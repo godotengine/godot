@@ -4,7 +4,7 @@
 		Pin joint for 2D shapes.
 	</brief_description>
 	<description>
-		Pin joint for 2D rigid bodies. It pins two bodies (rigid or static) together.
+		Pin joint for 2D rigid bodies. It pins two bodies (dynamic or static) together.
 	</description>
 	<tutorials>
 	</tutorials>

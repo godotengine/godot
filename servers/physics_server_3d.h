@@ -374,8 +374,8 @@ public:
 	enum BodyMode {
 		BODY_MODE_STATIC,
 		BODY_MODE_KINEMATIC,
-		BODY_MODE_RIGID,
-		BODY_MODE_CHARACTER
+		BODY_MODE_DYNAMIC,
+		BODY_MODE_DYNAMIC_LOCKED,
 	};
 
 	virtual RID body_create() = 0;
@@ -427,9 +427,6 @@ public:
 
 	virtual void body_set_param(RID p_body, BodyParameter p_param, real_t p_value) = 0;
 	virtual real_t body_get_param(RID p_body, BodyParameter p_param) const = 0;
-
-	virtual void body_set_kinematic_safe_margin(RID p_body, real_t p_margin) = 0;
-	virtual real_t body_get_kinematic_safe_margin(RID p_body) const = 0;
 
 	//state
 	enum BodyState {
@@ -500,19 +497,14 @@ public:
 		Vector3 collision_point;
 		Vector3 collision_normal;
 		Vector3 collider_velocity;
-		int collision_local_shape;
+		int collision_local_shape = 0;
 		ObjectID collider_id;
 		RID collider;
-		int collider_shape;
+		int collider_shape = 0;
 		Variant collider_metadata;
-		MotionResult() {
-			collision_local_shape = 0;
-			collider_id = ObjectID();
-			collider_shape = 0;
-		}
 	};
 
-	virtual bool body_test_motion(RID p_body, const Transform3D &p_from, const Vector3 &p_motion, bool p_infinite_inertia, MotionResult *r_result = nullptr, bool p_exclude_raycast_shapes = true) = 0;
+	virtual bool body_test_motion(RID p_body, const Transform3D &p_from, const Vector3 &p_motion, bool p_infinite_inertia, real_t p_margin = 0.001, MotionResult *r_result = nullptr, bool p_exclude_raycast_shapes = true) = 0;
 
 	struct SeparationResult {
 		real_t collision_depth;

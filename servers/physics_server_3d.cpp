@@ -523,9 +523,6 @@ void PhysicsServer3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("body_set_param", "body", "param", "value"), &PhysicsServer3D::body_set_param);
 	ClassDB::bind_method(D_METHOD("body_get_param", "body", "param"), &PhysicsServer3D::body_get_param);
 
-	ClassDB::bind_method(D_METHOD("body_set_kinematic_safe_margin", "body", "margin"), &PhysicsServer3D::body_set_kinematic_safe_margin);
-	ClassDB::bind_method(D_METHOD("body_get_kinematic_safe_margin", "body"), &PhysicsServer3D::body_get_kinematic_safe_margin);
-
 	ClassDB::bind_method(D_METHOD("body_set_state", "body", "state", "value"), &PhysicsServer3D::body_set_state);
 	ClassDB::bind_method(D_METHOD("body_get_state", "body", "state"), &PhysicsServer3D::body_get_state);
 
@@ -717,8 +714,8 @@ void PhysicsServer3D::_bind_methods() {
 
 	BIND_ENUM_CONSTANT(BODY_MODE_STATIC);
 	BIND_ENUM_CONSTANT(BODY_MODE_KINEMATIC);
-	BIND_ENUM_CONSTANT(BODY_MODE_RIGID);
-	BIND_ENUM_CONSTANT(BODY_MODE_CHARACTER);
+	BIND_ENUM_CONSTANT(BODY_MODE_DYNAMIC);
+	BIND_ENUM_CONSTANT(BODY_MODE_DYNAMIC_LOCKED);
 
 	BIND_ENUM_CONSTANT(BODY_PARAM_BOUNCE);
 	BIND_ENUM_CONSTANT(BODY_PARAM_FRICTION);

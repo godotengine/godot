@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="CharacterBody2D" inherits="PhysicsBody2D" version="4.0">
+	<brief_description>
+		Character body 2D node.
+	</brief_description>
+	<description>
+		Character bodies are special types of bodies that are meant to be user-controlled. They are not affected by physics at all; to other types of bodies, such as a rigid body, these are the same as a static body. However, they have two main uses:
+		[b]Kinematic characters:[/b] Character bodies have an API for moving objects with walls and slopes detection ([method move_and_slide] method), in addition to collision detection (also done with [method PhysicsBody3D.move_and_collide]). This makes them really useful to implement characters that move in specific ways and collide with the world, but don't require advanced physics.
+		[b]Kinematic motion:[/b] Character bodies can also be used for kinematic motion (same functionality as [member StaticBody3D.kinematic_motion] when enabled), which allows them to be moved by code and push other bodies on their path.
+	</description>
+	<tutorials>
+		<link title="Kinematic character (2D)">https://docs.godotengine.org/en/latest/tutorials/physics/kinematic_character_2d.html</link>
+		<link title="Using KinematicBody2D">https://docs.godotengine.org/en/latest/tutorials/physics/using_kinematic_body_2d.html</link>
+		<link title="2D Kinematic Character Demo">https://godotengine.org/asset-library/asset/113</link>
+		<link title="2D Platformer Demo">https://godotengine.org/asset-library/asset/120</link>
+	</tutorials>
+	<methods>
+		<method name="get_floor_normal" qualifiers="const">
+			<return type="Vector2">
+			</return>
+			<description>
+				Returns the surface normal of the floor at the last collision point. Only valid after calling [method move_and_slide] and when [method is_on_floor] returns [code]true[/code].
+			</description>
+		</method>
+		<method name="get_floor_velocity" qualifiers="const">
+			<return type="Vector2">
+			</return>
+			<description>
+				Returns the linear velocity of the floor at the last collision point. Only valid after calling [method move_and_slide] and when [method is_on_floor] returns [code]true[/code].
+			</description>
+		</method>
+		<method name="get_slide_collision">
+			<return type="KinematicCollision2D">
+			</return>
+			<argument index="0" name="slide_idx" type="int">
+			</argument>
+			<description>
+				Returns a [KinematicCollision2D], which contains information about a collision that occurred during the last call to [method move_and_slide]. Since the body can collide several times in a single call to [method move_and_slide], you must specify the index of the collision in the range 0 to ([method get_slide_count] - 1).
+				[b]Example usage:[/b]
+				[codeblocks]
+				[gdscript]
+				for i in get_slide_count():
+				var collision = get_slide_collision(i)
+				print("Collided with: ", collision.collider.name)
+				[/gdscript]
+				[csharp]
+				for (int i = 0; i &lt; GetSlideCount(); i++)
+				{
+				    KinematicCollision2D collision = GetSlideCollision(i);
+				    GD.Print("Collided with: ", (collision.Collider as Node).Name);
+				}
+				[/csharp]
+				[/codeblocks]
+			</description>
+		</method>
+		<method name="get_slide_count" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+				Returns the number of times the body collided and changed direction during the last call to [method move_and_slide].
+			</description>
+		</method>
+		<method name="is_on_ceiling" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+				Returns [code]true[/code] if the body collided with the ceiling on the last call of [method move_and_slide]. Otherwise, returns [code]false[/code].
+			</description>
+		</method>
+		<method name="is_on_floor" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+				Returns [code]true[/code] if the body collided with the floor on the last call of [method move_and_slide]. Otherwise, returns [code]false[/code].
+			</description>
+		</method>
+		<method name="is_on_wall" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+				Returns [code]true[/code] if the body collided with a wall on the last call of [method move_and_slide]. Otherwise, returns [code]false[/code].
+			</description>
+		</method>
+		<method name="move_and_slide">
+			<return type="void">
+			</return>
+			<description>
+				Moves the body based on [member linear_velocity]. If the body collides with another, it will slide along the other body rather than stop immediately. If the other body is a [CharacterBody2D] or [RigidBody2D], it will also be affected by the motion of the other body. You can use this to make moving and rotating platforms, or to make nodes push other nodes.
+				This method should be used in [method Node._physics_process] (or in a method called by [method Node._physics_process]), as it uses the physics step's [code]delta[/code] value automatically in calculations. Otherwise, the simulation will run at an incorrect speed.
+				Modifies [member linear_velocity] if a slide collision occurred. To get detailed information about collisions that occurred, use [method get_slide_collision].
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="collision/safe_margin" type="float" setter="set_safe_margin" getter="get_safe_margin" default="0.08">
+			Extra margin used for collision recovery when calling [method move_and_slide].
+			If the body is at least this close to another body, it will consider them to be colliding and will be pushed away before performing the actual motion.
+			A higher value means it's more flexible for detecting collision, which helps with consistently detecting walls and floors.
+			A lower value forces the collision algorithm to use more exact detection, so it can be used in cases that specifically require precision, e.g at very low scale to avoid visible jittering, or for stability with a stack of character bodies.
+		</member>
+		<member name="floor_max_angle" type="float" setter="set_floor_max_angle" getter="get_floor_max_angle" default="0.785398">
+			Maximum angle (in radians) where a slope is still considered a floor (or a ceiling), rather than a wall, when calling [method move_and_slide]. The default value equals 45 degrees.
+		</member>
+		<member name="infinite_inertia" type="bool" setter="set_infinite_inertia_enabled" getter="is_infinite_inertia_enabled" default="true">
+			If [code]true[/code], the body will be able to push [RigidBody2D] nodes when calling [method move_and_slide], but it also won't detect any collisions with them. If [code]false[/code], it will interact with [RigidBody2D] nodes like with [StaticBody2D].
+		</member>
+		<member name="linear_velocity" type="Vector2" setter="set_linear_velocity" getter="get_linear_velocity" default="Vector2( 0, 0 )">
+			Current velocity vector in pixels per second, used and modified during calls to [method move_and_slide].
+		</member>
+		<member name="max_slides" type="int" setter="set_max_slides" getter="get_max_slides" default="4">
+			Maximum number of times the body can change direction before it stops when calling [method move_and_slide].
+		</member>
+		<member name="motion/sync_to_physics" type="bool" setter="set_sync_to_physics" getter="is_sync_to_physics_enabled" default="false">
+			If [code]true[/code], the body's movement will be synchronized to the physics frame. This is useful when animating movement via [AnimationPlayer], for example on moving platforms. Do [b]not[/b] use together with [method move_and_slide] or [method PhysicsBody2D.move_and_collide] functions.
+		</member>
+		<member name="snap" type="Vector2" setter="set_snap" getter="get_snap" default="Vector2( 0, 0 )">
+			When set to a value different from [code]Vector2(0, 0)[/code], the body is kept attached to slopes when calling [method move_and_slide].
+			As long as the [code]snap[/code] vector is in contact with the ground, the body will remain attached to the surface. This means you must disable snap in order to jump, for example. You can do this by setting [code]snap[/code] to [code]Vector2(0, 0)[/code].
+		</member>
+		<member name="stop_on_slope" type="bool" setter="set_stop_on_slope_enabled" getter="is_stop_on_slope_enabled" default="false">
+			If [code]true[/code], the body will not slide on slopes when you include gravity in [code]linear_velocity[/code] when calling [method move_and_slide] and the body is standing still.
+		</member>
+		<member name="up_direction" type="Vector2" setter="set_up_direction" getter="get_up_direction" default="Vector2( 0, -1 )">
+			Direction vector used to determine what is a wall and what is a floor (or a ceiling), rather than a wall, when calling [method move_and_slide]. Defaults to [code]Vector2.UP[/code]. If set to [code]Vector2(0, 0)[/code], everything is considered a wall. This is useful for topdown games.
+		</member>
+	</members>
+	<constants>
+	</constants>
+</class>

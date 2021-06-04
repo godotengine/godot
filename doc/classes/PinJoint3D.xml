@@ -4,7 +4,7 @@
 		Pin joint for 3D PhysicsBodies.
 	</brief_description>
 	<description>
-		Pin joint for 3D rigid bodies. It pins 2 bodies (rigid or static) together. See also [Generic6DOFJoint3D].
+		Pin joint for 3D rigid bodies. It pins 2 bodies (dynamic or static) together. See also [Generic6DOFJoint3D].
 	</description>
 	<tutorials>
 	</tutorials>

@@ -370,8 +370,8 @@ public:
 	enum BodyMode {
 		BODY_MODE_STATIC,
 		BODY_MODE_KINEMATIC,
-		BODY_MODE_RIGID,
-		BODY_MODE_CHARACTER
+		BODY_MODE_DYNAMIC,
+		BODY_MODE_DYNAMIC_LOCKED,
 	};
 
 	virtual RID body_create() = 0;
@@ -493,17 +493,11 @@ public:
 		Vector2 collision_point;
 		Vector2 collision_normal;
 		Vector2 collider_velocity;
-		int collision_local_shape;
+		int collision_local_shape = 0;
 		ObjectID collider_id;
 		RID collider;
-		int collider_shape;
+		int collider_shape = 0;
 		Variant collider_metadata;
-
-		MotionResult() {
-			collision_local_shape = 0;
-			collider_shape = 0;
-			collider_id = ObjectID();
-		}
 	};
 
 	virtual bool body_test_motion(RID p_body, const Transform2D &p_from, const Vector2 &p_motion, bool p_infinite_inertia, real_t p_margin = 0.001, MotionResult *r_result = nullptr, bool p_exclude_raycast_shapes = true) = 0;
@@ -607,7 +601,6 @@ class PhysicsTestMotionResult2D : public Reference {
 	GDCLASS(PhysicsTestMotionResult2D, Reference);
 
 	PhysicsServer2D::MotionResult result;
-	bool colliding;
 	friend class PhysicsServer2D;
 
 protected:
@@ -616,7 +609,6 @@ protected:
 public:
 	PhysicsServer2D::MotionResult *get_result_ptr() const { return const_cast<PhysicsServer2D::MotionResult *>(&result); }
 
-	//bool is_colliding() const;
 	Vector2 get_motion() const;
 	Vector2 get_motion_remainder() const;
 
@@ -627,8 +619,6 @@ public:
 	RID get_collider_rid() const;
 	Object *get_collider() const;
 	int get_collider_shape() const;
-
-	PhysicsTestMotionResult2D();
 };
 
 typedef PhysicsServer2D *(*CreatePhysicsServer2DCallback)();

@@ -176,7 +176,7 @@ void VisibilityEnabler2D::_find_nodes(Node *p_node) {
 
 	{
 		RigidBody2D *rb2d = Object::cast_to<RigidBody2D>(p_node);
-		if (rb2d && ((rb2d->get_mode() == RigidBody2D::MODE_CHARACTER || rb2d->get_mode() == RigidBody2D::MODE_RIGID))) {
+		if (rb2d && ((rb2d->get_mode() == RigidBody2D::MODE_DYNAMIC || rb2d->get_mode() == RigidBody2D::MODE_DYNAMIC_LOCKED))) {
 			add = true;
 			meta = rb2d->get_mode();
 		}
