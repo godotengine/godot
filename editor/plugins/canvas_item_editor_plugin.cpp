@@ -2447,7 +2447,7 @@ bool CanvasItemEditor::_gui_input_select(const Ref<InputEvent> &p_event) {
 			// Popup the selection menu list
 			Point2 click = transform.affine_inverse().xform(b->get_position());
 
-			_get_canvas_items_at_pos(click, selection_results, b->is_alt_pressed() && tool != TOOL_LIST_SELECT);
+			_get_canvas_items_at_pos(click, selection_results, true);
 
 			if (selection_results.size() == 1) {
 				CanvasItem *item = selection_results[0].item;
