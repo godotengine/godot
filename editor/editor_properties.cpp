@@ -2078,7 +2078,7 @@ EditorPropertyBasis::EditorPropertyBasis() {
 
 ///////////////////// TRANSFORM /////////////////////////
 
-void EditorPropertyTransform::_value_changed(double val, const String &p_name) {
+void EditorPropertyTransform3D::_value_changed(double val, const String &p_name) {
 	if (setting) {
 		return;
 	}
@@ -2100,11 +2100,11 @@ void EditorPropertyTransform::_value_changed(double val, const String &p_name) {
 	emit_changed(get_edited_property(), p, p_name);
 }
 
-void EditorPropertyTransform::update_property() {
+void EditorPropertyTransform3D::update_property() {
 	update_using_transform(get_edited_object()->get(get_edited_property()));
 }
 
-void EditorPropertyTransform::update_using_transform(Transform3D p_transform) {
+void EditorPropertyTransform3D::update_using_transform(Transform3D p_transform) {
 	setting = true;
 	spin[0]->set_value(p_transform.basis[0][0]);
 	spin[1]->set_value(p_transform.basis[1][0]);
@@ -2121,7 +2121,7 @@ void EditorPropertyTransform::update_using_transform(Transform3D p_transform) {
 	setting = false;
 }
 
-void EditorPropertyTransform::_notification(int p_what) {
+void EditorPropertyTransform3D::_notification(int p_what) {
 	if (p_what == NOTIFICATION_ENTER_TREE || p_what == NOTIFICATION_THEME_CHANGED) {
 		Color base = get_theme_color("accent_color", "Editor");
 		for (int i = 0; i < 12; i++) {
@@ -2132,10 +2132,10 @@ void EditorPropertyTransform::_notification(int p_what) {
 	}
 }
 
-void EditorPropertyTransform::_bind_methods() {
+void EditorPropertyTransform3D::_bind_methods() {
 }
 
-void EditorPropertyTransform::setup(double p_min, double p_max, double p_step, bool p_no_slider) {
+void EditorPropertyTransform3D::setup(double p_min, double p_max, double p_step, bool p_no_slider) {
 	for (int i = 0; i < 12; i++) {
 		spin[i]->set_min(p_min);
 		spin[i]->set_max(p_max);
@@ -2146,7 +2146,7 @@ void EditorPropertyTransform::setup(double p_min, double p_max, double p_step, b
 	}
 }
 
-EditorPropertyTransform::EditorPropertyTransform() {
+EditorPropertyTransform3D::EditorPropertyTransform3D() {
 	GridContainer *g = memnew(GridContainer);
 	g->set_columns(3);
 	add_child(g);
@@ -2159,7 +2159,7 @@ EditorPropertyTransform::EditorPropertyTransform() {
 		g->add_child(spin[i]);
 		spin[i]->set_h_size_flags(SIZE_EXPAND_FILL);
 		add_focusable(spin[i]);
-		spin[i]->connect("value_changed", callable_mp(this, &EditorPropertyTransform::_value_changed), varray(desc[i]));
+		spin[i]->connect("value_changed", callable_mp(this, &EditorPropertyTransform3D::_value_changed), varray(desc[i]));
 	}
 	set_bottom_editor(g);
 	setting = false;
@@ -3108,7 +3108,7 @@ bool EditorInspectorDefaultPlugin::parse_property(Object *p_object, Variant::Typ
 			add_property_editor(p_path, editor);
 		} break;
 		case Variant::TRANSFORM3D: {
-			EditorPropertyTransform *editor = memnew(EditorPropertyTransform);
+			EditorPropertyTransform3D *editor = memnew(EditorPropertyTransform3D);
 			double min = -65535, max = 65535, step = default_float_step;
 			bool hide_slider = true;
 

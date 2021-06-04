@@ -95,7 +95,7 @@ void BoneTransformEditor::create_editors() {
 	section->get_vbox()->add_child(transform_section);
 
 	// Transform/Matrix property
-	transform_property = memnew(EditorPropertyTransform());
+	transform_property = memnew(EditorPropertyTransform3D());
 	transform_property->setup(-10000, 10000, 0.001f, true);
 	transform_property->set_label("Transform");
 	transform_property->set_use_folding(true);
