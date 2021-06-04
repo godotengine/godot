@@ -581,7 +581,7 @@ bool AnimationTree::_update_caches(AnimationPlayer *player) {
 						track = track_value;
 
 					} break;
-					case Animation::TYPE_TRANSFORM: {
+					case Animation::TYPE_TRANSFORM3D: {
 						Node3D *spatial = Object::cast_to<Node3D>(child);
 
 						if (!spatial) {
@@ -844,7 +844,7 @@ void AnimationTree::_process_graph(float p_delta) {
 				}
 
 				switch (track->type) {
-					case Animation::TYPE_TRANSFORM: {
+					case Animation::TYPE_TRANSFORM3D: {
 						TrackCacheTransform *t = static_cast<TrackCacheTransform *>(track);
 
 						if (track->root_motion) {
@@ -1188,7 +1188,7 @@ void AnimationTree::_process_graph(float p_delta) {
 			}
 
 			switch (track->type) {
-				case Animation::TYPE_TRANSFORM: {
+				case Animation::TYPE_TRANSFORM3D: {
 					TrackCacheTransform *t = static_cast<TrackCacheTransform *>(track);
 
 					Transform3D xform;
