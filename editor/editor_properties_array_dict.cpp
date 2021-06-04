@@ -869,7 +869,7 @@ void EditorPropertyDictionary::update_property() {
 
 				} break;
 				case Variant::TRANSFORM3D: {
-					EditorPropertyTransform *editor = memnew(EditorPropertyTransform);
+					EditorPropertyTransform3D *editor = memnew(EditorPropertyTransform3D);
 					editor->setup(-100000, 100000, 0.001, true);
 					prop = editor;
 
