@@ -299,8 +299,8 @@ Transform3D Node3D::get_relative_transform(const Node *p_parent) const {
 	}
 }
 
-void Node3D::set_translation(const Vector3 &p_translation) {
-	data.local_transform.origin = p_translation;
+void Node3D::set_position(const Vector3 &p_position) {
+	data.local_transform.origin = p_position;
 	_propagate_transform_changed(this);
 	if (data.notify_local_transform) {
 		notification(NOTIFICATION_LOCAL_TRANSFORM_CHANGED);
@@ -339,7 +339,7 @@ void Node3D::set_scale(const Vector3 &p_scale) {
 	}
 }
 
-Vector3 Node3D::get_translation() const {
+Vector3 Node3D::get_position() const {
 	return data.local_transform.origin;
 }
 
@@ -693,8 +693,8 @@ void Node3D::force_update_transform() {
 void Node3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_transform", "local"), &Node3D::set_transform);
 	ClassDB::bind_method(D_METHOD("get_transform"), &Node3D::get_transform);
-	ClassDB::bind_method(D_METHOD("set_translation", "translation"), &Node3D::set_translation);
-	ClassDB::bind_method(D_METHOD("get_translation"), &Node3D::get_translation);
+	ClassDB::bind_method(D_METHOD("set_position", "position"), &Node3D::set_position);
+	ClassDB::bind_method(D_METHOD("get_position"), &Node3D::get_position);
 	ClassDB::bind_method(D_METHOD("set_rotation", "euler"), &Node3D::set_rotation);
 	ClassDB::bind_method(D_METHOD("get_rotation"), &Node3D::get_rotation);
 	ClassDB::bind_method(D_METHOD("set_rotation_degrees", "euler_degrees"), &Node3D::set_rotation_degrees);
@@ -759,7 +759,7 @@ void Node3D::_bind_methods() {
 	//ADD_PROPERTY( PropertyInfo(Variant::TRANSFORM3D,"transform/global",PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR ), "set_global_transform", "get_global_transform") ;
 	ADD_GROUP("Transform", "");
 	ADD_PROPERTY(PropertyInfo(Variant::TRANSFORM3D, "global_transform", PROPERTY_HINT_NONE, "", 0), "set_global_transform", "get_global_transform");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "translation", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR), "set_translation", "get_translation");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "position", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR), "set_position", "get_position");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "rotation_degrees", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR), "set_rotation_degrees", "get_rotation_degrees");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "rotation", PROPERTY_HINT_NONE, "", 0), "set_rotation", "get_rotation");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "scale", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR), "set_scale", "get_scale");
