@@ -553,6 +553,9 @@ void Theme::get_icon_list(StringName p_theme_type, List<StringName> *p_list) con
 }
 
 void Theme::add_icon_type(const StringName &p_theme_type) {
+	if (icon_map.has(p_theme_type)) {
+		return;
+	}
 	icon_map[p_theme_type] = HashMap<StringName, Ref<Texture2D>>();
 }
 
@@ -641,6 +644,9 @@ void Theme::get_stylebox_list(StringName p_theme_type, List<StringName> *p_list)
 }
 
 void Theme::add_stylebox_type(const StringName &p_theme_type) {
+	if (style_map.has(p_theme_type)) {
+		return;
+	}
 	style_map[p_theme_type] = HashMap<StringName, Ref<StyleBox>>();
 }
 
@@ -730,6 +736,9 @@ void Theme::get_font_list(StringName p_theme_type, List<StringName> *p_list) con
 }
 
 void Theme::add_font_type(const StringName &p_theme_type) {
+	if (font_map.has(p_theme_type)) {
+		return;
+	}
 	font_map[p_theme_type] = HashMap<StringName, Ref<Font>>();
 }
 
@@ -807,6 +816,9 @@ void Theme::get_font_size_list(StringName p_theme_type, List<StringName> *p_list
 }
 
 void Theme::add_font_size_type(const StringName &p_theme_type) {
+	if (font_size_map.has(p_theme_type)) {
+		return;
+	}
 	font_size_map[p_theme_type] = HashMap<StringName, int>();
 }
 
@@ -882,6 +894,9 @@ void Theme::get_color_list(StringName p_theme_type, List<StringName> *p_list) co
 }
 
 void Theme::add_color_type(const StringName &p_theme_type) {
+	if (color_map.has(p_theme_type)) {
+		return;
+	}
 	color_map[p_theme_type] = HashMap<StringName, Color>();
 }
 
@@ -956,6 +971,9 @@ void Theme::get_constant_list(StringName p_theme_type, List<StringName> *p_list)
 }
 
 void Theme::add_constant_type(const StringName &p_theme_type) {
+	if (constant_map.has(p_theme_type)) {
+		return;
+	}
 	constant_map[p_theme_type] = HashMap<StringName, int>();
 }
 
