@@ -35,6 +35,7 @@
 #include "scene/gui/margin_container.h"
 
 class Button;
+class DebugAdapterParser;
 class EditorDebuggerTree;
 class EditorDebuggerRemoteObject;
 class MenuButton;
@@ -109,6 +110,7 @@ private:
 	EditorDebuggerRemoteObject *get_inspected_remote_object();
 
 	friend class DebuggerEditorPlugin;
+	friend class DebugAdapterParser;
 	static EditorDebuggerNode *singleton;
 	EditorDebuggerNode();
 
