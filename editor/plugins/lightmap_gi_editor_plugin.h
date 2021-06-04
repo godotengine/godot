@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  baked_lightmap_editor_plugin.h                                       */
+/*  lightmap_gi_editor_plugin.h                                          */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -33,13 +33,13 @@
 
 #include "editor/editor_node.h"
 #include "editor/editor_plugin.h"
-#include "scene/3d/baked_lightmap.h"
+#include "scene/3d/lightmap_gi.h"
 #include "scene/resources/material.h"
 
-class BakedLightmapEditorPlugin : public EditorPlugin {
-	GDCLASS(BakedLightmapEditorPlugin, EditorPlugin);
+class LightmapGIEditorPlugin : public EditorPlugin {
+	GDCLASS(LightmapGIEditorPlugin, EditorPlugin);
 
-	BakedLightmap *lightmap;
+	LightmapGI *lightmap;
 
 	Button *bake;
 	EditorNode *editor;
@@ -56,14 +56,14 @@ protected:
 	static void _bind_methods();
 
 public:
-	virtual String get_name() const override { return "BakedLightmap"; }
+	virtual String get_name() const override { return "LightmapGI"; }
 	bool has_main_screen() const override { return false; }
 	virtual void edit(Object *p_object) override;
 	virtual bool handles(Object *p_object) const override;
 	virtual void make_visible(bool p_visible) override;
 
-	BakedLightmapEditorPlugin(EditorNode *p_node);
-	~BakedLightmapEditorPlugin();
+	LightmapGIEditorPlugin(EditorNode *p_node);
+	~LightmapGIEditorPlugin();
 };
 
 #endif

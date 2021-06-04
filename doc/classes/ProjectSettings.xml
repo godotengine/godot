@@ -1421,17 +1421,15 @@
 		</member>
 		<member name="rendering/global_illumination/gi/use_half_resolution" type="bool" setter="" getter="" default="false">
 		</member>
-		<member name="rendering/global_illumination/gi_probes/anisotropic" type="bool" setter="" getter="" default="false">
-			If [code]true[/code], take additional samples when rendering objects affected by a [GIProbe] to reduce artifacts from only sampling in one direction.
-		</member>
-		<member name="rendering/global_illumination/gi_probes/quality" type="int" setter="" getter="" default="1">
-			Sets the number of cone samples taken when rendering objects affected by [GIProbe]s.
-		</member>
 		<member name="rendering/global_illumination/sdfgi/frames_to_converge" type="int" setter="" getter="" default="4">
 		</member>
 		<member name="rendering/global_illumination/sdfgi/frames_to_update_lights" type="int" setter="" getter="" default="2">
 		</member>
 		<member name="rendering/global_illumination/sdfgi/probe_ray_count" type="int" setter="" getter="" default="1">
+		</member>
+		<member name="rendering/global_illumination/voxel_gi/anisotropic" type="bool" setter="" getter="" default="false">
+		</member>
+		<member name="rendering/global_illumination/voxel_gi/quality" type="int" setter="" getter="" default="1">
 		</member>
 		<member name="rendering/lightmapping/bake_performance/max_rays_per_pass" type="int" setter="" getter="" default="32">
 		</member>

@@ -38,10 +38,10 @@
 #include "servers/rendering/renderer_rd/effects_rd.h"
 #include "servers/rendering/renderer_rd/shader_compiler_rd.h"
 #include "servers/rendering/renderer_rd/shaders/canvas_sdf.glsl.gen.h"
-#include "servers/rendering/renderer_rd/shaders/giprobe_sdf.glsl.gen.h"
 #include "servers/rendering/renderer_rd/shaders/particles.glsl.gen.h"
 #include "servers/rendering/renderer_rd/shaders/particles_copy.glsl.gen.h"
 #include "servers/rendering/renderer_rd/shaders/skeleton.glsl.gen.h"
+#include "servers/rendering/renderer_rd/shaders/voxel_gi_sdf.glsl.gen.h"
 #include "servers/rendering/renderer_scene_render.h"
 #include "servers/rendering/rendering_device.h"
 class RendererStorageRD : public RendererStorage {
@@ -1045,9 +1045,9 @@ private:
 
 	mutable RID_Owner<Decal, true> decal_owner;
 
-	/* GI PROBE */
+	/* VOXEL GI */
 
-	struct GIProbe {
+	struct VoxelGI {
 		RID octree_buffer;
 		RID data_buffer;
 		RID sdf_texture;
@@ -1081,12 +1081,12 @@ private:
 		Dependency dependency;
 	};
 
-	GiprobeSdfShaderRD giprobe_sdf_shader;
-	RID giprobe_sdf_shader_version;
-	RID giprobe_sdf_shader_version_shader;
-	RID giprobe_sdf_shader_pipeline;
+	VoxelGiSdfShaderRD voxel_gi_sdf_shader;
+	RID voxel_gi_sdf_shader_version;
+	RID voxel_gi_sdf_shader_version_shader;
+	RID voxel_gi_sdf_shader_pipeline;
 
-	mutable RID_Owner<GIProbe, true> gi_probe_owner;
+	mutable RID_Owner<VoxelGI, true> voxel_gi_owner;
 
 	/* REFLECTION PROBE */
 
@@ -2019,59 +2019,59 @@ public:
 
 	virtual AABB decal_get_aabb(RID p_decal) const;
 
-	/* GI PROBE API */
+	/* VOXEL GI API */
 
-	RID gi_probe_allocate();
-	void gi_probe_initialize(RID p_gi_probe);
+	RID voxel_gi_allocate();
+	void voxel_gi_initialize(RID p_voxel_gi);
 
-	void gi_probe_allocate_data(RID p_gi_probe, const Transform3D &p_to_cell_xform, const AABB &p_aabb, const Vector3i &p_octree_size, const Vector<uint8_t> &p_octree_cells, const Vector<uint8_t> &p_data_cells, const Vector<uint8_t> &p_distance_field, const Vector<int> &p_level_counts);
+	void voxel_gi_allocate_data(RID p_voxel_gi, const Transform3D &p_to_cell_xform, const AABB &p_aabb, const Vector3i &p_octree_size, const Vector<uint8_t> &p_octree_cells, const Vector<uint8_t> &p_data_cells, const Vector<uint8_t> &p_distance_field, const Vector<int> &p_level_counts);
 
-	AABB gi_probe_get_bounds(RID p_gi_probe) const;
-	Vector3i gi_probe_get_octree_size(RID p_gi_probe) const;
-	Vector<uint8_t> gi_probe_get_octree_cells(RID p_gi_probe) const;
-	Vector<uint8_t> gi_probe_get_data_cells(RID p_gi_probe) const;
-	Vector<uint8_t> gi_probe_get_distance_field(RID p_gi_probe) const;
+	AABB voxel_gi_get_bounds(RID p_voxel_gi) const;
+	Vector3i voxel_gi_get_octree_size(RID p_voxel_gi) const;
+	Vector<uint8_t> voxel_gi_get_octree_cells(RID p_voxel_gi) const;
+	Vector<uint8_t> voxel_gi_get_data_cells(RID p_voxel_gi) const;
+	Vector<uint8_t> voxel_gi_get_distance_field(RID p_voxel_gi) const;
 
-	Vector<int> gi_probe_get_level_counts(RID p_gi_probe) const;
-	Transform3D gi_probe_get_to_cell_xform(RID p_gi_probe) const;
+	Vector<int> voxel_gi_get_level_counts(RID p_voxel_gi) const;
+	Transform3D voxel_gi_get_to_cell_xform(RID p_voxel_gi) const;
 
-	void gi_probe_set_dynamic_range(RID p_gi_probe, float p_range);
-	float gi_probe_get_dynamic_range(RID p_gi_probe) const;
+	void voxel_gi_set_dynamic_range(RID p_voxel_gi, float p_range);
+	float voxel_gi_get_dynamic_range(RID p_voxel_gi) const;
 
-	void gi_probe_set_propagation(RID p_gi_probe, float p_range);
-	float gi_probe_get_propagation(RID p_gi_probe) const;
+	void voxel_gi_set_propagation(RID p_voxel_gi, float p_range);
+	float voxel_gi_get_propagation(RID p_voxel_gi) const;
 
-	void gi_probe_set_energy(RID p_gi_probe, float p_energy);
-	float gi_probe_get_energy(RID p_gi_probe) const;
+	void voxel_gi_set_energy(RID p_voxel_gi, float p_energy);
+	float voxel_gi_get_energy(RID p_voxel_gi) const;
 
-	void gi_probe_set_ao(RID p_gi_probe, float p_ao);
-	float gi_probe_get_ao(RID p_gi_probe) const;
+	void voxel_gi_set_ao(RID p_voxel_gi, float p_ao);
+	float voxel_gi_get_ao(RID p_voxel_gi) const;
 
-	void gi_probe_set_ao_size(RID p_gi_probe, float p_strength);
-	float gi_probe_get_ao_size(RID p_gi_probe) const;
+	void voxel_gi_set_ao_size(RID p_voxel_gi, float p_strength);
+	float voxel_gi_get_ao_size(RID p_voxel_gi) const;
 
-	void gi_probe_set_bias(RID p_gi_probe, float p_bias);
-	float gi_probe_get_bias(RID p_gi_probe) const;
+	void voxel_gi_set_bias(RID p_voxel_gi, float p_bias);
+	float voxel_gi_get_bias(RID p_voxel_gi) const;
 
-	void gi_probe_set_normal_bias(RID p_gi_probe, float p_range);
-	float gi_probe_get_normal_bias(RID p_gi_probe) const;
+	void voxel_gi_set_normal_bias(RID p_voxel_gi, float p_range);
+	float voxel_gi_get_normal_bias(RID p_voxel_gi) const;
 
-	void gi_probe_set_interior(RID p_gi_probe, bool p_enable);
-	bool gi_probe_is_interior(RID p_gi_probe) const;
+	void voxel_gi_set_interior(RID p_voxel_gi, bool p_enable);
+	bool voxel_gi_is_interior(RID p_voxel_gi) const;
 
-	void gi_probe_set_use_two_bounces(RID p_gi_probe, bool p_enable);
-	bool gi_probe_is_using_two_bounces(RID p_gi_probe) const;
+	void voxel_gi_set_use_two_bounces(RID p_voxel_gi, bool p_enable);
+	bool voxel_gi_is_using_two_bounces(RID p_voxel_gi) const;
 
-	void gi_probe_set_anisotropy_strength(RID p_gi_probe, float p_strength);
-	float gi_probe_get_anisotropy_strength(RID p_gi_probe) const;
+	void voxel_gi_set_anisotropy_strength(RID p_voxel_gi, float p_strength);
+	float voxel_gi_get_anisotropy_strength(RID p_voxel_gi) const;
 
-	uint32_t gi_probe_get_version(RID p_probe);
-	uint32_t gi_probe_get_data_version(RID p_probe);
+	uint32_t voxel_gi_get_version(RID p_probe);
+	uint32_t voxel_gi_get_data_version(RID p_probe);
 
-	RID gi_probe_get_octree_buffer(RID p_gi_probe) const;
-	RID gi_probe_get_data_buffer(RID p_gi_probe) const;
+	RID voxel_gi_get_octree_buffer(RID p_voxel_gi) const;
+	RID voxel_gi_get_data_buffer(RID p_voxel_gi) const;
 
-	RID gi_probe_get_sdf_texture(RID p_gi_probe);
+	RID voxel_gi_get_sdf_texture(RID p_voxel_gi);
 
 	/* LIGHTMAP CAPTURE */
 

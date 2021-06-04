@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  baked_lightmap_editor_plugin.cpp                                     */
+/*  lightmap_gi_editor_plugin.cpp                                        */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,11 +28,11 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "baked_lightmap_editor_plugin.h"
+#include "lightmap_gi_editor_plugin.h"
 
-void BakedLightmapEditorPlugin::_bake_select_file(const String &p_file) {
+void LightmapGIEditorPlugin::_bake_select_file(const String &p_file) {
 	if (lightmap) {
-		BakedLightmap::BakeError err;
+		LightmapGI::BakeError err;
 		if (get_tree()->get_edited_scene_root() && get_tree()->get_edited_scene_root() == lightmap) {
 			err = lightmap->bake(lightmap, p_file, bake_func_step);
 		} else {
@@ -42,7 +42,7 @@ void BakedLightmapEditorPlugin::_bake_select_file(const String &p_file) {
 		bake_func_end();
 
 		switch (err) {
-			case BakedLightmap::BAKE_ERROR_NO_SAVE_PATH: {
+			case LightmapGI::BAKE_ERROR_NO_SAVE_PATH: {
 				String scene_path = lightmap->get_filename();
 				if (scene_path == String()) {
 					scene_path = lightmap->get_owner()->get_filename();
@@ -57,10 +57,10 @@ void BakedLightmapEditorPlugin::_bake_select_file(const String &p_file) {
 				file_dialog->popup_file_dialog();
 
 			} break;
-			case BakedLightmap::BAKE_ERROR_NO_MESHES:
+			case LightmapGI::BAKE_ERROR_NO_MESHES:
 				EditorNode::get_singleton()->show_warning(TTR("No meshes to bake. Make sure they contain an UV2 channel and that the 'Bake Light' flag is on."));
 				break;
-			case BakedLightmap::BAKE_ERROR_CANT_CREATE_IMAGE:
+			case LightmapGI::BAKE_ERROR_CANT_CREATE_IMAGE:
 				EditorNode::get_singleton()->show_warning(TTR("Failed creating lightmap images, make sure path is writable."));
 				break;
 			default: {
@@ -69,12 +69,12 @@ void BakedLightmapEditorPlugin::_bake_select_file(const String &p_file) {
 	}
 }
 
-void BakedLightmapEditorPlugin::_bake() {
+void LightmapGIEditorPlugin::_bake() {
 	_bake_select_file("");
 }
 
-void BakedLightmapEditorPlugin::edit(Object *p_object) {
-	BakedLightmap *s = Object::cast_to<BakedLightmap>(p_object);
+void LightmapGIEditorPlugin::edit(Object *p_object) {
+	LightmapGI *s = Object::cast_to<LightmapGI>(p_object);
 	if (!s) {
 		return;
 	}
@@ -82,11 +82,11 @@ void BakedLightmapEditorPlugin::edit(Object *p_object) {
 	lightmap = s;
 }
 
-bool BakedLightmapEditorPlugin::handles(Object *p_object) const {
-	return p_object->is_class("BakedLightmap");
+bool LightmapGIEditorPlugin::handles(Object *p_object) const {
+	return p_object->is_class("LightmapGI");
 }
 
-void BakedLightmapEditorPlugin::make_visible(bool p_visible) {
+void LightmapGIEditorPlugin::make_visible(bool p_visible) {
 	if (p_visible) {
 		bake->show();
 	} else {
@@ -94,9 +94,9 @@ void BakedLightmapEditorPlugin::make_visible(bool p_visible) {
 	}
 }
 
-EditorProgress *BakedLightmapEditorPlugin::tmp_progress = nullptr;
+EditorProgress *LightmapGIEditorPlugin::tmp_progress = nullptr;
 
-bool BakedLightmapEditorPlugin::bake_func_step(float p_progress, const String &p_description, void *, bool p_refresh) {
+bool LightmapGIEditorPlugin::bake_func_step(float p_progress, const String &p_description, void *, bool p_refresh) {
 	if (!tmp_progress) {
 		tmp_progress = memnew(EditorProgress("bake_lightmaps", TTR("Bake Lightmaps"), 1000, false));
 		ERR_FAIL_COND_V(tmp_progress == nullptr, false);
@@ -104,18 +104,18 @@ bool BakedLightmapEditorPlugin::bake_func_step(float p_progress, const String &p
 	return tmp_progress->step(p_description, p_progress * 1000, p_refresh);
 }
 
-void BakedLightmapEditorPlugin::bake_func_end() {
+void LightmapGIEditorPlugin::bake_func_end() {
 	if (tmp_progress != nullptr) {
 		memdelete(tmp_progress);
 		tmp_progress = nullptr;
 	}
 }
 
-void BakedLightmapEditorPlugin::_bind_methods() {
-	ClassDB::bind_method("_bake", &BakedLightmapEditorPlugin::_bake);
+void LightmapGIEditorPlugin::_bind_methods() {
+	ClassDB::bind_method("_bake", &LightmapGIEditorPlugin::_bake);
 }
 
-BakedLightmapEditorPlugin::BakedLightmapEditorPlugin(EditorNode *p_node) {
+LightmapGIEditorPlugin::LightmapGIEditorPlugin(EditorNode *p_node) {
 	editor = p_node;
 	bake = memnew(Button);
 	bake->set_flat(true);
@@ -130,9 +130,9 @@ BakedLightmapEditorPlugin::BakedLightmapEditorPlugin(EditorNode *p_node) {
 	file_dialog->set_file_mode(EditorFileDialog::FILE_MODE_SAVE_FILE);
 	file_dialog->add_filter("*.lmbake ; LightMap Bake");
 	file_dialog->set_title(TTR("Select lightmap bake file:"));
-	file_dialog->connect("file_selected", callable_mp(this, &BakedLightmapEditorPlugin::_bake_select_file));
+	file_dialog->connect("file_selected", callable_mp(this, &LightmapGIEditorPlugin::_bake_select_file));
 	bake->add_child(file_dialog);
 }
 
-BakedLightmapEditorPlugin::~BakedLightmapEditorPlugin() {
+LightmapGIEditorPlugin::~LightmapGIEditorPlugin() {
 }

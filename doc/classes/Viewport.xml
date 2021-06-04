@@ -382,14 +382,14 @@
 		</constant>
 		<constant name="DEBUG_DRAW_NORMAL_BUFFER" value="5" enum="DebugDraw">
 		</constant>
-		<constant name="DEBUG_DRAW_GI_PROBE_ALBEDO" value="6" enum="DebugDraw">
-			Objects are displayed with only the albedo value from [GIProbe]s.
+		<constant name="DEBUG_DRAW_VOXEL_GI_ALBEDO" value="6" enum="DebugDraw">
+			Objects are displayed with only the albedo value from [VoxelGI]s.
 		</constant>
-		<constant name="DEBUG_DRAW_GI_PROBE_LIGHTING" value="7" enum="DebugDraw">
-			Objects are displayed with only the lighting value from [GIProbe]s.
+		<constant name="DEBUG_DRAW_VOXEL_GI_LIGHTING" value="7" enum="DebugDraw">
+			Objects are displayed with only the lighting value from [VoxelGI]s.
 		</constant>
-		<constant name="DEBUG_DRAW_GI_PROBE_EMISSION" value="8" enum="DebugDraw">
-			Objects are displayed with only the emission color from [GIProbe]s.
+		<constant name="DEBUG_DRAW_VOXEL_GI_EMISSION" value="8" enum="DebugDraw">
+			Objects are displayed with only the emission color from [VoxelGI]s.
 		</constant>
 		<constant name="DEBUG_DRAW_SHADOW_ATLAS" value="9" enum="DebugDraw">
 			Draws the shadow atlas that stores shadows from [OmniLight3D]s and [SpotLight3D]s in the upper left quadrant of the [Viewport].

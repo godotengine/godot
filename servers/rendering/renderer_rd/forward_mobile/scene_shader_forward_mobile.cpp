@@ -342,7 +342,7 @@ void SceneShaderForwardMobile::ShaderData::set_code(const String &p_code) {
 						//none, leave empty
 					} else if (k == SHADER_VERSION_DEPTH_PASS_WITH_NORMAL_AND_ROUGHNESS) {
 						blend_state = blend_state_depth_normal_roughness;
-					} else if (k == SHADER_VERSION_DEPTH_PASS_WITH_NORMAL_AND_ROUGHNESS_AND_GIPROBE) {
+					} else if (k == SHADER_VERSION_DEPTH_PASS_WITH_NORMAL_AND_ROUGHNESS_AND_VOXEL_GI) {
 						blend_state = blend_state_depth_normal_roughness_giprobe;
 					} else if (k == SHADER_VERSION_DEPTH_PASS_WITH_MATERIAL) {
 						blend_state = RD::PipelineColorBlendState::create_disabled(5); //writes to normal and roughness in opaque way

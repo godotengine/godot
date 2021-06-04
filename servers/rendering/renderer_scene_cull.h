@@ -253,7 +253,7 @@ public:
 			FLAG_GEOM_LIGHTING_DIRTY = (1 << 11),
 			FLAG_GEOM_REFLECTION_DIRTY = (1 << 12),
 			FLAG_GEOM_DECAL_DIRTY = (1 << 13),
-			FLAG_GEOM_GI_PROBE_DIRTY = (1 << 14),
+			FLAG_GEOM_VOXEL_GI_DIRTY = (1 << 14),
 			FLAG_LIGHTMAP_CAPTURE = (1 << 15),
 			FLAG_USES_BAKED_LIGHT = (1 << 16),
 			FLAG_USES_MESH_INSTANCE = (1 << 17),
@@ -535,7 +535,7 @@ public:
 
 		Set<Instance *> decals;
 		Set<Instance *> reflection_probes;
-		Set<Instance *> gi_probes;
+		Set<Instance *> voxel_gi_instances;
 		Set<Instance *> lightmap_captures;
 
 		InstanceGeometryData() {
@@ -599,7 +599,7 @@ public:
 		}
 	};
 
-	struct InstanceGIProbeData : public InstanceBaseData {
+	struct InstanceVoxelGIData : public InstanceBaseData {
 		Instance *owner;
 
 		Set<Instance *> geometries;
@@ -629,16 +629,16 @@ public:
 		bool invalid;
 		uint32_t base_version;
 
-		SelfList<InstanceGIProbeData> update_element;
+		SelfList<InstanceVoxelGIData> update_element;
 
-		InstanceGIProbeData() :
+		InstanceVoxelGIData() :
 				update_element(this) {
 			invalid = true;
 			base_version = 0;
 		}
 	};
 
-	SelfList<InstanceGIProbeData>::List gi_probe_update_list;
+	SelfList<InstanceVoxelGIData>::List voxel_gi_update_list;
 
 	struct InstanceLightmapData : public InstanceBaseData {
 		RID instance;
@@ -724,7 +724,7 @@ public:
 		PagedArray<RID> lightmaps;
 		PagedArray<RID> reflections;
 		PagedArray<RID> decals;
-		PagedArray<RID> gi_probes;
+		PagedArray<RID> voxel_gi_instances;
 		PagedArray<RID> mesh_instances;
 
 		struct DirectionalShadow {
@@ -741,7 +741,7 @@ public:
 			lightmaps.clear();
 			reflections.clear();
 			decals.clear();
-			gi_probes.clear();
+			voxel_gi_instances.clear();
 			mesh_instances.clear();
 			for (int i = 0; i < RendererSceneRender::MAX_DIRECTIONAL_LIGHTS; i++) {
 				for (int j = 0; j < RendererSceneRender::MAX_DIRECTIONAL_LIGHT_CASCADES; j++) {
@@ -765,7 +765,7 @@ public:
 			lightmaps.reset();
 			reflections.reset();
 			decals.reset();
-			gi_probes.reset();
+			voxel_gi_instances.reset();
 			mesh_instances.reset();
 			for (int i = 0; i < RendererSceneRender::MAX_DIRECTIONAL_LIGHTS; i++) {
 				for (int j = 0; j < RendererSceneRender::MAX_DIRECTIONAL_LIGHT_CASCADES; j++) {
@@ -789,7 +789,7 @@ public:
 			lightmaps.merge_unordered(p_cull_result.lightmaps);
 			reflections.merge_unordered(p_cull_result.reflections);
 			decals.merge_unordered(p_cull_result.decals);
-			gi_probes.merge_unordered(p_cull_result.gi_probes);
+			voxel_gi_instances.merge_unordered(p_cull_result.voxel_gi_instances);
 			mesh_instances.merge_unordered(p_cull_result.mesh_instances);
 
 			for (int i = 0; i < RendererSceneRender::MAX_DIRECTIONAL_LIGHTS; i++) {
@@ -814,7 +814,7 @@ public:
 			lightmaps.set_page_pool(p_rid_pool);
 			reflections.set_page_pool(p_rid_pool);
 			decals.set_page_pool(p_rid_pool);
-			gi_probes.set_page_pool(p_rid_pool);
+			voxel_gi_instances.set_page_pool(p_rid_pool);
 			mesh_instances.set_page_pool(p_rid_pool);
 			for (int i = 0; i < RendererSceneRender::MAX_DIRECTIONAL_LIGHTS; i++) {
 				for (int j = 0; j < RendererSceneRender::MAX_DIRECTIONAL_LIGHT_CASCADES; j++) {
@@ -975,7 +975,7 @@ public:
 #define PASSBASE scene_render
 
 	PASS2(directional_shadow_atlas_set_size, int, bool)
-	PASS1(gi_probe_set_quality, RS::GIProbeQuality)
+	PASS1(voxel_gi_set_quality, RS::VoxelGIQuality)
 
 	/* SKY API */
 

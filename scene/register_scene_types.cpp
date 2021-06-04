@@ -194,18 +194,17 @@
 #ifndef _3D_DISABLED
 #include "scene/3d/area_3d.h"
 #include "scene/3d/audio_stream_player_3d.h"
-#include "scene/3d/baked_lightmap.h"
 #include "scene/3d/bone_attachment_3d.h"
 #include "scene/3d/camera_3d.h"
 #include "scene/3d/collision_polygon_3d.h"
 #include "scene/3d/collision_shape_3d.h"
 #include "scene/3d/cpu_particles_3d.h"
 #include "scene/3d/decal.h"
-#include "scene/3d/gi_probe.h"
 #include "scene/3d/gpu_particles_3d.h"
 #include "scene/3d/gpu_particles_collision_3d.h"
 #include "scene/3d/immediate_geometry_3d.h"
 #include "scene/3d/light_3d.h"
+#include "scene/3d/lightmap_gi.h"
 #include "scene/3d/lightmap_probe.h"
 #include "scene/3d/listener_3d.h"
 #include "scene/3d/mesh_instance_3d.h"
@@ -230,6 +229,7 @@
 #include "scene/3d/sprite_3d.h"
 #include "scene/3d/vehicle_body_3d.h"
 #include "scene/3d/visibility_notifier_3d.h"
+#include "scene/3d/voxel_gi.h"
 #include "scene/3d/world_environment.h"
 #include "scene/3d/xr_nodes.h"
 #include "scene/resources/environment.h"
@@ -462,10 +462,10 @@ void register_scene_types() {
 	ClassDB::register_class<SpotLight3D>();
 	ClassDB::register_class<ReflectionProbe>();
 	ClassDB::register_class<Decal>();
-	ClassDB::register_class<GIProbe>();
-	ClassDB::register_class<GIProbeData>();
-	ClassDB::register_class<BakedLightmap>();
-	ClassDB::register_class<BakedLightmapData>();
+	ClassDB::register_class<VoxelGI>();
+	ClassDB::register_class<VoxelGIData>();
+	ClassDB::register_class<LightmapGI>();
+	ClassDB::register_class<LightmapGIData>();
 	ClassDB::register_class<LightmapProbe>();
 	ClassDB::register_virtual_class<Lightmapper>();
 	ClassDB::register_class<GPUParticles3D>();
@@ -841,6 +841,10 @@ void register_scene_types() {
 	ClassDB::add_compatibility_class("Navigation3D", "Node3D");
 	ClassDB::add_compatibility_class("Navigation2D", "Node2D");
 	ClassDB::add_compatibility_class("YSort", "Node2D");
+	ClassDB::add_compatibility_class("GIProbe", "VoxelGI");
+	ClassDB::add_compatibility_class("GIProbeData", "VoxelGIData");
+	ClassDB::add_compatibility_class("BakedLightmap", "LightmapGI");
+	ClassDB::add_compatibility_class("BakedLightmapData", "LightmapGIData");
 
 	// Renamed in 4.0.
 	// Keep alphabetical ordering to easily locate classes and avoid duplicates.

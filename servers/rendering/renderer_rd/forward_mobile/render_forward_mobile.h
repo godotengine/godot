@@ -104,7 +104,7 @@ protected:
 		PASS_MODE_SHADOW_DP,
 		// PASS_MODE_DEPTH,
 		// PASS_MODE_DEPTH_NORMAL_ROUGHNESS,
-		// PASS_MODE_DEPTH_NORMAL_ROUGHNESS_GIPROBE,
+		// PASS_MODE_DEPTH_NORMAL_ROUGHNESS_VOXEL_GI,
 		PASS_MODE_DEPTH_MATERIAL,
 		// PASS_MODE_SDF,
 	};
@@ -390,7 +390,7 @@ protected:
 		INSTANCE_DATA_FLAG_USE_LIGHTMAP_CAPTURE = 1 << 8,
 		INSTANCE_DATA_FLAG_USE_LIGHTMAP = 1 << 9,
 		INSTANCE_DATA_FLAG_USE_SH_LIGHTMAP = 1 << 10,
-		INSTANCE_DATA_FLAG_USE_GIPROBE = 1 << 11,
+		INSTANCE_DATA_FLAG_USE_VOXEL_GI = 1 << 11,
 		INSTANCE_DATA_FLAG_MULTIMESH = 1 << 12,
 		INSTANCE_DATA_FLAG_MULTIMESH_FORMAT_2D = 1 << 13,
 		INSTANCE_DATA_FLAG_MULTIMESH_HAS_COLOR = 1 << 14,
@@ -587,7 +587,7 @@ public:
 	virtual void geometry_instance_pair_light_instances(GeometryInstance *p_geometry_instance, const RID *p_light_instances, uint32_t p_light_instance_count);
 	virtual void geometry_instance_pair_reflection_probe_instances(GeometryInstance *p_geometry_instance, const RID *p_reflection_probe_instances, uint32_t p_reflection_probe_instance_count);
 	virtual void geometry_instance_pair_decal_instances(GeometryInstance *p_geometry_instance, const RID *p_decal_instances, uint32_t p_decal_instance_count);
-	virtual void geometry_instance_pair_gi_probe_instances(GeometryInstance *p_geometry_instance, const RID *p_gi_probe_instances, uint32_t p_gi_probe_instance_count);
+	virtual void geometry_instance_pair_voxel_gi_instances(GeometryInstance *p_geometry_instance, const RID *p_voxel_gi_instances, uint32_t p_voxel_gi_instance_count);
 
 	virtual bool free(RID p_rid);
 

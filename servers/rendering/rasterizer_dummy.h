@@ -59,7 +59,7 @@ public:
 	void geometry_instance_pair_light_instances(GeometryInstance *p_geometry_instance, const RID *p_light_instances, uint32_t p_light_instance_count) override {}
 	void geometry_instance_pair_reflection_probe_instances(GeometryInstance *p_geometry_instance, const RID *p_reflection_probe_instances, uint32_t p_reflection_probe_instance_count) override {}
 	void geometry_instance_pair_decal_instances(GeometryInstance *p_geometry_instance, const RID *p_decal_instances, uint32_t p_decal_instance_count) override {}
-	void geometry_instance_pair_gi_probe_instances(GeometryInstance *p_geometry_instance, const RID *p_gi_probe_instances, uint32_t p_gi_probe_instance_count) override {}
+	void geometry_instance_pair_voxel_gi_instances(GeometryInstance *p_geometry_instance, const RID *p_voxel_gi_instances, uint32_t p_voxel_gi_instance_count) override {}
 
 	void geometry_instance_free(GeometryInstance *p_geometry_instance) override {}
 
@@ -168,14 +168,14 @@ public:
 	RID lightmap_instance_create(RID p_lightmap) override { return RID(); }
 	void lightmap_instance_set_transform(RID p_lightmap, const Transform3D &p_transform) override {}
 
-	RID gi_probe_instance_create(RID p_gi_probe) override { return RID(); }
-	void gi_probe_instance_set_transform_to_data(RID p_probe, const Transform3D &p_xform) override {}
-	bool gi_probe_needs_update(RID p_probe) const override { return false; }
-	void gi_probe_update(RID p_probe, bool p_update_light_instances, const Vector<RID> &p_light_instances, const PagedArray<RendererSceneRender::GeometryInstance *> &p_dynamic_objects) override {}
+	RID voxel_gi_instance_create(RID p_voxel_gi) override { return RID(); }
+	void voxel_gi_instance_set_transform_to_data(RID p_probe, const Transform3D &p_xform) override {}
+	bool voxel_gi_needs_update(RID p_probe) const override { return false; }
+	void voxel_gi_update(RID p_probe, bool p_update_light_instances, const Vector<RID> &p_light_instances, const PagedArray<RendererSceneRender::GeometryInstance *> &p_dynamic_objects) override {}
 
-	void gi_probe_set_quality(RS::GIProbeQuality) override {}
+	void voxel_gi_set_quality(RS::VoxelGIQuality) override {}
 
-	void render_scene(RID p_render_buffers, const Transform3D &p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_ortogonal, const PagedArray<GeometryInstance *> &p_instances, const PagedArray<RID> &p_lights, const PagedArray<RID> &p_reflection_probes, const PagedArray<RID> &p_gi_probes, const PagedArray<RID> &p_decals, const PagedArray<RID> &p_lightmaps, RID p_environment, RID p_camera_effects, RID p_shadow_atlas, RID p_occluder_debug_tex, RID p_reflection_atlas, RID p_reflection_probe, int p_reflection_probe_pass, float p_screen_lod_threshold, const RenderShadowData *p_render_shadows, int p_render_shadow_count, const RenderSDFGIData *p_render_sdfgi_regions, int p_render_sdfgi_region_count, const RenderSDFGIUpdateData *p_sdfgi_update_data = nullptr) override {}
+	void render_scene(RID p_render_buffers, const Transform3D &p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_ortogonal, const PagedArray<GeometryInstance *> &p_instances, const PagedArray<RID> &p_lights, const PagedArray<RID> &p_reflection_probes, const PagedArray<RID> &p_voxel_gi_instances, const PagedArray<RID> &p_decals, const PagedArray<RID> &p_lightmaps, RID p_environment, RID p_camera_effects, RID p_shadow_atlas, RID p_occluder_debug_tex, RID p_reflection_atlas, RID p_reflection_probe, int p_reflection_probe_pass, float p_screen_lod_threshold, const RenderShadowData *p_render_shadows, int p_render_shadow_count, const RenderSDFGIData *p_render_sdfgi_regions, int p_render_sdfgi_region_count, const RenderSDFGIUpdateData *p_sdfgi_update_data = nullptr) override {}
 	void render_material(const Transform3D &p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_ortogonal, const PagedArray<GeometryInstance *> &p_instances, RID p_framebuffer, const Rect2i &p_region) override {}
 	void render_particle_collider_heightfield(RID p_collider, const Transform3D &p_transform, const PagedArray<GeometryInstance *> &p_instances) override {}
 
@@ -482,52 +482,52 @@ public:
 
 	AABB decal_get_aabb(RID p_decal) const override { return AABB(); }
 
-	/* GI PROBE API */
+	/* VOXEL GI API */
 
-	RID gi_probe_allocate() override { return RID(); }
-	void gi_probe_initialize(RID p_rid) override {}
-	void gi_probe_allocate_data(RID p_gi_probe, const Transform3D &p_to_cell_xform, const AABB &p_aabb, const Vector3i &p_octree_size, const Vector<uint8_t> &p_octree_cells, const Vector<uint8_t> &p_data_cells, const Vector<uint8_t> &p_distance_field, const Vector<int> &p_level_counts) override {}
+	RID voxel_gi_allocate() override { return RID(); }
+	void voxel_gi_initialize(RID p_rid) override {}
+	void voxel_gi_allocate_data(RID p_voxel_gi, const Transform3D &p_to_cell_xform, const AABB &p_aabb, const Vector3i &p_octree_size, const Vector<uint8_t> &p_octree_cells, const Vector<uint8_t> &p_data_cells, const Vector<uint8_t> &p_distance_field, const Vector<int> &p_level_counts) override {}
 
-	AABB gi_probe_get_bounds(RID p_gi_probe) const override { return AABB(); }
-	Vector3i gi_probe_get_octree_size(RID p_gi_probe) const override { return Vector3i(); }
-	Vector<uint8_t> gi_probe_get_octree_cells(RID p_gi_probe) const override { return Vector<uint8_t>(); }
-	Vector<uint8_t> gi_probe_get_data_cells(RID p_gi_probe) const override { return Vector<uint8_t>(); }
-	Vector<uint8_t> gi_probe_get_distance_field(RID p_gi_probe) const override { return Vector<uint8_t>(); }
+	AABB voxel_gi_get_bounds(RID p_voxel_gi) const override { return AABB(); }
+	Vector3i voxel_gi_get_octree_size(RID p_voxel_gi) const override { return Vector3i(); }
+	Vector<uint8_t> voxel_gi_get_octree_cells(RID p_voxel_gi) const override { return Vector<uint8_t>(); }
+	Vector<uint8_t> voxel_gi_get_data_cells(RID p_voxel_gi) const override { return Vector<uint8_t>(); }
+	Vector<uint8_t> voxel_gi_get_distance_field(RID p_voxel_gi) const override { return Vector<uint8_t>(); }
 
-	Vector<int> gi_probe_get_level_counts(RID p_gi_probe) const override { return Vector<int>(); }
-	Transform3D gi_probe_get_to_cell_xform(RID p_gi_probe) const override { return Transform3D(); }
+	Vector<int> voxel_gi_get_level_counts(RID p_voxel_gi) const override { return Vector<int>(); }
+	Transform3D voxel_gi_get_to_cell_xform(RID p_voxel_gi) const override { return Transform3D(); }
 
-	void gi_probe_set_dynamic_range(RID p_gi_probe, float p_range) override {}
-	float gi_probe_get_dynamic_range(RID p_gi_probe) const override { return 0; }
+	void voxel_gi_set_dynamic_range(RID p_voxel_gi, float p_range) override {}
+	float voxel_gi_get_dynamic_range(RID p_voxel_gi) const override { return 0; }
 
-	void gi_probe_set_propagation(RID p_gi_probe, float p_range) override {}
-	float gi_probe_get_propagation(RID p_gi_probe) const override { return 0; }
+	void voxel_gi_set_propagation(RID p_voxel_gi, float p_range) override {}
+	float voxel_gi_get_propagation(RID p_voxel_gi) const override { return 0; }
 
-	void gi_probe_set_energy(RID p_gi_probe, float p_range) override {}
-	float gi_probe_get_energy(RID p_gi_probe) const override { return 0.0; }
+	void voxel_gi_set_energy(RID p_voxel_gi, float p_range) override {}
+	float voxel_gi_get_energy(RID p_voxel_gi) const override { return 0.0; }
 
-	void gi_probe_set_ao(RID p_gi_probe, float p_ao) override {}
-	float gi_probe_get_ao(RID p_gi_probe) const override { return 0; }
+	void voxel_gi_set_ao(RID p_voxel_gi, float p_ao) override {}
+	float voxel_gi_get_ao(RID p_voxel_gi) const override { return 0; }
 
-	void gi_probe_set_ao_size(RID p_gi_probe, float p_strength) override {}
-	float gi_probe_get_ao_size(RID p_gi_probe) const override { return 0; }
+	void voxel_gi_set_ao_size(RID p_voxel_gi, float p_strength) override {}
+	float voxel_gi_get_ao_size(RID p_voxel_gi) const override { return 0; }
 
-	void gi_probe_set_bias(RID p_gi_probe, float p_range) override {}
-	float gi_probe_get_bias(RID p_gi_probe) const override { return 0.0; }
+	void voxel_gi_set_bias(RID p_voxel_gi, float p_range) override {}
+	float voxel_gi_get_bias(RID p_voxel_gi) const override { return 0.0; }
 
-	void gi_probe_set_normal_bias(RID p_gi_probe, float p_range) override {}
-	float gi_probe_get_normal_bias(RID p_gi_probe) const override { return 0.0; }
+	void voxel_gi_set_normal_bias(RID p_voxel_gi, float p_range) override {}
+	float voxel_gi_get_normal_bias(RID p_voxel_gi) const override { return 0.0; }
 
-	void gi_probe_set_interior(RID p_gi_probe, bool p_enable) override {}
-	bool gi_probe_is_interior(RID p_gi_probe) const override { return false; }
+	void voxel_gi_set_interior(RID p_voxel_gi, bool p_enable) override {}
+	bool voxel_gi_is_interior(RID p_voxel_gi) const override { return false; }
 
-	void gi_probe_set_use_two_bounces(RID p_gi_probe, bool p_enable) override {}
-	bool gi_probe_is_using_two_bounces(RID p_gi_probe) const override { return false; }
+	void voxel_gi_set_use_two_bounces(RID p_voxel_gi, bool p_enable) override {}
+	bool voxel_gi_is_using_two_bounces(RID p_voxel_gi) const override { return false; }
 
-	void gi_probe_set_anisotropy_strength(RID p_gi_probe, float p_strength) override {}
-	float gi_probe_get_anisotropy_strength(RID p_gi_probe) const override { return 0; }
+	void voxel_gi_set_anisotropy_strength(RID p_voxel_gi, float p_strength) override {}
+	float voxel_gi_get_anisotropy_strength(RID p_voxel_gi) const override { return 0; }
 
-	uint32_t gi_probe_get_version(RID p_gi_probe) override { return 0; }
+	uint32_t voxel_gi_get_version(RID p_voxel_gi) override { return 0; }
 
 	/* LIGHTMAP CAPTURE */
 	RID lightmap_allocate() override { return RID(); }

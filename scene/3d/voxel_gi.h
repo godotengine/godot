@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  gi_probe.h                                                           */
+/*  voxel_gi.h                                                           */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,14 +28,14 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef GIPROBE_H
-#define GIPROBE_H
+#ifndef VOXEL_GI_H
+#define VOXEL_GI_H
 
 #include "multimesh_instance_3d.h"
 #include "scene/3d/visual_instance_3d.h"
 
-class GIProbeData : public Resource {
-	GDCLASS(GIProbeData, Resource);
+class VoxelGIData : public Resource {
+	GDCLASS(VoxelGIData, Resource);
 
 	RID probe;
 
@@ -103,12 +103,12 @@ public:
 
 	virtual RID get_rid() const override;
 
-	GIProbeData();
-	~GIProbeData();
+	VoxelGIData();
+	~VoxelGIData();
 };
 
-class GIProbe : public VisualInstance3D {
-	GDCLASS(GIProbe, VisualInstance3D);
+class VoxelGI : public VisualInstance3D {
+	GDCLASS(VoxelGI, VisualInstance3D);
 
 public:
 	enum Subdiv {
@@ -125,9 +125,9 @@ public:
 	typedef void (*BakeEndFunc)();
 
 private:
-	Ref<GIProbeData> probe_data;
+	Ref<VoxelGIData> probe_data;
 
-	RID gi_probe;
+	RID voxel_gi;
 
 	Subdiv subdiv = SUBDIV_128;
 	Vector3 extents = Vector3(10, 10, 10);
@@ -150,8 +150,8 @@ public:
 	static BakeStepFunc bake_step_function;
 	static BakeEndFunc bake_end_function;
 
-	void set_probe_data(const Ref<GIProbeData> &p_data);
-	Ref<GIProbeData> get_probe_data() const;
+	void set_probe_data(const Ref<VoxelGIData> &p_data);
+	Ref<VoxelGIData> get_probe_data() const;
 
 	void set_subdiv(Subdiv p_subdiv);
 	Subdiv get_subdiv() const;
@@ -167,10 +167,10 @@ public:
 
 	TypedArray<String> get_configuration_warnings() const override;
 
-	GIProbe();
-	~GIProbe();
+	VoxelGI();
+	~VoxelGI();
 };
 
-VARIANT_ENUM_CAST(GIProbe::Subdiv)
+VARIANT_ENUM_CAST(VoxelGI::Subdiv)
 
-#endif // GIPROBE_H
+#endif // VOXEL_GI_H

@@ -48,24 +48,24 @@ vec4 voxel_cone_trace_45_degrees(texture3D probe, vec3 cell_size, vec3 pos, vec3
 	return color;
 }
 
-void gi_probe_compute(uint index, vec3 position, vec3 normal, vec3 ref_vec, mat3 normal_xform, float roughness, vec3 ambient, vec3 environment, inout vec4 out_spec, inout vec4 out_diff) {
-	position = (gi_probes.data[index].xform * vec4(position, 1.0)).xyz;
-	ref_vec = normalize((gi_probes.data[index].xform * vec4(ref_vec, 0.0)).xyz);
-	normal = normalize((gi_probes.data[index].xform * vec4(normal, 0.0)).xyz);
+void voxel_gi_compute(uint index, vec3 position, vec3 normal, vec3 ref_vec, mat3 normal_xform, float roughness, vec3 ambient, vec3 environment, inout vec4 out_spec, inout vec4 out_diff) {
+	position = (voxel_gi_instances.data[index].xform * vec4(position, 1.0)).xyz;
+	ref_vec = normalize((voxel_gi_instances.data[index].xform * vec4(ref_vec, 0.0)).xyz);
+	normal = normalize((voxel_gi_instances.data[index].xform * vec4(normal, 0.0)).xyz);
 
-	position += normal * gi_probes.data[index].normal_bias;
+	position += normal * voxel_gi_instances.data[index].normal_bias;
 
 	//this causes corrupted pixels, i have no idea why..
-	if (any(bvec2(any(lessThan(position, vec3(0.0))), any(greaterThan(position, gi_probes.data[index].bounds))))) {
+	if (any(bvec2(any(lessThan(position, vec3(0.0))), any(greaterThan(position, voxel_gi_instances.data[index].bounds))))) {
 		return;
 	}
 
-	vec3 blendv = abs(position / gi_probes.data[index].bounds * 2.0 - 1.0);
+	vec3 blendv = abs(position / voxel_gi_instances.data[index].bounds * 2.0 - 1.0);
 	float blend = clamp(1.0 - max(blendv.x, max(blendv.y, blendv.z)), 0.0, 1.0);
 	//float blend=1.0;
 
-	float max_distance = length(gi_probes.data[index].bounds);
-	vec3 cell_size = 1.0 / gi_probes.data[index].bounds;
+	float max_distance = length(voxel_gi_instances.data[index].bounds);
+	vec3 cell_size = 1.0 / voxel_gi_instances.data[index].bounds;
 
 	//radiance
 
@@ -83,26 +83,26 @@ void gi_probe_compute(uint index, vec3 position, vec3 normal, vec3 ref_vec, mat3
 	vec3 light = vec3(0.0);
 
 	for (int i = 0; i < MAX_CONE_DIRS; i++) {
-		vec3 dir = normalize((gi_probes.data[index].xform * vec4(normal_xform * cone_dirs[i], 0.0)).xyz);
+		vec3 dir = normalize((voxel_gi_instances.data[index].xform * vec4(normal_xform * cone_dirs[i], 0.0)).xyz);
 
-		vec4 cone_light = voxel_cone_trace_45_degrees(gi_probe_textures[index], cell_size, position, dir, cone_angle_tan, max_distance, gi_probes.data[index].bias);
+		vec4 cone_light = voxel_cone_trace_45_degrees(voxel_gi_textures[index], cell_size, position, dir, cone_angle_tan, max_distance, voxel_gi_instances.data[index].bias);
 
-		if (gi_probes.data[index].blend_ambient) {
+		if (voxel_gi_instances.data[index].blend_ambient) {
 			cone_light.rgb = mix(ambient, cone_light.rgb, min(1.0, cone_light.a / 0.95));
 		}
 
 		light += cone_weights[i] * cone_light.rgb;
 	}
 
-	light *= gi_probes.data[index].dynamic_range;
+	light *= voxel_gi_instances.data[index].dynamic_range;
 	out_diff += vec4(light * blend, blend);
 
 	//irradiance
-	vec4 irr_light = voxel_cone_trace(gi_probe_textures[index], cell_size, position, ref_vec, tan(roughness * 0.5 * M_PI * 0.99), max_distance, gi_probes.data[index].bias);
-	if (gi_probes.data[index].blend_ambient) {
+	vec4 irr_light = voxel_cone_trace(voxel_gi_textures[index], cell_size, position, ref_vec, tan(roughness * 0.5 * M_PI * 0.99), max_distance, voxel_gi_instances.data[index].bias);
+	if (voxel_gi_instances.data[index].blend_ambient) {
 		irr_light.rgb = mix(environment, irr_light.rgb, min(1.0, irr_light.a / 0.95));
 	}
-	irr_light.rgb *= gi_probes.data[index].dynamic_range;
+	irr_light.rgb *= voxel_gi_instances.data[index].dynamic_range;
 	//irr_light=vec3(0.0);
 
 	out_spec += vec4(irr_light.rgb * blend, blend);

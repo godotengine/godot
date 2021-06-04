@@ -668,19 +668,19 @@ void Voxelizer::end_bake() {
 
 //create the data for visual server
 
-int Voxelizer::get_gi_probe_octree_depth() const {
+int Voxelizer::get_voxel_gi_octree_depth() const {
 	return cell_subdiv;
 }
 
-Vector3i Voxelizer::get_giprobe_octree_size() const {
+Vector3i Voxelizer::get_voxel_gi_octree_size() const {
 	return Vector3i(axis_cell_size[0], axis_cell_size[1], axis_cell_size[2]);
 }
 
-int Voxelizer::get_giprobe_cell_count() const {
+int Voxelizer::get_voxel_gi_cell_count() const {
 	return bake_cells.size();
 }
 
-Vector<uint8_t> Voxelizer::get_giprobe_octree_cells() const {
+Vector<uint8_t> Voxelizer::get_voxel_gi_octree_cells() const {
 	Vector<uint8_t> data;
 	data.resize((8 * 4) * bake_cells.size()); //8 uint32t values
 	{
@@ -700,7 +700,7 @@ Vector<uint8_t> Voxelizer::get_giprobe_octree_cells() const {
 	return data;
 }
 
-Vector<uint8_t> Voxelizer::get_giprobe_data_cells() const {
+Vector<uint8_t> Voxelizer::get_voxel_gi_data_cells() const {
 	Vector<uint8_t> data;
 	data.resize((4 * 4) * bake_cells.size()); //8 uint32t values
 	{
@@ -755,7 +755,7 @@ Vector<uint8_t> Voxelizer::get_giprobe_data_cells() const {
 	return data;
 }
 
-Vector<int> Voxelizer::get_giprobe_level_cell_count() const {
+Vector<int> Voxelizer::get_voxel_gi_level_cell_count() const {
 	uint32_t cell_count = bake_cells.size();
 	const Cell *cells = bake_cells.ptr();
 	Vector<int> level_count;
@@ -819,7 +819,7 @@ static void edt(float *f, int stride, int n) {
 #undef square
 
 Vector<uint8_t> Voxelizer::get_sdf_3d_image() const {
-	Vector3i octree_size = get_giprobe_octree_size();
+	Vector3i octree_size = get_voxel_gi_octree_size();
 
 	uint32_t float_count = octree_size.x * octree_size.y * octree_size.z;
 	float *work_memory = memnew_arr(float, float_count);

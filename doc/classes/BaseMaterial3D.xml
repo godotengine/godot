@@ -199,7 +199,7 @@
 			The emitted light's color. See [member emission_enabled].
 		</member>
 		<member name="emission_enabled" type="bool" setter="set_feature" getter="get_feature" default="false">
-			If [code]true[/code], the body emits light. Emitting light makes the object appear brighter. The object can also cast light on other objects if a [GIProbe] is used and this object is used in baked lighting.
+			If [code]true[/code], the body emits light. Emitting light makes the object appear brighter. The object can also cast light on other objects if a [VoxelGI] is used and this object is used in baked lighting.
 		</member>
 		<member name="emission_energy" type="float" setter="set_emission_energy" getter="get_emission_energy" default="1.0">
 			The emitted light's strength. See [member emission_enabled].

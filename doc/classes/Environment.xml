@@ -206,7 +206,7 @@
 			The depth tolerance for screen-space reflections.
 		</member>
 		<member name="ss_reflections_enabled" type="bool" setter="set_ssr_enabled" getter="is_ssr_enabled" default="false">
-			If [code]true[/code], screen-space reflections are enabled. Screen-space reflections are more accurate than reflections from [GIProbe]s or [ReflectionProbe]s, but are slower and can't reflect surfaces occluded by others.
+			If [code]true[/code], screen-space reflections are enabled. Screen-space reflections are more accurate than reflections from [VoxelGI]s or [ReflectionProbe]s, but are slower and can't reflect surfaces occluded by others.
 		</member>
 		<member name="ss_reflections_fade_in" type="float" setter="set_ssr_fade_in" getter="get_ssr_fade_in" default="0.15">
 			The fade-in distance for screen-space reflections. Affects the area from the reflected material to the screen-space reflection).
