@@ -165,7 +165,7 @@ public:
 		}
 
 		switch (animation->track_get_type(track)) {
-			case Animation::TYPE_TRANSFORM: {
+			case Animation::TYPE_TRANSFORM3D: {
 				Dictionary d_old = animation->track_get_key_value(track, key);
 				Dictionary d_new = d_old.duplicate();
 				d_new[p_name] = p_value;
@@ -412,7 +412,7 @@ public:
 		}
 
 		switch (animation->track_get_type(track)) {
-			case Animation::TYPE_TRANSFORM: {
+			case Animation::TYPE_TRANSFORM3D: {
 				Dictionary d = animation->track_get_key_value(track, key);
 				ERR_FAIL_COND_V(!d.has(name), false);
 				r_ret = d[p_name];
@@ -523,7 +523,7 @@ public:
 		}
 
 		switch (animation->track_get_type(track)) {
-			case Animation::TYPE_TRANSFORM: {
+			case Animation::TYPE_TRANSFORM3D: {
 				p_list->push_back(PropertyInfo(Variant::VECTOR3, "location"));
 				p_list->push_back(PropertyInfo(Variant::QUAT, "rotation"));
 				p_list->push_back(PropertyInfo(Variant::VECTOR3, "scale"));
@@ -781,7 +781,7 @@ public:
 				}
 
 				switch (animation->track_get_type(track)) {
-					case Animation::TYPE_TRANSFORM: {
+					case Animation::TYPE_TRANSFORM3D: {
 						Dictionary d_old = animation->track_get_key_value(track, key);
 						Dictionary d_new = d_old.duplicate();
 						d_new[p_name] = p_value;
@@ -1012,7 +1012,7 @@ public:
 				}
 
 				switch (animation->track_get_type(track)) {
-					case Animation::TYPE_TRANSFORM: {
+					case Animation::TYPE_TRANSFORM3D: {
 						Dictionary d = animation->track_get_key_value(track, key);
 						ERR_FAIL_COND_V(!d.has(name), false);
 						r_ret = d[p_name];
@@ -1162,7 +1162,7 @@ public:
 
 		if (same_track_type) {
 			switch (animation->track_get_type(first_track)) {
-				case Animation::TYPE_TRANSFORM: {
+				case Animation::TYPE_TRANSFORM3D: {
 					p_list->push_back(PropertyInfo(Variant::VECTOR3, "location"));
 					p_list->push_back(PropertyInfo(Variant::QUAT, "rotation"));
 					p_list->push_back(PropertyInfo(Variant::VECTOR3, "scale"));
@@ -2007,7 +2007,7 @@ void AnimationTrackEdit::_notification(int p_what) {
 				interp_mode_rect.position.y = int(get_size().height - icon->get_height()) / 2;
 				interp_mode_rect.size = icon->get_size();
 
-				if (animation->track_get_type(track) == Animation::TYPE_VALUE || animation->track_get_type(track) == Animation::TYPE_TRANSFORM) {
+				if (animation->track_get_type(track) == Animation::TYPE_VALUE || animation->track_get_type(track) == Animation::TYPE_TRANSFORM3D) {
 					draw_texture(icon, interp_mode_rect.position);
 				}
 				//make it easier to click
@@ -2017,7 +2017,7 @@ void AnimationTrackEdit::_notification(int p_what) {
 				ofs += icon->get_width() + hsep;
 				interp_mode_rect.size.x += hsep;
 
-				if (animation->track_get_type(track) == Animation::TYPE_VALUE || animation->track_get_type(track) == Animation::TYPE_TRANSFORM) {
+				if (animation->track_get_type(track) == Animation::TYPE_VALUE || animation->track_get_type(track) == Animation::TYPE_TRANSFORM3D) {
 					draw_texture(down_icon, Vector2(ofs, int(get_size().height - down_icon->get_height()) / 2));
 					interp_mode_rect.size.x += down_icon->get_width();
 				} else {
@@ -2040,7 +2040,7 @@ void AnimationTrackEdit::_notification(int p_what) {
 				loop_mode_rect.position.y = int(get_size().height - icon->get_height()) / 2;
 				loop_mode_rect.size = icon->get_size();
 
-				if (animation->track_get_type(track) == Animation::TYPE_VALUE || animation->track_get_type(track) == Animation::TYPE_TRANSFORM) {
+				if (animation->track_get_type(track) == Animation::TYPE_VALUE || animation->track_get_type(track) == Animation::TYPE_TRANSFORM3D) {
 					draw_texture(icon, loop_mode_rect.position);
 				}
 
@@ -2050,7 +2050,7 @@ void AnimationTrackEdit::_notification(int p_what) {
 				ofs += icon->get_width() + hsep;
 				loop_mode_rect.size.x += hsep;
 
-				if (animation->track_get_type(track) == Animation::TYPE_VALUE || animation->track_get_type(track) == Animation::TYPE_TRANSFORM) {
+				if (animation->track_get_type(track) == Animation::TYPE_VALUE || animation->track_get_type(track) == Animation::TYPE_TRANSFORM3D) {
 					draw_texture(down_icon, Vector2(ofs, int(get_size().height - down_icon->get_height()) / 2));
 					loop_mode_rect.size.x += down_icon->get_width();
 				} else {
@@ -2441,7 +2441,7 @@ String AnimationTrackEdit::get_tooltip(const Point2 &p_pos) const {
 		if (key_idx != -1) {
 			String text = TTR("Time (s): ") + rtos(animation->track_get_key_time(track, key_idx)) + "\n";
 			switch (animation->track_get_type(track)) {
-				case Animation::TYPE_TRANSFORM: {
+				case Animation::TYPE_TRANSFORM3D: {
 					Dictionary d = animation->track_get_key_value(track, key_idx);
 					if (d.has("location")) {
 						text += "Pos: " + String(d["location"]) + "\n";
@@ -3310,7 +3310,7 @@ static bool track_type_is_resettable(Animation::TrackType p_type) {
 			[[fallthrough]];
 		case Animation::TYPE_BEZIER:
 			[[fallthrough]];
-		case Animation::TYPE_TRANSFORM:
+		case Animation::TYPE_TRANSFORM3D:
 			return true;
 		default:
 			return false;
@@ -3479,7 +3479,7 @@ void AnimationTrackEditor::insert_transform_key(Node3D *p_node, const String &p_
 	int track_idx = -1;
 
 	for (int i = 0; i < animation->get_track_count(); i++) {
-		if (animation->track_get_type(i) != Animation::TYPE_TRANSFORM) {
+		if (animation->track_get_type(i) != Animation::TYPE_TRANSFORM3D) {
 			continue;
 		}
 		if (animation->track_get_path(i) != np) {
@@ -3496,7 +3496,7 @@ void AnimationTrackEditor::insert_transform_key(Node3D *p_node, const String &p_
 	id.path = np;
 	id.track_idx = track_idx;
 	id.value = p_xform;
-	id.type = Animation::TYPE_TRANSFORM;
+	id.type = Animation::TYPE_TRANSFORM3D;
 	id.query = "node '" + p_node->get_name() + "'";
 	id.advance = false;
 
@@ -3945,7 +3945,7 @@ AnimationTrackEditor::TrackIndices AnimationTrackEditor::_confirm_insert(InsertD
 			value = p_id.value;
 
 		} break;
-		case Animation::TYPE_TRANSFORM: {
+		case Animation::TYPE_TRANSFORM3D: {
 			Transform3D tr = p_id.value;
 			Dictionary d;
 			d["location"] = tr.origin;
@@ -4368,8 +4368,8 @@ void AnimationTrackEditor::_new_track_node_selected(NodePath p_path) {
 	ERR_FAIL_COND(!node);
 	NodePath path_to = root->get_path_to(node);
 
-	if (adding_track_type == Animation::TYPE_TRANSFORM && !node->is_class("Node3D")) {
-		EditorNode::get_singleton()->show_warning(TTR("Transform tracks only apply to 3D-based nodes."));
+	if (adding_track_type == Animation::TYPE_TRANSFORM3D && !node->is_class("Node3D")) {
+		EditorNode::get_singleton()->show_warning(TTR("Transform3D tracks only apply to 3D-based nodes."));
 		return;
 	}
 
@@ -4379,7 +4379,7 @@ void AnimationTrackEditor::_new_track_node_selected(NodePath p_path) {
 			prop_selector->set_type_filter(Vector<Variant::Type>());
 			prop_selector->select_property_from_instance(node);
 		} break;
-		case Animation::TYPE_TRANSFORM:
+		case Animation::TYPE_TRANSFORM3D:
 		case Animation::TYPE_METHOD: {
 			undo_redo->create_action(TTR("Add Track"));
 			undo_redo->add_do_method(animation.ptr(), "add_track", adding_track_type);
@@ -4548,7 +4548,7 @@ void AnimationTrackEditor::_insert_key_from_track(float p_ofs, int p_track) {
 	}
 
 	switch (animation->track_get_type(p_track)) {
-		case Animation::TYPE_TRANSFORM: {
+		case Animation::TYPE_TRANSFORM3D: {
 			if (!root->has_node(animation->track_get_path(p_track))) {
 				EditorNode::get_singleton()->show_warning(TTR("Track path is invalid, so can't add a key."));
 				return;
@@ -5182,7 +5182,7 @@ void AnimationTrackEditor::_edit_menu_pressed(int p_option) {
 				}
 
 				switch (animation->track_get_type(i)) {
-					case Animation::TYPE_TRANSFORM:
+					case Animation::TYPE_TRANSFORM3D:
 						text += " (Transform)";
 						break;
 					case Animation::TYPE_METHOD:
