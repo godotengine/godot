@@ -256,6 +256,7 @@ void Tabs::_notification(int p_what) {
 			_update_cache();
 			update();
 		} break;
+		case NOTIFICATION_THEME_CHANGED:
 		case NOTIFICATION_TRANSLATION_CHANGED: {
 			for (int i = 0; i < tabs.size(); ++i) {
 				_shape(i);
