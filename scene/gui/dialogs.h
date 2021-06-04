@@ -77,7 +77,7 @@ public:
 	Label *get_label() { return label; }
 	static void set_swap_cancel_ok(bool p_swap);
 
-	void register_text_enter(Node *p_line_edit);
+	void register_text_enter(Control *p_line_edit);
 
 	Button *get_ok_button() { return ok; }
 	Button *add_button(const String &p_text, bool p_right = false, const String &p_action = "");
