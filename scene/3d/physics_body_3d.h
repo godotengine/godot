@@ -339,8 +339,8 @@ public:
 	~CharacterBody3D();
 };
 
-class KinematicCollision3D : public Reference {
-	GDCLASS(KinematicCollision3D, Reference);
+class KinematicCollision3D : public RefCounted {
+	GDCLASS(KinematicCollision3D, RefCounted);
 
 	PhysicsBody3D *owner = nullptr;
 	friend class PhysicsBody3D;

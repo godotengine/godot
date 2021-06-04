@@ -449,8 +449,8 @@ public:
 	~VisualScriptInstance();
 };
 
-class VisualScriptFunctionState : public Reference {
-	GDCLASS(VisualScriptFunctionState, Reference);
+class VisualScriptFunctionState : public RefCounted {
+	GDCLASS(VisualScriptFunctionState, RefCounted);
 	friend class VisualScriptInstance;
 
 	ObjectID instance_id;

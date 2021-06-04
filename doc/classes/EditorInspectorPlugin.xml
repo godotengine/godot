@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="EditorInspectorPlugin" inherits="Reference" version="4.0">
+<class name="EditorInspectorPlugin" inherits="RefCounted" version="4.0">
 	<brief_description>
 		Plugin for adding custom property editors on inspector.
 	</brief_description>

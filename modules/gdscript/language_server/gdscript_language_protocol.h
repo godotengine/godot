@@ -46,7 +46,7 @@ class GDScriptLanguageProtocol : public JSONRPC {
 	GDCLASS(GDScriptLanguageProtocol, JSONRPC)
 
 private:
-	struct LSPeer : Reference {
+	struct LSPeer : RefCounted {
 		Ref<StreamPeerTCP> connection;
 
 		uint8_t req_buf[LSP_MAX_BUFFER_SIZE];

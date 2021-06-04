@@ -175,8 +175,8 @@ public:
 	EditorProperty();
 };
 
-class EditorInspectorPlugin : public Reference {
-	GDCLASS(EditorInspectorPlugin, Reference);
+class EditorInspectorPlugin : public RefCounted {
+	GDCLASS(EditorInspectorPlugin, RefCounted);
 
 	friend class EditorInspector;
 	struct AddedEditor {

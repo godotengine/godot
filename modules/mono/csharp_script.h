@@ -170,7 +170,7 @@ private:
 	static int _try_get_member_export_hint(IMonoClassMember *p_member, ManagedType p_type, Variant::Type p_variant_type, bool p_allow_generics, PropertyHint &r_hint, String &r_hint_string);
 #endif
 
-	CSharpInstance *_create_instance(const Variant **p_args, int p_argcount, Object *p_owner, bool p_isref, Callable::CallError &r_error);
+	CSharpInstance *_create_instance(const Variant **p_args, int p_argcount, Object *p_owner, bool p_is_ref_counted, Callable::CallError &r_error);
 	Variant _new(const Variant **p_args, int p_argcount, Callable::CallError &r_error);
 
 	// Do not use unless you know what you are doing
@@ -251,7 +251,7 @@ class CSharpInstance : public ScriptInstance {
 	friend class CSharpLanguage;
 
 	Object *owner = nullptr;
-	bool base_ref = false;
+	bool base_ref_counted = false;
 	bool ref_dying = false;
 	bool unsafe_referenced = false;
 	bool predelete_notified = false;

@@ -93,8 +93,8 @@ public:
 	ResourceFormatImporter();
 };
 
-class ResourceImporter : public Reference {
-	GDCLASS(ResourceImporter, Reference);
+class ResourceImporter : public RefCounted {
+	GDCLASS(ResourceImporter, RefCounted);
 
 public:
 	virtual String get_importer_name() const = 0;

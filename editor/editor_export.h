@@ -42,8 +42,8 @@ class EditorExportPlatform;
 class EditorFileSystemDirectory;
 struct EditorProgress;
 
-class EditorExportPreset : public Reference {
-	GDCLASS(EditorExportPreset, Reference);
+class EditorExportPreset : public RefCounted {
+	GDCLASS(EditorExportPreset, RefCounted);
 
 public:
 	enum ExportFilter {
@@ -161,8 +161,8 @@ struct SharedObject {
 	SharedObject() {}
 };
 
-class EditorExportPlatform : public Reference {
-	GDCLASS(EditorExportPlatform, Reference);
+class EditorExportPlatform : public RefCounted {
+	GDCLASS(EditorExportPlatform, RefCounted);
 
 public:
 	typedef Error (*EditorExportSaveFunction)(void *p_userdata, const String &p_path, const Vector<uint8_t> &p_data, int p_file, int p_total, const Vector<String> &p_enc_in_filters, const Vector<String> &p_enc_ex_filters, const Vector<uint8_t> &p_key);
@@ -284,8 +284,8 @@ public:
 	EditorExportPlatform();
 };
 
-class EditorExportPlugin : public Reference {
-	GDCLASS(EditorExportPlugin, Reference);
+class EditorExportPlugin : public RefCounted {
+	GDCLASS(EditorExportPlugin, RefCounted);
 
 	friend class EditorExportPlatform;
 

@@ -1260,7 +1260,7 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 		CRASH_COND(itype.cname != name_cache.type_Object);
 		CRASH_COND(!itype.is_instantiable);
 		CRASH_COND(itype.api_type != ClassDB::API_CORE);
-		CRASH_COND(itype.is_reference);
+		CRASH_COND(itype.is_ref_counted);
 		CRASH_COND(itype.is_singleton);
 	}
 
@@ -2284,8 +2284,8 @@ Error BindingsGenerator::_generate_glue_method(const BindingsGenerator::TypeInte
 			}
 
 			if (return_type->is_object_type) {
-				ptrcall_return_type = return_type->is_reference ? "Ref<Reference>" : return_type->c_type;
-				initialization = return_type->is_reference ? "" : " = nullptr";
+				ptrcall_return_type = return_type->is_ref_counted ? "Ref<RefCounted>" : return_type->c_type;
+				initialization = return_type->is_ref_counted ? "" : " = nullptr";
 			} else {
 				ptrcall_return_type = return_type->c_type;
 			}
@@ -2600,12 +2600,12 @@ bool BindingsGenerator::_populate_object_type_interfaces() {
 		itype.base_name = ClassDB::get_parent_class(type_cname);
 		itype.is_singleton = Engine::get_singleton()->has_singleton(itype.proxy_name);
 		itype.is_instantiable = class_info->creation_func && !itype.is_singleton;
-		itype.is_reference = ClassDB::is_parent_class(type_cname, name_cache.type_Reference);
-		itype.memory_own = itype.is_reference;
+		itype.is_ref_counted = ClassDB::is_parent_class(type_cname, name_cache.type_RefCounted);
+		itype.memory_own = itype.is_ref_counted;
 
 		itype.c_out = "\treturn ";
 		itype.c_out += C_METHOD_UNMANAGED_GET_MANAGED;
-		itype.c_out += itype.is_reference ? "(%1.ptr());\n" : "(%1);\n";
+		itype.c_out += itype.is_ref_counted ? "(%1.ptr());\n" : "(%1);\n";
 
 		itype.cs_in = itype.is_singleton ? BINDINGS_PTR_FIELD : "Object." CS_SMETHOD_GETINSTANCE "(%0)";
 
@@ -2741,7 +2741,7 @@ bool BindingsGenerator::_populate_object_type_interfaces() {
 				imethod.return_type.cname = return_info.class_name;
 
 				bool bad_reference_hint = !imethod.is_virtual && return_info.hint != PROPERTY_HINT_RESOURCE_TYPE &&
-										  ClassDB::is_parent_class(return_info.class_name, name_cache.type_Reference);
+										  ClassDB::is_parent_class(return_info.class_name, name_cache.type_RefCounted);
 				ERR_FAIL_COND_V_MSG(bad_reference_hint, false,
 						String() + "Return type is reference but hint is not '" _STR(PROPERTY_HINT_RESOURCE_TYPE) "'." +
 								" Are you returning a reference type by pointer? Method: '" + itype.name + "." + imethod.name + "'.");

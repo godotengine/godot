@@ -32,7 +32,7 @@
 
 #include "core/core_string_names.h"
 #include "core/io/marshalls.h"
-#include "core/object/reference.h"
+#include "core/object/ref_counted.h"
 #include "core/os/os.h"
 #include "core/templates/oa_hash_map.h"
 #include "core/variant/binder_common.h"

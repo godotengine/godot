@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  reference.h                                                          */
+/*  ref_counted.h                                                        */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,14 +28,14 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef REFERENCE_H
-#define REFERENCE_H
+#ifndef REF_COUNTED_H
+#define REF_COUNTED_H
 
 #include "core/object/class_db.h"
 #include "core/templates/safe_refcount.h"
 
-class Reference : public Object {
-	GDCLASS(Reference, Object);
+class RefCounted : public Object {
+	GDCLASS(RefCounted, Object);
 	SafeRefCount refcount;
 	SafeRefCount refcount_init;
 
@@ -49,8 +49,8 @@ public:
 	bool unreference();
 	int reference_get_count() const;
 
-	Reference();
-	~Reference() {}
+	RefCounted();
+	~RefCounted() {}
 };
 
 template <class T>
@@ -78,7 +78,7 @@ class Ref {
 		}
 	}
 
-	//virtual Reference * get_reference() const { return reference; }
+	//virtual RefCounted * get_reference() const { return reference; }
 public:
 	_FORCE_INLINE_ bool operator==(const T *p_ptr) const {
 		return reference == p_ptr;
@@ -130,7 +130,7 @@ public:
 
 	template <class T_Other>
 	void operator=(const Ref<T_Other> &p_from) {
-		Reference *refb = const_cast<Reference *>(static_cast<const Reference *>(p_from.ptr()));
+		RefCounted *refb = const_cast<RefCounted *>(static_cast<const RefCounted *>(p_from.ptr()));
 		if (!refb) {
 			unref();
 			return;
@@ -179,7 +179,7 @@ public:
 
 	template <class T_Other>
 	Ref(const Ref<T_Other> &p_from) {
-		Reference *refb = const_cast<Reference *>(static_cast<const Reference *>(p_from.ptr()));
+		RefCounted *refb = const_cast<RefCounted *>(static_cast<const RefCounted *>(p_from.ptr()));
 		if (!refb) {
 			unref();
 			return;
@@ -234,10 +234,10 @@ public:
 	}
 };
 
-typedef Ref<Reference> REF;
+typedef Ref<RefCounted> REF;
 
-class WeakRef : public Reference {
-	GDCLASS(WeakRef, Reference);
+class WeakRef : public RefCounted {
+	GDCLASS(WeakRef, RefCounted);
 
 	ObjectID ref;
 
@@ -259,7 +259,7 @@ struct PtrToArg<Ref<T>> {
 	}
 
 	_FORCE_INLINE_ static void encode(Ref<T> p_val, const void *p_ptr) {
-		*(Ref<Reference> *)p_ptr = p_val;
+		*(Ref<RefCounted> *)p_ptr = p_val;
 	}
 };
 
@@ -294,4 +294,4 @@ struct GetTypeInfo<const Ref<T> &> {
 
 #endif // DEBUG_METHODS_ENABLED
 
-#endif // REFERENCE_H
+#endif // REF_COUNTED_H

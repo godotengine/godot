@@ -1136,8 +1136,8 @@ Variant mono_object_to_variant_impl(MonoObject *p_obj, const ManagedType &p_type
 			if (CACHED_CLASS(GodotObject)->is_assignable_from(type_class)) {
 				Object *ptr = unbox<Object *>(CACHED_FIELD(GodotObject, ptr)->get_value(p_obj));
 				if (ptr != nullptr) {
-					Reference *ref = Object::cast_to<Reference>(ptr);
-					return ref ? Variant(Ref<Reference>(ref)) : Variant(ptr);
+					RefCounted *rc = Object::cast_to<RefCounted>(ptr);
+					return rc ? Variant(Ref<RefCounted>(rc)) : Variant(ptr);
 				}
 				return Variant();
 			}

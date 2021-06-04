@@ -32,7 +32,7 @@
 #define MAIN_LOOP_H
 
 #include "core/input/input_event.h"
-#include "core/object/reference.h"
+#include "core/object/ref_counted.h"
 #include "core/object/script_language.h"
 
 class MainLoop : public Object {

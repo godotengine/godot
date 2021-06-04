@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="AStar2D" inherits="Reference" version="4.0">
+<class name="AStar2D" inherits="RefCounted" version="4.0">
 	<brief_description>
 		AStar class representation that uses 2D vectors as edges.
 	</brief_description>

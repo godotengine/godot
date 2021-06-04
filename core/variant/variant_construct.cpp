@@ -836,9 +836,9 @@ String Variant::get_constructor_argument_name(Variant::Type p_type, int p_constr
 
 void VariantInternal::object_assign(Variant *v, const Object *o) {
 	if (o) {
-		if (o->is_reference()) {
-			Reference *reference = const_cast<Reference *>(static_cast<const Reference *>(o));
-			if (!reference->init_ref()) {
+		if (o->is_ref_counted()) {
+			RefCounted *ref_counted = const_cast<RefCounted *>(static_cast<const RefCounted *>(o));
+			if (!ref_counted->init_ref()) {
 				v->_get_obj().obj = nullptr;
 				v->_get_obj().id = ObjectID();
 				return;

@@ -9,7 +9,7 @@
 		[gdscript]
 		var foo = 2 # foo is dynamically an integer
 		foo = "Now foo is a string!"
-		foo = Reference.new() # foo is an Object
+		foo = RefCounted.new() # foo is an Object
 		var bar: int = 2 # bar is a statically typed integer.
 		# bar = "Uh oh! I can't make static variables become a different type!"
 		[/gdscript]

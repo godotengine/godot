@@ -39,7 +39,7 @@
 #include "platform/javascript/logo.gen.h"
 #include "platform/javascript/run_icon.gen.h"
 
-class EditorHTTPServer : public Reference {
+class EditorHTTPServer : public RefCounted {
 private:
 	Ref<TCPServer> server;
 	Map<String, String> mimes;

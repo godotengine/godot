@@ -33,8 +33,8 @@
 
 #include "scene/main/node.h"
 
-class ArrayPropertyEdit : public Reference {
-	GDCLASS(ArrayPropertyEdit, Reference);
+class ArrayPropertyEdit : public RefCounted {
+	GDCLASS(ArrayPropertyEdit, RefCounted);
 
 	int page;
 	ObjectID obj;

@@ -766,7 +766,7 @@ struct MarkupContent {
 
 // Use namespace instead of enumeration to follow the LSP specifications
 // lsp::EnumName::EnumValue is OK but lsp::EnumValue is not
-// And here C++ compilers are unhappy with our enumeration name like Color, File, Reference etc.
+// And here C++ compilers are unhappy with our enumeration name like Color, File, RefCounted etc.
 /**
  * The kind of a completion entry.
  */
@@ -788,7 +788,7 @@ static const int Keyword = 14;
 static const int Snippet = 15;
 static const int Color = 16;
 static const int File = 17;
-static const int Reference = 18;
+static const int RefCounted = 18;
 static const int Folder = 19;
 static const int EnumMember = 20;
 static const int Constant = 21;

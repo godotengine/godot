@@ -31,7 +31,7 @@
 #ifdef MONO_GLUE_ENABLED
 
 #include "core/object/class_db.h"
-#include "core/object/reference.h"
+#include "core/object/ref_counted.h"
 #include "core/string/string_name.h"
 
 #include "../csharp_script.h"
@@ -81,13 +81,13 @@ void godot_icall_Object_Disposed(MonoObject *p_obj, Object *p_ptr) {
 void godot_icall_Reference_Disposed(MonoObject *p_obj, Object *p_ptr, MonoBoolean p_is_finalizer) {
 #ifdef DEBUG_ENABLED
 	CRASH_COND(p_ptr == nullptr);
-	// This is only called with Reference derived classes
-	CRASH_COND(!Object::cast_to<Reference>(p_ptr));
+	// This is only called with RefCounted derived classes
+	CRASH_COND(!Object::cast_to<RefCounted>(p_ptr));
 #endif
 
-	Reference *ref = static_cast<Reference *>(p_ptr);
+	RefCounted *rc = static_cast<RefCounted *>(p_ptr);
 
-	if (ref->get_script_instance()) {
+	if (rc->get_script_instance()) {
 		CSharpInstance *cs_instance = CAST_CSHARP_INSTANCE(ref->get_script_instance());
 		if (cs_instance) {
 			if (!cs_instance->is_destructing_script_instance()) {
@@ -97,9 +97,9 @@ void godot_icall_Reference_Disposed(MonoObject *p_obj, Object *p_ptr, MonoBoolea
 				cs_instance->mono_object_disposed_baseref(p_obj, p_is_finalizer, delete_owner, remove_script_instance);
 
 				if (delete_owner) {
-					memdelete(ref);
+					memdelete(rc);
 				} else if (remove_script_instance) {
-					ref->set_script_instance(nullptr);
+					rc->set_script_instance(nullptr);
 				}
 			}
 			return;
@@ -145,10 +145,10 @@ MonoObject *godot_icall_Object_weakref(Object *p_ptr) {
 	}
 
 	Ref<WeakRef> wref;
-	Reference *ref = Object::cast_to<Reference>(p_ptr);
+	RefCounted *rc = Object::cast_to<RefCounted>(p_ptr);
 
-	if (ref) {
-		REF r = ref;
+	if (rc) {
+		REF r = rc;
 		if (!r.is_valid()) {
 			return nullptr;
 		}

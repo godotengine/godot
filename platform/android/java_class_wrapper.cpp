@@ -102,7 +102,7 @@ bool JavaClass::_call_method(JavaObject *p_instance, const StringName &p_method,
 					if (p_args[i]->get_type() != Variant::OBJECT)
 						arg_expected = Variant::OBJECT;
 					else {
-						Ref<Reference> ref = *p_args[i];
+						Ref<RefCounted> ref = *p_args[i];
 						if (!ref.is_null()) {
 							if (Object::cast_to<JavaObject>(ref.ptr())) {
 								Ref<JavaObject> jo = ref;
@@ -488,7 +488,7 @@ Variant JavaClass::call(const StringName &p_method, const Variant **p_args, int 
 		return ret;
 	}
 
-	return Reference::call(p_method, p_args, p_argcount, r_error);
+	return RefCounted::call(p_method, p_args, p_argcount, r_error);
 }
 
 JavaClass::JavaClass() {

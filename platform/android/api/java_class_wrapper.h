@@ -31,7 +31,7 @@
 #ifndef JAVA_CLASS_WRAPPER_H
 #define JAVA_CLASS_WRAPPER_H
 
-#include "core/object/reference.h"
+#include "core/object/ref_counted.h"
 
 #ifdef ANDROID_ENABLED
 #include <android/log.h>
@@ -42,8 +42,8 @@
 class JavaObject;
 #endif
 
-class JavaClass : public Reference {
-	GDCLASS(JavaClass, Reference);
+class JavaClass : public RefCounted {
+	GDCLASS(JavaClass, RefCounted);
 
 #ifdef ANDROID_ENABLED
 	enum ArgumentType{
@@ -184,8 +184,8 @@ public:
 	JavaClass();
 };
 
-class JavaObject : public Reference {
-	GDCLASS(JavaObject, Reference);
+class JavaObject : public RefCounted {
+	GDCLASS(JavaObject, RefCounted);
 
 #ifdef ANDROID_ENABLED
 	Ref<JavaClass> base_class;

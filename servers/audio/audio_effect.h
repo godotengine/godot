@@ -34,8 +34,8 @@
 #include "core/io/resource.h"
 #include "core/math/audio_frame.h"
 
-class AudioEffectInstance : public Reference {
-	GDCLASS(AudioEffectInstance, Reference);
+class AudioEffectInstance : public RefCounted {
+	GDCLASS(AudioEffectInstance, RefCounted);
 
 public:
 	virtual void process(const AudioFrame *p_src_frames, AudioFrame *p_dst_frames, int p_frame_count) = 0;

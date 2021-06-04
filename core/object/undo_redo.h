@@ -32,7 +32,7 @@
 #define UNDO_REDO_H
 
 #include "core/object/class_db.h"
-#include "core/object/reference.h"
+#include "core/object/ref_counted.h"
 
 class UndoRedo : public Object {
 	GDCLASS(UndoRedo, Object);
@@ -61,7 +61,7 @@ private:
 		};
 
 		Type type;
-		Ref<Reference> ref;
+		Ref<RefCounted> ref;
 		ObjectID object;
 		StringName name;
 		Variant args[VARIANT_ARG_MAX];

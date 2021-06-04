@@ -33,7 +33,7 @@
 #include "callable_bind.h"
 #include "core/object/message_queue.h"
 #include "core/object/object.h"
-#include "core/object/reference.h"
+#include "core/object/ref_counted.h"
 #include "core/object/script_language.h"
 
 void Callable::call_deferred(const Variant **p_arguments, int p_argcount) const {

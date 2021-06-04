@@ -285,7 +285,7 @@ public:
 		v->clear();
 	}
 
-	static void object_assign(Variant *v, const Object *o); // Needs Reference, so it's implemented elsewhere.
+	static void object_assign(Variant *v, const Object *o); // Needs RefCounted, so it's implemented elsewhere.
 
 	_FORCE_INLINE_ static void object_assign(Variant *v, const Variant *o) {
 		object_assign(v, o->_get_obj().obj);

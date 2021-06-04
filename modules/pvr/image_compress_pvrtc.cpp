@@ -31,7 +31,7 @@
 #include "image_compress_pvrtc.h"
 
 #include "core/io/image.h"
-#include "core/object/reference.h"
+#include "core/object/ref_counted.h"
 
 #include <PvrTcEncoder.h>
 #include <RgbaBitmap.h>

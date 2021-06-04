@@ -50,8 +50,8 @@ class PropertyValueEvaluator;
 class CreateDialog;
 class PropertySelector;
 
-class EditorResourceConversionPlugin : public Reference {
-	GDCLASS(EditorResourceConversionPlugin, Reference);
+class EditorResourceConversionPlugin : public RefCounted {
+	GDCLASS(EditorResourceConversionPlugin, RefCounted);
 
 protected:
 	static void _bind_methods();

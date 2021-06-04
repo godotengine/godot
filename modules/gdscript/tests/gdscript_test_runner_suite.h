@@ -51,7 +51,7 @@ TEST_SUITE("[Modules][GDScript]") {
 TEST_CASE("[Modules][GDScript] Load source code dynamically and run it") {
 	Ref<GDScript> gdscript = memnew(GDScript);
 	gdscript->set_source_code(R"(
-extends Reference
+extends RefCounted
 
 func _init():
 	set_meta("result", 42)
@@ -64,9 +64,9 @@ func _init():
 	CHECK_MESSAGE(error == OK, "The script should parse successfully.");
 
 	// Run the script by assigning it to a reference-counted object.
-	Ref<Reference> reference = memnew(Reference);
-	reference->set_script(gdscript);
-	CHECK_MESSAGE(int(reference->get_meta("result")) == 42, "The script should assign object metadata successfully.");
+	Ref<RefCounted> ref_counted = memnew(RefCounted);
+	ref_counted->set_script(gdscript);
+	CHECK_MESSAGE(int(ref_counted->get_meta("result")) == 42, "The script should assign object metadata successfully.");
 }
 
 } // namespace GDScriptTests

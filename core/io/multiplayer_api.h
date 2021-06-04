@@ -32,10 +32,10 @@
 #define MULTIPLAYER_API_H
 
 #include "core/io/networked_multiplayer_peer.h"
-#include "core/object/reference.h"
+#include "core/object/ref_counted.h"
 
-class MultiplayerAPI : public Reference {
-	GDCLASS(MultiplayerAPI, Reference);
+class MultiplayerAPI : public RefCounted {
+	GDCLASS(MultiplayerAPI, RefCounted);
 
 public:
 	enum RPCMode {

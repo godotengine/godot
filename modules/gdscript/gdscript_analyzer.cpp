@@ -163,7 +163,7 @@ Error GDScriptAnalyzer::resolve_inheritance(GDScriptParser::ClassNode *p_class, 
 	if (!p_class->extends_used) {
 		result.type_source = GDScriptParser::DataType::ANNOTATED_INFERRED;
 		result.kind = GDScriptParser::DataType::NATIVE;
-		result.native_type = "Reference";
+		result.native_type = "RefCounted";
 	} else {
 		result.type_source = GDScriptParser::DataType::ANNOTATED_EXPLICIT;
 

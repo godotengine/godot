@@ -32,7 +32,7 @@
 #define WEBSOCKET_H
 
 #include "core/crypto/crypto.h"
-#include "core/object/reference.h"
+#include "core/object/ref_counted.h"
 #include "websocket_multiplayer_peer.h"
 #include "websocket_peer.h"
 

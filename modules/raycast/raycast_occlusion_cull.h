@@ -34,7 +34,7 @@
 #include "core/io/image.h"
 #include "core/math/camera_matrix.h"
 #include "core/object/object.h"
-#include "core/object/reference.h"
+#include "core/object/ref_counted.h"
 #include "core/templates/local_vector.h"
 #include "core/templates/rid_owner.h"
 #include "scene/resources/mesh.h"

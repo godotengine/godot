@@ -36,8 +36,8 @@
 
 /*************************************************************************/
 
-class TextLine : public Reference {
-	GDCLASS(TextLine, Reference);
+class TextLine : public RefCounted {
+	GDCLASS(TextLine, RefCounted);
 
 	RID rid;
 	int spacing_top = 0;

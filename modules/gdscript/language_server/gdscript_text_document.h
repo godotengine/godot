@@ -32,11 +32,11 @@
 #define GDSCRIPT_TEXT_DOCUMENT_H
 
 #include "core/io/file_access.h"
-#include "core/object/reference.h"
+#include "core/object/ref_counted.h"
 #include "lsp.hpp"
 
-class GDScriptTextDocument : public Reference {
-	GDCLASS(GDScriptTextDocument, Reference)
+class GDScriptTextDocument : public RefCounted {
+	GDCLASS(GDScriptTextDocument, RefCounted)
 protected:
 	static void _bind_methods();
 

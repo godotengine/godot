@@ -32,7 +32,7 @@
 #define GDSCRIPT_ANALYZER_H
 
 #include "core/object/object.h"
-#include "core/object/reference.h"
+#include "core/object/ref_counted.h"
 #include "core/templates/set.h"
 #include "gdscript_cache.h"
 #include "gdscript_parser.h"

@@ -38,7 +38,7 @@
 
 struct PivotTransform;
 
-struct FBXBone : public Reference {
+struct FBXBone : public RefCounted {
 	uint64_t parent_bone_id = 0;
 	uint64_t bone_id = 0;
 

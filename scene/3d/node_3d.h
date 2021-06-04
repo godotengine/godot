@@ -34,8 +34,8 @@
 #include "scene/main/node.h"
 #include "scene/main/scene_tree.h"
 
-class Node3DGizmo : public Reference {
-	GDCLASS(Node3DGizmo, Reference);
+class Node3DGizmo : public RefCounted {
+	GDCLASS(Node3DGizmo, RefCounted);
 
 public:
 	virtual void create() = 0;

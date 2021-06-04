@@ -30,7 +30,7 @@
 
 #include "marshalls.h"
 
-#include "core/object/reference.h"
+#include "core/object/ref_counted.h"
 #include "core/os/keyboard.h"
 #include "core/string/print_string.h"
 
@@ -489,8 +489,8 @@ Error decode_variant(Variant &r_variant, const uint8_t *p_buffer, int p_len, int
 						obj->set(str, value);
 					}
 
-					if (Object::cast_to<Reference>(obj)) {
-						REF ref = REF(Object::cast_to<Reference>(obj));
+					if (Object::cast_to<RefCounted>(obj)) {
+						REF ref = REF(Object::cast_to<RefCounted>(obj));
 						r_variant = ref;
 					} else {
 						r_variant = obj;

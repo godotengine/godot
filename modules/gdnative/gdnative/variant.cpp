@@ -30,7 +30,7 @@
 
 #include "gdnative/variant.h"
 
-#include "core/object/reference.h"
+#include "core/object/ref_counted.h"
 #include "core/variant/variant.h"
 
 #ifdef __cplusplus
@@ -200,17 +200,17 @@ void GDAPI godot_variant_new_signal(godot_variant *r_dest, const godot_signal *p
 void GDAPI godot_variant_new_object(godot_variant *r_dest, const godot_object *p_obj) {
 	Variant *dest = (Variant *)r_dest;
 	const Object *obj = (const Object *)p_obj;
-	const Reference *reference = Object::cast_to<Reference>(obj);
+	const RefCounted *ref_counted = Object::cast_to<RefCounted>(obj);
 	REF ref;
-	if (reference) {
-		ref = REF(reference);
+	if (ref_counted) {
+		ref = REF(ref_counted);
 	}
 	if (!ref.is_null()) {
 		memnew_placement_custom(dest, Variant, Variant(ref));
 	} else {
 #if defined(DEBUG_METHODS_ENABLED)
-		if (reference) {
-			ERR_PRINT("Reference object has 0 refcount in godot_variant_new_object - you lost it somewhere.");
+		if (ref_counted) {
+			ERR_PRINT("RefCounted object has 0 refcount in godot_variant_new_object - you lost it somewhere.");
 		}
 #endif
 		memnew_placement_custom(dest, Variant, Variant(obj));

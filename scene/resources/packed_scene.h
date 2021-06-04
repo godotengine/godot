@@ -34,8 +34,8 @@
 #include "core/io/resource.h"
 #include "scene/main/node.h"
 
-class SceneState : public Reference {
-	GDCLASS(SceneState, Reference);
+class SceneState : public RefCounted {
+	GDCLASS(SceneState, RefCounted);
 
 	Vector<StringName> names;
 	Vector<Variant> variants;

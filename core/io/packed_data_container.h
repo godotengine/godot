@@ -80,8 +80,8 @@ public:
 	PackedDataContainer() {}
 };
 
-class PackedDataContainerRef : public Reference {
-	GDCLASS(PackedDataContainerRef, Reference);
+class PackedDataContainerRef : public RefCounted {
+	GDCLASS(PackedDataContainerRef, RefCounted);
 
 	friend class PackedDataContainer;
 	uint32_t offset = 0;

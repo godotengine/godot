@@ -32,10 +32,10 @@
 #define EDITOR_TRANSLATION_PARSER_H
 
 #include "core/error/error_list.h"
-#include "core/object/reference.h"
+#include "core/object/ref_counted.h"
 
-class EditorTranslationParserPlugin : public Reference {
-	GDCLASS(EditorTranslationParserPlugin, Reference);
+class EditorTranslationParserPlugin : public RefCounted {
+	GDCLASS(EditorTranslationParserPlugin, RefCounted);
 
 protected:
 	static void _bind_methods();

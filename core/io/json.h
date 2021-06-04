@@ -31,7 +31,7 @@
 #ifndef JSON_H
 #define JSON_H
 
-#include "core/object/reference.h"
+#include "core/object/ref_counted.h"
 #include "core/variant/variant.h"
 class JSON {
 	enum TokenType {
@@ -74,8 +74,8 @@ public:
 	static Error parse(const String &p_json, Variant &r_ret, String &r_err_str, int &r_err_line);
 };
 
-class JSONParser : public Reference {
-	GDCLASS(JSONParser, Reference);
+class JSONParser : public RefCounted {
+	GDCLASS(JSONParser, RefCounted);
 
 	Variant data;
 	String string;

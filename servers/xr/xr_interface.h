@@ -47,8 +47,8 @@
 	Note that we may make this into a fully instantiable class for GDNative support.
 */
 
-class XRInterface : public Reference {
-	GDCLASS(XRInterface, Reference);
+class XRInterface : public RefCounted {
+	GDCLASS(XRInterface, RefCounted);
 
 public:
 	enum Capabilities { /* purely meta data, provides some info about what this interface supports */

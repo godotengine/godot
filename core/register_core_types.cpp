@@ -131,7 +131,7 @@ void register_core_types() {
 
 	ClassDB::register_virtual_class<Script>();
 
-	ClassDB::register_class<Reference>();
+	ClassDB::register_class<RefCounted>();
 	ClassDB::register_class<WeakRef>();
 	ClassDB::register_class<Resource>();
 	ClassDB::register_class<Image>();

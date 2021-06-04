@@ -97,7 +97,7 @@ struct ExposedClass {
 
 	bool is_singleton = false;
 	bool is_instantiable = false;
-	bool is_reference = false;
+	bool is_ref_counted = false;
 
 	ClassDB::APIType api_type;
 
@@ -131,7 +131,7 @@ struct ExposedClass {
 struct NamesCache {
 	StringName variant_type = StaticCString::create("Variant");
 	StringName object_class = StaticCString::create("Object");
-	StringName reference_class = StaticCString::create("Reference");
+	StringName ref_counted_class = StaticCString::create("RefCounted");
 	StringName string_type = StaticCString::create("String");
 	StringName string_name_type = StaticCString::create("StringName");
 	StringName node_path_type = StaticCString::create("NodePath");
@@ -516,7 +516,7 @@ void add_exposed_classes(Context &r_context) {
 		exposed_class.api_type = api_type;
 		exposed_class.is_singleton = Engine::get_singleton()->has_singleton(class_name);
 		exposed_class.is_instantiable = class_info->creation_func && !exposed_class.is_singleton;
-		exposed_class.is_reference = ClassDB::is_parent_class(class_name, "Reference");
+		exposed_class.is_ref_counted = ClassDB::is_parent_class(class_name, "RefCounted");
 		exposed_class.base = ClassDB::get_parent_class(class_name);
 
 		// Add properties
@@ -611,7 +611,7 @@ void add_exposed_classes(Context &r_context) {
 				method.return_type.name = return_info.class_name;
 
 				bool bad_reference_hint = !method.is_virtual && return_info.hint != PROPERTY_HINT_RESOURCE_TYPE &&
-										  ClassDB::is_parent_class(return_info.class_name, r_context.names_cache.reference_class);
+										  ClassDB::is_parent_class(return_info.class_name, r_context.names_cache.ref_counted_class);
 				TEST_COND(bad_reference_hint, "Return type is reference but hint is not '" _STR(PROPERTY_HINT_RESOURCE_TYPE) "'.", " Are you returning a reference type by pointer? Method: '",
 						exposed_class.name, ".", method.name, "'.");
 			} else if (return_info.hint == PROPERTY_HINT_RESOURCE_TYPE) {

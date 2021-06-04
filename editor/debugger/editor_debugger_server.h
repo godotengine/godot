@@ -32,9 +32,9 @@
 #define EDITOR_DEBUGGER_CONNECTION_H
 
 #include "core/debugger/remote_debugger_peer.h"
-#include "core/object/reference.h"
+#include "core/object/ref_counted.h"
 
-class EditorDebuggerServer : public Reference {
+class EditorDebuggerServer : public RefCounted {
 public:
 	typedef EditorDebuggerServer *(*CreateServerFunc)(const String &p_uri);
 

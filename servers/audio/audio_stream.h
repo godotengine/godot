@@ -36,8 +36,8 @@
 #include "servers/audio/audio_filter_sw.h"
 #include "servers/audio_server.h"
 
-class AudioStreamPlayback : public Reference {
-	GDCLASS(AudioStreamPlayback, Reference);
+class AudioStreamPlayback : public RefCounted {
+	GDCLASS(AudioStreamPlayback, RefCounted);
 
 public:
 	virtual void start(float p_from_pos = 0.0) = 0;

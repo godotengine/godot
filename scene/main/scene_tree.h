@@ -48,8 +48,8 @@ class Material;
 class Mesh;
 class SceneDebugger;
 
-class SceneTreeTimer : public Reference {
-	GDCLASS(SceneTreeTimer, Reference);
+class SceneTreeTimer : public RefCounted {
+	GDCLASS(SceneTreeTimer, RefCounted);
 
 	float time_left = 0.0;
 	bool process_always = true;
