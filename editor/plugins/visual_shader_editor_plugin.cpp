@@ -1007,6 +1007,7 @@ void VisualShaderEditor::edit(VisualShader *p_visual_shader) {
 		const Dictionary vs_version = visual_shader->get_engine_version();
 		if (!vs_version.has_all(components)) {
 			visual_shader->update_engine_version(engine_version);
+			print_line(vformat(TTR("The shader (\"%s\") has been updated to correspond Godot %s.%s version."), visual_shader->get_path(), engine_version["major"], engine_version["minor"]));
 		} else {
 			for (int i = 0; i < components.size(); i++) {
 				if (vs_version[components[i]] != engine_version[components[i]]) {

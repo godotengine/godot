@@ -144,4 +144,23 @@ public:
 	EditorScriptPicker();
 };
 
+class EditorShaderPicker : public EditorResourcePicker {
+	GDCLASS(EditorShaderPicker, EditorResourcePicker);
+
+	enum ExtraMenuOption {
+		OBJ_MENU_NEW_SHADER = 10,
+	};
+
+	ShaderMaterial *edited_material = nullptr;
+
+public:
+	virtual void set_create_options(Object *p_menu_node) override;
+	virtual bool handle_menu_selected(int p_which) override;
+
+	void set_edited_material(ShaderMaterial *p_material);
+	ShaderMaterial *get_edited_material() const;
+
+	EditorShaderPicker();
+};
+
 #endif // EDITOR_RESOURCE_PICKER_H

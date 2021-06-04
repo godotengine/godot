@@ -45,6 +45,7 @@
 #include "editor/plugins/canvas_item_editor_plugin.h"
 #include "editor/plugins/node_3d_editor_plugin.h"
 #include "editor/plugins/script_editor_plugin.h"
+#include "editor/shader_create_dialog.h"
 #include "scene/main/window.h"
 #include "scene/resources/packed_scene.h"
 #include "servers/display_server.h"
@@ -1939,10 +1940,29 @@ void SceneTreeDock::_script_created(Ref<Script> p_script) {
 	_update_script_button();
 }
 
+void SceneTreeDock::_shader_created(Ref<Shader> p_shader) {
+	if (selected_shader_material.is_null()) {
+		return;
+	}
+
+	Ref<Shader> existing = selected_shader_material->get_shader();
+
+	editor_data->get_undo_redo().create_action(TTR("Set Shader"));
+	editor_data->get_undo_redo().add_do_method(selected_shader_material.ptr(), "set_shader", p_shader);
+	editor_data->get_undo_redo().add_undo_method(selected_shader_material.ptr(), "set_shader", existing);
+	editor_data->get_undo_redo().commit_action();
+}
+
 void SceneTreeDock::_script_creation_closed() {
 	script_create_dialog->disconnect("script_created", callable_mp(this, &SceneTreeDock::_script_created));
 	script_create_dialog->disconnect("confirmed", callable_mp(this, &SceneTreeDock::_script_creation_closed));
 	script_create_dialog->disconnect("cancelled", callable_mp(this, &SceneTreeDock::_script_creation_closed));
+}
+
+void SceneTreeDock::_shader_creation_closed() {
+	shader_create_dialog->disconnect("shader_created", callable_mp(this, &SceneTreeDock::_shader_created));
+	shader_create_dialog->disconnect("confirmed", callable_mp(this, &SceneTreeDock::_shader_creation_closed));
+	shader_create_dialog->disconnect("cancelled", callable_mp(this, &SceneTreeDock::_shader_creation_closed));
 }
 
 void SceneTreeDock::_toggle_editable_children_from_selection() {
@@ -2896,6 +2916,42 @@ void SceneTreeDock::open_script_dialog(Node *p_for_node, bool p_extend) {
 	}
 }
 
+void SceneTreeDock::attach_shader_to_selected() {
+	if (selected_shader_material.is_null()) {
+		return;
+	}
+
+	String path = selected_shader_material->get_path();
+	if (path == "") {
+		String root_path;
+		if (editor_data->get_edited_scene_root()) {
+			root_path = editor_data->get_edited_scene_root()->get_filename();
+		}
+		String shader_name;
+		if (selected_shader_material->get_name().is_empty()) {
+			shader_name = root_path.get_file();
+		} else {
+			shader_name = selected_shader_material->get_name();
+		}
+		if (root_path == "") {
+			path = String("res://").plus_file(shader_name);
+		} else {
+			path = root_path.get_base_dir().plus_file(shader_name);
+		}
+	}
+
+	shader_create_dialog->connect("shader_created", callable_mp(this, &SceneTreeDock::_shader_created));
+	shader_create_dialog->connect("confirmed", callable_mp(this, &SceneTreeDock::_shader_creation_closed));
+	shader_create_dialog->connect("cancelled", callable_mp(this, &SceneTreeDock::_shader_creation_closed));
+	shader_create_dialog->config(path);
+	shader_create_dialog->popup_centered();
+}
+
+void SceneTreeDock::open_shader_dialog(Ref<ShaderMaterial> &p_for_material) {
+	selected_shader_material = p_for_material;
+	attach_shader_to_selected();
+}
+
 void SceneTreeDock::open_add_child_dialog() {
 	create_dialog->set_base_type("CanvasItem");
 	_tool_selected(TOOL_NEW, true);
@@ -3266,6 +3322,9 @@ SceneTreeDock::SceneTreeDock(EditorNode *p_editor, Node *p_scene_root, EditorSel
 	script_create_dialog = memnew(ScriptCreateDialog);
 	script_create_dialog->set_inheritance_base_type("Node");
 	add_child(script_create_dialog);
+
+	shader_create_dialog = memnew(ShaderCreateDialog);
+	add_child(shader_create_dialog);
 
 	reparent_dialog = memnew(ReparentDialog);
 	add_child(reparent_dialog);
