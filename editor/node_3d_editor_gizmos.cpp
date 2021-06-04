@@ -34,15 +34,14 @@
 #include "core/math/geometry_2d.h"
 #include "core/math/geometry_3d.h"
 #include "scene/3d/audio_stream_player_3d.h"
-#include "scene/3d/baked_lightmap.h"
 #include "scene/3d/collision_polygon_3d.h"
 #include "scene/3d/collision_shape_3d.h"
 #include "scene/3d/cpu_particles_3d.h"
 #include "scene/3d/decal.h"
-#include "scene/3d/gi_probe.h"
 #include "scene/3d/gpu_particles_3d.h"
 #include "scene/3d/gpu_particles_collision_3d.h"
 #include "scene/3d/light_3d.h"
+#include "scene/3d/lightmap_gi.h"
 #include "scene/3d/lightmap_probe.h"
 #include "scene/3d/listener_3d.h"
 #include "scene/3d/mesh_instance_3d.h"
@@ -57,6 +56,7 @@
 #include "scene/3d/sprite_3d.h"
 #include "scene/3d/vehicle_body_3d.h"
 #include "scene/3d/visibility_notifier_3d.h"
+#include "scene/3d/voxel_gi.h"
 #include "scene/resources/box_shape_3d.h"
 #include "scene/resources/capsule_shape_3d.h"
 #include "scene/resources/concave_polygon_shape_3d.h"
@@ -3086,35 +3086,35 @@ void DecalGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 }
 
 ///////////////////////////////
-GIProbeGizmoPlugin::GIProbeGizmoPlugin() {
-	Color gizmo_color = EDITOR_DEF("editors/3d_gizmos/gizmo_colors/gi_probe", Color(0.5, 1, 0.6));
+VoxelGIGizmoPlugin::VoxelGIGizmoPlugin() {
+	Color gizmo_color = EDITOR_DEF("editors/3d_gizmos/gizmo_colors/voxel_gi", Color(0.5, 1, 0.6));
 
-	create_material("gi_probe_material", gizmo_color);
+	create_material("voxel_gi_material", gizmo_color);
 
 	// This gizmo draws a lot of lines. Use a low opacity to make it not too intrusive.
 	gizmo_color.a = 0.1;
-	create_material("gi_probe_internal_material", gizmo_color);
+	create_material("voxel_gi_internal_material", gizmo_color);
 
 	gizmo_color.a = 0.05;
-	create_material("gi_probe_solid_material", gizmo_color);
+	create_material("voxel_gi_solid_material", gizmo_color);
 
-	create_icon_material("gi_probe_icon", Node3DEditor::get_singleton()->get_theme_icon("GizmoGIProbe", "EditorIcons"));
+	create_icon_material("voxel_gi_icon", Node3DEditor::get_singleton()->get_theme_icon("GizmoVoxelGI", "EditorIcons"));
 	create_handle_material("handles");
 }
 
-bool GIProbeGizmoPlugin::has_gizmo(Node3D *p_spatial) {
-	return Object::cast_to<GIProbe>(p_spatial) != nullptr;
+bool VoxelGIGizmoPlugin::has_gizmo(Node3D *p_spatial) {
+	return Object::cast_to<VoxelGI>(p_spatial) != nullptr;
 }
 
-String GIProbeGizmoPlugin::get_gizmo_name() const {
-	return "GIProbe";
+String VoxelGIGizmoPlugin::get_gizmo_name() const {
+	return "VoxelGI";
 }
 
-int GIProbeGizmoPlugin::get_priority() const {
+int VoxelGIGizmoPlugin::get_priority() const {
 	return -1;
 }
 
-String GIProbeGizmoPlugin::get_handle_name(const EditorNode3DGizmo *p_gizmo, int p_idx) const {
+String VoxelGIGizmoPlugin::get_handle_name(const EditorNode3DGizmo *p_gizmo, int p_idx) const {
 	switch (p_idx) {
 		case 0:
 			return "Extents X";
@@ -3127,13 +3127,13 @@ String GIProbeGizmoPlugin::get_handle_name(const EditorNode3DGizmo *p_gizmo, int
 	return "";
 }
 
-Variant GIProbeGizmoPlugin::get_handle_value(EditorNode3DGizmo *p_gizmo, int p_idx) const {
-	GIProbe *probe = Object::cast_to<GIProbe>(p_gizmo->get_spatial_node());
+Variant VoxelGIGizmoPlugin::get_handle_value(EditorNode3DGizmo *p_gizmo, int p_idx) const {
+	VoxelGI *probe = Object::cast_to<VoxelGI>(p_gizmo->get_spatial_node());
 	return probe->get_extents();
 }
 
-void GIProbeGizmoPlugin::set_handle(EditorNode3DGizmo *p_gizmo, int p_idx, Camera3D *p_camera, const Point2 &p_point) {
-	GIProbe *probe = Object::cast_to<GIProbe>(p_gizmo->get_spatial_node());
+void VoxelGIGizmoPlugin::set_handle(EditorNode3DGizmo *p_gizmo, int p_idx, Camera3D *p_camera, const Point2 &p_point) {
+	VoxelGI *probe = Object::cast_to<VoxelGI>(p_gizmo->get_spatial_node());
 
 	Transform3D gt = probe->get_global_transform();
 	Transform3D gi = gt.affine_inverse();
@@ -3163,8 +3163,8 @@ void GIProbeGizmoPlugin::set_handle(EditorNode3DGizmo *p_gizmo, int p_idx, Camer
 	probe->set_extents(extents);
 }
 
-void GIProbeGizmoPlugin::commit_handle(EditorNode3DGizmo *p_gizmo, int p_idx, const Variant &p_restore, bool p_cancel) {
-	GIProbe *probe = Object::cast_to<GIProbe>(p_gizmo->get_spatial_node());
+void VoxelGIGizmoPlugin::commit_handle(EditorNode3DGizmo *p_gizmo, int p_idx, const Variant &p_restore, bool p_cancel) {
+	VoxelGI *probe = Object::cast_to<VoxelGI>(p_gizmo->get_spatial_node());
 
 	Vector3 restore = p_restore;
 
@@ -3180,19 +3180,19 @@ void GIProbeGizmoPlugin::commit_handle(EditorNode3DGizmo *p_gizmo, int p_idx, co
 	ur->commit_action();
 }
 
-void GIProbeGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
-	GIProbe *probe = Object::cast_to<GIProbe>(p_gizmo->get_spatial_node());
+void VoxelGIGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
+	VoxelGI *probe = Object::cast_to<VoxelGI>(p_gizmo->get_spatial_node());
 
-	Ref<Material> material = get_material("gi_probe_material", p_gizmo);
-	Ref<Material> icon = get_material("gi_probe_icon", p_gizmo);
-	Ref<Material> material_internal = get_material("gi_probe_internal_material", p_gizmo);
+	Ref<Material> material = get_material("voxel_gi_material", p_gizmo);
+	Ref<Material> icon = get_material("voxel_gi_icon", p_gizmo);
+	Ref<Material> material_internal = get_material("voxel_gi_internal_material", p_gizmo);
 
 	p_gizmo->clear();
 
 	Vector<Vector3> lines;
 	Vector3 extents = probe->get_extents();
 
-	static const int subdivs[GIProbe::SUBDIV_MAX] = { 64, 128, 256, 512 };
+	static const int subdivs[VoxelGI::SUBDIV_MAX] = { 64, 128, 256, 512 };
 
 	AABB aabb = AABB(-extents, extents * 2);
 	int subdiv = subdivs[probe->get_subdiv()];
@@ -3256,7 +3256,7 @@ void GIProbeGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 	}
 
 	if (p_gizmo->is_selected()) {
-		Ref<Material> solid_material = get_material("gi_probe_solid_material", p_gizmo);
+		Ref<Material> solid_material = get_material("voxel_gi_solid_material", p_gizmo);
 		p_gizmo->add_solid_box(solid_material, aabb.get_size());
 	}
 
@@ -3266,7 +3266,7 @@ void GIProbeGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 
 ////
 
-BakedLightmapGizmoPlugin::BakedLightmapGizmoPlugin() {
+LightmapGIGizmoPlugin::LightmapGIGizmoPlugin() {
 	Color gizmo_color = EDITOR_DEF("editors/3d_gizmos/gizmo_colors/lightmap_lines", Color(0.5, 0.6, 1));
 
 	gizmo_color.a = 0.1;
@@ -3280,39 +3280,39 @@ BakedLightmapGizmoPlugin::BakedLightmapGizmoPlugin() {
 
 	add_material("lightmap_probe_material", mat);
 
-	create_icon_material("baked_indirect_light_icon", Node3DEditor::get_singleton()->get_theme_icon("GizmoBakedLightmap", "EditorIcons"));
+	create_icon_material("baked_indirect_light_icon", Node3DEditor::get_singleton()->get_theme_icon("GizmoLightmapGI", "EditorIcons"));
 }
 
-String BakedLightmapGizmoPlugin::get_handle_name(const EditorNode3DGizmo *p_gizmo, int p_idx) const {
+String LightmapGIGizmoPlugin::get_handle_name(const EditorNode3DGizmo *p_gizmo, int p_idx) const {
 	return "";
 }
 
-Variant BakedLightmapGizmoPlugin::get_handle_value(EditorNode3DGizmo *p_gizmo, int p_idx) const {
+Variant LightmapGIGizmoPlugin::get_handle_value(EditorNode3DGizmo *p_gizmo, int p_idx) const {
 	return Variant();
 }
 
-void BakedLightmapGizmoPlugin::set_handle(EditorNode3DGizmo *p_gizmo, int p_idx, Camera3D *p_camera, const Point2 &p_point) {
+void LightmapGIGizmoPlugin::set_handle(EditorNode3DGizmo *p_gizmo, int p_idx, Camera3D *p_camera, const Point2 &p_point) {
 }
 
-void BakedLightmapGizmoPlugin::commit_handle(EditorNode3DGizmo *p_gizmo, int p_idx, const Variant &p_restore, bool p_cancel) {
+void LightmapGIGizmoPlugin::commit_handle(EditorNode3DGizmo *p_gizmo, int p_idx, const Variant &p_restore, bool p_cancel) {
 }
 
-bool BakedLightmapGizmoPlugin::has_gizmo(Node3D *p_spatial) {
-	return Object::cast_to<BakedLightmap>(p_spatial) != nullptr;
+bool LightmapGIGizmoPlugin::has_gizmo(Node3D *p_spatial) {
+	return Object::cast_to<LightmapGI>(p_spatial) != nullptr;
 }
 
-String BakedLightmapGizmoPlugin::get_gizmo_name() const {
-	return "BakedLightmap";
+String LightmapGIGizmoPlugin::get_gizmo_name() const {
+	return "LightmapGI";
 }
 
-int BakedLightmapGizmoPlugin::get_priority() const {
+int LightmapGIGizmoPlugin::get_priority() const {
 	return -1;
 }
 
-void BakedLightmapGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
+void LightmapGIGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 	Ref<Material> icon = get_material("baked_indirect_light_icon", p_gizmo);
-	BakedLightmap *baker = Object::cast_to<BakedLightmap>(p_gizmo->get_spatial_node());
-	Ref<BakedLightmapData> data = baker->get_light_data();
+	LightmapGI *baker = Object::cast_to<LightmapGI>(p_gizmo->get_spatial_node());
+	Ref<LightmapGIData> data = baker->get_light_data();
 
 	p_gizmo->add_unscaled_billboard(icon, 0.05);
 

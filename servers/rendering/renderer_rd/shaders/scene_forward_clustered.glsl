@@ -426,8 +426,8 @@ layout(location = 4) out float depth_output_buffer;
 #ifdef MODE_RENDER_NORMAL_ROUGHNESS
 layout(location = 0) out vec4 normal_roughness_output_buffer;
 
-#ifdef MODE_RENDER_GIPROBE
-layout(location = 1) out uvec2 giprobe_buffer;
+#ifdef MODE_RENDER_VOXEL_GI
+layout(location = 1) out uvec2 voxel_gi_buffer;
 #endif
 
 #endif //MODE_RENDER_NORMAL
@@ -1042,7 +1042,7 @@ void main() {
 		}
 	}
 
-	if (bool(instances.data[instance_index].flags & INSTANCE_FLAGS_USE_GIPROBE)) { // process giprobes
+	if (bool(instances.data[instance_index].flags & INSTANCE_FLAGS_USE_VOXEL_GI)) { // process voxel_gi_instances
 
 		uint index1 = instances.data[instance_index].gi_offset & 0xFFFF;
 		vec3 ref_vec = normalize(reflect(normalize(vertex), normal));
@@ -1054,12 +1054,12 @@ void main() {
 
 		vec4 amb_accum = vec4(0.0);
 		vec4 spec_accum = vec4(0.0);
-		gi_probe_compute(index1, vertex, normal, ref_vec, normal_mat, roughness * roughness, ambient_light, specular_light, spec_accum, amb_accum);
+		voxel_gi_compute(index1, vertex, normal, ref_vec, normal_mat, roughness * roughness, ambient_light, specular_light, spec_accum, amb_accum);
 
 		uint index2 = instances.data[instance_index].gi_offset >> 16;
 
 		if (index2 != 0xFFFF) {
-			gi_probe_compute(index2, vertex, normal, ref_vec, normal_mat, roughness * roughness, ambient_light, specular_light, spec_accum, amb_accum);
+			voxel_gi_compute(index2, vertex, normal, ref_vec, normal_mat, roughness * roughness, ambient_light, specular_light, spec_accum, amb_accum);
 		}
 
 		if (amb_accum.a > 0.0) {
@@ -1929,15 +1929,15 @@ void main() {
 #ifdef MODE_RENDER_NORMAL_ROUGHNESS
 		normal_roughness_output_buffer = vec4(normal * 0.5 + 0.5, roughness);
 
-#ifdef MODE_RENDER_GIPROBE
-		if (bool(instances.data[instance_index].flags & INSTANCE_FLAGS_USE_GIPROBE)) { // process giprobes
+#ifdef MODE_RENDER_VOXEL_GI
+		if (bool(instances.data[instance_index].flags & INSTANCE_FLAGS_USE_VOXEL_GI)) { // process voxel_gi_instances
 			uint index1 = instances.data[instance_index].gi_offset & 0xFFFF;
 			uint index2 = instances.data[instance_index].gi_offset >> 16;
-			giprobe_buffer.x = index1 & 0xFF;
-			giprobe_buffer.y = index2 & 0xFF;
+			voxel_gi_buffer.x = index1 & 0xFF;
+			voxel_gi_buffer.y = index2 & 0xFF;
 		} else {
-			giprobe_buffer.x = 0xFF;
-			giprobe_buffer.y = 0xFF;
+			voxel_gi_buffer.x = 0xFF;
+			voxel_gi_buffer.y = 0xFF;
 		}
 #endif
 

@@ -52,9 +52,9 @@ class RenderForwardClustered : public RendererSceneRenderRD {
 
 	enum {
 		SDFGI_MAX_CASCADES = 8,
-		MAX_GI_PROBES = 8,
+		MAX_VOXEL_GI_INSTANCESS = 8,
 		MAX_LIGHTMAPS = 8,
-		MAX_GI_PROBES_PER_INSTANCE = 2,
+		MAX_VOXEL_GI_INSTANCESS_PER_INSTANCE = 2,
 		INSTANCE_DATA_BUFFER_MIN_SIZE = 4096
 	};
 
@@ -79,7 +79,7 @@ class RenderForwardClustered : public RendererSceneRenderRD {
 		RID depth;
 		RID specular;
 		RID normal_roughness_buffer;
-		RID giprobe_buffer;
+		RID voxelgi_buffer;
 
 		RS::ViewportMSAA msaa;
 		RD::TextureSamples texture_samples;
@@ -89,11 +89,11 @@ class RenderForwardClustered : public RendererSceneRenderRD {
 		RID specular_msaa;
 		RID normal_roughness_buffer_msaa;
 		RID roughness_buffer_msaa;
-		RID giprobe_buffer_msaa;
+		RID voxelgi_buffer_msaa;
 
 		RID depth_fb;
 		RID depth_normal_roughness_fb;
-		RID depth_normal_roughness_giprobe_fb;
+		RID depth_normal_roughness_voxelgi_fb;
 		RID color_fb;
 		RID color_specular_fb;
 		RID specular_only_fb;
@@ -101,7 +101,7 @@ class RenderForwardClustered : public RendererSceneRenderRD {
 
 		RID render_sdfgi_uniform_set;
 		void ensure_specular();
-		void ensure_giprobe();
+		void ensure_voxelgi();
 		void clear();
 		virtual void configure(RID p_color_buffer, RID p_depth_buffer, int p_width, int p_height, RS::ViewportMSAA p_msaa);
 
@@ -132,7 +132,7 @@ class RenderForwardClustered : public RendererSceneRenderRD {
 		PASS_MODE_SHADOW_DP,
 		PASS_MODE_DEPTH,
 		PASS_MODE_DEPTH_NORMAL_ROUGHNESS,
-		PASS_MODE_DEPTH_NORMAL_ROUGHNESS_GIPROBE,
+		PASS_MODE_DEPTH_NORMAL_ROUGHNESS_VOXEL_GI,
 		PASS_MODE_DEPTH_MATERIAL,
 		PASS_MODE_SDF,
 	};
@@ -189,7 +189,7 @@ class RenderForwardClustered : public RendererSceneRenderRD {
 		INSTANCE_DATA_FLAG_USE_LIGHTMAP_CAPTURE = 1 << 8,
 		INSTANCE_DATA_FLAG_USE_LIGHTMAP = 1 << 9,
 		INSTANCE_DATA_FLAG_USE_SH_LIGHTMAP = 1 << 10,
-		INSTANCE_DATA_FLAG_USE_GIPROBE = 1 << 11,
+		INSTANCE_DATA_FLAG_USE_VOXEL_GI = 1 << 11,
 		INSTANCE_DATA_FLAG_MULTIMESH = 1 << 12,
 		INSTANCE_DATA_FLAG_MULTIMESH_FORMAT_2D = 1 << 13,
 		INSTANCE_DATA_FLAG_MULTIMESH_HAS_COLOR = 1 << 14,
@@ -318,8 +318,8 @@ class RenderForwardClustered : public RendererSceneRenderRD {
 		uint32_t max_lightmap_captures;
 		RID lightmap_capture_buffer;
 
-		RID giprobe_ids[MAX_GI_PROBES];
-		uint32_t giprobes_used = 0;
+		RID voxelgi_ids[MAX_VOXEL_GI_INSTANCESS];
+		uint32_t voxelgis_used = 0;
 
 		bool used_screen_texture = false;
 		bool used_normal_texture = false;
@@ -350,7 +350,7 @@ class RenderForwardClustered : public RendererSceneRenderRD {
 	static RenderForwardClustered *singleton;
 
 	void _setup_environment(const RenderDataRD *p_render_data, bool p_no_fog, const Size2i &p_screen_size, bool p_flip_y, const Color &p_default_bg_color, bool p_opaque_render_buffers = false, bool p_pancake_shadows = false, int p_index = 0);
-	void _setup_giprobes(const PagedArray<RID> &p_giprobes);
+	void _setup_voxelgis(const PagedArray<RID> &p_voxelgis);
 	void _setup_lightmaps(const PagedArray<RID> &p_lightmaps, const Transform3D &p_cam_transform);
 
 	struct RenderElementInfo {
@@ -459,7 +459,7 @@ class RenderForwardClustered : public RendererSceneRenderRD {
 		//used during setup
 		uint32_t base_flags = 0;
 		Transform3D transform;
-		RID gi_probes[MAX_GI_PROBES_PER_INSTANCE];
+		RID voxel_gi_instances[MAX_VOXEL_GI_INSTANCESS_PER_INSTANCE];
 		RID lightmap_instance;
 		GeometryInstanceLightmapSH *lightmap_sh = nullptr;
 		GeometryInstanceSurfaceDataCache *surface_caches = nullptr;
@@ -603,7 +603,7 @@ public:
 	virtual void geometry_instance_pair_light_instances(GeometryInstance *p_geometry_instance, const RID *p_light_instances, uint32_t p_light_instance_count);
 	virtual void geometry_instance_pair_reflection_probe_instances(GeometryInstance *p_geometry_instance, const RID *p_reflection_probe_instances, uint32_t p_reflection_probe_instance_count);
 	virtual void geometry_instance_pair_decal_instances(GeometryInstance *p_geometry_instance, const RID *p_decal_instances, uint32_t p_decal_instance_count);
-	virtual void geometry_instance_pair_gi_probe_instances(GeometryInstance *p_geometry_instance, const RID *p_gi_probe_instances, uint32_t p_gi_probe_instance_count);
+	virtual void geometry_instance_pair_voxel_gi_instances(GeometryInstance *p_geometry_instance, const RID *p_voxel_gi_instances, uint32_t p_voxel_gi_instance_count);
 
 	virtual bool free(RID p_rid);
 

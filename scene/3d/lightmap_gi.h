@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  baked_lightmap.h                                                     */
+/*  lightmap_gi.h                                                        */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef BAKED_LIGHTMAP_H
-#define BAKED_LIGHTMAP_H
+#ifndef LIGHTMAP_GI_H
+#define LIGHTMAP_GI_H
 
 #include "core/templates/local_vector.h"
 #include "scene/3d/light_3d.h"
@@ -39,8 +39,8 @@
 #include "scene/3d/visual_instance_3d.h"
 #include "scene/resources/sky.h"
 
-class BakedLightmapData : public Resource {
-	GDCLASS(BakedLightmapData, Resource);
+class LightmapGIData : public Resource {
+	GDCLASS(LightmapGIData, Resource);
 	RES_BASE_EXTENSION("lmbake")
 
 	Ref<TextureLayered> light_texture;
@@ -95,12 +95,12 @@ public:
 	void clear();
 
 	virtual RID get_rid() const override;
-	BakedLightmapData();
-	~BakedLightmapData();
+	LightmapGIData();
+	~LightmapGIData();
 };
 
-class BakedLightmap : public VisualInstance3D {
-	GDCLASS(BakedLightmap, VisualInstance3D);
+class LightmapGI : public VisualInstance3D {
+	GDCLASS(LightmapGI, VisualInstance3D);
 
 public:
 	enum BakeQuality {
@@ -149,7 +149,7 @@ private:
 	bool directional = false;
 	GenerateProbes gen_probes = GENERATE_PROBES_DISABLED;
 
-	Ref<BakedLightmapData> light_data;
+	Ref<LightmapGIData> light_data;
 
 	struct LightsFound {
 		Transform3D xform;
@@ -230,8 +230,8 @@ protected:
 	void _notification(int p_what);
 
 public:
-	void set_light_data(const Ref<BakedLightmapData> &p_data);
-	Ref<BakedLightmapData> get_light_data() const;
+	void set_light_data(const Ref<LightmapGIData> &p_data);
+	Ref<LightmapGIData> get_light_data() const;
 
 	void set_bake_quality(BakeQuality p_quality);
 	BakeQuality get_bake_quality() const;
@@ -273,12 +273,12 @@ public:
 	Vector<Face3> get_faces(uint32_t p_usage_flags) const override;
 
 	BakeError bake(Node *p_from_node, String p_image_data_path = "", Lightmapper::BakeStepFunc p_bake_step = nullptr, void *p_bake_userdata = nullptr);
-	BakedLightmap();
+	LightmapGI();
 };
 
-VARIANT_ENUM_CAST(BakedLightmap::BakeQuality);
-VARIANT_ENUM_CAST(BakedLightmap::GenerateProbes);
-VARIANT_ENUM_CAST(BakedLightmap::BakeError);
-VARIANT_ENUM_CAST(BakedLightmap::EnvironmentMode);
+VARIANT_ENUM_CAST(LightmapGI::BakeQuality);
+VARIANT_ENUM_CAST(LightmapGI::GenerateProbes);
+VARIANT_ENUM_CAST(LightmapGI::BakeError);
+VARIANT_ENUM_CAST(LightmapGI::EnvironmentMode);
 
 #endif // BAKED_LIGHTMAP_H

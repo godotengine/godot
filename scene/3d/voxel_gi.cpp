@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  gi_probe.cpp                                                         */
+/*  voxel_gi.cpp                                                         */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,14 +28,14 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "gi_probe.h"
+#include "voxel_gi.h"
 
 #include "core/os/os.h"
 
 #include "mesh_instance_3d.h"
 #include "voxelizer.h"
 
-void GIProbeData::_set_data(const Dictionary &p_data) {
+void VoxelGIData::_set_data(const Dictionary &p_data) {
 	ERR_FAIL_COND(!p_data.has("bounds"));
 	ERR_FAIL_COND(!p_data.has("octree_size"));
 	ERR_FAIL_COND(!p_data.has("octree_cells"));
@@ -67,7 +67,7 @@ void GIProbeData::_set_data(const Dictionary &p_data) {
 	allocate(to_cell_xform, bounds, octree_size, octree_cells, octree_data, octree_df, octree_levels);
 }
 
-Dictionary GIProbeData::_get_data() const {
+Dictionary VoxelGIData::_get_data() const {
 	Dictionary d;
 	d["bounds"] = get_bounds();
 	Vector3i otsize = get_octree_size();
@@ -90,186 +90,186 @@ Dictionary GIProbeData::_get_data() const {
 	return d;
 }
 
-void GIProbeData::allocate(const Transform3D &p_to_cell_xform, const AABB &p_aabb, const Vector3 &p_octree_size, const Vector<uint8_t> &p_octree_cells, const Vector<uint8_t> &p_data_cells, const Vector<uint8_t> &p_distance_field, const Vector<int> &p_level_counts) {
-	RS::get_singleton()->gi_probe_allocate_data(probe, p_to_cell_xform, p_aabb, p_octree_size, p_octree_cells, p_data_cells, p_distance_field, p_level_counts);
+void VoxelGIData::allocate(const Transform3D &p_to_cell_xform, const AABB &p_aabb, const Vector3 &p_octree_size, const Vector<uint8_t> &p_octree_cells, const Vector<uint8_t> &p_data_cells, const Vector<uint8_t> &p_distance_field, const Vector<int> &p_level_counts) {
+	RS::get_singleton()->voxel_gi_allocate_data(probe, p_to_cell_xform, p_aabb, p_octree_size, p_octree_cells, p_data_cells, p_distance_field, p_level_counts);
 	bounds = p_aabb;
 	to_cell_xform = p_to_cell_xform;
 	octree_size = p_octree_size;
 }
 
-AABB GIProbeData::get_bounds() const {
+AABB VoxelGIData::get_bounds() const {
 	return bounds;
 }
 
-Vector3 GIProbeData::get_octree_size() const {
+Vector3 VoxelGIData::get_octree_size() const {
 	return octree_size;
 }
 
-Vector<uint8_t> GIProbeData::get_octree_cells() const {
-	return RS::get_singleton()->gi_probe_get_octree_cells(probe);
+Vector<uint8_t> VoxelGIData::get_octree_cells() const {
+	return RS::get_singleton()->voxel_gi_get_octree_cells(probe);
 }
 
-Vector<uint8_t> GIProbeData::get_data_cells() const {
-	return RS::get_singleton()->gi_probe_get_data_cells(probe);
+Vector<uint8_t> VoxelGIData::get_data_cells() const {
+	return RS::get_singleton()->voxel_gi_get_data_cells(probe);
 }
 
-Vector<uint8_t> GIProbeData::get_distance_field() const {
-	return RS::get_singleton()->gi_probe_get_distance_field(probe);
+Vector<uint8_t> VoxelGIData::get_distance_field() const {
+	return RS::get_singleton()->voxel_gi_get_distance_field(probe);
 }
 
-Vector<int> GIProbeData::get_level_counts() const {
-	return RS::get_singleton()->gi_probe_get_level_counts(probe);
+Vector<int> VoxelGIData::get_level_counts() const {
+	return RS::get_singleton()->voxel_gi_get_level_counts(probe);
 }
 
-Transform3D GIProbeData::get_to_cell_xform() const {
+Transform3D VoxelGIData::get_to_cell_xform() const {
 	return to_cell_xform;
 }
 
-void GIProbeData::set_dynamic_range(float p_range) {
-	RS::get_singleton()->gi_probe_set_dynamic_range(probe, p_range);
+void VoxelGIData::set_dynamic_range(float p_range) {
+	RS::get_singleton()->voxel_gi_set_dynamic_range(probe, p_range);
 	dynamic_range = p_range;
 }
 
-float GIProbeData::get_dynamic_range() const {
+float VoxelGIData::get_dynamic_range() const {
 	return dynamic_range;
 }
 
-void GIProbeData::set_propagation(float p_propagation) {
-	RS::get_singleton()->gi_probe_set_propagation(probe, p_propagation);
+void VoxelGIData::set_propagation(float p_propagation) {
+	RS::get_singleton()->voxel_gi_set_propagation(probe, p_propagation);
 	propagation = p_propagation;
 }
 
-float GIProbeData::get_propagation() const {
+float VoxelGIData::get_propagation() const {
 	return propagation;
 }
 
-void GIProbeData::set_anisotropy_strength(float p_anisotropy_strength) {
-	RS::get_singleton()->gi_probe_set_anisotropy_strength(probe, p_anisotropy_strength);
+void VoxelGIData::set_anisotropy_strength(float p_anisotropy_strength) {
+	RS::get_singleton()->voxel_gi_set_anisotropy_strength(probe, p_anisotropy_strength);
 	anisotropy_strength = p_anisotropy_strength;
 }
 
-float GIProbeData::get_anisotropy_strength() const {
+float VoxelGIData::get_anisotropy_strength() const {
 	return anisotropy_strength;
 }
 
-void GIProbeData::set_energy(float p_energy) {
-	RS::get_singleton()->gi_probe_set_energy(probe, p_energy);
+void VoxelGIData::set_energy(float p_energy) {
+	RS::get_singleton()->voxel_gi_set_energy(probe, p_energy);
 	energy = p_energy;
 }
 
-float GIProbeData::get_energy() const {
+float VoxelGIData::get_energy() const {
 	return energy;
 }
 
-void GIProbeData::set_ao(float p_ao) {
-	RS::get_singleton()->gi_probe_set_ao(probe, p_ao);
+void VoxelGIData::set_ao(float p_ao) {
+	RS::get_singleton()->voxel_gi_set_ao(probe, p_ao);
 	ao = p_ao;
 }
 
-float GIProbeData::get_ao() const {
+float VoxelGIData::get_ao() const {
 	return ao;
 }
 
-void GIProbeData::set_ao_size(float p_ao_size) {
-	RS::get_singleton()->gi_probe_set_ao_size(probe, p_ao_size);
+void VoxelGIData::set_ao_size(float p_ao_size) {
+	RS::get_singleton()->voxel_gi_set_ao_size(probe, p_ao_size);
 	ao_size = p_ao_size;
 }
 
-float GIProbeData::get_ao_size() const {
+float VoxelGIData::get_ao_size() const {
 	return ao_size;
 }
 
-void GIProbeData::set_bias(float p_bias) {
-	RS::get_singleton()->gi_probe_set_bias(probe, p_bias);
+void VoxelGIData::set_bias(float p_bias) {
+	RS::get_singleton()->voxel_gi_set_bias(probe, p_bias);
 	bias = p_bias;
 }
 
-float GIProbeData::get_bias() const {
+float VoxelGIData::get_bias() const {
 	return bias;
 }
 
-void GIProbeData::set_normal_bias(float p_normal_bias) {
-	RS::get_singleton()->gi_probe_set_normal_bias(probe, p_normal_bias);
+void VoxelGIData::set_normal_bias(float p_normal_bias) {
+	RS::get_singleton()->voxel_gi_set_normal_bias(probe, p_normal_bias);
 	normal_bias = p_normal_bias;
 }
 
-float GIProbeData::get_normal_bias() const {
+float VoxelGIData::get_normal_bias() const {
 	return normal_bias;
 }
 
-void GIProbeData::set_interior(bool p_enable) {
-	RS::get_singleton()->gi_probe_set_interior(probe, p_enable);
+void VoxelGIData::set_interior(bool p_enable) {
+	RS::get_singleton()->voxel_gi_set_interior(probe, p_enable);
 	interior = p_enable;
 }
 
-bool GIProbeData::is_interior() const {
+bool VoxelGIData::is_interior() const {
 	return interior;
 }
 
-void GIProbeData::set_use_two_bounces(bool p_enable) {
-	RS::get_singleton()->gi_probe_set_use_two_bounces(probe, p_enable);
+void VoxelGIData::set_use_two_bounces(bool p_enable) {
+	RS::get_singleton()->voxel_gi_set_use_two_bounces(probe, p_enable);
 	use_two_bounces = p_enable;
 }
 
-bool GIProbeData::is_using_two_bounces() const {
+bool VoxelGIData::is_using_two_bounces() const {
 	return use_two_bounces;
 }
 
-RID GIProbeData::get_rid() const {
+RID VoxelGIData::get_rid() const {
 	return probe;
 }
 
-void GIProbeData::_validate_property(PropertyInfo &property) const {
+void VoxelGIData::_validate_property(PropertyInfo &property) const {
 	if (property.name == "anisotropy_strength") {
-		bool anisotropy_enabled = ProjectSettings::get_singleton()->get("rendering/global_illumination/gi_probes/anisotropic");
+		bool anisotropy_enabled = ProjectSettings::get_singleton()->get("rendering/global_illumination/voxel_gi/anisotropic");
 		if (!anisotropy_enabled) {
 			property.usage = PROPERTY_USAGE_NOEDITOR;
 		}
 	}
 }
 
-void GIProbeData::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("allocate", "to_cell_xform", "aabb", "octree_size", "octree_cells", "data_cells", "distance_field", "level_counts"), &GIProbeData::allocate);
+void VoxelGIData::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("allocate", "to_cell_xform", "aabb", "octree_size", "octree_cells", "data_cells", "distance_field", "level_counts"), &VoxelGIData::allocate);
 
-	ClassDB::bind_method(D_METHOD("get_bounds"), &GIProbeData::get_bounds);
-	ClassDB::bind_method(D_METHOD("get_octree_size"), &GIProbeData::get_octree_size);
-	ClassDB::bind_method(D_METHOD("get_to_cell_xform"), &GIProbeData::get_to_cell_xform);
-	ClassDB::bind_method(D_METHOD("get_octree_cells"), &GIProbeData::get_octree_cells);
-	ClassDB::bind_method(D_METHOD("get_data_cells"), &GIProbeData::get_data_cells);
-	ClassDB::bind_method(D_METHOD("get_level_counts"), &GIProbeData::get_level_counts);
+	ClassDB::bind_method(D_METHOD("get_bounds"), &VoxelGIData::get_bounds);
+	ClassDB::bind_method(D_METHOD("get_octree_size"), &VoxelGIData::get_octree_size);
+	ClassDB::bind_method(D_METHOD("get_to_cell_xform"), &VoxelGIData::get_to_cell_xform);
+	ClassDB::bind_method(D_METHOD("get_octree_cells"), &VoxelGIData::get_octree_cells);
+	ClassDB::bind_method(D_METHOD("get_data_cells"), &VoxelGIData::get_data_cells);
+	ClassDB::bind_method(D_METHOD("get_level_counts"), &VoxelGIData::get_level_counts);
 
-	ClassDB::bind_method(D_METHOD("set_dynamic_range", "dynamic_range"), &GIProbeData::set_dynamic_range);
-	ClassDB::bind_method(D_METHOD("get_dynamic_range"), &GIProbeData::get_dynamic_range);
+	ClassDB::bind_method(D_METHOD("set_dynamic_range", "dynamic_range"), &VoxelGIData::set_dynamic_range);
+	ClassDB::bind_method(D_METHOD("get_dynamic_range"), &VoxelGIData::get_dynamic_range);
 
-	ClassDB::bind_method(D_METHOD("set_energy", "energy"), &GIProbeData::set_energy);
-	ClassDB::bind_method(D_METHOD("get_energy"), &GIProbeData::get_energy);
+	ClassDB::bind_method(D_METHOD("set_energy", "energy"), &VoxelGIData::set_energy);
+	ClassDB::bind_method(D_METHOD("get_energy"), &VoxelGIData::get_energy);
 
-	ClassDB::bind_method(D_METHOD("set_bias", "bias"), &GIProbeData::set_bias);
-	ClassDB::bind_method(D_METHOD("get_bias"), &GIProbeData::get_bias);
+	ClassDB::bind_method(D_METHOD("set_bias", "bias"), &VoxelGIData::set_bias);
+	ClassDB::bind_method(D_METHOD("get_bias"), &VoxelGIData::get_bias);
 
-	ClassDB::bind_method(D_METHOD("set_normal_bias", "bias"), &GIProbeData::set_normal_bias);
-	ClassDB::bind_method(D_METHOD("get_normal_bias"), &GIProbeData::get_normal_bias);
+	ClassDB::bind_method(D_METHOD("set_normal_bias", "bias"), &VoxelGIData::set_normal_bias);
+	ClassDB::bind_method(D_METHOD("get_normal_bias"), &VoxelGIData::get_normal_bias);
 
-	ClassDB::bind_method(D_METHOD("set_propagation", "propagation"), &GIProbeData::set_propagation);
-	ClassDB::bind_method(D_METHOD("get_propagation"), &GIProbeData::get_propagation);
+	ClassDB::bind_method(D_METHOD("set_propagation", "propagation"), &VoxelGIData::set_propagation);
+	ClassDB::bind_method(D_METHOD("get_propagation"), &VoxelGIData::get_propagation);
 
-	ClassDB::bind_method(D_METHOD("set_anisotropy_strength", "strength"), &GIProbeData::set_anisotropy_strength);
-	ClassDB::bind_method(D_METHOD("get_anisotropy_strength"), &GIProbeData::get_anisotropy_strength);
+	ClassDB::bind_method(D_METHOD("set_anisotropy_strength", "strength"), &VoxelGIData::set_anisotropy_strength);
+	ClassDB::bind_method(D_METHOD("get_anisotropy_strength"), &VoxelGIData::get_anisotropy_strength);
 
-	ClassDB::bind_method(D_METHOD("set_ao", "ao"), &GIProbeData::set_ao);
-	ClassDB::bind_method(D_METHOD("get_ao"), &GIProbeData::get_ao);
+	ClassDB::bind_method(D_METHOD("set_ao", "ao"), &VoxelGIData::set_ao);
+	ClassDB::bind_method(D_METHOD("get_ao"), &VoxelGIData::get_ao);
 
-	ClassDB::bind_method(D_METHOD("set_ao_size", "strength"), &GIProbeData::set_ao_size);
-	ClassDB::bind_method(D_METHOD("get_ao_size"), &GIProbeData::get_ao_size);
+	ClassDB::bind_method(D_METHOD("set_ao_size", "strength"), &VoxelGIData::set_ao_size);
+	ClassDB::bind_method(D_METHOD("get_ao_size"), &VoxelGIData::get_ao_size);
 
-	ClassDB::bind_method(D_METHOD("set_interior", "interior"), &GIProbeData::set_interior);
-	ClassDB::bind_method(D_METHOD("is_interior"), &GIProbeData::is_interior);
+	ClassDB::bind_method(D_METHOD("set_interior", "interior"), &VoxelGIData::set_interior);
+	ClassDB::bind_method(D_METHOD("is_interior"), &VoxelGIData::is_interior);
 
-	ClassDB::bind_method(D_METHOD("set_use_two_bounces", "enable"), &GIProbeData::set_use_two_bounces);
-	ClassDB::bind_method(D_METHOD("is_using_two_bounces"), &GIProbeData::is_using_two_bounces);
+	ClassDB::bind_method(D_METHOD("set_use_two_bounces", "enable"), &VoxelGIData::set_use_two_bounces);
+	ClassDB::bind_method(D_METHOD("is_using_two_bounces"), &VoxelGIData::is_using_two_bounces);
 
-	ClassDB::bind_method(D_METHOD("_set_data", "data"), &GIProbeData::_set_data);
-	ClassDB::bind_method(D_METHOD("_get_data"), &GIProbeData::_get_data);
+	ClassDB::bind_method(D_METHOD("_set_data", "data"), &VoxelGIData::_set_data);
+	ClassDB::bind_method(D_METHOD("_get_data"), &VoxelGIData::_get_data);
 
 	ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY, "_data", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL), "_set_data", "_get_data");
 
@@ -285,18 +285,18 @@ void GIProbeData::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "interior"), "set_interior", "is_interior");
 }
 
-GIProbeData::GIProbeData() {
-	probe = RS::get_singleton()->gi_probe_create();
+VoxelGIData::VoxelGIData() {
+	probe = RS::get_singleton()->voxel_gi_create();
 }
 
-GIProbeData::~GIProbeData() {
+VoxelGIData::~VoxelGIData() {
 	RS::get_singleton()->free(probe);
 }
 
 //////////////////////
 //////////////////////
 
-void GIProbe::set_probe_data(const Ref<GIProbeData> &p_data) {
+void VoxelGI::set_probe_data(const Ref<VoxelGIData> &p_data) {
 	if (p_data.is_valid()) {
 		RS::get_singleton()->instance_set_base(get_instance(), p_data->get_rid());
 	} else {
@@ -306,30 +306,30 @@ void GIProbe::set_probe_data(const Ref<GIProbeData> &p_data) {
 	probe_data = p_data;
 }
 
-Ref<GIProbeData> GIProbe::get_probe_data() const {
+Ref<VoxelGIData> VoxelGI::get_probe_data() const {
 	return probe_data;
 }
 
-void GIProbe::set_subdiv(Subdiv p_subdiv) {
+void VoxelGI::set_subdiv(Subdiv p_subdiv) {
 	ERR_FAIL_INDEX(p_subdiv, SUBDIV_MAX);
 	subdiv = p_subdiv;
 	update_gizmo();
 }
 
-GIProbe::Subdiv GIProbe::get_subdiv() const {
+VoxelGI::Subdiv VoxelGI::get_subdiv() const {
 	return subdiv;
 }
 
-void GIProbe::set_extents(const Vector3 &p_extents) {
+void VoxelGI::set_extents(const Vector3 &p_extents) {
 	extents = p_extents;
 	update_gizmo();
 }
 
-Vector3 GIProbe::get_extents() const {
+Vector3 VoxelGI::get_extents() const {
 	return extents;
 }
 
-void GIProbe::_find_meshes(Node *p_at_node, List<PlotMesh> &plot_meshes) {
+void VoxelGI::_find_meshes(Node *p_at_node, List<PlotMesh> &plot_meshes) {
 	MeshInstance3D *mi = Object::cast_to<MeshInstance3D>(p_at_node);
 	if (mi && mi->get_gi_mode() == GeometryInstance3D::GI_MODE_BAKED && mi->is_visible_in_tree()) {
 		Ref<Mesh> mesh = mi->get_mesh();
@@ -382,11 +382,11 @@ void GIProbe::_find_meshes(Node *p_at_node, List<PlotMesh> &plot_meshes) {
 	}
 }
 
-GIProbe::BakeBeginFunc GIProbe::bake_begin_function = nullptr;
-GIProbe::BakeStepFunc GIProbe::bake_step_function = nullptr;
-GIProbe::BakeEndFunc GIProbe::bake_end_function = nullptr;
+VoxelGI::BakeBeginFunc VoxelGI::bake_begin_function = nullptr;
+VoxelGI::BakeStepFunc VoxelGI::bake_step_function = nullptr;
+VoxelGI::BakeEndFunc VoxelGI::bake_end_function = nullptr;
 
-Vector3i GIProbe::get_estimated_cell_size() const {
+Vector3i VoxelGI::get_estimated_cell_size() const {
 	static const int subdiv_value[SUBDIV_MAX] = { 6, 7, 8, 9 };
 	int cell_subdiv = subdiv_value[subdiv];
 	int axis_cell_size[3];
@@ -412,7 +412,7 @@ Vector3i GIProbe::get_estimated_cell_size() const {
 	return Vector3i(axis_cell_size[0], axis_cell_size[1], axis_cell_size[2]);
 }
 
-void GIProbe::bake(Node *p_from_node, bool p_create_visual_debug) {
+void VoxelGI::bake(Node *p_from_node, bool p_create_visual_debug) {
 	static const int subdiv_value[SUBDIV_MAX] = { 6, 7, 8, 9 };
 
 	p_from_node = p_from_node ? p_from_node : get_parent();
@@ -464,7 +464,7 @@ void GIProbe::bake(Node *p_from_node, bool p_create_visual_debug) {
 #endif
 
 	} else {
-		Ref<GIProbeData> probe_data = get_probe_data();
+		Ref<VoxelGIData> probe_data = get_probe_data();
 
 		if (probe_data.is_null()) {
 			probe_data.instance();
@@ -476,7 +476,7 @@ void GIProbe::bake(Node *p_from_node, bool p_create_visual_debug) {
 
 		Vector<uint8_t> df = baker.get_sdf_3d_image();
 
-		probe_data->allocate(baker.get_to_cell_space_xform(), AABB(-extents, extents * 2.0), baker.get_giprobe_octree_size(), baker.get_giprobe_octree_cells(), baker.get_giprobe_data_cells(), df, baker.get_giprobe_level_cell_count());
+		probe_data->allocate(baker.get_to_cell_space_xform(), AABB(-extents, extents * 2.0), baker.get_voxel_gi_octree_size(), baker.get_voxel_gi_octree_cells(), baker.get_voxel_gi_data_cells(), df, baker.get_voxel_gi_level_cell_count());
 
 		set_probe_data(probe_data);
 #ifdef TOOLS_ENABLED
@@ -491,46 +491,46 @@ void GIProbe::bake(Node *p_from_node, bool p_create_visual_debug) {
 	notify_property_list_changed(); //bake property may have changed
 }
 
-void GIProbe::_debug_bake() {
+void VoxelGI::_debug_bake() {
 	bake(nullptr, true);
 }
 
-AABB GIProbe::get_aabb() const {
+AABB VoxelGI::get_aabb() const {
 	return AABB(-extents, extents * 2);
 }
 
-Vector<Face3> GIProbe::get_faces(uint32_t p_usage_flags) const {
+Vector<Face3> VoxelGI::get_faces(uint32_t p_usage_flags) const {
 	return Vector<Face3>();
 }
 
-TypedArray<String> GIProbe::get_configuration_warnings() const {
+TypedArray<String> VoxelGI::get_configuration_warnings() const {
 	TypedArray<String> warnings = Node::get_configuration_warnings();
 
 	if (RenderingServer::get_singleton()->is_low_end()) {
-		warnings.push_back(TTR("GIProbes are not supported by the GLES2 video driver.\nUse a BakedLightmap instead."));
+		warnings.push_back(TTR("VoxelGIs are not supported by the GLES2 video driver.\nUse a LightmapGI instead."));
 	} else if (probe_data.is_null()) {
-		warnings.push_back(TTR("No GIProbe data set, so this node is disabled. Bake static objects to enable GI."));
+		warnings.push_back(TTR("No VoxelGI data set, so this node is disabled. Bake static objects to enable GI."));
 	}
 	return warnings;
 }
 
-void GIProbe::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("set_probe_data", "data"), &GIProbe::set_probe_data);
-	ClassDB::bind_method(D_METHOD("get_probe_data"), &GIProbe::get_probe_data);
+void VoxelGI::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("set_probe_data", "data"), &VoxelGI::set_probe_data);
+	ClassDB::bind_method(D_METHOD("get_probe_data"), &VoxelGI::get_probe_data);
 
-	ClassDB::bind_method(D_METHOD("set_subdiv", "subdiv"), &GIProbe::set_subdiv);
-	ClassDB::bind_method(D_METHOD("get_subdiv"), &GIProbe::get_subdiv);
+	ClassDB::bind_method(D_METHOD("set_subdiv", "subdiv"), &VoxelGI::set_subdiv);
+	ClassDB::bind_method(D_METHOD("get_subdiv"), &VoxelGI::get_subdiv);
 
-	ClassDB::bind_method(D_METHOD("set_extents", "extents"), &GIProbe::set_extents);
-	ClassDB::bind_method(D_METHOD("get_extents"), &GIProbe::get_extents);
+	ClassDB::bind_method(D_METHOD("set_extents", "extents"), &VoxelGI::set_extents);
+	ClassDB::bind_method(D_METHOD("get_extents"), &VoxelGI::get_extents);
 
-	ClassDB::bind_method(D_METHOD("bake", "from_node", "create_visual_debug"), &GIProbe::bake, DEFVAL(Variant()), DEFVAL(false));
-	ClassDB::bind_method(D_METHOD("debug_bake"), &GIProbe::_debug_bake);
+	ClassDB::bind_method(D_METHOD("bake", "from_node", "create_visual_debug"), &VoxelGI::bake, DEFVAL(Variant()), DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("debug_bake"), &VoxelGI::_debug_bake);
 	ClassDB::set_method_flags(get_class_static(), _scs_create("debug_bake"), METHOD_FLAGS_DEFAULT | METHOD_FLAG_EDITOR);
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "subdiv", PROPERTY_HINT_ENUM, "64,128,256,512"), "set_subdiv", "get_subdiv");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "extents"), "set_extents", "get_extents");
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "data", PROPERTY_HINT_RESOURCE_TYPE, "GIProbeData", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_DO_NOT_SHARE_ON_DUPLICATE), "set_probe_data", "get_probe_data");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "data", PROPERTY_HINT_RESOURCE_TYPE, "VoxelGIData", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_DO_NOT_SHARE_ON_DUPLICATE), "set_probe_data", "get_probe_data");
 
 	BIND_ENUM_CONSTANT(SUBDIV_64);
 	BIND_ENUM_CONSTANT(SUBDIV_128);
@@ -539,11 +539,11 @@ void GIProbe::_bind_methods() {
 	BIND_ENUM_CONSTANT(SUBDIV_MAX);
 }
 
-GIProbe::GIProbe() {
-	gi_probe = RS::get_singleton()->gi_probe_create();
+VoxelGI::VoxelGI() {
+	voxel_gi = RS::get_singleton()->voxel_gi_create();
 	set_disable_scale(true);
 }
 
-GIProbe::~GIProbe() {
-	RS::get_singleton()->free(gi_probe);
+VoxelGI::~VoxelGI() {
+	RS::get_singleton()->free(voxel_gi);
 }

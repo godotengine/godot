@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  baked_lightmap.cpp                                                   */
+/*  lightmap_gi.cpp                                                      */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,7 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "baked_lightmap.h"
+#include "lightmap_gi.h"
 
 #include "core/io/config_file.h"
 #include "core/io/resource_saver.h"
@@ -40,7 +40,7 @@
 #include "core/templates/sort_array.h"
 #include "lightmap_probe.h"
 
-void BakedLightmapData::add_user(const NodePath &p_path, const Rect2 &p_uv_scale, int p_slice_index, int32_t p_sub_instance) {
+void LightmapGIData::add_user(const NodePath &p_path, const Rect2 &p_uv_scale, int p_slice_index, int32_t p_sub_instance) {
 	User user;
 	user.path = p_path;
 	user.uv_scale = p_uv_scale;
@@ -49,35 +49,35 @@ void BakedLightmapData::add_user(const NodePath &p_path, const Rect2 &p_uv_scale
 	users.push_back(user);
 }
 
-int BakedLightmapData::get_user_count() const {
+int LightmapGIData::get_user_count() const {
 	return users.size();
 }
 
-NodePath BakedLightmapData::get_user_path(int p_user) const {
+NodePath LightmapGIData::get_user_path(int p_user) const {
 	ERR_FAIL_INDEX_V(p_user, users.size(), NodePath());
 	return users[p_user].path;
 }
 
-int32_t BakedLightmapData::get_user_sub_instance(int p_user) const {
+int32_t LightmapGIData::get_user_sub_instance(int p_user) const {
 	ERR_FAIL_INDEX_V(p_user, users.size(), -1);
 	return users[p_user].sub_instance;
 }
 
-Rect2 BakedLightmapData::get_user_lightmap_uv_scale(int p_user) const {
+Rect2 LightmapGIData::get_user_lightmap_uv_scale(int p_user) const {
 	ERR_FAIL_INDEX_V(p_user, users.size(), Rect2());
 	return users[p_user].uv_scale;
 }
 
-int BakedLightmapData::get_user_lightmap_slice_index(int p_user) const {
+int LightmapGIData::get_user_lightmap_slice_index(int p_user) const {
 	ERR_FAIL_INDEX_V(p_user, users.size(), -1);
 	return users[p_user].slice_index;
 }
 
-void BakedLightmapData::clear_users() {
+void LightmapGIData::clear_users() {
 	users.clear();
 }
 
-void BakedLightmapData::_set_user_data(const Array &p_data) {
+void LightmapGIData::_set_user_data(const Array &p_data) {
 	ERR_FAIL_COND(p_data.size() <= 0);
 	ERR_FAIL_COND((p_data.size() % 4) != 0);
 
@@ -86,7 +86,7 @@ void BakedLightmapData::_set_user_data(const Array &p_data) {
 	}
 }
 
-Array BakedLightmapData::_get_user_data() const {
+Array LightmapGIData::_get_user_data() const {
 	Array ret;
 	for (int i = 0; i < users.size(); i++) {
 		ret.push_back(users[i].path);
@@ -97,33 +97,33 @@ Array BakedLightmapData::_get_user_data() const {
 	return ret;
 }
 
-RID BakedLightmapData::get_rid() const {
+RID LightmapGIData::get_rid() const {
 	return lightmap;
 }
 
-void BakedLightmapData::clear() {
+void LightmapGIData::clear() {
 	users.clear();
 }
 
-void BakedLightmapData::set_light_texture(const Ref<TextureLayered> &p_light_texture) {
+void LightmapGIData::set_light_texture(const Ref<TextureLayered> &p_light_texture) {
 	light_texture = p_light_texture;
 	RS::get_singleton()->lightmap_set_textures(lightmap, light_texture.is_valid() ? light_texture->get_rid() : RID(), uses_spherical_harmonics);
 }
 
-Ref<TextureLayered> BakedLightmapData::get_light_texture() const {
+Ref<TextureLayered> LightmapGIData::get_light_texture() const {
 	return light_texture;
 }
 
-void BakedLightmapData::set_uses_spherical_harmonics(bool p_enable) {
+void LightmapGIData::set_uses_spherical_harmonics(bool p_enable) {
 	uses_spherical_harmonics = p_enable;
 	RS::get_singleton()->lightmap_set_textures(lightmap, light_texture.is_valid() ? light_texture->get_rid() : RID(), uses_spherical_harmonics);
 }
 
-bool BakedLightmapData::is_using_spherical_harmonics() const {
+bool LightmapGIData::is_using_spherical_harmonics() const {
 	return uses_spherical_harmonics;
 }
 
-void BakedLightmapData::set_capture_data(const AABB &p_bounds, bool p_interior, const PackedVector3Array &p_points, const PackedColorArray &p_point_sh, const PackedInt32Array &p_tetrahedra, const PackedInt32Array &p_bsp_tree) {
+void LightmapGIData::set_capture_data(const AABB &p_bounds, bool p_interior, const PackedVector3Array &p_points, const PackedColorArray &p_point_sh, const PackedInt32Array &p_tetrahedra, const PackedInt32Array &p_bsp_tree) {
 	if (p_points.size()) {
 		int pc = p_points.size();
 		ERR_FAIL_COND(pc * 9 != p_point_sh.size());
@@ -141,31 +141,31 @@ void BakedLightmapData::set_capture_data(const AABB &p_bounds, bool p_interior, 
 	bounds = p_bounds;
 }
 
-PackedVector3Array BakedLightmapData::get_capture_points() const {
+PackedVector3Array LightmapGIData::get_capture_points() const {
 	return RS::get_singleton()->lightmap_get_probe_capture_points(lightmap);
 }
 
-PackedColorArray BakedLightmapData::get_capture_sh() const {
+PackedColorArray LightmapGIData::get_capture_sh() const {
 	return RS::get_singleton()->lightmap_get_probe_capture_sh(lightmap);
 }
 
-PackedInt32Array BakedLightmapData::get_capture_tetrahedra() const {
+PackedInt32Array LightmapGIData::get_capture_tetrahedra() const {
 	return RS::get_singleton()->lightmap_get_probe_capture_tetrahedra(lightmap);
 }
 
-PackedInt32Array BakedLightmapData::get_capture_bsp_tree() const {
+PackedInt32Array LightmapGIData::get_capture_bsp_tree() const {
 	return RS::get_singleton()->lightmap_get_probe_capture_bsp_tree(lightmap);
 }
 
-AABB BakedLightmapData::get_capture_bounds() const {
+AABB LightmapGIData::get_capture_bounds() const {
 	return bounds;
 }
 
-bool BakedLightmapData::is_interior() const {
+bool LightmapGIData::is_interior() const {
 	return interior;
 }
 
-void BakedLightmapData::_set_probe_data(const Dictionary &p_data) {
+void LightmapGIData::_set_probe_data(const Dictionary &p_data) {
 	ERR_FAIL_COND(!p_data.has("bounds"));
 	ERR_FAIL_COND(!p_data.has("points"));
 	ERR_FAIL_COND(!p_data.has("tetrahedra"));
@@ -175,7 +175,7 @@ void BakedLightmapData::_set_probe_data(const Dictionary &p_data) {
 	set_capture_data(p_data["bounds"], p_data["interior"], p_data["points"], p_data["sh"], p_data["tetrahedra"], p_data["bsp"]);
 }
 
-Dictionary BakedLightmapData::_get_probe_data() const {
+Dictionary LightmapGIData::_get_probe_data() const {
 	Dictionary d;
 	d["bounds"] = get_capture_bounds();
 	d["points"] = get_capture_points();
@@ -186,23 +186,23 @@ Dictionary BakedLightmapData::_get_probe_data() const {
 	return d;
 }
 
-void BakedLightmapData::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("_set_user_data", "data"), &BakedLightmapData::_set_user_data);
-	ClassDB::bind_method(D_METHOD("_get_user_data"), &BakedLightmapData::_get_user_data);
+void LightmapGIData::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("_set_user_data", "data"), &LightmapGIData::_set_user_data);
+	ClassDB::bind_method(D_METHOD("_get_user_data"), &LightmapGIData::_get_user_data);
 
-	ClassDB::bind_method(D_METHOD("set_light_texture", "light_texture"), &BakedLightmapData::set_light_texture);
-	ClassDB::bind_method(D_METHOD("get_light_texture"), &BakedLightmapData::get_light_texture);
+	ClassDB::bind_method(D_METHOD("set_light_texture", "light_texture"), &LightmapGIData::set_light_texture);
+	ClassDB::bind_method(D_METHOD("get_light_texture"), &LightmapGIData::get_light_texture);
 
-	ClassDB::bind_method(D_METHOD("set_uses_spherical_harmonics", "uses_spherical_harmonics"), &BakedLightmapData::set_uses_spherical_harmonics);
-	ClassDB::bind_method(D_METHOD("is_using_spherical_harmonics"), &BakedLightmapData::is_using_spherical_harmonics);
+	ClassDB::bind_method(D_METHOD("set_uses_spherical_harmonics", "uses_spherical_harmonics"), &LightmapGIData::set_uses_spherical_harmonics);
+	ClassDB::bind_method(D_METHOD("is_using_spherical_harmonics"), &LightmapGIData::is_using_spherical_harmonics);
 
-	ClassDB::bind_method(D_METHOD("add_user", "path", "uv_scale", "slice_index", "sub_instance"), &BakedLightmapData::add_user);
-	ClassDB::bind_method(D_METHOD("get_user_count"), &BakedLightmapData::get_user_count);
-	ClassDB::bind_method(D_METHOD("get_user_path", "user_idx"), &BakedLightmapData::get_user_path);
-	ClassDB::bind_method(D_METHOD("clear_users"), &BakedLightmapData::clear_users);
+	ClassDB::bind_method(D_METHOD("add_user", "path", "uv_scale", "slice_index", "sub_instance"), &LightmapGIData::add_user);
+	ClassDB::bind_method(D_METHOD("get_user_count"), &LightmapGIData::get_user_count);
+	ClassDB::bind_method(D_METHOD("get_user_path", "user_idx"), &LightmapGIData::get_user_path);
+	ClassDB::bind_method(D_METHOD("clear_users"), &LightmapGIData::clear_users);
 
-	ClassDB::bind_method(D_METHOD("_set_probe_data", "data"), &BakedLightmapData::_set_probe_data);
-	ClassDB::bind_method(D_METHOD("_get_probe_data"), &BakedLightmapData::_get_probe_data);
+	ClassDB::bind_method(D_METHOD("_set_probe_data", "data"), &LightmapGIData::_set_probe_data);
+	ClassDB::bind_method(D_METHOD("_get_probe_data"), &LightmapGIData::_get_probe_data);
 
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "light_texture", PROPERTY_HINT_RESOURCE_TYPE, "TextureLayered"), "set_light_texture", "get_light_texture");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "uses_spherical_harmonics", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL), "set_uses_spherical_harmonics", "is_using_spherical_harmonics");
@@ -210,17 +210,17 @@ void BakedLightmapData::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY, "probe_data", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL), "_set_probe_data", "_get_probe_data");
 }
 
-BakedLightmapData::BakedLightmapData() {
+LightmapGIData::LightmapGIData() {
 	lightmap = RS::get_singleton()->lightmap_create();
 }
 
-BakedLightmapData::~BakedLightmapData() {
+LightmapGIData::~LightmapGIData() {
 	RS::get_singleton()->free(lightmap);
 }
 
 ///////////////////////////
 
-void BakedLightmap::_find_meshes_and_lights(Node *p_at_node, Vector<MeshesFound> &meshes, Vector<LightsFound> &lights, Vector<Vector3> &probes) {
+void LightmapGI::_find_meshes_and_lights(Node *p_at_node, Vector<MeshesFound> &meshes, Vector<LightsFound> &lights, Vector<Vector3> &probes) {
 	MeshInstance3D *mi = Object::cast_to<MeshInstance3D>(p_at_node);
 	if (mi && mi->get_gi_mode() == GeometryInstance3D::GI_MODE_BAKED && mi->is_visible_in_tree()) {
 		Ref<Mesh> mesh = mi->get_mesh();
@@ -320,7 +320,7 @@ void BakedLightmap::_find_meshes_and_lights(Node *p_at_node, Vector<MeshesFound>
 	}
 }
 
-int BakedLightmap::_bsp_get_simplex_side(const Vector<Vector3> &p_points, const LocalVector<BSPSimplex> &p_simplices, const Plane &p_plane, uint32_t p_simplex) const {
+int LightmapGI::_bsp_get_simplex_side(const Vector<Vector3> &p_points, const LocalVector<BSPSimplex> &p_simplices, const Plane &p_plane, uint32_t p_simplex) const {
 	int over = 0;
 	int under = 0;
 	int coplanar = 0;
@@ -348,7 +348,7 @@ int BakedLightmap::_bsp_get_simplex_side(const Vector<Vector3> &p_points, const 
 
 //#define DEBUG_BSP
 
-int32_t BakedLightmap::_compute_bsp_tree(const Vector<Vector3> &p_points, const LocalVector<Plane> &p_planes, LocalVector<int32_t> &planes_tested, const LocalVector<BSPSimplex> &p_simplices, const LocalVector<int32_t> &p_simplex_indices, LocalVector<BSPNode> &bsp_nodes) {
+int32_t LightmapGI::_compute_bsp_tree(const Vector<Vector3> &p_points, const LocalVector<Plane> &p_planes, LocalVector<int32_t> &planes_tested, const LocalVector<BSPSimplex> &p_simplices, const LocalVector<int32_t> &p_simplex_indices, LocalVector<BSPNode> &bsp_nodes) {
 	//if we reach here, it means there is more than one simplex
 	int32_t node_index = (int32_t)bsp_nodes.size();
 	bsp_nodes.push_back(BSPNode());
@@ -533,7 +533,7 @@ int32_t BakedLightmap::_compute_bsp_tree(const Vector<Vector3> &p_points, const 
 	return node_index;
 }
 
-bool BakedLightmap::_lightmap_bake_step_function(float p_completion, const String &p_text, void *ud, bool p_refresh) {
+bool LightmapGI::_lightmap_bake_step_function(float p_completion, const String &p_text, void *ud, bool p_refresh) {
 	BakeStepUD *bsud = (BakeStepUD *)ud;
 	bool ret = false;
 	if (bsud->func) {
@@ -542,7 +542,7 @@ bool BakedLightmap::_lightmap_bake_step_function(float p_completion, const Strin
 	return ret;
 }
 
-void BakedLightmap::_plot_triangle_into_octree(GenProbesOctree *p_cell, float p_cell_size, const Vector3 *p_triangle) {
+void LightmapGI::_plot_triangle_into_octree(GenProbesOctree *p_cell, float p_cell_size, const Vector3 *p_triangle) {
 	for (int i = 0; i < 8; i++) {
 		Vector3i pos = p_cell->offset;
 		uint32_t half_size = p_cell->size / 2;
@@ -578,7 +578,7 @@ void BakedLightmap::_plot_triangle_into_octree(GenProbesOctree *p_cell, float p_
 	}
 }
 
-void BakedLightmap::_gen_new_positions_from_octree(const GenProbesOctree *p_cell, float p_cell_size, const Vector<Vector3> &probe_positions, LocalVector<Vector3> &new_probe_positions, HashMap<Vector3i, bool, Vector3iHash> &positions_used, const AABB &p_bounds) {
+void LightmapGI::_gen_new_positions_from_octree(const GenProbesOctree *p_cell, float p_cell_size, const Vector<Vector3> &probe_positions, LocalVector<Vector3> &new_probe_positions, HashMap<Vector3i, bool, Vector3iHash> &positions_used, const AABB &p_bounds) {
 	for (int i = 0; i < 8; i++) {
 		Vector3i pos = p_cell->offset;
 		if (i & 1) {
@@ -618,7 +618,7 @@ void BakedLightmap::_gen_new_positions_from_octree(const GenProbesOctree *p_cell
 	}
 }
 
-BakedLightmap::BakeError BakedLightmap::bake(Node *p_from_node, String p_image_data_path, Lightmapper::BakeStepFunc p_bake_step, void *p_bake_userdata) {
+LightmapGI::BakeError LightmapGI::bake(Node *p_from_node, String p_image_data_path, Lightmapper::BakeStepFunc p_bake_step, void *p_bake_userdata) {
 	if (p_image_data_path == "") {
 		if (get_light_data().is_null()) {
 			return BAKE_ERROR_NO_SAVE_PATH;
@@ -1011,10 +1011,10 @@ BakedLightmap::BakeError BakedLightmap::bake(Node *p_from_node, String p_image_d
 
 	/* POSTBAKE: Save Light Data */
 
-	Ref<BakedLightmapData> data;
+	Ref<LightmapGIData> data;
 	if (get_light_data().is_valid()) {
 		data = get_light_data();
-		set_light_data(Ref<BakedLightmapData>()); //clear
+		set_light_data(Ref<LightmapGIData>()); //clear
 		data->clear();
 	} else {
 		data.instance();
@@ -1183,7 +1183,7 @@ BakedLightmap::BakeError BakedLightmap::bake(Node *p_from_node, String p_image_d
 	return BAKE_ERROR_OK;
 }
 
-void BakedLightmap::_notification(int p_what) {
+void LightmapGI::_notification(int p_what) {
 	if (p_what == NOTIFICATION_POST_ENTER_TREE) {
 		if (light_data.is_valid()) {
 			_assign_lightmaps();
@@ -1197,7 +1197,7 @@ void BakedLightmap::_notification(int p_what) {
 	}
 }
 
-void BakedLightmap::_assign_lightmaps() {
+void LightmapGI::_assign_lightmaps() {
 	ERR_FAIL_COND(!light_data.is_valid());
 
 	for (int i = 0; i < light_data->get_user_count(); i++) {
@@ -1216,7 +1216,7 @@ void BakedLightmap::_assign_lightmaps() {
 	}
 }
 
-void BakedLightmap::_clear_lightmaps() {
+void LightmapGI::_clear_lightmaps() {
 	ERR_FAIL_COND(!light_data.is_valid());
 	for (int i = 0; i < light_data->get_user_count(); i++) {
 		Node *node = get_node(light_data->get_user_path(i));
@@ -1234,7 +1234,7 @@ void BakedLightmap::_clear_lightmaps() {
 	}
 }
 
-void BakedLightmap::set_light_data(const Ref<BakedLightmapData> &p_data) {
+void LightmapGI::set_light_data(const Ref<LightmapGIData> &p_data) {
 	if (light_data.is_valid()) {
 		if (is_inside_tree()) {
 			_clear_lightmaps();
@@ -1253,119 +1253,119 @@ void BakedLightmap::set_light_data(const Ref<BakedLightmapData> &p_data) {
 	update_gizmo();
 }
 
-Ref<BakedLightmapData> BakedLightmap::get_light_data() const {
+Ref<LightmapGIData> LightmapGI::get_light_data() const {
 	return light_data;
 }
 
-void BakedLightmap::set_bake_quality(BakeQuality p_quality) {
+void LightmapGI::set_bake_quality(BakeQuality p_quality) {
 	bake_quality = p_quality;
 }
 
-BakedLightmap::BakeQuality BakedLightmap::get_bake_quality() const {
+LightmapGI::BakeQuality LightmapGI::get_bake_quality() const {
 	return bake_quality;
 }
 
-AABB BakedLightmap::get_aabb() const {
+AABB LightmapGI::get_aabb() const {
 	return AABB();
 }
 
-Vector<Face3> BakedLightmap::get_faces(uint32_t p_usage_flags) const {
+Vector<Face3> LightmapGI::get_faces(uint32_t p_usage_flags) const {
 	return Vector<Face3>();
 }
 
-void BakedLightmap::set_use_denoiser(bool p_enable) {
+void LightmapGI::set_use_denoiser(bool p_enable) {
 	use_denoiser = p_enable;
 }
 
-bool BakedLightmap::is_using_denoiser() const {
+bool LightmapGI::is_using_denoiser() const {
 	return use_denoiser;
 }
 
-void BakedLightmap::set_directional(bool p_enable) {
+void LightmapGI::set_directional(bool p_enable) {
 	directional = p_enable;
 }
 
-bool BakedLightmap::is_directional() const {
+bool LightmapGI::is_directional() const {
 	return directional;
 }
 
-void BakedLightmap::set_interior(bool p_enable) {
+void LightmapGI::set_interior(bool p_enable) {
 	interior = p_enable;
 }
 
-bool BakedLightmap::is_interior() const {
+bool LightmapGI::is_interior() const {
 	return interior;
 }
 
-void BakedLightmap::set_environment_mode(EnvironmentMode p_mode) {
+void LightmapGI::set_environment_mode(EnvironmentMode p_mode) {
 	environment_mode = p_mode;
 	notify_property_list_changed();
 }
 
-BakedLightmap::EnvironmentMode BakedLightmap::get_environment_mode() const {
+LightmapGI::EnvironmentMode LightmapGI::get_environment_mode() const {
 	return environment_mode;
 }
 
-void BakedLightmap::set_environment_custom_sky(const Ref<Sky> &p_sky) {
+void LightmapGI::set_environment_custom_sky(const Ref<Sky> &p_sky) {
 	environment_custom_sky = p_sky;
 }
 
-Ref<Sky> BakedLightmap::get_environment_custom_sky() const {
+Ref<Sky> LightmapGI::get_environment_custom_sky() const {
 	return environment_custom_sky;
 }
 
-void BakedLightmap::set_environment_custom_color(const Color &p_color) {
+void LightmapGI::set_environment_custom_color(const Color &p_color) {
 	environment_custom_color = p_color;
 }
 
-Color BakedLightmap::get_environment_custom_color() const {
+Color LightmapGI::get_environment_custom_color() const {
 	return environment_custom_color;
 }
 
-void BakedLightmap::set_environment_custom_energy(float p_energy) {
+void LightmapGI::set_environment_custom_energy(float p_energy) {
 	environment_custom_energy = p_energy;
 }
 
-float BakedLightmap::get_environment_custom_energy() const {
+float LightmapGI::get_environment_custom_energy() const {
 	return environment_custom_energy;
 }
 
-void BakedLightmap::set_bounces(int p_bounces) {
+void LightmapGI::set_bounces(int p_bounces) {
 	ERR_FAIL_COND(p_bounces < 0 || p_bounces > 16);
 	bounces = p_bounces;
 }
 
-int BakedLightmap::get_bounces() const {
+int LightmapGI::get_bounces() const {
 	return bounces;
 }
 
-void BakedLightmap::set_bias(float p_bias) {
+void LightmapGI::set_bias(float p_bias) {
 	ERR_FAIL_COND(p_bias < 0.00001);
 	bias = p_bias;
 }
 
-float BakedLightmap::get_bias() const {
+float LightmapGI::get_bias() const {
 	return bias;
 }
 
-void BakedLightmap::set_max_texture_size(int p_size) {
+void LightmapGI::set_max_texture_size(int p_size) {
 	ERR_FAIL_COND(p_size < 2048);
 	max_texture_size = p_size;
 }
 
-int BakedLightmap::get_max_texture_size() const {
+int LightmapGI::get_max_texture_size() const {
 	return max_texture_size;
 }
 
-void BakedLightmap::set_generate_probes(GenerateProbes p_generate_probes) {
+void LightmapGI::set_generate_probes(GenerateProbes p_generate_probes) {
 	gen_probes = p_generate_probes;
 }
 
-BakedLightmap::GenerateProbes BakedLightmap::get_generate_probes() const {
+LightmapGI::GenerateProbes LightmapGI::get_generate_probes() const {
 	return gen_probes;
 }
 
-void BakedLightmap::_validate_property(PropertyInfo &property) const {
+void LightmapGI::_validate_property(PropertyInfo &property) const {
 	if (property.name == "environment_custom_sky" && environment_mode != ENVIRONMENT_MODE_CUSTOM_SKY) {
 		property.usage = 0;
 	}
@@ -1377,47 +1377,47 @@ void BakedLightmap::_validate_property(PropertyInfo &property) const {
 	}
 }
 
-void BakedLightmap::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("set_light_data", "data"), &BakedLightmap::set_light_data);
-	ClassDB::bind_method(D_METHOD("get_light_data"), &BakedLightmap::get_light_data);
+void LightmapGI::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("set_light_data", "data"), &LightmapGI::set_light_data);
+	ClassDB::bind_method(D_METHOD("get_light_data"), &LightmapGI::get_light_data);
 
-	ClassDB::bind_method(D_METHOD("set_bake_quality", "bake_quality"), &BakedLightmap::set_bake_quality);
-	ClassDB::bind_method(D_METHOD("get_bake_quality"), &BakedLightmap::get_bake_quality);
+	ClassDB::bind_method(D_METHOD("set_bake_quality", "bake_quality"), &LightmapGI::set_bake_quality);
+	ClassDB::bind_method(D_METHOD("get_bake_quality"), &LightmapGI::get_bake_quality);
 
-	ClassDB::bind_method(D_METHOD("set_bounces", "bounces"), &BakedLightmap::set_bounces);
-	ClassDB::bind_method(D_METHOD("get_bounces"), &BakedLightmap::get_bounces);
+	ClassDB::bind_method(D_METHOD("set_bounces", "bounces"), &LightmapGI::set_bounces);
+	ClassDB::bind_method(D_METHOD("get_bounces"), &LightmapGI::get_bounces);
 
-	ClassDB::bind_method(D_METHOD("set_generate_probes", "subdivision"), &BakedLightmap::set_generate_probes);
-	ClassDB::bind_method(D_METHOD("get_generate_probes"), &BakedLightmap::get_generate_probes);
+	ClassDB::bind_method(D_METHOD("set_generate_probes", "subdivision"), &LightmapGI::set_generate_probes);
+	ClassDB::bind_method(D_METHOD("get_generate_probes"), &LightmapGI::get_generate_probes);
 
-	ClassDB::bind_method(D_METHOD("set_bias", "bias"), &BakedLightmap::set_bias);
-	ClassDB::bind_method(D_METHOD("get_bias"), &BakedLightmap::get_bias);
+	ClassDB::bind_method(D_METHOD("set_bias", "bias"), &LightmapGI::set_bias);
+	ClassDB::bind_method(D_METHOD("get_bias"), &LightmapGI::get_bias);
 
-	ClassDB::bind_method(D_METHOD("set_environment_mode", "mode"), &BakedLightmap::set_environment_mode);
-	ClassDB::bind_method(D_METHOD("get_environment_mode"), &BakedLightmap::get_environment_mode);
+	ClassDB::bind_method(D_METHOD("set_environment_mode", "mode"), &LightmapGI::set_environment_mode);
+	ClassDB::bind_method(D_METHOD("get_environment_mode"), &LightmapGI::get_environment_mode);
 
-	ClassDB::bind_method(D_METHOD("set_environment_custom_sky", "sky"), &BakedLightmap::set_environment_custom_sky);
-	ClassDB::bind_method(D_METHOD("get_environment_custom_sky"), &BakedLightmap::get_environment_custom_sky);
+	ClassDB::bind_method(D_METHOD("set_environment_custom_sky", "sky"), &LightmapGI::set_environment_custom_sky);
+	ClassDB::bind_method(D_METHOD("get_environment_custom_sky"), &LightmapGI::get_environment_custom_sky);
 
-	ClassDB::bind_method(D_METHOD("set_environment_custom_color", "color"), &BakedLightmap::set_environment_custom_color);
-	ClassDB::bind_method(D_METHOD("get_environment_custom_color"), &BakedLightmap::get_environment_custom_color);
+	ClassDB::bind_method(D_METHOD("set_environment_custom_color", "color"), &LightmapGI::set_environment_custom_color);
+	ClassDB::bind_method(D_METHOD("get_environment_custom_color"), &LightmapGI::get_environment_custom_color);
 
-	ClassDB::bind_method(D_METHOD("set_environment_custom_energy", "energy"), &BakedLightmap::set_environment_custom_energy);
-	ClassDB::bind_method(D_METHOD("get_environment_custom_energy"), &BakedLightmap::get_environment_custom_energy);
+	ClassDB::bind_method(D_METHOD("set_environment_custom_energy", "energy"), &LightmapGI::set_environment_custom_energy);
+	ClassDB::bind_method(D_METHOD("get_environment_custom_energy"), &LightmapGI::get_environment_custom_energy);
 
-	ClassDB::bind_method(D_METHOD("set_max_texture_size", "max_texture_size"), &BakedLightmap::set_max_texture_size);
-	ClassDB::bind_method(D_METHOD("get_max_texture_size"), &BakedLightmap::get_max_texture_size);
+	ClassDB::bind_method(D_METHOD("set_max_texture_size", "max_texture_size"), &LightmapGI::set_max_texture_size);
+	ClassDB::bind_method(D_METHOD("get_max_texture_size"), &LightmapGI::get_max_texture_size);
 
-	ClassDB::bind_method(D_METHOD("set_use_denoiser", "use_denoiser"), &BakedLightmap::set_use_denoiser);
-	ClassDB::bind_method(D_METHOD("is_using_denoiser"), &BakedLightmap::is_using_denoiser);
+	ClassDB::bind_method(D_METHOD("set_use_denoiser", "use_denoiser"), &LightmapGI::set_use_denoiser);
+	ClassDB::bind_method(D_METHOD("is_using_denoiser"), &LightmapGI::is_using_denoiser);
 
-	ClassDB::bind_method(D_METHOD("set_interior", "enable"), &BakedLightmap::set_interior);
-	ClassDB::bind_method(D_METHOD("is_interior"), &BakedLightmap::is_interior);
+	ClassDB::bind_method(D_METHOD("set_interior", "enable"), &LightmapGI::set_interior);
+	ClassDB::bind_method(D_METHOD("is_interior"), &LightmapGI::is_interior);
 
-	ClassDB::bind_method(D_METHOD("set_directional", "directional"), &BakedLightmap::set_directional);
-	ClassDB::bind_method(D_METHOD("is_directional"), &BakedLightmap::is_directional);
+	ClassDB::bind_method(D_METHOD("set_directional", "directional"), &LightmapGI::set_directional);
+	ClassDB::bind_method(D_METHOD("is_directional"), &LightmapGI::is_directional);
 
-	//	ClassDB::bind_method(D_METHOD("bake", "from_node"), &BakedLightmap::bake, DEFVAL(Variant()));
+	//	ClassDB::bind_method(D_METHOD("bake", "from_node"), &LightmapGI::bake, DEFVAL(Variant()));
 
 	ADD_GROUP("Tweaks", "");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "quality", PROPERTY_HINT_ENUM, "Low,Medium,High,Ultra"), "set_bake_quality", "get_bake_quality");
@@ -1435,7 +1435,7 @@ void BakedLightmap::_bind_methods() {
 	ADD_GROUP("Gen Probes", "generate_probes_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "generate_probes_subdiv", PROPERTY_HINT_ENUM, "Disabled,4,8,16,32"), "set_generate_probes", "get_generate_probes");
 	ADD_GROUP("Data", "");
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "light_data", PROPERTY_HINT_RESOURCE_TYPE, "BakedLightmapData"), "set_light_data", "get_light_data");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "light_data", PROPERTY_HINT_RESOURCE_TYPE, "LightmapGIData"), "set_light_data", "get_light_data");
 
 	BIND_ENUM_CONSTANT(BAKE_QUALITY_LOW);
 	BIND_ENUM_CONSTANT(BAKE_QUALITY_MEDIUM);
@@ -1462,5 +1462,5 @@ void BakedLightmap::_bind_methods() {
 	BIND_ENUM_CONSTANT(ENVIRONMENT_MODE_CUSTOM_COLOR);
 }
 
-BakedLightmap::BakedLightmap() {
+LightmapGI::LightmapGI() {
 }

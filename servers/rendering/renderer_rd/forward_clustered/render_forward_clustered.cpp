@@ -93,8 +93,8 @@ void RenderForwardClustered::RenderBufferDataForwardClustered::ensure_specular()
 	}
 }
 
-void RenderForwardClustered::RenderBufferDataForwardClustered::ensure_giprobe() {
-	if (!giprobe_buffer.is_valid()) {
+void RenderForwardClustered::RenderBufferDataForwardClustered::ensure_voxelgi() {
+	if (!voxelgi_buffer.is_valid()) {
 		RD::TextureFormat tf;
 		tf.format = RD::DATA_FORMAT_R8G8_UINT;
 		tf.width = width;
@@ -105,41 +105,41 @@ void RenderForwardClustered::RenderBufferDataForwardClustered::ensure_giprobe() 
 			RD::TextureFormat tf_aa = tf;
 			tf_aa.usage_bits |= RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT;
 			tf_aa.samples = texture_samples;
-			giprobe_buffer_msaa = RD::get_singleton()->texture_create(tf_aa, RD::TextureView());
+			voxelgi_buffer_msaa = RD::get_singleton()->texture_create(tf_aa, RD::TextureView());
 		} else {
 			tf.usage_bits |= RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT;
 		}
 
 		tf.usage_bits |= RD::TEXTURE_USAGE_STORAGE_BIT;
 
-		giprobe_buffer = RD::get_singleton()->texture_create(tf, RD::TextureView());
+		voxelgi_buffer = RD::get_singleton()->texture_create(tf, RD::TextureView());
 
 		Vector<RID> fb;
 		if (msaa != RS::VIEWPORT_MSAA_DISABLED) {
 			fb.push_back(depth_msaa);
 			fb.push_back(normal_roughness_buffer_msaa);
-			fb.push_back(giprobe_buffer_msaa);
+			fb.push_back(voxelgi_buffer_msaa);
 		} else {
 			fb.push_back(depth);
 			fb.push_back(normal_roughness_buffer);
-			fb.push_back(giprobe_buffer);
+			fb.push_back(voxelgi_buffer);
 		}
 
-		depth_normal_roughness_giprobe_fb = RD::get_singleton()->framebuffer_create(fb);
+		depth_normal_roughness_voxelgi_fb = RD::get_singleton()->framebuffer_create(fb);
 	}
 }
 
 void RenderForwardClustered::RenderBufferDataForwardClustered::clear() {
-	if (giprobe_buffer != RID()) {
-		RD::get_singleton()->free(giprobe_buffer);
-		giprobe_buffer = RID();
+	if (voxelgi_buffer != RID()) {
+		RD::get_singleton()->free(voxelgi_buffer);
+		voxelgi_buffer = RID();
 
-		if (giprobe_buffer_msaa.is_valid()) {
-			RD::get_singleton()->free(giprobe_buffer_msaa);
-			giprobe_buffer_msaa = RID();
+		if (voxelgi_buffer_msaa.is_valid()) {
+			RD::get_singleton()->free(voxelgi_buffer_msaa);
+			voxelgi_buffer_msaa = RID();
 		}
 
-		depth_normal_roughness_giprobe_fb = RID();
+		depth_normal_roughness_voxelgi_fb = RID();
 	}
 
 	if (color_msaa.is_valid()) {
@@ -398,8 +398,8 @@ void RenderForwardClustered::_render_list_template(RenderingDevice::DrawListID p
 			case PASS_MODE_DEPTH_NORMAL_ROUGHNESS: {
 				shader_version = SceneShaderForwardClustered::SHADER_VERSION_DEPTH_PASS_WITH_NORMAL_AND_ROUGHNESS;
 			} break;
-			case PASS_MODE_DEPTH_NORMAL_ROUGHNESS_GIPROBE: {
-				shader_version = SceneShaderForwardClustered::SHADER_VERSION_DEPTH_PASS_WITH_NORMAL_AND_ROUGHNESS_AND_GIPROBE;
+			case PASS_MODE_DEPTH_NORMAL_ROUGHNESS_VOXEL_GI: {
+				shader_version = SceneShaderForwardClustered::SHADER_VERSION_DEPTH_PASS_WITH_NORMAL_AND_ROUGHNESS_AND_VOXEL_GI;
 			} break;
 			case PASS_MODE_DEPTH_MATERIAL: {
 				shader_version = SceneShaderForwardClustered::SHADER_VERSION_DEPTH_PASS_WITH_MATERIAL;
@@ -498,8 +498,8 @@ void RenderForwardClustered::_render_list(RenderingDevice::DrawListID p_draw_lis
 		case PASS_MODE_DEPTH_NORMAL_ROUGHNESS: {
 			_render_list_template<PASS_MODE_DEPTH_NORMAL_ROUGHNESS>(p_draw_list, p_framebuffer_Format, p_params, p_from_element, p_to_element);
 		} break;
-		case PASS_MODE_DEPTH_NORMAL_ROUGHNESS_GIPROBE: {
-			_render_list_template<PASS_MODE_DEPTH_NORMAL_ROUGHNESS_GIPROBE>(p_draw_list, p_framebuffer_Format, p_params, p_from_element, p_to_element);
+		case PASS_MODE_DEPTH_NORMAL_ROUGHNESS_VOXEL_GI: {
+			_render_list_template<PASS_MODE_DEPTH_NORMAL_ROUGHNESS_VOXEL_GI>(p_draw_list, p_framebuffer_Format, p_params, p_from_element, p_to_element);
 		} break;
 		case PASS_MODE_DEPTH_MATERIAL: {
 			_render_list_template<PASS_MODE_DEPTH_MATERIAL>(p_draw_list, p_framebuffer_Format, p_params, p_from_element, p_to_element);
@@ -948,14 +948,14 @@ void RenderForwardClustered::_fill_render_list(RenderListType p_render_list, con
 					flags |= INSTANCE_DATA_FLAG_USE_GI_BUFFERS;
 				}
 
-				if (inst->gi_probes[0].is_valid()) {
+				if (inst->voxel_gi_instances[0].is_valid()) {
 					uint32_t probe0_index = 0xFFFF;
 					uint32_t probe1_index = 0xFFFF;
 
-					for (uint32_t j = 0; j < scene_state.giprobes_used; j++) {
-						if (scene_state.giprobe_ids[j] == inst->gi_probes[0]) {
+					for (uint32_t j = 0; j < scene_state.voxelgis_used; j++) {
+						if (scene_state.voxelgi_ids[j] == inst->voxel_gi_instances[0]) {
 							probe0_index = j;
-						} else if (scene_state.giprobe_ids[j] == inst->gi_probes[1]) {
+						} else if (scene_state.voxelgi_ids[j] == inst->voxel_gi_instances[1]) {
 							probe1_index = j;
 						}
 					}
@@ -966,7 +966,7 @@ void RenderForwardClustered::_fill_render_list(RenderListType p_render_list, con
 					}
 
 					inst->gi_offset_cache = probe0_index | (probe1_index << 16);
-					flags |= INSTANCE_DATA_FLAG_USE_GIPROBE;
+					flags |= INSTANCE_DATA_FLAG_USE_VOXEL_GI;
 					uses_gi = true;
 				} else {
 					if (p_using_sdfgi && inst->can_sdfgi) {
@@ -1061,10 +1061,10 @@ void RenderForwardClustered::_fill_render_list(RenderListType p_render_list, con
 	}
 }
 
-void RenderForwardClustered::_setup_giprobes(const PagedArray<RID> &p_giprobes) {
-	scene_state.giprobes_used = MIN(p_giprobes.size(), uint32_t(MAX_GI_PROBES));
-	for (uint32_t i = 0; i < scene_state.giprobes_used; i++) {
-		scene_state.giprobe_ids[i] = p_giprobes[i];
+void RenderForwardClustered::_setup_voxelgis(const PagedArray<RID> &p_voxelgis) {
+	scene_state.voxelgis_used = MIN(p_voxelgis.size(), uint32_t(MAX_VOXEL_GI_INSTANCESS));
+	for (uint32_t i = 0; i < scene_state.voxelgis_used; i++) {
+		scene_state.voxelgi_ids[i] = p_voxelgis[i];
 	}
 }
 
@@ -1120,7 +1120,7 @@ void RenderForwardClustered::_render_scene(RenderDataRD *p_render_data, const Co
 	bool using_separate_specular = false;
 	bool using_ssr = false;
 	bool using_sdfgi = false;
-	bool using_giprobe = false;
+	bool using_voxelgi = false;
 	bool reverse_cull = false;
 
 	if (render_buffer) {
@@ -1129,19 +1129,19 @@ void RenderForwardClustered::_render_scene(RenderDataRD *p_render_data, const Co
 
 		opaque_framebuffer = render_buffer->color_fb;
 
-		if (p_render_data->gi_probes->size() > 0) {
-			using_giprobe = true;
+		if (p_render_data->voxel_gi_instances->size() > 0) {
+			using_voxelgi = true;
 		}
 
-		if (!p_render_data->environment.is_valid() && using_giprobe) {
-			depth_pass_mode = PASS_MODE_DEPTH_NORMAL_ROUGHNESS_GIPROBE;
+		if (!p_render_data->environment.is_valid() && using_voxelgi) {
+			depth_pass_mode = PASS_MODE_DEPTH_NORMAL_ROUGHNESS_VOXEL_GI;
 
-		} else if (p_render_data->environment.is_valid() && (environment_is_ssr_enabled(p_render_data->environment) || environment_is_sdfgi_enabled(p_render_data->environment) || using_giprobe)) {
+		} else if (p_render_data->environment.is_valid() && (environment_is_ssr_enabled(p_render_data->environment) || environment_is_sdfgi_enabled(p_render_data->environment) || using_voxelgi)) {
 			if (environment_is_sdfgi_enabled(p_render_data->environment)) {
-				depth_pass_mode = using_giprobe ? PASS_MODE_DEPTH_NORMAL_ROUGHNESS_GIPROBE : PASS_MODE_DEPTH_NORMAL_ROUGHNESS; // also giprobe
+				depth_pass_mode = using_voxelgi ? PASS_MODE_DEPTH_NORMAL_ROUGHNESS_VOXEL_GI : PASS_MODE_DEPTH_NORMAL_ROUGHNESS; // also voxelgi
 				using_sdfgi = true;
 			} else {
-				depth_pass_mode = using_giprobe ? PASS_MODE_DEPTH_NORMAL_ROUGHNESS_GIPROBE : PASS_MODE_DEPTH_NORMAL_ROUGHNESS;
+				depth_pass_mode = using_voxelgi ? PASS_MODE_DEPTH_NORMAL_ROUGHNESS_VOXEL_GI : PASS_MODE_DEPTH_NORMAL_ROUGHNESS;
 			}
 
 			if (environment_is_ssr_enabled(p_render_data->environment)) {
@@ -1164,10 +1164,10 @@ void RenderForwardClustered::_render_scene(RenderDataRD *p_render_data, const Co
 				depth_framebuffer = render_buffer->depth_normal_roughness_fb;
 				depth_pass_clear.push_back(Color(0.5, 0.5, 0.5, 0));
 			} break;
-			case PASS_MODE_DEPTH_NORMAL_ROUGHNESS_GIPROBE: {
+			case PASS_MODE_DEPTH_NORMAL_ROUGHNESS_VOXEL_GI: {
 				_allocate_normal_roughness_texture(render_buffer);
-				render_buffer->ensure_giprobe();
-				depth_framebuffer = render_buffer->depth_normal_roughness_giprobe_fb;
+				render_buffer->ensure_voxelgi();
+				depth_framebuffer = render_buffer->depth_normal_roughness_voxelgi_fb;
 				depth_pass_clear.push_back(Color(0.5, 0.5, 0.5, 0));
 				depth_pass_clear.push_back(Color(0, 0, 0, 0));
 			} break;
@@ -1198,12 +1198,12 @@ void RenderForwardClustered::_render_scene(RenderDataRD *p_render_data, const Co
 	RD::get_singleton()->draw_command_begin_label("Render Setup");
 
 	_setup_lightmaps(*p_render_data->lightmaps, p_render_data->cam_transform);
-	_setup_giprobes(*p_render_data->gi_probes);
+	_setup_voxelgis(*p_render_data->voxel_gi_instances);
 	_setup_environment(p_render_data, p_render_data->reflection_probe.is_valid(), screen_size, !p_render_data->reflection_probe.is_valid(), p_default_bg_color, false);
 
 	_update_render_base_uniform_set(); //may have changed due to the above (light buffer enlarged, as an example)
 
-	_fill_render_list(RENDER_LIST_OPAQUE, p_render_data, PASS_MODE_COLOR, using_sdfgi, using_sdfgi || using_giprobe);
+	_fill_render_list(RENDER_LIST_OPAQUE, p_render_data, PASS_MODE_COLOR, using_sdfgi, using_sdfgi || using_voxelgi);
 	render_list[RENDER_LIST_OPAQUE].sort_by_key();
 	render_list[RENDER_LIST_ALPHA].sort_by_depth();
 	_fill_instance_data(RENDER_LIST_OPAQUE);
@@ -1293,7 +1293,7 @@ void RenderForwardClustered::_render_scene(RenderDataRD *p_render_data, const Co
 		clear_color = p_default_bg_color;
 	}
 
-	bool debug_giprobes = get_debug_draw_mode() == RS::VIEWPORT_DEBUG_DRAW_GI_PROBE_ALBEDO || get_debug_draw_mode() == RS::VIEWPORT_DEBUG_DRAW_GI_PROBE_LIGHTING || get_debug_draw_mode() == RS::VIEWPORT_DEBUG_DRAW_GI_PROBE_EMISSION;
+	bool debug_voxelgis = get_debug_draw_mode() == RS::VIEWPORT_DEBUG_DRAW_VOXEL_GI_ALBEDO || get_debug_draw_mode() == RS::VIEWPORT_DEBUG_DRAW_VOXEL_GI_LIGHTING || get_debug_draw_mode() == RS::VIEWPORT_DEBUG_DRAW_VOXEL_GI_EMISSION;
 	bool debug_sdfgi_probes = get_debug_draw_mode() == RS::VIEWPORT_DEBUG_DRAW_SDFGI_PROBES;
 	bool depth_pre_pass = depth_framebuffer.is_valid();
 
@@ -1301,7 +1301,7 @@ void RenderForwardClustered::_render_scene(RenderDataRD *p_render_data, const Co
 	bool continue_depth = false;
 	if (depth_pre_pass) { //depth pre pass
 
-		bool needs_pre_resolve = _needs_post_prepass_render(p_render_data, using_sdfgi || using_giprobe);
+		bool needs_pre_resolve = _needs_post_prepass_render(p_render_data, using_sdfgi || using_voxelgi);
 		if (needs_pre_resolve) {
 			RENDER_TIMESTAMP("GI + Render Depth Pre-Pass (parallel)");
 		} else {
@@ -1312,32 +1312,32 @@ void RenderForwardClustered::_render_scene(RenderDataRD *p_render_data, const Co
 			RD::get_singleton()->draw_list_begin(depth_framebuffer, RD::INITIAL_ACTION_CLEAR, RD::FINAL_ACTION_CONTINUE, RD::INITIAL_ACTION_CLEAR, RD::FINAL_ACTION_CONTINUE, depth_pass_clear);
 			RD::get_singleton()->draw_list_end();
 			//start compute processes here, so they run at the same time as depth pre-pass
-			_post_prepass_render(p_render_data, using_sdfgi || using_giprobe);
+			_post_prepass_render(p_render_data, using_sdfgi || using_voxelgi);
 		}
 
 		RD::get_singleton()->draw_command_begin_label("Render Depth Pre-Pass");
 
 		RID rp_uniform_set = _setup_render_pass_uniform_set(RENDER_LIST_OPAQUE, nullptr, RID());
 
-		bool finish_depth = using_ssao || using_sdfgi || using_giprobe;
+		bool finish_depth = using_ssao || using_sdfgi || using_voxelgi;
 		RenderListParameters render_list_params(render_list[RENDER_LIST_OPAQUE].elements.ptr(), render_list[RENDER_LIST_OPAQUE].element_info.ptr(), render_list[RENDER_LIST_OPAQUE].elements.size(), reverse_cull, depth_pass_mode, render_buffer == nullptr, rp_uniform_set, get_debug_draw_mode() == RS::VIEWPORT_DEBUG_DRAW_WIREFRAME, Vector2(), p_render_data->lod_camera_plane, p_render_data->lod_distance_multiplier, p_render_data->screen_lod_threshold);
 		_render_list_with_threads(&render_list_params, depth_framebuffer, needs_pre_resolve ? RD::INITIAL_ACTION_CONTINUE : RD::INITIAL_ACTION_CLEAR, RD::FINAL_ACTION_READ, needs_pre_resolve ? RD::INITIAL_ACTION_CONTINUE : RD::INITIAL_ACTION_CLEAR, finish_depth ? RD::FINAL_ACTION_READ : RD::FINAL_ACTION_CONTINUE, needs_pre_resolve ? Vector<Color>() : depth_pass_clear);
 
 		RD::get_singleton()->draw_command_end_label();
 
 		if (needs_pre_resolve) {
-			_pre_resolve_render(p_render_data, using_sdfgi || using_giprobe);
+			_pre_resolve_render(p_render_data, using_sdfgi || using_voxelgi);
 		}
 
 		if (render_buffer && render_buffer->msaa != RS::VIEWPORT_MSAA_DISABLED) {
 			RENDER_TIMESTAMP("Resolve Depth Pre-Pass");
 			RD::get_singleton()->draw_command_begin_label("Resolve Depth Pre-Pass");
-			if (depth_pass_mode == PASS_MODE_DEPTH_NORMAL_ROUGHNESS || depth_pass_mode == PASS_MODE_DEPTH_NORMAL_ROUGHNESS_GIPROBE) {
+			if (depth_pass_mode == PASS_MODE_DEPTH_NORMAL_ROUGHNESS || depth_pass_mode == PASS_MODE_DEPTH_NORMAL_ROUGHNESS_VOXEL_GI) {
 				if (needs_pre_resolve) {
 					RD::get_singleton()->barrier(RD::BARRIER_MASK_RASTER, RD::BARRIER_MASK_COMPUTE);
 				}
 				static int texture_samples[RS::VIEWPORT_MSAA_MAX] = { 1, 2, 4, 8, 16 };
-				storage->get_effects()->resolve_gi(render_buffer->depth_msaa, render_buffer->normal_roughness_buffer_msaa, using_giprobe ? render_buffer->giprobe_buffer_msaa : RID(), render_buffer->depth, render_buffer->normal_roughness_buffer, using_giprobe ? render_buffer->giprobe_buffer : RID(), Vector2i(render_buffer->width, render_buffer->height), texture_samples[render_buffer->msaa]);
+				storage->get_effects()->resolve_gi(render_buffer->depth_msaa, render_buffer->normal_roughness_buffer_msaa, using_voxelgi ? render_buffer->voxelgi_buffer_msaa : RID(), render_buffer->depth, render_buffer->normal_roughness_buffer, using_voxelgi ? render_buffer->voxelgi_buffer : RID(), Vector2i(render_buffer->width, render_buffer->height), texture_samples[render_buffer->msaa]);
 			} else if (finish_depth) {
 				RD::get_singleton()->texture_resolve_multisample(render_buffer->depth_msaa, render_buffer->depth);
 			}
@@ -1347,7 +1347,7 @@ void RenderForwardClustered::_render_scene(RenderDataRD *p_render_data, const Co
 		continue_depth = !finish_depth;
 	}
 
-	_pre_opaque_render(p_render_data, using_ssao, using_sdfgi || using_giprobe, render_buffer ? render_buffer->normal_roughness_buffer : RID(), render_buffer ? render_buffer->giprobe_buffer : RID());
+	_pre_opaque_render(p_render_data, using_ssao, using_sdfgi || using_voxelgi, render_buffer ? render_buffer->normal_roughness_buffer : RID(), render_buffer ? render_buffer->voxelgi_buffer : RID());
 
 	RD::get_singleton()->draw_command_begin_label("Render Opaque Pass");
 
@@ -1363,8 +1363,8 @@ void RenderForwardClustered::_render_scene(RenderDataRD *p_render_data, const Co
 	bool can_continue_depth = !scene_state.used_depth_texture && !using_ssr && !using_sss;
 
 	{
-		bool will_continue_color = (can_continue_color || draw_sky || draw_sky_fog_only || debug_giprobes || debug_sdfgi_probes);
-		bool will_continue_depth = (can_continue_depth || draw_sky || draw_sky_fog_only || debug_giprobes || debug_sdfgi_probes);
+		bool will_continue_color = (can_continue_color || draw_sky || draw_sky_fog_only || debug_voxelgis || debug_sdfgi_probes);
+		bool will_continue_depth = (can_continue_depth || draw_sky || draw_sky_fog_only || debug_voxelgis || debug_sdfgi_probes);
 
 		//regular forward for now
 		Vector<Color> c;
@@ -1389,8 +1389,8 @@ void RenderForwardClustered::_render_scene(RenderDataRD *p_render_data, const Co
 
 	RD::get_singleton()->draw_command_end_label();
 
-	if (debug_giprobes) {
-		//debug giprobes
+	if (debug_voxelgis) {
+		//debug voxelgis
 		bool will_continue_color = (can_continue_color || draw_sky || draw_sky_fog_only);
 		bool will_continue_depth = (can_continue_depth || draw_sky || draw_sky_fog_only);
 
@@ -1398,16 +1398,16 @@ void RenderForwardClustered::_render_scene(RenderDataRD *p_render_data, const Co
 		dc.set_depth_correction(true);
 		CameraMatrix cm = (dc * p_render_data->cam_projection) * CameraMatrix(p_render_data->cam_transform.affine_inverse());
 		RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(opaque_framebuffer, RD::INITIAL_ACTION_CONTINUE, will_continue_color ? RD::FINAL_ACTION_CONTINUE : RD::FINAL_ACTION_READ, RD::INITIAL_ACTION_CONTINUE, will_continue_depth ? RD::FINAL_ACTION_CONTINUE : RD::FINAL_ACTION_READ);
-		RD::get_singleton()->draw_command_begin_label("Debug GIProbes");
-		for (int i = 0; i < (int)p_render_data->gi_probes->size(); i++) {
-			gi.debug_giprobe((*p_render_data->gi_probes)[i], draw_list, opaque_framebuffer, cm, get_debug_draw_mode() == RS::VIEWPORT_DEBUG_DRAW_GI_PROBE_LIGHTING, get_debug_draw_mode() == RS::VIEWPORT_DEBUG_DRAW_GI_PROBE_EMISSION, 1.0);
+		RD::get_singleton()->draw_command_begin_label("Debug VoxelGIs");
+		for (int i = 0; i < (int)p_render_data->voxel_gi_instances->size(); i++) {
+			gi.debug_voxel_gi((*p_render_data->voxel_gi_instances)[i], draw_list, opaque_framebuffer, cm, get_debug_draw_mode() == RS::VIEWPORT_DEBUG_DRAW_VOXEL_GI_LIGHTING, get_debug_draw_mode() == RS::VIEWPORT_DEBUG_DRAW_VOXEL_GI_EMISSION, 1.0);
 		}
 		RD::get_singleton()->draw_command_end_label();
 		RD::get_singleton()->draw_list_end();
 	}
 
 	if (debug_sdfgi_probes) {
-		//debug giprobes
+		//debug voxelgis
 		bool will_continue_color = (can_continue_color || draw_sky || draw_sky_fog_only);
 		bool will_continue_depth = (can_continue_depth || draw_sky || draw_sky_fog_only);
 
@@ -2059,11 +2059,11 @@ RID RenderForwardClustered::_setup_render_pass_uniform_set(RenderListType p_rend
 		RD::Uniform u;
 		u.binding = 7;
 		u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
-		u.ids.resize(MAX_GI_PROBES);
+		u.ids.resize(MAX_VOXEL_GI_INSTANCESS);
 		RID default_tex = storage->texture_rd_get_default(RendererStorageRD::DEFAULT_RD_TEXTURE_3D_WHITE);
-		for (int i = 0; i < MAX_GI_PROBES; i++) {
-			if (p_render_data && i < (int)p_render_data->gi_probes->size()) {
-				RID tex = gi.gi_probe_instance_get_texture((*p_render_data->gi_probes)[i]);
+		for (int i = 0; i < MAX_VOXEL_GI_INSTANCESS; i++) {
+			if (p_render_data && i < (int)p_render_data->voxel_gi_instances->size()) {
+				RID tex = gi.voxel_gi_instance_get_texture((*p_render_data->voxel_gi_instances)[i]);
 				if (!tex.is_valid()) {
 					tex = default_tex;
 				}
@@ -2170,7 +2170,7 @@ RID RenderForwardClustered::_setup_render_pass_uniform_set(RenderListType p_rend
 			RD::Uniform u;
 			u.binding = 17;
 			u.uniform_type = RD::UNIFORM_TYPE_UNIFORM_BUFFER;
-			u.ids.push_back(rb ? render_buffers_get_gi_probe_buffer(p_render_data->render_buffers) : render_buffers_get_default_gi_probe_buffer());
+			u.ids.push_back(rb ? render_buffers_get_voxel_gi_buffer(p_render_data->render_buffers) : render_buffers_get_default_voxel_gi_buffer());
 			uniforms.push_back(u);
 		}
 		{
@@ -2279,13 +2279,13 @@ RID RenderForwardClustered::_setup_sdfgi_render_pass_uniform_set(RID p_albedo_te
 	}
 
 	{
-		// No GIProbes
+		// No VoxelGIs
 		RD::Uniform u;
 		u.binding = 7;
 		u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
-		u.ids.resize(MAX_GI_PROBES);
+		u.ids.resize(MAX_VOXEL_GI_INSTANCESS);
 		RID default_tex = storage->texture_rd_get_default(RendererStorageRD::DEFAULT_RD_TEXTURE_3D_WHITE);
-		for (int i = 0; i < MAX_GI_PROBES; i++) {
+		for (int i = 0; i < MAX_VOXEL_GI_INSTANCESS; i++) {
 			u.ids.write[i] = default_tex;
 		}
 
@@ -2633,7 +2633,7 @@ void RenderForwardClustered::_geometry_instance_update(GeometryInstance *p_geome
 	ginstance->can_sdfgi = false;
 
 	if (!lightmap_instance_is_valid(ginstance->lightmap_instance)) {
-		if (ginstance->gi_probes[0].is_null() && (ginstance->data->use_baked_light || ginstance->data->use_dynamic_gi)) {
+		if (ginstance->voxel_gi_instances[0].is_null() && (ginstance->data->use_baked_light || ginstance->data->use_dynamic_gi)) {
 			ginstance->can_sdfgi = true;
 		}
 	}
@@ -2816,7 +2816,7 @@ void RenderForwardClustered::geometry_instance_free(GeometryInstance *p_geometry
 }
 
 uint32_t RenderForwardClustered::geometry_instance_get_pair_mask() {
-	return (1 << RS::INSTANCE_GI_PROBE);
+	return (1 << RS::INSTANCE_VOXEL_GI);
 }
 void RenderForwardClustered::geometry_instance_pair_light_instances(GeometryInstance *p_geometry_instance, const RID *p_light_instances, uint32_t p_light_instance_count) {
 }
@@ -2837,19 +2837,19 @@ AABB RenderForwardClustered::geometry_instance_get_aabb(GeometryInstance *p_inst
 	return ginstance->data->aabb;
 }
 
-void RenderForwardClustered::geometry_instance_pair_gi_probe_instances(GeometryInstance *p_geometry_instance, const RID *p_gi_probe_instances, uint32_t p_gi_probe_instance_count) {
+void RenderForwardClustered::geometry_instance_pair_voxel_gi_instances(GeometryInstance *p_geometry_instance, const RID *p_voxel_gi_instances, uint32_t p_voxel_gi_instance_count) {
 	GeometryInstanceForwardClustered *ginstance = static_cast<GeometryInstanceForwardClustered *>(p_geometry_instance);
 	ERR_FAIL_COND(!ginstance);
-	if (p_gi_probe_instance_count > 0) {
-		ginstance->gi_probes[0] = p_gi_probe_instances[0];
+	if (p_voxel_gi_instance_count > 0) {
+		ginstance->voxel_gi_instances[0] = p_voxel_gi_instances[0];
 	} else {
-		ginstance->gi_probes[0] = RID();
+		ginstance->voxel_gi_instances[0] = RID();
 	}
 
-	if (p_gi_probe_instance_count > 1) {
-		ginstance->gi_probes[1] = p_gi_probe_instances[1];
+	if (p_voxel_gi_instance_count > 1) {
+		ginstance->voxel_gi_instances[1] = p_voxel_gi_instances[1];
 	} else {
-		ginstance->gi_probes[1] = RID();
+		ginstance->voxel_gi_instances[1] = RID();
 	}
 }
 

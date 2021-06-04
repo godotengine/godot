@@ -3477,14 +3477,14 @@
 		<constant name="VIEWPORT_DEBUG_DRAW_NORMAL_BUFFER" value="5" enum="ViewportDebugDraw">
 			Normal buffer is drawn instead of regular scene so you can see the per-pixel normals that will be used by post-processing effects.
 		</constant>
-		<constant name="VIEWPORT_DEBUG_DRAW_GI_PROBE_ALBEDO" value="6" enum="ViewportDebugDraw">
-			Objects are displayed with only the albedo value from [GIProbe]s.
+		<constant name="VIEWPORT_DEBUG_DRAW_VOXEL_GI_ALBEDO" value="6" enum="ViewportDebugDraw">
+			Objects are displayed with only the albedo value from [VoxelGI]s.
 		</constant>
-		<constant name="VIEWPORT_DEBUG_DRAW_GI_PROBE_LIGHTING" value="7" enum="ViewportDebugDraw">
-			Objects are displayed with only the lighting value from [GIProbe]s.
+		<constant name="VIEWPORT_DEBUG_DRAW_VOXEL_GI_LIGHTING" value="7" enum="ViewportDebugDraw">
+			Objects are displayed with only the lighting value from [VoxelGI]s.
 		</constant>
-		<constant name="VIEWPORT_DEBUG_DRAW_GI_PROBE_EMISSION" value="8" enum="ViewportDebugDraw">
-			Objects are displayed with only the emission color from [GIProbe]s.
+		<constant name="VIEWPORT_DEBUG_DRAW_VOXEL_GI_EMISSION" value="8" enum="ViewportDebugDraw">
+			Objects are displayed with only the emission color from [VoxelGI]s.
 		</constant>
 		<constant name="VIEWPORT_DEBUG_DRAW_SHADOW_ATLAS" value="9" enum="ViewportDebugDraw">
 			Draws the shadow atlas that stores shadows from [OmniLight3D]s and [SpotLight3D]s in the upper left quadrant of the [Viewport].
@@ -3694,8 +3694,8 @@
 		<constant name="INSTANCE_DECAL" value="8" enum="InstanceType">
 			The instance is a decal.
 		</constant>
-		<constant name="INSTANCE_GI_PROBE" value="9" enum="InstanceType">
-			The instance is a GI probe.
+		<constant name="INSTANCE_VOXEL_GI" value="9" enum="InstanceType">
+			The instance is a VoxelGI.
 		</constant>
 		<constant name="INSTANCE_LIGHTMAP" value="10" enum="InstanceType">
 			The instance is a lightmap.

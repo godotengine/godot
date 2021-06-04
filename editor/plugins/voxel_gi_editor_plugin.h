@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  gi_probe_editor_plugin.h                                             */
+/*  voxel_gi_editor_plugin.h                                             */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,18 +28,18 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef GIPROBEEDITORPLUGIN_H
-#define GIPROBEEDITORPLUGIN_H
+#ifndef VOXEL_GIEDITORPLUGIN_H
+#define VOXEL_GIEDITORPLUGIN_H
 
 #include "editor/editor_node.h"
 #include "editor/editor_plugin.h"
-#include "scene/3d/gi_probe.h"
+#include "scene/3d/voxel_gi.h"
 #include "scene/resources/material.h"
 
-class GIProbeEditorPlugin : public EditorPlugin {
-	GDCLASS(GIProbeEditorPlugin, EditorPlugin);
+class VoxelGIEditorPlugin : public EditorPlugin {
+	GDCLASS(VoxelGIEditorPlugin, EditorPlugin);
 
-	GIProbe *gi_probe;
+	VoxelGI *voxel_gi;
 
 	HBoxContainer *bake_hb;
 	Label *bake_info;
@@ -54,21 +54,21 @@ class GIProbeEditorPlugin : public EditorPlugin {
 	static void bake_func_end();
 
 	void _bake();
-	void _giprobe_save_path_and_bake(const String &p_path);
+	void _voxel_gi_save_path_and_bake(const String &p_path);
 
 protected:
 	static void _bind_methods();
 	void _notification(int p_what);
 
 public:
-	virtual String get_name() const override { return "GIProbe"; }
+	virtual String get_name() const override { return "VoxelGI"; }
 	bool has_main_screen() const override { return false; }
 	virtual void edit(Object *p_object) override;
 	virtual bool handles(Object *p_object) const override;
 	virtual void make_visible(bool p_visible) override;
 
-	GIProbeEditorPlugin(EditorNode *p_node);
-	~GIProbeEditorPlugin();
+	VoxelGIEditorPlugin(EditorNode *p_node);
+	~VoxelGIEditorPlugin();
 };
 
-#endif // GIPROBEEDITORPLUGIN_H
+#endif // VOXEL_GIEDITORPLUGIN_H
