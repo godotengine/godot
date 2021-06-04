@@ -87,7 +87,8 @@ protected:
 	void _notification(int p_what);
 	static void _bind_methods();
 
-	void _direct_state_changed(Object *p_state);
+	static void _body_state_changed_callback(void *p_instance, PhysicsDirectBodyState3D *p_state);
+	void _body_state_changed(PhysicsDirectBodyState3D *p_state);
 
 public:
 	void set_physics_material_override(const Ref<PhysicsMaterial> &p_physics_material_override);
@@ -126,7 +127,6 @@ public:
 
 protected:
 	bool can_sleep = true;
-	PhysicsDirectBodyState3D *state = nullptr;
 	Mode mode = MODE_DYNAMIC;
 
 	real_t mass = 1.0;
@@ -187,7 +187,8 @@ protected:
 	void _body_exit_tree(ObjectID p_id);
 
 	void _body_inout(int p_status, const RID &p_body, ObjectID p_instance, int p_body_shape, int p_local_shape);
-	virtual void _direct_state_changed(Object *p_state);
+	static void _body_state_changed_callback(void *p_instance, PhysicsDirectBodyState3D *p_state);
+	virtual void _body_state_changed(PhysicsDirectBodyState3D *p_state);
 
 	void _notification(int p_what);
 	static void _bind_methods();
@@ -515,7 +516,8 @@ protected:
 	bool _get(const StringName &p_name, Variant &r_ret) const;
 	void _get_property_list(List<PropertyInfo> *p_list) const;
 	void _notification(int p_what);
-	void _direct_state_changed(Object *p_state);
+	static void _body_state_changed_callback(void *p_instance, PhysicsDirectBodyState3D *p_state);
+	void _body_state_changed(PhysicsDirectBodyState3D *p_state);
 
 	static void _bind_methods();
 

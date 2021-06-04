@@ -44,7 +44,6 @@ class PhysicsServer3DSW : public PhysicsServer3D {
 	friend class PhysicsDirectSpaceState3DSW;
 	bool active;
 	int iterations;
-	real_t last_step;
 
 	int island_count;
 	int active_objects;
@@ -56,8 +55,6 @@ class PhysicsServer3DSW : public PhysicsServer3D {
 
 	Step3DSW *stepper;
 	Set<const Space3DSW *> active_spaces;
-
-	PhysicsDirectBodyState3DSW *direct_state;
 
 	mutable RID_PtrOwner<Shape3DSW, true> shape_owner;
 	mutable RID_PtrOwner<Space3DSW, true> space_owner;
@@ -238,6 +235,7 @@ public:
 	virtual void body_set_max_contacts_reported(RID p_body, int p_contacts) override;
 	virtual int body_get_max_contacts_reported(RID p_body) const override;
 
+	virtual void body_set_state_sync_callback(RID p_body, void *p_instance, BodyStateCallback p_callback) override;
 	virtual void body_set_force_integration_callback(RID p_body, const Callable &p_callable, const Variant &p_udata = Variant()) override;
 
 	virtual void body_set_ray_pickable(RID p_body, bool p_enable) override;

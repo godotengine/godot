@@ -114,7 +114,6 @@ public:
 
 private:
 	bool can_sleep = true;
-	PhysicsDirectBodyState2D *state = nullptr;
 	Mode mode = MODE_DYNAMIC;
 
 	real_t mass = 1.0;
@@ -173,7 +172,9 @@ private:
 	void _body_exit_tree(ObjectID p_id);
 
 	void _body_inout(int p_status, const RID &p_body, ObjectID p_instance, int p_body_shape, int p_local_shape);
-	void _direct_state_changed(Object *p_state);
+
+	static void _body_state_changed_callback(void *p_instance, PhysicsDirectBodyState2D *p_state);
+	void _body_state_changed(PhysicsDirectBodyState2D *p_state);
 
 protected:
 	void _notification(int p_what);
@@ -286,7 +287,9 @@ private:
 	bool separate_raycast_shapes(PhysicsServer2D::MotionResult &r_result);
 
 	Transform2D last_valid_transform;
-	void _direct_state_changed(Object *p_state);
+
+	static void _body_state_changed_callback(void *p_instance, PhysicsDirectBodyState2D *p_state);
+	void _body_state_changed(PhysicsDirectBodyState2D *p_state);
 
 	void set_safe_margin(real_t p_margin);
 	real_t get_safe_margin() const;
