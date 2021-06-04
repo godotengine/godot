@@ -41,7 +41,7 @@ class PhysicalBone3D;
 class Skeleton3DEditorPlugin;
 class Button;
 class CheckBox;
-class EditorPropertyTransform;
+class EditorPropertyTransform3D;
 class EditorPropertyVector3;
 
 class BoneTransformEditor : public VBoxContainer {
@@ -53,7 +53,7 @@ class BoneTransformEditor : public VBoxContainer {
 	EditorPropertyVector3 *rotation_property = nullptr;
 	EditorPropertyVector3 *scale_property = nullptr;
 	EditorInspectorSection *transform_section = nullptr;
-	EditorPropertyTransform *transform_property = nullptr;
+	EditorPropertyTransform3D *transform_property = nullptr;
 
 	Rect2 background_rects[5];
 
