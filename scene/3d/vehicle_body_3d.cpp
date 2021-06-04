@@ -802,24 +802,21 @@ void VehicleBody3D::_update_friction(PhysicsDirectBodyState3D *s) {
 	}
 }
 
-void VehicleBody3D::_direct_state_changed(Object *p_state) {
-	RigidBody3D::_direct_state_changed(p_state);
+void VehicleBody3D::_body_state_changed(PhysicsDirectBodyState3D *p_state) {
+	RigidBody3D::_body_state_changed(p_state);
 
-	state = Object::cast_to<PhysicsDirectBodyState3D>(p_state);
-	ERR_FAIL_NULL_MSG(state, "Method '_direct_state_changed' must receive a valid PhysicsDirectBodyState3D object as argument");
-
-	real_t step = state->get_step();
+	real_t step = p_state->get_step();
 
 	for (int i = 0; i < wheels.size(); i++) {
-		_update_wheel(i, state);
+		_update_wheel(i, p_state);
 	}
 
 	for (int i = 0; i < wheels.size(); i++) {
-		_ray_cast(i, state);
-		wheels[i]->set_transform(state->get_transform().inverse() * wheels[i]->m_worldTransform);
+		_ray_cast(i, p_state);
+		wheels[i]->set_transform(p_state->get_transform().inverse() * wheels[i]->m_worldTransform);
 	}
 
-	_update_suspension(state);
+	_update_suspension(p_state);
 
 	for (int i = 0; i < wheels.size(); i++) {
 		//apply suspension force
@@ -831,20 +828,20 @@ void VehicleBody3D::_direct_state_changed(Object *p_state) {
 			suspensionForce = wheel.m_maxSuspensionForce;
 		}
 		Vector3 impulse = wheel.m_raycastInfo.m_contactNormalWS * suspensionForce * step;
-		Vector3 relative_position = wheel.m_raycastInfo.m_contactPointWS - state->get_transform().origin;
+		Vector3 relative_position = wheel.m_raycastInfo.m_contactPointWS - p_state->get_transform().origin;
 
-		state->apply_impulse(impulse, relative_position);
+		p_state->apply_impulse(impulse, relative_position);
 	}
 
-	_update_friction(state);
+	_update_friction(p_state);
 
 	for (int i = 0; i < wheels.size(); i++) {
 		VehicleWheel3D &wheel = *wheels[i];
-		Vector3 relpos = wheel.m_raycastInfo.m_hardPointWS - state->get_transform().origin;
-		Vector3 vel = state->get_linear_velocity() + (state->get_angular_velocity()).cross(relpos); // * mPos);
+		Vector3 relpos = wheel.m_raycastInfo.m_hardPointWS - p_state->get_transform().origin;
+		Vector3 vel = p_state->get_linear_velocity() + (p_state->get_angular_velocity()).cross(relpos); // * mPos);
 
 		if (wheel.m_raycastInfo.m_isInContact) {
-			const Transform3D &chassisWorldTransform = state->get_transform();
+			const Transform3D &chassisWorldTransform = p_state->get_transform();
 
 			Vector3 fwd(
 					chassisWorldTransform.basis[0][Vector3::AXIS_Z],
@@ -864,8 +861,6 @@ void VehicleBody3D::_direct_state_changed(Object *p_state) {
 
 		wheel.m_deltaRotation *= real_t(0.99); //damping of rotation when not in contact
 	}
-
-	state = nullptr;
 }
 
 void VehicleBody3D::set_engine_force(real_t p_engine_force) {
@@ -926,7 +921,5 @@ void VehicleBody3D::_bind_methods() {
 
 VehicleBody3D::VehicleBody3D() {
 	exclude.insert(get_rid());
-	//PhysicsServer3D::get_singleton()->body_set_force_integration_callback(get_rid(), callable_mp(this, &VehicleBody3D::_direct_state_changed));
-
 	set_mass(40);
 }
