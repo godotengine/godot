@@ -582,21 +582,22 @@ bool AnimationTree::_update_caches(AnimationPlayer *player) {
 
 					} break;
 					case Animation::TYPE_TRANSFORM3D: {
-						Node3D *spatial = Object::cast_to<Node3D>(child);
+#ifndef _3D_DISABLED
+						Node3D *node_3d = Object::cast_to<Node3D>(child);
 
-						if (!spatial) {
-							ERR_PRINT("AnimationTree: '" + String(E->get()) + "', transform track does not point to spatial:  '" + String(path) + "'");
+						if (!node_3d) {
+							ERR_PRINT("AnimationTree: '" + String(E->get()) + "', transform track does not point to Node3D:  '" + String(path) + "'");
 							continue;
 						}
 
 						TrackCacheTransform *track_xform = memnew(TrackCacheTransform);
 
-						track_xform->spatial = spatial;
+						track_xform->node_3d = node_3d;
 						track_xform->skeleton = nullptr;
 						track_xform->bone_idx = -1;
 
-						if (path.get_subname_count() == 1 && Object::cast_to<Skeleton3D>(spatial)) {
-							Skeleton3D *sk = Object::cast_to<Skeleton3D>(spatial);
+						if (path.get_subname_count() == 1 && Object::cast_to<Skeleton3D>(node_3d)) {
+							Skeleton3D *sk = Object::cast_to<Skeleton3D>(node_3d);
 							track_xform->skeleton = sk;
 							int bone_idx = sk->find_bone(path.get_subname(0));
 							if (bone_idx != -1) {
@@ -604,11 +605,11 @@ bool AnimationTree::_update_caches(AnimationPlayer *player) {
 							}
 						}
 
-						track_xform->object = spatial;
+						track_xform->object = node_3d;
 						track_xform->object_id = track_xform->object->get_instance_id();
 
 						track = track_xform;
-
+#endif // _3D_DISABLED
 					} break;
 					case Animation::TYPE_METHOD: {
 						TrackCacheMethod *track_method = memnew(TrackCacheMethod);
@@ -845,6 +846,7 @@ void AnimationTree::_process_graph(float p_delta) {
 
 				switch (track->type) {
 					case Animation::TYPE_TRANSFORM3D: {
+#ifndef _3D_DISABLED
 						TrackCacheTransform *t = static_cast<TrackCacheTransform *>(track);
 
 						if (track->root_motion) {
@@ -930,7 +932,7 @@ void AnimationTree::_process_graph(float p_delta) {
 							}
 							t->scale = t->scale.lerp(scale, blend);
 						}
-
+#endif // _3D_DISABLED
 					} break;
 					case Animation::TYPE_VALUE: {
 						TrackCacheValue *t = static_cast<TrackCacheValue *>(track);
@@ -1189,6 +1191,7 @@ void AnimationTree::_process_graph(float p_delta) {
 
 			switch (track->type) {
 				case Animation::TYPE_TRANSFORM3D: {
+#ifndef _3D_DISABLED
 					TrackCacheTransform *t = static_cast<TrackCacheTransform *>(track);
 
 					Transform3D xform;
@@ -1206,9 +1209,9 @@ void AnimationTree::_process_graph(float p_delta) {
 						t->skeleton->set_bone_pose(t->bone_idx, xform);
 
 					} else if (!t->skeleton) {
-						t->spatial->set_transform(xform);
+						t->node_3d->set_transform(xform);
 					}
-
+#endif // _3D_DISABLED
 				} break;
 				case Animation::TYPE_VALUE: {
 					TrackCacheValue *t = static_cast<TrackCacheValue *>(track);
