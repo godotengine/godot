@@ -34,11 +34,9 @@
 #include "collision_object_2d_sw.h"
 #include "core/templates/self_list.h"
 #include "servers/physics_server_2d.h"
-//#include "servers/physics_3d/query_sw.h"
 
 class Space2DSW;
 class Body2DSW;
-class Constraint2DSW;
 
 class Area2DSW : public CollisionObject2DSW {
 	PhysicsServer2D::AreaSpaceOverrideMode space_override_mode;
@@ -94,17 +92,10 @@ class Area2DSW : public CollisionObject2DSW {
 	Map<BodyKey, BodyState> monitored_bodies;
 	Map<BodyKey, BodyState> monitored_areas;
 
-	//virtual void shape_changed_notify(Shape2DSW *p_shape);
-	//virtual void shape_deleted_notify(Shape2DSW *p_shape);
-	Set<Constraint2DSW *> constraints;
-
 	virtual void _shapes_changed();
 	void _queue_monitor_update();
 
 public:
-	//_FORCE_INLINE_ const Matrix32& get_inverse_transform() const { return inverse_transform; }
-	//_FORCE_INLINE_ SpaceSW* get_owner() { return owner; }
-
 	void set_monitor_callback(ObjectID p_id, const StringName &p_method);
 	_FORCE_INLINE_ bool has_monitor_callback() const { return monitor_callback_id.is_valid(); }
 
@@ -146,11 +137,6 @@ public:
 
 	_FORCE_INLINE_ void set_priority(int p_priority) { priority = p_priority; }
 	_FORCE_INLINE_ int get_priority() const { return priority; }
-
-	_FORCE_INLINE_ void add_constraint(Constraint2DSW *p_constraint) { constraints.insert(p_constraint); }
-	_FORCE_INLINE_ void remove_constraint(Constraint2DSW *p_constraint) { constraints.erase(p_constraint); }
-	_FORCE_INLINE_ const Set<Constraint2DSW *> &get_constraints() const { return constraints; }
-	_FORCE_INLINE_ void clear_constraints() { constraints.clear(); }
 
 	void set_monitorable(bool p_monitorable);
 	_FORCE_INLINE_ bool is_monitorable() const { return monitorable; }

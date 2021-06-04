@@ -226,8 +226,8 @@ Generic6DOFJoint3DSW::Generic6DOFJoint3DSW(Body3DSW *rbA, Body3DSW *rbB, const T
 		m_useLinearReferenceFrameA(useLinearReferenceFrameA) {
 	A = rbA;
 	B = rbB;
-	A->add_constraint(this, 0);
-	B->add_constraint(this, 1);
+	A->add_constraint(this);
+	B->add_constraint(this);
 }
 
 void Generic6DOFJoint3DSW::calculateAngleInfo() {

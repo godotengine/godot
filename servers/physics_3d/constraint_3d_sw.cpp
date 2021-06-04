@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  constraint_2d_sw.h                                                   */
+/*  constraint_3d_sw.cpp                                                 */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,55 +28,6 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef CONSTRAINT_2D_SW_H
-#define CONSTRAINT_2D_SW_H
+#include "constraint_3d_sw.h"
 
-#include "core/math/math_defs.h"
-#include "core/templates/rid.h"
-#include "core/templates/safe_refcount.h"
-
-class Body2DSW;
-
-class Constraint2DSW {
-	Body2DSW **_body_ptr;
-	int _body_count;
-	uint64_t island_step;
-	bool disabled_collisions_between_bodies;
-
-	RID self;
-
-	static SafeNumeric<uint32_t> constraint_id_counter;
-	uint32_t constraint_id = 0;
-
-protected:
-	Constraint2DSW(Body2DSW **p_body_ptr = nullptr, int p_body_count = 0) {
-		_body_ptr = p_body_ptr;
-		_body_count = p_body_count;
-		island_step = 0;
-		disabled_collisions_between_bodies = true;
-		constraint_id = constraint_id_counter.increment();
-	}
-
-public:
-	_FORCE_INLINE_ void set_self(const RID &p_self) { self = p_self; }
-	_FORCE_INLINE_ RID get_self() const { return self; }
-
-	_FORCE_INLINE_ uint32_t get_constraint_id() const { return constraint_id; }
-
-	_FORCE_INLINE_ uint64_t get_island_step() const { return island_step; }
-	_FORCE_INLINE_ void set_island_step(uint64_t p_step) { island_step = p_step; }
-
-	_FORCE_INLINE_ Body2DSW **get_body_ptr() const { return _body_ptr; }
-	_FORCE_INLINE_ int get_body_count() const { return _body_count; }
-
-	_FORCE_INLINE_ void disable_collisions_between_bodies(const bool p_disabled) { disabled_collisions_between_bodies = p_disabled; }
-	_FORCE_INLINE_ bool is_disabled_collisions_between_bodies() const { return disabled_collisions_between_bodies; }
-
-	virtual bool setup(real_t p_step) = 0;
-	virtual bool pre_solve(real_t p_step) = 0;
-	virtual void solve(real_t p_step) = 0;
-
-	virtual ~Constraint2DSW() {}
-};
-
-#endif // CONSTRAINT_2D_SW_H
+SafeNumeric<uint32_t> Constraint3DSW::constraint_id_counter;

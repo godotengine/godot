@@ -89,7 +89,7 @@ AreaPair2DSW::AreaPair2DSW(Body2DSW *p_body, int p_body_shape, Area2DSW *p_area,
 	area = p_area;
 	body_shape = p_body_shape;
 	area_shape = p_area_shape;
-	body->add_constraint(this, 0);
+	body->add_constraint(this);
 	area->add_constraint(this);
 	if (p_body->get_mode() == PhysicsServer2D::BODY_MODE_KINEMATIC) { //need to be active to process pair
 		p_body->set_active(true);
@@ -105,7 +105,7 @@ AreaPair2DSW::~AreaPair2DSW() {
 			area->remove_body_from_query(body, body_shape, area_shape);
 		}
 	}
-	body->remove_constraint(this, 0);
+	body->remove_constraint(this);
 	area->remove_constraint(this);
 }
 

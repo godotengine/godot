@@ -534,11 +534,11 @@ BodyPair2DSW::BodyPair2DSW(Body2DSW *p_A, int p_shape_A, Body2DSW *p_B, int p_sh
 	shape_A = p_shape_A;
 	shape_B = p_shape_B;
 	space = A->get_space();
-	A->add_constraint(this, 0);
-	B->add_constraint(this, 1);
+	A->add_constraint(this);
+	B->add_constraint(this);
 }
 
 BodyPair2DSW::~BodyPair2DSW() {
-	A->remove_constraint(this, 0);
-	B->remove_constraint(this, 1);
+	A->remove_constraint(this);
+	B->remove_constraint(this);
 }

@@ -47,8 +47,8 @@ void Step3DSW::_populate_island(Body3DSW *p_body, LocalVector<Body3DSW *> &p_bod
 		p_body_island.push_back(p_body);
 	}
 
-	for (Map<Constraint3DSW *, int>::Element *E = p_body->get_constraint_map().front(); E; E = E->next()) {
-		Constraint3DSW *constraint = (Constraint3DSW *)E->key();
+	for (const CollisionObject3DSW::T_ConstraintMap::Element *E = p_body->get_constraint_map().front(); E; E = E->next()) {
+		Constraint3DSW *constraint = E->get();
 		if (constraint->get_island_step() == _step) {
 			continue; // Already processed.
 		}
@@ -58,26 +58,31 @@ void Step3DSW::_populate_island(Body3DSW *p_body, LocalVector<Body3DSW *> &p_bod
 		all_constraints.push_back(constraint);
 
 		// Find connected rigid bodies.
-		for (int i = 0; i < constraint->get_body_count(); i++) {
-			if (i == E->get()) {
-				continue;
-			}
-			Body3DSW *other_body = constraint->get_body_ptr()[i];
+		Body3DSW **bodies = constraint->get_body_ptr();
+		int body_count = constraint->get_body_count();
+		for (int i = 0; i < body_count; i++) {
+			Body3DSW *other_body = bodies[i];
+
 			if (other_body->get_island_step() == _step) {
-				continue; // Already processed.
+				continue; // Already processed (can be this body).
 			}
+
 			if (other_body->get_mode() == PhysicsServer3D::BODY_MODE_STATIC) {
 				continue; // Static bodies don't connect islands.
 			}
+
 			_populate_island(other_body, p_body_island, p_constraint_island);
 		}
 
 		// Find connected soft bodies.
-		for (int i = 0; i < constraint->get_soft_body_count(); i++) {
+		int soft_body_count = constraint->get_soft_body_count();
+		for (int i = 0; i < soft_body_count; i++) {
 			SoftBody3DSW *soft_body = constraint->get_soft_body_ptr(i);
+
 			if (soft_body->get_island_step() == _step) {
 				continue; // Already processed.
 			}
+
 			_populate_island_soft_body(soft_body, p_body_island, p_constraint_island);
 		}
 	}
@@ -86,8 +91,8 @@ void Step3DSW::_populate_island(Body3DSW *p_body, LocalVector<Body3DSW *> &p_bod
 void Step3DSW::_populate_island_soft_body(SoftBody3DSW *p_soft_body, LocalVector<Body3DSW *> &p_body_island, LocalVector<Constraint3DSW *> &p_constraint_island) {
 	p_soft_body->set_island_step(_step);
 
-	for (Set<Constraint3DSW *>::Element *E = p_soft_body->get_constraints().front(); E; E = E->next()) {
-		Constraint3DSW *constraint = (Constraint3DSW *)E->get();
+	for (const CollisionObject3DSW::T_ConstraintMap::Element *E = p_soft_body->get_constraint_map().front(); E; E = E->next()) {
+		Constraint3DSW *constraint = E->get();
 		if (constraint->get_island_step() == _step) {
 			continue; // Already processed.
 		}
@@ -97,14 +102,19 @@ void Step3DSW::_populate_island_soft_body(SoftBody3DSW *p_soft_body, LocalVector
 		all_constraints.push_back(constraint);
 
 		// Find connected rigid bodies.
-		for (int i = 0; i < constraint->get_body_count(); i++) {
-			Body3DSW *body = constraint->get_body_ptr()[i];
+		Body3DSW **bodies = constraint->get_body_ptr();
+		int body_count = constraint->get_body_count();
+		for (int i = 0; i < body_count; i++) {
+			Body3DSW *body = bodies[i];
+
 			if (body->get_island_step() == _step) {
 				continue; // Already processed.
 			}
+
 			if (body->get_mode() == PhysicsServer3D::BODY_MODE_STATIC) {
 				continue; // Static bodies don't connect islands.
 			}
+
 			_populate_island(body, p_body_island, p_constraint_island);
 		}
 	}
@@ -230,7 +240,7 @@ void Step3DSW::step(Space3DSW *p_space, real_t p_delta, int p_iterations) {
 	const SelfList<Area3DSW>::List &aml = p_space->get_moved_area_list();
 
 	while (aml.first()) {
-		for (const Set<Constraint3DSW *>::Element *E = aml.first()->self()->get_constraints().front(); E; E = E->next()) {
+		for (const CollisionObject3DSW::T_ConstraintMap::Element *E = aml.first()->self()->get_constraint_map().front(); E; E = E->next()) {
 			Constraint3DSW *constraint = E->get();
 			if (constraint->get_island_step() == _step) {
 				continue;

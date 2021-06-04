@@ -34,11 +34,9 @@
 #include "collision_object_3d_sw.h"
 #include "core/templates/self_list.h"
 #include "servers/physics_server_3d.h"
-//#include "servers/physics_3d/query_sw.h"
 
 class Space3DSW;
 class Body3DSW;
-class Constraint3DSW;
 
 class Area3DSW : public CollisionObject3DSW {
 	PhysicsServer3D::AreaSpaceOverrideMode space_override_mode;
@@ -94,18 +92,10 @@ class Area3DSW : public CollisionObject3DSW {
 	Map<BodyKey, BodyState> monitored_bodies;
 	Map<BodyKey, BodyState> monitored_areas;
 
-	//virtual void shape_changed_notify(ShapeSW *p_shape);
-	//virtual void shape_deleted_notify(ShapeSW *p_shape);
-
-	Set<Constraint3DSW *> constraints;
-
 	virtual void _shapes_changed();
 	void _queue_monitor_update();
 
 public:
-	//_FORCE_INLINE_ const Transform& get_inverse_transform() const { return inverse_transform; }
-	//_FORCE_INLINE_ SpaceSW* get_owner() { return owner; }
-
 	void set_monitor_callback(ObjectID p_id, const StringName &p_method);
 	_FORCE_INLINE_ bool has_monitor_callback() const { return monitor_callback_id.is_valid(); }
 
@@ -147,11 +137,6 @@ public:
 
 	_FORCE_INLINE_ void set_priority(int p_priority) { priority = p_priority; }
 	_FORCE_INLINE_ int get_priority() const { return priority; }
-
-	_FORCE_INLINE_ void add_constraint(Constraint3DSW *p_constraint) { constraints.insert(p_constraint); }
-	_FORCE_INLINE_ void remove_constraint(Constraint3DSW *p_constraint) { constraints.erase(p_constraint); }
-	_FORCE_INLINE_ const Set<Constraint3DSW *> &get_constraints() const { return constraints; }
-	_FORCE_INLINE_ void clear_constraints() { constraints.clear(); }
 
 	void set_monitorable(bool p_monitorable);
 	_FORCE_INLINE_ bool is_monitorable() const { return monitorable; }
