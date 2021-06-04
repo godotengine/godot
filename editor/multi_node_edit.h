@@ -33,8 +33,8 @@
 
 #include "scene/main/node.h"
 
-class MultiNodeEdit : public Reference {
-	GDCLASS(MultiNodeEdit, Reference);
+class MultiNodeEdit : public RefCounted {
+	GDCLASS(MultiNodeEdit, RefCounted);
 
 	List<NodePath> nodes;
 	struct PLData {

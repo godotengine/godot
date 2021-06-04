@@ -2261,7 +2261,7 @@ void EditorPropertyNodePath::_node_selected(const NodePath &p_path) {
 		base_node = get_edited_object()->call("get_root_path");
 	}
 
-	if (!base_node && Object::cast_to<Reference>(get_edited_object())) {
+	if (!base_node && Object::cast_to<RefCounted>(get_edited_object())) {
 		Node *to_node = get_node(p_path);
 		ERR_FAIL_COND(!to_node);
 		path = get_tree()->get_edited_scene_root()->get_path_to(to_node);

@@ -32,7 +32,7 @@
 #define OPEN_SIMPLEX_NOISE_H
 
 #include "core/io/image.h"
-#include "core/object/reference.h"
+#include "core/object/ref_counted.h"
 #include "scene/resources/texture.h"
 
 #include "thirdparty/misc/open-simplex-noise.h"

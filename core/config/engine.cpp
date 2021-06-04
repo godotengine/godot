@@ -232,9 +232,9 @@ Engine::Singleton::Singleton(const StringName &p_name, Object *p_ptr) :
 		name(p_name),
 		ptr(p_ptr) {
 #ifdef DEBUG_ENABLED
-	Reference *ref = Object::cast_to<Reference>(p_ptr);
-	if (ref && !ref->is_referenced()) {
-		WARN_PRINT("You must use Ref<> to ensure the lifetime of a Reference object intended to be used as a singleton.");
+	RefCounted *rc = Object::cast_to<RefCounted>(p_ptr);
+	if (rc && !rc->is_referenced()) {
+		WARN_PRINT("You must use Ref<> to ensure the lifetime of a RefCounted object intended to be used as a singleton.");
 	}
 #endif
 }

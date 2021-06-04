@@ -165,8 +165,8 @@ TEST_CASE("[Object] Construction") {
 	Object object;
 
 	CHECK_MESSAGE(
-			!object.is_reference(),
-			"Object is not a Reference.");
+			!object.is_ref_counted(),
+			"Object is not a RefCounted.");
 
 	Object *p_db = ObjectDB::get_instance(object.get_instance_id());
 	CHECK_MESSAGE(

@@ -37,8 +37,8 @@
 #include "scene/resources/animation.h"
 
 #ifdef TOOLS_ENABLED
-class AnimatedValuesBackup : public Reference {
-	GDCLASS(AnimatedValuesBackup, Reference);
+class AnimatedValuesBackup : public RefCounted {
+	GDCLASS(AnimatedValuesBackup, RefCounted);
 
 	struct Entry {
 		Object *object = nullptr;

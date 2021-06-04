@@ -1115,9 +1115,9 @@ void Variant::reference(const Variant &p_variant) {
 		case OBJECT: {
 			memnew_placement(_data._mem, ObjData);
 
-			if (p_variant._get_obj().obj && p_variant._get_obj().id.is_reference()) {
-				Reference *reference = static_cast<Reference *>(p_variant._get_obj().obj);
-				if (!reference->reference()) {
+			if (p_variant._get_obj().obj && p_variant._get_obj().id.is_ref_counted()) {
+				RefCounted *ref_counted = static_cast<RefCounted *>(p_variant._get_obj().obj);
+				if (!ref_counted->reference()) {
 					_get_obj().obj = nullptr;
 					_get_obj().id = ObjectID();
 					break;
@@ -1301,11 +1301,11 @@ void Variant::_clear_internal() {
 			reinterpret_cast<NodePath *>(_data._mem)->~NodePath();
 		} break;
 		case OBJECT: {
-			if (_get_obj().id.is_reference()) {
+			if (_get_obj().id.is_ref_counted()) {
 				//we are safe that there is a reference here
-				Reference *reference = static_cast<Reference *>(_get_obj().obj);
-				if (reference->unreference()) {
-					memdelete(reference);
+				RefCounted *ref_counted = static_cast<RefCounted *>(_get_obj().obj);
+				if (ref_counted->unreference()) {
+					memdelete(ref_counted);
 				}
 			}
 			_get_obj().obj = nullptr;
@@ -1830,7 +1830,7 @@ String Variant::stringify(List<const void *> &stack) const {
 		} break;
 		case OBJECT: {
 			if (_get_obj().obj) {
-				if (!_get_obj().id.is_reference() && ObjectDB::get_instance(_get_obj().id) == nullptr) {
+				if (!_get_obj().id.is_ref_counted() && ObjectDB::get_instance(_get_obj().id) == nullptr) {
 					return "[Freed Object]";
 				}
 
@@ -2530,9 +2530,9 @@ Variant::Variant(const Object *p_object) {
 	memnew_placement(_data._mem, ObjData);
 
 	if (p_object) {
-		if (p_object->is_reference()) {
-			Reference *reference = const_cast<Reference *>(static_cast<const Reference *>(p_object));
-			if (!reference->init_ref()) {
+		if (p_object->is_ref_counted()) {
+			RefCounted *ref_counted = const_cast<RefCounted *>(static_cast<const RefCounted *>(p_object));
+			if (!ref_counted->init_ref()) {
 				_get_obj().obj = nullptr;
 				_get_obj().id = ObjectID();
 				return;
@@ -2756,17 +2756,17 @@ void Variant::operator=(const Variant &p_variant) {
 			*reinterpret_cast<::RID *>(_data._mem) = *reinterpret_cast<const ::RID *>(p_variant._data._mem);
 		} break;
 		case OBJECT: {
-			if (_get_obj().id.is_reference()) {
+			if (_get_obj().id.is_ref_counted()) {
 				//we are safe that there is a reference here
-				Reference *reference = static_cast<Reference *>(_get_obj().obj);
-				if (reference->unreference()) {
-					memdelete(reference);
+				RefCounted *ref_counted = static_cast<RefCounted *>(_get_obj().obj);
+				if (ref_counted->unreference()) {
+					memdelete(ref_counted);
 				}
 			}
 
-			if (p_variant._get_obj().obj && p_variant._get_obj().id.is_reference()) {
-				Reference *reference = static_cast<Reference *>(p_variant._get_obj().obj);
-				if (!reference->reference()) {
+			if (p_variant._get_obj().obj && p_variant._get_obj().id.is_ref_counted()) {
+				RefCounted *ref_counted = static_cast<RefCounted *>(p_variant._get_obj().obj);
+				if (!ref_counted->reference()) {
 					_get_obj().obj = nullptr;
 					_get_obj().id = ObjectID();
 					break;
@@ -3323,7 +3323,7 @@ bool Variant::hash_compare(const Variant &p_variant) const {
 }
 
 bool Variant::is_ref() const {
-	return type == OBJECT && _get_obj().id.is_reference();
+	return type == OBJECT && _get_obj().id.is_ref_counted();
 }
 
 Vector<Variant> varray() {

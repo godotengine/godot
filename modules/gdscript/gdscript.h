@@ -39,8 +39,8 @@
 #include "core/object/script_language.h"
 #include "gdscript_function.h"
 
-class GDScriptNativeClass : public Reference {
-	GDCLASS(GDScriptNativeClass, Reference);
+class GDScriptNativeClass : public RefCounted {
+	GDCLASS(GDScriptNativeClass, RefCounted);
 
 	StringName name;
 
@@ -132,7 +132,7 @@ class GDScript : public Script {
 	SelfList<GDScriptFunctionState>::List pending_func_states;
 
 	void _super_implicit_constructor(GDScript *p_script, GDScriptInstance *p_instance, Callable::CallError &r_error);
-	GDScriptInstance *_create_instance(const Variant **p_args, int p_argcount, Object *p_owner, bool p_isref, Callable::CallError &r_error);
+	GDScriptInstance *_create_instance(const Variant **p_args, int p_argcount, Object *p_owner, bool p_is_ref_counted, Callable::CallError &r_error);
 
 	void _set_subclass_path(Ref<GDScript> &p_sc, const String &p_path);
 
@@ -157,7 +157,7 @@ class GDScript : public Script {
 	void _get_script_method_list(List<MethodInfo> *r_list, bool p_include_base) const;
 	void _get_script_signal_list(List<MethodInfo> *r_list, bool p_include_base) const;
 
-	// This method will map the class name from "Reference" to "MyClass.InnerClass".
+	// This method will map the class name from "RefCounted" to "MyClass.InnerClass".
 	static String _get_gdscript_reference_class_name(const GDScript *p_gdscript);
 
 protected:
@@ -270,7 +270,7 @@ class GDScriptInstance : public ScriptInstance {
 	Map<StringName, int> member_indices_cache; //used only for hot script reloading
 #endif
 	Vector<Variant> members;
-	bool base_ref;
+	bool base_ref_counted;
 
 	SelfList<GDScriptFunctionState>::List pending_func_states;
 

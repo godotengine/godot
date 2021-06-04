@@ -32,7 +32,7 @@
 #define PIVOT_TRANSFORM_H
 
 #include "core/math/transform_3d.h"
-#include "core/object/reference.h"
+#include "core/object/ref_counted.h"
 
 #include "model_abstraction.h"
 
@@ -55,7 +55,7 @@ enum TransformationComp {
 	TransformationComp_MAXIMUM
 };
 // Abstract away pivot data so its simpler to handle
-struct PivotTransform : Reference, ModelAbstraction {
+struct PivotTransform : RefCounted, ModelAbstraction {
 	// at the end we want to keep geometric_ everything, post and pre rotation
 	// these are used during animation data processing / keyframe ingestion the rest can be simplified down / out.
 	Quaternion pre_rotation = Quaternion();

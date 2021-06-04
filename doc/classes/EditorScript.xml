@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="EditorScript" inherits="Reference" version="4.0">
+<class name="EditorScript" inherits="RefCounted" version="4.0">
 	<brief_description>
 		Base script that can be used to add extension functions to the editor.
 	</brief_description>

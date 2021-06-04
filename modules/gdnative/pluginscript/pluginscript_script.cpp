@@ -94,7 +94,7 @@ Variant PluginScript::_new(const Variant **p_args, int p_argcount, Callable::Cal
 	Object *owner = nullptr;
 
 	if (get_instance_base_type() == "") {
-		owner = memnew(Reference);
+		owner = memnew(RefCounted);
 	} else {
 		owner = ClassDB::instance(get_instance_base_type());
 	}
@@ -104,7 +104,7 @@ Variant PluginScript::_new(const Variant **p_args, int p_argcount, Callable::Cal
 		return Variant();
 	}
 
-	Reference *r = Object::cast_to<Reference>(owner);
+	RefCounted *r = Object::cast_to<RefCounted>(owner);
 	if (r) {
 		ref = REF(r);
 	}

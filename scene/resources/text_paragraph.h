@@ -36,8 +36,8 @@
 
 /*************************************************************************/
 
-class TextParagraph : public Reference {
-	GDCLASS(TextParagraph, Reference);
+class TextParagraph : public RefCounted {
+	GDCLASS(TextParagraph, RefCounted);
 
 	RID dropcap_rid;
 	int dropcap_lines = 0;

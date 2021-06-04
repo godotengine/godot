@@ -972,7 +972,7 @@ void Variant::call(const StringName &p_method, const Variant **p_args, int p_arg
 			return;
 		}
 #ifdef DEBUG_ENABLED
-		if (EngineDebugger::is_active() && !_get_obj().id.is_reference() && ObjectDB::get_instance(_get_obj().id) == nullptr) {
+		if (EngineDebugger::is_active() && !_get_obj().id.is_ref_counted() && ObjectDB::get_instance(_get_obj().id) == nullptr) {
 			r_error.error = Callable::CallError::CALL_ERROR_INSTANCE_IS_NULL;
 			return;
 		}

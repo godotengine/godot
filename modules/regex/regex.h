@@ -31,15 +31,15 @@
 #ifndef REGEX_H
 #define REGEX_H
 
-#include "core/object/reference.h"
+#include "core/object/ref_counted.h"
 #include "core/string/ustring.h"
 #include "core/templates/map.h"
 #include "core/templates/vector.h"
 #include "core/variant/array.h"
 #include "core/variant/dictionary.h"
 
-class RegExMatch : public Reference {
-	GDCLASS(RegExMatch, Reference);
+class RegExMatch : public RefCounted {
+	GDCLASS(RegExMatch, RefCounted);
 
 	struct Range {
 		int start = 0;
@@ -68,8 +68,8 @@ public:
 	int get_end(const Variant &p_name) const;
 };
 
-class RegEx : public Reference {
-	GDCLASS(RegEx, Reference);
+class RegEx : public RefCounted {
+	GDCLASS(RegEx, RefCounted);
 
 	void *general_ctx;
 	void *code = nullptr;

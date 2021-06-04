@@ -353,8 +353,8 @@ public:
 	_Geometry3D() { singleton = this; }
 };
 
-class _File : public Reference {
-	GDCLASS(_File, Reference);
+class _File : public RefCounted {
+	GDCLASS(_File, RefCounted);
 
 	FileAccess *f = nullptr;
 	bool big_endian = false;
@@ -455,8 +455,8 @@ public:
 VARIANT_ENUM_CAST(_File::ModeFlags);
 VARIANT_ENUM_CAST(_File::CompressionMode);
 
-class _Directory : public Reference {
-	GDCLASS(_Directory, Reference);
+class _Directory : public RefCounted {
+	GDCLASS(_Directory, RefCounted);
 	DirAccess *d;
 	bool dir_open = false;
 
@@ -525,8 +525,8 @@ public:
 	~_Marshalls() { singleton = nullptr; }
 };
 
-class _Mutex : public Reference {
-	GDCLASS(_Mutex, Reference);
+class _Mutex : public RefCounted {
+	GDCLASS(_Mutex, RefCounted);
 	Mutex mutex;
 
 	static void _bind_methods();
@@ -537,8 +537,8 @@ public:
 	void unlock();
 };
 
-class _Semaphore : public Reference {
-	GDCLASS(_Semaphore, Reference);
+class _Semaphore : public RefCounted {
+	GDCLASS(_Semaphore, RefCounted);
 	Semaphore semaphore;
 
 	static void _bind_methods();
@@ -549,8 +549,8 @@ public:
 	void post();
 };
 
-class _Thread : public Reference {
-	GDCLASS(_Thread, Reference);
+class _Thread : public RefCounted {
+	GDCLASS(_Thread, RefCounted);
 
 protected:
 	Variant ret;
@@ -666,8 +666,8 @@ public:
 
 class _JSON;
 
-class JSONParseResult : public Reference {
-	GDCLASS(JSONParseResult, Reference);
+class JSONParseResult : public RefCounted {
+	GDCLASS(JSONParseResult, RefCounted);
 
 	friend class _JSON;
 

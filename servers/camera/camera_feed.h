@@ -43,8 +43,8 @@
 	camera feeds that can be used as the background for our environment.
 **/
 
-class CameraFeed : public Reference {
-	GDCLASS(CameraFeed, Reference);
+class CameraFeed : public RefCounted {
+	GDCLASS(CameraFeed, RefCounted);
 
 public:
 	enum FeedDataType {

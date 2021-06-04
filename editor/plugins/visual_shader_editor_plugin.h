@@ -41,8 +41,8 @@
 #include "scene/gui/tree.h"
 #include "scene/resources/visual_shader.h"
 
-class VisualShaderNodePlugin : public Reference {
-	GDCLASS(VisualShaderNodePlugin, Reference);
+class VisualShaderNodePlugin : public RefCounted {
+	GDCLASS(VisualShaderNodePlugin, RefCounted);
 
 protected:
 	static void _bind_methods();
@@ -51,8 +51,8 @@ public:
 	virtual Control *create_editor(const Ref<Resource> &p_parent_resource, const Ref<VisualShaderNode> &p_node);
 };
 
-class VisualShaderGraphPlugin : public Reference {
-	GDCLASS(VisualShaderGraphPlugin, Reference);
+class VisualShaderGraphPlugin : public RefCounted {
+	GDCLASS(VisualShaderGraphPlugin, RefCounted);
 
 private:
 	struct InputPort {

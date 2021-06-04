@@ -33,7 +33,7 @@
 
 #include <mono/jit/jit.h>
 
-#include "core/object/reference.h"
+#include "core/object/ref_counted.h"
 
 namespace gdmono {
 
@@ -79,8 +79,8 @@ struct MonoGCHandleData {
 	static MonoGCHandleData new_weak_handle(MonoObject *p_object);
 };
 
-class MonoGCHandleRef : public Reference {
-	GDCLASS(MonoGCHandleRef, Reference);
+class MonoGCHandleRef : public RefCounted {
+	GDCLASS(MonoGCHandleRef, RefCounted);
 
 	MonoGCHandleData data;
 

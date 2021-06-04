@@ -505,7 +505,7 @@ Variant NativeScript::_new(const Variant **p_args, int p_argcount, Callable::Cal
 	if (!(script_data->base_native_type == "")) {
 		owner = ClassDB::instance(script_data->base_native_type);
 	} else {
-		owner = memnew(Reference);
+		owner = memnew(RefCounted);
 	}
 
 	if (!owner) {
@@ -513,7 +513,7 @@ Variant NativeScript::_new(const Variant **p_args, int p_argcount, Callable::Cal
 		return Variant();
 	}
 
-	Reference *r = Object::cast_to<Reference>(owner);
+	RefCounted *r = Object::cast_to<RefCounted>(owner);
 	if (r) {
 		ref = REF(r);
 	}

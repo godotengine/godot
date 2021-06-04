@@ -96,8 +96,8 @@ public:
 
 class PhysicsShapeQueryResult3D;
 
-class PhysicsShapeQueryParameters3D : public Reference {
-	GDCLASS(PhysicsShapeQueryParameters3D, Reference);
+class PhysicsShapeQueryParameters3D : public RefCounted {
+	GDCLASS(PhysicsShapeQueryParameters3D, RefCounted);
 	friend class PhysicsDirectSpaceState3D;
 
 	RES shape_ref;
@@ -196,8 +196,8 @@ public:
 	PhysicsDirectSpaceState3D();
 };
 
-class PhysicsShapeQueryResult3D : public Reference {
-	GDCLASS(PhysicsShapeQueryResult3D, Reference);
+class PhysicsShapeQueryResult3D : public RefCounted {
+	GDCLASS(PhysicsShapeQueryResult3D, RefCounted);
 
 	Vector<PhysicsDirectSpaceState3D::ShapeResult> result;
 

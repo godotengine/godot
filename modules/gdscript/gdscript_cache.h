@@ -31,7 +31,7 @@
 #ifndef GDSCRIPT_CACHE_H
 #define GDSCRIPT_CACHE_H
 
-#include "core/object/reference.h"
+#include "core/object/ref_counted.h"
 #include "core/os/mutex.h"
 #include "core/templates/hash_map.h"
 #include "core/templates/set.h"
@@ -40,7 +40,7 @@
 class GDScriptAnalyzer;
 class GDScriptParser;
 
-class GDScriptParserRef : public Reference {
+class GDScriptParserRef : public RefCounted {
 public:
 	enum Status {
 		EMPTY,

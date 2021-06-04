@@ -236,8 +236,8 @@ public:
 	AnimationTrackEdit();
 };
 
-class AnimationTrackEditPlugin : public Reference {
-	GDCLASS(AnimationTrackEditPlugin, Reference);
+class AnimationTrackEditPlugin : public RefCounted {
+	GDCLASS(AnimationTrackEditPlugin, RefCounted);
 
 public:
 	virtual AnimationTrackEdit *create_value_track_edit(Object *p_object, Variant::Type p_type, const String &p_property, PropertyHint p_hint, const String &p_hint_string, int p_usage);

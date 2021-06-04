@@ -121,7 +121,7 @@ struct ClassAPI {
 	String singleton_name;
 	bool is_instantiable = false;
 	// @Unclear
-	bool is_reference = false;
+	bool is_ref_counted = false;
 	bool has_indexing = false; // For builtin types.
 	String indexed_type; // For builtin types.
 	bool is_keyed = false; // For builtin types.
@@ -254,10 +254,10 @@ List<ClassAPI> generate_c_api_classes() {
 
 		{
 			List<StringName> inheriters;
-			ClassDB::get_inheriters_from_class("Reference", &inheriters);
-			bool is_reference = !!inheriters.find(class_name) || class_name == "Reference";
+			ClassDB::get_inheriters_from_class("RefCounted", &inheriters);
+			bool is_ref_counted = !!inheriters.find(class_name) || class_name == "RefCounted";
 			// @Unclear
-			class_api.is_reference = !class_api.is_singleton && is_reference;
+			class_api.is_ref_counted = !class_api.is_singleton && is_ref_counted;
 		}
 
 		// constants
@@ -509,10 +509,10 @@ List<ClassAPI> generate_c_builtin_api_types() {
 			case Variant::PACKED_VECTOR2_ARRAY:
 			case Variant::PACKED_VECTOR3_ARRAY:
 			case Variant::PACKED_COLOR_ARRAY:
-				class_api.is_reference = true;
+				class_api.is_ref_counted = true;
 				break;
 			default:
-				class_api.is_reference = false;
+				class_api.is_ref_counted = false;
 				break;
 		}
 
@@ -652,7 +652,7 @@ static List<String> generate_c_api_json(const List<ClassAPI> &p_api) {
 		source.push_back(String("\t\t\"singleton\": ") + (api.is_singleton ? "true" : "false") + ",\n");
 		source.push_back("\t\t\"singleton_name\": \"" + api.singleton_name + "\",\n");
 		source.push_back(String("\t\t\"instantiable\": ") + (api.is_instantiable ? "true" : "false") + ",\n");
-		source.push_back(String("\t\t\"is_reference\": ") + (api.is_reference ? "true" : "false") + ",\n");
+		source.push_back(String("\t\t\"is_ref_counted\": ") + (api.is_ref_counted ? "true" : "false") + ",\n");
 
 		source.push_back("\t\t\"constants\": {\n");
 		for (List<ConstantAPI>::Element *e = api.constants.front(); e; e = e->next()) {
@@ -794,7 +794,7 @@ static List<String> generate_c_builtin_api_json(const List<ClassAPI> &p_api) {
 
 		append_indented(source, vformat(R"("name": "%s",)", class_api.class_name));
 		append_indented(source, vformat(R"("is_instantiable": %s,)", class_api.is_instantiable ? "true" : "false"));
-		append_indented(source, vformat(R"("is_reference": %s,)", class_api.is_reference ? "true" : "false"));
+		append_indented(source, vformat(R"("is_ref_counted": %s,)", class_api.is_ref_counted ? "true" : "false"));
 		append_indented(source, vformat(R"("has_indexing": %s,)", class_api.has_indexing ? "true" : "false"));
 		append_indented(source, vformat(R"("indexed_type": "%s",)", class_api.has_indexing && class_api.indexed_type == "Nil" ? "Variant" : class_api.indexed_type));
 		append_indented(source, vformat(R"("is_keyed": %s,)", class_api.is_keyed ? "true" : "false"));

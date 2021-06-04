@@ -32,7 +32,7 @@
 #define RESOURCE_H
 
 #include "core/object/class_db.h"
-#include "core/object/reference.h"
+#include "core/object/ref_counted.h"
 #include "core/templates/safe_refcount.h"
 #include "core/templates/self_list.h"
 
@@ -43,8 +43,8 @@ public:                                                                         
                                                                                                                     \
 private:
 
-class Resource : public Reference {
-	GDCLASS(Resource, Reference);
+class Resource : public RefCounted {
+	GDCLASS(Resource, RefCounted);
 	OBJ_CATEGORY("Resources");
 
 public:

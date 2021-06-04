@@ -46,7 +46,7 @@ class WSLServer : public WebSocketServer {
 	GDCIIMPL(WSLServer, WebSocketServer);
 
 private:
-	class PendingPeer : public Reference {
+	class PendingPeer : public RefCounted {
 	private:
 		bool _parse_request(const Vector<String> p_protocols);
 

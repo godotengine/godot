@@ -545,7 +545,7 @@ private:
 
 	_FORCE_INLINE_ void _construct_object(bool p_reference);
 
-	friend class Reference;
+	friend class RefCounted;
 	bool type_is_reference = false;
 	SafeNumeric<uint32_t> instance_binding_count;
 	void *_script_instance_bindings[MAX_SCRIPT_INSTANCE_BINDINGS];
@@ -795,7 +795,7 @@ public:
 
 	void clear_internal_resource_paths();
 
-	_ALWAYS_INLINE_ bool is_reference() const { return type_is_reference; }
+	_ALWAYS_INLINE_ bool is_ref_counted() const { return type_is_reference; }
 
 	Object();
 	virtual ~Object();
@@ -815,7 +815,7 @@ class ObjectDB {
 	struct ObjectSlot { //128 bits per slot
 		uint64_t validator : OBJECTDB_VALIDATOR_BITS;
 		uint64_t next_free : OBJECTDB_SLOT_MAX_COUNT_BITS;
-		uint64_t is_reference : 1;
+		uint64_t is_ref_counted : 1;
 		Object *object;
 	};
 

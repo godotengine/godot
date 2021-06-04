@@ -122,8 +122,8 @@ void UndoRedo::add_do_method(Object *p_object, const StringName &p_method, VARIA
 	ERR_FAIL_COND((current_action + 1) >= actions.size());
 	Operation do_op;
 	do_op.object = p_object->get_instance_id();
-	if (Object::cast_to<Reference>(p_object)) {
-		do_op.ref = Ref<Reference>(Object::cast_to<Reference>(p_object));
+	if (Object::cast_to<RefCounted>(p_object)) {
+		do_op.ref = Ref<RefCounted>(Object::cast_to<RefCounted>(p_object));
 	}
 
 	do_op.type = Operation::TYPE_METHOD;
@@ -148,8 +148,8 @@ void UndoRedo::add_undo_method(Object *p_object, const StringName &p_method, VAR
 
 	Operation undo_op;
 	undo_op.object = p_object->get_instance_id();
-	if (Object::cast_to<Reference>(p_object)) {
-		undo_op.ref = Ref<Reference>(Object::cast_to<Reference>(p_object));
+	if (Object::cast_to<RefCounted>(p_object)) {
+		undo_op.ref = Ref<RefCounted>(Object::cast_to<RefCounted>(p_object));
 	}
 
 	undo_op.type = Operation::TYPE_METHOD;
@@ -167,8 +167,8 @@ void UndoRedo::add_do_property(Object *p_object, const StringName &p_property, c
 	ERR_FAIL_COND((current_action + 1) >= actions.size());
 	Operation do_op;
 	do_op.object = p_object->get_instance_id();
-	if (Object::cast_to<Reference>(p_object)) {
-		do_op.ref = Ref<Reference>(Object::cast_to<Reference>(p_object));
+	if (Object::cast_to<RefCounted>(p_object)) {
+		do_op.ref = Ref<RefCounted>(Object::cast_to<RefCounted>(p_object));
 	}
 
 	do_op.type = Operation::TYPE_PROPERTY;
@@ -189,8 +189,8 @@ void UndoRedo::add_undo_property(Object *p_object, const StringName &p_property,
 
 	Operation undo_op;
 	undo_op.object = p_object->get_instance_id();
-	if (Object::cast_to<Reference>(p_object)) {
-		undo_op.ref = Ref<Reference>(Object::cast_to<Reference>(p_object));
+	if (Object::cast_to<RefCounted>(p_object)) {
+		undo_op.ref = Ref<RefCounted>(Object::cast_to<RefCounted>(p_object));
 	}
 
 	undo_op.type = Operation::TYPE_PROPERTY;
@@ -205,8 +205,8 @@ void UndoRedo::add_do_reference(Object *p_object) {
 	ERR_FAIL_COND((current_action + 1) >= actions.size());
 	Operation do_op;
 	do_op.object = p_object->get_instance_id();
-	if (Object::cast_to<Reference>(p_object)) {
-		do_op.ref = Ref<Reference>(Object::cast_to<Reference>(p_object));
+	if (Object::cast_to<RefCounted>(p_object)) {
+		do_op.ref = Ref<RefCounted>(Object::cast_to<RefCounted>(p_object));
 	}
 
 	do_op.type = Operation::TYPE_REFERENCE;
@@ -225,8 +225,8 @@ void UndoRedo::add_undo_reference(Object *p_object) {
 
 	Operation undo_op;
 	undo_op.object = p_object->get_instance_id();
-	if (Object::cast_to<Reference>(p_object)) {
-		undo_op.ref = Ref<Reference>(Object::cast_to<Reference>(p_object));
+	if (Object::cast_to<RefCounted>(p_object)) {
+		undo_op.ref = Ref<RefCounted>(Object::cast_to<RefCounted>(p_object));
 	}
 
 	undo_op.type = Operation::TYPE_REFERENCE;

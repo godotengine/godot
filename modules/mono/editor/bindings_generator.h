@@ -216,7 +216,7 @@ class BindingsGenerator {
 		bool is_enum = false;
 		bool is_object_type = false;
 		bool is_singleton = false;
-		bool is_reference = false;
+		bool is_ref_counted = false;
 
 		/**
 		 * Used only by Object-derived types.
@@ -228,7 +228,7 @@ class BindingsGenerator {
 		/**
 		 * Used only by Object-derived types.
 		 * Determines if the C# class owns the native handle and must free it somehow when disposed.
-		 * e.g.: Reference types must notify when the C# instance is disposed, for proper refcounting.
+		 * e.g.: RefCounted types must notify when the C# instance is disposed, for proper refcounting.
 		 */
 		bool memory_own = false;
 
@@ -295,7 +295,7 @@ class BindingsGenerator {
 		 * VarArg (fictitious type to represent variable arguments): Array
 		 * float: double (because ptrcall only supports double)
 		 * int: int64_t (because ptrcall only supports int64_t and uint64_t)
-		 * Reference types override this for the type of the return variable: Ref<Reference>
+		 * RefCounted types override this for the type of the return variable: Ref<RefCounted>
 		 */
 		String c_type;
 
@@ -534,7 +534,7 @@ class BindingsGenerator {
 		StringName type_Variant = StaticCString::create("Variant");
 		StringName type_VarArg = StaticCString::create("VarArg");
 		StringName type_Object = StaticCString::create("Object");
-		StringName type_Reference = StaticCString::create("Reference");
+		StringName type_RefCounted = StaticCString::create("RefCounted");
 		StringName type_RID = StaticCString::create("RID");
 		StringName type_String = StaticCString::create("String");
 		StringName type_StringName = StaticCString::create("StringName");
@@ -623,7 +623,7 @@ class BindingsGenerator {
 	}
 
 	inline String get_unique_sig(const TypeInterface &p_type) {
-		if (p_type.is_reference) {
+		if (p_type.is_ref_counted) {
 			return "Ref";
 		} else if (p_type.is_object_type) {
 			return "Obj";

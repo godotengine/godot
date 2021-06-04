@@ -32,12 +32,12 @@
 #define CONFIG_FILE_H
 
 #include "core/io/file_access.h"
-#include "core/object/reference.h"
+#include "core/object/ref_counted.h"
 #include "core/templates/ordered_hash_map.h"
 #include "core/variant/variant_parser.h"
 
-class ConfigFile : public Reference {
-	GDCLASS(ConfigFile, Reference);
+class ConfigFile : public RefCounted {
+	GDCLASS(ConfigFile, RefCounted);
 
 	OrderedHashMap<String, OrderedHashMap<String, Variant>> values;
 

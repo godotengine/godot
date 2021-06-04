@@ -34,8 +34,8 @@
 #include "core/io/net_socket.h"
 #include "core/io/packet_peer_udp.h"
 
-class UDPServer : public Reference {
-	GDCLASS(UDPServer, Reference);
+class UDPServer : public RefCounted {
+	GDCLASS(UDPServer, RefCounted);
 
 protected:
 	enum {

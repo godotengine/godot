@@ -33,8 +33,8 @@
 
 #include "scene/3d/node_3d.h"
 
-class VelocityTracker3D : public Reference {
-	GDCLASS(VelocityTracker3D, Reference);
+class VelocityTracker3D : public RefCounted {
+	GDCLASS(VelocityTracker3D, RefCounted);
 
 	struct PositionHistory {
 		uint64_t frame = 0;
