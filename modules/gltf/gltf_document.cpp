@@ -5673,7 +5673,7 @@ void GLTFDocument::_import_animation(Ref<GLTFState> state, AnimationPlayer *ap, 
 		if ((track.rotation_track.values.size() || track.translation_track.values.size() || track.scale_track.values.size()) && !transform_affects_skinned_mesh_instance) {
 			//make transform track
 			int track_idx = animation->get_track_count();
-			animation->add_track(Animation::TYPE_TRANSFORM);
+			animation->add_track(Animation::TYPE_TRANSFORM3D);
 			animation->track_set_path(track_idx, transform_node_path);
 			//first determine animation length
 
@@ -6020,7 +6020,7 @@ GLTFAnimation::Track GLTFDocument::_convert_animation_track(Ref<GLTFState> state
 		times.write[key_i] = p_animation->track_get_key_time(p_track_i, key_i);
 	}
 	const float BAKE_FPS = 30.0f;
-	if (track_type == Animation::TYPE_TRANSFORM) {
+	if (track_type == Animation::TYPE_TRANSFORM3D) {
 		p_track.translation_track.times = times;
 		p_track.translation_track.interpolation = gltf_interpolation;
 		p_track.rotation_track.times = times;

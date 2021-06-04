@@ -856,7 +856,7 @@ void ResourceImporterScene::_create_clips(AnimationPlayer *anim, const Array &p_
 						new_anim->track_set_path(dtrack, default_anim->track_get_path(j));
 
 						if (kt > (from + 0.01) && k > 0) {
-							if (default_anim->track_get_type(j) == Animation::TYPE_TRANSFORM) {
+							if (default_anim->track_get_type(j) == Animation::TYPE_TRANSFORM3D) {
 								Quat q;
 								Vector3 p;
 								Vector3 s;
@@ -870,7 +870,7 @@ void ResourceImporterScene::_create_clips(AnimationPlayer *anim, const Array &p_
 						}
 					}
 
-					if (default_anim->track_get_type(j) == Animation::TYPE_TRANSFORM) {
+					if (default_anim->track_get_type(j) == Animation::TYPE_TRANSFORM3D) {
 						Quat q;
 						Vector3 p;
 						Vector3 s;
@@ -884,7 +884,7 @@ void ResourceImporterScene::_create_clips(AnimationPlayer *anim, const Array &p_
 				}
 
 				if (dtrack != -1 && kt >= to) {
-					if (default_anim->track_get_type(j) == Animation::TYPE_TRANSFORM) {
+					if (default_anim->track_get_type(j) == Animation::TYPE_TRANSFORM3D) {
 						Quat q;
 						Vector3 p;
 						Vector3 s;
@@ -902,7 +902,7 @@ void ResourceImporterScene::_create_clips(AnimationPlayer *anim, const Array &p_
 				new_anim->add_track(default_anim->track_get_type(j));
 				dtrack = new_anim->get_track_count() - 1;
 				new_anim->track_set_path(dtrack, default_anim->track_get_path(j));
-				if (default_anim->track_get_type(j) == Animation::TYPE_TRANSFORM) {
+				if (default_anim->track_get_type(j) == Animation::TYPE_TRANSFORM3D) {
 					Quat q;
 					Vector3 p;
 					Vector3 s;
