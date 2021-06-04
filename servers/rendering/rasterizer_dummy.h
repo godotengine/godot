@@ -637,6 +637,7 @@ public:
 	void render_target_set_position(RID p_render_target, int p_x, int p_y) override {}
 	void render_target_set_size(RID p_render_target, int p_width, int p_height, uint32_t p_view_count) override {}
 	RID render_target_get_texture(RID p_render_target) override { return RID(); }
+	RID render_target_get_color(RID p_render_target) override { return RID(); }
 	void render_target_set_external_texture(RID p_render_target, unsigned int p_texture_id) override {}
 	void render_target_set_flag(RID p_render_target, RenderTargetFlags p_flag, bool p_value) override {}
 	bool render_target_was_used(RID p_render_target) override { return false; }

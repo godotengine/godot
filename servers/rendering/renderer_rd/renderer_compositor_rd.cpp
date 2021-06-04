@@ -65,10 +65,14 @@ void RendererCompositorRD::blit_render_targets_to_screen(DisplayServer::WindowID
 		RD::get_singleton()->draw_list_bind_index_array(draw_list, blit.array);
 		RD::get_singleton()->draw_list_bind_uniform_set(draw_list, render_target_descriptors[rd_texture], 0);
 
-		blit.push_constant.rect[0] = p_render_targets[i].rect.position.x / screen_size.width;
-		blit.push_constant.rect[1] = p_render_targets[i].rect.position.y / screen_size.height;
-		blit.push_constant.rect[2] = p_render_targets[i].rect.size.width / screen_size.width;
-		blit.push_constant.rect[3] = p_render_targets[i].rect.size.height / screen_size.height;
+		blit.push_constant.src_rect[0] = p_render_targets[i].src_rect.position.x;
+		blit.push_constant.src_rect[1] = p_render_targets[i].src_rect.position.y;
+		blit.push_constant.src_rect[2] = p_render_targets[i].src_rect.size.width;
+		blit.push_constant.src_rect[3] = p_render_targets[i].src_rect.size.height;
+		blit.push_constant.dst_rect[0] = p_render_targets[i].dest_rect.position.x / screen_size.width;
+		blit.push_constant.dst_rect[1] = p_render_targets[i].dest_rect.position.y / screen_size.height;
+		blit.push_constant.dst_rect[2] = p_render_targets[i].dest_rect.size.width / screen_size.width;
+		blit.push_constant.dst_rect[3] = p_render_targets[i].dest_rect.size.height / screen_size.height;
 		blit.push_constant.layer = p_render_targets[i].multi_view.layer;
 		blit.push_constant.eye_center[0] = p_render_targets[i].lens_distortion.eye_center.x;
 		blit.push_constant.eye_center[1] = p_render_targets[i].lens_distortion.eye_center.y;
@@ -204,10 +208,14 @@ void RendererCompositorRD::set_boot_image(const Ref<Image> &p_image, const Color
 	RD::get_singleton()->draw_list_bind_index_array(draw_list, blit.array);
 	RD::get_singleton()->draw_list_bind_uniform_set(draw_list, uset, 0);
 
-	blit.push_constant.rect[0] = screenrect.position.x;
-	blit.push_constant.rect[1] = screenrect.position.y;
-	blit.push_constant.rect[2] = screenrect.size.width;
-	blit.push_constant.rect[3] = screenrect.size.height;
+	blit.push_constant.src_rect[0] = 0.0;
+	blit.push_constant.src_rect[1] = 0.0;
+	blit.push_constant.src_rect[2] = 1.0;
+	blit.push_constant.src_rect[3] = 1.0;
+	blit.push_constant.dst_rect[0] = screenrect.position.x;
+	blit.push_constant.dst_rect[1] = screenrect.position.y;
+	blit.push_constant.dst_rect[2] = screenrect.size.width;
+	blit.push_constant.dst_rect[3] = screenrect.size.height;
 	blit.push_constant.layer = 0;
 	blit.push_constant.eye_center[0] = 0;
 	blit.push_constant.eye_center[1] = 0;

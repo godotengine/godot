@@ -84,7 +84,7 @@ protected:
 
 public:
 	/** general interface information **/
-	virtual StringName get_name() const;
+	virtual String get_name() const;
 	virtual int get_capabilities() const = 0;
 
 	bool is_primary();
@@ -113,7 +113,7 @@ public:
 	virtual Transform3D get_transform_for_view(uint32_t p_view, const Transform3D &p_cam_transform) = 0; /* get each views transform */
 	virtual CameraMatrix get_projection_for_view(uint32_t p_view, real_t p_aspect, real_t p_z_near, real_t p_z_far) = 0; /* get each view projection matrix */
 
-	virtual Vector<BlitToScreen> commit_views(RID p_render_target, const Rect2 &p_screen_rect) = 0; /* commit rendered views to the XR interface */
+	virtual Vector<BlitToScreen> commit_views(const RID p_render_target, const Rect2 &p_screen_rect) = 0; /* commit rendered views to the XR interface */
 
 	virtual void process() = 0;
 	virtual void notification(int p_what) = 0;

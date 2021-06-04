@@ -35,7 +35,7 @@
 #include "servers/display_server.h"
 #include "servers/rendering/rendering_server_globals.h"
 
-StringName MobileVRInterface::get_name() const {
+String MobileVRInterface::get_name() const {
 	return "Native mobile";
 };
 
@@ -454,7 +454,7 @@ void MobileVRInterface::commit_for_eye(XRInterface::Eyes p_eye, RID p_render_tar
 	eye_center.y = 0.0;
 }
 
-Vector<BlitToScreen> MobileVRInterface::commit_views(RID p_render_target, const Rect2 &p_screen_rect) {
+Vector<BlitToScreen> MobileVRInterface::commit_views(const RID p_render_target, const Rect2 &p_screen_rect) {
 	_THREAD_SAFE_METHOD_
 
 	Vector<BlitToScreen> blit_to_screen;
@@ -476,16 +476,16 @@ Vector<BlitToScreen> MobileVRInterface::commit_views(RID p_render_target, const 
 	blit.lens_distortion.aspect_ratio = aspect;
 
 	// left eye
-	blit.rect = p_screen_rect;
-	blit.rect.size.width *= 0.5;
+	blit.dest_rect = p_screen_rect;
+	blit.dest_rect.size.width *= 0.5;
 	blit.multi_view.layer = 0;
 	blit.lens_distortion.eye_center.x = ((-intraocular_dist / 2.0) + (display_width / 4.0)) / (display_width / 2.0);
 	blit_to_screen.push_back(blit);
 
 	// right eye
-	blit.rect = p_screen_rect;
-	blit.rect.size.width *= 0.5;
-	blit.rect.position.x = blit.rect.size.width;
+	blit.dest_rect = p_screen_rect;
+	blit.dest_rect.size.width *= 0.5;
+	blit.dest_rect.position.x = blit.dest_rect.size.width;
 	blit.multi_view.layer = 1;
 	blit.lens_distortion.eye_center.x = ((intraocular_dist / 2.0) - (display_width / 4.0)) / (display_width / 2.0);
 	blit_to_screen.push_back(blit);

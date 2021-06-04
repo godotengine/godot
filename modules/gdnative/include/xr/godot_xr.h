@@ -48,7 +48,7 @@ typedef struct {
 	godot_gdnative_api_version version; /* version of our API */
 	void *(*constructor)(godot_object *);
 	void (*destructor)(void *);
-	godot_string (*get_name)(const void *);
+	void (*get_name)(const void *, godot_string *);
 	godot_int (*get_capabilities)(const void *);
 	godot_bool (*get_anchor_detection_is_enabled)(const void *);
 	void (*set_anchor_detection_is_enabled)(void *, godot_bool);
@@ -59,9 +59,9 @@ typedef struct {
 	godot_vector2 (*get_render_targetsize)(const void *);
 
 	godot_transform3d (*get_camera_transform)(void *);
-	godot_transform3d (*get_transform_for_view)(void *, godot_int, godot_transform3d *);
+	godot_transform3d (*get_transform_for_view)(void *, godot_int, const godot_transform3d *);
 	void (*fill_projection_for_view)(void *, godot_real_t *, godot_int, godot_real_t, godot_real_t, godot_real_t);
-	void (*commit_views)(void *, godot_rid *, godot_rect2 *);
+	void (*commit_views)(void *, void *, const godot_rid *, godot_rect2 *);
 
 	void (*process)(void *);
 	void (*notification)(void *, godot_int);
@@ -73,17 +73,33 @@ typedef struct {
 	godot_int (*get_external_depth_for_eye)(void *, godot_int);
 } godot_xr_interface_gdnative;
 
+// register our callback struct
 void GDAPI godot_xr_register_interface(const godot_xr_interface_gdnative *p_interface);
+void GDAPI godot_xr_set_interface(godot_object *p_xr_interface, const godot_xr_interface_gdnative *p_gdn_interface);
 
-// helper functions to access XRServer data
+// help functions for rendering
+void GDAPI godot_xr_blit_layer(void *p_blit_to_screen, const godot_rid *p_render_target, const godot_rect2 *p_src_rect, const godot_rect2 *p_dest_rect, godot_int p_layer);
+
+typedef struct {
+	void *device;
+	void *physical_device;
+	void *instance;
+	void *queue;
+	uint32_t queue_family_index;
+} godot_xr_vulkan_data;
+
+bool GDAPI godot_xr_get_vulkan_data(godot_xr_vulkan_data *p_vulkan_data);
+bool GDAPI godot_xr_get_image_data(const godot_rid *p_render_target, uint64_t *p_texture_id, uint32_t *p_format);
+
+// helper functions to access XRServer data (deprecated)
 godot_real_t GDAPI godot_xr_get_worldscale();
 godot_transform3d GDAPI godot_xr_get_reference_frame();
 
-// helper functions for rendering
+// helper functions for rendering (deprecated)
 void GDAPI godot_xr_blit(godot_int p_eye, godot_rid *p_render_target, godot_rect2 *p_rect);
 godot_int GDAPI godot_xr_get_texid(godot_rid *p_render_target);
 
-// helper functions for updating XR controllers
+// helper functions for updating XR controllers (deprecated)
 godot_int GDAPI godot_xr_add_controller(char *p_device_name, godot_int p_hand, godot_bool p_tracks_orientation, godot_bool p_tracks_position);
 void GDAPI godot_xr_remove_controller(godot_int p_controller_id);
 void GDAPI godot_xr_set_controller_transform(godot_int p_controller_id, godot_transform3d *p_transform, godot_bool p_tracks_orientation, godot_bool p_tracks_position);

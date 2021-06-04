@@ -1035,6 +1035,10 @@ public:
 	virtual Error texture_clear(RID p_texture, const Color &p_color, uint32_t p_base_mipmap, uint32_t p_mipmaps, uint32_t p_base_layer, uint32_t p_layers, uint32_t p_post_barrier = BARRIER_MASK_ALL);
 	virtual Error texture_resolve_multisample(RID p_from_texture, RID p_to_texture, uint32_t p_post_barrier = BARRIER_MASK_ALL);
 
+	// for now to get access to VkImage
+	virtual uint64_t texture_get_vulkan_image(const RID p_texture);
+	virtual uint32_t texture_get_vulkan_image_format(const RID p_texture);
+
 	/*********************/
 	/**** FRAMEBUFFER ****/
 	/*********************/
@@ -1208,6 +1212,13 @@ public:
 
 	RenderingDeviceVulkan();
 	~RenderingDeviceVulkan();
+
+	// TODO this needs to be solved differently but for now to get things to work..
+	virtual void *get_vulkan_device();
+	virtual void *get_vulkan_physical_device();
+	virtual void *get_vulkan_instance();
+	virtual void *get_vulkan_queue();
+	virtual uint32_t get_vulkan_queue_family_index();
 };
 
 #endif // RENDERING_DEVICE_VULKAN_H

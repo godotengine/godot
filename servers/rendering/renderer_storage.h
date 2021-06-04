@@ -575,6 +575,7 @@ public:
 	virtual void render_target_set_position(RID p_render_target, int p_x, int p_y) = 0;
 	virtual void render_target_set_size(RID p_render_target, int p_width, int p_height, uint32_t p_view_count) = 0;
 	virtual RID render_target_get_texture(RID p_render_target) = 0;
+	virtual RID render_target_get_color(RID p_render_target) = 0;
 	virtual void render_target_set_external_texture(RID p_render_target, unsigned int p_texture_id) = 0;
 	virtual void render_target_set_flag(RID p_render_target, RenderTargetFlags p_flag, bool p_value) = 0;
 	virtual bool render_target_was_used(RID p_render_target) = 0;

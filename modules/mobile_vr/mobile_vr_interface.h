@@ -130,7 +130,7 @@ public:
 	void set_k2(const real_t p_k2);
 	real_t get_k2() const;
 
-	virtual StringName get_name() const override;
+	virtual String get_name() const override;
 	virtual int get_capabilities() const override;
 
 	virtual bool is_initialized() const override;
@@ -142,7 +142,7 @@ public:
 	virtual Transform3D get_camera_transform() override;
 	virtual Transform3D get_transform_for_view(uint32_t p_view, const Transform3D &p_cam_transform) override;
 	virtual CameraMatrix get_projection_for_view(uint32_t p_view, real_t p_aspect, real_t p_z_near, real_t p_z_far) override;
-	virtual Vector<BlitToScreen> commit_views(RID p_render_target, const Rect2 &p_screen_rect) override;
+	virtual Vector<BlitToScreen> commit_views(const RID p_render_target, const Rect2 &p_screen_rect) override;
 
 	virtual void process() override;
 	virtual void notification(int p_what) override {}

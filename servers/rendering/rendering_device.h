@@ -499,6 +499,10 @@ public:
 	virtual Error texture_clear(RID p_texture, const Color &p_color, uint32_t p_base_mipmap, uint32_t p_mipmaps, uint32_t p_base_layer, uint32_t p_layers, uint32_t p_post_barrier = BARRIER_MASK_ALL) = 0;
 	virtual Error texture_resolve_multisample(RID p_from_texture, RID p_to_texture, uint32_t p_post_barrier = BARRIER_MASK_ALL) = 0;
 
+	// for now to get access to VkImage
+	virtual uint64_t texture_get_vulkan_image(const RID p_texture) = 0;
+	virtual uint32_t texture_get_vulkan_image_format(const RID p_texture) = 0;
+
 	/*********************/
 	/**** FRAMEBUFFER ****/
 	/*********************/
@@ -1150,6 +1154,13 @@ public:
 
 	static RenderingDevice *get_singleton();
 	RenderingDevice();
+
+	// TODO this needs to be solved differently but for now to get things to work..
+	virtual void *get_vulkan_device() { return nullptr; };
+	virtual void *get_vulkan_physical_device() { return nullptr; };
+	virtual void *get_vulkan_instance() { return nullptr; };
+	virtual void *get_vulkan_queue() { return nullptr; };
+	virtual uint32_t get_vulkan_queue_family_index() { return 0; };
 
 protected:
 	//binders to script API

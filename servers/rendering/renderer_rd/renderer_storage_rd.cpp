@@ -7105,6 +7105,13 @@ RID RendererStorageRD::render_target_get_texture(RID p_render_target) {
 	return rt->texture;
 }
 
+RID RendererStorageRD::render_target_get_color(RID p_render_target) {
+	RenderTarget *rt = render_target_owner.getornull(p_render_target);
+	ERR_FAIL_COND_V(!rt, RID());
+
+	return rt->color;
+}
+
 void RendererStorageRD::render_target_set_external_texture(RID p_render_target, unsigned int p_texture_id) {
 }
 

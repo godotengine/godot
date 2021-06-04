@@ -58,7 +58,7 @@ public:
 
 	void set_interface(const godot_xr_interface_gdnative *p_interface);
 
-	virtual StringName get_name() const override;
+	virtual String get_name() const override;
 	virtual int get_capabilities() const override;
 
 	virtual bool is_initialized() const override;
@@ -82,7 +82,7 @@ public:
 	// and a CameraMatrix version to XRServer
 	virtual CameraMatrix get_projection_for_view(uint32_t p_view, real_t p_aspect, real_t p_z_near, real_t p_z_far) override;
 
-	virtual Vector<BlitToScreen> commit_views(RID p_render_target, const Rect2 &p_screen_rect) override;
+	virtual Vector<BlitToScreen> commit_views(const RID p_render_target, const Rect2 &p_screen_rect) override;
 
 	virtual void process() override;
 	virtual void notification(int p_what) override;

@@ -194,7 +194,7 @@ PackedVector3Array WebXRInterfaceJS::get_bounds_geometry() const {
 	return ret;
 }
 
-StringName WebXRInterfaceJS::get_name() const {
+String WebXRInterfaceJS::get_name() const {
 	return "WebXR";
 };
 

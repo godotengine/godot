@@ -1995,11 +1995,19 @@ VkPhysicalDevice VulkanContext::get_physical_device() {
 	return gpu;
 }
 
+VkInstance VulkanContext::get_instance() {
+	return inst;
+}
+
 int VulkanContext::get_swapchain_image_count() const {
 	return swapchainImageCount;
 }
 
-uint32_t VulkanContext::get_graphics_queue() const {
+VkQueue VulkanContext::get_graphics_queue() const {
+	return graphics_queue;
+}
+
+uint32_t VulkanContext::get_graphics_queue_family_index() const {
 	return graphics_queue_family_index;
 }
 
