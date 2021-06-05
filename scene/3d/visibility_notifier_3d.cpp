@@ -34,6 +34,7 @@
 #include "scene/3d/camera_3d.h"
 #include "scene/3d/physics_body_3d.h"
 #include "scene/animation/animation_player.h"
+#include "scene/animation/animation_tree.h"
 #include "scene/scene_string_names.h"
 
 void VisibilityNotifier3D::_enter_camera(Camera3D *p_camera) {
@@ -151,6 +152,13 @@ void VisibilityEnabler3D::_find_nodes(Node *p_node) {
 		}
 	}
 
+	{
+		AnimationTree *at = Object::cast_to<AnimationTree>(p_node);
+		if (at) {
+			add = true;
+		}
+	}
+
 	if (add) {
 		p_node->connect(SceneStringNames::get_singleton()->tree_exiting, callable_mp(this, &VisibilityEnabler3D::_node_removed), varray(p_node), CONNECT_ONESHOT);
 		nodes[p_node] = meta;
@@ -213,6 +221,11 @@ void VisibilityEnabler3D::_change_node_state(Node *p_node, bool p_enabled) {
 
 		if (ap) {
 			ap->set_active(p_enabled);
+		} else {
+			AnimationTree *at = Object::cast_to<AnimationTree>(p_node);
+			if (at) {
+				at->set_active(p_enabled);
+			}
 		}
 	}
 }
