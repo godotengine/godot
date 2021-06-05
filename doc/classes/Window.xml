@@ -340,7 +340,7 @@
 		</member>
 		<member name="theme" type="Theme" setter="set_theme" getter="get_theme">
 		</member>
-		<member name="theme_custom_type" type="StringName" setter="set_theme_custom_type" getter="get_theme_custom_type" default="@&quot;&quot;">
+		<member name="theme_custom_type" type="StringName" setter="set_theme_custom_type" getter="get_theme_custom_type" default="&amp;&quot;&quot;">
 		</member>
 		<member name="title" type="String" setter="set_title" getter="get_title" default="&quot;&quot;">
 		</member>
