@@ -50,6 +50,7 @@ namespace Godot.Collections
             {
                 throw new NullReferenceException($"Parameter '{nameof(array)} cannot be null.'");
             }
+
             safeHandle = new ArraySafeHandle(godot_icall_Array_Ctor_MonoArray(array));
         }
 
@@ -265,6 +266,7 @@ namespace Godot.Collections
             {
                 throw new NullReferenceException($"Parameter '{nameof(array)} cannot be null.'");
             }
+
             objectArray = new Array(array);
         }
 

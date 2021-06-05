@@ -4,6 +4,7 @@ using System.Runtime.InteropServices;
 using real_t = System.Double;
 #else
 using real_t = System.Single;
+
 #endif
 
 namespace Godot
@@ -674,7 +675,8 @@ namespace Godot
             }
         }
 
-        private static readonly Basis[] _orthoBases = {
+        private static readonly Basis[] _orthoBases =
+        {
             new Basis(1f, 0f, 0f, 0f, 1f, 0f, 0f, 0f, 1f),
             new Basis(0f, -1f, 0f, 1f, 0f, 0f, 0f, 0f, 1f),
             new Basis(-1f, 0f, 0f, 0f, -1f, 0f, 0f, 0f, 1f),
@@ -713,16 +715,19 @@ namespace Godot
         /// </summary>
         /// <value>Equivalent to `new Basis(Vector3.Right, Vector3.Up, Vector3.Back)`.</value>
         public static Basis Identity { get { return _identity; } }
+
         /// <summary>
         /// The basis that will flip something along the X axis when used in a transformation.
         /// </summary>
         /// <value>Equivalent to `new Basis(Vector3.Left, Vector3.Up, Vector3.Back)`.</value>
         public static Basis FlipX { get { return _flipX; } }
+
         /// <summary>
         /// The basis that will flip something along the Y axis when used in a transformation.
         /// </summary>
         /// <value>Equivalent to `new Basis(Vector3.Right, Vector3.Down, Vector3.Back)`.</value>
         public static Basis FlipY { get { return _flipY; } }
+
         /// <summary>
         /// The basis that will flip something along the Z axis when used in a transformation.
         /// </summary>

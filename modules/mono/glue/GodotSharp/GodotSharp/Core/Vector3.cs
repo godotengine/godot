@@ -4,12 +4,14 @@
 // commit: 7ad14e7a3e6f87ddc450f7e34621eb5200808451
 // file: core/variant_call.cpp
 // commit: 5ad9be4c24e9d7dc5672fdc42cea896622fe5685
+
 using System;
 using System.Runtime.InteropServices;
 #if REAL_T_IS_DOUBLE
 using real_t = System.Double;
 #else
 using real_t = System.Single;
+
 #endif
 
 namespace Godot
@@ -36,10 +38,12 @@ namespace Godot
         /// The vector's X component. Also accessible by using the index position `[0]`.
         /// </summary>
         public real_t x;
+
         /// <summary>
         /// The vector's Y component. Also accessible by using the index position `[1]`.
         /// </summary>
         public real_t y;
+
         /// <summary>
         /// The vector's Z component. Also accessible by using the index position `[2]`.
         /// </summary>
@@ -175,10 +179,10 @@ namespace Godot
             real_t t3 = t2 * t;
 
             return 0.5f * (
-                        p1 * 2.0f + (-p0 + p2) * t +
-                        (2.0f * p0 - 5.0f * p1 + 4f * p2 - p3) * t2 +
-                        (-p0 + 3.0f * p1 - 3.0f * p2 + p3) * t3
-                    );
+                p1 * 2.0f + (-p0 + p2) * t +
+                (2.0f * p0 - 5.0f * p1 + 4f * p2 - p3) * t2 +
+                (-p0 + 3.0f * p1 - 3.0f * p2 + p3) * t3
+            );
         }
 
         /// <summary>
@@ -460,6 +464,7 @@ namespace Godot
             this.y = y;
             this.z = z;
         }
+
         [Obsolete("Set is deprecated. Use the Vector3(" + nameof(Vector3) + ") constructor instead.", error: true)]
         public void Set(Vector3 v)
         {
@@ -499,6 +504,7 @@ namespace Godot
             {
                 throw new InvalidOperationException("Vector3.Slerp: From vector is not normalized.");
             }
+
             if (!to.IsNormalized())
             {
                 throw new InvalidOperationException("Vector3.Slerp: `to` is not normalized.");
@@ -568,16 +574,19 @@ namespace Godot
         /// </summary>
         /// <value>Equivalent to `new Vector3(0, 0, 0)`</value>
         public static Vector3 Zero { get { return _zero; } }
+
         /// <summary>
         /// One vector, a vector with all components set to `1`.
         /// </summary>
         /// <value>Equivalent to `new Vector3(1, 1, 1)`</value>
         public static Vector3 One { get { return _one; } }
+
         /// <summary>
         /// Deprecated, please use a negative sign with <see cref="One"/> instead.
         /// </summary>
         /// <value>Equivalent to `new Vector3(-1, -1, -1)`</value>
         public static Vector3 NegOne { get { return _negOne; } }
+
         /// <summary>
         /// Infinity vector, a vector with all components set to `Mathf.Inf`.
         /// </summary>
@@ -589,29 +598,34 @@ namespace Godot
         /// </summary>
         /// <value>Equivalent to `new Vector3(0, 1, 0)`</value>
         public static Vector3 Up { get { return _up; } }
+
         /// <summary>
         /// Down unit vector.
         /// </summary>
         /// <value>Equivalent to `new Vector3(0, -1, 0)`</value>
         public static Vector3 Down { get { return _down; } }
+
         /// <summary>
         /// Right unit vector. Represents the local direction of right,
         /// and the global direction of east.
         /// </summary>
         /// <value>Equivalent to `new Vector3(1, 0, 0)`</value>
         public static Vector3 Right { get { return _right; } }
+
         /// <summary>
         /// Left unit vector. Represents the local direction of left,
         /// and the global direction of west.
         /// </summary>
         /// <value>Equivalent to `new Vector3(-1, 0, 0)`</value>
         public static Vector3 Left { get { return _left; } }
+
         /// <summary>
         /// Forward unit vector. Represents the local direction of forward,
         /// and the global direction of north.
         /// </summary>
         /// <value>Equivalent to `new Vector3(0, 0, -1)`</value>
         public static Vector3 Forward { get { return _forward; } }
+
         /// <summary>
         /// Back unit vector. Represents the local direction of back,
         /// and the global direction of south.
@@ -741,8 +755,10 @@ namespace Godot
                 {
                     return left.z < right.z;
                 }
+
                 return left.y < right.y;
             }
+
             return left.x < right.x;
         }
 
@@ -754,8 +770,10 @@ namespace Godot
                 {
                     return left.z > right.z;
                 }
+
                 return left.y > right.y;
             }
+
             return left.x > right.x;
         }
 
@@ -767,8 +785,10 @@ namespace Godot
                 {
                     return left.z <= right.z;
                 }
+
                 return left.y < right.y;
             }
+
             return left.x < right.x;
         }
 
@@ -780,8 +800,10 @@ namespace Godot
                 {
                     return left.z >= right.z;
                 }
+
                 return left.y > right.y;
             }
+
             return left.x > right.x;
         }
 

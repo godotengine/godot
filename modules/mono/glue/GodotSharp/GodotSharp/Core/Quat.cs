@@ -4,6 +4,7 @@ using System.Runtime.InteropServices;
 using real_t = System.Double;
 #else
 using real_t = System.Single;
+
 #endif
 
 namespace Godot
@@ -236,6 +237,7 @@ namespace Godot
             {
                 throw new InvalidOperationException("Quat is not normalized");
             }
+
             if (!to.IsNormalized())
             {
                 throw new ArgumentException("Argument is not normalized", nameof(to));

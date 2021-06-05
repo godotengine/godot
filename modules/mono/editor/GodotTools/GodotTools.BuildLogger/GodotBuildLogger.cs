@@ -17,7 +17,7 @@ namespace GodotTools.BuildLogger
             if (null == Parameters)
                 throw new LoggerException("Log directory parameter not specified.");
 
-            var parameters = Parameters.Split(new[] {';'});
+            var parameters = Parameters.Split(new[] { ';' });
 
             string logDir = parameters[0];
 
@@ -164,7 +164,7 @@ namespace GodotTools.BuildLogger
     {
         public static string CsvEscape(this string value, char delimiter = ',')
         {
-            bool hasSpecialChar = value.IndexOfAny(new[] {'\"', '\n', '\r', delimiter}) != -1;
+            bool hasSpecialChar = value.IndexOfAny(new[] { '\"', '\n', '\r', delimiter }) != -1;
 
             if (hasSpecialChar)
                 return "\"" + value.Replace("\"", "\"\"") + "\"";

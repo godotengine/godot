@@ -114,7 +114,7 @@ namespace GodotTools.Export
                     ExecuteCompiler(FindCrossCompiler(compilerDirPath), compilerArgs, bclDir);
 
                     // The Godot exporter expects us to pass the abi in the tags parameter
-                    exporter.AddSharedObject(soFilePath, tags: new[] {abi});
+                    exporter.AddSharedObject(soFilePath, tags: new[] { abi });
                 }
             }
         }
@@ -222,12 +222,12 @@ namespace GodotTools.Export
                         throw new Exception($"Command 'clang' exited with code: {clangExitCode}");
 
                     string arOutputFilePath = Path.Combine(aotTempDir, baseFilePath + ".a");
-                    RunAr(new[] {objFilePath}, arOutputFilePath);
+                    RunAr(new[] { objFilePath }, arOutputFilePath);
 
                     return arOutputFilePath;
                 }
 
-                RunLipo(new[] {CompileForArch("arm64"), CompileForArch("x86_64")}, libFilePath);
+                RunLipo(new[] { CompileForArch("arm64"), CompileForArch("x86_64") }, libFilePath);
             }
 
             string projectAssemblyName = GodotSharpEditor.ProjectAssemblyName;
@@ -502,7 +502,7 @@ MONO_AOT_MODE_LAST = 1000,
 
             AssemblyDefinition ReadAssembly(string fileName)
                 => AssemblyDefinition.ReadAssembly(fileName,
-                    new ReaderParameters {AssemblyResolver = resolver});
+                    new ReaderParameters { AssemblyResolver = resolver });
 
             foreach (var assembly in assemblies)
             {

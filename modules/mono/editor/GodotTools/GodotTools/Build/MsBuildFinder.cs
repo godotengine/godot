@@ -165,7 +165,7 @@ namespace GodotTools.Build
 
             // Try to find 15.0 with vswhere
 
-            var envNames = Internal.GodotIs32Bits() ? new[] {"ProgramFiles", "ProgramW6432"} : new[] {"ProgramFiles(x86)", "ProgramFiles"};
+            var envNames = Internal.GodotIs32Bits() ? new[] { "ProgramFiles", "ProgramW6432" } : new[] { "ProgramFiles(x86)", "ProgramFiles" };
 
             string vsWherePath = null;
             foreach (var envName in envNames)
@@ -181,7 +181,7 @@ namespace GodotTools.Build
                 vsWherePath = null;
             }
 
-            var vsWhereArgs = new[] {"-latest", "-products", "*", "-requires", "Microsoft.Component.MSBuild"};
+            var vsWhereArgs = new[] { "-latest", "-products", "*", "-requires", "Microsoft.Component.MSBuild" };
 
             var outputArray = new Godot.Collections.Array<string>();
             int exitCode = Godot.OS.Execute(vsWherePath, vsWhereArgs,

@@ -4,12 +4,14 @@
 // commit: bd282ff43f23fe845f29a3e25c8efc01bd65ffb0
 // file: core/variant_call.cpp
 // commit: 5ad9be4c24e9d7dc5672fdc42cea896622fe5685
+
 using System;
 using System.Runtime.InteropServices;
 #if REAL_T_IS_DOUBLE
 using real_t = System.Double;
 #else
 using real_t = System.Single;
+
 #endif
 
 namespace Godot
@@ -103,10 +105,12 @@ namespace Godot
             {
                 begin.x = point.x;
             }
+
             if (point.y < begin.y)
             {
                 begin.y = point.y;
             }
+
             if (point.z < begin.z)
             {
                 begin.z = point.z;
@@ -116,10 +120,12 @@ namespace Godot
             {
                 end.x = point.x;
             }
+
             if (point.y > end.y)
             {
                 end.y = point.y;
             }
+
             if (point.z > end.z)
             {
                 end.z = point.z;
@@ -545,6 +551,7 @@ namespace Godot
                 {
                     max = cmax;
                 }
+
                 if (max < min)
                 {
                     return false;
@@ -567,16 +574,16 @@ namespace Godot
             var end2 = new Vector3(with._size.x, with._size.y, with._size.z) + beg2;
 
             var min = new Vector3(
-                              beg1.x < beg2.x ? beg1.x : beg2.x,
-                              beg1.y < beg2.y ? beg1.y : beg2.y,
-                              beg1.z < beg2.z ? beg1.z : beg2.z
-                          );
+                beg1.x < beg2.x ? beg1.x : beg2.x,
+                beg1.y < beg2.y ? beg1.y : beg2.y,
+                beg1.z < beg2.z ? beg1.z : beg2.z
+            );
 
             var max = new Vector3(
-                              end1.x > end2.x ? end1.x : end2.x,
-                              end1.y > end2.y ? end1.y : end2.y,
-                              end1.z > end2.z ? end1.z : end2.z
-                          );
+                end1.x > end2.x ? end1.x : end2.x,
+                end1.y > end2.y ? end1.y : end2.y,
+                end1.z > end2.z ? end1.z : end2.z
+            );
 
             return new AABB(min, max - min);
         }
@@ -677,19 +684,19 @@ namespace Godot
         public override string ToString()
         {
             return String.Format("{0} - {1}", new object[]
-                {
-                    _position.ToString(),
-                    _size.ToString()
-                });
+            {
+                _position.ToString(),
+                _size.ToString()
+            });
         }
 
         public string ToString(string format)
         {
             return String.Format("{0} - {1}", new object[]
-                {
-                    _position.ToString(format),
-                    _size.ToString(format)
-                });
+            {
+                _position.ToString(format),
+                _size.ToString(format)
+            });
         }
     }
 }

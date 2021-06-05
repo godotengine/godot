@@ -124,7 +124,7 @@ namespace Godot
                 instance = instance.Substring(2);
             }
 
-            return sign * Convert.ToInt32(instance, 2);;
+            return sign * Convert.ToInt32(instance, 2);
         }
 
         // <summary>
@@ -157,6 +157,7 @@ namespace Godot
                 {
                     return 0;
                 }
+
                 if (from == 0 && to == len)
                 {
                     str = instance;
@@ -476,7 +477,7 @@ namespace Godot
         {
             uint hash = 5381;
 
-            foreach(uint c in instance)
+            foreach (uint c in instance)
             {
                 hash = (hash << 5) + hash + c; // hash * 33 + c
             }
@@ -620,6 +621,7 @@ namespace Godot
                 {
                     match = instance[source] == text[target];
                 }
+
                 if (match)
                 {
                     source++;
@@ -677,9 +679,9 @@ namespace Godot
                 }
 
                 bool validChar = instance[i] >= '0' &&
-                                  instance[i] <= '9' || instance[i] >= 'a' &&
-                                  instance[i] <= 'z' || instance[i] >= 'A' &&
-                                  instance[i] <= 'Z' || instance[i] == '_';
+                    instance[i] <= '9' || instance[i] >= 'a' &&
+                    instance[i] <= 'z' || instance[i] >= 'A' &&
+                    instance[i] <= 'Z' || instance[i] == '_';
 
                 if (!validChar)
                     return false;
@@ -1074,6 +1076,7 @@ namespace Godot
                 // Equal strings are totally similar
                 return 1.0f;
             }
+
             if (instance.Length < 2 || text.Length < 2)
             {
                 // No way to calculate similarity without a single bigram
@@ -1137,7 +1140,8 @@ namespace Godot
             return ret.ToArray();
         }
 
-        private static readonly char[] _nonPrintable = {
+        private static readonly char[] _nonPrintable =
+        {
             (char)00, (char)01, (char)02, (char)03, (char)04, (char)05,
             (char)06, (char)07, (char)08, (char)09, (char)10, (char)11,
             (char)12, (char)13, (char)14, (char)15, (char)16, (char)17,

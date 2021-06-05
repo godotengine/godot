@@ -76,7 +76,7 @@ namespace GodotTools
                     {
                         Guid = guid,
                         PathRelativeToSolution = name + ".csproj",
-                        Configs = new List<string> {"Debug", "ExportDebug", "ExportRelease"}
+                        Configs = new List<string> { "Debug", "ExportDebug", "ExportRelease" }
                     };
 
                     solution.AddNewProject(name, projectInfo);
@@ -461,7 +461,7 @@ namespace GodotTools
             MSBuildPanel = new MSBuildPanel();
             bottomPanelBtn = AddControlToBottomPanel(MSBuildPanel, "MSBuild".TTR());
 
-            AddChild(new HotReloadAssemblyWatcher {Name = "HotReloadAssemblyWatcher"});
+            AddChild(new HotReloadAssemblyWatcher { Name = "HotReloadAssemblyWatcher" });
 
             menuPopup = new PopupMenu();
             menuPopup.Hide();
@@ -509,7 +509,7 @@ namespace GodotTools
                 EditorDef("mono/editor/show_info_on_start", true);
 
                 // CheckBox in main container
-                aboutDialogCheckBox = new CheckBox {Text = "Show this warning when starting the editor"};
+                aboutDialogCheckBox = new CheckBox { Text = "Show this warning when starting the editor" };
                 aboutDialogCheckBox.Connect("toggled", this, nameof(_ToggleAboutDialogOnStart));
                 aboutVBox.AddChild(aboutDialogCheckBox);
             }

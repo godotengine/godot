@@ -98,7 +98,7 @@ namespace GodotTools.ProjectEditor
         }
 
         const string SolutionTemplate =
-@"Microsoft Visual Studio Solution File, Format Version 12.00
+            @"Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2012
 {0}
 Global
@@ -112,14 +112,14 @@ EndGlobal
 ";
 
         const string ProjectDeclaration =
-@"Project(""{{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}}"") = ""{0}"", ""{1}"", ""{{{2}}}""
+            @"Project(""{{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}}"") = ""{0}"", ""{1}"", ""{{{2}}}""
 EndProject";
 
         const string SolutionPlatformsConfig =
-@"	{0}|Any CPU = {0}|Any CPU";
+            @"	{0}|Any CPU = {0}|Any CPU";
 
         const string ProjectPlatformsConfig =
-@"		{{{0}}}.{1}|Any CPU.ActiveCfg = {1}|Any CPU
+            @"		{{{0}}}.{1}|Any CPU.ActiveCfg = {1}|Any CPU
 		{{{0}}}.{1}|Any CPU.Build.0 = {1}|Any CPU";
 
         public static void MigrateFromOldConfigNames(string slnPath)
@@ -145,13 +145,13 @@ EndProject";
 
             var dict = new Dictionary<string, string>
             {
-                {"Debug|Any CPU", "Debug|Any CPU"},
-                {"Release|Any CPU", "ExportDebug|Any CPU"},
-                {"Tools|Any CPU", "ExportRelease|Any CPU"}
+                { "Debug|Any CPU", "Debug|Any CPU" },
+                { "Release|Any CPU", "ExportDebug|Any CPU" },
+                { "Tools|Any CPU", "ExportRelease|Any CPU" }
             };
 
-            var regex = new Regex(string.Join("|",dict.Keys.Select(Regex.Escape)));
-            var result = regex.Replace(input,m => dict[m.Value]);
+            var regex = new Regex(string.Join("|", dict.Keys.Select(Regex.Escape)));
+            var result = regex.Replace(input, m => dict[m.Value]);
 
             if (result != input)
             {

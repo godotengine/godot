@@ -4,12 +4,14 @@
 // commit: 7ad14e7a3e6f87ddc450f7e34621eb5200808451
 // file: core/variant_call.cpp
 // commit: 5ad9be4c24e9d7dc5672fdc42cea896622fe5685
+
 using System;
 using System.Runtime.InteropServices;
 #if REAL_T_IS_DOUBLE
 using real_t = System.Double;
 #else
 using real_t = System.Single;
+
 #endif
 
 namespace Godot
@@ -35,6 +37,7 @@ namespace Godot
         /// The vector's X component. Also accessible by using the index position `[0]`.
         /// </summary>
         public real_t x;
+
         /// <summary>
         /// The vector's Y component. Also accessible by using the index position `[1]`.
         /// </summary>
@@ -208,9 +211,9 @@ namespace Godot
             real_t t3 = t2 * t;
 
             return 0.5f * (p1 * 2.0f +
-                                (-p0 + p2) * t +
-                                (2.0f * p0 - 5.0f * p1 + 4 * p2 - p3) * t2 +
-                                (-p0 + 3.0f * p1 - 3.0f * p2 + p3) * t3);
+                           (-p0 + p2) * t +
+                           (2.0f * p0 - 5.0f * p1 + 4 * p2 - p3) * t2 +
+                           (-p0 + 3.0f * p1 - 3.0f * p2 + p3) * t3);
         }
 
         /// <summary>
@@ -468,6 +471,7 @@ namespace Godot
             this.x = x;
             this.y = y;
         }
+
         [Obsolete("Set is deprecated. Use the Vector2(" + nameof(Vector2) + ") constructor instead.", error: true)]
         public void Set(Vector2 v)
         {
@@ -505,6 +509,7 @@ namespace Godot
             {
                 throw new InvalidOperationException("Vector2.Slerp: From vector is not normalized.");
             }
+
             if (!to.IsNormalized())
             {
                 throw new InvalidOperationException("Vector2.Slerp: `to` is not normalized.");
@@ -561,16 +566,19 @@ namespace Godot
         /// </summary>
         /// <value>Equivalent to `new Vector2(0, 0)`</value>
         public static Vector2 Zero { get { return _zero; } }
+
         /// <summary>
         /// Deprecated, please use a negative sign with <see cref="One"/> instead.
         /// </summary>
         /// <value>Equivalent to `new Vector2(-1, -1)`</value>
         public static Vector2 NegOne { get { return _negOne; } }
+
         /// <summary>
         /// One vector, a vector with all components set to `1`.
         /// </summary>
         /// <value>Equivalent to `new Vector2(1, 1)`</value>
         public static Vector2 One { get { return _one; } }
+
         /// <summary>
         /// Infinity vector, a vector with all components set to `Mathf.Inf`.
         /// </summary>
@@ -582,16 +590,19 @@ namespace Godot
         /// </summary>
         /// <value>Equivalent to `new Vector2(0, -1)`</value>
         public static Vector2 Up { get { return _up; } }
+
         /// <summary>
         /// Down unit vector. Y is down in 2D, so this vector points +Y.
         /// </summary>
         /// <value>Equivalent to `new Vector2(0, 1)`</value>
         public static Vector2 Down { get { return _down; } }
+
         /// <summary>
         /// Right unit vector. Represents the direction of right.
         /// </summary>
         /// <value>Equivalent to `new Vector2(1, 0)`</value>
         public static Vector2 Right { get { return _right; } }
+
         /// <summary>
         /// Left unit vector. Represents the direction of left.
         /// </summary>
@@ -705,6 +716,7 @@ namespace Godot
             {
                 return left.y < right.y;
             }
+
             return left.x < right.x;
         }
 
@@ -714,6 +726,7 @@ namespace Godot
             {
                 return left.y > right.y;
             }
+
             return left.x > right.x;
         }
 
@@ -723,6 +736,7 @@ namespace Godot
             {
                 return left.y <= right.y;
             }
+
             return left.x <= right.x;
         }
 
@@ -732,6 +746,7 @@ namespace Godot
             {
                 return left.y >= right.y;
             }
+
             return left.x >= right.x;
         }
 
@@ -741,6 +756,7 @@ namespace Godot
             {
                 return Equals((Vector2)obj);
             }
+
             return false;
         }
 

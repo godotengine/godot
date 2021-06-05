@@ -4,6 +4,7 @@ using System.Runtime.InteropServices;
 using real_t = System.Double;
 #else
 using real_t = System.Single;
+
 #endif
 
 namespace Godot
@@ -106,8 +107,8 @@ namespace Godot
         public bool Encloses(Rect2 b)
         {
             return b._position.x >= _position.x && b._position.y >= _position.y &&
-               b._position.x + b._size.x < _position.x + _size.x &&
-               b._position.y + b._size.y < _position.y + _size.y;
+                   b._position.x + b._size.x < _position.x + _size.x &&
+                   b._position.y + b._size.y < _position.y + _size.y;
         }
 
         /// <summary>
@@ -126,6 +127,7 @@ namespace Godot
             {
                 begin.x = to.x;
             }
+
             if (to.y < begin.y)
             {
                 begin.y = to.y;
@@ -135,6 +137,7 @@ namespace Godot
             {
                 end.x = to.x;
             }
+
             if (to.y > end.y)
             {
                 end.y = to.y;
@@ -203,9 +206,9 @@ namespace Godot
             var g = this;
 
             g = g.GrowIndividual(Margin.Left == margin ? by : 0,
-                    Margin.Top == margin ? by : 0,
-                    Margin.Right == margin ? by : 0,
-                    Margin.Bottom == margin ? by : 0);
+                Margin.Top == margin ? by : 0,
+                Margin.Right == margin ? by : 0,
+                Margin.Bottom == margin ? by : 0);
 
             return g;
         }
@@ -257,14 +260,17 @@ namespace Godot
                 {
                     return false;
                 }
+
                 if (_position.x + _size.x < b._position.x)
                 {
                     return false;
                 }
+
                 if (_position.y > b._position.y + b._size.y)
                 {
                     return false;
                 }
+
                 if (_position.y + _size.y < b._position.y)
                 {
                     return false;
@@ -276,14 +282,17 @@ namespace Godot
                 {
                     return false;
                 }
+
                 if (_position.x + _size.x <= b._position.x)
                 {
                     return false;
                 }
+
                 if (_position.y >= b._position.y + b._size.y)
                 {
                     return false;
                 }
+
                 if (_position.y + _size.y <= b._position.y)
                 {
                     return false;

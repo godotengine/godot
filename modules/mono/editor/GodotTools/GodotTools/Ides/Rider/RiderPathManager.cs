@@ -57,7 +57,7 @@ namespace GodotTools.Ides.Rider
 
         public static bool IsExternalEditorSetToRider(EditorSettings editorSettings)
         {
-            return editorSettings.HasSetting(EditorPathSettingName) && IsRider((string) editorSettings.GetSetting(EditorPathSettingName));
+            return editorSettings.HasSetting(EditorPathSettingName) && IsRider((string)editorSettings.GetSetting(EditorPathSettingName));
         }
 
         public static bool IsRider(string path)
@@ -106,6 +106,7 @@ namespace GodotTools.Ides.Rider
                 args.Add("--line");
                 args.Add((line + 1).ToString()); // https://github.com/JetBrains/godot-support/issues/61
             }
+
             args.Add(scriptPath);
             try
             {

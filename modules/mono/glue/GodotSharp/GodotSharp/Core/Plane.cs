@@ -4,6 +4,7 @@ using System.Runtime.InteropServices;
 using real_t = System.Double;
 #else
 using real_t = System.Single;
+
 #endif
 
 namespace Godot
@@ -157,8 +158,8 @@ namespace Godot
             }
 
             Vector3 result = b._normal.Cross(c._normal) * D +
-                                c._normal.Cross(_normal) * b.D +
-                                _normal.Cross(b._normal) * c.D;
+                             c._normal.Cross(_normal) * b.D +
+                             _normal.Cross(b._normal) * c.D;
 
             return result / denom;
         }

@@ -208,7 +208,7 @@ namespace GodotTools.Build
 
             issuesList.Clear();
 
-            var issue = new BuildIssue {Message = cause, Warning = false};
+            var issue = new BuildIssue { Message = cause, Warning = false };
 
             ErrorCount += 1;
             issues.Add(issue);

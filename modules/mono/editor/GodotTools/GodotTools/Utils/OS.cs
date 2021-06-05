@@ -88,7 +88,7 @@ namespace GodotTools.Utils
         public static bool IsiOS => _isiOS.Value;
         public static bool IsHTML5 => _isHTML5.Value;
 
-        private static readonly string[] UnixLikePlatforms = {Names.OSX, Names.X11, Names.Server, Names.Haiku, Names.Android, Names.iOS};
+        private static readonly string[] UnixLikePlatforms = { Names.OSX, Names.X11, Names.Server, Names.Haiku, Names.Android, Names.iOS };
 
         public static bool IsUnixLike => _isUnixLike.Value;
 
@@ -186,7 +186,7 @@ namespace GodotTools.Utils
 
             startInfo.UseShellExecute = false;
 
-            using (var process = new Process {StartInfo = startInfo})
+            using (var process = new Process { StartInfo = startInfo })
             {
                 process.Start();
                 process.WaitForExit();

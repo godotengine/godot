@@ -108,13 +108,13 @@ namespace GodotTools.Ides.MonoDevelop
                 ExecutableNames = new Dictionary<EditorId, string>
                 {
                     // Rely on PATH
-                    {EditorId.MonoDevelop, "monodevelop"},
-                    {EditorId.VisualStudioForMac, "VisualStudio"}
+                    { EditorId.MonoDevelop, "monodevelop" },
+                    { EditorId.VisualStudioForMac, "VisualStudio" }
                 };
                 BundleIds = new Dictionary<EditorId, string>
                 {
                     // TODO EditorId.MonoDevelop
-                    {EditorId.VisualStudioForMac, "com.microsoft.visual-studio"}
+                    { EditorId.VisualStudioForMac, "com.microsoft.visual-studio" }
                 };
             }
             else if (OS.IsWindows)
@@ -125,7 +125,7 @@ namespace GodotTools.Ides.MonoDevelop
                     // MonoDevelop is available from source only on Windows. The recommendation
                     // is to use Visual Studio instead. Since there are no official builds, we
                     // will rely on custom MonoDevelop builds being added to PATH.
-                    {EditorId.MonoDevelop, "MonoDevelop.exe"}
+                    { EditorId.MonoDevelop, "MonoDevelop.exe" }
                 };
             }
             else if (OS.IsUnixLike)
@@ -133,7 +133,7 @@ namespace GodotTools.Ides.MonoDevelop
                 ExecutableNames = new Dictionary<EditorId, string>
                 {
                     // Rely on PATH
-                    {EditorId.MonoDevelop, "monodevelop"}
+                    { EditorId.MonoDevelop, "monodevelop" }
                 };
             }
         }

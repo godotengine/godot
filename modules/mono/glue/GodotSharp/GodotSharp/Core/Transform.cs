@@ -4,6 +4,7 @@ using System.Runtime.InteropServices;
 using real_t = System.Double;
 #else
 using real_t = System.Single;
+
 #endif
 
 namespace Godot
@@ -89,6 +90,7 @@ namespace Godot
                 {
                     return origin[row];
                 }
+
                 return basis[column, row];
             }
             set
@@ -98,6 +100,7 @@ namespace Godot
                     origin[row] = value;
                     return;
                 }
+
                 basis[column, row] = value;
             }
         }
@@ -292,16 +295,19 @@ namespace Godot
         /// </summary>
         /// <value>Equivalent to `new Transform(Vector3.Right, Vector3.Up, Vector3.Back, Vector3.Zero)`.</value>
         public static Transform Identity { get { return _identity; } }
+
         /// <summary>
         /// The transform that will flip something along the X axis.
         /// </summary>
         /// <value>Equivalent to `new Transform(Vector3.Left, Vector3.Up, Vector3.Back, Vector3.Zero)`.</value>
         public static Transform FlipX { get { return _flipX; } }
+
         /// <summary>
         /// The transform that will flip something along the Y axis.
         /// </summary>
         /// <value>Equivalent to `new Transform(Vector3.Right, Vector3.Down, Vector3.Back, Vector3.Zero)`.</value>
         public static Transform FlipY { get { return _flipY; } }
+
         /// <summary>
         /// The transform that will flip something along the Z axis.
         /// </summary>

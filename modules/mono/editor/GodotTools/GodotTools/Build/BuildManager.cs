@@ -162,7 +162,7 @@ namespace GodotTools.Build
 
         public static bool BuildProjectBlocking(string config, [CanBeNull] string[] targets = null, [CanBeNull] string platform = null)
         {
-            var buildInfo = new BuildInfo(GodotSharpDirs.ProjectSlnPath, targets ?? new[] {"Build"}, config, restore: true);
+            var buildInfo = new BuildInfo(GodotSharpDirs.ProjectSlnPath, targets ?? new[] { "Build" }, config, restore: true);
 
             // If a platform was not specified, try determining the current one. If that fails, let MSBuild auto-detect it.
             if (platform != null || OS.PlatformNameMap.TryGetValue(Godot.OS.GetName(), out platform))

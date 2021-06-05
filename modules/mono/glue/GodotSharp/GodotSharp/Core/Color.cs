@@ -912,10 +912,13 @@ namespace Godot
                     {
                         return left.a < right.a;
                     }
+
                     return left.b < right.b;
                 }
+
                 return left.g < right.g;
             }
+
             return left.r < right.r;
         }
 
@@ -929,10 +932,13 @@ namespace Godot
                     {
                         return left.a > right.a;
                     }
+
                     return left.b > right.b;
                 }
+
                 return left.g > right.g;
             }
+
             return left.r > right.r;
         }
 

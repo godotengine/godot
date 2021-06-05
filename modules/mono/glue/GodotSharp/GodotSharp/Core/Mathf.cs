@@ -3,6 +3,7 @@ using System;
 using real_t = System.Double;
 #else
 using real_t = System.Single;
+
 #endif
 
 namespace Godot
@@ -14,13 +15,13 @@ namespace Godot
         /// <summary>
         /// The circle constant, the circumference of the unit circle in radians.
         /// </summary>
-        public const real_t Tau = (real_t) 6.2831853071795864769252867666M; // 6.2831855f and 6.28318530717959
+        public const real_t Tau = (real_t)6.2831853071795864769252867666M; // 6.2831855f and 6.28318530717959
 
         /// <summary>
         /// Constant that represents how many times the diameter of a circle
         /// fits around its perimeter. This is equivalent to `Mathf.Tau / 2`.
         /// </summary>
-        public const real_t Pi = (real_t) 3.1415926535897932384626433833M; // 3.1415927f and 3.14159265358979
+        public const real_t Pi = (real_t)3.1415926535897932384626433833M; // 3.1415927f and 3.14159265358979
 
         /// <summary>
         /// Positive infinity. For negative infinity, use `-Mathf.Inf`.
@@ -34,8 +35,8 @@ namespace Godot
         /// </summary>
         public const real_t NaN = real_t.NaN;
 
-        private const real_t Deg2RadConst = (real_t) 0.0174532925199432957692369077M; // 0.0174532924f and 0.0174532925199433
-        private const real_t Rad2DegConst = (real_t) 57.295779513082320876798154814M; // 57.29578f and 57.2957795130823
+        private const real_t Deg2RadConst = (real_t)0.0174532925199432957692369077M; // 0.0174532924f and 0.0174532925199433
+        private const real_t Rad2DegConst = (real_t)57.295779513082320876798154814M; // 57.29578f and 57.2957795130823
 
         /// <summary>
         /// Returns the absolute value of `s` (i.e. positive value).
@@ -272,12 +273,14 @@ namespace Godot
             {
                 return true;
             }
+
             // Then check for approximate equality.
             real_t tolerance = Epsilon * Abs(a);
             if (tolerance < Epsilon)
             {
                 tolerance = Epsilon;
             }
+
             return Abs(a - b) < tolerance;
         }
 
@@ -457,6 +460,7 @@ namespace Godot
             {
                 c += b;
             }
+
             return c;
         }
 
@@ -473,6 +477,7 @@ namespace Godot
             {
                 c += b;
             }
+
             return c;
         }
 
@@ -565,6 +570,7 @@ namespace Godot
             {
                 return from;
             }
+
             real_t x = Clamp((weight - from) / (to - from), (real_t)0.0, (real_t)1.0);
             return x * x * (3 - 2 * x);
         }
@@ -590,7 +596,8 @@ namespace Godot
         /// <returns>The position of the first non-zero digit.</returns>
         public static int StepDecimals(real_t step)
         {
-            double[] sd = new double[] {
+            double[] sd = new double[]
+            {
                 0.9999,
                 0.09999,
                 0.009999,
@@ -610,6 +617,7 @@ namespace Godot
                     return i;
                 }
             }
+
             return 0;
         }
 

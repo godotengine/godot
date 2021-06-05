@@ -315,7 +315,7 @@ namespace GodotTools.ProjectEditor
 
             // Godot API References
 
-            var apiAssemblies = new[] {ApiAssemblyNames.Core, ApiAssemblyNames.Editor};
+            var apiAssemblies = new[] { ApiAssemblyNames.Core, ApiAssemblyNames.Editor };
 
             RemoveElements(root.ItemGroups.SelectMany(g => g.Items)
                 .Where(i => i.ItemType == "Reference" && apiAssemblies.Contains(i.Include)));

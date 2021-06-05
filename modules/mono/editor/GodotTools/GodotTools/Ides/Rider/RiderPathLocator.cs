@@ -11,6 +11,7 @@ using Environment = System.Environment;
 using File = System.IO.File;
 using Path = System.IO.Path;
 using OS = GodotTools.Utils.OS;
+
 // ReSharper disable UnassignedField.Local
 // ReSharper disable InconsistentNaming
 // ReSharper disable UnassignedField.Global
@@ -32,14 +33,17 @@ namespace GodotTools.Ides.Rider
                 {
                     return CollectRiderInfosWindows();
                 }
+
                 if (OS.IsOSX)
                 {
                     return CollectRiderInfosMac();
                 }
+
                 if (OS.IsUnixLike)
                 {
                     return CollectAllRiderPathsLinux();
                 }
+
                 throw new Exception("Unexpected OS.");
             }
             catch (Exception e)
@@ -58,7 +62,7 @@ namespace GodotTools.Ides.Rider
             {
                 var toolboxRiderRootPath = GetToolboxBaseDir();
                 installInfos.AddRange(CollectPathsFromToolbox(toolboxRiderRootPath, "bin", "rider.sh", false)
-                  .Select(a => new RiderInfo(a, true)).ToList());
+                    .Select(a => new RiderInfo(a, true)).ToList());
 
                 //$Home/.local/share/applications/jetbrains-rider.desktop
                 var shortcut = new FileInfo(Path.Combine(home, @".local/share/applications/jetbrains-rider.desktop"));
@@ -98,15 +102,15 @@ namespace GodotTools.Ides.Rider
             if (folder.Exists)
             {
                 installInfos.AddRange(folder.GetDirectories("*Rider*.app")
-                  .Select(a => new RiderInfo(Path.Combine(a.FullName, "Contents/MacOS/rider"), false))
-                  .ToList());
+                    .Select(a => new RiderInfo(Path.Combine(a.FullName, "Contents/MacOS/rider"), false))
+                    .ToList());
             }
 
             // /Users/user/Library/Application Support/JetBrains/Toolbox/apps/Rider/ch-1/181.3870.267/Rider EAP.app
             // should be combined with "Contents/MacOS/rider"
             var toolboxRiderRootPath = GetToolboxBaseDir();
             var paths = CollectPathsFromToolbox(toolboxRiderRootPath, "", "Rider*.app", true)
-              .Select(a => new RiderInfo(Path.Combine(a, "Contents/MacOS/rider"), true));
+                .Select(a => new RiderInfo(Path.Combine(a, "Contents/MacOS/rider"), true));
             installInfos.AddRange(paths);
 
             return installInfos.ToArray();
@@ -222,6 +226,7 @@ namespace GodotTools.Ides.Rider
             {
                 CollectPathsFromRegistry(installPaths, key);
             }
+
             using (var key = Registry.LocalMachine.OpenSubKey(registryKey))
             {
                 CollectPathsFromRegistry(installPaths, key);
@@ -246,59 +251,59 @@ namespace GodotTools.Ides.Rider
         }
 
         private static string[] CollectPathsFromToolbox(string toolboxRiderRootPath, string dirName, string searchPattern,
-          bool isMac)
+            bool isMac)
         {
             if (!Directory.Exists(toolboxRiderRootPath))
                 return new string[0];
 
             var channelDirs = Directory.GetDirectories(toolboxRiderRootPath);
             var paths = channelDirs.SelectMany(channelDir =>
-              {
-                  try
-                  {
-                      // use history.json - last entry stands for the active build https://jetbrains.slack.com/archives/C07KNP99D/p1547807024066500?thread_ts=1547731708.057700&cid=C07KNP99D
-                      var historyFile = Path.Combine(channelDir, ".history.json");
-                      if (File.Exists(historyFile))
-                      {
-                          var json = File.ReadAllText(historyFile);
-                          var build = ToolboxHistory.GetLatestBuildFromJson(json);
-                          if (build != null)
-                          {
-                              var buildDir = Path.Combine(channelDir, build);
-                              var executablePaths = GetExecutablePaths(dirName, searchPattern, isMac, buildDir);
-                              if (executablePaths.Any())
-                                  return executablePaths;
-                          }
-                      }
+                {
+                    try
+                    {
+                        // use history.json - last entry stands for the active build https://jetbrains.slack.com/archives/C07KNP99D/p1547807024066500?thread_ts=1547731708.057700&cid=C07KNP99D
+                        var historyFile = Path.Combine(channelDir, ".history.json");
+                        if (File.Exists(historyFile))
+                        {
+                            var json = File.ReadAllText(historyFile);
+                            var build = ToolboxHistory.GetLatestBuildFromJson(json);
+                            if (build != null)
+                            {
+                                var buildDir = Path.Combine(channelDir, build);
+                                var executablePaths = GetExecutablePaths(dirName, searchPattern, isMac, buildDir);
+                                if (executablePaths.Any())
+                                    return executablePaths;
+                            }
+                        }
 
-                      var channelFile = Path.Combine(channelDir, ".channel.settings.json");
-                      if (File.Exists(channelFile))
-                      {
-                          var json = File.ReadAllText(channelFile).Replace("active-application", "active_application");
-                          var build = ToolboxInstallData.GetLatestBuildFromJson(json);
-                          if (build != null)
-                          {
-                              var buildDir = Path.Combine(channelDir, build);
-                              var executablePaths = GetExecutablePaths(dirName, searchPattern, isMac, buildDir);
-                              if (executablePaths.Any())
-                                  return executablePaths;
-                          }
-                      }
+                        var channelFile = Path.Combine(channelDir, ".channel.settings.json");
+                        if (File.Exists(channelFile))
+                        {
+                            var json = File.ReadAllText(channelFile).Replace("active-application", "active_application");
+                            var build = ToolboxInstallData.GetLatestBuildFromJson(json);
+                            if (build != null)
+                            {
+                                var buildDir = Path.Combine(channelDir, build);
+                                var executablePaths = GetExecutablePaths(dirName, searchPattern, isMac, buildDir);
+                                if (executablePaths.Any())
+                                    return executablePaths;
+                            }
+                        }
 
-                      // changes in toolbox json files format may brake the logic above, so return all found Rider installations
-                      return Directory.GetDirectories(channelDir)
-                          .SelectMany(buildDir => GetExecutablePaths(dirName, searchPattern, isMac, buildDir));
-                  }
-                  catch (Exception e)
-                  {
-                      // do not write to Debug.Log, just log it.
-                      Logger.Warn($"Failed to get RiderPath from {channelDir}", e);
-                  }
+                        // changes in toolbox json files format may brake the logic above, so return all found Rider installations
+                        return Directory.GetDirectories(channelDir)
+                            .SelectMany(buildDir => GetExecutablePaths(dirName, searchPattern, isMac, buildDir));
+                    }
+                    catch (Exception e)
+                    {
+                        // do not write to Debug.Log, just log it.
+                        Logger.Warn($"Failed to get RiderPath from {channelDir}", e);
+                    }
 
-                  return new string[0];
-              })
-              .Where(c => !string.IsNullOrEmpty(c))
-              .ToArray();
+                    return new string[0];
+                })
+                .Where(c => !string.IsNullOrEmpty(c))
+                .ToArray();
             return paths;
         }
 
@@ -311,7 +316,7 @@ namespace GodotTools.Ides.Rider
             if (!isMac)
                 return new[] { Path.Combine(folder.FullName, searchPattern) }.Where(File.Exists).ToArray();
             return folder.GetDirectories(searchPattern).Select(f => f.FullName)
-              .Where(Directory.Exists).ToArray();
+                .Where(Directory.Exists).ToArray();
         }
 
         // Disable the "field is never assigned" compiler warning. We never assign it, but Unity does.

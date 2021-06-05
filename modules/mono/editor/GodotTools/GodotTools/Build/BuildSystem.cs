@@ -77,7 +77,7 @@ namespace GodotTools.Build
             // Needed when running from Developer Command Prompt for VS
             RemovePlatformVariable(startInfo.EnvironmentVariables);
 
-            var process = new Process {StartInfo = startInfo};
+            var process = new Process { StartInfo = startInfo };
 
             if (stdOutHandler != null)
                 process.OutputDataReceived += (s, e) => stdOutHandler.Invoke(e.Data);

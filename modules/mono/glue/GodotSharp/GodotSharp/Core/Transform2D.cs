@@ -4,6 +4,7 @@ using System.Runtime.InteropServices;
 using real_t = System.Double;
 #else
 using real_t = System.Single;
+
 #endif
 
 namespace Godot
@@ -383,11 +384,13 @@ namespace Godot
         /// </summary>
         /// <value>Equivalent to `new Transform2D(Vector2.Right, Vector2.Down, Vector2.Zero)`.</value>
         public static Transform2D Identity { get { return _identity; } }
+
         /// <summary>
         /// The transform that will flip something along the X axis.
         /// </summary>
         /// <value>Equivalent to `new Transform2D(Vector2.Left, Vector2.Down, Vector2.Zero)`.</value>
         public static Transform2D FlipX { get { return _flipX; } }
+
         /// <summary>
         /// The transform that will flip something along the Y axis.
         /// </summary>
