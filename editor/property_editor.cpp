@@ -1446,6 +1446,8 @@ void CustomPropertyEditor::_modified(String p_string) {
 		return;
 	}
 
+	Variant prev_v = v;
+
 	updating = true;
 	switch (type) {
 		case Variant::INT: {
@@ -1459,14 +1461,18 @@ void CustomPropertyEditor::_modified(String p_string) {
 			} else {
 				v = expr->execute(Array(), nullptr, false);
 			}
-			emit_signal("variant_changed");
 
+			if (v != prev_v) {
+				emit_signal("variant_changed");
+			}
 		} break;
 		case Variant::FLOAT: {
 			if (hint != PROPERTY_HINT_EXP_EASING) {
 				String text = TS->parse_number(value_editor[0]->get_text());
 				v = _parse_real_expression(text);
-				emit_signal("variant_changed");
+				if (v != prev_v) {
+					emit_signal("variant_changed");
+				}
 			}
 
 		} break;
@@ -1479,7 +1485,9 @@ void CustomPropertyEditor::_modified(String p_string) {
 			vec.x = _parse_real_expression(value_editor[0]->get_text());
 			vec.y = _parse_real_expression(value_editor[1]->get_text());
 			v = vec;
-			_emit_changed_whole_or_field();
+			if (v != prev_v) {
+				_emit_changed_whole_or_field();
+			}
 
 		} break;
 		case Variant::RECT2: {
@@ -1490,7 +1498,9 @@ void CustomPropertyEditor::_modified(String p_string) {
 			r2.size.x = _parse_real_expression(value_editor[2]->get_text());
 			r2.size.y = _parse_real_expression(value_editor[3]->get_text());
 			v = r2;
-			_emit_changed_whole_or_field();
+			if (v != prev_v) {
+				_emit_changed_whole_or_field();
+			}
 
 		} break;
 
@@ -1500,7 +1510,9 @@ void CustomPropertyEditor::_modified(String p_string) {
 			vec.y = _parse_real_expression(value_editor[1]->get_text());
 			vec.z = _parse_real_expression(value_editor[2]->get_text());
 			v = vec;
-			_emit_changed_whole_or_field();
+			if (v != prev_v) {
+				_emit_changed_whole_or_field();
+			}
 
 		} break;
 		case Variant::PLANE: {
@@ -1510,7 +1522,9 @@ void CustomPropertyEditor::_modified(String p_string) {
 			pl.normal.z = _parse_real_expression(value_editor[2]->get_text());
 			pl.d = _parse_real_expression(value_editor[3]->get_text());
 			v = pl;
-			_emit_changed_whole_or_field();
+			if (v != prev_v) {
+				_emit_changed_whole_or_field();
+			}
 
 		} break;
 		case Variant::QUATERNION: {
@@ -1520,7 +1534,9 @@ void CustomPropertyEditor::_modified(String p_string) {
 			q.z = _parse_real_expression(value_editor[2]->get_text());
 			q.w = _parse_real_expression(value_editor[3]->get_text());
 			v = q;
-			_emit_changed_whole_or_field();
+			if (v != prev_v) {
+				_emit_changed_whole_or_field();
+			}
 
 		} break;
 		case Variant::AABB: {
@@ -1534,7 +1550,9 @@ void CustomPropertyEditor::_modified(String p_string) {
 			size.y = _parse_real_expression(value_editor[4]->get_text());
 			size.z = _parse_real_expression(value_editor[5]->get_text());
 			v = AABB(pos, size);
-			_emit_changed_whole_or_field();
+			if (v != prev_v) {
+				_emit_changed_whole_or_field();
+			}
 
 		} break;
 		case Variant::TRANSFORM2D: {
@@ -1544,7 +1562,9 @@ void CustomPropertyEditor::_modified(String p_string) {
 			}
 
 			v = m;
-			_emit_changed_whole_or_field();
+			if (v != prev_v) {
+				_emit_changed_whole_or_field();
+			}
 
 		} break;
 		case Variant::BASIS: {
@@ -1554,7 +1574,9 @@ void CustomPropertyEditor::_modified(String p_string) {
 			}
 
 			v = m;
-			_emit_changed_whole_or_field();
+			if (v != prev_v) {
+				_emit_changed_whole_or_field();
+			}
 
 		} break;
 		case Variant::TRANSFORM3D: {
@@ -1570,7 +1592,9 @@ void CustomPropertyEditor::_modified(String p_string) {
 			origin.z = _parse_real_expression(value_editor[11]->get_text());
 
 			v = Transform3D(basis, origin);
-			_emit_changed_whole_or_field();
+			if (v != prev_v) {
+				_emit_changed_whole_or_field();
+			}
 
 		} break;
 		case Variant::COLOR: {
@@ -1578,7 +1602,9 @@ void CustomPropertyEditor::_modified(String p_string) {
 
 		case Variant::NODE_PATH: {
 			v = NodePath(value_editor[0]->get_text());
-			emit_signal("variant_changed");
+			if (v != prev_v) {
+				emit_signal("variant_changed");
+			}
 		} break;
 		case Variant::DICTIONARY: {
 		} break;
@@ -1654,25 +1680,7 @@ void CustomPropertyEditor::_focus_enter() {
 }
 
 void CustomPropertyEditor::_focus_exit() {
-	switch (type) {
-		case Variant::FLOAT:
-		case Variant::STRING:
-		case Variant::VECTOR2:
-		case Variant::RECT2:
-		case Variant::VECTOR3:
-		case Variant::PLANE:
-		case Variant::QUATERNION:
-		case Variant::AABB:
-		case Variant::TRANSFORM2D:
-		case Variant::BASIS:
-		case Variant::TRANSFORM3D: {
-			for (int i = 0; i < MAX_VALUE_EDITORS; ++i) {
-				value_editor[i]->select(0, 0);
-			}
-		} break;
-		default: {
-		}
-	}
+	_modified(String());
 }
 
 void CustomPropertyEditor::config_action_buttons(const List<String> &p_strings) {
