@@ -201,6 +201,7 @@ void ResourceImporterTexture::get_import_options(List<ImportOption> *r_options, 
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "process/premult_alpha"), false));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "process/HDR_as_SRGB"), false));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "process/invert_color"), false));
+	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "process/normal_map_invert_y"), false));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "stream"), false));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "size_limit", PROPERTY_HINT_RANGE, "0,4096,1"), 0));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "detect_3d"), p_preset == PRESET_DETECT));
@@ -373,6 +374,7 @@ Error ResourceImporterTexture::import(const String &p_source_file, const String 
 	bool fix_alpha_border = p_options["process/fix_alpha_border"];
 	bool premult_alpha = p_options["process/premult_alpha"];
 	bool invert_color = p_options["process/invert_color"];
+	bool normal_map_invert_y = p_options["process/normal_map_invert_y"];
 	bool stream = p_options["stream"];
 	int size_limit = p_options["size_limit"];
 	bool hdr_as_srgb = p_options["process/HDR_as_SRGB"];
@@ -460,6 +462,24 @@ Error ResourceImporterTexture::import(const String &p_source_file, const String 
 		for (int i = 0; i < width; i++) {
 			for (int j = 0; j < height; j++) {
 				image->set_pixel(i, j, image->get_pixel(i, j).inverted());
+			}
+		}
+		image->unlock();
+	}
+
+	if (normal_map_invert_y) {
+		// Inverting the green channel can be used to flip a normal map's direction.
+		// There's no standard when it comes to normal map Y direction, so this is
+		// sometimes needed when using a normal map exported from another program.
+		// See <http://wiki.polycount.com/wiki/Normal_Map_Technical_Details#Common_Swizzle_Coordinates>.
+		const int height = image->get_height();
+		const int width = image->get_width();
+
+		image->lock();
+		for (int i = 0; i < width; i++) {
+			for (int j = 0; j < height; j++) {
+				const Color color = image->get_pixel(i, j);
+				image->set_pixel(i, j, Color(color.r, 1 - color.g, color.b));
 			}
 		}
 		image->unlock();
