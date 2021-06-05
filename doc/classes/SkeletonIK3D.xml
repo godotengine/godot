@@ -46,13 +46,13 @@
 		</member>
 		<member name="override_tip_basis" type="bool" setter="set_override_tip_basis" getter="is_override_tip_basis" default="true">
 		</member>
-		<member name="root_bone" type="StringName" setter="set_root_bone" getter="get_root_bone" default="@&quot;&quot;">
+		<member name="root_bone" type="StringName" setter="set_root_bone" getter="get_root_bone" default="&amp;&quot;&quot;">
 		</member>
 		<member name="target" type="Transform3D" setter="set_target_transform" getter="get_target_transform" default="Transform3D( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0 )">
 		</member>
 		<member name="target_node" type="NodePath" setter="set_target_node" getter="get_target_node" default="NodePath(&quot;&quot;)">
 		</member>
-		<member name="tip_bone" type="StringName" setter="set_tip_bone" getter="get_tip_bone" default="@&quot;&quot;">
+		<member name="tip_bone" type="StringName" setter="set_tip_bone" getter="get_tip_bone" default="&amp;&quot;&quot;">
 		</member>
 		<member name="use_magnet" type="bool" setter="set_use_magnet" getter="is_using_magnet" default="false">
 		</member>

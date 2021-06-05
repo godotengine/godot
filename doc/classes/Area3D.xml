@@ -52,7 +52,7 @@
 			The rate at which objects stop spinning in this area. Represents the angular velocity lost per second.
 			See [member ProjectSettings.physics/3d/default_angular_damp] for more details about damping.
 		</member>
-		<member name="audio_bus_name" type="StringName" setter="set_audio_bus_name" getter="get_audio_bus_name" default="@&quot;Master&quot;">
+		<member name="audio_bus_name" type="StringName" setter="set_audio_bus_name" getter="get_audio_bus_name" default="&amp;&quot;Master&quot;">
 			The name of the area's audio bus.
 		</member>
 		<member name="audio_bus_override" type="bool" setter="set_audio_bus_override" getter="is_overriding_audio_bus" default="false">
@@ -89,7 +89,7 @@
 		<member name="reverb_bus_enable" type="bool" setter="set_use_reverb_bus" getter="is_using_reverb_bus" default="false">
 			If [code]true[/code], the area applies reverb to its associated audio.
 		</member>
-		<member name="reverb_bus_name" type="StringName" setter="set_reverb_bus" getter="get_reverb_bus" default="@&quot;Master&quot;">
+		<member name="reverb_bus_name" type="StringName" setter="set_reverb_bus" getter="get_reverb_bus" default="&amp;&quot;Master&quot;">
 			The reverb bus name to use for this area's associated audio.
 		</member>
 		<member name="reverb_bus_uniformity" type="float" setter="set_reverb_uniformity" getter="get_reverb_uniformity" default="0.0">

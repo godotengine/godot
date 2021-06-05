@@ -10,7 +10,7 @@
 		<method name="get_bytecode" qualifiers="const">
 			<return type="RDShaderBytecode">
 			</return>
-			<argument index="0" name="version" type="StringName" default="@&quot;&quot;">
+			<argument index="0" name="version" type="StringName" default="&amp;&quot;&quot;">
 			</argument>
 			<description>
 			</description>
@@ -26,7 +26,7 @@
 			</return>
 			<argument index="0" name="bytecode" type="RDShaderBytecode">
 			</argument>
-			<argument index="1" name="version" type="StringName" default="@&quot;&quot;">
+			<argument index="1" name="version" type="StringName" default="&amp;&quot;&quot;">
 			</argument>
 			<description>
 			</description>

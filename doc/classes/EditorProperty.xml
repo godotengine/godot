@@ -25,7 +25,7 @@
 			</argument>
 			<argument index="1" name="value" type="Variant">
 			</argument>
-			<argument index="2" name="field" type="StringName" default="@&quot;&quot;">
+			<argument index="2" name="field" type="StringName" default="&amp;&quot;&quot;">
 			</argument>
 			<argument index="3" name="changing" type="bool" default="false">
 			</argument>

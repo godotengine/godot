@@ -1516,7 +1516,7 @@ Error VariantWriter::write(const Variant &p_variant, StoreStringFunc p_store_str
 		case Variant::STRING_NAME: {
 			String str = p_variant;
 
-			str = "@\"" + str.c_escape() + "\"";
+			str = "&\"" + str.c_escape() + "\"";
 			p_store_string_func(p_store_string_ud, str);
 
 		} break;
