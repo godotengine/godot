@@ -85,7 +85,7 @@ uint32_t GDScriptByteCodeGenerator::add_temporary(const GDScriptDataType &p_type
 				case Variant::VECTOR3I:
 				case Variant::TRANSFORM2D:
 				case Variant::PLANE:
-				case Variant::QUAT:
+				case Variant::QUATERNION:
 				case Variant::AABB:
 				case Variant::BASIS:
 				case Variant::TRANSFORM3D:
@@ -458,8 +458,8 @@ void GDScriptByteCodeGenerator::write_type_adjust(const Address &p_target, Varia
 		case Variant::PLANE:
 			append(GDScriptFunction::OPCODE_TYPE_ADJUST_PLANE, 1);
 			break;
-		case Variant::QUAT:
-			append(GDScriptFunction::OPCODE_TYPE_ADJUST_QUAT, 1);
+		case Variant::QUATERNION:
+			append(GDScriptFunction::OPCODE_TYPE_ADJUST_QUATERNION, 1);
 			break;
 		case Variant::AABB:
 			append(GDScriptFunction::OPCODE_TYPE_ADJUST_AABB, 1);
@@ -1105,7 +1105,7 @@ void GDScriptByteCodeGenerator::write_call_ptrcall(const Address &p_target, cons
 			CASE_TYPE(STRING_NAME);
 			CASE_TYPE(NODE_PATH);
 			CASE_TYPE(RID);
-			CASE_TYPE(QUAT);
+			CASE_TYPE(QUATERNION);
 			CASE_TYPE(OBJECT);
 			CASE_TYPE(CALLABLE);
 			CASE_TYPE(SIGNAL);

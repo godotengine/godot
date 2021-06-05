@@ -236,7 +236,7 @@ void AnimationCache::set_all(float p_time, float p_delta) {
 		switch (animation->track_get_type(i)) {
 			case Animation::TYPE_TRANSFORM3D: {
 				Vector3 loc, scale;
-				Quat rot;
+				Quaternion rot;
 				animation->transform_track_interpolate(i, p_time, &loc, &rot, &scale);
 				Transform3D tr(Basis(rot), loc);
 				tr.basis.scale(scale);

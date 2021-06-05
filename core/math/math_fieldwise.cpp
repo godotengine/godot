@@ -88,8 +88,8 @@ Variant fieldwise_assign(const Variant &p_target, const Variant &p_source, const
 			return target;
 		}
 
-		case Variant::QUAT: {
-			SETUP_TYPE(Quat)
+		case Variant::QUATERNION: {
+			SETUP_TYPE(Quaternion)
 
 			/**/ TRY_TRANSFER_FIELD("x", x)
 			else TRY_TRANSFER_FIELD("y", y)

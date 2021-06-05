@@ -102,7 +102,7 @@ private:
 		// accumulated transforms
 
 		Vector3 loc_accum;
-		Quat rot_accum;
+		Quaternion rot_accum;
 		Vector3 scale_accum;
 		uint64_t accum_pass = 0;
 

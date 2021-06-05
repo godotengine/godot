@@ -519,11 +519,11 @@ Variant Tween::_run_equation(InterpolateData &p_data) {
 			result = r;
 		} break;
 
-		case Variant::QUAT: {
+		case Variant::QUATERNION: {
 			// Get the quaternian for the initial and delta values
-			Quat i = initial_val;
-			Quat d = delta_val;
-			Quat r;
+			Quaternion i = initial_val;
+			Quaternion d = delta_val;
+			Quaternion r;
 
 			// Execute the equation on the quaternian values and mutate the r quaternian
 			// This uses the custom APPLY_EQUATION macro defined above
@@ -1202,9 +1202,9 @@ bool Tween::_calc_delta_val(const Variant &p_initial_val, const Variant &p_final
 			delta_val = d;
 		} break;
 
-		case Variant::QUAT:
+		case Variant::QUATERNION:
 			// Convert to quaternianls and find the delta
-			delta_val = final_val.operator Quat() - initial_val.operator Quat();
+			delta_val = final_val.operator Quaternion() - initial_val.operator Quaternion();
 			break;
 
 		case Variant::AABB: {
@@ -1266,7 +1266,7 @@ bool Tween::_calc_delta_val(const Variant &p_initial_val, const Variant &p_final
 				Variant::RECT2,
 				Variant::VECTOR3,
 				Variant::TRANSFORM2D,
-				Variant::QUAT,
+				Variant::QUATERNION,
 				Variant::AABB,
 				Variant::BASIS,
 				Variant::TRANSFORM3D,
