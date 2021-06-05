@@ -2499,6 +2499,143 @@ VisualShaderNodeTransformFunc::VisualShaderNodeTransformFunc() {
 	set_input_port_default_value(0, Transform3D());
 }
 
+////////////// UV Func
+
+String VisualShaderNodeUVFunc::get_caption() const {
+	return "UVFunc";
+}
+
+int VisualShaderNodeUVFunc::get_input_port_count() const {
+	return 3;
+}
+
+VisualShaderNodeUVFunc::PortType VisualShaderNodeUVFunc::get_input_port_type(int p_port) const {
+	switch (p_port) {
+		case 0:
+			[[fallthrough]]; // uv
+		case 1:
+			return PORT_TYPE_VECTOR; // scale
+		case 2:
+			return PORT_TYPE_VECTOR; // offset & pivot
+		default:
+			break;
+	}
+	return PORT_TYPE_SCALAR;
+}
+
+String VisualShaderNodeUVFunc::get_input_port_name(int p_port) const {
+	switch (p_port) {
+		case 0:
+			return "uv";
+		case 1:
+			return "scale";
+		case 2:
+			switch (func) {
+				case FUNC_PANNING:
+					return "offset";
+				case FUNC_SCALING:
+					return "pivot";
+				case FUNC_MAX:
+					break;
+				default:
+					break;
+			}
+			break;
+		default:
+			break;
+	}
+	return "";
+}
+
+String VisualShaderNodeUVFunc::get_input_port_default_hint(int p_port) const {
+	if (p_port == 0) {
+		return "UV";
+	}
+	return "";
+}
+
+int VisualShaderNodeUVFunc::get_output_port_count() const {
+	return 1;
+}
+
+VisualShaderNodeUVFunc::PortType VisualShaderNodeUVFunc::get_output_port_type(int p_port) const {
+	return PORT_TYPE_VECTOR;
+}
+
+String VisualShaderNodeUVFunc::get_output_port_name(int p_port) const {
+	return "uv";
+}
+
+bool VisualShaderNodeUVFunc::is_show_prop_names() const {
+	return true;
+}
+
+String VisualShaderNodeUVFunc::generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview) const {
+	String code;
+
+	String uv;
+	if (p_input_vars[0].is_empty()) {
+		uv = "vec3(UV.xy, 0.0)";
+	} else {
+		uv = vformat("%s", p_input_vars[0]);
+	}
+	String scale = vformat("%s", p_input_vars[1]);
+	String offset_pivot = vformat("%s", p_input_vars[2]);
+
+	switch (func) {
+		case FUNC_PANNING: {
+			code += vformat("\t%s = fma(%s, %s, %s);\n", p_output_vars[0], offset_pivot, scale, uv);
+		} break;
+		case FUNC_SCALING: {
+			code += vformat("\t%s = fma((%s - %s), %s, %s);\n", p_output_vars[0], uv, offset_pivot, scale, offset_pivot);
+		} break;
+		case FUNC_MAX:
+			break;
+	}
+	return code;
+}
+
+void VisualShaderNodeUVFunc::set_function(VisualShaderNodeUVFunc::Function p_func) {
+	ERR_FAIL_INDEX(int(p_func), FUNC_MAX);
+	if (func == p_func) {
+		return;
+	}
+	func = p_func;
+
+	if (p_func == FUNC_PANNING) {
+		set_input_port_default_value(2, Vector3()); // offset
+	} else { // FUNC_SCALING
+		set_input_port_default_value(2, Vector3(0.5, 0.5, 0.0)); // pivot
+	}
+	emit_changed();
+}
+
+VisualShaderNodeUVFunc::Function VisualShaderNodeUVFunc::get_function() const {
+	return func;
+}
+
+Vector<StringName> VisualShaderNodeUVFunc::get_editable_properties() const {
+	Vector<StringName> props;
+	props.push_back("function");
+	return props;
+}
+
+void VisualShaderNodeUVFunc::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("set_function", "func"), &VisualShaderNodeUVFunc::set_function);
+	ClassDB::bind_method(D_METHOD("get_function"), &VisualShaderNodeUVFunc::get_function);
+
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "function", PROPERTY_HINT_ENUM, "Panning,Scaling"), "set_function", "get_function");
+
+	BIND_ENUM_CONSTANT(FUNC_PANNING);
+	BIND_ENUM_CONSTANT(FUNC_SCALING);
+	BIND_ENUM_CONSTANT(FUNC_MAX);
+}
+
+VisualShaderNodeUVFunc::VisualShaderNodeUVFunc() {
+	set_input_port_default_value(1, Vector3(1.0, 1.0, 0.0)); // scale
+	set_input_port_default_value(2, Vector3()); // offset
+}
+
 ////////////// Dot Product
 
 String VisualShaderNodeDotProduct::get_caption() const {
