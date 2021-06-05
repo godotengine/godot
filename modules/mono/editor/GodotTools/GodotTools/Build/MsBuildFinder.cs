@@ -61,7 +61,7 @@ namespace GodotTools.Build
                     }
                     case BuildTool.JetBrainsMsBuild:
                     {
-                        var editorPath = (string)editorSettings.GetSetting(RiderPathManager.EditorPathSettingName);
+                        string editorPath = (string)editorSettings.GetSetting(RiderPathManager.EditorPathSettingName);
 
                         if (!File.Exists(editorPath))
                             throw new FileNotFoundException($"Cannot find Rider executable. Tried with path: {editorPath}");
@@ -165,10 +165,12 @@ namespace GodotTools.Build
 
             // Try to find 15.0 with vswhere
 
-            var envNames = Internal.GodotIs32Bits() ? new[] { "ProgramFiles", "ProgramW6432" } : new[] { "ProgramFiles(x86)", "ProgramFiles" };
+            string[] envNames = Internal.GodotIs32Bits() ?
+                new[] { "ProgramFiles", "ProgramW6432" } :
+                new[] { "ProgramFiles(x86)", "ProgramFiles" };
 
             string vsWherePath = null;
-            foreach (var envName in envNames)
+            foreach (string envName in envNames)
             {
                 vsWherePath = Environment.GetEnvironmentVariable(envName);
                 if (!string.IsNullOrEmpty(vsWherePath))
@@ -181,7 +183,7 @@ namespace GodotTools.Build
                 vsWherePath = null;
             }
 
-            var vsWhereArgs = new[] { "-latest", "-products", "*", "-requires", "Microsoft.Component.MSBuild" };
+            string[] vsWhereArgs = { "-latest", "-products", "*", "-requires", "Microsoft.Component.MSBuild" };
 
             var outputArray = new Godot.Collections.Array<string>();
             int exitCode = Godot.OS.Execute(vsWherePath, vsWhereArgs,
@@ -193,7 +195,7 @@ namespace GodotTools.Build
             if (outputArray.Count == 0)
                 return string.Empty;
 
-            var lines = outputArray[0].Split('\n');
+            string[] lines = outputArray[0].Split('\n');
 
             foreach (string line in lines)
             {

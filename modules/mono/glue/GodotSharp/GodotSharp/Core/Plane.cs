@@ -28,8 +28,8 @@ namespace Godot
         /// <value>Equivalent to `x`, `y`, and `z`.</value>
         public Vector3 Normal
         {
-            get { return _normal; }
-            set { _normal = value; }
+            get => _normal;
+            set => _normal = value;
         }
 
         /// <summary>
@@ -38,14 +38,8 @@ namespace Godot
         /// <value>Equivalent to <see cref="Normal"/>'s X value.</value>
         public real_t x
         {
-            get
-            {
-                return _normal.x;
-            }
-            set
-            {
-                _normal.x = value;
-            }
+            get => _normal.x;
+            set => _normal.x = value;
         }
 
         /// <summary>
@@ -54,14 +48,8 @@ namespace Godot
         /// <value>Equivalent to <see cref="Normal"/>'s Y value.</value>
         public real_t y
         {
-            get
-            {
-                return _normal.y;
-            }
-            set
-            {
-                _normal.y = value;
-            }
+            get => _normal.y;
+            set => _normal.y = value;
         }
 
         /// <summary>
@@ -70,14 +58,8 @@ namespace Godot
         /// <value>Equivalent to <see cref="Normal"/>'s Z value.</value>
         public real_t z
         {
-            get
-            {
-                return _normal.z;
-            }
-            set
-            {
-                _normal.z = value;
-            }
+            get => _normal.z;
+            set => _normal.z = value;
         }
 
         /// <summary>
@@ -96,10 +78,7 @@ namespace Godot
         /// <value>Equivalent to <see cref="Normal"/> multiplied by `D`.</value>
         public Vector3 Center
         {
-            get
-            {
-                return _normal * D;
-            }
+            get => _normal * D;
             set
             {
                 _normal = value.Normalized();
@@ -112,10 +91,7 @@ namespace Godot
         /// </summary>
         /// <param name="point">The position to use for the calculation.</param>
         /// <returns>The shortest distance.</returns>
-        public real_t DistanceTo(Vector3 point)
-        {
-            return _normal.Dot(point) - D;
-        }
+        public real_t DistanceTo(Vector3 point) => _normal.Dot(point) - D;
 
         /// <summary>
         /// The center of the plane, the point where the normal line intersects the plane.
@@ -123,10 +99,7 @@ namespace Godot
         /// </summary>
         /// <returns>Equivalent to <see cref="Normal"/> multiplied by `D`.</returns>
         [Obsolete("GetAnyPoint is deprecated. Use the Center property instead.")]
-        public Vector3 GetAnyPoint()
-        {
-            return _normal * D;
-        }
+        public Vector3 GetAnyPoint() => _normal * D;
 
         /// <summary>
         /// Returns true if point is inside the plane.
@@ -157,9 +130,9 @@ namespace Godot
                 return null;
             }
 
-            Vector3 result = b._normal.Cross(c._normal) * D +
-                             c._normal.Cross(_normal) * b.D +
-                             _normal.Cross(b._normal) * c.D;
+            Vector3 result = (b._normal.Cross(c._normal) * D) +
+                             (c._normal.Cross(_normal) * b.D) +
+                             (_normal.Cross(b._normal) * c.D);
 
             return result / denom;
         }
@@ -189,7 +162,7 @@ namespace Godot
                 return null;
             }
 
-            return from + dir * -dist;
+            return from + (dir * -dist);
         }
 
         /// <summary>
@@ -218,7 +191,7 @@ namespace Godot
                 return null;
             }
 
-            return begin + segment * -dist;
+            return begin + (segment * -dist);
         }
 
         /// <summary>
@@ -226,10 +199,7 @@ namespace Godot
         /// </summary>
         /// <param name="point">The point to check.</param>
         /// <returns>A bool for whether or not the point is above the plane.</returns>
-        public bool IsPointOver(Vector3 point)
-        {
-            return _normal.Dot(point) > D;
-        }
+        public bool IsPointOver(Vector3 point) => _normal.Dot(point) > D;
 
         /// <summary>
         /// Returns the plane scaled to unit length.
@@ -252,10 +222,7 @@ namespace Godot
         /// </summary>
         /// <param name="point">The point to project.</param>
         /// <returns>The projected point.</returns>
-        public Vector3 Project(Vector3 point)
-        {
-            return point - _normal * DistanceTo(point);
-        }
+        public Vector3 Project(Vector3 point) => point - (_normal * DistanceTo(point));
 
         // Constants
         private static readonly Plane _planeYZ = new Plane(1, 0, 0, 0);
@@ -266,19 +233,19 @@ namespace Godot
         /// A plane that extends in the Y and Z axes (normal vector points +X).
         /// </summary>
         /// <value>Equivalent to `new Plane(1, 0, 0, 0)`.</value>
-        public static Plane PlaneYZ { get { return _planeYZ; } }
+        public static Plane PlaneYZ => _planeYZ;
 
         /// <summary>
         /// A plane that extends in the X and Z axes (normal vector points +Y).
         /// </summary>
         /// <value>Equivalent to `new Plane(0, 1, 0, 0)`.</value>
-        public static Plane PlaneXZ { get { return _planeXZ; } }
+        public static Plane PlaneXZ => _planeXZ;
 
         /// <summary>
         /// A plane that extends in the X and Y axes (normal vector points +Z).
         /// </summary>
         /// <value>Equivalent to `new Plane(0, 0, 1, 0)`.</value>
-        public static Plane PlaneXY { get { return _planeXY; } }
+        public static Plane PlaneXY => _planeXY;
 
         /// <summary>
         /// Constructs a plane from four values. `a`, `b` and `c` become the
@@ -292,7 +259,7 @@ namespace Godot
         public Plane(real_t a, real_t b, real_t c, real_t d)
         {
             _normal = new Vector3(a, b, c);
-            this.D = d;
+            D = d;
         }
 
         /// <summary>
@@ -302,8 +269,8 @@ namespace Godot
         /// <param name="d">The plane's distance from the origin. This value is typically non-negative.</param>
         public Plane(Vector3 normal, real_t d)
         {
-            this._normal = normal;
-            this.D = d;
+            _normal = normal;
+            D = d;
         }
 
         /// <summary>
@@ -319,20 +286,11 @@ namespace Godot
             D = _normal.Dot(v1);
         }
 
-        public static Plane operator -(Plane plane)
-        {
-            return new Plane(-plane._normal, -plane.D);
-        }
+        public static Plane operator -(Plane plane) => new Plane(-plane._normal, -plane.D);
 
-        public static bool operator ==(Plane left, Plane right)
-        {
-            return left.Equals(right);
-        }
+        public static bool operator ==(Plane left, Plane right) => left.Equals(right);
 
-        public static bool operator !=(Plane left, Plane right)
-        {
-            return !left.Equals(right);
-        }
+        public static bool operator !=(Plane left, Plane right) => !left.Equals(right);
 
         public override bool Equals(object obj)
         {
@@ -344,10 +302,7 @@ namespace Godot
             return false;
         }
 
-        public bool Equals(Plane other)
-        {
-            return _normal == other._normal && D == other.D;
-        }
+        public bool Equals(Plane other) => _normal == other._normal && D == other.D;
 
         /// <summary>
         /// Returns true if this plane and `other` are approximately equal, by running
@@ -355,32 +310,23 @@ namespace Godot
         /// </summary>
         /// <param name="other">The other plane to compare.</param>
         /// <returns>Whether or not the planes are approximately equal.</returns>
-        public bool IsEqualApprox(Plane other)
-        {
-            return _normal.IsEqualApprox(other._normal) && Mathf.IsEqualApprox(D, other.D);
-        }
+        public bool IsEqualApprox(Plane other) =>
+            _normal.IsEqualApprox(other._normal) && Mathf.IsEqualApprox(D, other.D);
 
-        public override int GetHashCode()
-        {
-            return _normal.GetHashCode() ^ D.GetHashCode();
-        }
+        public override int GetHashCode() => _normal.GetHashCode() ^ D.GetHashCode();
 
-        public override string ToString()
-        {
-            return String.Format("({0}, {1})", new object[]
+        public override string ToString() =>
+            string.Format("({0}, {1})", new object[]
             {
                 _normal.ToString(),
                 D.ToString()
             });
-        }
 
-        public string ToString(string format)
-        {
-            return String.Format("({0}, {1})", new object[]
+        public string ToString(string format) =>
+            string.Format("({0}, {1})", new object[]
             {
                 _normal.ToString(format),
                 D.ToString(format)
             });
-        }
     }
 }

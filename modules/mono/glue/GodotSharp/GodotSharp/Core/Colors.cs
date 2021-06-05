@@ -10,7 +10,7 @@ namespace Godot
     public static class Colors
     {
         // Color names and values are derived from core/color_names.inc
-        internal static readonly Dictionary<string, Color> namedColors = new Dictionary<string, Color>
+        internal static readonly Dictionary<string, Color> NamedColors = new Dictionary<string, Color>
         {
             { "aliceblue", new Color(0.94f, 0.97f, 1.00f) },
             { "antiquewhite", new Color(0.98f, 0.92f, 0.84f) },
@@ -160,151 +160,151 @@ namespace Godot
             { "yellowgreen", new Color(0.60f, 0.80f, 0.20f) },
         };
 
-        public static Color AliceBlue { get { return namedColors["aliceblue"]; } }
-        public static Color AntiqueWhite { get { return namedColors["antiquewhite"]; } }
-        public static Color Aqua { get { return namedColors["aqua"]; } }
-        public static Color Aquamarine { get { return namedColors["aquamarine"]; } }
-        public static Color Azure { get { return namedColors["azure"]; } }
-        public static Color Beige { get { return namedColors["beige"]; } }
-        public static Color Bisque { get { return namedColors["bisque"]; } }
-        public static Color Black { get { return namedColors["black"]; } }
-        public static Color BlanchedAlmond { get { return namedColors["blanchedalmond"]; } }
-        public static Color Blue { get { return namedColors["blue"]; } }
-        public static Color BlueViolet { get { return namedColors["blueviolet"]; } }
-        public static Color Brown { get { return namedColors["brown"]; } }
-        public static Color BurlyWood { get { return namedColors["burlywood"]; } }
-        public static Color CadetBlue { get { return namedColors["cadetblue"]; } }
-        public static Color Chartreuse { get { return namedColors["chartreuse"]; } }
-        public static Color Chocolate { get { return namedColors["chocolate"]; } }
-        public static Color Coral { get { return namedColors["coral"]; } }
-        public static Color Cornflower { get { return namedColors["cornflower"]; } }
-        public static Color Cornsilk { get { return namedColors["cornsilk"]; } }
-        public static Color Crimson { get { return namedColors["crimson"]; } }
-        public static Color Cyan { get { return namedColors["cyan"]; } }
-        public static Color DarkBlue { get { return namedColors["darkblue"]; } }
-        public static Color DarkCyan { get { return namedColors["darkcyan"]; } }
-        public static Color DarkGoldenrod { get { return namedColors["darkgoldenrod"]; } }
-        public static Color DarkGray { get { return namedColors["darkgray"]; } }
-        public static Color DarkGreen { get { return namedColors["darkgreen"]; } }
-        public static Color DarkKhaki { get { return namedColors["darkkhaki"]; } }
-        public static Color DarkMagenta { get { return namedColors["darkmagenta"]; } }
-        public static Color DarkOliveGreen { get { return namedColors["darkolivegreen"]; } }
-        public static Color DarkOrange { get { return namedColors["darkorange"]; } }
-        public static Color DarkOrchid { get { return namedColors["darkorchid"]; } }
-        public static Color DarkRed { get { return namedColors["darkred"]; } }
-        public static Color DarkSalmon { get { return namedColors["darksalmon"]; } }
-        public static Color DarkSeaGreen { get { return namedColors["darkseagreen"]; } }
-        public static Color DarkSlateBlue { get { return namedColors["darkslateblue"]; } }
-        public static Color DarkSlateGray { get { return namedColors["darkslategray"]; } }
-        public static Color DarkTurquoise { get { return namedColors["darkturquoise"]; } }
-        public static Color DarkViolet { get { return namedColors["darkviolet"]; } }
-        public static Color DeepPink { get { return namedColors["deeppink"]; } }
-        public static Color DeepSkyBlue { get { return namedColors["deepskyblue"]; } }
-        public static Color DimGray { get { return namedColors["dimgray"]; } }
-        public static Color DodgerBlue { get { return namedColors["dodgerblue"]; } }
-        public static Color Firebrick { get { return namedColors["firebrick"]; } }
-        public static Color FloralWhite { get { return namedColors["floralwhite"]; } }
-        public static Color ForestGreen { get { return namedColors["forestgreen"]; } }
-        public static Color Fuchsia { get { return namedColors["fuchsia"]; } }
-        public static Color Gainsboro { get { return namedColors["gainsboro"]; } }
-        public static Color GhostWhite { get { return namedColors["ghostwhite"]; } }
-        public static Color Gold { get { return namedColors["gold"]; } }
-        public static Color Goldenrod { get { return namedColors["goldenrod"]; } }
-        public static Color Gray { get { return namedColors["gray"]; } }
-        public static Color Green { get { return namedColors["green"]; } }
-        public static Color GreenYellow { get { return namedColors["greenyellow"]; } }
-        public static Color Honeydew { get { return namedColors["honeydew"]; } }
-        public static Color HotPink { get { return namedColors["hotpink"]; } }
-        public static Color IndianRed { get { return namedColors["indianred"]; } }
-        public static Color Indigo { get { return namedColors["indigo"]; } }
-        public static Color Ivory { get { return namedColors["ivory"]; } }
-        public static Color Khaki { get { return namedColors["khaki"]; } }
-        public static Color Lavender { get { return namedColors["lavender"]; } }
-        public static Color LavenderBlush { get { return namedColors["lavenderblush"]; } }
-        public static Color LawnGreen { get { return namedColors["lawngreen"]; } }
-        public static Color LemonChiffon { get { return namedColors["lemonchiffon"]; } }
-        public static Color LightBlue { get { return namedColors["lightblue"]; } }
-        public static Color LightCoral { get { return namedColors["lightcoral"]; } }
-        public static Color LightCyan { get { return namedColors["lightcyan"]; } }
-        public static Color LightGoldenrod { get { return namedColors["lightgoldenrod"]; } }
-        public static Color LightGray { get { return namedColors["lightgray"]; } }
-        public static Color LightGreen { get { return namedColors["lightgreen"]; } }
-        public static Color LightPink { get { return namedColors["lightpink"]; } }
-        public static Color LightSalmon { get { return namedColors["lightsalmon"]; } }
-        public static Color LightSeaGreen { get { return namedColors["lightseagreen"]; } }
-        public static Color LightSkyBlue { get { return namedColors["lightskyblue"]; } }
-        public static Color LightSlateGray { get { return namedColors["lightslategray"]; } }
-        public static Color LightSteelBlue { get { return namedColors["lightsteelblue"]; } }
-        public static Color LightYellow { get { return namedColors["lightyellow"]; } }
-        public static Color Lime { get { return namedColors["lime"]; } }
-        public static Color Limegreen { get { return namedColors["limegreen"]; } }
-        public static Color Linen { get { return namedColors["linen"]; } }
-        public static Color Magenta { get { return namedColors["magenta"]; } }
-        public static Color Maroon { get { return namedColors["maroon"]; } }
-        public static Color MediumAquamarine { get { return namedColors["mediumaquamarine"]; } }
-        public static Color MediumBlue { get { return namedColors["mediumblue"]; } }
-        public static Color MediumOrchid { get { return namedColors["mediumorchid"]; } }
-        public static Color MediumPurple { get { return namedColors["mediumpurple"]; } }
-        public static Color MediumSeaGreen { get { return namedColors["mediumseagreen"]; } }
-        public static Color MediumSlateBlue { get { return namedColors["mediumslateblue"]; } }
-        public static Color MediumSpringGreen { get { return namedColors["mediumspringgreen"]; } }
-        public static Color MediumTurquoise { get { return namedColors["mediumturquoise"]; } }
-        public static Color MediumVioletRed { get { return namedColors["mediumvioletred"]; } }
-        public static Color MidnightBlue { get { return namedColors["midnightblue"]; } }
-        public static Color MintCream { get { return namedColors["mintcream"]; } }
-        public static Color MistyRose { get { return namedColors["mistyrose"]; } }
-        public static Color Moccasin { get { return namedColors["moccasin"]; } }
-        public static Color NavajoWhite { get { return namedColors["navajowhite"]; } }
-        public static Color NavyBlue { get { return namedColors["navyblue"]; } }
-        public static Color OldLace { get { return namedColors["oldlace"]; } }
-        public static Color Olive { get { return namedColors["olive"]; } }
-        public static Color OliveDrab { get { return namedColors["olivedrab"]; } }
-        public static Color Orange { get { return namedColors["orange"]; } }
-        public static Color OrangeRed { get { return namedColors["orangered"]; } }
-        public static Color Orchid { get { return namedColors["orchid"]; } }
-        public static Color PaleGoldenrod { get { return namedColors["palegoldenrod"]; } }
-        public static Color PaleGreen { get { return namedColors["palegreen"]; } }
-        public static Color PaleTurquoise { get { return namedColors["paleturquoise"]; } }
-        public static Color PaleVioletRed { get { return namedColors["palevioletred"]; } }
-        public static Color PapayaWhip { get { return namedColors["papayawhip"]; } }
-        public static Color PeachPuff { get { return namedColors["peachpuff"]; } }
-        public static Color Peru { get { return namedColors["peru"]; } }
-        public static Color Pink { get { return namedColors["pink"]; } }
-        public static Color Plum { get { return namedColors["plum"]; } }
-        public static Color PowderBlue { get { return namedColors["powderblue"]; } }
-        public static Color Purple { get { return namedColors["purple"]; } }
-        public static Color RebeccaPurple { get { return namedColors["rebeccapurple"]; } }
-        public static Color Red { get { return namedColors["red"]; } }
-        public static Color RosyBrown { get { return namedColors["rosybrown"]; } }
-        public static Color RoyalBlue { get { return namedColors["royalblue"]; } }
-        public static Color SaddleBrown { get { return namedColors["saddlebrown"]; } }
-        public static Color Salmon { get { return namedColors["salmon"]; } }
-        public static Color SandyBrown { get { return namedColors["sandybrown"]; } }
-        public static Color SeaGreen { get { return namedColors["seagreen"]; } }
-        public static Color SeaShell { get { return namedColors["seashell"]; } }
-        public static Color Sienna { get { return namedColors["sienna"]; } }
-        public static Color Silver { get { return namedColors["silver"]; } }
-        public static Color SkyBlue { get { return namedColors["skyblue"]; } }
-        public static Color SlateBlue { get { return namedColors["slateblue"]; } }
-        public static Color SlateGray { get { return namedColors["slategray"]; } }
-        public static Color Snow { get { return namedColors["snow"]; } }
-        public static Color SpringGreen { get { return namedColors["springgreen"]; } }
-        public static Color SteelBlue { get { return namedColors["steelblue"]; } }
-        public static Color Tan { get { return namedColors["tan"]; } }
-        public static Color Teal { get { return namedColors["teal"]; } }
-        public static Color Thistle { get { return namedColors["thistle"]; } }
-        public static Color Tomato { get { return namedColors["tomato"]; } }
-        public static Color Transparent { get { return namedColors["transparent"]; } }
-        public static Color Turquoise { get { return namedColors["turquoise"]; } }
-        public static Color Violet { get { return namedColors["violet"]; } }
-        public static Color WebGreen { get { return namedColors["webgreen"]; } }
-        public static Color WebGray { get { return namedColors["webgray"]; } }
-        public static Color WebMaroon { get { return namedColors["webmaroon"]; } }
-        public static Color WebPurple { get { return namedColors["webpurple"]; } }
-        public static Color Wheat { get { return namedColors["wheat"]; } }
-        public static Color White { get { return namedColors["white"]; } }
-        public static Color WhiteSmoke { get { return namedColors["whitesmoke"]; } }
-        public static Color Yellow { get { return namedColors["yellow"]; } }
-        public static Color YellowGreen { get { return namedColors["yellowgreen"]; } }
+        public static Color AliceBlue => NamedColors["aliceblue"];
+        public static Color AntiqueWhite => NamedColors["antiquewhite"];
+        public static Color Aqua => NamedColors["aqua"];
+        public static Color Aquamarine => NamedColors["aquamarine"];
+        public static Color Azure => NamedColors["azure"];
+        public static Color Beige => NamedColors["beige"];
+        public static Color Bisque => NamedColors["bisque"];
+        public static Color Black => NamedColors["black"];
+        public static Color BlanchedAlmond => NamedColors["blanchedalmond"];
+        public static Color Blue => NamedColors["blue"];
+        public static Color BlueViolet => NamedColors["blueviolet"];
+        public static Color Brown => NamedColors["brown"];
+        public static Color BurlyWood => NamedColors["burlywood"];
+        public static Color CadetBlue => NamedColors["cadetblue"];
+        public static Color Chartreuse => NamedColors["chartreuse"];
+        public static Color Chocolate => NamedColors["chocolate"];
+        public static Color Coral => NamedColors["coral"];
+        public static Color Cornflower => NamedColors["cornflower"];
+        public static Color Cornsilk => NamedColors["cornsilk"];
+        public static Color Crimson => NamedColors["crimson"];
+        public static Color Cyan => NamedColors["cyan"];
+        public static Color DarkBlue => NamedColors["darkblue"];
+        public static Color DarkCyan => NamedColors["darkcyan"];
+        public static Color DarkGoldenrod => NamedColors["darkgoldenrod"];
+        public static Color DarkGray => NamedColors["darkgray"];
+        public static Color DarkGreen => NamedColors["darkgreen"];
+        public static Color DarkKhaki => NamedColors["darkkhaki"];
+        public static Color DarkMagenta => NamedColors["darkmagenta"];
+        public static Color DarkOliveGreen => NamedColors["darkolivegreen"];
+        public static Color DarkOrange => NamedColors["darkorange"];
+        public static Color DarkOrchid => NamedColors["darkorchid"];
+        public static Color DarkRed => NamedColors["darkred"];
+        public static Color DarkSalmon => NamedColors["darksalmon"];
+        public static Color DarkSeaGreen => NamedColors["darkseagreen"];
+        public static Color DarkSlateBlue => NamedColors["darkslateblue"];
+        public static Color DarkSlateGray => NamedColors["darkslategray"];
+        public static Color DarkTurquoise => NamedColors["darkturquoise"];
+        public static Color DarkViolet => NamedColors["darkviolet"];
+        public static Color DeepPink => NamedColors["deeppink"];
+        public static Color DeepSkyBlue => NamedColors["deepskyblue"];
+        public static Color DimGray => NamedColors["dimgray"];
+        public static Color DodgerBlue => NamedColors["dodgerblue"];
+        public static Color Firebrick => NamedColors["firebrick"];
+        public static Color FloralWhite => NamedColors["floralwhite"];
+        public static Color ForestGreen => NamedColors["forestgreen"];
+        public static Color Fuchsia => NamedColors["fuchsia"];
+        public static Color Gainsboro => NamedColors["gainsboro"];
+        public static Color GhostWhite => NamedColors["ghostwhite"];
+        public static Color Gold => NamedColors["gold"];
+        public static Color Goldenrod => NamedColors["goldenrod"];
+        public static Color Gray => NamedColors["gray"];
+        public static Color Green => NamedColors["green"];
+        public static Color GreenYellow => NamedColors["greenyellow"];
+        public static Color Honeydew => NamedColors["honeydew"];
+        public static Color HotPink => NamedColors["hotpink"];
+        public static Color IndianRed => NamedColors["indianred"];
+        public static Color Indigo => NamedColors["indigo"];
+        public static Color Ivory => NamedColors["ivory"];
+        public static Color Khaki => NamedColors["khaki"];
+        public static Color Lavender => NamedColors["lavender"];
+        public static Color LavenderBlush => NamedColors["lavenderblush"];
+        public static Color LawnGreen => NamedColors["lawngreen"];
+        public static Color LemonChiffon => NamedColors["lemonchiffon"];
+        public static Color LightBlue => NamedColors["lightblue"];
+        public static Color LightCoral => NamedColors["lightcoral"];
+        public static Color LightCyan => NamedColors["lightcyan"];
+        public static Color LightGoldenrod => NamedColors["lightgoldenrod"];
+        public static Color LightGray => NamedColors["lightgray"];
+        public static Color LightGreen => NamedColors["lightgreen"];
+        public static Color LightPink => NamedColors["lightpink"];
+        public static Color LightSalmon => NamedColors["lightsalmon"];
+        public static Color LightSeaGreen => NamedColors["lightseagreen"];
+        public static Color LightSkyBlue => NamedColors["lightskyblue"];
+        public static Color LightSlateGray => NamedColors["lightslategray"];
+        public static Color LightSteelBlue => NamedColors["lightsteelblue"];
+        public static Color LightYellow => NamedColors["lightyellow"];
+        public static Color Lime => NamedColors["lime"];
+        public static Color Limegreen => NamedColors["limegreen"];
+        public static Color Linen => NamedColors["linen"];
+        public static Color Magenta => NamedColors["magenta"];
+        public static Color Maroon => NamedColors["maroon"];
+        public static Color MediumAquamarine => NamedColors["mediumaquamarine"];
+        public static Color MediumBlue => NamedColors["mediumblue"];
+        public static Color MediumOrchid => NamedColors["mediumorchid"];
+        public static Color MediumPurple => NamedColors["mediumpurple"];
+        public static Color MediumSeaGreen => NamedColors["mediumseagreen"];
+        public static Color MediumSlateBlue => NamedColors["mediumslateblue"];
+        public static Color MediumSpringGreen => NamedColors["mediumspringgreen"];
+        public static Color MediumTurquoise => NamedColors["mediumturquoise"];
+        public static Color MediumVioletRed => NamedColors["mediumvioletred"];
+        public static Color MidnightBlue => NamedColors["midnightblue"];
+        public static Color MintCream => NamedColors["mintcream"];
+        public static Color MistyRose => NamedColors["mistyrose"];
+        public static Color Moccasin => NamedColors["moccasin"];
+        public static Color NavajoWhite => NamedColors["navajowhite"];
+        public static Color NavyBlue => NamedColors["navyblue"];
+        public static Color OldLace => NamedColors["oldlace"];
+        public static Color Olive => NamedColors["olive"];
+        public static Color OliveDrab => NamedColors["olivedrab"];
+        public static Color Orange => NamedColors["orange"];
+        public static Color OrangeRed => NamedColors["orangered"];
+        public static Color Orchid => NamedColors["orchid"];
+        public static Color PaleGoldenrod => NamedColors["palegoldenrod"];
+        public static Color PaleGreen => NamedColors["palegreen"];
+        public static Color PaleTurquoise => NamedColors["paleturquoise"];
+        public static Color PaleVioletRed => NamedColors["palevioletred"];
+        public static Color PapayaWhip => NamedColors["papayawhip"];
+        public static Color PeachPuff => NamedColors["peachpuff"];
+        public static Color Peru => NamedColors["peru"];
+        public static Color Pink => NamedColors["pink"];
+        public static Color Plum => NamedColors["plum"];
+        public static Color PowderBlue => NamedColors["powderblue"];
+        public static Color Purple => NamedColors["purple"];
+        public static Color RebeccaPurple => NamedColors["rebeccapurple"];
+        public static Color Red => NamedColors["red"];
+        public static Color RosyBrown => NamedColors["rosybrown"];
+        public static Color RoyalBlue => NamedColors["royalblue"];
+        public static Color SaddleBrown => NamedColors["saddlebrown"];
+        public static Color Salmon => NamedColors["salmon"];
+        public static Color SandyBrown => NamedColors["sandybrown"];
+        public static Color SeaGreen => NamedColors["seagreen"];
+        public static Color SeaShell => NamedColors["seashell"];
+        public static Color Sienna => NamedColors["sienna"];
+        public static Color Silver => NamedColors["silver"];
+        public static Color SkyBlue => NamedColors["skyblue"];
+        public static Color SlateBlue => NamedColors["slateblue"];
+        public static Color SlateGray => NamedColors["slategray"];
+        public static Color Snow => NamedColors["snow"];
+        public static Color SpringGreen => NamedColors["springgreen"];
+        public static Color SteelBlue => NamedColors["steelblue"];
+        public static Color Tan => NamedColors["tan"];
+        public static Color Teal => NamedColors["teal"];
+        public static Color Thistle => NamedColors["thistle"];
+        public static Color Tomato => NamedColors["tomato"];
+        public static Color Transparent => NamedColors["transparent"];
+        public static Color Turquoise => NamedColors["turquoise"];
+        public static Color Violet => NamedColors["violet"];
+        public static Color WebGreen => NamedColors["webgreen"];
+        public static Color WebGray => NamedColors["webgray"];
+        public static Color WebMaroon => NamedColors["webmaroon"];
+        public static Color WebPurple => NamedColors["webpurple"];
+        public static Color Wheat => NamedColors["wheat"];
+        public static Color White => NamedColors["white"];
+        public static Color WhiteSmoke => NamedColors["whitesmoke"];
+        public static Color Yellow => NamedColors["yellow"];
+        public static Color YellowGreen => NamedColors["yellowgreen"];
     }
 }

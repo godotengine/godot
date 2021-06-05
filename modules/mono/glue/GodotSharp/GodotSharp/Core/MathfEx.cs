@@ -37,20 +37,14 @@ namespace Godot
         /// </summary>
         /// <param name="s">The input value.</param>
         /// <returns>The amount of digits.</returns>
-        public static int DecimalCount(real_t s)
-        {
-            return DecimalCount((decimal)s);
-        }
+        public static int DecimalCount(real_t s) => DecimalCount((decimal)s);
 
         /// <summary>
         /// Returns the amount of digits after the decimal place.
         /// </summary>
         /// <param name="s">The input <see cref="System.Decimal"/> value.</param>
         /// <returns>The amount of digits.</returns>
-        public static int DecimalCount(decimal s)
-        {
-            return BitConverter.GetBytes(decimal.GetBits(s)[3])[2];
-        }
+        public static int DecimalCount(decimal s) => BitConverter.GetBytes(decimal.GetBits(s)[3])[2];
 
         /// <summary>
         /// Rounds `s` upward (towards positive infinity).
@@ -59,10 +53,7 @@ namespace Godot
         /// </summary>
         /// <param name="s">The number to ceil.</param>
         /// <returns>The smallest whole number that is not less than `s`.</returns>
-        public static int CeilToInt(real_t s)
-        {
-            return (int)Math.Ceiling(s);
-        }
+        public static int CeilToInt(real_t s) => (int)Math.Ceiling(s);
 
         /// <summary>
         /// Rounds `s` downward (towards negative infinity).
@@ -71,20 +62,14 @@ namespace Godot
         /// </summary>
         /// <param name="s">The number to floor.</param>
         /// <returns>The largest whole number that is not more than `s`.</returns>
-        public static int FloorToInt(real_t s)
-        {
-            return (int)Math.Floor(s);
-        }
+        public static int FloorToInt(real_t s) => (int)Math.Floor(s);
 
         /// <summary>
         ///
         /// </summary>
         /// <param name="s"></param>
         /// <returns></returns>
-        public static int RoundToInt(real_t s)
-        {
-            return (int)Math.Round(s);
-        }
+        public static int RoundToInt(real_t s) => (int)Math.Round(s);
 
         /// <summary>
         /// Returns true if `a` and `b` are approximately equal to each other.

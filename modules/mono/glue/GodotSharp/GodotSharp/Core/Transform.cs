@@ -135,7 +135,8 @@ namespace Godot
             Vector3 destinationLocation = transform.origin;
 
             var interpolated = new Transform();
-            interpolated.basis.SetQuatScale(sourceRotation.Slerp(destinationRotation, weight).Normalized(), sourceScale.LinearInterpolate(destinationScale, weight));
+            interpolated.basis.SetQuatScale(sourceRotation.Slerp(destinationRotation, weight).Normalized(),
+                sourceScale.LinearInterpolate(destinationScale, weight));
             interpolated.origin = sourceLocation.LinearInterpolate(destinationLocation, weight);
 
             return interpolated;
@@ -168,7 +169,7 @@ namespace Godot
         /// <returns>The resulting transform.</returns>
         public Transform LookingAt(Vector3 target, Vector3 up)
         {
-            var t = this;
+            Transform t = this;
             t.SetLookAt(origin, target, up);
             return t;
         }
@@ -178,10 +179,7 @@ namespace Godot
         /// and normalized axis vectors (scale of 1 or -1).
         /// </summary>
         /// <returns>The orthonormalized transform.</returns>
-        public Transform Orthonormalized()
-        {
-            return new Transform(basis.Orthonormalized(), origin);
-        }
+        public Transform Orthonormalized() => new Transform(basis.Orthonormalized(), origin);
 
         /// <summary>
         /// Rotates the transform around the given `axis` by `phi` (in radians),
@@ -190,20 +188,14 @@ namespace Godot
         /// <param name="axis">The axis to rotate around. Must be normalized.</param>
         /// <param name="phi">The angle to rotate, in radians.</param>
         /// <returns>The rotated transformation matrix.</returns>
-        public Transform Rotated(Vector3 axis, real_t phi)
-        {
-            return new Transform(new Basis(axis, phi), new Vector3()) * this;
-        }
+        public Transform Rotated(Vector3 axis, real_t phi) => new Transform(new Basis(axis, phi), new Vector3()) * this;
 
         /// <summary>
         /// Scales the transform by the given 3D scaling factor, using matrix multiplication.
         /// </summary>
         /// <param name="scale">The scale to introduce.</param>
         /// <returns>The scaled transformation matrix.</returns>
-        public Transform Scaled(Vector3 scale)
-        {
-            return new Transform(basis.Scaled(scale), origin * scale);
-        }
+        public Transform Scaled(Vector3 scale) => new Transform(basis.Scaled(scale), origin * scale);
 
         public void SetLookAt(Vector3 eye, Vector3 target, Vector3 up)
         {
@@ -237,30 +229,26 @@ namespace Godot
         /// </summary>
         /// <param name="offset">The offset to translate by.</param>
         /// <returns>The translated matrix.</returns>
-        public Transform Translated(Vector3 offset)
-        {
-            return new Transform(basis, new Vector3
+        public Transform Translated(Vector3 offset) =>
+            new Transform(basis, new Vector3
             (
                 origin[0] += basis.Row0.Dot(offset),
                 origin[1] += basis.Row1.Dot(offset),
                 origin[2] += basis.Row2.Dot(offset)
             ));
-        }
 
         /// <summary>
         /// Returns a vector transformed (multiplied) by this transformation matrix.
         /// </summary>
         /// <param name="v">A vector to transform.</param>
         /// <returns>The transformed vector.</returns>
-        public Vector3 Xform(Vector3 v)
-        {
-            return new Vector3
+        public Vector3 Xform(Vector3 v) =>
+            new Vector3
             (
                 basis.Row0.Dot(v) + origin.x,
                 basis.Row1.Dot(v) + origin.y,
                 basis.Row2.Dot(v) + origin.z
             );
-        }
 
         /// <summary>
         /// Returns a vector transformed (multiplied) by the transposed transformation matrix.
@@ -276,9 +264,9 @@ namespace Godot
 
             return new Vector3
             (
-                basis.Row0[0] * vInv.x + basis.Row1[0] * vInv.y + basis.Row2[0] * vInv.z,
-                basis.Row0[1] * vInv.x + basis.Row1[1] * vInv.y + basis.Row2[1] * vInv.z,
-                basis.Row0[2] * vInv.x + basis.Row1[2] * vInv.y + basis.Row2[2] * vInv.z
+                (basis.Row0[0] * vInv.x) + (basis.Row1[0] * vInv.y) + (basis.Row2[0] * vInv.z),
+                (basis.Row0[1] * vInv.x) + (basis.Row1[1] * vInv.y) + (basis.Row2[1] * vInv.z),
+                (basis.Row0[2] * vInv.x) + (basis.Row1[2] * vInv.y) + (basis.Row2[2] * vInv.z)
             );
         }
 
@@ -294,25 +282,25 @@ namespace Godot
         /// Do not use `new Transform()` with no arguments in C#, because it sets all values to zero.
         /// </summary>
         /// <value>Equivalent to `new Transform(Vector3.Right, Vector3.Up, Vector3.Back, Vector3.Zero)`.</value>
-        public static Transform Identity { get { return _identity; } }
+        public static Transform Identity => _identity;
 
         /// <summary>
         /// The transform that will flip something along the X axis.
         /// </summary>
         /// <value>Equivalent to `new Transform(Vector3.Left, Vector3.Up, Vector3.Back, Vector3.Zero)`.</value>
-        public static Transform FlipX { get { return _flipX; } }
+        public static Transform FlipX => _flipX;
 
         /// <summary>
         /// The transform that will flip something along the Y axis.
         /// </summary>
         /// <value>Equivalent to `new Transform(Vector3.Right, Vector3.Down, Vector3.Back, Vector3.Zero)`.</value>
-        public static Transform FlipY { get { return _flipY; } }
+        public static Transform FlipY => _flipY;
 
         /// <summary>
         /// The transform that will flip something along the Z axis.
         /// </summary>
         /// <value>Equivalent to `new Transform(Vector3.Right, Vector3.Up, Vector3.Forward, Vector3.Zero)`.</value>
-        public static Transform FlipZ { get { return _flipZ; } }
+        public static Transform FlipZ => _flipZ;
 
         /// <summary>
         /// Constructs a transformation matrix from 4 vectors (matrix columns).
@@ -356,15 +344,9 @@ namespace Godot
             return left;
         }
 
-        public static bool operator ==(Transform left, Transform right)
-        {
-            return left.Equals(right);
-        }
+        public static bool operator ==(Transform left, Transform right) => left.Equals(right);
 
-        public static bool operator !=(Transform left, Transform right)
-        {
-            return !left.Equals(right);
-        }
+        public static bool operator !=(Transform left, Transform right) => !left.Equals(right);
 
         public override bool Equals(object obj)
         {
@@ -376,10 +358,7 @@ namespace Godot
             return false;
         }
 
-        public bool Equals(Transform other)
-        {
-            return basis.Equals(other.basis) && origin.Equals(other.origin);
-        }
+        public bool Equals(Transform other) => basis.Equals(other.basis) && origin.Equals(other.origin);
 
         /// <summary>
         /// Returns true if this transform and `other` are approximately equal, by running
@@ -387,32 +366,23 @@ namespace Godot
         /// </summary>
         /// <param name="other">The other transform to compare.</param>
         /// <returns>Whether or not the matrices are approximately equal.</returns>
-        public bool IsEqualApprox(Transform other)
-        {
-            return basis.IsEqualApprox(other.basis) && origin.IsEqualApprox(other.origin);
-        }
+        public bool IsEqualApprox(Transform other) =>
+            basis.IsEqualApprox(other.basis) && origin.IsEqualApprox(other.origin);
 
-        public override int GetHashCode()
-        {
-            return basis.GetHashCode() ^ origin.GetHashCode();
-        }
+        public override int GetHashCode() => basis.GetHashCode() ^ origin.GetHashCode();
 
-        public override string ToString()
-        {
-            return String.Format("{0} - {1}", new object[]
+        public override string ToString() =>
+            string.Format("{0} - {1}", new object[]
             {
                 basis.ToString(),
                 origin.ToString()
             });
-        }
 
-        public string ToString(string format)
-        {
-            return String.Format("{0} - {1}", new object[]
+        public string ToString(string format) =>
+            string.Format("{0} - {1}", new object[]
             {
                 basis.ToString(format),
                 origin.ToString(format)
             });
-        }
     }
 }

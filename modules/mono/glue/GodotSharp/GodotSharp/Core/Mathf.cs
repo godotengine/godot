@@ -35,48 +35,38 @@ namespace Godot
         /// </summary>
         public const real_t NaN = real_t.NaN;
 
-        private const real_t Deg2RadConst = (real_t)0.0174532925199432957692369077M; // 0.0174532924f and 0.0174532925199433
-        private const real_t Rad2DegConst = (real_t)57.295779513082320876798154814M; // 57.29578f and 57.2957795130823
+        private const real_t
+            _deg2RadConst = (real_t)0.0174532925199432957692369077M; // 0.0174532924f and 0.0174532925199433
+
+        private const real_t _rad2DegConst = (real_t)57.295779513082320876798154814M; // 57.29578f and 57.2957795130823
 
         /// <summary>
         /// Returns the absolute value of `s` (i.e. positive value).
         /// </summary>
         /// <param name="s">The input number.</param>
         /// <returns>The absolute value of `s`.</returns>
-        public static int Abs(int s)
-        {
-            return Math.Abs(s);
-        }
+        public static int Abs(int s) => Math.Abs(s);
 
         /// <summary>
         /// Returns the absolute value of `s` (i.e. positive value).
         /// </summary>
         /// <param name="s">The input number.</param>
         /// <returns>The absolute value of `s`.</returns>
-        public static real_t Abs(real_t s)
-        {
-            return Math.Abs(s);
-        }
+        public static real_t Abs(real_t s) => Math.Abs(s);
 
         /// <summary>
         /// Returns the arc cosine of `s` in radians. Use to get the angle of cosine s.
         /// </summary>
         /// <param name="s">The input cosine value. Must be on the range of -1.0 to 1.0.</param>
         /// <returns>An angle that would result in the given cosine value. On the range `0` to `Tau/2`.</returns>
-        public static real_t Acos(real_t s)
-        {
-            return (real_t)Math.Acos(s);
-        }
+        public static real_t Acos(real_t s) => (real_t)Math.Acos(s);
 
         /// <summary>
         /// Returns the arc sine of `s` in radians. Use to get the angle of sine s.
         /// </summary>
         /// <param name="s">The input sine value. Must be on the range of -1.0 to 1.0.</param>
         /// <returns>An angle that would result in the given sine value. On the range `-Tau/4` to `Tau/4`.</returns>
-        public static real_t Asin(real_t s)
-        {
-            return (real_t)Math.Asin(s);
-        }
+        public static real_t Asin(real_t s) => (real_t)Math.Asin(s);
 
         /// <summary>
         /// Returns the arc tangent of `s` in radians. Use to get the angle of tangent s.
@@ -86,10 +76,7 @@ namespace Godot
         /// </summary>
         /// <param name="s">The input tangent value.</param>
         /// <returns>An angle that would result in the given tangent value. On the range `-Tau/4` to `Tau/4`.</returns>
-        public static real_t Atan(real_t s)
-        {
-            return (real_t)Math.Atan(s);
-        }
+        public static real_t Atan(real_t s) => (real_t)Math.Atan(s);
 
         /// <summary>
         /// Returns the arc tangent of `y` and `x` in radians. Use to get the angle
@@ -101,10 +88,7 @@ namespace Godot
         /// <param name="y">The Y coordinate of the point to find the angle to.</param>
         /// <param name="x">The X coordinate of the point to find the angle to.</param>
         /// <returns>An angle that would result in the given tangent value. On the range `-Tau/2` to `Tau/2`.</returns>
-        public static real_t Atan2(real_t y, real_t x)
-        {
-            return (real_t)Math.Atan2(y, x);
-        }
+        public static real_t Atan2(real_t y, real_t x) => (real_t)Math.Atan2(y, x);
 
         /// <summary>
         /// Converts a 2D point expressed in the cartesian coordinate
@@ -114,20 +98,14 @@ namespace Godot
         /// <param name="x">The input X coordinate.</param>
         /// <param name="y">The input Y coordinate.</param>
         /// <returns>A <see cref="Vector2"/> with X representing the distance and Y representing the angle.</returns>
-        public static Vector2 Cartesian2Polar(real_t x, real_t y)
-        {
-            return new Vector2(Sqrt(x * x + y * y), Atan2(y, x));
-        }
+        public static Vector2 Cartesian2Polar(real_t x, real_t y) => new Vector2(Sqrt((x * x) + (y * y)), Atan2(y, x));
 
         /// <summary>
         /// Rounds `s` upward (towards positive infinity).
         /// </summary>
         /// <param name="s">The number to ceil.</param>
         /// <returns>The smallest whole number that is not less than `s`.</returns>
-        public static real_t Ceil(real_t s)
-        {
-            return (real_t)Math.Ceiling(s);
-        }
+        public static real_t Ceil(real_t s) => (real_t)Math.Ceiling(s);
 
         /// <summary>
         /// Clamps a `value` so that it is not less than `min` and not more than `max`.
@@ -136,10 +114,7 @@ namespace Godot
         /// <param name="min">The minimum allowed value.</param>
         /// <param name="max">The maximum allowed value.</param>
         /// <returns>The clamped value.</returns>
-        public static int Clamp(int value, int min, int max)
-        {
-            return value < min ? min : value > max ? max : value;
-        }
+        public static int Clamp(int value, int min, int max) => value < min ? min : value > max ? max : value;
 
         /// <summary>
         /// Clamps a `value` so that it is not less than `min` and not more than `max`.
@@ -148,40 +123,29 @@ namespace Godot
         /// <param name="min">The minimum allowed value.</param>
         /// <param name="max">The maximum allowed value.</param>
         /// <returns>The clamped value.</returns>
-        public static real_t Clamp(real_t value, real_t min, real_t max)
-        {
-            return value < min ? min : value > max ? max : value;
-        }
+        public static real_t Clamp(real_t value, real_t min, real_t max) =>
+            value < min ? min : value > max ? max : value;
 
         /// <summary>
         /// Returns the cosine of angle `s` in radians.
         /// </summary>
         /// <param name="s">The angle in radians.</param>
         /// <returns>The cosine of that angle.</returns>
-        public static real_t Cos(real_t s)
-        {
-            return (real_t)Math.Cos(s);
-        }
+        public static real_t Cos(real_t s) => (real_t)Math.Cos(s);
 
         /// <summary>
         /// Returns the hyperbolic cosine of angle `s` in radians.
         /// </summary>
         /// <param name="s">The angle in radians.</param>
         /// <returns>The hyperbolic cosine of that angle.</returns>
-        public static real_t Cosh(real_t s)
-        {
-            return (real_t)Math.Cosh(s);
-        }
+        public static real_t Cosh(real_t s) => (real_t)Math.Cosh(s);
 
         /// <summary>
         /// Converts an angle expressed in degrees to radians.
         /// </summary>
         /// <param name="deg">An angle expressed in degrees.</param>
         /// <returns>The same angle expressed in radians.</returns>
-        public static real_t Deg2Rad(real_t deg)
-        {
-            return deg * Deg2RadConst;
-        }
+        public static real_t Deg2Rad(real_t deg) => deg * _deg2RadConst;
 
         /// <summary>
         /// Easing function, based on exponent. The curve values are:
@@ -219,7 +183,7 @@ namespace Godot
                     return Pow(s * 2.0f, -curve) * 0.5f;
                 }
 
-                return (1.0f - Pow(1.0f - (s - 0.5f) * 2.0f, -curve)) * 0.5f + 0.5f;
+                return ((1.0f - Pow(1.0f - ((s - 0.5f) * 2.0f), -curve)) * 0.5f) + 0.5f;
             }
 
             return 0f;
@@ -231,20 +195,14 @@ namespace Godot
         /// </summary>
         /// <param name="s">The exponent to raise `e` to.</param>
         /// <returns>`e` raised to the power of `s`.</returns>
-        public static real_t Exp(real_t s)
-        {
-            return (real_t)Math.Exp(s);
-        }
+        public static real_t Exp(real_t s) => (real_t)Math.Exp(s);
 
         /// <summary>
         /// Rounds `s` downward (towards negative infinity).
         /// </summary>
         /// <param name="s">The number to floor.</param>
         /// <returns>The largest whole number that is not more than `s`.</returns>
-        public static real_t Floor(real_t s)
-        {
-            return (real_t)Math.Floor(s);
-        }
+        public static real_t Floor(real_t s) => (real_t)Math.Floor(s);
 
         /// <summary>
         /// Returns a normalized value considering the given range.
@@ -254,10 +212,7 @@ namespace Godot
         /// <param name="to">The destination value for interpolation.</param>
         /// <param name="weight">A value on the range of 0.0 to 1.0, representing the amount of interpolation.</param>
         /// <returns>The resulting value of the inverse interpolation.</returns>
-        public static real_t InverseLerp(real_t from, real_t to, real_t weight)
-        {
-            return (weight - from) / (to - from);
-        }
+        public static real_t InverseLerp(real_t from, real_t to, real_t weight) => (weight - from) / (to - from);
 
         /// <summary>
         /// Returns true if `a` and `b` are approximately equal to each other.
@@ -289,20 +244,14 @@ namespace Godot
         /// </summary>
         /// <param name="s">The value to check.</param>
         /// <returns>A bool for whether or not the value is an infinity value.</returns>
-        public static bool IsInf(real_t s)
-        {
-            return real_t.IsInfinity(s);
-        }
+        public static bool IsInf(real_t s) => real_t.IsInfinity(s);
 
         /// <summary>
         /// Returns whether `s` is a `NaN` ("Not a Number" or invalid) value.
         /// </summary>
         /// <param name="s">The value to check.</param>
         /// <returns>A bool for whether or not the value is a `NaN` value.</returns>
-        public static bool IsNaN(real_t s)
-        {
-            return real_t.IsNaN(s);
-        }
+        public static bool IsNaN(real_t s) => real_t.IsNaN(s);
 
         /// <summary>
         /// Returns true if `s` is approximately zero.
@@ -312,10 +261,7 @@ namespace Godot
         /// </summary>
         /// <param name="s">The value to check.</param>
         /// <returns>A bool for whether or not the value is nearly zero.</returns>
-        public static bool IsZeroApprox(real_t s)
-        {
-            return Abs(s) < Epsilon;
-        }
+        public static bool IsZeroApprox(real_t s) => Abs(s) < Epsilon;
 
         /// <summary>
         /// Linearly interpolates between two values by a normalized value.
@@ -325,10 +271,7 @@ namespace Godot
         /// <param name="to">The destination value for interpolation.</param>
         /// <param name="weight">A value on the range of 0.0 to 1.0, representing the amount of interpolation.</param>
         /// <returns>The resulting value of the interpolation.</returns>
-        public static real_t Lerp(real_t from, real_t to, real_t weight)
-        {
-            return from + (to - from) * weight;
-        }
+        public static real_t Lerp(real_t from, real_t to, real_t weight) => from + ((to - @from) * weight);
 
         /// <summary>
         /// Linearly interpolates between two angles (in radians) by a normalized value.
@@ -342,9 +285,9 @@ namespace Godot
         /// <returns>The resulting angle of the interpolation.</returns>
         public static real_t LerpAngle(real_t from, real_t to, real_t weight)
         {
-            real_t difference = (to - from) % Mathf.Tau;
-            real_t distance = ((2 * difference) % Mathf.Tau) - difference;
-            return from + distance * weight;
+            real_t difference = (to - from) % Tau;
+            real_t distance = ((2 * difference) % Tau) - difference;
+            return from + (distance * weight);
         }
 
         /// <summary>
@@ -354,10 +297,7 @@ namespace Godot
         /// </summary>
         /// <param name="s">The input value.</param>
         /// <returns>The natural log of `s`.</returns>
-        public static real_t Log(real_t s)
-        {
-            return (real_t)Math.Log(s);
-        }
+        public static real_t Log(real_t s) => (real_t)Math.Log(s);
 
         /// <summary>
         /// Returns the maximum of two values.
@@ -365,10 +305,7 @@ namespace Godot
         /// <param name="a">One of the values.</param>
         /// <param name="b">The other value.</param>
         /// <returns>Whichever of the two values is higher.</returns>
-        public static int Max(int a, int b)
-        {
-            return a > b ? a : b;
-        }
+        public static int Max(int a, int b) => a > b ? a : b;
 
         /// <summary>
         /// Returns the maximum of two values.
@@ -376,10 +313,7 @@ namespace Godot
         /// <param name="a">One of the values.</param>
         /// <param name="b">The other value.</param>
         /// <returns>Whichever of the two values is higher.</returns>
-        public static real_t Max(real_t a, real_t b)
-        {
-            return a > b ? a : b;
-        }
+        public static real_t Max(real_t a, real_t b) => a > b ? a : b;
 
         /// <summary>
         /// Returns the minimum of two values.
@@ -387,10 +321,7 @@ namespace Godot
         /// <param name="a">One of the values.</param>
         /// <param name="b">The other value.</param>
         /// <returns>Whichever of the two values is lower.</returns>
-        public static int Min(int a, int b)
-        {
-            return a < b ? a : b;
-        }
+        public static int Min(int a, int b) => a < b ? a : b;
 
         /// <summary>
         /// Returns the minimum of two values.
@@ -398,10 +329,7 @@ namespace Godot
         /// <param name="a">One of the values.</param>
         /// <param name="b">The other value.</param>
         /// <returns>Whichever of the two values is lower.</returns>
-        public static real_t Min(real_t a, real_t b)
-        {
-            return a < b ? a : b;
-        }
+        public static real_t Min(real_t a, real_t b) => a < b ? a : b;
 
         /// <summary>
         /// Moves `from` toward `to` by the `delta` value.
@@ -412,10 +340,8 @@ namespace Godot
         /// <param name="to">The value to move towards.</param>
         /// <param name="delta">The amount to move by.</param>
         /// <returns>The value after moving.</returns>
-        public static real_t MoveToward(real_t from, real_t to, real_t delta)
-        {
-            return Abs(to - from) <= delta ? to : from + Sign(to - from) * delta;
-        }
+        public static real_t MoveToward(real_t from, real_t to, real_t delta) =>
+            Abs(to - from) <= delta ? to : from + (Sign(to - @from) * delta);
 
         /// <summary>
         /// Returns the nearest larger power of 2 for the integer `value`.
@@ -442,10 +368,7 @@ namespace Godot
         /// <param name="r">The distance from the origin.</param>
         /// <param name="th">The angle of the point.</param>
         /// <returns>A <see cref="Vector2"/> representing the cartesian coordinate.</returns>
-        public static Vector2 Polar2Cartesian(real_t r, real_t th)
-        {
-            return new Vector2(r * Cos(th), r * Sin(th));
-        }
+        public static Vector2 Polar2Cartesian(real_t r, real_t th) => new Vector2(r * Cos(th), r * Sin(th));
 
         /// <summary>
         /// Performs a canonical Modulus operation, where the output is on the range `[0, b)`.
@@ -487,20 +410,14 @@ namespace Godot
         /// <param name="x">The base.</param>
         /// <param name="y">The exponent.</param>
         /// <returns>`x` raised to the power of `y`.</returns>
-        public static real_t Pow(real_t x, real_t y)
-        {
-            return (real_t)Math.Pow(x, y);
-        }
+        public static real_t Pow(real_t x, real_t y) => (real_t)Math.Pow(x, y);
 
         /// <summary>
         /// Converts an angle expressed in radians to degrees.
         /// </summary>
         /// <param name="rad">An angle expressed in radians.</param>
         /// <returns>The same angle expressed in degrees.</returns>
-        public static real_t Rad2Deg(real_t rad)
-        {
-            return rad * Rad2DegConst;
-        }
+        public static real_t Rad2Deg(real_t rad) => rad * _rad2DegConst;
 
         /// <summary>
         /// Rounds `s` to the nearest whole number,
@@ -508,10 +425,7 @@ namespace Godot
         /// </summary>
         /// <param name="s">The number to round.</param>
         /// <returns>The rounded number.</returns>
-        public static real_t Round(real_t s)
-        {
-            return (real_t)Math.Round(s);
-        }
+        public static real_t Round(real_t s) => (real_t)Math.Round(s);
 
         /// <summary>
         /// Returns the sign of `s`: `-1` or `1`. Returns `0` if `s` is `0`.
@@ -540,20 +454,14 @@ namespace Godot
         /// </summary>
         /// <param name="s">The angle in radians.</param>
         /// <returns>The sine of that angle.</returns>
-        public static real_t Sin(real_t s)
-        {
-            return (real_t)Math.Sin(s);
-        }
+        public static real_t Sin(real_t s) => (real_t)Math.Sin(s);
 
         /// <summary>
         /// Returns the hyperbolic sine of angle `s` in radians.
         /// </summary>
         /// <param name="s">The angle in radians.</param>
         /// <returns>The hyperbolic sine of that angle.</returns>
-        public static real_t Sinh(real_t s)
-        {
-            return (real_t)Math.Sinh(s);
-        }
+        public static real_t Sinh(real_t s) => (real_t)Math.Sinh(s);
 
         /// <summary>
         /// Returns a number smoothly interpolated between `from` and `to`,
@@ -572,7 +480,7 @@ namespace Godot
             }
 
             real_t x = Clamp((weight - from) / (to - from), (real_t)0.0, (real_t)1.0);
-            return x * x * (3 - 2 * x);
+            return x * x * (3 - (2 * x));
         }
 
         /// <summary>
@@ -582,10 +490,7 @@ namespace Godot
         /// </summary>
         /// <param name="s">The input number. Must not be negative.</param>
         /// <returns>The square root of `s`.</returns>
-        public static real_t Sqrt(real_t s)
-        {
-            return (real_t)Math.Sqrt(s);
-        }
+        public static real_t Sqrt(real_t s) => (real_t)Math.Sqrt(s);
 
         /// <summary>
         /// Returns the position of the first non-zero digit, after the
@@ -608,7 +513,7 @@ namespace Godot
                 0.00000009999,
                 0.000000009999,
             };
-            double abs = Mathf.Abs(step);
+            double abs = Abs(step);
             double decs = abs - (int)abs; // Strip away integer part
             for (int i = 0; i < sd.Length; i++)
             {
@@ -633,7 +538,7 @@ namespace Godot
         {
             if (step != 0f)
             {
-                return Floor(s / step + 0.5f) * step;
+                return Floor((s / step) + 0.5f) * step;
             }
 
             return s;
@@ -644,20 +549,14 @@ namespace Godot
         /// </summary>
         /// <param name="s">The angle in radians.</param>
         /// <returns>The tangent of that angle.</returns>
-        public static real_t Tan(real_t s)
-        {
-            return (real_t)Math.Tan(s);
-        }
+        public static real_t Tan(real_t s) => (real_t)Math.Tan(s);
 
         /// <summary>
         /// Returns the hyperbolic tangent of angle `s` in radians.
         /// </summary>
         /// <param name="s">The angle in radians.</param>
         /// <returns>The hyperbolic tangent of that angle.</returns>
-        public static real_t Tanh(real_t s)
-        {
-            return (real_t)Math.Tanh(s);
-        }
+        public static real_t Tanh(real_t s) => (real_t)Math.Tanh(s);
 
         /// <summary>
         /// Wraps `value` between `min` and `max`. Usable for creating loop-alike
@@ -671,7 +570,7 @@ namespace Godot
         public static int Wrap(int value, int min, int max)
         {
             int range = max - min;
-            return range == 0 ? min : min + ((value - min) % range + range) % range;
+            return range == 0 ? min : min + ((((value - min) % range) + range) % range);
         }
 
         /// <summary>
@@ -686,7 +585,7 @@ namespace Godot
         public static real_t Wrap(real_t value, real_t min, real_t max)
         {
             real_t range = max - min;
-            return IsZeroApprox(range) ? min : min + ((value - min) % range + range) % range;
+            return IsZeroApprox(range) ? min : min + ((((value - min) % range) + range) % range);
         }
     }
 }

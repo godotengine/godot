@@ -40,7 +40,9 @@ namespace GodotTools.Export
 
     public static class AotBuilder
     {
-        public static void CompileAssemblies(ExportPlugin exporter, AotOptions aotOpts, string[] features, string platform, bool isDebug, string bclDir, string outputDir, string outputDataDir, IDictionary<string, string> assemblies)
+        public static void CompileAssemblies(ExportPlugin exporter, AotOptions aotOpts, string[] features,
+            string platform, bool isDebug, string bclDir, string outputDataDir,
+            IDictionary<string, string> assemblies)
         {
             // TODO: WASM
 
@@ -73,22 +75,23 @@ namespace GodotTools.Export
 
             if (platform == OS.Platforms.iOS)
             {
-                var architectures = GetEnablediOSArchs(features).ToArray();
-                CompileAssembliesForiOS(exporter, isDebug, architectures, aotOpts, aotTempDir, assembliesPrepared, bclDir);
+                CompileAssembliesForiOS(exporter, isDebug, aotOpts, aotTempDir, assembliesPrepared, bclDir);
             }
             else if (platform == OS.Platforms.Android)
             {
-                var abis = GetEnabledAndroidAbis(features).ToArray();
+                string[] abis = GetEnabledAndroidAbis(features).ToArray();
                 CompileAssembliesForAndroid(exporter, isDebug, abis, aotOpts, aotTempDir, assembliesPrepared, bclDir);
             }
             else
             {
                 string bits = features.Contains("64") ? "64" : features.Contains("32") ? "32" : null;
-                CompileAssembliesForDesktop(exporter, platform, isDebug, bits, aotOpts, aotTempDir, outputDataDir, assembliesPrepared, bclDir);
+                CompileAssembliesForDesktop(exporter, platform, isDebug, bits, aotOpts, aotTempDir, outputDataDir,
+                    assembliesPrepared, bclDir);
             }
         }
 
-        public static void CompileAssembliesForAndroid(ExportPlugin exporter, bool isDebug, string[] abis, AotOptions aotOpts, string aotTempDir, IDictionary<string, string> assemblies, string bclDir)
+        private static void CompileAssembliesForAndroid(ExportPlugin exporter, bool isDebug, string[] abis,
+            AotOptions aotOpts, string aotTempDir, IDictionary<string, string> assemblies, string bclDir)
         {
             foreach (var assembly in assemblies)
             {
@@ -104,12 +107,14 @@ namespace GodotTools.Export
                     string aotAbiTempDir = Path.Combine(aotTempDir, abi);
                     string soFilePath = Path.Combine(aotAbiTempDir, outputFileName);
 
-                    var compilerArgs = GetAotCompilerArgs(OS.Platforms.Android, isDebug, abi, aotOpts, assemblyPath, soFilePath);
+                    var compilerArgs = GetAotCompilerArgs(OS.Platforms.Android, isDebug, abi, aotOpts, assemblyPath,
+                        soFilePath);
 
                     // Make sure the output directory exists
                     Directory.CreateDirectory(aotAbiTempDir);
 
-                    string compilerDirPath = Path.Combine(GodotSharpDirs.DataEditorToolsDir, "aot-compilers", $"{OS.Platforms.Android}-{abi}");
+                    string compilerDirPath = Path.Combine(GodotSharpDirs.DataEditorToolsDir, "aot-compilers",
+                        $"{OS.Platforms.Android}-{abi}");
 
                     ExecuteCompiler(FindCrossCompiler(compilerDirPath), compilerArgs, bclDir);
 
@@ -119,7 +124,9 @@ namespace GodotTools.Export
             }
         }
 
-        public static void CompileAssembliesForDesktop(ExportPlugin exporter, string platform, bool isDebug, string bits, AotOptions aotOpts, string aotTempDir, string outputDataDir, IDictionary<string, string> assemblies, string bclDir)
+        private static void CompileAssembliesForDesktop(ExportPlugin exporter, string platform, bool isDebug,
+            string bits, AotOptions aotOpts, string aotTempDir, string outputDataDir,
+            IDictionary<string, string> assemblies, string bclDir)
         {
             foreach (var assembly in assemblies)
             {
@@ -133,7 +140,8 @@ namespace GodotTools.Export
                 string outputFileName = assemblyName + ".dll" + outputFileExtension;
                 string tempOutputFilePath = Path.Combine(aotTempDir, outputFileName);
 
-                var compilerArgs = GetAotCompilerArgs(platform, isDebug, bits, aotOpts, assemblyPath, tempOutputFilePath);
+                var compilerArgs =
+                    GetAotCompilerArgs(platform, isDebug, bits, aotOpts, assemblyPath, tempOutputFilePath);
 
                 string compilerDirPath = GetMonoCrossDesktopDirName(platform, bits);
 
@@ -145,13 +153,15 @@ namespace GodotTools.Export
                 }
                 else
                 {
-                    string outputDataLibDir = Path.Combine(outputDataDir, "Mono", platform == OS.Platforms.Windows ? "bin" : "lib");
+                    string outputDataLibDir = Path.Combine(outputDataDir, "Mono",
+                        platform == OS.Platforms.Windows ? "bin" : "lib");
                     File.Copy(tempOutputFilePath, Path.Combine(outputDataLibDir, outputFileName));
                 }
             }
         }
 
-        public static void CompileAssembliesForiOS(ExportPlugin exporter, bool isDebug, string[] architectures, AotOptions aotOpts, string aotTempDir, IDictionary<string, string> assemblies, string bclDir)
+        private static void CompileAssembliesForiOS(ExportPlugin exporter, bool isDebug, AotOptions aotOpts,
+            string aotTempDir, IDictionary<string, string> assemblies, string bclDir)
         {
             void RunAr(IEnumerable<string> objFilePaths, string outputFilePath)
             {
@@ -207,7 +217,7 @@ namespace GodotTools.Export
 
                     string objFilePath = baseFilePath + ".o";
 
-                    var clangArgs = new[]
+                    string[] clangArgs =
                     {
                         "-isysroot", iOSSdkPath,
                         $"-miphonesimulator-version-min={versionMin}",
@@ -260,9 +270,11 @@ namespace GodotTools.Export
                 {
                     string asmFilePath = Path.Combine(aotTempDir, asmFileName);
 
-                    var compilerArgs = GetAotCompilerArgs(OS.Platforms.iOS, isDebug, "arm64", aotOpts, assemblyPath, asmFilePath);
+                    var compilerArgs = GetAotCompilerArgs(OS.Platforms.iOS, isDebug, "arm64", aotOpts, assemblyPath,
+                        asmFilePath);
 
-                    string compilerDirPath = Path.Combine(GodotSharpDirs.DataEditorToolsDir, "aot-compilers", $"{OS.Platforms.iOS}-arm64");
+                    string compilerDirPath = Path.Combine(GodotSharpDirs.DataEditorToolsDir, "aot-compilers",
+                        $"{OS.Platforms.iOS}-arm64");
 
                     ExecuteCompiler(FindCrossCompiler(compilerDirPath), compilerArgs, bclDir);
 
@@ -492,9 +504,9 @@ MONO_AOT_MODE_LAST = 1000,
             var symbols = new List<string>();
 
             var resolver = new DefaultAssemblyResolver();
-            foreach (var searchDir in resolver.GetSearchDirectories())
+            foreach (string searchDir in resolver.GetSearchDirectories())
                 resolver.RemoveSearchDirectory(searchDir);
-            foreach (var searchDir in assemblies
+            foreach (string searchDir in assemblies
                 .Select(a => a.Value.GetBaseDir().NormalizePath()).Distinct())
             {
                 resolver.AddSearchDirectory(searchDir);
@@ -581,7 +593,8 @@ MONO_AOT_MODE_LAST = 1000,
             return builder.ToString();
         }
 
-        private static IEnumerable<string> GetAotCompilerArgs(string platform, bool isDebug, string target, AotOptions aotOpts, string assemblyPath, string outputFilePath)
+        private static IEnumerable<string> GetAotCompilerArgs(string platform, bool isDebug, string target,
+            AotOptions aotOpts, string assemblyPath, string outputFilePath)
         {
             // TODO: LLVM
 
@@ -730,20 +743,9 @@ MONO_AOT_MODE_LAST = 1000,
             }
         }
 
-        private static IEnumerable<string> GetEnablediOSArchs(string[] features)
-        {
-            var iosArchs = new[]
-            {
-                "armv7",
-                "arm64"
-            };
-
-            return iosArchs.Where(features.Contains);
-        }
-
         private static IEnumerable<string> GetEnabledAndroidAbis(string[] features)
         {
-            var androidAbis = new[]
+            string[] androidAbis =
             {
                 "armeabi-v7a",
                 "arm64-v8a",

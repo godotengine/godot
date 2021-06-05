@@ -14,20 +14,12 @@ namespace Godot
 {
     public static partial class GD
     {
-        public static object Bytes2Var(byte[] bytes, bool allow_objects = false)
-        {
-            return godot_icall_GD_bytes2var(bytes, allow_objects);
-        }
+        public static object Bytes2Var(byte[] bytes, bool allowObjects = false) =>
+            godot_icall_GD_bytes2var(bytes, allowObjects);
 
-        public static object Convert(object what, Variant.Type type)
-        {
-            return godot_icall_GD_convert(what, type);
-        }
+        public static object Convert(object what, Variant.Type type) => godot_icall_GD_convert(what, type);
 
-        public static real_t Db2Linear(real_t db)
-        {
-            return (real_t)Math.Exp(db * 0.11512925464970228420089957273422);
-        }
+        public static real_t Db2Linear(real_t db) => (real_t)Math.Exp(db * 0.11512925464970228420089957273422);
 
         public static real_t DecTime(real_t value, real_t amount, real_t step)
         {
@@ -47,105 +39,53 @@ namespace Godot
             return ret;
         }
 
-        public static int Hash(object var)
-        {
-            return godot_icall_GD_hash(var);
-        }
+        public static int Hash(object var) => godot_icall_GD_hash(var);
 
-        public static Object InstanceFromId(ulong instanceId)
-        {
-            return godot_icall_GD_instance_from_id(instanceId);
-        }
+        public static Object InstanceFromId(ulong instanceId) => godot_icall_GD_instance_from_id(instanceId);
 
-        public static real_t Linear2Db(real_t linear)
-        {
-            return (real_t)(Math.Log(linear) * 8.6858896380650365530225783783321);
-        }
+        public static real_t Linear2Db(real_t linear) => (real_t)(Math.Log(linear) * 8.6858896380650365530225783783321);
 
-        public static Resource Load(string path)
-        {
-            return ResourceLoader.Load(path);
-        }
+        public static Resource Load(string path) => ResourceLoader.Load(path);
 
-        public static T Load<T>(string path) where T : class
-        {
-            return ResourceLoader.Load<T>(path);
-        }
+        public static T Load<T>(string path) where T : class => ResourceLoader.Load<T>(path);
 
-        public static void PushError(string message)
-        {
-            godot_icall_GD_pusherror(message);
-        }
+        public static void PushError(string message) => godot_icall_GD_pusherror(message);
 
-        public static void PushWarning(string message)
-        {
-            godot_icall_GD_pushwarning(message);
-        }
+        public static void PushWarning(string message) => godot_icall_GD_pushwarning(message);
 
-        public static void Print(params object[] what)
-        {
-            godot_icall_GD_print(Array.ConvertAll(what ?? new object[] { "null" }, x => x != null ? x.ToString() : "null"));
-        }
+        public static void Print(params object[] what) =>
+            godot_icall_GD_print(Array.ConvertAll(what ?? new object[] { "null" },
+                x => x != null ? x.ToString() : "null"));
 
-        public static void PrintStack()
-        {
-            Print(System.Environment.StackTrace);
-        }
+        public static void PrintStack() => Print(System.Environment.StackTrace);
 
-        public static void PrintErr(params object[] what)
-        {
-            godot_icall_GD_printerr(Array.ConvertAll(what ?? new object[] { "null" }, x => x != null ? x.ToString() : "null"));
-        }
+        public static void PrintErr(params object[] what) => godot_icall_GD_printerr(
+            Array.ConvertAll(what ?? new object[] { "null" }, x => x != null ? x.ToString() : "null"));
 
-        public static void PrintRaw(params object[] what)
-        {
-            godot_icall_GD_printraw(Array.ConvertAll(what ?? new object[] { "null" }, x => x != null ? x.ToString() : "null"));
-        }
+        public static void PrintRaw(params object[] what) => godot_icall_GD_printraw(
+            Array.ConvertAll(what ?? new object[] { "null" }, x => x != null ? x.ToString() : "null"));
 
-        public static void PrintS(params object[] what)
-        {
-            godot_icall_GD_prints(Array.ConvertAll(what ?? new object[] { "null" }, x => x != null ? x.ToString() : "null"));
-        }
+        public static void PrintS(params object[] what) =>
+            godot_icall_GD_prints(Array.ConvertAll(what ?? new object[] { "null" },
+                x => x != null ? x.ToString() : "null"));
 
-        public static void PrintT(params object[] what)
-        {
-            godot_icall_GD_printt(Array.ConvertAll(what ?? new object[] { "null" }, x => x != null ? x.ToString() : "null"));
-        }
+        public static void PrintT(params object[] what) =>
+            godot_icall_GD_printt(Array.ConvertAll(what ?? new object[] { "null" },
+                x => x != null ? x.ToString() : "null"));
 
-        public static float Randf()
-        {
-            return godot_icall_GD_randf();
-        }
+        public static float Randf() => godot_icall_GD_randf();
 
-        public static uint Randi()
-        {
-            return godot_icall_GD_randi();
-        }
+        public static uint Randi() => godot_icall_GD_randi();
 
-        public static void Randomize()
-        {
-            godot_icall_GD_randomize();
-        }
+        public static void Randomize() => godot_icall_GD_randomize();
 
-        public static double RandRange(double from, double to)
-        {
-            return godot_icall_GD_rand_range(from, to);
-        }
+        public static double RandRange(double from, double to) => godot_icall_GD_rand_range(from, to);
 
-        public static uint RandSeed(ulong seed, out ulong newSeed)
-        {
-            return godot_icall_GD_rand_seed(seed, out newSeed);
-        }
+        public static uint RandSeed(ulong seed, out ulong newSeed) => godot_icall_GD_rand_seed(seed, out newSeed);
 
-        public static IEnumerable<int> Range(int end)
-        {
-            return Range(0, end, 1);
-        }
+        public static IEnumerable<int> Range(int end) => Range(0, end, 1);
 
-        public static IEnumerable<int> Range(int start, int end)
-        {
-            return Range(start, end, 1);
-        }
+        public static IEnumerable<int> Range(int start, int end) => Range(start, end, 1);
 
         public static IEnumerable<int> Range(int start, int end, int step)
         {
@@ -167,101 +107,84 @@ namespace Godot
             }
         }
 
-        public static void Seed(ulong seed)
-        {
-            godot_icall_GD_seed(seed);
-        }
+        public static void Seed(ulong seed) => godot_icall_GD_seed(seed);
 
-        public static string Str(params object[] what)
-        {
-            return godot_icall_GD_str(what);
-        }
+        public static string Str(params object[] what) => godot_icall_GD_str(what);
 
-        public static object Str2Var(string str)
-        {
-            return godot_icall_GD_str2var(str);
-        }
+        public static object Str2Var(string str) => godot_icall_GD_str2var(str);
 
-        public static bool TypeExists(string type)
-        {
-            return godot_icall_GD_type_exists(type);
-        }
+        public static bool TypeExists(string type) => godot_icall_GD_type_exists(type);
 
-        public static byte[] Var2Bytes(object var, bool full_objects = false)
-        {
-            return godot_icall_GD_var2bytes(var, full_objects);
-        }
+        public static byte[] Var2Bytes(object var, bool fullObjects = false) =>
+            godot_icall_GD_var2bytes(var, fullObjects);
 
-        public static string Var2Str(object var)
-        {
-            return godot_icall_GD_var2str(var);
-        }
+        public static string Var2Str(object var) => godot_icall_GD_var2str(var);
 
         [MethodImpl(MethodImplOptions.InternalCall)]
-        internal extern static object godot_icall_GD_bytes2var(byte[] bytes, bool allow_objects);
+        internal static extern object godot_icall_GD_bytes2var(byte[] bytes, bool allow_objects);
 
         [MethodImpl(MethodImplOptions.InternalCall)]
-        internal extern static object godot_icall_GD_convert(object what, Variant.Type type);
+        internal static extern object godot_icall_GD_convert(object what, Variant.Type type);
 
         [MethodImpl(MethodImplOptions.InternalCall)]
-        internal extern static int godot_icall_GD_hash(object var);
+        internal static extern int godot_icall_GD_hash(object var);
 
         [MethodImpl(MethodImplOptions.InternalCall)]
-        internal extern static Object godot_icall_GD_instance_from_id(ulong instance_id);
+        internal static extern Object godot_icall_GD_instance_from_id(ulong instance_id);
 
         [MethodImpl(MethodImplOptions.InternalCall)]
-        internal extern static void godot_icall_GD_print(object[] what);
+        internal static extern void godot_icall_GD_print(object[] what);
 
         [MethodImpl(MethodImplOptions.InternalCall)]
-        internal extern static void godot_icall_GD_printerr(object[] what);
+        internal static extern void godot_icall_GD_printerr(object[] what);
 
         [MethodImpl(MethodImplOptions.InternalCall)]
-        internal extern static void godot_icall_GD_printraw(object[] what);
+        internal static extern void godot_icall_GD_printraw(object[] what);
 
         [MethodImpl(MethodImplOptions.InternalCall)]
-        internal extern static void godot_icall_GD_prints(object[] what);
+        internal static extern void godot_icall_GD_prints(object[] what);
 
         [MethodImpl(MethodImplOptions.InternalCall)]
-        internal extern static void godot_icall_GD_printt(object[] what);
+        internal static extern void godot_icall_GD_printt(object[] what);
 
         [MethodImpl(MethodImplOptions.InternalCall)]
-        internal extern static float godot_icall_GD_randf();
+        internal static extern float godot_icall_GD_randf();
 
         [MethodImpl(MethodImplOptions.InternalCall)]
-        internal extern static uint godot_icall_GD_randi();
+        internal static extern uint godot_icall_GD_randi();
 
         [MethodImpl(MethodImplOptions.InternalCall)]
-        internal extern static void godot_icall_GD_randomize();
+        internal static extern void godot_icall_GD_randomize();
 
 
         [MethodImpl(MethodImplOptions.InternalCall)]
-        internal extern static double godot_icall_GD_rand_range(double from, double to);
+        internal static extern double godot_icall_GD_rand_range(double from, double to);
 
         [MethodImpl(MethodImplOptions.InternalCall)]
-        internal extern static uint godot_icall_GD_rand_seed(ulong seed, out ulong newSeed);
+        internal static extern uint godot_icall_GD_rand_seed(ulong seed, out ulong newSeed);
 
         [MethodImpl(MethodImplOptions.InternalCall)]
-        internal extern static void godot_icall_GD_seed(ulong seed);
+        internal static extern void godot_icall_GD_seed(ulong seed);
 
         [MethodImpl(MethodImplOptions.InternalCall)]
-        internal extern static string godot_icall_GD_str(object[] what);
+        internal static extern string godot_icall_GD_str(object[] what);
 
         [MethodImpl(MethodImplOptions.InternalCall)]
-        internal extern static object godot_icall_GD_str2var(string str);
+        internal static extern object godot_icall_GD_str2var(string str);
 
         [MethodImpl(MethodImplOptions.InternalCall)]
-        internal extern static bool godot_icall_GD_type_exists(string type);
+        internal static extern bool godot_icall_GD_type_exists(string type);
 
         [MethodImpl(MethodImplOptions.InternalCall)]
-        internal extern static byte[] godot_icall_GD_var2bytes(object what, bool full_objects);
+        internal static extern byte[] godot_icall_GD_var2bytes(object what, bool full_objects);
 
         [MethodImpl(MethodImplOptions.InternalCall)]
-        internal extern static string godot_icall_GD_var2str(object var);
+        internal static extern string godot_icall_GD_var2str(object var);
 
         [MethodImpl(MethodImplOptions.InternalCall)]
-        internal extern static void godot_icall_GD_pusherror(string type);
+        internal static extern void godot_icall_GD_pusherror(string type);
 
         [MethodImpl(MethodImplOptions.InternalCall)]
-        internal extern static void godot_icall_GD_pushwarning(string type);
+        internal static extern void godot_icall_GD_pushwarning(string type);
     }
 }

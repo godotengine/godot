@@ -5,17 +5,12 @@ namespace Godot
 {
     public partial class Object
     {
-        public static bool IsInstanceValid(Object instance)
-        {
-            return instance != null && instance.NativeInstance != IntPtr.Zero;
-        }
+        public static bool IsInstanceValid(Object instance) =>
+            instance != null && instance.NativeInstance != IntPtr.Zero;
 
-        public static WeakRef WeakRef(Object obj)
-        {
-            return godot_icall_Object_weakref(Object.GetPtr(obj));
-        }
+        public static WeakRef WeakRef(Object obj) => godot_icall_Object_weakref(GetPtr(obj));
 
         [MethodImpl(MethodImplOptions.InternalCall)]
-        internal extern static WeakRef godot_icall_Object_weakref(IntPtr obj);
+        internal static extern WeakRef godot_icall_Object_weakref(IntPtr obj);
     }
 }

@@ -24,11 +24,11 @@ namespace GodotTools
             }
         }
 
-        private static readonly DateTime Epoch = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+        private static readonly DateTime _epoch = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
 
         private static ulong ConvertToTimestamp(this DateTime value)
         {
-            TimeSpan elapsedTime = value - Epoch;
+            TimeSpan elapsedTime = value - _epoch;
             return (ulong)elapsedTime.TotalSeconds;
         }
 
@@ -74,7 +74,7 @@ namespace GodotTools
 
             bool IsUpToDate(string includeFile, ulong modifiedTime)
             {
-                return metadataDict.TryGetValue(includeFile, out var oldFileVar) &&
+                return metadataDict.TryGetValue(includeFile, out object oldFileVar) &&
                        ulong.TryParse(((Dictionary)oldFileVar)["modified_time"] as string,
                            out ulong storedModifiedTime) && storedModifiedTime == modifiedTime;
             }

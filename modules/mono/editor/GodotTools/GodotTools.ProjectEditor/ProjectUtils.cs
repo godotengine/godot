@@ -22,10 +22,7 @@ namespace GodotTools.ProjectEditor
 
         public void Save() => Root.Save();
 
-        public MSBuildProject(ProjectRootElement root)
-        {
-            Root = root;
-        }
+        public MSBuildProject(ProjectRootElement root) => Root = root;
     }
 
     public static class ProjectUtils
@@ -39,7 +36,7 @@ namespace GodotTools.ProjectEditor
         [PublicAPI]
         public static void AddItemToProjectChecked(string projectPath, string itemType, string include)
         {
-            var dir = Directory.GetParent(projectPath).FullName;
+            string dir = Directory.GetParent(projectPath).FullName;
             var root = ProjectRootElement.Open(projectPath);
             Debug.Assert(root != null);
 
@@ -50,15 +47,16 @@ namespace GodotTools.ProjectEditor
                 return;
             }
 
-            var normalizedInclude = include.RelativeToPath(dir).Replace("/", "\\");
+            string normalizedInclude = include.RelativeToPath(dir).Replace("/", "\\");
 
             if (root.AddItemChecked(itemType, normalizedInclude))
                 root.Save();
         }
 
-        public static void RenameItemInProjectChecked(string projectPath, string itemType, string oldInclude, string newInclude)
+        public static void RenameItemInProjectChecked(string projectPath, string itemType, string oldInclude,
+            string newInclude)
         {
-            var dir = Directory.GetParent(projectPath).FullName;
+            string dir = Directory.GetParent(projectPath).FullName;
             var root = ProjectRootElement.Open(projectPath);
             Debug.Assert(root != null);
 
@@ -69,8 +67,8 @@ namespace GodotTools.ProjectEditor
                 return;
             }
 
-            var normalizedOldInclude = oldInclude.NormalizePath();
-            var normalizedNewInclude = newInclude.NormalizePath();
+            string normalizedOldInclude = oldInclude.NormalizePath();
+            string normalizedNewInclude = newInclude.NormalizePath();
 
             var item = root.FindItemOrNullAbs(itemType, normalizedOldInclude);
 
@@ -93,15 +91,16 @@ namespace GodotTools.ProjectEditor
                 return;
             }
 
-            var normalizedInclude = include.NormalizePath();
+            string normalizedInclude = include.NormalizePath();
 
             if (root.RemoveItemChecked(itemType, normalizedInclude))
                 root.Save();
         }
 
-        public static void RenameItemsToNewFolderInProjectChecked(string projectPath, string itemType, string oldFolder, string newFolder)
+        public static void RenameItemsToNewFolderInProjectChecked(string projectPath, string itemType, string oldFolder,
+            string newFolder)
         {
-            var dir = Directory.GetParent(projectPath).FullName;
+            string dir = Directory.GetParent(projectPath).FullName;
             var root = ProjectRootElement.Open(projectPath);
             Debug.Assert(root != null);
 
@@ -114,15 +113,16 @@ namespace GodotTools.ProjectEditor
 
             bool dirty = false;
 
-            var oldFolderNormalized = oldFolder.NormalizePath();
-            var newFolderNormalized = newFolder.NormalizePath();
+            string oldFolderNormalized = oldFolder.NormalizePath();
+            string newFolderNormalized = newFolder.NormalizePath();
             string absOldFolderNormalized = Path.GetFullPath(oldFolderNormalized).NormalizePath();
             string absNewFolderNormalized = Path.GetFullPath(newFolderNormalized).NormalizePath();
 
             foreach (var item in root.FindAllItemsInFolder(itemType, oldFolderNormalized))
             {
                 string absPathNormalized = Path.GetFullPath(item.Include).NormalizePath();
-                string absNewIncludeNormalized = absNewFolderNormalized + absPathNormalized.Substring(absOldFolderNormalized.Length);
+                string absNewIncludeNormalized =
+                    absNewFolderNormalized + absPathNormalized.Substring(absOldFolderNormalized.Length);
                 item.Include = absNewIncludeNormalized.RelativeToPath(dir).Replace("/", "\\");
                 dirty = true;
             }
@@ -143,7 +143,7 @@ namespace GodotTools.ProjectEditor
                 return;
             }
 
-            var folderNormalized = folder.NormalizePath();
+            string folderNormalized = folder.NormalizePath();
 
             var itemsToRemove = root.FindAllItemsInFolder(itemType, folderNormalized).ToList();
 
@@ -172,7 +172,7 @@ namespace GodotTools.ProjectEditor
         public static string[] GetIncludeFiles(string projectPath, string itemType)
         {
             var result = new List<string>();
-            var existingFiles = GetAllFilesRecursive(Path.GetDirectoryName(projectPath), "*.cs");
+            string[] existingFiles = GetAllFilesRecursive(Path.GetDirectoryName(projectPath), "*.cs");
 
             var root = ProjectRootElement.Open(projectPath);
             Debug.Assert(root != null);
@@ -215,7 +215,7 @@ namespace GodotTools.ProjectEditor
 
                     var glob = MSBuildGlob.Parse(normalizedInclude);
 
-                    foreach (var existingFile in existingFiles)
+                    foreach (string existingFile in existingFiles)
                     {
                         if (glob.IsMatch(existingFile))
                         {
@@ -228,7 +228,7 @@ namespace GodotTools.ProjectEditor
             return result.ToArray();
         }
 
-        public static void MigrateToProjectSdksStyle(MSBuildProject project, string projectName)
+        public static void MigrateToProjectSdksStyle(MSBuildProject project)
         {
             var root = project.Root;
 
@@ -255,16 +255,18 @@ namespace GodotTools.ProjectEditor
             // Default Configuration
 
             RemoveElements(root.PropertyGroups.SelectMany(g => g.Properties)
-                .Where(p => p.Name == "Configuration" && p.Condition.Trim() == "'$(Configuration)' == ''" && p.Value == "Debug"));
+                .Where(p => p.Name == "Configuration" && p.Condition.Trim() == "'$(Configuration)' == ''" &&
+                            p.Value == "Debug"));
 
             // Default Platform
 
             RemoveElements(root.PropertyGroups.SelectMany(g => g.Properties)
-                .Where(p => p.Name == "Platform" && p.Condition.Trim() == "'$(Platform)' == ''" && p.Value == "AnyCPU"));
+                .Where(p => p.Name == "Platform" && p.Condition.Trim() == "'$(Platform)' == ''" &&
+                            p.Value == "AnyCPU"));
 
             // Simple properties
 
-            var yabaiProperties = new[]
+            string[] yabaiProperties =
             {
                 "OutputPath",
                 "BaseIntermediateOutputPath",
@@ -279,7 +281,7 @@ namespace GodotTools.ProjectEditor
 
             // Configuration dependent properties
 
-            var yabaiPropertiesForConfigs = new[]
+            string[] yabaiPropertiesForConfigs =
             {
                 "DebugSymbols",
                 "DebugType",
@@ -290,13 +292,13 @@ namespace GodotTools.ProjectEditor
                 "ConsolePause"
             };
 
-            var configNames = new[]
+            string[] configNames =
             {
                 "ExportDebug", "ExportRelease", "Debug",
                 "Tools", "Release" // Include old config names as well in case it's upgrading from 3.2.1 or older
             };
 
-            foreach (var config in configNames)
+            foreach (string config in configNames)
             {
                 var group = root.PropertyGroups
                     .FirstOrDefault(g => g.Condition.Trim() == $"'$(Configuration)|$(Platform)' == '{config}|AnyCPU'");
@@ -315,7 +317,7 @@ namespace GodotTools.ProjectEditor
 
             // Godot API References
 
-            var apiAssemblies = new[] { ApiAssemblyNames.Core, ApiAssemblyNames.Editor };
+            string[] apiAssemblies = { ApiAssemblyNames.Core, ApiAssemblyNames.Editor };
 
             RemoveElements(root.ItemGroups.SelectMany(g => g.Items)
                 .Where(i => i.ItemType == "Reference" && apiAssemblies.Contains(i.Include)));
@@ -328,7 +330,7 @@ namespace GodotTools.ProjectEditor
 
             // Imports
 
-            var yabaiImports = new[]
+            string[] yabaiImports =
             {
                 "$(MSBuildBinPath)/Microsoft.CSharp.targets",
                 "$(MSBuildBinPath)Microsoft.CSharp.targets"
@@ -376,8 +378,9 @@ namespace GodotTools.ProjectEditor
             // Add comment about Microsoft.NET.Sdk properties disabled during migration
 
             GetElement(xDoc, name: "EnableDefaultCompileItems", value: "false", parentName: "PropertyGroup")
-                .AddBeforeSelf(new XComment("The following properties were overridden during migration to prevent errors.\n" +
-                                            "    Enabling them may require other manual changes to the project and its files."));
+                .AddBeforeSelf(new XComment(
+                    "The following properties were overridden during migration to prevent errors.\n" +
+                    "    Enabling them may require other manual changes to the project and its files."));
 
             void RemoveNamespace(XElement element)
             {

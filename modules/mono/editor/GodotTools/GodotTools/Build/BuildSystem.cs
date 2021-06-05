@@ -44,7 +44,8 @@ namespace GodotTools.Build
             }
         }
 
-        private static Process LaunchBuild(BuildInfo buildInfo, Action<string> stdOutHandler, Action<string> stdErrHandler)
+        private static Process LaunchBuild(BuildInfo buildInfo, Action<string> stdOutHandler,
+            Action<string> stdErrHandler)
         {
             (string msbuildPath, BuildTool buildTool) = MsBuildFinder.FindMsBuild();
 
@@ -102,7 +103,8 @@ namespace GodotTools.Build
             }
         }
 
-        public static async Task<int> BuildAsync(BuildInfo buildInfo, Action<string> stdOutHandler, Action<string> stdErrHandler)
+        public static async Task<int> BuildAsync(BuildInfo buildInfo, Action<string> stdOutHandler,
+            Action<string> stdErrHandler)
         {
             using (var process = LaunchBuild(buildInfo, stdOutHandler, stdErrHandler))
             {

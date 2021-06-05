@@ -6,17 +6,11 @@ using System.Runtime.InteropServices;
 
 namespace Godot.Collections
 {
-    class DictionarySafeHandle : SafeHandle
+    internal class DictionarySafeHandle : SafeHandle
     {
-        public DictionarySafeHandle(IntPtr handle) : base(IntPtr.Zero, true)
-        {
-            this.handle = handle;
-        }
+        public DictionarySafeHandle(IntPtr handle) : base(IntPtr.Zero, true) => this.handle = handle;
 
-        public override bool IsInvalid
-        {
-            get { return handle == IntPtr.Zero; }
-        }
+        public override bool IsInvalid => handle == IntPtr.Zero;
 
         protected override bool ReleaseHandle()
         {
@@ -29,13 +23,10 @@ namespace Godot.Collections
         IDictionary,
         IDisposable
     {
-        DictionarySafeHandle safeHandle;
-        bool disposed = false;
+        private DictionarySafeHandle _safeHandle;
+        private bool _disposed = false;
 
-        public Dictionary()
-        {
-            safeHandle = new DictionarySafeHandle(godot_icall_Dictionary_Ctor());
-        }
+        public Dictionary() => _safeHandle = new DictionarySafeHandle(godot_icall_Dictionary_Ctor());
 
         public Dictionary(IDictionary dictionary) : this()
         {
@@ -46,42 +37,34 @@ namespace Godot.Collections
                 Add(entry.Key, entry.Value);
         }
 
-        internal Dictionary(DictionarySafeHandle handle)
-        {
-            safeHandle = handle;
-        }
+        internal Dictionary(DictionarySafeHandle handle) => _safeHandle = handle;
 
-        internal Dictionary(IntPtr handle)
-        {
-            safeHandle = new DictionarySafeHandle(handle);
-        }
+        internal Dictionary(IntPtr handle) => _safeHandle = new DictionarySafeHandle(handle);
 
         internal IntPtr GetPtr()
         {
-            if (disposed)
+            if (_disposed)
                 throw new ObjectDisposedException(GetType().FullName);
 
-            return safeHandle.DangerousGetHandle();
+            return _safeHandle.DangerousGetHandle();
         }
 
         public void Dispose()
         {
-            if (disposed)
+            if (_disposed)
                 return;
 
-            if (safeHandle != null)
+            if (_safeHandle != null)
             {
-                safeHandle.Dispose();
-                safeHandle = null;
+                _safeHandle.Dispose();
+                _safeHandle = null;
             }
 
-            disposed = true;
+            _disposed = true;
         }
 
-        public Dictionary Duplicate(bool deep = false)
-        {
-            return new Dictionary(godot_icall_Dictionary_Duplicate(GetPtr(), deep));
-        }
+        public Dictionary Duplicate(bool deep = false) =>
+            new Dictionary(godot_icall_Dictionary_Duplicate(GetPtr(), deep));
 
         // IDictionary
 
@@ -141,8 +124,8 @@ namespace Godot.Collections
             if (index < 0)
                 throw new ArgumentOutOfRangeException(nameof(index), "Number was less than the array's lower bound in the first dimension.");
 
-            Array keys = (Array)Keys;
-            Array values = (Array)Values;
+            var keys = (Array)Keys;
+            var values = (Array)Values;
             int count = Count;
 
             if (array.Length < (index + count))
@@ -161,24 +144,24 @@ namespace Godot.Collections
 
         private class DictionaryEnumerator : IDictionaryEnumerator
         {
-            Array keys;
-            Array values;
-            int count;
-            int index = -1;
+            private readonly Array _keys;
+            private readonly Array _values;
+            private readonly int _count;
+            private int _index = -1;
 
             public DictionaryEnumerator(Dictionary dictionary)
             {
                 // TODO 3 internal calls, can reduce to 1
-                keys = (Array)dictionary.Keys;
-                values = (Array)dictionary.Values;
-                count = dictionary.Count;
+                _keys = (Array)dictionary.Keys;
+                _values = (Array)dictionary.Values;
+                _count = dictionary.Count;
             }
 
             public object Current => Entry;
 
             public DictionaryEntry Entry =>
                 // TODO 2 internal calls, can reduce to 1
-                new DictionaryEntry(keys[index], values[index]);
+                new DictionaryEntry(_keys[_index], _values[_index]);
 
             public object Key => Entry.Key;
 
@@ -186,96 +169,89 @@ namespace Godot.Collections
 
             public bool MoveNext()
             {
-                index++;
-                return index < count;
+                _index++;
+                return _index < _count;
             }
 
-            public void Reset()
-            {
-                index = -1;
-            }
+            public void Reset() => _index = -1;
         }
 
-        public override string ToString()
-        {
-            return godot_icall_Dictionary_ToString(GetPtr());
-        }
+        public override string ToString() => godot_icall_Dictionary_ToString(GetPtr());
 
         [MethodImpl(MethodImplOptions.InternalCall)]
-        internal extern static IntPtr godot_icall_Dictionary_Ctor();
+        internal static extern IntPtr godot_icall_Dictionary_Ctor();
 
         [MethodImpl(MethodImplOptions.InternalCall)]
-        internal extern static void godot_icall_Dictionary_Dtor(IntPtr ptr);
+        internal static extern void godot_icall_Dictionary_Dtor(IntPtr ptr);
 
         [MethodImpl(MethodImplOptions.InternalCall)]
-        internal extern static object godot_icall_Dictionary_GetValue(IntPtr ptr, object key);
+        internal static extern object godot_icall_Dictionary_GetValue(IntPtr ptr, object key);
 
         [MethodImpl(MethodImplOptions.InternalCall)]
-        internal extern static object godot_icall_Dictionary_GetValue_Generic(IntPtr ptr, object key, int valTypeEncoding, IntPtr valTypeClass);
+        internal static extern object godot_icall_Dictionary_GetValue_Generic(IntPtr ptr, object key,
+            int valTypeEncoding, IntPtr valTypeClass);
 
         [MethodImpl(MethodImplOptions.InternalCall)]
-        internal extern static void godot_icall_Dictionary_SetValue(IntPtr ptr, object key, object value);
+        internal static extern void godot_icall_Dictionary_SetValue(IntPtr ptr, object key, object value);
 
         [MethodImpl(MethodImplOptions.InternalCall)]
-        internal extern static IntPtr godot_icall_Dictionary_Keys(IntPtr ptr);
+        internal static extern IntPtr godot_icall_Dictionary_Keys(IntPtr ptr);
 
         [MethodImpl(MethodImplOptions.InternalCall)]
-        internal extern static IntPtr godot_icall_Dictionary_Values(IntPtr ptr);
+        internal static extern IntPtr godot_icall_Dictionary_Values(IntPtr ptr);
 
         [MethodImpl(MethodImplOptions.InternalCall)]
-        internal extern static int godot_icall_Dictionary_Count(IntPtr ptr);
+        internal static extern int godot_icall_Dictionary_Count(IntPtr ptr);
 
         [MethodImpl(MethodImplOptions.InternalCall)]
-        internal extern static void godot_icall_Dictionary_Add(IntPtr ptr, object key, object value);
+        internal static extern void godot_icall_Dictionary_Add(IntPtr ptr, object key, object value);
 
         [MethodImpl(MethodImplOptions.InternalCall)]
-        internal extern static void godot_icall_Dictionary_Clear(IntPtr ptr);
+        internal static extern void godot_icall_Dictionary_Clear(IntPtr ptr);
 
         [MethodImpl(MethodImplOptions.InternalCall)]
-        internal extern static bool godot_icall_Dictionary_Contains(IntPtr ptr, object key, object value);
+        internal static extern bool godot_icall_Dictionary_Contains(IntPtr ptr, object key, object value);
 
         [MethodImpl(MethodImplOptions.InternalCall)]
-        internal extern static bool godot_icall_Dictionary_ContainsKey(IntPtr ptr, object key);
+        internal static extern bool godot_icall_Dictionary_ContainsKey(IntPtr ptr, object key);
 
         [MethodImpl(MethodImplOptions.InternalCall)]
-        internal extern static IntPtr godot_icall_Dictionary_Duplicate(IntPtr ptr, bool deep);
+        internal static extern IntPtr godot_icall_Dictionary_Duplicate(IntPtr ptr, bool deep);
 
         [MethodImpl(MethodImplOptions.InternalCall)]
-        internal extern static bool godot_icall_Dictionary_RemoveKey(IntPtr ptr, object key);
+        internal static extern bool godot_icall_Dictionary_RemoveKey(IntPtr ptr, object key);
 
         [MethodImpl(MethodImplOptions.InternalCall)]
-        internal extern static bool godot_icall_Dictionary_Remove(IntPtr ptr, object key, object value);
+        internal static extern bool godot_icall_Dictionary_Remove(IntPtr ptr, object key, object value);
 
         [MethodImpl(MethodImplOptions.InternalCall)]
-        internal extern static bool godot_icall_Dictionary_TryGetValue(IntPtr ptr, object key, out object value);
+        internal static extern bool godot_icall_Dictionary_TryGetValue(IntPtr ptr, object key, out object value);
 
         [MethodImpl(MethodImplOptions.InternalCall)]
-        internal extern static bool godot_icall_Dictionary_TryGetValue_Generic(IntPtr ptr, object key, out object value, int valTypeEncoding, IntPtr valTypeClass);
+        internal static extern bool godot_icall_Dictionary_TryGetValue_Generic(IntPtr ptr, object key, out object value,
+            int valTypeEncoding, IntPtr valTypeClass);
 
         [MethodImpl(MethodImplOptions.InternalCall)]
-        internal extern static void godot_icall_Dictionary_Generic_GetValueTypeInfo(Type valueType, out int valTypeEncoding, out IntPtr valTypeClass);
+        internal static extern void godot_icall_Dictionary_Generic_GetValueTypeInfo(Type valueType,
+            out int valTypeEncoding, out IntPtr valTypeClass);
 
         [MethodImpl(MethodImplOptions.InternalCall)]
-        internal extern static string godot_icall_Dictionary_ToString(IntPtr ptr);
+        internal static extern string godot_icall_Dictionary_ToString(IntPtr ptr);
     }
 
     public class Dictionary<TKey, TValue> :
         IDictionary<TKey, TValue>
     {
-        Dictionary objectDict;
+        private Dictionary objectDict;
 
         internal static int valTypeEncoding;
         internal static IntPtr valTypeClass;
 
-        static Dictionary()
-        {
-            Dictionary.godot_icall_Dictionary_Generic_GetValueTypeInfo(typeof(TValue), out valTypeEncoding, out valTypeClass);
-        }
+        static Dictionary() =>
+            Dictionary.godot_icall_Dictionary_Generic_GetValueTypeInfo(typeof(TValue), out valTypeEncoding,
+                out valTypeClass);
 
-        public Dictionary()
-        {
-            objectDict = new Dictionary();
-        }
+        public Dictionary() => objectDict = new Dictionary();
 
         public Dictionary(IDictionary<TKey, TValue> dictionary)
         {
@@ -294,42 +270,26 @@ namespace Godot.Collections
             }
         }
 
-        public Dictionary(Dictionary dictionary)
-        {
-            objectDict = dictionary;
-        }
+        public Dictionary(Dictionary dictionary) => objectDict = dictionary;
 
-        internal Dictionary(IntPtr handle)
-        {
-            objectDict = new Dictionary(handle);
-        }
+        internal Dictionary(IntPtr handle) => objectDict = new Dictionary(handle);
 
-        internal Dictionary(DictionarySafeHandle handle)
-        {
-            objectDict = new Dictionary(handle);
-        }
+        internal Dictionary(DictionarySafeHandle handle) => objectDict = new Dictionary(handle);
 
-        public static explicit operator Dictionary(Dictionary<TKey, TValue> from)
-        {
-            return from.objectDict;
-        }
+        public static explicit operator Dictionary(Dictionary<TKey, TValue> from) => from.objectDict;
 
-        internal IntPtr GetPtr()
-        {
-            return objectDict.GetPtr();
-        }
+        internal IntPtr GetPtr() => objectDict.GetPtr();
 
-        public Dictionary<TKey, TValue> Duplicate(bool deep = false)
-        {
-            return new Dictionary<TKey, TValue>(objectDict.Duplicate(deep));
-        }
+        public Dictionary<TKey, TValue> Duplicate(bool deep = false) =>
+            new Dictionary<TKey, TValue>(objectDict.Duplicate(deep));
 
         // IDictionary<TKey, TValue>
 
         public TValue this[TKey key]
         {
-            get { return (TValue)Dictionary.godot_icall_Dictionary_GetValue_Generic(objectDict.GetPtr(), key, valTypeEncoding, valTypeClass); }
-            set { objectDict[key] = value; }
+            get => (TValue)Dictionary.godot_icall_Dictionary_GetValue_Generic(objectDict.GetPtr(), key, valTypeEncoding,
+                valTypeClass);
+            set => objectDict[key] = value;
         }
 
         public ICollection<TKey> Keys
@@ -350,55 +310,34 @@ namespace Godot.Collections
             }
         }
 
-        public void Add(TKey key, TValue value)
-        {
-            objectDict.Add(key, value);
-        }
+        public void Add(TKey key, TValue value) => objectDict.Add(key, value);
 
-        public bool ContainsKey(TKey key)
-        {
-            return objectDict.Contains(key);
-        }
+        public bool ContainsKey(TKey key) => objectDict.Contains(key);
 
-        public bool Remove(TKey key)
-        {
-            return Dictionary.godot_icall_Dictionary_RemoveKey(GetPtr(), key);
-        }
+        public bool Remove(TKey key) => Dictionary.godot_icall_Dictionary_RemoveKey(GetPtr(), key);
 
         public bool TryGetValue(TKey key, out TValue value)
         {
             object retValue;
-            bool found = Dictionary.godot_icall_Dictionary_TryGetValue_Generic(GetPtr(), key, out retValue, valTypeEncoding, valTypeClass);
-            value = found ? (TValue)retValue : default(TValue);
+            bool found =
+                Dictionary.godot_icall_Dictionary_TryGetValue_Generic(GetPtr(), key, out retValue, valTypeEncoding,
+                    valTypeClass);
+            value = found ? (TValue)retValue : default;
             return found;
         }
 
         // ICollection<KeyValuePair<TKey, TValue>>
 
-        public int Count
-        {
-            get { return objectDict.Count; }
-        }
+        public int Count => objectDict.Count;
 
-        public bool IsReadOnly
-        {
-            get { return objectDict.IsReadOnly; }
-        }
+        public bool IsReadOnly => objectDict.IsReadOnly;
 
-        public void Add(KeyValuePair<TKey, TValue> item)
-        {
-            objectDict.Add(item.Key, item.Value);
-        }
+        public void Add(KeyValuePair<TKey, TValue> item) => objectDict.Add(item.Key, item.Value);
 
-        public void Clear()
-        {
-            objectDict.Clear();
-        }
+        public void Clear() => objectDict.Clear();
 
-        public bool Contains(KeyValuePair<TKey, TValue> item)
-        {
-            return objectDict.Contains(new KeyValuePair<object, object>(item.Key, item.Value));
-        }
+        public bool Contains(KeyValuePair<TKey, TValue> item) =>
+            objectDict.Contains(new KeyValuePair<object, object>(item.Key, item.Value));
 
         public void CopyTo(KeyValuePair<TKey, TValue>[] array, int arrayIndex)
         {
@@ -409,8 +348,8 @@ namespace Godot.Collections
                 throw new ArgumentOutOfRangeException(nameof(arrayIndex), "Number was less than the array's lower bound in the first dimension.");
 
             // TODO 3 internal calls, can reduce to 1
-            Array<TKey> keys = (Array<TKey>)Keys;
-            Array<TValue> values = (Array<TValue>)Values;
+            var keys = (Array<TKey>)Keys;
+            var values = (Array<TValue>)Values;
             int count = Count;
 
             if (array.Length < (arrayIndex + count))
@@ -424,19 +363,16 @@ namespace Godot.Collections
             }
         }
 
-        public bool Remove(KeyValuePair<TKey, TValue> item)
-        {
-            return Dictionary.godot_icall_Dictionary_Remove(GetPtr(), item.Key, item.Value);
-            ;
-        }
+        public bool Remove(KeyValuePair<TKey, TValue> item) =>
+            Dictionary.godot_icall_Dictionary_Remove(GetPtr(), item.Key, item.Value);
 
         // IEnumerable<KeyValuePair<TKey, TValue>>
 
         public IEnumerator<KeyValuePair<TKey, TValue>> GetEnumerator()
         {
             // TODO 3 internal calls, can reduce to 1
-            Array<TKey> keys = (Array<TKey>)Keys;
-            Array<TValue> values = (Array<TValue>)Values;
+            var keys = (Array<TKey>)Keys;
+            var values = (Array<TValue>)Values;
             int count = Count;
 
             for (int i = 0; i < count; i++)
@@ -446,10 +382,7 @@ namespace Godot.Collections
             }
         }
 
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            return GetEnumerator();
-        }
+        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
         public override string ToString() => objectDict.ToString();
     }

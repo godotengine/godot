@@ -43,14 +43,8 @@ namespace Godot
         /// <value>Getting is equivalent to multiplying by 255 and rounding. Setting is equivalent to dividing by 255.</value>
         public int r8
         {
-            get
-            {
-                return (int)Math.Round(r * 255.0f);
-            }
-            set
-            {
-                r = value / 255.0f;
-            }
+            get => (int)Math.Round(r * 255.0f);
+            set => r = value / 255.0f;
         }
 
         /// <summary>
@@ -59,14 +53,8 @@ namespace Godot
         /// <value>Getting is equivalent to multiplying by 255 and rounding. Setting is equivalent to dividing by 255.</value>
         public int g8
         {
-            get
-            {
-                return (int)Math.Round(g * 255.0f);
-            }
-            set
-            {
-                g = value / 255.0f;
-            }
+            get => (int)Math.Round(g * 255.0f);
+            set => g = value / 255.0f;
         }
 
         /// <summary>
@@ -75,14 +63,8 @@ namespace Godot
         /// <value>Getting is equivalent to multiplying by 255 and rounding. Setting is equivalent to dividing by 255.</value>
         public int b8
         {
-            get
-            {
-                return (int)Math.Round(b * 255.0f);
-            }
-            set
-            {
-                b = value / 255.0f;
-            }
+            get => (int)Math.Round(b * 255.0f);
+            set => b = value / 255.0f;
         }
 
         /// <summary>
@@ -91,14 +73,8 @@ namespace Godot
         /// <value>Getting is equivalent to multiplying by 255 and rounding. Setting is equivalent to dividing by 255.</value>
         public int a8
         {
-            get
-            {
-                return (int)Math.Round(a * 255.0f);
-            }
-            set
-            {
-                a = value / 255.0f;
-            }
+            get => (int)Math.Round(a * 255.0f);
+            set => a = value / 255.0f;
         }
 
         /// <summary>
@@ -127,11 +103,11 @@ namespace Godot
                 }
                 else if (g == max)
                 {
-                    h = 2 + (b - r) / delta; // Between cyan & yellow
+                    h = 2 + ((b - r) / delta); // Between cyan & yellow
                 }
                 else
                 {
-                    h = 4 + (r - g) / delta; // Between magenta & cyan
+                    h = 4 + ((r - g) / delta); // Between magenta & cyan
                 }
 
                 h /= 6.0f;
@@ -143,10 +119,7 @@ namespace Godot
 
                 return h;
             }
-            set
-            {
-                this = FromHsv(value, s, v, a);
-            }
+            set => this = FromHsv(value, s, v, a);
         }
 
         /// <summary>
@@ -164,10 +137,7 @@ namespace Godot
 
                 return max == 0 ? 0 : delta / max;
             }
-            set
-            {
-                this = FromHsv(h, value, v, a);
-            }
+            set => this = FromHsv(h, value, v, a);
         }
 
         /// <summary>
@@ -176,14 +146,8 @@ namespace Godot
         /// <value>Getting is equivalent to using `Max()` on the RGB components. Setting uses <see cref="FromHsv"/>.</value>
         public float v
         {
-            get
-            {
-                return Math.Max(r, Math.Max(g, b));
-            }
-            set
-            {
-                this = FromHsv(h, s, value, a);
-            }
+            get => Math.Max(r, Math.Max(g, b));
+            set => this = FromHsv(h, s, value, a);
         }
 
         /// <summary>
@@ -196,19 +160,19 @@ namespace Godot
         /// <returns>The constructed color.</returns>
         public static Color ColorN(string name, float alpha = 1f)
         {
-            name = name.Replace(" ", String.Empty);
-            name = name.Replace("-", String.Empty);
-            name = name.Replace("_", String.Empty);
-            name = name.Replace("'", String.Empty);
-            name = name.Replace(".", String.Empty);
+            name = name.Replace(" ", string.Empty);
+            name = name.Replace("-", string.Empty);
+            name = name.Replace("_", string.Empty);
+            name = name.Replace("'", string.Empty);
+            name = name.Replace(".", string.Empty);
             name = name.ToLower();
 
-            if (!Colors.namedColors.ContainsKey(name))
+            if (!Colors.NamedColors.ContainsKey(name))
             {
                 throw new ArgumentOutOfRangeException($"Invalid Color Name: {name}");
             }
 
-            Color color = Colors.namedColors[name];
+            Color color = Colors.NamedColors[name];
             color.a = alpha;
             return color;
         }
@@ -280,9 +244,9 @@ namespace Godot
                 if (r == max)
                     hue = (g - b) / delta; // Between yellow & magenta
                 else if (g == max)
-                    hue = 2 + (b - r) / delta; // Between cyan & yellow
+                    hue = 2 + ((b - r) / delta); // Between cyan & yellow
                 else
-                    hue = 4 + (r - g) / delta; // Between magenta & cyan
+                    hue = 4 + ((r - g) / delta); // Between magenta & cyan
 
                 hue /= 6.0f;
 
@@ -290,7 +254,7 @@ namespace Godot
                     hue += 1.0f;
             }
 
-            saturation = max == 0 ? 0 : 1f - 1f * min / max;
+            saturation = max == 0 ? 0 : 1f - (1f * min / max);
             value = max;
         }
 
@@ -321,8 +285,8 @@ namespace Godot
 
             f = hue - i;
             p = value * (1 - saturation);
-            q = value * (1 - saturation * f);
-            t = value * (1 - saturation * (1 - f));
+            q = value * (1 - (saturation * f));
+            t = value * (1 - (saturation * (1 - f)));
 
             switch (i)
             {
@@ -353,16 +317,16 @@ namespace Godot
             Color res;
 
             float sa = 1.0f - over.a;
-            res.a = a * sa + over.a;
+            res.a = (a * sa) + over.a;
 
             if (res.a == 0)
             {
                 return new Color(0, 0, 0, 0);
             }
 
-            res.r = (r * a * sa + over.r * over.a) / res.a;
-            res.g = (g * a * sa + over.g * over.a) / res.a;
-            res.b = (b * a * sa + over.b * over.a) / res.a;
+            res.r = ((r * a * sa) + (over.r * over.a)) / res.a;
+            res.g = ((g * a * sa) + (over.g * over.a)) / res.a;
+            res.b = ((b * a * sa) + (over.b * over.a)) / res.a;
 
             return res;
         }
@@ -371,15 +335,13 @@ namespace Godot
         /// Returns the most contrasting color.
         /// </summary>
         /// <returns>The most contrasting color</returns>
-        public Color Contrasted()
-        {
-            return new Color(
+        public Color Contrasted() =>
+            new Color(
                 (r + 0.5f) % 1.0f,
                 (g + 0.5f) % 1.0f,
                 (b + 0.5f) % 1.0f,
                 a
             );
-        }
 
         /// <summary>
         /// Returns a new color resulting from making this color darker
@@ -400,15 +362,13 @@ namespace Godot
         /// Returns the inverted color: `(1 - r, 1 - g, 1 - b, a)`.
         /// </summary>
         /// <returns>The inverted color.</returns>
-        public Color Inverted()
-        {
-            return new Color(
+        public Color Inverted() =>
+            new Color(
                 1.0f - r,
                 1.0f - g,
                 1.0f - b,
                 a
             );
-        }
 
         /// <summary>
         /// Returns a new color resulting from making this color lighter
@@ -419,9 +379,9 @@ namespace Godot
         public Color Lightened(float amount)
         {
             Color res = this;
-            res.r = res.r + (1.0f - res.r) * amount;
-            res.g = res.g + (1.0f - res.g) * amount;
-            res.b = res.b + (1.0f - res.b) * amount;
+            res.r = res.r + ((1.0f - res.r) * amount);
+            res.g = res.g + ((1.0f - res.g) * amount);
+            res.b = res.b + ((1.0f - res.b) * amount);
             return res;
         }
 
@@ -432,16 +392,14 @@ namespace Godot
         /// <param name="to">The destination color for interpolation.</param>
         /// <param name="weight">A value on the range of 0.0 to 1.0, representing the amount of interpolation.</param>
         /// <returns>The resulting color of the interpolation.</returns>
-        public Color LinearInterpolate(Color to, float weight)
-        {
-            return new Color
+        public Color LinearInterpolate(Color to, float weight) =>
+            new Color
             (
                 Mathf.Lerp(r, to.r, weight),
                 Mathf.Lerp(g, to.g, weight),
                 Mathf.Lerp(b, to.b, weight),
                 Mathf.Lerp(a, to.a, weight)
             );
-        }
 
         /// <summary>
         /// Returns the result of the linear interpolation between
@@ -450,16 +408,14 @@ namespace Godot
         /// <param name="to">The destination color for interpolation.</param>
         /// <param name="weight">A color with components on the range of 0.0 to 1.0, representing the amount of interpolation.</param>
         /// <returns>The resulting color of the interpolation.</returns>
-        public Color LinearInterpolate(Color to, Color weight)
-        {
-            return new Color
+        public Color LinearInterpolate(Color to, Color weight) =>
+            new Color
             (
                 Mathf.Lerp(r, to.r, weight.r),
                 Mathf.Lerp(g, to.g, weight.g),
                 Mathf.Lerp(b, to.b, weight.b),
                 Mathf.Lerp(a, to.a, weight.a)
             );
-        }
 
         /// <summary>
         /// Returns the color converted to a 32-bit integer in ABGR
@@ -582,7 +538,7 @@ namespace Godot
         /// <returns>A string for the HTML hexadecimal representation of this color.</returns>
         public string ToHtml(bool includeAlpha = true)
         {
-            var txt = string.Empty;
+            string txt = string.Empty;
 
             txt += ToHex32(r);
             txt += ToHex32(g);
@@ -756,10 +712,8 @@ namespace Godot
         /// <param name="b8">The blue component represented on the range of 0 to 255.</param>
         /// <param name="a8">The alpha (transparency) component represented on the range of 0 to 255.</param>
         /// <returns>The constructed color.</returns>
-        public static Color Color8(byte r8, byte g8, byte b8, byte a8 = 255)
-        {
-            return new Color(r8 / 255f, g8 / 255f, b8 / 255f, a8 / 255f);
-        }
+        public static Color Color8(byte r8, byte g8, byte b8, byte a8 = 255) =>
+            new Color(r8 / 255f, g8 / 255f, b8 / 255f, a8 / 255f);
 
         /// <summary>
         /// Constructs a color from the HTML hexadecimal color string in RGBA format.
@@ -791,7 +745,8 @@ namespace Godot
             }
             else
             {
-                throw new ArgumentOutOfRangeException("Invalid color code. Length is " + rgba.Length + " but a length of 6 or 8 is expected: " + rgba);
+                throw new ArgumentOutOfRangeException("Invalid color code. Length is " + rgba.Length +
+                                                      " but a length of 6 or 8 is expected: " + rgba);
             }
 
             if (alpha)
@@ -842,10 +797,7 @@ namespace Godot
             return left;
         }
 
-        public static Color operator -(Color color)
-        {
-            return Colors.White - color;
-        }
+        public static Color operator -(Color color) => Colors.White - color;
 
         public static Color operator *(Color color, float scale)
         {
@@ -892,15 +844,9 @@ namespace Godot
             return left;
         }
 
-        public static bool operator ==(Color left, Color right)
-        {
-            return left.Equals(right);
-        }
+        public static bool operator ==(Color left, Color right) => left.Equals(right);
 
-        public static bool operator !=(Color left, Color right)
-        {
-            return !left.Equals(right);
-        }
+        public static bool operator !=(Color left, Color right) => !left.Equals(right);
 
         public static bool operator <(Color left, Color right)
         {
@@ -952,10 +898,7 @@ namespace Godot
             return false;
         }
 
-        public bool Equals(Color other)
-        {
-            return r == other.r && g == other.g && b == other.b && a == other.a;
-        }
+        public bool Equals(Color other) => r == other.r && g == other.g && b == other.b && a == other.a;
 
         /// <summary>
         /// Returns true if this color and `other` are approximately equal, by running
@@ -963,24 +906,15 @@ namespace Godot
         /// </summary>
         /// <param name="other">The other color to compare.</param>
         /// <returns>Whether or not the colors are approximately equal.</returns>
-        public bool IsEqualApprox(Color other)
-        {
-            return Mathf.IsEqualApprox(r, other.r) && Mathf.IsEqualApprox(g, other.g) && Mathf.IsEqualApprox(b, other.b) && Mathf.IsEqualApprox(a, other.a);
-        }
+        public bool IsEqualApprox(Color other) => Mathf.IsEqualApprox(r, other.r) && Mathf.IsEqualApprox(g, other.g) &&
+                                                  Mathf.IsEqualApprox(b, other.b) && Mathf.IsEqualApprox(a, other.a);
 
-        public override int GetHashCode()
-        {
-            return r.GetHashCode() ^ g.GetHashCode() ^ b.GetHashCode() ^ a.GetHashCode();
-        }
+        public override int GetHashCode() => r.GetHashCode() ^ g.GetHashCode() ^ b.GetHashCode() ^ a.GetHashCode();
 
-        public override string ToString()
-        {
-            return String.Format("{0},{1},{2},{3}", r.ToString(), g.ToString(), b.ToString(), a.ToString());
-        }
+        public override string ToString() =>
+            string.Format("{0},{1},{2},{3}", r.ToString(), g.ToString(), b.ToString(), a.ToString());
 
-        public string ToString(string format)
-        {
-            return String.Format("{0},{1},{2},{3}", r.ToString(format), g.ToString(format), b.ToString(format), a.ToString(format));
-        }
+        public string ToString(string format) => string.Format("{0},{1},{2},{3}", r.ToString(format),
+            g.ToString(format), b.ToString(format), a.ToString(format));
     }
 }

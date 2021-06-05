@@ -9,15 +9,15 @@ namespace GodotTools.ProjectEditor
 {
     public class DotNetSolution
     {
-        private string directoryPath;
-        private readonly Dictionary<string, ProjectInfo> projects = new Dictionary<string, ProjectInfo>();
+        private string _directoryPath;
+        private readonly Dictionary<string, ProjectInfo> _projects = new Dictionary<string, ProjectInfo>();
 
         public string Name { get; }
 
         public string DirectoryPath
         {
-            get => directoryPath;
-            set => directoryPath = value.IsAbsolutePath() ? value : Path.GetFullPath(value);
+            get => _directoryPath;
+            set => _directoryPath = value.IsAbsolutePath() ? value : Path.GetFullPath(value);
         }
 
         public class ProjectInfo
@@ -27,25 +27,13 @@ namespace GodotTools.ProjectEditor
             public List<string> Configs = new List<string>();
         }
 
-        public void AddNewProject(string name, ProjectInfo projectInfo)
-        {
-            projects[name] = projectInfo;
-        }
+        public void AddNewProject(string name, ProjectInfo projectInfo) => _projects[name] = projectInfo;
 
-        public bool HasProject(string name)
-        {
-            return projects.ContainsKey(name);
-        }
+        public bool HasProject(string name) => _projects.ContainsKey(name);
 
-        public ProjectInfo GetProjectInfo(string name)
-        {
-            return projects[name];
-        }
+        public ProjectInfo GetProjectInfo(string name) => _projects[name];
 
-        public bool RemoveProject(string name)
-        {
-            return projects.Remove(name);
-        }
+        public bool RemoveProject(string name) => _projects.Remove(name);
 
         public void Save()
         {
@@ -58,7 +46,7 @@ namespace GodotTools.ProjectEditor
 
             bool isFirstProject = true;
 
-            foreach (var pair in projects)
+            foreach (var pair in _projects)
             {
                 string name = pair.Key;
                 ProjectInfo projectInfo = pair.Value;
@@ -66,7 +54,7 @@ namespace GodotTools.ProjectEditor
                 if (!isFirstProject)
                     projectsDecl += "\n";
 
-                projectsDecl += string.Format(ProjectDeclaration,
+                projectsDecl += string.Format(_projectDeclaration,
                     name, projectInfo.PathRelativeToSolution.Replace("/", "\\"), projectInfo.Guid);
 
                 for (int i = 0; i < projectInfo.Configs.Count; i++)
@@ -79,25 +67,22 @@ namespace GodotTools.ProjectEditor
                         projPlatformsCfg += "\n";
                     }
 
-                    slnPlatformsCfg += string.Format(SolutionPlatformsConfig, config);
-                    projPlatformsCfg += string.Format(ProjectPlatformsConfig, projectInfo.Guid, config);
+                    slnPlatformsCfg += string.Format(_solutionPlatformsConfig, config);
+                    projPlatformsCfg += string.Format(_projectPlatformsConfig, projectInfo.Guid, config);
                 }
 
                 isFirstProject = false;
             }
 
             string solutionPath = Path.Combine(DirectoryPath, Name + ".sln");
-            string content = string.Format(SolutionTemplate, projectsDecl, slnPlatformsCfg, projPlatformsCfg);
+            string content = string.Format(_solutionTemplate, projectsDecl, slnPlatformsCfg, projPlatformsCfg);
 
             File.WriteAllText(solutionPath, content, Encoding.UTF8); // UTF-8 with BOM
         }
 
-        public DotNetSolution(string name)
-        {
-            Name = name;
-        }
+        public DotNetSolution(string name) => Name = name;
 
-        const string SolutionTemplate =
+        private const string _solutionTemplate =
             @"Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2012
 {0}
@@ -111,14 +96,14 @@ Global
 EndGlobal
 ";
 
-        const string ProjectDeclaration =
+        private const string _projectDeclaration =
             @"Project(""{{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}}"") = ""{0}"", ""{1}"", ""{{{2}}}""
 EndProject";
 
-        const string SolutionPlatformsConfig =
+        private const string _solutionPlatformsConfig =
             @"	{0}|Any CPU = {0}|Any CPU";
 
-        const string ProjectPlatformsConfig =
+        private const string _projectPlatformsConfig =
             @"		{{{0}}}.{1}|Any CPU.ActiveCfg = {1}|Any CPU
 		{{{0}}}.{1}|Any CPU.Build.0 = {1}|Any CPU";
 
@@ -127,7 +112,7 @@ EndProject";
             if (!File.Exists(slnPath))
                 return;
 
-            var input = File.ReadAllText(slnPath);
+            string input = File.ReadAllText(slnPath);
 
             if (!Regex.IsMatch(input, Regex.Escape("Tools|Any CPU")))
                 return;
@@ -151,7 +136,7 @@ EndProject";
             };
 
             var regex = new Regex(string.Join("|", dict.Keys.Select(Regex.Escape)));
-            var result = regex.Replace(input, m => dict[m.Value]);
+            string result = regex.Replace(input, m => dict[m.Value]);
 
             if (result != input)
             {

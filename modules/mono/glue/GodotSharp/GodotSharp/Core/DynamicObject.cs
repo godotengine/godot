@@ -72,13 +72,11 @@ namespace Godot
             if (godotObject == null)
                 throw new ArgumentNullException(nameof(godotObject));
 
-            this.Value = godotObject;
+            Value = godotObject;
         }
 
-        public override IEnumerable<string> GetDynamicMemberNames()
-        {
-            return godot_icall_DynamicGodotObject_SetMemberList(Object.GetPtr(Value));
-        }
+        public override IEnumerable<string> GetDynamicMemberNames() =>
+            godot_icall_DynamicGodotObject_SetMemberList(Object.GetPtr(Value));
 
         public override bool TryBinaryOperation(BinaryOperationBinder binder, object arg, out object result)
         {
@@ -152,15 +150,11 @@ namespace Godot
             return base.TryGetIndex(binder, indexes, out result);
         }
 
-        public override bool TryGetMember(GetMemberBinder binder, out object result)
-        {
-            return godot_icall_DynamicGodotObject_GetMember(Object.GetPtr(Value), binder.Name, out result);
-        }
+        public override bool TryGetMember(GetMemberBinder binder, out object result) =>
+            godot_icall_DynamicGodotObject_GetMember(Object.GetPtr(Value), binder.Name, out result);
 
-        public override bool TryInvokeMember(InvokeMemberBinder binder, object[] args, out object result)
-        {
-            return godot_icall_DynamicGodotObject_InvokeMember(Object.GetPtr(Value), binder.Name, args, out result);
-        }
+        public override bool TryInvokeMember(InvokeMemberBinder binder, object[] args, out object result) =>
+            godot_icall_DynamicGodotObject_InvokeMember(Object.GetPtr(Value), binder.Name, args, out result);
 
         public override bool TrySetIndex(SetIndexBinder binder, object[] indexes, object value)
         {
@@ -175,22 +169,23 @@ namespace Godot
             return base.TrySetIndex(binder, indexes, value);
         }
 
-        public override bool TrySetMember(SetMemberBinder binder, object value)
-        {
-            return godot_icall_DynamicGodotObject_SetMember(Object.GetPtr(Value), binder.Name, value);
-        }
+        public override bool TrySetMember(SetMemberBinder binder, object value) =>
+            godot_icall_DynamicGodotObject_SetMember(Object.GetPtr(Value), binder.Name, value);
 
         [MethodImpl(MethodImplOptions.InternalCall)]
-        internal extern static string[] godot_icall_DynamicGodotObject_SetMemberList(IntPtr godotObject);
+        internal static extern string[] godot_icall_DynamicGodotObject_SetMemberList(IntPtr godotObject);
 
         [MethodImpl(MethodImplOptions.InternalCall)]
-        internal extern static bool godot_icall_DynamicGodotObject_InvokeMember(IntPtr godotObject, string name, object[] args, out object result);
+        internal static extern bool godot_icall_DynamicGodotObject_InvokeMember(IntPtr godotObject, string name,
+            object[] args, out object result);
 
         [MethodImpl(MethodImplOptions.InternalCall)]
-        internal extern static bool godot_icall_DynamicGodotObject_GetMember(IntPtr godotObject, string name, out object result);
+        internal static extern bool godot_icall_DynamicGodotObject_GetMember(IntPtr godotObject, string name,
+            out object result);
 
         [MethodImpl(MethodImplOptions.InternalCall)]
-        internal extern static bool godot_icall_DynamicGodotObject_SetMember(IntPtr godotObject, string name, object value);
+        internal static extern bool godot_icall_DynamicGodotObject_SetMember(IntPtr godotObject, string name,
+            object value);
 
         #region We don't override these methods
 

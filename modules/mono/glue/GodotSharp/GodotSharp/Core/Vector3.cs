@@ -109,54 +109,40 @@ namespace Godot
         /// Returns a new vector with all components in absolute values (i.e. positive).
         /// </summary>
         /// <returns>A vector with <see cref="Mathf.Abs(real_t)"/> called on each component.</returns>
-        public Vector3 Abs()
-        {
-            return new Vector3(Mathf.Abs(x), Mathf.Abs(y), Mathf.Abs(z));
-        }
+        public Vector3 Abs() => new Vector3(Mathf.Abs(x), Mathf.Abs(y), Mathf.Abs(z));
 
         /// <summary>
         /// Returns the minimum angle to the given vector, in radians.
         /// </summary>
         /// <param name="to">The other vector to compare this vector to.</param>
         /// <returns>The angle between the two vectors, in radians.</returns>
-        public real_t AngleTo(Vector3 to)
-        {
-            return Mathf.Atan2(Cross(to).Length(), Dot(to));
-        }
+        public real_t AngleTo(Vector3 to) => Mathf.Atan2(Cross(to).Length(), Dot(to));
 
         /// <summary>
         /// Returns this vector "bounced off" from a plane defined by the given normal.
         /// </summary>
         /// <param name="normal">The normal vector defining the plane to bounce off. Must be normalized.</param>
         /// <returns>The bounced vector.</returns>
-        public Vector3 Bounce(Vector3 normal)
-        {
-            return -Reflect(normal);
-        }
+        public Vector3 Bounce(Vector3 normal) => -Reflect(normal);
 
         /// <summary>
         /// Returns a new vector with all components rounded up (towards positive infinity).
         /// </summary>
         /// <returns>A vector with <see cref="Mathf.Ceil"/> called on each component.</returns>
-        public Vector3 Ceil()
-        {
-            return new Vector3(Mathf.Ceil(x), Mathf.Ceil(y), Mathf.Ceil(z));
-        }
+        public Vector3 Ceil() => new Vector3(Mathf.Ceil(x), Mathf.Ceil(y), Mathf.Ceil(z));
 
         /// <summary>
         /// Returns the cross product of this vector and `b`.
         /// </summary>
         /// <param name="b">The other vector.</param>
         /// <returns>The cross product vector.</returns>
-        public Vector3 Cross(Vector3 b)
-        {
-            return new Vector3
+        public Vector3 Cross(Vector3 b) =>
+            new Vector3
             (
-                y * b.z - z * b.y,
-                z * b.x - x * b.z,
-                x * b.y - y * b.x
+                (y * b.z) - (z * b.y),
+                (z * b.x) - (x * b.z),
+                (x * b.y) - (y * b.x)
             );
-        }
 
         /// <summary>
         /// Performs a cubic interpolation between vectors `preA`, this vector,
@@ -179,9 +165,9 @@ namespace Godot
             real_t t3 = t2 * t;
 
             return 0.5f * (
-                p1 * 2.0f + (-p0 + p2) * t +
-                (2.0f * p0 - 5.0f * p1 + 4f * p2 - p3) * t2 +
-                (-p0 + 3.0f * p1 - 3.0f * p2 + p3) * t3
+                (p1 * 2.0f) + ((-p0 + p2) * t) +
+                (((2.0f * p0) - (5.0f * p1) + (4f * p2) - p3) * t2) +
+                ((-p0 + (3.0f * p1) - (3.0f * p2) + p3) * t3)
             );
         }
 
@@ -190,10 +176,7 @@ namespace Godot
         /// </summary>
         /// <param name="b">The other vector to point towards.</param>
         /// <returns>The direction from this vector to `b`.</returns>
-        public Vector3 DirectionTo(Vector3 b)
-        {
-            return new Vector3(b.x - x, b.y - y, b.z - z).Normalized();
-        }
+        public Vector3 DirectionTo(Vector3 b) => new Vector3(b.x - x, b.y - y, b.z - z).Normalized();
 
         /// <summary>
         /// Returns the squared distance between this vector and `b`.
@@ -202,57 +185,39 @@ namespace Godot
         /// </summary>
         /// <param name="b">The other vector to use.</param>
         /// <returns>The squared distance between the two vectors.</returns>
-        public real_t DistanceSquaredTo(Vector3 b)
-        {
-            return (b - this).LengthSquared();
-        }
+        public real_t DistanceSquaredTo(Vector3 b) => (b - this).LengthSquared();
 
         /// <summary>
         /// Returns the distance between this vector and `b`.
         /// </summary>
         /// <param name="b">The other vector to use.</param>
         /// <returns>The distance between the two vectors.</returns>
-        public real_t DistanceTo(Vector3 b)
-        {
-            return (b - this).Length();
-        }
+        public real_t DistanceTo(Vector3 b) => (b - this).Length();
 
         /// <summary>
         /// Returns the dot product of this vector and `b`.
         /// </summary>
         /// <param name="b">The other vector to use.</param>
         /// <returns>The dot product of the two vectors.</returns>
-        public real_t Dot(Vector3 b)
-        {
-            return x * b.x + y * b.y + z * b.z;
-        }
+        public real_t Dot(Vector3 b) => (x * b.x) + (y * b.y) + (z * b.z);
 
         /// <summary>
         /// Returns a new vector with all components rounded down (towards negative infinity).
         /// </summary>
         /// <returns>A vector with <see cref="Mathf.Floor"/> called on each component.</returns>
-        public Vector3 Floor()
-        {
-            return new Vector3(Mathf.Floor(x), Mathf.Floor(y), Mathf.Floor(z));
-        }
+        public Vector3 Floor() => new Vector3(Mathf.Floor(x), Mathf.Floor(y), Mathf.Floor(z));
 
         /// <summary>
         /// Returns the inverse of this vector. This is the same as `new Vector3(1 / v.x, 1 / v.y, 1 / v.z)`.
         /// </summary>
         /// <returns>The inverse of this vector.</returns>
-        public Vector3 Inverse()
-        {
-            return new Vector3(1 / x, 1 / y, 1 / z);
-        }
+        public Vector3 Inverse() => new Vector3(1 / x, 1 / y, 1 / z);
 
         /// <summary>
         /// Returns true if the vector is normalized, and false otherwise.
         /// </summary>
         /// <returns>A bool indicating whether or not the vector is normalized.</returns>
-        public bool IsNormalized()
-        {
-            return Mathf.Abs(LengthSquared() - 1.0f) < Mathf.Epsilon;
-        }
+        public bool IsNormalized() => Mathf.Abs(LengthSquared() - 1.0f) < Mathf.Epsilon;
 
         /// <summary>
         /// Returns the length (magnitude) of this vector.
@@ -289,15 +254,13 @@ namespace Godot
         /// <param name="to">The destination vector for interpolation.</param>
         /// <param name="weight">A value on the range of 0.0 to 1.0, representing the amount of interpolation.</param>
         /// <returns>The resulting vector of the interpolation.</returns>
-        public Vector3 LinearInterpolate(Vector3 to, real_t weight)
-        {
-            return new Vector3
+        public Vector3 LinearInterpolate(Vector3 to, real_t weight) =>
+            new Vector3
             (
                 Mathf.Lerp(x, to.x, weight),
                 Mathf.Lerp(y, to.y, weight),
                 Mathf.Lerp(z, to.z, weight)
             );
-        }
 
         /// <summary>
         /// Returns the result of the linear interpolation between
@@ -306,35 +269,27 @@ namespace Godot
         /// <param name="to">The destination vector for interpolation.</param>
         /// <param name="weight">A vector with components on the range of 0.0 to 1.0, representing the amount of interpolation.</param>
         /// <returns>The resulting vector of the interpolation.</returns>
-        public Vector3 LinearInterpolate(Vector3 to, Vector3 weight)
-        {
-            return new Vector3
+        public Vector3 LinearInterpolate(Vector3 to, Vector3 weight) =>
+            new Vector3
             (
                 Mathf.Lerp(x, to.x, weight.x),
                 Mathf.Lerp(y, to.y, weight.y),
                 Mathf.Lerp(z, to.z, weight.z)
             );
-        }
 
         /// <summary>
         /// Returns the axis of the vector's largest value. See <see cref="Axis"/>.
         /// If all components are equal, this method returns <see cref="Axis.X"/>.
         /// </summary>
         /// <returns>The index of the largest axis.</returns>
-        public Axis MaxAxis()
-        {
-            return x < y ? (y < z ? Axis.Z : Axis.Y) : (x < z ? Axis.Z : Axis.X);
-        }
+        public Axis MaxAxis() => x < y ? (y < z ? Axis.Z : Axis.Y) : (x < z ? Axis.Z : Axis.X);
 
         /// <summary>
         /// Returns the axis of the vector's smallest value. See <see cref="Axis"/>.
         /// If all components are equal, this method returns <see cref="Axis.Z"/>.
         /// </summary>
         /// <returns>The index of the smallest axis.</returns>
-        public Axis MinAxis()
-        {
-            return x < y ? (x < z ? Axis.X : Axis.Z) : (y < z ? Axis.Y : Axis.Z);
-        }
+        public Axis MinAxis() => x < y ? (x < z ? Axis.X : Axis.Z) : (y < z ? Axis.Y : Axis.Z);
 
         /// <summary>
         /// Moves this vector toward `to` by the fixed `delta` amount.
@@ -344,10 +299,10 @@ namespace Godot
         /// <returns>The resulting vector.</returns>
         public Vector3 MoveToward(Vector3 to, real_t delta)
         {
-            var v = this;
-            var vd = to - v;
-            var len = vd.Length();
-            return len <= delta || len < Mathf.Epsilon ? to : v + vd / len * delta;
+            Vector3 v = this;
+            Vector3 vd = to - v;
+            float len = vd.Length();
+            return len <= delta || len < Mathf.Epsilon ? to : v + (vd / len * delta);
         }
 
         /// <summary>
@@ -356,7 +311,7 @@ namespace Godot
         /// <returns>A normalized version of the vector.</returns>
         public Vector3 Normalized()
         {
-            var v = this;
+            Vector3 v = this;
             v.Normalize();
             return v;
         }
@@ -366,14 +321,12 @@ namespace Godot
         /// </summary>
         /// <param name="b">The other vector.</param>
         /// <returns>A <see cref="Basis"/> representing the outer product matrix.</returns>
-        public Basis Outer(Vector3 b)
-        {
-            return new Basis(
+        public Basis Outer(Vector3 b) =>
+            new Basis(
                 x * b.x, x * b.y, x * b.z,
                 y * b.x, y * b.y, y * b.z,
                 z * b.x, z * b.y, z * b.z
             );
-        }
 
         /// <summary>
         /// Returns a vector composed of the <see cref="Mathf.PosMod(real_t, real_t)"/> of this vector's components and `mod`.
@@ -408,10 +361,7 @@ namespace Godot
         /// </summary>
         /// <param name="onNormal">The vector to project onto.</param>
         /// <returns>The projected vector.</returns>
-        public Vector3 Project(Vector3 onNormal)
-        {
-            return onNormal * (Dot(onNormal) / onNormal.LengthSquared());
-        }
+        public Vector3 Project(Vector3 onNormal) => onNormal * (Dot(onNormal) / onNormal.LengthSquared());
 
         /// <summary>
         /// Returns this vector reflected from a plane defined by the given `normal`.
@@ -426,7 +376,7 @@ namespace Godot
                 throw new ArgumentException("Argument  is not normalized", nameof(normal));
             }
 #endif
-            return 2.0f * Dot(normal) * normal - this;
+            return (2.0f * Dot(normal) * normal) - this;
         }
 
         /// <summary>
@@ -452,12 +402,11 @@ namespace Godot
         /// with halfway cases rounded towards the nearest multiple of two.
         /// </summary>
         /// <returns>The rounded vector.</returns>
-        public Vector3 Round()
-        {
-            return new Vector3(Mathf.Round(x), Mathf.Round(y), Mathf.Round(z));
-        }
+        public Vector3 Round() => new Vector3(Mathf.Round(x), Mathf.Round(y), Mathf.Round(z));
 
-        [Obsolete("Set is deprecated. Use the Vector3(" + nameof(real_t) + ", " + nameof(real_t) + ", " + nameof(real_t) + ") constructor instead.", error: true)]
+        [Obsolete(
+            "Set is deprecated. Use the Vector3(" + nameof(real_t) + ", " + nameof(real_t) + ", " + nameof(real_t) +
+            ") constructor instead.", error: true)]
         public void Set(real_t x, real_t y, real_t z)
         {
             this.x = x;
@@ -519,10 +468,7 @@ namespace Godot
         /// </summary>
         /// <param name="normal">The normal vector defining the plane to slide on.</param>
         /// <returns>The slid vector.</returns>
-        public Vector3 Slide(Vector3 normal)
-        {
-            return this - normal * Dot(normal);
-        }
+        public Vector3 Slide(Vector3 normal) => this - (normal * Dot(normal));
 
         /// <summary>
         /// Returns this vector with each component snapped to the nearest multiple of `step`.
@@ -530,15 +476,13 @@ namespace Godot
         /// </summary>
         /// <param name="step">A vector value representing the step size to snap to.</param>
         /// <returns>The snapped vector.</returns>
-        public Vector3 Snapped(Vector3 step)
-        {
-            return new Vector3
+        public Vector3 Snapped(Vector3 step) =>
+            new Vector3
             (
                 Mathf.Stepify(x, step.x),
                 Mathf.Stepify(y, step.y),
                 Mathf.Stepify(z, step.z)
             );
-        }
 
         /// <summary>
         /// Returns a diagonal matrix with the vector as main diagonal.
@@ -547,14 +491,12 @@ namespace Godot
         /// this vector's components set as the scale.
         /// </summary>
         /// <returns>A Basis with the vector as its main diagonal.</returns>
-        public Basis ToDiagonalMatrix()
-        {
-            return new Basis(
+        public Basis ToDiagonalMatrix() =>
+            new Basis(
                 x, 0, 0,
                 0, y, 0,
                 0, 0, z
             );
-        }
 
         // Constants
         private static readonly Vector3 _zero = new Vector3(0, 0, 0);
@@ -573,65 +515,65 @@ namespace Godot
         /// Zero vector, a vector with all components set to `0`.
         /// </summary>
         /// <value>Equivalent to `new Vector3(0, 0, 0)`</value>
-        public static Vector3 Zero { get { return _zero; } }
+        public static Vector3 Zero => _zero;
 
         /// <summary>
         /// One vector, a vector with all components set to `1`.
         /// </summary>
         /// <value>Equivalent to `new Vector3(1, 1, 1)`</value>
-        public static Vector3 One { get { return _one; } }
+        public static Vector3 One => _one;
 
         /// <summary>
         /// Deprecated, please use a negative sign with <see cref="One"/> instead.
         /// </summary>
         /// <value>Equivalent to `new Vector3(-1, -1, -1)`</value>
-        public static Vector3 NegOne { get { return _negOne; } }
+        public static Vector3 NegOne => _negOne;
 
         /// <summary>
         /// Infinity vector, a vector with all components set to `Mathf.Inf`.
         /// </summary>
         /// <value>Equivalent to `new Vector3(Mathf.Inf, Mathf.Inf, Mathf.Inf)`</value>
-        public static Vector3 Inf { get { return _inf; } }
+        public static Vector3 Inf => _inf;
 
         /// <summary>
         /// Up unit vector.
         /// </summary>
         /// <value>Equivalent to `new Vector3(0, 1, 0)`</value>
-        public static Vector3 Up { get { return _up; } }
+        public static Vector3 Up => _up;
 
         /// <summary>
         /// Down unit vector.
         /// </summary>
         /// <value>Equivalent to `new Vector3(0, -1, 0)`</value>
-        public static Vector3 Down { get { return _down; } }
+        public static Vector3 Down => _down;
 
         /// <summary>
         /// Right unit vector. Represents the local direction of right,
         /// and the global direction of east.
         /// </summary>
         /// <value>Equivalent to `new Vector3(1, 0, 0)`</value>
-        public static Vector3 Right { get { return _right; } }
+        public static Vector3 Right => _right;
 
         /// <summary>
         /// Left unit vector. Represents the local direction of left,
         /// and the global direction of west.
         /// </summary>
         /// <value>Equivalent to `new Vector3(-1, 0, 0)`</value>
-        public static Vector3 Left { get { return _left; } }
+        public static Vector3 Left => _left;
 
         /// <summary>
         /// Forward unit vector. Represents the local direction of forward,
         /// and the global direction of north.
         /// </summary>
         /// <value>Equivalent to `new Vector3(0, 0, -1)`</value>
-        public static Vector3 Forward { get { return _forward; } }
+        public static Vector3 Forward => _forward;
 
         /// <summary>
         /// Back unit vector. Represents the local direction of back,
         /// and the global direction of south.
         /// </summary>
         /// <value>Equivalent to `new Vector3(0, 0, 1)`</value>
-        public static Vector3 Back { get { return _back; } }
+        public static Vector3 Back => _back;
 
         /// <summary>
         /// Constructs a new <see cref="Vector3"/> with the given components.
@@ -737,15 +679,9 @@ namespace Godot
             return vec;
         }
 
-        public static bool operator ==(Vector3 left, Vector3 right)
-        {
-            return left.Equals(right);
-        }
+        public static bool operator ==(Vector3 left, Vector3 right) => left.Equals(right);
 
-        public static bool operator !=(Vector3 left, Vector3 right)
-        {
-            return !left.Equals(right);
-        }
+        public static bool operator !=(Vector3 left, Vector3 right) => !left.Equals(right);
 
         public static bool operator <(Vector3 left, Vector3 right)
         {
@@ -817,10 +753,7 @@ namespace Godot
             return false;
         }
 
-        public bool Equals(Vector3 other)
-        {
-            return x == other.x && y == other.y && z == other.z;
-        }
+        public bool Equals(Vector3 other) => x == other.x && y == other.y && z == other.z;
 
         /// <summary>
         /// Returns true if this vector and `other` are approximately equal, by running
@@ -828,34 +761,25 @@ namespace Godot
         /// </summary>
         /// <param name="other">The other vector to compare.</param>
         /// <returns>Whether or not the vectors are approximately equal.</returns>
-        public bool IsEqualApprox(Vector3 other)
-        {
-            return Mathf.IsEqualApprox(x, other.x) && Mathf.IsEqualApprox(y, other.y) && Mathf.IsEqualApprox(z, other.z);
-        }
+        public bool IsEqualApprox(Vector3 other) => Mathf.IsEqualApprox(x, other.x) &&
+                                                    Mathf.IsEqualApprox(y, other.y) && Mathf.IsEqualApprox(z, other.z);
 
-        public override int GetHashCode()
-        {
-            return y.GetHashCode() ^ x.GetHashCode() ^ z.GetHashCode();
-        }
+        public override int GetHashCode() => y.GetHashCode() ^ x.GetHashCode() ^ z.GetHashCode();
 
-        public override string ToString()
-        {
-            return String.Format("({0}, {1}, {2})", new object[]
+        public override string ToString() =>
+            string.Format("({0}, {1}, {2})", new object[]
             {
                 x.ToString(),
                 y.ToString(),
                 z.ToString()
             });
-        }
 
-        public string ToString(string format)
-        {
-            return String.Format("({0}, {1}, {2})", new object[]
+        public string ToString(string format) =>
+            string.Format("({0}, {1}, {2})", new object[]
             {
                 x.ToString(format),
                 y.ToString(format),
                 z.ToString(format)
             });
-        }
     }
 }

@@ -7,11 +7,8 @@ namespace Godot
     {
         private string methodName;
 
-        public string MethodName { get { return methodName; } }
+        public string MethodName => methodName;
 
-        public GodotMethodAttribute(string methodName)
-        {
-            this.methodName = methodName;
-        }
+        public GodotMethodAttribute(string methodName) => this.methodName = methodName;
     }
 }

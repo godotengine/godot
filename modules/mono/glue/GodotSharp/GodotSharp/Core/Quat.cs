@@ -98,10 +98,7 @@ namespace Godot
         /// Returns the length (magnitude) of the quaternion.
         /// </summary>
         /// <value>Equivalent to `Mathf.Sqrt(LengthSquared)`.</value>
-        public real_t Length
-        {
-            get { return Mathf.Sqrt(LengthSquared); }
-        }
+        public real_t Length => Mathf.Sqrt(LengthSquared);
 
         /// <summary>
         /// Returns the squared length (squared magnitude) of the quaternion.
@@ -109,10 +106,7 @@ namespace Godot
         /// you need to compare quaternions or need the squared length for some formula.
         /// </summary>
         /// <value>Equivalent to `Dot(this)`.</value>
-        public real_t LengthSquared
-        {
-            get { return Dot(this); }
-        }
+        public real_t LengthSquared => Dot(this);
 
         /// <summary>
         /// Performs a cubic spherical interpolation between quaternions `preA`,
@@ -137,10 +131,7 @@ namespace Godot
         /// </summary>
         /// <param name="b">The other quaternion.</param>
         /// <returns>The dot product.</returns>
-        public real_t Dot(Quat b)
-        {
-            return x * b.x + y * b.y + z * b.z + w * b.w;
-        }
+        public real_t Dot(Quat b) => (x * b.x) + (y * b.y) + (z * b.z) + (w * b.w);
 
         /// <summary>
         /// Returns Euler angles (in the YXZ convention: when decomposing,
@@ -180,21 +171,17 @@ namespace Godot
         /// Returns whether the quaternion is normalized or not.
         /// </summary>
         /// <returns>A bool for whether the quaternion is normalized or not.</returns>
-        public bool IsNormalized()
-        {
-            return Mathf.Abs(LengthSquared - 1) <= Mathf.Epsilon;
-        }
+        public bool IsNormalized() => Mathf.Abs(LengthSquared - 1) <= Mathf.Epsilon;
 
         /// <summary>
         /// Returns a copy of the quaternion, normalized to unit length.
         /// </summary>
         /// <returns>The normalized quaternion.</returns>
-        public Quat Normalized()
-        {
-            return this / Length;
-        }
+        public Quat Normalized() => this / Length;
 
-        [Obsolete("Set is deprecated. Use the Quat(" + nameof(real_t) + ", " + nameof(real_t) + ", " + nameof(real_t) + ", " + nameof(real_t) + ") constructor instead.", error: true)]
+        [Obsolete(
+            "Set is deprecated. Use the Quat(" + nameof(real_t) + ", " + nameof(real_t) + ", " + nameof(real_t) + ", " +
+            nameof(real_t) + ") constructor instead.", error: true)]
         public void Set(real_t x, real_t y, real_t z, real_t w)
         {
             this.x = x;
@@ -204,22 +191,15 @@ namespace Godot
         }
 
         [Obsolete("Set is deprecated. Use the Quat(" + nameof(Quat) + ") constructor instead.", error: true)]
-        public void Set(Quat q)
-        {
-            this = q;
-        }
+        public void Set(Quat q) => this = q;
 
-        [Obsolete("SetAxisAngle is deprecated. Use the Quat(" + nameof(Vector3) + ", " + nameof(real_t) + ") constructor instead.", error: true)]
-        public void SetAxisAngle(Vector3 axis, real_t angle)
-        {
-            this = new Quat(axis, angle);
-        }
+        [Obsolete(
+            "SetAxisAngle is deprecated. Use the Quat(" + nameof(Vector3) + ", " + nameof(real_t) +
+            ") constructor instead.", error: true)]
+        public void SetAxisAngle(Vector3 axis, real_t angle) => this = new Quat(axis, angle);
 
         [Obsolete("SetEuler is deprecated. Use the Quat(" + nameof(Vector3) + ") constructor instead.", error: true)]
-        public void SetEuler(Vector3 eulerYXZ)
-        {
-            this = new Quat(eulerYXZ);
-        }
+        public void SetEuler(Vector3 eulerYXZ) => this = new Quat(eulerYXZ);
 
         /// <summary>
         /// Returns the result of the spherical linear interpolation between
@@ -245,7 +225,7 @@ namespace Godot
 #endif
 
             // Calculate cosine.
-            real_t cosom = x * to.x + y * to.y + z * to.z + w * to.w;
+            real_t cosom = (x * to.x) + (y * to.y) + (z * to.z) + (w * to.w);
 
             var to1 = new Quat();
 
@@ -287,10 +267,10 @@ namespace Godot
             // Calculate final values.
             return new Quat
             (
-                scale0 * x + scale1 * to1.x,
-                scale0 * y + scale1 * to1.y,
-                scale0 * z + scale1 * to1.z,
-                scale0 * w + scale1 * to1.w
+                (scale0 * x) + (scale1 * to1.x),
+                (scale0 * y) + (scale1 * to1.y),
+                (scale0 * z) + (scale1 * to1.z),
+                (scale0 * w) + (scale1 * to1.w)
             );
         }
 
@@ -318,10 +298,10 @@ namespace Godot
 
             return new Quat
             (
-                invFactor * x + newFactor * to.x,
-                invFactor * y + newFactor * to.y,
-                invFactor * z + newFactor * to.z,
-                invFactor * w + newFactor * to.w
+                (invFactor * x) + (newFactor * to.x),
+                (invFactor * y) + (newFactor * to.y),
+                (invFactor * z) + (newFactor * to.z),
+                (invFactor * w) + (newFactor * to.w)
             );
         }
 
@@ -340,7 +320,7 @@ namespace Godot
 #endif
             var u = new Vector3(x, y, z);
             Vector3 uv = u.Cross(v);
-            return v + ((uv * w) + u.Cross(uv)) * 2;
+            return v + (((uv * w) + u.Cross(uv)) * 2);
         }
 
         // Constants
@@ -352,7 +332,7 @@ namespace Godot
         /// an identity quaternion, it will not change.
         /// </summary>
         /// <value>Equivalent to `new Quat(0, 0, 0, 1)`.</value>
-        public static Quat Identity { get { return _identity; } }
+        public static Quat Identity => _identity;
 
         /// <summary>
         /// Constructs a quaternion defined by the given values.
@@ -373,19 +353,13 @@ namespace Godot
         /// Constructs a quaternion from the given quaternion.
         /// </summary>
         /// <param name="q">The existing quaternion.</param>
-        public Quat(Quat q)
-        {
-            this = q;
-        }
+        public Quat(Quat q) => this = q;
 
         /// <summary>
         /// Constructs a quaternion from the given <see cref="Basis"/>.
         /// </summary>
         /// <param name="basis">The basis to construct from.</param>
-        public Quat(Basis basis)
-        {
-            this = basis.Quat();
-        }
+        public Quat(Basis basis) => this = basis.Quat();
 
         /// <summary>
         /// Constructs a quaternion that will perform a rotation specified by
@@ -396,25 +370,25 @@ namespace Godot
         /// <param name="eulerYXZ"></param>
         public Quat(Vector3 eulerYXZ)
         {
-            real_t half_a1 = eulerYXZ.y * 0.5f;
-            real_t half_a2 = eulerYXZ.x * 0.5f;
-            real_t half_a3 = eulerYXZ.z * 0.5f;
+            real_t halfA1 = eulerYXZ.y * 0.5f;
+            real_t halfA2 = eulerYXZ.x * 0.5f;
+            real_t halfA3 = eulerYXZ.z * 0.5f;
 
             // R = Y(a1).X(a2).Z(a3) convention for Euler angles.
             // Conversion to quaternion as listed in https://ntrs.nasa.gov/archive/nasa/casi.ntrs.nasa.gov/19770024290.pdf (page A-6)
             // a3 is the angle of the first rotation, following the notation in this reference.
 
-            real_t cos_a1 = Mathf.Cos(half_a1);
-            real_t sin_a1 = Mathf.Sin(half_a1);
-            real_t cos_a2 = Mathf.Cos(half_a2);
-            real_t sin_a2 = Mathf.Sin(half_a2);
-            real_t cos_a3 = Mathf.Cos(half_a3);
-            real_t sin_a3 = Mathf.Sin(half_a3);
+            real_t cosA1 = Mathf.Cos(halfA1);
+            real_t sinA1 = Mathf.Sin(halfA1);
+            real_t cosA2 = Mathf.Cos(halfA2);
+            real_t sinA2 = Mathf.Sin(halfA2);
+            real_t cosA3 = Mathf.Cos(halfA3);
+            real_t sinA3 = Mathf.Sin(halfA3);
 
-            x = sin_a1 * cos_a2 * sin_a3 + cos_a1 * sin_a2 * cos_a3;
-            y = sin_a1 * cos_a2 * cos_a3 - cos_a1 * sin_a2 * sin_a3;
-            z = cos_a1 * cos_a2 * sin_a3 - sin_a1 * sin_a2 * cos_a3;
-            w = sin_a1 * sin_a2 * sin_a3 + cos_a1 * cos_a2 * cos_a3;
+            x = (sinA1 * cosA2 * sinA3) + (cosA1 * sinA2 * cosA3);
+            y = (sinA1 * cosA2 * cosA3) - (cosA1 * sinA2 * sinA3);
+            z = (cosA1 * cosA2 * sinA3) - (sinA1 * sinA2 * cosA3);
+            w = (sinA1 * sinA2 * sinA3) + (cosA1 * cosA2 * cosA3);
         }
 
         /// <summary>
@@ -454,78 +428,52 @@ namespace Godot
             }
         }
 
-        public static Quat operator *(Quat left, Quat right)
-        {
-            return new Quat
+        public static Quat operator *(Quat left, Quat right) =>
+            new Quat
             (
-                left.w * right.x + left.x * right.w + left.y * right.z - left.z * right.y,
-                left.w * right.y + left.y * right.w + left.z * right.x - left.x * right.z,
-                left.w * right.z + left.z * right.w + left.x * right.y - left.y * right.x,
-                left.w * right.w - left.x * right.x - left.y * right.y - left.z * right.z
+                (left.w * right.x) + (left.x * right.w) + (left.y * right.z) - (left.z * right.y),
+                (left.w * right.y) + (left.y * right.w) + (left.z * right.x) - (left.x * right.z),
+                (left.w * right.z) + (left.z * right.w) + (left.x * right.y) - (left.y * right.x),
+                (left.w * right.w) - (left.x * right.x) - (left.y * right.y) - (left.z * right.z)
             );
-        }
 
-        public static Quat operator +(Quat left, Quat right)
-        {
-            return new Quat(left.x + right.x, left.y + right.y, left.z + right.z, left.w + right.w);
-        }
+        public static Quat operator +(Quat left, Quat right) =>
+            new Quat(left.x + right.x, left.y + right.y, left.z + right.z, left.w + right.w);
 
-        public static Quat operator -(Quat left, Quat right)
-        {
-            return new Quat(left.x - right.x, left.y - right.y, left.z - right.z, left.w - right.w);
-        }
+        public static Quat operator -(Quat left, Quat right) =>
+            new Quat(left.x - right.x, left.y - right.y, left.z - right.z, left.w - right.w);
 
-        public static Quat operator -(Quat left)
-        {
-            return new Quat(-left.x, -left.y, -left.z, -left.w);
-        }
+        public static Quat operator -(Quat left) => new Quat(-left.x, -left.y, -left.z, -left.w);
 
-        public static Quat operator *(Quat left, Vector3 right)
-        {
-            return new Quat
+        public static Quat operator *(Quat left, Vector3 right) =>
+            new Quat
             (
-                left.w * right.x + left.y * right.z - left.z * right.y,
-                left.w * right.y + left.z * right.x - left.x * right.z,
-                left.w * right.z + left.x * right.y - left.y * right.x,
-                -left.x * right.x - left.y * right.y - left.z * right.z
+                (left.w * right.x) + (left.y * right.z) - (left.z * right.y),
+                (left.w * right.y) + (left.z * right.x) - (left.x * right.z),
+                (left.w * right.z) + (left.x * right.y) - (left.y * right.x),
+                (-left.x * right.x) - (left.y * right.y) - (left.z * right.z)
             );
-        }
 
-        public static Quat operator *(Vector3 left, Quat right)
-        {
-            return new Quat
+        public static Quat operator *(Vector3 left, Quat right) =>
+            new Quat
             (
-                right.w * left.x + right.y * left.z - right.z * left.y,
-                right.w * left.y + right.z * left.x - right.x * left.z,
-                right.w * left.z + right.x * left.y - right.y * left.x,
-                -right.x * left.x - right.y * left.y - right.z * left.z
+                (right.w * left.x) + (right.y * left.z) - (right.z * left.y),
+                (right.w * left.y) + (right.z * left.x) - (right.x * left.z),
+                (right.w * left.z) + (right.x * left.y) - (right.y * left.x),
+                (-right.x * left.x) - (right.y * left.y) - (right.z * left.z)
             );
-        }
 
-        public static Quat operator *(Quat left, real_t right)
-        {
-            return new Quat(left.x * right, left.y * right, left.z * right, left.w * right);
-        }
+        public static Quat operator *(Quat left, real_t right) =>
+            new Quat(left.x * right, left.y * right, left.z * right, left.w * right);
 
-        public static Quat operator *(real_t left, Quat right)
-        {
-            return new Quat(right.x * left, right.y * left, right.z * left, right.w * left);
-        }
+        public static Quat operator *(real_t left, Quat right) =>
+            new Quat(right.x * left, right.y * left, right.z * left, right.w * left);
 
-        public static Quat operator /(Quat left, real_t right)
-        {
-            return left * (1.0f / right);
-        }
+        public static Quat operator /(Quat left, real_t right) => left * (1.0f / right);
 
-        public static bool operator ==(Quat left, Quat right)
-        {
-            return left.Equals(right);
-        }
+        public static bool operator ==(Quat left, Quat right) => left.Equals(right);
 
-        public static bool operator !=(Quat left, Quat right)
-        {
-            return !left.Equals(right);
-        }
+        public static bool operator !=(Quat left, Quat right) => !left.Equals(right);
 
         public override bool Equals(object obj)
         {
@@ -537,10 +485,7 @@ namespace Godot
             return false;
         }
 
-        public bool Equals(Quat other)
-        {
-            return x == other.x && y == other.y && z == other.z && w == other.w;
-        }
+        public bool Equals(Quat other) => x == other.x && y == other.y && z == other.z && w == other.w;
 
         /// <summary>
         /// Returns true if this quaternion and `other` are approximately equal, by running
@@ -548,24 +493,15 @@ namespace Godot
         /// </summary>
         /// <param name="other">The other quaternion to compare.</param>
         /// <returns>Whether or not the quaternions are approximately equal.</returns>
-        public bool IsEqualApprox(Quat other)
-        {
-            return Mathf.IsEqualApprox(x, other.x) && Mathf.IsEqualApprox(y, other.y) && Mathf.IsEqualApprox(z, other.z) && Mathf.IsEqualApprox(w, other.w);
-        }
+        public bool IsEqualApprox(Quat other) => Mathf.IsEqualApprox(x, other.x) && Mathf.IsEqualApprox(y, other.y) &&
+                                                 Mathf.IsEqualApprox(z, other.z) && Mathf.IsEqualApprox(w, other.w);
 
-        public override int GetHashCode()
-        {
-            return y.GetHashCode() ^ x.GetHashCode() ^ z.GetHashCode() ^ w.GetHashCode();
-        }
+        public override int GetHashCode() => y.GetHashCode() ^ x.GetHashCode() ^ z.GetHashCode() ^ w.GetHashCode();
 
-        public override string ToString()
-        {
-            return String.Format("({0}, {1}, {2}, {3})", x.ToString(), y.ToString(), z.ToString(), w.ToString());
-        }
+        public override string ToString() => string.Format("({0}, {1}, {2}, {3})", x.ToString(), y.ToString(),
+            z.ToString(), w.ToString());
 
-        public string ToString(string format)
-        {
-            return String.Format("({0}, {1}, {2}, {3})", x.ToString(format), y.ToString(format), z.ToString(format), w.ToString(format));
-        }
+        public string ToString(string format) => string.Format("({0}, {1}, {2}, {3})", x.ToString(format),
+            y.ToString(format), z.ToString(format), w.ToString(format));
     }
 }

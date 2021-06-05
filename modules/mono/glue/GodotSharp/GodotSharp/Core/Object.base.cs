@@ -5,7 +5,7 @@ namespace Godot
 {
     public partial class Object : IDisposable
     {
-        private bool disposed = false;
+        private bool _disposed = false;
 
         private const string nativeName = "Object";
 
@@ -18,31 +18,22 @@ namespace Godot
                 ptr = godot_icall_Object_Ctor(this);
         }
 
-        internal Object(bool memoryOwn)
-        {
-            this.memoryOwn = memoryOwn;
-        }
+        internal Object(bool memoryOwn) => this.memoryOwn = memoryOwn;
 
-        public IntPtr NativeInstance
-        {
-            get { return ptr; }
-        }
+        public IntPtr NativeInstance => ptr;
 
         internal static IntPtr GetPtr(Object instance)
         {
             if (instance == null)
                 return IntPtr.Zero;
 
-            if (instance.disposed)
+            if (instance._disposed)
                 throw new ObjectDisposedException(instance.GetType().FullName);
 
             return instance.ptr;
         }
 
-        ~Object()
-        {
-            Dispose(false);
-        }
+        ~Object() => Dispose(false);
 
         public void Dispose()
         {
@@ -52,7 +43,7 @@ namespace Godot
 
         protected virtual void Dispose(bool disposing)
         {
-            if (disposed)
+            if (_disposed)
                 return;
 
             if (ptr != IntPtr.Zero)
@@ -67,16 +58,13 @@ namespace Godot
                     godot_icall_Object_Disposed(this, ptr);
                 }
 
-                this.ptr = IntPtr.Zero;
+                ptr = IntPtr.Zero;
             }
 
-            disposed = true;
+            _disposed = true;
         }
 
-        public override string ToString()
-        {
-            return godot_icall_Object_ToString(GetPtr(this));
-        }
+        public override string ToString() => godot_icall_Object_ToString(GetPtr(this));
 
         /// <summary>
         /// Returns a new <see cref="Godot.SignalAwaiter"/> awaiter configured to complete when the instance
@@ -101,10 +89,7 @@ namespace Godot
         /// }
         /// </code>
         /// </example>
-        public SignalAwaiter ToSignal(Object source, string signal)
-        {
-            return new SignalAwaiter(source, signal, this);
-        }
+        public SignalAwaiter ToSignal(Object source, string signal) => new SignalAwaiter(source, signal, this);
 
         /// <summary>
         /// Gets a new <see cref="Godot.DynamicGodotObject"/> associated with this instance.
@@ -112,19 +97,19 @@ namespace Godot
         public dynamic DynamicObject => new DynamicGodotObject(this);
 
         [MethodImpl(MethodImplOptions.InternalCall)]
-        internal extern static IntPtr godot_icall_Object_Ctor(Object obj);
+        internal static extern IntPtr godot_icall_Object_Ctor(Object obj);
 
         [MethodImpl(MethodImplOptions.InternalCall)]
-        internal extern static void godot_icall_Object_Disposed(Object obj, IntPtr ptr);
+        internal static extern void godot_icall_Object_Disposed(Object obj, IntPtr ptr);
 
         [MethodImpl(MethodImplOptions.InternalCall)]
-        internal extern static void godot_icall_Reference_Disposed(Object obj, IntPtr ptr, bool isFinalizer);
+        internal static extern void godot_icall_Reference_Disposed(Object obj, IntPtr ptr, bool isFinalizer);
 
         [MethodImpl(MethodImplOptions.InternalCall)]
-        internal extern static string godot_icall_Object_ToString(IntPtr ptr);
+        internal static extern string godot_icall_Object_ToString(IntPtr ptr);
 
         // Used by the generated API
         [MethodImpl(MethodImplOptions.InternalCall)]
-        internal extern static IntPtr godot_icall_Object_ClassDB_get_method(string type, string method);
+        internal static extern IntPtr godot_icall_Object_ClassDB_get_method(string type, string method);
     }
 }

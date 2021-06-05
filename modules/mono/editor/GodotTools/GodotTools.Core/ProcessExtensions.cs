@@ -7,7 +7,7 @@ namespace GodotTools.Core
 {
     public static class ProcessExtensions
     {
-        public static async Task WaitForExitAsync(this Process process, CancellationToken cancellationToken = default(CancellationToken))
+        public static async Task WaitForExitAsync(this Process process, CancellationToken cancellationToken = default)
         {
             var tcs = new TaskCompletionSource<bool>();
 

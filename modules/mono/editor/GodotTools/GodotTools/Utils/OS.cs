@@ -13,10 +13,10 @@ namespace GodotTools.Utils
     public static class OS
     {
         [MethodImpl(MethodImplOptions.InternalCall)]
-        static extern string GetPlatformName();
+        private static extern string GetPlatformName();
 
         [MethodImpl(MethodImplOptions.InternalCall)]
-        static extern bool UnixFileHasExecutableAccess(string filePath);
+        private static extern bool UnixFileHasExecutableAccess(string filePath);
 
         public static class Names
         {
@@ -57,15 +57,10 @@ namespace GodotTools.Utils
             [Names.HTML5] = Platforms.HTML5
         };
 
-        private static bool IsOS(string name)
-        {
-            return name.Equals(GetPlatformName(), StringComparison.OrdinalIgnoreCase);
-        }
+        private static bool IsOS(string name) => name.Equals(GetPlatformName(), StringComparison.OrdinalIgnoreCase);
 
-        private static bool IsAnyOS(IEnumerable<string> names)
-        {
-            return names.Any(p => p.Equals(GetPlatformName(), StringComparison.OrdinalIgnoreCase));
-        }
+        private static bool IsAnyOS(IEnumerable<string> names) =>
+            names.Any(p => p.Equals(GetPlatformName(), StringComparison.OrdinalIgnoreCase));
 
         private static readonly Lazy<bool> _isWindows = new Lazy<bool>(() => IsOS(Names.Windows));
         private static readonly Lazy<bool> _isOSX = new Lazy<bool>(() => IsOS(Names.OSX));
@@ -88,16 +83,15 @@ namespace GodotTools.Utils
         public static bool IsiOS => _isiOS.Value;
         public static bool IsHTML5 => _isHTML5.Value;
 
-        private static readonly string[] UnixLikePlatforms = { Names.OSX, Names.X11, Names.Server, Names.Haiku, Names.Android, Names.iOS };
+        private static readonly string[] UnixLikePlatforms =
+            { Names.OSX, Names.X11, Names.Server, Names.Haiku, Names.Android, Names.iOS };
 
         public static bool IsUnixLike => _isUnixLike.Value;
 
         public static char PathSep => IsWindows ? ';' : ':';
 
-        public static string PathWhich([NotNull] string name)
-        {
-            return IsWindows ? PathWhichWindows(name) : PathWhichUnix(name);
-        }
+        public static string PathWhich([NotNull] string name) =>
+            IsWindows ? PathWhichWindows(name) : PathWhichUnix(name);
 
         private static string PathWhichWindows([NotNull] string name)
         {
@@ -110,7 +104,8 @@ namespace GodotTools.Utils
                 searchDirs.AddRange(pathDirs);
 
             string nameExt = Path.GetExtension(name);
-            bool hasPathExt = !string.IsNullOrEmpty(nameExt) && windowsExts.Contains(nameExt, StringComparer.OrdinalIgnoreCase);
+            bool hasPathExt = !string.IsNullOrEmpty(nameExt) &&
+                              windowsExts.Contains(nameExt, StringComparer.OrdinalIgnoreCase);
 
             searchDirs.Add(System.IO.Directory.GetCurrentDirectory()); // last in the list
 
@@ -155,7 +150,7 @@ namespace GodotTools.Utils
                 UseShellExecute = false
             };
 
-            using (Process process = Process.Start(startInfo))
+            using (var process = Process.Start(startInfo))
             {
                 if (process == null)
                     throw new Exception("No process was started");

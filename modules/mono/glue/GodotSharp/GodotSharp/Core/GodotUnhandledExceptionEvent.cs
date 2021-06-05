@@ -13,9 +13,7 @@ namespace Godot
         /// </summary>
         public static event EventHandler<UnhandledExceptionArgs> UnhandledException;
 
-        private static void OnUnhandledException(Exception e)
-        {
+        private static void OnUnhandledException(Exception e) =>
             UnhandledException?.Invoke(null, new UnhandledExceptionArgs(e));
-        }
     }
 }

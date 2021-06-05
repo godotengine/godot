@@ -57,10 +57,10 @@ namespace GodotTools.Ides.Rider
         private static RiderInfo[] CollectAllRiderPathsLinux()
         {
             var installInfos = new List<RiderInfo>();
-            var home = Environment.GetEnvironmentVariable("HOME");
+            string home = Environment.GetEnvironmentVariable("HOME");
             if (!string.IsNullOrEmpty(home))
             {
-                var toolboxRiderRootPath = GetToolboxBaseDir();
+                string toolboxRiderRootPath = GetToolboxBaseDir();
                 installInfos.AddRange(CollectPathsFromToolbox(toolboxRiderRootPath, "bin", "rider.sh", false)
                     .Select(a => new RiderInfo(a, true)).ToList());
 
@@ -69,12 +69,12 @@ namespace GodotTools.Ides.Rider
 
                 if (shortcut.Exists)
                 {
-                    var lines = File.ReadAllLines(shortcut.FullName);
-                    foreach (var line in lines)
+                    string[] lines = File.ReadAllLines(shortcut.FullName);
+                    foreach (string line in lines)
                     {
                         if (!line.StartsWith("Exec=\""))
                             continue;
-                        var path = line.Split('"').Where((item, index) => index == 1).SingleOrDefault();
+                        string path = line.Split('"').Where((item, index) => index == 1).SingleOrDefault();
                         if (string.IsNullOrEmpty(path))
                             continue;
 
@@ -86,7 +86,7 @@ namespace GodotTools.Ides.Rider
             }
 
             // snap install
-            var snapInstallPath = "/snap/rider/current/bin/rider.sh";
+            string snapInstallPath = "/snap/rider/current/bin/rider.sh";
             if (new FileInfo(snapInstallPath).Exists)
                 installInfos.Add(new RiderInfo(snapInstallPath, false));
 
@@ -108,7 +108,7 @@ namespace GodotTools.Ides.Rider
 
             // /Users/user/Library/Application Support/JetBrains/Toolbox/apps/Rider/ch-1/181.3870.267/Rider EAP.app
             // should be combined with "Contents/MacOS/rider"
-            var toolboxRiderRootPath = GetToolboxBaseDir();
+            string toolboxRiderRootPath = GetToolboxBaseDir();
             var paths = CollectPathsFromToolbox(toolboxRiderRootPath, "", "Rider*.app", true)
                 .Select(a => new RiderInfo(Path.Combine(a, "Contents/MacOS/rider"), true));
             installInfos.AddRange(paths);
@@ -119,8 +119,9 @@ namespace GodotTools.Ides.Rider
         private static RiderInfo[] CollectRiderInfosWindows()
         {
             var installInfos = new List<RiderInfo>();
-            var toolboxRiderRootPath = GetToolboxBaseDir();
-            var installPathsToolbox = CollectPathsFromToolbox(toolboxRiderRootPath, "bin", "rider64.exe", false).ToList();
+            string toolboxRiderRootPath = GetToolboxBaseDir();
+            var installPathsToolbox =
+                CollectPathsFromToolbox(toolboxRiderRootPath, "bin", "rider64.exe", false).ToList();
             installInfos.AddRange(installPathsToolbox.Select(a => new RiderInfo(a, true)).ToList());
 
             var installPaths = new List<string>();
@@ -138,25 +139,25 @@ namespace GodotTools.Ides.Rider
         {
             if (OS.IsWindows)
             {
-                var localAppData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+                string localAppData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
                 return GetToolboxRiderRootPath(localAppData);
             }
 
             if (OS.IsOSX)
             {
-                var home = Environment.GetEnvironmentVariable("HOME");
+                string home = Environment.GetEnvironmentVariable("HOME");
                 if (string.IsNullOrEmpty(home))
                     return string.Empty;
-                var localAppData = Path.Combine(home, @"Library/Application Support");
+                string localAppData = Path.Combine(home, @"Library/Application Support");
                 return GetToolboxRiderRootPath(localAppData);
             }
 
             if (OS.IsUnixLike)
             {
-                var home = Environment.GetEnvironmentVariable("HOME");
+                string home = Environment.GetEnvironmentVariable("HOME");
                 if (string.IsNullOrEmpty(home))
                     return string.Empty;
-                var localAppData = Path.Combine(home, @".local/share");
+                string localAppData = Path.Combine(home, @".local/share");
                 return GetToolboxRiderRootPath(localAppData);
             }
 
@@ -166,30 +167,30 @@ namespace GodotTools.Ides.Rider
 
         private static string GetToolboxRiderRootPath(string localAppData)
         {
-            var toolboxPath = Path.Combine(localAppData, @"JetBrains/Toolbox");
-            var settingsJson = Path.Combine(toolboxPath, ".settings.json");
+            string toolboxPath = Path.Combine(localAppData, @"JetBrains/Toolbox");
+            string settingsJson = Path.Combine(toolboxPath, ".settings.json");
 
             if (File.Exists(settingsJson))
             {
-                var path = SettingsJson.GetInstallLocationFromJson(File.ReadAllText(settingsJson));
+                string path = SettingsJson.GetInstallLocationFromJson(File.ReadAllText(settingsJson));
                 if (!string.IsNullOrEmpty(path))
                     toolboxPath = path;
             }
 
-            var toolboxRiderRootPath = Path.Combine(toolboxPath, @"apps/Rider");
+            string toolboxRiderRootPath = Path.Combine(toolboxPath, @"apps/Rider");
             return toolboxRiderRootPath;
         }
 
         internal static ProductInfo GetBuildVersion(string path)
         {
             var buildTxtFileInfo = new FileInfo(Path.Combine(path, GetRelativePathToBuildTxt()));
-            var dir = buildTxtFileInfo.DirectoryName;
+            string dir = buildTxtFileInfo.DirectoryName;
             if (!Directory.Exists(dir))
                 return null;
             var buildVersionFile = new FileInfo(Path.Combine(dir, "product-info.json"));
             if (!buildVersionFile.Exists)
                 return null;
-            var json = File.ReadAllText(buildVersionFile.FullName);
+            string json = File.ReadAllText(buildVersionFile.FullName);
             return ProductInfo.GetProductInfo(json);
         }
 
@@ -198,18 +199,15 @@ namespace GodotTools.Ides.Rider
             var file = new FileInfo(Path.Combine(path, GetRelativePathToBuildTxt()));
             if (!file.Exists)
                 return null;
-            var text = File.ReadAllText(file.FullName);
+            string text = File.ReadAllText(file.FullName);
             if (text.Length <= 3)
                 return null;
 
-            var versionText = text.Substring(3);
-            return Version.TryParse(versionText, out var v) ? v : null;
+            string versionText = text.Substring(3);
+            return Version.TryParse(versionText, out Version v) ? v : null;
         }
 
-        internal static bool IsToolbox(string path)
-        {
-            return path.StartsWith(GetToolboxBaseDir());
-        }
+        internal static bool IsToolbox(string path) => path.StartsWith(GetToolboxBaseDir());
 
         private static string GetRelativePathToBuildTxt()
         {
@@ -236,55 +234,57 @@ namespace GodotTools.Ides.Rider
         private static void CollectPathsFromRegistry(List<string> installPaths, RegistryKey key)
         {
             if (key == null) return;
-            foreach (var subkeyName in key.GetSubKeyNames().Where(a => a.Contains("Rider")))
+            foreach (string subkeyName in key.GetSubKeyNames().Where(a => a.Contains("Rider")))
             {
                 using (var subkey = key.OpenSubKey(subkeyName))
                 {
-                    var folderObject = subkey?.GetValue("InstallLocation");
+                    object folderObject = subkey?.GetValue("InstallLocation");
                     if (folderObject == null) continue;
-                    var folder = folderObject.ToString();
-                    var possiblePath = Path.Combine(folder, @"bin\rider64.exe");
+                    string folder = folderObject.ToString();
+                    string possiblePath = Path.Combine(folder, @"bin\rider64.exe");
                     if (File.Exists(possiblePath))
                         installPaths.Add(possiblePath);
                 }
             }
         }
 
-        private static string[] CollectPathsFromToolbox(string toolboxRiderRootPath, string dirName, string searchPattern,
+        private static string[] CollectPathsFromToolbox(string toolboxRiderRootPath, string dirName,
+            string searchPattern,
             bool isMac)
         {
             if (!Directory.Exists(toolboxRiderRootPath))
                 return new string[0];
 
-            var channelDirs = Directory.GetDirectories(toolboxRiderRootPath);
-            var paths = channelDirs.SelectMany(channelDir =>
+            string[] channelDirs = Directory.GetDirectories(toolboxRiderRootPath);
+            string[] paths = channelDirs.SelectMany(channelDir =>
                 {
                     try
                     {
                         // use history.json - last entry stands for the active build https://jetbrains.slack.com/archives/C07KNP99D/p1547807024066500?thread_ts=1547731708.057700&cid=C07KNP99D
-                        var historyFile = Path.Combine(channelDir, ".history.json");
+                        string historyFile = Path.Combine(channelDir, ".history.json");
                         if (File.Exists(historyFile))
                         {
-                            var json = File.ReadAllText(historyFile);
-                            var build = ToolboxHistory.GetLatestBuildFromJson(json);
+                            string json = File.ReadAllText(historyFile);
+                            string build = ToolboxHistory.GetLatestBuildFromJson(json);
                             if (build != null)
                             {
-                                var buildDir = Path.Combine(channelDir, build);
-                                var executablePaths = GetExecutablePaths(dirName, searchPattern, isMac, buildDir);
+                                string buildDir = Path.Combine(channelDir, build);
+                                string[] executablePaths = GetExecutablePaths(dirName, searchPattern, isMac, buildDir);
                                 if (executablePaths.Any())
                                     return executablePaths;
                             }
                         }
 
-                        var channelFile = Path.Combine(channelDir, ".channel.settings.json");
+                        string channelFile = Path.Combine(channelDir, ".channel.settings.json");
                         if (File.Exists(channelFile))
                         {
-                            var json = File.ReadAllText(channelFile).Replace("active-application", "active_application");
-                            var build = ToolboxInstallData.GetLatestBuildFromJson(json);
+                            string json = File.ReadAllText(channelFile)
+                                .Replace("active-application", "active_application");
+                            string build = ToolboxInstallData.GetLatestBuildFromJson(json);
                             if (build != null)
                             {
-                                var buildDir = Path.Combine(channelDir, build);
-                                var executablePaths = GetExecutablePaths(dirName, searchPattern, isMac, buildDir);
+                                string buildDir = Path.Combine(channelDir, build);
+                                string[] executablePaths = GetExecutablePaths(dirName, searchPattern, isMac, buildDir);
                                 if (executablePaths.Any())
                                     return executablePaths;
                             }
@@ -324,7 +324,7 @@ namespace GodotTools.Ides.Rider
 #pragma warning disable 0649
 
         [Serializable]
-        class SettingsJson
+        private class SettingsJson
         {
             public string install_location;
 
@@ -345,7 +345,7 @@ namespace GodotTools.Ides.Rider
         }
 
         [Serializable]
-        class ToolboxHistory
+        private class ToolboxHistory
         {
             public List<ItemNode> history;
 
@@ -365,13 +365,13 @@ namespace GodotTools.Ides.Rider
         }
 
         [Serializable]
-        class ItemNode
+        private class ItemNode
         {
             public BuildNode item;
         }
 
         [Serializable]
-        class BuildNode
+        private class BuildNode
         {
             public string build;
         }
@@ -401,7 +401,7 @@ namespace GodotTools.Ides.Rider
 
         // ReSharper disable once ClassNeverInstantiated.Global
         [Serializable]
-        class ToolboxInstallData
+        private class ToolboxInstallData
         {
             // ReSharper disable once InconsistentNaming
             public ActiveApplication active_application;
@@ -426,7 +426,7 @@ namespace GodotTools.Ides.Rider
         }
 
         [Serializable]
-        class ActiveApplication
+        private class ActiveApplication
         {
             public List<string> builds;
         }
@@ -447,11 +447,11 @@ namespace GodotTools.Ides.Rider
                 BuildNumber = GetBuildNumber(path);
                 ProductInfo = GetBuildVersion(path);
                 Path = new FileInfo(path).FullName; // normalize separators
-                var presentation = $"Rider {BuildNumber}";
+                string presentation = $"Rider {BuildNumber}";
 
                 if (ProductInfo != null && !string.IsNullOrEmpty(ProductInfo.version))
                 {
-                    var suffix = string.IsNullOrEmpty(ProductInfo.versionSuffix) ? "" : $" {ProductInfo.versionSuffix}";
+                    string suffix = string.IsNullOrEmpty(ProductInfo.versionSuffix) ? "" : $" {ProductInfo.versionSuffix}";
                     presentation = $"Rider {ProductInfo.version}{suffix}";
                 }
 
@@ -465,10 +465,7 @@ namespace GodotTools.Ides.Rider
 
         private static class Logger
         {
-            internal static void Warn(string message, Exception e = null)
-            {
-                throw new Exception(message, e);
-            }
+            internal static void Warn(string message, Exception e = null) => throw new Exception(message, e);
         }
     }
 }

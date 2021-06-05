@@ -89,9 +89,9 @@ namespace Godot
             get => new Vector3(Row0.x, Row1.x, Row2.x);
             set
             {
-                this.Row0.x = value.x;
-                this.Row1.x = value.y;
-                this.Row2.x = value.z;
+                Row0.x = value.x;
+                Row1.x = value.y;
+                Row2.x = value.z;
             }
         }
 
@@ -104,9 +104,9 @@ namespace Godot
             get => new Vector3(Row0.y, Row1.y, Row2.y);
             set
             {
-                this.Row0.y = value.x;
-                this.Row1.y = value.y;
-                this.Row2.y = value.z;
+                Row0.y = value.x;
+                Row1.y = value.y;
+                Row2.y = value.z;
             }
         }
 
@@ -119,9 +119,9 @@ namespace Godot
             get => new Vector3(Row0.z, Row1.z, Row2.z);
             set
             {
-                this.Row0.z = value.x;
-                this.Row1.z = value.y;
-                this.Row2.z = value.z;
+                Row0.z = value.x;
+                Row1.z = value.y;
+                Row2.z = value.z;
             }
         }
 
@@ -196,10 +196,7 @@ namespace Godot
         /// <param name="row">Which row, the matrix vertical position.</param>
         public real_t this[int column, int row]
         {
-            get
-            {
-                return this[column][row];
-            }
+            get => this[column][row];
             set
             {
                 Vector3 columnVector = this[column];
@@ -228,10 +225,7 @@ namespace Godot
             Rotate(quat);
         }
 
-        private void Rotate(Quat quat)
-        {
-            this *= new Basis(quat);
-        }
+        private void Rotate(Quat quat) => this *= new Basis(quat);
 
         private void SetDiagonal(Vector3 diagonal)
         {
@@ -251,11 +245,11 @@ namespace Godot
         /// <returns>The determinant of the basis matrix.</returns>
         public real_t Determinant()
         {
-            real_t cofac00 = Row1[1] * Row2[2] - Row1[2] * Row2[1];
-            real_t cofac10 = Row1[2] * Row2[0] - Row1[0] * Row2[2];
-            real_t cofac20 = Row1[0] * Row2[1] - Row1[1] * Row2[0];
+            real_t cofac00 = (Row1[1] * Row2[2]) - (Row1[2] * Row2[1]);
+            real_t cofac10 = (Row1[2] * Row2[0]) - (Row1[0] * Row2[2]);
+            real_t cofac20 = (Row1[0] * Row2[1]) - (Row1[1] * Row2[0]);
 
-            return Row0[0] * cofac00 + Row0[1] * cofac10 + Row0[2] * cofac20;
+            return (Row0[0] * cofac00) + (Row0[1] * cofac10) + (Row0[2] * cofac20);
         }
 
         /// <summary>
@@ -351,10 +345,7 @@ namespace Godot
         /// <param name="index">Which column.</param>
         /// <returns>One of `Column0`, `Column1`, or `Column2`.</returns>
         [Obsolete("GetColumn is deprecated. Use the array operator instead.")]
-        public Vector3 GetColumn(int index)
-        {
-            return this[index];
-        }
+        public Vector3 GetColumn(int index) => this[index];
 
         /// <summary>
         /// Deprecated, please use the array operator instead.
@@ -362,10 +353,7 @@ namespace Godot
         /// <param name="index">Which column.</param>
         /// <param name="value">The vector to set the column to.</param>
         [Obsolete("SetColumn is deprecated. Use the array operator instead.")]
-        public void SetColumn(int index, Vector3 value)
-        {
-            this[index] = value;
-        }
+        public void SetColumn(int index, Vector3 value) => this[index] = value;
 
         /// <summary>
         /// Deprecated, please use the array operator instead.
@@ -373,10 +361,7 @@ namespace Godot
         /// <param name="axis">Which column.</param>
         /// <returns>One of `Column0`, `Column1`, or `Column2`.</returns>
         [Obsolete("GetAxis is deprecated. Use the array operator instead.")]
-        public Vector3 GetAxis(int axis)
-        {
-            return new Vector3(this.Row0[axis], this.Row1[axis], this.Row2[axis]);
-        }
+        public Vector3 GetAxis(int axis) => new Vector3(Row0[axis], Row1[axis], Row2[axis]);
 
         /// <summary>
         /// This function considers a discretization of rotations into
@@ -390,13 +375,13 @@ namespace Godot
         /// <returns>The orthogonal index.</returns>
         public int GetOrthogonalIndex()
         {
-            var orth = this;
+            Basis orth = this;
 
             for (int i = 0; i < 3; i++)
             {
                 for (int j = 0; j < 3; j++)
                 {
-                    var row = orth.GetRow(i);
+                    Vector3 row = orth.GetRow(i);
 
                     real_t v = row[j];
 
@@ -436,11 +421,11 @@ namespace Godot
         /// <returns>The inverse matrix.</returns>
         public Basis Inverse()
         {
-            real_t cofac00 = Row1[1] * Row2[2] - Row1[2] * Row2[1];
-            real_t cofac10 = Row1[2] * Row2[0] - Row1[0] * Row2[2];
-            real_t cofac20 = Row1[0] * Row2[1] - Row1[1] * Row2[0];
+            real_t cofac00 = (Row1[1] * Row2[2]) - (Row1[2] * Row2[1]);
+            real_t cofac10 = (Row1[2] * Row2[0]) - (Row1[0] * Row2[2]);
+            real_t cofac20 = (Row1[0] * Row2[1]) - (Row1[1] * Row2[0]);
 
-            real_t det = Row0[0] * cofac00 + Row0[1] * cofac10 + Row0[2] * cofac20;
+            real_t det = (Row0[0] * cofac00) + (Row0[1] * cofac10) + (Row0[2] * cofac20);
 
             if (det == 0)
             {
@@ -449,12 +434,12 @@ namespace Godot
 
             real_t detInv = 1.0f / det;
 
-            real_t cofac01 = Row0[2] * Row2[1] - Row0[1] * Row2[2];
-            real_t cofac02 = Row0[1] * Row1[2] - Row0[2] * Row1[1];
-            real_t cofac11 = Row0[0] * Row2[2] - Row0[2] * Row2[0];
-            real_t cofac12 = Row0[2] * Row1[0] - Row0[0] * Row1[2];
-            real_t cofac21 = Row0[1] * Row2[0] - Row0[0] * Row2[1];
-            real_t cofac22 = Row0[0] * Row1[1] - Row0[1] * Row1[0];
+            real_t cofac01 = (Row0[2] * Row2[1]) - (Row0[1] * Row2[2]);
+            real_t cofac02 = (Row0[1] * Row1[2]) - (Row0[2] * Row1[1]);
+            real_t cofac11 = (Row0[0] * Row2[2]) - (Row0[2] * Row2[0]);
+            real_t cofac12 = (Row0[2] * Row1[0]) - (Row0[0] * Row1[2]);
+            real_t cofac21 = (Row0[1] * Row2[0]) - (Row0[0] * Row2[1]);
+            real_t cofac22 = (Row0[0] * Row1[1]) - (Row0[1] * Row1[0]);
 
             return new Basis
             (
@@ -477,9 +462,9 @@ namespace Godot
             Vector3 column2 = this[2];
 
             column0.Normalize();
-            column1 = column1 - column0 * column0.Dot(column1);
+            column1 = column1 - (column0 * column0.Dot(column1));
             column1.Normalize();
-            column2 = column2 - column0 * column0.Dot(column2) - column1 * column1.Dot(column2);
+            column2 = column2 - (column0 * column0.Dot(column2)) - (column1 * column1.Dot(column2));
             column2.Normalize();
 
             return new Basis(column0, column1, column2);
@@ -492,10 +477,7 @@ namespace Godot
         /// <param name="axis">The axis to rotate around. Must be normalized.</param>
         /// <param name="phi">The angle to rotate, in radians.</param>
         /// <returns>The rotated basis matrix.</returns>
-        public Basis Rotated(Vector3 axis, real_t phi)
-        {
-            return new Basis(axis, phi) * this;
-        }
+        public Basis Rotated(Vector3 axis, real_t phi) => new Basis(axis, phi) * this;
 
         /// <summary>
         /// Introduce an additional scaling specified by the given 3D scaling factor.
@@ -520,10 +502,10 @@ namespace Godot
         /// <returns>The resulting basis matrix of the interpolation.</returns>
         public Basis Slerp(Basis target, real_t weight)
         {
-            Quat from = new Quat(this);
-            Quat to = new Quat(target);
+            var from = new Quat(this);
+            var to = new Quat(target);
 
-            Basis b = new Basis(from.Slerp(to, weight));
+            var b = new Basis(from.Slerp(to, weight));
             b.Row0 *= Mathf.Lerp(Row0.Length(), target.Row0.Length(), weight);
             b.Row1 *= Mathf.Lerp(Row1.Length(), target.Row1.Length(), weight);
             b.Row2 *= Mathf.Lerp(Row2.Length(), target.Row2.Length(), weight);
@@ -536,30 +518,21 @@ namespace Godot
         /// </summary>
         /// <param name="with">A vector to calculate the dot product with.</param>
         /// <returns>The resulting dot product.</returns>
-        public real_t Tdotx(Vector3 with)
-        {
-            return this.Row0[0] * with[0] + this.Row1[0] * with[1] + this.Row2[0] * with[2];
-        }
+        public real_t Tdotx(Vector3 with) => (Row0[0] * with[0]) + (Row1[0] * with[1]) + (Row2[0] * with[2]);
 
         /// <summary>
         /// Transposed dot product with the Y axis of the matrix.
         /// </summary>
         /// <param name="with">A vector to calculate the dot product with.</param>
         /// <returns>The resulting dot product.</returns>
-        public real_t Tdoty(Vector3 with)
-        {
-            return this.Row0[1] * with[0] + this.Row1[1] * with[1] + this.Row2[1] * with[2];
-        }
+        public real_t Tdoty(Vector3 with) => (Row0[1] * with[0]) + (Row1[1] * with[1]) + (Row2[1] * with[2]);
 
         /// <summary>
         /// Transposed dot product with the Z axis of the matrix.
         /// </summary>
         /// <param name="with">A vector to calculate the dot product with.</param>
         /// <returns>The resulting dot product.</returns>
-        public real_t Tdotz(Vector3 with)
-        {
-            return this.Row0[2] * with[0] + this.Row1[2] * with[1] + this.Row2[2] * with[2];
-        }
+        public real_t Tdotz(Vector3 with) => (Row0[2] * with[0]) + (Row1[2] * with[1]) + (Row2[2] * with[2]);
 
         /// <summary>
         /// Returns the transposed version of the basis matrix.
@@ -567,7 +540,7 @@ namespace Godot
         /// <returns>The transposed basis matrix.</returns>
         public Basis Transposed()
         {
-            var tr = this;
+            Basis tr = this;
 
             real_t temp = tr.Row0[1];
             tr.Row0[1] = tr.Row1[0];
@@ -589,15 +562,13 @@ namespace Godot
         /// </summary>
         /// <param name="v">A vector to transform.</param>
         /// <returns>The transformed vector.</returns>
-        public Vector3 Xform(Vector3 v)
-        {
-            return new Vector3
+        public Vector3 Xform(Vector3 v) =>
+            new Vector3
             (
-                this.Row0.Dot(v),
-                this.Row1.Dot(v),
-                this.Row2.Dot(v)
+                Row0.Dot(v),
+                Row1.Dot(v),
+                Row2.Dot(v)
             );
-        }
 
         /// <summary>
         /// Returns a vector transformed (multiplied) by the transposed basis matrix.
@@ -607,15 +578,13 @@ namespace Godot
         /// </summary>
         /// <param name="v">A vector to inversely transform.</param>
         /// <returns>The inversely transformed vector.</returns>
-        public Vector3 XformInv(Vector3 v)
-        {
-            return new Vector3
+        public Vector3 XformInv(Vector3 v) =>
+            new Vector3
             (
-                this.Row0[0] * v.x + this.Row1[0] * v.y + this.Row2[0] * v.z,
-                this.Row0[1] * v.x + this.Row1[1] * v.y + this.Row2[1] * v.z,
-                this.Row0[2] * v.x + this.Row1[2] * v.y + this.Row2[2] * v.z
+                (Row0[0] * v.x) + (Row1[0] * v.y) + (Row2[0] * v.z),
+                (Row0[1] * v.x) + (Row1[1] * v.y) + (Row2[1] * v.z),
+                (Row0[2] * v.x) + (Row1[2] * v.y) + (Row2[2] * v.z)
             );
-        }
 
         /// <summary>
         /// Returns the basis's rotation in the form of a quaternion.
@@ -630,11 +599,11 @@ namespace Godot
             if (trace > 0.0f)
             {
                 real_t s = Mathf.Sqrt(trace + 1.0f) * 2f;
-                real_t inv_s = 1f / s;
+                real_t invS = 1f / s;
                 return new Quat(
-                    (Row2[1] - Row1[2]) * inv_s,
-                    (Row0[2] - Row2[0]) * inv_s,
-                    (Row1[0] - Row0[1]) * inv_s,
+                    (Row2[1] - Row1[2]) * invS,
+                    (Row0[2] - Row2[0]) * invS,
+                    (Row1[0] - Row0[1]) * invS,
                     s * 0.25f
                 );
             }
@@ -642,35 +611,35 @@ namespace Godot
             if (Row0[0] > Row1[1] && Row0[0] > Row2[2])
             {
                 real_t s = Mathf.Sqrt(Row0[0] - Row1[1] - Row2[2] + 1.0f) * 2f;
-                real_t inv_s = 1f / s;
+                real_t invS = 1f / s;
                 return new Quat(
                     s * 0.25f,
-                    (Row0[1] + Row1[0]) * inv_s,
-                    (Row0[2] + Row2[0]) * inv_s,
-                    (Row2[1] - Row1[2]) * inv_s
+                    (Row0[1] + Row1[0]) * invS,
+                    (Row0[2] + Row2[0]) * invS,
+                    (Row2[1] - Row1[2]) * invS
                 );
             }
 
             if (Row1[1] > Row2[2])
             {
                 real_t s = Mathf.Sqrt(-Row0[0] + Row1[1] - Row2[2] + 1.0f) * 2f;
-                real_t inv_s = 1f / s;
+                real_t invS = 1f / s;
                 return new Quat(
-                    (Row0[1] + Row1[0]) * inv_s,
+                    (Row0[1] + Row1[0]) * invS,
                     s * 0.25f,
-                    (Row1[2] + Row2[1]) * inv_s,
-                    (Row0[2] - Row2[0]) * inv_s
+                    (Row1[2] + Row2[1]) * invS,
+                    (Row0[2] - Row2[0]) * invS
                 );
             }
             else
             {
                 real_t s = Mathf.Sqrt(-Row0[0] - Row1[1] + Row2[2] + 1.0f) * 2f;
-                real_t inv_s = 1f / s;
+                real_t invS = 1f / s;
                 return new Quat(
-                    (Row0[2] + Row2[0]) * inv_s,
-                    (Row1[2] + Row2[1]) * inv_s,
+                    (Row0[2] + Row2[0]) * invS,
+                    (Row1[2] + Row2[1]) * invS,
                     s * 0.25f,
-                    (Row1[0] - Row0[1]) * inv_s
+                    (Row1[0] - Row0[1]) * invS
                 );
             }
         }
@@ -714,25 +683,25 @@ namespace Godot
         /// Do not use `new Basis()` with no arguments in C#, because it sets all values to zero.
         /// </summary>
         /// <value>Equivalent to `new Basis(Vector3.Right, Vector3.Up, Vector3.Back)`.</value>
-        public static Basis Identity { get { return _identity; } }
+        public static Basis Identity => _identity;
 
         /// <summary>
         /// The basis that will flip something along the X axis when used in a transformation.
         /// </summary>
         /// <value>Equivalent to `new Basis(Vector3.Left, Vector3.Up, Vector3.Back)`.</value>
-        public static Basis FlipX { get { return _flipX; } }
+        public static Basis FlipX => _flipX;
 
         /// <summary>
         /// The basis that will flip something along the Y axis when used in a transformation.
         /// </summary>
         /// <value>Equivalent to `new Basis(Vector3.Right, Vector3.Down, Vector3.Back)`.</value>
-        public static Basis FlipY { get { return _flipY; } }
+        public static Basis FlipY => _flipY;
 
         /// <summary>
         /// The basis that will flip something along the Z axis when used in a transformation.
         /// </summary>
         /// <value>Equivalent to `new Basis(Vector3.Right, Vector3.Up, Vector3.Forward)`.</value>
-        public static Basis FlipZ { get { return _flipZ; } }
+        public static Basis FlipZ => _flipZ;
 
         /// <summary>
         /// Constructs a pure rotation basis matrix from the given quaternion.
@@ -765,7 +734,7 @@ namespace Godot
         /// (in the YXZ convention: when *composing*, first Y, then X, and Z last),
         /// given in the vector format as (X angle, Y angle, Z angle).
         ///
-        /// Consider using the <see cref="Basis(Quat)"/> constructor instead, which
+        /// Consider using the <see cref="Basis(Godot.Quat)"/> constructor instead, which
         /// uses a <see cref="Godot.Quat"/> quaternion instead of Euler angles.
         /// </summary>
         /// <param name="eulerYXZ">The Euler angles to create the basis from.</param>
@@ -797,11 +766,11 @@ namespace Godot
         /// <param name="phi">The angle to rotate, in radians.</param>
         public Basis(Vector3 axis, real_t phi)
         {
-            Vector3 axisSq = new Vector3(axis.x * axis.x, axis.y * axis.y, axis.z * axis.z);
+            var axisSq = new Vector3(axis.x * axis.x, axis.y * axis.y, axis.z * axis.z);
             real_t cosine = Mathf.Cos(phi);
-            Row0.x = axisSq.x + cosine * (1.0f - axisSq.x);
-            Row1.y = axisSq.y + cosine * (1.0f - axisSq.y);
-            Row2.z = axisSq.z + cosine * (1.0f - axisSq.z);
+            Row0.x = axisSq.x + (cosine * (1.0f - axisSq.x));
+            Row1.y = axisSq.y + (cosine * (1.0f - axisSq.y));
+            Row2.z = axisSq.z + (cosine * (1.0f - axisSq.z));
 
             real_t sine = Mathf.Sin(phi);
             real_t t = 1.0f - cosine;
@@ -841,32 +810,25 @@ namespace Godot
         }
 
         // Arguments are named such that xy is equal to calling x.y
-        internal Basis(real_t xx, real_t yx, real_t zx, real_t xy, real_t yy, real_t zy, real_t xz, real_t yz, real_t zz)
+        internal Basis(real_t xx, real_t yx, real_t zx, real_t xy, real_t yy, real_t zy, real_t xz, real_t yz,
+            real_t zz)
         {
             Row0 = new Vector3(xx, yx, zx);
             Row1 = new Vector3(xy, yy, zy);
             Row2 = new Vector3(xz, yz, zz);
         }
 
-        public static Basis operator *(Basis left, Basis right)
-        {
-            return new Basis
+        public static Basis operator *(Basis left, Basis right) =>
+            new Basis
             (
                 right.Tdotx(left.Row0), right.Tdoty(left.Row0), right.Tdotz(left.Row0),
                 right.Tdotx(left.Row1), right.Tdoty(left.Row1), right.Tdotz(left.Row1),
                 right.Tdotx(left.Row2), right.Tdoty(left.Row2), right.Tdotz(left.Row2)
             );
-        }
 
-        public static bool operator ==(Basis left, Basis right)
-        {
-            return left.Equals(right);
-        }
+        public static bool operator ==(Basis left, Basis right) => left.Equals(right);
 
-        public static bool operator !=(Basis left, Basis right)
-        {
-            return !left.Equals(right);
-        }
+        public static bool operator !=(Basis left, Basis right) => !left.Equals(right);
 
         public override bool Equals(object obj)
         {
@@ -878,10 +840,8 @@ namespace Godot
             return false;
         }
 
-        public bool Equals(Basis other)
-        {
-            return Row0.Equals(other.Row0) && Row1.Equals(other.Row1) && Row2.Equals(other.Row2);
-        }
+        public bool Equals(Basis other) =>
+            Row0.Equals(other.Row0) && Row1.Equals(other.Row1) && Row2.Equals(other.Row2);
 
         /// <summary>
         /// Returns true if this basis and `other` are approximately equal, by running
@@ -889,34 +849,25 @@ namespace Godot
         /// </summary>
         /// <param name="other">The other basis to compare.</param>
         /// <returns>Whether or not the matrices are approximately equal.</returns>
-        public bool IsEqualApprox(Basis other)
-        {
-            return Row0.IsEqualApprox(other.Row0) && Row1.IsEqualApprox(other.Row1) && Row2.IsEqualApprox(other.Row2);
-        }
+        public bool IsEqualApprox(Basis other) => Row0.IsEqualApprox(other.Row0) && Row1.IsEqualApprox(other.Row1) &&
+                                                  Row2.IsEqualApprox(other.Row2);
 
-        public override int GetHashCode()
-        {
-            return Row0.GetHashCode() ^ Row1.GetHashCode() ^ Row2.GetHashCode();
-        }
+        public override int GetHashCode() => Row0.GetHashCode() ^ Row1.GetHashCode() ^ Row2.GetHashCode();
 
-        public override string ToString()
-        {
-            return String.Format("({0}, {1}, {2})", new object[]
+        public override string ToString() =>
+            string.Format("({0}, {1}, {2})", new object[]
             {
                 Row0.ToString(),
                 Row1.ToString(),
                 Row2.ToString()
             });
-        }
 
-        public string ToString(string format)
-        {
-            return String.Format("({0}, {1}, {2})", new object[]
+        public string ToString(string format) =>
+            string.Format("({0}, {1}, {2})", new object[]
             {
                 Row0.ToString(format),
                 Row1.ToString(format),
                 Row2.ToString(format)
             });
-        }
     }
 }

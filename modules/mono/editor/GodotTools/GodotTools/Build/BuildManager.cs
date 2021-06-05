@@ -33,7 +33,7 @@ namespace GodotTools.Build
 
         private static void RemoveOldIssuesFile(BuildInfo buildInfo)
         {
-            var issuesFile = GetIssuesFilePath(buildInfo);
+            string issuesFile = GetIssuesFilePath(buildInfo);
 
             if (!File.Exists(issuesFile))
                 return;
@@ -48,18 +48,11 @@ namespace GodotTools.Build
             plugin.MakeBottomPanelItemVisible(plugin.MSBuildPanel);
         }
 
-        public static void RestartBuild(BuildOutputView buildOutputView) => throw new NotImplementedException();
-        public static void StopBuild(BuildOutputView buildOutputView) => throw new NotImplementedException();
+        private static string GetLogFilePath(BuildInfo buildInfo) =>
+            Path.Combine(buildInfo.LogsDirPath, MsBuildLogFileName);
 
-        private static string GetLogFilePath(BuildInfo buildInfo)
-        {
-            return Path.Combine(buildInfo.LogsDirPath, MsBuildLogFileName);
-        }
-
-        private static string GetIssuesFilePath(BuildInfo buildInfo)
-        {
-            return Path.Combine(buildInfo.LogsDirPath, MsBuildIssuesFileName);
-        }
+        private static string GetIssuesFilePath(BuildInfo buildInfo) =>
+            Path.Combine(buildInfo.LogsDirPath, MsBuildIssuesFileName);
 
         private static void PrintVerbose(string text)
         {
@@ -104,7 +97,8 @@ namespace GodotTools.Build
                 }
                 catch (Exception e)
                 {
-                    BuildLaunchFailed?.Invoke(buildInfo, $"The build method threw an exception.\n{e.GetType().FullName}: {e.Message}");
+                    BuildLaunchFailed?.Invoke(buildInfo,
+                        $"The build method threw an exception.\n{e.GetType().FullName}: {e.Message}");
                     Console.Error.WriteLine(e);
                     return false;
                 }
@@ -149,7 +143,8 @@ namespace GodotTools.Build
                 }
                 catch (Exception e)
                 {
-                    BuildLaunchFailed?.Invoke(buildInfo, $"The build method threw an exception.\n{e.GetType().FullName}: {e.Message}");
+                    BuildLaunchFailed?.Invoke(buildInfo,
+                        $"The build method threw an exception.\n{e.GetType().FullName}: {e.Message}");
                     Console.Error.WriteLine(e);
                     return false;
                 }
@@ -160,9 +155,11 @@ namespace GodotTools.Build
             }
         }
 
-        public static bool BuildProjectBlocking(string config, [CanBeNull] string[] targets = null, [CanBeNull] string platform = null)
+        public static bool BuildProjectBlocking(string config, [CanBeNull] string[] targets = null,
+            [CanBeNull] string platform = null)
         {
-            var buildInfo = new BuildInfo(GodotSharpDirs.ProjectSlnPath, targets ?? new[] { "Build" }, config, restore: true);
+            var buildInfo = new BuildInfo(GodotSharpDirs.ProjectSlnPath, targets ?? new[] { "Build" }, config,
+                restore: true);
 
             // If a platform was not specified, try determining the current one. If that fails, let MSBuild auto-detect it.
             if (platform != null || OS.PlatformNameMap.TryGetValue(Godot.OS.GetName(), out platform))
@@ -182,7 +179,10 @@ namespace GodotTools.Build
             // Make sure the API assemblies are up to date before building the project.
             // We may not have had the chance to update the release API assemblies, and the debug ones
             // may have been deleted by the user at some point after they were loaded by the Godot editor.
-            string apiAssembliesUpdateError = Internal.UpdateApiAssembliesFromPrebuilt(buildInfo.Configuration == "ExportRelease" ? "Release" : "Debug");
+            string apiAssembliesUpdateError =
+                Internal.UpdateApiAssembliesFromPrebuilt(buildInfo.Configuration == "ExportRelease" ?
+                    "Release" :
+                    "Debug");
 
             if (!string.IsNullOrEmpty(apiAssembliesUpdateError))
             {
@@ -221,7 +221,8 @@ namespace GodotTools.Build
         public static void GenerateEditorScriptMetadata()
         {
             string editorScriptsMetadataPath = Path.Combine(GodotSharpDirs.ResMetadataDir, "scripts_metadata.editor");
-            string playerScriptsMetadataPath = Path.Combine(GodotSharpDirs.ResMetadataDir, "scripts_metadata.editor_player");
+            string playerScriptsMetadataPath =
+                Path.Combine(GodotSharpDirs.ResMetadataDir, "scripts_metadata.editor_player");
 
             CsProjOperations.GenerateScriptsMetadata(GodotSharpDirs.ProjectCsProjPath, editorScriptsMetadataPath);
 
@@ -241,7 +242,8 @@ namespace GodotTools.Build
         // NOTE: This will be replaced with C# source generators in 4.0
         public static string GenerateExportedGameScriptMetadata(bool isDebug)
         {
-            string scriptsMetadataPath = Path.Combine(GodotSharpDirs.ResMetadataDir, $"scripts_metadata.{(isDebug ? "debug" : "release")}");
+            string scriptsMetadataPath = Path.Combine(GodotSharpDirs.ResMetadataDir,
+                $"scripts_metadata.{(isDebug ? "debug" : "release")}");
             CsProjOperations.GenerateScriptsMetadata(GodotSharpDirs.ProjectCsProjPath, scriptsMetadataPath);
             return scriptsMetadataPath;
         }
@@ -256,13 +258,21 @@ namespace GodotTools.Build
             if (OS.IsWindows)
             {
                 if (RiderPathManager.IsExternalEditorSetToRider(editorSettings))
+                {
                     msbuildDefault = BuildTool.JetBrainsMsBuild;
+                }
                 else
-                    msbuildDefault = !string.IsNullOrEmpty(OS.PathWhich("dotnet")) ? BuildTool.DotnetCli : BuildTool.MsBuildVs;
+                {
+                    msbuildDefault = !string.IsNullOrEmpty(OS.PathWhich("dotnet")) ?
+                        BuildTool.DotnetCli :
+                        BuildTool.MsBuildVs;
+                }
             }
             else
             {
-                msbuildDefault = !string.IsNullOrEmpty(OS.PathWhich("dotnet")) ? BuildTool.DotnetCli : BuildTool.MsBuildMono;
+                msbuildDefault = !string.IsNullOrEmpty(OS.PathWhich("dotnet")) ?
+                    BuildTool.DotnetCli :
+                    BuildTool.MsBuildMono;
             }
 
             EditorDef("mono/builds/build_tool", msbuildDefault);
