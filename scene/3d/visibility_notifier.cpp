@@ -34,6 +34,8 @@
 #include "scene/3d/camera.h"
 #include "scene/3d/physics_body.h"
 #include "scene/animation/animation_player.h"
+#include "scene/animation/animation_tree.h"
+#include "scene/animation/animation_tree_player.h"
 #include "scene/scene_string_names.h"
 
 void VisibilityNotifier::_enter_camera(Camera *p_camera) {
@@ -146,11 +148,8 @@ void VisibilityEnabler::_find_nodes(Node *p_node) {
 		}
 	}
 
-	{
-		AnimationPlayer *ap = Object::cast_to<AnimationPlayer>(p_node);
-		if (ap) {
-			add = true;
-		}
+	if (Object::cast_to<AnimationPlayer>(p_node) || Object::cast_to<AnimationTree>(p_node) || Object::cast_to<AnimationTreePlayer>(p_node)) {
+		add = true;
 	}
 
 	if (add) {
@@ -212,9 +211,18 @@ void VisibilityEnabler::_change_node_state(Node *p_node, bool p_enabled) {
 
 	if (enabler[ENABLER_PAUSE_ANIMATIONS]) {
 		AnimationPlayer *ap = Object::cast_to<AnimationPlayer>(p_node);
-
 		if (ap) {
 			ap->set_active(p_enabled);
+		} else {
+			AnimationTree *at = Object::cast_to<AnimationTree>(p_node);
+			if (at) {
+				at->set_active(p_enabled);
+			} else {
+				AnimationTreePlayer *atp = Object::cast_to<AnimationTreePlayer>(p_node);
+				if (atp) {
+					atp->set_active(p_enabled);
+				}
+			}
 		}
 	}
 }
