@@ -208,7 +208,7 @@ void ResourceImporterTexture::get_import_options(List<ImportOption> *r_options, 
 	r_options->push_back(ImportOption(PropertyInfo(Variant::STRING, "roughness/src_normal", PROPERTY_HINT_FILE, "*.bmp,*.dds,*.exr,*.jpeg,*.jpg,*.hdr,*.png,*.svg,*.svgz,*.tga,*.webp"), ""));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "process/fix_alpha_border"), p_preset != PRESET_3D));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "process/premult_alpha"), false));
-	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "process/invert_color"), false));
+	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "process/normal_map_invert_y"), false));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "process/HDR_as_SRGB"), false));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "process/size_limit", PROPERTY_HINT_RANGE, "0,4096,1"), 0));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "detect_3d/compress_to", PROPERTY_HINT_ENUM, "Disabled,VRAM Compressed,Basis Universal"), (p_preset == PRESET_DETECT) ? 1 : 0));
@@ -388,7 +388,7 @@ Error ResourceImporterTexture::import(const String &p_source_file, const String 
 	uint32_t mipmap_limit = int(mipmaps ? int(p_options["mipmaps/limit"]) : int(-1));
 	bool fix_alpha_border = p_options["process/fix_alpha_border"];
 	bool premult_alpha = p_options["process/premult_alpha"];
-	bool invert_color = p_options["process/invert_color"];
+	bool normal_map_invert_y = p_options["process/normal_map_invert_y"];
 	bool stream = p_options["compress/streamed"];
 	int size_limit = p_options["process/size_limit"];
 	bool hdr_as_srgb = p_options["process/HDR_as_SRGB"];
@@ -444,13 +444,18 @@ Error ResourceImporterTexture::import(const String &p_source_file, const String 
 		image->premultiply_alpha();
 	}
 
-	if (invert_color) {
-		int height = image->get_height();
-		int width = image->get_width();
+	if (normal_map_invert_y) {
+		// Inverting the green channel can be used to flip a normal map's direction.
+		// There's no standard when it comes to normal map Y direction, so this is
+		// sometimes needed when using a normal map exported from another program.
+		// See <http://wiki.polycount.com/wiki/Normal_Map_Technical_Details#Common_Swizzle_Coordinates>.
+		const int height = image->get_height();
+		const int width = image->get_width();
 
 		for (int i = 0; i < width; i++) {
 			for (int j = 0; j < height; j++) {
-				image->set_pixel(i, j, image->get_pixel(i, j).inverted());
+				const Color color = image->get_pixel(i, j);
+				image->set_pixel(i, j, Color(color.r, 1 - color.g, color.b));
 			}
 		}
 	}
