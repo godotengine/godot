@@ -229,6 +229,13 @@ void StaticBody2D::set_kinematic_motion_enabled(bool p_enabled) {
 		set_body_mode(PhysicsServer2D::BODY_MODE_STATIC);
 	}
 
+#ifdef TOOLS_ENABLED
+	if (Engine::get_singleton()->is_editor_hint()) {
+		update_configuration_warnings();
+		return;
+	}
+#endif
+
 	_update_kinematic_motion();
 }
 
@@ -236,8 +243,75 @@ bool StaticBody2D::is_kinematic_motion_enabled() const {
 	return kinematic_motion;
 }
 
+void StaticBody2D::set_sync_to_physics(bool p_enable) {
+	if (sync_to_physics == p_enable) {
+		return;
+	}
+
+	sync_to_physics = p_enable;
+
+#ifdef TOOLS_ENABLED
+	if (Engine::get_singleton()->is_editor_hint()) {
+		update_configuration_warnings();
+		return;
+	}
+#endif
+
+	if (kinematic_motion) {
+		_update_kinematic_motion();
+	}
+}
+
+bool StaticBody2D::is_sync_to_physics_enabled() const {
+	return sync_to_physics;
+}
+
+void StaticBody2D::_direct_state_changed(Object *p_state) {
+	if (!sync_to_physics) {
+		return;
+	}
+
+	PhysicsDirectBodyState2D *state = Object::cast_to<PhysicsDirectBodyState2D>(p_state);
+	ERR_FAIL_NULL_MSG(state, "Method '_direct_state_changed' must receive a valid PhysicsDirectBodyState2D object as argument");
+
+	last_valid_transform = state->get_transform();
+	set_notify_local_transform(false);
+	set_global_transform(last_valid_transform);
+	set_notify_local_transform(true);
+}
+
+TypedArray<String> StaticBody2D::get_configuration_warnings() const {
+	TypedArray<String> warnings = PhysicsBody2D::get_configuration_warnings();
+
+	if (sync_to_physics && !kinematic_motion) {
+		warnings.push_back(TTR("Sync to physics works only when kinematic motion is enabled."));
+	}
+
+	return warnings;
+}
+
 void StaticBody2D::_notification(int p_what) {
 	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE: {
+			last_valid_transform = get_global_transform();
+		} break;
+
+		case NOTIFICATION_LOCAL_TRANSFORM_CHANGED: {
+			// Used by sync to physics, send the new transform to the physics...
+			Transform2D new_transform = get_global_transform();
+
+			real_t delta_time = get_physics_process_delta_time();
+			new_transform.translate(constant_linear_velocity * delta_time);
+			new_transform.set_rotation(new_transform.get_rotation() + constant_angular_velocity * delta_time);
+
+			PhysicsServer2D::get_singleton()->body_set_state(get_rid(), PhysicsServer2D::BODY_STATE_TRANSFORM, new_transform);
+
+			// ... but then revert changes.
+			set_notify_local_transform(false);
+			set_global_transform(last_valid_transform);
+			set_notify_local_transform(true);
+		} break;
+
 		case NOTIFICATION_INTERNAL_PHYSICS_PROCESS: {
 #ifdef TOOLS_ENABLED
 			if (Engine::get_singleton()->is_editor_hint()) {
@@ -247,19 +321,23 @@ void StaticBody2D::_notification(int p_what) {
 
 			ERR_FAIL_COND(!kinematic_motion);
 
-			real_t delta_time = get_physics_process_delta_time();
-
 			Transform2D new_transform = get_global_transform();
 
+			real_t delta_time = get_physics_process_delta_time();
 			new_transform.translate(constant_linear_velocity * delta_time);
 			new_transform.set_rotation(new_transform.get_rotation() + constant_angular_velocity * delta_time);
 
-			PhysicsServer2D::get_singleton()->body_set_state(get_rid(), PhysicsServer2D::BODY_STATE_TRANSFORM, new_transform);
+			if (sync_to_physics) {
+				// Propagate transform change to node.
+				set_global_transform(new_transform);
+			} else {
+				PhysicsServer2D::get_singleton()->body_set_state(get_rid(), PhysicsServer2D::BODY_STATE_TRANSFORM, new_transform);
 
-			// Propagate transform change to node.
-			set_block_transform_notify(true);
-			set_global_transform(new_transform);
-			set_block_transform_notify(false);
+				// Propagate transform change to node.
+				set_block_transform_notify(true);
+				set_global_transform(new_transform);
+				set_block_transform_notify(false);
+			}
 		} break;
 	}
 }
@@ -276,10 +354,14 @@ void StaticBody2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_physics_material_override", "physics_material_override"), &StaticBody2D::set_physics_material_override);
 	ClassDB::bind_method(D_METHOD("get_physics_material_override"), &StaticBody2D::get_physics_material_override);
 
+	ClassDB::bind_method(D_METHOD("set_sync_to_physics", "enable"), &StaticBody2D::set_sync_to_physics);
+	ClassDB::bind_method(D_METHOD("is_sync_to_physics_enabled"), &StaticBody2D::is_sync_to_physics_enabled);
+
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "physics_material_override", PROPERTY_HINT_RESOURCE_TYPE, "PhysicsMaterial"), "set_physics_material_override", "get_physics_material_override");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "constant_linear_velocity"), "set_constant_linear_velocity", "get_constant_linear_velocity");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "constant_angular_velocity"), "set_constant_angular_velocity", "get_constant_angular_velocity");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "kinematic_motion"), "set_kinematic_motion_enabled", "is_kinematic_motion_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "sync_to_physics"), "set_sync_to_physics", "is_sync_to_physics_enabled");
 }
 
 StaticBody2D::StaticBody2D() :
@@ -303,14 +385,24 @@ void StaticBody2D::_update_kinematic_motion() {
 	}
 #endif
 
+	if (kinematic_motion && sync_to_physics) {
+		PhysicsServer2D::get_singleton()->body_set_force_integration_callback(get_rid(), callable_mp(this, &StaticBody2D::_direct_state_changed));
+		set_only_update_transform_changes(true);
+		set_notify_local_transform(true);
+	} else {
+		PhysicsServer2D::get_singleton()->body_set_force_integration_callback(get_rid(), Callable());
+		set_only_update_transform_changes(false);
+		set_notify_local_transform(false);
+	}
+
+	bool needs_physics_process = false;
 	if (kinematic_motion) {
 		if (!Math::is_zero_approx(constant_angular_velocity) || !constant_linear_velocity.is_equal_approx(Vector2())) {
-			set_physics_process_internal(true);
-			return;
+			needs_physics_process = true;
 		}
 	}
 
-	set_physics_process_internal(false);
+	set_physics_process_internal(needs_physics_process);
 }
 
 void RigidBody2D::_body_enter_tree(ObjectID p_id) {
@@ -1206,45 +1298,6 @@ Ref<KinematicCollision2D> CharacterBody2D::_get_slide_collision(int p_bounce) {
 	return slide_colliders[p_bounce];
 }
 
-void CharacterBody2D::set_sync_to_physics(bool p_enable) {
-	if (sync_to_physics == p_enable) {
-		return;
-	}
-	sync_to_physics = p_enable;
-
-	if (Engine::get_singleton()->is_editor_hint()) {
-		return;
-	}
-
-	if (p_enable) {
-		PhysicsServer2D::get_singleton()->body_set_force_integration_callback(get_rid(), callable_mp(this, &CharacterBody2D::_direct_state_changed));
-		set_only_update_transform_changes(true);
-		set_notify_local_transform(true);
-	} else {
-		PhysicsServer2D::get_singleton()->body_set_force_integration_callback(get_rid(), Callable());
-		set_only_update_transform_changes(false);
-		set_notify_local_transform(false);
-	}
-}
-
-bool CharacterBody2D::is_sync_to_physics_enabled() const {
-	return sync_to_physics;
-}
-
-void CharacterBody2D::_direct_state_changed(Object *p_state) {
-	if (!sync_to_physics) {
-		return;
-	}
-
-	PhysicsDirectBodyState2D *state = Object::cast_to<PhysicsDirectBodyState2D>(p_state);
-	ERR_FAIL_NULL_MSG(state, "Method '_direct_state_changed' must receive a valid PhysicsDirectBodyState2D object as argument");
-
-	last_valid_transform = state->get_transform();
-	set_notify_local_transform(false);
-	set_global_transform(last_valid_transform);
-	set_notify_local_transform(true);
-}
-
 void CharacterBody2D::set_safe_margin(real_t p_margin) {
 	margin = p_margin;
 }
@@ -1304,8 +1357,6 @@ void CharacterBody2D::set_up_direction(const Vector2 &p_up_direction) {
 void CharacterBody2D::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
-			last_valid_transform = get_global_transform();
-
 			// Reset move_and_slide() data.
 			on_floor = false;
 			on_floor_body = RID();
@@ -1313,16 +1364,6 @@ void CharacterBody2D::_notification(int p_what) {
 			on_wall = false;
 			motion_results.clear();
 			floor_velocity = Vector2();
-		} break;
-
-		case NOTIFICATION_LOCAL_TRANSFORM_CHANGED: {
-			// Used by sync to physics, send the new transform to the physics.
-			Transform2D new_transform = get_global_transform();
-			PhysicsServer2D::get_singleton()->body_set_state(get_rid(), PhysicsServer2D::BODY_STATE_TRANSFORM, new_transform);
-			// But then revert changes.
-			set_notify_local_transform(false);
-			set_global_transform(last_valid_transform);
-			set_notify_local_transform(true);
 		} break;
 	}
 }
@@ -1356,9 +1397,6 @@ void CharacterBody2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_slide_count"), &CharacterBody2D::get_slide_count);
 	ClassDB::bind_method(D_METHOD("get_slide_collision", "slide_idx"), &CharacterBody2D::_get_slide_collision);
 
-	ClassDB::bind_method(D_METHOD("set_sync_to_physics", "enable"), &CharacterBody2D::set_sync_to_physics);
-	ClassDB::bind_method(D_METHOD("is_sync_to_physics_enabled"), &CharacterBody2D::is_sync_to_physics_enabled);
-
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "linear_velocity"), "set_linear_velocity", "get_linear_velocity");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "stop_on_slope"), "set_stop_on_slope_enabled", "is_stop_on_slope_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "infinite_inertia"), "set_infinite_inertia_enabled", "is_infinite_inertia_enabled");
@@ -1367,7 +1405,6 @@ void CharacterBody2D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "snap"), "set_snap", "get_snap");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "up_direction"), "set_up_direction", "get_up_direction");
 
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "motion/sync_to_physics"), "set_sync_to_physics", "is_sync_to_physics_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "collision/safe_margin", PROPERTY_HINT_RANGE, "0.001,256,0.001"), "set_safe_margin", "get_safe_margin");
 }
 
