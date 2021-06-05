@@ -74,6 +74,8 @@ private:
 
 	Map<uint32_t, ShapeData> shapes;
 
+	bool only_update_transform_changes = false; // This is used for sync to physics.
+
 	bool capture_input_on_drag = false;
 	bool ray_pickable = true;
 
@@ -106,6 +108,9 @@ protected:
 	virtual void _mouse_exit();
 
 	void set_body_mode(PhysicsServer3D::BodyMode p_mode);
+
+	void set_only_update_transform_changes(bool p_enable);
+	bool is_only_update_transform_changes_enabled() const;
 
 public:
 	void set_collision_layer(uint32_t p_layer);
