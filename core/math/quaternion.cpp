@@ -168,16 +168,82 @@ Quaternion Quaternion::slerpni(const Quaternion &p_to, const real_t &p_weight) c
 			invFactor * from.w + newFactor * p_to.w);
 }
 
-Quaternion Quaternion::cubic_slerp(const Quaternion &p_b, const Quaternion &p_pre_a, const Quaternion &p_post_b, const real_t &p_weight) const {
+Quaternion Quaternion::cubic_slerp(const Quaternion &p_q, const Quaternion &p_prep, const Quaternion &p_postq, const real_t &p_t) const {
 #ifdef MATH_CHECKS
 	ERR_FAIL_COND_V_MSG(!is_normalized(), Quaternion(), "The start quaternion must be normalized.");
-	ERR_FAIL_COND_V_MSG(!p_b.is_normalized(), Quaternion(), "The end quaternion must be normalized.");
+	ERR_FAIL_COND_V_MSG(!p_q.is_normalized(), Quaternion(), "The end quaternion must be normalized.");
 #endif
-	//the only way to do slerp :|
-	real_t t2 = (1.0 - p_weight) * p_weight * 2;
-	Quaternion sp = this->slerp(p_b, p_weight);
-	Quaternion sq = p_pre_a.slerpni(p_post_b, p_weight);
-	return sp.slerpni(sq, t2);
+	// Modify quaternions for shortest path
+	// https://math.stackexchange.com/questions/2650188/super-confused-by-squad-algorithm-for-quaternion-interpolation
+	const Quaternion q_a = *this;
+	Quaternion prep = (q_a - p_prep).length_squared() < (q_a + p_prep).length_squared() ? p_prep : p_prep * -1.0f;
+	Quaternion q_b = (q_a - p_q).length_squared() < (q_a + p_q).length_squared() ? p_q : p_q * -1.0f;
+	Quaternion postq = (p_q - p_postq).length_squared() < (p_q + p_postq).length_squared() ? p_postq : p_postq * -1.0f;
+
+	return prep.spline_segment(q_a, q_b, postq, p_t);
+}
+
+Quaternion Quaternion::squad(const Quaternion p_a, const Quaternion p_b, const Quaternion p_post, const float p_t) const {
+	Quaternion pre = *this;
+	float slerp_t = 2.0 * p_t * (1.0 - p_t);
+	Quaternion slerp_1 = pre.slerpni(p_post, p_t);
+	Quaternion slerp_2 = p_a.slerpni(p_b, p_t);
+	return slerp_1.slerpni(slerp_2, slerp_t);
+}
+
+Quaternion Quaternion::log() const {
+	Quaternion result = *this;
+	float a_0 = result.w;
+	result.w = 0.0;
+	if (Math::abs(a_0) < 1.0) {
+		float angle = Math::acos(a_0);
+		angle = CLAMP(angle, -1.0f, 1.0f);
+		float sin_angle = Math::sin(angle);
+		if (!Math::is_equal_approx(Math::absf(sin_angle), 0.0f)) {
+			float coeff = angle / sin_angle;
+			result.x *= coeff;
+			result.y *= coeff;
+			result.z *= coeff;
+		}
+	}
+	return result;
+}
+
+Quaternion Quaternion::exp() const {
+	Quaternion rot = *this;
+
+	float angle = rot.length();
+	float coeff = 0.0f;
+
+	if (!Math::is_equal_approx(angle, 0.0f)) {
+		coeff = Math::sin(angle) / angle;
+	}
+	Quaternion result;
+	result.x = rot.x * coeff;
+	result.y = rot.y * coeff;
+	result.z = rot.z * coeff;
+	result.w = Math::cos(angle);
+	return result;
+}
+
+Quaternion Quaternion::intermediate(Quaternion p_a, Quaternion p_b) const {
+	Quaternion a_inv = p_a.inverse();
+	Quaternion c_1 = a_inv * p_b;
+	Quaternion c_2 = a_inv * (*this);
+	c_1 = c_1.log();
+	c_2 = c_2.log();
+	Quaternion c_3 = c_2 + c_1;
+	c_3 = c_3 * -0.25f;
+	c_3 = c_3.exp();
+	Quaternion r = p_a * c_3;
+	return r.normalized();
+}
+
+Quaternion Quaternion::spline_segment(const Quaternion p_a, const Quaternion p_b, const Quaternion p_post, const float p_t) const {
+	Quaternion pre = *this;
+	Quaternion q_a = pre.intermediate(p_a, p_b);
+	Quaternion q_b = p_a.intermediate(p_b, p_post);
+	return p_a.squad(q_a, q_b, p_b, p_t);
 }
 
 Quaternion::operator String() const {

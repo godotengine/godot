@@ -69,8 +69,9 @@ public:
 
 	Quaternion slerp(const Quaternion &p_to, const real_t &p_weight) const;
 	Quaternion slerpni(const Quaternion &p_to, const real_t &p_weight) const;
-	Quaternion cubic_slerp(const Quaternion &p_b, const Quaternion &p_pre_a, const Quaternion &p_post_b, const real_t &p_weight) const;
+	Quaternion cubic_slerp(const Quaternion &p_q, const Quaternion &p_prep, const Quaternion &p_postq, const real_t &p_t) const;
 
+	void set_axis_angle(const Vector3 &axis, const real_t &angle);
 	_FORCE_INLINE_ void get_axis_angle(Vector3 &r_axis, real_t &r_angle) const {
 		r_angle = 2 * Math::acos(w);
 		real_t r = ((real_t)1) / Math::sqrt(1 - w * w);
@@ -79,8 +80,23 @@ public:
 		r_axis.z = z * r;
 	}
 
-	void operator*=(const Quaternion &p_q);
-	Quaternion operator*(const Quaternion &p_q) const;
+	// Squad (Spherical Spline Quaternions, [Shoemake 1987]) implementation for Unity by Vegard Myklebust.
+	// Made available under Creative Commons license CC0. License details can be found here:
+	// https://creativecommons.org/publicdomain/zero/1.0/legalcode.txt
+	// https://gist.github.com/usefulslug
+	// Returns a smooth approximation between the current quaternion and post using a and b as 'tangents'
+	Quaternion squad(const Quaternion p_a, const Quaternion p_b, const Quaternion p_post, const float p_t) const;
+	Quaternion log() const;
+	Quaternion exp() const;
+
+	// Tries to compute sensible tangent values for the quaternion
+	Quaternion intermediate(Quaternion p_a, Quaternion p_b) const;
+
+	// Returns a quaternion between a and b as part of a smooth squad segment
+	Quaternion spline_segment(const Quaternion p_a, const Quaternion p_b, const Quaternion p_post, const float p_t) const;
+
+	void operator*=(const Quaternion &q);
+	Quaternion operator*(const Quaternion &q) const;
 
 	Quaternion operator*(const Vector3 &v) const {
 		return Quaternion(w * v.x + y * v.z - z * v.y,
