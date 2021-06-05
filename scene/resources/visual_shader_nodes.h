@@ -1019,6 +1019,51 @@ public:
 VARIANT_ENUM_CAST(VisualShaderNodeTransformFunc::Function)
 
 ///////////////////////////////////////
+/// UV FUNC
+///////////////////////////////////////
+
+class VisualShaderNodeUVFunc : public VisualShaderNode {
+	GDCLASS(VisualShaderNodeUVFunc, VisualShaderNode);
+
+public:
+	enum Function {
+		FUNC_PANNING,
+		FUNC_SCALING,
+		FUNC_MAX,
+	};
+
+protected:
+	Function func = FUNC_PANNING;
+
+	static void _bind_methods();
+
+public:
+	virtual String get_caption() const override;
+
+	virtual int get_input_port_count() const override;
+	virtual PortType get_input_port_type(int p_port) const override;
+	virtual String get_input_port_name(int p_port) const override;
+	virtual String get_input_port_default_hint(int p_port) const override;
+
+	virtual int get_output_port_count() const override;
+	virtual PortType get_output_port_type(int p_port) const override;
+	virtual String get_output_port_name(int p_port) const override;
+
+	virtual bool is_show_prop_names() const override;
+
+	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const override;
+
+	void set_function(Function p_op);
+	Function get_function() const;
+
+	virtual Vector<StringName> get_editable_properties() const override;
+
+	VisualShaderNodeUVFunc();
+};
+
+VARIANT_ENUM_CAST(VisualShaderNodeUVFunc::Function)
+
+///////////////////////////////////////
 /// DOT
 ///////////////////////////////////////
 

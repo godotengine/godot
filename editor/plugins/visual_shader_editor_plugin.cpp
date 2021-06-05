@@ -2081,6 +2081,16 @@ void VisualShaderEditor::_setup_node(VisualShaderNode *p_node, int p_op_idx) {
 		}
 	}
 
+	//UV_FUNC
+	{
+		VisualShaderNodeUVFunc *uvFunc = Object::cast_to<VisualShaderNodeUVFunc>(p_node);
+
+		if (uvFunc) {
+			uvFunc->set_function((VisualShaderNodeUVFunc::Function)p_op_idx);
+			return;
+		}
+	}
+
 	// IS
 	{
 		VisualShaderNodeIs *is = Object::cast_to<VisualShaderNodeIs>(p_node);
@@ -4244,6 +4254,8 @@ VisualShaderEditor::VisualShaderEditor() {
 
 	// TEXTURES
 
+	add_options.push_back(AddOption("UVFunc", "Textures", "Common", "VisualShaderNodeUVFunc", TTR("Function to be applied on texture coordinates."), -1, VisualShaderNode::PORT_TYPE_VECTOR));
+
 	cubemap_node_option_idx = add_options.size();
 	add_options.push_back(AddOption("CubeMap", "Textures", "Functions", "VisualShaderNodeCubemap", TTR("Perform the cubic texture lookup."), -1, -1));
 	curve_node_option_idx = add_options.size();
@@ -4254,6 +4266,8 @@ VisualShaderEditor::VisualShaderEditor() {
 	add_options.push_back(AddOption("Texture2DArray", "Textures", "Functions", "VisualShaderNodeTexture2DArray", TTR("Perform the 2D-array texture lookup."), -1, -1, -1, -1, -1));
 	texture3d_node_option_idx = add_options.size();
 	add_options.push_back(AddOption("Texture3D", "Textures", "Functions", "VisualShaderNodeTexture3D", TTR("Perform the 3D texture lookup."), -1, -1));
+	add_options.push_back(AddOption("UVPanning", "Textures", "Functions", "VisualShaderNodeUVFunc", TTR("Apply panning function on texture coordinates."), VisualShaderNodeUVFunc::FUNC_PANNING, VisualShaderNode::PORT_TYPE_VECTOR));
+	add_options.push_back(AddOption("UVScaling", "Textures", "Functions", "VisualShaderNodeUVFunc", TTR("Apply scaling function on texture coordinates."), VisualShaderNodeUVFunc::FUNC_SCALING, VisualShaderNode::PORT_TYPE_VECTOR));
 
 	add_options.push_back(AddOption("CubeMapUniform", "Textures", "Variables", "VisualShaderNodeCubemapUniform", TTR("Cubic texture uniform lookup."), -1, -1));
 	add_options.push_back(AddOption("TextureUniform", "Textures", "Variables", "VisualShaderNodeTextureUniform", TTR("2D texture uniform lookup."), -1, -1));

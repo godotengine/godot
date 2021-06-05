@@ -9,6 +9,13 @@
 		<link title="VisualShaders">https://docs.godotengine.org/en/latest/tutorials/shading/visual_shaders.html</link>
 	</tutorials>
 	<methods>
+		<method name="clear_default_input_values">
+			<return type="void">
+			</return>
+			<description>
+				Clears the default input ports value.
+			</description>
+		</method>
 		<method name="get_default_input_values" qualifiers="const">
 			<return type="Array">
 			</return>
@@ -23,6 +30,15 @@
 			</argument>
 			<description>
 				Returns the default value of the input [code]port[/code].
+			</description>
+		</method>
+		<method name="remove_input_port_default_value">
+			<return type="void">
+			</return>
+			<argument index="0" name="port" type="int">
+			</argument>
+			<description>
+				Removes the default value of the input [code]port[/code].
 			</description>
 		</method>
 		<method name="set_default_input_values">
