@@ -173,6 +173,9 @@
 			A higher value means it's more flexible for detecting collision, which helps with consistently detecting walls and floors.
 			A lower value forces the collision algorithm to use more exact detection, so it can be used in cases that specifically require precision, e.g at very low scale to avoid visible jittering, or for stability with a stack of kinematic bodies.
 		</member>
+		<member name="motion/sync_to_physics" type="bool" setter="set_sync_to_physics" getter="is_sync_to_physics_enabled" default="false">
+			If [code]true[/code], the body's movement will be synchronized to the physics frame. This is useful when animating movement via [AnimationPlayer], for example on moving platforms. Do [b]not[/b] use together with [method move_and_slide] or [method move_and_collide] functions.
+		</member>
 		<member name="move_lock_x" type="bool" setter="set_axis_lock" getter="get_axis_lock" default="false">
 			Lock the body's X axis movement.
 		</member>

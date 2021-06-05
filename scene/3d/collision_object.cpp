@@ -72,6 +72,10 @@ void CollisionObject::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_TRANSFORM_CHANGED: {
+			if (only_update_transform_changes) {
+				return;
+			}
+
 			if (area) {
 				PhysicsServer::get_singleton()->area_set_transform(rid, get_global_transform());
 			} else {
@@ -169,6 +173,10 @@ void CollisionObject::_mouse_exit() {
 		get_script_instance()->call(SceneStringNames::get_singleton()->_mouse_exit);
 	}
 	emit_signal(SceneStringNames::get_singleton()->mouse_exited);
+}
+
+void CollisionObject::set_only_update_transform_changes(bool p_enable) {
+	only_update_transform_changes = p_enable;
 }
 
 void CollisionObject::_update_pickable() {
