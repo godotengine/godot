@@ -334,6 +334,12 @@ TileMap::VisibilityMode TileMap::get_navigation_visibility_mode() {
 	return show_navigation;
 }
 
+void TileMap::set_y_sort_enabled(bool p_enable) {
+	Node2D::set_y_sort_enabled(p_enable);
+	_recreate_quadrants();
+	emit_signal("changed");
+}
+
 void TileMap::update_dirty_quadrants() {
 	if (!pending_update) {
 		return;
