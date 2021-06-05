@@ -349,6 +349,7 @@ void BoxContainer::_bind_methods() {
 
 MarginContainer *VBoxContainer::add_margin_child(const String &p_label, Control *p_control, bool p_expand) {
 	Label *l = memnew(Label);
+	l->set_header_mode(Label::HEADER_SMALL);
 	l->set_text(p_label);
 	add_child(l);
 	MarginContainer *mc = memnew(MarginContainer);

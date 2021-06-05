@@ -36,6 +36,31 @@
 
 #include "servers/text_server.h"
 
+Ref<Font> Label::_get_font() const {
+	switch (header_mode) {
+		case HEADER_SMALL:
+			return get_theme_font("font_header_small");
+		case HEADER_MEDIUM:
+			return get_theme_font("font_header_medium");
+		case HEADER_LARGE:
+			return get_theme_font("font_header_large");
+		default:
+			return get_theme_font("font");
+	}
+}
+int Label::_get_font_size() const {
+	switch (header_mode) {
+		case HEADER_SMALL:
+			return get_theme_font_size("font_header_small_size");
+		case HEADER_MEDIUM:
+			return get_theme_font_size("font_header_medium_size");
+		case HEADER_LARGE:
+			return get_theme_font_size("font_header_large_size");
+		default:
+			return get_theme_font_size("font_size");
+	}
+}
+
 void Label::set_autowrap(bool p_autowrap) {
 	if (autowrap != p_autowrap) {
 		autowrap = p_autowrap;
@@ -64,7 +89,7 @@ bool Label::is_uppercase() const {
 }
 
 int Label::get_line_height(int p_line) const {
-	Ref<Font> font = get_theme_font("font");
+	Ref<Font> font = _get_font();
 	if (p_line >= 0 && p_line < lines_rid.size()) {
 		return TS->shaped_text_get_size(lines_rid[p_line]).y + font->get_spacing(Font::SPACING_TOP) + font->get_spacing(Font::SPACING_BOTTOM);
 	} else if (lines_rid.size() > 0) {
@@ -74,7 +99,7 @@ int Label::get_line_height(int p_line) const {
 		}
 		return h;
 	} else {
-		return font->get_height(get_theme_font_size("font_size"));
+		return font->get_height(_get_font_size());
 	}
 }
 
@@ -89,7 +114,7 @@ void Label::_shape() {
 		} else {
 			TS->shaped_text_set_direction(text_rid, (TextServer::Direction)text_direction);
 		}
-		TS->shaped_text_add_string(text_rid, (uppercase) ? xl_text.to_upper() : xl_text, get_theme_font("font")->get_rids(), get_theme_font_size("font_size"), opentype_features, (language != "") ? language : TranslationServer::get_singleton()->get_tool_locale());
+		TS->shaped_text_add_string(text_rid, (uppercase) ? xl_text.to_upper() : xl_text, _get_font()->get_rids(), _get_font_size(), opentype_features, (language != "") ? language : TranslationServer::get_singleton()->get_tool_locale());
 		TS->shaped_text_set_bidi_override(text_rid, structured_text_parser(st_parser, st_args, xl_text));
 		dirty = false;
 		lines_dirty = true;
@@ -139,7 +164,7 @@ void Label::_shape() {
 void Label::_update_visible() {
 	int line_spacing = get_theme_constant("line_spacing", "Label");
 	Ref<StyleBox> style = get_theme_stylebox("normal", "Label");
-	Ref<Font> font = get_theme_font("font");
+	Ref<Font> font = _get_font();
 	int lines_visible = lines_rid.size();
 
 	if (max_lines_visible >= 0 && lines_visible > max_lines_visible) {
@@ -182,7 +207,7 @@ void Label::_notification(int p_what) {
 		Size2 string_size;
 		Size2 size = get_size();
 		Ref<StyleBox> style = get_theme_stylebox("normal");
-		Ref<Font> font = get_theme_font("font");
+		Ref<Font> font = _get_font();
 		Color font_color = get_theme_color("font_color");
 		Color font_shadow_color = get_theme_color("font_shadow_color");
 		Point2 shadow_ofs(get_theme_constant("shadow_offset_x"), get_theme_constant("shadow_offset_y"));
@@ -365,8 +390,8 @@ Size2 Label::get_minimum_size() const {
 
 	Size2 min_size = minsize;
 
-	Ref<Font> font = get_theme_font("font");
-	min_size.height = MAX(min_size.height, font->get_height(get_theme_font_size("font_size")) + font->get_spacing(Font::SPACING_TOP) + font->get_spacing(Font::SPACING_BOTTOM));
+	Ref<Font> font = _get_font();
+	min_size.height = MAX(min_size.height, font->get_height(_get_font_size()) + font->get_spacing(Font::SPACING_TOP) + font->get_spacing(Font::SPACING_BOTTOM));
 
 	Size2 min_style = get_theme_stylebox("normal")->get_minimum_size();
 	if (autowrap) {
@@ -392,7 +417,7 @@ int Label::get_line_count() const {
 }
 
 int Label::get_visible_line_count() const {
-	Ref<Font> font = get_theme_font("font");
+	Ref<Font> font = _get_font();
 	Ref<StyleBox> style = get_theme_stylebox("normal");
 	int line_spacing = get_theme_constant("line_spacing");
 	int lines_visible = 0;
@@ -597,6 +622,16 @@ int Label::get_total_character_count() const {
 	return xl_text.length();
 }
 
+void Label::set_header_mode(HeaderMode p_mode) {
+	header_mode = p_mode;
+	dirty = true;
+	update();
+}
+
+Label::HeaderMode Label::get_header_mode() const {
+	return header_mode;
+}
+
 bool Label::_set(const StringName &p_name, const Variant &p_value) {
 	String str = p_name;
 	if (str.begins_with("opentype_features/")) {
@@ -683,6 +718,8 @@ void Label::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_structured_text_bidi_override"), &Label::get_structured_text_bidi_override);
 	ClassDB::bind_method(D_METHOD("set_structured_text_bidi_override_options", "args"), &Label::set_structured_text_bidi_override_options);
 	ClassDB::bind_method(D_METHOD("get_structured_text_bidi_override_options"), &Label::get_structured_text_bidi_override_options);
+	ClassDB::bind_method(D_METHOD("set_header_mode", "mode"), &Label::set_header_mode);
+	ClassDB::bind_method(D_METHOD("get_header_mode"), &Label::get_header_mode);
 
 	BIND_ENUM_CONSTANT(ALIGN_LEFT);
 	BIND_ENUM_CONSTANT(ALIGN_CENTER);
@@ -694,6 +731,11 @@ void Label::_bind_methods() {
 	BIND_ENUM_CONSTANT(VALIGN_BOTTOM);
 	BIND_ENUM_CONSTANT(VALIGN_FILL);
 
+	BIND_ENUM_CONSTANT(HEADER_DISABLED);
+	BIND_ENUM_CONSTANT(HEADER_SMALL);
+	BIND_ENUM_CONSTANT(HEADER_MEDIUM);
+	BIND_ENUM_CONSTANT(HEADER_LARGE);
+
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "text", PROPERTY_HINT_MULTILINE_TEXT, "", PROPERTY_USAGE_DEFAULT_INTL), "set_text", "get_text");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "text_direction", PROPERTY_HINT_ENUM, "Auto,Left-to-Right,Right-to-Left,Inherited"), "set_text_direction", "get_text_direction");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "language"), "set_language", "get_language");
@@ -702,6 +744,7 @@ void Label::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "autowrap"), "set_autowrap", "has_autowrap");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "clip_text"), "set_clip_text", "is_clipping_text");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "uppercase"), "set_uppercase", "is_uppercase");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "header_mode", PROPERTY_HINT_ENUM, "Disabled,Small,Medium,Large"), "set_header_mode", "get_header_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "visible_characters", PROPERTY_HINT_RANGE, "-1,128000,1", PROPERTY_USAGE_EDITOR), "set_visible_characters", "get_visible_characters");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "percent_visible", PROPERTY_HINT_RANGE, "0,1,0.001"), "set_percent_visible", "get_percent_visible");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "lines_skipped", PROPERTY_HINT_RANGE, "0,999,1"), "set_lines_skipped", "get_lines_skipped");

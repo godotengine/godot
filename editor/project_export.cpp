@@ -1006,7 +1006,10 @@ ProjectExportDialog::ProjectExportDialog() {
 	hbox->add_child(preset_vb);
 
 	HBoxContainer *preset_hb = memnew(HBoxContainer);
-	preset_hb->add_child(memnew(Label(TTR("Presets"))));
+	Label *l = memnew(Label(TTR("Presets")));
+	l->set_header_mode(Label::HEADER_SMALL);
+	preset_hb->add_child(l);
+
 	preset_hb->add_spacer();
 	preset_vb->add_child(preset_hb);
 

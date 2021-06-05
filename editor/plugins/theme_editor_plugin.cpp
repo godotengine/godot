@@ -1954,7 +1954,9 @@ ThemeEditor::ThemeEditor() {
 	HBoxContainer *top_menu = memnew(HBoxContainer);
 	add_child(top_menu);
 
-	top_menu->add_child(memnew(Label(TTR("Preview:"))));
+	Label *l = memnew(Label(TTR("Preview:")));
+	l->set_header_mode(Label::HEADER_SMALL);
+	top_menu->add_child(l);
 	top_menu->add_spacer(false);
 
 	theme_edit_button = memnew(Button);

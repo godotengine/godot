@@ -51,6 +51,13 @@ public:
 		VALIGN_FILL
 	};
 
+	enum HeaderMode {
+		HEADER_DISABLED,
+		HEADER_SMALL,
+		HEADER_MEDIUM,
+		HEADER_LARGE,
+	};
+
 private:
 	Align align = ALIGN_LEFT;
 	VAlign valign = VALIGN_TOP;
@@ -60,6 +67,7 @@ private:
 	bool clip = false;
 	Size2 minsize;
 	bool uppercase = false;
+	HeaderMode header_mode = HEADER_DISABLED;
 
 	bool lines_dirty = true;
 	bool dirty = true;
@@ -80,6 +88,9 @@ private:
 
 	void _update_visible();
 	void _shape();
+
+	Ref<Font> _get_font() const;
+	int _get_font_size() const;
 
 protected:
 	void _notification(int p_what);
@@ -144,11 +155,15 @@ public:
 	int get_line_count() const;
 	int get_visible_line_count() const;
 
+	void set_header_mode(HeaderMode p_mode);
+	HeaderMode get_header_mode() const;
+
 	Label(const String &p_text = String());
 	~Label();
 };
 
 VARIANT_ENUM_CAST(Label::Align);
 VARIANT_ENUM_CAST(Label::VAlign);
+VARIANT_ENUM_CAST(Label::HeaderMode);
 
 #endif

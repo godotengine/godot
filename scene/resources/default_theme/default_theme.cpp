@@ -380,6 +380,13 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_font("font", "Label", Ref<Font>());
 	theme->set_font_size("font_size", "Label", -1);
 
+	theme->set_font("font_header_small", "Label", Ref<Font>());
+	theme->set_font_size("font_header_small_size", "Label", -1);
+	theme->set_font("font_header_medium", "Label", Ref<Font>());
+	theme->set_font_size("font_header_medium_size", "Label", -1);
+	theme->set_font("font_header_large", "Label", Ref<Font>());
+	theme->set_font_size("font_header_large_size", "Label", -1);
+
 	theme->set_color("font_color", "Label", Color(1, 1, 1));
 	theme->set_color("font_shadow_color", "Label", Color(0, 0, 0, 0));
 	theme->set_color("font_outline_color", "Label", Color(1, 1, 1));
