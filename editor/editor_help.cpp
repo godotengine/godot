@@ -1737,7 +1737,7 @@ void FindBar::_update_results_count() {
 	int from_pos = 0;
 
 	while (true) {
-		int pos = full_text.find(searched, from_pos);
+		int pos = full_text.findn(searched, from_pos);
 		if (pos == -1) {
 			break;
 		}
