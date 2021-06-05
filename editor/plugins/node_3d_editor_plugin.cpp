@@ -7080,6 +7080,7 @@ Node3DEditor::Node3DEditor(EditorNode *p_editor) {
 		sun_vb->hide();
 
 		sun_title = memnew(Label);
+		sun_title->set_theme_custom_type("Header");
 		sun_vb->add_child(sun_title);
 		sun_title->set_text(TTR("Preview Sun"));
 		sun_title->set_align(Label::ALIGN_CENTER);
@@ -7141,6 +7142,8 @@ Node3DEditor::Node3DEditor(EditorNode *p_editor) {
 		environ_vb->hide();
 
 		environ_title = memnew(Label);
+		environ_title->set_theme_custom_type("Header");
+
 		environ_vb->add_child(environ_title);
 		environ_title->set_text(TTR("Preview Environment"));
 		environ_title->set_align(Label::ALIGN_CENTER);

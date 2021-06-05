@@ -232,6 +232,8 @@ DependencyEditor::DependencyEditor() {
 
 	HBoxContainer *hbc = memnew(HBoxContainer);
 	Label *label = memnew(Label(TTR("Dependencies:")));
+	label->set_theme_custom_type("Header");
+
 	hbc->add_child(label);
 	hbc->add_spacer();
 	fixdeps = memnew(Button(TTR("Fix Broken")));
