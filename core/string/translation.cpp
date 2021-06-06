@@ -1306,7 +1306,15 @@ StringName TranslationServer::pseudolocalize(const StringName &p_message) const 
 	if (true) {
 		String temp = "";
 		for (int i = 0; i < message.size(); i++) {
-			temp += get_accented_version(message[i]);
+			wchar_t *accented = get_accented_version(message[i]);
+			if(accented)
+			{
+				temp += accented;
+			}
+			else
+			{
+				temp += message[i];
+			}
 		}
 		message = temp;
 	}
@@ -1337,114 +1345,62 @@ StringName TranslationServer::pseudolocalize(const StringName &p_message) const 
 	return res;
 }
 
-wchar_t TranslationServer::get_accented_version(char c) const {
+wchar_t* TranslationServer::get_accented_version(char c) const {
 	switch (c) {
-		case 'A':
-			return L'Å';
-		case 'B':
-			return L'ß';
-		case 'C':
-			return L'Ç';
-		case 'D':
-			return L'Ð';
-		case 'E':
-			return L'É';
-		case 'F':
-			return L'F́';
-		case 'G':
-			return L'Ĝ';
-		case 'H':
-			return L'Ĥ';
-		case 'I':
-			return L'Ĩ';
-		case 'J':
-			return L'Ĵ';
-		case 'K':
-			return L'ĸ';
-		case 'L':
-			return L'Ł';
-		case 'M':
-			return L'Ḿ';
-		case 'N':
-			return L'Ñ';
-		case 'O':
-			return L'Ö';
-		case 'P':
-			return L'Ṕ';
-		case 'Q':
-			return L'Q́';
-		case 'R':
-			return L'Ř';
-		case 'S':
-			return L'Ŝ';
-		case 'T':
-			return L'Ŧ';
-		case 'U':
-			return L'Ũ';
-		case 'V':
-			return L'Ṽ';
-		case 'W':
-			return L'Ŵ';
-		case 'X':
-			return L'X́';
-		case 'Y':
-			return L'Ÿ';
-		case 'Z':
-			return L'Ž';
-		case 'a':
-			return L'á';
-		case 'b':
-			return L'b';
-		case 'c':
-			return L'ć';
-		case 'd':
-			return L'd́';
-		case 'e':
-			return L'é';
-		case 'f':
-			return L'f́';
-		case 'g':
-			return L'‎ɠ';
-		case 'h':
-			return L'h̀';
-		case 'i':
-			return L'í';
-		case 'j':
-			return L'ǰ';
-		case 'k':
-			return L'ḱ';
-		case 'l':
-			return L'ł';
-		case 'm':
-			return L'm̀';
-		case 'n':
-			return L'ǹ';
-		case 'o':
-			return L'ô';
-		case 'p':
-			return L'ṕ';
-		case 'q':
-			return L'q́';
-		case 'r':
-			return L'ŕ';
-		case 's':
-			return L'š';
-		case 't':
-			return L't̂';
-		case 'u':
-			return L'ü';
-		case 'v':
-			return L'ṽ';
-		case 'w':
-			return L'ŵ';
-		case 'x':
-			return L'x́';
-		case 'y':
-			return L'ý';
-		case 'z':
-			return L'ź';
+		case 'A': return L"Å";
+		case 'B': return L"ß";
+		case 'C': return L"Ç";
+		case 'D': return L"Ð";
+		case 'E': return L"É";
+		case 'F': return L"F́";
+		case 'G': return L"Ĝ";
+		case 'H': return L"Ĥ";
+		case 'I': return L"Ĩ";
+		case 'J': return L"Ĵ";
+		case 'K': return L"ĸ";
+		case 'L': return L"Ł";
+		case 'M': return L"Ḿ";
+		case 'N': return L"Ñ";
+		case 'O': return L"Ö";
+		case 'P': return L"Ṕ";
+		case 'Q': return L"Q́";
+		case 'R': return L"Ř";
+		case 'S': return L"Ŝ";
+		case 'T': return L"Ŧ";
+		case 'U': return L"Ũ";
+		case 'V': return L"Ṽ";
+		case 'W': return L"Ŵ";
+		case 'X': return L"X́";
+		case 'Y': return L"Ÿ";
+		case 'Z': return L"Ž";
+		case 'a': return L"á";
+		case 'b': return L"ḅ";
+		case 'c': return L"ć";
+		case 'd': return L"d́";
+		case 'e': return L"é";
+		case 'f': return L"f́";
+		case 'g': return L"ǵ";
+		case 'h': return L"h̀";
+		case 'i': return L"í";
+		case 'j': return L"ǰ";
+		case 'k': return L"ḱ";
+		case 'l': return L"ł";
+		case 'm': return L"m̀";
+		case 'n': return L"ǹ";
+		case 'o': return L"ô";
+		case 'p': return L"ṕ";
+		case 'q': return L"q́";
+		case 'r': return L"ŕ";
+		case 's': return L"š";
+		case 't': return L"ŧ";
+		case 'u': return L"ü";
+		case 'v': return L"ṽ";
+		case 'w': return L"ŵ";
+		case 'x': return L"x́";
+		case 'y': return L"ý";
+		case 'z': return L"ź";
 	}
-	return c;
+	return NULL;
 }
 
 void TranslationServer::_bind_methods() {
