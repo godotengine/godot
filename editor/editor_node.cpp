@@ -6175,9 +6175,9 @@ EditorNode::EditorNode() {
 	gui_base->add_child(warning);
 	warning->connect("custom_action", callable_mp(this, &EditorNode::_copy_warning));
 
-	ED_SHORTCUT("editor/next_tab", TTR("Next tab"), KEY_MASK_CMD + KEY_TAB);
-	ED_SHORTCUT("editor/prev_tab", TTR("Previous tab"), KEY_MASK_CMD + KEY_MASK_SHIFT + KEY_TAB);
-	ED_SHORTCUT("editor/filter_files", TTR("Filter Files..."), KEY_MASK_CMD + KEY_MASK_ALT + KEY_P);
+	ED_SHORTCUT("editor/next_tab", TTR("Next Scene Tab"), KEY_MASK_CMD + KEY_TAB);
+	ED_SHORTCUT("editor/prev_tab", TTR("Previous Scene Tab"), KEY_MASK_CMD + KEY_MASK_SHIFT + KEY_TAB);
+	ED_SHORTCUT("editor/filter_files", TTR("Focus FileSystem Filter"), KEY_MASK_CMD + KEY_MASK_ALT + KEY_P);
 	PopupMenu *p;
 
 	file_menu->set_tooltip(TTR("Operations with scene files."));
@@ -6970,8 +6970,8 @@ EditorNode::EditorNode() {
 	ED_SHORTCUT("editor/editor_script", TTR("Open Script Editor"), KEY_MASK_CTRL | KEY_F3);
 	ED_SHORTCUT("editor/editor_assetlib", TTR("Open Asset Library"), KEY_MASK_CTRL | KEY_F4);
 #endif
-	ED_SHORTCUT("editor/editor_next", TTR("Open the next Editor"));
-	ED_SHORTCUT("editor/editor_prev", TTR("Open the previous Editor"));
+	ED_SHORTCUT("editor/editor_next", TTR("Next Editor Tab"));
+	ED_SHORTCUT("editor/editor_prev", TTR("Previous Editor Tab"));
 
 	screenshot_timer = memnew(Timer);
 	screenshot_timer->set_one_shot(true);
