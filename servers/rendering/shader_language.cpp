@@ -6375,13 +6375,7 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const FunctionInfo &p_fun
 				}
 				pass_array = false;
 
-				bool array_size_incorrect = false;
-
-				if (b->parent_function->return_array_size > 0 && b->parent_function->return_array_size != expr->get_array_size()) {
-					array_size_incorrect = true;
-				}
-
-				if (b->parent_function->return_type != expr->get_datatype() || array_size_incorrect || return_struct_name != expr->get_datatype_name()) {
+				if (b->parent_function->return_type != expr->get_datatype() || b->parent_function->return_array_size != expr->get_array_size() || return_struct_name != expr->get_datatype_name()) {
 					_set_error("Expected return with an expression of type '" + (return_struct_name != "" ? return_struct_name : get_datatype_name(b->parent_function->return_type)) + array_size_string + "'");
 					return ERR_PARSE_ERROR;
 				}
