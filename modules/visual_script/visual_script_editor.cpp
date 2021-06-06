@@ -739,6 +739,7 @@ void VisualScriptEditor::_update_graph(int p_only_id) {
 			}
 
 			Color c = sbf->get_border_color();
+			c = ((c.r + c.g + c.b) / 3) < 0.7 ? Color(1.0, 1.0, 1.0, 0.85) : Color(0.0, 0.0, 0.0, 0.85);
 			Color ic = c;
 			gnode->add_theme_color_override("title_color", c);
 			c.a = 1;
