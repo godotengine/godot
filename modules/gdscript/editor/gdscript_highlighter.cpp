@@ -64,6 +64,7 @@ Dictionary GDScriptSyntaxHighlighter::_get_line_syntax_highlighting(int p_line) 
 	bool in_function_args = false;
 	bool in_member_variable = false;
 	bool in_node_path = false;
+	bool in_annotation = false;
 	bool is_hex_notation = false;
 	bool is_bin_notation = false;
 	bool expect_type = false;
@@ -357,9 +358,18 @@ Dictionary GDScriptSyntaxHighlighter::_get_line_syntax_highlighting(int p_line) 
 			in_node_path = false;
 		}
 
+		if (!in_annotation && in_region == -1 && str[j] == '@') {
+			in_annotation = true;
+		} else if (in_region != -1 || is_a_symbol) {
+			in_annotation = false;
+		}
+
 		if (in_node_path) {
 			next_type = NODE_PATH;
 			color = node_path_color;
+		} else if (in_annotation) {
+			next_type = ANNOTATION;
+			color = annotation_color;
 		} else if (in_keyword) {
 			next_type = KEYWORD;
 			color = keyword_color;
@@ -546,19 +556,22 @@ void GDScriptSyntaxHighlighter::_update_cache() {
 	}
 
 	const String text_edit_color_theme = EditorSettings::get_singleton()->get("text_editor/theme/color_theme");
-	const bool default_theme = text_edit_color_theme == "Godot 2";
+	const bool godot_2_theme = text_edit_color_theme == "Godot 2";
 
-	if (default_theme || EditorSettings::get_singleton()->is_dark_theme()) {
+	if (godot_2_theme || EditorSettings::get_singleton()->is_dark_theme()) {
 		function_definition_color = Color(0.4, 0.9, 1.0);
 		node_path_color = Color(0.39, 0.76, 0.35);
+		annotation_color = Color(1.0, 0.7, 0.45);
 	} else {
 		function_definition_color = Color(0.0, 0.65, 0.73);
 		node_path_color = Color(0.32, 0.55, 0.29);
+		annotation_color = Color(0.8, 0.5, 0.25);
 	}
 
 	EDITOR_DEF("text_editor/highlighting/gdscript/function_definition_color", function_definition_color);
 	EDITOR_DEF("text_editor/highlighting/gdscript/node_path_color", node_path_color);
-	if (text_edit_color_theme == "Default" || default_theme) {
+	EDITOR_DEF("text_editor/highlighting/gdscript/annotation_color", annotation_color);
+	if (text_edit_color_theme == "Default" || godot_2_theme) {
 		EditorSettings::get_singleton()->set_initial_value(
 				"text_editor/highlighting/gdscript/function_definition_color",
 				function_definition_color,
@@ -567,10 +580,15 @@ void GDScriptSyntaxHighlighter::_update_cache() {
 				"text_editor/highlighting/gdscript/node_path_color",
 				node_path_color,
 				true);
+		EditorSettings::get_singleton()->set_initial_value(
+				"text_editor/highlighting/gdscript/annotation_color",
+				annotation_color,
+				true);
 	}
 
 	function_definition_color = EDITOR_GET("text_editor/highlighting/gdscript/function_definition_color");
 	node_path_color = EDITOR_GET("text_editor/highlighting/gdscript/node_path_color");
+	annotation_color = EDITOR_GET("text_editor/highlighting/gdscript/annotation_color");
 	type_color = EDITOR_GET("text_editor/highlighting/base_type_color");
 }
 
