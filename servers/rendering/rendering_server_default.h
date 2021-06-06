@@ -418,47 +418,47 @@ public:
 
 	/* BAKED LIGHT API */
 
-	FUNCRIDSPLIT(gi_probe)
+	FUNCRIDSPLIT(voxel_gi)
 
-	FUNC8(gi_probe_allocate_data, RID, const Transform3D &, const AABB &, const Vector3i &, const Vector<uint8_t> &, const Vector<uint8_t> &, const Vector<uint8_t> &, const Vector<int> &)
+	FUNC8(voxel_gi_allocate_data, RID, const Transform3D &, const AABB &, const Vector3i &, const Vector<uint8_t> &, const Vector<uint8_t> &, const Vector<uint8_t> &, const Vector<int> &)
 
-	FUNC1RC(AABB, gi_probe_get_bounds, RID)
-	FUNC1RC(Vector3i, gi_probe_get_octree_size, RID)
-	FUNC1RC(Vector<uint8_t>, gi_probe_get_octree_cells, RID)
-	FUNC1RC(Vector<uint8_t>, gi_probe_get_data_cells, RID)
-	FUNC1RC(Vector<uint8_t>, gi_probe_get_distance_field, RID)
-	FUNC1RC(Vector<int>, gi_probe_get_level_counts, RID)
-	FUNC1RC(Transform3D, gi_probe_get_to_cell_xform, RID)
+	FUNC1RC(AABB, voxel_gi_get_bounds, RID)
+	FUNC1RC(Vector3i, voxel_gi_get_octree_size, RID)
+	FUNC1RC(Vector<uint8_t>, voxel_gi_get_octree_cells, RID)
+	FUNC1RC(Vector<uint8_t>, voxel_gi_get_data_cells, RID)
+	FUNC1RC(Vector<uint8_t>, voxel_gi_get_distance_field, RID)
+	FUNC1RC(Vector<int>, voxel_gi_get_level_counts, RID)
+	FUNC1RC(Transform3D, voxel_gi_get_to_cell_xform, RID)
 
-	FUNC2(gi_probe_set_dynamic_range, RID, float)
-	FUNC1RC(float, gi_probe_get_dynamic_range, RID)
+	FUNC2(voxel_gi_set_dynamic_range, RID, float)
+	FUNC1RC(float, voxel_gi_get_dynamic_range, RID)
 
-	FUNC2(gi_probe_set_propagation, RID, float)
-	FUNC1RC(float, gi_probe_get_propagation, RID)
+	FUNC2(voxel_gi_set_propagation, RID, float)
+	FUNC1RC(float, voxel_gi_get_propagation, RID)
 
-	FUNC2(gi_probe_set_energy, RID, float)
-	FUNC1RC(float, gi_probe_get_energy, RID)
+	FUNC2(voxel_gi_set_energy, RID, float)
+	FUNC1RC(float, voxel_gi_get_energy, RID)
 
-	FUNC2(gi_probe_set_ao, RID, float)
-	FUNC1RC(float, gi_probe_get_ao, RID)
+	FUNC2(voxel_gi_set_ao, RID, float)
+	FUNC1RC(float, voxel_gi_get_ao, RID)
 
-	FUNC2(gi_probe_set_ao_size, RID, float)
-	FUNC1RC(float, gi_probe_get_ao_size, RID)
+	FUNC2(voxel_gi_set_ao_size, RID, float)
+	FUNC1RC(float, voxel_gi_get_ao_size, RID)
 
-	FUNC2(gi_probe_set_bias, RID, float)
-	FUNC1RC(float, gi_probe_get_bias, RID)
+	FUNC2(voxel_gi_set_bias, RID, float)
+	FUNC1RC(float, voxel_gi_get_bias, RID)
 
-	FUNC2(gi_probe_set_normal_bias, RID, float)
-	FUNC1RC(float, gi_probe_get_normal_bias, RID)
+	FUNC2(voxel_gi_set_normal_bias, RID, float)
+	FUNC1RC(float, voxel_gi_get_normal_bias, RID)
 
-	FUNC2(gi_probe_set_interior, RID, bool)
-	FUNC1RC(bool, gi_probe_is_interior, RID)
+	FUNC2(voxel_gi_set_interior, RID, bool)
+	FUNC1RC(bool, voxel_gi_is_interior, RID)
 
-	FUNC2(gi_probe_set_use_two_bounces, RID, bool)
-	FUNC1RC(bool, gi_probe_is_using_two_bounces, RID)
+	FUNC2(voxel_gi_set_use_two_bounces, RID, bool)
+	FUNC1RC(bool, voxel_gi_is_using_two_bounces, RID)
 
-	FUNC2(gi_probe_set_anisotropy_strength, RID, float)
-	FUNC1RC(float, gi_probe_get_anisotropy_strength, RID)
+	FUNC2(voxel_gi_set_anisotropy_strength, RID, float)
+	FUNC1RC(float, voxel_gi_get_anisotropy_strength, RID)
 
 	/* LIGHTMAP */
 
@@ -624,7 +624,7 @@ public:
 #define server_name RSG::scene
 
 	FUNC2(directional_shadow_atlas_set_size, int, bool)
-	FUNC1(gi_probe_set_quality, GIProbeQuality)
+	FUNC1(voxel_gi_set_quality, VoxelGIQuality)
 
 	/* SKY API */
 

@@ -190,26 +190,26 @@ void RendererSceneCull::_instance_pair(Instance *p_A, Instance *p_B) {
 			((RendererSceneCull *)self)->_instance_queue_update(A, false, false); //need to update capture
 		}
 
-	} else if (self->geometry_instance_pair_mask & (1 << RS::INSTANCE_GI_PROBE) && B->base_type == RS::INSTANCE_GI_PROBE && ((1 << A->base_type) & RS::INSTANCE_GEOMETRY_MASK)) {
-		InstanceGIProbeData *gi_probe = static_cast<InstanceGIProbeData *>(B->base_data);
+	} else if (self->geometry_instance_pair_mask & (1 << RS::INSTANCE_VOXEL_GI) && B->base_type == RS::INSTANCE_VOXEL_GI && ((1 << A->base_type) & RS::INSTANCE_GEOMETRY_MASK)) {
+		InstanceVoxelGIData *voxel_gi = static_cast<InstanceVoxelGIData *>(B->base_data);
 		InstanceGeometryData *geom = static_cast<InstanceGeometryData *>(A->base_data);
 
-		geom->gi_probes.insert(B);
+		geom->voxel_gi_instances.insert(B);
 
 		if (A->dynamic_gi) {
-			gi_probe->dynamic_geometries.insert(A);
+			voxel_gi->dynamic_geometries.insert(A);
 		} else {
-			gi_probe->geometries.insert(A);
+			voxel_gi->geometries.insert(A);
 		}
 
 		if (A->scenario && A->array_index >= 0) {
 			InstanceData &idata = A->scenario->instance_data[A->array_index];
-			idata.flags |= InstanceData::FLAG_GEOM_GI_PROBE_DIRTY;
+			idata.flags |= InstanceData::FLAG_GEOM_VOXEL_GI_DIRTY;
 		}
 
-	} else if (B->base_type == RS::INSTANCE_GI_PROBE && A->base_type == RS::INSTANCE_LIGHT) {
-		InstanceGIProbeData *gi_probe = static_cast<InstanceGIProbeData *>(B->base_data);
-		gi_probe->lights.insert(A);
+	} else if (B->base_type == RS::INSTANCE_VOXEL_GI && A->base_type == RS::INSTANCE_LIGHT) {
+		InstanceVoxelGIData *voxel_gi = static_cast<InstanceVoxelGIData *>(B->base_data);
+		voxel_gi->lights.insert(A);
 	} else if (B->base_type == RS::INSTANCE_PARTICLES_COLLISION && A->base_type == RS::INSTANCE_PARTICLES) {
 		InstanceParticlesCollisionData *collision = static_cast<InstanceParticlesCollisionData *>(B->base_data);
 		RSG::storage->particles_add_collision(A->base, collision->instance);
@@ -281,25 +281,25 @@ void RendererSceneCull::_instance_unpair(Instance *p_A, Instance *p_B) {
 			((RendererSceneCull *)self)->_instance_queue_update(A, false, false); //need to update capture
 		}
 
-	} else if (self->geometry_instance_pair_mask & (1 << RS::INSTANCE_GI_PROBE) && B->base_type == RS::INSTANCE_GI_PROBE && ((1 << A->base_type) & RS::INSTANCE_GEOMETRY_MASK)) {
-		InstanceGIProbeData *gi_probe = static_cast<InstanceGIProbeData *>(B->base_data);
+	} else if (self->geometry_instance_pair_mask & (1 << RS::INSTANCE_VOXEL_GI) && B->base_type == RS::INSTANCE_VOXEL_GI && ((1 << A->base_type) & RS::INSTANCE_GEOMETRY_MASK)) {
+		InstanceVoxelGIData *voxel_gi = static_cast<InstanceVoxelGIData *>(B->base_data);
 		InstanceGeometryData *geom = static_cast<InstanceGeometryData *>(A->base_data);
 
-		geom->gi_probes.erase(B);
+		geom->voxel_gi_instances.erase(B);
 		if (A->dynamic_gi) {
-			gi_probe->dynamic_geometries.erase(A);
+			voxel_gi->dynamic_geometries.erase(A);
 		} else {
-			gi_probe->geometries.erase(A);
+			voxel_gi->geometries.erase(A);
 		}
 
 		if (A->scenario && A->array_index >= 0) {
 			InstanceData &idata = A->scenario->instance_data[A->array_index];
-			idata.flags |= InstanceData::FLAG_GEOM_GI_PROBE_DIRTY;
+			idata.flags |= InstanceData::FLAG_GEOM_VOXEL_GI_DIRTY;
 		}
 
-	} else if (B->base_type == RS::INSTANCE_GI_PROBE && A->base_type == RS::INSTANCE_LIGHT) {
-		InstanceGIProbeData *gi_probe = static_cast<InstanceGIProbeData *>(B->base_data);
-		gi_probe->lights.erase(A);
+	} else if (B->base_type == RS::INSTANCE_VOXEL_GI && A->base_type == RS::INSTANCE_LIGHT) {
+		InstanceVoxelGIData *voxel_gi = static_cast<InstanceVoxelGIData *>(B->base_data);
+		voxel_gi->lights.erase(A);
 	} else if (B->base_type == RS::INSTANCE_PARTICLES_COLLISION && A->base_type == RS::INSTANCE_PARTICLES) {
 		InstanceParticlesCollisionData *collision = static_cast<InstanceParticlesCollisionData *>(B->base_data);
 		RSG::storage->particles_remove_collision(A->base, collision->instance);
@@ -494,23 +494,23 @@ void RendererSceneCull::instance_set_base(RID p_instance, RID p_base) {
 				}
 				scene_render->free(lightmap_data->instance);
 			} break;
-			case RS::INSTANCE_GI_PROBE: {
-				InstanceGIProbeData *gi_probe = static_cast<InstanceGIProbeData *>(instance->base_data);
+			case RS::INSTANCE_VOXEL_GI: {
+				InstanceVoxelGIData *voxel_gi = static_cast<InstanceVoxelGIData *>(instance->base_data);
 #ifdef DEBUG_ENABLED
-				if (gi_probe->geometries.size()) {
-					ERR_PRINT("BUG, indexing did not unpair geometries from GIProbe.");
+				if (voxel_gi->geometries.size()) {
+					ERR_PRINT("BUG, indexing did not unpair geometries from VoxelGI.");
 				}
 #endif
 #ifdef DEBUG_ENABLED
-				if (gi_probe->lights.size()) {
-					ERR_PRINT("BUG, indexing did not unpair lights from GIProbe.");
+				if (voxel_gi->lights.size()) {
+					ERR_PRINT("BUG, indexing did not unpair lights from VoxelGI.");
 				}
 #endif
-				if (gi_probe->update_element.in_list()) {
-					gi_probe_update_list.remove(&gi_probe->update_element);
+				if (voxel_gi->update_element.in_list()) {
+					voxel_gi_update_list.remove(&voxel_gi->update_element);
 				}
 
-				scene_render->free(gi_probe->probe_instance);
+				scene_render->free(voxel_gi->probe_instance);
 
 			} break;
 			case RS::INSTANCE_OCCLUDER: {
@@ -602,16 +602,16 @@ void RendererSceneCull::instance_set_base(RID p_instance, RID p_base) {
 				instance->base_data = lightmap_data;
 				lightmap_data->instance = scene_render->lightmap_instance_create(p_base);
 			} break;
-			case RS::INSTANCE_GI_PROBE: {
-				InstanceGIProbeData *gi_probe = memnew(InstanceGIProbeData);
-				instance->base_data = gi_probe;
-				gi_probe->owner = instance;
+			case RS::INSTANCE_VOXEL_GI: {
+				InstanceVoxelGIData *voxel_gi = memnew(InstanceVoxelGIData);
+				instance->base_data = voxel_gi;
+				voxel_gi->owner = instance;
 
-				if (scenario && !gi_probe->update_element.in_list()) {
-					gi_probe_update_list.add(&gi_probe->update_element);
+				if (scenario && !voxel_gi->update_element.in_list()) {
+					voxel_gi_update_list.add(&voxel_gi->update_element);
 				}
 
-				gi_probe->probe_instance = scene_render->gi_probe_instance_create(p_base);
+				voxel_gi->probe_instance = scene_render->voxel_gi_instance_create(p_base);
 
 			} break;
 			case RS::INSTANCE_OCCLUDER: {
@@ -668,22 +668,22 @@ void RendererSceneCull::instance_set_scenario(RID p_instance, RID p_scenario) {
 			case RS::INSTANCE_PARTICLES_COLLISION: {
 				heightfield_particle_colliders_update_list.erase(instance);
 			} break;
-			case RS::INSTANCE_GI_PROBE: {
-				InstanceGIProbeData *gi_probe = static_cast<InstanceGIProbeData *>(instance->base_data);
+			case RS::INSTANCE_VOXEL_GI: {
+				InstanceVoxelGIData *voxel_gi = static_cast<InstanceVoxelGIData *>(instance->base_data);
 
 #ifdef DEBUG_ENABLED
-				if (gi_probe->geometries.size()) {
-					ERR_PRINT("BUG, indexing did not unpair geometries from GIProbe.");
+				if (voxel_gi->geometries.size()) {
+					ERR_PRINT("BUG, indexing did not unpair geometries from VoxelGI.");
 				}
 #endif
 #ifdef DEBUG_ENABLED
-				if (gi_probe->lights.size()) {
-					ERR_PRINT("BUG, indexing did not unpair lights from GIProbe.");
+				if (voxel_gi->lights.size()) {
+					ERR_PRINT("BUG, indexing did not unpair lights from VoxelGI.");
 				}
 #endif
 
-				if (gi_probe->update_element.in_list()) {
-					gi_probe_update_list.remove(&gi_probe->update_element);
+				if (voxel_gi->update_element.in_list()) {
+					voxel_gi_update_list.remove(&voxel_gi->update_element);
 				}
 			} break;
 			case RS::INSTANCE_OCCLUDER: {
@@ -714,10 +714,10 @@ void RendererSceneCull::instance_set_scenario(RID p_instance, RID p_scenario) {
 					light->D = scenario->directional_lights.push_back(instance);
 				}
 			} break;
-			case RS::INSTANCE_GI_PROBE: {
-				InstanceGIProbeData *gi_probe = static_cast<InstanceGIProbeData *>(instance->base_data);
-				if (!gi_probe->update_element.in_list()) {
-					gi_probe_update_list.add(&gi_probe->update_element);
+			case RS::INSTANCE_VOXEL_GI: {
+				InstanceVoxelGIData *voxel_gi = static_cast<InstanceVoxelGIData *>(instance->base_data);
+				if (!voxel_gi->update_element.in_list()) {
+					voxel_gi_update_list.add(&voxel_gi->update_element);
 				}
 			} break;
 			case RS::INSTANCE_OCCLUDER: {
@@ -1253,10 +1253,10 @@ void RendererSceneCull::_update_instance(Instance *p_instance) {
 		InstanceLightmapData *lightmap = static_cast<InstanceLightmapData *>(p_instance->base_data);
 
 		scene_render->lightmap_instance_set_transform(lightmap->instance, p_instance->transform);
-	} else if (p_instance->base_type == RS::INSTANCE_GI_PROBE) {
-		InstanceGIProbeData *gi_probe = static_cast<InstanceGIProbeData *>(p_instance->base_data);
+	} else if (p_instance->base_type == RS::INSTANCE_VOXEL_GI) {
+		InstanceVoxelGIData *voxel_gi = static_cast<InstanceVoxelGIData *>(p_instance->base_data);
 
-		scene_render->gi_probe_instance_set_transform_to_data(gi_probe->probe_instance, p_instance->transform);
+		scene_render->voxel_gi_instance_set_transform_to_data(voxel_gi->probe_instance, p_instance->transform);
 	} else if (p_instance->base_type == RS::INSTANCE_PARTICLES) {
 		RSG::storage->particles_set_emission_transform(p_instance->base, p_instance->transform);
 	} else if (p_instance->base_type == RS::INSTANCE_PARTICLES_COLLISION) {
@@ -1371,8 +1371,8 @@ void RendererSceneCull::_update_instance(Instance *p_instance) {
 			case RS::INSTANCE_LIGHTMAP: {
 				idata.instance_data_rid = static_cast<InstanceLightmapData *>(p_instance->base_data)->instance.get_id();
 			} break;
-			case RS::INSTANCE_GI_PROBE: {
-				idata.instance_data_rid = static_cast<InstanceGIProbeData *>(p_instance->base_data)->probe_instance.get_id();
+			case RS::INSTANCE_VOXEL_GI: {
+				idata.instance_data_rid = static_cast<InstanceVoxelGIData *>(p_instance->base_data)->probe_instance.get_id();
 			} break;
 			default: {
 			}
@@ -1425,7 +1425,7 @@ void RendererSceneCull::_update_instance(Instance *p_instance) {
 
 	if ((1 << p_instance->base_type) & RS::INSTANCE_GEOMETRY_MASK) {
 		pair.pair_mask |= 1 << RS::INSTANCE_LIGHT;
-		pair.pair_mask |= 1 << RS::INSTANCE_GI_PROBE;
+		pair.pair_mask |= 1 << RS::INSTANCE_VOXEL_GI;
 		pair.pair_mask |= 1 << RS::INSTANCE_LIGHTMAP;
 		if (p_instance->base_type == RS::INSTANCE_PARTICLES) {
 			pair.pair_mask |= 1 << RS::INSTANCE_PARTICLES_COLLISION;
@@ -1439,7 +1439,7 @@ void RendererSceneCull::_update_instance(Instance *p_instance) {
 		pair.bvh = &p_instance->scenario->indexers[Scenario::INDEXER_GEOMETRY];
 
 		if (RSG::storage->light_get_bake_mode(p_instance->base) == RS::LIGHT_BAKE_DYNAMIC) {
-			pair.pair_mask |= (1 << RS::INSTANCE_GI_PROBE);
+			pair.pair_mask |= (1 << RS::INSTANCE_VOXEL_GI);
 			pair.bvh2 = &p_instance->scenario->indexers[Scenario::INDEXER_VOLUMES];
 		}
 	} else if (geometry_instance_pair_mask & (1 << RS::INSTANCE_REFLECTION_PROBE) && (p_instance->base_type == RS::INSTANCE_REFLECTION_PROBE)) {
@@ -1451,7 +1451,7 @@ void RendererSceneCull::_update_instance(Instance *p_instance) {
 	} else if (p_instance->base_type == RS::INSTANCE_PARTICLES_COLLISION) {
 		pair.pair_mask = (1 << RS::INSTANCE_PARTICLES);
 		pair.bvh = &p_instance->scenario->indexers[Scenario::INDEXER_GEOMETRY];
-	} else if (p_instance->base_type == RS::INSTANCE_GI_PROBE) {
+	} else if (p_instance->base_type == RS::INSTANCE_VOXEL_GI) {
 		//lights and geometries
 		pair.pair_mask = RS::INSTANCE_GEOMETRY_MASK | (1 << RS::INSTANCE_LIGHT);
 		pair.bvh = &p_instance->scenario->indexers[Scenario::INDEXER_GEOMETRY];
@@ -1504,7 +1504,7 @@ void RendererSceneCull::_unpair_instance(Instance *p_instance) {
 		scene_render->geometry_instance_pair_light_instances(geom->geometry_instance, nullptr, 0);
 		scene_render->geometry_instance_pair_reflection_probe_instances(geom->geometry_instance, nullptr, 0);
 		scene_render->geometry_instance_pair_decal_instances(geom->geometry_instance, nullptr, 0);
-		scene_render->geometry_instance_pair_gi_probe_instances(geom->geometry_instance, nullptr, 0);
+		scene_render->geometry_instance_pair_voxel_gi_instances(geom->geometry_instance, nullptr, 0);
 	}
 }
 
@@ -1566,8 +1566,8 @@ void RendererSceneCull::_update_instance_aabb(Instance *p_instance) {
 			new_aabb = RSG::storage->decal_get_aabb(p_instance->base);
 
 		} break;
-		case RenderingServer::INSTANCE_GI_PROBE: {
-			new_aabb = RSG::storage->gi_probe_get_bounds(p_instance->base);
+		case RenderingServer::INSTANCE_VOXEL_GI: {
+			new_aabb = RSG::storage->voxel_gi_get_bounds(p_instance->base);
 
 		} break;
 		case RenderingServer::INSTANCE_LIGHTMAP: {
@@ -2384,14 +2384,14 @@ void RendererSceneCull::_frustum_cull(CullData &cull_data, FrustumCullResult &cu
 			} else if (base_type == RS::INSTANCE_DECAL) {
 				cull_result.decals.push_back(RID::from_uint64(idata.instance_data_rid));
 
-			} else if (base_type == RS::INSTANCE_GI_PROBE) {
-				InstanceGIProbeData *gi_probe = static_cast<InstanceGIProbeData *>(idata.instance->base_data);
+			} else if (base_type == RS::INSTANCE_VOXEL_GI) {
+				InstanceVoxelGIData *voxel_gi = static_cast<InstanceVoxelGIData *>(idata.instance->base_data);
 				cull_data.cull->lock.lock();
-				if (!gi_probe->update_element.in_list()) {
-					gi_probe_update_list.add(&gi_probe->update_element);
+				if (!voxel_gi->update_element.in_list()) {
+					voxel_gi_update_list.add(&voxel_gi->update_element);
 				}
 				cull_data.cull->lock.unlock();
-				cull_result.gi_probes.push_back(RID::from_uint64(idata.instance_data_rid));
+				cull_result.voxel_gi_instances.push_back(RID::from_uint64(idata.instance_data_rid));
 
 			} else if (base_type == RS::INSTANCE_LIGHTMAP) {
 				cull_result.lightmaps.push_back(RID::from_uint64(idata.instance_data_rid));
@@ -2468,20 +2468,20 @@ void RendererSceneCull::_frustum_cull(CullData &cull_data, FrustumCullResult &cu
 					idata.flags &= ~uint32_t(InstanceData::FLAG_GEOM_DECAL_DIRTY);
 				}
 
-				if (idata.flags & InstanceData::FLAG_GEOM_GI_PROBE_DIRTY) {
+				if (idata.flags & InstanceData::FLAG_GEOM_VOXEL_GI_DIRTY) {
 					InstanceGeometryData *geom = static_cast<InstanceGeometryData *>(idata.instance->base_data);
 					uint32_t idx = 0;
-					for (Set<Instance *>::Element *E = geom->gi_probes.front(); E; E = E->next()) {
-						InstanceGIProbeData *gi_probe = static_cast<InstanceGIProbeData *>(E->get()->base_data);
+					for (Set<Instance *>::Element *E = geom->voxel_gi_instances.front(); E; E = E->next()) {
+						InstanceVoxelGIData *voxel_gi = static_cast<InstanceVoxelGIData *>(E->get()->base_data);
 
-						instance_pair_buffer[idx++] = gi_probe->probe_instance;
+						instance_pair_buffer[idx++] = voxel_gi->probe_instance;
 						if (idx == MAX_INSTANCE_PAIRS) {
 							break;
 						}
 					}
 
-					scene_render->geometry_instance_pair_gi_probe_instances(geom->geometry_instance, instance_pair_buffer, idx);
-					idata.flags &= ~uint32_t(InstanceData::FLAG_GEOM_GI_PROBE_DIRTY);
+					scene_render->geometry_instance_pair_voxel_gi_instances(geom->geometry_instance, instance_pair_buffer, idx);
+					idata.flags &= ~uint32_t(InstanceData::FLAG_GEOM_VOXEL_GI_DIRTY);
 				}
 
 				if ((idata.flags & InstanceData::FLAG_LIGHTMAP_CAPTURE) && idata.instance->last_frame_pass != frame_number && !idata.instance->lightmap_target_sh.is_empty() && !idata.instance->lightmap_sh.is_empty()) {
@@ -2864,7 +2864,7 @@ void RendererSceneCull::_render_scene(const Transform3D &p_cam_transform, const 
 	}
 
 	RENDER_TIMESTAMP("Render Scene ");
-	scene_render->render_scene(p_render_buffers, p_cam_transform, p_cam_projection, p_cam_orthogonal, frustum_cull_result.geometry_instances, frustum_cull_result.light_instances, frustum_cull_result.reflections, frustum_cull_result.gi_probes, frustum_cull_result.decals, frustum_cull_result.lightmaps, p_environment, camera_effects, p_shadow_atlas, occluders_tex, p_reflection_probe.is_valid() ? RID() : scenario->reflection_atlas, p_reflection_probe, p_reflection_probe_pass, p_screen_lod_threshold, render_shadow_data, max_shadows_used, render_sdfgi_data, cull.sdfgi.region_count, &sdfgi_update_data);
+	scene_render->render_scene(p_render_buffers, p_cam_transform, p_cam_projection, p_cam_orthogonal, frustum_cull_result.geometry_instances, frustum_cull_result.light_instances, frustum_cull_result.reflections, frustum_cull_result.voxel_gi_instances, frustum_cull_result.decals, frustum_cull_result.lightmaps, p_environment, camera_effects, p_shadow_atlas, occluders_tex, p_reflection_probe.is_valid() ? RID() : scenario->reflection_atlas, p_reflection_probe, p_reflection_probe_pass, p_screen_lod_threshold, render_shadow_data, max_shadows_used, render_sdfgi_data, cull.sdfgi.region_count, &sdfgi_update_data);
 
 	for (uint32_t i = 0; i < max_shadows_used; i++) {
 		render_shadow_data[i].instances.clear();
@@ -2875,7 +2875,7 @@ void RendererSceneCull::_render_scene(const Transform3D &p_cam_transform, const 
 		render_sdfgi_data[i].instances.clear();
 	}
 
-	//	virtual void render_scene(RID p_render_buffers, const Transform3D &p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_ortogonal, const PagedArray<GeometryInstance *> &p_instances, const PagedArray<RID> &p_lights, const PagedArray<RID> &p_reflection_probes, const PagedArray<RID> &p_gi_probes, const PagedArray<RID> &p_decals, const PagedArray<RID> &p_lightmaps, RID p_environment, RID p_camera_effects, RID p_shadow_atlas, RID p_reflection_atlas, RID p_reflection_probe, int p_reflection_probe_pass, float p_screen_lod_threshold,const RenderShadowData *p_render_shadows,int p_render_shadow_count,const RenderSDFGIData *p_render_sdfgi_regions,int p_render_sdfgi_region_count,const RenderSDFGIStaticLightData *p_render_sdfgi_static_lights=nullptr) = 0;
+	//	virtual void render_scene(RID p_render_buffers, const Transform3D &p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_ortogonal, const PagedArray<GeometryInstance *> &p_instances, const PagedArray<RID> &p_lights, const PagedArray<RID> &p_reflection_probes, const PagedArray<RID> &p_voxel_gi_instances, const PagedArray<RID> &p_decals, const PagedArray<RID> &p_lightmaps, RID p_environment, RID p_camera_effects, RID p_shadow_atlas, RID p_reflection_atlas, RID p_reflection_probe, int p_reflection_probe_pass, float p_screen_lod_threshold,const RenderShadowData *p_render_shadows,int p_render_shadow_count,const RenderSDFGIData *p_render_sdfgi_regions,int p_render_sdfgi_region_count,const RenderSDFGIStaticLightData *p_render_sdfgi_static_lights=nullptr) = 0;
 }
 
 RID RendererSceneCull::_render_get_environment(RID p_camera, RID p_scenario) {
@@ -3033,18 +3033,18 @@ void RendererSceneCull::render_probes() {
 		ref_probe = next;
 	}
 
-	/* GI PROBES */
+	/* VOXEL GIS */
 
-	SelfList<InstanceGIProbeData> *gi_probe = gi_probe_update_list.first();
+	SelfList<InstanceVoxelGIData> *voxel_gi = voxel_gi_update_list.first();
 
-	if (gi_probe) {
+	if (voxel_gi) {
 		RENDER_TIMESTAMP("Render GI Probes");
 	}
 
-	while (gi_probe) {
-		SelfList<InstanceGIProbeData> *next = gi_probe->next();
+	while (voxel_gi) {
+		SelfList<InstanceVoxelGIData> *next = voxel_gi->next();
 
-		InstanceGIProbeData *probe = gi_probe->self();
+		InstanceVoxelGIData *probe = voxel_gi->self();
 		//Instance *instance_probe = probe->owner;
 
 		//check if probe must be setup, but don't do if on the lighting thread
@@ -3053,7 +3053,7 @@ void RendererSceneCull::render_probes() {
 		int cache_count = 0;
 		{
 			int light_cache_size = probe->light_cache.size();
-			const InstanceGIProbeData::LightCache *caches = probe->light_cache.ptr();
+			const InstanceVoxelGIData::LightCache *caches = probe->light_cache.ptr();
 			const RID *instance_caches = probe->light_instances.ptr();
 
 			int idx = 0; //must count visible lights
@@ -3068,7 +3068,7 @@ void RendererSceneCull::render_probes() {
 				} else if (idx >= light_cache_size) {
 					cache_dirty = true;
 				} else {
-					const InstanceGIProbeData::LightCache *cache = &caches[idx];
+					const InstanceVoxelGIData::LightCache *cache = &caches[idx];
 
 					if (
 							instance_caches[idx] != instance_light->instance ||
@@ -3100,7 +3100,7 @@ void RendererSceneCull::render_probes() {
 				} else if (idx >= light_cache_size) {
 					cache_dirty = true;
 				} else {
-					const InstanceGIProbeData::LightCache *cache = &caches[idx];
+					const InstanceVoxelGIData::LightCache *cache = &caches[idx];
 
 					if (
 							instance_caches[idx] != instance_light->instance ||
@@ -3129,14 +3129,14 @@ void RendererSceneCull::render_probes() {
 			cache_count = idx;
 		}
 
-		bool update_lights = scene_render->gi_probe_needs_update(probe->probe_instance);
+		bool update_lights = scene_render->voxel_gi_needs_update(probe->probe_instance);
 
 		if (cache_dirty) {
 			probe->light_cache.resize(cache_count);
 			probe->light_instances.resize(cache_count);
 
 			if (cache_count) {
-				InstanceGIProbeData::LightCache *caches = probe->light_cache.ptrw();
+				InstanceVoxelGIData::LightCache *caches = probe->light_cache.ptrw();
 				RID *instance_caches = probe->light_instances.ptrw();
 
 				int idx = 0; //must count visible lights
@@ -3147,7 +3147,7 @@ void RendererSceneCull::render_probes() {
 						continue;
 					}
 
-					InstanceGIProbeData::LightCache *cache = &caches[idx];
+					InstanceVoxelGIData::LightCache *cache = &caches[idx];
 
 					instance_caches[idx] = instance_light->instance;
 					cache->has_shadow = RSG::storage->light_has_shadow(instance->base);
@@ -3170,7 +3170,7 @@ void RendererSceneCull::render_probes() {
 						continue;
 					}
 
-					InstanceGIProbeData::LightCache *cache = &caches[idx];
+					InstanceVoxelGIData::LightCache *cache = &caches[idx];
 
 					instance_caches[idx] = instance_light->instance;
 					cache->has_shadow = RSG::storage->light_has_shadow(instance->base);
@@ -3203,30 +3203,30 @@ void RendererSceneCull::render_probes() {
 			}
 			InstanceGeometryData *geom = (InstanceGeometryData *)ins->base_data;
 
-			if (ins->scenario && ins->array_index >= 0 && (ins->scenario->instance_data[ins->array_index].flags & InstanceData::FLAG_GEOM_GI_PROBE_DIRTY)) {
+			if (ins->scenario && ins->array_index >= 0 && (ins->scenario->instance_data[ins->array_index].flags & InstanceData::FLAG_GEOM_VOXEL_GI_DIRTY)) {
 				uint32_t idx = 0;
-				for (Set<Instance *>::Element *F = geom->gi_probes.front(); F; F = F->next()) {
-					InstanceGIProbeData *gi_probe2 = static_cast<InstanceGIProbeData *>(F->get()->base_data);
+				for (Set<Instance *>::Element *F = geom->voxel_gi_instances.front(); F; F = F->next()) {
+					InstanceVoxelGIData *voxel_gi2 = static_cast<InstanceVoxelGIData *>(F->get()->base_data);
 
-					instance_pair_buffer[idx++] = gi_probe2->probe_instance;
+					instance_pair_buffer[idx++] = voxel_gi2->probe_instance;
 					if (idx == MAX_INSTANCE_PAIRS) {
 						break;
 					}
 				}
 
-				scene_render->geometry_instance_pair_gi_probe_instances(geom->geometry_instance, instance_pair_buffer, idx);
+				scene_render->geometry_instance_pair_voxel_gi_instances(geom->geometry_instance, instance_pair_buffer, idx);
 
-				ins->scenario->instance_data[ins->array_index].flags &= ~uint32_t(InstanceData::FLAG_GEOM_GI_PROBE_DIRTY);
+				ins->scenario->instance_data[ins->array_index].flags &= ~uint32_t(InstanceData::FLAG_GEOM_VOXEL_GI_DIRTY);
 			}
 
 			frustum_cull_result.geometry_instances.push_back(geom->geometry_instance);
 		}
 
-		scene_render->gi_probe_update(probe->probe_instance, update_lights, probe->light_instances, frustum_cull_result.geometry_instances);
+		scene_render->voxel_gi_update(probe->probe_instance, update_lights, probe->light_instances, frustum_cull_result.geometry_instances);
 
-		gi_probe_update_list.remove(gi_probe);
+		voxel_gi_update_list.remove(voxel_gi);
 
-		gi_probe = next;
+		voxel_gi = next;
 	}
 }
 

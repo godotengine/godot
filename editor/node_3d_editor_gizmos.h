@@ -316,8 +316,8 @@ public:
 	DecalGizmoPlugin();
 };
 
-class GIProbeGizmoPlugin : public EditorNode3DGizmoPlugin {
-	GDCLASS(GIProbeGizmoPlugin, EditorNode3DGizmoPlugin);
+class VoxelGIGizmoPlugin : public EditorNode3DGizmoPlugin {
+	GDCLASS(VoxelGIGizmoPlugin, EditorNode3DGizmoPlugin);
 
 public:
 	bool has_gizmo(Node3D *p_spatial) override;
@@ -330,11 +330,11 @@ public:
 	void set_handle(EditorNode3DGizmo *p_gizmo, int p_idx, Camera3D *p_camera, const Point2 &p_point) override;
 	void commit_handle(EditorNode3DGizmo *p_gizmo, int p_idx, const Variant &p_restore, bool p_cancel = false) override;
 
-	GIProbeGizmoPlugin();
+	VoxelGIGizmoPlugin();
 };
 
-class BakedLightmapGizmoPlugin : public EditorNode3DGizmoPlugin {
-	GDCLASS(BakedLightmapGizmoPlugin, EditorNode3DGizmoPlugin);
+class LightmapGIGizmoPlugin : public EditorNode3DGizmoPlugin {
+	GDCLASS(LightmapGIGizmoPlugin, EditorNode3DGizmoPlugin);
 
 public:
 	bool has_gizmo(Node3D *p_spatial) override;
@@ -347,7 +347,7 @@ public:
 	void set_handle(EditorNode3DGizmo *p_gizmo, int p_idx, Camera3D *p_camera, const Point2 &p_point) override;
 	void commit_handle(EditorNode3DGizmo *p_gizmo, int p_idx, const Variant &p_restore, bool p_cancel = false) override;
 
-	BakedLightmapGizmoPlugin();
+	LightmapGIGizmoPlugin();
 };
 
 class LightmapProbeGizmoPlugin : public EditorNode3DGizmoPlugin {

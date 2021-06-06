@@ -13,9 +13,9 @@ layout(set = 0, binding = 1) uniform sampler2DMS source_normal_roughness;
 layout(r32f, set = 1, binding = 0) uniform restrict writeonly image2D dest_depth;
 layout(rgba8, set = 1, binding = 1) uniform restrict writeonly image2D dest_normal_roughness;
 
-#ifdef GIPROBE_RESOLVE
-layout(set = 2, binding = 0) uniform usampler2DMS source_giprobe;
-layout(rg8ui, set = 3, binding = 0) uniform restrict writeonly uimage2D dest_giprobe;
+#ifdef VOXEL_GI_RESOLVE
+layout(set = 2, binding = 0) uniform usampler2DMS source_voxel_gi;
+layout(rg8ui, set = 3, binding = 0) uniform restrict writeonly uimage2D dest_voxel_gi;
 #endif
 
 #endif
@@ -38,8 +38,8 @@ void main() {
 
 	float best_depth = 1e20;
 	vec4 best_normal_roughness = vec4(0.0);
-#ifdef GIPROBE_RESOLVE
-	uvec2 best_giprobe;
+#ifdef VOXEL_GI_RESOLVE
+	uvec2 best_voxel_gi;
 #endif
 
 #if 0
@@ -50,8 +50,8 @@ void main() {
 			best_depth = depth;
 			best_normal_roughness = texelFetch(source_normal_roughness,pos,i);
 
-#ifdef GIPROBE_RESOLVE
-			best_giprobe = texelFetch(source_giprobe,pos,i).rg;
+#ifdef VOXEL_GI_RESOLVE
+			best_voxel_gi = texelFetch(source_voxel_gi,pos,i).rg;
 #endif
 		}
 	}
@@ -204,16 +204,16 @@ void main() {
 #endif
 	best_depth = texelFetch(source_depth, pos, best_index).r;
 	best_normal_roughness = texelFetch(source_normal_roughness, pos, best_index);
-#ifdef GIPROBE_RESOLVE
-	best_giprobe = texelFetch(source_giprobe, pos, best_index).rg;
+#ifdef VOXEL_GI_RESOLVE
+	best_voxel_gi = texelFetch(source_voxel_gi, pos, best_index).rg;
 #endif
 
 #endif
 
 	imageStore(dest_depth, pos, vec4(best_depth));
 	imageStore(dest_normal_roughness, pos, vec4(best_normal_roughness));
-#ifdef GIPROBE_RESOLVE
-	imageStore(dest_giprobe, pos, uvec4(best_giprobe, 0, 0));
+#ifdef VOXEL_GI_RESOLVE
+	imageStore(dest_voxel_gi, pos, uvec4(best_voxel_gi, 0, 0));
 #endif
 
 #endif

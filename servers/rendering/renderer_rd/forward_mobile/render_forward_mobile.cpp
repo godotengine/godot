@@ -226,11 +226,11 @@ RID RenderForwardMobile::_setup_render_pass_uniform_set(RenderListType p_render_
 		RD::Uniform u;
 		u.binding = 7;
 		u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
-		u.ids.resize(MAX_GI_PROBES);
+		u.ids.resize(MAX_VOXEL_GI_INSTANCESS);
 		RID default_tex = storage->texture_rd_get_default(RendererStorageRD::DEFAULT_RD_TEXTURE_3D_WHITE);
-		for (int i = 0; i < MAX_GI_PROBES; i++) {
-			if (i < (int)p_gi_probes.size()) {
-				RID tex = gi.gi_probe_instance_get_texture(p_gi_probes[i]);
+		for (int i = 0; i < MAX_VOXEL_GI_INSTANCESS; i++) {
+			if (i < (int)p_voxel_gi_instances.size()) {
+				RID tex = gi.voxel_gi_instance_get_texture(p_voxel_gi_instances[i]);
 				if (!tex.is_valid()) {
 					tex = default_tex;
 				}
@@ -1725,7 +1725,7 @@ void RenderForwardMobile::geometry_instance_pair_decal_instances(GeometryInstanc
 	}
 }
 
-void RenderForwardMobile::geometry_instance_pair_gi_probe_instances(GeometryInstance *p_geometry_instance, const RID *p_gi_probe_instances, uint32_t p_gi_probe_instance_count) {
+void RenderForwardMobile::geometry_instance_pair_voxel_gi_instances(GeometryInstance *p_geometry_instance, const RID *p_voxel_gi_instances, uint32_t p_voxel_gi_instance_count) {
 	// We do not have this here!
 }
 
