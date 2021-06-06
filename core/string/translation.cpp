@@ -1095,10 +1095,10 @@ StringName TranslationServer::translate(const StringName &p_message, const Strin
 	}
 
 	if (!res) {
-		return p_message;
+		return pseudolocalize(p_message);
 	}
 
-	return res;
+	return pseudolocalize(res);
 }
 
 StringName TranslationServer::translate_plural(const StringName &p_message, const StringName &p_message_plural, int p_n, const StringName &p_context) const {
@@ -1298,6 +1298,153 @@ StringName TranslationServer::doc_translate_plural(const StringName &p_message, 
 		return p_message;
 	}
 	return p_message_plural;
+}
+
+StringName TranslationServer::pseudolocalize(const StringName &p_message) const {
+	String message = p_message;
+
+	if (true) {
+		String temp = "";
+		for (int i = 0; i < message.size(); i++) {
+			temp += get_accented_version(message[i]);
+		}
+		message = temp;
+	}
+
+	if (true) {
+		String temp = "";
+		wchar_t fakebidiprefix = L'\u202e';
+		wchar_t fakebidipostfix = L'\u202c';
+		temp += fakebidiprefix;
+		//the fake bidi unicode gets popped at every newline so pushing it back at every newline.
+		for (int i = 0; i < message.size(); i++) {
+			if(message[i] == '\n')
+			{
+				temp += fakebidipostfix;
+				temp += message[i];
+				temp += fakebidiprefix;
+			}
+			else
+			{
+				temp += message[i];
+			}
+		}
+		temp += fakebidipostfix;
+		message = temp;
+	}
+
+	StringName res = message;
+	return res;
+}
+
+wchar_t TranslationServer::get_accented_version(char c) const {
+	switch (c) {
+		case 'A':
+			return L'Å';
+		case 'B':
+			return L'ß';
+		case 'C':
+			return L'Ç';
+		case 'D':
+			return L'Ð';
+		case 'E':
+			return L'É';
+		case 'F':
+			return L'F́';
+		case 'G':
+			return L'Ĝ';
+		case 'H':
+			return L'Ĥ';
+		case 'I':
+			return L'Ĩ';
+		case 'J':
+			return L'Ĵ';
+		case 'K':
+			return L'ĸ';
+		case 'L':
+			return L'Ł';
+		case 'M':
+			return L'Ḿ';
+		case 'N':
+			return L'Ñ';
+		case 'O':
+			return L'Ö';
+		case 'P':
+			return L'Ṕ';
+		case 'Q':
+			return L'Q́';
+		case 'R':
+			return L'Ř';
+		case 'S':
+			return L'Ŝ';
+		case 'T':
+			return L'Ŧ';
+		case 'U':
+			return L'Ũ';
+		case 'V':
+			return L'Ṽ';
+		case 'W':
+			return L'Ŵ';
+		case 'X':
+			return L'X́';
+		case 'Y':
+			return L'Ÿ';
+		case 'Z':
+			return L'Ž';
+		case 'a':
+			return L'á';
+		case 'b':
+			return L'b';
+		case 'c':
+			return L'ć';
+		case 'd':
+			return L'd́';
+		case 'e':
+			return L'é';
+		case 'f':
+			return L'f́';
+		case 'g':
+			return L'‎ɠ';
+		case 'h':
+			return L'h̀';
+		case 'i':
+			return L'í';
+		case 'j':
+			return L'ǰ';
+		case 'k':
+			return L'ḱ';
+		case 'l':
+			return L'ł';
+		case 'm':
+			return L'm̀';
+		case 'n':
+			return L'ǹ';
+		case 'o':
+			return L'ô';
+		case 'p':
+			return L'ṕ';
+		case 'q':
+			return L'q́';
+		case 'r':
+			return L'ŕ';
+		case 's':
+			return L'š';
+		case 't':
+			return L't̂';
+		case 'u':
+			return L'ü';
+		case 'v':
+			return L'ṽ';
+		case 'w':
+			return L'ŵ';
+		case 'x':
+			return L'x́';
+		case 'y':
+			return L'ý';
+		case 'z':
+			return L'ź';
+	}
+	return c;
 }
 
 void TranslationServer::_bind_methods() {
