@@ -5,6 +5,7 @@
 	</brief_description>
 	<description>
 		Popup is a base [Control] used to show dialogs and popups. It's a subwindow and modal by default (see [Control]) and has helpers for custom popup behavior.
+		[b]Note:[/b] An open Popup window is focus-capturing.
 	</description>
 	<tutorials>
 	</tutorials>
