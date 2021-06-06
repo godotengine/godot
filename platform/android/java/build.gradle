@@ -118,8 +118,8 @@ task zipCustomBuild(type: Zip) {
     }
     from(fileTree(dir: 'app', excludes: ['**/build/**', '**/.gradle/**', '**/*.iml']), fileTree(dir: '.', includes: ['gradle.properties', 'gradlew', 'gradlew.bat', 'gradle/**']))
     include '**/*'
-    archiveName 'android_source.zip'
-    destinationDir(file(binDir))
+    archiveFileName = 'android_source.zip'
+    destinationDirectory = file(binDir)
 }
 
 def templateExcludedBuildTask() {
