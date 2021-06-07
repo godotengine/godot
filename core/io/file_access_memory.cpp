@@ -168,6 +168,7 @@ void FileAccessMemory::store_8(uint8_t p_byte) {
 }
 
 void FileAccessMemory::store_buffer(const uint8_t *p_src, uint64_t p_length) {
+	ERR_FAIL_COND(!p_src && p_length > 0);
 	uint64_t left = length - pos;
 	uint64_t write = MIN(p_length, left);
 	if (write < p_length) {
