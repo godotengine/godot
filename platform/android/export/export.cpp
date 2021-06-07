@@ -2568,19 +2568,35 @@ public:
 			// Sensitive additions must be done below the logging statement.
 			print_verbose("Build Android project using gradle command: " + String("\n") + build_command + " " + join_list(cmdline, String(" ")));
 
-			if (should_sign && !p_debug) {
-				// Pass the release keystore info as well
-				String release_keystore = p_preset->get("keystore/release");
-				String release_username = p_preset->get("keystore/release_user");
-				String release_password = p_preset->get("keystore/release_password");
-				if (!FileAccess::exists(release_keystore)) {
-					EditorNode::add_io_error("Could not find keystore, unable to export.");
-					return ERR_FILE_CANT_OPEN;
-				}
+			if (should_sign) {
+				if (p_debug) {
+					String debug_keystore = p_preset->get("keystore/debug");
+					String debug_password = p_preset->get("keystore/debug_password");
+					String debug_user = p_preset->get("keystore/debug_user");
 
-				cmdline.push_back("-Prelease_keystore_file=" + release_keystore); // argument to specify the release keystore file.
-				cmdline.push_back("-Prelease_keystore_alias=" + release_username); // argument to specify the release keystore alias.
-				cmdline.push_back("-Prelease_keystore_password=" + release_password); // argument to specity the release keystore password.
+					if (debug_keystore.is_empty()) {
+						debug_keystore = EditorSettings::get_singleton()->get("export/android/debug_keystore");
+						debug_password = EditorSettings::get_singleton()->get("export/android/debug_keystore_pass");
+						debug_user = EditorSettings::get_singleton()->get("export/android/debug_keystore_user");
+					}
+
+					cmdline.push_back("-Pdebug_keystore_file=" + debug_keystore); // argument to specify the debug keystore file.
+					cmdline.push_back("-Pdebug_keystore_alias=" + debug_user); // argument to specify the debug keystore alias.
+					cmdline.push_back("-Pdebug_keystore_password=" + debug_password); // argument to specify the debug keystore password.
+				} else {
+					// Pass the release keystore info as well
+					String release_keystore = p_preset->get("keystore/release");
+					String release_username = p_preset->get("keystore/release_user");
+					String release_password = p_preset->get("keystore/release_password");
+					if (!FileAccess::exists(release_keystore)) {
+						EditorNode::add_io_error("Could not find keystore, unable to export.");
+						return ERR_FILE_CANT_OPEN;
+					}
+
+					cmdline.push_back("-Prelease_keystore_file=" + release_keystore); // argument to specify the release keystore file.
+					cmdline.push_back("-Prelease_keystore_alias=" + release_username); // argument to specify the release keystore alias.
+					cmdline.push_back("-Prelease_keystore_password=" + release_password); // argument to specify the release keystore password.
+				}
 			}
 
 			int result = EditorNode::get_singleton()->execute_and_show_output(TTR("Building Android Project (gradle)"), build_command, cmdline);
