@@ -897,66 +897,8 @@ void GDScript::get_members(Set<StringName> *p_members) {
 	}
 }
 
-Vector<ScriptNetData> GDScript::get_rpc_methods() const {
+const Vector<MultiplayerAPI::RPCConfig> GDScript::get_rpc_methods() const {
 	return rpc_functions;
-}
-
-uint16_t GDScript::get_rpc_method_id(const StringName &p_method) const {
-	for (int i = 0; i < rpc_functions.size(); i++) {
-		if (rpc_functions[i].name == p_method) {
-			return i;
-		}
-	}
-	return UINT16_MAX;
-}
-
-StringName GDScript::get_rpc_method(const uint16_t p_rpc_method_id) const {
-	if (p_rpc_method_id >= rpc_functions.size()) {
-		return StringName();
-	}
-	return rpc_functions[p_rpc_method_id].name;
-}
-
-MultiplayerAPI::RPCMode GDScript::get_rpc_mode_by_id(const uint16_t p_rpc_method_id) const {
-	if (p_rpc_method_id >= rpc_functions.size()) {
-		return MultiplayerAPI::RPC_MODE_DISABLED;
-	}
-	return rpc_functions[p_rpc_method_id].mode;
-}
-
-MultiplayerAPI::RPCMode GDScript::get_rpc_mode(const StringName &p_method) const {
-	return get_rpc_mode_by_id(get_rpc_method_id(p_method));
-}
-
-Vector<ScriptNetData> GDScript::get_rset_properties() const {
-	return rpc_variables;
-}
-
-uint16_t GDScript::get_rset_property_id(const StringName &p_variable) const {
-	for (int i = 0; i < rpc_variables.size(); i++) {
-		if (rpc_variables[i].name == p_variable) {
-			return i;
-		}
-	}
-	return UINT16_MAX;
-}
-
-StringName GDScript::get_rset_property(const uint16_t p_rset_member_id) const {
-	if (p_rset_member_id >= rpc_variables.size()) {
-		return StringName();
-	}
-	return rpc_variables[p_rset_member_id].name;
-}
-
-MultiplayerAPI::RPCMode GDScript::get_rset_mode_by_id(const uint16_t p_rset_member_id) const {
-	if (p_rset_member_id >= rpc_variables.size()) {
-		return MultiplayerAPI::RPC_MODE_DISABLED;
-	}
-	return rpc_variables[p_rset_member_id].mode;
-}
-
-MultiplayerAPI::RPCMode GDScript::get_rset_mode(const StringName &p_variable) const {
-	return get_rset_mode_by_id(get_rset_property_id(p_variable));
 }
 
 Variant GDScript::call(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error) {
@@ -1210,10 +1152,8 @@ void GDScript::_save_orphaned_subclasses() {
 void GDScript::_init_rpc_methods_properties() {
 	// Copy the base rpc methods so we don't mask their IDs.
 	rpc_functions.clear();
-	rpc_variables.clear();
 	if (base.is_valid()) {
 		rpc_functions = base->rpc_functions;
-		rpc_variables = base->rpc_variables;
 	}
 
 	GDScript *cscript = this;
@@ -1222,22 +1162,14 @@ void GDScript::_init_rpc_methods_properties() {
 		// RPC Methods
 		for (Map<StringName, GDScriptFunction *>::Element *E = cscript->member_functions.front(); E; E = E->next()) {
 			if (E->get()->get_rpc_mode() != MultiplayerAPI::RPC_MODE_DISABLED) {
-				ScriptNetData nd;
+				MultiplayerAPI::RPCConfig nd;
 				nd.name = E->key();
-				nd.mode = E->get()->get_rpc_mode();
+				nd.rpc_mode = E->get()->get_rpc_mode();
+				// TODO
+				nd.transfer_mode = NetworkedMultiplayerPeer::TRANSFER_MODE_RELIABLE;
+				nd.channel = 0;
 				if (-1 == rpc_functions.find(nd)) {
 					rpc_functions.push_back(nd);
-				}
-			}
-		}
-		// RSet
-		for (Map<StringName, MemberInfo>::Element *E = cscript->member_indices.front(); E; E = E->next()) {
-			if (E->get().rpc_mode != MultiplayerAPI::RPC_MODE_DISABLED) {
-				ScriptNetData nd;
-				nd.name = E->key();
-				nd.mode = E->get().rpc_mode;
-				if (-1 == rpc_variables.find(nd)) {
-					rpc_variables.push_back(nd);
 				}
 			}
 		}
@@ -1254,8 +1186,7 @@ void GDScript::_init_rpc_methods_properties() {
 	}
 
 	// Sort so we are 100% that they are always the same.
-	rpc_functions.sort_custom<SortNetData>();
-	rpc_variables.sort_custom<SortNetData>();
+	rpc_functions.sort_custom<MultiplayerAPI::SortRPCConfig>();
 }
 
 GDScript::~GDScript() {
@@ -1611,44 +1542,8 @@ ScriptLanguage *GDScriptInstance::get_language() {
 	return GDScriptLanguage::get_singleton();
 }
 
-Vector<ScriptNetData> GDScriptInstance::get_rpc_methods() const {
+const Vector<MultiplayerAPI::RPCConfig> GDScriptInstance::get_rpc_methods() const {
 	return script->get_rpc_methods();
-}
-
-uint16_t GDScriptInstance::get_rpc_method_id(const StringName &p_method) const {
-	return script->get_rpc_method_id(p_method);
-}
-
-StringName GDScriptInstance::get_rpc_method(const uint16_t p_rpc_method_id) const {
-	return script->get_rpc_method(p_rpc_method_id);
-}
-
-MultiplayerAPI::RPCMode GDScriptInstance::get_rpc_mode_by_id(const uint16_t p_rpc_method_id) const {
-	return script->get_rpc_mode_by_id(p_rpc_method_id);
-}
-
-MultiplayerAPI::RPCMode GDScriptInstance::get_rpc_mode(const StringName &p_method) const {
-	return script->get_rpc_mode(p_method);
-}
-
-Vector<ScriptNetData> GDScriptInstance::get_rset_properties() const {
-	return script->get_rset_properties();
-}
-
-uint16_t GDScriptInstance::get_rset_property_id(const StringName &p_variable) const {
-	return script->get_rset_property_id(p_variable);
-}
-
-StringName GDScriptInstance::get_rset_property(const uint16_t p_rset_member_id) const {
-	return script->get_rset_property(p_rset_member_id);
-}
-
-MultiplayerAPI::RPCMode GDScriptInstance::get_rset_mode_by_id(const uint16_t p_rset_member_id) const {
-	return script->get_rset_mode_by_id(p_rset_member_id);
-}
-
-MultiplayerAPI::RPCMode GDScriptInstance::get_rset_mode(const StringName &p_variable) const {
-	return script->get_rset_mode(p_variable);
 }
 
 void GDScriptInstance::reload_members() {

@@ -80,11 +80,6 @@ private:
 		SceneTree::Group *group = nullptr;
 	};
 
-	struct NetData {
-		StringName name;
-		MultiplayerAPI::RPCMode mode = MultiplayerAPI::RPCMode::RPC_MODE_DISABLED;
-	};
-
 	struct Data {
 		String filename;
 		Ref<SceneState> instance_state;
@@ -116,8 +111,7 @@ private:
 		Node *process_owner = nullptr;
 
 		int network_master = 1; // Server by default.
-		Vector<NetData> rpc_methods;
-		Vector<NetData> rpc_properties;
+		Vector<MultiplayerAPI::RPCConfig> rpc_methods;
 
 		// Variables used to properly sort the node when processing, ignored otherwise.
 		// TODO: Should move all the stuff below to bits.
@@ -179,9 +173,7 @@ private:
 	Array _get_groups() const;
 
 	Variant _rpc_bind(const Variant **p_args, int p_argcount, Callable::CallError &r_error);
-	Variant _rpc_unreliable_bind(const Variant **p_args, int p_argcount, Callable::CallError &r_error);
 	Variant _rpc_id_bind(const Variant **p_args, int p_argcount, Callable::CallError &r_error);
-	Variant _rpc_unreliable_id_bind(const Variant **p_args, int p_argcount, Callable::CallError &r_error);
 
 	friend class SceneTree;
 
@@ -429,41 +421,16 @@ public:
 	int get_network_master() const;
 	bool is_network_master() const;
 
-	uint16_t rpc_config(const StringName &p_method, MultiplayerAPI::RPCMode p_mode); // config a local method for RPC
-	uint16_t rset_config(const StringName &p_property, MultiplayerAPI::RPCMode p_mode); // config a local property for RPC
+	uint16_t rpc_config(const StringName &p_method, MultiplayerAPI::RPCMode p_rpc_mode, NetworkedMultiplayerPeer::TransferMode p_transfer_mode, int p_channel = 0); // config a local method for RPC
+	Vector<MultiplayerAPI::RPCConfig> get_node_rpc_methods() const;
 
-	void rpc(const StringName &p_method, VARIANT_ARG_LIST); //rpc call, honors RPCMode
-	void rpc_unreliable(const StringName &p_method, VARIANT_ARG_LIST); //rpc call, honors RPCMode
-	void rpc_id(int p_peer_id, const StringName &p_method, VARIANT_ARG_LIST); //rpc call, honors RPCMode
-	void rpc_unreliable_id(int p_peer_id, const StringName &p_method, VARIANT_ARG_LIST); //rpc call, honors RPCMode
-
-	void rset(const StringName &p_property, const Variant &p_value); //remote set call, honors RPCMode
-	void rset_unreliable(const StringName &p_property, const Variant &p_value); //remote set call, honors RPCMode
-	void rset_id(int p_peer_id, const StringName &p_property, const Variant &p_value); //remote set call, honors RPCMode
-	void rset_unreliable_id(int p_peer_id, const StringName &p_property, const Variant &p_value); //remote set call, honors RPCMode
-
-	void rpcp(int p_peer_id, bool p_unreliable, const StringName &p_method, const Variant **p_arg, int p_argcount);
-	void rsetp(int p_peer_id, bool p_unreliable, const StringName &p_property, const Variant &p_value);
+	void rpc(const StringName &p_method, VARIANT_ARG_LIST); // RPC, honors RPCMode, TransferMode, channel
+	void rpc_id(int p_peer_id, const StringName &p_method, VARIANT_ARG_LIST); // RPC to specific peer(s), honors RPCMode, TransferMode, channel
+	void rpcp(int p_peer_id, const StringName &p_method, const Variant **p_arg, int p_argcount);
 
 	Ref<MultiplayerAPI> get_multiplayer() const;
 	Ref<MultiplayerAPI> get_custom_multiplayer() const;
 	void set_custom_multiplayer(Ref<MultiplayerAPI> p_multiplayer);
-
-	/// Returns the rpc method ID, otherwise UINT32_MAX
-	uint16_t get_node_rpc_method_id(const StringName &p_method) const;
-	StringName get_node_rpc_method(const uint16_t p_rpc_method_id) const;
-	MultiplayerAPI::RPCMode get_node_rpc_mode_by_id(const uint16_t p_rpc_method_id) const;
-	MultiplayerAPI::RPCMode get_node_rpc_mode(const StringName &p_method) const;
-
-	/// Returns the rpc property ID, otherwise UINT32_MAX
-	uint16_t get_node_rset_property_id(const StringName &p_property) const;
-	StringName get_node_rset_property(const uint16_t p_rset_property_id) const;
-	MultiplayerAPI::RPCMode get_node_rset_mode_by_id(const uint16_t p_rpc_method_id) const;
-	MultiplayerAPI::RPCMode get_node_rset_mode(const StringName &p_property) const;
-
-	/// Can be used to check if the rpc methods and the rset properties are the
-	/// same across the peers.
-	String get_rpc_md5() const;
 
 	Node();
 	~Node();
