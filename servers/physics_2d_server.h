@@ -164,9 +164,9 @@ public:
 		Vector2 position;
 		Vector2 normal;
 		RID rid;
-		ObjectID collider_id;
-		Object *collider;
-		int shape;
+		ObjectID collider_id = 0;
+		Object *collider = nullptr;
+		int shape = 0;
 		Variant metadata;
 	};
 
@@ -175,9 +175,9 @@ public:
 	struct ShapeResult {
 
 		RID rid;
-		ObjectID collider_id;
-		Object *collider;
-		int shape;
+		ObjectID collider_id = 0;
+		Object *collider = nullptr;
+		int shape = 0;
 		Variant metadata;
 	};
 
@@ -195,8 +195,8 @@ public:
 		Vector2 point;
 		Vector2 normal;
 		RID rid;
-		ObjectID collider_id;
-		int shape;
+		ObjectID collider_id = 0;
+		int shape = 0;
 		Vector2 linear_velocity; //velocity at contact point
 		Variant metadata;
 	};
