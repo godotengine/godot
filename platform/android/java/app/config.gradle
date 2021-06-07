@@ -191,6 +191,35 @@ ext.getGodotPluginsLocalBinaries = { ->
     return binDeps
 }
 
+ext.getDebugKeystoreFile = { ->
+    String keystoreFile = project.hasProperty("debug_keystore_file") ? project.property("debug_keystore_file") : ""
+    if (keystoreFile == null || keystoreFile.isEmpty()) {
+        keystoreFile = "."
+    }
+    return keystoreFile
+}
+
+ext.hasCustomDebugKeystore = { ->
+    File keystoreFile = new File(getDebugKeystoreFile())
+    return keystoreFile.isFile()
+}
+
+ext.getDebugKeystorePassword = { ->
+    String keystorePassword = project.hasProperty("debug_keystore_password") ? project.property("debug_keystore_password") : ""
+    if (keystorePassword == null || keystorePassword.isEmpty()) {
+        keystorePassword = "android"
+    }
+    return keystorePassword
+}
+
+ext.getDebugKeyAlias = { ->
+    String keyAlias = project.hasProperty("debug_keystore_alias") ? project.property("debug_keystore_alias") : ""
+    if (keyAlias == null || keyAlias.isEmpty()) {
+        keyAlias = "androiddebugkey"
+    }
+    return keyAlias
+}
+
 ext.getReleaseKeystoreFile = { ->
     String keystoreFile = project.hasProperty("release_keystore_file") ? project.property("release_keystore_file") : ""
     if (keystoreFile == null || keystoreFile.isEmpty()) {
