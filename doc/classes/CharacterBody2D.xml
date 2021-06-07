@@ -101,6 +101,9 @@
 		<member name="floor_max_angle" type="float" setter="set_floor_max_angle" getter="get_floor_max_angle" default="0.785398">
 			Maximum angle (in radians) where a slope is still considered a floor (or a ceiling), rather than a wall, when calling [method move_and_slide]. The default value equals 45 degrees.
 		</member>
+		<member name="floor_max_angle_degrees" type="float" setter="set_floor_max_angle_degrees" getter="get_floor_max_angle_degrees" default="45.0">
+			Maximum angle (in degrees) where a slope is still considered a floor (or a ceiling), rather than a wall, when calling [method move_and_slide].
+		</member>
 		<member name="infinite_inertia" type="bool" setter="set_infinite_inertia_enabled" getter="is_infinite_inertia_enabled" default="true">
 			If [code]true[/code], the body will be able to push [RigidBody2D] nodes when calling [method move_and_slide], but it also won't detect any collisions with them. If [code]false[/code], it will interact with [RigidBody2D] nodes like with [StaticBody2D].
 		</member>

@@ -1203,8 +1203,16 @@ real_t CharacterBody2D::get_floor_max_angle() const {
 	return floor_max_angle;
 }
 
-void CharacterBody2D::set_floor_max_angle(real_t p_floor_max_angle) {
-	floor_max_angle = p_floor_max_angle;
+void CharacterBody2D::set_floor_max_angle(real_t p_radians) {
+	floor_max_angle = p_radians;
+}
+
+real_t CharacterBody2D::get_floor_max_angle_degrees() const {
+	return Math::rad2deg(floor_max_angle);
+}
+
+void CharacterBody2D::set_floor_max_angle_degrees(real_t p_degrees) {
+	floor_max_angle = Math::deg2rad(p_degrees);
 }
 
 const Vector2 &CharacterBody2D::get_snap() const {
@@ -1262,7 +1270,9 @@ void CharacterBody2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_max_slides"), &CharacterBody2D::get_max_slides);
 	ClassDB::bind_method(D_METHOD("set_max_slides", "max_slides"), &CharacterBody2D::set_max_slides);
 	ClassDB::bind_method(D_METHOD("get_floor_max_angle"), &CharacterBody2D::get_floor_max_angle);
-	ClassDB::bind_method(D_METHOD("set_floor_max_angle", "floor_max_angle"), &CharacterBody2D::set_floor_max_angle);
+	ClassDB::bind_method(D_METHOD("set_floor_max_angle", "radians"), &CharacterBody2D::set_floor_max_angle);
+	ClassDB::bind_method(D_METHOD("get_floor_max_angle_degrees"), &CharacterBody2D::get_floor_max_angle_degrees);
+	ClassDB::bind_method(D_METHOD("set_floor_max_angle_degrees", "degrees"), &CharacterBody2D::set_floor_max_angle_degrees);
 	ClassDB::bind_method(D_METHOD("get_snap"), &CharacterBody2D::get_snap);
 	ClassDB::bind_method(D_METHOD("set_snap", "snap"), &CharacterBody2D::set_snap);
 	ClassDB::bind_method(D_METHOD("get_up_direction"), &CharacterBody2D::get_up_direction);
@@ -1283,7 +1293,8 @@ void CharacterBody2D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "stop_on_slope"), "set_stop_on_slope_enabled", "is_stop_on_slope_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "infinite_inertia"), "set_infinite_inertia_enabled", "is_infinite_inertia_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "max_slides"), "set_max_slides", "get_max_slides");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "floor_max_angle"), "set_floor_max_angle", "get_floor_max_angle");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "floor_max_angle", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR), "set_floor_max_angle", "get_floor_max_angle");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "floor_max_angle_degrees", PROPERTY_HINT_RANGE, "0,180,0.1", PROPERTY_USAGE_EDITOR), "set_floor_max_angle_degrees", "get_floor_max_angle_degrees");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "snap"), "set_snap", "get_snap");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "up_direction"), "set_up_direction", "get_up_direction");
 
