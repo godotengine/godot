@@ -1309,7 +1309,10 @@ void ColorPickerButton::pressed() {
 			break;
 		}
 	}
-	popup->set_position(cp_rect.position);
+
+	Point2 camera_offset = get_viewport()->get_canvas_transform().get_origin();
+
+	popup->set_position(cp_rect.position + camera_offset);
 	popup->popup();
 	picker->set_focus_on_line_edit();
 }

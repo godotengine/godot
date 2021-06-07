@@ -116,7 +116,15 @@ void OptionButton::_selected(int p_which) {
 
 void OptionButton::pressed() {
 	Size2 size = get_size();
-	popup->set_position(get_screen_position() + Size2(0, size.height * get_global_transform().get_scale().y));
+
+	Point2 gp = get_screen_position();
+	gp.y += size.height * get_global_transform().get_scale().y;
+
+	Point2 camera_offset = get_viewport()->get_canvas_transform().get_origin();
+	gp += camera_offset;
+
+	popup->set_position(gp);
+
 	popup->set_size(Size2(size.width, 0));
 	popup->popup();
 }
