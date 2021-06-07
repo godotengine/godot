@@ -1541,19 +1541,46 @@ Position3DGizmoPlugin::Position3DGizmoPlugin() {
 	cursor_points = Vector<Vector3>();
 
 	Vector<Color> cursor_colors;
-	float cs = 0.25;
+	const float cs = 0.25;
+	// Add more points to create a "hard stop" in the color gradient.
 	cursor_points.push_back(Vector3(+cs, 0, 0));
+	cursor_points.push_back(Vector3());
+	cursor_points.push_back(Vector3());
 	cursor_points.push_back(Vector3(-cs, 0, 0));
+
 	cursor_points.push_back(Vector3(0, +cs, 0));
+	cursor_points.push_back(Vector3());
+	cursor_points.push_back(Vector3());
 	cursor_points.push_back(Vector3(0, -cs, 0));
+
 	cursor_points.push_back(Vector3(0, 0, +cs));
+	cursor_points.push_back(Vector3());
+	cursor_points.push_back(Vector3());
 	cursor_points.push_back(Vector3(0, 0, -cs));
-	cursor_colors.push_back(EditorNode::get_singleton()->get_gui_base()->get_theme_color("axis_x_color", "Editor"));
-	cursor_colors.push_back(EditorNode::get_singleton()->get_gui_base()->get_theme_color("axis_x_color", "Editor"));
-	cursor_colors.push_back(EditorNode::get_singleton()->get_gui_base()->get_theme_color("axis_y_color", "Editor"));
-	cursor_colors.push_back(EditorNode::get_singleton()->get_gui_base()->get_theme_color("axis_y_color", "Editor"));
-	cursor_colors.push_back(EditorNode::get_singleton()->get_gui_base()->get_theme_color("axis_z_color", "Editor"));
-	cursor_colors.push_back(EditorNode::get_singleton()->get_gui_base()->get_theme_color("axis_z_color", "Editor"));
+
+	// Use the axis color which is brighter for the positive axis.
+	// Use a darkened axis color for the negative axis.
+	// This makes it possible to see in which direction the Position3D node is rotated
+	// (which can be important depending on how it's used).
+	const Color color_x = EditorNode::get_singleton()->get_gui_base()->get_theme_color("axis_x_color", "Editor");
+	cursor_colors.push_back(color_x);
+	cursor_colors.push_back(color_x);
+	// FIXME: Use less strong darkening factor once GH-48573 is fixed.
+	// The current darkening factor compensates for lines being too bright in the 3D editor.
+	cursor_colors.push_back(color_x.lerp(Color(0, 0, 0), 0.75));
+	cursor_colors.push_back(color_x.lerp(Color(0, 0, 0), 0.75));
+
+	const Color color_y = EditorNode::get_singleton()->get_gui_base()->get_theme_color("axis_y_color", "Editor");
+	cursor_colors.push_back(color_y);
+	cursor_colors.push_back(color_y);
+	cursor_colors.push_back(color_y.lerp(Color(0, 0, 0), 0.75));
+	cursor_colors.push_back(color_y.lerp(Color(0, 0, 0), 0.75));
+
+	const Color color_z = EditorNode::get_singleton()->get_gui_base()->get_theme_color("axis_z_color", "Editor");
+	cursor_colors.push_back(color_z);
+	cursor_colors.push_back(color_z);
+	cursor_colors.push_back(color_z.lerp(Color(0, 0, 0), 0.75));
+	cursor_colors.push_back(color_z.lerp(Color(0, 0, 0), 0.75));
 
 	Ref<StandardMaterial3D> mat = memnew(StandardMaterial3D);
 	mat->set_shading_mode(StandardMaterial3D::SHADING_MODE_UNSHADED);
