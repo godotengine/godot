@@ -161,6 +161,8 @@
 		</member>
 		<member name="limit_smoothed" type="bool" setter="set_limit_smoothing_enabled" getter="is_limit_smoothing_enabled" default="false">
 			If [code]true[/code], the camera smoothly stops when reaches its limits.
+			This has no effect if smoothing is disabled.
+			[b]Note:[/b] To immediately update the camera's position to be within limits without smoothing, even with this setting enabled, invoke [method reset_smoothing].
 		</member>
 		<member name="limit_top" type="int" setter="set_limit" getter="get_limit" default="-10000000">
 			Top scroll limit in pixels. The camera stops moving when reaching this value.
