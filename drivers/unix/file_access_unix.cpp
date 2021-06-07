@@ -264,7 +264,7 @@ void FileAccessUnix::store_8(uint8_t p_dest) {
 
 void FileAccessUnix::store_buffer(const uint8_t *p_src, uint64_t p_length) {
 	ERR_FAIL_COND_MSG(!f, "File must be opened before use.");
-	ERR_FAIL_COND(!p_src);
+	ERR_FAIL_COND(!p_src && p_length > 0);
 	ERR_FAIL_COND(fwrite(p_src, 1, p_length, f) != p_length);
 }
 

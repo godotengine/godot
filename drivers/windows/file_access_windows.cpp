@@ -294,6 +294,7 @@ void FileAccessWindows::store_8(uint8_t p_dest) {
 
 void FileAccessWindows::store_buffer(const uint8_t *p_src, uint64_t p_length) {
 	ERR_FAIL_COND(!f);
+	ERR_FAIL_COND(!p_src && p_length > 0);
 	if (flags == READ_WRITE || flags == WRITE_READ) {
 		if (prev_op == READ) {
 			if (last_error != ERR_FILE_EOF) {
