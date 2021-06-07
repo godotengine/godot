@@ -141,7 +141,7 @@ EditorAbout::EditorAbout() {
 	version_btn = memnew(LinkButton);
 	String hash = String(VERSION_HASH);
 	if (hash.length() != 0) {
-		hash = "." + hash.left(9);
+		hash = " " + vformat("[%s]", hash.left(9));
 	}
 	version_btn->set_text(VERSION_FULL_NAME + hash);
 	// Set the text to copy in metadata as it slightly differs from the button's text.
