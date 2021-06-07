@@ -3280,7 +3280,7 @@ VkRenderPass RenderingDeviceVulkan::_render_pass_create(const Vector<AttachmentF
 
 		// For each UNDEFINED, assume the prior use was a *read*, as we'd be discarding the output of a write
 		// Also, each UNDEFINED will do an immediate layout transition (write), s.t. we must ensure execution synchronization vs.
-		// the read.  If this is a performance issue, one could track the actual last accessor of each resource, adding only that
+		// the read. If this is a performance issue, one could track the actual last accessor of each resource, adding only that
 		// stage
 		switch (is_depth_stencil ? p_initial_depth_action : p_initial_color_action) {
 			case INITIAL_ACTION_CLEAR_REGION:

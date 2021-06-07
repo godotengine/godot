@@ -81,7 +81,7 @@ private:
 		1004, //CURSOR_BUSY
 		1021, //CURSOR_DRAG
 		1021, //CURSOR_CAN_DRO
-		1000, //CURSOR_FORBIDD (no corresponding icon in Android's icon  so fallback to default)
+		1000, //CURSOR_FORBIDD (no corresponding icon in Android's icon so fallback to default)
 		1015, //CURSOR_VSIZE
 		1014, //CURSOR_HSIZE
 		1017, //CURSOR_BDIAGSI

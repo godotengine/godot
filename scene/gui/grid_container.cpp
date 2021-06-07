@@ -33,7 +33,7 @@
 void GridContainer::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_SORT_CHILDREN: {
-			Map<int, int> col_minw; // Max of min_width  of all controls in each col (indexed by col).
+			Map<int, int> col_minw; // Max of min_width of all controls in each col (indexed by col).
 			Map<int, int> row_minh; // Max of min_height of all controls in each row (indexed by row).
 			Set<int> col_expanded; // Columns which have the SIZE_EXPAND flag set.
 			Set<int> row_expanded; // Rows which have the SIZE_EXPAND flag set.

@@ -61,7 +61,7 @@ typedef struct {
 	//this is used by script languages that keep a reference counter of their own
 	//you can make make Ref<> not die when it reaches zero, so deleting the reference
 	//depends entirely from the script.
-	// Note: You can set those function pointer to nullptr  if not needed.
+	// Note: You can set those function pointer to nullptr if not needed.
 	void (*refcount_incremented)(godot_pluginscript_instance_data *p_data);
 	bool (*refcount_decremented)(godot_pluginscript_instance_data *p_data); // return true if it can die
 } godot_pluginscript_instance_desc;
@@ -121,12 +121,12 @@ typedef struct {
 	const char *name;
 	const char *type;
 	const char *extension;
-	const char **recognized_extensions; // nullptr  terminated array
+	const char **recognized_extensions; // nullptr terminated array
 	godot_pluginscript_language_data *(*init)();
 	void (*finish)(godot_pluginscript_language_data *p_data);
-	const char **reserved_words; // nullptr  terminated array
-	const char **comment_delimiters; // nullptr  terminated array
-	const char **string_delimiters; // nullptr  terminated array
+	const char **reserved_words; // nullptr terminated array
+	const char **comment_delimiters; // nullptr terminated array
+	const char **string_delimiters; // nullptr terminated array
 	godot_bool has_named_classes;
 	godot_bool supports_builtin_mode;
 	godot_bool can_inherit_from_file;
