@@ -305,7 +305,10 @@ private:
 	void set_max_slides(int p_max_slides);
 
 	real_t get_floor_max_angle() const;
-	void set_floor_max_angle(real_t p_floor_max_angle);
+	void set_floor_max_angle(real_t p_radians);
+
+	real_t get_floor_max_angle_degrees() const;
+	void set_floor_max_angle_degrees(real_t p_degrees);
 
 	const Vector3 &get_snap() const;
 	void set_snap(const Vector3 &p_snap);
