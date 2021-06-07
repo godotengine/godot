@@ -2451,7 +2451,9 @@ void ScriptEditor::_add_callback(Object *p_obj, const String &p_function, const 
 		script_list->select(script_list->find_metadata(i));
 
 		// Save the current script so the changes can be picked up by an external editor.
-		save_current_script();
+		if (!_is_built_in_script(script.ptr())) { // But only if it's not built-in script.
+			save_current_script();
+		}
 
 		break;
 	}
