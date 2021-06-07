@@ -591,7 +591,7 @@ void FileAccess::store_csv_line(const Vector<String> &p_values, const String &p_
 }
 
 void FileAccess::store_buffer(const uint8_t *p_src, int p_length) {
-
+	ERR_FAIL_COND(!p_src && p_length > 0);
 	for (int i = 0; i < p_length; i++)
 		store_8(p_src[i]);
 }
