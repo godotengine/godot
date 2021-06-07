@@ -758,12 +758,12 @@ void SpatialMaterial::_update_shader() {
 			code += "\t\tfloat current_layer_depth = 0.0;\n";
 			code += "\t\tvec2 P = view_dir.xy * depth_scale;\n";
 			code += "\t\tvec2 delta = P / num_layers;\n";
-			code += "\t\tvec2  ofs = base_uv;\n";
-			code += "\t\tfloat depth = textureLod(texture_depth, ofs,0.0).r;\n";
+			code += "\t\tvec2 ofs = base_uv;\n";
+			code += "\t\tfloat depth = textureLod(texture_depth, ofs, 0.0).r;\n";
 			code += "\t\tfloat current_depth = 0.0;\n";
 			code += "\t\twhile(current_depth < depth) {\n";
 			code += "\t\t\tofs -= delta;\n";
-			code += "\t\t\tdepth = textureLod(texture_depth, ofs,0.0).r;\n";
+			code += "\t\t\tdepth = textureLod(texture_depth, ofs, 0.0).r;\n";
 			code += "\t\t\tcurrent_depth += layer_depth;\n";
 			code += "\t\t}\n";
 			code += "\t\tvec2 prev_ofs = ofs + delta;\n";
