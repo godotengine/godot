@@ -442,7 +442,7 @@ namespace Godot
 #if DEBUG
             if (!normal.IsNormalized())
             {
-                throw new ArgumentException("Argument  is not normalized", nameof(normal));
+                throw new ArgumentException("Argument is not normalized", nameof(normal));
             }
 #endif
             return 2 * Dot(normal) * normal - this;

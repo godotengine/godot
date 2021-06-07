@@ -891,7 +891,7 @@ void BaseMaterial3D::_update_shader() {
 			code += "\t\tfloat current_layer_depth = 0.0;\n";
 			code += "\t\tvec2 P = view_dir.xy * heightmap_scale;\n";
 			code += "\t\tvec2 delta = P / num_layers;\n";
-			code += "\t\tvec2  ofs = base_uv;\n";
+			code += "\t\tvec2 ofs = base_uv;\n";
 			if (flags[FLAG_INVERT_HEIGHTMAP]) {
 				code += "\t\tfloat depth = texture(texture_heightmap, ofs).r;\n";
 			} else {

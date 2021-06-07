@@ -889,7 +889,7 @@ Error encode_variant(const Variant &p_variant, uint8_t *r_buffer, int &r_len, bo
 			// Test for potential wrong values sent by the debugger when it breaks.
 			Object *obj = p_variant.get_validated_object();
 			if (!obj) {
-				// Object is invalid, send a nullptr  instead.
+				// Object is invalid, send a nullptr instead.
 				if (buf) {
 					encode_uint32(Variant::NIL, buf);
 				}

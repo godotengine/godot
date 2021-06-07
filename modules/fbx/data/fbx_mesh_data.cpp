@@ -1126,8 +1126,8 @@ HashMap<int, R> FBXMeshData::extract_per_vertex_data(
 					}
 					const int vertex_index = get_vertex_from_polygon_vertex(p_mesh_indices, polygon_vertex_index);
 					ERR_FAIL_COND_V_MSG(vertex_index < 0, (HashMap<int, R>()), "FBX file corrupted: #ERR8");
-					ERR_FAIL_COND_V_MSG(vertex_index >= p_vertex_count, (HashMap<int, R>()), "FBX file seems  corrupted: #ERR9.");
-					ERR_FAIL_COND_V_MSG(p_mapping_data.index[polygon_vertex_index] < 0, (HashMap<int, R>()), "FBX file seems  corrupted: #ERR10.");
+					ERR_FAIL_COND_V_MSG(vertex_index >= p_vertex_count, (HashMap<int, R>()), "FBX file seems corrupted: #ERR9.");
+					ERR_FAIL_COND_V_MSG(p_mapping_data.index[polygon_vertex_index] < 0, (HashMap<int, R>()), "FBX file seems corrupted: #ERR10.");
 					ERR_FAIL_COND_V_MSG(p_mapping_data.index[polygon_vertex_index] >= (int)p_mapping_data.data.size(), (HashMap<int, R>()), "FBX file seems corrupted: #ERR11.");
 					aggregate_vertex_data[vertex_index].push_back({ polygon_id, p_mapping_data.data[p_mapping_data.index[polygon_vertex_index]] });
 				}

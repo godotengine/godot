@@ -354,7 +354,7 @@ Error ResourceLoader::load_threaded_request(const String &p_path, const String &
 
 	ThreadLoadTask &load_task = thread_load_tasks[local_path];
 
-	if (load_task.resource.is_null()) { //needs  to be loaded in thread
+	if (load_task.resource.is_null()) { //needs to be loaded in thread
 
 		load_task.semaphore = memnew(Semaphore);
 		if (thread_loading_count < thread_load_max) {

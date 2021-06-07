@@ -80,7 +80,6 @@ private:
 
 	Vector<Attribute> attributes;
 
-	String _replace_special_characters(const String &origstr);
 	bool _set_text(char *start, char *end);
 	void _parse_closing_xml_element();
 	void _ignore_definition();

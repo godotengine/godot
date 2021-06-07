@@ -302,7 +302,7 @@ void VideoStreamPlaybackTheora::set_file(const String &p_file) {
 		}
 	}
 
-	/* and now we have it all.  initialize decoders */
+	/* And now we have it all. Initialize decoders. */
 	if (theora_p) {
 		td = th_decode_alloc(&ti, ts);
 		px_fmt = ti.pixel_fmt;
@@ -484,10 +484,10 @@ void VideoStreamPlaybackTheora::update(float p_delta) {
 
 					//printf("frame time %f, play time %f, ready %i\n", (float)videobuf_time, get_time(), videobuf_ready);
 
-					/* is it already too old to be useful?  This is only actually
-					 useful cosmetically after a SIGSTOP.  Note that we have to
+					/* is it already too old to be useful? This is only actually
+					 useful cosmetically after a SIGSTOP. Note that we have to
 					 decode the frame even if we don't show it (for now) due to
-					 keyframing.  Soon enough libtheora will be able to deal
+					 keyframing. Soon enough libtheora will be able to deal
 					 with non-keyframe seeks.  */
 
 					if (videobuf_time >= get_time()) {

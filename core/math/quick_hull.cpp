@@ -112,7 +112,7 @@ Error QuickHull::build(const Vector<Vector3> &p_points, Geometry3D::MeshData &r_
 		}
 	}
 
-	//fourth vertex is the one  most further away from the plane
+	//fourth vertex is the one most further away from the plane
 
 	{
 		real_t maxd = 0;
