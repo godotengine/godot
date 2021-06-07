@@ -13,7 +13,7 @@
 		<method name="execute_modifications">
 			<return type="void">
 			</return>
-			<argument index="0" name="execution_mode" type="float">
+			<argument index="0" name="delta" type="float">
 			</argument>
 			<argument index="1" name="execution_mode" type="int">
 			</argument>

@@ -787,7 +787,7 @@ void Skeleton2D::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_modification_stack", "modification_stack"), &Skeleton2D::set_modification_stack);
 	ClassDB::bind_method(D_METHOD("get_modification_stack"), &Skeleton2D::get_modification_stack);
-	ClassDB::bind_method(D_METHOD("execute_modifications", "execution_mode", "execution_mode"), &Skeleton2D::execute_modifications);
+	ClassDB::bind_method(D_METHOD("execute_modifications", "delta", "execution_mode"), &Skeleton2D::execute_modifications);
 
 	ClassDB::bind_method(D_METHOD("set_bone_local_pose_override", "bone_idx", "override_pose", "strength", "persistent"), &Skeleton2D::set_bone_local_pose_override);
 	ClassDB::bind_method(D_METHOD("get_bone_local_pose_override", "bone_idx"), &Skeleton2D::get_bone_local_pose_override);
