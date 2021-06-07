@@ -537,12 +537,16 @@ Array SurfaceTool::commit_to_arrays() {
 				int count = skin_weights == SKIN_8_WEIGHTS ? 8 : 4;
 				Vector<int> array;
 				array.resize(varr_len * count);
+				array.fill(0);
 				int *w = array.ptrw();
 
 				for (uint32_t idx = 0; idx < vertex_array.size(); idx++) {
 					const Vertex &v = vertex_array[idx];
 
-					ERR_CONTINUE(v.bones.size() != count);
+					if (v.bones.size() > count) {
+						ERR_PRINT_ONCE(vformat("Invalid bones size %d vs count %d", v.bones.size(), count));
+						continue;
+					}
 
 					for (int j = 0; j < count; j++) {
 						w[idx * count + j] = v.bones[j];
@@ -557,12 +561,16 @@ Array SurfaceTool::commit_to_arrays() {
 				int count = skin_weights == SKIN_8_WEIGHTS ? 8 : 4;
 
 				array.resize(varr_len * count);
+				array.fill(0.0f);
 				float *w = array.ptrw();
 
 				for (uint32_t idx = 0; idx < vertex_array.size(); idx++) {
 					const Vertex &v = vertex_array[idx];
 
-					ERR_CONTINUE(v.weights.size() != count);
+					if (v.weights.size() > count) {
+						ERR_PRINT_ONCE(vformat("Invalid weight size %d vs count %d", v.weights.size(), count));
+						continue;
+					}
 
 					for (int j = 0; j < count; j++) {
 						w[idx * count + j] = v.weights[j];

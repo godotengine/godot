@@ -2653,10 +2653,10 @@ Error GLTFDocument::_parse_meshes(Ref<GLTFState> state) {
 				//must generate mikktspace tangents.. ergh..
 				Ref<SurfaceTool> st;
 				st.instance();
+				st->create_from_triangle_arrays(array);
 				if (a.has("JOINTS_0") && a.has("JOINTS_1")) {
 					st->set_skin_weight_count(SurfaceTool::SKIN_8_WEIGHTS);
 				}
-				st->create_from_triangle_arrays(array);
 				st->generate_tangents();
 				array = st->commit_to_arrays();
 			}
@@ -2772,10 +2772,10 @@ Error GLTFDocument::_parse_meshes(Ref<GLTFState> state) {
 					if (generate_tangents) {
 						Ref<SurfaceTool> st;
 						st.instance();
+						st->create_from_triangle_arrays(array_copy);
 						if (a.has("JOINTS_0") && a.has("JOINTS_1")) {
 							st->set_skin_weight_count(SurfaceTool::SKIN_8_WEIGHTS);
 						}
-						st->create_from_triangle_arrays(array_copy);
 						st->deindex();
 						st->generate_tangents();
 						array_copy = st->commit_to_arrays();
