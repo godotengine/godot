@@ -16,14 +16,14 @@
 			</argument>
 			<argument index="1" name="event" type="InputEvent">
 			</argument>
-			<argument index="2" name="click_position" type="Vector3">
+			<argument index="2" name="position" type="Vector3">
 			</argument>
-			<argument index="3" name="click_normal" type="Vector3">
+			<argument index="3" name="normal" type="Vector3">
 			</argument>
 			<argument index="4" name="shape_idx" type="int">
 			</argument>
 			<description>
-				Accepts unhandled [InputEvent]s. [code]click_position[/code] is the clicked location in world space and [code]click_normal[/code] is the normal vector extending from the clicked surface of the [Shape3D] at [code]shape_idx[/code]. Connect to the [code]input_event[/code] signal to easily pick up these events.
+				Receives unhandled [InputEvent]s. [code]position[/code] is the location in world space of the mouse pointer on the surface of the shape with index [code]shape_idx[/code] and [code]normal[/code] is the normal vector of the surface at that point. Connect to the [signal input_event] signal to easily pick up these events.
 			</description>
 		</method>
 		<method name="create_shape_owner">
@@ -243,14 +243,14 @@
 			</argument>
 			<argument index="1" name="event" type="InputEvent">
 			</argument>
-			<argument index="2" name="click_position" type="Vector3">
+			<argument index="2" name="position" type="Vector3">
 			</argument>
-			<argument index="3" name="click_normal" type="Vector3">
+			<argument index="3" name="normal" type="Vector3">
 			</argument>
 			<argument index="4" name="shape_idx" type="int">
 			</argument>
 			<description>
-				Emitted when [method _input_event] receives an event. See its description for details.
+				Emitted when the object receives an unhandled [InputEvent]. [code]position[/code] is the location in world space of the mouse pointer on the surface of the shape with index [code]shape_idx[/code] and [code]normal[/code] is the normal vector of the surface at that point.
 			</description>
 		</signal>
 		<signal name="mouse_entered">
