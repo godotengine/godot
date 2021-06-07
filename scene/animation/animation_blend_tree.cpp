@@ -34,6 +34,7 @@
 
 void AnimationNodeAnimation::set_animation(const StringName &p_name) {
 	animation = p_name;
+	emit_signal("tree_changed");
 }
 
 StringName AnimationNodeAnimation::get_animation() const {
@@ -641,6 +642,8 @@ void AnimationNodeTransition::set_enabled_inputs(int p_inputs) {
 	ERR_FAIL_INDEX(p_inputs, MAX_INPUTS);
 	enabled_inputs = p_inputs;
 	_update_inputs();
+
+	emit_signal("tree_changed");
 }
 
 int AnimationNodeTransition::get_enabled_inputs() {
@@ -661,6 +664,8 @@ void AnimationNodeTransition::set_input_caption(int p_input, const String &p_nam
 	ERR_FAIL_INDEX(p_input, MAX_INPUTS);
 	inputs[p_input].name = p_name;
 	set_input_name(p_input, p_name);
+
+	emit_signal("tree_changed");
 }
 
 String AnimationNodeTransition::get_input_caption(int p_input) const {
