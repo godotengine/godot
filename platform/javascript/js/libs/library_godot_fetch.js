@@ -29,7 +29,7 @@
 /*************************************************************************/
 
 const GodotFetch = {
-	$GodotFetch__deps: ['$GodotRuntime'],
+	$GodotFetch__deps: ['$IDHandler', '$GodotRuntime'],
 	$GodotFetch: {
 
 		onread: function (id, result) {
