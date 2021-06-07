@@ -684,7 +684,7 @@ void SoftBody3DSW::generate_bending_constraints(int p_distance) {
 //
 // This function takes in a list of interdependent Links and tries
 // to maximize the distance between calculation
-// of dependent links.  This increases the amount of parallelism that can
+// of dependent links. This increases the amount of parallelism that can
 // be exploited by out-of-order instruction processors with large but
 // (inevitably) finite instruction windows.
 //

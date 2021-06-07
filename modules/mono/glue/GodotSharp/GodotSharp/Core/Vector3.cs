@@ -456,7 +456,7 @@ namespace Godot
 #if DEBUG
             if (!normal.IsNormalized())
             {
-                throw new ArgumentException("Argument  is not normalized", nameof(normal));
+                throw new ArgumentException("Argument is not normalized", nameof(normal));
             }
 #endif
             return 2.0f * Dot(normal) * normal - this;
@@ -474,7 +474,7 @@ namespace Godot
 #if DEBUG
             if (!axis.IsNormalized())
             {
-                throw new ArgumentException("Argument  is not normalized", nameof(axis));
+                throw new ArgumentException("Argument is not normalized", nameof(axis));
             }
 #endif
             return new Basis(axis, phi).Xform(this);

@@ -92,7 +92,7 @@
 		        return new Godot.Collections.Array{new Godot.Collections.Dictionary{{"name", "myOption"}, {"defaultValue", false}}};
 		    }
 
-		    public override int Import(String sourceFile, String savePath, Godot.Collections.Dictionary options, Godot.Collections.Array platformVariants, Godot.Collections.Array  genFiles)
+		    public override int Import(String sourceFile, String savePath, Godot.Collections.Dictionary options, Godot.Collections.Array platformVariants, Godot.Collections.Array genFiles)
 		    {
 		        var file = new File();
 		        if (file.Open(sourceFile, File.ModeFlags.Read) != Error.Ok)

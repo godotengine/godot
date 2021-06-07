@@ -231,7 +231,7 @@ public:
 	/**
 	 * returns true if the value was found, false otherwise.
 	 *
-	 * if r_data is not nullptr  then the value will be written to the object
+	 * if r_data is not nullptr then the value will be written to the object
 	 * it points to.
 	 */
 	bool lookup(const TKey &p_key, TValue &r_data) const {
@@ -249,7 +249,7 @@ public:
 	/**
 	 * returns true if the value was found, false otherwise.
 	 *
-	 * if r_data is not nullptr  then the value will be written to the object
+	 * if r_data is not nullptr then the value will be written to the object
 	 * it points to.
 	 */
 	TValue *lookup_ptr(const TKey &p_key) const {

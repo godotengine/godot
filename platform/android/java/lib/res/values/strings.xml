@@ -6,7 +6,7 @@
     <string name="text_button_resume_cellular">Resume download</string>
     <string name="text_button_wifi_settings">Wi-Fi settings</string>
     <string name="text_verifying_download">Verifying Download</string>
-    <string name="text_validation_complete">XAPK File Validation Complete.  Select OK to exit.</string>
+    <string name="text_validation_complete">XAPK File Validation Complete. Select OK to exit.</string>
     <string name="text_validation_failed">XAPK File Validation Failed.</string>
     <string name="text_button_pause">Pause Download</string>
     <string name="text_button_resume">Resume Download</string>

@@ -81,7 +81,7 @@ public:
 
 	//! temp_variables
 	//!@{
-	real_t m_currentLimitError; //!  How much is violated this limit
+	real_t m_currentLimitError; //!< How much is violated this limit
 	int m_currentLimit; //!< 0=free, 1=at lo limit, 2=at hi limit
 	real_t m_accumulatedImpulse;
 	//!@}
@@ -113,7 +113,7 @@ public:
 		return (m_enableMotor || m_currentLimit != 0);
 	}
 
-	//! calculates  error
+	//! calculates error
 	/*!
 	calculates m_currentLimit and m_currentLimitError.
 	*/
@@ -327,7 +327,7 @@ public:
 		return &m_angularLimits[index];
 	}
 
-	//! Retrieves the  limit informacion
+	//! Retrieves the limit informacion
 	G6DOFTranslationalLimitMotor3DSW *getTranslationalLimitMotor() {
 		return &m_linearLimits;
 	}

@@ -38,7 +38,7 @@
 			<return type="bool">
 			</return>
 			<description>
-				Returns [code]true[/code] if there is an instance of  the game running with the attached debugger otherwise [code]false[/code].
+				Returns [code]true[/code] if there is an instance of the game running with the attached debugger otherwise [code]false[/code].
 			</description>
 		</method>
 		<method name="register_message_capture">

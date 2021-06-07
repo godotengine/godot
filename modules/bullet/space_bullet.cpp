@@ -445,7 +445,7 @@ real_t SpaceBullet::get_param(PhysicsServer3D::SpaceParameter p_param) {
 		case PhysicsServer3D::SPACE_PARAM_BODY_ANGULAR_VELOCITY_DAMP_RATIO:
 		case PhysicsServer3D::SPACE_PARAM_CONSTRAINT_DEFAULT_BIAS:
 		default:
-			WARN_PRINT("The SpaceBullet  doesn't support this get parameter (" + itos(p_param) + "), 0 is returned.");
+			WARN_PRINT("The SpaceBullet doesn't support this get parameter (" + itos(p_param) + "), 0 is returned.");
 			return 0.f;
 	}
 }

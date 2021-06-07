@@ -1731,59 +1731,10 @@ void Skeleton3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 				surface_tool->set_color(bonecolor);
 				surface_tool->add_vertex(points[(j + 1) % 4]);
 			}
-
-			/*
-			bones[0]=parent;
-			surface_tool->add_bones(bones);
-			surface_tool->add_weights(weights);
-			surface_tool->add_color(Color(0.4,1,0.4,0.4));
-			surface_tool->add_vertex(v0);
-			bones[0]=i;
-			surface_tool->add_bones(bones);
-			surface_tool->add_weights(weights);
-			surface_tool->add_color(Color(0.4,1,0.4,0.4));
-			surface_tool->add_vertex(v1);
-*/
 		} else {
 			grests.write[i] = skel->get_bone_rest(i);
 			bones.write[0] = i;
 		}
-		/*
-		Transform3D  t = grests[i];
-		t.orthonormalize();
-
-		for (int i=0;i<6;i++) {
-
-
-			Vector3 face_points[4];
-
-			for (int j=0;j<4;j++) {
-				float v[3];
-				v[0]=1.0;
-				v[1]=1-2*((j>>1)&1);
-				v[2]=v[1]*(1-2*(j&1));
-
-				for (int k=0;k<3;k++) {
-					if (i<3)
-						face_points[j][(i+k)%3]=v[k]*(i>=3?-1:1);
-					else
-						face_points[3-j][(i+k)%3]=v[k]*(i>=3?-1:1);
-				}
-			}
-
-			for(int j=0;j<4;j++) {
-				surface_tool->add_bones(bones);
-				surface_tool->add_weights(weights);
-				surface_tool->add_color(Color(1.0,0.4,0.4,0.4));
-				surface_tool->add_vertex(t.xform(face_points[j]*0.04));
-				surface_tool->add_bones(bones);
-				surface_tool->add_weights(weights);
-				surface_tool->add_color(Color(1.0,0.4,0.4,0.4));
-				surface_tool->add_vertex(t.xform(face_points[(j+1)%4]*0.04));
-			}
-
-		}
-		*/
 	}
 
 	Ref<ArrayMesh> m = surface_tool->commit();
