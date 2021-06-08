@@ -238,7 +238,11 @@ void light_compute(vec3 N, vec3 L, vec3 V, vec3 light_color, float attenuation, 
 #elif defined(SPECULAR_PHONG)
 
 		vec3 R = normalize(-reflect(L, N));
+#ifdef USE_SOFT_SHADOWS
 		float cRdotV = clamp(A + dot(R, V), 0.0, 1.0);
+#else
+		float cRdotV = clamp(dot(R, V), 0.0, 1.0);
+#endif
 		float shininess = exp2(15.0 * (1.0 - roughness) + 1.0) * 0.25;
 		float phong = pow(cRdotV, shininess);
 		phong *= (shininess + 8.0) * (1.0 / (8.0 * M_PI));
