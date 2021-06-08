@@ -252,6 +252,7 @@ public:
 	virtual String get_bundle_resource_dir() const;
 
 	virtual String get_user_data_dir() const;
+	virtual String get_external_data_dir() const;
 	virtual String get_resource_dir() const;
 
 	enum SystemDir {
