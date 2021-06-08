@@ -204,7 +204,6 @@ ShaderTypes::ShaderTypes() {
 
 	shader_modes[RS::SHADER_SPATIAL].modes.push_back("diffuse_lambert");
 	shader_modes[RS::SHADER_SPATIAL].modes.push_back("diffuse_lambert_wrap");
-	shader_modes[RS::SHADER_SPATIAL].modes.push_back("diffuse_oren_nayar");
 	shader_modes[RS::SHADER_SPATIAL].modes.push_back("diffuse_burley");
 	shader_modes[RS::SHADER_SPATIAL].modes.push_back("diffuse_toon");
 
