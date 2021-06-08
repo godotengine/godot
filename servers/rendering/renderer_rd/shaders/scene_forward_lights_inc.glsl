@@ -144,12 +144,7 @@ void light_compute(vec3 N, vec3 L, vec3 V, vec3 light_color, float attenuation, 
 	float metallic = unpackUnorm4x8(orms).z;
 	if (metallic < 1.0) {
 		float roughness = unpackUnorm4x8(orms).y;
-
-#if defined(DIFFUSE_OREN_NAYAR)
-		vec3 diffuse_brdf_NL;
-#else
 		float diffuse_brdf_NL; // BRDF times N.L for calculating diffuse radiance
-#endif
 
 #if defined(DIFFUSE_LAMBERT_WRAP)
 		// energy conserving lambert wrap shader
