@@ -168,7 +168,7 @@ public:
 			case Animation::TYPE_TRANSFORM3D: {
 				Dictionary d_old = animation->track_get_key_value(track, key);
 				Dictionary d_new = d_old.duplicate();
-				d_new[p_name] = p_value;
+				d_new[name] = p_value;
 				setting = true;
 				undo_redo->create_action(TTR("Anim Change Transform"));
 				undo_redo->add_do_method(animation.ptr(), "track_set_key_value", track, key, d_new);
@@ -415,7 +415,7 @@ public:
 			case Animation::TYPE_TRANSFORM3D: {
 				Dictionary d = animation->track_get_key_value(track, key);
 				ERR_FAIL_COND_V(!d.has(name), false);
-				r_ret = d[p_name];
+				r_ret = d[name];
 				return true;
 
 			} break;
@@ -784,7 +784,7 @@ public:
 					case Animation::TYPE_TRANSFORM3D: {
 						Dictionary d_old = animation->track_get_key_value(track, key);
 						Dictionary d_new = d_old.duplicate();
-						d_new[p_name] = p_value;
+						d_new[name] = p_value;
 
 						if (!setting) {
 							setting = true;
@@ -1015,7 +1015,7 @@ public:
 					case Animation::TYPE_TRANSFORM3D: {
 						Dictionary d = animation->track_get_key_value(track, key);
 						ERR_FAIL_COND_V(!d.has(name), false);
-						r_ret = d[p_name];
+						r_ret = d[name];
 						return true;
 
 					} break;
