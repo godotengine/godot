@@ -3316,43 +3316,8 @@ void RendererSceneRenderRD::_setup_lights(const PagedArray<RID> &p_lights, const
 
 				light_data.size = 1.0 - Math::cos(Math::deg2rad(size)); //angle to cosine offset
 
-				Color shadow_col = storage->light_get_shadow_color(base).to_linear();
-
 				if (get_debug_draw_mode() == RS::VIEWPORT_DEBUG_DRAW_PSSM_SPLITS) {
-					light_data.shadow_color1[0] = 1.0;
-					light_data.shadow_color1[1] = 0.0;
-					light_data.shadow_color1[2] = 0.0;
-					light_data.shadow_color1[3] = 1.0;
-					light_data.shadow_color2[0] = 0.0;
-					light_data.shadow_color2[1] = 1.0;
-					light_data.shadow_color2[2] = 0.0;
-					light_data.shadow_color2[3] = 1.0;
-					light_data.shadow_color3[0] = 0.0;
-					light_data.shadow_color3[1] = 0.0;
-					light_data.shadow_color3[2] = 1.0;
-					light_data.shadow_color3[3] = 1.0;
-					light_data.shadow_color4[0] = 1.0;
-					light_data.shadow_color4[1] = 1.0;
-					light_data.shadow_color4[2] = 0.0;
-					light_data.shadow_color4[3] = 1.0;
-
-				} else {
-					light_data.shadow_color1[0] = shadow_col.r;
-					light_data.shadow_color1[1] = shadow_col.g;
-					light_data.shadow_color1[2] = shadow_col.b;
-					light_data.shadow_color1[3] = 1.0;
-					light_data.shadow_color2[0] = shadow_col.r;
-					light_data.shadow_color2[1] = shadow_col.g;
-					light_data.shadow_color2[2] = shadow_col.b;
-					light_data.shadow_color2[3] = 1.0;
-					light_data.shadow_color3[0] = shadow_col.r;
-					light_data.shadow_color3[1] = shadow_col.g;
-					light_data.shadow_color3[2] = shadow_col.b;
-					light_data.shadow_color3[3] = 1.0;
-					light_data.shadow_color4[0] = shadow_col.r;
-					light_data.shadow_color4[1] = shadow_col.g;
-					light_data.shadow_color4[2] = shadow_col.b;
-					light_data.shadow_color4[3] = 1.0;
+					WARN_PRINT_ONCE("The DirectionalLight3D PSSM splits debug draw mode is not reimplemented yet.");
 				}
 
 				light_data.shadow_enabled = p_using_shadows && storage->light_has_shadow(base);

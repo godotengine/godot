@@ -382,7 +382,6 @@ void main() {
 				float depth_z = -view_pos.z;
 
 				vec4 pssm_coord;
-				vec3 shadow_color = directional_lights.data[i].shadow_color1.rgb;
 				vec3 light_dir = directional_lights.data[i].direction;
 				vec4 v = vec4(view_pos, 1.0);
 				float z_range;
@@ -413,7 +412,7 @@ void main() {
 
 				shadow = mix(shadow, 1.0, smoothstep(directional_lights.data[i].fade_from, directional_lights.data[i].fade_to, view_pos.z)); //done with negative values for performance
 
-				shadow_attenuation = mix(shadow_color, vec3(1.0), shadow);
+				shadow_attenuation = mix(vec3(0.0), vec3(1.0), shadow);
 			}
 
 			total_light += shadow_attenuation * directional_lights.data[i].color * directional_lights.data[i].energy * henyey_greenstein(dot(normalize(view_pos), normalize(directional_lights.data[i].direction)), params.phase_g);

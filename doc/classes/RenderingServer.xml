@@ -1709,14 +1709,6 @@
 				If [code]true[/code], light will cast shadows. Equivalent to [member Light3D.shadow_enabled].
 			</description>
 		</method>
-		<method name="light_set_shadow_color">
-			<return type="void" />
-			<argument index="0" name="light" type="RID" />
-			<argument index="1" name="color" type="Color" />
-			<description>
-				Sets the color of the shadow cast by the light. Equivalent to [member Light3D.shadow_color].
-			</description>
-		</method>
 		<method name="lightmap_create">
 			<return type="RID" />
 			<description>

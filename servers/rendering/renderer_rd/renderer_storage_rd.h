@@ -1025,7 +1025,6 @@ private:
 		RS::LightType type;
 		float param[RS::LIGHT_PARAM_MAX];
 		Color color = Color(1, 1, 1, 1);
-		Color shadow_color;
 		RID projector;
 		bool shadow = false;
 		bool negative = false;
@@ -1841,7 +1840,6 @@ public:
 	void light_set_color(RID p_light, const Color &p_color);
 	void light_set_param(RID p_light, RS::LightParam p_param, float p_value);
 	void light_set_shadow(RID p_light, bool p_enabled);
-	void light_set_shadow_color(RID p_light, const Color &p_color);
 	void light_set_projector(RID p_light, RID p_texture);
 	void light_set_negative(RID p_light, bool p_enable);
 	void light_set_cull_mask(RID p_light, uint32_t p_mask);
@@ -1888,13 +1886,6 @@ public:
 		ERR_FAIL_COND_V(!light, Color());
 
 		return light->color;
-	}
-
-	_FORCE_INLINE_ Color light_get_shadow_color(RID p_light) {
-		const Light *light = light_owner.get_or_null(p_light);
-		ERR_FAIL_COND_V(!light, Color());
-
-		return light->shadow_color;
 	}
 
 	_FORCE_INLINE_ uint32_t light_get_cull_mask(RID p_light) {

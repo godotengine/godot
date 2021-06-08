@@ -2255,9 +2255,6 @@ void RasterizerStorageGLES3::light_set_param(RID p_light, RS::LightParam p_param
 void RasterizerStorageGLES3::light_set_shadow(RID p_light, bool p_enabled) {
 }
 
-void RasterizerStorageGLES3::light_set_shadow_color(RID p_light, const Color &p_color) {
-}
-
 void RasterizerStorageGLES3::light_set_projector(RID p_light, RID p_texture) {
 }
 
