@@ -832,7 +832,7 @@ struct FSample {
 };
 
 static FSample _samples[] = {
-	{ "hani", U"漢語" },
+	{ "hani", U"漢字" },
 	{ "armn", U"Աբ" },
 	{ "copt", U"Αα" },
 	{ "cyrl", U"Аб" },
