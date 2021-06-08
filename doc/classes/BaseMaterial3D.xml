@@ -671,10 +671,7 @@
 		<constant name="DIFFUSE_LAMBERT_WRAP" value="2" enum="DiffuseMode">
 			Extends Lambert to cover more than 90 degrees when roughness increases.
 		</constant>
-		<constant name="DIFFUSE_OREN_NAYAR" value="3" enum="DiffuseMode">
-			Attempts to use roughness to emulate microsurfacing.
-		</constant>
-		<constant name="DIFFUSE_TOON" value="4" enum="DiffuseMode">
+		<constant name="DIFFUSE_TOON" value="3" enum="DiffuseMode">
 			Uses a hard cut for lighting, with smoothing affected by roughness.
 		</constant>
 		<constant name="SPECULAR_SCHLICK_GGX" value="0" enum="SpecularMode">
