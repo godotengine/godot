@@ -2022,8 +2022,6 @@ void GDScriptLanguage::get_reserved_words(List<String> *p_words) const {
 		"preload",
 		"signal",
 		"super",
-		"trait",
-		"yield",
 		// var
 		"const",
 		"enum",
@@ -2040,6 +2038,11 @@ void GDScriptLanguage::get_reserved_words(List<String> *p_words) const {
 		"return",
 		"match",
 		"while",
+		// These keywords are not implemented currently, but reserved for (potential) future use.
+		// We highlight them as keywords to make errors easier to understand.
+		"trait",
+		"namespace",
+		"yield",
 		nullptr
 	};
 
