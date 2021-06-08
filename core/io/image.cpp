@@ -1428,16 +1428,23 @@ void Image::flip_x() {
 	}
 }
 
+/// Get mipmap size and offset.
 int Image::_get_dst_image_size(int p_width, int p_height, Format p_format, int &r_mipmaps, int p_mipmaps, int *r_mm_width, int *r_mm_height) {
+	// Data offset in mipmaps (including the original texture).
 	int size = 0;
+
 	int w = p_width;
 	int h = p_height;
+
+	// Current mipmap index in the loop below. p_mipmaps is the target mipmap index.
+	// In this function, mipmap 0 represents the first mipmap instead of the original texture.
 	int mm = 0;
 
 	int pixsize = get_format_pixel_size(p_format);
 	int pixshift = get_format_pixel_rshift(p_format);
 	int block = get_format_block_size(p_format);
-	//technically, you can still compress up to 1 px no matter the format, so commenting this
+
+	// Technically, you can still compress up to 1 px no matter the format, so commenting this.
 	//int minw, minh;
 	//get_format_min_pixel_size(p_format, minw, minh);
 	int minw = 1, minh = 1;
@@ -1453,17 +1460,6 @@ int Image::_get_dst_image_size(int p_width, int p_height, Format p_format, int &
 
 		size += s;
 
-		if (r_mm_width) {
-			*r_mm_width = bw;
-		}
-		if (r_mm_height) {
-			*r_mm_height = bh;
-		}
-
-		if (p_mipmaps >= 0 && mm == p_mipmaps) {
-			break;
-		}
-
 		if (p_mipmaps >= 0) {
 			w = MAX(minw, w >> 1);
 			h = MAX(minh, h >> 1);
@@ -1474,6 +1470,21 @@ int Image::_get_dst_image_size(int p_width, int p_height, Format p_format, int &
 			w = MAX(minw, w >> 1);
 			h = MAX(minh, h >> 1);
 		}
+
+		// Set mipmap size.
+		// It might be necessary to put this after the minimum mipmap size check because of the possible occurrence of "1 >> 1".
+		if (r_mm_width) {
+			*r_mm_width = bw >> 1;
+		}
+		if (r_mm_height) {
+			*r_mm_height = bh >> 1;
+		}
+
+		// Reach target mipmap.
+		if (p_mipmaps >= 0 && mm == p_mipmaps) {
+			break;
+		}
+
 		mm++;
 	}
 
