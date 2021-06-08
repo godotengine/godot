@@ -452,6 +452,10 @@ public class GodotIO {
 		return activity.getFilesDir().getAbsolutePath();
 	}
 
+	public String getExternalDataDir() {
+		return activity.getExternalFilesDir(null).getAbsolutePath();
+	}
+
 	public String getLocale() {
 		return Locale.getDefault().toString();
 	}

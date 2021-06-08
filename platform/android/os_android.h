@@ -111,6 +111,7 @@ public:
 
 	virtual Error shell_open(String p_uri) override;
 	virtual String get_user_data_dir() const override;
+	virtual String get_external_data_dir() const override;
 	virtual String get_resource_dir() const override;
 	virtual String get_locale() const override;
 	virtual String get_model_name() const override;
