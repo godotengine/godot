@@ -1779,10 +1779,10 @@ void GDScriptAnalyzer::reduce_binary_op(GDScriptParser::BinaryOpNode *p_binary_o
 	} else {
 		if (p_binary_op->variant_op < Variant::OP_MAX) {
 			bool valid = false;
-			result = get_operation_type(p_binary_op->variant_op, p_binary_op->left_operand->get_datatype(), right_type, valid, p_binary_op);
+			result = get_operation_type(p_binary_op->variant_op, left_type, right_type, valid, p_binary_op);
 
 			if (!valid) {
-				push_error(vformat(R"(Invalid operands "%s" and "%s" for "%s" operator.)", p_binary_op->left_operand->get_datatype().to_string(), right_type.to_string(), Variant::get_operator_name(p_binary_op->variant_op)), p_binary_op);
+				push_error(vformat(R"(Invalid operands "%s" and "%s" for "%s" operator.)", left_type.to_string(), right_type.to_string(), Variant::get_operator_name(p_binary_op->variant_op)), p_binary_op);
 			}
 		} else {
 			if (p_binary_op->operation == GDScriptParser::BinaryOpNode::OP_TYPE_TEST) {
@@ -2349,6 +2349,7 @@ void GDScriptAnalyzer::reduce_identifier_from_base(GDScriptParser::IdentifierNod
 				GDScriptParser::DataType result;
 				result.type_source = GDScriptParser::DataType::ANNOTATED_EXPLICIT;
 				result.kind = GDScriptParser::DataType::ENUM_VALUE;
+				result.builtin_type = base.builtin_type;
 				result.native_type = base.native_type;
 				result.enum_type = name;
 				p_identifier->set_datatype(result);
