@@ -101,6 +101,8 @@ void light_compute(vec3 N, vec3 L, vec3 V, vec3 light_color, float attenuation, 
 #endif
 		inout vec3 diffuse_light, inout vec3 specular_light) {
 
+	float metallic = unpackUnorm4x8(orms).z;
+	float roughness = unpackUnorm4x8(orms).y;
 #if defined(LIGHT_CODE_USED)
 	// light is written by the light shader
 
@@ -141,9 +143,7 @@ void light_compute(vec3 N, vec3 L, vec3 V, vec3 light_color, float attenuation, 
 #endif
 #endif
 
-	float metallic = unpackUnorm4x8(orms).z;
 	if (metallic < 1.0) {
-		float roughness = unpackUnorm4x8(orms).y;
 
 #if defined(DIFFUSE_OREN_NAYAR)
 		vec3 diffuse_brdf_NL;
@@ -225,7 +225,6 @@ void light_compute(vec3 N, vec3 L, vec3 V, vec3 light_color, float attenuation, 
 #endif //LIGHT_TRANSMITTANCE_USED
 	}
 
-	float roughness = unpackUnorm4x8(orms).y;
 	if (roughness > 0.0) { // FIXME: roughness == 0 should not disable specular light entirely
 
 		// D
