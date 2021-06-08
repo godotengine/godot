@@ -1534,17 +1534,6 @@
 				If [code]true[/code], light will cast shadows. Equivalent to [member Light3D.shadow_enabled].
 			</description>
 		</method>
-		<method name="light_set_shadow_color">
-			<return type="void">
-			</return>
-			<argument index="0" name="light" type="RID">
-			</argument>
-			<argument index="1" name="color" type="Color">
-			</argument>
-			<description>
-				Sets the color of the shadow cast by the light. Equivalent to [member Light3D.shadow_color].
-			</description>
-		</method>
 		<method name="make_sphere_mesh">
 			<return type="RID">
 			</return>
