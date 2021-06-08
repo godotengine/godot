@@ -2161,9 +2161,14 @@ void EditorNode::_edit_current() {
 	if (!inspector_only) {
 		EditorPlugin *main_plugin = editor_data.get_editor(current_obj);
 
-		for (int i = 0; i < editor_table.size(); i++) {
-			if (editor_table[i] == main_plugin && !main_editor_buttons[i]->is_visible()) {
-				main_plugin = nullptr; //if button is not visible, then no plugin active
+		int plugin_index = 0;
+		for (; plugin_index < editor_table.size(); plugin_index++) {
+			if (editor_table[plugin_index] == main_plugin) {
+				if (!main_editor_buttons[plugin_index]->is_visible()) {
+					main_plugin = nullptr; //if button is not visible, then no plugin active
+				}
+
+				break;
 			}
 		}
 
@@ -2177,26 +2182,8 @@ void EditorNode::_edit_current() {
 
 			else if (main_plugin != editor_plugin_screen && (!ScriptEditor::get_singleton() || !ScriptEditor::get_singleton()->is_visible_in_tree() || ScriptEditor::get_singleton()->can_take_away_focus())) {
 				// update screen main_plugin
-
-				if (!changing_scene) {
-					if (editor_plugin_screen) {
-						editor_plugin_screen->make_visible(false);
-					}
-					editor_plugin_screen = main_plugin;
-					editor_plugin_screen->edit(current_obj);
-
-					editor_plugin_screen->make_visible(true);
-
-					int plugin_count = editor_data.get_editor_plugin_count();
-					for (int i = 0; i < plugin_count; i++) {
-						editor_data.get_editor_plugin(i)->notify_main_screen_changed(editor_plugin_screen->get_name());
-					}
-
-					for (int i = 0; i < editor_table.size(); i++) {
-						main_editor_buttons[i]->set_pressed(editor_table[i] == main_plugin);
-					}
-				}
-
+				_editor_select(plugin_index);
+				main_plugin->edit(current_obj);
 			} else {
 				editor_plugin_screen->edit(current_obj);
 			}
