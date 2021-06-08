@@ -549,8 +549,8 @@ bool CustomPropertyEditor::edit(Object *p_owner, const String &p_name, Variant::
 
 				action_buttons[0]->set_anchor(SIDE_LEFT, Control::ANCHOR_END);
 				action_buttons[0]->set_anchor(SIDE_TOP, Control::ANCHOR_END);
-				action_buttons[0]->set_anchor(SIDE_RIGHT, Control::ANCHOR_END);
-				action_buttons[0]->set_anchor(SIDE_BOTTOM, Control::ANCHOR_END);
+				action_buttons[0]->set_anchor(SIDE_RIGHT, Control::ANCHOR_BEGIN);
+				action_buttons[0]->set_anchor(SIDE_BOTTOM, Control::ANCHOR_BEGIN);
 				action_buttons[0]->set_begin(Point2(-70 * EDSCALE, -button_margin + 5 * EDSCALE));
 				action_buttons[0]->set_end(Point2(-margin, -margin));
 				action_buttons[0]->set_text(TTR("Close"));
