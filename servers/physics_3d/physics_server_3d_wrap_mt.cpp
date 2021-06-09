@@ -56,7 +56,7 @@ void PhysicsServer3DWrapMT::thread_loop() {
 	step_thread_up = true;
 	while (!exit) {
 		// flush commands one by one, until exit is requested
-		command_queue.wait_and_flush_one();
+		command_queue.wait_and_flush();
 	}
 
 	command_queue.flush_all(); // flush all
