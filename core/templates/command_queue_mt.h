@@ -34,6 +34,8 @@
 #include "core/os/memory.h"
 #include "core/os/mutex.h"
 #include "core/os/semaphore.h"
+#include "core/string/print_string.h"
+#include "core/templates/local_vector.h"
 #include "core/templates/simple_type.h"
 #include "core/typedefs.h"
 
@@ -334,11 +336,7 @@ class CommandQueueMT {
 		SYNC_SEMAPHORES = 8
 	};
 
-	uint8_t *command_mem = nullptr;
-	uint32_t read_ptr_and_epoch = 0;
-	uint32_t write_ptr_and_epoch = 0;
-	uint32_t dealloc_ptr = 0;
-	uint32_t command_mem_size = 0;
+	LocalVector<uint8_t> command_mem;
 	SyncSemaphore sync_sems[SYNC_SEMAPHORES];
 	Mutex mutex;
 	Semaphore *sync = nullptr;
@@ -346,138 +344,47 @@ class CommandQueueMT {
 	template <class T>
 	T *allocate() {
 		// alloc size is size+T+safeguard
-		uint32_t alloc_size = ((sizeof(T) + 8 - 1) & ~(8 - 1)) + 8;
-
-		// Assert that the buffer is big enough to hold at least two messages.
-		ERR_FAIL_COND_V(alloc_size * 2 + sizeof(uint32_t) > command_mem_size, nullptr);
-
-	tryagain:
-		uint32_t write_ptr = write_ptr_and_epoch >> 1;
-
-		if (write_ptr < dealloc_ptr) {
-			// behind dealloc_ptr, check that there is room
-			if ((dealloc_ptr - write_ptr) <= alloc_size) {
-				// There is no more room, try to deallocate something
-				if (dealloc_one()) {
-					goto tryagain;
-				}
-				return nullptr;
-			}
-		} else {
-			// ahead of dealloc_ptr, check that there is room
-
-			if ((command_mem_size - write_ptr) < alloc_size + sizeof(uint32_t)) {
-				// no room at the end, wrap down;
-
-				if (dealloc_ptr == 0) { // don't want write_ptr to become dealloc_ptr
-
-					// There is no more room, try to deallocate something
-					if (dealloc_one()) {
-						goto tryagain;
-					}
-					return nullptr;
-				}
-
-				// if this happens, it's a bug
-				ERR_FAIL_COND_V((command_mem_size - write_ptr) < 8, nullptr);
-				// zero means, wrap to beginning
-
-				uint32_t *p = (uint32_t *)&command_mem[write_ptr];
-				*p = 1;
-				write_ptr_and_epoch = 0 | (1 & ~write_ptr_and_epoch); // Invert epoch.
-				// See if we can get the thread to run and clear up some more space while we wait.
-				// This is required if alloc_size * 2 + 4 > COMMAND_MEM_SIZE
-				if (sync) {
-					sync->post();
-				}
-				goto tryagain;
-			}
-		}
-		// Allocate the size and the 'in use' bit.
-		// First bit used to mark if command is still in use (1)
-		// or if it has been destroyed and can be deallocated (0).
-		uint32_t size = (sizeof(T) + 8 - 1) & ~(8 - 1);
-		uint32_t *p = (uint32_t *)&command_mem[write_ptr];
-		*p = (size << 1) | 1;
-		write_ptr += 8;
-		// allocate the command
-		T *cmd = memnew_placement(&command_mem[write_ptr], T);
-		write_ptr += size;
-		write_ptr_and_epoch = (write_ptr << 1) | (write_ptr_and_epoch & 1);
+		uint32_t alloc_size = ((sizeof(T) + 8 - 1) & ~(8 - 1));
+		uint64_t size = command_mem.size();
+		command_mem.resize(size + alloc_size + 8);
+		*(uint64_t *)&command_mem[size] = alloc_size;
+		T *cmd = memnew_placement(&command_mem[size + 8], T);
 		return cmd;
 	}
 
 	template <class T>
 	T *allocate_and_lock() {
 		lock();
-		T *ret;
-
-		while ((ret = allocate<T>()) == nullptr) {
-			unlock();
-			// sleep a little until fetch happened and some room is made
-			wait_for_flush();
-			lock();
-		}
-
+		T *ret = allocate<T>();
 		return ret;
 	}
 
-	bool flush_one(bool p_lock = true) {
-		if (p_lock) {
-			lock();
-		}
-	tryagain:
+	void _flush() {
+		lock();
 
-		// tried to read an empty queue
-		if (read_ptr_and_epoch == write_ptr_and_epoch) {
-			if (p_lock) {
-				unlock();
-			}
-			return false;
-		}
+		uint64_t read_ptr = 0;
+		uint64_t limit = command_mem.size();
 
-		uint32_t read_ptr = read_ptr_and_epoch >> 1;
-		uint32_t size_ptr = read_ptr;
-		uint32_t size = *(uint32_t *)&command_mem[read_ptr] >> 1;
+		while (read_ptr < limit) {
+			uint64_t size = *(uint64_t *)&command_mem[read_ptr];
+			read_ptr += 8;
+			CommandBase *cmd = reinterpret_cast<CommandBase *>(&command_mem[read_ptr]);
 
-		if (size == 0) {
-			*(uint32_t *)&command_mem[read_ptr] = 0; // clear in-use bit.
-			//end of ringbuffer, wrap
-			read_ptr_and_epoch = 0 | (1 & ~read_ptr_and_epoch); // Invert epoch.
-			goto tryagain;
+			cmd->call(); //execute the function
+			cmd->post(); //release in case it needs sync/ret
+			cmd->~CommandBase(); //should be done, so erase the command
+
+			read_ptr += size;
 		}
 
-		read_ptr += 8;
-
-		CommandBase *cmd = reinterpret_cast<CommandBase *>(&command_mem[read_ptr]);
-
-		read_ptr += size;
-
-		read_ptr_and_epoch = (read_ptr << 1) | (read_ptr_and_epoch & 1);
-
-		if (p_lock) {
-			unlock();
-		}
-		cmd->call();
-		if (p_lock) {
-			lock();
-		}
-
-		cmd->post();
-		cmd->~CommandBase();
-		*(uint32_t *)&command_mem[size_ptr] &= ~1;
-
-		if (p_lock) {
-			unlock();
-		}
-		return true;
+		command_mem.clear();
+		unlock();
 	}
 
 	void lock();
 	void unlock();
 	void wait_for_flush();
 	SyncSemaphore *_alloc_sync_sem();
-	bool dealloc_one();
 
 public:
 	/* NORMAL PUSH COMMANDS */
@@ -492,23 +399,19 @@ public:
 	DECL_PUSH_AND_SYNC(0)
 	SPACE_SEP_LIST(DECL_PUSH_AND_SYNC, 15)
 
-	void wait_and_flush_one() {
-		ERR_FAIL_COND(!sync);
-		sync->wait();
-		flush_one();
-	}
-
 	_FORCE_INLINE_ void flush_if_pending() {
-		if (unlikely(read_ptr_and_epoch != write_ptr_and_epoch)) {
-			flush_all();
+		if (unlikely(command_mem.size() > 0)) {
+			_flush();
 		}
 	}
 	void flush_all() {
-		//ERR_FAIL_COND(sync);
-		lock();
-		while (flush_one(false)) {
-		}
-		unlock();
+		_flush();
+	}
+
+	void wait_and_flush() {
+		ERR_FAIL_COND(!sync);
+		sync->wait();
+		_flush();
 	}
 
 	CommandQueueMT(bool p_sync);

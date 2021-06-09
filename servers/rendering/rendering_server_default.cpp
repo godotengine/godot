@@ -358,7 +358,7 @@ void RenderingServerDefault::_thread_loop() {
 	draw_thread_up.set();
 	while (!exit.is_set()) {
 		// flush commands one by one, until exit is requested
-		command_queue.wait_and_flush_one();
+		command_queue.wait_and_flush();
 	}
 
 	command_queue.flush_all(); // flush all
