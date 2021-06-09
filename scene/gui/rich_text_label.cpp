@@ -2481,13 +2481,19 @@ bool RichTextLabel::search(const String &p_string, bool p_from_selection, bool p
 
 	if (p_from_selection && selection.active) {
 		it = selection.to;
-		charidx = selection.to_char + 1;
+		charidx = p_search_previous ? selection.from_char - 1 : selection.to_char + 1;
+	}
+
+	if (charidx == -1) {
+		// At beginning of line and searching backwards
+		it = _get_prev_item(it, true);
 	}
 
 	while (it) {
 		if (it->type == ITEM_TEXT) {
 			ItemText *t = static_cast<ItemText *>(it);
-			int sp = t->text.findn(p_string, charidx);
+			int sp = p_search_previous ? t->text.rfindn(p_string, charidx) : t->text.findn(p_string, charidx);
+
 			if (sp != -1) {
 				selection.from = it;
 				selection.from_char = sp;
@@ -2522,10 +2528,11 @@ bool RichTextLabel::search(const String &p_string, bool p_from_selection, bool p
 
 		if (p_search_previous) {
 			it = _get_prev_item(it, true);
+			charidx = -1;
 		} else {
 			it = _get_next_item(it, true);
+			charidx = 0;
 		}
-		charidx = 0;
 	}
 
 	return false;
