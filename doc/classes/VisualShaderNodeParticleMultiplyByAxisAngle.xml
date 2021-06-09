@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="VisualShaderNodeParticleMultiplyByAxisAngle" inherits="VisualShaderNode" version="4.0">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+	</methods>
+	<members>
+		<member name="degrees_mode" type="bool" setter="set_degrees_mode" getter="is_degrees_mode" default="true">
+		</member>
+	</members>
+	<constants>
+	</constants>
+</class>
