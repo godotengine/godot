@@ -62,6 +62,11 @@ class LocalizationEditor : public VBoxContainer {
 	EditorFileDialog *pot_file_open_dialog;
 	EditorFileDialog *pot_generate_dialog;
 
+	Button *use_pseudolocalization_checkbox;
+	Button *accented_characters_checkbox;
+	Button *fake_bidi_checkbox;
+	Button *dynamic_length_expansion_checkbox;
+
 	UndoRedo *undo_redo;
 	bool updating_translations;
 	String localization_changed;
@@ -89,6 +94,7 @@ class LocalizationEditor : public VBoxContainer {
 	void _pot_generate(const String &p_file);
 	void _update_pot_file_extensions();
 
+	void _use_pseudolocalization_changed(bool pressed);
 protected:
 	void _notification(int p_what);
 	static void _bind_methods();
