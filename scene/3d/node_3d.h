@@ -118,7 +118,7 @@ public:
 		NOTIFICATION_LOCAL_TRANSFORM_CHANGED = 44,
 	};
 
-	Node3D *get_parent_spatial() const;
+	Node3D *get_parent_node_3d() const;
 
 	Ref<World3D> get_world_3d() const;
 

@@ -282,8 +282,12 @@ Transform3D Node3D::get_local_gizmo_transform() const {
 }
 #endif
 
-Node3D *Node3D::get_parent_spatial() const {
-	return data.parent;
+Node3D *Node3D::get_parent_node_3d() const {
+	if (data.top_level) {
+		return nullptr;
+	}
+
+	return Object::cast_to<Node3D>(get_parent());
 }
 
 Transform3D Node3D::get_relative_transform(const Node *p_parent) const {
@@ -703,7 +707,7 @@ void Node3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_scale"), &Node3D::get_scale);
 	ClassDB::bind_method(D_METHOD("set_global_transform", "global"), &Node3D::set_global_transform);
 	ClassDB::bind_method(D_METHOD("get_global_transform"), &Node3D::get_global_transform);
-	ClassDB::bind_method(D_METHOD("get_parent_spatial"), &Node3D::get_parent_spatial);
+	ClassDB::bind_method(D_METHOD("get_parent_node_3d"), &Node3D::get_parent_node_3d);
 	ClassDB::bind_method(D_METHOD("set_ignore_transform_notification", "enabled"), &Node3D::set_ignore_transform_notification);
 	ClassDB::bind_method(D_METHOD("set_as_top_level", "enable"), &Node3D::set_as_top_level);
 	ClassDB::bind_method(D_METHOD("is_set_as_top_level"), &Node3D::is_set_as_top_level);
