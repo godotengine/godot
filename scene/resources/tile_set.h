@@ -33,19 +33,18 @@
 
 #include "core/io/resource.h"
 #include "core/object/object.h"
+#include "core/templates/local_vector.h"
 #include "scene/2d/light_occluder_2d.h"
 #include "scene/2d/navigation_region_2d.h"
 #include "scene/main/canvas_item.h"
+#include "scene/resources/concave_polygon_shape_2d.h"
 #include "scene/resources/convex_polygon_shape_2d.h"
 #include "scene/resources/packed_scene.h"
 #include "scene/resources/physics_material.h"
 #include "scene/resources/shape_2d.h"
 
 #ifndef DISABLE_DEPRECATED
-#include "scene/2d/light_occluder_2d.h"
-#include "scene/2d/navigation_region_2d.h"
 #include "scene/resources/shader.h"
-#include "scene/resources/shape_2d.h"
 #include "scene/resources/texture.h"
 #endif
 
@@ -60,7 +59,6 @@ class TileSetPlugin;
 class TileSetPluginAtlasRendering;
 class TileSetPluginAtlasPhysics;
 class TileSetPluginAtlasNavigation;
-class TileSetPluginAtlasTerrain;
 
 class TileSet : public Resource {
 	GDCLASS(TileSet, Resource);
@@ -138,6 +136,8 @@ public:
 		CELL_NEIGHBOR_MAX,
 	};
 
+	static const char *CELL_NEIGHBOR_ENUM_TO_TEXT[];
+
 	enum TerrainMode {
 		TERRAIN_MODE_MATCH_CORNERS_AND_SIDES = 0,
 		TERRAIN_MODE_MATCH_CORNERS,
@@ -194,6 +194,10 @@ private:
 	};
 	Vector<OcclusionLayer> occlusion_layers;
 
+	Ref<ArrayMesh> tile_lines_mesh;
+	Ref<ArrayMesh> tile_filled_mesh;
+	bool tile_meshes_dirty = true;
+
 	// Physics
 	struct PhysicsLayer {
 		uint32_t collision_layer = 1;
@@ -212,6 +216,9 @@ private:
 		Vector<Terrain> terrains;
 	};
 	Vector<TerrainSet> terrain_sets;
+
+	Map<TerrainMode, Map<CellNeighbor, Ref<ArrayMesh>>> terrain_bits_meshes;
+	bool terrain_bits_meshes_dirty = true;
 
 	// Navigation
 	struct Navigationlayer {
@@ -239,6 +246,19 @@ private:
 	void _compute_next_source_id();
 	void _source_changed();
 
+	// Helpers
+	Vector<Point2> _get_square_corner_or_side_terrain_bit_polygon(Vector2i p_size, TileSet::CellNeighbor p_bit);
+	Vector<Point2> _get_square_corner_terrain_bit_polygon(Vector2i p_size, TileSet::CellNeighbor p_bit);
+	Vector<Point2> _get_square_side_terrain_bit_polygon(Vector2i p_size, TileSet::CellNeighbor p_bit);
+
+	Vector<Point2> _get_isometric_corner_or_side_terrain_bit_polygon(Vector2i p_size, TileSet::CellNeighbor p_bit);
+	Vector<Point2> _get_isometric_corner_terrain_bit_polygon(Vector2i p_size, TileSet::CellNeighbor p_bit);
+	Vector<Point2> _get_isometric_side_terrain_bit_polygon(Vector2i p_size, TileSet::CellNeighbor p_bit);
+
+	Vector<Point2> _get_half_offset_corner_or_side_terrain_bit_polygon(Vector2i p_size, TileSet::CellNeighbor p_bit, float p_overlap, TileSet::TileOffsetAxis p_offset_axis);
+	Vector<Point2> _get_half_offset_corner_terrain_bit_polygon(Vector2i p_size, TileSet::CellNeighbor p_bit, float p_overlap, TileSet::TileOffsetAxis p_offset_axis);
+	Vector<Point2> _get_half_offset_side_terrain_bit_polygon(Vector2i p_size, TileSet::CellNeighbor p_bit, float p_overlap, TileSet::TileOffsetAxis p_offset_axis);
+
 protected:
 	static void _bind_methods();
 
@@ -257,8 +277,6 @@ public:
 	TileOffsetAxis get_tile_offset_axis() const;
 	void set_tile_size(Size2i p_size);
 	Size2i get_tile_size() const;
-	void set_tile_skew(Vector2 p_skew);
-	Vector2 get_tile_skew() const;
 
 	// -- Sources management --
 	int get_next_source_id() const;
@@ -305,6 +323,7 @@ public:
 	String get_terrain_name(int p_terrain_set, int p_terrain_index) const;
 	void set_terrain_color(int p_terrain_set, int p_terrain_index, Color p_color);
 	Color get_terrain_color(int p_terrain_set, int p_terrain_index) const;
+	bool is_valid_peering_bit_for_mode(TileSet::TerrainMode p_terrain_mode, TileSet::CellNeighbor p_peering_bit) const;
 	bool is_valid_peering_bit_terrain(int p_terrain_set, TileSet::CellNeighbor p_peering_bit) const;
 
 	// Navigation
@@ -323,8 +342,14 @@ public:
 	Variant::Type get_custom_data_type(int p_layer_id) const;
 
 	// Helpers
+	Vector<Vector2> get_tile_shape_polygon();
 	void draw_tile_shape(CanvasItem *p_canvas_item, Rect2 p_region, Color p_color, bool p_filled = false, Ref<Texture2D> p_texture = Ref<Texture2D>());
 
+	Vector<Point2> get_terrain_bit_polygon(int p_terrain_set, TileSet::CellNeighbor p_bit);
+	void draw_terrains(CanvasItem *p_canvas_item, Transform2D p_transform, const TileData *p_tile_data);
+	Vector<Vector<Ref<Texture2D>>> generate_terrains_icons(Size2i p_size);
+
+	// Resource management
 	virtual void reset_state() override;
 
 	TileSet();
@@ -509,13 +534,14 @@ private:
 
 	// Physics
 	struct PhysicsLayerTileData {
-		struct ShapeTileData {
-			Ref<Shape2D> shape = Ref<Shape2D>();
+		struct PolygonShapeTileData {
+			LocalVector<Vector2> polygon;
+			LocalVector<Ref<ConvexPolygonShape2D>> shapes;
 			bool one_way = false;
 			float one_way_margin = 1.0;
 		};
 
-		Vector<ShapeTileData> shapes;
+		Vector<PolygonShapeTileData> polygons;
 	};
 	Vector<PhysicsLayerTileData> physics;
 	// TODO add support for areas.
@@ -570,16 +596,18 @@ public:
 	Ref<OccluderPolygon2D> get_occluder(int p_layer_id) const;
 
 	// Physics
-	int get_collision_shapes_count(int p_layer_id) const;
-	void set_collision_shapes_count(int p_layer_id, int p_shapes_count);
-	void add_collision_shape(int p_layer_id);
-	void remove_collision_shape(int p_layer_id, int p_shape_index);
-	void set_collision_shape_shape(int p_layer_id, int p_shape_index, Ref<Shape2D> p_shape);
-	Ref<Shape2D> get_collision_shape_shape(int p_layer_id, int p_shape_index) const;
-	void set_collision_shape_one_way(int p_layer_id, int p_shape_index, bool p_one_way);
-	bool is_collision_shape_one_way(int p_layer_id, int p_shape_index) const;
-	void set_collision_shape_one_way_margin(int p_layer_id, int p_shape_index, float p_one_way_margin);
-	float get_collision_shape_one_way_margin(int p_layer_id, int p_shape_index) const;
+	int get_collision_polygons_count(int p_layer_id) const;
+	void set_collision_polygons_count(int p_layer_id, int p_shapes_count);
+	void add_collision_polygon(int p_layer_id);
+	void remove_collision_polygon(int p_layer_id, int p_polygon_index);
+	void set_collision_polygon_points(int p_layer_id, int p_polygon_index, Vector<Vector2> p_polygon);
+	Vector<Vector2> get_collision_polygon_points(int p_layer_id, int p_polygon_index) const;
+	void set_collision_polygon_one_way(int p_layer_id, int p_polygon_index, bool p_one_way);
+	bool is_collision_polygon_one_way(int p_layer_id, int p_polygon_index) const;
+	void set_collision_polygon_one_way_margin(int p_layer_id, int p_polygon_index, float p_one_way_margin);
+	float get_collision_polygon_one_way_margin(int p_layer_id, int p_polygon_index) const;
+	int get_collision_polygon_shapes_count(int p_layer_id, int p_polygon_index) const;
+	Ref<ConvexPolygonShape2D> get_collision_polygon_shape(int p_layer_id, int p_polygon_index, int shape_index) const;
 
 	// Terrain
 	void set_terrain_set(int p_terrain_id);
@@ -635,26 +663,6 @@ public:
 
 	// Other.
 	static void draw_tile(RID p_canvas_item, Vector2i p_position, const Ref<TileSet> p_tile_set, int p_atlas_source_id, Vector2i p_atlas_coords, int p_alternative_tile, Color p_modulation = Color(1.0, 1.0, 1.0, 1.0));
-};
-
-class TileSetPluginAtlasTerrain : public TileSetPlugin {
-	GDCLASS(TileSetPluginAtlasTerrain, TileSetPlugin);
-
-private:
-	static void _draw_square_corner_or_side_terrain_bit(CanvasItem *p_canvas_item, Color p_color, Vector2i p_size, TileSet::CellNeighbor p_bit);
-	static void _draw_square_corner_terrain_bit(CanvasItem *p_canvas_item, Color p_color, Vector2i p_size, TileSet::CellNeighbor p_bit);
-	static void _draw_square_side_terrain_bit(CanvasItem *p_canvas_item, Color p_color, Vector2i p_size, TileSet::CellNeighbor p_bit);
-
-	static void _draw_isometric_corner_or_side_terrain_bit(CanvasItem *p_canvas_item, Color p_color, Vector2i p_size, TileSet::CellNeighbor p_bit);
-	static void _draw_isometric_corner_terrain_bit(CanvasItem *p_canvas_item, Color p_color, Vector2i p_size, TileSet::CellNeighbor p_bit);
-	static void _draw_isometric_side_terrain_bit(CanvasItem *p_canvas_item, Color p_color, Vector2i p_size, TileSet::CellNeighbor p_bit);
-
-	static void _draw_half_offset_corner_or_side_terrain_bit(CanvasItem *p_canvas_item, Color p_color, Vector2i p_size, TileSet::CellNeighbor p_bit, float p_overlap, TileSet::TileOffsetAxis p_offset_axis);
-	static void _draw_half_offset_corner_terrain_bit(CanvasItem *p_canvas_item, Color p_color, Vector2i p_size, TileSet::CellNeighbor p_bit, float p_overlap, TileSet::TileOffsetAxis p_offset_axis);
-	static void _draw_half_offset_side_terrain_bit(CanvasItem *p_canvas_item, Color p_color, Vector2i p_size, TileSet::CellNeighbor p_bit, float p_overlap, TileSet::TileOffsetAxis p_offset_axis);
-
-public:
-	static void draw_terrains(CanvasItem *p_canvas_item, Transform2D p_transform, TileSet *p_tile_set, const TileData *p_tile_data);
 };
 
 class TileSetPluginAtlasPhysics : public TileSetPlugin {

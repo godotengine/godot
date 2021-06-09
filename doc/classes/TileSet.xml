@@ -289,8 +289,6 @@
 		</member>
 		<member name="tile_size" type="Vector2i" setter="set_tile_size" getter="get_tile_size" default="Vector2i(16, 16)">
 		</member>
-		<member name="tile_skew" type="Vector2" setter="set_tile_skew" getter="get_tile_skew" default="Vector2(0, 0)">
-		</member>
 		<member name="uv_clipping" type="bool" setter="set_uv_clipping" getter="is_uv_clipping" default="false">
 		</member>
 		<member name="y_sorting" type="bool" setter="set_y_sorting" getter="is_y_sorting" default="false">

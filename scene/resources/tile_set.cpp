@@ -30,13 +30,35 @@
 
 #include "tile_set.h"
 
+#include "core/core_string_names.h"
 #include "core/math/geometry_2d.h"
+#include "core/templates/local_vector.h"
+
 #include "scene/2d/navigation_region_2d.h"
 #include "scene/gui/control.h"
 #include "scene/resources/convex_polygon_shape_2d.h"
 #include "servers/navigation_server_2d.h"
 
 /////////////////////////////// TileSet //////////////////////////////////////
+
+const char *TileSet::CELL_NEIGHBOR_ENUM_TO_TEXT[] = {
+	"right_side",
+	"right_corner",
+	"bottom_right_side",
+	"bottom_right_corner",
+	"bottom_side",
+	"bottom_corner",
+	"bottom_left_side",
+	"bottom_left_corner",
+	"left_side",
+	"left_corner",
+	"top_left_side",
+	"top_left_corner",
+	"top_side",
+	"top_corner",
+	"top_right_side",
+	"top_right_corner"
+};
 
 // --- Plugins ---
 Vector<TileSetPlugin *> TileSet::get_tile_set_atlas_plugins() const {
@@ -51,6 +73,8 @@ void TileSet::set_tile_shape(TileSet::TileShape p_shape) {
 		E_source->get()->notify_tile_data_properties_should_change();
 	}
 
+	terrain_bits_meshes_dirty = true;
+	tile_meshes_dirty = true;
 	emit_changed();
 }
 TileSet::TileShape TileSet::get_tile_shape() const {
@@ -72,6 +96,8 @@ void TileSet::set_tile_offset_axis(TileSet::TileOffsetAxis p_alignment) {
 		E_source->get()->notify_tile_data_properties_should_change();
 	}
 
+	terrain_bits_meshes_dirty = true;
+	tile_meshes_dirty = true;
 	emit_changed();
 }
 TileSet::TileOffsetAxis TileSet::get_tile_offset_axis() const {
@@ -81,18 +107,12 @@ TileSet::TileOffsetAxis TileSet::get_tile_offset_axis() const {
 void TileSet::set_tile_size(Size2i p_size) {
 	ERR_FAIL_COND(p_size.x < 1 || p_size.y < 1);
 	tile_size = p_size;
+	terrain_bits_meshes_dirty = true;
+	tile_meshes_dirty = true;
 	emit_changed();
 }
 Size2i TileSet::get_tile_size() const {
 	return tile_size;
-}
-
-void TileSet::set_tile_skew(Vector2 p_skew) {
-	emit_changed();
-	tile_skew = p_skew;
-}
-Vector2 TileSet::get_tile_skew() const {
-	return tile_skew;
 }
 
 int TileSet::get_next_source_id() const {
@@ -117,7 +137,7 @@ int TileSet::add_source(Ref<TileSetSource> p_tile_set_source, int p_atlas_source
 	p_tile_set_source->set_tile_set(this);
 	_compute_next_source_id();
 
-	sources[new_source_id]->connect("changed", callable_mp(this, &TileSet::_source_changed));
+	sources[new_source_id]->connect(CoreStringNames::get_singleton()->changed, callable_mp(this, &TileSet::_source_changed));
 
 	emit_changed();
 
@@ -127,7 +147,7 @@ int TileSet::add_source(Ref<TileSetSource> p_tile_set_source, int p_atlas_source
 void TileSet::remove_source(int p_source_id) {
 	ERR_FAIL_COND_MSG(!sources.has(p_source_id), vformat("Cannot remove TileSet atlas source. No tileset atlas source with id %d.", p_source_id));
 
-	sources[p_source_id]->disconnect("changed", callable_mp(this, &TileSet::_source_changed));
+	sources[p_source_id]->disconnect(CoreStringNames::get_singleton()->changed, callable_mp(this, &TileSet::_source_changed));
 
 	sources[p_source_id]->set_tile_set(nullptr);
 	sources.erase(p_source_id);
@@ -238,80 +258,6 @@ void TileSet::set_occlusion_layer_sdf_collision(int p_layer_index, int p_sdf_col
 bool TileSet::get_occlusion_layer_sdf_collision(int p_layer_index) const {
 	ERR_FAIL_INDEX_V(p_layer_index, occlusion_layers.size(), false);
 	return occlusion_layers[p_layer_index].sdf_collision;
-}
-
-void TileSet::draw_tile_shape(CanvasItem *p_canvas_item, Rect2 p_region, Color p_color, bool p_filled, Ref<Texture2D> p_texture) {
-	// TODO: optimize this with 2D meshes when they work again.
-	if (get_tile_shape() == TileSet::TILE_SHAPE_SQUARE) {
-		if (p_filled && p_texture.is_valid()) {
-			p_canvas_item->draw_texture_rect(p_texture, p_region, false, p_color);
-		} else {
-			p_canvas_item->draw_rect(p_region, p_color, p_filled);
-		}
-	} else {
-		float overlap = 0.0;
-		switch (get_tile_shape()) {
-			case TileSet::TILE_SHAPE_ISOMETRIC:
-				overlap = 0.5;
-				break;
-			case TileSet::TILE_SHAPE_HEXAGON:
-				overlap = 0.25;
-				break;
-			case TileSet::TILE_SHAPE_HALF_OFFSET_SQUARE:
-				overlap = 0.0;
-				break;
-			default:
-				break;
-		}
-
-		Vector<Vector2> uvs;
-		uvs.append(Vector2(0.5, 0.0));
-		uvs.append(Vector2(0.0, overlap));
-		uvs.append(Vector2(0.0, 1.0 - overlap));
-		uvs.append(Vector2(0.5, 1.0));
-		uvs.append(Vector2(1.0, 1.0 - overlap));
-		uvs.append(Vector2(1.0, overlap));
-		uvs.append(Vector2(0.5, 0.0));
-		if (get_tile_offset_axis() == TileSet::TILE_OFFSET_AXIS_VERTICAL) {
-			for (int i = 0; i < uvs.size(); i++) {
-				uvs.write[i] = Vector2(uvs[i].y, uvs[i].x);
-			}
-		}
-
-		Vector<Vector2> points;
-		for (int i = 0; i < uvs.size(); i++) {
-			points.append(p_region.position + uvs[i] * p_region.size);
-		}
-
-		if (p_filled) {
-			// This does hurt performances a lot. We should use a mesh if possible instead.
-			p_canvas_item->draw_colored_polygon(points, p_color, uvs, p_texture);
-
-			// Should improve performances, but does not work as draw_primitive does not work with textures :/ :
-			/*for (int i = 0; i < 6; i += 3) {
-				Vector<Vector2> quad;
-				quad.append(points[i]);
-				quad.append(points[(i + 1) % points.size()]);
-				quad.append(points[(i + 2) % points.size()]);
-				quad.append(points[(i + 3) % points.size()]);
-
-				Vector<Vector2> uv_quad;
-				uv_quad.append(uvs[i]);
-				uv_quad.append(uvs[(i + 1) % uvs.size()]);
-				uv_quad.append(uvs[(i + 2) % uvs.size()]);
-				uv_quad.append(uvs[(i + 3) % uvs.size()]);
-
-				p_control->draw_primitive(quad, Vector<Color>(), uv_quad, p_texture);
-			}*/
-
-		} else {
-			// This does hurt performances a lot. We should use a mesh if possible instead.
-			// tile_shape_grid->draw_polyline(points, p_color);
-			for (int i = 0; i < points.size() - 1; i++) {
-				p_canvas_item->draw_line(points[i], points[i + 1], p_color);
-			}
-		}
-	}
 }
 
 // Physics
@@ -459,14 +405,9 @@ Color TileSet::get_terrain_color(int p_terrain_set, int p_terrain_index) const {
 	return terrain_sets[p_terrain_set].terrains[p_terrain_index].color;
 }
 
-bool TileSet::is_valid_peering_bit_terrain(int p_terrain_set, TileSet::CellNeighbor p_peering_bit) const {
-	if (p_terrain_set < 0 || p_terrain_set >= get_terrain_sets_count()) {
-		return false;
-	}
-
-	TileSet::TerrainMode terrain_mode = get_terrain_set_mode(p_terrain_set);
+bool TileSet::is_valid_peering_bit_for_mode(TileSet::TerrainMode p_terrain_mode, TileSet::CellNeighbor p_peering_bit) const {
 	if (tile_shape == TileSet::TILE_SHAPE_SQUARE) {
-		if (terrain_mode == TileSet::TERRAIN_MODE_MATCH_CORNERS_AND_SIDES || terrain_mode == TileSet::TERRAIN_MODE_MATCH_SIDES) {
+		if (p_terrain_mode == TileSet::TERRAIN_MODE_MATCH_CORNERS_AND_SIDES || p_terrain_mode == TileSet::TERRAIN_MODE_MATCH_SIDES) {
 			if (p_peering_bit == TileSet::CELL_NEIGHBOR_RIGHT_SIDE ||
 					p_peering_bit == TileSet::CELL_NEIGHBOR_BOTTOM_SIDE ||
 					p_peering_bit == TileSet::CELL_NEIGHBOR_LEFT_SIDE ||
@@ -474,7 +415,7 @@ bool TileSet::is_valid_peering_bit_terrain(int p_terrain_set, TileSet::CellNeigh
 				return true;
 			}
 		}
-		if (terrain_mode == TileSet::TERRAIN_MODE_MATCH_CORNERS_AND_SIDES || terrain_mode == TileSet::TERRAIN_MODE_MATCH_CORNERS) {
+		if (p_terrain_mode == TileSet::TERRAIN_MODE_MATCH_CORNERS_AND_SIDES || p_terrain_mode == TileSet::TERRAIN_MODE_MATCH_CORNERS) {
 			if (p_peering_bit == TileSet::CELL_NEIGHBOR_BOTTOM_RIGHT_CORNER ||
 					p_peering_bit == TileSet::CELL_NEIGHBOR_BOTTOM_LEFT_CORNER ||
 					p_peering_bit == TileSet::CELL_NEIGHBOR_TOP_LEFT_CORNER ||
@@ -483,7 +424,7 @@ bool TileSet::is_valid_peering_bit_terrain(int p_terrain_set, TileSet::CellNeigh
 			}
 		}
 	} else if (tile_shape == TileSet::TILE_SHAPE_ISOMETRIC) {
-		if (terrain_mode == TileSet::TERRAIN_MODE_MATCH_CORNERS_AND_SIDES || terrain_mode == TileSet::TERRAIN_MODE_MATCH_SIDES) {
+		if (p_terrain_mode == TileSet::TERRAIN_MODE_MATCH_CORNERS_AND_SIDES || p_terrain_mode == TileSet::TERRAIN_MODE_MATCH_SIDES) {
 			if (p_peering_bit == TileSet::CELL_NEIGHBOR_BOTTOM_RIGHT_SIDE ||
 					p_peering_bit == TileSet::CELL_NEIGHBOR_BOTTOM_LEFT_SIDE ||
 					p_peering_bit == TileSet::CELL_NEIGHBOR_TOP_LEFT_SIDE ||
@@ -491,7 +432,7 @@ bool TileSet::is_valid_peering_bit_terrain(int p_terrain_set, TileSet::CellNeigh
 				return true;
 			}
 		}
-		if (terrain_mode == TileSet::TERRAIN_MODE_MATCH_CORNERS_AND_SIDES || terrain_mode == TileSet::TERRAIN_MODE_MATCH_CORNERS) {
+		if (p_terrain_mode == TileSet::TERRAIN_MODE_MATCH_CORNERS_AND_SIDES || p_terrain_mode == TileSet::TERRAIN_MODE_MATCH_CORNERS) {
 			if (p_peering_bit == TileSet::CELL_NEIGHBOR_RIGHT_CORNER ||
 					p_peering_bit == TileSet::CELL_NEIGHBOR_BOTTOM_CORNER ||
 					p_peering_bit == TileSet::CELL_NEIGHBOR_LEFT_CORNER ||
@@ -501,7 +442,7 @@ bool TileSet::is_valid_peering_bit_terrain(int p_terrain_set, TileSet::CellNeigh
 		}
 	} else {
 		if (get_tile_offset_axis() == TileSet::TILE_OFFSET_AXIS_HORIZONTAL) {
-			if (terrain_mode == TileSet::TERRAIN_MODE_MATCH_CORNERS_AND_SIDES || terrain_mode == TileSet::TERRAIN_MODE_MATCH_SIDES) {
+			if (p_terrain_mode == TileSet::TERRAIN_MODE_MATCH_CORNERS_AND_SIDES || p_terrain_mode == TileSet::TERRAIN_MODE_MATCH_SIDES) {
 				if (p_peering_bit == TileSet::CELL_NEIGHBOR_RIGHT_SIDE ||
 						p_peering_bit == TileSet::CELL_NEIGHBOR_BOTTOM_RIGHT_SIDE ||
 						p_peering_bit == TileSet::CELL_NEIGHBOR_BOTTOM_LEFT_SIDE ||
@@ -511,7 +452,7 @@ bool TileSet::is_valid_peering_bit_terrain(int p_terrain_set, TileSet::CellNeigh
 					return true;
 				}
 			}
-			if (terrain_mode == TileSet::TERRAIN_MODE_MATCH_CORNERS_AND_SIDES || terrain_mode == TileSet::TERRAIN_MODE_MATCH_CORNERS) {
+			if (p_terrain_mode == TileSet::TERRAIN_MODE_MATCH_CORNERS_AND_SIDES || p_terrain_mode == TileSet::TERRAIN_MODE_MATCH_CORNERS) {
 				if (p_peering_bit == TileSet::CELL_NEIGHBOR_BOTTOM_RIGHT_CORNER ||
 						p_peering_bit == TileSet::CELL_NEIGHBOR_BOTTOM_CORNER ||
 						p_peering_bit == TileSet::CELL_NEIGHBOR_BOTTOM_LEFT_CORNER ||
@@ -522,7 +463,7 @@ bool TileSet::is_valid_peering_bit_terrain(int p_terrain_set, TileSet::CellNeigh
 				}
 			}
 		} else {
-			if (terrain_mode == TileSet::TERRAIN_MODE_MATCH_CORNERS_AND_SIDES || terrain_mode == TileSet::TERRAIN_MODE_MATCH_SIDES) {
+			if (p_terrain_mode == TileSet::TERRAIN_MODE_MATCH_CORNERS_AND_SIDES || p_terrain_mode == TileSet::TERRAIN_MODE_MATCH_SIDES) {
 				if (p_peering_bit == TileSet::CELL_NEIGHBOR_BOTTOM_RIGHT_SIDE ||
 						p_peering_bit == TileSet::CELL_NEIGHBOR_BOTTOM_SIDE ||
 						p_peering_bit == TileSet::CELL_NEIGHBOR_BOTTOM_LEFT_SIDE ||
@@ -532,7 +473,7 @@ bool TileSet::is_valid_peering_bit_terrain(int p_terrain_set, TileSet::CellNeigh
 					return true;
 				}
 			}
-			if (terrain_mode == TileSet::TERRAIN_MODE_MATCH_CORNERS_AND_SIDES || terrain_mode == TileSet::TERRAIN_MODE_MATCH_CORNERS) {
+			if (p_terrain_mode == TileSet::TERRAIN_MODE_MATCH_CORNERS_AND_SIDES || p_terrain_mode == TileSet::TERRAIN_MODE_MATCH_CORNERS) {
 				if (p_peering_bit == TileSet::CELL_NEIGHBOR_RIGHT_CORNER ||
 						p_peering_bit == TileSet::CELL_NEIGHBOR_BOTTOM_RIGHT_CORNER ||
 						p_peering_bit == TileSet::CELL_NEIGHBOR_BOTTOM_LEFT_CORNER ||
@@ -545,6 +486,15 @@ bool TileSet::is_valid_peering_bit_terrain(int p_terrain_set, TileSet::CellNeigh
 		}
 	}
 	return false;
+}
+
+bool TileSet::is_valid_peering_bit_terrain(int p_terrain_set, TileSet::CellNeighbor p_peering_bit) const {
+	if (p_terrain_set < 0 || p_terrain_set >= get_terrain_sets_count()) {
+		return false;
+	}
+
+	TileSet::TerrainMode terrain_mode = get_terrain_set_mode(p_terrain_set);
+	return is_valid_peering_bit_for_mode(terrain_mode, p_peering_bit);
 }
 
 // Navigation
@@ -657,9 +607,926 @@ Variant::Type TileSet::get_custom_data_type(int p_layer_id) const {
 	return custom_data_layers[p_layer_id].type;
 }
 
+Vector<Vector2> TileSet::get_tile_shape_polygon() {
+	Vector<Vector2> points;
+	if (tile_shape == TileSet::TILE_SHAPE_SQUARE) {
+		points.append(Vector2(0.0, 0.0));
+		points.append(Vector2(1.0, 0.0));
+		points.append(Vector2(1.0, 1.0));
+		points.append(Vector2(0.0, 1.0));
+	} else {
+		float overlap = 0.0;
+		switch (tile_shape) {
+			case TileSet::TILE_SHAPE_ISOMETRIC:
+				overlap = 0.5;
+				break;
+			case TileSet::TILE_SHAPE_HEXAGON:
+				overlap = 0.25;
+				break;
+			case TileSet::TILE_SHAPE_HALF_OFFSET_SQUARE:
+				overlap = 0.0;
+				break;
+			default:
+				break;
+		}
+
+		points.append(Vector2(0.5, 0.0));
+		points.append(Vector2(0.0, overlap));
+		points.append(Vector2(0.0, 1.0 - overlap));
+		points.append(Vector2(0.5, 1.0));
+		points.append(Vector2(1.0, 1.0 - overlap));
+		points.append(Vector2(1.0, overlap));
+		points.append(Vector2(0.5, 0.0));
+		if (get_tile_offset_axis() == TileSet::TILE_OFFSET_AXIS_VERTICAL) {
+			for (int i = 0; i < points.size(); i++) {
+				points.write[i] = Vector2(points[i].y, points[i].x);
+			}
+		}
+	}
+	for (int i = 0; i < points.size(); i++) {
+		points.write[i] = points[i] * tile_size - tile_size / 2;
+	}
+	return points;
+}
+
+void TileSet::draw_tile_shape(CanvasItem *p_canvas_item, Rect2 p_region, Color p_color, bool p_filled, Ref<Texture2D> p_texture) {
+	if (tile_meshes_dirty) {
+		Vector<Vector2> uvs = get_tile_shape_polygon();
+		for (int i = 0; i < uvs.size(); i++) {
+			uvs.write[i] = (uvs[i] + tile_size / 2) / tile_size;
+		}
+
+		Vector<Color> colors;
+		colors.resize(uvs.size());
+		colors.fill(Color(1.0, 1.0, 1.0, 1.0));
+
+		// Filled mesh.
+		tile_filled_mesh->clear_surfaces();
+		Array a;
+		a.resize(Mesh::ARRAY_MAX);
+		a[Mesh::ARRAY_VERTEX] = uvs;
+		a[Mesh::ARRAY_TEX_UV] = uvs;
+		a[Mesh::ARRAY_COLOR] = colors;
+		a[Mesh::ARRAY_INDEX] = Geometry2D::triangulate_polygon(uvs);
+		tile_filled_mesh->add_surface_from_arrays(Mesh::PRIMITIVE_TRIANGLES, a, Array(), Dictionary(), Mesh::ARRAY_FLAG_USE_2D_VERTICES);
+
+		// Lines mesh.
+		tile_lines_mesh->clear_surfaces();
+		a.clear();
+		a.resize(Mesh::ARRAY_MAX);
+		// Add the first point again when drawing lines.
+		uvs.push_back(uvs[0]);
+		colors.push_back(colors[0]);
+		a[Mesh::ARRAY_VERTEX] = uvs;
+		a[Mesh::ARRAY_COLOR] = colors;
+		tile_lines_mesh->add_surface_from_arrays(Mesh::PRIMITIVE_LINE_STRIP, a, Array(), Dictionary(), Mesh::ARRAY_FLAG_USE_2D_VERTICES);
+
+		tile_meshes_dirty = false;
+	}
+
+	Transform2D xform;
+	xform.scale(p_region.size);
+	xform.set_origin(p_region.get_position());
+	if (p_filled) {
+		p_canvas_item->draw_mesh(tile_filled_mesh, p_texture, xform, p_color);
+	} else {
+		p_canvas_item->draw_mesh(tile_lines_mesh, Ref<Texture2D>(), xform, p_color);
+	}
+}
+
+Vector<Point2> TileSet::get_terrain_bit_polygon(int p_terrain_set, TileSet::CellNeighbor p_bit) {
+	ERR_FAIL_COND_V(p_terrain_set < 0 || p_terrain_set >= get_terrain_sets_count(), Vector<Point2>());
+
+	TileSet::TerrainMode terrain_mode = get_terrain_set_mode(p_terrain_set);
+
+	if (tile_shape == TileSet::TILE_SHAPE_SQUARE) {
+		if (terrain_mode == TileSet::TERRAIN_MODE_MATCH_CORNERS_AND_SIDES) {
+			return _get_square_corner_or_side_terrain_bit_polygon(tile_size, p_bit);
+		} else if (terrain_mode == TileSet::TERRAIN_MODE_MATCH_CORNERS) {
+			return _get_square_corner_terrain_bit_polygon(tile_size, p_bit);
+		} else { // TileData::TERRAIN_MODE_MATCH_SIDES
+			return _get_square_side_terrain_bit_polygon(tile_size, p_bit);
+		}
+	} else if (tile_shape == TileSet::TILE_SHAPE_ISOMETRIC) {
+		if (terrain_mode == TileSet::TERRAIN_MODE_MATCH_CORNERS_AND_SIDES) {
+			return _get_isometric_corner_or_side_terrain_bit_polygon(tile_size, p_bit);
+		} else if (terrain_mode == TileSet::TERRAIN_MODE_MATCH_CORNERS) {
+			return _get_isometric_corner_terrain_bit_polygon(tile_size, p_bit);
+		} else { // TileData::TERRAIN_MODE_MATCH_SIDES
+			return _get_isometric_side_terrain_bit_polygon(tile_size, p_bit);
+		}
+	} else {
+		float overlap = 0.0;
+		switch (tile_shape) {
+			case TileSet::TILE_SHAPE_HEXAGON:
+				overlap = 0.25;
+				break;
+			case TileSet::TILE_SHAPE_HALF_OFFSET_SQUARE:
+				overlap = 0.0;
+				break;
+			default:
+				break;
+		}
+		if (terrain_mode == TileSet::TERRAIN_MODE_MATCH_CORNERS_AND_SIDES) {
+			return _get_half_offset_corner_or_side_terrain_bit_polygon(tile_size, p_bit, overlap, tile_offset_axis);
+		} else if (terrain_mode == TileSet::TERRAIN_MODE_MATCH_CORNERS) {
+			return _get_half_offset_corner_terrain_bit_polygon(tile_size, p_bit, overlap, tile_offset_axis);
+		} else { // TileData::TERRAIN_MODE_MATCH_SIDES
+			return _get_half_offset_side_terrain_bit_polygon(tile_size, p_bit, overlap, tile_offset_axis);
+		}
+	}
+}
+
+#define TERRAIN_ALPHA 0.6
+
+void TileSet::draw_terrains(CanvasItem *p_canvas_item, Transform2D p_transform, const TileData *p_tile_data) {
+	ERR_FAIL_COND(!p_tile_data);
+
+	if (terrain_bits_meshes_dirty) {
+		// Recompute the meshes.
+		terrain_bits_meshes.clear();
+
+		for (int terrain_mode_index = 0; terrain_mode_index < 3; terrain_mode_index++) {
+			TerrainMode terrain_mode = TerrainMode(terrain_mode_index);
+			for (int i = 0; i < TileSet::CELL_NEIGHBOR_MAX; i++) {
+				CellNeighbor bit = CellNeighbor(i);
+
+				if (is_valid_peering_bit_for_mode(terrain_mode, bit)) {
+					Vector<Vector2> polygon;
+					if (tile_shape == TileSet::TILE_SHAPE_SQUARE) {
+						if (terrain_mode == TileSet::TERRAIN_MODE_MATCH_CORNERS_AND_SIDES) {
+							polygon = _get_square_corner_or_side_terrain_bit_polygon(tile_size, bit);
+						} else if (terrain_mode == TileSet::TERRAIN_MODE_MATCH_CORNERS) {
+							polygon = _get_square_corner_terrain_bit_polygon(tile_size, bit);
+						} else { // TileData::TERRAIN_MODE_MATCH_SIDES
+							polygon = _get_square_side_terrain_bit_polygon(tile_size, bit);
+						}
+					} else if (tile_shape == TileSet::TILE_SHAPE_ISOMETRIC) {
+						if (terrain_mode == TileSet::TERRAIN_MODE_MATCH_CORNERS_AND_SIDES) {
+							polygon = _get_isometric_corner_or_side_terrain_bit_polygon(tile_size, bit);
+						} else if (terrain_mode == TileSet::TERRAIN_MODE_MATCH_CORNERS) {
+							polygon = _get_isometric_corner_terrain_bit_polygon(tile_size, bit);
+						} else { // TileData::TERRAIN_MODE_MATCH_SIDES
+							polygon = _get_isometric_side_terrain_bit_polygon(tile_size, bit);
+						}
+					} else {
+						float overlap = 0.0;
+						switch (tile_shape) {
+							case TileSet::TILE_SHAPE_HEXAGON:
+								overlap = 0.25;
+								break;
+							case TileSet::TILE_SHAPE_HALF_OFFSET_SQUARE:
+								overlap = 0.0;
+								break;
+							default:
+								break;
+						}
+						if (terrain_mode == TileSet::TERRAIN_MODE_MATCH_CORNERS_AND_SIDES) {
+							polygon = _get_half_offset_corner_or_side_terrain_bit_polygon(tile_size, bit, overlap, tile_offset_axis);
+						} else if (terrain_mode == TileSet::TERRAIN_MODE_MATCH_CORNERS) {
+							polygon = _get_half_offset_corner_terrain_bit_polygon(tile_size, bit, overlap, tile_offset_axis);
+						} else { // TileData::TERRAIN_MODE_MATCH_SIDES
+							polygon = _get_half_offset_side_terrain_bit_polygon(tile_size, bit, overlap, tile_offset_axis);
+						}
+					}
+
+					Ref<ArrayMesh> mesh;
+					mesh.instantiate();
+					Vector<Vector2> uvs;
+					uvs.resize(polygon.size());
+					Vector<Color> colors;
+					colors.resize(polygon.size());
+					colors.fill(Color(1.0, 1.0, 1.0, 1.0));
+					Array a;
+					a.resize(Mesh::ARRAY_MAX);
+					a[Mesh::ARRAY_VERTEX] = polygon;
+					a[Mesh::ARRAY_TEX_UV] = uvs;
+					a[Mesh::ARRAY_COLOR] = colors;
+					a[Mesh::ARRAY_INDEX] = Geometry2D::triangulate_polygon(polygon);
+					mesh->add_surface_from_arrays(Mesh::PRIMITIVE_TRIANGLES, a, Array(), Dictionary(), Mesh::ARRAY_FLAG_USE_2D_VERTICES);
+					terrain_bits_meshes[terrain_mode][bit] = mesh;
+				}
+			}
+		}
+		terrain_bits_meshes_dirty = false;
+	}
+
+	int terrain_set = p_tile_data->get_terrain_set();
+	if (terrain_set < 0) {
+		return;
+	}
+	TileSet::TerrainMode terrain_mode = get_terrain_set_mode(terrain_set);
+
+	RenderingServer::get_singleton()->canvas_item_add_set_transform(p_canvas_item->get_canvas_item(), p_transform);
+	for (int i = 0; i < TileSet::CELL_NEIGHBOR_MAX; i++) {
+		CellNeighbor bit = CellNeighbor(i);
+		if (is_valid_peering_bit_terrain(terrain_set, bit)) {
+			int terrain_id = p_tile_data->get_peering_bit_terrain(bit);
+			if (terrain_id >= 0) {
+				Color color = get_terrain_color(terrain_set, terrain_id);
+				color.a = TERRAIN_ALPHA;
+				p_canvas_item->draw_mesh(terrain_bits_meshes[terrain_mode][bit], Ref<Texture2D>(), Transform2D(), color);
+			}
+		}
+	}
+	RenderingServer::get_singleton()->canvas_item_add_set_transform(p_canvas_item->get_canvas_item(), Transform2D());
+}
+
+Vector<Vector<Ref<Texture2D>>> TileSet::generate_terrains_icons(Size2i p_size) {
+	// Counts the number of matching terrain tiles and find the best matching icon.
+	struct Count {
+		int count = 0;
+		float probability = 0.0;
+		Ref<Texture2D> texture;
+		Rect2i region;
+	};
+	Vector<Vector<Ref<Texture2D>>> output;
+	LocalVector<LocalVector<Count>> counts;
+	output.resize(get_terrain_sets_count());
+	counts.resize(get_terrain_sets_count());
+	for (int terrain_set = 0; terrain_set < get_terrain_sets_count(); terrain_set++) {
+		output.write[terrain_set].resize(get_terrains_count(terrain_set));
+		counts[terrain_set].resize(get_terrains_count(terrain_set));
+	}
+
+	for (int source_index = 0; source_index < get_source_count(); source_index++) {
+		int source_id = get_source_id(source_index);
+		Ref<TileSetSource> source = get_source(source_id);
+
+		Ref<TileSetAtlasSource> atlas_source = source;
+		if (atlas_source.is_valid()) {
+			for (int tile_index = 0; tile_index < source->get_tiles_count(); tile_index++) {
+				Vector2i tile_id = source->get_tile_id(tile_index);
+				for (int alternative_index = 0; alternative_index < source->get_alternative_tiles_count(tile_id); alternative_index++) {
+					int alternative_id = source->get_alternative_tile_id(tile_id, alternative_index);
+
+					TileData *tile_data = Object::cast_to<TileData>(atlas_source->get_tile_data(tile_id, alternative_id));
+					int terrain_set = tile_data->get_terrain_set();
+					if (terrain_set >= 0) {
+						ERR_FAIL_INDEX_V(terrain_set, get_terrain_sets_count(), Vector<Vector<Ref<Texture2D>>>());
+
+						LocalVector<int> bit_counts;
+						bit_counts.resize(get_terrains_count(terrain_set));
+						for (int terrain = 0; terrain < get_terrains_count(terrain_set); terrain++) {
+							bit_counts[terrain] = 0;
+						}
+						for (int terrain_bit = 0; terrain_bit < TileSet::CELL_NEIGHBOR_MAX; terrain_bit++) {
+							TileSet::CellNeighbor cell_neighbor = TileSet::CellNeighbor(terrain_bit);
+							if (is_valid_peering_bit_terrain(terrain_set, cell_neighbor)) {
+								int terrain = tile_data->get_peering_bit_terrain(cell_neighbor);
+								if (terrain >= 0) {
+									bit_counts[terrain] += 1;
+								}
+							}
+						}
+
+						for (int terrain = 0; terrain < get_terrains_count(terrain_set); terrain++) {
+							if ((bit_counts[terrain] > counts[terrain_set][terrain].count) || (bit_counts[terrain] == counts[terrain_set][terrain].count && tile_data->get_probability() > counts[terrain_set][terrain].probability)) {
+								counts[terrain_set][terrain].count = bit_counts[terrain];
+								counts[terrain_set][terrain].probability = tile_data->get_probability();
+								counts[terrain_set][terrain].texture = atlas_source->get_texture();
+								counts[terrain_set][terrain].region = atlas_source->get_tile_texture_region(tile_id);
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+
+	// Generate the icons.
+	for (int terrain_set = 0; terrain_set < get_terrain_sets_count(); terrain_set++) {
+		for (int terrain = 0; terrain < get_terrains_count(terrain_set); terrain++) {
+			Ref<Image> image;
+			image.instantiate();
+			if (counts[terrain_set][terrain].count > 0) {
+				// Get the best tile.
+				Ref<Texture2D> texture = counts[terrain_set][terrain].texture;
+				Rect2 region = counts[terrain_set][terrain].region;
+				image->create(region.size.x, region.size.y, false, Image::FORMAT_RGBA8);
+				image->blit_rect(texture->get_image(), region, Point2());
+				image->resize(p_size.x, p_size.y, Image::INTERPOLATE_NEAREST);
+			} else {
+				image->create(1, 1, false, Image::FORMAT_RGBA8);
+				image->set_pixel(0, 0, get_terrain_color(terrain_set, terrain));
+			}
+			Ref<ImageTexture> icon;
+			icon.instantiate();
+			icon->create_from_image(image);
+			icon->set_size_override(p_size);
+
+			output.write[terrain_set].write[terrain] = icon;
+		}
+	}
+	return output;
+}
+
 void TileSet::_source_changed() {
 	emit_changed();
-	notify_property_list_changed();
+}
+
+Vector<Point2> TileSet::_get_square_corner_or_side_terrain_bit_polygon(Vector2i p_size, TileSet::CellNeighbor p_bit) {
+	Rect2 bit_rect;
+	bit_rect.size = Vector2(p_size) / 3;
+	switch (p_bit) {
+		case TileSet::CELL_NEIGHBOR_RIGHT_SIDE:
+			bit_rect.position = Vector2(1, -1);
+			break;
+		case TileSet::CELL_NEIGHBOR_BOTTOM_RIGHT_CORNER:
+			bit_rect.position = Vector2(1, 1);
+			break;
+		case TileSet::CELL_NEIGHBOR_BOTTOM_SIDE:
+			bit_rect.position = Vector2(-1, 1);
+			break;
+		case TileSet::CELL_NEIGHBOR_BOTTOM_LEFT_CORNER:
+			bit_rect.position = Vector2(-3, 1);
+			break;
+		case TileSet::CELL_NEIGHBOR_LEFT_SIDE:
+			bit_rect.position = Vector2(-3, -1);
+			break;
+		case TileSet::CELL_NEIGHBOR_TOP_LEFT_CORNER:
+			bit_rect.position = Vector2(-3, -3);
+			break;
+		case TileSet::CELL_NEIGHBOR_TOP_SIDE:
+			bit_rect.position = Vector2(-1, -3);
+			break;
+		case TileSet::CELL_NEIGHBOR_TOP_RIGHT_CORNER:
+			bit_rect.position = Vector2(1, -3);
+			break;
+		default:
+			break;
+	}
+	bit_rect.position *= Vector2(p_size) / 6.0;
+	Vector<Vector2> polygon;
+	polygon.push_back(bit_rect.position);
+	polygon.push_back(Vector2(bit_rect.get_end().x, bit_rect.position.y));
+	polygon.push_back(bit_rect.get_end());
+	polygon.push_back(Vector2(bit_rect.position.x, bit_rect.get_end().y));
+	return polygon;
+}
+
+Vector<Point2> TileSet::_get_square_corner_terrain_bit_polygon(Vector2i p_size, TileSet::CellNeighbor p_bit) {
+	Vector2 unit = Vector2(p_size) / 6.0;
+	Vector<Vector2> polygon;
+	switch (p_bit) {
+		case TileSet::CELL_NEIGHBOR_BOTTOM_RIGHT_CORNER:
+			polygon.push_back(Vector2(0, 3) * unit);
+			polygon.push_back(Vector2(3, 3) * unit);
+			polygon.push_back(Vector2(3, 0) * unit);
+			polygon.push_back(Vector2(1, 0) * unit);
+			polygon.push_back(Vector2(1, 1) * unit);
+			polygon.push_back(Vector2(0, 1) * unit);
+			break;
+		case TileSet::CELL_NEIGHBOR_BOTTOM_LEFT_CORNER:
+			polygon.push_back(Vector2(0, 3) * unit);
+			polygon.push_back(Vector2(-3, 3) * unit);
+			polygon.push_back(Vector2(-3, 0) * unit);
+			polygon.push_back(Vector2(-1, 0) * unit);
+			polygon.push_back(Vector2(-1, 1) * unit);
+			polygon.push_back(Vector2(0, 1) * unit);
+			break;
+		case TileSet::CELL_NEIGHBOR_TOP_LEFT_CORNER:
+			polygon.push_back(Vector2(0, -3) * unit);
+			polygon.push_back(Vector2(-3, -3) * unit);
+			polygon.push_back(Vector2(-3, 0) * unit);
+			polygon.push_back(Vector2(-1, 0) * unit);
+			polygon.push_back(Vector2(-1, -1) * unit);
+			polygon.push_back(Vector2(0, -1) * unit);
+			break;
+		case TileSet::CELL_NEIGHBOR_TOP_RIGHT_CORNER:
+			polygon.push_back(Vector2(0, -3) * unit);
+			polygon.push_back(Vector2(3, -3) * unit);
+			polygon.push_back(Vector2(3, 0) * unit);
+			polygon.push_back(Vector2(1, 0) * unit);
+			polygon.push_back(Vector2(1, -1) * unit);
+			polygon.push_back(Vector2(0, -1) * unit);
+			break;
+		default:
+			break;
+	}
+	return polygon;
+}
+
+Vector<Point2> TileSet::_get_square_side_terrain_bit_polygon(Vector2i p_size, TileSet::CellNeighbor p_bit) {
+	Vector2 unit = Vector2(p_size) / 6.0;
+	Vector<Vector2> polygon;
+	switch (p_bit) {
+		case TileSet::CELL_NEIGHBOR_RIGHT_SIDE:
+			polygon.push_back(Vector2(1, -1) * unit);
+			polygon.push_back(Vector2(3, -3) * unit);
+			polygon.push_back(Vector2(3, 3) * unit);
+			polygon.push_back(Vector2(1, 1) * unit);
+			break;
+		case TileSet::CELL_NEIGHBOR_BOTTOM_SIDE:
+			polygon.push_back(Vector2(-1, 1) * unit);
+			polygon.push_back(Vector2(-3, 3) * unit);
+			polygon.push_back(Vector2(3, 3) * unit);
+			polygon.push_back(Vector2(1, 1) * unit);
+			break;
+		case TileSet::CELL_NEIGHBOR_LEFT_SIDE:
+			polygon.push_back(Vector2(-1, -1) * unit);
+			polygon.push_back(Vector2(-3, -3) * unit);
+			polygon.push_back(Vector2(-3, 3) * unit);
+			polygon.push_back(Vector2(-1, 1) * unit);
+			break;
+		case TileSet::CELL_NEIGHBOR_TOP_SIDE:
+			polygon.push_back(Vector2(-1, -1) * unit);
+			polygon.push_back(Vector2(-3, -3) * unit);
+			polygon.push_back(Vector2(3, -3) * unit);
+			polygon.push_back(Vector2(1, -1) * unit);
+			break;
+		default:
+			break;
+	}
+	return polygon;
+}
+
+Vector<Point2> TileSet::_get_isometric_corner_or_side_terrain_bit_polygon(Vector2i p_size, TileSet::CellNeighbor p_bit) {
+	Vector2 unit = Vector2(p_size) / 6.0;
+	Vector<Vector2> polygon;
+	switch (p_bit) {
+		case TileSet::CELL_NEIGHBOR_RIGHT_CORNER:
+			polygon.push_back(Vector2(1, 0) * unit);
+			polygon.push_back(Vector2(2, -1) * unit);
+			polygon.push_back(Vector2(3, 0) * unit);
+			polygon.push_back(Vector2(2, 1) * unit);
+			break;
+		case TileSet::CELL_NEIGHBOR_BOTTOM_RIGHT_SIDE:
+			polygon.push_back(Vector2(0, 1) * unit);
+			polygon.push_back(Vector2(1, 2) * unit);
+			polygon.push_back(Vector2(2, 1) * unit);
+			polygon.push_back(Vector2(1, 0) * unit);
+			break;
+		case TileSet::CELL_NEIGHBOR_BOTTOM_CORNER:
+			polygon.push_back(Vector2(0, 1) * unit);
+			polygon.push_back(Vector2(-1, 2) * unit);
+			polygon.push_back(Vector2(0, 3) * unit);
+			polygon.push_back(Vector2(1, 2) * unit);
+			break;
+		case TileSet::CELL_NEIGHBOR_BOTTOM_LEFT_SIDE:
+			polygon.push_back(Vector2(0, 1) * unit);
+			polygon.push_back(Vector2(-1, 2) * unit);
+			polygon.push_back(Vector2(-2, 1) * unit);
+			polygon.push_back(Vector2(-1, 0) * unit);
+			break;
+		case TileSet::CELL_NEIGHBOR_LEFT_CORNER:
+			polygon.push_back(Vector2(-1, 0) * unit);
+			polygon.push_back(Vector2(-2, -1) * unit);
+			polygon.push_back(Vector2(-3, 0) * unit);
+			polygon.push_back(Vector2(-2, 1) * unit);
+			break;
+		case TileSet::CELL_NEIGHBOR_TOP_LEFT_SIDE:
+			polygon.push_back(Vector2(0, -1) * unit);
+			polygon.push_back(Vector2(-1, -2) * unit);
+			polygon.push_back(Vector2(-2, -1) * unit);
+			polygon.push_back(Vector2(-1, 0) * unit);
+			break;
+		case TileSet::CELL_NEIGHBOR_TOP_CORNER:
+			polygon.push_back(Vector2(0, -1) * unit);
+			polygon.push_back(Vector2(-1, -2) * unit);
+			polygon.push_back(Vector2(0, -3) * unit);
+			polygon.push_back(Vector2(1, -2) * unit);
+			break;
+		case TileSet::CELL_NEIGHBOR_TOP_RIGHT_SIDE:
+			polygon.push_back(Vector2(0, -1) * unit);
+			polygon.push_back(Vector2(1, -2) * unit);
+			polygon.push_back(Vector2(2, -1) * unit);
+			polygon.push_back(Vector2(1, 0) * unit);
+			break;
+		default:
+			break;
+	}
+	return polygon;
+}
+
+Vector<Point2> TileSet::_get_isometric_corner_terrain_bit_polygon(Vector2i p_size, TileSet::CellNeighbor p_bit) {
+	Vector2 unit = Vector2(p_size) / 6.0;
+	Vector<Vector2> polygon;
+	switch (p_bit) {
+		case TileSet::CELL_NEIGHBOR_RIGHT_CORNER:
+			polygon.push_back(Vector2(0.5, -0.5) * unit);
+			polygon.push_back(Vector2(1.5, -1.5) * unit);
+			polygon.push_back(Vector2(3, 0) * unit);
+			polygon.push_back(Vector2(1.5, 1.5) * unit);
+			polygon.push_back(Vector2(0.5, 0.5) * unit);
+			polygon.push_back(Vector2(1, 0) * unit);
+			break;
+		case TileSet::CELL_NEIGHBOR_BOTTOM_CORNER:
+			polygon.push_back(Vector2(-0.5, 0.5) * unit);
+			polygon.push_back(Vector2(-1.5, 1.5) * unit);
+			polygon.push_back(Vector2(0, 3) * unit);
+			polygon.push_back(Vector2(1.5, 1.5) * unit);
+			polygon.push_back(Vector2(0.5, 0.5) * unit);
+			polygon.push_back(Vector2(0, 1) * unit);
+			break;
+		case TileSet::CELL_NEIGHBOR_LEFT_CORNER:
+			polygon.push_back(Vector2(-0.5, -0.5) * unit);
+			polygon.push_back(Vector2(-1.5, -1.5) * unit);
+			polygon.push_back(Vector2(-3, 0) * unit);
+			polygon.push_back(Vector2(-1.5, 1.5) * unit);
+			polygon.push_back(Vector2(-0.5, 0.5) * unit);
+			polygon.push_back(Vector2(-1, 0) * unit);
+			break;
+		case TileSet::CELL_NEIGHBOR_TOP_CORNER:
+			polygon.push_back(Vector2(-0.5, -0.5) * unit);
+			polygon.push_back(Vector2(-1.5, -1.5) * unit);
+			polygon.push_back(Vector2(0, -3) * unit);
+			polygon.push_back(Vector2(1.5, -1.5) * unit);
+			polygon.push_back(Vector2(0.5, -0.5) * unit);
+			polygon.push_back(Vector2(0, -1) * unit);
+			break;
+		default:
+			break;
+	}
+	return polygon;
+}
+
+Vector<Point2> TileSet::_get_isometric_side_terrain_bit_polygon(Vector2i p_size, TileSet::CellNeighbor p_bit) {
+	Vector2 unit = Vector2(p_size) / 6.0;
+	Vector<Vector2> polygon;
+	switch (p_bit) {
+		case TileSet::CELL_NEIGHBOR_BOTTOM_RIGHT_SIDE:
+			polygon.push_back(Vector2(1, 0) * unit);
+			polygon.push_back(Vector2(3, 0) * unit);
+			polygon.push_back(Vector2(0, 3) * unit);
+			polygon.push_back(Vector2(0, 1) * unit);
+			break;
+		case TileSet::CELL_NEIGHBOR_BOTTOM_LEFT_SIDE:
+			polygon.push_back(Vector2(-1, 0) * unit);
+			polygon.push_back(Vector2(-3, 0) * unit);
+			polygon.push_back(Vector2(0, 3) * unit);
+			polygon.push_back(Vector2(0, 1) * unit);
+			break;
+		case TileSet::CELL_NEIGHBOR_TOP_LEFT_SIDE:
+			polygon.push_back(Vector2(-1, 0) * unit);
+			polygon.push_back(Vector2(-3, 0) * unit);
+			polygon.push_back(Vector2(0, -3) * unit);
+			polygon.push_back(Vector2(0, -1) * unit);
+			break;
+		case TileSet::CELL_NEIGHBOR_TOP_RIGHT_SIDE:
+			polygon.push_back(Vector2(1, 0) * unit);
+			polygon.push_back(Vector2(3, 0) * unit);
+			polygon.push_back(Vector2(0, -3) * unit);
+			polygon.push_back(Vector2(0, -1) * unit);
+			break;
+		default:
+			break;
+	}
+	return polygon;
+}
+
+Vector<Point2> TileSet::_get_half_offset_corner_or_side_terrain_bit_polygon(Vector2i p_size, TileSet::CellNeighbor p_bit, float p_overlap, TileSet::TileOffsetAxis p_offset_axis) {
+	Vector<Vector2> point_list;
+	point_list.push_back(Vector2(3, (3.0 * (1.0 - p_overlap * 2.0)) / 2.0));
+	point_list.push_back(Vector2(3, 3.0 * (1.0 - p_overlap * 2.0)));
+	point_list.push_back(Vector2(2, 3.0 * (1.0 - (p_overlap * 2.0) * 2.0 / 3.0)));
+	point_list.push_back(Vector2(1, 3.0 - p_overlap * 2.0));
+	point_list.push_back(Vector2(0, 3));
+	point_list.push_back(Vector2(-1, 3.0 - p_overlap * 2.0));
+	point_list.push_back(Vector2(-2, 3.0 * (1.0 - (p_overlap * 2.0) * 2.0 / 3.0)));
+	point_list.push_back(Vector2(-3, 3.0 * (1.0 - p_overlap * 2.0)));
+	point_list.push_back(Vector2(-3, (3.0 * (1.0 - p_overlap * 2.0)) / 2.0));
+	point_list.push_back(Vector2(-3, -(3.0 * (1.0 - p_overlap * 2.0)) / 2.0));
+	point_list.push_back(Vector2(-3, -3.0 * (1.0 - p_overlap * 2.0)));
+	point_list.push_back(Vector2(-2, -3.0 * (1.0 - (p_overlap * 2.0) * 2.0 / 3.0)));
+	point_list.push_back(Vector2(-1, -(3.0 - p_overlap * 2.0)));
+	point_list.push_back(Vector2(0, -3));
+	point_list.push_back(Vector2(1, -(3.0 - p_overlap * 2.0)));
+	point_list.push_back(Vector2(2, -3.0 * (1.0 - (p_overlap * 2.0) * 2.0 / 3.0)));
+	point_list.push_back(Vector2(3, -3.0 * (1.0 - p_overlap * 2.0)));
+	point_list.push_back(Vector2(3, -(3.0 * (1.0 - p_overlap * 2.0)) / 2.0));
+
+	Vector2 unit = Vector2(p_size) / 6.0;
+	for (int i = 0; i < point_list.size(); i++) {
+		point_list.write[i] = point_list[i] * unit;
+	}
+
+	Vector<Vector2> polygon;
+	if (p_offset_axis == TileSet::TILE_OFFSET_AXIS_HORIZONTAL) {
+		switch (p_bit) {
+			case TileSet::CELL_NEIGHBOR_RIGHT_SIDE:
+				polygon.push_back(point_list[17]);
+				polygon.push_back(point_list[0]);
+				break;
+			case TileSet::CELL_NEIGHBOR_BOTTOM_RIGHT_CORNER:
+				polygon.push_back(point_list[0]);
+				polygon.push_back(point_list[1]);
+				polygon.push_back(point_list[2]);
+				break;
+			case TileSet::CELL_NEIGHBOR_BOTTOM_RIGHT_SIDE:
+				polygon.push_back(point_list[2]);
+				polygon.push_back(point_list[3]);
+				break;
+			case TileSet::CELL_NEIGHBOR_BOTTOM_CORNER:
+				polygon.push_back(point_list[3]);
+				polygon.push_back(point_list[4]);
+				polygon.push_back(point_list[5]);
+				break;
+			case TileSet::CELL_NEIGHBOR_BOTTOM_LEFT_SIDE:
+				polygon.push_back(point_list[5]);
+				polygon.push_back(point_list[6]);
+				break;
+			case TileSet::CELL_NEIGHBOR_BOTTOM_LEFT_CORNER:
+				polygon.push_back(point_list[6]);
+				polygon.push_back(point_list[7]);
+				polygon.push_back(point_list[8]);
+				break;
+			case TileSet::CELL_NEIGHBOR_LEFT_SIDE:
+				polygon.push_back(point_list[8]);
+				polygon.push_back(point_list[9]);
+				break;
+			case TileSet::CELL_NEIGHBOR_TOP_LEFT_CORNER:
+				polygon.push_back(point_list[9]);
+				polygon.push_back(point_list[10]);
+				polygon.push_back(point_list[11]);
+				break;
+			case TileSet::CELL_NEIGHBOR_TOP_LEFT_SIDE:
+				polygon.push_back(point_list[11]);
+				polygon.push_back(point_list[12]);
+				break;
+			case TileSet::CELL_NEIGHBOR_TOP_CORNER:
+				polygon.push_back(point_list[12]);
+				polygon.push_back(point_list[13]);
+				polygon.push_back(point_list[14]);
+				break;
+			case TileSet::CELL_NEIGHBOR_TOP_RIGHT_SIDE:
+				polygon.push_back(point_list[14]);
+				polygon.push_back(point_list[15]);
+				break;
+			case TileSet::CELL_NEIGHBOR_TOP_RIGHT_CORNER:
+				polygon.push_back(point_list[15]);
+				polygon.push_back(point_list[16]);
+				polygon.push_back(point_list[17]);
+				break;
+			default:
+				break;
+		}
+	} else {
+		if (p_offset_axis == TileSet::TILE_OFFSET_AXIS_VERTICAL) {
+			for (int i = 0; i < point_list.size(); i++) {
+				point_list.write[i] = Vector2(point_list[i].y, point_list[i].x);
+			}
+		}
+		switch (p_bit) {
+			case TileSet::CELL_NEIGHBOR_RIGHT_CORNER:
+				polygon.push_back(point_list[3]);
+				polygon.push_back(point_list[4]);
+				polygon.push_back(point_list[5]);
+				break;
+			case TileSet::CELL_NEIGHBOR_BOTTOM_RIGHT_SIDE:
+				polygon.push_back(point_list[2]);
+				polygon.push_back(point_list[3]);
+				break;
+			case TileSet::CELL_NEIGHBOR_BOTTOM_RIGHT_CORNER:
+				polygon.push_back(point_list[0]);
+				polygon.push_back(point_list[1]);
+				polygon.push_back(point_list[2]);
+				break;
+			case TileSet::CELL_NEIGHBOR_BOTTOM_SIDE:
+				polygon.push_back(point_list[17]);
+				polygon.push_back(point_list[0]);
+				break;
+			case TileSet::CELL_NEIGHBOR_BOTTOM_LEFT_CORNER:
+				polygon.push_back(point_list[15]);
+				polygon.push_back(point_list[16]);
+				polygon.push_back(point_list[17]);
+				break;
+			case TileSet::CELL_NEIGHBOR_BOTTOM_LEFT_SIDE:
+				polygon.push_back(point_list[14]);
+				polygon.push_back(point_list[15]);
+				break;
+			case TileSet::CELL_NEIGHBOR_LEFT_CORNER:
+				polygon.push_back(point_list[12]);
+				polygon.push_back(point_list[13]);
+				polygon.push_back(point_list[14]);
+				break;
+			case TileSet::CELL_NEIGHBOR_TOP_LEFT_SIDE:
+				polygon.push_back(point_list[11]);
+				polygon.push_back(point_list[12]);
+				break;
+			case TileSet::CELL_NEIGHBOR_TOP_LEFT_CORNER:
+				polygon.push_back(point_list[9]);
+				polygon.push_back(point_list[10]);
+				polygon.push_back(point_list[11]);
+				break;
+			case TileSet::CELL_NEIGHBOR_TOP_SIDE:
+				polygon.push_back(point_list[8]);
+				polygon.push_back(point_list[9]);
+				break;
+			case TileSet::CELL_NEIGHBOR_TOP_RIGHT_CORNER:
+				polygon.push_back(point_list[6]);
+				polygon.push_back(point_list[7]);
+				polygon.push_back(point_list[8]);
+				break;
+			case TileSet::CELL_NEIGHBOR_TOP_RIGHT_SIDE:
+				polygon.push_back(point_list[5]);
+				polygon.push_back(point_list[6]);
+				break;
+			default:
+				break;
+		}
+	}
+
+	int half_polygon_size = polygon.size();
+	for (int i = 0; i < half_polygon_size; i++) {
+		polygon.push_back(polygon[half_polygon_size - 1 - i] / 3.0);
+	}
+
+	return polygon;
+}
+
+Vector<Point2> TileSet::_get_half_offset_corner_terrain_bit_polygon(Vector2i p_size, TileSet::CellNeighbor p_bit, float p_overlap, TileSet::TileOffsetAxis p_offset_axis) {
+	Vector<Vector2> point_list;
+	point_list.push_back(Vector2(3, 0));
+	point_list.push_back(Vector2(3, 3.0 * (1.0 - p_overlap * 2.0)));
+	point_list.push_back(Vector2(1.5, (3.0 * (1.0 - p_overlap * 2.0) + 3.0) / 2.0));
+	point_list.push_back(Vector2(0, 3));
+	point_list.push_back(Vector2(-1.5, (3.0 * (1.0 - p_overlap * 2.0) + 3.0) / 2.0));
+	point_list.push_back(Vector2(-3, 3.0 * (1.0 - p_overlap * 2.0)));
+	point_list.push_back(Vector2(-3, 0));
+	point_list.push_back(Vector2(-3, -3.0 * (1.0 - p_overlap * 2.0)));
+	point_list.push_back(Vector2(-1.5, -(3.0 * (1.0 - p_overlap * 2.0) + 3.0) / 2.0));
+	point_list.push_back(Vector2(0, -3));
+	point_list.push_back(Vector2(1.5, -(3.0 * (1.0 - p_overlap * 2.0) + 3.0) / 2.0));
+	point_list.push_back(Vector2(3, -3.0 * (1.0 - p_overlap * 2.0)));
+
+	Vector2 unit = Vector2(p_size) / 6.0;
+	for (int i = 0; i < point_list.size(); i++) {
+		point_list.write[i] = point_list[i] * unit;
+	}
+
+	Vector<Vector2> polygon;
+	if (p_offset_axis == TileSet::TILE_OFFSET_AXIS_HORIZONTAL) {
+		switch (p_bit) {
+			case TileSet::CELL_NEIGHBOR_BOTTOM_RIGHT_CORNER:
+				polygon.push_back(point_list[0]);
+				polygon.push_back(point_list[1]);
+				polygon.push_back(point_list[2]);
+				break;
+			case TileSet::CELL_NEIGHBOR_BOTTOM_CORNER:
+				polygon.push_back(point_list[2]);
+				polygon.push_back(point_list[3]);
+				polygon.push_back(point_list[4]);
+				break;
+			case TileSet::CELL_NEIGHBOR_BOTTOM_LEFT_CORNER:
+				polygon.push_back(point_list[4]);
+				polygon.push_back(point_list[5]);
+				polygon.push_back(point_list[6]);
+				break;
+			case TileSet::CELL_NEIGHBOR_TOP_LEFT_CORNER:
+				polygon.push_back(point_list[6]);
+				polygon.push_back(point_list[7]);
+				polygon.push_back(point_list[8]);
+				break;
+			case TileSet::CELL_NEIGHBOR_TOP_CORNER:
+				polygon.push_back(point_list[8]);
+				polygon.push_back(point_list[9]);
+				polygon.push_back(point_list[10]);
+				break;
+			case TileSet::CELL_NEIGHBOR_TOP_RIGHT_CORNER:
+				polygon.push_back(point_list[10]);
+				polygon.push_back(point_list[11]);
+				polygon.push_back(point_list[0]);
+				break;
+			default:
+				break;
+		}
+	} else {
+		if (p_offset_axis == TileSet::TILE_OFFSET_AXIS_VERTICAL) {
+			for (int i = 0; i < point_list.size(); i++) {
+				point_list.write[i] = Vector2(point_list[i].y, point_list[i].x);
+			}
+		}
+		switch (p_bit) {
+			case TileSet::CELL_NEIGHBOR_RIGHT_CORNER:
+				polygon.push_back(point_list[2]);
+				polygon.push_back(point_list[3]);
+				polygon.push_back(point_list[4]);
+				break;
+			case TileSet::CELL_NEIGHBOR_BOTTOM_RIGHT_CORNER:
+				polygon.push_back(point_list[0]);
+				polygon.push_back(point_list[1]);
+				polygon.push_back(point_list[2]);
+				break;
+			case TileSet::CELL_NEIGHBOR_BOTTOM_LEFT_CORNER:
+				polygon.push_back(point_list[10]);
+				polygon.push_back(point_list[11]);
+				polygon.push_back(point_list[0]);
+				break;
+			case TileSet::CELL_NEIGHBOR_LEFT_CORNER:
+				polygon.push_back(point_list[8]);
+				polygon.push_back(point_list[9]);
+				polygon.push_back(point_list[10]);
+				break;
+			case TileSet::CELL_NEIGHBOR_TOP_LEFT_CORNER:
+				polygon.push_back(point_list[6]);
+				polygon.push_back(point_list[7]);
+				polygon.push_back(point_list[8]);
+				break;
+			case TileSet::CELL_NEIGHBOR_TOP_RIGHT_CORNER:
+				polygon.push_back(point_list[4]);
+				polygon.push_back(point_list[5]);
+				polygon.push_back(point_list[6]);
+				break;
+			default:
+				break;
+		}
+	}
+
+	int half_polygon_size = polygon.size();
+	for (int i = 0; i < half_polygon_size; i++) {
+		polygon.push_back(polygon[half_polygon_size - 1 - i] / 3.0);
+	}
+
+	return polygon;
+}
+
+Vector<Point2> TileSet::_get_half_offset_side_terrain_bit_polygon(Vector2i p_size, TileSet::CellNeighbor p_bit, float p_overlap, TileSet::TileOffsetAxis p_offset_axis) {
+	Vector<Vector2> point_list;
+	point_list.push_back(Vector2(3, 3.0 * (1.0 - p_overlap * 2.0)));
+	point_list.push_back(Vector2(0, 3));
+	point_list.push_back(Vector2(-3, 3.0 * (1.0 - p_overlap * 2.0)));
+	point_list.push_back(Vector2(-3, -3.0 * (1.0 - p_overlap * 2.0)));
+	point_list.push_back(Vector2(0, -3));
+	point_list.push_back(Vector2(3, -3.0 * (1.0 - p_overlap * 2.0)));
+
+	Vector2 unit = Vector2(p_size) / 6.0;
+	for (int i = 0; i < point_list.size(); i++) {
+		point_list.write[i] = point_list[i] * unit;
+	}
+
+	Vector<Vector2> polygon;
+	if (p_offset_axis == TileSet::TILE_OFFSET_AXIS_HORIZONTAL) {
+		switch (p_bit) {
+			case TileSet::CELL_NEIGHBOR_RIGHT_SIDE:
+				polygon.push_back(point_list[5]);
+				polygon.push_back(point_list[0]);
+				break;
+			case TileSet::CELL_NEIGHBOR_BOTTOM_RIGHT_SIDE:
+				polygon.push_back(point_list[0]);
+				polygon.push_back(point_list[1]);
+				break;
+			case TileSet::CELL_NEIGHBOR_BOTTOM_LEFT_SIDE:
+				polygon.push_back(point_list[1]);
+				polygon.push_back(point_list[2]);
+				break;
+			case TileSet::CELL_NEIGHBOR_LEFT_SIDE:
+				polygon.push_back(point_list[2]);
+				polygon.push_back(point_list[3]);
+				break;
+			case TileSet::CELL_NEIGHBOR_TOP_LEFT_SIDE:
+				polygon.push_back(point_list[3]);
+				polygon.push_back(point_list[4]);
+				break;
+			case TileSet::CELL_NEIGHBOR_TOP_RIGHT_SIDE:
+				polygon.push_back(point_list[4]);
+				polygon.push_back(point_list[5]);
+				break;
+			default:
+				break;
+		}
+	} else {
+		if (p_offset_axis == TileSet::TILE_OFFSET_AXIS_VERTICAL) {
+			for (int i = 0; i < point_list.size(); i++) {
+				point_list.write[i] = Vector2(point_list[i].y, point_list[i].x);
+			}
+		}
+		switch (p_bit) {
+			case TileSet::CELL_NEIGHBOR_BOTTOM_RIGHT_SIDE:
+				polygon.push_back(point_list[0]);
+				polygon.push_back(point_list[1]);
+				break;
+			case TileSet::CELL_NEIGHBOR_BOTTOM_SIDE:
+				polygon.push_back(point_list[5]);
+				polygon.push_back(point_list[0]);
+				break;
+			case TileSet::CELL_NEIGHBOR_BOTTOM_LEFT_SIDE:
+				polygon.push_back(point_list[4]);
+				polygon.push_back(point_list[5]);
+				break;
+			case TileSet::CELL_NEIGHBOR_TOP_LEFT_SIDE:
+				polygon.push_back(point_list[3]);
+				polygon.push_back(point_list[4]);
+				break;
+			case TileSet::CELL_NEIGHBOR_TOP_SIDE:
+				polygon.push_back(point_list[2]);
+				polygon.push_back(point_list[3]);
+				break;
+			case TileSet::CELL_NEIGHBOR_TOP_RIGHT_SIDE:
+				polygon.push_back(point_list[1]);
+				polygon.push_back(point_list[2]);
+				break;
+			default:
+				break;
+		}
+	}
+
+	int half_polygon_size = polygon.size();
+	for (int i = 0; i < half_polygon_size; i++) {
+		polygon.push_back(polygon[half_polygon_size - 1 - i] / 3.0);
+	}
+
+	return polygon;
 }
 
 void TileSet::reset_state() {
@@ -747,12 +1614,18 @@ void TileSet::compatibility_conversion() {
 							for (int k = 0; k < ctd->shapes.size(); k++) {
 								CompatibilityShapeData csd = ctd->shapes[k];
 								if (csd.autotile_coords == coords) {
-									tile_data->set_collision_shapes_count(0, tile_data->get_collision_shapes_count(0) + 1);
-									int index = tile_data->get_collision_shapes_count(0) - 1;
-									tile_data->set_collision_shape_one_way(0, index, csd.one_way);
-									tile_data->set_collision_shape_one_way_margin(0, index, csd.one_way_margin);
-									tile_data->set_collision_shape_shape(0, index, csd.shape);
-									// Ignores transform for now.
+									Ref<ConvexPolygonShape2D> convex_shape = csd.shape; // Only ConvexPolygonShape2D are supported, which is the default type used by the 3.x editor
+									if (convex_shape.is_valid()) {
+										Vector<Vector2> polygon = convex_shape->get_points();
+										for (int point_index = 0; point_index < polygon.size(); point_index++) {
+											polygon.write[point_index] = csd.transform.xform(polygon[point_index]);
+										}
+										tile_data->set_collision_polygons_count(0, tile_data->get_collision_polygons_count(0) + 1);
+										int index = tile_data->get_collision_polygons_count(0) - 1;
+										tile_data->set_collision_polygon_one_way(0, index, csd.one_way);
+										tile_data->set_collision_polygon_one_way_margin(0, index, csd.one_way_margin);
+										tile_data->set_collision_polygon_points(0, index, polygon);
+									}
 								}
 							}
 
@@ -1086,7 +1959,7 @@ bool TileSet::_set(const StringName &p_name, const Variant &p_value) {
 				return true;
 			}
 		} else if (components.size() == 2 && components[0] == "sources" && components[1].is_valid_int()) {
-			// Create source only if it does not exist.
+			// Create source only if it does not exists.
 			int source_id = components[1].to_int();
 
 			if (!has_source(source_id)) {
@@ -1287,14 +2160,11 @@ void TileSet::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_tile_offset_axis"), &TileSet::get_tile_offset_axis);
 	ClassDB::bind_method(D_METHOD("set_tile_size", "size"), &TileSet::set_tile_size);
 	ClassDB::bind_method(D_METHOD("get_tile_size"), &TileSet::get_tile_size);
-	ClassDB::bind_method(D_METHOD("set_tile_skew", "skew"), &TileSet::set_tile_skew);
-	ClassDB::bind_method(D_METHOD("get_tile_skew"), &TileSet::get_tile_skew);
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "tile_shape", PROPERTY_HINT_ENUM, "Square,Isometric,Half-Offset Square,Hexagon"), "set_tile_shape", "get_tile_shape");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "tile_layout", PROPERTY_HINT_ENUM, "Stacked,Stacked Offset,Stairs Right,Stairs Down,Diamond Right,Diamond Down"), "set_tile_layout", "get_tile_layout");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "tile_offset_axis", PROPERTY_HINT_ENUM, "Horizontal Offset,Vertical Offset"), "set_tile_offset_axis", "get_tile_offset_axis");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2I, "tile_size"), "set_tile_size", "get_tile_size");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2I, "tile_skew"), "set_tile_skew", "get_tile_skew");
 
 	// Rendering.
 	ClassDB::bind_method(D_METHOD("set_uv_clipping", "uv_clipping"), &TileSet::set_uv_clipping);
@@ -1398,10 +2268,13 @@ void TileSet::_bind_methods() {
 }
 
 TileSet::TileSet() {
-	// Instanciatie and list all plugins.
+	// Instantiate the tile meshes.
+	tile_lines_mesh.instantiate();
+	tile_filled_mesh.instantiate();
+
+	// Instanciate and list all plugins.
 	tile_set_plugins_vector.append(memnew(TileSetPluginAtlasRendering));
 	tile_set_plugins_vector.append(memnew(TileSetPluginAtlasPhysics));
-	tile_set_plugins_vector.append(memnew(TileSetPluginAtlasTerrain));
 	tile_set_plugins_vector.append(memnew(TileSetPluginAtlasNavigation));
 	tile_set_plugins_vector.append(memnew(TileSetPluginScenesCollections));
 }
@@ -2237,16 +3110,14 @@ void TileSetScenesCollectionSource::_bind_methods() {
 
 void TileData::set_tile_set(const TileSet *p_tile_set) {
 	tile_set = p_tile_set;
-	if (tile_set) {
-		occluders.resize(tile_set->get_occlusion_layers_count());
-		physics.resize(tile_set->get_physics_layers_count());
-		navigation.resize(tile_set->get_navigation_layers_count());
-		custom_data.resize(tile_set->get_custom_data_layers_count());
-	}
-	notify_property_list_changed();
+	notify_tile_data_properties_should_change();
 }
 
 void TileData::notify_tile_data_properties_should_change() {
+	if (!tile_set) {
+		return;
+	}
+
 	occluders.resize(tile_set->get_occlusion_layers_count());
 	physics.resize(tile_set->get_physics_layers_count());
 	for (int bit_index = 0; bit_index < 16; bit_index++) {
@@ -2373,76 +3244,112 @@ Ref<OccluderPolygon2D> TileData::get_occluder(int p_layer_id) const {
 }
 
 // Physics
-int TileData::get_collision_shapes_count(int p_layer_id) const {
+int TileData::get_collision_polygons_count(int p_layer_id) const {
 	ERR_FAIL_INDEX_V(p_layer_id, physics.size(), 0);
-	return physics[p_layer_id].shapes.size();
+	return physics[p_layer_id].polygons.size();
 }
 
-void TileData::set_collision_shapes_count(int p_layer_id, int p_shapes_count) {
+void TileData::set_collision_polygons_count(int p_layer_id, int p_polygons_count) {
 	ERR_FAIL_INDEX(p_layer_id, physics.size());
-	ERR_FAIL_COND(p_shapes_count < 0);
-	physics.write[p_layer_id].shapes.resize(p_shapes_count);
+	ERR_FAIL_COND(p_polygons_count < 0);
+	physics.write[p_layer_id].polygons.resize(p_polygons_count);
 	notify_property_list_changed();
 	emit_signal("changed");
 }
 
-void TileData::add_collision_shape(int p_layer_id) {
+void TileData::add_collision_polygon(int p_layer_id) {
 	ERR_FAIL_INDEX(p_layer_id, physics.size());
-	physics.write[p_layer_id].shapes.push_back(PhysicsLayerTileData::ShapeTileData());
+	physics.write[p_layer_id].polygons.push_back(PhysicsLayerTileData::PolygonShapeTileData());
 	emit_signal("changed");
 }
 
-void TileData::remove_collision_shape(int p_layer_id, int p_shape_index) {
+void TileData::remove_collision_polygon(int p_layer_id, int p_polygon_index) {
 	ERR_FAIL_INDEX(p_layer_id, physics.size());
-	ERR_FAIL_INDEX(p_shape_index, physics[p_layer_id].shapes.size());
-	physics.write[p_layer_id].shapes.remove(p_shape_index);
+	ERR_FAIL_INDEX(p_polygon_index, physics[p_layer_id].polygons.size());
+	physics.write[p_layer_id].polygons.remove(p_polygon_index);
 	emit_signal("changed");
 }
 
-void TileData::set_collision_shape_shape(int p_layer_id, int p_shape_index, Ref<Shape2D> p_shape) {
+void TileData::set_collision_polygon_points(int p_layer_id, int p_polygon_index, Vector<Vector2> p_polygon) {
 	ERR_FAIL_INDEX(p_layer_id, physics.size());
-	ERR_FAIL_INDEX(p_shape_index, physics[p_layer_id].shapes.size());
-	physics.write[p_layer_id].shapes.write[p_shape_index].shape = p_shape;
+	ERR_FAIL_INDEX(p_polygon_index, physics[p_layer_id].polygons.size());
+	ERR_FAIL_COND_MSG(p_polygon.size() != 0 && p_polygon.size() < 3, "Invalid polygon. Needs either 0 or more than 3 points.");
+
+	if (p_polygon.is_empty()) {
+		physics.write[p_layer_id].polygons.write[p_polygon_index].shapes.clear();
+	} else {
+		// Decompose into convex shapes.
+		Vector<Vector<Vector2>> decomp = Geometry2D::decompose_polygon_in_convex(p_polygon);
+		ERR_FAIL_COND_MSG(decomp.is_empty(), "Could not decompose the polygon into convex shapes.");
+
+		physics.write[p_layer_id].polygons.write[p_polygon_index].shapes.resize(decomp.size());
+		for (int i = 0; i < decomp.size(); i++) {
+			Ref<ConvexPolygonShape2D> shape;
+			shape.instantiate();
+			shape->set_points(decomp[i]);
+			physics.write[p_layer_id].polygons.write[p_polygon_index].shapes[i] = shape;
+		}
+	}
+	physics.write[p_layer_id].polygons.write[p_polygon_index].polygon = p_polygon;
 	emit_signal("changed");
 }
 
-Ref<Shape2D> TileData::get_collision_shape_shape(int p_layer_id, int p_shape_index) const {
-	ERR_FAIL_INDEX_V(p_layer_id, physics.size(), Ref<Shape2D>());
-	ERR_FAIL_INDEX_V(p_shape_index, physics[p_layer_id].shapes.size(), Ref<Shape2D>());
-	return physics[p_layer_id].shapes[p_shape_index].shape;
+Vector<Vector2> TileData::get_collision_polygon_points(int p_layer_id, int p_polygon_index) const {
+	ERR_FAIL_INDEX_V(p_layer_id, physics.size(), Vector<Vector2>());
+	ERR_FAIL_INDEX_V(p_polygon_index, physics[p_layer_id].polygons.size(), Vector<Vector2>());
+	return physics[p_layer_id].polygons[p_polygon_index].polygon;
 }
 
-void TileData::set_collision_shape_one_way(int p_layer_id, int p_shape_index, bool p_one_way) {
+void TileData::set_collision_polygon_one_way(int p_layer_id, int p_polygon_index, bool p_one_way) {
 	ERR_FAIL_INDEX(p_layer_id, physics.size());
-	ERR_FAIL_INDEX(p_shape_index, physics[p_layer_id].shapes.size());
-	physics.write[p_layer_id].shapes.write[p_shape_index].one_way = p_one_way;
+	ERR_FAIL_INDEX(p_polygon_index, physics[p_layer_id].polygons.size());
+	physics.write[p_layer_id].polygons.write[p_polygon_index].one_way = p_one_way;
 	emit_signal("changed");
 }
 
-bool TileData::is_collision_shape_one_way(int p_layer_id, int p_shape_index) const {
+bool TileData::is_collision_polygon_one_way(int p_layer_id, int p_polygon_index) const {
 	ERR_FAIL_INDEX_V(p_layer_id, physics.size(), false);
-	ERR_FAIL_INDEX_V(p_shape_index, physics[p_layer_id].shapes.size(), false);
-	return physics[p_layer_id].shapes[p_shape_index].one_way;
+	ERR_FAIL_INDEX_V(p_polygon_index, physics[p_layer_id].polygons.size(), false);
+	return physics[p_layer_id].polygons[p_polygon_index].one_way;
 }
 
-void TileData::set_collision_shape_one_way_margin(int p_layer_id, int p_shape_index, float p_one_way_margin) {
+void TileData::set_collision_polygon_one_way_margin(int p_layer_id, int p_polygon_index, float p_one_way_margin) {
 	ERR_FAIL_INDEX(p_layer_id, physics.size());
-	ERR_FAIL_INDEX(p_shape_index, physics[p_layer_id].shapes.size());
-	physics.write[p_layer_id].shapes.write[p_shape_index].one_way_margin = p_one_way_margin;
+	ERR_FAIL_INDEX(p_polygon_index, physics[p_layer_id].polygons.size());
+	physics.write[p_layer_id].polygons.write[p_polygon_index].one_way_margin = p_one_way_margin;
 	emit_signal("changed");
 }
 
-float TileData::get_collision_shape_one_way_margin(int p_layer_id, int p_shape_index) const {
+float TileData::get_collision_polygon_one_way_margin(int p_layer_id, int p_polygon_index) const {
 	ERR_FAIL_INDEX_V(p_layer_id, physics.size(), 0.0);
-	ERR_FAIL_INDEX_V(p_shape_index, physics[p_layer_id].shapes.size(), 0.0);
-	return physics[p_layer_id].shapes[p_shape_index].one_way_margin;
+	ERR_FAIL_INDEX_V(p_polygon_index, physics[p_layer_id].polygons.size(), 0.0);
+	return physics[p_layer_id].polygons[p_polygon_index].one_way_margin;
+}
+
+int TileData::get_collision_polygon_shapes_count(int p_layer_id, int p_polygon_index) const {
+	ERR_FAIL_INDEX_V(p_layer_id, physics.size(), 0);
+	ERR_FAIL_INDEX_V(p_polygon_index, physics[p_layer_id].polygons.size(), 0);
+	return physics[p_layer_id].polygons[p_polygon_index].shapes.size();
+}
+
+Ref<ConvexPolygonShape2D> TileData::get_collision_polygon_shape(int p_layer_id, int p_polygon_index, int shape_index) const {
+	ERR_FAIL_INDEX_V(p_layer_id, physics.size(), 0);
+	ERR_FAIL_INDEX_V(p_polygon_index, physics[p_layer_id].polygons.size(), Ref<ConvexPolygonShape2D>());
+	ERR_FAIL_INDEX_V(shape_index, (int)physics[p_layer_id].polygons[shape_index].shapes.size(), Ref<ConvexPolygonShape2D>());
+	return physics[p_layer_id].polygons[shape_index].shapes[shape_index];
 }
 
 // Terrain
 void TileData::set_terrain_set(int p_terrain_set) {
 	ERR_FAIL_COND(p_terrain_set < -1);
+	if (p_terrain_set == terrain_set) {
+		return;
+	}
 	if (tile_set) {
 		ERR_FAIL_COND(p_terrain_set >= tile_set->get_terrain_sets_count());
+		for (int i = 0; i < 16; i++) {
+			terrain_peering_bits[i] = -1;
+		}
 	}
 	terrain_set = p_terrain_set;
 	notify_property_list_changed();
@@ -2454,7 +3361,7 @@ int TileData::get_terrain_set() const {
 }
 
 void TileData::set_peering_bit_terrain(TileSet::CellNeighbor p_peering_bit, int p_terrain_index) {
-	ERR_FAIL_INDEX(p_peering_bit, TileSet::CELL_NEIGHBOR_MAX);
+	ERR_FAIL_COND(terrain_set < 0);
 	ERR_FAIL_COND(p_terrain_index < -1);
 	if (tile_set) {
 		ERR_FAIL_COND(p_terrain_index >= tile_set->get_terrains_count(terrain_set));
@@ -2465,7 +3372,7 @@ void TileData::set_peering_bit_terrain(TileSet::CellNeighbor p_peering_bit, int 
 }
 
 int TileData::get_peering_bit_terrain(TileSet::CellNeighbor p_peering_bit) const {
-	ERR_FAIL_INDEX_V(p_peering_bit, TileSet::CELL_NEIGHBOR_MAX, -1);
+	ERR_FAIL_COND_V(!is_valid_peering_bit_terrain(p_peering_bit), -1);
 	return terrain_peering_bits[p_peering_bit];
 }
 
@@ -2489,7 +3396,7 @@ Ref<NavigationPolygon> TileData::get_navigation_polygon(int p_layer_id) const {
 
 // Misc
 void TileData::set_probability(float p_probability) {
-	ERR_FAIL_COND(p_probability <= 0.0);
+	ERR_FAIL_COND(p_probability < 0.0);
 	probability = p_probability;
 	emit_signal("changed");
 }
@@ -2550,7 +3457,7 @@ bool TileData::_set(const StringName &p_name, const Variant &p_value) {
 		// Physics layers.
 		int layer_index = components[0].trim_prefix("physics_layer_").to_int();
 		ERR_FAIL_COND_V(layer_index < 0, false);
-		if (components.size() == 2 && components[1] == "shapes_count") {
+		if (components.size() == 2 && components[1] == "polygons_count") {
 			if (p_value.get_type() != Variant::INT) {
 				return false;
 			}
@@ -2562,13 +3469,13 @@ bool TileData::_set(const StringName &p_name, const Variant &p_value) {
 					physics.resize(layer_index + 1);
 				}
 			}
-			set_collision_shapes_count(layer_index, p_value);
+			set_collision_polygons_count(layer_index, p_value);
 			return true;
-		} else if (components.size() == 3 && components[1].begins_with("shape_") && components[1].trim_prefix("shape_").is_valid_int()) {
-			int shape_index = components[1].trim_prefix("shape_").to_int();
-			ERR_FAIL_COND_V(shape_index < 0, false);
+		} else if (components.size() == 3 && components[1].begins_with("polygon_") && components[1].trim_prefix("polygon_").is_valid_int()) {
+			int polygon_index = components[1].trim_prefix("polygon_").to_int();
+			ERR_FAIL_COND_V(polygon_index < 0, false);
 
-			if (components[2] == "shape" || components[2] == "one_way" || components[2] == "one_way_margin") {
+			if (components[2] == "points" || components[2] == "one_way" || components[2] == "one_way_margin") {
 				if (layer_index >= physics.size()) {
 					if (tile_set) {
 						return false;
@@ -2577,19 +3484,19 @@ bool TileData::_set(const StringName &p_name, const Variant &p_value) {
 					}
 				}
 
-				if (shape_index >= physics[layer_index].shapes.size()) {
-					physics.write[layer_index].shapes.resize(shape_index + 1);
+				if (polygon_index >= physics[layer_index].polygons.size()) {
+					physics.write[layer_index].polygons.resize(polygon_index + 1);
 				}
 			}
-			if (components[2] == "shape") {
-				Ref<Shape2D> shape = p_value;
-				set_collision_shape_shape(layer_index, shape_index, shape);
+			if (components[2] == "points") {
+				Vector<Vector2> polygon = p_value;
+				set_collision_polygon_points(layer_index, polygon_index, polygon);
 				return true;
 			} else if (components[2] == "one_way") {
-				set_collision_shape_one_way(layer_index, shape_index, p_value);
+				set_collision_polygon_one_way(layer_index, polygon_index, p_value);
 				return true;
 			} else if (components[2] == "one_way_margin") {
-				set_collision_shape_one_way_margin(layer_index, shape_index, p_value);
+				set_collision_polygon_one_way_margin(layer_index, polygon_index, p_value);
 				return true;
 			}
 		}
@@ -2615,42 +3522,14 @@ bool TileData::_set(const StringName &p_name, const Variant &p_value) {
 		}
 	} else if (components.size() == 2 && components[0] == "terrains_peering_bit") {
 		// Terrains.
-		if (components[1] == "right_side") {
-			set_peering_bit_terrain(TileSet::CELL_NEIGHBOR_RIGHT_SIDE, p_value);
-		} else if (components[1] == "right_corner") {
-			set_peering_bit_terrain(TileSet::CELL_NEIGHBOR_RIGHT_CORNER, p_value);
-		} else if (components[1] == "bottom_right_side") {
-			set_peering_bit_terrain(TileSet::CELL_NEIGHBOR_BOTTOM_RIGHT_SIDE, p_value);
-		} else if (components[1] == "bottom_right_corner") {
-			set_peering_bit_terrain(TileSet::CELL_NEIGHBOR_BOTTOM_RIGHT_CORNER, p_value);
-		} else if (components[1] == "bottom_side") {
-			set_peering_bit_terrain(TileSet::CELL_NEIGHBOR_BOTTOM_SIDE, p_value);
-		} else if (components[1] == "bottom_corner") {
-			set_peering_bit_terrain(TileSet::CELL_NEIGHBOR_BOTTOM_CORNER, p_value);
-		} else if (components[1] == "bottom_left_side") {
-			set_peering_bit_terrain(TileSet::CELL_NEIGHBOR_BOTTOM_LEFT_SIDE, p_value);
-		} else if (components[1] == "bottom_left_corner") {
-			set_peering_bit_terrain(TileSet::CELL_NEIGHBOR_BOTTOM_LEFT_CORNER, p_value);
-		} else if (components[1] == "left_side") {
-			set_peering_bit_terrain(TileSet::CELL_NEIGHBOR_LEFT_SIDE, p_value);
-		} else if (components[1] == "left_corner") {
-			set_peering_bit_terrain(TileSet::CELL_NEIGHBOR_LEFT_CORNER, p_value);
-		} else if (components[1] == "top_left_side") {
-			set_peering_bit_terrain(TileSet::CELL_NEIGHBOR_TOP_LEFT_SIDE, p_value);
-		} else if (components[1] == "top_left_corner") {
-			set_peering_bit_terrain(TileSet::CELL_NEIGHBOR_TOP_LEFT_CORNER, p_value);
-		} else if (components[1] == "top_side") {
-			set_peering_bit_terrain(TileSet::CELL_NEIGHBOR_TOP_SIDE, p_value);
-		} else if (components[1] == "top_corner") {
-			set_peering_bit_terrain(TileSet::CELL_NEIGHBOR_TOP_CORNER, p_value);
-		} else if (components[1] == "top_right_side") {
-			set_peering_bit_terrain(TileSet::CELL_NEIGHBOR_TOP_RIGHT_SIDE, p_value);
-		} else if (components[1] == "top_right_corner") {
-			set_peering_bit_terrain(TileSet::CELL_NEIGHBOR_TOP_RIGHT_CORNER, p_value);
-		} else {
-			return false;
+		for (int i = 0; i < TileSet::CELL_NEIGHBOR_MAX; i++) {
+			TileSet::CellNeighbor bit = TileSet::CellNeighbor(i);
+			if (components[1] == TileSet::CELL_NEIGHBOR_ENUM_TO_TEXT[i]) {
+				set_peering_bit_terrain(bit, p_value);
+				return true;
+			}
 		}
-		return true;
+		return false;
 	} else if (components.size() == 1 && components[0].begins_with("custom_data_") && components[0].trim_prefix("custom_data_").is_valid_int()) {
 		// Custom data layers.
 		int layer_index = components[0].trim_prefix("custom_data_").to_int();
@@ -2693,64 +3572,35 @@ bool TileData::_get(const StringName &p_name, Variant &r_ret) const {
 			if (layer_index >= physics.size()) {
 				return false;
 			}
-			if (components.size() == 2 && components[1] == "shapes_count") {
-				r_ret = get_collision_shapes_count(layer_index);
+			if (components.size() == 2 && components[1] == "polygons_count") {
+				r_ret = get_collision_polygons_count(layer_index);
 				return true;
-			} else if (components.size() == 3 && components[1].begins_with("shape_") && components[1].trim_prefix("shape_").is_valid_int()) {
-				int shape_index = components[1].trim_prefix("shape_").to_int();
-				ERR_FAIL_COND_V(shape_index < 0, false);
-				if (shape_index >= physics[layer_index].shapes.size()) {
+			} else if (components.size() == 3 && components[1].begins_with("polygon_") && components[1].trim_prefix("polygon_").is_valid_int()) {
+				int polygon_index = components[1].trim_prefix("polygon_").to_int();
+				ERR_FAIL_COND_V(polygon_index < 0, false);
+				if (polygon_index >= physics[layer_index].polygons.size()) {
 					return false;
 				}
-				if (components[2] == "shape") {
-					r_ret = get_collision_shape_shape(layer_index, shape_index);
+				if (components[2] == "points") {
+					r_ret = get_collision_polygon_points(layer_index, polygon_index);
 					return true;
 				} else if (components[2] == "one_way") {
-					r_ret = is_collision_shape_one_way(layer_index, shape_index);
+					r_ret = is_collision_polygon_one_way(layer_index, polygon_index);
 					return true;
 				} else if (components[2] == "one_way_margin") {
-					r_ret = get_collision_shape_one_way_margin(layer_index, shape_index);
+					r_ret = get_collision_polygon_one_way_margin(layer_index, polygon_index);
 					return true;
 				}
 			}
 		} else if (components.size() == 2 && components[0] == "terrains_peering_bit") {
 			// Terrains.
-			if (components[1] == "right_side") {
-				r_ret = terrain_peering_bits[TileSet::CELL_NEIGHBOR_RIGHT_SIDE];
-			} else if (components[1] == "right_corner") {
-				r_ret = terrain_peering_bits[TileSet::CELL_NEIGHBOR_RIGHT_CORNER];
-			} else if (components[1] == "bottom_right_side") {
-				r_ret = terrain_peering_bits[TileSet::CELL_NEIGHBOR_BOTTOM_RIGHT_SIDE];
-			} else if (components[1] == "bottom_right_corner") {
-				r_ret = terrain_peering_bits[TileSet::CELL_NEIGHBOR_BOTTOM_RIGHT_CORNER];
-			} else if (components[1] == "bottom_side") {
-				r_ret = terrain_peering_bits[TileSet::CELL_NEIGHBOR_BOTTOM_SIDE];
-			} else if (components[1] == "bottom_corner") {
-				r_ret = terrain_peering_bits[TileSet::CELL_NEIGHBOR_BOTTOM_CORNER];
-			} else if (components[1] == "bottom_left_side") {
-				r_ret = terrain_peering_bits[TileSet::CELL_NEIGHBOR_BOTTOM_LEFT_SIDE];
-			} else if (components[1] == "bottom_left_corner") {
-				r_ret = terrain_peering_bits[TileSet::CELL_NEIGHBOR_BOTTOM_LEFT_CORNER];
-			} else if (components[1] == "left_side") {
-				r_ret = terrain_peering_bits[TileSet::CELL_NEIGHBOR_LEFT_SIDE];
-			} else if (components[1] == "left_corner") {
-				r_ret = terrain_peering_bits[TileSet::CELL_NEIGHBOR_LEFT_CORNER];
-			} else if (components[1] == "top_left_side") {
-				r_ret = terrain_peering_bits[TileSet::CELL_NEIGHBOR_TOP_LEFT_SIDE];
-			} else if (components[1] == "top_left_corner") {
-				r_ret = terrain_peering_bits[TileSet::CELL_NEIGHBOR_TOP_LEFT_CORNER];
-			} else if (components[1] == "top_side") {
-				r_ret = terrain_peering_bits[TileSet::CELL_NEIGHBOR_TOP_SIDE];
-			} else if (components[1] == "top_corner") {
-				r_ret = terrain_peering_bits[TileSet::CELL_NEIGHBOR_TOP_CORNER];
-			} else if (components[1] == "top_right_side") {
-				r_ret = terrain_peering_bits[TileSet::CELL_NEIGHBOR_TOP_RIGHT_SIDE];
-			} else if (components[1] == "top_right_corner") {
-				r_ret = terrain_peering_bits[TileSet::CELL_NEIGHBOR_TOP_RIGHT_CORNER];
-			} else {
-				return false;
+			for (int i = 0; i < TileSet::CELL_NEIGHBOR_MAX; i++) {
+				if (components[1] == TileSet::CELL_NEIGHBOR_ENUM_TO_TEXT[i]) {
+					r_ret = terrain_peering_bits[i];
+					return true;
+				}
 			}
-			return true;
+			return false;
 		} else if (components.size() == 2 && components[0].begins_with("navigation_layer_") && components[0].trim_prefix("navigation_layer_").is_valid_int()) {
 			// Occlusion layers.
 			int layer_index = components[0].trim_prefix("navigation_layer_").to_int();
@@ -2795,26 +3645,26 @@ void TileData::_get_property_list(List<PropertyInfo> *p_list) const {
 		// Physics layers.
 		p_list->push_back(PropertyInfo(Variant::NIL, "Physics", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_GROUP));
 		for (int i = 0; i < physics.size(); i++) {
-			p_list->push_back(PropertyInfo(Variant::INT, vformat("physics_layer_%d/shapes_count", i), PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR));
+			p_list->push_back(PropertyInfo(Variant::INT, vformat("physics_layer_%d/polygons_count", i), PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR));
 
-			for (int j = 0; j < physics[i].shapes.size(); j++) {
-				// physics_layer_%d/shapes_count
-				property_info = PropertyInfo(Variant::OBJECT, vformat("physics_layer_%d/shape_%d/shape", i, j), PROPERTY_HINT_RESOURCE_TYPE, "Shape2D", PROPERTY_USAGE_DEFAULT);
-				if (!physics[i].shapes[j].shape.is_valid()) {
+			for (int j = 0; j < physics[i].polygons.size(); j++) {
+				// physics_layer_%d/points
+				property_info = PropertyInfo(Variant::ARRAY, vformat("physics_layer_%d/polygon_%d/points", i, j), PROPERTY_HINT_ARRAY_TYPE, "Vector2", PROPERTY_USAGE_DEFAULT);
+				if (physics[i].polygons[j].polygon.is_empty()) {
 					property_info.usage ^= PROPERTY_USAGE_STORAGE;
 				}
 				p_list->push_back(property_info);
 
-				// physics_layer_%d/shape_%d/one_way
-				property_info = PropertyInfo(Variant::BOOL, vformat("physics_layer_%d/shape_%d/one_way", i, j));
-				if (physics[i].shapes[j].one_way == false) {
+				// physics_layer_%d/polygon_%d/one_way
+				property_info = PropertyInfo(Variant::BOOL, vformat("physics_layer_%d/polygon_%d/one_way", i, j));
+				if (physics[i].polygons[j].one_way == false) {
 					property_info.usage ^= PROPERTY_USAGE_STORAGE;
 				}
 				p_list->push_back(property_info);
 
-				// physics_layer_%d/shape_%d/one_way_margin
-				property_info = PropertyInfo(Variant::FLOAT, vformat("physics_layer_%d/shape_%d/one_way_margin", i, j));
-				if (physics[i].shapes[j].one_way_margin == 1.0) {
+				// physics_layer_%d/polygon_%d/one_way_margin
+				property_info = PropertyInfo(Variant::FLOAT, vformat("physics_layer_%d/polygon_%d/one_way_margin", i, j));
+				if (physics[i].polygons[j].one_way_margin == 1.0) {
 					property_info.usage ^= PROPERTY_USAGE_STORAGE;
 				}
 				p_list->push_back(property_info);
@@ -2824,117 +3674,15 @@ void TileData::_get_property_list(List<PropertyInfo> *p_list) const {
 		// Terrain data
 		if (terrain_set >= 0) {
 			p_list->push_back(PropertyInfo(Variant::NIL, "Terrains", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_GROUP));
-			if (is_valid_peering_bit_terrain(TileSet::CELL_NEIGHBOR_RIGHT_SIDE)) {
-				property_info = PropertyInfo(Variant::INT, "terrains_peering_bit/right_side");
-				if (get_peering_bit_terrain(TileSet::CELL_NEIGHBOR_RIGHT_SIDE) == -1) {
-					property_info.usage ^= PROPERTY_USAGE_STORAGE;
+			for (int i = 0; i < TileSet::CELL_NEIGHBOR_MAX; i++) {
+				TileSet::CellNeighbor bit = TileSet::CellNeighbor(i);
+				if (is_valid_peering_bit_terrain(bit)) {
+					property_info = PropertyInfo(Variant::INT, "terrains_peering_bit/" + String(TileSet::CELL_NEIGHBOR_ENUM_TO_TEXT[i]));
+					if (get_peering_bit_terrain(bit) == -1) {
+						property_info.usage ^= PROPERTY_USAGE_STORAGE;
+					}
+					p_list->push_back(property_info);
 				}
-				p_list->push_back(property_info);
-			}
-			if (is_valid_peering_bit_terrain(TileSet::CELL_NEIGHBOR_RIGHT_CORNER)) {
-				property_info = PropertyInfo(Variant::INT, "terrains_peering_bit/right_corner");
-				if (get_peering_bit_terrain(TileSet::CELL_NEIGHBOR_RIGHT_CORNER) == -1) {
-					property_info.usage ^= PROPERTY_USAGE_STORAGE;
-				}
-				p_list->push_back(property_info);
-			}
-			if (is_valid_peering_bit_terrain(TileSet::CELL_NEIGHBOR_BOTTOM_RIGHT_SIDE)) {
-				property_info = PropertyInfo(Variant::INT, "terrains_peering_bit/bottom_right_side");
-				if (get_peering_bit_terrain(TileSet::CELL_NEIGHBOR_BOTTOM_RIGHT_SIDE) == -1) {
-					property_info.usage ^= PROPERTY_USAGE_STORAGE;
-				}
-				p_list->push_back(property_info);
-			}
-			if (is_valid_peering_bit_terrain(TileSet::CELL_NEIGHBOR_BOTTOM_RIGHT_CORNER)) {
-				property_info = PropertyInfo(Variant::INT, "terrains_peering_bit/bottom_right_corner");
-				if (get_peering_bit_terrain(TileSet::CELL_NEIGHBOR_BOTTOM_RIGHT_CORNER) == -1) {
-					property_info.usage ^= PROPERTY_USAGE_STORAGE;
-				}
-				p_list->push_back(property_info);
-			}
-			if (is_valid_peering_bit_terrain(TileSet::CELL_NEIGHBOR_BOTTOM_SIDE)) {
-				property_info = PropertyInfo(Variant::INT, "terrains_peering_bit/bottom_side");
-				if (get_peering_bit_terrain(TileSet::CELL_NEIGHBOR_BOTTOM_SIDE) == -1) {
-					property_info.usage ^= PROPERTY_USAGE_STORAGE;
-				}
-				p_list->push_back(property_info);
-			}
-			if (is_valid_peering_bit_terrain(TileSet::CELL_NEIGHBOR_BOTTOM_CORNER)) {
-				property_info = PropertyInfo(Variant::INT, "terrains_peering_bit/bottom_corner");
-				if (get_peering_bit_terrain(TileSet::CELL_NEIGHBOR_BOTTOM_CORNER) == -1) {
-					property_info.usage ^= PROPERTY_USAGE_STORAGE;
-				}
-				p_list->push_back(property_info);
-			}
-			if (is_valid_peering_bit_terrain(TileSet::CELL_NEIGHBOR_BOTTOM_LEFT_SIDE)) {
-				property_info = PropertyInfo(Variant::INT, "terrains_peering_bit/bottom_left_side");
-				if (get_peering_bit_terrain(TileSet::CELL_NEIGHBOR_BOTTOM_LEFT_SIDE) == -1) {
-					property_info.usage ^= PROPERTY_USAGE_STORAGE;
-				}
-				p_list->push_back(property_info);
-			}
-			if (is_valid_peering_bit_terrain(TileSet::CELL_NEIGHBOR_BOTTOM_LEFT_CORNER)) {
-				property_info = PropertyInfo(Variant::INT, "terrains_peering_bit/bottom_left_corner");
-				if (get_peering_bit_terrain(TileSet::CELL_NEIGHBOR_BOTTOM_LEFT_CORNER) == -1) {
-					property_info.usage ^= PROPERTY_USAGE_STORAGE;
-				}
-				p_list->push_back(property_info);
-			}
-			if (is_valid_peering_bit_terrain(TileSet::CELL_NEIGHBOR_LEFT_SIDE)) {
-				property_info = PropertyInfo(Variant::INT, "terrains_peering_bit/left_side");
-				if (get_peering_bit_terrain(TileSet::CELL_NEIGHBOR_LEFT_SIDE) == -1) {
-					property_info.usage ^= PROPERTY_USAGE_STORAGE;
-				}
-				p_list->push_back(property_info);
-			}
-			if (is_valid_peering_bit_terrain(TileSet::CELL_NEIGHBOR_LEFT_CORNER)) {
-				property_info = PropertyInfo(Variant::INT, "terrains_peering_bit/left_corner");
-				if (get_peering_bit_terrain(TileSet::CELL_NEIGHBOR_LEFT_CORNER) == -1) {
-					property_info.usage ^= PROPERTY_USAGE_STORAGE;
-				}
-				p_list->push_back(property_info);
-			}
-			if (is_valid_peering_bit_terrain(TileSet::CELL_NEIGHBOR_TOP_LEFT_SIDE)) {
-				property_info = PropertyInfo(Variant::INT, "terrains_peering_bit/top_left_side");
-				if (get_peering_bit_terrain(TileSet::CELL_NEIGHBOR_TOP_LEFT_SIDE) == -1) {
-					property_info.usage ^= PROPERTY_USAGE_STORAGE;
-				}
-				p_list->push_back(property_info);
-			}
-			if (is_valid_peering_bit_terrain(TileSet::CELL_NEIGHBOR_TOP_LEFT_CORNER)) {
-				property_info = PropertyInfo(Variant::INT, "terrains_peering_bit/top_left_corner");
-				if (get_peering_bit_terrain(TileSet::CELL_NEIGHBOR_TOP_LEFT_CORNER) == -1) {
-					property_info.usage ^= PROPERTY_USAGE_STORAGE;
-				}
-				p_list->push_back(property_info);
-			}
-			if (is_valid_peering_bit_terrain(TileSet::CELL_NEIGHBOR_TOP_SIDE)) {
-				property_info = PropertyInfo(Variant::INT, "terrains_peering_bit/top_side");
-				if (get_peering_bit_terrain(TileSet::CELL_NEIGHBOR_TOP_SIDE) == -1) {
-					property_info.usage ^= PROPERTY_USAGE_STORAGE;
-				}
-				p_list->push_back(property_info);
-			}
-			if (is_valid_peering_bit_terrain(TileSet::CELL_NEIGHBOR_TOP_CORNER)) {
-				property_info = PropertyInfo(Variant::INT, "terrains_peering_bit/top_corner");
-				if (get_peering_bit_terrain(TileSet::CELL_NEIGHBOR_TOP_CORNER) == -1) {
-					property_info.usage ^= PROPERTY_USAGE_STORAGE;
-				}
-				p_list->push_back(property_info);
-			}
-			if (is_valid_peering_bit_terrain(TileSet::CELL_NEIGHBOR_TOP_RIGHT_SIDE)) {
-				property_info = PropertyInfo(Variant::INT, "terrains_peering_bit/top_right_side");
-				if (get_peering_bit_terrain(TileSet::CELL_NEIGHBOR_TOP_RIGHT_SIDE) == -1) {
-					property_info.usage ^= PROPERTY_USAGE_STORAGE;
-				}
-				p_list->push_back(property_info);
-			}
-			if (is_valid_peering_bit_terrain(TileSet::CELL_NEIGHBOR_TOP_RIGHT_CORNER)) {
-				property_info = PropertyInfo(Variant::INT, "terrains_peering_bit/top_right_corner");
-				if (get_peering_bit_terrain(TileSet::CELL_NEIGHBOR_TOP_RIGHT_CORNER) == -1) {
-					property_info.usage ^= PROPERTY_USAGE_STORAGE;
-				}
-				p_list->push_back(property_info);
 			}
 		}
 
@@ -2986,16 +3734,16 @@ void TileData::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_occluder", "layer_id"), &TileData::get_occluder);
 
 	// Physics.
-	ClassDB::bind_method(D_METHOD("get_collision_shapes_count", "layer_id"), &TileData::get_collision_shapes_count);
-	ClassDB::bind_method(D_METHOD("set_collision_shapes_count", "layer_id", "shapes_count"), &TileData::set_collision_shapes_count);
-	ClassDB::bind_method(D_METHOD("add_collision_shape", "layer_id"), &TileData::add_collision_shape);
-	ClassDB::bind_method(D_METHOD("remove_collision_shape", "layer_id", "shape_index"), &TileData::remove_collision_shape);
-	ClassDB::bind_method(D_METHOD("set_collision_shape_shape", "layer_id", "shape_index", "shape"), &TileData::set_collision_shape_shape);
-	ClassDB::bind_method(D_METHOD("get_collision_shape_shape", "layer_id", "shape_index"), &TileData::get_collision_shape_shape);
-	ClassDB::bind_method(D_METHOD("set_collision_shape_one_way", "layer_id", "shape_index", "one_way"), &TileData::set_collision_shape_one_way);
-	ClassDB::bind_method(D_METHOD("is_collision_shape_one_way", "layer_id", "shape_index"), &TileData::is_collision_shape_one_way);
-	ClassDB::bind_method(D_METHOD("set_collision_shape_one_way_margin", "layer_id", "shape_index", "one_way_margin"), &TileData::set_collision_shape_one_way_margin);
-	ClassDB::bind_method(D_METHOD("get_collision_shape_one_way_margin", "layer_id", "shape_index"), &TileData::get_collision_shape_one_way_margin);
+	ClassDB::bind_method(D_METHOD("get_collision_polygons_count", "layer_id"), &TileData::get_collision_polygons_count);
+	ClassDB::bind_method(D_METHOD("set_collision_polygons_count", "layer_id", "polygons_count"), &TileData::set_collision_polygons_count);
+	ClassDB::bind_method(D_METHOD("add_collision_polygon", "layer_id"), &TileData::add_collision_polygon);
+	ClassDB::bind_method(D_METHOD("remove_collision_polygon", "layer_id", "polygon_index"), &TileData::remove_collision_polygon);
+	ClassDB::bind_method(D_METHOD("set_collision_polygon_points", "layer_id", "polygon_index", "polygon"), &TileData::set_collision_polygon_points);
+	ClassDB::bind_method(D_METHOD("get_collision_polygon_points", "layer_id", "polygon_index"), &TileData::get_collision_polygon_points);
+	ClassDB::bind_method(D_METHOD("set_collision_polygon_one_way", "layer_id", "polygon_index", "one_way"), &TileData::set_collision_polygon_one_way);
+	ClassDB::bind_method(D_METHOD("is_collision_polygon_one_way", "layer_id", "polygon_index"), &TileData::is_collision_polygon_one_way);
+	ClassDB::bind_method(D_METHOD("set_collision_polygon_one_way_margin", "layer_id", "polygon_index", "one_way_margin"), &TileData::set_collision_polygon_one_way_margin);
+	ClassDB::bind_method(D_METHOD("get_collision_polygon_one_way_margin", "layer_id", "polygon_index"), &TileData::get_collision_polygon_one_way_margin);
 
 	// Terrain
 	ClassDB::bind_method(D_METHOD("set_terrain_set", "terrain_set"), &TileData::set_terrain_set);
@@ -3034,805 +3782,6 @@ void TileData::_bind_methods() {
 
 	ADD_SIGNAL(MethodInfo("changed"));
 }
-
-/////////////////////////////// TileSetPluginAtlasTerrain //////////////////////////////////////
-
-// --- PLUGINS ---
-void TileSetPluginAtlasTerrain::_draw_square_corner_or_side_terrain_bit(CanvasItem *p_canvas_item, Color p_color, Vector2i p_size, TileSet::CellNeighbor p_bit) {
-	Rect2 bit_rect;
-	bit_rect.size = Vector2(p_size) / 3;
-	switch (p_bit) {
-		case TileSet::CELL_NEIGHBOR_RIGHT_SIDE:
-			bit_rect.position = Vector2(1, -1);
-			break;
-		case TileSet::CELL_NEIGHBOR_BOTTOM_RIGHT_CORNER:
-			bit_rect.position = Vector2(1, 1);
-			break;
-		case TileSet::CELL_NEIGHBOR_BOTTOM_SIDE:
-			bit_rect.position = Vector2(-1, 1);
-			break;
-		case TileSet::CELL_NEIGHBOR_BOTTOM_LEFT_CORNER:
-			bit_rect.position = Vector2(-3, 1);
-			break;
-		case TileSet::CELL_NEIGHBOR_LEFT_SIDE:
-			bit_rect.position = Vector2(-3, -1);
-			break;
-		case TileSet::CELL_NEIGHBOR_TOP_LEFT_CORNER:
-			bit_rect.position = Vector2(-3, -3);
-			break;
-		case TileSet::CELL_NEIGHBOR_TOP_SIDE:
-			bit_rect.position = Vector2(-1, -3);
-			break;
-		case TileSet::CELL_NEIGHBOR_TOP_RIGHT_CORNER:
-			bit_rect.position = Vector2(1, -3);
-			break;
-		default:
-			break;
-	}
-	bit_rect.position *= Vector2(p_size) / 6.0;
-	p_canvas_item->draw_rect(bit_rect, p_color);
-}
-
-void TileSetPluginAtlasTerrain::_draw_square_corner_terrain_bit(CanvasItem *p_canvas_item, Color p_color, Vector2i p_size, TileSet::CellNeighbor p_bit) {
-	PackedColorArray color_array;
-	color_array.push_back(p_color);
-
-	Vector2 unit = Vector2(p_size) / 6.0;
-	PackedVector2Array polygon;
-	switch (p_bit) {
-		case TileSet::CELL_NEIGHBOR_BOTTOM_RIGHT_CORNER:
-			polygon.push_back(Vector2(0, 3) * unit);
-			polygon.push_back(Vector2(3, 3) * unit);
-			polygon.push_back(Vector2(3, 0) * unit);
-			polygon.push_back(Vector2(1, 0) * unit);
-			polygon.push_back(Vector2(1, 1) * unit);
-			polygon.push_back(Vector2(0, 1) * unit);
-			break;
-		case TileSet::CELL_NEIGHBOR_BOTTOM_LEFT_CORNER:
-			polygon.push_back(Vector2(0, 3) * unit);
-			polygon.push_back(Vector2(-3, 3) * unit);
-			polygon.push_back(Vector2(-3, 0) * unit);
-			polygon.push_back(Vector2(-1, 0) * unit);
-			polygon.push_back(Vector2(-1, 1) * unit);
-			polygon.push_back(Vector2(0, 1) * unit);
-			break;
-		case TileSet::CELL_NEIGHBOR_TOP_LEFT_CORNER:
-			polygon.push_back(Vector2(0, -3) * unit);
-			polygon.push_back(Vector2(-3, -3) * unit);
-			polygon.push_back(Vector2(-3, 0) * unit);
-			polygon.push_back(Vector2(-1, 0) * unit);
-			polygon.push_back(Vector2(-1, -1) * unit);
-			polygon.push_back(Vector2(0, -1) * unit);
-			break;
-		case TileSet::CELL_NEIGHBOR_TOP_RIGHT_CORNER:
-			polygon.push_back(Vector2(0, -3) * unit);
-			polygon.push_back(Vector2(3, -3) * unit);
-			polygon.push_back(Vector2(3, 0) * unit);
-			polygon.push_back(Vector2(1, 0) * unit);
-			polygon.push_back(Vector2(1, -1) * unit);
-			polygon.push_back(Vector2(0, -1) * unit);
-			break;
-		default:
-			break;
-	}
-	if (!polygon.is_empty()) {
-		p_canvas_item->draw_polygon(polygon, color_array);
-	}
-}
-
-void TileSetPluginAtlasTerrain::_draw_square_side_terrain_bit(CanvasItem *p_canvas_item, Color p_color, Vector2i p_size, TileSet::CellNeighbor p_bit) {
-	PackedColorArray color_array;
-	color_array.push_back(p_color);
-
-	Vector2 unit = Vector2(p_size) / 6.0;
-	PackedVector2Array polygon;
-	switch (p_bit) {
-		case TileSet::CELL_NEIGHBOR_RIGHT_SIDE:
-			polygon.push_back(Vector2(1, -1) * unit);
-			polygon.push_back(Vector2(3, -3) * unit);
-			polygon.push_back(Vector2(3, 3) * unit);
-			polygon.push_back(Vector2(1, 1) * unit);
-			break;
-		case TileSet::CELL_NEIGHBOR_BOTTOM_SIDE:
-			polygon.push_back(Vector2(-1, 1) * unit);
-			polygon.push_back(Vector2(-3, 3) * unit);
-			polygon.push_back(Vector2(3, 3) * unit);
-			polygon.push_back(Vector2(1, 1) * unit);
-			break;
-		case TileSet::CELL_NEIGHBOR_LEFT_SIDE:
-			polygon.push_back(Vector2(-1, -1) * unit);
-			polygon.push_back(Vector2(-3, -3) * unit);
-			polygon.push_back(Vector2(-3, 3) * unit);
-			polygon.push_back(Vector2(-1, 1) * unit);
-			break;
-		case TileSet::CELL_NEIGHBOR_TOP_SIDE:
-			polygon.push_back(Vector2(-1, -1) * unit);
-			polygon.push_back(Vector2(-3, -3) * unit);
-			polygon.push_back(Vector2(3, -3) * unit);
-			polygon.push_back(Vector2(1, -1) * unit);
-			break;
-		default:
-			break;
-	}
-	if (!polygon.is_empty()) {
-		p_canvas_item->draw_polygon(polygon, color_array);
-	}
-}
-
-void TileSetPluginAtlasTerrain::_draw_isometric_corner_or_side_terrain_bit(CanvasItem *p_canvas_item, Color p_color, Vector2i p_size, TileSet::CellNeighbor p_bit) {
-	PackedColorArray color_array;
-	color_array.push_back(p_color);
-
-	Vector2 unit = Vector2(p_size) / 6.0;
-	PackedVector2Array polygon;
-	switch (p_bit) {
-		case TileSet::CELL_NEIGHBOR_RIGHT_CORNER:
-			polygon.push_back(Vector2(1, 0) * unit);
-			polygon.push_back(Vector2(2, -1) * unit);
-			polygon.push_back(Vector2(3, 0) * unit);
-			polygon.push_back(Vector2(2, 1) * unit);
-			break;
-		case TileSet::CELL_NEIGHBOR_BOTTOM_RIGHT_SIDE:
-			polygon.push_back(Vector2(0, 1) * unit);
-			polygon.push_back(Vector2(1, 2) * unit);
-			polygon.push_back(Vector2(2, 1) * unit);
-			polygon.push_back(Vector2(1, 0) * unit);
-			break;
-		case TileSet::CELL_NEIGHBOR_BOTTOM_CORNER:
-			polygon.push_back(Vector2(0, 1) * unit);
-			polygon.push_back(Vector2(-1, 2) * unit);
-			polygon.push_back(Vector2(0, 3) * unit);
-			polygon.push_back(Vector2(1, 2) * unit);
-			break;
-		case TileSet::CELL_NEIGHBOR_BOTTOM_LEFT_SIDE:
-			polygon.push_back(Vector2(0, 1) * unit);
-			polygon.push_back(Vector2(-1, 2) * unit);
-			polygon.push_back(Vector2(-2, 1) * unit);
-			polygon.push_back(Vector2(-1, 0) * unit);
-			break;
-		case TileSet::CELL_NEIGHBOR_LEFT_CORNER:
-			polygon.push_back(Vector2(-1, 0) * unit);
-			polygon.push_back(Vector2(-2, -1) * unit);
-			polygon.push_back(Vector2(-3, 0) * unit);
-			polygon.push_back(Vector2(-2, 1) * unit);
-			break;
-		case TileSet::CELL_NEIGHBOR_TOP_LEFT_SIDE:
-			polygon.push_back(Vector2(0, -1) * unit);
-			polygon.push_back(Vector2(-1, -2) * unit);
-			polygon.push_back(Vector2(-2, -1) * unit);
-			polygon.push_back(Vector2(-1, 0) * unit);
-			break;
-		case TileSet::CELL_NEIGHBOR_TOP_CORNER:
-			polygon.push_back(Vector2(0, -1) * unit);
-			polygon.push_back(Vector2(-1, -2) * unit);
-			polygon.push_back(Vector2(0, -3) * unit);
-			polygon.push_back(Vector2(1, -2) * unit);
-			break;
-		case TileSet::CELL_NEIGHBOR_TOP_RIGHT_SIDE:
-			polygon.push_back(Vector2(0, -1) * unit);
-			polygon.push_back(Vector2(1, -2) * unit);
-			polygon.push_back(Vector2(2, -1) * unit);
-			polygon.push_back(Vector2(1, 0) * unit);
-			break;
-		default:
-			break;
-	}
-	if (!polygon.is_empty()) {
-		p_canvas_item->draw_polygon(polygon, color_array);
-	}
-}
-
-void TileSetPluginAtlasTerrain::_draw_isometric_corner_terrain_bit(CanvasItem *p_canvas_item, Color p_color, Vector2i p_size, TileSet::CellNeighbor p_bit) {
-	PackedColorArray color_array;
-	color_array.push_back(p_color);
-
-	Vector2 unit = Vector2(p_size) / 6.0;
-	PackedVector2Array polygon;
-	switch (p_bit) {
-		case TileSet::CELL_NEIGHBOR_RIGHT_CORNER:
-			polygon.push_back(Vector2(0.5, -0.5) * unit);
-			polygon.push_back(Vector2(1.5, -1.5) * unit);
-			polygon.push_back(Vector2(3, 0) * unit);
-			polygon.push_back(Vector2(1.5, 1.5) * unit);
-			polygon.push_back(Vector2(0.5, 0.5) * unit);
-			polygon.push_back(Vector2(1, 0) * unit);
-			break;
-		case TileSet::CELL_NEIGHBOR_BOTTOM_CORNER:
-			polygon.push_back(Vector2(-0.5, 0.5) * unit);
-			polygon.push_back(Vector2(-1.5, 1.5) * unit);
-			polygon.push_back(Vector2(0, 3) * unit);
-			polygon.push_back(Vector2(1.5, 1.5) * unit);
-			polygon.push_back(Vector2(0.5, 0.5) * unit);
-			polygon.push_back(Vector2(0, 1) * unit);
-			break;
-		case TileSet::CELL_NEIGHBOR_LEFT_CORNER:
-			polygon.push_back(Vector2(-0.5, -0.5) * unit);
-			polygon.push_back(Vector2(-1.5, -1.5) * unit);
-			polygon.push_back(Vector2(-3, 0) * unit);
-			polygon.push_back(Vector2(-1.5, 1.5) * unit);
-			polygon.push_back(Vector2(-0.5, 0.5) * unit);
-			polygon.push_back(Vector2(-1, 0) * unit);
-			break;
-		case TileSet::CELL_NEIGHBOR_TOP_CORNER:
-			polygon.push_back(Vector2(-0.5, -0.5) * unit);
-			polygon.push_back(Vector2(-1.5, -1.5) * unit);
-			polygon.push_back(Vector2(0, -3) * unit);
-			polygon.push_back(Vector2(1.5, -1.5) * unit);
-			polygon.push_back(Vector2(0.5, -0.5) * unit);
-			polygon.push_back(Vector2(0, -1) * unit);
-			break;
-		default:
-			break;
-	}
-	if (!polygon.is_empty()) {
-		p_canvas_item->draw_polygon(polygon, color_array);
-	}
-}
-
-void TileSetPluginAtlasTerrain::_draw_isometric_side_terrain_bit(CanvasItem *p_canvas_item, Color p_color, Vector2i p_size, TileSet::CellNeighbor p_bit) {
-	PackedColorArray color_array;
-	color_array.push_back(p_color);
-
-	Vector2 unit = Vector2(p_size) / 6.0;
-	PackedVector2Array polygon;
-	switch (p_bit) {
-		case TileSet::CELL_NEIGHBOR_BOTTOM_RIGHT_SIDE:
-			polygon.push_back(Vector2(1, 0) * unit);
-			polygon.push_back(Vector2(3, 0) * unit);
-			polygon.push_back(Vector2(0, 3) * unit);
-			polygon.push_back(Vector2(0, 1) * unit);
-			break;
-		case TileSet::CELL_NEIGHBOR_BOTTOM_LEFT_SIDE:
-			polygon.push_back(Vector2(-1, 0) * unit);
-			polygon.push_back(Vector2(-3, 0) * unit);
-			polygon.push_back(Vector2(0, 3) * unit);
-			polygon.push_back(Vector2(0, 1) * unit);
-			break;
-		case TileSet::CELL_NEIGHBOR_TOP_LEFT_SIDE:
-			polygon.push_back(Vector2(-1, 0) * unit);
-			polygon.push_back(Vector2(-3, 0) * unit);
-			polygon.push_back(Vector2(0, -3) * unit);
-			polygon.push_back(Vector2(0, -1) * unit);
-			break;
-		case TileSet::CELL_NEIGHBOR_TOP_RIGHT_SIDE:
-			polygon.push_back(Vector2(1, 0) * unit);
-			polygon.push_back(Vector2(3, 0) * unit);
-			polygon.push_back(Vector2(0, -3) * unit);
-			polygon.push_back(Vector2(0, -1) * unit);
-			break;
-		default:
-			break;
-	}
-	if (!polygon.is_empty()) {
-		p_canvas_item->draw_polygon(polygon, color_array);
-	}
-}
-
-void TileSetPluginAtlasTerrain::_draw_half_offset_corner_or_side_terrain_bit(CanvasItem *p_canvas_item, Color p_color, Vector2i p_size, TileSet::CellNeighbor p_bit, float p_overlap, TileSet::TileOffsetAxis p_offset_axis) {
-	PackedColorArray color_array;
-	color_array.push_back(p_color);
-
-	PackedVector2Array point_list;
-	point_list.push_back(Vector2(3, (3.0 * (1.0 - p_overlap * 2.0)) / 2.0));
-	point_list.push_back(Vector2(3, 3.0 * (1.0 - p_overlap * 2.0)));
-	point_list.push_back(Vector2(2, 3.0 * (1.0 - (p_overlap * 2.0) * 2.0 / 3.0)));
-	point_list.push_back(Vector2(1, 3.0 - p_overlap * 2.0));
-	point_list.push_back(Vector2(0, 3));
-	point_list.push_back(Vector2(-1, 3.0 - p_overlap * 2.0));
-	point_list.push_back(Vector2(-2, 3.0 * (1.0 - (p_overlap * 2.0) * 2.0 / 3.0)));
-	point_list.push_back(Vector2(-3, 3.0 * (1.0 - p_overlap * 2.0)));
-	point_list.push_back(Vector2(-3, (3.0 * (1.0 - p_overlap * 2.0)) / 2.0));
-	point_list.push_back(Vector2(-3, -(3.0 * (1.0 - p_overlap * 2.0)) / 2.0));
-	point_list.push_back(Vector2(-3, -3.0 * (1.0 - p_overlap * 2.0)));
-	point_list.push_back(Vector2(-2, -3.0 * (1.0 - (p_overlap * 2.0) * 2.0 / 3.0)));
-	point_list.push_back(Vector2(-1, -(3.0 - p_overlap * 2.0)));
-	point_list.push_back(Vector2(0, -3));
-	point_list.push_back(Vector2(1, -(3.0 - p_overlap * 2.0)));
-	point_list.push_back(Vector2(2, -3.0 * (1.0 - (p_overlap * 2.0) * 2.0 / 3.0)));
-	point_list.push_back(Vector2(3, -3.0 * (1.0 - p_overlap * 2.0)));
-	point_list.push_back(Vector2(3, -(3.0 * (1.0 - p_overlap * 2.0)) / 2.0));
-
-	Vector2 unit = Vector2(p_size) / 6.0;
-	for (int i = 0; i < point_list.size(); i++) {
-		point_list.write[i] = point_list[i] * unit;
-	}
-
-	PackedVector2Array polygon;
-	if (p_offset_axis == TileSet::TILE_OFFSET_AXIS_HORIZONTAL) {
-		switch (p_bit) {
-			case TileSet::CELL_NEIGHBOR_RIGHT_SIDE:
-				polygon.push_back(point_list[17]);
-				polygon.push_back(point_list[0]);
-				break;
-			case TileSet::CELL_NEIGHBOR_BOTTOM_RIGHT_CORNER:
-				polygon.push_back(point_list[0]);
-				polygon.push_back(point_list[1]);
-				polygon.push_back(point_list[2]);
-				break;
-			case TileSet::CELL_NEIGHBOR_BOTTOM_RIGHT_SIDE:
-				polygon.push_back(point_list[2]);
-				polygon.push_back(point_list[3]);
-				break;
-			case TileSet::CELL_NEIGHBOR_BOTTOM_CORNER:
-				polygon.push_back(point_list[3]);
-				polygon.push_back(point_list[4]);
-				polygon.push_back(point_list[5]);
-				break;
-			case TileSet::CELL_NEIGHBOR_BOTTOM_LEFT_SIDE:
-				polygon.push_back(point_list[5]);
-				polygon.push_back(point_list[6]);
-				break;
-			case TileSet::CELL_NEIGHBOR_BOTTOM_LEFT_CORNER:
-				polygon.push_back(point_list[6]);
-				polygon.push_back(point_list[7]);
-				polygon.push_back(point_list[8]);
-				break;
-			case TileSet::CELL_NEIGHBOR_LEFT_SIDE:
-				polygon.push_back(point_list[8]);
-				polygon.push_back(point_list[9]);
-				break;
-			case TileSet::CELL_NEIGHBOR_TOP_LEFT_CORNER:
-				polygon.push_back(point_list[9]);
-				polygon.push_back(point_list[10]);
-				polygon.push_back(point_list[11]);
-				break;
-			case TileSet::CELL_NEIGHBOR_TOP_LEFT_SIDE:
-				polygon.push_back(point_list[11]);
-				polygon.push_back(point_list[12]);
-				break;
-			case TileSet::CELL_NEIGHBOR_TOP_CORNER:
-				polygon.push_back(point_list[12]);
-				polygon.push_back(point_list[13]);
-				polygon.push_back(point_list[14]);
-				break;
-			case TileSet::CELL_NEIGHBOR_TOP_RIGHT_SIDE:
-				polygon.push_back(point_list[14]);
-				polygon.push_back(point_list[15]);
-				break;
-			case TileSet::CELL_NEIGHBOR_TOP_RIGHT_CORNER:
-				polygon.push_back(point_list[15]);
-				polygon.push_back(point_list[16]);
-				polygon.push_back(point_list[17]);
-				break;
-			default:
-				break;
-		}
-	} else {
-		if (p_offset_axis == TileSet::TILE_OFFSET_AXIS_VERTICAL) {
-			for (int i = 0; i < point_list.size(); i++) {
-				point_list.write[i] = Vector2(point_list[i].y, point_list[i].x);
-			}
-		}
-		switch (p_bit) {
-			case TileSet::CELL_NEIGHBOR_RIGHT_CORNER:
-				polygon.push_back(point_list[3]);
-				polygon.push_back(point_list[4]);
-				polygon.push_back(point_list[5]);
-				break;
-			case TileSet::CELL_NEIGHBOR_BOTTOM_RIGHT_SIDE:
-				polygon.push_back(point_list[2]);
-				polygon.push_back(point_list[3]);
-				break;
-			case TileSet::CELL_NEIGHBOR_BOTTOM_RIGHT_CORNER:
-				polygon.push_back(point_list[0]);
-				polygon.push_back(point_list[1]);
-				polygon.push_back(point_list[2]);
-				break;
-			case TileSet::CELL_NEIGHBOR_BOTTOM_SIDE:
-				polygon.push_back(point_list[17]);
-				polygon.push_back(point_list[0]);
-				break;
-			case TileSet::CELL_NEIGHBOR_BOTTOM_LEFT_CORNER:
-				polygon.push_back(point_list[15]);
-				polygon.push_back(point_list[16]);
-				polygon.push_back(point_list[17]);
-				break;
-			case TileSet::CELL_NEIGHBOR_BOTTOM_LEFT_SIDE:
-				polygon.push_back(point_list[14]);
-				polygon.push_back(point_list[15]);
-				break;
-			case TileSet::CELL_NEIGHBOR_LEFT_CORNER:
-				polygon.push_back(point_list[12]);
-				polygon.push_back(point_list[13]);
-				polygon.push_back(point_list[14]);
-				break;
-			case TileSet::CELL_NEIGHBOR_TOP_LEFT_SIDE:
-				polygon.push_back(point_list[11]);
-				polygon.push_back(point_list[12]);
-				break;
-			case TileSet::CELL_NEIGHBOR_TOP_LEFT_CORNER:
-				polygon.push_back(point_list[9]);
-				polygon.push_back(point_list[10]);
-				polygon.push_back(point_list[11]);
-				break;
-			case TileSet::CELL_NEIGHBOR_TOP_SIDE:
-				polygon.push_back(point_list[8]);
-				polygon.push_back(point_list[9]);
-				break;
-			case TileSet::CELL_NEIGHBOR_TOP_RIGHT_CORNER:
-				polygon.push_back(point_list[6]);
-				polygon.push_back(point_list[7]);
-				polygon.push_back(point_list[8]);
-				break;
-			case TileSet::CELL_NEIGHBOR_TOP_RIGHT_SIDE:
-				polygon.push_back(point_list[5]);
-				polygon.push_back(point_list[6]);
-				break;
-			default:
-				break;
-		}
-	}
-
-	int half_polygon_size = polygon.size();
-	for (int i = 0; i < half_polygon_size; i++) {
-		polygon.push_back(polygon[half_polygon_size - 1 - i] / 3.0);
-	}
-
-	if (!polygon.is_empty()) {
-		p_canvas_item->draw_polygon(polygon, color_array);
-	}
-}
-
-void TileSetPluginAtlasTerrain::_draw_half_offset_corner_terrain_bit(CanvasItem *p_canvas_item, Color p_color, Vector2i p_size, TileSet::CellNeighbor p_bit, float p_overlap, TileSet::TileOffsetAxis p_offset_axis) {
-	PackedColorArray color_array;
-	color_array.push_back(p_color);
-
-	PackedVector2Array point_list;
-	point_list.push_back(Vector2(3, 0));
-	point_list.push_back(Vector2(3, 3.0 * (1.0 - p_overlap * 2.0)));
-	point_list.push_back(Vector2(1.5, (3.0 * (1.0 - p_overlap * 2.0) + 3.0) / 2.0));
-	point_list.push_back(Vector2(0, 3));
-	point_list.push_back(Vector2(-1.5, (3.0 * (1.0 - p_overlap * 2.0) + 3.0) / 2.0));
-	point_list.push_back(Vector2(-3, 3.0 * (1.0 - p_overlap * 2.0)));
-	point_list.push_back(Vector2(-3, 0));
-	point_list.push_back(Vector2(-3, -3.0 * (1.0 - p_overlap * 2.0)));
-	point_list.push_back(Vector2(-1.5, -(3.0 * (1.0 - p_overlap * 2.0) + 3.0) / 2.0));
-	point_list.push_back(Vector2(0, -3));
-	point_list.push_back(Vector2(1.5, -(3.0 * (1.0 - p_overlap * 2.0) + 3.0) / 2.0));
-	point_list.push_back(Vector2(3, -3.0 * (1.0 - p_overlap * 2.0)));
-
-	Vector2 unit = Vector2(p_size) / 6.0;
-	for (int i = 0; i < point_list.size(); i++) {
-		point_list.write[i] = point_list[i] * unit;
-	}
-
-	PackedVector2Array polygon;
-	if (p_offset_axis == TileSet::TILE_OFFSET_AXIS_HORIZONTAL) {
-		switch (p_bit) {
-			case TileSet::CELL_NEIGHBOR_BOTTOM_RIGHT_CORNER:
-				polygon.push_back(point_list[0]);
-				polygon.push_back(point_list[1]);
-				polygon.push_back(point_list[2]);
-				break;
-			case TileSet::CELL_NEIGHBOR_BOTTOM_CORNER:
-				polygon.push_back(point_list[2]);
-				polygon.push_back(point_list[3]);
-				polygon.push_back(point_list[4]);
-				break;
-			case TileSet::CELL_NEIGHBOR_BOTTOM_LEFT_CORNER:
-				polygon.push_back(point_list[4]);
-				polygon.push_back(point_list[5]);
-				polygon.push_back(point_list[6]);
-				break;
-			case TileSet::CELL_NEIGHBOR_TOP_LEFT_CORNER:
-				polygon.push_back(point_list[6]);
-				polygon.push_back(point_list[7]);
-				polygon.push_back(point_list[8]);
-				break;
-			case TileSet::CELL_NEIGHBOR_TOP_CORNER:
-				polygon.push_back(point_list[8]);
-				polygon.push_back(point_list[9]);
-				polygon.push_back(point_list[10]);
-				break;
-			case TileSet::CELL_NEIGHBOR_TOP_RIGHT_CORNER:
-				polygon.push_back(point_list[10]);
-				polygon.push_back(point_list[11]);
-				polygon.push_back(point_list[0]);
-				break;
-			default:
-				break;
-		}
-	} else {
-		if (p_offset_axis == TileSet::TILE_OFFSET_AXIS_VERTICAL) {
-			for (int i = 0; i < point_list.size(); i++) {
-				point_list.write[i] = Vector2(point_list[i].y, point_list[i].x);
-			}
-		}
-		switch (p_bit) {
-			case TileSet::CELL_NEIGHBOR_RIGHT_CORNER:
-				polygon.push_back(point_list[2]);
-				polygon.push_back(point_list[3]);
-				polygon.push_back(point_list[4]);
-				break;
-			case TileSet::CELL_NEIGHBOR_BOTTOM_RIGHT_CORNER:
-				polygon.push_back(point_list[0]);
-				polygon.push_back(point_list[1]);
-				polygon.push_back(point_list[2]);
-				break;
-			case TileSet::CELL_NEIGHBOR_BOTTOM_LEFT_CORNER:
-				polygon.push_back(point_list[10]);
-				polygon.push_back(point_list[11]);
-				polygon.push_back(point_list[0]);
-				break;
-			case TileSet::CELL_NEIGHBOR_LEFT_CORNER:
-				polygon.push_back(point_list[8]);
-				polygon.push_back(point_list[9]);
-				polygon.push_back(point_list[10]);
-				break;
-			case TileSet::CELL_NEIGHBOR_TOP_LEFT_CORNER:
-				polygon.push_back(point_list[6]);
-				polygon.push_back(point_list[7]);
-				polygon.push_back(point_list[8]);
-				break;
-			case TileSet::CELL_NEIGHBOR_TOP_RIGHT_CORNER:
-				polygon.push_back(point_list[4]);
-				polygon.push_back(point_list[5]);
-				polygon.push_back(point_list[6]);
-				break;
-			default:
-				break;
-		}
-	}
-
-	int half_polygon_size = polygon.size();
-	for (int i = 0; i < half_polygon_size; i++) {
-		polygon.push_back(polygon[half_polygon_size - 1 - i] / 3.0);
-	}
-
-	if (!polygon.is_empty()) {
-		p_canvas_item->draw_polygon(polygon, color_array);
-	}
-}
-
-void TileSetPluginAtlasTerrain::_draw_half_offset_side_terrain_bit(CanvasItem *p_canvas_item, Color p_color, Vector2i p_size, TileSet::CellNeighbor p_bit, float p_overlap, TileSet::TileOffsetAxis p_offset_axis) {
-	PackedColorArray color_array;
-	color_array.push_back(p_color);
-
-	PackedVector2Array point_list;
-	point_list.push_back(Vector2(3, 3.0 * (1.0 - p_overlap * 2.0)));
-	point_list.push_back(Vector2(0, 3));
-	point_list.push_back(Vector2(-3, 3.0 * (1.0 - p_overlap * 2.0)));
-	point_list.push_back(Vector2(-3, -3.0 * (1.0 - p_overlap * 2.0)));
-	point_list.push_back(Vector2(0, -3));
-	point_list.push_back(Vector2(3, -3.0 * (1.0 - p_overlap * 2.0)));
-
-	Vector2 unit = Vector2(p_size) / 6.0;
-	for (int i = 0; i < point_list.size(); i++) {
-		point_list.write[i] = point_list[i] * unit;
-	}
-
-	PackedVector2Array polygon;
-	if (p_offset_axis == TileSet::TILE_OFFSET_AXIS_HORIZONTAL) {
-		switch (p_bit) {
-			case TileSet::CELL_NEIGHBOR_RIGHT_SIDE:
-				polygon.push_back(point_list[5]);
-				polygon.push_back(point_list[0]);
-				break;
-			case TileSet::CELL_NEIGHBOR_BOTTOM_RIGHT_SIDE:
-				polygon.push_back(point_list[0]);
-				polygon.push_back(point_list[1]);
-				break;
-			case TileSet::CELL_NEIGHBOR_BOTTOM_LEFT_SIDE:
-				polygon.push_back(point_list[1]);
-				polygon.push_back(point_list[2]);
-				break;
-			case TileSet::CELL_NEIGHBOR_LEFT_SIDE:
-				polygon.push_back(point_list[2]);
-				polygon.push_back(point_list[3]);
-				break;
-			case TileSet::CELL_NEIGHBOR_TOP_LEFT_SIDE:
-				polygon.push_back(point_list[3]);
-				polygon.push_back(point_list[4]);
-				break;
-			case TileSet::CELL_NEIGHBOR_TOP_RIGHT_SIDE:
-				polygon.push_back(point_list[4]);
-				polygon.push_back(point_list[5]);
-				break;
-			default:
-				break;
-		}
-	} else {
-		if (p_offset_axis == TileSet::TILE_OFFSET_AXIS_VERTICAL) {
-			for (int i = 0; i < point_list.size(); i++) {
-				point_list.write[i] = Vector2(point_list[i].y, point_list[i].x);
-			}
-		}
-		switch (p_bit) {
-			case TileSet::CELL_NEIGHBOR_BOTTOM_RIGHT_SIDE:
-				polygon.push_back(point_list[0]);
-				polygon.push_back(point_list[1]);
-				break;
-			case TileSet::CELL_NEIGHBOR_BOTTOM_SIDE:
-				polygon.push_back(point_list[5]);
-				polygon.push_back(point_list[0]);
-				break;
-			case TileSet::CELL_NEIGHBOR_BOTTOM_LEFT_SIDE:
-				polygon.push_back(point_list[4]);
-				polygon.push_back(point_list[5]);
-				break;
-			case TileSet::CELL_NEIGHBOR_TOP_LEFT_SIDE:
-				polygon.push_back(point_list[3]);
-				polygon.push_back(point_list[4]);
-				break;
-			case TileSet::CELL_NEIGHBOR_TOP_SIDE:
-				polygon.push_back(point_list[2]);
-				polygon.push_back(point_list[3]);
-				break;
-			case TileSet::CELL_NEIGHBOR_TOP_RIGHT_SIDE:
-				polygon.push_back(point_list[1]);
-				polygon.push_back(point_list[2]);
-				break;
-			default:
-				break;
-		}
-	}
-
-	int half_polygon_size = polygon.size();
-	for (int i = 0; i < half_polygon_size; i++) {
-		polygon.push_back(polygon[half_polygon_size - 1 - i] / 3.0);
-	}
-
-	if (!polygon.is_empty()) {
-		p_canvas_item->draw_polygon(polygon, color_array);
-	}
-}
-
-#define TERRAIN_ALPHA 0.8
-
-#define DRAW_TERRAIN_BIT(f, bit)                                                  \
-	{                                                                             \
-		int terrain_id = p_tile_data->get_peering_bit_terrain((bit));             \
-		if (terrain_id >= 0) {                                                    \
-			Color color = p_tile_set->get_terrain_color(terrain_set, terrain_id); \
-			color.a = TERRAIN_ALPHA;                                              \
-			f(p_canvas_item, color, size, (bit));                                 \
-		}                                                                         \
-	}
-
-#define DRAW_HALF_OFFSET_TERRAIN_BIT(f, bit, overlap, half_offset_axis)           \
-	{                                                                             \
-		int terrain_id = p_tile_data->get_peering_bit_terrain((bit));             \
-		if (terrain_id >= 0) {                                                    \
-			Color color = p_tile_set->get_terrain_color(terrain_set, terrain_id); \
-			color.a = TERRAIN_ALPHA;                                              \
-			f(p_canvas_item, color, size, (bit), overlap, half_offset_axis);      \
-		}                                                                         \
-	}
-
-void TileSetPluginAtlasTerrain::draw_terrains(CanvasItem *p_canvas_item, Transform2D p_transform, TileSet *p_tile_set, const TileData *p_tile_data) {
-	ERR_FAIL_COND(!p_tile_set);
-	ERR_FAIL_COND(!p_tile_data);
-
-	int terrain_set = p_tile_data->get_terrain_set();
-	if (terrain_set < 0) {
-		return;
-	}
-	TileSet::TerrainMode terrain_mode = p_tile_set->get_terrain_set_mode(terrain_set);
-
-	TileSet::TileShape shape = p_tile_set->get_tile_shape();
-	Vector2i size = p_tile_set->get_tile_size();
-
-	RenderingServer::get_singleton()->canvas_item_add_set_transform(p_canvas_item->get_canvas_item(), p_transform);
-	if (shape == TileSet::TILE_SHAPE_SQUARE) {
-		if (terrain_mode == TileSet::TERRAIN_MODE_MATCH_CORNERS_AND_SIDES) {
-			DRAW_TERRAIN_BIT(_draw_square_corner_or_side_terrain_bit, TileSet::CELL_NEIGHBOR_RIGHT_SIDE);
-			DRAW_TERRAIN_BIT(_draw_square_corner_or_side_terrain_bit, TileSet::CELL_NEIGHBOR_BOTTOM_RIGHT_CORNER);
-			DRAW_TERRAIN_BIT(_draw_square_corner_or_side_terrain_bit, TileSet::CELL_NEIGHBOR_BOTTOM_SIDE);
-			DRAW_TERRAIN_BIT(_draw_square_corner_or_side_terrain_bit, TileSet::CELL_NEIGHBOR_BOTTOM_LEFT_CORNER);
-			DRAW_TERRAIN_BIT(_draw_square_corner_or_side_terrain_bit, TileSet::CELL_NEIGHBOR_LEFT_SIDE);
-			DRAW_TERRAIN_BIT(_draw_square_corner_or_side_terrain_bit, TileSet::CELL_NEIGHBOR_TOP_LEFT_CORNER);
-			DRAW_TERRAIN_BIT(_draw_square_corner_or_side_terrain_bit, TileSet::CELL_NEIGHBOR_TOP_SIDE);
-			DRAW_TERRAIN_BIT(_draw_square_corner_or_side_terrain_bit, TileSet::CELL_NEIGHBOR_TOP_RIGHT_CORNER);
-		} else if (terrain_mode == TileSet::TERRAIN_MODE_MATCH_CORNERS) {
-			DRAW_TERRAIN_BIT(_draw_square_corner_terrain_bit, TileSet::CELL_NEIGHBOR_BOTTOM_RIGHT_CORNER);
-			DRAW_TERRAIN_BIT(_draw_square_corner_terrain_bit, TileSet::CELL_NEIGHBOR_BOTTOM_LEFT_CORNER);
-			DRAW_TERRAIN_BIT(_draw_square_corner_terrain_bit, TileSet::CELL_NEIGHBOR_TOP_LEFT_CORNER);
-			DRAW_TERRAIN_BIT(_draw_square_corner_terrain_bit, TileSet::CELL_NEIGHBOR_TOP_RIGHT_CORNER);
-		} else { // TileData::TERRAIN_MODE_MATCH_SIDES
-			DRAW_TERRAIN_BIT(_draw_square_side_terrain_bit, TileSet::CELL_NEIGHBOR_RIGHT_SIDE);
-			DRAW_TERRAIN_BIT(_draw_square_side_terrain_bit, TileSet::CELL_NEIGHBOR_BOTTOM_SIDE);
-			DRAW_TERRAIN_BIT(_draw_square_side_terrain_bit, TileSet::CELL_NEIGHBOR_LEFT_SIDE);
-			DRAW_TERRAIN_BIT(_draw_square_side_terrain_bit, TileSet::CELL_NEIGHBOR_TOP_SIDE);
-		}
-	} else if (shape == TileSet::TILE_SHAPE_ISOMETRIC) {
-		if (terrain_mode == TileSet::TERRAIN_MODE_MATCH_CORNERS_AND_SIDES) {
-			DRAW_TERRAIN_BIT(_draw_isometric_corner_or_side_terrain_bit, TileSet::CELL_NEIGHBOR_RIGHT_CORNER);
-			DRAW_TERRAIN_BIT(_draw_isometric_corner_or_side_terrain_bit, TileSet::CELL_NEIGHBOR_BOTTOM_RIGHT_SIDE);
-			DRAW_TERRAIN_BIT(_draw_isometric_corner_or_side_terrain_bit, TileSet::CELL_NEIGHBOR_BOTTOM_CORNER);
-			DRAW_TERRAIN_BIT(_draw_isometric_corner_or_side_terrain_bit, TileSet::CELL_NEIGHBOR_BOTTOM_LEFT_SIDE);
-			DRAW_TERRAIN_BIT(_draw_isometric_corner_or_side_terrain_bit, TileSet::CELL_NEIGHBOR_LEFT_CORNER);
-			DRAW_TERRAIN_BIT(_draw_isometric_corner_or_side_terrain_bit, TileSet::CELL_NEIGHBOR_TOP_LEFT_SIDE);
-			DRAW_TERRAIN_BIT(_draw_isometric_corner_or_side_terrain_bit, TileSet::CELL_NEIGHBOR_TOP_CORNER);
-			DRAW_TERRAIN_BIT(_draw_isometric_corner_or_side_terrain_bit, TileSet::CELL_NEIGHBOR_TOP_RIGHT_SIDE);
-		} else if (terrain_mode == TileSet::TERRAIN_MODE_MATCH_CORNERS) {
-			DRAW_TERRAIN_BIT(_draw_isometric_corner_terrain_bit, TileSet::CELL_NEIGHBOR_RIGHT_CORNER);
-			DRAW_TERRAIN_BIT(_draw_isometric_corner_terrain_bit, TileSet::CELL_NEIGHBOR_BOTTOM_CORNER);
-			DRAW_TERRAIN_BIT(_draw_isometric_corner_terrain_bit, TileSet::CELL_NEIGHBOR_LEFT_CORNER);
-			DRAW_TERRAIN_BIT(_draw_isometric_corner_terrain_bit, TileSet::CELL_NEIGHBOR_TOP_CORNER);
-		} else { // TileData::TERRAIN_MODE_MATCH_SIDES
-			DRAW_TERRAIN_BIT(_draw_isometric_side_terrain_bit, TileSet::CELL_NEIGHBOR_BOTTOM_RIGHT_SIDE);
-			DRAW_TERRAIN_BIT(_draw_isometric_side_terrain_bit, TileSet::CELL_NEIGHBOR_BOTTOM_LEFT_SIDE);
-			DRAW_TERRAIN_BIT(_draw_isometric_side_terrain_bit, TileSet::CELL_NEIGHBOR_TOP_LEFT_SIDE);
-			DRAW_TERRAIN_BIT(_draw_isometric_side_terrain_bit, TileSet::CELL_NEIGHBOR_TOP_RIGHT_SIDE);
-		}
-	} else {
-		TileSet::TileOffsetAxis offset_axis = p_tile_set->get_tile_offset_axis();
-		float overlap = 0.0;
-		switch (p_tile_set->get_tile_shape()) {
-			case TileSet::TILE_SHAPE_HEXAGON:
-				overlap = 0.25;
-				break;
-			case TileSet::TILE_SHAPE_HALF_OFFSET_SQUARE:
-				overlap = 0.0;
-				break;
-			default:
-				break;
-		}
-		if (terrain_mode == TileSet::TERRAIN_MODE_MATCH_CORNERS_AND_SIDES) {
-			if (offset_axis == TileSet::TILE_OFFSET_AXIS_HORIZONTAL) {
-				DRAW_HALF_OFFSET_TERRAIN_BIT(_draw_half_offset_corner_or_side_terrain_bit, TileSet::CELL_NEIGHBOR_RIGHT_SIDE, overlap, offset_axis);
-				DRAW_HALF_OFFSET_TERRAIN_BIT(_draw_half_offset_corner_or_side_terrain_bit, TileSet::CELL_NEIGHBOR_BOTTOM_RIGHT_CORNER, overlap, offset_axis);
-				DRAW_HALF_OFFSET_TERRAIN_BIT(_draw_half_offset_corner_or_side_terrain_bit, TileSet::CELL_NEIGHBOR_BOTTOM_RIGHT_SIDE, overlap, offset_axis);
-				DRAW_HALF_OFFSET_TERRAIN_BIT(_draw_half_offset_corner_or_side_terrain_bit, TileSet::CELL_NEIGHBOR_BOTTOM_CORNER, overlap, offset_axis);
-				DRAW_HALF_OFFSET_TERRAIN_BIT(_draw_half_offset_corner_or_side_terrain_bit, TileSet::CELL_NEIGHBOR_BOTTOM_LEFT_SIDE, overlap, offset_axis);
-				DRAW_HALF_OFFSET_TERRAIN_BIT(_draw_half_offset_corner_or_side_terrain_bit, TileSet::CELL_NEIGHBOR_BOTTOM_LEFT_CORNER, overlap, offset_axis);
-				DRAW_HALF_OFFSET_TERRAIN_BIT(_draw_half_offset_corner_or_side_terrain_bit, TileSet::CELL_NEIGHBOR_LEFT_SIDE, overlap, offset_axis);
-				DRAW_HALF_OFFSET_TERRAIN_BIT(_draw_half_offset_corner_or_side_terrain_bit, TileSet::CELL_NEIGHBOR_TOP_LEFT_CORNER, overlap, offset_axis);
-				DRAW_HALF_OFFSET_TERRAIN_BIT(_draw_half_offset_corner_or_side_terrain_bit, TileSet::CELL_NEIGHBOR_TOP_LEFT_SIDE, overlap, offset_axis);
-				DRAW_HALF_OFFSET_TERRAIN_BIT(_draw_half_offset_corner_or_side_terrain_bit, TileSet::CELL_NEIGHBOR_TOP_CORNER, overlap, offset_axis);
-				DRAW_HALF_OFFSET_TERRAIN_BIT(_draw_half_offset_corner_or_side_terrain_bit, TileSet::CELL_NEIGHBOR_TOP_RIGHT_SIDE, overlap, offset_axis);
-				DRAW_HALF_OFFSET_TERRAIN_BIT(_draw_half_offset_corner_or_side_terrain_bit, TileSet::CELL_NEIGHBOR_TOP_RIGHT_CORNER, overlap, offset_axis);
-			} else {
-				DRAW_HALF_OFFSET_TERRAIN_BIT(_draw_half_offset_corner_or_side_terrain_bit, TileSet::CELL_NEIGHBOR_RIGHT_CORNER, overlap, offset_axis);
-				DRAW_HALF_OFFSET_TERRAIN_BIT(_draw_half_offset_corner_or_side_terrain_bit, TileSet::CELL_NEIGHBOR_BOTTOM_RIGHT_SIDE, overlap, offset_axis);
-				DRAW_HALF_OFFSET_TERRAIN_BIT(_draw_half_offset_corner_or_side_terrain_bit, TileSet::CELL_NEIGHBOR_BOTTOM_RIGHT_CORNER, overlap, offset_axis);
-				DRAW_HALF_OFFSET_TERRAIN_BIT(_draw_half_offset_corner_or_side_terrain_bit, TileSet::CELL_NEIGHBOR_BOTTOM_SIDE, overlap, offset_axis);
-				DRAW_HALF_OFFSET_TERRAIN_BIT(_draw_half_offset_corner_or_side_terrain_bit, TileSet::CELL_NEIGHBOR_BOTTOM_LEFT_CORNER, overlap, offset_axis);
-				DRAW_HALF_OFFSET_TERRAIN_BIT(_draw_half_offset_corner_or_side_terrain_bit, TileSet::CELL_NEIGHBOR_BOTTOM_LEFT_SIDE, overlap, offset_axis);
-				DRAW_HALF_OFFSET_TERRAIN_BIT(_draw_half_offset_corner_or_side_terrain_bit, TileSet::CELL_NEIGHBOR_LEFT_CORNER, overlap, offset_axis);
-				DRAW_HALF_OFFSET_TERRAIN_BIT(_draw_half_offset_corner_or_side_terrain_bit, TileSet::CELL_NEIGHBOR_TOP_LEFT_SIDE, overlap, offset_axis);
-				DRAW_HALF_OFFSET_TERRAIN_BIT(_draw_half_offset_corner_or_side_terrain_bit, TileSet::CELL_NEIGHBOR_TOP_LEFT_CORNER, overlap, offset_axis);
-				DRAW_HALF_OFFSET_TERRAIN_BIT(_draw_half_offset_corner_or_side_terrain_bit, TileSet::CELL_NEIGHBOR_TOP_SIDE, overlap, offset_axis);
-				DRAW_HALF_OFFSET_TERRAIN_BIT(_draw_half_offset_corner_or_side_terrain_bit, TileSet::CELL_NEIGHBOR_TOP_RIGHT_CORNER, overlap, offset_axis);
-				DRAW_HALF_OFFSET_TERRAIN_BIT(_draw_half_offset_corner_or_side_terrain_bit, TileSet::CELL_NEIGHBOR_TOP_RIGHT_SIDE, overlap, offset_axis);
-			}
-		} else if (terrain_mode == TileSet::TERRAIN_MODE_MATCH_CORNERS) {
-			if (offset_axis == TileSet::TILE_OFFSET_AXIS_HORIZONTAL) {
-				DRAW_HALF_OFFSET_TERRAIN_BIT(_draw_half_offset_corner_terrain_bit, TileSet::CELL_NEIGHBOR_BOTTOM_RIGHT_CORNER, overlap, offset_axis);
-				DRAW_HALF_OFFSET_TERRAIN_BIT(_draw_half_offset_corner_terrain_bit, TileSet::CELL_NEIGHBOR_BOTTOM_CORNER, overlap, offset_axis);
-				DRAW_HALF_OFFSET_TERRAIN_BIT(_draw_half_offset_corner_terrain_bit, TileSet::CELL_NEIGHBOR_BOTTOM_LEFT_CORNER, overlap, offset_axis);
-				DRAW_HALF_OFFSET_TERRAIN_BIT(_draw_half_offset_corner_terrain_bit, TileSet::CELL_NEIGHBOR_TOP_LEFT_CORNER, overlap, offset_axis);
-				DRAW_HALF_OFFSET_TERRAIN_BIT(_draw_half_offset_corner_terrain_bit, TileSet::CELL_NEIGHBOR_TOP_CORNER, overlap, offset_axis);
-				DRAW_HALF_OFFSET_TERRAIN_BIT(_draw_half_offset_corner_terrain_bit, TileSet::CELL_NEIGHBOR_TOP_RIGHT_CORNER, overlap, offset_axis);
-			} else {
-				DRAW_HALF_OFFSET_TERRAIN_BIT(_draw_half_offset_corner_terrain_bit, TileSet::CELL_NEIGHBOR_RIGHT_CORNER, overlap, offset_axis);
-				DRAW_HALF_OFFSET_TERRAIN_BIT(_draw_half_offset_corner_terrain_bit, TileSet::CELL_NEIGHBOR_BOTTOM_RIGHT_CORNER, overlap, offset_axis);
-				DRAW_HALF_OFFSET_TERRAIN_BIT(_draw_half_offset_corner_terrain_bit, TileSet::CELL_NEIGHBOR_BOTTOM_LEFT_CORNER, overlap, offset_axis);
-				DRAW_HALF_OFFSET_TERRAIN_BIT(_draw_half_offset_corner_terrain_bit, TileSet::CELL_NEIGHBOR_LEFT_CORNER, overlap, offset_axis);
-				DRAW_HALF_OFFSET_TERRAIN_BIT(_draw_half_offset_corner_terrain_bit, TileSet::CELL_NEIGHBOR_TOP_LEFT_CORNER, overlap, offset_axis);
-				DRAW_HALF_OFFSET_TERRAIN_BIT(_draw_half_offset_corner_terrain_bit, TileSet::CELL_NEIGHBOR_TOP_RIGHT_CORNER, overlap, offset_axis);
-			}
-		} else { // TileData::TERRAIN_MODE_MATCH_SIDES
-			if (offset_axis == TileSet::TILE_OFFSET_AXIS_HORIZONTAL) {
-				DRAW_HALF_OFFSET_TERRAIN_BIT(_draw_half_offset_side_terrain_bit, TileSet::CELL_NEIGHBOR_RIGHT_SIDE, overlap, offset_axis);
-				DRAW_HALF_OFFSET_TERRAIN_BIT(_draw_half_offset_side_terrain_bit, TileSet::CELL_NEIGHBOR_BOTTOM_RIGHT_SIDE, overlap, offset_axis);
-				DRAW_HALF_OFFSET_TERRAIN_BIT(_draw_half_offset_side_terrain_bit, TileSet::CELL_NEIGHBOR_BOTTOM_LEFT_SIDE, overlap, offset_axis);
-				DRAW_HALF_OFFSET_TERRAIN_BIT(_draw_half_offset_side_terrain_bit, TileSet::CELL_NEIGHBOR_LEFT_SIDE, overlap, offset_axis);
-				DRAW_HALF_OFFSET_TERRAIN_BIT(_draw_half_offset_side_terrain_bit, TileSet::CELL_NEIGHBOR_TOP_LEFT_SIDE, overlap, offset_axis);
-				DRAW_HALF_OFFSET_TERRAIN_BIT(_draw_half_offset_side_terrain_bit, TileSet::CELL_NEIGHBOR_TOP_RIGHT_SIDE, overlap, offset_axis);
-			} else {
-				DRAW_HALF_OFFSET_TERRAIN_BIT(_draw_half_offset_side_terrain_bit, TileSet::CELL_NEIGHBOR_BOTTOM_RIGHT_SIDE, overlap, offset_axis);
-				DRAW_HALF_OFFSET_TERRAIN_BIT(_draw_half_offset_side_terrain_bit, TileSet::CELL_NEIGHBOR_BOTTOM_SIDE, overlap, offset_axis);
-				DRAW_HALF_OFFSET_TERRAIN_BIT(_draw_half_offset_side_terrain_bit, TileSet::CELL_NEIGHBOR_BOTTOM_LEFT_SIDE, overlap, offset_axis);
-				DRAW_HALF_OFFSET_TERRAIN_BIT(_draw_half_offset_side_terrain_bit, TileSet::CELL_NEIGHBOR_TOP_LEFT_SIDE, overlap, offset_axis);
-				DRAW_HALF_OFFSET_TERRAIN_BIT(_draw_half_offset_side_terrain_bit, TileSet::CELL_NEIGHBOR_TOP_SIDE, overlap, offset_axis);
-				DRAW_HALF_OFFSET_TERRAIN_BIT(_draw_half_offset_side_terrain_bit, TileSet::CELL_NEIGHBOR_TOP_RIGHT_SIDE, overlap, offset_axis);
-			}
-		}
-	}
-	RenderingServer::get_singleton()->canvas_item_add_set_transform(p_canvas_item->get_canvas_item(), Transform2D());
-}
-
 /////////////////////////////// TileSetPluginAtlasRendering //////////////////////////////////////
 
 void TileSetPluginAtlasRendering::tilemap_notification(TileMap *p_tile_map, int p_what) {
@@ -4218,15 +4167,17 @@ void TileSetPluginAtlasPhysics::update_dirty_quadrants(TileMap *p_tile_map, Self
 
 					for (int body_index = 0; body_index < q.bodies.size(); body_index++) {
 						// Add the shapes again.
-						for (int shape_index = 0; shape_index < tile_data->get_collision_shapes_count(body_index); shape_index++) {
-							bool one_way_collision = tile_data->is_collision_shape_one_way(body_index, shape_index);
-							float one_way_collision_margin = tile_data->get_collision_shape_one_way_margin(body_index, shape_index);
-							Ref<Shape2D> shape = tile_data->get_collision_shape_shape(body_index, shape_index);
-							if (shape.is_valid()) {
+						for (int polygon_index = 0; polygon_index < tile_data->get_collision_polygons_count(body_index); polygon_index++) {
+							bool one_way_collision = tile_data->is_collision_polygon_one_way(body_index, polygon_index);
+							float one_way_collision_margin = tile_data->get_collision_polygon_one_way_margin(body_index, polygon_index);
+
+							int shapes_count = tile_data->get_collision_polygon_shapes_count(body_index, polygon_index);
+							for (int shape_index = 0; shape_index < shapes_count; shape_index++) {
 								Transform2D xform = Transform2D();
 								xform.set_origin(p_tile_map->map_to_world(E_cell->get()) - quadrant_pos);
 
 								// Add decomposed convex shapes.
+								Ref<ConvexPolygonShape2D> shape = tile_data->get_collision_polygon_shape(body_index, polygon_index, shape_index);
 								ps->body_add_shape(q.bodies[body_index], shape->get_rid(), xform);
 								ps->body_set_shape_metadata(q.bodies[body_index], shape_index, E_cell->get());
 								ps->body_set_shape_as_one_way_collision(q.bodies[body_index], shape_index, one_way_collision, one_way_collision_margin);
@@ -4343,11 +4294,13 @@ void TileSetPluginAtlasPhysics::draw_quadrant_debug(TileMap *p_tile_map, TileMap
 				TileData *tile_data = Object::cast_to<TileData>(atlas_source->get_tile_data(c.get_atlas_coords(), c.alternative_tile));
 
 				for (int body_index = 0; body_index < p_quadrant->bodies.size(); body_index++) {
-					for (int shape_index = 0; shape_index < tile_data->get_collision_shapes_count(body_index); shape_index++) {
-						// Draw the debug shape.
-						Ref<Shape2D> shape = tile_data->get_collision_shape_shape(body_index, shape_index);
-						if (shape.is_valid()) {
-							shape->draw(p_quadrant->debug_canvas_item, debug_collision_color);
+					for (int polygon_index = 0; polygon_index < tile_data->get_collision_polygons_count(body_index); polygon_index++) {
+						// Draw the debug polygon.
+						Vector<Vector2> polygon = tile_data->get_collision_polygon_points(body_index, polygon_index);
+						if (polygon.size() >= 3) {
+							Vector<Color> color;
+							color.push_back(debug_collision_color);
+							rs->canvas_item_add_polygon(p_quadrant->debug_canvas_item, polygon, color);
 						}
 					}
 				}

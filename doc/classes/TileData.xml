@@ -7,7 +7,7 @@
 	<tutorials>
 	</tutorials>
 	<methods>
-		<method name="add_collision_shape">
+		<method name="add_collision_polygon">
 			<return type="void">
 			</return>
 			<argument index="0" name="layer_id" type="int">
@@ -15,27 +15,27 @@
 			<description>
 			</description>
 		</method>
-		<method name="get_collision_shape_one_way_margin" qualifiers="const">
+		<method name="get_collision_polygon_one_way_margin" qualifiers="const">
 			<return type="float">
 			</return>
 			<argument index="0" name="layer_id" type="int">
 			</argument>
-			<argument index="1" name="shape_index" type="int">
+			<argument index="1" name="polygon_index" type="int">
 			</argument>
 			<description>
 			</description>
 		</method>
-		<method name="get_collision_shape_shape" qualifiers="const">
-			<return type="Shape2D">
+		<method name="get_collision_polygon_points" qualifiers="const">
+			<return type="PackedVector2Array">
 			</return>
 			<argument index="0" name="layer_id" type="int">
 			</argument>
-			<argument index="1" name="shape_index" type="int">
+			<argument index="1" name="polygon_index" type="int">
 			</argument>
 			<description>
 			</description>
 		</method>
-		<method name="get_collision_shapes_count" qualifiers="const">
+		<method name="get_collision_polygons_count" qualifiers="const">
 			<return type="int">
 			</return>
 			<argument index="0" name="layer_id" type="int">
@@ -83,68 +83,68 @@
 			<description>
 			</description>
 		</method>
-		<method name="is_collision_shape_one_way" qualifiers="const">
+		<method name="is_collision_polygon_one_way" qualifiers="const">
 			<return type="bool">
 			</return>
 			<argument index="0" name="layer_id" type="int">
 			</argument>
-			<argument index="1" name="shape_index" type="int">
+			<argument index="1" name="polygon_index" type="int">
 			</argument>
 			<description>
 			</description>
 		</method>
-		<method name="remove_collision_shape">
+		<method name="remove_collision_polygon">
 			<return type="void">
 			</return>
 			<argument index="0" name="layer_id" type="int">
 			</argument>
-			<argument index="1" name="shape_index" type="int">
+			<argument index="1" name="polygon_index" type="int">
 			</argument>
 			<description>
 			</description>
 		</method>
-		<method name="set_collision_shape_one_way">
+		<method name="set_collision_polygon_one_way">
 			<return type="void">
 			</return>
 			<argument index="0" name="layer_id" type="int">
 			</argument>
-			<argument index="1" name="shape_index" type="int">
+			<argument index="1" name="polygon_index" type="int">
 			</argument>
 			<argument index="2" name="one_way" type="bool">
 			</argument>
 			<description>
 			</description>
 		</method>
-		<method name="set_collision_shape_one_way_margin">
+		<method name="set_collision_polygon_one_way_margin">
 			<return type="void">
 			</return>
 			<argument index="0" name="layer_id" type="int">
 			</argument>
-			<argument index="1" name="shape_index" type="int">
+			<argument index="1" name="polygon_index" type="int">
 			</argument>
 			<argument index="2" name="one_way_margin" type="float">
 			</argument>
 			<description>
 			</description>
 		</method>
-		<method name="set_collision_shape_shape">
+		<method name="set_collision_polygon_points">
 			<return type="void">
 			</return>
 			<argument index="0" name="layer_id" type="int">
 			</argument>
-			<argument index="1" name="shape_index" type="int">
+			<argument index="1" name="polygon_index" type="int">
 			</argument>
-			<argument index="2" name="shape" type="Shape2D">
+			<argument index="2" name="polygon" type="PackedVector2Array">
 			</argument>
 			<description>
 			</description>
 		</method>
-		<method name="set_collision_shapes_count">
+		<method name="set_collision_polygons_count">
 			<return type="void">
 			</return>
 			<argument index="0" name="layer_id" type="int">
 			</argument>
-			<argument index="1" name="shapes_count" type="int">
+			<argument index="1" name="polygons_count" type="int">
 			</argument>
 			<description>
 			</description>

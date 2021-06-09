@@ -34,6 +34,7 @@
 #include "editor/editor_zoom_widget.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/button.h"
+#include "scene/gui/center_container.h"
 #include "scene/gui/label.h"
 #include "scene/gui/margin_container.h"
 #include "scene/gui/scroll_container.h"
@@ -48,17 +49,24 @@ private:
 	TileSetAtlasSource *tile_set_atlas_source;
 	int source_id = -1;
 
+	enum DragType {
+		DRAG_TYPE_NONE,
+		DRAG_TYPE_PAN,
+	};
+	DragType drag_type = DRAG_TYPE_NONE;
 	float previous_zoom = 1.0;
 	EditorZoomWidget *zoom_widget;
+	Button *button_center_view;
+	CenterContainer *center_container;
+	Vector2 panning;
+	void _update_zoom_and_panning(bool p_zoom_on_mouse_pos = false);
 	void _zoom_widget_changed();
-	void _scroll_changed();
-	void _update_zoom(float p_zoom, bool p_zoom_on_mouse_pos = false, Vector2i p_scroll = Vector2i(-1, -1));
+	void _center_view();
 	void _gui_input(const Ref<InputEvent> &p_event);
 
 	Map<Vector2, Map<int, Rect2i>> alternative_tiles_rect_cache;
 	void _update_alternative_tiles_rect_cache();
 
-	ScrollContainer *scroll_container;
 	MarginContainer *margin_container;
 	int margin_container_paddings[4] = { 0, 0, 0, 0 };
 	HBoxContainer *hbox;
@@ -102,16 +110,15 @@ private:
 	Size2i _compute_alternative_tiles_control_size();
 
 protected:
+	void _notification(int p_what);
 	static void _bind_methods();
 
 public:
 	// Global.
 	void set_atlas_source(TileSet *p_tile_set, TileSetAtlasSource *p_tile_set_atlas_source, int p_source_id);
 
-	ScrollContainer *get_scroll_container() { return scroll_container; };
-
 	float get_zoom() const;
-	void set_transform(float p_zoom, Vector2i p_scroll);
+	void set_transform(float p_zoom, Vector2i p_panning);
 
 	void set_padding(Side p_side, int p_padding);
 
