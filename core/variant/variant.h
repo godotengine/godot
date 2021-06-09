@@ -346,6 +346,10 @@ public:
 	bool is_one() const;
 	bool is_null() const;
 
+	// Make sure Variant is not implicitly cast when accessing it with bracket notation (GH-49469).
+	Variant &operator[](const Variant &p_key) = delete;
+	const Variant &operator[](const Variant &p_key) const = delete;
+
 	operator bool() const;
 	operator signed int() const;
 	operator unsigned int() const; // this is the real one
