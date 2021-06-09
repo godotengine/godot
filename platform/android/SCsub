@@ -9,7 +9,6 @@ android_files = [
     "dir_access_jandroid.cpp",
     "thread_jandroid.cpp",
     "net_socket_android.cpp",
-    "audio_driver_jandroid.cpp",
     "java_godot_lib_jni.cpp",
     "java_class_wrapper.cpp",
     "java_godot_wrapper.cpp",

@@ -31,7 +31,6 @@
 #ifndef OS_ANDROID_H
 #define OS_ANDROID_H
 
-#include "audio_driver_jandroid.h"
 #include "audio_driver_opensl.h"
 #include "core/os/main_loop.h"
 #include "drivers/unix/os_unix.h"
@@ -59,7 +58,6 @@ private:
 
 	mutable String data_dir_cache;
 
-	//AudioDriverAndroid audio_driver_android;
 	AudioDriverOpenSL audio_driver_android;
 
 	MainLoop *main_loop;
