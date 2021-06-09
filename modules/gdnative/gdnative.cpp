@@ -343,10 +343,13 @@ bool GDNative::initialize() {
 #endif
 
 	if (library->should_load_once()) {
-		if (GDNativeLibrary::loaded_libraries.has(lib_path)) {
+		Map<String, Vector<Ref<GDNative>>>::Element *V = GDNativeLibrary::loaded_libraries.find(lib_path);
+		if (V) {
 			// already loaded. Don't load again.
 			// copy some of the stuff instead
-			this->native_handle = GDNativeLibrary::loaded_libraries[lib_path][0]->native_handle;
+			Vector<Ref<GDNative>> &gdnatives = V->get();
+			gdnatives.push_back(Ref<GDNative>(this));
+			this->native_handle = gdnatives[0]->native_handle;
 			initialized = true;
 			return true;
 		}
@@ -430,6 +433,10 @@ bool GDNative::terminate() {
 			gdnatives->clear();
 			// whew this looks scary, but all it does is remove the entry completely
 			GDNativeLibrary::loaded_libraries.erase(GDNativeLibrary::loaded_libraries.find(library->get_current_library_path()));
+		} else {
+			// in case user triggers a call to terminate in the callback below
+			WARN_PRINT("loaded_libraries is empty, avoiding recursive call to `GDNative::terminate`");
+			return false;
 		}
 	}
 
