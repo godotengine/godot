@@ -768,8 +768,8 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 			for (int i = 0; i < list.size(); i++) {
 				String name = list[i].replace("/", "::");
 				set("projects/" + name, list[i]);
-			};
-		};
+			}
+		}
 
 		if (p_extra_config->has_section("presets")) {
 			List<String> keys;
@@ -779,9 +779,9 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 				String key = E->get();
 				Variant val = p_extra_config->get_value("presets", key);
 				set(key, val);
-			};
-		};
-	};
+			}
+		}
+	}
 }
 
 void EditorSettings::_load_godot2_text_editor_theme() {
@@ -871,9 +871,8 @@ static void _create_script_templates(const String &p_path) {
 	Dictionary templates = _get_builtin_script_templates();
 	List<Variant> keys;
 	templates.get_key_list(&keys);
-	FileAccess *file = FileAccess::create(FileAccess::ACCESS_FILESYSTEM);
-
-	DirAccess *dir = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
+	FileAccessRef file = FileAccess::create(FileAccess::ACCESS_FILESYSTEM);
+	DirAccessRef dir = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
 	dir->change_dir(p_path);
 	for (int i = 0; i < keys.size(); i++) {
 		if (!dir->file_exists(keys[i])) {
@@ -883,9 +882,6 @@ static void _create_script_templates(const String &p_path) {
 			file->close();
 		}
 	}
-
-	memdelete(dir);
-	memdelete(file);
 }
 
 // PUBLIC METHODS
@@ -895,103 +891,48 @@ EditorSettings *EditorSettings::get_singleton() {
 }
 
 void EditorSettings::create() {
+	// IMPORTANT: create() *must* create a valid EditorSettings singleton,
+	// as the rest of the engine code will assume it. As such, it should never
+	// return (incl. via ERR_FAIL) without initializing the singleton member.
+
 	if (singleton.ptr()) {
-		return; //pointless
+		ERR_PRINT("Can't recreate EditorSettings as it already exists.");
+		return;
 	}
 
+	ClassDB::register_class<EditorSettings>(); // Otherwise it can't be unserialized.
+
+	String config_file_path;
 	Ref<ConfigFile> extra_config = memnew(ConfigFile);
+
+	if (!EditorPaths::get_singleton()) {
+		ERR_PRINT("Bug (please report): EditorPaths haven't been initialized, EditorSettings cannot be created properly.");
+		goto fail;
+	}
 
 	if (EditorPaths::get_singleton()->is_self_contained()) {
 		Error err = extra_config->load(EditorPaths::get_singleton()->get_self_contained_file());
 		if (err != OK) {
-			ERR_PRINT("Can't load extra config from path :" + EditorPaths::get_singleton()->get_self_contained_file());
+			ERR_PRINT("Can't load extra config from path: " + EditorPaths::get_singleton()->get_self_contained_file());
 		}
 	}
 
-	DirAccess *dir = nullptr;
-
-	ClassDB::register_class<EditorSettings>(); //otherwise it can't be unserialized
-
-	String config_file_path;
-
 	if (EditorPaths::get_singleton()->are_paths_valid()) {
-		// Validate/create data dir and subdirectories
+		_create_script_templates(EditorPaths::get_singleton()->get_config_dir().plus_file("script_templates"));
 
-		String data_dir = EditorPaths::get_singleton()->get_data_dir();
+		// Validate editor config file.
 
-		dir = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
-		if (dir->change_dir(data_dir) != OK) {
-			dir->make_dir_recursive(data_dir);
-			if (dir->change_dir(data_dir) != OK) {
-				ERR_PRINT("Cannot create data directory!");
-				memdelete(dir);
-				goto fail;
-			}
-		}
-
-		if (dir->change_dir("templates") != OK) {
-			dir->make_dir("templates");
-		} else {
-			dir->change_dir("..");
-		}
-
-		// Validate/create config dir and subdirectories
-
-		if (dir->change_dir(EditorPaths::get_singleton()->get_config_dir()) != OK) {
-			dir->make_dir_recursive(EditorPaths::get_singleton()->get_config_dir());
-			if (dir->change_dir(EditorPaths::get_singleton()->get_config_dir()) != OK) {
-				ERR_PRINT("Cannot create config directory!");
-				memdelete(dir);
-				goto fail;
-			}
-		}
-
-		if (dir->change_dir("text_editor_themes") != OK) {
-			dir->make_dir("text_editor_themes");
-		} else {
-			dir->change_dir("..");
-		}
-
-		if (dir->change_dir("script_templates") != OK) {
-			dir->make_dir("script_templates");
-		} else {
-			dir->change_dir("..");
-		}
-
-		if (dir->change_dir("feature_profiles") != OK) {
-			dir->make_dir("feature_profiles");
-		} else {
-			dir->change_dir("..");
-		}
-
-		_create_script_templates(dir->get_current_dir().plus_file("script_templates"));
-
-		{
-			// Validate/create project-specific editor settings dir.
-			DirAccessRef da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
-			if (da->change_dir(EditorSettings::PROJECT_EDITOR_SETTINGS_PATH) != OK) {
-				Error err = da->make_dir_recursive(EditorSettings::PROJECT_EDITOR_SETTINGS_PATH);
-				if (err || da->change_dir(EditorSettings::PROJECT_EDITOR_SETTINGS_PATH) != OK) {
-					ERR_FAIL_MSG("Failed to create '" + EditorSettings::PROJECT_EDITOR_SETTINGS_PATH + "' folder.");
-				}
-			}
-		}
-
-		// Validate editor config file
-
+		DirAccessRef dir = DirAccess::open(EditorPaths::get_singleton()->get_config_dir());
 		String config_file_name = "editor_settings-" + itos(VERSION_MAJOR) + ".tres";
 		config_file_path = EditorPaths::get_singleton()->get_config_dir().plus_file(config_file_name);
 		if (!dir->file_exists(config_file_name)) {
-			memdelete(dir);
 			goto fail;
 		}
-
-		memdelete(dir);
 
 		singleton = ResourceLoader::load(config_file_path, "EditorSettings");
 
 		if (singleton.is_null()) {
-			WARN_PRINT("Could not open config file.");
+			ERR_PRINT("Could not load editor settings from path: " + config_file_path);
 			goto fail;
 		}
 
@@ -1009,7 +950,6 @@ void EditorSettings::create() {
 	}
 
 fail:
-
 	// patch init projects
 	String exe_path = OS::get_singleton()->get_executable_path().get_base_dir();
 
@@ -1017,9 +957,9 @@ fail:
 		Vector<String> list = extra_config->get_value("init_projects", "list");
 		for (int i = 0; i < list.size(); i++) {
 			list.write[i] = exe_path.plus_file(list[i]);
-		};
+		}
 		extra_config->set_value("init_projects", "list", list);
-	};
+	}
 
 	singleton = Ref<EditorSettings>(memnew(EditorSettings));
 	singleton->save_changed_setting = true;
@@ -1251,16 +1191,15 @@ void EditorSettings::add_property_hint(const PropertyInfo &p_hint) {
 	hints[p_hint.name] = p_hint;
 }
 
-// Data directories
+// Editor data and config directories
+// EditorPaths::create() is responsible for the creation of these directories.
 
 String EditorSettings::get_templates_dir() const {
 	return EditorPaths::get_singleton()->get_data_dir().plus_file("templates");
 }
 
-// Config directories
-
 String EditorSettings::get_project_settings_dir() const {
-	return EditorSettings::PROJECT_EDITOR_SETTINGS_PATH;
+	return EditorPaths::get_singleton()->get_project_data_dir().plus_file("editor");
 }
 
 String EditorSettings::get_text_editor_themes_dir() const {
@@ -1274,8 +1213,6 @@ String EditorSettings::get_script_templates_dir() const {
 String EditorSettings::get_project_script_templates_dir() const {
 	return ProjectSettings::get_singleton()->get("editor/script/templates_search_path");
 }
-
-// Cache directory
 
 String EditorSettings::get_feature_profiles_dir() const {
 	return EditorPaths::get_singleton()->get_config_dir().plus_file("feature_profiles");

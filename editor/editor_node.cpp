@@ -3728,10 +3728,6 @@ bool EditorNode::is_scene_in_use(const String &p_path) {
 	return false;
 }
 
-void EditorNode::register_editor_paths(bool p_for_project_manager) {
-	EditorPaths::create(p_for_project_manager);
-}
-
 void EditorNode::register_editor_types() {
 	ResourceLoader::set_timestamp_on_load(true);
 	ResourceSaver::set_timestamp_on_save(true);

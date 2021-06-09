@@ -1934,19 +1934,6 @@ void EditorFileSystem::_reimport_thread(uint32_t p_index, ImportThreadData *p_im
 }
 
 void EditorFileSystem::reimport_files(const Vector<String> &p_files) {
-	{
-		// Ensure that ProjectSettings::IMPORTED_FILES_PATH exists.
-		DirAccess *da = DirAccess::open("res://");
-		if (da->change_dir(ProjectSettings::IMPORTED_FILES_PATH) != OK) {
-			Error err = da->make_dir_recursive(ProjectSettings::IMPORTED_FILES_PATH);
-			if (err || da->change_dir(ProjectSettings::IMPORTED_FILES_PATH) != OK) {
-				memdelete(da);
-				ERR_FAIL_MSG("Failed to create '" + ProjectSettings::IMPORTED_FILES_PATH + "' folder.");
-			}
-		}
-		memdelete(da);
-	}
-
 	importing = true;
 	EditorProgress pr("reimport", TTR("(Re)Importing Assets"), p_files.size());
 
@@ -2177,13 +2164,9 @@ EditorFileSystem::EditorFileSystem() {
 	scanning_changes = false;
 	scanning_changes_done = false;
 
-	DirAccess *da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
-	if (da->change_dir(ProjectSettings::IMPORTED_FILES_PATH) != OK) {
-		da->make_dir(ProjectSettings::IMPORTED_FILES_PATH);
-	}
 	// This should probably also work on Unix and use the string it returns for FAT32 or exFAT
+	DirAccessRef da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
 	using_fat32_or_exfat = (da->get_filesystem_type() == "FAT32" || da->get_filesystem_type() == "exFAT");
-	memdelete(da);
 
 	scan_total = 0;
 	update_script_classes_queued.clear();

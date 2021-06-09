@@ -1453,7 +1453,7 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 
 #ifdef TOOLS_ENABLED
 	if (editor || project_manager) {
-		EditorNode::register_editor_paths(project_manager);
+		EditorPaths::create();
 	}
 #endif
 
@@ -2379,10 +2379,8 @@ bool Main::start() {
 			}
 
 			// Load SSL Certificates from Editor Settings (or builtin)
-			Crypto::load_default_certificates(EditorSettings::get_singleton()->get_setting(
-																					 "network/ssl/editor_ssl_certificates")
-													  .
-													  operator String());
+			Crypto::load_default_certificates(
+					EditorSettings::get_singleton()->get_setting("network/ssl/editor_ssl_certificates").operator String());
 		}
 #endif
 	}
