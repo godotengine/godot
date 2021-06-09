@@ -1640,10 +1640,13 @@ void ScriptEditor::ensure_select_current() {
 		ScriptEditorBase *se = _get_current_editor();
 		if (se) {
 			se->enable_editor();
+			se->set_find_replace_bar(find_replace_bar);
 
 			if (!grab_focus_block && is_visible_in_tree()) {
 				se->ensure_focus();
 			}
+		} else {
+			find_replace_bar->hide();
 		}
 	}
 
@@ -3379,11 +3382,19 @@ ScriptEditor::ScriptEditor(EditorNode *p_editor) {
 	help_overview->set_custom_minimum_size(Size2(0, 60) * EDSCALE); //need to give a bit of limit to avoid it from disappearing
 	help_overview->set_v_size_flags(SIZE_EXPAND_FILL);
 
+	VBoxContainer *code_editor_container = memnew(VBoxContainer);
+	script_split->add_child(code_editor_container);
+
 	tab_container = memnew(TabContainer);
 	tab_container->set_tabs_visible(false);
 	tab_container->set_custom_minimum_size(Size2(200, 0) * EDSCALE);
-	script_split->add_child(tab_container);
+	code_editor_container->add_child(tab_container);
 	tab_container->set_h_size_flags(SIZE_EXPAND_FILL);
+	tab_container->set_v_size_flags(SIZE_EXPAND_FILL);
+
+	find_replace_bar = memnew(FindReplaceBar);
+	code_editor_container->add_child(find_replace_bar);
+	find_replace_bar->hide();
 
 	ED_SHORTCUT("script_editor/window_sort", TTR("Sort"));
 	ED_SHORTCUT("script_editor/window_move_up", TTR("Move Up"), KEY_MASK_SHIFT | KEY_MASK_ALT | KEY_UP);
