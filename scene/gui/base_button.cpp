@@ -172,10 +172,9 @@ void BaseButton::on_action_event(Ref<InputEvent> p_event) {
 				status.hovering = false;
 			}
 		}
-		// pressed state should be correct with button_up signal
-		emit_signal("button_up");
 		status.press_attempt = false;
 		status.pressing_inside = false;
+		emit_signal("button_up");
 	}
 
 	update();
