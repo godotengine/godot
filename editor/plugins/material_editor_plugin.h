@@ -46,8 +46,11 @@ class SubViewportContainer;
 class MaterialEditor : public Control {
 	GDCLASS(MaterialEditor, Control);
 
+	Vector2 rot = Vector2(0, 0);
+
 	SubViewportContainer *vc;
 	SubViewport *viewport;
+	Node3D *rotation;
 	MeshInstance3D *sphere_instance;
 	MeshInstance3D *box_instance;
 	DirectionalLight3D *light1;
@@ -65,12 +68,14 @@ class MaterialEditor : public Control {
 
 	Ref<Material> material;
 
+	bool first_enter = true;
+
 	void _button_pressed(Node *p_button);
-	bool first_enter;
+	void _update_rotation();
 
 protected:
+	void _gui_input(Ref<InputEvent> p_event);
 	void _notification(int p_what);
-
 	static void _bind_methods();
 
 public:

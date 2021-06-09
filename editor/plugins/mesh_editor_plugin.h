@@ -42,8 +42,7 @@
 class MeshEditor : public SubViewportContainer {
 	GDCLASS(MeshEditor, SubViewportContainer);
 
-	float rot_x;
-	float rot_y;
+	Vector2 rot = Vector2(0, 0);
 
 	SubViewport *viewport;
 	MeshInstance3D *mesh_instance;
@@ -57,14 +56,14 @@ class MeshEditor : public SubViewportContainer {
 	TextureButton *light_1_switch;
 	TextureButton *light_2_switch;
 
-	void _button_pressed(Node *p_button);
-	bool first_enter;
+	bool first_enter = true;
 
+	void _button_pressed(Node *p_button);
 	void _update_rotation();
 
 protected:
-	void _notification(int p_what);
 	void _gui_input(Ref<InputEvent> p_event);
+	void _notification(int p_what);
 	static void _bind_methods();
 
 public:
