@@ -2373,10 +2373,8 @@ bool Main::start() {
 			}
 
 			// Load SSL Certificates from Editor Settings (or builtin)
-			Crypto::load_default_certificates(EditorSettings::get_singleton()->get_setting(
-																					 "network/ssl/editor_ssl_certificates")
-													  .
-													  operator String());
+			Crypto::load_default_certificates(
+					EditorSettings::get_singleton()->get_setting("network/ssl/editor_ssl_certificates").operator String());
 		}
 #endif
 	}

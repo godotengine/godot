@@ -895,8 +895,14 @@ EditorSettings *EditorSettings::get_singleton() {
 }
 
 void EditorSettings::create() {
+	// IMPORTANT: create() *must* create a valid EditorSettings singleton,
+	// as the rest of the engine code will assume it. As such, it should never
+	// return (incl. via ERR_FAIL) without initializing the singleton member.
+	// The proper way to error out is thus to print an error and `goto fail`.
+
 	if (singleton.ptr()) {
-		return; //pointless
+		ERR_PRINT("Can't recreate EditorSettings as it already exists.");
+		return;
 	}
 
 	Ref<ConfigFile> extra_config = memnew(ConfigFile);
@@ -908,8 +914,6 @@ void EditorSettings::create() {
 		}
 	}
 
-	DirAccess *dir = nullptr;
-
 	ClassDB::register_class<EditorSettings>(); //otherwise it can't be unserialized
 
 	String config_file_path;
@@ -919,12 +923,11 @@ void EditorSettings::create() {
 
 		String data_dir = EditorPaths::get_singleton()->get_data_dir();
 
-		dir = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
+		DirAccessRef dir = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
 		if (dir->change_dir(data_dir) != OK) {
 			dir->make_dir_recursive(data_dir);
 			if (dir->change_dir(data_dir) != OK) {
 				ERR_PRINT("Cannot create data directory!");
-				memdelete(dir);
 				goto fail;
 			}
 		}
@@ -941,7 +944,6 @@ void EditorSettings::create() {
 			dir->make_dir_recursive(EditorPaths::get_singleton()->get_config_dir());
 			if (dir->change_dir(EditorPaths::get_singleton()->get_config_dir()) != OK) {
 				ERR_PRINT("Cannot create config directory!");
-				memdelete(dir);
 				goto fail;
 			}
 		}
@@ -972,7 +974,7 @@ void EditorSettings::create() {
 			if (da->change_dir(EditorSettings::PROJECT_EDITOR_SETTINGS_PATH) != OK) {
 				Error err = da->make_dir_recursive(EditorSettings::PROJECT_EDITOR_SETTINGS_PATH);
 				if (err || da->change_dir(EditorSettings::PROJECT_EDITOR_SETTINGS_PATH) != OK) {
-					ERR_FAIL_MSG("Failed to create '" + EditorSettings::PROJECT_EDITOR_SETTINGS_PATH + "' folder.");
+					ERR_PRINT("Failed to create '" + EditorSettings::PROJECT_EDITOR_SETTINGS_PATH + "' folder.");
 				}
 			}
 		}
@@ -982,11 +984,8 @@ void EditorSettings::create() {
 		String config_file_name = "editor_settings-" + itos(VERSION_MAJOR) + ".tres";
 		config_file_path = EditorPaths::get_singleton()->get_config_dir().plus_file(config_file_name);
 		if (!dir->file_exists(config_file_name)) {
-			memdelete(dir);
 			goto fail;
 		}
-
-		memdelete(dir);
 
 		singleton = ResourceLoader::load(config_file_path, "EditorSettings");
 
@@ -1009,7 +1008,6 @@ void EditorSettings::create() {
 	}
 
 fail:
-
 	// patch init projects
 	String exe_path = OS::get_singleton()->get_executable_path().get_base_dir();
 
@@ -1017,9 +1015,9 @@ fail:
 		Vector<String> list = extra_config->get_value("init_projects", "list");
 		for (int i = 0; i < list.size(); i++) {
 			list.write[i] = exe_path.plus_file(list[i]);
-		};
+		}
 		extra_config->set_value("init_projects", "list", list);
-	};
+	}
 
 	singleton = Ref<EditorSettings>(memnew(EditorSettings));
 	singleton->save_changed_setting = true;
