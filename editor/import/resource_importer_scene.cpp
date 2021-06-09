@@ -1213,7 +1213,7 @@ void ResourceImporterScene::_generate_meshes(Node *p_node, const Dictionary &p_m
 					Node3D *n = src_mesh_node;
 					while (n) {
 						xf = n->get_transform() * xf;
-						n = n->get_parent_spatial();
+						n = n->get_parent_node_3d();
 					}
 
 					Vector<uint8_t> lightmap_cache;
