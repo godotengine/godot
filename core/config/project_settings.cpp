@@ -1133,6 +1133,8 @@ ProjectSettings::ProjectSettings() {
 
 	GLOBAL_DEF("compression/formats/gzip/compression_level", Compression::gzip_level);
 	custom_prop_info["compression/formats/gzip/compression_level"] = PropertyInfo(Variant::INT, "compression/formats/gzip/compression_level", PROPERTY_HINT_RANGE, "-1,9,1");
+
+	GLOBAL_DEF("internationalization/use_pseudolocalization", false);
 }
 
 ProjectSettings::~ProjectSettings() {

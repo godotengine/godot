@@ -1095,10 +1095,24 @@ StringName TranslationServer::translate(const StringName &p_message, const Strin
 	}
 
 	if (!res) {
-		return pseudolocalize(p_message);
+		if(GLOBAL_GET("internationalization/use_pseudolocalization"))
+		{
+			return pseudolocalize(p_message);
+		}
+		else
+		{
+			return p_message;
+		}
 	}
 
-	return pseudolocalize(res);
+	if(GLOBAL_GET("internationalization/use_pseudolocalization"))
+	{
+		return pseudolocalize(res);
+	}
+	else
+	{
+		return res;
+	}
 }
 
 StringName TranslationServer::translate_plural(const StringName &p_message, const StringName &p_message_plural, int p_n, const StringName &p_context) const {
@@ -1306,7 +1320,7 @@ StringName TranslationServer::pseudolocalize(const StringName &p_message) const 
 	if (true) {
 		String temp = "";
 		for (int i = 0; i < message.size(); i++) {
-			wchar_t *accented = get_accented_version(message[i]);
+			const wchar_t *accented = get_accented_version(message[i]);
 			if(accented)
 			{
 				temp += accented;
@@ -1345,7 +1359,7 @@ StringName TranslationServer::pseudolocalize(const StringName &p_message) const 
 	return res;
 }
 
-wchar_t* TranslationServer::get_accented_version(char c) const {
+const wchar_t *TranslationServer::get_accented_version(char c) const {
 	switch (c) {
 		case 'A': return L"Å";
 		case 'B': return L"ß";
