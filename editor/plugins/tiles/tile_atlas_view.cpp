@@ -33,7 +33,6 @@
 #include "core/input/input.h"
 #include "core/os/keyboard.h"
 #include "scene/gui/box_container.h"
-#include "scene/gui/center_container.h"
 #include "scene/gui/label.h"
 #include "scene/gui/panel.h"
 #include "scene/gui/texture_rect.h"
@@ -44,21 +43,41 @@
 void TileAtlasView::_gui_input(const Ref<InputEvent> &p_event) {
 	bool ctrl = Input::get_singleton()->is_key_pressed(KEY_CTRL);
 
-	Ref<InputEventMouseButton> b = p_event;
-	if (b.is_valid()) {
-		if (ctrl && b->is_pressed() && b->get_button_index() == MOUSE_BUTTON_WHEEL_DOWN) {
+	Ref<InputEventMouseButton> mb = p_event;
+	if (mb.is_valid()) {
+		drag_type = DRAG_TYPE_NONE;
+		if (ctrl && mb->is_pressed() && mb->get_button_index() == MOUSE_BUTTON_WHEEL_DOWN) {
 			// Zoom out
 			zoom_widget->set_zoom_by_increments(-2);
-			emit_signal("transform_changed", zoom_widget->get_zoom(), Vector2(scroll_container->get_h_scroll(), scroll_container->get_v_scroll()));
-			_update_zoom(zoom_widget->get_zoom(), true);
+			emit_signal("transform_changed", zoom_widget->get_zoom(), panning);
+			_update_zoom_and_panning(true);
 			accept_event();
 		}
 
-		if (ctrl && b->is_pressed() && b->get_button_index() == MOUSE_BUTTON_WHEEL_UP) {
+		if (ctrl && mb->is_pressed() && mb->get_button_index() == MOUSE_BUTTON_WHEEL_UP) {
 			// Zoom in
 			zoom_widget->set_zoom_by_increments(2);
-			emit_signal("transform_changed", zoom_widget->get_zoom(), Vector2(scroll_container->get_h_scroll(), scroll_container->get_v_scroll()));
-			_update_zoom(zoom_widget->get_zoom(), true);
+			emit_signal("transform_changed", zoom_widget->get_zoom(), panning);
+			_update_zoom_and_panning(true);
+			accept_event();
+		}
+
+		if (mb->get_button_index() == MOUSE_BUTTON_MIDDLE || mb->get_button_index() == MOUSE_BUTTON_RIGHT) {
+			if (mb->is_pressed()) {
+				drag_type = DRAG_TYPE_PAN;
+			} else {
+				drag_type = DRAG_TYPE_NONE;
+			}
+			accept_event();
+		}
+	}
+
+	Ref<InputEventMouseMotion> mm = p_event;
+	if (mm.is_valid()) {
+		if (drag_type == DRAG_TYPE_PAN) {
+			panning += mm->get_relative();
+			_update_zoom_and_panning();
+			emit_signal("transform_changed", zoom_widget->get_zoom(), panning);
 			accept_event();
 		}
 	}
@@ -103,25 +122,27 @@ Size2i TileAtlasView::_compute_alternative_tiles_control_size() {
 	return size;
 }
 
-void TileAtlasView::_update_zoom(float p_zoom, bool p_zoom_on_mouse_pos, Vector2i p_scroll) {
+void TileAtlasView::_update_zoom_and_panning(bool p_zoom_on_mouse_pos) {
+	float zoom = zoom_widget->get_zoom();
+
 	// Compute the minimum sizes.
 	Size2i base_tiles_control_size = _compute_base_tiles_control_size();
-	base_tiles_root_control->set_custom_minimum_size(Vector2(base_tiles_control_size) * p_zoom);
+	base_tiles_root_control->set_custom_minimum_size(Vector2(base_tiles_control_size) * zoom);
 
 	Size2i alternative_tiles_control_size = _compute_alternative_tiles_control_size();
-	alternative_tiles_root_control->set_custom_minimum_size(Vector2(alternative_tiles_control_size) * p_zoom);
+	alternative_tiles_root_control->set_custom_minimum_size(Vector2(alternative_tiles_control_size) * zoom);
 
 	// Set the texture for the base tiles.
 	Ref<Texture2D> texture = tile_set_atlas_source->get_texture();
 
 	// Set the scales.
 	if (base_tiles_control_size.x > 0 && base_tiles_control_size.y > 0) {
-		base_tiles_drawing_root->set_scale(Vector2(p_zoom, p_zoom));
+		base_tiles_drawing_root->set_scale(Vector2(zoom, zoom));
 	} else {
 		base_tiles_drawing_root->set_scale(Vector2(1, 1));
 	}
 	if (alternative_tiles_control_size.x > 0 && alternative_tiles_control_size.y > 0) {
-		alternative_tiles_drawing_root->set_scale(Vector2(p_zoom, p_zoom));
+		alternative_tiles_drawing_root->set_scale(Vector2(zoom, zoom));
 	} else {
 		alternative_tiles_drawing_root->set_scale(Vector2(1, 1));
 	}
@@ -129,64 +150,40 @@ void TileAtlasView::_update_zoom(float p_zoom, bool p_zoom_on_mouse_pos, Vector2
 	// Update the margin container's margins.
 	const char *constants[] = { "margin_left", "margin_top", "margin_right", "margin_bottom" };
 	for (int i = 0; i < 4; i++) {
-		margin_container->add_theme_constant_override(constants[i], margin_container_paddings[i] * p_zoom);
+		margin_container->add_theme_constant_override(constants[i], margin_container_paddings[i] * zoom);
 	}
 
 	// Update the backgrounds.
 	background_left->update();
 	background_right->update();
 
-	if (p_scroll != Vector2i(-1, -1)) {
-		scroll_container->set_h_scroll(p_scroll.x);
-		scroll_container->set_v_scroll(p_scroll.y);
-	}
-
 	// Zoom on the position.
-	if (previous_zoom != p_zoom) {
-		// TODO: solve this.
-		// There is however an issue with scrollcainter preventing this, as it seems
-		// that the scrollbars are not updated right aways after its children update.
-
-		// Compute point on previous area.
-		/*Vector2 max = Vector2(scroll_container->get_h_scrollbar()->get_max(), scroll_container->get_v_scrollbar()->get_max());
-		Vector2 min = Vector2(scroll_container->get_h_scrollbar()->get_min(), scroll_container->get_v_scrollbar()->get_min());
-		Vector2 value = Vector2(scroll_container->get_h_scrollbar()->get_value(), scroll_container->get_v_scrollbar()->get_value());
-
-		Vector2 old_max = max * previous_zoom / p_zoom;
-
-		Vector2 max_pixel_change = max - old_max;
-		Vector2 ratio = ((value + scroll_container->get_local_mouse_position()) / old_max).max(Vector2()).min(Vector2(1,1));
-		Vector2 offset = max_pixel_change * ratio;
-
-		print_line("--- ZOOMED ---");
-		print_line(vformat("max: %s", max));
-		print_line(vformat("min: %s", min));
-		print_line(vformat("value: %s", value));
-		print_line(vformat("size: %s", scroll_container->get_size()));
-		print_line(vformat("mouse_pos: %s", scroll_container->get_local_mouse_position()));
-
-		print_line(vformat("ratio: %s", ratio));
-		print_line(vformat("max_pixel_change: %s", max_pixel_change));
-		print_line(vformat("offset: %s", offset));
-
-
-		print_line(vformat("value before: %s", Vector2(scroll_container->get_h_scroll(), scroll_container->get_v_scroll())));
-		scroll_container->set_h_scroll(10000);//scroll_container->get_h_scroll()+offset.x);
-		scroll_container->set_v_scroll(10000);//scroll_container->get_v_scroll()+offset.y);
-		print_line(vformat("value after: %s", Vector2(scroll_container->get_h_scroll(), scroll_container->get_v_scroll())));
-		*/
-
-		previous_zoom = p_zoom;
+	if (p_zoom_on_mouse_pos) {
+		// Offset the panning relative to the center of panel.
+		Vector2 relative_mpos = get_local_mouse_position() - get_size() / 2;
+		panning = (panning - relative_mpos) * zoom / previous_zoom + relative_mpos;
+	} else {
+		// Center of panel.
+		panning = panning * zoom / previous_zoom;
 	}
-}
+	button_center_view->set_disabled(panning.is_equal_approx(Vector2()));
 
-void TileAtlasView::_scroll_changed() {
-	emit_signal("transform_changed", zoom_widget->get_zoom(), Vector2(scroll_container->get_h_scroll(), scroll_container->get_v_scroll()));
+	previous_zoom = zoom;
+
+	center_container->set_begin(panning - center_container->get_minimum_size() / 2);
+	center_container->set_size(center_container->get_minimum_size());
 }
 
 void TileAtlasView::_zoom_widget_changed() {
-	_update_zoom(zoom_widget->get_zoom());
-	emit_signal("transform_changed", zoom_widget->get_zoom(), Vector2(scroll_container->get_h_scroll(), scroll_container->get_v_scroll()));
+	_update_zoom_and_panning();
+	emit_signal("transform_changed", zoom_widget->get_zoom(), panning);
+}
+
+void TileAtlasView::_center_view() {
+	panning = Vector2();
+	button_center_view->set_disabled(true);
+	_update_zoom_and_panning();
+	emit_signal("transform_changed", zoom_widget->get_zoom(), panning);
 }
 
 void TileAtlasView::_base_tiles_root_control_gui_input(const Ref<InputEvent> &p_event) {
@@ -415,7 +412,7 @@ void TileAtlasView::set_atlas_source(TileSet *p_tile_set, TileSetAtlasSource *p_
 	_update_alternative_tiles_rect_cache();
 
 	// Update everything.
-	_update_zoom(zoom_widget->get_zoom());
+	_update_zoom_and_panning();
 
 	// Change children control size.
 	Size2i base_tiles_control_size = _compute_base_tiles_control_size();
@@ -448,9 +445,10 @@ float TileAtlasView::get_zoom() const {
 	return zoom_widget->get_zoom();
 };
 
-void TileAtlasView::set_transform(float p_zoom, Vector2i p_scroll) {
+void TileAtlasView::set_transform(float p_zoom, Vector2i p_panning) {
 	zoom_widget->set_zoom(p_zoom);
-	_update_zoom(zoom_widget->get_zoom(), false, p_scroll);
+	panning = p_panning;
+	_update_zoom_and_panning();
 };
 
 void TileAtlasView::set_padding(Side p_side, int p_padding) {
@@ -525,7 +523,7 @@ Rect2i TileAtlasView::get_alternative_tile_rect(const Vector2i p_coords, int p_a
 }
 
 void TileAtlasView::update() {
-	scroll_container->update();
+	base_tiles_draw->update();
 	base_tiles_texture_grid->update();
 	base_tiles_shape_grid->update();
 	base_tiles_dark->update();
@@ -534,124 +532,149 @@ void TileAtlasView::update() {
 	background_right->update();
 }
 
+void TileAtlasView::_notification(int p_what) {
+	switch (p_what) {
+		case NOTIFICATION_READY:
+			button_center_view->set_icon(get_theme_icon("CenterView", "EditorIcons"));
+			break;
+	}
+}
+
 void TileAtlasView::_bind_methods() {
+	ClassDB::bind_method("_gui_input", &TileAtlasView::_gui_input);
+
 	ADD_SIGNAL(MethodInfo("transform_changed", PropertyInfo(Variant::FLOAT, "zoom"), PropertyInfo(Variant::VECTOR2, "scroll")));
 }
 
 TileAtlasView::TileAtlasView() {
-	Panel *panel_container = memnew(Panel);
-	panel_container->set_h_size_flags(SIZE_EXPAND_FILL);
-	panel_container->set_v_size_flags(SIZE_EXPAND_FILL);
-	panel_container->set_anchors_and_offsets_preset(Control::PRESET_WIDE);
-	add_child(panel_container);
+	set_texture_filter(CanvasItem::TEXTURE_FILTER_NEAREST);
 
-	//Scrolling
-	scroll_container = memnew(ScrollContainer);
-	scroll_container->get_h_scrollbar()->connect("value_changed", callable_mp(this, &TileAtlasView::_scroll_changed).unbind(1));
-	scroll_container->get_v_scrollbar()->connect("value_changed", callable_mp(this, &TileAtlasView::_scroll_changed).unbind(1));
-	panel_container->add_child(scroll_container);
-	scroll_container->set_anchors_and_offsets_preset(Control::PRESET_WIDE);
+	Panel *panel = memnew(Panel);
+	panel->set_clip_contents(true);
+	panel->set_mouse_filter(Control::MOUSE_FILTER_IGNORE);
+	panel->set_anchors_and_offsets_preset(Control::PRESET_WIDE);
+	panel->set_h_size_flags(SIZE_EXPAND_FILL);
+	panel->set_v_size_flags(SIZE_EXPAND_FILL);
+	add_child(panel);
 
+	// Scrollingsc
 	zoom_widget = memnew(EditorZoomWidget);
 	add_child(zoom_widget);
 	zoom_widget->set_anchors_and_offsets_preset(Control::PRESET_TOP_LEFT, Control::PRESET_MODE_MINSIZE, 2 * EDSCALE);
 	zoom_widget->connect("zoom_changed", callable_mp(this, &TileAtlasView::_zoom_widget_changed).unbind(1));
 
-	CenterContainer *center_container = memnew(CenterContainer);
-	center_container->set_h_size_flags(SIZE_EXPAND_FILL);
-	center_container->set_v_size_flags(SIZE_EXPAND_FILL);
+	button_center_view = memnew(Button);
+	button_center_view->set_icon(get_theme_icon("CenterView", "EditorIcons"));
+	button_center_view->set_anchors_and_offsets_preset(Control::PRESET_TOP_RIGHT, Control::PRESET_MODE_MINSIZE, 5);
+	button_center_view->connect("pressed", callable_mp(this, &TileAtlasView::_center_view));
+	button_center_view->set_flat(true);
+	button_center_view->set_disabled(true);
+	add_child(button_center_view);
+
+	center_container = memnew(CenterContainer);
+	center_container->set_mouse_filter(Control::MOUSE_FILTER_IGNORE);
+	center_container->set_anchors_preset(Control::PRESET_CENTER);
 	center_container->connect("gui_input", callable_mp(this, &TileAtlasView::_gui_input));
-	scroll_container->add_child(center_container);
+	panel->add_child(center_container);
 
 	missing_source_label = memnew(Label);
 	missing_source_label->set_text(TTR("No atlas source with a valid texture selected."));
 	center_container->add_child(missing_source_label);
 
 	margin_container = memnew(MarginContainer);
+	margin_container->set_mouse_filter(Control::MOUSE_FILTER_IGNORE);
 	center_container->add_child(margin_container);
 
 	hbox = memnew(HBoxContainer);
+	hbox->set_mouse_filter(Control::MOUSE_FILTER_IGNORE);
 	hbox->add_theme_constant_override("separation", 10);
 	hbox->hide();
 	margin_container->add_child(hbox);
 
 	VBoxContainer *left_vbox = memnew(VBoxContainer);
+	left_vbox->set_mouse_filter(Control::MOUSE_FILTER_IGNORE);
 	hbox->add_child(left_vbox);
 
 	VBoxContainer *right_vbox = memnew(VBoxContainer);
+	right_vbox->set_mouse_filter(Control::MOUSE_FILTER_IGNORE);
 	hbox->add_child(right_vbox);
 
 	// Base tiles.
 	Label *base_tile_label = memnew(Label);
+	base_tile_label->set_mouse_filter(Control::MOUSE_FILTER_PASS);
 	base_tile_label->set_text(TTR("Base Tiles"));
 	base_tile_label->set_align(Label::ALIGN_CENTER);
 	left_vbox->add_child(base_tile_label);
 
 	base_tiles_root_control = memnew(Control);
+	base_tiles_root_control->set_mouse_filter(Control::MOUSE_FILTER_PASS);
 	base_tiles_root_control->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	base_tiles_root_control->connect("gui_input", callable_mp(this, &TileAtlasView::_base_tiles_root_control_gui_input));
 	left_vbox->add_child(base_tiles_root_control);
 
 	background_left = memnew(Control);
+	background_left->set_mouse_filter(Control::MOUSE_FILTER_IGNORE);
 	background_left->set_anchors_and_offsets_preset(Control::PRESET_WIDE);
 	background_left->set_texture_repeat(TextureRepeat::TEXTURE_REPEAT_ENABLED);
-	background_left->set_mouse_filter(Control::MOUSE_FILTER_IGNORE);
 	background_left->connect("draw", callable_mp(this, &TileAtlasView::_draw_background_left));
 	base_tiles_root_control->add_child(background_left);
 
 	base_tiles_drawing_root = memnew(Control);
+	base_tiles_drawing_root->set_mouse_filter(Control::MOUSE_FILTER_IGNORE);
 	base_tiles_drawing_root->set_anchors_and_offsets_preset(Control::PRESET_WIDE);
 	base_tiles_drawing_root->set_texture_filter(TEXTURE_FILTER_NEAREST);
-	base_tiles_drawing_root->set_mouse_filter(Control::MOUSE_FILTER_IGNORE);
 	base_tiles_root_control->add_child(base_tiles_drawing_root);
 
 	base_tiles_draw = memnew(Control);
+	base_tiles_draw->set_mouse_filter(Control::MOUSE_FILTER_IGNORE);
 	base_tiles_draw->set_anchors_and_offsets_preset(Control::PRESET_WIDE);
 	base_tiles_draw->connect("draw", callable_mp(this, &TileAtlasView::_draw_base_tiles));
-	base_tiles_draw->set_mouse_filter(Control::MOUSE_FILTER_IGNORE);
 	base_tiles_drawing_root->add_child(base_tiles_draw);
 
 	base_tiles_texture_grid = memnew(Control);
+	base_tiles_texture_grid->set_mouse_filter(Control::MOUSE_FILTER_IGNORE);
 	base_tiles_texture_grid->set_anchors_and_offsets_preset(Control::PRESET_WIDE);
 	base_tiles_texture_grid->connect("draw", callable_mp(this, &TileAtlasView::_draw_base_tiles_texture_grid));
-	base_tiles_texture_grid->set_mouse_filter(Control::MOUSE_FILTER_IGNORE);
 	base_tiles_drawing_root->add_child(base_tiles_texture_grid);
 
 	base_tiles_shape_grid = memnew(Control);
+	base_tiles_shape_grid->set_mouse_filter(Control::MOUSE_FILTER_IGNORE);
 	base_tiles_shape_grid->set_anchors_and_offsets_preset(Control::PRESET_WIDE);
 	base_tiles_shape_grid->connect("draw", callable_mp(this, &TileAtlasView::_draw_base_tiles_shape_grid));
-	base_tiles_shape_grid->set_mouse_filter(Control::MOUSE_FILTER_IGNORE);
 	base_tiles_drawing_root->add_child(base_tiles_shape_grid);
 
 	base_tiles_dark = memnew(Control);
+	base_tiles_dark->set_mouse_filter(Control::MOUSE_FILTER_IGNORE);
 	base_tiles_dark->set_anchors_and_offsets_preset(Control::PRESET_WIDE);
 	base_tiles_dark->connect("draw", callable_mp(this, &TileAtlasView::_draw_base_tiles_dark));
-	base_tiles_dark->set_mouse_filter(Control::MOUSE_FILTER_IGNORE);
 	base_tiles_drawing_root->add_child(base_tiles_dark);
 
 	// Alternative tiles.
 	Label *alternative_tiles_label = memnew(Label);
+	alternative_tiles_label->set_mouse_filter(Control::MOUSE_FILTER_IGNORE);
 	alternative_tiles_label->set_text(TTR("Alternative Tiles"));
 	alternative_tiles_label->set_align(Label::ALIGN_CENTER);
 	right_vbox->add_child(alternative_tiles_label);
 
 	alternative_tiles_root_control = memnew(Control);
+	alternative_tiles_root_control->set_mouse_filter(Control::MOUSE_FILTER_PASS);
 	alternative_tiles_root_control->connect("gui_input", callable_mp(this, &TileAtlasView::_alternative_tiles_root_control_gui_input));
 	right_vbox->add_child(alternative_tiles_root_control);
 
 	background_right = memnew(Control);
+	background_right->set_mouse_filter(Control::MOUSE_FILTER_IGNORE);
 	background_right->set_texture_repeat(TextureRepeat::TEXTURE_REPEAT_ENABLED);
 	background_right->connect("draw", callable_mp(this, &TileAtlasView::_draw_background_right));
-	background_right->set_mouse_filter(Control::MOUSE_FILTER_IGNORE);
+
 	alternative_tiles_root_control->add_child(background_right);
 
 	alternative_tiles_drawing_root = memnew(Control);
-	alternative_tiles_drawing_root->set_texture_filter(TEXTURE_FILTER_NEAREST);
 	alternative_tiles_drawing_root->set_mouse_filter(Control::MOUSE_FILTER_IGNORE);
+	alternative_tiles_drawing_root->set_texture_filter(TEXTURE_FILTER_NEAREST);
 	alternative_tiles_root_control->add_child(alternative_tiles_drawing_root);
 
 	alternatives_draw = memnew(Control);
-	alternatives_draw->connect("draw", callable_mp(this, &TileAtlasView::_draw_alternatives));
 	alternatives_draw->set_mouse_filter(Control::MOUSE_FILTER_IGNORE);
+	alternatives_draw->connect("draw", callable_mp(this, &TileAtlasView::_draw_alternatives));
 	alternative_tiles_drawing_root->add_child(alternatives_draw);
 }

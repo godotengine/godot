@@ -2989,6 +2989,7 @@ void TileMapEditorTerrainsPlugin::_update_terrains_tree() {
 	}
 
 	// Fill in the terrain list.
+	Vector<Vector<Ref<Texture2D>>> icons = tile_set->generate_terrains_icons(Size2(16, 16) * EDSCALE);
 	for (int terrain_set_index = 0; terrain_set_index < tile_set->get_terrain_sets_count(); terrain_set_index++) {
 		// Add an item for the terrain set.
 		TreeItem *terrain_set_tree_item = terrains_tree->create_item();
@@ -3007,58 +3008,12 @@ void TileMapEditorTerrainsPlugin::_update_terrains_tree() {
 		terrain_set_tree_item->set_selectable(0, false);
 
 		for (int terrain_index = 0; terrain_index < tile_set->get_terrains_count(terrain_set_index); terrain_index++) {
-			// Compute the terrains_tile_pattern used for terrain preview (whenever possible).
-			TerrainsTilePattern terrains_tile_pattern;
-			int max_bit_count = -1;
-			for (Set<TerrainsTilePattern>::Element *E = per_terrain_terrains_tile_patterns[terrain_set_index][terrain_index].front(); E; E = E->next()) {
-				int count = 0;
-				for (int i = 0; i < E->get().size(); i++) {
-					if (int(E->get()[i]) == terrain_index) {
-						count++;
-					}
-				}
-				if (count > max_bit_count) {
-					terrains_tile_pattern = E->get();
-					max_bit_count = count;
-				}
-			}
-
-			// Get the preview.
-			Ref<Texture2D> icon;
-			Rect2 region;
-			if (max_bit_count >= 0) {
-				double max_probability = -1.0;
-				for (Set<TileMapCell>::Element *E = per_terrain_terrains_tile_patterns_tiles[terrain_set_index][terrains_tile_pattern].front(); E; E = E->next()) {
-					Ref<TileSetSource> source = tile_set->get_source(E->get().source_id);
-
-					Ref<TileSetAtlasSource> atlas_source = source;
-					if (atlas_source.is_valid()) {
-						TileData *tile_data = Object::cast_to<TileData>(atlas_source->get_tile_data(E->get().get_atlas_coords(), E->get().alternative_tile));
-						if (tile_data->get_probability() > max_probability) {
-							icon = atlas_source->get_texture();
-							region = atlas_source->get_tile_texture_region(E->get().get_atlas_coords());
-							max_probability = tile_data->get_probability();
-						}
-					}
-				}
-			} else {
-				Ref<Image> image;
-				image.instantiate();
-				image->create(1, 1, false, Image::FORMAT_RGBA8);
-				image->set_pixel(0, 0, tile_set->get_terrain_color(terrain_set_index, terrain_index));
-				Ref<ImageTexture> image_texture;
-				image_texture.instantiate();
-				image_texture->create_from_image(image);
-				image_texture->set_size_override(Size2(32, 32) * EDSCALE);
-				icon = image_texture;
-			}
-
 			// Add the item to the terrain list.
 			TreeItem *terrain_tree_item = terrains_tree->create_item(terrain_set_tree_item);
 			terrain_tree_item->set_text(0, tile_set->get_terrain_name(terrain_set_index, terrain_index));
 			terrain_tree_item->set_icon_max_width(0, 32 * EDSCALE);
-			terrain_tree_item->set_icon(0, icon);
-			terrain_tree_item->set_icon_region(0, region);
+			terrain_tree_item->set_icon(0, icons[terrain_set_index][terrain_index]);
+
 			Dictionary metadata_dict;
 			metadata_dict["terrain_set"] = terrain_set_index;
 			metadata_dict["terrain_id"] = terrain_index;

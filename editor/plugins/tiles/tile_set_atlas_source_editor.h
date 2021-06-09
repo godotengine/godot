@@ -32,6 +32,7 @@
 #define TILE_SET_ATLAS_SOURCE_EDITOR_H
 
 #include "tile_atlas_view.h"
+#include "tile_data_editors.h"
 
 #include "editor/editor_node.h"
 #include "scene/gui/split_container.h"
@@ -113,10 +114,27 @@ private:
 
 	bool tile_set_atlas_source_changed_needs_update = false;
 
+	// -- Properties painting --
+	VBoxContainer *tile_data_painting_editor_container;
+	Label *tile_data_editors_label;
+	Button *tile_data_editor_dropdown_button;
+	Popup *tile_data_editors_popup;
+	Tree *tile_data_editors_tree;
+	void _tile_data_editor_dropdown_button_draw();
+	void _tile_data_editor_dropdown_button_pressed();
+
+	// -- Tile data editors --
+	String current_property;
+	Control *current_tile_data_editor_toolbar = nullptr;
+	Map<String, TileDataEditor *> tile_data_editors;
+	TileDataEditor *current_tile_data_editor = nullptr;
+	void _tile_data_editors_tree_selected();
+
 	// -- Inspector --
 	AtlasTileProxyObject *tile_proxy_object;
 	Label *tile_inspector_label;
 	EditorInspector *tile_inspector;
+	Label *tile_inspector_no_tile_selected_label;
 	String selected_property;
 	void _inspector_property_selected(String p_property);
 
@@ -141,6 +159,8 @@ private:
 		DRAG_TYPE_MOVE_TILE,
 
 		DRAG_TYPE_RECT_SELECT,
+
+		DRAG_TYPE_MAY_POPUP_MENU,
 
 		// Warning: keep in this order.
 		DRAG_TYPE_RESIZE_TOP_LEFT,
@@ -179,15 +199,16 @@ private:
 
 	// Tool buttons.
 	Ref<ButtonGroup> tools_button_group;
+	Button *tool_setup_atlas_source_button;
 	Button *tool_select_button;
-	Button *tool_add_remove_button;
-	Button *tool_add_remove_rect_button;
+	Button *tool_paint_button;
 	Label *tool_tile_id_label;
 
+	// Tool settings.
 	HBoxContainer *tool_settings;
 	VSeparator *tool_settings_vsep;
+	HBoxContainer *tool_settings_tile_data_toolbar_container;
 	Button *tools_settings_erase_button;
-
 	MenuButton *tool_advanced_menu_buttom;
 
 	// Selection.
@@ -226,7 +247,10 @@ private:
 	void _update_tile_id_label();
 	void _update_source_inspector();
 	void _update_fix_selected_and_hovered_tiles();
+	void _update_atlas_source_inspector();
 	void _update_tile_inspector();
+	void _update_tile_data_editors();
+	void _update_current_tile_data_editor();
 	void _update_manage_tile_properties_button();
 	void _update_atlas_view();
 	void _update_toolbar();
