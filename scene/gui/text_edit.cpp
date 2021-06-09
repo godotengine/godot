@@ -1590,8 +1590,9 @@ void TextEdit::_notification(int p_what) {
 				int scroll_rectangle_width = get_constant("completion_scroll_width");
 				int width = 0;
 
-				// Compute max width of the panel based on the longest completion option
-				if (completion_options_size < 50) {
+				// Compute max width of the panel based on the longest completion option.
+				// Limit the number of results for automatic width calculation to avoid freezing while showing results.
+				if (completion_options_size < 1000) {
 					for (int i = 0; i < completion_options_size; i++) {
 						int line_width = MIN(cache.font->get_string_size(completion_options[i].display).x, cmax_width);
 						if (line_width > width) {
@@ -1599,6 +1600,7 @@ void TextEdit::_notification(int p_what) {
 						}
 					}
 				} else {
+					// Fall back to predetermined width.
 					width = cmax_width;
 				}
 
