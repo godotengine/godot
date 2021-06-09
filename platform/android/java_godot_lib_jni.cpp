@@ -36,7 +36,6 @@
 #include "android_keys_utils.h"
 #include "api/java_class_wrapper.h"
 #include "api/jni_singleton.h"
-#include "audio_driver_jandroid.h"
 #include "core/engine.h"
 #include "core/project_settings.h"
 #include "dir_access_jandroid.h"
@@ -136,7 +135,6 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_initialize(JNIEnv *en
 	FileAccessAndroid::asset_manager = AAssetManager_fromJava(env, amgr);
 
 	DirAccessJAndroid::setup(godot_io_java->get_instance());
-	AudioDriverAndroid::setup(godot_io_java->get_instance());
 	NetSocketAndroid::setup(godot_java->get_member_object("netUtils", "Lorg/godotengine/godot/utils/GodotNetUtils;", env));
 
 	os_android = new OS_Android(godot_java, godot_io_java, p_use_apk_expansion);
@@ -411,11 +409,6 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_focusout(JNIEnv *env,
 		return;
 
 	os_android->main_loop_focusout();
-}
-
-JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_audio(JNIEnv *env, jclass clazz) {
-	setup_android_thread();
-	AudioDriverAndroid::thread_func(env);
 }
 
 JNIEXPORT jstring JNICALL Java_org_godotengine_godot_GodotLib_getGlobal(JNIEnv *env, jclass clazz, jstring path) {
