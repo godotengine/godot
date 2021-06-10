@@ -15,10 +15,10 @@ struct ItemRef {
 // as this is less used as keeps cache better
 struct ItemExtra {
 	uint32_t last_updated_tick;
+
 	uint32_t pairable;
 	uint32_t pairable_mask;
 	uint32_t pairable_type;
-
 	int32_t subindex;
 
 	// the active reference is a separate list of which references

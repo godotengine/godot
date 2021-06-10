@@ -34,7 +34,7 @@
 #include "core/templates/pass_func.h"
 #include "servers/rendering/renderer_compositor.h"
 
-#include "core/math/dynamic_bvh.h"
+#include "core/math/bvh_simple.h"
 #include "core/math/geometry_3d.h"
 #include "core/math/octree.h"
 #include "core/os/semaphore.h"
@@ -281,7 +281,7 @@ public:
 			INDEXER_MAX
 		};
 
-		DynamicBVH indexers[INDEXER_MAX];
+		BVH_Simple indexers[INDEXER_MAX];
 
 		RS::ScenarioDebugMode debug;
 		RID self;
@@ -397,7 +397,7 @@ public:
 
 		RID self;
 		//scenario stuff
-		DynamicBVH::ID indexer_id;
+		BVH_Simple::ID indexer_id;
 		int32_t array_index;
 		Scenario *scenario;
 		SelfList<Instance> scenario_item;
@@ -655,8 +655,8 @@ public:
 		Instance *instance = nullptr;
 		PagedAllocator<InstancePair> *pair_allocator = nullptr;
 		SelfList<InstancePair>::List pairs_found;
-		DynamicBVH *bvh = nullptr;
-		DynamicBVH *bvh2 = nullptr; //some may need to cull in two
+		BVH_Simple *bvh = nullptr;
+		BVH_Simple *bvh2 = nullptr; //some may need to cull in two
 		uint32_t pair_mask;
 		uint64_t pair_pass;
 

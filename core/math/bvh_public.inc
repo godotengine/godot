@@ -421,3 +421,31 @@ void update() {
 	}
 #endif
 }
+
+void clear() {
+	_refs.clear();
+	_extra.clear();
+	_pairs.clear();
+	_nodes.clear();
+	_leaves.clear();
+	_active_refs.clear();
+	_current_active_ref = 0;
+	_cull_hits.clear();
+
+	for (int n = 0; n < NUM_TREES; n++) {
+		_root_node_id[n] = BVHCommon::INVALID;
+	}
+
+	// disallow zero leaf ids
+	// (as these ids are stored as negative numbers in the node)
+	uint32_t dummy_leaf_id;
+	_leaves.request(dummy_leaf_id);
+}
+
+bool is_empty() const {
+	for (int n = 0; n < NUM_TREES; n++) {
+		if (_root_node_id[n] != BVHCommon::INVALID)
+			return false;
+	}
+	return true;
+}
