@@ -2352,24 +2352,22 @@ bool TextServerAdvanced::shaped_text_shape(RID p_shaped) {
 							sd->glyphs.push_back(gl);
 						} else {
 							Vector<RID> fonts;
-							// Push fonts with the language and script support first.
-							for (int l = 0; l < span.fonts.size(); l++) {
-								if ((font_is_language_supported(span.fonts[l], span.language)) && (font_is_script_supported(span.fonts[l], script))) {
-									fonts.push_back(sd->spans[k].fonts[l]);
+							Vector<RID> fonts_scr_only;
+							Vector<RID> fonts_no_match;
+							int font_count = span.fonts.size();
+							for (int l = 0; l < font_count; l++) {
+								if (font_is_script_supported(span.fonts[l], script)) {
+									if (font_is_language_supported(span.fonts[l], span.language)) {
+										fonts.push_back(sd->spans[k].fonts[l]);
+									} else {
+										fonts_scr_only.push_back(sd->spans[k].fonts[l]);
+									}
+								} else {
+									fonts_no_match.push_back(sd->spans[k].fonts[l]);
 								}
 							}
-							// Push fonts with the script support.
-							for (int l = 0; l < sd->spans[k].fonts.size(); l++) {
-								if (!(font_is_language_supported(span.fonts[l], span.language)) && (font_is_script_supported(span.fonts[l], script))) {
-									fonts.push_back(sd->spans[k].fonts[l]);
-								}
-							}
-							// Push the rest valid fonts.
-							for (int l = 0; l < sd->spans[k].fonts.size(); l++) {
-								if (!(font_is_language_supported(span.fonts[l], span.language)) && !(font_is_script_supported(span.fonts[l], script))) {
-									fonts.push_back(sd->spans[k].fonts[l]);
-								}
-							}
+							fonts.append_array(fonts_scr_only);
+							fonts.append_array(fonts_no_match);
 							_shape_run(sd, MAX(sd->spans[k].start, script_run_start), MIN(sd->spans[k].end, script_run_end), sd->script_iter->script_ranges[j].script, bidi_run_direction, fonts, k, 0);
 						}
 					}
