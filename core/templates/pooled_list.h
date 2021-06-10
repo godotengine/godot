@@ -92,6 +92,18 @@ public:
 		freelist.push_back(p_id);
 		_used_size--;
 	}
+
+	void clear() {
+		list.clear();
+		freelist.clear();
+		_used_size = 0;
+	}
+
+	void reset() {
+		list.reset();
+		freelist.reset();
+		_used_size = 0;
+	}
 };
 
 #endif // POOLED_LIST_H

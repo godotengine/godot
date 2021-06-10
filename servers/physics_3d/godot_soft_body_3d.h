@@ -35,7 +35,7 @@
 #include "godot_collision_object_3d.h"
 
 #include "core/math/aabb.h"
-#include "core/math/dynamic_bvh.h"
+#include "core/math/bvh_simple.h"
 #include "core/math/vector3.h"
 #include "core/templates/local_vector.h"
 #include "core/templates/set.h"
@@ -56,7 +56,7 @@ class GodotSoftBody3D : public GodotCollisionObject3D {
 		Vector3 n; // Normal
 		real_t area = 0.0; // Area
 		real_t im = 0.0; // 1/mass
-		DynamicBVH::ID leaf; // Leaf data
+		BVH_Simple::ID leaf; // Leaf data
 		uint32_t index = 0;
 	};
 
@@ -74,7 +74,7 @@ class GodotSoftBody3D : public GodotCollisionObject3D {
 		Node *n[3] = { nullptr, nullptr, nullptr }; // Node pointers
 		Vector3 normal; // Normal
 		real_t ra = 0.0; // Rest area
-		DynamicBVH::ID leaf; // Leaf data
+		BVH_Simple::ID leaf; // Leaf data
 		uint32_t index = 0;
 	};
 
@@ -82,8 +82,8 @@ class GodotSoftBody3D : public GodotCollisionObject3D {
 	LocalVector<Link> links;
 	LocalVector<Face> faces;
 
-	DynamicBVH node_tree;
-	DynamicBVH face_tree;
+	BVH_Simple node_tree;
+	BVH_Simple face_tree;
 
 	LocalVector<uint32_t> map_visual_to_physics;
 

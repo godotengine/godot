@@ -1707,7 +1707,7 @@ void RendererSceneCull::_unpair_instance(Instance *p_instance) {
 		p_instance->scenario->indexers[Scenario::INDEXER_VOLUMES].remove(p_instance->indexer_id);
 	}
 
-	p_instance->indexer_id = DynamicBVH::ID();
+	p_instance->indexer_id = BVH_Simple::ID();
 
 	//replace this by last
 	int32_t swap_with_index = p_instance->scenario->instance_data.size() - 1;

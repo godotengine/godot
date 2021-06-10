@@ -148,7 +148,7 @@ public:
 	}
 };
 
-template <class T, int MAX_CHILDREN, int MAX_ITEMS, bool USE_PAIRS = false, class Bounds = AABB, class Point = Vector3>
+template <class T, int MAX_CHILDREN, int MAX_ITEMS, bool USE_PAIRS = false, bool USE_SIMPLE = false, class Bounds = AABB, class Point = Vector3>
 class BVH_Tree {
 	friend class BVH;
 
@@ -157,14 +157,7 @@ class BVH_Tree {
 
 public:
 	BVH_Tree() {
-		for (int n = 0; n < NUM_TREES; n++) {
-			_root_node_id[n] = BVHCommon::INVALID;
-		}
-
-		// disallow zero leaf ids
-		// (as these ids are stored as negative numbers in the node)
-		uint32_t dummy_leaf_id;
-		_leaves.request(dummy_leaf_id);
+		clear();
 	}
 
 private:
