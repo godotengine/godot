@@ -52,11 +52,15 @@ class Theme : public Resource {
 	HashMap<StringName, HashMap<StringName, int>> constant_map;
 
 	PoolVector<String> _get_icon_list(const String &p_node_type) const;
+	PoolVector<String> _get_icon_types() const;
 	PoolVector<String> _get_stylebox_list(const String &p_node_type) const;
 	PoolVector<String> _get_stylebox_types() const;
 	PoolVector<String> _get_font_list(const String &p_node_type) const;
+	PoolVector<String> _get_font_types() const;
 	PoolVector<String> _get_color_list(const String &p_node_type) const;
+	PoolVector<String> _get_color_types() const;
 	PoolVector<String> _get_constant_list(const String &p_node_type) const;
+	PoolVector<String> _get_constant_types() const;
 	PoolVector<String> _get_type_list(const String &p_node_type) const;
 
 protected:
@@ -93,6 +97,7 @@ public:
 	bool has_icon(const StringName &p_name, const StringName &p_node_type) const;
 	void clear_icon(const StringName &p_name, const StringName &p_node_type);
 	void get_icon_list(StringName p_node_type, List<StringName> *p_list) const;
+	void get_icon_types(List<StringName> *p_list) const;
 
 	void set_shader(const StringName &p_name, const StringName &p_node_type, const Ref<Shader> &p_shader);
 	Ref<Shader> get_shader(const StringName &p_name, const StringName &p_node_type) const;
@@ -112,18 +117,21 @@ public:
 	bool has_font(const StringName &p_name, const StringName &p_node_type) const;
 	void clear_font(const StringName &p_name, const StringName &p_node_type);
 	void get_font_list(StringName p_node_type, List<StringName> *p_list) const;
+	void get_font_types(List<StringName> *p_list) const;
 
 	void set_color(const StringName &p_name, const StringName &p_node_type, const Color &p_color);
 	Color get_color(const StringName &p_name, const StringName &p_node_type) const;
 	bool has_color(const StringName &p_name, const StringName &p_node_type) const;
 	void clear_color(const StringName &p_name, const StringName &p_node_type);
 	void get_color_list(StringName p_node_type, List<StringName> *p_list) const;
+	void get_color_types(List<StringName> *p_list) const;
 
 	void set_constant(const StringName &p_name, const StringName &p_node_type, int p_constant);
 	int get_constant(const StringName &p_name, const StringName &p_node_type) const;
 	bool has_constant(const StringName &p_name, const StringName &p_node_type) const;
 	void clear_constant(const StringName &p_name, const StringName &p_node_type);
 	void get_constant_list(StringName p_node_type, List<StringName> *p_list) const;
+	void get_constant_types(List<StringName> *p_list) const;
 
 	void get_type_list(List<StringName> *p_list) const;
 

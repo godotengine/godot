@@ -51,6 +51,21 @@ PoolVector<String> Theme::_get_icon_list(const String &p_node_type) const {
 	return ilret;
 }
 
+PoolVector<String> Theme::_get_icon_types() const {
+	PoolVector<String> ilret;
+	List<StringName> il;
+
+	get_icon_types(&il);
+	ilret.resize(il.size());
+
+	int i = 0;
+	PoolVector<String>::Write w = ilret.write();
+	for (List<StringName>::Element *E = il.front(); E; E = E->next(), i++) {
+		w[i] = E->get();
+	}
+	return ilret;
+}
+
 PoolVector<String> Theme::_get_stylebox_list(const String &p_node_type) const {
 	PoolVector<String> ilret;
 	List<StringName> il;
@@ -96,6 +111,21 @@ PoolVector<String> Theme::_get_font_list(const String &p_node_type) const {
 	return ilret;
 }
 
+PoolVector<String> Theme::_get_font_types() const {
+	PoolVector<String> ilret;
+	List<StringName> il;
+
+	get_font_types(&il);
+	ilret.resize(il.size());
+
+	int i = 0;
+	PoolVector<String>::Write w = ilret.write();
+	for (List<StringName>::Element *E = il.front(); E; E = E->next(), i++) {
+		w[i] = E->get();
+	}
+	return ilret;
+}
+
 PoolVector<String> Theme::_get_color_list(const String &p_node_type) const {
 	PoolVector<String> ilret;
 	List<StringName> il;
@@ -111,11 +141,41 @@ PoolVector<String> Theme::_get_color_list(const String &p_node_type) const {
 	return ilret;
 }
 
+PoolVector<String> Theme::_get_color_types() const {
+	PoolVector<String> ilret;
+	List<StringName> il;
+
+	get_color_types(&il);
+	ilret.resize(il.size());
+
+	int i = 0;
+	PoolVector<String>::Write w = ilret.write();
+	for (List<StringName>::Element *E = il.front(); E; E = E->next(), i++) {
+		w[i] = E->get();
+	}
+	return ilret;
+}
+
 PoolVector<String> Theme::_get_constant_list(const String &p_node_type) const {
 	PoolVector<String> ilret;
 	List<StringName> il;
 
 	get_constant_list(p_node_type, &il);
+	ilret.resize(il.size());
+
+	int i = 0;
+	PoolVector<String>::Write w = ilret.write();
+	for (List<StringName>::Element *E = il.front(); E; E = E->next(), i++) {
+		w[i] = E->get();
+	}
+	return ilret;
+}
+
+PoolVector<String> Theme::_get_constant_types() const {
+	PoolVector<String> ilret;
+	List<StringName> il;
+
+	get_constant_types(&il);
 	ilret.resize(il.size());
 
 	int i = 0;
@@ -316,9 +376,11 @@ void Theme::set_project_default(const Ref<Theme> &p_project_default) {
 void Theme::set_default_icon(const Ref<Texture> &p_icon) {
 	default_icon = p_icon;
 }
+
 void Theme::set_default_style(const Ref<StyleBox> &p_style) {
 	default_style = p_style;
 }
+
 void Theme::set_default_font(const Ref<Font> &p_font) {
 	default_font = p_font;
 }
@@ -343,6 +405,7 @@ void Theme::set_icon(const StringName &p_name, const StringName &p_node_type, co
 		emit_changed();
 	}
 }
+
 Ref<Texture> Theme::get_icon(const StringName &p_name, const StringName &p_node_type) const {
 	if (icon_map.has(p_node_type) && icon_map[p_node_type].has(p_name) && icon_map[p_node_type][p_name].is_valid()) {
 		return icon_map[p_node_type][p_name];
@@ -379,6 +442,15 @@ void Theme::get_icon_list(StringName p_node_type, List<StringName> *p_list) cons
 	const StringName *key = nullptr;
 
 	while ((key = icon_map[p_node_type].next(key))) {
+		p_list->push_back(*key);
+	}
+}
+
+void Theme::get_icon_types(List<StringName> *p_list) const {
+	ERR_FAIL_NULL(p_list);
+
+	const StringName *key = nullptr;
+	while ((key = icon_map.next(key))) {
 		p_list->push_back(*key);
 	}
 }
@@ -519,6 +591,7 @@ void Theme::set_font(const StringName &p_name, const StringName &p_node_type, co
 		emit_changed();
 	}
 }
+
 Ref<Font> Theme::get_font(const StringName &p_name, const StringName &p_node_type) const {
 	if (font_map.has(p_node_type) && font_map[p_node_type].has(p_name) && font_map[p_node_type][p_name].is_valid()) {
 		return font_map[p_node_type][p_name];
@@ -556,6 +629,15 @@ void Theme::get_font_list(StringName p_node_type, List<StringName> *p_list) cons
 	const StringName *key = nullptr;
 
 	while ((key = font_map[p_node_type].next(key))) {
+		p_list->push_back(*key);
+	}
+}
+
+void Theme::get_font_types(List<StringName> *p_list) const {
+	ERR_FAIL_NULL(p_list);
+
+	const StringName *key = nullptr;
+	while ((key = font_map.next(key))) {
 		p_list->push_back(*key);
 	}
 }
@@ -606,6 +688,15 @@ void Theme::get_color_list(StringName p_node_type, List<StringName> *p_list) con
 	}
 }
 
+void Theme::get_color_types(List<StringName> *p_list) const {
+	ERR_FAIL_NULL(p_list);
+
+	const StringName *key = nullptr;
+	while ((key = color_map.next(key))) {
+		p_list->push_back(*key);
+	}
+}
+
 void Theme::set_constant(const StringName &p_name, const StringName &p_node_type, int p_constant) {
 	bool new_value = !constant_map.has(p_node_type) || !constant_map[p_node_type].has(p_name);
 	constant_map[p_node_type][p_name] = p_constant;
@@ -647,6 +738,15 @@ void Theme::get_constant_list(StringName p_node_type, List<StringName> *p_list) 
 	const StringName *key = nullptr;
 
 	while ((key = constant_map[p_node_type].next(key))) {
+		p_list->push_back(*key);
+	}
+}
+
+void Theme::get_constant_types(List<StringName> *p_list) const {
+	ERR_FAIL_NULL(p_list);
+
+	const StringName *key = nullptr;
+	while ((key = constant_map.next(key))) {
 		p_list->push_back(*key);
 	}
 }
@@ -801,6 +901,7 @@ void Theme::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("has_icon", "name", "node_type"), &Theme::has_icon);
 	ClassDB::bind_method(D_METHOD("clear_icon", "name", "node_type"), &Theme::clear_icon);
 	ClassDB::bind_method(D_METHOD("get_icon_list", "node_type"), &Theme::_get_icon_list);
+	ClassDB::bind_method(D_METHOD("get_icon_types"), &Theme::_get_icon_types);
 
 	ClassDB::bind_method(D_METHOD("set_stylebox", "name", "node_type", "texture"), &Theme::set_stylebox);
 	ClassDB::bind_method(D_METHOD("get_stylebox", "name", "node_type"), &Theme::get_stylebox);
@@ -814,18 +915,21 @@ void Theme::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("has_font", "name", "node_type"), &Theme::has_font);
 	ClassDB::bind_method(D_METHOD("clear_font", "name", "node_type"), &Theme::clear_font);
 	ClassDB::bind_method(D_METHOD("get_font_list", "node_type"), &Theme::_get_font_list);
+	ClassDB::bind_method(D_METHOD("get_font_types"), &Theme::_get_font_types);
 
 	ClassDB::bind_method(D_METHOD("set_color", "name", "node_type", "color"), &Theme::set_color);
 	ClassDB::bind_method(D_METHOD("get_color", "name", "node_type"), &Theme::get_color);
 	ClassDB::bind_method(D_METHOD("has_color", "name", "node_type"), &Theme::has_color);
 	ClassDB::bind_method(D_METHOD("clear_color", "name", "node_type"), &Theme::clear_color);
 	ClassDB::bind_method(D_METHOD("get_color_list", "node_type"), &Theme::_get_color_list);
+	ClassDB::bind_method(D_METHOD("get_color_types"), &Theme::_get_color_types);
 
 	ClassDB::bind_method(D_METHOD("set_constant", "name", "node_type", "constant"), &Theme::set_constant);
 	ClassDB::bind_method(D_METHOD("get_constant", "name", "node_type"), &Theme::get_constant);
 	ClassDB::bind_method(D_METHOD("has_constant", "name", "node_type"), &Theme::has_constant);
 	ClassDB::bind_method(D_METHOD("clear_constant", "name", "node_type"), &Theme::clear_constant);
 	ClassDB::bind_method(D_METHOD("get_constant_list", "node_type"), &Theme::_get_constant_list);
+	ClassDB::bind_method(D_METHOD("get_constant_types"), &Theme::_get_constant_types);
 
 	ClassDB::bind_method(D_METHOD("clear"), &Theme::clear);
 

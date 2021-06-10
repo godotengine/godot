@@ -109,6 +109,13 @@
 				Returns all the [Color]s as a [PoolStringArray] filled with each [Color]'s name, for use in [method get_color], if the theme has [code]node_type[/code].
 			</description>
 		</method>
+		<method name="get_color_types" qualifiers="const">
+			<return type="PoolStringArray">
+			</return>
+			<description>
+				Returns all the [Color] types as a [PoolStringArray] filled with unique type names, for use in [method get_color] and/or [method get_color_list].
+			</description>
+		</method>
 		<method name="get_constant" qualifiers="const">
 			<return type="int">
 			</return>
@@ -127,6 +134,13 @@
 			</argument>
 			<description>
 				Returns all the constants as a [PoolStringArray] filled with each constant's name, for use in [method get_constant], if the theme has [code]node_type[/code].
+			</description>
+		</method>
+		<method name="get_constant_types" qualifiers="const">
+			<return type="PoolStringArray">
+			</return>
+			<description>
+				Returns all the constant types as a [PoolStringArray] filled with unique type names, for use in [method get_constant] and/or [method get_constant_list].
 			</description>
 		</method>
 		<method name="get_font" qualifiers="const">
@@ -149,6 +163,13 @@
 				Returns all the [Font]s as a [PoolStringArray] filled with each [Font]'s name, for use in [method get_font], if the theme has [code]node_type[/code].
 			</description>
 		</method>
+		<method name="get_font_types" qualifiers="const">
+			<return type="PoolStringArray">
+			</return>
+			<description>
+				Returns all the [Font] types as a [PoolStringArray] filled with unique type names, for use in [method get_font] and/or [method get_font_list].
+			</description>
+		</method>
 		<method name="get_icon" qualifiers="const">
 			<return type="Texture">
 			</return>
@@ -167,6 +188,13 @@
 			</argument>
 			<description>
 				Returns all the icons as a [PoolStringArray] filled with each [Texture]'s name, for use in [method get_icon], if the theme has [code]node_type[/code].
+			</description>
+		</method>
+		<method name="get_icon_types" qualifiers="const">
+			<return type="PoolStringArray">
+			</return>
+			<description>
+				Returns all the icon types as a [PoolStringArray] filled with unique type names, for use in [method get_icon] and/or [method get_icon_list].
 			</description>
 		</method>
 		<method name="get_stylebox" qualifiers="const">
@@ -195,7 +223,7 @@
 			<return type="PoolStringArray">
 			</return>
 			<description>
-				Returns all the [StyleBox] types as a [PoolStringArray] filled with each [StyleBox]'s type, for use in [method get_stylebox] and/or [method get_stylebox_list], if the theme has [code]node_type[/code].
+				Returns all the [StyleBox] types as a [PoolStringArray] filled with unique type names, for use in [method get_stylebox] and/or [method get_stylebox_list].
 			</description>
 		</method>
 		<method name="get_type_list" qualifiers="const">
@@ -204,7 +232,8 @@
 			<argument index="0" name="node_type" type="String">
 			</argument>
 			<description>
-				Returns all the types in [code]node_type[/code] as a [PoolStringArray] for use in any of the [code]get_*[/code] functions, if the theme has [code]node_type[/code].
+				Returns all the theme types as a [PoolStringArray] filled with unique type names, for use in other [code]get_*[/code] functions of this theme.
+				[b]Note:[/b] [code]node_type[/code] has no effect and will be removed in future version.
 			</description>
 		</method>
 		<method name="has_color" qualifiers="const">
