@@ -175,11 +175,6 @@ public class GodotLib {
 	public static native void focusout();
 
 	/**
-	 * Invoked when the audio thread is started.
-	 */
-	public static native void audio();
-
-	/**
 	 * Used to access Godot global properties.
 	 * @param p_key Property key
 	 * @return String value of the property
