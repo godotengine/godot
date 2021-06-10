@@ -237,6 +237,7 @@ public:
 	String get_system_dir(SystemDir p_dir) const;
 
 	String get_user_data_dir() const;
+	String get_external_data_dir() const;
 
 	Error set_thread_name(const String &p_name);
 	Thread::ID get_thread_caller_id() const;

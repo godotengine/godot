@@ -221,6 +221,13 @@
 				Returns the path to the current engine executable.
 			</description>
 		</method>
+		<method name="get_external_data_dir" qualifiers="const">
+			<return type="String">
+			</return>
+			<description>
+				On Android, returns the absolute directory path where user data can be written to external storage if available. On all other platforms, this will return the same location as [method get_user_data_dir].
+			</description>
+		</method>
 		<method name="get_granted_permissions" qualifiers="const">
 			<return type="PackedStringArray">
 			</return>

@@ -310,6 +310,11 @@ String OS::get_user_data_dir() const {
 	return ".";
 }
 
+// Android OS path to app's external data storage
+String OS::get_external_data_dir() const {
+	return get_user_data_dir();
+};
+
 // Absolute path to res://
 String OS::get_resource_dir() const {
 	return ProjectSettings::get_singleton()->get_resource_path();
