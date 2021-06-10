@@ -745,9 +745,13 @@ void SpriteFramesEditor::_animation_name_edited() {
 	undo_redo->add_undo_method(frames, "rename_animation", name, edited_anim);
 
 	for (List<Node *>::Element *E = nodes.front(); E; E = E->next()) {
-		String current = E->get()->call("get_animation");
+		StringName current = E->get()->call("get_animation");
+		if (current != edited_anim) {
+			continue;
+		}
+
 		undo_redo->add_do_method(E->get(), "set_animation", name);
-		undo_redo->add_undo_method(E->get(), "set_animation", edited_anim);
+		undo_redo->add_undo_method(E->get(), "set_animation", current);
 	}
 
 	undo_redo->add_do_method(this, "_update_library");
@@ -775,8 +779,14 @@ void SpriteFramesEditor::_animation_add() {
 	undo_redo->add_do_method(this, "_update_library");
 	undo_redo->add_undo_method(this, "_update_library");
 
+	// Assign the newly added animation to the edited anim sprite and to all other anim sprites having invalid animation.
+	Object *edited_anim_sprite = EditorNode::get_singleton()->get_inspector()->get_edited_object();
 	for (List<Node *>::Element *E = nodes.front(); E; E = E->next()) {
-		String current = E->get()->call("get_animation");
+		StringName current = E->get()->call("get_animation");
+		if (frames->has_animation(current) && E->get() != edited_anim_sprite) {
+			continue;
+		}
+
 		undo_redo->add_do_method(E->get(), "set_animation", name);
 		undo_redo->add_undo_method(E->get(), "set_animation", current);
 	}
@@ -811,10 +821,35 @@ void SpriteFramesEditor::_animation_remove_confirmed() {
 		Ref<Texture> frame = frames->get_frame(edited_anim, i);
 		undo_redo->add_undo_method(frames, "add_frame", edited_anim, frame);
 	}
+
+	StringName new_edited_anim = StringName();
+
+	List<StringName> anim_names;
+	frames->get_animation_list(&anim_names);
+	anim_names.sort_custom<StringName::AlphCompare>();
+
+	// If removing not the last animation, make the first animation left the new edited one.
+	if (anim_names.size() > 1) {
+		new_edited_anim = edited_anim != anim_names.front()->get() ? anim_names.front()->get() : anim_names.front()->next()->get();
+
+		List<Node *> nodes;
+		_find_anim_sprites(EditorNode::get_singleton()->get_edited_scene(), &nodes, Ref<SpriteFrames>(frames));
+
+		for (List<Node *>::Element *E = nodes.front(); E; E = E->next()) {
+			StringName current = E->get()->call("get_animation");
+			if (current != edited_anim) {
+				continue;
+			}
+
+			undo_redo->add_do_method(E->get(), "set_animation", new_edited_anim);
+			undo_redo->add_undo_method(E->get(), "set_animation", current);
+		}
+	}
+
 	undo_redo->add_do_method(this, "_update_library");
 	undo_redo->add_undo_method(this, "_update_library");
 
-	edited_anim = StringName();
+	edited_anim = new_edited_anim;
 
 	undo_redo->commit_action();
 }
