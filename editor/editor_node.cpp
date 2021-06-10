@@ -79,6 +79,7 @@
 #include "editor/editor_log.h"
 #include "editor/editor_plugin.h"
 #include "editor/editor_properties.h"
+#include "editor/editor_resource_picker.h"
 #include "editor/editor_resource_preview.h"
 #include "editor/editor_run_native.h"
 #include "editor/editor_run_script.h"
@@ -3799,6 +3800,8 @@ void EditorNode::register_editor_types() {
 	ClassDB::register_class<ScriptCreateDialog>();
 	ClassDB::register_class<EditorFeatureProfile>();
 	ClassDB::register_class<EditorSpinSlider>();
+	ClassDB::register_class<EditorResourcePicker>();
+	ClassDB::register_class<EditorScriptPicker>();
 	ClassDB::register_virtual_class<FileSystemDock>();
 
 	// FIXME: Is this stuff obsolete, or should it be ported to new APIs?
