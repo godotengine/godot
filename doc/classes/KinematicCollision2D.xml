@@ -21,6 +21,9 @@
 		<member name="collider_metadata" type="Variant" setter="" getter="get_collider_metadata">
 			The colliding body's metadata. See [Object].
 		</member>
+		<member name="collider_rid" type="RID" setter="" getter="get_collider_rid">
+			The colliding body's [RID] used by the [PhysicsServer2D].
+		</member>
 		<member name="collider_shape" type="Object" setter="" getter="get_collider_shape">
 			The colliding body's shape.
 		</member>

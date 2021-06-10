@@ -358,6 +358,7 @@ public:
 	Object *get_local_shape() const;
 	Object *get_collider() const;
 	ObjectID get_collider_id() const;
+	RID get_collider_rid() const;
 	Object *get_collider_shape() const;
 	int get_collider_shape_index() const;
 	Vector3 get_collider_velocity() const;
