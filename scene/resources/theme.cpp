@@ -33,6 +33,11 @@
 #include "core/print_string.h"
 
 void Theme::_emit_theme_changed() {
+	if (no_change_propagation) {
+		return;
+	}
+
+	_change_notify();
 	emit_changed();
 }
 
@@ -381,8 +386,7 @@ void Theme::set_default_theme_font(const Ref<Font> &p_default_font) {
 		default_theme_font->connect("changed", this, "_emit_theme_changed", varray(), CONNECT_REFERENCE_COUNTED);
 	}
 
-	_change_notify();
-	emit_changed();
+	_emit_theme_changed();
 }
 
 Ref<Font> Theme::get_default_theme_font() const {
@@ -424,8 +428,6 @@ void Theme::set_default_font(const Ref<Font> &p_font) {
 }
 
 void Theme::set_icon(const StringName &p_name, const StringName &p_node_type, const Ref<Texture> &p_icon) {
-	bool new_value = !icon_map.has(p_node_type) || !icon_map[p_node_type].has(p_name);
-
 	if (icon_map[p_node_type].has(p_name) && icon_map[p_node_type][p_name].is_valid()) {
 		icon_map[p_node_type][p_name]->disconnect("changed", this, "_emit_theme_changed");
 	}
@@ -436,10 +438,7 @@ void Theme::set_icon(const StringName &p_name, const StringName &p_node_type, co
 		icon_map[p_node_type][p_name]->connect("changed", this, "_emit_theme_changed", varray(), CONNECT_REFERENCE_COUNTED);
 	}
 
-	if (new_value) {
-		_change_notify();
-		emit_changed();
-	}
+	_emit_theme_changed();
 }
 
 Ref<Texture> Theme::get_icon(const StringName &p_name, const StringName &p_node_type) const {
@@ -454,6 +453,10 @@ bool Theme::has_icon(const StringName &p_name, const StringName &p_node_type) co
 	return (icon_map.has(p_node_type) && icon_map[p_node_type].has(p_name) && icon_map[p_node_type][p_name].is_valid());
 }
 
+bool Theme::has_icon_nocheck(const StringName &p_name, const StringName &p_node_type) const {
+	return (icon_map.has(p_node_type) && icon_map[p_node_type].has(p_name));
+}
+
 void Theme::rename_icon(const StringName &p_old_name, const StringName &p_name, const StringName &p_node_type) {
 	ERR_FAIL_COND_MSG(!icon_map.has(p_node_type), "Cannot rename the icon '" + String(p_old_name) + "' because the node type '" + String(p_node_type) + "' does not exist.");
 	ERR_FAIL_COND_MSG(icon_map[p_node_type].has(p_name), "Cannot rename the icon '" + String(p_old_name) + "' because the new name '" + String(p_name) + "' already exists.");
@@ -462,8 +465,7 @@ void Theme::rename_icon(const StringName &p_old_name, const StringName &p_name, 
 	icon_map[p_node_type][p_name] = icon_map[p_node_type][p_old_name];
 	icon_map[p_node_type].erase(p_old_name);
 
-	_change_notify();
-	emit_changed();
+	_emit_theme_changed();
 }
 
 void Theme::clear_icon(const StringName &p_name, const StringName &p_node_type) {
@@ -476,8 +478,7 @@ void Theme::clear_icon(const StringName &p_name, const StringName &p_node_type) 
 
 	icon_map[p_node_type].erase(p_name);
 
-	_change_notify();
-	emit_changed();
+	_emit_theme_changed();
 }
 
 void Theme::get_icon_list(StringName p_node_type, List<StringName> *p_list) const {
@@ -511,14 +512,9 @@ void Theme::get_icon_types(List<StringName> *p_list) const {
 }
 
 void Theme::set_shader(const StringName &p_name, const StringName &p_node_type, const Ref<Shader> &p_shader) {
-	bool new_value = !shader_map.has(p_node_type) || !shader_map[p_node_type].has(p_name);
-
 	shader_map[p_node_type][p_name] = p_shader;
 
-	if (new_value) {
-		_change_notify();
-		emit_changed();
-	}
+	_emit_theme_changed();
 }
 
 Ref<Shader> Theme::get_shader(const StringName &p_name, const StringName &p_node_type) const {
@@ -538,8 +534,8 @@ void Theme::clear_shader(const StringName &p_name, const StringName &p_node_type
 	ERR_FAIL_COND(!shader_map[p_node_type].has(p_name));
 
 	shader_map[p_node_type].erase(p_name);
-	_change_notify();
-	emit_changed();
+
+	_emit_theme_changed();
 }
 
 void Theme::get_shader_list(const StringName &p_node_type, List<StringName> *p_list) const {
@@ -557,8 +553,6 @@ void Theme::get_shader_list(const StringName &p_node_type, List<StringName> *p_l
 }
 
 void Theme::set_stylebox(const StringName &p_name, const StringName &p_node_type, const Ref<StyleBox> &p_style) {
-	bool new_value = !style_map.has(p_node_type) || !style_map[p_node_type].has(p_name);
-
 	if (style_map[p_node_type].has(p_name) && style_map[p_node_type][p_name].is_valid()) {
 		style_map[p_node_type][p_name]->disconnect("changed", this, "_emit_theme_changed");
 	}
@@ -569,10 +563,7 @@ void Theme::set_stylebox(const StringName &p_name, const StringName &p_node_type
 		style_map[p_node_type][p_name]->connect("changed", this, "_emit_theme_changed", varray(), CONNECT_REFERENCE_COUNTED);
 	}
 
-	if (new_value) {
-		_change_notify();
-	}
-	emit_changed();
+	_emit_theme_changed();
 }
 
 Ref<StyleBox> Theme::get_stylebox(const StringName &p_name, const StringName &p_node_type) const {
@@ -587,6 +578,10 @@ bool Theme::has_stylebox(const StringName &p_name, const StringName &p_node_type
 	return (style_map.has(p_node_type) && style_map[p_node_type].has(p_name) && style_map[p_node_type][p_name].is_valid());
 }
 
+bool Theme::has_stylebox_nocheck(const StringName &p_name, const StringName &p_node_type) const {
+	return (style_map.has(p_node_type) && style_map[p_node_type].has(p_name));
+}
+
 void Theme::rename_stylebox(const StringName &p_old_name, const StringName &p_name, const StringName &p_node_type) {
 	ERR_FAIL_COND_MSG(!style_map.has(p_node_type), "Cannot rename the stylebox '" + String(p_old_name) + "' because the node type '" + String(p_node_type) + "' does not exist.");
 	ERR_FAIL_COND_MSG(style_map[p_node_type].has(p_name), "Cannot rename the stylebox '" + String(p_old_name) + "' because the new name '" + String(p_name) + "' already exists.");
@@ -595,8 +590,7 @@ void Theme::rename_stylebox(const StringName &p_old_name, const StringName &p_na
 	style_map[p_node_type][p_name] = style_map[p_node_type][p_old_name];
 	style_map[p_node_type].erase(p_old_name);
 
-	_change_notify();
-	emit_changed();
+	_emit_theme_changed();
 }
 
 void Theme::clear_stylebox(const StringName &p_name, const StringName &p_node_type) {
@@ -609,8 +603,7 @@ void Theme::clear_stylebox(const StringName &p_name, const StringName &p_node_ty
 
 	style_map[p_node_type].erase(p_name);
 
-	_change_notify();
-	emit_changed();
+	_emit_theme_changed();
 }
 
 void Theme::get_stylebox_list(StringName p_node_type, List<StringName> *p_list) const {
@@ -644,8 +637,6 @@ void Theme::get_stylebox_types(List<StringName> *p_list) const {
 }
 
 void Theme::set_font(const StringName &p_name, const StringName &p_node_type, const Ref<Font> &p_font) {
-	bool new_value = !font_map.has(p_node_type) || !font_map[p_node_type].has(p_name);
-
 	if (font_map[p_node_type][p_name].is_valid()) {
 		font_map[p_node_type][p_name]->disconnect("changed", this, "_emit_theme_changed");
 	}
@@ -656,10 +647,7 @@ void Theme::set_font(const StringName &p_name, const StringName &p_node_type, co
 		font_map[p_node_type][p_name]->connect("changed", this, "_emit_theme_changed", varray(), CONNECT_REFERENCE_COUNTED);
 	}
 
-	if (new_value) {
-		_change_notify();
-		emit_changed();
-	}
+	_emit_theme_changed();
 }
 
 Ref<Font> Theme::get_font(const StringName &p_name, const StringName &p_node_type) const {
@@ -676,6 +664,10 @@ bool Theme::has_font(const StringName &p_name, const StringName &p_node_type) co
 	return (font_map.has(p_node_type) && font_map[p_node_type].has(p_name) && font_map[p_node_type][p_name].is_valid());
 }
 
+bool Theme::has_font_nocheck(const StringName &p_name, const StringName &p_node_type) const {
+	return (font_map.has(p_node_type) && font_map[p_node_type].has(p_name));
+}
+
 void Theme::rename_font(const StringName &p_old_name, const StringName &p_name, const StringName &p_node_type) {
 	ERR_FAIL_COND_MSG(!font_map.has(p_node_type), "Cannot rename the font '" + String(p_old_name) + "' because the node type '" + String(p_node_type) + "' does not exist.");
 	ERR_FAIL_COND_MSG(font_map[p_node_type].has(p_name), "Cannot rename the font '" + String(p_old_name) + "' because the new name '" + String(p_name) + "' already exists.");
@@ -684,8 +676,7 @@ void Theme::rename_font(const StringName &p_old_name, const StringName &p_name, 
 	font_map[p_node_type][p_name] = font_map[p_node_type][p_old_name];
 	font_map[p_node_type].erase(p_old_name);
 
-	_change_notify();
-	emit_changed();
+	_emit_theme_changed();
 }
 
 void Theme::clear_font(const StringName &p_name, const StringName &p_node_type) {
@@ -697,8 +688,8 @@ void Theme::clear_font(const StringName &p_name, const StringName &p_node_type) 
 	}
 
 	font_map[p_node_type].erase(p_name);
-	_change_notify();
-	emit_changed();
+
+	_emit_theme_changed();
 }
 
 void Theme::get_font_list(StringName p_node_type, List<StringName> *p_list) const {
@@ -732,14 +723,9 @@ void Theme::get_font_types(List<StringName> *p_list) const {
 }
 
 void Theme::set_color(const StringName &p_name, const StringName &p_node_type, const Color &p_color) {
-	bool new_value = !color_map.has(p_node_type) || !color_map[p_node_type].has(p_name);
-
 	color_map[p_node_type][p_name] = p_color;
 
-	if (new_value) {
-		_change_notify();
-		emit_changed();
-	}
+	_emit_theme_changed();
 }
 
 Color Theme::get_color(const StringName &p_name, const StringName &p_node_type) const {
@@ -754,6 +740,10 @@ bool Theme::has_color(const StringName &p_name, const StringName &p_node_type) c
 	return (color_map.has(p_node_type) && color_map[p_node_type].has(p_name));
 }
 
+bool Theme::has_color_nocheck(const StringName &p_name, const StringName &p_node_type) const {
+	return (color_map.has(p_node_type) && color_map[p_node_type].has(p_name));
+}
+
 void Theme::rename_color(const StringName &p_old_name, const StringName &p_name, const StringName &p_node_type) {
 	ERR_FAIL_COND_MSG(!color_map.has(p_node_type), "Cannot rename the color '" + String(p_old_name) + "' because the node type '" + String(p_node_type) + "' does not exist.");
 	ERR_FAIL_COND_MSG(color_map[p_node_type].has(p_name), "Cannot rename the color '" + String(p_old_name) + "' because the new name '" + String(p_name) + "' already exists.");
@@ -762,8 +752,7 @@ void Theme::rename_color(const StringName &p_old_name, const StringName &p_name,
 	color_map[p_node_type][p_name] = color_map[p_node_type][p_old_name];
 	color_map[p_node_type].erase(p_old_name);
 
-	_change_notify();
-	emit_changed();
+	_emit_theme_changed();
 }
 
 void Theme::clear_color(const StringName &p_name, const StringName &p_node_type) {
@@ -771,8 +760,8 @@ void Theme::clear_color(const StringName &p_name, const StringName &p_node_type)
 	ERR_FAIL_COND_MSG(!color_map[p_node_type].has(p_name), "Cannot clear the color '" + String(p_name) + "' because it does not exist.");
 
 	color_map[p_node_type].erase(p_name);
-	_change_notify();
-	emit_changed();
+
+	_emit_theme_changed();
 }
 
 void Theme::get_color_list(StringName p_node_type, List<StringName> *p_list) const {
@@ -806,13 +795,9 @@ void Theme::get_color_types(List<StringName> *p_list) const {
 }
 
 void Theme::set_constant(const StringName &p_name, const StringName &p_node_type, int p_constant) {
-	bool new_value = !constant_map.has(p_node_type) || !constant_map[p_node_type].has(p_name);
 	constant_map[p_node_type][p_name] = p_constant;
 
-	if (new_value) {
-		_change_notify();
-		emit_changed();
-	}
+	_emit_theme_changed();
 }
 
 int Theme::get_constant(const StringName &p_name, const StringName &p_node_type) const {
@@ -827,6 +812,10 @@ bool Theme::has_constant(const StringName &p_name, const StringName &p_node_type
 	return (constant_map.has(p_node_type) && constant_map[p_node_type].has(p_name));
 }
 
+bool Theme::has_constant_nocheck(const StringName &p_name, const StringName &p_node_type) const {
+	return (constant_map.has(p_node_type) && constant_map[p_node_type].has(p_name));
+}
+
 void Theme::rename_constant(const StringName &p_old_name, const StringName &p_name, const StringName &p_node_type) {
 	ERR_FAIL_COND_MSG(!constant_map.has(p_node_type), "Cannot rename the constant '" + String(p_old_name) + "' because the node type '" + String(p_node_type) + "' does not exist.");
 	ERR_FAIL_COND_MSG(constant_map[p_node_type].has(p_name), "Cannot rename the constant '" + String(p_old_name) + "' because the new name '" + String(p_name) + "' already exists.");
@@ -835,8 +824,7 @@ void Theme::rename_constant(const StringName &p_old_name, const StringName &p_na
 	constant_map[p_node_type][p_name] = constant_map[p_node_type][p_old_name];
 	constant_map[p_node_type].erase(p_old_name);
 
-	_change_notify();
-	emit_changed();
+	_emit_theme_changed();
 }
 
 void Theme::clear_constant(const StringName &p_name, const StringName &p_node_type) {
@@ -844,8 +832,8 @@ void Theme::clear_constant(const StringName &p_name, const StringName &p_node_ty
 	ERR_FAIL_COND_MSG(!constant_map[p_node_type].has(p_name), "Cannot clear the constant '" + String(p_name) + "' because it does not exist.");
 
 	constant_map[p_node_type].erase(p_name);
-	_change_notify();
-	emit_changed();
+
+	_emit_theme_changed();
 }
 
 void Theme::get_constant_list(StringName p_node_type, List<StringName> *p_list) const {
@@ -946,6 +934,25 @@ bool Theme::has_theme_item(DataType p_data_type, const StringName &p_name, const
 			return has_icon(p_name, p_node_type);
 		case DATA_TYPE_STYLEBOX:
 			return has_stylebox(p_name, p_node_type);
+		case DATA_TYPE_MAX:
+			break; // Can't happen, but silences warning.
+	}
+
+	return false;
+}
+
+bool Theme::has_theme_item_nocheck(DataType p_data_type, const StringName &p_name, const StringName &p_node_type) const {
+	switch (p_data_type) {
+		case DATA_TYPE_COLOR:
+			return has_color_nocheck(p_name, p_node_type);
+		case DATA_TYPE_CONSTANT:
+			return has_constant_nocheck(p_name, p_node_type);
+		case DATA_TYPE_FONT:
+			return has_font_nocheck(p_name, p_node_type);
+		case DATA_TYPE_ICON:
+			return has_icon_nocheck(p_name, p_node_type);
+		case DATA_TYPE_STYLEBOX:
+			return has_stylebox_nocheck(p_name, p_node_type);
 		case DATA_TYPE_MAX:
 			break; // Can't happen, but silences warning.
 	}
@@ -1063,6 +1070,15 @@ void Theme::get_theme_item_types(DataType p_data_type, List<StringName> *p_list)
 	}
 }
 
+void Theme::_freeze_change_propagation() {
+	no_change_propagation = true;
+}
+
+void Theme::_unfreeze_and_propagate_changes() {
+	no_change_propagation = false;
+	_emit_theme_changed();
+}
+
 void Theme::clear() {
 	//these need disconnecting
 	{
@@ -1111,8 +1127,7 @@ void Theme::clear() {
 	color_map.clear();
 	constant_map.clear();
 
-	_change_notify();
-	emit_changed();
+	_emit_theme_changed();
 }
 
 void Theme::copy_default_theme() {
@@ -1125,6 +1140,8 @@ void Theme::copy_theme(const Ref<Theme> &p_other) {
 		clear();
 		return;
 	}
+
+	_freeze_change_propagation();
 
 	// These items need reconnecting, so add them normally.
 	{
@@ -1162,8 +1179,7 @@ void Theme::copy_theme(const Ref<Theme> &p_other) {
 	constant_map = p_other->constant_map;
 	shader_map = p_other->shader_map;
 
-	_change_notify();
-	emit_changed();
+	_unfreeze_and_propagate_changes();
 }
 
 void Theme::get_type_list(List<StringName> *p_list) const {
