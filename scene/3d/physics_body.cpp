@@ -1335,6 +1335,9 @@ Object *KinematicCollision::get_collider() const {
 ObjectID KinematicCollision::get_collider_id() const {
 	return collision.collider;
 }
+RID KinematicCollision::get_collider_rid() const {
+	return collision.collider_rid;
+}
 Object *KinematicCollision::get_collider_shape() const {
 	Object *collider = get_collider();
 	if (collider) {
@@ -1365,6 +1368,7 @@ void KinematicCollision::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_local_shape"), &KinematicCollision::get_local_shape);
 	ClassDB::bind_method(D_METHOD("get_collider"), &KinematicCollision::get_collider);
 	ClassDB::bind_method(D_METHOD("get_collider_id"), &KinematicCollision::get_collider_id);
+	ClassDB::bind_method(D_METHOD("get_collider_rid"), &KinematicCollision::get_collider_rid);
 	ClassDB::bind_method(D_METHOD("get_collider_shape"), &KinematicCollision::get_collider_shape);
 	ClassDB::bind_method(D_METHOD("get_collider_shape_index"), &KinematicCollision::get_collider_shape_index);
 	ClassDB::bind_method(D_METHOD("get_collider_velocity"), &KinematicCollision::get_collider_velocity);
@@ -1377,6 +1381,7 @@ void KinematicCollision::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "local_shape"), "", "get_local_shape");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "collider"), "", "get_collider");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "collider_id"), "", "get_collider_id");
+	ADD_PROPERTY(PropertyInfo(Variant::_RID, "collider_rid"), "", "get_collider_rid");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "collider_shape"), "", "get_collider_shape");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "collider_shape_index"), "", "get_collider_shape_index");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "collider_velocity"), "", "get_collider_velocity");
