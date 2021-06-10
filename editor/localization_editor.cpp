@@ -435,19 +435,6 @@ void LocalizationEditor::_update_pot_file_extensions() {
 	}
 }
 
-void LocalizationEditor::_use_pseudolocalization_changed(bool pressed) {
-	//GLOBAL_DEF("internationalization/use_pseudolocalization", use_pseudolocalization_checkbox->is_pressed());
-	//print_line("reached");
-	undo_redo->create_action(TTR("Toggle use_pseudolocalization"));
-	undo_redo->add_do_property(ProjectSettings::get_singleton(), "internationalization/use_pseudolocalization", pressed);
-	undo_redo->add_undo_property(ProjectSettings::get_singleton(), "internationalization/use_pseudolocalization", !pressed);
-	undo_redo->add_do_method(this, "update_translations");
-	undo_redo->add_undo_method(this, "update_translations");
-	undo_redo->add_do_method(this, "emit_signal", localization_changed);
-	undo_redo->add_undo_method(this, "emit_signal", localization_changed);
-	undo_redo->commit_action();
-}
-
 void LocalizationEditor::update_translations() {
 	if (updating_translations) {
 		return;
@@ -824,42 +811,5 @@ LocalizationEditor::LocalizationEditor() {
 		pot_file_open_dialog->set_file_mode(EditorFileDialog::FILE_MODE_OPEN_FILES);
 		pot_file_open_dialog->connect("files_selected", callable_mp(this, &LocalizationEditor::_pot_add));
 		add_child(pot_file_open_dialog);
-	}
-
-	{
-		VBoxContainer *tvb = memnew(VBoxContainer);
-		tvb->set_name(TTR("Pseudolocalization"));
-		translations->add_child(tvb);
-
-		VBoxContainer *tmc = memnew(VBoxContainer);
-		tmc->set_v_size_flags(Control::SIZE_EXPAND_FILL);
-		tvb->add_child(tmc);
-
-		use_pseudolocalization_checkbox = memnew(CheckBox);
-		use_pseudolocalization_checkbox->set_text(TTR("Use Pseudolocalization"));
-		use_pseudolocalization_checkbox->set_pressed(GLOBAL_GET("internationalization/use_pseudolocalization"));
-		use_pseudolocalization_checkbox->set_focus_mode(FOCUS_NONE);
-		use_pseudolocalization_checkbox->connect("toggled", callable_mp(this, &LocalizationEditor::_use_pseudolocalization_changed));
-		tmc->add_margin_child(TTR("Pseudolocalization:"), use_pseudolocalization_checkbox);
-
-		tmc->add_child(memnew(Label(TTR("Options :"))));
-		accented_characters_checkbox = memnew(CheckBox);
-		accented_characters_checkbox->set_text(TTR("Replace characters with accented variants"));
-		accented_characters_checkbox->set_pressed(false);
-		accented_characters_checkbox->set_focus_mode(FOCUS_NONE);
-		//accented_characters_checkbox->connect("toggled", callable_mp(this, &LocalizationEditor::_use_pseudolocalization_changed));
-		tmc->add_child(accented_characters_checkbox);
-		fake_bidi_checkbox = memnew(CheckBox);
-		fake_bidi_checkbox->set_text(TTR("Force fakebidi"));
-		fake_bidi_checkbox->set_pressed(false);
-		fake_bidi_checkbox->set_focus_mode(FOCUS_NONE);
-		//accented_characters_checkbox->connect("toggled", callable_mp(this, &LocalizationEditor::_use_pseudolocalization_changed));
-		tmc->add_child(fake_bidi_checkbox);
-		dynamic_length_expansion_checkbox = memnew(CheckBox);
-		dynamic_length_expansion_checkbox->set_text(TTR("Expand text"));
-		dynamic_length_expansion_checkbox->set_pressed(false);
-		dynamic_length_expansion_checkbox->set_focus_mode(FOCUS_NONE);
-		//accented_characters_checkbox->connect("toggled", callable_mp(this, &LocalizationEditor::_use_pseudolocalization_changed));
-		tmc->add_child(dynamic_length_expansion_checkbox);
 	}
 }

@@ -775,6 +775,18 @@
 		<member name="internationalization/locale/test" type="String" setter="" getter="" default="&quot;&quot;">
 			If non-empty, this locale will be used when running the project from the editor.
 		</member>
+		<member name="internationalization/pseudolocalization/expand_text" type="bool" setter="" getter="" default="true">
+			Expand text during pseudolocalization.
+		</member>
+		<member name="internationalization/pseudolocalization/fake_bidi" type="bool" setter="" getter="" default="false">
+			Fake RTL text.
+		</member>
+		<member name="internationalization/pseudolocalization/replace_with_accents" type="bool" setter="" getter="" default="true">
+			Replace all characters with their accented variants during pseudolocalization.
+		</member>
+		<member name="internationalization/pseudolocalization/use_pseudolocalization" type="bool" setter="" getter="" default="false">
+			Turn on Pseudolocalization for the project.
+		</member>
 		<member name="internationalization/rendering/force_right_to_left_layout_direction" type="bool" setter="" getter="" default="false">
 			Force layout direction and text writing direction to RTL for all locales.
 		</member>
