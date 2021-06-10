@@ -58,8 +58,6 @@ class SpriteFrames : public Resource {
 	Array _get_animations() const;
 	void _set_animations(const Array &p_animations);
 
-	Vector<String> _get_animation_list() const;
-
 protected:
 	static void _bind_methods();
 
