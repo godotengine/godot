@@ -634,17 +634,17 @@ bool TextServerFallback::shaped_text_add_string(RID p_shaped, const String &p_te
 	span.start = sd->text.length();
 	span.end = span.start + p_text.length();
 	// Pre-sort fonts, push fonts with the language support first.
-	for (int i = 0; i < p_fonts.size(); i++) {
+	Vector<RID> fonts_no_match;
+	int font_count = p_fonts.size();
+	for (int i = 0; i < font_count; i++) {
 		if (font_is_language_supported(p_fonts[i], p_language)) {
 			span.fonts.push_back(p_fonts[i]);
+		} else {
+			fonts_no_match.push_back(p_fonts[i]);
 		}
 	}
-	// Push the rest valid fonts.
-	for (int i = 0; i < p_fonts.size(); i++) {
-		if (!font_is_language_supported(p_fonts[i], p_language)) {
-			span.fonts.push_back(p_fonts[i]);
-		}
-	}
+	span.fonts.append_array(fonts_no_match);
+
 	ERR_FAIL_COND_V(span.fonts.is_empty(), false);
 	span.font_size = p_size;
 	span.language = p_language;
