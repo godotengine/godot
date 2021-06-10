@@ -105,7 +105,7 @@ public:
 	StringName translate_plural(const StringName &p_message, const StringName &p_message_plural, int p_n, const StringName &p_context = "") const;
 
 	StringName pseudolocalize(const StringName &p_message) const;
-	const wchar_t* get_accented_version(char c) const;
+	const wchar_t *get_accented_version(char c) const;
 	static Vector<String> get_all_locales();
 	static Vector<String> get_all_locale_names();
 	static bool is_locale_valid(const String &p_locale);
