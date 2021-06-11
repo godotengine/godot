@@ -1416,7 +1416,6 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 		setting->set_initial_value("text_editor/highlighting/line_number_color", line_number_color, true);
 		setting->set_initial_value("text_editor/highlighting/safe_line_number_color", safe_line_number_color, true);
 		setting->set_initial_value("text_editor/highlighting/caret_color", caret_color, true);
-		setting->set_initial_value("text_editor/highlighting/caret_background_color", caret_background_color, true);
 		setting->set_initial_value("text_editor/highlighting/text_selected_color", text_selected_color, true);
 		setting->set_initial_value("text_editor/highlighting/selection_color", selection_color, true);
 		setting->set_initial_value("text_editor/highlighting/brace_mismatch_color", brace_mismatch_color, true);

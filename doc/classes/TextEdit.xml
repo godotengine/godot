@@ -968,8 +968,6 @@
 		</theme_item>
 		<theme_item name="brace_mismatch_color" type="Color" default="Color( 1, 0.2, 0.2, 1 )">
 		</theme_item>
-		<theme_item name="caret_background_color" type="Color" default="Color( 0, 0, 0, 1 )">
-		</theme_item>
 		<theme_item name="caret_color" type="Color" default="Color( 0.88, 0.88, 0.88, 1 )">
 		</theme_item>
 		<theme_item name="code_folding_color" type="Color" default="Color( 0.8, 0.8, 0.8, 0.8 )">

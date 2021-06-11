@@ -4397,7 +4397,6 @@ void TextEdit::_update_caches() {
 	cache.outline_color = get_theme_color("font_outline_color");
 	cache.outline_size = get_theme_constant("outline_size");
 	cache.caret_color = get_theme_color("caret_color");
-	cache.caret_background_color = get_theme_color("caret_background_color");
 	cache.font_color = get_theme_color("font_color");
 	cache.font_selected_color = get_theme_color("font_selected_color");
 	cache.font_readonly_color = get_theme_color("font_readonly_color");
