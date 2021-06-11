@@ -1022,7 +1022,7 @@ int String::get_slice_count(String p_splitter) const {
 	}
 
 	int pos = 0;
-	int slices = 1;
+	int slices = 0;
 
 	while ((pos = find(p_splitter, pos)) >= 0) {
 		slices++;
