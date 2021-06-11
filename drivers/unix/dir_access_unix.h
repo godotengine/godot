@@ -33,7 +33,7 @@
 
 #if defined(UNIX_ENABLED) || defined(LIBC_FILEIO_ENABLED)
 
-#include "core/os/dir_access.h"
+#include "core/io/dir_access.h"
 
 #include <dirent.h>
 #include <sys/stat.h>

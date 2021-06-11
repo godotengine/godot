@@ -29,7 +29,7 @@
 /*************************************************************************/
 
 #include "theme.h"
-#include "core/os/file_access.h"
+#include "core/io/file_access.h"
 #include "core/string/print_string.h"
 
 void Theme::_emit_theme_changed() {

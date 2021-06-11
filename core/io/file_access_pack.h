@@ -31,8 +31,8 @@
 #ifndef FILE_ACCESS_PACK_H
 #define FILE_ACCESS_PACK_H
 
-#include "core/os/dir_access.h"
-#include "core/os/file_access.h"
+#include "core/io/dir_access.h"
+#include "core/io/file_access.h"
 #include "core/string/print_string.h"
 #include "core/templates/list.h"
 #include "core/templates/map.h"

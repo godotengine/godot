@@ -32,7 +32,7 @@
 #define FILE_ACCESS_COMPRESSED_H
 
 #include "core/io/compression.h"
-#include "core/os/file_access.h"
+#include "core/io/file_access.h"
 
 class FileAccessCompressed : public FileAccess {
 	Compression::Mode cmode = Compression::MODE_ZSTD;

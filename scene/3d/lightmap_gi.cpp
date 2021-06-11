@@ -31,11 +31,11 @@
 #include "lightmap_gi.h"
 
 #include "core/io/config_file.h"
+#include "core/io/dir_access.h"
+#include "core/io/file_access.h"
 #include "core/io/resource_saver.h"
 #include "core/math/camera_matrix.h"
 #include "core/math/delaunay_3d.h"
-#include "core/os/dir_access.h"
-#include "core/os/file_access.h"
 #include "core/os/os.h"
 #include "core/templates/sort_array.h"
 #include "lightmap_probe.h"

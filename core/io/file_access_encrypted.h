@@ -31,7 +31,7 @@
 #ifndef FILE_ACCESS_ENCRYPTED_H
 #define FILE_ACCESS_ENCRYPTED_H
 
-#include "core/os/file_access.h"
+#include "core/io/file_access.h"
 
 #define ENCRYPTED_HEADER_MAGIC 0x43454447
 

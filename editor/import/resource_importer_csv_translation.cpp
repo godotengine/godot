@@ -30,8 +30,8 @@
 
 #include "resource_importer_csv_translation.h"
 
+#include "core/io/file_access.h"
 #include "core/io/resource_saver.h"
-#include "core/os/file_access.h"
 #include "core/string/optimized_translation.h"
 #include "core/string/translation.h"
 

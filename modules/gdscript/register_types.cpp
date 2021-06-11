@@ -30,10 +30,10 @@
 
 #include "register_types.h"
 
+#include "core/io/dir_access.h"
+#include "core/io/file_access.h"
 #include "core/io/file_access_encrypted.h"
 #include "core/io/resource_loader.h"
-#include "core/os/dir_access.h"
-#include "core/os/file_access.h"
 #include "gdscript.h"
 #include "gdscript_analyzer.h"
 #include "gdscript_cache.h"

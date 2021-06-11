@@ -31,7 +31,7 @@
 #ifndef EDITORFILEDIALOG_H
 #define EDITORFILEDIALOG_H
 
-#include "core/os/dir_access.h"
+#include "core/io/dir_access.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/dialogs.h"
 #include "scene/gui/item_list.h"

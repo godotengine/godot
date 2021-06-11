@@ -30,7 +30,7 @@
 
 #include "editor_folding.h"
 
-#include "core/os/file_access.h"
+#include "core/io/file_access.h"
 #include "editor_inspector.h"
 #include "editor_settings.h"
 

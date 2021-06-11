@@ -31,8 +31,8 @@
 #ifndef GDSCRIPT_TEXT_DOCUMENT_H
 #define GDSCRIPT_TEXT_DOCUMENT_H
 
+#include "core/io/file_access.h"
 #include "core/object/reference.h"
-#include "core/os/file_access.h"
 #include "lsp.hpp"
 
 class GDScriptTextDocument : public Reference {

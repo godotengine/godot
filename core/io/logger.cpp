@@ -31,7 +31,7 @@
 #include "logger.h"
 
 #include "core/config/project_settings.h"
-#include "core/os/dir_access.h"
+#include "core/io/dir_access.h"
 #include "core/os/os.h"
 #include "core/string/print_string.h"
 

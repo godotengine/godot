@@ -32,7 +32,7 @@
 #define VIDEO_STREAM_GDNATIVE_H
 
 #include "../gdnative.h"
-#include "core/os/file_access.h"
+#include "core/io/file_access.h"
 #include "scene/resources/texture.h"
 #include "scene/resources/video_stream.h"
 

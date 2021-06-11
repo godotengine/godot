@@ -29,7 +29,7 @@
 /*************************************************************************/
 
 // Godot imports
-#include "core/os/file_access.h"
+#include "core/io/file_access.h"
 // PluginScript imports
 #include "pluginscript_instance.h"
 #include "pluginscript_script.h"

@@ -31,7 +31,7 @@
 #ifndef ZIP_IO_H
 #define ZIP_IO_H
 
-#include "core/os/file_access.h"
+#include "core/io/file_access.h"
 
 // Not directly used in this header, but assumed available in downstream users
 // like platform/*/export/export.cpp. Could be fixed, but probably better to have

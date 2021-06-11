@@ -29,7 +29,7 @@
 /*************************************************************************/
 
 #include "editor_paths.h"
-#include "core/os/dir_access.h"
+#include "core/io/dir_access.h"
 #include "core/os/os.h"
 
 EditorPaths *EditorPaths::singleton = nullptr;

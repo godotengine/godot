@@ -31,7 +31,7 @@
 #include "dir_access.h"
 
 #include "core/config/project_settings.h"
-#include "core/os/file_access.h"
+#include "core/io/file_access.h"
 #include "core/os/memory.h"
 #include "core/os/os.h"
 

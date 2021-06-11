@@ -31,8 +31,8 @@
 #ifndef VIDEO_STREAM_THEORA_H
 #define VIDEO_STREAM_THEORA_H
 
+#include "core/io/file_access.h"
 #include "core/io/resource_loader.h"
-#include "core/os/file_access.h"
 #include "core/os/semaphore.h"
 #include "core/os/thread.h"
 #include "core/templates/ring_buffer.h"

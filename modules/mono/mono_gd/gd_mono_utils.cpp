@@ -35,8 +35,8 @@
 
 #include "core/debugger/engine_debugger.h"
 #include "core/debugger/script_debugger.h"
+#include "core/io/dir_access.h"
 #include "core/object/reference.h"
-#include "core/os/dir_access.h"
 #include "core/os/mutex.h"
 #include "core/os/os.h"
 

@@ -30,9 +30,9 @@
 
 #include "resource_importer_wav.h"
 
+#include "core/io/file_access.h"
 #include "core/io/marshalls.h"
 #include "core/io/resource_saver.h"
-#include "core/os/file_access.h"
 #include "scene/resources/audio_stream_sample.h"
 
 const float TRIM_DB_LIMIT = -50;

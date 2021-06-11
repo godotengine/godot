@@ -31,7 +31,7 @@
 #ifndef TEST_FILE_ACCESS_H
 #define TEST_FILE_ACCESS_H
 
-#include "core/os/file_access.h"
+#include "core/io/file_access.h"
 #include "test_utils.h"
 
 namespace TestFileAccess {

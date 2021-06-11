@@ -30,7 +30,7 @@
 
 #include "editor_file_dialog.h"
 
-#include "core/os/file_access.h"
+#include "core/io/file_access.h"
 #include "core/os/keyboard.h"
 #include "core/os/os.h"
 #include "core/string/print_string.h"

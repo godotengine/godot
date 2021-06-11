@@ -31,7 +31,7 @@
 #ifndef DIR_ACCESS_JANDROID_H
 #define DIR_ACCESS_JANDROID_H
 
-#include "core/os/dir_access.h"
+#include "core/io/dir_access.h"
 #include "java_godot_lib_jni.h"
 #include <stdio.h>
 

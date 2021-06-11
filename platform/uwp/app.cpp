@@ -34,8 +34,8 @@
 
 #include "app.h"
 
-#include "core/os/dir_access.h"
-#include "core/os/file_access.h"
+#include "core/io/dir_access.h"
+#include "core/io/file_access.h"
 #include "core/os/keyboard.h"
 #include "main/main.h"
 

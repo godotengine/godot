@@ -41,7 +41,7 @@
 #endif
 
 #ifdef GD_MONO_LOG_ENABLED
-#include "core/os/file_access.h"
+#include "core/io/file_access.h"
 #endif
 
 class GDMonoLog {

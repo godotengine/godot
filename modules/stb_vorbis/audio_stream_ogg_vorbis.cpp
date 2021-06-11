@@ -30,7 +30,7 @@
 
 #include "audio_stream_ogg_vorbis.h"
 
-#include "core/os/file_access.h"
+#include "core/io/file_access.h"
 
 void AudioStreamPlaybackOGGVorbis::_mix_internal(AudioFrame *p_buffer, int p_frames) {
 	ERR_FAIL_COND(!active);

@@ -32,7 +32,7 @@
 
 #include <stdlib.h> // abort
 
-#include "core/os/dir_access.h"
+#include "core/io/dir_access.h"
 #include "core/os/os.h"
 
 #include "../godotsharp_dirs.h"

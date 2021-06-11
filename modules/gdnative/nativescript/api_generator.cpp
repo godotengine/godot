@@ -34,8 +34,8 @@
 
 #include "core/config/engine.h"
 #include "core/core_constants.h"
+#include "core/io/file_access.h"
 #include "core/object/class_db.h"
-#include "core/os/file_access.h"
 #include "core/string/string_builder.h"
 #include "core/templates/pair.h"
 

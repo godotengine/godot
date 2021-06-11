@@ -30,8 +30,8 @@
 
 #include "editor_feature_profile.h"
 
+#include "core/io/dir_access.h"
 #include "core/io/json.h"
-#include "core/os/dir_access.h"
 #include "editor/editor_settings.h"
 #include "editor_node.h"
 #include "editor_scale.h"

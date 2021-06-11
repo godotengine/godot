@@ -31,8 +31,8 @@
 #ifndef CONFIG_FILE_H
 #define CONFIG_FILE_H
 
+#include "core/io/file_access.h"
 #include "core/object/reference.h"
-#include "core/os/file_access.h"
 #include "core/templates/ordered_hash_map.h"
 #include "core/variant/variant_parser.h"
 

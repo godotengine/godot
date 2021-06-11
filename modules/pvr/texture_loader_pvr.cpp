@@ -30,7 +30,7 @@
 
 #include "texture_loader_pvr.h"
 
-#include "core/os/file_access.h"
+#include "core/io/file_access.h"
 
 static void _pvrtc_decompress(Image *p_img);
 

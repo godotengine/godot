@@ -34,9 +34,9 @@
 #include "core/config/project_settings.h"
 #include "core/core_constants.h"
 #include "core/io/compression.h"
+#include "core/io/dir_access.h"
 #include "core/io/marshalls.h"
 #include "core/object/script_language.h"
-#include "core/os/dir_access.h"
 #include "core/version.h"
 #include "scene/resources/theme.h"
 

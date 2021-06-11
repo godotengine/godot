@@ -31,9 +31,9 @@
 #include "gdscript_parser.h"
 
 #include "core/config/project_settings.h"
+#include "core/io/file_access.h"
 #include "core/io/resource_loader.h"
 #include "core/math/math_defs.h"
-#include "core/os/file_access.h"
 #include "gdscript.h"
 
 #ifdef DEBUG_ENABLED

@@ -31,9 +31,9 @@
 #include "resource.h"
 
 #include "core/core_string_names.h"
+#include "core/io/file_access.h"
 #include "core/io/resource_loader.h"
 #include "core/object/script_language.h"
-#include "core/os/file_access.h"
 #include "core/os/os.h"
 #include "scene/main/node.h" //only so casting works
 
