@@ -196,7 +196,7 @@ const GodotJSWrapper = {
 		}
 	},
 
-	godot_js_wrapper_create_cb__sig: 'vii',
+	godot_js_wrapper_create_cb__sig: 'iii',
 	godot_js_wrapper_create_cb: function (p_ref, p_func) {
 		const func = GodotRuntime.get_func(p_func);
 		let id = 0;
