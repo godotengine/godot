@@ -1312,38 +1312,57 @@ StringName TranslationServer::pseudolocalize(const StringName &p_message) const 
 	String message = p_message;
 
 	if (GLOBAL_GET("internationalization/pseudolocalization/replace_with_accents")) {
-		String temp = "";
-		for (int i = 0; i < message.size(); i++) {
-			const wchar_t *accented = get_accented_version(message[i]);
-			if (accented) {
-				temp += accented;
-			} else {
-				temp += message[i];
-			}
-		}
-		message = temp;
+		message = replace_with_accented_string(message);
 	}
 
 	if (GLOBAL_GET("internationalization/pseudolocalization/fake_bidi")) {
-		String temp = "";
-		wchar_t fakebidiprefix = L'\u202e';
-		wchar_t fakebidipostfix = L'\u202c';
-		temp += fakebidiprefix;
-		//the fake bidi unicode gets popped at every newline so pushing it back at every newline.
-		for (int i = 0; i < message.size(); i++) {
-			if (message[i] == '\n') {
-				temp += fakebidipostfix;
-				temp += message[i];
-				temp += fakebidiprefix;
-			} else {
-				temp += message[i];
-			}
-		}
-		temp += fakebidipostfix;
-		message = temp;
+		message = wrap_with_fakebidi_characters(message);
 	}
 
-	StringName res = message;
+	StringName res = add_padding(message);
+	return res;
+}
+
+String TranslationServer::replace_with_accented_string(String &message) const {
+	String res = "";
+	for (int i = 0; i < message.size(); i++) {
+		const wchar_t *accented = get_accented_version(message[i]);
+		if (accented) {
+			res += accented;
+		} else {
+			res += message[i];
+		}
+	}
+	return res;
+}
+
+String TranslationServer::wrap_with_fakebidi_characters(String &message) const {
+	String res = "";
+	wchar_t fakebidiprefix = L'\u202e';
+	wchar_t fakebidipostfix = L'\u202c';
+	res += fakebidiprefix;
+	//the fake bidi unicode gets popped at every newline so pushing it back at every newline.
+	for (int i = 0; i < message.size(); i++) {
+		if (message[i] == '\n') {
+			res += fakebidipostfix;
+			res += message[i];
+			res += fakebidiprefix;
+		} else {
+			res += message[i];
+		}
+	}
+	res += fakebidipostfix;
+	return res;
+}
+
+String TranslationServer::add_padding(String &message) const {
+	String res = "";
+	String prefix = GLOBAL_GET("internationalization/pseudolocalization/prefix");
+	String postfix = GLOBAL_GET("internationalization/pseudolocalization/postfix");
+	//replace with expansion logic here when implementing that
+	res += prefix;
+	res += message;
+	res += postfix;
 	return res;
 }
 
@@ -1376,7 +1395,7 @@ const wchar_t *TranslationServer::get_accented_version(char c) const {
 		case 'M':
 			return L"Ḿ";
 		case 'N':
-			return L"Ñ";
+			return L"й";
 		case 'O':
 			return L"Ö";
 		case 'P':
@@ -1428,7 +1447,7 @@ const wchar_t *TranslationServer::get_accented_version(char c) const {
 		case 'm':
 			return L"m̀";
 		case 'n':
-			return L"ǹ";
+			return L"ή";
 		case 'o':
 			return L"ô";
 		case 'p':
