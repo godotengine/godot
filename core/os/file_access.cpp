@@ -362,6 +362,10 @@ Vector<String> FileAccess::get_csv_line(const String &p_delim) const {
 		}
 	}
 
+	if (in_quote) {
+		WARN_PRINT(vformat("Warning: reached end of file before closing '\"' in CSV file '%s'.", get_path()));
+	}
+
 	strings.push_back(current);
 
 	return strings;
