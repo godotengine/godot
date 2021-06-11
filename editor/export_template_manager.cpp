@@ -31,9 +31,9 @@
 #include "export_template_manager.h"
 
 #include "core/input/input.h"
+#include "core/io/dir_access.h"
 #include "core/io/json.h"
 #include "core/io/zip_io.h"
-#include "core/os/dir_access.h"
 #include "core/os/keyboard.h"
 #include "core/version.h"
 #include "editor_node.h"

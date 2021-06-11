@@ -30,7 +30,7 @@
 
 #include "gdscript_cache.h"
 
-#include "core/os/file_access.h"
+#include "core/io/file_access.h"
 #include "core/templates/vector.h"
 #include "gdscript.h"
 #include "gdscript_analyzer.h"

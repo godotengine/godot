@@ -32,8 +32,8 @@
 
 #include "canvas_item_editor_plugin.h"
 #include "core/input/input.h"
+#include "core/io/file_access.h"
 #include "core/math/geometry_2d.h"
-#include "core/os/file_access.h"
 #include "core/os/keyboard.h"
 #include "editor/editor_settings.h"
 #include "node_3d_editor_plugin.h"

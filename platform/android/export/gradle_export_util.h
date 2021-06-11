@@ -31,9 +31,9 @@
 #ifndef GODOT_GRADLE_EXPORT_UTIL_H
 #define GODOT_GRADLE_EXPORT_UTIL_H
 
+#include "core/io/dir_access.h"
+#include "core/io/file_access.h"
 #include "core/io/zip_io.h"
-#include "core/os/dir_access.h"
-#include "core/os/file_access.h"
 #include "core/os/os.h"
 #include "editor/editor_export.h"
 

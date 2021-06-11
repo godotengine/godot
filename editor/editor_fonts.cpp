@@ -31,7 +31,7 @@
 #include "editor_fonts.h"
 
 #include "builtin_fonts.gen.h"
-#include "core/os/dir_access.h"
+#include "core/io/dir_access.h"
 #include "editor_scale.h"
 #include "editor_settings.h"
 #include "scene/resources/default_theme/default_theme.h"

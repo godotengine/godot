@@ -28,7 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "core/os/file_access.h"
+#include "core/io/file_access.h"
 #include "core/os/os.h"
 #include "editor/editor_export.h"
 #include "editor/editor_node.h"

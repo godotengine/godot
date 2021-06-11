@@ -30,7 +30,7 @@
 
 #include "export.h"
 
-#include "core/os/file_access.h"
+#include "core/io/file_access.h"
 #include "editor/editor_export.h"
 #include "platform/linuxbsd/logo.gen.h"
 #include "scene/resources/texture.h"

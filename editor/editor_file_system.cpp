@@ -31,10 +31,10 @@
 #include "editor_file_system.h"
 
 #include "core/config/project_settings.h"
+#include "core/io/file_access.h"
 #include "core/io/resource_importer.h"
 #include "core/io/resource_loader.h"
 #include "core/io/resource_saver.h"
-#include "core/os/file_access.h"
 #include "core/os/os.h"
 #include "core/variant/variant_parser.h"
 #include "editor_node.h"

@@ -31,9 +31,9 @@
 #ifndef RESOURCE_FORMAT_BINARY_H
 #define RESOURCE_FORMAT_BINARY_H
 
+#include "core/io/file_access.h"
 #include "core/io/resource_loader.h"
 #include "core/io/resource_saver.h"
-#include "core/os/file_access.h"
 
 class ResourceLoaderBinary {
 	bool translation_remapped = false;

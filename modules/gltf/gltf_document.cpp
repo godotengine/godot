@@ -49,9 +49,9 @@
 
 #include "core/core_bind.h"
 #include "core/crypto/crypto_core.h"
+#include "core/io/file_access.h"
 #include "core/io/json.h"
 #include "core/math/disjoint_set.h"
-#include "core/os/file_access.h"
 #include "core/variant/typed_array.h"
 #include "core/version.h"
 #include "core/version_hash.gen.h"

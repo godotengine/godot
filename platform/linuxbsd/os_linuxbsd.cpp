@@ -30,7 +30,7 @@
 
 #include "os_linuxbsd.h"
 
-#include "core/os/dir_access.h"
+#include "core/io/dir_access.h"
 #include "main/main.h"
 
 #ifdef X11_ENABLED

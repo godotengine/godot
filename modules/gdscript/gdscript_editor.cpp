@@ -32,7 +32,7 @@
 
 #include "core/config/engine.h"
 #include "core/core_constants.h"
-#include "core/os/file_access.h"
+#include "core/io/file_access.h"
 #include "gdscript_analyzer.h"
 #include "gdscript_compiler.h"
 #include "gdscript_parser.h"

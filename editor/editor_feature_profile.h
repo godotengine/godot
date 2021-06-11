@@ -31,8 +31,8 @@
 #ifndef EDITOR_FEATURE_PROFILE_H
 #define EDITOR_FEATURE_PROFILE_H
 
+#include "core/io/file_access.h"
 #include "core/object/reference.h"
-#include "core/os/file_access.h"
 #include "editor/editor_file_dialog.h"
 #include "editor_help.h"
 #include "scene/gui/dialogs.h"

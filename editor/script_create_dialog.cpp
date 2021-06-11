@@ -31,9 +31,9 @@
 #include "script_create_dialog.h"
 
 #include "core/config/project_settings.h"
+#include "core/io/file_access.h"
 #include "core/io/resource_saver.h"
 #include "core/object/script_language.h"
-#include "core/os/file_access.h"
 #include "core/string/string_builder.h"
 #include "editor/create_dialog.h"
 #include "editor/editor_node.h"
