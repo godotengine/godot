@@ -2282,9 +2282,10 @@ Error GDScriptCompiler::_parse_class_level(GDScript *p_script, const GDScriptPar
 					}
 					prop_info.hint = export_info.hint;
 					prop_info.hint_string = export_info.hint_string;
-					prop_info.usage = export_info.usage;
+					prop_info.usage = export_info.usage | PROPERTY_USAGE_SCRIPT_VARIABLE;
+				} else {
+					prop_info.usage = PROPERTY_USAGE_SCRIPT_VARIABLE;
 				}
-				prop_info.usage |= PROPERTY_USAGE_SCRIPT_VARIABLE;
 #ifdef TOOLS_ENABLED
 				p_script->doc_variables[name] = variable->doc_description;
 #endif
