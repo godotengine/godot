@@ -742,7 +742,7 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 				return ERR_PARSE_ERROR;
 			}
 
-			REF ref = REF(Object::cast_to<Reference>(obj));
+			REF ref = REF(Object::cast_to<RefCounted>(obj));
 
 			get_token(p_stream, token, line, r_err_str);
 			if (token.type != TK_COMMA) {

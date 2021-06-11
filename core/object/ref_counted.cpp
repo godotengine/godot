@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  reference.cpp                                                        */
+/*  ref_counted.cpp                                                      */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,11 +28,11 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "reference.h"
+#include "ref_counted.h"
 
 #include "core/object/script_language.h"
 
-bool Reference::init_ref() {
+bool RefCounted::init_ref() {
 	if (reference()) {
 		if (!is_referenced() && refcount_init.unref()) {
 			unreference(); // first referencing is already 1, so compensate for the ref above
@@ -44,17 +44,17 @@ bool Reference::init_ref() {
 	}
 }
 
-void Reference::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("init_ref"), &Reference::init_ref);
-	ClassDB::bind_method(D_METHOD("reference"), &Reference::reference);
-	ClassDB::bind_method(D_METHOD("unreference"), &Reference::unreference);
+void RefCounted::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("init_ref"), &RefCounted::init_ref);
+	ClassDB::bind_method(D_METHOD("reference"), &RefCounted::reference);
+	ClassDB::bind_method(D_METHOD("unreference"), &RefCounted::unreference);
 }
 
-int Reference::reference_get_count() const {
+int RefCounted::reference_get_count() const {
 	return refcount.get();
 }
 
-bool Reference::reference() {
+bool RefCounted::reference() {
 	uint32_t rc_val = refcount.refval();
 	bool success = rc_val != 0;
 
@@ -77,7 +77,7 @@ bool Reference::reference() {
 	return success;
 }
 
-bool Reference::unreference() {
+bool RefCounted::unreference() {
 	uint32_t rc_val = refcount.unrefval();
 	bool die = rc_val == 0;
 
@@ -102,7 +102,7 @@ bool Reference::unreference() {
 	return die;
 }
 
-Reference::Reference() :
+RefCounted::RefCounted() :
 		Object(true) {
 	refcount.init();
 	refcount_init.init();
@@ -117,7 +117,7 @@ Variant WeakRef::get_ref() const {
 	if (!obj) {
 		return Variant();
 	}
-	Reference *r = cast_to<Reference>(obj);
+	RefCounted *r = cast_to<RefCounted>(obj);
 	if (r) {
 		return REF(r);
 	}

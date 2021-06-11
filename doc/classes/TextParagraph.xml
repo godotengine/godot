@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="TextParagraph" inherits="Reference" version="4.0">
+<class name="TextParagraph" inherits="RefCounted" version="4.0">
 	<brief_description>
 		Holds a paragraph of text.
 	</brief_description>

@@ -42,8 +42,8 @@ class Material;
 class AnimationPlayer;
 
 class EditorSceneImporterMesh;
-class EditorSceneImporter : public Reference {
-	GDCLASS(EditorSceneImporter, Reference);
+class EditorSceneImporter : public RefCounted {
+	GDCLASS(EditorSceneImporter, RefCounted);
 
 protected:
 	static void _bind_methods();
@@ -69,8 +69,8 @@ public:
 	EditorSceneImporter() {}
 };
 
-class EditorScenePostImport : public Reference {
-	GDCLASS(EditorScenePostImport, Reference);
+class EditorScenePostImport : public RefCounted {
+	GDCLASS(EditorScenePostImport, RefCounted);
 
 	String source_file;
 

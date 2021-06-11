@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Reference" inherits="Object" version="4.0">
+<class name="RefCounted" inherits="Object" version="4.0">
 	<brief_description>
 		Base class for reference-counted objects.
 	</brief_description>
 	<description>
 		Base class for any object that keeps a reference count. [Resource] and many other helper objects inherit this class.
 		Unlike other [Object] types, References keep an internal reference counter so that they are automatically released when no longer in use, and only then. References therefore do not need to be freed manually with [method Object.free].
-		In the vast majority of use cases, instantiating and using [Reference]-derived types is all you need to do. The methods provided in this class are only for advanced users, and can cause issues if misused.
+		In the vast majority of use cases, instantiating and using [RefCounted]-derived types is all you need to do. The methods provided in this class are only for advanced users, and can cause issues if misused.
 		[b]Note:[/b] In C#, references will not be freed instantly after they are no longer in use. Instead, garbage collection will run periodically and will free references that are no longer in use. This means that unused references will linger on for a while before being removed.
 	</description>
 	<tutorials>

@@ -511,9 +511,9 @@ GDScriptTest::TestResult GDScriptTest::execute_test_code(bool p_is_generating) {
 
 	// Create object instance for test.
 	Object *obj = ClassDB::instance(script->get_native()->get_name());
-	Ref<Reference> obj_ref;
-	if (obj->is_reference()) {
-		obj_ref = Ref<Reference>(Object::cast_to<Reference>(obj));
+	Ref<RefCounted> obj_ref;
+	if (obj->is_ref_counted()) {
+		obj_ref = Ref<RefCounted>(Object::cast_to<RefCounted>(obj));
 	}
 	obj->set_script(script);
 	GDScriptInstance *instance = static_cast<GDScriptInstance *>(obj->get_script_instance());

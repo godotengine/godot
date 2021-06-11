@@ -769,7 +769,7 @@ Variant Object::call(const StringName &p_method, const Variant **p_args, int p_a
 			r_error.error = Callable::CallError::CALL_ERROR_TOO_MANY_ARGUMENTS;
 			return Variant();
 		}
-		if (Object::cast_to<Reference>(this)) {
+		if (Object::cast_to<RefCounted>(this)) {
 			r_error.argument = 0;
 			r_error.error = Callable::CallError::CALL_ERROR_INVALID_METHOD;
 			ERR_FAIL_V_MSG(Variant(), "Can't 'free' a reference.");
@@ -1900,7 +1900,7 @@ ObjectID ObjectDB::add_instance(Object *p_object) {
 		object_slots = (ObjectSlot *)memrealloc(object_slots, sizeof(ObjectSlot) * new_slot_max);
 		for (uint32_t i = slot_max; i < new_slot_max; i++) {
 			object_slots[i].object = nullptr;
-			object_slots[i].is_reference = false;
+			object_slots[i].is_ref_counted = false;
 			object_slots[i].next_free = i;
 			object_slots[i].validator = 0;
 		}
@@ -1913,7 +1913,7 @@ ObjectID ObjectDB::add_instance(Object *p_object) {
 		ERR_FAIL_COND_V(object_slots[slot].object != nullptr, ObjectID());
 	}
 	object_slots[slot].object = p_object;
-	object_slots[slot].is_reference = p_object->is_reference();
+	object_slots[slot].is_ref_counted = p_object->is_ref_counted();
 	validator_counter = (validator_counter + 1) & OBJECTDB_VALIDATOR_MASK;
 	if (unlikely(validator_counter == 0)) {
 		validator_counter = 1;
@@ -1924,7 +1924,7 @@ ObjectID ObjectDB::add_instance(Object *p_object) {
 	id <<= OBJECTDB_SLOT_MAX_COUNT_BITS;
 	id |= uint64_t(slot);
 
-	if (p_object->is_reference()) {
+	if (p_object->is_ref_counted()) {
 		id |= OBJECTDB_REFERENCE_BIT;
 	}
 
@@ -1962,7 +1962,7 @@ void ObjectDB::remove_instance(Object *p_object) {
 	object_slots[slot_count].next_free = slot;
 	//invalidate, so checks against it fail
 	object_slots[slot].validator = 0;
-	object_slots[slot].is_reference = false;
+	object_slots[slot].is_ref_counted = false;
 	object_slots[slot].object = nullptr;
 
 	spin_lock.unlock();
@@ -1997,7 +1997,7 @@ void ObjectDB::cleanup() {
 						extra_info = " - Resource path: " + String(resource_get_path->call(obj, nullptr, 0, call_error));
 					}
 
-					uint64_t id = uint64_t(i) | (uint64_t(object_slots[i].validator) << OBJECTDB_VALIDATOR_BITS) | (object_slots[i].is_reference ? OBJECTDB_REFERENCE_BIT : 0);
+					uint64_t id = uint64_t(i) | (uint64_t(object_slots[i].validator) << OBJECTDB_VALIDATOR_BITS) | (object_slots[i].is_ref_counted ? OBJECTDB_REFERENCE_BIT : 0);
 					print_line("Leaked instance: " + String(obj->get_class()) + ":" + itos(id) + extra_info);
 
 					count--;

@@ -75,9 +75,9 @@ Variant GDScriptNativeClass::_new() {
 	Object *o = instance();
 	ERR_FAIL_COND_V_MSG(!o, Variant(), "Class type: '" + String(name) + "' is not instantiable.");
 
-	Reference *ref = Object::cast_to<Reference>(o);
-	if (ref) {
-		return REF(ref);
+	RefCounted *rc = Object::cast_to<RefCounted>(o);
+	if (rc) {
+		return REF(rc);
 	} else {
 		return o;
 	}
@@ -98,11 +98,11 @@ void GDScript::_super_implicit_constructor(GDScript *p_script, GDScriptInstance 
 	p_script->implicit_initializer->call(p_instance, nullptr, 0, r_error);
 }
 
-GDScriptInstance *GDScript::_create_instance(const Variant **p_args, int p_argcount, Object *p_owner, bool p_isref, Callable::CallError &r_error) {
+GDScriptInstance *GDScript::_create_instance(const Variant **p_args, int p_argcount, Object *p_owner, bool p_is_ref_counted, Callable::CallError &r_error) {
 	/* STEP 1, CREATE */
 
 	GDScriptInstance *instance = memnew(GDScriptInstance);
-	instance->base_ref = p_isref;
+	instance->base_ref_counted = p_is_ref_counted;
 	instance->members.resize(member_indices.size());
 	instance->script = Ref<GDScript>(this);
 	instance->owner = p_owner;
@@ -172,11 +172,11 @@ Variant GDScript::_new(const Variant **p_args, int p_argcount, Callable::CallErr
 	if (_baseptr->native.ptr()) {
 		owner = _baseptr->native->instance();
 	} else {
-		owner = memnew(Reference); //by default, no base means use reference
+		owner = memnew(RefCounted); //by default, no base means use reference
 	}
 	ERR_FAIL_COND_V_MSG(!owner, Variant(), "Can't inherit from a virtual class.");
 
-	Reference *r = Object::cast_to<Reference>(owner);
+	RefCounted *r = Object::cast_to<RefCounted>(owner);
 	if (r) {
 		ref = REF(r);
 	}
@@ -353,7 +353,7 @@ ScriptInstance *GDScript::instance_create(Object *p_this) {
 	}
 
 	Callable::CallError unchecked_error;
-	return _create_instance(nullptr, 0, p_this, Object::cast_to<Reference>(p_this) != nullptr, unchecked_error);
+	return _create_instance(nullptr, 0, p_this, Object::cast_to<RefCounted>(p_this) != nullptr, unchecked_error);
 }
 
 PlaceHolderScriptInstance *GDScript::placeholder_instance_create(Object *p_this) {
@@ -1576,7 +1576,7 @@ void GDScriptInstance::reload_members() {
 
 GDScriptInstance::GDScriptInstance() {
 	owner = nullptr;
-	base_ref = false;
+	base_ref_counted = false;
 }
 
 GDScriptInstance::~GDScriptInstance() {
@@ -2132,7 +2132,7 @@ String GDScriptLanguage::get_global_class_name(const String &p_path, String *r_b
 						break;
 					}
 				} else {
-					*r_base_type = "Reference";
+					*r_base_type = "RefCounted";
 					subclass = nullptr;
 				}
 			}

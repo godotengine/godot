@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="EditorTranslationParserPlugin" inherits="Reference" version="4.0">
+<class name="EditorTranslationParserPlugin" inherits="RefCounted" version="4.0">
 	<brief_description>
 		Plugin for adding custom parsers to extract strings that are to be translated from custom files (.csv, .json etc.).
 	</brief_description>

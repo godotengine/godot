@@ -31,7 +31,7 @@
 #ifndef MARSHALLS_H
 #define MARSHALLS_H
 
-#include "core/object/reference.h"
+#include "core/object/ref_counted.h"
 #include "core/typedefs.h"
 #include "core/variant/variant.h"
 
@@ -165,8 +165,8 @@ static inline double decode_double(const uint8_t *p_arr) {
 	return md.d;
 }
 
-class EncodedObjectAsID : public Reference {
-	GDCLASS(EncodedObjectAsID, Reference);
+class EncodedObjectAsID : public RefCounted {
+	GDCLASS(EncodedObjectAsID, RefCounted);
 
 	ObjectID id;
 

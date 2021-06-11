@@ -31,7 +31,7 @@
 #ifndef GDSCRIPT_FUNCTION_H
 #define GDSCRIPT_FUNCTION_H
 
-#include "core/object/reference.h"
+#include "core/object/ref_counted.h"
 #include "core/object/script_language.h"
 #include "core/os/thread.h"
 #include "core/string/string_name.h"
@@ -597,8 +597,8 @@ public:
 	~GDScriptFunction();
 };
 
-class GDScriptFunctionState : public Reference {
-	GDCLASS(GDScriptFunctionState, Reference);
+class GDScriptFunctionState : public RefCounted {
+	GDCLASS(GDScriptFunctionState, RefCounted);
 	friend class GDScriptFunction;
 	GDScriptFunction *function = nullptr;
 	GDScriptFunction::CallState state;

@@ -7,7 +7,7 @@
 		Every class which is not a built-in type inherits from this class.
 		You can construct Objects from scripting languages, using [code]Object.new()[/code] in GDScript, [code]new Object[/code] in C#, or the "Construct Object" node in VisualScript.
 		Objects do not manage memory. If a class inherits from Object, you will have to delete instances of it manually. To do so, call the [method free] method from your script or delete the instance from C++.
-		Some classes that extend Object add memory management. This is the case of [Reference], which counts references and deletes itself automatically when no longer referenced. [Node], another fundamental type, deletes all its children when freed from memory.
+		Some classes that extend Object add memory management. This is the case of [RefCounted], which counts references and deletes itself automatically when no longer referenced. [Node], another fundamental type, deletes all its children when freed from memory.
 		Objects export properties, which are mainly useful for storage and editing, but not really so much in programming. Properties are exported in [method _get_property_list] and handled in [method _get] and [method _set]. However, scripting languages and C++ have simpler means to export them.
 		Property membership can be tested directly in GDScript using [code]in[/code]:
 		[codeblocks]
@@ -26,7 +26,7 @@
 		[/codeblocks]
 		The [code]in[/code] operator will evaluate to [code]true[/code] as long as the key exists, even if the value is [code]null[/code].
 		Objects also receive notifications. Notifications are a simple way to notify the object about different events, so they can all be handled together. See [method _notification].
-		[b]Note:[/b] Unlike references to a [Reference], references to an Object stored in a variable can become invalid without warning. Therefore, it's recommended to use [Reference] for data classes instead of [Object].
+		[b]Note:[/b] Unlike references to a [RefCounted], references to an Object stored in a variable can become invalid without warning. Therefore, it's recommended to use [RefCounted] for data classes instead of [Object].
 	</description>
 	<tutorials>
 		<link title="When and how to avoid using nodes for everything">https://docs.godotengine.org/en/latest/getting_started/workflow/best_practices/node_alternatives.html</link>

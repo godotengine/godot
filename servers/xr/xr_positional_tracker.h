@@ -43,8 +43,8 @@
 	This is where potentially additional AR/VR interfaces may be active as there are AR/VR SDKs that solely deal with positional tracking.
 */
 
-class XRPositionalTracker : public Reference {
-	GDCLASS(XRPositionalTracker, Reference);
+class XRPositionalTracker : public RefCounted {
+	GDCLASS(XRPositionalTracker, RefCounted);
 	_THREAD_SAFE_CLASS_
 
 public:

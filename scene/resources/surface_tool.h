@@ -35,8 +35,8 @@
 #include "scene/resources/mesh.h"
 #include "thirdparty/misc/mikktspace.h"
 
-class SurfaceTool : public Reference {
-	GDCLASS(SurfaceTool, Reference);
+class SurfaceTool : public RefCounted {
+	GDCLASS(SurfaceTool, RefCounted);
 
 public:
 	struct Vertex {

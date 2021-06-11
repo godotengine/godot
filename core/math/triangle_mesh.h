@@ -32,10 +32,10 @@
 #define TRIANGLE_MESH_H
 
 #include "core/math/face3.h"
-#include "core/object/reference.h"
+#include "core/object/ref_counted.h"
 
-class TriangleMesh : public Reference {
-	GDCLASS(TriangleMesh, Reference);
+class TriangleMesh : public RefCounted {
+	GDCLASS(TriangleMesh, RefCounted);
 
 	struct Triangle {
 		Vector3 normal;

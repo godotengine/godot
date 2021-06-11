@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="TextLine" inherits="Reference" version="4.0">
+<class name="TextLine" inherits="RefCounted" version="4.0">
 	<brief_description>
 		Holds a line of text.
 	</brief_description>
