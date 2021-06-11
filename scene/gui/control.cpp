@@ -965,6 +965,7 @@ Color Control::get_color(const StringName &p_name, const StringName &p_node_type
 	}
 
 	StringName type = p_node_type ? p_node_type : get_class_name();
+
 	// try with custom themes
 	Control *theme_owner = data.theme_owner;
 
@@ -1005,6 +1006,7 @@ int Control::get_constant(const StringName &p_name, const StringName &p_node_typ
 	}
 
 	StringName type = p_node_type ? p_node_type : get_class_name();
+
 	// try with custom themes
 	Control *theme_owner = data.theme_owner;
 
@@ -1098,7 +1100,7 @@ bool Control::has_icon(const StringName &p_name, const StringName &p_node_type) 
 	}
 
 	if (Theme::get_project_default().is_valid()) {
-		if (Theme::get_project_default()->has_color(p_name, type)) {
+		if (Theme::get_project_default()->has_icon(p_name, type)) {
 			return true;
 		}
 	}
