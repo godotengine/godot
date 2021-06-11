@@ -32,7 +32,7 @@
 
 #include "editor/audio_stream_preview.h"
 #include "editor_resource_preview.h"
-#include "editor_scale.h"
+#include "editordeps/editor_scale.h"
 #include "scene/2d/animated_sprite_2d.h"
 #include "scene/2d/sprite_2d.h"
 #include "scene/3d/sprite_3d.h"

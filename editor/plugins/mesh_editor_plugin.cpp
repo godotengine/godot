@@ -30,7 +30,7 @@
 
 #include "mesh_editor_plugin.h"
 
-#include "editor/editor_scale.h"
+#include "editordeps/editor_scale.h"
 
 void MeshEditor::_gui_input(Ref<InputEvent> p_event) {
 	ERR_FAIL_COND(p_event.is_null());

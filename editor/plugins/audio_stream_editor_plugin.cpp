@@ -34,8 +34,8 @@
 #include "core/io/resource_loader.h"
 #include "core/os/keyboard.h"
 #include "editor/audio_stream_preview.h"
-#include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
+#include "editordeps/editor_scale.h"
 
 void AudioStreamEditor::_notification(int p_what) {
 	if (p_what == NOTIFICATION_READY) {

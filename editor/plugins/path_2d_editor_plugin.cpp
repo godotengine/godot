@@ -33,8 +33,8 @@
 #include "canvas_item_editor_plugin.h"
 #include "core/os/file_access.h"
 #include "core/os/keyboard.h"
-#include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
+#include "editordeps/editor_scale.h"
 
 void Path2DEditor::_notification(int p_what) {
 	switch (p_what) {

@@ -33,8 +33,8 @@
 #include "core/os/dir_access.h"
 #include "editor/editor_node.h"
 #include "editor/editor_plugin.h"
-#include "editor/editor_scale.h"
 #include "editor/project_settings_editor.h"
+#include "editordeps/editor_scale.h"
 #include "scene/gui/grid_container.h"
 
 #include "modules/modules_enabled.gen.h"

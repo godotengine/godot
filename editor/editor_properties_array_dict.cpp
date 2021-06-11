@@ -31,8 +31,8 @@
 #include "editor_properties_array_dict.h"
 
 #include "core/io/marshalls.h"
-#include "editor/editor_scale.h"
 #include "editor_properties.h"
+#include "editordeps/editor_scale.h"
 
 bool EditorPropertyArrayObject::_set(const StringName &p_name, const Variant &p_value) {
 	String pn = p_name;

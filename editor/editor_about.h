@@ -43,7 +43,7 @@
 #include "scene/gui/texture_rect.h"
 #include "scene/gui/tree.h"
 
-#include "editor_scale.h"
+#include "editordeps/editor_scale.h"
 
 /**
  * NOTE: Do not assume the EditorNode singleton to be available in this class' methods.

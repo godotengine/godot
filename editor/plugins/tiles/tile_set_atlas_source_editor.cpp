@@ -33,8 +33,8 @@
 #include "tiles_editor_plugin.h"
 
 #include "editor/editor_inspector.h"
-#include "editor/editor_scale.h"
 #include "editor/progress_dialog.h"
+#include "editordeps/editor_scale.h"
 
 #include "scene/gui/box_container.h"
 #include "scene/gui/button.h"

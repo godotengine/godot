@@ -38,7 +38,7 @@
 #include "core/version.h"
 #include "editor/editor_log.h"
 #include "editor/editor_properties.h"
-#include "editor/editor_scale.h"
+#include "editordeps/editor_scale.h"
 #include "scene/animation/animation_player.h"
 #include "scene/gui/menu_button.h"
 #include "scene/gui/panel.h"

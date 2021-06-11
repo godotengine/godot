@@ -31,8 +31,8 @@
 #include "tile_set_scenes_collection_source_editor.h"
 
 #include "editor/editor_resource_preview.h"
-#include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
+#include "editordeps/editor_scale.h"
 
 #include "scene/gui/item_list.h"
 

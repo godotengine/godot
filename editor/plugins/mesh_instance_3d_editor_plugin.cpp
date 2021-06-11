@@ -30,7 +30,7 @@
 
 #include "mesh_instance_3d_editor_plugin.h"
 
-#include "editor/editor_scale.h"
+#include "editordeps/editor_scale.h"
 #include "node_3d_editor_plugin.h"
 #include "scene/3d/collision_shape_3d.h"
 #include "scene/3d/navigation_region_3d.h"

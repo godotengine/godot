@@ -31,7 +31,7 @@
 #include "action_map_editor.h"
 #include "core/input/input_map.h"
 #include "core/os/keyboard.h"
-#include "editor/editor_scale.h"
+#include "editordeps/editor_scale.h"
 #include "scene/gui/center_container.h"
 
 /////////////////////////////////////////

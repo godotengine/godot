@@ -663,6 +663,7 @@ def generate_vs_project(env, num_jobs):
         add_to_vs_project(env, env.servers_sources)
         if env["tests"]:
             add_to_vs_project(env, env.tests_sources)
+        add_to_vs_project(env, env.editordeps_sources)
         add_to_vs_project(env, env.editor_sources)
 
         for header in glob_recursive("**/*.h"):

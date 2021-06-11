@@ -37,7 +37,7 @@
 #include "core/os/keyboard.h"
 #include "core/version.h"
 #include "editor_node.h"
-#include "editor_scale.h"
+#include "editordeps/editor_scale.h"
 #include "progress_dialog.h"
 #include "scene/gui/link_button.h"
 

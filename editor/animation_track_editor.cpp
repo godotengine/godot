@@ -36,7 +36,7 @@
 #include "editor/animation_bezier_editor.h"
 #include "editor/plugins/animation_player_editor_plugin.h"
 #include "editor_node.h"
-#include "editor_scale.h"
+#include "editordeps/editor_scale.h"
 #include "scene/animation/animation_player.h"
 #include "scene/main/window.h"
 #include "servers/audio/audio_stream.h"

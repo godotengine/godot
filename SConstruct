@@ -143,6 +143,9 @@ opts.Add(BoolVariable("no_editor_splash", "Don't use the custom splash screen fo
 opts.Add("system_certs_path", "Use this path as SSL certificates default for editor (for package maintainers)", "")
 opts.Add(BoolVariable("use_precise_math_checks", "Math checks use very precise epsilon (debug option)", False))
 
+_editordeps_desc = "Disable editor-related nodes and behaviors. Defaults to yes on non-tool builds."
+opts.Add(EnumVariable("disable_editordeps", _editordeps_desc, "default", ("default", "yes", "no")))
+
 # Thirdparty libraries
 opts.Add(BoolVariable("builtin_bullet", "Use the built-in Bullet library", True))
 opts.Add(BoolVariable("builtin_certs", "Use the built-in SSL certificates bundles", True))
@@ -633,6 +636,15 @@ if selected_platform in platform_list:
 
     if env["tools"]:
         env.Append(CPPDEFINES=["TOOLS_ENABLED"])
+        if env["disable_editordeps"] == "yes":
+            print(
+                "Build option 'disable_editordeps=yes' cannot be used with 'tools=yes' (editor), "
+                "only with 'tools=no' (export template)."
+            )
+            Exit(255)
+    elif env["disable_editordeps"] != "no":
+        env.Append(CPPDEFINES=["EDITORDEPS_DISABLED"])
+
     if env["disable_3d"]:
         if env["tools"]:
             print(
@@ -695,6 +707,7 @@ if selected_platform in platform_list:
     SConscript("core/SCsub")
     SConscript("servers/SCsub")
     SConscript("scene/SCsub")
+    SConscript("editordeps/SCsub")
     SConscript("editor/SCsub")
     SConscript("drivers/SCsub")
 
