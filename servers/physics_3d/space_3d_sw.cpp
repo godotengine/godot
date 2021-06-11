@@ -807,6 +807,13 @@ bool Space3DSW::test_body_motion(Body3DSW *p_body, const Transform3D &p_from, co
 					const CollisionObject3DSW *col_obj = intersection_query_results[i];
 					int shape_idx = intersection_query_subindex_results[i];
 
+					if (CollisionObject3DSW::TYPE_BODY == col_obj->get_type()) {
+						const Body3DSW *b = static_cast<const Body3DSW *>(col_obj);
+						if (p_infinite_inertia && PhysicsServer3D::BODY_MODE_STATIC != b->get_mode() && PhysicsServer3D::BODY_MODE_KINEMATIC != b->get_mode()) {
+							continue;
+						}
+					}
+
 					if (CollisionSolver3DSW::solve_static(body_shape, body_shape_xform, col_obj->get_shape(shape_idx), col_obj->get_transform() * col_obj->get_shape_transform(shape_idx), cbkres, cbkptr, nullptr, p_margin)) {
 						collided = cbk.amount > 0;
 					}
@@ -888,6 +895,13 @@ bool Space3DSW::test_body_motion(Body3DSW *p_body, const Transform3D &p_from, co
 			for (int i = 0; i < amount; i++) {
 				const CollisionObject3DSW *col_obj = intersection_query_results[i];
 				int shape_idx = intersection_query_subindex_results[i];
+
+				if (CollisionObject3DSW::TYPE_BODY == col_obj->get_type()) {
+					const Body3DSW *b = static_cast<const Body3DSW *>(col_obj);
+					if (p_infinite_inertia && PhysicsServer3D::BODY_MODE_STATIC != b->get_mode() && PhysicsServer3D::BODY_MODE_KINEMATIC != b->get_mode()) {
+						continue;
+					}
+				}
 
 				//test initial overlap, does it collide if going all the way?
 				Vector3 point_A, point_B;
@@ -993,6 +1007,13 @@ bool Space3DSW::test_body_motion(Body3DSW *p_body, const Transform3D &p_from, co
 			for (int i = 0; i < amount; i++) {
 				const CollisionObject3DSW *col_obj = intersection_query_results[i];
 				int shape_idx = intersection_query_subindex_results[i];
+
+				if (CollisionObject3DSW::TYPE_BODY == col_obj->get_type()) {
+					const Body3DSW *b = static_cast<const Body3DSW *>(col_obj);
+					if (p_infinite_inertia && PhysicsServer3D::BODY_MODE_STATIC != b->get_mode() && PhysicsServer3D::BODY_MODE_KINEMATIC != b->get_mode()) {
+						continue;
+					}
+				}
 
 				rcd.object = col_obj;
 				rcd.shape = shape_idx;
