@@ -218,14 +218,21 @@ void ResourceImporterTexture::get_import_options(List<ImportOption> *r_options, 
 void ResourceImporterTexture::save_to_stex_format(FileAccess *f, const Ref<Image> &p_image, CompressMode p_compress_mode, Image::UsedChannels p_channels, Image::CompressMode p_compress_format, float p_lossy_quality) {
 	switch (p_compress_mode) {
 		case COMPRESS_LOSSLESS: {
-			f->store_32(StreamTexture2D::DATA_FORMAT_LOSSLESS);
+			bool lossless_force_png = ProjectSettings::get_singleton()->get("rendering/textures/lossless_compression/force_png");
+			bool use_webp = !lossless_force_png && p_image->get_width() <= 16383 && p_image->get_height() <= 16383; // WebP has a size limit
+			f->store_32(use_webp ? StreamTexture2D::DATA_FORMAT_WEBP : StreamTexture2D::DATA_FORMAT_PNG);
 			f->store_16(p_image->get_width());
 			f->store_16(p_image->get_height());
 			f->store_32(p_image->get_mipmap_count());
 			f->store_32(p_image->get_format());
 
 			for (int i = 0; i < p_image->get_mipmap_count() + 1; i++) {
-				Vector<uint8_t> data = Image::lossless_packer(p_image->get_image_from_mipmap(i));
+				Vector<uint8_t> data;
+				if (use_webp) {
+					data = Image::webp_lossless_packer(p_image->get_image_from_mipmap(i));
+				} else {
+					data = Image::png_packer(p_image->get_image_from_mipmap(i));
+				}
 				int data_len = data.size();
 				f->store_32(data_len);
 
@@ -235,14 +242,14 @@ void ResourceImporterTexture::save_to_stex_format(FileAccess *f, const Ref<Image
 
 		} break;
 		case COMPRESS_LOSSY: {
-			f->store_32(StreamTexture2D::DATA_FORMAT_LOSSY);
+			f->store_32(StreamTexture2D::DATA_FORMAT_WEBP);
 			f->store_16(p_image->get_width());
 			f->store_16(p_image->get_height());
 			f->store_32(p_image->get_mipmap_count());
 			f->store_32(p_image->get_format());
 
 			for (int i = 0; i < p_image->get_mipmap_count() + 1; i++) {
-				Vector<uint8_t> data = Image::lossy_packer(p_image->get_image_from_mipmap(i), p_lossy_quality);
+				Vector<uint8_t> data = Image::webp_lossy_packer(p_image->get_image_from_mipmap(i), p_lossy_quality);
 				int data_len = data.size();
 				f->store_32(data_len);
 

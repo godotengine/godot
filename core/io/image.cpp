@@ -2729,10 +2729,11 @@ void (*Image::_image_decompress_bptc)(Image *) = nullptr;
 void (*Image::_image_decompress_etc1)(Image *) = nullptr;
 void (*Image::_image_decompress_etc2)(Image *) = nullptr;
 
-Vector<uint8_t> (*Image::lossy_packer)(const Ref<Image> &, float) = nullptr;
-Ref<Image> (*Image::lossy_unpacker)(const Vector<uint8_t> &) = nullptr;
-Vector<uint8_t> (*Image::lossless_packer)(const Ref<Image> &) = nullptr;
-Ref<Image> (*Image::lossless_unpacker)(const Vector<uint8_t> &) = nullptr;
+Vector<uint8_t> (*Image::webp_lossy_packer)(const Ref<Image> &, float) = nullptr;
+Vector<uint8_t> (*Image::webp_lossless_packer)(const Ref<Image> &) = nullptr;
+Ref<Image> (*Image::webp_unpacker)(const Vector<uint8_t> &) = nullptr;
+Vector<uint8_t> (*Image::png_packer)(const Ref<Image> &) = nullptr;
+Ref<Image> (*Image::png_unpacker)(const Vector<uint8_t> &) = nullptr;
 Vector<uint8_t> (*Image::basis_universal_packer)(const Ref<Image> &, Image::UsedChannels) = nullptr;
 Ref<Image> (*Image::basis_universal_unpacker)(const Vector<uint8_t> &) = nullptr;
 
