@@ -60,6 +60,7 @@ class ResourceInteractiveLoaderText : public ResourceInteractiveLoader {
 	//Map<String,String> remaps;
 
 	Map<int, ExtResource> ext_resources;
+	Map<int, RES> int_resources;
 
 	int resources_total;
 	int resource_current;
@@ -100,7 +101,6 @@ class ResourceInteractiveLoaderText : public ResourceInteractiveLoader {
 
 	friend class ResourceFormatLoaderText;
 
-	List<RES> resource_cache;
 	Error error;
 
 	RES resource;
