@@ -362,7 +362,9 @@ Vector<String> FileAccess::get_csv_line(const String &p_delim) const {
 		}
 	}
 
-	strings.push_back(current);
+	if (!l.is_empty()) {
+		strings.push_back(current);
+	}
 
 	return strings;
 }
