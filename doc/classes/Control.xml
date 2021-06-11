@@ -1175,7 +1175,7 @@
 		<member name="theme" type="Theme" setter="set_theme" getter="get_theme">
 			The [Theme] resource this node and all its [Control] children use. If a child node has its own [Theme] resource set, theme items are merged with child's definitions having higher priority.
 		</member>
-		<member name="theme_custom_type" type="StringName" setter="set_theme_custom_type" getter="get_theme_custom_type" default="@&quot;&quot;">
+		<member name="theme_custom_type" type="StringName" setter="set_theme_custom_type" getter="get_theme_custom_type" default="&amp;&quot;&quot;">
 			The type name used by this [Control] to look up its own theme items. By default, the class name of the node is used (e.g. [code]Button[/code] for the [Button] control), as well as the class names of all parent classes (in order of inheritance). Setting this property gives the highest priority to the type of the specified name, then falls back on the class names.
 			[b]Note:[/b] To look up [Control]'s own items use various [code]get_theme_*[/code] methods without specifying [code]theme_type[/code].
 			[b]Note:[/b] Theme items are looked for in the tree order, from branch to root, where each [Control] node is checked for its [member theme] property. The earliest match against any type/class name is returned. The project-level Theme and the default Theme are checked last.

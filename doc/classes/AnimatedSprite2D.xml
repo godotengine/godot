@@ -22,7 +22,7 @@
 		<method name="play">
 			<return type="void">
 			</return>
-			<argument index="0" name="anim" type="StringName" default="@&quot;&quot;">
+			<argument index="0" name="anim" type="StringName" default="&amp;&quot;&quot;">
 			</argument>
 			<argument index="1" name="backwards" type="bool" default="false">
 			</argument>
@@ -39,7 +39,7 @@
 		</method>
 	</methods>
 	<members>
-		<member name="animation" type="StringName" setter="set_animation" getter="get_animation" default="@&quot;default&quot;">
+		<member name="animation" type="StringName" setter="set_animation" getter="get_animation" default="&amp;&quot;default&quot;">
 			The current animation from the [code]frames[/code] resource. If this value changes, the [code]frame[/code] counter is reset.
 		</member>
 		<member name="centered" type="bool" setter="set_centered" getter="is_centered" default="true">
