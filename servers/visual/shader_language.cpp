@@ -6147,6 +6147,12 @@ Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_funct
 					builtin_types = p_functions[name].built_ins;
 				}
 
+				if (p_functions.has("global")) { // Adds global variables: 'TIME'
+					for (Map<StringName, BuiltInInfo>::Element *E = p_functions["global"].built_ins.front(); E; E = E->next()) {
+						builtin_types.insert(E->key(), E->value());
+					}
+				}
+
 				ShaderNode::Function function;
 
 				function.callable = !p_functions.has(name);
@@ -6567,17 +6573,27 @@ Error ShaderLanguage::complete(const String &p_code, const Map<StringName, Funct
 					block = block->parent_block;
 				}
 
-				if (comp_ident && skip_function != StringName() && p_functions.has(skip_function)) {
-					for (Map<StringName, BuiltInInfo>::Element *E = p_functions[skip_function].built_ins.front(); E; E = E->next()) {
-						ScriptCodeCompletionOption::Kind kind = ScriptCodeCompletionOption::KIND_MEMBER;
-						if (E->get().constant) {
-							kind = ScriptCodeCompletionOption::KIND_CONSTANT;
-						}
-						matches.insert(E->key(), kind);
-					}
-				}
-
 				if (comp_ident) {
+					if (p_functions.has("global")) {
+						for (Map<StringName, BuiltInInfo>::Element *E = p_functions["global"].built_ins.front(); E; E = E->next()) {
+							ScriptCodeCompletionOption::Kind kind = ScriptCodeCompletionOption::KIND_MEMBER;
+							if (E->get().constant) {
+								kind = ScriptCodeCompletionOption::KIND_CONSTANT;
+							}
+							matches.insert(E->key(), kind);
+						}
+					}
+
+					if (skip_function != StringName() && p_functions.has(skip_function)) {
+						for (Map<StringName, BuiltInInfo>::Element *E = p_functions[skip_function].built_ins.front(); E; E = E->next()) {
+							ScriptCodeCompletionOption::Kind kind = ScriptCodeCompletionOption::KIND_MEMBER;
+							if (E->get().constant) {
+								kind = ScriptCodeCompletionOption::KIND_CONSTANT;
+							}
+							matches.insert(E->key(), kind);
+						}
+					}
+
 					for (const Map<StringName, ShaderNode::Varying>::Element *E = shader->varyings.front(); E; E = E->next()) {
 						matches.insert(E->key(), ScriptCodeCompletionOption::KIND_VARIABLE);
 					}

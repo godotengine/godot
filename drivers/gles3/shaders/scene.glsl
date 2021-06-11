@@ -692,12 +692,6 @@ MATERIAL_UNIFORMS
 
 #endif
 
-/* clang-format off */
-
-FRAGMENT_SHADER_GLOBALS
-
-/* clang-format on */
-
 layout(std140) uniform SceneData {
 	highp mat4 projection_matrix;
 	highp mat4 inv_projection_matrix;
@@ -746,7 +740,13 @@ layout(std140) uniform SceneData {
 	int view_index;
 };
 
-	//directional light data
+/* clang-format off */
+
+FRAGMENT_SHADER_GLOBALS
+
+/* clang-format on */
+
+//directional light data
 
 #ifdef USE_LIGHT_DIRECTIONAL
 
