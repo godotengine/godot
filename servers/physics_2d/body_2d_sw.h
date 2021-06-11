@@ -41,7 +41,7 @@ class Constraint2DSW;
 class PhysicsDirectBodyState2DSW;
 
 class Body2DSW : public CollisionObject2DSW {
-	PhysicsServer2D::BodyMode mode;
+	PhysicsServer2D::BodyMode mode = PhysicsServer2D::BODY_MODE_DYNAMIC;
 
 	Vector2 biased_linear_velocity;
 	real_t biased_angular_velocity = 0.0;
@@ -52,40 +52,44 @@ class Body2DSW : public CollisionObject2DSW {
 	Vector2 constant_linear_velocity;
 	real_t constant_angular_velocity = 0.0;
 
-	real_t linear_damp;
-	real_t angular_damp;
-	real_t gravity_scale;
+	real_t linear_damp = -1.0;
+	real_t angular_damp = -1.0;
+	real_t gravity_scale = 1.0;
 
-	real_t mass;
-	real_t inertia;
-	real_t bounce;
-	real_t friction;
+	real_t bounce = 0.0;
+	real_t friction = 1.0;
 
-	real_t _inv_mass;
-	real_t _inv_inertia;
-	bool user_inertia;
+	real_t mass = 1.0;
+	real_t _inv_mass = 1.0;
+
+	real_t inertia = 0.0;
+	real_t _inv_inertia = 0.0;
+
+	Vector2 center_of_mass;
+
+	bool calculate_inertia = true;
+	bool calculate_center_of_mass = true;
 
 	Vector2 gravity;
-	real_t area_linear_damp;
-	real_t area_angular_damp;
+	real_t area_linear_damp = 0.0;
+	real_t area_angular_damp = 0.0;
 
-	real_t still_time;
+	real_t still_time = 0.0;
 
 	Vector2 applied_force;
-	real_t applied_torque;
+	real_t applied_torque = 0.0;
 
 	SelfList<Body2DSW> active_list;
-	SelfList<Body2DSW> inertia_update_list;
+	SelfList<Body2DSW> mass_properties_update_list;
 	SelfList<Body2DSW> direct_state_query_list;
 
 	VSet<RID> exceptions;
-	PhysicsServer2D::CCDMode continuous_cd_mode;
-	bool omit_force_integration;
-	bool active;
-	bool can_sleep;
-	bool first_time_kinematic;
-	bool first_integration;
-	void _update_inertia();
+	PhysicsServer2D::CCDMode continuous_cd_mode = PhysicsServer2D::CCD_MODE_DISABLED;
+	bool omit_force_integration = false;
+	bool active = true;
+	bool can_sleep = true;
+	bool first_time_kinematic = false;
+	void _mass_properties_changed();
 	virtual void _shapes_changed();
 	Transform2D new_transform;
 
@@ -118,7 +122,7 @@ class Body2DSW : public CollisionObject2DSW {
 	};
 
 	Vector<Contact> contacts; //no contacts by default
-	int contact_count;
+	int contact_count = 0;
 
 	void *body_state_callback_instance = nullptr;
 	PhysicsServer2D::BodyStateCallback body_state_callback = nullptr;
@@ -132,7 +136,7 @@ class Body2DSW : public CollisionObject2DSW {
 
 	PhysicsDirectBodyState2DSW *direct_state = nullptr;
 
-	uint64_t island_step;
+	uint64_t island_step = 0;
 
 	_FORCE_INLINE_ void _compute_area_gravity_and_damping(const Area2DSW *p_area);
 
@@ -210,7 +214,7 @@ public:
 
 	_FORCE_INLINE_ void apply_impulse(const Vector2 &p_impulse, const Vector2 &p_position = Vector2()) {
 		linear_velocity += p_impulse * _inv_mass;
-		angular_velocity += _inv_inertia * p_position.cross(p_impulse);
+		angular_velocity += _inv_inertia * (p_position - center_of_mass).cross(p_impulse);
 	}
 
 	_FORCE_INLINE_ void apply_torque_impulse(real_t p_torque) {
@@ -219,7 +223,7 @@ public:
 
 	_FORCE_INLINE_ void apply_bias_impulse(const Vector2 &p_impulse, const Vector2 &p_position = Vector2()) {
 		biased_linear_velocity += p_impulse * _inv_mass;
-		biased_angular_velocity += _inv_inertia * p_position.cross(p_impulse);
+		biased_angular_velocity += _inv_inertia * (p_position - center_of_mass).cross(p_impulse);
 	}
 
 	void set_active(bool p_active);
@@ -232,8 +236,8 @@ public:
 		set_active(true);
 	}
 
-	void set_param(PhysicsServer2D::BodyParameter p_param, real_t);
-	real_t get_param(PhysicsServer2D::BodyParameter p_param) const;
+	void set_param(PhysicsServer2D::BodyParameter p_param, const Variant &p_value);
+	Variant get_param(PhysicsServer2D::BodyParameter p_param) const;
 
 	void set_mode(PhysicsServer2D::BodyMode p_mode);
 	PhysicsServer2D::BodyMode get_mode() const;
@@ -253,7 +257,7 @@ public:
 
 	_FORCE_INLINE_ void add_force(const Vector2 &p_force, const Vector2 &p_position = Vector2()) {
 		applied_force += p_force;
-		applied_torque += p_position.cross(p_force);
+		applied_torque += (p_position - center_of_mass).cross(p_force);
 	}
 
 	_FORCE_INLINE_ void add_torque(real_t p_torque) {
@@ -265,8 +269,10 @@ public:
 
 	void set_space(Space2DSW *p_space);
 
-	void update_inertias();
+	void update_mass_properties();
+	void reset_mass_properties();
 
+	_FORCE_INLINE_ Vector2 get_center_of_mass() const { return center_of_mass; }
 	_FORCE_INLINE_ real_t get_inv_mass() const { return _inv_mass; }
 	_FORCE_INLINE_ real_t get_inv_inertia() const { return _inv_inertia; }
 	_FORCE_INLINE_ real_t get_friction() const { return friction; }

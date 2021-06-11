@@ -46,6 +46,10 @@ real_t PhysicsDirectBodyState2DSW::get_total_linear_damp() const {
 	return body->area_linear_damp;
 }
 
+Vector2 PhysicsDirectBodyState2DSW::get_center_of_mass() const {
+	return body->get_center_of_mass();
+}
+
 real_t PhysicsDirectBodyState2DSW::get_inverse_mass() const {
 	return body->get_inv_mass();
 }

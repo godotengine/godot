@@ -743,19 +743,26 @@ uint32_t PhysicsServer2DSW::body_get_collision_mask(RID p_body) const {
 	return body->get_collision_mask();
 };
 
-void PhysicsServer2DSW::body_set_param(RID p_body, BodyParameter p_param, real_t p_value) {
+void PhysicsServer2DSW::body_set_param(RID p_body, BodyParameter p_param, const Variant &p_value) {
 	Body2DSW *body = body_owner.getornull(p_body);
 	ERR_FAIL_COND(!body);
 
 	body->set_param(p_param, p_value);
 };
 
-real_t PhysicsServer2DSW::body_get_param(RID p_body, BodyParameter p_param) const {
+Variant PhysicsServer2DSW::body_get_param(RID p_body, BodyParameter p_param) const {
 	Body2DSW *body = body_owner.getornull(p_body);
 	ERR_FAIL_COND_V(!body, 0);
 
 	return body->get_param(p_param);
 };
+
+void PhysicsServer2DSW::body_reset_mass_properties(RID p_body) {
+	Body2DSW *body = body_owner.getornull(p_body);
+	ERR_FAIL_COND(!body);
+
+	return body->reset_mass_properties();
+}
 
 void PhysicsServer2DSW::body_set_state(RID p_body, BodyState p_state, const Variant &p_variant) {
 	Body2DSW *body = body_owner.getornull(p_body);

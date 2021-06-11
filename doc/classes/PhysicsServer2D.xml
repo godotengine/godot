@@ -373,7 +373,7 @@
 			</description>
 		</method>
 		<method name="body_get_param" qualifiers="const">
-			<return type="float" />
+			<return type="Variant" />
 			<argument index="0" name="body" type="RID" />
 			<argument index="1" name="param" type="int" enum="PhysicsServer2D.BodyParameter" />
 			<description>
@@ -449,6 +449,13 @@
 				Removes a shape from a body. The shape is not deleted, so it can be reused afterwards.
 			</description>
 		</method>
+		<method name="body_reset_mass_properties">
+			<return type="void" />
+			<argument index="0" name="body" type="RID" />
+			<description>
+				Restores the default inertia and center of mass based on shapes to cancel any custom values previously set using [method body_set_param].
+			</description>
+		</method>
 		<method name="body_set_axis_velocity">
 			<return type="void" />
 			<argument index="0" name="body" type="RID" />
@@ -522,7 +529,7 @@
 			<return type="void" />
 			<argument index="0" name="body" type="RID" />
 			<argument index="1" name="param" type="int" enum="PhysicsServer2D.BodyParameter" />
-			<argument index="2" name="value" type="float" />
+			<argument index="2" name="value" type="Variant" />
 			<description>
 				Sets a body parameter. See [enum BodyParameter] for a list of available parameters.
 			</description>
@@ -936,16 +943,19 @@
 		<constant name="BODY_PARAM_INERTIA" value="3" enum="BodyParameter">
 			Constant to set/get a body's inertia.
 		</constant>
-		<constant name="BODY_PARAM_GRAVITY_SCALE" value="4" enum="BodyParameter">
+		<constant name="BODY_PARAM_CENTER_OF_MASS" value="4" enum="BodyParameter">
+			Constant to set/get a body's center of mass.
+		</constant>
+		<constant name="BODY_PARAM_GRAVITY_SCALE" value="5" enum="BodyParameter">
 			Constant to set/get a body's gravity multiplier.
 		</constant>
-		<constant name="BODY_PARAM_LINEAR_DAMP" value="5" enum="BodyParameter">
+		<constant name="BODY_PARAM_LINEAR_DAMP" value="6" enum="BodyParameter">
 			Constant to set/get a body's linear dampening factor.
 		</constant>
-		<constant name="BODY_PARAM_ANGULAR_DAMP" value="6" enum="BodyParameter">
+		<constant name="BODY_PARAM_ANGULAR_DAMP" value="7" enum="BodyParameter">
 			Constant to set/get a body's angular dampening factor.
 		</constant>
-		<constant name="BODY_PARAM_MAX" value="7" enum="BodyParameter">
+		<constant name="BODY_PARAM_MAX" value="8" enum="BodyParameter">
 			Represents the size of the [enum BodyParameter] enum.
 		</constant>
 		<constant name="BODY_STATE_TRANSFORM" value="0" enum="BodyState">

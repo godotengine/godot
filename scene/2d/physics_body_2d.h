@@ -124,6 +124,11 @@ public:
 		MODE_KINEMATIC,
 	};
 
+	enum CenterOfMassMode {
+		CENTER_OF_MASS_MODE_AUTO,
+		CENTER_OF_MASS_MODE_CUSTOM,
+	};
+
 	enum CCDMode {
 		CCD_MODE_DISABLED,
 		CCD_MODE_CAST_RAY,
@@ -135,6 +140,10 @@ private:
 	Mode mode = MODE_DYNAMIC;
 
 	real_t mass = 1.0;
+	real_t inertia = 0.0;
+	CenterOfMassMode center_of_mass_mode = CENTER_OF_MASS_MODE_AUTO;
+	Vector2 center_of_mass;
+
 	Ref<PhysicsMaterial> physics_material_override;
 	real_t gravity_scale = 1.0;
 	real_t linear_damp = -1.0;
@@ -198,6 +207,8 @@ protected:
 	void _notification(int p_what);
 	static void _bind_methods();
 
+	virtual void _validate_property(PropertyInfo &property) const override;
+
 	GDVIRTUAL1(_integrate_forces, PhysicsDirectBodyState2D *)
 
 public:
@@ -209,6 +220,12 @@ public:
 
 	void set_inertia(real_t p_inertia);
 	real_t get_inertia() const;
+
+	void set_center_of_mass_mode(CenterOfMassMode p_mode);
+	CenterOfMassMode get_center_of_mass_mode() const;
+
+	void set_center_of_mass(const Vector2 &p_center_of_mass);
+	const Vector2 &get_center_of_mass() const;
 
 	void set_physics_material_override(const Ref<PhysicsMaterial> &p_physics_material_override);
 	Ref<PhysicsMaterial> get_physics_material_override() const;
@@ -274,6 +291,7 @@ private:
 };
 
 VARIANT_ENUM_CAST(RigidBody2D::Mode);
+VARIANT_ENUM_CAST(RigidBody2D::CenterOfMassMode);
 VARIANT_ENUM_CAST(RigidBody2D::CCDMode);
 
 class CharacterBody2D : public PhysicsBody2D {

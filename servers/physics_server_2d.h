@@ -48,6 +48,7 @@ public:
 	virtual real_t get_total_linear_damp() const = 0; // get density of this body space/area
 	virtual real_t get_total_angular_damp() const = 0; // get density of this body space/area
 
+	virtual Vector2 get_center_of_mass() const = 0;
 	virtual real_t get_inverse_mass() const = 0; // get the mass
 	virtual real_t get_inverse_inertia() const = 0; // get density of this body space
 
@@ -402,15 +403,18 @@ public:
 		BODY_PARAM_BOUNCE,
 		BODY_PARAM_FRICTION,
 		BODY_PARAM_MASS, ///< unused for static, always infinite
-		BODY_PARAM_INERTIA, // read-only: computed from mass & shapes
+		BODY_PARAM_INERTIA,
+		BODY_PARAM_CENTER_OF_MASS,
 		BODY_PARAM_GRAVITY_SCALE,
 		BODY_PARAM_LINEAR_DAMP,
 		BODY_PARAM_ANGULAR_DAMP,
 		BODY_PARAM_MAX,
 	};
 
-	virtual void body_set_param(RID p_body, BodyParameter p_param, real_t p_value) = 0;
-	virtual real_t body_get_param(RID p_body, BodyParameter p_param) const = 0;
+	virtual void body_set_param(RID p_body, BodyParameter p_param, const Variant &p_value) = 0;
+	virtual Variant body_get_param(RID p_body, BodyParameter p_param) const = 0;
+
+	virtual void body_reset_mass_properties(RID p_body) = 0;
 
 	//state
 	enum BodyState {

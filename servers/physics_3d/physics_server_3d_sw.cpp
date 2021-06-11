@@ -643,19 +643,26 @@ uint32_t PhysicsServer3DSW::body_get_user_flags(RID p_body) const {
 	return 0;
 };
 
-void PhysicsServer3DSW::body_set_param(RID p_body, BodyParameter p_param, real_t p_value) {
+void PhysicsServer3DSW::body_set_param(RID p_body, BodyParameter p_param, const Variant &p_value) {
 	Body3DSW *body = body_owner.getornull(p_body);
 	ERR_FAIL_COND(!body);
 
 	body->set_param(p_param, p_value);
 };
 
-real_t PhysicsServer3DSW::body_get_param(RID p_body, BodyParameter p_param) const {
+Variant PhysicsServer3DSW::body_get_param(RID p_body, BodyParameter p_param) const {
 	Body3DSW *body = body_owner.getornull(p_body);
 	ERR_FAIL_COND_V(!body, 0);
 
 	return body->get_param(p_param);
 };
+
+void PhysicsServer3DSW::body_reset_mass_properties(RID p_body) {
+	Body3DSW *body = body_owner.getornull(p_body);
+	ERR_FAIL_COND(!body);
+
+	return body->reset_mass_properties();
+}
 
 void PhysicsServer3DSW::body_set_state(RID p_body, BodyState p_state, const Variant &p_variant) {
 	Body3DSW *body = body_owner.getornull(p_body);

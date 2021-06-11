@@ -39,7 +39,7 @@ class Constraint3DSW;
 class PhysicsDirectBodyState3DSW;
 
 class Body3DSW : public CollisionObject3DSW {
-	PhysicsServer3D::BodyMode mode;
+	PhysicsServer3D::BodyMode mode = PhysicsServer3D::BODY_MODE_DYNAMIC;
 
 	Vector3 linear_velocity;
 	Vector3 angular_velocity;
@@ -49,17 +49,18 @@ class Body3DSW : public CollisionObject3DSW {
 
 	Vector3 biased_linear_velocity;
 	Vector3 biased_angular_velocity;
-	real_t mass;
-	real_t bounce;
-	real_t friction;
+	real_t mass = 1.0;
+	real_t bounce = 0.0;
+	real_t friction = 1.0;
+	Vector3 inertia;
 
-	real_t linear_damp;
-	real_t angular_damp;
-	real_t gravity_scale;
+	real_t linear_damp = -1.0;
+	real_t angular_damp = -1.0;
+	real_t gravity_scale = 1.0;
 
 	uint16_t locked_axis = 0;
 
-	real_t _inv_mass;
+	real_t _inv_mass = 1.0;
 	Vector3 _inv_inertia; // Relative to the principal axes of inertia
 
 	// Relative to the local frame of reference
@@ -71,30 +72,32 @@ class Body3DSW : public CollisionObject3DSW {
 	Basis principal_inertia_axes;
 	Vector3 center_of_mass;
 
+	bool calculate_inertia = true;
+	bool calculate_center_of_mass = true;
+
 	Vector3 gravity;
 
-	real_t still_time;
+	real_t still_time = 0.0;
 
 	Vector3 applied_force;
 	Vector3 applied_torque;
 
-	real_t area_angular_damp;
-	real_t area_linear_damp;
+	real_t area_angular_damp = 0.0;
+	real_t area_linear_damp = 0.0;
 
 	SelfList<Body3DSW> active_list;
-	SelfList<Body3DSW> inertia_update_list;
+	SelfList<Body3DSW> mass_properties_update_list;
 	SelfList<Body3DSW> direct_state_query_list;
 
 	VSet<RID> exceptions;
-	bool omit_force_integration;
-	bool active;
+	bool omit_force_integration = false;
+	bool active = true;
 
-	bool first_integration;
+	bool continuous_cd = false;
+	bool can_sleep = true;
+	bool first_time_kinematic = false;
 
-	bool continuous_cd;
-	bool can_sleep;
-	bool first_time_kinematic;
-	void _update_inertia();
+	void _mass_properties_changed();
 	virtual void _shapes_changed();
 	Transform3D new_transform;
 
@@ -115,7 +118,7 @@ class Body3DSW : public CollisionObject3DSW {
 	};
 
 	Vector<Contact> contacts; //no contacts by default
-	int contact_count;
+	int contact_count = 0;
 
 	void *body_state_callback_instance = nullptr;
 	PhysicsServer3D::BodyStateCallback body_state_callback = nullptr;
@@ -129,7 +132,7 @@ class Body3DSW : public CollisionObject3DSW {
 
 	PhysicsDirectBodyState3DSW *direct_state = nullptr;
 
-	uint64_t island_step;
+	uint64_t island_step = 0;
 
 	_FORCE_INLINE_ void _compute_area_gravity_and_damping(const Area3DSW *p_area);
 
@@ -254,8 +257,8 @@ public:
 		set_active(true);
 	}
 
-	void set_param(PhysicsServer3D::BodyParameter p_param, real_t);
-	real_t get_param(PhysicsServer3D::BodyParameter p_param) const;
+	void set_param(PhysicsServer3D::BodyParameter p_param, const Variant &p_value);
+	Variant get_param(PhysicsServer3D::BodyParameter p_param) const;
 
 	void set_mode(PhysicsServer3D::BodyMode p_mode);
 	PhysicsServer3D::BodyMode get_mode() const;
@@ -274,7 +277,8 @@ public:
 
 	void set_space(Space3DSW *p_space);
 
-	void update_inertias();
+	void update_mass_properties();
+	void reset_mass_properties();
 
 	_FORCE_INLINE_ real_t get_inv_mass() const { return _inv_mass; }
 	_FORCE_INLINE_ const Vector3 &get_inv_inertia() const { return _inv_inertia; }

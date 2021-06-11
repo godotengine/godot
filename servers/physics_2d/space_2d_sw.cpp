@@ -482,7 +482,7 @@ bool PhysicsDirectSpaceState2DSW::rest_info(RID p_shape, const Transform2D &p_sh
 	r_info->metadata = rcd.best_object->get_shape_metadata(rcd.best_shape);
 	if (rcd.best_object->get_type() == CollisionObject2DSW::TYPE_BODY) {
 		const Body2DSW *body = static_cast<const Body2DSW *>(rcd.best_object);
-		Vector2 rel_vec = r_info->point - body->get_transform().get_origin();
+		Vector2 rel_vec = r_info->point - (body->get_transform().get_origin() + body->get_center_of_mass());
 		r_info->linear_velocity = Vector2(-body->get_angular_velocity() * rel_vec.y, body->get_angular_velocity() * rel_vec.x) + body->get_linear_velocity();
 
 	} else {
@@ -961,7 +961,7 @@ bool Space2DSW::test_body_motion(Body2DSW *p_body, const Transform2D &p_from, co
 				r_result->collider_metadata = rcd.best_object->get_shape_metadata(rcd.best_shape);
 
 				const Body2DSW *body = static_cast<const Body2DSW *>(rcd.best_object);
-				Vector2 rel_vec = r_result->collision_point - body->get_transform().get_origin();
+				Vector2 rel_vec = r_result->collision_point - (body->get_transform().get_origin() + body->get_center_of_mass());
 				r_result->collider_velocity = Vector2(-body->get_angular_velocity() * rel_vec.y, body->get_angular_velocity() * rel_vec.x) + body->get_linear_velocity();
 
 				r_result->travel = safe * p_motion;
@@ -1041,12 +1041,12 @@ void Space2DSW::body_remove_from_active_list(SelfList<Body2DSW> *p_body) {
 	active_list.remove(p_body);
 }
 
-void Space2DSW::body_add_to_inertia_update_list(SelfList<Body2DSW> *p_body) {
-	inertia_update_list.add(p_body);
+void Space2DSW::body_add_to_mass_properties_update_list(SelfList<Body2DSW> *p_body) {
+	mass_properties_update_list.add(p_body);
 }
 
-void Space2DSW::body_remove_from_inertia_update_list(SelfList<Body2DSW> *p_body) {
-	inertia_update_list.remove(p_body);
+void Space2DSW::body_remove_from_mass_properties_update_list(SelfList<Body2DSW> *p_body) {
+	mass_properties_update_list.remove(p_body);
 }
 
 BroadPhase2DSW *Space2DSW::get_broadphase() {
@@ -1112,9 +1112,9 @@ void Space2DSW::call_queries() {
 void Space2DSW::setup() {
 	contact_debug_count = 0;
 
-	while (inertia_update_list.first()) {
-		inertia_update_list.first()->self()->update_inertias();
-		inertia_update_list.remove(inertia_update_list.first());
+	while (mass_properties_update_list.first()) {
+		mass_properties_update_list.first()->self()->update_mass_properties();
+		mass_properties_update_list.remove(mass_properties_update_list.first());
 	}
 }
 

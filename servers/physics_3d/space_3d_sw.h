@@ -79,7 +79,7 @@ private:
 
 	BroadPhase3DSW *broadphase;
 	SelfList<Body3DSW>::List active_list;
-	SelfList<Body3DSW>::List inertia_update_list;
+	SelfList<Body3DSW>::List mass_properties_update_list;
 	SelfList<Body3DSW>::List state_query_list;
 	SelfList<Area3DSW>::List monitor_query_list;
 	SelfList<Area3DSW>::List area_moved_list;
@@ -137,8 +137,8 @@ public:
 	const SelfList<Body3DSW>::List &get_active_body_list() const;
 	void body_add_to_active_list(SelfList<Body3DSW> *p_body);
 	void body_remove_from_active_list(SelfList<Body3DSW> *p_body);
-	void body_add_to_inertia_update_list(SelfList<Body3DSW> *p_body);
-	void body_remove_from_inertia_update_list(SelfList<Body3DSW> *p_body);
+	void body_add_to_mass_properties_update_list(SelfList<Body3DSW> *p_body);
+	void body_remove_from_mass_properties_update_list(SelfList<Body3DSW> *p_body);
 
 	void body_add_to_state_query_list(SelfList<Body3DSW> *p_body);
 	void body_remove_from_state_query_list(SelfList<Body3DSW> *p_body);
