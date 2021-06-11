@@ -31,10 +31,10 @@
 #include "editor_resource_preview.h"
 
 #include "core/config/project_settings.h"
+#include "core/io/file_access.h"
 #include "core/io/resource_loader.h"
 #include "core/io/resource_saver.h"
 #include "core/object/message_queue.h"
-#include "core/os/file_access.h"
 #include "editor_node.h"
 #include "editor_scale.h"
 #include "editor_settings.h"

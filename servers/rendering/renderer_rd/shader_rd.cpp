@@ -31,8 +31,8 @@
 #include "shader_rd.h"
 
 #include "core/io/compression.h"
-#include "core/os/dir_access.h"
-#include "core/os/file_access.h"
+#include "core/io/dir_access.h"
+#include "core/io/file_access.h"
 #include "renderer_compositor_rd.h"
 #include "servers/rendering/rendering_device.h"
 #include "thirdparty/misc/smolv.h"

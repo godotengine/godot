@@ -30,9 +30,9 @@
 
 #include "resource_importer_shader_file.h"
 
+#include "core/io/file_access.h"
 #include "core/io/marshalls.h"
 #include "core/io/resource_saver.h"
-#include "core/os/file_access.h"
 #include "editor/editor_node.h"
 #include "editor/plugins/shader_file_editor_plugin.h"
 #include "servers/rendering/rendering_device_binds.h"

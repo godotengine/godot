@@ -31,8 +31,8 @@
 #ifndef EDITOR_EXPORT_H
 #define EDITOR_EXPORT_H
 
+#include "core/io/dir_access.h"
 #include "core/io/resource.h"
-#include "core/os/dir_access.h"
 #include "scene/main/node.h"
 #include "scene/main/timer.h"
 #include "scene/resources/texture.h"

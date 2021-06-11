@@ -30,9 +30,9 @@
 
 #include "editor_asset_installer.h"
 
+#include "core/io/dir_access.h"
+#include "core/io/file_access.h"
 #include "core/io/zip_io.h"
-#include "core/os/dir_access.h"
-#include "core/os/file_access.h"
 #include "editor_node.h"
 #include "progress_dialog.h"
 

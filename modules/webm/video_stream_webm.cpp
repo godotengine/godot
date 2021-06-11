@@ -31,7 +31,7 @@
 #include "video_stream_webm.h"
 
 #include "core/config/project_settings.h"
-#include "core/os/file_access.h"
+#include "core/io/file_access.h"
 #include "core/os/os.h"
 #include "servers/audio_server.h"
 

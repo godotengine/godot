@@ -43,7 +43,7 @@
 #include "scene/gui/tree.h"
 #include "scene/main/timer.h"
 
-#include "core/os/dir_access.h"
+#include "core/io/dir_access.h"
 #include "core/os/thread.h"
 
 #include "create_dialog.h"

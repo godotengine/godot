@@ -31,8 +31,8 @@
 #ifndef AUDIOEFFECTRECORD_H
 #define AUDIOEFFECTRECORD_H
 
+#include "core/io/file_access.h"
 #include "core/io/marshalls.h"
-#include "core/os/file_access.h"
 #include "core/os/os.h"
 #include "core/os/thread.h"
 #include "editor/import/resource_importer_wav.h"
