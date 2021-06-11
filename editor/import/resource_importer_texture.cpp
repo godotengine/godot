@@ -255,6 +255,8 @@ void ResourceImporterTexture::_save_stex(const Ref<Image> &p_image, const String
 
 	switch (p_compress_mode) {
 		case COMPRESS_LOSSLESS: {
+			bool lossless_force_png = ProjectSettings::get_singleton()->get("rendering/lossless_compression/force_png");
+			bool use_webp = !lossless_force_png && p_image->get_width() <= 16383 && p_image->get_height() <= 16383; // WebP has a size limit
 			Ref<Image> image = p_image->duplicate();
 			if (p_mipmaps) {
 				image->generate_mipmaps();
@@ -264,7 +266,11 @@ void ResourceImporterTexture::_save_stex(const Ref<Image> &p_image, const String
 
 			int mmc = image->get_mipmap_count() + 1;
 
-			format |= StreamTexture::FORMAT_BIT_LOSSLESS;
+			if (use_webp) {
+				format |= StreamTexture::FORMAT_BIT_WEBP;
+			} else {
+				format |= StreamTexture::FORMAT_BIT_PNG;
+			}
 			f->store_32(format);
 			f->store_32(mmc);
 
@@ -273,7 +279,12 @@ void ResourceImporterTexture::_save_stex(const Ref<Image> &p_image, const String
 					image->shrink_x2();
 				}
 
-				PoolVector<uint8_t> data = Image::lossless_packer(image);
+				PoolVector<uint8_t> data;
+				if (use_webp) {
+					data = Image::webp_lossless_packer(image);
+				} else {
+					data = Image::png_packer(image);
+				}
 				int data_len = data.size();
 				f->store_32(data_len);
 
@@ -292,7 +303,7 @@ void ResourceImporterTexture::_save_stex(const Ref<Image> &p_image, const String
 
 			int mmc = image->get_mipmap_count() + 1;
 
-			format |= StreamTexture::FORMAT_BIT_LOSSY;
+			format |= StreamTexture::FORMAT_BIT_WEBP;
 			f->store_32(format);
 			f->store_32(mmc);
 
@@ -301,7 +312,7 @@ void ResourceImporterTexture::_save_stex(const Ref<Image> &p_image, const String
 					image->shrink_x2();
 				}
 
-				PoolVector<uint8_t> data = Image::lossy_packer(image, p_lossy_quality);
+				PoolVector<uint8_t> data = Image::webp_lossy_packer(image, p_lossy_quality);
 				int data_len = data.size();
 				f->store_32(data_len);
 
