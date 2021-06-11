@@ -275,7 +275,7 @@ Error String::parse_url(String &r_scheme, String &r_host, int &r_port, String &r
 		base = base.substr(pos + 1, base.length() - pos - 1);
 	} else {
 		// Anything else
-		if (base.get_slice_count(":") > 1) {
+		if (base.get_slice_count(":") > 2) {
 			return ERR_INVALID_PARAMETER;
 		}
 		pos = base.rfind(":");
