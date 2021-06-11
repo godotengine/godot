@@ -368,7 +368,7 @@ void AnimatedSprite2D::_res_changed() {
 	update();
 }
 
-void AnimatedSprite2D::_set_playing(bool p_playing) {
+void AnimatedSprite2D::set_playing(bool p_playing) {
 	if (playing == p_playing) {
 		return;
 	}
@@ -377,25 +377,30 @@ void AnimatedSprite2D::_set_playing(bool p_playing) {
 	set_process_internal(playing);
 }
 
-bool AnimatedSprite2D::_is_playing() const {
-	return playing;
-}
-
-void AnimatedSprite2D::play(const StringName &p_animation, const bool p_backwards) {
-	backwards = p_backwards;
-
+void AnimatedSprite2D::start(const StringName &p_animation, const bool p_backwards) {
 	if (p_animation) {
 		set_animation(p_animation);
-		if (frames.is_valid() && backwards && get_frame() == 0) {
-			set_frame(frames->get_frame_count(p_animation) - 1);
-		}
 	}
+	backwards = p_backwards;
+	if (backwards && frames.is_valid()) {
+		set_frame(frames->get_frame_count(p_animation) - 1);
+	} else {
+		set_frame(0);
+	}
+	set_playing(true);
+}
 
-	_set_playing(true);
+void AnimatedSprite2D::pause() {
+	set_playing(false);
+}
+
+void AnimatedSprite2D::resume() {
+	set_playing(true);
 }
 
 void AnimatedSprite2D::stop() {
-	_set_playing(false);
+	set_frame(backwards ? (frames->get_frame_count(animation) - 1) : 0);
+	set_playing(false);
 }
 
 bool AnimatedSprite2D::is_playing() const {
@@ -457,11 +462,11 @@ void AnimatedSprite2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_animation", "animation"), &AnimatedSprite2D::set_animation);
 	ClassDB::bind_method(D_METHOD("get_animation"), &AnimatedSprite2D::get_animation);
 
-	ClassDB::bind_method(D_METHOD("_set_playing", "playing"), &AnimatedSprite2D::_set_playing);
-	ClassDB::bind_method(D_METHOD("_is_playing"), &AnimatedSprite2D::_is_playing);
-
-	ClassDB::bind_method(D_METHOD("play", "anim", "backwards"), &AnimatedSprite2D::play, DEFVAL(StringName()), DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("start", "animation", "backwards"), &AnimatedSprite2D::start, DEFVAL(StringName()), DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("pause"), &AnimatedSprite2D::pause);
+	ClassDB::bind_method(D_METHOD("resume"), &AnimatedSprite2D::resume);
 	ClassDB::bind_method(D_METHOD("stop"), &AnimatedSprite2D::stop);
+	ClassDB::bind_method(D_METHOD("set_playing", "playing"), &AnimatedSprite2D::set_playing);
 	ClassDB::bind_method(D_METHOD("is_playing"), &AnimatedSprite2D::is_playing);
 
 	ClassDB::bind_method(D_METHOD("set_centered", "centered"), &AnimatedSprite2D::set_centered);
@@ -490,7 +495,7 @@ void AnimatedSprite2D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "animation"), "set_animation", "get_animation");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "frame"), "set_frame", "get_frame");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "speed_scale"), "set_speed_scale", "get_speed_scale");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "playing"), "_set_playing", "_is_playing");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "playing"), "set_playing", "is_playing");
 	ADD_GROUP("Offset", "");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "centered"), "set_centered", "is_centered");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "offset"), "set_offset", "get_offset");
