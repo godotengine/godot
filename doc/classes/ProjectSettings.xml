@@ -781,6 +781,12 @@
 		<member name="internationalization/pseudolocalization/fake_bidi" type="bool" setter="" getter="" default="false">
 			Fake RTL text.
 		</member>
+		<member name="internationalization/pseudolocalization/postfix" type="String" setter="" getter="" default="&quot;]&quot;">
+			Postfix that will be appended to the pseudolocalized string.
+		</member>
+		<member name="internationalization/pseudolocalization/prefix" type="String" setter="" getter="" default="&quot;[&quot;">
+			Prefix that will be prepended to the pseudolocalized string.
+		</member>
 		<member name="internationalization/pseudolocalization/replace_with_accents" type="bool" setter="" getter="" default="true">
 			Replace all characters with their accented variants during pseudolocalization.
 		</member>
