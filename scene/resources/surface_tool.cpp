@@ -370,13 +370,13 @@ Array SurfaceTool::commit_to_arrays() {
 				for (uint32_t idx = 0; idx < vertex_array.size(); idx++) {
 					const Vertex &v = vertex_array[idx];
 
-					w[idx + 0] = v.tangent.x;
-					w[idx + 1] = v.tangent.y;
-					w[idx + 2] = v.tangent.z;
+					w[idx * 4 + 0] = v.tangent.x;
+					w[idx * 4 + 1] = v.tangent.y;
+					w[idx * 4 + 2] = v.tangent.z;
 
 					//float d = v.tangent.dot(v.binormal,v.normal);
 					float d = v.binormal.dot(v.normal.cross(v.tangent));
-					w[idx + 3] = d < 0 ? -1 : 1;
+					w[idx * 4 + 3] = d < 0 ? -1 : 1;
 				}
 
 				a[i] = array;
