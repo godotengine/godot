@@ -3522,11 +3522,15 @@ void RendererSceneCull::update_dirty_instances() {
 
 void RendererSceneCull::update() {
 	//optimize bvhs
-	for (uint32_t i = 0; i < scenario_owner.get_rid_count(); i++) {
-		Scenario *s = scenario_owner.get_ptr_by_index(i);
-		s->indexers[Scenario::INDEXER_GEOMETRY].optimize_incremental(indexer_update_iterations);
-		s->indexers[Scenario::INDEXER_VOLUMES].optimize_incremental(indexer_update_iterations);
+	uint32_t i = UINT32_MAX;
+	while (scenario_owner.find_next_valid_alloc_id(i)) {
+		Scenario *s = scenario_owner.get_ptr_by_alloc_id(i);
+		if (s) {
+			s->indexers[Scenario::INDEXER_GEOMETRY].optimize_incremental(indexer_update_iterations);
+			s->indexers[Scenario::INDEXER_VOLUMES].optimize_incremental(indexer_update_iterations);
+		}
 	}
+
 	scene_render->update();
 	update_dirty_instances();
 	render_particle_colliders();

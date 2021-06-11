@@ -286,13 +286,53 @@ public:
 		return alloc_count;
 	}
 
-	_FORCE_INLINE_ T *get_ptr_by_index(uint32_t p_index) {
-		ERR_FAIL_UNSIGNED_INDEX_V(p_index, alloc_count, nullptr);
+	_FORCE_INLINE_ bool find_next_valid_alloc_id(uint32_t &r_alloc_id) {
+		r_alloc_id++;
+
 		if (THREAD_SAFE) {
 			spin_lock.lock();
 		}
-		uint64_t idx = free_list_chunks[p_index / elements_in_chunk][p_index % elements_in_chunk];
-		T *ptr = &chunks[idx / elements_in_chunk][idx % elements_in_chunk];
+
+		while (r_alloc_id < max_alloc) {
+			uint32_t chunk = r_alloc_id / elements_in_chunk;
+			uint32_t element = r_alloc_id % elements_in_chunk;
+
+			if (validator_chunks[chunk][element] != 0xFFFFFFFF) {
+				if (THREAD_SAFE) {
+					spin_lock.unlock();
+				}
+				return true;
+			}
+
+			r_alloc_id++;
+		}
+
+		if (THREAD_SAFE) {
+			spin_lock.unlock();
+		}
+
+		// just for safety,
+		// hopefully should not be used
+		r_alloc_id = 0;
+		return false;
+	}
+
+	_FORCE_INLINE_ T *get_ptr_by_alloc_id(uint32_t p_alloc_id) {
+		ERR_FAIL_UNSIGNED_INDEX_V(p_alloc_id, max_alloc, nullptr);
+
+		if (THREAD_SAFE) {
+			spin_lock.lock();
+		}
+
+		uint32_t chunk = p_alloc_id / elements_in_chunk;
+		uint32_t element = p_alloc_id % elements_in_chunk;
+
+		T *ptr = nullptr;
+		// if this index has not been made invalid (freed)
+		if (validator_chunks[chunk][element] != 0xFFFFFFFF) {
+			ptr = &chunks[chunk][element];
+		}
+
 		if (THREAD_SAFE) {
 			spin_lock.unlock();
 		}
@@ -419,8 +459,17 @@ public:
 		return alloc.get_rid_by_index(p_index);
 	}
 
-	_FORCE_INLINE_ T *get_ptr_by_index(uint32_t p_index) {
-		return *alloc.get_ptr_by_index(p_index);
+	_FORCE_INLINE_ bool find_next_valid_alloc_id(uint32_t &r_alloc_id) {
+		return alloc.find_next_valid_alloc_id(r_alloc_id);
+	}
+
+	_FORCE_INLINE_ T *get_ptr_by_alloc_id(uint32_t p_alloc_id) {
+		T **p = alloc.get_ptr_by_alloc_id(p_alloc_id);
+		if (p) {
+			return *p;
+		}
+
+		return nullptr;
 	}
 
 	_FORCE_INLINE_ void get_owned_list(List<RID> *p_owned) {
