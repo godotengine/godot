@@ -7,40 +7,6 @@
 	<tutorials>
 	</tutorials>
 	<methods>
-		<method name="can_drop_data_fw" qualifiers="const">
-			<return type="bool">
-			</return>
-			<argument index="0" name="position" type="Vector2">
-			</argument>
-			<argument index="1" name="data" type="Variant">
-			</argument>
-			<argument index="2" name="from" type="Control">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="drop_data_fw">
-			<return type="void">
-			</return>
-			<argument index="0" name="position" type="Vector2">
-			</argument>
-			<argument index="1" name="data" type="Variant">
-			</argument>
-			<argument index="2" name="from" type="Control">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="get_drag_data_fw">
-			<return type="Variant">
-			</return>
-			<argument index="0" name="position" type="Vector2">
-			</argument>
-			<argument index="1" name="from" type="Control">
-			</argument>
-			<description>
-			</description>
-		</method>
 		<method name="navigate_to_path">
 			<return type="void">
 			</return>

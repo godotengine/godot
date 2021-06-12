@@ -11,7 +11,7 @@
 	<tutorials>
 	</tutorials>
 	<methods>
-		<method name="get_dependencies" qualifiers="virtual">
+		<method name="_get_dependencies" qualifiers="virtual">
 			<return type="void">
 			</return>
 			<argument index="0" name="path" type="String">
@@ -23,14 +23,14 @@
 				[b]Note:[/b] Custom resource types defined by scripts aren't known by the [ClassDB], so you might just return [code]"Resource"[/code] for them.
 			</description>
 		</method>
-		<method name="get_recognized_extensions" qualifiers="virtual">
+		<method name="_get_recognized_extensions" qualifiers="virtual">
 			<return type="PackedStringArray">
 			</return>
 			<description>
 				Gets the list of extensions for files this loader is able to read.
 			</description>
 		</method>
-		<method name="get_resource_type" qualifiers="virtual">
+		<method name="_get_resource_type" qualifiers="virtual">
 			<return type="String">
 			</return>
 			<argument index="0" name="path" type="String">
@@ -40,7 +40,7 @@
 				[b]Note:[/b] Custom resource types defined by scripts aren't known by the [ClassDB], so you might just return [code]"Resource"[/code] for them.
 			</description>
 		</method>
-		<method name="handles_type" qualifiers="virtual">
+		<method name="_handles_type" qualifiers="virtual">
 			<return type="bool">
 			</return>
 			<argument index="0" name="typename" type="StringName">
@@ -50,7 +50,7 @@
 				[b]Note:[/b] Custom resource types defined by scripts aren't known by the [ClassDB], so you might just handle [code]"Resource"[/code] for them.
 			</description>
 		</method>
-		<method name="load" qualifiers="virtual">
+		<method name="_load" qualifiers="virtual">
 			<return type="Variant">
 			</return>
 			<argument index="0" name="path" type="String">
@@ -66,7 +66,7 @@
 				The [code]cache_mode[/code] property defines whether and how the cache should be used or updated when loading the resource. See [enum CacheMode] for details.
 			</description>
 		</method>
-		<method name="rename_dependencies" qualifiers="virtual">
+		<method name="_rename_dependencies" qualifiers="virtual">
 			<return type="int">
 			</return>
 			<argument index="0" name="path" type="String">

@@ -41,24 +41,24 @@ bool ResourceSaver::timestamp_on_save = false;
 ResourceSavedCallback ResourceSaver::save_callback = nullptr;
 
 Error ResourceFormatSaver::save(const String &p_path, const RES &p_resource, uint32_t p_flags) {
-	if (get_script_instance() && get_script_instance()->has_method("save")) {
-		return (Error)get_script_instance()->call("save", p_path, p_resource, p_flags).operator int64_t();
+	if (get_script_instance() && get_script_instance()->has_method("_save")) {
+		return (Error)get_script_instance()->call("_save", p_path, p_resource, p_flags).operator int64_t();
 	}
 
 	return ERR_METHOD_NOT_FOUND;
 }
 
 bool ResourceFormatSaver::recognize(const RES &p_resource) const {
-	if (get_script_instance() && get_script_instance()->has_method("recognize")) {
-		return get_script_instance()->call("recognize", p_resource);
+	if (get_script_instance() && get_script_instance()->has_method("_recognize")) {
+		return get_script_instance()->call("_recognize", p_resource);
 	}
 
 	return false;
 }
 
 void ResourceFormatSaver::get_recognized_extensions(const RES &p_resource, List<String> *p_extensions) const {
-	if (get_script_instance() && get_script_instance()->has_method("get_recognized_extensions")) {
-		PackedStringArray exts = get_script_instance()->call("get_recognized_extensions", p_resource);
+	if (get_script_instance() && get_script_instance()->has_method("_get_recognized_extensions")) {
+		PackedStringArray exts = get_script_instance()->call("_get_recognized_extensions", p_resource);
 
 		{
 			const String *r = exts.ptr();
@@ -74,11 +74,11 @@ void ResourceFormatSaver::_bind_methods() {
 		PropertyInfo arg0 = PropertyInfo(Variant::STRING, "path");
 		PropertyInfo arg1 = PropertyInfo(Variant::OBJECT, "resource", PROPERTY_HINT_RESOURCE_TYPE, "Resource");
 		PropertyInfo arg2 = PropertyInfo(Variant::INT, "flags");
-		ClassDB::add_virtual_method(get_class_static(), MethodInfo(Variant::INT, "save", arg0, arg1, arg2));
+		BIND_VMETHOD(MethodInfo(Variant::INT, "_save", arg0, arg1, arg2));
 	}
 
-	ClassDB::add_virtual_method(get_class_static(), MethodInfo(Variant::PACKED_STRING_ARRAY, "get_recognized_extensions", PropertyInfo(Variant::OBJECT, "resource", PROPERTY_HINT_RESOURCE_TYPE, "Resource")));
-	ClassDB::add_virtual_method(get_class_static(), MethodInfo(Variant::BOOL, "recognize", PropertyInfo(Variant::OBJECT, "resource", PROPERTY_HINT_RESOURCE_TYPE, "Resource")));
+	BIND_VMETHOD(MethodInfo(Variant::PACKED_STRING_ARRAY, "_get_recognized_extensions", PropertyInfo(Variant::OBJECT, "resource", PROPERTY_HINT_RESOURCE_TYPE, "Resource")));
+	BIND_VMETHOD(MethodInfo(Variant::BOOL, "_recognize", PropertyInfo(Variant::OBJECT, "resource", PROPERTY_HINT_RESOURCE_TYPE, "Resource")));
 }
 
 Error ResourceSaver::save(const String &p_path, const RES &p_resource, uint32_t p_flags) {

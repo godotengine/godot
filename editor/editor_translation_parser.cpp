@@ -42,10 +42,10 @@ Error EditorTranslationParserPlugin::parse_file(const String &p_path, Vector<Str
 		return ERR_UNAVAILABLE;
 	}
 
-	if (get_script_instance()->has_method("parse_file")) {
+	if (get_script_instance()->has_method("_parse_file")) {
 		Array ids;
 		Array ids_ctx_plural;
-		get_script_instance()->call("parse_file", p_path, ids, ids_ctx_plural);
+		get_script_instance()->call("_parse_file", p_path, ids, ids_ctx_plural);
 
 		// Add user's extracted translatable messages.
 		for (int i = 0; i < ids.size(); i++) {
@@ -75,8 +75,8 @@ void EditorTranslationParserPlugin::get_recognized_extensions(List<String> *r_ex
 		return;
 	}
 
-	if (get_script_instance()->has_method("get_recognized_extensions")) {
-		Array extensions = get_script_instance()->call("get_recognized_extensions");
+	if (get_script_instance()->has_method("_get_recognized_extensions")) {
+		Array extensions = get_script_instance()->call("_get_recognized_extensions");
 		for (int i = 0; i < extensions.size(); i++) {
 			r_extensions->push_back(extensions[i]);
 		}
@@ -86,8 +86,8 @@ void EditorTranslationParserPlugin::get_recognized_extensions(List<String> *r_ex
 }
 
 void EditorTranslationParserPlugin::_bind_methods() {
-	ClassDB::add_virtual_method(get_class_static(), MethodInfo(Variant::NIL, "parse_file", PropertyInfo(Variant::STRING, "path"), PropertyInfo(Variant::ARRAY, "msgids"), PropertyInfo(Variant::ARRAY, "msgids_context_plural")));
-	ClassDB::add_virtual_method(get_class_static(), MethodInfo(Variant::ARRAY, "get_recognized_extensions"));
+	BIND_VMETHOD(MethodInfo(Variant::NIL, "_parse_file", PropertyInfo(Variant::STRING, "path"), PropertyInfo(Variant::ARRAY, "msgids"), PropertyInfo(Variant::ARRAY, "msgids_context_plural")));
+	BIND_VMETHOD(MethodInfo(Variant::ARRAY, "_get_recognized_extensions"));
 }
 
 /////////////////////////
