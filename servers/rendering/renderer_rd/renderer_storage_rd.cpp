@@ -8552,6 +8552,7 @@ bool RendererStorageRD::free(RID p_rid) {
 	if (texture_owner.owns(p_rid)) {
 		Texture *t = texture_owner.getornull(p_rid);
 
+		ERR_FAIL_COND_V(!t, false);
 		ERR_FAIL_COND_V(t->is_render_target, false);
 
 		if (RD::get_singleton()->texture_is_valid(t->rd_texture_srgb)) {
