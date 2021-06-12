@@ -397,7 +397,7 @@ EditorLog::EditorLog() {
 	show_search_button->set_focus_mode(FOCUS_NONE);
 	show_search_button->set_toggle_mode(true);
 	show_search_button->set_pressed(true);
-	show_search_button->set_shortcut(ED_SHORTCUT("editor/open_search", TTR("Open the search box."), KEY_MASK_CMD | KEY_F));
+	show_search_button->set_shortcut(ED_SHORTCUT("editor/open_search", TTR("Focus Search/Filter Bar"), KEY_MASK_CMD | KEY_F));
 	show_search_button->set_shortcut_context(this);
 	show_search_button->connect("toggled", callable_mp(this, &EditorLog::_set_search_visible));
 	hb_tools2->add_child(show_search_button);
