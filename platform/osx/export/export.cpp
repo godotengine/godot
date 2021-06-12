@@ -1000,9 +1000,9 @@ void EditorExportPlatformOSX::_zip_folder_recursive(zipFile &p_zip, const String
 			zip_fileinfo zipfi;
 			zipfi.tmz_date.tm_hour = time.hour;
 			zipfi.tmz_date.tm_mday = date.day;
-			zipfi.tmz_date.tm_min = time.min;
+			zipfi.tmz_date.tm_min = time.minute;
 			zipfi.tmz_date.tm_mon = date.month - 1; // Note: "tm" month range - 0..11, Godot month range - 1..12, http://www.cplusplus.com/reference/ctime/tm/
-			zipfi.tmz_date.tm_sec = time.sec;
+			zipfi.tmz_date.tm_sec = time.second;
 			zipfi.tmz_date.tm_year = date.year;
 			zipfi.dosDate = 0;
 			// 0120000: symbolic link type
@@ -1045,9 +1045,9 @@ void EditorExportPlatformOSX::_zip_folder_recursive(zipFile &p_zip, const String
 			zip_fileinfo zipfi;
 			zipfi.tmz_date.tm_hour = time.hour;
 			zipfi.tmz_date.tm_mday = date.day;
-			zipfi.tmz_date.tm_min = time.min;
+			zipfi.tmz_date.tm_min = time.minute;
 			zipfi.tmz_date.tm_mon = date.month - 1; // Note: "tm" month range - 0..11, Godot month range - 1..12, http://www.cplusplus.com/reference/ctime/tm/
-			zipfi.tmz_date.tm_sec = time.sec;
+			zipfi.tmz_date.tm_sec = time.second;
 			zipfi.tmz_date.tm_year = date.year;
 			zipfi.dosDate = 0;
 			// 0100000: regular file type
