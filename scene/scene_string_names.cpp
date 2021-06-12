@@ -175,6 +175,7 @@ SceneStringNames::SceneStringNames() {
 	_toggled = StaticCString::create("_toggled");
 
 	frame_changed = StaticCString::create("frame_changed");
+	texture_changed = StaticCString::create("texture_changed");
 
 	playback_speed = StaticCString::create("playback/speed");
 	playback_active = StaticCString::create("playback/active");
