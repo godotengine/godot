@@ -57,6 +57,7 @@ class EditorToolAddons;
 class EditorPaths;
 class FileSystemDock;
 class ScriptEditor;
+class Node3DEditorViewport;
 
 class EditorInterface : public Node {
 	GDCLASS(EditorInterface, Node);
@@ -71,6 +72,7 @@ public:
 	static EditorInterface *get_singleton() { return singleton; }
 
 	Control *get_editor_main_control();
+	Node3DEditorViewport *get_node_3d_editor_viewport(int p_idx) const;
 	void edit_resource(const Ref<Resource> &p_resource);
 	void edit_node(Node *p_node);
 	void open_scene_from_path(const String &scene_path);

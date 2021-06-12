@@ -92,6 +92,15 @@
 				Returns the editor's [EditorInspector] instance.
 			</description>
 		</method>
+		<method name="get_node_3d_editor_viewport" qualifiers="const">
+			<return type="Node3DEditorViewport">
+			</return>
+			<argument index="0" name="index" type="int">
+			</argument>
+			<description>
+				Returns the specified Node3DEditorViewport.
+			</description>
+		</method>
 		<method name="get_open_scenes" qualifiers="const">
 			<return type="Array">
 			</return>
@@ -283,5 +292,8 @@
 		</member>
 	</members>
 	<constants>
+		<constant name="VIEWPORTS_COUNT" value="4">
+			The maximum number of viewports that can be displayed at the same time in the 3D editor.
+		</constant>
 	</constants>
 </class>
