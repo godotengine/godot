@@ -216,7 +216,9 @@ void SkeletonModification2D::set_editor_draw_gizmo(bool p_draw_gizmo) {
 	editor_draw_gizmo = p_draw_gizmo;
 #ifdef TOOLS_ENABLED
 	if (is_setup) {
-		stack->set_editor_gizmos_dirty(true);
+		if (stack) {
+			stack->set_editor_gizmos_dirty(true);
+		}
 	}
 #endif // TOOLS_ENABLED
 }
