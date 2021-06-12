@@ -863,13 +863,13 @@ Sprite2D *TextureRegionEditor::get_sprite() {
 
 void TextureRegionEditor::edit(Object *p_obj) {
 	if (node_sprite) {
-		node_sprite->disconnect("changed", callable_mp(this, &TextureRegionEditor::_texture_changed));
+		node_sprite->disconnect("texture_changed", callable_mp(this, &TextureRegionEditor::_texture_changed));
 	}
 	if (node_sprite_3d) {
-		node_sprite_3d->disconnect("changed", callable_mp(this, &TextureRegionEditor::_texture_changed));
+		node_sprite_3d->disconnect("texture_changed", callable_mp(this, &TextureRegionEditor::_texture_changed));
 	}
 	if (node_ninepatch) {
-		node_ninepatch->disconnect("changed", callable_mp(this, &TextureRegionEditor::_texture_changed));
+		node_ninepatch->disconnect("texture_changed", callable_mp(this, &TextureRegionEditor::_texture_changed));
 	}
 	if (obj_styleBox.is_valid()) {
 		obj_styleBox->disconnect("changed", callable_mp(this, &TextureRegionEditor::_texture_changed));
@@ -881,13 +881,22 @@ void TextureRegionEditor::edit(Object *p_obj) {
 		node_sprite = Object::cast_to<Sprite2D>(p_obj);
 		node_sprite_3d = Object::cast_to<Sprite3D>(p_obj);
 		node_ninepatch = Object::cast_to<NinePatchRect>(p_obj);
+
+		bool is_resource = false;
 		if (Object::cast_to<StyleBoxTexture>(p_obj)) {
 			obj_styleBox = Ref<StyleBoxTexture>(Object::cast_to<StyleBoxTexture>(p_obj));
+			is_resource = true;
 		}
 		if (Object::cast_to<AtlasTexture>(p_obj)) {
 			atlas_tex = Ref<AtlasTexture>(Object::cast_to<AtlasTexture>(p_obj));
+			is_resource = true;
 		}
-		p_obj->connect("changed", callable_mp(this, &TextureRegionEditor::_texture_changed));
+
+		if (is_resource) {
+			p_obj->connect("changed", callable_mp(this, &TextureRegionEditor::_texture_changed));
+		} else {
+			p_obj->connect("texture_changed", callable_mp(this, &TextureRegionEditor::_texture_changed));
+		}
 		_edit_region();
 	} else {
 		node_sprite = nullptr;
