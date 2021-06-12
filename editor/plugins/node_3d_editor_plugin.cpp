@@ -5054,6 +5054,10 @@ void Node3DEditor::_menu_gizmo_toggled(int p_option) {
 void Node3DEditor::_update_camera_override_button(bool p_game_running) {
 	Button *const button = tool_option_button[TOOL_OPT_OVERRIDE_CAMERA];
 
+#ifdef JAVASCRIPT_ENABLED
+	button->set_disabled(true);
+	button->set_tooltip(TTR("Game Camera Override is not available in the web editor due to missing debugger protocol support."));
+#else
 	if (p_game_running) {
 		button->set_disabled(false);
 		button->set_tooltip(TTR("Game Camera Override\nNo game instance running."));
@@ -5062,6 +5066,7 @@ void Node3DEditor::_update_camera_override_button(bool p_game_running) {
 		button->set_pressed(false);
 		button->set_tooltip(TTR("Game Camera Override\nOverrides game camera with editor viewport camera."));
 	}
+#endif
 }
 
 void Node3DEditor::_update_camera_override_viewport(Object *p_viewport) {

@@ -6268,16 +6268,29 @@ EditorNode::EditorNode() {
 	vcs_actions_menu = VersionControlEditorPlugin::get_singleton()->get_version_control_actions_panel();
 	vcs_actions_menu->set_name("Version Control");
 	vcs_actions_menu->connect("index_pressed", callable_mp(this, &EditorNode::_version_control_menu_option));
+#ifndef JAVASCRIPT_ENABLED
+	// GDNative (and therefore version control add-ons) aren't supported in the web editor yet,
+	// since threads cannot be enabled at the same time as GDNative.
+	// The editor requires threads to work, so threads cannot be disabled.
 	p->add_separator();
 	p->add_child(vcs_actions_menu);
 	p->add_submenu_item(TTR("Version Control"), "Version Control");
 	vcs_actions_menu->add_item(TTR("Set Up Version Control"), RUN_VCS_SETTINGS);
 	vcs_actions_menu->add_item(TTR("Shut Down Version Control"), RUN_VCS_SHUT_DOWN);
+#endif
 
 	p->add_separator();
+
+#ifndef JAVASCRIPT_ENABLED
+	// Exporting projects is not possible from the web editor. The user must download the project
+	// source using Project > Tools > Download Project Source.
+	// This also makes downloading/installing export templates irrelevant in the web editor.
+	// Open Project Data Folder does nothing when clicked in the web editor,
+	// so it is also hidden there.
 	p->add_shortcut(ED_SHORTCUT("editor/export", TTR("Export...")), FILE_EXPORT_PROJECT);
 	p->add_item(TTR("Install Android Build Template..."), FILE_INSTALL_ANDROID_SOURCE);
 	p->add_item(TTR("Open Project Data Folder"), RUN_PROJECT_DATA_FOLDER);
+#endif
 
 	plugin_config_dialog = memnew(PluginConfigDialog);
 	plugin_config_dialog->connect("plugin_ready", callable_mp(this, &EditorNode::_on_plugin_ready));
@@ -6333,24 +6346,38 @@ EditorNode::EditorNode() {
 	editor_layouts->connect("id_pressed", callable_mp(this, &EditorNode::_layout_menu_option));
 	p->add_submenu_item(TTR("Editor Layout"), "Layouts");
 	p->add_separator();
+
+#ifndef JAVASCRIPT_ENABLED
+// Taking screenshots doesn't work in the web editor (it freezes the editor).
 #ifdef OSX_ENABLED
 	p->add_shortcut(ED_SHORTCUT("editor/take_screenshot", TTR("Take Screenshot"), KEY_MASK_CMD | KEY_F12), EDITOR_SCREENSHOT);
 #else
 	p->add_shortcut(ED_SHORTCUT("editor/take_screenshot", TTR("Take Screenshot"), KEY_MASK_CTRL | KEY_F12), EDITOR_SCREENSHOT);
-#endif
+#endif // OSX_ENABLED
 	p->set_item_tooltip(p->get_item_count() - 1, TTR("Screenshots are stored in the Editor Data/Settings Folder."));
+#endif // JAVASCRIPT_ENABLED
+
+#ifndef JAVASCRIPT_ENABLED
+	// Toggling fullscreen doesn't work well in the web editor
+	// (it causes a bar to flicker at the top of the editorand messes up mouse coordinates).
+	// Using the browser's fullscreen toggle works more reliably, but it requires the user
+	// not to be focused on the editor itself while pressing F11.
 #ifdef OSX_ENABLED
 	p->add_shortcut(ED_SHORTCUT("editor/fullscreen_mode", TTR("Toggle Fullscreen"), KEY_MASK_CMD | KEY_MASK_CTRL | KEY_F), SETTINGS_TOGGLE_FULLSCREEN);
 #else
 	p->add_shortcut(ED_SHORTCUT("editor/fullscreen_mode", TTR("Toggle Fullscreen"), KEY_MASK_SHIFT | KEY_F11), SETTINGS_TOGGLE_FULLSCREEN);
-#endif
+#endif // OSX_ENABLED
+#endif // JAVASCRIPT_ENABLED
+
 #if defined(WINDOWS_ENABLED) && defined(WINDOWS_SUBSYSTEM_CONSOLE)
 	// The console can only be toggled if the application was built for the console subsystem,
 	// not the GUI subsystem.
 	p->add_item(TTR("Toggle System Console"), SETTINGS_TOGGLE_CONSOLE);
 #endif
-	p->add_separator();
 
+#ifndef JAVASCRIPT_ENABLED
+	p->add_separator();
+	// Open Editor Data/Settings Folder does nothing when clicked in the web editor, so hide it there.
 	if (OS::get_singleton()->get_data_path() == OS::get_singleton()->get_config_path()) {
 		// Configuration and data folders are located in the same place (Windows/macOS)
 		p->add_item(TTR("Open Editor Data/Settings Folder"), SETTINGS_EDITOR_DATA_FOLDER);
@@ -6360,9 +6387,14 @@ EditorNode::EditorNode() {
 		p->add_item(TTR("Open Editor Settings Folder"), SETTINGS_EDITOR_CONFIG_FOLDER);
 	}
 	p->add_separator();
+#endif
 
 	p->add_item(TTR("Manage Editor Features..."), SETTINGS_MANAGE_FEATURE_PROFILES);
+#ifndef JAVASCRIPT_ENABLED
+	// Exporting projects is not possible from the web editor,
+	// which makes downloading/installing export templates irrelevant there.
 	p->add_item(TTR("Manage Export Templates..."), SETTINGS_MANAGE_EXPORT_TEMPLATES);
+#endif
 
 	// Help Menu
 	help_menu = memnew(MenuButton);
