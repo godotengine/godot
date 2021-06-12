@@ -6755,17 +6755,29 @@ EditorNode::EditorNode() {
 	vcs_actions_menu = VersionControlEditorPlugin::get_singleton()->get_version_control_actions_panel();
 	vcs_actions_menu->set_name("Version Control");
 	vcs_actions_menu->connect("index_pressed", callable_mp(this, &EditorNode::_version_control_menu_option));
+#ifndef WEB_ENABLED
+	// GDExtension (and therefore version control add-ons) aren't supported in the web editor yet,
+	// since threads cannot be enabled at the same time as GDExtension.
+	// The editor requires threads to work, so threads cannot be disabled.
 	project_menu->add_separator();
 	project_menu->add_child(vcs_actions_menu);
 	project_menu->add_submenu_item(TTR("Version Control"), "Version Control");
 	vcs_actions_menu->add_item(TTR("Create Version Control Metadata"), RUN_VCS_METADATA);
 	vcs_actions_menu->add_item(TTR("Version Control Settings"), RUN_VCS_SETTINGS);
+#endif
 
+#ifndef WEB_ENABLED
 	project_menu->add_separator();
+	// Exporting projects is not possible from the web editor. The user must download the project
+	// source using Project > Tools > Download Project Source.
+	// This also makes downloading/installing export templates irrelevant in the web editor.
+	// Open Project Data Folder does nothing when clicked in the web editor,
+	// so it is also hidden there.
 	project_menu->add_shortcut(ED_SHORTCUT_AND_COMMAND("editor/export", TTR("Export..."), Key::NONE, TTR("Export")), FILE_EXPORT_PROJECT);
 #ifndef ANDROID_ENABLED
 	project_menu->add_item(TTR("Install Android Build Template..."), FILE_INSTALL_ANDROID_SOURCE);
 	project_menu->add_item(TTR("Open User Data Folder"), RUN_USER_DATA_FOLDER);
+#endif
 #endif
 
 	project_menu->add_separator();
@@ -6831,20 +6843,28 @@ EditorNode::EditorNode() {
 	settings_menu->add_submenu_item(TTR("Editor Layout"), "Layouts");
 	settings_menu->add_separator();
 
+#if !defined(WEB_ENABLED) && !defined(ANDROID_ENABLED)
+	// Taking screenshots doesn't work in the web editor (it freezes the editor).
 	ED_SHORTCUT_AND_COMMAND("editor/take_screenshot", TTR("Take Screenshot"), KeyModifierMask::CTRL | Key::F12);
 	ED_SHORTCUT_OVERRIDE("editor/take_screenshot", "macos", KeyModifierMask::META | Key::F12);
 	settings_menu->add_shortcut(ED_GET_SHORTCUT("editor/take_screenshot"), EDITOR_SCREENSHOT);
 
 	settings_menu->set_item_tooltip(-1, TTR("Screenshots are stored in the Editor Data/Settings Folder."));
+#endif
 
-#ifndef ANDROID_ENABLED
+#if !defined(WEB_ENABLED) && !defined(ANDROID_ENABLED)
+	// Toggling fullscreen doesn't work well in the web editor
+	// (it causes a bar to flicker at the top of the editor and messes up mouse coordinates).
+	// Using the browser's fullscreen toggle works more reliably, but it requires the user
+	// not to be focused on the editor itself while pressing F11.
 	ED_SHORTCUT_AND_COMMAND("editor/fullscreen_mode", TTR("Toggle Fullscreen"), KeyModifierMask::SHIFT | Key::F11);
 	ED_SHORTCUT_OVERRIDE("editor/fullscreen_mode", "macos", KeyModifierMask::META | KeyModifierMask::CTRL | Key::F);
 	settings_menu->add_shortcut(ED_GET_SHORTCUT("editor/fullscreen_mode"), SETTINGS_TOGGLE_FULLSCREEN);
-#endif
 	settings_menu->add_separator();
+#endif
 
-#ifndef ANDROID_ENABLED
+#if !defined(WEB_ENABLED) && !defined(ANDROID_ENABLED)
+	// Opening user data folders is not possible on the web editor.
 	if (OS::get_singleton()->get_data_path() == OS::get_singleton()->get_config_path()) {
 		// Configuration and data folders are located in the same place (Windows/MacOS).
 		settings_menu->add_item(TTR("Open Editor Data/Settings Folder"), SETTINGS_EDITOR_DATA_FOLDER);
@@ -6857,7 +6877,9 @@ EditorNode::EditorNode() {
 #endif
 
 	settings_menu->add_item(TTR("Manage Editor Features..."), SETTINGS_MANAGE_FEATURE_PROFILES);
-#ifndef ANDROID_ENABLED
+#if !defined(WEB_ENABLED) && !defined(ANDROID_ENABLED)
+	// Exporting projects is not possible from the web editor,
+	// which makes downloading/installing export templates irrelevant there.
 	settings_menu->add_item(TTR("Manage Export Templates..."), SETTINGS_MANAGE_EXPORT_TEMPLATES);
 #endif
 

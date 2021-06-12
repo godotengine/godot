@@ -2704,6 +2704,11 @@ ProjectManager::ProjectManager() {
 		scan_btn->set_shortcut(ED_SHORTCUT("project_manager/scan_projects", TTR("Scan Projects"), KeyModifierMask::CMD_OR_CTRL | Key::S));
 		scan_btn->connect("pressed", callable_mp(this, &ProjectManager::_scan_projects));
 		tree_vb->add_child(scan_btn);
+#ifdef WEB_ENABLED
+		// Scan function is not relevant on the web editor, as there is no way
+		// to import multiple projects at once into the virtual HTML5 filesystem.
+		scan_btn->hide();
+#endif
 
 		tree_vb->add_child(memnew(HSeparator));
 
