@@ -916,7 +916,7 @@ void EditorPlugin::_bind_methods() {
 	BIND_VMETHOD(MethodInfo("_save_external_data"));
 	BIND_VMETHOD(MethodInfo("_apply_changes"));
 	BIND_VMETHOD(MethodInfo(Variant::PACKED_STRING_ARRAY, "_get_breakpoints"));
-	BIND_VMETHOD(MethodInfo("set_window_layout", PropertyInfo(Variant::OBJECT, "layout", PROPERTY_HINT_RESOURCE_TYPE, "ConfigFile")));
+	BIND_VMETHOD(MethodInfo("_set_window_layout", PropertyInfo(Variant::OBJECT, "layout", PROPERTY_HINT_RESOURCE_TYPE, "ConfigFile")));
 	BIND_VMETHOD(MethodInfo("_get_window_layout", PropertyInfo(Variant::OBJECT, "layout", PROPERTY_HINT_RESOURCE_TYPE, "ConfigFile")));
 	BIND_VMETHOD(MethodInfo(Variant::BOOL, "_build"));
 	BIND_VMETHOD(MethodInfo("_enable_plugin"));

@@ -361,8 +361,8 @@ void EditorResourcePicker::_edit_menu_cbk(int p_which) {
 
 void EditorResourcePicker::set_create_options(Object *p_menu_node) {
 	// If a subclass implements this method, use it to replace all create items.
-	if (get_script_instance() && get_script_instance()->has_method("set_create_options")) {
-		get_script_instance()->call("set_create_options", p_menu_node);
+	if (get_script_instance() && get_script_instance()->has_method("_set_create_options")) {
+		get_script_instance()->call("_set_create_options", p_menu_node);
 		return;
 	}
 
@@ -418,8 +418,8 @@ void EditorResourcePicker::set_create_options(Object *p_menu_node) {
 }
 
 bool EditorResourcePicker::handle_menu_selected(int p_which) {
-	if (get_script_instance() && get_script_instance()->has_method("handle_menu_selected")) {
-		return get_script_instance()->call("handle_menu_selected", p_which);
+	if (get_script_instance() && get_script_instance()->has_method("_handle_menu_selected")) {
+		return get_script_instance()->call("_handle_menu_selected", p_which);
 	}
 
 	return false;
@@ -640,8 +640,8 @@ void EditorResourcePicker::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_editable", "enable"), &EditorResourcePicker::set_editable);
 	ClassDB::bind_method(D_METHOD("is_editable"), &EditorResourcePicker::is_editable);
 
-	ClassDB::add_virtual_method(get_class_static(), MethodInfo("set_create_options", PropertyInfo(Variant::OBJECT, "menu_node")));
-	ClassDB::add_virtual_method(get_class_static(), MethodInfo("handle_menu_selected", PropertyInfo(Variant::INT, "id")));
+	ClassDB::add_virtual_method(get_class_static(), MethodInfo("_set_create_options", PropertyInfo(Variant::OBJECT, "menu_node")));
+	ClassDB::add_virtual_method(get_class_static(), MethodInfo("_handle_menu_selected", PropertyInfo(Variant::INT, "id")));
 
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "base_type"), "set_base_type", "get_base_type");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "edited_resource", PROPERTY_HINT_RESOURCE_TYPE, "Resource", 0), "set_edited_resource", "get_edited_resource");
