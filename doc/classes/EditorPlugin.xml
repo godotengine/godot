@@ -334,6 +334,15 @@
 				Restore the state saved by [method _get_state].
 			</description>
 		</method>
+		<method name="_set_window_layout" qualifiers="virtual">
+			<return type="void">
+			</return>
+			<argument index="0" name="layout" type="ConfigFile">
+			</argument>
+			<description>
+				Restore the plugin GUI layout saved by [method _get_window_layout].
+			</description>
+		</method>
 		<method name="add_autoload_singleton">
 			<return type="void">
 			</return>
@@ -695,15 +704,6 @@
 			</return>
 			<description>
 				Use this method if you always want to receive inputs from 3D view screen inside [method _forward_spatial_gui_input]. It might be especially usable if your plugin will want to use raycast in the scene.
-			</description>
-		</method>
-		<method name="set_window_layout" qualifiers="virtual">
-			<return type="void">
-			</return>
-			<argument index="0" name="layout" type="ConfigFile">
-			</argument>
-			<description>
-				Restore the plugin GUI layout saved by [method _get_window_layout].
 			</description>
 		</method>
 		<method name="update_overlays" qualifiers="const">
