@@ -850,7 +850,7 @@ void main() {
 	if (scene_data.roughness_limiter_enabled) {
 		//http://www.jp.square-enix.com/tech/library/pdf/ImprovedGeometricSpecularAA.pdf
 		float roughness2 = roughness * roughness;
-		vec2 dndu = dFdx(normal), dndv = dFdy(normal);
+		vec3 dndu = dFdx(normal), dndv = dFdy(normal);
 		float variance = scene_data.roughness_limiter_amount * (dot(dndu, dndu) + dot(dndv, dndv));
 		float kernelRoughness2 = min(2.0 * variance, scene_data.roughness_limiter_limit); //limit effect
 		float filteredRoughness2 = min(1.0, roughness2 + kernelRoughness2);
