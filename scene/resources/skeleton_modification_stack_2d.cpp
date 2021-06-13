@@ -160,6 +160,8 @@ Ref<SkeletonModification2D> SkeletonModificationStack2D::get_modification(int p_
 }
 
 void SkeletonModificationStack2D::add_modification(Ref<SkeletonModification2D> p_mod) {
+	ERR_FAIL_COND(!p_mod.is_valid());
+
 	p_mod->_setup_modification(this);
 	modifications.push_back(p_mod);
 
