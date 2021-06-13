@@ -80,7 +80,7 @@ void tie_managed_to_unmanaged(MonoObject *managed, Object *unmanaged) {
 			// Unsafe refcount increment. The managed instance also counts as a reference.
 			// This way if the unmanaged world has no references to our owner
 			// but the managed instance is alive, the refcount will be 1 instead of 0.
-			// See: godot_icall_Reference_Dtor(MonoObject *p_obj, Object *p_ptr)
+			// See: godot_icall_RefCounted_Dtor(MonoObject *p_obj, Object *p_ptr)
 
 			// May not me referenced yet, so we must use init_ref() instead of reference()
 			if (rc->init_ref()) {
