@@ -1989,7 +1989,10 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 
 				ip += instr_arg_count;
 
-				int self_fun = _code_ptr[ip + 1];
+				int argc = _code_ptr[ip + 1];
+				GD_ERR_BREAK(argc < 0);
+
+				int self_fun = _code_ptr[ip + 2];
 #ifdef DEBUG_ENABLED
 				if (self_fun < 0 || self_fun >= _global_names_count) {
 					err_text = "compiler bug, function name not found";
@@ -1997,9 +2000,6 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 				}
 #endif
 				const StringName *methodname = &_global_names_ptr[self_fun];
-
-				int argc = _code_ptr[ip + 2];
-				GD_ERR_BREAK(argc < 0);
 
 				Variant **argptrs = instruction_args;
 
