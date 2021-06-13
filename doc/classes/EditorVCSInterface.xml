@@ -9,6 +9,15 @@
 	<tutorials>
 	</tutorials>
 	<methods>
+		<method name="checkout_branch">
+			<return type="bool">
+			</return>
+			<argument index="0" name="branch" type="String">
+			</argument>
+			<description>
+				Checks out to the `branch` and returns false if there is any error while performing checkout operation.
+			</description>
+		</method>
 		<method name="commit">
 			<return type="void">
 			</return>
@@ -18,33 +27,20 @@
 				Creates a version commit if the addon is initialized, else returns without doing anything. Uses the files which have been staged previously, with the commit message set to a value as provided as in the argument.
 			</description>
 		</method>
-		<method name="get_file_diff">
-			<return type="Array">
+		<method name="discard_file">
+			<return type="void">
 			</return>
 			<argument index="0" name="file_path" type="String">
 			</argument>
 			<description>
-				Returns an [Array] of [Dictionary] objects containing the diff output from the VCS in use, if a VCS addon is initialized, else returns an empty [Array] object. The diff contents also consist of some contextual lines which provide context to the observed line change in the file.
-				Each [Dictionary] object has the line diff contents under the keys:
-				- [code]"content"[/code] to store a [String] containing the line contents
-				- [code]"status"[/code] to store a [String] which contains [code]"+"[/code] in case the content is a line addition but it stores a [code]"-"[/code] in case of deletion and an empty string in the case the line content is neither an addition nor a deletion.
-				- [code]"new_line_number"[/code] to store an integer containing the new line number of the line content.
-				- [code]"line_count"[/code] to store an integer containing the number of lines in the line content.
-				- [code]"old_line_number"[/code] to store an integer containing the old line number of the line content.
-				- [code]"offset"[/code] to store the offset of the line change since the first contextual line content.
+				Discards changes made in 'file_path'.
 			</description>
 		</method>
-		<method name="get_modified_files_data">
-			<return type="Dictionary">
+		<method name="fetch">
+			<return type="void">
 			</return>
 			<description>
-				Returns a [Dictionary] containing the path of the detected file change mapped to an integer signifying what kind of change the corresponding file has experienced.
-				The following integer values are being used to signify that the detected file is:
-				- [code]0[/code]: New to the VCS working directory
-				- [code]1[/code]: Modified
-				- [code]2[/code]: Renamed
-				- [code]3[/code]: Deleted
-				- [code]4[/code]: Typechanged
+				Fetchs changes from remote. For now 'origin' is hardcoded for remote name.
 			</description>
 		</method>
 		<method name="get_project_name">
@@ -84,6 +80,31 @@
 				Returns [code]true[/code] if the VCS addon has been initialized, else returns [code]false[/code].
 			</description>
 		</method>
+		<method name="pull">
+			<return type="void">
+			</return>
+			<description>
+				Pulls changes of current branch from remote.
+			</description>
+		</method>
+		<method name="push">
+			<return type="void">
+			</return>
+			<description>
+				Pushes changes of current branch to remote.
+			</description>
+		</method>
+		<method name="set_up_credentials">
+			<return type="void">
+			</return>
+			<argument index="0" name="arg0" type="String">
+			</argument>
+			<argument index="1" name="arg1" type="String">
+			</argument>
+			<description>
+				Sets up username and password for remote.
+			</description>
+		</method>
 		<method name="shut_down">
 			<return type="bool">
 			</return>
@@ -110,6 +131,30 @@
 			</description>
 		</method>
 	</methods>
+	<signals>
+		<signal name="stage_area_refreshed">
+			<description>
+			</description>
+		</signal>
+	</signals>
 	<constants>
+		<constant name="CHANGE_TYPE_NEW" value="0" enum="ChangeType">
+		</constant>
+		<constant name="CHANGE_TYPE_MODIFIED" value="1" enum="ChangeType">
+		</constant>
+		<constant name="CHANGE_TYPE_RENAMED" value="2" enum="ChangeType">
+		</constant>
+		<constant name="CHANGE_TYPE_DELETED" value="3" enum="ChangeType">
+		</constant>
+		<constant name="CHANGE_TYPE_TYPECHANGE" value="4" enum="ChangeType">
+		</constant>
+		<constant name="CHANGE_TYPE_UNMERGED" value="5" enum="ChangeType">
+		</constant>
+		<constant name="TREE_AREA_COMMIT" value="0" enum="TreeArea">
+		</constant>
+		<constant name="TREE_AREA_STAGED" value="1" enum="TreeArea">
+		</constant>
+		<constant name="TREE_AREA_UNSTAGED" value="2" enum="TreeArea">
+		</constant>
 	</constants>
 </class>
