@@ -50,8 +50,8 @@ TEST_CASE("[AABB] Constructor methods") {
 
 TEST_CASE("[AABB] String conversion") {
 	CHECK_MESSAGE(
-			String(AABB(Vector3(-1.5, 2, -2.5), Vector3(4, 5, 6))) == "-1.5, 2, -2.5 - 4, 5, 6",
-			"The string representation shouild match the expected value.");
+			String(AABB(Vector3(-1.5, 2, -2.5), Vector3(4, 5, 6))) == "[P: (-1.5, 2, -2.5), S: (4, 5, 6)]",
+			"The string representation should match the expected value.");
 }
 
 TEST_CASE("[AABB] Basic getters") {

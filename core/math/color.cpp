@@ -468,7 +468,7 @@ Color Color::from_hsv(float p_h, float p_s, float p_v, float p_a) const {
 }
 
 Color::operator String() const {
-	return rtos(r) + ", " + rtos(g) + ", " + rtos(b) + ", " + rtos(a);
+	return "(" + String::num(r, 4) + ", " + String::num(g, 4) + ", " + String::num(b, 4) + ", " + String::num(a, 4) + ")";
 }
 
 Color Color::operator+(const Color &p_color) const {

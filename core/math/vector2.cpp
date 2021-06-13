@@ -193,6 +193,10 @@ bool Vector2::is_equal_approx(const Vector2 &p_v) const {
 	return Math::is_equal_approx(x, p_v.x) && Math::is_equal_approx(y, p_v.y);
 }
 
+Vector2::operator String() const {
+	return "(" + String::num_real(x, false) + ", " + String::num_real(y, false) + ")";
+}
+
 /* Vector2i */
 
 Vector2i Vector2i::clamp(const Vector2i &p_min, const Vector2i &p_max) const {
@@ -268,4 +272,8 @@ bool Vector2i::operator==(const Vector2i &p_vec2) const {
 
 bool Vector2i::operator!=(const Vector2i &p_vec2) const {
 	return x != p_vec2.x || y != p_vec2.y;
+}
+
+Vector2i::operator String() const {
+	return "(" + itos(x) + ", " + itos(y) + ")";
 }
