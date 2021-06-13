@@ -41,6 +41,11 @@ class Theme : public Resource {
 	GDCLASS(Theme, Resource);
 	RES_BASE_EXTENSION("theme");
 
+#ifdef TOOLS_ENABLED
+	friend class ThemeItemImportTree;
+	friend class ThemeItemEditorDialog;
+#endif
+
 public:
 	enum DataType {
 		DATA_TYPE_COLOR,
@@ -53,6 +58,8 @@ public:
 	};
 
 private:
+	bool no_change_propagation = false;
+
 	void _emit_theme_changed();
 
 	HashMap<StringName, HashMap<StringName, Ref<Texture2D>>> icon_map;
@@ -95,6 +102,9 @@ protected:
 	int default_theme_font_size = -1;
 
 	static void _bind_methods();
+
+	void _freeze_change_propagation();
+	void _unfreeze_and_propagate_changes();
 
 	virtual void reset_state() override;
 
