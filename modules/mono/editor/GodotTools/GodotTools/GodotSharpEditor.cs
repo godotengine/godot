@@ -371,7 +371,7 @@ namespace GodotTools
             return (ExternalEditorId)editorSettings.GetSetting("mono/editor/external_editor") != ExternalEditorId.None;
         }
 
-        public override bool Build()
+        public override bool _Build()
         {
             return BuildManager.EditorBuildCallback();
         }
@@ -413,9 +413,9 @@ namespace GodotTools
                 bottomPanelBtn.Icon = MSBuildPanel.BuildOutputView.BuildStateIcon;
         }
 
-        public override void EnablePlugin()
+        public override void _EnablePlugin()
         {
-            base.EnablePlugin();
+            base._EnablePlugin();
 
             if (Instance != null)
                 throw new InvalidOperationException();

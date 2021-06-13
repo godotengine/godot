@@ -114,7 +114,7 @@ MonoObject *unmanaged_get_managed(Object *unmanaged) {
 		// Unsafe refcount increment. The managed instance also counts as a reference.
 		// This way if the unmanaged world has no references to our owner
 		// but the managed instance is alive, the refcount will be 1 instead of 0.
-		// See: godot_icall_Reference_Dtor(MonoObject *p_obj, Object *p_ptr)
+		// See: godot_icall_RefCounted_Dtor(MonoObject *p_obj, Object *p_ptr)
 		rc->reference();
 		CSharpLanguage::get_singleton()->post_unsafe_reference(rc);
 	}
