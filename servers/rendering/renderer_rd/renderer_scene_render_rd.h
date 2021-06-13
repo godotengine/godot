@@ -454,6 +454,10 @@ private:
 			Vector<RID> ao_pong_slices;
 			RID ao_final;
 			RID importance_map[2];
+
+			RID downsample_uniform_set;
+			RID gather_uniform_set;
+			RID importance_map_uniform_set;
 		} ssao;
 
 		struct SSR {

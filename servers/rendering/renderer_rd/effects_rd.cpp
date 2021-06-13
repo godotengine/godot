@@ -934,10 +934,10 @@ void EffectsRD::bokeh_dof(RID p_base_texture, RID p_depth_texture, const Size2i 
 	RD::get_singleton()->compute_list_end();
 }
 
-void EffectsRD::gather_ssao(RD::ComputeListID p_compute_list, const Vector<RID> p_ao_slices, const SSAOSettings &p_settings, bool p_adaptive_base_pass) {
-	RD::get_singleton()->compute_list_bind_uniform_set(p_compute_list, ssao.gather_uniform_set, 0);
+void EffectsRD::gather_ssao(RD::ComputeListID p_compute_list, const Vector<RID> p_ao_slices, const SSAOSettings &p_settings, bool p_adaptive_base_pass, RID p_gather_uniform_set, RID p_importance_map_uniform_set) {
+	RD::get_singleton()->compute_list_bind_uniform_set(p_compute_list, p_gather_uniform_set, 0);
 	if ((p_settings.quality == RS::ENV_SSAO_QUALITY_ULTRA) && !p_adaptive_base_pass) {
-		RD::get_singleton()->compute_list_bind_uniform_set(p_compute_list, ssao.importance_map_uniform_set, 1);
+		RD::get_singleton()->compute_list_bind_uniform_set(p_compute_list, p_importance_map_uniform_set, 1);
 	}
 
 	for (int i = 0; i < 4; i++) {
@@ -960,7 +960,7 @@ void EffectsRD::gather_ssao(RD::ComputeListID p_compute_list, const Vector<RID> 
 	RD::get_singleton()->compute_list_add_barrier(p_compute_list);
 }
 
-void EffectsRD::generate_ssao(RID p_depth_buffer, RID p_normal_buffer, RID p_depth_mipmaps_texture, const Vector<RID> &p_depth_mipmaps, RID p_ao, const Vector<RID> p_ao_slices, RID p_ao_pong, const Vector<RID> p_ao_pong_slices, RID p_upscale_buffer, RID p_importance_map, RID p_importance_map_pong, const CameraMatrix &p_projection, const SSAOSettings &p_settings, bool p_invalidate_uniform_sets) {
+void EffectsRD::generate_ssao(RID p_depth_buffer, RID p_normal_buffer, RID p_depth_mipmaps_texture, const Vector<RID> &p_depth_mipmaps, RID p_ao, const Vector<RID> p_ao_slices, RID p_ao_pong, const Vector<RID> p_ao_pong_slices, RID p_upscale_buffer, RID p_importance_map, RID p_importance_map_pong, const CameraMatrix &p_projection, const SSAOSettings &p_settings, bool p_invalidate_uniform_sets, RID &r_downsample_uniform_set, RID &r_gather_uniform_set, RID &r_importance_map_uniform_set) {
 	RD::ComputeListID compute_list = RD::get_singleton()->compute_list_begin();
 	RD::get_singleton()->draw_command_begin_label("SSAO");
 	/* FIRST PASS */
@@ -990,7 +990,7 @@ void EffectsRD::generate_ssao(RID p_depth_buffer, RID p_normal_buffer, RID p_dep
 				u.ids.push_back(p_depth_mipmaps[3]);
 				uniforms.push_back(u);
 			}
-			ssao.downsample_uniform_set = RD::get_singleton()->uniform_set_create(uniforms, ssao.downsample_shader.version_get_shader(ssao.downsample_shader_version, 2), 2);
+			r_downsample_uniform_set = RD::get_singleton()->uniform_set_create(uniforms, ssao.downsample_shader.version_get_shader(ssao.downsample_shader_version, 2), 2);
 		}
 
 		float depth_linearize_mul = -p_projection.matrix[3][2];
@@ -1025,7 +1025,7 @@ void EffectsRD::generate_ssao(RID p_depth_buffer, RID p_normal_buffer, RID p_dep
 		RD::get_singleton()->compute_list_bind_uniform_set(compute_list, _get_compute_uniform_set_from_texture(p_depth_buffer), 0);
 		RD::get_singleton()->compute_list_bind_uniform_set(compute_list, _get_uniform_set_from_image(p_depth_mipmaps[0]), 1);
 		if (p_settings.quality > RS::ENV_SSAO_QUALITY_MEDIUM) {
-			RD::get_singleton()->compute_list_bind_uniform_set(compute_list, ssao.downsample_uniform_set, 2);
+			RD::get_singleton()->compute_list_bind_uniform_set(compute_list, r_downsample_uniform_set, 2);
 		}
 		RD::get_singleton()->compute_list_set_push_constant(compute_list, &ssao.downsample_push_constant, sizeof(SSAODownsamplePushConstant));
 
@@ -1109,7 +1109,7 @@ void EffectsRD::generate_ssao(RID p_depth_buffer, RID p_normal_buffer, RID p_dep
 				u.ids.push_back(ssao.gather_constants_buffer);
 				uniforms.push_back(u);
 			}
-			ssao.gather_uniform_set = RD::get_singleton()->uniform_set_create(uniforms, ssao.gather_shader.version_get_shader(ssao.gather_shader_version, 0), 0);
+			r_gather_uniform_set = RD::get_singleton()->uniform_set_create(uniforms, ssao.gather_shader.version_get_shader(ssao.gather_shader_version, 0), 0);
 		}
 
 		if (p_invalidate_uniform_sets) {
@@ -1136,7 +1136,7 @@ void EffectsRD::generate_ssao(RID p_depth_buffer, RID p_normal_buffer, RID p_dep
 				u.ids.push_back(ssao.importance_map_load_counter);
 				uniforms.push_back(u);
 			}
-			ssao.importance_map_uniform_set = RD::get_singleton()->uniform_set_create(uniforms, ssao.gather_shader.version_get_shader(ssao.gather_shader_version, 2), 1);
+			r_importance_map_uniform_set = RD::get_singleton()->uniform_set_create(uniforms, ssao.gather_shader.version_get_shader(ssao.gather_shader_version, 2), 1);
 		}
 
 		if (p_settings.quality == RS::ENV_SSAO_QUALITY_ULTRA) {
@@ -1147,7 +1147,7 @@ void EffectsRD::generate_ssao(RID p_depth_buffer, RID p_normal_buffer, RID p_dep
 			ssao.importance_map_push_constant.power = p_settings.power;
 			//base pass
 			RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, ssao.pipelines[SSAO_GATHER_BASE]);
-			gather_ssao(compute_list, p_ao_pong_slices, p_settings, true);
+			gather_ssao(compute_list, p_ao_pong_slices, p_settings, true, r_gather_uniform_set, RID());
 			//generate importance map
 
 			RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, ssao.pipelines[SSAO_GENERATE_IMPORTANCE_MAP]);
@@ -1178,7 +1178,7 @@ void EffectsRD::generate_ssao(RID p_depth_buffer, RID p_normal_buffer, RID p_dep
 			RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, ssao.pipelines[SSAO_GATHER]);
 		}
 
-		gather_ssao(compute_list, p_ao_slices, p_settings, false);
+		gather_ssao(compute_list, p_ao_slices, p_settings, false, r_gather_uniform_set, r_importance_map_uniform_set);
 		RD::get_singleton()->draw_command_end_label(); // Gather SSAO
 	}
 
