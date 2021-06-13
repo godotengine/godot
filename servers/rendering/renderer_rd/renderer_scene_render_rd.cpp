@@ -3498,11 +3498,9 @@ void RendererSceneRenderRD::_pre_opaque_render(RenderDataRD *p_render_data, bool
 	if (p_render_data->render_buffers.is_valid() && p_use_gi) {
 		RenderBuffers *rb = render_buffers_owner.getornull(p_render_data->render_buffers);
 		ERR_FAIL_COND(rb == nullptr);
-		if (rb->sdfgi == nullptr) {
-			return;
+		if (rb->sdfgi != nullptr) {
+			rb->sdfgi->store_probes();
 		}
-
-		rb->sdfgi->store_probes();
 	}
 
 	render_state.cube_shadows.clear();
@@ -3730,17 +3728,18 @@ void RendererSceneRenderRD::render_scene(RID p_render_buffers, const Transform3D
 		current_cluster_builder = nullptr;
 	}
 
-	if (rb != nullptr && rb->sdfgi != nullptr) {
-		rb->sdfgi->update_cascades();
-
-		rb->sdfgi->pre_process_gi(p_cam_transform, &render_data, this);
-	}
-
 	render_state.voxel_gi_count = 0;
-	if (rb != nullptr && rb->sdfgi != nullptr) {
-		gi.setup_voxel_gi_instances(render_data.render_buffers, render_data.cam_transform, *render_data.voxel_gi_instances, render_state.voxel_gi_count, this);
 
-		rb->sdfgi->update_light();
+	if (rb != nullptr) {
+		if (rb->sdfgi) {
+			rb->sdfgi->update_cascades();
+			rb->sdfgi->pre_process_gi(p_cam_transform, &render_data, this);
+			rb->sdfgi->update_light();
+		}
+
+		if (p_voxel_gi_instances.size()) {
+			gi.setup_voxel_gi_instances(render_data.render_buffers, render_data.cam_transform, *render_data.voxel_gi_instances, render_state.voxel_gi_count, this);
+		}
 	}
 
 	render_state.depth_prepass_used = false;
