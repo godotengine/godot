@@ -44,7 +44,7 @@ protected:
 	static void _bind_methods();
 
 private:
-	Skeleton2D *parent_skeleton;
+	Skeleton2D *parent_skeleton = nullptr;
 	int bone2d_index = -1;
 	NodePath bone2d_nodepath;
 	bool follow_bone_when_simulating = false;
