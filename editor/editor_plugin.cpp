@@ -755,44 +755,54 @@ void EditorPlugin::restore_global_state() {}
 void EditorPlugin::save_global_state() {}
 
 void EditorPlugin::add_import_plugin(const Ref<EditorImportPlugin> &p_importer) {
+	ERR_FAIL_COND(!p_importer.is_valid());
 	ResourceFormatImporter::get_singleton()->add_importer(p_importer);
 	EditorFileSystem::get_singleton()->call_deferred("scan");
 }
 
 void EditorPlugin::remove_import_plugin(const Ref<EditorImportPlugin> &p_importer) {
+	ERR_FAIL_COND(!p_importer.is_valid());
 	ResourceFormatImporter::get_singleton()->remove_importer(p_importer);
 	EditorFileSystem::get_singleton()->call_deferred("scan");
 }
 
 void EditorPlugin::add_export_plugin(const Ref<EditorExportPlugin> &p_exporter) {
+	ERR_FAIL_COND(!p_exporter.is_valid());
 	EditorExport::get_singleton()->add_export_plugin(p_exporter);
 }
 
 void EditorPlugin::remove_export_plugin(const Ref<EditorExportPlugin> &p_exporter) {
+	ERR_FAIL_COND(!p_exporter.is_valid());
 	EditorExport::get_singleton()->remove_export_plugin(p_exporter);
 }
 
 void EditorPlugin::add_spatial_gizmo_plugin(const Ref<EditorSpatialGizmoPlugin> &p_gizmo_plugin) {
+	ERR_FAIL_COND(!p_gizmo_plugin.is_valid());
 	SpatialEditor::get_singleton()->add_gizmo_plugin(p_gizmo_plugin);
 }
 
 void EditorPlugin::remove_spatial_gizmo_plugin(const Ref<EditorSpatialGizmoPlugin> &p_gizmo_plugin) {
+	ERR_FAIL_COND(!p_gizmo_plugin.is_valid());
 	SpatialEditor::get_singleton()->remove_gizmo_plugin(p_gizmo_plugin);
 }
 
 void EditorPlugin::add_inspector_plugin(const Ref<EditorInspectorPlugin> &p_plugin) {
+	ERR_FAIL_COND(!p_plugin.is_valid());
 	EditorInspector::add_inspector_plugin(p_plugin);
 }
 
 void EditorPlugin::remove_inspector_plugin(const Ref<EditorInspectorPlugin> &p_plugin) {
+	ERR_FAIL_COND(!p_plugin.is_valid());
 	EditorInspector::remove_inspector_plugin(p_plugin);
 }
 
 void EditorPlugin::add_scene_import_plugin(const Ref<EditorSceneImporter> &p_importer) {
+	ERR_FAIL_COND(!p_importer.is_valid());
 	ResourceImporterScene::get_singleton()->add_importer(p_importer);
 }
 
 void EditorPlugin::remove_scene_import_plugin(const Ref<EditorSceneImporter> &p_importer) {
+	ERR_FAIL_COND(!p_importer.is_valid());
 	ResourceImporterScene::get_singleton()->remove_importer(p_importer);
 }
 
