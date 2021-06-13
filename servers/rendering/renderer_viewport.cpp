@@ -71,11 +71,11 @@ static Transform2D _canvas_get_transform(RendererViewport::Viewport *p_viewport,
 	return xf;
 }
 
-void RendererViewport::_draw_3d(Viewport *p_viewport, XRInterface::Eyes p_eye) {
+void RendererViewport::_draw_3d(Viewport *p_viewport) {
 	RENDER_TIMESTAMP(">Begin Rendering 3D Scene");
 
 	Ref<XRInterface> xr_interface;
-	if (XRServer::get_singleton() != nullptr) {
+	if (p_viewport->use_xr && XRServer::get_singleton() != nullptr) {
 		xr_interface = XRServer::get_singleton()->get_primary_interface();
 	}
 
@@ -95,15 +95,12 @@ void RendererViewport::_draw_3d(Viewport *p_viewport, XRInterface::Eyes p_eye) {
 	}
 
 	float screen_lod_threshold = p_viewport->lod_threshold / float(p_viewport->size.width);
-	if (p_viewport->use_xr && xr_interface.is_valid()) {
-		RSG::scene->render_camera(p_viewport->render_buffers, xr_interface, p_eye, p_viewport->camera, p_viewport->scenario, p_viewport->self, p_viewport->size, screen_lod_threshold, p_viewport->shadow_atlas);
-	} else {
-		RSG::scene->render_camera(p_viewport->render_buffers, p_viewport->camera, p_viewport->scenario, p_viewport->self, p_viewport->size, screen_lod_threshold, p_viewport->shadow_atlas);
-	}
+	RSG::scene->render_camera(p_viewport->render_buffers, p_viewport->camera, p_viewport->scenario, p_viewport->self, p_viewport->size, screen_lod_threshold, p_viewport->shadow_atlas, xr_interface);
+
 	RENDER_TIMESTAMP("<End Rendering 3D Scene");
 }
 
-void RendererViewport::_draw_viewport(Viewport *p_viewport, XRInterface::Eyes p_eye) {
+void RendererViewport::_draw_viewport(Viewport *p_viewport, uint32_t p_view_count) {
 	if (p_viewport->measure_render_time) {
 		String rt_id = "vp_begin_" + itos(p_viewport->self.get_id());
 		RSG::storage->capture_timestamp(rt_id);
@@ -139,13 +136,13 @@ void RendererViewport::_draw_viewport(Viewport *p_viewport, XRInterface::Eyes p_
 	if ((scenario_draw_canvas_bg || can_draw_3d) && !p_viewport->render_buffers.is_valid()) {
 		//wants to draw 3D but there is no render buffer, create
 		p_viewport->render_buffers = RSG::scene->render_buffers_create();
-		RSG::scene->render_buffers_configure(p_viewport->render_buffers, p_viewport->render_target, p_viewport->size.width, p_viewport->size.height, p_viewport->msaa, p_viewport->screen_space_aa, p_viewport->use_debanding);
+		RSG::scene->render_buffers_configure(p_viewport->render_buffers, p_viewport->render_target, p_viewport->size.width, p_viewport->size.height, p_viewport->msaa, p_viewport->screen_space_aa, p_viewport->use_debanding, p_view_count);
 	}
 
 	RSG::storage->render_target_request_clear(p_viewport->render_target, bgcolor);
 
 	if (!scenario_draw_canvas_bg && can_draw_3d) {
-		_draw_3d(p_viewport, p_eye);
+		_draw_3d(p_viewport);
 	}
 
 	if (!p_viewport->hide_canvas) {
@@ -392,7 +389,7 @@ void RendererViewport::_draw_viewport(Viewport *p_viewport, XRInterface::Eyes p_
 			if (!can_draw_3d) {
 				RSG::scene->render_empty_scene(p_viewport->render_buffers, p_viewport->scenario, p_viewport->shadow_atlas);
 			} else {
-				_draw_3d(p_viewport, p_eye);
+				_draw_3d(p_viewport);
 			}
 			scenario_draw_canvas_bg = false;
 		}
@@ -433,7 +430,7 @@ void RendererViewport::_draw_viewport(Viewport *p_viewport, XRInterface::Eyes p_
 				if (!can_draw_3d) {
 					RSG::scene->render_empty_scene(p_viewport->render_buffers, p_viewport->scenario, p_viewport->shadow_atlas);
 				} else {
-					_draw_3d(p_viewport, p_eye);
+					_draw_3d(p_viewport);
 				}
 
 				scenario_draw_canvas_bg = false;
@@ -444,7 +441,7 @@ void RendererViewport::_draw_viewport(Viewport *p_viewport, XRInterface::Eyes p_
 			if (!can_draw_3d) {
 				RSG::scene->render_empty_scene(p_viewport->render_buffers, p_viewport->scenario, p_viewport->shadow_atlas);
 			} else {
-				_draw_3d(p_viewport, p_eye);
+				_draw_3d(p_viewport);
 			}
 		}
 	}
@@ -481,7 +478,7 @@ void RendererViewport::draw_viewports() {
 	//sort viewports
 	active_viewports.sort_custom<ViewportSort>();
 
-	Map<DisplayServer::WindowID, Vector<RendererCompositor::BlitToScreen>> blit_to_screen_list;
+	Map<DisplayServer::WindowID, Vector<BlitToScreen>> blit_to_screen_list;
 	//draw viewports
 	RENDER_TIMESTAMP(">Render Viewports");
 
@@ -535,52 +532,54 @@ void RendererViewport::draw_viewports() {
 		RENDER_TIMESTAMP(">Rendering Viewport " + itos(i));
 
 		RSG::storage->render_target_set_as_unused(vp->render_target);
-#if 0
-		// TODO fix up this code after we change our commit_for_eye to accept our new render targets
-
 		if (vp->use_xr && xr_interface.is_valid()) {
-			// override our size, make sure it matches our required size
+			// override our size, make sure it matches our required size and is created as a stereo target
 			vp->size = xr_interface->get_render_targetsize();
-			RSG::storage->render_target_set_size(vp->render_target, vp->size.x, vp->size.y);
+			uint32_t view_count = xr_interface->get_view_count();
+			RSG::storage->render_target_set_size(vp->render_target, vp->size.x, vp->size.y, view_count);
 
-			// render mono or left eye first
-			XRInterface::Eyes leftOrMono = xr_interface->is_stereo() ? XRInterface::EYE_LEFT : XRInterface::EYE_MONO;
+			// check for an external texture destination (disabled for now, not yet supported)
+			// RSG::storage->render_target_set_external_texture(vp->render_target, xr_interface->get_external_texture_for_eye(leftOrMono));
+			RSG::storage->render_target_set_external_texture(vp->render_target, 0);
 
-			// check for an external texture destination for our left eye/mono
-			// TODO investigate how we're going to make external textures work
-			RSG::storage->render_target_set_external_texture(vp->render_target, xr_interface->get_external_texture_for_eye(leftOrMono));
+			// render...
+			RSG::scene->set_debug_draw_mode(vp->debug_draw);
+			RSG::storage->render_info_begin_capture();
 
-			// set our render target as current
-			RSG::rasterizer->set_current_render_target(vp->render_target);
+			// and draw viewport
+			_draw_viewport(vp, view_count);
 
-			// and draw left eye/mono
-			_draw_viewport(vp, leftOrMono);
-			xr_interface->commit_for_eye(leftOrMono, vp->render_target, vp->viewport_to_screen_rect);
+			// measure
+			RSG::storage->render_info_end_capture();
+			vp->render_info[RS::VIEWPORT_RENDER_INFO_OBJECTS_IN_FRAME] = RSG::storage->get_captured_render_info(RS::INFO_OBJECTS_IN_FRAME);
+			vp->render_info[RS::VIEWPORT_RENDER_INFO_VERTICES_IN_FRAME] = RSG::storage->get_captured_render_info(RS::INFO_VERTICES_IN_FRAME);
+			vp->render_info[RS::VIEWPORT_RENDER_INFO_MATERIAL_CHANGES_IN_FRAME] = RSG::storage->get_captured_render_info(RS::INFO_MATERIAL_CHANGES_IN_FRAME);
+			vp->render_info[RS::VIEWPORT_RENDER_INFO_SHADER_CHANGES_IN_FRAME] = RSG::storage->get_captured_render_info(RS::INFO_SHADER_CHANGES_IN_FRAME);
+			vp->render_info[RS::VIEWPORT_RENDER_INFO_SURFACE_CHANGES_IN_FRAME] = RSG::storage->get_captured_render_info(RS::INFO_SURFACE_CHANGES_IN_FRAME);
+			vp->render_info[RS::VIEWPORT_RENDER_INFO_DRAW_CALLS_IN_FRAME] = RSG::storage->get_captured_render_info(RS::INFO_DRAW_CALLS_IN_FRAME);
 
-			// render right eye
-			if (leftOrMono == XRInterface::EYE_LEFT) {
-				// check for an external texture destination for our right eye
-				RSG::storage->render_target_set_external_texture(vp->render_target, xr_interface->get_external_texture_for_eye(XRInterface::EYE_RIGHT));
+			// commit our eyes
+			Vector<BlitToScreen> blits = xr_interface->commit_views(vp->render_target, vp->viewport_to_screen_rect);
+			if (vp->viewport_to_screen != DisplayServer::INVALID_WINDOW_ID && blits.size() > 0) {
+				if (!blit_to_screen_list.has(vp->viewport_to_screen)) {
+					blit_to_screen_list[vp->viewport_to_screen] = Vector<BlitToScreen>();
+				}
 
-				// commit for eye may have changed the render target
-				RSG::rasterizer->set_current_render_target(vp->render_target);
-
-				_draw_viewport(vp, XRInterface::EYE_RIGHT);
-				xr_interface->commit_for_eye(XRInterface::EYE_RIGHT, vp->render_target, vp->viewport_to_screen_rect);
+				for (int b = 0; b < blits.size(); b++) {
+					blit_to_screen_list[vp->viewport_to_screen].push_back(blits[b]);
+				}
 			}
 
 			// and for our frame timing, mark when we've finished committing our eyes
 			XRServer::get_singleton()->_mark_commit();
 		} else {
-#endif
-		{
 			RSG::storage->render_target_set_external_texture(vp->render_target, 0);
 
 			RSG::scene->set_debug_draw_mode(vp->debug_draw);
 			RSG::storage->render_info_begin_capture();
 
 			// render standard mono camera
-			_draw_viewport(vp);
+			_draw_viewport(vp, 1);
 
 			RSG::storage->render_info_end_capture();
 			vp->render_info[RS::VIEWPORT_RENDER_INFO_OBJECTS_IN_FRAME] = RSG::storage->get_captured_render_info(RS::INFO_OBJECTS_IN_FRAME);
@@ -592,7 +591,7 @@ void RendererViewport::draw_viewports() {
 
 			if (vp->viewport_to_screen != DisplayServer::INVALID_WINDOW_ID && (!vp->viewport_render_direct_to_screen || !RSG::rasterizer->is_low_end())) {
 				//copy to screen if set as such
-				RendererCompositor::BlitToScreen blit;
+				BlitToScreen blit;
 				blit.render_target = vp->render_target;
 				if (vp->viewport_to_screen_rect != Rect2()) {
 					blit.rect = vp->viewport_to_screen_rect;
@@ -602,7 +601,7 @@ void RendererViewport::draw_viewports() {
 				}
 
 				if (!blit_to_screen_list.has(vp->viewport_to_screen)) {
-					blit_to_screen_list[vp->viewport_to_screen] = Vector<RendererCompositor::BlitToScreen>();
+					blit_to_screen_list[vp->viewport_to_screen] = Vector<BlitToScreen>();
 				}
 
 				blit_to_screen_list[vp->viewport_to_screen].push_back(blit);
@@ -621,7 +620,7 @@ void RendererViewport::draw_viewports() {
 	//this needs to be called to make screen swapping more efficient
 	RSG::rasterizer->prepare_for_blitting_render_targets();
 
-	for (Map<int, Vector<RendererCompositor::BlitToScreen>>::Element *E = blit_to_screen_list.front(); E; E = E->next()) {
+	for (Map<int, Vector<BlitToScreen>>::Element *E = blit_to_screen_list.front(); E; E = E->next()) {
 		RSG::rasterizer->blit_render_targets_to_screen(E->key(), E->get().ptr(), E->get().size());
 	}
 }
@@ -646,7 +645,29 @@ void RendererViewport::viewport_set_use_xr(RID p_viewport, bool p_use_xr) {
 	Viewport *viewport = viewport_owner.getornull(p_viewport);
 	ERR_FAIL_COND(!viewport);
 
+	if (viewport->use_xr == p_use_xr) {
+		return;
+	}
+
 	viewport->use_xr = p_use_xr;
+	if (viewport->render_buffers.is_valid()) {
+		RSG::scene->render_buffers_configure(viewport->render_buffers, viewport->render_target, viewport->size.width, viewport->size.height, viewport->msaa, viewport->screen_space_aa, viewport->use_debanding, viewport->get_view_count());
+	}
+}
+
+uint32_t RendererViewport::Viewport::get_view_count() {
+	uint32_t view_count = 1;
+
+	if (use_xr && XRServer::get_singleton() != nullptr) {
+		Ref<XRInterface> xr_interface;
+
+		xr_interface = XRServer::get_singleton()->get_primary_interface();
+		if (xr_interface.is_valid()) {
+			view_count = xr_interface->get_view_count();
+		}
+	}
+
+	return view_count;
 }
 
 void RendererViewport::viewport_set_size(RID p_viewport, int p_width, int p_height) {
@@ -656,13 +677,14 @@ void RendererViewport::viewport_set_size(RID p_viewport, int p_width, int p_heig
 	ERR_FAIL_COND(!viewport);
 
 	viewport->size = Size2(p_width, p_height);
-	RSG::storage->render_target_set_size(viewport->render_target, p_width, p_height);
+	uint32_t view_count = viewport->get_view_count();
+	RSG::storage->render_target_set_size(viewport->render_target, p_width, p_height, view_count);
 	if (viewport->render_buffers.is_valid()) {
 		if (p_width == 0 || p_height == 0) {
 			RSG::scene->free(viewport->render_buffers);
 			viewport->render_buffers = RID();
 		} else {
-			RSG::scene->render_buffers_configure(viewport->render_buffers, viewport->render_target, viewport->size.width, viewport->size.height, viewport->msaa, viewport->screen_space_aa, viewport->use_debanding);
+			RSG::scene->render_buffers_configure(viewport->render_buffers, viewport->render_target, viewport->size.width, viewport->size.height, viewport->msaa, viewport->screen_space_aa, viewport->use_debanding, view_count);
 		}
 	}
 
@@ -704,7 +726,7 @@ void RendererViewport::viewport_attach_to_screen(RID p_viewport, const Rect2 &p_
 		// If using GLES2 we can optimize this operation by rendering directly to system_fbo
 		// instead of rendering to fbo and copying to system_fbo after
 		if (RSG::rasterizer->is_low_end() && viewport->viewport_render_direct_to_screen) {
-			RSG::storage->render_target_set_size(viewport->render_target, p_rect.size.x, p_rect.size.y);
+			RSG::storage->render_target_set_size(viewport->render_target, p_rect.size.x, p_rect.size.y, viewport->get_view_count());
 			RSG::storage->render_target_set_position(viewport->render_target, p_rect.position.x, p_rect.position.y);
 		}
 
@@ -714,7 +736,7 @@ void RendererViewport::viewport_attach_to_screen(RID p_viewport, const Rect2 &p_
 		// if render_direct_to_screen was used, reset size and position
 		if (RSG::rasterizer->is_low_end() && viewport->viewport_render_direct_to_screen) {
 			RSG::storage->render_target_set_position(viewport->render_target, 0, 0);
-			RSG::storage->render_target_set_size(viewport->render_target, viewport->size.x, viewport->size.y);
+			RSG::storage->render_target_set_size(viewport->render_target, viewport->size.x, viewport->size.y, viewport->get_view_count());
 		}
 
 		viewport->viewport_to_screen_rect = Rect2();
@@ -733,7 +755,7 @@ void RendererViewport::viewport_set_render_direct_to_screen(RID p_viewport, bool
 	// if disabled, reset render_target size and position
 	if (!p_enable) {
 		RSG::storage->render_target_set_position(viewport->render_target, 0, 0);
-		RSG::storage->render_target_set_size(viewport->render_target, viewport->size.x, viewport->size.y);
+		RSG::storage->render_target_set_size(viewport->render_target, viewport->size.x, viewport->size.y, viewport->get_view_count());
 	}
 
 	RSG::storage->render_target_set_flag(viewport->render_target, RendererStorage::RENDER_TARGET_DIRECT_TO_SCREEN, p_enable);
@@ -741,7 +763,7 @@ void RendererViewport::viewport_set_render_direct_to_screen(RID p_viewport, bool
 
 	// if attached to screen already, setup screen size and position, this needs to happen after setting flag to avoid an unnecessary buffer allocation
 	if (RSG::rasterizer->is_low_end() && viewport->viewport_to_screen_rect != Rect2() && p_enable) {
-		RSG::storage->render_target_set_size(viewport->render_target, viewport->viewport_to_screen_rect.size.x, viewport->viewport_to_screen_rect.size.y);
+		RSG::storage->render_target_set_size(viewport->render_target, viewport->viewport_to_screen_rect.size.x, viewport->viewport_to_screen_rect.size.y, viewport->get_view_count());
 		RSG::storage->render_target_set_position(viewport->render_target, viewport->viewport_to_screen_rect.position.x, viewport->viewport_to_screen_rect.position.y);
 	}
 }
@@ -892,7 +914,7 @@ void RendererViewport::viewport_set_msaa(RID p_viewport, RS::ViewportMSAA p_msaa
 	}
 	viewport->msaa = p_msaa;
 	if (viewport->render_buffers.is_valid()) {
-		RSG::scene->render_buffers_configure(viewport->render_buffers, viewport->render_target, viewport->size.width, viewport->size.height, p_msaa, viewport->screen_space_aa, viewport->use_debanding);
+		RSG::scene->render_buffers_configure(viewport->render_buffers, viewport->render_target, viewport->size.width, viewport->size.height, p_msaa, viewport->screen_space_aa, viewport->use_debanding, viewport->get_view_count());
 	}
 }
 
@@ -905,7 +927,7 @@ void RendererViewport::viewport_set_screen_space_aa(RID p_viewport, RS::Viewport
 	}
 	viewport->screen_space_aa = p_mode;
 	if (viewport->render_buffers.is_valid()) {
-		RSG::scene->render_buffers_configure(viewport->render_buffers, viewport->render_target, viewport->size.width, viewport->size.height, viewport->msaa, p_mode, viewport->use_debanding);
+		RSG::scene->render_buffers_configure(viewport->render_buffers, viewport->render_target, viewport->size.width, viewport->size.height, viewport->msaa, p_mode, viewport->use_debanding, viewport->get_view_count());
 	}
 }
 
@@ -918,7 +940,7 @@ void RendererViewport::viewport_set_use_debanding(RID p_viewport, bool p_use_deb
 	}
 	viewport->use_debanding = p_use_debanding;
 	if (viewport->render_buffers.is_valid()) {
-		RSG::scene->render_buffers_configure(viewport->render_buffers, viewport->render_target, viewport->size.width, viewport->size.height, viewport->msaa, viewport->screen_space_aa, p_use_debanding);
+		RSG::scene->render_buffers_configure(viewport->render_buffers, viewport->render_target, viewport->size.width, viewport->size.height, viewport->msaa, viewport->screen_space_aa, p_use_debanding, viewport->get_view_count());
 	}
 }
 

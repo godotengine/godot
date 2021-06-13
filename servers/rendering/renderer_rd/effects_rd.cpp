@@ -34,6 +34,7 @@
 #include "core/math/math_defs.h"
 #include "core/os/os.h"
 
+#include "servers/rendering/renderer_rd/renderer_compositor_rd.h"
 #include "thirdparty/misc/cubemap_coeffs.h"
 
 static _FORCE_INLINE_ void store_transform_3x3(const Basis &p_basis, float *p_array) {
@@ -732,6 +733,11 @@ void EffectsRD::tonemapper(RID p_source_color, RID p_dst_framebuffer, const Tone
 	tonemap.push_constant.pixel_size[0] = 1.0 / p_settings.texture_size.x;
 	tonemap.push_constant.pixel_size[1] = 1.0 / p_settings.texture_size.y;
 
+	if (p_settings.view_count > 1) {
+		// Use MULTIVIEW versions
+		mode += 4;
+	}
+
 	RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(p_dst_framebuffer, RD::INITIAL_ACTION_DROP, RD::FINAL_ACTION_READ, RD::INITIAL_ACTION_DROP, RD::FINAL_ACTION_DISCARD);
 	RD::get_singleton()->draw_list_bind_render_pipeline(draw_list, tonemap.pipelines[mode].get_render_pipeline(RD::INVALID_ID, RD::get_singleton()->framebuffer_get_format(p_dst_framebuffer)));
 	RD::get_singleton()->draw_list_bind_uniform_set(draw_list, _get_uniform_set_from_texture(p_source_color), 0);
@@ -1365,15 +1371,18 @@ void EffectsRD::cubemap_filter(RID p_source_cubemap, Vector<RID> p_dest_cubemap,
 	RD::get_singleton()->compute_list_end();
 }
 
-void EffectsRD::render_sky(RD::DrawListID p_list, float p_time, RID p_fb, RID p_samplers, RID p_fog, PipelineCacheRD *p_pipeline, RID p_uniform_set, RID p_texture_set, const CameraMatrix &p_camera, const Basis &p_orientation, float p_multiplier, const Vector3 &p_position) {
+void EffectsRD::render_sky(RD::DrawListID p_list, float p_time, RID p_fb, RID p_samplers, RID p_fog, PipelineCacheRD *p_pipeline, RID p_uniform_set, RID p_texture_set, uint32_t p_view_count, const CameraMatrix *p_projections, const Basis &p_orientation, float p_multiplier, const Vector3 &p_position) {
 	SkyPushConstant sky_push_constant;
 
 	memset(&sky_push_constant, 0, sizeof(SkyPushConstant));
 
-	sky_push_constant.proj[0] = p_camera.matrix[2][0];
-	sky_push_constant.proj[1] = p_camera.matrix[0][0];
-	sky_push_constant.proj[2] = p_camera.matrix[2][1];
-	sky_push_constant.proj[3] = p_camera.matrix[1][1];
+	for (uint32_t v = 0; v < p_view_count; v++) {
+		// We only need key components of our projection matrix
+		sky_push_constant.projections[v][0] = p_projections[v].matrix[2][0];
+		sky_push_constant.projections[v][1] = p_projections[v].matrix[0][0];
+		sky_push_constant.projections[v][2] = p_projections[v].matrix[2][1];
+		sky_push_constant.projections[v][3] = p_projections[v].matrix[1][1];
+	}
 	sky_push_constant.position[0] = p_position.x;
 	sky_push_constant.position[1] = p_position.y;
 	sky_push_constant.position[2] = p_position.z;
@@ -1553,7 +1562,20 @@ EffectsRD::EffectsRD() {
 		tonemap_modes.push_back("\n#define USE_1D_LUT\n");
 		tonemap_modes.push_back("\n#define USE_GLOW_FILTER_BICUBIC\n#define USE_1D_LUT\n");
 
+		// multiview versions of our shaders
+		tonemap_modes.push_back("\n#define MULTIVIEW\n");
+		tonemap_modes.push_back("\n#define MULTIVIEW\n#define USE_GLOW_FILTER_BICUBIC\n");
+		tonemap_modes.push_back("\n#define MULTIVIEW\n#define USE_1D_LUT\n");
+		tonemap_modes.push_back("\n#define MULTIVIEW\n#define USE_GLOW_FILTER_BICUBIC\n#define USE_1D_LUT\n");
+
 		tonemap.shader.initialize(tonemap_modes);
+
+		if (!RendererCompositorRD::singleton->is_xr_enabled()) {
+			tonemap.shader.set_variant_enabled(TONEMAP_MODE_NORMAL_MULTIVIEW, false);
+			tonemap.shader.set_variant_enabled(TONEMAP_MODE_BICUBIC_GLOW_FILTER_MULTIVIEW, false);
+			tonemap.shader.set_variant_enabled(TONEMAP_MODE_1D_LUT_MULTIVIEW, false);
+			tonemap.shader.set_variant_enabled(TONEMAP_MODE_BICUBIC_GLOW_FILTER_1D_LUT_MULTIVIEW, false);
+		}
 
 		tonemap.shader_version = tonemap.shader.version_create();
 

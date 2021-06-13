@@ -32,6 +32,7 @@
 #include "core/config/project_settings.h"
 #include "core/math/math_defs.h"
 #include "render_forward_mobile.h"
+#include "servers/rendering/renderer_rd/renderer_compositor_rd.h"
 
 using namespace RendererSceneRenderImplementation;
 
@@ -291,12 +292,12 @@ void SceneShaderForwardMobile::ShaderData::set_code(const String &p_code) {
 						multisample_state.enable_alpha_to_one = true;
 					}
 
-					if (k == SHADER_VERSION_COLOR_PASS || k == SHADER_VERSION_LIGHTMAP_COLOR_PASS) {
+					if (k == SHADER_VERSION_COLOR_PASS || k == SHADER_VERSION_COLOR_PASS_MULTIVIEW || k == SHADER_VERSION_LIGHTMAP_COLOR_PASS || k == SHADER_VERSION_LIGHTMAP_COLOR_PASS_MULTIVIEW) {
 						blend_state = blend_state_blend;
 						if (depth_draw == DEPTH_DRAW_OPAQUE) {
 							depth_stencil.enable_depth_write = false; //alpha does not draw depth
 						}
-					} else if (k == SHADER_VERSION_SHADOW_PASS || k == SHADER_VERSION_DEPTH_PASS_DP) {
+					} else if (k == SHADER_VERSION_SHADOW_PASS || k == SHADER_VERSION_SHADOW_PASS_MULTIVIEW || k == SHADER_VERSION_SHADOW_PASS_DP) {
 						//none, blend state contains nothing
 					} else if (k == SHADER_VERSION_DEPTH_PASS_WITH_MATERIAL) {
 						blend_state = RD::PipelineColorBlendState::create_disabled(5); //writes to normal and roughness in opaque way
@@ -304,57 +305,16 @@ void SceneShaderForwardMobile::ShaderData::set_code(const String &p_code) {
 						pipelines[i][j][k].clear();
 						continue; // do not use this version (will error if using it is attempted)
 					}
-
-					/*
-					if (k == SHADER_VERSION_COLOR_PASS || k == SHADER_VERSION_COLOR_PASS_WITH_FORWARD_GI || k == SHADER_VERSION_LIGHTMAP_COLOR_PASS) {
-						blend_state = blend_state_blend;
-						if (depth_draw == DEPTH_DRAW_OPAQUE) {
-							depth_stencil.enable_depth_write = false; //alpha does not draw depth
-						}
-					} else if (uses_depth_pre_pass && (k == SHADER_VERSION_DEPTH_PASS || k == SHADER_VERSION_DEPTH_PASS_DP || k == SHADER_VERSION_DEPTH_PASS_WITH_NORMAL_AND_ROUGHNESS || k == SHADER_VERSION_DEPTH_PASS_WITH_MATERIAL)) {
-						if (k == SHADER_VERSION_DEPTH_PASS || k == SHADER_VERSION_DEPTH_PASS_DP) {
-							//none, blend state contains nothing
-						} else if (k == SHADER_VERSION_DEPTH_PASS_WITH_MATERIAL) {
-							blend_state = RD::PipelineColorBlendState::create_disabled(5); //writes to normal and roughness in opaque way
-						} else {
-							blend_state = blend_state_opaque; //writes to normal and roughness in opaque way
-						}
-					} else {
-						pipelines[i][j][k].clear();
-						continue; // do not use this version (will error if using it is attempted)
-					}
-					*/
 				} else {
-					if (k == SHADER_VERSION_COLOR_PASS || k == SHADER_VERSION_LIGHTMAP_COLOR_PASS) {
+					if (k == SHADER_VERSION_COLOR_PASS || k == SHADER_VERSION_COLOR_PASS_MULTIVIEW || k == SHADER_VERSION_LIGHTMAP_COLOR_PASS || k == SHADER_VERSION_LIGHTMAP_COLOR_PASS_MULTIVIEW) {
 						blend_state = blend_state_opaque;
-					} else if (k == SHADER_VERSION_SHADOW_PASS || k == SHADER_VERSION_DEPTH_PASS_DP) {
+					} else if (k == SHADER_VERSION_SHADOW_PASS || k == SHADER_VERSION_SHADOW_PASS_MULTIVIEW || k == SHADER_VERSION_SHADOW_PASS_DP) {
 						//none, leave empty
 					} else if (k == SHADER_VERSION_DEPTH_PASS_WITH_MATERIAL) {
 						blend_state = RD::PipelineColorBlendState::create_disabled(5); //writes to normal and roughness in opaque way
 					} else {
 						// ???
 					}
-
-					/*
-					if (k == SHADER_VERSION_COLOR_PASS || k == SHADER_VERSION_COLOR_PASS_WITH_FORWARD_GI || k == SHADER_VERSION_LIGHTMAP_COLOR_PASS) {
-						blend_state = blend_state_opaque;
-					} else if (k == SHADER_VERSION_DEPTH_PASS || k == SHADER_VERSION_DEPTH_PASS_DP) {
-						//none, leave empty
-					} else if (k == SHADER_VERSION_DEPTH_PASS_WITH_NORMAL_AND_ROUGHNESS) {
-						blend_state = blend_state_depth_normal_roughness;
-					} else if (k == SHADER_VERSION_DEPTH_PASS_WITH_NORMAL_AND_ROUGHNESS_AND_VOXEL_GI) {
-						blend_state = blend_state_depth_normal_roughness_giprobe;
-					} else if (k == SHADER_VERSION_DEPTH_PASS_WITH_MATERIAL) {
-						blend_state = RD::PipelineColorBlendState::create_disabled(5); //writes to normal and roughness in opaque way
-					} else if (k == SHADER_VERSION_DEPTH_PASS_WITH_SDF) {
-						blend_state = RD::PipelineColorBlendState(); //no color targets for SDF
-					} else {
-						//specular write
-						blend_state = blend_state_opaque_specular;
-						depth_stencil.enable_depth_test = false;
-						depth_stencil.enable_depth_write = false;
-					}
-					*/
 				}
 
 				RID shader_variant = shader_singleton->shader.version_get_shader(version, k);
@@ -585,10 +545,22 @@ void SceneShaderForwardMobile::init(RendererStorageRD *p_storage, const String p
 		Vector<String> shader_versions;
 		shader_versions.push_back(""); // SHADER_VERSION_COLOR_PASS
 		shader_versions.push_back("\n#define USE_LIGHTMAP\n"); // SHADER_VERSION_LIGHTMAP_COLOR_PASS
-		shader_versions.push_back("\n#define MODE_RENDER_DEPTH\n"); // !BAS! SHADER_VERSION_SHADOW_PASS, should probably change this to MODE_RENDER_SHADOW because we don't have a depth pass here...
-		shader_versions.push_back("\n#define MODE_RENDER_DEPTH\n#define MODE_DUAL_PARABOLOID\n"); // SHADER_VERSION_DEPTH_PASS_DP (maybe rename to SHADER_VERSION_SHADOW_PASS_DP?)
+		shader_versions.push_back("\n#define MODE_RENDER_DEPTH\n"); // SHADER_VERSION_SHADOW_PASS, should probably change this to MODE_RENDER_SHADOW because we don't have a depth pass here...
+		shader_versions.push_back("\n#define MODE_RENDER_DEPTH\n#define MODE_DUAL_PARABOLOID\n"); // SHADER_VERSION_SHADOW_PASS_DP
 		shader_versions.push_back("\n#define MODE_RENDER_DEPTH\n#define MODE_RENDER_MATERIAL\n"); // SHADER_VERSION_DEPTH_PASS_WITH_MATERIAL
+
+		// multiview versions of our shaders
+		shader_versions.push_back("\n#define USE_MULTIVIEW\n"); // SHADER_VERSION_COLOR_PASS_MULTIVIEW
+		shader_versions.push_back("\n#define USE_MULTIVIEW\n#define USE_LIGHTMAP\n"); // SHADER_VERSION_LIGHTMAP_COLOR_PASS_MULTIVIEW
+		shader_versions.push_back("\n#define USE_MULTIVIEW\n#define MODE_RENDER_DEPTH\n"); // SHADER_VERSION_SHADOW_PASS_MULTIVIEW
+
 		shader.initialize(shader_versions, p_defines);
+
+		if (!RendererCompositorRD::singleton->is_xr_enabled()) {
+			shader.set_variant_enabled(SHADER_VERSION_COLOR_PASS_MULTIVIEW, false);
+			shader.set_variant_enabled(SHADER_VERSION_LIGHTMAP_COLOR_PASS_MULTIVIEW, false);
+			shader.set_variant_enabled(SHADER_VERSION_SHADOW_PASS_MULTIVIEW, false);
+		}
 	}
 
 	storage->shader_set_data_request_function(RendererStorageRD::SHADER_TYPE_3D, _create_shader_funcs);
@@ -603,7 +575,7 @@ void SceneShaderForwardMobile::init(RendererStorageRD *p_storage, const String p
 		actions.renames["INV_CAMERA_MATRIX"] = "scene_data.inv_camera_matrix";
 		actions.renames["CAMERA_MATRIX"] = "scene_data.camera_matrix";
 		actions.renames["PROJECTION_MATRIX"] = "projection_matrix";
-		actions.renames["INV_PROJECTION_MATRIX"] = "scene_data.inv_projection_matrix";
+		actions.renames["INV_PROJECTION_MATRIX"] = "inv_projection_matrix";
 		actions.renames["MODELVIEW_MATRIX"] = "modelview";
 		actions.renames["MODELVIEW_NORMAL_MATRIX"] = "modelview_normal";
 
@@ -672,6 +644,10 @@ void SceneShaderForwardMobile::init(RendererStorageRD *p_storage, const String p
 		actions.renames["CUSTOM1"] = "custom1_attrib";
 		actions.renames["CUSTOM2"] = "custom2_attrib";
 		actions.renames["CUSTOM3"] = "custom3_attrib";
+
+		actions.renames["VIEW_INDEX"] = "ViewIndex";
+		actions.renames["VIEW_MONO_LEFT"] = "0";
+		actions.renames["VIEW_RIGHT"] = "1";
 
 		//for light
 		actions.renames["VIEW"] = "view";

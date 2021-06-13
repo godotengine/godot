@@ -6911,9 +6911,13 @@ void RendererStorageRD::_update_render_target(RenderTarget *rt) {
 		rd_format.width = rt->size.width;
 		rd_format.height = rt->size.height;
 		rd_format.depth = 1;
-		rd_format.array_layers = 1;
+		rd_format.array_layers = rt->view_count; // for stereo we create two (or more) layers, need to see if we can make fallback work like this too if we don't have multiview
 		rd_format.mipmaps = 1;
-		rd_format.texture_type = RD::TEXTURE_TYPE_2D;
+		if (rd_format.array_layers > 1) { // why are we not using rt->texture_type ??
+			rd_format.texture_type = RD::TEXTURE_TYPE_2D_ARRAY;
+		} else {
+			rd_format.texture_type = RD::TEXTURE_TYPE_2D;
+		}
 		rd_format.samples = RD::TEXTURE_SAMPLES_1;
 		rd_format.usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT | RD::TEXTURE_USAGE_CAN_COPY_FROM_BIT;
 		rd_format.shareable_formats.push_back(rt->color_format);
@@ -6925,7 +6929,7 @@ void RendererStorageRD::_update_render_target(RenderTarget *rt) {
 
 	Vector<RID> fb_textures;
 	fb_textures.push_back(rt->color);
-	rt->framebuffer = RD::get_singleton()->framebuffer_create(fb_textures);
+	rt->framebuffer = RD::get_singleton()->framebuffer_create(fb_textures, RenderingDevice::INVALID_ID, rt->view_count);
 	if (rt->framebuffer.is_null()) {
 		_clear_render_target(rt);
 		ERR_FAIL_COND(rt->framebuffer.is_null());
@@ -7039,12 +7043,15 @@ void RendererStorageRD::render_target_set_position(RID p_render_target, int p_x,
 	//unused for this render target
 }
 
-void RendererStorageRD::render_target_set_size(RID p_render_target, int p_width, int p_height) {
+void RendererStorageRD::render_target_set_size(RID p_render_target, int p_width, int p_height, uint32_t p_view_count) {
 	RenderTarget *rt = render_target_owner.getornull(p_render_target);
 	ERR_FAIL_COND(!rt);
-	rt->size.x = p_width;
-	rt->size.y = p_height;
-	_update_render_target(rt);
+	if (rt->size.x != p_width || rt->size.y != p_height || rt->view_count != p_view_count) {
+		rt->size.x = p_width;
+		rt->size.y = p_height;
+		rt->view_count = p_view_count;
+		_update_render_target(rt);
+	}
 }
 
 RID RendererStorageRD::render_target_get_texture(RID p_render_target) {
