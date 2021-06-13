@@ -1023,7 +1023,7 @@ static const char *_joy_button_descriptions[JOY_BUTTON_SDL_MAX] = {
 String InputEventJoypadButton::as_text() const {
 	String text = "Joypad Button " + itos(button_index);
 
-	if (button_index < JOY_BUTTON_SDL_MAX) {
+	if (button_index >= 0 && button_index < JOY_BUTTON_SDL_MAX) {
 		text += vformat(" (%s)", _joy_button_descriptions[button_index]);
 	}
 
