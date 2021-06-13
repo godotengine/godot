@@ -78,7 +78,7 @@ void godot_icall_Object_Disposed(MonoObject *p_obj, Object *p_ptr) {
 	}
 }
 
-void godot_icall_Reference_Disposed(MonoObject *p_obj, Object *p_ptr, MonoBoolean p_is_finalizer) {
+void godot_icall_RefCounted_Disposed(MonoObject *p_obj, Object *p_ptr, MonoBoolean p_is_finalizer) {
 #ifdef DEBUG_ENABLED
 	CRASH_COND(p_ptr == nullptr);
 	// This is only called with RefCounted derived classes
@@ -88,7 +88,7 @@ void godot_icall_Reference_Disposed(MonoObject *p_obj, Object *p_ptr, MonoBoolea
 	RefCounted *rc = static_cast<RefCounted *>(p_ptr);
 
 	if (rc->get_script_instance()) {
-		CSharpInstance *cs_instance = CAST_CSHARP_INSTANCE(ref->get_script_instance());
+		CSharpInstance *cs_instance = CAST_CSHARP_INSTANCE(rc->get_script_instance());
 		if (cs_instance) {
 			if (!cs_instance->is_destructing_script_instance()) {
 				bool delete_owner;
@@ -108,11 +108,11 @@ void godot_icall_Reference_Disposed(MonoObject *p_obj, Object *p_ptr, MonoBoolea
 
 	// Unsafe refcount decrement. The managed instance also counts as a reference.
 	// See: CSharpLanguage::alloc_instance_binding_data(Object *p_object)
-	CSharpLanguage::get_singleton()->pre_unsafe_unreference(ref);
-	if (ref->unreference()) {
-		memdelete(ref);
+	CSharpLanguage::get_singleton()->pre_unsafe_unreference(rc);
+	if (rc->unreference()) {
+		memdelete(rc);
 	} else {
-		void *data = ref->get_script_instance_binding(CSharpLanguage::get_singleton()->get_language_index());
+		void *data = rc->get_script_instance_binding(CSharpLanguage::get_singleton()->get_language_index());
 
 		if (data) {
 			CSharpScriptBinding &script_binding = ((Map<Object *, CSharpScriptBinding>::Element *)data)->get();
@@ -242,7 +242,7 @@ MonoString *godot_icall_Object_ToString(Object *p_ptr) {
 void godot_register_object_icalls() {
 	GDMonoUtils::add_internal_call("Godot.Object::godot_icall_Object_Ctor", godot_icall_Object_Ctor);
 	GDMonoUtils::add_internal_call("Godot.Object::godot_icall_Object_Disposed", godot_icall_Object_Disposed);
-	GDMonoUtils::add_internal_call("Godot.Object::godot_icall_Reference_Disposed", godot_icall_Reference_Disposed);
+	GDMonoUtils::add_internal_call("Godot.Object::godot_icall_RefCounted_Disposed", godot_icall_RefCounted_Disposed);
 	GDMonoUtils::add_internal_call("Godot.Object::godot_icall_Object_ConnectEventSignals", godot_icall_Object_ConnectEventSignals);
 	GDMonoUtils::add_internal_call("Godot.Object::godot_icall_Object_ClassDB_get_method", godot_icall_Object_ClassDB_get_method);
 	GDMonoUtils::add_internal_call("Godot.Object::godot_icall_Object_ToString", godot_icall_Object_ToString);
