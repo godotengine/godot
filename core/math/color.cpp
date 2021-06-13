@@ -368,7 +368,7 @@ Color Color::named(const String &p_name) {
 		ERR_FAIL_V_MSG(Color(), "Invalid color name: " + p_name + ".");
 		return Color();
 	}
-	return get_named_color(idx);
+	return named_colors[idx].color;
 }
 
 Color Color::named(const String &p_name, const Color &p_default) {
@@ -376,7 +376,7 @@ Color Color::named(const String &p_name, const Color &p_default) {
 	if (idx == -1) {
 		return p_default;
 	}
-	return get_named_color(idx);
+	return named_colors[idx].color;
 }
 
 int Color::find_named_color(const String &p_name) {
@@ -409,10 +409,12 @@ int Color::get_named_color_count() {
 }
 
 String Color::get_named_color_name(int p_idx) {
+	ERR_FAIL_INDEX_V(p_idx, get_named_color_count(), "");
 	return named_colors[p_idx].name;
 }
 
 Color Color::get_named_color(int p_idx) {
+	ERR_FAIL_INDEX_V(p_idx, get_named_color_count(), Color());
 	return named_colors[p_idx].color;
 }
 
