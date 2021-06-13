@@ -172,7 +172,7 @@ void Slider::_notification(int p_what) {
 				int widget_width = style->get_minimum_size().width + style->get_center_size().width;
 				float areasize = size.height - grabber->get_size().height;
 				style->draw(ci, Rect2i(Point2i(size.width / 2 - widget_width / 2, 0), Size2i(widget_width, size.height)));
-				grabber_area->draw(ci, Rect2i(Point2i((size.width - widget_width) / 2, size.height - areasize * ratio - grabber->get_size().height / 2), Size2i(widget_width, areasize * ratio + grabber->get_size().width / 2)));
+				grabber_area->draw(ci, Rect2i(Point2i((size.width - widget_width) / 2, size.height - areasize * ratio - grabber->get_size().height / 2), Size2i(widget_width, areasize * ratio + grabber->get_size().height / 2)));
 
 				if (ticks > 1) {
 					int grabber_offset = (grabber->get_size().height / 2 - tick->get_height() / 2);
