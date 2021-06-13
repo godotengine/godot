@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="JSONRPC" inherits="Object" version="4.0">
 	<brief_description>
-	A helper to handle dictionaries which look like JSONRPC documents.
+		A helper to handle dictionaries which look like JSONRPC documents.
 	</brief_description>
 	<description>
     	JSON-RPC is a standard which wraps a method call in a JSON object. The object has a particular structure and identifies which method is called, the parameters to that function, and carries an ID to keep track of responses. This class implements that standard on top of Dictionaries; you will have to convert between a Dictionary and JSON with other functions.
