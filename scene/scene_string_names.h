@@ -184,6 +184,7 @@ public:
 	StringName _mouse_exit;
 
 	StringName frame_changed;
+	StringName texture_changed;
 
 	StringName playback_speed;
 	StringName playback_active;

@@ -127,13 +127,6 @@
 			The texture to use when drawing this style box.
 		</member>
 	</members>
-	<signals>
-		<signal name="texture_changed">
-			<description>
-				Emitted when the stylebox's texture is changed.
-			</description>
-		</signal>
-	</signals>
 	<constants>
 		<constant name="AXIS_STRETCH_MODE_STRETCH" value="0" enum="AxisStretchMode">
 			Stretch the stylebox's texture. This results in visible distortion unless the texture size matches the stylebox's size perfectly.
