@@ -163,7 +163,7 @@ private:
 	void load_script_signals(GDMonoClass *p_class, GDMonoClass *p_native_class);
 	bool _get_signal(GDMonoClass *p_class, GDMonoMethod *p_delegate_invoke, Vector<SignalParameter> &params);
 
-	bool _update_exports();
+	bool _update_exports(PlaceHolderScriptInstance *p_instance_to_update = nullptr);
 
 	bool _get_member_export(IMonoClassMember *p_member, bool p_inspect_export, PropertyInfo &r_prop_info, bool &r_exported);
 #ifdef TOOLS_ENABLED

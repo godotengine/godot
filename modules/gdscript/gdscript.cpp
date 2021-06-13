@@ -360,7 +360,7 @@ PlaceHolderScriptInstance *GDScript::placeholder_instance_create(Object *p_this)
 #ifdef TOOLS_ENABLED
 	PlaceHolderScriptInstance *si = memnew(PlaceHolderScriptInstance(GDScriptLanguage::get_singleton(), Ref<Script>(this), p_this));
 	placeholders.insert(si);
-	_update_exports();
+	_update_exports(nullptr, false, si);
 	return si;
 #else
 	return nullptr;
@@ -584,7 +584,7 @@ void GDScript::_update_doc() {
 }
 #endif
 
-bool GDScript::_update_exports(bool *r_err, bool p_recursive_call) {
+bool GDScript::_update_exports(bool *r_err, bool p_recursive_call, PlaceHolderScriptInstance *p_instance_to_update) {
 #ifdef TOOLS_ENABLED
 
 	static Vector<GDScript *> base_caches;
@@ -721,15 +721,19 @@ bool GDScript::_update_exports(bool *r_err, bool p_recursive_call) {
 		}
 	}
 
-	if (placeholders.size()) { //hm :(
+	if ((changed || p_instance_to_update) && placeholders.size()) { //hm :(
 
 		// update placeholders if any
 		Map<StringName, Variant> values;
 		List<PropertyInfo> propnames;
 		_update_exports_values(values, propnames);
 
-		for (Set<PlaceHolderScriptInstance *>::Element *E = placeholders.front(); E; E = E->next()) {
-			E->get()->update(propnames, values);
+		if (changed) {
+			for (Set<PlaceHolderScriptInstance *>::Element *E = placeholders.front(); E; E = E->next()) {
+				E->get()->update(propnames, values);
+			}
+		} else {
+			p_instance_to_update->update(propnames, values);
 		}
 	}
 
