@@ -245,14 +245,14 @@ void EditorLog::_add_log_line(LogMessage &p_message, bool p_replace_previous) {
 		case MSG_TYPE_ERROR: {
 			log->push_color(get_theme_color("error_color", "Editor"));
 			Ref<Texture2D> icon = get_theme_icon("Error", "EditorIcons");
-			log->add_image(icon);
+			log->add_image(icon, 0, 0, Color(1, 1, 1), VALIGN_CENTER);
 			log->add_text(" ");
 			tool_button->set_icon(icon);
 		} break;
 		case MSG_TYPE_WARNING: {
 			log->push_color(get_theme_color("warning_color", "Editor"));
 			Ref<Texture2D> icon = get_theme_icon("Warning", "EditorIcons");
-			log->add_image(icon);
+			log->add_image(icon, 0, 0, Color(1, 1, 1), VALIGN_CENTER);
 			log->add_text(" ");
 			tool_button->set_icon(icon);
 		} break;
