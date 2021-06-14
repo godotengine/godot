@@ -130,7 +130,6 @@ def configure(env):
         env.Append(CCFLAGS=["-fsanitize=leak"])
         env.Append(LINKFLAGS=["-fsanitize=leak"])
     if env["use_safe_heap"]:
-        env.Append(CCFLAGS=["-s", "SAFE_HEAP=1"])
         env.Append(LINKFLAGS=["-s", "SAFE_HEAP=1"])
 
     # Closure compiler
@@ -212,6 +211,9 @@ def configure(env):
 
     # Reduce code size by generating less support code (e.g. skip NodeJS support).
     env.Append(LINKFLAGS=["-s", "ENVIRONMENT=web,worker"])
+
+    # Break Chrome for android? Need to report upstream.
+    env.Append(LINKFLAGS=["-s", "BINARYEN_EXTRA_PASSES=--one-caller-inline-max-function-size=1"])
 
     # Wrap the JavaScript support code around a closure named Godot.
     env.Append(LINKFLAGS=["-s", "MODULARIZE=1", "-s", "EXPORT_NAME='Godot'"])
