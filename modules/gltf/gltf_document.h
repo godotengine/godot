@@ -283,8 +283,9 @@ private:
 	Error _parse_lights(Ref<GLTFState> state);
 	Error _parse_animations(Ref<GLTFState> state);
 	Error _serialize_animations(Ref<GLTFState> state);
-	BoneAttachment3D *_generate_bone_attachment(Ref<GLTFState> state,
-			Skeleton3D *skeleton,
+	BoneAttachment3D *_get_or_generate_bone_attachment(Ref<GLTFState> state,
+			Node *scene_parent,
+			Node3D *scene_root,
 			const GLTFNodeIndex node_index,
 			const GLTFNodeIndex bone_index);
 	ImporterMeshInstance3D *_generate_mesh_instance(Ref<GLTFState> state, Node *parent_node, const GLTFNodeIndex node_index);

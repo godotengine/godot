@@ -5027,15 +5027,28 @@ void GLTFDocument::_assign_scene_names(Ref<GLTFState> state) {
 	}
 }
 
-BoneAttachment3D *GLTFDocument::_generate_bone_attachment(Ref<GLTFState> state, Skeleton3D *skeleton, const GLTFNodeIndex node_index, const GLTFNodeIndex bone_index) {
+BoneAttachment3D *GLTFDocument::_get_or_generate_bone_attachment(Ref<GLTFState> state, Node *scene_parent, Node3D *scene_root, const GLTFNodeIndex node_index, const GLTFNodeIndex bone_index) {
 	Ref<GLTFNode> gltf_node = state->nodes[node_index];
 	Ref<GLTFNode> bone_node = state->nodes[bone_index];
-	BoneAttachment3D *bone_attachment = memnew(BoneAttachment3D);
-	print_verbose("glTF: Creating bone attachment for: " + gltf_node->get_name());
 
+	// we cache the BoneAttachment3D
+	// 'bone_index' serves as the key. The parameter 'node_index' is only used for debug output.
+	BoneAttachment3D *bone_attachment = Object::cast_to<BoneAttachment3D>(state->scene_nodes.find(bone_index)->get());
+	if (bone_attachment != nullptr) {
+		return bone_attachment;
+	}
+
+	print_verbose("glTF: Creating bone attachment for: " + gltf_node->get_name());
 	ERR_FAIL_COND_V(!bone_node->joint, nullptr);
 
+	bone_attachment = memnew(BoneAttachment3D);
+
 	bone_attachment->set_bone_name(bone_node->get_name());
+	bone_attachment->set_name(bone_node->get_name());
+	scene_parent->add_child(bone_attachment, true); // enforces name uniqueness
+	bone_attachment->set_owner(scene_root);
+
+	state->scene_nodes.insert(bone_index, bone_attachment); // cache
 
 	return bone_attachment;
 }
@@ -5603,13 +5616,7 @@ void GLTFDocument::_generate_scene_node(Ref<GLTFState> state, Node *scene_parent
 	// skinned meshes must not be placed in a bone attachment.
 	if (non_bone_parented_to_skeleton && gltf_node->skin < 0) {
 		// Bone Attachment - Parent Case
-		BoneAttachment3D *bone_attachment = _generate_bone_attachment(state, active_skeleton, node_index, gltf_node->parent);
-
-		scene_parent->add_child(bone_attachment, true);
-		bone_attachment->set_owner(scene_root);
-
-		// There is no gltf_node that represent this, so just directly create a unique name
-		bone_attachment->set_name(_gen_unique_name(state, "BoneAttachment3D"));
+		BoneAttachment3D *bone_attachment = _get_or_generate_bone_attachment(state, scene_parent, scene_root, node_index, gltf_node->parent);
 
 		// We change the scene_parent to our bone attachment now. We do not set current_node because we want to make the node
 		// and attach it to the bone_attachment
@@ -5656,13 +5663,7 @@ void GLTFDocument::_generate_skeleton_bone_node(Ref<GLTFState> state, Node *scen
 	if (active_skeleton != skeleton) {
 		if (active_skeleton) {
 			// Bone Attachment - Direct Parented Skeleton Case
-			BoneAttachment3D *bone_attachment = _generate_bone_attachment(state, active_skeleton, node_index, gltf_node->parent);
-
-			scene_parent->add_child(bone_attachment, true);
-			bone_attachment->set_owner(scene_root);
-
-			// There is no gltf_node that represent this, so just directly create a unique name
-			bone_attachment->set_name(_gen_unique_name(state, "BoneAttachment3D"));
+			BoneAttachment3D *bone_attachment = _get_or_generate_bone_attachment(state, scene_parent, scene_root, node_index, gltf_node->parent);
 
 			// We change the scene_parent to our bone attachment now. We do not set current_node because we want to make the node
 			// and attach it to the bone_attachment
@@ -5684,13 +5685,7 @@ void GLTFDocument::_generate_skeleton_bone_node(Ref<GLTFState> state, Node *scen
 		// skinned meshes must not be placed in a bone attachment.
 		if (!is_skinned_mesh) {
 			// Bone Attachment - Same Node Case
-			BoneAttachment3D *bone_attachment = _generate_bone_attachment(state, active_skeleton, node_index, node_index);
-
-			scene_parent->add_child(bone_attachment, true);
-			bone_attachment->set_owner(scene_root);
-
-			// There is no gltf_node that represent this, so just directly create a unique name
-			bone_attachment->set_name(_gen_unique_name(state, "BoneAttachment3D"));
+			BoneAttachment3D *bone_attachment = _get_or_generate_bone_attachment(state, scene_parent, scene_root, node_index, node_index);
 
 			// We change the scene_parent to our bone attachment now. We do not set current_node because we want to make the node
 			// and attach it to the bone_attachment
