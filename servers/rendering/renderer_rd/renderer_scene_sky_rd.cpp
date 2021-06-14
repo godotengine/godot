@@ -127,8 +127,12 @@ void RendererSceneSkyRD::SkyShaderData::set_code(const String &p_code) {
 		depth_stencil_state.enable_depth_test = true;
 		depth_stencil_state.depth_compare_operator = RD::COMPARE_OP_LESS_OR_EQUAL;
 
-		RID shader_variant = scene_singleton->sky.sky_shader.shader.version_get_shader(version, i);
-		pipelines[i].setup(shader_variant, RD::RENDER_PRIMITIVE_TRIANGLES, RD::PipelineRasterizationState(), RD::PipelineMultisampleState(), depth_stencil_state, RD::PipelineColorBlendState::create_disabled(), 0);
+		if (scene_singleton->sky.sky_shader.shader.is_variant_enabled(i)) {
+			RID shader_variant = scene_singleton->sky.sky_shader.shader.version_get_shader(version, i);
+			pipelines[i].setup(shader_variant, RD::RENDER_PRIMITIVE_TRIANGLES, RD::PipelineRasterizationState(), RD::PipelineMultisampleState(), depth_stencil_state, RD::PipelineColorBlendState::create_disabled(), 0);
+		} else {
+			pipelines[i].clear();
+		}
 	}
 
 	valid = true;
