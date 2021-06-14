@@ -711,11 +711,16 @@ Map<Vector2i, TileMapQuadrant> &TileMap::get_quadrant_map() {
 
 void TileMap::fix_invalid_tiles() {
 	ERR_FAIL_COND_MSG(tile_set.is_null(), "Cannot fix invalid tiles if Tileset is not open.");
+
+	Set<Vector2i> coords;
 	for (Map<Vector2i, TileMapCell>::Element *E = tile_map.front(); E; E = E->next()) {
 		TileSetSource *source = *tile_set->get_source(E->get().source_id);
 		if (!source || !source->has_tile(E->get().get_atlas_coords()) || !source->has_alternative_tile(E->get().get_atlas_coords(), E->get().alternative_tile)) {
-			set_cell(E->key(), -1, TileSetSource::INVALID_ATLAS_COORDS, TileSetSource::INVALID_TILE_ALTERNATIVE);
+			coords.insert(E->key());
 		}
+	}
+	for (Set<Vector2i>::Element *E = coords.front(); E; E = E->next()) {
+		set_cell(E->get(), -1, TileSetSource::INVALID_ATLAS_COORDS, TileSetSource::INVALID_TILE_ALTERNATIVE);
 	}
 }
 
