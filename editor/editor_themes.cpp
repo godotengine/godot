@@ -960,14 +960,6 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	style_content_panel->set_border_color(dark_color_2);
 	theme->set_stylebox("panel", "TabContainer", style_content_panel);
 
-	// this is the stylebox used in 3d and 2d viewports (no borders)
-	Ref<StyleBoxFlat> style_content_panel_vp = style_content_panel->duplicate();
-	style_content_panel_vp->set_default_margin(SIDE_LEFT, border_width * 2);
-	style_content_panel_vp->set_default_margin(SIDE_TOP, default_margin_size * EDSCALE);
-	style_content_panel_vp->set_default_margin(SIDE_RIGHT, border_width * 2);
-	style_content_panel_vp->set_default_margin(SIDE_BOTTOM, border_width * 2);
-	theme->set_stylebox("Content", "EditorStyles", style_content_panel_vp);
-
 	// These styleboxes can be used on tabs against the base color background (e.g. nested tabs).
 	Ref<StyleBoxFlat> style_tab_selected_odd = style_tab_selected->duplicate();
 	style_tab_selected_odd->set_bg_color(disabled_bg_color);
@@ -976,6 +968,22 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	Ref<StyleBoxFlat> style_content_panel_odd = style_content_panel->duplicate();
 	style_content_panel_odd->set_bg_color(disabled_bg_color);
 	theme->set_stylebox("panel_odd", "TabContainer", style_content_panel_odd);
+
+	// This stylebox is used in 3d and 2d viewports (no borders).
+	Ref<StyleBoxFlat> style_content_panel_vp = style_content_panel->duplicate();
+	style_content_panel_vp->set_default_margin(SIDE_LEFT, border_width * 2);
+	style_content_panel_vp->set_default_margin(SIDE_TOP, default_margin_size * EDSCALE);
+	style_content_panel_vp->set_default_margin(SIDE_RIGHT, border_width * 2);
+	style_content_panel_vp->set_default_margin(SIDE_BOTTOM, border_width * 2);
+	theme->set_stylebox("Content", "EditorStyles", style_content_panel_vp);
+
+	// This stylebox is used by preview tabs in the Theme Editor.
+	Ref<StyleBoxFlat> style_theme_preview_tab = style_tab_selected_odd->duplicate();
+	style_theme_preview_tab->set_expand_margin_size(SIDE_BOTTOM, 5 * EDSCALE);
+	theme->set_stylebox("ThemeEditorPreviewFG", "EditorStyles", style_theme_preview_tab);
+	Ref<StyleBoxFlat> style_theme_preview_bg_tab = style_tab_unselected->duplicate();
+	style_theme_preview_bg_tab->set_expand_margin_size(SIDE_BOTTOM, 2 * EDSCALE);
+	theme->set_stylebox("ThemeEditorPreviewBG", "EditorStyles", style_theme_preview_bg_tab);
 
 	// Separators
 	theme->set_stylebox("separator", "HSeparator", make_line_stylebox(separator_color, MAX(Math::round(EDSCALE), border_width)));
@@ -1345,6 +1353,15 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	style_info_3d_viewport->set_bg_color(style_info_3d_viewport->get_bg_color() * Color(1, 1, 1, 0.5));
 	style_info_3d_viewport->set_border_width_all(0);
 	theme->set_stylebox("Information3dViewport", "EditorStyles", style_info_3d_viewport);
+
+	// Theme editor.
+	theme->set_color("preview_picker_overlay_color", "ThemeEditor", Color(0.1, 0.1, 0.1, 0.25));
+	Color theme_preview_picker_bg_color = accent_color;
+	theme_preview_picker_bg_color.a = 0.2;
+	Ref<StyleBoxFlat> theme_preview_picker_sb = make_flat_stylebox(theme_preview_picker_bg_color, 0, 0, 0, 0);
+	theme_preview_picker_sb->set_border_color(accent_color);
+	theme_preview_picker_sb->set_border_width_all(1.0 * EDSCALE);
+	theme->set_stylebox("preview_picker_overlay", "ThemeEditor", theme_preview_picker_sb);
 
 	// adaptive script theme constants
 	// for comments and elements with lower relevance
