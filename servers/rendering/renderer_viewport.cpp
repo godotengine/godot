@@ -824,6 +824,10 @@ void RendererViewport::viewport_set_scenario(RID p_viewport, RID p_scenario) {
 	Viewport *viewport = viewport_owner.getornull(p_viewport);
 	ERR_FAIL_COND(!viewport);
 
+	if (viewport->scenario.is_valid()) {
+		RSG::scene->scenario_remove_viewport_visibility_mask(viewport->scenario, p_viewport);
+	}
+
 	viewport->scenario = p_scenario;
 	if (viewport->use_occlusion_culling) {
 		RendererSceneOcclusionCull::get_singleton()->buffer_set_scenario(p_viewport, p_scenario);
