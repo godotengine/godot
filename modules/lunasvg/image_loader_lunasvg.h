@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  image_loader_svg.h                                                   */
+/*  image_loader_lunasvg.h                                               */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,46 +28,28 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef IMAGE_LOADER_SVG_H
-#define IMAGE_LOADER_SVG_H
+#ifndef RESOURCE_IMPORTER_LUNASVG
+#define RESOURCE_IMPORTER_LUNASVG
 
+#include "core/error/error_macros.h"
 #include "core/io/image_loader.h"
 #include "core/string/ustring.h"
 
-/**
-	@author Daniel Ramirez <djrmuv@gmail.com>
-*/
+#include "core/templates/local_vector.h"
+#include "thirdparty/lunasvg/include/document.h"
+#include <stdint.h>
+#include <iostream>
+#include <memory>
+#include <sstream>
 
-// Forward declare and include thirdparty headers in .cpp.
-struct NSVGrasterizer;
-struct NSVGimage;
-
-class SVGRasterizer {
-	NSVGrasterizer *rasterizer;
+class ImageLoaderLunaSVG : public ImageFormatLoader {
+public:
+	static void create_image_from_string(Ref<Image> p_image, String p_string, float p_scale, bool upsample, bool p_convert_color);
+	virtual Error load_image(Ref<Image> p_image, FileAccess *p_fileaccess,
+			bool p_force_linear, float p_scale) override;
+	virtual void get_recognized_extensions(List<String> *p_extensions) const override;
 
 public:
-	void rasterize(NSVGimage *p_image, float p_tx, float p_ty, float p_scale, unsigned char *p_dst, int p_w, int p_h, int p_stride);
-
-	SVGRasterizer();
-	~SVGRasterizer();
+	virtual ~ImageLoaderLunaSVG() {}
 };
-
-class ImageLoaderSVG : public ImageFormatLoader {
-	static struct ReplaceColors {
-		List<uint32_t> old_colors;
-		List<uint32_t> new_colors;
-	} replace_colors;
-	static SVGRasterizer rasterizer;
-	static void _convert_colors(NSVGimage *p_svg_image);
-	static Error _create_image(Ref<Image> p_image, const Vector<uint8_t> *p_data, float p_scale, bool upsample, bool convert_colors = false);
-
-public:
-	static void set_convert_colors(Dictionary *p_replace_color = nullptr);
-	static Error create_image_from_string(Ref<Image> p_image, const char *p_svg_str, float p_scale, bool upsample, bool convert_colors = false);
-
-	virtual Error load_image(Ref<Image> p_image, FileAccess *f, bool p_force_linear, float p_scale);
-	virtual void get_recognized_extensions(List<String> *p_extensions) const;
-	ImageLoaderSVG();
-};
-
-#endif
+#endif // RESOURCE_IMPORTER_LUNASVG

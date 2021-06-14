@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  register_types.cpp                                                   */
+/*  register_types.h                                                     */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,17 +28,10 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "register_types.h"
+#ifndef RESOURCE_IMPORTER_LUNASVG_REGISTER_TYPES
+#define RESOURCE_IMPORTER_LUNASVG_REGISTER_TYPES
 
-#include "image_loader_svg.h"
+void register_lunasvg_types();
+void unregister_lunasvg_types();
 
-static ImageLoaderSVG *image_loader_svg = nullptr;
-
-void register_svg_types() {
-	image_loader_svg = memnew(ImageLoaderSVG);
-	ImageLoader::add_image_format_loader(image_loader_svg);
-}
-
-void unregister_svg_types() {
-	memdelete(image_loader_svg);
-}
+#endif

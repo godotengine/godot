@@ -1,0 +1,63 @@
+#!/usr/bin/env python
+
+Import("env")
+Import("env_modules")
+
+env_lunasvg = env_modules.Clone()
+
+thirdparty_obj = []
+
+thirdparty_dir = "#thirdparty/lunasvg/"
+thirdparty_sources = [
+    "./source/canvas.cpp",
+    "./source/clippathelement.cpp",
+    "./source/defselement.cpp",
+    "./source/document.cpp",
+    "./source/element.cpp",
+    "./source/gelement.cpp",
+    "./source/geometryelement.cpp",
+    "./source/graphicselement.cpp",
+    "./source/layoutcontext.cpp",
+    "./source/markerelement.cpp",
+    "./source/maskelement.cpp",
+    "./source/paintelement.cpp",
+    "./source/parser.cpp",
+    "./source/property.cpp",
+    "./source/stopelement.cpp",
+    "./source/styledelement.cpp",
+    "./source/svgelement.cpp",
+    "./source/symbolelement.cpp",
+    "./source/useelement.cpp",
+    "./3rdparty/ftl/sw_ft_math.c",
+    "./3rdparty/ftl/sw_ft_raster.c",
+    "./3rdparty/ftl/sw_ft_stroker.c",
+    "./3rdparty/plutovg/plutovg-blend.c",
+    "./3rdparty/plutovg/plutovg-dash.c",
+    "./3rdparty/plutovg/plutovg-geometry.c",
+    "./3rdparty/plutovg/plutovg-paint.c",
+    "./3rdparty/plutovg/plutovg-rle.c",
+    "./3rdparty/plutovg/plutovg.c",
+]
+thirdparty_sources = [thirdparty_dir + file for file in thirdparty_sources]
+
+env_lunasvg.Prepend(CPPPATH=[thirdparty_dir])
+env_lunasvg.Prepend(CPPPATH=["."])
+env_lunasvg.Prepend(CPPPATH=["#thirdparty/lunasvg/3rdparty/ftl"])
+env_lunasvg.Prepend(CPPPATH=["#thirdparty/lunasvg/3rdparty/plutovg"])
+env_lunasvg.Prepend(CPPPATH=["#thirdparty/lunasvg/include"])
+
+env_thirdparty = env_lunasvg.Clone()
+env_thirdparty.disable_warnings()
+
+env_thirdparty.add_source_files(thirdparty_obj, thirdparty_sources)
+env.modules_sources += thirdparty_obj
+
+# Godot source files
+
+module_obj = []
+
+env_lunasvg.add_source_files(module_obj, "*.cpp")
+env.modules_sources += module_obj
+
+# Needed to force rebuilding the module files when the thirdparty library is updated.
+env.Depends(module_obj, thirdparty_obj)
