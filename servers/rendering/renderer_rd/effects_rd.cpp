@@ -1580,7 +1580,11 @@ EffectsRD::EffectsRD() {
 		tonemap.shader_version = tonemap.shader.version_create();
 
 		for (int i = 0; i < TONEMAP_MODE_MAX; i++) {
-			tonemap.pipelines[i].setup(tonemap.shader.version_get_shader(tonemap.shader_version, i), RD::RENDER_PRIMITIVE_TRIANGLES, RD::PipelineRasterizationState(), RD::PipelineMultisampleState(), RD::PipelineDepthStencilState(), RD::PipelineColorBlendState::create_disabled(), 0);
+			if (tonemap.shader.is_variant_enabled(i)) {
+				tonemap.pipelines[i].setup(tonemap.shader.version_get_shader(tonemap.shader_version, i), RD::RENDER_PRIMITIVE_TRIANGLES, RD::PipelineRasterizationState(), RD::PipelineMultisampleState(), RD::PipelineDepthStencilState(), RD::PipelineColorBlendState::create_disabled(), 0);
+			} else {
+				tonemap.pipelines[i].clear();
+			}
 		}
 	}
 
