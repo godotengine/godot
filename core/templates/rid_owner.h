@@ -351,6 +351,9 @@ public:
 
 			for (size_t i = 0; i < max_alloc; i++) {
 				uint64_t validator = validator_chunks[i / elements_in_chunk][i % elements_in_chunk];
+				if (validator & 0x80000000) {
+					continue; //uninitialized
+				}
 				if (validator != 0xFFFFFFFF) {
 					chunks[i / elements_in_chunk][i % elements_in_chunk].~T();
 				}
