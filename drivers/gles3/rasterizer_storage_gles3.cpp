@@ -119,18 +119,6 @@
 #define glClearDepth glClearDepthf
 #endif
 
-#ifdef __EMSCRIPTEN__
-#include <emscripten/emscripten.h>
-
-void glGetBufferSubData(GLenum target, GLintptr offset, GLsizeiptr size, GLvoid *data) {
-	/* clang-format off */
-	EM_ASM({
-	    GLctx.getBufferSubData($0, $1, HEAPU8, $2, $3);
-	}, target, offset, data, size);
-	/* clang-format on */
-}
-#endif
-
 void glTexStorage2DCustom(GLenum target, GLsizei levels, GLenum internalformat, GLsizei width, GLsizei height, GLenum format, GLenum type) {
 #ifdef GLES_OVER_GL
 
