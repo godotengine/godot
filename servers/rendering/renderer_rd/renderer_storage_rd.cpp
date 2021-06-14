@@ -1440,8 +1440,10 @@ void RendererStorageRD::shader_set_code(RID p_shader, const String &p_code) {
 			material->shader_type = new_type;
 		}
 
-		for (Map<StringName, RID>::Element *E = shader->default_texture_parameter.front(); E; E = E->next()) {
-			shader->data->set_default_texture_param(E->key(), E->get());
+		if (shader->data) {
+			for (Map<StringName, RID>::Element *E = shader->default_texture_parameter.front(); E; E = E->next()) {
+				shader->data->set_default_texture_param(E->key(), E->get());
+			}
 		}
 	}
 
