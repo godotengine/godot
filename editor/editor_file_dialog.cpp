@@ -294,10 +294,10 @@ void EditorFileDialog::_post_popup() {
 			if (res && name == "res://") {
 				name = "/";
 			} else {
-			  if(name[name.length()-1] == '/'){
-			    name.erase(name.length()-1, 1);
-			  }
-			  name = name.get_file() + "/";		  
+				if(name.ends_with("/")){
+					name.erase(name.length() - 1, 1);
+				}
+				name = name.get_file() + "/";		  
 			}
 			bool exists = dir_access->dir_exists(recentd[i]);
 			if (!exists) {
