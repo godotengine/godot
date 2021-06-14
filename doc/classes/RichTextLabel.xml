@@ -26,7 +26,7 @@
 			</argument>
 			<argument index="3" name="color" type="Color" default="Color( 1, 1, 1, 1 )">
 			</argument>
-			<argument index="4" name="inline_align" type="int" enum="VAlign" default="0">
+			<argument index="4" name="inline_align" type="int" enum="InlineAlign" default="5">
 			</argument>
 			<description>
 				Adds an image's opening and closing tags to the tag stack, optionally providing a [code]width[/code] and [code]height[/code] to resize the image and a [code]color[/code] to tint the image.
@@ -345,7 +345,7 @@
 			</return>
 			<argument index="0" name="columns" type="int">
 			</argument>
-			<argument index="1" name="inline_align" type="int" enum="VAlign" default="0">
+			<argument index="1" name="inline_align" type="int" enum="InlineAlign" default="0">
 			</argument>
 			<description>
 				Adds a [code][table=columns,inline_align][/code] tag to the tag stack.
