@@ -96,6 +96,7 @@ public class GodotLib {
 	 */
 	public static native void touch(int inputDevice, int event, int pointer, int pointerCount, float[] positions);
 	public static native void touch(int inputDevice, int event, int pointer, int pointerCount, float[] positions, int buttonsMask);
+	public static native void touch(int inputDevice, int event, int pointer, int pointerCount, float[] positions, int buttonsMask, float pressure);
 	public static native void touch(int inputDevice, int event, int pointer, int pointerCount, float[] positions, int buttonsMask, float verticalFactor, float horizontalFactor);
 
 	/**

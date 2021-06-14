@@ -199,7 +199,7 @@ public:
 	void process_gyroscope(const Vector3 &p_gyroscope);
 	void process_touch(int p_event, int p_pointer, const Vector<TouchPos> &p_points);
 	void process_hover(int p_type, Point2 p_pos);
-	void process_mouse_event(int input_device, int event_action, int event_android_buttons_mask, Point2 event_pos, float event_vertical_factor = 0, float event_horizontal_factor = 0);
+	void process_mouse_event(int input_device, int event_action, int event_android_buttons_mask, Point2 event_pos, float event_vertical_factor = 0, float event_horizontal_factor = 0, float event_pressure = 0);
 	void process_double_tap(int event_android_button_mask, Point2 p_pos);
 	void process_scroll(Point2 p_pos);
 	void process_joy_event(JoypadEvent p_event);

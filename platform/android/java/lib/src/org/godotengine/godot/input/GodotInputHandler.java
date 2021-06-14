@@ -170,7 +170,7 @@ public class GodotInputHandler implements InputDeviceListener {
 
 	public boolean onTouchEvent(final MotionEvent event) {
 		// Mouse drag (mouse pressed and move) doesn't fire onGenericMotionEvent so this is needed
-		if (event.isFromSource(InputDevice.SOURCE_MOUSE)) {
+		if (event.isFromSource(InputDevice.SOURCE_MOUSE) || event.isFromSource(InputDevice.SOURCE_STYLUS)) {
 			if (event.getAction() != MotionEvent.ACTION_MOVE) {
 				// we return true because every time a mouse event is fired, the event is already handled
 				// in onGenericMotionEvent, so by touch event we can say that the event is also handled
@@ -487,10 +487,11 @@ public class GodotInputHandler implements InputDeviceListener {
 				final float y = event.getY();
 				final int buttonsMask = event.getButtonState();
 				final int action = event.getAction();
+				final float pressure = event.getPressure();
 				queueEvent(new Runnable() {
 					@Override
 					public void run() {
-						GodotLib.touch(event.getSource(), action, 0, 1, new float[] { 0, x, y }, buttonsMask);
+						GodotLib.touch(event.getSource(), action, 0, 1, new float[] { 0, x, y }, buttonsMask, pressure);
 					}
 				});
 				return true;
