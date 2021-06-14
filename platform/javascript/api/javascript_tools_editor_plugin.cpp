@@ -41,7 +41,7 @@
 
 // JavaScript functions defined in library_godot_editor_tools.js
 extern "C" {
-extern int godot_js_os_download_buffer(const uint8_t *p_buf, int p_buf_size, const char *p_name, const char *p_mime);
+extern void godot_js_os_download_buffer(const uint8_t *p_buf, int p_buf_size, const char *p_name, const char *p_mime);
 }
 
 static void _javascript_editor_init_callback() {
