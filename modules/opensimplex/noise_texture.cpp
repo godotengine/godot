@@ -187,6 +187,7 @@ Ref<OpenSimplexNoise> NoiseTexture::get_noise() {
 }
 
 void NoiseTexture::set_width(int p_width) {
+	ERR_FAIL_COND(p_width <= 0);
 	if (p_width == size.x) {
 		return;
 	}
@@ -195,6 +196,7 @@ void NoiseTexture::set_width(int p_width) {
 }
 
 void NoiseTexture::set_height(int p_height) {
+	ERR_FAIL_COND(p_height <= 0);
 	if (p_height == size.y) {
 		return;
 	}
