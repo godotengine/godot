@@ -35,7 +35,7 @@
 #include "core/os/os.h"
 #include "core/print_string.h"
 
-Error ImageLoaderTGA::decode_tga_rle(const uint8_t *p_compressed_buffer, size_t p_pixel_size, uint8_t *p_uncompressed_buffer, size_t p_output_size) {
+Error ImageLoaderTGA::decode_tga_rle(const uint8_t *p_compressed_buffer, size_t p_pixel_size, uint8_t *p_uncompressed_buffer, size_t p_output_size, size_t p_input_size) {
 	Error error;
 
 	PoolVector<uint8_t> pixels;
@@ -55,11 +55,14 @@ Error ImageLoaderTGA::decode_tga_rle(const uint8_t *p_compressed_buffer, size_t 
 		compressed_pos += 1;
 		count = (c & 0x7f) + 1;
 
-		if (output_pos + count * p_pixel_size > output_pos) {
+		if (output_pos + count * p_pixel_size > p_output_size) {
 			return ERR_PARSE_ERROR;
 		}
 
 		if (c & 0x80) {
+			if (compressed_pos + p_pixel_size > p_input_size) {
+				return ERR_PARSE_ERROR;
+			}
 			for (size_t i = 0; i < p_pixel_size; i++) {
 				pixels_w.ptr()[i] = p_compressed_buffer[compressed_pos];
 				compressed_pos += 1;
@@ -71,6 +74,9 @@ Error ImageLoaderTGA::decode_tga_rle(const uint8_t *p_compressed_buffer, size_t 
 				output_pos += p_pixel_size;
 			}
 		} else {
+			if (compressed_pos + count * p_pixel_size > p_input_size) {
+				return ERR_PARSE_ERROR;
+			}
 			count *= p_pixel_size;
 			for (size_t i = 0; i < count; i++) {
 				p_uncompressed_buffer[output_pos] = p_compressed_buffer[compressed_pos];
@@ -82,8 +88,7 @@ Error ImageLoaderTGA::decode_tga_rle(const uint8_t *p_compressed_buffer, size_t 
 	return OK;
 }
 
-Error ImageLoaderTGA::convert_to_image(Ref<Image> p_image, const uint8_t *p_buffer, const tga_header_s &p_header, const uint8_t *p_palette, const bool p_is_monochrome, size_t p_output_size) {
-
+Error ImageLoaderTGA::convert_to_image(Ref<Image> p_image, const uint8_t *p_buffer, const tga_header_s &p_header, const uint8_t *p_palette, const bool p_is_monochrome, size_t p_input_size) {
 #define TGA_PUT_PIXEL(r, g, b, a)             \
 	int image_data_ofs = ((y * width) + x);   \
 	image_data_w[image_data_ofs * 4 + 0] = r; \
@@ -134,7 +139,7 @@ Error ImageLoaderTGA::convert_to_image(Ref<Image> p_image, const uint8_t *p_buff
 		if (p_is_monochrome) {
 			while (y != y_end) {
 				while (x != x_end) {
-					if (i > p_output_size) {
+					if (i >= p_input_size) {
 						return ERR_PARSE_ERROR;
 					}
 					uint8_t shade = p_buffer[i];
@@ -150,7 +155,7 @@ Error ImageLoaderTGA::convert_to_image(Ref<Image> p_image, const uint8_t *p_buff
 		} else {
 			while (y != y_end) {
 				while (x != x_end) {
-					if (i > p_output_size) {
+					if (i >= p_input_size) {
 						return ERR_PARSE_ERROR;
 					}
 					uint8_t index = p_buffer[i];
@@ -181,7 +186,7 @@ Error ImageLoaderTGA::convert_to_image(Ref<Image> p_image, const uint8_t *p_buff
 	} else if (p_header.pixel_depth == 24) {
 		while (y != y_end) {
 			while (x != x_end) {
-				if (i + 2 > p_output_size) {
+				if (i + 2 >= p_input_size) {
 					return ERR_PARSE_ERROR;
 				}
 
@@ -200,7 +205,7 @@ Error ImageLoaderTGA::convert_to_image(Ref<Image> p_image, const uint8_t *p_buff
 	} else if (p_header.pixel_depth == 32) {
 		while (y != y_end) {
 			while (x != x_end) {
-				if (i + 3 > p_output_size) {
+				if (i + 3 >= p_input_size) {
 					return ERR_PARSE_ERROR;
 				}
 
@@ -308,8 +313,7 @@ Error ImageLoaderTGA::load_image(Ref<Image> p_image, FileAccess *f, bool p_force
 		const uint8_t *buffer = NULL;
 
 		if (is_encoded) {
-
-			err = decode_tga_rle(src_image_r.ptr(), pixel_size, uncompressed_buffer_w.ptr(), buffer_size);
+			err = decode_tga_rle(src_image_r.ptr(), pixel_size, uncompressed_buffer_w.ptr(), buffer_size, src_image_len);
 
 			if (err == OK) {
 				uncompressed_buffer_r = uncompressed_buffer.read();
