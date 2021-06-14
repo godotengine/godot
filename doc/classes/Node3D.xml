@@ -20,7 +20,7 @@
 				Forces the transform to update. Transform changes in physics are not instant for performance reasons. Transforms are accumulated and then set. Use this if you need an up-to-date transform when doing physics operations.
 			</description>
 		</method>
-		<method name="get_parent_spatial" qualifiers="const">
+		<method name="get_parent_node_3d" qualifiers="const">
 			<return type="Node3D">
 			</return>
 			<description>
