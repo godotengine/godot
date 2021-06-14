@@ -1128,6 +1128,36 @@
 		<constant name="VALIGN_BOTTOM" value="2" enum="VAlign">
 			Vertical bottom alignment, usually for text-derived classes.
 		</constant>
+		<constant name="INLINE_ALIGN_TOP_TO" value="0" enum="InlineAlign">
+			Aligns the top of the inline object (e.g. image, table) to the position of the text specified by [code]INLINE_ALIGN_TO_*[/code] constant.
+		</constant>
+		<constant name="INLINE_ALIGN_CENTER_TO" value="1" enum="InlineAlign">
+			Aligns the center of the inline object (e.g. image, table) to the position of the text specified by [code]INLINE_ALIGN_TO_*[/code] constant.
+		</constant>
+		<constant name="INLINE_ALIGN_BOTTOM_TO" value="2" enum="InlineAlign">
+			Aligns the bottom of the inline object (e.g. image, table) to the position of the text specified by [code]INLINE_ALIGN_TO_*[/code] constant.
+		</constant>
+		<constant name="INLINE_ALIGN_TO_TOP" value="0" enum="InlineAlign">
+			Aligns the position of the inline object (e.g. image, table) specified by [code]INLINE_ALIGN_*_TO[/code] constant to the top of the text.
+		</constant>
+		<constant name="INLINE_ALIGN_TO_CENTER" value="4" enum="InlineAlign">
+			Aligns the position of the inline object (e.g. image, table) specified by [code]INLINE_ALIGN_*_TO[/code] constant to the center of the text.
+		</constant>
+		<constant name="INLINE_ALIGN_TO_BASELINE" value="8" enum="InlineAlign">
+			Aligns the position of the inline object (e.g. image, table) specified by [code]INLINE_ALIGN_*_TO[/code] constant to the baseline of the text.
+		</constant>
+		<constant name="INLINE_ALIGN_TO_BOTTOM" value="12" enum="InlineAlign">
+			Aligns inline object (e.g. image, table) to the bottom of the text.
+		</constant>
+		<constant name="INLINE_ALIGN_TOP" value="0" enum="InlineAlign">
+			Aligns top of the inline object (e.g. image, table) to the top of the text. Equvalent to [code]INLINE_ALIGN_TOP_TO | INLINE_ALIGN_TO_TOP[/code].
+		</constant>
+		<constant name="INLINE_ALIGN_CENTER" value="5" enum="InlineAlign">
+			Aligns center of the inline object (e.g. image, table) to the center of the text. Equvalent to [code]INLINE_ALIGN_CENTER_TO | INLINE_ALIGN_TO_CENTER[/code].
+		</constant>
+		<constant name="INLINE_ALIGN_BOTTOM" value="14" enum="InlineAlign">
+			Aligns bottom of the inline object (e.g. image, table) to the bottom of the text. Equvalent to [code]INLINE_ALIGN_BOTTOM_TO | INLINE_ALIGN_TO_BOTTOM[/code].
+		</constant>
 		<constant name="SPKEY" value="16777216">
 			Keycodes with this bit applied are non-printable.
 		</constant>

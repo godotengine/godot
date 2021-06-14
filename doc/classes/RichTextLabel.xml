@@ -21,7 +21,7 @@
 			<argument index="1" name="width" type="int" default="0" />
 			<argument index="2" name="height" type="int" default="0" />
 			<argument index="3" name="color" type="Color" default="Color(1, 1, 1, 1)" />
-			<argument index="4" name="inline_align" type="int" enum="VAlign" default="0" />
+			<argument index="4" name="inline_align" type="int" enum="InlineAlign" default="5" />
 			<description>
 				Adds an image's opening and closing tags to the tag stack, optionally providing a [code]width[/code] and [code]height[/code] to resize the image and a [code]color[/code] to tint the image.
 				If [code]width[/code] or [code]height[/code] is set to 0, the image size will be adjusted in order to keep the original aspect ratio.
@@ -288,7 +288,7 @@
 		<method name="push_table">
 			<return type="void" />
 			<argument index="0" name="columns" type="int" />
-			<argument index="1" name="inline_align" type="int" enum="VAlign" default="0" />
+			<argument index="1" name="inline_align" type="int" enum="InlineAlign" default="0" />
 			<description>
 				Adds a [code][table=columns,inline_align][/code] tag to the tag stack.
 			</description>
