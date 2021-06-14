@@ -3823,7 +3823,7 @@ void RendererStorageRD::_update_dirty_multimeshes() {
 
 			if (multimesh->data_cache_used_dirty_regions) {
 				uint32_t data_cache_dirty_region_count = (multimesh->instances - 1) / MULTIMESH_DIRTY_REGION_SIZE + 1;
-				uint32_t visible_region_count = (visible_instances - 1) / MULTIMESH_DIRTY_REGION_SIZE + 1;
+				uint32_t visible_region_count = visible_instances == 0 ? 0 : (visible_instances - 1) / MULTIMESH_DIRTY_REGION_SIZE + 1;
 
 				uint32_t region_size = multimesh->stride_cache * MULTIMESH_DIRTY_REGION_SIZE * sizeof(float);
 
