@@ -1526,6 +1526,9 @@ void CodeEdit::_clear_delimiters(DelimiterType p_type) {
 		}
 	}
 	delimiter_cache.clear();
+	if (!setting_delimiters) {
+		_update_delimiter_cache();
+	}
 }
 
 TypedArray<String> CodeEdit::_get_delimiters(DelimiterType p_type) const {
