@@ -28,10 +28,14 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifdef JAVASCRIPT_EVAL_ENABLED
-
 #include "api/javascript_singleton.h"
 #include "emscripten.h"
+
+extern "C" {
+extern void godot_js_os_download_buffer(const uint8_t *p_buf, int p_buf_size, const char *p_name, const char *p_mime);
+}
+
+#ifdef JAVASCRIPT_EVAL_ENABLED
 
 extern "C" {
 typedef union {
@@ -301,7 +305,6 @@ union js_eval_ret {
 };
 
 extern int godot_js_eval(const char *p_js, int p_use_global_ctx, union js_eval_ret *p_union_ptr, void *p_byte_arr, void *p_byte_arr_write, void *(*p_callback)(void *p_ptr, void *p_ptr2, int p_len));
-extern int godot_js_os_download_buffer(const uint8_t *p_buf, int p_buf_size, const char *p_name, const char *p_mime);
 }
 
 void *resize_PackedByteArray_and_open_write(void *p_arr, void *r_write, int p_len) {
