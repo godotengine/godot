@@ -520,9 +520,9 @@ TypedArray<String> XROrigin3D::get_configuration_warnings() const {
 		}
 	}
 
-	bool vr_enabled = GLOBAL_GET("rendering/vr/enabled");
-	if (!vr_enabled) {
-		warnings.push_back(TTR("VR is not enabled in rendering project settings. Stereoscopic output is not supported unless this is enabled."));
+	bool xr_enabled = GLOBAL_GET("rendering/xr/enabled");
+	if (!xr_enabled) {
+		warnings.push_back(TTR("XR is not enabled in rendering project settings. Stereoscopic output is not supported unless this is enabled."));
 	}
 
 	return warnings;
