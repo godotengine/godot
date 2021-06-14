@@ -665,7 +665,7 @@ void add_exposed_classes(Context &r_context) {
 			TEST_COND(exposed_class.find_property_by_name(method.name),
 					"Method name conflicts with property: '", String(class_name), ".", String(method.name), "'.");
 
-			// Classes starting with an underscore are ignored unless they're used as a property setter or getter
+			// Methods starting with an underscore are ignored unless they're virtual or used as a property setter or getter.
 			if (!method.is_virtual && String(method.name)[0] == '_') {
 				for (const List<PropertyData>::Element *F = exposed_class.properties.front(); F; F = F->next()) {
 					const PropertyData &prop = F->get();
@@ -677,6 +677,10 @@ void add_exposed_classes(Context &r_context) {
 				}
 			} else {
 				exposed_class.methods.push_back(method);
+			}
+
+			if (method.is_virtual) {
+				TEST_COND(String(method.name)[0] != '_', "Virtual method ", String(method.name), " does not start with underscore.");
 			}
 		}
 
