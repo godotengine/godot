@@ -38,6 +38,7 @@
 #include "core/object/class_db.h"
 #include "core/string/string_builder.h"
 #include "core/templates/pair.h"
+#include "core/variant/variant_parser.h"
 
 // helper stuff
 
@@ -638,6 +639,7 @@ static List<String> generate_c_api_json(const List<ClassAPI> &p_api) {
 	// I'm sorry for the \t mess
 
 	List<String> source;
+	VariantWriter writer;
 
 	source.push_back("[\n");
 
@@ -682,7 +684,12 @@ static List<String> generate_c_api_json(const List<ClassAPI> &p_api) {
 				source.push_back("\t\t\t\t\t\t\"name\": \"" + e->get().argument_names[i] + "\",\n");
 				source.push_back("\t\t\t\t\t\t\"type\": \"" + e->get().argument_types[i] + "\",\n");
 				source.push_back(String("\t\t\t\t\t\t\"has_default_value\": ") + (e->get().default_arguments.has(i) ? "true" : "false") + ",\n");
-				source.push_back("\t\t\t\t\t\t\"default_value\": \"" + (e->get().default_arguments.has(i) ? (String)e->get().default_arguments[i] : "") + "\"\n");
+				String default_value;
+				if (e->get().default_arguments.has(i)) {
+					writer.write_to_string(e->get().default_arguments[i], default_value);
+					default_value = default_value.replace("\n", "").json_escape();
+				}
+				source.push_back("\t\t\t\t\t\t\"default_value\": \"" + default_value + "\"\n");
 				source.push_back(String("\t\t\t\t\t}") + ((i < e->get().argument_names.size() - 1) ? "," : "") + "\n");
 			}
 			source.push_back("\t\t\t\t]\n");
@@ -708,7 +715,12 @@ static List<String> generate_c_api_json(const List<ClassAPI> &p_api) {
 				source.push_back("\t\t\t\t\t\t\"name\": \"" + e->get().argument_names[i] + "\",\n");
 				source.push_back("\t\t\t\t\t\t\"type\": \"" + e->get().argument_types[i] + "\",\n");
 				source.push_back(String("\t\t\t\t\t\t\"has_default_value\": ") + (e->get().default_arguments.has(i) ? "true" : "false") + ",\n");
-				source.push_back("\t\t\t\t\t\t\"default_value\": \"" + (e->get().default_arguments.has(i) ? (String)e->get().default_arguments[i] : "") + "\"\n");
+				String default_value;
+				if (e->get().default_arguments.has(i)) {
+					writer.write_to_string(e->get().default_arguments[i], default_value);
+					default_value = default_value.replace("\n", "").json_escape();
+				}
+				source.push_back("\t\t\t\t\t\t\"default_value\": \"" + default_value + "\"\n");
 				source.push_back(String("\t\t\t\t\t}") + ((i < e->get().argument_names.size() - 1) ? "," : "") + "\n");
 			}
 			source.push_back("\t\t\t\t]\n");
@@ -756,6 +768,8 @@ static void append_indented(StringBuilder &p_source, const char *p_text) {
 }
 
 static void write_builtin_method(StringBuilder &p_source, const MethodAPI &p_method) {
+	VariantWriter writer;
+
 	append_indented(p_source, vformat(R"("name": "%s",)", p_method.method_name));
 	append_indented(p_source, vformat(R"("return_type": "%s",)", p_method.return_type));
 	append_indented(p_source, vformat(R"("is_const": %s,)", p_method.is_const ? "true" : "false"));
@@ -771,7 +785,12 @@ static void write_builtin_method(StringBuilder &p_source, const MethodAPI &p_met
 		append_indented(p_source, vformat(R"("name": "%s",)", p_method.argument_names[i]));
 		append_indented(p_source, vformat(R"("type": "%s",)", p_method.argument_types[i]));
 		append_indented(p_source, vformat(R"("has_default_value": %s,)", p_method.default_arguments.has(i) ? "true" : "false"));
-		append_indented(p_source, vformat(R"("default_value": "%s")", p_method.default_arguments.has(i) ? p_method.default_arguments[i].operator String() : ""));
+		String default_value;
+		if (p_method.default_arguments.has(i)) {
+			writer.write_to_string(p_method.default_arguments[i], default_value);
+			default_value = default_value.replace("\n", "").json_escape();
+		}
+		append_indented(p_source, vformat(R"("default_value": "%s")", default_value));
 
 		indent_level--;
 		append_indented(p_source, i < p_method.argument_count - 1 ? "}," : "}");
