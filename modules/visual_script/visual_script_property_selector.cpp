@@ -469,10 +469,11 @@ void VisualScriptPropertySelector::_item_selected() {
 
 		at_class = ClassDB::get_parent_class_nocheck(at_class);
 	}
-	Map<String, DocData::ClassDoc>::Element *T = dd->class_list.find(class_type);
+	Vector<String> functions = name.rsplit("/", false);
+	at_class = functions.size() > 3 ? functions[functions.size() - 2] : class_type;
+	Map<String, DocData::ClassDoc>::Element *T = dd->class_list.find(at_class);
 	if (T) {
 		for (int i = 0; i < T->get().methods.size(); i++) {
-			Vector<String> functions = name.rsplit("/", false, 1);
 			if (T->get().methods[i].name == functions[functions.size() - 1]) {
 				text = DTR(T->get().methods[i].description);
 			}
