@@ -930,7 +930,7 @@ void CodeTextEditor::update_editor_settings() {
 	text_editor->set_highlight_current_line(EditorSettings::get_singleton()->get("text_editor/highlighting/highlight_current_line"));
 	text_editor->set_indent_using_spaces(EditorSettings::get_singleton()->get("text_editor/indent/type"));
 	text_editor->set_indent_size(EditorSettings::get_singleton()->get("text_editor/indent/size"));
-	text_editor->set_auto_indent(EditorSettings::get_singleton()->get("text_editor/indent/auto_indent"));
+	text_editor->set_auto_indent_enabled(EditorSettings::get_singleton()->get("text_editor/indent/auto_indent"));
 	text_editor->set_draw_tabs(EditorSettings::get_singleton()->get("text_editor/indent/draw_tabs"));
 	text_editor->set_draw_spaces(EditorSettings::get_singleton()->get("text_editor/indent/draw_spaces"));
 	text_editor->set_smooth_scroll_enabled(EditorSettings::get_singleton()->get("text_editor/navigation/smooth_scrolling"));
@@ -1255,7 +1255,7 @@ void CodeTextEditor::_delete_line(int p_line) {
 		text_editor->cursor_set_line(1);
 		text_editor->cursor_set_column(0);
 	}
-	text_editor->backspace_at_cursor();
+	text_editor->backspace();
 	text_editor->unfold_line(p_line);
 	text_editor->cursor_set_line(p_line);
 }
@@ -1809,7 +1809,7 @@ CodeTextEditor::CodeTextEditor() {
 
 	text_editor->set_draw_line_numbers(true);
 	text_editor->set_brace_matching(true);
-	text_editor->set_auto_indent(true);
+	text_editor->set_auto_indent_enabled(true);
 
 	status_bar = memnew(HBoxContainer);
 	add_child(status_bar);

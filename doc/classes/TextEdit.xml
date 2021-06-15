@@ -10,11 +10,23 @@
 	<tutorials>
 	</tutorials>
 	<methods>
+		<method name="_backspace" qualifiers="virtual">
+			<return type="void">
+			</return>
+			<description>
+			</description>
+		</method>
 		<method name="add_gutter">
 			<return type="void">
 			</return>
 			<argument index="0" name="at" type="int" default="-1">
 			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="backspace">
+			<return type="void">
+			</return>
 			<description>
 			</description>
 		</method>
@@ -96,6 +108,12 @@
 				Cut's the current selection.
 			</description>
 		</method>
+		<method name="delete_selection">
+			<return type="void">
+			</return>
+			<description>
+			</description>
+		</method>
 		<method name="deselect">
 			<return type="void">
 			</return>
@@ -108,6 +126,14 @@
 			</return>
 			<description>
 				Gets the caret pixel draw poistion.
+			</description>
+		</method>
+		<method name="get_first_non_whitespace_column" qualifiers="const">
+			<return type="int">
+			</return>
+			<argument index="0" name="line" type="int">
+			</argument>
+			<description>
 			</description>
 		</method>
 		<method name="get_gutter_count" qualifiers="const">
@@ -136,6 +162,14 @@
 			<return type="int">
 			</return>
 			<argument index="0" name="gutter" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_indent_level" qualifiers="const">
+			<return type="int">
+			</return>
+			<argument index="0" name="line" type="int">
 			</argument>
 			<description>
 			</description>
@@ -274,6 +308,12 @@
 				Returns the selection end line.
 			</description>
 		</method>
+		<method name="get_tab_size" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
 		<method name="get_visible_line_count" qualifiers="const">
 			<return type="int">
 			</return>
@@ -352,6 +392,16 @@
 			</argument>
 			<description>
 				Triggers a right-click menu action by the specified index. See [enum MenuItems] for a list of available indexes.
+			</description>
+		</method>
+		<method name="merge_gutters">
+			<return type="void">
+			</return>
+			<argument index="0" name="from_line" type="int">
+			</argument>
+			<argument index="1" name="to_line" type="int">
+			</argument>
+			<description>
 			</description>
 		</method>
 		<method name="paste">
@@ -607,6 +657,14 @@
 			<argument index="1" name="line" type="int" default="-1">
 			</argument>
 			<argument index="2" name="column" type="int" default="-1">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_tab_size">
+			<return type="void">
+			</return>
+			<argument index="0" name="size" type="int">
 			</argument>
 			<description>
 			</description>

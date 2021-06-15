@@ -102,14 +102,6 @@ static char32_t _get_right_pair_symbol(char32_t c) {
 	return 0;
 }
 
-static int _find_first_non_whitespace_column_of_line(const String &line) {
-	int left = 0;
-	while (left < line.length() && _is_whitespace(line[left])) {
-		left++;
-	}
-	return left;
-}
-
 ///////////////////////////////////////////////////////////////////////////////
 
 void TextEdit::Text::set_font(const Ref<Font> &p_font) {
@@ -120,8 +112,12 @@ void TextEdit::Text::set_font_size(int p_font_size) {
 	font_size = p_font_size;
 }
 
-void TextEdit::Text::set_indent_size(int p_indent_size) {
-	indent_size = p_indent_size;
+void TextEdit::Text::set_tab_size(int p_tab_size) {
+	tab_size = p_tab_size;
+}
+
+int TextEdit::Text::get_tab_size() const {
+	return tab_size;
 }
 
 void TextEdit::Text::set_font_features(const Dictionary &p_features) {
@@ -204,9 +200,9 @@ void TextEdit::Text::invalidate_cache(int p_line, int p_column, const String &p_
 	}
 
 	// Apply tab align.
-	if (indent_size > 0) {
+	if (tab_size > 0) {
 		Vector<float> tabs;
-		tabs.push_back(font->get_char_size(' ', 0, font_size).width * indent_size);
+		tabs.push_back(font->get_char_size(' ', 0, font_size).width * tab_size);
 		text.write[p_line].data_buf->tab_align(tabs);
 	}
 }
@@ -214,9 +210,9 @@ void TextEdit::Text::invalidate_cache(int p_line, int p_column, const String &p_
 void TextEdit::Text::invalidate_all_lines() {
 	for (int i = 0; i < text.size(); i++) {
 		text.write[i].data_buf->set_width(width);
-		if (indent_size > 0) {
+		if (tab_size > 0) {
 			Vector<float> tabs;
-			tabs.push_back(font->get_char_size(' ', 0, font_size).width * indent_size);
+			tabs.push_back(font->get_char_size(' ', 0, font_size).width * tab_size);
 			text.write[i].data_buf->tab_align(tabs);
 		}
 	}
@@ -822,7 +818,7 @@ void TextEdit::_notification(int p_what) {
 			if (draw_minimap) {
 				int minimap_visible_lines = _get_minimap_visible_rows();
 				int minimap_line_height = (minimap_char_size.y + minimap_line_spacing);
-				int minimap_tab_size = minimap_char_size.x * indent_size;
+				int minimap_tab_size = minimap_char_size.x * text.get_tab_size();
 
 				// calculate viewport size and y offset
 				int viewport_height = (draw_amount - 1) * minimap_line_height;
@@ -1695,7 +1691,13 @@ void TextEdit::_consume_backspace_for_pair_symbol(int prev_line, int prev_column
 	}
 }
 
-void TextEdit::backspace_at_cursor() {
+void TextEdit::backspace() {
+	ScriptInstance *si = get_script_instance();
+	if (si && si->has_method("_backspace")) {
+		si->call("_backspace");
+		return;
+	}
+
 	if (readonly) {
 		return;
 	}
@@ -1704,34 +1706,15 @@ void TextEdit::backspace_at_cursor() {
 		return;
 	}
 
+	if (is_selection_active()) {
+		delete_selection();
+		return;
+	}
+
 	int prev_line = cursor.column ? cursor.line : cursor.line - 1;
 	int prev_column = cursor.column ? (cursor.column - 1) : (text[cursor.line - 1].length());
 
-	if (cursor.line != prev_line) {
-		for (int i = 0; i < gutters.size(); i++) {
-			if (!gutters[i].overwritable) {
-				continue;
-			}
-
-			if (text.get_line_gutter_text(cursor.line, i) != "") {
-				text.set_line_gutter_text(prev_line, i, text.get_line_gutter_text(cursor.line, i));
-				text.set_line_gutter_item_color(prev_line, i, text.get_line_gutter_item_color(cursor.line, i));
-			}
-
-			if (text.get_line_gutter_icon(cursor.line, i).is_valid()) {
-				text.set_line_gutter_icon(prev_line, i, text.get_line_gutter_icon(cursor.line, i));
-				text.set_line_gutter_item_color(prev_line, i, text.get_line_gutter_item_color(cursor.line, i));
-			}
-
-			if (text.get_line_gutter_metadata(cursor.line, i) != "") {
-				text.set_line_gutter_metadata(prev_line, i, text.get_line_gutter_metadata(cursor.line, i));
-			}
-
-			if (text.is_line_gutter_clickable(cursor.line, i)) {
-				text.set_line_gutter_clickable(prev_line, i, true);
-			}
-		}
-	}
+	merge_gutters(cursor.line, prev_line);
 
 	if (is_line_hidden(cursor.line)) {
 		set_line_as_hidden(prev_line, true);
@@ -1742,166 +1725,11 @@ void TextEdit::backspace_at_cursor() {
 			_is_pair_left_symbol(text[cursor.line][cursor.column - 1])) {
 		_consume_backspace_for_pair_symbol(prev_line, prev_column);
 	} else {
-		// Handle space indentation.
-		if (cursor.column != 0 && indent_using_spaces) {
-			// Check if there are no other chars before cursor, just indentation.
-			bool unindent = true;
-			int i = 0;
-			while (i < cursor.column && i < text[cursor.line].length()) {
-				if (!_is_whitespace(text[cursor.line][i])) {
-					unindent = false;
-					break;
-				}
-				i++;
-			}
-
-			// Then we can remove all spaces as a single character.
-			if (unindent) {
-				// We want to remove spaces up to closest indent, or whole indent if cursor is pointing at it.
-				int spaces_to_delete = _calculate_spaces_till_next_left_indent(cursor.column);
-				prev_column = cursor.column - spaces_to_delete;
-				_remove_text(cursor.line, prev_column, cursor.line, cursor.column);
-			} else {
-				_remove_text(prev_line, prev_column, cursor.line, cursor.column);
-			}
-		} else {
-			_remove_text(prev_line, prev_column, cursor.line, cursor.column);
-		}
+		_remove_text(prev_line, prev_column, cursor.line, cursor.column);
 	}
 
 	cursor_set_line(prev_line, false, true);
 	cursor_set_column(prev_column);
-}
-
-void TextEdit::indent_selected_lines_right() {
-	int start_line;
-	int end_line;
-
-	// This value informs us by how much we changed selection position by indenting right.
-	// Default is 1 for tab indentation.
-	int selection_offset = 1;
-	begin_complex_operation();
-
-	if (is_selection_active()) {
-		start_line = get_selection_from_line();
-		end_line = get_selection_to_line();
-	} else {
-		start_line = cursor.line;
-		end_line = start_line;
-	}
-
-	// Ignore if the cursor is not past the first column.
-	if (is_selection_active() && get_selection_to_column() == 0) {
-		selection_offset = 0;
-		end_line--;
-	}
-
-	for (int i = start_line; i <= end_line; i++) {
-		String line_text = get_line(i);
-		if (line_text.size() == 0 && is_selection_active()) {
-			continue;
-		}
-		if (indent_using_spaces) {
-			// We don't really care where selection is - we just need to know indentation level at the beginning of the line.
-			int left = _find_first_non_whitespace_column_of_line(line_text);
-			int spaces_to_add = _calculate_spaces_till_next_right_indent(left);
-			// Since we will add these many spaces, we want to move the whole selection and cursor by this much.
-			selection_offset = spaces_to_add;
-			for (int j = 0; j < spaces_to_add; j++) {
-				line_text = ' ' + line_text;
-			}
-		} else {
-			line_text = '\t' + line_text;
-		}
-		set_line(i, line_text);
-	}
-
-	// Fix selection and cursor being off after shifting selection right.
-	if (is_selection_active()) {
-		select(selection.from_line, selection.from_column + selection_offset, selection.to_line, selection.to_column + selection_offset);
-	}
-	cursor_set_column(cursor.column + selection_offset, false);
-	end_complex_operation();
-	update();
-}
-
-void TextEdit::indent_selected_lines_left() {
-	int start_line;
-	int end_line;
-
-	// Moving cursor and selection after unindenting can get tricky because
-	// changing content of line can move cursor and selection on its own (if new line ends before previous position of either),
-	// therefore we just remember initial values and at the end of the operation offset them by number of removed characters.
-	int removed_characters = 0;
-	int initial_selection_end_column = selection.to_column;
-	int initial_cursor_column = cursor.column;
-
-	begin_complex_operation();
-
-	if (is_selection_active()) {
-		start_line = get_selection_from_line();
-		end_line = get_selection_to_line();
-	} else {
-		start_line = cursor.line;
-		end_line = start_line;
-	}
-
-	// Ignore if the cursor is not past the first column.
-	if (is_selection_active() && get_selection_to_column() == 0) {
-		end_line--;
-	}
-	String first_line_text = get_line(start_line);
-	String last_line_text = get_line(end_line);
-
-	for (int i = start_line; i <= end_line; i++) {
-		String line_text = get_line(i);
-
-		if (line_text.begins_with("\t")) {
-			line_text = line_text.substr(1, line_text.length());
-			set_line(i, line_text);
-			removed_characters = 1;
-		} else if (line_text.begins_with(" ")) {
-			// When unindenting we aim to remove spaces before line that has selection no matter what is selected,
-			// so we start of by finding first non whitespace character of line
-			int left = _find_first_non_whitespace_column_of_line(line_text);
-
-			// Here we remove only enough spaces to align text to nearest full multiple of indentation_size.
-			// In case where selection begins at the start of indentation_size multiple we remove whole indentation level.
-			int spaces_to_remove = _calculate_spaces_till_next_left_indent(left);
-
-			line_text = line_text.substr(spaces_to_remove, line_text.length());
-			set_line(i, line_text);
-			removed_characters = spaces_to_remove;
-		}
-	}
-
-	if (is_selection_active()) {
-		// Fix selection being off by one on the first line.
-		if (first_line_text != get_line(start_line)) {
-			select(selection.from_line, selection.from_column - removed_characters,
-					selection.to_line, initial_selection_end_column);
-		}
-		// Fix selection being off by one on the last line.
-		if (last_line_text != get_line(end_line)) {
-			select(selection.from_line, selection.from_column,
-					selection.to_line, initial_selection_end_column - removed_characters);
-		}
-	}
-	cursor_set_column(initial_cursor_column - removed_characters, false);
-	end_complex_operation();
-	update();
-}
-
-int TextEdit::_calculate_spaces_till_next_left_indent(int column) {
-	int spaces_till_indent = column % indent_size;
-	if (spaces_till_indent == 0) {
-		spaces_till_indent = indent_size;
-	}
-	return spaces_till_indent;
-}
-
-int TextEdit::_calculate_spaces_till_next_right_indent(int column) {
-	return indent_size - column % indent_size;
 }
 
 void TextEdit::_swap_current_input_direction() {
@@ -1919,90 +1747,8 @@ void TextEdit::_new_line(bool p_split_current_line, bool p_above) {
 		return;
 	}
 
-	String ins = "\n";
-
-	// Keep indentation.
-	int space_count = 0;
-	for (int i = 0; i < cursor.column; i++) {
-		if (text[cursor.line][i] == '\t') {
-			if (indent_using_spaces) {
-				ins += space_indent;
-			} else {
-				ins += "\t";
-			}
-			space_count = 0;
-		} else if (text[cursor.line][i] == ' ') {
-			space_count++;
-
-			if (space_count == indent_size) {
-				if (indent_using_spaces) {
-					ins += space_indent;
-				} else {
-					ins += "\t";
-				}
-				space_count = 0;
-			}
-		} else {
-			break;
-		}
-	}
-
-	bool brace_indent = false;
-
-	// No need to indent if we are going upwards.
-	if (auto_indent && !p_above) {
-		// Indent once again if previous line will end with ':','{','[','(' and the line is not a comment
-		// (i.e. colon/brace precedes current cursor position).
-		if (cursor.column > 0) {
-			bool indent_char_found = false;
-			bool should_indent = false;
-			char indent_char = ':';
-			char c = text[cursor.line][cursor.column];
-
-			for (int i = 0; i < cursor.column; i++) {
-				c = text[cursor.line][i];
-				switch (c) {
-					case ':':
-					case '{':
-					case '[':
-					case '(':
-						indent_char_found = true;
-						should_indent = true;
-						indent_char = c;
-						continue;
-				}
-
-				if (indent_char_found && is_line_comment(cursor.line)) {
-					should_indent = true;
-					break;
-				} else if (indent_char_found && !_is_whitespace(c)) {
-					should_indent = false;
-					indent_char_found = false;
-				}
-			}
-
-			if (!is_line_comment(cursor.line) && should_indent) {
-				if (indent_using_spaces) {
-					ins += space_indent;
-				} else {
-					ins += "\t";
-				}
-
-				// No need to move the brace below if we are not taking the text with us.
-				char32_t closing_char = _get_right_pair_symbol(indent_char);
-				if ((closing_char != 0) && (closing_char == text[cursor.line][cursor.column])) {
-					if (p_split_current_line) {
-						brace_indent = true;
-						ins += "\n" + ins.substr(1, ins.length() - 2);
-					} else {
-						brace_indent = false;
-						ins = "\n" + ins.substr(1, ins.length() - 2);
-					}
-				}
-			}
-		}
-	}
 	begin_complex_operation();
+
 	bool first_line = false;
 	if (!p_split_current_line) {
 		if (p_above) {
@@ -2018,83 +1764,13 @@ void TextEdit::_new_line(bool p_split_current_line, bool p_above) {
 		}
 	}
 
-	insert_text_at_cursor(ins);
+	insert_text_at_cursor("\n");
 
 	if (first_line) {
 		cursor_set_line(0);
-	} else if (brace_indent) {
-		cursor_set_line(cursor.line - 1, false);
-		cursor_set_column(text[cursor.line].length());
 	}
+
 	end_complex_operation();
-}
-
-void TextEdit::_indent_right() {
-	if (readonly) {
-		return;
-	}
-
-	if (is_selection_active()) {
-		indent_selected_lines_right();
-	} else {
-		// Simple indent.
-		if (indent_using_spaces) {
-			// Insert only as much spaces as needed till next indentation level.
-			int spaces_to_add = _calculate_spaces_till_next_right_indent(cursor.column);
-			String indent_to_insert = String();
-			for (int i = 0; i < spaces_to_add; i++) {
-				indent_to_insert = ' ' + indent_to_insert;
-			}
-			_insert_text_at_cursor(indent_to_insert);
-		} else {
-			_insert_text_at_cursor("\t");
-		}
-	}
-}
-
-void TextEdit::_indent_left() {
-	if (readonly) {
-		return;
-	}
-
-	if (is_selection_active()) {
-		indent_selected_lines_left();
-	} else {
-		// Simple unindent.
-		int cc = cursor.column;
-		const String &line = text[cursor.line];
-
-		int left = _find_first_non_whitespace_column_of_line(line);
-		cc = MIN(cc, left);
-
-		while (cc < indent_size && cc < left && line[cc] == ' ') {
-			cc++;
-		}
-
-		if (cc > 0 && cc <= text[cursor.line].length()) {
-			if (text[cursor.line][cc - 1] == '\t') {
-				// Tabs unindentation.
-				_remove_text(cursor.line, cc - 1, cursor.line, cc);
-				if (cursor.column >= left) {
-					cursor_set_column(MAX(0, cursor.column - 1));
-				}
-				update();
-			} else {
-				// Spaces unindentation.
-				int spaces_to_remove = _calculate_spaces_till_next_left_indent(cc);
-				if (spaces_to_remove > 0) {
-					_remove_text(cursor.line, cc - spaces_to_remove, cursor.line, cc);
-					if (cursor.column > left - spaces_to_remove) { // Inside text?
-						cursor_set_column(MAX(0, cursor.column - spaces_to_remove));
-					}
-					update();
-				}
-			}
-		} else if (cc == 0 && line.length() > 0 && line[0] == '\t') {
-			_remove_text(cursor.line, 0, cursor.line, 1);
-			update();
-		}
-	}
 }
 
 void TextEdit::_move_cursor_left(bool p_select, bool p_move_by_word) {
@@ -2331,20 +2007,24 @@ void TextEdit::_move_cursor_page_down(bool p_select) {
 	}
 }
 
-void TextEdit::_backspace(bool p_word, bool p_all_to_left) {
+void TextEdit::_do_backspace(bool p_word, bool p_all_to_left) {
 	if (readonly) {
 		return;
 	}
 
-	if (is_selection_active()) {
-		_delete_selection();
+	if (is_selection_active() || (!p_all_to_left && !p_word)) {
+		backspace();
 		return;
 	}
+
 	if (p_all_to_left) {
 		int cursor_current_column = cursor.column;
 		cursor.column = 0;
 		_remove_text(cursor.line, 0, cursor.line, cursor_current_column);
-	} else if (p_word) {
+		return;
+	}
+
+	if (p_word) {
 		int line = cursor.line;
 		int column = cursor.column;
 
@@ -2360,8 +2040,7 @@ void TextEdit::_backspace(bool p_word, bool p_all_to_left) {
 
 		cursor_set_line(line, false);
 		cursor_set_column(column);
-	} else {
-		backspace_at_cursor();
+		return;
 	}
 }
 
@@ -2371,7 +2050,7 @@ void TextEdit::_delete(bool p_word, bool p_all_to_right) {
 	}
 
 	if (is_selection_active()) {
-		_delete_selection();
+		delete_selection();
 		return;
 	}
 	int curline_len = text[cursor.line].length();
@@ -2416,15 +2095,16 @@ void TextEdit::_delete(bool p_word, bool p_all_to_right) {
 	update();
 }
 
-void TextEdit::_delete_selection() {
-	if (is_selection_active()) {
-		selection.active = false;
-		update();
-		_remove_text(selection.from_line, selection.from_column, selection.to_line, selection.to_column);
-		cursor_set_line(selection.from_line, false, false);
-		cursor_set_column(selection.from_column);
-		update();
+void TextEdit::delete_selection() {
+	if (!is_selection_active()) {
+		return;
 	}
+
+	selection.active = false;
+	_remove_text(selection.from_line, selection.from_column, selection.to_line, selection.to_column);
+	cursor_set_line(selection.from_line, false, false);
+	cursor_set_column(selection.from_column);
+	update();
 }
 
 void TextEdit::_move_cursor_document_start(bool p_select) {
@@ -2459,7 +2139,7 @@ void TextEdit::_move_cursor_document_end(bool p_select) {
 
 void TextEdit::_handle_unicode_character(uint32_t unicode, bool p_had_selection) {
 	if (p_had_selection) {
-		_delete_selection();
+		delete_selection();
 	}
 
 	// Remove the old character if in insert mode and no selection.
@@ -2942,31 +2622,19 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 			return;
 		}
 
-		// INDENTATION.
-		if (k->is_action("ui_text_dedent", true)) {
-			_indent_left();
-			accept_event();
-			return;
-		}
-		if (k->is_action("ui_text_indent", true)) {
-			_indent_right();
-			accept_event();
-			return;
-		}
-
 		// BACKSPACE AND DELETE.
 		if (k->is_action("ui_text_backspace_all_to_left", true)) {
-			_backspace(false, true);
+			_do_backspace(false, true);
 			accept_event();
 			return;
 		}
 		if (k->is_action("ui_text_backspace_word", true)) {
-			_backspace(true);
+			_do_backspace(true);
 			accept_event();
 			return;
 		}
 		if (k->is_action("ui_text_backspace", true)) {
-			_backspace();
+			_do_backspace();
 			accept_event();
 			return;
 		}
@@ -4540,6 +4208,39 @@ bool TextEdit::is_gutter_overwritable(int p_gutter) const {
 	return gutters[p_gutter].overwritable;
 }
 
+void TextEdit::merge_gutters(int p_from_line, int p_to_line) {
+	ERR_FAIL_INDEX(p_from_line, text.size());
+	ERR_FAIL_INDEX(p_to_line, text.size());
+	if (p_from_line == p_to_line) {
+		return;
+	}
+
+	for (int i = 0; i < gutters.size(); i++) {
+		if (!gutters[i].overwritable) {
+			continue;
+		}
+
+		if (text.get_line_gutter_text(p_from_line, i) != "") {
+			text.set_line_gutter_text(p_to_line, i, text.get_line_gutter_text(p_from_line, i));
+			text.set_line_gutter_item_color(p_to_line, i, text.get_line_gutter_item_color(p_from_line, i));
+		}
+
+		if (text.get_line_gutter_icon(p_from_line, i).is_valid()) {
+			text.set_line_gutter_icon(p_to_line, i, text.get_line_gutter_icon(p_from_line, i));
+			text.set_line_gutter_item_color(p_to_line, i, text.get_line_gutter_item_color(p_from_line, i));
+		}
+
+		if (text.get_line_gutter_metadata(p_from_line, i) != "") {
+			text.set_line_gutter_metadata(p_to_line, i, text.get_line_gutter_metadata(p_from_line, i));
+		}
+
+		if (text.is_line_gutter_clickable(p_from_line, i)) {
+			text.set_line_gutter_clickable(p_to_line, i, true);
+		}
+	}
+	update();
+}
+
 void TextEdit::set_gutter_custom_draw(int p_gutter, Object *p_object, const StringName &p_callback) {
 	ERR_FAIL_INDEX(p_gutter, gutters.size());
 	ERR_FAIL_NULL(p_object);
@@ -4625,10 +4326,6 @@ Color TextEdit::get_line_background_color(int p_line) {
 	return text.get_line_background_color(p_line);
 }
 
-void TextEdit::set_auto_indent(bool p_auto_indent) {
-	auto_indent = p_auto_indent;
-}
-
 void TextEdit::cut() {
 	if (readonly) {
 		return;
@@ -4644,7 +4341,7 @@ void TextEdit::cut() {
 			_remove_text(cursor.line, 0, cursor.line + 1, 0);
 		} else {
 			_remove_text(cursor.line, 0, cursor.line, text[cursor.line].length());
-			backspace_at_cursor();
+			backspace();
 			cursor_set_line(cursor.line + 1);
 		}
 
@@ -5191,7 +4888,6 @@ int TextEdit::get_last_unhidden_line() const {
 int TextEdit::get_indent_level(int p_line) const {
 	ERR_FAIL_INDEX_V(p_line, text.size(), 0);
 
-	// Counts number of tabs and spaces before line starts.
 	int tab_count = 0;
 	int whitespace_count = 0;
 	int line_length = text[p_line].size();
@@ -5204,28 +4900,17 @@ int TextEdit::get_indent_level(int p_line) const {
 			break;
 		}
 	}
-	return tab_count * indent_size + whitespace_count;
+	return tab_count * text.get_tab_size() + whitespace_count;
 }
 
-bool TextEdit::is_line_comment(int p_line) const {
-	// Checks to see if this line is the start of a comment.
-	ERR_FAIL_INDEX_V(p_line, text.size(), false);
+int TextEdit::get_first_non_whitespace_column(int p_line) const {
+	ERR_FAIL_INDEX_V(p_line, text.size(), 0);
 
-	int line_length = text[p_line].size();
-	for (int i = 0; i < line_length - 1; i++) {
-		if (_is_whitespace(text[p_line][i])) {
-			continue;
-		}
-		if (_is_symbol(text[p_line][i])) {
-			if (text[p_line][i] == '\\') {
-				i++; // Skip quoted anything.
-				continue;
-			}
-			return text[p_line][i] == '#' || (i + 1 < line_length && text[p_line][i] == '/' && text[p_line][i + 1] == '/');
-		}
-		break;
+	int col = 0;
+	while (col < text[p_line].length() && _is_whitespace(text[p_line][col])) {
+		col++;
 	}
-	return false;
+	return col;
 }
 
 int TextEdit::get_line_count() const {
@@ -5401,32 +5086,18 @@ void TextEdit::_push_current_op() {
 	}
 }
 
-void TextEdit::set_indent_using_spaces(const bool p_use_spaces) {
-	indent_using_spaces = p_use_spaces;
-}
-
-bool TextEdit::is_indent_using_spaces() const {
-	return indent_using_spaces;
-}
-
-void TextEdit::set_indent_size(const int p_size) {
-	ERR_FAIL_COND_MSG(p_size <= 0, "Indend size must be greater than 0.");
-	if (indent_size != p_size) {
-		indent_size = p_size;
-		text.set_indent_size(p_size);
-		text.invalidate_all_lines();
+void TextEdit::set_tab_size(const int p_size) {
+	ERR_FAIL_COND_MSG(p_size <= 0, "Tab size must be greater than 0.");
+	if (p_size == text.get_tab_size()) {
+		return;
 	}
-
-	space_indent = "";
-	for (int i = 0; i < p_size; i++) {
-		space_indent += " ";
-	}
-
+	text.set_tab_size(p_size);
+	text.invalidate_all_lines();
 	update();
 }
 
-int TextEdit::get_indent_size() {
-	return indent_size;
+int TextEdit::get_tab_size() const {
+	return text.get_tab_size();
 }
 
 void TextEdit::set_draw_tabs(bool p_draw) {
@@ -6019,6 +5690,11 @@ void TextEdit::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_language", "language"), &TextEdit::set_language);
 	ClassDB::bind_method(D_METHOD("get_language"), &TextEdit::get_language);
 
+	ClassDB::bind_method(D_METHOD("get_first_non_whitespace_column", "line"), &TextEdit::get_first_non_whitespace_column);
+	ClassDB::bind_method(D_METHOD("get_indent_level", "line"), &TextEdit::get_indent_level);
+	ClassDB::bind_method(D_METHOD("set_tab_size", "size"), &TextEdit::set_tab_size);
+	ClassDB::bind_method(D_METHOD("get_tab_size"), &TextEdit::get_tab_size);
+
 	ClassDB::bind_method(D_METHOD("set_text", "text"), &TextEdit::set_text);
 	ClassDB::bind_method(D_METHOD("insert_text_at_cursor", "text"), &TextEdit::insert_text_at_cursor);
 
@@ -6072,6 +5748,10 @@ void TextEdit::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_virtual_keyboard_enabled"), &TextEdit::is_virtual_keyboard_enabled);
 	ClassDB::bind_method(D_METHOD("set_selecting_enabled", "enable"), &TextEdit::set_selecting_enabled);
 	ClassDB::bind_method(D_METHOD("is_selecting_enabled"), &TextEdit::is_selecting_enabled);
+
+	ClassDB::bind_method(D_METHOD("delete_selection"), &TextEdit::delete_selection);
+	ClassDB::bind_method(D_METHOD("backspace"), &TextEdit::backspace);
+	BIND_VMETHOD(MethodInfo("_backspace"));
 
 	ClassDB::bind_method(D_METHOD("cut"), &TextEdit::cut);
 	ClassDB::bind_method(D_METHOD("copy"), &TextEdit::copy);
@@ -6128,6 +5808,7 @@ void TextEdit::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_gutter_clickable", "gutter"), &TextEdit::is_gutter_clickable);
 	ClassDB::bind_method(D_METHOD("set_gutter_overwritable", "gutter", "overwritable"), &TextEdit::set_gutter_overwritable);
 	ClassDB::bind_method(D_METHOD("is_gutter_overwritable", "gutter"), &TextEdit::is_gutter_overwritable);
+	ClassDB::bind_method(D_METHOD("merge_gutters", "from_line", "to_line"), &TextEdit::merge_gutters);
 	ClassDB::bind_method(D_METHOD("set_gutter_custom_draw", "column", "object", "callback"), &TextEdit::set_gutter_custom_draw);
 
 	// Line gutters.
@@ -6254,7 +5935,7 @@ TextEdit::TextEdit() {
 	_update_caches();
 	set_default_cursor_shape(CURSOR_IBEAM);
 
-	text.set_indent_size(indent_size);
+	text.set_tab_size(text.get_tab_size());
 	text.clear();
 
 	h_scroll = memnew(HScrollBar);
