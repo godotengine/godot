@@ -104,7 +104,7 @@ void _mark_ysort_dirty(RendererCanvasCull::Item *ysort_owner, RID_PtrOwner<Rende
 	} while (ysort_owner && ysort_owner->sort_y);
 }
 
-void _attach_canvas_item_for_draw(RendererCanvasCull::Item *ci, RendererCanvasCull::Item *p_canvas_clip, RendererCanvasRender::Item **z_list, RendererCanvasRender::Item **z_last_list, const Transform2D &xform, const Rect2 &p_clip_rect, Rect2 global_rect, const Color &modulate, int p_z, RendererCanvasCull::Item *p_material_owner, bool use_canvas_group, RendererCanvasRender::Item *canvas_group_from) {
+void RendererCanvasCull::_attach_canvas_item_for_draw(RendererCanvasCull::Item *ci, RendererCanvasCull::Item *p_canvas_clip, RendererCanvasRender::Item **z_list, RendererCanvasRender::Item **z_last_list, const Transform2D &xform, const Rect2 &p_clip_rect, Rect2 global_rect, const Color &modulate, int p_z, RendererCanvasCull::Item *p_material_owner, bool use_canvas_group, RendererCanvasRender::Item *canvas_group_from, const Transform2D &p_xform) {
 	if (ci->copy_back_buffer) {
 		ci->copy_back_buffer->screen_rect = xform.xform(ci->copy_back_buffer->rect).intersection(p_clip_rect);
 	}
@@ -173,32 +173,44 @@ void _attach_canvas_item_for_draw(RendererCanvasCull::Item *ci, RendererCanvasCu
 		}
 	}
 
-	if (ci->update_when_visible) {
-		RenderingServerDefault::redraw_request();
-	}
-
-	if ((ci->commands != nullptr && p_clip_rect.intersects(global_rect, true)) || ci->vp_render || ci->copy_back_buffer) {
+	if (((ci->commands != nullptr || ci->visibility_notifier) && p_clip_rect.intersects(global_rect, true)) || ci->vp_render || ci->copy_back_buffer) {
 		//something to draw?
-		ci->final_transform = xform;
-		ci->final_modulate = Color(modulate.r * ci->self_modulate.r, modulate.g * ci->self_modulate.g, modulate.b * ci->self_modulate.b, modulate.a * ci->self_modulate.a);
-		ci->global_rect_cache = global_rect;
-		ci->global_rect_cache.position -= p_clip_rect.position;
-		ci->light_masked = false;
 
-		int zidx = p_z - RS::CANVAS_ITEM_Z_MIN;
-
-		if (z_last_list[zidx]) {
-			z_last_list[zidx]->next = ci;
-			z_last_list[zidx] = ci;
-
-		} else {
-			z_list[zidx] = ci;
-			z_last_list[zidx] = ci;
+		if (ci->update_when_visible) {
+			RenderingServerDefault::redraw_request();
 		}
 
-		ci->z_final = p_z;
+		if (ci->commands != nullptr) {
+			ci->final_transform = xform;
+			ci->final_modulate = Color(modulate.r * ci->self_modulate.r, modulate.g * ci->self_modulate.g, modulate.b * ci->self_modulate.b, modulate.a * ci->self_modulate.a);
+			ci->global_rect_cache = global_rect;
+			ci->global_rect_cache.position -= p_clip_rect.position;
+			ci->light_masked = false;
 
-		ci->next = nullptr;
+			int zidx = p_z - RS::CANVAS_ITEM_Z_MIN;
+
+			if (z_last_list[zidx]) {
+				z_last_list[zidx]->next = ci;
+				z_last_list[zidx] = ci;
+
+			} else {
+				z_list[zidx] = ci;
+				z_last_list[zidx] = ci;
+			}
+
+			ci->z_final = p_z;
+
+			ci->next = nullptr;
+		}
+
+		if (ci->visibility_notifier) {
+			if (!ci->visibility_notifier->visible_element.in_list()) {
+				visibility_notifier_list.add(&ci->visibility_notifier->visible_element);
+				ci->visibility_notifier->just_visible = true;
+			}
+
+			ci->visibility_notifier->visible_in_frame = RSG::rasterizer->get_frame_number();
+		}
 	}
 }
 
@@ -215,6 +227,13 @@ void RendererCanvasCull::_cull_canvas_item(Item *p_canvas_item, const Transform2
 	}
 
 	Rect2 rect = ci->get_rect();
+
+	if (ci->visibility_notifier) {
+		if (ci->visibility_notifier->area.size != Vector2()) {
+			rect = rect.merge(ci->visibility_notifier->area);
+		}
+	}
+
 	Transform2D xform = ci->xform;
 	if (snapping_2d_transforms_to_pixel) {
 		xform.elements[2] = xform.elements[2].floor();
@@ -289,7 +308,7 @@ void RendererCanvasCull::_cull_canvas_item(Item *p_canvas_item, const Transform2
 				canvas_group_from = z_last_list[zidx];
 			}
 
-			_attach_canvas_item_for_draw(ci, p_canvas_clip, z_list, z_last_list, xform, p_clip_rect, global_rect, modulate, p_z, p_material_owner, use_canvas_group, canvas_group_from);
+			_attach_canvas_item_for_draw(ci, p_canvas_clip, z_list, z_last_list, xform, p_clip_rect, global_rect, modulate, p_z, p_material_owner, use_canvas_group, canvas_group_from, xform);
 		}
 	} else {
 		RendererCanvasRender::Item *canvas_group_from = nullptr;
@@ -305,7 +324,7 @@ void RendererCanvasCull::_cull_canvas_item(Item *p_canvas_item, const Transform2
 			}
 			_cull_canvas_item(child_items[i], xform, p_clip_rect, modulate, p_z, z_list, z_last_list, (Item *)ci->final_clip_owner, p_material_owner, true);
 		}
-		_attach_canvas_item_for_draw(ci, p_canvas_clip, z_list, z_last_list, xform, p_clip_rect, global_rect, modulate, p_z, p_material_owner, use_canvas_group, canvas_group_from);
+		_attach_canvas_item_for_draw(ci, p_canvas_clip, z_list, z_last_list, xform, p_clip_rect, global_rect, modulate, p_z, p_material_owner, use_canvas_group, canvas_group_from, xform);
 		for (int i = 0; i < child_item_count; i++) {
 			if (child_items[i]->behind || use_canvas_group) {
 				continue;
@@ -1095,6 +1114,26 @@ void RendererCanvasCull::canvas_item_set_use_parent_material(RID p_item, bool p_
 	canvas_item->use_parent_material = p_enable;
 }
 
+void RendererCanvasCull::canvas_item_set_visibility_notifier(RID p_item, bool p_enable, const Rect2 &p_area, const Callable &p_enter_callable, const Callable &p_exit_callable) {
+	Item *canvas_item = canvas_item_owner.getornull(p_item);
+	ERR_FAIL_COND(!canvas_item);
+
+	if (p_enable) {
+		if (!canvas_item->visibility_notifier) {
+			canvas_item->visibility_notifier = visibility_notifier_allocator.alloc();
+		}
+		canvas_item->visibility_notifier->area = p_area;
+		canvas_item->visibility_notifier->enter_callable = p_enter_callable;
+		canvas_item->visibility_notifier->exit_callable = p_exit_callable;
+
+	} else {
+		if (canvas_item->visibility_notifier) {
+			visibility_notifier_allocator.free(canvas_item->visibility_notifier);
+			canvas_item->visibility_notifier = nullptr;
+		}
+	}
+}
+
 void RendererCanvasCull::canvas_item_set_canvas_group_mode(RID p_item, RS::CanvasGroupMode p_mode, float p_clear_margin, bool p_fit_empty, float p_fit_margin, bool p_blur_mipmaps) {
 	Item *canvas_item = canvas_item_owner.getornull(p_item);
 	ERR_FAIL_COND(!canvas_item);
@@ -1477,6 +1516,44 @@ void RendererCanvasCull::canvas_item_set_default_texture_repeat(RID p_item, RS::
 	ci->texture_repeat = p_repeat;
 }
 
+void RendererCanvasCull::update_visibility_notifiers() {
+	SelfList<Item::VisibilityNotifierData> *E = visibility_notifier_list.first();
+	while (E) {
+		SelfList<Item::VisibilityNotifierData> *N = E->next();
+
+		Item::VisibilityNotifierData *visibility_notifier = E->self();
+		if (visibility_notifier->just_visible) {
+			visibility_notifier->just_visible = false;
+
+			if (!visibility_notifier->enter_callable.is_null()) {
+				if (RSG::threaded) {
+					visibility_notifier->enter_callable.call_deferred(nullptr, 0);
+				} else {
+					Callable::CallError ce;
+					Variant ret;
+					visibility_notifier->enter_callable.call(nullptr, 0, ret, ce);
+				}
+			}
+		} else {
+			if (visibility_notifier->visible_in_frame != RSG::rasterizer->get_frame_number()) {
+				visibility_notifier_list.remove(E);
+
+				if (!visibility_notifier->exit_callable.is_null()) {
+					if (RSG::threaded) {
+						visibility_notifier->exit_callable.call_deferred(nullptr, 0);
+					} else {
+						Callable::CallError ce;
+						Variant ret;
+						visibility_notifier->exit_callable.call(nullptr, 0, ret, ce);
+					}
+				}
+			}
+		}
+
+		E = N;
+	}
+}
+
 bool RendererCanvasCull::free(RID p_rid) {
 	if (canvas_owner.owns(p_rid)) {
 		Canvas *canvas = canvas_owner.getornull(p_rid);
@@ -1529,6 +1606,10 @@ bool RendererCanvasCull::free(RID p_rid) {
 
 		for (int i = 0; i < canvas_item->child_items.size(); i++) {
 			canvas_item->child_items[i]->parent = RID();
+		}
+
+		if (canvas_item->visibility_notifier != nullptr) {
+			visibility_notifier_allocator.free(canvas_item->visibility_notifier);
 		}
 
 		/*

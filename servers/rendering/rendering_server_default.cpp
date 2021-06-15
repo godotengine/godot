@@ -117,6 +117,8 @@ void RenderingServerDefault::_draw(bool p_swap_buffers, double frame_step) {
 	_draw_margins();
 	RSG::rasterizer->end_frame(p_swap_buffers);
 
+	RSG::canvas->update_visibility_notifiers();
+
 	while (frame_drawn_callbacks.front()) {
 		Object *obj = ObjectDB::get_instance(frame_drawn_callbacks.front()->get().object);
 		if (obj) {
@@ -396,6 +398,7 @@ RenderingServerDefault::RenderingServerDefault(bool p_create_thread) :
 		server_thread = 0;
 	}
 
+	RSG::threaded = p_create_thread;
 	RSG::canvas = memnew(RendererCanvasCull);
 	RSG::viewport = memnew(RendererViewport);
 	RendererSceneCull *sr = memnew(RendererSceneCull);

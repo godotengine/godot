@@ -31,6 +31,7 @@
 #ifndef RENDERING_SERVER_CANVAS_CULL_H
 #define RENDERING_SERVER_CANVAS_CULL_H
 
+#include "core/templates/paged_allocator.h"
 #include "renderer_compositor.h"
 #include "renderer_viewport.h"
 
@@ -54,6 +55,20 @@ public:
 		int ysort_index;
 
 		Vector<Item *> child_items;
+
+		struct VisibilityNotifierData {
+			Rect2 area;
+			Callable enter_callable;
+			Callable exit_callable;
+			bool just_visible = false;
+			uint64_t visible_in_frame = 0;
+			SelfList<VisibilityNotifierData> visible_element;
+			VisibilityNotifierData() :
+					visible_element(this) {
+			}
+		};
+
+		VisibilityNotifierData *visibility_notifier = nullptr;
 
 		Item() {
 			children_order_dirty = true;
@@ -156,6 +171,11 @@ public:
 	bool sdf_used = false;
 	bool snapping_2d_transforms_to_pixel = false;
 
+	PagedAllocator<Item::VisibilityNotifierData> visibility_notifier_allocator;
+	SelfList<Item::VisibilityNotifierData>::List visibility_notifier_list;
+
+	_FORCE_INLINE_ void _attach_canvas_item_for_draw(Item *ci, Item *p_canvas_clip, RendererCanvasRender::Item **z_list, RendererCanvasRender::Item **z_last_list, const Transform2D &xform, const Rect2 &p_clip_rect, Rect2 global_rect, const Color &modulate, int p_z, RendererCanvasCull::Item *p_material_owner, bool use_canvas_group, RendererCanvasRender::Item *canvas_group_from, const Transform2D &p_xform);
+
 private:
 	void _render_canvas_item_tree(RID p_to_render_target, Canvas::ChildItem *p_child_items, int p_child_item_count, Item *p_canvas_item, const Transform2D &p_transform, const Rect2 &p_clip_rect, const Color &p_modulate, RendererCanvasRender::Light *p_lights, RendererCanvasRender::Light *p_directional_lights, RS::CanvasItemTextureFilter p_default_filter, RS::CanvasItemTextureRepeat p_default_repeat, bool p_snap_2d_vertices_to_pixel);
 	void _cull_canvas_item(Item *p_canvas_item, const Transform2D &p_transform, const Rect2 &p_clip_rect, const Color &p_modulate, int p_z, RendererCanvasRender::Item **z_list, RendererCanvasRender::Item **z_last_list, Item *p_canvas_clip, Item *p_material_owner, bool allow_y_sort);
@@ -224,6 +244,8 @@ public:
 
 	void canvas_item_set_use_parent_material(RID p_item, bool p_enable);
 
+	void canvas_item_set_visibility_notifier(RID p_item, bool p_enable, const Rect2 &p_area, const Callable &p_enter_callable, const Callable &p_exit_callable);
+
 	void canvas_item_set_canvas_group_mode(RID p_item, RS::CanvasGroupMode p_mode, float p_clear_margin = 5.0, bool p_fit_empty = false, float p_fit_margin = 0.0, bool p_blur_mipmaps = false);
 
 	RID canvas_light_allocate();
@@ -282,6 +304,8 @@ public:
 
 	void canvas_item_set_default_texture_filter(RID p_item, RS::CanvasItemTextureFilter p_filter);
 	void canvas_item_set_default_texture_repeat(RID p_item, RS::CanvasItemTextureRepeat p_repeat);
+
+	void update_visibility_notifiers();
 
 	bool free(RID p_rid);
 	RendererCanvasCull();

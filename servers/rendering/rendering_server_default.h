@@ -820,6 +820,8 @@ public:
 
 	FUNC2(canvas_item_set_use_parent_material, RID, bool)
 
+	FUNC5(canvas_item_set_visibility_notifier, RID, bool, const Rect2 &, const Callable &, const Callable &)
+
 	FUNC6(canvas_item_set_canvas_group_mode, RID, CanvasGroupMode, float, bool, float, bool)
 
 	FUNCRIDSPLIT(canvas_light)
