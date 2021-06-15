@@ -55,7 +55,7 @@ static String _make_indent(const String &p_indent, int p_size) {
 	return indent_text;
 }
 
-String JSON::_print_var(const Variant &p_var, const String &p_indent, int p_cur_indent, bool p_sort_keys, bool p_full_precision) {
+String JSON::_print_var(const Variant &p_var, const String &p_indent, int p_cur_indent, bool p_sort_keys, Set<const void *> &p_markers, bool p_full_precision) {
 	String colon = ":";
 	String end_statement = "";
 
@@ -91,20 +91,29 @@ String JSON::_print_var(const Variant &p_var, const String &p_indent, int p_cur_
 			String s = "[";
 			s += end_statement;
 			Array a = p_var;
+
+			ERR_FAIL_COND_V_MSG(p_markers.has(a.id()), "\"[...]\"", "Converting circular structure to JSON.");
+			p_markers.insert(a.id());
+
 			for (int i = 0; i < a.size(); i++) {
 				if (i > 0) {
 					s += ",";
 					s += end_statement;
 				}
-				s += _make_indent(p_indent, p_cur_indent + 1) + _print_var(a[i], p_indent, p_cur_indent + 1, p_sort_keys);
+				s += _make_indent(p_indent, p_cur_indent + 1) + _print_var(a[i], p_indent, p_cur_indent + 1, p_sort_keys, p_markers);
 			}
 			s += end_statement + _make_indent(p_indent, p_cur_indent) + "]";
+			p_markers.erase(a.id());
 			return s;
 		}
 		case Variant::DICTIONARY: {
 			String s = "{";
 			s += end_statement;
 			Dictionary d = p_var;
+
+			ERR_FAIL_COND_V_MSG(p_markers.has(d.id()), "\"{...}\"", "Converting circular structure to JSON.");
+			p_markers.insert(d.id());
+
 			List<Variant> keys;
 			d.get_key_list(&keys);
 
@@ -117,12 +126,13 @@ String JSON::_print_var(const Variant &p_var, const String &p_indent, int p_cur_
 					s += ",";
 					s += end_statement;
 				}
-				s += _make_indent(p_indent, p_cur_indent + 1) + _print_var(String(E->get()), p_indent, p_cur_indent + 1, p_sort_keys);
+				s += _make_indent(p_indent, p_cur_indent + 1) + _print_var(String(E->get()), p_indent, p_cur_indent + 1, p_sort_keys, p_markers);
 				s += colon;
-				s += _print_var(d[E->get()], p_indent, p_cur_indent + 1, p_sort_keys);
+				s += _print_var(d[E->get()], p_indent, p_cur_indent + 1, p_sort_keys, p_markers);
 			}
 
 			s += end_statement + _make_indent(p_indent, p_cur_indent) + "}";
+			p_markers.erase(d.id());
 			return s;
 		}
 		default:
@@ -131,7 +141,8 @@ String JSON::_print_var(const Variant &p_var, const String &p_indent, int p_cur_
 }
 
 String JSON::print(const Variant &p_var, const String &p_indent, bool p_sort_keys, bool p_full_precision) {
-	return _print_var(p_var, p_indent, 0, p_sort_keys, p_full_precision);
+	Set<const void *> markers;
+	return _print_var(p_var, p_indent, 0, p_sort_keys, markers, p_full_precision);
 }
 
 Error JSON::_get_token(const char32_t *p_str, int &index, int p_len, Token &r_token, int &line, String &r_err_str) {
