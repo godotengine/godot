@@ -29,8 +29,12 @@
 /*************************************************************************/
 
 #include "editor_paths.h"
+
+#include "core/config/engine.h"
+#include "core/config/project_settings.h"
 #include "core/io/dir_access.h"
 #include "core/os/os.h"
+#include "main/main.h" // For `is_project_manager`.
 
 EditorPaths *EditorPaths::singleton = nullptr;
 
@@ -41,23 +45,32 @@ bool EditorPaths::are_paths_valid() const {
 String EditorPaths::get_data_dir() const {
 	return data_dir;
 }
+
 String EditorPaths::get_config_dir() const {
 	return config_dir;
 }
+
 String EditorPaths::get_cache_dir() const {
 	return cache_dir;
 }
+
+String EditorPaths::get_project_data_dir() const {
+	return project_data_dir;
+}
+
 bool EditorPaths::is_self_contained() const {
 	return self_contained;
 }
+
 String EditorPaths::get_self_contained_file() const {
 	return self_contained_file;
 }
 
-void EditorPaths::create(bool p_for_project_manager) {
+void EditorPaths::create() {
 	ERR_FAIL_COND(singleton != nullptr);
-	memnew(EditorPaths(p_for_project_manager));
+	memnew(EditorPaths());
 }
+
 void EditorPaths::free() {
 	ERR_FAIL_COND(singleton == nullptr);
 	memdelete(singleton);
@@ -71,9 +84,10 @@ void EditorPaths::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_self_contained_file"), &EditorPaths::get_self_contained_file);
 }
 
-EditorPaths::EditorPaths(bool p_for_project_mamanger) {
+EditorPaths::EditorPaths() {
 	singleton = this;
 
+	// Self-contained mode if a `._sc_` or `_sc_` file is present in executable dir.
 	String exe_path = OS::get_singleton()->get_executable_path().get_base_dir();
 	{
 		DirAccessRef d = DirAccess::create_for_path(exe_path);
@@ -100,13 +114,13 @@ EditorPaths::EditorPaths(bool p_for_project_mamanger) {
 		cache_path = exe_path;
 		cache_dir = data_dir.plus_file("cache");
 	} else {
-		// Typically XDG_DATA_HOME or %APPDATA%
+		// Typically XDG_DATA_HOME or %APPDATA%.
 		data_path = OS::get_singleton()->get_data_path();
 		data_dir = data_path.plus_file(OS::get_singleton()->get_godot_dir_name());
-		// Can be different from data_path e.g. on Linux or macOS
+		// Can be different from data_path e.g. on Linux or macOS.
 		config_path = OS::get_singleton()->get_config_path();
 		config_dir = config_path.plus_file(OS::get_singleton()->get_godot_dir_name());
-		// Can be different from above paths, otherwise a subfolder of data_dir
+		// Can be different from above paths, otherwise a subfolder of data_dir.
 		cache_path = OS::get_singleton()->get_cache_path();
 		if (cache_path == data_path) {
 			cache_dir = data_dir.plus_file("cache");
@@ -116,37 +130,85 @@ EditorPaths::EditorPaths(bool p_for_project_mamanger) {
 	}
 
 	paths_valid = (data_path != "" && config_path != "" && cache_path != "");
+	ERR_FAIL_COND_MSG(!paths_valid, "Editor data, config, or cache paths are invalid.");
 
-	if (paths_valid) {
-		DirAccessRef dir = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
+	// Validate or create each dir and its relevant subdirectories.
+
+	DirAccessRef dir = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
+
+	// Data dir.
+	{
 		if (dir->change_dir(data_dir) != OK) {
 			dir->make_dir_recursive(data_dir);
 			if (dir->change_dir(data_dir) != OK) {
-				ERR_PRINT("Cannot create data directory!");
+				ERR_PRINT("Could not create editor data directory: " + data_dir);
 				paths_valid = false;
 			}
 		}
 
-		// Validate/create cache dir
-
-		if (dir->change_dir(EditorPaths::get_singleton()->get_cache_dir()) != OK) {
-			dir->make_dir_recursive(cache_dir);
-			if (dir->change_dir(cache_dir) != OK) {
-				ERR_PRINT("Cannot create cache directory!");
-			}
-		}
-
-		if (p_for_project_mamanger) {
-			Engine::get_singleton()->set_shader_cache_path(get_data_dir());
-		} else {
-			DirAccessRef dir2 = DirAccess::open("res://");
-			if (dir2->change_dir(".godot") != OK) { //ensure the .godot subdir exists
-				if (dir2->make_dir(".godot") != OK) {
-					ERR_PRINT("Cannot create res://.godot directory!");
-				}
-			}
-
-			Engine::get_singleton()->set_shader_cache_path("res://.godot");
+		if (!dir->dir_exists("templates")) {
+			dir->make_dir("templates");
 		}
 	}
+
+	// Config dir.
+	{
+		if (dir->change_dir(config_dir) != OK) {
+			dir->make_dir_recursive(config_dir);
+			if (dir->change_dir(config_dir) != OK) {
+				ERR_PRINT("Could not create editor config directory: " + config_dir);
+				paths_valid = false;
+			}
+		}
+
+		if (!dir->dir_exists("text_editor_themes")) {
+			dir->make_dir("text_editor_themes");
+		}
+		if (!dir->dir_exists("script_templates")) {
+			dir->make_dir("script_templates");
+		}
+		if (!dir->dir_exists("feature_profiles")) {
+			dir->make_dir("feature_profiles");
+		}
+	}
+
+	// Cache dir.
+	{
+		if (dir->change_dir(cache_dir) != OK) {
+			dir->make_dir_recursive(cache_dir);
+			if (dir->change_dir(cache_dir) != OK) {
+				ERR_PRINT("Could not create editor cache directory: " + cache_dir);
+				paths_valid = false;
+			}
+		}
+	}
+
+	// Validate or create project-specific editor data dir (`res://.godot`),
+	// including shader cache subdir.
+
+	if (Main::is_project_manager()) {
+		// Nothing to create, use shared editor data dir for shader cache.
+		Engine::get_singleton()->set_shader_cache_path(data_dir);
+	} else {
+		DirAccessRef dir_res = DirAccess::create(DirAccess::ACCESS_RESOURCES);
+		if (dir_res->change_dir(project_data_dir) != OK) {
+			dir_res->make_dir_recursive(project_data_dir);
+			if (dir_res->change_dir(project_data_dir) != OK) {
+				ERR_PRINT("Could not create project data directory (" + project_data_dir + ") in: " + dir_res->get_current_dir());
+				paths_valid = false;
+			}
+		}
+		Engine::get_singleton()->set_shader_cache_path(project_data_dir);
+
+		// Editor metadata dir.
+		if (!dir_res->dir_exists("editor")) {
+			dir_res->make_dir("editor");
+		}
+		// Imported assets dir.
+		if (!dir_res->dir_exists(ProjectSettings::IMPORTED_FILES_PATH)) {
+			dir_res->make_dir(ProjectSettings::IMPORTED_FILES_PATH);
+		}
+	}
+
+	print_line("paths valid: " + itos((int)paths_valid));
 }

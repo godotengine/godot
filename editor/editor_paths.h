@@ -28,20 +28,22 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef EDITORPATHS_H
-#define EDITORPATHS_H
+#ifndef EDITOR_PATHS_H
+#define EDITOR_PATHS_H
 
-#include "core/config/engine.h"
+#include "core/object/class_db.h"
+#include "core/string/ustring.h"
 
 class EditorPaths : public Object {
 	GDCLASS(EditorPaths, Object)
 
-	bool paths_valid = false;
-	String data_dir; //editor data dir
-	String config_dir; //editor config dir
-	String cache_dir; //editor cache dir
-	bool self_contained = false; //true if running self contained
-	String self_contained_file; //self contained file with configuration
+	bool paths_valid = false; // If any of the paths can't be created, this is false.
+	String data_dir; // Editor data (templates, shader cache, etc.).
+	String config_dir; // Editor config (settings, profiles, themes, etc.).
+	String cache_dir; // Editor cache (thumbnails, tmp generated files).
+	String project_data_dir = "res://.godot"; // Project-specific data (metadata, shader cache, etc.).
+	bool self_contained = false; // Self-contained means everything goes to `editor_data` dir.
+	String self_contained_file; // Self-contained file with configuration.
 
 	static EditorPaths *singleton;
 
@@ -54,6 +56,8 @@ public:
 	String get_data_dir() const;
 	String get_config_dir() const;
 	String get_cache_dir() const;
+	String get_project_data_dir() const;
+
 	bool is_self_contained() const;
 	String get_self_contained_file() const;
 
@@ -61,10 +65,10 @@ public:
 		return singleton;
 	}
 
-	static void create(bool p_for_project_manager);
+	static void create();
 	static void free();
 
-	EditorPaths(bool p_for_project_mamanger = false);
+	EditorPaths();
 };
 
-#endif // EDITORPATHS_H
+#endif // EDITOR_PATHS_H
