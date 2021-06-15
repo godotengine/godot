@@ -994,9 +994,8 @@ void EditorPropertyEasing::_draw_easing() {
 
 	Size2 s = easing_draw->get_size();
 
-	const int points = 48;
+	const int point_count = 48;
 
-	float prev = 1.0;
 	const float exp = get_edited_object()->get(get_edited_property());
 
 	const Ref<Font> f = get_theme_font("font", "Label");
@@ -1009,24 +1008,20 @@ void EditorPropertyEasing::_draw_easing() {
 		line_color = get_theme_color("font_color", "Label") * Color(1, 1, 1, 0.9);
 	}
 
-	Vector<Point2> lines;
-	for (int i = 1; i <= points; i++) {
-		float ifl = i / float(points);
-		float iflp = (i - 1) / float(points);
+	Vector<Point2> points;
+	for (int i = 0; i <= point_count; i++) {
+		float ifl = i / float(point_count);
 
 		const float h = 1.0 - Math::ease(ifl, exp);
 
 		if (flip) {
 			ifl = 1.0 - ifl;
-			iflp = 1.0 - iflp;
 		}
 
-		lines.push_back(Point2(ifl * s.width, h * s.height));
-		lines.push_back(Point2(iflp * s.width, prev * s.height));
-		prev = h;
+		points.push_back(Point2(ifl * s.width, h * s.height));
 	}
 
-	easing_draw->draw_multiline(lines, line_color, 1.0);
+	easing_draw->draw_polyline(points, line_color, 1.0, true);
 	// Draw more decimals for small numbers since higher precision is usually required for fine adjustments.
 	int decimals;
 	if (Math::abs(exp) < 0.1 - CMP_EPSILON) {
