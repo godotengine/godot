@@ -320,10 +320,10 @@ void TextEditor::_edit_option(int p_op) {
 			code_editor->move_lines_down();
 		} break;
 		case EDIT_INDENT_LEFT: {
-			tx->indent_selected_lines_left();
+			tx->unindent_lines();
 		} break;
 		case EDIT_INDENT_RIGHT: {
-			tx->indent_selected_lines_right();
+			tx->indent_lines();
 		} break;
 		case EDIT_DELETE_LINE: {
 			code_editor->delete_lines();

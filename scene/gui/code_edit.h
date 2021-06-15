@@ -53,6 +53,19 @@ public:
 	};
 
 private:
+	/* Indent management */
+	int indent_size = 4;
+	String indent_text = "\t";
+
+	bool auto_indent = false;
+	Set<char32_t> auto_indent_prefixes;
+
+	bool indent_using_spaces = false;
+	int _calculate_spaces_till_next_left_indent(int p_column) const;
+	int _calculate_spaces_till_next_right_indent(int p_column) const;
+
+	void _new_line(bool p_split_current_line = true, bool p_above = false);
+
 	/* Main Gutter */
 	enum MainGutterType {
 		MAIN_GUTTER_BREAKPOINT = 0x01,
@@ -205,6 +218,27 @@ protected:
 
 public:
 	virtual CursorShape get_cursor_shape(const Point2 &p_pos = Point2i()) const override;
+
+	/* Indent management */
+	void set_indent_size(const int p_size);
+	int get_indent_size() const;
+
+	void set_indent_using_spaces(const bool p_use_spaces);
+	bool is_indent_using_spaces() const;
+
+	void set_auto_indent_enabled(bool p_enabled);
+	bool is_auto_indent_enabled() const;
+
+	void set_auto_indent_prefixes(const TypedArray<String> &p_prefixes);
+	TypedArray<String> get_auto_indent_prefixes() const;
+
+	void do_indent();
+	void do_unindent();
+
+	void indent_lines();
+	void unindent_lines();
+
+	virtual void backspace() override;
 
 	/* Main Gutter */
 	void set_draw_breakpoints_gutter(bool p_draw);

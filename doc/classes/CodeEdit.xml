@@ -143,6 +143,20 @@
 				Inserts the selected entry into the text. If [code]replace[/code] is true, any existing text is replaced rather then merged.
 			</description>
 		</method>
+		<method name="do_indent">
+			<return type="void">
+			</return>
+			<description>
+				Perform an indent as if the user activated the "ui_text_indent" action.
+			</description>
+		</method>
+		<method name="do_unindent">
+			<return type="void">
+			</return>
+			<description>
+				Perform an unindent as if the user activated the "ui_text_unindent" action.
+			</description>
+		</method>
 		<method name="fold_all_lines">
 			<return type="void">
 			</return>
@@ -276,6 +290,13 @@
 			</argument>
 			<description>
 				Returns [code]true[/code] if string [code]start_key[/code] exists.
+			</description>
+		</method>
+		<method name="indent_lines">
+			<return type="void">
+			</return>
+			<description>
+				Indents selected lines, or in the case of no selection the caret line by one.
 			</description>
 		</method>
 		<method name="is_in_comment" qualifiers="const">
@@ -441,6 +462,13 @@
 				Unfolds all lines that were previously folded.
 			</description>
 		</method>
+		<method name="unindent_lines">
+			<return type="void">
+			</return>
+			<description>
+				Unindents selected lines, or in the case of no selection the caret line by one.
+			</description>
+		</method>
 		<method name="update_code_completion_options">
 			<return type="void">
 			</return>
@@ -474,6 +502,18 @@
 		<member name="draw_fold_gutter" type="bool" setter="set_draw_fold_gutter" getter="is_drawing_fold_gutter" default="false">
 		</member>
 		<member name="draw_line_numbers" type="bool" setter="set_draw_line_numbers" getter="is_draw_line_numbers_enabled" default="false">
+		</member>
+		<member name="indent_automatic" type="bool" setter="set_auto_indent_enabled" getter="is_auto_indent_enabled" default="false">
+			Sets whether automatic indent are enabled, this will add an extra indent if a prefix or brace is found.
+		</member>
+		<member name="indent_automatic_prefixes" type="String[]" setter="set_auto_indent_prefixes" getter="get_auto_indent_prefixes" default="[&quot;(&quot;, &quot;:&quot;, &quot;[&quot;, &quot;{&quot;]">
+			Prefixes to trigger an automatic indent.
+		</member>
+		<member name="indent_size" type="int" setter="set_indent_size" getter="get_indent_size" default="4">
+			Size of tabs, if [code]indent_use_spaces[/code] is enabled the amount of spaces to use.
+		</member>
+		<member name="indent_use_spaces" type="bool" setter="set_indent_using_spaces" getter="is_indent_using_spaces" default="false">
+			Use spaces instead of tabs for indentation.
 		</member>
 		<member name="layout_direction" type="int" setter="set_layout_direction" getter="get_layout_direction" override="true" enum="Control.LayoutDirection" default="2" />
 		<member name="line_folding" type="bool" setter="set_line_folding_enabled" getter="is_line_folding_enabled" default="true">

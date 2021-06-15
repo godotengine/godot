@@ -524,7 +524,7 @@ void ScriptTextEditor::_validate_script() {
 			if (safe_lines.has(i + 1)) {
 				te->set_line_gutter_item_color(i, line_number_gutter, safe_line_number_color);
 				last_is_safe = true;
-			} else if (last_is_safe && (te->is_line_comment(i) || te->get_line(i).strip_edges().is_empty())) {
+			} else if (last_is_safe && (te->is_in_comment(i) != -1 || te->get_line(i).strip_edges().is_empty())) {
 				te->set_line_gutter_item_color(i, line_number_gutter, safe_line_number_color);
 			} else {
 				te->set_line_gutter_item_color(i, line_number_gutter, default_line_number_color);
@@ -1038,7 +1038,7 @@ void ScriptTextEditor::_edit_option(int p_op) {
 				return;
 			}
 
-			tx->indent_selected_lines_left();
+			tx->unindent_lines();
 		} break;
 		case EDIT_INDENT_RIGHT: {
 			Ref<Script> scr = script;
@@ -1046,7 +1046,7 @@ void ScriptTextEditor::_edit_option(int p_op) {
 				return;
 			}
 
-			tx->indent_selected_lines_right();
+			tx->indent_lines();
 		} break;
 		case EDIT_DELETE_LINE: {
 			code_editor->delete_lines();
