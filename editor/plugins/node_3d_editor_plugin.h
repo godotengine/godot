@@ -387,6 +387,7 @@ private:
 		Vector3 orig_gizmo_pos;
 		int edited_gizmo = 0;
 		Point2 mouse_pos;
+		Point2 original_mouse_pos;
 		bool snap = false;
 		Ref<EditorNode3DGizmo> gizmo;
 		int gizmo_handle = 0;
