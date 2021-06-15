@@ -575,6 +575,7 @@ Error ResourceLoaderText::load() {
 		int_resources[id] = res; //always assign int resources
 		if (do_assign && cache_mode != ResourceFormatLoader::CACHE_MODE_IGNORE) {
 			res->set_path(path, cache_mode == ResourceFormatLoader::CACHE_MODE_REPLACE);
+			res->set_subindex(id);
 		}
 
 		if (progress && resources_total > 0) {
