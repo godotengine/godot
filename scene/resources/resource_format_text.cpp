@@ -115,18 +115,8 @@ Error ResourceInteractiveLoaderText::_parse_sub_resource(VariantParser::Stream *
 
 	int index = token.value;
 
-	String path = local_path + "::" + itos(index);
-
-	if (!ignore_resource_parsing) {
-		if (!ResourceCache::has(path)) {
-			r_err_str = "Can't load cached sub-resource: " + path;
-			return ERR_PARSE_ERROR;
-		}
-
-		r_res = RES(ResourceCache::get(path));
-	} else {
-		r_res = RES();
-	}
+	ERR_FAIL_COND_V(!int_resources.has(index), ERR_INVALID_PARAMETER);
+	r_res = int_resources[index];
 
 	VariantParser::get_token(p_stream, token, line, r_err_str);
 	if (token.type != VariantParser::TK_PARENTHESIS_CLOSE) {
@@ -425,7 +415,6 @@ Error ResourceInteractiveLoaderText::poll() {
 				ResourceLoader::notify_dependency_error(local_path, path, type);
 			}
 		} else {
-			resource_cache.push_back(res);
 #ifdef TOOLS_ENABLED
 			//remember ID for saving
 			res->set_id_for_path(local_path, index);
@@ -466,12 +455,16 @@ Error ResourceInteractiveLoaderText::poll() {
 
 		String path = local_path + "::" + itos(id);
 
-		//bool exists=ResourceCache::has(path);
-
 		Ref<Resource> res;
 
-		if (!ResourceCache::has(path)) { //only if it doesn't exist
+		bool do_assign = false;
 
+		if (ResourceCache::has(path)) {
+			//cached, do not assign
+			Resource *r = ResourceCache::get(path);
+			res = Ref<Resource>(r);
+		} else {
+			//create
 			Object *obj = ClassDB::instance(type);
 			if (!obj) {
 				error_text += "Can't create sub resource of type: " + type;
@@ -489,8 +482,13 @@ Error ResourceInteractiveLoaderText::poll() {
 			}
 
 			res = Ref<Resource>(r);
-			resource_cache.push_back(res);
+			do_assign = true;
+		}
+
+		int_resources[id] = res; //always assign int resources
+		if (do_assign) {
 			res->set_path(path);
+			res->set_subindex(id);
 		}
 
 		resource_current++;
@@ -507,7 +505,7 @@ Error ResourceInteractiveLoaderText::poll() {
 			}
 
 			if (assign != String()) {
-				if (res.is_valid()) {
+				if (do_assign) {
 					res->set(assign, value);
 				}
 				//it's assignment
