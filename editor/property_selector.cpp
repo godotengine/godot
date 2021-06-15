@@ -135,7 +135,7 @@ void PropertySelector::_update_search() {
 			search_options->get_theme_icon("Quaternion", "EditorIcons"),
 			search_options->get_theme_icon("AABB", "EditorIcons"),
 			search_options->get_theme_icon("Basis", "EditorIcons"),
-			search_options->get_theme_icon("Transform", "EditorIcons"),
+			search_options->get_theme_icon("Transform3D", "EditorIcons"),
 			search_options->get_theme_icon("Color", "EditorIcons"),
 			search_options->get_theme_icon("NodePath", "EditorIcons"),
 			search_options->get_theme_icon("RID", "EditorIcons"),

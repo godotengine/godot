@@ -1227,7 +1227,7 @@ void VisualShaderEditor::_update_options_menu() {
 				item->set_icon(0, EditorNode::get_singleton()->get_gui_base()->get_theme_icon("bool", "EditorIcons"));
 				break;
 			case VisualShaderNode::PORT_TYPE_TRANSFORM:
-				item->set_icon(0, EditorNode::get_singleton()->get_gui_base()->get_theme_icon("Transform", "EditorIcons"));
+				item->set_icon(0, EditorNode::get_singleton()->get_gui_base()->get_theme_icon("Transform3D", "EditorIcons"));
 				break;
 			case VisualShaderNode::PORT_TYPE_SAMPLER:
 				item->set_icon(0, EditorNode::get_singleton()->get_gui_base()->get_theme_icon("ImageTexture", "EditorIcons"));
@@ -4504,7 +4504,7 @@ public:
 			EditorNode::get_singleton()->get_gui_base()->get_theme_icon("int", "EditorIcons"),
 			EditorNode::get_singleton()->get_gui_base()->get_theme_icon("Vector3", "EditorIcons"),
 			EditorNode::get_singleton()->get_gui_base()->get_theme_icon("bool", "EditorIcons"),
-			EditorNode::get_singleton()->get_gui_base()->get_theme_icon("Transform", "EditorIcons"),
+			EditorNode::get_singleton()->get_gui_base()->get_theme_icon("Transform3D", "EditorIcons"),
 			EditorNode::get_singleton()->get_gui_base()->get_theme_icon("ImageTexture", "EditorIcons"),
 		};
 
@@ -4549,7 +4549,7 @@ public:
 			EditorNode::get_singleton()->get_gui_base()->get_theme_icon("int", "EditorIcons"),
 			EditorNode::get_singleton()->get_gui_base()->get_theme_icon("bool", "EditorIcons"),
 			EditorNode::get_singleton()->get_gui_base()->get_theme_icon("Vector3", "EditorIcons"),
-			EditorNode::get_singleton()->get_gui_base()->get_theme_icon("Transform", "EditorIcons"),
+			EditorNode::get_singleton()->get_gui_base()->get_theme_icon("Transform3D", "EditorIcons"),
 			EditorNode::get_singleton()->get_gui_base()->get_theme_icon("Color", "EditorIcons"),
 			EditorNode::get_singleton()->get_gui_base()->get_theme_icon("ImageTexture", "EditorIcons"),
 		};

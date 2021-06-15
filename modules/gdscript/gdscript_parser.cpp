@@ -63,7 +63,7 @@ Variant::Type GDScriptParser::get_builtin_type(const StringName &p_type) {
 		builtin_types["Plane"] = Variant::PLANE;
 		builtin_types["Quaternion"] = Variant::QUATERNION;
 		builtin_types["Basis"] = Variant::BASIS;
-		builtin_types["Transform"] = Variant::TRANSFORM3D;
+		builtin_types["Transform3D"] = Variant::TRANSFORM3D;
 		builtin_types["Color"] = Variant::COLOR;
 		builtin_types["RID"] = Variant::RID;
 		builtin_types["Object"] = Variant::OBJECT;

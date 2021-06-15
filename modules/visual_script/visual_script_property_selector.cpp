@@ -111,7 +111,7 @@ void VisualScriptPropertySelector::_update_search() {
 			vbc->get_theme_icon("Quaternion", "EditorIcons"),
 			vbc->get_theme_icon("AABB", "EditorIcons"),
 			vbc->get_theme_icon("Basis", "EditorIcons"),
-			vbc->get_theme_icon("Transform", "EditorIcons"),
+			vbc->get_theme_icon("Transform3D", "EditorIcons"),
 			vbc->get_theme_icon("Color", "EditorIcons"),
 			vbc->get_theme_icon("Path", "EditorIcons"),
 			vbc->get_theme_icon("RID", "EditorIcons"),

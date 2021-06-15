@@ -1029,7 +1029,7 @@ static void _find_identifiers(GDScriptParser::CompletionContext &p_context, bool
 	}
 
 	static const char *_type_names[Variant::VARIANT_MAX] = {
-		"null", "bool", "int", "float", "String", "StringName", "Vector2", "Vector2i", "Rect2", "Rect2i", "Vector3", "Vector3i", "Transform2D", "Plane", "Quat", "AABB", "Basis", "Transform",
+		"null", "bool", "int", "float", "String", "StringName", "Vector2", "Vector2i", "Rect2", "Rect2i", "Vector3", "Vector3i", "Transform2D", "Plane", "Quaternion", "AABB", "Basis", "Transform3D",
 		"Color", "NodePath", "RID", "Signal", "Callable", "Object", "Dictionary", "Array", "PackedByteArray", "PackedInt32Array", "PackedInt64Array", "PackedFloat32Array", "PackedFloat64Array", "PackedStringArray",
 		"PackedVector2Array", "PackedVector3Array", "PackedColorArray"
 	};
