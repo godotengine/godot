@@ -904,7 +904,7 @@ void main() {
 	}
 #endif // USE_LIGHTMAP
 #if defined(CUSTOM_IRRADIANCE_USED)
-	ambient_light = mix(specular_light, custom_irradiance.rgb, custom_irradiance.a);
+	ambient_light = mix(ambient_light, custom_irradiance.rgb, custom_irradiance.a);
 #endif
 #endif //!defined(MODE_RENDER_DEPTH) && !defined(MODE_UNSHADED)
 
