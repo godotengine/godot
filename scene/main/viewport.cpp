@@ -188,11 +188,6 @@ void Viewport::update_worlds() {
 		return;
 	}
 
-	Rect2 abstracted_rect = Rect2(Vector2(), get_visible_rect().size);
-	Rect2 xformed_rect = (global_canvas_transform * canvas_transform).affine_inverse().xform(abstracted_rect);
-	find_world_2d()->_update_viewport(this, xformed_rect);
-	find_world_2d()->_update();
-
 	find_world_3d()->_update(get_tree()->get_frame());
 }
 
@@ -441,8 +436,6 @@ void Viewport::_notification(int p_what) {
 			_update_listener();
 			_update_listener_2d();
 
-			find_world_2d()->_register_viewport(this, Rect2());
-
 			add_to_group("_viewports");
 			if (get_tree()->is_debugging_collisions_hint()) {
 				//2D
@@ -499,9 +492,6 @@ void Viewport::_notification(int p_what) {
 		} break;
 		case NOTIFICATION_EXIT_TREE: {
 			_gui_cancel_tooltip();
-			if (world_2d.is_valid()) {
-				world_2d->_remove_viewport(this);
-			}
 
 			RenderingServer::get_singleton()->viewport_set_scenario(viewport, RID());
 			RenderingServer::get_singleton()->viewport_remove_canvas(viewport, current_canvas);
@@ -1156,7 +1146,6 @@ void Viewport::set_world_2d(const Ref<World2D> &p_world_2d) {
 	}
 
 	if (is_inside_tree()) {
-		find_world_2d()->_remove_viewport(this);
 		RenderingServer::get_singleton()->viewport_remove_canvas(viewport, current_canvas);
 	}
 
@@ -1172,7 +1161,6 @@ void Viewport::set_world_2d(const Ref<World2D> &p_world_2d) {
 	if (is_inside_tree()) {
 		current_canvas = find_world_2d()->get_canvas();
 		RenderingServer::get_singleton()->viewport_attach_canvas(viewport, current_canvas);
-		find_world_2d()->_register_viewport(this, Rect2());
 	}
 }
 

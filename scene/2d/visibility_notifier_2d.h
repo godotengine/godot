@@ -41,12 +41,12 @@ class VisibilityNotifier2D : public Node2D {
 
 	Rect2 rect;
 
+private:
+	bool on_screen = false;
+	void _visibility_enter();
+	void _visibility_exit();
+
 protected:
-	friend struct SpatialIndexer2D;
-
-	void _enter_viewport(Viewport *p_viewport);
-	void _exit_viewport(Viewport *p_viewport);
-
 	virtual void _screen_enter() {}
 	virtual void _screen_exit() {}
 
@@ -71,42 +71,35 @@ class VisibilityEnabler2D : public VisibilityNotifier2D {
 	GDCLASS(VisibilityEnabler2D, VisibilityNotifier2D);
 
 public:
-	enum Enabler {
-		ENABLER_PAUSE_ANIMATIONS,
-		ENABLER_FREEZE_BODIES,
-		ENABLER_PAUSE_PARTICLES,
-		ENABLER_PARENT_PROCESS,
-		ENABLER_PARENT_PHYSICS_PROCESS,
-		ENABLER_PAUSE_ANIMATED_SPRITES,
-		ENABLER_MAX
+	enum EnableMode {
+		ENABLE_MODE_INHERIT,
+		ENABLE_MODE_ALWAYS,
+		ENABLE_MODE_WHEN_PAUSED,
 	};
 
 protected:
+	ObjectID node_id;
 	virtual void _screen_enter() override;
 	virtual void _screen_exit() override;
 
-	bool visible = false;
-
-	void _find_nodes(Node *p_node);
-
-	Map<Node *, Variant> nodes;
-	void _node_removed(Node *p_node);
-	bool enabler[ENABLER_MAX];
-
-	void _change_node_state(Node *p_node, bool p_enabled);
+	EnableMode enable_mode = ENABLE_MODE_INHERIT;
+	NodePath enable_node_path = NodePath("..");
 
 	void _notification(int p_what);
 	static void _bind_methods();
 
-public:
-	void set_enabler(Enabler p_enabler, bool p_enable);
-	bool is_enabler_enabled(Enabler p_enabler) const;
+	void _update_enable_mode(bool p_enable);
 
-	TypedArray<String> get_configuration_warnings() const override;
+public:
+	void set_enable_mode(EnableMode p_mode);
+	EnableMode get_enable_mode();
+
+	void set_enable_node_path(NodePath p_path);
+	NodePath get_enable_node_path();
 
 	VisibilityEnabler2D();
 };
 
-VARIANT_ENUM_CAST(VisibilityEnabler2D::Enabler);
+VARIANT_ENUM_CAST(VisibilityEnabler2D::EnableMode);
 
 #endif // VISIBILITY_NOTIFIER_2D_H

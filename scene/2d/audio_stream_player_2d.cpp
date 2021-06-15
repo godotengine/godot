@@ -170,7 +170,6 @@ void AudioStreamPlayer2D::_notification(int p_what) {
 		//update anything related to position first, if possible of course
 
 		if (!output_ready.is_set()) {
-			List<Viewport *> viewports;
 			Ref<World2D> world_2d = get_world_2d();
 			ERR_FAIL_COND(world_2d.is_null());
 
@@ -203,8 +202,9 @@ void AudioStreamPlayer2D::_notification(int p_what) {
 				break;
 			}
 
-			world_2d->get_viewport_list(&viewports);
-			for (List<Viewport *>::Element *E = viewports.front(); E; E = E->next()) {
+			const Set<Viewport *> viewports = world_2d->get_viewports();
+
+			for (Set<Viewport *>::Element *E = viewports.front(); E; E = E->next()) {
 				Viewport *vp = E->get();
 				if (vp->is_audio_listener_2d()) {
 					//compute matrix to convert to screen
