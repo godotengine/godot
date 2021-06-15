@@ -446,7 +446,7 @@ ConnectDialog::ConnectDialog() {
 	type_list->add_item("Quaternion", Variant::QUATERNION);
 	type_list->add_item("AABB", Variant::AABB);
 	type_list->add_item("Basis", Variant::BASIS);
-	type_list->add_item("Transform", Variant::TRANSFORM3D);
+	type_list->add_item("Transform3D", Variant::TRANSFORM3D);
 	type_list->add_item("Color", Variant::COLOR);
 	type_list->select(0);
 
