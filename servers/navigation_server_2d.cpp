@@ -29,8 +29,8 @@
 /*************************************************************************/
 
 #include "servers/navigation_server_2d.h"
-#include "core/math/transform.h"
 #include "core/math/transform_2d.h"
+#include "core/math/transform_3d.h"
 #include "servers/navigation_server_3d.h"
 
 /**
@@ -129,12 +129,12 @@ static Vector<Vector2> vector_v3_to_v2(const Vector<Vector3> &d) {
 	return nd;
 }
 
-static Transform trf2_to_trf3(const Transform2D &d) {
+static Transform3D trf2_to_trf3(const Transform2D &d) {
 	Vector3 o(v2_to_v3(d.get_origin()));
 	Basis b;
 	b.rotate(Vector3(0, -1, 0), d.get_rotation());
 	b.scale(v2_to_v3(d.get_scale()));
-	return Transform(b, o);
+	return Transform3D(b, o);
 }
 
 static Object *obj_to_obj(Object *d) {

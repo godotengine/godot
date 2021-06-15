@@ -175,8 +175,8 @@ public:
 	EditorProperty();
 };
 
-class EditorInspectorPlugin : public Reference {
-	GDCLASS(EditorInspectorPlugin, Reference);
+class EditorInspectorPlugin : public RefCounted {
+	GDCLASS(EditorInspectorPlugin, RefCounted);
 
 	friend class EditorInspector;
 	struct AddedEditor {
@@ -208,7 +208,7 @@ class EditorInspectorCategory : public Control {
 	friend class EditorInspector;
 	Ref<Texture2D> icon;
 	String label;
-	Color bg_color;
+
 	mutable String tooltip_text;
 
 protected:

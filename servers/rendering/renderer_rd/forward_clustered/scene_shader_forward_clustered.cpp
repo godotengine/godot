@@ -30,6 +30,7 @@
 
 #include "scene_shader_forward_clustered.h"
 #include "core/config/project_settings.h"
+#include "core/math/math_defs.h"
 #include "render_forward_clustered.h"
 
 using namespace RendererSceneRenderImplementation;
@@ -310,7 +311,7 @@ void SceneShaderForwardClustered::ShaderData::set_code(const String &p_code) {
 						//none, leave empty
 					} else if (k == SHADER_VERSION_DEPTH_PASS_WITH_NORMAL_AND_ROUGHNESS) {
 						blend_state = blend_state_depth_normal_roughness;
-					} else if (k == SHADER_VERSION_DEPTH_PASS_WITH_NORMAL_AND_ROUGHNESS_AND_GIPROBE) {
+					} else if (k == SHADER_VERSION_DEPTH_PASS_WITH_NORMAL_AND_ROUGHNESS_AND_VOXEL_GI) {
 						blend_state = blend_state_depth_normal_roughness_giprobe;
 					} else if (k == SHADER_VERSION_DEPTH_PASS_WITH_MATERIAL) {
 						blend_state = RD::PipelineColorBlendState::create_disabled(5); //writes to normal and roughness in opaque way
@@ -559,17 +560,18 @@ void SceneShaderForwardClustered::init(RendererStorageRD *p_storage, const Strin
 
 	{
 		Vector<String> shader_versions;
-		shader_versions.push_back("\n#define MODE_RENDER_DEPTH\n");
-		shader_versions.push_back("\n#define MODE_RENDER_DEPTH\n#define MODE_DUAL_PARABOLOID\n");
-		shader_versions.push_back("\n#define MODE_RENDER_DEPTH\n#define MODE_RENDER_NORMAL_ROUGHNESS\n");
-		shader_versions.push_back("\n#define MODE_RENDER_DEPTH\n#define MODE_RENDER_NORMAL_ROUGHNESS\n#define MODE_RENDER_GIPROBE\n");
-		shader_versions.push_back("\n#define MODE_RENDER_DEPTH\n#define MODE_RENDER_MATERIAL\n");
-		shader_versions.push_back("\n#define MODE_RENDER_DEPTH\n#define MODE_RENDER_SDF\n");
-		shader_versions.push_back("");
-		shader_versions.push_back("\n#define USE_FORWARD_GI\n");
-		shader_versions.push_back("\n#define MODE_MULTIPLE_RENDER_TARGETS\n");
-		shader_versions.push_back("\n#define USE_LIGHTMAP\n");
-		shader_versions.push_back("\n#define MODE_MULTIPLE_RENDER_TARGETS\n#define USE_LIGHTMAP\n");
+		shader_versions.push_back("\n#define MODE_RENDER_DEPTH\n"); // SHADER_VERSION_DEPTH_PASS
+		shader_versions.push_back("\n#define MODE_RENDER_DEPTH\n#define MODE_DUAL_PARABOLOID\n"); // SHADER_VERSION_DEPTH_PASS_DP
+		shader_versions.push_back("\n#define MODE_RENDER_DEPTH\n#define MODE_RENDER_NORMAL_ROUGHNESS\n"); // SHADER_VERSION_DEPTH_PASS_WITH_NORMAL_AND_ROUGHNESS
+		shader_versions.push_back("\n#define MODE_RENDER_DEPTH\n#define MODE_RENDER_NORMAL_ROUGHNESS\n#define MODE_RENDER_VOXEL_GI\n"); // SHADER_VERSION_DEPTH_PASS_WITH_NORMAL_AND_ROUGHNESS_AND_GIPROBE
+		shader_versions.push_back("\n#define MODE_RENDER_DEPTH\n#define MODE_RENDER_MATERIAL\n"); // SHADER_VERSION_DEPTH_PASS_WITH_MATERIAL
+		shader_versions.push_back("\n#define MODE_RENDER_DEPTH\n#define MODE_RENDER_SDF\n"); // SHADER_VERSION_DEPTH_PASS_WITH_SDF
+		shader_versions.push_back(""); // SHADER_VERSION_COLOR_PASS
+		shader_versions.push_back("\n#define USE_FORWARD_GI\n"); // SHADER_VERSION_COLOR_PASS_WITH_FORWARD_GI
+		shader_versions.push_back("\n#define MODE_MULTIPLE_RENDER_TARGETS\n"); // SHADER_VERSION_COLOR_PASS_WITH_SEPARATE_SPECULAR
+		shader_versions.push_back("\n#define USE_LIGHTMAP\n"); // SHADER_VERSION_LIGHTMAP_COLOR_PASS
+		shader_versions.push_back("\n#define MODE_MULTIPLE_RENDER_TARGETS\n#define USE_LIGHTMAP\n"); // SHADER_VERSION_LIGHTMAP_COLOR_PASS_WITH_SEPARATE_SPECULAR
+
 		shader.initialize(shader_versions, p_defines);
 	}
 
@@ -608,6 +610,9 @@ void SceneShaderForwardClustered::init(RendererStorageRD *p_storage, const Strin
 		//builtins
 
 		actions.renames["TIME"] = "scene_data.time";
+		actions.renames["PI"] = _MKSTR(Math_PI);
+		actions.renames["TAU"] = _MKSTR(Math_TAU);
+		actions.renames["E"] = _MKSTR(Math_E);
 		actions.renames["VIEWPORT_SIZE"] = "scene_data.viewport_size";
 
 		actions.renames["FRAGCOORD"] = "gl_FragCoord";
@@ -651,6 +656,11 @@ void SceneShaderForwardClustered::init(RendererStorageRD *p_storage, const Strin
 		actions.renames["CUSTOM1"] = "custom1_attrib";
 		actions.renames["CUSTOM2"] = "custom2_attrib";
 		actions.renames["CUSTOM3"] = "custom3_attrib";
+
+		// not implemented but need these just in case code is in the shaders
+		actions.renames["VIEW_INDEX"] = "0";
+		actions.renames["VIEW_MONO_LEFT"] = "0";
+		actions.renames["VIEW_RIGHT"] = "1";
 
 		//for light
 		actions.renames["VIEW"] = "view";
@@ -717,7 +727,6 @@ void SceneShaderForwardClustered::init(RendererStorageRD *p_storage, const Strin
 			actions.render_mode_defines["diffuse_burley"] = "#define DIFFUSE_BURLEY\n";
 		}
 
-		actions.render_mode_defines["diffuse_oren_nayar"] = "#define DIFFUSE_OREN_NAYAR\n";
 		actions.render_mode_defines["diffuse_lambert_wrap"] = "#define DIFFUSE_LAMBERT_WRAP\n";
 		actions.render_mode_defines["diffuse_toon"] = "#define DIFFUSE_TOON\n";
 

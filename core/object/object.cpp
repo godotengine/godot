@@ -385,6 +385,15 @@ void Object::set(const StringName &p_name, const Variant &p_value, bool *r_valid
 		}
 	}
 
+	if (_extension && _extension->set) {
+		if (_extension->set(_extension_instance, &p_name, &p_value)) {
+			if (r_valid) {
+				*r_valid = true;
+			}
+			return;
+		}
+	}
+
 	//try built-in setgetter
 	{
 		if (ClassDB::set_property(this, p_name, p_value, r_valid)) {
@@ -444,6 +453,15 @@ Variant Object::get(const StringName &p_name, bool *r_valid) const {
 
 	if (script_instance) {
 		if (script_instance->get(p_name, ret)) {
+			if (r_valid) {
+				*r_valid = true;
+			}
+			return ret;
+		}
+	}
+
+	if (_extension && _extension->get) {
+		if (_extension->get(_extension_instance, &p_name, &ret)) {
 			if (r_valid) {
 				*r_valid = true;
 			}
@@ -596,6 +614,17 @@ void Object::get_property_list(List<PropertyInfo> *p_list, bool p_reversed) cons
 
 	_get_property_listv(p_list, p_reversed);
 
+	if (_extension && _extension->get_property_list) {
+		uint32_t pcount;
+		const ObjectNativeExtension::PInfo *pinfo = _extension->get_property_list(_extension_instance, &pcount);
+		for (uint32_t i = 0; i < pcount; i++) {
+			p_list->push_back(PropertyInfo(Variant::Type(pinfo[i].type), pinfo[i].class_name, PropertyHint(pinfo[i].hint), pinfo[i].hint_string, pinfo[i].usage, pinfo[i].class_name));
+		}
+		if (_extension->free_property_list) {
+			_extension->free_property_list(_extension_instance, pinfo);
+		}
+	}
+
 	if (!is_class("Script")) { // can still be set, but this is for user-friendliness
 		p_list->push_back(PropertyInfo(Variant::OBJECT, "script", PROPERTY_HINT_RESOURCE_TYPE, "Script", PROPERTY_USAGE_DEFAULT));
 	}
@@ -740,7 +769,7 @@ Variant Object::call(const StringName &p_method, const Variant **p_args, int p_a
 			r_error.error = Callable::CallError::CALL_ERROR_TOO_MANY_ARGUMENTS;
 			return Variant();
 		}
-		if (Object::cast_to<Reference>(this)) {
+		if (Object::cast_to<RefCounted>(this)) {
 			r_error.argument = 0;
 			r_error.error = Callable::CallError::CALL_ERROR_INVALID_METHOD;
 			ERR_FAIL_V_MSG(Variant(), "Can't 'free' a reference.");
@@ -761,6 +790,7 @@ Variant Object::call(const StringName &p_method, const Variant **p_args, int p_a
 
 	Variant ret;
 	OBJ_DEBUG_LOCK
+
 	if (script_instance) {
 		ret = script_instance->call(p_method, p_args, p_argcount, r_error);
 		//force jumptable
@@ -777,6 +807,8 @@ Variant Object::call(const StringName &p_method, const Variant **p_args, int p_a
 			}
 		}
 	}
+
+	//extension does not need this, because all methods are registered in MethodBind
 
 	MethodBind *method = ClassDB::get_method(get_class_name(), p_method);
 
@@ -795,6 +827,10 @@ void Object::notification(int p_notification, bool p_reversed) {
 	if (script_instance) {
 		script_instance->notification(p_notification);
 	}
+
+	if (_extension && _extension->notification) {
+		_extension->notification(_extension_instance, p_notification);
+	}
 }
 
 String Object::to_string() {
@@ -804,6 +840,9 @@ String Object::to_string() {
 		if (valid) {
 			return ret;
 		}
+	}
+	if (_extension && _extension->to_string) {
+		return _extension->to_string(_extension_instance);
 	}
 	return "[" + get_class() + ":" + itos(get_instance_id()) + "]";
 }
@@ -1751,6 +1790,8 @@ void Object::_construct_object(bool p_reference) {
 	_instance_id = ObjectDB::add_instance(this);
 	memset(_script_instance_bindings, 0, sizeof(void *) * MAX_SCRIPT_INSTANCE_BINDINGS);
 
+	ClassDB::instance_get_native_extension_data(&_extension, &_extension_instance);
+
 #ifdef DEBUG_ENABLED
 	_lock_index.init(1);
 #endif
@@ -1769,6 +1810,12 @@ Object::~Object() {
 		memdelete(script_instance);
 	}
 	script_instance = nullptr;
+
+	if (_extension && _extension->free_instance) {
+		_extension->free_instance(_extension->create_instance_userdata, _extension_instance);
+		_extension = nullptr;
+		_extension_instance = nullptr;
+	}
 
 	const StringName *S = nullptr;
 
@@ -1853,7 +1900,7 @@ ObjectID ObjectDB::add_instance(Object *p_object) {
 		object_slots = (ObjectSlot *)memrealloc(object_slots, sizeof(ObjectSlot) * new_slot_max);
 		for (uint32_t i = slot_max; i < new_slot_max; i++) {
 			object_slots[i].object = nullptr;
-			object_slots[i].is_reference = false;
+			object_slots[i].is_ref_counted = false;
 			object_slots[i].next_free = i;
 			object_slots[i].validator = 0;
 		}
@@ -1866,7 +1913,7 @@ ObjectID ObjectDB::add_instance(Object *p_object) {
 		ERR_FAIL_COND_V(object_slots[slot].object != nullptr, ObjectID());
 	}
 	object_slots[slot].object = p_object;
-	object_slots[slot].is_reference = p_object->is_reference();
+	object_slots[slot].is_ref_counted = p_object->is_ref_counted();
 	validator_counter = (validator_counter + 1) & OBJECTDB_VALIDATOR_MASK;
 	if (unlikely(validator_counter == 0)) {
 		validator_counter = 1;
@@ -1877,7 +1924,7 @@ ObjectID ObjectDB::add_instance(Object *p_object) {
 	id <<= OBJECTDB_SLOT_MAX_COUNT_BITS;
 	id |= uint64_t(slot);
 
-	if (p_object->is_reference()) {
+	if (p_object->is_ref_counted()) {
 		id |= OBJECTDB_REFERENCE_BIT;
 	}
 
@@ -1915,7 +1962,7 @@ void ObjectDB::remove_instance(Object *p_object) {
 	object_slots[slot_count].next_free = slot;
 	//invalidate, so checks against it fail
 	object_slots[slot].validator = 0;
-	object_slots[slot].is_reference = false;
+	object_slots[slot].is_ref_counted = false;
 	object_slots[slot].object = nullptr;
 
 	spin_lock.unlock();
@@ -1950,7 +1997,7 @@ void ObjectDB::cleanup() {
 						extra_info = " - Resource path: " + String(resource_get_path->call(obj, nullptr, 0, call_error));
 					}
 
-					uint64_t id = uint64_t(i) | (uint64_t(object_slots[i].validator) << OBJECTDB_VALIDATOR_BITS) | (object_slots[i].is_reference ? OBJECTDB_REFERENCE_BIT : 0);
+					uint64_t id = uint64_t(i) | (uint64_t(object_slots[i].validator) << OBJECTDB_VALIDATOR_BITS) | (object_slots[i].is_ref_counted ? OBJECTDB_REFERENCE_BIT : 0);
 					print_line("Leaked instance: " + String(obj->get_class()) + ":" + itos(id) + extra_info);
 
 					count--;

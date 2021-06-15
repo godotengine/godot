@@ -368,6 +368,10 @@ static NSCursor *_cursorFromSelector(SEL selector, SEL fallback = nil) {
 	if (wd.resize_disabled) {
 		[wd.window_object setStyleMask:[wd.window_object styleMask] & ~NSWindowStyleMaskResizable];
 	}
+
+	if (wd.on_top) {
+		[wd.window_object setLevel:NSFloatingWindowLevel];
+	}
 }
 
 - (void)windowDidChangeBackingProperties:(NSNotification *)notification {
@@ -880,7 +884,7 @@ static void _mouseDownEvent(DisplayServer::WindowID window_id, NSEvent *event, i
 		return;
 	}
 
-	if (DS_OSX->mouse_mode == DisplayServer::MOUSE_MODE_CONFINED) {
+	if (DS_OSX->mouse_mode == DisplayServer::MOUSE_MODE_CONFINED || DS_OSX->mouse_mode == DisplayServer::MOUSE_MODE_CONFINED_HIDDEN) {
 		// Discard late events
 		if (([event timestamp]) < DS_OSX->last_warp) {
 			return;
@@ -2102,7 +2106,12 @@ void DisplayServerOSX::mouse_set_mode(MouseMode p_mode) {
 	} else if (p_mode == MOUSE_MODE_CONFINED) {
 		CGDisplayShowCursor(kCGDirectMainDisplay);
 		CGAssociateMouseAndMouseCursorPosition(false);
-	} else {
+	} else if (p_mode == MOUSE_MODE_CONFINED_HIDDEN) {
+		if (mouse_mode == MOUSE_MODE_VISIBLE || mouse_mode == MOUSE_MODE_CONFINED) {
+			CGDisplayHideCursor(kCGDirectMainDisplay);
+		}
+		CGAssociateMouseAndMouseCursorPosition(false);
+	} else { // MOUSE_MODE_VISIBLE
 		CGDisplayShowCursor(kCGDirectMainDisplay);
 		CGAssociateMouseAndMouseCursorPosition(true);
 	}
@@ -2139,7 +2148,7 @@ void DisplayServerOSX::mouse_warp_to_position(const Point2i &p_to) {
 		CGEventSourceSetLocalEventsSuppressionInterval(lEventRef, 0.0);
 		CGAssociateMouseAndMouseCursorPosition(false);
 		CGWarpMouseCursorPosition(lMouseWarpPos);
-		if (mouse_mode != MOUSE_MODE_CONFINED) {
+		if (mouse_mode != MOUSE_MODE_CONFINED && mouse_mode != MOUSE_MODE_CONFINED_HIDDEN) {
 			CGAssociateMouseAndMouseCursorPosition(true);
 		}
 	}
@@ -2437,7 +2446,7 @@ void DisplayServerOSX::_update_window(WindowData p_wd) {
 		[p_wd.window_object setHidesOnDeactivate:YES];
 	} else {
 		// Reset these when our window is not a borderless window that covers up the screen
-		if (p_wd.on_top) {
+		if (p_wd.on_top && !p_wd.fullscreen) {
 			[p_wd.window_object setLevel:NSFloatingWindowLevel];
 		} else {
 			[p_wd.window_object setLevel:NSNormalWindowLevel];
@@ -2786,6 +2795,7 @@ void DisplayServerOSX::window_set_mode(WindowMode p_mode, WindowID p_window) {
 			[wd.window_object deminiaturize:nil];
 		} break;
 		case WINDOW_MODE_FULLSCREEN: {
+			[wd.window_object setLevel:NSNormalWindowLevel];
 			if (wd.layered_window) {
 				_set_window_per_pixel_transparency_enabled(true, p_window);
 			}
@@ -2903,6 +2913,9 @@ void DisplayServerOSX::window_set_flag(WindowFlags p_flag, bool p_enabled, Windo
 		} break;
 		case WINDOW_FLAG_ALWAYS_ON_TOP: {
 			wd.on_top = p_enabled;
+			if (wd.fullscreen) {
+				return;
+			}
 			if (p_enabled) {
 				[wd.window_object setLevel:NSFloatingWindowLevel];
 			} else {
@@ -2940,7 +2953,11 @@ bool DisplayServerOSX::window_get_flag(WindowFlags p_flag, WindowID p_window) co
 			return [wd.window_object styleMask] == NSWindowStyleMaskBorderless;
 		} break;
 		case WINDOW_FLAG_ALWAYS_ON_TOP: {
-			return [wd.window_object level] == NSFloatingWindowLevel;
+			if (wd.fullscreen) {
+				return wd.on_top;
+			} else {
+				return [wd.window_object level] == NSFloatingWindowLevel;
+			}
 		} break;
 		case WINDOW_FLAG_TRANSPARENT: {
 			return wd.layered_window;
@@ -3467,7 +3484,7 @@ void DisplayServerOSX::set_native_icon(const String &p_filename) {
 	ERR_FAIL_COND(!f);
 
 	Vector<uint8_t> data;
-	uint64_t len = f->get_len();
+	uint64_t len = f->get_length();
 	data.resize(len);
 	f->get_buffer((uint8_t *)&data.write[0], len);
 	memdelete(f);

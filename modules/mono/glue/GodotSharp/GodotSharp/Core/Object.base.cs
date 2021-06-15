@@ -66,7 +66,7 @@ namespace Godot
                 if (memoryOwn)
                 {
                     memoryOwn = false;
-                    godot_icall_Reference_Disposed(this, ptr, !disposing);
+                    godot_icall_RefCounted_Disposed(this, ptr, !disposing);
                 }
                 else
                 {
@@ -129,7 +129,7 @@ namespace Godot
         internal static extern void godot_icall_Object_Disposed(Object obj, IntPtr ptr);
 
         [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void godot_icall_Reference_Disposed(Object obj, IntPtr ptr, bool isFinalizer);
+        internal static extern void godot_icall_RefCounted_Disposed(Object obj, IntPtr ptr, bool isFinalizer);
 
         [MethodImpl(MethodImplOptions.InternalCall)]
         internal static extern void godot_icall_Object_ConnectEventSignals(IntPtr obj);

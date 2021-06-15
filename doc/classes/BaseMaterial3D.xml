@@ -199,7 +199,7 @@
 			The emitted light's color. See [member emission_enabled].
 		</member>
 		<member name="emission_enabled" type="bool" setter="set_feature" getter="get_feature" default="false">
-			If [code]true[/code], the body emits light. Emitting light makes the object appear brighter. The object can also cast light on other objects if a [GIProbe] is used and this object is used in baked lighting.
+			If [code]true[/code], the body emits light. Emitting light makes the object appear brighter. The object can also cast light on other objects if a [VoxelGI] is used and this object is used in baked lighting.
 		</member>
 		<member name="emission_energy" type="float" setter="set_emission_energy" getter="get_emission_energy" default="1.0">
 			The emitted light's strength. See [member emission_enabled].
@@ -671,10 +671,7 @@
 		<constant name="DIFFUSE_LAMBERT_WRAP" value="2" enum="DiffuseMode">
 			Extends Lambert to cover more than 90 degrees when roughness increases.
 		</constant>
-		<constant name="DIFFUSE_OREN_NAYAR" value="3" enum="DiffuseMode">
-			Attempts to use roughness to emulate microsurfacing.
-		</constant>
-		<constant name="DIFFUSE_TOON" value="4" enum="DiffuseMode">
+		<constant name="DIFFUSE_TOON" value="3" enum="DiffuseMode">
 			Uses a hard cut for lighting, with smoothing affected by roughness.
 		</constant>
 		<constant name="SPECULAR_SCHLICK_GGX" value="0" enum="SpecularMode">

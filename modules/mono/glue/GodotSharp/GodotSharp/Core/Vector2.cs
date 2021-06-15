@@ -160,22 +160,20 @@ namespace Godot
         }
 
         /// <summary>
-        /// Returns the vector with a maximum length by limiting its length to `length`.
+        /// Returns a new vector with all components clamped between the
+        /// components of `min` and `max` using
+        /// <see cref="Mathf.Clamp(real_t, real_t, real_t)"/>.
         /// </summary>
-        /// <param name="length">The length to limit to.</param>
-        /// <returns>The vector with its length limited.</returns>
-        public Vector2 Clamped(real_t length)
+        /// <param name="min">The vector with minimum allowed values.</param>
+        /// <param name="max">The vector with maximum allowed values.</param>
+        /// <returns>The vector with all components clamped.</returns>
+        public Vector2 Clamp(Vector2 min, Vector2 max)
         {
-            var v = this;
-            real_t l = Length();
-
-            if (l > 0 && length < l)
-            {
-                v /= l;
-                v *= length;
-            }
-
-            return v;
+            return new Vector2
+            (
+                Mathf.Clamp(x, min.x, max.x),
+                Mathf.Clamp(y, min.y, max.y)
+            );
         }
 
         /// <summary>
@@ -335,6 +333,25 @@ namespace Godot
         }
 
         /// <summary>
+        /// Returns the vector with a maximum length by limiting its length to `length`.
+        /// </summary>
+        /// <param name="length">The length to limit to.</param>
+        /// <returns>The vector with its length limited.</returns>
+        public Vector2 LimitLength(real_t length = 1.0f)
+        {
+            Vector2 v = this;
+            real_t l = Length();
+
+            if (l > 0 && length < l)
+            {
+                v /= l;
+                v *= length;
+            }
+
+            return v;
+        }
+
+        /// <summary>
         /// Returns the axis of the vector's largest value. See <see cref="Axis"/>.
         /// If both components are equal, this method returns <see cref="Axis.X"/>.
         /// </summary>
@@ -425,7 +442,7 @@ namespace Godot
 #if DEBUG
             if (!normal.IsNormalized())
             {
-                throw new ArgumentException("Argument  is not normalized", nameof(normal));
+                throw new ArgumentException("Argument is not normalized", nameof(normal));
             }
 #endif
             return 2 * Dot(normal) * normal - this;

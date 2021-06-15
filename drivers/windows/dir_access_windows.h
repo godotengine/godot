@@ -33,7 +33,7 @@
 
 #ifdef WINDOWS_ENABLED
 
-#include "core/os/dir_access.h"
+#include "core/io/dir_access.h"
 
 /**
 	@author Juan Linietsky <reduz@gmail.com>
@@ -77,6 +77,10 @@ public:
 
 	virtual Error rename(String p_path, String p_new_path);
 	virtual Error remove(String p_path);
+
+	virtual bool is_link(String p_file) { return false; };
+	virtual String read_link(String p_file) { return p_file; };
+	virtual Error create_link(String p_source, String p_target) { return FAILED; };
 
 	uint64_t get_space_left();
 

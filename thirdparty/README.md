@@ -367,7 +367,7 @@ File extracted from upstream release tarball:
 ## meshoptimizer
 
 - Upstream: https://github.com/zeux/meshoptimizer
-- Version: 0.16 (95893c0566646434dd675b708d293fcb2d526d08, 2021)
+- Version: git (f5d83e879c48f8664783a69b4f50711d27549b66, 2021)
 - License: MIT
 
 Files extracted from upstream repository:
@@ -469,6 +469,10 @@ Collection of single-file libraries used in Godot components.
   * Version: git (2f625846a775501fb69456567409a8b12f10ea25, 2012)
   * License: BSD-3-Clause
   * Modifications: use `const char*` instead of `char*` for input string
+- `smolv.h`
+  * Upstream: https://github.com/aras-p/smol-v
+  * Version: git (4b52c165c13763051a18e80ffbc2ee436314ceb2, 2020)
+  * License: Public Domain or MIT
 - `stb_rect_pack.h`
   * Upstream: https://github.com/nothings/stb
   * Version: 1.00 (2bb4a0accd4003c1db4c24533981e01b1adfd656, 2019)
@@ -731,3 +735,4 @@ Files extracted from upstream source:
 
 - lib/{common/,compress/,decompress/,zstd.h}
 - LICENSE
+

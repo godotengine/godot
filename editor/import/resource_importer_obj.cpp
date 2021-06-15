@@ -30,8 +30,8 @@
 
 #include "resource_importer_obj.h"
 
+#include "core/io/file_access.h"
 #include "core/io/resource_saver.h"
-#include "core/os/file_access.h"
 #include "editor/import/scene_importer_mesh.h"
 #include "editor/import/scene_importer_mesh_node_3d.h"
 #include "scene/3d/mesh_instance_3d.h"
@@ -126,7 +126,7 @@ static Error _parse_material_library(const String &p_path, Map<String, Ref<Stand
 
 			String p = l.replace("map_Kd", "").replace("\\", "/").strip_edges();
 			String path;
-			if (p.is_abs_path()) {
+			if (p.is_absolute_path()) {
 				path = p;
 			} else {
 				path = base_path.plus_file(p);
@@ -146,7 +146,7 @@ static Error _parse_material_library(const String &p_path, Map<String, Ref<Stand
 
 			String p = l.replace("map_Ks", "").replace("\\", "/").strip_edges();
 			String path;
-			if (p.is_abs_path()) {
+			if (p.is_absolute_path()) {
 				path = p;
 			} else {
 				path = base_path.plus_file(p);
@@ -166,7 +166,7 @@ static Error _parse_material_library(const String &p_path, Map<String, Ref<Stand
 
 			String p = l.replace("map_Ns", "").replace("\\", "/").strip_edges();
 			String path;
-			if (p.is_abs_path()) {
+			if (p.is_absolute_path()) {
 				path = p;
 			} else {
 				path = base_path.plus_file(p);

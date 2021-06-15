@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="File" inherits="Reference" version="4.0">
+<class name="File" inherits="RefCounted" version="4.0">
 	<brief_description>
 		Type to handle file reading and writing operations.
 	</brief_description>
@@ -61,7 +61,7 @@
 			</return>
 			<description>
 				Returns [code]true[/code] if the file cursor has read past the end of the file.
-				[b]Note:[/b] This function will still return [code]false[/code] while at the end of the file and only activates when reading past it. This can be confusing but it conforms to how low-level file access works in all operating systems. There is always [method get_len] and [method get_position] to implement a custom logic.
+				[b]Note:[/b] This function will still return [code]false[/code] while at the end of the file and only activates when reading past it. This can be confusing but it conforms to how low-level file access works in all operating systems. There is always [method get_length] and [method get_position] to implement a custom logic.
 			</description>
 		</method>
 		<method name="file_exists" qualifiers="const">
@@ -121,10 +121,10 @@
 		<method name="get_buffer" qualifiers="const">
 			<return type="PackedByteArray">
 			</return>
-			<argument index="0" name="len" type="int">
+			<argument index="0" name="length" type="int">
 			</argument>
 			<description>
-				Returns next [code]len[/code] bytes of the file as a [PackedByteArray].
+				Returns next [code]length[/code] bytes of the file as a [PackedByteArray].
 			</description>
 		</method>
 		<method name="get_csv_line" qualifiers="const">
@@ -158,7 +158,7 @@
 				Returns the next 32 bits from the file as a floating-point number.
 			</description>
 		</method>
-		<method name="get_len" qualifiers="const">
+		<method name="get_length" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
@@ -188,7 +188,7 @@
 			<argument index="0" name="file" type="String">
 			</argument>
 			<description>
-				Returns the last time the [code]file[/code] was modified in unix timestamp format or returns a [String] "ERROR IN [code]file[/code]". This unix timestamp can be converted to datetime by using [method OS.get_datetime_from_unix_time].
+				Returns the last time the [code]file[/code] was modified in Unix timestamp format or returns a [String] "ERROR IN [code]file[/code]". This Unix timestamp can be converted to another format using the [Time] singleton.
 			</description>
 		</method>
 		<method name="get_pascal_string">
@@ -490,10 +490,10 @@
 		</method>
 	</methods>
 	<members>
-		<member name="endian_swap" type="bool" setter="set_endian_swap" getter="get_endian_swap" default="false">
+		<member name="big_endian" type="bool" setter="set_big_endian" getter="is_big_endian" default="false">
 			If [code]true[/code], the file is read with big-endian [url=https://en.wikipedia.org/wiki/Endianness]endianness[/url]. If [code]false[/code], the file is read with little-endian endianness. If in doubt, leave this to [code]false[/code] as most files are written with little-endian endianness.
-			[b]Note:[/b] [member endian_swap] is only about the file format, not the CPU type. The CPU endianness doesn't affect the default endianness for files written.
-			[b]Note:[/b] This is always reset to [code]false[/code] whenever you open the file. Therefore, you must set [member endian_swap] [i]after[/i] opening the file, not before.
+			[b]Note:[/b] [member big_endian] is only about the file format, not the CPU type. The CPU endianness doesn't affect the default endianness for files written.
+			[b]Note:[/b] This is always reset to [code]false[/code] whenever you open the file. Therefore, you must set [member big_endian] [i]after[/i] opening the file, not before.
 		</member>
 	</members>
 	<constants>

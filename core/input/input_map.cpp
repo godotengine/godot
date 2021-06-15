@@ -474,9 +474,13 @@ const OrderedHashMap<String, List<Ref<InputEvent>>> &InputMap::get_builtins() {
 	default_builtin_cache.insert("ui_text_completion_query", inputs);
 
 	inputs = List<Ref<InputEvent>>();
-	inputs.push_back(InputEventKey::create_reference(KEY_TAB));
 	inputs.push_back(InputEventKey::create_reference(KEY_ENTER));
+	inputs.push_back(InputEventKey::create_reference(KEY_KP_ENTER));
 	default_builtin_cache.insert("ui_text_completion_accept", inputs);
+
+	inputs = List<Ref<InputEvent>>();
+	inputs.push_back(InputEventKey::create_reference(KEY_TAB));
+	default_builtin_cache.insert("ui_text_completion_replace", inputs);
 
 	// Newlines
 	inputs = List<Ref<InputEvent>>();
@@ -507,6 +511,7 @@ const OrderedHashMap<String, List<Ref<InputEvent>>> &InputMap::get_builtins() {
 	// Text Backspace and Delete
 	inputs = List<Ref<InputEvent>>();
 	inputs.push_back(InputEventKey::create_reference(KEY_BACKSPACE));
+	inputs.push_back(InputEventKey::create_reference(KEY_BACKSPACE | KEY_MASK_SHIFT));
 	default_builtin_cache.insert("ui_text_backspace", inputs);
 
 	inputs = List<Ref<InputEvent>>();

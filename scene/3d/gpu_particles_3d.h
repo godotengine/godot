@@ -44,6 +44,7 @@ public:
 	enum DrawOrder {
 		DRAW_ORDER_INDEX,
 		DRAW_ORDER_LIFETIME,
+		DRAW_ORDER_REVERSE_LIFETIME,
 		DRAW_ORDER_VIEW_DEPTH,
 	};
 
@@ -74,7 +75,7 @@ private:
 	bool fractional_delta;
 	bool interpolate = true;
 	NodePath sub_emitter;
-	float collision_base_size;
+	float collision_base_size = 0.01;
 
 	bool trail_enabled = false;
 	float trail_length = 0.3;
@@ -113,7 +114,7 @@ public:
 	void set_process_material(const Ref<Material> &p_material);
 	void set_speed_scale(float p_scale);
 	void set_collision_base_size(float p_ratio);
-	void set_enable_trail(bool p_enabled);
+	void set_trail_enabled(bool p_enabled);
 	void set_trail_length(float p_seconds);
 
 	bool is_emitting() const;
@@ -170,7 +171,7 @@ public:
 		EMIT_FLAG_CUSTOM = RS::PARTICLES_EMIT_FLAG_CUSTOM
 	};
 
-	void emit_particle(const Transform &p_transform, const Vector3 &p_velocity, const Color &p_color, const Color &p_custom, uint32_t p_emit_flags);
+	void emit_particle(const Transform3D &p_transform, const Vector3 &p_velocity, const Color &p_color, const Color &p_custom, uint32_t p_emit_flags);
 
 	AABB capture_aabb() const;
 	GPUParticles3D();

@@ -38,6 +38,8 @@
 	</array>
 	<key>NSPrincipalClass</key>
 	<string>NSApplication</string>
+	<key>LSApplicationCategoryType</key>
+	<string>public.app-category.developer-tools</string>
 	<key>LSMinimumSystemVersion</key>
 	<string>10.12</string>
 	<key>LSMinimumSystemVersionByArchitecture</key>

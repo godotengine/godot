@@ -302,7 +302,7 @@ void FindReplaceBar::_replace_all() {
 	matches_label->add_theme_color_override("font_color", rc > 0 ? get_theme_color("font_color", "Label") : get_theme_color("error_color", "Editor"));
 	matches_label->set_text(vformat(TTR("%d replaced."), rc));
 
-	text_editor->call_deferred("connect", "text_changed", Callable(this, "_editor_text_changed"));
+	text_editor->call_deferred("connect", "text_changed", callable_mp(this, &FindReplaceBar::_editor_text_changed));
 	results_count = -1;
 }
 
@@ -583,15 +583,29 @@ void FindReplaceBar::set_error(const String &p_label) {
 	emit_signal("error", p_label);
 }
 
-void FindReplaceBar::set_text_edit(CodeEdit *p_text_edit) {
+void FindReplaceBar::set_text_edit(CodeTextEditor *p_text_editor) {
+	if (p_text_editor == base_text_editor) {
+		return;
+	}
+
+	if (base_text_editor) {
+		base_text_editor->remove_find_replace_bar();
+		base_text_editor = nullptr;
+		text_editor->disconnect("text_changed", callable_mp(this, &FindReplaceBar::_editor_text_changed));
+		text_editor = nullptr;
+	}
+
 	results_count = -1;
-	text_editor = p_text_edit;
+	base_text_editor = p_text_editor;
+	text_editor = base_text_editor->get_text_editor();
 	text_editor->connect("text_changed", callable_mp(this, &FindReplaceBar::_editor_text_changed));
+
+	_update_results_count();
+	_update_matches_label();
 }
 
 void FindReplaceBar::_bind_methods() {
 	ClassDB::bind_method("_unhandled_input", &FindReplaceBar::_unhandled_input);
-
 	ClassDB::bind_method("_search_current", &FindReplaceBar::search_current);
 
 	ADD_SIGNAL(MethodInfo("search"));
@@ -816,12 +830,12 @@ void CodeTextEditor::_code_complete_timer_timeout() {
 	if (!is_visible_in_tree()) {
 		return;
 	}
-	text_editor->query_code_comple();
+	text_editor->request_code_completion();
 }
 
 void CodeTextEditor::_complete_request() {
 	List<ScriptCodeCompletionOption> entries;
-	String ctext = text_editor->get_text_for_completion();
+	String ctext = text_editor->get_text_for_code_completion();
 	_code_complete_script(ctext, &entries);
 	bool forced = false;
 	if (code_complete_func) {
@@ -832,16 +846,17 @@ void CodeTextEditor::_complete_request() {
 	}
 
 	for (List<ScriptCodeCompletionOption>::Element *E = entries.front(); E; E = E->next()) {
-		ScriptCodeCompletionOption *e = &E->get();
-		e->icon = _get_completion_icon(*e);
-		e->font_color = completion_font_color;
-		if (e->insert_text.begins_with("\"") || e->insert_text.begins_with("\'")) {
-			e->font_color = completion_string_color;
-		} else if (e->insert_text.begins_with("#") || e->insert_text.begins_with("//")) {
-			e->font_color = completion_comment_color;
+		ScriptCodeCompletionOption &e = E->get();
+
+		Color font_color = completion_font_color;
+		if (e.insert_text.begins_with("\"") || e.insert_text.begins_with("\'")) {
+			font_color = completion_string_color;
+		} else if (e.insert_text.begins_with("#") || e.insert_text.begins_with("//")) {
+			font_color = completion_comment_color;
 		}
+		text_editor->add_code_completion_option((CodeEdit::CodeCompletionKind)e.kind, e.display, e.insert_text, font_color, _get_completion_icon(e), e.default_value);
 	}
-	text_editor->code_complete(entries, forced);
+	text_editor->update_code_completion_options(forced);
 }
 
 Ref<Texture2D> CodeTextEditor::_get_completion_icon(const ScriptCodeCompletionOption &p_option) {
@@ -936,6 +951,25 @@ void CodeTextEditor::update_editor_settings() {
 	text_editor->cursor_set_blink_enabled(EditorSettings::get_singleton()->get("text_editor/cursor/caret_blink"));
 	text_editor->cursor_set_blink_speed(EditorSettings::get_singleton()->get("text_editor/cursor/caret_blink_speed"));
 	text_editor->set_auto_brace_completion(EditorSettings::get_singleton()->get("text_editor/completion/auto_brace_complete"));
+}
+
+void CodeTextEditor::set_find_replace_bar(FindReplaceBar *p_bar) {
+	if (find_replace_bar) {
+		return;
+	}
+
+	find_replace_bar = p_bar;
+	find_replace_bar->set_text_edit(this);
+	find_replace_bar->connect("error", callable_mp(error, &Label::set_text));
+}
+
+void CodeTextEditor::remove_find_replace_bar() {
+	if (!find_replace_bar) {
+		return;
+	}
+
+	find_replace_bar->disconnect("error", callable_mp(error, &Label::set_text));
+	find_replace_bar = nullptr;
 }
 
 void CodeTextEditor::trim_trailing_whitespace() {
@@ -1563,9 +1597,7 @@ void CodeTextEditor::_on_settings_change() {
 			EDITOR_GET("text_editor/completion/code_complete_delay"));
 
 	// Call hint settings.
-	text_editor->set_callhint_settings(
-			EDITOR_GET("text_editor/completion/put_callhint_tooltip_below_current_line"),
-			EDITOR_GET("text_editor/completion/callhint_tooltip_offset"));
+	text_editor->set_code_hint_draw_below(EDITOR_GET("text_editor/completion/put_callhint_tooltip_below_current_line"));
 
 	idle->set_wait_time(EDITOR_GET("text_editor/completion/idle_parse_delay"));
 }
@@ -1761,14 +1793,6 @@ CodeTextEditor::CodeTextEditor() {
 		} break;
 	}
 
-	// Added second so it opens at the bottom, so it won't shift the entire text editor when opening.
-	find_replace_bar = memnew(FindReplaceBar);
-	add_child(find_replace_bar);
-	find_replace_bar->set_h_size_flags(SIZE_EXPAND_FILL);
-	find_replace_bar->hide();
-
-	find_replace_bar->set_text_edit(text_editor);
-
 	text_editor->set_draw_line_numbers(true);
 	text_editor->set_brace_matching(true);
 	text_editor->set_auto_indent(true);
@@ -1809,7 +1833,6 @@ CodeTextEditor::CodeTextEditor() {
 	error->set_v_size_flags(SIZE_EXPAND | SIZE_SHRINK_CENTER);
 	error->set_mouse_filter(MOUSE_FILTER_STOP);
 	error->connect("gui_input", callable_mp(this, &CodeTextEditor::_error_pressed));
-	find_replace_bar->connect("error", callable_mp(error, &Label::set_text));
 
 	// Warnings
 	warning_button = memnew(Button);
@@ -1847,15 +1870,17 @@ CodeTextEditor::CodeTextEditor() {
 	text_editor->connect("gui_input", callable_mp(this, &CodeTextEditor::_text_editor_gui_input));
 	text_editor->connect("cursor_changed", callable_mp(this, &CodeTextEditor::_line_col_changed));
 	text_editor->connect("text_changed", callable_mp(this, &CodeTextEditor::_text_changed));
-	text_editor->connect("request_completion", callable_mp(this, &CodeTextEditor::_complete_request));
-	Vector<String> cs;
+	text_editor->connect("request_code_completion", callable_mp(this, &CodeTextEditor::_complete_request));
+	TypedArray<String> cs;
 	cs.push_back(".");
 	cs.push_back(",");
 	cs.push_back("(");
 	cs.push_back("=");
 	cs.push_back("$");
 	cs.push_back("@");
-	text_editor->set_completion(true, cs);
+	cs.push_back("\"");
+	cs.push_back("\'");
+	text_editor->set_code_completion_prefixes(cs);
 	idle->connect("timeout", callable_mp(this, &CodeTextEditor::_text_changed_idle_timeout));
 
 	code_complete_timer->connect("timeout", callable_mp(this, &CodeTextEditor::_code_complete_timer_timeout));

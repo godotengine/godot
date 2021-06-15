@@ -870,6 +870,15 @@ void TreeItem::clear_custom_color(int p_column) {
 	_changed_notify(p_column);
 }
 
+void TreeItem::set_custom_font(int p_column, const Ref<Font> &p_font) {
+	ERR_FAIL_INDEX(p_column, cells.size());
+	cells.write[p_column].custom_font = p_font;
+}
+Ref<Font> TreeItem::get_custom_font(int p_column) const {
+	ERR_FAIL_INDEX_V(p_column, cells.size(), Ref<Font>());
+	return cells[p_column].custom_font;
+}
+
 void TreeItem::set_tooltip(int p_column, const String &p_tooltip) {
 	ERR_FAIL_INDEX(p_column, cells.size());
 	cells.write[p_column].tooltip = p_tooltip;
@@ -1050,8 +1059,11 @@ void TreeItem::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_editable", "column"), &TreeItem::is_editable);
 
 	ClassDB::bind_method(D_METHOD("set_custom_color", "column", "color"), &TreeItem::set_custom_color);
-	ClassDB::bind_method(D_METHOD("clear_custom_color", "column"), &TreeItem::clear_custom_color);
 	ClassDB::bind_method(D_METHOD("get_custom_color", "column"), &TreeItem::get_custom_color);
+	ClassDB::bind_method(D_METHOD("clear_custom_color", "column"), &TreeItem::clear_custom_color);
+
+	ClassDB::bind_method(D_METHOD("set_custom_font", "column", "font"), &TreeItem::set_custom_font);
+	ClassDB::bind_method(D_METHOD("get_custom_font", "column"), &TreeItem::get_custom_font);
 
 	ClassDB::bind_method(D_METHOD("set_custom_bg_color", "column", "color", "just_outline"), &TreeItem::set_custom_bg_color, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("clear_custom_bg_color", "column"), &TreeItem::clear_custom_bg_color);
@@ -1184,15 +1196,23 @@ void Tree::update_cache() {
 
 	cache.font_color = get_theme_color("font_color");
 	cache.font_selected_color = get_theme_color("font_selected_color");
-	cache.guide_color = get_theme_color("guide_color");
 	cache.drop_position_color = get_theme_color("drop_position_color");
 	cache.hseparation = get_theme_constant("hseparation");
 	cache.vseparation = get_theme_constant("vseparation");
 	cache.item_margin = get_theme_constant("item_margin");
 	cache.button_margin = get_theme_constant("button_margin");
+
 	cache.draw_guides = get_theme_constant("draw_guides");
+	cache.guide_color = get_theme_color("guide_color");
 	cache.draw_relationship_lines = get_theme_constant("draw_relationship_lines");
+	cache.relationship_line_width = get_theme_constant("relationship_line_width");
+	cache.parent_hl_line_width = get_theme_constant("parent_hl_line_width");
+	cache.children_hl_line_width = get_theme_constant("children_hl_line_width");
+	cache.parent_hl_line_margin = get_theme_constant("parent_hl_line_margin");
 	cache.relationship_line_color = get_theme_color("relationship_line_color");
+	cache.parent_hl_line_color = get_theme_color("parent_hl_line_color");
+	cache.children_hl_line_color = get_theme_color("children_hl_line_color");
+
 	cache.scroll_border = get_theme_constant("scroll_border");
 	cache.scroll_speed = get_theme_constant("scroll_speed");
 
@@ -1364,6 +1384,7 @@ void Tree::update_column(int p_col) {
 	} else {
 		columns.write[p_col].text_buf->set_direction((TextServer::Direction)columns[p_col].text_direction);
 	}
+
 	columns.write[p_col].text_buf->add_string(columns[p_col].title, cache.font, cache.font_size, columns[p_col].opentype_features, (columns[p_col].language != "") ? columns[p_col].language : TranslationServer::get_singleton()->get_tool_locale());
 }
 
@@ -1408,7 +1429,14 @@ void Tree::update_item_cell(TreeItem *p_item, int p_col) {
 	} else {
 		p_item->cells.write[p_col].text_buf->set_direction((TextServer::Direction)p_item->cells[p_col].text_direction);
 	}
-	p_item->cells.write[p_col].text_buf->add_string(valtext, cache.font, cache.font_size, p_item->cells[p_col].opentype_features, (p_item->cells[p_col].language != "") ? p_item->cells[p_col].language : TranslationServer::get_singleton()->get_tool_locale());
+
+	Ref<Font> font;
+	if (p_item->cells[p_col].custom_font.is_valid()) {
+		font = p_item->cells[p_col].custom_font;
+	} else {
+		font = cache.font;
+	}
+	p_item->cells.write[p_col].text_buf->add_string(valtext, font, cache.font_size, p_item->cells[p_col].opentype_features, (p_item->cells[p_col].language != "") ? p_item->cells[p_col].language : TranslationServer::get_singleton()->get_tool_locale());
 	TS->shaped_text_set_bidi_override(p_item->cells[p_col].text_buf->get_rid(), structured_text_parser(p_item->cells[p_col].st_parser, p_item->cells[p_col].st_args, valtext));
 	p_item->cells.write[p_col].dirty = false;
 }
@@ -1813,38 +1841,79 @@ int Tree::draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 
 
 		TreeItem *c = p_item->first_child;
 
-		int prev_ofs = children_pos.y - cache.offset.y + p_draw_ofs.y;
+		int base_ofs = children_pos.y - cache.offset.y + p_draw_ofs.y;
+		int prev_ofs = base_ofs;
+		int prev_hl_ofs = base_ofs;
 
 		while (c) {
 			if (cache.draw_relationship_lines > 0 && (!hide_root || c->parent != root)) {
 				int root_ofs = children_pos.x + ((p_item->disable_folding || hide_folding) ? cache.hseparation : cache.item_margin);
-				int parent_ofs = p_pos.x + ((p_item->disable_folding || hide_folding) ? cache.hseparation : cache.item_margin);
+				int parent_ofs = p_pos.x + cache.item_margin;
 				Point2i root_pos = Point2i(root_ofs, children_pos.y + label_h / 2) - cache.offset + p_draw_ofs;
 
 				if (c->get_first_child() != nullptr) {
 					root_pos -= Point2i(cache.arrow->get_width(), 0);
 				}
 
-				float line_width = 1.0;
+				float line_width = cache.relationship_line_width;
+				float parent_line_width = cache.parent_hl_line_width;
+				float children_line_width = cache.children_hl_line_width;
+
 #ifdef TOOLS_ENABLED
 				line_width *= Math::round(EDSCALE);
+				parent_line_width *= Math::round(EDSCALE);
+				children_line_width *= Math::round(EDSCALE);
 #endif
 
 				Point2i parent_pos = Point2i(parent_ofs - cache.arrow->get_width() / 2, p_pos.y + label_h / 2 + cache.arrow->get_height() / 2) - cache.offset + p_draw_ofs;
+
+				int more_prev_ofs = 0;
 
 				if (root_pos.y + line_width >= 0) {
 					if (rtl) {
 						root_pos.x = get_size().width - root_pos.x;
 						parent_pos.x = get_size().width - parent_pos.x;
 					}
-					RenderingServer::get_singleton()->canvas_item_add_line(ci, root_pos, Point2i(parent_pos.x - Math::floor(line_width / 2), root_pos.y), cache.relationship_line_color, line_width);
-					RenderingServer::get_singleton()->canvas_item_add_line(ci, Point2i(parent_pos.x, root_pos.y), Point2i(parent_pos.x, prev_ofs), cache.relationship_line_color, line_width);
+
+					// Order of parts on this bend: the horizontal line first, then the vertical line.
+					if (_is_branch_selected(c)) {
+						// If this item or one of its children is selected, we draw the line using parent highlight style.
+						RenderingServer::get_singleton()->canvas_item_add_line(ci, root_pos, Point2i(parent_pos.x + Math::floor(parent_line_width / 2), root_pos.y), cache.parent_hl_line_color, parent_line_width);
+						RenderingServer::get_singleton()->canvas_item_add_line(ci, Point2i(parent_pos.x, root_pos.y + Math::floor(parent_line_width / 2)), Point2i(parent_pos.x, prev_hl_ofs), cache.parent_hl_line_color, parent_line_width);
+
+						more_prev_ofs = cache.parent_hl_line_margin;
+						prev_hl_ofs = root_pos.y + Math::floor(parent_line_width / 2);
+					} else if (p_item->is_selected(0)) {
+						// If parent item is selected (but this item is not), we draw the line using children highlight style.
+						// Siblings of the selected branch can be drawn with a slight offset and their vertical line must appear as highlighted.
+						if (_is_sibling_branch_selected(c)) {
+							RenderingServer::get_singleton()->canvas_item_add_line(ci, root_pos, Point2i(parent_pos.x + Math::floor(parent_line_width / 2), root_pos.y), cache.children_hl_line_color, children_line_width);
+							RenderingServer::get_singleton()->canvas_item_add_line(ci, Point2i(parent_pos.x, root_pos.y + Math::floor(parent_line_width / 2)), Point2i(parent_pos.x, prev_hl_ofs), cache.parent_hl_line_color, parent_line_width);
+
+							prev_hl_ofs = root_pos.y + Math::floor(parent_line_width / 2);
+						} else {
+							RenderingServer::get_singleton()->canvas_item_add_line(ci, root_pos, Point2i(parent_pos.x + Math::floor(children_line_width / 2), root_pos.y), cache.children_hl_line_color, children_line_width);
+							RenderingServer::get_singleton()->canvas_item_add_line(ci, Point2i(parent_pos.x, root_pos.y + Math::floor(children_line_width / 2)), Point2i(parent_pos.x, prev_ofs + Math::floor(children_line_width / 2)), cache.children_hl_line_color, children_line_width);
+						}
+					} else {
+						// If nothing of the above is true, we draw the line using normal style.
+						// Siblings of the selected branch can be drawn with a slight offset and their vertical line must appear as highlighted.
+						if (_is_sibling_branch_selected(c)) {
+							RenderingServer::get_singleton()->canvas_item_add_line(ci, root_pos, Point2i(parent_pos.x + cache.parent_hl_line_margin, root_pos.y), cache.relationship_line_color, line_width);
+							RenderingServer::get_singleton()->canvas_item_add_line(ci, Point2i(parent_pos.x, root_pos.y + Math::floor(parent_line_width / 2)), Point2i(parent_pos.x, prev_hl_ofs), cache.parent_hl_line_color, parent_line_width);
+
+							prev_hl_ofs = root_pos.y + Math::floor(parent_line_width / 2);
+						} else {
+							RenderingServer::get_singleton()->canvas_item_add_line(ci, root_pos, Point2i(parent_pos.x + Math::floor(line_width / 2), root_pos.y), cache.relationship_line_color, line_width);
+							RenderingServer::get_singleton()->canvas_item_add_line(ci, Point2i(parent_pos.x, root_pos.y + Math::floor(line_width / 2)), Point2i(parent_pos.x, prev_ofs + Math::floor(line_width / 2)), cache.relationship_line_color, line_width);
+						}
+					}
 				}
 
 				if (htotal < 0) {
 					return -1;
 				}
-				prev_ofs = root_pos.y;
+				prev_ofs = root_pos.y + more_prev_ofs;
 			}
 
 			if (htotal >= 0) {
@@ -1853,10 +1922,10 @@ int Tree::draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 
 				if (child_h < 0) {
 					if (cache.draw_relationship_lines == 0) {
 						return -1; // break, stop drawing, no need to anymore
-					} else {
-						htotal = -1;
-						children_pos.y = cache.offset.y + p_draw_size.height;
 					}
+
+					htotal = -1;
+					children_pos.y = cache.offset.y + p_draw_size.height;
 				} else {
 					htotal += child_h;
 					children_pos.y += child_h;
@@ -1887,6 +1956,36 @@ int Tree::_count_selected_items(TreeItem *p_from) const {
 	}
 
 	return count;
+}
+
+bool Tree::_is_branch_selected(TreeItem *p_from) const {
+	for (int i = 0; i < columns.size(); i++) {
+		if (p_from->is_selected(i)) {
+			return true;
+		}
+	}
+
+	TreeItem *child_item = p_from->get_first_child();
+	while (child_item) {
+		if (_is_branch_selected(child_item)) {
+			return true;
+		}
+		child_item = child_item->get_next();
+	}
+
+	return false;
+}
+
+bool Tree::_is_sibling_branch_selected(TreeItem *p_from) const {
+	TreeItem *sibling_item = p_from->get_next();
+	while (sibling_item) {
+		if (_is_branch_selected(sibling_item)) {
+			return true;
+		}
+		sibling_item = sibling_item->get_next();
+	}
+
+	return false;
 }
 
 void Tree::select_single_item(TreeItem *p_selected, TreeItem *p_current, int p_col, TreeItem *p_prev, bool *r_in_range, bool p_force_deselect) {
@@ -3027,7 +3126,7 @@ void Tree::_gui_input(Ref<InputEvent> p_event) {
 					drag_accum = 0;
 					//last_drag_accum=0;
 					drag_from = v_scroll->get_value();
-					drag_touching = !DisplayServer::get_singleton()->screen_is_touchscreen(DisplayServer::get_singleton()->window_get_current_screen(get_viewport()->get_window_id()));
+					drag_touching = DisplayServer::get_singleton()->screen_is_touchscreen(DisplayServer::get_singleton()->window_get_current_screen(get_viewport()->get_window_id()));
 					drag_touching_deaccel = false;
 					if (drag_touching) {
 						set_physics_process_internal(true);
@@ -4386,7 +4485,7 @@ void Tree::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "allow_rmb_select"), "set_allow_rmb_select", "get_allow_rmb_select");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "hide_folding"), "set_hide_folding", "is_folding_hidden");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "hide_root"), "set_hide_root", "is_root_hidden");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "drop_mode_flags", PROPERTY_HINT_FLAGS, "On Item,In between"), "set_drop_mode_flags", "get_drop_mode_flags");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "drop_mode_flags", PROPERTY_HINT_FLAGS, "On Item,In Between"), "set_drop_mode_flags", "get_drop_mode_flags");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "select_mode", PROPERTY_HINT_ENUM, "Single,Row,Multi"), "set_select_mode", "get_select_mode");
 
 	ADD_SIGNAL(MethodInfo("item_selected"));

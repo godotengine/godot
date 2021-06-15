@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="XRInterface" inherits="Reference" version="4.0">
+<class name="XRInterface" inherits="RefCounted" version="4.0">
 	<brief_description>
 		Base class for an AR/VR interface implementation.
 	</brief_description>
@@ -46,6 +46,13 @@
 				If supported, returns the status of our tracking. This will allow you to provide feedback to the user whether there are issues with positional tracking.
 			</description>
 		</method>
+		<method name="get_view_count">
+			<return type="int">
+			</return>
+			<description>
+				Returns the number of views that need to be rendered for this device. 1 for Monoscopic, 2 for Stereoscopic.
+			</description>
+		</method>
 		<method name="initialize">
 			<return type="bool">
 			</return>
@@ -55,13 +62,6 @@
 				[b]Note:[/b] You must enable the AR/VR mode on the main viewport for any device that uses the main output of Godot, such as for mobile VR.
 				If you do this for a platform that handles its own output (such as OpenVR) Godot will show just one eye without distortion on screen. Alternatively, you can add a separate viewport node to your scene and enable AR/VR on that viewport. It will be used to output to the HMD, leaving you free to do anything you like in the main window, such as using a separate camera as a spectator camera or rendering something completely different.
 				While currently not used, you can activate additional interfaces. You may wish to do this if you want to track controllers from other platforms. However, at this point in time only one interface can render to an HMD.
-			</description>
-		</method>
-		<method name="is_stereo">
-			<return type="bool">
-			</return>
-			<description>
-				Returns [code]true[/code] if the current output of this interface is in stereo.
 			</description>
 		</method>
 		<method name="uninitialize">

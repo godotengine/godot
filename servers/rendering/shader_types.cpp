@@ -29,6 +29,7 @@
 /*************************************************************************/
 
 #include "shader_types.h"
+#include "core/math/math_defs.h"
 
 const Map<StringName, ShaderLanguage::FunctionInfo> &ShaderTypes::get_functions(RS::ShaderMode p_mode) {
 	return shader_modes[p_mode].functions;
@@ -54,6 +55,9 @@ ShaderTypes::ShaderTypes() {
 	/*************** SPATIAL ***********************/
 
 	shader_modes[RS::SHADER_SPATIAL].functions["global"].built_ins["TIME"] = constt(ShaderLanguage::TYPE_FLOAT);
+	shader_modes[RS::SHADER_SPATIAL].functions["global"].built_ins["PI"] = constt(ShaderLanguage::TYPE_FLOAT);
+	shader_modes[RS::SHADER_SPATIAL].functions["global"].built_ins["TAU"] = constt(ShaderLanguage::TYPE_FLOAT);
+	shader_modes[RS::SHADER_SPATIAL].functions["global"].built_ins["E"] = constt(ShaderLanguage::TYPE_FLOAT);
 
 	shader_modes[RS::SHADER_SPATIAL].functions["vertex"].built_ins["VERTEX"] = ShaderLanguage::TYPE_VEC3;
 	shader_modes[RS::SHADER_SPATIAL].functions["vertex"].built_ins["NORMAL"] = ShaderLanguage::TYPE_VEC3;
@@ -88,6 +92,10 @@ ShaderTypes::ShaderTypes() {
 	shader_modes[RS::SHADER_SPATIAL].functions["vertex"].built_ins["VIEWPORT_SIZE"] = constt(ShaderLanguage::TYPE_VEC2);
 	shader_modes[RS::SHADER_SPATIAL].functions["vertex"].built_ins["OUTPUT_IS_SRGB"] = constt(ShaderLanguage::TYPE_BOOL);
 
+	shader_modes[RS::SHADER_SPATIAL].functions["vertex"].built_ins["VIEW_INDEX"] = constt(ShaderLanguage::TYPE_INT);
+	shader_modes[RS::SHADER_SPATIAL].functions["vertex"].built_ins["VIEW_MONO_LEFT"] = constt(ShaderLanguage::TYPE_INT);
+	shader_modes[RS::SHADER_SPATIAL].functions["vertex"].built_ins["VIEW_RIGHT"] = constt(ShaderLanguage::TYPE_INT);
+
 	shader_modes[RS::SHADER_SPATIAL].functions["fragment"].built_ins["VERTEX"] = constt(ShaderLanguage::TYPE_VEC3);
 	shader_modes[RS::SHADER_SPATIAL].functions["fragment"].built_ins["FRAGCOORD"] = constt(ShaderLanguage::TYPE_VEC4);
 	shader_modes[RS::SHADER_SPATIAL].functions["fragment"].built_ins["FRONT_FACING"] = constt(ShaderLanguage::TYPE_BOOL);
@@ -120,12 +128,16 @@ ShaderTypes::ShaderTypes() {
 	shader_modes[RS::SHADER_SPATIAL].functions["fragment"].built_ins["AO"] = ShaderLanguage::TYPE_FLOAT;
 	shader_modes[RS::SHADER_SPATIAL].functions["fragment"].built_ins["AO_LIGHT_AFFECT"] = ShaderLanguage::TYPE_FLOAT;
 	shader_modes[RS::SHADER_SPATIAL].functions["fragment"].built_ins["EMISSION"] = ShaderLanguage::TYPE_VEC3;
-	shader_modes[RS::SHADER_SPATIAL].functions["fragment"].built_ins["SCREEN_TEXTURE"] = ShaderLanguage::TYPE_SAMPLER2D;
-	shader_modes[RS::SHADER_SPATIAL].functions["fragment"].built_ins["NORMAL_ROUGHNESS_TEXTURE"] = ShaderLanguage::TYPE_SAMPLER2D;
-	shader_modes[RS::SHADER_SPATIAL].functions["fragment"].built_ins["DEPTH_TEXTURE"] = ShaderLanguage::TYPE_SAMPLER2D;
+	shader_modes[RS::SHADER_SPATIAL].functions["fragment"].built_ins["SCREEN_TEXTURE"] = constt(ShaderLanguage::TYPE_SAMPLER2D);
+	shader_modes[RS::SHADER_SPATIAL].functions["fragment"].built_ins["NORMAL_ROUGHNESS_TEXTURE"] = constt(ShaderLanguage::TYPE_SAMPLER2D);
+	shader_modes[RS::SHADER_SPATIAL].functions["fragment"].built_ins["DEPTH_TEXTURE"] = constt(ShaderLanguage::TYPE_SAMPLER2D);
 	shader_modes[RS::SHADER_SPATIAL].functions["fragment"].built_ins["DEPTH"] = ShaderLanguage::TYPE_FLOAT;
-	shader_modes[RS::SHADER_SPATIAL].functions["fragment"].built_ins["SCREEN_UV"] = ShaderLanguage::TYPE_VEC2;
+	shader_modes[RS::SHADER_SPATIAL].functions["fragment"].built_ins["SCREEN_UV"] = constt(ShaderLanguage::TYPE_VEC2);
 	shader_modes[RS::SHADER_SPATIAL].functions["fragment"].built_ins["POINT_COORD"] = constt(ShaderLanguage::TYPE_VEC2);
+
+	shader_modes[RS::SHADER_SPATIAL].functions["fragment"].built_ins["VIEW_INDEX"] = constt(ShaderLanguage::TYPE_INT);
+	shader_modes[RS::SHADER_SPATIAL].functions["fragment"].built_ins["VIEW_MONO_LEFT"] = constt(ShaderLanguage::TYPE_INT);
+	shader_modes[RS::SHADER_SPATIAL].functions["fragment"].built_ins["VIEW_RIGHT"] = constt(ShaderLanguage::TYPE_INT);
 
 	shader_modes[RS::SHADER_SPATIAL].functions["fragment"].built_ins["OUTPUT_IS_SRGB"] = constt(ShaderLanguage::TYPE_BOOL);
 
@@ -200,7 +212,6 @@ ShaderTypes::ShaderTypes() {
 
 	shader_modes[RS::SHADER_SPATIAL].modes.push_back("diffuse_lambert");
 	shader_modes[RS::SHADER_SPATIAL].modes.push_back("diffuse_lambert_wrap");
-	shader_modes[RS::SHADER_SPATIAL].modes.push_back("diffuse_oren_nayar");
 	shader_modes[RS::SHADER_SPATIAL].modes.push_back("diffuse_burley");
 	shader_modes[RS::SHADER_SPATIAL].modes.push_back("diffuse_toon");
 
@@ -227,6 +238,9 @@ ShaderTypes::ShaderTypes() {
 	/************ CANVAS ITEM **************************/
 
 	shader_modes[RS::SHADER_CANVAS_ITEM].functions["global"].built_ins["TIME"] = constt(ShaderLanguage::TYPE_FLOAT);
+	shader_modes[RS::SHADER_CANVAS_ITEM].functions["global"].built_ins["PI"] = constt(ShaderLanguage::TYPE_FLOAT);
+	shader_modes[RS::SHADER_CANVAS_ITEM].functions["global"].built_ins["TAU"] = constt(ShaderLanguage::TYPE_FLOAT);
+	shader_modes[RS::SHADER_CANVAS_ITEM].functions["global"].built_ins["E"] = constt(ShaderLanguage::TYPE_FLOAT);
 
 	shader_modes[RS::SHADER_CANVAS_ITEM].functions["vertex"].built_ins["VERTEX"] = ShaderLanguage::TYPE_VEC2;
 	shader_modes[RS::SHADER_CANVAS_ITEM].functions["vertex"].built_ins["UV"] = ShaderLanguage::TYPE_VEC2;
@@ -317,6 +331,9 @@ ShaderTypes::ShaderTypes() {
 	/************ PARTICLES **************************/
 
 	shader_modes[RS::SHADER_PARTICLES].functions["global"].built_ins["TIME"] = constt(ShaderLanguage::TYPE_FLOAT);
+	shader_modes[RS::SHADER_PARTICLES].functions["global"].built_ins["PI"] = constt(ShaderLanguage::TYPE_FLOAT);
+	shader_modes[RS::SHADER_PARTICLES].functions["global"].built_ins["TAU"] = constt(ShaderLanguage::TYPE_FLOAT);
+	shader_modes[RS::SHADER_PARTICLES].functions["global"].built_ins["E"] = constt(ShaderLanguage::TYPE_FLOAT);
 
 	shader_modes[RS::SHADER_PARTICLES].functions["start"].built_ins["COLOR"] = ShaderLanguage::TYPE_VEC4;
 	shader_modes[RS::SHADER_PARTICLES].functions["start"].built_ins["VELOCITY"] = ShaderLanguage::TYPE_VEC3;
@@ -381,6 +398,9 @@ ShaderTypes::ShaderTypes() {
 	/************ SKY **************************/
 
 	shader_modes[RS::SHADER_SKY].functions["global"].built_ins["TIME"] = constt(ShaderLanguage::TYPE_FLOAT);
+	shader_modes[RS::SHADER_SKY].functions["global"].built_ins["PI"] = constt(ShaderLanguage::TYPE_FLOAT);
+	shader_modes[RS::SHADER_SKY].functions["global"].built_ins["TAU"] = constt(ShaderLanguage::TYPE_FLOAT);
+	shader_modes[RS::SHADER_SKY].functions["global"].built_ins["E"] = constt(ShaderLanguage::TYPE_FLOAT);
 	shader_modes[RS::SHADER_SKY].functions["global"].built_ins["POSITION"] = constt(ShaderLanguage::TYPE_VEC3);
 	shader_modes[RS::SHADER_SKY].functions["global"].built_ins["RADIANCE"] = constt(ShaderLanguage::TYPE_SAMPLERCUBE);
 	shader_modes[RS::SHADER_SKY].functions["global"].built_ins["AT_HALF_RES_PASS"] = constt(ShaderLanguage::TYPE_BOOL);

@@ -136,8 +136,7 @@ private:
 	Map<StringName, EventSignal> event_signals;
 	bool signals_invalidated = true;
 
-	Vector<ScriptNetData> rpc_functions;
-	Vector<ScriptNetData> rpc_variables;
+	Vector<MultiplayerAPI::RPCConfig> rpc_functions;
 
 #ifdef TOOLS_ENABLED
 	List<PropertyInfo> exported_members_cache; // members_cache
@@ -164,14 +163,14 @@ private:
 	void load_script_signals(GDMonoClass *p_class, GDMonoClass *p_native_class);
 	bool _get_signal(GDMonoClass *p_class, GDMonoMethod *p_delegate_invoke, Vector<SignalParameter> &params);
 
-	bool _update_exports();
+	bool _update_exports(PlaceHolderScriptInstance *p_instance_to_update = nullptr);
 
 	bool _get_member_export(IMonoClassMember *p_member, bool p_inspect_export, PropertyInfo &r_prop_info, bool &r_exported);
 #ifdef TOOLS_ENABLED
 	static int _try_get_member_export_hint(IMonoClassMember *p_member, ManagedType p_type, Variant::Type p_variant_type, bool p_allow_generics, PropertyHint &r_hint, String &r_hint_string);
 #endif
 
-	CSharpInstance *_create_instance(const Variant **p_args, int p_argcount, Object *p_owner, bool p_isref, Callable::CallError &r_error);
+	CSharpInstance *_create_instance(const Variant **p_args, int p_argcount, Object *p_owner, bool p_is_ref_counted, Callable::CallError &r_error);
 	Variant _new(const Variant **p_args, int p_argcount, Callable::CallError &r_error);
 
 	// Do not use unless you know what you are doing
@@ -235,17 +234,7 @@ public:
 
 	int get_member_line(const StringName &p_member) const override;
 
-	Vector<ScriptNetData> get_rpc_methods() const override;
-	uint16_t get_rpc_method_id(const StringName &p_method) const override;
-	StringName get_rpc_method(const uint16_t p_rpc_method_id) const override;
-	MultiplayerAPI::RPCMode get_rpc_mode_by_id(const uint16_t p_rpc_method_id) const override;
-	MultiplayerAPI::RPCMode get_rpc_mode(const StringName &p_method) const override;
-
-	Vector<ScriptNetData> get_rset_properties() const override;
-	uint16_t get_rset_property_id(const StringName &p_variable) const override;
-	StringName get_rset_property(const uint16_t p_variable_id) const override;
-	MultiplayerAPI::RPCMode get_rset_mode_by_id(const uint16_t p_variable_id) const override;
-	MultiplayerAPI::RPCMode get_rset_mode(const StringName &p_variable) const override;
+	const Vector<MultiplayerAPI::RPCConfig> get_rpc_methods() const override;
 
 #ifdef TOOLS_ENABLED
 	bool is_placeholder_fallback_enabled() const override { return placeholder_fallback_enabled; }
@@ -262,7 +251,7 @@ class CSharpInstance : public ScriptInstance {
 	friend class CSharpLanguage;
 
 	Object *owner = nullptr;
-	bool base_ref = false;
+	bool base_ref_counted = false;
 	bool ref_dying = false;
 	bool unsafe_referenced = false;
 	bool predelete_notified = false;
@@ -322,17 +311,7 @@ public:
 	void refcount_incremented() override;
 	bool refcount_decremented() override;
 
-	Vector<ScriptNetData> get_rpc_methods() const override;
-	uint16_t get_rpc_method_id(const StringName &p_method) const override;
-	StringName get_rpc_method(const uint16_t p_rpc_method_id) const override;
-	MultiplayerAPI::RPCMode get_rpc_mode_by_id(const uint16_t p_rpc_method_id) const override;
-	MultiplayerAPI::RPCMode get_rpc_mode(const StringName &p_method) const override;
-
-	Vector<ScriptNetData> get_rset_properties() const override;
-	uint16_t get_rset_property_id(const StringName &p_variable) const override;
-	StringName get_rset_property(const uint16_t p_variable_id) const override;
-	MultiplayerAPI::RPCMode get_rset_mode_by_id(const uint16_t p_variable_id) const override;
-	MultiplayerAPI::RPCMode get_rset_mode(const StringName &p_variable) const override;
+	const Vector<MultiplayerAPI::RPCConfig> get_rpc_methods() const override;
 
 	void notification(int p_notification) override;
 	void _call_notification(int p_notification);
@@ -470,7 +449,7 @@ public:
 
 	/* EDITOR FUNCTIONS */
 	void get_reserved_words(List<String> *p_words) const override;
-	bool is_control_flow_keyword(String p_keyword) const;
+	bool is_control_flow_keyword(String p_keyword) const override;
 	void get_comment_delimiters(List<String> *p_delimiters) const override;
 	void get_string_delimiters(List<String> *p_delimiters) const override;
 	Ref<Script> get_template(const String &p_class_name, const String &p_base_class_name) const override;

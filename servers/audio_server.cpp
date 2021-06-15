@@ -32,8 +32,8 @@
 
 #include "core/config/project_settings.h"
 #include "core/debugger/engine_debugger.h"
+#include "core/io/file_access.h"
 #include "core/io/resource_loader.h"
-#include "core/os/file_access.h"
 #include "core/os/os.h"
 #include "scene/resources/audio_stream_sample.h"
 #include "servers/audio/audio_driver_dummy.h"
@@ -1164,6 +1164,9 @@ void AudioServer::set_bus_layout(const Ref<AudioBusLayout> &p_bus_layout) {
 				Bus::Effect bfx;
 				bfx.effect = fx;
 				bfx.enabled = p_bus_layout->buses[i].effects[j].enabled;
+#if DEBUG_ENABLED
+				bfx.prof_time = 0;
+#endif
 				bus->effects.push_back(bfx);
 			}
 		}

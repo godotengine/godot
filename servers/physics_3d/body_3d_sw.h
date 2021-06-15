@@ -55,7 +55,6 @@ class Body3DSW : public CollisionObject3DSW {
 
 	uint16_t locked_axis = 0;
 
-	real_t kinematic_safe_margin;
 	real_t _inv_mass;
 	Vector3 _inv_inertia; // Relative to the principal axes of inertia
 
@@ -93,7 +92,7 @@ class Body3DSW : public CollisionObject3DSW {
 	bool first_time_kinematic;
 	void _update_inertia();
 	virtual void _shapes_changed();
-	Transform new_transform;
+	Transform3D new_transform;
 
 	Map<Constraint3DSW *, int> constraint_map;
 
@@ -143,9 +142,6 @@ class Body3DSW : public CollisionObject3DSW {
 
 public:
 	void set_force_integration_callback(const Callable &p_callable, const Variant &p_udata = Variant());
-
-	void set_kinematic_margin(real_t p_margin);
-	_FORCE_INLINE_ real_t get_kinematic_margin() { return kinematic_safe_margin; }
 
 	_FORCE_INLINE_ void add_area(Area3DSW *p_area) {
 		int index = areas.find(AreaCMP(p_area));
@@ -311,7 +307,7 @@ public:
 		return p_axis.dot(_inv_inertia_tensor.xform_inv(p_axis));
 	}
 
-	//void simulate_motion(const Transform& p_xform,real_t p_step);
+	//void simulate_motion(const Transform3D& p_xform,real_t p_step);
 	void call_queries();
 	void wakeup_neighbours();
 
@@ -390,8 +386,8 @@ public:
 	virtual void set_angular_velocity(const Vector3 &p_velocity) override { body->set_angular_velocity(p_velocity); }
 	virtual Vector3 get_angular_velocity() const override { return body->get_angular_velocity(); }
 
-	virtual void set_transform(const Transform &p_transform) override { body->set_state(PhysicsServer3D::BODY_STATE_TRANSFORM, p_transform); }
-	virtual Transform get_transform() const override { return body->get_transform(); }
+	virtual void set_transform(const Transform3D &p_transform) override { body->set_state(PhysicsServer3D::BODY_STATE_TRANSFORM, p_transform); }
+	virtual Transform3D get_transform() const override { return body->get_transform(); }
 
 	virtual void add_central_force(const Vector3 &p_force) override { body->add_central_force(p_force); }
 	virtual void add_force(const Vector3 &p_force, const Vector3 &p_position = Vector3()) override {

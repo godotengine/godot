@@ -51,9 +51,11 @@ public:
 		TYPE_VERTEX,
 		TYPE_FRAGMENT,
 		TYPE_LIGHT,
-		TYPE_EMIT,
+		TYPE_START,
 		TYPE_PROCESS,
-		TYPE_END,
+		TYPE_COLLIDE,
+		TYPE_START_CUSTOM,
+		TYPE_PROCESS_CUSTOM,
 		TYPE_SKY,
 		TYPE_MAX
 	};
@@ -199,9 +201,12 @@ class VisualShaderNode : public Resource {
 	Map<int, Variant> default_input_values;
 	Map<int, bool> connected_input_ports;
 	Map<int, int> connected_output_ports;
+	Map<int, bool> expanded_output_ports;
 
 protected:
 	bool simple_decl = true;
+	bool disabled = false;
+
 	static void _bind_methods();
 
 public:
@@ -227,6 +232,8 @@ public:
 	Variant get_input_port_default_value(int p_port) const; // if NIL (default if node does not set anything) is returned, it means no default value is wanted if disconnected, thus no input var must be supplied (empty string will be supplied)
 	Array get_default_input_values() const;
 	virtual void set_default_input_values(const Array &p_values);
+	virtual void remove_input_port_default_value(int p_port);
+	virtual void clear_default_input_values();
 
 	virtual int get_output_port_count() const = 0;
 	virtual PortType get_output_port_type(int p_port) const = 0;
@@ -245,9 +252,19 @@ public:
 	void set_input_port_connected(int p_port, bool p_connected);
 	virtual bool is_generate_input_var(int p_port) const;
 
+	virtual bool is_output_port_expandable(int p_port) const;
+	void _set_output_ports_expanded(const Array &p_data);
+	Array _get_output_ports_expanded() const;
+	void _set_output_port_expanded(int p_port, bool p_expanded);
+	bool _is_output_port_expanded(int p_port) const;
+	int get_expanded_output_port_count() const;
+
 	virtual bool is_code_generated() const;
 	virtual bool is_show_prop_names() const;
 	virtual bool is_use_prop_slots() const;
+
+	bool is_disabled() const;
+	void set_disabled(bool p_disabled = true);
 
 	virtual Vector<StringName> get_editable_properties() const;
 
@@ -292,6 +309,8 @@ protected:
 
 	virtual void set_input_port_default_value(int p_port, const Variant &p_value) override;
 	virtual void set_default_input_values(const Array &p_values) override;
+	virtual void remove_input_port_default_value(int p_port) override;
+	virtual void clear_default_input_values() override;
 
 protected:
 	void _set_input_port_default_value(int p_port, const Variant &p_value);

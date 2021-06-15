@@ -115,12 +115,13 @@
 # Lucas E. <lukas.ed45@gmail.com>, 2021.
 # Gabriel Silveira <gabomfim99@gmail.com>, 2021.
 # Arthur Phillip D. Silva <artphil.dev@gmail.com>, 2021.
+# Gustavo HM 102 <gustavohm102@gmail.com>, 2021.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: 2016-05-30\n"
-"PO-Revision-Date: 2021-04-11 22:02+0000\n"
-"Last-Translator: Arthur Phillip D. Silva <artphil.dev@gmail.com>\n"
+"PO-Revision-Date: 2021-05-24 21:36+0000\n"
+"Last-Translator: Gustavo HM 102 <gustavohm102@gmail.com>\n"
 "Language-Team: Portuguese (Brazil) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/pt_BR/>\n"
 "Language: pt_BR\n"
@@ -128,7 +129,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 4.6-dev\n"
+"X-Generator: Weblate 4.7-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -2650,14 +2651,14 @@ msgstr ""
 "'%s'."
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid ""
 "Unable to load addon script from path: '%s'. This might be due to a code "
 "error in that script.\n"
 "Disabling the addon at '%s' to prevent further errors."
 msgstr ""
-"Não foi possível localizar a área do script para o complemento do plugin em: "
-"'%s'."
+"Não foi possível localizar o script do caminho: '%s'. Isso pode ser devido a "
+"um erro de código nesse script.\n"
+"Desativando o addon em '%s' para prevenir erros futuros."
 
 #: editor/editor_node.cpp
 msgid ""
@@ -3102,8 +3103,9 @@ msgid "About"
 msgstr "Sobre"
 
 #: editor/editor_node.cpp
+#, fuzzy
 msgid "Support Godot Development"
-msgstr ""
+msgstr "Apoie o desenvolvimento do Godot"
 
 #: editor/editor_node.cpp
 msgid "Play the project."
@@ -5345,12 +5347,11 @@ msgstr ""
 "contidos na região quadrada [0.0,1.0]."
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
-#, fuzzy
 msgid ""
 "Godot editor was built without ray tracing support, lightmaps can't be baked."
 msgstr ""
 "O editor Godot foi construído sem suporte à ray tracing, os lightmaps não "
-"podem ser bakeados."
+"podem ser refinados."
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
 msgid "Bake Lightmaps"
@@ -7671,9 +7672,12 @@ msgid "View Rotation Locked"
 msgstr "Ver Rotação Bloqueada"
 
 #: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
 msgid ""
 "To zoom further, change the camera's clipping planes (View -> Settings...)"
 msgstr ""
+"Para dar mais zoom, mude os planos de clipping da câmera (Visão -> "
+"Configurações...)"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid ""
@@ -10251,7 +10255,7 @@ msgstr "Botão do Mous"
 
 #: editor/project_settings_editor.cpp
 msgid ""
-"Invalid action name. it cannot be empty nor contain '/', ':', '=', '\\' or "
+"Invalid action name. It cannot be empty nor contain '/', ':', '=', '\\' or "
 "'\"'"
 msgstr ""
 "Nome da ação inválido. Não pode estar vazio nem conter '/', ':', '=', '\\' "
@@ -11058,11 +11062,15 @@ msgid "Remote"
 msgstr "Remoto"
 
 #: editor/scene_tree_dock.cpp
+#, fuzzy
 msgid ""
 "If selected, the Remote scene tree dock will cause the project to stutter "
 "every time it updates.\n"
 "Switch back to the Local scene tree dock to improve performance."
 msgstr ""
+"Se selecionado, o painel da árvore de cena Remota vai fazer o projeto travar "
+"toda hora que atualizar.\n"
+"Volta para o painel da árvore de cena Local para melhorar a performance."
 
 #: editor/scene_tree_dock.cpp
 msgid "Local"

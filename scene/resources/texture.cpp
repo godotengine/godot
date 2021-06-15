@@ -327,7 +327,7 @@ Ref<Image> StreamTexture2D::load_image_from_file(FileAccess *f, int p_size_limit
 	uint32_t mipmaps = f->get_32();
 	Image::Format format = Image::Format(f->get_32());
 
-	if (data_format == DATA_FORMAT_LOSSLESS || data_format == DATA_FORMAT_LOSSY || data_format == DATA_FORMAT_BASIS_UNIVERSAL) {
+	if (data_format == DATA_FORMAT_PNG || data_format == DATA_FORMAT_WEBP || data_format == DATA_FORMAT_BASIS_UNIVERSAL) {
 		//look for a PNG or WEBP file inside
 
 		int sw = w;
@@ -360,10 +360,10 @@ Ref<Image> StreamTexture2D::load_image_from_file(FileAccess *f, int p_size_limit
 			Ref<Image> img;
 			if (data_format == DATA_FORMAT_BASIS_UNIVERSAL) {
 				img = Image::basis_universal_unpacker(pv);
-			} else if (data_format == DATA_FORMAT_LOSSLESS) {
-				img = Image::lossless_unpacker(pv);
+			} else if (data_format == DATA_FORMAT_PNG) {
+				img = Image::png_unpacker(pv);
 			} else {
-				img = Image::lossy_unpacker(pv);
+				img = Image::webp_unpacker(pv);
 			}
 
 			if (img.is_null() || img->is_empty()) {
@@ -490,7 +490,7 @@ Image::Format StreamTexture2D::get_format() const {
 	return format;
 }
 
-Error StreamTexture2D::_load_data(const String &p_path, int &tw, int &th, int &tw_custom, int &th_custom, Ref<Image> &image, bool &r_request_3d, bool &r_request_normal, bool &r_request_roughness, int &mipmap_limit, int p_size_limit) {
+Error StreamTexture2D::_load_data(const String &p_path, int &r_width, int &r_height, Ref<Image> &image, bool &r_request_3d, bool &r_request_normal, bool &r_request_roughness, int &mipmap_limit, int p_size_limit) {
 	alpha_cache.unref();
 
 	ERR_FAIL_COND_V(image.is_null(), ERR_INVALID_PARAMETER);
@@ -511,8 +511,8 @@ Error StreamTexture2D::_load_data(const String &p_path, int &tw, int &th, int &t
 		memdelete(f);
 		ERR_FAIL_V_MSG(ERR_FILE_CORRUPT, "Stream texture file is too new.");
 	}
-	tw_custom = f->get_32();
-	th_custom = f->get_32();
+	r_width = f->get_32();
+	r_height = f->get_32();
 	uint32_t df = f->get_32(); //data format
 
 	//skip reserved
@@ -551,7 +551,7 @@ Error StreamTexture2D::_load_data(const String &p_path, int &tw, int &th, int &t
 }
 
 Error StreamTexture2D::load(const String &p_path) {
-	int lw, lh, lwc, lhc;
+	int lw, lh;
 	Ref<Image> image;
 	image.instance();
 
@@ -560,7 +560,7 @@ Error StreamTexture2D::load(const String &p_path) {
 	bool request_roughness;
 	int mipmap_limit;
 
-	Error err = _load_data(p_path, lw, lh, lwc, lhc, image, request_3d, request_normal, request_roughness, mipmap_limit);
+	Error err = _load_data(p_path, lw, lh, image, request_3d, request_normal, request_roughness, mipmap_limit);
 	if (err) {
 		return err;
 	}
@@ -571,12 +571,12 @@ Error StreamTexture2D::load(const String &p_path) {
 	} else {
 		texture = RS::get_singleton()->texture_2d_create(image);
 	}
-	if (lwc || lhc) {
-		RS::get_singleton()->texture_set_size_override(texture, lwc, lhc);
+	if (lw || lh) {
+		RS::get_singleton()->texture_set_size_override(texture, lw, lh);
 	}
 
-	w = lwc ? lwc : lw;
-	h = lhc ? lhc : lh;
+	w = lw;
+	h = lh;
 	path_to_file = p_path;
 	format = image->get_format();
 

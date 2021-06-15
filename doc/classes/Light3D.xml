@@ -52,7 +52,7 @@
 			The light's strength multiplier (this is not a physical unit). For [OmniLight3D] and [SpotLight3D], changing this value will only change the light color's intensity, not the light's radius.
 		</member>
 		<member name="light_indirect_energy" type="float" setter="set_param" getter="get_param" default="1.0">
-			Secondary multiplier used with indirect light (light bounces). Used with [GIProbe].
+			Secondary multiplier used with indirect light (light bounces). Used with [VoxelGI].
 		</member>
 		<member name="light_negative" type="bool" setter="set_negative" getter="is_negative" default="false">
 			If [code]true[/code], the light's effect is reversed, darkening areas and casting bright shadows.

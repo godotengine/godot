@@ -48,14 +48,14 @@ class Generic6DOFJointBullet : public JointBullet {
 	bool flags[3][PhysicsServer3D::G6DOF_JOINT_FLAG_MAX];
 
 public:
-	Generic6DOFJointBullet(RigidBodyBullet *rbA, RigidBodyBullet *rbB, const Transform &frameInA, const Transform &frameInB);
+	Generic6DOFJointBullet(RigidBodyBullet *rbA, RigidBodyBullet *rbB, const Transform3D &frameInA, const Transform3D &frameInB);
 
 	virtual PhysicsServer3D::JointType get_type() const { return PhysicsServer3D::JOINT_6DOF; }
 
-	Transform getFrameOffsetA() const;
-	Transform getFrameOffsetB() const;
-	Transform getFrameOffsetA();
-	Transform getFrameOffsetB();
+	Transform3D getFrameOffsetA() const;
+	Transform3D getFrameOffsetB() const;
+	Transform3D getFrameOffsetA();
+	Transform3D getFrameOffsetB();
 
 	void set_linear_lower_limit(const Vector3 &linearLower);
 	void set_linear_upper_limit(const Vector3 &linearUpper);

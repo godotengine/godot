@@ -1593,7 +1593,7 @@ void EditorHelp::_notification(int p_what) {
 			_update_doc();
 		} break;
 		case NOTIFICATION_THEME_CHANGED: {
-			if (is_visible_in_tree()) {
+			if (is_inside_tree()) {
 				_class_desc_resized();
 			}
 		} break;

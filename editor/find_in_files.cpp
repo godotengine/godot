@@ -30,7 +30,7 @@
 
 #include "find_in_files.h"
 
-#include "core/os/dir_access.h"
+#include "core/io/dir_access.h"
 #include "core/os/os.h"
 #include "editor_node.h"
 #include "editor_scale.h"

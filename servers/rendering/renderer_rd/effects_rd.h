@@ -55,6 +55,7 @@
 #include "servers/rendering/renderer_rd/shaders/ssao_interleave.glsl.gen.h"
 #include "servers/rendering/renderer_rd/shaders/subsurface_scattering.glsl.gen.h"
 #include "servers/rendering/renderer_rd/shaders/tonemap.glsl.gen.h"
+#include "servers/rendering/renderer_scene_render.h"
 
 #include "servers/rendering_server.h"
 
@@ -170,6 +171,12 @@ class EffectsRD {
 		TONEMAP_MODE_BICUBIC_GLOW_FILTER,
 		TONEMAP_MODE_1D_LUT,
 		TONEMAP_MODE_BICUBIC_GLOW_FILTER_1D_LUT,
+
+		TONEMAP_MODE_NORMAL_MULTIVIEW,
+		TONEMAP_MODE_BICUBIC_GLOW_FILTER_MULTIVIEW,
+		TONEMAP_MODE_1D_LUT_MULTIVIEW,
+		TONEMAP_MODE_BICUBIC_GLOW_FILTER_1D_LUT_MULTIVIEW,
+
 		TONEMAP_MODE_MAX
 	};
 
@@ -378,12 +385,10 @@ class EffectsRD {
 		SSAODownsamplePushConstant downsample_push_constant;
 		SsaoDownsampleShaderRD downsample_shader;
 		RID downsample_shader_version;
-		RID downsample_uniform_set;
 
 		SSAOGatherPushConstant gather_push_constant;
 		SsaoShaderRD gather_shader;
 		RID gather_shader_version;
-		RID gather_uniform_set;
 		RID gather_constants_buffer;
 		bool gather_initialized = false;
 
@@ -391,7 +396,6 @@ class EffectsRD {
 		SsaoImportanceMapShaderRD importance_map_shader;
 		RID importance_map_shader_version;
 		RID importance_map_load_counter;
-		RID importance_map_uniform_set;
 		RID counter_uniform_set;
 
 		SSAOBlurPushConstant blur_push_constant;
@@ -453,12 +457,12 @@ class EffectsRD {
 	} filter;
 
 	struct SkyPushConstant {
-		float orientation[12];
-		float proj[4];
-		float position[3];
-		float multiplier;
-		float time;
-		float pad[3];
+		float orientation[12]; // 48 - 48
+		float projections[RendererSceneRender::MAX_RENDER_VIEWS][4]; // 2 x 16 - 64, if we ever need more then 3 we should consider adding this to a set.
+		float position[3]; // 12 - 92
+		float multiplier; // 4 - 96
+		float time; // 4 - 100
+		float pad[3]; // 12 - 112
 	};
 
 	enum SpecularMergeMode {
@@ -585,7 +589,7 @@ class EffectsRD {
 
 	enum ResolveMode {
 		RESOLVE_MODE_GI,
-		RESOLVE_MODE_GI_GIPROBE,
+		RESOLVE_MODE_GI_VOXEL_GI,
 		RESOLVE_MODE_MAX
 	};
 
@@ -714,6 +718,7 @@ public:
 		bool use_fxaa = false;
 		bool use_debanding = false;
 		Vector2i texture_size;
+		uint32_t view_count = 1;
 	};
 
 	struct SSAOSettings {
@@ -738,19 +743,19 @@ public:
 
 	void tonemapper(RID p_source_color, RID p_dst_framebuffer, const TonemapSettings &p_settings);
 
-	void gather_ssao(RD::ComputeListID p_compute_list, const Vector<RID> p_ao_slices, const SSAOSettings &p_settings, bool p_adaptive_base_pass);
-	void generate_ssao(RID p_depth_buffer, RID p_normal_buffer, RID p_depth_mipmaps_texture, const Vector<RID> &depth_mipmaps, RID p_ao, const Vector<RID> p_ao_slices, RID p_ao_pong, const Vector<RID> p_ao_pong_slices, RID p_upscale_buffer, RID p_importance_map, RID p_importance_map_pong, const CameraMatrix &p_projection, const SSAOSettings &p_settings, bool p_invalidate_uniform_sets);
+	void gather_ssao(RD::ComputeListID p_compute_list, const Vector<RID> p_ao_slices, const SSAOSettings &p_settings, bool p_adaptive_base_pass, RID p_gather_uniform_set, RID p_importance_map_uniform_set);
+	void generate_ssao(RID p_depth_buffer, RID p_normal_buffer, RID p_depth_mipmaps_texture, const Vector<RID> &depth_mipmaps, RID p_ao, const Vector<RID> p_ao_slices, RID p_ao_pong, const Vector<RID> p_ao_pong_slices, RID p_upscale_buffer, RID p_importance_map, RID p_importance_map_pong, const CameraMatrix &p_projection, const SSAOSettings &p_settings, bool p_invalidate_uniform_sets, RID &r_downsample_uniform_set, RID &r_gather_uniform_set, RID &r_importance_map_uniform_set);
 
 	void roughness_limit(RID p_source_normal, RID p_roughness, const Size2i &p_size, float p_curve);
 	void cubemap_downsample(RID p_source_cubemap, RID p_dest_cubemap, const Size2i &p_size);
 	void cubemap_filter(RID p_source_cubemap, Vector<RID> p_dest_cubemap, bool p_use_array);
-	void render_sky(RD::DrawListID p_list, float p_time, RID p_fb, RID p_samplers, RID p_fog, PipelineCacheRD *p_pipeline, RID p_uniform_set, RID p_texture_set, const CameraMatrix &p_camera, const Basis &p_orientation, float p_multiplier, const Vector3 &p_position);
+	void render_sky(RD::DrawListID p_list, float p_time, RID p_fb, RID p_samplers, RID p_fog, PipelineCacheRD *p_pipeline, RID p_uniform_set, RID p_texture_set, uint32_t p_view_count, const CameraMatrix *p_projections, const Basis &p_orientation, float p_multiplier, const Vector3 &p_position);
 
 	void screen_space_reflection(RID p_diffuse, RID p_normal_roughness, RS::EnvironmentSSRRoughnessQuality p_roughness_quality, RID p_blur_radius, RID p_blur_radius2, RID p_metallic, const Color &p_metallic_mask, RID p_depth, RID p_scale_depth, RID p_scale_normal, RID p_output, RID p_output_blur, const Size2i &p_screen_size, int p_max_steps, float p_fade_in, float p_fade_out, float p_tolerance, const CameraMatrix &p_camera);
 	void merge_specular(RID p_dest_framebuffer, RID p_specular, RID p_base, RID p_reflection);
 	void sub_surface_scattering(RID p_diffuse, RID p_diffuse2, RID p_depth, const CameraMatrix &p_camera, const Size2i &p_screen_size, float p_scale, float p_depth_scale, RS::SubSurfaceScatteringQuality p_quality);
 
-	void resolve_gi(RID p_source_depth, RID p_source_normal_roughness, RID p_source_giprobe, RID p_dest_depth, RID p_dest_normal_roughness, RID p_dest_giprobe, Vector2i p_screen_size, int p_samples, uint32_t p_barrier = RD::BARRIER_MASK_ALL);
+	void resolve_gi(RID p_source_depth, RID p_source_normal_roughness, RID p_source_voxel_gi, RID p_dest_depth, RID p_dest_normal_roughness, RID p_dest_voxel_gi, Vector2i p_screen_size, int p_samples, uint32_t p_barrier = RD::BARRIER_MASK_ALL);
 
 	void sort_buffer(RID p_uniform_set, int p_size);
 

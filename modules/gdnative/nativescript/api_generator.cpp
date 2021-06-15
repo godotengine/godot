@@ -34,10 +34,11 @@
 
 #include "core/config/engine.h"
 #include "core/core_constants.h"
+#include "core/io/file_access.h"
 #include "core/object/class_db.h"
-#include "core/os/file_access.h"
 #include "core/string/string_builder.h"
 #include "core/templates/pair.h"
+#include "core/variant/variant_parser.h"
 
 // helper stuff
 
@@ -121,7 +122,7 @@ struct ClassAPI {
 	String singleton_name;
 	bool is_instantiable = false;
 	// @Unclear
-	bool is_reference = false;
+	bool is_ref_counted = false;
 	bool has_indexing = false; // For builtin types.
 	String indexed_type; // For builtin types.
 	bool is_keyed = false; // For builtin types.
@@ -254,10 +255,10 @@ List<ClassAPI> generate_c_api_classes() {
 
 		{
 			List<StringName> inheriters;
-			ClassDB::get_inheriters_from_class("Reference", &inheriters);
-			bool is_reference = !!inheriters.find(class_name) || class_name == "Reference";
+			ClassDB::get_inheriters_from_class("RefCounted", &inheriters);
+			bool is_ref_counted = !!inheriters.find(class_name) || class_name == "RefCounted";
 			// @Unclear
-			class_api.is_reference = !class_api.is_singleton && is_reference;
+			class_api.is_ref_counted = !class_api.is_singleton && is_ref_counted;
 		}
 
 		// constants
@@ -509,10 +510,10 @@ List<ClassAPI> generate_c_builtin_api_types() {
 			case Variant::PACKED_VECTOR2_ARRAY:
 			case Variant::PACKED_VECTOR3_ARRAY:
 			case Variant::PACKED_COLOR_ARRAY:
-				class_api.is_reference = true;
+				class_api.is_ref_counted = true;
 				break;
 			default:
-				class_api.is_reference = false;
+				class_api.is_ref_counted = false;
 				break;
 		}
 
@@ -638,6 +639,7 @@ static List<String> generate_c_api_json(const List<ClassAPI> &p_api) {
 	// I'm sorry for the \t mess
 
 	List<String> source;
+	VariantWriter writer;
 
 	source.push_back("[\n");
 
@@ -652,7 +654,7 @@ static List<String> generate_c_api_json(const List<ClassAPI> &p_api) {
 		source.push_back(String("\t\t\"singleton\": ") + (api.is_singleton ? "true" : "false") + ",\n");
 		source.push_back("\t\t\"singleton_name\": \"" + api.singleton_name + "\",\n");
 		source.push_back(String("\t\t\"instantiable\": ") + (api.is_instantiable ? "true" : "false") + ",\n");
-		source.push_back(String("\t\t\"is_reference\": ") + (api.is_reference ? "true" : "false") + ",\n");
+		source.push_back(String("\t\t\"is_ref_counted\": ") + (api.is_ref_counted ? "true" : "false") + ",\n");
 
 		source.push_back("\t\t\"constants\": {\n");
 		for (List<ConstantAPI>::Element *e = api.constants.front(); e; e = e->next()) {
@@ -682,7 +684,12 @@ static List<String> generate_c_api_json(const List<ClassAPI> &p_api) {
 				source.push_back("\t\t\t\t\t\t\"name\": \"" + e->get().argument_names[i] + "\",\n");
 				source.push_back("\t\t\t\t\t\t\"type\": \"" + e->get().argument_types[i] + "\",\n");
 				source.push_back(String("\t\t\t\t\t\t\"has_default_value\": ") + (e->get().default_arguments.has(i) ? "true" : "false") + ",\n");
-				source.push_back("\t\t\t\t\t\t\"default_value\": \"" + (e->get().default_arguments.has(i) ? (String)e->get().default_arguments[i] : "") + "\"\n");
+				String default_value;
+				if (e->get().default_arguments.has(i)) {
+					writer.write_to_string(e->get().default_arguments[i], default_value);
+					default_value = default_value.replace("\n", "").json_escape();
+				}
+				source.push_back("\t\t\t\t\t\t\"default_value\": \"" + default_value + "\"\n");
 				source.push_back(String("\t\t\t\t\t}") + ((i < e->get().argument_names.size() - 1) ? "," : "") + "\n");
 			}
 			source.push_back("\t\t\t\t]\n");
@@ -708,7 +715,12 @@ static List<String> generate_c_api_json(const List<ClassAPI> &p_api) {
 				source.push_back("\t\t\t\t\t\t\"name\": \"" + e->get().argument_names[i] + "\",\n");
 				source.push_back("\t\t\t\t\t\t\"type\": \"" + e->get().argument_types[i] + "\",\n");
 				source.push_back(String("\t\t\t\t\t\t\"has_default_value\": ") + (e->get().default_arguments.has(i) ? "true" : "false") + ",\n");
-				source.push_back("\t\t\t\t\t\t\"default_value\": \"" + (e->get().default_arguments.has(i) ? (String)e->get().default_arguments[i] : "") + "\"\n");
+				String default_value;
+				if (e->get().default_arguments.has(i)) {
+					writer.write_to_string(e->get().default_arguments[i], default_value);
+					default_value = default_value.replace("\n", "").json_escape();
+				}
+				source.push_back("\t\t\t\t\t\t\"default_value\": \"" + default_value + "\"\n");
 				source.push_back(String("\t\t\t\t\t}") + ((i < e->get().argument_names.size() - 1) ? "," : "") + "\n");
 			}
 			source.push_back("\t\t\t\t]\n");
@@ -756,6 +768,8 @@ static void append_indented(StringBuilder &p_source, const char *p_text) {
 }
 
 static void write_builtin_method(StringBuilder &p_source, const MethodAPI &p_method) {
+	VariantWriter writer;
+
 	append_indented(p_source, vformat(R"("name": "%s",)", p_method.method_name));
 	append_indented(p_source, vformat(R"("return_type": "%s",)", p_method.return_type));
 	append_indented(p_source, vformat(R"("is_const": %s,)", p_method.is_const ? "true" : "false"));
@@ -771,7 +785,12 @@ static void write_builtin_method(StringBuilder &p_source, const MethodAPI &p_met
 		append_indented(p_source, vformat(R"("name": "%s",)", p_method.argument_names[i]));
 		append_indented(p_source, vformat(R"("type": "%s",)", p_method.argument_types[i]));
 		append_indented(p_source, vformat(R"("has_default_value": %s,)", p_method.default_arguments.has(i) ? "true" : "false"));
-		append_indented(p_source, vformat(R"("default_value": "%s")", p_method.default_arguments.has(i) ? p_method.default_arguments[i].operator String() : ""));
+		String default_value;
+		if (p_method.default_arguments.has(i)) {
+			writer.write_to_string(p_method.default_arguments[i], default_value);
+			default_value = default_value.replace("\n", "").json_escape();
+		}
+		append_indented(p_source, vformat(R"("default_value": "%s")", default_value));
 
 		indent_level--;
 		append_indented(p_source, i < p_method.argument_count - 1 ? "}," : "}");
@@ -794,7 +813,7 @@ static List<String> generate_c_builtin_api_json(const List<ClassAPI> &p_api) {
 
 		append_indented(source, vformat(R"("name": "%s",)", class_api.class_name));
 		append_indented(source, vformat(R"("is_instantiable": %s,)", class_api.is_instantiable ? "true" : "false"));
-		append_indented(source, vformat(R"("is_reference": %s,)", class_api.is_reference ? "true" : "false"));
+		append_indented(source, vformat(R"("is_ref_counted": %s,)", class_api.is_ref_counted ? "true" : "false"));
 		append_indented(source, vformat(R"("has_indexing": %s,)", class_api.has_indexing ? "true" : "false"));
 		append_indented(source, vformat(R"("indexed_type": "%s",)", class_api.has_indexing && class_api.indexed_type == "Nil" ? "Variant" : class_api.indexed_type));
 		append_indented(source, vformat(R"("is_keyed": %s,)", class_api.is_keyed ? "true" : "false"));

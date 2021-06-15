@@ -33,6 +33,7 @@
 #include "core/config/engine.h"
 #include "core/config/project_settings.h"
 #include "core/io/resource_loader.h"
+#include "core/math/math_defs.h"
 #include "renderer_compositor_rd.h"
 #include "servers/rendering/shader_language.h"
 
@@ -1439,8 +1440,10 @@ void RendererStorageRD::shader_set_code(RID p_shader, const String &p_code) {
 			material->shader_type = new_type;
 		}
 
-		for (Map<StringName, RID>::Element *E = shader->default_texture_parameter.front(); E; E = E->next()) {
-			shader->data->set_default_texture_param(E->key(), E->get());
+		if (shader->data) {
+			for (Map<StringName, RID>::Element *E = shader->default_texture_parameter.front(); E; E = E->next()) {
+				shader->data->set_default_texture_param(E->key(), E->get());
+			}
 		}
 	}
 
@@ -1877,8 +1880,8 @@ _FORCE_INLINE_ static void _fill_std140_variant_ubo_value(ShaderLanguage::DataTy
 				gui[1] = v.position.y;
 				gui[2] = v.size.x;
 				gui[3] = v.size.y;
-			} else if (value.get_type() == Variant::QUAT) {
-				Quat v = value;
+			} else if (value.get_type() == Variant::QUATERNION) {
+				Quaternion v = value;
 
 				gui[0] = v.x;
 				gui[1] = v.y;
@@ -1925,7 +1928,7 @@ _FORCE_INLINE_ static void _fill_std140_variant_ubo_value(ShaderLanguage::DataTy
 			gui[11] = 0;
 		} break;
 		case ShaderLanguage::TYPE_MAT4: {
-			Transform v = value;
+			Transform3D v = value;
 			float *gui = (float *)data;
 
 			gui[0] = v.basis.elements[0][0];
@@ -2775,7 +2778,7 @@ AABB RendererStorageRD::mesh_get_aabb(RID p_mesh, RID p_skeleton) {
 
 					const float *dataptr = baseptr + j * 8;
 
-					Transform mtx;
+					Transform3D mtx;
 
 					mtx.basis.elements[0].x = dataptr[0];
 					mtx.basis.elements[1].x = dataptr[1];
@@ -2802,7 +2805,7 @@ AABB RendererStorageRD::mesh_get_aabb(RID p_mesh, RID p_skeleton) {
 
 					const float *dataptr = baseptr + j * 12;
 
-					Transform mtx;
+					Transform3D mtx;
 
 					mtx.basis.elements[0][0] = dataptr[0];
 					mtx.basis.elements[0][1] = dataptr[1];
@@ -3477,7 +3480,7 @@ void RendererStorageRD::_multimesh_re_create_aabb(MultiMesh *multimesh, const fl
 	AABB mesh_aabb = mesh_get_aabb(multimesh->mesh);
 	for (int i = 0; i < p_instances; i++) {
 		const float *data = p_data + multimesh->stride_cache * i;
-		Transform t;
+		Transform3D t;
 
 		if (multimesh->xform_format == RS::MULTIMESH_TRANSFORM_3D) {
 			t.basis.elements[0][0] = data[0];
@@ -3513,7 +3516,7 @@ void RendererStorageRD::_multimesh_re_create_aabb(MultiMesh *multimesh, const fl
 	multimesh->aabb = aabb;
 }
 
-void RendererStorageRD::multimesh_instance_set_transform(RID p_multimesh, int p_index, const Transform &p_transform) {
+void RendererStorageRD::multimesh_instance_set_transform(RID p_multimesh, int p_index, const Transform3D &p_transform) {
 	MultiMesh *multimesh = multimesh_owner.getornull(p_multimesh);
 	ERR_FAIL_COND(!multimesh);
 	ERR_FAIL_INDEX(p_index, multimesh->instances);
@@ -3620,15 +3623,15 @@ RID RendererStorageRD::multimesh_get_mesh(RID p_multimesh) const {
 	return multimesh->mesh;
 }
 
-Transform RendererStorageRD::multimesh_instance_get_transform(RID p_multimesh, int p_index) const {
+Transform3D RendererStorageRD::multimesh_instance_get_transform(RID p_multimesh, int p_index) const {
 	MultiMesh *multimesh = multimesh_owner.getornull(p_multimesh);
-	ERR_FAIL_COND_V(!multimesh, Transform());
-	ERR_FAIL_INDEX_V(p_index, multimesh->instances, Transform());
-	ERR_FAIL_COND_V(multimesh->xform_format != RS::MULTIMESH_TRANSFORM_3D, Transform());
+	ERR_FAIL_COND_V(!multimesh, Transform3D());
+	ERR_FAIL_INDEX_V(p_index, multimesh->instances, Transform3D());
+	ERR_FAIL_COND_V(multimesh->xform_format != RS::MULTIMESH_TRANSFORM_3D, Transform3D());
 
 	_multimesh_make_local(multimesh);
 
-	Transform t;
+	Transform3D t;
 	{
 		const float *r = multimesh->data_cache.ptr();
 
@@ -3822,7 +3825,7 @@ void RendererStorageRD::_update_dirty_multimeshes() {
 
 			if (multimesh->data_cache_used_dirty_regions) {
 				uint32_t data_cache_dirty_region_count = (multimesh->instances - 1) / MULTIMESH_DIRTY_REGION_SIZE + 1;
-				uint32_t visible_region_count = (visible_instances - 1) / MULTIMESH_DIRTY_REGION_SIZE + 1;
+				uint32_t visible_region_count = visible_instances == 0 ? 0 : (visible_instances - 1) / MULTIMESH_DIRTY_REGION_SIZE + 1;
 
 				uint32_t region_size = multimesh->stride_cache * MULTIMESH_DIRTY_REGION_SIZE * sizeof(float);
 
@@ -4064,7 +4067,7 @@ void RendererStorageRD::particles_set_trails(RID p_particles, bool p_enable, flo
 	particles->dependency.changed_notify(DEPENDENCY_CHANGED_PARTICLES);
 }
 
-void RendererStorageRD::particles_set_trail_bind_poses(RID p_particles, const Vector<Transform> &p_bind_poses) {
+void RendererStorageRD::particles_set_trail_bind_poses(RID p_particles, const Vector<Transform3D> &p_bind_poses) {
 	Particles *particles = particles_owner.getornull(p_particles);
 	ERR_FAIL_COND(!particles);
 	if (particles->trail_bind_pose_buffer.is_valid() && particles->trail_bind_poses.size() != p_bind_poses.size()) {
@@ -4160,7 +4163,7 @@ void RendererStorageRD::particles_set_subemitter(RID p_particles, RID p_subemitt
 	}
 }
 
-void RendererStorageRD::particles_emit(RID p_particles, const Transform &p_transform, const Vector3 &p_velocity, const Color &p_color, const Color &p_custom, uint32_t p_emit_flags) {
+void RendererStorageRD::particles_emit(RID p_particles, const Transform3D &p_transform, const Vector3 &p_velocity, const Color &p_color, const Color &p_custom, uint32_t p_emit_flags) {
 	Particles *particles = particles_owner.getornull(p_particles);
 	ERR_FAIL_COND(!particles);
 	ERR_FAIL_COND(particles->amount == 0);
@@ -4228,7 +4231,7 @@ AABB RendererStorageRD::particles_get_current_aabb(RID p_particles) {
 
 	Vector<uint8_t> buffer = RD::get_singleton()->buffer_get_data(particles->particle_buffer);
 
-	Transform inv = particles->emission_transform.affine_inverse();
+	Transform3D inv = particles->emission_transform.affine_inverse();
 
 	AABB aabb;
 	if (buffer.size()) {
@@ -4271,7 +4274,7 @@ AABB RendererStorageRD::particles_get_aabb(RID p_particles) const {
 	return particles->custom_aabb;
 }
 
-void RendererStorageRD::particles_set_emission_transform(RID p_particles, const Transform &p_transform) {
+void RendererStorageRD::particles_set_emission_transform(RID p_particles, const Transform3D &p_transform) {
 	Particles *particles = particles_owner.getornull(p_particles);
 	ERR_FAIL_COND(!particles);
 
@@ -4303,6 +4306,15 @@ void RendererStorageRD::particles_remove_collision(RID p_particles, RID p_partic
 	Particles *particles = particles_owner.getornull(p_particles);
 	ERR_FAIL_COND(!particles);
 	particles->collisions.erase(p_particles_collision_instance);
+}
+
+void RendererStorageRD::particles_set_canvas_sdf_collision(RID p_particles, bool p_enable, const Transform2D &p_xform, const Rect2 &p_to_screen, RID p_texture) {
+	Particles *particles = particles_owner.getornull(p_particles);
+	ERR_FAIL_COND(!particles);
+	particles->has_sdf_collision = p_enable;
+	particles->sdf_collision_transform = p_xform;
+	particles->sdf_collision_to_screen = p_to_screen;
+	particles->sdf_collision_texture = p_texture;
 }
 
 void RendererStorageRD::_particles_process(Particles *p_particles, float p_delta) {
@@ -4386,7 +4398,7 @@ void RendererStorageRD::_particles_process(Particles *p_particles, float p_delta
 	frame_params.randomness = p_particles->randomness;
 
 	if (p_particles->use_local_coords) {
-		store_transform(Transform(), frame_params.emission_transform);
+		store_transform(Transform3D(), frame_params.emission_transform);
 	} else {
 		store_transform(p_particles->emission_transform, frame_params.emission_transform);
 	}
@@ -4406,10 +4418,54 @@ void RendererStorageRD::_particles_process(Particles *p_particles, float p_delta
 		RID collision_3d_textures[ParticlesFrameParams::MAX_3D_TEXTURES];
 		RID collision_heightmap_texture;
 
-		Transform to_particles;
+		Transform3D to_particles;
 		if (p_particles->use_local_coords) {
 			to_particles = p_particles->emission_transform.affine_inverse();
 		}
+
+		if (p_particles->has_sdf_collision && RD::get_singleton()->texture_is_valid(p_particles->sdf_collision_texture)) {
+			//2D collision
+
+			Transform2D xform = p_particles->sdf_collision_transform; //will use dotproduct manually so invert beforehand
+			Transform2D revert = xform.affine_inverse();
+			frame_params.collider_count = 1;
+			frame_params.colliders[0].transform[0] = xform.elements[0][0];
+			frame_params.colliders[0].transform[1] = xform.elements[0][1];
+			frame_params.colliders[0].transform[2] = 0;
+			frame_params.colliders[0].transform[3] = xform.elements[2][0];
+
+			frame_params.colliders[0].transform[4] = xform.elements[1][0];
+			frame_params.colliders[0].transform[5] = xform.elements[1][1];
+			frame_params.colliders[0].transform[6] = 0;
+			frame_params.colliders[0].transform[7] = xform.elements[2][1];
+
+			frame_params.colliders[0].transform[8] = revert.elements[0][0];
+			frame_params.colliders[0].transform[9] = revert.elements[0][1];
+			frame_params.colliders[0].transform[10] = 0;
+			frame_params.colliders[0].transform[11] = revert.elements[2][0];
+
+			frame_params.colliders[0].transform[12] = revert.elements[1][0];
+			frame_params.colliders[0].transform[13] = revert.elements[1][1];
+			frame_params.colliders[0].transform[14] = 0;
+			frame_params.colliders[0].transform[15] = revert.elements[2][1];
+
+			frame_params.colliders[0].extents[0] = p_particles->sdf_collision_to_screen.size.x;
+			frame_params.colliders[0].extents[1] = p_particles->sdf_collision_to_screen.size.y;
+			frame_params.colliders[0].extents[2] = p_particles->sdf_collision_to_screen.position.x;
+			frame_params.colliders[0].scale = p_particles->sdf_collision_to_screen.position.y;
+			frame_params.colliders[0].texture_index = 0;
+			frame_params.colliders[0].type = ParticlesFrameParams::COLLISION_TYPE_2D_SDF;
+
+			collision_heightmap_texture = p_particles->sdf_collision_texture;
+
+			//replace in all other history frames where used because parameters are no longer valid if screen moves
+			for (uint32_t i = 1; i < p_particles->frame_history.size(); i++) {
+				if (p_particles->frame_history[i].collider_count > 0 && p_particles->frame_history[i].colliders[0].type == ParticlesFrameParams::COLLISION_TYPE_2D_SDF) {
+					p_particles->frame_history[i].colliders[0] = frame_params.colliders[0];
+				}
+			}
+		}
+
 		uint32_t collision_3d_textures_used = 0;
 		for (const Set<RID>::Element *E = p_particles->collisions.front(); E; E = E->next()) {
 			ParticlesCollisionInstance *pci = particles_collision_instance_owner.getornull(E->get());
@@ -4419,7 +4475,7 @@ void RendererStorageRD::_particles_process(Particles *p_particles, float p_delta
 			ParticlesCollision *pc = particles_collision_owner.getornull(pci->collision);
 			ERR_CONTINUE(!pc);
 
-			Transform to_collider = pci->transform;
+			Transform3D to_collider = pci->transform;
 			if (p_particles->use_local_coords) {
 				to_collider = to_particles * to_collider;
 			}
@@ -4657,6 +4713,8 @@ void RendererStorageRD::_particles_process(Particles *p_particles, float p_delta
 
 	ERR_FAIL_COND(!m);
 
+	p_particles->has_collision_cache = m->shader_data->uses_collision;
+
 	//todo should maybe compute all particle systems together?
 	RD::ComputeListID compute_list = RD::get_singleton()->compute_list_begin();
 	RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, m->shader_data->pipeline);
@@ -4740,6 +4798,11 @@ void RendererStorageRD::particles_set_view_axis(RID p_particles, const Vector3 &
 		copy_push_constant.trail_total = 1;
 		copy_push_constant.frame_delta = 0.0;
 	}
+
+	copy_push_constant.order_by_lifetime = (particles->draw_order == RS::PARTICLES_DRAW_ORDER_LIFETIME || particles->draw_order == RS::PARTICLES_DRAW_ORDER_REVERSE_LIFETIME);
+	copy_push_constant.lifetime_split = MIN(particles->amount * particles->phase, particles->amount - 1);
+	copy_push_constant.lifetime_reverse = particles->draw_order == RS::PARTICLES_DRAW_ORDER_REVERSE_LIFETIME;
+
 	copy_push_constant.frame_remainder = particles->interpolate ? particles->frame_remainder : 0.0;
 	copy_push_constant.total_particles = particles->amount;
 
@@ -5019,6 +5082,10 @@ void RendererStorageRD::update_particles() {
 				copy_push_constant.frame_delta = 0.0;
 			}
 
+			copy_push_constant.order_by_lifetime = (particles->draw_order == RS::PARTICLES_DRAW_ORDER_LIFETIME || particles->draw_order == RS::PARTICLES_DRAW_ORDER_REVERSE_LIFETIME);
+			copy_push_constant.lifetime_split = MIN(particles->amount * particles->phase, particles->amount - 1);
+			copy_push_constant.lifetime_reverse = particles->draw_order == RS::PARTICLES_DRAW_ORDER_REVERSE_LIFETIME;
+
 			RD::ComputeListID compute_list = RD::get_singleton()->compute_list_begin();
 			RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, particles_shader.copy_pipelines[particles->mode == RS::PARTICLES_MODE_2D ? ParticlesShader::COPY_MODE_FILL_INSTANCES_2D : ParticlesShader::COPY_MODE_FILL_INSTANCES]);
 			RD::get_singleton()->compute_list_bind_uniform_set(compute_list, particles->particles_copy_uniform_set, 0);
@@ -5049,6 +5116,7 @@ void RendererStorageRD::ParticlesShaderData::set_code(const String &p_code) {
 	valid = false;
 	ubo_size = 0;
 	uniforms.clear();
+	uses_collision = false;
 
 	if (code == String()) {
 		return; //just invalid, but no error
@@ -5067,6 +5135,8 @@ void RendererStorageRD::ParticlesShaderData::set_code(const String &p_code) {
 
 	actions.usage_flag_pointers["TIME"] = &uses_time;
 */
+
+	actions.usage_flag_pointers["COLLIDED"] = &uses_collision;
 
 	actions.uniforms = &uniforms;
 
@@ -5454,7 +5524,7 @@ RID RendererStorageRD::particles_collision_instance_create(RID p_collision) {
 	pci.collision = p_collision;
 	return particles_collision_instance_owner.make_rid(pci);
 }
-void RendererStorageRD::particles_collision_instance_set_transform(RID p_collision_instance, const Transform &p_transform) {
+void RendererStorageRD::particles_collision_instance_set_transform(RID p_collision_instance, const Transform3D &p_transform) {
 	ParticlesCollisionInstance *pci = particles_collision_instance_owner.getornull(p_collision_instance);
 	ERR_FAIL_COND(!pci);
 	pci->transform = p_transform;
@@ -5532,7 +5602,7 @@ int RendererStorageRD::skeleton_get_bone_count(RID p_skeleton) const {
 	return skeleton->size;
 }
 
-void RendererStorageRD::skeleton_bone_set_transform(RID p_skeleton, int p_bone, const Transform &p_transform) {
+void RendererStorageRD::skeleton_bone_set_transform(RID p_skeleton, int p_bone, const Transform3D &p_transform) {
 	Skeleton *skeleton = skeleton_owner.getornull(p_skeleton);
 
 	ERR_FAIL_COND(!skeleton);
@@ -5557,16 +5627,16 @@ void RendererStorageRD::skeleton_bone_set_transform(RID p_skeleton, int p_bone, 
 	_skeleton_make_dirty(skeleton);
 }
 
-Transform RendererStorageRD::skeleton_bone_get_transform(RID p_skeleton, int p_bone) const {
+Transform3D RendererStorageRD::skeleton_bone_get_transform(RID p_skeleton, int p_bone) const {
 	Skeleton *skeleton = skeleton_owner.getornull(p_skeleton);
 
-	ERR_FAIL_COND_V(!skeleton, Transform());
-	ERR_FAIL_INDEX_V(p_bone, skeleton->size, Transform());
-	ERR_FAIL_COND_V(skeleton->use_2d, Transform());
+	ERR_FAIL_COND_V(!skeleton, Transform3D());
+	ERR_FAIL_INDEX_V(p_bone, skeleton->size, Transform3D());
+	ERR_FAIL_COND_V(skeleton->use_2d, Transform3D());
 
 	const float *dataptr = skeleton->data.ptr() + p_bone * 12;
 
-	Transform t;
+	Transform3D t;
 
 	t.basis.elements[0][0] = dataptr[0];
 	t.basis.elements[0][1] = dataptr[1];
@@ -6256,36 +6326,36 @@ AABB RendererStorageRD::decal_get_aabb(RID p_decal) const {
 	return AABB(-decal->extents, decal->extents * 2.0);
 }
 
-RID RendererStorageRD::gi_probe_allocate() {
-	return gi_probe_owner.allocate_rid();
+RID RendererStorageRD::voxel_gi_allocate() {
+	return voxel_gi_owner.allocate_rid();
 }
-void RendererStorageRD::gi_probe_initialize(RID p_gi_probe) {
-	gi_probe_owner.initialize_rid(p_gi_probe, GIProbe());
+void RendererStorageRD::voxel_gi_initialize(RID p_voxel_gi) {
+	voxel_gi_owner.initialize_rid(p_voxel_gi, VoxelGI());
 }
 
-void RendererStorageRD::gi_probe_allocate_data(RID p_gi_probe, const Transform &p_to_cell_xform, const AABB &p_aabb, const Vector3i &p_octree_size, const Vector<uint8_t> &p_octree_cells, const Vector<uint8_t> &p_data_cells, const Vector<uint8_t> &p_distance_field, const Vector<int> &p_level_counts) {
-	GIProbe *gi_probe = gi_probe_owner.getornull(p_gi_probe);
-	ERR_FAIL_COND(!gi_probe);
+void RendererStorageRD::voxel_gi_allocate_data(RID p_voxel_gi, const Transform3D &p_to_cell_xform, const AABB &p_aabb, const Vector3i &p_octree_size, const Vector<uint8_t> &p_octree_cells, const Vector<uint8_t> &p_data_cells, const Vector<uint8_t> &p_distance_field, const Vector<int> &p_level_counts) {
+	VoxelGI *voxel_gi = voxel_gi_owner.getornull(p_voxel_gi);
+	ERR_FAIL_COND(!voxel_gi);
 
-	if (gi_probe->octree_buffer.is_valid()) {
-		RD::get_singleton()->free(gi_probe->octree_buffer);
-		RD::get_singleton()->free(gi_probe->data_buffer);
-		if (gi_probe->sdf_texture.is_valid()) {
-			RD::get_singleton()->free(gi_probe->sdf_texture);
+	if (voxel_gi->octree_buffer.is_valid()) {
+		RD::get_singleton()->free(voxel_gi->octree_buffer);
+		RD::get_singleton()->free(voxel_gi->data_buffer);
+		if (voxel_gi->sdf_texture.is_valid()) {
+			RD::get_singleton()->free(voxel_gi->sdf_texture);
 		}
 
-		gi_probe->sdf_texture = RID();
-		gi_probe->octree_buffer = RID();
-		gi_probe->data_buffer = RID();
-		gi_probe->octree_buffer_size = 0;
-		gi_probe->data_buffer_size = 0;
-		gi_probe->cell_count = 0;
+		voxel_gi->sdf_texture = RID();
+		voxel_gi->octree_buffer = RID();
+		voxel_gi->data_buffer = RID();
+		voxel_gi->octree_buffer_size = 0;
+		voxel_gi->data_buffer_size = 0;
+		voxel_gi->cell_count = 0;
 	}
 
-	gi_probe->to_cell_xform = p_to_cell_xform;
-	gi_probe->bounds = p_aabb;
-	gi_probe->octree_size = p_octree_size;
-	gi_probe->level_counts = p_level_counts;
+	voxel_gi->to_cell_xform = p_to_cell_xform;
+	voxel_gi->bounds = p_aabb;
+	voxel_gi->octree_size = p_octree_size;
+	voxel_gi->level_counts = p_level_counts;
 
 	if (p_octree_cells.size()) {
 		ERR_FAIL_COND(p_octree_cells.size() % 32 != 0); //cells size must be a multiple of 32
@@ -6294,42 +6364,42 @@ void RendererStorageRD::gi_probe_allocate_data(RID p_gi_probe, const Transform &
 
 		ERR_FAIL_COND(p_data_cells.size() != (int)cell_count * 16); //see that data size matches
 
-		gi_probe->cell_count = cell_count;
-		gi_probe->octree_buffer = RD::get_singleton()->storage_buffer_create(p_octree_cells.size(), p_octree_cells);
-		gi_probe->octree_buffer_size = p_octree_cells.size();
-		gi_probe->data_buffer = RD::get_singleton()->storage_buffer_create(p_data_cells.size(), p_data_cells);
-		gi_probe->data_buffer_size = p_data_cells.size();
+		voxel_gi->cell_count = cell_count;
+		voxel_gi->octree_buffer = RD::get_singleton()->storage_buffer_create(p_octree_cells.size(), p_octree_cells);
+		voxel_gi->octree_buffer_size = p_octree_cells.size();
+		voxel_gi->data_buffer = RD::get_singleton()->storage_buffer_create(p_data_cells.size(), p_data_cells);
+		voxel_gi->data_buffer_size = p_data_cells.size();
 
 		if (p_distance_field.size()) {
 			RD::TextureFormat tf;
 			tf.format = RD::DATA_FORMAT_R8_UNORM;
-			tf.width = gi_probe->octree_size.x;
-			tf.height = gi_probe->octree_size.y;
-			tf.depth = gi_probe->octree_size.z;
+			tf.width = voxel_gi->octree_size.x;
+			tf.height = voxel_gi->octree_size.y;
+			tf.depth = voxel_gi->octree_size.z;
 			tf.texture_type = RD::TEXTURE_TYPE_3D;
 			tf.usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_CAN_UPDATE_BIT | RD::TEXTURE_USAGE_CAN_COPY_FROM_BIT;
 			Vector<Vector<uint8_t>> s;
 			s.push_back(p_distance_field);
-			gi_probe->sdf_texture = RD::get_singleton()->texture_create(tf, RD::TextureView(), s);
+			voxel_gi->sdf_texture = RD::get_singleton()->texture_create(tf, RD::TextureView(), s);
 		}
 #if 0
 			{
 				RD::TextureFormat tf;
 				tf.format = RD::DATA_FORMAT_R8_UNORM;
-				tf.width = gi_probe->octree_size.x;
-				tf.height = gi_probe->octree_size.y;
-				tf.depth = gi_probe->octree_size.z;
+				tf.width = voxel_gi->octree_size.x;
+				tf.height = voxel_gi->octree_size.y;
+				tf.depth = voxel_gi->octree_size.z;
 				tf.type = RD::TEXTURE_TYPE_3D;
 				tf.usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_STORAGE_BIT | RD::TEXTURE_USAGE_CAN_COPY_TO_BIT;
 				tf.shareable_formats.push_back(RD::DATA_FORMAT_R8_UNORM);
 				tf.shareable_formats.push_back(RD::DATA_FORMAT_R8_UINT);
-				gi_probe->sdf_texture = RD::get_singleton()->texture_create(tf, RD::TextureView());
+				voxel_gi->sdf_texture = RD::get_singleton()->texture_create(tf, RD::TextureView());
 			}
 			RID shared_tex;
 			{
 				RD::TextureView tv;
 				tv.format_override = RD::DATA_FORMAT_R8_UINT;
-				shared_tex = RD::get_singleton()->texture_create_shared(tv, gi_probe->sdf_texture);
+				shared_tex = RD::get_singleton()->texture_create_shared(tv, voxel_gi->sdf_texture);
 			}
 			//update SDF texture
 			Vector<RD::Uniform> uniforms;
@@ -6337,14 +6407,14 @@ void RendererStorageRD::gi_probe_allocate_data(RID p_gi_probe, const Transform &
 				RD::Uniform u;
 				u.uniform_type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
 				u.binding = 1;
-				u.ids.push_back(gi_probe->octree_buffer);
+				u.ids.push_back(voxel_gi->octree_buffer);
 				uniforms.push_back(u);
 			}
 			{
 				RD::Uniform u;
 				u.uniform_type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
 				u.binding = 2;
-				u.ids.push_back(gi_probe->data_buffer);
+				u.ids.push_back(voxel_gi->data_buffer);
 				uniforms.push_back(u);
 			}
 			{
@@ -6355,24 +6425,24 @@ void RendererStorageRD::gi_probe_allocate_data(RID p_gi_probe, const Transform &
 				uniforms.push_back(u);
 			}
 
-			RID uniform_set = RD::get_singleton()->uniform_set_create(uniforms, giprobe_sdf_shader_version_shader, 0);
+			RID uniform_set = RD::get_singleton()->uniform_set_create(uniforms, voxel_gi_sdf_shader_version_shader, 0);
 
 			{
 				uint32_t push_constant[4] = { 0, 0, 0, 0 };
 
-				for (int i = 0; i < gi_probe->level_counts.size() - 1; i++) {
-					push_constant[0] += gi_probe->level_counts[i];
+				for (int i = 0; i < voxel_gi->level_counts.size() - 1; i++) {
+					push_constant[0] += voxel_gi->level_counts[i];
 				}
-				push_constant[1] = push_constant[0] + gi_probe->level_counts[gi_probe->level_counts.size() - 1];
+				push_constant[1] = push_constant[0] + voxel_gi->level_counts[voxel_gi->level_counts.size() - 1];
 
 				print_line("offset: " + itos(push_constant[0]));
 				print_line("size: " + itos(push_constant[1]));
 				//create SDF
 				RD::ComputeListID compute_list = RD::get_singleton()->compute_list_begin();
-				RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, giprobe_sdf_shader_pipeline);
+				RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, voxel_gi_sdf_shader_pipeline);
 				RD::get_singleton()->compute_list_bind_uniform_set(compute_list, uniform_set, 0);
 				RD::get_singleton()->compute_list_set_push_constant(compute_list, push_constant, sizeof(uint32_t) * 4);
-				RD::get_singleton()->compute_list_dispatch(compute_list, gi_probe->octree_size.x / 4, gi_probe->octree_size.y / 4, gi_probe->octree_size.z / 4);
+				RD::get_singleton()->compute_list_dispatch(compute_list, voxel_gi->octree_size.x / 4, voxel_gi->octree_size.y / 4, voxel_gi->octree_size.z / 4);
 				RD::get_singleton()->compute_list_end();
 			}
 
@@ -6382,232 +6452,232 @@ void RendererStorageRD::gi_probe_allocate_data(RID p_gi_probe, const Transform &
 #endif
 	}
 
-	gi_probe->version++;
-	gi_probe->data_version++;
+	voxel_gi->version++;
+	voxel_gi->data_version++;
 
-	gi_probe->dependency.changed_notify(DEPENDENCY_CHANGED_AABB);
+	voxel_gi->dependency.changed_notify(DEPENDENCY_CHANGED_AABB);
 }
 
-AABB RendererStorageRD::gi_probe_get_bounds(RID p_gi_probe) const {
-	GIProbe *gi_probe = gi_probe_owner.getornull(p_gi_probe);
-	ERR_FAIL_COND_V(!gi_probe, AABB());
+AABB RendererStorageRD::voxel_gi_get_bounds(RID p_voxel_gi) const {
+	VoxelGI *voxel_gi = voxel_gi_owner.getornull(p_voxel_gi);
+	ERR_FAIL_COND_V(!voxel_gi, AABB());
 
-	return gi_probe->bounds;
+	return voxel_gi->bounds;
 }
 
-Vector3i RendererStorageRD::gi_probe_get_octree_size(RID p_gi_probe) const {
-	GIProbe *gi_probe = gi_probe_owner.getornull(p_gi_probe);
-	ERR_FAIL_COND_V(!gi_probe, Vector3i());
-	return gi_probe->octree_size;
+Vector3i RendererStorageRD::voxel_gi_get_octree_size(RID p_voxel_gi) const {
+	VoxelGI *voxel_gi = voxel_gi_owner.getornull(p_voxel_gi);
+	ERR_FAIL_COND_V(!voxel_gi, Vector3i());
+	return voxel_gi->octree_size;
 }
 
-Vector<uint8_t> RendererStorageRD::gi_probe_get_octree_cells(RID p_gi_probe) const {
-	GIProbe *gi_probe = gi_probe_owner.getornull(p_gi_probe);
-	ERR_FAIL_COND_V(!gi_probe, Vector<uint8_t>());
+Vector<uint8_t> RendererStorageRD::voxel_gi_get_octree_cells(RID p_voxel_gi) const {
+	VoxelGI *voxel_gi = voxel_gi_owner.getornull(p_voxel_gi);
+	ERR_FAIL_COND_V(!voxel_gi, Vector<uint8_t>());
 
-	if (gi_probe->octree_buffer.is_valid()) {
-		return RD::get_singleton()->buffer_get_data(gi_probe->octree_buffer);
+	if (voxel_gi->octree_buffer.is_valid()) {
+		return RD::get_singleton()->buffer_get_data(voxel_gi->octree_buffer);
 	}
 	return Vector<uint8_t>();
 }
 
-Vector<uint8_t> RendererStorageRD::gi_probe_get_data_cells(RID p_gi_probe) const {
-	GIProbe *gi_probe = gi_probe_owner.getornull(p_gi_probe);
-	ERR_FAIL_COND_V(!gi_probe, Vector<uint8_t>());
+Vector<uint8_t> RendererStorageRD::voxel_gi_get_data_cells(RID p_voxel_gi) const {
+	VoxelGI *voxel_gi = voxel_gi_owner.getornull(p_voxel_gi);
+	ERR_FAIL_COND_V(!voxel_gi, Vector<uint8_t>());
 
-	if (gi_probe->data_buffer.is_valid()) {
-		return RD::get_singleton()->buffer_get_data(gi_probe->data_buffer);
+	if (voxel_gi->data_buffer.is_valid()) {
+		return RD::get_singleton()->buffer_get_data(voxel_gi->data_buffer);
 	}
 	return Vector<uint8_t>();
 }
 
-Vector<uint8_t> RendererStorageRD::gi_probe_get_distance_field(RID p_gi_probe) const {
-	GIProbe *gi_probe = gi_probe_owner.getornull(p_gi_probe);
-	ERR_FAIL_COND_V(!gi_probe, Vector<uint8_t>());
+Vector<uint8_t> RendererStorageRD::voxel_gi_get_distance_field(RID p_voxel_gi) const {
+	VoxelGI *voxel_gi = voxel_gi_owner.getornull(p_voxel_gi);
+	ERR_FAIL_COND_V(!voxel_gi, Vector<uint8_t>());
 
-	if (gi_probe->data_buffer.is_valid()) {
-		return RD::get_singleton()->texture_get_data(gi_probe->sdf_texture, 0);
+	if (voxel_gi->data_buffer.is_valid()) {
+		return RD::get_singleton()->texture_get_data(voxel_gi->sdf_texture, 0);
 	}
 	return Vector<uint8_t>();
 }
 
-Vector<int> RendererStorageRD::gi_probe_get_level_counts(RID p_gi_probe) const {
-	GIProbe *gi_probe = gi_probe_owner.getornull(p_gi_probe);
-	ERR_FAIL_COND_V(!gi_probe, Vector<int>());
+Vector<int> RendererStorageRD::voxel_gi_get_level_counts(RID p_voxel_gi) const {
+	VoxelGI *voxel_gi = voxel_gi_owner.getornull(p_voxel_gi);
+	ERR_FAIL_COND_V(!voxel_gi, Vector<int>());
 
-	return gi_probe->level_counts;
+	return voxel_gi->level_counts;
 }
 
-Transform RendererStorageRD::gi_probe_get_to_cell_xform(RID p_gi_probe) const {
-	GIProbe *gi_probe = gi_probe_owner.getornull(p_gi_probe);
-	ERR_FAIL_COND_V(!gi_probe, Transform());
+Transform3D RendererStorageRD::voxel_gi_get_to_cell_xform(RID p_voxel_gi) const {
+	VoxelGI *voxel_gi = voxel_gi_owner.getornull(p_voxel_gi);
+	ERR_FAIL_COND_V(!voxel_gi, Transform3D());
 
-	return gi_probe->to_cell_xform;
+	return voxel_gi->to_cell_xform;
 }
 
-void RendererStorageRD::gi_probe_set_dynamic_range(RID p_gi_probe, float p_range) {
-	GIProbe *gi_probe = gi_probe_owner.getornull(p_gi_probe);
-	ERR_FAIL_COND(!gi_probe);
+void RendererStorageRD::voxel_gi_set_dynamic_range(RID p_voxel_gi, float p_range) {
+	VoxelGI *voxel_gi = voxel_gi_owner.getornull(p_voxel_gi);
+	ERR_FAIL_COND(!voxel_gi);
 
-	gi_probe->dynamic_range = p_range;
-	gi_probe->version++;
+	voxel_gi->dynamic_range = p_range;
+	voxel_gi->version++;
 }
 
-float RendererStorageRD::gi_probe_get_dynamic_range(RID p_gi_probe) const {
-	GIProbe *gi_probe = gi_probe_owner.getornull(p_gi_probe);
-	ERR_FAIL_COND_V(!gi_probe, 0);
+float RendererStorageRD::voxel_gi_get_dynamic_range(RID p_voxel_gi) const {
+	VoxelGI *voxel_gi = voxel_gi_owner.getornull(p_voxel_gi);
+	ERR_FAIL_COND_V(!voxel_gi, 0);
 
-	return gi_probe->dynamic_range;
+	return voxel_gi->dynamic_range;
 }
 
-void RendererStorageRD::gi_probe_set_propagation(RID p_gi_probe, float p_range) {
-	GIProbe *gi_probe = gi_probe_owner.getornull(p_gi_probe);
-	ERR_FAIL_COND(!gi_probe);
+void RendererStorageRD::voxel_gi_set_propagation(RID p_voxel_gi, float p_range) {
+	VoxelGI *voxel_gi = voxel_gi_owner.getornull(p_voxel_gi);
+	ERR_FAIL_COND(!voxel_gi);
 
-	gi_probe->propagation = p_range;
-	gi_probe->version++;
+	voxel_gi->propagation = p_range;
+	voxel_gi->version++;
 }
 
-float RendererStorageRD::gi_probe_get_propagation(RID p_gi_probe) const {
-	GIProbe *gi_probe = gi_probe_owner.getornull(p_gi_probe);
-	ERR_FAIL_COND_V(!gi_probe, 0);
-	return gi_probe->propagation;
+float RendererStorageRD::voxel_gi_get_propagation(RID p_voxel_gi) const {
+	VoxelGI *voxel_gi = voxel_gi_owner.getornull(p_voxel_gi);
+	ERR_FAIL_COND_V(!voxel_gi, 0);
+	return voxel_gi->propagation;
 }
 
-void RendererStorageRD::gi_probe_set_energy(RID p_gi_probe, float p_energy) {
-	GIProbe *gi_probe = gi_probe_owner.getornull(p_gi_probe);
-	ERR_FAIL_COND(!gi_probe);
+void RendererStorageRD::voxel_gi_set_energy(RID p_voxel_gi, float p_energy) {
+	VoxelGI *voxel_gi = voxel_gi_owner.getornull(p_voxel_gi);
+	ERR_FAIL_COND(!voxel_gi);
 
-	gi_probe->energy = p_energy;
+	voxel_gi->energy = p_energy;
 }
 
-float RendererStorageRD::gi_probe_get_energy(RID p_gi_probe) const {
-	GIProbe *gi_probe = gi_probe_owner.getornull(p_gi_probe);
-	ERR_FAIL_COND_V(!gi_probe, 0);
-	return gi_probe->energy;
+float RendererStorageRD::voxel_gi_get_energy(RID p_voxel_gi) const {
+	VoxelGI *voxel_gi = voxel_gi_owner.getornull(p_voxel_gi);
+	ERR_FAIL_COND_V(!voxel_gi, 0);
+	return voxel_gi->energy;
 }
 
-void RendererStorageRD::gi_probe_set_ao(RID p_gi_probe, float p_ao) {
-	GIProbe *gi_probe = gi_probe_owner.getornull(p_gi_probe);
-	ERR_FAIL_COND(!gi_probe);
+void RendererStorageRD::voxel_gi_set_ao(RID p_voxel_gi, float p_ao) {
+	VoxelGI *voxel_gi = voxel_gi_owner.getornull(p_voxel_gi);
+	ERR_FAIL_COND(!voxel_gi);
 
-	gi_probe->ao = p_ao;
+	voxel_gi->ao = p_ao;
 }
 
-float RendererStorageRD::gi_probe_get_ao(RID p_gi_probe) const {
-	GIProbe *gi_probe = gi_probe_owner.getornull(p_gi_probe);
-	ERR_FAIL_COND_V(!gi_probe, 0);
-	return gi_probe->ao;
+float RendererStorageRD::voxel_gi_get_ao(RID p_voxel_gi) const {
+	VoxelGI *voxel_gi = voxel_gi_owner.getornull(p_voxel_gi);
+	ERR_FAIL_COND_V(!voxel_gi, 0);
+	return voxel_gi->ao;
 }
 
-void RendererStorageRD::gi_probe_set_ao_size(RID p_gi_probe, float p_strength) {
-	GIProbe *gi_probe = gi_probe_owner.getornull(p_gi_probe);
-	ERR_FAIL_COND(!gi_probe);
+void RendererStorageRD::voxel_gi_set_ao_size(RID p_voxel_gi, float p_strength) {
+	VoxelGI *voxel_gi = voxel_gi_owner.getornull(p_voxel_gi);
+	ERR_FAIL_COND(!voxel_gi);
 
-	gi_probe->ao_size = p_strength;
+	voxel_gi->ao_size = p_strength;
 }
 
-float RendererStorageRD::gi_probe_get_ao_size(RID p_gi_probe) const {
-	GIProbe *gi_probe = gi_probe_owner.getornull(p_gi_probe);
-	ERR_FAIL_COND_V(!gi_probe, 0);
-	return gi_probe->ao_size;
+float RendererStorageRD::voxel_gi_get_ao_size(RID p_voxel_gi) const {
+	VoxelGI *voxel_gi = voxel_gi_owner.getornull(p_voxel_gi);
+	ERR_FAIL_COND_V(!voxel_gi, 0);
+	return voxel_gi->ao_size;
 }
 
-void RendererStorageRD::gi_probe_set_bias(RID p_gi_probe, float p_bias) {
-	GIProbe *gi_probe = gi_probe_owner.getornull(p_gi_probe);
-	ERR_FAIL_COND(!gi_probe);
+void RendererStorageRD::voxel_gi_set_bias(RID p_voxel_gi, float p_bias) {
+	VoxelGI *voxel_gi = voxel_gi_owner.getornull(p_voxel_gi);
+	ERR_FAIL_COND(!voxel_gi);
 
-	gi_probe->bias = p_bias;
+	voxel_gi->bias = p_bias;
 }
 
-float RendererStorageRD::gi_probe_get_bias(RID p_gi_probe) const {
-	GIProbe *gi_probe = gi_probe_owner.getornull(p_gi_probe);
-	ERR_FAIL_COND_V(!gi_probe, 0);
-	return gi_probe->bias;
+float RendererStorageRD::voxel_gi_get_bias(RID p_voxel_gi) const {
+	VoxelGI *voxel_gi = voxel_gi_owner.getornull(p_voxel_gi);
+	ERR_FAIL_COND_V(!voxel_gi, 0);
+	return voxel_gi->bias;
 }
 
-void RendererStorageRD::gi_probe_set_normal_bias(RID p_gi_probe, float p_normal_bias) {
-	GIProbe *gi_probe = gi_probe_owner.getornull(p_gi_probe);
-	ERR_FAIL_COND(!gi_probe);
+void RendererStorageRD::voxel_gi_set_normal_bias(RID p_voxel_gi, float p_normal_bias) {
+	VoxelGI *voxel_gi = voxel_gi_owner.getornull(p_voxel_gi);
+	ERR_FAIL_COND(!voxel_gi);
 
-	gi_probe->normal_bias = p_normal_bias;
+	voxel_gi->normal_bias = p_normal_bias;
 }
 
-float RendererStorageRD::gi_probe_get_normal_bias(RID p_gi_probe) const {
-	GIProbe *gi_probe = gi_probe_owner.getornull(p_gi_probe);
-	ERR_FAIL_COND_V(!gi_probe, 0);
-	return gi_probe->normal_bias;
+float RendererStorageRD::voxel_gi_get_normal_bias(RID p_voxel_gi) const {
+	VoxelGI *voxel_gi = voxel_gi_owner.getornull(p_voxel_gi);
+	ERR_FAIL_COND_V(!voxel_gi, 0);
+	return voxel_gi->normal_bias;
 }
 
-void RendererStorageRD::gi_probe_set_anisotropy_strength(RID p_gi_probe, float p_strength) {
-	GIProbe *gi_probe = gi_probe_owner.getornull(p_gi_probe);
-	ERR_FAIL_COND(!gi_probe);
+void RendererStorageRD::voxel_gi_set_anisotropy_strength(RID p_voxel_gi, float p_strength) {
+	VoxelGI *voxel_gi = voxel_gi_owner.getornull(p_voxel_gi);
+	ERR_FAIL_COND(!voxel_gi);
 
-	gi_probe->anisotropy_strength = p_strength;
+	voxel_gi->anisotropy_strength = p_strength;
 }
 
-float RendererStorageRD::gi_probe_get_anisotropy_strength(RID p_gi_probe) const {
-	GIProbe *gi_probe = gi_probe_owner.getornull(p_gi_probe);
-	ERR_FAIL_COND_V(!gi_probe, 0);
-	return gi_probe->anisotropy_strength;
+float RendererStorageRD::voxel_gi_get_anisotropy_strength(RID p_voxel_gi) const {
+	VoxelGI *voxel_gi = voxel_gi_owner.getornull(p_voxel_gi);
+	ERR_FAIL_COND_V(!voxel_gi, 0);
+	return voxel_gi->anisotropy_strength;
 }
 
-void RendererStorageRD::gi_probe_set_interior(RID p_gi_probe, bool p_enable) {
-	GIProbe *gi_probe = gi_probe_owner.getornull(p_gi_probe);
-	ERR_FAIL_COND(!gi_probe);
+void RendererStorageRD::voxel_gi_set_interior(RID p_voxel_gi, bool p_enable) {
+	VoxelGI *voxel_gi = voxel_gi_owner.getornull(p_voxel_gi);
+	ERR_FAIL_COND(!voxel_gi);
 
-	gi_probe->interior = p_enable;
+	voxel_gi->interior = p_enable;
 }
 
-void RendererStorageRD::gi_probe_set_use_two_bounces(RID p_gi_probe, bool p_enable) {
-	GIProbe *gi_probe = gi_probe_owner.getornull(p_gi_probe);
-	ERR_FAIL_COND(!gi_probe);
+void RendererStorageRD::voxel_gi_set_use_two_bounces(RID p_voxel_gi, bool p_enable) {
+	VoxelGI *voxel_gi = voxel_gi_owner.getornull(p_voxel_gi);
+	ERR_FAIL_COND(!voxel_gi);
 
-	gi_probe->use_two_bounces = p_enable;
-	gi_probe->version++;
+	voxel_gi->use_two_bounces = p_enable;
+	voxel_gi->version++;
 }
 
-bool RendererStorageRD::gi_probe_is_using_two_bounces(RID p_gi_probe) const {
-	GIProbe *gi_probe = gi_probe_owner.getornull(p_gi_probe);
-	ERR_FAIL_COND_V(!gi_probe, false);
-	return gi_probe->use_two_bounces;
+bool RendererStorageRD::voxel_gi_is_using_two_bounces(RID p_voxel_gi) const {
+	VoxelGI *voxel_gi = voxel_gi_owner.getornull(p_voxel_gi);
+	ERR_FAIL_COND_V(!voxel_gi, false);
+	return voxel_gi->use_two_bounces;
 }
 
-bool RendererStorageRD::gi_probe_is_interior(RID p_gi_probe) const {
-	GIProbe *gi_probe = gi_probe_owner.getornull(p_gi_probe);
-	ERR_FAIL_COND_V(!gi_probe, 0);
-	return gi_probe->interior;
+bool RendererStorageRD::voxel_gi_is_interior(RID p_voxel_gi) const {
+	VoxelGI *voxel_gi = voxel_gi_owner.getornull(p_voxel_gi);
+	ERR_FAIL_COND_V(!voxel_gi, 0);
+	return voxel_gi->interior;
 }
 
-uint32_t RendererStorageRD::gi_probe_get_version(RID p_gi_probe) {
-	GIProbe *gi_probe = gi_probe_owner.getornull(p_gi_probe);
-	ERR_FAIL_COND_V(!gi_probe, 0);
-	return gi_probe->version;
+uint32_t RendererStorageRD::voxel_gi_get_version(RID p_voxel_gi) {
+	VoxelGI *voxel_gi = voxel_gi_owner.getornull(p_voxel_gi);
+	ERR_FAIL_COND_V(!voxel_gi, 0);
+	return voxel_gi->version;
 }
 
-uint32_t RendererStorageRD::gi_probe_get_data_version(RID p_gi_probe) {
-	GIProbe *gi_probe = gi_probe_owner.getornull(p_gi_probe);
-	ERR_FAIL_COND_V(!gi_probe, 0);
-	return gi_probe->data_version;
+uint32_t RendererStorageRD::voxel_gi_get_data_version(RID p_voxel_gi) {
+	VoxelGI *voxel_gi = voxel_gi_owner.getornull(p_voxel_gi);
+	ERR_FAIL_COND_V(!voxel_gi, 0);
+	return voxel_gi->data_version;
 }
 
-RID RendererStorageRD::gi_probe_get_octree_buffer(RID p_gi_probe) const {
-	GIProbe *gi_probe = gi_probe_owner.getornull(p_gi_probe);
-	ERR_FAIL_COND_V(!gi_probe, RID());
-	return gi_probe->octree_buffer;
+RID RendererStorageRD::voxel_gi_get_octree_buffer(RID p_voxel_gi) const {
+	VoxelGI *voxel_gi = voxel_gi_owner.getornull(p_voxel_gi);
+	ERR_FAIL_COND_V(!voxel_gi, RID());
+	return voxel_gi->octree_buffer;
 }
 
-RID RendererStorageRD::gi_probe_get_data_buffer(RID p_gi_probe) const {
-	GIProbe *gi_probe = gi_probe_owner.getornull(p_gi_probe);
-	ERR_FAIL_COND_V(!gi_probe, RID());
-	return gi_probe->data_buffer;
+RID RendererStorageRD::voxel_gi_get_data_buffer(RID p_voxel_gi) const {
+	VoxelGI *voxel_gi = voxel_gi_owner.getornull(p_voxel_gi);
+	ERR_FAIL_COND_V(!voxel_gi, RID());
+	return voxel_gi->data_buffer;
 }
 
-RID RendererStorageRD::gi_probe_get_sdf_texture(RID p_gi_probe) {
-	GIProbe *gi_probe = gi_probe_owner.getornull(p_gi_probe);
-	ERR_FAIL_COND_V(!gi_probe, RID());
+RID RendererStorageRD::voxel_gi_get_sdf_texture(RID p_voxel_gi) {
+	VoxelGI *voxel_gi = voxel_gi_owner.getornull(p_voxel_gi);
+	ERR_FAIL_COND_V(!voxel_gi, RID());
 
-	return gi_probe->sdf_texture;
+	return voxel_gi->sdf_texture;
 }
 
 /* LIGHTMAP API */
@@ -6843,9 +6913,13 @@ void RendererStorageRD::_update_render_target(RenderTarget *rt) {
 		rd_format.width = rt->size.width;
 		rd_format.height = rt->size.height;
 		rd_format.depth = 1;
-		rd_format.array_layers = 1;
+		rd_format.array_layers = rt->view_count; // for stereo we create two (or more) layers, need to see if we can make fallback work like this too if we don't have multiview
 		rd_format.mipmaps = 1;
-		rd_format.texture_type = RD::TEXTURE_TYPE_2D;
+		if (rd_format.array_layers > 1) { // why are we not using rt->texture_type ??
+			rd_format.texture_type = RD::TEXTURE_TYPE_2D_ARRAY;
+		} else {
+			rd_format.texture_type = RD::TEXTURE_TYPE_2D;
+		}
 		rd_format.samples = RD::TEXTURE_SAMPLES_1;
 		rd_format.usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT | RD::TEXTURE_USAGE_CAN_COPY_FROM_BIT;
 		rd_format.shareable_formats.push_back(rt->color_format);
@@ -6857,7 +6931,7 @@ void RendererStorageRD::_update_render_target(RenderTarget *rt) {
 
 	Vector<RID> fb_textures;
 	fb_textures.push_back(rt->color);
-	rt->framebuffer = RD::get_singleton()->framebuffer_create(fb_textures);
+	rt->framebuffer = RD::get_singleton()->framebuffer_create(fb_textures, RenderingDevice::INVALID_ID, rt->view_count);
 	if (rt->framebuffer.is_null()) {
 		_clear_render_target(rt);
 		ERR_FAIL_COND(rt->framebuffer.is_null());
@@ -6971,12 +7045,15 @@ void RendererStorageRD::render_target_set_position(RID p_render_target, int p_x,
 	//unused for this render target
 }
 
-void RendererStorageRD::render_target_set_size(RID p_render_target, int p_width, int p_height) {
+void RendererStorageRD::render_target_set_size(RID p_render_target, int p_width, int p_height, uint32_t p_view_count) {
 	RenderTarget *rt = render_target_owner.getornull(p_render_target);
 	ERR_FAIL_COND(!rt);
-	rt->size.x = p_width;
-	rt->size.y = p_height;
-	_update_render_target(rt);
+	if (rt->size.x != p_width || rt->size.y != p_height || rt->view_count != p_view_count) {
+		rt->size.x = p_width;
+		rt->size.y = p_height;
+		rt->view_count = p_view_count;
+		_update_render_target(rt);
+	}
 }
 
 RID RendererStorageRD::render_target_get_texture(RID p_render_target) {
@@ -7133,6 +7210,20 @@ Rect2i RendererStorageRD::render_target_get_sdf_rect(RID p_render_target) const 
 	return _render_target_get_sdf_rect(rt);
 }
 
+void RendererStorageRD::render_target_mark_sdf_enabled(RID p_render_target, bool p_enabled) {
+	RenderTarget *rt = render_target_owner.getornull(p_render_target);
+	ERR_FAIL_COND(!rt);
+
+	rt->sdf_enabled = p_enabled;
+}
+
+bool RendererStorageRD::render_target_is_sdf_enabled(RID p_render_target) const {
+	const RenderTarget *rt = render_target_owner.getornull(p_render_target);
+	ERR_FAIL_COND_V(!rt, false);
+
+	return rt->sdf_enabled;
+}
+
 RID RendererStorageRD::render_target_get_sdf_texture(RID p_render_target) {
 	RenderTarget *rt = render_target_owner.getornull(p_render_target);
 	ERR_FAIL_COND_V(!rt, RID());
@@ -7200,7 +7291,7 @@ void RendererStorageRD::_render_target_allocate_sdf(RenderTarget *rt) {
 	rt->process_size.x = MAX(rt->process_size.x, 1);
 	rt->process_size.y = MAX(rt->process_size.y, 1);
 
-	tformat.format = RD::DATA_FORMAT_R16G16_UINT;
+	tformat.format = RD::DATA_FORMAT_R16G16_SINT;
 	tformat.width = rt->process_size.width;
 	tformat.height = rt->process_size.height;
 	tformat.usage_bits = RD::TEXTURE_USAGE_STORAGE_BIT;
@@ -7208,7 +7299,7 @@ void RendererStorageRD::_render_target_allocate_sdf(RenderTarget *rt) {
 	rt->sdf_buffer_process[0] = RD::get_singleton()->texture_create(tformat, RD::TextureView());
 	rt->sdf_buffer_process[1] = RD::get_singleton()->texture_create(tformat, RD::TextureView());
 
-	tformat.format = RD::DATA_FORMAT_R16_UNORM;
+	tformat.format = RD::DATA_FORMAT_R16_SNORM;
 	tformat.usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_STORAGE_BIT;
 
 	rt->sdf_buffer_read = RD::get_singleton()->texture_create(tformat, RD::TextureView());
@@ -7484,8 +7575,8 @@ void RendererStorageRD::base_update_dependency(RID p_base, DependencyTracker *p_
 	} else if (decal_owner.owns(p_base)) {
 		Decal *decal = decal_owner.getornull(p_base);
 		p_instance->update_dependency(&decal->dependency);
-	} else if (gi_probe_owner.owns(p_base)) {
-		GIProbe *gip = gi_probe_owner.getornull(p_base);
+	} else if (voxel_gi_owner.owns(p_base)) {
+		VoxelGI *gip = voxel_gi_owner.getornull(p_base);
 		p_instance->update_dependency(&gip->dependency);
 	} else if (lightmap_owner.owns(p_base)) {
 		Lightmap *lm = lightmap_owner.getornull(p_base);
@@ -7522,8 +7613,8 @@ RS::InstanceType RendererStorageRD::get_base_type(RID p_rid) const {
 	if (decal_owner.owns(p_rid)) {
 		return RS::INSTANCE_DECAL;
 	}
-	if (gi_probe_owner.owns(p_rid)) {
-		return RS::INSTANCE_GI_PROBE;
+	if (voxel_gi_owner.owns(p_rid)) {
+		return RS::INSTANCE_VOXEL_GI;
 	}
 	if (light_owner.owns(p_rid)) {
 		return RS::INSTANCE_LIGHT;
@@ -8047,7 +8138,7 @@ void RendererStorageRD::_global_variable_store_in_buffer(int32_t p_index, RS::Gl
 		} break;
 		case RS::GLOBAL_VAR_TYPE_TRANSFORM: {
 			GlobalVariables::Value *bv = &global_variables.buffer_values[p_index];
-			Transform v = p_value;
+			Transform3D v = p_value;
 			bv[0].x = v.basis.elements[0][0];
 			bv[0].y = v.basis.elements[1][0];
 			bv[0].z = v.basis.elements[2][0];
@@ -8470,6 +8561,7 @@ bool RendererStorageRD::free(RID p_rid) {
 	if (texture_owner.owns(p_rid)) {
 		Texture *t = texture_owner.getornull(p_rid);
 
+		ERR_FAIL_COND_V(!t, false);
 		ERR_FAIL_COND_V(t->is_render_target, false);
 
 		if (RD::get_singleton()->texture_is_valid(t->rd_texture_srgb)) {
@@ -8580,11 +8672,11 @@ bool RendererStorageRD::free(RID p_rid) {
 		}
 		decal->dependency.deleted_notify(p_rid);
 		decal_owner.free(p_rid);
-	} else if (gi_probe_owner.owns(p_rid)) {
-		gi_probe_allocate_data(p_rid, Transform(), AABB(), Vector3i(), Vector<uint8_t>(), Vector<uint8_t>(), Vector<uint8_t>(), Vector<int>()); //deallocate
-		GIProbe *gi_probe = gi_probe_owner.getornull(p_rid);
-		gi_probe->dependency.deleted_notify(p_rid);
-		gi_probe_owner.free(p_rid);
+	} else if (voxel_gi_owner.owns(p_rid)) {
+		voxel_gi_allocate_data(p_rid, Transform3D(), AABB(), Vector3i(), Vector<uint8_t>(), Vector<uint8_t>(), Vector<uint8_t>(), Vector<int>()); //deallocate
+		VoxelGI *voxel_gi = voxel_gi_owner.getornull(p_rid);
+		voxel_gi->dependency.deleted_notify(p_rid);
+		voxel_gi_owner.free(p_rid);
 	} else if (lightmap_owner.owns(p_rid)) {
 		lightmap_set_textures(p_rid, RID(), false);
 		Lightmap *lightmap = lightmap_owner.getornull(p_rid);
@@ -9099,10 +9191,10 @@ RendererStorageRD::RendererStorageRD() {
 	{
 		Vector<String> sdf_versions;
 		sdf_versions.push_back(""); //one only
-		giprobe_sdf_shader.initialize(sdf_versions);
-		giprobe_sdf_shader_version = giprobe_sdf_shader.version_create();
-		giprobe_sdf_shader_version_shader = giprobe_sdf_shader.version_get_shader(giprobe_sdf_shader_version, 0);
-		giprobe_sdf_shader_pipeline = RD::get_singleton()->compute_pipeline_create(giprobe_sdf_shader_version_shader);
+		voxel_gi_sdf_shader.initialize(sdf_versions);
+		voxel_gi_sdf_shader_version = voxel_gi_sdf_shader.version_create();
+		voxel_gi_sdf_shader_version_shader = voxel_gi_sdf_shader.version_get_shader(voxel_gi_sdf_shader_version, 0);
+		voxel_gi_sdf_shader_pipeline = RD::get_singleton()->compute_pipeline_create(voxel_gi_sdf_shader_version_shader);
 	}
 
 	using_lightmap_array = true; // high end
@@ -9144,6 +9236,9 @@ RendererStorageRD::RendererStorageRD() {
 		actions.renames["CUSTOM"] = "PARTICLE.custom";
 		actions.renames["TRANSFORM"] = "PARTICLE.xform";
 		actions.renames["TIME"] = "FRAME.time";
+		actions.renames["PI"] = _MKSTR(Math_PI);
+		actions.renames["TAU"] = _MKSTR(Math_TAU);
+		actions.renames["E"] = _MKSTR(Math_E);
 		actions.renames["LIFETIME"] = "params.lifetime";
 		actions.renames["DELTA"] = "local_delta";
 		actions.renames["NUMBER"] = "particle_number";
@@ -9315,7 +9410,7 @@ RendererStorageRD::~RendererStorageRD() {
 		RD::get_singleton()->free(mesh_default_rd_buffers[i]);
 	}
 
-	giprobe_sdf_shader.version_free(giprobe_sdf_shader_version);
+	voxel_gi_sdf_shader.version_free(voxel_gi_sdf_shader_version);
 	particles_shader.copy_shader.version_free(particles_shader.copy_shader_version);
 	rt_sdf.shader.version_free(rt_sdf.shader_version);
 

@@ -5,7 +5,7 @@
 	</brief_description>
 	<description>
 		This is the node that implements full 3D physics. This means that you do not control a RigidBody3D directly. Instead, you can apply forces to it (gravity, impulses, etc.), and the physics simulation will calculate the resulting movement, collision, bouncing, rotating, etc.
-		A RigidBody3D has 4 behavior [member mode]s: Rigid, Static, Character, and Kinematic.
+		A RigidBody3D has 4 behavior [member mode]s: Dynamic, Static, DynamicLocked, and Kinematic.
 		[b]Note:[/b] Don't change a RigidBody3D's position every frame or very often. Sporadic changes work fine, but physics runs at a different granularity (fixed Hz) than usual rendering (process callback) and maybe even in a separate thread, so changing this from a process loop may result in strange behavior. If you need to directly affect the body's state, use [method _integrate_forces], which allows you to directly access the physics state.
 		If you need to override the default physics behavior, you can write a custom force integration function. See [member custom_integrator].
 		With Bullet physics (the default), the center of mass is the RigidBody3D center. With GodotPhysics, the center of mass is the average of the [CollisionShape3D] centers.
@@ -86,15 +86,6 @@
 				Applies a torque impulse which will be affected by the body mass and shape. This will rotate the body around the [code]impulse[/code] vector passed.
 			</description>
 		</method>
-		<method name="get_axis_lock" qualifiers="const">
-			<return type="bool">
-			</return>
-			<argument index="0" name="axis" type="int" enum="PhysicsServer3D.BodyAxis">
-			</argument>
-			<description>
-				Returns [code]true[/code] if the specified linear or rotational axis is locked.
-			</description>
-		</method>
 		<method name="get_colliding_bodies" qualifiers="const">
 			<return type="Array">
 			</return>
@@ -108,17 +99,6 @@
 			</return>
 			<description>
 				Returns the inverse inertia tensor basis. This is used to calculate the angular acceleration resulting from a torque applied to the [RigidBody3D].
-			</description>
-		</method>
-		<method name="set_axis_lock">
-			<return type="void">
-			</return>
-			<argument index="0" name="axis" type="int" enum="PhysicsServer3D.BodyAxis">
-			</argument>
-			<argument index="1" name="lock" type="bool">
-			</argument>
-			<description>
-				Locks the specified linear or rotational axis.
 			</description>
 		</method>
 		<method name="set_axis_velocity">
@@ -139,27 +119,8 @@
 		<member name="angular_velocity" type="Vector3" setter="set_angular_velocity" getter="get_angular_velocity" default="Vector3( 0, 0, 0 )">
 			RigidBody3D's rotational velocity.
 		</member>
-		<member name="axis_lock_angular_x" type="bool" setter="set_axis_lock" getter="get_axis_lock" default="false">
-			Lock the body's rotation in the X axis.
-		</member>
-		<member name="axis_lock_angular_y" type="bool" setter="set_axis_lock" getter="get_axis_lock" default="false">
-			Lock the body's rotation in the Y axis.
-		</member>
-		<member name="axis_lock_angular_z" type="bool" setter="set_axis_lock" getter="get_axis_lock" default="false">
-			Lock the body's rotation in the Z axis.
-		</member>
-		<member name="axis_lock_linear_x" type="bool" setter="set_axis_lock" getter="get_axis_lock" default="false">
-			Lock the body's movement in the X axis.
-		</member>
-		<member name="axis_lock_linear_y" type="bool" setter="set_axis_lock" getter="get_axis_lock" default="false">
-			Lock the body's movement in the Y axis.
-		</member>
-		<member name="axis_lock_linear_z" type="bool" setter="set_axis_lock" getter="get_axis_lock" default="false">
-			Lock the body's movement in the Z axis.
-		</member>
 		<member name="can_sleep" type="bool" setter="set_can_sleep" getter="is_able_to_sleep" default="true">
 			If [code]true[/code], the body can enter sleep mode when there is no movement. See [member sleeping].
-			[b]Note:[/b] A RigidBody3D will never enter sleep mode automatically if its [member mode] is [constant MODE_CHARACTER]. It can still be put to sleep manually by setting its [member sleeping] property to [code]true[/code].
 		</member>
 		<member name="contact_monitor" type="bool" setter="set_contact_monitor" getter="is_contact_monitor_enabled" default="false">
 			If [code]true[/code], the RigidBody3D will emit signals when it collides with another RigidBody3D. See also [member contacts_reported].
@@ -260,17 +221,17 @@
 		</signal>
 	</signals>
 	<constants>
-		<constant name="MODE_RIGID" value="0" enum="Mode">
-			Rigid body mode. This is the "natural" state of a rigid body. It is affected by forces, and can move, rotate, and be affected by user code.
+		<constant name="MODE_DYNAMIC" value="0" enum="Mode">
+			Dynamic body mode. This is the default mode of a rigid body. It is affected by forces, and can move, rotate, and be affected by user code.
 		</constant>
 		<constant name="MODE_STATIC" value="1" enum="Mode">
-			Static mode. The body behaves like a [StaticBody3D], and can only move by user code.
+			Static body mode. The body behaves like a [StaticBody3D], and can only move by user code.
 		</constant>
-		<constant name="MODE_CHARACTER" value="2" enum="Mode">
-			Character body mode. This behaves like a rigid body, but can not rotate.
+		<constant name="MODE_DYNAMIC_LOCKED" value="2" enum="Mode">
+			Locked dynamic body mode. Similar to [constant MODE_DYNAMIC], but the body can not rotate.
 		</constant>
 		<constant name="MODE_KINEMATIC" value="3" enum="Mode">
-			Kinematic body mode. The body behaves like a [KinematicBody3D], and can only move by user code.
+			Kinematic body mode. The body behaves like a [StaticBody3D] with [member StaticBody3D.kinematic_motion] enabled, and can only move by user code.
 		</constant>
 	</constants>
 </class>

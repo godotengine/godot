@@ -1084,7 +1084,11 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 					gen->write_call(GDScriptCodeGenerator::Address(), GDScriptCodeGenerator::Address(GDScriptCodeGenerator::Address::SELF), setter_function, args);
 				} else {
 					// Just assign.
-					gen->write_assign(target, op_result);
+					if (assignment->use_conversion_assign) {
+						gen->write_assign_with_conversion(target, op_result);
+					} else {
+						gen->write_assign(target, op_result);
+					}
 				}
 
 				if (op_result.mode == GDScriptCodeGenerator::Address::TEMPORARY) {
@@ -1792,7 +1796,11 @@ Error GDScriptCompiler::_parse_block(CodeGen &codegen, const GDScriptParser::Sui
 					if (error) {
 						return error;
 					}
-					gen->write_assign(local, src_address);
+					if (lv->use_conversion_assign) {
+						gen->write_assign_with_conversion(local, src_address);
+					} else {
+						gen->write_assign(local, src_address);
+					}
 					if (src_address.mode == GDScriptCodeGenerator::Address::TEMPORARY) {
 						codegen.generator->pop_temporary();
 					}
@@ -1930,7 +1938,11 @@ GDScriptFunction *GDScriptCompiler::_parse_function(Error &r_error, GDScript *p_
 					return nullptr;
 				}
 
-				codegen.generator->write_assign(dst_address, src_address);
+				if (field->use_conversion_assign) {
+					codegen.generator->write_assign_with_conversion(dst_address, src_address);
+				} else {
+					codegen.generator->write_assign(dst_address, src_address);
+				}
 				if (src_address.mode == GDScriptCodeGenerator::Address::TEMPORARY) {
 					codegen.generator->pop_temporary();
 				}
@@ -2211,7 +2223,7 @@ Error GDScriptCompiler::_parse_class_level(GDScript *p_script, const GDScriptPar
 					if (err) {
 						return err;
 					}
-					if (base.is_null() && !base->is_valid()) {
+					if (base.is_null() || !base->is_valid()) {
 						return ERR_COMPILATION_FAILED;
 					}
 				}
@@ -2270,9 +2282,10 @@ Error GDScriptCompiler::_parse_class_level(GDScript *p_script, const GDScriptPar
 					}
 					prop_info.hint = export_info.hint;
 					prop_info.hint_string = export_info.hint_string;
-					prop_info.usage = export_info.usage;
+					prop_info.usage = export_info.usage | PROPERTY_USAGE_SCRIPT_VARIABLE;
+				} else {
+					prop_info.usage = PROPERTY_USAGE_SCRIPT_VARIABLE;
 				}
-				prop_info.usage |= PROPERTY_USAGE_SCRIPT_VARIABLE;
 #ifdef TOOLS_ENABLED
 				p_script->doc_variables[name] = variable->doc_description;
 #endif
@@ -2499,7 +2512,7 @@ Error GDScriptCompiler::_parse_class_blocks(GDScript *p_script, const GDScriptPa
 					p_script->placeholders.erase(psi); //remove placeholder
 
 					GDScriptInstance *instance = memnew(GDScriptInstance);
-					instance->base_ref = Object::cast_to<Reference>(E->get());
+					instance->base_ref_counted = Object::cast_to<RefCounted>(E->get());
 					instance->members.resize(p_script->member_indices.size());
 					instance->script = Ref<GDScript>(p_script);
 					instance->owner = E->get();

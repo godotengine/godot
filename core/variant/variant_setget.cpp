@@ -279,17 +279,17 @@ SETGET_NUMBER_STRUCT_CUSTOM(Plane, double, z, normal.z)
 SETGET_STRUCT(Plane, Vector3, normal)
 SETGET_NUMBER_STRUCT(Plane, double, d)
 
-SETGET_NUMBER_STRUCT(Quat, double, x)
-SETGET_NUMBER_STRUCT(Quat, double, y)
-SETGET_NUMBER_STRUCT(Quat, double, z)
-SETGET_NUMBER_STRUCT(Quat, double, w)
+SETGET_NUMBER_STRUCT(Quaternion, double, x)
+SETGET_NUMBER_STRUCT(Quaternion, double, y)
+SETGET_NUMBER_STRUCT(Quaternion, double, z)
+SETGET_NUMBER_STRUCT(Quaternion, double, w)
 
 SETGET_STRUCT_FUNC_INDEX(Basis, Vector3, x, set_axis, get_axis, 0)
 SETGET_STRUCT_FUNC_INDEX(Basis, Vector3, y, set_axis, get_axis, 1)
 SETGET_STRUCT_FUNC_INDEX(Basis, Vector3, z, set_axis, get_axis, 2)
 
-SETGET_STRUCT(Transform, Basis, basis)
-SETGET_STRUCT(Transform, Vector3, origin)
+SETGET_STRUCT(Transform3D, Basis, basis)
+SETGET_STRUCT(Transform3D, Vector3, origin)
 
 SETGET_NUMBER_STRUCT(Color, double, r)
 SETGET_NUMBER_STRUCT(Color, double, g)
@@ -374,17 +374,17 @@ void register_named_setters_getters() {
 	REGISTER_MEMBER(Plane, d);
 	REGISTER_MEMBER(Plane, normal);
 
-	REGISTER_MEMBER(Quat, x);
-	REGISTER_MEMBER(Quat, y);
-	REGISTER_MEMBER(Quat, z);
-	REGISTER_MEMBER(Quat, w);
+	REGISTER_MEMBER(Quaternion, x);
+	REGISTER_MEMBER(Quaternion, y);
+	REGISTER_MEMBER(Quaternion, z);
+	REGISTER_MEMBER(Quaternion, w);
 
 	REGISTER_MEMBER(Basis, x);
 	REGISTER_MEMBER(Basis, y);
 	REGISTER_MEMBER(Basis, z);
 
-	REGISTER_MEMBER(Transform, basis);
-	REGISTER_MEMBER(Transform, origin);
+	REGISTER_MEMBER(Transform3D, basis);
+	REGISTER_MEMBER(Transform3D, origin);
 
 	REGISTER_MEMBER(Color, r);
 	REGISTER_MEMBER(Color, g);
@@ -975,7 +975,7 @@ INDEXED_SETGET_STRUCT_BULTIN_NUMERIC(Vector2, double, real_t, 2)
 INDEXED_SETGET_STRUCT_BULTIN_NUMERIC(Vector2i, int64_t, int32_t, 2)
 INDEXED_SETGET_STRUCT_BULTIN_NUMERIC(Vector3, double, real_t, 3)
 INDEXED_SETGET_STRUCT_BULTIN_NUMERIC(Vector3i, int64_t, int32_t, 3)
-INDEXED_SETGET_STRUCT_BULTIN_NUMERIC(Quat, double, real_t, 4)
+INDEXED_SETGET_STRUCT_BULTIN_NUMERIC(Quaternion, double, real_t, 4)
 INDEXED_SETGET_STRUCT_BULTIN_NUMERIC(Color, double, float, 4)
 
 INDEXED_SETGET_STRUCT_BULTIN_ACCESSOR(Transform2D, Vector2, .elements, 3)
@@ -1037,7 +1037,7 @@ void register_indexed_setters_getters() {
 	REGISTER_INDEXED_MEMBER(Vector2i);
 	REGISTER_INDEXED_MEMBER(Vector3);
 	REGISTER_INDEXED_MEMBER(Vector3i);
-	REGISTER_INDEXED_MEMBER(Quat);
+	REGISTER_INDEXED_MEMBER(Quaternion);
 	REGISTER_INDEXED_MEMBER(Color);
 	REGISTER_INDEXED_MEMBER(Transform2D);
 	REGISTER_INDEXED_MEMBER(Basis);
@@ -1453,7 +1453,7 @@ bool Variant::iter_init(Variant &r_iter, bool &valid) const {
 
 #ifdef DEBUG_ENABLED
 
-			if (EngineDebugger::is_active() && !_get_obj().id.is_reference() && ObjectDB::get_instance(_get_obj().id) == nullptr) {
+			if (EngineDebugger::is_active() && !_get_obj().id.is_ref_counted() && ObjectDB::get_instance(_get_obj().id) == nullptr) {
 				valid = false;
 				return false;
 			}
@@ -1680,7 +1680,7 @@ bool Variant::iter_next(Variant &r_iter, bool &valid) const {
 
 #ifdef DEBUG_ENABLED
 
-			if (EngineDebugger::is_active() && !_get_obj().id.is_reference() && ObjectDB::get_instance(_get_obj().id) == nullptr) {
+			if (EngineDebugger::is_active() && !_get_obj().id.is_ref_counted() && ObjectDB::get_instance(_get_obj().id) == nullptr) {
 				valid = false;
 				return false;
 			}
@@ -1865,7 +1865,7 @@ Variant Variant::iter_get(const Variant &r_iter, bool &r_valid) const {
 				return Variant();
 			}
 #ifdef DEBUG_ENABLED
-			if (EngineDebugger::is_active() && !_get_obj().id.is_reference() && ObjectDB::get_instance(_get_obj().id) == nullptr) {
+			if (EngineDebugger::is_active() && !_get_obj().id.is_ref_counted() && ObjectDB::get_instance(_get_obj().id) == nullptr) {
 				r_valid = false;
 				return Variant();
 			}
@@ -2135,10 +2135,10 @@ void Variant::blend(const Variant &a, const Variant &b, float c, Variant &r_dst)
 			r_dst = ::AABB(ra->position + rb->position * c, ra->size + rb->size * c);
 		}
 			return;
-		case QUAT: {
-			Quat empty_rot;
-			const Quat *qa = reinterpret_cast<const Quat *>(a._data._mem);
-			const Quat *qb = reinterpret_cast<const Quat *>(b._data._mem);
+		case QUATERNION: {
+			Quaternion empty_rot;
+			const Quaternion *qa = reinterpret_cast<const Quaternion *>(a._data._mem);
+			const Quaternion *qb = reinterpret_cast<const Quaternion *>(b._data._mem);
 			r_dst = *qa * empty_rot.slerp(*qb, c);
 		}
 			return;
@@ -2295,8 +2295,8 @@ void Variant::interpolate(const Variant &a, const Variant &b, float c, Variant &
 			r_dst = a;
 		}
 			return;
-		case QUAT: {
-			r_dst = reinterpret_cast<const Quat *>(a._data._mem)->slerp(*reinterpret_cast<const Quat *>(b._data._mem), c);
+		case QUATERNION: {
+			r_dst = reinterpret_cast<const Quaternion *>(a._data._mem)->slerp(*reinterpret_cast<const Quaternion *>(b._data._mem), c);
 		}
 			return;
 		case AABB: {
@@ -2304,11 +2304,11 @@ void Variant::interpolate(const Variant &a, const Variant &b, float c, Variant &
 		}
 			return;
 		case BASIS: {
-			r_dst = Transform(*a._data._basis).interpolate_with(Transform(*b._data._basis), c).basis;
+			r_dst = Transform3D(*a._data._basis).interpolate_with(Transform3D(*b._data._basis), c).basis;
 		}
 			return;
-		case TRANSFORM: {
-			r_dst = a._data._transform->interpolate_with(*b._data._transform, c);
+		case TRANSFORM3D: {
+			r_dst = a._data._transform3d->interpolate_with(*b._data._transform3d, c);
 		}
 			return;
 		case COLOR: {

@@ -1044,12 +1044,20 @@
 		<constant name="FEATURE_SWAP_BUFFERS" value="17" enum="Feature">
 		</constant>
 		<constant name="MOUSE_MODE_VISIBLE" value="0" enum="MouseMode">
+			Makes the mouse cursor visible if it is hidden.
 		</constant>
 		<constant name="MOUSE_MODE_HIDDEN" value="1" enum="MouseMode">
+			Makes the mouse cursor hidden if it is visible.
 		</constant>
 		<constant name="MOUSE_MODE_CAPTURED" value="2" enum="MouseMode">
+			Captures the mouse. The mouse will be hidden and its position locked at the center of the screen.
+			[b]Note:[/b] If you want to process the mouse's movement in this mode, you need to use [member InputEventMouseMotion.relative].
 		</constant>
 		<constant name="MOUSE_MODE_CONFINED" value="3" enum="MouseMode">
+			Confines the mouse cursor to the game window, and make it visible.
+		</constant>
+		<constant name="MOUSE_MODE_CONFINED_HIDDEN" value="4" enum="MouseMode">
+			Confines the mouse cursor to the game window, and make it hidden.
 		</constant>
 		<constant name="SCREEN_OF_MAIN_WINDOW" value="-1">
 		</constant>

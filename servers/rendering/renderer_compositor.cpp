@@ -30,6 +30,7 @@
 
 #include "renderer_compositor.h"
 
+#include "core/config/project_settings.h"
 #include "core/os/os.h"
 #include "core/string/print_string.h"
 
@@ -37,6 +38,14 @@ RendererCompositor *(*RendererCompositor::_create_func)() = nullptr;
 
 RendererCompositor *RendererCompositor::create() {
 	return _create_func();
+}
+
+bool RendererCompositor::is_xr_enabled() const {
+	return xr_enabled;
+}
+
+RendererCompositor::RendererCompositor() {
+	xr_enabled = GLOBAL_GET("rendering/xr/enabled");
 }
 
 RendererCanvasRender *RendererCanvasRender::singleton = nullptr;

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="XRPositionalTracker" inherits="Reference" version="4.0">
+<class name="XRPositionalTracker" inherits="RefCounted" version="4.0">
 	<brief_description>
 		A tracked object.
 	</brief_description>
@@ -69,7 +69,7 @@
 			</description>
 		</method>
 		<method name="get_transform" qualifiers="const">
-			<return type="Transform">
+			<return type="Transform3D">
 			</return>
 			<argument index="0" name="adjust_by_reference_frame" type="bool">
 			</argument>

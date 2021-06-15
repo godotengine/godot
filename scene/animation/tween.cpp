@@ -519,11 +519,11 @@ Variant Tween::_run_equation(InterpolateData &p_data) {
 			result = r;
 		} break;
 
-		case Variant::QUAT: {
+		case Variant::QUATERNION: {
 			// Get the quaternian for the initial and delta values
-			Quat i = initial_val;
-			Quat d = delta_val;
-			Quat r;
+			Quaternion i = initial_val;
+			Quaternion d = delta_val;
+			Quaternion r;
 
 			// Execute the equation on the quaternian values and mutate the r quaternian
 			// This uses the custom APPLY_EQUATION macro defined above
@@ -571,11 +571,11 @@ Variant Tween::_run_equation(InterpolateData &p_data) {
 			result = r;
 		} break;
 
-		case Variant::TRANSFORM: {
+		case Variant::TRANSFORM3D: {
 			// Get the transforms for the initial and delta values
-			Transform i = initial_val;
-			Transform d = delta_val;
-			Transform r;
+			Transform3D i = initial_val;
+			Transform3D d = delta_val;
+			Transform3D r;
 
 			// Execute the equation for each of the transforms and their origin and mutate the r transform
 			// This uses the custom APPLY_EQUATION macro defined above
@@ -1202,9 +1202,9 @@ bool Tween::_calc_delta_val(const Variant &p_initial_val, const Variant &p_final
 			delta_val = d;
 		} break;
 
-		case Variant::QUAT:
+		case Variant::QUATERNION:
 			// Convert to quaternianls and find the delta
-			delta_val = final_val.operator Quat() - initial_val.operator Quat();
+			delta_val = final_val.operator Quaternion() - initial_val.operator Quaternion();
 			break;
 
 		case Variant::AABB: {
@@ -1229,11 +1229,11 @@ bool Tween::_calc_delta_val(const Variant &p_initial_val, const Variant &p_final
 					f.elements[2][2] - i.elements[2][2]);
 		} break;
 
-		case Variant::TRANSFORM: {
+		case Variant::TRANSFORM3D: {
 			// Build a new transform which is the difference between the initial and final values
-			Transform i = initial_val;
-			Transform f = final_val;
-			Transform d;
+			Transform3D i = initial_val;
+			Transform3D f = final_val;
+			Transform3D d;
 			d.set(f.basis.elements[0][0] - i.basis.elements[0][0],
 					f.basis.elements[0][1] - i.basis.elements[0][1],
 					f.basis.elements[0][2] - i.basis.elements[0][2],
@@ -1266,10 +1266,10 @@ bool Tween::_calc_delta_val(const Variant &p_initial_val, const Variant &p_final
 				Variant::RECT2,
 				Variant::VECTOR3,
 				Variant::TRANSFORM2D,
-				Variant::QUAT,
+				Variant::QUATERNION,
 				Variant::AABB,
 				Variant::BASIS,
-				Variant::TRANSFORM,
+				Variant::TRANSFORM3D,
 				Variant::COLOR,
 			};
 

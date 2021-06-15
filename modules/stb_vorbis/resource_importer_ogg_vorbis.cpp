@@ -30,8 +30,8 @@
 
 #include "resource_importer_ogg_vorbis.h"
 
+#include "core/io/file_access.h"
 #include "core/io/resource_saver.h"
-#include "core/os/file_access.h"
 #include "scene/resources/texture.h"
 
 String ResourceImporterOGGVorbis::get_importer_name() const {
@@ -79,7 +79,7 @@ Error ResourceImporterOGGVorbis::import(const String &p_source_file, const Strin
 
 	ERR_FAIL_COND_V_MSG(!f, ERR_CANT_OPEN, "Cannot open file '" + p_source_file + "'.");
 
-	uint64_t len = f->get_len();
+	uint64_t len = f->get_length();
 
 	Vector<uint8_t> data;
 	data.resize(len);

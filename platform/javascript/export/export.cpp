@@ -39,7 +39,7 @@
 #include "platform/javascript/logo.gen.h"
 #include "platform/javascript/run_icon.gen.h"
 
-class EditorHTTPServer : public Reference {
+class EditorHTTPServer : public RefCounted {
 private:
 	Ref<TCPServer> server;
 	Map<String, String> mimes;
@@ -63,7 +63,7 @@ private:
 	}
 
 	void _set_internal_certs(Ref<Crypto> p_crypto) {
-		const String cache_path = EditorSettings::get_singleton()->get_cache_dir();
+		const String cache_path = EditorPaths::get_singleton()->get_cache_dir();
 		const String key_path = cache_path.plus_file("html5_server.key");
 		const String crt_path = cache_path.plus_file("html5_server.crt");
 		bool regen = !FileAccess::exists(key_path) || !FileAccess::exists(crt_path);
@@ -138,7 +138,7 @@ public:
 
 		const String req_file = req[1].get_file();
 		const String req_ext = req[1].get_extension();
-		const String cache_path = EditorSettings::get_singleton()->get_cache_dir().plus_file("web");
+		const String cache_path = EditorPaths::get_singleton()->get_cache_dir().plus_file("web");
 		const String filepath = cache_path.plus_file(req_file);
 
 		if (!mimes.has(req_ext) || !FileAccess::exists(filepath)) {
@@ -547,7 +547,7 @@ Error EditorExportPlatformJavaScript::_build_pwa(const Ref<EditorExportPreset> &
 			EditorNode::get_singleton()->show_warning(TTR("Could not read file:") + "\n" + sw_path);
 			return ERR_FILE_CANT_READ;
 		}
-		sw.resize(f->get_len());
+		sw.resize(f->get_length());
 		f->get_buffer(sw.ptrw(), sw.size());
 		memdelete(f);
 		f = nullptr;
@@ -651,7 +651,7 @@ void EditorExportPlatformJavaScript::get_export_options(List<ExportOption> *r_op
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "html/experimental_virtual_keyboard"), false));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "progressive_web_app/enabled"), false));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "progressive_web_app/offline_page", PROPERTY_HINT_FILE, "*.html"), ""));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "progressive_web_app/display", PROPERTY_HINT_ENUM, "Fullscreen,Standalone,Minimal Ui,Browser"), 1));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "progressive_web_app/display", PROPERTY_HINT_ENUM, "Fullscreen,Standalone,Minimal UI,Browser"), 1));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "progressive_web_app/orientation", PROPERTY_HINT_ENUM, "Any,Landscape,Portrait"), 0));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "progressive_web_app/icon_144x144", PROPERTY_HINT_FILE, "*.png,*.webp,*.svg,*.svgz"), ""));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "progressive_web_app/icon_180x180", PROPERTY_HINT_FILE, "*.png,*.webp,*.svg,*.svgz"), ""));
@@ -781,13 +781,13 @@ Error EditorExportPlatformJavaScript::export_project(const Ref<EditorExportPrese
 	FileAccess *f = nullptr;
 	f = FileAccess::open(pck_path, FileAccess::READ);
 	if (f) {
-		file_sizes[pck_path.get_file()] = (uint64_t)f->get_len();
+		file_sizes[pck_path.get_file()] = (uint64_t)f->get_length();
 		memdelete(f);
 		f = nullptr;
 	}
 	f = FileAccess::open(base_path + ".wasm", FileAccess::READ);
 	if (f) {
-		file_sizes[base_name + ".wasm"] = (uint64_t)f->get_len();
+		file_sizes[base_name + ".wasm"] = (uint64_t)f->get_length();
 		memdelete(f);
 		f = nullptr;
 	}
@@ -800,7 +800,7 @@ Error EditorExportPlatformJavaScript::export_project(const Ref<EditorExportPrese
 		EditorNode::get_singleton()->show_warning(TTR("Could not read HTML shell:") + "\n" + html_path);
 		return ERR_FILE_CANT_READ;
 	}
-	html.resize(f->get_len());
+	html.resize(f->get_length());
 	f->get_buffer(html.ptrw(), html.size());
 	memdelete(f);
 	f = nullptr;
@@ -888,7 +888,7 @@ Error EditorExportPlatformJavaScript::run(const Ref<EditorExportPreset> &p_prese
 		return OK;
 	}
 
-	const String dest = EditorSettings::get_singleton()->get_cache_dir().plus_file("web");
+	const String dest = EditorPaths::get_singleton()->get_cache_dir().plus_file("web");
 	DirAccessRef da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
 	if (!da->dir_exists(dest)) {
 		Error err = da->make_dir_recursive(dest);

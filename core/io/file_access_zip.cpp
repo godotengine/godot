@@ -32,7 +32,7 @@
 
 #include "file_access_zip.h"
 
-#include "core/os/file_access.h"
+#include "core/io/file_access.h"
 
 ZipArchive *ZipArchive::instance = nullptr;
 
@@ -73,7 +73,7 @@ static long godot_seek(voidpf opaque, voidpf stream, uLong offset, int origin) {
 			pos = f->get_position() + offset;
 			break;
 		case ZLIB_FILEFUNC_SEEK_END:
-			pos = f->get_len() + offset;
+			pos = f->get_length() + offset;
 			break;
 		default:
 			break;
@@ -226,9 +226,7 @@ ZipArchive::ZipArchive() {
 
 ZipArchive::~ZipArchive() {
 	for (int i = 0; i < packages.size(); i++) {
-		FileAccess *f = (FileAccess *)unzGetOpaque(packages[i].zfile);
 		unzClose(packages[i].zfile);
-		memdelete(f);
 	}
 
 	packages.clear();
@@ -272,7 +270,7 @@ void FileAccessZip::seek(uint64_t p_position) {
 
 void FileAccessZip::seek_end(int64_t p_position) {
 	ERR_FAIL_COND(!zfile);
-	unzSeekCurrentFile(zfile, get_len() + p_position);
+	unzSeekCurrentFile(zfile, get_length() + p_position);
 }
 
 uint64_t FileAccessZip::get_position() const {
@@ -280,7 +278,7 @@ uint64_t FileAccessZip::get_position() const {
 	return unztell(zfile);
 }
 
-uint64_t FileAccessZip::get_len() const {
+uint64_t FileAccessZip::get_length() const {
 	ERR_FAIL_COND_V(!zfile, 0);
 	return file_info.uncompressed_size;
 }

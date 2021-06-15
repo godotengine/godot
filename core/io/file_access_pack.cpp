@@ -279,7 +279,7 @@ uint64_t FileAccessPack::get_position() const {
 	return pos;
 }
 
-uint64_t FileAccessPack::get_len() const {
+uint64_t FileAccessPack::get_length() const {
 	return pf.size;
 }
 
@@ -320,9 +320,9 @@ uint64_t FileAccessPack::get_buffer(uint8_t *p_dst, uint64_t p_length) const {
 	return to_read;
 }
 
-void FileAccessPack::set_endian_swap(bool p_swap) {
-	FileAccess::set_endian_swap(p_swap);
-	f->set_endian_swap(p_swap);
+void FileAccessPack::set_big_endian(bool p_big_endian) {
+	FileAccess::set_big_endian(p_big_endian);
+	f->set_big_endian(p_big_endian);
 }
 
 Error FileAccessPack::get_error() const {

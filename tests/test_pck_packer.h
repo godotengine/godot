@@ -62,10 +62,10 @@ TEST_CASE("[PCKPacker] Pack an empty PCK file") {
 			err == OK,
 			"The generated empty PCK file should be opened successfully.");
 	CHECK_MESSAGE(
-			f->get_len() >= 100,
+			f->get_length() >= 100,
 			"The generated empty PCK file shouldn't be too small (it should have the PCK header).");
 	CHECK_MESSAGE(
-			f->get_len() <= 500,
+			f->get_length() <= 500,
 			"The generated empty PCK file shouldn't be too large.");
 }
 
@@ -103,10 +103,10 @@ TEST_CASE("[PCKPacker] Pack a PCK file with some files and directories") {
 			err == OK,
 			"The generated non-empty PCK file should be opened successfully.");
 	CHECK_MESSAGE(
-			f->get_len() >= 25000,
+			f->get_length() >= 25000,
 			"The generated non-empty PCK file should be large enough to actually hold the contents specified above.");
 	CHECK_MESSAGE(
-			f->get_len() <= 35000,
+			f->get_length() <= 35000,
 			"The generated non-empty PCK file shouldn't be too large.");
 }
 } // namespace TestPCKPacker

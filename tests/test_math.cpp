@@ -30,13 +30,13 @@
 
 #include "test_math.h"
 
+#include "core/io/file_access.h"
 #include "core/math/basis.h"
 #include "core/math/camera_matrix.h"
 #include "core/math/delaunay_3d.h"
 #include "core/math/geometry_2d.h"
 #include "core/math/math_funcs.h"
-#include "core/math/transform.h"
-#include "core/os/file_access.h"
+#include "core/math/transform_3d.h"
 #include "core/os/keyboard.h"
 #include "core/os/os.h"
 #include "core/string/print_string.h"
@@ -529,8 +529,8 @@ MainLoop *test() {
 	ERR_FAIL_COND_V_MSG(!fa, nullptr, "Could not open file: " + test);
 
 	Vector<uint8_t> buf;
-	uint64_t flen = fa->get_len();
-	buf.resize(fa->get_len() + 1);
+	uint64_t flen = fa->get_length();
+	buf.resize(fa->get_length() + 1);
 	fa->get_buffer(buf.ptrw(), flen);
 	buf.write[flen] = 0;
 
@@ -599,13 +599,13 @@ MainLoop *test() {
 
 		Basis m2(v2, a2);
 
-		Quat q = m;
-		Quat q2 = m2;
+		Quaternion q = m;
+		Quaternion q2 = m2;
 
 		Basis m3 = m.inverse() * m2;
-		Quat q3 = (q.inverse() * q2); //.normalized();
+		Quaternion q3 = (q.inverse() * q2); //.normalized();
 
-		print_line(Quat(m3));
+		print_line(Quaternion(m3));
 		print_line(q3);
 
 		print_line("before v: " + v + " a: " + rtos(a));

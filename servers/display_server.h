@@ -142,7 +142,8 @@ public:
 		MOUSE_MODE_VISIBLE,
 		MOUSE_MODE_HIDDEN,
 		MOUSE_MODE_CAPTURED,
-		MOUSE_MODE_CONFINED
+		MOUSE_MODE_CONFINED,
+		MOUSE_MODE_CONFINED_HIDDEN,
 	};
 
 	virtual void mouse_set_mode(MouseMode p_mode);
@@ -175,6 +176,9 @@ public:
 		return scale;
 	}
 	virtual bool screen_is_touchscreen(int p_screen = SCREEN_OF_MAIN_WINDOW) const;
+
+	// Keep the ScreenOrientation enum values in sync with the `display/window/handheld/orientation`
+	// project setting hint.
 	enum ScreenOrientation {
 		SCREEN_LANDSCAPE,
 		SCREEN_PORTRAIT,

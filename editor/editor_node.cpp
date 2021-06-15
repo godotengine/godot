@@ -34,15 +34,16 @@
 #include "core/core_bind.h"
 #include "core/input/input.h"
 #include "core/io/config_file.h"
+#include "core/io/file_access.h"
 #include "core/io/image_loader.h"
 #include "core/io/resource_loader.h"
 #include "core/io/resource_saver.h"
 #include "core/io/stream_peer_ssl.h"
 #include "core/object/class_db.h"
 #include "core/object/message_queue.h"
-#include "core/os/file_access.h"
 #include "core/os/keyboard.h"
 #include "core/os/os.h"
+#include "core/os/time.h"
 #include "core/string/print_string.h"
 #include "core/string/translation.h"
 #include "core/version.h"
@@ -80,6 +81,7 @@
 #include "editor/editor_inspector.h"
 #include "editor/editor_layouts_dialog.h"
 #include "editor/editor_log.h"
+#include "editor/editor_paths.h"
 #include "editor/editor_plugin.h"
 #include "editor/editor_properties.h"
 #include "editor/editor_resource_picker.h"
@@ -118,7 +120,6 @@
 #include "editor/plugins/animation_tree_editor_plugin.h"
 #include "editor/plugins/asset_library_editor_plugin.h"
 #include "editor/plugins/audio_stream_editor_plugin.h"
-#include "editor/plugins/baked_lightmap_editor_plugin.h"
 #include "editor/plugins/camera_3d_editor_plugin.h"
 #include "editor/plugins/canvas_item_editor_plugin.h"
 #include "editor/plugins/collision_polygon_2d_editor_plugin.h"
@@ -131,13 +132,13 @@
 #include "editor/plugins/editor_debugger_plugin.h"
 #include "editor/plugins/editor_preview_plugins.h"
 #include "editor/plugins/font_editor_plugin.h"
-#include "editor/plugins/gi_probe_editor_plugin.h"
 #include "editor/plugins/gpu_particles_2d_editor_plugin.h"
 #include "editor/plugins/gpu_particles_3d_editor_plugin.h"
 #include "editor/plugins/gpu_particles_collision_sdf_editor_plugin.h"
 #include "editor/plugins/gradient_editor_plugin.h"
 #include "editor/plugins/item_list_editor_plugin.h"
 #include "editor/plugins/light_occluder_2d_editor_plugin.h"
+#include "editor/plugins/lightmap_gi_editor_plugin.h"
 #include "editor/plugins/line_2d_editor_plugin.h"
 #include "editor/plugins/material_editor_plugin.h"
 #include "editor/plugins/mesh_editor_plugin.h"
@@ -174,6 +175,7 @@
 #include "editor/plugins/tiles/tiles_editor_plugin.h"
 #include "editor/plugins/version_control_editor_plugin.h"
 #include "editor/plugins/visual_shader_editor_plugin.h"
+#include "editor/plugins/voxel_gi_editor_plugin.h"
 #include "editor/progress_dialog.h"
 #include "editor/project_export.h"
 #include "editor/project_settings_editor.h"
@@ -483,8 +485,8 @@ void EditorNode::_update_from_settings() {
 	RS::get_singleton()->environment_set_sdfgi_frames_to_converge(frames_to_converge);
 	RS::EnvironmentSDFGIRayCount ray_count = RS::EnvironmentSDFGIRayCount(int(GLOBAL_GET("rendering/global_illumination/sdfgi/probe_ray_count")));
 	RS::get_singleton()->environment_set_sdfgi_ray_count(ray_count);
-	RS::GIProbeQuality gi_probe_quality = RS::GIProbeQuality(int(GLOBAL_GET("rendering/global_illumination/gi_probes/quality")));
-	RS::get_singleton()->gi_probe_set_quality(gi_probe_quality);
+	RS::VoxelGIQuality voxel_gi_quality = RS::VoxelGIQuality(int(GLOBAL_GET("rendering/global_illumination/voxel_gi/quality")));
+	RS::get_singleton()->voxel_gi_set_quality(voxel_gi_quality);
 	RS::get_singleton()->environment_set_volumetric_fog_volume_size(GLOBAL_GET("rendering/environment/volumetric_fog/volume_size"), GLOBAL_GET("rendering/environment/volumetric_fog/volume_depth"));
 	RS::get_singleton()->environment_set_volumetric_fog_filter_active(bool(GLOBAL_GET("rendering/environment/volumetric_fog/use_filter")));
 	RS::get_singleton()->canvas_set_shadow_texture_size(GLOBAL_GET("rendering/2d/shadow_atlas/size"));
@@ -706,6 +708,11 @@ void EditorNode::_notification(int p_what) {
 			p->set_item_icon(p->get_item_index(HELP_ABOUT), gui_base->get_theme_icon("Godot", "EditorIcons"));
 			p->set_item_icon(p->get_item_index(HELP_SUPPORT_GODOT_DEVELOPMENT), gui_base->get_theme_icon("Heart", "EditorIcons"));
 
+			for (int i = 0; i < main_editor_buttons.size(); i++) {
+				main_editor_buttons.write[i]->add_theme_font_override("font", gui_base->get_theme_font("main_button_font", "EditorFonts"));
+				main_editor_buttons.write[i]->add_theme_font_size_override("font_size", gui_base->get_theme_font_size("main_button_font_size", "EditorFonts"));
+			}
+
 			_update_update_spinner();
 		} break;
 
@@ -764,7 +771,7 @@ void EditorNode::_resources_changed(const Vector<String> &p_resources) {
 		if (!res->editor_can_reload_from_file()) {
 			continue;
 		}
-		if (!res->get_path().is_resource_file() && !res->get_path().is_abs_path()) {
+		if (!res->get_path().is_resource_file() && !res->get_path().is_absolute_path()) {
 			continue;
 		}
 		if (!FileAccess::exists(res->get_path())) {
@@ -1457,7 +1464,7 @@ void EditorNode::_save_scene_with_preview(String p_file, int p_idx) {
 			img->convert(Image::FORMAT_RGB8);
 
 			//save thumbnail directly, as thumbnailer may not update due to actual scene not changing md5
-			String temp_path = EditorSettings::get_singleton()->get_cache_dir();
+			String temp_path = EditorPaths::get_singleton()->get_cache_dir();
 			String cache_base = ProjectSettings::get_singleton()->globalize_path(p_file).md5_text();
 			cache_base = temp_path.plus_file("resthumb-" + cache_base);
 
@@ -1581,6 +1588,8 @@ void EditorNode::_save_scene(String p_file, int idx) {
 		return;
 	}
 
+	scene->propagate_notification(NOTIFICATION_EDITOR_PRE_SAVE);
+
 	editor_data.apply_changes_in_editors();
 	List<Ref<AnimatedValuesBackup>> anim_backups;
 	_reset_animation_players(scene, &anim_backups);
@@ -1652,6 +1661,8 @@ void EditorNode::_save_scene(String p_file, int idx) {
 	} else {
 		_dialog_display_save_error(p_file, err);
 	}
+
+	scene->propagate_notification(NOTIFICATION_EDITOR_POST_SAVE);
 }
 
 void EditorNode::save_all_scenes() {
@@ -2151,9 +2162,14 @@ void EditorNode::_edit_current() {
 	if (!inspector_only) {
 		EditorPlugin *main_plugin = editor_data.get_editor(current_obj);
 
-		for (int i = 0; i < editor_table.size(); i++) {
-			if (editor_table[i] == main_plugin && !main_editor_buttons[i]->is_visible()) {
-				main_plugin = nullptr; //if button is not visible, then no plugin active
+		int plugin_index = 0;
+		for (; plugin_index < editor_table.size(); plugin_index++) {
+			if (editor_table[plugin_index] == main_plugin) {
+				if (!main_editor_buttons[plugin_index]->is_visible()) {
+					main_plugin = nullptr; //if button is not visible, then no plugin active
+				}
+
+				break;
 			}
 		}
 
@@ -2167,26 +2183,8 @@ void EditorNode::_edit_current() {
 
 			else if (main_plugin != editor_plugin_screen && (!ScriptEditor::get_singleton() || !ScriptEditor::get_singleton()->is_visible_in_tree() || ScriptEditor::get_singleton()->can_take_away_focus())) {
 				// update screen main_plugin
-
-				if (!changing_scene) {
-					if (editor_plugin_screen) {
-						editor_plugin_screen->make_visible(false);
-					}
-					editor_plugin_screen = main_plugin;
-					editor_plugin_screen->edit(current_obj);
-
-					editor_plugin_screen->make_visible(true);
-
-					int plugin_count = editor_data.get_editor_plugin_count();
-					for (int i = 0; i < plugin_count; i++) {
-						editor_data.get_editor_plugin(i)->notify_main_screen_changed(editor_plugin_screen->get_name());
-					}
-
-					for (int i = 0; i < editor_table.size(); i++) {
-						main_editor_buttons[i]->set_pressed(editor_table[i] == main_plugin);
-					}
-				}
-
+				_editor_select(plugin_index);
+				main_plugin->edit(current_obj);
 			} else {
 				editor_plugin_screen->edit(current_obj);
 			}
@@ -2695,6 +2693,9 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 		case FILE_EXPLORE_ANDROID_BUILD_TEMPLATES: {
 			OS::get_singleton()->shell_open("file://" + ProjectSettings::get_singleton()->get_resource_path().plus_file("android"));
 		} break;
+		case RUN_RELOAD_CURRENT_PROJECT: {
+			restart_editor();
+		} break;
 		case FILE_QUIT:
 		case RUN_PROJECT_MANAGER: {
 			if (!p_confirmed) {
@@ -2745,10 +2746,10 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 			settings_config_dialog->popup_edit_settings();
 		} break;
 		case SETTINGS_EDITOR_DATA_FOLDER: {
-			OS::get_singleton()->shell_open(String("file://") + EditorSettings::get_singleton()->get_data_dir());
+			OS::get_singleton()->shell_open(String("file://") + EditorPaths::get_singleton()->get_data_dir());
 		} break;
 		case SETTINGS_EDITOR_CONFIG_FOLDER: {
-			OS::get_singleton()->shell_open(String("file://") + EditorSettings::get_singleton()->get_settings_dir());
+			OS::get_singleton()->shell_open(String("file://") + EditorPaths::get_singleton()->get_config_dir());
 		} break;
 		case SETTINGS_MANAGE_EXPORT_TEMPLATES: {
 			export_template_manager->popup_manager();
@@ -2826,7 +2827,7 @@ void EditorNode::_request_screenshot() {
 }
 
 void EditorNode::_screenshot(bool p_use_utc) {
-	String name = "editor_screenshot_" + OS::get_singleton()->get_iso_date_time(p_use_utc).replace(":", "") + ".png";
+	String name = "editor_screenshot_" + Time::get_singleton()->get_datetime_string_from_system(p_use_utc).replace(":", "") + ".png";
 	NodePath path = String("user://") + name;
 	_save_screenshot(path);
 	if (EditorSettings::get_singleton()->get("interface/editor/automatically_open_screenshots")) {
@@ -2892,7 +2893,7 @@ void EditorNode::_exit_editor() {
 	_save_docks();
 
 	// Dim the editor window while it's quitting to make it clearer that it's busy
-	dim_editor(true, true);
+	dim_editor(true);
 
 	get_tree()->quit();
 }
@@ -3057,6 +3058,9 @@ void EditorNode::add_editor_plugin(EditorPlugin *p_editor, bool p_config_changed
 		} else if (singleton->gui_base->has_theme_icon(p_editor->get_name(), "EditorIcons")) {
 			tb->set_icon(singleton->gui_base->get_theme_icon(p_editor->get_name(), "EditorIcons"));
 		}
+
+		tb->add_theme_font_override("font", singleton->gui_base->get_theme_font("main_button_font", "EditorFonts"));
+		tb->add_theme_font_size_override("font_size", singleton->gui_base->get_theme_font_size("main_button_font_size", "EditorFonts"));
 
 		tb->set_name(p_editor->get_name());
 		singleton->main_editor_buttons.push_back(tb);
@@ -3731,6 +3735,7 @@ void EditorNode::register_editor_types() {
 	ResourceLoader::set_timestamp_on_load(true);
 	ResourceSaver::set_timestamp_on_save(true);
 
+	ClassDB::register_class<EditorPaths>();
 	ClassDB::register_class<EditorPlugin>();
 	ClassDB::register_class<EditorTranslationParserPlugin>();
 	ClassDB::register_class<EditorImportPlugin>();
@@ -3774,6 +3779,9 @@ void EditorNode::register_editor_types() {
 
 void EditorNode::unregister_editor_types() {
 	_init_callbacks.clear();
+	if (EditorPaths::get_singleton()) {
+		EditorPaths::free();
+	}
 }
 
 void EditorNode::stop_child_process(OS::ProcessID p_pid) {
@@ -5396,15 +5404,9 @@ void EditorNode::_open_imported() {
 	load_scene(open_import_request, true, false, true, true);
 }
 
-void EditorNode::dim_editor(bool p_dimming, bool p_force_dim) {
-	// Dimming can be forced regardless of the editor setting, which is useful when quitting the editor.
-	if ((p_force_dim || EditorSettings::get_singleton()->get("interface/editor/dim_editor_on_dialog_popup")) && p_dimming) {
-		dimmed = true;
-		gui_base->set_modulate(Color(0.5, 0.5, 0.5));
-	} else {
-		dimmed = false;
-		gui_base->set_modulate(Color(1, 1, 1));
-	}
+void EditorNode::dim_editor(bool p_dimming) {
+	dimmed = p_dimming;
+	gui_base->set_modulate(p_dimming ? Color(0.5, 0.5, 0.5) : Color(1, 1, 1));
 }
 
 bool EditorNode::is_editor_dimmed() const {
@@ -6289,6 +6291,7 @@ EditorNode::EditorNode() {
 	tool_menu->add_item(TTR("Orphan Resource Explorer..."), TOOLS_ORPHAN_RESOURCES);
 
 	p->add_separator();
+	p->add_item(TTR("Reload Current Project"), RUN_RELOAD_CURRENT_PROJECT);
 #ifdef OSX_ENABLED
 	p->add_shortcut(ED_SHORTCUT("editor/quit_to_project_list", TTR("Quit to Project List"), KEY_MASK_SHIFT + KEY_MASK_ALT + KEY_Q), RUN_PROJECT_MANAGER, true);
 #else
@@ -6617,7 +6620,7 @@ EditorNode::EditorNode() {
 	version_btn->set_text(VERSION_FULL_CONFIG);
 	String hash = String(VERSION_HASH);
 	if (hash.length() != 0) {
-		hash = "." + hash.left(9);
+		hash = " " + vformat("[%s]", hash.left(9));
 	}
 	// Set the text to copy in metadata as it slightly differs from the button's text.
 	version_btn->set_meta(META_TEXT_TO_COPY, "v" VERSION_FULL_BUILD + hash);
@@ -6807,8 +6810,8 @@ EditorNode::EditorNode() {
 	add_editor_plugin(memnew(TilesEditorPlugin(this)));
 	add_editor_plugin(memnew(SpriteFramesEditorPlugin(this)));
 	add_editor_plugin(memnew(TextureRegionEditorPlugin(this)));
-	add_editor_plugin(memnew(GIProbeEditorPlugin(this)));
-	add_editor_plugin(memnew(BakedLightmapEditorPlugin(this)));
+	add_editor_plugin(memnew(VoxelGIEditorPlugin(this)));
+	add_editor_plugin(memnew(LightmapGIEditorPlugin(this)));
 	add_editor_plugin(memnew(OccluderInstance3DEditorPlugin(this)));
 	add_editor_plugin(memnew(Path2DEditorPlugin(this)));
 	add_editor_plugin(memnew(Path3DEditorPlugin(this)));

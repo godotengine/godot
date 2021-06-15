@@ -976,7 +976,7 @@
 			</argument>
 			<description>
 				Returns [code]true[/code] if text buffer is configured to display hexadecimal codes in place of invalid characters.
-				Note: If set to [code]false[/code], nothing is displayed  in place of invalid characters.
+				Note: If set to [code]false[/code], nothing is displayed in place of invalid characters.
 			</description>
 		</method>
 		<method name="shaped_text_get_range" qualifiers="const">

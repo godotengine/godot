@@ -155,13 +155,13 @@ SceneStringNames::SceneStringNames() {
 	area_entered = StaticCString::create("area_entered");
 	area_exited = StaticCString::create("area_exited");
 
-	has_point = StaticCString::create("has_point");
+	_has_point = StaticCString::create("_has_point");
 
 	line_separation = StaticCString::create("line_separation");
 
-	get_drag_data = StaticCString::create("get_drag_data");
-	drop_data = StaticCString::create("drop_data");
-	can_drop_data = StaticCString::create("can_drop_data");
+	_get_drag_data = StaticCString::create("_get_drag_data");
+	_drop_data = StaticCString::create("_drop_data");
+	_can_drop_data = StaticCString::create("_can_drop_data");
 
 	_im_update = StaticCString::create("_im_update"); // Sprite3D
 
@@ -175,6 +175,7 @@ SceneStringNames::SceneStringNames() {
 	_toggled = StaticCString::create("_toggled");
 
 	frame_changed = StaticCString::create("frame_changed");
+	texture_changed = StaticCString::create("texture_changed");
 
 	playback_speed = StaticCString::create("playback/speed");
 	playback_active = StaticCString::create("playback/active");

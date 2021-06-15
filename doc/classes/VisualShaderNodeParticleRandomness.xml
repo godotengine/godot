@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="VisualShaderNodeParticleRandomness" inherits="VisualShaderNode" version="4.0">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+	</methods>
+	<members>
+		<member name="op_type" type="int" setter="set_op_type" getter="get_op_type" enum="VisualShaderNodeParticleRandomness.OpType" default="0">
+		</member>
+	</members>
+	<constants>
+		<constant name="OP_TYPE_SCALAR" value="0" enum="OpType">
+		</constant>
+		<constant name="OP_TYPE_VECTOR" value="1" enum="OpType">
+		</constant>
+		<constant name="OP_TYPE_MAX" value="2" enum="OpType">
+		</constant>
+	</constants>
+</class>

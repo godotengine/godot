@@ -1,7 +1,7 @@
 #define M_PI 3.14159265359
 #define ROUGHNESS_MAX_LOD 5
 
-#define MAX_GI_PROBES 8
+#define MAX_VOXEL_GI_INSTANCES 8
 
 #if defined(has_GL_KHR_shader_subgroup_ballot) && defined(has_GL_KHR_shader_subgroup_arithmetic)
 
@@ -15,7 +15,7 @@
 #include "cluster_data_inc.glsl"
 #include "decal_data_inc.glsl"
 
-#if !defined(MODE_RENDER_DEPTH) || defined(MODE_RENDER_MATERIAL) || defined(MODE_RENDER_SDF) || defined(MODE_RENDER_NORMAL_ROUGHNESS) || defined(MODE_RENDER_GIPROBE) || defined(TANGENT_USED) || defined(NORMAL_MAP_USED)
+#if !defined(MODE_RENDER_DEPTH) || defined(MODE_RENDER_MATERIAL) || defined(MODE_RENDER_SDF) || defined(MODE_RENDER_NORMAL_ROUGHNESS) || defined(MODE_RENDER_VOXEL_GI) || defined(TANGENT_USED) || defined(NORMAL_MAP_USED)
 #ifndef NORMAL_USED
 #define NORMAL_USED
 #endif
@@ -57,7 +57,7 @@ layout(set = 0, binding = 2) uniform sampler shadow_sampler;
 #define INSTANCE_FLAGS_USE_LIGHTMAP_CAPTURE (1 << 8)
 #define INSTANCE_FLAGS_USE_LIGHTMAP (1 << 9)
 #define INSTANCE_FLAGS_USE_SH_LIGHTMAP (1 << 10)
-#define INSTANCE_FLAGS_USE_GIPROBE (1 << 11)
+#define INSTANCE_FLAGS_USE_VOXEL_GI (1 << 11)
 #define INSTANCE_FLAGS_MULTIMESH (1 << 12)
 #define INSTANCE_FLAGS_MULTIMESH_FORMAT_2D (1 << 13)
 #define INSTANCE_FLAGS_MULTIMESH_HAS_COLOR (1 << 14)
@@ -122,7 +122,7 @@ layout(set = 0, binding = 12, std430) restrict readonly buffer GlobalVariableDat
 }
 global_variables;
 
-struct SDFGIProbeCascadeData {
+struct SDFVoxelGICascadeData {
 	vec3 position;
 	float to_probe;
 	ivec3 probe_world_offset;
@@ -153,7 +153,7 @@ layout(set = 0, binding = 13, std140) uniform SDFGI {
 	vec3 cascade_probe_size;
 	uint pad5;
 
-	SDFGIProbeCascadeData cascades[SDFGI_MAX_CASCADES];
+	SDFVoxelGICascadeData cascades[SDFGI_MAX_CASCADES];
 }
 sdfgi;
 
@@ -275,7 +275,7 @@ layout(set = 1, binding = 5) uniform texture2D directional_shadow_atlas;
 
 layout(set = 1, binding = 6) uniform texture2DArray lightmap_textures[MAX_LIGHTMAP_TEXTURES];
 
-layout(set = 1, binding = 7) uniform texture3D gi_probe_textures[MAX_GI_PROBES];
+layout(set = 1, binding = 7) uniform texture3D voxel_gi_textures[MAX_VOXEL_GI_INSTANCES];
 
 layout(set = 1, binding = 8, std430) buffer restrict readonly ClusterBuffer {
 	uint data[];
@@ -306,7 +306,7 @@ layout(set = 1, binding = 14) uniform texture2D reflection_buffer;
 layout(set = 1, binding = 15) uniform texture2DArray sdfgi_lightprobe_texture;
 layout(set = 1, binding = 16) uniform texture3D sdfgi_occlusion_cascades;
 
-struct GIProbeData {
+struct VoxelGIData {
 	mat4 xform;
 	vec3 bounds;
 	float dynamic_range;
@@ -322,10 +322,10 @@ struct GIProbeData {
 	uint mipmaps;
 };
 
-layout(set = 1, binding = 17, std140) uniform GIProbes {
-	GIProbeData data[MAX_GI_PROBES];
+layout(set = 1, binding = 17, std140) uniform VoxelGIs {
+	VoxelGIData data[MAX_VOXEL_GI_INSTANCES];
 }
-gi_probes;
+voxel_gi_instances;
 
 layout(set = 1, binding = 18) uniform texture3D volumetric_fog_texture;
 

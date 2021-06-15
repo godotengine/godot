@@ -33,8 +33,8 @@
 		[/gdscript]
 		[csharp]
 		// Array concatenation is not possible with C# arrays, but is with Godot.Collections.Array.
-		var array1 = new Godot.Collections.Array("One", 2);
-		var array2 = new Godot.Collections.Array(3, "Four");
+		var array1 = new Godot.Collections.Array{"One", 2};
+		var array2 = new Godot.Collections.Array{3, "Four"};
 		GD.Print(array1 + array2); // Prints [One, 2, 3, Four]
 		[/csharp]
 		[/codeblocks]
@@ -615,7 +615,7 @@
 			<argument index="0" name="func" type="Callable">
 			</argument>
 			<description>
-				Sorts the array using a custom method. The custom method receives two arguments (a pair of elements from the array) and must return either [code]true[/code] or [code]false[/code].
+				Sorts the array using a custom method. The custom method receives two arguments (a pair of elements from the array) and must return either [code]true[/code] or [code]false[/code]. For two elements [code]a[/code] and [code]b[/code], if the given method returns [code]true[/code], element [code]b[/code] will be after element [code]a[/code] in the array.
 				[b]Note:[/b] you cannot randomize the return value as the heapsort algorithm expects a deterministic result. Doing so will result in unexpected behavior.
 				[codeblocks]
 				[gdscript]

@@ -515,7 +515,9 @@ void Control::_notification(int p_notification) {
 			get_viewport()->_gui_remove_control(this);
 		} break;
 		case NOTIFICATION_READY: {
+#ifdef DEBUG_ENABLED
 			connect("ready", callable_mp(this, &Control::_clear_size_warning), varray(), CONNECT_DEFERRED | CONNECT_ONESHOT);
+#endif
 		} break;
 
 		case NOTIFICATION_ENTER_CANVAS: {
@@ -660,7 +662,7 @@ bool Control::has_point(const Point2 &p_point) const {
 		Variant v = p_point;
 		const Variant *p = &v;
 		Callable::CallError ce;
-		Variant ret = get_script_instance()->call(SceneStringNames::get_singleton()->has_point, &p, 1, ce);
+		Variant ret = get_script_instance()->call(SceneStringNames::get_singleton()->_has_point, &p, 1, ce);
 		if (ce.error == Callable::CallError::CALL_OK) {
 			return ret;
 		}
@@ -685,7 +687,7 @@ Variant Control::get_drag_data(const Point2 &p_point) {
 		Object *obj = ObjectDB::get_instance(data.drag_owner);
 		if (obj) {
 			Control *c = Object::cast_to<Control>(obj);
-			return c->call("get_drag_data_fw", p_point, this);
+			return c->call("_get_drag_data_fw", p_point, this);
 		}
 	}
 
@@ -693,7 +695,7 @@ Variant Control::get_drag_data(const Point2 &p_point) {
 		Variant v = p_point;
 		const Variant *p = &v;
 		Callable::CallError ce;
-		Variant ret = get_script_instance()->call(SceneStringNames::get_singleton()->get_drag_data, &p, 1, ce);
+		Variant ret = get_script_instance()->call(SceneStringNames::get_singleton()->_get_drag_data, &p, 1, ce);
 		if (ce.error == Callable::CallError::CALL_OK) {
 			return ret;
 		}
@@ -707,7 +709,7 @@ bool Control::can_drop_data(const Point2 &p_point, const Variant &p_data) const 
 		Object *obj = ObjectDB::get_instance(data.drag_owner);
 		if (obj) {
 			Control *c = Object::cast_to<Control>(obj);
-			return c->call("can_drop_data_fw", p_point, p_data, this);
+			return c->call("_can_drop_data_fw", p_point, p_data, this);
 		}
 	}
 
@@ -715,7 +717,7 @@ bool Control::can_drop_data(const Point2 &p_point, const Variant &p_data) const 
 		Variant v = p_point;
 		const Variant *p[2] = { &v, &p_data };
 		Callable::CallError ce;
-		Variant ret = get_script_instance()->call(SceneStringNames::get_singleton()->can_drop_data, p, 2, ce);
+		Variant ret = get_script_instance()->call(SceneStringNames::get_singleton()->_can_drop_data, p, 2, ce);
 		if (ce.error == Callable::CallError::CALL_OK) {
 			return ret;
 		}
@@ -729,7 +731,7 @@ void Control::drop_data(const Point2 &p_point, const Variant &p_data) {
 		Object *obj = ObjectDB::get_instance(data.drag_owner);
 		if (obj) {
 			Control *c = Object::cast_to<Control>(obj);
-			c->call("drop_data_fw", p_point, p_data, this);
+			c->call("_drop_data_fw", p_point, p_data, this);
 			return;
 		}
 	}
@@ -738,7 +740,7 @@ void Control::drop_data(const Point2 &p_point, const Variant &p_data) {
 		Variant v = p_point;
 		const Variant *p[2] = { &v, &p_data };
 		Callable::CallError ce;
-		Variant ret = get_script_instance()->call(SceneStringNames::get_singleton()->drop_data, p, 2, ce);
+		Variant ret = get_script_instance()->call(SceneStringNames::get_singleton()->_drop_data, p, 2, ce);
 		if (ce.error == Callable::CallError::CALL_OK) {
 			return;
 		}
@@ -1579,8 +1581,8 @@ void Control::set_rect(const Rect2 &p_rect) {
 
 void Control::_set_size(const Size2 &p_size) {
 #ifdef DEBUG_ENABLED
-	if (data.size_warning) {
-		WARN_PRINT("Adjusting the size of Control nodes before they are fully initialized is unreliable. Consider deferring it with set_deferred().");
+	if (data.size_warning && (data.anchor[SIDE_LEFT] != data.anchor[SIDE_RIGHT] || data.anchor[SIDE_TOP] != data.anchor[SIDE_BOTTOM])) {
+		WARN_PRINT("Nodes with non-equal opposite anchors will have their size overriden after _ready(). \nIf you want to set size, change the anchors or consider using set_deferred().");
 	}
 #endif
 	set_size(p_size);
@@ -2773,12 +2775,12 @@ void Control::_bind_methods() {
 	BIND_VMETHOD(MethodInfo("_gui_input", PropertyInfo(Variant::OBJECT, "event", PROPERTY_HINT_RESOURCE_TYPE, "InputEvent")));
 	BIND_VMETHOD(MethodInfo(Variant::VECTOR2, "_get_minimum_size"));
 
-	MethodInfo get_drag_data = MethodInfo("get_drag_data", PropertyInfo(Variant::VECTOR2, "position"));
+	MethodInfo get_drag_data = MethodInfo("_get_drag_data", PropertyInfo(Variant::VECTOR2, "position"));
 	get_drag_data.return_val.usage |= PROPERTY_USAGE_NIL_IS_VARIANT;
 	BIND_VMETHOD(get_drag_data);
 
-	BIND_VMETHOD(MethodInfo(Variant::BOOL, "can_drop_data", PropertyInfo(Variant::VECTOR2, "position"), PropertyInfo(Variant::NIL, "data")));
-	BIND_VMETHOD(MethodInfo("drop_data", PropertyInfo(Variant::VECTOR2, "position"), PropertyInfo(Variant::NIL, "data")));
+	BIND_VMETHOD(MethodInfo(Variant::BOOL, "_can_drop_data", PropertyInfo(Variant::VECTOR2, "position"), PropertyInfo(Variant::NIL, "data")));
+	BIND_VMETHOD(MethodInfo("_drop_data", PropertyInfo(Variant::VECTOR2, "position"), PropertyInfo(Variant::NIL, "data")));
 	BIND_VMETHOD(MethodInfo(
 			PropertyInfo(Variant::OBJECT, "control", PROPERTY_HINT_RESOURCE_TYPE, "Control"),
 			"_make_custom_tooltip", PropertyInfo(Variant::STRING, "for_text")));
@@ -2801,7 +2803,7 @@ void Control::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "grow_vertical", PROPERTY_HINT_ENUM, "Begin,End,Both"), "set_v_grow_direction", "get_v_grow_direction");
 
 	ADD_GROUP("Layout Direction", "layout_");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "layout_direction", PROPERTY_HINT_ENUM, "Inherited,Locale,Left-to-right,Right-to-left"), "set_layout_direction", "get_layout_direction");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "layout_direction", PROPERTY_HINT_ENUM, "Inherited,Locale,Left-to-Right,Right-to-Left"), "set_layout_direction", "get_layout_direction");
 
 	ADD_GROUP("Rect", "rect_");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "rect_position", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR), "_set_position", "get_position");
@@ -2828,7 +2830,7 @@ void Control::_bind_methods() {
 
 	ADD_GROUP("Mouse", "mouse_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "mouse_filter", PROPERTY_HINT_ENUM, "Stop,Pass,Ignore"), "set_mouse_filter", "get_mouse_filter");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "mouse_default_cursor_shape", PROPERTY_HINT_ENUM, "Arrow,Ibeam,Pointing hand,Cross,Wait,Busy,Drag,Can drop,Forbidden,Vertical resize,Horizontal resize,Secondary diagonal resize,Main diagonal resize,Move,Vertical split,Horizontal split,Help"), "set_default_cursor_shape", "get_default_cursor_shape");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "mouse_default_cursor_shape", PROPERTY_HINT_ENUM, "Arrow,I-Beam,Pointing Hand,Cross,Wait,Busy,Drag,Can Drop,Forbidden,Vertical Resize,Horizontal Resize,Secondary Diagonal Resize,Main Diagonal Resize,Move,Vertical Split,Horizontal Split,Help"), "set_default_cursor_shape", "get_default_cursor_shape");
 
 	ADD_GROUP("Size Flags", "size_flags_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "size_flags_horizontal", PROPERTY_HINT_FLAGS, "Fill,Expand,Shrink Center,Shrink End"), "set_h_size_flags", "get_h_size_flags");
@@ -2938,5 +2940,5 @@ void Control::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("minimum_size_changed"));
 	ADD_SIGNAL(MethodInfo("theme_changed"));
 
-	BIND_VMETHOD(MethodInfo(Variant::BOOL, "has_point", PropertyInfo(Variant::VECTOR2, "point")));
+	BIND_VMETHOD(MethodInfo(Variant::BOOL, "_has_point", PropertyInfo(Variant::VECTOR2, "point")));
 }

@@ -257,6 +257,27 @@ namespace Godot
         }
 
         /// <summary>
+        /// Returns a new color with all components clamped between the
+        /// components of `min` and `max` using
+        /// <see cref="Mathf.Clamp(float, float, float)"/>.
+        /// </summary>
+        /// <param name="min">The color with minimum allowed values.</param>
+        /// <param name="max">The color with maximum allowed values.</param>
+        /// <returns>The color with all components clamped.</returns>
+        public Color Clamp(Color? min = null, Color? max = null)
+        {
+            Color minimum = min ?? new Color(0, 0, 0, 0);
+            Color maximum = max ?? new Color(1, 1, 1, 1);
+            return new Color
+            (
+                (float)Mathf.Clamp(r, minimum.r, maximum.r),
+                (float)Mathf.Clamp(g, minimum.g, maximum.g),
+                (float)Mathf.Clamp(b, minimum.b, maximum.b),
+                (float)Mathf.Clamp(a, minimum.a, maximum.a)
+            );
+        }
+
+        /// <summary>
         /// Returns a new color resulting from making this color darker
         /// by the specified ratio (on the range of 0 to 1).
         /// </summary>
@@ -989,12 +1010,12 @@ namespace Godot
 
         public override string ToString()
         {
-            return String.Format("{0},{1},{2},{3}", r.ToString(), g.ToString(), b.ToString(), a.ToString());
+            return String.Format("({0}, {1}, {2}, {3})", r.ToString(), g.ToString(), b.ToString(), a.ToString());
         }
 
         public string ToString(string format)
         {
-            return String.Format("{0},{1},{2},{3}", r.ToString(format), g.ToString(format), b.ToString(format), a.ToString(format));
+            return String.Format("({0}, {1}, {2}, {3})", r.ToString(format), g.ToString(format), b.ToString(format), a.ToString(format));
         }
     }
 }

@@ -289,7 +289,7 @@ void SoftBody3DSW::update_link_constants() {
 	}
 }
 
-void SoftBody3DSW::apply_nodes_transform(const Transform &p_transform) {
+void SoftBody3DSW::apply_nodes_transform(const Transform3D &p_transform) {
 	if (soft_mesh.is_null()) {
 		return;
 	}
@@ -684,7 +684,7 @@ void SoftBody3DSW::generate_bending_constraints(int p_distance) {
 //
 // This function takes in a list of interdependent Links and tries
 // to maximize the distance between calculation
-// of dependent links.  This increases the amount of parallelism that can
+// of dependent links. This increases the amount of parallelism that can
 // be exploited by out-of-order instruction processors with large but
 // (inevitably) finite instruction windows.
 //

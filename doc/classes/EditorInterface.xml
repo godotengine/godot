@@ -57,6 +57,12 @@
 				[b]Note:[/b] This returns the main editor control containing the whole editor, not the 2D or 3D viewports specifically.
 			</description>
 		</method>
+		<method name="get_editor_paths">
+			<return type="EditorPaths">
+			</return>
+			<description>
+			</description>
+		</method>
 		<method name="get_editor_scale" qualifiers="const">
 			<return type="float">
 			</return>

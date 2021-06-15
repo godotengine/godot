@@ -112,6 +112,8 @@ private:
 
 		Vector<Button> buttons;
 
+		Ref<Font> custom_font;
+
 		Cell() {
 			text_buf.instance();
 		}
@@ -290,6 +292,9 @@ public:
 	void set_custom_color(int p_column, const Color &p_color);
 	Color get_custom_color(int p_column) const;
 	void clear_custom_color(int p_column);
+
+	void set_custom_font(int p_column, const Ref<Font> &p_font);
+	Ref<Font> get_custom_font(int p_column) const;
 
 	void set_custom_bg_color(int p_column, const Color &p_color, bool p_bg_outline = false);
 	void clear_custom_bg_color(int p_column);
@@ -494,6 +499,8 @@ private:
 		Color guide_color;
 		Color drop_position_color;
 		Color relationship_line_color;
+		Color parent_hl_line_color;
+		Color children_hl_line_color;
 		Color custom_button_font_highlight;
 
 		int hseparation = 0;
@@ -502,6 +509,10 @@ private:
 		int button_margin = 0;
 		Point2 offset;
 		int draw_relationship_lines = 0;
+		int relationship_line_width = 0;
+		int parent_hl_line_width = 0;
+		int children_hl_line_width = 0;
+		int parent_hl_line_margin = 0;
 		int draw_guides = 0;
 		int scroll_border = 0;
 		int scroll_speed = 0;
@@ -574,6 +585,8 @@ private:
 	bool hide_folding = false;
 
 	int _count_selected_items(TreeItem *p_from) const;
+	bool _is_branch_selected(TreeItem *p_from) const;
+	bool _is_sibling_branch_selected(TreeItem *p_from) const;
 	void _go_left();
 	void _go_right();
 	void _go_down();

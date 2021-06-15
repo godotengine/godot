@@ -35,6 +35,9 @@
 #include "core/os/thread_safe.h"
 #include "servers/xr_server.h"
 
+// forward declaration
+struct BlitToScreen;
+
 /**
 	@author Bastiaan Olij <mux213@gmail.com>
 
@@ -47,8 +50,8 @@
 	Note that we may make this into a fully instantiable class for GDNative support.
 */
 
-class XRInterface : public Reference {
-	GDCLASS(XRInterface, Reference);
+class XRInterface : public RefCounted {
+	GDCLASS(XRInterface, RefCounted);
 
 public:
 	enum Capabilities { /* purely meta data, provides some info about what this interface supports */
@@ -105,17 +108,22 @@ public:
 	/** rendering and internal **/
 
 	virtual Size2 get_render_targetsize() = 0; /* returns the recommended render target size per eye for this device */
-	virtual bool is_stereo() = 0; /* returns true if this interface requires stereo rendering (for VR HMDs) or mono rendering (for mobile AR) */
-	virtual Transform get_transform_for_eye(XRInterface::Eyes p_eye, const Transform &p_cam_transform) = 0; /* get each eyes camera transform, also implement EYE_MONO */
-	virtual CameraMatrix get_projection_for_eye(XRInterface::Eyes p_eye, real_t p_aspect, real_t p_z_near, real_t p_z_far) = 0; /* get each eyes projection matrix */
-	virtual unsigned int get_external_texture_for_eye(XRInterface::Eyes p_eye); /* if applicable return external texture to render to */
-	virtual void commit_for_eye(XRInterface::Eyes p_eye, RID p_render_target, const Rect2 &p_screen_rect) = 0; /* output the left or right eye */
+	virtual uint32_t get_view_count() = 0; /* returns the view count we need (1 is monoscopic, 2 is stereoscopic but can be more) */
+	virtual Transform3D get_camera_transform() = 0; /* returns the position of our camera for updating our camera node. For monoscopic this is equal to the views transform, for stereoscopic this should be an average */
+	virtual Transform3D get_transform_for_view(uint32_t p_view, const Transform3D &p_cam_transform) = 0; /* get each views transform */
+	virtual CameraMatrix get_projection_for_view(uint32_t p_view, real_t p_aspect, real_t p_z_near, real_t p_z_far) = 0; /* get each view projection matrix */
+
+	virtual Vector<BlitToScreen> commit_views(RID p_render_target, const Rect2 &p_screen_rect) = 0; /* commit rendered views to the XR interface */
 
 	virtual void process() = 0;
 	virtual void notification(int p_what) = 0;
 
 	XRInterface();
 	~XRInterface();
+
+	// deprecated
+	virtual unsigned int get_external_texture_for_eye(XRInterface::Eyes p_eye); /* if applicable return external texture to render to */
+	virtual void commit_for_eye(XRInterface::Eyes p_eye, RID p_render_target, const Rect2 &p_screen_rect) = 0; /* output the left or right eye */
 };
 
 VARIANT_ENUM_CAST(XRInterface::Capabilities);

@@ -197,8 +197,8 @@ void Viewport::update_worlds() {
 }
 
 void Viewport::_collision_object_input_event(CollisionObject3D *p_object, Camera3D *p_camera, const Ref<InputEvent> &p_input_event, const Vector3 &p_pos, const Vector3 &p_normal, int p_shape) {
-	Transform object_transform = p_object->get_global_transform();
-	Transform camera_transform = p_camera->get_global_transform();
+	Transform3D object_transform = p_object->get_global_transform();
+	Transform3D camera_transform = p_camera->get_global_transform();
 	ObjectID id = p_object->get_instance_id();
 
 	//avoid sending the fake event unnecessarily if nothing really changed in the context
@@ -553,7 +553,7 @@ void Viewport::_notification(int p_what) {
 				RS::get_singleton()->multimesh_set_visible_instances(contact_3d_debug_multimesh, point_count);
 
 				for (int i = 0; i < point_count; i++) {
-					Transform point_transform;
+					Transform3D point_transform;
 					point_transform.origin = points[i];
 					RS::get_singleton()->multimesh_instance_set_transform(contact_3d_debug_multimesh, i, point_transform);
 				}
@@ -1341,19 +1341,19 @@ bool Viewport::is_camera_override_enabled() const {
 	return camera_override;
 }
 
-void Viewport::set_camera_override_transform(const Transform &p_transform) {
+void Viewport::set_camera_override_transform(const Transform3D &p_transform) {
 	if (camera_override) {
 		camera_override.transform = p_transform;
 		RenderingServer::get_singleton()->camera_set_transform(camera_override.rid, p_transform);
 	}
 }
 
-Transform Viewport::get_camera_override_transform() const {
+Transform3D Viewport::get_camera_override_transform() const {
 	if (camera_override) {
 		return camera_override.transform;
 	}
 
-	return Transform();
+	return Transform3D();
 }
 
 void Viewport::set_camera_override_perspective(float p_fovy_degrees, float p_z_near, float p_z_far) {
@@ -2550,6 +2550,8 @@ void Viewport::_gui_remove_control(Control *p_control) {
 }
 
 Window *Viewport::get_base_window() const {
+	ERR_FAIL_COND_V(!is_inside_tree(), nullptr);
+
 	Viewport *v = const_cast<Viewport *>(this);
 	Window *w = Object::cast_to<Window>(v);
 	while (!w) {
@@ -3339,6 +3341,7 @@ bool Viewport::is_input_handled() const {
 		return local_input_handled;
 	} else {
 		const Viewport *vp = this;
+		ERR_FAIL_COND_V(!is_inside_tree(), false);
 		while (true) {
 			if (Object::cast_to<Window>(vp)) {
 				break;
@@ -3604,8 +3607,8 @@ void Viewport::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "snap_2d_transforms_to_pixel"), "set_snap_2d_transforms_to_pixel", "is_snap_2d_transforms_to_pixel_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "snap_2d_vertices_to_pixel"), "set_snap_2d_vertices_to_pixel", "is_snap_2d_vertices_to_pixel_enabled");
 	ADD_GROUP("Rendering", "");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "msaa", PROPERTY_HINT_ENUM, "Disabled,2x,4x,8x,16x,AndroidVR 2x,AndroidVR 4x"), "set_msaa", "get_msaa");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "screen_space_aa", PROPERTY_HINT_ENUM, "Disabled,FXAA"), "set_screen_space_aa", "get_screen_space_aa");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "msaa", PROPERTY_HINT_ENUM, "Disabled (Fastest),2x (Fast),4x (Average),8x (Slow),16x (Slower)"), "set_msaa", "get_msaa");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "screen_space_aa", PROPERTY_HINT_ENUM, "Disabled (Fastest),FXAA (Fast)"), "set_screen_space_aa", "get_screen_space_aa");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_debanding"), "set_use_debanding", "is_using_debanding");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_occlusion_culling"), "set_use_occlusion_culling", "is_using_occlusion_culling");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "lod_threshold", PROPERTY_HINT_RANGE, "0,1024,0.1"), "set_lod_threshold", "get_lod_threshold");
@@ -3672,9 +3675,9 @@ void Viewport::_bind_methods() {
 	BIND_ENUM_CONSTANT(DEBUG_DRAW_OVERDRAW);
 	BIND_ENUM_CONSTANT(DEBUG_DRAW_WIREFRAME);
 	BIND_ENUM_CONSTANT(DEBUG_DRAW_NORMAL_BUFFER);
-	BIND_ENUM_CONSTANT(DEBUG_DRAW_GI_PROBE_ALBEDO);
-	BIND_ENUM_CONSTANT(DEBUG_DRAW_GI_PROBE_LIGHTING);
-	BIND_ENUM_CONSTANT(DEBUG_DRAW_GI_PROBE_EMISSION);
+	BIND_ENUM_CONSTANT(DEBUG_DRAW_VOXEL_GI_ALBEDO);
+	BIND_ENUM_CONSTANT(DEBUG_DRAW_VOXEL_GI_LIGHTING);
+	BIND_ENUM_CONSTANT(DEBUG_DRAW_VOXEL_GI_EMISSION);
 	BIND_ENUM_CONSTANT(DEBUG_DRAW_SHADOW_ATLAS);
 	BIND_ENUM_CONSTANT(DEBUG_DRAW_DIRECTIONAL_SHADOW_ATLAS);
 	BIND_ENUM_CONSTANT(DEBUG_DRAW_SCENE_LUMINANCE);

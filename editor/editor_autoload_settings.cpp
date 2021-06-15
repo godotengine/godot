@@ -749,9 +749,9 @@ void EditorAutoloadSettings::autoload_remove(const String &p_name) {
 void EditorAutoloadSettings::_bind_methods() {
 	ClassDB::bind_method("_autoload_open", &EditorAutoloadSettings::_autoload_open);
 
-	ClassDB::bind_method("get_drag_data_fw", &EditorAutoloadSettings::get_drag_data_fw);
-	ClassDB::bind_method("can_drop_data_fw", &EditorAutoloadSettings::can_drop_data_fw);
-	ClassDB::bind_method("drop_data_fw", &EditorAutoloadSettings::drop_data_fw);
+	ClassDB::bind_method("_get_drag_data_fw", &EditorAutoloadSettings::get_drag_data_fw);
+	ClassDB::bind_method("_can_drop_data_fw", &EditorAutoloadSettings::can_drop_data_fw);
+	ClassDB::bind_method("_drop_data_fw", &EditorAutoloadSettings::drop_data_fw);
 
 	ClassDB::bind_method("update_autoload", &EditorAutoloadSettings::update_autoload);
 	ClassDB::bind_method("autoload_add", &EditorAutoloadSettings::autoload_add);

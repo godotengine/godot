@@ -63,7 +63,7 @@
 			</description>
 		</method>
 		<method name="get_hmd_transform">
-			<return type="Transform">
+			<return type="Transform3D">
 			</return>
 			<description>
 				Returns the primary interface's transformation.
@@ -96,7 +96,7 @@
 			<return type="int">
 			</return>
 			<description>
-				Returns the absolute timestamp (in μs) of the last [XRServer] commit of the AR/VR eyes to [RenderingServer]. The value comes from an internal call to [method OS.get_ticks_usec].
+				Returns the absolute timestamp (in μs) of the last [XRServer] commit of the AR/VR eyes to [RenderingServer]. The value comes from an internal call to [method Time.get_ticks_usec].
 			</description>
 		</method>
 		<method name="get_last_frame_usec">
@@ -110,11 +110,11 @@
 			<return type="int">
 			</return>
 			<description>
-				Returns the absolute timestamp (in μs) of the last [XRServer] process callback. The value comes from an internal call to [method OS.get_ticks_usec].
+				Returns the absolute timestamp (in μs) of the last [XRServer] process callback. The value comes from an internal call to [method Time.get_ticks_usec].
 			</description>
 		</method>
 		<method name="get_reference_frame" qualifiers="const">
-			<return type="Transform">
+			<return type="Transform3D">
 			</return>
 			<description>
 				Returns the reference frame transform. Mostly used internally and exposed for GDNative build interfaces.

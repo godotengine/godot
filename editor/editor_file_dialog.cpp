@@ -30,7 +30,7 @@
 
 #include "editor_file_dialog.h"
 
-#include "core/os/file_access.h"
+#include "core/io/file_access.h"
 #include "core/os/keyboard.h"
 #include "core/os/os.h"
 #include "core/string/print_string.h"
@@ -294,6 +294,9 @@ void EditorFileDialog::_post_popup() {
 			if (res && name == "res://") {
 				name = "/";
 			} else {
+				if (name.ends_with("/")) {
+					name = name.substr(0, name.length() - 1);
+				}
 				name = name.get_file() + "/";
 			}
 			bool exists = dir_access->dir_exists(recentd[i]);

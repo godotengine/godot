@@ -30,7 +30,7 @@
 
 #include "marshalls.h"
 
-#include "core/object/reference.h"
+#include "core/object/ref_counted.h"
 #include "core/os/keyboard.h"
 #include "core/string/print_string.h"
 
@@ -279,9 +279,9 @@ Error decode_variant(Variant &r_variant, const uint8_t *p_buffer, int p_len, int
 			}
 
 		} break;
-		case Variant::QUAT: {
+		case Variant::QUATERNION: {
 			ERR_FAIL_COND_V(len < 4 * 4, ERR_INVALID_DATA);
-			Quat val;
+			Quaternion val;
 			val.x = decode_float(&buf[0]);
 			val.y = decode_float(&buf[4]);
 			val.z = decode_float(&buf[8]);
@@ -325,9 +325,9 @@ Error decode_variant(Variant &r_variant, const uint8_t *p_buffer, int p_len, int
 			}
 
 		} break;
-		case Variant::TRANSFORM: {
+		case Variant::TRANSFORM3D: {
 			ERR_FAIL_COND_V(len < 4 * 12, ERR_INVALID_DATA);
-			Transform val;
+			Transform3D val;
 			for (int i = 0; i < 3; i++) {
 				for (int j = 0; j < 3; j++) {
 					val.basis.elements[i][j] = decode_float(&buf[(i * 3 + j) * 4]);
@@ -489,8 +489,8 @@ Error decode_variant(Variant &r_variant, const uint8_t *p_buffer, int p_len, int
 						obj->set(str, value);
 					}
 
-					if (Object::cast_to<Reference>(obj)) {
-						REF ref = REF(Object::cast_to<Reference>(obj));
+					if (Object::cast_to<RefCounted>(obj)) {
+						REF ref = REF(Object::cast_to<RefCounted>(obj));
 						r_variant = ref;
 					} else {
 						r_variant = obj;
@@ -889,7 +889,7 @@ Error encode_variant(const Variant &p_variant, uint8_t *r_buffer, int &r_len, bo
 			// Test for potential wrong values sent by the debugger when it breaks.
 			Object *obj = p_variant.get_validated_object();
 			if (!obj) {
-				// Object is invalid, send a nullptr  instead.
+				// Object is invalid, send a nullptr instead.
 				if (buf) {
 					encode_uint32(Variant::NIL, buf);
 				}
@@ -1099,9 +1099,9 @@ Error encode_variant(const Variant &p_variant, uint8_t *r_buffer, int &r_len, bo
 			r_len += 4 * 4;
 
 		} break;
-		case Variant::QUAT: {
+		case Variant::QUATERNION: {
 			if (buf) {
-				Quat q = p_variant;
+				Quaternion q = p_variant;
 				encode_float(q.x, &buf[0]);
 				encode_float(q.y, &buf[4]);
 				encode_float(q.z, &buf[8]);
@@ -1138,9 +1138,9 @@ Error encode_variant(const Variant &p_variant, uint8_t *r_buffer, int &r_len, bo
 			r_len += 9 * 4;
 
 		} break;
-		case Variant::TRANSFORM: {
+		case Variant::TRANSFORM3D: {
 			if (buf) {
-				Transform val = p_variant;
+				Transform3D val = p_variant;
 				for (int i = 0; i < 3; i++) {
 					for (int j = 0; j < 3; j++) {
 						memcpy(&buf[(i * 3 + j) * 4], &val.basis.elements[i][j], sizeof(float));

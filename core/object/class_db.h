@@ -97,6 +97,8 @@ public:
 	enum APIType {
 		API_CORE,
 		API_EDITOR,
+		API_EXTENSION,
+		API_EDITOR_EXTENSION,
 		API_NONE
 	};
 
@@ -114,6 +116,8 @@ public:
 		APIType api = API_NONE;
 		ClassInfo *inherits_ptr = nullptr;
 		void *class_ptr = nullptr;
+
+		ObjectNativeExtension *native_extension = nullptr;
 
 		HashMap<StringName, MethodBind *> method_map;
 		HashMap<StringName, int> constant_map;
@@ -199,6 +203,8 @@ public:
 		//nothing
 	}
 
+	static void register_extension_class(ObjectNativeExtension *p_extension);
+
 	template <class T>
 	static Object *_create_ptr_func() {
 		return T::create();
@@ -226,6 +232,7 @@ public:
 	static bool is_parent_class(const StringName &p_class, const StringName &p_inherits);
 	static bool can_instance(const StringName &p_class);
 	static Object *instance(const StringName &p_class);
+	static void instance_get_native_extension_data(ObjectNativeExtension **r_extension, void **r_extension_instance);
 	static APIType get_api_type(const StringName &p_class);
 
 	static uint64_t get_api_hash(APIType p_api);
@@ -333,6 +340,8 @@ public:
 
 		return bind;
 	}
+
+	static void bind_method_custom(const StringName &p_class, MethodBind *p_method);
 
 	static void add_signal(StringName p_class, const MethodInfo &p_signal);
 	static bool has_signal(StringName p_class, StringName p_signal, bool p_no_inheritance = false);

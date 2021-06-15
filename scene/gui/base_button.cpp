@@ -98,17 +98,14 @@ void BaseButton::_notification(int p_what) {
 	}
 
 	if (p_what == NOTIFICATION_FOCUS_ENTER) {
-		status.hovering = true;
 		update();
 	}
 
 	if (p_what == NOTIFICATION_FOCUS_EXIT) {
 		if (status.press_attempt) {
 			status.press_attempt = false;
-			status.hovering = false;
 			update();
 		} else if (status.hovering) {
-			status.hovering = false;
 			update();
 		}
 	}
@@ -175,10 +172,9 @@ void BaseButton::on_action_event(Ref<InputEvent> p_event) {
 				status.hovering = false;
 			}
 		}
-		// pressed state should be correct with button_up signal
-		emit_signal("button_up");
 		status.press_attempt = false;
 		status.pressing_inside = false;
+		emit_signal("button_up");
 	}
 
 	update();

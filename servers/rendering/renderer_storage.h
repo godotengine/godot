@@ -268,14 +268,14 @@ public:
 	virtual int multimesh_get_instance_count(RID p_multimesh) const = 0;
 
 	virtual void multimesh_set_mesh(RID p_multimesh, RID p_mesh) = 0;
-	virtual void multimesh_instance_set_transform(RID p_multimesh, int p_index, const Transform &p_transform) = 0;
+	virtual void multimesh_instance_set_transform(RID p_multimesh, int p_index, const Transform3D &p_transform) = 0;
 	virtual void multimesh_instance_set_transform_2d(RID p_multimesh, int p_index, const Transform2D &p_transform) = 0;
 	virtual void multimesh_instance_set_color(RID p_multimesh, int p_index, const Color &p_color) = 0;
 	virtual void multimesh_instance_set_custom_data(RID p_multimesh, int p_index, const Color &p_color) = 0;
 
 	virtual RID multimesh_get_mesh(RID p_multimesh) const = 0;
 
-	virtual Transform multimesh_instance_get_transform(RID p_multimesh, int p_index) const = 0;
+	virtual Transform3D multimesh_instance_get_transform(RID p_multimesh, int p_index) const = 0;
 	virtual Transform2D multimesh_instance_get_transform_2d(RID p_multimesh, int p_index) const = 0;
 	virtual Color multimesh_instance_get_color(RID p_multimesh, int p_index) const = 0;
 	virtual Color multimesh_instance_get_custom_data(RID p_multimesh, int p_index) const = 0;
@@ -313,8 +313,8 @@ public:
 
 	virtual void skeleton_allocate_data(RID p_skeleton, int p_bones, bool p_2d_skeleton = false) = 0;
 	virtual int skeleton_get_bone_count(RID p_skeleton) const = 0;
-	virtual void skeleton_bone_set_transform(RID p_skeleton, int p_bone, const Transform &p_transform) = 0;
-	virtual Transform skeleton_bone_get_transform(RID p_skeleton, int p_bone) const = 0;
+	virtual void skeleton_bone_set_transform(RID p_skeleton, int p_bone, const Transform3D &p_transform) = 0;
+	virtual Transform3D skeleton_bone_get_transform(RID p_skeleton, int p_bone) const = 0;
 	virtual void skeleton_bone_set_transform_2d(RID p_skeleton, int p_bone, const Transform2D &p_transform) = 0;
 	virtual Transform2D skeleton_bone_get_transform_2d(RID p_skeleton, int p_bone) const = 0;
 	virtual void skeleton_set_base_transform_2d(RID p_skeleton, const Transform2D &p_base_transform) = 0;
@@ -413,53 +413,53 @@ public:
 
 	virtual AABB decal_get_aabb(RID p_decal) const = 0;
 
-	/* GI PROBE API */
+	/* VOXEL GI API */
 
-	virtual RID gi_probe_allocate() = 0;
-	virtual void gi_probe_initialize(RID p_rid) = 0;
+	virtual RID voxel_gi_allocate() = 0;
+	virtual void voxel_gi_initialize(RID p_rid) = 0;
 
-	virtual void gi_probe_allocate_data(RID p_gi_probe, const Transform &p_to_cell_xform, const AABB &p_aabb, const Vector3i &p_octree_size, const Vector<uint8_t> &p_octree_cells, const Vector<uint8_t> &p_data_cells, const Vector<uint8_t> &p_distance_field, const Vector<int> &p_level_counts) = 0;
+	virtual void voxel_gi_allocate_data(RID p_voxel_gi, const Transform3D &p_to_cell_xform, const AABB &p_aabb, const Vector3i &p_octree_size, const Vector<uint8_t> &p_octree_cells, const Vector<uint8_t> &p_data_cells, const Vector<uint8_t> &p_distance_field, const Vector<int> &p_level_counts) = 0;
 
-	virtual AABB gi_probe_get_bounds(RID p_gi_probe) const = 0;
-	virtual Vector3i gi_probe_get_octree_size(RID p_gi_probe) const = 0;
-	virtual Vector<uint8_t> gi_probe_get_octree_cells(RID p_gi_probe) const = 0;
-	virtual Vector<uint8_t> gi_probe_get_data_cells(RID p_gi_probe) const = 0;
-	virtual Vector<uint8_t> gi_probe_get_distance_field(RID p_gi_probe) const = 0;
+	virtual AABB voxel_gi_get_bounds(RID p_voxel_gi) const = 0;
+	virtual Vector3i voxel_gi_get_octree_size(RID p_voxel_gi) const = 0;
+	virtual Vector<uint8_t> voxel_gi_get_octree_cells(RID p_voxel_gi) const = 0;
+	virtual Vector<uint8_t> voxel_gi_get_data_cells(RID p_voxel_gi) const = 0;
+	virtual Vector<uint8_t> voxel_gi_get_distance_field(RID p_voxel_gi) const = 0;
 
-	virtual Vector<int> gi_probe_get_level_counts(RID p_gi_probe) const = 0;
-	virtual Transform gi_probe_get_to_cell_xform(RID p_gi_probe) const = 0;
+	virtual Vector<int> voxel_gi_get_level_counts(RID p_voxel_gi) const = 0;
+	virtual Transform3D voxel_gi_get_to_cell_xform(RID p_voxel_gi) const = 0;
 
-	virtual void gi_probe_set_dynamic_range(RID p_gi_probe, float p_range) = 0;
-	virtual float gi_probe_get_dynamic_range(RID p_gi_probe) const = 0;
+	virtual void voxel_gi_set_dynamic_range(RID p_voxel_gi, float p_range) = 0;
+	virtual float voxel_gi_get_dynamic_range(RID p_voxel_gi) const = 0;
 
-	virtual void gi_probe_set_propagation(RID p_gi_probe, float p_range) = 0;
-	virtual float gi_probe_get_propagation(RID p_gi_probe) const = 0;
+	virtual void voxel_gi_set_propagation(RID p_voxel_gi, float p_range) = 0;
+	virtual float voxel_gi_get_propagation(RID p_voxel_gi) const = 0;
 
-	virtual void gi_probe_set_energy(RID p_gi_probe, float p_energy) = 0;
-	virtual float gi_probe_get_energy(RID p_gi_probe) const = 0;
+	virtual void voxel_gi_set_energy(RID p_voxel_gi, float p_energy) = 0;
+	virtual float voxel_gi_get_energy(RID p_voxel_gi) const = 0;
 
-	virtual void gi_probe_set_ao(RID p_gi_probe, float p_ao) = 0;
-	virtual float gi_probe_get_ao(RID p_gi_probe) const = 0;
+	virtual void voxel_gi_set_ao(RID p_voxel_gi, float p_ao) = 0;
+	virtual float voxel_gi_get_ao(RID p_voxel_gi) const = 0;
 
-	virtual void gi_probe_set_ao_size(RID p_gi_probe, float p_strength) = 0;
-	virtual float gi_probe_get_ao_size(RID p_gi_probe) const = 0;
+	virtual void voxel_gi_set_ao_size(RID p_voxel_gi, float p_strength) = 0;
+	virtual float voxel_gi_get_ao_size(RID p_voxel_gi) const = 0;
 
-	virtual void gi_probe_set_bias(RID p_gi_probe, float p_bias) = 0;
-	virtual float gi_probe_get_bias(RID p_gi_probe) const = 0;
+	virtual void voxel_gi_set_bias(RID p_voxel_gi, float p_bias) = 0;
+	virtual float voxel_gi_get_bias(RID p_voxel_gi) const = 0;
 
-	virtual void gi_probe_set_normal_bias(RID p_gi_probe, float p_range) = 0;
-	virtual float gi_probe_get_normal_bias(RID p_gi_probe) const = 0;
+	virtual void voxel_gi_set_normal_bias(RID p_voxel_gi, float p_range) = 0;
+	virtual float voxel_gi_get_normal_bias(RID p_voxel_gi) const = 0;
 
-	virtual void gi_probe_set_interior(RID p_gi_probe, bool p_enable) = 0;
-	virtual bool gi_probe_is_interior(RID p_gi_probe) const = 0;
+	virtual void voxel_gi_set_interior(RID p_voxel_gi, bool p_enable) = 0;
+	virtual bool voxel_gi_is_interior(RID p_voxel_gi) const = 0;
 
-	virtual void gi_probe_set_use_two_bounces(RID p_gi_probe, bool p_enable) = 0;
-	virtual bool gi_probe_is_using_two_bounces(RID p_gi_probe) const = 0;
+	virtual void voxel_gi_set_use_two_bounces(RID p_voxel_gi, bool p_enable) = 0;
+	virtual bool voxel_gi_is_using_two_bounces(RID p_voxel_gi) const = 0;
 
-	virtual void gi_probe_set_anisotropy_strength(RID p_gi_probe, float p_strength) = 0;
-	virtual float gi_probe_get_anisotropy_strength(RID p_gi_probe) const = 0;
+	virtual void voxel_gi_set_anisotropy_strength(RID p_voxel_gi, float p_strength) = 0;
+	virtual float voxel_gi_get_anisotropy_strength(RID p_voxel_gi) const = 0;
 
-	virtual uint32_t gi_probe_get_version(RID p_probe) = 0;
+	virtual uint32_t voxel_gi_get_version(RID p_probe) = 0;
 
 	/* LIGHTMAP  */
 
@@ -507,10 +507,10 @@ public:
 	virtual void particles_set_transform_align(RID p_particles, RS::ParticlesTransformAlign p_transform_align) = 0;
 
 	virtual void particles_set_trails(RID p_particles, bool p_enable, float p_length) = 0;
-	virtual void particles_set_trail_bind_poses(RID p_particles, const Vector<Transform> &p_bind_poses) = 0;
+	virtual void particles_set_trail_bind_poses(RID p_particles, const Vector<Transform3D> &p_bind_poses) = 0;
 
 	virtual void particles_restart(RID p_particles) = 0;
-	virtual void particles_emit(RID p_particles, const Transform &p_transform, const Vector3 &p_velocity, const Color &p_color, const Color &p_custom, uint32_t p_emit_flags) = 0;
+	virtual void particles_emit(RID p_particles, const Transform3D &p_transform, const Vector3 &p_velocity, const Color &p_color, const Color &p_custom, uint32_t p_emit_flags) = 0;
 	virtual void particles_set_subemitter(RID p_particles, RID p_subemitter_particles) = 0;
 
 	virtual bool particles_is_inactive(RID p_particles) const = 0;
@@ -524,7 +524,7 @@ public:
 	virtual AABB particles_get_current_aabb(RID p_particles) = 0;
 	virtual AABB particles_get_aabb(RID p_particles) const = 0;
 
-	virtual void particles_set_emission_transform(RID p_particles, const Transform &p_transform) = 0;
+	virtual void particles_set_emission_transform(RID p_particles, const Transform3D &p_transform) = 0;
 
 	virtual int particles_get_draw_passes(RID p_particles) const = 0;
 	virtual RID particles_get_draw_pass_mesh(RID p_particles, int p_pass) const = 0;
@@ -533,6 +533,8 @@ public:
 
 	virtual void particles_add_collision(RID p_particles, RID p_particles_collision_instance) = 0;
 	virtual void particles_remove_collision(RID p_particles, RID p_particles_collision_instance) = 0;
+
+	virtual void particles_set_canvas_sdf_collision(RID p_particles, bool p_enable, const Transform2D &p_xform, const Rect2 &p_to_screen, RID p_texture) = 0;
 
 	virtual void update_particles() = 0;
 
@@ -557,7 +559,7 @@ public:
 
 	//used from 2D and 3D
 	virtual RID particles_collision_instance_create(RID p_collision) = 0;
-	virtual void particles_collision_instance_set_transform(RID p_collision_instance, const Transform &p_transform) = 0;
+	virtual void particles_collision_instance_set_transform(RID p_collision_instance, const Transform3D &p_transform) = 0;
 	virtual void particles_collision_instance_set_active(RID p_collision_instance, bool p_active) = 0;
 
 	/* GLOBAL VARIABLES */
@@ -588,7 +590,7 @@ public:
 
 	virtual RID render_target_create() = 0;
 	virtual void render_target_set_position(RID p_render_target, int p_x, int p_y) = 0;
-	virtual void render_target_set_size(RID p_render_target, int p_width, int p_height) = 0;
+	virtual void render_target_set_size(RID p_render_target, int p_width, int p_height, uint32_t p_view_count) = 0;
 	virtual RID render_target_get_texture(RID p_render_target) = 0;
 	virtual void render_target_set_external_texture(RID p_render_target, unsigned int p_texture_id) = 0;
 	virtual void render_target_set_flag(RID p_render_target, RenderTargetFlags p_flag, bool p_value) = 0;
@@ -603,6 +605,7 @@ public:
 
 	virtual void render_target_set_sdf_size_and_scale(RID p_render_target, RS::ViewportSDFOversize p_size, RS::ViewportSDFScale p_scale) = 0;
 	virtual Rect2i render_target_get_sdf_rect(RID p_render_target) const = 0;
+	virtual void render_target_mark_sdf_enabled(RID p_render_target, bool p_enabled) = 0;
 
 	virtual RS::InstanceType get_base_type(RID p_rid) const = 0;
 	virtual bool free(RID p_rid) = 0;

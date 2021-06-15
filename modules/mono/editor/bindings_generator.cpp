@@ -35,8 +35,8 @@
 #include "core/config/engine.h"
 #include "core/core_constants.h"
 #include "core/io/compression.h"
-#include "core/os/dir_access.h"
-#include "core/os/file_access.h"
+#include "core/io/dir_access.h"
+#include "core/io/file_access.h"
 #include "core/os/os.h"
 #include "core/string/ucaps.h"
 #include "main/main.h"
@@ -1260,7 +1260,7 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 		CRASH_COND(itype.cname != name_cache.type_Object);
 		CRASH_COND(!itype.is_instantiable);
 		CRASH_COND(itype.api_type != ClassDB::API_CORE);
-		CRASH_COND(itype.is_reference);
+		CRASH_COND(itype.is_ref_counted);
 		CRASH_COND(itype.is_singleton);
 	}
 
@@ -2284,8 +2284,8 @@ Error BindingsGenerator::_generate_glue_method(const BindingsGenerator::TypeInte
 			}
 
 			if (return_type->is_object_type) {
-				ptrcall_return_type = return_type->is_reference ? "Ref<Reference>" : return_type->c_type;
-				initialization = return_type->is_reference ? "" : " = nullptr";
+				ptrcall_return_type = return_type->is_ref_counted ? "Ref<RefCounted>" : return_type->c_type;
+				initialization = return_type->is_ref_counted ? "" : " = nullptr";
 			} else {
 				ptrcall_return_type = return_type->c_type;
 			}
@@ -2520,10 +2520,10 @@ bool BindingsGenerator::_arg_default_value_is_assignable_to_type(const Variant &
 				   p_arg_type.name == name_cache.type_NodePath;
 		case Variant::NODE_PATH:
 			return p_arg_type.name == name_cache.type_NodePath;
-		case Variant::TRANSFORM:
 		case Variant::TRANSFORM2D:
+		case Variant::TRANSFORM3D:
 		case Variant::BASIS:
-		case Variant::QUAT:
+		case Variant::QUATERNION:
 		case Variant::PLANE:
 		case Variant::AABB:
 		case Variant::COLOR:
@@ -2600,12 +2600,12 @@ bool BindingsGenerator::_populate_object_type_interfaces() {
 		itype.base_name = ClassDB::get_parent_class(type_cname);
 		itype.is_singleton = Engine::get_singleton()->has_singleton(itype.proxy_name);
 		itype.is_instantiable = class_info->creation_func && !itype.is_singleton;
-		itype.is_reference = ClassDB::is_parent_class(type_cname, name_cache.type_Reference);
-		itype.memory_own = itype.is_reference;
+		itype.is_ref_counted = ClassDB::is_parent_class(type_cname, name_cache.type_RefCounted);
+		itype.memory_own = itype.is_ref_counted;
 
 		itype.c_out = "\treturn ";
 		itype.c_out += C_METHOD_UNMANAGED_GET_MANAGED;
-		itype.c_out += itype.is_reference ? "(%1.ptr());\n" : "(%1);\n";
+		itype.c_out += itype.is_ref_counted ? "(%1.ptr());\n" : "(%1);\n";
 
 		itype.cs_in = itype.is_singleton ? BINDINGS_PTR_FIELD : "Object." CS_SMETHOD_GETINSTANCE "(%0)";
 
@@ -2741,7 +2741,7 @@ bool BindingsGenerator::_populate_object_type_interfaces() {
 				imethod.return_type.cname = return_info.class_name;
 
 				bool bad_reference_hint = !imethod.is_virtual && return_info.hint != PROPERTY_HINT_RESOURCE_TYPE &&
-										  ClassDB::is_parent_class(return_info.class_name, name_cache.type_Reference);
+										  ClassDB::is_parent_class(return_info.class_name, name_cache.type_RefCounted);
 				ERR_FAIL_COND_V_MSG(bad_reference_hint, false,
 						String() + "Return type is reference but hint is not '" _STR(PROPERTY_HINT_RESOURCE_TYPE) "'." +
 								" Are you returning a reference type by pointer? Method: '" + itype.name + "." + imethod.name + "'.");
@@ -3053,28 +3053,25 @@ bool BindingsGenerator::_arg_default_value_from_variant(const Variant &p_val, Ar
 			break;
 		case Variant::PLANE: {
 			Plane plane = p_val.operator Plane();
-			r_iarg.default_argument = "new Plane(new Vector3(" + plane.normal.operator String() + "), " + rtos(plane.d) + ")";
+			r_iarg.default_argument = "new Plane(new Vector3" + plane.normal.operator String() + ", " + rtos(plane.d) + ")";
 			r_iarg.def_param_mode = ArgumentInterface::NULLABLE_VAL;
 		} break;
 		case Variant::AABB: {
 			AABB aabb = p_val.operator ::AABB();
-			r_iarg.default_argument = "new AABB(new Vector3(" + aabb.position.operator String() + "), new Vector3(" + aabb.position.operator String() + "))";
+			r_iarg.default_argument = "new AABB(new Vector3" + aabb.position.operator String() + ", new Vector3" + aabb.position.operator String() + ")";
 			r_iarg.def_param_mode = ArgumentInterface::NULLABLE_VAL;
 		} break;
 		case Variant::RECT2: {
 			Rect2 rect = p_val.operator Rect2();
-			r_iarg.default_argument = "new Rect2(new Vector2(" + rect.position.operator String() + "), new Vector2(" + rect.position.operator String() + "))";
+			r_iarg.default_argument = "new Rect2(new Vector2" + rect.position.operator String() + ", new Vector2" + rect.position.operator String() + ")";
 			r_iarg.def_param_mode = ArgumentInterface::NULLABLE_VAL;
 		} break;
 		case Variant::RECT2I: {
 			Rect2i rect = p_val.operator Rect2i();
-			r_iarg.default_argument = "new Rect2i(new Vector2i(" + rect.position.operator String() + "), new Vector2i(" + rect.position.operator String() + "))";
+			r_iarg.default_argument = "new Rect2i(new Vector2i" + rect.position.operator String() + ", new Vector2i" + rect.position.operator String() + ")";
 			r_iarg.def_param_mode = ArgumentInterface::NULLABLE_VAL;
 		} break;
 		case Variant::COLOR:
-			r_iarg.default_argument = "new %s(" + r_iarg.default_argument + ")";
-			r_iarg.def_param_mode = ArgumentInterface::NULLABLE_VAL;
-			break;
 		case Variant::VECTOR2:
 		case Variant::VECTOR2I:
 		case Variant::VECTOR3:
@@ -3123,13 +3120,13 @@ bool BindingsGenerator::_arg_default_value_from_variant(const Variant &p_val, Ar
 			}
 			r_iarg.def_param_mode = ArgumentInterface::NULLABLE_VAL;
 		} break;
-		case Variant::TRANSFORM: {
-			Transform transform = p_val.operator Transform();
-			if (transform == Transform()) {
-				r_iarg.default_argument = "Transform.Identity";
+		case Variant::TRANSFORM3D: {
+			Transform3D transform = p_val.operator Transform3D();
+			if (transform == Transform3D()) {
+				r_iarg.default_argument = "Transform3D.Identity";
 			} else {
 				Basis basis = transform.basis;
-				r_iarg.default_argument = "new Transform(new Vector3" + basis.get_column(0).operator String() + ", new Vector3" + basis.get_column(1).operator String() + ", new Vector3" + basis.get_column(2).operator String() + ", new Vector3" + transform.origin.operator String() + ")";
+				r_iarg.default_argument = "new Transform3D(new Vector3" + basis.get_column(0).operator String() + ", new Vector3" + basis.get_column(1).operator String() + ", new Vector3" + basis.get_column(2).operator String() + ", new Vector3" + transform.origin.operator String() + ")";
 			}
 			r_iarg.def_param_mode = ArgumentInterface::NULLABLE_VAL;
 		} break;
@@ -3142,12 +3139,12 @@ bool BindingsGenerator::_arg_default_value_from_variant(const Variant &p_val, Ar
 			}
 			r_iarg.def_param_mode = ArgumentInterface::NULLABLE_VAL;
 		} break;
-		case Variant::QUAT: {
-			Quat quat = p_val.operator Quat();
-			if (quat == Quat()) {
-				r_iarg.default_argument = "Quat.Identity";
+		case Variant::QUATERNION: {
+			Quaternion quaternion = p_val.operator Quaternion();
+			if (quaternion == Quaternion()) {
+				r_iarg.default_argument = "Quaternion.Identity";
 			} else {
-				r_iarg.default_argument = "new Quat" + quat.operator String();
+				r_iarg.default_argument = "new Quaternion" + quaternion.operator String();
 			}
 			r_iarg.def_param_mode = ArgumentInterface::NULLABLE_VAL;
 		} break;
@@ -3196,8 +3193,8 @@ void BindingsGenerator::_populate_builtin_type_interfaces() {
 	INSERT_STRUCT_TYPE(Vector3)
 	INSERT_STRUCT_TYPE(Vector3i)
 	INSERT_STRUCT_TYPE(Basis)
-	INSERT_STRUCT_TYPE(Quat)
-	INSERT_STRUCT_TYPE(Transform)
+	INSERT_STRUCT_TYPE(Quaternion)
+	INSERT_STRUCT_TYPE(Transform3D)
 	INSERT_STRUCT_TYPE(AABB)
 	INSERT_STRUCT_TYPE(Color)
 	INSERT_STRUCT_TYPE(Plane)

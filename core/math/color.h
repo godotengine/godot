@@ -89,6 +89,7 @@ struct Color {
 
 	bool is_equal_approx(const Color &p_color) const;
 
+	Color clamp(const Color &p_min = Color(0, 0, 0, 0), const Color &p_max = Color(1, 1, 1, 1)) const;
 	void invert();
 	Color inverted() const;
 

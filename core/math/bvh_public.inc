@@ -53,16 +53,16 @@ BVHHandle item_add(T *p_userdata, bool p_active, const Bounds &p_aabb, int32_t p
 	// assign to handle to return
 	handle.set_id(ref_id);
 
-	_current_tree = 0;
+	uint32_t tree_id = 0;
 	if (p_pairable) {
-		_current_tree = 1;
+		tree_id = 1;
 	}
 
-	create_root_node(_current_tree);
+	create_root_node(tree_id);
 
 	// we must choose where to add to tree
 	if (p_active) {
-		ref->tnode_id = _logic_choose_item_add_node(_root_node_id[_current_tree], abb);
+		ref->tnode_id = _logic_choose_item_add_node(_root_node_id[tree_id], abb);
 
 		bool refit = _node_add_item(ref->tnode_id, ref_id, abb);
 
@@ -70,7 +70,7 @@ BVHHandle item_add(T *p_userdata, bool p_active, const Bounds &p_aabb, int32_t p
 			// only need to refit from the parent
 			const TNode &add_node = _nodes[ref->tnode_id];
 			if (add_node.parent_id != BVHCommon::INVALID) {
-				refit_upward_and_balance(add_node.parent_id);
+				refit_upward_and_balance(add_node.parent_id, tree_id);
 			}
 		}
 	} else {
@@ -139,13 +139,13 @@ bool item_move(BVHHandle p_handle, const Bounds &p_aabb) {
 		return true;
 	}
 
-	_current_tree = _handle_get_tree_id(p_handle);
+	uint32_t tree_id = _handle_get_tree_id(p_handle);
 
 	// remove and reinsert
-	node_remove_item(ref_id);
+	node_remove_item(ref_id, tree_id);
 
 	// we must choose where to add to tree
-	ref.tnode_id = _logic_choose_item_add_node(_root_node_id[_current_tree], abb);
+	ref.tnode_id = _logic_choose_item_add_node(_root_node_id[tree_id], abb);
 
 	// add to the tree
 	bool needs_refit = _node_add_item(ref.tnode_id, ref_id, abb);
@@ -167,7 +167,7 @@ bool item_move(BVHHandle p_handle, const Bounds &p_aabb) {
 void item_remove(BVHHandle p_handle) {
 	uint32_t ref_id = p_handle.id();
 
-	_current_tree = _handle_get_tree_id(p_handle);
+	uint32_t tree_id = _handle_get_tree_id(p_handle);
 
 	VERBOSE_PRINT("item_remove [" + itos(ref_id) + "] ");
 
@@ -187,7 +187,7 @@ void item_remove(BVHHandle p_handle) {
 
 	// remove the item from the node (only if active)
 	if (_refs[ref_id].is_active()) {
-		node_remove_item(ref_id);
+		node_remove_item(ref_id, tree_id);
 	}
 
 	// remove the item reference
@@ -198,10 +198,10 @@ void item_remove(BVHHandle p_handle) {
 	}
 
 	// don't think refit_all is necessary?
-	//refit_all(_current_tree);
+	//refit_all(_tree_id);
 
 #ifdef BVH_VERBOSE_TREE
-	_debug_recursive_print_tree(_current_tree);
+	_debug_recursive_print_tree(tree_id);
 #endif
 }
 
@@ -218,13 +218,13 @@ bool item_activate(BVHHandle p_handle, const Bounds &p_aabb) {
 	BVHABB_CLASS abb;
 	abb.from(p_aabb);
 
-	_current_tree = _handle_get_tree_id(p_handle);
+	uint32_t tree_id = _handle_get_tree_id(p_handle);
 
 	// we must choose where to add to tree
-	ref.tnode_id = _logic_choose_item_add_node(_root_node_id[_current_tree], abb);
+	ref.tnode_id = _logic_choose_item_add_node(_root_node_id[tree_id], abb);
 	_node_add_item(ref.tnode_id, ref_id, abb);
 
-	refit_upward_and_balance(ref.tnode_id);
+	refit_upward_and_balance(ref.tnode_id, tree_id);
 
 	return true;
 }
@@ -238,9 +238,11 @@ bool item_deactivate(BVHHandle p_handle) {
 		return false;
 	}
 
+	uint32_t tree_id = _handle_get_tree_id(p_handle);
+
 	// remove from tree
 	BVHABB_CLASS abb;
-	node_remove_item(ref_id, &abb);
+	node_remove_item(ref_id, tree_id, &abb);
 
 	// mark as inactive
 	ref.set_inactive();
@@ -304,21 +306,21 @@ bool item_set_pairable(const BVHHandle &p_handle, bool p_pairable, uint32_t p_pa
 		BVHABB_CLASS abb = leaf.get_aabb(ref.item_id);
 
 		// make sure current tree is correct prior to changing
-		_current_tree = _handle_get_tree_id(p_handle);
+		uint32_t tree_id = _handle_get_tree_id(p_handle);
 
 		// remove from old tree
-		node_remove_item(ref_id);
+		node_remove_item(ref_id, tree_id);
 
 		// we must set the pairable AFTER getting the current tree
 		// because the pairable status determines which tree
 		ex.pairable = p_pairable;
 
 		// add to new tree
-		_current_tree = _handle_get_tree_id(p_handle);
-		create_root_node(_current_tree);
+		tree_id = _handle_get_tree_id(p_handle);
+		create_root_node(tree_id);
 
 		// we must choose where to add to tree
-		ref.tnode_id = _logic_choose_item_add_node(_root_node_id[_current_tree], abb);
+		ref.tnode_id = _logic_choose_item_add_node(_root_node_id[tree_id], abb);
 		bool needs_refit = _node_add_item(ref.tnode_id, ref_id, abb);
 
 		// only need to refit from the PARENT
@@ -326,7 +328,7 @@ bool item_set_pairable(const BVHHandle &p_handle, bool p_pairable, uint32_t p_pa
 			// only need to refit from the parent
 			const TNode &add_node = _nodes[ref.tnode_id];
 			if (add_node.parent_id != BVHCommon::INVALID) {
-				refit_upward_and_balance(add_node.parent_id);
+				refit_upward_and_balance(add_node.parent_id, tree_id);
 			}
 		}
 	} else {

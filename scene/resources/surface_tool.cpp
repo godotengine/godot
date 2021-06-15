@@ -370,13 +370,13 @@ Array SurfaceTool::commit_to_arrays() {
 				for (uint32_t idx = 0; idx < vertex_array.size(); idx++) {
 					const Vertex &v = vertex_array[idx];
 
-					w[idx + 0] = v.tangent.x;
-					w[idx + 1] = v.tangent.y;
-					w[idx + 2] = v.tangent.z;
+					w[idx * 4 + 0] = v.tangent.x;
+					w[idx * 4 + 1] = v.tangent.y;
+					w[idx * 4 + 2] = v.tangent.z;
 
 					//float d = v.tangent.dot(v.binormal,v.normal);
 					float d = v.binormal.dot(v.normal.cross(v.tangent));
-					w[idx + 3] = d < 0 ? -1 : 1;
+					w[idx * 4 + 3] = d < 0 ? -1 : 1;
 				}
 
 				a[i] = array;
@@ -857,7 +857,7 @@ void SurfaceTool::create_from_blend_shape(const Ref<Mesh> &p_existing, int p_sur
 	_create_list_from_arrays(arr[shape_idx], &vertex_array, &index_array, format);
 }
 
-void SurfaceTool::append_from(const Ref<Mesh> &p_existing, int p_surface, const Transform &p_xform) {
+void SurfaceTool::append_from(const Ref<Mesh> &p_existing, int p_surface, const Transform3D &p_xform) {
 	ERR_FAIL_NULL_MSG(p_existing, "First argument in SurfaceTool::append_from() must be a valid object of type Mesh");
 
 	if (vertex_array.size() == 0) {

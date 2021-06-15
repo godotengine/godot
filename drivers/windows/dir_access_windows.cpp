@@ -208,7 +208,7 @@ String DirAccessWindows::get_current_dir(bool p_include_drive) {
 bool DirAccessWindows::file_exists(String p_file) {
 	GLOBAL_LOCK_FUNCTION
 
-	if (!p_file.is_abs_path()) {
+	if (!p_file.is_absolute_path()) {
 		p_file = get_current_dir().plus_file(p_file);
 	}
 

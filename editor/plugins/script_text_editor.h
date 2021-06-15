@@ -233,6 +233,8 @@ public:
 
 	Control *get_edit_menu() override;
 	virtual void clear_edit_menu() override;
+	virtual void set_find_replace_bar(FindReplaceBar *p_bar) override;
+
 	static void register_editor();
 
 	virtual Control *get_base_editor() const override;

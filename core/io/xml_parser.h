@@ -31,8 +31,8 @@
 #ifndef XML_PARSER_H
 #define XML_PARSER_H
 
-#include "core/object/reference.h"
-#include "core/os/file_access.h"
+#include "core/io/file_access.h"
+#include "core/object/ref_counted.h"
 #include "core/string/ustring.h"
 #include "core/templates/vector.h"
 
@@ -40,8 +40,8 @@
   Based on irrXML (see their zlib license). Added mainly for compatibility with their Collada loader.
 */
 
-class XMLParser : public Reference {
-	GDCLASS(XMLParser, Reference);
+class XMLParser : public RefCounted {
+	GDCLASS(XMLParser, RefCounted);
 
 public:
 	//! Enumeration of all supported source text file formats
@@ -80,7 +80,6 @@ private:
 
 	Vector<Attribute> attributes;
 
-	String _replace_special_characters(const String &origstr);
 	bool _set_text(char *start, char *end);
 	void _parse_closing_xml_element();
 	void _ignore_definition();

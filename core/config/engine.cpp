@@ -31,6 +31,7 @@
 #include "engine.h"
 
 #include "core/authors.gen.h"
+#include "core/config/project_settings.h"
 #include "core/donors.gen.h"
 #include "core/license.gen.h"
 #include "core/version.h"
@@ -210,6 +211,13 @@ void Engine::get_singletons(List<Singleton> *p_singletons) {
 	}
 }
 
+void Engine::set_shader_cache_path(const String &p_path) {
+	shader_cache_path = p_path;
+}
+String Engine::get_shader_cache_path() const {
+	return shader_cache_path;
+}
+
 Engine *Engine::singleton = nullptr;
 
 Engine *Engine::get_singleton() {
@@ -224,9 +232,9 @@ Engine::Singleton::Singleton(const StringName &p_name, Object *p_ptr) :
 		name(p_name),
 		ptr(p_ptr) {
 #ifdef DEBUG_ENABLED
-	Reference *ref = Object::cast_to<Reference>(p_ptr);
-	if (ref && !ref->is_referenced()) {
-		WARN_PRINT("You must use Ref<> to ensure the lifetime of a Reference object intended to be used as a singleton.");
+	RefCounted *rc = Object::cast_to<RefCounted>(p_ptr);
+	if (rc && !rc->is_referenced()) {
+		WARN_PRINT("You must use Ref<> to ensure the lifetime of a RefCounted object intended to be used as a singleton.");
 	}
 #endif
 }

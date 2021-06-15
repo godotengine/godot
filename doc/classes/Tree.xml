@@ -361,7 +361,7 @@
 			The number of columns.
 		</member>
 		<member name="drop_mode_flags" type="int" setter="set_drop_mode_flags" getter="get_drop_mode_flags" default="0">
-			The drop mode as an OR combination of flags. See [enum DropModeFlags] constants. Once dropping is done, reverts to [constant DROP_MODE_DISABLED]. Setting this during [method Control.can_drop_data] is recommended.
+			The drop mode as an OR combination of flags. See [enum DropModeFlags] constants. Once dropping is done, reverts to [constant DROP_MODE_DISABLED]. Setting this during [method Control._can_drop_data] is recommended.
 			This controls the drop sections, i.e. the decision and drawing of possible drop locations based on the mouse position.
 		</member>
 		<member name="focus_mode" type="int" setter="set_focus_mode" getter="get_focus_mode" override="true" enum="Control.FocusMode" default="2" />
@@ -533,6 +533,12 @@
 		<theme_item name="checked" type="Texture2D">
 			The check icon to display when the [constant TreeItem.CELL_MODE_CHECK] mode cell is checked.
 		</theme_item>
+		<theme_item name="children_hl_line_color" type="Color" default="Color( 0.27, 0.27, 0.27, 1 )">
+			The [Color] of the relationship lines between the selected [TreeItem] and its children.
+		</theme_item>
+		<theme_item name="children_hl_line_width" type="int" default="1">
+			The width of the relationship lines between the selected [TreeItem] and its children.
+		</theme_item>
 		<theme_item name="cursor" type="StyleBox">
 			[StyleBox] used for the cursor, when the [Tree] is being focused.
 		</theme_item>
@@ -587,8 +593,20 @@
 		<theme_item name="outline_size" type="int" default="0">
 			The size of the text outline.
 		</theme_item>
+		<theme_item name="parent_hl_line_color" type="Color" default="Color( 0.27, 0.27, 0.27, 1 )">
+			The [Color] of the relationship lines between the selected [TreeItem] and its parents.
+		</theme_item>
+		<theme_item name="parent_hl_line_margin" type="int" default="0">
+			The space between the parent relationship lines for the selected [TreeItem] and the relationship lines to its siblings that are not selected.
+		</theme_item>
+		<theme_item name="parent_hl_line_width" type="int" default="1">
+			The width of the relationship lines between the selected [TreeItem] and its parents.
+		</theme_item>
 		<theme_item name="relationship_line_color" type="Color" default="Color( 0.27, 0.27, 0.27, 1 )">
-			[Color] of the relationship lines.
+			The default [Color] of the relationship lines.
+		</theme_item>
+		<theme_item name="relationship_line_width" type="int" default="1">
+			The default width of the relationship lines.
 		</theme_item>
 		<theme_item name="scroll_border" type="int" default="4">
 			The maximum distance between the mouse cursor and the control's border to trigger border scrolling when dragging.

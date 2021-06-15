@@ -43,8 +43,8 @@ bool Animation::_set(const StringName &p_name, const Variant &p_value) {
 		if (tracks.size() == track && what == "type") {
 			String type = p_value;
 
-			if (type == "transform") {
-				add_track(TYPE_TRANSFORM);
+			if (type == "transform" || type == "transform3d") {
+				add_track(TYPE_TRANSFORM3D);
 			} else if (type == "value") {
 				add_track(TYPE_VALUE);
 			} else if (type == "method") {
@@ -75,7 +75,7 @@ bool Animation::_set(const StringName &p_name, const Variant &p_value) {
 		} else if (what == "enabled") {
 			track_set_enabled(track, p_value);
 		} else if (what == "keys" || what == "key_values") {
-			if (track_get_type(track) == TYPE_TRANSFORM) {
+			if (track_get_type(track) == TYPE_TRANSFORM3D) {
 				TransformTrack *tt = static_cast<TransformTrack *>(tracks[track]);
 				Vector<float> values = p_value;
 				int vcount = values.size();
@@ -318,7 +318,7 @@ bool Animation::_get(const StringName &p_name, Variant &r_ret) const {
 		ERR_FAIL_INDEX_V(track, tracks.size(), false);
 		if (what == "type") {
 			switch (track_get_type(track)) {
-				case TYPE_TRANSFORM:
+				case TYPE_TRANSFORM3D:
 					r_ret = "transform";
 					break;
 				case TYPE_VALUE:
@@ -351,7 +351,7 @@ bool Animation::_get(const StringName &p_name, Variant &r_ret) const {
 		} else if (what == "enabled") {
 			r_ret = track_is_enabled(track);
 		} else if (what == "keys") {
-			if (track_get_type(track) == TYPE_TRANSFORM) {
+			if (track_get_type(track) == TYPE_TRANSFORM3D) {
 				Vector<float> keys;
 				int kk = track_get_key_count(track);
 				keys.resize(kk * 12);
@@ -361,7 +361,7 @@ bool Animation::_get(const StringName &p_name, Variant &r_ret) const {
 				int idx = 0;
 				for (int i = 0; i < track_get_key_count(track); i++) {
 					Vector3 loc;
-					Quat rot;
+					Quaternion rot;
 					Vector3 scale;
 					transform_track_get_key(track, i, &loc, &rot, &scale);
 
@@ -590,7 +590,7 @@ int Animation::add_track(TrackType p_type, int p_at_pos) {
 	}
 
 	switch (p_type) {
-		case TYPE_TRANSFORM: {
+		case TYPE_TRANSFORM3D: {
 			TransformTrack *tt = memnew(TransformTrack);
 			tracks.insert(p_at_pos, tt);
 		} break;
@@ -628,7 +628,7 @@ void Animation::remove_track(int p_track) {
 	Track *t = tracks[p_track];
 
 	switch (t->type) {
-		case TYPE_TRANSFORM: {
+		case TYPE_TRANSFORM3D: {
 			TransformTrack *tt = static_cast<TransformTrack *>(t);
 			_clear(tt->transforms);
 
@@ -671,7 +671,7 @@ int Animation::get_track_count() const {
 }
 
 Animation::TrackType Animation::track_get_type(int p_track) const {
-	ERR_FAIL_INDEX_V(p_track, tracks.size(), TYPE_TRANSFORM);
+	ERR_FAIL_INDEX_V(p_track, tracks.size(), TYPE_TRANSFORM3D);
 	return tracks[p_track]->type;
 }
 
@@ -773,12 +773,12 @@ void Animation::_clear(T &p_keys) {
 	p_keys.clear();
 }
 
-Error Animation::transform_track_get_key(int p_track, int p_key, Vector3 *r_loc, Quat *r_rot, Vector3 *r_scale) const {
+Error Animation::transform_track_get_key(int p_track, int p_key, Vector3 *r_loc, Quaternion *r_rot, Vector3 *r_scale) const {
 	ERR_FAIL_INDEX_V(p_track, tracks.size(), ERR_INVALID_PARAMETER);
 	Track *t = tracks[p_track];
 
 	TransformTrack *tt = static_cast<TransformTrack *>(t);
-	ERR_FAIL_COND_V(t->type != TYPE_TRANSFORM, ERR_INVALID_PARAMETER);
+	ERR_FAIL_COND_V(t->type != TYPE_TRANSFORM3D, ERR_INVALID_PARAMETER);
 	ERR_FAIL_INDEX_V(p_key, tt->transforms.size(), ERR_INVALID_PARAMETER);
 
 	if (r_loc) {
@@ -794,10 +794,10 @@ Error Animation::transform_track_get_key(int p_track, int p_key, Vector3 *r_loc,
 	return OK;
 }
 
-int Animation::transform_track_insert_key(int p_track, float p_time, const Vector3 &p_loc, const Quat &p_rot, const Vector3 &p_scale) {
+int Animation::transform_track_insert_key(int p_track, float p_time, const Vector3 &p_loc, const Quaternion &p_rot, const Vector3 &p_scale) {
 	ERR_FAIL_INDEX_V(p_track, tracks.size(), -1);
 	Track *t = tracks[p_track];
-	ERR_FAIL_COND_V(t->type != TYPE_TRANSFORM, -1);
+	ERR_FAIL_COND_V(t->type != TYPE_TRANSFORM3D, -1);
 
 	TransformTrack *tt = static_cast<TransformTrack *>(t);
 
@@ -823,7 +823,7 @@ void Animation::track_remove_key(int p_track, int p_idx) {
 	Track *t = tracks[p_track];
 
 	switch (t->type) {
-		case TYPE_TRANSFORM: {
+		case TYPE_TRANSFORM3D: {
 			TransformTrack *tt = static_cast<TransformTrack *>(t);
 			ERR_FAIL_INDEX(p_idx, tt->transforms.size());
 			tt->transforms.remove(p_idx);
@@ -869,7 +869,7 @@ int Animation::track_find_key(int p_track, float p_time, bool p_exact) const {
 	Track *t = tracks[p_track];
 
 	switch (t->type) {
-		case TYPE_TRANSFORM: {
+		case TYPE_TRANSFORM3D: {
 			TransformTrack *tt = static_cast<TransformTrack *>(t);
 			int k = _find(tt->transforms, p_time);
 			if (k < 0 || k >= tt->transforms.size()) {
@@ -951,14 +951,14 @@ void Animation::track_insert_key(int p_track, float p_time, const Variant &p_key
 	Track *t = tracks[p_track];
 
 	switch (t->type) {
-		case TYPE_TRANSFORM: {
+		case TYPE_TRANSFORM3D: {
 			Dictionary d = p_key;
 			Vector3 loc;
 			if (d.has("location")) {
 				loc = d["location"];
 			}
 
-			Quat rot;
+			Quaternion rot;
 			if (d.has("rotation")) {
 				rot = d["rotation"];
 			}
@@ -1053,7 +1053,7 @@ int Animation::track_get_key_count(int p_track) const {
 	Track *t = tracks[p_track];
 
 	switch (t->type) {
-		case TYPE_TRANSFORM: {
+		case TYPE_TRANSFORM3D: {
 			TransformTrack *tt = static_cast<TransformTrack *>(t);
 			return tt->transforms.size();
 		} break;
@@ -1088,7 +1088,7 @@ Variant Animation::track_get_key_value(int p_track, int p_key_idx) const {
 	Track *t = tracks[p_track];
 
 	switch (t->type) {
-		case TYPE_TRANSFORM: {
+		case TYPE_TRANSFORM3D: {
 			TransformTrack *tt = static_cast<TransformTrack *>(t);
 			ERR_FAIL_INDEX_V(p_key_idx, tt->transforms.size(), Variant());
 
@@ -1156,7 +1156,7 @@ float Animation::track_get_key_time(int p_track, int p_key_idx) const {
 	Track *t = tracks[p_track];
 
 	switch (t->type) {
-		case TYPE_TRANSFORM: {
+		case TYPE_TRANSFORM3D: {
 			TransformTrack *tt = static_cast<TransformTrack *>(t);
 			ERR_FAIL_INDEX_V(p_key_idx, tt->transforms.size(), -1);
 			return tt->transforms[p_key_idx].time;
@@ -1201,7 +1201,7 @@ void Animation::track_set_key_time(int p_track, int p_key_idx, float p_time) {
 	Track *t = tracks[p_track];
 
 	switch (t->type) {
-		case TYPE_TRANSFORM: {
+		case TYPE_TRANSFORM3D: {
 			TransformTrack *tt = static_cast<TransformTrack *>(t);
 			ERR_FAIL_INDEX(p_key_idx, tt->transforms.size());
 			TKey<TransformKey> key = tt->transforms[p_key_idx];
@@ -1265,7 +1265,7 @@ float Animation::track_get_key_transition(int p_track, int p_key_idx) const {
 	Track *t = tracks[p_track];
 
 	switch (t->type) {
-		case TYPE_TRANSFORM: {
+		case TYPE_TRANSFORM3D: {
 			TransformTrack *tt = static_cast<TransformTrack *>(t);
 			ERR_FAIL_INDEX_V(p_key_idx, tt->transforms.size(), -1);
 			return tt->transforms[p_key_idx].transition;
@@ -1301,7 +1301,7 @@ void Animation::track_set_key_value(int p_track, int p_key_idx, const Variant &p
 	Track *t = tracks[p_track];
 
 	switch (t->type) {
-		case TYPE_TRANSFORM: {
+		case TYPE_TRANSFORM3D: {
 			TransformTrack *tt = static_cast<TransformTrack *>(t);
 			ERR_FAIL_INDEX(p_key_idx, tt->transforms.size());
 
@@ -1384,7 +1384,7 @@ void Animation::track_set_key_transition(int p_track, int p_key_idx, float p_tra
 	Track *t = tracks[p_track];
 
 	switch (t->type) {
-		case TYPE_TRANSFORM: {
+		case TYPE_TRANSFORM3D: {
 			TransformTrack *tt = static_cast<TransformTrack *>(t);
 			ERR_FAIL_INDEX(p_key_idx, tt->transforms.size());
 			tt->transforms.write[p_key_idx].transition = p_transition;
@@ -1462,7 +1462,7 @@ Vector3 Animation::_interpolate(const Vector3 &p_a, const Vector3 &p_b, float p_
 	return p_a.lerp(p_b, p_c);
 }
 
-Quat Animation::_interpolate(const Quat &p_a, const Quat &p_b, float p_c) const {
+Quaternion Animation::_interpolate(const Quaternion &p_a, const Quaternion &p_b, float p_c) const {
 	return p_a.slerp(p_b, p_c);
 }
 
@@ -1490,7 +1490,7 @@ Vector3 Animation::_cubic_interpolate(const Vector3 &p_pre_a, const Vector3 &p_a
 	return p_a.cubic_interpolate(p_b, p_pre_a, p_post_b, p_c);
 }
 
-Quat Animation::_cubic_interpolate(const Quat &p_pre_a, const Quat &p_a, const Quat &p_b, const Quat &p_post_b, float p_c) const {
+Quaternion Animation::_cubic_interpolate(const Quaternion &p_pre_a, const Quaternion &p_a, const Quaternion &p_b, const Quaternion &p_post_b, float p_c) const {
 	return p_a.cubic_slerp(p_b, p_pre_a, p_post_b, p_c);
 }
 
@@ -1555,11 +1555,11 @@ Variant Animation::_cubic_interpolate(const Variant &p_pre_a, const Variant &p_a
 
 			return a.cubic_interpolate(b, pa, pb, p_c);
 		}
-		case Variant::QUAT: {
-			Quat a = p_a;
-			Quat b = p_b;
-			Quat pa = p_pre_a;
-			Quat pb = p_post_b;
+		case Variant::QUATERNION: {
+			Quaternion a = p_a;
+			Quaternion b = p_b;
+			Quaternion pa = p_pre_a;
+			Quaternion pb = p_post_b;
 
 			return a.cubic_slerp(b, pa, pb, p_c);
 		}
@@ -1728,10 +1728,10 @@ T Animation::_interpolate(const Vector<TKey<T>> &p_keys, float p_time, Interpola
 	// do a barrel roll
 }
 
-Error Animation::transform_track_interpolate(int p_track, float p_time, Vector3 *r_loc, Quat *r_rot, Vector3 *r_scale) const {
+Error Animation::transform_track_interpolate(int p_track, float p_time, Vector3 *r_loc, Quaternion *r_rot, Vector3 *r_scale) const {
 	ERR_FAIL_INDEX_V(p_track, tracks.size(), ERR_INVALID_PARAMETER);
 	Track *t = tracks[p_track];
-	ERR_FAIL_COND_V(t->type != TYPE_TRANSFORM, ERR_INVALID_PARAMETER);
+	ERR_FAIL_COND_V(t->type != TYPE_TRANSFORM3D, ERR_INVALID_PARAMETER);
 
 	TransformTrack *tt = static_cast<TransformTrack *>(t);
 
@@ -1932,7 +1932,7 @@ void Animation::track_get_key_indices_in_range(int p_track, float p_time, float 
 			// handle loop by splitting
 
 			switch (t->type) {
-				case TYPE_TRANSFORM: {
+				case TYPE_TRANSFORM3D: {
 					const TransformTrack *tt = static_cast<const TransformTrack *>(t);
 					_track_get_key_indices_in_range(tt->transforms, from_time, length, p_indices);
 					_track_get_key_indices_in_range(tt->transforms, 0, to_time, p_indices);
@@ -1988,7 +1988,7 @@ void Animation::track_get_key_indices_in_range(int p_track, float p_time, float 
 	}
 
 	switch (t->type) {
-		case TYPE_TRANSFORM: {
+		case TYPE_TRANSFORM3D: {
 			const TransformTrack *tt = static_cast<const TransformTrack *>(t);
 			_track_get_key_indices_in_range(tt->transforms, from_time, to_time, p_indices);
 
@@ -2681,7 +2681,7 @@ void Animation::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("tracks_changed"));
 
 	BIND_ENUM_CONSTANT(TYPE_VALUE);
-	BIND_ENUM_CONSTANT(TYPE_TRANSFORM);
+	BIND_ENUM_CONSTANT(TYPE_TRANSFORM3D);
 	BIND_ENUM_CONSTANT(TYPE_METHOD);
 	BIND_ENUM_CONSTANT(TYPE_BEZIER);
 	BIND_ENUM_CONSTANT(TYPE_AUDIO);
@@ -2751,9 +2751,9 @@ bool Animation::_transform_track_optimize_key(const TKey<TransformKey> &t0, cons
 
 	{ //rotation
 
-		const Quat &q0 = t0.value.rot;
-		const Quat &q1 = t1.value.rot;
-		const Quat &q2 = t2.value.rot;
+		const Quaternion &q0 = t0.value.rot;
+		const Quaternion &q1 = t1.value.rot;
+		const Quaternion &q2 = t2.value.rot;
 
 		//localize both to rotation from q0
 
@@ -2763,8 +2763,8 @@ bool Animation::_transform_track_optimize_key(const TKey<TransformKey> &t0, cons
 			}
 
 		} else {
-			Quat r02 = (q0.inverse() * q2).normalized();
-			Quat r01 = (q0.inverse() * q1).normalized();
+			Quaternion r02 = (q0.inverse() * q2).normalized();
+			Quaternion r01 = (q0.inverse() * q1).normalized();
 
 			Vector3 v02, v01;
 			real_t a02, a01;
@@ -2877,7 +2877,7 @@ bool Animation::_transform_track_optimize_key(const TKey<TransformKey> &t0, cons
 
 void Animation::_transform_track_optimize(int p_idx, float p_allowed_linear_err, float p_allowed_angular_err, float p_max_optimizable_angle) {
 	ERR_FAIL_INDEX(p_idx, tracks.size());
-	ERR_FAIL_COND(tracks[p_idx]->type != TYPE_TRANSFORM);
+	ERR_FAIL_COND(tracks[p_idx]->type != TYPE_TRANSFORM3D);
 	TransformTrack *tt = static_cast<TransformTrack *>(tracks[p_idx]);
 	bool prev_erased = false;
 	TKey<TransformKey> first_erased;
@@ -2917,7 +2917,7 @@ void Animation::_transform_track_optimize(int p_idx, float p_allowed_linear_err,
 
 void Animation::optimize(float p_allowed_linear_err, float p_allowed_angular_err, float p_max_optimizable_angle) {
 	for (int i = 0; i < tracks.size(); i++) {
-		if (tracks[i]->type == TYPE_TRANSFORM) {
+		if (tracks[i]->type == TYPE_TRANSFORM3D) {
 			_transform_track_optimize(i, p_allowed_linear_err, p_allowed_angular_err, p_max_optimizable_angle);
 		}
 	}

@@ -31,7 +31,7 @@
 			<return type="Array">
 			</return>
 			<description>
-				Returns an [Array] with two elements, the first is the [Transform] of this node and the second is the root [Mesh] of this node. Only works when this node is the root shape.
+				Returns an [Array] with two elements, the first is the [Transform3D] of this node and the second is the root [Mesh] of this node. Only works when this node is the root shape.
 			</description>
 		</method>
 		<method name="is_root_shape" qualifiers="const">

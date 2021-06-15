@@ -33,7 +33,7 @@
 
 #include "core/io/multiplayer_api.h"
 #include "core/io/resource.h"
-#include "core/object/reference.h"
+#include "core/object/ref_counted.h"
 #include "core/object/script_language.h"
 #include "core/string/string_name.h"
 #include "core/string/ustring.h"
@@ -370,6 +370,7 @@ public:
 		Variant::Operator variant_op = Variant::OP_MAX;
 		ExpressionNode *assignee = nullptr;
 		ExpressionNode *assigned_value = nullptr;
+		bool use_conversion_assign = false;
 
 		AssignmentNode() {
 			type = ASSIGNMENT;
@@ -1119,6 +1120,7 @@ public:
 		MultiplayerAPI::RPCMode rpc_mode = MultiplayerAPI::RPC_MODE_DISABLED;
 		int assignments = 0;
 		int usages = 0;
+		bool use_conversion_assign = false;
 #ifdef TOOLS_ENABLED
 		String doc_description;
 #endif // TOOLS_ENABLED

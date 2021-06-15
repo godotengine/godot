@@ -30,8 +30,8 @@
 
 #include "platform/javascript/display_server_javascript.h"
 
-#include "drivers/dummy/rasterizer_dummy.h"
 #include "platform/javascript/os_javascript.h"
+#include "servers/rendering/rasterizer_dummy.h"
 
 #include <emscripten.h>
 #include <png.h>
@@ -407,9 +407,10 @@ void DisplayServerJavaScript::cursor_set_custom_image(const RES &p_cursor, Curso
 
 // Mouse mode
 void DisplayServerJavaScript::mouse_set_mode(MouseMode p_mode) {
-	ERR_FAIL_COND_MSG(p_mode == MOUSE_MODE_CONFINED, "MOUSE_MODE_CONFINED is not supported for the HTML5 platform.");
-	if (p_mode == mouse_get_mode())
+	ERR_FAIL_COND_MSG(p_mode == MOUSE_MODE_CONFINED || p_mode == MOUSE_MODE_CONFINED_HIDDEN, "MOUSE_MODE_CONFINED is not supported for the HTML5 platform.");
+	if (p_mode == mouse_get_mode()) {
 		return;
+	}
 
 	if (p_mode == MOUSE_MODE_VISIBLE) {
 		godot_js_display_cursor_set_visible(1);

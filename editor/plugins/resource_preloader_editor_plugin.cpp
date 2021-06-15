@@ -339,9 +339,9 @@ void ResourcePreloaderEditor::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_update_library"), &ResourcePreloaderEditor::_update_library);
 	ClassDB::bind_method(D_METHOD("_remove_resource", "to_remove"), &ResourcePreloaderEditor::_remove_resource);
 
-	ClassDB::bind_method(D_METHOD("get_drag_data_fw"), &ResourcePreloaderEditor::get_drag_data_fw);
-	ClassDB::bind_method(D_METHOD("can_drop_data_fw"), &ResourcePreloaderEditor::can_drop_data_fw);
-	ClassDB::bind_method(D_METHOD("drop_data_fw"), &ResourcePreloaderEditor::drop_data_fw);
+	ClassDB::bind_method(D_METHOD("_get_drag_data_fw"), &ResourcePreloaderEditor::get_drag_data_fw);
+	ClassDB::bind_method(D_METHOD("_can_drop_data_fw"), &ResourcePreloaderEditor::can_drop_data_fw);
+	ClassDB::bind_method(D_METHOD("_drop_data_fw"), &ResourcePreloaderEditor::drop_data_fw);
 }
 
 ResourcePreloaderEditor::ResourcePreloaderEditor() {

@@ -31,8 +31,8 @@
 #include "test_gdscript.h"
 
 #include "core/config/project_settings.h"
+#include "core/io/file_access.h"
 #include "core/io/file_access_pack.h"
-#include "core/os/file_access.h"
 #include "core/os/main_loop.h"
 #include "core/os/os.h"
 #include "core/string/string_builder.h"
@@ -215,8 +215,8 @@ void test(TestType p_type) {
 	init_language(fa->get_path_absolute().get_base_dir());
 
 	Vector<uint8_t> buf;
-	uint64_t flen = fa->get_len();
-	buf.resize(fa->get_len() + 1);
+	uint64_t flen = fa->get_length();
+	buf.resize(flen + 1);
 	fa->get_buffer(buf.ptrw(), flen);
 	buf.write[flen] = 0;
 

@@ -10,28 +10,23 @@
 	<tutorials>
 	</tutorials>
 	<methods>
-		<method name="can_drop_data_fw" qualifiers="const">
-			<return type="bool">
-			</return>
-			<argument index="0" name="position" type="Vector2">
-			</argument>
-			<argument index="1" name="data" type="Variant">
-			</argument>
-			<argument index="2" name="from" type="Control">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="drop_data_fw">
+		<method name="_handle_menu_selected" qualifiers="virtual">
 			<return type="void">
 			</return>
-			<argument index="0" name="position" type="Vector2">
-			</argument>
-			<argument index="1" name="data" type="Variant">
-			</argument>
-			<argument index="2" name="from" type="Control">
+			<argument index="0" name="id" type="int">
 			</argument>
 			<description>
+				This virtual method can be implemented to handle context menu items not handled by default. See [method _set_create_options].
+			</description>
+		</method>
+		<method name="_set_create_options" qualifiers="virtual">
+			<return type="void">
+			</return>
+			<argument index="0" name="menu_node" type="Object">
+			</argument>
+			<description>
+				This virtual method is called when updating the context menu of [EditorResourcePicker]. Implement this method to override the "New ..." items with your own options. [code]menu_node[/code] is a reference to the [PopupMenu] node.
+				[b]Note:[/b] Implement [method _handle_menu_selected] to handle these custom items.
 			</description>
 		</method>
 		<method name="get_allowed_types" qualifiers="const">
@@ -39,35 +34,6 @@
 			</return>
 			<description>
 				Returns a list of all allowed types and subtypes corresponding to the [member base_type]. If the [member base_type] is empty, an empty list is returned.
-			</description>
-		</method>
-		<method name="get_drag_data_fw">
-			<return type="Variant">
-			</return>
-			<argument index="0" name="position" type="Vector2">
-			</argument>
-			<argument index="1" name="from" type="Control">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="handle_menu_selected" qualifiers="virtual">
-			<return type="void">
-			</return>
-			<argument index="0" name="id" type="int">
-			</argument>
-			<description>
-				This virtual method can be implemented to handle context menu items not handled by default. See [method set_create_options].
-			</description>
-		</method>
-		<method name="set_create_options" qualifiers="virtual">
-			<return type="void">
-			</return>
-			<argument index="0" name="menu_node" type="Object">
-			</argument>
-			<description>
-				This virtual method is called when updating the context menu of [EditorResourcePicker]. Implement this method to override the "New ..." items with your own options. [code]menu_node[/code] is a reference to the [PopupMenu] node.
-				[b]Note:[/b] Implement [method handle_menu_selected] to handle these custom items.
 			</description>
 		</method>
 		<method name="set_toggle_pressed">

@@ -184,16 +184,18 @@ private:
 	};
 
 	struct TrackCacheTransform : public TrackCache {
-		Node3D *spatial = nullptr;
+#ifndef _3D_DISABLED
+		Node3D *node_3d = nullptr;
 		Skeleton3D *skeleton = nullptr;
+#endif // _3D_DISABLED
 		int bone_idx = -1;
 		Vector3 loc;
-		Quat rot;
+		Quaternion rot;
 		float rot_blend_accum = 0.0;
 		Vector3 scale;
 
 		TrackCacheTransform() {
-			type = Animation::TYPE_TRANSFORM;
+			type = Animation::TYPE_TRANSFORM3D;
 		}
 	};
 
@@ -257,7 +259,7 @@ private:
 	bool started = true;
 
 	NodePath root_motion_track;
-	Transform root_motion_transform;
+	Transform3D root_motion_transform;
 
 	friend class AnimationNode;
 	bool properties_dirty = true;
@@ -308,7 +310,7 @@ public:
 	void set_root_motion_track(const NodePath &p_track);
 	NodePath get_root_motion_track() const;
 
-	Transform get_root_motion_transform() const;
+	Transform3D get_root_motion_transform() const;
 
 	float get_connection_activity(const StringName &p_path, int p_connection) const;
 	void advance(float p_time);

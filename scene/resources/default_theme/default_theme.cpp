@@ -432,7 +432,6 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_stylebox("normal", "TextEdit", make_stylebox(tree_bg_png, 3, 3, 3, 3, 0, 0, 0, 0));
 	theme->set_stylebox("focus", "TextEdit", focus);
 	theme->set_stylebox("read_only", "TextEdit", make_stylebox(tree_bg_disabled_png, 4, 4, 4, 4, 0, 0, 0, 0));
-	theme->set_stylebox("completion", "TextEdit", make_stylebox(tree_bg_png, 3, 3, 3, 3, 0, 0, 0, 0));
 
 	theme->set_icon("tab", "TextEdit", make_icon(tab_png));
 	theme->set_icon("space", "TextEdit", make_icon(space_png));
@@ -441,11 +440,6 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_font_size("font_size", "TextEdit", -1);
 
 	theme->set_color("background_color", "TextEdit", Color(0, 0, 0, 0));
-	theme->set_color("completion_background_color", "TextEdit", Color(0.17, 0.16, 0.2));
-	theme->set_color("completion_selected_color", "TextEdit", Color(0.26, 0.26, 0.27));
-	theme->set_color("completion_existing_color", "TextEdit", Color(0.87, 0.87, 0.87, 0.13));
-	theme->set_color("completion_scroll_color", "TextEdit", control_font_pressed_color);
-	theme->set_color("completion_font_color", "TextEdit", Color(0.67, 0.67, 0.67));
 	theme->set_color("font_color", "TextEdit", control_font_color);
 	theme->set_color("font_selected_color", "TextEdit", Color(0, 0, 0));
 	theme->set_color("font_readonly_color", "TextEdit", Color(control_font_color.r, control_font_color.g, control_font_color.b, 0.5f));
@@ -458,9 +452,6 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_color("brace_mismatch_color", "TextEdit", Color(1, 0.2, 0.2));
 	theme->set_color("word_highlighted_color", "TextEdit", Color(0.8, 0.9, 0.9, 0.15));
 
-	theme->set_constant("completion_lines", "TextEdit", 7);
-	theme->set_constant("completion_max_width", "TextEdit", 50);
-	theme->set_constant("completion_scroll_width", "TextEdit", 3);
 	theme->set_constant("line_spacing", "TextEdit", 4 * scale);
 	theme->set_constant("outline_size", "TextEdit", 0);
 
@@ -719,6 +710,8 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_color("guide_color", "Tree", Color(0, 0, 0, 0.1));
 	theme->set_color("drop_position_color", "Tree", Color(1, 0.3, 0.2));
 	theme->set_color("relationship_line_color", "Tree", Color(0.27, 0.27, 0.27));
+	theme->set_color("parent_hl_line_color", "Tree", Color(0.27, 0.27, 0.27));
+	theme->set_color("children_hl_line_color", "Tree", Color(0.27, 0.27, 0.27));
 	theme->set_color("custom_button_font_highlight", "Tree", control_font_hover_color);
 
 	theme->set_constant("hseparation", "Tree", 4 * scale);
@@ -726,6 +719,10 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_constant("item_margin", "Tree", 12 * scale);
 	theme->set_constant("button_margin", "Tree", 4 * scale);
 	theme->set_constant("draw_relationship_lines", "Tree", 0);
+	theme->set_constant("relationship_line_width", "Tree", 1);
+	theme->set_constant("parent_hl_line_width", "Tree", 1);
+	theme->set_constant("children_hl_line_width", "Tree", 1);
+	theme->set_constant("parent_hl_line_margin", "Tree", 0);
 	theme->set_constant("draw_guides", "Tree", 1);
 	theme->set_constant("scroll_border", "Tree", 4);
 	theme->set_constant("scroll_speed", "Tree", 12);

@@ -11277,7 +11277,7 @@ msgstr "Миш Дугме"
 #: editor/project_settings_editor.cpp
 #, fuzzy
 msgid ""
-"Invalid action name. it cannot be empty nor contain '/', ':', '=', '\\' or "
+"Invalid action name. It cannot be empty nor contain '/', ':', '=', '\\' or "
 "'\"'"
 msgstr ""
 "Неважеће име акције. Не може бити празно или садржати '/', ':', '=', '\\' "

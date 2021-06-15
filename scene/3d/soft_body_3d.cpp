@@ -283,7 +283,7 @@ void SoftBody3D::_notification(int p_what) {
 			set_notify_transform(false);
 			// Required to be top level with Transform at center of world in order to modify RenderingServer only to support custom Transform
 			set_as_top_level(true);
-			set_transform(Transform());
+			set_transform(Transform3D());
 			set_notify_transform(true);
 
 		} break;
@@ -373,7 +373,7 @@ TypedArray<String> SoftBody3D::get_configuration_warnings() const {
 		warnings.push_back(TTR("This body will be ignored until you set a mesh."));
 	}
 
-	Transform t = get_transform();
+	Transform3D t = get_transform();
 	if ((ABS(t.basis.get_axis(0).length() - 1.0) > 0.05 || ABS(t.basis.get_axis(1).length() - 1.0) > 0.05 || ABS(t.basis.get_axis(2).length() - 1.0) > 0.05)) {
 		warnings.push_back(TTR("Size changes to SoftBody3D will be overridden by the physics engine when running.\nChange the size in children collision shapes instead."));
 	}
@@ -408,7 +408,7 @@ void SoftBody3D::_draw_soft_mesh() {
 		/// Necessary in order to render the mesh correctly (Soft body nodes are in global space)
 		simulation_started = true;
 		call_deferred("set_as_top_level", true);
-		call_deferred("set_transform", Transform());
+		call_deferred("set_transform", Transform3D());
 	}
 
 	_update_physics_server();

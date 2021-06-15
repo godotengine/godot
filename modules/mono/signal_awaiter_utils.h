@@ -31,7 +31,7 @@
 #ifndef SIGNAL_AWAITER_UTILS_H
 #define SIGNAL_AWAITER_UTILS_H
 
-#include "core/object/reference.h"
+#include "core/object/ref_counted.h"
 
 #include "csharp_script.h"
 #include "mono_gc_handle.h"

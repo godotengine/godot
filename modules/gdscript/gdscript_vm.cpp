@@ -166,10 +166,10 @@ void (*type_init_function_table[])(Variant *) = {
 	&VariantInitializer<Vector3i>::init, // VECTOR3I.
 	&VariantInitializer<Transform2D>::init, // TRANSFORM2D.
 	&VariantInitializer<Plane>::init, // PLANE.
-	&VariantInitializer<Quat>::init, // QUAT.
+	&VariantInitializer<Quaternion>::init, // QUATERNION.
 	&VariantInitializer<AABB>::init, // AABB.
 	&VariantInitializer<Basis>::init, // BASIS.
-	&VariantInitializer<Transform>::init, // TRANSFORM.
+	&VariantInitializer<Transform3D>::init, // TRANSFORM3D.
 	&VariantInitializer<Color>::init, // COLOR.
 	&VariantInitializer<StringName>::init, // STRING_NAME.
 	&VariantInitializer<NodePath>::init, // NODE_PATH.
@@ -248,10 +248,10 @@ void (*type_init_function_table[])(Variant *) = {
 		&&OPCODE_CALL_PTRCALL_VECTOR3I,              \
 		&&OPCODE_CALL_PTRCALL_TRANSFORM2D,           \
 		&&OPCODE_CALL_PTRCALL_PLANE,                 \
-		&&OPCODE_CALL_PTRCALL_QUAT,                  \
+		&&OPCODE_CALL_PTRCALL_QUATERNION,            \
 		&&OPCODE_CALL_PTRCALL_AABB,                  \
 		&&OPCODE_CALL_PTRCALL_BASIS,                 \
-		&&OPCODE_CALL_PTRCALL_TRANSFORM,             \
+		&&OPCODE_CALL_PTRCALL_TRANSFORM3D,           \
 		&&OPCODE_CALL_PTRCALL_COLOR,                 \
 		&&OPCODE_CALL_PTRCALL_STRING_NAME,           \
 		&&OPCODE_CALL_PTRCALL_NODE_PATH,             \
@@ -335,7 +335,7 @@ void (*type_init_function_table[])(Variant *) = {
 		&&OPCODE_TYPE_ADJUST_VECTOR3I,               \
 		&&OPCODE_TYPE_ADJUST_TRANSFORM2D,            \
 		&&OPCODE_TYPE_ADJUST_PLANE,                  \
-		&&OPCODE_TYPE_ADJUST_QUAT,                   \
+		&&OPCODE_TYPE_ADJUST_QUATERNION,             \
 		&&OPCODE_TYPE_ADJUST_AABB,                   \
 		&&OPCODE_TYPE_ADJUST_BASIS,                  \
 		&&OPCODE_TYPE_ADJUST_TRANSFORM,              \
@@ -398,7 +398,7 @@ void (*type_init_function_table[])(Variant *) = {
 #define OP_GET_VECTOR3I get_vector3i
 #define OP_GET_RECT2 get_rect2
 #define OP_GET_RECT2I get_rect2i
-#define OP_GET_QUAT get_quat
+#define OP_GET_QUATERNION get_quaternion
 #define OP_GET_COLOR get_color
 #define OP_GET_STRING get_string
 #define OP_GET_STRING_NAME get_string_name
@@ -416,7 +416,7 @@ void (*type_init_function_table[])(Variant *) = {
 #define OP_GET_PACKED_VECTOR2_ARRAY get_vector2_array
 #define OP_GET_PACKED_VECTOR3_ARRAY get_vector3_array
 #define OP_GET_PACKED_COLOR_ARRAY get_color_array
-#define OP_GET_TRANSFORM get_transform
+#define OP_GET_TRANSFORM3D get_transform
 #define OP_GET_TRANSFORM2D get_transform2d
 #define OP_GET_PLANE get_plane
 #define OP_GET_AABB get_aabb
@@ -1733,10 +1733,10 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 			OPCODE_CALL_PTR(VECTOR3I);
 			OPCODE_CALL_PTR(TRANSFORM2D);
 			OPCODE_CALL_PTR(PLANE);
-			OPCODE_CALL_PTR(QUAT);
+			OPCODE_CALL_PTR(QUATERNION);
 			OPCODE_CALL_PTR(AABB);
 			OPCODE_CALL_PTR(BASIS);
-			OPCODE_CALL_PTR(TRANSFORM);
+			OPCODE_CALL_PTR(TRANSFORM3D);
 			OPCODE_CALL_PTR(COLOR);
 			OPCODE_CALL_PTR(STRING_NAME);
 			OPCODE_CALL_PTR(NODE_PATH);
@@ -1989,7 +1989,10 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 
 				ip += instr_arg_count;
 
-				int self_fun = _code_ptr[ip + 1];
+				int argc = _code_ptr[ip + 1];
+				GD_ERR_BREAK(argc < 0);
+
+				int self_fun = _code_ptr[ip + 2];
 #ifdef DEBUG_ENABLED
 				if (self_fun < 0 || self_fun >= _global_names_count) {
 					err_text = "compiler bug, function name not found";
@@ -1997,9 +2000,6 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 				}
 #endif
 				const StringName *methodname = &_global_names_ptr[self_fun];
-
-				int argc = _code_ptr[ip + 2];
-				GD_ERR_BREAK(argc < 0);
 
 				Variant **argptrs = instruction_args;
 
@@ -3150,10 +3150,10 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 			OPCODE_TYPE_ADJUST(VECTOR3I, Vector3i);
 			OPCODE_TYPE_ADJUST(TRANSFORM2D, Transform2D);
 			OPCODE_TYPE_ADJUST(PLANE, Plane);
-			OPCODE_TYPE_ADJUST(QUAT, Quat);
+			OPCODE_TYPE_ADJUST(QUATERNION, Quaternion);
 			OPCODE_TYPE_ADJUST(AABB, AABB);
 			OPCODE_TYPE_ADJUST(BASIS, Basis);
-			OPCODE_TYPE_ADJUST(TRANSFORM, Transform);
+			OPCODE_TYPE_ADJUST(TRANSFORM, Transform3D);
 			OPCODE_TYPE_ADJUST(COLOR, Color);
 			OPCODE_TYPE_ADJUST(STRING_NAME, StringName);
 			OPCODE_TYPE_ADJUST(NODE_PATH, NodePath);

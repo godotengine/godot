@@ -54,7 +54,7 @@
 #define snprintf _snprintf_s
 #endif
 
-#define MAX_DIGITS 6
+#define MAX_DECIMALS 32
 #define UPPERCASE(m_c) (((m_c) >= 'a' && (m_c) <= 'z') ? ((m_c) - ('a' - 'A')) : (m_c))
 #define LOWERCASE(m_c) (((m_c) >= 'A' && (m_c) <= 'Z') ? ((m_c) + ('a' - 'A')) : (m_c))
 #define IS_DIGIT(m_d) ((m_d) >= '0' && (m_d) <= '9')
@@ -1379,8 +1379,11 @@ String String::num(double p_num, int p_decimals) {
 	}
 #ifndef NO_USE_STDLIB
 
-	if (p_decimals > 16) {
-		p_decimals = 16;
+	if (p_decimals < 0) {
+		p_decimals = 14 - (int)floor(log10(p_num));
+	}
+	if (p_decimals > MAX_DECIMALS) {
+		p_decimals = MAX_DECIMALS;
 	}
 
 	char fmt[7];
@@ -1391,7 +1394,6 @@ String String::num(double p_num, int p_decimals) {
 		fmt[1] = 'l';
 		fmt[2] = 'f';
 		fmt[3] = 0;
-
 	} else if (p_decimals < 10) {
 		fmt[2] = '0' + p_decimals;
 		fmt[3] = 'l';
@@ -1458,8 +1460,9 @@ String String::num(double p_num, int p_decimals) {
 		double dec = p_num - (double)((int)p_num);
 
 		int digit = 0;
-		if (p_decimals > MAX_DIGITS)
-			p_decimals = MAX_DIGITS;
+		if (p_decimals > MAX_DECIMALS) {
+			p_decimals = MAX_DECIMALS;
+		}
 
 		int dec_int = 0;
 		int dec_max = 0;
@@ -1471,16 +1474,18 @@ String String::num(double p_num, int p_decimals) {
 			digit++;
 
 			if (p_decimals == -1) {
-				if (digit == MAX_DIGITS) //no point in going to infinite
+				if (digit == MAX_DECIMALS) { //no point in going to infinite
 					break;
+				}
 
 				if (dec - (double)((int)dec) < 1e-6) {
 					break;
 				}
 			}
 
-			if (digit == p_decimals)
+			if (digit == p_decimals) {
 				break;
+			}
 		}
 		dec *= 10;
 		int last = (int)dec % 10;
@@ -1589,7 +1594,7 @@ String String::num_uint64(uint64_t p_num, int base, bool capitalize_hex) {
 	return s;
 }
 
-String String::num_real(double p_num) {
+String String::num_real(double p_num, bool p_trailing) {
 	if (Math::is_nan(p_num)) {
 		return "nan";
 	}
@@ -1616,7 +1621,15 @@ String String::num_real(double p_num) {
 		double dec = p_num - (double)((int)p_num);
 
 		int digit = 0;
-		int decimals = MAX_DIGITS;
+
+#if REAL_T_IS_DOUBLE
+		int decimals = 14 - (int)floor(log10(p_num));
+#else
+		int decimals = 6 - (int)floor(log10(p_num));
+#endif
+		if (decimals > MAX_DECIMALS) {
+			decimals = MAX_DECIMALS;
+		}
 
 		int dec_int = 0;
 		int dec_max = 0;
@@ -1656,8 +1669,10 @@ String String::num_real(double p_num) {
 			dec_int /= 10;
 		}
 		sd = '.' + decimal;
-	} else {
+	} else if (p_trailing) {
 		sd = ".0";
+	} else {
+		sd = "";
 	}
 
 	if (intn == 0) {
@@ -3786,7 +3801,7 @@ String String::humanize_size(uint64_t p_size) {
 	return String::num(p_size / divisor).pad_decimals(digits) + " " + prefixes[prefix_idx];
 }
 
-bool String::is_abs_path() const {
+bool String::is_absolute_path() const {
 	if (length() > 1) {
 		return (operator[](0) == '/' || operator[](0) == '\\' || find(":/") != -1 || find(":\\") != -1);
 	} else if ((length()) == 1) {
@@ -4396,7 +4411,7 @@ bool String::is_resource_file() const {
 }
 
 bool String::is_rel_path() const {
-	return !is_abs_path();
+	return !is_absolute_path();
 }
 
 String String::get_base_dir() const {

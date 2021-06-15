@@ -53,6 +53,11 @@ layout(push_constant, binding = 0, std430) uniform Params {
 
 	vec3 align_up;
 	uint align_mode;
+
+	bool order_by_lifetime;
+	uint lifetime_split;
+	bool lifetime_reverse;
+	uint pad;
 }
 params;
 
@@ -80,7 +85,6 @@ void main() {
 #ifdef MODE_FILL_INSTANCES
 
 	uint particle = gl_GlobalInvocationID.x;
-	uint write_offset = gl_GlobalInvocationID.x * (3 + 1 + 1); //xform + color + custom
 
 	if (particle >= params.total_particles) {
 		return; //discard
@@ -93,7 +97,41 @@ void main() {
 	} else {
 		particle = uint(sort_buffer.data[particle].y); //use index from sort buffer
 	}
-#endif
+#else
+	if (params.order_by_lifetime) {
+		if (params.trail_size > 1) {
+			uint limit = (params.total_particles / params.trail_size) - params.lifetime_split;
+
+			uint base_index = particle / params.trail_size;
+			uint base_offset = particle % params.trail_size;
+
+			if (params.lifetime_reverse) {
+				base_index = (params.total_particles / params.trail_size) - base_index - 1;
+			}
+
+			if (base_index < limit) {
+				base_index = params.lifetime_split + base_index;
+			} else {
+				base_index -= limit;
+			}
+
+			particle = base_index * params.trail_size + base_offset;
+
+		} else {
+			uint limit = params.total_particles - params.lifetime_split;
+
+			if (params.lifetime_reverse) {
+				particle = params.total_particles - particle - 1;
+			}
+
+			if (particle < limit) {
+				particle = params.lifetime_split + particle;
+			} else {
+				particle -= limit;
+			}
+		}
+	}
+#endif // USE_SORT_BUFFER
 
 	mat4 txform;
 
@@ -165,12 +203,17 @@ void main() {
 
 #ifdef MODE_2D
 
+	uint write_offset = gl_GlobalInvocationID.x * (2 + 1 + 1); //xform + color + custom
+
 	instances.data[write_offset + 0] = txform[0];
 	instances.data[write_offset + 1] = txform[1];
 	instances.data[write_offset + 2] = particles.data[particle].color;
 	instances.data[write_offset + 3] = particles.data[particle].custom;
 
 #else
+
+	uint write_offset = gl_GlobalInvocationID.x * (3 + 1 + 1); //xform + color + custom
+
 	instances.data[write_offset + 0] = txform[0];
 	instances.data[write_offset + 1] = txform[1];
 	instances.data[write_offset + 2] = txform[2];

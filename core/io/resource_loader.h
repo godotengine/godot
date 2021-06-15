@@ -35,8 +35,8 @@
 #include "core/os/semaphore.h"
 #include "core/os/thread.h"
 
-class ResourceFormatLoader : public Reference {
-	GDCLASS(ResourceFormatLoader, Reference);
+class ResourceFormatLoader : public RefCounted {
+	GDCLASS(ResourceFormatLoader, RefCounted);
 
 public:
 	enum CacheMode {

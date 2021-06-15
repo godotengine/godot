@@ -190,10 +190,13 @@ Error VariantParser::get_token(Stream *p_stream, Token &r_token, int &line, Stri
 				r_token.type = TK_COLOR;
 				return OK;
 			}
-			case '@': {
+#ifndef DISABLE_DEPRECATED
+			case '@': // Compatibility with 3.x StringNames.
+#endif
+			case '&': { // StringName.
 				cchar = p_stream->get_char();
 				if (cchar != '"') {
-					r_err_str = "Expected '\"' after '@'";
+					r_err_str = "Expected '\"' after '&'";
 					r_token.type = TK_ERROR;
 					return ERR_PARSE_ERROR;
 				}
@@ -614,7 +617,7 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 			}
 
 			value = Plane(args[0], args[1], args[2], args[3]);
-		} else if (id == "Quat") {
+		} else if (id == "Quaternion" || id == "Quat") { // "Quat" kept for compatibility
 			Vector<real_t> args;
 			Error err = _parse_construct<real_t>(p_stream, args, line, r_err_str);
 			if (err) {
@@ -626,7 +629,7 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 				return ERR_PARSE_ERROR;
 			}
 
-			value = Quat(args[0], args[1], args[2], args[3]);
+			value = Quaternion(args[0], args[1], args[2], args[3]);
 		} else if (id == "AABB" || id == "Rect3") {
 			Vector<real_t> args;
 			Error err = _parse_construct<real_t>(p_stream, args, line, r_err_str);
@@ -653,7 +656,7 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 			}
 
 			value = Basis(args[0], args[1], args[2], args[3], args[4], args[5], args[6], args[7], args[8]);
-		} else if (id == "Transform") {
+		} else if (id == "Transform3D" || id == "Transform") { // "Transform" kept for compatibility with Godot <4.
 			Vector<real_t> args;
 			Error err = _parse_construct<real_t>(p_stream, args, line, r_err_str);
 			if (err) {
@@ -665,7 +668,7 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 				return ERR_PARSE_ERROR;
 			}
 
-			value = Transform(Basis(args[0], args[1], args[2], args[3], args[4], args[5], args[6], args[7], args[8]), Vector3(args[9], args[10], args[11]));
+			value = Transform3D(Basis(args[0], args[1], args[2], args[3], args[4], args[5], args[6], args[7], args[8]), Vector3(args[9], args[10], args[11]));
 		} else if (id == "Color") {
 			Vector<float> args;
 			Error err = _parse_construct<float>(p_stream, args, line, r_err_str);
@@ -742,7 +745,7 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 				return ERR_PARSE_ERROR;
 			}
 
-			REF ref = REF(Object::cast_to<Reference>(obj));
+			REF ref = REF(Object::cast_to<RefCounted>(obj));
 
 			get_token(p_stream, token, line, r_err_str);
 			if (token.type != TK_COMMA) {
@@ -1454,9 +1457,9 @@ Error VariantWriter::write(const Variant &p_variant, StoreStringFunc p_store_str
 			p_store_string_func(p_store_string_ud, "AABB( " + rtosfix(aabb.position.x) + ", " + rtosfix(aabb.position.y) + ", " + rtosfix(aabb.position.z) + ", " + rtosfix(aabb.size.x) + ", " + rtosfix(aabb.size.y) + ", " + rtosfix(aabb.size.z) + " )");
 
 		} break;
-		case Variant::QUAT: {
-			Quat quat = p_variant;
-			p_store_string_func(p_store_string_ud, "Quat( " + rtosfix(quat.x) + ", " + rtosfix(quat.y) + ", " + rtosfix(quat.z) + ", " + rtosfix(quat.w) + " )");
+		case Variant::QUATERNION: {
+			Quaternion quaternion = p_variant;
+			p_store_string_func(p_store_string_ud, "Quaternion( " + rtosfix(quaternion.x) + ", " + rtosfix(quaternion.y) + ", " + rtosfix(quaternion.z) + ", " + rtosfix(quaternion.w) + " )");
 
 		} break;
 		case Variant::TRANSFORM2D: {
@@ -1489,9 +1492,9 @@ Error VariantWriter::write(const Variant &p_variant, StoreStringFunc p_store_str
 			p_store_string_func(p_store_string_ud, s + " )");
 
 		} break;
-		case Variant::TRANSFORM: {
-			String s = "Transform( ";
-			Transform t = p_variant;
+		case Variant::TRANSFORM3D: {
+			String s = "Transform3D( ";
+			Transform3D t = p_variant;
 			Basis &m3 = t.basis;
 			for (int i = 0; i < 3; i++) {
 				for (int j = 0; j < 3; j++) {
@@ -1516,7 +1519,7 @@ Error VariantWriter::write(const Variant &p_variant, StoreStringFunc p_store_str
 		case Variant::STRING_NAME: {
 			String str = p_variant;
 
-			str = "@\"" + str.c_escape() + "\"";
+			str = "&\"" + str.c_escape() + "\"";
 			p_store_string_func(p_store_string_ud, str);
 
 		} break;

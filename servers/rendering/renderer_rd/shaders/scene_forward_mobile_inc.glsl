@@ -1,4 +1,9 @@
 #define M_PI 3.14159265359
+#define MAX_VIEWS 2
+
+#if defined(USE_MULTIVIEW) && defined(has_VK_KHR_multiview)
+#extension GL_EXT_multiview : enable
+#endif
 
 #include "decal_data_inc.glsl"
 
@@ -51,7 +56,7 @@ layout(set = 0, binding = 2) uniform sampler shadow_sampler;
 #define INSTANCE_FLAGS_USE_LIGHTMAP_CAPTURE (1 << 8)
 #define INSTANCE_FLAGS_USE_LIGHTMAP (1 << 9)
 #define INSTANCE_FLAGS_USE_SH_LIGHTMAP (1 << 10)
-#define INSTANCE_FLAGS_USE_GIPROBE (1 << 11)
+#define INSTANCE_FLAGS_USE_VOXEL_GI (1 << 11)
 #define INSTANCE_FLAGS_MULTIMESH (1 << 12)
 #define INSTANCE_FLAGS_MULTIMESH_FORMAT_2D (1 << 13)
 #define INSTANCE_FLAGS_MULTIMESH_HAS_COLOR (1 << 14)
@@ -121,9 +126,12 @@ global_variables;
 layout(set = 1, binding = 0, std140) uniform SceneData {
 	mat4 projection_matrix;
 	mat4 inv_projection_matrix;
-
 	mat4 camera_matrix;
 	mat4 inv_camera_matrix;
+
+	// only used for multiview
+	mat4 projection_matrix_view[MAX_VIEWS];
+	mat4 inv_projection_matrix_view[MAX_VIEWS];
 
 	vec2 viewport_size;
 	vec2 screen_pixel_size;

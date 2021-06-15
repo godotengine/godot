@@ -67,7 +67,7 @@ static void plane_space(const Vector3 &n, Vector3 &p, Vector3 &q) {
 	}
 }
 
-HingeJoint3DSW::HingeJoint3DSW(Body3DSW *rbA, Body3DSW *rbB, const Transform &frameA, const Transform &frameB) :
+HingeJoint3DSW::HingeJoint3DSW(Body3DSW *rbA, Body3DSW *rbB, const Transform3D &frameA, const Transform3D &frameB) :
 		Joint3DSW(_arr, 2) {
 	A = rbA;
 	B = rbB;
@@ -126,7 +126,7 @@ HingeJoint3DSW::HingeJoint3DSW(Body3DSW *rbA, Body3DSW *rbB, const Vector3 &pivo
 			rbAxisA1.y, rbAxisA2.y, axisInA.y,
 			rbAxisA1.z, rbAxisA2.z, axisInA.z);
 
-	Quat rotationArc = Quat(axisInA, axisInB);
+	Quaternion rotationArc = Quaternion(axisInA, axisInB);
 	Vector3 rbAxisB1 = rotationArc.xform(rbAxisA1);
 	Vector3 rbAxisB2 = axisInB.cross(rbAxisB1);
 

@@ -31,9 +31,9 @@
 #include "editor_data.h"
 
 #include "core/config/project_settings.h"
+#include "core/io/dir_access.h"
+#include "core/io/file_access.h"
 #include "core/io/resource_loader.h"
-#include "core/os/dir_access.h"
-#include "core/os/file_access.h"
 #include "editor_node.h"
 #include "editor_settings.h"
 #include "scene/resources/packed_scene.h"
@@ -83,7 +83,7 @@ void EditorHistory::cleanup_history() {
 void EditorHistory::_add_object(ObjectID p_object, const String &p_property, int p_level_change, bool p_inspector_only) {
 	Object *obj = ObjectDB::get_instance(p_object);
 	ERR_FAIL_COND(!obj);
-	Reference *r = Object::cast_to<Reference>(obj);
+	RefCounted *r = Object::cast_to<RefCounted>(obj);
 	Obj o;
 	if (r) {
 		o.ref = REF(r);

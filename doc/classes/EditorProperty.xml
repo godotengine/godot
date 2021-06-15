@@ -9,6 +9,13 @@
 	<tutorials>
 	</tutorials>
 	<methods>
+		<method name="_update_property" qualifiers="virtual">
+			<return type="void">
+			</return>
+			<description>
+				When this virtual function is called, you must update your editor.
+			</description>
+		</method>
 		<method name="add_focusable">
 			<return type="void">
 			</return>
@@ -25,7 +32,7 @@
 			</argument>
 			<argument index="1" name="value" type="Variant">
 			</argument>
-			<argument index="2" name="field" type="StringName" default="@&quot;&quot;">
+			<argument index="2" name="field" type="StringName" default="&amp;&quot;&quot;">
 			</argument>
 			<argument index="3" name="changing" type="bool" default="false">
 			</argument>
@@ -44,7 +51,7 @@
 			<return type="StringName">
 			</return>
 			<description>
-				Gets the edited property. If your editor is for a single property (added via [method EditorInspectorPlugin.parse_property]), then this will return the property.
+				Gets the edited property. If your editor is for a single property (added via [method EditorInspectorPlugin._parse_property]), then this will return the property.
 			</description>
 		</method>
 		<method name="get_tooltip_text" qualifiers="const">
@@ -61,13 +68,6 @@
 			</argument>
 			<description>
 				Adds controls with this function if you want them on the bottom (below the label).
-			</description>
-		</method>
-		<method name="update_property" qualifiers="virtual">
-			<return type="void">
-			</return>
-			<description>
-				When this virtual function is called, you must update your editor.
 			</description>
 		</method>
 	</methods>
@@ -101,7 +101,7 @@
 			<argument index="1" name="value" type="Array">
 			</argument>
 			<description>
-				Emit it if you want multiple properties modified at the same time. Do not use if added via [method EditorInspectorPlugin.parse_property].
+				Emit it if you want multiple properties modified at the same time. Do not use if added via [method EditorInspectorPlugin._parse_property].
 			</description>
 		</signal>
 		<signal name="object_id_selected">

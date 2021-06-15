@@ -37,9 +37,9 @@
 #include "core/math/color.h"
 #include "core/math/face3.h"
 #include "core/math/plane.h"
-#include "core/math/quat.h"
-#include "core/math/transform.h"
+#include "core/math/quaternion.h"
 #include "core/math/transform_2d.h"
+#include "core/math/transform_3d.h"
 #include "core/math/vector3.h"
 #include "core/math/vector3i.h"
 #include "core/object/object_id.h"
@@ -88,10 +88,10 @@ public:
 		VECTOR3I,
 		TRANSFORM2D,
 		PLANE,
-		QUAT,
+		QUATERNION,
 		AABB,
 		BASIS,
-		TRANSFORM,
+		TRANSFORM3D,
 
 		// misc types
 		COLOR,
@@ -200,7 +200,7 @@ private:
 		Transform2D *_transform2d;
 		::AABB *_aabb;
 		Basis *_basis;
-		Transform *_transform;
+		Transform3D *_transform3d;
 		PackedArrayRefBase *packed_array;
 		void *_ptr; //generic pointer
 		uint8_t _mem[sizeof(ObjData) > (sizeof(real_t) * 4) ? sizeof(ObjData) : (sizeof(real_t) * 4)];
@@ -225,7 +225,7 @@ private:
 			false, //VECTOR3I,
 			true, //TRANSFORM2D,
 			false, //PLANE,
-			false, //QUAT,
+			false, //QUATERNION,
 			true, //AABB,
 			true, //BASIS,
 			true, //TRANSFORM,
@@ -320,10 +320,10 @@ public:
 	operator Vector3i() const;
 	operator Plane() const;
 	operator ::AABB() const;
-	operator Quat() const;
+	operator Quaternion() const;
 	operator Basis() const;
-	operator Transform() const;
 	operator Transform2D() const;
+	operator Transform3D() const;
 
 	operator Color() const;
 	operator NodePath() const;
@@ -392,10 +392,10 @@ public:
 	Variant(const Vector3i &p_vector3i);
 	Variant(const Plane &p_plane);
 	Variant(const ::AABB &p_aabb);
-	Variant(const Quat &p_quat);
+	Variant(const Quaternion &p_quat);
 	Variant(const Basis &p_matrix);
 	Variant(const Transform2D &p_transform);
-	Variant(const Transform &p_transform);
+	Variant(const Transform3D &p_transform);
 	Variant(const Color &p_color);
 	Variant(const NodePath &p_node_path);
 	Variant(const ::RID &p_rid);

@@ -94,7 +94,7 @@ void ContextGL_Windows::swap_buffers() {
 
 		if (vsync_via_compositor_now != vsync_via_compositor) {
 			// The previous frame had a different operating mode than this
-			// frame.  Set the 'vsync_via_compositor' member variable and the
+			// frame. Set the 'vsync_via_compositor' member variable and the
 			// OpenGL swap interval to their proper values.
 			set_use_vsync(true);
 		}

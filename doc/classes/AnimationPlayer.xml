@@ -275,7 +275,8 @@
 			<argument index="1" name="new_name" type="StringName">
 			</argument>
 			<description>
-				If the currently being played animation changes, this signal will notify of such change.
+				Emitted when a queued animation plays after the previous animation was finished. See [method queue].
+				[b]Note:[/b] The signal is not emitted when the animation is changed via [method play] or from [AnimationTree].
 			</description>
 		</signal>
 		<signal name="animation_finished">

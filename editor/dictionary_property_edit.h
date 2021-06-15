@@ -33,8 +33,8 @@
 
 #include "scene/main/node.h"
 
-class DictionaryPropertyEdit : public Reference {
-	GDCLASS(DictionaryPropertyEdit, Reference);
+class DictionaryPropertyEdit : public RefCounted {
+	GDCLASS(DictionaryPropertyEdit, RefCounted);
 
 	ObjectID obj;
 	StringName property;

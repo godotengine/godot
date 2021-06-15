@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="RefCounted" inherits="Object" version="4.0">
+	<brief_description>
+		Base class for reference-counted objects.
+	</brief_description>
+	<description>
+		Base class for any object that keeps a reference count. [Resource] and many other helper objects inherit this class.
+		Unlike other [Object] types, References keep an internal reference counter so that they are automatically released when no longer in use, and only then. References therefore do not need to be freed manually with [method Object.free].
+		In the vast majority of use cases, instantiating and using [RefCounted]-derived types is all you need to do. The methods provided in this class are only for advanced users, and can cause issues if misused.
+		[b]Note:[/b] In C#, references will not be freed instantly after they are no longer in use. Instead, garbage collection will run periodically and will free references that are no longer in use. This means that unused references will linger on for a while before being removed.
+	</description>
+	<tutorials>
+		<link title="When and how to avoid using nodes for everything">https://docs.godotengine.org/en/latest/getting_started/workflow/best_practices/node_alternatives.html</link>
+	</tutorials>
+	<methods>
+		<method name="init_ref">
+			<return type="bool">
+			</return>
+			<description>
+				Initializes the internal reference counter. Use this only if you really know what you are doing.
+				Returns whether the initialization was successful.
+			</description>
+		</method>
+		<method name="reference">
+			<return type="bool">
+			</return>
+			<description>
+				Increments the internal reference counter. Use this only if you really know what you are doing.
+				Returns [code]true[/code] if the increment was successful, [code]false[/code] otherwise.
+			</description>
+		</method>
+		<method name="unreference">
+			<return type="bool">
+			</return>
+			<description>
+				Decrements the internal reference counter. Use this only if you really know what you are doing.
+				Returns [code]true[/code] if the decrement was successful, [code]false[/code] otherwise.
+			</description>
+		</method>
+	</methods>
+	<constants>
+	</constants>
+</class>

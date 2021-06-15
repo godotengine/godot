@@ -38,15 +38,15 @@
 #include "servers/rendering/renderer_rd/effects_rd.h"
 #include "servers/rendering/renderer_rd/shader_compiler_rd.h"
 #include "servers/rendering/renderer_rd/shaders/canvas_sdf.glsl.gen.h"
-#include "servers/rendering/renderer_rd/shaders/giprobe_sdf.glsl.gen.h"
 #include "servers/rendering/renderer_rd/shaders/particles.glsl.gen.h"
 #include "servers/rendering/renderer_rd/shaders/particles_copy.glsl.gen.h"
 #include "servers/rendering/renderer_rd/shaders/skeleton.glsl.gen.h"
+#include "servers/rendering/renderer_rd/shaders/voxel_gi_sdf.glsl.gen.h"
 #include "servers/rendering/renderer_scene_render.h"
 #include "servers/rendering/rendering_device.h"
 class RendererStorageRD : public RendererStorage {
 public:
-	static _FORCE_INLINE_ void store_transform(const Transform &p_mtx, float *p_array) {
+	static _FORCE_INLINE_ void store_transform(const Transform3D &p_mtx, float *p_array) {
 		p_array[0] = p_mtx.basis.elements[0][0];
 		p_array[1] = p_mtx.basis.elements[1][0];
 		p_array[2] = p_mtx.basis.elements[2][0];
@@ -95,7 +95,7 @@ public:
 		p_array[11] = 0;
 	}
 
-	static _FORCE_INLINE_ void store_transform_transposed_3x4(const Transform &p_mtx, float *p_array) {
+	static _FORCE_INLINE_ void store_transform_transposed_3x4(const Transform3D &p_mtx, float *p_array) {
 		p_array[0] = p_mtx.basis.elements[0][0];
 		p_array[1] = p_mtx.basis.elements[0][1];
 		p_array[2] = p_mtx.basis.elements[0][2];
@@ -638,7 +638,9 @@ private:
 			COLLISION_TYPE_SPHERE,
 			COLLISION_TYPE_BOX,
 			COLLISION_TYPE_SDF,
-			COLLISION_TYPE_HEIGHT_FIELD
+			COLLISION_TYPE_HEIGHT_FIELD,
+			COLLISION_TYPE_2D_SDF,
+
 		};
 
 		struct Collider {
@@ -710,6 +712,13 @@ private:
 		bool restart_request = false;
 		AABB custom_aabb = AABB(Vector3(-4, -4, -4), Vector3(8, 8, 8));
 		bool use_local_coords = true;
+		bool has_collision_cache = false;
+
+		bool has_sdf_collision = false;
+		Transform2D sdf_collision_transform;
+		Rect2 sdf_collision_to_screen;
+		RID sdf_collision_texture;
+
 		RID process_material;
 		uint32_t frame_counter = 0;
 		RS::ParticlesTransformAlign transform_align = RS::PARTICLES_TRANSFORM_ALIGN_DISABLED;
@@ -717,7 +726,7 @@ private:
 		RS::ParticlesDrawOrder draw_order = RS::PARTICLES_DRAW_ORDER_INDEX;
 
 		Vector<RID> draw_passes;
-		Vector<Transform> trail_bind_poses;
+		Vector<Transform3D> trail_bind_poses;
 		bool trail_bind_poses_dirty = false;
 		RID trail_bind_pose_buffer;
 		RID trail_bind_pose_uniform_set;
@@ -762,7 +771,7 @@ private:
 
 		bool force_sub_emit = false;
 
-		Transform emission_transform;
+		Transform3D emission_transform;
 
 		Vector<uint8_t> emission_buffer_data;
 
@@ -820,6 +829,11 @@ private:
 
 			float align_up[3];
 			uint32_t align_mode;
+
+			uint32_t order_by_lifetime;
+			uint32_t lifetime_split;
+			uint32_t lifetime_reverse;
+			uint32_t pad;
 		};
 
 		enum {
@@ -843,6 +857,7 @@ private:
 	struct ParticlesShaderData : public ShaderData {
 		bool valid;
 		RID version;
+		bool uses_collision = false;
 
 		//PipelineCacheRD pipelines[SKY_VERSION_MAX];
 		Map<StringName, ShaderLanguage::ShaderNode::Uniform> uniforms;
@@ -926,7 +941,7 @@ private:
 
 	struct ParticlesCollisionInstance {
 		RID collision;
-		Transform transform;
+		Transform3D transform;
 		bool active = false;
 	};
 
@@ -1030,9 +1045,9 @@ private:
 
 	mutable RID_Owner<Decal, true> decal_owner;
 
-	/* GI PROBE */
+	/* VOXEL GI */
 
-	struct GIProbe {
+	struct VoxelGI {
 		RID octree_buffer;
 		RID data_buffer;
 		RID sdf_texture;
@@ -1044,7 +1059,7 @@ private:
 
 		int cell_count = 0;
 
-		Transform to_cell_xform;
+		Transform3D to_cell_xform;
 		AABB bounds;
 		Vector3i octree_size;
 
@@ -1066,12 +1081,12 @@ private:
 		Dependency dependency;
 	};
 
-	GiprobeSdfShaderRD giprobe_sdf_shader;
-	RID giprobe_sdf_shader_version;
-	RID giprobe_sdf_shader_version_shader;
-	RID giprobe_sdf_shader_pipeline;
+	VoxelGiSdfShaderRD voxel_gi_sdf_shader;
+	RID voxel_gi_sdf_shader_version;
+	RID voxel_gi_sdf_shader_version_shader;
+	RID voxel_gi_sdf_shader_pipeline;
 
-	mutable RID_Owner<GIProbe, true> gi_probe_owner;
+	mutable RID_Owner<VoxelGI, true> voxel_gi_owner;
 
 	/* REFLECTION PROBE */
 
@@ -1110,6 +1125,7 @@ private:
 
 	struct RenderTarget {
 		Size2i size;
+		uint32_t view_count;
 		RID framebuffer;
 		RID color;
 
@@ -1119,6 +1135,8 @@ private:
 		Image::Format image_format = Image::FORMAT_L8;
 
 		bool flags[RENDER_TARGET_FLAG_MAX];
+
+		bool sdf_enabled = false;
 
 		RID backbuffer; //used for effects
 		RID backbuffer_fb;
@@ -1644,14 +1662,14 @@ public:
 	int multimesh_get_instance_count(RID p_multimesh) const;
 
 	void multimesh_set_mesh(RID p_multimesh, RID p_mesh);
-	void multimesh_instance_set_transform(RID p_multimesh, int p_index, const Transform &p_transform);
+	void multimesh_instance_set_transform(RID p_multimesh, int p_index, const Transform3D &p_transform);
 	void multimesh_instance_set_transform_2d(RID p_multimesh, int p_index, const Transform2D &p_transform);
 	void multimesh_instance_set_color(RID p_multimesh, int p_index, const Color &p_color);
 	void multimesh_instance_set_custom_data(RID p_multimesh, int p_index, const Color &p_color);
 
 	RID multimesh_get_mesh(RID p_multimesh) const;
 
-	Transform multimesh_instance_get_transform(RID p_multimesh, int p_index) const;
+	Transform3D multimesh_instance_get_transform(RID p_multimesh, int p_index) const;
 	Transform2D multimesh_instance_get_transform_2d(RID p_multimesh, int p_index) const;
 	Color multimesh_instance_get_color(RID p_multimesh, int p_index) const;
 	Color multimesh_instance_get_custom_data(RID p_multimesh, int p_index) const;
@@ -1742,10 +1760,10 @@ public:
 
 	void skeleton_allocate_data(RID p_skeleton, int p_bones, bool p_2d_skeleton = false);
 	void skeleton_set_base_transform_2d(RID p_skeleton, const Transform2D &p_base_transform);
-	void skeleton_set_world_transform(RID p_skeleton, bool p_enable, const Transform &p_world_transform);
+	void skeleton_set_world_transform(RID p_skeleton, bool p_enable, const Transform3D &p_world_transform);
 	int skeleton_get_bone_count(RID p_skeleton) const;
-	void skeleton_bone_set_transform(RID p_skeleton, int p_bone, const Transform &p_transform);
-	Transform skeleton_bone_get_transform(RID p_skeleton, int p_bone) const;
+	void skeleton_bone_set_transform(RID p_skeleton, int p_bone, const Transform3D &p_transform);
+	Transform3D skeleton_bone_get_transform(RID p_skeleton, int p_bone) const;
 	void skeleton_bone_set_transform_2d(RID p_skeleton, int p_bone, const Transform2D &p_transform);
 	Transform2D skeleton_bone_get_transform_2d(RID p_skeleton, int p_bone) const;
 
@@ -2002,59 +2020,59 @@ public:
 
 	virtual AABB decal_get_aabb(RID p_decal) const;
 
-	/* GI PROBE API */
+	/* VOXEL GI API */
 
-	RID gi_probe_allocate();
-	void gi_probe_initialize(RID p_gi_probe);
+	RID voxel_gi_allocate();
+	void voxel_gi_initialize(RID p_voxel_gi);
 
-	void gi_probe_allocate_data(RID p_gi_probe, const Transform &p_to_cell_xform, const AABB &p_aabb, const Vector3i &p_octree_size, const Vector<uint8_t> &p_octree_cells, const Vector<uint8_t> &p_data_cells, const Vector<uint8_t> &p_distance_field, const Vector<int> &p_level_counts);
+	void voxel_gi_allocate_data(RID p_voxel_gi, const Transform3D &p_to_cell_xform, const AABB &p_aabb, const Vector3i &p_octree_size, const Vector<uint8_t> &p_octree_cells, const Vector<uint8_t> &p_data_cells, const Vector<uint8_t> &p_distance_field, const Vector<int> &p_level_counts);
 
-	AABB gi_probe_get_bounds(RID p_gi_probe) const;
-	Vector3i gi_probe_get_octree_size(RID p_gi_probe) const;
-	Vector<uint8_t> gi_probe_get_octree_cells(RID p_gi_probe) const;
-	Vector<uint8_t> gi_probe_get_data_cells(RID p_gi_probe) const;
-	Vector<uint8_t> gi_probe_get_distance_field(RID p_gi_probe) const;
+	AABB voxel_gi_get_bounds(RID p_voxel_gi) const;
+	Vector3i voxel_gi_get_octree_size(RID p_voxel_gi) const;
+	Vector<uint8_t> voxel_gi_get_octree_cells(RID p_voxel_gi) const;
+	Vector<uint8_t> voxel_gi_get_data_cells(RID p_voxel_gi) const;
+	Vector<uint8_t> voxel_gi_get_distance_field(RID p_voxel_gi) const;
 
-	Vector<int> gi_probe_get_level_counts(RID p_gi_probe) const;
-	Transform gi_probe_get_to_cell_xform(RID p_gi_probe) const;
+	Vector<int> voxel_gi_get_level_counts(RID p_voxel_gi) const;
+	Transform3D voxel_gi_get_to_cell_xform(RID p_voxel_gi) const;
 
-	void gi_probe_set_dynamic_range(RID p_gi_probe, float p_range);
-	float gi_probe_get_dynamic_range(RID p_gi_probe) const;
+	void voxel_gi_set_dynamic_range(RID p_voxel_gi, float p_range);
+	float voxel_gi_get_dynamic_range(RID p_voxel_gi) const;
 
-	void gi_probe_set_propagation(RID p_gi_probe, float p_range);
-	float gi_probe_get_propagation(RID p_gi_probe) const;
+	void voxel_gi_set_propagation(RID p_voxel_gi, float p_range);
+	float voxel_gi_get_propagation(RID p_voxel_gi) const;
 
-	void gi_probe_set_energy(RID p_gi_probe, float p_energy);
-	float gi_probe_get_energy(RID p_gi_probe) const;
+	void voxel_gi_set_energy(RID p_voxel_gi, float p_energy);
+	float voxel_gi_get_energy(RID p_voxel_gi) const;
 
-	void gi_probe_set_ao(RID p_gi_probe, float p_ao);
-	float gi_probe_get_ao(RID p_gi_probe) const;
+	void voxel_gi_set_ao(RID p_voxel_gi, float p_ao);
+	float voxel_gi_get_ao(RID p_voxel_gi) const;
 
-	void gi_probe_set_ao_size(RID p_gi_probe, float p_strength);
-	float gi_probe_get_ao_size(RID p_gi_probe) const;
+	void voxel_gi_set_ao_size(RID p_voxel_gi, float p_strength);
+	float voxel_gi_get_ao_size(RID p_voxel_gi) const;
 
-	void gi_probe_set_bias(RID p_gi_probe, float p_bias);
-	float gi_probe_get_bias(RID p_gi_probe) const;
+	void voxel_gi_set_bias(RID p_voxel_gi, float p_bias);
+	float voxel_gi_get_bias(RID p_voxel_gi) const;
 
-	void gi_probe_set_normal_bias(RID p_gi_probe, float p_range);
-	float gi_probe_get_normal_bias(RID p_gi_probe) const;
+	void voxel_gi_set_normal_bias(RID p_voxel_gi, float p_range);
+	float voxel_gi_get_normal_bias(RID p_voxel_gi) const;
 
-	void gi_probe_set_interior(RID p_gi_probe, bool p_enable);
-	bool gi_probe_is_interior(RID p_gi_probe) const;
+	void voxel_gi_set_interior(RID p_voxel_gi, bool p_enable);
+	bool voxel_gi_is_interior(RID p_voxel_gi) const;
 
-	void gi_probe_set_use_two_bounces(RID p_gi_probe, bool p_enable);
-	bool gi_probe_is_using_two_bounces(RID p_gi_probe) const;
+	void voxel_gi_set_use_two_bounces(RID p_voxel_gi, bool p_enable);
+	bool voxel_gi_is_using_two_bounces(RID p_voxel_gi) const;
 
-	void gi_probe_set_anisotropy_strength(RID p_gi_probe, float p_strength);
-	float gi_probe_get_anisotropy_strength(RID p_gi_probe) const;
+	void voxel_gi_set_anisotropy_strength(RID p_voxel_gi, float p_strength);
+	float voxel_gi_get_anisotropy_strength(RID p_voxel_gi) const;
 
-	uint32_t gi_probe_get_version(RID p_probe);
-	uint32_t gi_probe_get_data_version(RID p_probe);
+	uint32_t voxel_gi_get_version(RID p_probe);
+	uint32_t voxel_gi_get_data_version(RID p_probe);
 
-	RID gi_probe_get_octree_buffer(RID p_gi_probe) const;
-	RID gi_probe_get_data_buffer(RID p_gi_probe) const;
+	RID voxel_gi_get_octree_buffer(RID p_voxel_gi) const;
+	RID voxel_gi_get_data_buffer(RID p_voxel_gi) const;
 
-	RID gi_probe_get_sdf_texture(RID p_gi_probe);
+	RID voxel_gi_get_sdf_texture(RID p_voxel_gi);
 
 	/* LIGHTMAP CAPTURE */
 
@@ -2130,10 +2148,10 @@ public:
 	void particles_set_transform_align(RID p_particles, RS::ParticlesTransformAlign p_transform_align);
 
 	void particles_set_trails(RID p_particles, bool p_enable, float p_length);
-	void particles_set_trail_bind_poses(RID p_particles, const Vector<Transform> &p_bind_poses);
+	void particles_set_trail_bind_poses(RID p_particles, const Vector<Transform3D> &p_bind_poses);
 
 	void particles_restart(RID p_particles);
-	void particles_emit(RID p_particles, const Transform &p_transform, const Vector3 &p_velocity, const Color &p_color, const Color &p_custom, uint32_t p_emit_flags);
+	void particles_emit(RID p_particles, const Transform3D &p_transform, const Vector3 &p_velocity, const Color &p_color, const Color &p_custom, uint32_t p_emit_flags);
 
 	void particles_set_subemitter(RID p_particles, RID p_subemitter_particles);
 
@@ -2146,7 +2164,7 @@ public:
 	AABB particles_get_current_aabb(RID p_particles);
 	AABB particles_get_aabb(RID p_particles) const;
 
-	void particles_set_emission_transform(RID p_particles, const Transform &p_transform);
+	void particles_set_emission_transform(RID p_particles, const Transform3D &p_transform);
 
 	bool particles_get_emitting(RID p_particles);
 	int particles_get_draw_passes(RID p_particles) const;
@@ -2173,6 +2191,13 @@ public:
 		}
 
 		return particles->amount * r_trail_divisor;
+	}
+
+	_FORCE_INLINE_ bool particles_has_collision(RID p_particles) {
+		Particles *particles = particles_owner.getornull(p_particles);
+		ERR_FAIL_COND_V(!particles, 0);
+
+		return particles->has_collision_cache;
 	}
 
 	_FORCE_INLINE_ uint32_t particles_is_using_local_coords(RID p_particles) {
@@ -2206,6 +2231,7 @@ public:
 
 	virtual void particles_add_collision(RID p_particles, RID p_particles_collision_instance);
 	virtual void particles_remove_collision(RID p_particles, RID p_particles_collision_instance);
+	virtual void particles_set_canvas_sdf_collision(RID p_particles, bool p_enable, const Transform2D &p_xform, const Rect2 &p_to_screen, RID p_texture);
 
 	/* PARTICLES COLLISION */
 
@@ -2229,7 +2255,7 @@ public:
 
 	//used from 2D and 3D
 	virtual RID particles_collision_instance_create(RID p_collision);
-	virtual void particles_collision_instance_set_transform(RID p_collision_instance, const Transform &p_transform);
+	virtual void particles_collision_instance_set_transform(RID p_collision_instance, const Transform3D &p_transform);
 	virtual void particles_collision_instance_set_active(RID p_collision_instance, bool p_active);
 
 	/* GLOBAL VARIABLES API */
@@ -2257,7 +2283,7 @@ public:
 
 	RID render_target_create();
 	void render_target_set_position(RID p_render_target, int p_x, int p_y);
-	void render_target_set_size(RID p_render_target, int p_width, int p_height);
+	void render_target_set_size(RID p_render_target, int p_width, int p_height, uint32_t p_view_count);
 	RID render_target_get_texture(RID p_render_target);
 	void render_target_set_external_texture(RID p_render_target, unsigned int p_texture_id);
 	void render_target_set_flag(RID p_render_target, RenderTargetFlags p_flag, bool p_value);
@@ -2280,6 +2306,8 @@ public:
 	RID render_target_get_sdf_framebuffer(RID p_render_target);
 	void render_target_sdf_process(RID p_render_target);
 	virtual Rect2i render_target_get_sdf_rect(RID p_render_target) const;
+	void render_target_mark_sdf_enabled(RID p_render_target, bool p_enabled);
+	bool render_target_is_sdf_enabled(RID p_render_target) const;
 
 	Size2 render_target_get_size(RID p_render_target);
 	RID render_target_get_rd_framebuffer(RID p_render_target);

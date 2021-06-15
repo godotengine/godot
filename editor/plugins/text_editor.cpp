@@ -281,6 +281,10 @@ void TextEditor::clear_edit_menu() {
 	memdelete(edit_hb);
 }
 
+void TextEditor::set_find_replace_bar(FindReplaceBar *p_bar) {
+	code_editor->set_find_replace_bar(p_bar);
+}
+
 void TextEditor::_edit_option(int p_op) {
 	CodeEdit *tx = code_editor->get_text_editor();
 
@@ -538,7 +542,7 @@ TextEditor::TextEditor() {
 	edit_menu->get_popup()->connect("id_pressed", callable_mp(this, &TextEditor::_edit_option));
 
 	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("ui_undo"), EDIT_UNDO);
-	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("un_redo"), EDIT_REDO);
+	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("ui_redo"), EDIT_REDO);
 	edit_menu->get_popup()->add_separator();
 	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("ui_cut"), EDIT_CUT);
 	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("ui_copy"), EDIT_COPY);

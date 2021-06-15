@@ -31,9 +31,9 @@
 #include "filesystem_dock.h"
 
 #include "core/config/project_settings.h"
+#include "core/io/dir_access.h"
+#include "core/io/file_access.h"
 #include "core/io/resource_loader.h"
-#include "core/os/dir_access.h"
-#include "core/os/file_access.h"
 #include "core/os/keyboard.h"
 #include "core/os/os.h"
 #include "core/templates/list.h"
@@ -2751,9 +2751,9 @@ void FileSystemDock::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_tree_thumbnail_done"), &FileSystemDock::_tree_thumbnail_done);
 	ClassDB::bind_method(D_METHOD("_select_file"), &FileSystemDock::_select_file);
 
-	ClassDB::bind_method(D_METHOD("get_drag_data_fw", "position", "from"), &FileSystemDock::get_drag_data_fw);
-	ClassDB::bind_method(D_METHOD("can_drop_data_fw", "position", "data", "from"), &FileSystemDock::can_drop_data_fw);
-	ClassDB::bind_method(D_METHOD("drop_data_fw", "position", "data", "from"), &FileSystemDock::drop_data_fw);
+	ClassDB::bind_method(D_METHOD("_get_drag_data_fw", "position", "from"), &FileSystemDock::get_drag_data_fw);
+	ClassDB::bind_method(D_METHOD("_can_drop_data_fw", "position", "data", "from"), &FileSystemDock::can_drop_data_fw);
+	ClassDB::bind_method(D_METHOD("_drop_data_fw", "position", "data", "from"), &FileSystemDock::drop_data_fw);
 	ClassDB::bind_method(D_METHOD("navigate_to_path", "path"), &FileSystemDock::navigate_to_path);
 
 	ClassDB::bind_method(D_METHOD("_update_import_dock"), &FileSystemDock::_update_import_dock);
@@ -2777,22 +2777,7 @@ FileSystemDock::FileSystemDock(EditorNode *p_editor) {
 	// `KEY_MASK_CMD | KEY_C` conflicts with other editor shortcuts.
 	ED_SHORTCUT("filesystem_dock/copy_path", TTR("Copy Path"), KEY_MASK_CMD | KEY_MASK_SHIFT | KEY_C);
 	ED_SHORTCUT("filesystem_dock/duplicate", TTR("Duplicate..."), KEY_MASK_CMD | KEY_D);
-
-#if defined(WINDOWS_ENABLED)
-	// TRANSLATORS: This string is only used on Windows, as it refers to the system trash
-	// as "Recycle Bin" instead of "Trash". Make sure to use the translation of "Recycle Bin"
-	// recommended by Microsoft for the target language.
-	ED_SHORTCUT("filesystem_dock/delete", TTR("Move to Recycle Bin"), KEY_DELETE);
-#elif defined(OSX_ENABLED)
-	// TRANSLATORS: This string is only used on macOS, as it refers to the system trash
-	// as "Bin" instead of "Trash". Make sure to use the translation of "Bin"
-	// recommended by Apple for the target language.
-	ED_SHORTCUT("filesystem_dock/delete", TTR("Move to Bin"), KEY_DELETE);
-#else
-	// TRANSLATORS: This string is only used on platforms other than Windows and macOS.
-	ED_SHORTCUT("filesystem_dock/delete", TTR("Move to Trash"), KEY_DELETE);
-#endif
-
+	ED_SHORTCUT("filesystem_dock/delete", TTR("Delete"), KEY_DELETE);
 	ED_SHORTCUT("filesystem_dock/rename", TTR("Rename..."), KEY_F2);
 
 	VBoxContainer *top_vbc = memnew(VBoxContainer);
@@ -2834,6 +2819,7 @@ FileSystemDock::FileSystemDock(EditorNode *p_editor) {
 	button_toggle_display_mode->connect("toggled", callable_mp(this, &FileSystemDock::_toggle_split_mode));
 	button_toggle_display_mode->set_focus_mode(FOCUS_NONE);
 	button_toggle_display_mode->set_tooltip(TTR("Toggle Split Mode"));
+	button_toggle_display_mode->set_flat(true);
 	toolbar_hbc->add_child(button_toggle_display_mode);
 
 	toolbar2_hbc = memnew(HBoxContainer);

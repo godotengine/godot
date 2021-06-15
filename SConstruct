@@ -123,6 +123,7 @@ opts.Add(BoolVariable("use_lto", "Use link-time optimization", False))
 opts.Add(BoolVariable("deprecated", "Enable deprecated features", True))
 opts.Add(BoolVariable("minizip", "Enable ZIP archive support using minizip", True))
 opts.Add(BoolVariable("xaudio2", "Enable the XAudio2 audio driver", False))
+opts.Add(BoolVariable("vulkan", "Enable the vulkan video driver", True))
 opts.Add("custom_modules", "A list of comma-separated directory paths containing custom modules to build.", "")
 opts.Add(BoolVariable("custom_modules_recursive", "Detect custom modules recursively for each specified path.", True))
 
@@ -409,14 +410,27 @@ if selected_platform in platform_list:
         env.Prepend(CCFLAGS=["/std:c++17"])
 
     # Enforce our minimal compiler version requirements
-    cc_version = methods.get_compiler_version(env) or [-1, -1]
-    cc_version_major = cc_version[0]
-    cc_version_minor = cc_version[1]
+    cc_version = methods.get_compiler_version(env) or {
+        "major": None,
+        "minor": None,
+        "patch": None,
+        "metadata1": None,
+        "metadata2": None,
+        "date": None,
+    }
+    cc_version_major = int(cc_version["major"] or -1)
+    cc_version_minor = int(cc_version["minor"] or -1)
+    cc_version_metadata1 = cc_version["metadata1"] or ""
 
     if methods.using_gcc(env):
+        if cc_version_major == -1:
+            print(
+                "Couldn't detect compiler version, skipping version checks. "
+                "Build may fail if the compiler doesn't support C++17 fully."
+            )
         # GCC 8 before 8.4 has a regression in the support of guaranteed copy elision
         # which causes a build failure: https://gcc.gnu.org/bugzilla/show_bug.cgi?id=86521
-        if cc_version_major == 8 and cc_version_minor < 4:
+        elif cc_version_major == 8 and cc_version_minor < 4:
             print(
                 "Detected GCC 8 version < 8.4, which is not supported due to a "
                 "regression in its C++17 guaranteed copy elision support. Use a "
@@ -432,10 +446,23 @@ if selected_platform in platform_list:
                 "SCons command line."
             )
             Exit(255)
+        elif cc_version_metadata1 == "win32":
+            print(
+                "Detected mingw version is not using posix threads. Only posix "
+                "version of mingw is supported. "
+                'Use "update-alternatives --config <platform>-w64-mingw32-[gcc|g++]" '
+                "to switch to posix threads."
+            )
+            Exit(255)
     elif methods.using_clang(env):
+        if cc_version_major == -1:
+            print(
+                "Couldn't detect compiler version, skipping version checks. "
+                "Build may fail if the compiler doesn't support C++17 fully."
+            )
         # Apple LLVM versions differ from upstream LLVM version \o/, compare
         # in https://en.wikipedia.org/wiki/Xcode#Toolchain_versions
-        if env["platform"] == "osx" or env["platform"] == "iphone":
+        elif env["platform"] == "osx" or env["platform"] == "iphone":
             vanilla = methods.is_vanilla_clang(env)
             if vanilla and cc_version_major < 6:
                 print(
@@ -639,20 +666,19 @@ if selected_platform in platform_list:
     if not env["verbose"]:
         methods.no_verbose(sys, env)
 
-    if not env["platform"] == "server":
-        GLSL_BUILDERS = {
-            "RD_GLSL": env.Builder(
-                action=env.Run(glsl_builders.build_rd_headers, 'Building RD_GLSL header: "$TARGET"'),
-                suffix="glsl.gen.h",
-                src_suffix=".glsl",
-            ),
-            "GLSL_HEADER": env.Builder(
-                action=env.Run(glsl_builders.build_raw_headers, 'Building GLSL header: "$TARGET"'),
-                suffix="glsl.gen.h",
-                src_suffix=".glsl",
-            ),
-        }
-        env.Append(BUILDERS=GLSL_BUILDERS)
+    GLSL_BUILDERS = {
+        "RD_GLSL": env.Builder(
+            action=env.Run(glsl_builders.build_rd_headers, 'Building RD_GLSL header: "$TARGET"'),
+            suffix="glsl.gen.h",
+            src_suffix=".glsl",
+        ),
+        "GLSL_HEADER": env.Builder(
+            action=env.Run(glsl_builders.build_raw_headers, 'Building GLSL header: "$TARGET"'),
+            suffix="glsl.gen.h",
+            src_suffix=".glsl",
+        ),
+    }
+    env.Append(BUILDERS=GLSL_BUILDERS)
 
     scons_cache_path = os.environ.get("SCONS_CACHE")
     if scons_cache_path != None:

@@ -203,6 +203,26 @@ void ScriptTextEditor::_set_theme_for_script() {
 	CodeEdit *text_edit = code_editor->get_text_editor();
 	text_edit->get_syntax_highlighter()->update_cache();
 
+	List<String> strings;
+	script->get_language()->get_string_delimiters(&strings);
+	text_edit->clear_string_delimiters();
+	for (List<String>::Element *E = strings.front(); E; E = E->next()) {
+		String string = E->get();
+		String beg = string.get_slice(" ", 0);
+		String end = string.get_slice_count(" ") > 1 ? string.get_slice(" ", 1) : String();
+		text_edit->add_string_delimiter(beg, end, end == "");
+	}
+
+	List<String> comments;
+	script->get_language()->get_comment_delimiters(&comments);
+	text_edit->clear_comment_delimiters();
+	for (List<String>::Element *E = comments.front(); E; E = E->next()) {
+		String comment = E->get();
+		String beg = comment.get_slice(" ", 0);
+		String end = comment.get_slice_count(" ") > 1 ? comment.get_slice(" ", 1) : String();
+		text_edit->add_comment_delimiter(beg, end, end == "");
+	}
+
 	/* add keywords for auto completion */
 	// singleton autoloads (as types, just as engine singletons are)
 	Map<StringName, ProjectSettings::AutoloadInfo> autoloads = ProjectSettings::get_singleton()->get_autoload_list();
@@ -1056,7 +1076,7 @@ void ScriptTextEditor::_edit_option(int p_op) {
 			_edit_option_toggle_inline_comment();
 		} break;
 		case EDIT_COMPLETE: {
-			tx->query_code_comple();
+			tx->request_code_completion(true);
 		} break;
 		case EDIT_AUTO_INDENT: {
 			String text = tx->get_text();
@@ -1323,9 +1343,9 @@ void ScriptTextEditor::_notification(int p_what) {
 void ScriptTextEditor::_bind_methods() {
 	ClassDB::bind_method("_update_connected_methods", &ScriptTextEditor::_update_connected_methods);
 
-	ClassDB::bind_method("get_drag_data_fw", &ScriptTextEditor::get_drag_data_fw);
-	ClassDB::bind_method("can_drop_data_fw", &ScriptTextEditor::can_drop_data_fw);
-	ClassDB::bind_method("drop_data_fw", &ScriptTextEditor::drop_data_fw);
+	ClassDB::bind_method("_get_drag_data_fw", &ScriptTextEditor::get_drag_data_fw);
+	ClassDB::bind_method("_can_drop_data_fw", &ScriptTextEditor::can_drop_data_fw);
+	ClassDB::bind_method("_drop_data_fw", &ScriptTextEditor::drop_data_fw);
 
 	ClassDB::bind_method(D_METHOD("add_syntax_highlighter", "highlighter"), &ScriptTextEditor::add_syntax_highlighter);
 }
@@ -1336,6 +1356,10 @@ Control *ScriptTextEditor::get_edit_menu() {
 
 void ScriptTextEditor::clear_edit_menu() {
 	memdelete(edit_hb);
+}
+
+void ScriptTextEditor::set_find_replace_bar(FindReplaceBar *p_bar) {
+	code_editor->set_find_replace_bar(p_bar);
 }
 
 void ScriptTextEditor::reload(bool p_soft) {
@@ -1429,11 +1453,17 @@ void ScriptTextEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data
 		Array files = d["files"];
 
 		String text_to_drop;
+		bool preload = Input::get_singleton()->is_key_pressed(KEY_CTRL);
 		for (int i = 0; i < files.size(); i++) {
 			if (i > 0) {
-				text_to_drop += ",";
+				text_to_drop += ", ";
 			}
-			text_to_drop += "\"" + String(files[i]).c_escape() + "\"";
+
+			if (preload) {
+				text_to_drop += "preload(\"" + String(files[i]).c_escape() + "\")";
+			} else {
+				text_to_drop += "\"" + String(files[i]).c_escape() + "\"";
+			}
 		}
 
 		te->cursor_set_line(row);
@@ -1798,9 +1828,7 @@ ScriptTextEditor::ScriptTextEditor() {
 
 	update_settings();
 
-	code_editor->get_text_editor()->set_callhint_settings(
-			EditorSettings::get_singleton()->get("text_editor/completion/put_callhint_tooltip_below_current_line"),
-			EditorSettings::get_singleton()->get("text_editor/completion/callhint_tooltip_offset"));
+	code_editor->get_text_editor()->set_code_hint_draw_below(EditorSettings::get_singleton()->get("text_editor/completion/put_callhint_tooltip_below_current_line"));
 
 	code_editor->get_text_editor()->set_select_identifiers_on_hover(true);
 	code_editor->get_text_editor()->set_context_menu_enabled(false);

@@ -33,8 +33,8 @@
 
 #include "scene/resources/mesh.h"
 
-class MeshDataTool : public Reference {
-	GDCLASS(MeshDataTool, Reference);
+class MeshDataTool : public RefCounted {
+	GDCLASS(MeshDataTool, RefCounted);
 
 	int format = 0;
 	struct Vertex {

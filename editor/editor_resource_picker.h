@@ -51,7 +51,7 @@ class EditorResourcePicker : public HBoxContainer {
 	Button *assign_button;
 	TextureRect *preview_rect;
 	Button *edit_button;
-	EditorFileDialog *file_dialog;
+	EditorFileDialog *file_dialog = nullptr;
 
 	enum MenuOption {
 		OBJ_MENU_LOAD,

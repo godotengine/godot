@@ -32,9 +32,9 @@
 #define NET_SOCKET_H
 
 #include "core/io/ip.h"
-#include "core/object/reference.h"
+#include "core/object/ref_counted.h"
 
-class NetSocket : public Reference {
+class NetSocket : public RefCounted {
 protected:
 	static NetSocket *(*_create)();
 

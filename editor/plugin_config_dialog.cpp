@@ -30,7 +30,7 @@
 
 #include "plugin_config_dialog.h"
 #include "core/io/config_file.h"
-#include "core/os/dir_access.h"
+#include "core/io/dir_access.h"
 #include "editor/editor_node.h"
 #include "editor/editor_plugin.h"
 #include "editor/editor_scale.h"
@@ -214,6 +214,7 @@ PluginConfigDialog::PluginConfigDialog() {
 
 	desc_edit = memnew(TextEdit);
 	desc_edit->set_custom_minimum_size(Size2(400, 80) * EDSCALE);
+	desc_edit->set_wrap_enabled(true);
 	grid->add_child(desc_edit);
 
 	Label *author_lb = memnew(Label);

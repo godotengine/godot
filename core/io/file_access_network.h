@@ -31,8 +31,8 @@
 #ifndef FILE_ACCESS_NETWORK_H
 #define FILE_ACCESS_NETWORK_H
 
+#include "core/io/file_access.h"
 #include "core/io/stream_peer_tcp.h"
-#include "core/os/file_access.h"
 #include "core/os/semaphore.h"
 #include "core/os/thread.h"
 
@@ -137,7 +137,7 @@ public:
 	virtual void seek(uint64_t p_position); ///< seek to a given position
 	virtual void seek_end(int64_t p_position = 0); ///< seek from the end of file
 	virtual uint64_t get_position() const; ///< get position in the file
-	virtual uint64_t get_len() const; ///< get size of the file
+	virtual uint64_t get_length() const; ///< get size of the file
 
 	virtual bool eof_reached() const; ///< reading passed EOF
 

@@ -30,7 +30,7 @@
 
 // Godot imports
 #include "core/config/project_settings.h"
-#include "core/os/file_access.h"
+#include "core/io/file_access.h"
 #include "core/os/os.h"
 // PluginScript imports
 #include "pluginscript_language.h"

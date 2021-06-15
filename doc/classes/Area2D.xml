@@ -54,7 +54,7 @@
 			The rate at which objects stop spinning in this area. Represents the angular velocity lost per second.
 			See [member ProjectSettings.physics/2d/default_angular_damp] for more details about damping.
 		</member>
-		<member name="audio_bus_name" type="StringName" setter="set_audio_bus_name" getter="get_audio_bus_name" default="@&quot;Master&quot;">
+		<member name="audio_bus_name" type="StringName" setter="set_audio_bus_name" getter="get_audio_bus_name" default="&amp;&quot;Master&quot;">
 			The name of the area's audio bus.
 		</member>
 		<member name="audio_bus_override" type="bool" setter="set_audio_bus_override" getter="is_overriding_audio_bus" default="false">

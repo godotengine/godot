@@ -224,6 +224,13 @@ void EditorResourcePicker::_edit_menu_cbk(int p_which) {
 				valid_extensions.insert(E->get());
 			}
 
+			if (!file_dialog) {
+				file_dialog = memnew(EditorFileDialog);
+				file_dialog->set_file_mode(EditorFileDialog::FILE_MODE_OPEN_FILE);
+				add_child(file_dialog);
+				file_dialog->connect("file_selected", callable_mp(this, &EditorResourcePicker::_file_selected));
+			}
+
 			file_dialog->clear_filters();
 			for (Set<String>::Element *E = valid_extensions.front(); E; E = E->next()) {
 				file_dialog->add_filter("*." + E->get() + " ; " + E->get().to_upper());
@@ -354,8 +361,8 @@ void EditorResourcePicker::_edit_menu_cbk(int p_which) {
 
 void EditorResourcePicker::set_create_options(Object *p_menu_node) {
 	// If a subclass implements this method, use it to replace all create items.
-	if (get_script_instance() && get_script_instance()->has_method("set_create_options")) {
-		get_script_instance()->call("set_create_options", p_menu_node);
+	if (get_script_instance() && get_script_instance()->has_method("_set_create_options")) {
+		get_script_instance()->call("_set_create_options", p_menu_node);
 		return;
 	}
 
@@ -411,8 +418,8 @@ void EditorResourcePicker::set_create_options(Object *p_menu_node) {
 }
 
 bool EditorResourcePicker::handle_menu_selected(int p_which) {
-	if (get_script_instance() && get_script_instance()->has_method("handle_menu_selected")) {
-		return get_script_instance()->call("handle_menu_selected", p_which);
+	if (get_script_instance() && get_script_instance()->has_method("_handle_menu_selected")) {
+		return get_script_instance()->call("_handle_menu_selected", p_which);
 	}
 
 	return false;
@@ -618,9 +625,9 @@ void EditorResourcePicker::drop_data_fw(const Point2 &p_point, const Variant &p_
 
 void EditorResourcePicker::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_update_resource_preview"), &EditorResourcePicker::_update_resource_preview);
-	ClassDB::bind_method(D_METHOD("get_drag_data_fw", "position", "from"), &EditorResourcePicker::get_drag_data_fw);
-	ClassDB::bind_method(D_METHOD("can_drop_data_fw", "position", "data", "from"), &EditorResourcePicker::can_drop_data_fw);
-	ClassDB::bind_method(D_METHOD("drop_data_fw", "position", "data", "from"), &EditorResourcePicker::drop_data_fw);
+	ClassDB::bind_method(D_METHOD("_get_drag_data_fw", "position", "from"), &EditorResourcePicker::get_drag_data_fw);
+	ClassDB::bind_method(D_METHOD("_can_drop_data_fw", "position", "data", "from"), &EditorResourcePicker::can_drop_data_fw);
+	ClassDB::bind_method(D_METHOD("_drop_data_fw", "position", "data", "from"), &EditorResourcePicker::drop_data_fw);
 
 	ClassDB::bind_method(D_METHOD("set_base_type", "base_type"), &EditorResourcePicker::set_base_type);
 	ClassDB::bind_method(D_METHOD("get_base_type"), &EditorResourcePicker::get_base_type);
@@ -633,8 +640,8 @@ void EditorResourcePicker::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_editable", "enable"), &EditorResourcePicker::set_editable);
 	ClassDB::bind_method(D_METHOD("is_editable"), &EditorResourcePicker::is_editable);
 
-	ClassDB::add_virtual_method(get_class_static(), MethodInfo("set_create_options", PropertyInfo(Variant::OBJECT, "menu_node")));
-	ClassDB::add_virtual_method(get_class_static(), MethodInfo("handle_menu_selected", PropertyInfo(Variant::INT, "id")));
+	ClassDB::add_virtual_method(get_class_static(), MethodInfo("_set_create_options", PropertyInfo(Variant::OBJECT, "menu_node")));
+	ClassDB::add_virtual_method(get_class_static(), MethodInfo("_handle_menu_selected", PropertyInfo(Variant::INT, "id")));
 
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "base_type"), "set_base_type", "get_base_type");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "edited_resource", PROPERTY_HINT_RESOURCE_TYPE, "Resource", 0), "set_edited_resource", "get_edited_resource");
@@ -781,10 +788,11 @@ EditorResourcePicker::EditorResourcePicker() {
 	assign_button->set_flat(true);
 	assign_button->set_h_size_flags(SIZE_EXPAND_FILL);
 	assign_button->set_clip_text(true);
-	assign_button->connect("pressed", callable_mp(this, &EditorResourcePicker::_resource_selected));
 	assign_button->set_drag_forwarding(this);
-	assign_button->connect("draw", callable_mp(this, &EditorResourcePicker::_button_draw));
 	add_child(assign_button);
+	assign_button->connect("pressed", callable_mp(this, &EditorResourcePicker::_resource_selected));
+	assign_button->connect("draw", callable_mp(this, &EditorResourcePicker::_button_draw));
+	assign_button->connect("gui_input", callable_mp(this, &EditorResourcePicker::_button_input));
 
 	preview_rect = memnew(TextureRect);
 	preview_rect->set_expand(true);
@@ -793,23 +801,17 @@ EditorResourcePicker::EditorResourcePicker() {
 	preview_rect->set_offset(SIDE_BOTTOM, -1);
 	preview_rect->set_offset(SIDE_RIGHT, -1);
 	assign_button->add_child(preview_rect);
-	assign_button->connect("gui_input", callable_mp(this, &EditorResourcePicker::_button_input));
 
-	edit_menu = memnew(PopupMenu);
-	add_child(edit_menu);
 	edit_button = memnew(Button);
 	edit_button->set_flat(true);
 	edit_button->set_toggle_mode(true);
-	edit_menu->connect("id_pressed", callable_mp(this, &EditorResourcePicker::_edit_menu_cbk));
-	edit_menu->connect("popup_hide", callable_mp((BaseButton *)edit_button, &BaseButton::set_pressed), varray(false));
 	edit_button->connect("pressed", callable_mp(this, &EditorResourcePicker::_update_menu));
 	add_child(edit_button);
 	edit_button->connect("gui_input", callable_mp(this, &EditorResourcePicker::_button_input));
-
-	file_dialog = memnew(EditorFileDialog);
-	file_dialog->set_file_mode(EditorFileDialog::FILE_MODE_OPEN_FILE);
-	add_child(file_dialog);
-	file_dialog->connect("file_selected", callable_mp(this, &EditorResourcePicker::_file_selected));
+	edit_menu = memnew(PopupMenu);
+	add_child(edit_menu);
+	edit_menu->connect("id_pressed", callable_mp(this, &EditorResourcePicker::_edit_menu_cbk));
+	edit_menu->connect("popup_hide", callable_mp((BaseButton *)edit_button, &BaseButton::set_pressed), varray(false));
 }
 
 void EditorScriptPicker::set_create_options(Object *p_menu_node) {

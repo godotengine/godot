@@ -68,12 +68,13 @@
 # Daniel Plaster <danimineiromc@googlemail.com>, 2021.
 # El Captian <elcaptian@posteo.me>, 2021.
 # Ron Eric Hackländer <mail@roneric.net>, 2021.
+# Stephan Kerbl <stephankerbl@gmail.com>, 2021.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2021-05-14 20:34+0000\n"
-"Last-Translator: So Wieso <sowieso@dukun.de>\n"
+"PO-Revision-Date: 2021-05-24 21:36+0000\n"
+"Last-Translator: Stephan Kerbl <stephankerbl@gmail.com>\n"
 "Language-Team: German <https://hosted.weblate.org/projects/godot-engine/"
 "godot/de/>\n"
 "Language: de\n"
@@ -2448,8 +2449,7 @@ msgid ""
 "Please read the documentation relevant to debugging to better understand "
 "this workflow."
 msgstr ""
-"Dies ist ein Laufzeit-Objekt Objekt, Änderungen an ihm werden nicht "
-"gespeichert.\n"
+"Dies ist ein Laufzeit-Objekt, Änderungen werden nicht gespeichert.\n"
 "Die Dokumentation zum Debugging beschreibt den nötigen Arbeitsablauf."
 
 #: editor/editor_node.cpp
@@ -3076,7 +3076,7 @@ msgstr "Über"
 
 #: editor/editor_node.cpp
 msgid "Support Godot Development"
-msgstr ""
+msgstr "Unterstützung der Godot-Entwicklung"
 
 #: editor/editor_node.cpp
 msgid "Play the project."
@@ -4940,7 +4940,7 @@ msgstr "Abspielmodus:"
 #: editor/plugins/animation_tree_editor_plugin.cpp
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "AnimationTree"
-msgstr "AnimationsBaum"
+msgstr "AnimationTree"
 
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "New name:"
@@ -5316,7 +5316,6 @@ msgstr ""
 "Kanals im Bereich von 0.0 bis 1.0 liegen."
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
-#, fuzzy
 msgid ""
 "Godot editor was built without ray tracing support, lightmaps can't be baked."
 msgstr ""
@@ -10250,7 +10249,7 @@ msgstr "Maustaste"
 
 #: editor/project_settings_editor.cpp
 msgid ""
-"Invalid action name. it cannot be empty nor contain '/', ':', '=', '\\' or "
+"Invalid action name. It cannot be empty nor contain '/', ':', '=', '\\' or "
 "'\"'"
 msgstr ""
 "Ungültiger Aktionsname. Er kann weder leer sein noch ‚/‘, ‚:‘, ‚=‘, ‘\\‘ "

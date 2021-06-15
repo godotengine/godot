@@ -33,7 +33,7 @@
 #include "core/io/marshalls.h"
 #include "core/math/math_funcs.h"
 #include "core/object/class_db.h"
-#include "core/object/reference.h"
+#include "core/object/ref_counted.h"
 #include "core/os/os.h"
 #include "core/variant/variant_parser.h"
 
@@ -132,6 +132,7 @@ bool VisualScriptBuiltinFunc::has_input_sequence_port() const {
 		case TEXT_PRINT:
 		case TEXT_PRINTERR:
 		case TEXT_PRINTRAW:
+		case MATH_SEED:
 			return true;
 		default:
 			return false;

@@ -34,8 +34,8 @@
 #include <mono/metadata/tokentype.h>
 
 #include "core/config/project_settings.h"
+#include "core/io/file_access.h"
 #include "core/io/file_access_pack.h"
-#include "core/os/file_access.h"
 #include "core/os/os.h"
 #include "core/templates/list.h"
 

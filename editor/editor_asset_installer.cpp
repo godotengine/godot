@@ -30,9 +30,9 @@
 
 #include "editor_asset_installer.h"
 
+#include "core/io/dir_access.h"
+#include "core/io/file_access.h"
 #include "core/io/zip_io.h"
-#include "core/os/dir_access.h"
-#include "core/os/file_access.h"
 #include "editor_node.h"
 #include "progress_dialog.h"
 
@@ -137,7 +137,7 @@ void EditorAssetInstaller::open(const String &p_path, int p_depth) {
 		extension_guess["atlastex"] = tree->get_theme_icon("AtlasTexture", "EditorIcons");
 		extension_guess["scn"] = tree->get_theme_icon("PackedScene", "EditorIcons");
 		extension_guess["tscn"] = tree->get_theme_icon("PackedScene", "EditorIcons");
-		extension_guess["shader"] = tree->get_theme_icon("Shader", "EditorIcons");
+		extension_guess["gdshader"] = tree->get_theme_icon("Shader", "EditorIcons");
 		extension_guess["gd"] = tree->get_theme_icon("GDScript", "EditorIcons");
 		extension_guess["vs"] = tree->get_theme_icon("VisualScript", "EditorIcons");
 	}

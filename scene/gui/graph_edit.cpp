@@ -42,8 +42,13 @@
 
 #define ZOOM_SCALE 1.2
 
-#define MIN_ZOOM (((1 / ZOOM_SCALE) / ZOOM_SCALE) / ZOOM_SCALE)
-#define MAX_ZOOM (1 * ZOOM_SCALE * ZOOM_SCALE * ZOOM_SCALE)
+// Allow dezooming 8 times from the default zoom level.
+// At low zoom levels, text is unreadable due to its small size and poor filtering,
+// but this is still useful for previewing purposes.
+#define MIN_ZOOM (1 / Math::pow(ZOOM_SCALE, 8))
+
+// Allow zooming 4 times from the default zoom level.
+#define MAX_ZOOM (1 * Math::pow(ZOOM_SCALE, 4))
 
 #define MINIMAP_OFFSET 12
 #define MINIMAP_PADDING 5
@@ -824,7 +829,7 @@ void GraphEdit::_bake_segment2d(Vector<Vector2> &points, Vector<Color> &colors, 
 	}
 }
 
-void GraphEdit::_draw_cos_line(CanvasItem *p_where, const Vector2 &p_from, const Vector2 &p_to, const Color &p_color, const Color &p_to_color, float p_width, float p_bezier_ratio = 1.0) {
+void GraphEdit::_draw_cos_line(CanvasItem *p_where, const Vector2 &p_from, const Vector2 &p_to, const Color &p_color, const Color &p_to_color, float p_width, float p_bezier_ratio) {
 	//cubic bezier code
 	float diff = p_to.x - p_from.x;
 	float cp_offset;

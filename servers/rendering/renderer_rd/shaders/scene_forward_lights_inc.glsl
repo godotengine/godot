@@ -144,12 +144,7 @@ void light_compute(vec3 N, vec3 L, vec3 V, vec3 light_color, float attenuation, 
 	float metallic = unpackUnorm4x8(orms).z;
 	if (metallic < 1.0) {
 		float roughness = unpackUnorm4x8(orms).y;
-
-#if defined(DIFFUSE_OREN_NAYAR)
-		vec3 diffuse_brdf_NL;
-#else
 		float diffuse_brdf_NL; // BRDF times N.L for calculating diffuse radiance
-#endif
 
 #if defined(DIFFUSE_LAMBERT_WRAP)
 		// energy conserving lambert wrap shader
@@ -243,7 +238,11 @@ void light_compute(vec3 N, vec3 L, vec3 V, vec3 light_color, float attenuation, 
 #elif defined(SPECULAR_PHONG)
 
 		vec3 R = normalize(-reflect(L, N));
+#ifdef USE_SOFT_SHADOWS
 		float cRdotV = clamp(A + dot(R, V), 0.0, 1.0);
+#else
+		float cRdotV = clamp(dot(R, V), 0.0, 1.0);
+#endif
 		float shininess = exp2(15.0 * (1.0 - roughness) + 1.0) * 0.25;
 		float phong = pow(cRdotV, shininess);
 		phong *= (shininess + 8.0) * (1.0 / (8.0 * M_PI));

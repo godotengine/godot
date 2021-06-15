@@ -326,9 +326,9 @@ void CollisionObject3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("shape_owner_clear_shapes", "owner_id"), &CollisionObject3D::shape_owner_clear_shapes);
 	ClassDB::bind_method(D_METHOD("shape_find_owner", "shape_index"), &CollisionObject3D::shape_find_owner);
 
-	BIND_VMETHOD(MethodInfo("_input_event", PropertyInfo(Variant::OBJECT, "camera"), PropertyInfo(Variant::OBJECT, "event", PROPERTY_HINT_RESOURCE_TYPE, "InputEvent"), PropertyInfo(Variant::VECTOR3, "click_position"), PropertyInfo(Variant::VECTOR3, "click_normal"), PropertyInfo(Variant::INT, "shape_idx")));
+	BIND_VMETHOD(MethodInfo("_input_event", PropertyInfo(Variant::OBJECT, "camera"), PropertyInfo(Variant::OBJECT, "event", PROPERTY_HINT_RESOURCE_TYPE, "InputEvent"), PropertyInfo(Variant::VECTOR3, "position"), PropertyInfo(Variant::VECTOR3, "normal"), PropertyInfo(Variant::INT, "shape_idx")));
 
-	ADD_SIGNAL(MethodInfo("input_event", PropertyInfo(Variant::OBJECT, "camera", PROPERTY_HINT_RESOURCE_TYPE, "Node"), PropertyInfo(Variant::OBJECT, "event", PROPERTY_HINT_RESOURCE_TYPE, "InputEvent"), PropertyInfo(Variant::VECTOR3, "click_position"), PropertyInfo(Variant::VECTOR3, "click_normal"), PropertyInfo(Variant::INT, "shape_idx")));
+	ADD_SIGNAL(MethodInfo("input_event", PropertyInfo(Variant::OBJECT, "camera", PROPERTY_HINT_RESOURCE_TYPE, "Node"), PropertyInfo(Variant::OBJECT, "event", PROPERTY_HINT_RESOURCE_TYPE, "InputEvent"), PropertyInfo(Variant::VECTOR3, "position"), PropertyInfo(Variant::VECTOR3, "normal"), PropertyInfo(Variant::INT, "shape_idx")));
 	ADD_SIGNAL(MethodInfo("mouse_entered"));
 	ADD_SIGNAL(MethodInfo("mouse_exited"));
 
@@ -406,7 +406,7 @@ Array CollisionObject3D::_get_shape_owners() {
 	return ret;
 }
 
-void CollisionObject3D::shape_owner_set_transform(uint32_t p_owner, const Transform &p_transform) {
+void CollisionObject3D::shape_owner_set_transform(uint32_t p_owner, const Transform3D &p_transform) {
 	ERR_FAIL_COND(!shapes.has(p_owner));
 
 	ShapeData &sd = shapes[p_owner];
@@ -421,9 +421,8 @@ void CollisionObject3D::shape_owner_set_transform(uint32_t p_owner, const Transf
 
 	_update_shape_data(p_owner);
 }
-
-Transform CollisionObject3D::shape_owner_get_transform(uint32_t p_owner) const {
-	ERR_FAIL_COND_V(!shapes.has(p_owner), Transform());
+Transform3D CollisionObject3D::shape_owner_get_transform(uint32_t p_owner) const {
+	ERR_FAIL_COND_V(!shapes.has(p_owner), Transform3D());
 
 	return shapes[p_owner].xform;
 }

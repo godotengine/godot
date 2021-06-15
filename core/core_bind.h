@@ -32,11 +32,11 @@
 #define CORE_BIND_H
 
 #include "core/io/compression.h"
+#include "core/io/dir_access.h"
+#include "core/io/file_access.h"
 #include "core/io/image.h"
 #include "core/io/resource_loader.h"
 #include "core/io/resource_saver.h"
-#include "core/os/dir_access.h"
-#include "core/os/file_access.h"
 #include "core/os/os.h"
 #include "core/os/semaphore.h"
 #include "core/os/thread.h"
@@ -199,14 +199,6 @@ public:
 
 	void set_use_file_access_save_and_swap(bool p_enable);
 
-	Dictionary get_date(bool utc) const;
-	Dictionary get_time(bool utc) const;
-	Dictionary get_datetime(bool utc) const;
-	Dictionary get_datetime_from_unix_time(int64_t unix_time_val) const;
-	int64_t get_unix_time_from_datetime(Dictionary datetime) const;
-	Dictionary get_time_zone_info() const;
-	double get_unix_time() const;
-
 	uint64_t get_static_memory_usage() const;
 	uint64_t get_static_memory_peak_usage() const;
 
@@ -237,6 +229,7 @@ public:
 	String get_system_dir(SystemDir p_dir) const;
 
 	String get_user_data_dir() const;
+	String get_external_data_dir() const;
 
 	Error set_thread_name(const String &p_name);
 	Thread::ID get_thread_caller_id() const;
@@ -352,11 +345,11 @@ public:
 	_Geometry3D() { singleton = this; }
 };
 
-class _File : public Reference {
-	GDCLASS(_File, Reference);
+class _File : public RefCounted {
+	GDCLASS(_File, RefCounted);
 
 	FileAccess *f = nullptr;
-	bool eswap = false;
+	bool big_endian = false;
 
 protected:
 	static void _bind_methods();
@@ -391,7 +384,7 @@ public:
 	void seek(int64_t p_position); // Seek to a given position.
 	void seek_end(int64_t p_position = 0); // Seek from the end of file.
 	uint64_t get_position() const; // Get position in the file.
-	uint64_t get_len() const; // Get size of the file.
+	uint64_t get_length() const; // Get size of the file.
 
 	bool eof_reached() const; // Reading passed EOF.
 
@@ -413,13 +406,13 @@ public:
 	String get_md5(const String &p_path) const;
 	String get_sha256(const String &p_path) const;
 
-	/* Use this for files WRITTEN in _big_ endian machines (ie, amiga/mac).
+	/*
+	 * Use this for files WRITTEN in _big_ endian machines (ie, amiga/mac).
 	 * It's not about the current CPU type but file formats.
-	 * This flags get reset to false (little endian) on each open.
+	 * This flag gets reset to `false` (little endian) on each open.
 	 */
-
-	void set_endian_swap(bool p_swap);
-	bool get_endian_swap();
+	void set_big_endian(bool p_big_endian);
+	bool is_big_endian();
 
 	Error get_error() const; // Get last error.
 
@@ -454,8 +447,8 @@ public:
 VARIANT_ENUM_CAST(_File::ModeFlags);
 VARIANT_ENUM_CAST(_File::CompressionMode);
 
-class _Directory : public Reference {
-	GDCLASS(_Directory, Reference);
+class _Directory : public RefCounted {
+	GDCLASS(_Directory, RefCounted);
 	DirAccess *d;
 	bool dir_open = false;
 
@@ -467,7 +460,7 @@ public:
 
 	bool is_open() const;
 
-	Error list_dir_begin(bool p_skip_navigational = false, bool p_skip_hidden = false); // This starts dir listing.
+	Error list_dir_begin(bool p_show_navigational = false, bool p_show_hidden = false); // This starts dir listing.
 	String get_next();
 	bool current_is_dir() const;
 
@@ -524,8 +517,8 @@ public:
 	~_Marshalls() { singleton = nullptr; }
 };
 
-class _Mutex : public Reference {
-	GDCLASS(_Mutex, Reference);
+class _Mutex : public RefCounted {
+	GDCLASS(_Mutex, RefCounted);
 	Mutex mutex;
 
 	static void _bind_methods();
@@ -536,8 +529,8 @@ public:
 	void unlock();
 };
 
-class _Semaphore : public Reference {
-	GDCLASS(_Semaphore, Reference);
+class _Semaphore : public RefCounted {
+	GDCLASS(_Semaphore, RefCounted);
 	Semaphore semaphore;
 
 	static void _bind_methods();
@@ -548,8 +541,8 @@ public:
 	void post();
 };
 
-class _Thread : public Reference {
-	GDCLASS(_Thread, Reference);
+class _Thread : public RefCounted {
+	GDCLASS(_Thread, RefCounted);
 
 protected:
 	Variant ret;
@@ -665,8 +658,8 @@ public:
 
 class _JSON;
 
-class JSONParseResult : public Reference {
-	GDCLASS(JSONParseResult, Reference);
+class JSONParseResult : public RefCounted {
+	GDCLASS(JSONParseResult, RefCounted);
 
 	friend class _JSON;
 
@@ -705,7 +698,7 @@ protected:
 public:
 	static _JSON *get_singleton() { return singleton; }
 
-	String print(const Variant &p_value, const String &p_indent = "", bool p_sort_keys = false);
+	String print(const Variant &p_value, const String &p_indent = "", bool p_sort_keys = false, bool p_full_precision = false);
 	Ref<JSONParseResult> parse(const String &p_json);
 
 	_JSON() { singleton = this; }

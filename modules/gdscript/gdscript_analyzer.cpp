@@ -31,10 +31,10 @@
 #include "gdscript_analyzer.h"
 
 #include "core/config/project_settings.h"
+#include "core/io/file_access.h"
 #include "core/io/resource_loader.h"
 #include "core/object/class_db.h"
 #include "core/object/script_language.h"
-#include "core/os/file_access.h"
 #include "core/templates/hash_map.h"
 #include "gdscript.h"
 #include "gdscript_utility_functions.h"
@@ -163,7 +163,7 @@ Error GDScriptAnalyzer::resolve_inheritance(GDScriptParser::ClassNode *p_class, 
 	if (!p_class->extends_used) {
 		result.type_source = GDScriptParser::DataType::ANNOTATED_INFERRED;
 		result.kind = GDScriptParser::DataType::NATIVE;
-		result.native_type = "Reference";
+		result.native_type = "RefCounted";
 	} else {
 		result.type_source = GDScriptParser::DataType::ANNOTATED_EXPLICIT;
 
@@ -543,6 +543,7 @@ void GDScriptAnalyzer::resolve_class_interface(GDScriptParser::ClassNode *p_clas
 							} else {
 								// TODO: Add warning.
 								mark_node_unsafe(member.variable->initializer);
+								member.variable->use_conversion_assign = true;
 							}
 						} else if (datatype.builtin_type == Variant::INT && member.variable->initializer->get_datatype().builtin_type == Variant::FLOAT) {
 #ifdef DEBUG_ENABLED
@@ -552,6 +553,7 @@ void GDScriptAnalyzer::resolve_class_interface(GDScriptParser::ClassNode *p_clas
 						if (member.variable->initializer->get_datatype().is_variant()) {
 							// TODO: Warn unsafe assign.
 							mark_node_unsafe(member.variable->initializer);
+							member.variable->use_conversion_assign = true;
 						}
 					}
 				} else if (member.variable->infer_datatype) {
@@ -1145,6 +1147,7 @@ void GDScriptAnalyzer::resolve_variable(GDScriptParser::VariableNode *p_variable
 				} else {
 					// TODO: Add warning.
 					mark_node_unsafe(p_variable->initializer);
+					p_variable->use_conversion_assign = true;
 				}
 #ifdef DEBUG_ENABLED
 			} else if (type.builtin_type == Variant::INT && p_variable->initializer->get_datatype().builtin_type == Variant::FLOAT) {
@@ -1154,6 +1157,7 @@ void GDScriptAnalyzer::resolve_variable(GDScriptParser::VariableNode *p_variable
 			if (p_variable->initializer->get_datatype().is_variant()) {
 				// TODO: Warn unsafe assign.
 				mark_node_unsafe(p_variable->initializer);
+				p_variable->use_conversion_assign = true;
 			}
 		}
 	} else if (p_variable->infer_datatype) {
@@ -1608,10 +1612,12 @@ void GDScriptAnalyzer::reduce_assignment(GDScriptParser::AssignmentNode *p_assig
 					} else {
 						// TODO: Add warning.
 						mark_node_unsafe(p_assignment);
+						p_assignment->use_conversion_assign = true;
 					}
 				} else {
 					// TODO: Warning in this case.
 					mark_node_unsafe(p_assignment);
+					p_assignment->use_conversion_assign = true;
 				}
 			}
 		} else {
@@ -1621,6 +1627,9 @@ void GDScriptAnalyzer::reduce_assignment(GDScriptParser::AssignmentNode *p_assig
 
 	if (assignee_type.has_no_type() || assigned_value_type.is_variant()) {
 		mark_node_unsafe(p_assignment);
+		if (assignee_type.is_hard_type()) {
+			p_assignment->use_conversion_assign = true;
+		}
 	}
 
 	if (p_assignment->assignee->type == GDScriptParser::Node::IDENTIFIER) {
@@ -2059,9 +2068,11 @@ void GDScriptAnalyzer::reduce_call(GDScriptParser::CallNode *p_call, bool is_awa
 
 	if (p_call->is_super) {
 		base_type = parser->current_class->base_type;
+		base_type.is_meta_type = false;
 		is_self = true;
 	} else if (callee_type == GDScriptParser::Node::IDENTIFIER) {
 		base_type = parser->current_class->get_datatype();
+		base_type.is_meta_type = false;
 		is_self = true;
 	} else if (callee_type == GDScriptParser::Node::SUBSCRIPT) {
 		GDScriptParser::SubscriptNode *subscript = static_cast<GDScriptParser::SubscriptNode *>(p_call->callee);
@@ -2814,7 +2825,7 @@ void GDScriptAnalyzer::reduce_subscript(GDScriptParser::SubscriptNode *p_subscri
 							case Variant::RECT2:
 							case Variant::RECT2I:
 							case Variant::PLANE:
-							case Variant::QUAT:
+							case Variant::QUATERNION:
 							case Variant::AABB:
 							case Variant::OBJECT:
 								error = index_type.builtin_type != Variant::STRING;
@@ -2825,8 +2836,8 @@ void GDScriptAnalyzer::reduce_subscript(GDScriptParser::SubscriptNode *p_subscri
 							case Variant::VECTOR2I:
 							case Variant::VECTOR3:
 							case Variant::VECTOR3I:
-							case Variant::TRANSFORM:
 							case Variant::TRANSFORM2D:
+							case Variant::TRANSFORM3D:
 								error = index_type.builtin_type != Variant::INT && index_type.builtin_type != Variant::FLOAT &&
 										index_type.builtin_type != Variant::STRING;
 								break;
@@ -2893,7 +2904,7 @@ void GDScriptAnalyzer::reduce_subscript(GDScriptParser::SubscriptNode *p_subscri
 					case Variant::PACKED_FLOAT64_ARRAY:
 					case Variant::VECTOR2:
 					case Variant::VECTOR3:
-					case Variant::QUAT:
+					case Variant::QUATERNION:
 						result_type.builtin_type = Variant::FLOAT;
 						break;
 					// Return Color.
@@ -2922,7 +2933,7 @@ void GDScriptAnalyzer::reduce_subscript(GDScriptParser::SubscriptNode *p_subscri
 						result_type.builtin_type = Variant::VECTOR3;
 						break;
 					// Depends on the index.
-					case Variant::TRANSFORM:
+					case Variant::TRANSFORM3D:
 					case Variant::PLANE:
 					case Variant::COLOR:
 					case Variant::DICTIONARY:

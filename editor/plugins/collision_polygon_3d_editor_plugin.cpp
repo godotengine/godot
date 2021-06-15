@@ -32,8 +32,8 @@
 
 #include "canvas_item_editor_plugin.h"
 #include "core/input/input.h"
+#include "core/io/file_access.h"
 #include "core/math/geometry_2d.h"
-#include "core/os/file_access.h"
 #include "core/os/keyboard.h"
 #include "editor/editor_settings.h"
 #include "node_3d_editor_plugin.h"
@@ -108,8 +108,8 @@ bool CollisionPolygon3DEditor::forward_spatial_gui_input(Camera3D *p_camera, con
 		return false;
 	}
 
-	Transform gt = node->get_global_transform();
-	Transform gi = gt.affine_inverse();
+	Transform3D gt = node->get_global_transform();
+	Transform3D gi = gt.affine_inverse();
 	float depth = _get_depth() * 0.5;
 	Vector3 n = gt.basis.get_axis(2).normalized();
 	Plane p(gt.origin + n * depth, n);
@@ -516,7 +516,7 @@ CollisionPolygon3DEditor::CollisionPolygon3DEditor(EditorNode *p_editor) {
 	mode = MODE_EDIT;
 	wip_active = false;
 	imgeom = memnew(ImmediateGeometry3D);
-	imgeom->set_transform(Transform(Basis(), Vector3(0, 0, 0.00001)));
+	imgeom->set_transform(Transform3D(Basis(), Vector3(0, 0, 0.00001)));
 
 	line_material = Ref<StandardMaterial3D>(memnew(StandardMaterial3D));
 	line_material->set_shading_mode(StandardMaterial3D::SHADING_MODE_UNSHADED);
@@ -539,7 +539,7 @@ CollisionPolygon3DEditor::CollisionPolygon3DEditor(EditorNode *p_editor) {
 	imgeom->add_child(pointsm);
 	m.instance();
 	pointsm->set_mesh(m);
-	pointsm->set_transform(Transform(Basis(), Vector3(0, 0, 0.00001)));
+	pointsm->set_transform(Transform3D(Basis(), Vector3(0, 0, 0.00001)));
 
 	snap_ignore = false;
 }

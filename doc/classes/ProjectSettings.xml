@@ -309,7 +309,7 @@
 			If [code]true[/code], microphone input will be allowed. This requires appropriate permissions to be set when exporting to Android or iOS.
 		</member>
 		<member name="audio/driver/mix_rate" type="int" setter="" getter="" default="44100">
-			Mixing rate used for audio. In general, it's better to not touch this and leave it to the host operating system.
+			The mixing rate used for audio (in Hz). In general, it's better to not touch this and leave it to the host operating system.
 		</member>
 		<member name="audio/driver/output_latency" type="int" setter="" getter="" default="15">
 			Output latency in milliseconds for audio. Lower values will result in lower audio latency at the cost of increased CPU usage. Low values may result in audible cracking on slower hardware.
@@ -494,8 +494,9 @@
 		<member name="display/window/energy_saving/keep_screen_on" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], keeps the screen on (even in case of inactivity), so the screensaver does not take over. Works on desktop and mobile platforms.
 		</member>
-		<member name="display/window/handheld/orientation" type="String" setter="" getter="" default="&quot;landscape&quot;">
-			Default orientation on mobile devices.
+		<member name="display/window/handheld/orientation" type="int" setter="" getter="" default="0">
+			The default screen orientation to use on mobile devices. See [enum DisplayServer.ScreenOrientation] for possible values.
+			[b]Note:[/b] When set to a portrait orientation, this project setting does not flip the project resolution's width and height automatically. Instead, you have to set [member display/window/size/width] and [member display/window/size/height] accordingly.
 		</member>
 		<member name="display/window/ios/hide_home_indicator" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], the home indicator is hidden automatically. This only affects iOS devices without a physical home button.
@@ -550,7 +551,7 @@
 			prime-run %command%
 			[/codeblock]
 		</member>
-		<member name="editor/script/search_in_file_extensions" type="PackedStringArray" setter="" getter="" default="PackedStringArray( &quot;gd&quot;, &quot;shader&quot; )">
+		<member name="editor/script/search_in_file_extensions" type="PackedStringArray" setter="" getter="" default="PackedStringArray( &quot;gd&quot;, &quot;gdshader&quot; )">
 			Text-based file extensions to include in the script editor's "Find in Files" feature. You can add e.g. [code]tscn[/code] if you wish to also parse your scene files, especially if you use built-in scripts which are serialized in the scene files.
 		</member>
 		<member name="editor/script/templates_search_path" type="String" setter="" getter="" default="&quot;res://script_templates&quot;">
@@ -701,6 +702,8 @@
 		<member name="input/ui_text_completion_accept" type="Dictionary" setter="" getter="">
 		</member>
 		<member name="input/ui_text_completion_query" type="Dictionary" setter="" getter="">
+		</member>
+		<member name="input/ui_text_completion_replace" type="Dictionary" setter="" getter="">
 		</member>
 		<member name="input/ui_text_dedent" type="Dictionary" setter="" getter="">
 		</member>
@@ -1136,8 +1139,6 @@
 		<member name="layer_names/3d_render/layer_9" type="String" setter="" getter="" default="&quot;&quot;">
 			Optional name for the 3D render layer 9. If left empty, the layer will display as "Layer 9".
 		</member>
-		<member name="memory/limits/command_queue/multithreading_queue_size_kb" type="int" setter="" getter="" default="256">
-		</member>
 		<member name="memory/limits/message_queue/max_size_kb" type="int" setter="" getter="" default="4096">
 			Godot uses a message queue to defer some function calls. If you run out of space on it (you will see an error), you can increase the size here.
 		</member>
@@ -1310,7 +1311,8 @@
 			[b]Note:[/b] This property is only read when the project starts. To change the physics FPS at runtime, set [member Engine.iterations_per_second] instead.
 		</member>
 		<member name="physics/common/physics_jitter_fix" type="float" setter="" getter="" default="0.5">
-			Fix to improve physics jitter, specially on monitors where refresh rate is different than the physics FPS.
+			Controls how much physics ticks are synchronized with real time. For 0 or less, the ticks are synchronized. Such values are recommended for network games, where clock synchronization matters. Higher values cause higher deviation of in-game clock and real clock, but allows smoothing out framerate jitters. The default value of 0.5 should be fine for most; values above 2 could cause the game to react to dropped frames with a noticeable delay and are not recommended.
+			[b]Note:[/b] For best results, when using a custom physics interpolation solution, the physics jitter fix should be disabled by setting [member physics/common/physics_jitter_fix] to [code]0[/code].
 			[b]Note:[/b] This property is only read when the project starts. To change the physics FPS at runtime, set [member Engine.physics_jitter_fix] instead.
 		</member>
 		<member name="rendering/2d/sdf/oversize" type="int" setter="" getter="" default="1">
@@ -1418,17 +1420,15 @@
 		</member>
 		<member name="rendering/global_illumination/gi/use_half_resolution" type="bool" setter="" getter="" default="false">
 		</member>
-		<member name="rendering/global_illumination/gi_probes/anisotropic" type="bool" setter="" getter="" default="false">
-			If [code]true[/code], take additional samples when rendering objects affected by a [GIProbe] to reduce artifacts from only sampling in one direction.
-		</member>
-		<member name="rendering/global_illumination/gi_probes/quality" type="int" setter="" getter="" default="1">
-			Sets the number of cone samples taken when rendering objects affected by [GIProbe]s.
-		</member>
 		<member name="rendering/global_illumination/sdfgi/frames_to_converge" type="int" setter="" getter="" default="4">
 		</member>
 		<member name="rendering/global_illumination/sdfgi/frames_to_update_lights" type="int" setter="" getter="" default="2">
 		</member>
 		<member name="rendering/global_illumination/sdfgi/probe_ray_count" type="int" setter="" getter="" default="1">
+		</member>
+		<member name="rendering/global_illumination/voxel_gi/anisotropic" type="bool" setter="" getter="" default="false">
+		</member>
+		<member name="rendering/global_illumination/voxel_gi/quality" type="int" setter="" getter="" default="1">
 		</member>
 		<member name="rendering/lightmapping/bake_performance/max_rays_per_pass" type="int" setter="" getter="" default="32">
 		</member>
@@ -1501,6 +1501,16 @@
 		<member name="rendering/reflections/sky_reflections/texture_array_reflections.mobile" type="bool" setter="" getter="" default="false">
 			Lower-end override for [member rendering/reflections/sky_reflections/texture_array_reflections] on mobile devices, due to performance concerns or driver support.
 		</member>
+		<member name="rendering/shader_compiler/shader_cache/compress" type="bool" setter="" getter="" default="true">
+		</member>
+		<member name="rendering/shader_compiler/shader_cache/enabled" type="bool" setter="" getter="" default="true">
+		</member>
+		<member name="rendering/shader_compiler/shader_cache/strip_debug" type="bool" setter="" getter="" default="false">
+		</member>
+		<member name="rendering/shader_compiler/shader_cache/strip_debug.release" type="bool" setter="" getter="" default="true">
+		</member>
+		<member name="rendering/shader_compiler/shader_cache/use_zstd_compression" type="bool" setter="" getter="" default="true">
+		</member>
 		<member name="rendering/shading/overrides/force_blinn_over_ggx" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], uses faster but lower-quality Blinn model to generate blurred reflections instead of the GGX model.
 		</member>
@@ -1565,20 +1575,31 @@
 		<member name="rendering/textures/default_filters/use_nearest_mipmap_filter" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], uses nearest-neighbor mipmap filtering when using mipmaps (also called "bilinear filtering"), which will result in visible seams appearing between mipmap stages. This may increase performance in mobile as less memory bandwidth is used. If [code]false[/code], linear mipmap filtering (also called "trilinear filtering") is used.
 		</member>
+		<member name="rendering/textures/lossless_compression/force_png" type="bool" setter="" getter="" default="false">
+			If [code]true[/code], the texture importer will import lossless textures using the PNG format. Otherwise, it will default to using WebP.
+		</member>
+		<member name="rendering/textures/lossless_compression/webp_compression_level" type="int" setter="" getter="" default="2">
+			The default compression level for lossless WebP. Higher levels result in smaller files at the cost of compression speed. Decompression speed is mostly unaffected by the compression level. Supported values are 0 to 9. Note that compression levels above 6 are very slow and offer very little savings.
+		</member>
 		<member name="rendering/textures/vram_compression/import_bptc" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], the texture importer will import VRAM-compressed textures using the BPTC algorithm. This texture compression algorithm is only supported on desktop platforms, and only when using the Vulkan renderer.
+			[b]Note:[/b] Changing this setting does [i]not[/i] impact textures that were already imported before. To make this setting apply to textures that were already imported, exit the editor, remove the [code].godot/imported/[/code] folder located inside the project folder then restart the editor.
 		</member>
 		<member name="rendering/textures/vram_compression/import_etc" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], the texture importer will import VRAM-compressed textures using the Ericsson Texture Compression algorithm. This algorithm doesn't support alpha channels in textures.
+			[b]Note:[/b] Changing this setting does [i]not[/i] impact textures that were already imported before. To make this setting apply to textures that were already imported, exit the editor, remove the [code].godot/imported/[/code] folder located inside the project folder then restart the editor.
 		</member>
 		<member name="rendering/textures/vram_compression/import_etc2" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], the texture importer will import VRAM-compressed textures using the Ericsson Texture Compression 2 algorithm. This texture compression algorithm is only supported when using the Vulkan renderer.
+			[b]Note:[/b] Changing this setting does [i]not[/i] impact textures that were already imported before. To make this setting apply to textures that were already imported, exit the editor, remove the [code].godot/imported/[/code] folder located inside the project folder then restart the editor.
 		</member>
 		<member name="rendering/textures/vram_compression/import_pvrtc" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], the texture importer will import VRAM-compressed textures using the PowerVR Texture Compression algorithm. This texture compression algorithm is only supported on iOS.
+			[b]Note:[/b] Changing this setting does [i]not[/i] impact textures that were already imported before. To make this setting apply to textures that were already imported, exit the editor, remove the [code].godot/imported/[/code] folder located inside the project folder then restart the editor.
 		</member>
 		<member name="rendering/textures/vram_compression/import_s3tc" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], the texture importer will import VRAM-compressed textures using the S3 Texture Compression algorithm. This algorithm is only supported on desktop platforms and consoles.
+			[b]Note:[/b] Changing this setting does [i]not[/i] impact textures that were already imported before. To make this setting apply to textures that were already imported, exit the editor, remove the [code].godot/imported/[/code] folder located inside the project folder then restart the editor.
 		</member>
 		<member name="rendering/vulkan/descriptor_pools/max_descriptors_per_pool" type="int" setter="" getter="" default="64">
 		</member>
@@ -1591,6 +1612,9 @@
 		<member name="rendering/vulkan/staging_buffer/max_size_mb" type="int" setter="" getter="" default="128">
 		</member>
 		<member name="rendering/vulkan/staging_buffer/texture_upload_region_size_px" type="int" setter="" getter="" default="64">
+		</member>
+		<member name="rendering/xr/enabled" type="bool" setter="" getter="" default="false">
+			If [code]true[/code], XR support is enabled in Godot, this ensures required shaders are compiled.
 		</member>
 		<member name="world/2d/cell_size" type="int" setter="" getter="" default="100">
 			Cell size used for the 2D hash grid that [VisibilityNotifier2D] uses (in pixels).

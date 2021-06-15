@@ -130,10 +130,10 @@
 			</return>
 			<argument index="0" name="camera" type="RID">
 			</argument>
-			<argument index="1" name="transform" type="Transform">
+			<argument index="1" name="transform" type="Transform3D">
 			</argument>
 			<description>
-				Sets [Transform] of camera.
+				Sets [Transform3D] of camera.
 			</description>
 		</method>
 		<method name="camera_set_use_vertical_aspect">
@@ -1175,17 +1175,6 @@
 				Once finished with your RID, you will want to free the RID using the RenderingServer's [method free_rid] static method.
 			</description>
 		</method>
-		<method name="instance_geometry_set_as_instance_lod">
-			<return type="void">
-			</return>
-			<argument index="0" name="instance" type="RID">
-			</argument>
-			<argument index="1" name="as_lod_of_instance" type="RID">
-			</argument>
-			<description>
-				Not implemented in Godot 3.x.
-			</description>
-		</method>
 		<method name="instance_geometry_set_cast_shadows_setting">
 			<return type="void">
 			</return>
@@ -1195,23 +1184,6 @@
 			</argument>
 			<description>
 				Sets the shadow casting setting to one of [enum ShadowCastingSetting]. Equivalent to [member GeometryInstance3D.cast_shadow].
-			</description>
-		</method>
-		<method name="instance_geometry_set_draw_range">
-			<return type="void">
-			</return>
-			<argument index="0" name="instance" type="RID">
-			</argument>
-			<argument index="1" name="min" type="float">
-			</argument>
-			<argument index="2" name="max" type="float">
-			</argument>
-			<argument index="3" name="min_margin" type="float">
-			</argument>
-			<argument index="4" name="max_margin" type="float">
-			</argument>
-			<description>
-				Not implemented in Godot 3.x.
 			</description>
 		</method>
 		<method name="instance_geometry_set_flag">
@@ -1236,6 +1208,23 @@
 			</argument>
 			<description>
 				Sets a material that will override the material for all surfaces on the mesh associated with this instance. Equivalent to [member GeometryInstance3D.material_override].
+			</description>
+		</method>
+		<method name="instance_geometry_set_visibility_range">
+			<return type="void">
+			</return>
+			<argument index="0" name="instance" type="RID">
+			</argument>
+			<argument index="1" name="min" type="float">
+			</argument>
+			<argument index="2" name="max" type="float">
+			</argument>
+			<argument index="3" name="min_margin" type="float">
+			</argument>
+			<argument index="4" name="max_margin" type="float">
+			</argument>
+			<description>
+				Sets the visibility range values for the given geometry instance. Equivalent to [member GeometryInstance3D.visibility_range_begin] and related properties.
 			</description>
 		</method>
 		<method name="instance_set_base">
@@ -1335,10 +1324,21 @@
 			</return>
 			<argument index="0" name="instance" type="RID">
 			</argument>
-			<argument index="1" name="transform" type="Transform">
+			<argument index="1" name="transform" type="Transform3D">
 			</argument>
 			<description>
 				Sets the world space transform of the instance. Equivalent to [member Node3D.transform].
+			</description>
+		</method>
+		<method name="instance_set_visibility_parent">
+			<return type="void">
+			</return>
+			<argument index="0" name="instance" type="RID">
+			</argument>
+			<argument index="1" name="parent" type="RID">
+			</argument>
+			<description>
+				Sets the visibility parent for the given instance. Equivalent to [member Node3D.visibility_parent].
 			</description>
 		</method>
 		<method name="instance_set_visible">
@@ -1894,14 +1894,14 @@
 			</description>
 		</method>
 		<method name="multimesh_instance_get_transform" qualifiers="const">
-			<return type="Transform">
+			<return type="Transform3D">
 			</return>
 			<argument index="0" name="multimesh" type="RID">
 			</argument>
 			<argument index="1" name="index" type="int">
 			</argument>
 			<description>
-				Returns the [Transform] of the specified instance.
+				Returns the [Transform3D] of the specified instance.
 			</description>
 		</method>
 		<method name="multimesh_instance_get_transform_2d" qualifiers="const">
@@ -1948,10 +1948,10 @@
 			</argument>
 			<argument index="1" name="index" type="int">
 			</argument>
-			<argument index="2" name="transform" type="Transform">
+			<argument index="2" name="transform" type="Transform3D">
 			</argument>
 			<description>
-				Sets the [Transform] for this instance. Equivalent to [method MultiMesh.set_instance_transform].
+				Sets the [Transform3D] for this instance. Equivalent to [method MultiMesh.set_instance_transform].
 			</description>
 		</method>
 		<method name="multimesh_instance_set_transform_2d">
@@ -2142,10 +2142,10 @@
 			</return>
 			<argument index="0" name="particles" type="RID">
 			</argument>
-			<argument index="1" name="transform" type="Transform">
+			<argument index="1" name="transform" type="Transform3D">
 			</argument>
 			<description>
-				Sets the [Transform] that will be used by the particles when they first emit.
+				Sets the [Transform3D] that will be used by the particles when they first emit.
 			</description>
 		</method>
 		<method name="particles_set_emitting">
@@ -2590,14 +2590,14 @@
 			</description>
 		</method>
 		<method name="skeleton_bone_get_transform" qualifiers="const">
-			<return type="Transform">
+			<return type="Transform3D">
 			</return>
 			<argument index="0" name="skeleton" type="RID">
 			</argument>
 			<argument index="1" name="bone" type="int">
 			</argument>
 			<description>
-				Returns the [Transform] set for a specific bone of this skeleton.
+				Returns the [Transform3D] set for a specific bone of this skeleton.
 			</description>
 		</method>
 		<method name="skeleton_bone_get_transform_2d" qualifiers="const">
@@ -2618,10 +2618,10 @@
 			</argument>
 			<argument index="1" name="bone" type="int">
 			</argument>
-			<argument index="2" name="transform" type="Transform">
+			<argument index="2" name="transform" type="Transform3D">
 			</argument>
 			<description>
-				Sets the [Transform] for a specific bone of this skeleton.
+				Sets the [Transform3D] for a specific bone of this skeleton.
 			</description>
 		</method>
 		<method name="skeleton_bone_set_transform_2d">
@@ -3267,7 +3267,7 @@
 			Use [Transform2D] to store MultiMesh transform.
 		</constant>
 		<constant name="MULTIMESH_TRANSFORM_3D" value="1" enum="MultimeshTransformFormat">
-			Use [Transform] to store MultiMesh transform.
+			Use [Transform3D] to store MultiMesh transform.
 		</constant>
 		<constant name="LIGHT_DIRECTIONAL" value="0" enum="LightType">
 			Is a directional (sun) light.
@@ -3388,7 +3388,7 @@
 		<constant name="PARTICLES_DRAW_ORDER_LIFETIME" value="1" enum="ParticlesDrawOrder">
 			Sort particles based on their lifetime.
 		</constant>
-		<constant name="PARTICLES_DRAW_ORDER_VIEW_DEPTH" value="2" enum="ParticlesDrawOrder">
+		<constant name="PARTICLES_DRAW_ORDER_VIEW_DEPTH" value="3" enum="ParticlesDrawOrder">
 			Sort particles based on their distance to the camera.
 		</constant>
 		<constant name="VIEWPORT_UPDATE_DISABLED" value="0" enum="ViewportUpdateMode">
@@ -3477,14 +3477,14 @@
 		<constant name="VIEWPORT_DEBUG_DRAW_NORMAL_BUFFER" value="5" enum="ViewportDebugDraw">
 			Normal buffer is drawn instead of regular scene so you can see the per-pixel normals that will be used by post-processing effects.
 		</constant>
-		<constant name="VIEWPORT_DEBUG_DRAW_GI_PROBE_ALBEDO" value="6" enum="ViewportDebugDraw">
-			Objects are displayed with only the albedo value from [GIProbe]s.
+		<constant name="VIEWPORT_DEBUG_DRAW_VOXEL_GI_ALBEDO" value="6" enum="ViewportDebugDraw">
+			Objects are displayed with only the albedo value from [VoxelGI]s.
 		</constant>
-		<constant name="VIEWPORT_DEBUG_DRAW_GI_PROBE_LIGHTING" value="7" enum="ViewportDebugDraw">
-			Objects are displayed with only the lighting value from [GIProbe]s.
+		<constant name="VIEWPORT_DEBUG_DRAW_VOXEL_GI_LIGHTING" value="7" enum="ViewportDebugDraw">
+			Objects are displayed with only the lighting value from [VoxelGI]s.
 		</constant>
-		<constant name="VIEWPORT_DEBUG_DRAW_GI_PROBE_EMISSION" value="8" enum="ViewportDebugDraw">
-			Objects are displayed with only the emission color from [GIProbe]s.
+		<constant name="VIEWPORT_DEBUG_DRAW_VOXEL_GI_EMISSION" value="8" enum="ViewportDebugDraw">
+			Objects are displayed with only the emission color from [VoxelGI]s.
 		</constant>
 		<constant name="VIEWPORT_DEBUG_DRAW_SHADOW_ATLAS" value="9" enum="ViewportDebugDraw">
 			Draws the shadow atlas that stores shadows from [OmniLight3D]s and [SpotLight3D]s in the upper left quadrant of the [Viewport].
@@ -3694,8 +3694,8 @@
 		<constant name="INSTANCE_DECAL" value="8" enum="InstanceType">
 			The instance is a decal.
 		</constant>
-		<constant name="INSTANCE_GI_PROBE" value="9" enum="InstanceType">
-			The instance is a GI probe.
+		<constant name="INSTANCE_VOXEL_GI" value="9" enum="InstanceType">
+			The instance is a VoxelGI.
 		</constant>
 		<constant name="INSTANCE_LIGHTMAP" value="10" enum="InstanceType">
 			The instance is a lightmap.

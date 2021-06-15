@@ -163,6 +163,7 @@ public:
 	virtual int get_output_port_count() const override;
 	virtual PortType get_output_port_type(int p_port) const override;
 	virtual String get_output_port_name(int p_port) const override;
+	virtual bool is_output_port_expandable(int p_port) const override;
 
 	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const override;
 
@@ -208,7 +209,7 @@ public:
 
 class VisualShaderNodeTransformConstant : public VisualShaderNodeConstant {
 	GDCLASS(VisualShaderNodeTransformConstant, VisualShaderNodeConstant);
-	Transform constant;
+	Transform3D constant;
 
 protected:
 	static void _bind_methods();
@@ -226,8 +227,8 @@ public:
 
 	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const override;
 
-	void set_constant(Transform p_value);
-	Transform get_constant() const;
+	void set_constant(Transform3D p_value);
+	Transform3D get_constant() const;
 
 	virtual Vector<StringName> get_editable_properties() const override;
 
@@ -275,6 +276,7 @@ public:
 	virtual int get_output_port_count() const override;
 	virtual PortType get_output_port_type(int p_port) const override;
 	virtual String get_output_port_name(int p_port) const override;
+	virtual bool is_output_port_expandable(int p_port) const override;
 
 	virtual String get_input_port_default_hint(int p_port) const override;
 
@@ -359,6 +361,7 @@ public:
 	virtual int get_output_port_count() const override;
 	virtual PortType get_output_port_type(int p_port) const override;
 	virtual String get_output_port_name(int p_port) const override;
+	virtual bool is_output_port_expandable(int p_port) const override;
 
 	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const override;
 
@@ -452,6 +455,7 @@ public:
 	virtual int get_output_port_count() const override;
 	virtual PortType get_output_port_type(int p_port) const override;
 	virtual String get_output_port_name(int p_port) const override;
+	virtual bool is_output_port_expandable(int p_port) const override;
 
 	virtual Vector<VisualShader::DefaultTextureParam> get_default_texture_parameters(VisualShader::Type p_type, int p_id) const override;
 	virtual String generate_global(Shader::Mode p_mode, VisualShader::Type p_type, int p_id) const override;
@@ -1013,6 +1017,51 @@ public:
 };
 
 VARIANT_ENUM_CAST(VisualShaderNodeTransformFunc::Function)
+
+///////////////////////////////////////
+/// UV FUNC
+///////////////////////////////////////
+
+class VisualShaderNodeUVFunc : public VisualShaderNode {
+	GDCLASS(VisualShaderNodeUVFunc, VisualShaderNode);
+
+public:
+	enum Function {
+		FUNC_PANNING,
+		FUNC_SCALING,
+		FUNC_MAX,
+	};
+
+protected:
+	Function func = FUNC_PANNING;
+
+	static void _bind_methods();
+
+public:
+	virtual String get_caption() const override;
+
+	virtual int get_input_port_count() const override;
+	virtual PortType get_input_port_type(int p_port) const override;
+	virtual String get_input_port_name(int p_port) const override;
+	virtual String get_input_port_default_hint(int p_port) const override;
+
+	virtual int get_output_port_count() const override;
+	virtual PortType get_output_port_type(int p_port) const override;
+	virtual String get_output_port_name(int p_port) const override;
+
+	virtual bool is_show_prop_names() const override;
+
+	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const override;
+
+	void set_function(Function p_op);
+	Function get_function() const;
+
+	virtual Vector<StringName> get_editable_properties() const override;
+
+	VisualShaderNodeUVFunc();
+};
+
+VARIANT_ENUM_CAST(VisualShaderNodeUVFunc::Function)
 
 ///////////////////////////////////////
 /// DOT
@@ -1784,7 +1833,7 @@ class VisualShaderNodeTransformUniform : public VisualShaderNodeUniform {
 
 private:
 	bool default_value_enabled = false;
-	Transform default_value = Transform(1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0);
+	Transform3D default_value = Transform3D(1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0);
 
 protected:
 	static void _bind_methods();
@@ -1809,8 +1858,8 @@ public:
 	void set_default_value_enabled(bool p_enabled);
 	bool is_default_value_enabled() const;
 
-	void set_default_value(const Transform &p_value);
-	Transform get_default_value() const;
+	void set_default_value(const Transform3D &p_value);
+	Transform3D get_default_value() const;
 
 	bool is_qualifier_supported(Qualifier p_qual) const override;
 	bool is_convertible_to_constant() const override;
@@ -2212,5 +2261,52 @@ public:
 };
 
 VARIANT_ENUM_CAST(VisualShaderNodeMultiplyAdd::OpType)
+
+class VisualShaderNodeBillboard : public VisualShaderNode {
+	GDCLASS(VisualShaderNodeBillboard, VisualShaderNode);
+
+public:
+	enum BillboardType {
+		BILLBOARD_TYPE_DISABLED,
+		BILLBOARD_TYPE_ENABLED,
+		BILLBOARD_TYPE_FIXED_Y,
+		BILLBOARD_TYPE_PARTICLES,
+		BILLBOARD_TYPE_MAX,
+	};
+
+protected:
+	BillboardType billboard_type = BILLBOARD_TYPE_ENABLED;
+	bool keep_scale = false;
+
+protected:
+	static void _bind_methods();
+
+public:
+	virtual String get_caption() const override;
+
+	virtual int get_input_port_count() const override;
+	virtual PortType get_input_port_type(int p_port) const override;
+	virtual String get_input_port_name(int p_port) const override;
+
+	virtual int get_output_port_count() const override;
+	virtual PortType get_output_port_type(int p_port) const override;
+	virtual String get_output_port_name(int p_port) const override;
+
+	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const override;
+
+	virtual bool is_show_prop_names() const override;
+
+	void set_billboard_type(BillboardType p_billboard_type);
+	BillboardType get_billboard_type() const;
+
+	void set_keep_scale_enabled(bool p_enabled);
+	bool is_keep_scale_enabled() const;
+
+	virtual Vector<StringName> get_editable_properties() const override;
+
+	VisualShaderNodeBillboard();
+};
+
+VARIANT_ENUM_CAST(VisualShaderNodeBillboard::BillboardType)
 
 #endif // VISUAL_SHADER_NODES_H

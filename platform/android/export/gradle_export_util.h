@@ -31,9 +31,9 @@
 #ifndef GODOT_GRADLE_EXPORT_UTIL_H
 #define GODOT_GRADLE_EXPORT_UTIL_H
 
+#include "core/io/dir_access.h"
+#include "core/io/file_access.h"
 #include "core/io/zip_io.h"
-#include "core/os/dir_access.h"
-#include "core/os/file_access.h"
 #include "core/os/os.h"
 #include "editor/editor_export.h"
 
@@ -43,28 +43,6 @@ const String godot_project_name_xml_string = R"(<?xml version="1.0" encoding="ut
 	<string name="godot_project_name_string">%s</string>
 </resources>
 )";
-
-DisplayServer::ScreenOrientation _get_screen_orientation() {
-	String orientation_settings = ProjectSettings::get_singleton()->get("display/window/handheld/orientation");
-	DisplayServer::ScreenOrientation screen_orientation;
-	if (orientation_settings == "portrait") {
-		screen_orientation = DisplayServer::SCREEN_PORTRAIT;
-	} else if (orientation_settings == "reverse_landscape") {
-		screen_orientation = DisplayServer::SCREEN_REVERSE_LANDSCAPE;
-	} else if (orientation_settings == "reverse_portrait") {
-		screen_orientation = DisplayServer::SCREEN_REVERSE_PORTRAIT;
-	} else if (orientation_settings == "sensor_landscape") {
-		screen_orientation = DisplayServer::SCREEN_SENSOR_LANDSCAPE;
-	} else if (orientation_settings == "sensor_portrait") {
-		screen_orientation = DisplayServer::SCREEN_SENSOR_PORTRAIT;
-	} else if (orientation_settings == "sensor") {
-		screen_orientation = DisplayServer::SCREEN_SENSOR;
-	} else {
-		screen_orientation = DisplayServer::SCREEN_LANDSCAPE;
-	}
-
-	return screen_orientation;
-}
 
 int _get_android_orientation_value(DisplayServer::ScreenOrientation screen_orientation) {
 	switch (screen_orientation) {
@@ -266,7 +244,7 @@ String _get_instrumentation_tag(const Ref<EditorExportPreset> &p_preset) {
 
 String _get_activity_tag(const Ref<EditorExportPreset> &p_preset) {
 	bool uses_xr = (int)(p_preset->get("xr_features/xr_mode")) == 1;
-	String orientation = _get_android_orientation_label(_get_screen_orientation());
+	String orientation = _get_android_orientation_label(DisplayServer::ScreenOrientation(int(GLOBAL_GET("display/window/handheld/orientation"))));
 	String manifest_activity_text = vformat(
 			"        <activity android:name=\"com.godot.game.GodotApp\" "
 			"tools:replace=\"android:screenOrientation\" "
@@ -280,10 +258,11 @@ String _get_activity_tag(const Ref<EditorExportPreset> &p_preset) {
 }
 
 String _get_application_tag(const Ref<EditorExportPreset> &p_preset) {
-	String manifest_application_text =
+	String manifest_application_text = vformat(
 			"    <application android:label=\"@string/godot_project_name_string\"\n"
-			"        android:allowBackup=\"false\" tools:ignore=\"GoogleAppIndexingWarning\"\n"
-			"        android:icon=\"@mipmap/icon\">\n\n";
+			"        android:allowBackup=\"%s\" tools:ignore=\"GoogleAppIndexingWarning\"\n"
+			"        android:icon=\"@mipmap/icon\">\n\n",
+			bool_to_string(p_preset->get("user_data_backup/allow")));
 
 	manifest_application_text += _get_activity_tag(p_preset);
 	manifest_application_text += "    </application>\n";

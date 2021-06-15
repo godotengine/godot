@@ -33,14 +33,14 @@
 #include "core/config/project_settings.h"
 #include "core/crypto/crypto_core.h"
 #include "core/io/config_file.h"
+#include "core/io/dir_access.h"
+#include "core/io/file_access.h"
 #include "core/io/file_access_encrypted.h"
 #include "core/io/file_access_pack.h" // PACK_HEADER_MAGIC, PACK_FORMAT_VERSION
 #include "core/io/resource_loader.h"
 #include "core/io/resource_saver.h"
 #include "core/io/zip_io.h"
 #include "core/object/script_language.h"
-#include "core/os/dir_access.h"
-#include "core/os/file_access.h"
 #include "core/version.h"
 #include "editor/editor_file_system.h"
 #include "editor/plugins/script_editor_plugin.h"
@@ -151,7 +151,7 @@ void EditorExportPreset::set_export_path(const String &p_path) {
 	export_path = p_path;
 	/* NOTE(SonerSound): if there is a need to implement a PropertyHint that specifically indicates a relative path,
 	 * this should be removed. */
-	if (export_path.is_abs_path()) {
+	if (export_path.is_absolute_path()) {
 		String res_path = OS::get_singleton()->get_resource_dir();
 		export_path = res_path.path_to_file(export_path);
 	}
@@ -1065,7 +1065,7 @@ Error EditorExportPlatform::export_project_files(const Ref<EditorExportPreset> &
 				}
 			} else {
 				// Use default text server data.
-				String icu_data_file = EditorSettings::get_singleton()->get_cache_dir().plus_file("tmp_icu_data");
+				String icu_data_file = EditorPaths::get_singleton()->get_cache_dir().plus_file("tmp_icu_data");
 				TS->save_support_data(icu_data_file);
 				Vector<uint8_t> array = FileAccess::get_file_as_array(icu_data_file);
 				err = p_func(p_udata, ts_data, array, idx, total, enc_in_filters, enc_ex_filters, key);
@@ -1078,7 +1078,7 @@ Error EditorExportPlatform::export_project_files(const Ref<EditorExportPreset> &
 	}
 
 	String config_file = "project.binary";
-	String engine_cfb = EditorSettings::get_singleton()->get_cache_dir().plus_file("tmp" + config_file);
+	String engine_cfb = EditorPaths::get_singleton()->get_cache_dir().plus_file("tmp" + config_file);
 	ProjectSettings::get_singleton()->save_custom(engine_cfb, custom_map, custom_list);
 	Vector<uint8_t> data = FileAccess::get_file_as_array(engine_cfb);
 	DirAccess::remove_file_or_error(engine_cfb);
@@ -1100,9 +1100,9 @@ Error EditorExportPlatform::save_pack(const Ref<EditorExportPreset> &p_preset, c
 
 	// Create the temporary export directory if it doesn't exist.
 	DirAccessRef da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
-	da->make_dir_recursive(EditorSettings::get_singleton()->get_cache_dir());
+	da->make_dir_recursive(EditorPaths::get_singleton()->get_cache_dir());
 
-	String tmppath = EditorSettings::get_singleton()->get_cache_dir().plus_file("packtmp");
+	String tmppath = EditorPaths::get_singleton()->get_cache_dir().plus_file("packtmp");
 	FileAccess *ftmp = FileAccess::open(tmppath, FileAccess::WRITE);
 	ERR_FAIL_COND_V_MSG(!ftmp, ERR_CANT_CREATE, "Cannot create file '" + tmppath + "'.");
 
@@ -1984,7 +1984,7 @@ void EditorExportTextSceneToBinaryPlugin::_export_file(const String &p_path, con
 	if (!convert) {
 		return;
 	}
-	String tmp_path = EditorSettings::get_singleton()->get_cache_dir().plus_file("tmpfile.res");
+	String tmp_path = EditorPaths::get_singleton()->get_cache_dir().plus_file("tmpfile.res");
 	Error err = ResourceFormatLoaderText::convert_file_to_binary(p_path, tmp_path);
 	if (err != OK) {
 		DirAccess::remove_file_or_error(tmp_path);

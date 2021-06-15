@@ -31,31 +31,31 @@
 #include "editor_resource_preview.h"
 
 #include "core/config/project_settings.h"
+#include "core/io/file_access.h"
 #include "core/io/resource_loader.h"
 #include "core/io/resource_saver.h"
 #include "core/object/message_queue.h"
-#include "core/os/file_access.h"
 #include "editor_node.h"
 #include "editor_scale.h"
 #include "editor_settings.h"
 
 bool EditorResourcePreviewGenerator::handles(const String &p_type) const {
-	if (get_script_instance() && get_script_instance()->has_method("handles")) {
-		return get_script_instance()->call("handles", p_type);
+	if (get_script_instance() && get_script_instance()->has_method("_handles")) {
+		return get_script_instance()->call("_handles", p_type);
 	}
-	ERR_FAIL_V_MSG(false, "EditorResourcePreviewGenerator::handles needs to be overridden.");
+	ERR_FAIL_V_MSG(false, "EditorResourcePreviewGenerator::_handles needs to be overridden.");
 }
 
 Ref<Texture2D> EditorResourcePreviewGenerator::generate(const RES &p_from, const Size2 &p_size) const {
-	if (get_script_instance() && get_script_instance()->has_method("generate")) {
-		return get_script_instance()->call("generate", p_from, p_size);
+	if (get_script_instance() && get_script_instance()->has_method("_generate")) {
+		return get_script_instance()->call("_generate", p_from, p_size);
 	}
-	ERR_FAIL_V_MSG(Ref<Texture2D>(), "EditorResourcePreviewGenerator::generate needs to be overridden.");
+	ERR_FAIL_V_MSG(Ref<Texture2D>(), "EditorResourcePreviewGenerator::_generate needs to be overridden.");
 }
 
 Ref<Texture2D> EditorResourcePreviewGenerator::generate_from_path(const String &p_path, const Size2 &p_size) const {
-	if (get_script_instance() && get_script_instance()->has_method("generate_from_path")) {
-		return get_script_instance()->call("generate_from_path", p_path, p_size);
+	if (get_script_instance() && get_script_instance()->has_method("_generate_from_path")) {
+		return get_script_instance()->call("_generate_from_path", p_path, p_size);
 	}
 
 	RES res = ResourceLoader::load(p_path);
@@ -66,27 +66,27 @@ Ref<Texture2D> EditorResourcePreviewGenerator::generate_from_path(const String &
 }
 
 bool EditorResourcePreviewGenerator::generate_small_preview_automatically() const {
-	if (get_script_instance() && get_script_instance()->has_method("generate_small_preview_automatically")) {
-		return get_script_instance()->call("generate_small_preview_automatically");
+	if (get_script_instance() && get_script_instance()->has_method("_generate_small_preview_automatically")) {
+		return get_script_instance()->call("_generate_small_preview_automatically");
 	}
 
 	return false;
 }
 
 bool EditorResourcePreviewGenerator::can_generate_small_preview() const {
-	if (get_script_instance() && get_script_instance()->has_method("can_generate_small_preview")) {
-		return get_script_instance()->call("can_generate_small_preview");
+	if (get_script_instance() && get_script_instance()->has_method("_can_generate_small_preview")) {
+		return get_script_instance()->call("_can_generate_small_preview");
 	}
 
 	return false;
 }
 
 void EditorResourcePreviewGenerator::_bind_methods() {
-	ClassDB::add_virtual_method(get_class_static(), MethodInfo(Variant::BOOL, "handles", PropertyInfo(Variant::STRING, "type")));
-	ClassDB::add_virtual_method(get_class_static(), MethodInfo(CLASS_INFO(Texture2D), "generate", PropertyInfo(Variant::OBJECT, "from", PROPERTY_HINT_RESOURCE_TYPE, "Resource"), PropertyInfo(Variant::VECTOR2, "size")));
-	ClassDB::add_virtual_method(get_class_static(), MethodInfo(CLASS_INFO(Texture2D), "generate_from_path", PropertyInfo(Variant::STRING, "path", PROPERTY_HINT_FILE), PropertyInfo(Variant::VECTOR2, "size")));
-	ClassDB::add_virtual_method(get_class_static(), MethodInfo(Variant::BOOL, "generate_small_preview_automatically"));
-	ClassDB::add_virtual_method(get_class_static(), MethodInfo(Variant::BOOL, "can_generate_small_preview"));
+	BIND_VMETHOD(MethodInfo(Variant::BOOL, "_handles", PropertyInfo(Variant::STRING, "type")));
+	BIND_VMETHOD(MethodInfo(CLASS_INFO(Texture2D), "_generate", PropertyInfo(Variant::OBJECT, "from", PROPERTY_HINT_RESOURCE_TYPE, "Resource"), PropertyInfo(Variant::VECTOR2, "size")));
+	BIND_VMETHOD(MethodInfo(CLASS_INFO(Texture2D), "_generate_from_path", PropertyInfo(Variant::STRING, "path", PROPERTY_HINT_FILE), PropertyInfo(Variant::VECTOR2, "size")));
+	BIND_VMETHOD(MethodInfo(Variant::BOOL, "_generate_small_preview_automatically"));
+	BIND_VMETHOD(MethodInfo(Variant::BOOL, "_can_generate_small_preview"));
 }
 
 EditorResourcePreviewGenerator::EditorResourcePreviewGenerator() {
@@ -241,7 +241,7 @@ void EditorResourcePreview::_thread() {
 					_preview_ready(item.path + ":" + itos(item.resource->hash_edited_version()), texture, small_texture, item.id, item.function, item.userdata);
 
 				} else {
-					String temp_path = EditorSettings::get_singleton()->get_cache_dir();
+					String temp_path = EditorPaths::get_singleton()->get_cache_dir();
 					String cache_base = ProjectSettings::get_singleton()->globalize_path(item.path).md5_text();
 					cache_base = temp_path.plus_file("resthumb-" + cache_base);
 

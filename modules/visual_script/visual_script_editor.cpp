@@ -381,7 +381,7 @@ static Color _color_from_type(Variant::Type p_type, bool dark_theme = true) {
 			case Variant::PLANE:
 				color = Color(0.97, 0.44, 0.44);
 				break;
-			case Variant::QUAT:
+			case Variant::QUATERNION:
 				color = Color(0.93, 0.41, 0.64);
 				break;
 			case Variant::AABB:
@@ -390,7 +390,7 @@ static Color _color_from_type(Variant::Type p_type, bool dark_theme = true) {
 			case Variant::BASIS:
 				color = Color(0.89, 0.93, 0.41);
 				break;
-			case Variant::TRANSFORM:
+			case Variant::TRANSFORM3D:
 				color = Color(0.96, 0.66, 0.43);
 				break;
 
@@ -487,7 +487,7 @@ static Color _color_from_type(Variant::Type p_type, bool dark_theme = true) {
 			case Variant::PLANE:
 				color = Color(0.97, 0.44, 0.44);
 				break;
-			case Variant::QUAT:
+			case Variant::QUATERNION:
 				color = Color(0.93, 0.41, 0.64);
 				break;
 			case Variant::AABB:
@@ -496,7 +496,7 @@ static Color _color_from_type(Variant::Type p_type, bool dark_theme = true) {
 			case Variant::BASIS:
 				color = Color(0.7, 0.73, 0.1);
 				break;
-			case Variant::TRANSFORM:
+			case Variant::TRANSFORM3D:
 				color = Color(0.96, 0.56, 0.28);
 				break;
 
@@ -624,10 +624,10 @@ void VisualScriptEditor::_update_graph(int p_only_id) {
 		Control::get_theme_icon("Vector3i", "EditorIcons"),
 		Control::get_theme_icon("Transform2D", "EditorIcons"),
 		Control::get_theme_icon("Plane", "EditorIcons"),
-		Control::get_theme_icon("Quat", "EditorIcons"),
+		Control::get_theme_icon("Quaternion", "EditorIcons"),
 		Control::get_theme_icon("AABB", "EditorIcons"),
 		Control::get_theme_icon("Basis", "EditorIcons"),
-		Control::get_theme_icon("Transform", "EditorIcons"),
+		Control::get_theme_icon("Transform3D", "EditorIcons"),
 		Control::get_theme_icon("Color", "EditorIcons"),
 		Control::get_theme_icon("NodePath", "EditorIcons"),
 		Control::get_theme_icon("RID", "EditorIcons"),
@@ -739,6 +739,7 @@ void VisualScriptEditor::_update_graph(int p_only_id) {
 			}
 
 			Color c = sbf->get_border_color();
+			c = ((c.r + c.g + c.b) / 3) < 0.7 ? Color(1.0, 1.0, 1.0, 0.85) : Color(0.0, 0.0, 0.0, 0.85);
 			Color ic = c;
 			gnode->add_theme_color_override("title_color", c);
 			c.a = 1;
@@ -1074,10 +1075,10 @@ void VisualScriptEditor::_update_members() {
 		Control::get_theme_icon("Vector3i", "EditorIcons"),
 		Control::get_theme_icon("Transform2D", "EditorIcons"),
 		Control::get_theme_icon("Plane", "EditorIcons"),
-		Control::get_theme_icon("Quat", "EditorIcons"),
+		Control::get_theme_icon("Quaternion", "EditorIcons"),
 		Control::get_theme_icon("AABB", "EditorIcons"),
 		Control::get_theme_icon("Basis", "EditorIcons"),
-		Control::get_theme_icon("Transform", "EditorIcons"),
+		Control::get_theme_icon("Transform3D", "EditorIcons"),
 		Control::get_theme_icon("Color", "EditorIcons"),
 		Control::get_theme_icon("NodePath", "EditorIcons"),
 		Control::get_theme_icon("RID", "EditorIcons"),
@@ -1852,7 +1853,7 @@ void VisualScriptEditor::_members_gui_input(const Ref<InputEvent> &p_event) {
 				}
 				member_name = ti->get_text(0);
 			}
-			if (ED_IS_SHORTCUT("visual_script_editor/delete_selected", p_event)) {
+			if (ED_IS_SHORTCUT("ui_graph_delete", p_event)) {
 				_member_option(MEMBER_REMOVE);
 			}
 			if (ED_IS_SHORTCUT("visual_script_editor/edit_member", p_event)) {
@@ -4120,7 +4121,7 @@ void VisualScriptEditor::_member_rmb_selected(const Vector2 &p_pos) {
 		member_name = ti->get_text(0);
 		member_popup->add_icon_shortcut(edit_icon, ED_GET_SHORTCUT("visual_script_editor/edit_member"), MEMBER_EDIT);
 		member_popup->add_separator();
-		member_popup->add_icon_shortcut(del_icon, ED_GET_SHORTCUT("visual_script_editor/delete_selected"), MEMBER_REMOVE);
+		member_popup->add_icon_shortcut(del_icon, ED_GET_SHORTCUT("ui_graph_delete"), MEMBER_REMOVE);
 		member_popup->popup();
 		return;
 	}
@@ -4130,7 +4131,7 @@ void VisualScriptEditor::_member_rmb_selected(const Vector2 &p_pos) {
 		member_name = ti->get_text(0);
 		member_popup->add_icon_shortcut(edit_icon, ED_GET_SHORTCUT("visual_script_editor/edit_member"), MEMBER_EDIT);
 		member_popup->add_separator();
-		member_popup->add_icon_shortcut(del_icon, ED_GET_SHORTCUT("visual_script_editor/delete_selected"), MEMBER_REMOVE);
+		member_popup->add_icon_shortcut(del_icon, ED_GET_SHORTCUT("ui_graph_delete"), MEMBER_REMOVE);
 		member_popup->popup();
 		return;
 	}
@@ -4140,7 +4141,7 @@ void VisualScriptEditor::_member_rmb_selected(const Vector2 &p_pos) {
 		member_name = ti->get_text(0);
 		member_popup->add_icon_shortcut(edit_icon, ED_GET_SHORTCUT("visual_script_editor/edit_member"), MEMBER_EDIT);
 		member_popup->add_separator();
-		member_popup->add_icon_shortcut(del_icon, ED_GET_SHORTCUT("visual_script_editor/delete_selected"), MEMBER_REMOVE);
+		member_popup->add_icon_shortcut(del_icon, ED_GET_SHORTCUT("ui_graph_delete"), MEMBER_REMOVE);
 		member_popup->popup();
 		return;
 	}
@@ -4242,9 +4243,9 @@ void VisualScriptEditor::_bind_methods() {
 
 	ClassDB::bind_method("_create_new_node_from_name", &VisualScriptEditor::_create_new_node_from_name);
 
-	ClassDB::bind_method("get_drag_data_fw", &VisualScriptEditor::get_drag_data_fw);
-	ClassDB::bind_method("can_drop_data_fw", &VisualScriptEditor::can_drop_data_fw);
-	ClassDB::bind_method("drop_data_fw", &VisualScriptEditor::drop_data_fw);
+	ClassDB::bind_method("_get_drag_data_fw", &VisualScriptEditor::get_drag_data_fw);
+	ClassDB::bind_method("_can_drop_data_fw", &VisualScriptEditor::can_drop_data_fw);
+	ClassDB::bind_method("_drop_data_fw", &VisualScriptEditor::drop_data_fw);
 
 	ClassDB::bind_method("_input", &VisualScriptEditor::_input);
 

@@ -1290,7 +1290,7 @@ void TileSet::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_tile_skew", "skew"), &TileSet::set_tile_skew);
 	ClassDB::bind_method(D_METHOD("get_tile_skew"), &TileSet::get_tile_skew);
 
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "tile_shape", PROPERTY_HINT_ENUM, "Square,Isometric,Half-offset square,Hexagon"), "set_tile_shape", "get_tile_shape");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "tile_shape", PROPERTY_HINT_ENUM, "Square,Isometric,Half-Offset Square,Hexagon"), "set_tile_shape", "get_tile_shape");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "tile_layout", PROPERTY_HINT_ENUM, "Stacked,Stacked Offset,Stairs Right,Stairs Down,Diamond Right,Diamond Down"), "set_tile_layout", "get_tile_layout");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "tile_offset_axis", PROPERTY_HINT_ENUM, "Horizontal Offset,Vertical Offset"), "set_tile_offset_axis", "get_tile_offset_axis");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2I, "tile_size"), "set_tile_size", "get_tile_size");
@@ -1407,9 +1407,11 @@ TileSet::TileSet() {
 }
 
 TileSet::~TileSet() {
+#ifndef DISABLE_DEPRECATED
 	for (Map<int, CompatibilityTileData *>::Element *E = compatibility_data.front(); E; E = E->next()) {
 		memdelete(E->get());
 	}
+#endif // DISABLE_DEPRECATED
 	while (!source_ids.is_empty()) {
 		remove_source(source_ids[0]);
 	}
@@ -2452,6 +2454,7 @@ int TileData::get_terrain_set() const {
 }
 
 void TileData::set_peering_bit_terrain(TileSet::CellNeighbor p_peering_bit, int p_terrain_index) {
+	ERR_FAIL_INDEX(p_peering_bit, TileSet::CELL_NEIGHBOR_MAX);
 	ERR_FAIL_COND(p_terrain_index < -1);
 	if (tile_set) {
 		ERR_FAIL_COND(p_terrain_index >= tile_set->get_terrains_count(terrain_set));
@@ -2462,6 +2465,7 @@ void TileData::set_peering_bit_terrain(TileSet::CellNeighbor p_peering_bit, int 
 }
 
 int TileData::get_peering_bit_terrain(TileSet::CellNeighbor p_peering_bit) const {
+	ERR_FAIL_INDEX_V(p_peering_bit, TileSet::CELL_NEIGHBOR_MAX, -1);
 	return terrain_peering_bits[p_peering_bit];
 }
 
@@ -3868,8 +3872,8 @@ void TileSetPluginAtlasRendering::tilemap_notification(TileMap *p_tile_map, int 
 		} break;
 		case CanvasItem::NOTIFICATION_DRAW: {
 			Ref<TileSet> tile_set = p_tile_map->get_tileset();
-			if (tile_set.is_valid()) {
-				RenderingServer::get_singleton()->canvas_item_set_sort_children_by_y(p_tile_map->get_canvas_item(), tile_set->is_y_sorting());
+			if (tile_set.is_valid() || p_tile_map->is_y_sort_enabled()) {
+				RenderingServer::get_singleton()->canvas_item_set_sort_children_by_y(p_tile_map->get_canvas_item(), tile_set->is_y_sorting() || p_tile_map->is_y_sort_enabled());
 			}
 		} break;
 	}
@@ -4295,7 +4299,23 @@ void TileSetPluginAtlasPhysics::draw_quadrant_debug(TileMap *p_tile_map, TileMap
 	Ref<TileSet> tile_set = p_tile_map->get_tileset();
 	ERR_FAIL_COND(!tile_set.is_valid());
 
-	if (!p_tile_map->get_tree() || !(Engine::get_singleton()->is_editor_hint() || p_tile_map->get_tree()->is_debugging_collisions_hint())) {
+	if (!p_tile_map->get_tree()) {
+		return;
+	}
+
+	bool show_collision = false;
+	switch (p_tile_map->get_collision_visibility_mode()) {
+		case TileMap::VISIBILITY_MODE_DEFAULT:
+			show_collision = !Engine::get_singleton()->is_editor_hint() && (p_tile_map->get_tree() && p_tile_map->get_tree()->is_debugging_navigation_hint());
+			break;
+		case TileMap::VISIBILITY_MODE_FORCE_HIDE:
+			show_collision = false;
+			break;
+		case TileMap::VISIBILITY_MODE_FORCE_SHOW:
+			show_collision = true;
+			break;
+	}
+	if (!show_collision) {
 		return;
 	}
 
@@ -4454,7 +4474,23 @@ void TileSetPluginAtlasNavigation::draw_quadrant_debug(TileMap *p_tile_map, Tile
 	Ref<TileSet> tile_set = p_tile_map->get_tileset();
 	ERR_FAIL_COND(!tile_set.is_valid());
 
-	if (!p_tile_map->get_tree() || !(Engine::get_singleton()->is_editor_hint() || p_tile_map->get_tree()->is_debugging_navigation_hint())) {
+	if (!p_tile_map->get_tree()) {
+		return;
+	}
+
+	bool show_navigation = false;
+	switch (p_tile_map->get_navigation_visibility_mode()) {
+		case TileMap::VISIBILITY_MODE_DEFAULT:
+			show_navigation = !Engine::get_singleton()->is_editor_hint() && (p_tile_map->get_tree() && p_tile_map->get_tree()->is_debugging_navigation_hint());
+			break;
+		case TileMap::VISIBILITY_MODE_FORCE_HIDE:
+			show_navigation = false;
+			break;
+		case TileMap::VISIBILITY_MODE_FORCE_SHOW:
+			show_navigation = true;
+			break;
+	}
+	if (!show_navigation) {
 		return;
 	}
 

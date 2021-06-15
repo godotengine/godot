@@ -41,8 +41,8 @@
 #include "scene/gui/tree.h"
 #include "scene/resources/visual_shader.h"
 
-class VisualShaderNodePlugin : public Reference {
-	GDCLASS(VisualShaderNodePlugin, Reference);
+class VisualShaderNodePlugin : public RefCounted {
+	GDCLASS(VisualShaderNodePlugin, RefCounted);
 
 protected:
 	static void _bind_methods();
@@ -51,8 +51,8 @@ public:
 	virtual Control *create_editor(const Ref<Resource> &p_parent_resource, const Ref<VisualShaderNode> &p_node);
 };
 
-class VisualShaderGraphPlugin : public Reference {
-	GDCLASS(VisualShaderGraphPlugin, Reference);
+class VisualShaderGraphPlugin : public RefCounted {
+	GDCLASS(VisualShaderGraphPlugin, RefCounted);
 
 private:
 	struct InputPort {
@@ -82,6 +82,8 @@ private:
 	Map<int, Link> links;
 	List<VisualShader::Connection> connections;
 	bool dirty = false;
+
+	Color vector_expanded_color[3];
 
 protected:
 	static void _bind_methods();
@@ -119,6 +121,7 @@ public:
 	void set_expression(VisualShader::Type p_type, int p_node_id, const String &p_expression);
 	int get_constant_index(float p_constant) const;
 	void update_node_size(int p_node_id);
+	void update_theme();
 	VisualShader::Type get_shader_type() const;
 
 	VisualShaderGraphPlugin();
@@ -139,12 +142,11 @@ class VisualShaderEditor : public VBoxContainer {
 	Button *preview_shader;
 
 	OptionButton *edit_type = nullptr;
-	OptionButton *edit_type_standart;
+	OptionButton *edit_type_standard;
 	OptionButton *edit_type_particles;
 	OptionButton *edit_type_sky;
-
-	PanelContainer *error_panel;
-	Label *error_label;
+	CheckBox *custom_mode_box;
+	bool custom_mode_enabled = false;
 
 	bool pending_update_preview;
 	bool shader_error;
@@ -152,7 +154,8 @@ class VisualShaderEditor : public VBoxContainer {
 	VBoxContainer *preview_vbox;
 	CodeEdit *preview_text;
 	Ref<CodeHighlighter> syntax_highlighter;
-	Label *error_text;
+	PanelContainer *error_panel;
+	Label *error_label;
 
 	UndoRedo *undo_redo;
 	Point2 saved_node_pos;
@@ -188,7 +191,9 @@ class VisualShaderEditor : public VBoxContainer {
 	enum ParticlesTypeFlags {
 		TYPE_FLAGS_EMIT = 1,
 		TYPE_FLAGS_PROCESS = 2,
-		TYPE_FLAGS_END = 4
+		TYPE_FLAGS_COLLIDE = 4,
+		TYPE_FLAGS_EMIT_CUSTOM = 8,
+		TYPE_FLAGS_PROCESS_CUSTOM = 16,
 	};
 
 	enum SkyTypeFlags {
@@ -290,15 +295,8 @@ class VisualShaderEditor : public VBoxContainer {
 
 	void _draw_color_over_button(Object *obj, Color p_color);
 
-	void _add_custom_node(const String &p_path);
-	void _add_cubemap_node(const String &p_path);
-	void _add_texture2d_node(const String &p_path);
-	void _add_texture2d_array_node(const String &p_path);
-	void _add_texture3d_node(const String &p_path);
-	void _add_curve_node(const String &p_path);
-
 	void _setup_node(VisualShaderNode *p_node, int p_op_idx);
-	VisualShaderNode *_add_node(int p_idx, int p_op_idx = -1);
+	void _add_node(int p_idx, int p_op_idx = -1, String p_resource_path = "", int p_node_idx = -1);
 	void _update_options_menu();
 	void _set_mode(int p_which);
 
@@ -391,6 +389,7 @@ class VisualShaderEditor : public VBoxContainer {
 	Ref<VisualShaderGraphPlugin> graph_plugin;
 
 	void _mode_selected(int p_id);
+	void _custom_mode_toggled(bool p_enabled);
 
 	void _input_select_item(Ref<VisualShaderNodeInput> input, String name);
 	void _uniform_select_item(Ref<VisualShaderNodeUniformRef> p_uniform, String p_name);
@@ -408,6 +407,7 @@ class VisualShaderEditor : public VBoxContainer {
 	void _remove_output_port(int p_node, int p_port);
 	void _change_output_port_type(int p_type, int p_node, int p_port);
 	void _change_output_port_name(const String &p_text, Object *p_line_edit, int p_node, int p_port);
+	void _expand_output_port(int p_node, int p_port, bool p_expand);
 
 	void _expression_focus_out(Object *code_edit, int p_node);
 

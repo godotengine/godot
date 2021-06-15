@@ -129,7 +129,7 @@ bool FabrikInverseKinematic::build_chain(Task *p_task, bool p_force_simple_chain
 	return true;
 }
 
-void FabrikInverseKinematic::solve_simple(Task *p_task, bool p_solve_magnet) {
+void FabrikInverseKinematic::solve_simple(Task *p_task, bool p_solve_magnet, Vector3 p_origin_pos) {
 	real_t distance_to_goal(1e4);
 	real_t previous_distance_to_goal(0);
 	int can_solve(p_task->max_iterations);
@@ -138,7 +138,7 @@ void FabrikInverseKinematic::solve_simple(Task *p_task, bool p_solve_magnet) {
 		--can_solve;
 
 		solve_simple_backwards(p_task->chain, p_solve_magnet);
-		solve_simple_forwards(p_task->chain, p_solve_magnet);
+		solve_simple_forwards(p_task->chain, p_solve_magnet, p_origin_pos);
 
 		distance_to_goal = (p_task->chain.tips[0].chain_item->current_pos - p_task->chain.tips[0].end_effector->goal_transform.origin).length();
 	}
@@ -176,13 +176,13 @@ void FabrikInverseKinematic::solve_simple_backwards(Chain &r_chain, bool p_solve
 	}
 }
 
-void FabrikInverseKinematic::solve_simple_forwards(Chain &r_chain, bool p_solve_magnet) {
+void FabrikInverseKinematic::solve_simple_forwards(Chain &r_chain, bool p_solve_magnet, Vector3 p_origin_pos) {
 	if (p_solve_magnet && !r_chain.middle_chain_item) {
 		return;
 	}
 
 	ChainItem *sub_chain_root(&r_chain.chain_root);
-	Vector3 origin(r_chain.chain_root.initial_transform.origin);
+	Vector3 origin = p_origin_pos;
 
 	while (sub_chain_root) { // Reach the tip
 		sub_chain_root->current_pos = origin;
@@ -212,7 +212,7 @@ void FabrikInverseKinematic::solve_simple_forwards(Chain &r_chain, bool p_solve_
 	}
 }
 
-FabrikInverseKinematic::Task *FabrikInverseKinematic::create_simple_task(Skeleton3D *p_sk, BoneId root_bone, BoneId tip_bone, const Transform &goal_transform) {
+FabrikInverseKinematic::Task *FabrikInverseKinematic::create_simple_task(Skeleton3D *p_sk, BoneId root_bone, BoneId tip_bone, const Transform3D &goal_transform) {
 	FabrikInverseKinematic::EndEffector ee;
 	ee.tip_bone = tip_bone;
 
@@ -236,17 +236,17 @@ void FabrikInverseKinematic::free_task(Task *p_task) {
 	}
 }
 
-void FabrikInverseKinematic::set_goal(Task *p_task, const Transform &p_goal) {
+void FabrikInverseKinematic::set_goal(Task *p_task, const Transform3D &p_goal) {
 	p_task->goal_global_transform = p_goal;
 }
 
-void FabrikInverseKinematic::make_goal(Task *p_task, const Transform &p_inverse_transf, real_t blending_delta) {
+void FabrikInverseKinematic::make_goal(Task *p_task, const Transform3D &p_inverse_transf, real_t blending_delta) {
 	if (blending_delta >= 0.99f) {
 		// Update the end_effector (local transform) without blending
 		p_task->end_effectors.write[0].goal_transform = p_inverse_transf * p_task->goal_global_transform;
 	} else {
 		// End effector in local transform
-		const Transform end_effector_pose(p_task->skeleton->get_bone_global_pose_no_override(p_task->end_effectors[0].tip_bone));
+		const Transform3D end_effector_pose(p_task->skeleton->get_bone_global_pose_no_override(p_task->end_effectors[0].tip_bone));
 
 		// Update the end_effector (local transform) by blending with current pose
 		p_task->end_effectors.write[0].goal_transform = end_effector_pose.interpolate_with(p_inverse_transf * p_task->goal_global_transform, blending_delta);
@@ -273,18 +273,21 @@ void FabrikInverseKinematic::solve(Task *p_task, real_t blending_delta, bool ove
 	// Update the initial root transform so its synced with any animation changes
 	_update_chain(p_task->skeleton, &p_task->chain.chain_root);
 
+	p_task->skeleton->set_bone_global_pose_override(p_task->chain.chain_root.bone, Transform3D(), 0.0, false);
+	Vector3 origin_pos = p_task->skeleton->get_bone_global_pose(p_task->chain.chain_root.bone).origin;
+
 	make_goal(p_task, p_task->skeleton->get_global_transform().affine_inverse(), blending_delta);
 
 	if (p_use_magnet && p_task->chain.middle_chain_item) {
 		p_task->chain.magnet_position = p_task->chain.middle_chain_item->initial_transform.origin.lerp(p_magnet_position, blending_delta);
-		solve_simple(p_task, true);
+		solve_simple(p_task, true, origin_pos);
 	}
-	solve_simple(p_task, false);
+	solve_simple(p_task, false, origin_pos);
 
 	// Assign new bone position.
 	ChainItem *ci(&p_task->chain.chain_root);
 	while (ci) {
-		Transform new_bone_pose(ci->initial_transform);
+		Transform3D new_bone_pose(ci->initial_transform);
 		new_bone_pose.origin = ci->current_pos;
 
 		if (!ci->children.is_empty()) {
@@ -394,7 +397,7 @@ void SkeletonIK3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "root_bone"), "set_root_bone", "get_root_bone");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "tip_bone"), "set_tip_bone", "get_tip_bone");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "interpolation", PROPERTY_HINT_RANGE, "0,1,0.001"), "set_interpolation", "get_interpolation");
-	ADD_PROPERTY(PropertyInfo(Variant::TRANSFORM, "target"), "set_target_transform", "get_target_transform");
+	ADD_PROPERTY(PropertyInfo(Variant::TRANSFORM3D, "target"), "set_target_transform", "get_target_transform");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "override_tip_basis"), "set_override_tip_basis", "is_override_tip_basis");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_magnet"), "set_use_magnet", "is_using_magnet");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "magnet"), "set_magnet_position", "get_magnet_position");
@@ -458,12 +461,12 @@ real_t SkeletonIK3D::get_interpolation() const {
 	return interpolation;
 }
 
-void SkeletonIK3D::set_target_transform(const Transform &p_target) {
+void SkeletonIK3D::set_target_transform(const Transform3D &p_target) {
 	target = p_target;
 	reload_goal();
 }
 
-const Transform &SkeletonIK3D::get_target_transform() const {
+const Transform3D &SkeletonIK3D::get_target_transform() const {
 	return target;
 }
 
@@ -534,7 +537,7 @@ void SkeletonIK3D::stop() {
 	}
 }
 
-Transform SkeletonIK3D::_get_target_transform() {
+Transform3D SkeletonIK3D::_get_target_transform() {
 	if (!target_node_override && !target_node_path_override.is_empty()) {
 		target_node_override = Object::cast_to<Node3D>(get_node(target_node_path_override));
 	}

@@ -140,6 +140,24 @@ namespace Godot
         }
 
         /// <summary>
+        /// Returns a new vector with all components clamped between the
+        /// components of `min` and `max` using
+        /// <see cref="Mathf.Clamp(real_t, real_t, real_t)"/>.
+        /// </summary>
+        /// <param name="min">The vector with minimum allowed values.</param>
+        /// <param name="max">The vector with maximum allowed values.</param>
+        /// <returns>The vector with all components clamped.</returns>
+        public Vector3 Clamp(Vector3 min, Vector3 max)
+        {
+            return new Vector3
+            (
+                Mathf.Clamp(x, min.x, max.x),
+                Mathf.Clamp(y, min.y, max.y),
+                Mathf.Clamp(z, min.z, max.z)
+            );
+        }
+
+        /// <summary>
         /// Returns the cross product of this vector and `b`.
         /// </summary>
         /// <param name="b">The other vector.</param>
@@ -313,6 +331,25 @@ namespace Godot
         }
 
         /// <summary>
+        /// Returns the vector with a maximum length by limiting its length to `length`.
+        /// </summary>
+        /// <param name="length">The length to limit to.</param>
+        /// <returns>The vector with its length limited.</returns>
+        public Vector3 LimitLength(real_t length = 1.0f)
+        {
+            Vector3 v = this;
+            real_t l = Length();
+
+            if (l > 0 && length < l)
+            {
+                v /= l;
+                v *= length;
+            }
+
+            return v;
+        }
+
+        /// <summary>
         /// Returns the axis of the vector's largest value. See <see cref="Axis"/>.
         /// If all components are equal, this method returns <see cref="Axis.X"/>.
         /// </summary>
@@ -419,7 +456,7 @@ namespace Godot
 #if DEBUG
             if (!normal.IsNormalized())
             {
-                throw new ArgumentException("Argument  is not normalized", nameof(normal));
+                throw new ArgumentException("Argument is not normalized", nameof(normal));
             }
 #endif
             return 2.0f * Dot(normal) * normal - this;
@@ -437,7 +474,7 @@ namespace Godot
 #if DEBUG
             if (!axis.IsNormalized())
             {
-                throw new ArgumentException("Argument  is not normalized", nameof(axis));
+                throw new ArgumentException("Argument is not normalized", nameof(axis));
             }
 #endif
             return new Basis(axis, phi).Xform(this);

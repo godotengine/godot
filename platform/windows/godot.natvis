@@ -40,13 +40,13 @@
 		<DisplayString Condition="type == Variant::TRANSFORM2D">{_data._transform2d}</DisplayString>
 		<DisplayString Condition="type == Variant::AABB">{_data._aabb}</DisplayString>
 		<DisplayString Condition="type == Variant::BASIS">{_data._basis}</DisplayString>
-		<DisplayString Condition="type == Variant::TRANSFORM">{_data._transform}</DisplayString>
+		<DisplayString Condition="type == Variant::TRANSFORM3D">{_data._transform}</DisplayString>
 		<DisplayString Condition="type == Variant::STRING">{*(String *)_data._mem}</DisplayString>
 		<DisplayString Condition="type == Variant::VECTOR2">{*(Vector2 *)_data._mem}</DisplayString>
 		<DisplayString Condition="type == Variant::RECT2">{*(Rect2 *)_data._mem}</DisplayString>
 		<DisplayString Condition="type == Variant::VECTOR3">{*(Vector3 *)_data._mem}</DisplayString>
 		<DisplayString Condition="type == Variant::PLANE">{*(Plane *)_data._mem}</DisplayString>
-		<DisplayString Condition="type == Variant::QUAT">{*(Quat *)_data._mem}</DisplayString>
+		<DisplayString Condition="type == Variant::QUATERNION">{*(Quaternion *)_data._mem}</DisplayString>
 		<DisplayString Condition="type == Variant::COLOR">{*(Color *)_data._mem}</DisplayString>
 		<DisplayString Condition="type == Variant::NODE_PATH">{*(NodePath *)_data._mem}</DisplayString>
 		<DisplayString Condition="type == Variant::RID">{*(::RID *)_data._mem}</DisplayString>
@@ -72,13 +72,13 @@
 			<Item Name="[value]" Condition="type == Variant::TRANSFORM2D">_data._transform2d</Item>
 			<Item Name="[value]" Condition="type == Variant::AABB">_data._aabb</Item>
 			<Item Name="[value]" Condition="type == Variant::BASIS">_data._basis</Item>
-			<Item Name="[value]" Condition="type == Variant::TRANSFORM">_data._transform</Item>
+			<Item Name="[value]" Condition="type == Variant::TRANSFORM3D">_data._transform</Item>
 			<Item Name="[value]" Condition="type == Variant::STRING">*(String *)_data._mem</Item>
 			<Item Name="[value]" Condition="type == Variant::VECTOR2">*(Vector2 *)_data._mem</Item>
 			<Item Name="[value]" Condition="type == Variant::RECT2">*(Rect2 *)_data._mem</Item>
 			<Item Name="[value]" Condition="type == Variant::VECTOR3">*(Vector3 *)_data._mem</Item>
 			<Item Name="[value]" Condition="type == Variant::PLANE">*(Plane *)_data._mem</Item>
-			<Item Name="[value]" Condition="type == Variant::QUAT">*(Quat *)_data._mem</Item>
+			<Item Name="[value]" Condition="type == Variant::QUATERNION">*(Quaternion *)_data._mem</Item>
 			<Item Name="[value]" Condition="type == Variant::COLOR">*(Color *)_data._mem</Item>
 			<Item Name="[value]" Condition="type == Variant::NODE_PATH">*(NodePath *)_data._mem</Item>
 			<Item Name="[value]" Condition="type == Variant::RID">*(::RID *)_data._mem</Item>
@@ -128,8 +128,8 @@
 		</Expand>
 	</Type>
 
-	<Type Name="Quat">
-		<DisplayString>Quat {{{x},{y},{z},{w}}}</DisplayString>
+	<Type Name="Quaternion">
+		<DisplayString>Quaternion {{{x},{y},{z},{w}}}</DisplayString>
 		<Expand>
 			<Item Name="x">x</Item>
 			<Item Name="y">y</Item>

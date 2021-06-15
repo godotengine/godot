@@ -31,11 +31,11 @@
 #include "project_export.h"
 
 #include "core/config/project_settings.h"
+#include "core/io/dir_access.h"
+#include "core/io/file_access.h"
 #include "core/io/image_loader.h"
 #include "core/io/resource_loader.h"
 #include "core/io/resource_saver.h"
-#include "core/os/dir_access.h"
-#include "core/os/file_access.h"
 #include "core/os/os.h"
 #include "core/string/optimized_translation.h"
 #include "editor_data.h"
@@ -978,9 +978,9 @@ void ProjectExportDialog::_export_all(bool p_debug) {
 }
 
 void ProjectExportDialog::_bind_methods() {
-	ClassDB::bind_method("get_drag_data_fw", &ProjectExportDialog::get_drag_data_fw);
-	ClassDB::bind_method("can_drop_data_fw", &ProjectExportDialog::can_drop_data_fw);
-	ClassDB::bind_method("drop_data_fw", &ProjectExportDialog::drop_data_fw);
+	ClassDB::bind_method("_get_drag_data_fw", &ProjectExportDialog::get_drag_data_fw);
+	ClassDB::bind_method("_can_drop_data_fw", &ProjectExportDialog::can_drop_data_fw);
+	ClassDB::bind_method("_drop_data_fw", &ProjectExportDialog::drop_data_fw);
 	ClassDB::bind_method("_export_all", &ProjectExportDialog::_export_all);
 	ClassDB::bind_method("set_export_path", &ProjectExportDialog::set_export_path);
 	ClassDB::bind_method("get_export_path", &ProjectExportDialog::get_export_path);

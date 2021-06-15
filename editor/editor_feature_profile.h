@@ -31,17 +31,18 @@
 #ifndef EDITOR_FEATURE_PROFILE_H
 #define EDITOR_FEATURE_PROFILE_H
 
-#include "core/object/reference.h"
-#include "core/os/file_access.h"
+#include "core/io/file_access.h"
+#include "core/object/ref_counted.h"
 #include "editor/editor_file_dialog.h"
+#include "editor_help.h"
 #include "scene/gui/dialogs.h"
 #include "scene/gui/option_button.h"
 #include "scene/gui/separator.h"
 #include "scene/gui/split_container.h"
 #include "scene/gui/tree.h"
 
-class EditorFeatureProfile : public Reference {
-	GDCLASS(EditorFeatureProfile, Reference);
+class EditorFeatureProfile : public RefCounted {
+	GDCLASS(EditorFeatureProfile, RefCounted);
 
 public:
 	enum Feature {
@@ -60,8 +61,11 @@ private:
 	Set<StringName> disabled_editors;
 	Map<StringName, Set<StringName>> disabled_properties;
 
+	Set<StringName> collapsed_classes;
+
 	bool features_disabled[FEATURE_MAX];
 	static const char *feature_names[FEATURE_MAX];
+	static const char *feature_descriptions[FEATURE_MAX];
 	static const char *feature_identifiers[FEATURE_MAX];
 
 	String _get_feature_name(Feature p_feature) { return get_feature_name(p_feature); }
@@ -80,6 +84,9 @@ public:
 	bool is_class_property_disabled(const StringName &p_class, const StringName &p_property) const;
 	bool has_class_properties_disabled(const StringName &p_class) const;
 
+	void set_item_collapsed(const StringName &p_class, bool p_collapsed);
+	bool is_item_collapsed(const StringName &p_class) const;
+
 	void set_disable_feature(Feature p_feature, bool p_disable);
 	bool is_feature_disabled(Feature p_feature) const;
 
@@ -87,6 +94,7 @@ public:
 	Error load_from_file(const String &p_path);
 
 	static String get_feature_name(Feature p_feature);
+	static String get_feature_description(Feature p_feature);
 
 	EditorFeatureProfile();
 };
@@ -124,6 +132,7 @@ class EditorFeatureProfileManager : public AcceptDialog {
 	Tree *class_list;
 	VBoxContainer *property_list_vbc;
 	Tree *property_list;
+	EditorHelpBit *description_bit;
 	Label *no_profile_selected_help;
 
 	EditorFileDialog *import_profiles;
@@ -151,6 +160,7 @@ class EditorFeatureProfileManager : public AcceptDialog {
 
 	void _class_list_item_selected();
 	void _class_list_item_edited();
+	void _class_list_item_collapsed(Object *p_item);
 	void _property_item_edited();
 	void _save_and_update();
 

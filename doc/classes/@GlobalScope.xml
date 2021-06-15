@@ -1261,6 +1261,9 @@
 		<member name="TextServerManager" type="TextServerManager" setter="" getter="">
 			The [TextServerManager] singleton.
 		</member>
+		<member name="Time" type="Time" setter="" getter="">
+			The [Time] singleton.
+		</member>
 		<member name="TranslationServer" type="TranslationServer" setter="" getter="">
 			The [TranslationServer] singleton.
 		</member>
@@ -2596,8 +2599,8 @@
 		<constant name="TYPE_PLANE" value="12" enum="Variant.Type">
 			Variable is of type [Plane].
 		</constant>
-		<constant name="TYPE_QUAT" value="13" enum="Variant.Type">
-			Variable is of type [Quat].
+		<constant name="TYPE_QUATERNION" value="13" enum="Variant.Type">
+			Variable is of type [Quaternion].
 		</constant>
 		<constant name="TYPE_AABB" value="14" enum="Variant.Type">
 			Variable is of type [AABB].
@@ -2605,8 +2608,8 @@
 		<constant name="TYPE_BASIS" value="15" enum="Variant.Type">
 			Variable is of type [Basis].
 		</constant>
-		<constant name="TYPE_TRANSFORM" value="16" enum="Variant.Type">
-			Variable is of type [Transform].
+		<constant name="TYPE_TRANSFORM3D" value="16" enum="Variant.Type">
+			Variable is of type [Transform3D].
 		</constant>
 		<constant name="TYPE_COLOR" value="17" enum="Variant.Type">
 			Variable is of type [Color].

@@ -37,8 +37,8 @@
 #include "scene/main/node.h"
 #include "scene/resources/texture.h"
 
-class EditorResourcePreviewGenerator : public Reference {
-	GDCLASS(EditorResourcePreviewGenerator, Reference);
+class EditorResourcePreviewGenerator : public RefCounted {
+	GDCLASS(EditorResourcePreviewGenerator, RefCounted);
 
 protected:
 	static void _bind_methods();
@@ -101,7 +101,8 @@ protected:
 public:
 	static EditorResourcePreview *get_singleton();
 
-	//callback function is callback(String p_path,Ref<Texture2D> preview,Variant udata) preview null if could not load
+	// p_receiver_func callback has signature (String p_path, Ref<Texture2D> p_preview, Ref<Texture2D> p_preview_small, Variant p_userdata)
+	// p_preview will be null if there was an error
 	void queue_resource_preview(const String &p_path, Object *p_receiver, const StringName &p_receiver_func, const Variant &p_userdata);
 	void queue_edited_resource_preview(const Ref<Resource> &p_res, Object *p_receiver, const StringName &p_receiver_func, const Variant &p_userdata);
 

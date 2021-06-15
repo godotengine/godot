@@ -104,12 +104,12 @@ Variant::Type managed_to_variant_type(const ManagedType &p_type, bool *r_nil_is_
 				return Variant::BASIS;
 			}
 
-			if (vtclass == CACHED_CLASS(Quat)) {
-				return Variant::QUAT;
+			if (vtclass == CACHED_CLASS(Quaternion)) {
+				return Variant::QUATERNION;
 			}
 
-			if (vtclass == CACHED_CLASS(Transform)) {
-				return Variant::TRANSFORM;
+			if (vtclass == CACHED_CLASS(Transform3D)) {
+				return Variant::TRANSFORM3D;
 			}
 
 			if (vtclass == CACHED_CLASS(AABB)) {
@@ -508,9 +508,9 @@ MonoObject *variant_to_mono_object(const Variant &p_var) {
 			GDMonoMarshal::M_Plane from = MARSHALLED_OUT(Plane, p_var.operator ::Plane());
 			return mono_value_box(mono_domain_get(), CACHED_CLASS_RAW(Plane), &from);
 		}
-		case Variant::QUAT: {
-			GDMonoMarshal::M_Quat from = MARSHALLED_OUT(Quat, p_var.operator ::Quat());
-			return mono_value_box(mono_domain_get(), CACHED_CLASS_RAW(Quat), &from);
+		case Variant::QUATERNION: {
+			GDMonoMarshal::M_Quaternion from = MARSHALLED_OUT(Quaternion, p_var.operator ::Quaternion());
+			return mono_value_box(mono_domain_get(), CACHED_CLASS_RAW(Quaternion), &from);
 		}
 		case Variant::AABB: {
 			GDMonoMarshal::M_AABB from = MARSHALLED_OUT(AABB, p_var.operator ::AABB());
@@ -520,9 +520,9 @@ MonoObject *variant_to_mono_object(const Variant &p_var) {
 			GDMonoMarshal::M_Basis from = MARSHALLED_OUT(Basis, p_var.operator ::Basis());
 			return mono_value_box(mono_domain_get(), CACHED_CLASS_RAW(Basis), &from);
 		}
-		case Variant::TRANSFORM: {
-			GDMonoMarshal::M_Transform from = MARSHALLED_OUT(Transform, p_var.operator ::Transform());
-			return mono_value_box(mono_domain_get(), CACHED_CLASS_RAW(Transform), &from);
+		case Variant::TRANSFORM3D: {
+			GDMonoMarshal::M_Transform3D from = MARSHALLED_OUT(Transform3D, p_var.operator ::Transform3D());
+			return mono_value_box(mono_domain_get(), CACHED_CLASS_RAW(Transform3D), &from);
 		}
 		case Variant::COLOR: {
 			GDMonoMarshal::M_Color from = MARSHALLED_OUT(Color, p_var.operator ::Color());
@@ -619,8 +619,8 @@ size_t variant_get_managed_unboxed_size(const ManagedType &p_type) {
 			RETURN_CHECK_FOR_STRUCT(Vector3);
 			RETURN_CHECK_FOR_STRUCT(Vector3i);
 			RETURN_CHECK_FOR_STRUCT(Basis);
-			RETURN_CHECK_FOR_STRUCT(Quat);
-			RETURN_CHECK_FOR_STRUCT(Transform);
+			RETURN_CHECK_FOR_STRUCT(Quaternion);
+			RETURN_CHECK_FOR_STRUCT(Transform3D);
 			RETURN_CHECK_FOR_STRUCT(AABB);
 			RETURN_CHECK_FOR_STRUCT(Color);
 			RETURN_CHECK_FOR_STRUCT(Plane);
@@ -724,8 +724,8 @@ void *variant_to_managed_unboxed(const Variant &p_var, const ManagedType &p_type
 			RETURN_CHECK_FOR_STRUCT(Vector3);
 			RETURN_CHECK_FOR_STRUCT(Vector3i);
 			RETURN_CHECK_FOR_STRUCT(Basis);
-			RETURN_CHECK_FOR_STRUCT(Quat);
-			RETURN_CHECK_FOR_STRUCT(Transform);
+			RETURN_CHECK_FOR_STRUCT(Quaternion);
+			RETURN_CHECK_FOR_STRUCT(Transform3D);
 			RETURN_CHECK_FOR_STRUCT(AABB);
 			RETURN_CHECK_FOR_STRUCT(Color);
 			RETURN_CHECK_FOR_STRUCT(Plane);
@@ -880,8 +880,8 @@ MonoObject *variant_to_mono_object(const Variant &p_var, const ManagedType &p_ty
 			RETURN_CHECK_FOR_STRUCT(Vector3);
 			RETURN_CHECK_FOR_STRUCT(Vector3i);
 			RETURN_CHECK_FOR_STRUCT(Basis);
-			RETURN_CHECK_FOR_STRUCT(Quat);
-			RETURN_CHECK_FOR_STRUCT(Transform);
+			RETURN_CHECK_FOR_STRUCT(Quaternion);
+			RETURN_CHECK_FOR_STRUCT(Transform3D);
 			RETURN_CHECK_FOR_STRUCT(AABB);
 			RETURN_CHECK_FOR_STRUCT(Color);
 			RETURN_CHECK_FOR_STRUCT(Plane);
@@ -1036,12 +1036,12 @@ Variant mono_object_to_variant_impl(MonoObject *p_obj, const ManagedType &p_type
 				return MARSHALLED_IN(Basis, unbox_addr<GDMonoMarshal::M_Basis>(p_obj));
 			}
 
-			if (vtclass == CACHED_CLASS(Quat)) {
-				return MARSHALLED_IN(Quat, unbox_addr<GDMonoMarshal::M_Quat>(p_obj));
+			if (vtclass == CACHED_CLASS(Quaternion)) {
+				return MARSHALLED_IN(Quaternion, unbox_addr<GDMonoMarshal::M_Quaternion>(p_obj));
 			}
 
-			if (vtclass == CACHED_CLASS(Transform)) {
-				return MARSHALLED_IN(Transform, unbox_addr<GDMonoMarshal::M_Transform>(p_obj));
+			if (vtclass == CACHED_CLASS(Transform3D)) {
+				return MARSHALLED_IN(Transform3D, unbox_addr<GDMonoMarshal::M_Transform3D>(p_obj));
 			}
 
 			if (vtclass == CACHED_CLASS(AABB)) {
@@ -1136,8 +1136,8 @@ Variant mono_object_to_variant_impl(MonoObject *p_obj, const ManagedType &p_type
 			if (CACHED_CLASS(GodotObject)->is_assignable_from(type_class)) {
 				Object *ptr = unbox<Object *>(CACHED_FIELD(GodotObject, ptr)->get_value(p_obj));
 				if (ptr != nullptr) {
-					Reference *ref = Object::cast_to<Reference>(ptr);
-					return ref ? Variant(Ref<Reference>(ref)) : Variant(ptr);
+					RefCounted *rc = Object::cast_to<RefCounted>(ptr);
+					return rc ? Variant(Ref<RefCounted>(rc)) : Variant(ptr);
 				}
 				return Variant();
 			}

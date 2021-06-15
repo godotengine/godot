@@ -30,7 +30,7 @@
 
 #include "os_linuxbsd.h"
 
-#include "core/os/dir_access.h"
+#include "core/io/dir_access.h"
 #include "main/main.h"
 
 #ifdef X11_ENABLED
@@ -166,7 +166,7 @@ bool OS_LinuxBSD::_check_internal_feature_support(const String &p_feature) {
 
 String OS_LinuxBSD::get_config_path() const {
 	if (has_environment("XDG_CONFIG_HOME")) {
-		if (get_environment("XDG_CONFIG_HOME").is_abs_path()) {
+		if (get_environment("XDG_CONFIG_HOME").is_absolute_path()) {
 			return get_environment("XDG_CONFIG_HOME");
 		} else {
 			WARN_PRINT_ONCE("`XDG_CONFIG_HOME` is a relative path. Ignoring its value and falling back to `$HOME/.config` or `.` per the XDG Base Directory specification.");
@@ -181,7 +181,7 @@ String OS_LinuxBSD::get_config_path() const {
 
 String OS_LinuxBSD::get_data_path() const {
 	if (has_environment("XDG_DATA_HOME")) {
-		if (get_environment("XDG_DATA_HOME").is_abs_path()) {
+		if (get_environment("XDG_DATA_HOME").is_absolute_path()) {
 			return get_environment("XDG_DATA_HOME");
 		} else {
 			WARN_PRINT_ONCE("`XDG_DATA_HOME` is a relative path. Ignoring its value and falling back to `$HOME/.local/share` or `get_config_path()` per the XDG Base Directory specification.");
@@ -196,7 +196,7 @@ String OS_LinuxBSD::get_data_path() const {
 
 String OS_LinuxBSD::get_cache_path() const {
 	if (has_environment("XDG_CACHE_HOME")) {
-		if (get_environment("XDG_CACHE_HOME").is_abs_path()) {
+		if (get_environment("XDG_CACHE_HOME").is_absolute_path()) {
 			return get_environment("XDG_CACHE_HOME");
 		} else {
 			WARN_PRINT_ONCE("`XDG_CACHE_HOME` is a relative path. Ignoring its value and falling back to `$HOME/.cache` or `get_config_path()` per the XDG Base Directory specification.");
@@ -425,8 +425,8 @@ Error OS_LinuxBSD::move_to_trash(const String &p_path) {
 	// Generates the .trashinfo file
 	OS::Date date = OS::get_singleton()->get_date(false);
 	OS::Time time = OS::get_singleton()->get_time(false);
-	String timestamp = vformat("%04d-%02d-%02dT%02d:%02d:", date.year, date.month, date.day, time.hour, time.min);
-	timestamp = vformat("%s%02d", timestamp, time.sec); // vformat only supports up to 6 arguments.
+	String timestamp = vformat("%04d-%02d-%02dT%02d:%02d:", date.year, date.month, date.day, time.hour, time.minute);
+	timestamp = vformat("%s%02d", timestamp, time.second); // vformat only supports up to 6 arguments.
 	String trash_info = "[Trash Info]\nPath=" + p_path.uri_encode() + "\nDeletionDate=" + timestamp + "\n";
 	{
 		Error err;
