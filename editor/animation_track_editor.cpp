@@ -1649,24 +1649,24 @@ void AnimationTimelineEdit::_gui_input(const Ref<InputEvent> &p_event) {
 
 	const Ref<InputEventMouseButton> mb = p_event;
 
-	if (mb.is_valid() && mb->is_pressed() && mb->get_command() && mb->get_button_index() == MOUSE_BUTTON_WHEEL_UP) {
+	if (mb.is_valid() && mb->is_pressed() && mb->is_command_pressed() && mb->get_button_index() == MOUSE_BUTTON_WHEEL_UP) {
 		get_zoom()->set_value(get_zoom()->get_value() * 1.05);
 		accept_event();
 	}
 
-	if (mb.is_valid() && mb->is_pressed() && mb->get_command() && mb->get_button_index() == MOUSE_BUTTON_WHEEL_DOWN) {
+	if (mb.is_valid() && mb->is_pressed() && mb->is_command_pressed() && mb->get_button_index() == MOUSE_BUTTON_WHEEL_DOWN) {
 		get_zoom()->set_value(get_zoom()->get_value() / 1.05);
 		accept_event();
 	}
 
-	if (mb.is_valid() && mb->is_pressed() && mb->get_alt() && mb->get_button_index() == MOUSE_BUTTON_WHEEL_UP) {
+	if (mb.is_valid() && mb->is_pressed() && mb->is_alt_pressed() && mb->get_button_index() == MOUSE_BUTTON_WHEEL_UP) {
 		if (track_edit) {
 			track_edit->get_editor()->goto_prev_step(true);
 		}
 		accept_event();
 	}
 
-	if (mb.is_valid() && mb->is_pressed() && mb->get_alt() && mb->get_button_index() == MOUSE_BUTTON_WHEEL_DOWN) {
+	if (mb.is_valid() && mb->is_pressed() && mb->is_alt_pressed() && mb->get_button_index() == MOUSE_BUTTON_WHEEL_DOWN) {
 		if (track_edit) {
 			track_edit->get_editor()->goto_next_step(true);
 		}
@@ -4999,12 +4999,12 @@ void AnimationTrackEditor::_scroll_input(const Ref<InputEvent> &p_event) {
 		scroll->accept_event();
 	}
 
-	if (mb.is_valid() && mb->is_pressed() && mb->get_alt() && mb->get_button_index() == MOUSE_BUTTON_WHEEL_UP) {
+	if (mb.is_valid() && mb->is_pressed() && mb->is_alt_pressed() && mb->get_button_index() == MOUSE_BUTTON_WHEEL_UP) {
 		goto_prev_step(true);
 		scroll->accept_event();
 	}
 
-	if (mb.is_valid() && mb->is_pressed() && mb->get_alt() && mb->get_button_index() == MOUSE_BUTTON_WHEEL_DOWN) {
+	if (mb.is_valid() && mb->is_pressed() && mb->is_alt_pressed() && mb->get_button_index() == MOUSE_BUTTON_WHEEL_DOWN) {
 		goto_next_step(true);
 		scroll->accept_event();
 	}
