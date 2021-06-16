@@ -2059,8 +2059,6 @@ void SceneTreeDock::_selection_changed() {
 		_tool_selected(TOOL_MULTI_EDIT);
 	} else if (selection_size == 0) {
 		editor->push_item(nullptr);
-	} else {
-		editor->push_item(EditorNode::get_singleton()->get_editor_selection()->get_selection().front()->value());
 	}
 
 	_update_script_button();
