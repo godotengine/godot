@@ -1095,14 +1095,14 @@ StringName TranslationServer::translate(const StringName &p_message, const Strin
 	}
 
 	if (!res) {
-		if (GLOBAL_GET("internationalization/pseudolocalization/use_pseudolocalization")) {
+		if (pseudolocalization_enabled) {
 			return pseudolocalize(p_message);
 		} else {
 			return p_message;
 		}
 	}
 
-	if (GLOBAL_GET("internationalization/pseudolocalization/use_pseudolocalization")) {
+	if (pseudolocalization_enabled) {
 		return pseudolocalize(res);
 	} else {
 		return res;
@@ -1220,6 +1220,12 @@ void TranslationServer::setup() {
 		set_locale(OS::get_singleton()->get_locale());
 	}
 	fallback = GLOBAL_DEF("internationalization/locale/fallback", "en");
+	pseudolocalization_enabled = GLOBAL_GET("internationalization/pseudolocalization/use_pseudolocalization");
+	pseudolocalization_accents_enabled = GLOBAL_GET("internationalization/pseudolocalization/replace_with_accents");
+	pseudolocalization_double_vowels = GLOBAL_GET("internationalization/pseudolocalization/double_vowels");
+	pseudolocalization_fake_bidi = GLOBAL_GET("internationalization/pseudolocalization/fake_bidi");
+	pseudolocalization_prefix = GLOBAL_GET("internationalization/pseudolocalization/prefix");
+	pseudolocalization_suffix = GLOBAL_GET("internationalization/pseudolocalization/suffix");
 #ifdef TOOLS_ENABLED
 	{
 		String options = "";
@@ -1308,14 +1314,92 @@ StringName TranslationServer::doc_translate_plural(const StringName &p_message, 
 	return p_message_plural;
 }
 
+bool TranslationServer::get_pseudolocalization_enabled() const {
+	return pseudolocalization_enabled;
+}
+
+void TranslationServer::set_pseudolocalization_enabled(bool enabled) {
+	pseudolocalization_enabled = enabled;
+
+	if (OS::get_singleton()->get_main_loop()) {
+		OS::get_singleton()->get_main_loop()->notification(MainLoop::NOTIFICATION_TRANSLATION_CHANGED);
+	}
+	ResourceLoader::reload_translation_remaps();
+}
+
+bool TranslationServer::get_pseudolocalization_accents_enabled() const {
+	return pseudolocalization_accents_enabled;
+}
+
+void TranslationServer::set_pseudolocalization_accents_enabled(bool enabled) {
+	pseudolocalization_accents_enabled = enabled;
+
+	if (OS::get_singleton()->get_main_loop()) {
+		OS::get_singleton()->get_main_loop()->notification(MainLoop::NOTIFICATION_TRANSLATION_CHANGED);
+	}
+	ResourceLoader::reload_translation_remaps();
+}
+
+bool TranslationServer::get_pseudolocalization_double_vowels() const {
+	return pseudolocalization_double_vowels;
+}
+
+void TranslationServer::set_pseudolocalization_double_vowels(bool enabled) {
+	pseudolocalization_double_vowels = enabled;
+
+	if (OS::get_singleton()->get_main_loop()) {
+		OS::get_singleton()->get_main_loop()->notification(MainLoop::NOTIFICATION_TRANSLATION_CHANGED);
+	}
+	ResourceLoader::reload_translation_remaps();
+}
+
+bool TranslationServer::get_pseudolocalization_fake_bidi() const {
+	return pseudolocalization_fake_bidi;
+}
+
+void TranslationServer::set_pseudolocalization_fake_bidi(bool enabled) {
+	pseudolocalization_fake_bidi = enabled;
+
+	if (OS::get_singleton()->get_main_loop()) {
+		OS::get_singleton()->get_main_loop()->notification(MainLoop::NOTIFICATION_TRANSLATION_CHANGED);
+	}
+	ResourceLoader::reload_translation_remaps();
+}
+
+String TranslationServer::get_pseudolocalization_prefix() const {
+	return pseudolocalization_prefix;
+}
+
+void TranslationServer::set_pseudolocalization_prefix(String prefix) {
+	pseudolocalization_prefix = prefix;
+
+	if (OS::get_singleton()->get_main_loop()) {
+		OS::get_singleton()->get_main_loop()->notification(MainLoop::NOTIFICATION_TRANSLATION_CHANGED);
+	}
+	ResourceLoader::reload_translation_remaps();
+}
+
+String TranslationServer::get_pseudolocalization_suffix() const {
+	return pseudolocalization_suffix;
+}
+
+void TranslationServer::set_pseudolocalization_suffix(String suffix) {
+	pseudolocalization_suffix = suffix;
+
+	if (OS::get_singleton()->get_main_loop()) {
+		OS::get_singleton()->get_main_loop()->notification(MainLoop::NOTIFICATION_TRANSLATION_CHANGED);
+	}
+	ResourceLoader::reload_translation_remaps();
+}
+
 StringName TranslationServer::pseudolocalize(const StringName &p_message) const {
 	String message = p_message;
 
-	if (GLOBAL_GET("internationalization/pseudolocalization/replace_with_accents")) {
+	if (pseudolocalization_accents_enabled) {
 		message = replace_with_accented_string(message);
 	}
 
-	if (GLOBAL_GET("internationalization/pseudolocalization/fake_bidi")) {
+	if (pseudolocalization_fake_bidi) {
 		message = wrap_with_fakebidi_characters(message);
 	}
 
@@ -1339,30 +1423,30 @@ String TranslationServer::replace_with_accented_string(String &message) const {
 String TranslationServer::wrap_with_fakebidi_characters(String &message) const {
 	String res = "";
 	wchar_t fakebidiprefix = L'\u202e';
-	wchar_t fakebidipostfix = L'\u202c';
+	wchar_t fakebidisuffix = L'\u202c';
 	res += fakebidiprefix;
 	//the fake bidi unicode gets popped at every newline so pushing it back at every newline.
 	for (int i = 0; i < message.size(); i++) {
 		if (message[i] == '\n') {
-			res += fakebidipostfix;
+			res += fakebidisuffix;
 			res += message[i];
 			res += fakebidiprefix;
 		} else {
 			res += message[i];
 		}
 	}
-	res += fakebidipostfix;
+	res += fakebidisuffix;
 	return res;
 }
 
 String TranslationServer::add_padding(String &message) const {
 	String res = "";
-	String prefix = GLOBAL_GET("internationalization/pseudolocalization/prefix");
-	String postfix = GLOBAL_GET("internationalization/pseudolocalization/postfix");
+	String prefix = pseudolocalization_prefix;
+	String suffix = pseudolocalization_suffix;
 	//replace with expansion logic here when implementing that
 	res += prefix;
 	res += message;
-	res += postfix;
+	res += suffix;
 	return res;
 }
 
@@ -1492,6 +1576,20 @@ void TranslationServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("clear"), &TranslationServer::clear);
 
 	ClassDB::bind_method(D_METHOD("get_loaded_locales"), &TranslationServer::get_loaded_locales);
+
+	ClassDB::bind_method(D_METHOD("get_pseudolocalization_enabled"), &TranslationServer::get_pseudolocalization_enabled);
+	ClassDB::bind_method(D_METHOD("set_pseudolocalization_enabled", "enabled"), &TranslationServer::set_pseudolocalization_enabled);
+	ClassDB::bind_method(D_METHOD("get_pseudolocalization_accents_enabled"), &TranslationServer::get_pseudolocalization_accents_enabled);
+	ClassDB::bind_method(D_METHOD("set_pseudolocalization_accents_enabled", "enabled"), &TranslationServer::set_pseudolocalization_accents_enabled);
+	ClassDB::bind_method(D_METHOD("get_pseudolocalization_double_vowels"), &TranslationServer::get_pseudolocalization_double_vowels);
+	ClassDB::bind_method(D_METHOD("set_pseudolocalization_double_vowels", "enabled"), &TranslationServer::set_pseudolocalization_double_vowels);
+	ClassDB::bind_method(D_METHOD("get_pseudolocalization_fake_bidi"), &TranslationServer::get_pseudolocalization_fake_bidi);
+	ClassDB::bind_method(D_METHOD("set_pseudolocalization_fake_bidi", "enabled"), &TranslationServer::set_pseudolocalization_fake_bidi);
+	ClassDB::bind_method(D_METHOD("get_pseudolocalization_prefix"), &TranslationServer::get_pseudolocalization_prefix);
+	ClassDB::bind_method(D_METHOD("set_pseudolocalization_prefix", "prefix"), &TranslationServer::set_pseudolocalization_prefix);
+	ClassDB::bind_method(D_METHOD("get_pseudolocalization_suffix"), &TranslationServer::get_pseudolocalization_suffix);
+	ClassDB::bind_method(D_METHOD("set_pseudolocalization_suffix", "suffix"), &TranslationServer::set_pseudolocalization_suffix);
+	ClassDB::bind_method(D_METHOD("pseudolocalize", "p_message"), &TranslationServer::pseudolocalize);
 }
 
 void TranslationServer::load_translations() {

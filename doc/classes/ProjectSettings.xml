@@ -775,20 +775,20 @@
 		<member name="internationalization/locale/test" type="String" setter="" getter="" default="&quot;&quot;">
 			If non-empty, this locale will be used when running the project from the editor.
 		</member>
-		<member name="internationalization/pseudolocalization/expand_text" type="bool" setter="" getter="" default="true">
-			Expand text during pseudolocalization.
+		<member name="internationalization/pseudolocalization/double_vowels" type="bool" setter="" getter="" default="true">
+			Double vowels in strings during pseudolocalization.
 		</member>
 		<member name="internationalization/pseudolocalization/fake_bidi" type="bool" setter="" getter="" default="false">
 			Fake RTL text.
-		</member>
-		<member name="internationalization/pseudolocalization/postfix" type="String" setter="" getter="" default="&quot;]&quot;">
-			Postfix that will be appended to the pseudolocalized string.
 		</member>
 		<member name="internationalization/pseudolocalization/prefix" type="String" setter="" getter="" default="&quot;[&quot;">
 			Prefix that will be prepended to the pseudolocalized string.
 		</member>
 		<member name="internationalization/pseudolocalization/replace_with_accents" type="bool" setter="" getter="" default="true">
 			Replace all characters with their accented variants during pseudolocalization.
+		</member>
+		<member name="internationalization/pseudolocalization/suffix" type="String" setter="" getter="" default="&quot;]&quot;">
+			Suffix that will be appended to the pseudolocalized string.
 		</member>
 		<member name="internationalization/pseudolocalization/use_pseudolocalization" type="bool" setter="" getter="" default="false">
 			Turn on Pseudolocalization for the project.

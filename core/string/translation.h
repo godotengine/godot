@@ -77,6 +77,13 @@ class TranslationServer : public Object {
 
 	bool enabled = true;
 
+	bool pseudolocalization_enabled;
+	bool pseudolocalization_accents_enabled;
+	bool pseudolocalization_double_vowels;
+	bool pseudolocalization_fake_bidi;
+	String pseudolocalization_prefix;
+	String pseudolocalization_suffix;
+
 	static TranslationServer *singleton;
 	bool _load_translations(const String &p_from);
 
@@ -109,6 +116,19 @@ public:
 	String wrap_with_fakebidi_characters(String &message) const;
 	String add_padding(String &message) const;
 	const wchar_t *get_accented_version(char c) const;
+
+	bool get_pseudolocalization_enabled() const;
+	void set_pseudolocalization_enabled(bool enabled);
+	bool get_pseudolocalization_accents_enabled() const;
+	void set_pseudolocalization_accents_enabled(bool enabled);
+	bool get_pseudolocalization_double_vowels() const;
+	void set_pseudolocalization_double_vowels(bool enabled);
+	bool get_pseudolocalization_fake_bidi() const;
+	void set_pseudolocalization_fake_bidi(bool enabled);
+	String get_pseudolocalization_prefix() const;
+	void set_pseudolocalization_prefix(String prefix);
+	String get_pseudolocalization_suffix() const;
+	void set_pseudolocalization_suffix(String suffix);
 
 	static Vector<String> get_all_locales();
 	static Vector<String> get_all_locale_names();
