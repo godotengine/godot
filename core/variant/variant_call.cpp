@@ -1380,7 +1380,7 @@ static void _register_variant_builtin_methods() {
 	bind_method(String, validate_node_name, sarray(), varray());
 
 	bind_method(String, is_valid_identifier, sarray(), varray());
-	bind_method(String, is_valid_integer, sarray(), varray());
+	bind_method(String, is_valid_int, sarray(), varray());
 	bind_method(String, is_valid_float, sarray(), varray());
 	bind_method(String, is_valid_hex_number, sarray("with_prefix"), varray(false));
 	bind_method(String, is_valid_html_color, sarray(), varray());

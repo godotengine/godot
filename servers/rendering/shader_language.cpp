@@ -631,7 +631,7 @@ ShaderLanguage::Token ShaderLanguage::_get_token() {
 						if (!_is_number(last_char)) {
 							return _make_token(TK_ERROR, "Invalid (integer) numeric constant");
 						}
-						if (!str.is_valid_integer()) {
+						if (!str.is_valid_int()) {
 							return _make_token(TK_ERROR, "Invalid numeric constant");
 						}
 					}

@@ -356,8 +356,8 @@ void TileSetEditor::_undo_redo_inspector_callback(Object *p_undo_redo, Object *p
 								}
 							}
 						} else if ((p_property == "terrains_sets_count" && tile_data->get_terrain_set() >= (int)p_new_value) ||
-								   (components.size() == 2 && components[0].begins_with("terrain_set_") && components[0].trim_prefix("terrain_set_").is_valid_integer() && components[1] == "mode") ||
-								   (components.size() == 2 && components[0].begins_with("terrain_set_") && components[0].trim_prefix("terrain_set_").is_valid_integer() && components[1] == "terrains_count" && tile_data->get_terrain_set() == components[0].trim_prefix("terrain_set_").to_int() && (int)p_new_value < tile_set->get_terrains_count(tile_data->get_terrain_set()))) {
+								   (components.size() == 2 && components[0].begins_with("terrain_set_") && components[0].trim_prefix("terrain_set_").is_valid_int() && components[1] == "mode") ||
+								   (components.size() == 2 && components[0].begins_with("terrain_set_") && components[0].trim_prefix("terrain_set_").is_valid_int() && components[1] == "terrains_count" && tile_data->get_terrain_set() == components[0].trim_prefix("terrain_set_").to_int() && (int)p_new_value < tile_set->get_terrains_count(tile_data->get_terrain_set()))) {
 							ADD_UNDO(tile_data, "terrain_set");
 							if (tile_data->is_valid_peering_bit_terrain(TileSet::CELL_NEIGHBOR_RIGHT_SIDE)) {
 								ADD_UNDO(tile_data, "terrains_peering_bit/right_side");
@@ -423,8 +423,8 @@ void TileSetEditor::_undo_redo_inspector_callback(Object *p_undo_redo, Object *p
 									ADD_UNDO(tile_data, vformat("custom_data_%d", custom_data_layer_index));
 								}
 							}
-						} else if (components.size() == 2 && components[0].begins_with("custom_data_layer_") && components[0].trim_prefix("custom_data_layer_").is_valid_integer() && components[1] == "type") {
-							int custom_data_layer = components[0].trim_prefix("custom_data_layer_").is_valid_integer();
+						} else if (components.size() == 2 && components[0].begins_with("custom_data_layer_") && components[0].trim_prefix("custom_data_layer_").is_valid_int() && components[1] == "type") {
+							int custom_data_layer = components[0].trim_prefix("custom_data_layer_").is_valid_int();
 							ADD_UNDO(tile_data, vformat("custom_data_%d", custom_data_layer));
 						}
 					}

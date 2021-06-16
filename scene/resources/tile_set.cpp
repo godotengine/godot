@@ -801,7 +801,7 @@ bool TileSet::_set(const StringName &p_name, const Variant &p_value) {
 #ifndef DISABLE_DEPRECATED
 	// TODO: THIS IS HOW WE CHECK IF WE HAVE A DEPRECATED RESOURCE
 	// This should be moved to a dedicated conversion system
-	if (components.size() >= 1 && components[0].is_valid_integer()) {
+	if (components.size() >= 1 && components[0].is_valid_int()) {
 		int id = components[0].to_int();
 
 		// Get or create the compatibility object
@@ -966,7 +966,7 @@ bool TileSet::_set(const StringName &p_name, const Variant &p_value) {
 #endif // DISABLE_DEPRECATED
 
 		// This is now a new property.
-		if (components.size() == 2 && components[0].begins_with("occlusion_layer_") && components[0].trim_prefix("occlusion_layer_").is_valid_integer()) {
+		if (components.size() == 2 && components[0].begins_with("occlusion_layer_") && components[0].trim_prefix("occlusion_layer_").is_valid_int()) {
 			// Occlusion layers.
 			int index = components[0].trim_prefix("occlusion_layer_").to_int();
 			ERR_FAIL_COND_V(index < 0, false);
@@ -985,7 +985,7 @@ bool TileSet::_set(const StringName &p_name, const Variant &p_value) {
 				set_occlusion_layer_sdf_collision(index, p_value);
 				return true;
 			}
-		} else if (components.size() == 2 && components[0].begins_with("physics_layer_") && components[0].trim_prefix("physics_layer_").is_valid_integer()) {
+		} else if (components.size() == 2 && components[0].begins_with("physics_layer_") && components[0].trim_prefix("physics_layer_").is_valid_int()) {
 			// Physics layers.
 			int index = components[0].trim_prefix("physics_layer_").to_int();
 			ERR_FAIL_COND_V(index < 0, false);
@@ -1012,7 +1012,7 @@ bool TileSet::_set(const StringName &p_name, const Variant &p_value) {
 				set_physics_layer_physics_material(index, physics_material);
 				return true;
 			}
-		} else if (components.size() >= 2 && components[0].begins_with("terrain_set_") && components[0].trim_prefix("terrain_set_").is_valid_integer()) {
+		} else if (components.size() >= 2 && components[0].begins_with("terrain_set_") && components[0].trim_prefix("terrain_set_").is_valid_int()) {
 			// Terrains.
 			int terrain_set_index = components[0].trim_prefix("terrain_set_").to_int();
 			ERR_FAIL_COND_V(terrain_set_index < 0, false);
@@ -1029,7 +1029,7 @@ bool TileSet::_set(const StringName &p_name, const Variant &p_value) {
 				}
 				set_terrains_count(terrain_set_index, p_value);
 				return true;
-			} else if (components.size() >= 3 && components[1].begins_with("terrain_") && components[1].trim_prefix("terrain_").is_valid_integer()) {
+			} else if (components.size() >= 3 && components[1].begins_with("terrain_") && components[1].trim_prefix("terrain_").is_valid_int()) {
 				int terrain_index = components[1].trim_prefix("terrain_").to_int();
 				ERR_FAIL_COND_V(terrain_index < 0, false);
 				if (components[2] == "name") {
@@ -1054,7 +1054,7 @@ bool TileSet::_set(const StringName &p_name, const Variant &p_value) {
 					return true;
 				}
 			}
-		} else if (components.size() == 2 && components[0].begins_with("navigation_layer_") && components[0].trim_prefix("navigation_layer_").is_valid_integer()) {
+		} else if (components.size() == 2 && components[0].begins_with("navigation_layer_") && components[0].trim_prefix("navigation_layer_").is_valid_int()) {
 			// Navigation layers.
 			int index = components[0].trim_prefix("navigation_layer_").to_int();
 			ERR_FAIL_COND_V(index < 0, false);
@@ -1066,7 +1066,7 @@ bool TileSet::_set(const StringName &p_name, const Variant &p_value) {
 				set_navigation_layer_layers(index, p_value);
 				return true;
 			}
-		} else if (components.size() == 2 && components[0].begins_with("custom_data_layer_") && components[0].trim_prefix("custom_data_layer_").is_valid_integer()) {
+		} else if (components.size() == 2 && components[0].begins_with("custom_data_layer_") && components[0].trim_prefix("custom_data_layer_").is_valid_int()) {
 			// Custom data layers.
 			int index = components[0].trim_prefix("custom_data_layer_").to_int();
 			ERR_FAIL_COND_V(index < 0, false);
@@ -1085,8 +1085,8 @@ bool TileSet::_set(const StringName &p_name, const Variant &p_value) {
 				set_custom_data_type(index, Variant::Type(int(p_value)));
 				return true;
 			}
-		} else if (components.size() == 2 && components[0] == "sources" && components[1].is_valid_integer()) {
-			// Create source only if it does not exists.
+		} else if (components.size() == 2 && components[0] == "sources" && components[1].is_valid_int()) {
+			// Create source only if it does not exist.
 			int source_id = components[1].to_int();
 
 			if (!has_source(source_id)) {
@@ -1105,7 +1105,7 @@ bool TileSet::_set(const StringName &p_name, const Variant &p_value) {
 bool TileSet::_get(const StringName &p_name, Variant &r_ret) const {
 	Vector<String> components = String(p_name).split("/", true, 2);
 
-	if (components.size() == 2 && components[0].begins_with("occlusion_layer_") && components[0].trim_prefix("occlusion_layer_").is_valid_integer()) {
+	if (components.size() == 2 && components[0].begins_with("occlusion_layer_") && components[0].trim_prefix("occlusion_layer_").is_valid_int()) {
 		// Occlusion layers.
 		int index = components[0].trim_prefix("occlusion_layer_").to_int();
 		if (index < 0 || index >= occlusion_layers.size()) {
@@ -1118,7 +1118,7 @@ bool TileSet::_get(const StringName &p_name, Variant &r_ret) const {
 			r_ret = get_occlusion_layer_sdf_collision(index);
 			return true;
 		}
-	} else if (components.size() == 2 && components[0].begins_with("physics_layer_") && components[0].trim_prefix("physics_layer_").is_valid_integer()) {
+	} else if (components.size() == 2 && components[0].begins_with("physics_layer_") && components[0].trim_prefix("physics_layer_").is_valid_int()) {
 		// Physics layers.
 		int index = components[0].trim_prefix("physics_layer_").to_int();
 		if (index < 0 || index >= physics_layers.size()) {
@@ -1134,7 +1134,7 @@ bool TileSet::_get(const StringName &p_name, Variant &r_ret) const {
 			r_ret = get_physics_layer_physics_material(index);
 			return true;
 		}
-	} else if (components.size() >= 2 && components[0].begins_with("terrain_set_") && components[0].trim_prefix("terrain_set_").is_valid_integer()) {
+	} else if (components.size() >= 2 && components[0].begins_with("terrain_set_") && components[0].trim_prefix("terrain_set_").is_valid_int()) {
 		// Terrains.
 		int terrain_set_index = components[0].trim_prefix("terrain_set_").to_int();
 		if (terrain_set_index < 0 || terrain_set_index >= terrain_sets.size()) {
@@ -1146,7 +1146,7 @@ bool TileSet::_get(const StringName &p_name, Variant &r_ret) const {
 		} else if (components[1] == "terrains_count") {
 			r_ret = get_terrains_count(terrain_set_index);
 			return true;
-		} else if (components.size() >= 3 && components[1].begins_with("terrain_") && components[1].trim_prefix("terrain_").is_valid_integer()) {
+		} else if (components.size() >= 3 && components[1].begins_with("terrain_") && components[1].trim_prefix("terrain_").is_valid_int()) {
 			int terrain_index = components[1].trim_prefix("terrain_").to_int();
 			if (terrain_index < 0 || terrain_index >= terrain_sets[terrain_set_index].terrains.size()) {
 				return false;
@@ -1159,7 +1159,7 @@ bool TileSet::_get(const StringName &p_name, Variant &r_ret) const {
 				return true;
 			}
 		}
-	} else if (components.size() == 2 && components[0].begins_with("navigation_layer_") && components[0].trim_prefix("navigation_layer_").is_valid_integer()) {
+	} else if (components.size() == 2 && components[0].begins_with("navigation_layer_") && components[0].trim_prefix("navigation_layer_").is_valid_int()) {
 		// navigation layers.
 		int index = components[0].trim_prefix("navigation_layer_").to_int();
 		if (index < 0 || index >= navigation_layers.size()) {
@@ -1169,7 +1169,7 @@ bool TileSet::_get(const StringName &p_name, Variant &r_ret) const {
 			r_ret = get_navigation_layer_layers(index);
 			return true;
 		}
-	} else if (components.size() == 2 && components[0].begins_with("custom_data_layer_") && components[0].trim_prefix("custom_data_layer_").is_valid_integer()) {
+	} else if (components.size() == 2 && components[0].begins_with("custom_data_layer_") && components[0].trim_prefix("custom_data_layer_").is_valid_int()) {
 		// Custom data layers.
 		int index = components[0].trim_prefix("custom_data_layer_").to_int();
 		if (index < 0 || index >= custom_data_layers.size()) {
@@ -1182,7 +1182,7 @@ bool TileSet::_get(const StringName &p_name, Variant &r_ret) const {
 			r_ret = get_custom_data_type(index);
 			return true;
 		}
-	} else if (components.size() == 2 && components[0] == "sources" && components[1].is_valid_integer()) {
+	} else if (components.size() == 2 && components[0] == "sources" && components[1].is_valid_int()) {
 		// Atlases data.
 		int source_id = components[1].to_int();
 
@@ -1534,7 +1534,7 @@ bool TileSetAtlasSource::_set(const StringName &p_name, const Variant &p_value) 
 	// Compute the vector2i if we have coordinates.
 	Vector<String> coords_split = components[0].split(":");
 	Vector2i coords = TileSetSource::INVALID_ATLAS_COORDS;
-	if (coords_split.size() == 2 && coords_split[0].is_valid_integer() && coords_split[1].is_valid_integer()) {
+	if (coords_split.size() == 2 && coords_split[0].is_valid_int() && coords_split[1].is_valid_int()) {
 		coords = Vector2i(coords_split[0].to_int(), coords_split[1].to_int());
 	}
 
@@ -1550,7 +1550,7 @@ bool TileSetAtlasSource::_set(const StringName &p_name, const Variant &p_value) 
 				move_tile_in_atlas(coords, coords, p_value);
 			} else if (components[1] == "next_alternative_id") {
 				tiles[coords].next_alternative_id = p_value;
-			} else if (components[1].is_valid_integer()) {
+			} else if (components[1].is_valid_int()) {
 				int alternative_id = components[1].to_int();
 				if (alternative_id != TileSetSource::INVALID_TILE_ALTERNATIVE) {
 					// Create the alternative if needed ?
@@ -1584,7 +1584,7 @@ bool TileSetAtlasSource::_get(const StringName &p_name, Variant &r_ret) const {
 
 	// Properties.
 	Vector<String> coords_split = components[0].split(":");
-	if (coords_split.size() == 2 && coords_split[0].is_valid_integer() && coords_split[1].is_valid_integer()) {
+	if (coords_split.size() == 2 && coords_split[0].is_valid_int() && coords_split[1].is_valid_int()) {
 		Vector2i coords = Vector2i(coords_split[0].to_int(), coords_split[1].to_int());
 		if (tiles.has(coords)) {
 			if (components.size() >= 2) {
@@ -1595,7 +1595,7 @@ bool TileSetAtlasSource::_get(const StringName &p_name, Variant &r_ret) const {
 				} else if (components[1] == "next_alternative_id") {
 					r_ret = tiles[coords].next_alternative_id;
 					return true;
-				} else if (components[1].is_valid_integer()) {
+				} else if (components[1].is_valid_int()) {
 					int alternative_id = components[1].to_int();
 					if (alternative_id != TileSetSource::INVALID_TILE_ALTERNATIVE && tiles[coords].alternatives.has(alternative_id)) {
 						if (components.size() >= 3) {
@@ -2160,7 +2160,7 @@ int TileSetScenesCollectionSource::get_next_scene_tile_id() const {
 bool TileSetScenesCollectionSource::_set(const StringName &p_name, const Variant &p_value) {
 	Vector<String> components = String(p_name).split("/", true, 2);
 
-	if (components.size() >= 2 && components[0] == "scenes" && components[1].is_valid_integer()) {
+	if (components.size() >= 2 && components[0] == "scenes" && components[1].is_valid_int()) {
 		int scene_id = components[1].to_int();
 		if (components.size() >= 3 && components[2] == "scene") {
 			if (has_scene_tile_id(scene_id)) {
@@ -2184,7 +2184,7 @@ bool TileSetScenesCollectionSource::_set(const StringName &p_name, const Variant
 bool TileSetScenesCollectionSource::_get(const StringName &p_name, Variant &r_ret) const {
 	Vector<String> components = String(p_name).split("/", true, 2);
 
-	if (components.size() >= 2 && components[0] == "scenes" && components[1].is_valid_integer() && scenes.has(components[1].to_int())) {
+	if (components.size() >= 2 && components[0] == "scenes" && components[1].is_valid_int() && scenes.has(components[1].to_int())) {
 		if (components.size() >= 3 && components[2] == "scene") {
 			r_ret = scenes[components[1].to_int()].scene;
 			return true;
@@ -2526,7 +2526,7 @@ Variant TileData::get_custom_data_by_layer_id(int p_layer_id) const {
 bool TileData::_set(const StringName &p_name, const Variant &p_value) {
 	Vector<String> components = String(p_name).split("/", true, 2);
 
-	if (components.size() == 2 && components[0].begins_with("occlusion_layer_") && components[0].trim_prefix("occlusion_layer_").is_valid_integer()) {
+	if (components.size() == 2 && components[0].begins_with("occlusion_layer_") && components[0].trim_prefix("occlusion_layer_").is_valid_int()) {
 		// Occlusion layers.
 		int layer_index = components[0].trim_prefix("occlusion_layer_").to_int();
 		ERR_FAIL_COND_V(layer_index < 0, false);
@@ -2546,7 +2546,7 @@ bool TileData::_set(const StringName &p_name, const Variant &p_value) {
 			set_occluder(layer_index, polygon);
 			return true;
 		}
-	} else if (components.size() >= 2 && components[0].begins_with("physics_layer_") && components[0].trim_prefix("physics_layer_").is_valid_integer()) {
+	} else if (components.size() >= 2 && components[0].begins_with("physics_layer_") && components[0].trim_prefix("physics_layer_").is_valid_int()) {
 		// Physics layers.
 		int layer_index = components[0].trim_prefix("physics_layer_").to_int();
 		ERR_FAIL_COND_V(layer_index < 0, false);
@@ -2564,7 +2564,7 @@ bool TileData::_set(const StringName &p_name, const Variant &p_value) {
 			}
 			set_collision_shapes_count(layer_index, p_value);
 			return true;
-		} else if (components.size() == 3 && components[1].begins_with("shape_") && components[1].trim_prefix("shape_").is_valid_integer()) {
+		} else if (components.size() == 3 && components[1].begins_with("shape_") && components[1].trim_prefix("shape_").is_valid_int()) {
 			int shape_index = components[1].trim_prefix("shape_").to_int();
 			ERR_FAIL_COND_V(shape_index < 0, false);
 
@@ -2593,7 +2593,7 @@ bool TileData::_set(const StringName &p_name, const Variant &p_value) {
 				return true;
 			}
 		}
-	} else if (components.size() == 2 && components[0].begins_with("navigation_layer_") && components[0].trim_prefix("navigation_layer_").is_valid_integer()) {
+	} else if (components.size() == 2 && components[0].begins_with("navigation_layer_") && components[0].trim_prefix("navigation_layer_").is_valid_int()) {
 		// Navigation layers.
 		int layer_index = components[0].trim_prefix("navigation_layer_").to_int();
 		ERR_FAIL_COND_V(layer_index < 0, false);
@@ -2651,7 +2651,7 @@ bool TileData::_set(const StringName &p_name, const Variant &p_value) {
 			return false;
 		}
 		return true;
-	} else if (components.size() == 1 && components[0].begins_with("custom_data_") && components[0].trim_prefix("custom_data_").is_valid_integer()) {
+	} else if (components.size() == 1 && components[0].begins_with("custom_data_") && components[0].trim_prefix("custom_data_").is_valid_int()) {
 		// Custom data layers.
 		int layer_index = components[0].trim_prefix("custom_data_").to_int();
 		ERR_FAIL_COND_V(layer_index < 0, false);
@@ -2675,7 +2675,7 @@ bool TileData::_get(const StringName &p_name, Variant &r_ret) const {
 	Vector<String> components = String(p_name).split("/", true, 2);
 
 	if (tile_set) {
-		if (components.size() == 2 && components[0].begins_with("occlusion_layer") && components[0].trim_prefix("occlusion_layer_").is_valid_integer()) {
+		if (components.size() == 2 && components[0].begins_with("occlusion_layer") && components[0].trim_prefix("occlusion_layer_").is_valid_int()) {
 			// Occlusion layers.
 			int layer_index = components[0].trim_prefix("occlusion_layer_").to_int();
 			ERR_FAIL_COND_V(layer_index < 0, false);
@@ -2686,7 +2686,7 @@ bool TileData::_get(const StringName &p_name, Variant &r_ret) const {
 				r_ret = get_occluder(layer_index);
 				return true;
 			}
-		} else if (components.size() >= 2 && components[0].begins_with("physics_layer_") && components[0].trim_prefix("physics_layer_").is_valid_integer()) {
+		} else if (components.size() >= 2 && components[0].begins_with("physics_layer_") && components[0].trim_prefix("physics_layer_").is_valid_int()) {
 			// Physics layers.
 			int layer_index = components[0].trim_prefix("physics_layer_").to_int();
 			ERR_FAIL_COND_V(layer_index < 0, false);
@@ -2696,7 +2696,7 @@ bool TileData::_get(const StringName &p_name, Variant &r_ret) const {
 			if (components.size() == 2 && components[1] == "shapes_count") {
 				r_ret = get_collision_shapes_count(layer_index);
 				return true;
-			} else if (components.size() == 3 && components[1].begins_with("shape_") && components[1].trim_prefix("shape_").is_valid_integer()) {
+			} else if (components.size() == 3 && components[1].begins_with("shape_") && components[1].trim_prefix("shape_").is_valid_int()) {
 				int shape_index = components[1].trim_prefix("shape_").to_int();
 				ERR_FAIL_COND_V(shape_index < 0, false);
 				if (shape_index >= physics[layer_index].shapes.size()) {
@@ -2751,7 +2751,7 @@ bool TileData::_get(const StringName &p_name, Variant &r_ret) const {
 				return false;
 			}
 			return true;
-		} else if (components.size() == 2 && components[0].begins_with("navigation_layer_") && components[0].trim_prefix("navigation_layer_").is_valid_integer()) {
+		} else if (components.size() == 2 && components[0].begins_with("navigation_layer_") && components[0].trim_prefix("navigation_layer_").is_valid_int()) {
 			// Occlusion layers.
 			int layer_index = components[0].trim_prefix("navigation_layer_").to_int();
 			ERR_FAIL_COND_V(layer_index < 0, false);
@@ -2762,7 +2762,7 @@ bool TileData::_get(const StringName &p_name, Variant &r_ret) const {
 				r_ret = get_navigation_polygon(layer_index);
 				return true;
 			}
-		} else if (components.size() == 1 && components[0].begins_with("custom_data_") && components[0].trim_prefix("custom_data_").is_valid_integer()) {
+		} else if (components.size() == 1 && components[0].begins_with("custom_data_") && components[0].trim_prefix("custom_data_").is_valid_int()) {
 			// Custom data layers.
 			int layer_index = components[0].trim_prefix("custom_data_").to_int();
 			ERR_FAIL_COND_V(layer_index < 0, false);
