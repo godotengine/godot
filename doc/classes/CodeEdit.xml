@@ -184,7 +184,7 @@
 				Gets the end key for a string or comment region index.
 			</description>
 		</method>
-		<method name="get_delimiter_end_postion" qualifiers="const">
+		<method name="get_delimiter_end_position" qualifiers="const">
 			<return type="Vector2">
 			</return>
 			<argument index="0" name="line" type="int">
@@ -204,7 +204,7 @@
 				Gets the start key for a string or comment region index.
 			</description>
 		</method>
-		<method name="get_delimiter_start_postion" qualifiers="const">
+		<method name="get_delimiter_start_position" qualifiers="const">
 			<return type="Vector2">
 			</return>
 			<argument index="0" name="line" type="int">

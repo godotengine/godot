@@ -1121,8 +1121,8 @@ void CodeEdit::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_delimiter_start_key", "delimiter_index"), &CodeEdit::get_delimiter_start_key);
 	ClassDB::bind_method(D_METHOD("get_delimiter_end_key", "delimiter_index"), &CodeEdit::get_delimiter_end_key);
 
-	ClassDB::bind_method(D_METHOD("get_delimiter_start_postion", "line", "column"), &CodeEdit::get_delimiter_start_position);
-	ClassDB::bind_method(D_METHOD("get_delimiter_end_postion", "line", "column"), &CodeEdit::get_delimiter_end_position);
+	ClassDB::bind_method(D_METHOD("get_delimiter_start_position", "line", "column"), &CodeEdit::get_delimiter_start_position);
+	ClassDB::bind_method(D_METHOD("get_delimiter_end_position", "line", "column"), &CodeEdit::get_delimiter_end_position);
 
 	/* Code hint */
 	ClassDB::bind_method(D_METHOD("set_code_hint", "code_hint"), &CodeEdit::set_code_hint);
