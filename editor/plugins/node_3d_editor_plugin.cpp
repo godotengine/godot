@@ -7245,10 +7245,6 @@ void Node3DEditorPlugin::set_state(const Dictionary &p_state) {
 	spatial_editor->set_state(p_state);
 }
 
-void Node3DEditor::snap_cursor_to_plane(const Plane &p_plane) {
-	//cursor.pos=p_plane.project(cursor.pos);
-}
-
 Vector3 Node3DEditor::snap_point(Vector3 p_target, Vector3 p_start) const {
 	if (is_snap_enabled()) {
 		p_target.x = Math::snap_scalar(0.0, get_translate_snap(), p_target.x);
@@ -7289,14 +7285,6 @@ float Node3DEditor::get_scale_snap() const {
 	}
 
 	return snap_value;
-}
-
-void Node3DEditorPlugin::_bind_methods() {
-	ClassDB::bind_method("snap_cursor_to_plane", &Node3DEditorPlugin::snap_cursor_to_plane);
-}
-
-void Node3DEditorPlugin::snap_cursor_to_plane(const Plane &p_plane) {
-	spatial_editor->snap_cursor_to_plane(p_plane);
 }
 
 struct _GizmoPluginPriorityComparator {
