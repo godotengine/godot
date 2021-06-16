@@ -1040,7 +1040,7 @@ Map<Vector2i, List<const PropertyInfo *>> TileSetAtlasSourceEditor::_group_prope
 		Vector<String> components = String(E_property->get().name).split("/", true, 1);
 		if (components.size() >= 1) {
 			Vector<String> coord_arr = components[0].split(":");
-			if (coord_arr.size() == 2 && coord_arr[0].is_valid_integer() && coord_arr[1].is_valid_integer()) {
+			if (coord_arr.size() == 2 && coord_arr[0].is_valid_int() && coord_arr[1].is_valid_int()) {
 				Vector2i coords = Vector2i(coord_arr[0].to_int(), coord_arr[1].to_int());
 				per_tile[coords].push_back(&(E_property->get()));
 			}
@@ -1088,7 +1088,7 @@ void TileSetAtlasSourceEditor::_menu_option(int p_option) {
 					if (per_tile.has(selected.tile)) {
 						for (List<const PropertyInfo *>::Element *E_property = per_tile[selected.tile].front(); E_property; E_property = E_property->next()) {
 							Vector<String> components = E_property->get()->name.split("/", true, 2);
-							if (components.size() >= 2 && components[1].is_valid_integer() && components[1].to_int() == selected.alternative) {
+							if (components.size() >= 2 && components[1].is_valid_int() && components[1].to_int() == selected.alternative) {
 								String property = E_property->get()->name;
 								Variant value = tile_set_atlas_source->get(property);
 								if (value.get_type() != Variant::NIL) {
