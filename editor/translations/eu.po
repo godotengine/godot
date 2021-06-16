@@ -4,23 +4,25 @@
 # This file is distributed under the same license as the Godot source code.
 # Julen Irazoki <rktzbkr.julen@gmail.com>, 2019.
 # Osoitz <oelkoro@gmail.com>, 2019, 2020.
+# Erik Zubiria <erik@ezsd.net>, 2021.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
-"PO-Revision-Date: 2020-06-15 01:48+0000\n"
-"Last-Translator: Osoitz <oelkoro@gmail.com>\n"
+"PO-Revision-Date: 2021-06-14 12:34+0000\n"
+"Last-Translator: Erik Zubiria <erik@ezsd.net>\n"
 "Language-Team: Basque <https://hosted.weblate.org/projects/godot-engine/"
 "godot/eu/>\n"
 "Language: eu\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8-bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.1-dev\n"
+"X-Generator: Weblate 4.7-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
 msgid "Invalid type argument to convert(), use TYPE_* constants."
 msgstr ""
+"'convert()'-entzat argumentu baliogabea, erabil itzazu TYPE_* konstanteak."
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 msgid "Expected a string of length 1 (a character)."
@@ -34,23 +36,24 @@ msgstr "Ez daude byte nahikoa byteak deskodetzeko, edo formatua ez da zuzena."
 
 #: core/math/expression.cpp
 msgid "Invalid input %i (not passed) in expression"
-msgstr ""
+msgstr "%i (onartu gabea) sarrera baliogabea espresioan"
 
 #: core/math/expression.cpp
 msgid "self can't be used because instance is null (not passed)"
-msgstr ""
+msgstr "ezin da self erabili instantzia null (pasatu gabea) delako"
 
 #: core/math/expression.cpp
 msgid "Invalid operands to operator %s, %s and %s."
-msgstr ""
+msgstr "%s, %s eta %s operatzaileentzat operando baliogabeak."
 
 #: core/math/expression.cpp
 msgid "Invalid index of type %s for base type %s"
-msgstr ""
+msgstr "%s tipo oinarriarentzat %s tipo adierazle baliogabea"
 
 #: core/math/expression.cpp
 msgid "Invalid named index '%s' for base type %s"
 msgstr ""
+"'%s' izena daukan adierazleak ez dauka baliorik %s oinarri tipoarentzat"
 
 #: core/math/expression.cpp
 msgid "Invalid arguments to construct '%s'"
@@ -130,51 +133,51 @@ msgstr "Mugitu Bezier puntuak"
 
 #: editor/animation_bezier_editor.cpp editor/animation_track_editor.cpp
 msgid "Anim Duplicate Keys"
-msgstr ""
+msgstr "Animazio giltza bikoiztuak"
 
 #: editor/animation_bezier_editor.cpp editor/animation_track_editor.cpp
 msgid "Anim Delete Keys"
-msgstr ""
+msgstr "Animazio giltza ezabatuak"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Change Keyframe Time"
-msgstr ""
+msgstr "Animazioaren giltza fotogramaren denbora aldatu"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Change Transition"
-msgstr ""
+msgstr "Animazioaren transizioa aldatu"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Change Transform"
-msgstr ""
+msgstr "Animazioaren transformazioa aldatu"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Change Keyframe Value"
-msgstr ""
+msgstr "Animazioaren giltza fotogramen balioa aldatu"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Change Call"
-msgstr ""
+msgstr "Animazioaren deia aldatu"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Multi Change Keyframe Time"
-msgstr ""
+msgstr "Fotograma anitzen animazio giltzen denbora aldatu"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Multi Change Transition"
-msgstr ""
+msgstr "Animazio transizio anitzak aldatu"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Multi Change Transform"
-msgstr ""
+msgstr "Animazio Transform anitz aldatu"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Multi Change Keyframe Value"
-msgstr ""
+msgstr "Animazio anitzen giltza fotogramen balioa aldatu"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Multi Change Call"
-msgstr ""
+msgstr "Animazio dei anitz aldatu"
 
 #: editor/animation_track_editor.cpp
 msgid "Change Animation Length"
@@ -187,27 +190,27 @@ msgstr "Aldatu animazioaren begizta"
 
 #: editor/animation_track_editor.cpp
 msgid "Property Track"
-msgstr ""
+msgstr "Propietateen pista"
 
 #: editor/animation_track_editor.cpp
 msgid "3D Transform Track"
-msgstr ""
+msgstr "3D Transformazioaren pista"
 
 #: editor/animation_track_editor.cpp
 msgid "Call Method Track"
-msgstr ""
+msgstr "Metodoen deiaren pista"
 
 #: editor/animation_track_editor.cpp
 msgid "Bezier Curve Track"
-msgstr ""
+msgstr "Bezier kurbaren pista"
 
 #: editor/animation_track_editor.cpp
 msgid "Audio Playback Track"
-msgstr ""
+msgstr "Audioaren erreprodukzio pista"
 
 #: editor/animation_track_editor.cpp
 msgid "Animation Playback Track"
-msgstr ""
+msgstr "Animazioaren erreprodukzio pista"
 
 #: editor/animation_track_editor.cpp
 msgid "Animation length (frames)"
@@ -219,40 +222,40 @@ msgstr "Animazioaren iraupena (segundoak)"
 
 #: editor/animation_track_editor.cpp
 msgid "Add Track"
-msgstr ""
+msgstr "Gehitu pista"
 
 #: editor/animation_track_editor.cpp
 msgid "Animation Looping"
-msgstr ""
+msgstr "Animazioaren loop-a"
 
 #: editor/animation_track_editor.cpp
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Functions:"
-msgstr ""
+msgstr "Funtzioak:"
 
 #: editor/animation_track_editor.cpp
 msgid "Audio Clips:"
-msgstr ""
+msgstr "Audio klipak:"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Clips:"
-msgstr ""
+msgstr "Animazio klipak:"
 
 #: editor/animation_track_editor.cpp
 msgid "Change Track Path"
-msgstr ""
+msgstr "Pistaren bidea aldatu"
 
 #: editor/animation_track_editor.cpp
 msgid "Toggle this track on/off."
-msgstr ""
+msgstr "Pista hau aktibatu/desaktibatu."
 
 #: editor/animation_track_editor.cpp
 msgid "Update Mode (How this property is set)"
-msgstr ""
+msgstr "Eguneratze mota (Nola ezartzen da)"
 
 #: editor/animation_track_editor.cpp
 msgid "Interpolation Mode"
-msgstr ""
+msgstr "Interpolazio mota"
 
 #: editor/animation_track_editor.cpp
 msgid "Loop Wrap Mode (Interpolate end with beginning on loop)"
@@ -1087,6 +1090,10 @@ msgstr "Aldatu hiztegiaren balioa"
 #, fuzzy
 msgid "Thanks from the Godot community!"
 msgstr "Eskerrik asko Godot komunitatearen partetik!"
+
+#: editor/editor_about.cpp editor/editor_node.cpp editor/project_manager.cpp
+msgid "Click to copy."
+msgstr ""
 
 #: editor/editor_about.cpp
 msgid "Godot Engine contributors"
@@ -11717,7 +11724,19 @@ msgid ""
 msgstr ""
 
 #: platform/android/export/export.cpp
+msgid ""
+"Either Debug Keystore, Debug User AND Debug Password settings must be "
+"configured OR none of them."
+msgstr ""
+
+#: platform/android/export/export.cpp
 msgid "Debug keystore not configured in the Editor Settings nor in the preset."
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid ""
+"Either Release Keystore, Release User AND Release Password settings must be "
+"configured OR none of them."
 msgstr ""
 
 #: platform/android/export/export.cpp

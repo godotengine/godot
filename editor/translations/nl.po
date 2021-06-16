@@ -50,7 +50,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2021-05-29 13:49+0000\n"
+"PO-Revision-Date: 2021-06-05 08:32+0000\n"
 "Last-Translator: Stijn Hinlopen <f.a.hinlopen@gmail.com>\n"
 "Language-Team: Dutch <https://hosted.weblate.org/projects/godot-engine/godot/"
 "nl/>\n"
@@ -1162,6 +1162,10 @@ msgstr "Waarde wijzigen"
 #: editor/editor_about.cpp
 msgid "Thanks from the Godot community!"
 msgstr "Bedankt van de Godot gemeenschap!"
+
+#: editor/editor_about.cpp editor/editor_node.cpp editor/project_manager.cpp
+msgid "Click to copy."
+msgstr ""
 
 #: editor/editor_about.cpp
 msgid "Godot Engine contributors"
@@ -10497,7 +10501,7 @@ msgstr "Plugins"
 
 #: editor/project_settings_editor.cpp
 msgid "Import Defaults"
-msgstr "Laad de standaard waarden"
+msgstr "Import"
 
 #: editor/property_editor.cpp
 msgid "Preset..."
@@ -10750,9 +10754,8 @@ msgid "Instance Child Scene"
 msgstr "Scène instantiëren"
 
 #: editor/scene_tree_dock.cpp
-#, fuzzy
 msgid "Can't paste root node into the same scene."
-msgstr "Kan deze operatie niet uitvoeren op knopen uit een vreemde scène!"
+msgstr "Kan de wortelknoop niet in dezelfde scène plakken."
 
 #: editor/scene_tree_dock.cpp
 msgid "Paste Node(s)"
@@ -12259,8 +12262,20 @@ msgstr ""
 "projectmenu kan het geïnstalleerd worden."
 
 #: platform/android/export/export.cpp
+msgid ""
+"Either Debug Keystore, Debug User AND Debug Password settings must be "
+"configured OR none of them."
+msgstr ""
+
+#: platform/android/export/export.cpp
 msgid "Debug keystore not configured in the Editor Settings nor in the preset."
 msgstr "Debug Keystore is niet ingesteld of aanwezig in de Editor Settings."
+
+#: platform/android/export/export.cpp
+msgid ""
+"Either Release Keystore, Release User AND Release Password settings must be "
+"configured OR none of them."
+msgstr ""
 
 #: platform/android/export/export.cpp
 msgid "Release keystore incorrectly configured in the export preset."

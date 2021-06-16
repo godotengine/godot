@@ -15,8 +15,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2021-05-14 11:19+0000\n"
-"Last-Translator: Oymate <dhruboadittya96@gmail.com>\n"
+"PO-Revision-Date: 2021-06-11 14:49+0000\n"
+"Last-Translator: Mokarrom Hossain <mhb2016.bzs@gmail.com>\n"
 "Language-Team: Bengali <https://hosted.weblate.org/projects/godot-engine/"
 "godot/bn/>\n"
 "Language: bn\n"
@@ -47,7 +47,7 @@ msgstr "অবৈধ ইনপুট %i (পাস করা হয়নি) �
 
 #: core/math/expression.cpp
 msgid "self can't be used because instance is null (not passed)"
-msgstr "self ব্যবহার করা যাবে না কারণ instance যুক্তিযুক্ত নয়"
+msgstr "self ব্যবহার করা যাবে না কারণ instance যুক্তিযুক্ত নয় (not passed)"
 
 #: core/math/expression.cpp
 msgid "Invalid operands to operator %s, %s and %s."
@@ -103,7 +103,7 @@ msgstr "মুক্ত করে দিন"
 
 #: editor/animation_bezier_editor.cpp
 msgid "Balanced"
-msgstr "স্থির"
+msgstr "সুষম"
 
 #: editor/animation_bezier_editor.cpp
 msgid "Mirror"
@@ -591,7 +591,7 @@ msgstr "অ্যানিমেশন (Animation) পরিচ্ছন্ন �
 
 #: editor/animation_track_editor.cpp
 msgid "Pick the node that will be animated:"
-msgstr ""
+msgstr "নোডটি চয়ন করুন যা অ্যানিমেটেড হবে:"
 
 #: editor/animation_track_editor.cpp
 msgid "Use Bezier Curves"
@@ -655,22 +655,20 @@ msgid "Copy"
 msgstr "প্রতিলিপি/কপি করুন"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Select All/None"
-msgstr "কোনোটাই নির্বাচন করবেন না"
+msgstr "কোনোটাই নির্বাচন করবেন/না"
 
 #: editor/animation_track_editor_plugins.cpp
-#, fuzzy
 msgid "Add Audio Track Clip"
-msgstr "অডিও শ্রোতা"
+msgstr "অডিও ট্র্যাক ক্লিপ যুক্ত করুন"
 
 #: editor/animation_track_editor_plugins.cpp
 msgid "Change Audio Track Clip Start Offset"
-msgstr ""
+msgstr "অডিও ট্র্যাক ক্লিপ শুরু অফসেট পরিবর্তন করুন"
 
 #: editor/animation_track_editor_plugins.cpp
 msgid "Change Audio Track Clip End Offset"
-msgstr ""
+msgstr "অডিও ট্র্যাক ক্লিপ শেষ অফসেট পরিবর্তন করুন"
 
 #: editor/array_property_edit.cpp
 msgid "Resize Array"
@@ -693,18 +691,16 @@ msgid "Line Number:"
 msgstr "লাইন নাম্বার:"
 
 #: editor/code_editor.cpp
-#, fuzzy
 msgid "%d replaced."
-msgstr "প্রতিস্থাপন..."
+msgstr "%d প্রতিস্থাপন করা হয়েছে।"
 
 #: editor/code_editor.cpp editor/editor_help.cpp
 msgid "%d match."
-msgstr ""
+msgstr "% d মিল।"
 
 #: editor/code_editor.cpp editor/editor_help.cpp
-#, fuzzy
 msgid "%d matches."
-msgstr "কোনো মিল নেই"
+msgstr "% d টি মিলছে।"
 
 #: editor/code_editor.cpp editor/find_in_files.cpp
 msgid "Match Case"
@@ -732,9 +728,8 @@ msgid "Standard"
 msgstr "আদর্শ"
 
 #: editor/code_editor.cpp editor/plugins/script_editor_plugin.cpp
-#, fuzzy
 msgid "Toggle Scripts Panel"
-msgstr "ফেবরিট/প্রিয়-সমূহ অদলবদল/টগল করুন"
+msgstr "স্ক্রিপ্টস প্যানেল টগল করুন"
 
 #: editor/code_editor.cpp editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/texture_region_editor_plugin.cpp
@@ -753,7 +748,6 @@ msgid "Reset Zoom"
 msgstr "সম্প্রসারন/সংকোচন অপসারণ করুন (রিসেট জুম্)"
 
 #: editor/code_editor.cpp
-#, fuzzy
 msgid "Warnings"
 msgstr "সতর্কতা"
 
@@ -1148,6 +1142,10 @@ msgstr "ডিকশনারি ভ্যালু  পরিবর্তন �
 #: editor/editor_about.cpp
 msgid "Thanks from the Godot community!"
 msgstr "Godot কমিউনিটি হতে আপনাকে ধন্যবাদ!"
+
+#: editor/editor_about.cpp editor/editor_node.cpp editor/project_manager.cpp
+msgid "Click to copy."
+msgstr ""
 
 #: editor/editor_about.cpp
 msgid "Godot Engine contributors"
@@ -2598,9 +2596,8 @@ msgid "Exit the editor?"
 msgstr "এডিটর হতে প্রস্থান করবেন?"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Open Project Manager?"
-msgstr "প্রকল্প ম্যানেজার"
+msgstr "Open প্রকল্প ম্যানেজার?"
 
 #: editor/editor_node.cpp
 #, fuzzy
@@ -3276,13 +3273,12 @@ msgid "Open & Run a Script"
 msgstr "একটি স্ক্রিপ্ট খুলুন এবং চালান"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid ""
 "The following files are newer on disk.\n"
 "What action should be taken?"
 msgstr ""
 "নিম্নোক্ত ফাইলসমূহ ডিস্কে নতুনতর।\n"
-"কোন সিধান্তটি নেয়া উচিত হবে?:"
+"কোন সিধান্তটি নেয়া উচিত হবে?"
 
 #: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
 #: editor/plugins/shader_editor_plugin.cpp
@@ -3839,9 +3835,8 @@ msgid "Remove Template"
 msgstr "বস্তু অপসারণ করুন"
 
 #: editor/export_template_manager.cpp
-#, fuzzy
 msgid "Select Template File"
-msgstr "নির্বাচিত ফাইলসমূহ অপসারণ করবেন?"
+msgstr "টেমপ্লেট ফাইল নির্বাচন করুন"
 
 #: editor/export_template_manager.cpp
 #, fuzzy
@@ -4855,9 +4850,8 @@ msgstr "অ্যানিমেশনের নাম পরিবর্তন 
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 #: editor/plugins/sprite_frames_editor_plugin.cpp
-#, fuzzy
 msgid "Delete Animation?"
-msgstr "অ্যানিমেশন প্রতিলিপি করুন"
+msgstr "Delete অ্যানিমেশন?"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 #: editor/plugins/sprite_frames_editor_plugin.cpp
@@ -5563,9 +5557,8 @@ msgid "Bake Lightmaps"
 msgstr "লাইট্ম্যাপে হস্তান্তর করুন:"
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
-#, fuzzy
 msgid "Select lightmap bake file:"
-msgstr "নির্বাচিত ফাইলসমূহ অপসারণ করবেন?"
+msgstr "লাইটম্যাপ বেক ফাইলটি নির্বাচন করুন:"
 
 #: editor/plugins/camera_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -7235,11 +7228,8 @@ msgid "Clear Recent Files"
 msgstr "বোন্‌/হাড় পরিষ্কার করুন"
 
 #: editor/plugins/script_editor_plugin.cpp
-#, fuzzy
 msgid "Close and save changes?"
-msgstr ""
-"বন্ধ এবং পরিবর্তন সংরক্ষণ করবেন?\n"
-"\""
+msgstr "বন্ধ এবং পরিবর্তন সংরক্ষণ করবেন?"
 
 #: editor/plugins/script_editor_plugin.cpp
 #, fuzzy
@@ -7740,13 +7730,12 @@ msgid "Go to Previous Breakpoint"
 msgstr "পূর্বের বিরতিবিন্দুতে যান"
 
 #: editor/plugins/shader_editor_plugin.cpp
-#, fuzzy
 msgid ""
 "This shader has been modified on on disk.\n"
 "What action should be taken?"
 msgstr ""
 "নিম্নোক্ত ফাইলসমূহ ডিস্কে নতুনতর।\n"
-"কোন সিধান্তটি নেয়া উচিত হবে?:"
+"কোন সিধান্তটি নেয়া উচিত হবে?"
 
 #: editor/plugins/shader_editor_plugin.cpp
 msgid "Shader"
@@ -12971,7 +12960,19 @@ msgid ""
 msgstr ""
 
 #: platform/android/export/export.cpp
+msgid ""
+"Either Debug Keystore, Debug User AND Debug Password settings must be "
+"configured OR none of them."
+msgstr ""
+
+#: platform/android/export/export.cpp
 msgid "Debug keystore not configured in the Editor Settings nor in the preset."
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid ""
+"Either Release Keystore, Release User AND Release Password settings must be "
+"configured OR none of them."
 msgstr ""
 
 #: platform/android/export/export.cpp
