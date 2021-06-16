@@ -445,7 +445,6 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_color("font_readonly_color", "TextEdit", Color(control_font_color.r, control_font_color.g, control_font_color.b, 0.5f));
 	theme->set_color("font_outline_color", "TextEdit", Color(1, 1, 1));
 	theme->set_color("selection_color", "TextEdit", control_selection_color);
-	theme->set_color("code_folding_color", "TextEdit", Color(0.8, 0.8, 0.8, 0.8));
 	theme->set_color("current_line_color", "TextEdit", Color(0.25, 0.25, 0.26, 0.8));
 	theme->set_color("caret_color", "TextEdit", control_font_color);
 	theme->set_color("caret_background_color", "TextEdit", Color(0, 0, 0));
@@ -469,6 +468,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_icon("executing_line", "CodeEdit", make_icon(arrow_right_png));
 	theme->set_icon("can_fold", "CodeEdit", make_icon(arrow_down_png));
 	theme->set_icon("folded", "CodeEdit", make_icon(arrow_right_png));
+	theme->set_icon("folded_eol_icon", "CodeEdit", make_icon(ellipsis_png));
 
 	theme->set_font("font", "CodeEdit", Ref<Font>());
 	theme->set_font_size("font_size", "CodeEdit", -1);
@@ -487,8 +487,8 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_color("bookmark_color", "CodeEdit", Color(0.5, 0.64, 1, 0.8));
 	theme->set_color("breakpoint_color", "CodeEdit", Color(0.9, 0.29, 0.3));
 	theme->set_color("executing_line_color", "CodeEdit", Color(0.98, 0.89, 0.27));
-	theme->set_color("code_folding_color", "CodeEdit", Color(0.8, 0.8, 0.8, 0.8));
 	theme->set_color("current_line_color", "CodeEdit", Color(0.25, 0.25, 0.26, 0.8));
+	theme->set_color("code_folding_color", "CodeEdit", Color(0.8, 0.8, 0.8, 0.8));
 	theme->set_color("caret_color", "CodeEdit", control_font_color);
 	theme->set_color("caret_background_color", "CodeEdit", Color(0, 0, 0));
 	theme->set_color("brace_mismatch_color", "CodeEdit", Color(1, 0.2, 0.2));

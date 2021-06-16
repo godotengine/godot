@@ -1061,7 +1061,7 @@ void ScriptTextEditor::_edit_option(int p_op) {
 			code_editor->clone_lines_down();
 		} break;
 		case EDIT_TOGGLE_FOLD_LINE: {
-			tx->toggle_fold_line(tx->cursor_get_line());
+			tx->toggle_foldable_line(tx->cursor_get_line());
 			tx->update();
 		} break;
 		case EDIT_FOLD_ALL_LINES: {
@@ -1549,7 +1549,7 @@ void ScriptTextEditor::_text_edit_gui_input(const Ref<InputEvent> &ev) {
 		}
 
 		bool has_color = (word_at_pos == "Color");
-		bool foldable = tx->can_fold(row) || tx->is_folded(row);
+		bool foldable = tx->can_fold_line(row) || tx->is_line_folded(row);
 		bool open_docs = false;
 		bool goto_definition = false;
 
