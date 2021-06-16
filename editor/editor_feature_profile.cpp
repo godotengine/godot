@@ -378,7 +378,7 @@ void EditorFeatureProfileManager::_update_profile_list(const String &p_select_pr
 		}
 
 		if (name == current_profile) {
-			name += " (current)";
+			name += " " + TTR("(current)");
 		}
 		profile_list->add_item(name);
 		int index = profile_list->get_item_count() - 1;
@@ -388,12 +388,15 @@ void EditorFeatureProfileManager::_update_profile_list(const String &p_select_pr
 		}
 	}
 
+	class_list_vbc->set_visible(selected_profile != String());
+	property_list_vbc->set_visible(selected_profile != String());
+	no_profile_selected_help->set_visible(selected_profile == String());
 	profile_actions[PROFILE_CLEAR]->set_disabled(current_profile == String());
 	profile_actions[PROFILE_ERASE]->set_disabled(selected_profile == String());
 	profile_actions[PROFILE_EXPORT]->set_disabled(selected_profile == String());
 	profile_actions[PROFILE_SET]->set_disabled(selected_profile == String());
 
-	current_profile_name->set_text(current_profile);
+	current_profile_name->set_text(current_profile != String() ? current_profile : TTR("(none)"));
 
 	_update_selected_profile();
 }
@@ -476,6 +479,10 @@ void EditorFeatureProfileManager::_create_new_profile() {
 	new_profile->save_to_file(file);
 
 	_update_profile_list(name);
+	// The newly created profile is the first one, make it the current profile automatically.
+	if (profile_list->get_item_count() == 1) {
+		_profile_action(PROFILE_SET);
+	}
 }
 
 void EditorFeatureProfileManager::_profile_selected(int p_what) {
@@ -802,6 +809,10 @@ void EditorFeatureProfileManager::_import_profiles(const Vector<String> &p_paths
 	}
 
 	_update_profile_list();
+	// The newly imported profile is the first one, make it the current profile automatically.
+	if (profile_list->get_item_count() == 1) {
+		_profile_action(PROFILE_SET);
+	}
 }
 
 void EditorFeatureProfileManager::_export_profile(const String &p_path) {
@@ -862,6 +873,7 @@ EditorFeatureProfileManager::EditorFeatureProfileManager() {
 	HBoxContainer *name_hbc = memnew(HBoxContainer);
 	current_profile_name = memnew(LineEdit);
 	name_hbc->add_child(current_profile_name);
+	current_profile_name->set_text(TTR("(none)"));
 	current_profile_name->set_editable(false);
 	current_profile_name->set_h_size_flags(SIZE_EXPAND_FILL);
 	profile_actions[PROFILE_CLEAR] = memnew(Button(TTR("Reset to Default")));
@@ -914,7 +926,7 @@ EditorFeatureProfileManager::EditorFeatureProfileManager() {
 	h_split->set_v_size_flags(SIZE_EXPAND_FILL);
 	main_vbc->add_child(h_split);
 
-	VBoxContainer *class_list_vbc = memnew(VBoxContainer);
+	class_list_vbc = memnew(VBoxContainer);
 	h_split->add_child(class_list_vbc);
 	class_list_vbc->set_h_size_flags(SIZE_EXPAND_FILL);
 
@@ -926,7 +938,10 @@ EditorFeatureProfileManager::EditorFeatureProfileManager() {
 	class_list->connect("item_edited", this, "_class_list_item_edited", varray(), CONNECT_DEFERRED);
 	class_list->connect("item_collapsed", this, "_class_list_item_collapsed");
 
-	VBoxContainer *property_list_vbc = memnew(VBoxContainer);
+	// It will be displayed once the user creates or chooses a profile.
+	class_list_vbc->hide();
+
+	property_list_vbc = memnew(VBoxContainer);
 	h_split->add_child(property_list_vbc);
 	property_list_vbc->set_h_size_flags(SIZE_EXPAND_FILL);
 
@@ -940,6 +955,18 @@ EditorFeatureProfileManager::EditorFeatureProfileManager() {
 	property_list->set_hide_folding(true);
 	property_list->set_edit_checkbox_cell_only_when_checkbox_is_pressed(true);
 	property_list->connect("item_edited", this, "_property_item_edited", varray(), CONNECT_DEFERRED);
+
+	// It will be displayed once the user creates or chooses a profile.
+	property_list_vbc->hide();
+
+	no_profile_selected_help = memnew(Label(TTR("Create or import a profile to edit available classes and properties.")));
+	// Add some spacing above the help label.
+	Ref<StyleBoxEmpty> sb = memnew(StyleBoxEmpty);
+	sb->set_default_margin(MARGIN_TOP, 20 * EDSCALE);
+	no_profile_selected_help->add_style_override("normal", sb);
+	no_profile_selected_help->set_align(Label::ALIGN_CENTER);
+	no_profile_selected_help->set_v_size_flags(SIZE_EXPAND_FILL);
+	h_split->add_child(no_profile_selected_help);
 
 	new_profile_dialog = memnew(ConfirmationDialog);
 	new_profile_dialog->set_title(TTR("Create Profile"));
