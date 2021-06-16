@@ -5535,6 +5535,59 @@ void RendererStorageRD::particles_collision_instance_set_active(RID p_collision_
 	pci->active = p_active;
 }
 
+/* VISIBILITY NOTIFIER */
+
+RID RendererStorageRD::visibility_notifier_allocate() {
+	return visibility_notifier_owner.allocate_rid();
+}
+void RendererStorageRD::visibility_notifier_initialize(RID p_notifier) {
+	visibility_notifier_owner.initialize_rid(p_notifier, VisibilityNotifier());
+}
+void RendererStorageRD::visibility_notifier_set_aabb(RID p_notifier, const AABB &p_aabb) {
+	VisibilityNotifier *vn = visibility_notifier_owner.getornull(p_notifier);
+	ERR_FAIL_COND(!vn);
+	vn->aabb = p_aabb;
+	vn->dependency.changed_notify(DEPENDENCY_CHANGED_AABB);
+}
+void RendererStorageRD::visibility_notifier_set_callbacks(RID p_notifier, const Callable &p_enter_callbable, const Callable &p_exit_callable) {
+	VisibilityNotifier *vn = visibility_notifier_owner.getornull(p_notifier);
+	ERR_FAIL_COND(!vn);
+	vn->enter_callback = p_enter_callbable;
+	vn->exit_callback = p_exit_callable;
+}
+
+AABB RendererStorageRD::visibility_notifier_get_aabb(RID p_notifier) const {
+	const VisibilityNotifier *vn = visibility_notifier_owner.getornull(p_notifier);
+	ERR_FAIL_COND_V(!vn, AABB());
+	return vn->aabb;
+}
+void RendererStorageRD::visibility_notifier_call(RID p_notifier, bool p_enter, bool p_deferred) {
+	VisibilityNotifier *vn = visibility_notifier_owner.getornull(p_notifier);
+	ERR_FAIL_COND(!vn);
+
+	if (p_enter) {
+		if (!vn->enter_callback.is_null()) {
+			if (p_deferred) {
+				vn->enter_callback.call_deferred(nullptr, 0);
+			} else {
+				Variant r;
+				Callable::CallError ce;
+				vn->enter_callback.call(nullptr, 0, r, ce);
+			}
+		}
+	} else {
+		if (!vn->exit_callback.is_null()) {
+			if (p_deferred) {
+				vn->exit_callback.call_deferred(nullptr, 0);
+			} else {
+				Variant r;
+				Callable::CallError ce;
+				vn->exit_callback.call(nullptr, 0, r, ce);
+			}
+		}
+	}
+}
+
 /* SKELETON API */
 
 RID RendererStorageRD::skeleton_allocate() {
@@ -7590,6 +7643,9 @@ void RendererStorageRD::base_update_dependency(RID p_base, DependencyTracker *p_
 	} else if (particles_collision_owner.owns(p_base)) {
 		ParticlesCollision *pc = particles_collision_owner.getornull(p_base);
 		p_instance->update_dependency(&pc->dependency);
+	} else if (visibility_notifier_owner.owns(p_base)) {
+		VisibilityNotifier *vn = visibility_notifier_owner.getornull(p_base);
+		p_instance->update_dependency(&vn->dependency);
 	}
 }
 
@@ -7627,6 +7683,9 @@ RS::InstanceType RendererStorageRD::get_base_type(RID p_rid) const {
 	}
 	if (particles_collision_owner.owns(p_rid)) {
 		return RS::INSTANCE_PARTICLES_COLLISION;
+	}
+	if (visibility_notifier_owner.owns(p_rid)) {
+		return RS::INSTANCE_VISIBLITY_NOTIFIER;
 	}
 
 	return RS::INSTANCE_NONE;
@@ -8704,6 +8763,10 @@ bool RendererStorageRD::free(RID p_rid) {
 		}
 		particles_collision->dependency.deleted_notify(p_rid);
 		particles_collision_owner.free(p_rid);
+	} else if (visibility_notifier_owner.owns(p_rid)) {
+		VisibilityNotifier *vn = visibility_notifier_owner.getornull(p_rid);
+		vn->dependency.deleted_notify(p_rid);
+		visibility_notifier_owner.free(p_rid);
 	} else if (particles_collision_instance_owner.owns(p_rid)) {
 		particles_collision_instance_owner.free(p_rid);
 	} else if (render_target_owner.owns(p_rid)) {

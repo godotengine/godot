@@ -207,6 +207,7 @@ public:
 
 	virtual void update() = 0;
 	virtual void render_probes() = 0;
+	virtual void update_visibility_notifiers() = 0;
 
 	virtual bool free(RID p_rid) = 0;
 

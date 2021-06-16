@@ -621,9 +621,18 @@ public:
 	bool particles_collision_is_heightfield(RID p_particles_collision) const override { return false; }
 	RID particles_collision_get_heightfield_framebuffer(RID p_particles_collision) const override { return RID(); }
 
-	RID particles_collision_instance_create(RID p_collision) override { return RID(); };
-	void particles_collision_instance_set_transform(RID p_collision_instance, const Transform3D &p_transform) override{};
-	void particles_collision_instance_set_active(RID p_collision_instance, bool p_active) override{};
+	RID particles_collision_instance_create(RID p_collision) override { return RID(); }
+	void particles_collision_instance_set_transform(RID p_collision_instance, const Transform3D &p_transform) override {}
+	void particles_collision_instance_set_active(RID p_collision_instance, bool p_active) override {}
+
+	/* VISIBILITY NOTIFIER */
+	virtual RID visibility_notifier_allocate() override { return RID(); }
+	virtual void visibility_notifier_initialize(RID p_notifier) override {}
+	virtual void visibility_notifier_set_aabb(RID p_notifier, const AABB &p_aabb) override {}
+	virtual void visibility_notifier_set_callbacks(RID p_notifier, const Callable &p_enter_callbable, const Callable &p_exit_callable) override {}
+
+	virtual AABB visibility_notifier_get_aabb(RID p_notifier) const override { return AABB(); }
+	virtual void visibility_notifier_call(RID p_notifier, bool p_enter, bool p_deferred) override {}
 
 	/* GLOBAL VARIABLES */
 

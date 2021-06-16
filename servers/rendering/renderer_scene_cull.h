@@ -118,6 +118,8 @@ public:
 	virtual void occluder_initialize(RID p_occluder);
 	virtual void occluder_set_mesh(RID p_occluder, const PackedVector3Array &p_vertices, const PackedInt32Array &p_indices);
 
+	/* VISIBILITY NOTIFIER API */
+
 	RendererSceneOcclusionCull *dummy_occlusion_culling;
 
 	/* SCENARIO API */
@@ -243,6 +245,8 @@ public:
 		}
 	};
 
+	struct InstanceVisibilityNotifierData;
+
 	struct InstanceData {
 		// Store instance pointer as well as common instance processing information,
 		// to make processing more cache friendly.
@@ -271,6 +275,7 @@ public:
 		union {
 			uint64_t instance_data_rid;
 			RendererSceneRender::GeometryInstance *instance_geometry;
+			InstanceVisibilityNotifierData *visibility_notifier;
 		};
 		Instance *instance = nullptr;
 		int32_t parent_array_index = -1;
@@ -610,6 +615,18 @@ public:
 	struct InstanceParticlesCollisionData : public InstanceBaseData {
 		RID instance;
 	};
+
+	struct InstanceVisibilityNotifierData : public InstanceBaseData {
+		bool just_visible = false;
+		uint64_t visible_in_frame = 0;
+		RID base;
+		SelfList<InstanceVisibilityNotifierData> list_element;
+		InstanceVisibilityNotifierData() :
+				list_element(this) {}
+	};
+
+	SpinLock visible_notifier_list_lock;
+	SelfList<InstanceVisibilityNotifierData>::List visible_notifier_list;
 
 	struct InstanceLightData : public InstanceBaseData {
 		RID instance;
@@ -1122,6 +1139,8 @@ public:
 	bool free(RID p_rid);
 
 	void set_scene_render(RendererSceneRender *p_scene_render);
+
+	virtual void update_visibility_notifiers();
 
 	RendererSceneCull();
 	virtual ~RendererSceneCull();

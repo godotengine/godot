@@ -722,6 +722,17 @@ public:
 
 	virtual void particles_collision_set_height_field_resolution(RID p_particles_collision, ParticlesCollisionHeightfieldResolution p_resolution) = 0; //for SDF and vector field
 
+	/* VISIBILITY NOTIFIER API */
+
+	virtual RID visibility_notifier_create() = 0;
+	virtual void visibility_notifier_set_aabb(RID p_notifier, const AABB &p_aabb) = 0;
+	virtual void visibility_notifier_set_callbacks(RID p_notifier, const Callable &p_enter_callbable, const Callable &p_exit_callable) = 0;
+
+	/* OCCLUDER API */
+
+	virtual RID occluder_create() = 0;
+	virtual void occluder_set_mesh(RID p_occluder, const PackedVector3Array &p_vertices, const PackedInt32Array &p_indices) = 0;
+
 	/* CAMERA API */
 
 	virtual RID camera_create() = 0;
@@ -733,11 +744,6 @@ public:
 	virtual void camera_set_environment(RID p_camera, RID p_env) = 0;
 	virtual void camera_set_camera_effects(RID p_camera, RID p_camera_effects) = 0;
 	virtual void camera_set_use_vertical_aspect(RID p_camera, bool p_enable) = 0;
-
-	/* OCCLUDER API */
-
-	virtual RID occluder_create() = 0;
-	virtual void occluder_set_mesh(RID p_occluder, const PackedVector3Array &p_vertices, const PackedInt32Array &p_indices) = 0;
 
 	/* VIEWPORT TARGET API */
 
@@ -1148,6 +1154,7 @@ public:
 		INSTANCE_VOXEL_GI,
 		INSTANCE_LIGHTMAP,
 		INSTANCE_OCCLUDER,
+		INSTANCE_VISIBLITY_NOTIFIER,
 		INSTANCE_MAX,
 
 		INSTANCE_GEOMETRY_MASK = (1 << INSTANCE_MESH) | (1 << INSTANCE_MULTIMESH) | (1 << INSTANCE_IMMEDIATE) | (1 << INSTANCE_PARTICLES)

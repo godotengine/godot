@@ -397,8 +397,6 @@ private:
 
 	void _gui_input_event(Ref<InputEvent> p_event);
 
-	void update_worlds();
-
 	_FORCE_INLINE_ Transform2D _get_input_pre_xform() const;
 
 	Ref<InputEvent> _make_input_local(const Ref<InputEvent> &ev);

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="VisibilityNotifier3D" inherits="Node3D" version="4.0">
+<class name="VisibilityNotifier3D" inherits="VisualInstance3D" version="4.0">
 	<brief_description>
 		Detects approximately when the node is visible on screen.
 	</brief_description>
@@ -26,20 +26,6 @@
 		</member>
 	</members>
 	<signals>
-		<signal name="camera_entered">
-			<argument index="0" name="camera" type="Camera3D">
-			</argument>
-			<description>
-				Emitted when the VisibilityNotifier3D enters a [Camera3D]'s view.
-			</description>
-		</signal>
-		<signal name="camera_exited">
-			<argument index="0" name="camera" type="Camera3D">
-			</argument>
-			<description>
-				Emitted when the VisibilityNotifier3D exits a [Camera3D]'s view.
-			</description>
-		</signal>
 		<signal name="screen_entered">
 			<description>
 				Emitted when the VisibilityNotifier3D enters the screen.

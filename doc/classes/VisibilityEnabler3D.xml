@@ -12,44 +12,19 @@
 	<tutorials>
 	</tutorials>
 	<methods>
-		<method name="is_enabler_enabled" qualifiers="const">
-			<return type="bool">
-			</return>
-			<argument index="0" name="enabler" type="int" enum="VisibilityEnabler3D.Enabler">
-			</argument>
-			<description>
-				Returns whether the enabler identified by given [enum Enabler] constant is active.
-			</description>
-		</method>
-		<method name="set_enabler">
-			<return type="void">
-			</return>
-			<argument index="0" name="enabler" type="int" enum="VisibilityEnabler3D.Enabler">
-			</argument>
-			<argument index="1" name="enabled" type="bool">
-			</argument>
-			<description>
-				Sets active state of the enabler identified by given [enum Enabler] constant.
-			</description>
-		</method>
 	</methods>
 	<members>
-		<member name="freeze_bodies" type="bool" setter="set_enabler" getter="is_enabler_enabled" default="true">
-			If [code]true[/code], [RigidBody3D] nodes will be paused.
+		<member name="enable_mode" type="int" setter="set_enable_mode" getter="get_enable_mode" enum="VisibilityEnabler3D.EnableMode" default="0">
 		</member>
-		<member name="pause_animations" type="bool" setter="set_enabler" getter="is_enabler_enabled" default="true">
-			If [code]true[/code], [AnimationPlayer] nodes will be paused.
+		<member name="enable_node_path" type="NodePath" setter="set_enable_node_path" getter="get_enable_node_path" default="NodePath(&quot;..&quot;)">
 		</member>
 	</members>
 	<constants>
-		<constant name="ENABLER_PAUSE_ANIMATIONS" value="0" enum="Enabler">
-			This enabler will pause [AnimationPlayer] nodes.
+		<constant name="ENABLE_MODE_INHERIT" value="0" enum="EnableMode">
 		</constant>
-		<constant name="ENABLER_FREEZE_BODIES" value="1" enum="Enabler">
-			This enabler will freeze [RigidBody3D] nodes.
+		<constant name="ENABLE_MODE_ALWAYS" value="1" enum="EnableMode">
 		</constant>
-		<constant name="ENABLER_MAX" value="2" enum="Enabler">
-			Represents the size of the [enum Enabler] enum.
+		<constant name="ENABLE_MODE_WHEN_PAUSED" value="2" enum="EnableMode">
 		</constant>
 	</constants>
 </class>

@@ -179,13 +179,6 @@
 			<description>
 			</description>
 		</method>
-		<method name="update_worlds">
-			<return type="void">
-			</return>
-			<description>
-				Forces update of the 2D and 3D worlds.
-			</description>
-		</method>
 		<method name="warp_mouse">
 			<return type="void">
 			</return>

@@ -93,10 +93,6 @@ void Camera3D::_update_camera() {
 	}
 
 	get_viewport()->_camera_transform_changed_notify();
-
-	if (get_world_3d().is_valid()) {
-		get_world_3d()->_update_camera(this);
-	}
 }
 
 void Camera3D::_notification(int p_what) {

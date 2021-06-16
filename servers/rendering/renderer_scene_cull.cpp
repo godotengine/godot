@@ -506,6 +506,9 @@ void RendererSceneCull::instance_set_base(RID p_instance, RID p_base) {
 				InstanceParticlesCollisionData *collision = static_cast<InstanceParticlesCollisionData *>(instance->base_data);
 				RSG::storage->free(collision->instance);
 			} break;
+			case RS::INSTANCE_VISIBLITY_NOTIFIER: {
+				//none
+			} break;
 			case RS::INSTANCE_REFLECTION_PROBE: {
 				InstanceReflectionProbeData *reflection_probe = static_cast<InstanceReflectionProbeData *>(instance->base_data);
 				scene_render->free(reflection_probe->instance);
@@ -614,6 +617,11 @@ void RendererSceneCull::instance_set_base(RID p_instance, RID p_base) {
 				collision->instance = RSG::storage->particles_collision_instance_create(p_base);
 				RSG::storage->particles_collision_instance_set_active(collision->instance, instance->visible);
 				instance->base_data = collision;
+			} break;
+			case RS::INSTANCE_VISIBLITY_NOTIFIER: {
+				InstanceVisibilityNotifierData *vnd = memnew(InstanceVisibilityNotifierData);
+				vnd->base = p_base;
+				instance->base_data = vnd;
 			} break;
 			case RS::INSTANCE_REFLECTION_PROBE: {
 				InstanceReflectionProbeData *reflection_probe = memnew(InstanceReflectionProbeData);
@@ -1549,6 +1557,9 @@ void RendererSceneCull::_update_instance(Instance *p_instance) {
 			case RS::INSTANCE_VOXEL_GI: {
 				idata.instance_data_rid = static_cast<InstanceVoxelGIData *>(p_instance->base_data)->probe_instance.get_id();
 			} break;
+			case RS::INSTANCE_VISIBLITY_NOTIFIER: {
+				idata.visibility_notifier = static_cast<InstanceVisibilityNotifierData *>(p_instance->base_data);
+			} break;
 			default: {
 			}
 		}
@@ -1757,6 +1768,9 @@ void RendererSceneCull::_update_instance_aabb(Instance *p_instance) {
 		case RenderingServer::INSTANCE_PARTICLES_COLLISION: {
 			new_aabb = RSG::storage->particles_collision_get_aabb(p_instance->base);
 
+		} break;
+		case RenderingServer::INSTANCE_VISIBLITY_NOTIFIER: {
+			new_aabb = RSG::storage->visibility_notifier_get_aabb(p_instance->base);
 		} break;
 		case RenderingServer::INSTANCE_LIGHT: {
 			new_aabb = RSG::storage->light_get_aabb(p_instance->base);
@@ -2613,6 +2627,15 @@ void RendererSceneCull::_scene_cull(CullData &cull_data, InstanceCullResult &cul
 
 				} else if (base_type == RS::INSTANCE_LIGHTMAP) {
 					cull_result.lightmaps.push_back(RID::from_uint64(idata.instance_data_rid));
+				} else if (base_type == RS::INSTANCE_VISIBLITY_NOTIFIER) {
+					InstanceVisibilityNotifierData *vnd = idata.visibility_notifier;
+					if (!vnd->list_element.in_list()) {
+						visible_notifier_list_lock.lock();
+						visible_notifier_list.add(&vnd->list_element);
+						visible_notifier_list_lock.unlock();
+						vnd->just_visible = true;
+					}
+					vnd->visible_in_frame = RSG::rasterizer->get_frame_number();
 				} else if (((1 << base_type) & RS::INSTANCE_GEOMETRY_MASK) && !(idata.flags & InstanceData::FLAG_CAST_SHADOWS_ONLY)) {
 					bool keep = true;
 
@@ -3847,6 +3870,28 @@ bool RendererSceneCull::free(RID p_rid) {
 
 TypedArray<Image> RendererSceneCull::bake_render_uv2(RID p_base, const Vector<RID> &p_material_overrides, const Size2i &p_image_size) {
 	return scene_render->bake_render_uv2(p_base, p_material_overrides, p_image_size);
+}
+
+void RendererSceneCull::update_visibility_notifiers() {
+	SelfList<InstanceVisibilityNotifierData> *E = visible_notifier_list.first();
+	while (E) {
+		SelfList<InstanceVisibilityNotifierData> *N = E->next();
+
+		InstanceVisibilityNotifierData *visibility_notifier = E->self();
+		if (visibility_notifier->just_visible) {
+			visibility_notifier->just_visible = false;
+
+			RSG::storage->visibility_notifier_call(visibility_notifier->base, true, RSG::threaded);
+		} else {
+			if (visibility_notifier->visible_in_frame != RSG::rasterizer->get_frame_number()) {
+				visible_notifier_list.remove(E);
+
+				RSG::storage->visibility_notifier_call(visibility_notifier->base, false, RSG::threaded);
+			}
+		}
+
+		E = N;
+	}
 }
 
 /*******************************/
