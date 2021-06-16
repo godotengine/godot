@@ -723,7 +723,7 @@ generous deed immortalized in the next stable release of Godot Engine.
     SeungJong k
     Shaidak
     Shane
-    Shane Sicienski 
+    Shane Sicienski
     Shane Spoor
     Siim Raidma
     simdee
@@ -786,7 +786,7 @@ generous deed immortalized in the next stable release of Godot Engine.
     Vladislav Smirnov
     Vojtěch
     Vytenis Narušis
-    waka nya 
+    waka nya
     Wayne Haak
     werner mendizabal
     Wiley Thompson
