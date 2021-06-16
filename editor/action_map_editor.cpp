@@ -1106,7 +1106,7 @@ ActionMapEditor::ActionMapEditor() {
 	add_edit->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	add_edit->set_placeholder(TTR("Add New Action"));
 	add_edit->set_clear_button_enabled(true);
-	add_edit->connect("text_entered", callable_mp(this, &ActionMapEditor::_add_action));
+	add_edit->connect("text_submitted", callable_mp(this, &ActionMapEditor::_add_action));
 	add_hbox->add_child(add_edit);
 
 	Button *add_button = memnew(Button);

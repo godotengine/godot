@@ -3452,7 +3452,30 @@ void RichTextLabel::set_selection_enabled(bool p_enabled) {
 	}
 }
 
-bool RichTextLabel::_search_line(ItemFrame *p_frame, int p_line, const String &p_string, Item *p_from, Item *p_to) {
+bool RichTextLabel::_search_table(ItemTable *p_table, List<Item *>::Element *p_from, const String &p_string, bool p_reverse_search) {
+	List<Item *>::Element *E = p_from;
+	while (E != nullptr) {
+		ERR_CONTINUE(E->get()->type != ITEM_FRAME); // Children should all be frames.
+		ItemFrame *frame = static_cast<ItemFrame *>(E->get());
+		if (p_reverse_search) {
+			for (int i = frame->lines.size() - 1; i >= 0; i--) {
+				if (_search_line(frame, i, p_string, -1, p_reverse_search)) {
+					return true;
+				}
+			}
+		} else {
+			for (int i = 0; i < frame->lines.size(); i++) {
+				if (_search_line(frame, i, p_string, 0, p_reverse_search)) {
+					return true;
+				}
+			}
+		}
+		E = p_reverse_search ? E->prev() : E->next();
+	}
+	return false;
+}
+
+bool RichTextLabel::_search_line(ItemFrame *p_frame, int p_line, const String &p_string, int p_char_idx, bool p_reverse_search) {
 	ERR_FAIL_COND_V(p_frame == nullptr, false);
 	ERR_FAIL_COND_V(p_line < 0 || p_line >= p_frame->lines.size(), false);
 
@@ -3474,24 +3497,23 @@ bool RichTextLabel::_search_line(ItemFrame *p_frame, int p_line, const String &p
 			} break;
 			case ITEM_TABLE: {
 				ItemTable *table = static_cast<ItemTable *>(it);
-				int idx = 0;
-				for (List<Item *>::Element *E = table->subitems.front(); E; E = E->next()) {
-					ERR_CONTINUE(E->get()->type != ITEM_FRAME); // Children should all be frames.
-					ItemFrame *frame = static_cast<ItemFrame *>(E->get());
-
-					for (int i = 0; i < frame->lines.size(); i++) {
-						if (_search_line(frame, i, p_string, p_from, p_to)) {
-							return true;
-						}
-					}
-					idx++;
+				List<Item *>::Element *E = p_reverse_search ? table->subitems.back() : table->subitems.front();
+				if (_search_table(table, E, p_string, p_reverse_search)) {
+					return true;
 				}
 			} break;
 			default:
 				break;
 		}
 	}
-	int sp = text.findn(p_string, 0);
+
+	int sp = -1;
+	if (p_reverse_search) {
+		sp = text.rfindn(p_string, p_char_idx);
+	} else {
+		sp = text.findn(p_string, p_char_idx);
+	}
+
 	if (sp != -1) {
 		selection.from_frame = p_frame;
 		selection.from_line = p_line;
@@ -3499,8 +3521,8 @@ bool RichTextLabel::_search_line(ItemFrame *p_frame, int p_line, const String &p
 		selection.from_char = sp;
 		selection.to_frame = p_frame;
 		selection.to_line = p_line;
-		selection.to_item = _get_item_at_pos(l.from, it_to, sp + p_string.length() - 1);
-		selection.to_char = sp + p_string.length() - 1;
+		selection.to_item = _get_item_at_pos(l.from, it_to, sp + p_string.length());
+		selection.to_char = sp + p_string.length();
 		selection.active = true;
 		return true;
 	}
@@ -3511,23 +3533,81 @@ bool RichTextLabel::_search_line(ItemFrame *p_frame, int p_line, const String &p
 bool RichTextLabel::search(const String &p_string, bool p_from_selection, bool p_search_previous) {
 	ERR_FAIL_COND_V(!selection.enabled, false);
 
-	if (p_from_selection && selection.active) {
-		for (int i = 0; i < main->lines.size(); i++) {
-			if (_search_line(main, i, p_string, selection.from_item, selection.to_item)) {
-				update();
-				return true;
-			}
-		}
-	} else {
-		for (int i = 0; i < main->lines.size(); i++) {
-			if (_search_line(main, i, p_string, nullptr, nullptr)) {
-				update();
-				return true;
-			}
-		}
+	if (p_string.size() == 0) {
+		selection.active = false;
+		return false;
 	}
 
-	return false;
+	int char_idx = p_search_previous ? -1 : 0;
+	int current_line = 0;
+	int ending_line = main->lines.size() - 1;
+	if (p_from_selection && selection.active) {
+		// First check to see if other results exist in current line
+		char_idx = p_search_previous ? selection.from_char - 1 : selection.to_char;
+		if (!(p_search_previous && char_idx < 0) &&
+				_search_line(selection.from_frame, selection.from_line, p_string, char_idx, p_search_previous)) {
+			scroll_to_line(selection.from_frame->line + selection.from_line);
+			update();
+			return true;
+		}
+		char_idx = p_search_previous ? -1 : 0;
+
+		// Next, check to see if the current search result is in a table
+		if (selection.from_frame->parent != nullptr && selection.from_frame->parent->type == ITEM_TABLE) {
+			// Find last search result in table
+			ItemTable *parent_table = static_cast<ItemTable *>(selection.from_frame->parent);
+			List<Item *>::Element *parent_element = p_search_previous ? parent_table->subitems.back() : parent_table->subitems.front();
+
+			while (parent_element->get() != selection.from_frame) {
+				parent_element = p_search_previous ? parent_element->prev() : parent_element->next();
+				ERR_FAIL_COND_V(parent_element == nullptr, false);
+			}
+
+			// Search remainder of table
+			if (!(p_search_previous && parent_element == parent_table->subitems.front()) &&
+					parent_element != parent_table->subitems.back()) {
+				parent_element = p_search_previous ? parent_element->prev() : parent_element->next(); // Don't want to search current item
+				ERR_FAIL_COND_V(parent_element == nullptr, false);
+
+				// Search for next element
+				if (_search_table(parent_table, parent_element, p_string, p_search_previous)) {
+					scroll_to_line(selection.from_frame->line + selection.from_line);
+					update();
+					return true;
+				}
+			}
+		}
+
+		ending_line = selection.from_frame->line + selection.from_line;
+		current_line = p_search_previous ? ending_line - 1 : ending_line + 1;
+	} else if (p_search_previous) {
+		current_line = ending_line;
+		ending_line = 0;
+	}
+
+	// Search remainder of the file
+	while (current_line != ending_line) {
+		// Wrap around
+		if (current_line < 0) {
+			current_line = main->lines.size() - 1;
+		} else if (current_line >= main->lines.size()) {
+			current_line = 0;
+		}
+
+		if (_search_line(main, current_line, p_string, char_idx, p_search_previous)) {
+			scroll_to_line(current_line);
+			update();
+			return true;
+		}
+		p_search_previous ? current_line-- : current_line++;
+	}
+
+	if (p_from_selection && selection.active) {
+		// Check contents of selection
+		return _search_line(main, current_line, p_string, char_idx, p_search_previous);
+	} else {
+		return false;
+	}
 }
 
 String RichTextLabel::_get_line_text(ItemFrame *p_frame, int p_line, Selection p_selection) const {

@@ -432,7 +432,7 @@ void VisualShaderGraphPlugin::add_node(VisualShader::Type p_type, int p_id) {
 		register_uniform_name(p_id, uniform_name);
 		uniform_name->set_text(uniform->get_uniform_name());
 		node->add_child(uniform_name);
-		uniform_name->connect("text_entered", callable_mp(VisualShaderEditor::get_singleton(), &VisualShaderEditor::_uniform_line_edit_changed), varray(p_id));
+		uniform_name->connect("text_submitted", callable_mp(VisualShaderEditor::get_singleton(), &VisualShaderEditor::_uniform_line_edit_changed), varray(p_id));
 		uniform_name->connect("focus_exited", callable_mp(VisualShaderEditor::get_singleton(), &VisualShaderEditor::_uniform_line_edit_focus_out), varray(uniform_name, p_id));
 
 		if (vsnode->get_input_port_count() == 0 && vsnode->get_output_port_count() == 1 && vsnode->get_output_port_name(0) == "") {
@@ -666,7 +666,7 @@ void VisualShaderGraphPlugin::add_node(VisualShader::Type p_type, int p_id) {
 					name_box->set_custom_minimum_size(Size2(65 * EDSCALE, 0));
 					name_box->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 					name_box->set_text(name_left);
-					name_box->connect("text_entered", callable_mp(VisualShaderEditor::get_singleton(), &VisualShaderEditor::_change_input_port_name), varray(name_box, p_id, i), CONNECT_DEFERRED);
+					name_box->connect("text_submitted", callable_mp(VisualShaderEditor::get_singleton(), &VisualShaderEditor::_change_input_port_name), varray(name_box, p_id, i), CONNECT_DEFERRED);
 					name_box->connect("focus_exited", callable_mp(VisualShaderEditor::get_singleton(), &VisualShaderEditor::_port_name_focus_out), varray(name_box, p_id, i, false), CONNECT_DEFERRED);
 
 					Button *remove_btn = memnew(Button);
@@ -707,7 +707,7 @@ void VisualShaderGraphPlugin::add_node(VisualShader::Type p_type, int p_id) {
 					name_box->set_custom_minimum_size(Size2(65 * EDSCALE, 0));
 					name_box->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 					name_box->set_text(name_right);
-					name_box->connect("text_entered", callable_mp(VisualShaderEditor::get_singleton(), &VisualShaderEditor::_change_output_port_name), varray(name_box, p_id, i), CONNECT_DEFERRED);
+					name_box->connect("text_submitted", callable_mp(VisualShaderEditor::get_singleton(), &VisualShaderEditor::_change_output_port_name), varray(name_box, p_id, i), CONNECT_DEFERRED);
 					name_box->connect("focus_exited", callable_mp(VisualShaderEditor::get_singleton(), &VisualShaderEditor::_port_name_focus_out), varray(name_box, p_id, i, true), CONNECT_DEFERRED);
 
 					OptionButton *type_box = memnew(OptionButton);
@@ -1855,7 +1855,7 @@ void VisualShaderEditor::_comment_title_text_changed(const String &p_new_text) {
 	comment_title_change_popup->set_size(Size2(-1, -1));
 }
 
-void VisualShaderEditor::_comment_title_text_entered(const String &p_new_text) {
+void VisualShaderEditor::_comment_title_text_submitted(const String &p_new_text) {
 	comment_title_change_popup->hide();
 }
 
@@ -3944,7 +3944,7 @@ VisualShaderEditor::VisualShaderEditor() {
 	comment_title_change_edit = memnew(LineEdit);
 	comment_title_change_edit->set_expand_to_text_length_enabled(true);
 	comment_title_change_edit->connect("text_changed", callable_mp(this, &VisualShaderEditor::_comment_title_text_changed));
-	comment_title_change_edit->connect("text_entered", callable_mp(this, &VisualShaderEditor::_comment_title_text_entered));
+	comment_title_change_edit->connect("text_submitted", callable_mp(this, &VisualShaderEditor::_comment_title_text_submitted));
 	comment_title_change_popup->add_child(comment_title_change_edit);
 	comment_title_change_edit->set_size(Size2(-1, -1));
 	comment_title_change_popup->set_size(Size2(-1, -1));

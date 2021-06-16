@@ -51,7 +51,7 @@ EditorPropertyNil::EditorPropertyNil() {
 
 ///////////////////// TEXT /////////////////////////
 
-void EditorPropertyText::_text_entered(const String &p_string) {
+void EditorPropertyText::_text_submitted(const String &p_string) {
 	if (updating) {
 		return;
 	}
@@ -100,7 +100,7 @@ EditorPropertyText::EditorPropertyText() {
 	add_child(text);
 	add_focusable(text);
 	text->connect("text_changed", callable_mp(this, &EditorPropertyText::_text_changed));
-	text->connect("text_entered", callable_mp(this, &EditorPropertyText::_text_entered));
+	text->connect("text_submitted", callable_mp(this, &EditorPropertyText::_text_submitted));
 
 	string_name = false;
 	updating = false;
@@ -297,7 +297,7 @@ EditorPropertyPath::EditorPropertyPath() {
 	path = memnew(LineEdit);
 	path->set_structured_text_bidi_override(Control::STRUCTURED_TEXT_FILE);
 	path_hb->add_child(path);
-	path->connect("text_entered", callable_mp(this, &EditorPropertyPath::_path_selected));
+	path->connect("text_submitted", callable_mp(this, &EditorPropertyPath::_path_selected));
 	path->connect("focus_exited", callable_mp(this, &EditorPropertyPath::_path_focus_exited));
 	path->set_h_size_flags(SIZE_EXPAND_FILL);
 

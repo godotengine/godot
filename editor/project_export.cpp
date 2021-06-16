@@ -871,10 +871,10 @@ void ProjectExportDialog::_validate_export_path(const String &p_path) {
 
 	if (invalid_path) {
 		export_project->get_ok_button()->set_disabled(true);
-		export_project->get_line_edit()->disconnect("text_entered", Callable(export_project, "_file_entered"));
+		export_project->get_line_edit()->disconnect("text_submitted", Callable(export_project, "_file_submitted"));
 	} else {
 		export_project->get_ok_button()->set_disabled(false);
-		export_project->get_line_edit()->connect("text_entered", Callable(export_project, "_file_entered"));
+		export_project->get_line_edit()->connect("text_submitted", Callable(export_project, "_file_submitted"));
 	}
 }
 
@@ -905,10 +905,10 @@ void ProjectExportDialog::_export_project() {
 	// Ensure that signal is connected if previous attempt left it disconnected
 	// with _validate_export_path.
 	// FIXME: This is a hack, we should instead change EditorFileDialog to allow
-	// disabling validation by the "text_entered" signal.
-	if (!export_project->get_line_edit()->is_connected("text_entered", Callable(export_project, "_file_entered"))) {
+	// disabling validation by the "text_submitted" signal.
+	if (!export_project->get_line_edit()->is_connected("text_submitted", Callable(export_project, "_file_submitted"))) {
 		export_project->get_ok_button()->set_disabled(false);
-		export_project->get_line_edit()->connect("text_entered", Callable(export_project, "_file_entered"));
+		export_project->get_line_edit()->connect("text_submitted", Callable(export_project, "_file_submitted"));
 	}
 
 	export_project->set_file_mode(EditorFileDialog::FILE_MODE_SAVE_FILE);

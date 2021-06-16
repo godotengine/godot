@@ -1761,7 +1761,7 @@ FindBar::FindBar() {
 	search_text->set_custom_minimum_size(Size2(100 * EDSCALE, 0));
 	search_text->set_h_size_flags(SIZE_EXPAND_FILL);
 	search_text->connect("text_changed", callable_mp(this, &FindBar::_search_text_changed));
-	search_text->connect("text_entered", callable_mp(this, &FindBar::_search_text_entered));
+	search_text->connect("text_submitted", callable_mp(this, &FindBar::_search_text_submitted));
 
 	matches_label = memnew(Label);
 	add_child(matches_label);
@@ -1849,9 +1849,6 @@ bool FindBar::_search(bool p_search_previous) {
 	bool keep = prev_search == stext;
 
 	bool ret = rich_text_label->search(stext, keep, p_search_previous);
-	if (!ret) {
-		ret = rich_text_label->search(stext, false, p_search_previous);
-	}
 
 	prev_search = stext;
 
@@ -1878,7 +1875,7 @@ void FindBar::_update_results_count() {
 	int from_pos = 0;
 
 	while (true) {
-		int pos = full_text.find(searched, from_pos);
+		int pos = full_text.findn(searched, from_pos);
 		if (pos == -1) {
 			break;
 		}
@@ -1935,7 +1932,7 @@ void FindBar::_search_text_changed(const String &p_text) {
 	search_next();
 }
 
-void FindBar::_search_text_entered(const String &p_text) {
+void FindBar::_search_text_submitted(const String &p_text) {
 	if (Input::get_singleton()->is_key_pressed(KEY_SHIFT)) {
 		search_prev();
 	} else {

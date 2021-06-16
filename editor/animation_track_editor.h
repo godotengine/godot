@@ -177,7 +177,7 @@ class AnimationTrackEdit : public Control {
 
 	void _menu_selected(int p_index);
 
-	void _path_entered(const String &p_text);
+	void _path_submitted(const String &p_text);
 	void _play_position_draw();
 	bool _is_value_key_valid(const Variant &p_key_value, Variant::Type &r_valid_type) const;
 

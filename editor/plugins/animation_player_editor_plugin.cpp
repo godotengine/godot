@@ -1694,7 +1694,7 @@ AnimationPlayerEditor::AnimationPlayerEditor(EditorNode *p_editor, AnimationPlay
 
 	file->connect("file_selected", callable_mp(this, &AnimationPlayerEditor::_dialog_action));
 	frame->connect("value_changed", callable_mp(this, &AnimationPlayerEditor::_seek_value_changed), make_binds(true, false));
-	scale->connect("text_entered", callable_mp(this, &AnimationPlayerEditor::_scale_changed));
+	scale->connect("text_submitted", callable_mp(this, &AnimationPlayerEditor::_scale_changed));
 
 	renaming = false;
 	last_active = false;

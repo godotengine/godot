@@ -12,9 +12,9 @@
 		var expression = Expression.new()
 
 		func _ready():
-		    $LineEdit.connect("text_entered", self, "_on_text_entered")
+		    $LineEdit.connect("text_submitted", self, "_on_text_submitted")
 
-		func _on_text_entered(command):
+		func _on_text_submitted(command):
 		    var error = expression.parse(command)
 		    if error != OK:
 		        print(expression.get_error_text())
@@ -28,7 +28,7 @@
 
 		public override void _Ready()
 		{
-		    GetNode("LineEdit").Connect("text_entered", this, nameof(OnTextEntered));
+		    GetNode("LineEdit").Connect("text_submitted", this, nameof(OnTextEntered));
 		}
 
 		private void OnTextEntered(string command)

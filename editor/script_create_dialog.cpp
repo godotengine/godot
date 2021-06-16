@@ -602,7 +602,7 @@ void ScriptCreateDialog::_path_changed(const String &p_path) {
 	_update_dialog();
 }
 
-void ScriptCreateDialog::_path_entered(const String &p_path) {
+void ScriptCreateDialog::_path_submitted(const String &p_path) {
 	ok_pressed();
 }
 
@@ -731,13 +731,13 @@ void ScriptCreateDialog::_update_dialog() {
 
 	get_ok_button()->set_disabled(!script_ok);
 
-	Callable entered_call = callable_mp(this, &ScriptCreateDialog::_path_entered);
+	Callable entered_call = callable_mp(this, &ScriptCreateDialog::_path_submitted);
 	if (script_ok) {
-		if (!file_path->is_connected("text_entered", entered_call)) {
-			file_path->connect("text_entered", entered_call);
+		if (!file_path->is_connected("text_submitted", entered_call)) {
+			file_path->connect("text_submitted", entered_call);
 		}
-	} else if (file_path->is_connected("text_entered", entered_call)) {
-		file_path->disconnect("text_entered", entered_call);
+	} else if (file_path->is_connected("text_submitted", entered_call)) {
+		file_path->disconnect("text_submitted", entered_call);
 	}
 }
 

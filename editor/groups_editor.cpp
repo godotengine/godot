@@ -446,7 +446,7 @@ GroupDialog::GroupDialog() {
 	add_group_text = memnew(LineEdit);
 	chbc->add_child(add_group_text);
 	add_group_text->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-	add_group_text->connect("text_entered", callable_mp(this, &GroupDialog::_add_group_pressed));
+	add_group_text->connect("text_submitted", callable_mp(this, &GroupDialog::_add_group_pressed));
 
 	Button *add_group_button = memnew(Button);
 	add_group_button->set_text(TTR("Add"));
@@ -689,7 +689,7 @@ GroupsEditor::GroupsEditor() {
 	group_name = memnew(LineEdit);
 	group_name->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	hbc->add_child(group_name);
-	group_name->connect("text_entered", callable_mp(this, &GroupsEditor::_add_group));
+	group_name->connect("text_submitted", callable_mp(this, &GroupsEditor::_add_group));
 
 	add = memnew(Button);
 	add->set_text(TTR("Add"));

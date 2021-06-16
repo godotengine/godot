@@ -2380,7 +2380,7 @@ void AnimationTrackEdit::_zoom_changed() {
 	play_position->update();
 }
 
-void AnimationTrackEdit::_path_entered(const String &p_text) {
+void AnimationTrackEdit::_path_submitted(const String &p_text) {
 	undo_redo->create_action(TTR("Change Track Path"));
 	undo_redo->add_do_method(animation.ptr(), "track_set_path", track, p_text);
 	undo_redo->add_undo_method(animation.ptr(), "track_set_path", track, animation->track_get_path(track));
@@ -2755,7 +2755,7 @@ void AnimationTrackEdit::_gui_input(const Ref<InputEvent> &p_event) {
 			path = memnew(LineEdit);
 			path_popup->add_child(path);
 			path->set_anchors_and_offsets_preset(PRESET_WIDE);
-			path->connect("text_entered", callable_mp(this, &AnimationTrackEdit::_path_entered));
+			path->connect("text_submitted", callable_mp(this, &AnimationTrackEdit::_path_submitted));
 		}
 
 		path->set_text(animation->track_get_path(track));

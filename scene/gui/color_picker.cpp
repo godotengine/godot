@@ -289,7 +289,7 @@ void ColorPicker::_value_changed(double) {
 	emit_signal("color_changed", color);
 }
 
-void ColorPicker::_html_entered(const String &p_html) {
+void ColorPicker::_html_submitted(const String &p_html) {
 	if (updating || text_is_constructor || !c_text->is_visible()) {
 		return;
 	}
@@ -1041,7 +1041,7 @@ void ColorPicker::_html_focus_exit() {
 	if (c_text->get_menu()->is_visible()) {
 		return;
 	}
-	_html_entered(c_text->get_text());
+	_html_submitted(c_text->get_text());
 	_focus_exit();
 }
 
@@ -1204,7 +1204,7 @@ ColorPicker::ColorPicker() :
 
 	hhb->add_child(c_text);
 	c_text->set_h_size_flags(SIZE_EXPAND_FILL);
-	c_text->connect("text_entered", callable_mp(this, &ColorPicker::_html_entered));
+	c_text->connect("text_submitted", callable_mp(this, &ColorPicker::_html_submitted));
 	c_text->connect("focus_entered", callable_mp(this, &ColorPicker::_focus_enter));
 	c_text->connect("focus_exited", callable_mp(this, &ColorPicker::_html_focus_exit));
 
