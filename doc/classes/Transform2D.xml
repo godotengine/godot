@@ -148,17 +148,9 @@
 			</description>
 		</method>
 		<method name="operator *" qualifiers="operator">
-			<return type="PackedVector2Array">
+			<return type="Vector2">
 			</return>
-			<argument index="0" name="right" type="PackedVector2Array">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="operator *" qualifiers="operator">
-			<return type="Transform2D">
-			</return>
-			<argument index="0" name="right" type="Transform2D">
+			<argument index="0" name="right" type="Vector2">
 			</argument>
 			<description>
 			</description>
@@ -172,11 +164,37 @@
 			</description>
 		</method>
 		<method name="operator *" qualifiers="operator">
-			<return type="Vector2">
+			<return type="Transform2D">
 			</return>
-			<argument index="0" name="right" type="Vector2">
+			<argument index="0" name="right" type="Transform2D">
 			</argument>
 			<description>
+			</description>
+		</method>
+		<method name="operator *" qualifiers="operator">
+			<return type="PackedVector2Array">
+			</return>
+			<argument index="0" name="right" type="PackedVector2Array">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="operator *" qualifiers="operator">
+			<return type="Transform2D">
+			</return>
+			<argument index="0" name="right" type="float">
+			</argument>
+			<description>
+				This operator multiplies all components of the [Transform2D], including the origin vector, which scales it uniformly.
+			</description>
+		</method>
+		<method name="operator *" qualifiers="operator">
+			<return type="Transform2D">
+			</return>
+			<argument index="0" name="right" type="int">
+			</argument>
+			<description>
+				This operator multiplies all components of the [Transform2D], including the origin vector, which scales it uniformly.
 			</description>
 		</method>
 		<method name="operator ==" qualifiers="operator">
