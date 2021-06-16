@@ -702,7 +702,7 @@ ThemeEditor::ThemeEditor() {
 	test_menu_button->get_popup()->add_radio_check_item(TTR("Radio Item"));
 	test_menu_button->get_popup()->add_radio_check_item(TTR("Checked Radio Item"));
 	test_menu_button->get_popup()->set_item_checked(7, true);
-	test_menu_button->get_popup()->add_separator(TTR("Named Sep."));
+	test_menu_button->get_popup()->add_separator(TTR("Named Separator"));
 
 	PopupMenu *test_submenu = memnew(PopupMenu);
 	test_menu_button->get_popup()->add_child(test_submenu);
