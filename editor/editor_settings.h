@@ -174,6 +174,7 @@ public:
 
 	Vector<String> get_script_templates(const String &p_extension, const String &p_custom_path = String());
 	String get_editor_layouts_config() const;
+	float get_auto_display_scale() const;
 
 	void add_shortcut(const String &p_name, Ref<Shortcut> &p_shortcut);
 	bool is_shortcut(const String &p_name, const Ref<InputEvent> &p_event) const;
