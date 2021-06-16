@@ -591,7 +591,7 @@ void RenameDialog::rename() {
 			const String &new_name = to_rename[i].second;
 
 			if (!n) {
-				ERR_PRINTS("Skipping missing node: " + to_rename[i].first.get_concatenated_subnames());
+				ERR_PRINT("Skipping missing node: " + to_rename[i].first.get_concatenated_subnames());
 				continue;
 			}
 

@@ -475,15 +475,6 @@ void _err_print_index_error(const char *p_function, const char *p_file, int p_li
 	}
 
 /**
- * Prints an error message without returning.
- * FIXME: Remove this macro and replace all uses with `ERR_PRINT` as it's identical.
- */
-#define ERR_PRINTS(m_string)                                          \
-	{                                                                 \
-		_err_print_error(FUNCTION_STR, __FILE__, __LINE__, m_string); \
-	}
-
-/**
  * Prints an error message without returning, but only do so once in the application lifecycle.
  * This can be used to avoid spamming the console with error messages.
  */

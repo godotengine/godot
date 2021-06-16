@@ -2871,7 +2871,7 @@ void EditorNode::_tool_menu_option(int p_idx) {
 				handler->call(callback, (const Variant **)&ud, 1, ce);
 				if (ce.error != Variant::CallError::CALL_OK) {
 					String err = Variant::get_call_error_text(handler, callback, (const Variant **)&ud, 1, ce);
-					ERR_PRINTS("Error calling function from tool menu: " + err);
+					ERR_PRINT("Error calling function from tool menu: " + err);
 				}
 			} // else it's a submenu so don't do anything.
 		} break;

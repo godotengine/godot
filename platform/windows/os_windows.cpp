@@ -3519,7 +3519,7 @@ Error OS_Windows::move_to_trash(const String &p_path) {
 	delete[] from;
 
 	if (ret) {
-		ERR_PRINTS("SHFileOperation error: " + itos(ret));
+		ERR_PRINT("SHFileOperation error: " + itos(ret));
 		return FAILED;
 	}
 

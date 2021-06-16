@@ -771,7 +771,7 @@ void GDScriptFunctions::call(Function p_func, const Variant **p_args, int p_arg_
 			}
 
 			String message = *p_args[0];
-			ERR_PRINTS(message);
+			ERR_PRINT(message);
 			r_ret = Variant();
 		} break;
 		case PUSH_WARNING: {
@@ -1211,7 +1211,7 @@ void GDScriptFunctions::call(Function p_func, const Variant **p_args, int p_arg_
 
 			if (err != OK) {
 				r_ret = Variant();
-				ERR_PRINTS(vformat("Error parsing JSON at line %s: %s", errl, errs));
+				ERR_PRINT(vformat("Error parsing JSON at line %s: %s", errl, errs));
 			}
 
 		} break;
