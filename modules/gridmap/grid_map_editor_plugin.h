@@ -94,7 +94,6 @@ class GridMapEditor : public VBoxContainer {
 	MeshLibrary *last_mesh_library;
 	ClipMode clip_mode = CLIP_DISABLED;
 
-	bool lock_view = false;
 	Transform3D grid_xform;
 	Transform3D edit_grid_xform;
 	Vector3::Axis edit_axis;
