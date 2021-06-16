@@ -48,6 +48,7 @@ class ResourceInteractiveLoaderText : public ResourceInteractiveLoader {
 	VariantParser::StreamFile stream;
 
 	struct ExtResource {
+		RES cache;
 		String path;
 		String type;
 	};

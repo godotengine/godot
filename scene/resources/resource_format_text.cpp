@@ -422,6 +422,7 @@ Error ResourceInteractiveLoaderText::poll() {
 		}
 
 		ExtResource er;
+		er.cache = res;
 		er.path = path;
 		er.type = type;
 		ext_resources[index] = er;
