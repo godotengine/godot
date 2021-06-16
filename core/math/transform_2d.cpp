@@ -276,6 +276,18 @@ Transform2D Transform2D::interpolate_with(const Transform2D &p_transform, real_t
 	return res;
 }
 
+void Transform2D::operator*=(const real_t p_val) {
+	elements[0] *= p_val;
+	elements[1] *= p_val;
+	elements[2] *= p_val;
+}
+
+Transform2D Transform2D::operator*(const real_t p_val) const {
+	Transform2D ret(*this);
+	ret *= p_val;
+	return ret;
+}
+
 Transform2D::operator String() const {
 	return "[X: " + elements[0].operator String() +
 		   ", Y: " + elements[1].operator String() +

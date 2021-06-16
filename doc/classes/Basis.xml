@@ -155,6 +155,24 @@
 			<description>
 			</description>
 		</method>
+		<method name="operator *" qualifiers="operator">
+			<return type="Basis">
+			</return>
+			<argument index="0" name="right" type="float">
+			</argument>
+			<description>
+				This operator multiplies all components of the [Basis], which scales it uniformly.
+			</description>
+		</method>
+		<method name="operator *" qualifiers="operator">
+			<return type="Basis">
+			</return>
+			<argument index="0" name="right" type="int">
+			</argument>
+			<description>
+				This operator multiplies all components of the [Basis], which scales it uniformly.
+			</description>
+		</method>
 		<method name="operator ==" qualifiers="operator">
 			<return type="bool">
 			</return>

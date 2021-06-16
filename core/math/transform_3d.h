@@ -88,6 +88,8 @@ public:
 
 	void operator*=(const Transform3D &p_transform);
 	Transform3D operator*(const Transform3D &p_transform) const;
+	void operator*=(const real_t p_val);
+	Transform3D operator*(const real_t p_val) const;
 
 	Transform3D interpolate_with(const Transform3D &p_transform, real_t p_c) const;
 

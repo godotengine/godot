@@ -255,7 +255,7 @@ void NavigationMeshGenerator::_parse_geometry(Transform3D p_accumulated_transfor
 		for (int i = 0; i < meshes.size(); i += 2) {
 			Ref<Mesh> mesh = meshes[i + 1];
 			if (mesh.is_valid()) {
-				_add_mesh(mesh, p_accumulated_transform * xform * meshes[i], p_verticies, p_indices);
+				_add_mesh(mesh, p_accumulated_transform * xform * (Transform3D)meshes[i], p_verticies, p_indices);
 			}
 		}
 	}
