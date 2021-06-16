@@ -1135,6 +1135,10 @@ msgstr "Змінити значення словника"
 msgid "Thanks from the Godot community!"
 msgstr "Спасибі від спільноти Godot!"
 
+#: editor/editor_about.cpp editor/editor_node.cpp editor/project_manager.cpp
+msgid "Click to copy."
+msgstr ""
+
 #: editor/editor_about.cpp
 msgid "Godot Engine contributors"
 msgstr "Автори рушія Godot"
@@ -12236,10 +12240,22 @@ msgstr ""
 "допомогою меню «Проєкт»."
 
 #: platform/android/export/export.cpp
+msgid ""
+"Either Debug Keystore, Debug User AND Debug Password settings must be "
+"configured OR none of them."
+msgstr ""
+
+#: platform/android/export/export.cpp
 msgid "Debug keystore not configured in the Editor Settings nor in the preset."
 msgstr ""
 "Ні у параметрах редактора, ні у шаблоні не налаштовано діагностичне сховище "
 "ключів."
+
+#: platform/android/export/export.cpp
+msgid ""
+"Either Release Keystore, Release User AND Release Password settings must be "
+"configured OR none of them."
+msgstr ""
 
 #: platform/android/export/export.cpp
 msgid "Release keystore incorrectly configured in the export preset."

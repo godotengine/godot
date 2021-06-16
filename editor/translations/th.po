@@ -15,8 +15,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2021-05-14 11:20+0000\n"
-"Last-Translator: Kongfa Waroros <gongpha@hotmail.com>\n"
+"PO-Revision-Date: 2021-06-07 23:43+0000\n"
+"Last-Translator: Atirut Wattanamongkol <artjang301@gmail.com>\n"
 "Language-Team: Thai <https://hosted.weblate.org/projects/godot-engine/godot/"
 "th/>\n"
 "Language: th\n"
@@ -1123,6 +1123,10 @@ msgstr "แก้ไขค่าดิกชันนารี"
 msgid "Thanks from the Godot community!"
 msgstr "ขอขอบคุณจากชุมชนผู้ใช้ Godot!"
 
+#: editor/editor_about.cpp editor/editor_node.cpp editor/project_manager.cpp
+msgid "Click to copy."
+msgstr ""
+
 #: editor/editor_about.cpp
 msgid "Godot Engine contributors"
 msgstr "ผู้ช่วยพัฒนา Godot Engine"
@@ -1956,7 +1960,7 @@ msgstr "มีการนำเข้าไฟล์ %s หลายอัน �
 
 #: editor/editor_file_system.cpp
 msgid "(Re)Importing Assets"
-msgstr "นำเข้าทรัพยากร(อีกครั้ง)"
+msgstr "กำลังนำเข้าทรัพยากร(อีกครั้ง)"
 
 #: editor/editor_help.cpp editor/plugins/spatial_editor_plugin.cpp
 msgid "Top"
@@ -3465,7 +3469,7 @@ msgstr "กำลังคลายเทมเพลตส่งออก"
 
 #: editor/export_template_manager.cpp
 msgid "Importing:"
-msgstr "นำเข้า:"
+msgstr "กำลังนำเข้า:"
 
 #: editor/export_template_manager.cpp
 msgid "Error getting the list of mirrors."
@@ -12005,8 +12009,20 @@ msgid ""
 msgstr "เทมเพลตการสร้างสำหรับแอนดรอยด์ไม่ถูกติดตั้ง สามารถติดตั้งจากเมนูโปรเจกต์"
 
 #: platform/android/export/export.cpp
+msgid ""
+"Either Debug Keystore, Debug User AND Debug Password settings must be "
+"configured OR none of them."
+msgstr ""
+
+#: platform/android/export/export.cpp
 msgid "Debug keystore not configured in the Editor Settings nor in the preset."
 msgstr "ดีบัก Keystore ไม่ได้ถูกตั้งไว้ในตั้งค่าของตัวแก้ไขหรือในพรีเซ็ต"
+
+#: platform/android/export/export.cpp
+msgid ""
+"Either Release Keystore, Release User AND Release Password settings must be "
+"configured OR none of them."
+msgstr ""
 
 #: platform/android/export/export.cpp
 msgid "Release keystore incorrectly configured in the export preset."

@@ -73,8 +73,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2021-05-24 21:36+0000\n"
-"Last-Translator: Stephan Kerbl <stephankerbl@gmail.com>\n"
+"PO-Revision-Date: 2021-06-07 23:43+0000\n"
+"Last-Translator: Linux User <no-ads@mail.de>\n"
 "Language-Team: German <https://hosted.weblate.org/projects/godot-engine/"
 "godot/de/>\n"
 "Language: de\n"
@@ -1187,6 +1187,10 @@ msgstr "Wörterbuchwert ändern"
 msgid "Thanks from the Godot community!"
 msgstr "Die Godot-Gemeinschaft bedankt sich!"
 
+#: editor/editor_about.cpp editor/editor_node.cpp editor/project_manager.cpp
+msgid "Click to copy."
+msgstr ""
+
 #: editor/editor_about.cpp
 msgid "Godot Engine contributors"
 msgstr "Mitwirkende der Godot Engine"
@@ -1382,7 +1386,7 @@ msgstr "Stummschalten"
 
 #: editor/editor_audio_buses.cpp
 msgid "Bypass"
-msgstr "Brücke"
+msgstr "Überbrückung"
 
 #: editor/editor_audio_buses.cpp
 msgid "Bus options"
@@ -12322,10 +12326,22 @@ msgstr ""
 "im Projektmenü installiert werden."
 
 #: platform/android/export/export.cpp
+msgid ""
+"Either Debug Keystore, Debug User AND Debug Password settings must be "
+"configured OR none of them."
+msgstr ""
+
+#: platform/android/export/export.cpp
 msgid "Debug keystore not configured in the Editor Settings nor in the preset."
 msgstr ""
 "Debug-Keystore wurde weder in den Editoreinstellungen noch in der Vorlage "
 "konfiguriert."
+
+#: platform/android/export/export.cpp
+msgid ""
+"Either Release Keystore, Release User AND Release Password settings must be "
+"configured OR none of them."
+msgstr ""
 
 #: platform/android/export/export.cpp
 msgid "Release keystore incorrectly configured in the export preset."

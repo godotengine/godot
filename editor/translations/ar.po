@@ -1154,6 +1154,10 @@ msgstr "تغيير قيمة في القاموس"
 msgid "Thanks from the Godot community!"
 msgstr "شكراً من مجتمع غودوت!"
 
+#: editor/editor_about.cpp editor/editor_node.cpp editor/project_manager.cpp
+msgid "Click to copy."
+msgstr ""
+
 #: editor/editor_about.cpp
 msgid "Godot Engine contributors"
 msgstr "المسهامين في محرك غودوت"
@@ -12204,10 +12208,22 @@ msgstr ""
 "لم يتم تنزيل قالب بناء Android لهذا المشروع. نزّل واحداً من قائمة المشروع."
 
 #: platform/android/export/export.cpp
+msgid ""
+"Either Debug Keystore, Debug User AND Debug Password settings must be "
+"configured OR none of them."
+msgstr ""
+
+#: platform/android/export/export.cpp
 msgid "Debug keystore not configured in the Editor Settings nor in the preset."
 msgstr ""
 "مُنقح أخطاء مفتاح المتجر keystore غير مُهيئ في إعدادت المُحرر أو في الإعدادات "
 "الموضوعة سلفاً."
+
+#: platform/android/export/export.cpp
+msgid ""
+"Either Release Keystore, Release User AND Release Password settings must be "
+"configured OR none of them."
+msgstr ""
 
 #: platform/android/export/export.cpp
 msgid "Release keystore incorrectly configured in the export preset."

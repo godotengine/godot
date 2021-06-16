@@ -1,148 +1,150 @@
-# Macedonian translation of the Godot Engine editor
+# Tatar translation of the Godot Engine editor.
 # Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.
 # Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).
 # This file is distributed under the same license as the Godot source code.
 #
-# Kristijan Fremen Velkovski <me@krisfremen.com>, 2021.
+# Bualma Show <appleaidar6@gmail.com>, 2021.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
-"PO-Revision-Date: 2021-01-22 10:21+0000\n"
-"Last-Translator: Kristijan Fremen Velkovski <me@krisfremen.com>\n"
-"Language-Team: Macedonian <https://hosted.weblate.org/projects/godot-engine/"
-"godot/mk/>\n"
-"Language: mk\n"
+"PO-Revision-Date: 2021-06-07 23:43+0000\n"
+"Last-Translator: Bualma Show <appleaidar6@gmail.com>\n"
+"Language-Team: Tatar <https://hosted.weblate.org/projects/godot-engine/godot/"
+"tt/>\n"
+"Language: tt\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8-bit\n"
-"Plural-Forms: nplurals=2; plural=n==1 || n%10==1 ? 0 : 1;\n"
-"X-Generator: Weblate 4.5-dev\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+"X-Generator: Weblate 4.7-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
 msgid "Invalid type argument to convert(), use TYPE_* constants."
-msgstr "Погрешен тип на аргумент до convert(), користите TYPE_* константи."
+msgstr "convert() өчен яраксыз аргумент төре, TYPE_ * тотрыклы кулланыгыз."
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 msgid "Expected a string of length 1 (a character)."
-msgstr "Очекува стринг од должина 1 (карактер)."
+msgstr "Озынлык сызык 1 (ягъни символ) көтелгән иде."
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/mono/glue/gd_glue.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
 msgid "Not enough bytes for decoding bytes, or invalid format."
-msgstr "Нема доволно бајти за декодирање бајтови, или невалиден формат."
+msgstr ""
+"Байтларны декодацияләү өчен байтлар җитәрлек түгел яки рөхсәт ителми торган "
+"формат."
 
 #: core/math/expression.cpp
 msgid "Invalid input %i (not passed) in expression"
-msgstr "Невалидено внесување %i (не додадено) во израз"
+msgstr ""
 
 #: core/math/expression.cpp
 msgid "self can't be used because instance is null (not passed)"
-msgstr "self неможе да се користи зашто инстанцата е нула(не дадена)"
+msgstr ""
 
 #: core/math/expression.cpp
 msgid "Invalid operands to operator %s, %s and %s."
-msgstr "Невалиден операнд на операторите %s, %s и %s."
+msgstr ""
 
 #: core/math/expression.cpp
 msgid "Invalid index of type %s for base type %s"
-msgstr "Невалиден индекс од тип %s за основен тип %s"
+msgstr ""
 
 #: core/math/expression.cpp
 msgid "Invalid named index '%s' for base type %s"
-msgstr "Невалиден именуван индекс од тип %s за основен тип %s"
+msgstr ""
 
 #: core/math/expression.cpp
 msgid "Invalid arguments to construct '%s'"
-msgstr "Невалидни аргументи на конструкт '%s'"
+msgstr ""
 
 #: core/math/expression.cpp
 msgid "On call to '%s':"
-msgstr "На јавување до '%s':"
+msgstr ""
 
 #: core/ustring.cpp
 msgid "B"
-msgstr "Б"
+msgstr ""
 
 #: core/ustring.cpp
 msgid "KiB"
-msgstr "КиБ"
+msgstr ""
 
 #: core/ustring.cpp
 msgid "MiB"
-msgstr "МиБ"
+msgstr ""
 
 #: core/ustring.cpp
 msgid "GiB"
-msgstr "ГиБ"
+msgstr ""
 
 #: core/ustring.cpp
 msgid "TiB"
-msgstr "ТиБ"
+msgstr ""
 
 #: core/ustring.cpp
 msgid "PiB"
-msgstr "ПиБ"
+msgstr ""
 
 #: core/ustring.cpp
 msgid "EiB"
-msgstr "ЕиБ"
+msgstr ""
 
 #: editor/animation_bezier_editor.cpp
 msgid "Free"
-msgstr "Слободно"
+msgstr ""
 
 #: editor/animation_bezier_editor.cpp
 msgid "Balanced"
-msgstr "Балансирано"
+msgstr ""
 
 #: editor/animation_bezier_editor.cpp
 msgid "Mirror"
-msgstr "Огледало"
+msgstr ""
 
 #: editor/animation_bezier_editor.cpp editor/editor_profiler.cpp
 msgid "Time:"
-msgstr "Време:"
+msgstr ""
 
 #: editor/animation_bezier_editor.cpp
 msgid "Value:"
-msgstr "Вредност:"
+msgstr ""
 
 #: editor/animation_bezier_editor.cpp
 msgid "Insert Key Here"
-msgstr "Внеси клуч тука"
+msgstr ""
 
 #: editor/animation_bezier_editor.cpp
 msgid "Duplicate Selected Key(s)"
-msgstr "Дуплирај избран(и) клуч(еви)"
+msgstr ""
 
 #: editor/animation_bezier_editor.cpp
 msgid "Delete Selected Key(s)"
-msgstr "Избриши избран(и) клуч(еви)"
+msgstr ""
 
 #: editor/animation_bezier_editor.cpp
 msgid "Add Bezier Point"
-msgstr "Додади Безиер Точка"
+msgstr ""
 
 #: editor/animation_bezier_editor.cpp
 msgid "Move Bezier Points"
-msgstr "Промести Безиер Точка"
+msgstr ""
 
 #: editor/animation_bezier_editor.cpp editor/animation_track_editor.cpp
 msgid "Anim Duplicate Keys"
-msgstr "Дуплицирај клучеви"
+msgstr ""
 
 #: editor/animation_bezier_editor.cpp editor/animation_track_editor.cpp
 msgid "Anim Delete Keys"
-msgstr "Избриши Клучеви"
+msgstr ""
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Change Keyframe Time"
-msgstr "Анимација Промени Време на клучниот кадар"
+msgstr ""
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Change Transition"
-msgstr "Анимација Промени Прелаз"
+msgstr ""
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Change Transform"
@@ -150,11 +152,11 @@ msgstr ""
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Change Keyframe Value"
-msgstr "Анимација Промени Клучен Кадар Вредност"
+msgstr ""
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Change Call"
-msgstr "Анимација Промени Позив"
+msgstr ""
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Multi Change Keyframe Time"
@@ -162,7 +164,7 @@ msgstr ""
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Multi Change Transition"
-msgstr "Анимација Многукратно Променување на Прелози"
+msgstr ""
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Multi Change Transform"
@@ -504,12 +506,12 @@ msgstr ""
 
 #: editor/animation_track_editor.cpp
 msgid "Seconds"
-msgstr "Секунди"
+msgstr ""
 
 #: editor/animation_track_editor.cpp
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "FPS"
-msgstr "ФПС"
+msgstr ""
 
 #: editor/animation_track_editor.cpp editor/editor_properties.cpp
 #: editor/plugins/polygon_2d_editor_plugin.cpp
@@ -519,15 +521,15 @@ msgstr "ФПС"
 #: editor/project_settings_editor.cpp editor/property_editor.cpp
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Edit"
-msgstr "Уреди"
+msgstr ""
 
 #: editor/animation_track_editor.cpp
 msgid "Animation properties."
-msgstr "Својства на анимацијата."
+msgstr ""
 
 #: editor/animation_track_editor.cpp
 msgid "Copy Tracks"
-msgstr "Копирај Траки"
+msgstr ""
 
 #: editor/animation_track_editor.cpp
 msgid "Scale Selection"
@@ -591,19 +593,19 @@ msgstr ""
 
 #: editor/animation_track_editor.cpp
 msgid "Optimize"
-msgstr "Оптимизирај"
+msgstr ""
 
 #: editor/animation_track_editor.cpp
 msgid "Remove invalid keys"
-msgstr "Избриши невалидни клучеви"
+msgstr ""
 
 #: editor/animation_track_editor.cpp
 msgid "Remove unresolved and empty tracks"
-msgstr "Избриши нерешени и празни траки"
+msgstr ""
 
 #: editor/animation_track_editor.cpp
 msgid "Clean-up all animations"
-msgstr "Исчисти сите анимации"
+msgstr ""
 
 #: editor/animation_track_editor.cpp
 msgid "Clean-Up Animation(s) (NO UNDO!)"
@@ -628,7 +630,7 @@ msgstr ""
 #: editor/plugins/sprite_frames_editor_plugin.cpp editor/property_editor.cpp
 #: editor/scene_tree_dock.cpp scene/gui/line_edit.cpp scene/gui/text_edit.cpp
 msgid "Copy"
-msgstr "Копирај"
+msgstr ""
 
 #: editor/animation_track_editor.cpp
 msgid "Select All/None"
@@ -2188,7 +2190,7 @@ msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Saving Scene"
-msgstr "Зачувување на сцената"
+msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Analyzing"
@@ -2843,7 +2845,7 @@ msgstr ""
 
 #: editor/editor_node.cpp editor/plugins/asset_library_editor_plugin.cpp
 msgid "Community"
-msgstr ""
+msgstr "Җәмәгать"
 
 #: editor/editor_node.cpp
 msgid "About"
@@ -8617,11 +8619,11 @@ msgstr ""
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Less Than or Equal (<=)"
-msgstr "Помалку или еднакво (<=)"
+msgstr ""
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Not Equal (!=)"
-msgstr "Нееднакво"
+msgstr ""
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid ""
@@ -9895,7 +9897,7 @@ msgstr ""
 
 #: editor/project_settings_editor.cpp editor/settings_config_dialog.cpp
 msgid "General"
-msgstr ""
+msgstr "Төп"
 
 #: editor/project_settings_editor.cpp
 msgid "Override For..."
@@ -10985,27 +10987,27 @@ msgstr ""
 
 #: modules/gdnative/gdnative_library_singleton_editor.cpp
 msgid "Libraries: "
-msgstr "Библиотеки: "
+msgstr ""
 
 #: modules/gdnative/register_types.cpp
 msgid "GDNative"
-msgstr "GDNative(ГДДомороден)"
+msgstr ""
 
 #: modules/gdscript/gdscript_functions.cpp
 msgid "Step argument is zero!"
-msgstr "Корак аргумент е нула!"
+msgstr ""
 
 #: modules/gdscript/gdscript_functions.cpp
 msgid "Not a script with an instance"
-msgstr "Не е скрипта со инстанца"
+msgstr ""
 
 #: modules/gdscript/gdscript_functions.cpp
 msgid "Not based on a script"
-msgstr "Не е основано на скрипта"
+msgstr ""
 
 #: modules/gdscript/gdscript_functions.cpp
 msgid "Not based on a resource file"
-msgstr "Не е основано на ресурс фајл"
+msgstr ""
 
 #: modules/gdscript/gdscript_functions.cpp
 msgid "Invalid instance dictionary format (missing @path)"
@@ -12503,4 +12505,4 @@ msgstr ""
 
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
-msgstr "Константите неможат да се променат."
+msgstr ""

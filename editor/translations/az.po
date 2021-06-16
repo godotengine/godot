@@ -1149,6 +1149,10 @@ msgstr "Lüğət dəyərini dəyiş"
 msgid "Thanks from the Godot community!"
 msgstr "Godot topluluğundan təşəkkürlər!"
 
+#: editor/editor_about.cpp editor/editor_node.cpp editor/project_manager.cpp
+msgid "Click to copy."
+msgstr ""
+
 #: editor/editor_about.cpp
 msgid "Godot Engine contributors"
 msgstr "Godot oyun motoruna töhvə verənlər"
@@ -11756,7 +11760,19 @@ msgid ""
 msgstr ""
 
 #: platform/android/export/export.cpp
+msgid ""
+"Either Debug Keystore, Debug User AND Debug Password settings must be "
+"configured OR none of them."
+msgstr ""
+
+#: platform/android/export/export.cpp
 msgid "Debug keystore not configured in the Editor Settings nor in the preset."
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid ""
+"Either Release Keystore, Release User AND Release Password settings must be "
+"configured OR none of them."
 msgstr ""
 
 #: platform/android/export/export.cpp

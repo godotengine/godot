@@ -6,11 +6,12 @@
 # Amado Wilkins <epicalert68@gmail.com>, 2019.
 # Bakainkorp <Ryan.Bautista86@myhunter.cuny.edu>, 2019.
 # Jethro Parker <lionbearjet@hotmail.com>, 2020.
+# Sven Sorupia <stsorupia@gmail.com>, 2021.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
-"PO-Revision-Date: 2020-08-14 03:56+0000\n"
-"Last-Translator: Jethro Parker <lionbearjet@hotmail.com>\n"
+"PO-Revision-Date: 2021-06-07 23:43+0000\n"
+"Last-Translator: Sven Sorupia <stsorupia@gmail.com>\n"
 "Language-Team: Filipino <https://hosted.weblate.org/projects/godot-engine/"
 "godot/fil/>\n"
 "Language: fil\n"
@@ -18,7 +19,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8-bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1 && n != 2 && n != 3 && (n % 10 == 4 "
 "|| n % 10 == 6 || n % 10 == 9);\n"
-"X-Generator: Weblate 4.2-dev\n"
+"X-Generator: Weblate 4.7-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -29,7 +30,7 @@ msgstr ""
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 msgid "Expected a string of length 1 (a character)."
-msgstr "Nanghihingi ng string na may habang 1 (character)."
+msgstr "Inasahan na ang haba ng string ay 1 (isang character)."
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/mono/glue/gd_glue.cpp
@@ -98,7 +99,7 @@ msgstr "EiB"
 
 #: editor/animation_bezier_editor.cpp
 msgid "Free"
-msgstr "Malaya"
+msgstr "Libre"
 
 #: editor/animation_bezier_editor.cpp
 msgid "Balanced"
@@ -138,64 +139,64 @@ msgstr "Maglipat ng (mga) Bezier Point"
 
 #: editor/animation_bezier_editor.cpp editor/animation_track_editor.cpp
 msgid "Anim Duplicate Keys"
-msgstr "I-anim ang (mga) Duplicate Key"
+msgstr "Pagduplika ng mga Animation Keys"
 
 #: editor/animation_bezier_editor.cpp editor/animation_track_editor.cpp
 msgid "Anim Delete Keys"
-msgstr "I-anim ang (mga) Delete Key"
+msgstr "Pagbura ng mga Animation Key"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Change Keyframe Time"
-msgstr "I-anim ang Oras ng Pagbago ng Keyframe"
+msgstr "Pagbago ng Keyframe Time ng Animation"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Change Transition"
-msgstr "I-anim ang Transition ng Pagbago"
+msgstr "Pagbago ng Transition ng Animation"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Change Transform"
-msgstr "I-anim ang Pagbabago sa Transform"
+msgstr "Pagbago ng Transform ng Animation"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Change Keyframe Value"
-msgstr "I-anim ang Halaga ng Keyframe na Binago"
+msgstr "Pagbago ng Nilalaman ng Keyframe ng Animation"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Change Call"
-msgstr ""
+msgstr "Pagbago ng Pagtawag sa Animation"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Multi Change Keyframe Time"
-msgstr ""
+msgstr "Pagbago ng Time ng Maraming Keyframe ng Animation"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Multi Change Transition"
-msgstr ""
+msgstr "Pagbago ng Maraming Transition ng Animation"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Multi Change Transform"
-msgstr ""
+msgstr "Pagbago ng Maraming Transform ng Animation"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Multi Change Keyframe Value"
-msgstr ""
+msgstr "Pagbago ng Nilalaman ng Maraming Keyframe ng Animation"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Multi Change Call"
-msgstr ""
+msgstr "Pagbago ng Maraming Pagtawag ng Animation"
 
 #: editor/animation_track_editor.cpp
 msgid "Change Animation Length"
-msgstr "Ibahin ang haba ng Animation"
+msgstr "Pagbago ng Haba ng Animation"
 
 #: editor/animation_track_editor.cpp
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Change Animation Loop"
-msgstr "Ibahin ang ulit ng Animation"
+msgstr "Pagbago ng Animation Loop"
 
 #: editor/animation_track_editor.cpp
 msgid "Property Track"
-msgstr ""
+msgstr "Property Track"
 
 #: editor/animation_track_editor.cpp
 msgid "3D Transform Track"
@@ -236,7 +237,7 @@ msgstr "Pagulit ng Animation"
 #: editor/animation_track_editor.cpp
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Functions:"
-msgstr "Functions:"
+msgstr "Mga Functions:"
 
 #: editor/animation_track_editor.cpp
 msgid "Audio Clips:"
@@ -326,7 +327,7 @@ msgstr "Kopyahin Ang (Mga) Key(s)"
 
 #: editor/animation_track_editor.cpp
 msgid "Delete Key(s)"
-msgstr ""
+msgstr "Tanggalin Ang (Mga) Key(s)"
 
 #: editor/animation_track_editor.cpp
 msgid "Change Animation Update Mode"
@@ -575,11 +576,11 @@ msgstr ""
 
 #: editor/animation_track_editor.cpp
 msgid "Pick the node that will be animated:"
-msgstr ""
+msgstr "Piliin ang node na i-aanimate:"
 
 #: editor/animation_track_editor.cpp
 msgid "Use Bezier Curves"
-msgstr ""
+msgstr "Gumamit ng Bezier Curves"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim. Optimizer"
@@ -611,11 +612,11 @@ msgstr ""
 
 #: editor/animation_track_editor.cpp
 msgid "Clean-up all animations"
-msgstr ""
+msgstr "Linisin ang lahat ng mga animation"
 
 #: editor/animation_track_editor.cpp
 msgid "Clean-Up Animation(s) (NO UNDO!)"
-msgstr ""
+msgstr "Linisin ang (mga) Animation (HINDI MAIBABALIK!)"
 
 #: editor/animation_track_editor.cpp
 msgid "Clean-Up"
@@ -627,7 +628,7 @@ msgstr ""
 
 #: editor/animation_track_editor.cpp
 msgid "Select Tracks to Copy"
-msgstr ""
+msgstr "Piliin ang mga Tracks na Kokopyahin"
 
 #: editor/animation_track_editor.cpp editor/editor_log.cpp
 #: editor/editor_properties.cpp
@@ -656,15 +657,15 @@ msgstr ""
 
 #: editor/array_property_edit.cpp
 msgid "Resize Array"
-msgstr ""
+msgstr "Baguhin ang Laki ng Array"
 
 #: editor/array_property_edit.cpp
 msgid "Change Array Value Type"
-msgstr ""
+msgstr "Baguhin ang Type ng Nilalaman ng Array"
 
 #: editor/array_property_edit.cpp
 msgid "Change Array Value"
-msgstr ""
+msgstr "Baguhin ang Nilalaman ng Array"
 
 #: editor/code_editor.cpp
 msgid "Go to Line"
@@ -675,17 +676,16 @@ msgid "Line Number:"
 msgstr ""
 
 #: editor/code_editor.cpp
-#, fuzzy
 msgid "%d replaced."
-msgstr "Palitan"
+msgstr "%d ay pinalitan."
 
 #: editor/code_editor.cpp editor/editor_help.cpp
 msgid "%d match."
-msgstr ""
+msgstr "%d magkatugma."
 
 #: editor/code_editor.cpp editor/editor_help.cpp
 msgid "%d matches."
-msgstr ""
+msgstr "%d magkatugma."
 
 #: editor/code_editor.cpp editor/find_in_files.cpp
 msgid "Match Case"
@@ -1088,6 +1088,10 @@ msgstr ""
 
 #: editor/editor_about.cpp
 msgid "Thanks from the Godot community!"
+msgstr ""
+
+#: editor/editor_about.cpp editor/editor_node.cpp editor/project_manager.cpp
+msgid "Click to copy."
 msgstr ""
 
 #: editor/editor_about.cpp
@@ -11712,7 +11716,19 @@ msgid ""
 msgstr ""
 
 #: platform/android/export/export.cpp
+msgid ""
+"Either Debug Keystore, Debug User AND Debug Password settings must be "
+"configured OR none of them."
+msgstr ""
+
+#: platform/android/export/export.cpp
 msgid "Debug keystore not configured in the Editor Settings nor in the preset."
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid ""
+"Either Release Keystore, Release User AND Release Password settings must be "
+"configured OR none of them."
 msgstr ""
 
 #: platform/android/export/export.cpp

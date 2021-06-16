@@ -94,12 +94,13 @@
 # narrnika <narr13niki@gmail.com>, 2021.
 # nec-trou <darya.bilyalova@gmail.com>, 2021.
 # IindinAndEdresia <kapitan_pol@inbox.ru>, 2021.
+# Bualma Show <appleaidar6@gmail.com>, 2021.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2021-05-21 11:33+0000\n"
-"Last-Translator: Danil Alexeev <danil@alexeev.xyz>\n"
+"PO-Revision-Date: 2021-06-07 23:43+0000\n"
+"Last-Translator: Bualma Show <appleaidar6@gmail.com>\n"
 "Language-Team: Russian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ru/>\n"
 "Language: ru\n"
@@ -117,7 +118,7 @@ msgstr "Неверный параметр типа для convert(), испол�
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 msgid "Expected a string of length 1 (a character)."
-msgstr "Ожидалась строка длиной 1 (т.е. символ)."
+msgstr "Ожидалась строка длиной 1 (т. е. 1 символ)."
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/mono/glue/gd_glue.cpp
@@ -1203,6 +1204,10 @@ msgstr "Изменить значение словаря"
 #: editor/editor_about.cpp
 msgid "Thanks from the Godot community!"
 msgstr "Спасибо от сообщества Godot!"
+
+#: editor/editor_about.cpp editor/editor_node.cpp editor/project_manager.cpp
+msgid "Click to copy."
+msgstr ""
 
 #: editor/editor_about.cpp
 msgid "Godot Engine contributors"
@@ -12278,10 +12283,22 @@ msgstr ""
 "Шаблон сборки Android не установлен в проекте. Установите его в меню проекта."
 
 #: platform/android/export/export.cpp
+msgid ""
+"Either Debug Keystore, Debug User AND Debug Password settings must be "
+"configured OR none of them."
+msgstr ""
+
+#: platform/android/export/export.cpp
 msgid "Debug keystore not configured in the Editor Settings nor in the preset."
 msgstr ""
 "Отладочное хранилище ключей не настроено ни в настройках редактора, ни в "
 "предустановках."
+
+#: platform/android/export/export.cpp
+msgid ""
+"Either Release Keystore, Release User AND Release Password settings must be "
+"configured OR none of them."
+msgstr ""
 
 #: platform/android/export/export.cpp
 msgid "Release keystore incorrectly configured in the export preset."
