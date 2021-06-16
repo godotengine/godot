@@ -947,6 +947,17 @@ private:
 
 	mutable RID_Owner<ParticlesCollisionInstance> particles_collision_instance_owner;
 
+	/* visibility_notifier */
+
+	struct VisibilityNotifier {
+		AABB aabb;
+		Callable enter_callback;
+		Callable exit_callback;
+		Dependency dependency;
+	};
+
+	mutable RID_Owner<VisibilityNotifier> visibility_notifier_owner;
+
 	/* Skeleton */
 
 	struct Skeleton {
@@ -2252,6 +2263,14 @@ public:
 	virtual Vector3 particles_collision_get_extents(RID p_particles_collision) const;
 	virtual bool particles_collision_is_heightfield(RID p_particles_collision) const;
 	RID particles_collision_get_heightfield_framebuffer(RID p_particles_collision) const;
+
+	virtual RID visibility_notifier_allocate();
+	virtual void visibility_notifier_initialize(RID p_notifier);
+	virtual void visibility_notifier_set_aabb(RID p_notifier, const AABB &p_aabb);
+	virtual void visibility_notifier_set_callbacks(RID p_notifier, const Callable &p_enter_callbable, const Callable &p_exit_callable);
+
+	virtual AABB visibility_notifier_get_aabb(RID p_notifier) const;
+	virtual void visibility_notifier_call(RID p_notifier, bool p_enter, bool p_deferred);
 
 	//used from 2D and 3D
 	virtual RID particles_collision_instance_create(RID p_collision);

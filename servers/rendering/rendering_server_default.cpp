@@ -118,6 +118,7 @@ void RenderingServerDefault::_draw(bool p_swap_buffers, double frame_step) {
 	RSG::rasterizer->end_frame(p_swap_buffers);
 
 	RSG::canvas->update_visibility_notifiers();
+	RSG::scene->update_visibility_notifiers();
 
 	while (frame_drawn_callbacks.front()) {
 		Object *obj = ObjectDB::get_instance(frame_drawn_callbacks.front()->get().object);

@@ -183,14 +183,6 @@ public:
 
 /////////////////////////////////////
 
-void Viewport::update_worlds() {
-	if (!is_inside_tree()) {
-		return;
-	}
-
-	find_world_3d()->_update(get_tree()->get_frame());
-}
-
 void Viewport::_collision_object_input_event(CollisionObject3D *p_object, Camera3D *p_camera, const Ref<InputEvent> &p_input_event, const Vector3 &p_pos, const Vector3 &p_normal, int p_shape) {
 	Transform3D object_transform = p_object->get_global_transform();
 	Transform3D camera_transform = p_camera->get_global_transform();
@@ -3512,8 +3504,6 @@ void Viewport::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("input_text", "text"), &Viewport::input_text);
 	ClassDB::bind_method(D_METHOD("input", "event", "in_local_coords"), &Viewport::input, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("unhandled_input", "event", "in_local_coords"), &Viewport::unhandled_input, DEFVAL(false));
-
-	ClassDB::bind_method(D_METHOD("update_worlds"), &Viewport::update_worlds);
 
 	ClassDB::bind_method(D_METHOD("set_use_own_world_3d", "enable"), &Viewport::set_use_own_world_3d);
 	ClassDB::bind_method(D_METHOD("is_using_own_world_3d"), &Viewport::is_using_own_world_3d);

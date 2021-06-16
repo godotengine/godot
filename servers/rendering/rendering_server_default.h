@@ -529,6 +529,12 @@ public:
 	FUNC1(particles_collision_height_field_update, RID)
 	FUNC2(particles_collision_set_height_field_resolution, RID, ParticlesCollisionHeightfieldResolution)
 
+	/* VISIBILITY_NOTIFIER */
+
+	FUNCRIDSPLIT(visibility_notifier)
+	FUNC2(visibility_notifier_set_aabb, RID, const AABB &)
+	FUNC3(visibility_notifier_set_callbacks, RID, const Callable &, const Callable &)
+
 #undef server_name
 #undef ServerName
 //from now on, calls forwarded to this singleton
@@ -549,7 +555,7 @@ public:
 
 	/* OCCLUDER */
 	FUNCRIDSPLIT(occluder)
-	FUNC3(occluder_set_mesh, RID, const PackedVector3Array &, const PackedInt32Array &);
+	FUNC3(occluder_set_mesh, RID, const PackedVector3Array &, const PackedInt32Array &)
 
 #undef server_name
 #undef ServerName
