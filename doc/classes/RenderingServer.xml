@@ -3702,7 +3702,7 @@
 		</constant>
 		<constant name="INSTANCE_OCCLUDER" value="11" enum="InstanceType">
 		</constant>
-		<constant name="INSTANCE_MAX" value="12" enum="InstanceType">
+		<constant name="INSTANCE_MAX" value="13" enum="InstanceType">
 			Represents the size of the [enum InstanceType] enum.
 		</constant>
 		<constant name="INSTANCE_GEOMETRY_MASK" value="30" enum="InstanceType">

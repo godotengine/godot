@@ -557,6 +557,14 @@ public:
 	virtual bool particles_collision_is_heightfield(RID p_particles_collision) const = 0;
 	virtual RID particles_collision_get_heightfield_framebuffer(RID p_particles_collision) const = 0;
 
+	virtual RID visibility_notifier_allocate() = 0;
+	virtual void visibility_notifier_initialize(RID p_notifier) = 0;
+	virtual void visibility_notifier_set_aabb(RID p_notifier, const AABB &p_aabb) = 0;
+	virtual void visibility_notifier_set_callbacks(RID p_notifier, const Callable &p_enter_callbable, const Callable &p_exit_callable) = 0;
+
+	virtual AABB visibility_notifier_get_aabb(RID p_notifier) const = 0;
+	virtual void visibility_notifier_call(RID p_notifier, bool p_enter, bool p_deferred) = 0;
+
 	//used from 2D and 3D
 	virtual RID particles_collision_instance_create(RID p_collision) = 0;
 	virtual void particles_collision_instance_set_transform(RID p_collision_instance, const Transform3D &p_transform) = 0;
