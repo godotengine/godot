@@ -373,30 +373,7 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	// Editor
 	_initial_set("interface/editor/display_scale", 0);
 	// Display what the Auto display scale setting effectively corresponds to.
-	// The code below is adapted in `editor/editor_node.cpp` and `editor/project_manager.cpp`.
-	// Make sure to update those when modifying the code below.
-#ifdef OSX_ENABLED
-	float scale = DisplayServer::get_singleton()->screen_get_max_scale();
-#else
-	const int screen = DisplayServer::get_singleton()->window_get_current_screen();
-	// Use the smallest dimension to use a correct display scale on portait displays.
-	const int smallest_dimension = MIN(DisplayServer::get_singleton()->screen_get_size(screen).x, DisplayServer::get_singleton()->screen_get_size(screen).y);
-	float scale;
-	if (DisplayServer::get_singleton()->screen_get_dpi(screen) >= 192 && smallest_dimension >= 1400) {
-		// hiDPI display.
-		scale = 2.0;
-	} else if (smallest_dimension <= 1700) {
-		// Likely a hiDPI display, but we aren't certain due to the returned DPI.
-		// Use an intermediate scale to handle this situation.
-		scale = 1.5;
-	} else if (smallest_dimension <= 800) {
-		// Small loDPI display. Use a smaller display scale so that editor elements fit more easily.
-		// Icons won't look great, but this is better than having editor elements overflow from its window.
-		scale = 0.75;
-	} else {
-		scale = 1.0;
-	}
-#endif
+	float scale = get_auto_display_scale();
 	hints["interface/editor/display_scale"] = PropertyInfo(Variant::INT, "interface/editor/display_scale", PROPERTY_HINT_ENUM, vformat("Auto (%d%%),75%%,100%%,125%%,150%%,175%%,200%%,Custom", Math::round(scale * 100)), PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED);
 	_initial_set("interface/editor/custom_display_scale", 1.0f);
 	hints["interface/editor/custom_display_scale"] = PropertyInfo(Variant::FLOAT, "interface/editor/custom_display_scale", PROPERTY_HINT_RANGE, "0.5,3,0.01", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED);
@@ -1445,6 +1422,29 @@ Vector<String> EditorSettings::get_script_templates(const String &p_extension, c
 
 String EditorSettings::get_editor_layouts_config() const {
 	return EditorPaths::get_singleton()->get_config_dir().plus_file("editor_layouts.cfg");
+}
+
+float EditorSettings::get_auto_display_scale() const {
+#ifdef OSX_ENABLED
+	return DisplayServer::get_singleton()->screen_get_max_scale();
+#else
+	const int screen = DisplayServer::get_singleton()->window_get_current_screen();
+	// Use the smallest dimension to use a correct display scale on portait displays.
+	const int smallest_dimension = MIN(DisplayServer::get_singleton()->screen_get_size(screen).x, DisplayServer::get_singleton()->screen_get_size(screen).y);
+	if (DisplayServer::get_singleton()->screen_get_dpi(screen) >= 192 && smallest_dimension >= 1400) {
+		// hiDPI display.
+		return 2.0;
+	} else if (smallest_dimension >= 1700) {
+		// Likely a hiDPI display, but we aren't certain due to the returned DPI.
+		// Use an intermediate scale to handle this situation.
+		return 1.5;
+	} else if (smallest_dimension <= 800) {
+		// Small loDPI display. Use a smaller display scale so that editor elements fit more easily.
+		// Icons won't look great, but this is better than having editor elements overflow from its window.
+		return 0.75;
+	}
+	return 1.0;
+#endif
 }
 
 // Shortcuts
