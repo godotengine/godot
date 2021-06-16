@@ -186,7 +186,7 @@ EditorPaths::EditorPaths() {
 	// Validate or create project-specific editor data dir (`res://.godot`),
 	// including shader cache subdir.
 
-	if (Main::is_project_manager()) {
+	if (Main::is_project_manager() || Main::is_cmdline_tool()) {
 		// Nothing to create, use shared editor data dir for shader cache.
 		Engine::get_singleton()->set_shader_cache_path(data_dir);
 	} else {
@@ -209,6 +209,4 @@ EditorPaths::EditorPaths() {
 			dir_res->make_dir(ProjectSettings::IMPORTED_FILES_PATH);
 		}
 	}
-
-	print_line("paths valid: " + itos((int)paths_valid));
 }
