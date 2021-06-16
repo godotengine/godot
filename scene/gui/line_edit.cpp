@@ -357,9 +357,9 @@ void LineEdit::_gui_input(Ref<InputEvent> p_event) {
 			}
 		}
 
-		// Default is ENTER, KP_ENTER. Cannot use ui_accept as default includes SPACE
-		if (k->is_action("ui_text_newline", true)) {
-			emit_signal("text_entered", text);
+		// Default is ENTER and KP_ENTER. Cannot use ui_accept as default includes SPACE
+		if (k->is_action("ui_text_submit", false)) {
+			emit_signal("text_submitted", text);
 			if (DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_VIRTUAL_KEYBOARD) && virtual_keyboard_enabled) {
 				DisplayServer::get_singleton()->virtual_keyboard_hide();
 			}
@@ -2159,7 +2159,7 @@ void LineEdit::_bind_methods() {
 
 	ADD_SIGNAL(MethodInfo("text_changed", PropertyInfo(Variant::STRING, "new_text")));
 	ADD_SIGNAL(MethodInfo("text_change_rejected"));
-	ADD_SIGNAL(MethodInfo("text_entered", PropertyInfo(Variant::STRING, "new_text")));
+	ADD_SIGNAL(MethodInfo("text_submitted", PropertyInfo(Variant::STRING, "new_text")));
 
 	BIND_ENUM_CONSTANT(ALIGN_LEFT);
 	BIND_ENUM_CONSTANT(ALIGN_CENTER);

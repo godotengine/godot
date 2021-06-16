@@ -2451,10 +2451,10 @@ void Tree::_text_editor_modal_close() {
 		return;
 	}
 
-	_text_editor_enter(text_editor->get_text());
+	_text_editor_submit(text_editor->get_text());
 }
 
-void Tree::_text_editor_enter(String p_text) {
+void Tree::_text_editor_submit(String p_text) {
 	popup_editor->hide();
 
 	if (!popup_edited_item) {
@@ -4554,7 +4554,7 @@ Tree::Tree() {
 
 	h_scroll->connect("value_changed", callable_mp(this, &Tree::_scroll_moved));
 	v_scroll->connect("value_changed", callable_mp(this, &Tree::_scroll_moved));
-	text_editor->connect("text_entered", callable_mp(this, &Tree::_text_editor_enter));
+	text_editor->connect("text_submitted", callable_mp(this, &Tree::_text_editor_submit));
 	popup_editor->connect("popup_hide", callable_mp(this, &Tree::_text_editor_modal_close));
 	popup_menu->connect("id_pressed", callable_mp(this, &Tree::popup_select));
 	value_editor->connect("value_changed", callable_mp(this, &Tree::value_editor_changed));

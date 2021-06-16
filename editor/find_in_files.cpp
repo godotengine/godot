@@ -311,7 +311,7 @@ FindInFilesDialog::FindInFilesDialog() {
 	_search_text_line_edit = memnew(LineEdit);
 	_search_text_line_edit->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	_search_text_line_edit->connect("text_changed", callable_mp(this, &FindInFilesDialog::_on_search_text_modified));
-	_search_text_line_edit->connect("text_entered", callable_mp(this, &FindInFilesDialog::_on_search_text_entered));
+	_search_text_line_edit->connect("text_submitted", callable_mp(this, &FindInFilesDialog::_on_search_text_submitted));
 	gc->add_child(_search_text_line_edit);
 
 	_replace_label = memnew(Label);
@@ -321,7 +321,7 @@ FindInFilesDialog::FindInFilesDialog() {
 
 	_replace_text_line_edit = memnew(LineEdit);
 	_replace_text_line_edit->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-	_replace_text_line_edit->connect("text_entered", callable_mp(this, &FindInFilesDialog::_on_replace_text_entered));
+	_replace_text_line_edit->connect("text_submitted", callable_mp(this, &FindInFilesDialog::_on_replace_text_submitted));
 	_replace_text_line_edit->hide();
 	gc->add_child(_replace_text_line_edit);
 
@@ -503,7 +503,7 @@ void FindInFilesDialog::_on_search_text_modified(String text) {
 	_replace_button->set_disabled(get_search_text().is_empty());
 }
 
-void FindInFilesDialog::_on_search_text_entered(String text) {
+void FindInFilesDialog::_on_search_text_submitted(String text) {
 	// This allows to trigger a global search without leaving the keyboard
 	if (!_find_button->is_disabled()) {
 		if (_mode == SEARCH_MODE) {
@@ -518,7 +518,7 @@ void FindInFilesDialog::_on_search_text_entered(String text) {
 	}
 }
 
-void FindInFilesDialog::_on_replace_text_entered(String text) {
+void FindInFilesDialog::_on_replace_text_submitted(String text) {
 	// This allows to trigger a global search without leaving the keyboard
 	if (!_replace_button->is_disabled()) {
 		if (_mode == REPLACE_MODE) {

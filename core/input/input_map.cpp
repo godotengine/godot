@@ -353,8 +353,9 @@ static const _BuiltinActionDisplayName _builtin_action_display_names[] = {
     { "ui_text_scroll_down",                           TTRC("Scroll Down") },
     { "ui_text_scroll_down.OSX",                       TTRC("Scroll Down") },
     { "ui_text_select_all",                            TTRC("Select All") },
-    { "ui_text_select_word_under_caret",              TTRC("Select Word Under Caret") },
+    { "ui_text_select_word_under_caret",               TTRC("Select Word Under Caret") },
     { "ui_text_toggle_insert_mode",                    TTRC("Toggle Insert Mode") },
+    { "ui_text_submit",                                TTRC("Text Submitted") },
     { "ui_graph_duplicate",                            TTRC("Duplicate Nodes") },
     { "ui_graph_delete",                               TTRC("Delete Nodes") },
     { "ui_filedialog_up_one_level",                    TTRC("Go Up One Level") },
@@ -667,6 +668,11 @@ const OrderedHashMap<String, List<Ref<InputEvent>>> &InputMap::get_builtins() {
 	inputs = List<Ref<InputEvent>>();
 	inputs.push_back(InputEventKey::create_reference(KEY_MENU));
 	default_builtin_cache.insert("ui_menu", inputs);
+
+	inputs = List<Ref<InputEvent>>();
+	inputs.push_back(InputEventKey::create_reference(KEY_ENTER));
+	inputs.push_back(InputEventKey::create_reference(KEY_KP_ENTER));
+	default_builtin_cache.insert("ui_text_submit", inputs);
 
 	// ///// UI Graph Shortcuts /////
 

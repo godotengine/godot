@@ -104,7 +104,7 @@ private:
 	float v = 0.0;
 	Color last_hsv;
 
-	void _html_entered(const String &p_html);
+	void _html_submitted(const String &p_html);
 	void _value_changed(double);
 	void _update_controls();
 	void _update_color(bool p_update_sliders = true);

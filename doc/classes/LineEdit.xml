@@ -248,7 +248,7 @@
 				Emitted when the text changes.
 			</description>
 		</signal>
-		<signal name="text_entered">
+		<signal name="text_submitted">
 			<argument index="0" name="new_text" type="String">
 			</argument>
 			<description>
