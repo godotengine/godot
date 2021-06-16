@@ -559,7 +559,7 @@ bool AnimationTree::_update_caches(AnimationPlayer *player) {
 				Node *child = parent->get_node_and_resource(path, resource, leftover_path);
 
 				if (!child) {
-					ERR_PRINTS("AnimationTree: '" + String(E->get()) + "', couldn't resolve track:  '" + String(path) + "'");
+					ERR_PRINT("AnimationTree: '" + String(E->get()) + "', couldn't resolve track:  '" + String(path) + "'");
 					continue;
 				}
 
@@ -587,7 +587,7 @@ bool AnimationTree::_update_caches(AnimationPlayer *player) {
 						Spatial *spatial = Object::cast_to<Spatial>(child);
 
 						if (!spatial) {
-							ERR_PRINTS("AnimationTree: '" + String(E->get()) + "', transform track does not point to spatial:  '" + String(path) + "'");
+							ERR_PRINT("AnimationTree: '" + String(E->get()) + "', transform track does not point to spatial:  '" + String(path) + "'");
 							continue;
 						}
 

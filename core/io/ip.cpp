@@ -193,7 +193,7 @@ IP_Address IP::get_resolve_item_address(ResolverID p_id) const {
 	MutexLock lock(resolver->mutex);
 
 	if (resolver->queue[p_id].status.get() != IP::RESOLVER_STATUS_DONE) {
-		ERR_PRINTS("Resolve of '" + resolver->queue[p_id].hostname + "'' didn't complete yet.");
+		ERR_PRINT("Resolve of '" + resolver->queue[p_id].hostname + "'' didn't complete yet.");
 		return IP_Address();
 	}
 
@@ -213,7 +213,7 @@ Array IP::get_resolve_item_addresses(ResolverID p_id) const {
 	MutexLock lock(resolver->mutex);
 
 	if (resolver->queue[p_id].status.get() != IP::RESOLVER_STATUS_DONE) {
-		ERR_PRINTS("Resolve of '" + resolver->queue[p_id].hostname + "'' didn't complete yet.");
+		ERR_PRINT("Resolve of '" + resolver->queue[p_id].hostname + "'' didn't complete yet.");
 		return Array();
 	}
 

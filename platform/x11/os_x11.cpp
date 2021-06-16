@@ -3783,7 +3783,7 @@ Error OS_X11::move_to_trash(const String &p_path) {
 
 	// Issue an error if none of the previous locations is appropriate for the trash can.
 	if (trash_can == "") {
-		ERR_PRINTS("move_to_trash: Could not determine the trash can location");
+		ERR_PRINT("move_to_trash: Could not determine the trash can location");
 		return FAILED;
 	}
 
@@ -3794,7 +3794,7 @@ Error OS_X11::move_to_trash(const String &p_path) {
 
 	// Issue an error if trash can is not created proprely.
 	if (err != OK) {
-		ERR_PRINTS("move_to_trash: Could not create the trash can \"" + trash_can + "\"");
+		ERR_PRINT("move_to_trash: Could not create the trash can \"" + trash_can + "\"");
 		return err;
 	}
 
@@ -3808,7 +3808,7 @@ Error OS_X11::move_to_trash(const String &p_path) {
 
 	// Issue an error if "mv" failed to move the given resource to the trash can.
 	if (err != OK || retval != 0) {
-		ERR_PRINTS("move_to_trash: Could not move the resource \"" + p_path + "\" to the trash can \"" + trash_can + "\"");
+		ERR_PRINT("move_to_trash: Could not move the resource \"" + p_path + "\" to the trash can \"" + trash_can + "\"");
 		return FAILED;
 	}
 

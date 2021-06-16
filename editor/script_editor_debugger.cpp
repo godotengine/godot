@@ -329,7 +329,7 @@ void ScriptEditorDebugger::_file_selected(const String &p_file) {
 			FileAccessRef file = FileAccess::open(p_file, FileAccess::WRITE, &err);
 
 			if (err != OK) {
-				ERR_PRINTS("Failed to open " + p_file);
+				ERR_PRINT("Failed to open " + p_file);
 				return;
 			}
 			Vector<String> line;
@@ -364,7 +364,7 @@ void ScriptEditorDebugger::_file_selected(const String &p_file) {
 			FileAccessRef file = FileAccess::open(p_file, FileAccess::WRITE, &err);
 
 			if (err != OK) {
-				ERR_PRINTS("Failed to open " + p_file);
+				ERR_PRINT("Failed to open " + p_file);
 				return;
 			}
 

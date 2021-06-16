@@ -637,7 +637,7 @@ bool GDMono::copy_prebuilt_api_assembly(ApiAssemblyInfo::Type p_api_type, const 
 		memdelete(da);
 
 		if (err != OK) {
-			ERR_PRINTS("Failed to create destination directory for the API assemblies. Error: " + itos(err) + ".");
+			ERR_PRINT("Failed to create destination directory for the API assemblies. Error: " + itos(err) + ".");
 			return false;
 		}
 	}
@@ -654,7 +654,7 @@ bool GDMono::copy_prebuilt_api_assembly(ApiAssemblyInfo::Type p_api_type, const 
 
 	String assembly_file = assembly_name + ".dll";
 	if (da->copy(src_dir.plus_file(assembly_file), dst_dir.plus_file(assembly_file)) != OK) {
-		ERR_PRINTS("Failed to copy '" + assembly_file + "'.");
+		ERR_PRINT("Failed to copy '" + assembly_file + "'.");
 		return false;
 	}
 
@@ -1124,7 +1124,7 @@ Error GDMono::finalize_and_unload_domain(MonoDomain *p_domain) {
 	mono_domain_try_unload(p_domain, (MonoObject **)&exc);
 
 	if (exc) {
-		ERR_PRINTS("Exception thrown when unloading domain '" + domain_name + "'.");
+		ERR_PRINT("Exception thrown when unloading domain '" + domain_name + "'.");
 		GDMonoUtils::debug_print_unhandled_exception(exc);
 		return FAILED;
 	}

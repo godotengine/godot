@@ -57,10 +57,10 @@
 
 // <--------------- Joint creation asserts
 /// Assert the body is assigned to a space
-#define JointAssertSpace(body, bIndex, ret)                                                           \
-	if (!body->get_space()) {                                                                         \
-		ERR_PRINTS("Before create a joint the Body" + String(bIndex) + " must be added to a space!"); \
-		return ret;                                                                                   \
+#define JointAssertSpace(body, bIndex, ret)                                                          \
+	if (!body->get_space()) {                                                                        \
+		ERR_PRINT("Before create a joint the Body" + String(bIndex) + " must be added to a space!"); \
+		return ret;                                                                                  \
 	}
 
 /// Assert the two bodies of joint are in the same space

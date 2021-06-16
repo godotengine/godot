@@ -565,7 +565,7 @@ Error ProjectSettings::_load_settings_text(const String &p_path) {
 			last_save_time = FileAccess::get_modified_time(get_resource_path().plus_file("project.godot"));
 			return OK;
 		} else if (err != OK) {
-			ERR_PRINTS("Error parsing " + p_path + " at line " + itos(lines) + ": " + error_text + " File might be corrupted.");
+			ERR_PRINT("Error parsing " + p_path + " at line " + itos(lines) + ": " + error_text + " File might be corrupted.");
 			memdelete(f);
 			return err;
 		}

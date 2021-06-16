@@ -1549,7 +1549,7 @@ void ResourceFormatSaverBinaryInstance::_find_resources(const Variant &p_variant
 
 			if (!p_main && (!bundle_resources) && res->get_path().length() && res->get_path().find("::") == -1) {
 				if (res->get_path() == path) {
-					ERR_PRINTS("Circular reference to resource being saved found: '" + local_path + "' will be null next time it's loaded.");
+					ERR_PRINT("Circular reference to resource being saved found: '" + local_path + "' will be null next time it's loaded.");
 					return;
 				}
 				int idx = external_resources.size();

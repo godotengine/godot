@@ -3253,7 +3253,7 @@ void OS_OSX::run() {
 				quit = true;
 			}
 		} @catch (NSException *exception) {
-			ERR_PRINTS("NSException: " + String([exception reason].UTF8String));
+			ERR_PRINT("NSException: " + String([exception reason].UTF8String));
 		}
 	};
 
@@ -3323,7 +3323,7 @@ Error OS_OSX::move_to_trash(const String &p_path) {
 	NSError *err;
 
 	if (![fm trashItemAtURL:url resultingItemURL:nil error:&err]) {
-		ERR_PRINTS("trashItemAtURL error: " + String(err.localizedDescription.UTF8String));
+		ERR_PRINT("trashItemAtURL error: " + String(err.localizedDescription.UTF8String));
 		return FAILED;
 	}
 
