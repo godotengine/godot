@@ -41,6 +41,8 @@ class RendererScene;
 
 class RenderingServerGlobals {
 public:
+	static bool threaded;
+
 	static RendererStorage *storage;
 	static RendererCanvasRender *canvas_render;
 	static RendererCompositor *rasterizer;
