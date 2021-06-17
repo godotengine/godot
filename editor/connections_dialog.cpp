@@ -146,7 +146,7 @@ void ConnectDialog::_item_activated() {
 	_ok_pressed(); // From AcceptDialog.
 }
 
-void ConnectDialog::_text_entered(const String &p_text) {
+void ConnectDialog::_text_submitted(const String &p_text) {
 	_ok_pressed(); // From AcceptDialog.
 }
 
@@ -471,7 +471,7 @@ ConnectDialog::ConnectDialog() {
 
 	dst_method = memnew(LineEdit);
 	dst_method->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-	dst_method->connect("text_entered", callable_mp(this, &ConnectDialog::_text_entered));
+	dst_method->connect("text_submitted", callable_mp(this, &ConnectDialog::_text_submitted));
 	dstm_hb->add_child(dst_method);
 
 	advanced = memnew(CheckButton);

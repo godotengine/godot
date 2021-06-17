@@ -782,7 +782,7 @@ EditorAudioBus::EditorAudioBus(EditorAudioBuses *p_buses, bool p_is_master) {
 	set_v_size_flags(SIZE_EXPAND_FILL);
 
 	track_name = memnew(LineEdit);
-	track_name->connect("text_entered", callable_mp(this, &EditorAudioBus::_name_changed));
+	track_name->connect("text_submitted", callable_mp(this, &EditorAudioBus::_name_changed));
 	track_name->connect("focus_exited", callable_mp(this, &EditorAudioBus::_name_focus_exit));
 	vb->add_child(track_name);
 

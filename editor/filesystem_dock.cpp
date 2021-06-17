@@ -365,7 +365,7 @@ void FileSystemDock::_notification(int p_what) {
 			file_list_popup->connect("id_pressed", callable_mp(this, &FileSystemDock::_file_list_rmb_option));
 			tree_popup->connect("id_pressed", callable_mp(this, &FileSystemDock::_tree_rmb_option));
 
-			current_path->connect("text_entered", callable_mp(this, &FileSystemDock::_navigate_to_path), make_binds(false));
+			current_path->connect("text_submitted", callable_mp(this, &FileSystemDock::_navigate_to_path), make_binds(false));
 
 			always_show_folders = bool(EditorSettings::get_singleton()->get("docks/filesystem/always_show_folders"));
 

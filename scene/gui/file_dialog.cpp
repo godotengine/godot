@@ -116,7 +116,7 @@ void FileDialog::_unhandled_input(const Ref<InputEvent> &p_event) {
 					invalidate();
 				} break;
 				case KEY_BACKSPACE: {
-					_dir_entered("..");
+					_dir_submitted("..");
 				} break;
 				default: {
 					handled = false;
@@ -156,7 +156,7 @@ void FileDialog::update_dir() {
 	deselect_all();
 }
 
-void FileDialog::_dir_entered(String p_dir) {
+void FileDialog::_dir_submitted(String p_dir) {
 	dir_access->change_dir(p_dir);
 	file->set_text("");
 	invalidate();
@@ -164,7 +164,7 @@ void FileDialog::_dir_entered(String p_dir) {
 	_push_history();
 }
 
-void FileDialog::_file_entered(const String &p_file) {
+void FileDialog::_file_submitted(const String &p_file) {
 	_action_pressed();
 }
 
@@ -1020,8 +1020,8 @@ FileDialog::FileDialog() {
 	tree->connect("cell_selected", callable_mp(this, &FileDialog::_tree_selected), varray(), CONNECT_DEFERRED);
 	tree->connect("item_activated", callable_mp(this, &FileDialog::_tree_item_activated), varray());
 	tree->connect("nothing_selected", callable_mp(this, &FileDialog::deselect_all));
-	dir->connect("text_entered", callable_mp(this, &FileDialog::_dir_entered));
-	file->connect("text_entered", callable_mp(this, &FileDialog::_file_entered));
+	dir->connect("text_submitted", callable_mp(this, &FileDialog::_dir_submitted));
+	file->connect("text_submitted", callable_mp(this, &FileDialog::_file_submitted));
 	filter->connect("item_selected", callable_mp(this, &FileDialog::_filter_selected));
 
 	confirm_save = memnew(ConfirmationDialog);

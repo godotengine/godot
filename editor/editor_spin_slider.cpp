@@ -386,8 +386,8 @@ void EditorSpinSlider::_evaluate_input_text() {
 	set_value(v);
 }
 
-//text_entered signal
-void EditorSpinSlider::_value_input_entered(const String &p_text) {
+//text_submitted signal
+void EditorSpinSlider::_value_input_submitted(const String &p_text) {
 	value_input_just_closed = true;
 	value_input_popup->hide();
 }
@@ -510,7 +510,7 @@ EditorSpinSlider::EditorSpinSlider() {
 	value_input_popup->set_wrap_controls(true);
 	value_input->set_anchors_and_offsets_preset(PRESET_WIDE);
 	value_input_popup->connect("popup_hide", callable_mp(this, &EditorSpinSlider::_value_input_closed));
-	value_input->connect("text_entered", callable_mp(this, &EditorSpinSlider::_value_input_entered));
+	value_input->connect("text_submitted", callable_mp(this, &EditorSpinSlider::_value_input_submitted));
 	value_input->connect("focus_exited", callable_mp(this, &EditorSpinSlider::_value_focus_exited));
 	value_input_just_closed = false;
 	hide_slider = false;

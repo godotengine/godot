@@ -69,7 +69,7 @@ protected:
 	virtual void custom_action(const String &) {}
 
 	// Not private since used by derived classes signal.
-	void _text_entered(const String &p_text);
+	void _text_submitted(const String &p_text);
 	void _ok_pressed();
 	void _cancel_pressed();
 

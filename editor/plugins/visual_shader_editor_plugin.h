@@ -358,7 +358,7 @@ class VisualShaderEditor : public VBoxContainer {
 	void _comment_title_popup_hide();
 	void _comment_title_popup_focus_out();
 	void _comment_title_text_changed(const String &p_new_text);
-	void _comment_title_text_entered(const String &p_new_text);
+	void _comment_title_text_submitted(const String &p_new_text);
 
 	void _comment_desc_popup_show(const Point2 &p_position, int p_node_id);
 	void _comment_desc_popup_hide();

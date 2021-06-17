@@ -230,14 +230,14 @@ void EditorFileDialog::update_dir() {
 	}
 }
 
-void EditorFileDialog::_dir_entered(String p_dir) {
+void EditorFileDialog::_dir_submitted(String p_dir) {
 	dir_access->change_dir(p_dir);
 	invalidate();
 	update_dir();
 	_push_history();
 }
 
-void EditorFileDialog::_file_entered(const String &p_file) {
+void EditorFileDialog::_file_submitted(const String &p_file) {
 	_action_pressed();
 }
 
@@ -1676,8 +1676,8 @@ EditorFileDialog::EditorFileDialog() {
 	item_list->connect("multi_selected", callable_mp(this, &EditorFileDialog::_multi_selected), varray(), CONNECT_DEFERRED);
 	item_list->connect("item_activated", callable_mp(this, &EditorFileDialog::_item_dc_selected), varray());
 	item_list->connect("nothing_selected", callable_mp(this, &EditorFileDialog::_items_clear_selection));
-	dir->connect("text_entered", callable_mp(this, &EditorFileDialog::_dir_entered));
-	file->connect("text_entered", callable_mp(this, &EditorFileDialog::_file_entered));
+	dir->connect("text_submitted", callable_mp(this, &EditorFileDialog::_dir_submitted));
+	file->connect("text_submitted", callable_mp(this, &EditorFileDialog::_file_submitted));
 	filter->connect("item_selected", callable_mp(this, &EditorFileDialog::_filter_selected));
 
 	confirm_save = memnew(ConfirmationDialog);

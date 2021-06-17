@@ -97,7 +97,7 @@ void AcceptDialog::_notification(int p_what) {
 	}
 }
 
-void AcceptDialog::_text_entered(const String &p_text) {
+void AcceptDialog::_text_submitted(const String &p_text) {
 	_ok_pressed();
 }
 
@@ -159,7 +159,7 @@ void AcceptDialog::register_text_enter(Control *p_line_edit) {
 	ERR_FAIL_NULL(p_line_edit);
 	LineEdit *line_edit = Object::cast_to<LineEdit>(p_line_edit);
 	if (line_edit) {
-		line_edit->connect("text_entered", callable_mp(this, &AcceptDialog::_text_entered));
+		line_edit->connect("text_submitted", callable_mp(this, &AcceptDialog::_text_submitted));
 	}
 }
 
