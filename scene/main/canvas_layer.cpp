@@ -303,7 +303,7 @@ void CanvasLayer::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "scale"), "set_scale", "get_scale");
 	ADD_PROPERTY(PropertyInfo(Variant::TRANSFORM2D, "transform"), "set_transform", "get_transform");
 	ADD_GROUP("", "");
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "custom_viewport", PROPERTY_HINT_RESOURCE_TYPE, "Viewport", 0), "set_custom_viewport", "get_custom_viewport");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "custom_viewport", PROPERTY_HINT_RESOURCE_TYPE, "Viewport", PROPERTY_USAGE_NONE), "set_custom_viewport", "get_custom_viewport");
 	ADD_GROUP("Follow Viewport", "follow_viewport");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "follow_viewport_enable"), "set_follow_viewport", "is_following_viewport");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "follow_viewport_scale", PROPERTY_HINT_RANGE, "0.001,1000,0.001,or_greater,or_lesser"), "set_follow_viewport_scale", "get_follow_viewport_scale");
