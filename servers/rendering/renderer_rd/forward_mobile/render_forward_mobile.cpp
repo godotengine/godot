@@ -65,9 +65,13 @@ void RenderForwardMobile::RenderBufferDataForwardMobile::configure(RID p_color_b
 	color = p_color_buffer;
 	depth = p_depth_buffer;
 
-	// re-introduce setting up msaa? For now we ignore this...
+	RD::DataFormat color_format = RenderForwardMobile::singleton->_render_buffers_get_color_format();
 
 	if (p_msaa == RS::VIEWPORT_MSAA_DISABLED) {
+		if (color_format == RD::DATA_FORMAT_B10G11R11_UFLOAT_PACK32) {
+			// @TODO add a second color buffer for alpha as this format is RGB only
+		}
+
 		Vector<RID> fb;
 		fb.push_back(p_color_buffer);
 		fb.push_back(depth);
@@ -80,7 +84,7 @@ void RenderForwardMobile::RenderBufferDataForwardMobile::configure(RID p_color_b
 		} else {
 			tf.texture_type = RD::TEXTURE_TYPE_2D;
 		}
-		tf.format = RD::DATA_FORMAT_R16G16B16A16_SFLOAT;
+		tf.format = color_format;
 		tf.width = p_width;
 		tf.height = p_height;
 		tf.array_layers = view_count; // create a layer for every view
@@ -130,6 +134,13 @@ bool RenderForwardMobile::free(RID p_rid) {
 }
 
 /* Render functions */
+
+RD::DataFormat RenderForwardMobile::_render_buffers_get_color_format() {
+	// Using 32bit buffers enables AFBC on mobile devices which should have a definate performance improvement (MALI G710 and newer support this on 64bit RTs)
+	// NO ALPHA and unsigned float.
+	// @TODO No alpha is an issue, recommendation here is to add a second RT for alpha
+	return RD::DATA_FORMAT_B10G11R11_UFLOAT_PACK32;
+}
 
 RID RenderForwardMobile::_setup_render_pass_uniform_set(RenderListType p_render_list, const RenderDataRD *p_render_data, RID p_radiance_texture, bool p_use_directional_shadow_atlas, int p_index) {
 	//there should always be enough uniform buffers for render passes, otherwise bugs

@@ -654,7 +654,7 @@ bool RendererSceneRenderRD::reflection_probe_instance_begin_render(RID p_instanc
 			//reflection atlas was unused, create:
 			RD::TextureFormat tf;
 			tf.array_layers = 6 * atlas->count;
-			tf.format = RD::DATA_FORMAT_R16G16B16A16_SFLOAT;
+			tf.format = _render_buffers_get_color_format();
 			tf.texture_type = RD::TEXTURE_TYPE_CUBE_ARRAY;
 			tf.mipmaps = mipmaps;
 			tf.width = atlas->size;
@@ -2118,6 +2118,10 @@ float RendererSceneRenderRD::render_buffers_get_volumetric_fog_detail_spread(RID
 	return rb->volumetric_fog->spread;
 }
 
+RD::DataFormat RendererSceneRenderRD::_render_buffers_get_color_format() {
+	return RD::DATA_FORMAT_R16G16B16A16_SFLOAT;
+}
+
 void RendererSceneRenderRD::render_buffers_configure(RID p_render_buffers, RID p_render_target, int p_width, int p_height, RS::ViewportMSAA p_msaa, RenderingServer::ViewportScreenSpaceAA p_screen_space_aa, bool p_use_debanding, uint32_t p_view_count) {
 	ERR_FAIL_COND_MSG(p_view_count == 0, "Must have atleast 1 view");
 
@@ -2144,7 +2148,7 @@ void RendererSceneRenderRD::render_buffers_configure(RID p_render_buffers, RID p
 		if (rb->view_count > 1) {
 			tf.texture_type = RD::TEXTURE_TYPE_2D_ARRAY;
 		}
-		tf.format = RD::DATA_FORMAT_R16G16B16A16_SFLOAT;
+		tf.format = _render_buffers_get_color_format();
 		tf.width = rb->width;
 		tf.height = rb->height;
 		tf.array_layers = rb->view_count; // create a layer for every view

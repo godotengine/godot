@@ -1129,6 +1129,7 @@ public:
 
 	/* render buffers */
 
+	virtual RD::DataFormat _render_buffers_get_color_format();
 	virtual RID render_buffers_create() override;
 	virtual void render_buffers_configure(RID p_render_buffers, RID p_render_target, int p_width, int p_height, RS::ViewportMSAA p_msaa, RS::ViewportScreenSpaceAA p_screen_space_aa, bool p_use_debanding, uint32_t p_view_count) override;
 	virtual void gi_set_use_half_resolution(bool p_enable) override;

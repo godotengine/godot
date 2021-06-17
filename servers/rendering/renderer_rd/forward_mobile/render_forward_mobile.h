@@ -151,6 +151,8 @@ protected:
 		}
 	};
 
+	virtual RD::DataFormat _render_buffers_get_color_format() override;
+
 	RID _setup_render_pass_uniform_set(RenderListType p_render_list, const RenderDataRD *p_render_data, RID p_radiance_texture, bool p_use_directional_shadow_atlas = false, int p_index = 0);
 	virtual void _render_scene(RenderDataRD *p_render_data, const Color &p_default_bg_color) override;
 
