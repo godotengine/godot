@@ -32,7 +32,7 @@
 
 #include "core/config/project_settings.h"
 #include "scene/2d/camera_2d.h"
-#include "scene/2d/visibility_notifier_2d.h"
+#include "scene/2d/visible_on_screen_notifier_2d.h"
 #include "scene/main/window.h"
 #include "servers/navigation_server_2d.h"
 #include "servers/physics_server_2d.h"

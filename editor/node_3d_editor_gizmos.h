@@ -218,8 +218,8 @@ public:
 	SoftBody3DGizmoPlugin();
 };
 
-class VisibilityNotifier3DGizmoPlugin : public EditorNode3DGizmoPlugin {
-	GDCLASS(VisibilityNotifier3DGizmoPlugin, EditorNode3DGizmoPlugin);
+class VisibleOnScreenNotifier3DGizmoPlugin : public EditorNode3DGizmoPlugin {
+	GDCLASS(VisibleOnScreenNotifier3DGizmoPlugin, EditorNode3DGizmoPlugin);
 
 public:
 	bool has_gizmo(Node3D *p_spatial) override;
@@ -232,7 +232,7 @@ public:
 	void set_handle(EditorNode3DGizmo *p_gizmo, int p_idx, Camera3D *p_camera, const Point2 &p_point) override;
 	void commit_handle(EditorNode3DGizmo *p_gizmo, int p_idx, const Variant &p_restore, bool p_cancel = false) override;
 
-	VisibilityNotifier3DGizmoPlugin();
+	VisibleOnScreenNotifier3DGizmoPlugin();
 };
 
 class CPUParticles3DGizmoPlugin : public EditorNode3DGizmoPlugin {

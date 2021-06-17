@@ -35,7 +35,7 @@
 #include "core/io/resource.h"
 #include "servers/physics_server_2d.h"
 
-class VisibilityNotifier2D;
+class VisibleOnScreenNotifier2D;
 class Viewport;
 struct SpatialIndexer2D;
 
