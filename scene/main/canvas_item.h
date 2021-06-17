@@ -356,6 +356,8 @@ public:
 
 	void draw_set_transform(const Point2 &p_offset, real_t p_rot = 0.0, const Size2 &p_scale = Size2(1.0, 1.0));
 	void draw_set_transform_matrix(const Transform2D &p_matrix);
+	void draw_animation_slice(double p_animation_length, double p_slice_begin, double p_slice_end, double p_offset = 0);
+	void draw_end_animation();
 
 	static CanvasItem *get_current_item_drawn();
 
