@@ -260,33 +260,33 @@ void register_scene_types() {
 
 	Node::init_node_hrcr();
 
-	resource_loader_font.instance();
+	resource_loader_font.instantiate();
 	ResourceLoader::add_resource_format_loader(resource_loader_font);
 
 #ifndef DISABLE_DEPRECATED
-	resource_loader_compat_font.instance();
+	resource_loader_compat_font.instantiate();
 	ResourceLoader::add_resource_format_loader(resource_loader_compat_font);
 #endif /* DISABLE_DEPRECATED */
 
-	resource_loader_stream_texture.instance();
+	resource_loader_stream_texture.instantiate();
 	ResourceLoader::add_resource_format_loader(resource_loader_stream_texture);
 
-	resource_loader_texture_layered.instance();
+	resource_loader_texture_layered.instantiate();
 	ResourceLoader::add_resource_format_loader(resource_loader_texture_layered);
 
-	resource_loader_texture_3d.instance();
+	resource_loader_texture_3d.instantiate();
 	ResourceLoader::add_resource_format_loader(resource_loader_texture_3d);
 
-	resource_saver_text.instance();
+	resource_saver_text.instantiate();
 	ResourceSaver::add_resource_format_saver(resource_saver_text, true);
 
-	resource_loader_text.instance();
+	resource_loader_text.instantiate();
 	ResourceLoader::add_resource_format_loader(resource_loader_text, true);
 
-	resource_saver_shader.instance();
+	resource_saver_shader.instantiate();
 	ResourceSaver::add_resource_format_saver(resource_saver_shader, true);
 
-	resource_loader_shader.instance();
+	resource_loader_shader.instantiate();
 	ResourceLoader::add_resource_format_loader(resource_loader_shader, true);
 
 	OS::get_singleton()->yield(); //may take time to init

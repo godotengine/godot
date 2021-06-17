@@ -661,7 +661,7 @@ void LiveEditor::_create_node_func(const NodePath &p_parent, const String &p_typ
 		}
 		Node *n2 = n->get_node(p_parent);
 
-		Node *no = Object::cast_to<Node>(ClassDB::instance(p_type));
+		Node *no = Object::cast_to<Node>(ClassDB::instantiate(p_type));
 		if (!no) {
 			continue;
 		}
@@ -705,7 +705,7 @@ void LiveEditor::_instance_node_func(const NodePath &p_parent, const String &p_p
 		}
 		Node *n2 = n->get_node(p_parent);
 
-		Node *no = ps->instance();
+		Node *no = ps->instantiate();
 		if (!no) {
 			continue;
 		}

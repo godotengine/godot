@@ -400,7 +400,7 @@ void WebXRInterfaceJS::_update_tracker(int p_controller_id) {
 	Ref<XRPositionalTracker> tracker = xr_server->find_by_type_and_id(XRServer::TRACKER_CONTROLLER, p_controller_id + 1);
 	if (godot_webxr_is_controller_connected(p_controller_id)) {
 		if (tracker.is_null()) {
-			tracker.instance();
+			tracker.instantiate();
 			tracker->set_tracker_type(XRServer::TRACKER_CONTROLLER);
 			// Controller id's 0 and 1 are always the left and right hands.
 			if (p_controller_id < 2) {

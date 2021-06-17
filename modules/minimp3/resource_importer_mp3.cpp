@@ -90,7 +90,7 @@ Error ResourceImporterMP3::import(const String &p_source_file, const String &p_s
 	memdelete(f);
 
 	Ref<AudioStreamMP3> mp3_stream;
-	mp3_stream.instance();
+	mp3_stream.instantiate();
 
 	mp3_stream->set_data(data);
 	ERR_FAIL_COND_V(!mp3_stream->get_data().size(), ERR_FILE_CORRUPT);

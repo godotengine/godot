@@ -628,7 +628,7 @@ Ref<Image> RendererSceneSkyRD::Sky::bake_panorama(RendererStorageRD *p_storage, 
 		RD::get_singleton()->free(rad_tex);
 
 		Ref<Image> img;
-		img.instance();
+		img.instantiate();
 		img->create(p_size.width, p_size.height, false, Image::FORMAT_RGBAF, data);
 		for (int i = 0; i < p_size.width; i++) {
 			for (int j = 0; j < p_size.height; j++) {

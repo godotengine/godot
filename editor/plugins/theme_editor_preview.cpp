@@ -403,7 +403,7 @@ void SceneThemeEditorPreview::_reload_scene() {
 		preview_content->remove_child(node);
 	}
 
-	Node *instance = loaded_scene->instance();
+	Node *instance = loaded_scene->instantiate();
 	if (!instance || !Object::cast_to<Control>(instance)) {
 		EditorNode::get_singleton()->show_warning(TTR("Invalid PackedScene resource, must have a Control node at its root."));
 		emit_signal("scene_invalidated");
@@ -435,7 +435,7 @@ bool SceneThemeEditorPreview::set_preview_scene(const String &p_path) {
 		return false;
 	}
 
-	Node *instance = loaded_scene->instance();
+	Node *instance = loaded_scene->instantiate();
 	if (!instance || !Object::cast_to<Control>(instance)) {
 		EditorNode::get_singleton()->show_warning(TTR("Invalid PackedScene resource, must have a Control node at its root."));
 		return false;

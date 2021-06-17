@@ -704,7 +704,7 @@ Error ResourceLoaderBinary::load() {
 		if (res.is_null()) {
 			//did not replace
 
-			Object *obj = ClassDB::instance(t);
+			Object *obj = ClassDB::instantiate(t);
 			if (!obj) {
 				error = ERR_FILE_CORRUPT;
 				ERR_FAIL_V_MSG(ERR_FILE_CORRUPT, local_path + ":Resource of unrecognized type in file: " + t + ".");

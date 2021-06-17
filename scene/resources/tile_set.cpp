@@ -4587,7 +4587,7 @@ void TileSetPluginScenesCollections::update_dirty_quadrants(TileMap *p_tile_map,
 				if (scenes_collection_source) {
 					Ref<PackedScene> packed_scene = scenes_collection_source->get_scene_tile_scene(c.alternative_tile);
 					if (packed_scene.is_valid()) {
-						Node *scene = packed_scene->instance();
+						Node *scene = packed_scene->instantiate();
 						p_tile_map->add_child(scene);
 						Control *scene_as_control = Object::cast_to<Control>(scene);
 						Node2D *scene_as_node2d = Object::cast_to<Node2D>(scene);

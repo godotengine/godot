@@ -554,7 +554,7 @@ Path3DEditorPlugin::Path3DEditorPlugin(EditorNode *p_node) {
 	mirror_handle_length = true;
 
 	Ref<Path3DGizmoPlugin> gizmo_plugin;
-	gizmo_plugin.instance();
+	gizmo_plugin.instantiate();
 	Node3DEditor::get_singleton()->add_gizmo_plugin(gizmo_plugin);
 
 	sep = memnew(VSeparator);

@@ -91,7 +91,7 @@ public:
 
 void ImportDock::set_edit_path(const String &p_path) {
 	Ref<ConfigFile> config;
-	config.instance();
+	config.instantiate();
 	Error err = config->load(p_path + ".import");
 	if (err != OK) {
 		clear();
@@ -182,7 +182,7 @@ void ImportDock::set_edit_multiple_paths(const Vector<String> &p_paths) {
 
 	for (int i = 0; i < p_paths.size(); i++) {
 		Ref<ConfigFile> config;
-		config.instance();
+		config.instantiate();
 		Error err = config->load(p_paths[i] + ".import");
 		ERR_CONTINUE(err != OK);
 
@@ -328,7 +328,7 @@ void ImportDock::_importer_selected(int i_idx) {
 
 		Ref<ConfigFile> config;
 		if (params->paths.size()) {
-			config.instance();
+			config.instantiate();
 			Error err = config->load(params->paths[0] + ".import");
 			if (err != OK) {
 				config.unref();
@@ -440,7 +440,7 @@ void ImportDock::_reimport_attempt() {
 	}
 	for (int i = 0; i < params->paths.size(); i++) {
 		Ref<ConfigFile> config;
-		config.instance();
+		config.instantiate();
 		Error err = config->load(params->paths[i] + ".import");
 		ERR_CONTINUE(err != OK);
 
@@ -477,7 +477,7 @@ void ImportDock::_advanced_options() {
 void ImportDock::_reimport() {
 	for (int i = 0; i < params->paths.size(); i++) {
 		Ref<ConfigFile> config;
-		config.instance();
+		config.instantiate();
 		Error err = config->load(params->paths[i] + ".import");
 		ERR_CONTINUE(err != OK);
 

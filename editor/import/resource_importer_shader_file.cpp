@@ -99,7 +99,7 @@ Error ResourceImporterShaderFile::import(const String &p_source_file, const Stri
 
 	String file_txt = file->get_as_utf8_string();
 	Ref<RDShaderFile> shader_file;
-	shader_file.instance();
+	shader_file.instantiate();
 	String base_path = p_source_file.get_base_dir();
 	err = shader_file->parse_versions_from_text(file_txt, "", _include_function, &base_path);
 

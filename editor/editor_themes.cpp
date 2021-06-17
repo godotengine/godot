@@ -766,12 +766,12 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 		theme->set_stylebox("sub_inspector_bg" + itos(i), "Editor", sub_inspector_bg);
 
 		Ref<StyleBoxFlat> bg_color;
-		bg_color.instance();
+		bg_color.instantiate();
 		bg_color->set_bg_color(si_base_color * Color(0.7, 0.7, 0.7, 0.8));
 		bg_color->set_border_width_all(0);
 
 		Ref<StyleBoxFlat> bg_color_selected;
-		bg_color_selected.instance();
+		bg_color_selected.instantiate();
 		bg_color_selected->set_border_width_all(0);
 		bg_color_selected->set_bg_color(si_base_color * Color(0.8, 0.8, 0.8, 0.8));
 

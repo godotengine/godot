@@ -1012,7 +1012,7 @@ void GridMap::make_baked_meshes(bool p_gen_lightmap_uv, float p_lightmap_uv_texe
 			Ref<Material> surf_mat = mesh->surface_get_material(i);
 			if (!mat_map.has(surf_mat)) {
 				Ref<SurfaceTool> st;
-				st.instance();
+				st.instantiate();
 				st->begin(Mesh::PRIMITIVE_TRIANGLES);
 				st->set_material(surf_mat);
 				mat_map[surf_mat] = st;
@@ -1024,7 +1024,7 @@ void GridMap::make_baked_meshes(bool p_gen_lightmap_uv, float p_lightmap_uv_texe
 
 	for (Map<OctantKey, Map<Ref<Material>, Ref<SurfaceTool>>>::Element *E = surface_map.front(); E; E = E->next()) {
 		Ref<ArrayMesh> mesh;
-		mesh.instance();
+		mesh.instantiate();
 		for (Map<Ref<Material>, Ref<SurfaceTool>>::Element *F = E->get().front(); F; F = F->next()) {
 			F->get()->commit(mesh);
 		}

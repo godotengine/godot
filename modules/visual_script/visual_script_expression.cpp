@@ -1498,7 +1498,7 @@ public:
 	}
 };
 
-VisualScriptNodeInstance *VisualScriptExpression::instance(VisualScriptInstance *p_instance) {
+VisualScriptNodeInstance *VisualScriptExpression::instantiate(VisualScriptInstance *p_instance) {
 	_compile_expression();
 	VisualScriptNodeInstanceExpression *instance = memnew(VisualScriptNodeInstanceExpression);
 	instance->instance = p_instance;

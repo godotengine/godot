@@ -1669,7 +1669,7 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 		boot_logo_path = boot_logo_path.strip_edges();
 
 		if (boot_logo_path != String()) {
-			boot_logo.instance();
+			boot_logo.instantiate();
 			Error load_err = ImageLoader::load_image(boot_logo_path, boot_logo);
 			if (load_err) {
 				ERR_PRINT("Non-existing or invalid boot splash at '" + boot_logo_path + "'. Loading default splash.");
@@ -2037,9 +2037,9 @@ bool Main::start() {
 			return false;
 		}
 
-		if (script_res->can_instance()) {
+		if (script_res->can_instantiate()) {
 			StringName instance_type = script_res->get_instance_base_type();
-			Object *obj = ClassDB::instance(instance_type);
+			Object *obj = ClassDB::instantiate(instance_type);
 			MainLoop *script_loop = Object::cast_to<MainLoop>(obj);
 			if (!script_loop) {
 				if (obj) {
@@ -2060,7 +2060,7 @@ bool Main::start() {
 			String script_path = ScriptServer::get_global_class_path(main_loop_type);
 			Ref<Script> script_res = ResourceLoader::load(script_path);
 			StringName script_base = ScriptServer::get_global_class_native_base(main_loop_type);
-			Object *obj = ClassDB::instance(script_base);
+			Object *obj = ClassDB::instantiate(script_base);
 			MainLoop *script_loop = Object::cast_to<MainLoop>(obj);
 			if (!script_loop) {
 				if (obj) {
@@ -2083,7 +2083,7 @@ bool Main::start() {
 			DisplayServer::get_singleton()->alert("Error: MainLoop type doesn't exist: " + main_loop_type);
 			return false;
 		} else {
-			Object *ml = ClassDB::instance(main_loop_type);
+			Object *ml = ClassDB::instantiate(main_loop_type);
 			ERR_FAIL_COND_V_MSG(!ml, false, "Can't instance MainLoop type.");
 
 			main_loop = Object::cast_to<MainLoop>(ml);
@@ -2140,14 +2140,14 @@ bool Main::start() {
 					Node *n = nullptr;
 					if (res->is_class("PackedScene")) {
 						Ref<PackedScene> ps = res;
-						n = ps->instance();
+						n = ps->instantiate();
 					} else if (res->is_class("Script")) {
 						Ref<Script> script_res = res;
 						StringName ibt = script_res->get_instance_base_type();
 						bool valid_type = ClassDB::is_parent_class(ibt, "Node");
 						ERR_CONTINUE_MSG(!valid_type, "Script does not inherit a Node: " + info.path);
 
-						Object *obj = ClassDB::instance(ibt);
+						Object *obj = ClassDB::instantiate(ibt);
 
 						ERR_CONTINUE_MSG(obj == nullptr,
 								"Cannot instance script for autoload, expected 'Node' inheritance, got: " +
@@ -2350,7 +2350,7 @@ bool Main::start() {
 				Node *scene = nullptr;
 				Ref<PackedScene> scenedata = ResourceLoader::load(local_game_path);
 				if (scenedata.is_valid()) {
-					scene = scenedata->instance();
+					scene = scenedata->instantiate();
 				}
 
 				ERR_FAIL_COND_V_MSG(!scene, false, "Failed loading scene: " + local_game_path);
@@ -2375,7 +2375,7 @@ bool Main::start() {
 				String iconpath = GLOBAL_DEF("application/config/icon", "Variant()");
 				if ((iconpath != "") && (!hasicon)) {
 					Ref<Image> icon;
-					icon.instance();
+					icon.instantiate();
 					if (ImageLoader::load_image(iconpath, icon) == OK) {
 						DisplayServer::get_singleton()->set_icon(icon);
 						hasicon = true;

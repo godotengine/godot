@@ -287,7 +287,7 @@ void ShaderTextEditor::_bind_methods() {
 }
 
 ShaderTextEditor::ShaderTextEditor() {
-	syntax_highlighter.instance();
+	syntax_highlighter.instantiate();
 	get_text_editor()->set_syntax_highlighter(syntax_highlighter);
 }
 

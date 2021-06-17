@@ -3714,7 +3714,7 @@ void Node3DEditorViewport::_create_preview(const Vector<String> &files) const {
 				preview_node->add_child(mesh_instance);
 			} else {
 				if (scene.is_valid()) {
-					Node *instance = scene->instance();
+					Node *instance = scene->instantiate();
 					if (instance) {
 						preview_node->add_child(instance);
 					}
@@ -3759,49 +3759,49 @@ bool Node3DEditorViewport::_create_instance(Node *parent, String &path, const Po
 	Ref<PackedScene> scene = Ref<PackedScene>(Object::cast_to<PackedScene>(*res));
 	Ref<Mesh> mesh = Ref<Mesh>(Object::cast_to<Mesh>(*res));
 
-	Node *instanced_scene = nullptr;
+	Node *instantiated_scene = nullptr;
 
 	if (mesh != nullptr || scene != nullptr) {
 		if (mesh != nullptr) {
 			MeshInstance3D *mesh_instance = memnew(MeshInstance3D);
 			mesh_instance->set_mesh(mesh);
 			mesh_instance->set_name(path.get_file().get_basename());
-			instanced_scene = mesh_instance;
+			instantiated_scene = mesh_instance;
 		} else {
 			if (!scene.is_valid()) { // invalid scene
 				return false;
 			} else {
-				instanced_scene = scene->instance(PackedScene::GEN_EDIT_STATE_INSTANCE);
+				instantiated_scene = scene->instantiate(PackedScene::GEN_EDIT_STATE_INSTANCE);
 			}
 		}
 	}
 
-	if (instanced_scene == nullptr) {
+	if (instantiated_scene == nullptr) {
 		return false;
 	}
 
 	if (editor->get_edited_scene()->get_filename() != "") { // cyclical instancing
-		if (_cyclical_dependency_exists(editor->get_edited_scene()->get_filename(), instanced_scene)) {
-			memdelete(instanced_scene);
+		if (_cyclical_dependency_exists(editor->get_edited_scene()->get_filename(), instantiated_scene)) {
+			memdelete(instantiated_scene);
 			return false;
 		}
 	}
 
 	if (scene != nullptr) {
-		instanced_scene->set_filename(ProjectSettings::get_singleton()->localize_path(path));
+		instantiated_scene->set_filename(ProjectSettings::get_singleton()->localize_path(path));
 	}
 
-	editor_data->get_undo_redo().add_do_method(parent, "add_child", instanced_scene);
-	editor_data->get_undo_redo().add_do_method(instanced_scene, "set_owner", editor->get_edited_scene());
-	editor_data->get_undo_redo().add_do_reference(instanced_scene);
-	editor_data->get_undo_redo().add_undo_method(parent, "remove_child", instanced_scene);
+	editor_data->get_undo_redo().add_do_method(parent, "add_child", instantiated_scene);
+	editor_data->get_undo_redo().add_do_method(instantiated_scene, "set_owner", editor->get_edited_scene());
+	editor_data->get_undo_redo().add_do_reference(instantiated_scene);
+	editor_data->get_undo_redo().add_undo_method(parent, "remove_child", instantiated_scene);
 
-	String new_name = parent->validate_child_name(instanced_scene);
+	String new_name = parent->validate_child_name(instantiated_scene);
 	EditorDebuggerNode *ed = EditorDebuggerNode::get_singleton();
 	editor_data->get_undo_redo().add_do_method(ed, "live_debug_instance_node", editor->get_edited_scene()->get_path_to(parent), path, new_name);
 	editor_data->get_undo_redo().add_undo_method(ed, "live_debug_remove_node", NodePath(String(editor->get_edited_scene()->get_path_to(parent)) + "/" + new_name));
 
-	Node3D *node3d = Object::cast_to<Node3D>(instanced_scene);
+	Node3D *node3d = Object::cast_to<Node3D>(instantiated_scene);
 	if (node3d) {
 		Transform3D global_transform;
 		Node3D *parent_node3d = Object::cast_to<Node3D>(parent);
@@ -3812,7 +3812,7 @@ bool Node3DEditorViewport::_create_instance(Node *parent, String &path, const Po
 		global_transform.origin = spatial_editor->snap_point(_get_instance_position(p_point));
 		global_transform.basis *= node3d->get_transform().basis;
 
-		editor_data->get_undo_redo().add_do_method(instanced_scene, "set_global_transform", global_transform);
+		editor_data->get_undo_redo().add_do_method(instantiated_scene, "set_global_transform", global_transform);
 	}
 
 	return true;
@@ -3855,7 +3855,7 @@ void Node3DEditorViewport::_perform_drop_data() {
 }
 
 bool Node3DEditorViewport::can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) const {
-	bool can_instance = false;
+	bool can_instantiate = false;
 
 	if (!preview_node->is_inside_tree()) {
 		Dictionary d = p_data;
@@ -3877,11 +3877,11 @@ bool Node3DEditorViewport::can_drop_data_fw(const Point2 &p_point, const Variant
 					String type = res->get_class();
 					if (type == "PackedScene") {
 						Ref<PackedScene> sdata = ResourceLoader::load(files[i]);
-						Node *instanced_scene = sdata->instance(PackedScene::GEN_EDIT_STATE_INSTANCE);
-						if (!instanced_scene) {
+						Node *instantiated_scene = sdata->instantiate(PackedScene::GEN_EDIT_STATE_INSTANCE);
+						if (!instantiated_scene) {
 							continue;
 						}
-						memdelete(instanced_scene);
+						memdelete(instantiated_scene);
 					} else if (type == "Mesh" || type == "ArrayMesh" || type == "PrimitiveMesh") {
 						Ref<Mesh> mesh = ResourceLoader::load(files[i]);
 						if (!mesh.is_valid()) {
@@ -3890,24 +3890,24 @@ bool Node3DEditorViewport::can_drop_data_fw(const Point2 &p_point, const Variant
 					} else {
 						continue;
 					}
-					can_instance = true;
+					can_instantiate = true;
 					break;
 				}
 			}
-			if (can_instance) {
+			if (can_instantiate) {
 				_create_preview(files);
 			}
 		}
 	} else {
-		can_instance = true;
+		can_instantiate = true;
 	}
 
-	if (can_instance) {
+	if (can_instantiate) {
 		Transform3D global_transform = Transform3D(Basis(), _get_instance_position(p_point));
 		preview_node->set_global_transform(global_transform);
 	}
 
-	return can_instance;
+	return can_instantiate;
 }
 
 void Node3DEditorViewport::drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) {
@@ -5317,7 +5317,7 @@ void Node3DEditor::_init_indicators() {
 		origin_enabled = true;
 		grid_enabled = true;
 
-		indicator_mat.instance();
+		indicator_mat.instantiate();
 		indicator_mat->set_shading_mode(StandardMaterial3D::SHADING_MODE_UNSHADED);
 		indicator_mat->set_flag(StandardMaterial3D::FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
 		indicator_mat->set_flag(StandardMaterial3D::FLAG_SRGB_VERTEX_COLOR, true);
@@ -5397,7 +5397,7 @@ void Node3DEditor::_init_indicators() {
 				"}");
 
 		for (int i = 0; i < 3; i++) {
-			grid_mat[i].instance();
+			grid_mat[i].instantiate();
 			grid_mat[i]->set_shader(grid_shader);
 		}
 
@@ -7115,9 +7115,9 @@ Node3DEditor::Node3DEditor(EditorNode *p_editor) {
 		sun_direction->set_default_cursor_shape(CURSOR_MOVE);
 
 		String sun_dir_shader_code = "shader_type canvas_item; uniform vec3 sun_direction; uniform vec3 sun_color; void fragment() { vec3 n; n.xy = UV * 2.0 - 1.0; n.z = sqrt(max(0.0, 1.0 - dot(n.xy, n.xy))); COLOR.rgb = dot(n,sun_direction) * sun_color; COLOR.a = 1.0 - smoothstep(0.99,1.0,length(n.xy)); }";
-		sun_direction_shader.instance();
+		sun_direction_shader.instantiate();
 		sun_direction_shader->set_code(sun_dir_shader_code);
-		sun_direction_material.instance();
+		sun_direction_material.instantiate();
 		sun_direction_material->set_shader(sun_direction_shader);
 		sun_direction_material->set_shader_param("sun_direction", Vector3(0, 0, 1));
 		sun_direction_material->set_shader_param("sun_color", Vector3(1, 1, 1));
@@ -7248,11 +7248,11 @@ Node3DEditor::Node3DEditor(EditorNode *p_editor) {
 		preview_sun->set_shadow(true);
 		preview_sun->set_shadow_mode(DirectionalLight3D::SHADOW_PARALLEL_4_SPLITS);
 		preview_environment = memnew(WorldEnvironment);
-		environment.instance();
+		environment.instantiate();
 		preview_environment->set_environment(environment);
 		Ref<Sky> sky;
-		sky.instance();
-		sky_material.instance();
+		sky.instantiate();
+		sky_material.instantiate();
 		sky->set_material(sky_material);
 		environment->set_sky(sky);
 		environment->set_background(Environment::BG_SKY);
@@ -7383,17 +7383,17 @@ Node3DEditorPlugin::~Node3DEditorPlugin() {
 }
 
 void EditorNode3DGizmoPlugin::create_material(const String &p_name, const Color &p_color, bool p_billboard, bool p_on_top, bool p_use_vertex_color) {
-	Color instanced_color = EDITOR_DEF("editors/3d_gizmos/gizmo_colors/instanced", Color(0.7, 0.7, 0.7, 0.6));
+	Color instantiated_color = EDITOR_DEF("editors/3d_gizmos/gizmo_colors/instantiated", Color(0.7, 0.7, 0.7, 0.6));
 
 	Vector<Ref<StandardMaterial3D>> mats;
 
 	for (int i = 0; i < 4; i++) {
 		bool selected = i % 2 == 1;
-		bool instanced = i < 2;
+		bool instantiated = i < 2;
 
 		Ref<StandardMaterial3D> material = Ref<StandardMaterial3D>(memnew(StandardMaterial3D));
 
-		Color color = instanced ? instanced_color : p_color;
+		Color color = instantiated ? instantiated_color : p_color;
 
 		if (!selected) {
 			color.a *= 0.3;
@@ -7425,17 +7425,17 @@ void EditorNode3DGizmoPlugin::create_material(const String &p_name, const Color 
 }
 
 void EditorNode3DGizmoPlugin::create_icon_material(const String &p_name, const Ref<Texture2D> &p_texture, bool p_on_top, const Color &p_albedo) {
-	Color instanced_color = EDITOR_DEF("editors/3d_gizmos/gizmo_colors/instanced", Color(0.7, 0.7, 0.7, 0.6));
+	Color instantiated_color = EDITOR_DEF("editors/3d_gizmos/gizmo_colors/instantiated", Color(0.7, 0.7, 0.7, 0.6));
 
 	Vector<Ref<StandardMaterial3D>> icons;
 
 	for (int i = 0; i < 4; i++) {
 		bool selected = i % 2 == 1;
-		bool instanced = i < 2;
+		bool instantiated = i < 2;
 
 		Ref<StandardMaterial3D> icon = Ref<StandardMaterial3D>(memnew(StandardMaterial3D));
 
-		Color color = instanced ? instanced_color : p_albedo;
+		Color color = instantiated ? instantiated_color : p_albedo;
 
 		if (!selected) {
 			color.a *= 0.85;
@@ -7594,7 +7594,7 @@ Ref<EditorNode3DGizmo> EditorNode3DGizmoPlugin::create_gizmo(Node3D *p_spatial) 
 
 	Ref<EditorNode3DGizmo> ref;
 	if (has_gizmo(p_spatial)) {
-		ref.instance();
+		ref.instantiate();
 	}
 	return ref;
 }

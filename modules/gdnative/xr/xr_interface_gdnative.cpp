@@ -258,7 +258,7 @@ void GDAPI godot_xr_register_interface(const godot_xr_interface_gdnative *p_inte
 	ERR_FAIL_COND_MSG(p_interface->version.major < 4, "GDNative XR interfaces build for Godot 3.x are not supported.");
 
 	Ref<XRInterfaceGDNative> new_interface;
-	new_interface.instance();
+	new_interface.instantiate();
 	new_interface->set_interface((const godot_xr_interface_gdnative *)p_interface);
 	XRServer::get_singleton()->add_interface(new_interface);
 }
@@ -331,7 +331,7 @@ godot_int GDAPI godot_xr_add_controller(char *p_device_name, godot_int p_hand, g
 	ERR_FAIL_NULL_V(input, 0);
 
 	Ref<XRPositionalTracker> new_tracker;
-	new_tracker.instance();
+	new_tracker.instantiate();
 	new_tracker->set_tracker_name(p_device_name);
 	new_tracker->set_tracker_type(XRServer::TRACKER_CONTROLLER);
 	if (p_hand == 1) {

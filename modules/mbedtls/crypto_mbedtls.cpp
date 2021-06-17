@@ -324,7 +324,7 @@ void CryptoMbedTLS::load_default_certificates(String p_path) {
 
 Ref<CryptoKey> CryptoMbedTLS::generate_rsa(int p_bytes) {
 	Ref<CryptoKeyMbedTLS> out;
-	out.instance();
+	out.instantiate();
 	int ret = mbedtls_pk_setup(&(out->pkey), mbedtls_pk_info_from_type(MBEDTLS_PK_RSA));
 	ERR_FAIL_COND_V(ret != 0, nullptr);
 	ret = mbedtls_rsa_gen_key(mbedtls_pk_rsa(out->pkey), mbedtls_ctr_drbg_random, &ctr_drbg, p_bytes, 65537);
@@ -366,7 +366,7 @@ Ref<X509Certificate> CryptoMbedTLS::generate_self_signed_certificate(Ref<CryptoK
 	buf[4095] = '\0'; // Make sure strlen can't fail.
 
 	Ref<X509CertificateMbedTLS> out;
-	out.instance();
+	out.instantiate();
 	out->load_from_memory(buf, strlen((char *)buf) + 1); // Use strlen to find correct output size.
 	return out;
 }

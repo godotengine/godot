@@ -465,7 +465,7 @@ void SoftBody3D::become_mesh_owner() {
 		surface_format |= Mesh::ARRAY_FLAG_USE_DYNAMIC_UPDATE;
 
 		Ref<ArrayMesh> soft_mesh;
-		soft_mesh.instance();
+		soft_mesh.instantiate();
 		soft_mesh->add_surface_from_arrays(Mesh::PRIMITIVE_TRIANGLES, surface_arrays, surface_blend_arrays, surface_lods, surface_format);
 		soft_mesh->surface_set_material(0, mesh->surface_get_material(0));
 

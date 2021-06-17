@@ -700,7 +700,7 @@ Error EditorExportPlatformOSX::export_project(const Ref<EditorExportPreset> &p_p
 					}
 				} else {
 					Ref<Image> icon;
-					icon.instance();
+					icon.instantiate();
 					icon->load(iconpath);
 					if (!icon->is_empty()) {
 						_make_icon(icon, data);
@@ -1151,7 +1151,7 @@ bool EditorExportPlatformOSX::can_export(const Ref<EditorExportPreset> &p_preset
 
 EditorExportPlatformOSX::EditorExportPlatformOSX() {
 	Ref<Image> img = memnew(Image(_osx_logo));
-	logo.instance();
+	logo.instantiate();
 	logo->create_from_image(img);
 }
 
@@ -1160,7 +1160,7 @@ EditorExportPlatformOSX::~EditorExportPlatformOSX() {
 
 void register_osx_exporter() {
 	Ref<EditorExportPlatformOSX> platform;
-	platform.instance();
+	platform.instantiate();
 
 	EditorExport::get_singleton()->add_export_platform(platform);
 }

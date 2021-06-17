@@ -113,18 +113,18 @@ void register_core_types() {
 
 	CoreStringNames::create();
 
-	resource_format_po.instance();
+	resource_format_po.instantiate();
 	ResourceLoader::add_resource_format_loader(resource_format_po);
 
-	resource_saver_binary.instance();
+	resource_saver_binary.instantiate();
 	ResourceSaver::add_resource_format_saver(resource_saver_binary);
-	resource_loader_binary.instance();
+	resource_loader_binary.instantiate();
 	ResourceLoader::add_resource_format_loader(resource_loader_binary);
 
-	resource_format_importer.instance();
+	resource_format_importer.instantiate();
 	ResourceLoader::add_resource_format_loader(resource_format_importer);
 
-	resource_format_image.instance();
+	resource_format_image.instantiate();
 	ResourceLoader::add_resource_format_loader(resource_format_image);
 
 	ClassDB::register_class<Object>();
@@ -171,9 +171,9 @@ void register_core_types() {
 	ClassDB::register_custom_instance_class<Crypto>();
 	ClassDB::register_custom_instance_class<StreamPeerSSL>();
 
-	resource_format_saver_crypto.instance();
+	resource_format_saver_crypto.instantiate();
 	ResourceSaver::add_resource_format_saver(resource_format_saver_crypto);
-	resource_format_loader_crypto.instance();
+	resource_format_loader_crypto.instantiate();
 	ResourceLoader::add_resource_format_loader(resource_format_loader_crypto);
 
 	ClassDB::register_virtual_class<IP>();

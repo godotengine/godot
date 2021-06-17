@@ -1945,7 +1945,7 @@ Error Image::generate_mipmap_roughness(RoughnessChannel p_roughness_channel, con
 			memcpy(wr.ptr(), ptr, size);
 			wr = uint8_t*();
 			Ref<Image> im;
-			im.instance();
+			im.instantiate();
 			im->create(w, h, false, format, imgdata);
 			im->save_png("res://mipmap_" + itos(i) + ".png");
 		}
@@ -3280,7 +3280,7 @@ Ref<Image> Image::rgbe_to_srgb() {
 	ERR_FAIL_COND_V(format != FORMAT_RGBE9995, Ref<Image>());
 
 	Ref<Image> new_image;
-	new_image.instance();
+	new_image.instantiate();
 	new_image->create(width, height, false, Image::FORMAT_RGB8);
 
 	for (int row = 0; row < height; row++) {
@@ -3310,7 +3310,7 @@ Ref<Image> Image::get_image_from_mipmap(int p_mipamp) const {
 	}
 
 	Ref<Image> image;
-	image.instance();
+	image.instantiate();
 	image->width = w;
 	image->height = h;
 	image->format = format;
@@ -3627,7 +3627,7 @@ Image::Image(const uint8_t *p_mem_png_jpg, int p_len) {
 
 Ref<Resource> Image::duplicate(bool p_subresources) const {
 	Ref<Image> copy;
-	copy.instance();
+	copy.instantiate();
 	copy->_copy_internals_from(*this);
 	return copy;
 }

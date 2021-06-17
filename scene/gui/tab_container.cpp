@@ -586,7 +586,7 @@ void TabContainer::_refresh_texts() {
 		Control *control = Object::cast_to<Control>(tabs[i]);
 		String text = control->has_meta("_tab_name") ? String(tr(String(control->get_meta("_tab_name")))) : String(tr(control->get_name()));
 		Ref<TextLine> name;
-		name.instance();
+		name.instantiate();
 		name->set_direction(rtl ? TextServer::DIRECTION_RTL : TextServer::DIRECTION_LTR);
 		name->add_string(text, font, font_size, Dictionary(), TranslationServer::get_singleton()->get_tool_locale());
 		text_buf.push_back(name);

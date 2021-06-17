@@ -344,11 +344,11 @@ void register_windows_exporter() {
 #endif
 
 	Ref<EditorExportPlatformWindows> platform;
-	platform.instance();
+	platform.instantiate();
 
 	Ref<Image> img = memnew(Image(_windows_logo));
 	Ref<ImageTexture> logo;
-	logo.instance();
+	logo.instantiate();
 	logo->create_from_image(img);
 	platform->set_logo(logo);
 	platform->set_name("Windows Desktop");

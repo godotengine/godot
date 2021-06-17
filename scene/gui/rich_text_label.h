@@ -100,7 +100,7 @@ private:
 		int char_offset = 0;
 		int char_count = 0;
 
-		Line() { text_buf.instance(); }
+		Line() { text_buf.instantiate(); }
 	};
 
 	struct Item {
@@ -313,7 +313,7 @@ private:
 
 		ItemCustomFX() {
 			type = ITEM_CUSTOMFX;
-			char_fx_transform.instance();
+			char_fx_transform.instantiate();
 		}
 
 		virtual ~ItemCustomFX() {

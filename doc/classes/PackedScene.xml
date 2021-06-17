@@ -11,13 +11,13 @@
 		[codeblocks]
 		[gdscript]
 		# Use load() instead of preload() if the path isn't known at compile-time.
-		var scene = preload("res://scene.tscn").instance()
+		var scene = preload("res://scene.tscn").instantiate()
 		# Add the node as a child of the node the script is attached to.
 		add_child(scene)
 		[/gdscript]
 		[csharp]
 		// C# has no preload, so you have to always use ResourceLoader.Load&lt;PackedScene&gt;().
-		var scene = ResourceLoader.Load&lt;PackedScene&gt;("res://scene.tscn").Instance();
+		var scene = ResourceLoader.Load&lt;PackedScene&gt;("res://scene.tscn").Instantiate();
 		// Add the node as a child of the node the script is attached to.
 		AddChild(scene);
 		[/csharp]
@@ -76,7 +76,7 @@
 		<link title="2D Role Playing Game Demo">https://godotengine.org/asset-library/asset/520</link>
 	</tutorials>
 	<methods>
-		<method name="can_instance" qualifiers="const">
+		<method name="can_instantiate" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
@@ -90,7 +90,7 @@
 				Returns the [code]SceneState[/code] representing the scene file contents.
 			</description>
 		</method>
-		<method name="instance" qualifiers="const">
+		<method name="instantiate" qualifiers="const">
 			<return type="Node">
 			</return>
 			<argument index="0" name="edit_state" type="int" enum="PackedScene.GenEditState" default="0">
@@ -117,14 +117,14 @@
 	</members>
 	<constants>
 		<constant name="GEN_EDIT_STATE_DISABLED" value="0" enum="GenEditState">
-			If passed to [method instance], blocks edits to the scene state.
+			If passed to [method instantiate], blocks edits to the scene state.
 		</constant>
 		<constant name="GEN_EDIT_STATE_INSTANCE" value="1" enum="GenEditState">
-			If passed to [method instance], provides local scene resources to the local scene.
+			If passed to [method instantiate], provides local scene resources to the local scene.
 			[b]Note:[/b] Only available in editor builds.
 		</constant>
 		<constant name="GEN_EDIT_STATE_MAIN" value="2" enum="GenEditState">
-			If passed to [method instance], provides local scene resources to the local scene. Only the main scene should receive the main edit state.
+			If passed to [method instantiate], provides local scene resources to the local scene. Only the main scene should receive the main edit state.
 			[b]Note:[/b] Only available in editor builds.
 		</constant>
 	</constants>

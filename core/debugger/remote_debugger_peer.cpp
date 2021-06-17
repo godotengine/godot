@@ -84,7 +84,7 @@ RemoteDebuggerPeerTCP::RemoteDebuggerPeerTCP(Ref<StreamPeerTCP> p_tcp) {
 		thread.start(_thread_func, this);
 #endif
 	} else {
-		tcp_client.instance();
+		tcp_client.instantiate();
 	}
 }
 

@@ -972,7 +972,7 @@ void RendererStorageRD::texture_2d_placeholder_initialize(RID p_texture) {
 	//this could be better optimized to reuse an existing image , done this way
 	//for now to get it working
 	Ref<Image> image;
-	image.instance();
+	image.instantiate();
 	image->create(4, 4, false, Image::FORMAT_RGBA8);
 
 	for (int i = 0; i < 4; i++) {
@@ -988,7 +988,7 @@ void RendererStorageRD::texture_2d_layered_placeholder_initialize(RID p_texture,
 	//this could be better optimized to reuse an existing image , done this way
 	//for now to get it working
 	Ref<Image> image;
-	image.instance();
+	image.instantiate();
 	image->create(4, 4, false, Image::FORMAT_RGBA8);
 
 	for (int i = 0; i < 4; i++) {
@@ -1014,7 +1014,7 @@ void RendererStorageRD::texture_3d_placeholder_initialize(RID p_texture) {
 	//this could be better optimized to reuse an existing image , done this way
 	//for now to get it working
 	Ref<Image> image;
-	image.instance();
+	image.instantiate();
 	image->create(4, 4, false, Image::FORMAT_RGBA8);
 
 	for (int i = 0; i < 4; i++) {
@@ -1044,7 +1044,7 @@ Ref<Image> RendererStorageRD::texture_2d_get(RID p_texture) const {
 	Vector<uint8_t> data = RD::get_singleton()->texture_get_data(tex->rd_texture, 0);
 	ERR_FAIL_COND_V(data.size() == 0, Ref<Image>());
 	Ref<Image> image;
-	image.instance();
+	image.instantiate();
 	image->create(tex->width, tex->height, tex->mipmaps > 1, tex->validated_format, data);
 	ERR_FAIL_COND_V(image->is_empty(), Ref<Image>());
 	if (tex->format != tex->validated_format) {
@@ -1067,7 +1067,7 @@ Ref<Image> RendererStorageRD::texture_2d_layer_get(RID p_texture, int p_layer) c
 	Vector<uint8_t> data = RD::get_singleton()->texture_get_data(tex->rd_texture, p_layer);
 	ERR_FAIL_COND_V(data.size() == 0, Ref<Image>());
 	Ref<Image> image;
-	image.instance();
+	image.instantiate();
 	image->create(tex->width, tex->height, tex->mipmaps > 1, tex->validated_format, data);
 	ERR_FAIL_COND_V(image->is_empty(), Ref<Image>());
 	if (tex->format != tex->validated_format) {
@@ -1095,7 +1095,7 @@ Vector<Ref<Image>> RendererStorageRD::texture_3d_get(RID p_texture) const {
 		Vector<uint8_t> sub_region = all_data.subarray(bs.offset, bs.offset + bs.buffer_size - 1);
 
 		Ref<Image> img;
-		img.instance();
+		img.instantiate();
 		img->create(bs.size.width, bs.size.height, false, tex->validated_format, sub_region);
 		ERR_FAIL_COND_V(img->is_empty(), Vector<Ref<Image>>());
 		if (tex->format != tex->validated_format) {

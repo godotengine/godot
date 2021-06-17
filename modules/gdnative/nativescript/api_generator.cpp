@@ -251,7 +251,7 @@ List<ClassAPI> generate_c_api_classes() {
 				class_api.singleton_name = name;
 			}
 		}
-		class_api.is_instantiable = !class_api.is_singleton && ClassDB::can_instance(class_name);
+		class_api.is_instantiable = !class_api.is_singleton && ClassDB::can_instantiate(class_name);
 
 		{
 			List<StringName> inheriters;

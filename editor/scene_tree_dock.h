@@ -55,7 +55,7 @@ class SceneTreeDock : public VBoxContainer {
 
 	enum Tool {
 		TOOL_NEW,
-		TOOL_INSTANCE,
+		TOOL_INSTANTIATE,
 		TOOL_EXPAND_COLLAPSE,
 		TOOL_CUT,
 		TOOL_COPY,
@@ -224,7 +224,7 @@ class SceneTreeDock : public VBoxContainer {
 
 	void _filter_changed(const String &p_filter);
 
-	void _perform_instance_scenes(const Vector<String> &p_files, Node *parent, int p_pos);
+	void _perform_instantiate_scenes(const Vector<String> &p_files, Node *parent, int p_pos);
 	void _replace_with_branch_scene(const String &p_file, Node *base);
 
 	void _file_selected(String p_file);
@@ -259,8 +259,8 @@ public:
 
 	void import_subscene();
 	void set_edited_scene(Node *p_scene);
-	void instance(const String &p_file);
-	void instance_scenes(const Vector<String> &p_files, Node *p_parent = nullptr);
+	void instantiate(const String &p_file);
+	void instantiate_scenes(const Vector<String> &p_files, Node *p_parent = nullptr);
 	void set_selected(Node *p_node, bool p_emit_selected = false);
 	void fill_path_renames(Node *p_node, Node *p_new_parent, List<Pair<NodePath, NodePath>> *p_renames);
 	void perform_node_renames(Node *p_base, List<Pair<NodePath, NodePath>> *p_renames, Map<Ref<Animation>, Set<int>> *r_rem_anims = nullptr);

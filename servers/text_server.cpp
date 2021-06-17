@@ -466,16 +466,16 @@ void TextServer::initialize_hex_code_box_fonts() {
 		Vector<uint8_t> hex_box_data;
 
 		Ref<Image> image;
-		image.instance();
+		image.instantiate();
 
 		Ref<ImageTexture> hex_code_image_tex[2];
 
 		hex_box_data.resize(tamsyn5x9_png_len);
 		memcpy(hex_box_data.ptrw(), tamsyn5x9_png, tamsyn5x9_png_len);
 		image->load_png_from_buffer(hex_box_data);
-		hex_code_image_tex[0].instance();
+		hex_code_image_tex[0].instantiate();
 		hex_code_image_tex[0]->create_from_image(image);
-		hex_code_box_font_tex[0].instance();
+		hex_code_box_font_tex[0].instantiate();
 		hex_code_box_font_tex[0]->set_diffuse_texture(hex_code_image_tex[0]);
 		hex_code_box_font_tex[0]->set_texture_filter(CanvasItem::TEXTURE_FILTER_NEAREST);
 		hex_box_data.clear();
@@ -483,9 +483,9 @@ void TextServer::initialize_hex_code_box_fonts() {
 		hex_box_data.resize(tamsyn10x20_png_len);
 		memcpy(hex_box_data.ptrw(), tamsyn10x20_png, tamsyn10x20_png_len);
 		image->load_png_from_buffer(hex_box_data);
-		hex_code_image_tex[1].instance();
+		hex_code_image_tex[1].instantiate();
 		hex_code_image_tex[1]->create_from_image(image);
-		hex_code_box_font_tex[1].instance();
+		hex_code_box_font_tex[1].instantiate();
 		hex_code_box_font_tex[1]->set_diffuse_texture(hex_code_image_tex[1]);
 		hex_code_box_font_tex[1]->set_texture_filter(CanvasItem::TEXTURE_FILTER_NEAREST);
 		hex_box_data.clear();

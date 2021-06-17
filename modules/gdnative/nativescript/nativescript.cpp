@@ -170,7 +170,7 @@ String NativeScript::get_script_class_icon_path() const {
 	return script_class_icon_path;
 }
 
-bool NativeScript::can_instance() const {
+bool NativeScript::can_instantiate() const {
 	NativeScriptDesc *script_data = get_script_desc();
 
 #ifdef TOOLS_ENABLED
@@ -503,7 +503,7 @@ Variant NativeScript::_new(const Variant **p_args, int p_argcount, Callable::Cal
 	Object *owner = nullptr;
 
 	if (!(script_data->base_native_type == "")) {
-		owner = ClassDB::instance(script_data->base_native_type);
+		owner = ClassDB::instantiate(script_data->base_native_type);
 	} else {
 		owner = memnew(RefCounted);
 	}
@@ -1422,7 +1422,7 @@ void NativeScriptLanguage::init_library(const Ref<GDNativeLibrary> &lib) {
 
 	if (!E) {
 		Ref<GDNative> gdn;
-		gdn.instance();
+		gdn.instantiate();
 		gdn->set_library(lib);
 
 		// TODO check the return value?

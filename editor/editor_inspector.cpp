@@ -417,7 +417,7 @@ bool EditorPropertyRevert::may_node_be_in_instance(Node *p_node) {
 	return might_be; // or might not be
 }
 
-bool EditorPropertyRevert::get_instanced_node_original_property(Node *p_node, const StringName &p_prop, Variant &value) {
+bool EditorPropertyRevert::get_instantiated_node_original_property(Node *p_node, const StringName &p_prop, Variant &value) {
 	Node *node = p_node;
 	Node *orig = node;
 
@@ -524,7 +524,7 @@ bool EditorPropertyRevert::can_property_revert(Object *p_object, const StringNam
 	if (node && EditorPropertyRevert::may_node_be_in_instance(node)) {
 		//check for difference including instantiation
 		Variant vorig;
-		if (EditorPropertyRevert::get_instanced_node_original_property(node, p_property, vorig)) {
+		if (EditorPropertyRevert::get_instantiated_node_original_property(node, p_property, vorig)) {
 			Variant v = p_object->get(p_property);
 
 			if (EditorPropertyRevert::is_node_property_different(node, v, vorig)) {
@@ -764,7 +764,7 @@ void EditorProperty::_gui_input(const Ref<InputEvent> &p_event) {
 			Variant vorig;
 
 			Node *node = Object::cast_to<Node>(object);
-			if (node && EditorPropertyRevert::may_node_be_in_instance(node) && EditorPropertyRevert::get_instanced_node_original_property(node, property, vorig)) {
+			if (node && EditorPropertyRevert::may_node_be_in_instance(node) && EditorPropertyRevert::get_instantiated_node_original_property(node, property, vorig)) {
 				emit_changed(property, vorig.duplicate(true));
 				update_property();
 				return;

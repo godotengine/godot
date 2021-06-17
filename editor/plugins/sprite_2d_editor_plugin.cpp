@@ -186,7 +186,7 @@ void Sprite2DEditor::_update_mesh_data() {
 	}
 
 	Ref<BitMap> bm;
-	bm.instance();
+	bm.instantiate();
 	bm->create_from_image_alpha(image);
 
 	int shrink = shrink_pixels->get_value();
@@ -322,7 +322,7 @@ void Sprite2DEditor::_convert_to_mesh_2d_node() {
 	}
 
 	Ref<ArrayMesh> mesh;
-	mesh.instance();
+	mesh.instantiate();
 
 	Array a;
 	a.resize(Mesh::ARRAY_MAX);
@@ -435,7 +435,7 @@ void Sprite2DEditor::_create_light_occluder_2d_node() {
 		Vector<Vector2> outline = computed_outline_lines[i];
 
 		Ref<OccluderPolygon2D> polygon;
-		polygon.instance();
+		polygon.instantiate();
 
 		PackedVector2Array a;
 		a.resize(outline.size());

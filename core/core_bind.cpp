@@ -1850,12 +1850,12 @@ bool _ClassDB::is_parent_class(const StringName &p_class, const StringName &p_in
 	return ClassDB::is_parent_class(p_class, p_inherits);
 }
 
-bool _ClassDB::can_instance(const StringName &p_class) const {
-	return ClassDB::can_instance(p_class);
+bool _ClassDB::can_instantiate(const StringName &p_class) const {
+	return ClassDB::can_instantiate(p_class);
 }
 
-Variant _ClassDB::instance(const StringName &p_class) const {
-	Object *obj = ClassDB::instance(p_class);
+Variant _ClassDB::instantiate(const StringName &p_class) const {
+	Object *obj = ClassDB::instantiate(p_class);
 	if (!obj) {
 		return Variant();
 	}
@@ -1984,8 +1984,8 @@ void _ClassDB::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_parent_class", "class"), &_ClassDB::get_parent_class);
 	ClassDB::bind_method(D_METHOD("class_exists", "class"), &_ClassDB::class_exists);
 	ClassDB::bind_method(D_METHOD("is_parent_class", "class", "inherits"), &_ClassDB::is_parent_class);
-	ClassDB::bind_method(D_METHOD("can_instance", "class"), &_ClassDB::can_instance);
-	ClassDB::bind_method(D_METHOD("instance", "class"), &_ClassDB::instance);
+	ClassDB::bind_method(D_METHOD("can_instantiate", "class"), &_ClassDB::can_instantiate);
+	ClassDB::bind_method(D_METHOD("instantiate", "class"), &_ClassDB::instantiate);
 
 	ClassDB::bind_method(D_METHOD("class_has_signal", "class", "signal"), &_ClassDB::has_signal);
 	ClassDB::bind_method(D_METHOD("class_get_signal", "class", "signal"), &_ClassDB::get_signal);

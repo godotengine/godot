@@ -931,14 +931,14 @@ void Voxelizer::_debug_mesh(int p_idx, int p_level, const AABB &p_aabb, Ref<Mult
 Ref<MultiMesh> Voxelizer::create_debug_multimesh() {
 	Ref<MultiMesh> mm;
 
-	mm.instance();
+	mm.instantiate();
 
 	mm->set_transform_format(MultiMesh::TRANSFORM_3D);
 	mm->set_use_colors(true);
 	mm->set_instance_count(leaf_voxel_count);
 
 	Ref<ArrayMesh> mesh;
-	mesh.instance();
+	mesh.instantiate();
 
 	{
 		Array arr;
@@ -985,7 +985,7 @@ Ref<MultiMesh> Voxelizer::create_debug_multimesh() {
 
 	{
 		Ref<StandardMaterial3D> fsm;
-		fsm.instance();
+		fsm.instantiate();
 		fsm->set_flag(StandardMaterial3D::FLAG_SRGB_VERTEX_COLOR, true);
 		fsm->set_flag(StandardMaterial3D::FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
 		fsm->set_shading_mode(StandardMaterial3D::SHADING_MODE_UNSHADED);

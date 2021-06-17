@@ -104,7 +104,7 @@ Error ResourceImporterCSVTranslation::import(const String &p_source_file, const 
 
 		locales.push_back(locale);
 		Ref<Translation> translation;
-		translation.instance();
+		translation.instantiate();
 		translation->set_locale(locale);
 		translations.push_back(translation);
 	}

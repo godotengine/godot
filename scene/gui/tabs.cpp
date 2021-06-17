@@ -743,7 +743,7 @@ void Tabs::add_tab(const String &p_str, const Ref<Texture2D> &p_icon) {
 	Tab t;
 	t.text = p_str;
 	t.xl_text = tr(p_str);
-	t.text_buf.instance();
+	t.text_buf.instantiate();
 	t.text_buf->set_direction(is_layout_rtl() ? TextServer::DIRECTION_RTL : TextServer::DIRECTION_LTR);
 	t.text_buf->add_string(t.xl_text, get_theme_font("font"), get_theme_font_size("font_size"), Dictionary(), TranslationServer::get_singleton()->get_tool_locale());
 	t.icon = p_icon;

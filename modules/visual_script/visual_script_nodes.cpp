@@ -296,7 +296,7 @@ public:
 	}
 };
 
-VisualScriptNodeInstance *VisualScriptFunction::instance(VisualScriptInstance *p_instance) {
+VisualScriptNodeInstance *VisualScriptFunction::instantiate(VisualScriptInstance *p_instance) {
 	VisualScriptNodeInstanceFunction *instance = memnew(VisualScriptNodeInstanceFunction);
 	instance->node = this;
 	instance->instance = p_instance;
@@ -791,7 +791,7 @@ public:
 	}
 };
 
-VisualScriptNodeInstance *VisualScriptComposeArray::instance(VisualScriptInstance *p_instance) {
+VisualScriptNodeInstance *VisualScriptComposeArray::instantiate(VisualScriptInstance *p_instance) {
 	VisualScriptComposeArrayNode *instance = memnew(VisualScriptComposeArrayNode);
 	instance->input_count = inputports.size();
 	return instance;
@@ -1062,7 +1062,7 @@ public:
 	}
 };
 
-VisualScriptNodeInstance *VisualScriptOperator::instance(VisualScriptInstance *p_instance) {
+VisualScriptNodeInstance *VisualScriptOperator::instantiate(VisualScriptInstance *p_instance) {
 	VisualScriptNodeInstanceOperator *instance = memnew(VisualScriptNodeInstanceOperator);
 	instance->unary = get_input_value_port_count() == 1;
 	instance->op = op;
@@ -1077,7 +1077,7 @@ VisualScriptOperator::VisualScriptOperator() {
 template <Variant::Operator OP>
 static Ref<VisualScriptNode> create_op_node(const String &p_name) {
 	Ref<VisualScriptOperator> node;
-	node.instance();
+	node.instantiate();
 	node->set_operator(OP);
 	return node;
 }
@@ -1169,7 +1169,7 @@ public:
 	}
 };
 
-VisualScriptNodeInstance *VisualScriptSelect::instance(VisualScriptInstance *p_instance) {
+VisualScriptNodeInstance *VisualScriptSelect::instantiate(VisualScriptInstance *p_instance) {
 	VisualScriptNodeInstanceSelect *instance = memnew(VisualScriptNodeInstanceSelect);
 	return instance;
 }
@@ -1277,7 +1277,7 @@ public:
 	}
 };
 
-VisualScriptNodeInstance *VisualScriptVariableGet::instance(VisualScriptInstance *p_instance) {
+VisualScriptNodeInstance *VisualScriptVariableGet::instantiate(VisualScriptInstance *p_instance) {
 	VisualScriptNodeInstanceVariableGet *instance = memnew(VisualScriptNodeInstanceVariableGet);
 	instance->node = this;
 	instance->instance = p_instance;
@@ -1389,7 +1389,7 @@ public:
 	}
 };
 
-VisualScriptNodeInstance *VisualScriptVariableSet::instance(VisualScriptInstance *p_instance) {
+VisualScriptNodeInstance *VisualScriptVariableSet::instantiate(VisualScriptInstance *p_instance) {
 	VisualScriptNodeInstanceVariableSet *instance = memnew(VisualScriptNodeInstanceVariableSet);
 	instance->node = this;
 	instance->instance = p_instance;
@@ -1504,7 +1504,7 @@ public:
 	}
 };
 
-VisualScriptNodeInstance *VisualScriptConstant::instance(VisualScriptInstance *p_instance) {
+VisualScriptNodeInstance *VisualScriptConstant::instantiate(VisualScriptInstance *p_instance) {
 	VisualScriptNodeInstanceConstant *instance = memnew(VisualScriptNodeInstanceConstant);
 	instance->constant = value;
 	return instance;
@@ -1597,7 +1597,7 @@ public:
 	}
 };
 
-VisualScriptNodeInstance *VisualScriptPreload::instance(VisualScriptInstance *p_instance) {
+VisualScriptNodeInstance *VisualScriptPreload::instantiate(VisualScriptInstance *p_instance) {
 	VisualScriptNodeInstancePreload *instance = memnew(VisualScriptNodeInstancePreload);
 	instance->preload = preload;
 	return instance;
@@ -1662,7 +1662,7 @@ public:
 	}
 };
 
-VisualScriptNodeInstance *VisualScriptIndexGet::instance(VisualScriptInstance *p_instance) {
+VisualScriptNodeInstance *VisualScriptIndexGet::instantiate(VisualScriptInstance *p_instance) {
 	VisualScriptNodeInstanceIndexGet *instance = memnew(VisualScriptNodeInstanceIndexGet);
 	return instance;
 }
@@ -1732,7 +1732,7 @@ public:
 	}
 };
 
-VisualScriptNodeInstance *VisualScriptIndexSet::instance(VisualScriptInstance *p_instance) {
+VisualScriptNodeInstance *VisualScriptIndexSet::instantiate(VisualScriptInstance *p_instance) {
 	VisualScriptNodeInstanceIndexSet *instance = memnew(VisualScriptNodeInstanceIndexSet);
 	return instance;
 }
@@ -1798,7 +1798,7 @@ public:
 	}
 };
 
-VisualScriptNodeInstance *VisualScriptGlobalConstant::instance(VisualScriptInstance *p_instance) {
+VisualScriptNodeInstance *VisualScriptGlobalConstant::instantiate(VisualScriptInstance *p_instance) {
 	VisualScriptNodeInstanceGlobalConstant *instance = memnew(VisualScriptNodeInstanceGlobalConstant);
 	instance->index = index;
 	return instance;
@@ -1916,7 +1916,7 @@ public:
 	}
 };
 
-VisualScriptNodeInstance *VisualScriptClassConstant::instance(VisualScriptInstance *p_instance) {
+VisualScriptNodeInstance *VisualScriptClassConstant::instantiate(VisualScriptInstance *p_instance) {
 	VisualScriptNodeInstanceClassConstant *instance = memnew(VisualScriptNodeInstanceClassConstant);
 	instance->value = ClassDB::get_integer_constant(base_type, name, &instance->valid);
 	return instance;
@@ -2050,7 +2050,7 @@ public:
 	}
 };
 
-VisualScriptNodeInstance *VisualScriptBasicTypeConstant::instance(VisualScriptInstance *p_instance) {
+VisualScriptNodeInstance *VisualScriptBasicTypeConstant::instantiate(VisualScriptInstance *p_instance) {
 	VisualScriptNodeInstanceBasicTypeConstant *instance = memnew(VisualScriptNodeInstanceBasicTypeConstant);
 	instance->value = Variant::get_constant_value(type, name, &instance->valid);
 	return instance;
@@ -2174,7 +2174,7 @@ public:
 	}
 };
 
-VisualScriptNodeInstance *VisualScriptMathConstant::instance(VisualScriptInstance *p_instance) {
+VisualScriptNodeInstance *VisualScriptMathConstant::instantiate(VisualScriptInstance *p_instance) {
 	VisualScriptNodeInstanceMathConstant *instance = memnew(VisualScriptNodeInstanceMathConstant);
 	instance->value = const_value[constant];
 	return instance;
@@ -2268,7 +2268,7 @@ public:
 	}
 };
 
-VisualScriptNodeInstance *VisualScriptEngineSingleton::instance(VisualScriptInstance *p_instance) {
+VisualScriptNodeInstance *VisualScriptEngineSingleton::instantiate(VisualScriptInstance *p_instance) {
 	VisualScriptNodeInstanceEngineSingleton *instance = memnew(VisualScriptNodeInstanceEngineSingleton);
 	instance->singleton = Engine::get_singleton()->get_singleton_object(singleton);
 	return instance;
@@ -2394,7 +2394,7 @@ public:
 	}
 };
 
-VisualScriptNodeInstance *VisualScriptSceneNode::instance(VisualScriptInstance *p_instance) {
+VisualScriptNodeInstance *VisualScriptSceneNode::instantiate(VisualScriptInstance *p_instance) {
 	VisualScriptNodeInstanceSceneNode *instance = memnew(VisualScriptNodeInstanceSceneNode);
 	instance->node = this;
 	instance->instance = p_instance;
@@ -2574,7 +2574,7 @@ public:
 	}
 };
 
-VisualScriptNodeInstance *VisualScriptSceneTree::instance(VisualScriptInstance *p_instance) {
+VisualScriptNodeInstance *VisualScriptSceneTree::instantiate(VisualScriptInstance *p_instance) {
 	VisualScriptNodeInstanceSceneTree *instance = memnew(VisualScriptNodeInstanceSceneTree);
 	instance->node = this;
 	instance->instance = p_instance;
@@ -2655,7 +2655,7 @@ public:
 	}
 };
 
-VisualScriptNodeInstance *VisualScriptResourcePath::instance(VisualScriptInstance *p_instance) {
+VisualScriptNodeInstance *VisualScriptResourcePath::instantiate(VisualScriptInstance *p_instance) {
 	VisualScriptNodeInstanceResourcePath *instance = memnew(VisualScriptNodeInstanceResourcePath);
 	instance->path = path;
 	return instance;
@@ -2727,7 +2727,7 @@ public:
 	}
 };
 
-VisualScriptNodeInstance *VisualScriptSelf::instance(VisualScriptInstance *p_instance) {
+VisualScriptNodeInstance *VisualScriptSelf::instantiate(VisualScriptInstance *p_instance) {
 	VisualScriptNodeInstanceSelf *instance = memnew(VisualScriptNodeInstanceSelf);
 	instance->instance = p_instance;
 	return instance;
@@ -2908,7 +2908,7 @@ public:
 	}
 };
 
-VisualScriptNodeInstance *VisualScriptCustomNode::instance(VisualScriptInstance *p_instance) {
+VisualScriptNodeInstance *VisualScriptCustomNode::instantiate(VisualScriptInstance *p_instance) {
 	VisualScriptNodeInstanceCustomNode *instance = memnew(VisualScriptNodeInstanceCustomNode);
 	instance->instance = p_instance;
 	instance->node = this;
@@ -3059,7 +3059,7 @@ public:
 	}
 };
 
-VisualScriptNodeInstance *VisualScriptSubCall::instance(VisualScriptInstance *p_instance) {
+VisualScriptNodeInstance *VisualScriptSubCall::instantiate(VisualScriptInstance *p_instance) {
 	VisualScriptNodeInstanceSubCall *instance = memnew(VisualScriptNodeInstanceSubCall);
 	instance->instance = p_instance;
 	Ref<Script> script = get_script();
@@ -3172,7 +3172,7 @@ public:
 	}
 };
 
-VisualScriptNodeInstance *VisualScriptComment::instance(VisualScriptInstance *p_instance) {
+VisualScriptNodeInstance *VisualScriptComment::instantiate(VisualScriptInstance *p_instance) {
 	VisualScriptNodeInstanceComment *instance = memnew(VisualScriptNodeInstanceComment);
 	instance->instance = p_instance;
 	return instance;
@@ -3279,7 +3279,7 @@ public:
 	}
 };
 
-VisualScriptNodeInstance *VisualScriptConstructor::instance(VisualScriptInstance *p_instance) {
+VisualScriptNodeInstance *VisualScriptConstructor::instantiate(VisualScriptInstance *p_instance) {
 	VisualScriptNodeInstanceConstructor *instance = memnew(VisualScriptNodeInstanceConstructor);
 	instance->instance = p_instance;
 	instance->type = type;
@@ -3308,7 +3308,7 @@ static Ref<VisualScriptNode> create_constructor_node(const String &p_name) {
 	ERR_FAIL_COND_V(!constructor_map.has(p_name), Ref<VisualScriptNode>());
 
 	Ref<VisualScriptConstructor> vsc;
-	vsc.instance();
+	vsc.instantiate();
 	vsc->set_constructor_type(constructor_map[p_name].first);
 	vsc->set_constructor(constructor_map[p_name].second);
 
@@ -3389,7 +3389,7 @@ public:
 	}
 };
 
-VisualScriptNodeInstance *VisualScriptLocalVar::instance(VisualScriptInstance *p_instance) {
+VisualScriptNodeInstance *VisualScriptLocalVar::instantiate(VisualScriptInstance *p_instance) {
 	VisualScriptNodeInstanceLocalVar *instance = memnew(VisualScriptNodeInstanceLocalVar);
 	instance->instance = p_instance;
 	instance->name = name;
@@ -3497,7 +3497,7 @@ public:
 	}
 };
 
-VisualScriptNodeInstance *VisualScriptLocalVarSet::instance(VisualScriptInstance *p_instance) {
+VisualScriptNodeInstance *VisualScriptLocalVarSet::instantiate(VisualScriptInstance *p_instance) {
 	VisualScriptNodeInstanceLocalVarSet *instance = memnew(VisualScriptNodeInstanceLocalVarSet);
 	instance->instance = p_instance;
 	instance->name = name;
@@ -3634,7 +3634,7 @@ public:
 	}
 };
 
-VisualScriptNodeInstance *VisualScriptInputAction::instance(VisualScriptInstance *p_instance) {
+VisualScriptNodeInstance *VisualScriptInputAction::instantiate(VisualScriptInstance *p_instance) {
 	VisualScriptNodeInstanceInputAction *instance = memnew(VisualScriptNodeInstanceInputAction);
 	instance->instance = p_instance;
 	instance->action = name;
@@ -3812,7 +3812,7 @@ public:
 	}
 };
 
-VisualScriptNodeInstance *VisualScriptDeconstruct::instance(VisualScriptInstance *p_instance) {
+VisualScriptNodeInstance *VisualScriptDeconstruct::instantiate(VisualScriptInstance *p_instance) {
 	VisualScriptNodeInstanceDeconstruct *instance = memnew(VisualScriptNodeInstanceDeconstruct);
 	instance->instance = p_instance;
 	instance->outputs.resize(elements.size());
@@ -3849,7 +3849,7 @@ VisualScriptDeconstruct::VisualScriptDeconstruct() {
 template <Variant::Type T>
 static Ref<VisualScriptNode> create_node_deconst_typed(const String &p_name) {
 	Ref<VisualScriptDeconstruct> node;
-	node.instance();
+	node.instantiate();
 	node->set_deconstruct_type(T);
 	return node;
 }

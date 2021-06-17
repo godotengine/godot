@@ -128,7 +128,7 @@ void DisplayServerJavaScript::dom2godot_mod(T *emscripten_event_ptr, Ref<InputEv
 
 Ref<InputEventKey> DisplayServerJavaScript::setup_key_event(const EmscriptenKeyboardEvent *emscripten_event) {
 	Ref<InputEventKey> ev;
-	ev.instance();
+	ev.instantiate();
 	ev->set_echo(emscripten_event->repeat);
 	dom2godot_mod(emscripten_event, ev);
 	ev->set_keycode(dom_code2godot_scancode(emscripten_event->code, emscripten_event->key, false));
@@ -181,7 +181,7 @@ EM_BOOL DisplayServerJavaScript::mouse_button_callback(int p_event_type, const E
 	DisplayServerJavaScript *display = get_singleton();
 
 	Ref<InputEventMouseButton> ev;
-	ev.instance();
+	ev.instantiate();
 	ev->set_pressed(p_event_type == EMSCRIPTEN_EVENT_MOUSEDOWN);
 	ev->set_position(compute_position_in_canvas(p_event->clientX, p_event->clientY));
 	ev->set_global_position(ev->get_position());
@@ -261,7 +261,7 @@ EM_BOOL DisplayServerJavaScript::mousemove_callback(int p_event_type, const Emsc
 		return false;
 
 	Ref<InputEventMouseMotion> ev;
-	ev.instance();
+	ev.instantiate();
 	dom2godot_mod(p_event, ev);
 	ev->set_button_mask(input_mask);
 
@@ -452,7 +452,7 @@ EM_BOOL DisplayServerJavaScript::wheel_callback(int p_event_type, const Emscript
 
 	Input *input = Input::get_singleton();
 	Ref<InputEventMouseButton> ev;
-	ev.instance();
+	ev.instantiate();
 	ev->set_position(input->get_mouse_position());
 	ev->set_global_position(ev->get_position());
 
@@ -492,7 +492,7 @@ EM_BOOL DisplayServerJavaScript::wheel_callback(int p_event_type, const Emscript
 EM_BOOL DisplayServerJavaScript::touch_press_callback(int p_event_type, const EmscriptenTouchEvent *p_event, void *p_user_data) {
 	DisplayServerJavaScript *display = get_singleton();
 	Ref<InputEventScreenTouch> ev;
-	ev.instance();
+	ev.instantiate();
 	int lowest_id_index = -1;
 	for (int i = 0; i < p_event->numTouches; ++i) {
 		const EmscriptenTouchPoint &touch = p_event->touches[i];
@@ -514,7 +514,7 @@ EM_BOOL DisplayServerJavaScript::touch_press_callback(int p_event_type, const Em
 EM_BOOL DisplayServerJavaScript::touchmove_callback(int p_event_type, const EmscriptenTouchEvent *p_event, void *p_user_data) {
 	DisplayServerJavaScript *display = get_singleton();
 	Ref<InputEventScreenDrag> ev;
-	ev.instance();
+	ev.instantiate();
 	int lowest_id_index = -1;
 	for (int i = 0; i < p_event->numTouches; ++i) {
 		const EmscriptenTouchPoint &touch = p_event->touches[i];
@@ -553,12 +553,12 @@ void DisplayServerJavaScript::vk_input_text_callback(const char *p_text, int p_c
 	Input *input = Input::get_singleton();
 	Ref<InputEventKey> k;
 	for (int i = 0; i < p_cursor; i++) {
-		k.instance();
+		k.instantiate();
 		k->set_pressed(true);
 		k->set_echo(false);
 		k->set_keycode(KEY_RIGHT);
 		input->parse_input_event(k);
-		k.instance();
+		k.instantiate();
 		k->set_pressed(false);
 		k->set_echo(false);
 		k->set_keycode(KEY_RIGHT);

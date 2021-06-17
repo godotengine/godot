@@ -525,7 +525,7 @@ void EditorAudioBus::_effect_add(int p_which) {
 
 	StringName name = effect_options->get_item_metadata(p_which);
 
-	Object *fx = ClassDB::instance(name);
+	Object *fx = ClassDB::instantiate(name);
 	ERR_FAIL_COND(!fx);
 	AudioEffect *afx = Object::cast_to<AudioEffect>(fx);
 	ERR_FAIL_COND(!afx);
@@ -921,7 +921,7 @@ EditorAudioBus::EditorAudioBus(EditorAudioBuses *p_buses, bool p_is_master) {
 	ClassDB::get_inheriters_from_class("AudioEffect", &effects);
 	effects.sort_custom<StringName::AlphCompare>();
 	for (List<StringName>::Element *E = effects.front(); E; E = E->next()) {
-		if (!ClassDB::can_instance(E->get())) {
+		if (!ClassDB::can_instantiate(E->get())) {
 			continue;
 		}
 
@@ -1238,7 +1238,7 @@ void EditorAudioBuses::_file_dialog_callback(const String &p_string) {
 	} else if (file_dialog->get_file_mode() == EditorFileDialog::FILE_MODE_SAVE_FILE) {
 		if (new_layout) {
 			Ref<AudioBusLayout> empty_state;
-			empty_state.instance();
+			empty_state.instantiate();
 			AudioServer::get_singleton()->set_bus_layout(empty_state);
 		}
 

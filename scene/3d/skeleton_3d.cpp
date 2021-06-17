@@ -797,7 +797,7 @@ Ref<SkinReference> Skeleton3D::register_skin(const Ref<Skin> &p_skin) {
 		//when skeletons did not support skins. It is also used by gizmo
 		//to display the skeleton.
 
-		skin.instance();
+		skin.instantiate();
 		skin->set_bind_count(bones.size());
 		_update_process_order(); //just in case
 
@@ -826,7 +826,7 @@ Ref<SkinReference> Skeleton3D::register_skin(const Ref<Skin> &p_skin) {
 	ERR_FAIL_COND_V(skin.is_null(), Ref<SkinReference>());
 
 	Ref<SkinReference> skin_ref;
-	skin_ref.instance();
+	skin_ref.instantiate();
 
 	skin_ref->skeleton_node = this;
 	skin_ref->bind_count = 0;

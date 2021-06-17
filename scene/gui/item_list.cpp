@@ -57,7 +57,7 @@ int ItemList::add_item(const String &p_item, const Ref<Texture2D> &p_texture, bo
 	item.icon_region = Rect2i();
 	item.icon_modulate = Color(1, 1, 1, 1);
 	item.text = p_item;
-	item.text_buf.instance();
+	item.text_buf.instantiate();
 	item.selectable = p_selectable;
 	item.selected = false;
 	item.disabled = false;
@@ -80,7 +80,7 @@ int ItemList::add_icon_item(const Ref<Texture2D> &p_item, bool p_selectable) {
 	item.icon_region = Rect2i();
 	item.icon_modulate = Color(1, 1, 1, 1);
 	//item.text=p_item;
-	item.text_buf.instance();
+	item.text_buf.instantiate();
 	item.selectable = p_selectable;
 	item.selected = false;
 	item.disabled = false;

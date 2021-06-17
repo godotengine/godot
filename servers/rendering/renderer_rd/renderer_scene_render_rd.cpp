@@ -486,7 +486,7 @@ Ref<Image> RendererSceneRenderRD::environment_bake_panorama(RID p_env, bool p_ba
 		color.b *= env->bg_energy;
 
 		Ref<Image> ret;
-		ret.instance();
+		ret.instantiate();
 		ret->create(p_size.width, p_size.height, false, Image::FORMAT_RGBAF);
 		for (int i = 0; i < p_size.width; i++) {
 			for (int j = 0; j < p_size.height; j++) {
@@ -4174,7 +4174,7 @@ TypedArray<Image> RendererSceneRenderRD::bake_render_uv2(RID p_base, const Vecto
 	{
 		PackedByteArray data = RD::get_singleton()->texture_get_data(albedo_alpha_tex, 0);
 		Ref<Image> img;
-		img.instance();
+		img.instantiate();
 		img->create(p_image_size.width, p_image_size.height, false, Image::FORMAT_RGBA8, data);
 		RD::get_singleton()->free(albedo_alpha_tex);
 		ret.push_back(img);
@@ -4183,7 +4183,7 @@ TypedArray<Image> RendererSceneRenderRD::bake_render_uv2(RID p_base, const Vecto
 	{
 		PackedByteArray data = RD::get_singleton()->texture_get_data(normal_tex, 0);
 		Ref<Image> img;
-		img.instance();
+		img.instantiate();
 		img->create(p_image_size.width, p_image_size.height, false, Image::FORMAT_RGBA8, data);
 		RD::get_singleton()->free(normal_tex);
 		ret.push_back(img);
@@ -4192,7 +4192,7 @@ TypedArray<Image> RendererSceneRenderRD::bake_render_uv2(RID p_base, const Vecto
 	{
 		PackedByteArray data = RD::get_singleton()->texture_get_data(orm_tex, 0);
 		Ref<Image> img;
-		img.instance();
+		img.instantiate();
 		img->create(p_image_size.width, p_image_size.height, false, Image::FORMAT_RGBA8, data);
 		RD::get_singleton()->free(orm_tex);
 		ret.push_back(img);
@@ -4201,7 +4201,7 @@ TypedArray<Image> RendererSceneRenderRD::bake_render_uv2(RID p_base, const Vecto
 	{
 		PackedByteArray data = RD::get_singleton()->texture_get_data(emission_tex, 0);
 		Ref<Image> img;
-		img.instance();
+		img.instantiate();
 		img->create(p_image_size.width, p_image_size.height, false, Image::FORMAT_RGBAH, data);
 		RD::get_singleton()->free(emission_tex);
 		ret.push_back(img);

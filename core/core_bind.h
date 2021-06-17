@@ -585,8 +585,8 @@ public:
 	StringName get_parent_class(const StringName &p_class) const;
 	bool class_exists(const StringName &p_class) const;
 	bool is_parent_class(const StringName &p_class, const StringName &p_inherits) const;
-	bool can_instance(const StringName &p_class) const;
-	Variant instance(const StringName &p_class) const;
+	bool can_instantiate(const StringName &p_class) const;
+	Variant instantiate(const StringName &p_class) const;
 
 	bool has_signal(StringName p_class, StringName p_signal) const;
 	Dictionary get_signal(StringName p_class, StringName p_signal) const;

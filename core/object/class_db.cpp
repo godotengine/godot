@@ -516,7 +516,7 @@ void ClassDB::instance_get_native_extension_data(ObjectNativeExtension **r_exten
 	}
 }
 
-Object *ClassDB::instance(const StringName &p_class) {
+Object *ClassDB::instantiate(const StringName &p_class) {
 	ClassInfo *ti;
 	{
 		OBJTYPE_RLOCK;
@@ -544,7 +544,7 @@ Object *ClassDB::instance(const StringName &p_class) {
 	return ti->creation_func();
 }
 
-bool ClassDB::can_instance(const StringName &p_class) {
+bool ClassDB::can_instantiate(const StringName &p_class) {
 	OBJTYPE_RLOCK;
 
 	ClassInfo *ti = classes.getptr(p_class);
@@ -1522,8 +1522,8 @@ Variant ClassDB::class_get_default_property_value(const StringName &p_class, con
 		if (Engine::get_singleton()->has_singleton(p_class)) {
 			c = Engine::get_singleton()->get_singleton_object(p_class);
 			cleanup_c = false;
-		} else if (ClassDB::can_instance(p_class)) {
-			c = ClassDB::instance(p_class);
+		} else if (ClassDB::can_instantiate(p_class)) {
+			c = ClassDB::instantiate(p_class);
 			cleanup_c = true;
 		}
 

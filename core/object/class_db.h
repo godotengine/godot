@@ -230,8 +230,8 @@ public:
 	static StringName get_compatibility_remapped_class(const StringName &p_class);
 	static bool class_exists(const StringName &p_class);
 	static bool is_parent_class(const StringName &p_class, const StringName &p_inherits);
-	static bool can_instance(const StringName &p_class);
-	static Object *instance(const StringName &p_class);
+	static bool can_instantiate(const StringName &p_class);
+	static Object *instantiate(const StringName &p_class);
 	static void instance_get_native_extension_data(ObjectNativeExtension **r_extension, void **r_extension_instance);
 	static APIType get_api_type(const StringName &p_class);
 

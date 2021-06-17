@@ -74,7 +74,7 @@ void CPUParticles2DEditorPlugin::_menu_callback(int p_idx) {
 
 void CPUParticles2DEditorPlugin::_generate_emission_mask() {
 	Ref<Image> img;
-	img.instance();
+	img.instantiate();
 	Error err = ImageLoader::load_image(source_emission_file, img);
 	ERR_FAIL_COND_MSG(err != OK, "Error loading image '" + source_emission_file + "'.");
 

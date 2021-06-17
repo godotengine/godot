@@ -126,7 +126,7 @@ Ref<AudioStreamPlayback> AudioStreamMP3::instance_playback() {
 			"to it. AudioStreamMP3 should not be created from the "
 			"inspector or with `.new()`. Instead, load an audio file.");
 
-	mp3s.instance();
+	mp3s.instantiate();
 	mp3s->mp3_stream = Ref<AudioStreamMP3>(this);
 	mp3s->mp3d = (mp3dec_ex_t *)memalloc(sizeof(mp3dec_ex_t));
 

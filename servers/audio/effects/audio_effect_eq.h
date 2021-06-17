@@ -66,7 +66,7 @@ protected:
 	static void _bind_methods();
 
 public:
-	Ref<AudioEffectInstance> instance() override;
+	Ref<AudioEffectInstance> instantiate() override;
 	void set_band_gain_db(int p_band, float p_volume);
 	float get_band_gain_db(int p_band) const;
 	int get_band_count() const;

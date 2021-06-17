@@ -661,7 +661,7 @@ Camera3D::Camera3D() {
 	set_perspective(75.0, 0.05, 4000.0);
 	RenderingServer::get_singleton()->camera_set_cull_mask(camera, layers);
 	//active=false;
-	velocity_tracker.instance();
+	velocity_tracker.instantiate();
 	set_notify_transform(true);
 	set_disable_scale(true);
 }

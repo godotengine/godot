@@ -944,7 +944,7 @@ Variant SceneTreeEditor::get_drag_data_fw(const Point2 &p_point, Control *p_from
 
 		Node *n = get_node(np);
 		if (n) {
-			// Only allow selection if not part of an instanced scene.
+			// Only allow selection if not part of an instantiated scene.
 			if (!n->get_owner() || n->get_owner() == get_scene_node() || n->get_owner()->get_filename() == String()) {
 				selected.push_back(n);
 				icons.push_back(next->get_icon(0));

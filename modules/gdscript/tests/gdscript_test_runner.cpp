@@ -75,14 +75,14 @@ void init_autoloads() {
 		Node *n = nullptr;
 		if (res->is_class("PackedScene")) {
 			Ref<PackedScene> ps = res;
-			n = ps->instance();
+			n = ps->instantiate();
 		} else if (res->is_class("Script")) {
 			Ref<Script> script_res = res;
 			StringName ibt = script_res->get_instance_base_type();
 			bool valid_type = ClassDB::is_parent_class(ibt, "Node");
 			ERR_CONTINUE_MSG(!valid_type, "Script does not inherit a Node: " + info.path);
 
-			Object *obj = ClassDB::instance(ibt);
+			Object *obj = ClassDB::instantiate(ibt);
 
 			ERR_CONTINUE_MSG(obj == nullptr,
 					"Cannot instance script for autoload, expected 'Node' inheritance, got: " +
@@ -420,7 +420,7 @@ GDScriptTest::TestResult GDScriptTest::execute_test_code(bool p_is_generating) {
 
 	// Create script.
 	Ref<GDScript> script;
-	script.instance();
+	script.instantiate();
 	script->set_path(source_file);
 	script->set_script_path(source_file);
 	err = script->load_source_code(source_file);
@@ -510,7 +510,7 @@ GDScriptTest::TestResult GDScriptTest::execute_test_code(bool p_is_generating) {
 	script->reload();
 
 	// Create object instance for test.
-	Object *obj = ClassDB::instance(script->get_native()->get_name());
+	Object *obj = ClassDB::instantiate(script->get_native()->get_name());
 	Ref<RefCounted> obj_ref;
 	if (obj->is_ref_counted()) {
 		obj_ref = Ref<RefCounted>(Object::cast_to<RefCounted>(obj));

@@ -997,7 +997,7 @@ void AudioStreamPlayer3D::_bind_methods() {
 }
 
 AudioStreamPlayer3D::AudioStreamPlayer3D() {
-	velocity_tracker.instance();
+	velocity_tracker.instantiate();
 	AudioServer::get_singleton()->connect("bus_layout_changed", callable_mp(this, &AudioStreamPlayer3D::_bus_layout_changed));
 	set_disable_scale(true);
 }

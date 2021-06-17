@@ -435,7 +435,7 @@ void SceneImportSettings::open_settings(const String &p_path) {
 		base_subresource_settings.clear();
 
 		Ref<ConfigFile> config;
-		config.instance();
+		config.instantiate();
 		Error err = config->load(p_path + ".import");
 		if (err == OK) {
 			List<String> keys;
@@ -1105,12 +1105,12 @@ SceneImportSettings::SceneImportSettings() {
 
 	{
 		Ref<StandardMaterial3D> selection_mat;
-		selection_mat.instance();
+		selection_mat.instantiate();
 		selection_mat->set_shading_mode(StandardMaterial3D::SHADING_MODE_UNSHADED);
 		selection_mat->set_albedo(Color(1, 0.8, 1.0));
 
 		Ref<SurfaceTool> st;
-		st.instance();
+		st.instantiate();
 		st->begin(Mesh::PRIMITIVE_LINES);
 
 		AABB base_aabb;
@@ -1126,7 +1126,7 @@ SceneImportSettings::SceneImportSettings() {
 			st->add_vertex(b.lerp(a, 0.2));
 		}
 
-		selection_mesh.instance();
+		selection_mesh.instantiate();
 		st->commit(selection_mesh);
 		selection_mesh->surface_set_material(0, selection_mat);
 
@@ -1141,7 +1141,7 @@ SceneImportSettings::SceneImportSettings() {
 		base_viewport->add_child(mesh_preview);
 		mesh_preview->hide();
 
-		material_preview.instance();
+		material_preview.instantiate();
 	}
 
 	inspector = memnew(EditorInspector);

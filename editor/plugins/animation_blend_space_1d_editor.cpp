@@ -386,7 +386,7 @@ void AnimationNodeBlendSpace1DEditor::_add_menu_type(int p_index) {
 	} else {
 		String type = menu->get_item_metadata(p_index);
 
-		Object *obj = ClassDB::instance(type);
+		Object *obj = ClassDB::instantiate(type);
 		ERR_FAIL_COND(!obj);
 		AnimationNode *an = Object::cast_to<AnimationNode>(obj);
 		ERR_FAIL_COND(!an);
@@ -413,7 +413,7 @@ void AnimationNodeBlendSpace1DEditor::_add_menu_type(int p_index) {
 
 void AnimationNodeBlendSpace1DEditor::_add_animation_type(int p_index) {
 	Ref<AnimationNodeAnimation> anim;
-	anim.instance();
+	anim.instantiate();
 
 	anim->set_animation(animations_to_add[p_index]);
 
@@ -594,7 +594,7 @@ AnimationNodeBlendSpace1DEditor::AnimationNodeBlendSpace1DEditor() {
 	add_child(top_hb);
 
 	Ref<ButtonGroup> bg;
-	bg.instance();
+	bg.instantiate();
 
 	tool_blend = memnew(Button);
 	tool_blend->set_flat(true);

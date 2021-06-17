@@ -191,7 +191,7 @@ protected:
 	void _get_property_list(List<PropertyInfo> *p_properties) const;
 
 public:
-	bool can_instance() const override;
+	bool can_instantiate() const override;
 	StringName get_instance_base_type() const override;
 	ScriptInstance *instance_create(Object *p_this) override;
 	PlaceHolderScriptInstance *placeholder_instance_create(Object *p_this) override;

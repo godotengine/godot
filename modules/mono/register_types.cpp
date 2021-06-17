@@ -52,10 +52,10 @@ void register_mono_types() {
 	script_language_cs->set_language_index(ScriptServer::get_language_count());
 	ScriptServer::register_language(script_language_cs);
 
-	resource_loader_cs.instance();
+	resource_loader_cs.instantiate();
 	ResourceLoader::add_resource_format_loader(resource_loader_cs);
 
-	resource_saver_cs.instance();
+	resource_saver_cs.instantiate();
 	ResourceSaver::add_resource_format_saver(resource_saver_cs);
 }
 

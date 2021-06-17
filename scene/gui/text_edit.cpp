@@ -1114,7 +1114,7 @@ void TextEdit::_notification(int p_what) {
 									}
 
 									Ref<TextLine> tl;
-									tl.instance();
+									tl.instantiate();
 									tl->add_string(text, cache.font, cache.font_size);
 
 									int yofs = ofs_y + (row_height - tl->get_size().y) / 2;

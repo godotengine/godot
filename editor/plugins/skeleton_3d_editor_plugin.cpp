@@ -700,7 +700,7 @@ Skeleton3DEditorPlugin::Skeleton3DEditorPlugin(EditorNode *p_node) {
 	editor = p_node;
 
 	Ref<EditorInspectorPluginSkeleton> skeleton_plugin;
-	skeleton_plugin.instance();
+	skeleton_plugin.instantiate();
 	skeleton_plugin->editor = editor;
 
 	EditorInspector::add_inspector_plugin(skeleton_plugin);

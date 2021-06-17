@@ -104,7 +104,7 @@ Ref<Script> GDScriptLanguage::get_template(const String &p_class_name, const Str
 	_template = _get_processed_template(_template, p_base_class_name);
 
 	Ref<GDScript> script;
-	script.instance();
+	script.instantiate();
 	script->set_source_code(_template);
 
 	return script;
@@ -2900,7 +2900,7 @@ static Error _lookup_symbol_from_base(const GDScriptParser::DataType &p_base, co
 				Variant v;
 				REF v_ref;
 				if (base_type.builtin_type == Variant::OBJECT) {
-					v_ref.instance();
+					v_ref.instantiate();
 					v = v_ref;
 				} else {
 					Callable::CallError err;

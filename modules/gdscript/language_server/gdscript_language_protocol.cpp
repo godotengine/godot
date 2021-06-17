@@ -293,10 +293,10 @@ bool GDScriptLanguageProtocol::is_goto_native_symbols_enabled() const {
 }
 
 GDScriptLanguageProtocol::GDScriptLanguageProtocol() {
-	server.instance();
+	server.instantiate();
 	singleton = this;
-	workspace.instance();
-	text_document.instance();
+	workspace.instantiate();
+	text_document.instantiate();
 	set_scope("textDocument", text_document.ptr());
 	set_scope("completionItem", text_document.ptr());
 	set_scope("workspace", workspace.ptr());

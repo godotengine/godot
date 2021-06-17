@@ -113,7 +113,7 @@ public:
 			}
 
 			Ref<VisualScriptFunctionState> state;
-			state.instance();
+			state.instantiate();
 
 			int ret = STEP_YIELD_BIT;
 			switch (mode) {
@@ -138,7 +138,7 @@ public:
 	}
 };
 
-VisualScriptNodeInstance *VisualScriptYield::instance(VisualScriptInstance *p_instance) {
+VisualScriptNodeInstance *VisualScriptYield::instantiate(VisualScriptInstance *p_instance) {
 	VisualScriptNodeInstanceYield *instance = memnew(VisualScriptNodeInstanceYield);
 	//instance->instance=p_instance;
 	instance->mode = yield_mode;
@@ -202,7 +202,7 @@ VisualScriptYield::VisualScriptYield() {
 template <VisualScriptYield::YieldMode MODE>
 static Ref<VisualScriptNode> create_yield_node(const String &p_name) {
 	Ref<VisualScriptYield> node;
-	node.instance();
+	node.instantiate();
 	node->set_yield_mode(MODE);
 	return node;
 }
@@ -548,7 +548,7 @@ public:
 			}
 
 			Ref<VisualScriptFunctionState> state;
-			state.instance();
+			state.instantiate();
 
 			state->connect_to_signal(object, signal, Array());
 
@@ -559,7 +559,7 @@ public:
 	}
 };
 
-VisualScriptNodeInstance *VisualScriptYieldSignal::instance(VisualScriptInstance *p_instance) {
+VisualScriptNodeInstance *VisualScriptYieldSignal::instantiate(VisualScriptInstance *p_instance) {
 	VisualScriptNodeInstanceYieldSignal *instance = memnew(VisualScriptNodeInstanceYieldSignal);
 	instance->node = this;
 	instance->instance = p_instance;
@@ -578,7 +578,7 @@ VisualScriptYieldSignal::VisualScriptYieldSignal() {
 template <VisualScriptYieldSignal::CallMode cmode>
 static Ref<VisualScriptNode> create_yield_signal_node(const String &p_name) {
 	Ref<VisualScriptYieldSignal> node;
-	node.instance();
+	node.instantiate();
 	node->set_call_mode(cmode);
 	return node;
 }

@@ -260,7 +260,7 @@ static Ref<Image> basis_universal_unpacker(const Vector<uint8_t> &p_buffer) {
 		};
 	};
 
-	image.instance();
+	image.instantiate();
 	image->create(info.m_width, info.m_height, info.m_total_levels > 1, imgfmt, gpudata);
 
 	return image;

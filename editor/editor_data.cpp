@@ -476,7 +476,7 @@ Variant EditorData::instance_custom_type(const String &p_type, const String &p_i
 			if (get_custom_types()[p_inherits][i].name == p_type) {
 				Ref<Script> script = get_custom_types()[p_inherits][i].script;
 
-				Variant ob = ClassDB::instance(p_inherits);
+				Variant ob = ClassDB::instantiate(p_inherits);
 				ERR_FAIL_COND_V(!ob, Variant());
 				Node *n = Object::cast_to<Node>(ob);
 				if (n) {
@@ -603,7 +603,7 @@ bool EditorData::check_and_update_scene(int p_idx) {
 
 	if (must_reload) {
 		Ref<PackedScene> pscene;
-		pscene.instance();
+		pscene.instantiate();
 
 		EditorProgress ep("update_scene", TTR("Updating Scene"), 2);
 		ep.step(TTR("Storing local changes..."), 0);
@@ -611,7 +611,7 @@ bool EditorData::check_and_update_scene(int p_idx) {
 		Error err = pscene->pack(edited_scene[p_idx].root);
 		ERR_FAIL_COND_V(err != OK, false);
 		ep.step(TTR("Updating scene..."), 1);
-		Node *new_scene = pscene->instance(PackedScene::GEN_EDIT_STATE_MAIN);
+		Node *new_scene = pscene->instantiate(PackedScene::GEN_EDIT_STATE_MAIN);
 		ERR_FAIL_COND_V(!new_scene, false);
 
 		//transfer selection
@@ -908,7 +908,7 @@ StringName EditorData::script_class_get_base(const String &p_class) const {
 
 Variant EditorData::script_class_instance(const String &p_class) {
 	if (ScriptServer::is_global_class(p_class)) {
-		Variant obj = ClassDB::instance(ScriptServer::get_global_class_native_base(p_class));
+		Variant obj = ClassDB::instantiate(ScriptServer::get_global_class_native_base(p_class));
 		if (obj) {
 			Ref<Script> script = script_class_load_script(p_class);
 			if (script.is_valid()) {

@@ -594,7 +594,7 @@ void Viewport::_process_picking() {
 
 		if (!has_mouse_event) {
 			Ref<InputEventMouseMotion> mm;
-			mm.instance();
+			mm.instantiate();
 
 			mm->set_device(InputEvent::DEVICE_ID_INTERNAL);
 			mm->set_global_position(physics_last_mousepos);
@@ -2585,7 +2585,7 @@ void Viewport::_drop_mouse_focus() {
 	for (int i = 0; i < 3; i++) {
 		if (mask & (1 << i)) {
 			Ref<InputEventMouseButton> mb;
-			mb.instance();
+			mb.instantiate();
 			mb->set_position(c->get_local_mouse_position());
 			mb->set_global_position(c->get_local_mouse_position());
 			mb->set_button_index(i + 1);
@@ -2661,7 +2661,7 @@ void Viewport::_post_gui_grab_click_focus() {
 		for (int i = 0; i < 3; i++) {
 			if (mask & (1 << i)) {
 				Ref<InputEventMouseButton> mb;
-				mb.instance();
+				mb.instantiate();
 
 				//send unclick
 
@@ -2679,7 +2679,7 @@ void Viewport::_post_gui_grab_click_focus() {
 		for (int i = 0; i < 3; i++) {
 			if (mask & (1 << i)) {
 				Ref<InputEventMouseButton> mb;
-				mb.instance();
+				mb.instantiate();
 
 				//send click
 
@@ -3698,7 +3698,7 @@ Viewport::Viewport() {
 	viewport = RenderingServer::get_singleton()->viewport_create();
 	texture_rid = RenderingServer::get_singleton()->viewport_get_texture(viewport);
 
-	default_texture.instance();
+	default_texture.instantiate();
 	default_texture->vp = const_cast<Viewport *>(this);
 	viewport_textures.insert(default_texture.ptr());
 	default_texture->proxy = RS::get_singleton()->texture_proxy_create(texture_rid);

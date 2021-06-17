@@ -157,13 +157,13 @@
 			Largest amount of memory the message queue buffer has used, in bytes. The message queue is used for deferred functions calls and notifications.
 		</constant>
 		<constant name="OBJECT_COUNT" value="6" enum="Monitor">
-			Number of objects currently instanced (including nodes).
+			Number of objects currently instantiated (including nodes).
 		</constant>
 		<constant name="OBJECT_RESOURCE_COUNT" value="7" enum="Monitor">
 			Number of resources currently used.
 		</constant>
 		<constant name="OBJECT_NODE_COUNT" value="8" enum="Monitor">
-			Number of nodes currently instanced in the scene tree. This also includes the root node.
+			Number of nodes currently instantiated in the scene tree. This also includes the root node.
 		</constant>
 		<constant name="OBJECT_ORPHAN_NODE_COUNT" value="9" enum="Monitor">
 			Number of orphan nodes, i.e. nodes which are not parented to a node of the scene tree.

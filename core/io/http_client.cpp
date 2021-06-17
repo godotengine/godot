@@ -730,7 +730,7 @@ int HTTPClient::get_read_chunk_size() const {
 }
 
 HTTPClient::HTTPClient() {
-	tcp_connection.instance();
+	tcp_connection.instantiate();
 }
 
 HTTPClient::~HTTPClient() {}

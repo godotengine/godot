@@ -57,7 +57,7 @@ void EditorPluginSettings::update_plugins() {
 
 	for (int i = 0; i < plugins.size(); i++) {
 		Ref<ConfigFile> cf;
-		cf.instance();
+		cf.instantiate();
 		const String path = plugins[i];
 
 		Error err2 = cf->load(path);

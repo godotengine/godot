@@ -794,7 +794,7 @@ void AudioServer::_update_bus_effects(int p_bus) {
 	for (int i = 0; i < buses[p_bus]->channels.size(); i++) {
 		buses.write[p_bus]->channels.write[i].effect_instances.resize(buses[p_bus]->effects.size());
 		for (int j = 0; j < buses[p_bus]->effects.size(); j++) {
-			Ref<AudioEffectInstance> fx = buses.write[p_bus]->effects.write[j].effect->instance();
+			Ref<AudioEffectInstance> fx = buses.write[p_bus]->effects.write[j].effect->instantiate();
 			if (Object::cast_to<AudioEffectCompressorInstance>(*fx)) {
 				Object::cast_to<AudioEffectCompressorInstance>(*fx)->set_current_channel(i);
 			}
@@ -813,7 +813,7 @@ void AudioServer::add_bus_effect(int p_bus, const Ref<AudioEffect> &p_effect, in
 
 	Bus::Effect fx;
 	fx.effect = p_effect;
-	//fx.instance=p_effect->instance();
+	//fx.instance=p_effect->instantiate();
 	fx.enabled = true;
 #ifdef DEBUG_ENABLED
 	fx.prof_time = 0;
@@ -1188,7 +1188,7 @@ void AudioServer::set_bus_layout(const Ref<AudioBusLayout> &p_bus_layout) {
 
 Ref<AudioBusLayout> AudioServer::generate_bus_layout() const {
 	Ref<AudioBusLayout> state;
-	state.instance();
+	state.instantiate();
 
 	state->buses.resize(buses.size());
 

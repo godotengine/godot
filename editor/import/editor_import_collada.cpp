@@ -850,7 +850,7 @@ Error ColladaImport::_create_mesh_surfaces(bool p_optimize, Ref<EditorSceneImpor
 			}
 
 			Ref<SurfaceTool> surftool;
-			surftool.instance();
+			surftool.instantiate();
 			surftool->begin(Mesh::PRIMITIVE_TRIANGLES);
 
 			for (int k = 0; k < vertex_array.size(); k++) {

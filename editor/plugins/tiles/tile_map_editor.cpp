@@ -1756,7 +1756,7 @@ TileMapEditorTilesPlugin::TileMapEditorTilesPlugin() {
 
 	HBoxContainer *tilemap_tiles_tools_buttons = memnew(HBoxContainer);
 
-	tool_buttons_group.instance();
+	tool_buttons_group.instantiate();
 
 	select_tool_button = memnew(Button);
 	select_tool_button->set_flat(true);
@@ -3043,11 +3043,11 @@ void TileMapEditorTerrainsPlugin::_update_terrains_tree() {
 				}
 			} else {
 				Ref<Image> image;
-				image.instance();
+				image.instantiate();
 				image->create(1, 1, false, Image::FORMAT_RGBA8);
 				image->set_pixel(0, 0, tile_set->get_terrain_color(terrain_set_index, terrain_index));
 				Ref<ImageTexture> image_texture;
-				image_texture.instance();
+				image_texture.instantiate();
 				image_texture->create_from_image(image);
 				image_texture->set_size_override(Size2(32, 32) * EDSCALE);
 				icon = image_texture;
@@ -3188,7 +3188,7 @@ TileMapEditorTerrainsPlugin::TileMapEditorTerrainsPlugin() {
 
 	HBoxContainer *tilemap_tiles_tools_buttons = memnew(HBoxContainer);
 
-	tool_buttons_group.instance();
+	tool_buttons_group.instantiate();
 
 	paint_tool_button = memnew(Button);
 	paint_tool_button->set_flat(true);

@@ -50,10 +50,10 @@ void register_nativescript_types() {
 	native_script_language->set_language_index(ScriptServer::get_language_count());
 	ScriptServer::register_language(native_script_language);
 
-	resource_saver_gdns.instance();
+	resource_saver_gdns.instantiate();
 	ResourceSaver::add_resource_format_saver(resource_saver_gdns);
 
-	resource_loader_gdns.instance();
+	resource_loader_gdns.instantiate();
 	ResourceLoader::add_resource_format_loader(resource_loader_gdns);
 }
 

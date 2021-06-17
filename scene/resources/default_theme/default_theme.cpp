@@ -559,7 +559,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	// ScrollContainer
 
 	Ref<StyleBoxEmpty> empty;
-	empty.instance();
+	empty.instantiate();
 	theme->set_stylebox("bg", "ScrollContainer", empty);
 
 	// WindowDialog
@@ -979,7 +979,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 
 void make_default_theme(bool p_hidpi, Ref<Font> p_font) {
 	Ref<Theme> t;
-	t.instance();
+	t.instantiate();
 
 	Ref<StyleBox> default_style;
 	Ref<Texture2D> default_icon;
@@ -993,10 +993,10 @@ void make_default_theme(bool p_hidpi, Ref<Font> p_font) {
 		// The default DynamicFont is chosen to have a small file size since it's
 		// embedded in both editor and export template binaries.
 		Ref<Font> dynamic_font;
-		dynamic_font.instance();
+		dynamic_font.instantiate();
 
 		Ref<FontData> dynamic_font_data;
-		dynamic_font_data.instance();
+		dynamic_font_data.instantiate();
 		dynamic_font_data->load_memory(_font_OpenSans_SemiBold, _font_OpenSans_SemiBold_size, "ttf", default_font_size);
 		dynamic_font->add_data(dynamic_font_data);
 

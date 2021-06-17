@@ -45,7 +45,7 @@ void DTLSServerMbedTLS::stop() {
 
 Ref<PacketPeerDTLS> DTLSServerMbedTLS::take_connection(Ref<PacketPeerUDP> p_udp_peer) {
 	Ref<PacketPeerMbedDTLS> out;
-	out.instance();
+	out.instantiate();
 
 	ERR_FAIL_COND_V(!out.is_valid(), out);
 	ERR_FAIL_COND_V(!p_udp_peer.is_valid(), out);
@@ -68,7 +68,7 @@ void DTLSServerMbedTLS::finalize() {
 }
 
 DTLSServerMbedTLS::DTLSServerMbedTLS() {
-	_cookies.instance();
+	_cookies.instantiate();
 }
 
 DTLSServerMbedTLS::~DTLSServerMbedTLS() {

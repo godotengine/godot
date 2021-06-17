@@ -596,7 +596,7 @@ Error AudioStreamSample::save_to_wav(const String &p_path) {
 
 Ref<AudioStreamPlayback> AudioStreamSample::instance_playback() {
 	Ref<AudioStreamPlaybackSample> sample;
-	sample.instance();
+	sample.instantiate();
 	sample->base = Ref<AudioStreamSample>(this);
 	return sample;
 }

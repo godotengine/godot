@@ -725,7 +725,7 @@ int VisualScript::get_available_id() const {
 
 /////////////////////////////////
 
-bool VisualScript::can_instance() const {
+bool VisualScript::can_instantiate() const {
 	return true; // ScriptServer::is_scripting_enabled();
 }
 
@@ -1958,7 +1958,7 @@ void VisualScriptInstance::create(const Ref<VisualScript> &p_script, Object *p_o
 			for (const Set<int>::Element *F = node_ids.front(); F; F = F->next()) {
 				Ref<VisualScriptNode> node = script->nodes[F->get()].node;
 
-				VisualScriptNodeInstance *instance = node->instance(this); // Create instance.
+				VisualScriptNodeInstance *instance = node->instantiate(this); // Create instance.
 				ERR_FAIL_COND(!instance);
 
 				instance->base = node.ptr();
@@ -2262,7 +2262,7 @@ void VisualScriptLanguage::get_string_delimiters(List<String> *p_delimiters) con
 
 Ref<Script> VisualScriptLanguage::get_template(const String &p_class_name, const String &p_base_class_name) const {
 	Ref<VisualScript> script;
-	script.instance();
+	script.instantiate();
 	script->set_instance_base_type(p_base_class_name);
 	return script;
 }

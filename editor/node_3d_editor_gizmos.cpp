@@ -759,7 +759,7 @@ EditorNode3DGizmo::EditorNode3DGizmo() {
 	hidden = false;
 	base = nullptr;
 	selected = false;
-	instanced = false;
+	instantiated = false;
 	spatial_node = nullptr;
 	gizmo_plugin = nullptr;
 	selectable_icon_size = -1.0f;
@@ -3427,7 +3427,7 @@ void LightmapGIGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 	array[RS::ARRAY_COLOR] = colors;
 
 	Ref<ArrayMesh> mesh;
-	mesh.instance();
+	mesh.instantiate();
 	mesh->add_surface_from_arrays(Mesh::PRIMITIVE_TRIANGLES, array, Array(), Dictionary(), 0); //no compression
 	mesh->surface_set_material(0, material_probes);
 

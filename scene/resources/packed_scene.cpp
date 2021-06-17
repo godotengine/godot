@@ -41,11 +41,11 @@
 
 #define PACKED_SCENE_VERSION 2
 
-bool SceneState::can_instance() const {
+bool SceneState::can_instantiate() const {
 	return nodes.size() > 0;
 }
 
-Node *SceneState::instance(GenEditState p_edit_state) const {
+Node *SceneState::instantiate(GenEditState p_edit_state) const {
 	// nodes where instancing failed (because something is missing)
 	List<Node *> stray_instances;
 
@@ -109,7 +109,7 @@ Node *SceneState::instance(GenEditState p_edit_state) const {
 			//scene inheritance on root node
 			Ref<PackedScene> sdata = props[base_scene_idx];
 			ERR_FAIL_COND_V(!sdata.is_valid(), nullptr);
-			node = sdata->instance(p_edit_state == GEN_EDIT_STATE_DISABLED ? PackedScene::GEN_EDIT_STATE_DISABLED : PackedScene::GEN_EDIT_STATE_INSTANCE); //only main gets main edit state
+			node = sdata->instantiate(p_edit_state == GEN_EDIT_STATE_DISABLED ? PackedScene::GEN_EDIT_STATE_DISABLED : PackedScene::GEN_EDIT_STATE_INSTANCE); //only main gets main edit state
 			ERR_FAIL_COND_V(!node, nullptr);
 			if (p_edit_state != GEN_EDIT_STATE_DISABLED) {
 				node->set_scene_inherited_state(sdata->get_state());
@@ -122,7 +122,7 @@ Node *SceneState::instance(GenEditState p_edit_state) const {
 				if (disable_placeholders) {
 					Ref<PackedScene> sdata = ResourceLoader::load(path, "PackedScene");
 					ERR_FAIL_COND_V(!sdata.is_valid(), nullptr);
-					node = sdata->instance(p_edit_state == GEN_EDIT_STATE_DISABLED ? PackedScene::GEN_EDIT_STATE_DISABLED : PackedScene::GEN_EDIT_STATE_INSTANCE);
+					node = sdata->instantiate(p_edit_state == GEN_EDIT_STATE_DISABLED ? PackedScene::GEN_EDIT_STATE_DISABLED : PackedScene::GEN_EDIT_STATE_INSTANCE);
 					ERR_FAIL_COND_V(!node, nullptr);
 				} else {
 					InstancePlaceholder *ip = memnew(InstancePlaceholder);
@@ -133,7 +133,7 @@ Node *SceneState::instance(GenEditState p_edit_state) const {
 			} else {
 				Ref<PackedScene> sdata = props[n.instance & FLAG_MASK];
 				ERR_FAIL_COND_V(!sdata.is_valid(), nullptr);
-				node = sdata->instance(p_edit_state == GEN_EDIT_STATE_DISABLED ? PackedScene::GEN_EDIT_STATE_DISABLED : PackedScene::GEN_EDIT_STATE_INSTANCE);
+				node = sdata->instantiate(p_edit_state == GEN_EDIT_STATE_DISABLED ? PackedScene::GEN_EDIT_STATE_DISABLED : PackedScene::GEN_EDIT_STATE_INSTANCE);
 				ERR_FAIL_COND_V(!node, nullptr);
 			}
 
@@ -152,7 +152,7 @@ Node *SceneState::instance(GenEditState p_edit_state) const {
 
 			if (ClassDB::is_class_enabled(snames[n.type])) {
 				//node belongs to this scene and must be created
-				obj = ClassDB::instance(snames[n.type]);
+				obj = ClassDB::instantiate(snames[n.type]);
 			}
 
 			if (!Object::cast_to<Node>(obj)) {
@@ -180,7 +180,7 @@ Node *SceneState::instance(GenEditState p_edit_state) const {
 		}
 
 		if (node) {
-			// may not have found the node (part of instanced scene and removed)
+			// may not have found the node (part of instantiated scene and removed)
 			// if found all is good, otherwise ignore
 
 			//properties
@@ -266,7 +266,7 @@ Node *SceneState::instance(GenEditState p_edit_state) const {
 							parent->move_child(node, n.index);
 						}
 					} else {
-						//it may be possible that an instanced scene has changed
+						//it may be possible that an instantiated scene has changed
 						//and the node has nowhere to go anymore
 						stray_instances.push_back(node); //can't be added, go to stray list
 					}
@@ -368,7 +368,7 @@ static int _vm_get_variant(const Variant &p_variant, HashMap<Variant, int, Varia
 
 Error SceneState::_parse_node(Node *p_owner, Node *p_node, int p_parent_idx, Map<StringName, int> &name_map, HashMap<Variant, int, VariantHasher, VariantComparator> &variant_map, Map<Node *, int> &node_map, Map<Node *, int> &nodepath_map) {
 	// this function handles all the work related to properly packing scenes, be it
-	// instanced or inherited.
+	// instantiated or inherited.
 	// given the complexity of this process, an attempt will be made to properly
 	// document it. if you fail to understand something, please ask!
 
@@ -377,7 +377,7 @@ Error SceneState::_parse_node(Node *p_owner, Node *p_node, int p_parent_idx, Map
 		return OK;
 	}
 
-	// save the child instanced scenes that are chosen as editable, so they can be restored
+	// save the child instantiated scenes that are chosen as editable, so they can be restored
 	// upon load back
 	if (p_node != p_owner && p_node->get_filename() != String() && p_owner->is_editable_instance(p_node)) {
 		editable_instances.push_back(p_owner->get_path_to(p_node));
@@ -386,7 +386,7 @@ Error SceneState::_parse_node(Node *p_owner, Node *p_node, int p_parent_idx, Map
 	NodeData nd;
 
 	nd.name = _nm_get_string(p_node->get_name(), name_map);
-	nd.instance = -1; //not instanced by default
+	nd.instance = -1; //not instantiated by default
 
 	//really convoluted condition, but it basically checks that index is only saved when part of an inherited scene OR the node parent is from the edited scene
 	if (p_owner->get_scene_inherited_state().is_null() && (p_node == p_owner || (p_node->get_owner() == p_owner && (p_node->get_parent() == p_owner || p_node->get_parent()->get_owner() == p_owner)))) {
@@ -396,18 +396,18 @@ Error SceneState::_parse_node(Node *p_owner, Node *p_node, int p_parent_idx, Map
 		//This (hopefully) happens if the node is a scene root, so its index is irrelevant.
 		nd.index = -1;
 	} else {
-		//part of an inherited scene, or parent is from an instanced scene
+		//part of an inherited scene, or parent is from an instantiated scene
 		nd.index = p_node->get_index();
 	}
 
-	// if this node is part of an instanced scene or sub-instanced scene
+	// if this node is part of an instantiated scene or sub-instantiated scene
 	// we need to get the corresponding instance states.
 	// with the instance states, we can query for identical properties/groups
 	// and only save what has changed
 
 	List<PackState> pack_state_stack;
 
-	bool instanced_by_owner = true;
+	bool instantiated_by_owner = true;
 
 	{
 		Node *n = p_node;
@@ -423,11 +423,11 @@ Error SceneState::_parse_node(Node *p_owner, Node *p_node, int p_parent_idx, Map
 						ps.node = node;
 						ps.state = state;
 						pack_state_stack.push_back(ps);
-						instanced_by_owner = false;
+						instantiated_by_owner = false;
 					}
 				}
 
-				if (p_node->get_filename() != String() && p_node->get_owner() == p_owner && instanced_by_owner) {
+				if (p_node->get_filename() != String() && p_node->get_owner() == p_owner && instantiated_by_owner) {
 					if (p_node->get_scene_instance_load_placeholder()) {
 						//it's a placeholder, use the placeholder path
 						nd.instance = _vm_get_variant(p_node->get_filename(), variant_map);
@@ -500,8 +500,8 @@ Error SceneState::_parse_node(Node *p_owner, Node *p_node, int p_parent_idx, Map
 		// }
 
 		if (pack_state_stack.size()) {
-			// we are on part of an instanced subscene
-			// or part of instanced scene.
+			// we are on part of an instantiated subscene
+			// or part of instantiated scene.
 			// only save what has been changed
 			// only save changed properties in instance
 
@@ -571,7 +571,7 @@ Error SceneState::_parse_node(Node *p_owner, Node *p_node, int p_parent_idx, Map
 		}
 		/*
 		if (instance_state_node>=0 && instance_state->is_node_in_group(instance_state_node,gi.name))
-			continue; //group was instanced, don't add here
+			continue; //group was instantiated, don't add here
 		*/
 
 		bool skip = false;
@@ -594,7 +594,7 @@ Error SceneState::_parse_node(Node *p_owner, Node *p_node, int p_parent_idx, Map
 	// save the right owner
 	// for the saved scene root this is -1
 	// for nodes of the saved scene this is 0
-	// for nodes of instanced scenes this is >0
+	// for nodes of instantiated scenes this is >0
 
 	if (p_node == p_owner) {
 		//saved scene root
@@ -612,20 +612,20 @@ Error SceneState::_parse_node(Node *p_owner, Node *p_node, int p_parent_idx, Map
 		//this node is not part of an instancing process, so save the type
 		nd.type = _nm_get_string(p_node->get_class(), name_map);
 	} else {
-		// this node is part of an instanced process, so do not save the type.
-		// instead, save that it was instanced
+		// this node is part of an instantiated process, so do not save the type.
+		// instead, save that it was instantiated
 		nd.type = TYPE_INSTANCED;
 	}
 
 	// determine whether to save this node or not
-	// if this node is part of an instanced sub-scene, we can skip storing it if basically
+	// if this node is part of an instantiated sub-scene, we can skip storing it if basically
 	// no properties changed and no groups were added to it.
 	// below condition is true for all nodes of the scene being saved, and ones in subscenes
 	// that hold changes
 
 	bool save_node = nd.properties.size() || nd.groups.size(); // some local properties or groups exist
 	save_node = save_node || p_node == p_owner; // owner is always saved
-	save_node = save_node || (p_node->get_owner() == p_owner && instanced_by_owner); //part of scene and not instanced
+	save_node = save_node || (p_node->get_owner() == p_owner && instantiated_by_owner); //part of scene and not instantiated
 
 	int idx = nodes.size();
 	int parent_node = NO_PARENT_SAVED;
@@ -955,7 +955,7 @@ int SceneState::find_node_by_path(const NodePath &p_node) const {
 
 	if (_get_base_scene_state().is_valid() && !base_scene_node_remap.has(nid)) {
 		//for nodes that _do_ exist in current scene, still try to look for
-		//the node in the instanced scene, as a property may be missing
+		//the node in the instantiated scene, as a property may be missing
 		//from the local one
 		int idx = _get_base_scene_state()->find_node_by_path(p_node);
 		if (idx != -1) {
@@ -1623,16 +1623,16 @@ void PackedScene::clear() {
 	state->clear();
 }
 
-bool PackedScene::can_instance() const {
-	return state->can_instance();
+bool PackedScene::can_instantiate() const {
+	return state->can_instantiate();
 }
 
-Node *PackedScene::instance(GenEditState p_edit_state) const {
+Node *PackedScene::instantiate(GenEditState p_edit_state) const {
 #ifndef TOOLS_ENABLED
 	ERR_FAIL_COND_V_MSG(p_edit_state != GEN_EDIT_STATE_DISABLED, nullptr, "Edit state is only for editors, does not work without tools compiled.");
 #endif
 
-	Node *s = state->instance((SceneState::GenEditState)p_edit_state);
+	Node *s = state->instantiate((SceneState::GenEditState)p_edit_state);
 	if (!s) {
 		return nullptr;
 	}
@@ -1680,8 +1680,8 @@ void PackedScene::reset_state() {
 }
 void PackedScene::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("pack", "path"), &PackedScene::pack);
-	ClassDB::bind_method(D_METHOD("instance", "edit_state"), &PackedScene::instance, DEFVAL(GEN_EDIT_STATE_DISABLED));
-	ClassDB::bind_method(D_METHOD("can_instance"), &PackedScene::can_instance);
+	ClassDB::bind_method(D_METHOD("instantiate", "edit_state"), &PackedScene::instantiate, DEFVAL(GEN_EDIT_STATE_DISABLED));
+	ClassDB::bind_method(D_METHOD("can_instantiate"), &PackedScene::can_instantiate);
 	ClassDB::bind_method(D_METHOD("_set_bundled_scene"), &PackedScene::_set_bundled_scene);
 	ClassDB::bind_method(D_METHOD("_get_bundled_scene"), &PackedScene::_get_bundled_scene);
 	ClassDB::bind_method(D_METHOD("get_state"), &PackedScene::get_state);

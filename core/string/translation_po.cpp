@@ -188,7 +188,7 @@ void TranslationPO::set_plural_rule(const String &p_plural_rule) {
 	plural_rule = plural_rule.replacen("(", "");
 	plural_rule = plural_rule.replacen(")", "");
 	_cache_plural_tests(plural_rule);
-	expr.instance();
+	expr.instantiate();
 	input_name.push_back("n");
 }
 

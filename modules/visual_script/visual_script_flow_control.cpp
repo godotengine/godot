@@ -138,7 +138,7 @@ public:
 	}
 };
 
-VisualScriptNodeInstance *VisualScriptReturn::instance(VisualScriptInstance *p_instance) {
+VisualScriptNodeInstance *VisualScriptReturn::instantiate(VisualScriptInstance *p_instance) {
 	VisualScriptNodeInstanceReturn *instance = memnew(VisualScriptNodeInstanceReturn);
 	instance->node = this;
 	instance->instance = p_instance;
@@ -154,7 +154,7 @@ VisualScriptReturn::VisualScriptReturn() {
 template <bool with_value>
 static Ref<VisualScriptNode> create_return_node(const String &p_name) {
 	Ref<VisualScriptReturn> node;
-	node.instance();
+	node.instantiate();
 	node->set_enable_return_value(with_value);
 	return node;
 }
@@ -231,7 +231,7 @@ public:
 	}
 };
 
-VisualScriptNodeInstance *VisualScriptCondition::instance(VisualScriptInstance *p_instance) {
+VisualScriptNodeInstance *VisualScriptCondition::instantiate(VisualScriptInstance *p_instance) {
 	VisualScriptNodeInstanceCondition *instance = memnew(VisualScriptNodeInstanceCondition);
 	instance->node = this;
 	instance->instance = p_instance;
@@ -311,7 +311,7 @@ public:
 	}
 };
 
-VisualScriptNodeInstance *VisualScriptWhile::instance(VisualScriptInstance *p_instance) {
+VisualScriptNodeInstance *VisualScriptWhile::instantiate(VisualScriptInstance *p_instance) {
 	VisualScriptNodeInstanceWhile *instance = memnew(VisualScriptNodeInstanceWhile);
 	instance->node = this;
 	instance->instance = p_instance;
@@ -435,7 +435,7 @@ public:
 	}
 };
 
-VisualScriptNodeInstance *VisualScriptIterator::instance(VisualScriptInstance *p_instance) {
+VisualScriptNodeInstance *VisualScriptIterator::instantiate(VisualScriptInstance *p_instance) {
 	VisualScriptNodeInstanceIterator *instance = memnew(VisualScriptNodeInstanceIterator);
 	instance->node = this;
 	instance->instance = p_instance;
@@ -534,7 +534,7 @@ public:
 	}
 };
 
-VisualScriptNodeInstance *VisualScriptSequence::instance(VisualScriptInstance *p_instance) {
+VisualScriptNodeInstance *VisualScriptSequence::instantiate(VisualScriptInstance *p_instance) {
 	VisualScriptNodeInstanceSequence *instance = memnew(VisualScriptNodeInstanceSequence);
 	instance->node = this;
 	instance->instance = p_instance;
@@ -618,7 +618,7 @@ public:
 	}
 };
 
-VisualScriptNodeInstance *VisualScriptSwitch::instance(VisualScriptInstance *p_instance) {
+VisualScriptNodeInstance *VisualScriptSwitch::instantiate(VisualScriptInstance *p_instance) {
 	VisualScriptNodeInstanceSwitch *instance = memnew(VisualScriptNodeInstanceSwitch);
 	instance->instance = p_instance;
 	instance->case_count = case_values.size();
@@ -831,7 +831,7 @@ public:
 	}
 };
 
-VisualScriptNodeInstance *VisualScriptTypeCast::instance(VisualScriptInstance *p_instance) {
+VisualScriptNodeInstance *VisualScriptTypeCast::instantiate(VisualScriptInstance *p_instance) {
 	VisualScriptNodeInstanceTypeCast *instance = memnew(VisualScriptNodeInstanceTypeCast);
 	instance->instance = p_instance;
 	instance->base_type = base_type;

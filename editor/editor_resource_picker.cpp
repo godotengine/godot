@@ -271,7 +271,7 @@ void EditorResourcePicker::_edit_menu_cbk(int p_which) {
 			}
 
 			String orig_type = edited_resource->get_class();
-			Object *inst = ClassDB::instance(orig_type);
+			Object *inst = ClassDB::instantiate(orig_type);
 			Ref<Resource> unique_resource = Ref<Resource>(Object::cast_to<Resource>(inst));
 			ERR_FAIL_COND(unique_resource.is_null());
 
@@ -334,7 +334,7 @@ void EditorResourcePicker::_edit_menu_cbk(int p_which) {
 			Variant obj;
 
 			if (ScriptServer::is_global_class(intype)) {
-				obj = ClassDB::instance(ScriptServer::get_global_class_native_base(intype));
+				obj = ClassDB::instantiate(ScriptServer::get_global_class_native_base(intype));
 				if (obj) {
 					Ref<Script> script = ResourceLoader::load(ScriptServer::get_global_class_path(intype));
 					if (script.is_valid()) {
@@ -342,7 +342,7 @@ void EditorResourcePicker::_edit_menu_cbk(int p_which) {
 					}
 				}
 			} else {
-				obj = ClassDB::instance(intype);
+				obj = ClassDB::instantiate(intype);
 			}
 
 			if (!obj) {
@@ -395,7 +395,7 @@ void EditorResourcePicker::set_create_options(Object *p_menu_node) {
 				}
 			}
 
-			if (!is_custom_resource && !(ScriptServer::is_global_class(t) || ClassDB::can_instance(t))) {
+			if (!is_custom_resource && !(ScriptServer::is_global_class(t) || ClassDB::can_instantiate(t))) {
 				continue;
 			}
 

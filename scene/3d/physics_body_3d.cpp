@@ -106,7 +106,7 @@ Ref<KinematicCollision3D> PhysicsBody3D::_move(const Vector3 &p_motion, bool p_i
 	PhysicsServer3D::MotionResult result;
 	if (move_and_collide(p_motion, p_infinite_inertia, result, p_margin, p_exclude_raycast_shapes, p_test_only)) {
 		if (motion_cache.is_null()) {
-			motion_cache.instance();
+			motion_cache.instantiate();
 			motion_cache->owner = this;
 		}
 
@@ -1168,7 +1168,7 @@ Ref<KinematicCollision3D> CharacterBody3D::_get_slide_collision(int p_bounce) {
 	}
 
 	if (slide_colliders[p_bounce].is_null()) {
-		slide_colliders.write[p_bounce].instance();
+		slide_colliders.write[p_bounce].instantiate();
 		slide_colliders.write[p_bounce]->owner = this;
 	}
 

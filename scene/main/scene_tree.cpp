@@ -1093,7 +1093,7 @@ Error SceneTree::change_scene(const String &p_path) {
 Error SceneTree::change_scene_to(const Ref<PackedScene> &p_scene) {
 	Node *new_scene = nullptr;
 	if (p_scene.is_valid()) {
-		new_scene = p_scene->instance();
+		new_scene = p_scene->instantiate();
 		ERR_FAIL_COND_V(!new_scene, ERR_CANT_CREATE);
 	}
 
@@ -1114,7 +1114,7 @@ void SceneTree::add_current_scene(Node *p_current) {
 
 Ref<SceneTreeTimer> SceneTree::create_timer(float p_delay_sec, bool p_process_always) {
 	Ref<SceneTreeTimer> stt;
-	stt.instance();
+	stt.instantiate();
 	stt->set_process_always(p_process_always);
 	stt->set_time_left(p_delay_sec);
 	timers.push_back(stt);
@@ -1123,7 +1123,7 @@ Ref<SceneTreeTimer> SceneTree::create_timer(float p_delay_sec, bool p_process_al
 
 Ref<Tween> SceneTree::create_tween() {
 	Ref<Tween> tween;
-	tween.instance();
+	tween.instantiate();
 	tween->set_valid(true);
 	tweens.push_back(tween);
 	return tween;

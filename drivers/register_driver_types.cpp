@@ -40,7 +40,7 @@ void register_core_driver_types() {
 	image_loader_png = memnew(ImageLoaderPNG);
 	ImageLoader::add_image_format_loader(image_loader_png);
 
-	resource_saver_png.instance();
+	resource_saver_png.instantiate();
 	ResourceSaver::add_resource_format_saver(resource_saver_png);
 }
 

@@ -738,10 +738,10 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 
 			String type = token.value;
 
-			Object *obj = ClassDB::instance(type);
+			Object *obj = ClassDB::instantiate(type);
 
 			if (!obj) {
-				r_err_str = "Can't instance Object() of type: " + type;
+				r_err_str = "Can't instantiate Object() of type: " + type;
 				return ERR_PARSE_ERROR;
 			}
 

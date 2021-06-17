@@ -359,7 +359,7 @@ void GPUParticles3DEditor::_generate_emission_points() {
 	Ref<Image> image = memnew(Image(w, h, false, Image::FORMAT_RGBF, point_img));
 
 	Ref<ImageTexture> tex;
-	tex.instance();
+	tex.instantiate();
 
 	Ref<ParticlesMaterial> material = node->get_process_material();
 	ERR_FAIL_COND(material.is_null());
@@ -387,7 +387,7 @@ void GPUParticles3DEditor::_generate_emission_points() {
 		Ref<Image> image2 = memnew(Image(w, h, false, Image::FORMAT_RGBF, point_img2));
 
 		Ref<ImageTexture> tex2;
-		tex2.instance();
+		tex2.instantiate();
 
 		material->set_emission_normal_texture(tex2);
 	} else {

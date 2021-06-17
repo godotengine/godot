@@ -177,7 +177,7 @@ void NavigationMeshGenerator::_parse_geometry(Transform3D p_accumulated_transfor
 					BoxShape3D *box = Object::cast_to<BoxShape3D>(*s);
 					if (box) {
 						Ref<BoxMesh> box_mesh;
-						box_mesh.instance();
+						box_mesh.instantiate();
 						box_mesh->set_size(box->get_size());
 						mesh = box_mesh;
 					}
@@ -185,7 +185,7 @@ void NavigationMeshGenerator::_parse_geometry(Transform3D p_accumulated_transfor
 					CapsuleShape3D *capsule = Object::cast_to<CapsuleShape3D>(*s);
 					if (capsule) {
 						Ref<CapsuleMesh> capsule_mesh;
-						capsule_mesh.instance();
+						capsule_mesh.instantiate();
 						capsule_mesh->set_radius(capsule->get_radius());
 						capsule_mesh->set_mid_height(capsule->get_height() / 2.0);
 						mesh = capsule_mesh;
@@ -194,7 +194,7 @@ void NavigationMeshGenerator::_parse_geometry(Transform3D p_accumulated_transfor
 					CylinderShape3D *cylinder = Object::cast_to<CylinderShape3D>(*s);
 					if (cylinder) {
 						Ref<CylinderMesh> cylinder_mesh;
-						cylinder_mesh.instance();
+						cylinder_mesh.instantiate();
 						cylinder_mesh->set_height(cylinder->get_height());
 						cylinder_mesh->set_bottom_radius(cylinder->get_radius());
 						cylinder_mesh->set_top_radius(cylinder->get_radius());
@@ -204,7 +204,7 @@ void NavigationMeshGenerator::_parse_geometry(Transform3D p_accumulated_transfor
 					SphereShape3D *sphere = Object::cast_to<SphereShape3D>(*s);
 					if (sphere) {
 						Ref<SphereMesh> sphere_mesh;
-						sphere_mesh.instance();
+						sphere_mesh.instantiate();
 						sphere_mesh->set_radius(sphere->get_radius());
 						sphere_mesh->set_height(sphere->get_radius() * 2.0);
 						mesh = sphere_mesh;

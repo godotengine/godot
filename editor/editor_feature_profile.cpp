@@ -311,7 +311,7 @@ void EditorFeatureProfileManager::_notification(int p_what) {
 	if (p_what == NOTIFICATION_READY) {
 		current_profile = EDITOR_GET("_default_feature_profile");
 		if (current_profile != String()) {
-			current.instance();
+			current.instantiate();
 			Error err = current->load_from_file(EditorSettings::get_singleton()->get_feature_profiles_dir().plus_file(current_profile + ".profile"));
 			if (err != OK) {
 				ERR_PRINT("Error loading default feature profile: " + current_profile);
@@ -473,7 +473,7 @@ void EditorFeatureProfileManager::_create_new_profile() {
 	}
 
 	Ref<EditorFeatureProfile> new_profile;
-	new_profile.instance();
+	new_profile.instantiate();
 	new_profile->save_to_file(file);
 
 	_update_profile_list(name);
@@ -730,7 +730,7 @@ void EditorFeatureProfileManager::_update_selected_profile() {
 		ERR_FAIL_COND(current.is_null()); //nothing selected, current should never be null
 	} else {
 		//reload edited, if different from current
-		edited.instance();
+		edited.instantiate();
 		Error err = edited->load_from_file(EditorSettings::get_singleton()->get_feature_profiles_dir().plus_file(profile + ".profile"));
 		ERR_FAIL_COND_MSG(err != OK, "Error when loading EditorSettings from file '" + EditorSettings::get_singleton()->get_feature_profiles_dir().plus_file(profile + ".profile") + "'.");
 	}
@@ -779,7 +779,7 @@ void EditorFeatureProfileManager::_import_profiles(const Vector<String> &p_paths
 	//test it first
 	for (int i = 0; i < p_paths.size(); i++) {
 		Ref<EditorFeatureProfile> profile;
-		profile.instance();
+		profile.instantiate();
 		Error err = profile->load_from_file(p_paths[i]);
 		String basefile = p_paths[i].get_file();
 		if (err != OK) {
@@ -798,7 +798,7 @@ void EditorFeatureProfileManager::_import_profiles(const Vector<String> &p_paths
 	//do it second
 	for (int i = 0; i < p_paths.size(); i++) {
 		Ref<EditorFeatureProfile> profile;
-		profile.instance();
+		profile.instantiate();
 		Error err = profile->load_from_file(p_paths[i]);
 		ERR_CONTINUE(err != OK);
 		String basefile = p_paths[i].get_file();

@@ -85,9 +85,9 @@ void Texture3DEditor::_make_shaders() {
 					   "  COLOR = textureLod(tex,vec3(UV,layer),0.0);\n"
 					   "}";
 
-	shader.instance();
+	shader.instantiate();
 	shader->set_code(shader_3d);
-	material.instance();
+	material.instantiate();
 	material->set_shader(shader);
 }
 
@@ -207,6 +207,6 @@ void EditorInspectorPlugin3DTexture::parse_begin(Object *p_object) {
 
 Texture3DEditorPlugin::Texture3DEditorPlugin(EditorNode *p_node) {
 	Ref<EditorInspectorPlugin3DTexture> plugin;
-	plugin.instance();
+	plugin.instantiate();
 	add_inspector_plugin(plugin);
 }

@@ -86,7 +86,7 @@ void EditorAssetLibraryItem::_bind_methods() {
 
 EditorAssetLibraryItem::EditorAssetLibraryItem() {
 	Ref<StyleBoxEmpty> border;
-	border.instance();
+	border.instantiate();
 	border->set_default_margin(SIDE_LEFT, 5 * EDSCALE);
 	border->set_default_margin(SIDE_RIGHT, 5 * EDSCALE);
 	border->set_default_margin(SIDE_BOTTOM, 5 * EDSCALE);
@@ -155,7 +155,7 @@ void EditorAssetLibraryItemDescription::set_image(int p_type, int p_index, const
 						thumbnail->blend_rect(overlay, overlay->get_used_rect(), overlay_pos);
 
 						Ref<ImageTexture> tex;
-						tex.instance();
+						tex.instantiate();
 						tex->create_from_image(thumbnail);
 
 						preview_images[i].button->set_icon(tex);
@@ -761,7 +761,7 @@ void EditorAssetLibrary::_image_update(bool use_cache, bool final, const PackedB
 			}
 
 			Ref<ImageTexture> tex;
-			tex.instance();
+			tex.instantiate();
 			tex->create_from_image(image);
 
 			obj->call("set_image", image_queue[p_queue_id].image_type, image_queue[p_queue_id].image_index, tex);
@@ -1435,7 +1435,7 @@ EditorAssetLibrary::EditorAssetLibrary(bool p_templates_only) {
 	library_scroll_bg->add_child(library_scroll);
 
 	Ref<StyleBoxEmpty> border2;
-	border2.instance();
+	border2.instantiate();
 	border2->set_default_margin(SIDE_LEFT, 15 * EDSCALE);
 	border2->set_default_margin(SIDE_RIGHT, 35 * EDSCALE);
 	border2->set_default_margin(SIDE_BOTTOM, 15 * EDSCALE);

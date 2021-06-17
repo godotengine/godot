@@ -248,13 +248,13 @@ Lightmapper::BakeError LightmapperRD::_blit_meshes_into_atlas(int p_max_texture_
 
 	for (int i = 0; i < atlas_slices; i++) {
 		Ref<Image> albedo;
-		albedo.instance();
+		albedo.instantiate();
 		albedo->create(atlas_size.width, atlas_size.height, false, Image::FORMAT_RGBA8);
 		albedo->set_as_black();
 		albedo_images.write[i] = albedo;
 
 		Ref<Image> emission;
-		emission.instance();
+		emission.instantiate();
 		emission->create(atlas_size.width, atlas_size.height, false, Image::FORMAT_RGBAH);
 		emission->set_as_black();
 		emission_images.write[i] = emission;
@@ -479,7 +479,7 @@ void LightmapperRD::_create_acceleration_structures(RenderingDevice *rd, Size2i 
 		}
 
 		Ref<Image> img;
-		img.instance();
+		img.instantiate();
 		img->create(grid_size, grid_size, false, Image::FORMAT_L8, grid_usage);
 		img->save_png("res://grid_layer_" + itos(1000 + i).substr(1, 3) + ".png");
 	}
@@ -725,7 +725,7 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 				panorama_tex = p_environment_panorama;
 				panorama_tex->convert(Image::FORMAT_RGBAF);
 			} else {
-				panorama_tex.instance();
+				panorama_tex.instantiate();
 				panorama_tex->create(8, 8, false, Image::FORMAT_RGBAF);
 				for (int i = 0; i < 8; i++) {
 					for (int j = 0; j < 8; j++) {
@@ -782,7 +782,7 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 
 	//shaders
 	Ref<RDShaderFile> raster_shader;
-	raster_shader.instance();
+	raster_shader.instantiate();
 	Error err = raster_shader->parse_versions_from_text(lm_raster_shader_glsl);
 	if (err != OK) {
 		raster_shader->print_errors("raster_shader");
@@ -915,7 +915,7 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 	for (int i = 0; i < atlas_slices; i++) {
 		Vector<uint8_t> s = rd->texture_get_data(position_tex, i);
 		Ref<Image> img;
-		img.instance();
+		img.instantiate();
 		img->create(atlas_size.width, atlas_size.height, false, Image::FORMAT_RGBAF, s);
 		img->save_exr("res://1_position_" + itos(i) + ".exr", false);
 
@@ -933,7 +933,7 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 	/* Plot direct light */
 
 	Ref<RDShaderFile> compute_shader;
-	compute_shader.instance();
+	compute_shader.instantiate();
 	err = compute_shader->parse_versions_from_text(lm_compute_shader_glsl, p_bake_sh ? "\n#define USE_SH_LIGHTMAPS\n" : "");
 	if (err != OK) {
 		FREE_TEXTURES
@@ -1129,7 +1129,7 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 	for (int i = 0; i < atlas_slices; i++) {
 		Vector<uint8_t> s = rd->texture_get_data(light_source_tex, i);
 		Ref<Image> img;
-		img.instance();
+		img.instantiate();
 		img->create(atlas_size.width, atlas_size.height, false, Image::FORMAT_RGBAH, s);
 		img->save_exr("res://2_light_primary_" + itos(i) + ".exr", false);
 	}
@@ -1379,12 +1379,12 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 #if 0
 	for (int i = 0; i < probe_positions.size(); i++) {
 		Ref<Image> img;
-		img.instance();
+		img.instantiate();
 		img->create(6, 4, false, Image::FORMAT_RGB8);
 		for (int j = 0; j < 6; j++) {
 			Vector<uint8_t> s = rd->texture_get_data(lightprobe_tex, i * 6 + j);
 			Ref<Image> img2;
-			img2.instance();
+			img2.instantiate();
 			img2->create(2, 2, false, Image::FORMAT_RGBAF, s);
 			img2->convert(Image::FORMAT_RGB8);
 			img->blit_rect(img2, Rect2(0, 0, 2, 2), Point2((j % 3) * 2, (j / 3) * 2));
@@ -1405,7 +1405,7 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 			for (int i = 0; i < atlas_slices * (p_bake_sh ? 4 : 1); i++) {
 				Vector<uint8_t> s = rd->texture_get_data(light_accum_tex, i);
 				Ref<Image> img;
-				img.instance();
+				img.instantiate();
 				img->create(atlas_size.width, atlas_size.height, false, Image::FORMAT_RGBAH, s);
 
 				Ref<Image> denoised = denoiser->denoise_image(img);
@@ -1432,7 +1432,7 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 	for (int i = 0; i < atlas_slices * (p_bake_sh ? 4 : 1); i++) {
 		Vector<uint8_t> s = rd->texture_get_data(light_accum_tex, i);
 		Ref<Image> img;
-		img.instance();
+		img.instantiate();
 		img->create(atlas_size.width, atlas_size.height, false, Image::FORMAT_RGBAH, s);
 		img->save_exr("res://4_light_secondary_" + itos(i) + ".exr", false);
 	}
@@ -1484,7 +1484,7 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 	for (int i = 0; i < atlas_slices * (p_bake_sh ? 4 : 1); i++) {
 		Vector<uint8_t> s = rd->texture_get_data(light_accum_tex, i);
 		Ref<Image> img;
-		img.instance();
+		img.instantiate();
 		img->create(atlas_size.width, atlas_size.height, false, Image::FORMAT_RGBAH, s);
 		img->convert(Image::FORMAT_RGBA8);
 		img->save_png("res://5_dilated_" + itos(i) + ".png");
@@ -1494,7 +1494,7 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 	/* BLEND SEAMS */
 	//shaders
 	Ref<RDShaderFile> blendseams_shader;
-	blendseams_shader.instance();
+	blendseams_shader.instantiate();
 	err = blendseams_shader->parse_versions_from_text(lm_blendseams_shader_glsl);
 	if (err != OK) {
 		FREE_TEXTURES
@@ -1641,7 +1641,7 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 	for (int i = 0; i < atlas_slices * (p_bake_sh ? 4 : 1); i++) {
 		Vector<uint8_t> s = rd->texture_get_data(light_accum_tex, i);
 		Ref<Image> img;
-		img.instance();
+		img.instantiate();
 		img->create(atlas_size.width, atlas_size.height, false, Image::FORMAT_RGBAH, s);
 		img->save_exr("res://5_blendseams" + itos(i) + ".exr", false);
 	}
@@ -1653,7 +1653,7 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 	for (int i = 0; i < atlas_slices * (p_bake_sh ? 4 : 1); i++) {
 		Vector<uint8_t> s = rd->texture_get_data(light_accum_tex, i);
 		Ref<Image> img;
-		img.instance();
+		img.instantiate();
 		img->create(atlas_size.width, atlas_size.height, false, Image::FORMAT_RGBAH, s);
 		img->convert(Image::FORMAT_RGBH); //remove alpha
 		bake_textures.push_back(img);
@@ -1668,7 +1668,7 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 #ifdef DEBUG_TEXTURES
 		{
 			Ref<Image> img2;
-			img2.instance();
+			img2.instantiate();
 			img2->create(probe_values.size(), 1, false, Image::FORMAT_RGBAF, probe_data);
 			img2->save_exr("res://6_lightprobes.exr", false);
 		}

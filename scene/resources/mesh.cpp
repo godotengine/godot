@@ -571,7 +571,7 @@ Vector<Ref<Shape3D>> Mesh::convex_decompose() const {
 		}
 
 		Ref<ConvexPolygonShape3D> shape;
-		shape.instance();
+		shape.instantiate();
 		shape->set_points(convex_points);
 		ret.push_back(shape);
 	}
@@ -1537,7 +1537,7 @@ Error ArrayMesh::lightmap_unwrap_cached(const Transform3D &p_base_transform, flo
 
 	for (int i = 0; i < lightmap_surfaces.size(); i++) {
 		Ref<SurfaceTool> st;
-		st.instance();
+		st.instantiate();
 		st->begin(Mesh::PRIMITIVE_TRIANGLES);
 		st->set_material(lightmap_surfaces[i].material);
 		surfaces_tools.push_back(st); //stay there

@@ -130,7 +130,7 @@ bool CreateDialog::_should_hide_type(const String &p_type) const {
 	}
 
 	if (ClassDB::class_exists(p_type)) {
-		if (!ClassDB::can_instance(p_type)) {
+		if (!ClassDB::can_instantiate(p_type)) {
 			return true; // Can't create abstract class.
 		}
 
@@ -234,8 +234,8 @@ void CreateDialog::_configure_search_option_item(TreeItem *r_item, const String 
 		r_item->set_text(0, p_type);
 	}
 
-	bool can_instance = (p_cpp_type && ClassDB::can_instance(p_type)) || !p_cpp_type;
-	if (!can_instance) {
+	bool can_instantiate = (p_cpp_type && ClassDB::can_instantiate(p_type)) || !p_cpp_type;
+	if (!can_instantiate) {
 		r_item->set_custom_color(0, search_options->get_theme_color("disabled_font_color", "Editor"));
 		r_item->set_icon(0, EditorNode::get_singleton()->get_class_icon(p_type, "NodeDisabled"));
 		r_item->set_selectable(0, false);
@@ -247,7 +247,7 @@ void CreateDialog::_configure_search_option_item(TreeItem *r_item, const String 
 		r_item->set_collapsed(false);
 	} else {
 		// Don't collapse the root node or an abstract node on the first tree level.
-		bool should_collapse = p_type != base_type && (r_item->get_parent()->get_text(0) != base_type || can_instance);
+		bool should_collapse = p_type != base_type && (r_item->get_parent()->get_text(0) != base_type || can_instantiate);
 
 		if (should_collapse && bool(EditorSettings::get_singleton()->get("docks/scene_tree/start_create_dialog_fully_expanded"))) {
 			should_collapse = false; // Collapse all nodes anyway.
@@ -432,7 +432,7 @@ Variant CreateDialog::instance_selected() {
 			obj = EditorNode::get_editor_data().instance_custom_type(selected->get_text(0), custom);
 		}
 	} else {
-		obj = ClassDB::instance(selected->get_text(0));
+		obj = ClassDB::instantiate(selected->get_text(0));
 	}
 
 	// Check if any Object-type property should be instantiated.
@@ -442,7 +442,7 @@ Variant CreateDialog::instance_selected() {
 	for (List<PropertyInfo>::Element *E = pinfo.front(); E; E = E->next()) {
 		PropertyInfo pi = E->get();
 		if (pi.type == Variant::OBJECT && pi.usage & PROPERTY_USAGE_EDITOR_INSTANTIATE_OBJECT) {
-			Object *prop = ClassDB::instance(pi.class_name);
+			Object *prop = ClassDB::instantiate(pi.class_name);
 			((Object *)obj)->set(pi.name, prop);
 		}
 	}

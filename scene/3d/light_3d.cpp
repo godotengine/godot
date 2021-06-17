@@ -353,7 +353,7 @@ Light3D::Light3D(RenderingServer::LightType p_type) {
 }
 
 Light3D::Light3D() {
-	ERR_PRINT("Light3D should not be instanced directly; use the DirectionalLight3D, OmniLight3D or SpotLight3D subtypes instead.");
+	ERR_PRINT("Light3D should not be instantiated directly; use the DirectionalLight3D, OmniLight3D or SpotLight3D subtypes instead.");
 }
 
 Light3D::~Light3D() {

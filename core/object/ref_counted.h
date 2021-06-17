@@ -213,7 +213,7 @@ public:
 	inline bool is_null() const { return reference == nullptr; }
 
 	void unref() {
-		//TODO this should be moved to mutexes, since this engine does not really
+		// TODO: this should be moved to mutexes, since this engine does not really
 		// do a lot of referencing on references and stuff
 		// mutexes will avoid more crashes?
 
@@ -223,7 +223,7 @@ public:
 		reference = nullptr;
 	}
 
-	void instance() {
+	void instantiate() {
 		ref(memnew(T));
 	}
 

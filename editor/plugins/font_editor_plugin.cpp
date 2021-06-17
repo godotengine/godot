@@ -119,7 +119,7 @@ void FontDataPreview::set_data(const Ref<FontData> &p_data) {
 }
 
 FontDataPreview::FontDataPreview() {
-	line.instance();
+	line.instantiate();
 }
 
 /*************************************************************************/
@@ -326,6 +326,6 @@ bool EditorInspectorPluginFont::parse_property(Object *p_object, Variant::Type p
 
 FontEditorPlugin::FontEditorPlugin(EditorNode *p_node) {
 	Ref<EditorInspectorPluginFont> fd_plugin;
-	fd_plugin.instance();
+	fd_plugin.instantiate();
 	EditorInspector::add_inspector_plugin(fd_plugin);
 }
