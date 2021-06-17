@@ -66,6 +66,7 @@ private:
 	jmethodID _on_godot_setup_completed = 0;
 	jmethodID _on_godot_main_loop_started = 0;
 	jmethodID _get_class_loader = 0;
+	jmethodID _get_display_rotation = 0;
 
 public:
 	GodotJavaWrapper(JNIEnv *p_env, jobject p_activity, jobject p_godot_instance);
@@ -97,6 +98,7 @@ public:
 	bool is_activity_resumed();
 	void vibrate(int p_duration_ms);
 	String get_input_fallback_mapping();
+	int get_display_rotation();
 };
 
 #endif /* !JAVA_GODOT_WRAPPER_H */

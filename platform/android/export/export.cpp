@@ -52,6 +52,11 @@
 
 #include <string.h>
 
+// XR Mode constants. The values should match the ones defined in org.godotengine.godot.xr.XRMode.java
+static const int XR_MODE_REGULAR = 0;
+static const int XR_MODE_OVR = 1;
+static const int XR_MODE_ARCORE = 2;
+
 static const char *android_perms[] = {
 	"ACCESS_CHECKIN_PROPERTIES",
 	"ACCESS_COARSE_LOCATION",
@@ -788,7 +793,7 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 		}
 
 		int xr_mode_index = p_preset->get("xr_features/xr_mode");
-		if (xr_mode_index == 1 /* XRMode.OVR */) {
+		if (xr_mode_index == XR_MODE_OVR) {
 			int hand_tracking_index = p_preset->get("xr_features/hand_tracking"); // 0: none, 1: optional, 2: required
 			if (hand_tracking_index > 0) {
 				if (r_permissions.find("com.oculus.permission.HAND_TRACKING") == -1) {
@@ -999,25 +1004,26 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 							encode_uint32(min_gles3 ? 0x00030000 : 0x00020000, &p_manifest.write[iofs + 16]);
 						}
 
-						// FIXME: `attr_value != 0xFFFFFFFF` below added as a stopgap measure for GH-32553,
-						// but the issue should be debugged further and properly addressed.
-						if (tname == "meta-data" && attrname == "name" && value == "xr_mode_metadata_name") {
-							// Update the meta-data 'android:name' attribute based on the selected XR mode.
-							if (xr_mode_index == 1 /* XRMode.OVR */) {
-								string_table.write[attr_value] = "com.samsung.android.vr.application.mode";
+						// Parameters specific to XR modes
+						if (xr_mode_index != XR_MODE_REGULAR) {
+							if (tname == "meta-data" && attrname == "name" && value == "xr_mode_metadata_name") {
+								// Update the meta-data 'android:name' attribute based on the selected XR mode.
+								if (xr_mode_index == XR_MODE_OVR) {
+									string_table.write[attr_value] = "com.samsung.android.vr.application.mode";
+								}
 							}
-						}
 
-						if (tname == "meta-data" && attrname == "value" && value == "xr_mode_metadata_value") {
-							// Update the meta-data 'android:value' attribute based on the selected XR mode.
-							if (xr_mode_index == 1 /* XRMode.OVR */) {
-								string_table.write[attr_value] = "vr_only";
+							if (tname == "meta-data" && attrname == "value" && value == "xr_mode_metadata_value") {
+								// Update the meta-data 'android:value' attribute based on the selected XR mode.
+								if (xr_mode_index == XR_MODE_OVR) {
+									string_table.write[attr_value] = "vr_only";
+								}
 							}
-						}
 
-						if (tname == "meta-data" && attrname == "value" && is_focus_aware_metadata) {
-							// Update the focus awareness meta-data value
-							encode_uint32(xr_mode_index == /* XRMode.OVR */ 1 && focus_awareness ? 0xFFFFFFFF : 0, &p_manifest.write[iofs + 16]);
+							if (tname == "meta-data" && attrname == "value" && is_focus_aware_metadata) {
+								// Update the focus awareness meta-data value
+								encode_uint32(xr_mode_index == XR_MODE_OVR && focus_awareness ? 0xFFFFFFFF : 0, &p_manifest.write[iofs + 16]);
+							}
 						}
 
 						is_focus_aware_metadata = tname == "meta-data" && attrname == "name" && value == "com.oculus.vr.focusaware";
@@ -1035,7 +1041,7 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 						Vector<bool> feature_required_list;
 						Vector<int> feature_versions;
 
-						if (xr_mode_index == 1 /* XRMode.OVR */) {
+						if (xr_mode_index == XR_MODE_OVR) {
 							// Check for degrees of freedom
 							int dof_index = p_preset->get("xr_features/degrees_of_freedom"); // 0: none, 1: 3dof and 6dof, 2: 6dof
 
@@ -1734,7 +1740,7 @@ public:
 		r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "graphics/32_bits_framebuffer"), true));
 		r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "graphics/opengl_debug"), false));
 
-		r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "xr_features/xr_mode", PROPERTY_HINT_ENUM, "Regular,Oculus Mobile VR"), 0));
+		r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "xr_features/xr_mode", PROPERTY_HINT_ENUM, "Regular,Oculus Mobile VR,AR Core"), 0));
 		r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "xr_features/degrees_of_freedom", PROPERTY_HINT_ENUM, "None,3DOF and 6DOF,6DOF"), 0));
 		r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "xr_features/hand_tracking", PROPERTY_HINT_ENUM, "None,Optional,Required"), 0));
 		r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "xr_features/focus_awareness"), false));
@@ -2602,8 +2608,10 @@ public:
 		}
 
 		int xr_mode_index = p_preset->get("xr_features/xr_mode");
-		if (xr_mode_index == 1) {
+		if (xr_mode_index == XR_MODE_OVR) {
 			command_line_strings.push_back("--xr_mode_ovr");
+		} else if (xr_mode_index == XR_MODE_ARCORE) {
+			command_line_strings.push_back("--xr_mode_arcore");
 		} else { // XRMode.REGULAR is the default.
 			command_line_strings.push_back("--xr_mode_regular");
 		}
