@@ -34,6 +34,7 @@
 #include "context_gl_x11.h"
 #include "core/local_vector.h"
 #include "core/os/input.h"
+#include "core/os/spin_lock.h"
 #include "crash_handler_x11.h"
 #include "drivers/alsa/audio_driver_alsa.h"
 #include "drivers/alsamidi/midi_driver_alsamidi.h"
@@ -164,7 +165,7 @@ class OS_X11 : public OS_Unix {
 	String _get_clipboard(Atom p_source, Window x11_window) const;
 	void _clipboard_transfer_ownership(Atom p_source, Window x11_window) const;
 
-	mutable Mutex events_mutex;
+	mutable SpinLock events_lock;
 	Thread events_thread;
 	bool events_thread_done = false;
 	LocalVector<XEvent> polled_events;

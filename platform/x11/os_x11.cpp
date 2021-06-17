@@ -759,13 +759,15 @@ void OS_X11::set_ime_active(const bool p_active) {
 	// because it triggers some event polling internally.
 	if (p_active) {
 		{
-			MutexLock mutex_lock(events_mutex);
+			events_lock.lock();
 			XSetICFocus(xic);
+			events_lock.unlock();
 		}
 		set_ime_position(im_position);
 	} else {
-		MutexLock mutex_lock(events_mutex);
+		events_lock.lock();
 		XUnsetICFocus(xic);
+		events_lock.unlock();
 	}
 }
 
@@ -784,8 +786,9 @@ void OS_X11::set_ime_position(const Point2 &p_pos) {
 	{
 		// Block events polling during this call
 		// because it triggers some event polling internally.
-		MutexLock mutex_lock(events_mutex);
+		events_lock.lock();
 		XSetICValues(xic, XNPreeditAttributes, preedit_attr, NULL);
+		events_lock.unlock();
 	}
 
 	XFree(preedit_attr);
@@ -937,7 +940,7 @@ void OS_X11::warp_mouse_position(const Point2 &p_to) {
 
 void OS_X11::flush_mouse_motion() {
 	// Block events polling while flushing motion events.
-	MutexLock mutex_lock(events_mutex);
+	events_lock.lock();
 
 	for (uint32_t event_index = 0; event_index < polled_events.size(); ++event_index) {
 		XEvent &event = polled_events[event_index];
@@ -955,6 +958,8 @@ void OS_X11::flush_mouse_motion() {
 
 	xi.relative_motion.x = 0;
 	xi.relative_motion.y = 0;
+
+	events_lock.unlock();
 }
 
 OS::MouseMode OS_X11::get_mouse_mode() const {
@@ -2314,7 +2319,7 @@ void OS_X11::_poll_events() {
 
 		// Process events from the queue.
 		{
-			MutexLock mutex_lock(events_mutex);
+			events_lock.lock();
 
 			// Non-blocking wait for next event and remove it from the queue.
 			XEvent ev;
@@ -2336,6 +2341,8 @@ void OS_X11::_poll_events() {
 
 				polled_events.push_back(ev);
 			}
+
+			events_lock.unlock();
 		}
 	}
 }
@@ -2355,9 +2362,10 @@ void OS_X11::process_xevents() {
 	LocalVector<XEvent> events;
 	{
 		// Block events polling while flushing events.
-		MutexLock mutex_lock(events_mutex);
+		events_lock.lock();
 		events = polled_events;
 		polled_events.clear();
+		events_lock.unlock();
 	}
 
 	for (uint32_t event_index = 0; event_index < events.size(); ++event_index) {
@@ -2574,8 +2582,9 @@ void OS_X11::process_xevents() {
 				if (xic) {
 					// Block events polling while changing input focus
 					// because it triggers some event polling internally.
-					MutexLock mutex_lock(events_mutex);
+					events_lock.lock();
 					XSetICFocus(xic);
+					events_lock.unlock();
 				}
 				break;
 
@@ -2612,8 +2621,9 @@ void OS_X11::process_xevents() {
 				if (xic) {
 					// Block events polling while changing input focus
 					// because it triggers some event polling internally.
-					MutexLock mutex_lock(events_mutex);
+					events_lock.lock();
 					XUnsetICFocus(xic);
+					events_lock.unlock();
 				}
 				break;
 
@@ -2933,8 +2943,9 @@ bool OS_X11::can_draw() const {
 void OS_X11::set_clipboard(const String &p_text) {
 	{
 		// The clipboard content can be accessed while polling for events.
-		MutexLock mutex_lock(events_mutex);
+		events_lock.lock();
 		OS::set_clipboard(p_text);
+		events_lock.unlock();
 	}
 
 	XSetSelectionOwner(x11_display, XA_PRIMARY, x11_window, CurrentTime);
@@ -2967,7 +2978,7 @@ String OS_X11::_get_clipboard_impl(Atom p_source, Window x11_window, Atom target
 
 	if (selection_owner != None) {
 		// Block events polling while processing selection events.
-		MutexLock mutex_lock(events_mutex);
+		events_lock.lock();
 
 		Atom selection = XA_PRIMARY;
 		XConvertSelection(x11_display, p_source, target, selection,
@@ -3081,6 +3092,8 @@ String OS_X11::_get_clipboard_impl(Atom p_source, Window x11_window, Atom target
 				XFree(data);
 			}
 		}
+
+		events_lock.unlock();
 	}
 
 	return ret;
@@ -3126,7 +3139,7 @@ void OS_X11::_clipboard_transfer_ownership(Atom p_source, Window x11_window) con
 	}
 
 	// Block events polling while processing selection events.
-	MutexLock mutex_lock(events_mutex);
+	events_lock.lock();
 
 	Atom clipboard_manager = XInternAtom(x11_display, "CLIPBOARD_MANAGER", False);
 	Atom save_targets = XInternAtom(x11_display, "SAVE_TARGETS", False);
@@ -3159,6 +3172,8 @@ void OS_X11::_clipboard_transfer_ownership(Atom p_source, Window x11_window) con
 			}
 		}
 	}
+
+	events_lock.unlock();
 }
 
 String OS_X11::get_name() const {
