@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="VisibilityNotifier2D" inherits="Node2D" version="4.0">
+<class name="VisibleOnScreenNotifier2D" inherits="Node2D" version="4.0">
 	<brief_description>
 		Detects when the node extents are visible on screen.
 	</brief_description>
 	<description>
-		The VisibilityNotifier2D detects when it is visible on the screen. It also notifies when its bounding rectangle enters or exits the screen or a viewport.
-		If you want nodes to be disabled automatically when they exit the screen, use [VisibilityEnabler2D] instead.
+		The VisibleOnScreenNotifier2D detects when it is visible on the screen. It also notifies when its bounding rectangle enters or exits the screen or a viewport.
+		If you want nodes to be disabled automatically when they exit the screen, use [VisibleOnScreenEnabler2D] instead.
 	</description>
 	<tutorials>
 		<link title="2D Dodge The Creeps Demo">https://godotengine.org/asset-library/asset/515</link>
@@ -22,18 +22,18 @@
 	</methods>
 	<members>
 		<member name="rect" type="Rect2" setter="set_rect" getter="get_rect" default="Rect2( -10, -10, 20, 20 )">
-			The VisibilityNotifier2D's bounding rectangle.
+			The VisibleOnScreenNotifier2D's bounding rectangle.
 		</member>
 	</members>
 	<signals>
 		<signal name="screen_entered">
 			<description>
-				Emitted when the VisibilityNotifier2D enters the screen.
+				Emitted when the VisibleOnScreenNotifier2D enters the screen.
 			</description>
 		</signal>
 		<signal name="screen_exited">
 			<description>
-				Emitted when the VisibilityNotifier2D exits the screen.
+				Emitted when the VisibleOnScreenNotifier2D exits the screen.
 			</description>
 		</signal>
 	</signals>

@@ -55,7 +55,7 @@
 #include "scene/3d/spring_arm_3d.h"
 #include "scene/3d/sprite_3d.h"
 #include "scene/3d/vehicle_body_3d.h"
-#include "scene/3d/visibility_notifier_3d.h"
+#include "scene/3d/visible_on_screen_notifier_3d.h"
 #include "scene/3d/voxel_gi.h"
 #include "scene/resources/box_shape_3d.h"
 #include "scene/resources/capsule_shape_3d.h"
@@ -2127,7 +2127,7 @@ bool SoftBody3DGizmoPlugin::is_handle_highlighted(const EditorNode3DGizmo *p_giz
 
 ///////////
 
-VisibilityNotifier3DGizmoPlugin::VisibilityNotifier3DGizmoPlugin() {
+VisibleOnScreenNotifier3DGizmoPlugin::VisibleOnScreenNotifier3DGizmoPlugin() {
 	Color gizmo_color = EDITOR_DEF("editors/3d_gizmos/gizmo_colors/visibility_notifier", Color(0.8, 0.5, 0.7));
 	create_material("visibility_notifier_material", gizmo_color);
 	gizmo_color.a = 0.1;
@@ -2135,19 +2135,19 @@ VisibilityNotifier3DGizmoPlugin::VisibilityNotifier3DGizmoPlugin() {
 	create_handle_material("handles");
 }
 
-bool VisibilityNotifier3DGizmoPlugin::has_gizmo(Node3D *p_spatial) {
-	return Object::cast_to<VisibilityNotifier3D>(p_spatial) != nullptr;
+bool VisibleOnScreenNotifier3DGizmoPlugin::has_gizmo(Node3D *p_spatial) {
+	return Object::cast_to<VisibleOnScreenNotifier3D>(p_spatial) != nullptr;
 }
 
-String VisibilityNotifier3DGizmoPlugin::get_gizmo_name() const {
-	return "VisibilityNotifier3D";
+String VisibleOnScreenNotifier3DGizmoPlugin::get_gizmo_name() const {
+	return "VisibleOnScreenNotifier3D";
 }
 
-int VisibilityNotifier3DGizmoPlugin::get_priority() const {
+int VisibleOnScreenNotifier3DGizmoPlugin::get_priority() const {
 	return -1;
 }
 
-String VisibilityNotifier3DGizmoPlugin::get_handle_name(const EditorNode3DGizmo *p_gizmo, int p_idx) const {
+String VisibleOnScreenNotifier3DGizmoPlugin::get_handle_name(const EditorNode3DGizmo *p_gizmo, int p_idx) const {
 	switch (p_idx) {
 		case 0:
 			return "Size X";
@@ -2166,13 +2166,13 @@ String VisibilityNotifier3DGizmoPlugin::get_handle_name(const EditorNode3DGizmo 
 	return "";
 }
 
-Variant VisibilityNotifier3DGizmoPlugin::get_handle_value(EditorNode3DGizmo *p_gizmo, int p_idx) const {
-	VisibilityNotifier3D *notifier = Object::cast_to<VisibilityNotifier3D>(p_gizmo->get_spatial_node());
+Variant VisibleOnScreenNotifier3DGizmoPlugin::get_handle_value(EditorNode3DGizmo *p_gizmo, int p_idx) const {
+	VisibleOnScreenNotifier3D *notifier = Object::cast_to<VisibleOnScreenNotifier3D>(p_gizmo->get_spatial_node());
 	return notifier->get_aabb();
 }
 
-void VisibilityNotifier3DGizmoPlugin::set_handle(EditorNode3DGizmo *p_gizmo, int p_idx, Camera3D *p_camera, const Point2 &p_point) {
-	VisibilityNotifier3D *notifier = Object::cast_to<VisibilityNotifier3D>(p_gizmo->get_spatial_node());
+void VisibleOnScreenNotifier3DGizmoPlugin::set_handle(EditorNode3DGizmo *p_gizmo, int p_idx, Camera3D *p_camera, const Point2 &p_point) {
+	VisibleOnScreenNotifier3D *notifier = Object::cast_to<VisibleOnScreenNotifier3D>(p_gizmo->get_spatial_node());
 
 	Transform3D gt = notifier->get_global_transform();
 
@@ -2223,8 +2223,8 @@ void VisibilityNotifier3DGizmoPlugin::set_handle(EditorNode3DGizmo *p_gizmo, int
 	}
 }
 
-void VisibilityNotifier3DGizmoPlugin::commit_handle(EditorNode3DGizmo *p_gizmo, int p_idx, const Variant &p_restore, bool p_cancel) {
-	VisibilityNotifier3D *notifier = Object::cast_to<VisibilityNotifier3D>(p_gizmo->get_spatial_node());
+void VisibleOnScreenNotifier3DGizmoPlugin::commit_handle(EditorNode3DGizmo *p_gizmo, int p_idx, const Variant &p_restore, bool p_cancel) {
+	VisibleOnScreenNotifier3D *notifier = Object::cast_to<VisibleOnScreenNotifier3D>(p_gizmo->get_spatial_node());
 
 	if (p_cancel) {
 		notifier->set_aabb(p_restore);
@@ -2238,8 +2238,8 @@ void VisibilityNotifier3DGizmoPlugin::commit_handle(EditorNode3DGizmo *p_gizmo, 
 	ur->commit_action();
 }
 
-void VisibilityNotifier3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
-	VisibilityNotifier3D *notifier = Object::cast_to<VisibilityNotifier3D>(p_gizmo->get_spatial_node());
+void VisibleOnScreenNotifier3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
+	VisibleOnScreenNotifier3D *notifier = Object::cast_to<VisibleOnScreenNotifier3D>(p_gizmo->get_spatial_node());
 
 	p_gizmo->clear();
 

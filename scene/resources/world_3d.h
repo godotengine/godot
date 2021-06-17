@@ -38,7 +38,7 @@
 #include "servers/rendering_server.h"
 
 class Camera3D;
-class VisibilityNotifier3D;
+class VisibleOnScreenNotifier3D;
 struct SpatialIndexer;
 
 class World3D : public Resource {
