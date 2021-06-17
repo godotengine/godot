@@ -1262,34 +1262,30 @@ public:
 					p_list->push_back(PropertyInfo(Variant::VECTOR3, "scale"));
 				} break;
 				case Animation::TYPE_VALUE: {
+					if (same_key_type) {
+						Variant v = animation->track_get_key_value(first_track, first_key);
 
-					if (!same_key_type)
-						break;
+						if (hint.type != Variant::NIL) {
+							PropertyInfo pi = hint;
+							pi.name = "value";
+							p_list->push_back(pi);
+						} else {
+							PropertyHint hint = PROPERTY_HINT_NONE;
+							String hint_string;
 
-					Variant v = animation->track_get_key_value(first_track, first_key);
+							if (v.get_type() == Variant::OBJECT) {
+								//could actually check the object property if exists..? yes i will!
+								Ref<Resource> res = v;
+								if (res.is_valid()) {
+									hint = PROPERTY_HINT_RESOURCE_TYPE;
+									hint_string = res->get_class();
+								}
+							}
 
-					if (hint.type != Variant::NIL) {
-
-						PropertyInfo pi = hint;
-						pi.name = "value";
-						p_list->push_back(pi);
-					} else {
-
-						PropertyHint hint = PROPERTY_HINT_NONE;
-						String hint_string;
-
-						if (v.get_type() == Variant::OBJECT) {
-							//could actually check the object property if exists..? yes i will!
-							Ref<Resource> res = v;
-							if (res.is_valid()) {
-
-								hint = PROPERTY_HINT_RESOURCE_TYPE;
-								hint_string = res->get_class();
+							if (v.get_type() != Variant::NIL) {
+								p_list->push_back(PropertyInfo(v.get_type(), "value", hint, hint_string));
 							}
 						}
-
-						if (v.get_type() != Variant::NIL)
-							p_list->push_back(PropertyInfo(v.get_type(), "value", hint, hint_string));
 					}
 
 					p_list->push_back(PropertyInfo(Variant::REAL, "easing", PROPERTY_HINT_EXP_EASING));
