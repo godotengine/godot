@@ -1447,6 +1447,11 @@ String EditorSettings::get_editor_layouts_config() const {
 	return EditorPaths::get_singleton()->get_config_dir().plus_file("editor_layouts.cfg");
 }
 
+String EditorSettings::get_window_config() const {
+
+	return get_cache_dir().plus_file("window.cfg");
+}
+
 // Shortcuts
 
 void EditorSettings::add_shortcut(const String &p_name, Ref<Shortcut> &p_shortcut) {
