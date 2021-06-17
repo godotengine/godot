@@ -105,7 +105,7 @@ public:
 	}
 
 	bool is_done_dispatching() const {
-		ERR_FAIL_COND_V(current_work == nullptr, false);
+		ERR_FAIL_COND_V(current_work == nullptr, true);
 		return index.load(std::memory_order_acquire) >= current_work->max_elements;
 	}
 
