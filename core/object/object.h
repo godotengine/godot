@@ -101,6 +101,7 @@ enum PropertyHint {
 };
 
 enum PropertyUsageFlags {
+	PROPERTY_USAGE_NONE = 0,
 	PROPERTY_USAGE_STORAGE = 1,
 	PROPERTY_USAGE_EDITOR = 2,
 	PROPERTY_USAGE_NETWORK = 4,
