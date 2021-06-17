@@ -1959,7 +1959,7 @@ VBoxContainer *ThemeTypeEditor::_create_item_list(Theme::DataType p_data_type) {
 	LineEdit *item_add_edit = memnew(LineEdit);
 	item_add_edit->set_h_size_flags(SIZE_EXPAND_FILL);
 	item_add_hb->add_child(item_add_edit);
-	item_add_edit->connect("text_entered", callable_mp(this, &ThemeTypeEditor::_item_add_lineedit_cbk), varray(p_data_type, item_add_edit));
+	item_add_edit->connect("text_submitted", callable_mp(this, &ThemeTypeEditor::_item_add_lineedit_cbk), varray(p_data_type, item_add_edit));
 	Button *item_add_button = memnew(Button);
 	item_add_button->set_text(TTR("Add"));
 	item_add_hb->add_child(item_add_button);
@@ -2124,7 +2124,7 @@ HBoxContainer *ThemeTypeEditor::_create_property_control(Theme::DataType p_data_
 		item_name_edit->set_h_size_flags(SIZE_EXPAND_FILL);
 		item_name_edit->set_text(p_item_name);
 		item_name_container->add_child(item_name_edit);
-		item_name_edit->connect("text_entered", callable_mp(this, &ThemeTypeEditor::_item_rename_entered), varray(p_data_type, p_item_name, item_name_container));
+		item_name_edit->connect("text_submitted", callable_mp(this, &ThemeTypeEditor::_item_rename_entered), varray(p_data_type, p_item_name, item_name_container));
 		item_name_edit->hide();
 
 		Button *item_rename_button = memnew(Button);
@@ -2894,7 +2894,7 @@ ThemeTypeEditor::ThemeTypeEditor() {
 	add_type_filter = memnew(LineEdit);
 	add_type_vb->add_child(add_type_filter);
 	add_type_filter->connect("text_changed", callable_mp(this, &ThemeTypeEditor::_add_type_filter_cbk));
-	add_type_filter->connect("text_entered", callable_mp(this, &ThemeTypeEditor::_add_type_dialog_entered));
+	add_type_filter->connect("text_submitted", callable_mp(this, &ThemeTypeEditor::_add_type_dialog_entered));
 	Label *add_type_options_label = memnew(Label);
 	add_type_options_label->set_text(TTR("Node Types:"));
 	add_type_vb->add_child(add_type_options_label);
