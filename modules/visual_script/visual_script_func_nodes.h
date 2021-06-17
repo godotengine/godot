@@ -272,6 +272,8 @@ private:
 	void _set_type_cache(Variant::Type p_type);
 	Variant::Type _get_type_cache() const;
 
+	void _adjust_input_index(PropertyInfo &pinfo) const;
+
 protected:
 	virtual void _validate_property(PropertyInfo &property) const override;
 
@@ -326,6 +328,9 @@ class VisualScriptEmitSignal : public VisualScriptNode {
 
 private:
 	StringName name;
+	StringName index;
+
+	void _adjust_input_index(PropertyInfo &pinfo) const;
 
 protected:
 	virtual void _validate_property(PropertyInfo &property) const override;

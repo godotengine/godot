@@ -990,8 +990,7 @@ PropertyInfo VisualScriptPropertySet::get_input_value_port_info(int p_idx) const
 		if (p_idx == 0) {
 			PropertyInfo pi;
 			pi.type = (call_mode == CALL_MODE_INSTANCE ? Variant::OBJECT : basic_type);
-			pi.name = (call_mode == CALL_MODE_INSTANCE ? String("instance") : Variant::get_type_name(basic_type).to_lower());
-			_adjust_input_index(pi);
+			pi.name = "instance";
 			return pi;
 		}
 	}
@@ -1000,14 +999,17 @@ PropertyInfo VisualScriptPropertySet::get_input_value_port_info(int p_idx) const
 	ClassDB::get_property_list(_get_base_type(), &props, false);
 	for (List<PropertyInfo>::Element *E = props.front(); E; E = E->next()) {
 		if (E->get().name == property) {
-			PropertyInfo pinfo = PropertyInfo(E->get().type, "value", PROPERTY_HINT_TYPE_STRING, E->get().hint_string);
+			String detail_prop_name = property;
+			if (index != StringName()) {
+				detail_prop_name += "." + String(index);
+			}			
+			PropertyInfo pinfo = PropertyInfo(E->get().type, detail_prop_name, PROPERTY_HINT_TYPE_STRING, E->get().hint_string);
 			_adjust_input_index(pinfo);
 			return pinfo;
 		}
 	}
 
 	PropertyInfo pinfo = type_cache;
-	pinfo.name = "value";
 	_adjust_input_index(pinfo);
 	return pinfo;
 }
@@ -1036,17 +1038,18 @@ String VisualScriptPropertySet::get_caption() const {
 }
 
 String VisualScriptPropertySet::get_text() const {
+	if (!has_input_sequence_port())
+		return "";
+
 	if (call_mode == CALL_MODE_BASIC_TYPE) {
 		return String("On ") + Variant::get_type_name(basic_type);
+	} else if (call_mode == CALL_MODE_INSTANCE) {
+		return String("On ") + base_type;
+	} else if (call_mode == CALL_MODE_NODE_PATH) {
+		return " [" + String(base_path.simplified()) + "]";
+	} else {
+		return "On Self";
 	}
-
-	static const char *cname[3] = {
-		"Self",
-		"Scene Node",
-		"Instance"
-	};
-
-	return String("On ") + cname[call_mode];
 }
 
 void VisualScriptPropertySet::_update_base_type() {
@@ -1731,29 +1734,36 @@ PropertyInfo VisualScriptPropertyGet::get_output_value_port_info(int p_idx) cons
 	ClassDB::get_property_list(_get_base_type(), &props, false);
 	for (List<PropertyInfo>::Element *E = props.front(); E; E = E->next()) {
 		if (E->get().name == property) {
-			return PropertyInfo(E->get().type, "value." + String(index));
+			PropertyInfo pinfo = PropertyInfo(E->get().type, String(property) + "." + String(index), E->get().hint, E->get().hint_string);
+			_adjust_input_index(pinfo);
+			return pinfo;
 		}
 	}
 
-	return PropertyInfo(type_cache, "value");
+	PropertyInfo pinfo = PropertyInfo(type_cache, "value");
+	_adjust_input_index(pinfo);
+	return pinfo;
 }
 
 String VisualScriptPropertyGet::get_caption() const {
-	return String("Get ") + property;
+	String prop = String("Get ") + property;
+	if (index != StringName()) {
+		prop += "." + String(index);
+	}
+
+	return prop;
 }
 
 String VisualScriptPropertyGet::get_text() const {
 	if (call_mode == CALL_MODE_BASIC_TYPE) {
 		return String("On ") + Variant::get_type_name(basic_type);
+	} else if (call_mode == CALL_MODE_INSTANCE) {
+		return String("On ") + base_type;
+	} else if (call_mode == CALL_MODE_NODE_PATH) {
+		return " [" + String(base_path.simplified()) + "]";
+	} else {
+		return "On Self";
 	}
-
-	static const char *cname[3] = {
-		"Self",
-		"Scene Node",
-		"Instance"
-	};
-
-	return String("On ") + cname[call_mode];
 }
 
 void VisualScriptPropertyGet::set_base_type(const StringName &p_type) {
@@ -1931,6 +1941,19 @@ void VisualScriptPropertyGet::_set_type_cache(Variant::Type p_type) {
 
 Variant::Type VisualScriptPropertyGet::_get_type_cache() const {
 	return type_cache;
+}
+
+void VisualScriptPropertyGet::_adjust_input_index(PropertyInfo &pinfo) const {
+	if (index != StringName()) {
+		Variant v;
+		Callable::CallError ce;
+		Variant::construct(pinfo.type, v, nullptr, 0, ce);
+		Variant i = v.get(index);
+		pinfo.type = i.get_type();
+		pinfo.name = String(property) + "." + index;
+	} else {
+		pinfo.name = String(property);
+	}
 }
 
 void VisualScriptPropertyGet::set_index(const StringName &p_type) {
@@ -2269,6 +2292,16 @@ void VisualScriptEmitSignal::set_signal(const StringName &p_type) {
 
 StringName VisualScriptEmitSignal::get_signal() const {
 	return name;
+}
+
+void VisualScriptEmitSignal::_adjust_input_index(PropertyInfo &pinfo) const {
+	if (index != StringName()) {
+		Variant v;
+		Callable::CallError ce;
+		Variant::construct(pinfo.type, v, nullptr, 0, ce);
+		Variant i = v.get(index);
+		pinfo.type = i.get_type();
+	}
 }
 
 void VisualScriptEmitSignal::_validate_property(PropertyInfo &property) const {
