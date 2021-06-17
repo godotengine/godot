@@ -231,6 +231,8 @@ public:
 	void canvas_item_add_particles(RID p_item, RID p_particles, RID p_texture);
 	void canvas_item_add_set_transform(RID p_item, const Transform2D &p_transform);
 	void canvas_item_add_clip_ignore(RID p_item, bool p_ignore);
+	void canvas_item_add_animation_slice(RID p_item, double p_animation_length, double p_slice_begin, double p_slice_end, double p_offset);
+
 	void canvas_item_set_sort_children_by_y(RID p_item, bool p_enable);
 	void canvas_item_set_z_index(RID p_item, int p_z);
 	void canvas_item_set_z_as_relative_to_parent(RID p_item, bool p_enable);

@@ -24,6 +24,21 @@
 				Overridable function called by the engine (if defined) to draw the canvas item.
 			</description>
 		</method>
+		<method name="draw_animation_slice">
+			<return type="void">
+			</return>
+			<argument index="0" name="animation_length" type="float">
+			</argument>
+			<argument index="1" name="slice_begin" type="float">
+			</argument>
+			<argument index="2" name="slice_end" type="float">
+			</argument>
+			<argument index="3" name="offset" type="float" default="0.0">
+			</argument>
+			<description>
+				Subsequent drawing commands will be ignored unless they fall within the specified animation slice. This is a faster way to implement animations that loop on background rather than redrawing constantly.
+			</description>
+		</method>
 		<method name="draw_arc">
 			<return type="void">
 			</return>
@@ -96,6 +111,13 @@
 			</argument>
 			<description>
 				Draws a colored polygon of any amount of points, convex or concave.
+			</description>
+		</method>
+		<method name="draw_end_animation">
+			<return type="void">
+			</return>
+			<description>
+				After submitting all animations slices via [method draw_animation_slice], this function can be used to revert drawing to its default state (all subsequent drawing commands will be visible). If you don't care about this particular use case, usage of this function after submitting the slices is not required.
 			</description>
 		</method>
 		<method name="draw_line">
