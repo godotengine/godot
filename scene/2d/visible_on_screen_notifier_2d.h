@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  visibility_notifier_3d.h                                             */
+/*  visible_on_screen_notifier_2d.h                                      */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,17 +28,18 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef VISIBILITY_NOTIFIER_H
-#define VISIBILITY_NOTIFIER_H
+#ifndef VISIBLE_ON_SCREEN_NOTIFIER_2D_H
+#define VISIBLE_ON_SCREEN_NOTIFIER_2D_H
 
-#include "scene/3d/visual_instance_3d.h"
+#include "scene/2d/node_2d.h"
 
-class World3D;
-class Camera3D;
-class VisibilityNotifier3D : public VisualInstance3D {
-	GDCLASS(VisibilityNotifier3D, VisualInstance3D);
+class Viewport;
+class VisibleOnScreenNotifier2D : public Node2D {
+	GDCLASS(VisibleOnScreenNotifier2D, Node2D);
 
-	AABB aabb = AABB(Vector3(-1, -1, -1), Vector3(2, 2, 2));
+	Set<Viewport *> viewports;
+
+	Rect2 rect;
 
 private:
 	bool on_screen = false;
@@ -53,17 +54,21 @@ protected:
 	static void _bind_methods();
 
 public:
-	void set_aabb(const AABB &p_aabb);
-	virtual AABB get_aabb() const override;
+#ifdef TOOLS_ENABLED
+	virtual Rect2 _edit_get_rect() const override;
+	virtual bool _edit_use_rect() const override;
+#endif
+
+	void set_rect(const Rect2 &p_rect);
+	Rect2 get_rect() const;
+
 	bool is_on_screen() const;
 
-	virtual Vector<Face3> get_faces(uint32_t p_usage_flags) const override;
-
-	VisibilityNotifier3D();
+	VisibleOnScreenNotifier2D();
 };
 
-class VisibilityEnabler3D : public VisibilityNotifier3D {
-	GDCLASS(VisibilityEnabler3D, VisibilityNotifier3D);
+class VisibleOnScreenEnabler2D : public VisibleOnScreenNotifier2D {
+	GDCLASS(VisibleOnScreenEnabler2D, VisibleOnScreenNotifier2D);
 
 public:
 	enum EnableMode {
@@ -92,9 +97,9 @@ public:
 	void set_enable_node_path(NodePath p_path);
 	NodePath get_enable_node_path();
 
-	VisibilityEnabler3D();
+	VisibleOnScreenEnabler2D();
 };
 
-VARIANT_ENUM_CAST(VisibilityEnabler3D::EnableMode);
+VARIANT_ENUM_CAST(VisibleOnScreenEnabler2D::EnableMode);
 
-#endif // VISIBILITY_NOTIFIER_H
+#endif // VISIBILITY_NOTIFIER_2D_H

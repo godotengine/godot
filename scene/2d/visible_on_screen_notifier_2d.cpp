@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  visibility_notifier_3d.cpp                                           */
+/*  visible_on_screen_notifier_2d.cpp                                    */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,15 +28,27 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "visibility_notifier_3d.h"
+#include "visible_on_screen_notifier_2d.h"
 
 #include "core/config/engine.h"
-#include "scene/3d/camera_3d.h"
-#include "scene/3d/physics_body_3d.h"
+#include "gpu_particles_2d.h"
+#include "scene/2d/animated_sprite_2d.h"
+#include "scene/2d/physics_body_2d.h"
 #include "scene/animation/animation_player.h"
+#include "scene/main/window.h"
 #include "scene/scene_string_names.h"
 
-void VisibilityNotifier3D::_visibility_enter() {
+#ifdef TOOLS_ENABLED
+Rect2 VisibleOnScreenNotifier2D::_edit_get_rect() const {
+	return rect;
+}
+
+bool VisibleOnScreenNotifier2D::_edit_use_rect() const {
+	return true;
+}
+#endif
+
+void VisibleOnScreenNotifier2D::_visibility_enter() {
 	if (!is_inside_tree() || Engine::get_singleton()->is_editor_hint()) {
 		return;
 	}
@@ -45,7 +57,7 @@ void VisibilityNotifier3D::_visibility_enter() {
 	emit_signal(SceneStringNames::get_singleton()->screen_entered);
 	_screen_enter();
 }
-void VisibilityNotifier3D::_visibility_exit() {
+void VisibleOnScreenNotifier2D::_visibility_exit() {
 	if (!is_inside_tree() || Engine::get_singleton()->is_editor_hint()) {
 		return;
 	}
@@ -55,73 +67,76 @@ void VisibilityNotifier3D::_visibility_exit() {
 	_screen_exit();
 }
 
-void VisibilityNotifier3D::set_aabb(const AABB &p_aabb) {
-	if (aabb == p_aabb) {
-		return;
+void VisibleOnScreenNotifier2D::set_rect(const Rect2 &p_rect) {
+	rect = p_rect;
+	if (is_inside_tree()) {
+		RS::get_singleton()->canvas_item_set_visibility_notifier(get_canvas_item(), true, rect, callable_mp(this, &VisibleOnScreenNotifier2D::_visibility_enter), callable_mp(this, &VisibleOnScreenNotifier2D::_visibility_exit));
 	}
-	aabb = p_aabb;
-
-	RS::get_singleton()->visibility_notifier_set_aabb(get_base(), aabb);
-
-	update_gizmo();
 }
 
-AABB VisibilityNotifier3D::get_aabb() const {
-	return aabb;
+Rect2 VisibleOnScreenNotifier2D::get_rect() const {
+	return rect;
 }
 
-bool VisibilityNotifier3D::is_on_screen() const {
+void VisibleOnScreenNotifier2D::_notification(int p_what) {
+	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE: {
+			//get_world_2d()->
+			on_screen = false;
+			RS::get_singleton()->canvas_item_set_visibility_notifier(get_canvas_item(), true, rect, callable_mp(this, &VisibleOnScreenNotifier2D::_visibility_enter), callable_mp(this, &VisibleOnScreenNotifier2D::_visibility_exit));
+		} break;
+		case NOTIFICATION_DRAW: {
+			if (Engine::get_singleton()->is_editor_hint()) {
+				draw_rect(rect, Color(1, 0.5, 1, 0.2));
+			}
+		} break;
+		case NOTIFICATION_EXIT_TREE: {
+			on_screen = false;
+			RS::get_singleton()->canvas_item_set_visibility_notifier(get_canvas_item(), false, Rect2(), Callable(), Callable());
+		} break;
+	}
+}
+
+bool VisibleOnScreenNotifier2D::is_on_screen() const {
 	return on_screen;
 }
 
-void VisibilityNotifier3D::_notification(int p_what) {
-	if (p_what == NOTIFICATION_ENTER_TREE || p_what == NOTIFICATION_EXIT_TREE) {
-		on_screen = false;
-	}
-}
+void VisibleOnScreenNotifier2D::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("set_rect", "rect"), &VisibleOnScreenNotifier2D::set_rect);
+	ClassDB::bind_method(D_METHOD("get_rect"), &VisibleOnScreenNotifier2D::get_rect);
+	ClassDB::bind_method(D_METHOD("is_on_screen"), &VisibleOnScreenNotifier2D::is_on_screen);
 
-void VisibilityNotifier3D::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("set_aabb", "rect"), &VisibilityNotifier3D::set_aabb);
-	ClassDB::bind_method(D_METHOD("is_on_screen"), &VisibilityNotifier3D::is_on_screen);
-
-	ADD_PROPERTY(PropertyInfo(Variant::AABB, "aabb"), "set_aabb", "get_aabb");
+	ADD_PROPERTY(PropertyInfo(Variant::RECT2, "rect"), "set_rect", "get_rect");
 
 	ADD_SIGNAL(MethodInfo("screen_entered"));
 	ADD_SIGNAL(MethodInfo("screen_exited"));
 }
 
-Vector<Face3> VisibilityNotifier3D::get_faces(uint32_t p_usage_flags) const {
-	return Vector<Face3>();
-}
-
-VisibilityNotifier3D::VisibilityNotifier3D() {
-	RID notifier = RS::get_singleton()->visibility_notifier_create();
-	RS::get_singleton()->visibility_notifier_set_aabb(notifier, aabb);
-	RS::get_singleton()->visibility_notifier_set_callbacks(notifier, callable_mp(this, &VisibilityNotifier3D::_visibility_enter), callable_mp(this, &VisibilityNotifier3D::_visibility_exit));
-	set_base(notifier);
+VisibleOnScreenNotifier2D::VisibleOnScreenNotifier2D() {
+	rect = Rect2(-10, -10, 20, 20);
 }
 
 //////////////////////////////////////
 
-void VisibilityEnabler3D::_screen_enter() {
+void VisibleOnScreenEnabler2D::_screen_enter() {
 	_update_enable_mode(true);
 }
 
-void VisibilityEnabler3D::_screen_exit() {
+void VisibleOnScreenEnabler2D::_screen_exit() {
 	_update_enable_mode(false);
 }
 
-void VisibilityEnabler3D::set_enable_mode(EnableMode p_mode) {
+void VisibleOnScreenEnabler2D::set_enable_mode(EnableMode p_mode) {
 	enable_mode = p_mode;
 	if (is_inside_tree()) {
 		_update_enable_mode(is_on_screen());
 	}
 }
-VisibilityEnabler3D::EnableMode VisibilityEnabler3D::get_enable_mode() {
+VisibleOnScreenEnabler2D::EnableMode VisibleOnScreenEnabler2D::get_enable_mode() {
 	return enable_mode;
 }
 
-void VisibilityEnabler3D::set_enable_node_path(NodePath p_path) {
+void VisibleOnScreenEnabler2D::set_enable_node_path(NodePath p_path) {
 	if (enable_node_path == p_path) {
 		return;
 	}
@@ -135,11 +150,11 @@ void VisibilityEnabler3D::set_enable_node_path(NodePath p_path) {
 		}
 	}
 }
-NodePath VisibilityEnabler3D::get_enable_node_path() {
+NodePath VisibleOnScreenEnabler2D::get_enable_node_path() {
 	return enable_node_path;
 }
 
-void VisibilityEnabler3D::_update_enable_mode(bool p_enable) {
+void VisibleOnScreenEnabler2D::_update_enable_mode(bool p_enable) {
 	Node *node = static_cast<Node *>(ObjectDB::get_instance(node_id));
 	if (node) {
 		if (p_enable) {
@@ -159,7 +174,7 @@ void VisibilityEnabler3D::_update_enable_mode(bool p_enable) {
 		}
 	}
 }
-void VisibilityEnabler3D::_notification(int p_what) {
+void VisibleOnScreenEnabler2D::_notification(int p_what) {
 	if (p_what == NOTIFICATION_ENTER_TREE) {
 		if (Engine::get_singleton()->is_editor_hint()) {
 			return;
@@ -178,12 +193,12 @@ void VisibilityEnabler3D::_notification(int p_what) {
 	}
 }
 
-void VisibilityEnabler3D::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("set_enable_mode", "mode"), &VisibilityEnabler3D::set_enable_mode);
-	ClassDB::bind_method(D_METHOD("get_enable_mode"), &VisibilityEnabler3D::get_enable_mode);
+void VisibleOnScreenEnabler2D::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("set_enable_mode", "mode"), &VisibleOnScreenEnabler2D::set_enable_mode);
+	ClassDB::bind_method(D_METHOD("get_enable_mode"), &VisibleOnScreenEnabler2D::get_enable_mode);
 
-	ClassDB::bind_method(D_METHOD("set_enable_node_path", "path"), &VisibilityEnabler3D::set_enable_node_path);
-	ClassDB::bind_method(D_METHOD("get_enable_node_path"), &VisibilityEnabler3D::get_enable_node_path);
+	ClassDB::bind_method(D_METHOD("set_enable_node_path", "path"), &VisibleOnScreenEnabler2D::set_enable_node_path);
+	ClassDB::bind_method(D_METHOD("get_enable_node_path"), &VisibleOnScreenEnabler2D::get_enable_node_path);
 
 	ADD_GROUP("Enabling", "enable_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "enable_mode", PROPERTY_HINT_ENUM, "Inherit,Always,WhenPaused"), "set_enable_mode", "get_enable_mode");
@@ -194,5 +209,5 @@ void VisibilityEnabler3D::_bind_methods() {
 	BIND_ENUM_CONSTANT(ENABLE_MODE_WHEN_PAUSED);
 }
 
-VisibilityEnabler3D::VisibilityEnabler3D() {
+VisibleOnScreenEnabler2D::VisibleOnScreenEnabler2D() {
 }

@@ -65,7 +65,7 @@
 #include "scene/2d/sprite_2d.h"
 #include "scene/2d/tile_map.h"
 #include "scene/2d/touch_screen_button.h"
-#include "scene/2d/visibility_notifier_2d.h"
+#include "scene/2d/visible_on_screen_notifier_2d.h"
 #include "scene/animation/animation_blend_space_1d.h"
 #include "scene/animation/animation_blend_space_2d.h"
 #include "scene/animation/animation_blend_tree.h"
@@ -229,7 +229,7 @@
 #include "scene/3d/spring_arm_3d.h"
 #include "scene/3d/sprite_3d.h"
 #include "scene/3d/vehicle_body_3d.h"
-#include "scene/3d/visibility_notifier_3d.h"
+#include "scene/3d/visible_on_screen_notifier_3d.h"
 #include "scene/3d/voxel_gi.h"
 #include "scene/3d/world_environment.h"
 #include "scene/3d/xr_nodes.h"
@@ -513,8 +513,8 @@ void register_scene_types() {
 	ClassDB::register_class<Curve3D>();
 	ClassDB::register_class<Path3D>();
 	ClassDB::register_class<PathFollow3D>();
-	ClassDB::register_class<VisibilityNotifier3D>();
-	ClassDB::register_class<VisibilityEnabler3D>();
+	ClassDB::register_class<VisibleOnScreenNotifier3D>();
+	ClassDB::register_class<VisibleOnScreenEnabler3D>();
 	ClassDB::register_class<WorldEnvironment>();
 	ClassDB::register_class<RemoteTransform3D>();
 
@@ -655,8 +655,8 @@ void register_scene_types() {
 	ClassDB::register_class<CollisionShape2D>();
 	ClassDB::register_class<CollisionPolygon2D>();
 	ClassDB::register_class<RayCast2D>();
-	ClassDB::register_class<VisibilityNotifier2D>();
-	ClassDB::register_class<VisibilityEnabler2D>();
+	ClassDB::register_class<VisibleOnScreenNotifier2D>();
+	ClassDB::register_class<VisibleOnScreenEnabler2D>();
 	ClassDB::register_class<Polygon2D>();
 	ClassDB::register_class<Skeleton2D>();
 	ClassDB::register_class<Bone2D>();
@@ -966,8 +966,8 @@ void register_scene_types() {
 	ClassDB::add_compatibility_class("VehicleWheel", "VehicleWheel3D");
 	ClassDB::add_compatibility_class("ViewportContainer", "SubViewportContainer");
 	ClassDB::add_compatibility_class("Viewport", "SubViewport");
-	ClassDB::add_compatibility_class("VisibilityEnabler", "VisibilityEnabler3D");
-	ClassDB::add_compatibility_class("VisibilityNotifier", "VisibilityNotifier3D");
+	ClassDB::add_compatibility_class("VisibilityEnabler", "VisibleOnScreenEnabler3D");
+	ClassDB::add_compatibility_class("VisibilityNotifier", "VisibleOnScreenNotifier3D");
 	ClassDB::add_compatibility_class("VisualServer", "RenderingServer");
 	ClassDB::add_compatibility_class("VisualShaderNodeScalarConstant", "VisualShaderNodeFloatConstant");
 	ClassDB::add_compatibility_class("VisualShaderNodeScalarFunc", "VisualShaderNodeFloatFunc");
@@ -986,6 +986,8 @@ void register_scene_types() {
 	ClassDB::add_compatibility_class("World", "World3D");
 	ClassDB::add_compatibility_class("StreamTexture", "StreamTexture2D");
 	ClassDB::add_compatibility_class("Light2D", "PointLight2D");
+	ClassDB::add_compatibility_class("VisibilityNotifier2D", "VisibleOnScreenNotifier2D");
+	ClassDB::add_compatibility_class("VisibilityNotifier3D", "VisibleOnScreenNotifier3D");
 
 #endif /* DISABLE_DEPRECATED */
 
