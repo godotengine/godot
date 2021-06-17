@@ -3446,6 +3446,7 @@ GDScriptParser::DataType GDScriptAnalyzer::get_operation_type(Variant::Operator 
 	}
 
 	r_valid = true;
+	result.type_source = GDScriptParser::DataType::ANNOTATED_INFERRED;
 
 	result.kind = GDScriptParser::DataType::BUILTIN;
 	result.builtin_type = Variant::get_operator_return_type(p_operation, a_type, b_type);
