@@ -1710,7 +1710,9 @@ int VisualScriptPropertyGet::get_input_value_port_count() const {
 }
 
 int VisualScriptPropertyGet::get_output_value_port_count() const {
-	return 1;
+	int pc = (call_mode == CALL_MODE_BASIC_TYPE || call_mode == CALL_MODE_INSTANCE) ? 2 : 1;
+
+	return pc;
 }
 
 String VisualScriptPropertyGet::get_output_sequence_port_text(int p_port) const {
@@ -1730,13 +1732,20 @@ PropertyInfo VisualScriptPropertyGet::get_input_value_port_info(int p_idx) const
 }
 
 PropertyInfo VisualScriptPropertyGet::get_output_value_port_info(int p_idx) const {
-	List<PropertyInfo> props;
-	ClassDB::get_property_list(_get_base_type(), &props, false);
-	for (List<PropertyInfo>::Element *E = props.front(); E; E = E->next()) {
-		if (E->get().name == property) {
-			PropertyInfo pinfo = PropertyInfo(E->get().type, String(property) + "." + String(index), E->get().hint, E->get().hint_string);
-			_adjust_input_index(pinfo);
-			return pinfo;
+
+	if (call_mode == CALL_MODE_BASIC_TYPE && p_idx == 0) {
+		return PropertyInfo(basic_type, "out");
+	} else if (call_mode == CALL_MODE_INSTANCE && p_idx == 0) {
+		return PropertyInfo(Variant::OBJECT, "pass", PROPERTY_HINT_TYPE_STRING, get_base_type());
+	} else {
+		List<PropertyInfo> props;
+		ClassDB::get_property_list(_get_base_type(), &props, false);
+		for (List<PropertyInfo>::Element *E = props.front(); E; E = E->next()) {
+			if (E->get().name == property) {
+				PropertyInfo pinfo = PropertyInfo(E->get().type, String(property) + "." + String(index), E->get().hint, E->get().hint_string);
+				_adjust_input_index(pinfo);
+				return pinfo;
+			}
 		}
 	}
 
@@ -2251,7 +2260,7 @@ int VisualScriptEmitSignal::get_input_value_port_count() const {
 }
 
 int VisualScriptEmitSignal::get_output_value_port_count() const {
-	return 0;
+	return 1;
 }
 
 String VisualScriptEmitSignal::get_output_sequence_port_text(int p_port) const {
