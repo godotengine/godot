@@ -137,6 +137,7 @@ static int audio_driver_idx = -1;
 static bool single_window = false;
 static bool editor = false;
 static bool project_manager = false;
+static bool cmdline_tool = false;
 static String locale;
 static bool show_help = false;
 static bool auto_quit = false;
@@ -183,6 +184,10 @@ bool profile_gpu = false;
 // but not if e.g. we fail to load and project and fallback to the manager.
 bool Main::is_project_manager() {
 	return project_manager;
+}
+
+bool Main::is_cmdline_tool() {
+	return cmdline_tool;
 }
 
 static String unescape_cmdline(const String &p_str) {
@@ -881,18 +886,25 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 
 			auto_build_solutions = true;
 			editor = true;
+			cmdline_tool = true;
 #ifdef DEBUG_METHODS_ENABLED
 		} else if (I->get() == "--gdnative-generate-json-api" || I->get() == "--gdnative-generate-json-builtin-api") {
 			// Register as an editor instance to use low-end fallback if relevant.
 			editor = true;
+			cmdline_tool = true;
 
 			// We still pass it to the main arguments since the argument handling itself is not done in this function
 			main_args.push_back(I->get());
 #endif
 		} else if (I->get() == "--export" || I->get() == "--export-debug" ||
 				   I->get() == "--export-pack") { // Export project
-
+			// Actually handling is done in start().
 			editor = true;
+			cmdline_tool = true;
+			main_args.push_back(I->get());
+		} else if (I->get() == "--doctool") {
+			// Actually handling is done in start().
+			cmdline_tool = true;
 			main_args.push_back(I->get());
 #endif
 		} else if (I->get() == "--path") { // set path of project to start or edit
@@ -1125,8 +1137,8 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	}
 
 	if (!project_manager && !editor) {
-		// Determine if the project manager should be requested
-		project_manager = main_args.size() == 0 && !found_project;
+		// If we didn't find a project, we fall back to the project manager.
+		project_manager = !found_project && !cmdline_tool;
 	}
 #endif
 
@@ -1452,7 +1464,7 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 #endif
 
 #ifdef TOOLS_ENABLED
-	if (editor || project_manager) {
+	if (editor || project_manager || cmdline_tool) {
 		EditorPaths::create();
 	}
 #endif
@@ -1577,7 +1589,7 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 
 	print_verbose("Using \"" + tablet_driver + "\" pen tablet driver...");
 
-	/* Initialize Visual Server */
+	/* Initialize Rendering Server */
 
 	rendering_server = memnew(RenderingServerDefault(OS::get_singleton()->get_render_thread_mode() == OS::RENDER_SEPARATE_THREAD));
 
@@ -1828,13 +1840,13 @@ bool Main::start() {
 	ERR_FAIL_COND_V(!_start_success, false);
 
 	bool hasicon = false;
-	String doc_tool_path;
 	String positional_arg;
 	String game_path;
 	String script;
 	bool check_only = false;
 
 #ifdef TOOLS_ENABLED
+	String doc_tool_path;
 	bool doc_base = true;
 	String _export_preset;
 	bool export_debug = false;
@@ -1844,8 +1856,9 @@ bool Main::start() {
 	main_timer_sync.init(OS::get_singleton()->get_ticks_usec());
 	List<String> args = OS::get_singleton()->get_cmdline_args();
 
-	// parameters that do not have an argument to the right
 	for (int i = 0; i < args.size(); i++) {
+		// First check parameters that do not have an argument to the right.
+
 		// Doctest Unit Testing Handler
 		// Designed to override and pass arguments to the unit test handler.
 		if (args[i] == "--check-only") {
@@ -1875,7 +1888,7 @@ bool Main::start() {
 				game_path = args[i];
 			}
 		}
-		//parameters that have an argument to the right
+		// Then parameters that have an argument to the right.
 		else if (i < (args.size() - 1)) {
 			bool parsed_pair = true;
 			if (args[i] == "-s" || args[i] == "--script") {
@@ -1907,16 +1920,19 @@ bool Main::start() {
 			if (parsed_pair) {
 				i++;
 			}
-		} else if (args[i] == "--doctool") {
-			// Handle case where no path is given to --doctool.
+		}
+#ifdef TOOLS_ENABLED
+		// Handle case where no path is given to --doctool.
+		else if (args[i] == "--doctool") {
 			doc_tool_path = ".";
 		}
+#endif
 	}
 
 #ifdef TOOLS_ENABLED
 	if (doc_tool_path != "") {
-		Engine::get_singleton()->set_editor_hint(
-				true); // Needed to instance editor-only classes for their default values
+		// Needed to instance editor-only classes for their default values
+		Engine::get_singleton()->set_editor_hint(true);
 
 		{
 			DirAccessRef da = DirAccess::open(doc_tool_path);
@@ -1988,17 +2004,26 @@ bool Main::start() {
 
 		return false;
 	}
-
 #endif
 
 	if (script == "" && game_path == "" && String(GLOBAL_GET("application/run/main_scene")) != "") {
 		game_path = GLOBAL_GET("application/run/main_scene");
 	}
 
+#ifdef TOOLS_ENABLED
+	if (!editor && !project_manager && !cmdline_tool && script == "" && game_path == "") {
+		// If we end up here, it means we didn't manage to detect what we want to run.
+		// Let's throw an error gently. The code leading to this is pretty brittle so
+		// this might end up triggered by valid usage, in which case we'll have to
+		// fine-tune further.
+		ERR_FAIL_V_MSG(false, "Couldn't detect whether to run the editor, the project manager or a specific project. Aborting.");
+	}
+#endif
+
 	MainLoop *main_loop = nullptr;
 	if (editor) {
 		main_loop = memnew(SceneTree);
-	};
+	}
 	String main_loop_type = GLOBAL_DEF("application/run/main_loop_type", "SceneTree");
 
 	if (script != "") {
@@ -2360,14 +2385,13 @@ bool Main::start() {
 		}
 
 #ifdef TOOLS_ENABLED
-		if (project_manager || (script == "" && game_path == "" && !editor)) {
+		if (project_manager) {
 			Engine::get_singleton()->set_editor_hint(true);
 			ProjectManager *pmanager = memnew(ProjectManager);
 			ProgressDialog *progress_dialog = memnew(ProgressDialog);
 			pmanager->add_child(progress_dialog);
 			sml->get_root()->add_child(pmanager);
 			DisplayServer::get_singleton()->set_context(DisplayServer::CONTEXT_PROJECTMAN);
-			project_manager = true;
 		}
 
 		if (project_manager || editor) {
