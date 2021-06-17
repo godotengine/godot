@@ -2191,15 +2191,18 @@ public:
 				bool valid;
 				Variant v = *p_inputs[0];
 
-				*p_outputs[0] = v.get(property, &valid);
+				*p_outputs[1] = v.get(property, &valid);
 				if (index != StringName()) {
-					*p_outputs[0] = p_outputs[0]->get_named(index, valid);
+					*p_outputs[1] = p_outputs[1]->get_named(index, valid);
 				}
 
 				if (!valid) {
 					r_error.error = Callable::CallError::CALL_ERROR_INVALID_METHOD;
 					r_error_str = RTR("Invalid index property name.");
 				}
+
+				*p_outputs[0] = v;
+
 			};
 		}
 
