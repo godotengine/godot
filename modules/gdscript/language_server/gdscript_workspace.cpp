@@ -188,7 +188,9 @@ Array GDScriptWorkspace::symbol(const Dictionary &p_params) {
 			E->get()->get_symbols().symbol_tree_as_list(E->key(), script_symbols);
 			for (int i = 0; i < script_symbols.size(); ++i) {
 				if (query.is_subsequence_ofi(script_symbols[i].name)) {
-					arr.push_back(script_symbols[i].to_json());
+					lsp::DocumentedSymbolInformation symbol = script_symbols[i];
+					symbol.location.uri = get_file_uri(symbol.location.uri);
+					arr.push_back(symbol.to_json());
 				}
 			}
 		}
