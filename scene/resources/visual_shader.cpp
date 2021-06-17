@@ -2533,6 +2533,14 @@ Vector<StringName> VisualShaderNodeInput::get_editable_properties() const {
 	return props;
 }
 
+void VisualShaderNodeInput::set_shader_type(VisualShader::Type p_shader_type) {
+	shader_type = p_shader_type;
+}
+
+void VisualShaderNodeInput::set_shader_mode(Shader::Mode p_shader_mode) {
+	shader_mode = p_shader_mode;
+}
+
 void VisualShaderNodeInput::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_input_name", "name"), &VisualShaderNodeInput::set_input_name);
 	ClassDB::bind_method(D_METHOD("get_input_name"), &VisualShaderNodeInput::get_input_name);

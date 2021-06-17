@@ -2315,6 +2315,13 @@ void VisualShaderEditor::_add_node(int p_idx, int p_op_idx, String p_resource_pa
 				undo_redo->add_do_method(graph_plugin.ptr(), "connect_nodes", type, _from_node, _from_slot, to_node, to_slot);
 				undo_redo->add_undo_method(graph_plugin.ptr(), "disconnect_nodes", type, _from_node, _from_slot, to_node, to_slot);
 			} else {
+				// Need to setting up Input node properly before committing since `is_port_types_compatible` (calling below) is using `mode` and `shader_type`.
+				VisualShaderNodeInput *input = Object::cast_to<VisualShaderNodeInput>(vsnode.ptr());
+				if (input) {
+					input->set_shader_mode(visual_shader->get_mode());
+					input->set_shader_type(visual_shader->get_shader_type());
+				}
+
 				// Attempting to connect to the first correct port.
 				for (int i = 0; i < vsnode->get_output_port_count(); i++) {
 					if (visual_shader->is_port_types_compatible(vsnode->get_output_port_type(i), input_port_type)) {

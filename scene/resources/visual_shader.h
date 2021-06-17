@@ -350,6 +350,10 @@ class VisualShaderNodeInput : public VisualShaderNode {
 
 	String input_name = "[None]";
 
+public:
+	void set_shader_type(VisualShader::Type p_shader_type);
+	void set_shader_mode(Shader::Mode p_shader_mode);
+
 protected:
 	static void _bind_methods();
 	void _validate_property(PropertyInfo &property) const override;
