@@ -92,7 +92,7 @@ public:
 		return _icon_path;
 	}
 
-	virtual bool can_instance() const override;
+	virtual bool can_instantiate() const override;
 
 	virtual Ref<Script> get_base_script() const override; //for script inheritance
 

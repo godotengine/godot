@@ -317,7 +317,7 @@ public:
 	// 		}
 	// 	} else {
 	// 		Ref<Image> img;
-	// 		img.instance();
+	// 		img.instantiate();
 	// 		PoolByteArray arr;
 	// 		uint32_t size = tex->mWidth * tex->mHeight;
 	// 		arr.resize(size);
@@ -362,7 +362,7 @@ public:
 	// 	if (found) {
 	// 		image_state.raw_image = AssimpUtils::load_image(state, state.assimp_scene, path);
 	// 		if (image_state.raw_image.is_valid()) {
-	// 			image_state.texture.instance();
+	// 			image_state.texture.instantiate();
 	// 			image_state.texture->create_from_image(image_state.raw_image);
 	// 			image_state.texture->set_storage(ImageTexture::STORAGE_COMPRESS_LOSSY);
 	// 			return true;

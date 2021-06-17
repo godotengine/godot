@@ -227,7 +227,7 @@ void SpriteFramesEditor::_sheet_add_frames() {
 		int y = (yp * height) + region_rect.position.y;
 
 		Ref<AtlasTexture> at;
-		at.instance();
+		at.instantiate();
 		at->set_atlas(split_sheet_preview->get_texture());
 		at->set_region(Rect2(x, y, width, height));
 

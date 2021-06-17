@@ -90,7 +90,7 @@ Error ResourceImporterOGGVorbis::import(const String &p_source_file, const Strin
 	memdelete(f);
 
 	Ref<AudioStreamOGGVorbis> ogg_stream;
-	ogg_stream.instance();
+	ogg_stream.instantiate();
 
 	ogg_stream->set_data(data);
 	ERR_FAIL_COND_V(!ogg_stream->get_data().size(), ERR_FILE_CORRUPT);

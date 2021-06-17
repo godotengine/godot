@@ -114,7 +114,7 @@ Ref<ArrayMesh> Occluder3D::get_debug_mesh() const {
 	arrays[Mesh::ARRAY_VERTEX] = vertices;
 	arrays[Mesh::ARRAY_INDEX] = indices;
 
-	debug_mesh.instance();
+	debug_mesh.instantiate();
 	debug_mesh->add_surface_from_arrays(Mesh::PRIMITIVE_TRIANGLES, arrays);
 	return debug_mesh;
 }
@@ -303,7 +303,7 @@ OccluderInstance3D::BakeError OccluderInstance3D::bake(Node *p_from_node, String
 	if (get_occluder().is_valid()) {
 		occ = get_occluder();
 	} else {
-		occ.instance();
+		occ.instantiate();
 		occ->set_path(p_occluder_path);
 	}
 

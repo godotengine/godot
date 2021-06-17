@@ -251,7 +251,7 @@ Ref<ArrayMesh> EditorSceneImporterMesh::get_mesh(const Ref<Mesh> &p_base) {
 			mesh = p_base;
 		}
 		if (mesh.is_null()) {
-			mesh.instance();
+			mesh.instantiate();
 		}
 		mesh->set_name(get_name());
 		if (has_meta("import_id")) {
@@ -320,7 +320,7 @@ void EditorSceneImporterMesh::create_shadow_mesh() {
 		}
 	}
 
-	shadow_mesh.instance();
+	shadow_mesh.instantiate();
 
 	for (int i = 0; i < surfaces.size(); i++) {
 		LocalVector<int> vertex_remap;
@@ -528,7 +528,7 @@ Vector<Ref<Shape3D>> EditorSceneImporterMesh::convex_decompose() const {
 		}
 
 		Ref<ConvexPolygonShape3D> shape;
-		shape.instance();
+		shape.instantiate();
 		shape->set_points(convex_points);
 		ret.push_back(shape);
 	}
@@ -587,7 +587,7 @@ Ref<NavigationMesh> EditorSceneImporterMesh::create_navigation_mesh() {
 	}
 
 	Ref<NavigationMesh> nm;
-	nm.instance();
+	nm.instantiate();
 	nm->set_vertices(vertices);
 
 	Vector<int> v3;
@@ -733,7 +733,7 @@ Error EditorSceneImporterMesh::lightmap_unwrap_cached(const Transform3D &p_base_
 
 	for (int i = 0; i < lightmap_surfaces.size(); i++) {
 		Ref<SurfaceTool> st;
-		st.instance();
+		st.instantiate();
 		st->begin(Mesh::PRIMITIVE_TRIANGLES);
 		st->set_material(lightmap_surfaces[i].material);
 		st->set_meta("name", lightmap_surfaces[i].name);

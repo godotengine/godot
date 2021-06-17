@@ -11,11 +11,11 @@
 		<link title="Scripting">https://docs.godotengine.org/en/latest/getting_started/step_by_step/scripting.html</link>
 	</tutorials>
 	<methods>
-		<method name="can_instance" qualifiers="const">
+		<method name="can_instantiate" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
-				Returns [code]true[/code] if the script can be instanced.
+				Returns [code]true[/code] if the script can be instantiated.
 			</description>
 		</method>
 		<method name="get_base_script" qualifiers="const">

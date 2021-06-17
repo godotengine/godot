@@ -373,7 +373,7 @@ void EditorSpinSlider::_evaluate_input_text() {
 	const String text = TS->parse_number(value_input->get_text().replace(",", "."));
 
 	Ref<Expression> expr;
-	expr.instance();
+	expr.instantiate();
 	Error err = expr->parse(text);
 	if (err != OK) {
 		return;

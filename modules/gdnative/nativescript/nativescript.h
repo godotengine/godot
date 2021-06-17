@@ -137,7 +137,7 @@ public:
 	void set_script_class_icon_path(String p_icon_path);
 	String get_script_class_icon_path() const;
 
-	virtual bool can_instance() const override;
+	virtual bool can_instantiate() const override;
 
 	virtual Ref<Script> get_base_script() const override; //for script inheritance
 

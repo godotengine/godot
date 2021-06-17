@@ -37,7 +37,7 @@ void register_mobile_vr_types() {
 
 	if (XRServer::get_singleton()) {
 		Ref<MobileVRInterface> mobile_vr;
-		mobile_vr.instance();
+		mobile_vr.instantiate();
 		XRServer::get_singleton()->add_interface(mobile_vr);
 	}
 }

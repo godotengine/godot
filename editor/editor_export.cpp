@@ -430,7 +430,7 @@ bool EditorExportPlatform::exists_export_template(String template_file_name, Str
 
 Ref<EditorExportPreset> EditorExportPlatform::create_preset() {
 	Ref<EditorExportPreset> preset;
-	preset.instance();
+	preset.instantiate();
 	preset->platform = Ref<EditorExportPlatform>(this);
 
 	List<ExportOption> options;
@@ -873,7 +873,7 @@ Error EditorExportPlatform::export_project_files(const Ref<EditorExportPreset> &
 		if (FileAccess::exists(path + ".import")) {
 			//file is imported, replace by what it imports
 			Ref<ConfigFile> config;
-			config.instance();
+			config.instantiate();
 			err = config->load(path + ".import");
 			if (err != OK) {
 				ERR_PRINT("Could not parse: '" + path + "', not exported.");
@@ -1391,7 +1391,7 @@ EditorExport *EditorExport::singleton = nullptr;
 
 void EditorExport::_save() {
 	Ref<ConfigFile> config;
-	config.instance();
+	config.instantiate();
 	for (int i = 0; i < export_presets.size(); i++) {
 		Ref<EditorExportPreset> preset = export_presets[i];
 		String section = "preset." + itos(i);
@@ -1546,7 +1546,7 @@ void EditorExport::_notification(int p_what) {
 
 void EditorExport::load_config() {
 	Ref<ConfigFile> config;
-	config.instance();
+	config.instantiate();
 	Error err = config->load("res://export_presets.cfg");
 	if (err != OK) {
 		return;

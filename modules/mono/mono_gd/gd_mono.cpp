@@ -691,7 +691,7 @@ static bool try_get_cached_api_hash_for(const String &p_api_assemblies_dir, bool
 	}
 
 	Ref<ConfigFile> cfg;
-	cfg.instance();
+	cfg.instantiate();
 	Error cfg_err = cfg->load(cached_api_hash_path);
 	ERR_FAIL_COND_V(cfg_err != OK, false);
 
@@ -717,7 +717,7 @@ static void create_cached_api_hash_for(const String &p_api_assemblies_dir) {
 	String cached_api_hash_path = p_api_assemblies_dir.plus_file("api_hash_cache.cfg");
 
 	Ref<ConfigFile> cfg;
-	cfg.instance();
+	cfg.instantiate();
 
 	cfg->set_value("core", "modified_time", FileAccess::get_modified_time(core_api_assembly_path));
 	cfg->set_value("editor", "modified_time", FileAccess::get_modified_time(editor_api_assembly_path));

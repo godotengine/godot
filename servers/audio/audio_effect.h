@@ -46,7 +46,7 @@ class AudioEffect : public Resource {
 	GDCLASS(AudioEffect, Resource);
 
 public:
-	virtual Ref<AudioEffectInstance> instance() = 0;
+	virtual Ref<AudioEffectInstance> instantiate() = 0;
 	AudioEffect();
 };
 

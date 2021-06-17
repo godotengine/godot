@@ -72,7 +72,7 @@ void GDScriptNativeClass::_bind_methods() {
 }
 
 Variant GDScriptNativeClass::_new() {
-	Object *o = instance();
+	Object *o = instantiate();
 	ERR_FAIL_COND_V_MSG(!o, Variant(), "Class type: '" + String(name) + "' is not instantiable.");
 
 	RefCounted *rc = Object::cast_to<RefCounted>(o);
@@ -83,8 +83,8 @@ Variant GDScriptNativeClass::_new() {
 	}
 }
 
-Object *GDScriptNativeClass::instance() {
-	return ClassDB::instance(name);
+Object *GDScriptNativeClass::instantiate() {
+	return ClassDB::instantiate(name);
 }
 
 void GDScript::_super_implicit_constructor(GDScript *p_script, GDScriptInstance *p_instance, Callable::CallError &r_error) {
@@ -170,7 +170,7 @@ Variant GDScript::_new(const Variant **p_args, int p_argcount, Callable::CallErr
 
 	ERR_FAIL_COND_V(_baseptr->native.is_null(), Variant());
 	if (_baseptr->native.ptr()) {
-		owner = _baseptr->native->instance();
+		owner = _baseptr->native->instantiate();
 	} else {
 		owner = memnew(RefCounted); //by default, no base means use reference
 	}
@@ -196,7 +196,7 @@ Variant GDScript::_new(const Variant **p_args, int p_argcount, Callable::CallErr
 	}
 }
 
-bool GDScript::can_instance() const {
+bool GDScript::can_instantiate() const {
 #ifdef TOOLS_ENABLED
 	return valid && (tool || ScriptServer::is_scripting_enabled());
 #else
@@ -346,9 +346,9 @@ ScriptInstance *GDScript::instance_create(Object *p_this) {
 	if (top->native.is_valid()) {
 		if (!ClassDB::is_parent_class(p_this->get_class_name(), top->native->get_name())) {
 			if (EngineDebugger::is_active()) {
-				GDScriptLanguage::get_singleton()->debug_break_parse(get_path(), 1, "Script inherits from native type '" + String(top->native->get_name()) + "', so it can't be instanced in object of type: '" + p_this->get_class() + "'");
+				GDScriptLanguage::get_singleton()->debug_break_parse(get_path(), 1, "Script inherits from native type '" + String(top->native->get_name()) + "', so it can't be instantiated in object of type: '" + p_this->get_class() + "'");
 			}
-			ERR_FAIL_V_MSG(nullptr, "Script inherits from native type '" + String(top->native->get_name()) + "', so it can't be instanced in object of type '" + p_this->get_class() + "'" + ".");
+			ERR_FAIL_V_MSG(nullptr, "Script inherits from native type '" + String(top->native->get_name()) + "', so it can't be instantiated in object of type '" + p_this->get_class() + "'" + ".");
 		}
 	}
 
@@ -2256,7 +2256,7 @@ RES ResourceFormatLoaderGDScript::load(const String &p_path, const String &p_ori
 
 	if (script.is_null()) {
 		// Don't fail loading because of parsing error.
-		script.instance();
+		script.instantiate();
 	}
 
 	if (r_error) {

@@ -112,7 +112,7 @@ void TextureLayeredEditor::_make_shaders() {
 							 "  COLOR = textureLod(tex,vec3(UV,layer),0.0);\n"
 							 "}";
 
-	shaders[0].instance();
+	shaders[0].instantiate();
 	shaders[0]->set_code(shader_2d_array);
 
 	String shader_cube = ""
@@ -125,7 +125,7 @@ void TextureLayeredEditor::_make_shaders() {
 						 "  COLOR = textureLod(tex,n,0.0);\n"
 						 "}";
 
-	shaders[1].instance();
+	shaders[1].instantiate();
 	shaders[1]->set_code(shader_cube);
 
 	String shader_cube_array = ""
@@ -139,11 +139,11 @@ void TextureLayeredEditor::_make_shaders() {
 							   "  COLOR = textureLod(tex,vec4(n,layer),0.0);\n"
 							   "}";
 
-	shaders[2].instance();
+	shaders[2].instantiate();
 	shaders[2]->set_code(shader_cube_array);
 
 	for (int i = 0; i < 3; i++) {
-		materials[i].instance();
+		materials[i].instantiate();
 		materials[i]->set_shader(shaders[i]);
 	}
 }
@@ -271,6 +271,6 @@ void EditorInspectorPluginLayeredTexture::parse_begin(Object *p_object) {
 
 TextureLayeredEditorPlugin::TextureLayeredEditorPlugin(EditorNode *p_node) {
 	Ref<EditorInspectorPluginLayeredTexture> plugin;
-	plugin.instance();
+	plugin.instantiate();
 	add_inspector_plugin(plugin);
 }

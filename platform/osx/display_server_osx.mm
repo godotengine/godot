@@ -119,7 +119,7 @@ static NSCursor *_cursorFromSelector(SEL selector, SEL fallback = nil) {
 	if ([event type] == NSEventTypeKeyDown) {
 		if (([event modifierFlags] & NSEventModifierFlagCommand) && [event keyCode] == 0x2f) {
 			Ref<InputEventKey> k;
-			k.instance();
+			k.instantiate();
 
 			_get_key_modifier_state([event modifierFlags], k);
 			k->set_window_id(DisplayServerOSX::INVALID_WINDOW_ID);
@@ -824,7 +824,7 @@ static void _mouseDownEvent(DisplayServer::WindowID window_id, NSEvent *event, i
 	}
 
 	Ref<InputEventMouseButton> mb;
-	mb.instance();
+	mb.instantiate();
 	mb->set_window_id(window_id);
 	const Vector2 pos = _get_mouse_pos(wd, [event locationInWindow]);
 	_get_key_modifier_state([event modifierFlags], mb);
@@ -928,7 +928,7 @@ static void _mouseDownEvent(DisplayServer::WindowID window_id, NSEvent *event, i
 	}
 
 	Ref<InputEventMouseMotion> mm;
-	mm.instance();
+	mm.instantiate();
 
 	mm->set_window_id(window_id);
 	mm->set_button_mask(DS_OSX->last_button_state);
@@ -1016,7 +1016,7 @@ static void _mouseDownEvent(DisplayServer::WindowID window_id, NSEvent *event, i
 	DisplayServerOSX::WindowData &wd = DS_OSX->windows[window_id];
 
 	Ref<InputEventMagnifyGesture> ev;
-	ev.instance();
+	ev.instantiate();
 	ev->set_window_id(window_id);
 	_get_key_modifier_state([event modifierFlags], ev);
 	ev->set_position(_get_mouse_pos(wd, [event locationInWindow]));
@@ -1492,7 +1492,7 @@ inline void sendScrollEvent(DisplayServer::WindowID window_id, int button, doubl
 	unsigned int mask = 1 << (button - 1);
 
 	Ref<InputEventMouseButton> sc;
-	sc.instance();
+	sc.instantiate();
 
 	sc->set_window_id(window_id);
 	_get_key_modifier_state(modifierFlags, sc);
@@ -1506,7 +1506,7 @@ inline void sendScrollEvent(DisplayServer::WindowID window_id, int button, doubl
 
 	Input::get_singleton()->accumulate_input_event(sc);
 
-	sc.instance();
+	sc.instantiate();
 	sc->set_window_id(window_id);
 	sc->set_button_index(button);
 	sc->set_factor(factor);
@@ -1524,7 +1524,7 @@ inline void sendPanEvent(DisplayServer::WindowID window_id, double dx, double dy
 	DisplayServerOSX::WindowData &wd = DS_OSX->windows[window_id];
 
 	Ref<InputEventPanGesture> pg;
-	pg.instance();
+	pg.instantiate();
 
 	pg->set_window_id(window_id);
 	_get_key_modifier_state(modifierFlags, pg);
@@ -3375,7 +3375,7 @@ void DisplayServerOSX::_process_key_events() {
 		const KeyEvent &ke = key_event_buffer[i];
 		if (ke.raw) {
 			// Non IME input - no composite characters, pass events as is
-			k.instance();
+			k.instantiate();
 
 			k->set_window_id(ke.window_id);
 			_get_key_modifier_state(ke.osx_state, k);
@@ -3389,7 +3389,7 @@ void DisplayServerOSX::_process_key_events() {
 		} else {
 			// IME input
 			if ((i == 0 && ke.keycode == 0) || (i > 0 && key_event_buffer[i - 1].keycode == 0)) {
-				k.instance();
+				k.instantiate();
 
 				k->set_window_id(ke.window_id);
 				_get_key_modifier_state(ke.osx_state, k);
@@ -3402,7 +3402,7 @@ void DisplayServerOSX::_process_key_events() {
 				_push_input(k);
 			}
 			if (ke.keycode != 0) {
-				k.instance();
+				k.instantiate();
 
 				k->set_window_id(ke.window_id);
 				_get_key_modifier_state(ke.osx_state, k);

@@ -537,7 +537,7 @@ CollisionPolygon3DEditor::CollisionPolygon3DEditor(EditorNode *p_editor) {
 
 	pointsm = memnew(MeshInstance3D);
 	imgeom->add_child(pointsm);
-	m.instance();
+	m.instantiate();
 	pointsm->set_mesh(m);
 	pointsm->set_transform(Transform3D(Basis(), Vector3(0, 0, 0.00001)));
 

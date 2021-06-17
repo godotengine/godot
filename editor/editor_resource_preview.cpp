@@ -177,7 +177,7 @@ void EditorResourcePreview::_generate_preview(Ref<ImageTexture> &r_texture, Ref<
 			Ref<Image> small_image = r_texture->get_image();
 			small_image = small_image->duplicate();
 			small_image->resize(small_thumbnail_size, small_thumbnail_size, Image::INTERPOLATE_CUBIC);
-			r_small_texture.instance();
+			r_small_texture.instantiate();
 			r_small_texture->create_from_image(small_image);
 		}
 
@@ -293,21 +293,21 @@ void EditorResourcePreview::_thread() {
 
 						if (cache_valid) {
 							Ref<Image> img;
-							img.instance();
+							img.instantiate();
 							Ref<Image> small_img;
-							small_img.instance();
+							small_img.instantiate();
 
 							if (img->load(cache_base + ".png") != OK) {
 								cache_valid = false;
 							} else {
-								texture.instance();
+								texture.instantiate();
 								texture->create_from_image(img);
 
 								if (has_small_texture) {
 									if (small_img->load(cache_base + "_small.png") != OK) {
 										cache_valid = false;
 									} else {
-										small_texture.instance();
+										small_texture.instantiate();
 										small_texture->create_from_image(small_img);
 									}
 								}

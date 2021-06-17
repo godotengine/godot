@@ -96,7 +96,7 @@ private:
 			bool hidden = false;
 
 			Line() {
-				data_buf.instance();
+				data_buf.instantiate();
 			}
 		};
 

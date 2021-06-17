@@ -38,7 +38,7 @@ void register_webxr_types() {
 
 #ifdef JAVASCRIPT_ENABLED
 	Ref<WebXRInterfaceJS> webxr;
-	webxr.instance();
+	webxr.instantiate();
 	XRServer::get_singleton()->add_interface(webxr);
 #endif
 }

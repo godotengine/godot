@@ -95,7 +95,7 @@
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
-				Returns the node's index, which is its position relative to its siblings. This is only relevant and saved in scenes for cases where new nodes are added to an instanced or inherited scene among siblings from the base scene. Despite the name, this index is not related to the [code]idx[/code] argument used here and in other methods.
+				Returns the node's index, which is its position relative to its siblings. This is only relevant and saved in scenes for cases where new nodes are added to an instantiated or inherited scene among siblings from the base scene. Despite the name, this index is not related to the [code]idx[/code] argument used here and in other methods.
 			</description>
 		</method>
 		<method name="get_node_instance" qualifiers="const">
@@ -199,14 +199,14 @@
 	</methods>
 	<constants>
 		<constant name="GEN_EDIT_STATE_DISABLED" value="0" enum="GenEditState">
-			If passed to [method PackedScene.instance], blocks edits to the scene state.
+			If passed to [method PackedScene.instantiate], blocks edits to the scene state.
 		</constant>
 		<constant name="GEN_EDIT_STATE_INSTANCE" value="1" enum="GenEditState">
-			If passed to [method PackedScene.instance], provides inherited scene resources to the local scene.
+			If passed to [method PackedScene.instantiate], provides inherited scene resources to the local scene.
 			[b]Note:[/b] Only available in editor builds.
 		</constant>
 		<constant name="GEN_EDIT_STATE_MAIN" value="2" enum="GenEditState">
-			If passed to [method PackedScene.instance], provides local scene resources to the local scene. Only the main scene should receive the main edit state.
+			If passed to [method PackedScene.instantiate], provides local scene resources to the local scene. Only the main scene should receive the main edit state.
 			[b]Note:[/b] Only available in editor builds.
 		</constant>
 	</constants>

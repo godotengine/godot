@@ -3760,7 +3760,7 @@ Ref<Animation> AnimationTrackEditor::_create_and_get_reset_animation() {
 		return player->get_animation("RESET");
 	} else {
 		Ref<Animation> reset_anim;
-		reset_anim.instance();
+		reset_anim.instantiate();
 		reset_anim->set_length(ANIM_MIN_LENGTH);
 		undo_redo->add_do_method(player, "add_animation", "RESET", reset_anim);
 		undo_redo->add_do_method(AnimationPlayerEditor::singleton, "_animation_player_changed", player);
@@ -5983,7 +5983,7 @@ AnimationTrackEditor::AnimationTrackEditor() {
 	//default plugins
 
 	Ref<AnimationTrackEditDefaultPlugin> def_plugin;
-	def_plugin.instance();
+	def_plugin.instantiate();
 	add_track_edit_plugin(def_plugin);
 
 	//dialogs

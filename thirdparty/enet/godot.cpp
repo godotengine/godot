@@ -164,7 +164,7 @@ public:
 		verify = p_verify;
 		for_hostname = p_for_hostname;
 		cert = p_cert;
-		udp.instance();
+		udp.instantiate();
 		dtls = Ref<PacketPeerDTLS>(PacketPeerDTLS::create());
 		if (p_base->bound) {
 			uint16_t port;
@@ -254,7 +254,7 @@ class ENetDTLSServer : public ENetGodotSocket {
 
 public:
 	ENetDTLSServer(ENetUDP *p_base, Ref<CryptoKey> p_key, Ref<X509Certificate> p_cert) {
-		udp_server.instance();
+		udp_server.instantiate();
 		if (p_base->bound) {
 			uint16_t port;
 			p_base->get_socket_address(&local_address, &port);

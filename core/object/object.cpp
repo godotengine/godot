@@ -871,7 +871,7 @@ void Object::set_script(const Variant &p_script) {
 	Ref<Script> s = script;
 
 	if (!s.is_null()) {
-		if (s->can_instance()) {
+		if (s->can_instantiate()) {
 			OBJ_DEBUG_LOCK
 			script_instance = s->instance_create(this);
 		} else if (Engine::get_singleton()->is_editor_hint()) {

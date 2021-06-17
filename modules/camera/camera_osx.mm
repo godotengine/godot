@@ -162,7 +162,7 @@
 			uint8_t *w = img_data[0].ptrw();
 			memcpy(w, dataY, new_width * new_height);
 
-			img[0].instance();
+			img[0].instantiate();
 			img[0]->create(new_width, new_height, 0, Image::FORMAT_R8, img_data[0]);
 		}
 
@@ -181,7 +181,7 @@
 			memcpy(w, dataCbCr, 2 * new_width * new_height);
 
 			///TODO GLES2 doesn't support FORMAT_RG8, need to do some form of conversion
-			img[1].instance();
+			img[1].instantiate();
 			img[1]->create(new_width, new_height, 0, Image::FORMAT_RG8, img_data[1]);
 		}
 
@@ -341,7 +341,7 @@ void CameraOSX::update_feeds() {
 
 		if (!found) {
 			Ref<CameraFeedOSX> newfeed;
-			newfeed.instance();
+			newfeed.instantiate();
 			newfeed->set_device(device);
 
 			// assume display camera so inverse

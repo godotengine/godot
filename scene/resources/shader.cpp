@@ -167,7 +167,7 @@ RES ResourceFormatLoaderShader::load(const String &p_path, const String &p_origi
 	}
 
 	Ref<Shader> shader;
-	shader.instance();
+	shader.instantiate();
 
 	Vector<uint8_t> buffer = FileAccess::get_file_as_array(p_path);
 

@@ -87,7 +87,7 @@ public:
 	void set_breakpoint(bool p_breakpoint);
 	bool is_breakpoint() const;
 
-	virtual VisualScriptNodeInstance *instance(VisualScriptInstance *p_instance) = 0;
+	virtual VisualScriptNodeInstance *instantiate(VisualScriptInstance *p_instance) = 0;
 
 	struct TypeGuess {
 		Variant::Type type = Variant::NIL;
@@ -325,7 +325,7 @@ public:
 
 	void set_instance_base_type(const StringName &p_type);
 
-	virtual bool can_instance() const override;
+	virtual bool can_instantiate() const override;
 
 	virtual Ref<Script> get_base_script() const override;
 	virtual StringName get_instance_base_type() const override;
@@ -619,7 +619,7 @@ public:
 template <class T>
 static Ref<VisualScriptNode> create_node_generic(const String &p_name) {
 	Ref<T> node;
-	node.instance();
+	node.instantiate();
 	return node;
 }
 

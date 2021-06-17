@@ -115,7 +115,7 @@ protected:
 	Dictionary _get_script_constant_map();
 
 public:
-	virtual bool can_instance() const = 0;
+	virtual bool can_instantiate() const = 0;
 
 	virtual Ref<Script> get_base_script() const = 0; //for script inheritance
 

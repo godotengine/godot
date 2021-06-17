@@ -238,7 +238,7 @@ GDMonoClass *get_class_native_base(GDMonoClass *p_class) {
 MonoObject *create_managed_for_godot_object(GDMonoClass *p_class, const StringName &p_native, Object *p_object) {
 	bool parent_is_object_class = ClassDB::is_parent_class(p_object->get_class_name(), p_native);
 	ERR_FAIL_COND_V_MSG(!parent_is_object_class, nullptr,
-			"Type inherits from native type '" + p_native + "', so it can't be instanced in object of type: '" + p_object->get_class() + "'.");
+			"Type inherits from native type '" + p_native + "', so it can't be instantiated in object of type: '" + p_object->get_class() + "'.");
 
 	MonoObject *mono_object = mono_object_new(mono_domain_get(), p_class->get_mono_ptr());
 	ERR_FAIL_NULL_V(mono_object, nullptr);

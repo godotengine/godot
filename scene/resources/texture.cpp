@@ -88,7 +88,7 @@ void ImageTexture::reload_from_file() {
 	}
 
 	Ref<Image> img;
-	img.instance();
+	img.instantiate();
 
 	if (ImageLoader::load_image(path, img) == OK) {
 		create_from_image(img);
@@ -138,7 +138,7 @@ void ImageTexture::_reload_hook(const RID &p_hook) {
 	}
 
 	Ref<Image> img;
-	img.instance();
+	img.instantiate();
 	Error err = ImageLoader::load_image(path, img);
 
 	ERR_FAIL_COND_MSG(err != OK, "Cannot load image from path '" + path + "'.");
@@ -258,7 +258,7 @@ bool ImageTexture::is_pixel_opaque(int p_x, int p_y) const {
 				decom->decompress();
 				img = decom;
 			}
-			alpha_cache.instance();
+			alpha_cache.instantiate();
 			alpha_cache->create_from_image_alpha(img);
 		}
 	}
@@ -390,7 +390,7 @@ Ref<Image> StreamTexture2D::load_image_from_file(FileAccess *f, int p_size_limit
 		//print_line("mipmap read total: " + itos(mipmap_images.size()));
 
 		Ref<Image> image;
-		image.instance();
+		image.instantiate();
 
 		if (mipmap_images.size() == 1) {
 			//only one image (which will most likely be the case anyway for this format)
@@ -442,7 +442,7 @@ Ref<Image> StreamTexture2D::load_image_from_file(FileAccess *f, int p_size_limit
 			}
 
 			Ref<Image> image;
-			image.instance();
+			image.instantiate();
 
 			image->create(tw, th, mipmaps - i ? true : false, format, data);
 
@@ -553,7 +553,7 @@ Error StreamTexture2D::_load_data(const String &p_path, int &r_width, int &r_hei
 Error StreamTexture2D::load(const String &p_path) {
 	int lw, lh;
 	Ref<Image> image;
-	image.instance();
+	image.instantiate();
 
 	bool request_3d;
 	bool request_normal;
@@ -679,7 +679,7 @@ bool StreamTexture2D::is_pixel_opaque(int p_x, int p_y) const {
 				img = decom;
 			}
 
-			alpha_cache.instance();
+			alpha_cache.instantiate();
 			alpha_cache->create_from_image_alpha(img);
 		}
 	}
@@ -738,7 +738,7 @@ StreamTexture2D::~StreamTexture2D() {
 
 RES ResourceFormatLoaderStreamTexture2D::load(const String &p_path, const String &p_original_path, Error *r_error, bool p_use_sub_threads, float *r_progress, CacheMode p_cache_mode) {
 	Ref<StreamTexture2D> st;
-	st.instance();
+	st.instantiate();
 	Error err = st->load(p_path);
 	if (r_error) {
 		*r_error = err;
@@ -1036,7 +1036,7 @@ StreamTexture3D::~StreamTexture3D() {
 
 RES ResourceFormatLoaderStreamTexture3D::load(const String &p_path, const String &p_original_path, Error *r_error, bool p_use_sub_threads, float *r_progress, CacheMode p_cache_mode) {
 	Ref<StreamTexture3D> st;
-	st.instance();
+	st.instantiate();
 	Error err = st->load(p_path);
 	if (r_error) {
 		*r_error = err;
@@ -2257,15 +2257,15 @@ RES ResourceFormatLoaderStreamTextureLayered::load(const String &p_path, const S
 	Ref<StreamTextureLayered> st;
 	if (p_path.get_extension().to_lower() == "stexarray") {
 		Ref<StreamTexture2DArray> s;
-		s.instance();
+		s.instantiate();
 		st = s;
 	} else if (p_path.get_extension().to_lower() == "scube") {
 		Ref<StreamCubemap> s;
-		s.instance();
+		s.instantiate();
 		st = s;
 	} else if (p_path.get_extension().to_lower() == "scubearray") {
 		Ref<StreamCubemapArray> s;
-		s.instance();
+		s.instantiate();
 		st = s;
 	} else {
 		if (r_error) {

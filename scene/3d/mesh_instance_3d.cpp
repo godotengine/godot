@@ -405,14 +405,14 @@ void MeshInstance3D::create_debug_tangents() {
 
 	if (lines.size()) {
 		Ref<StandardMaterial3D> sm;
-		sm.instance();
+		sm.instantiate();
 
 		sm->set_shading_mode(StandardMaterial3D::SHADING_MODE_UNSHADED);
 		sm->set_flag(StandardMaterial3D::FLAG_SRGB_VERTEX_COLOR, true);
 		sm->set_flag(StandardMaterial3D::FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
 
 		Ref<ArrayMesh> am;
-		am.instance();
+		am.instantiate();
 		Array a;
 		a.resize(Mesh::ARRAY_MAX);
 		a[Mesh::ARRAY_VERTEX] = lines;

@@ -79,7 +79,7 @@ bool EditorSettings::_set_only(const StringName &p_name, const Variant &p_value)
 			Ref<InputEvent> shortcut = arr[i + 1];
 
 			Ref<Shortcut> sc;
-			sc.instance();
+			sc.instantiate();
 			sc->set_shortcut(shortcut);
 			add_shortcut(name, sc);
 		}
@@ -1476,7 +1476,7 @@ Ref<Shortcut> EditorSettings::get_shortcut(const String &p_name) const {
 	Ref<Shortcut> sc;
 	const Map<String, List<Ref<InputEvent>>>::Element *builtin_override = builtin_action_overrides.find(p_name);
 	if (builtin_override) {
-		sc.instance();
+		sc.instantiate();
 		sc->set_shortcut(builtin_override->get().front()->get());
 		sc->set_name(InputMap::get_singleton()->get_builtin_display_name(p_name));
 	}
@@ -1485,7 +1485,7 @@ Ref<Shortcut> EditorSettings::get_shortcut(const String &p_name) const {
 	if (sc.is_null()) {
 		const OrderedHashMap<String, List<Ref<InputEvent>>>::ConstElement builtin_default = InputMap::get_singleton()->get_builtins().find(p_name);
 		if (builtin_default) {
-			sc.instance();
+			sc.instantiate();
 			sc->set_shortcut(builtin_default.get().front()->get());
 			sc->set_name(InputMap::get_singleton()->get_builtin_display_name(p_name));
 		}
@@ -1528,7 +1528,7 @@ Ref<Shortcut> ED_SHORTCUT(const String &p_path, const String &p_name, uint32_t p
 
 	Ref<InputEventKey> ie;
 	if (p_keycode) {
-		ie.instance();
+		ie.instantiate();
 
 		ie->set_unicode(p_keycode & KEY_CODE_MASK);
 		ie->set_keycode(p_keycode & KEY_CODE_MASK);
@@ -1540,7 +1540,7 @@ Ref<Shortcut> ED_SHORTCUT(const String &p_path, const String &p_name, uint32_t p
 
 	if (!EditorSettings::get_singleton()) {
 		Ref<Shortcut> sc;
-		sc.instance();
+		sc.instantiate();
 		sc->set_name(p_name);
 		sc->set_shortcut(ie);
 		sc->set_meta("original", ie);
@@ -1554,7 +1554,7 @@ Ref<Shortcut> ED_SHORTCUT(const String &p_path, const String &p_name, uint32_t p
 		return sc;
 	}
 
-	sc.instance();
+	sc.instantiate();
 	sc->set_name(p_name);
 	sc->set_shortcut(ie);
 	sc->set_meta("original", ie); //to compare against changes

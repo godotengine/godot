@@ -164,7 +164,7 @@ Ref<Resource> Resource::duplicate_for_local_scene(Node *p_for_scene, Map<Ref<Res
 	List<PropertyInfo> plist;
 	get_property_list(&plist);
 
-	Ref<Resource> r = Object::cast_to<Resource>(ClassDB::instance(get_class()));
+	Ref<Resource> r = Object::cast_to<Resource>(ClassDB::instantiate(get_class()));
 	ERR_FAIL_COND_V(r.is_null(), Ref<Resource>());
 
 	r->local_scene = p_for_scene;
@@ -224,7 +224,7 @@ Ref<Resource> Resource::duplicate(bool p_subresources) const {
 	List<PropertyInfo> plist;
 	get_property_list(&plist);
 
-	Ref<Resource> r = (Resource *)ClassDB::instance(get_class());
+	Ref<Resource> r = (Resource *)ClassDB::instantiate(get_class());
 	ERR_FAIL_COND_V(r.is_null(), Ref<Resource>());
 
 	for (List<PropertyInfo>::Element *E = plist.front(); E; E = E->next()) {

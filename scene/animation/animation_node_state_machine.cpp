@@ -496,7 +496,7 @@ void AnimationNodeStateMachinePlayback::_bind_methods() {
 }
 
 AnimationNodeStateMachinePlayback::AnimationNodeStateMachinePlayback() {
-	set_local_to_scene(true); //only one per instanced scene
+	set_local_to_scene(true); //only one per instantiated scene
 }
 
 ///////////////////////////////////////////////////////
@@ -520,7 +520,7 @@ void AnimationNodeStateMachine::get_parameter_list(List<PropertyInfo> *r_list) c
 Variant AnimationNodeStateMachine::get_parameter_default_value(const StringName &p_parameter) const {
 	if (p_parameter == playback) {
 		Ref<AnimationNodeStateMachinePlayback> p;
-		p.instance();
+		p.instantiate();
 		return p;
 	} else {
 		return false; //advance condition

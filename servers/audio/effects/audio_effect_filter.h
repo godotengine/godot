@@ -88,7 +88,7 @@ public:
 	void set_db(FilterDB p_db);
 	FilterDB get_db() const;
 
-	Ref<AudioEffectInstance> instance() override;
+	Ref<AudioEffectInstance> instantiate() override;
 
 	AudioEffectFilter(AudioFilterSW::Mode p_mode = AudioFilterSW::LOWPASS);
 };

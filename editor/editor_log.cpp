@@ -103,7 +103,7 @@ void EditorLog::_start_state_save_timer() {
 
 void EditorLog::_save_state() {
 	Ref<ConfigFile> config;
-	config.instance();
+	config.instantiate();
 	// Load and amend existing config if it exists.
 	config->load(EditorSettings::get_singleton()->get_project_settings_dir().plus_file("editor_layout.cfg"));
 
@@ -122,7 +122,7 @@ void EditorLog::_load_state() {
 	is_loading_state = true;
 
 	Ref<ConfigFile> config;
-	config.instance();
+	config.instantiate();
 	Error err = config->load(EditorSettings::get_singleton()->get_project_settings_dir().plus_file("editor_layout.cfg"));
 
 	if (err == OK) {

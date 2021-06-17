@@ -64,7 +64,7 @@ protected:
 	static void _bind_methods();
 
 public:
-	virtual Ref<AudioEffectInstance> instance() override;
+	virtual Ref<AudioEffectInstance> instantiate() override;
 
 	void set_buffer_length(float p_buffer_length_seconds);
 	float get_buffer_length();

@@ -192,7 +192,7 @@ Ref<AudioStreamPreview> AudioStreamPreviewGenerator::generate_preview(const Ref<
 		}
 	}
 
-	preview->preview.instance();
+	preview->preview.instantiate();
 	preview->preview->preview = maxmin;
 	preview->preview->length = len_s;
 

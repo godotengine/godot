@@ -90,7 +90,7 @@ public:
 		mimes["png"] = "image/png";
 		mimes["svg"] = "image/svg";
 		mimes["wasm"] = "application/wasm";
-		server.instance();
+		server.instantiate();
 		stop();
 	}
 
@@ -289,7 +289,7 @@ class EditorExportPlatformJavaScript : public EditorExportPlatform {
 
 	Ref<Image> _get_project_icon() const {
 		Ref<Image> icon;
-		icon.instance();
+		icon.instantiate();
 		const String icon_path = String(GLOBAL_GET("application/config/icon")).strip_edges();
 		if (icon_path.is_empty() || ImageLoader::load_image(icon_path, icon) != OK) {
 			return EditorNode::get_singleton()->get_editor_theme()->get_icon("DefaultProjectIcon", "EditorIcons")->get_image();
@@ -299,7 +299,7 @@ class EditorExportPlatformJavaScript : public EditorExportPlatform {
 
 	Ref<Image> _get_project_splash() const {
 		Ref<Image> splash;
-		splash.instance();
+		splash.instantiate();
 		const String splash_path = String(GLOBAL_GET("application/boot_splash/image")).strip_edges();
 		if (splash_path.is_empty() || ImageLoader::load_image(splash_path, splash) != OK) {
 			return Ref<Image>(memnew(Image(boot_splash_png)));
@@ -481,7 +481,7 @@ Error EditorExportPlatformJavaScript::_add_manifest_icon(const String &p_path, c
 
 	Ref<Image> icon;
 	if (!p_icon.is_empty()) {
-		icon.instance();
+		icon.instantiate();
 		const Error err = ImageLoader::load_image(p_icon, icon);
 		if (err != OK) {
 			EditorNode::get_singleton()->show_warning(TTR("Could not read file:") + "\n" + p_icon);
@@ -964,22 +964,22 @@ void EditorExportPlatformJavaScript::_server_thread_poll(void *data) {
 }
 
 EditorExportPlatformJavaScript::EditorExportPlatformJavaScript() {
-	server.instance();
+	server.instantiate();
 	server_thread.start(_server_thread_poll, this);
 
 	Ref<Image> img = memnew(Image(_javascript_logo));
-	logo.instance();
+	logo.instantiate();
 	logo->create_from_image(img);
 
 	img = Ref<Image>(memnew(Image(_javascript_run_icon)));
-	run_icon.instance();
+	run_icon.instantiate();
 	run_icon->create_from_image(img);
 
 	Ref<Theme> theme = EditorNode::get_singleton()->get_editor_theme();
 	if (theme.is_valid()) {
 		stop_icon = theme->get_icon("Stop", "EditorIcons");
 	} else {
-		stop_icon.instance();
+		stop_icon.instantiate();
 	}
 }
 
@@ -1000,6 +1000,6 @@ void register_javascript_exporter() {
 	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::STRING, "export/web/ssl_certificate", PROPERTY_HINT_GLOBAL_FILE, "*.crt,*.pem"));
 
 	Ref<EditorExportPlatformJavaScript> platform;
-	platform.instance();
+	platform.instantiate();
 	EditorExport::get_singleton()->add_export_platform(platform);
 }

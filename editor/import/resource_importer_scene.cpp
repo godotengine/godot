@@ -1422,7 +1422,7 @@ Error ResourceImporterScene::import(const String &p_source_file, const String &p
 	}
 
 	if (root_type != "Node3D") {
-		Node *base_node = Object::cast_to<Node>(ClassDB::instance(root_type));
+		Node *base_node = Object::cast_to<Node>(ClassDB::instantiate(root_type));
 
 		if (base_node) {
 			scene->replace_by(base_node);
@@ -1557,7 +1557,7 @@ Node *EditorSceneImporterESCN::import_scene(const String &p_path, uint32_t p_fla
 	Ref<PackedScene> ps = ResourceFormatLoaderText::singleton->load(p_path, p_path, &error);
 	ERR_FAIL_COND_V_MSG(!ps.is_valid(), nullptr, "Cannot load scene as text resource from path '" + p_path + "'.");
 
-	Node *scene = ps->instance();
+	Node *scene = ps->instantiate();
 	ERR_FAIL_COND_V(!scene, nullptr);
 
 	return scene;

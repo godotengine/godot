@@ -229,7 +229,7 @@ Error GDScriptAnalyzer::resolve_inheritance(GDScriptParser::ClassNode *p_class, 
 					push_error(vformat(R"(Could not resolve super class inheritance from "%s".)", name), p_class);
 					return err;
 				}
-			} else if (class_exists(name) && ClassDB::can_instance(GDScriptParser::get_real_class_name(name))) {
+			} else if (class_exists(name) && ClassDB::can_instantiate(GDScriptParser::get_real_class_name(name))) {
 				base.kind = GDScriptParser::DataType::NATIVE;
 				base.native_type = name;
 			} else {

@@ -1045,7 +1045,7 @@ bool ResourceLoader::add_custom_resource_format_loader(String script_path) {
 	bool valid_type = ClassDB::is_parent_class(ibt, "ResourceFormatLoader");
 	ERR_FAIL_COND_V_MSG(!valid_type, false, "Script does not inherit a CustomResourceLoader: " + script_path + ".");
 
-	Object *obj = ClassDB::instance(ibt);
+	Object *obj = ClassDB::instantiate(ibt);
 
 	ERR_FAIL_COND_V_MSG(obj == nullptr, false, "Cannot instance script as custom resource loader, expected 'ResourceFormatLoader' inheritance, got: " + String(ibt) + ".");
 

@@ -143,7 +143,7 @@ Ref<RDShaderBytecode> RenderingDevice::_shader_compile_from_source(const Ref<RDS
 	ERR_FAIL_COND_V(p_source.is_null(), Ref<RDShaderBytecode>());
 
 	Ref<RDShaderBytecode> bytecode;
-	bytecode.instance();
+	bytecode.instantiate();
 	for (int i = 0; i < RD::SHADER_STAGE_MAX; i++) {
 		String error;
 

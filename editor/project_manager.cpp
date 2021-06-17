@@ -862,7 +862,7 @@ public:
 		rasterizer_container->add_child(l);
 		Container *rshb = memnew(HBoxContainer);
 		rasterizer_container->add_child(rshb);
-		rasterizer_button_group.instance();
+		rasterizer_button_group.instantiate();
 
 		Container *rvb = memnew(VBoxContainer);
 		rvb->set_h_size_flags(Control::SIZE_EXPAND_FILL);
@@ -1145,7 +1145,7 @@ void ProjectList::load_project_icon(int p_index) {
 	Ref<Texture2D> icon;
 	if (item.icon != "") {
 		Ref<Image> img;
-		img.instance();
+		img.instantiate();
 		Error err = img->load(item.icon.replace_first("res://", item.path + "/"));
 		if (err == OK) {
 			img->resize(default_icon->get_width(), default_icon->get_height(), Image::INTERPOLATE_LANCZOS);
