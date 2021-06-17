@@ -180,6 +180,7 @@ public:
 				TYPE_PARTICLES,
 				TYPE_TRANSFORM,
 				TYPE_CLIP_IGNORE,
+				TYPE_ANIMATION_SLICE,
 			};
 
 			Command *next;
@@ -283,6 +284,17 @@ public:
 			CommandClipIgnore() {
 				type = TYPE_CLIP_IGNORE;
 				ignore = false;
+			}
+		};
+
+		struct CommandAnimationSlice : public Command {
+			double animation_length = 0;
+			double slice_begin = 0;
+			double slice_end = 0;
+			double offset = 0;
+
+			CommandAnimationSlice() {
+				type = TYPE_ANIMATION_SLICE;
 			}
 		};
 

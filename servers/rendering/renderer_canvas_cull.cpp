@@ -1003,6 +1003,18 @@ void RendererCanvasCull::canvas_item_add_clip_ignore(RID p_item, bool p_ignore) 
 	ci->ignore = p_ignore;
 }
 
+void RendererCanvasCull::canvas_item_add_animation_slice(RID p_item, double p_animation_length, double p_slice_begin, double p_slice_end, double p_offset) {
+	Item *canvas_item = canvas_item_owner.getornull(p_item);
+	ERR_FAIL_COND(!canvas_item);
+
+	Item::CommandAnimationSlice *as = canvas_item->alloc_command<Item::CommandAnimationSlice>();
+	ERR_FAIL_COND(!as);
+	as->animation_length = p_animation_length;
+	as->slice_begin = p_slice_begin;
+	as->slice_end = p_slice_end;
+	as->offset = p_offset;
+}
+
 void RendererCanvasCull::canvas_item_set_sort_children_by_y(RID p_item, bool p_enable) {
 	Item *canvas_item = canvas_item_owner.getornull(p_item);
 	ERR_FAIL_COND(!canvas_item);
