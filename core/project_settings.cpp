@@ -661,8 +661,7 @@ Error ProjectSettings::_save_settings_binary(const String &p_file, const Map<Str
 		file->store_32(count + 1);
 		//store how many properties are saved, add one for custom featuers, which must always go first
 		String key = CoreStringNames::get_singleton()->_custom_features;
-		file->store_32(key.length());
-		file->store_string(key);
+		file->store_pascal_string(key);
 
 		int len;
 		err = encode_variant(p_custom_features, nullptr, len, false);
@@ -699,8 +698,7 @@ Error ProjectSettings::_save_settings_binary(const String &p_file, const Map<Str
 				value = get(key);
 			}
 
-			file->store_32(key.length());
-			file->store_string(key);
+			file->store_pascal_string(key);
 
 			int len;
 			err = encode_variant(value, nullptr, len, true);

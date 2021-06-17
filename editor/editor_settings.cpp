@@ -309,28 +309,7 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	// Editor
 	_initial_set("interface/editor/display_scale", 0);
 	// Display what the Auto display scale setting effectively corresponds to.
-	// The code below is adapted in `editor/editor_node.cpp` and `editor/project_manager.cpp`.
-	// Make sure to update those when modifying the code below.
-#ifdef OSX_ENABLED
-	float scale = OS::get_singleton()->get_screen_max_scale();
-#else
-	const int screen = OS::get_singleton()->get_current_screen();
-	float scale;
-	if (OS::get_singleton()->get_screen_dpi(screen) >= 192 && OS::get_singleton()->get_screen_size(screen).y >= 1400) {
-		// hiDPI display.
-		scale = 2.0;
-	} else if (OS::get_singleton()->get_screen_size(screen).y >= 1700) {
-		// Likely a hiDPI display, but we aren't certain due to the returned DPI.
-		// Use an intermediate scale to handle this situation.
-		scale = 1.5;
-	} else if (OS::get_singleton()->get_screen_size(screen).y <= 800) {
-		// Small loDPI display. Use a smaller display scale so that editor elements fit more easily.
-		// Icons won't look great, but this is better than having editor elements overflow from its window.
-		scale = 0.75;
-	} else {
-		scale = 1.0;
-	}
-#endif
+	float scale = get_auto_display_scale();
 	hints["interface/editor/display_scale"] = PropertyInfo(Variant::INT, "interface/editor/display_scale", PROPERTY_HINT_ENUM, vformat("Auto (%d%%),75%%,100%%,125%%,150%%,175%%,200%%,Custom", Math::round(scale * 100)), PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED);
 	_initial_set("interface/editor/custom_display_scale", 1.0f);
 	hints["interface/editor/custom_display_scale"] = PropertyInfo(Variant::REAL, "interface/editor/custom_display_scale", PROPERTY_HINT_RANGE, "0.5,3,0.01", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED);
@@ -354,8 +333,12 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	_initial_set("interface/editor/dim_editor_on_dialog_popup", true);
 	_initial_set("interface/editor/low_processor_mode_sleep_usec", 6900); // ~144 FPS
 	hints["interface/editor/low_processor_mode_sleep_usec"] = PropertyInfo(Variant::REAL, "interface/editor/low_processor_mode_sleep_usec", PROPERTY_HINT_RANGE, "1,100000,1", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED);
-	_initial_set("interface/editor/unfocused_low_processor_mode_sleep_usec", 50000); // 20 FPS
-	hints["interface/editor/unfocused_low_processor_mode_sleep_usec"] = PropertyInfo(Variant::REAL, "interface/editor/unfocused_low_processor_mode_sleep_usec", PROPERTY_HINT_RANGE, "1,100000,1", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED);
+	_initial_set("interface/editor/unfocused_low_processor_mode_sleep_usec", 100000); // 10 FPS
+	// Allow an unfocused FPS limit as low as 1 FPS for those who really need low power usage
+	// (but don't need to preview particles or shaders while the editor is unfocused).
+	// With very low FPS limits, the editor can take a small while to become usable after being focused again,
+	// so this should be used at the user's discretion.
+	hints["interface/editor/unfocused_low_processor_mode_sleep_usec"] = PropertyInfo(Variant::REAL, "interface/editor/unfocused_low_processor_mode_sleep_usec", PROPERTY_HINT_RANGE, "1,1000000,1", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED);
 	_initial_set("interface/editor/separate_distraction_mode", false);
 	_initial_set("interface/editor/automatically_open_screenshots", true);
 	_initial_set("interface/editor/hide_console_window", false);
@@ -1480,6 +1463,29 @@ Vector<String> EditorSettings::get_script_templates(const String &p_extension, c
 
 String EditorSettings::get_editor_layouts_config() const {
 	return get_settings_dir().plus_file("editor_layouts.cfg");
+}
+
+float EditorSettings::get_auto_display_scale() const {
+#ifdef OSX_ENABLED
+	return OS::get_singleton()->get_screen_max_scale();
+#else
+	const int screen = OS::get_singleton()->get_current_screen();
+	// Use the smallest dimension to use a correct display scale on portait displays.
+	const int smallest_dimension = MIN(OS::get_singleton()->get_screen_size(screen).x, OS::get_singleton()->get_screen_size(screen).y);
+	if (OS::get_singleton()->get_screen_dpi(screen) >= 192 && smallest_dimension >= 1400) {
+		// hiDPI display.
+		return 2.0;
+	} else if (smallest_dimension >= 1700) {
+		// Likely a hiDPI display, but we aren't certain due to the returned DPI.
+		// Use an intermediate scale to handle this situation.
+		return 1.5;
+	} else if (smallest_dimension <= 800) {
+		// Small loDPI display. Use a smaller display scale so that editor elements fit more easily.
+		// Icons won't look great, but this is better than having editor elements overflow from its window.
+		return 0.75;
+	}
+	return 1.0;
+#endif
 }
 
 // Shortcuts

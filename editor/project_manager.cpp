@@ -2363,34 +2363,10 @@ ProjectManager::ProjectManager() {
 		float custom_display_scale = EditorSettings::get_singleton()->get("interface/editor/custom_display_scale");
 
 		switch (display_scale) {
-			case 0: {
+			case 0:
 				// Try applying a suitable display scale automatically.
-				// The code below is adapted in `editor/editor_settings.cpp` and `editor/editor_node.cpp`.
-				// Make sure to update those when modifying the code below.
-#ifdef OSX_ENABLED
-				editor_set_scale(OS::get_singleton()->get_screen_max_scale());
-#else
-				const int screen = OS::get_singleton()->get_current_screen();
-				float scale;
-				if (OS::get_singleton()->get_screen_dpi(screen) >= 192 && OS::get_singleton()->get_screen_size(screen).y >= 1400) {
-					// hiDPI display.
-					scale = 2.0;
-				} else if (OS::get_singleton()->get_screen_size(screen).y >= 1700) {
-					// Likely a hiDPI display, but we aren't certain due to the returned DPI.
-					// Use an intermediate scale to handle this situation.
-					scale = 1.5;
-				} else if (OS::get_singleton()->get_screen_size(screen).y <= 800) {
-					// Small loDPI display. Use a smaller display scale so that editor elements fit more easily.
-					// Icons won't look great, but this is better than having editor elements overflow from its window.
-					scale = 0.75;
-				} else {
-					scale = 1.0;
-				}
-
-				editor_set_scale(scale);
-#endif
-			} break;
-
+				editor_set_scale(EditorSettings::get_singleton()->get_auto_display_scale());
+				break;
 			case 1:
 				editor_set_scale(0.75);
 				break;
@@ -2600,7 +2576,7 @@ ProjectManager::ProjectManager() {
 	version_btn = memnew(LinkButton);
 	String hash = String(VERSION_HASH);
 	if (hash.length() != 0) {
-		hash = "." + hash.left(9);
+		hash = " " + vformat("[%s]", hash.left(9));
 	}
 	version_btn->set_text("v" VERSION_FULL_BUILD + hash);
 	// Fade the version label to be less prominent, but still readable.
