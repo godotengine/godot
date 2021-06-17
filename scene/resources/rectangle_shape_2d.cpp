@@ -37,6 +37,26 @@ void RectangleShape2D::_update_shape() {
 	emit_changed();
 }
 
+#ifndef DISABLE_DEPRECATED
+bool RectangleShape2D::_set(const StringName &p_name, const Variant &p_value) {
+	if (p_name == "extents") { // Compatibility with Godot 3.x.
+		// Convert to `size`, twice as big.
+		set_size((Vector2)p_value * 2);
+		return true;
+	}
+	return false;
+}
+
+bool RectangleShape2D::_get(const StringName &p_name, Variant &r_property) const {
+	if (p_name == "extents") { // Compatibility with Godot 3.x.
+		// Convert to `extents`, half as big.
+		r_property = size / 2;
+		return true;
+	}
+	return false;
+}
+#endif // DISABLE_DEPRECATED
+
 void RectangleShape2D::set_size(const Vector2 &p_size) {
 	size = p_size;
 	_update_shape();
