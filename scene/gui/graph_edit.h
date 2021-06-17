@@ -34,6 +34,7 @@
 #include "scene/gui/box_container.h"
 #include "scene/gui/button.h"
 #include "scene/gui/graph_node.h"
+#include "scene/gui/label.h"
 #include "scene/gui/scroll_bar.h"
 #include "scene/gui/slider.h"
 #include "scene/gui/spin_box.h"
@@ -105,6 +106,7 @@ public:
 	};
 
 private:
+	Label *zoom_label;
 	Button *zoom_minus;
 	Button *zoom_reset;
 	Button *zoom_plus;
@@ -113,10 +115,6 @@ private:
 	SpinBox *snap_amount;
 
 	Button *minimap_button;
-
-	void _zoom_minus();
-	void _zoom_reset();
-	void _zoom_plus();
 
 	HScrollBar *h_scroll;
 	VScrollBar *v_scroll;
@@ -144,6 +142,14 @@ private:
 	Vector2 drag_accum;
 
 	float zoom = 1.0;
+	float zoom_step = 1.2;
+	float zoom_min;
+	float zoom_max;
+
+	void _zoom_minus();
+	void _zoom_reset();
+	void _zoom_plus();
+	void _update_zoom_label();
 
 	bool box_selecting = false;
 	bool box_selection_mode_additive = false;
@@ -246,6 +252,18 @@ public:
 	void set_zoom(float p_zoom);
 	void set_zoom_custom(float p_zoom, const Vector2 &p_center);
 	float get_zoom() const;
+
+	void set_zoom_min(float p_zoom_min);
+	float get_zoom_min() const;
+
+	void set_zoom_max(float p_zoom_max);
+	float get_zoom_max() const;
+
+	void set_zoom_step(float p_zoom_step);
+	float get_zoom_step() const;
+
+	void set_show_zoom_label(bool p_enable);
+	bool is_showing_zoom_label() const;
 
 	void set_minimap_size(Vector2 p_size);
 	Vector2 get_minimap_size() const;
