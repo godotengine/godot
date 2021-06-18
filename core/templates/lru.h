@@ -61,14 +61,14 @@ public:
 		Element n = _list.push_front(Pair(p_key, p_value));
 
 		if (e) {
-			_list.erase(*e);
-			_map.erase(p_key);
+			_list.remove(*e);
+			_map.remove(p_key);
 		}
 		_map[p_key] = _list.front();
 
 		while (_map.size() > capacity) {
 			Element d = _list.back();
-			_map.erase(d->get().key);
+			_map.remove(d->get().key);
 			_list.pop_back();
 		}
 
@@ -108,7 +108,7 @@ public:
 			capacity = p_capacity;
 			while (_map.size() > capacity) {
 				Element d = _list.back();
-				_map.erase(d->get().key);
+				_map.remove(d->get().key);
 				_list.pop_back();
 			}
 		}

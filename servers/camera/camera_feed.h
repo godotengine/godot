@@ -72,7 +72,7 @@ protected:
 	Transform2D transform; // display transform
 
 	bool active; // only when active do we actually update the camera texture each frame
-	RID texture[CameraServer::FEED_IMAGES]; // texture images needed for this
+	RID texture[Camremoverver::FEED_IMAGES]; // texture images needed for this
 
 	static void _bind_methods();
 
@@ -93,7 +93,7 @@ public:
 	Transform2D get_transform() const;
 	void set_transform(const Transform2D &p_transform);
 
-	RID get_texture(CameraServer::FeedImage p_which);
+	RID get_texture(Camremoverver::FeedImage p_which);
 
 	CameraFeed();
 	CameraFeed(String p_name, FeedPosition p_position = CameraFeed::FEED_UNSPECIFIED);

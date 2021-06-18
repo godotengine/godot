@@ -127,7 +127,7 @@ GDScriptInstance *GDScript::_create_instance(const Variant **p_args, int p_argco
 		instance->owner->set_script_instance(nullptr);
 		{
 			MutexLock lock(GDScriptLanguage::singleton->lock);
-			instances.erase(p_owner);
+			instances.remove(p_owner);
 		}
 		ERR_FAIL_V_MSG(nullptr, "Error constructing a GDScriptInstance.");
 	}
@@ -142,7 +142,7 @@ GDScriptInstance *GDScript::_create_instance(const Variant **p_args, int p_argco
 			instance->owner->set_script_instance(nullptr);
 			{
 				MutexLock lock(GDScriptLanguage::singleton->lock);
-				instances.erase(p_owner);
+				instances.remove(p_owner);
 			}
 			ERR_FAIL_V_MSG(nullptr, "Error constructing a GDScriptInstance.");
 		}
@@ -230,8 +230,8 @@ struct _GDScriptMemberSort {
 
 #ifdef TOOLS_ENABLED
 
-void GDScript::_placeholder_erased(PlaceHolderScriptInstance *p_placeholder) {
-	placeholders.erase(p_placeholder);
+void GDScript::_placeholder_removed(PlaceHolderScriptInstance *p_placeholder) {
+	placeholders.remove(p_placeholder);
 }
 #endif
 
@@ -412,7 +412,7 @@ void GDScript::_add_doc(const DocData::ClassDoc &p_inner_class) {
 	} else {
 		for (int i = 0; i < docs.size(); i++) {
 			if (docs[i].name == p_inner_class.name) {
-				docs.remove(i);
+				docs.remove_at(i);
 				break;
 			}
 		}
@@ -617,7 +617,7 @@ bool GDScript::_update_exports(bool *r_err, bool p_recursive_call, PlaceHolderSc
 			const GDScriptParser::ClassNode *c = parser.get_tree();
 
 			if (base_cache.is_valid()) {
-				base_cache->inheriters_cache.erase(get_instance_id());
+				base_cache->inheriters_cache.remove(get_instance_id());
 				base_cache = Ref<GDScript>();
 			}
 
@@ -1594,7 +1594,7 @@ GDScriptInstance::~GDScriptInstance() {
 	}
 
 	if (script.is_valid() && owner) {
-		script->instances.erase(owner);
+		script->instances.remove(owner);
 	}
 }
 
@@ -1629,7 +1629,7 @@ void GDScriptLanguage::add_named_global_constant(const StringName &p_name, const
 
 void GDScriptLanguage::remove_named_global_constant(const StringName &p_name) {
 	ERR_FAIL_COND(!named_globals.has(p_name));
-	named_globals.erase(p_name);
+	named_globals.remove(p_name);
 }
 
 void GDScriptLanguage::init() {
@@ -1800,7 +1800,7 @@ void GDScriptLanguage::reload_all_scripts() {
 		while (elem) {
 			if (elem->self()->get_path().is_resource_file()) {
 				print_verbose("GDScript: Found: " + elem->self()->get_path());
-				scripts.push_back(Ref<GDScript>(elem->self())); //cast to gdscript to avoid being erased by accident
+				scripts.push_back(Ref<GDScript>(elem->self())); //cast to gdscript to avoid being removed by accident
 			}
 			elem = elem->next();
 		}
@@ -1828,7 +1828,7 @@ void GDScriptLanguage::reload_tool_script(const Ref<Script> &p_script, bool p_so
 		SelfList<GDScript> *elem = script_list.first();
 		while (elem) {
 			if (elem->self()->get_path().is_resource_file()) {
-				scripts.push_back(Ref<GDScript>(elem->self())); //cast to gdscript to avoid being erased by accident
+				scripts.push_back(Ref<GDScript>(elem->self())); //cast to gdscript to avoid being removed by accident
 			}
 			elem = elem->next();
 		}
@@ -1880,7 +1880,7 @@ void GDScriptLanguage::reload_tool_script(const Ref<Script> &p_script, bool p_so
 					obj->set_script(Variant());
 				} else {
 					// no instance found. Let's remove it so we don't loop forever
-					E->get()->placeholders.erase(E->get()->placeholders.front()->get());
+					E->get()->placeholders.remove(E->get()->placeholders.front()->get());
 				}
 			}
 
@@ -1932,7 +1932,7 @@ void GDScriptLanguage::reload_tool_script(const Ref<Script> &p_script, bool p_so
 				}
 			}
 
-			scr->pending_reload_state.erase(obj->get_instance_id()); //as it reloaded, remove pending state
+			scr->pending_reload_state.remove(obj->get_instance_id()); //as it reloaded, remove pending state
 		}
 
 		//if instance states were saved, set them!
@@ -2117,7 +2117,7 @@ String GDScriptLanguage::get_global_class_name(const String &p_path, String *r_b
 
 									const GDScriptParser::ClassNode *inner_class = subclass->members[i].m_class;
 									if (inner_class->identifier->name == extend_classes[0]) {
-										extend_classes.remove(0);
+										extend_classes.remove_at(0);
 										found = true;
 										subclass = inner_class;
 										break;
@@ -2235,7 +2235,7 @@ Ref<GDScript> GDScriptLanguage::get_orphan_subclass(const String &p_qualified_na
 	}
 	ObjectID orphan_subclass = orphan_subclass_element->get();
 	Object *obj = ObjectDB::get_instance(orphan_subclass);
-	orphan_subclasses.erase(orphan_subclass_element);
+	orphan_subclasses.remove(orphan_subclass_element);
 	if (!obj) {
 		return Ref<GDScript>();
 	}

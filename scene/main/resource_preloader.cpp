@@ -98,7 +98,7 @@ void ResourcePreloader::add_resource(const StringName &p_name, const RES &p_reso
 
 void ResourcePreloader::remove_resource(const StringName &p_name) {
 	ERR_FAIL_COND(!resources.has(p_name));
-	resources.erase(p_name);
+	resources.remove(p_name);
 }
 
 void ResourcePreloader::rename_resource(const StringName &p_from_name, const StringName &p_to_name) {
@@ -106,7 +106,7 @@ void ResourcePreloader::rename_resource(const StringName &p_from_name, const Str
 
 	RES res = resources[p_from_name];
 
-	resources.erase(p_from_name);
+	resources.remove(p_from_name);
 	add_resource(p_to_name, res);
 }
 

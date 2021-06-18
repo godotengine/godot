@@ -102,7 +102,7 @@ public:
                 (reachableViaControlFlow_.count(continueBlock) > 0)
                     ? spv::ReachViaControlFlow
                     : spv::ReachDeadContinue;
-            delayed_.erase(continueBlock);
+            delayed_.remove(continueBlock);
             visit(continueBlock, continueWhy, block);
         }
         if (mergeBlock) {
@@ -110,7 +110,7 @@ public:
                 (reachableViaControlFlow_.count(mergeBlock) > 0)
                     ? spv::ReachViaControlFlow
                     : spv::ReachDeadMerge;
-            delayed_.erase(mergeBlock);
+            delayed_.remove(mergeBlock);
             visit(mergeBlock, mergeWhy, block);
         }
     }

@@ -441,7 +441,7 @@ bool GridMapEditor::do_input_action(Camera3D *p_camera, const Point2 &p_point, b
 		set_items.push_back(si);
 		node->set_cell_item(Vector3i(cell[0], cell[1], cell[2]), selected_palette, cursor_rot);
 		return true;
-	} else if (input_action == INPUT_ERASE) {
+	} else if (input_action == INPUT_REMOVE) {
 		SetItem si;
 		si.position = Vector3i(cell[0], cell[1], cell[2]);
 		si.new_value = -1;
@@ -651,7 +651,7 @@ bool GridMapEditor::forward_spatial_input_event(Camera3D *p_camera, const Ref<In
 					_set_selection(false);
 					return true;
 				} else {
-					input_action = INPUT_ERASE;
+					input_action = INPUT_REMOVE;
 					set_items.clear();
 				}
 			} else {
@@ -660,7 +660,7 @@ bool GridMapEditor::forward_spatial_input_event(Camera3D *p_camera, const Ref<In
 
 			return do_input_action(p_camera, Point2(mb->get_position().x, mb->get_position().y), true);
 		} else {
-			if ((mb->get_button_index() == MOUSE_BUTTON_RIGHT && input_action == INPUT_ERASE) || (mb->get_button_index() == MOUSE_BUTTON_LEFT && input_action == INPUT_PAINT)) {
+			if ((mb->get_button_index() == MOUSE_BUTTON_RIGHT && input_action == INPUT_REMOVE) || (mb->get_button_index() == MOUSE_BUTTON_LEFT && input_action == INPUT_PAINT)) {
 				if (set_items.size()) {
 					undo_redo->create_action(TTR("GridMap Paint"));
 					for (List<SetItem>::Element *E = set_items.front(); E; E = E->next()) {
@@ -691,7 +691,7 @@ bool GridMapEditor::forward_spatial_input_event(Camera3D *p_camera, const Ref<In
 				input_action = INPUT_NONE;
 				return true;
 			}
-			if (mb->get_button_index() == MOUSE_BUTTON_RIGHT && (input_action == INPUT_ERASE || input_action == INPUT_PASTE)) {
+			if (mb->get_button_index() == MOUSE_BUTTON_RIGHT && (input_action == INPUT_REMOVE || input_action == INPUT_PASTE)) {
 				input_action = INPUT_NONE;
 				return true;
 			}

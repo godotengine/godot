@@ -196,7 +196,7 @@ bool MeshLibrary::has_item(int p_item) const {
 
 void MeshLibrary::remove_item(int p_item) {
 	ERR_FAIL_COND_MSG(!item_map.has(p_item), "Requested for nonexistent MeshLibrary item '" + itos(p_item) + "'.");
-	item_map.erase(p_item);
+	item_map.remove(p_item);
 	notify_change_to_owners();
 	notify_property_list_changed();
 	emit_changed();

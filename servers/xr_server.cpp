@@ -183,7 +183,7 @@ void XRServer::remove_interface(const Ref<XRInterface> &p_interface) {
 	print_verbose("XR: Removed interface" + p_interface->get_name());
 
 	emit_signal("interface_removed", p_interface->get_name());
-	interfaces.remove(idx);
+	interfaces.remove_at(idx);
 };
 
 int XRServer::get_interface_count() const {
@@ -286,7 +286,7 @@ void XRServer::remove_tracker(Ref<XRPositionalTracker> p_tracker) {
 	ERR_FAIL_COND(idx == -1);
 
 	emit_signal("tracker_removed", p_tracker->get_tracker_name(), p_tracker->get_tracker_type(), p_tracker->get_tracker_id());
-	trackers.remove(idx);
+	trackers.remove_at(idx);
 };
 
 int XRServer::get_tracker_count() const {
@@ -374,11 +374,11 @@ XRServer::~XRServer() {
 	primary_interface.unref();
 
 	while (interfaces.size() > 0) {
-		interfaces.remove(0);
+		interfaces.remove_at(0);
 	}
 
 	while (trackers.size() > 0) {
-		trackers.remove(0);
+		trackers.remove_at(0);
 	}
 
 	singleton = nullptr;

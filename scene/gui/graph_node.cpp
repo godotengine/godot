@@ -46,7 +46,7 @@ bool GraphNode::_set(const StringName &p_name, const Variant &p_value) {
 		double value = p_value;
 		if (value == -1) {
 			if (opentype_features.has(tag)) {
-				opentype_features.erase(tag);
+				opentype_features.remove(tag);
 				_shape();
 				update();
 			}
@@ -464,7 +464,7 @@ void GraphNode::set_slot(int p_idx, bool p_enable_left, int p_type_left, const C
 	if (!p_enable_left && p_type_left == 0 && p_color_left == Color(1, 1, 1, 1) &&
 			!p_enable_right && p_type_right == 0 && p_color_right == Color(1, 1, 1, 1) &&
 			!p_custom_left.is_valid() && !p_custom_right.is_valid()) {
-		slot_info.erase(p_idx);
+		slot_info.remove(p_idx);
 		return;
 	}
 
@@ -485,7 +485,7 @@ void GraphNode::set_slot(int p_idx, bool p_enable_left, int p_type_left, const C
 }
 
 void GraphNode::clear_slot(int p_idx) {
-	slot_info.erase(p_idx);
+	slot_info.remove(p_idx);
 	update();
 	connpos_dirty = true;
 }

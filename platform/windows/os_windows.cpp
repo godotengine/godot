@@ -489,7 +489,7 @@ Error OS_Windows::kill(const ProcessID &p_pid) {
 	ERR_FAIL_COND_V(!process_map->has(p_pid), FAILED);
 
 	const PROCESS_INFORMATION pi = (*process_map)[p_pid].pi;
-	process_map->erase(p_pid);
+	process_map->remove(p_pid);
 
 	const int ret = TerminateProcess(pi.hProcess, 0);
 

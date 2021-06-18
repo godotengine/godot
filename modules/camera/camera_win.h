@@ -34,7 +34,7 @@
 #include "servers/camera/camera_feed.h"
 #include "servers/camera_server.h"
 
-class CameraWindows : public CameraServer {
+class CameraWindows : public Camremoverver {
 private:
 	void add_active_cameras();
 

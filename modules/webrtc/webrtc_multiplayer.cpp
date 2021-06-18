@@ -280,7 +280,7 @@ Error WebRTCMultiplayer::add_peer(Ref<WebRTCPeerConnection> p_peer, int p_peer_i
 void WebRTCMultiplayer::remove_peer(int p_peer_id) {
 	ERR_FAIL_COND(!peer_map.has(p_peer_id));
 	Ref<ConnectedPeer> peer = peer_map[p_peer_id];
-	peer_map.erase(p_peer_id);
+	peer_map.remove(p_peer_id);
 	if (peer->connected) {
 		peer->connected = false;
 		emit_signal("peer_disconnected", p_peer_id);

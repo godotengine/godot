@@ -353,7 +353,7 @@ String BaseButton::get_tooltip(const Point2 &p_pos) const {
 
 void BaseButton::set_button_group(const Ref<ButtonGroup> &p_group) {
 	if (button_group.is_valid()) {
-		button_group->buttons.erase(this);
+		button_group->buttons.remove(this);
 	}
 
 	button_group = p_group;
@@ -457,7 +457,7 @@ BaseButton::BaseButton() {
 
 BaseButton::~BaseButton() {
 	if (button_group.is_valid()) {
-		button_group->buttons.erase(this);
+		button_group->buttons.remove(this);
 	}
 }
 

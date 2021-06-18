@@ -2325,7 +2325,7 @@ void CameraTexture::_bind_methods() {
 }
 
 int CameraTexture::get_width() const {
-	Ref<CameraFeed> feed = CameraServer::get_singleton()->get_feed_by_id(camera_feed_id);
+	Ref<CameraFeed> feed = Camremoverver::get_singleton()->get_feed_by_id(camera_feed_id);
 	if (feed.is_valid()) {
 		return feed->get_base_width();
 	} else {
@@ -2334,7 +2334,7 @@ int CameraTexture::get_width() const {
 }
 
 int CameraTexture::get_height() const {
-	Ref<CameraFeed> feed = CameraServer::get_singleton()->get_feed_by_id(camera_feed_id);
+	Ref<CameraFeed> feed = Camremoverver::get_singleton()->get_feed_by_id(camera_feed_id);
 	if (feed.is_valid()) {
 		return feed->get_base_height();
 	} else {
@@ -2347,7 +2347,7 @@ bool CameraTexture::has_alpha() const {
 }
 
 RID CameraTexture::get_rid() const {
-	Ref<CameraFeed> feed = CameraServer::get_singleton()->get_feed_by_id(camera_feed_id);
+	Ref<CameraFeed> feed = Camremoverver::get_singleton()->get_feed_by_id(camera_feed_id);
 	if (feed.is_valid()) {
 		return feed->get_texture(which_feed);
 	} else {
@@ -2378,17 +2378,17 @@ int CameraTexture::get_camera_feed_id() const {
 	return camera_feed_id;
 }
 
-void CameraTexture::set_which_feed(CameraServer::FeedImage p_which) {
+void CameraTexture::set_which_feed(Camremoverver::FeedImage p_which) {
 	which_feed = p_which;
 	notify_property_list_changed();
 }
 
-CameraServer::FeedImage CameraTexture::get_which_feed() const {
+Camremoverver::FeedImage CameraTexture::get_which_feed() const {
 	return which_feed;
 }
 
 void CameraTexture::set_camera_active(bool p_active) {
-	Ref<CameraFeed> feed = CameraServer::get_singleton()->get_feed_by_id(camera_feed_id);
+	Ref<CameraFeed> feed = Camremoverver::get_singleton()->get_feed_by_id(camera_feed_id);
 	if (feed.is_valid()) {
 		feed->set_active(p_active);
 		notify_property_list_changed();
@@ -2396,7 +2396,7 @@ void CameraTexture::set_camera_active(bool p_active) {
 }
 
 bool CameraTexture::get_camera_active() const {
-	Ref<CameraFeed> feed = CameraServer::get_singleton()->get_feed_by_id(camera_feed_id);
+	Ref<CameraFeed> feed = Camremoverver::get_singleton()->get_feed_by_id(camera_feed_id);
 	if (feed.is_valid()) {
 		return feed->is_active();
 	} else {

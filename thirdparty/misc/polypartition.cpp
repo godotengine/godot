@@ -304,8 +304,8 @@ int TPPLPartition::RemoveHoles(TPPLPolyList *inpolys, TPPLPolyList *outpolys) {
       i2++;
     }
 
-    polys.erase(holeiter);
-    polys.erase(polyiter);
+    polys.remove(holeiter);
+    polys.remove(polyiter);
     polys.push_back(newpoly);
   }
 
@@ -656,7 +656,7 @@ int TPPLPartition::ConvexPartition_HM(TPPLPoly *poly, TPPLPolyList *parts) {
         k++;
       }
 
-      triangles.erase(iter2);
+      triangles.remove(iter2);
       iter1->get() = newpoly;
       poly1 = &(iter1->get());
       i11 = -1;
@@ -1400,7 +1400,7 @@ int TPPLPartition::MonotonePartition(TPPLPolyList *inpolys, TPPLPolyList *monoto
                   vertextypes, edgeTreeIterators, &edgeTree, helpers);
         }
         // Delete e_i - 1 from T
-        edgeTree.erase(edgeTreeIterators[v->previous]);
+        edgeTree.remove(edgeTreeIterators[v->previous]);
         break;
 
       case TPPL_VERTEXTYPE_SPLIT:
@@ -1444,7 +1444,7 @@ int TPPLPartition::MonotonePartition(TPPLPolyList *inpolys, TPPLPolyList *monoto
           v2 = &(vertices[vindex2]);
         }
         // Delete e_i - 1 from T.
-        edgeTree.erase(edgeTreeIterators[v->previous]);
+        edgeTree.remove(edgeTreeIterators[v->previous]);
         // Search in T to find the edge e_j directly left of v_i.
         newedge.p1 = v->p;
         newedge.p2 = v->p;
@@ -1480,7 +1480,7 @@ int TPPLPartition::MonotonePartition(TPPLPolyList *inpolys, TPPLPolyList *monoto
             v2 = &(vertices[vindex2]);
           }
           // Delete e_i - 1 from T.
-          edgeTree.erase(edgeTreeIterators[v->previous]);
+          edgeTree.remove(edgeTreeIterators[v->previous]);
           // Insert e_i in T and set helper(e_i) to v_i.
           newedge.p1 = v2->p;
           newedge.p2 = vertices[v2->next].p;

@@ -133,9 +133,9 @@ void SceneTree::remove_from_group(const StringName &p_group, Node *p_node) {
 	Map<StringName, Group>::Element *E = group_map.find(p_group);
 	ERR_FAIL_COND(!E);
 
-	E->get().nodes.erase(p_node);
+	E->get().nodes.remove(p_node);
 	if (E->get().nodes.is_empty()) {
-		group_map.erase(E);
+		group_map.remove(E);
 	}
 }
 
@@ -171,7 +171,7 @@ void SceneTree::_flush_ugc() {
 		static_assert(VARIANT_ARG_MAX == 5, "This code needs to be updated if VARIANT_ARG_MAX != 5");
 		call_group_flags(GROUP_CALL_REALTIME, E->key().group, E->key().call, v[0], v[1], v[2], v[3], v[4]);
 
-		unique_group_calls.erase(E);
+		unique_group_calls.remove(E);
 	}
 
 	ugc_locked = false;
@@ -468,7 +468,7 @@ bool SceneTree::process(float p_time) {
 
 		if (time_left < 0) {
 			E->get()->emit_signal("timeout");
-			timers.erase(E);
+			timers.remove(E);
 		}
 		if (E == L) {
 			break; //break on last, so if new timers were added during list traversal, ignore them.
@@ -1439,10 +1439,10 @@ SceneTree::SceneTree() {
 				root->get_world_3d()->set_fallback_environment(env);
 			} else {
 				if (Engine::get_singleton()->is_editor_hint()) {
-					// File was erased, clear the field.
+					// File was removed, clear the field.
 					ProjectSettings::get_singleton()->set("rendering/environment/defaults/default_environment", "");
 				} else {
-					// File was erased, notify user.
+					// File was removed, notify user.
 					ERR_PRINT(RTR("Default Environment as specified in Project Settings (Rendering -> Environment -> Default Environment) could not be loaded."));
 				}
 			}

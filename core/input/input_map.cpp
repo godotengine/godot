@@ -42,13 +42,13 @@ void InputMap::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("has_action", "action"), &InputMap::has_action);
 	ClassDB::bind_method(D_METHOD("get_actions"), &InputMap::_get_actions);
 	ClassDB::bind_method(D_METHOD("add_action", "action", "deadzone"), &InputMap::add_action, DEFVAL(0.5f));
-	ClassDB::bind_method(D_METHOD("erase_action", "action"), &InputMap::erase_action);
+	ClassDB::bind_method(D_METHOD("remove_action", "action"), &InputMap::remove_action);
 
 	ClassDB::bind_method(D_METHOD("action_set_deadzone", "action", "deadzone"), &InputMap::action_set_deadzone);
 	ClassDB::bind_method(D_METHOD("action_add_event", "action", "event"), &InputMap::action_add_event);
 	ClassDB::bind_method(D_METHOD("action_has_event", "action", "event"), &InputMap::action_has_event);
-	ClassDB::bind_method(D_METHOD("action_erase_event", "action", "event"), &InputMap::action_erase_event);
-	ClassDB::bind_method(D_METHOD("action_erase_events", "action"), &InputMap::action_erase_events);
+	ClassDB::bind_method(D_METHOD("action_remove_event", "action", "event"), &InputMap::action_remove_event);
+	ClassDB::bind_method(D_METHOD("action_remove_events", "action"), &InputMap::action_remove_events);
 	ClassDB::bind_method(D_METHOD("action_get_events", "action"), &InputMap::_action_get_events);
 	ClassDB::bind_method(D_METHOD("event_is_action", "event", "action", "exact_match"), &InputMap::event_is_action, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("load_from_project_settings"), &InputMap::load_from_project_settings);
@@ -91,10 +91,10 @@ void InputMap::add_action(const StringName &p_action, float p_deadzone) {
 	last_id++;
 }
 
-void InputMap::erase_action(const StringName &p_action) {
+void InputMap::remove_action(const StringName &p_action) {
 	ERR_FAIL_COND_MSG(!input_map.has(p_action), _suggest_actions(p_action));
 
-	input_map.erase(p_action);
+	input_map.remove(p_action);
 }
 
 Array InputMap::_get_actions() {
@@ -177,19 +177,19 @@ bool InputMap::action_has_event(const StringName &p_action, const Ref<InputEvent
 	return (_find_event(input_map[p_action], p_event, true) != nullptr);
 }
 
-void InputMap::action_erase_event(const StringName &p_action, const Ref<InputEvent> &p_event) {
+void InputMap::action_remove_event(const StringName &p_action, const Ref<InputEvent> &p_event) {
 	ERR_FAIL_COND_MSG(!input_map.has(p_action), _suggest_actions(p_action));
 
 	List<Ref<InputEvent>>::Element *E = _find_event(input_map[p_action], p_event, true);
 	if (E) {
-		input_map[p_action].inputs.erase(E);
+		input_map[p_action].inputs.remove(E);
 		if (Input::get_singleton()->is_action_pressed(p_action)) {
 			Input::get_singleton()->action_release(p_action);
 		}
 	}
 }
 
-void InputMap::action_erase_events(const StringName &p_action) {
+void InputMap::action_remove_events(const StringName &p_action) {
 	ERR_FAIL_COND_MSG(!input_map.has(p_action), _suggest_actions(p_action));
 
 	input_map[p_action].inputs.clear();

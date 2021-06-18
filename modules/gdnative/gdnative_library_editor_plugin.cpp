@@ -105,7 +105,7 @@ void GDNativeLibraryEditor::_update_tree() {
 
 			bit->add_button(3, get_theme_icon("MoveUp", "EditorIcons"), BUTTON_MOVE_UP, false, TTR("Move Up"));
 			bit->add_button(3, get_theme_icon("MoveDown", "EditorIcons"), BUTTON_MOVE_DOWN, false, TTR("Move Down"));
-			bit->add_button(3, get_theme_icon("Remove", "EditorIcons"), BUTTON_ERASE_ENTRY, false, TTR("Remove current entry"));
+			bit->add_button(3, get_theme_icon("Remove", "EditorIcons"), BUTTON_REMOVE_ENTRY, false, TTR("Remove current entry"));
 		}
 
 		TreeItem *new_arch = tree->create_item(platform);
@@ -152,8 +152,8 @@ void GDNativeLibraryEditor::_on_item_button(Object *item, int column, int id) {
 		_set_target_value(section, target, "");
 	} else if (id == BUTTON_CLEAR_DEPENDENCES) {
 		_set_target_value(section, target, Array());
-	} else if (id == BUTTON_ERASE_ENTRY) {
-		_erase_entry(platform, entry);
+	} else if (id == BUTTON_REMOVE_ENTRY) {
+		_remove_entry(platform, entry);
 	} else if (id == BUTTON_MOVE_UP || id == BUTTON_MOVE_DOWN) {
 		_move_entry(platform, entry, id);
 	}
@@ -180,7 +180,7 @@ void GDNativeLibraryEditor::_on_item_collapsed(Object *p_item) {
 	if (item->is_collapsed()) {
 		collapsed_items.insert(name);
 	} else if (Set<String>::Element *e = collapsed_items.find(name)) {
-		collapsed_items.erase(e);
+		collapsed_items.remove(e);
 	}
 }
 
@@ -211,12 +211,12 @@ void GDNativeLibraryEditor::_set_target_value(const String &section, const Strin
 	_update_tree();
 }
 
-void GDNativeLibraryEditor::_erase_entry(const String &platform, const String &entry) {
+void GDNativeLibraryEditor::_remove_entry(const String &platform, const String &entry) {
 	if (platforms.has(platform)) {
 		if (List<String>::Element *E = platforms[platform].entries.find(entry)) {
 			String target = platform + "." + entry;
 
-			platforms[platform].entries.erase(E);
+			platforms[platform].entries.remove(E);
 			_set_target_value("entry", target, "");
 			_set_target_value("dependencies", target, Array());
 			_translate_to_config_file();
@@ -229,10 +229,10 @@ void GDNativeLibraryEditor::_move_entry(const String &platform, const String &en
 	if (List<String>::Element *E = platforms[platform].entries.find(entry)) {
 		if (E->prev() && dir == BUTTON_MOVE_UP) {
 			platforms[platform].entries.insert_before(E->prev(), E->get());
-			platforms[platform].entries.erase(E);
+			platforms[platform].entries.remove(E);
 		} else if (E->next() && dir == BUTTON_MOVE_DOWN) {
 			platforms[platform].entries.insert_after(E->next(), E->get());
-			platforms[platform].entries.erase(E);
+			platforms[platform].entries.remove(E);
 		}
 		_translate_to_config_file();
 		_update_tree();
@@ -242,8 +242,8 @@ void GDNativeLibraryEditor::_move_entry(const String &platform, const String &en
 void GDNativeLibraryEditor::_translate_to_config_file() {
 	if (!library.is_null()) {
 		Ref<ConfigFile> config = library->get_config_file();
-		config->erase_section("entry");
-		config->erase_section("dependencies");
+		config->remove_section("entry");
+		config->remove_section("dependencies");
 
 		for (Map<String, NativePlatformConfig>::Element *E = platforms.front(); E; E = E->next()) {
 			for (List<String>::Element *it = E->value().entries.front(); it; it = it->next()) {

@@ -669,7 +669,7 @@ void DisplayServerAndroid::process_touch(int p_event, int p_pointer, const Vecto
 					ev->set_pressed(false);
 					ev->set_position(touch[i].pos);
 					Input::get_singleton()->accumulate_input_event(ev);
-					touch.remove(i);
+					touch.remove_at(i);
 
 					break;
 				}

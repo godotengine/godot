@@ -61,7 +61,7 @@ void SyntaxHighlighter::_lines_edited_from(int p_from_line, int p_to_line) {
 	int cache_size = highlighting_cache.back()->key();
 	for (int i = MIN(p_from_line, p_to_line) - 1; i <= cache_size; i++) {
 		if (highlighting_cache.has(i)) {
-			highlighting_cache.erase(i);
+			highlighting_cache.remove(i);
 		}
 	}
 }
@@ -414,7 +414,7 @@ void CodeHighlighter::add_keyword_color(const String &p_keyword, const Color &p_
 }
 
 void CodeHighlighter::remove_keyword_color(const String &p_keyword) {
-	keywords.erase(p_keyword);
+	keywords.remove(p_keyword);
 	clear_highlighting_cache();
 }
 
@@ -448,7 +448,7 @@ void CodeHighlighter::add_member_keyword_color(const String &p_member_keyword, c
 }
 
 void CodeHighlighter::remove_member_keyword_color(const String &p_member_keyword) {
-	member_keywords.erase(p_member_keyword);
+	member_keywords.remove(p_member_keyword);
 	clear_highlighting_cache();
 }
 
@@ -507,7 +507,7 @@ void CodeHighlighter::add_color_region(const String &p_start_key, const String &
 void CodeHighlighter::remove_color_region(const String &p_start_key) {
 	for (int i = 0; i < color_regions.size(); i++) {
 		if (color_regions[i].start_key == p_start_key) {
-			color_regions.remove(i);
+			color_regions.remove_at(i);
 			break;
 		}
 	}

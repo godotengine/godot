@@ -128,7 +128,7 @@ public:
 	void set_setting(const String &p_setting, const Variant &p_value);
 	Variant get_setting(const String &p_setting) const;
 	bool has_setting(const String &p_setting) const;
-	void erase(const String &p_setting);
+	void remove(const String &p_setting);
 	void raise_order(const String &p_setting);
 	void set_initial_value(const StringName &p_setting, const Variant &p_value, bool p_update_current = false);
 	void set_restart_if_changed(const StringName &p_setting, bool p_restart);

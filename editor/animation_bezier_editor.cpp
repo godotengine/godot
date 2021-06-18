@@ -696,7 +696,7 @@ void AnimationBezierTrackEdit::_gui_input(const Ref<InputEvent> &p_event) {
 					if (mb->is_shift_pressed()) {
 						//add to selection
 						if (selection.has(i)) {
-							selection.erase(i);
+							selection.remove(i);
 						} else {
 							selection.insert(i);
 						}

@@ -413,7 +413,7 @@ void EditorSettingsDialog::_shortcut_button_pressed(Object *p_item, int p_column
 				_update_builtin_action(current_action, events);
 			} break;
 			case SHORTCUT_EDIT:
-			case SHORTCUT_ERASE: {
+			case SHORTCUT_REMOVE: {
 				// For Edit end Delete, we will show a popup which displays each event so the user can select which one to edit/delete.
 				current_action_events = ti->get_metadata(1);
 				action_popup->clear();
@@ -448,12 +448,12 @@ void EditorSettingsDialog::_shortcut_button_pressed(Object *p_item, int p_column
 				shortcut_editor->popup_and_configure(sc->get_shortcut());
 				shortcut_being_edited = item;
 				break;
-			case EditorSettingsDialog::SHORTCUT_ERASE: {
+			case EditorSettingsDialog::SHORTCUT_REMOVE: {
 				if (!sc.is_valid()) {
 					return; //pointless, there is nothing
 				}
 
-				undo_redo->create_action(TTR("Erase Shortcut"));
+				undo_redo->create_action(TTR("Remove Shortcut"));
 				undo_redo->add_do_method(sc.ptr(), "set_shortcut", Ref<InputEvent>());
 				undo_redo->add_undo_method(sc.ptr(), "set_shortcut", sc->get_shortcut());
 				undo_redo->add_do_method(this, "_update_shortcuts");
@@ -497,8 +497,8 @@ void EditorSettingsDialog::_builtin_action_popup_index_pressed(int p_index) {
 				shortcut_editor->popup_and_configure(action_popup->get_item_metadata(p_index));
 			}
 		} break;
-		case SHORTCUT_ERASE: {
-			current_action_events.remove(p_index);
+		case SHORTCUT_REMOVE: {
+			current_action_events.remove_at(p_index);
 			_update_builtin_action(current_action, current_action_events);
 		} break;
 		default:

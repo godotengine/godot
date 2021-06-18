@@ -106,7 +106,7 @@ protected:
 	static void _bind_methods();
 
 	friend class PlaceHolderScriptInstance;
-	virtual void _placeholder_erased(PlaceHolderScriptInstance *p_placeholder) {}
+	virtual void _placeholder_removed(PlaceHolderScriptInstance *p_placeholder) {}
 
 	Variant _get_property_default_value(const StringName &p_property);
 	Array _get_script_property_list();

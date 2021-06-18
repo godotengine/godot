@@ -60,9 +60,9 @@ void ScriptDebugger::remove_breakpoint(int p_line, const StringName &p_source) {
 		return;
 	}
 
-	breakpoints[p_line].erase(p_source);
+	breakpoints[p_line].remove(p_source);
 	if (breakpoints[p_line].size() == 0) {
-		breakpoints.erase(p_line);
+		breakpoints.remove(p_line);
 	}
 }
 

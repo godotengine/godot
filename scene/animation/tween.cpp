@@ -1026,8 +1026,8 @@ void Tween::remove(Object *p_object, StringName p_key) {
 
 	// For each interpolation we wish to remove...
 	for (List<List<InterpolateData>::Element *>::Element *E = for_removal.front(); E; E = E->next()) {
-		// Erase it
-		interpolates.erase(E->get());
+		// Remove it
+		interpolates.remove(E->get());
 	}
 }
 
@@ -1041,8 +1041,8 @@ void Tween::_remove_by_uid(int uid) {
 	// Find the interpolation that matches the given UID
 	for (List<InterpolateData>::Element *E = interpolates.front(); E; E = E->next()) {
 		if (uid == E->get().uid) {
-			// It matches, erase it and stop looking
-			E->erase();
+			// It matches, remove it and stop looking
+			E->remove();
 			break;
 		}
 	}

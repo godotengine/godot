@@ -103,7 +103,7 @@ String JSON::_print_var(const Variant &p_var, const String &p_indent, int p_cur_
 				s += _make_indent(p_indent, p_cur_indent + 1) + _print_var(a[i], p_indent, p_cur_indent + 1, p_sort_keys, p_markers);
 			}
 			s += end_statement + _make_indent(p_indent, p_cur_indent) + "]";
-			p_markers.erase(a.id());
+			p_markers.remove(a.id());
 			return s;
 		}
 		case Variant::DICTIONARY: {
@@ -132,7 +132,7 @@ String JSON::_print_var(const Variant &p_var, const String &p_indent, int p_cur_
 			}
 
 			s += end_statement + _make_indent(p_indent, p_cur_indent) + "}";
-			p_markers.erase(d.id());
+			p_markers.remove(d.id());
 			return s;
 		}
 		default:

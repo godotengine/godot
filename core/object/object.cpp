@@ -912,7 +912,7 @@ bool Object::has_meta(const String &p_name) const {
 
 void Object::set_meta(const String &p_name, const Variant &p_value) {
 	if (p_value.get_type() == Variant::NIL) {
-		metadata.erase(p_name);
+		metadata.remove(p_name);
 		return;
 	}
 
@@ -925,7 +925,7 @@ Variant Object::get_meta(const String &p_name) const {
 }
 
 void Object::remove_meta(const String &p_name) {
-	metadata.erase(p_name);
+	metadata.remove(p_name);
 }
 
 Array Object::_get_property_list_bind() const {
@@ -1399,12 +1399,12 @@ void Object::_disconnect(const StringName &p_signal, const Callable &p_callable,
 		}
 	}
 
-	target_object->connections.erase(slot->cE);
-	s->slot_map.erase(*p_callable.get_base_comparator());
+	target_object->connections.remove(slot->cE);
+	s->slot_map.remove(*p_callable.get_base_comparator());
 
 	if (s->slot_map.is_empty() && ClassDB::has_signal(get_class_name(), p_signal)) {
 		//not user signal, delete
-		signal_map.erase(p_signal);
+		signal_map.remove(p_signal);
 	}
 }
 
@@ -1500,7 +1500,7 @@ void Object::editor_set_section_unfold(const String &p_section, bool p_unfolded)
 	if (p_unfolded) {
 		editor_section_folding.insert(p_section);
 	} else {
-		editor_section_folding.erase(p_section);
+		editor_section_folding.remove(p_section);
 	}
 }
 
@@ -1832,10 +1832,10 @@ Object::~Object() {
 		const VMap<Callable, SignalData::Slot>::Pair *slot_list = s->slot_map.get_array();
 
 		for (int i = 0; i < slot_count; i++) {
-			slot_list[i].value.conn.callable.get_object()->connections.erase(slot_list[i].value.cE);
+			slot_list[i].value.conn.callable.get_object()->connections.remove(slot_list[i].value.cE);
 		}
 
-		signal_map.erase(*S);
+		signal_map.remove(*S);
 	}
 
 	//signals from nodes that connect to this node

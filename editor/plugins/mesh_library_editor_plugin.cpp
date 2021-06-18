@@ -50,7 +50,7 @@ void MeshLibraryEditor::edit(const Ref<MeshLibrary> &p_mesh_library) {
 void MeshLibraryEditor::_menu_confirm() {
 	switch (option) {
 		case MENU_OPTION_REMOVE_ITEM: {
-			mesh_library->remove_item(to_erase);
+			mesh_library->remove_item(to_remove);
 		} break;
 		case MENU_OPTION_UPDATE_FROM_SCENE: {
 			String existing = mesh_library->get_meta("_editor_source_scene");
@@ -218,8 +218,8 @@ void MeshLibraryEditor::_menu_cbk(int p_option) {
 		case MENU_OPTION_REMOVE_ITEM: {
 			String p = editor->get_inspector()->get_selected_path();
 			if (p.begins_with("/MeshLibrary/item") && p.get_slice_count("/") >= 3) {
-				to_erase = p.get_slice("/", 3).to_int();
-				cd->set_text(vformat(TTR("Remove item %d?"), to_erase));
+				to_remove = p.get_slice("/", 3).to_int();
+				cd->set_text(vformat(TTR("Remove item %d?"), to_remove));
 				cd->popup_centered(Size2(300, 60));
 			}
 		} break;

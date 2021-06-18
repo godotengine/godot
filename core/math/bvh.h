@@ -129,10 +129,10 @@ public:
 		move(h, p_aabb);
 	}
 
-	void erase(uint32_t p_handle) {
+	void remove(uint32_t p_handle) {
 		BVHHandle h;
 		h.set(p_handle);
-		erase(h);
+		remove(h);
 	}
 
 	void force_collision_check(uint32_t p_handle) {
@@ -186,7 +186,7 @@ public:
 		}
 	}
 
-	void erase(BVHHandle p_handle) {
+	void remove(BVHHandle p_handle) {
 		// call unpair and remove all references to the item
 		// before deleting from the tree
 		if (USE_PAIRS) {
@@ -249,7 +249,7 @@ public:
 			if (USE_PAIRS) {
 				_remove_changed_item(p_handle);
 
-				// force check for collisions, much like an erase was called
+				// force check for collisions, much like an remove was called
 				_check_for_collisions(true);
 			}
 			return true;

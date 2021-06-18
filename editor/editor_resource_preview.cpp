@@ -344,7 +344,7 @@ void EditorResourcePreview::queue_edited_resource_preview(const Ref<Resource> &p
 			return;
 		}
 
-		cache.erase(path_id); //erase if exists, since it will be regen
+		cache.remove(path_id); //remove if exists, since it will be regen
 
 		QueueItem item;
 		item.function = p_receiver_func;
@@ -385,7 +385,7 @@ void EditorResourcePreview::add_preview_generator(const Ref<EditorResourcePrevie
 }
 
 void EditorResourcePreview::remove_preview_generator(const Ref<EditorResourcePreviewGenerator> &p_generator) {
-	preview_generators.erase(p_generator);
+	preview_generators.remove(p_generator);
 }
 
 EditorResourcePreview *EditorResourcePreview::get_singleton() {
@@ -412,7 +412,7 @@ void EditorResourcePreview::check_for_invalidation(const String &p_path) {
 		if (cache.has(p_path)) {
 			uint64_t modified_time = FileAccess::get_modified_time(p_path);
 			if (modified_time != cache[p_path].modified_time) {
-				cache.erase(p_path);
+				cache.remove(p_path);
 				call_invalidated = true;
 			}
 		}

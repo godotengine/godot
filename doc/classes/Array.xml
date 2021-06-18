@@ -226,7 +226,7 @@
 				If [code]deep[/code] is [code]true[/code], a deep copy is performed: all nested arrays and dictionaries are duplicated and will not be shared with the original array. If [code]false[/code], a shallow copy is made and references to the original nested arrays and dictionaries are kept, so that modifying a sub-array or dictionary in the copy will also impact those referenced in the source array.
 			</description>
 		</method>
-		<method name="erase">
+		<method name="remove">
 			<return type="void">
 			</return>
 			<argument index="0" name="value" type="Variant">
@@ -524,10 +524,10 @@
 				[/codeblock]
 			</description>
 		</method>
-		<method name="remove">
+		<method name="remove_at">
 			<return type="void">
 			</return>
-			<argument index="0" name="position" type="int">
+			<argument index="0" name="index" type="int">
 			</argument>
 			<description>
 				Removes an element from the array by index. If the index does not exist in the array, nothing happens. To remove an element by searching for its value, use [method erase] instead.

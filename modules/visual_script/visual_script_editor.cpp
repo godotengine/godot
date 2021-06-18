@@ -1676,24 +1676,24 @@ String VisualScriptEditor::_validate_name(const String &p_name) const {
 void VisualScriptEditor::_on_nodes_delete() {
 	// Delete all the selected nodes.
 
-	List<int> to_erase;
+	List<int> to_remove;
 
 	for (int i = 0; i < graph->get_child_count(); i++) {
 		GraphNode *gn = Object::cast_to<GraphNode>(graph->get_child(i));
 		if (gn) {
 			if (gn->is_selected() && gn->is_close_button_visible()) {
-				to_erase.push_back(gn->get_name().operator String().to_int());
+				to_remove.push_back(gn->get_name().operator String().to_int());
 			}
 		}
 	}
 
-	if (to_erase.is_empty()) {
+	if (to_remove.is_empty()) {
 		return;
 	}
 
 	undo_redo->create_action(TTR("Remove VisualScript Nodes"));
 
-	for (List<int>::Element *F = to_erase.front(); F; F = F->next()) {
+	for (List<int>::Element *F = to_remove.front(); F; F = F->next()) {
 		int cr_node = F->get();
 
 		undo_redo->add_do_method(script.ptr(), "remove_node", cr_node);
@@ -4554,7 +4554,7 @@ void _VisualScriptEditor::add_custom_node(const String &p_name, const String &p_
 
 void _VisualScriptEditor::remove_custom_node(const String &p_name, const String &p_category) {
 	String node_name = "custom/" + p_category + "/" + p_name;
-	custom_nodes.erase(node_name);
+	custom_nodes.remove(node_name);
 	VisualScriptLanguage::singleton->remove_register_func(node_name);
 	emit_signal("custom_nodes_updated");
 }

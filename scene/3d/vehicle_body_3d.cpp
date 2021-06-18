@@ -97,7 +97,7 @@ void VehicleWheel3D::_notification(int p_what) {
 		if (!cb) {
 			return;
 		}
-		cb->wheels.erase(this);
+		cb->wheels.remove(this);
 		body = nullptr;
 	}
 }

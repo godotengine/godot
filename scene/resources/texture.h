@@ -771,7 +771,7 @@ class CameraTexture : public Texture2D {
 
 private:
 	int camera_feed_id = 0;
-	CameraServer::FeedImage which_feed = CameraServer::FEED_RGBA_IMAGE;
+	Camremoverver::FeedImage which_feed = Camremoverver::FEED_RGBA_IMAGE;
 
 protected:
 	static void _bind_methods();
@@ -790,8 +790,8 @@ public:
 	void set_camera_feed_id(int p_new_id);
 	int get_camera_feed_id() const;
 
-	void set_which_feed(CameraServer::FeedImage p_which);
-	CameraServer::FeedImage get_which_feed() const;
+	void set_which_feed(Camremoverver::FeedImage p_which);
+	Camremoverver::FeedImage get_which_feed() const;
 
 	void set_camera_active(bool p_active);
 	bool get_camera_active() const;

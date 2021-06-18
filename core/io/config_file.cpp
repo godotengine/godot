@@ -62,13 +62,13 @@ PackedStringArray ConfigFile::_get_section_keys(const String &p_section) const {
 
 void ConfigFile::set_value(const String &p_section, const String &p_key, const Variant &p_value) {
 	if (p_value.get_type() == Variant::NIL) {
-		//erase
+		//remove
 		if (!values.has(p_section)) {
 			return; // ?
 		}
-		values[p_section].erase(p_key);
+		values[p_section].remove(p_key);
 		if (values[p_section].is_empty()) {
-			values.erase(p_section);
+			values.remove(p_section);
 		}
 
 	} else {
@@ -115,16 +115,16 @@ void ConfigFile::get_section_keys(const String &p_section, List<String> *r_keys)
 	}
 }
 
-void ConfigFile::erase_section(const String &p_section) {
-	ERR_FAIL_COND_MSG(!values.has(p_section), vformat("Cannot erase nonexistent section \"%s\".", p_section));
-	values.erase(p_section);
+void ConfigFile::remove_section(const String &p_section) {
+	ERR_FAIL_COND_MSG(!values.has(p_section), vformat("Cannot remove nonexistent section \"%s\".", p_section));
+	values.remove(p_section);
 }
 
-void ConfigFile::erase_section_key(const String &p_section, const String &p_key) {
-	ERR_FAIL_COND_MSG(!values.has(p_section), vformat("Cannot erase key \"%s\" from nonexistent section \"%s\".", p_key, p_section));
-	ERR_FAIL_COND_MSG(!values[p_section].has(p_key), vformat("Cannot erase nonexistent key \"%s\" from section \"%s\".", p_key, p_section));
+void ConfigFile::remove_section_key(const String &p_section, const String &p_key) {
+	ERR_FAIL_COND_MSG(!values.has(p_section), vformat("Cannot remove key \"%s\" from nonexistent section \"%s\".", p_key, p_section));
+	ERR_FAIL_COND_MSG(!values[p_section].has(p_key), vformat("Cannot remove nonexistent key \"%s\" from section \"%s\".", p_key, p_section));
 
-	values[p_section].erase(p_key);
+	values[p_section].remove(p_key);
 }
 
 Error ConfigFile::save(const String &p_path) {
@@ -308,8 +308,8 @@ void ConfigFile::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_sections"), &ConfigFile::_get_sections);
 	ClassDB::bind_method(D_METHOD("get_section_keys", "section"), &ConfigFile::_get_section_keys);
 
-	ClassDB::bind_method(D_METHOD("erase_section", "section"), &ConfigFile::erase_section);
-	ClassDB::bind_method(D_METHOD("erase_section_key", "section", "key"), &ConfigFile::erase_section_key);
+	ClassDB::bind_method(D_METHOD("remove_section", "section"), &ConfigFile::remove_section);
+	ClassDB::bind_method(D_METHOD("remove_section_key", "section", "key"), &ConfigFile::remove_section_key);
 
 	ClassDB::bind_method(D_METHOD("load", "path"), &ConfigFile::load);
 	ClassDB::bind_method(D_METHOD("parse", "data"), &ConfigFile::parse);

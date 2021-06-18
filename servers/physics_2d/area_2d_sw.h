@@ -148,7 +148,7 @@ public:
 	_FORCE_INLINE_ int get_priority() const { return priority; }
 
 	_FORCE_INLINE_ void add_constraint(Constraint2DSW *p_constraint) { constraints.insert(p_constraint); }
-	_FORCE_INLINE_ void remove_constraint(Constraint2DSW *p_constraint) { constraints.erase(p_constraint); }
+	_FORCE_INLINE_ void remove_constraint(Constraint2DSW *p_constraint) { constraints.remove(p_constraint); }
 	_FORCE_INLINE_ const Set<Constraint2DSW *> &get_constraints() const { return constraints; }
 	_FORCE_INLINE_ void clear_constraints() { constraints.clear(); }
 

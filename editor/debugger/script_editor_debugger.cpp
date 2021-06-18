@@ -1491,7 +1491,7 @@ void ScriptEditorDebugger::remove_debugger_plugin(const Ref<Script> &p_script) {
 		tabs->remove_child(debugger_plugins[p_script]);
 		debugger_plugins[p_script]->detach_debugger(false);
 		memdelete(debugger_plugins[p_script]);
-		debugger_plugins.erase(p_script);
+		debugger_plugins.remove(p_script);
 	}
 }
 
@@ -1506,7 +1506,7 @@ void ScriptEditorDebugger::register_message_capture(const StringName &p_name, co
 
 void ScriptEditorDebugger::unregister_message_capture(const StringName &p_name) {
 	ERR_FAIL_COND_MSG(!has_capture(p_name), "Capture not registered: " + p_name);
-	captures.erase(p_name);
+	captures.remove(p_name);
 }
 
 bool ScriptEditorDebugger::has_capture(const StringName &p_name) {

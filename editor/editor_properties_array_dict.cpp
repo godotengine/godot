@@ -679,7 +679,7 @@ void EditorPropertyDictionary::_change_type_menu(int p_index) {
 		dict[key] = value;
 	} else {
 		Variant key = dict.get_key_at_index(changing_type_idx);
-		dict.erase(key);
+		dict.remove(key);
 	}
 
 	emit_changed(get_edited_property(), dict, "", false);

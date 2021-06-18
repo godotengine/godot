@@ -115,7 +115,7 @@ void GDScriptFunction::debug_get_stack_member_state(int p_line, List<Pair<String
 
 			sdmap[sd.identifier].pos.pop_back();
 			if (sdmap[sd.identifier].pos.is_empty()) {
-				sdmap.erase(sd.identifier);
+				sdmap.remove(sd.identifier);
 			}
 		}
 	}

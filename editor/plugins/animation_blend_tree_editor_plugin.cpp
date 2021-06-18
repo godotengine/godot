@@ -58,7 +58,7 @@ void AnimationNodeBlendTreeEditor::add_custom_type(const String &p_name, const R
 void AnimationNodeBlendTreeEditor::remove_custom_type(const Ref<Script> &p_script) {
 	for (int i = 0; i < add_options.size(); i++) {
 		if (add_options[i].script == p_script) {
-			add_options.remove(i);
+			add_options.remove_at(i);
 			return;
 		}
 	}
@@ -108,7 +108,7 @@ void AnimationNodeBlendTreeEditor::_update_graph() {
 	graph->set_scroll_ofs(blend_tree->get_graph_offset() * EDSCALE);
 
 	graph->clear_connections();
-	//erase all nodes
+	//remove all nodes
 	for (int i = 0; i < graph->get_child_count(); i++) {
 		if (Object::cast_to<GraphNode>(graph->get_child(i))) {
 			memdelete(graph->get_child(i));
@@ -406,24 +406,24 @@ void AnimationNodeBlendTreeEditor::_delete_request(const String &p_which) {
 }
 
 void AnimationNodeBlendTreeEditor::_delete_nodes_request() {
-	List<StringName> to_erase;
+	List<StringName> to_remove;
 
 	for (int i = 0; i < graph->get_child_count(); i++) {
 		GraphNode *gn = Object::cast_to<GraphNode>(graph->get_child(i));
 		if (gn) {
 			if (gn->is_selected() && gn->is_close_button_visible()) {
-				to_erase.push_back(gn->get_name());
+				to_remove.push_back(gn->get_name());
 			}
 		}
 	}
 
-	if (to_erase.is_empty()) {
+	if (to_remove.is_empty()) {
 		return;
 	}
 
 	undo_redo->create_action(TTR("Delete Node(s)"));
 
-	for (List<StringName>::Element *F = to_erase.front(); F; F = F->next()) {
+	for (List<StringName>::Element *F = to_remove.front(); F; F = F->next()) {
 		_delete_request(F->get());
 	}
 
@@ -840,7 +840,7 @@ void AnimationNodeBlendTreeEditor::_node_renamed(const String &p_text, Ref<Anima
 	for (Map<StringName, ProgressBar *>::Element *E = animations.front(); E; E = E->next()) {
 		if (E->key() == prev_name) {
 			animations[new_name] = animations[prev_name];
-			animations.erase(prev_name);
+			animations.remove(prev_name);
 			break;
 		}
 	}

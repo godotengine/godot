@@ -368,7 +368,7 @@ public:
 	String plus_file(const String &p_file) const;
 	char32_t unicode_at(int p_idx) const;
 
-	void erase(int p_pos, int p_chars);
+	void remove(int p_pos, int p_chars);
 
 	CharString ascii(bool p_allow_extended = false) const;
 	CharString utf8() const;

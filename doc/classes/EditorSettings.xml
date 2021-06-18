@@ -72,7 +72,7 @@
 				[/codeblocks]
 			</description>
 		</method>
-		<method name="erase">
+		<method name="remove">
 			<return type="void">
 			</return>
 			<argument index="0" name="property" type="String">

@@ -61,8 +61,8 @@ class ProjectManager : public Control {
 	Button *run_btn;
 	Button *open_btn;
 	Button *rename_btn;
-	Button *erase_btn;
-	Button *erase_missing_btn;
+	Button *remove_btn;
+	Button *remove_missing_btn;
 	Button *about_btn;
 
 	EditorAssetLibrary *asset_library;
@@ -70,11 +70,11 @@ class ProjectManager : public Control {
 	FileDialog *scan_dir;
 	ConfirmationDialog *language_restart_ask;
 
-	ConfirmationDialog *erase_ask;
-	Label *erase_ask_label;
+	ConfirmationDialog *remove_ask;
+	Label *remove_ask_label;
 	CheckBox *delete_project_contents;
 
-	ConfirmationDialog *erase_missing_ask;
+	ConfirmationDialog *remove_missing_ask;
 	ConfirmationDialog *multi_open_ask;
 	ConfirmationDialog *multi_run_ask;
 	ConfirmationDialog *multi_scan_ask;
@@ -100,10 +100,10 @@ class ProjectManager : public Control {
 	void _import_project();
 	void _new_project();
 	void _rename_project();
-	void _erase_project();
-	void _erase_missing_projects();
-	void _erase_project_confirm();
-	void _erase_missing_projects_confirm();
+	void _remove_project();
+	void _remove_missing_projects();
+	void _remove_project_confirm();
+	void _remove_missing_projects_confirm();
 	void _show_about();
 	void _update_project_buttons();
 	void _language_selected(int p_id);

@@ -94,7 +94,7 @@ public:
 		}
 	}
 
-	void erase(const T &p_val) {
+	void remove(const T &p_val) {
 		int64_t idx = find(p_val);
 		if (idx >= 0) {
 			remove(idx);

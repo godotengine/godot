@@ -883,7 +883,7 @@ void DisplayServerX11::delete_sub_window(WindowID p_id) {
 		wd.xic = nullptr;
 	}
 
-	windows.erase(p_id);
+	windows.remove(p_id);
 }
 
 void DisplayServerX11::window_attach_instance_id(ObjectID p_instance, WindowID p_window) {
@@ -1082,7 +1082,7 @@ void DisplayServerX11::window_set_transient(WindowID p_window, WindowID p_parent
 		WindowData &wd_parent = windows[prev_parent];
 
 		wd_window.transient_parent = INVALID_WINDOW_ID;
-		wd_parent.transient_children.erase(p_window);
+		wd_parent.transient_children.remove(p_window);
 
 		XSetTransientForHint(x11_display, wd_window.x11_window, None);
 
@@ -1907,7 +1907,7 @@ void DisplayServerX11::cursor_set_custom_image(const RES &p_cursor, CursorShape 
 				return;
 			}
 
-			cursors_cache.erase(p_shape);
+			cursors_cache.remove(p_shape);
 		}
 
 		Ref<Texture2D> texture = p_cursor;
@@ -1999,7 +1999,7 @@ void DisplayServerX11::cursor_set_custom_image(const RES &p_cursor, CursorShape 
 		current_cursor = CURSOR_MAX;
 		cursor_set_shape(c);
 
-		cursors_cache.erase(p_shape);
+		cursors_cache.remove(p_shape);
 	}
 }
 
@@ -2925,7 +2925,7 @@ void DisplayServerX11::process_events() {
 							if (!xi.state.has(index)) { // Defensive
 								break;
 							}
-							xi.state.erase(index);
+							xi.state.remove(index);
 							Input::get_singleton()->accumulate_input_event(st);
 						}
 					} break;

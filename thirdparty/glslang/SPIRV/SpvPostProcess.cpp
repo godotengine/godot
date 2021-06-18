@@ -373,7 +373,7 @@ void Builder::postProcessCFG()
     }
 
     // Remove unneeded decorations, for unreachable instructions
-    decorations.erase(std::remove_if(decorations.begin(), decorations.end(),
+    decorations.remove(std::remove_if(decorations.begin(), decorations.end(),
         [&unreachableDefinitions](std::unique_ptr<Instruction>& I) -> bool {
             Id decoration_id = I.get()->getIdOperand(0);
             return unreachableDefinitions.count(decoration_id) != 0;

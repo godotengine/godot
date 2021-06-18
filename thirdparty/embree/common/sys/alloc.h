@@ -110,7 +110,7 @@ namespace embree
         if (!IDs.empty()) 
         {
           T id = *IDs.begin();
-          IDs.erase(IDs.begin());
+          IDs.remove(IDs.begin());
           return id;
         } 
 
@@ -134,7 +134,7 @@ namespace embree
         if (id < nextID) {
           auto p = IDs.find(id);
           if (p == IDs.end()) return false;
-          IDs.erase(p);
+          IDs.remove(p);
           return true;
         }
 

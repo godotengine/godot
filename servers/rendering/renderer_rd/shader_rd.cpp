@@ -724,7 +724,7 @@ void ShaderRD::initialize(const Vector<String> &p_variant_defines, const String 
 			d->change_dir(name);
 		}
 
-		//erase other versions?
+		//remove other versions?
 		if (shader_cache_cleanup_on_start) {
 		}
 		//

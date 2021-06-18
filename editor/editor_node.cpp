@@ -260,7 +260,7 @@ void EditorNode::disambiguate_filenames(const Vector<String> p_full_paths, Vecto
 					}
 				}
 
-				Set<int>::Element *to_erase = duplicate_found ? nullptr : E;
+				Set<int>::Element *to_remove = duplicate_found ? nullptr : E;
 
 				// We need to check that we could actually append anymore names
 				// if we wanted to for disambiguation. If we can't, then we have
@@ -284,8 +284,8 @@ void EditorNode::disambiguate_filenames(const Vector<String> p_full_paths, Vecto
 				can_proceed = can_proceed || (path.size() - scene_name.size()) >= 1;
 
 				E = E->next();
-				if (to_erase) {
-					iset.erase(to_erase);
+				if (to_remove) {
+					iset.remove(to_remove);
 				}
 			}
 
@@ -756,7 +756,7 @@ void EditorNode::_remove_plugin_from_enabled(const String &p_name) {
 	PackedStringArray enabled_plugins = ps->get("editor_plugins/enabled");
 	for (int i = 0; i < enabled_plugins.size(); ++i) {
 		if (enabled_plugins.get(i) == p_name) {
-			enabled_plugins.remove(i);
+			enabled_plugins.remove_at(i);
 			break;
 		}
 	}
@@ -1070,7 +1070,7 @@ Error EditorNode::load_resource(const String &p_resource, bool p_ignore_broken_d
 			errors.push_back(E->get());
 		}
 		dependency_error->show(DependencyErrorDialog::MODE_RESOURCE, p_resource, errors);
-		dependency_errors.erase(p_resource);
+		dependency_errors.remove(p_resource);
 
 		return ERR_FILE_MISSING_DEPENDENCIES;
 	}
@@ -1885,7 +1885,7 @@ void EditorNode::_dialog_action(String p_file) {
 				return;
 			}
 
-			// erase
+			// remove
 			List<String> keys;
 			config->get_section_keys(p_file, &keys);
 			for (List<String>::Element *E = keys.front(); E; E = E->next()) {
@@ -3090,13 +3090,13 @@ void EditorNode::remove_editor_plugin(EditorPlugin *p_editor, bool p_config_chan
 				}
 
 				memdelete(singleton->main_editor_buttons[i]);
-				singleton->main_editor_buttons.remove(i);
+				singleton->main_editor_buttons.remove_at(i);
 
 				break;
 			}
 		}
 
-		singleton->editor_table.erase(p_editor);
+		singleton->editor_table.remove(p_editor);
 	}
 	p_editor->make_visible(false);
 	p_editor->clear();
@@ -3138,7 +3138,7 @@ void EditorNode::set_addon_plugin_enabled(const String &p_addon, bool p_enabled,
 		EditorPlugin *addon = plugin_addons[p_addon];
 		remove_editor_plugin(addon, p_config_changed);
 		memdelete(addon); //bye
-		plugin_addons.erase(p_addon);
+		plugin_addons.remove(p_addon);
 		_update_addon_config();
 		return;
 	}
@@ -3502,7 +3502,7 @@ Error EditorNode::load_scene(const String &p_scene, bool p_ignore_broken_deps, b
 		return ERR_FILE_MISSING_DEPENDENCIES;
 	}
 
-	dependency_errors.erase(lpath); //at least not self path
+	dependency_errors.remove(lpath); //at least not self path
 
 	for (Map<String, Set<String>>::Element *E = dependency_errors.front(); E; E = E->next()) {
 		String txt = vformat(TTR("Scene '%s' has broken dependencies:"), E->key()) + "\n";
@@ -3581,7 +3581,7 @@ void EditorNode::open_request(const String &p_path) {
 	if (!opening_prev) {
 		List<String>::Element *prev_scene = previous_scenes.find(p_path);
 		if (prev_scene != nullptr) {
-			prev_scene->erase();
+			prev_scene->remove();
 		}
 	}
 
@@ -3633,7 +3633,7 @@ void EditorNode::_show_messages() {
 void EditorNode::_add_to_recent_scenes(const String &p_scene) {
 	Array rc = EditorSettings::get_singleton()->get_project_metadata("recent_files", "scenes", Array());
 	if (rc.find(p_scene) != -1) {
-		rc.erase(p_scene);
+		rc.remove(p_scene);
 	}
 	rc.push_front(p_scene);
 	if (rc.size() > 10) {
@@ -3653,7 +3653,7 @@ void EditorNode::_open_recent_scene(int p_idx) {
 		ERR_FAIL_INDEX(p_idx, rc.size());
 
 		if (load_scene(rc[p_idx]) != OK) {
-			rc.remove(p_idx);
+			rc.remove_at(p_idx);
 			EditorSettings::get_singleton()->set_project_metadata("recent_files", "scenes", rc);
 			_update_recent_scenes();
 		}
@@ -4044,7 +4044,7 @@ void EditorNode::_file_dialog_register(FileDialog *p_dialog) {
 }
 
 void EditorNode::_file_dialog_unregister(FileDialog *p_dialog) {
-	singleton->file_dialogs.erase(p_dialog);
+	singleton->file_dialogs.remove(p_dialog);
 }
 
 void EditorNode::_editor_file_dialog_register(EditorFileDialog *p_dialog) {
@@ -4052,7 +4052,7 @@ void EditorNode::_editor_file_dialog_register(EditorFileDialog *p_dialog) {
 }
 
 void EditorNode::_editor_file_dialog_unregister(EditorFileDialog *p_dialog) {
-	singleton->editor_file_dialogs.erase(p_dialog);
+	singleton->editor_file_dialogs.remove(p_dialog);
 }
 
 Vector<EditorNodeInitCallback> EditorNode::_init_callbacks;
@@ -4101,7 +4101,7 @@ void EditorNode::_dock_floating_close_request(Control *p_control) {
 
 	_update_dock_containers();
 
-	floating_docks.erase(p_control);
+	floating_docks.remove(p_control);
 }
 
 void EditorNode::_dock_make_float() {
@@ -4999,7 +4999,7 @@ void EditorNode::remove_bottom_panel_item(Control *p_item) {
 			bottom_panel_vb->remove_child(bottom_panel_items[i].control);
 			bottom_panel_hb_editors->remove_child(bottom_panel_items[i].button);
 			memdelete(bottom_panel_items[i].button);
-			bottom_panel_items.remove(i);
+			bottom_panel_items.remove_at(i);
 			break;
 		}
 	}
@@ -5427,7 +5427,7 @@ void EditorNode::add_resource_conversion_plugin(const Ref<EditorResourceConversi
 }
 
 void EditorNode::remove_resource_conversion_plugin(const Ref<EditorResourceConversionPlugin> &p_plugin) {
-	resource_conversion_plugins.erase(p_plugin);
+	resource_conversion_plugins.remove(p_plugin);
 }
 
 Vector<Ref<EditorResourceConversionPlugin>> EditorNode::find_resource_conversion_plugin(const Ref<Resource> &p_for_resource) {
@@ -7081,7 +7081,7 @@ void EditorPluginList::add_plugin(EditorPlugin *p_plugin) {
 }
 
 void EditorPluginList::remove_plugin(EditorPlugin *p_plugin) {
-	plugins_list.erase(p_plugin);
+	plugins_list.remove(p_plugin);
 }
 
 bool EditorPluginList::is_empty() {

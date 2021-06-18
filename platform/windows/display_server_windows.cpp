@@ -542,7 +542,7 @@ void DisplayServerWindows::delete_sub_window(WindowID p_window) {
 		windows[p_window].wtctx = 0;
 	}
 	DestroyWindow(windows[p_window].hWnd);
-	windows.erase(p_window);
+	windows.remove(p_window);
 }
 
 void DisplayServerWindows::window_attach_instance_id(ObjectID p_instance, WindowID p_window) {
@@ -750,7 +750,7 @@ void DisplayServerWindows::window_set_transient(WindowID p_window, WindowID p_pa
 		WindowData &wd_parent = windows[wd_window.transient_parent];
 
 		wd_window.transient_parent = INVALID_WINDOW_ID;
-		wd_parent.transient_children.erase(p_window);
+		wd_parent.transient_children.remove(p_window);
 
 		SetWindowLongPtr(wd_window.hWnd, GWLP_HWNDPARENT, (LONG_PTR) nullptr);
 	} else {
@@ -1291,7 +1291,7 @@ void DisplayServerWindows::cursor_set_custom_image(const RES &p_cursor, CursorSh
 				return;
 			}
 
-			cursors_cache.erase(p_shape);
+			cursors_cache.remove(p_shape);
 		}
 
 		Ref<Texture2D> texture = p_cursor;
@@ -1406,7 +1406,7 @@ void DisplayServerWindows::cursor_set_custom_image(const RES &p_cursor, CursorSh
 		cursor_shape = CURSOR_MAX;
 		cursor_set_shape(c);
 
-		cursors_cache.erase(p_shape);
+		cursors_cache.remove(p_shape);
 	}
 }
 
@@ -1723,7 +1723,7 @@ void DisplayServerWindows::_touch_event(WindowID p_window, bool p_pressed, float
 	if (p_pressed) {
 		touch_state.insert(idx, Vector2(p_x, p_y));
 	} else {
-		touch_state.erase(idx);
+		touch_state.remove(idx);
 	}
 
 	Ref<InputEventScreenTouch> event;
@@ -3021,7 +3021,7 @@ DisplayServer::WindowID DisplayServerWindows::_create_window(WindowMode p_mode, 
 				nullptr, nullptr, hInstance, nullptr);
 		if (!wd.hWnd) {
 			MessageBoxW(nullptr, L"Window Creation Error.", L"ERROR", MB_OK | MB_ICONEXCLAMATION);
-			windows.erase(id);
+			windows.remove(id);
 			return INVALID_WINDOW_ID;
 		}
 		if (p_mode != WINDOW_MODE_FULLSCREEN) {
@@ -3033,7 +3033,7 @@ DisplayServer::WindowID DisplayServerWindows::_create_window(WindowMode p_mode, 
 			if (context_vulkan->window_create(id, wd.hWnd, hInstance, WindowRect.right - WindowRect.left, WindowRect.bottom - WindowRect.top) == -1) {
 				memdelete(context_vulkan);
 				context_vulkan = nullptr;
-				windows.erase(id);
+				windows.remove(id);
 				ERR_FAIL_V_MSG(INVALID_WINDOW_ID, "Failed to create Vulkan Window.");
 			}
 		}

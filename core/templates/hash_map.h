@@ -109,8 +109,8 @@ private:
 		}
 	}
 
-	void erase_hash_table() {
-		ERR_FAIL_COND_MSG(elements, "Cannot erase hash table if there are still elements inside.");
+	void remove_hash_table() {
+		ERR_FAIL_COND_MSG(elements, "Cannot remove hash table if there are still elements inside.");
 
 		memdelete_arr(hash_table);
 		hash_table = nullptr;
@@ -377,10 +377,10 @@ public:
 	}
 
 	/**
-	 * Erase an item, return true if erasing was successful
+	 * Remove an item, return true if erasing was successful
 	 */
 
-	bool erase(const TKey &p_key) {
+	bool remove(const TKey &p_key) {
 		if (unlikely(!hash_table)) {
 			return false;
 		}
@@ -404,7 +404,7 @@ public:
 				elements--;
 
 				if (elements == 0) {
-					erase_hash_table();
+					remove_hash_table();
 				} else {
 					check_hash_table();
 				}

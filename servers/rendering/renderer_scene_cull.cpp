@@ -230,8 +230,8 @@ void RendererSceneCull::_instance_unpair(Instance *p_A, Instance *p_B) {
 		InstanceLightData *light = static_cast<InstanceLightData *>(B->base_data);
 		InstanceGeometryData *geom = static_cast<InstanceGeometryData *>(A->base_data);
 
-		geom->lights.erase(B);
-		light->geometries.erase(A);
+		geom->lights.remove(B);
+		light->geometries.remove(A);
 
 		if (geom->can_cast_shadows) {
 			light->shadow_dirty = true;
@@ -246,8 +246,8 @@ void RendererSceneCull::_instance_unpair(Instance *p_A, Instance *p_B) {
 		InstanceReflectionProbeData *reflection_probe = static_cast<InstanceReflectionProbeData *>(B->base_data);
 		InstanceGeometryData *geom = static_cast<InstanceGeometryData *>(A->base_data);
 
-		geom->reflection_probes.erase(B);
-		reflection_probe->geometries.erase(A);
+		geom->reflection_probes.remove(B);
+		reflection_probe->geometries.remove(A);
 
 		if (A->scenario && A->array_index >= 0) {
 			InstanceData &idata = A->scenario->instance_data[A->array_index];
@@ -258,8 +258,8 @@ void RendererSceneCull::_instance_unpair(Instance *p_A, Instance *p_B) {
 		InstanceDecalData *decal = static_cast<InstanceDecalData *>(B->base_data);
 		InstanceGeometryData *geom = static_cast<InstanceGeometryData *>(A->base_data);
 
-		geom->decals.erase(B);
-		decal->geometries.erase(A);
+		geom->decals.remove(B);
+		decal->geometries.remove(A);
 
 		if (A->scenario && A->array_index >= 0) {
 			InstanceData &idata = A->scenario->instance_data[A->array_index];
@@ -270,14 +270,14 @@ void RendererSceneCull::_instance_unpair(Instance *p_A, Instance *p_B) {
 		InstanceLightmapData *lightmap_data = static_cast<InstanceLightmapData *>(B->base_data);
 		InstanceGeometryData *geom = static_cast<InstanceGeometryData *>(A->base_data);
 		if (A->dynamic_gi) {
-			geom->lightmap_captures.erase(B);
+			geom->lightmap_captures.remove(B);
 
 			if (geom->lightmap_captures.is_empty() && A->scenario && A->array_index >= 0) {
 				InstanceData &idata = A->scenario->instance_data[A->array_index];
 				idata.flags &= ~uint32_t(InstanceData::FLAG_LIGHTMAP_CAPTURE);
 			}
 
-			lightmap_data->geometries.erase(A);
+			lightmap_data->geometries.remove(A);
 			((RendererSceneCull *)self)->_instance_queue_update(A, false, false); //need to update capture
 		}
 
@@ -285,11 +285,11 @@ void RendererSceneCull::_instance_unpair(Instance *p_A, Instance *p_B) {
 		InstanceVoxelGIData *voxel_gi = static_cast<InstanceVoxelGIData *>(B->base_data);
 		InstanceGeometryData *geom = static_cast<InstanceGeometryData *>(A->base_data);
 
-		geom->voxel_gi_instances.erase(B);
+		geom->voxel_gi_instances.remove(B);
 		if (A->dynamic_gi) {
-			voxel_gi->dynamic_geometries.erase(A);
+			voxel_gi->dynamic_geometries.remove(A);
 		} else {
-			voxel_gi->geometries.erase(A);
+			voxel_gi->geometries.remove(A);
 		}
 
 		if (A->scenario && A->array_index >= 0) {
@@ -299,7 +299,7 @@ void RendererSceneCull::_instance_unpair(Instance *p_A, Instance *p_B) {
 
 	} else if (B->base_type == RS::INSTANCE_VOXEL_GI && A->base_type == RS::INSTANCE_LIGHT) {
 		InstanceVoxelGIData *voxel_gi = static_cast<InstanceVoxelGIData *>(B->base_data);
-		voxel_gi->lights.erase(A);
+		voxel_gi->lights.remove(A);
 	} else if (B->base_type == RS::INSTANCE_PARTICLES_COLLISION && A->base_type == RS::INSTANCE_PARTICLES) {
 		InstanceParticlesCollisionData *collision = static_cast<InstanceParticlesCollisionData *>(B->base_data);
 		RSG::storage->particles_remove_collision(A->base, collision->instance);
@@ -379,7 +379,7 @@ void RendererSceneCull::scenario_remove_viewport_visibility_mask(RID p_scenario,
 
 	uint64_t mask = scenario->viewport_visibility_masks[p_viewport];
 	scenario->used_viewport_visibility_bits &= ~mask;
-	scenario->viewport_visibility_masks.erase(p_viewport);
+	scenario->viewport_visibility_masks.remove(p_viewport);
 }
 
 void RendererSceneCull::scenario_add_viewport_visibility_mask(RID p_scenario, RID p_viewport) {
@@ -488,7 +488,7 @@ void RendererSceneCull::instance_set_base(RID p_instance, RID p_base) {
 				InstanceLightData *light = static_cast<InstanceLightData *>(instance->base_data);
 
 				if (scenario && instance->visible && RSG::storage->light_get_type(instance->base) != RS::LIGHT_DIRECTIONAL && light->bake_mode == RS::LIGHT_BAKE_DYNAMIC) {
-					scenario->dynamic_lights.erase(light->instance);
+					scenario->dynamic_lights.remove(light->instance);
 				}
 
 #ifdef DEBUG_ENABLED
@@ -497,7 +497,7 @@ void RendererSceneCull::instance_set_base(RID p_instance, RID p_base) {
 				}
 #endif
 				if (scenario && light->D) {
-					scenario->directional_lights.erase(light->D);
+					scenario->directional_lights.remove(light->D);
 					light->D = nullptr;
 				}
 				scene_render->free(light->instance);
@@ -523,7 +523,7 @@ void RendererSceneCull::instance_set_base(RID p_instance, RID p_base) {
 			} break;
 			case RS::INSTANCE_LIGHTMAP: {
 				InstanceLightmapData *lightmap_data = static_cast<InstanceLightmapData *>(instance->base_data);
-				//erase dependencies, since no longer a lightmap
+				//remove dependencies, since no longer a lightmap
 				while (lightmap_data->users.front()) {
 					instance_geometry_set_lightmap(lightmap_data->users.front()->get()->self, RID(), Rect2(), 0);
 				}
@@ -696,7 +696,7 @@ void RendererSceneCull::instance_set_scenario(RID p_instance, RID p_scenario) {
 				}
 #endif
 				if (light->D) {
-					instance->scenario->directional_lights.erase(light->D);
+					instance->scenario->directional_lights.remove(light->D);
 					light->D = nullptr;
 				}
 			} break;
@@ -706,7 +706,7 @@ void RendererSceneCull::instance_set_scenario(RID p_instance, RID p_scenario) {
 
 			} break;
 			case RS::INSTANCE_PARTICLES_COLLISION: {
-				heightfield_particle_colliders_update_list.erase(instance);
+				heightfield_particle_colliders_update_list.remove(instance);
 			} break;
 			case RS::INSTANCE_VOXEL_GI: {
 				InstanceVoxelGIData *voxel_gi = static_cast<InstanceVoxelGIData *>(instance->base_data);
@@ -871,7 +871,7 @@ void RendererSceneCull::instance_set_visible(RID p_instance, bool p_visible) {
 			if (p_visible) {
 				instance->scenario->dynamic_lights.push_back(light->instance);
 			} else {
-				instance->scenario->dynamic_lights.erase(light->instance);
+				instance->scenario->dynamic_lights.remove(light->instance);
 			}
 		}
 	}
@@ -1171,7 +1171,7 @@ void RendererSceneCull::instance_set_visibility_parent(RID p_instance, RID p_par
 	if (old_parent) {
 		if ((1 << old_parent->base_type) & RS::INSTANCE_GEOMETRY_MASK && old_parent->base_data) {
 			InstanceGeometryData *old_parent_geom = static_cast<InstanceGeometryData *>(old_parent->base_data);
-			old_parent_geom->visibility_dependencies.erase(instance);
+			old_parent_geom->visibility_dependencies.remove(instance);
 			_update_instance_visibility_depth(old_parent);
 		}
 		instance->visibility_parent = nullptr;
@@ -1287,7 +1287,7 @@ void RendererSceneCull::instance_geometry_set_lightmap(RID p_instance, RID p_lig
 
 	if (instance->lightmap) {
 		InstanceLightmapData *lightmap_data = static_cast<InstanceLightmapData *>(((Instance *)instance->lightmap)->base_data);
-		lightmap_data->users.erase(instance);
+		lightmap_data->users.remove(instance);
 		instance->lightmap = nullptr;
 	}
 
@@ -1394,7 +1394,7 @@ void RendererSceneCull::_update_instance(Instance *p_instance) {
 		RS::LightBakeMode bake_mode = RSG::storage->light_get_bake_mode(p_instance->base);
 		if (RSG::storage->light_get_type(p_instance->base) != RS::LIGHT_DIRECTIONAL && bake_mode != light->bake_mode) {
 			if (p_instance->visible && p_instance->scenario && light->bake_mode == RS::LIGHT_BAKE_DYNAMIC) {
-				p_instance->scenario->dynamic_lights.erase(light->instance);
+				p_instance->scenario->dynamic_lights.remove(light->instance);
 			}
 
 			light->bake_mode = bake_mode;
@@ -1452,7 +1452,7 @@ void RendererSceneCull::_update_instance(Instance *p_instance) {
 	if (p_instance->base_type == RS::INSTANCE_LIGHTMAP) {
 		//if this moved, update the captured objects
 		InstanceLightmapData *lightmap_data = static_cast<InstanceLightmapData *>(p_instance->base_data);
-		//erase dependencies, since no longer a lightmap
+		//remove dependencies, since no longer a lightmap
 
 		for (Set<Instance *>::Element *E = lightmap_data->geometries.front(); E; E = E->next()) {
 			Instance *geom = E->get();
@@ -3543,7 +3543,7 @@ void RendererSceneCull::render_particle_colliders() {
 
 			scene_render->render_particle_collider_heightfield(hfpc->base, hfpc->transform, scene_cull_result.geometry_instances);
 		}
-		heightfield_particle_colliders_update_list.erase(heightfield_particle_colliders_update_list.front());
+		heightfield_particle_colliders_update_list.remove(heightfield_particle_colliders_update_list.front());
 	}
 }
 

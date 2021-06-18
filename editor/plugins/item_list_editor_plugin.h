@@ -86,7 +86,7 @@ public:
 
 	virtual void add_item() = 0;
 	virtual int get_item_count() const = 0;
-	virtual void erase(int p_idx) = 0;
+	virtual void remove(int p_idx) = 0;
 
 	ItemListPlugin() {}
 };
@@ -117,7 +117,7 @@ public:
 
 	virtual void add_item() override;
 	virtual int get_item_count() const override;
-	virtual void erase(int p_idx) override;
+	virtual void remove(int p_idx) override;
 
 	ItemListOptionButtonPlugin();
 };
@@ -157,7 +157,7 @@ public:
 
 	virtual void add_item() override;
 	virtual int get_item_count() const override;
-	virtual void erase(int p_idx) override;
+	virtual void remove(int p_idx) override;
 
 	ItemListPopupMenuPlugin();
 };
@@ -185,7 +185,7 @@ public:
 
 	virtual void add_item() override;
 	virtual int get_item_count() const override;
-	virtual void erase(int p_idx) override;
+	virtual void remove(int p_idx) override;
 
 	ItemListItemListPlugin();
 };

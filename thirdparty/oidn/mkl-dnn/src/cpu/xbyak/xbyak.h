@@ -397,7 +397,7 @@ public:
 		SizeList::iterator i = sizeList_.find((uintptr_t)p);
 		if (i == sizeList_.end()) throw Error(ERR_BAD_PARAMETER);
 		if (munmap((void*)i->first, i->second) < 0) throw Error(ERR_MUNMAP);
-		sizeList_.erase(i);
+		sizeList_.remove(i);
 	}
 };
 #endif
@@ -1273,7 +1273,7 @@ class LabelManager {
 			} else {
 				base_->rewrite(offset, disp, jmp->jmpSize);
 			}
-			undefList.erase(itr);
+			undefList.remove(itr);
 		}
 	}
 	template<class DefList, class T>
@@ -1292,11 +1292,11 @@ class LabelManager {
 	}
 	void decRefCount(int id, Label *label)
 	{
-		labelPtrList_.erase(label);
+		labelPtrList_.remove(label);
 		ClabelDefList::iterator i = clabelDefList_.find(id);
 		if (i == clabelDefList_.end()) return;
 		if (i->second.refCount == 1) {
-			clabelDefList_.erase(id);
+			clabelDefList_.remove(id);
 		} else {
 			--i->second.refCount;
 		}
@@ -1357,12 +1357,12 @@ public:
 			SlabelDefList& defList = stateList_.front().defList;
 			SlabelDefList::iterator i = defList.find("@f");
 			if (i != defList.end()) {
-				defList.erase(i);
+				defList.remove(i);
 				label = "@b";
 			} else {
 				i = defList.find("@b");
 				if (i != defList.end()) {
-					defList.erase(i);
+					defList.remove(i);
 				}
 				label = "@f";
 			}

@@ -884,9 +884,9 @@ void AnimationNodeBlendTree::remove_node(const StringName &p_name) {
 		node->disconnect("changed", callable_mp(this, &AnimationNodeBlendTree::_node_changed));
 	}
 
-	nodes.erase(p_name);
+	nodes.remove(p_name);
 
-	//erase connections to name
+	//remove connections to name
 	for (Map<StringName, Node>::Element *E = nodes.front(); E; E = E->next()) {
 		for (int i = 0; i < E->get().connections.size(); i++) {
 			if (E->get().connections[i] == p_name) {
@@ -908,7 +908,7 @@ void AnimationNodeBlendTree::rename_node(const StringName &p_name, const StringN
 	nodes[p_name].node->disconnect("changed", callable_mp(this, &AnimationNodeBlendTree::_node_changed));
 
 	nodes[p_new_name] = nodes[p_name];
-	nodes.erase(p_name);
+	nodes.remove(p_name);
 
 	//rename connections
 	for (Map<StringName, Node>::Element *E = nodes.front(); E; E = E->next()) {

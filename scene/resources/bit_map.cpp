@@ -269,7 +269,7 @@ Vector<Vector2> BitMap::_march_square(const Rect2i &rect, const Point2i &start) 
 					//found, so we go down, and delete from case9s;
 					stepx = 0;
 					stepy = 1;
-					case9s.erase(Point2i(curx, cury));
+					case9s.remove(Point2i(curx, cury));
 				} else {
 					//not found, we go up, and add to case9s;
 					stepx = 0;
@@ -291,7 +291,7 @@ Vector<Vector2> BitMap::_march_square(const Rect2i &rect, const Point2i &start) 
 					//found, so we go left, and delete from case6s;
 					stepx = -1;
 					stepy = 0;
-					case6s.erase(Point2i(curx, cury));
+					case6s.remove(Point2i(curx, cury));
 				} else {
 					//not found, we go right, and add to case6s;
 					stepx = 1;

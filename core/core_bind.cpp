@@ -2250,7 +2250,7 @@ void _EngineDebugger::register_profiler(const StringName &p_name, const Callable
 void _EngineDebugger::unregister_profiler(const StringName &p_name) {
 	ERR_FAIL_COND_MSG(!profilers.has(p_name), "Profiler not registered: " + p_name);
 	EngineDebugger::unregister_profiler(p_name);
-	profilers.erase(p_name);
+	profilers.remove(p_name);
 }
 
 bool _EngineDebugger::_EngineDebugger::is_profiling(const StringName &p_name) {
@@ -2282,7 +2282,7 @@ void _EngineDebugger::register_message_capture(const StringName &p_name, const C
 void _EngineDebugger::unregister_message_capture(const StringName &p_name) {
 	ERR_FAIL_COND_MSG(!captures.has(p_name), "Capture not registered: " + p_name);
 	EngineDebugger::unregister_message_capture(p_name);
-	captures.erase(p_name);
+	captures.remove(p_name);
 }
 
 bool _EngineDebugger::has_capture(const StringName &p_name) {

@@ -1046,13 +1046,13 @@ public:
 	int get_project_count() const;
 	void select_project(int p_index);
 	void select_first_visible_project();
-	void erase_selected_projects(bool p_delete_project_contents);
+	void remove_selected_projects(bool p_delete_project_contents);
 	Vector<Item> get_selected_projects() const;
 	const Set<String> &get_selected_project_keys() const;
 	void ensure_project_visible(int p_index);
 	int get_single_selected_index() const;
 	bool is_any_project_missing() const;
-	void erase_missing_projects();
+	void remove_missing_projects();
 	int refresh_project(const String &dir_path);
 
 private:
@@ -1511,18 +1511,18 @@ int ProjectList::get_single_selected_index() const {
 void ProjectList::remove_project(int p_index, bool p_update_settings) {
 	const Item item = _projects[p_index]; // Take a copy
 
-	_selected_project_keys.erase(item.project_key);
+	_selected_project_keys.remove(item.project_key);
 
 	if (_last_clicked == item.project_key) {
 		_last_clicked = "";
 	}
 
 	memdelete(item.control);
-	_projects.remove(p_index);
+	_projects.remove_at(p_index);
 
 	if (p_update_settings) {
-		EditorSettings::get_singleton()->erase("projects/" + item.project_key);
-		EditorSettings::get_singleton()->erase("favorite_projects/" + item.project_key);
+		EditorSettings::get_singleton()->remove("projects/" + item.project_key);
+		EditorSettings::get_singleton()->remove("favorite_projects/" + item.project_key);
 		// Not actually saving the file, in case you are doing more changes to settings
 	}
 
@@ -1538,7 +1538,7 @@ bool ProjectList::is_any_project_missing() const {
 	return false;
 }
 
-void ProjectList::erase_missing_projects() {
+void ProjectList::remove_missing_projects() {
 	if (_projects.is_empty()) {
 		return;
 	}
@@ -1685,14 +1685,14 @@ void ProjectList::select_range(int p_begin, int p_end) {
 void ProjectList::toggle_select(int p_index) {
 	Item &item = _projects.write[p_index];
 	if (_selected_project_keys.has(item.project_key)) {
-		_selected_project_keys.erase(item.project_key);
+		_selected_project_keys.remove(item.project_key);
 	} else {
 		_selected_project_keys.insert(item.project_key);
 	}
 	item.control->update();
 }
 
-void ProjectList::erase_selected_projects(bool p_delete_project_contents) {
+void ProjectList::remove_selected_projects(bool p_delete_project_contents) {
 	if (_selected_project_keys.size() == 0) {
 		return;
 	}
@@ -1700,15 +1700,15 @@ void ProjectList::erase_selected_projects(bool p_delete_project_contents) {
 	for (int i = 0; i < _projects.size(); ++i) {
 		Item &item = _projects.write[i];
 		if (_selected_project_keys.has(item.project_key) && item.control->is_visible()) {
-			EditorSettings::get_singleton()->erase("projects/" + item.project_key);
-			EditorSettings::get_singleton()->erase("favorite_projects/" + item.project_key);
+			EditorSettings::get_singleton()->remove("projects/" + item.project_key);
+			EditorSettings::get_singleton()->remove("favorite_projects/" + item.project_key);
 
 			if (p_delete_project_contents) {
 				OS::get_singleton()->move_to_trash(item.path);
 			}
 
 			memdelete(item.control);
-			_projects.remove(i);
+			_projects.remove_at(i);
 			--i;
 		}
 	}
@@ -1784,7 +1784,7 @@ void ProjectList::_favorite_pressed(Node *p_hb) {
 	if (item.favorite) {
 		EditorSettings::get_singleton()->set("favorite_projects/" + item.project_key, item.path);
 	} else {
-		EditorSettings::get_singleton()->erase("favorite_projects/" + item.project_key);
+		EditorSettings::get_singleton()->remove("favorite_projects/" + item.project_key);
 	}
 	EditorSettings::get_singleton()->save();
 
@@ -1886,12 +1886,12 @@ void ProjectManager::_update_project_buttons() {
 		}
 	}
 
-	erase_btn->set_disabled(empty_selection);
+	remove_btn->set_disabled(empty_selection);
 	open_btn->set_disabled(empty_selection || is_missing_project_selected);
 	rename_btn->set_disabled(empty_selection || is_missing_project_selected);
 	run_btn->set_disabled(empty_selection || is_missing_project_selected);
 
-	erase_missing_btn->set_disabled(!_project_list->is_any_project_missing());
+	remove_missing_btn->set_disabled(!_project_list->is_any_project_missing());
 }
 
 void ProjectManager::_unhandled_key_input(const Ref<InputEvent> &p_ev) {
@@ -2226,17 +2226,17 @@ void ProjectManager::_rename_project() {
 	}
 }
 
-void ProjectManager::_erase_project_confirm() {
-	_project_list->erase_selected_projects(delete_project_contents->is_pressed());
+void ProjectManager::_remove_project_confirm() {
+	_project_list->remove_selected_projects(delete_project_contents->is_pressed());
 	_update_project_buttons();
 }
 
-void ProjectManager::_erase_missing_projects_confirm() {
-	_project_list->erase_missing_projects();
+void ProjectManager::_remove_missing_projects_confirm() {
+	_project_list->remove_missing_projects();
 	_update_project_buttons();
 }
 
-void ProjectManager::_erase_project() {
+void ProjectManager::_remove_project() {
 	const Set<String> &selected_list = _project_list->get_selected_project_keys();
 
 	if (selected_list.size() == 0) {
@@ -2250,14 +2250,14 @@ void ProjectManager::_erase_project() {
 		confirm_message = TTR("Remove this project from the list?");
 	}
 
-	erase_ask_label->set_text(confirm_message);
+	remove_ask_label->set_text(confirm_message);
 	delete_project_contents->set_pressed(false);
-	erase_ask->popup_centered();
+	remove_ask->popup_centered();
 }
 
-void ProjectManager::_erase_missing_projects() {
-	erase_missing_ask->set_text(TTR("Remove all missing projects from the list?\nThe project folders' contents won't be modified."));
-	erase_missing_ask->popup_centered();
+void ProjectManager::_remove_missing_projects() {
+	remove_missing_ask->set_text(TTR("Remove all missing projects from the list?\nThe project folders' contents won't be modified."));
+	remove_missing_ask->popup_centered();
 }
 
 void ProjectManager::_show_about() {
@@ -2565,16 +2565,16 @@ ProjectManager::ProjectManager() {
 		rename_btn->connect("pressed", callable_mp(this, &ProjectManager::_rename_project));
 		tree_vb->add_child(rename_btn);
 
-		erase_btn = memnew(Button);
-		erase_btn->set_text(TTR("Remove"));
-		erase_btn->set_shortcut(ED_SHORTCUT("project_manager/remove_project", TTR("Remove Project"), KEY_DELETE));
-		erase_btn->connect("pressed", callable_mp(this, &ProjectManager::_erase_project));
-		tree_vb->add_child(erase_btn);
+		remove_btn = memnew(Button);
+		remove_btn->set_text(TTR("Remove"));
+		remove_btn->set_shortcut(ED_SHORTCUT("project_manager/remove_project", TTR("Remove Project"), KEY_DELETE));
+		remove_btn->connect("pressed", callable_mp(this, &ProjectManager::_remove_project));
+		tree_vb->add_child(remove_btn);
 
-		erase_missing_btn = memnew(Button);
-		erase_missing_btn->set_text(TTR("Remove Missing"));
-		erase_missing_btn->connect("pressed", callable_mp(this, &ProjectManager::_erase_missing_projects));
-		tree_vb->add_child(erase_missing_btn);
+		remove_missing_btn = memnew(Button);
+		remove_missing_btn->set_text(TTR("Remove Missing"));
+		remove_missing_btn->connect("pressed", callable_mp(this, &ProjectManager::_remove_missing_projects));
+		tree_vb->add_child(remove_missing_btn);
 
 		tree_vb->add_spacer();
 
@@ -2675,25 +2675,25 @@ ProjectManager::ProjectManager() {
 		add_child(scan_dir);
 		scan_dir->connect("dir_selected", callable_mp(this, &ProjectManager::_scan_begin));
 
-		erase_missing_ask = memnew(ConfirmationDialog);
-		erase_missing_ask->get_ok_button()->set_text(TTR("Remove All"));
-		erase_missing_ask->get_ok_button()->connect("pressed", callable_mp(this, &ProjectManager::_erase_missing_projects_confirm));
-		add_child(erase_missing_ask);
+		remove_missing_ask = memnew(ConfirmationDialog);
+		remove_missing_ask->get_ok_button()->set_text(TTR("Remove All"));
+		remove_missing_ask->get_ok_button()->connect("pressed", callable_mp(this, &ProjectManager::_remove_missing_projects_confirm));
+		add_child(remove_missing_ask);
 
-		erase_ask = memnew(ConfirmationDialog);
-		erase_ask->get_ok_button()->set_text(TTR("Remove"));
-		erase_ask->get_ok_button()->connect("pressed", callable_mp(this, &ProjectManager::_erase_project_confirm));
-		add_child(erase_ask);
+		remove_ask = memnew(ConfirmationDialog);
+		remove_ask->get_ok_button()->set_text(TTR("Remove"));
+		remove_ask->get_ok_button()->connect("pressed", callable_mp(this, &ProjectManager::_remove_project_confirm));
+		add_child(remove_ask);
 
-		VBoxContainer *erase_ask_vb = memnew(VBoxContainer);
-		erase_ask->add_child(erase_ask_vb);
+		VBoxContainer *remove_ask_vb = memnew(VBoxContainer);
+		remove_ask->add_child(remove_ask_vb);
 
-		erase_ask_label = memnew(Label);
-		erase_ask_vb->add_child(erase_ask_label);
+		remove_ask_label = memnew(Label);
+		remove_ask_vb->add_child(remove_ask_label);
 
 		delete_project_contents = memnew(CheckBox);
 		delete_project_contents->set_text(TTR("Also delete project contents (no undo!)"));
-		erase_ask_vb->add_child(delete_project_contents);
+		remove_ask_vb->add_child(delete_project_contents);
 
 		multi_open_ask = memnew(ConfirmationDialog);
 		multi_open_ask->get_ok_button()->set_text(TTR("Edit"));

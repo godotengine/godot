@@ -114,12 +114,12 @@ public:
 		return _find_exact(p_val) != -1;
 	}
 
-	void erase(const T &p_val) {
+	void remove(const T &p_val) {
 		int pos = _find_exact(p_val);
 		if (pos < 0) {
 			return;
 		}
-		_data.remove(pos);
+		_data.remove_at(pos);
 	}
 
 	int find(const T &p_val) const {

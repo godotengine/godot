@@ -98,8 +98,8 @@ public:
 			}
 
 			while (to_clean_up.size()) {
-				to_clean_up.front()->get().first->instances.erase(to_clean_up.front()->get().second);
-				dependencies.erase(to_clean_up.front()->get().first);
+				to_clean_up.front()->get().first->instances.remove(to_clean_up.front()->get().second);
+				dependencies.remove(to_clean_up.front()->get().first);
 				to_clean_up.pop_front();
 			}
 		}
@@ -107,7 +107,7 @@ public:
 		void clear() { // clear all dependencies
 			for (Set<Dependency *>::Element *E = dependencies.front(); E; E = E->next()) {
 				Dependency *dep = E->get();
-				dep->instances.erase(this);
+				dep->instances.remove(this);
 			}
 			dependencies.clear();
 		}

@@ -1603,10 +1603,10 @@ Error EditorExportPlatformIOS::export_project(const Ref<EditorExportPreset> &p_p
 		// remove leftovers from last export so they don't interfere
 		// in case some files are no longer needed
 		if (da->change_dir(dest_dir + binary_name + ".xcodeproj") == OK) {
-			da->erase_contents_recursive();
+			da->remove_contents_recursive();
 		}
 		if (da->change_dir(dest_dir + binary_name) == OK) {
-			da->erase_contents_recursive();
+			da->remove_contents_recursive();
 		}
 
 		da->change_dir(current_dir);
@@ -1840,7 +1840,7 @@ Error EditorExportPlatformIOS::export_project(const Ref<EditorExportPreset> &p_p
 		print_line("Using Launch Storyboard");
 
 		if (launch_screen_da->change_dir(launch_image_path) == OK) {
-			launch_screen_da->erase_contents_recursive();
+			launch_screen_da->remove_contents_recursive();
 			launch_screen_da->remove(launch_image_path);
 		}
 
@@ -1853,7 +1853,7 @@ Error EditorExportPlatformIOS::export_project(const Ref<EditorExportPreset> &p_p
 		launch_screen_da->remove(launch_screen_path);
 
 		if (launch_screen_da->change_dir(splash_image_path) == OK) {
-			launch_screen_da->erase_contents_recursive();
+			launch_screen_da->remove_contents_recursive();
 			launch_screen_da->remove(splash_image_path);
 		}
 

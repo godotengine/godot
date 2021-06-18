@@ -363,7 +363,7 @@ void TextServerFallback::font_remove_language_support_override(RID p_font, const
 	_THREAD_SAFE_METHOD_
 	FontDataFallback *fd = font_owner.getornull(p_font);
 	ERR_FAIL_COND(!fd);
-	fd->lang_support_overrides.erase(p_language);
+	fd->lang_support_overrides.remove(p_language);
 }
 
 Vector<String> TextServerFallback::font_get_language_support_overrides(RID p_font) {
@@ -406,7 +406,7 @@ void TextServerFallback::font_remove_script_support_override(RID p_font, const S
 	_THREAD_SAFE_METHOD_
 	FontDataFallback *fd = font_owner.getornull(p_font);
 	ERR_FAIL_COND(!fd);
-	fd->script_support_overrides.erase(p_script);
+	fd->script_support_overrides.remove(p_script);
 }
 
 Vector<String> TextServerFallback::font_get_script_support_overrides(RID p_font) {

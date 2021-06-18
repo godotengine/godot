@@ -337,7 +337,7 @@ void RendererCanvasRenderRD::free_polygon(PolygonID p_polygon) {
 	RD::get_singleton()->free(pb.vertex_array);
 	RD::get_singleton()->free(pb.vertex_buffer);
 
-	polygon_buffers.polygons.erase(p_polygon);
+	polygon_buffers.polygons.remove(p_polygon);
 }
 
 ////////////////////
@@ -1359,7 +1359,7 @@ void RendererCanvasRenderRD::canvas_render_items(RID p_to_render_target, Item *p
 				if (md->last_frame != RendererCompositorRD::singleton->get_frame_number()) {
 					md->last_frame = RendererCompositorRD::singleton->get_frame_number();
 					if (!RD::get_singleton()->uniform_set_is_valid(md->uniform_set)) {
-						// uniform set may be gone because a dependency was erased. In this case, it will happen
+						// uniform set may be gone because a dependency was removed. In this case, it will happen
 						// if a texture is deleted, so just re-create it.
 						storage->material_force_update_textures(ci->material, RendererStorageRD::SHADER_TYPE_2D);
 					}
@@ -1489,7 +1489,7 @@ void RendererCanvasRenderRD::light_set_use_shadow(RID p_rid, bool p_enable) {
 void RendererCanvasRenderRD::_update_shadow_atlas() {
 	if (state.shadow_fb == RID()) {
 		//ah, we lack the shadow texture..
-		RD::get_singleton()->free(state.shadow_texture); //erase placeholder
+		RD::get_singleton()->free(state.shadow_texture); //remove placeholder
 
 		Vector<RID> fb_textures;
 
@@ -2108,7 +2108,7 @@ void RendererCanvasRenderRD::ShaderData::set_code(const String &p_code) {
 
 void RendererCanvasRenderRD::ShaderData::set_default_texture_param(const StringName &p_name, RID p_texture) {
 	if (!p_texture.is_valid()) {
-		default_texture_params.erase(p_name);
+		default_texture_params.remove(p_name);
 	} else {
 		default_texture_params[p_name] = p_texture;
 	}
@@ -2688,7 +2688,7 @@ void RendererCanvasRenderRD::set_shadow_texture_size(int p_size) {
 		state.shadow_fb = RID();
 
 		{
-			//create a default shadow texture to keep uniform set happy (and that it gets erased when a new one is created)
+			//create a default shadow texture to keep uniform set happy (and that it gets removed when a new one is created)
 			RD::TextureFormat tf;
 			tf.texture_type = RD::TEXTURE_TYPE_2D;
 			tf.width = 4;
@@ -2734,7 +2734,7 @@ RendererCanvasRenderRD::~RendererCanvasRenderRD() {
 	{
 		RD::get_singleton()->free(shader.quad_index_array);
 		RD::get_singleton()->free(shader.quad_index_buffer);
-		//primitives are erase by dependency
+		//primitives are remove by dependency
 	}
 
 	if (state.shadow_fb.is_valid()) {

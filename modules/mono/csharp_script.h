@@ -147,7 +147,7 @@ private:
 	bool exports_invalidated = true;
 	void _update_exports_values(Map<StringName, Variant> &values, List<PropertyInfo> &propnames);
 	void _update_member_info_no_exports();
-	void _placeholder_erased(PlaceHolderScriptInstance *p_placeholder) override;
+	void _placeholder_removed(PlaceHolderScriptInstance *p_placeholder) override;
 #endif
 
 #if defined(TOOLS_ENABLED) || defined(DEBUG_ENABLED)

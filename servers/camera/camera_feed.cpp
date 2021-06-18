@@ -132,13 +132,13 @@ void CameraFeed::set_transform(const Transform2D &p_transform) {
 	transform = p_transform;
 }
 
-RID CameraFeed::get_texture(CameraServer::FeedImage p_which) {
+RID CameraFeed::get_texture(Camremoverver::FeedImage p_which) {
 	return texture[p_which];
 }
 
 CameraFeed::CameraFeed() {
 	// initialize our feed
-	id = CameraServer::get_singleton()->get_free_id();
+	id = Camremoverver::get_singleton()->get_free_id();
 	name = "???";
 	active = false;
 	datatype = CameraFeed::FEED_RGB;
@@ -149,14 +149,14 @@ CameraFeed::CameraFeed() {
 #if 0
 	// create a texture object
 	RenderingServer *vs = RenderingServer::get_singleton();
-	texture[CameraServer::FEED_Y_IMAGE] = vs->texture_create(); // also used for RGBA
-	texture[CameraServer::FEED_CBCR_IMAGE] = vs->texture_create();
+	texture[Camremoverver::FEED_Y_IMAGE] = vs->texture_create(); // also used for RGBA
+	texture[Camremoverver::FEED_CBCR_IMAGE] = vs->texture_create();
 #endif
 }
 
 CameraFeed::CameraFeed(String p_name, FeedPosition p_position) {
 	// initialize our feed
-	id = CameraServer::get_singleton()->get_free_id();
+	id = Camremoverver::get_singleton()->get_free_id();
 	base_width = 0;
 	base_height = 0;
 	name = p_name;
@@ -169,8 +169,8 @@ CameraFeed::CameraFeed(String p_name, FeedPosition p_position) {
 #if 0
 	// create a texture object
 	RenderingServer *vs = RenderingServer::get_singleton();
-	texture[CameraServer::FEED_Y_IMAGE] = vs->texture_create(); // also used for RGBA
-	texture[CameraServer::FEED_CBCR_IMAGE] = vs->texture_create();
+	texture[Camremoverver::FEED_Y_IMAGE] = vs->texture_create(); // also used for RGBA
+	texture[Camremoverver::FEED_CBCR_IMAGE] = vs->texture_create();
 #endif
 }
 
@@ -179,8 +179,8 @@ CameraFeed::~CameraFeed() {
 #if 0
 	// Free our textures
 	RenderingServer *vs = RenderingServer::get_singleton();
-	vs->free(texture[CameraServer::FEED_Y_IMAGE]);
-	vs->free(texture[CameraServer::FEED_CBCR_IMAGE]);
+	vs->free(texture[Camremoverver::FEED_Y_IMAGE]);
+	vs->free(texture[Camremoverver::FEED_CBCR_IMAGE]);
 #endif
 }
 
@@ -199,10 +199,10 @@ void CameraFeed::set_RGB_img(const Ref<Image> &p_rgb_img) {
 			base_width = new_width;
 			base_height = new_height;
 
-			vs->texture_allocate(texture[CameraServer::FEED_RGBA_IMAGE], new_width, new_height, 0, Image::FORMAT_RGB8, RS::TEXTURE_TYPE_2D, RS::TEXTURE_FLAGS_DEFAULT);
+			vs->texture_allocate(texture[Camremoverver::FEED_RGBA_IMAGE], new_width, new_height, 0, Image::FORMAT_RGB8, RS::TEXTURE_TYPE_2D, RS::TEXTURE_FLAGS_DEFAULT);
 		}
 
-		vs->texture_set_data(texture[CameraServer::FEED_RGBA_IMAGE], p_rgb_img);
+		vs->texture_set_data(texture[Camremoverver::FEED_RGBA_IMAGE], p_rgb_img);
 		datatype = CameraFeed::FEED_RGB;
 	}
 #endif
@@ -223,10 +223,10 @@ void CameraFeed::set_YCbCr_img(const Ref<Image> &p_ycbcr_img) {
 			base_width = new_width;
 			base_height = new_height;
 
-			vs->texture_allocate(texture[CameraServer::FEED_RGBA_IMAGE], new_width, new_height, 0, Image::FORMAT_RGB8, RS::TEXTURE_TYPE_2D, RS::TEXTURE_FLAGS_DEFAULT);
+			vs->texture_allocate(texture[Camremoverver::FEED_RGBA_IMAGE], new_width, new_height, 0, Image::FORMAT_RGB8, RS::TEXTURE_TYPE_2D, RS::TEXTURE_FLAGS_DEFAULT);
 		}
 
-		vs->texture_set_data(texture[CameraServer::FEED_RGBA_IMAGE], p_ycbcr_img);
+		vs->texture_set_data(texture[Camremoverver::FEED_RGBA_IMAGE], p_ycbcr_img);
 		datatype = CameraFeed::FEED_YCBCR;
 	}
 #endif
@@ -254,14 +254,14 @@ void CameraFeed::set_YCbCr_imgs(const Ref<Image> &p_y_img, const Ref<Image> &p_c
 			base_width = new_y_width;
 			base_height = new_y_height;
 
-			vs->texture_allocate(texture[CameraServer::FEED_Y_IMAGE], new_y_width, new_y_height, 0, Image::FORMAT_R8, RS::TEXTURE_TYPE_2D, RS::TEXTURE_FLAG_USED_FOR_STREAMING);
+			vs->texture_allocate(texture[Camremoverver::FEED_Y_IMAGE], new_y_width, new_y_height, 0, Image::FORMAT_R8, RS::TEXTURE_TYPE_2D, RS::TEXTURE_FLAG_USED_FOR_STREAMING);
 
 			///@TODO GLES2 doesn't support FORMAT_RG8, need to do some form of conversion
-			vs->texture_allocate(texture[CameraServer::FEED_CBCR_IMAGE], new_cbcr_width, new_cbcr_height, 0, Image::FORMAT_RG8, RS::TEXTURE_TYPE_2D, RS::TEXTURE_FLAG_USED_FOR_STREAMING);
+			vs->texture_allocate(texture[Camremoverver::FEED_CBCR_IMAGE], new_cbcr_width, new_cbcr_height, 0, Image::FORMAT_RG8, RS::TEXTURE_TYPE_2D, RS::TEXTURE_FLAG_USED_FOR_STREAMING);
 		}
 
-		vs->texture_set_data(texture[CameraServer::FEED_Y_IMAGE], p_y_img);
-		vs->texture_set_data(texture[CameraServer::FEED_CBCR_IMAGE], p_cbcr_img);
+		vs->texture_set_data(texture[Camremoverver::FEED_Y_IMAGE], p_y_img);
+		vs->texture_set_data(texture[Camremoverver::FEED_CBCR_IMAGE], p_cbcr_img);
 		datatype = CameraFeed::FEED_YCBCR_SEP;
 	}
 #endif

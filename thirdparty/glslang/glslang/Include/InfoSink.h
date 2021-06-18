@@ -68,7 +68,7 @@ enum TOutputStream {
 class TInfoSinkBase {
 public:
     TInfoSinkBase() : outputStream(4) {}
-    void erase() { sink.erase(); }
+    void remove() { sink.remove(); }
     TInfoSinkBase& operator<<(const TPersistString& t) { append(t); return *this; }
     TInfoSinkBase& operator<<(char c)                  { append(1, c); return *this; }
     TInfoSinkBase& operator<<(const char* s)           { append(s); return *this; }

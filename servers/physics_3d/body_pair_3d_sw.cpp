@@ -136,7 +136,7 @@ void BodyPair3DSW::contact_added_callback(const Vector3 &p_point_A, int p_index_
 }
 
 void BodyPair3DSW::validate_contacts() {
-	//make sure to erase contacts that are no longer valid
+	//make sure to remove contacts that are no longer valid
 
 	real_t contact_max_separation = space->get_contact_max_separation();
 	for (int i = 0; i < contact_count; i++) {
@@ -570,7 +570,7 @@ void BodySoftBodyPair3DSW::contact_added_callback(const Vector3 &p_point_A, int 
 }
 
 void BodySoftBodyPair3DSW::validate_contacts() {
-	// Make sure to erase contacts that are no longer valid.
+	// Make sure to remove contacts that are no longer valid.
 	const Transform3D &transform_A = body->get_transform();
 
 	real_t contact_max_separation = space->get_contact_max_separation();

@@ -18,7 +18,7 @@
 				Removes all of a [code]hostname[/code]'s cached references. If no [code]hostname[/code] is given, all cached IP addresses are removed.
 			</description>
 		</method>
-		<method name="erase_resolve_item">
+		<method name="remove_resolve_item">
 			<return type="void">
 			</return>
 			<argument index="0" name="id" type="int">

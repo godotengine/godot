@@ -758,11 +758,11 @@ void TextureRegionEditor::_update_autoslice() {
 						bool merged = true;
 						while (merged) {
 							merged = false;
-							bool queue_erase = false;
+							bool queue_remove = false;
 							for (List<Rect2>::Element *F = autoslice_cache.front(); F; F = F->next()) {
-								if (queue_erase) {
-									autoslice_cache.erase(F->prev());
-									queue_erase = false;
+								if (queue_remove) {
+									autoslice_cache.remove(F->prev());
+									queue_remove = false;
 								}
 								if (F == E) {
 									continue;
@@ -772,9 +772,9 @@ void TextureRegionEditor::_update_autoslice() {
 									E->get().expand_to(F->get().position + F->get().size);
 									if (F->prev()) {
 										F = F->prev();
-										autoslice_cache.erase(F->next());
+										autoslice_cache.remove(F->next());
 									} else {
-										queue_erase = true;
+										queue_remove = true;
 										// Can't delete the first rect in the list.
 									}
 									merged = true;

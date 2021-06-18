@@ -147,7 +147,7 @@ void RendererCompositorRD::finalize() {
 	memdelete(canvas);
 	memdelete(storage);
 
-	//only need to erase these, the rest are erased by cascade
+	//only need to remove these, the rest are removed by cascade
 	blit.shader.version_free(blit.shader_version);
 	RD::get_singleton()->free(blit.index_buffer);
 	RD::get_singleton()->free(blit.sampler);

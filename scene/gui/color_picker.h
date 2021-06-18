@@ -149,7 +149,7 @@ public:
 	PickerShapeType get_picker_shape() const;
 
 	void add_preset(const Color &p_color);
-	void erase_preset(const Color &p_color);
+	void remove_preset(const Color &p_color);
 	PackedColorArray get_presets() const;
 
 	void set_hsv_mode(bool p_enabled);

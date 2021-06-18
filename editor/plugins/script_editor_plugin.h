@@ -268,7 +268,7 @@ class ScriptEditor : public PanelContainer {
 	TabContainer *tab_container;
 	EditorFileDialog *file_dialog;
 	AcceptDialog *error_dialog;
-	ConfirmationDialog *erase_tab_confirm;
+	ConfirmationDialog *remove_tab_confirm;
 	ScriptCreateDialog *script_create_dialog;
 	Button *scripts_visible;
 	FindReplaceBar *find_replace_bar;

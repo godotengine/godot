@@ -640,7 +640,7 @@ namespace basisu
 #if 0
 				int j = vector_find(m_selector_cluster_block_indices[old_selector_cluster_index], block_index);
 				if (j >= 0)
-					m_selector_cluster_block_indices[old_selector_cluster_index].erase(m_selector_cluster_block_indices[old_selector_cluster_index].begin() + j);
+					m_selector_cluster_block_indices[old_selector_cluster_index].remove(m_selector_cluster_block_indices[old_selector_cluster_index].begin() + j);
 #endif
 
 				total_blocks_relocated++;
@@ -1006,7 +1006,7 @@ namespace basisu
 			vector_sort(cluster_indices);
 			
 			auto last = std::unique(cluster_indices.begin(), cluster_indices.end());
-			cluster_indices.erase(last, cluster_indices.end());
+			cluster_indices.remove(last, cluster_indices.end());
 		}
 	}
 
@@ -1732,7 +1732,7 @@ namespace basisu
 			vector_sort(cluster_indices);
 			
 			auto last = std::unique(cluster_indices.begin(), cluster_indices.end());
-			cluster_indices.erase(last, cluster_indices.end());
+			cluster_indices.remove(last, cluster_indices.end());
 		}
 	}
 

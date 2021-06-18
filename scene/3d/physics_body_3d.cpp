@@ -429,7 +429,7 @@ void RigidBody3D::_body_inout(int p_status, const RID &p_body, ObjectID p_instan
 		//E->get().rc--;
 
 		if (node) {
-			E->get().shapes.erase(ShapePair(p_body_shape, p_local_shape));
+			E->get().shapes.remove(ShapePair(p_body_shape, p_local_shape));
 		}
 
 		bool in_tree = E->get().in_tree;
@@ -443,7 +443,7 @@ void RigidBody3D::_body_inout(int p_status, const RID &p_body, ObjectID p_instan
 				}
 			}
 
-			contact_monitor->body_map.erase(E);
+			contact_monitor->body_map.remove(E);
 		}
 		if (node && in_tree) {
 			emit_signal(SceneStringNames::get_singleton()->body_shape_exited, p_body, obj, p_body_shape, p_local_shape);

@@ -47,7 +47,7 @@ void UndoRedo::_discard_redo() {
 				}
 			}
 		}
-		//ERASE do data
+		//REMOVE do data
 	}
 
 	actions.resize(current_action + 1);
@@ -249,7 +249,7 @@ void UndoRedo::_pop_history_tail() {
 		}
 	}
 
-	actions.remove(0);
+	actions.remove_at(0);
 	if (current_action >= 0) {
 		current_action--;
 	}

@@ -122,7 +122,7 @@ void BodyPair2DSW::_contact_added_callback(const Vector2 &p_point_A, const Vecto
 }
 
 void BodyPair2DSW::_validate_contacts() {
-	//make sure to erase contacts that are no longer valid
+	//make sure to remove contacts that are no longer valid
 
 	real_t max_separation = space->get_contact_max_separation();
 	real_t max_separation2 = max_separation * max_separation;
@@ -133,10 +133,10 @@ void BodyPair2DSW::_validate_contacts() {
 	for (int i = 0; i < contact_count; i++) {
 		Contact &c = contacts[i];
 
-		bool erase = false;
+		bool remove = false;
 		if (!c.reused) {
 			//was left behind in previous frame
-			erase = true;
+			remove = true;
 		} else {
 			c.reused = false;
 
@@ -146,11 +146,11 @@ void BodyPair2DSW::_validate_contacts() {
 			real_t depth = axis.dot(c.normal);
 
 			if (depth < -max_separation || (global_B + c.normal * depth - global_A).length_squared() > max_separation2) {
-				erase = true;
+				remove = true;
 			}
 		}
 
-		if (erase) {
+		if (remove) {
 			// contact no longer needed, remove
 
 			if ((i + 1) < contact_count) {

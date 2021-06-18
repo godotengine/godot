@@ -48,7 +48,7 @@ void ProximityGroup3D::_clear_groups() {
 			E = E->next();
 		}
 		for (int i = 0; i < num; i++) {
-			groups.erase(remove_list[i]);
+			groups.remove(remove_list[i]);
 		}
 	}
 

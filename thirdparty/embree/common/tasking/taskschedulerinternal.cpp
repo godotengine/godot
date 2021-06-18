@@ -206,7 +206,7 @@ namespace embree
     Lock<MutexSys> lock(mutex);
     for (std::list<Ref<TaskScheduler> >::iterator it = schedulers.begin(); it != schedulers.end(); it++) {
       if (scheduler == *it) {
-        schedulers.erase(it);
+        schedulers.remove(it);
         return;
       }
     }

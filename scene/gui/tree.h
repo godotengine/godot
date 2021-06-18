@@ -166,7 +166,7 @@ private:
 		}
 		if (parent) {
 			if (!parent->children_cache.is_empty()) {
-				parent->children_cache.remove(get_index());
+				parent->children_cache.remove_at(get_index());
 			}
 			if (parent->first_child == this) {
 				parent->first_child = next;
@@ -249,7 +249,7 @@ public:
 	int get_button_count(int p_column) const;
 	String get_button_tooltip(int p_column, int p_idx) const;
 	Ref<Texture2D> get_button(int p_column, int p_idx) const;
-	void erase_button(int p_column, int p_idx);
+	void remove_button(int p_column, int p_idx);
 	int get_button_by_id(int p_column, int p_id) const;
 	void set_button(int p_column, int p_idx, const Ref<Texture2D> &p_button);
 	void set_button_color(int p_column, int p_idx, const Color &p_color);

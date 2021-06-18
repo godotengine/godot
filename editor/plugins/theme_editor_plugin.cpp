@@ -358,7 +358,7 @@ void ThemeItemImportTree::_store_selected_item(TreeItem *p_tree_item) {
 	} else if (import) {
 		selected_items[ti] = SELECT_IMPORT_DEFINITION;
 	} else {
-		selected_items.erase(ti);
+		selected_items.remove(ti);
 	}
 
 	_update_total_selected(ti.data_type);

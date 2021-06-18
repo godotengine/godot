@@ -456,7 +456,7 @@ void SpaceBullet::add_area(AreaBullet *p_area) {
 }
 
 void SpaceBullet::remove_area(AreaBullet *p_area) {
-	areas.erase(p_area);
+	areas.remove(p_area);
 	dynamicsWorld->removeCollisionObject(p_area->get_bt_ghost());
 }
 

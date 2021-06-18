@@ -127,8 +127,8 @@ Variant PluginScript::_new(const Variant **p_args, int p_argcount, Callable::Cal
 
 #ifdef TOOLS_ENABLED
 
-void PluginScript::_placeholder_erased(PlaceHolderScriptInstance *p_placeholder) {
-	placeholders.erase(p_placeholder);
+void PluginScript::_placeholder_removed(PlaceHolderScriptInstance *p_placeholder) {
+	placeholders.remove(p_placeholder);
 }
 
 #endif

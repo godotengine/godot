@@ -227,7 +227,7 @@ Array IP::get_resolve_item_addresses(ResolverID p_id) const {
 	return result;
 }
 
-void IP::erase_resolve_item(ResolverID p_id) {
+void IP::remove_resolve_item(ResolverID p_id) {
 	ERR_FAIL_INDEX(p_id, IP::RESOLVER_MAX_QUERIES);
 
 	MutexLock lock(resolver->mutex);
@@ -241,10 +241,10 @@ void IP::clear_cache(const String &p_hostname) {
 	if (p_hostname.is_empty()) {
 		resolver->cache.clear();
 	} else {
-		resolver->cache.erase(_IP_ResolverPrivate::get_cache_key(p_hostname, IP::TYPE_NONE));
-		resolver->cache.erase(_IP_ResolverPrivate::get_cache_key(p_hostname, IP::TYPE_IPV4));
-		resolver->cache.erase(_IP_ResolverPrivate::get_cache_key(p_hostname, IP::TYPE_IPV6));
-		resolver->cache.erase(_IP_ResolverPrivate::get_cache_key(p_hostname, IP::TYPE_ANY));
+		resolver->cache.remove(_IP_ResolverPrivate::get_cache_key(p_hostname, IP::TYPE_NONE));
+		resolver->cache.remove(_IP_ResolverPrivate::get_cache_key(p_hostname, IP::TYPE_IPV4));
+		resolver->cache.remove(_IP_ResolverPrivate::get_cache_key(p_hostname, IP::TYPE_IPV6));
+		resolver->cache.remove(_IP_ResolverPrivate::get_cache_key(p_hostname, IP::TYPE_ANY));
 	}
 }
 
@@ -299,7 +299,7 @@ void IP::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_resolve_item_status", "id"), &IP::get_resolve_item_status);
 	ClassDB::bind_method(D_METHOD("get_resolve_item_address", "id"), &IP::get_resolve_item_address);
 	ClassDB::bind_method(D_METHOD("get_resolve_item_addresses", "id"), &IP::get_resolve_item_addresses);
-	ClassDB::bind_method(D_METHOD("erase_resolve_item", "id"), &IP::erase_resolve_item);
+	ClassDB::bind_method(D_METHOD("remove_resolve_item", "id"), &IP::remove_resolve_item);
 	ClassDB::bind_method(D_METHOD("get_local_addresses"), &IP::_get_local_addresses);
 	ClassDB::bind_method(D_METHOD("get_local_interfaces"), &IP::_get_local_interfaces);
 	ClassDB::bind_method(D_METHOD("clear_cache", "hostname"), &IP::clear_cache, DEFVAL(""));

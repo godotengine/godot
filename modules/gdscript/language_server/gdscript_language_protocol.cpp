@@ -116,7 +116,7 @@ Error GDScriptLanguageProtocol::LSPeer::send_data() {
 		// Response sent
 		if (res_sent >= c_res.size() - 1) {
 			res_sent = 0;
-			res_queue.remove(0);
+			res_queue.remove_at(0);
 		}
 	}
 	return OK;
@@ -134,7 +134,7 @@ Error GDScriptLanguageProtocol::on_client_connected() {
 }
 
 void GDScriptLanguageProtocol::on_client_disconnected(const int &p_client_id) {
-	clients.erase(p_client_id);
+	clients.remove(p_client_id);
 	EditorNode::get_log()->add_message("Disconnected", EditorLog::MSG_TYPE_EDITOR);
 }
 

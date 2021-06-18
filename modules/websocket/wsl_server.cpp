@@ -181,7 +181,7 @@ void WSLServer::poll() {
 		}
 	}
 	for (List<int>::Element *E = remove_ids.front(); E; E = E->next()) {
-		_peer_map.erase(E->get());
+		_peer_map.remove(E->get());
 	}
 	remove_ids.clear();
 
@@ -214,7 +214,7 @@ void WSLServer::poll() {
 		_on_connect(id, ppeer->protocol);
 	}
 	for (List<Ref<PendingPeer>>::Element *E = remove_peers.front(); E; E = E->next()) {
-		_pending.erase(E->get());
+		_pending.remove(E->get());
 	}
 	remove_peers.clear();
 

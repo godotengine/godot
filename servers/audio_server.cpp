@@ -515,7 +515,7 @@ void AudioServer::set_bus_count(int p_count) {
 
 	if (p_count < buses.size()) {
 		for (int i = p_count; i < buses.size(); i++) {
-			bus_map.erase(buses[i]->name);
+			bus_map.remove(buses[i]->name);
 			memdelete(buses[i]);
 		}
 	}
@@ -571,9 +571,9 @@ void AudioServer::remove_bus(int p_index) {
 	MARK_EDITED
 
 	lock();
-	bus_map.erase(buses[p_index]->name);
+	bus_map.remove(buses[p_index]->name);
 	memdelete(buses[p_index]);
-	buses.remove(p_index);
+	buses.remove_at(p_index);
 	unlock();
 
 	emit_signal("bus_layout_changed");
@@ -644,7 +644,7 @@ void AudioServer::move_bus(int p_bus, int p_to_pos) {
 	}
 
 	Bus *bus = buses[p_bus];
-	buses.remove(p_bus);
+	buses.remove_at(p_bus);
 
 	if (p_to_pos == -1) {
 		buses.push_back(bus);
@@ -695,7 +695,7 @@ void AudioServer::set_bus_name(int p_bus, const String &p_name) {
 		attempts++;
 		attempt = p_name + " " + itos(attempts);
 	}
-	bus_map.erase(buses[p_bus]->name);
+	bus_map.remove(buses[p_bus]->name);
 	buses[p_bus]->name = attempt;
 	bus_map[attempt] = buses[p_bus];
 	unlock();
@@ -837,7 +837,7 @@ void AudioServer::remove_bus_effect(int p_bus, int p_effect) {
 
 	lock();
 
-	buses[p_bus]->effects.remove(p_effect);
+	buses[p_bus]->effects.remove_at(p_effect);
 	_update_bus_effects(p_bus);
 
 	unlock();
@@ -1112,7 +1112,7 @@ void AudioServer::remove_callback(AudioCallback p_callback, void *p_userdata) {
 	CallbackItem ci;
 	ci.callback = p_callback;
 	ci.userdata = p_userdata;
-	callbacks.erase(ci);
+	callbacks.remove(ci);
 	unlock();
 }
 
@@ -1130,7 +1130,7 @@ void AudioServer::remove_update_callback(AudioCallback p_callback, void *p_userd
 	CallbackItem ci;
 	ci.callback = p_callback;
 	ci.userdata = p_userdata;
-	update_callbacks.erase(ci);
+	update_callbacks.remove(ci);
 	unlock();
 }
 

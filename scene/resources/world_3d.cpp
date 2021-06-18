@@ -45,7 +45,7 @@ void World3D::_register_camera(Camera3D *p_camera) {
 
 void World3D::_remove_camera(Camera3D *p_camera) {
 #ifndef _3D_DISABLED
-	cameras.erase(p_camera);
+	cameras.remove(p_camera);
 #endif
 }
 

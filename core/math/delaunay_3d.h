@@ -312,11 +312,11 @@ public:
 					}
 
 					//remove simplex and continue
-					simplex_list.erase(simplex->SE);
+					simplex_list.remove(simplex->SE);
 
 					for (uint32_t k = 0; k < simplex->grid_positions.size(); k++) {
 						Vector3i p = simplex->grid_positions[k].pos;
-						acceleration_grid[p.x][p.y][p.z].erase(simplex->grid_positions[k].E);
+						acceleration_grid[p.x][p.y][p.z].remove(simplex->grid_positions[k].E);
 					}
 					memdelete(simplex);
 				}

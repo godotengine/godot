@@ -61,20 +61,20 @@ TEST_CASE("[OrderedHashMap] Overwrite element") {
 	CHECK(map[42] == 1234);
 }
 
-TEST_CASE("[OrderedHashMap] Erase via element") {
+TEST_CASE("[OrderedHashMap] Remove via element") {
 	OrderedHashMap<int, int> map;
 	OrderedHashMap<int, int>::Element e = map.insert(42, 84);
 
-	map.erase(e);
+	map.remove(e);
 	CHECK(!e);
 	CHECK(!map.has(42));
 	CHECK(!map.find(42));
 }
 
-TEST_CASE("[OrderedHashMap] Erase via key") {
+TEST_CASE("[OrderedHashMap] Remove via key") {
 	OrderedHashMap<int, int> map;
 	map.insert(42, 84);
-	map.erase(42);
+	map.remove(42);
 	CHECK(!map.has(42));
 	CHECK(!map.find(42));
 }

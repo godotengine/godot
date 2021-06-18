@@ -215,7 +215,7 @@ AudioStreamPreviewGenerator *AudioStreamPreviewGenerator::singleton = nullptr;
 
 void AudioStreamPreviewGenerator::_notification(int p_what) {
 	if (p_what == NOTIFICATION_PROCESS) {
-		List<ObjectID> to_erase;
+		List<ObjectID> to_remove;
 		for (Map<ObjectID, Preview>::Element *E = previews.front(); E; E = E->next()) {
 			if (!E->get().generating.is_set()) {
 				if (E->get().thread) {
@@ -224,14 +224,14 @@ void AudioStreamPreviewGenerator::_notification(int p_what) {
 					E->get().thread = nullptr;
 				}
 				if (!ObjectDB::get_instance(E->key())) { //no longer in use, get rid of preview
-					to_erase.push_back(E->key());
+					to_remove.push_back(E->key());
 				}
 			}
 		}
 
-		while (to_erase.front()) {
-			previews.erase(to_erase.front()->get());
-			to_erase.pop_front();
+		while (to_remove.front()) {
+			previews.remove(to_remove.front()->get());
+			to_remove.pop_front();
 		}
 	}
 }

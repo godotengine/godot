@@ -989,7 +989,7 @@ Vector<Vector2> TextServer::shaped_text_get_selection(RID p_shaped, int p_start,
 		while (j < ranges.size()) {
 			if (Math::is_equal_approx(ranges[i].y, ranges[j].x, (real_t)UNIT_EPSILON)) {
 				ranges.write[i].y = ranges[j].y;
-				ranges.remove(j);
+				ranges.remove_at(j);
 				continue;
 			}
 			j++;

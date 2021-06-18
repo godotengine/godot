@@ -1404,7 +1404,7 @@ void btSoftBodyHelpers::generateBoundaryFaces(btSoftBody* psb)
 			std::sort(f_sorted.begin(), f_sorted.end());
 			if (dict.find(f_sorted) != dict.end())
 			{
-				dict.erase(f_sorted);
+				dict.remove(f_sorted);
 			}
 			else
 			{

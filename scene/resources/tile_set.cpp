@@ -130,8 +130,8 @@ void TileSet::remove_source(int p_source_id) {
 	sources[p_source_id]->disconnect("changed", callable_mp(this, &TileSet::_source_changed));
 
 	sources[p_source_id]->set_tile_set(nullptr);
-	sources.erase(p_source_id);
-	source_ids.erase(p_source_id);
+	sources.remove(p_source_id);
+	source_ids.remove(p_source_id);
 	source_ids.sort();
 
 	emit_changed();
@@ -147,9 +147,9 @@ void TileSet::set_source_id(int p_source_id, int p_new_source_id) {
 	ERR_FAIL_COND_MSG(sources.has(p_new_source_id), vformat("Cannot change TileSet atlas source ID. Another atlas source exists with id %d.", p_new_source_id));
 
 	sources[p_new_source_id] = sources[p_source_id];
-	sources.erase(p_source_id);
+	sources.remove(p_source_id);
 
-	source_ids.erase(p_source_id);
+	source_ids.remove(p_source_id);
 	source_ids.append(p_new_source_id);
 	source_ids.sort();
 
@@ -590,7 +590,7 @@ void TileSet::set_custom_data_layers_count(int p_custom_data_layers_count) {
 
 	for (Map<String, int>::Element *E = custom_data_layers_by_name.front(); E; E = E->next()) {
 		if (E->get() >= custom_data_layers.size()) {
-			custom_data_layers_by_name.erase(E);
+			custom_data_layers_by_name.remove(E);
 		}
 	}
 
@@ -627,7 +627,7 @@ void TileSet::set_custom_data_name(int p_layer_id, String p_value) {
 	}
 
 	if (p_value.is_empty() && custom_data_layers_by_name.has(p_value)) {
-		custom_data_layers_by_name.erase(p_value);
+		custom_data_layers_by_name.remove(p_value);
 	} else {
 		custom_data_layers_by_name[p_value] = p_layer_id;
 	}
@@ -1708,7 +1708,7 @@ void TileSetAtlasSource::remove_tile(Vector2i p_atlas_coords) {
 	for (int x = 0; x < size.x; x++) {
 		for (int y = 0; y < size.y; y++) {
 			Vector2i coords = p_atlas_coords + Vector2i(x, y);
-			_coords_mapping_cache.erase(coords);
+			_coords_mapping_cache.remove(coords);
 		}
 	}
 
@@ -1718,8 +1718,8 @@ void TileSetAtlasSource::remove_tile(Vector2i p_atlas_coords) {
 	}
 
 	// Delete the tile
-	tiles.erase(p_atlas_coords);
-	tiles_ids.erase(p_atlas_coords);
+	tiles.remove(p_atlas_coords);
+	tiles_ids.remove(p_atlas_coords);
 	tiles_ids.sort();
 
 	emit_signal("changed");
@@ -1827,16 +1827,16 @@ void TileSetAtlasSource::move_tile_in_atlas(Vector2i p_atlas_coords, Vector2i p_
 	for (int x = 0; x < old_size.x; x++) {
 		for (int y = 0; y < old_size.y; y++) {
 			Vector2i coords = p_atlas_coords + Vector2i(x, y);
-			_coords_mapping_cache.erase(coords);
+			_coords_mapping_cache.remove(coords);
 		}
 	}
 
 	// Move the tile and update its size.
 	if (new_atlas_coords != p_atlas_coords) {
 		tiles[new_atlas_coords] = tiles[p_atlas_coords];
-		tiles.erase(p_atlas_coords);
+		tiles.remove(p_atlas_coords);
 
-		tiles_ids.erase(p_atlas_coords);
+		tiles_ids.remove(p_atlas_coords);
 		tiles_ids.append(new_atlas_coords);
 		tiles_ids.sort();
 	}
@@ -1906,8 +1906,8 @@ void TileSetAtlasSource::remove_alternative_tile(const Vector2i p_atlas_coords, 
 	ERR_FAIL_COND_MSG(p_alternative_tile == 0, "Cannot remove the alternative with id 0, the base tile alternative cannot be removed.");
 
 	memdelete(tiles[p_atlas_coords].alternatives[p_alternative_tile]);
-	tiles[p_atlas_coords].alternatives.erase(p_alternative_tile);
-	tiles[p_atlas_coords].alternatives_ids.erase(p_alternative_tile);
+	tiles[p_atlas_coords].alternatives.remove(p_alternative_tile);
+	tiles[p_atlas_coords].alternatives_ids.remove(p_alternative_tile);
 	tiles[p_atlas_coords].alternatives_ids.sort();
 
 	emit_signal("changed");
@@ -1923,8 +1923,8 @@ void TileSetAtlasSource::set_alternative_tile_id(const Vector2i p_atlas_coords, 
 	tiles[p_atlas_coords].alternatives[p_new_id] = tiles[p_atlas_coords].alternatives[p_alternative_tile];
 	tiles[p_atlas_coords].alternatives_ids.append(p_new_id);
 
-	tiles[p_atlas_coords].alternatives.erase(p_alternative_tile);
-	tiles[p_atlas_coords].alternatives_ids.erase(p_alternative_tile);
+	tiles[p_atlas_coords].alternatives.remove(p_alternative_tile);
+	tiles[p_atlas_coords].alternatives_ids.remove(p_alternative_tile);
 	tiles[p_atlas_coords].alternatives_ids.sort();
 
 	emit_signal("changed");
@@ -2102,8 +2102,8 @@ void TileSetScenesCollectionSource::set_scene_tile_id(int p_id, int p_new_id) {
 
 	_compute_next_alternative_id();
 
-	scenes.erase(p_id);
-	scenes_ids.erase(p_id);
+	scenes.remove(p_id);
+	scenes_ids.remove(p_id);
 
 	emit_signal("changed");
 }
@@ -2148,8 +2148,8 @@ bool TileSetScenesCollectionSource::get_scene_tile_display_placeholder(int p_id)
 void TileSetScenesCollectionSource::remove_scene_tile(int p_id) {
 	ERR_FAIL_COND(!scenes.has(p_id));
 
-	scenes.erase(p_id);
-	scenes_ids.erase(p_id);
+	scenes.remove(p_id);
+	scenes_ids.remove(p_id);
 	emit_signal("changed");
 }
 
@@ -2395,7 +2395,7 @@ void TileData::add_collision_shape(int p_layer_id) {
 void TileData::remove_collision_shape(int p_layer_id, int p_shape_index) {
 	ERR_FAIL_INDEX(p_layer_id, physics.size());
 	ERR_FAIL_INDEX(p_shape_index, physics[p_layer_id].shapes.size());
-	physics.write[p_layer_id].shapes.remove(p_shape_index);
+	physics.write[p_layer_id].shapes.remove_at(p_shape_index);
 	emit_signal("changed");
 }
 

@@ -424,9 +424,9 @@ void ColorPicker::add_preset(const Color &p_color) {
 #endif
 }
 
-void ColorPicker::erase_preset(const Color &p_color) {
+void ColorPicker::remove_preset(const Color &p_color) {
 	if (presets.find(p_color)) {
-		presets.erase(presets.find(p_color));
+		presets.remove(presets.find(p_color));
 		preset->update();
 
 #ifdef TOOLS_ENABLED
@@ -935,7 +935,7 @@ void ColorPicker::_preset_input(const Ref<InputEvent> &p_event) {
 		} else if (bev->is_pressed() && bev->get_button_index() == MOUSE_BUTTON_RIGHT && presets_enabled) {
 			index = bev->get_position().x / (preset->get_size().x / presets.size());
 			Color clicked_preset = presets[index];
-			erase_preset(clicked_preset);
+			remove_preset(clicked_preset);
 			emit_signal("preset_removed", clicked_preset);
 			bt_add_preset->show();
 		}
@@ -1087,7 +1087,7 @@ void ColorPicker::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_presets_visible", "visible"), &ColorPicker::set_presets_visible);
 	ClassDB::bind_method(D_METHOD("are_presets_visible"), &ColorPicker::are_presets_visible);
 	ClassDB::bind_method(D_METHOD("add_preset", "color"), &ColorPicker::add_preset);
-	ClassDB::bind_method(D_METHOD("erase_preset", "color"), &ColorPicker::erase_preset);
+	ClassDB::bind_method(D_METHOD("remove_preset", "color"), &ColorPicker::remove_preset);
 	ClassDB::bind_method(D_METHOD("get_presets"), &ColorPicker::get_presets);
 	ClassDB::bind_method(D_METHOD("set_picker_shape", "picker"), &ColorPicker::set_picker_shape);
 	ClassDB::bind_method(D_METHOD("get_picker_shape"), &ColorPicker::get_picker_shape);

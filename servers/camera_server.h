@@ -46,8 +46,8 @@
 
 class CameraFeed;
 
-class CameraServer : public Object {
-	GDCLASS(CameraServer, Object);
+class Camremoverver : public Object {
+	GDCLASS(Camremoverver, Object);
 	_THREAD_SAFE_CLASS_
 
 public:
@@ -59,7 +59,7 @@ public:
 		FEED_IMAGES = 2
 	};
 
-	typedef CameraServer *(*CreateFunc)();
+	typedef Camremoverver *(*CreateFunc)();
 
 private:
 protected:
@@ -67,25 +67,25 @@ protected:
 
 	Vector<Ref<CameraFeed>> feeds;
 
-	static CameraServer *singleton;
+	static Camremoverver *singleton;
 
 	static void _bind_methods();
 
 	template <class T>
-	static CameraServer *_create_builtin() {
+	static Camremoverver *_create_builtin() {
 		return memnew(T);
 	}
 
 public:
-	static CameraServer *get_singleton();
+	static Camremoverver *get_singleton();
 
 	template <class T>
 	static void make_default() {
 		create_func = _create_builtin<T>;
 	}
 
-	static CameraServer *create() {
-		CameraServer *server = create_func ? create_func() : memnew(CameraServer);
+	static Camremoverver *create() {
+		Camremoverver *server = create_func ? create_func() : memnew(Camremoverver);
 		return server;
 	};
 
@@ -104,13 +104,13 @@ public:
 	int get_feed_count();
 	Array get_feeds();
 
-	// Intended for use with custom CameraServer implementation.
+	// Intended for use with custom Camremoverver implementation.
 	RID feed_texture(int p_id, FeedImage p_texture);
 
-	CameraServer();
-	~CameraServer();
+	Camremoverver();
+	~Camremoverver();
 };
 
-VARIANT_ENUM_CAST(CameraServer::FeedImage);
+VARIANT_ENUM_CAST(Camremoverver::FeedImage);
 
 #endif /* CAMERA_SERVER_H */

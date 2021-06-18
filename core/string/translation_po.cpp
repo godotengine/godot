@@ -266,12 +266,12 @@ StringName TranslationPO::get_plural_message(const StringName &p_src_text, const
 	return translation_map[p_context][p_src_text][plural_index];
 }
 
-void TranslationPO::erase_message(const StringName &p_src_text, const StringName &p_context) {
+void TranslationPO::remove_message(const StringName &p_src_text, const StringName &p_context) {
 	if (!translation_map.has(p_context)) {
 		return;
 	}
 
-	translation_map[p_context].erase(p_src_text);
+	translation_map[p_context].remove(p_src_text);
 }
 
 void TranslationPO::get_message_list(List<StringName> *r_messages) const {

@@ -135,6 +135,6 @@ bool PluginScriptInstance::init(PluginScript *p_script, Object *p_owner) {
 PluginScriptInstance::~PluginScriptInstance() {
 	_desc->finish(_data);
 	_script->_language->lock();
-	_script->_instances.erase(_owner);
+	_script->_instances.remove(_owner);
 	_script->_language->unlock();
 }

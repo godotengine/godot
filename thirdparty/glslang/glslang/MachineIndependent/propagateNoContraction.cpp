@@ -828,7 +828,7 @@ void PropagateNoContraction(const glslang::TIntermediate& intermediate)
     while (!precise_return_nodes.empty()) {
         glslang::TIntermBranch* precise_return_node = *precise_return_nodes.begin();
         propagator.propagateNoContractionInReturnNode(precise_return_node);
-        precise_return_nodes.erase(precise_return_node);
+        precise_return_nodes.remove(precise_return_node);
     }
 
     while (!precise_object_accesschains.empty()) {
@@ -862,7 +862,7 @@ void PropagateNoContraction(const glslang::TIntermediate& intermediate)
             }
         }
         // Remove the last processed 'precise' object from the work list.
-        precise_object_accesschains.erase(precise_object_accesschain);
+        precise_object_accesschains.remove(precise_object_accesschain);
     }
 }
 };

@@ -61,7 +61,7 @@ class PackedData {
 public:
 	struct PackedFile {
 		String pack;
-		uint64_t offset; //if offset is ZERO, the file was ERASED
+		uint64_t offset; //if offset is ZERO, the file was REMOVED
 		uint64_t size;
 		uint8_t md5[16];
 		PackSource *src;
@@ -193,7 +193,7 @@ FileAccess *PackedData::try_open_path(const String &p_path) {
 		return nullptr; //not found
 	}
 	if (E->get().offset == 0) {
-		return nullptr; //was erased
+		return nullptr; //was removed
 	}
 
 	return E->get().src->get_file(p_path, &E->get());

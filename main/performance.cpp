@@ -243,7 +243,7 @@ void Performance::add_custom_monitor(const StringName &p_id, const Callable &p_c
 
 void Performance::remove_custom_monitor(const StringName &p_id) {
 	ERR_FAIL_COND_MSG(!has_custom_monitor(p_id), "Custom monitor with id '" + String(p_id) + "' doesn't exists.");
-	_monitor_map.erase(p_id);
+	_monitor_map.remove(p_id);
 	_monitor_modification_time = OS::get_singleton()->get_ticks_usec();
 }
 

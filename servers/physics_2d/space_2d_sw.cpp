@@ -1244,7 +1244,7 @@ void Space2DSW::add_object(CollisionObject2DSW *p_object) {
 
 void Space2DSW::remove_object(CollisionObject2DSW *p_object) {
 	ERR_FAIL_COND(!objects.has(p_object));
-	objects.erase(p_object);
+	objects.remove(p_object);
 }
 
 const Set<CollisionObject2DSW *> &Space2DSW::get_objects() const {

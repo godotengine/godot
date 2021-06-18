@@ -180,7 +180,7 @@ void BulletPhysicsServer3D::space_set_active(RID p_space, bool p_active) {
 		active_spaces.push_back(space);
 	} else {
 		--active_spaces_count;
-		active_spaces.erase(space);
+		active_spaces.remove(space);
 	}
 }
 

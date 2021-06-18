@@ -127,7 +127,7 @@ void SpriteFramesEditor::_sheet_preview_input(const Ref<InputEvent> &p_event) {
 				frames_toggled_by_mouse_hover.insert(idx);
 
 				if (mb->is_ctrl_pressed()) {
-					frames_selected.erase(i);
+					frames_selected.remove(i);
 				} else {
 					frames_selected.insert(i);
 				}
@@ -137,7 +137,7 @@ void SpriteFramesEditor::_sheet_preview_input(const Ref<InputEvent> &p_event) {
 			frames_toggled_by_mouse_hover.insert(idx);
 
 			if (frames_selected.has(idx)) {
-				frames_selected.erase(idx);
+				frames_selected.remove(idx);
 			} else {
 				frames_selected.insert(idx);
 			}
@@ -170,7 +170,7 @@ void SpriteFramesEditor::_sheet_preview_input(const Ref<InputEvent> &p_event) {
 			frames_toggled_by_mouse_hover.insert(idx);
 
 			if (frames_selected.has(idx)) {
-				frames_selected.erase(idx);
+				frames_selected.remove(idx);
 			} else {
 				frames_selected.insert(idx);
 			}

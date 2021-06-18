@@ -92,7 +92,7 @@ void BackgroundProgress::_end_task(const String &p_task) {
 	Task &t = tasks[p_task];
 
 	memdelete(t.hb);
-	tasks.erase(p_task);
+	tasks.remove(p_task);
 }
 
 void BackgroundProgress::_bind_methods() {
@@ -216,7 +216,7 @@ void ProgressDialog::end_task(const String &p_task) {
 	Task &t = tasks[p_task];
 
 	memdelete(t.vb);
-	tasks.erase(p_task);
+	tasks.remove(p_task);
 
 	if (tasks.is_empty()) {
 		hide();

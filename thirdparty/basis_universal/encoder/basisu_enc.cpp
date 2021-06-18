@@ -1312,7 +1312,7 @@ namespace basisu
 				m_entries_picked.insert(m_entries_picked.begin(), entry_to_move);
 
 			// Erase best_entry from the todo list
-			m_entries_to_do.erase(m_entries_to_do.begin() + best_entry);
+			m_entries_to_do.remove(m_entries_to_do.begin() + best_entry);
 
 			// We've just moved best_entry to the picked list, so now we need to update m_total_count_to_picked[] to factor the additional count to best_entry
 			for (uint32_t i = 0; i < m_entries_to_do.size(); i++)

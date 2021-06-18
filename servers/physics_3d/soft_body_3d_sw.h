@@ -117,12 +117,12 @@ public:
 	Variant get_state(PhysicsServer3D::BodyState p_state) const;
 
 	_FORCE_INLINE_ void add_constraint(Constraint3DSW *p_constraint) { constraints.insert(p_constraint); }
-	_FORCE_INLINE_ void remove_constraint(Constraint3DSW *p_constraint) { constraints.erase(p_constraint); }
+	_FORCE_INLINE_ void remove_constraint(Constraint3DSW *p_constraint) { constraints.remove(p_constraint); }
 	_FORCE_INLINE_ const Set<Constraint3DSW *> &get_constraints() const { return constraints; }
 	_FORCE_INLINE_ void clear_constraints() { constraints.clear(); }
 
 	_FORCE_INLINE_ void add_exception(const RID &p_exception) { exceptions.insert(p_exception); }
-	_FORCE_INLINE_ void remove_exception(const RID &p_exception) { exceptions.erase(p_exception); }
+	_FORCE_INLINE_ void remove_exception(const RID &p_exception) { exceptions.remove(p_exception); }
 	_FORCE_INLINE_ bool has_exception(const RID &p_exception) const { return exceptions.has(p_exception); }
 	_FORCE_INLINE_ const VSet<RID> &get_exceptions() const { return exceptions; }
 

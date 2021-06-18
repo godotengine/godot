@@ -5217,7 +5217,7 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 					_set_error("Invalid arguments to unary operator '" + get_operator_text(op->op) + "' :" + at);
 					return nullptr;
 				}
-				expression.remove(i + 1);
+				expression.remove_at(i + 1);
 			}
 
 		} else if (is_ternary) {
@@ -5257,7 +5257,7 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 			}
 
 			for (int i = 0; i < 4; i++) {
-				expression.remove(next_op);
+				expression.remove_at(next_op);
 			}
 
 		} else {
@@ -5318,8 +5318,8 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 				return nullptr;
 			}
 
-			expression.remove(next_op);
-			expression.remove(next_op);
+			expression.remove_at(next_op);
+			expression.remove_at(next_op);
 		}
 	}
 

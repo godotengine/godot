@@ -186,7 +186,7 @@ namespace basisu
          k.end();
          k.clear();
          k.empty();
-         k.erase(0);
+         k.remove(0);
          k.insert(0, 1);
          k.find(0);
          k.get_equals();
@@ -258,7 +258,7 @@ namespace basisu
                {
                   q[p] = -k - 1;
 
-                  bool s = m.erase(counted_obj(k));
+                  bool s = m.remove(counted_obj(k));
                   HASHMAP_TEST_VERIFY(s);
                }
             }

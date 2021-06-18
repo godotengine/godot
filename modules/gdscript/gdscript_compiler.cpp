@@ -2298,7 +2298,7 @@ Error GDScriptCompiler::_parse_class_level(GDScript *p_script, const GDScriptPar
 				if (variable->initializer != nullptr && variable->initializer->is_constant) {
 					p_script->member_default_values[name] = variable->initializer->reduced_value;
 				} else {
-					p_script->member_default_values.erase(name);
+					p_script->member_default_values.remove(name);
 				}
 				p_script->member_lines[name] = variable->start_line;
 #endif
@@ -2407,7 +2407,7 @@ Error GDScriptCompiler::_parse_class_level(GDScript *p_script, const GDScriptPar
 	}
 
 	parsed_classes.insert(p_script);
-	parsing_classes.erase(p_script);
+	parsing_classes.remove(p_script);
 
 	//parse sub-classes
 
@@ -2509,7 +2509,7 @@ Error GDScriptCompiler::_parse_class_blocks(GDScript *p_script, const GDScriptPa
 
 				if (p_script->is_tool()) {
 					//re-create as an instance
-					p_script->placeholders.erase(psi); //remove placeholder
+					p_script->placeholders.remove(psi); //remove placeholder
 
 					GDScriptInstance *instance = memnew(GDScriptInstance);
 					instance->base_ref_counted = Object::cast_to<RefCounted>(E->get());

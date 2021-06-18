@@ -2090,7 +2090,7 @@ void AnimationTrackEdit::_notification(int p_what) {
 			}
 
 			{
-				//erase
+				//remove
 
 				Ref<Texture2D> icon = get_theme_icon("Remove", "EditorIcons");
 
@@ -3141,7 +3141,7 @@ void AnimationTrackEditor::add_track_edit_plugin(const Ref<AnimationTrackEditPlu
 }
 
 void AnimationTrackEditor::remove_track_edit_plugin(const Ref<AnimationTrackEditPlugin> &p_plugin) {
-	track_edit_plugins.erase(p_plugin);
+	track_edit_plugins.remove(p_plugin);
 }
 
 void AnimationTrackEditor::set_animation(const Ref<Animation> &p_anim) {
@@ -4738,7 +4738,7 @@ void AnimationTrackEditor::_key_deselected(int p_key, int p_track) {
 	sk.key = p_key;
 	sk.track = p_track;
 
-	selection.erase(sk);
+	selection.remove(sk);
 
 	for (int i = 0; i < track_edits.size(); i++) {
 		track_edits[i]->update();

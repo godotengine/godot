@@ -58,7 +58,7 @@ TEST_CASE("[LRU] Store and read") {
 	CHECK(lru.getptr(1) != nullptr);
 	CHECK(lru.getptr(1000) == nullptr);
 
-	lru.insert(600, 600); // Erase <50>
+	lru.insert(600, 600); // Remove <50>
 	CHECK(lru.has(600));
 	CHECK(!lru.has(50));
 }

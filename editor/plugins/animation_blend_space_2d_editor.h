@@ -51,8 +51,8 @@ class AnimationNodeBlendSpace2DEditor : public AnimationTreeNodeEditorPlugin {
 	Button *tool_select;
 	Button *tool_create;
 	Button *tool_triangle;
-	VSeparator *tool_erase_sep;
-	Button *tool_erase;
+	VSeparator *tool_remove_sep;
+	Button *tool_remove;
 	Button *snap;
 	SpinBox *snap_x;
 	SpinBox *snap_y;
@@ -113,8 +113,8 @@ class AnimationNodeBlendSpace2DEditor : public AnimationTreeNodeEditorPlugin {
 
 	void _tool_switch(int p_tool);
 	void _update_edited_point_pos();
-	void _update_tool_erase();
-	void _erase_selected();
+	void _update_tool_remove();
+	void _remove_selected();
 	void _edit_point_pos(double);
 	void _open_editor();
 

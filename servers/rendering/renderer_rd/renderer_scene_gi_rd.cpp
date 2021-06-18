@@ -742,7 +742,7 @@ void RendererSceneGIRD::SDFGI::create(RendererSceneEnvironmentRD *p_env, const V
 	reads_sky = p_env->sdfgi_read_sky_light;
 }
 
-void RendererSceneGIRD::SDFGI::erase() {
+void RendererSceneGIRD::SDFGI::remove() {
 	for (uint32_t i = 0; i < cascades.size(); i++) {
 		const SDFGI::Cascade &c = cascades[i];
 		RD::get_singleton()->free(c.light_data);

@@ -1352,9 +1352,9 @@ static void _add_text_to_rt(const String &p_bbcode, RichTextLabel *p_rt) {
 					break;
 				}
 
-				bbcode.erase(pos, bbcode.find("[/csharp]") + 9 - pos);
+				bbcode.remove(pos, bbcode.find("[/csharp]") + 9 - pos);
 				while (bbcode[pos] == '\n') {
-					bbcode.erase(pos, 1);
+					bbcode.remove(pos, 1);
 				}
 			}
 			break;
@@ -1368,9 +1368,9 @@ static void _add_text_to_rt(const String &p_bbcode, RichTextLabel *p_rt) {
 					break;
 				}
 
-				bbcode.erase(pos, bbcode.find("[/gdscript]") + 11 - pos);
+				bbcode.remove(pos, bbcode.find("[/gdscript]") + 11 - pos);
 				while (bbcode[pos] == '\n') {
-					bbcode.erase(pos, 1);
+					bbcode.remove(pos, 1);
 				}
 			}
 			break;

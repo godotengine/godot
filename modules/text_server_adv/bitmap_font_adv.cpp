@@ -422,7 +422,7 @@ void BitmapFontDataAdvanced::bitmap_add_kerning_pair(char32_t p_A, char32_t p_B,
 	kpk.B = p_B;
 
 	if (p_kerning == 0 && kerning_map.has(kpk)) {
-		kerning_map.erase(kpk);
+		kerning_map.remove(kpk);
 	} else {
 		kerning_map[kpk] = p_kerning;
 	}

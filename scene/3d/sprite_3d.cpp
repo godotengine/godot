@@ -79,7 +79,7 @@ void SpriteBase3D::_notification(int p_what) {
 
 	if (p_what == NOTIFICATION_EXIT_TREE) {
 		if (parent_sprite) {
-			parent_sprite->children.erase(pI);
+			parent_sprite->children.remove(pI);
 			pI = nullptr;
 			parent_sprite = nullptr;
 		}

@@ -538,9 +538,9 @@ Vector<float> Polygon2D::get_bone_weights(int p_index) const {
 	return bone_weights[p_index].weights;
 }
 
-void Polygon2D::erase_bone(int p_idx) {
+void Polygon2D::remove_bone(int p_idx) {
 	ERR_FAIL_INDEX(p_idx, bone_weights.size());
-	bone_weights.remove(p_idx);
+	bone_weights.remove_at(p_idx);
 }
 
 void Polygon2D::clear_bones() {
@@ -635,7 +635,7 @@ void Polygon2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_bone_count"), &Polygon2D::get_bone_count);
 	ClassDB::bind_method(D_METHOD("get_bone_path", "index"), &Polygon2D::get_bone_path);
 	ClassDB::bind_method(D_METHOD("get_bone_weights", "index"), &Polygon2D::get_bone_weights);
-	ClassDB::bind_method(D_METHOD("erase_bone", "index"), &Polygon2D::erase_bone);
+	ClassDB::bind_method(D_METHOD("remove_bone", "index"), &Polygon2D::remove_bone);
 	ClassDB::bind_method(D_METHOD("clear_bones"), &Polygon2D::clear_bones);
 	ClassDB::bind_method(D_METHOD("set_bone_path", "index", "path"), &Polygon2D::set_bone_path);
 	ClassDB::bind_method(D_METHOD("set_bone_weights", "index", "weights"), &Polygon2D::set_bone_weights);

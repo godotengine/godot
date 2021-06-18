@@ -757,7 +757,7 @@ void add_exposed_classes(Context &r_context) {
 				int *value = class_info->constant_map.getptr(constant_name);
 				TEST_FAIL_COND(!value, "Missing enum constant value: '",
 						String(class_name), ".", String(enum_.name), ".", String(constant_name), "'.");
-				constants.erase(constant_name);
+				constants.remove(constant_name);
 
 				ConstantData constant;
 				constant.name = constant_name;

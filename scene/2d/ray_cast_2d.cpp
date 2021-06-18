@@ -124,7 +124,7 @@ void RayCast2D::set_exclude_parent_body(bool p_exclude_parent_body) {
 		if (exclude_parent_body) {
 			exclude.insert(Object::cast_to<CollisionObject2D>(get_parent())->get_rid());
 		} else {
-			exclude.erase(Object::cast_to<CollisionObject2D>(get_parent())->get_rid());
+			exclude.remove(Object::cast_to<CollisionObject2D>(get_parent())->get_rid());
 		}
 	}
 }
@@ -146,7 +146,7 @@ void RayCast2D::_notification(int p_what) {
 				if (exclude_parent_body) {
 					exclude.insert(Object::cast_to<CollisionObject2D>(get_parent())->get_rid());
 				} else {
-					exclude.erase(Object::cast_to<CollisionObject2D>(get_parent())->get_rid());
+					exclude.remove(Object::cast_to<CollisionObject2D>(get_parent())->get_rid());
 				}
 			}
 		} break;
@@ -265,7 +265,7 @@ void RayCast2D::add_exception(const Object *p_object) {
 }
 
 void RayCast2D::remove_exception_rid(const RID &p_rid) {
-	exclude.erase(p_rid);
+	exclude.remove(p_rid);
 }
 
 void RayCast2D::remove_exception(const Object *p_object) {

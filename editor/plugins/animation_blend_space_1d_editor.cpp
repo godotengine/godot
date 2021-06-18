@@ -44,7 +44,7 @@ void AnimationNodeBlendSpace1DEditor::_blend_space_gui_input(const Ref<InputEven
 
 	if (tool_select->is_pressed() && k.is_valid() && k->is_pressed() && k->get_keycode() == KEY_DELETE && !k->is_echo()) {
 		if (selected_point != -1) {
-			_erase_selected();
+			_remove_selected();
 			accept_event();
 		}
 	}
@@ -115,7 +115,7 @@ void AnimationNodeBlendSpace1DEditor::_blend_space_gui_input(const Ref<InputEven
 
 		// try to see if a point can be selected
 		selected_point = -1;
-		_update_tool_erase();
+		_update_tool_remove();
 
 		for (int i = 0; i < points.size(); i++) {
 			if (Math::abs(float(points[i] - mb->get_position().x)) < 10 * EDSCALE) {
@@ -125,7 +125,7 @@ void AnimationNodeBlendSpace1DEditor::_blend_space_gui_input(const Ref<InputEven
 				EditorNode::get_singleton()->push_item(node.ptr(), "", true);
 				dragging_selected_attempt = true;
 				drag_from = mb->get_position();
-				_update_tool_erase();
+				_update_tool_remove();
 				_update_edited_point_pos();
 				return;
 			}
@@ -431,14 +431,14 @@ void AnimationNodeBlendSpace1DEditor::_add_animation_type(int p_index) {
 
 void AnimationNodeBlendSpace1DEditor::_tool_switch(int p_tool) {
 	if (p_tool == 0) {
-		tool_erase->show();
-		tool_erase_sep->show();
+		tool_remove->show();
+		tool_remove_sep->show();
 	} else {
-		tool_erase->hide();
-		tool_erase_sep->hide();
+		tool_remove->hide();
+		tool_remove_sep->hide();
 	}
 
-	_update_tool_erase();
+	_update_tool_remove();
 	blend_space_draw->update();
 }
 
@@ -464,9 +464,9 @@ void AnimationNodeBlendSpace1DEditor::_update_edited_point_pos() {
 	}
 }
 
-void AnimationNodeBlendSpace1DEditor::_update_tool_erase() {
+void AnimationNodeBlendSpace1DEditor::_update_tool_remove() {
 	bool point_valid = selected_point >= 0 && selected_point < blend_space->get_blend_point_count();
-	tool_erase->set_disabled(!point_valid);
+	tool_remove->set_disabled(!point_valid);
 
 	if (point_valid) {
 		Ref<AnimationNode> an = blend_space->get_blend_point_node(selected_point);
@@ -483,7 +483,7 @@ void AnimationNodeBlendSpace1DEditor::_update_tool_erase() {
 	}
 }
 
-void AnimationNodeBlendSpace1DEditor::_erase_selected() {
+void AnimationNodeBlendSpace1DEditor::_remove_selected() {
 	if (selected_point != -1) {
 		updating = true;
 
@@ -535,7 +535,7 @@ void AnimationNodeBlendSpace1DEditor::_notification(int p_what) {
 		tool_blend->set_icon(get_theme_icon("EditPivot", "EditorIcons"));
 		tool_select->set_icon(get_theme_icon("ToolSelect", "EditorIcons"));
 		tool_create->set_icon(get_theme_icon("EditKey", "EditorIcons"));
-		tool_erase->set_icon(get_theme_icon("Remove", "EditorIcons"));
+		tool_remove->set_icon(get_theme_icon("Remove", "EditorIcons"));
 		snap->set_icon(get_theme_icon("SnapGrid", "EditorIcons"));
 		open_editor->set_icon(get_theme_icon("Edit", "EditorIcons"));
 	}
@@ -566,7 +566,7 @@ void AnimationNodeBlendSpace1DEditor::_notification(int p_what) {
 
 void AnimationNodeBlendSpace1DEditor::_bind_methods() {
 	ClassDB::bind_method("_update_space", &AnimationNodeBlendSpace1DEditor::_update_space);
-	ClassDB::bind_method("_update_tool_erase", &AnimationNodeBlendSpace1DEditor::_update_tool_erase);
+	ClassDB::bind_method("_update_tool_remove", &AnimationNodeBlendSpace1DEditor::_update_tool_remove);
 
 	ClassDB::bind_method("_update_edited_point_pos", &AnimationNodeBlendSpace1DEditor::_update_edited_point_pos);
 }
@@ -621,13 +621,13 @@ AnimationNodeBlendSpace1DEditor::AnimationNodeBlendSpace1DEditor() {
 	tool_create->set_tooltip(TTR("Create points."));
 	tool_create->connect("pressed", callable_mp(this, &AnimationNodeBlendSpace1DEditor::_tool_switch), varray(1));
 
-	tool_erase_sep = memnew(VSeparator);
-	top_hb->add_child(tool_erase_sep);
-	tool_erase = memnew(Button);
-	tool_erase->set_flat(true);
-	top_hb->add_child(tool_erase);
-	tool_erase->set_tooltip(TTR("Erase points."));
-	tool_erase->connect("pressed", callable_mp(this, &AnimationNodeBlendSpace1DEditor::_erase_selected));
+	tool_remove_sep = memnew(VSeparator);
+	top_hb->add_child(tool_remove_sep);
+	tool_remove = memnew(Button);
+	tool_remove->set_flat(true);
+	top_hb->add_child(tool_remove);
+	tool_remove->set_tooltip(TTR("Remove points."));
+	tool_remove->connect("pressed", callable_mp(this, &AnimationNodeBlendSpace1DEditor::_remove_selected));
 
 	top_hb->add_child(memnew(VSeparator));
 

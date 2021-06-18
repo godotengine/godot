@@ -63,7 +63,7 @@ Variant VisualShaderNode::get_input_port_default_value(int p_port) const {
 
 void VisualShaderNode::remove_input_port_default_value(int p_port) {
 	if (default_input_values.has(p_port)) {
-		default_input_values.erase(p_port);
+		default_input_values.remove(p_port);
 		emit_changed();
 	}
 }
@@ -591,14 +591,14 @@ void VisualShader::remove_node(Type p_type, int p_id) {
 
 	g->nodes[p_id].node->disconnect("changed", callable_mp(this, &VisualShader::_queue_update));
 
-	g->nodes.erase(p_id);
+	g->nodes.remove(p_id);
 
 	for (List<Connection>::Element *E = g->connections.front(); E;) {
 		List<Connection>::Element *N = E->next();
 		if (E->get().from_node == p_id || E->get().to_node == p_id) {
-			g->connections.erase(E);
+			g->connections.remove(E);
 			if (E->get().from_node == p_id) {
-				g->nodes[E->get().to_node].prev_connected_nodes.erase(p_id);
+				g->nodes[E->get().to_node].prev_connected_nodes.remove(p_id);
 				g->nodes[E->get().to_node].node->set_input_port_connected(E->get().to_port, false);
 			}
 		}
@@ -765,8 +765,8 @@ void VisualShader::disconnect_nodes(Type p_type, int p_from_node, int p_from_por
 
 	for (List<Connection>::Element *E = g->connections.front(); E; E = E->next()) {
 		if (E->get().from_node == p_from_node && E->get().from_port == p_from_port && E->get().to_node == p_to_node && E->get().to_port == p_to_port) {
-			g->connections.erase(E);
-			g->nodes[p_to_node].prev_connected_nodes.erase(p_from_node);
+			g->connections.remove(E);
+			g->nodes[p_to_node].prev_connected_nodes.remove(p_from_node);
 			g->nodes[p_from_node].node->set_output_port_connected(p_from_port, false);
 			g->nodes[p_to_node].node->set_input_port_connected(p_to_port, false);
 			_queue_update();
@@ -808,7 +808,7 @@ void VisualShader::set_mode(Mode p_mode) {
 		return;
 	}
 
-	//erase input/output connections
+	//remove input/output connections
 	modes.clear();
 	flags.clear();
 	shader_mode = p_mode;
@@ -852,7 +852,7 @@ void VisualShader::set_mode(Mode p_mode) {
 			}
 
 			if (!keep) {
-				graph[i].connections.erase(E);
+				graph[i].connections.remove(E);
 			}
 			E = N;
 		}
@@ -1099,7 +1099,7 @@ bool VisualShader::_set(const StringName &p_name, const Variant &p_value) {
 		if (enable) {
 			flags.insert(flag);
 		} else {
-			flags.erase(flag);
+			flags.remove(flag);
 		}
 		_queue_update();
 		return true;
@@ -1107,7 +1107,7 @@ bool VisualShader::_set(const StringName &p_name, const Variant &p_value) {
 		String mode = name.get_slicec('/', 1);
 		int value = p_value;
 		if (value == 0) {
-			modes.erase(mode); //means it's default anyway, so don't store it
+			modes.remove(mode); //means it's default anyway, so don't store it
 		} else {
 			modes[mode] = value;
 		}
@@ -1945,14 +1945,14 @@ void VisualShader::_queue_update() {
 
 void VisualShader::_input_type_changed(Type p_type, int p_id) {
 	ERR_FAIL_INDEX(p_type, TYPE_MAX);
-	//erase connections using this input, as type changed
+	//remove connections using this input, as type changed
 	Graph *g = &graph[p_type];
 
 	for (List<Connection>::Element *E = g->connections.front(); E;) {
 		List<Connection>::Element *N = E->next();
 		if (E->get().from_node == p_id) {
-			g->connections.erase(E);
-			g->nodes[E->get().to_node].prev_connected_nodes.erase(p_id);
+			g->connections.remove(E);
+			g->nodes[E->get().to_node].prev_connected_nodes.remove(p_id);
 		}
 		E = N;
 	}
@@ -3213,7 +3213,7 @@ void VisualShaderNodeGroupBase::add_input_port(int p_id, int p_type, const Strin
 			count++;
 		}
 
-		inputs.erase(index, count);
+		inputs.remove(index, count);
 		inputs = inputs.insert(index, itos(i));
 		index += inputs_strings[i].size();
 	}
@@ -3236,7 +3236,7 @@ void VisualShaderNodeGroupBase::remove_input_port(int p_id) {
 		}
 		index += inputs_strings[i].size();
 	}
-	inputs.erase(index, count);
+	inputs.remove(index, count);
 
 	inputs_strings = inputs.split(";", false);
 	inputs = inputs.substr(0, index);
@@ -3285,7 +3285,7 @@ void VisualShaderNodeGroupBase::add_output_port(int p_id, int p_type, const Stri
 			count++;
 		}
 
-		outputs.erase(index, count);
+		outputs.remove(index, count);
 		outputs = outputs.insert(index, itos(i));
 		index += outputs_strings[i].size();
 	}
@@ -3308,7 +3308,7 @@ void VisualShaderNodeGroupBase::remove_output_port(int p_id) {
 		}
 		index += outputs_strings[i].size();
 	}
-	outputs.erase(index, count);
+	outputs.remove(index, count);
 
 	outputs_strings = outputs.split(";", false);
 	outputs = outputs.substr(0, index);
@@ -3360,7 +3360,7 @@ void VisualShaderNodeGroupBase::set_input_port_type(int p_id, int p_type) {
 		index += inputs_strings[i].size();
 	}
 
-	inputs.erase(index, count);
+	inputs.remove(index, count);
 
 	inputs = inputs.insert(index, itos(p_type));
 
@@ -3396,7 +3396,7 @@ void VisualShaderNodeGroupBase::set_input_port_name(int p_id, const String &p_na
 		index += inputs_strings[i].size();
 	}
 
-	inputs.erase(index, count);
+	inputs.remove(index, count);
 
 	inputs = inputs.insert(index, p_name);
 
@@ -3432,7 +3432,7 @@ void VisualShaderNodeGroupBase::set_output_port_type(int p_id, int p_type) {
 		index += output_strings[i].size();
 	}
 
-	outputs.erase(index, count);
+	outputs.remove(index, count);
 
 	outputs = outputs.insert(index, itos(p_type));
 
@@ -3468,7 +3468,7 @@ void VisualShaderNodeGroupBase::set_output_port_name(int p_id, const String &p_n
 		index += output_strings[i].size();
 	}
 
-	outputs.erase(index, count);
+	outputs.remove(index, count);
 
 	outputs = outputs.insert(index, p_name);
 

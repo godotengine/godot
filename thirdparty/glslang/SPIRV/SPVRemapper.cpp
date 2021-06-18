@@ -939,8 +939,8 @@ namespace spv {
 
                 // Ignore process vars referenced via access chain
                 if ((opCode == spv::OpAccessChain || opCode == spv::OpInBoundsAccessChain) && fnLocalVars.count(asId(start+3)) > 0) {
-                    fnLocalVars.erase(asId(start+3));
-                    idMap.erase(asId(start+3));
+                    fnLocalVars.remove(asId(start+3));
+                    idMap.remove(asId(start+3));
                     return true;
                 }
 
@@ -949,22 +949,22 @@ namespace spv {
 
                     // Avoid loads before stores
                     if (idMap.find(varId) == idMap.end()) {
-                        fnLocalVars.erase(varId);
-                        idMap.erase(varId);
+                        fnLocalVars.remove(varId);
+                        idMap.remove(varId);
                     }
 
                     // don't do for volatile references
                     if (wordCount > 4 && (spv[start+4] & spv::MemoryAccessVolatileMask)) {
-                        fnLocalVars.erase(varId);
-                        idMap.erase(varId);
+                        fnLocalVars.remove(varId);
+                        idMap.remove(varId);
                     }
 
                     // Handle flow control
                     if (blockMap.find(varId) == blockMap.end()) {
                         blockMap[varId] = blockNum;  // track block we found it in.
                     } else if (blockMap[varId] != blockNum) {
-                        fnLocalVars.erase(varId);  // Ignore if crosses flow control
-                        idMap.erase(varId);
+                        fnLocalVars.remove(varId);  // Ignore if crosses flow control
+                        idMap.remove(varId);
                     }
 
                     return true;
@@ -977,22 +977,22 @@ namespace spv {
                         idMap[varId] = asId(start+2);
                     } else {
                         // Remove if it has more than one store to the same pointer
-                        fnLocalVars.erase(varId);
-                        idMap.erase(varId);
+                        fnLocalVars.remove(varId);
+                        idMap.remove(varId);
                     }
 
                     // don't do for volatile references
                     if (wordCount > 3 && (spv[start+3] & spv::MemoryAccessVolatileMask)) {
-                        fnLocalVars.erase(asId(start+3));
-                        idMap.erase(asId(start+3));
+                        fnLocalVars.remove(asId(start+3));
+                        idMap.remove(asId(start+3));
                     }
 
                     // Handle flow control
                     if (blockMap.find(varId) == blockMap.end()) {
                         blockMap[varId] = blockNum;  // track block we found it in.
                     } else if (blockMap[varId] != blockNum) {
-                        fnLocalVars.erase(varId);  // Ignore if crosses flow control
-                        idMap.erase(varId);
+                        fnLocalVars.remove(varId);  // Ignore if crosses flow control
+                        idMap.remove(varId);
                     }
 
                     return true;
@@ -1004,8 +1004,8 @@ namespace spv {
             // If local var id used anywhere else, don't eliminate
             [&](spv::Id& id) {
                 if (fnLocalVars.count(id) > 0) {
-                    fnLocalVars.erase(id);
-                    idMap.erase(id);
+                    fnLocalVars.remove(id);
+                    idMap.remove(id);
                 }
             }
         );
@@ -1093,7 +1093,7 @@ namespace spv {
                                 const auto call_it = fnCalls.find(asId(start + 3));
                                 if (call_it != fnCalls.end()) {
                                     if (--call_it->second <= 0)
-                                        fnCalls.erase(call_it);
+                                        fnCalls.remove(call_it);
                                 }
                             }
 
@@ -1106,7 +1106,7 @@ namespace spv {
                     if (errorLatch)
                         return;
 
-                    fn = fnPos.erase(fn);
+                    fn = fnPos.remove(fn);
                 } else ++fn;
             }
         }

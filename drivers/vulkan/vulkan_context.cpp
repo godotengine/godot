@@ -1250,7 +1250,7 @@ void VulkanContext::window_destroy(DisplayServer::WindowID p_window_id) {
 	ERR_FAIL_COND(!windows.has(p_window_id));
 	_clean_up_swap_chain(&windows[p_window_id]);
 	vkDestroySurfaceKHR(inst, windows[p_window_id].surface, nullptr);
-	windows.erase(p_window_id);
+	windows.remove(p_window_id);
 }
 
 Error VulkanContext::_clean_up_swap_chain(Window *window) {

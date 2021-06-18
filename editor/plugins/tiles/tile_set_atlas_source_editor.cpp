@@ -383,7 +383,7 @@ void TileSetAtlasSourceEditor::_update_fix_selected_and_hovered_tiles() {
 	for (Set<TileSelection>::Element *E = selection.front(); E; E = E->next()) {
 		TileSelection selected = E->get();
 		if (!tile_set_atlas_source->has_tile(selected.tile) || !tile_set_atlas_source->has_alternative_tile(selected.tile, selected.alternative)) {
-			selection.erase(E);
+			selection.remove(E);
 		}
 	}
 
@@ -476,10 +476,10 @@ void TileSetAtlasSourceEditor::_update_toolbar() {
 	if (tools_button_group->get_pressed_button() == tool_select_button) {
 	} else if (tools_button_group->get_pressed_button() == tool_add_remove_button) {
 		tool_settings_vsep->show();
-		tools_settings_erase_button->show();
+		tools_settings_remove_button->show();
 	} else if (tools_button_group->get_pressed_button() == tool_add_remove_rect_button) {
 		tool_settings_vsep->show();
-		tools_settings_erase_button->show();
+		tools_settings_remove_button->show();
 	}
 }
 
@@ -650,7 +650,7 @@ void TileSetAtlasSourceEditor::_tile_atlas_control_gui_input(const Ref<InputEven
 			if (mb->is_pressed()) {
 				// Left click pressed.
 				if (tools_button_group->get_pressed_button() == tool_add_remove_button) {
-					if (tools_settings_erase_button->is_pressed()) {
+					if (tools_settings_remove_button->is_pressed()) {
 						// Remove tiles.
 
 						// Setup the dragging info.
@@ -697,7 +697,7 @@ void TileSetAtlasSourceEditor::_tile_atlas_control_gui_input(const Ref<InputEven
 						}
 					}
 				} else if (tools_button_group->get_pressed_button() == tool_add_remove_rect_button) {
-					if (tools_settings_erase_button->is_pressed()) {
+					if (tools_settings_remove_button->is_pressed()) {
 						// Remove tiles using rect.
 
 						// Setup the dragging info.
@@ -993,7 +993,7 @@ void TileSetAtlasSourceEditor::_end_dragging() {
 						if (add_to_selection && !selection.has({ coords, 0 })) {
 							selection.insert({ coords, 0 });
 						} else if (!add_to_selection && selection.has({ coords, 0 })) {
-							selection.erase({ coords, 0 });
+							selection.remove({ coords, 0 });
 						}
 					}
 				}
@@ -1620,7 +1620,7 @@ void TileSetAtlasSourceEditor::_notification(int p_what) {
 			tool_add_remove_button->set_icon(get_theme_icon("EditAddRemove", "EditorIcons"));
 			tool_add_remove_rect_button->set_icon(get_theme_icon("RectangleAddRemove", "EditorIcons"));
 
-			tools_settings_erase_button->set_icon(get_theme_icon("Eraser", "EditorIcons"));
+			tools_settings_remove_button->set_icon(get_theme_icon("Remover", "EditorIcons"));
 
 			tool_advanced_menu_buttom->set_icon(get_theme_icon("Tools", "EditorIcons"));
 
@@ -1768,12 +1768,12 @@ TileSetAtlasSourceEditor::TileSetAtlasSourceEditor() {
 	tool_settings_vsep = memnew(VSeparator);
 	tool_settings->add_child(tool_settings_vsep);
 
-	tools_settings_erase_button = memnew(Button);
-	tools_settings_erase_button->set_flat(true);
-	tools_settings_erase_button->set_toggle_mode(true);
-	tools_settings_erase_button->set_shortcut(ED_SHORTCUT("tiles_editor/eraser", "Eraser", KEY_E));
-	tools_settings_erase_button->set_shortcut_context(this);
-	tool_settings->add_child(tools_settings_erase_button);
+	tools_settings_remove_button = memnew(Button);
+	tools_settings_remove_button->set_flat(true);
+	tools_settings_remove_button->set_toggle_mode(true);
+	tools_settings_remove_button->set_shortcut(ED_SHORTCUT("tiles_editor/remover", "Remover", KEY_E));
+	tools_settings_remove_button->set_shortcut_context(this);
+	tool_settings->add_child(tools_settings_remove_button);
 
 	VSeparator *tool_advanced_vsep = memnew(VSeparator);
 	toolbox->add_child(tool_advanced_vsep);

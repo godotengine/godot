@@ -243,7 +243,7 @@ private:
 #ifdef TOOLS_ENABLED
 	Set<PlaceHolderScriptInstance *> placeholders;
 	// void _update_placeholder(PlaceHolderScriptInstance *p_placeholder);
-	virtual void _placeholder_erased(PlaceHolderScriptInstance *p_placeholder) override;
+	virtual void _placeholder_removed(PlaceHolderScriptInstance *p_placeholder) override;
 	void _update_placeholders();
 #endif
 

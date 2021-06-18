@@ -856,7 +856,7 @@ void RigidBodyBullet::on_enter_area(AreaBullet *p_area) {
 void RigidBodyBullet::on_exit_area(AreaBullet *p_area) {
 	RigidCollisionObjectBullet::on_exit_area(p_area);
 	/// Remove this area and keep the order
-	/// N.B. Since I don't want resize the array I can't use the "erase" function
+	/// N.B. Since I don't want resize the array I can't use the "remove" function
 	bool wasTheAreaFound = false;
 	for (int i = 0; i < areaWhereIamCount; ++i) {
 		if (p_area == areasWhereIam[i]) {

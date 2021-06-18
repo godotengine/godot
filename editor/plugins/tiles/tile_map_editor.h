@@ -71,7 +71,7 @@ private:
 
 	HBoxContainer *tools_settings;
 	VSeparator *tools_settings_vsep;
-	Button *erase_button;
+	Button *remove_button;
 	CheckBox *bucket_continuous_checkbox;
 
 	VSeparator *tools_settings_vsep_2;
@@ -199,7 +199,7 @@ private:
 	HBoxContainer *tools_settings;
 	VSeparator *tools_settings_vsep;
 	Button *picker_button;
-	Button *erase_button;
+	Button *remove_button;
 
 	void _update_toolbar();
 

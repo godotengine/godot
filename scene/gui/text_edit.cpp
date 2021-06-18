@@ -265,7 +265,7 @@ void TextEdit::Text::insert(int p_at, const String &p_text, const Vector<Vector2
 }
 
 void TextEdit::Text::remove(int p_at) {
-	text.remove(p_at);
+	text.remove_at(p_at);
 }
 
 void TextEdit::Text::add_gutter(int p_at) {
@@ -281,7 +281,7 @@ void TextEdit::Text::add_gutter(int p_at) {
 
 void TextEdit::Text::remove_gutter(int p_gutter) {
 	for (int i = 0; i < text.size(); i++) {
-		text.write[i].gutters.remove(p_gutter);
+		text.write[i].gutters.remove_at(p_gutter);
 	}
 	gutter_count--;
 }
@@ -4459,7 +4459,7 @@ void TextEdit::add_gutter(int p_at) {
 void TextEdit::remove_gutter(int p_gutter) {
 	ERR_FAIL_INDEX(p_gutter, gutters.size());
 
-	gutters.remove(p_gutter);
+	gutters.remove_at(p_gutter);
 
 	for (int i = 0; i < text.size() + 1; i++) {
 		text.remove_gutter(p_gutter);
@@ -5273,7 +5273,7 @@ void TextEdit::_clear_redo() {
 	while (undo_stack_pos) {
 		List<TextOperation>::Element *elem = undo_stack_pos;
 		undo_stack_pos = undo_stack_pos->next();
-		undo_stack.erase(elem);
+		undo_stack.remove(elem);
 	}
 }
 
@@ -5951,7 +5951,7 @@ bool TextEdit::_set(const StringName &p_name, const Variant &p_value) {
 		double value = p_value;
 		if (value == -1) {
 			if (opentype_features.has(tag)) {
-				opentype_features.erase(tag);
+				opentype_features.remove(tag);
 				text.set_font_features(opentype_features);
 				text.invalidate_all();
 				update();

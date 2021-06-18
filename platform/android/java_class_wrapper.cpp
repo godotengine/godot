@@ -1079,7 +1079,7 @@ Ref<JavaClass> JavaClassWrapper::wrap(const String &p_class) {
 				continue;
 
 			if (new_likeliness > existing_likeliness) {
-				java_class->methods[str_method].erase(E);
+				java_class->methods[str_method].remove(E);
 				break;
 			} else {
 				discard = true;

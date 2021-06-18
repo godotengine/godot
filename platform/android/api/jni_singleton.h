@@ -89,12 +89,12 @@ public:
 
 		ERR_FAIL_COND_V(res != 0, Variant());
 
-		List<jobject> to_erase;
+		List<jobject> to_remove;
 		for (int i = 0; i < p_argcount; i++) {
 			jvalret vr = _variant_to_jvalue(env, E->get().argtypes[i], p_args[i]);
 			v[i] = vr.val;
 			if (vr.obj)
-				to_erase.push_back(vr.obj);
+				to_remove.push_back(vr.obj);
 		}
 
 		Variant ret;
@@ -164,9 +164,9 @@ public:
 			} break;
 		}
 
-		while (to_erase.size()) {
-			env->DeleteLocalRef(to_erase.front()->get());
-			to_erase.pop_front();
+		while (to_remove.size()) {
+			env->DeleteLocalRef(to_remove.front()->get());
+			to_remove.pop_front();
 		}
 
 		env->PopLocalFrame(nullptr);

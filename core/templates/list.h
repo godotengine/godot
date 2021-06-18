@@ -128,8 +128,8 @@ public:
 			value = (T &)p_value;
 		}
 
-		void erase() {
-			data->erase(this);
+		void remove() {
+			data->remove(this);
 		}
 
 		_FORCE_INLINE_ Element() {}
@@ -141,7 +141,7 @@ private:
 		Element *last = nullptr;
 		int size_cache = 0;
 
-		bool erase(const Element *p_I) {
+		bool remove(const Element *p_I) {
 			ERR_FAIL_COND_V(!p_I, false);
 			ERR_FAIL_COND_V(p_I->data != this, false);
 
@@ -234,7 +234,7 @@ public:
 
 	void pop_back() {
 		if (_data && _data->last) {
-			erase(_data->last);
+			remove(_data->last);
 		}
 	}
 
@@ -272,7 +272,7 @@ public:
 
 	void pop_front() {
 		if (_data && _data->first) {
-			erase(_data->first);
+			remove(_data->first);
 		}
 	}
 
@@ -345,11 +345,11 @@ public:
 	}
 
 	/**
-	 * erase an element in the list, by iterator pointing to it. Return true if it was found/erased.
+	 * remove an element in the list, by iterator pointing to it. Return true if it was found/removed.
 	 */
-	bool erase(const Element *p_I) {
+	bool remove(const Element *p_I) {
 		if (_data && p_I) {
-			bool ret = _data->erase(p_I);
+			bool ret = _data->remove(p_I);
 
 			if (_data->size_cache == 0) {
 				memdelete_allocator<_Data, A>(_data);
@@ -363,11 +363,11 @@ public:
 	}
 
 	/**
-	 * erase the first element in the list, that contains value
+	 * remove the first element in the list, that contains value
 	 */
-	bool erase(const T &value) {
+	bool remove(const T &value) {
 		Element *I = find(value);
-		return erase(I);
+		return remove(I);
 	}
 
 	/**
@@ -382,7 +382,7 @@ public:
 	 */
 	void clear() {
 		while (front()) {
-			erase(front());
+			remove(front());
 		}
 	}
 

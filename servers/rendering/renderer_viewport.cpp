@@ -700,7 +700,7 @@ void RendererViewport::viewport_set_active(RID p_viewport, bool p_active) {
 		viewport->occlusion_buffer_dirty = true;
 		active_viewports.push_back(viewport);
 	} else {
-		active_viewports.erase(viewport);
+		active_viewports.remove(viewport);
 	}
 }
 
@@ -856,8 +856,8 @@ void RendererViewport::viewport_remove_canvas(RID p_viewport, RID p_canvas) {
 	RendererCanvasCull::Canvas *canvas = RSG::canvas->canvas_owner.getornull(p_canvas);
 	ERR_FAIL_COND(!canvas);
 
-	viewport->canvas_map.erase(p_canvas);
-	canvas->viewports.erase(p_viewport);
+	viewport->canvas_map.remove(p_canvas);
+	canvas->viewports.remove(p_viewport);
 }
 
 void RendererViewport::viewport_set_canvas_transform(RID p_viewport, RID p_canvas, const Transform2D &p_offset) {
@@ -1078,7 +1078,7 @@ bool RendererViewport::free(RID p_rid) {
 		}
 
 		viewport_set_scenario(p_rid, RID());
-		active_viewports.erase(viewport);
+		active_viewports.remove(viewport);
 
 		if (viewport->use_occlusion_culling) {
 			RendererSceneOcclusionCull::get_singleton()->remove_buffer(p_rid);

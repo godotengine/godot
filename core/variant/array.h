@@ -73,7 +73,7 @@ public:
 	Error resize(int p_new_size);
 
 	void insert(int p_pos, const Variant &p_value);
-	void remove(int p_pos);
+	void remove_at(int p_pos);
 	void fill(const Variant &p_value);
 
 	Variant front() const;
@@ -92,7 +92,7 @@ public:
 	int count(const Variant &p_value) const;
 	bool has(const Variant &p_value) const;
 
-	void erase(const Variant &p_value);
+	void remove(const Variant &p_value);
 
 	void push_front(const Variant &p_value);
 	Variant pop_back();

@@ -186,7 +186,7 @@ private:
 
 	HBoxContainer *tool_settings;
 	VSeparator *tool_settings_vsep;
-	Button *tools_settings_erase_button;
+	Button *tools_settings_remove_button;
 
 	MenuButton *tool_advanced_menu_buttom;
 

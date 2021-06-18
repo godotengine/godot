@@ -294,7 +294,7 @@ void EditorPerformanceProfiler::_marker_input(const Ref<InputEvent> &p_event) {
 void EditorPerformanceProfiler::reset() {
 	for (OrderedHashMap<StringName, Monitor>::Element i = monitors.front(); i; i = i.next()) {
 		if (String(i.key()).begins_with("custom:")) {
-			monitors.erase(i);
+			monitors.remove(i);
 		} else {
 			i.value().reset();
 		}
@@ -315,10 +315,10 @@ void EditorPerformanceProfiler::update_monitors(const Vector<StringName> &p_name
 	for (OrderedHashMap<StringName, Monitor>::Element i = monitors.front(); i; i = i.next()) {
 		if (String(i.key()).begins_with("custom:")) {
 			if (!names.has(i.key())) {
-				monitors.erase(i);
+				monitors.remove(i);
 			} else {
 				i.value().frame_index = names[i.key()];
-				names.erase(i.key());
+				names.remove(i.key());
 			}
 		}
 	}

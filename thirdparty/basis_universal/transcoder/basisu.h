@@ -148,7 +148,7 @@ namespace basisu
 	inline uint32_t iabs(int32_t i) { return (i < 0) ? static_cast<uint32_t>(-i) : static_cast<uint32_t>(i);	}
 	inline uint64_t iabs64(int64_t i) {	return (i < 0) ? static_cast<uint64_t>(-i) : static_cast<uint64_t>(i); }
 
-	template<typename T> inline void clear_vector(T &vec) { vec.erase(vec.begin(), vec.end()); }		
+	template<typename T> inline void clear_vector(T &vec) { vec.remove(vec.begin(), vec.end()); }		
 	template<typename T> inline typename T::value_type *enlarge_vector(T &vec, size_t n) { size_t cs = vec.size(); vec.resize(cs + n); return &vec[cs]; }
 
 	inline bool is_pow2(uint32_t x) { return x && ((x & (x - 1U)) == 0U); }

@@ -36,7 +36,7 @@
 
 #include "servers/camera_server.h"
 
-class CameraOSX : public CameraServer {
+class CameraOSX : public Camremoverver {
 public:
 	CameraOSX();
 	~CameraOSX();

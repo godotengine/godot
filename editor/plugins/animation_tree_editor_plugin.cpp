@@ -176,7 +176,7 @@ void AnimationTreeEditor::add_plugin(AnimationTreeNodeEditorPlugin *p_editor) {
 void AnimationTreeEditor::remove_plugin(AnimationTreeNodeEditorPlugin *p_editor) {
 	ERR_FAIL_COND(p_editor->get_parent() != editor_base);
 	editor_base->remove_child(p_editor);
-	editors.erase(p_editor);
+	editors.remove(p_editor);
 }
 
 String AnimationTreeEditor::get_base_path() {

@@ -107,8 +107,8 @@ void NativeScript::_update_placeholder(PlaceHolderScriptInstance *p_placeholder)
 	p_placeholder->update(info, values);
 }
 
-void NativeScript::_placeholder_erased(PlaceHolderScriptInstance *p_placeholder) {
-	placeholders.erase(p_placeholder);
+void NativeScript::_placeholder_removed(PlaceHolderScriptInstance *p_placeholder) {
+	placeholders.remove(p_placeholder);
 }
 
 #endif
@@ -832,14 +832,14 @@ NativeScriptInstance::~NativeScriptInstance() {
 	if (owner) {
 		MutexLock lock(script->owners_lock);
 
-		script->instance_owners.erase(owner);
+		script->instance_owners.remove(owner);
 	}
 }
 
 NativeScriptLanguage *NativeScriptLanguage::singleton;
 
 void NativeScriptLanguage::_unload_stuff(bool p_reload) {
-	Map<String, Ref<GDNative>> erase_and_unload;
+	Map<String, Ref<GDNative>> remove_and_unload;
 
 	for (Map<String, Map<StringName, NativeScriptDesc>>::Element *L = library_classes.front(); L; L = L->next()) {
 		String lib_path = L->key();
@@ -903,14 +903,14 @@ void NativeScriptLanguage::_unload_stuff(bool p_reload) {
 			}
 		}
 
-		erase_and_unload.insert(lib_path, gdn);
+		remove_and_unload.insert(lib_path, gdn);
 	}
 
-	for (Map<String, Ref<GDNative>>::Element *E = erase_and_unload.front(); E; E = E->next()) {
+	for (Map<String, Ref<GDNative>>::Element *E = remove_and_unload.front(); E; E = E->next()) {
 		String lib_path = E->key();
 		Ref<GDNative> gdn = E->get();
 
-		library_classes.erase(lib_path);
+		library_classes.remove(lib_path);
 
 		if (gdn.is_valid() && gdn->get_library().is_valid()) {
 			Ref<GDNativeLibrary> lib = gdn->get_library();
@@ -1320,7 +1320,7 @@ void NativeScriptLanguage::free_instance_binding_data(void *p_data) {
 		}
 	}
 
-	binding_instances.erase(&binding_data);
+	binding_instances.remove(&binding_data);
 
 	delete &binding_data;
 }
@@ -1461,9 +1461,9 @@ void NativeScriptLanguage::unregister_script(NativeScript *script) {
 
 	Map<String, Set<NativeScript *>>::Element *S = library_script_users.find(script->lib_path);
 	if (S) {
-		S->get().erase(script);
+		S->get().remove(script);
 		if (S->get().size() == 0) {
-			library_script_users.erase(S);
+			library_script_users.remove(S);
 
 			Map<String, Ref<GDNative>>::Element *G = library_gdnatives.find(script->lib_path);
 			if (G && G->get()->get_library()->is_reloadable()) {
@@ -1503,17 +1503,17 @@ void NativeScriptLanguage::unregister_script(NativeScript *script) {
 						}
 					}
 
-					library_classes.erase(script->lib_path);
+					library_classes.remove(script->lib_path);
 				}
 
 				// now unload the library
 				G->get()->terminate();
-				library_gdnatives.erase(G);
+				library_gdnatives.remove(G);
 			}
 		}
 	}
 #ifndef NO_THREADS
-	scripts_to_register.erase(script);
+	scripts_to_register.remove(script);
 #endif
 }
 
@@ -1708,7 +1708,7 @@ void NativeReloadNode::_notification(int p_what) {
 			unloaded = false;
 
 			for (Set<StringName>::Element *R = libs_to_remove.front(); R; R = R->next()) {
-				NSL->library_gdnatives.erase(R->get());
+				NSL->library_gdnatives.remove(R->get());
 			}
 
 		} break;

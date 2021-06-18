@@ -157,7 +157,7 @@ void EditorProfiler::_item_edited() {
 	if (checked) {
 		plot_sigs.insert(signature);
 	} else {
-		plot_sigs.erase(signature);
+		plot_sigs.remove(signature);
 	}
 
 	if (!frame_delay->is_processing()) {

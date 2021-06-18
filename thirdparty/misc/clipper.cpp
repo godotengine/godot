@@ -3941,7 +3941,7 @@ void ClipperOffset::Execute(Paths& solution, double delta)
     clpr.AddPath(outer, ptSubject, true);
     clpr.ReverseSolution(true);
     clpr.Execute(ctUnion, solution, pftNegative, pftNegative);
-    if (solution.size() > 0) solution.erase(solution.begin());
+    if (solution.size() > 0) solution.remove(solution.begin());
   }
 }
 //------------------------------------------------------------------------------

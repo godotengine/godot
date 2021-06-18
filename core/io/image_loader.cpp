@@ -107,7 +107,7 @@ void ImageLoader::add_image_format_loader(ImageFormatLoader *p_loader) {
 }
 
 void ImageLoader::remove_image_format_loader(ImageFormatLoader *p_loader) {
-	loader.erase(p_loader);
+	loader.remove(p_loader);
 }
 
 const Vector<ImageFormatLoader *> &ImageLoader::get_image_format_loaders() {

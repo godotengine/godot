@@ -92,7 +92,7 @@ void CollisionObject3DSW::remove_shape(Shape3DSW *p_shape) {
 }
 
 void CollisionObject3DSW::remove_shape(int p_index) {
-	//remove anything from shape to be erased to end, so subindices don't change
+	//remove anything from shape to be removed to end, so subindices don't change
 	ERR_FAIL_INDEX(p_index, shapes.size());
 	for (int i = p_index; i < shapes.size(); i++) {
 		if (shapes[i].bpid == 0) {
@@ -103,7 +103,7 @@ void CollisionObject3DSW::remove_shape(int p_index) {
 		shapes.write[i].bpid = 0;
 	}
 	shapes[p_index].shape->remove_owner(this);
-	shapes.remove(p_index);
+	shapes.remove_at(p_index);
 
 	if (!pending_shape_update_list.in_list()) {
 		PhysicsServer3DSW::singletonsw->pending_shape_update_list.add(&pending_shape_update_list);

@@ -47,7 +47,7 @@ void EditorFileServer::_close_client(ClientData *cd) {
 	}
 	while (cd->files.size()) {
 		memdelete(cd->files.front()->get());
-		cd->files.erase(cd->files.front());
+		cd->files.remove(cd->files.front());
 	}
 	memdelete(cd);
 }
@@ -250,7 +250,7 @@ void EditorFileServer::_subthread_start(void *s) {
 				print_verbose("CLOSED");
 				ERR_CONTINUE(!cd->files.has(id));
 				memdelete(cd->files[id]);
-				cd->files.erase(id);
+				cd->files.remove(id);
 			} break;
 		}
 	}
@@ -285,7 +285,7 @@ void EditorFileServer::_thread_start(void *s) {
 		self->wait_mutex.lock();
 		while (self->to_wait.size()) {
 			Thread *w = self->to_wait.front()->get();
-			self->to_wait.erase(w);
+			self->to_wait.remove(w);
 			self->wait_mutex.unlock();
 			w->wait_to_finish();
 			self->wait_mutex.lock();

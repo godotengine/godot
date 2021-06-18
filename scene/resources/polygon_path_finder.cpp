@@ -357,7 +357,7 @@ Vector<Vector2> PolygonPathFinder::find_path(const Vector2 &p_from, const Vector
 			break;
 		}
 
-		open_list.erase(least_cost_point);
+		open_list.remove(least_cost_point);
 	}
 
 	if (found_route) {
@@ -372,8 +372,8 @@ Vector<Vector2> PolygonPathFinder::find_path(const Vector2 &p_from, const Vector
 	}
 
 	for (int i = 0; i < points.size() - 2; i++) {
-		points.write[i].connections.erase(aidx);
-		points.write[i].connections.erase(bidx);
+		points.write[i].connections.remove(aidx);
+		points.write[i].connections.remove(bidx);
 		points.write[i].prev = -1;
 		points.write[i].distance = 0;
 	}

@@ -59,7 +59,7 @@
 
 void ViewportTexture::setup_local_to_scene() {
 	if (vp) {
-		vp->viewport_textures.erase(this);
+		vp->viewport_textures.remove(this);
 	}
 
 	vp = nullptr;
@@ -149,7 +149,7 @@ ViewportTexture::ViewportTexture() {
 
 ViewportTexture::~ViewportTexture() {
 	if (vp) {
-		vp->viewport_textures.erase(this);
+		vp->viewport_textures.remove(this);
 	}
 
 	if (proxy_ph.is_valid()) {
@@ -311,7 +311,7 @@ void Viewport::_sub_window_grab_focus(Window *p_window) {
 	if (p_window->get_flag(Window::FLAG_NO_FOCUS)) {
 		//can only move to foreground, but no focus granted
 		SubWindow sw = gui.sub_windows[index];
-		gui.sub_windows.remove(index);
+		gui.sub_windows.remove_at(index);
 		gui.sub_windows.push_back(sw);
 		index = gui.sub_windows.size() - 1;
 		_sub_window_update_order();
@@ -339,7 +339,7 @@ void Viewport::_sub_window_grab_focus(Window *p_window) {
 
 	{ //move to foreground
 		SubWindow sw = gui.sub_windows[index];
-		gui.sub_windows.remove(index);
+		gui.sub_windows.remove_at(index);
 		gui.sub_windows.push_back(sw);
 		index = gui.sub_windows.size() - 1;
 		_sub_window_update_order();
@@ -356,7 +356,7 @@ void Viewport::_sub_window_remove(Window *p_window) {
 	for (int i = 0; i < gui.sub_windows.size(); i++) {
 		if (gui.sub_windows[i].window == p_window) {
 			RS::get_singleton()->free(gui.sub_windows[i].canvas_item);
-			gui.sub_windows.remove(i);
+			gui.sub_windows.remove_at(i);
 			break;
 		}
 	}
@@ -728,7 +728,7 @@ void Viewport::_process_picking() {
 			}
 
 			if (is_mouse) {
-				List<Map<ObjectID, uint64_t>::Element *> to_erase;
+				List<Map<ObjectID, uint64_t>::Element *> to_remove;
 
 				for (Map<ObjectID, uint64_t>::Element *E = physics_2d_mouseover.front(); E; E = E->next()) {
 					if (E->get() != frame) {
@@ -739,13 +739,13 @@ void Viewport::_process_picking() {
 								co->_mouse_exit();
 							}
 						}
-						to_erase.push_back(E);
+						to_remove.push_back(E);
 					}
 				}
 
-				while (to_erase.size()) {
-					physics_2d_mouseover.erase(to_erase.front()->get());
-					to_erase.pop_front();
+				while (to_remove.size()) {
+					physics_2d_mouseover.remove(to_remove.front()->get());
+					to_remove.pop_front();
 				}
 			}
 		}
@@ -1012,7 +1012,7 @@ bool Viewport::_listener_add(Listener3D *p_listener) {
 }
 
 void Viewport::_listener_remove(Listener3D *p_listener) {
-	listeners.erase(p_listener);
+	listeners.remove(p_listener);
 	if (listener == p_listener) {
 		listener = nullptr;
 	}
@@ -1085,7 +1085,7 @@ bool Viewport::_camera_add(Camera3D *p_camera) {
 }
 
 void Viewport::_camera_remove(Camera3D *p_camera) {
-	cameras.erase(p_camera);
+	cameras.remove(p_camera);
 	if (camera == p_camera) {
 		camera->notification(Camera3D::NOTIFICATION_LOST_CURRENT);
 		camera = nullptr;
@@ -1115,7 +1115,7 @@ void Viewport::_canvas_layer_add(CanvasLayer *p_canvas_layer) {
 }
 
 void Viewport::_canvas_layer_remove(CanvasLayer *p_canvas_layer) {
-	canvas_layers.erase(p_canvas_layer);
+	canvas_layers.remove(p_canvas_layer);
 }
 
 void Viewport::set_transparent_background(bool p_enable) {
@@ -2475,7 +2475,7 @@ Control *Viewport::_gui_get_drag_preview() {
 }
 
 void Viewport::_gui_remove_root_control(List<Control *>::Element *RI) {
-	gui.roots.erase(RI);
+	gui.roots.remove(RI);
 }
 
 void Viewport::_gui_unfocus_control(Control *p_control) {
@@ -2598,7 +2598,7 @@ void Viewport::_drop_mouse_focus() {
 void Viewport::_drop_physics_mouseover(bool p_paused_only) {
 	physics_has_last_mousepos = false;
 
-	List<Map<ObjectID, uint64_t>::Element *> to_erase;
+	List<Map<ObjectID, uint64_t>::Element *> to_remove;
 
 	for (Map<ObjectID, uint64_t>::Element *E = physics_2d_mouseover.front(); E; E = E->next()) {
 		Object *o = ObjectDB::get_instance(E->key());
@@ -2609,14 +2609,14 @@ void Viewport::_drop_physics_mouseover(bool p_paused_only) {
 					continue;
 				}
 				co->_mouse_exit();
-				to_erase.push_back(E);
+				to_remove.push_back(E);
 			}
 		}
 	}
 
-	while (to_erase.size()) {
-		physics_2d_mouseover.erase(to_erase.front()->get());
-		to_erase.pop_front();
+	while (to_remove.size()) {
+		physics_2d_mouseover.remove(to_remove.front()->get());
+		to_remove.pop_front();
 	}
 
 #ifndef _3D_DISABLED
@@ -2782,7 +2782,7 @@ bool Viewport::_sub_windows_forward_input(const Ref<InputEvent> &p_event) {
 				}
 			}
 			gui.subwindow_drag = SUB_WINDOW_DRAG_DISABLED;
-			if (gui.subwindow_focused != nullptr) { //may have been erased
+			if (gui.subwindow_focused != nullptr) { //may have been removed
 				_sub_window_update(gui.subwindow_focused);
 			}
 		}
@@ -2889,7 +2889,7 @@ bool Viewport::_sub_windows_forward_input(const Ref<InputEvent> &p_event) {
 				gui.subwindow_focused->_rect_changed_callback(r);
 			}
 
-			if (gui.subwindow_focused) { //may have been erased
+			if (gui.subwindow_focused) { //may have been removed
 				_sub_window_update(gui.subwindow_focused);
 			}
 		}
@@ -3733,7 +3733,7 @@ Viewport::Viewport() {
 }
 
 Viewport::~Viewport() {
-	//erase itself from viewport textures
+	//remove itself from viewport textures
 	for (Set<ViewportTexture *>::Element *E = viewport_textures.front(); E; E = E->next()) {
 		E->get()->vp = nullptr;
 	}

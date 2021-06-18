@@ -860,7 +860,7 @@ void GDAPI godot_packed_glyph_array_push_back(godot_packed_glyph_array *p_self, 
 
 void GDAPI godot_packed_glyph_array_remove(godot_packed_glyph_array *p_self, const godot_int p_idx) {
 	Vector<TextServer::Glyph> *self = (Vector<TextServer::Glyph> *)p_self;
-	self->remove(p_idx);
+	self->remove_at(p_idx);
 }
 
 void GDAPI godot_packed_glyph_array_resize(godot_packed_glyph_array *p_self, const godot_int p_size) {

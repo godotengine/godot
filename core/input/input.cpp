@@ -430,7 +430,7 @@ void Input::joy_connection_changed(int p_idx, bool p_connected, String p_name, S
 		js.connected = false;
 		for (int i = 0; i < JOY_BUTTON_MAX; i++) {
 			int c = _combine_device(i, p_idx);
-			joy_buttons_pressed.erase(c);
+			joy_buttons_pressed.remove(c);
 		}
 		for (int i = 0; i < JOY_AXIS_MAX; i++) {
 			set_joy_axis(p_idx, i, 0.0f);
@@ -480,7 +480,7 @@ void Input::_parse_input_event_impl(const Ref<InputEvent> &p_event, bool p_is_em
 		if (k->is_pressed()) {
 			keys_pressed.insert(k->get_keycode());
 		} else {
-			keys_pressed.erase(k->get_keycode());
+			keys_pressed.remove(k->get_keycode());
 		}
 	}
 
@@ -536,7 +536,7 @@ void Input::_parse_input_event_impl(const Ref<InputEvent> &p_event, bool p_is_em
 		} else {
 			// Since a pointer index may not occur again (OSs may or may not reuse them),
 			// imperatively remove it from the map to keep no fossil entries in it
-			touch_speed_track.erase(st->get_index());
+			touch_speed_track.remove(st->get_index());
 		}
 
 		if (emulate_mouse_from_touch) {
@@ -603,7 +603,7 @@ void Input::_parse_input_event_impl(const Ref<InputEvent> &p_event, bool p_is_em
 		if (jb->is_pressed()) {
 			joy_buttons_pressed.insert(c);
 		} else {
-			joy_buttons_pressed.erase(c);
+			joy_buttons_pressed.remove(c);
 		}
 	}
 
@@ -1342,7 +1342,7 @@ void Input::add_joy_mapping(String p_mapping, bool p_update_existing) {
 void Input::remove_joy_mapping(String p_guid) {
 	for (int i = map_db.size() - 1; i >= 0; i--) {
 		if (p_guid == map_db[i].uid) {
-			map_db.remove(i);
+			map_db.remove_at(i);
 		}
 	}
 	for (Map<int, Joypad>::Element *E = joy_names.front(); E; E = E->next()) {

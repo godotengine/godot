@@ -244,7 +244,7 @@ public:
 	}
 
 	//! fast erase
-	inline void erase(GUINT index)
+	inline void remove(GUINT index)
 	{
 		if (index < m_size - 1)
 		{
@@ -253,7 +253,7 @@ public:
 		pop_back();
 	}
 
-	inline void erase_sorted_mem(GUINT index)
+	inline void remove_sorted_mem(GUINT index)
 	{
 		m_size--;
 		for (GUINT i = index; i < m_size; i++)
@@ -262,10 +262,10 @@ public:
 		}
 	}
 
-	inline void erase_sorted(GUINT index)
+	inline void remove_sorted(GUINT index)
 	{
 		m_data[index].~T();
-		erase_sorted_mem(index);
+		remove_sorted_mem(index);
 	}
 
 	inline void insert_mem(GUINT index)

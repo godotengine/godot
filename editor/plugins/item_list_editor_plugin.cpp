@@ -152,7 +152,7 @@ int ItemListOptionButtonPlugin::get_item_count() const {
 	return ob->get_item_count();
 }
 
-void ItemListOptionButtonPlugin::erase(int p_idx) {
+void ItemListOptionButtonPlugin::remove(int p_idx) {
 	ob->remove_item(p_idx);
 	notify_property_list_changed();
 }
@@ -188,7 +188,7 @@ int ItemListPopupMenuPlugin::get_item_count() const {
 	return pp->get_item_count();
 }
 
-void ItemListPopupMenuPlugin::erase(int p_idx) {
+void ItemListPopupMenuPlugin::remove(int p_idx) {
 	pp->remove_item(p_idx);
 	notify_property_list_changed();
 }
@@ -220,7 +220,7 @@ int ItemListItemListPlugin::get_item_count() const {
 	return pp->get_item_count();
 }
 
-void ItemListItemListPlugin::erase(int p_idx) {
+void ItemListItemListPlugin::remove(int p_idx) {
 	pp->remove_item(p_idx);
 	notify_property_list_changed();
 }
@@ -276,7 +276,7 @@ void ItemListEditor::_delete_pressed() {
 
 	int idx = current_selected.get_slice("/", 0).to_int();
 
-	item_plugins[selected_idx]->erase(idx);
+	item_plugins[selected_idx]->remove(idx);
 }
 
 void ItemListEditor::_edit_items() {

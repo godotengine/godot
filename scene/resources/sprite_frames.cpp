@@ -56,7 +56,7 @@ void SpriteFrames::remove_frame(const StringName &p_anim, int p_idx) {
 	Map<StringName, Anim>::Element *E = animations.find(p_anim);
 	ERR_FAIL_COND_MSG(!E, "Animation '" + String(p_anim) + "' doesn't exist.");
 
-	E->get().frames.remove(p_idx);
+	E->get().frames.remove_at(p_idx);
 	emit_changed();
 }
 
@@ -84,7 +84,7 @@ bool SpriteFrames::has_animation(const StringName &p_anim) const {
 }
 
 void SpriteFrames::remove_animation(const StringName &p_anim) {
-	animations.erase(p_anim);
+	animations.remove(p_anim);
 }
 
 void SpriteFrames::rename_animation(const StringName &p_prev, const StringName &p_next) {
@@ -92,7 +92,7 @@ void SpriteFrames::rename_animation(const StringName &p_prev, const StringName &
 	ERR_FAIL_COND_MSG(animations.has(p_next), "Animation '" + String(p_next) + "' already exists.");
 
 	Anim anim = animations[p_prev];
-	animations.erase(p_prev);
+	animations.remove(p_prev);
 	animations[p_next] = anim;
 }
 

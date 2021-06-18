@@ -679,28 +679,28 @@ void FBXMeshData::reorganize_vertices(
 			// Normals
 			if (r_normals_raw.has(old_index)) {
 				r_normals.set(new_index, this_vert_poly_normal);
-				r_normals_raw.getptr(old_index)->erase(polygon_index);
+				r_normals_raw.getptr(old_index)->remove(polygon_index);
 				r_normals_raw[new_index][polygon_index] = this_vert_poly_normal;
 			}
 
 			// Vertex Color
 			if (r_colors_raw.has(old_index)) {
 				r_color.set(new_index, this_vert_poly_color);
-				r_colors_raw.getptr(old_index)->erase(polygon_index);
+				r_colors_raw.getptr(old_index)->remove(polygon_index);
 				r_colors_raw[new_index][polygon_index] = this_vert_poly_color;
 			}
 
 			// UV 0
 			if (r_uv_1_raw.has(old_index)) {
 				r_uv_1.set(new_index, this_vert_poly_uv1);
-				r_uv_1_raw.getptr(old_index)->erase(polygon_index);
+				r_uv_1_raw.getptr(old_index)->remove(polygon_index);
 				r_uv_1_raw[new_index][polygon_index] = this_vert_poly_uv1;
 			}
 
 			// UV 1
 			if (r_uv_2_raw.has(old_index)) {
 				r_uv_2.set(new_index, this_vert_poly_uv2);
-				r_uv_2_raw.getptr(old_index)->erase(polygon_index);
+				r_uv_2_raw.getptr(old_index)->remove(polygon_index);
 				r_uv_2_raw[new_index][polygon_index] = this_vert_poly_uv2;
 			}
 

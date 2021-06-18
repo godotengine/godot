@@ -720,7 +720,7 @@ void Font::remove_data(int p_idx) {
 		data.write[p_idx]->disconnect("changed", callable_mp(this, &Font::_data_changed));
 	}
 
-	data.remove(p_idx);
+	data.remove_at(p_idx);
 
 	cache.clear();
 	cache_wrap.clear();

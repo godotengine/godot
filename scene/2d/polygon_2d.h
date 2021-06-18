@@ -142,7 +142,7 @@ public:
 	int get_bone_count() const;
 	NodePath get_bone_path(int p_index) const;
 	Vector<float> get_bone_weights(int p_index) const;
-	void erase_bone(int p_idx);
+	void remove_bone(int p_idx);
 	void clear_bones();
 	void set_bone_weights(int p_index, const Vector<float> &p_weights);
 	void set_bone_path(int p_index, const NodePath &p_path);

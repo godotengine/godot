@@ -47,7 +47,7 @@ void RendererStorage::Dependency::deleted_notify(const RID &p_rid) {
 		}
 	}
 	for (Map<DependencyTracker *, uint32_t>::Element *E = instances.front(); E; E = E->next()) {
-		E->key()->dependencies.erase(this);
+		E->key()->dependencies.remove(this);
 	}
 	instances.clear();
 }
@@ -57,7 +57,7 @@ RendererStorage::Dependency::~Dependency() {
 	if (instances.size()) {
 		WARN_PRINT("Leaked instance dependency: Bug - did not call instance_notify_deleted when freeing.");
 		for (Map<DependencyTracker *, uint32_t>::Element *E = instances.front(); E; E = E->next()) {
-			E->key()->dependencies.erase(this);
+			E->key()->dependencies.remove(this);
 		}
 	}
 #endif

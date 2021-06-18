@@ -69,7 +69,7 @@ public:
 	RD_SETGET(uint32_t, usage_bits)
 
 	void add_shareable_format(RD::DataFormat p_format) { base.shareable_formats.push_back(p_format); }
-	void remove_shareable_format(RD::DataFormat p_format) { base.shareable_formats.erase(p_format); }
+	void remove_shareable_format(RD::DataFormat p_format) { base.shareable_formats.remove(p_format); }
 
 protected:
 	static void _bind_methods() {

@@ -817,7 +817,7 @@ void EditorAssetLibrary::_image_request_completed(int p_status, int p_code, cons
 	}
 
 	image_queue[p_queue_id].request->queue_delete();
-	image_queue.erase(p_queue_id);
+	image_queue.remove(p_queue_id);
 
 	_update_image_queue();
 }
@@ -855,7 +855,7 @@ void EditorAssetLibrary::_update_image_queue() {
 
 	while (to_delete.size()) {
 		image_queue[to_delete.front()->get()].request->queue_delete();
-		image_queue.erase(to_delete.front()->get());
+		image_queue.remove(to_delete.front()->get());
 		to_delete.pop_front();
 	}
 }

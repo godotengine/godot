@@ -202,7 +202,7 @@ Vector<Vector3> NavMap::get_path(Vector3 p_origin, Vector3 p_destination, bool p
 		}
 
 		// Removes the least cost polygon from the list of polygons to visit so we can advance.
-		to_visit.erase(least_cost_id);
+		to_visit.remove(least_cost_id);
 
 		// When the list of polygons to visit is empty at this point it means the End Polygon is not reachable
 		if (to_visit.size() == 0) {
@@ -506,7 +506,7 @@ void NavMap::add_region(NavRegion *p_region) {
 void NavMap::remove_region(NavRegion *p_region) {
 	const std::vector<NavRegion *>::iterator it = std::find(regions.begin(), regions.end(), p_region);
 	if (it != regions.end()) {
-		regions.erase(it);
+		regions.remove(it);
 		regenerate_links = true;
 	}
 }
@@ -526,7 +526,7 @@ void NavMap::remove_agent(RvoAgent *agent) {
 	remove_agent_as_controlled(agent);
 	const std::vector<RvoAgent *>::iterator it = std::find(agents.begin(), agents.end(), agent);
 	if (it != agents.end()) {
-		agents.erase(it);
+		agents.remove(it);
 		agents_dirty = true;
 	}
 }
@@ -542,7 +542,7 @@ void NavMap::set_agent_as_controlled(RvoAgent *agent) {
 void NavMap::remove_agent_as_controlled(RvoAgent *agent) {
 	const std::vector<RvoAgent *>::iterator it = std::find(controlled_agents.begin(), controlled_agents.end(), agent);
 	if (it != controlled_agents.end()) {
-		controlled_agents.erase(it);
+		controlled_agents.remove(it);
 	}
 }
 

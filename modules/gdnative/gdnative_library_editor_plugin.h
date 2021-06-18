@@ -54,7 +54,7 @@ class GDNativeLibraryEditor : public Control {
 		BUTTON_CLEAR_LIBRARY,
 		BUTTON_SELECT_DEPENDENCES,
 		BUTTON_CLEAR_DEPENDENCES,
-		BUTTON_ERASE_ENTRY,
+		BUTTON_REMOVE_ENTRY,
 		BUTTON_MOVE_UP,
 		BUTTON_MOVE_DOWN,
 	};
@@ -82,7 +82,7 @@ protected:
 	void _on_item_activated();
 	void _on_create_new_entry();
 	void _set_target_value(const String &section, const String &target, Variant file);
-	void _erase_entry(const String &platform, const String &entry);
+	void _remove_entry(const String &platform, const String &entry);
 	void _move_entry(const String &platform, const String &entry, int dir);
 	void _translate_to_config_file();
 

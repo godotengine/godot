@@ -27,7 +27,7 @@
 				Removes all bones from this [Polygon2D].
 			</description>
 		</method>
-		<method name="erase_bone">
+		<method name="remove_bone">
 			<return type="void">
 			</return>
 			<argument index="0" name="index" type="int">

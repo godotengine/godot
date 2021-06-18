@@ -220,7 +220,7 @@ private:
 	SelfList<TileMapQuadrant>::List dirty_quadrant_list;
 
 	Map<Vector2i, TileMapQuadrant>::Element *_create_quadrant(const Vector2i &p_qk);
-	void _erase_quadrant(Map<Vector2i, TileMapQuadrant>::Element *Q);
+	void _remove_quadrant(Map<Vector2i, TileMapQuadrant>::Element *Q);
 	void _make_all_quadrants_dirty(bool p_update = true);
 	void _make_quadrant_dirty(Map<Vector2i, TileMapQuadrant>::Element *Q, bool p_update = true);
 	void _recreate_quadrants();

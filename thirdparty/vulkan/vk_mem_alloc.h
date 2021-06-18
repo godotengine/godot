@@ -4349,7 +4349,7 @@ static void VmaVectorInsert(std::vector<T, allocatorT>& vec, size_t index, const
 template<typename T, typename allocatorT>
 static void VmaVectorRemove(std::vector<T, allocatorT>& vec, size_t index)
 {
-    vec.erase(vec.begin() + index);
+    vec.remove(vec.begin() + index);
 }
 
 #else // #if VMA_USE_STL_VECTOR
@@ -5199,7 +5199,7 @@ public:
 
     void clear() { m_RawList.Clear(); }
     void push_back(const T& value) { m_RawList.PushBack(value); }
-    void erase(iterator it) { m_RawList.Remove(it.m_pItem); }
+    void remove(iterator it) { m_RawList.Remove(it.m_pItem); }
     iterator insert(iterator it, const T& value) { return iterator(&m_RawList, m_RawList.InsertBefore(it.m_pItem, value)); }
 
 private:
@@ -5250,7 +5250,7 @@ public:
 
     void insert(const PairType& pair);
     iterator find(const KeyT& key);
-    void erase(iterator it);
+    void remove(iterator it);
     
 private:
     VmaVector< PairType, VmaStlAllocator<PairType> > m_Vector;
@@ -5301,7 +5301,7 @@ VmaPair<KeyT, ValueT>* VmaMap<KeyT, ValueT>::find(const KeyT& key)
 }
 
 template<typename KeyT, typename ValueT>
-void VmaMap<KeyT, ValueT>::erase(iterator it)
+void VmaMap<KeyT, ValueT>::remove(iterator it)
 {
     VmaVectorRemove(m_Vector, it - m_Vector.begin());
 }
@@ -9001,7 +9001,7 @@ void VmaBlockMetadata_Generic::MergeFreeWithNext(VmaSuballocationList::iterator 
 
     item->size += nextItem->size;
     --m_FreeCount;
-    m_Suballocations.erase(nextItem);
+    m_Suballocations.remove(nextItem);
 }
 
 VmaSuballocationList::iterator VmaBlockMetadata_Generic::FreeSuballocation(VmaSuballocationList::iterator suballocItem)
@@ -13405,7 +13405,7 @@ VkResult VmaDefragmentationAlgorithm_Fast::Defragment(
                     
                     VmaSuballocationList::iterator nextSuballocIt = srcSuballocIt;
                     ++nextSuballocIt;
-                    pSrcMetadata->m_Suballocations.erase(srcSuballocIt);
+                    pSrcMetadata->m_Suballocations.remove(srcSuballocIt);
                     srcSuballocIt = nextSuballocIt;
 
                     InsertSuballoc(pFreeSpaceMetadata, suballoc);
@@ -13431,7 +13431,7 @@ VkResult VmaDefragmentationAlgorithm_Fast::Defragment(
 
                     VmaSuballocationList::iterator nextSuballocIt = srcSuballocIt;
                     ++nextSuballocIt;
-                    pSrcMetadata->m_Suballocations.erase(srcSuballocIt);
+                    pSrcMetadata->m_Suballocations.remove(srcSuballocIt);
                     srcSuballocIt = nextSuballocIt;
 
                     InsertSuballoc(pFreeSpaceMetadata, suballoc);
@@ -13518,7 +13518,7 @@ VkResult VmaDefragmentationAlgorithm_Fast::Defragment(
 
                     VmaSuballocationList::iterator nextSuballocIt = srcSuballocIt;
                     ++nextSuballocIt;
-                    pSrcMetadata->m_Suballocations.erase(srcSuballocIt);
+                    pSrcMetadata->m_Suballocations.remove(srcSuballocIt);
                     srcSuballocIt = nextSuballocIt;
 
                     pDstMetadata->m_Suballocations.push_back(suballoc);
@@ -13557,7 +13557,7 @@ void VmaDefragmentationAlgorithm_Fast::PreprocessMetadata()
             {
                 VmaSuballocationList::iterator nextIt = it;
                 ++nextIt;
-                pMetadata->m_Suballocations.erase(it);
+                pMetadata->m_Suballocations.remove(it);
                 it = nextIt;
             }
             else

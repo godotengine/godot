@@ -302,7 +302,7 @@ void HTTPClient::close() {
 	status = STATUS_DISCONNECTED;
 	head_request = false;
 	if (resolving != IP::RESOLVER_INVALID_ID) {
-		IP::get_singleton()->erase_resolve_item(resolving);
+		IP::get_singleton()->remove_resolve_item(resolving);
 		resolving = IP::RESOLVER_INVALID_ID;
 	}
 
@@ -330,7 +330,7 @@ Error HTTPClient::poll() {
 				case IP::RESOLVER_STATUS_DONE: {
 					IPAddress host = IP::get_singleton()->get_resolve_item_address(resolving);
 					Error err = tcp_connection->connect_to_host(host, conn_port);
-					IP::get_singleton()->erase_resolve_item(resolving);
+					IP::get_singleton()->remove_resolve_item(resolving);
 					resolving = IP::RESOLVER_INVALID_ID;
 					if (err) {
 						status = STATUS_CANT_CONNECT;
@@ -341,7 +341,7 @@ Error HTTPClient::poll() {
 				} break;
 				case IP::RESOLVER_STATUS_NONE:
 				case IP::RESOLVER_STATUS_ERROR: {
-					IP::get_singleton()->erase_resolve_item(resolving);
+					IP::get_singleton()->remove_resolve_item(resolving);
 					resolving = IP::RESOLVER_INVALID_ID;
 					close();
 					status = STATUS_CANT_RESOLVE;
@@ -763,7 +763,7 @@ String HTTPClient::query_string_from_dict(const Dictionary &p_dict) {
 			}
 		}
 	}
-	query.erase(0, 1);
+	query.remove(0, 1);
 	return query;
 }
 

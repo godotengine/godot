@@ -54,8 +54,8 @@ void RendererSceneRenderRD::sdfgi_update(RID p_render_buffers, RID p_environment
 
 	if (!needs_sdfgi) {
 		if (rb->sdfgi != nullptr) {
-			//erase it
-			rb->sdfgi->erase();
+			//remove it
+			rb->sdfgi->remove();
 			memdelete(rb->sdfgi);
 			rb->sdfgi = nullptr;
 		}
@@ -66,8 +66,8 @@ void RendererSceneRenderRD::sdfgi_update(RID p_render_buffers, RID p_environment
 	uint32_t requested_history_size = history_frames_to_converge[gi.sdfgi_frames_to_converge];
 
 	if (rb->sdfgi && (rb->sdfgi->cascade_mode != env->sdfgi_cascades || rb->sdfgi->min_cell_size != env->sdfgi_min_cell_size || requested_history_size != rb->sdfgi->history_size || rb->sdfgi->uses_occlusion != env->sdfgi_use_occlusion || rb->sdfgi->y_scale_mode != env->sdfgi_y_scale)) {
-		//configuration changed, erase
-		rb->sdfgi->erase();
+		//configuration changed, remove
+		rb->sdfgi->remove();
 		memdelete(rb->sdfgi);
 		rb->sdfgi = nullptr;
 	}
@@ -835,11 +835,11 @@ void RendererSceneRenderRD::shadow_atlas_set_size(RID p_atlas, int p_size, bool 
 		shadow_atlas->quadrants[i].shadows.resize(1 << shadow_atlas->quadrants[i].subdivision);
 	}
 
-	//erase shadow atlas reference from lights
+	//remove shadow atlas reference from lights
 	for (Map<RID, uint32_t>::Element *E = shadow_atlas->shadow_owners.front(); E; E = E->next()) {
 		LightInstance *li = light_instance_owner.getornull(E->key());
 		ERR_CONTINUE(!li);
-		li->shadow_atlases.erase(p_atlas);
+		li->shadow_atlases.remove(p_atlas);
 	}
 
 	//clear owners
@@ -868,13 +868,13 @@ void RendererSceneRenderRD::shadow_atlas_set_quadrant_subdivision(RID p_atlas, i
 		return;
 	}
 
-	//erase all data from quadrant
+	//remove all data from quadrant
 	for (int i = 0; i < shadow_atlas->quadrants[p_quadrant].shadows.size(); i++) {
 		if (shadow_atlas->quadrants[p_quadrant].shadows[i].owner.is_valid()) {
-			shadow_atlas->shadow_owners.erase(shadow_atlas->quadrants[p_quadrant].shadows[i].owner);
+			shadow_atlas->shadow_owners.remove(shadow_atlas->quadrants[p_quadrant].shadows[i].owner);
 			LightInstance *li = light_instance_owner.getornull(shadow_atlas->quadrants[p_quadrant].shadows[i].owner);
 			ERR_CONTINUE(!li);
-			li->shadow_atlases.erase(p_atlas);
+			li->shadow_atlases.remove(p_atlas);
 		}
 	}
 
@@ -1036,12 +1036,12 @@ bool RendererSceneRenderRD::shadow_atlas_update_light(RID p_atlas, RID p_light_i
 			ShadowAtlas::Quadrant::Shadow *sh = &shadow_atlas->quadrants[new_quadrant].shadows.write[new_shadow];
 			if (sh->owner.is_valid()) {
 				//is taken, but is invalid, erasing it
-				shadow_atlas->shadow_owners.erase(sh->owner);
+				shadow_atlas->shadow_owners.remove(sh->owner);
 				LightInstance *sli = light_instance_owner.getornull(sh->owner);
-				sli->shadow_atlases.erase(p_atlas);
+				sli->shadow_atlases.remove(p_atlas);
 			}
 
-			//erase previous
+			//remove previous
 			shadow_atlas->quadrants[q].shadows.write[s].version = 0;
 			shadow_atlas->quadrants[q].shadows.write[s].owner = RID();
 
@@ -1076,9 +1076,9 @@ bool RendererSceneRenderRD::shadow_atlas_update_light(RID p_atlas, RID p_light_i
 		ShadowAtlas::Quadrant::Shadow *sh = &shadow_atlas->quadrants[new_quadrant].shadows.write[new_shadow];
 		if (sh->owner.is_valid()) {
 			//is taken, but is invalid, erasing it
-			shadow_atlas->shadow_owners.erase(sh->owner);
+			shadow_atlas->shadow_owners.remove(sh->owner);
 			LightInstance *sli = light_instance_owner.getornull(sh->owner);
-			sli->shadow_atlases.erase(p_atlas);
+			sli->shadow_atlases.remove(p_atlas);
 		}
 
 		sh->owner = p_light_intance;
@@ -3054,7 +3054,7 @@ void RendererSceneRenderRD::_fill_instance_indices(const RID *p_omni_light_insta
 	}
 }
 
-void RendererSceneRenderRD::_volumetric_fog_erase(RenderBuffers *rb) {
+void RendererSceneRenderRD::_volumetric_fog_remove(RenderBuffers *rb) {
 	ERR_FAIL_COND(!rb->volumetric_fog);
 
 	RD::get_singleton()->free(rb->volumetric_fog->prev_light_density_map);
@@ -3092,7 +3092,7 @@ void RendererSceneRenderRD::_update_volumetric_fog(RID p_render_buffers, RID p_e
 	if (rb->volumetric_fog) {
 		//validate
 		if (!env || !env->volumetric_fog_enabled || rb->volumetric_fog->width != target_width || rb->volumetric_fog->height != target_height || rb->volumetric_fog->depth != volumetric_fog_depth) {
-			_volumetric_fog_erase(rb);
+			_volumetric_fog_remove(rb);
 		}
 	}
 
@@ -4006,12 +4006,12 @@ bool RendererSceneRenderRD::free(RID p_rid) {
 		_free_render_buffer_data(rb);
 		memdelete(rb->data);
 		if (rb->sdfgi) {
-			rb->sdfgi->erase();
+			rb->sdfgi->remove();
 			memdelete(rb->sdfgi);
 			rb->sdfgi = nullptr;
 		}
 		if (rb->volumetric_fog) {
-			_volumetric_fog_erase(rb);
+			_volumetric_fog_remove(rb);
 		}
 		if (rb->cluster_builder) {
 			memdelete(rb->cluster_builder);
@@ -4067,7 +4067,7 @@ bool RendererSceneRenderRD::free(RID p_rid) {
 			uint32_t s = key & ShadowAtlas::SHADOW_INDEX_MASK;
 
 			shadow_atlas->quadrants[q].shadows.write[s].owner = RID();
-			shadow_atlas->shadow_owners.erase(p_rid);
+			shadow_atlas->shadow_owners.remove(p_rid);
 		}
 
 		light_instance_owner.free(p_rid);

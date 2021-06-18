@@ -180,7 +180,7 @@ void DocTools::merge_from(const DocTools &p_data) {
 void DocTools::remove_from(const DocTools &p_data) {
 	for (Map<String, DocData::ClassDoc>::Element *E = p_data.class_list.front(); E; E = E->next()) {
 		if (class_list.has(E->key())) {
-			class_list.erase(E->key());
+			class_list.remove(E->key());
 		}
 	}
 }
@@ -192,7 +192,7 @@ void DocTools::add_doc(const DocData::ClassDoc &p_class_doc) {
 
 void DocTools::remove_doc(const String &p_class_name) {
 	ERR_FAIL_COND(p_class_name == "" || !class_list.has(p_class_name));
-	class_list.erase(p_class_name);
+	class_list.remove(p_class_name);
 }
 
 bool DocTools::has_doc(const String &p_class_name) {
@@ -934,29 +934,29 @@ Error DocTools::load_classes(const String &p_dir) {
 	return OK;
 }
 
-Error DocTools::erase_classes(const String &p_dir) {
+Error DocTools::remove_classes(const String &p_dir) {
 	Error err;
 	DirAccessRef da = DirAccess::open(p_dir, &err);
 	if (!da) {
 		return err;
 	}
 
-	List<String> to_erase;
+	List<String> to_remove;
 
 	da->list_dir_begin();
 	String path;
 	path = da->get_next();
 	while (path != String()) {
 		if (!da->current_is_dir() && path.ends_with("xml")) {
-			to_erase.push_back(path);
+			to_remove.push_back(path);
 		}
 		path = da->get_next();
 	}
 	da->list_dir_end();
 
-	while (to_erase.size()) {
-		da->remove(to_erase.front()->get());
-		to_erase.pop_front();
+	while (to_remove.size()) {
+		da->remove(to_remove.front()->get());
+		to_remove.pop_front();
 	}
 
 	return OK;

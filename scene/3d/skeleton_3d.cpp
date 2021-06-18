@@ -61,7 +61,7 @@ Ref<Skin> SkinReference::get_skin() const {
 
 SkinReference::~SkinReference() {
 	if (skeleton_node) {
-		skeleton_node->skin_bindings.erase(this);
+		skeleton_node->skin_bindings.remove(this);
 	}
 
 	RS::get_singleton()->free(skeleton);
@@ -538,7 +538,7 @@ void Skeleton3D::unbind_child_node_from_bone(int p_bone, Node *p_node) {
 	ERR_FAIL_INDEX(p_bone, bones.size());
 
 	ObjectID id = p_node->get_instance_id();
-	bones.write[p_bone].nodes_bound.erase(id);
+	bones.write[p_bone].nodes_bound.remove(id);
 }
 
 void Skeleton3D::get_bound_child_nodes_to_bone(int p_bone, List<Node *> *p_bound) const {

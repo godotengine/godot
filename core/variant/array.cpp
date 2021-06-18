@@ -213,9 +213,9 @@ void Array::fill(const Variant &p_value) {
 	_p->array.fill(p_value);
 }
 
-void Array::erase(const Variant &p_value) {
-	ERR_FAIL_COND(!_p->typed.validate(p_value, "erase"));
-	_p->array.erase(p_value);
+void Array::remove(const Variant &p_value) {
+	ERR_FAIL_COND(!_p->typed.validate(p_value, "remove"));
+	_p->array.remove(p_value);
 }
 
 Variant Array::front() const {
@@ -284,8 +284,8 @@ bool Array::has(const Variant &p_value) const {
 	return _p->array.find(p_value, 0) != -1;
 }
 
-void Array::remove(int p_pos) {
-	_p->array.remove(p_pos);
+void Array::remove_at(int p_pos) {
+	_p->array.remove_at(p_pos);
 }
 
 void Array::set(int p_idx, const Variant &p_value) {
@@ -546,7 +546,7 @@ Variant Array::pop_back() {
 Variant Array::pop_front() {
 	if (!_p->array.is_empty()) {
 		Variant ret = _p->array.get(0);
-		_p->array.remove(0);
+		_p->array.remove_at(0);
 		return ret;
 	}
 	return Variant();

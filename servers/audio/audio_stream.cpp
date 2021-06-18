@@ -221,7 +221,7 @@ void AudioStreamPlaybackMicrophone::seek(float p_time) {
 }
 
 AudioStreamPlaybackMicrophone::~AudioStreamPlaybackMicrophone() {
-	microphone->playbacks.erase(this);
+	microphone->playbacks.remove(this);
 	stop();
 }
 
@@ -356,5 +356,5 @@ void AudioStreamPlaybackRandomPitch::mix(AudioFrame *p_buffer, float p_rate_scal
 }
 
 AudioStreamPlaybackRandomPitch::~AudioStreamPlaybackRandomPitch() {
-	random_pitch->playbacks.erase(this);
+	random_pitch->playbacks.remove(this);
 }

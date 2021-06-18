@@ -324,7 +324,7 @@ void AnimationNode::set_input_name(int p_input, const String &p_name) {
 
 void AnimationNode::remove_input(int p_index) {
 	ERR_FAIL_INDEX(p_index, inputs.size());
-	inputs.remove(p_index);
+	inputs.remove_at(p_index);
 	emit_changed();
 }
 
@@ -340,7 +340,7 @@ void AnimationNode::set_filter_path(const NodePath &p_path, bool p_enable) {
 	if (p_enable) {
 		filter[p_path] = true;
 	} else {
-		filter.erase(p_path);
+		filter.remove(p_path);
 	}
 }
 
@@ -549,9 +549,9 @@ bool AnimationTree::_update_caches(AnimationPlayer *player) {
 
 			//if not valid, delete track
 			if (track && (track->type != track_type || ObjectDB::get_instance(track->object_id) == nullptr)) {
-				playing_caches.erase(track);
+				playing_caches.remove(track);
 				memdelete(track);
-				track_cache.erase(path);
+				track_cache.remove(path);
 				track = nullptr;
 			}
 
@@ -687,7 +687,7 @@ bool AnimationTree::_update_caches(AnimationPlayer *player) {
 	while (to_delete.front()) {
 		NodePath np = to_delete.front()->get();
 		memdelete(track_cache[np]);
-		track_cache.erase(np);
+		track_cache.remove(np);
 		to_delete.pop_front();
 	}
 
@@ -1025,7 +1025,7 @@ void AnimationTree::_process_graph(float p_delta) {
 							if (!stream.is_valid()) {
 								t->object->call("stop");
 								t->playing = false;
-								playing_caches.erase(t);
+								playing_caches.remove(t);
 							} else {
 								float start_ofs = a->audio_track_get_key_start_offset(i, idx);
 								start_ofs += time - a->track_get_key_time(i, idx);
@@ -1035,7 +1035,7 @@ void AnimationTree::_process_graph(float p_delta) {
 								if (start_ofs > len - end_ofs) {
 									t->object->call("stop");
 									t->playing = false;
-									playing_caches.erase(t);
+									playing_caches.remove(t);
 									continue;
 								}
 
@@ -1064,7 +1064,7 @@ void AnimationTree::_process_graph(float p_delta) {
 								if (!stream.is_valid()) {
 									t->object->call("stop");
 									t->playing = false;
-									playing_caches.erase(t);
+									playing_caches.remove(t);
 								} else {
 									float start_ofs = a->audio_track_get_key_start_offset(i, idx);
 									float end_ofs = a->audio_track_get_key_end_offset(i, idx);
@@ -1102,7 +1102,7 @@ void AnimationTree::_process_graph(float p_delta) {
 									//time to stop
 									t->object->call("stop");
 									t->playing = false;
-									playing_caches.erase(t);
+									playing_caches.remove(t);
 								}
 							}
 						}
@@ -1166,7 +1166,7 @@ void AnimationTree::_process_graph(float p_delta) {
 								StringName anim_name = a->animation_track_get_key_animation(i, idx);
 								if (String(anim_name) == "[stop]" || !player2->has_animation(anim_name)) {
 									if (playing_caches.has(t)) {
-										playing_caches.erase(t);
+										playing_caches.remove(t);
 										player2->stop();
 										t->playing = false;
 									}

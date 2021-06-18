@@ -311,7 +311,7 @@ void NetworkedMultiplayerENet::poll() {
 				}
 
 				emit_signal("peer_disconnected", *id);
-				peer_map.erase(*id);
+				peer_map.remove(*id);
 				memdelete(id);
 			} break;
 			case ENET_EVENT_TYPE_RECEIVE: {
@@ -332,7 +332,7 @@ void NetworkedMultiplayerENet::poll() {
 
 						} break;
 						case SYSMSG_REMOVE_PEER: {
-							peer_map.erase(id);
+							peer_map.remove(id);
 							emit_signal("peer_disconnected", id);
 						} break;
 					}
@@ -400,7 +400,7 @@ void NetworkedMultiplayerENet::poll() {
 								// Server is not excluded
 								incoming_packets.push_back(packet);
 							} else {
-								// Server is excluded, erase packet
+								// Server is excluded, remove packet
 								enet_packet_destroy(packet.packet);
 							}
 
@@ -492,7 +492,7 @@ void NetworkedMultiplayerENet::disconnect_peer(int p_peer, bool now) {
 		}
 
 		emit_signal("peer_disconnected", p_peer);
-		peer_map.erase(p_peer);
+		peer_map.remove(p_peer);
 	} else {
 		enet_peer_disconnect_later(peer_map[p_peer], 0);
 	}

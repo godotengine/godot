@@ -472,7 +472,7 @@ void Node3DEditorViewport::_select(Node *p_node, bool p_append, bool p_single) {
 	}
 
 	if (editor_selection->is_selected(p_node)) {
-		//erase
+		//remove
 		editor_selection->remove_node(p_node);
 	} else {
 		editor_selection->add_node(p_node);
@@ -1033,7 +1033,7 @@ void Node3DEditorViewport::_list_select(Ref<InputEventMouseButton> b) {
 		Node3D *item = selection_results[i].item;
 		if (item != scene && item->get_owner() != scene && item != scene->get_deepest_editable_node(item)) {
 			//invalid result
-			selection_results.remove(i);
+			selection_results.remove_at(i);
 			i--;
 		}
 	}
@@ -7364,8 +7364,8 @@ void Node3DEditor::add_gizmo_plugin(Ref<EditorNode3DGizmoPlugin> p_plugin) {
 }
 
 void Node3DEditor::remove_gizmo_plugin(Ref<EditorNode3DGizmoPlugin> p_plugin) {
-	gizmo_plugins_by_priority.erase(p_plugin);
-	gizmo_plugins_by_name.erase(p_plugin);
+	gizmo_plugins_by_priority.remove(p_plugin);
+	gizmo_plugins_by_name.remove(p_plugin);
 	_update_gizmos_menu();
 }
 
@@ -7665,7 +7665,7 @@ int EditorNode3DGizmoPlugin::get_state() const {
 }
 
 void EditorNode3DGizmoPlugin::unregister_gizmo(EditorNode3DGizmo *p_gizmo) {
-	current_gizmos.erase(p_gizmo);
+	current_gizmos.remove(p_gizmo);
 }
 
 EditorNode3DGizmoPlugin::EditorNode3DGizmoPlugin() {

@@ -354,7 +354,7 @@ public:
 
 		// Remove disconnected peers from map.
 		for (List<String>::Element *E = remove.front(); E; E = E->next()) {
-			peers.erase(E->get());
+			peers.remove(E->get());
 		}
 
 		return err; // OK, ERR_BUSY, or possibly an error.

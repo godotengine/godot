@@ -113,7 +113,7 @@ static MessageQueue *message_queue = nullptr;
 static AudioServer *audio_server = nullptr;
 static DisplayServer *display_server = nullptr;
 static RenderingServer *rendering_server = nullptr;
-static CameraServer *camera_server = nullptr;
+static Camremoverver *camera_server = nullptr;
 static XRServer *xr_server = nullptr;
 static TextServerManager *tsman = nullptr;
 static PhysicsServer3D *physics_server = nullptr;
@@ -1794,7 +1794,7 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 		}
 	}
 
-	camera_server = CameraServer::create();
+	camera_server = Camremoverver::create();
 
 	initialize_physics();
 	initialize_navigation_server();
@@ -1996,7 +1996,7 @@ bool Main::start() {
 		doc.merge_from(docsrc);
 		for (Set<String>::Element *E = checked_paths.front(); E; E = E->next()) {
 			print_line("Erasing old docs at: " + E->get());
-			DocTools::erase_classes(E->get());
+			DocTools::remove_classes(E->get());
 		}
 
 		print_line("Generating new docs...");

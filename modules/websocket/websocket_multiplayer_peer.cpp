@@ -313,7 +313,7 @@ void WebSocketMultiplayerPeer::_process_multiplayer(Ref<WebSocketPeer> p_peer, u
 				break;
 
 			case SYS_DEL: // Remove peer
-				_peer_map.erase(id);
+				_peer_map.remove(id);
 				emit_signal("peer_disconnected", id);
 				break;
 			case SYS_ID: // Hello, server assigned ID

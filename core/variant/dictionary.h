@@ -66,7 +66,7 @@ public:
 	bool has(const Variant &p_key) const;
 	bool has_all(const Array &p_keys) const;
 
-	bool erase(const Variant &p_key);
+	bool remove(const Variant &p_key);
 
 	bool operator==(const Dictionary &p_dictionary) const;
 	bool operator!=(const Dictionary &p_dictionary) const;

@@ -886,12 +886,12 @@ StringName Translation::get_plural_message(const StringName &p_src_text, const S
 	return get_message(p_src_text);
 }
 
-void Translation::erase_message(const StringName &p_src_text, const StringName &p_context) {
+void Translation::remove_message(const StringName &p_src_text, const StringName &p_context) {
 	if (p_context != StringName()) {
-		WARN_PRINT("Translation class doesn't handle context. Using context in erase_message() on a Translation instance is probably a mistake. \nUse a derived Translation class that handles context, such as TranslationPO class");
+		WARN_PRINT("Translation class doesn't handle context. Using context in remove_message() on a Translation instance is probably a mistake. \nUse a derived Translation class that handles context, such as TranslationPO class");
 	}
 
-	translation_map.erase(p_src_text);
+	translation_map.remove(p_src_text);
 }
 
 void Translation::get_message_list(List<StringName> *r_messages) const {
@@ -911,7 +911,7 @@ void Translation::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("add_plural_message", "src_message", "xlated_messages", "context"), &Translation::add_plural_message, DEFVAL(""));
 	ClassDB::bind_method(D_METHOD("get_message", "src_message", "context"), &Translation::get_message, DEFVAL(""));
 	ClassDB::bind_method(D_METHOD("get_plural_message", "src_message", "src_plural_message", "n", "context"), &Translation::get_plural_message, DEFVAL(""));
-	ClassDB::bind_method(D_METHOD("erase_message", "src_message", "context"), &Translation::erase_message, DEFVAL(""));
+	ClassDB::bind_method(D_METHOD("remove_message", "src_message", "context"), &Translation::remove_message, DEFVAL(""));
 	ClassDB::bind_method(D_METHOD("get_message_list"), &Translation::_get_message_list);
 	ClassDB::bind_method(D_METHOD("get_message_count"), &Translation::get_message_count);
 	ClassDB::bind_method(D_METHOD("_set_messages"), &Translation::_set_messages);
@@ -1048,7 +1048,7 @@ void TranslationServer::add_translation(const Ref<Translation> &p_translation) {
 }
 
 void TranslationServer::remove_translation(const Ref<Translation> &p_translation) {
-	translations.erase(p_translation);
+	translations.remove(p_translation);
 }
 
 Ref<Translation> TranslationServer::get_translation_object(const String &p_locale) {

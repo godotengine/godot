@@ -933,7 +933,7 @@ void CSGBrushOperation::Build2DFaces::_merge_faces(const Vector<int> &p_segment_
 		merge_faces_idx.sort();
 		merge_faces_idx.reverse();
 		for (int i = 0; i < merge_faces_idx.size(); ++i) {
-			faces.remove(merge_faces_idx[i]);
+			faces.remove_at(merge_faces_idx[i]);
 		}
 
 		if (degenerate_points.size() == 0) {
@@ -983,7 +983,7 @@ void CSGBrushOperation::Build2DFaces::_merge_faces(const Vector<int> &p_segment_
 
 						// If new vertex snaps to degenerate vertex, just delete this face.
 						if (degenerate_idx == opposite_vertex_idx) {
-							faces.remove(face_idx);
+							faces.remove_at(face_idx);
 							// Update index.
 							--face_idx;
 							break;
@@ -999,7 +999,7 @@ void CSGBrushOperation::Build2DFaces::_merge_faces(const Vector<int> &p_segment_
 						right_face.vertex_idx[0] = opposite_vertex_idx;
 						right_face.vertex_idx[1] = face.vertex_idx[face_edge_idx];
 						right_face.vertex_idx[2] = degenerate_idx;
-						faces.remove(face_idx);
+						faces.remove_at(face_idx);
 						faces.insert(face_idx, right_face);
 						faces.insert(face_idx, left_face);
 
@@ -1070,7 +1070,7 @@ void CSGBrushOperation::Build2DFaces::_find_edge_intersections(const Vector2 p_s
 
 				// If new vertex snaps to opposite vertex, just delete this face.
 				if (new_vertex_idx == opposite_vertex_idx) {
-					faces.remove(face_idx);
+					faces.remove_at(face_idx);
 					// Update index.
 					--face_idx;
 					break;
@@ -1092,7 +1092,7 @@ void CSGBrushOperation::Build2DFaces::_find_edge_intersections(const Vector2 p_s
 				right_face.vertex_idx[0] = opposite_vertex_idx;
 				right_face.vertex_idx[1] = face.vertex_idx[face_edge_idx];
 				right_face.vertex_idx[2] = new_vertex_idx;
-				faces.remove(face_idx);
+				faces.remove_at(face_idx);
 				faces.insert(face_idx, right_face);
 				faces.insert(face_idx, left_face);
 
@@ -1162,7 +1162,7 @@ int CSGBrushOperation::Build2DFaces::_insert_point(const Vector2 &p_point) {
 
 				// If new vertex snaps to opposite vertex, just delete this face.
 				if (new_vertex_idx == opposite_vertex_idx) {
-					faces.remove(face_idx);
+					faces.remove_at(face_idx);
 					// Update index.
 					--face_idx;
 					break;
@@ -1187,7 +1187,7 @@ int CSGBrushOperation::Build2DFaces::_insert_point(const Vector2 &p_point) {
 				right_face.vertex_idx[0] = opposite_vertex_idx;
 				right_face.vertex_idx[1] = face.vertex_idx[face_edge_idx];
 				right_face.vertex_idx[2] = new_vertex_idx;
-				faces.remove(face_idx);
+				faces.remove_at(face_idx);
 				faces.insert(face_idx, right_face);
 				faces.insert(face_idx, left_face);
 
@@ -1222,7 +1222,7 @@ int CSGBrushOperation::Build2DFaces::_insert_point(const Vector2 &p_point) {
 				new_face.vertex_idx[2] = new_vertex_idx;
 				faces.push_back(new_face);
 			}
-			faces.remove(face_idx);
+			faces.remove_at(face_idx);
 
 			// No need to check other faces.
 			break;

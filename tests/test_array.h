@@ -83,7 +83,7 @@ TEST_CASE("[Array] append_array()") {
 	CHECK(int(arr1[1]) == 2);
 }
 
-TEST_CASE("[Array] resize(), insert(), and erase()") {
+TEST_CASE("[Array] resize(), insert(), and remove()") {
 	Array arr;
 	arr.resize(2);
 	CHECK(arr.size() == 2);
@@ -91,7 +91,7 @@ TEST_CASE("[Array] resize(), insert(), and erase()") {
 	CHECK(int(arr[0]) == 1);
 	arr.insert(0, 2);
 	CHECK(int(arr[0]) == 2);
-	arr.erase(2);
+	arr.remove(2);
 	CHECK(int(arr[0]) == 1);
 }
 
@@ -119,16 +119,16 @@ TEST_CASE("[Array] remove()") {
 	Array arr;
 	arr.push_back(1);
 	arr.push_back(2);
-	arr.remove(0);
+	arr.remove_at(0);
 	CHECK(arr.size() == 1);
 	CHECK(int(arr[0]) == 2);
-	arr.remove(0);
+	arr.remove_at(0);
 	CHECK(arr.size() == 0);
 
 	// The array is now empty; try to use `remove()` again.
 	// Normally, this prints an error message so we silence it.
 	ERR_PRINT_OFF;
-	arr.remove(0);
+	arr.remove_at(0);
 	ERR_PRINT_ON;
 
 	CHECK(arr.size() == 0);

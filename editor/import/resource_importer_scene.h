@@ -128,7 +128,7 @@ public:
 	const Set<Ref<EditorSceneImporter>> &get_importers() const { return importers; }
 
 	void add_importer(Ref<EditorSceneImporter> p_importer) { importers.insert(p_importer); }
-	void remove_importer(Ref<EditorSceneImporter> p_importer) { importers.erase(p_importer); }
+	void remove_importer(Ref<EditorSceneImporter> p_importer) { importers.remove(p_importer); }
 
 	virtual String get_importer_name() const override;
 	virtual String get_visible_name() const override;

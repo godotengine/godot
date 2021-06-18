@@ -90,7 +90,7 @@ void EditorDebuggerTree::_scene_tree_folded(Object *p_obj) {
 
 	ObjectID id = ObjectID(uint64_t(item->get_metadata(0)));
 	if (unfold_cache.has(id)) {
-		unfold_cache.erase(id);
+		unfold_cache.remove(id);
 	} else {
 		unfold_cache.insert(id);
 	}

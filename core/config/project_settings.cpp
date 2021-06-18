@@ -167,7 +167,7 @@ bool ProjectSettings::_set(const StringName &p_name, const Variant &p_value) {
 	_THREAD_SAFE_METHOD_
 
 	if (p_value.get_type() == Variant::NIL) {
-		props.erase(p_name);
+		props.remove(p_name);
 		if (p_name.operator String().begins_with("autoload/")) {
 			String node_name = p_name.operator String().split("/")[1];
 			if (autoloads.has(node_name)) {
@@ -680,7 +680,7 @@ bool ProjectSettings::is_builtin_setting(const String &p_name) const {
 
 void ProjectSettings::clear(const String &p_name) {
 	ERR_FAIL_COND_MSG(!props.has(p_name), "Request for nonexistent project setting: " + p_name + ".");
-	props.erase(p_name);
+	props.remove(p_name);
 }
 
 Error ProjectSettings::save() {
@@ -1022,7 +1022,7 @@ void ProjectSettings::add_autoload(const AutoloadInfo &p_autoload) {
 
 void ProjectSettings::remove_autoload(const StringName &p_autoload) {
 	ERR_FAIL_COND_MSG(!autoloads.has(p_autoload), "Trying to remove non-existent autoload.");
-	autoloads.erase(p_autoload);
+	autoloads.remove(p_autoload);
 }
 
 bool ProjectSettings::has_autoload(const StringName &p_autoload) const {

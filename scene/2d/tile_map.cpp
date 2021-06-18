@@ -48,7 +48,7 @@ bool TileMapPattern::has_cell(const Vector2i &p_coords) const {
 void TileMapPattern::remove_cell(const Vector2i &p_coords, bool p_update_size) {
 	ERR_FAIL_COND(!pattern.has(p_coords));
 
-	pattern.erase(p_coords);
+	pattern.remove(p_coords);
 	if (p_update_size) {
 		size = Vector2i();
 		for (Map<Vector2i, TileMapCell>::Element *E = pattern.front(); E; E = E->next()) {
@@ -440,7 +440,7 @@ Map<Vector2i, TileMapQuadrant>::Element *TileMap::_create_quadrant(const Vector2
 	return quadrant_map.insert(p_qk, q);
 }
 
-void TileMap::_erase_quadrant(Map<Vector2i, TileMapQuadrant>::Element *Q) {
+void TileMap::_remove_quadrant(Map<Vector2i, TileMapQuadrant>::Element *Q) {
 	// Remove a quadrant.
 	TileMapQuadrant *q = &(Q->get());
 
@@ -460,7 +460,7 @@ void TileMap::_erase_quadrant(Map<Vector2i, TileMapQuadrant>::Element *Q) {
 	RenderingServer *rs = RenderingServer::get_singleton();
 	rs->free(q->debug_canvas_item);
 
-	quadrant_map.erase(Q);
+	quadrant_map.remove(Q);
 	rect_cache_dirty = true;
 }
 
@@ -531,18 +531,18 @@ void TileMap::set_cell(const Vector2i &p_coords, int p_source_id, const Vector2i
 	Map<Vector2i, TileMapQuadrant>::Element *Q = quadrant_map.find(qk);
 
 	if (source_id == -1) {
-		// Erase existing cell in the tile map.
-		tile_map.erase(pk);
+		// Remove existing cell in the tile map.
+		tile_map.remove(pk);
 
-		// Erase existing cell in the quadrant.
+		// Remove existing cell in the quadrant.
 		ERR_FAIL_COND(!Q);
 		TileMapQuadrant &q = Q->get();
 
-		q.cells.erase(pk);
+		q.cells.remove(pk);
 
 		// Remove or make the quadrant dirty.
 		if (q.cells.size() == 0) {
-			_erase_quadrant(Q);
+			_remove_quadrant(Q);
 		} else {
 			_make_quadrant_dirty(Q);
 		}
@@ -749,7 +749,7 @@ void TileMap::_recreate_quadrants() {
 void TileMap::_clear_quadrants() {
 	// Clear quadrants.
 	while (quadrant_map.size()) {
-		_erase_quadrant(quadrant_map.front());
+		_remove_quadrant(quadrant_map.front());
 	}
 
 	// Clear the dirty quadrants list.

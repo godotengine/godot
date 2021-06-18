@@ -52,8 +52,8 @@ class AnimationNodeStateMachineEditor : public AnimationTreeNodeEditorPlugin {
 	Popup *name_edit_popup;
 	LineEdit *name_edit;
 
-	HBoxContainer *tool_erase_hb;
-	Button *tool_erase;
+	HBoxContainer *tool_remove_hb;
+	Button *tool_remove;
 	Button *tool_autoplay;
 	Button *tool_end;
 
@@ -150,7 +150,7 @@ class AnimationNodeStateMachineEditor : public AnimationTreeNodeEditorPlugin {
 	void _clip_src_line_to_rect(Vector2 &r_from, Vector2 &r_to, const Rect2 &p_rect);
 	void _clip_dst_line_to_rect(Vector2 &r_from, Vector2 &r_to, const Rect2 &p_rect);
 
-	void _erase_selected();
+	void _remove_selected();
 	void _update_mode();
 	void _autoplay_selected();
 	void _end_selected();

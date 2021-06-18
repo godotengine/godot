@@ -240,7 +240,7 @@ void ConnectDialog::_remove_bind() {
 	int idx = st.get_slice("/", 1).to_int() - 1;
 
 	ERR_FAIL_INDEX(idx, cdbinds->params.size());
-	cdbinds->params.remove(idx);
+	cdbinds->params.remove_at(idx);
 	cdbinds->notify_changed();
 }
 

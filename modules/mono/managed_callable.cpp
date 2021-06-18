@@ -140,7 +140,7 @@ ManagedCallable::~ManagedCallable() {
 	{
 		MutexLock lock(instances_mutex);
 		instances.remove(&self_instance);
-		instances_pending_reload.erase(this);
+		instances_pending_reload.remove(this);
 	}
 #endif
 

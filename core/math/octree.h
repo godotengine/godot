@@ -250,9 +250,9 @@ private:
 				SWAP(p_A, p_B);
 			}
 
-			p_A->pair_list.erase(E->get().eA);
-			p_B->pair_list.erase(E->get().eB);
-			pair_map.erase(E);
+			p_A->pair_list.remove(E->get().eA);
+			p_B->pair_list.remove(E->get().eB);
+			pair_map.remove(E);
 		}
 	}
 
@@ -327,7 +327,7 @@ public:
 	OctreeElementID create(T *p_userdata, const AABB &p_aabb = AABB(), int p_subindex = 0, bool p_pairable = false, uint32_t p_pairable_type = 0, uint32_t pairable_mask = 1);
 	void move(OctreeElementID p_id, const AABB &p_aabb);
 	void set_pairable(OctreeElementID p_id, bool p_pairable = false, uint32_t p_pairable_type = 0, uint32_t pairable_mask = 1);
-	void erase(OctreeElementID p_id);
+	void remove(OctreeElementID p_id);
 
 	bool is_pairable(OctreeElementID p_id) const;
 	T *get(OctreeElementID p_id) const;
@@ -542,7 +542,7 @@ bool Octree<T, use_pairs, AL>::_remove_element_from_octant(Element *p_element, O
 	while (true) {
 		// check all exit conditions
 
-		if (p_octant == p_limit) { // reached limit, nothing to erase, exit
+		if (p_octant == p_limit) { // reached limit, nothing to remove, exit
 			return octant_removed;
 		}
 
@@ -573,9 +573,9 @@ bool Octree<T, use_pairs, AL>::_remove_element_from_octant(Element *p_element, O
 		Octant *parent = p_octant->parent;
 
 		if (p_octant->children_count == 0 && p_octant->elements.is_empty() && p_octant->pairable_elements.is_empty()) {
-			// erase octant
+			// remove octant
 
-			if (p_octant == root) { // won't have a parent, just erase
+			if (p_octant == root) { // won't have a parent, just remove
 
 				root = nullptr;
 			} else {
@@ -687,7 +687,7 @@ void Octree<T, use_pairs, AL>::_remove_element(Element *p_element) {
 		Octant *o = I->get().octant;
 
 		if (!use_pairs) { // small speedup
-			o->elements.erase(I->get().E);
+			o->elements.remove(I->get().E);
 		}
 
 		_remove_element_from_octant(p_element, o);
@@ -701,7 +701,7 @@ void Octree<T, use_pairs, AL>::_remove_element(Element *p_element) {
 		for (; I; I = I->next()) {
 			Octant *o = I->get().octant;
 
-			// erase children pairs, they are erased ONCE even if repeated
+			// remove children pairs, they are removed ONCE even if repeated
 			pass++;
 			for (int i = 0; i < 8; i++) {
 				if (o->children[i]) {
@@ -710,9 +710,9 @@ void Octree<T, use_pairs, AL>::_remove_element(Element *p_element) {
 			}
 
 			if (p_element->pairable) {
-				o->pairable_elements.erase(I->get().E);
+				o->pairable_elements.remove(I->get().E);
 			} else {
-				o->elements.erase(I->get().E);
+				o->elements.remove(I->get().E);
 			}
 		}
 	}
@@ -856,17 +856,17 @@ void Octree<T, use_pairs, AL>::move(OctreeElementID p_id, const AABB &p_aabb) {
 
 		/*
 		if (!use_pairs)
-			o->elements.erase( F->get().E );
+			o->elements.remove( F->get().E );
 		*/
 
 		if (use_pairs && e.pairable) {
-			o->pairable_elements.erase(F->get().E);
+			o->pairable_elements.remove(F->get().E);
 		} else {
-			o->elements.erase(F->get().E);
+			o->elements.remove(F->get().E);
 		}
 
 		if (_remove_element_from_octant(&e, o, common_parent->parent)) {
-			owners.erase(F);
+			owners.remove(F);
 		}
 
 		F = N;
@@ -877,7 +877,7 @@ void Octree<T, use_pairs, AL>::move(OctreeElementID p_id, const AABB &p_aabb) {
 		for (typename List<typename Element::OctantOwner, AL>::Element *F = owners.front(); F; F = F->next()) {
 			Octant *o = F->get().octant;
 
-			// erase children pairs, unref ONCE
+			// remove children pairs, unref ONCE
 			pass++;
 			for (int i = 0; i < 8; i++) {
 				if (o->children[i]) {
@@ -922,7 +922,7 @@ void Octree<T, use_pairs, AL>::set_pairable(OctreeElementID p_id, bool p_pairabl
 }
 
 template <class T, bool use_pairs, class AL>
-void Octree<T, use_pairs, AL>::erase(OctreeElementID p_id) {
+void Octree<T, use_pairs, AL>::remove(OctreeElementID p_id) {
 	typename ElementMap::Element *E = element_map.find(p_id);
 	ERR_FAIL_COND(!E);
 
@@ -932,7 +932,7 @@ void Octree<T, use_pairs, AL>::erase(OctreeElementID p_id) {
 		_remove_element(&e);
 	}
 
-	element_map.erase(p_id);
+	element_map.remove(p_id);
 	_optimize();
 }
 

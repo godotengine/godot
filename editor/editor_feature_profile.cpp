@@ -70,7 +70,7 @@ void EditorFeatureProfile::set_disable_class(const StringName &p_class, bool p_d
 	if (p_disabled) {
 		disabled_classes.insert(p_class);
 	} else {
-		disabled_classes.erase(p_class);
+		disabled_classes.remove(p_class);
 	}
 }
 
@@ -85,7 +85,7 @@ void EditorFeatureProfile::set_disable_class_editor(const StringName &p_class, b
 	if (p_disabled) {
 		disabled_editors.insert(p_class);
 	} else {
-		disabled_editors.erase(p_class);
+		disabled_editors.remove(p_class);
 	}
 }
 
@@ -105,9 +105,9 @@ void EditorFeatureProfile::set_disable_class_property(const StringName &p_class,
 		disabled_properties[p_class].insert(p_property);
 	} else {
 		ERR_FAIL_COND(!disabled_properties.has(p_class));
-		disabled_properties[p_class].erase(p_property);
+		disabled_properties[p_class].remove(p_property);
 		if (disabled_properties[p_class].is_empty()) {
-			disabled_properties.erase(p_class);
+			disabled_properties.remove(p_class);
 		}
 	}
 }
@@ -132,7 +132,7 @@ void EditorFeatureProfile::set_item_collapsed(const StringName &p_class, bool p_
 	if (p_collapsed) {
 		collapsed_classes.insert(p_class);
 	} else {
-		collapsed_classes.erase(p_class);
+		collapsed_classes.remove(p_class);
 	}
 }
 
@@ -391,7 +391,7 @@ void EditorFeatureProfileManager::_update_profile_list(const String &p_select_pr
 	property_list_vbc->set_visible(selected_profile != String());
 	no_profile_selected_help->set_visible(selected_profile == String());
 	profile_actions[PROFILE_CLEAR]->set_disabled(current_profile == String());
-	profile_actions[PROFILE_ERASE]->set_disabled(selected_profile == String());
+	profile_actions[PROFILE_REMOVE]->set_disabled(selected_profile == String());
 	profile_actions[PROFILE_EXPORT]->set_disabled(selected_profile == String());
 	profile_actions[PROFILE_SET]->set_disabled(selected_profile == String());
 
@@ -437,17 +437,17 @@ void EditorFeatureProfileManager::_profile_action(int p_action) {
 			new_profile_name->clear();
 			new_profile_name->grab_focus();
 		} break;
-		case PROFILE_ERASE: {
+		case PROFILE_REMOVE: {
 			String selected = _get_selected_profile();
 			ERR_FAIL_COND(selected == String());
 
-			erase_profile_dialog->set_text(vformat(TTR("Remove currently selected profile, '%s'? Cannot be undone."), selected));
-			erase_profile_dialog->popup_centered(Size2(240, 60) * EDSCALE);
+			remove_profile_dialog->set_text(vformat(TTR("Remove currently selected profile, '%s'? Cannot be undone."), selected));
+			remove_profile_dialog->popup_centered(Size2(240, 60) * EDSCALE);
 		} break;
 	}
 }
 
-void EditorFeatureProfileManager::_erase_selected_profile() {
+void EditorFeatureProfileManager::_remove_selected_profile() {
 	String selected = _get_selected_profile();
 	ERR_FAIL_COND(selected == String());
 	DirAccessRef da = DirAccess::open(EditorSettings::get_singleton()->get_feature_profiles_dir());
@@ -883,10 +883,10 @@ EditorFeatureProfileManager::EditorFeatureProfileManager() {
 	profiles_hbc->add_child(profile_actions[PROFILE_NEW]);
 	profile_actions[PROFILE_NEW]->connect("pressed", callable_mp(this, &EditorFeatureProfileManager::_profile_action), varray(PROFILE_NEW));
 
-	profile_actions[PROFILE_ERASE] = memnew(Button(TTR("Remove Profile")));
-	profiles_hbc->add_child(profile_actions[PROFILE_ERASE]);
-	profile_actions[PROFILE_ERASE]->set_disabled(true);
-	profile_actions[PROFILE_ERASE]->connect("pressed", callable_mp(this, &EditorFeatureProfileManager::_profile_action), varray(PROFILE_ERASE));
+	profile_actions[PROFILE_REMOVE] = memnew(Button(TTR("Remove Profile")));
+	profiles_hbc->add_child(profile_actions[PROFILE_REMOVE]);
+	profile_actions[PROFILE_REMOVE]->set_disabled(true);
+	profile_actions[PROFILE_REMOVE]->connect("pressed", callable_mp(this, &EditorFeatureProfileManager::_profile_action), varray(PROFILE_REMOVE));
 
 	main_vbc->add_margin_child(TTR("Available Profiles:"), profiles_hbc);
 
@@ -969,10 +969,10 @@ EditorFeatureProfileManager::EditorFeatureProfileManager() {
 	new_profile_dialog->register_text_enter(new_profile_name);
 	new_profile_dialog->get_ok_button()->set_text(TTR("Create"));
 
-	erase_profile_dialog = memnew(ConfirmationDialog);
-	add_child(erase_profile_dialog);
-	erase_profile_dialog->set_title(TTR("Remove Profile"));
-	erase_profile_dialog->connect("confirmed", callable_mp(this, &EditorFeatureProfileManager::_erase_selected_profile));
+	remove_profile_dialog = memnew(ConfirmationDialog);
+	add_child(remove_profile_dialog);
+	remove_profile_dialog->set_title(TTR("Remove Profile"));
+	remove_profile_dialog->connect("confirmed", callable_mp(this, &EditorFeatureProfileManager::_remove_selected_profile));
 
 	import_profiles = memnew(EditorFileDialog);
 	add_child(import_profiles);

@@ -2957,7 +2957,7 @@ bool BindingsGenerator::_populate_object_type_interfaces() {
 				String constant_name = constant_cname.operator String();
 				int *value = class_info->constant_map.getptr(constant_cname);
 				ERR_FAIL_NULL_V(value, false);
-				constants.erase(constant_name);
+				constants.remove(constant_name);
 
 				ConstantInterface iconstant(constant_name, snake_to_pascal_case(constant_name, true), *value);
 

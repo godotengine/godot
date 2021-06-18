@@ -350,7 +350,7 @@ private:
 		return new_node;
 	}
 
-	void _erase_fix_rb(Element *p_node) {
+	void _remove_fix_rb(Element *p_node) {
 		Element *root = _data._root->left;
 		Element *node = _data._nil;
 		Element *sibling = p_node;
@@ -411,7 +411,7 @@ private:
 		ERR_FAIL_COND(_data._nil->color != BLACK);
 	}
 
-	void _erase(Element *p_node) {
+	void _remove(Element *p_node) {
 		Element *rp = ((p_node->left == _data._nil) || (p_node->right == _data._nil)) ? p_node : p_node->_next;
 		Element *node = (rp->left == _data._nil) ? rp->right : rp->left;
 
@@ -428,7 +428,7 @@ private:
 			node->parent = rp->parent;
 			_set_color(node, BLACK);
 		} else if (rp->color == BLACK && rp->parent != _data._root) {
-			_erase_fix_rb(sibling);
+			_remove_fix_rb(sibling);
 		}
 
 		if (rp != p_node) {
@@ -543,18 +543,18 @@ public:
 		return _insert(p_key, p_value);
 	}
 
-	void erase(Element *p_element) {
+	void remove(Element *p_element) {
 		if (!_data._root || !p_element) {
 			return;
 		}
 
-		_erase(p_element);
+		_remove(p_element);
 		if (_data.size_cache == 0 && _data._root) {
 			_data._free_root();
 		}
 	}
 
-	bool erase(const K &p_key) {
+	bool remove(const K &p_key) {
 		if (!_data._root) {
 			return false;
 		}
@@ -564,7 +564,7 @@ public:
 			return false;
 		}
 
-		_erase(e);
+		_remove(e);
 		if (_data.size_cache == 0 && _data._root) {
 			_data._free_root();
 		}

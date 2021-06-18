@@ -703,7 +703,7 @@ void CSharpLanguage::pre_unsafe_unreference(Object *p_obj) {
 	Map<ObjectID, int>::Element *elem = unsafe_object_references.find(id);
 	ERR_FAIL_NULL(elem);
 	if (--elem->value() == 0) {
-		unsafe_object_references.erase(elem);
+		unsafe_object_references.remove(elem);
 	}
 #endif
 }
@@ -825,7 +825,7 @@ void CSharpLanguage::reload_assemblies(bool p_soft_reload) {
 		MutexLock lock(script_instances_mutex);
 
 		for (SelfList<CSharpScript> *elem = script_list.first(); elem; elem = elem->next()) {
-			// Cast to CSharpScript to avoid being erased by accident
+			// Cast to CSharpScript to avoid being removed by accident
 			scripts.push_back(Ref<CSharpScript>(elem->self()));
 		}
 	}
@@ -980,7 +980,7 @@ void CSharpLanguage::reload_assemblies(bool p_soft_reload) {
 					placeholder->property_set_fallback(G->get().first, G->get().second, nullptr);
 				}
 
-				scr->pending_reload_state.erase(obj_id);
+				scr->pending_reload_state.remove(obj_id);
 			}
 		}
 
@@ -1049,13 +1049,13 @@ void CSharpLanguage::reload_assemblies(bool p_soft_reload) {
 				Object *obj = ObjectDB::get_instance(obj_id);
 
 				if (!obj) {
-					script->pending_reload_state.erase(obj_id);
+					script->pending_reload_state.remove(obj_id);
 					continue;
 				}
 
 				if (!ClassDB::is_parent_class(obj->get_class_name(), native_name)) {
 					// No longer inherits the same compatible type, can't reload
-					script->pending_reload_state.erase(obj_id);
+					script->pending_reload_state.remove(obj_id);
 					continue;
 				}
 
@@ -1078,7 +1078,7 @@ void CSharpLanguage::reload_assemblies(bool p_soft_reload) {
 						ScriptInstance *script_instance = script->instance_create(obj);
 
 						if (script_instance) {
-							script->placeholders.erase(static_cast<PlaceHolderScriptInstance *>(si));
+							script->placeholders.remove(static_cast<PlaceHolderScriptInstance *>(si));
 							obj->set_script_instance(script_instance);
 						}
 					}
@@ -1104,7 +1104,7 @@ void CSharpLanguage::reload_assemblies(bool p_soft_reload) {
 			Object *obj = ObjectDB::get_instance(obj_id);
 
 			if (!obj) {
-				script->pending_reload_state.erase(obj_id);
+				script->pending_reload_state.remove(obj_id);
 				continue;
 			}
 
@@ -1506,7 +1506,7 @@ void CSharpLanguage::free_instance_binding_data(void *p_data) {
 			script_binding.gchandle.release();
 		}
 
-		script_bindings.erase(data);
+		script_bindings.remove(data);
 	}
 }
 
@@ -2294,16 +2294,16 @@ CSharpInstance::~CSharpInstance() {
 		// CSharpInstance must not be created unless it's going to be added to the list for sure
 		Set<Object *>::Element *match = script->instances.find(owner);
 		CRASH_COND(!match);
-		script->instances.erase(match);
+		script->instances.remove(match);
 #else
-		script->instances.erase(owner);
+		script->instances.remove(owner);
 #endif
 	}
 }
 
 #ifdef TOOLS_ENABLED
-void CSharpScript::_placeholder_erased(PlaceHolderScriptInstance *p_placeholder) {
-	placeholders.erase(p_placeholder);
+void CSharpScript::_placeholder_removed(PlaceHolderScriptInstance *p_placeholder) {
+	placeholders.remove(p_placeholder);
 }
 #endif
 

@@ -1312,7 +1312,7 @@ public:
 		Vector<String> cl = ((String)p_preset->get("command_line/extra_args")).strip_edges().split(" ");
 		for (int i = 0; i < cl.size(); i++) {
 			if (cl[i].strip_edges().length() == 0) {
-				cl.remove(i);
+				cl.remove_at(i);
 				i--;
 			}
 		}

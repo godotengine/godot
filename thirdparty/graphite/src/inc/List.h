@@ -90,9 +90,9 @@ public:
     void                pop_back()              { assert(size() > 0); --m_last; }
     void                push_back(const T &v)   { if (m_last == m_end) reserve(size()+1); new (m_last++) T(v); }
 
-    void                clear()                 { erase(begin(), end()); }
-    iterator            erase(iterator p)       { return erase(p, p+1); }
-    iterator            erase(iterator first, iterator last);
+    void                clear()                 { remove(begin(), end()); }
+    iterator            remove(iterator p)       { return remove(p, p+1); }
+    iterator            remove(iterator first, iterator last);
 
 private:
     iterator            _insert_default(iterator p, size_t n);
@@ -118,7 +118,7 @@ template <typename T>
 inline
 void Vector<T>::resize(size_t n, const T & v) {
     const ptrdiff_t d = n-size();
-    if (d < 0)      erase(end()+d, end());
+    if (d < 0)      remove(end()+d, end());
     else if (d > 0) insert(end(), d, v);
 }
 
@@ -156,7 +156,7 @@ void Vector<T>::insert(iterator p, const_iterator first, const_iterator last)
 
 template<typename T>
 inline
-typename Vector<T>::iterator Vector<T>::erase(iterator first, iterator last)
+typename Vector<T>::iterator Vector<T>::remove(iterator first, iterator last)
 {
     for (iterator e = first; e != last; ++e) e->~T();
     const size_t sz = distance(first, last);

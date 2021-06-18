@@ -508,7 +508,7 @@ void CodeEdit::set_line_as_breakpoint(int p_line, bool p_breakpointed) {
 	if (p_breakpointed) {
 		breakpointed_lines[p_line] = true;
 	} else if (breakpointed_lines.has(p_line)) {
-		breakpointed_lines.erase(p_line);
+		breakpointed_lines.remove(p_line);
 	}
 	emit_signal("breakpoint_toggled", p_line);
 	update();
@@ -1502,7 +1502,7 @@ void CodeEdit::_update_delimiter_cache(int p_from_line, int p_to_line) {
 	if (start_line != end_line) {
 		if (p_to_line < p_from_line) {
 			for (int i = end_line; i > start_line; i--) {
-				delimiter_cache.remove(i);
+				delimiter_cache.remove_at(i);
 			}
 		} else {
 			for (int i = start_line; i < end_line; i++) {
@@ -1736,7 +1736,7 @@ void CodeEdit::_remove_delimiter(const String &p_start_key, DelimiterType p_type
 			break;
 		}
 
-		delimiters.remove(i);
+		delimiters.remove_at(i);
 		if (!setting_delimiters) {
 			delimiter_cache.clear();
 			_update_delimiter_cache();
@@ -1773,7 +1773,7 @@ void CodeEdit::_set_delimiters(const TypedArray<String> &p_delimiters, Delimiter
 void CodeEdit::_clear_delimiters(DelimiterType p_type) {
 	for (int i = delimiters.size() - 1; i >= 0; i--) {
 		if (delimiters[i].type == p_type) {
-			delimiters.remove(i);
+			delimiters.remove_at(i);
 		}
 	}
 	delimiter_cache.clear();
@@ -2048,7 +2048,7 @@ void CodeEdit::_lines_edited_from(int p_from_line, int p_to_line) {
 		if (line <= from_line) {
 			continue;
 		}
-		breakpointed_lines.erase(line);
+		breakpointed_lines.remove(line);
 
 		emit_signal("breakpoint_toggled", line);
 		if (line_count > 0 || line >= p_from_line) {

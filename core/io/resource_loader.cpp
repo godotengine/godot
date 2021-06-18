@@ -476,7 +476,7 @@ RES ResourceLoader::load_threaded_get(const String &p_path, Error *r_error) {
 
 		thread_suspended_count--;
 
-		if (!thread_load_tasks.has(local_path)) { //may have been erased during unlock and this was always an invalid call
+		if (!thread_load_tasks.has(local_path)) { //may have been removed during unlock and this was always an invalid call
 			thread_load_mutex->unlock();
 			if (r_error) {
 				*r_error = ERR_INVALID_PARAMETER;
@@ -497,7 +497,7 @@ RES ResourceLoader::load_threaded_get(const String &p_path, Error *r_error) {
 			load_task.thread->wait_to_finish();
 			memdelete(load_task.thread);
 		}
-		thread_load_tasks.erase(local_path);
+		thread_load_tasks.remove(local_path);
 	}
 
 	thread_load_mutex->unlock();

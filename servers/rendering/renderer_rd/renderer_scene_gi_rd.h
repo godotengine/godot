@@ -519,7 +519,7 @@ public:
 		RID integrate_sky_uniform_set;
 
 		void create(RendererSceneEnvironmentRD *p_env, const Vector3 &p_world_position, uint32_t p_requested_history_size, RendererSceneGIRD *p_gi);
-		void erase();
+		void remove();
 		void update(RendererSceneEnvironmentRD *p_env, const Vector3 &p_world_position);
 		void update_light();
 		void update_probes(RendererSceneEnvironmentRD *p_env, RendererSceneSkyRD::Sky *p_sky);

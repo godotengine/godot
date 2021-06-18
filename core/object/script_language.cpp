@@ -219,7 +219,7 @@ void ScriptServer::add_global_class(const StringName &p_class, const StringName 
 }
 
 void ScriptServer::remove_global_class(const StringName &p_class) {
-	global_classes.erase(p_class);
+	global_classes.remove(p_class);
 }
 
 bool ScriptServer::is_global_class(const StringName &p_class) {
@@ -388,7 +388,7 @@ bool PlaceHolderScriptInstance::set(const StringName &p_name, const Variant &p_v
 		Variant defval;
 		if (script->get_property_default_value(p_name, defval)) {
 			if (defval == p_value) {
-				values.erase(p_name);
+				values.remove(p_name);
 				return true;
 			}
 		}
@@ -518,7 +518,7 @@ void PlaceHolderScriptInstance::update(const List<PropertyInfo> &p_properties, c
 	}
 
 	while (to_remove.size()) {
-		values.erase(to_remove.front()->get());
+		values.remove(to_remove.front()->get());
 		to_remove.pop_front();
 	}
 
@@ -593,6 +593,6 @@ PlaceHolderScriptInstance::PlaceHolderScriptInstance(ScriptLanguage *p_language,
 
 PlaceHolderScriptInstance::~PlaceHolderScriptInstance() {
 	if (script.is_valid()) {
-		script->_placeholder_erased(this);
+		script->_placeholder_removed(this);
 	}
 }

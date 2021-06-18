@@ -46,7 +46,7 @@ void BroadPhase2DBVH::set_static(ID p_id, bool p_static) {
 }
 
 void BroadPhase2DBVH::remove(ID p_id) {
-	bvh.erase(p_id - 1);
+	bvh.remove(p_id - 1);
 }
 
 CollisionObject2DSW *BroadPhase2DBVH::get_object(ID p_id) const {

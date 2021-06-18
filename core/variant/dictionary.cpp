@@ -138,8 +138,8 @@ bool Dictionary::has_all(const Array &p_keys) const {
 	return true;
 }
 
-bool Dictionary::erase(const Variant &p_key) {
-	return _p->variant_map.erase(p_key);
+bool Dictionary::remove(const Variant &p_key) {
+	return _p->variant_map.remove(p_key);
 }
 
 bool Dictionary::operator==(const Dictionary &p_dictionary) const {

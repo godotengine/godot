@@ -201,7 +201,7 @@ Error EditorRun::run(const String &p_scene, const String &p_custom_args, const L
 			Vector<String> exec_args = p_custom_args.substr(0, placeholder_pos).split(" ", false);
 			if (exec_args.size() >= 1) {
 				exec = exec_args[0];
-				exec_args.remove(0);
+				exec_args.remove_at(0);
 
 				// Append the Godot executable name before we append executable arguments
 				// (since the order is reversed when using `push_front()`).
@@ -261,7 +261,7 @@ bool EditorRun::has_child_process(OS::ProcessID p_pid) const {
 void EditorRun::stop_child_process(OS::ProcessID p_pid) {
 	if (has_child_process(p_pid)) {
 		OS::get_singleton()->kill(p_pid);
-		pids.erase(p_pid);
+		pids.remove(p_pid);
 	}
 }
 

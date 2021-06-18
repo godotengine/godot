@@ -144,7 +144,7 @@ struct TSmallArrayVector {
         if (sizes->size() == 1)
             dealloc();
         else
-            sizes->erase(sizes->begin());
+            sizes->remove(sizes->begin());
     }
 
     // 'this' should currently not be holding anything, and copyNonFront

@@ -797,7 +797,7 @@ void ClippedCamera3D::add_exception(const Object *p_object) {
 }
 
 void ClippedCamera3D::remove_exception_rid(const RID &p_rid) {
-	exclude.erase(p_rid);
+	exclude.remove(p_rid);
 }
 
 void ClippedCamera3D::remove_exception(const Object *p_object) {

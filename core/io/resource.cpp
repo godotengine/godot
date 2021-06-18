@@ -53,7 +53,7 @@ void Resource::set_path(const String &p_path, bool p_take_over) {
 
 	if (path_cache != "") {
 		ResourceCache::lock.write_lock();
-		ResourceCache::resources.erase(path_cache);
+		ResourceCache::resources.remove(path_cache);
 		ResourceCache::lock.write_unlock();
 	}
 
@@ -265,7 +265,7 @@ void Resource::register_owner(Object *p_owner) {
 }
 
 void Resource::unregister_owner(Object *p_owner) {
-	owners.erase(p_owner->get_instance_id());
+	owners.remove(p_owner->get_instance_id());
 }
 
 void Resource::notify_change_to_owners() {
@@ -353,7 +353,7 @@ bool Resource::is_translation_remapped() const {
 void Resource::set_id_for_path(const String &p_path, int p_id) {
 	if (p_id == -1) {
 		ResourceCache::path_cache_lock.write_lock();
-		ResourceCache::resource_path_cache[p_path].erase(get_path());
+		ResourceCache::resource_path_cache[p_path].remove(get_path());
 		ResourceCache::path_cache_lock.write_unlock();
 	} else {
 		ResourceCache::path_cache_lock.write_lock();
@@ -404,7 +404,7 @@ Resource::Resource() :
 Resource::~Resource() {
 	if (path_cache != "") {
 		ResourceCache::lock.write_lock();
-		ResourceCache::resources.erase(path_cache);
+		ResourceCache::resources.remove(path_cache);
 		ResourceCache::lock.write_unlock();
 	}
 	if (owners.size()) {

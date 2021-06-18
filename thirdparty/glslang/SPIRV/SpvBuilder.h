@@ -110,7 +110,7 @@ public:
     void addExtension(const char* ext) { extensions.insert(ext); }
     void removeExtension(const char* ext)
     {
-        extensions.erase(ext);
+        extensions.remove(ext);
     }
     void addIncorporatedExtension(const char* ext, SpvVersion incorporatedVersion)
     {

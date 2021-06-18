@@ -336,7 +336,7 @@ void ProjectSettingsEditor::_action_removed(const String &p_name) {
 	Dictionary old_val = ProjectSettings::get_singleton()->get(property_name);
 	int order = ProjectSettings::get_singleton()->get_order(property_name);
 
-	undo_redo->create_action(TTR("Erase Input Action"));
+	undo_redo->create_action(TTR("Remove Input Action"));
 	undo_redo->add_do_method(ProjectSettings::get_singleton(), "clear", property_name);
 	undo_redo->add_undo_method(ProjectSettings::get_singleton(), "set", property_name, old_val);
 	undo_redo->add_undo_method(ProjectSettings::get_singleton(), "set_order", property_name, order);

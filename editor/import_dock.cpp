@@ -495,7 +495,7 @@ void ImportDock::_reimport() {
 				//override entirely
 				config->set_value("remap", "importer", importer_name);
 				if (config->has_section("params")) {
-					config->erase_section("params");
+					config->remove_section("params");
 				}
 
 				for (List<PropertyInfo>::Element *E = params->properties.front(); E; E = E->next()) {
@@ -546,7 +546,7 @@ void ImportDock::_property_toggled(const StringName &p_prop, bool p_checked) {
 	if (p_checked) {
 		params->checked.insert(p_prop);
 	} else {
-		params->checked.erase(p_prop);
+		params->checked.remove(p_prop);
 	}
 }
 

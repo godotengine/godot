@@ -427,7 +427,7 @@ void EditorAutoloadSettings::update_autoload() {
 					Ref<Script> scr = info.node->get_script();
 					info.in_editor = scr.is_valid() && scr->is_tool();
 					if (info.is_singleton == old_info.is_singleton && info.in_editor == old_info.in_editor) {
-						to_remove.erase(name);
+						to_remove.remove(name);
 						need_to_add = false;
 					} else {
 						info.node = nullptr;

@@ -311,10 +311,10 @@ Error QuickHull::build(const Vector<Vector3> &p_points, Geometry3D::MeshData &r_
 			}
 		}
 
-		//erase lit faces
+		//remove lit faces
 
 		while (lit_faces.size()) {
-			faces.erase(lit_faces.front()->get());
+			faces.remove(lit_faces.front()->get());
 			lit_faces.pop_front();
 		}
 
@@ -428,8 +428,8 @@ Error QuickHull::build(const Vector<Vector3> &p_points, Geometry3D::MeshData &r_
 					}
 				}
 
-				ret_edges.erase(F); //remove the edge
-				ret_faces.erase(O); //remove the face
+				ret_edges.remove(F); //remove the edge
+				ret_faces.remove(O); //remove the face
 			}
 		}
 	}

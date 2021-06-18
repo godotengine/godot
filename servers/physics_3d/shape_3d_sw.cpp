@@ -89,7 +89,7 @@ void Shape3DSW::remove_owner(ShapeOwner3DSW *p_owner) {
 	ERR_FAIL_COND(!E);
 	E->get()--;
 	if (E->get() == 0) {
-		owners.erase(E);
+		owners.remove(E);
 	}
 }
 

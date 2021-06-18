@@ -45,7 +45,7 @@ TEST_CASE("[Translation] Messages") {
 	translation->add_message("Hello", "Bonjour");
 	CHECK(translation->get_message("Hello") == "Bonjour");
 
-	translation->erase_message("Hello");
+	translation->remove_message("Hello");
 	// The message no longer exists, so it returns an empty string instead.
 	CHECK(translation->get_message("Hello") == "");
 
@@ -75,7 +75,7 @@ TEST_CASE("[TranslationPO] Messages with context") {
 	CHECK(translation->get_message("Hello", "nonexistent_context") == "");
 
 	// Only remove the message for the default context, not the "friendly" context.
-	translation->erase_message("Hello");
+	translation->remove_message("Hello");
 	// The message no longer exists, so it returns an empty string instead.
 	CHECK(translation->get_message("Hello") == "");
 	CHECK(translation->get_message("Hello", "friendly") == "Salut");

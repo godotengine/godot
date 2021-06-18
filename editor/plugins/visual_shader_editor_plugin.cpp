@@ -881,7 +881,7 @@ void VisualShaderGraphPlugin::remove_node(VisualShader::Type p_type, int p_id) {
 	if (visual_shader->get_shader_type() == p_type && links.has(p_id)) {
 		links[p_id].graph_node->get_parent()->remove_child(links[p_id].graph_node);
 		memdelete(links[p_id].graph_node);
-		links.erase(p_id);
+		links.remove(p_id);
 	}
 }
 
@@ -961,13 +961,13 @@ void VisualShaderEditor::add_plugin(const Ref<VisualShaderNodePlugin> &p_plugin)
 }
 
 void VisualShaderEditor::remove_plugin(const Ref<VisualShaderNodePlugin> &p_plugin) {
-	plugins.erase(p_plugin);
+	plugins.remove(p_plugin);
 }
 
 void VisualShaderEditor::clear_custom_types() {
 	for (int i = 0; i < add_options.size(); i++) {
 		if (add_options[i].is_custom) {
-			add_options.remove(i);
+			add_options.remove_at(i);
 			i--;
 		}
 	}
@@ -1372,7 +1372,7 @@ void VisualShaderEditor::_update_graph() {
 	VisualShader::Type type = get_current_shader_type();
 
 	graph->clear_connections();
-	//erase all nodes
+	//remove all nodes
 	for (int i = 0; i < graph->get_child_count(); i++) {
 		if (Object::cast_to<GraphNode>(graph->get_child(i))) {
 			Node *node = graph->get_child(i);
@@ -2758,32 +2758,32 @@ void VisualShaderEditor::_convert_constants_to_uniforms(bool p_vice_versa) {
 }
 
 void VisualShaderEditor::_delete_node_request(int p_type, int p_node) {
-	List<int> to_erase;
-	to_erase.push_back(p_node);
+	List<int> to_remove;
+	to_remove.push_back(p_node);
 
 	undo_redo->create_action(TTR("Delete VisualShader Node"));
-	_delete_nodes(p_type, to_erase);
+	_delete_nodes(p_type, to_remove);
 	undo_redo->commit_action();
 }
 
 void VisualShaderEditor::_delete_nodes_request() {
-	List<int> to_erase;
+	List<int> to_remove;
 
 	for (int i = 0; i < graph->get_child_count(); i++) {
 		GraphNode *gn = Object::cast_to<GraphNode>(graph->get_child(i));
 		if (gn) {
 			if (gn->is_selected() && gn->is_close_button_visible()) {
-				to_erase.push_back(gn->get_name().operator String().to_int());
+				to_remove.push_back(gn->get_name().operator String().to_int());
 			}
 		}
 	}
 
-	if (to_erase.is_empty()) {
+	if (to_remove.is_empty()) {
 		return;
 	}
 
 	undo_redo->create_action(TTR("Delete VisualShader Node(s)"));
-	_delete_nodes(get_current_shader_type(), to_erase);
+	_delete_nodes(get_current_shader_type(), to_remove);
 	undo_redo->commit_action();
 }
 

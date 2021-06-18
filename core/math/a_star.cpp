@@ -115,7 +115,7 @@ void AStar::remove_point(int p_id) {
 
 	for (OAHashMap<int, Point *>::Iterator it = p->neighbours.iter(); it.valid; it = p->neighbours.next_iter(it)) {
 		Segment s(p_id, (*it.key));
-		segments.erase(s);
+		segments.remove(s);
 
 		(*it.value)->neighbours.remove(p->id);
 		(*it.value)->unlinked_neighbours.remove(p->id);
@@ -123,7 +123,7 @@ void AStar::remove_point(int p_id) {
 
 	for (OAHashMap<int, Point *>::Iterator it = p->unlinked_neighbours.iter(); it.valid; it = p->unlinked_neighbours.next_iter(it)) {
 		Segment s(p_id, (*it.key));
-		segments.erase(s);
+		segments.remove(s);
 
 		(*it.value)->neighbours.remove(p->id);
 		(*it.value)->unlinked_neighbours.remove(p->id);
@@ -166,7 +166,7 @@ void AStar::connect_points(int p_id, int p_with_id, bool bidirectional) {
 			a->unlinked_neighbours.remove(b->id);
 			b->unlinked_neighbours.remove(a->id);
 		}
-		segments.erase(element);
+		segments.remove(element);
 	}
 
 	segments.insert(s);
@@ -187,7 +187,7 @@ void AStar::disconnect_points(int p_id, int p_with_id, bool bidirectional) {
 	Set<Segment>::Element *element = segments.find(s);
 	if (element != nullptr) {
 		// s is the new segment
-		// Erase the directions to be removed
+		// Remove the directions to be removed
 		s.direction = (element->get().direction & ~remove_direction);
 
 		a->neighbours.remove(b->id);
@@ -205,7 +205,7 @@ void AStar::disconnect_points(int p_id, int p_with_id, bool bidirectional) {
 			}
 		}
 
-		segments.erase(element);
+		segments.remove(element);
 		if (s.direction != Segment::NONE) {
 			segments.insert(s);
 		}
@@ -350,7 +350,7 @@ bool AStar::_solve(Point *begin_point, Point *end_point) {
 		}
 
 		sorter.pop_heap(0, open_list.size(), open_list.ptrw()); // Remove the current point from the open list
-		open_list.remove(open_list.size() - 1);
+		open_list.remove_at(open_list.size() - 1);
 		p->closed_pass = pass; // Mark the point as closed
 
 		for (OAHashMap<int, Point *>::Iterator it = p->neighbours.iter(); it.valid; it = p->neighbours.next_iter(it)) {
@@ -814,7 +814,7 @@ bool AStar2D::_solve(AStar::Point *begin_point, AStar::Point *end_point) {
 		}
 
 		sorter.pop_heap(0, open_list.size(), open_list.ptrw()); // Remove the current point from the open list
-		open_list.remove(open_list.size() - 1);
+		open_list.remove_at(open_list.size() - 1);
 		p->closed_pass = astar.pass; // Mark the point as closed
 
 		for (OAHashMap<int, AStar::Point *>::Iterator it = p->neighbours.iter(); it.valid; it = p->neighbours.next_iter(it)) {

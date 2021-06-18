@@ -158,7 +158,7 @@ void Node3D::_notification(int p_what) {
 				get_tree()->xform_change_list.remove(&xform_change);
 			}
 			if (data.C) {
-				data.parent->data.children.erase(data.C);
+				data.parent->data.children.remove(data.C);
 			}
 			data.parent = nullptr;
 			data.C = nullptr;

@@ -85,7 +85,7 @@ void ShapeBullet::remove_owner(ShapeOwnerBullet *p_owner, bool p_permanentlyFrom
 	}
 	E->get()--;
 	if (p_permanentlyFromThisBody || 0 >= E->get()) {
-		owners.erase(E);
+		owners.remove(E);
 	}
 }
 

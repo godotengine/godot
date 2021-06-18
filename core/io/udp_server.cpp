@@ -148,7 +148,7 @@ void UDPServer::set_max_pending_connections(int p_max) {
 			break;
 		}
 		memdelete(E->get().peer);
-		pending.erase(E);
+		pending.remove(E);
 	}
 }
 
@@ -174,7 +174,7 @@ void UDPServer::remove_peer(IPAddress p_ip, int p_port) {
 	peer.port = p_port;
 	List<Peer>::Element *E = peers.find(peer);
 	if (E) {
-		peers.erase(E);
+		peers.remove(E);
 	}
 }
 

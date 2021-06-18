@@ -70,7 +70,7 @@ void EditorHistory::cleanup_history() {
 		}
 
 		if (fail) {
-			history.remove(i);
+			history.remove_at(i);
 			i--;
 		}
 	}
@@ -431,7 +431,7 @@ void EditorData::add_undo_redo_inspector_hook_callback(Callable p_callable) {
 }
 
 void EditorData::remove_undo_redo_inspector_hook_callback(Callable p_callable) {
-	undo_redo_callbacks.erase(p_callable);
+	undo_redo_callbacks.remove(p_callable);
 }
 
 const Vector<Callable> EditorData::get_undo_redo_inspector_hook_callback() {
@@ -440,7 +440,7 @@ const Vector<Callable> EditorData::get_undo_redo_inspector_hook_callback() {
 
 void EditorData::remove_editor_plugin(EditorPlugin *p_plugin) {
 	p_plugin->undo_redo = nullptr;
-	editor_plugins.erase(p_plugin);
+	editor_plugins.remove(p_plugin);
 }
 
 void EditorData::add_editor_plugin(EditorPlugin *p_plugin) {
@@ -495,9 +495,9 @@ void EditorData::remove_custom_type(const String &p_type) {
 	for (Map<String, Vector<CustomType>>::Element *E = custom_types.front(); E; E = E->next()) {
 		for (int i = 0; i < E->get().size(); i++) {
 			if (E->get()[i].name == p_type) {
-				E->get().remove(i);
+				E->get().remove_at(i);
 				if (E->get().is_empty()) {
-					custom_types.erase(E->key());
+					custom_types.remove(E->key());
 				}
 				return;
 			}
@@ -551,7 +551,7 @@ void EditorData::remove_scene(int p_idx) {
 		current_edited_scene--;
 	}
 
-	edited_scene.remove(p_idx);
+	edited_scene.remove_at(p_idx);
 }
 
 bool EditorData::_find_updated_instances(Node *p_root, Node *p_node, Set<String> &checked_paths) {
@@ -732,7 +732,7 @@ void EditorData::move_edited_scene_to_index(int p_idx) {
 	ERR_FAIL_INDEX(p_idx, edited_scene.size());
 
 	EditedScene es = edited_scene[current_edited_scene];
-	edited_scene.remove(current_edited_scene);
+	edited_scene.remove_at(current_edited_scene);
 	edited_scene.insert(p_idx, es);
 	current_edited_scene = p_idx;
 }
@@ -1023,7 +1023,7 @@ void EditorSelection::_node_removed(Node *p_node) {
 	if (meta) {
 		memdelete(meta);
 	}
-	selection.erase(p_node);
+	selection.remove(p_node);
 	changed = true;
 	nl_changed = true;
 }
@@ -1064,7 +1064,7 @@ void EditorSelection::remove_node(Node *p_node) {
 	if (meta) {
 		memdelete(meta);
 	}
-	selection.erase(p_node);
+	selection.remove(p_node);
 	p_node->disconnect("tree_exiting", callable_mp(this, &EditorSelection::_node_removed));
 	//emit_signal("selection_changed");
 }

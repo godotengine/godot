@@ -328,7 +328,7 @@ void SceneShaderForwardMobile::ShaderData::set_code(const String &p_code) {
 
 void SceneShaderForwardMobile::ShaderData::set_default_texture_param(const StringName &p_name, RID p_texture) {
 	if (!p_texture.is_valid()) {
-		default_texture_params.erase(p_name);
+		default_texture_params.remove(p_name);
 	} else {
 		default_texture_params[p_name] = p_texture;
 	}

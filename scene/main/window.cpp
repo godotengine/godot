@@ -422,7 +422,7 @@ void Window::_clear_transient() {
 		if (transient_parent->window_id != DisplayServer::INVALID_WINDOW_ID && window_id != DisplayServer::INVALID_WINDOW_ID) {
 			DisplayServer::get_singleton()->window_set_transient(window_id, DisplayServer::INVALID_WINDOW_ID);
 		}
-		transient_parent->transient_children.erase(this);
+		transient_parent->transient_children.remove(this);
 		if (transient_parent->exclusive_child == this) {
 			transient_parent->exclusive_child = nullptr;
 		}

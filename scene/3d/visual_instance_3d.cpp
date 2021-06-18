@@ -290,7 +290,7 @@ void GeometryInstance3D::set_shader_instance_uniform(const StringName &p_uniform
 	if (p_value.get_type() == Variant::NIL) {
 		Variant def_value = RS::get_singleton()->instance_geometry_get_shader_parameter_default_value(get_instance(), p_uniform);
 		RS::get_singleton()->instance_geometry_set_shader_parameter(get_instance(), p_uniform, def_value);
-		instance_uniforms.erase(p_value);
+		instance_uniforms.remove(p_value);
 	} else {
 		instance_uniforms[p_uniform] = p_value;
 		RS::get_singleton()->instance_geometry_set_shader_parameter(get_instance(), p_uniform, p_value);

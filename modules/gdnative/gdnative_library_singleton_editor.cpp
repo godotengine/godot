@@ -166,7 +166,7 @@ void GDNativeLibrarySingletonEditor::_item_edited() {
 	}
 
 	if (enabled) {
-		disabled_paths.erase(path);
+		disabled_paths.remove(path);
 	} else {
 		if (disabled_paths.find(path) == -1) {
 			disabled_paths.push_back(path);

@@ -148,7 +148,7 @@ void Line2D::add_point(Vector2 p_pos, int p_atpos) {
 }
 
 void Line2D::remove_point(int i) {
-	_points.remove(i);
+	_points.remove_at(i);
 	update();
 }
 

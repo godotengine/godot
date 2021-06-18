@@ -82,7 +82,7 @@
 				Deselects the given column.
 			</description>
 		</method>
-		<method name="erase_button">
+		<method name="remove_button">
 			<return type="void">
 			</return>
 			<argument index="0" name="column" type="int">

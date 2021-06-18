@@ -860,7 +860,7 @@ bool KernCollider::initSlot(Segment *seg, Slot *aSlot, const Rect &limit, float 
                 Vector<float>::iterator e = _edges.begin();
                 while (numSlices--)
                     ++e;
-                _edges.erase(_edges.begin(), e);
+                _edges.remove(_edges.begin(), e);
             }
         }
         if (_maxy != ymax)

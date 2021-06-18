@@ -214,17 +214,17 @@ public:
 		return Element(new_element);
 	}
 
-	void erase(Element &p_element) {
-		map.erase(p_element.key());
-		list.erase(p_element.list_element);
+	void remove(Element &p_element) {
+		map.remove(p_element.key());
+		list.remove(p_element.list_element);
 		p_element.list_element = nullptr;
 	}
 
-	bool erase(const K &p_key) {
+	bool remove(const K &p_key) {
 		typename InternalList::Element **list_element = map.getptr(p_key);
 		if (list_element) {
-			list.erase(*list_element);
-			map.erase(p_key);
+			list.remove(*list_element);
+			map.remove(p_key);
 			return true;
 		}
 		return false;

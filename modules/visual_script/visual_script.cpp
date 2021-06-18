@@ -180,7 +180,7 @@ void VisualScript::remove_function(const StringName &p_name) {
 	ERR_FAIL_COND(!functions.has(p_name));
 
 	// Let the editor handle the node removal.
-	functions.erase(p_name);
+	functions.remove(p_name);
 }
 
 void VisualScript::rename_function(const StringName &p_name, const StringName &p_new_name) {
@@ -197,7 +197,7 @@ void VisualScript::rename_function(const StringName &p_name, const StringName &p
 	ERR_FAIL_COND(custom_signals.has(p_new_name));
 
 	functions[p_new_name] = functions[p_name];
-	functions.erase(p_name);
+	functions.remove(p_name);
 }
 
 void VisualScript::set_scroll(const Vector2 &p_scroll) {
@@ -239,7 +239,7 @@ void VisualScript::_node_ports_changed(int p_id) {
 		}
 
 		while (to_remove.size()) {
-			sequence_connections.erase(to_remove.front()->get());
+			sequence_connections.remove(to_remove.front()->get());
 			to_remove.pop_front();
 		}
 	}
@@ -257,7 +257,7 @@ void VisualScript::_node_ports_changed(int p_id) {
 		}
 
 		while (to_remove.size()) {
-			data_connections.erase(to_remove.front()->get());
+			data_connections.remove(to_remove.front()->get());
 			to_remove.pop_front();
 		}
 	}
@@ -297,7 +297,7 @@ void VisualScript::remove_node(int p_id) {
 		}
 
 		while (to_remove.size()) {
-			sequence_connections.erase(to_remove.front()->get());
+			sequence_connections.remove(to_remove.front()->get());
 			to_remove.pop_front();
 		}
 	}
@@ -312,7 +312,7 @@ void VisualScript::remove_node(int p_id) {
 		}
 
 		while (to_remove.size()) {
-			data_connections.erase(to_remove.front()->get());
+			data_connections.remove(to_remove.front()->get());
 			to_remove.pop_front();
 		}
 	}
@@ -320,7 +320,7 @@ void VisualScript::remove_node(int p_id) {
 	nodes[p_id].node->disconnect("ports_changed", callable_mp(this, &VisualScript::_node_ports_changed));
 	nodes[p_id].node->script_used.unref();
 
-	nodes.erase(p_id);
+	nodes.remove(p_id);
 }
 
 bool VisualScript::has_node(int p_id) const {
@@ -367,7 +367,7 @@ void VisualScript::sequence_disconnect(int p_from_node, int p_from_output, int p
 	sc.to_node = p_to_node;
 	ERR_FAIL_COND(!sequence_connections.has(sc));
 
-	sequence_connections.erase(sc);
+	sequence_connections.remove(sc);
 }
 
 bool VisualScript::has_sequence_connection(int p_from_node, int p_from_output, int p_to_node) const {
@@ -408,7 +408,7 @@ void VisualScript::data_disconnect(int p_from_node, int p_from_port, int p_to_no
 
 	ERR_FAIL_COND(!data_connections.has(dc));
 
-	data_connections.erase(dc);
+	data_connections.remove(dc);
 }
 
 bool VisualScript::has_data_connection(int p_from_node, int p_from_port, int p_to_node, int p_to_port) const {
@@ -476,7 +476,7 @@ bool VisualScript::has_variable(const StringName &p_name) const {
 
 void VisualScript::remove_variable(const StringName &p_name) {
 	ERR_FAIL_COND(!variables.has(p_name));
-	variables.erase(p_name);
+	variables.remove(p_name);
 
 #ifdef TOOLS_ENABLED
 	_update_placeholders();
@@ -585,7 +585,7 @@ void VisualScript::rename_variable(const StringName &p_name, const StringName &p
 	ERR_FAIL_COND(custom_signals.has(p_new_name));
 
 	variables[p_new_name] = variables[p_name];
-	variables.erase(p_name);
+	variables.remove(p_name);
 	List<int> ids;
 	get_node_list(&ids);
 	for (List<int>::Element *E = ids.front(); E; E = E->next()) {
@@ -660,7 +660,7 @@ void VisualScript::custom_signal_remove_argument(const StringName &p_func, int p
 	ERR_FAIL_COND(instances.size());
 	ERR_FAIL_COND(!custom_signals.has(p_func));
 	ERR_FAIL_INDEX(p_argidx, custom_signals[p_func].size());
-	custom_signals[p_func].remove(p_argidx);
+	custom_signals[p_func].remove_at(p_argidx);
 }
 
 int VisualScript::custom_signal_get_argument_count(const StringName &p_func) const {
@@ -680,7 +680,7 @@ void VisualScript::custom_signal_swap_argument(const StringName &p_func, int p_a
 void VisualScript::remove_custom_signal(const StringName &p_name) {
 	ERR_FAIL_COND(instances.size());
 	ERR_FAIL_COND(!custom_signals.has(p_name));
-	custom_signals.erase(p_name);
+	custom_signals.remove(p_name);
 }
 
 void VisualScript::rename_custom_signal(const StringName &p_name, const StringName &p_new_name) {
@@ -697,7 +697,7 @@ void VisualScript::rename_custom_signal(const StringName &p_name, const StringNa
 	ERR_FAIL_COND(custom_signals.has(p_new_name));
 
 	custom_signals[p_new_name] = custom_signals[p_name];
-	custom_signals.erase(p_name);
+	custom_signals.remove(p_name);
 }
 
 void VisualScript::get_custom_signal_list(List<StringName> *r_custom_signals) const {
@@ -738,8 +738,8 @@ Ref<Script> VisualScript::get_base_script() const {
 }
 
 #ifdef TOOLS_ENABLED
-void VisualScript::_placeholder_erased(PlaceHolderScriptInstance *p_placeholder) {
-	placeholders.erase(p_placeholder);
+void VisualScript::_placeholder_removed(PlaceHolderScriptInstance *p_placeholder) {
+	placeholders.remove(p_placeholder);
 }
 
 void VisualScript::_update_placeholders() {
@@ -2109,7 +2109,7 @@ VisualScriptInstance::~VisualScriptInstance() {
 	{
 		MutexLock lock(VisualScriptLanguage::singleton->lock);
 
-		script->instances.erase(owner);
+		script->instances.remove(owner);
 	}
 
 	for (Map<int, VisualScriptNodeInstance *>::Element *E = instances.front(); E; E = E->next()) {
@@ -2525,7 +2525,7 @@ void VisualScriptLanguage::add_register_func(const String &p_name, VisualScriptN
 
 void VisualScriptLanguage::remove_register_func(const String &p_name) {
 	ERR_FAIL_COND(!register_funcs.has(p_name));
-	register_funcs.erase(p_name);
+	register_funcs.remove(p_name);
 }
 
 Ref<VisualScriptNode> VisualScriptLanguage::create_node_from_name(const String &p_name) {

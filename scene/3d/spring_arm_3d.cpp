@@ -119,7 +119,7 @@ void SpringArm3D::add_excluded_object(RID p_rid) {
 }
 
 bool SpringArm3D::remove_excluded_object(RID p_rid) {
-	return excluded_objects.erase(p_rid);
+	return excluded_objects.remove(p_rid);
 }
 
 void SpringArm3D::clear_excluded_objects() {

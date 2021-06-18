@@ -73,7 +73,7 @@ bool DirAccess::drives_are_shortcuts() {
 	return false;
 }
 
-static Error _erase_recursive(DirAccess *da) {
+static Error _remove_recursive(DirAccess *da) {
 	List<String> dirs;
 	List<String> files;
 
@@ -96,7 +96,7 @@ static Error _erase_recursive(DirAccess *da) {
 	for (List<String>::Element *E = dirs.front(); E; E = E->next()) {
 		Error err = da->change_dir(E->get());
 		if (err == OK) {
-			err = _erase_recursive(da);
+			err = _remove_recursive(da);
 			if (err) {
 				da->change_dir("..");
 				return err;
@@ -124,8 +124,8 @@ static Error _erase_recursive(DirAccess *da) {
 	return OK;
 }
 
-Error DirAccess::erase_contents_recursive() {
-	return _erase_recursive(this);
+Error DirAccess::remove_contents_recursive() {
+	return _remove_recursive(this);
 }
 
 Error DirAccess::make_dir_recursive(String p_dir) {

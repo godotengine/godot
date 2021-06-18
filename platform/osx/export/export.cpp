@@ -979,7 +979,7 @@ Error EditorExportPlatformOSX::export_project(const Ref<EditorExportPreset> &p_p
 
 		// Clean up temporary .app dir.
 		tmp_app_dir->change_dir(tmp_app_path_name);
-		tmp_app_dir->erase_contents_recursive();
+		tmp_app_dir->remove_contents_recursive();
 		tmp_app_dir->change_dir("..");
 		tmp_app_dir->remove(tmp_app_dir_name);
 	}

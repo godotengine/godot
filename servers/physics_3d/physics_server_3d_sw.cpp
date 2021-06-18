@@ -162,7 +162,7 @@ void PhysicsServer3DSW::space_set_active(RID p_space, bool p_active) {
 	if (p_active) {
 		active_spaces.insert(space);
 	} else {
-		active_spaces.erase(space);
+		active_spaces.remove(space);
 	}
 }
 
@@ -1563,7 +1563,7 @@ void PhysicsServer3DSW::free(RID p_rid) {
 			co->set_space(nullptr);
 		}
 
-		active_spaces.erase(space);
+		active_spaces.remove(space);
 		free(space->get_default_area()->get_self());
 		free(space->get_static_global_body());
 

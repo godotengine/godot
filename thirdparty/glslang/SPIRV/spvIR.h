@@ -343,7 +343,7 @@ public:
     {
         auto found = find(blocks.begin(), blocks.end(), block);
         assert(found != blocks.end());
-        blocks.erase(found);
+        blocks.remove(found);
         delete block;
     }
 

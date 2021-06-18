@@ -146,7 +146,7 @@ public:
 		if (index > -1) {
 			areas.write[index].refCount -= 1;
 			if (areas[index].refCount < 1) {
-				areas.remove(index);
+				areas.remove_at(index);
 			}
 		}
 	}
@@ -165,7 +165,7 @@ public:
 	_FORCE_INLINE_ void add_contact(const Vector2 &p_local_pos, const Vector2 &p_local_normal, real_t p_depth, int p_local_shape, const Vector2 &p_collider_pos, int p_collider_shape, ObjectID p_collider_instance_id, const RID &p_collider, const Vector2 &p_collider_velocity_at_pos);
 
 	_FORCE_INLINE_ void add_exception(const RID &p_exception) { exceptions.insert(p_exception); }
-	_FORCE_INLINE_ void remove_exception(const RID &p_exception) { exceptions.erase(p_exception); }
+	_FORCE_INLINE_ void remove_exception(const RID &p_exception) { exceptions.remove(p_exception); }
 	_FORCE_INLINE_ bool has_exception(const RID &p_exception) const { return exceptions.has(p_exception); }
 	_FORCE_INLINE_ const VSet<RID> &get_exceptions() const { return exceptions; }
 
@@ -173,7 +173,7 @@ public:
 	_FORCE_INLINE_ void set_island_step(uint64_t p_step) { island_step = p_step; }
 
 	_FORCE_INLINE_ void add_constraint(Constraint2DSW *p_constraint, int p_pos) { constraint_list.push_back({ p_constraint, p_pos }); }
-	_FORCE_INLINE_ void remove_constraint(Constraint2DSW *p_constraint, int p_pos) { constraint_list.erase({ p_constraint, p_pos }); }
+	_FORCE_INLINE_ void remove_constraint(Constraint2DSW *p_constraint, int p_pos) { constraint_list.remove({ p_constraint, p_pos }); }
 	const List<Pair<Constraint2DSW *, int>> &get_constraint_list() const { return constraint_list; }
 	_FORCE_INLINE_ void clear_constraint_list() { constraint_list.clear(); }
 

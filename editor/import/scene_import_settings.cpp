@@ -47,7 +47,7 @@ class SceneImportSettingsData : public Object {
 	bool _set(const StringName &p_name, const Variant &p_value) {
 		if (settings) {
 			if (defaults.has(p_name) && defaults[p_name] == p_value) {
-				settings->erase(p_name);
+				settings->remove(p_name);
 			} else {
 				(*settings)[p_name] = p_value;
 			}
@@ -695,7 +695,7 @@ void SceneImportSettings::_re_import() {
 	Map<StringName, Variant> main_settings;
 
 	main_settings = defaults;
-	main_settings.erase("_subresources");
+	main_settings.remove("_subresources");
 	Dictionary nodes;
 	Dictionary materials;
 	Dictionary meshes;

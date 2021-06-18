@@ -535,7 +535,7 @@ void ExportTemplateManager::_uninstall_template_confirmed() {
 	err = da->change_dir(uninstall_version);
 	ERR_FAIL_COND_MSG(err != OK, "Could not access templates directory at '" + templates_dir.plus_file(uninstall_version) + "'.");
 
-	err = da->erase_contents_recursive();
+	err = da->remove_contents_recursive();
 	ERR_FAIL_COND_MSG(err != OK, "Could not remove all templates in '" + templates_dir.plus_file(uninstall_version) + "'.");
 
 	da->change_dir("..");

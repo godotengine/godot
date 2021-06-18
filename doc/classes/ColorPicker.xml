@@ -20,7 +20,7 @@
 				[b]Note:[/b] the presets list is only for [i]this[/i] color picker.
 			</description>
 		</method>
-		<method name="erase_preset">
+		<method name="remove_preset">
 			<return type="void">
 			</return>
 			<argument index="0" name="color" type="Color">

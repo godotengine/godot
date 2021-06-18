@@ -123,7 +123,7 @@ void ParticlesMaterial::_update_shader() {
 		if (shader_map[current_key].users == 0) {
 			//deallocate shader, as it's no longer in use
 			RS::get_singleton()->free(shader_map[current_key].shader);
-			shader_map.erase(current_key);
+			shader_map.remove(current_key);
 		}
 	}
 
@@ -1419,7 +1419,7 @@ ParticlesMaterial::~ParticlesMaterial() {
 		if (shader_map[current_key].users == 0) {
 			//deallocate shader, as it's no longer in use
 			RS::get_singleton()->free(shader_map[current_key].shader);
-			shader_map.erase(current_key);
+			shader_map.remove(current_key);
 		}
 
 		RS::get_singleton()->material_set_shader(_get_material(), RID());

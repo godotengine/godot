@@ -1391,7 +1391,7 @@ void PopupMenu::remove_item(int p_idx) {
 		_unref_shortcut(items[p_idx].shortcut);
 	}
 
-	items.remove(p_idx);
+	items.remove_at(p_idx);
 	control->update();
 	child_controls_changed();
 }
@@ -1455,7 +1455,7 @@ void PopupMenu::_unref_shortcut(Ref<Shortcut> p_sc) {
 	shortcut_refcount[p_sc]--;
 	if (shortcut_refcount[p_sc] == 0) {
 		p_sc->disconnect("changed", callable_mp((CanvasItem *)this, &CanvasItem::update));
-		shortcut_refcount.erase(p_sc);
+		shortcut_refcount.remove(p_sc);
 	}
 }
 

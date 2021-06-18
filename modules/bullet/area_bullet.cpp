@@ -83,7 +83,7 @@ void AreaBullet::dispatch_callbacks() {
 			case OVERLAP_STATE_EXIT:
 				call_event(otherObj.object, PhysicsServer3D::AREA_BODY_REMOVED);
 				otherObj.object->on_exit_area(this);
-				overlappingObjects.remove(i); // Remove after callback
+				overlappingObjects.remove_at(i); // Remove after callback
 				break;
 			case OVERLAP_STATE_DIRTY:
 			case OVERLAP_STATE_INSIDE:
@@ -135,7 +135,7 @@ void AreaBullet::remove_overlap(CollisionObjectBullet *p_object, bool p_notify) 
 				call_event(overlappingObjects[i].object, PhysicsServer3D::AREA_BODY_REMOVED);
 			}
 			overlappingObjects[i].object->on_exit_area(this);
-			overlappingObjects.remove(i);
+			overlappingObjects.remove_at(i);
 			break;
 		}
 	}

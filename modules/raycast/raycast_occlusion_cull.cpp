@@ -239,7 +239,7 @@ void RaycastOcclusionCull::scenario_set_instance(RID p_scenario, RID p_instance,
 
 	if (instance.removed) {
 		instance.removed = false;
-		scenario.removed_instances.erase(p_instance);
+		scenario.removed_instances.remove(p_instance);
 	}
 
 	bool changed = false;
@@ -247,7 +247,7 @@ void RaycastOcclusionCull::scenario_set_instance(RID p_scenario, RID p_instance,
 	if (instance.occluder != p_occluder) {
 		Occluder *old_occluder = occluder_owner.getornull(instance.occluder);
 		if (old_occluder) {
-			old_occluder->users.erase(InstanceID(p_scenario, p_instance));
+			old_occluder->users.remove(InstanceID(p_scenario, p_instance));
 		}
 
 		instance.occluder = p_occluder;
@@ -287,7 +287,7 @@ void RaycastOcclusionCull::scenario_remove_instance(RID p_scenario, RID p_instan
 		if (!instance.removed) {
 			Occluder *occluder = occluder_owner.getornull(instance.occluder);
 			if (occluder) {
-				occluder->users.erase(InstanceID(p_scenario, p_instance));
+				occluder->users.remove(InstanceID(p_scenario, p_instance));
 			}
 
 			scenario.removed_instances.push_back(p_instance);
@@ -389,7 +389,7 @@ bool RaycastOcclusionCull::Scenario::update(ThreadWorkPool &p_thread_pool) {
 	}
 
 	for (unsigned int i = 0; i < removed_instances.size(); i++) {
-		instances.erase(removed_instances[i]);
+		instances.remove(removed_instances[i]);
 	}
 
 	if (dirty_instances_array.size() / p_thread_pool.get_thread_count() > 128) {
@@ -477,7 +477,7 @@ void RaycastOcclusionCull::add_buffer(RID p_buffer) {
 
 void RaycastOcclusionCull::remove_buffer(RID p_buffer) {
 	ERR_FAIL_COND(!buffers.has(p_buffer));
-	buffers.erase(p_buffer);
+	buffers.remove(p_buffer);
 }
 
 void RaycastOcclusionCull::buffer_set_scenario(RID p_buffer, RID p_scenario) {
@@ -507,7 +507,7 @@ void RaycastOcclusionCull::buffer_update(RID p_buffer, const Transform3D &p_cam_
 	bool removed = scenario.update(p_thread_pool);
 
 	if (removed) {
-		scenarios.erase(buffer.scenario_rid);
+		scenarios.remove(buffer.scenario_rid);
 		return;
 	}
 

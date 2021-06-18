@@ -104,7 +104,7 @@ public:
         PushBack(value);
         return true;
     }
-    bool Erase(const T& value)
+    bool remove(const T& value)
     {
         size_t pos;
         T* const data = Data();

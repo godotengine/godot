@@ -341,7 +341,7 @@ namespace embree
   {
 #if defined(EMBREE_GEOMETRY_SUBDIVISION)
     Lock<MutexSys> lock(g_mutex);
-    if (bytes == 0) g_cache_size_map.erase(this);
+    if (bytes == 0) g_cache_size_map.remove(this);
     else            g_cache_size_map[this] = bytes;
     
     size_t maxCacheSize = getMaxCacheSize();
@@ -370,7 +370,7 @@ namespace embree
   void Device::exitTaskingSystem() 
   {
     Lock<MutexSys> lock(g_mutex);
-    g_num_threads_map.erase(this);
+    g_num_threads_map.remove(this);
 
     /* terminate tasking system */
     if (g_num_threads_map.size() == 0) {

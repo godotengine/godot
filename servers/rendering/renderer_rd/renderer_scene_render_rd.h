@@ -729,7 +729,7 @@ private:
 	uint32_t volumetric_fog_size = 128;
 	bool volumetric_fog_filter_active = true;
 
-	void _volumetric_fog_erase(RenderBuffers *rb);
+	void _volumetric_fog_remove(RenderBuffers *rb);
 	void _update_volumetric_fog(RID p_render_buffers, RID p_environment, const CameraMatrix &p_cam_projection, const Transform3D &p_cam_transform, RID p_shadow_atlas, int p_directional_light_count, bool p_use_directional_shadows, int p_positional_light_count, int p_voxel_gi_count);
 
 	RID shadow_sampler;

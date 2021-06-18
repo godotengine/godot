@@ -99,7 +99,7 @@ void EditorExportPreset::update_files_to_export() {
 		}
 	}
 	for (int i = 0; i < to_remove.size(); ++i) {
-		selected_files.erase(to_remove[i]);
+		selected_files.remove(to_remove[i]);
 	}
 }
 
@@ -177,7 +177,7 @@ void EditorExportPreset::add_export_file(const String &p_path) {
 }
 
 void EditorExportPreset::remove_export_file(const String &p_path) {
-	selected_files.erase(p_path);
+	selected_files.remove(p_path);
 	EditorExport::singleton->save_presets();
 }
 
@@ -497,7 +497,7 @@ void EditorExportPlatform::_edit_files_with_filter(DirAccess *da, const Vector<S
 					if (!exclude) {
 						r_list.insert(fullpath);
 					} else {
-						r_list.erase(fullpath);
+						r_list.remove(fullpath);
 					}
 				}
 			}
@@ -734,7 +734,7 @@ Error EditorExportPlatform::export_project_files(const Ref<EditorExportPreset> &
 		_export_find_resources(EditorFileSystem::get_singleton()->get_filesystem(), paths);
 		Vector<String> files = p_preset->get_files_to_export();
 		for (int i = 0; i < files.size(); i++) {
-			paths.erase(files[i]);
+			paths.remove(files[i]);
 		}
 	} else {
 		bool scenes_only = p_preset->get_export_filter() == EditorExportPreset::EXPORT_SELECTED_SCENES;
@@ -1515,7 +1515,7 @@ Ref<EditorExportPreset> EditorExport::get_export_preset(int p_idx) {
 }
 
 void EditorExport::remove_export_preset(int p_idx) {
-	export_presets.remove(p_idx);
+	export_presets.remove_at(p_idx);
 	save_presets();
 }
 
@@ -1526,7 +1526,7 @@ void EditorExport::add_export_plugin(const Ref<EditorExportPlugin> &p_plugin) {
 }
 
 void EditorExport::remove_export_plugin(const Ref<EditorExportPlugin> &p_plugin) {
-	export_plugins.erase(p_plugin);
+	export_plugins.remove(p_plugin);
 }
 
 Vector<Ref<EditorExportPlugin>> EditorExport::get_export_plugins() {
@@ -1946,7 +1946,7 @@ void EditorExportPlatformPC::get_platform_features(List<String> *r_features) {
 void EditorExportPlatformPC::resolve_platform_feature_priorities(const Ref<EditorExportPreset> &p_preset, Set<String> &p_features) {
 	if (p_features.has("bptc")) {
 		if (p_preset->has("texture_format/no_bptc_fallbacks")) {
-			p_features.erase("s3tc");
+			p_features.remove("s3tc");
 		}
 	}
 }

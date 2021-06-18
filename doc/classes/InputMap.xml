@@ -21,7 +21,7 @@
 				Adds an [InputEvent] to an action. This [InputEvent] will trigger the action.
 			</description>
 		</method>
-		<method name="action_erase_event">
+		<method name="action_remove_event">
 			<return type="void">
 			</return>
 			<argument index="0" name="action" type="StringName">
@@ -32,7 +32,7 @@
 				Removes an [InputEvent] from an action.
 			</description>
 		</method>
-		<method name="action_erase_events">
+		<method name="action_remove_events">
 			<return type="void">
 			</return>
 			<argument index="0" name="action" type="StringName">
@@ -84,7 +84,7 @@
 				An [InputEvent] can then be added to this action with [method action_add_event].
 			</description>
 		</method>
-		<method name="erase_action">
+		<method name="remove_action">
 			<return type="void">
 			</return>
 			<argument index="0" name="action" type="StringName">

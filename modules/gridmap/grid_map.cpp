@@ -287,15 +287,15 @@ void GridMap::set_cell_item(const Vector3i &p_position, int p_item, int p_rot) {
 	ok.z = p_position.z / octant_size;
 
 	if (p_item < 0) {
-		//erase
+		//remove
 		if (cell_map.has(key)) {
 			OctantKey octantkey = ok;
 
 			ERR_FAIL_COND(!octant_map.has(octantkey));
 			Octant &g = *octant_map[octantkey];
-			g.cells.erase(key);
+			g.cells.remove(key);
 			g.dirty = true;
-			cell_map.erase(key);
+			cell_map.remove(key);
 			_queue_octants_dirty();
 		}
 		return;
@@ -410,21 +410,21 @@ bool GridMap::_octant_update(const OctantKey &p_key) {
 		return false;
 	}
 
-	//erase body shapes
+	//remove body shapes
 	PhysicsServer3D::get_singleton()->body_clear_shapes(g.static_body);
 
-	//erase body shapes debug
+	//remove body shapes debug
 	if (g.collision_debug.is_valid()) {
 		RS::get_singleton()->mesh_clear(g.collision_debug);
 	}
 
-	//erase navigation
+	//remove navigation
 	for (Map<IndexKey, Octant::NavMesh>::Element *E = g.navmesh_ids.front(); E; E = E->next()) {
 		NavigationServer3D::get_singleton()->free(E->get().region);
 	}
 	g.navmesh_ids.clear();
 
-	//erase multimeshes
+	//remove multimeshes
 
 	for (int i = 0; i < g.multimesh_instances.size(); i++) {
 		RS::get_singleton()->free(g.multimesh_instances[i].instance);
@@ -641,13 +641,13 @@ void GridMap::_octant_clean_up(const OctantKey &p_key) {
 
 	PhysicsServer3D::get_singleton()->free(g.static_body);
 
-	// Erase navigation
+	// Remove navigation
 	for (Map<IndexKey, Octant::NavMesh>::Element *E = g.navmesh_ids.front(); E; E = E->next()) {
 		NavigationServer3D::get_singleton()->free(E->get().region);
 	}
 	g.navmesh_ids.clear();
 
-	//erase multimeshes
+	//remove multimeshes
 
 	for (int i = 0; i < g.multimesh_instances.size(); i++) {
 		RS::get_singleton()->free(g.multimesh_instances[i].instance);
@@ -779,7 +779,7 @@ void GridMap::_update_octants_callback() {
 	}
 
 	while (to_delete.front()) {
-		octant_map.erase(to_delete.front()->get());
+		octant_map.remove(to_delete.front()->get());
 		to_delete.pop_back();
 	}
 

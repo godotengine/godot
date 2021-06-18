@@ -112,7 +112,7 @@ void EditorDirDialog::_item_collapsed(Object *p_item) {
 	}
 
 	if (item->is_collapsed()) {
-		opened_paths.erase(item->get_metadata(0));
+		opened_paths.remove(item->get_metadata(0));
 	} else {
 		opened_paths.insert(item->get_metadata(0));
 	}

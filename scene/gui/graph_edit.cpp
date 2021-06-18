@@ -229,7 +229,7 @@ bool GraphEdit::is_node_connected(const StringName &p_from, int p_from_port, con
 void GraphEdit::disconnect_node(const StringName &p_from, int p_from_port, const StringName &p_to, int p_to_port) {
 	for (List<Connection>::Element *E = connections.front(); E; E = E->next()) {
 		if (E->get().from == p_from && E->get().from_port == p_from_port && E->get().to == p_to && E->get().to_port == p_to_port) {
-			connections.erase(E);
+			connections.remove(E);
 			top_layer->update();
 			minimap->update();
 			update();
@@ -579,7 +579,7 @@ void GraphEdit::_top_layer_input(const Ref<InputEvent> &p_ev) {
 									just_disconnected = true;
 
 									emit_signal("disconnection_request", E->get().from, E->get().from_port, E->get().to, E->get().to_port);
-									to = get_node(String(connecting_from)); //maybe it was erased
+									to = get_node(String(connecting_from)); //maybe it was removed
 									if (Object::cast_to<GraphNode>(to)) {
 										connecting = true;
 									}
@@ -621,7 +621,7 @@ void GraphEdit::_top_layer_input(const Ref<InputEvent> &p_ev) {
 									just_disconnected = true;
 
 									emit_signal("disconnection_request", E->get().from, E->get().from_port, E->get().to, E->get().to_port);
-									fr = get_node(String(connecting_from)); //maybe it was erased
+									fr = get_node(String(connecting_from)); //maybe it was removed
 									if (Object::cast_to<GraphNode>(fr)) {
 										connecting = true;
 									}
@@ -855,34 +855,34 @@ void GraphEdit::_draw_cos_line(CanvasItem *p_where, const Vector2 &p_from, const
 void GraphEdit::_connections_layer_draw() {
 	Color activity_color = get_theme_color("activity");
 	//draw connections
-	List<List<Connection>::Element *> to_erase;
+	List<List<Connection>::Element *> to_remove;
 	for (List<Connection>::Element *E = connections.front(); E; E = E->next()) {
 		NodePath fromnp(E->get().from);
 
 		Node *from = get_node(fromnp);
 		if (!from) {
-			to_erase.push_back(E);
+			to_remove.push_back(E);
 			continue;
 		}
 
 		GraphNode *gfrom = Object::cast_to<GraphNode>(from);
 
 		if (!gfrom) {
-			to_erase.push_back(E);
+			to_remove.push_back(E);
 			continue;
 		}
 
 		NodePath tonp(E->get().to);
 		Node *to = get_node(tonp);
 		if (!to) {
-			to_erase.push_back(E);
+			to_remove.push_back(E);
 			continue;
 		}
 
 		GraphNode *gto = Object::cast_to<GraphNode>(to);
 
 		if (!gto) {
-			to_erase.push_back(E);
+			to_remove.push_back(E);
 			continue;
 		}
 
@@ -898,9 +898,9 @@ void GraphEdit::_connections_layer_draw() {
 		_draw_cos_line(connections_layer, frompos, topos, color, tocolor, lines_thickness);
 	}
 
-	while (to_erase.size()) {
-		connections.erase(to_erase.front()->get());
-		to_erase.pop_front();
+	while (to_remove.size()) {
+		connections.remove(to_remove.front()->get());
+		to_remove.pop_front();
 	}
 }
 
@@ -1489,7 +1489,7 @@ void GraphEdit::add_valid_right_disconnect_type(int p_type) {
 }
 
 void GraphEdit::remove_valid_right_disconnect_type(int p_type) {
-	valid_right_disconnect_types.erase(p_type);
+	valid_right_disconnect_types.remove(p_type);
 }
 
 void GraphEdit::add_valid_left_disconnect_type(int p_type) {
@@ -1497,7 +1497,7 @@ void GraphEdit::add_valid_left_disconnect_type(int p_type) {
 }
 
 void GraphEdit::remove_valid_left_disconnect_type(int p_type) {
-	valid_left_disconnect_types.erase(p_type);
+	valid_left_disconnect_types.remove(p_type);
 }
 
 Array GraphEdit::_get_connection_list() const {
@@ -1546,7 +1546,7 @@ void GraphEdit::remove_valid_connection_type(int p_type, int p_with_type) {
 	ct.type_a = p_type;
 	ct.type_b = p_with_type;
 
-	valid_connection_types.erase(ct);
+	valid_connection_types.remove(ct);
 }
 
 bool GraphEdit::is_valid_connection_type(int p_type, int p_with_type) const {

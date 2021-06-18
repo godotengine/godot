@@ -68,7 +68,7 @@ void AnimationNodeStateMachineEditor::_state_machine_gui_input(const Ref<InputEv
 	Ref<InputEventKey> k = p_event;
 	if (tool_select->is_pressed() && k.is_valid() && k->is_pressed() && k->get_keycode() == KEY_DELETE && !k->is_echo()) {
 		if (selected_node != StringName() || selected_transition_to != StringName() || selected_transition_from != StringName()) {
-			_erase_selected();
+			_remove_selected();
 			accept_event();
 		}
 	}
@@ -895,7 +895,7 @@ void AnimationNodeStateMachineEditor::_notification(int p_what) {
 		transition_mode->add_icon_item(get_theme_icon("TransitionSync", "EditorIcons"), TTR("Sync"));
 		transition_mode->add_icon_item(get_theme_icon("TransitionEnd", "EditorIcons"), TTR("At End"));
 
-		tool_erase->set_icon(get_theme_icon("Remove", "EditorIcons"));
+		tool_remove->set_icon(get_theme_icon("Remove", "EditorIcons"));
 		tool_autoplay->set_icon(get_theme_icon("AutoPlay", "EditorIcons"));
 		tool_end->set_icon(get_theme_icon("AutoEnd", "EditorIcons"));
 
@@ -1102,7 +1102,7 @@ void AnimationNodeStateMachineEditor::_scroll_changed(double) {
 	state_machine_draw->update();
 }
 
-void AnimationNodeStateMachineEditor::_erase_selected() {
+void AnimationNodeStateMachineEditor::_remove_selected() {
 	if (selected_node != StringName() && state_machine->has_node(selected_node)) {
 		updating = true;
 		undo_redo->create_action(TTR("Node Removed"));
@@ -1186,12 +1186,12 @@ void AnimationNodeStateMachineEditor::_end_selected() {
 
 void AnimationNodeStateMachineEditor::_update_mode() {
 	if (tool_select->is_pressed()) {
-		tool_erase_hb->show();
-		tool_erase->set_disabled(selected_node == StringName() && selected_transition_from == StringName() && selected_transition_to == StringName());
+		tool_remove_hb->show();
+		tool_remove->set_disabled(selected_node == StringName() && selected_transition_from == StringName() && selected_transition_to == StringName());
 		tool_autoplay->set_disabled(selected_node == StringName());
 		tool_end->set_disabled(selected_node == StringName());
 	} else {
-		tool_erase_hb->hide();
+		tool_remove_hb->hide();
 	}
 }
 
@@ -1240,29 +1240,29 @@ AnimationNodeStateMachineEditor::AnimationNodeStateMachineEditor() {
 	tool_connect->set_tooltip(TTR("Connect nodes."));
 	tool_connect->connect("pressed", callable_mp(this, &AnimationNodeStateMachineEditor::_update_mode), varray(), CONNECT_DEFERRED);
 
-	tool_erase_hb = memnew(HBoxContainer);
-	top_hb->add_child(tool_erase_hb);
-	tool_erase_hb->add_child(memnew(VSeparator));
-	tool_erase = memnew(Button);
-	tool_erase->set_flat(true);
-	tool_erase->set_tooltip(TTR("Remove selected node or transition."));
-	tool_erase_hb->add_child(tool_erase);
-	tool_erase->connect("pressed", callable_mp(this, &AnimationNodeStateMachineEditor::_erase_selected));
-	tool_erase->set_disabled(true);
+	tool_remove_hb = memnew(HBoxContainer);
+	top_hb->add_child(tool_remove_hb);
+	tool_remove_hb->add_child(memnew(VSeparator));
+	tool_remove = memnew(Button);
+	tool_remove->set_flat(true);
+	tool_remove->set_tooltip(TTR("Remove selected node or transition."));
+	tool_remove_hb->add_child(tool_remove);
+	tool_remove->connect("pressed", callable_mp(this, &AnimationNodeStateMachineEditor::_remove_selected));
+	tool_remove->set_disabled(true);
 
-	tool_erase_hb->add_child(memnew(VSeparator));
+	tool_remove_hb->add_child(memnew(VSeparator));
 
 	tool_autoplay = memnew(Button);
 	tool_autoplay->set_flat(true);
 	tool_autoplay->set_tooltip(TTR("Toggle autoplay this animation on start, restart or seek to zero."));
-	tool_erase_hb->add_child(tool_autoplay);
+	tool_remove_hb->add_child(tool_autoplay);
 	tool_autoplay->connect("pressed", callable_mp(this, &AnimationNodeStateMachineEditor::_autoplay_selected));
 	tool_autoplay->set_disabled(true);
 
 	tool_end = memnew(Button);
 	tool_end->set_flat(true);
 	tool_end->set_tooltip(TTR("Set the end animation. This is useful for sub-transitions."));
-	tool_erase_hb->add_child(tool_end);
+	tool_remove_hb->add_child(tool_end);
 	tool_end->connect("pressed", callable_mp(this, &AnimationNodeStateMachineEditor::_end_selected));
 	tool_end->set_disabled(true);
 

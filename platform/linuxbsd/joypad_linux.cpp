@@ -253,7 +253,7 @@ void JoypadLinux::close_joypad(int p_id) {
 	if (joy.fd != -1) {
 		close(joy.fd);
 		joy.fd = -1;
-		attached_devices.remove(attached_devices.find(joy.devpath));
+		attached_devices.remove_at(attached_devices.find(joy.devpath));
 		input->joy_connection_changed(p_id, false, "");
 	};
 }

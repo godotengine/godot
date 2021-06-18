@@ -656,7 +656,7 @@ void EditorDebuggerNode::add_debugger_plugin(const Ref<Script> &p_script) {
 
 void EditorDebuggerNode::remove_debugger_plugin(const Ref<Script> &p_script) {
 	ERR_FAIL_COND_MSG(!debugger_plugins.has(p_script), "Debugger plugin doesn't exists.");
-	debugger_plugins.erase(p_script);
+	debugger_plugins.remove(p_script);
 	for (int i = 0; get_debugger(i); i++) {
 		get_debugger(i)->remove_debugger_plugin(p_script);
 	}

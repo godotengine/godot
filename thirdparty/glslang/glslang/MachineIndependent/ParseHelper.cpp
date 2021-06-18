@@ -4559,7 +4559,7 @@ void TParseContext::redeclareBuiltinBlock(const TSourceLoc& loc, TTypeList& newT
             // hide the original (shared) declaration.
             // Instance-named blocks can just have the member removed.
             if (instanceName)
-                member = type.getWritableStruct()->erase(member);
+                member = type.getWritableStruct()->remove(member);
             else {
                 member->type->hideMember();
                 ++member;

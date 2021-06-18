@@ -216,7 +216,7 @@ void Area3DSW::call_queries() {
 		for (Map<BodyKey, BodyState>::Element *E = monitored_bodies.front(); E;) {
 			if (E->get().state == 0) { // Nothing happened
 				Map<BodyKey, BodyState>::Element *next = E->next();
-				monitored_bodies.erase(E);
+				monitored_bodies.remove(E);
 				E = next;
 				continue;
 			}
@@ -228,7 +228,7 @@ void Area3DSW::call_queries() {
 			res[4] = E->key().area_shape;
 
 			Map<BodyKey, BodyState>::Element *next = E->next();
-			monitored_bodies.erase(E);
+			monitored_bodies.remove(E);
 			E = next;
 
 			Callable::CallError ce;
@@ -253,7 +253,7 @@ void Area3DSW::call_queries() {
 		for (Map<BodyKey, BodyState>::Element *E = monitored_areas.front(); E;) {
 			if (E->get().state == 0) { // Nothing happened
 				Map<BodyKey, BodyState>::Element *next = E->next();
-				monitored_areas.erase(E);
+				monitored_areas.remove(E);
 				E = next;
 				continue;
 			}
@@ -265,7 +265,7 @@ void Area3DSW::call_queries() {
 			res[4] = E->key().area_shape;
 
 			Map<BodyKey, BodyState>::Element *next = E->next();
-			monitored_areas.erase(E);
+			monitored_areas.remove(E);
 			E = next;
 
 			Callable::CallError ce;

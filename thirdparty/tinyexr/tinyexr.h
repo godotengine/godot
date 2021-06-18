@@ -11515,7 +11515,7 @@ static void GetLayers(const EXRHeader &exr_header,
     std::string full_name(exr_header.channels[c].name);
     const size_t pos = full_name.find_last_of('.');
     if (pos != std::string::npos && pos != 0 && pos + 1 < full_name.size()) {
-      full_name.erase(pos);
+      full_name.remove(pos);
       if (std::find(layer_names.begin(), layer_names.end(), full_name) ==
           layer_names.end())
         layer_names.push_back(full_name);

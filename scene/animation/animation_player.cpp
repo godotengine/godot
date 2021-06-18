@@ -620,7 +620,7 @@ void AnimationPlayer::_animation_process_animation(AnimationData *p_anim, float 
 					if (!stream.is_valid()) {
 						nc->node->call("stop");
 						nc->audio_playing = false;
-						playing_caches.erase(nc);
+						playing_caches.remove(nc);
 					} else {
 						float start_ofs = a->audio_track_get_key_start_offset(i, idx);
 						start_ofs += p_time - a->track_get_key_time(i, idx);
@@ -630,7 +630,7 @@ void AnimationPlayer::_animation_process_animation(AnimationData *p_anim, float 
 						if (start_ofs > len - end_ofs) {
 							nc->node->call("stop");
 							nc->audio_playing = false;
-							playing_caches.erase(nc);
+							playing_caches.remove(nc);
 							continue;
 						}
 
@@ -659,7 +659,7 @@ void AnimationPlayer::_animation_process_animation(AnimationData *p_anim, float 
 						if (!stream.is_valid()) {
 							nc->node->call("stop");
 							nc->audio_playing = false;
-							playing_caches.erase(nc);
+							playing_caches.remove(nc);
 						} else {
 							float start_ofs = a->audio_track_get_key_start_offset(i, idx);
 							float end_ofs = a->audio_track_get_key_end_offset(i, idx);
@@ -697,7 +697,7 @@ void AnimationPlayer::_animation_process_animation(AnimationData *p_anim, float 
 							//time to stop
 							nc->node->call("stop");
 							nc->audio_playing = false;
-							playing_caches.erase(nc);
+							playing_caches.remove(nc);
 						}
 					}
 				}
@@ -752,7 +752,7 @@ void AnimationPlayer::_animation_process_animation(AnimationData *p_anim, float 
 						StringName anim_name = a->animation_track_get_key_animation(i, idx);
 						if (String(anim_name) == "[stop]" || !player->has_animation(anim_name)) {
 							if (playing_caches.has(nc)) {
-								playing_caches.erase(nc);
+								playing_caches.remove(nc);
 								player->stop();
 								nc->animation_playing = false;
 							}
@@ -836,7 +836,7 @@ void AnimationPlayer::_animation_process2(float p_delta, bool p_started) {
 
 		prev = E->prev();
 		if (b.blend_left < 0) {
-			c.blend.erase(E);
+			c.blend.remove(E);
 		}
 	}
 }
@@ -984,7 +984,7 @@ void AnimationPlayer::remove_animation(const StringName &p_name) {
 
 	stop();
 	_unref_anim(animation_set[p_name].animation);
-	animation_set.erase(p_name);
+	animation_set.remove(p_name);
 
 	clear_caches();
 	notify_property_list_changed();
@@ -1006,38 +1006,38 @@ void AnimationPlayer::rename_animation(const StringName &p_name, const StringNam
 	stop();
 	AnimationData ad = animation_set[p_name];
 	ad.name = p_new_name;
-	animation_set.erase(p_name);
+	animation_set.remove(p_name);
 	animation_set[p_new_name] = ad;
 
-	List<BlendKey> to_erase;
+	List<BlendKey> to_remove;
 	Map<BlendKey, float> to_insert;
 	for (Map<BlendKey, float>::Element *E = blend_times.front(); E; E = E->next()) {
 		BlendKey bk = E->key();
 		BlendKey new_bk = bk;
-		bool erase = false;
+		bool remove = false;
 		if (bk.from == p_name) {
 			new_bk.from = p_new_name;
-			erase = true;
+			remove = true;
 		}
 		if (bk.to == p_name) {
 			new_bk.to = p_new_name;
-			erase = true;
+			remove = true;
 		}
 
-		if (erase) {
-			to_erase.push_back(bk);
+		if (remove) {
+			to_remove.push_back(bk);
 			to_insert[new_bk] = E->get();
 		}
 	}
 
-	while (to_erase.size()) {
-		blend_times.erase(to_erase.front()->get());
-		to_erase.pop_front();
+	while (to_remove.size()) {
+		blend_times.remove(to_remove.front()->get());
+		to_remove.pop_front();
 	}
 
 	while (to_insert.size()) {
 		blend_times[to_insert.front()->key()] = to_insert.front()->get();
-		to_insert.erase(to_insert.front());
+		to_insert.remove(to_insert.front());
 	}
 
 	if (autoplay == p_name) {
@@ -1083,7 +1083,7 @@ void AnimationPlayer::set_blend_time(const StringName &p_animation1, const Strin
 	bk.from = p_animation1;
 	bk.to = p_animation2;
 	if (p_time == 0) {
-		blend_times.erase(bk);
+		blend_times.remove(bk);
 	} else {
 		blend_times[bk] = p_time;
 	}

@@ -216,7 +216,7 @@ public:
 			/*
 			if( !E->next() ) {
 				vs->free( E->get().instance );
-				instances.erase(E );
+				instances.remove(E );
 			}*/
 		}
 

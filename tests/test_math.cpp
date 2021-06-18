@@ -333,7 +333,7 @@ public:
 			} else if (tk == TK_CURLY_BRACKET_CLOSE) {
 				curly_stack--;
 				if (namespace_stack.has(curly_stack)) {
-					namespace_stack.erase(curly_stack);
+					namespace_stack.remove(curly_stack);
 				}
 			}
 

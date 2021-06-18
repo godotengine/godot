@@ -132,7 +132,7 @@ void register_server_types() {
 	ClassDB::register_virtual_class<NavigationServer2D>();
 	ClassDB::register_virtual_class<NavigationServer3D>();
 	ClassDB::register_class<XRServer>();
-	ClassDB::register_class<CameraServer>();
+	ClassDB::register_class<Camremoverver>();
 
 	ClassDB::register_virtual_class<RenderingDevice>();
 
@@ -249,5 +249,5 @@ void register_server_singletons() {
 	Engine::get_singleton()->add_singleton(Engine::Singleton("NavigationServer3D", NavigationServer3D::get_singleton_mut()));
 	Engine::get_singleton()->add_singleton(Engine::Singleton("TextServerManager", TextServerManager::get_singleton()));
 	Engine::get_singleton()->add_singleton(Engine::Singleton("XRServer", XRServer::get_singleton()));
-	Engine::get_singleton()->add_singleton(Engine::Singleton("CameraServer", CameraServer::get_singleton()));
+	Engine::get_singleton()->add_singleton(Engine::Singleton("Camremoverver", Camremoverver::get_singleton()));
 }

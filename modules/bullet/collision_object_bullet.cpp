@@ -147,7 +147,7 @@ void CollisionObjectBullet::add_collision_exception(const CollisionObjectBullet 
 }
 
 void CollisionObjectBullet::remove_collision_exception(const CollisionObjectBullet *p_ignoreCollisionObject) {
-	exceptions.erase(p_ignoreCollisionObject->get_self());
+	exceptions.remove(p_ignoreCollisionObject->get_self());
 	if (!bt_collision_object) {
 		return;
 	}
@@ -182,7 +182,7 @@ void CollisionObjectBullet::notify_new_overlap(AreaBullet *p_area) {
 }
 
 void CollisionObjectBullet::on_exit_area(AreaBullet *p_area) {
-	areasOverlapped.erase(p_area);
+	areasOverlapped.remove(p_area);
 }
 
 void CollisionObjectBullet::set_godot_object_flags(int flags) {
@@ -272,7 +272,7 @@ void RigidCollisionObjectBullet::remove_shape_full(ShapeBullet *p_shape) {
 	for (int i = shapes.size() - 1; 0 <= i; --i) {
 		if (p_shape == shapes[i].shape) {
 			internal_shape_destroy(i);
-			shapes.remove(i);
+			shapes.remove_at(i);
 		}
 	}
 	reload_shapes();
@@ -281,7 +281,7 @@ void RigidCollisionObjectBullet::remove_shape_full(ShapeBullet *p_shape) {
 void RigidCollisionObjectBullet::remove_shape_full(int p_index) {
 	ERR_FAIL_INDEX(p_index, get_shape_count());
 	internal_shape_destroy(p_index);
-	shapes.remove(p_index);
+	shapes.remove_at(p_index);
 	reload_shapes();
 }
 

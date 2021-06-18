@@ -432,14 +432,14 @@ bool GDNative::terminate() {
 		Vector<Ref<GDNative>> *gdnatives = &GDNativeLibrary::loaded_libraries[library->get_current_library_path()];
 		if (gdnatives->size() > 1) {
 			// there are other GDNative's still using this library, so we actually don't terminate
-			gdnatives->erase(Ref<GDNative>(this));
+			gdnatives->remove(Ref<GDNative>(this));
 			initialized = false;
 			return true;
 		} else if (gdnatives->size() == 1) {
 			// we're the last one, terminate!
 			gdnatives->clear();
 			// whew this looks scary, but all it does is remove the entry completely
-			GDNativeLibrary::loaded_libraries.erase(GDNativeLibrary::loaded_libraries.find(library->get_current_library_path()));
+			GDNativeLibrary::loaded_libraries.remove(GDNativeLibrary::loaded_libraries.find(library->get_current_library_path()));
 		}
 	}
 
@@ -462,7 +462,7 @@ bool GDNative::terminate() {
 
 	initialized = false;
 
-	// GDNativeScriptLanguage::get_singleton()->initialized_libraries.erase(p_native_lib->path);
+	// GDNativeScriptLanguage::get_singleton()->initialized_libraries.remove(p_native_lib->path);
 
 	OS::get_singleton()->close_dynamic_library(native_handle);
 	native_handle = nullptr;

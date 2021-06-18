@@ -35,7 +35,7 @@ void AnimationCache::_node_exit_tree(Node *p_node) {
 
 	ERR_FAIL_COND(!connected_nodes.has(p_node));
 
-	connected_nodes.erase(p_node);
+	connected_nodes.remove(p_node);
 
 	for (int i = 0; i < path_cache.size(); i++) {
 		if (path_cache[i].node != p_node) {
@@ -53,7 +53,7 @@ void AnimationCache::_animation_changed() {
 void AnimationCache::_clear_cache() {
 	while (connected_nodes.size()) {
 		connected_nodes.front()->get()->disconnect("tree_exiting", callable_mp(this, &AnimationCache::_node_exit_tree));
-		connected_nodes.erase(connected_nodes.front());
+		connected_nodes.remove(connected_nodes.front());
 	}
 	path_cache.clear();
 	cache_valid = false;

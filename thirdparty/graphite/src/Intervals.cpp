@@ -171,7 +171,7 @@ void Zones::remove(float x, float xm)
             GR_FALLTHROUGH;
             // no break
         case 3:     // e completely covers i
-            i = _exclusions.erase(i);
+            i = _exclusions.remove(i);
             --i;
             break;
         }

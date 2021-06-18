@@ -240,9 +240,9 @@ void SceneDebugger::remove_from_cache(const String &p_filename, Node *p_node) {
 	Map<String, Set<Node *>> &edit_cache = debugger->live_scene_edit_cache;
 	Map<String, Set<Node *>>::Element *E = edit_cache.find(p_filename);
 	if (E) {
-		E->get().erase(p_node);
+		E->get().remove(p_node);
 		if (E->get().size() == 0) {
-			edit_cache.erase(E);
+			edit_cache.remove(E);
 		}
 	}
 
@@ -252,7 +252,7 @@ void SceneDebugger::remove_from_cache(const String &p_filename, Node *p_node) {
 		for (Map<ObjectID, Node *>::Element *G = F->get().front(); G; G = G->next()) {
 			memdelete(G->get());
 		}
-		remove_list.erase(F);
+		remove_list.remove(F);
 	}
 }
 
@@ -833,10 +833,10 @@ void LiveEditor::_restore_node_func(ObjectID p_id, const NodePath &p_at, int p_a
 		}
 		n2->add_child(FN->get());
 
-		EN->get().erase(FN);
+		EN->get().remove(FN);
 
 		if (EN->get().size() == 0) {
-			live_edit_remove_list.erase(EN);
+			live_edit_remove_list.remove(EN);
 		}
 
 		F = N;

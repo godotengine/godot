@@ -465,7 +465,7 @@ TEST_CASE("[String] Splitting") {
 
 TEST_CASE("[String] Erasing") {
 	String s = "Josephine is such a cute girl!";
-	s.erase(s.find("cute "), String("cute ").length());
+	s.remove(s.find("cute "), String("cute ").length());
 	CHECK(s == "Josephine is such a girl!");
 }
 

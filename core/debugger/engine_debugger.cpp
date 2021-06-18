@@ -55,7 +55,7 @@ void EngineDebugger::unregister_profiler(const StringName &p_name) {
 		p.toggle(p.data, false, Array());
 		p.active = false;
 	}
-	profilers.erase(p_name);
+	profilers.remove(p_name);
 }
 
 void EngineDebugger::register_message_capture(const StringName &p_name, Capture p_func) {
@@ -65,7 +65,7 @@ void EngineDebugger::register_message_capture(const StringName &p_name, Capture 
 
 void EngineDebugger::unregister_message_capture(const StringName &p_name) {
 	ERR_FAIL_COND_MSG(!captures.has(p_name), "Capture not registered: " + p_name);
-	captures.erase(p_name);
+	captures.remove(p_name);
 }
 
 void EngineDebugger::register_uri_handler(const String &p_protocol, CreatePeerFunc p_func) {

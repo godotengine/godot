@@ -275,7 +275,7 @@ void EditorFileSystem::_scan_filesystem() {
 			FileAccessRef f2 = FileAccess::open(update_cache, FileAccess::READ);
 			String l = f2->get_line().strip_edges();
 			while (l != String()) {
-				file_cache.erase(l); //erase cache for this, so it gets updated
+				file_cache.remove(l); //remove cache for this, so it gets updated
 				l = f2->get_line().strip_edges();
 			}
 		}
@@ -521,7 +521,7 @@ bool EditorFileSystem::_update_scan_actions() {
 			} break;
 			case ItemAction::ACTION_DIR_REMOVE: {
 				ERR_CONTINUE(!ia.dir->parent);
-				ia.dir->parent->subdirs.erase(ia.dir);
+				ia.dir->parent->subdirs.remove(ia.dir);
 				memdelete(ia.dir);
 				fs_changed = true;
 			} break;
@@ -547,7 +547,7 @@ bool EditorFileSystem::_update_scan_actions() {
 				ERR_CONTINUE(idx == -1);
 				_delete_internal_files(ia.dir->files[idx]->file);
 				memdelete(ia.dir->files[idx]);
-				ia.dir->files.remove(idx);
+				ia.dir->files.remove_at(idx);
 
 				fs_changed = true;
 
@@ -1463,7 +1463,7 @@ void EditorFileSystem::update_file(const String &p_file) {
 		_delete_internal_files(p_file);
 		if (cpos != -1) { // Might've never been part of the editor file system (*.* files deleted in Open dialog).
 			memdelete(fs->files[cpos]);
-			fs->files.remove(cpos);
+			fs->files.remove_at(cpos);
 		}
 
 		call_deferred("emit_signal", "filesystem_changed"); //update later
@@ -2102,7 +2102,7 @@ void EditorFileSystem::move_group_file(const String &p_path, const String &p_new
 	if (get_filesystem()) {
 		_move_group_files(get_filesystem(), p_path, p_new_path);
 		if (group_file_cache.has(p_path)) {
-			group_file_cache.erase(p_path);
+			group_file_cache.remove(p_path);
 			group_file_cache.insert(p_new_path);
 		}
 	}

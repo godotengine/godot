@@ -61,8 +61,8 @@ public:
 	void get_sections(List<String> *r_sections) const;
 	void get_section_keys(const String &p_section, List<String> *r_keys) const;
 
-	void erase_section(const String &p_section);
-	void erase_section_key(const String &p_section, const String &p_key);
+	void remove_section(const String &p_section);
+	void remove_section_key(const String &p_section, const String &p_key);
 
 	Error save(const String &p_path);
 	Error load(const String &p_path);

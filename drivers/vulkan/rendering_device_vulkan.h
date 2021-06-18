@@ -633,7 +633,7 @@ class RenderingDeviceVulkan : public RenderingDevice {
 	RID_Owner<TextureBuffer, true> texture_buffer_owner;
 
 	// This structure contains the descriptor set. They _need_ to be allocated
-	// for a shader (and will be erased when this shader is erased), but should
+	// for a shader (and will be removed when this shader is removed), but should
 	// work for other shaders as long as the hash matches. This covers using
 	// them in shader variants.
 	//

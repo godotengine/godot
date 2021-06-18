@@ -877,7 +877,7 @@ namespace basisu
 			return "";
 
 		std::string result(filename);
-		result.erase(0, dot + 1);
+		result.remove(0, dot + 1);
 
 		return result;
 	}

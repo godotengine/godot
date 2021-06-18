@@ -76,7 +76,7 @@ void CanvasItemMaterial::_update_shader() {
 		if (shader_map[current_key].users == 0) {
 			//deallocate shader, as it's no longer in use
 			RS::get_singleton()->free(shader_map[current_key].shader);
-			shader_map.erase(current_key);
+			shader_map.remove(current_key);
 		}
 	}
 
@@ -308,7 +308,7 @@ CanvasItemMaterial::~CanvasItemMaterial() {
 		if (shader_map[current_key].users == 0) {
 			//deallocate shader, as it's no longer in use
 			RS::get_singleton()->free(shader_map[current_key].shader);
-			shader_map.erase(current_key);
+			shader_map.remove(current_key);
 		}
 
 		RS::get_singleton()->material_set_shader(_get_material(), RID());
@@ -606,7 +606,7 @@ void CanvasItem::_notification(int p_what) {
 			}
 			_exit_canvas();
 			if (C) {
-				Object::cast_to<CanvasItem>(get_parent())->children_items.erase(C);
+				Object::cast_to<CanvasItem>(get_parent())->children_items.remove(C);
 				C = nullptr;
 			}
 			if (window) {

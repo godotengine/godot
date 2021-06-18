@@ -1144,7 +1144,7 @@ void Space3DSW::add_object(CollisionObject3DSW *p_object) {
 
 void Space3DSW::remove_object(CollisionObject3DSW *p_object) {
 	ERR_FAIL_COND(!objects.has(p_object));
-	objects.erase(p_object);
+	objects.remove(p_object);
 }
 
 const Set<CollisionObject3DSW *> &Space3DSW::get_objects() const {

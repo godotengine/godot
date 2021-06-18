@@ -1217,7 +1217,7 @@ void GDMono::_domain_assemblies_cleanup(int32_t p_domain_id) {
 		memdelete(domain_assemblies.get(*k));
 	}
 
-	assemblies.erase(p_domain_id);
+	assemblies.remove(p_domain_id);
 }
 
 void GDMono::unhandled_exception_hook(MonoObject *p_exc, void *) {

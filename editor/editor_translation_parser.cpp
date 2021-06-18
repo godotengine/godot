@@ -158,9 +158,9 @@ void EditorTranslationParser::add_parser(const Ref<EditorTranslationParserPlugin
 
 void EditorTranslationParser::remove_parser(const Ref<EditorTranslationParserPlugin> &p_parser, ParserType p_type) {
 	if (p_type == ParserType::STANDARD) {
-		standard_parsers.erase(p_parser);
+		standard_parsers.remove(p_parser);
 	} else if (p_type == ParserType::CUSTOM) {
-		custom_parsers.erase(p_parser);
+		custom_parsers.remove(p_parser);
 	}
 }
 

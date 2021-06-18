@@ -47,7 +47,7 @@ class GridMapEditor : public VBoxContainer {
 	enum InputAction {
 		INPUT_NONE,
 		INPUT_PAINT,
-		INPUT_ERASE,
+		INPUT_REMOVE,
 		INPUT_PICK,
 		INPUT_SELECT,
 		INPUT_PASTE,

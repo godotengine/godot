@@ -363,7 +363,7 @@ void CollisionObject3D::remove_shape_owner(uint32_t owner) {
 
 	shape_owner_clear_shapes(owner);
 
-	shapes.erase(owner);
+	shapes.remove(owner);
 }
 
 void CollisionObject3D::shape_owner_set_disabled(uint32_t p_owner, bool p_disabled) {
@@ -495,7 +495,7 @@ void CollisionObject3D::shape_owner_remove_shape(uint32_t p_owner, int p_shape) 
 		--debug_shapes_count;
 	}
 
-	shapes[p_owner].shapes.remove(p_shape);
+	shapes[p_owner].shapes.remove_at(p_shape);
 
 	for (Map<uint32_t, ShapeData>::Element *E = shapes.front(); E; E = E->next()) {
 		for (int i = 0; i < E->get().shapes.size(); i++) {

@@ -147,7 +147,7 @@ void RenderingDeviceVulkan::_free_dependencies(RID p_id) {
 		while (E->get().size()) {
 			free(E->get().front()->get());
 		}
-		dependency_map.erase(E);
+		dependency_map.remove(E);
 	}
 
 	//reverse dependencies must be unreferenced
@@ -158,10 +158,10 @@ void RenderingDeviceVulkan::_free_dependencies(RID p_id) {
 			Map<RID, Set<RID>>::Element *G = dependency_map.find(F->get());
 			ERR_CONTINUE(!G);
 			ERR_CONTINUE(!G->get().has(p_id));
-			G->get().erase(p_id);
+			G->get().remove(p_id);
 		}
 
-		reverse_dependency_map.erase(E);
+		reverse_dependency_map.remove(E);
 	}
 }
 
@@ -4813,10 +4813,10 @@ void RenderingDeviceVulkan::_descriptor_pool_free(const DescriptorPoolKey &p_key
 	p_pool->usage--;
 	if (p_pool->usage == 0) {
 		vkDestroyDescriptorPool(device, p_pool->pool, nullptr);
-		descriptor_pools[p_key].erase(p_pool);
+		descriptor_pools[p_key].remove(p_pool);
 		memdelete(p_pool);
 		if (descriptor_pools[p_key].is_empty()) {
-			descriptor_pools.erase(p_key);
+			descriptor_pools.remove(p_key);
 		}
 	}
 }
@@ -7011,7 +7011,7 @@ void RenderingDeviceVulkan::compute_list_bind_uniform_set(ComputeListID p_list, 
 
 			textures_to_sampled[i]->layout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
-			cl->state.textures_to_sampled_layout.erase(textures_to_sampled[i]);
+			cl->state.textures_to_sampled_layout.remove(textures_to_sampled[i]);
 		}
 
 		if (textures_to_sampled[i]->used_in_frame != frames_drawn) {
@@ -7514,7 +7514,7 @@ void RenderingDeviceVulkan::_free_internal(RID p_id) {
 void RenderingDeviceVulkan::free(RID p_id) {
 	_THREAD_SAFE_METHOD_
 
-	_free_dependencies(p_id); //recursively erase dependencies first, to avoid potential API problems
+	_free_dependencies(p_id); //recursively remove dependencies first, to avoid potential API problems
 	_free_internal(p_id);
 }
 
@@ -7610,7 +7610,7 @@ void RenderingDeviceVulkan::_finalize_command_bufers() {
 }
 
 void RenderingDeviceVulkan::_begin_frame() {
-	//erase pending resources
+	//remove pending resources
 	_free_pending_resources(frame);
 
 	//create setup command buffer and set as the setup buffer
@@ -8249,7 +8249,7 @@ void RenderingDeviceVulkan::finalize() {
 				List<RID>::Element *N = E->next();
 				if (texture_is_shared(E->get())) {
 					free(E->get());
-					owned.erase(E->get());
+					owned.remove(E->get());
 				}
 				E = N;
 			}
@@ -8288,7 +8288,7 @@ void RenderingDeviceVulkan::finalize() {
 		Map<VertexFormatID, VertexDescriptionCache>::Element *temp = vertex_formats.front();
 		memdelete_arr(temp->get().bindings);
 		memdelete_arr(temp->get().attributes);
-		vertex_formats.erase(temp);
+		vertex_formats.remove(temp);
 	}
 
 	for (int i = 0; i < framebuffer_formats.size(); i++) {

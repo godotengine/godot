@@ -39,7 +39,7 @@
 				An additional context could be used to specify the translation context or differentiate polysemic words.
 			</description>
 		</method>
-		<method name="erase_message">
+		<method name="remove_message">
 			<return type="void">
 			</return>
 			<argument index="0" name="src_message" type="StringName">

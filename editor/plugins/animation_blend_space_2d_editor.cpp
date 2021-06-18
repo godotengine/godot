@@ -72,7 +72,7 @@ void AnimationNodeBlendSpace2DEditor::_blend_space_gui_input(const Ref<InputEven
 	Ref<InputEventKey> k = p_event;
 	if (tool_select->is_pressed() && k.is_valid() && k->is_pressed() && k->get_keycode() == KEY_DELETE && !k->is_echo()) {
 		if (selected_point != -1 || selected_triangle != -1) {
-			_erase_selected();
+			_remove_selected();
 			accept_event();
 		}
 	}
@@ -139,7 +139,7 @@ void AnimationNodeBlendSpace2DEditor::_blend_space_gui_input(const Ref<InputEven
 		//try to see if a point can be selected
 		selected_point = -1;
 		selected_triangle = -1;
-		_update_tool_erase();
+		_update_tool_remove();
 
 		for (int i = 0; i < points.size(); i++) {
 			if (points[i].distance_to(mb->get_position()) < 10 * EDSCALE) {
@@ -148,7 +148,7 @@ void AnimationNodeBlendSpace2DEditor::_blend_space_gui_input(const Ref<InputEven
 				EditorNode::get_singleton()->push_item(node.ptr(), "", true);
 				dragging_selected_attempt = true;
 				drag_from = mb->get_position();
-				_update_tool_erase();
+				_update_tool_remove();
 				_update_edited_point_pos();
 				return;
 			}
@@ -167,7 +167,7 @@ void AnimationNodeBlendSpace2DEditor::_blend_space_gui_input(const Ref<InputEven
 
 				if (Geometry2D::is_point_in_triangle(mb->get_position(), triangle[0], triangle[1], triangle[2])) {
 					selected_triangle = i;
-					_update_tool_erase();
+					_update_tool_remove();
 					return;
 				}
 			}
@@ -351,8 +351,8 @@ void AnimationNodeBlendSpace2DEditor::_add_animation_type(int p_index) {
 	blend_space_draw->update();
 }
 
-void AnimationNodeBlendSpace2DEditor::_update_tool_erase() {
-	tool_erase->set_disabled(!(selected_point >= 0 && selected_point < blend_space->get_blend_point_count()) && !(selected_triangle >= 0 && selected_triangle < blend_space->get_triangle_count()));
+void AnimationNodeBlendSpace2DEditor::_update_tool_remove() {
+	tool_remove->set_disabled(!(selected_point >= 0 && selected_point < blend_space->get_blend_point_count()) && !(selected_triangle >= 0 && selected_triangle < blend_space->get_triangle_count()));
 	if (selected_point >= 0 && selected_point < blend_space->get_blend_point_count()) {
 		Ref<AnimationNode> an = blend_space->get_blend_point_node(selected_point);
 		if (AnimationTreeEditor::get_singleton()->can_edit(an)) {
@@ -381,13 +381,13 @@ void AnimationNodeBlendSpace2DEditor::_tool_switch(int p_tool) {
 	}
 
 	if (p_tool == 0) {
-		tool_erase->show();
-		tool_erase_sep->show();
+		tool_remove->show();
+		tool_remove_sep->show();
 	} else {
-		tool_erase->hide();
-		tool_erase_sep->hide();
+		tool_remove->hide();
+		tool_remove_sep->hide();
 	}
-	_update_tool_erase();
+	_update_tool_remove();
 	blend_space_draw->update();
 }
 
@@ -654,7 +654,7 @@ void AnimationNodeBlendSpace2DEditor::_labels_changed(String) {
 	updating = false;
 }
 
-void AnimationNodeBlendSpace2DEditor::_erase_selected() {
+void AnimationNodeBlendSpace2DEditor::_remove_selected() {
 	if (selected_point != -1) {
 		updating = true;
 		undo_redo->create_action(TTR("Remove BlendSpace2D Point"));
@@ -740,7 +740,7 @@ void AnimationNodeBlendSpace2DEditor::_notification(int p_what) {
 		tool_select->set_icon(get_theme_icon("ToolSelect", "EditorIcons"));
 		tool_create->set_icon(get_theme_icon("EditKey", "EditorIcons"));
 		tool_triangle->set_icon(get_theme_icon("ToolTriangle", "EditorIcons"));
-		tool_erase->set_icon(get_theme_icon("Remove", "EditorIcons"));
+		tool_remove->set_icon(get_theme_icon("Remove", "EditorIcons"));
 		snap->set_icon(get_theme_icon("SnapGrid", "EditorIcons"));
 		open_editor->set_icon(get_theme_icon("Edit", "EditorIcons"));
 		auto_triangles->set_icon(get_theme_icon("AutoTriangle", "EditorIcons"));
@@ -801,7 +801,7 @@ void AnimationNodeBlendSpace2DEditor::_auto_triangles_toggled() {
 
 void AnimationNodeBlendSpace2DEditor::_bind_methods() {
 	ClassDB::bind_method("_update_space", &AnimationNodeBlendSpace2DEditor::_update_space);
-	ClassDB::bind_method("_update_tool_erase", &AnimationNodeBlendSpace2DEditor::_update_tool_erase);
+	ClassDB::bind_method("_update_tool_remove", &AnimationNodeBlendSpace2DEditor::_update_tool_remove);
 
 	ClassDB::bind_method("_update_edited_point_pos", &AnimationNodeBlendSpace2DEditor::_update_edited_point_pos);
 
@@ -853,14 +853,14 @@ AnimationNodeBlendSpace2DEditor::AnimationNodeBlendSpace2DEditor() {
 	tool_triangle->set_tooltip(TTR("Create triangles by connecting points."));
 	tool_triangle->connect("pressed", callable_mp(this, &AnimationNodeBlendSpace2DEditor::_tool_switch), varray(2));
 
-	tool_erase_sep = memnew(VSeparator);
-	top_hb->add_child(tool_erase_sep);
-	tool_erase = memnew(Button);
-	tool_erase->set_flat(true);
-	top_hb->add_child(tool_erase);
-	tool_erase->set_tooltip(TTR("Erase points and triangles."));
-	tool_erase->connect("pressed", callable_mp(this, &AnimationNodeBlendSpace2DEditor::_erase_selected));
-	tool_erase->set_disabled(true);
+	tool_remove_sep = memnew(VSeparator);
+	top_hb->add_child(tool_remove_sep);
+	tool_remove = memnew(Button);
+	tool_remove->set_flat(true);
+	top_hb->add_child(tool_remove);
+	tool_remove->set_tooltip(TTR("Remove points and triangles."));
+	tool_remove->connect("pressed", callable_mp(this, &AnimationNodeBlendSpace2DEditor::_remove_selected));
+	tool_remove->set_disabled(true);
 
 	top_hb->add_child(memnew(VSeparator));
 

@@ -115,7 +115,7 @@ class ShaderEditor : public PanelContainer {
 	uint64_t idle;
 
 	GotoLineDialog *goto_line_dialog;
-	ConfirmationDialog *erase_tab_confirm;
+	ConfirmationDialog *remove_tab_confirm;
 	ConfirmationDialog *disk_changed;
 
 	ShaderTextEditor *shader_editor;

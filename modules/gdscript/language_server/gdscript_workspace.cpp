@@ -72,14 +72,14 @@ void GDScriptWorkspace::remove_cache_parser(const String &p_path) {
 			memdelete(script->get());
 			memdelete(parser->get());
 		}
-		parse_results.erase(p_path);
-		scripts.erase(p_path);
+		parse_results.remove(p_path);
+		scripts.remove(p_path);
 	} else if (parser) {
 		memdelete(parser->get());
-		parse_results.erase(p_path);
+		parse_results.remove(p_path);
 	} else if (script) {
 		memdelete(script->get());
-		scripts.erase(p_path);
+		scripts.remove(p_path);
 	}
 }
 

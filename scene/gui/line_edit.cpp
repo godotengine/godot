@@ -547,7 +547,7 @@ void LineEdit::drop_data(const Point2 &p_point, const Variant &p_data) {
 		set_caret_at_pixel_pos(p_point.x);
 		int selected = selection.end - selection.begin;
 
-		text.erase(selection.begin, selected);
+		text.remove(selection.begin, selected);
 		_shape();
 
 		insert_text_at_caret(p_data);
@@ -1204,7 +1204,7 @@ void LineEdit::delete_char() {
 		return;
 	}
 
-	text.erase(caret_column - 1, 1);
+	text.remove(caret_column - 1, 1);
 	_shape();
 
 	set_caret_column(get_caret_column() - 1);
@@ -1216,7 +1216,7 @@ void LineEdit::delete_text(int p_from_column, int p_to_column) {
 	ERR_FAIL_COND_MSG(p_from_column < 0 || p_from_column > p_to_column || p_to_column > text.length(),
 			vformat("Positional parameters (from: %d, to: %d) are inverted or outside the text length (%d).", p_from_column, p_to_column, text.length()));
 
-	text.erase(p_from_column, p_to_column - p_from_column);
+	text.remove(p_from_column, p_to_column - p_from_column);
 	_shape();
 
 	caret_column -= CLAMP(caret_column - p_from_column, 0, p_to_column - p_from_column);
@@ -1959,7 +1959,7 @@ void LineEdit::_clear_redo() {
 	while (undo_stack_pos) {
 		List<TextOperation>::Element *elem = undo_stack_pos;
 		undo_stack_pos = undo_stack_pos->next();
-		undo_stack.erase(elem);
+		undo_stack.remove(elem);
 	}
 	_create_undo_state();
 }
@@ -2040,7 +2040,7 @@ bool LineEdit::_set(const StringName &p_name, const Variant &p_value) {
 		double value = p_value;
 		if (value == -1) {
 			if (opentype_features.has(tag)) {
-				opentype_features.erase(tag);
+				opentype_features.remove(tag);
 				_shape();
 				update();
 			}

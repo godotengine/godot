@@ -263,7 +263,7 @@ public:
 		}
 
 		while (to_clean.front()) {
-			cached.erase(to_clean.front()->get());
+			cached.remove(to_clean.front()->get());
 			to_clean.pop_front();
 		}
 	}
@@ -292,7 +292,7 @@ public:
 			}
 
 			if (O != E) { //should never happen..
-				cached.erase(O);
+				cached.remove(O);
 			}
 		}
 
@@ -600,7 +600,7 @@ void ScriptEditor::_add_recent_script(String p_path) {
 
 	Array rc = EditorSettings::get_singleton()->get_project_metadata("recent_files", "scripts", Array());
 	if (rc.find(p_path) != -1) {
-		rc.erase(p_path);
+		rc.remove(p_path);
 	}
 	rc.push_front(p_path);
 	if (rc.size() > 10) {
@@ -679,7 +679,7 @@ void ScriptEditor::_open_recent_script(int p_idx) {
 		return;
 	}
 
-	rc.remove(p_idx);
+	rc.remove_at(p_idx);
 	EditorSettings::get_singleton()->set_project_metadata("recent_files", "scripts", rc);
 	_update_recent_scripts();
 	_show_error_dialog(path);
@@ -727,7 +727,7 @@ void ScriptEditor::_close_tab(int p_idx, bool p_save, bool p_history_back) {
 
 	for (int i = 0; i < history.size(); i++) {
 		if (history[i].control == tselected) {
-			history.remove(i);
+			history.remove_at(i);
 			i--;
 			history_pos--;
 		}
@@ -768,7 +768,7 @@ void ScriptEditor::_close_current_tab(bool p_save) {
 
 void ScriptEditor::_close_discard_current_tab(const String &p_str) {
 	_close_tab(tab_container->get_current_tab(), false);
-	erase_tab_confirm->hide();
+	remove_tab_confirm->hide();
 }
 
 void ScriptEditor::_close_docs_tab() {
@@ -832,8 +832,8 @@ void ScriptEditor::_close_all_tabs() {
 }
 
 void ScriptEditor::_ask_close_current_unsaved_tab(ScriptEditorBase *current) {
-	erase_tab_confirm->set_text(TTR("Close and save changes?") + "\n\"" + current->get_name() + "\"");
-	erase_tab_confirm->popup_centered();
+	remove_tab_confirm->set_text(TTR("Close and save changes?") + "\n\"" + current->get_name() + "\"");
+	remove_tab_confirm->popup_centered();
 }
 
 void ScriptEditor::_resave_scripts(const String &p_str) {
@@ -3161,7 +3161,7 @@ void ScriptEditor::register_syntax_highlighter(const Ref<EditorSyntaxHighlighter
 void ScriptEditor::unregister_syntax_highlighter(const Ref<EditorSyntaxHighlighter> &p_syntax_highlighter) {
 	ERR_FAIL_COND(p_syntax_highlighter.is_null());
 
-	syntax_highlighters.erase(p_syntax_highlighter);
+	syntax_highlighters.remove(p_syntax_highlighter);
 }
 
 int ScriptEditor::script_editor_func_count = 0;
@@ -3523,12 +3523,12 @@ ScriptEditor::ScriptEditor(EditorNode *p_editor) {
 
 	tab_container->connect("tab_changed", callable_mp(this, &ScriptEditor::_tab_changed));
 
-	erase_tab_confirm = memnew(ConfirmationDialog);
-	erase_tab_confirm->get_ok_button()->set_text(TTR("Save"));
-	erase_tab_confirm->add_button(TTR("Discard"), DisplayServer::get_singleton()->get_swap_cancel_ok(), "discard");
-	erase_tab_confirm->connect("confirmed", callable_mp(this, &ScriptEditor::_close_current_tab), varray(true));
-	erase_tab_confirm->connect("custom_action", callable_mp(this, &ScriptEditor::_close_discard_current_tab));
-	add_child(erase_tab_confirm);
+	remove_tab_confirm = memnew(ConfirmationDialog);
+	remove_tab_confirm->get_ok_button()->set_text(TTR("Save"));
+	remove_tab_confirm->add_button(TTR("Discard"), DisplayServer::get_singleton()->get_swap_cancel_ok(), "discard");
+	remove_tab_confirm->connect("confirmed", callable_mp(this, &ScriptEditor::_close_current_tab), varray(true));
+	remove_tab_confirm->connect("custom_action", callable_mp(this, &ScriptEditor::_close_discard_current_tab));
+	add_child(remove_tab_confirm);
 
 	script_create_dialog = memnew(ScriptCreateDialog);
 	script_create_dialog->set_title(TTR("Create Script"));

@@ -651,7 +651,7 @@ namespace basisu
          return *this;
       }
             
-      inline void erase(uint32_t start, uint32_t n)
+      inline void remove(uint32_t start, uint32_t n)
       {
          assert((start + n) <= m_size);
          if ((start + n) > m_size)
@@ -693,18 +693,18 @@ namespace basisu
          m_size -= n;
       }
 
-      inline void erase(uint32_t index)
+      inline void remove(uint32_t index)
       {
-         erase(index, 1);
+         remove(index, 1);
       }
 
-      inline void erase(T* p)
+      inline void remove(T* p)
       {
          assert((p >= m_p) && (p < (m_p + m_size)));
-         erase(static_cast<uint32_t>(p - m_p));
+         remove(static_cast<uint32_t>(p - m_p));
       }
 
-      inline void erase(T *pFirst, T *pEnd)
+      inline void remove(T *pFirst, T *pEnd)
       {
          assert(pFirst <= pEnd);
          assert(pFirst >= begin() && pFirst <= end());
@@ -724,10 +724,10 @@ namespace basisu
             return;
          }
 
-         erase((uint32_t)ofs, (uint32_t)n);
+         remove((uint32_t)ofs, (uint32_t)n);
       }
 
-      void erase_unordered(uint32_t index)
+      void remove_unordered(uint32_t index)
       {
          assert(index < m_size);
 
@@ -1422,7 +1422,7 @@ namespace basisu
          return iterator(*this, find_index(k));
       }
 
-      inline bool erase(const Key& k)
+      inline bool remove(const Key& k)
       {
          uint32_t i = find_index(k);
 

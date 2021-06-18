@@ -2216,7 +2216,7 @@ public:
 		Vector<String> command_line_strings = cmdline.strip_edges().split(" ");
 		for (int i = 0; i < command_line_strings.size(); i++) {
 			if (command_line_strings[i].strip_edges().length() == 0) {
-				command_line_strings.remove(i);
+				command_line_strings.remove_at(i);
 				i--;
 			}
 		}
@@ -2375,7 +2375,7 @@ public:
 		if (da_res->dir_exists("res://android/build/assets")) {
 			print_verbose("Clearing assets directory..");
 			DirAccessRef da_assets = DirAccess::open("res://android/build/assets");
-			da_assets->erase_contents_recursive();
+			da_assets->remove_contents_recursive();
 			da_res->remove("res://android/build/assets");
 		}
 	}
@@ -2741,7 +2741,7 @@ public:
 				bool enabled = false;
 				for (int i = 0; i < enabled_abis.size(); ++i) {
 					if (file.begins_with("lib/" + enabled_abis[i] + "/")) {
-						invalid_abis.erase(enabled_abis[i]);
+						invalid_abis.remove(enabled_abis[i]);
 						enabled = true;
 						break;
 					}

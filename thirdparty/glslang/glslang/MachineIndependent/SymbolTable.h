@@ -291,7 +291,7 @@ public:
     virtual void removePrefix(const TString& prefix)
     {
         assert(mangledName.compare(0, prefix.size(), prefix) == 0);
-        mangledName.erase(0, prefix.size());
+        mangledName.remove(0, prefix.size());
     }
 
     virtual const TString& getMangledName() const override { return mangledName; }

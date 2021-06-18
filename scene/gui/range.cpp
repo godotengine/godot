@@ -224,7 +224,7 @@ void Range::_ref_shared(Shared *p_shared) {
 
 void Range::_unref_shared() {
 	if (shared) {
-		shared->owners.erase(this);
+		shared->owners.remove(this);
 		if (shared->owners.size() == 0) {
 			memdelete(shared);
 			shared = nullptr;

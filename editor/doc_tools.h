@@ -38,7 +38,7 @@ public:
 	String version;
 	Map<String, DocData::ClassDoc> class_list;
 
-	static Error erase_classes(const String &p_dir);
+	static Error remove_classes(const String &p_dir);
 
 	void merge_from(const DocTools &p_data);
 	void remove_from(const DocTools &p_data);

@@ -500,7 +500,7 @@ private:
 		LocalVector<float> blend_weights;
 
 		RID blend_weights_buffer;
-		List<MeshInstance *>::Element *I = nullptr; //used to erase itself
+		List<MeshInstance *>::Element *I = nullptr; //used to remove itself
 		uint64_t skeleton_version = 0;
 		bool dirty = false;
 		bool weights_dirty = false;

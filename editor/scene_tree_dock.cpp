@@ -115,11 +115,11 @@ void SceneTreeDock::_unhandled_key_input(Ref<InputEvent> p_event) {
 	} else if (ED_IS_SHORTCUT("scene_tree/save_branch_as_scene", p_event)) {
 		_tool_selected(TOOL_NEW_SCENE_FROM);
 	} else if (ED_IS_SHORTCUT("scene_tree/delete_no_confirm", p_event)) {
-		_tool_selected(TOOL_ERASE, true);
+		_tool_selected(TOOL_REMOVE, true);
 	} else if (ED_IS_SHORTCUT("scene_tree/copy_node_path", p_event)) {
 		_tool_selected(TOOL_COPY_NODE_PATH);
 	} else if (ED_IS_SHORTCUT("scene_tree/delete", p_event)) {
-		_tool_selected(TOOL_ERASE);
+		_tool_selected(TOOL_REMOVE);
 	} else {
 		return;
 	}
@@ -849,7 +849,7 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 
 		} break;
 
-		case TOOL_ERASE: {
+		case TOOL_REMOVE: {
 			if (!profile_allow_editing) {
 				break;
 			}
@@ -1501,7 +1501,7 @@ void SceneTreeDock::perform_node_renames(Node *p_base, List<Pair<NodePath, NodeP
 			}
 
 			if (new_root_path != NodePath()) {
-				//will not be erased
+				//will not be removed
 
 				for (List<StringName>::Element *E = anims.front(); E; E = E->next()) {
 					Ref<Animation> anim = ap->get_animation(E->get());
@@ -1535,7 +1535,7 @@ void SceneTreeDock::perform_node_renames(Node *p_base, List<Pair<NodePath, NodeP
 						for (List<Pair<NodePath, NodePath>>::Element *F = p_renames->front(); F; F = F->next()) {
 							if (F->get().first == old_np) {
 								if (F->get().second == NodePath()) {
-									//will be erased
+									//will be removed
 
 									int idx = 0;
 									Set<int>::Element *EI = ran.front();
@@ -1554,7 +1554,7 @@ void SceneTreeDock::perform_node_renames(Node *p_base, List<Pair<NodePath, NodeP
 										editor_data->get_undo_redo().add_undo_method(anim.ptr(), "track_insert_key", idx, anim->track_get_key_time(i, j), anim->track_get_key_value(i, j), anim->track_get_key_transition(i, j));
 									}
 
-									ran.erase(i); //byebye channel
+									ran.remove(i); //byebye channel
 
 								} else {
 									//will be renamed
@@ -2274,10 +2274,10 @@ void SceneTreeDock::replace_node(Node *p_node, Node *p_by_node, bool p_keep_prop
 
 	String newname = n->get_name();
 
-	List<Node *> to_erase;
+	List<Node *> to_remove;
 	for (int i = 0; i < n->get_child_count(); i++) {
 		if (n->get_child(i)->get_owner() == nullptr && n->is_owned_by_parent()) {
-			to_erase.push_back(n->get_child(i));
+			to_remove.push_back(n->get_child(i));
 		}
 	}
 	n->replace_by(newnode, true);
@@ -2303,9 +2303,9 @@ void SceneTreeDock::replace_node(Node *p_node, Node *p_by_node, bool p_keep_prop
 	if (p_remove_old) {
 		memdelete(n);
 
-		while (to_erase.front()) {
-			memdelete(to_erase.front()->get());
-			to_erase.pop_front();
+		while (to_remove.front()) {
+			memdelete(to_remove.front()->get());
+			to_remove.pop_front();
 		}
 	}
 }
@@ -2706,7 +2706,7 @@ void SceneTreeDock::_tree_rmb(const Vector2 &p_menu_pos) {
 
 	if (profile_allow_editing) {
 		menu->add_separator();
-		menu->add_icon_shortcut(get_theme_icon("Remove", "EditorIcons"), ED_SHORTCUT("scene_tree/delete", TTR("Delete Node(s)"), KEY_DELETE), TOOL_ERASE);
+		menu->add_icon_shortcut(get_theme_icon("Remove", "EditorIcons"), ED_SHORTCUT("scene_tree/delete", TTR("Delete Node(s)"), KEY_DELETE), TOOL_REMOVE);
 	}
 	menu->set_size(Size2(1, 1));
 	menu->set_position(p_menu_pos);

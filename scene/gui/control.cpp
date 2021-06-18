@@ -232,33 +232,33 @@ bool Control::_set(const StringName &p_name, const Variant &p_value) {
 			if (data.icon_override.has(dname)) {
 				data.icon_override[dname]->disconnect("changed", callable_mp(this, &Control::_override_changed));
 			}
-			data.icon_override.erase(dname);
+			data.icon_override.remove(dname);
 			notification(NOTIFICATION_THEME_CHANGED);
 		} else if (name.begins_with("custom_styles/")) {
 			String dname = name.get_slicec('/', 1);
 			if (data.style_override.has(dname)) {
 				data.style_override[dname]->disconnect("changed", callable_mp(this, &Control::_override_changed));
 			}
-			data.style_override.erase(dname);
+			data.style_override.remove(dname);
 			notification(NOTIFICATION_THEME_CHANGED);
 		} else if (name.begins_with("custom_fonts/")) {
 			String dname = name.get_slicec('/', 1);
 			if (data.font_override.has(dname)) {
 				data.font_override[dname]->disconnect("changed", callable_mp(this, &Control::_override_changed));
 			}
-			data.font_override.erase(dname);
+			data.font_override.remove(dname);
 			notification(NOTIFICATION_THEME_CHANGED);
 		} else if (name.begins_with("custom_font_sizes/")) {
 			String dname = name.get_slicec('/', 1);
-			data.font_size_override.erase(dname);
+			data.font_size_override.remove(dname);
 			notification(NOTIFICATION_THEME_CHANGED);
 		} else if (name.begins_with("custom_colors/")) {
 			String dname = name.get_slicec('/', 1);
-			data.color_override.erase(dname);
+			data.color_override.remove(dname);
 			notification(NOTIFICATION_THEME_CHANGED);
 		} else if (name.begins_with("custom_constants/")) {
 			String dname = name.get_slicec('/', 1);
-			data.constant_override.erase(dname);
+			data.constant_override.remove(dname);
 			notification(NOTIFICATION_THEME_CHANGED);
 		} else {
 			return false;
@@ -1702,7 +1702,7 @@ void Control::remove_theme_icon_override(const StringName &p_name) {
 		data.icon_override[p_name]->disconnect("changed", callable_mp(this, &Control::_override_changed));
 	}
 
-	data.icon_override.erase(p_name);
+	data.icon_override.remove(p_name);
 	notification(NOTIFICATION_THEME_CHANGED);
 }
 
@@ -1711,7 +1711,7 @@ void Control::remove_theme_style_override(const StringName &p_name) {
 		data.style_override[p_name]->disconnect("changed", callable_mp(this, &Control::_override_changed));
 	}
 
-	data.style_override.erase(p_name);
+	data.style_override.remove(p_name);
 	notification(NOTIFICATION_THEME_CHANGED);
 }
 
@@ -1720,22 +1720,22 @@ void Control::remove_theme_font_override(const StringName &p_name) {
 		data.font_override[p_name]->disconnect("changed", callable_mp(this, &Control::_override_changed));
 	}
 
-	data.font_override.erase(p_name);
+	data.font_override.remove(p_name);
 	notification(NOTIFICATION_THEME_CHANGED);
 }
 
 void Control::remove_theme_font_size_override(const StringName &p_name) {
-	data.font_size_override.erase(p_name);
+	data.font_size_override.remove(p_name);
 	notification(NOTIFICATION_THEME_CHANGED);
 }
 
 void Control::remove_theme_color_override(const StringName &p_name) {
-	data.color_override.erase(p_name);
+	data.color_override.remove(p_name);
 	notification(NOTIFICATION_THEME_CHANGED);
 }
 
 void Control::remove_theme_constant_override(const StringName &p_name) {
-	data.constant_override.erase(p_name);
+	data.constant_override.remove(p_name);
 	notification(NOTIFICATION_THEME_CHANGED);
 }
 

@@ -178,12 +178,12 @@ void Area3D::_body_inout(int p_status, const RID &p_body, ObjectID p_instance, i
 		E->get().rc--;
 
 		if (node) {
-			E->get().shapes.erase(ShapePair(p_body_shape, p_area_shape));
+			E->get().shapes.remove(ShapePair(p_body_shape, p_area_shape));
 		}
 
 		bool in_tree = E->get().in_tree;
 		if (E->get().rc == 0) {
-			body_map.erase(E);
+			body_map.remove(E);
 			if (node) {
 				node->disconnect(SceneStringNames::get_singleton()->tree_entered, callable_mp(this, &Area3D::_body_enter_tree));
 				node->disconnect(SceneStringNames::get_singleton()->tree_exiting, callable_mp(this, &Area3D::_body_exit_tree));
@@ -359,12 +359,12 @@ void Area3D::_area_inout(int p_status, const RID &p_area, ObjectID p_instance, i
 		E->get().rc--;
 
 		if (node) {
-			E->get().shapes.erase(AreaShapePair(p_area_shape, p_self_shape));
+			E->get().shapes.remove(AreaShapePair(p_area_shape, p_self_shape));
 		}
 
 		bool in_tree = E->get().in_tree;
 		if (E->get().rc == 0) {
-			area_map.erase(E);
+			area_map.remove(E);
 			if (node) {
 				node->disconnect(SceneStringNames::get_singleton()->tree_entered, callable_mp(this, &Area3D::_area_enter_tree));
 				node->disconnect(SceneStringNames::get_singleton()->tree_exiting, callable_mp(this, &Area3D::_area_exit_tree));

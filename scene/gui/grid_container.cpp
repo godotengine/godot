@@ -112,7 +112,7 @@ void GridContainer::_notification(int p_what) {
 
 				// If not, the column with maximum minwidth is not expanded.
 				if (!can_fit) {
-					col_expanded.erase(max_index);
+					col_expanded.remove(max_index);
 					remaining_space.width -= col_minw[max_index];
 				}
 			}
@@ -133,7 +133,7 @@ void GridContainer::_notification(int p_what) {
 
 				// If not, the row with maximum minheight is not expanded.
 				if (!can_fit) {
-					row_expanded.erase(max_index);
+					row_expanded.remove(max_index);
 					remaining_space.height -= row_minh[max_index];
 				}
 			}

@@ -55,7 +55,7 @@ class EditorSettingsDialog : public AcceptDialog {
 
 	enum ShortcutButton {
 		SHORTCUT_EDIT,
-		SHORTCUT_ERASE,
+		SHORTCUT_REMOVE,
 		SHORTCUT_REVERT
 	};
 

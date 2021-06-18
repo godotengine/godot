@@ -136,7 +136,7 @@
 				Appends a value to the array.
 			</description>
 		</method>
-		<method name="remove">
+		<method name="remove_at">
 			<return type="void">
 			</return>
 			<argument index="0" name="index" type="int">

@@ -336,7 +336,7 @@ protected:
 	}
 
 	//! erase by index in hash table
-	inline bool _erase_by_index_hash_table(GUINT index)
+	inline bool _remove_by_index_hash_table(GUINT index)
 	{
 		if (index >= m_nodes.size()) return false;
 		if (m_nodes[index].m_key != GIM_INVALID_HASH)
@@ -350,11 +350,11 @@ protected:
 			m_hash_table[cell_index] = GIM_INVALID_HASH;
 		}
 
-		return this->_erase_unsorted(index);
+		return this->_remove_unsorted(index);
 	}
 
 	//! erase by key in hash table
-	inline bool _erase_hash_table(GUINT hashkey)
+	inline bool _remove_hash_table(GUINT hashkey)
 	{
 		if (hashkey == GIM_INVALID_HASH) return false;
 
@@ -365,7 +365,7 @@ protected:
 		GUINT index = m_hash_table[cell_index];
 		m_hash_table[cell_index] = GIM_INVALID_HASH;
 
-		return this->_erase_unsorted(index);
+		return this->_remove_unsorted(index);
 	}
 
 	//! insert an element in hash table
@@ -427,16 +427,16 @@ protected:
 	}
 
 	///Sorted array data management. The hash table has the indices to the corresponding m_nodes array
-	inline bool _erase_sorted(GUINT index)
+	inline bool _remove_sorted(GUINT index)
 	{
 		if (index >= (GUINT)m_nodes.size()) return false;
-		m_nodes.erase_sorted(index);
+		m_nodes.remove_sorted(index);
 		if (m_nodes.size() < 2) m_sorted = false;
 		return true;
 	}
 
 	//! faster, but unsorted
-	inline bool _erase_unsorted(GUINT index)
+	inline bool _remove_unsorted(GUINT index)
 	{
 		if (index >= m_nodes.size()) return false;
 
@@ -453,7 +453,7 @@ protected:
 				m_hash_table[cell_index] = index;
 			}
 		}
-		m_nodes.erase(index);
+		m_nodes.remove(index);
 		m_sorted = false;
 		return true;
 	}
@@ -729,7 +729,7 @@ public:
 
 	/*!
     */
-	inline bool erase_by_index(GUINT index)
+	inline bool remove_by_index(GUINT index)
 	{
 		if (index > m_nodes.size()) return false;
 
@@ -737,31 +737,31 @@ public:
 		{
 			if (is_sorted())
 			{
-				return this->_erase_sorted(index);
+				return this->_remove_sorted(index);
 			}
 			else
 			{
-				return this->_erase_unsorted(index);
+				return this->_remove_unsorted(index);
 			}
 		}
 		else
 		{
-			return this->_erase_by_index_hash_table(index);
+			return this->_remove_by_index_hash_table(index);
 		}
 		return false;
 	}
 
-	inline bool erase_by_index_unsorted(GUINT index)
+	inline bool remove_by_index_unsorted(GUINT index)
 	{
 		if (index > m_nodes.size()) return false;
 
 		if (m_hash_table == NULL)
 		{
-			return this->_erase_unsorted(index);
+			return this->_remove_unsorted(index);
 		}
 		else
 		{
-			return this->_erase_by_index_hash_table(index);
+			return this->_remove_by_index_hash_table(index);
 		}
 		return false;
 	}
@@ -769,13 +769,13 @@ public:
 	/*!
 
     */
-	inline bool erase_by_key(GUINT hashkey)
+	inline bool remove_by_key(GUINT hashkey)
 	{
 		if (size() == 0) return false;
 
 		if (m_hash_table)
 		{
-			return this->_erase_hash_table(hashkey);
+			return this->_remove_hash_table(hashkey);
 		}
 		//Binary search
 
@@ -784,7 +784,7 @@ public:
 		GUINT result_ind = find(hashkey);
 		if (result_ind != GIM_INVALID_HASH)
 		{
-			return this->_erase_sorted(result_ind);
+			return this->_remove_sorted(result_ind);
 		}
 		return false;
 	}

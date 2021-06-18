@@ -55,7 +55,7 @@
 			<description>
 			</description>
 		</method>
-		<method name="erase_section">
+		<method name="remove_section">
 			<return type="void">
 			</return>
 			<argument index="0" name="section" type="String">
@@ -64,7 +64,7 @@
 				Deletes the specified section along with all the key-value pairs inside. Raises an error if the section does not exist.
 			</description>
 		</method>
-		<method name="erase_section_key">
+		<method name="remove_section_key">
 			<return type="void">
 			</return>
 			<argument index="0" name="section" type="String">

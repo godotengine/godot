@@ -1480,8 +1480,8 @@ int ShCompile(
 
     SetThreadPoolAllocator(compiler->getPool());
 
-    compiler->infoSink.info.erase();
-    compiler->infoSink.debug.erase();
+    compiler->infoSink.info.remove();
+    compiler->infoSink.debug.remove();
 
     TIntermediate intermediate(compiler->getLanguage());
     TShader::ForbidIncluder includer;
@@ -1542,7 +1542,7 @@ int ShLinkExt(
     if (linker == 0)
         return 0;
 
-    linker->infoSink.info.erase();
+    linker->infoSink.info.remove();
 
     for (int i = 0; i < numHandles; ++i) {
         if (cObjects[i]->getAsCompiler()) {

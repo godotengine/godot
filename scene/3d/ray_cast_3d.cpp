@@ -139,7 +139,7 @@ void RayCast3D::set_exclude_parent_body(bool p_exclude_parent_body) {
 		if (exclude_parent_body) {
 			exclude.insert(Object::cast_to<CollisionObject3D>(get_parent())->get_rid());
 		} else {
-			exclude.erase(Object::cast_to<CollisionObject3D>(get_parent())->get_rid());
+			exclude.remove(Object::cast_to<CollisionObject3D>(get_parent())->get_rid());
 		}
 	}
 }
@@ -168,7 +168,7 @@ void RayCast3D::_notification(int p_what) {
 				if (exclude_parent_body) {
 					exclude.insert(Object::cast_to<CollisionObject3D>(get_parent())->get_rid());
 				} else {
-					exclude.erase(Object::cast_to<CollisionObject3D>(get_parent())->get_rid());
+					exclude.remove(Object::cast_to<CollisionObject3D>(get_parent())->get_rid());
 				}
 			}
 
@@ -245,7 +245,7 @@ void RayCast3D::add_exception(const Object *p_object) {
 }
 
 void RayCast3D::remove_exception_rid(const RID &p_rid) {
-	exclude.erase(p_rid);
+	exclude.remove(p_rid);
 }
 
 void RayCast3D::remove_exception(const Object *p_object) {

@@ -253,7 +253,7 @@ public:
         gpu_shader_half_float                     = 1 << 11,
     } feature;
     void insert(feature f) { features |= f; }
-    void erase(feature f) { features &= ~f; }
+    void remove(feature f) { features &= ~f; }
     bool contains(feature f) const { return (features & f) != 0; }
 private:
     unsigned int features;
@@ -927,7 +927,7 @@ public:
                numericFeatures.contains(TNumericFeatures::shader_explicit_arithmetic_types_float16);
     }
     void updateNumericFeature(TNumericFeatures::feature f, bool on)
-        { on ? numericFeatures.insert(f) : numericFeatures.erase(f); }
+        { on ? numericFeatures.insert(f) : numericFeatures.remove(f); }
 #endif
 
 protected:

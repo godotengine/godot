@@ -43,7 +43,7 @@ class MeshLibraryEditor : public Control {
 	MenuButton *menu;
 	ConfirmationDialog *cd;
 	EditorFileDialog *file;
-	int to_erase;
+	int to_remove;
 
 	enum {
 		MENU_OPTION_ADD_ITEM,

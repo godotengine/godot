@@ -1499,7 +1499,7 @@ void RichTextLabel::_gui_input(Ref<InputEvent> p_event) {
 						selection.click_line = c_line;
 						selection.click_char = c_index;
 
-						// Erase previous selection.
+						// Remove previous selection.
 						if (selection.active) {
 							selection.from_frame = nullptr;
 							selection.from_line = 0;
@@ -2231,10 +2231,10 @@ void RichTextLabel::_add_item(Item *p_item, bool p_enter, bool p_ensure_newline)
 void RichTextLabel::_remove_item(Item *p_item, const int p_line, const int p_subitem_line) {
 	int size = p_item->subitems.size();
 	if (size == 0) {
-		p_item->parent->subitems.erase(p_item);
-		// If a newline was erased, all lines AFTER the newline need to be decremented.
+		p_item->parent->subitems.remove(p_item);
+		// If a newline was removed, all lines AFTER the newline need to be decremented.
 		if (p_item->type == ITEM_NEWLINE) {
-			current_frame->lines.remove(p_line);
+			current_frame->lines.remove_at(p_line);
 			for (int i = 0; i < current->subitems.size(); i++) {
 				if (current->subitems[i]->line > p_subitem_line) {
 					current->subitems[i]->line--;
@@ -2247,7 +2247,7 @@ void RichTextLabel::_remove_item(Item *p_item, const int p_line, const int p_sub
 			_remove_item(p_item->subitems.front()->get(), p_line, p_subitem_line);
 		}
 		// Then remove the provided item itself.
-		p_item->parent->subitems.erase(p_item);
+		p_item->parent->subitems.remove(p_item);
 	}
 }
 
@@ -2324,7 +2324,7 @@ bool RichTextLabel::remove_line(const int p_line) {
 	}
 
 	if (!had_newline) {
-		current_frame->lines.remove(p_line);
+		current_frame->lines.remove_at(p_line);
 		if (current_frame->lines.size() == 0) {
 			current_frame->lines.resize(1);
 		}
@@ -3359,7 +3359,7 @@ Error RichTextLabel::append_bbcode(const String &p_bbcode) {
 				pos = brk_pos + 1;
 			} else {
 				String identifier = expr[0];
-				expr.remove(0);
+				expr.remove_at(0);
 				Dictionary properties = parse_expressions_for_values(expr);
 				Ref<RichTextEffect> effect = _get_custom_effect_by_code(identifier);
 

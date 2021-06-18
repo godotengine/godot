@@ -372,7 +372,7 @@ class CommandQueueMT {
 
 			cmd->call(); //execute the function
 			cmd->post(); //release in case it needs sync/ret
-			cmd->~CommandBase(); //should be done, so erase the command
+			cmd->~CommandBase(); //should be done, so remove the command
 
 			read_ptr += size;
 		}

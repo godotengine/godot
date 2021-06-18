@@ -122,7 +122,7 @@ private:
 
 	// Safety for when a node is deleted while a group is being called.
 	int call_lock = 0;
-	Set<Node *> call_skip; // Skip erased nodes.
+	Set<Node *> call_skip; // Skip removed nodes.
 
 	List<ObjectID> delete_queue;
 

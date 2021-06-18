@@ -110,7 +110,7 @@ class EditorFeatureProfileManager : public AcceptDialog {
 		PROFILE_IMPORT,
 		PROFILE_EXPORT,
 		PROFILE_NEW,
-		PROFILE_ERASE,
+		PROFILE_REMOVE,
 		PROFILE_MAX
 	};
 
@@ -118,7 +118,7 @@ class EditorFeatureProfileManager : public AcceptDialog {
 		CLASS_OPTION_DISABLE_EDITOR
 	};
 
-	ConfirmationDialog *erase_profile_dialog;
+	ConfirmationDialog *remove_profile_dialog;
 	ConfirmationDialog *new_profile_dialog;
 	LineEdit *new_profile_name;
 
@@ -149,7 +149,7 @@ class EditorFeatureProfileManager : public AcceptDialog {
 	Ref<EditorFeatureProfile> current;
 	Ref<EditorFeatureProfile> edited;
 
-	void _erase_selected_profile();
+	void _remove_selected_profile();
 	void _create_new_profile();
 	String _get_selected_profile();
 

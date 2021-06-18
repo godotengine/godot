@@ -191,15 +191,15 @@ TEST_CASE("[List] Find") {
 	}
 }
 
-TEST_CASE("[List] Erase (by value)") {
+TEST_CASE("[List] Remove (by value)") {
 	List<int> list;
 	List<int>::Element *n[4];
 	// Indices match values.
 	populate_integers(list, n, 4);
 
 	CHECK(list.front()->next()->next()->get() == 2);
-	bool erased = list.erase(2); // 0, 1, 3.
-	CHECK(erased);
+	bool removed = list.remove(2); // 0, 1, 3.
+	CHECK(removed);
 	CHECK(list.size() == 3);
 
 	// The pointer n[2] points to the freed memory which is not reset to zero,
@@ -214,30 +214,30 @@ TEST_CASE("[List] Erase (by value)") {
 	CHECK(n[1]->next()->get() == 3);
 	CHECK(n[3]->prev()->get() == 1);
 
-	erased = list.erase(9000); // Doesn't exist.
-	CHECK(!erased);
+	removed = list.remove(9000); // Doesn't exist.
+	CHECK(!removed);
 }
 
-TEST_CASE("[List] Erase (by element)") {
+TEST_CASE("[List] Remove (by element)") {
 	List<int> list;
 	List<int>::Element *n[4];
 	// Indices match values.
 	populate_integers(list, n, 4);
 
-	bool erased = list.erase(n[2]);
-	CHECK(erased);
+	bool removed = list.remove(n[2]);
+	CHECK(removed);
 	CHECK(list.size() == 3);
 	CHECK(n[1]->next()->get() == 3);
 	CHECK(n[3]->prev()->get() == 1);
 }
 
-TEST_CASE("[List] Element erase") {
+TEST_CASE("[List] Element remove") {
 	List<int> list;
 	List<int>::Element *n[4];
 	// Indices match values.
 	populate_integers(list, n, 4);
 
-	n[2]->erase();
+	n[2]->remove();
 
 	CHECK(list.size() == 3);
 	CHECK(n[1]->next()->get() == 3);

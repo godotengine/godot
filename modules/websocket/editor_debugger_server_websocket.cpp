@@ -40,7 +40,7 @@ void EditorDebuggerServerWebSocket::_peer_connected(int p_id, String _protocol) 
 
 void EditorDebuggerServerWebSocket::_peer_disconnected(int p_id, bool p_was_clean) {
 	if (pending_peers.find(p_id)) {
-		pending_peers.erase(p_id);
+		pending_peers.remove(p_id);
 	}
 }
 

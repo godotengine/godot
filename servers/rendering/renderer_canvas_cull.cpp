@@ -440,10 +440,10 @@ void RendererCanvasCull::canvas_item_set_parent(RID p_item, RID p_parent) {
 	if (canvas_item->parent.is_valid()) {
 		if (canvas_owner.owns(canvas_item->parent)) {
 			Canvas *canvas = canvas_owner.getornull(canvas_item->parent);
-			canvas->erase_item(canvas_item);
+			canvas->remove_item(canvas_item);
 		} else if (canvas_item_owner.owns(canvas_item->parent)) {
 			Item *item_owner = canvas_item_owner.getornull(canvas_item->parent);
-			item_owner->child_items.erase(canvas_item);
+			item_owner->child_items.remove(canvas_item);
 
 			if (item_owner->sort_y) {
 				_mark_ysort_dirty(item_owner, canvas_item_owner);
@@ -1204,9 +1204,9 @@ void RendererCanvasCull::canvas_light_attach_to_canvas(RID p_light, RID p_canvas
 	if (clight->canvas.is_valid()) {
 		Canvas *canvas = canvas_owner.getornull(clight->canvas);
 		if (clight->mode == RS::CANVAS_LIGHT_MODE_POINT) {
-			canvas->lights.erase(clight);
+			canvas->lights.remove(clight);
 		} else {
-			canvas->directional_lights.erase(clight);
+			canvas->directional_lights.remove(clight);
 		}
 	}
 
@@ -1378,7 +1378,7 @@ void RendererCanvasCull::canvas_light_occluder_attach_to_canvas(RID p_occluder, 
 
 	if (occluder->canvas.is_valid()) {
 		Canvas *canvas = canvas_owner.getornull(occluder->canvas);
-		canvas->occluders.erase(occluder);
+		canvas->occluders.remove(occluder);
 	}
 
 	if (!canvas_owner.owns(p_canvas)) {
@@ -1407,7 +1407,7 @@ void RendererCanvasCull::canvas_light_occluder_set_polygon(RID p_occluder, RID p
 	if (occluder->polygon.is_valid()) {
 		LightOccluderPolygon *occluder_poly = canvas_light_occluder_polygon_owner.getornull(p_polygon);
 		if (occluder_poly) {
-			occluder_poly->owners.erase(occluder);
+			occluder_poly->owners.remove(occluder);
 		}
 	}
 
@@ -1577,9 +1577,9 @@ bool RendererCanvasCull::free(RID p_rid) {
 
 			Map<RID, RendererViewport::Viewport::CanvasData>::Element *E = vp->canvas_map.find(p_rid);
 			ERR_FAIL_COND_V(!E, true);
-			vp->canvas_map.erase(p_rid);
+			vp->canvas_map.remove(p_rid);
 
-			canvas->viewports.erase(canvas->viewports.front());
+			canvas->viewports.remove(canvas->viewports.front());
 		}
 
 		for (int i = 0; i < canvas->child_items.size(); i++) {
@@ -1605,10 +1605,10 @@ bool RendererCanvasCull::free(RID p_rid) {
 		if (canvas_item->parent.is_valid()) {
 			if (canvas_owner.owns(canvas_item->parent)) {
 				Canvas *canvas = canvas_owner.getornull(canvas_item->parent);
-				canvas->erase_item(canvas_item);
+				canvas->remove_item(canvas_item);
 			} else if (canvas_item_owner.owns(canvas_item->parent)) {
 				Item *item_owner = canvas_item_owner.getornull(canvas_item->parent);
-				item_owner->child_items.erase(canvas_item);
+				item_owner->child_items.remove(canvas_item);
 
 				if (item_owner->sort_y) {
 					_mark_ysort_dirty(item_owner, canvas_item_owner);
@@ -1626,7 +1626,7 @@ bool RendererCanvasCull::free(RID p_rid) {
 
 		/*
 		if (canvas_item->material) {
-			canvas_item->material->owners.erase(canvas_item);
+			canvas_item->material->owners.remove(canvas_item);
 		}
 		*/
 
@@ -1641,7 +1641,7 @@ bool RendererCanvasCull::free(RID p_rid) {
 		if (canvas_light->canvas.is_valid()) {
 			Canvas *canvas = canvas_owner.getornull(canvas_light->canvas);
 			if (canvas) {
-				canvas->lights.erase(canvas_light);
+				canvas->lights.remove(canvas_light);
 			}
 		}
 
@@ -1657,13 +1657,13 @@ bool RendererCanvasCull::free(RID p_rid) {
 		if (occluder->polygon.is_valid()) {
 			LightOccluderPolygon *occluder_poly = canvas_light_occluder_polygon_owner.getornull(occluder->polygon);
 			if (occluder_poly) {
-				occluder_poly->owners.erase(occluder);
+				occluder_poly->owners.remove(occluder);
 			}
 		}
 
 		if (occluder->canvas.is_valid() && canvas_owner.owns(occluder->canvas)) {
 			Canvas *canvas = canvas_owner.getornull(occluder->canvas);
-			canvas->occluders.erase(occluder);
+			canvas->occluders.remove(occluder);
 		}
 
 		canvas_light_occluder_owner.free(p_rid);
@@ -1676,7 +1676,7 @@ bool RendererCanvasCull::free(RID p_rid) {
 
 		while (occluder_poly->owners.size()) {
 			occluder_poly->owners.front()->get()->polygon = RID();
-			occluder_poly->owners.erase(occluder_poly->owners.front());
+			occluder_poly->owners.remove(occluder_poly->owners.front());
 		}
 
 		canvas_light_occluder_polygon_owner.free(p_rid);

@@ -2926,6 +2926,6 @@ RenderForwardClustered::~RenderForwardClustered() {
 
 	while (sdfgi_framebuffer_size_cache.front()) {
 		RD::get_singleton()->free(sdfgi_framebuffer_size_cache.front()->get());
-		sdfgi_framebuffer_size_cache.erase(sdfgi_framebuffer_size_cache.front());
+		sdfgi_framebuffer_size_cache.remove(sdfgi_framebuffer_size_cache.front());
 	}
 }

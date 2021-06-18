@@ -948,7 +948,7 @@ void RendererStorageRD::texture_proxy_update(RID p_texture, RID p_proxy_to) {
 		}
 		Texture *prev_tex = texture_owner.getornull(tex->proxy_to);
 		ERR_FAIL_COND(!prev_tex);
-		prev_tex->proxies.erase(p_texture);
+		prev_tex->proxies.remove(p_texture);
 	}
 
 	*tex = *proxy_to;
@@ -1479,7 +1479,7 @@ void RendererStorageRD::shader_set_default_texture_param(RID p_shader, const Str
 	if (p_texture.is_valid() && texture_owner.owns(p_texture)) {
 		shader->default_texture_parameter[p_name] = p_texture;
 	} else {
-		shader->default_texture_parameter.erase(p_name);
+		shader->default_texture_parameter.remove(p_name);
 	}
 	if (shader->data) {
 		shader->data->set_default_texture_param(p_name, p_texture);
@@ -1564,7 +1564,7 @@ void RendererStorageRD::material_set_shader(RID p_material, RID p_shader) {
 	}
 
 	if (material->shader) {
-		material->shader->owners.erase(material);
+		material->shader->owners.remove(material);
 		material->shader = nullptr;
 		material->shader_type = SHADER_TYPE_MAX;
 	}
@@ -1602,7 +1602,7 @@ void RendererStorageRD::material_set_param(RID p_material, const StringName &p_p
 	ERR_FAIL_COND(!material);
 
 	if (p_value.get_type() == Variant::NIL) {
-		material->params.erase(p_param);
+		material->params.remove(p_param);
 	} else {
 		material->params[p_param] = p_value;
 	}
@@ -2209,7 +2209,7 @@ void RendererStorageRD::MaterialData::update_uniform_buffer(const Map<StringName
 		if (uses_global_buffer) {
 			global_buffer_E = rs->global_variables.materials_using_buffer.push_back(self);
 		} else {
-			rs->global_variables.materials_using_buffer.erase(global_buffer_E);
+			rs->global_variables.materials_using_buffer.remove(global_buffer_E);
 			global_buffer_E = nullptr;
 		}
 	}
@@ -2219,7 +2219,7 @@ RendererStorageRD::MaterialData::~MaterialData() {
 	if (global_buffer_E) {
 		//unregister global buffers
 		RendererStorageRD *rs = base_singleton;
-		rs->global_variables.materials_using_buffer.erase(global_buffer_E);
+		rs->global_variables.materials_using_buffer.remove(global_buffer_E);
 	}
 
 	if (global_texture_E) {
@@ -2229,11 +2229,11 @@ RendererStorageRD::MaterialData::~MaterialData() {
 		for (Map<StringName, uint64_t>::Element *E = used_global_textures.front(); E; E = E->next()) {
 			GlobalVariables::Variable *v = rs->global_variables.variables.getptr(E->key());
 			if (v) {
-				v->texture_materials.erase(self);
+				v->texture_materials.remove(self);
 			}
 		}
 		//unregister material from those using global textures
-		rs->global_variables.materials_using_texture.erase(global_texture_E);
+		rs->global_variables.materials_using_texture.remove(global_texture_E);
 	}
 }
 
@@ -2363,13 +2363,13 @@ void RendererStorageRD::MaterialData::update_textures(const Map<StringName, Vari
 
 				GlobalVariables::Variable *v = rs->global_variables.variables.getptr(E->key());
 				if (v) {
-					v->texture_materials.erase(self);
+					v->texture_materials.remove(self);
 				}
 			}
 		}
 
 		while (to_delete.front()) {
-			used_global_textures.erase(to_delete.front()->get());
+			used_global_textures.remove(to_delete.front()->get());
 			to_delete.pop_front();
 		}
 		//handle registering/unregistering global textures
@@ -2377,7 +2377,7 @@ void RendererStorageRD::MaterialData::update_textures(const Map<StringName, Vari
 			if (uses_global_textures) {
 				global_texture_E = rs->global_variables.materials_using_texture.push_back(self);
 			} else {
-				rs->global_variables.materials_using_texture.erase(global_texture_E);
+				rs->global_variables.materials_using_texture.remove(global_texture_E);
 				global_texture_E = nullptr;
 			}
 		}
@@ -2853,7 +2853,7 @@ void RendererStorageRD::mesh_set_shadow_mesh(RID p_mesh, RID p_shadow_mesh) {
 
 	Mesh *shadow_mesh = mesh_owner.getornull(mesh->shadow_mesh);
 	if (shadow_mesh) {
-		shadow_mesh->shadow_owners.erase(mesh);
+		shadow_mesh->shadow_owners.remove(mesh);
 	}
 	mesh->shadow_mesh = p_shadow_mesh;
 
@@ -4305,7 +4305,7 @@ void RendererStorageRD::particles_add_collision(RID p_particles, RID p_particles
 void RendererStorageRD::particles_remove_collision(RID p_particles, RID p_particles_collision_instance) {
 	Particles *particles = particles_owner.getornull(p_particles);
 	ERR_FAIL_COND(!particles);
-	particles->collisions.erase(p_particles_collision_instance);
+	particles->collisions.remove(p_particles_collision_instance);
 }
 
 void RendererStorageRD::particles_set_canvas_sdf_collision(RID p_particles, bool p_enable, const Transform2D &p_xform, const Rect2 &p_to_screen, RID p_texture) {
@@ -5164,7 +5164,7 @@ void RendererStorageRD::ParticlesShaderData::set_code(const String &p_code) {
 
 void RendererStorageRD::ParticlesShaderData::set_default_texture_param(const StringName &p_name, RID p_texture) {
 	if (!p_texture.is_valid()) {
-		default_texture_params.erase(p_name);
+		default_texture_params.remove(p_name);
 	} else {
 		default_texture_params[p_name] = p_texture;
 	}
@@ -6749,11 +6749,11 @@ void RendererStorageRD::lightmap_set_textures(RID p_lightmap, RID p_light, bool 
 
 	lightmap_array_version++;
 
-	//erase lightmap users
+	//remove lightmap users
 	if (lm->light_texture.is_valid()) {
 		Texture *t = texture_owner.getornull(lm->light_texture);
 		if (t) {
-			t->lightmap_users.erase(p_lightmap);
+			t->lightmap_users.remove(p_lightmap);
 		}
 	}
 
@@ -6927,7 +6927,7 @@ void RendererStorageRD::_clear_render_target(RenderTarget *rt) {
 		RD::get_singleton()->free(rt->backbuffer);
 		rt->backbuffer = RID();
 		for (int i = 0; i < rt->backbuffer_mipmaps.size(); i++) {
-			//just erase copies, since the rest are erased by dependency
+			//just remove copies, since the rest are removed by dependency
 			RD::get_singleton()->free(rt->backbuffer_mipmaps[i].mipmap_copy);
 		}
 		rt->backbuffer_mipmaps.clear();
@@ -7716,7 +7716,7 @@ void RendererStorageRD::texture_remove_from_decal_atlas(RID p_texture, bool p_pa
 		t->panorama_to_dp_users--;
 	}
 	if (t->users == 0) {
-		decal_atlas.textures.erase(p_texture);
+		decal_atlas.textures.remove(p_texture);
 		//do not mark it dirty, there is no need to since it remains working
 	}
 }
@@ -8292,7 +8292,7 @@ void RendererStorageRD::global_variable_remove(const StringName &p_name) {
 		global_variables.must_update_texture_materials = true;
 	}
 
-	global_variables.variables.erase(p_name);
+	global_variables.variables.remove(p_name);
 }
 
 Vector<StringName> RendererStorageRD::global_variable_get_list() const {
@@ -8488,7 +8488,7 @@ void RendererStorageRD::global_variables_instance_free(RID p_instance) {
 	if (pos >= 0) {
 		global_variables.buffer_usage[pos].elements = 0;
 	}
-	global_variables.instance_buffer_pos.erase(p_instance);
+	global_variables.instance_buffer_pos.remove(p_instance);
 }
 
 void RendererStorageRD::global_variables_instance_update(RID p_instance, int p_index, const Variant &p_value) {
@@ -8624,7 +8624,7 @@ bool RendererStorageRD::free(RID p_rid) {
 		ERR_FAIL_COND_V(t->is_render_target, false);
 
 		if (RD::get_singleton()->texture_is_valid(t->rd_texture_srgb)) {
-			//erase this first, as it's a dependency of the one below
+			//remove this first, as it's a dependency of the one below
 			RD::get_singleton()->free(t->rd_texture_srgb);
 		}
 		if (RD::get_singleton()->texture_is_valid(t->rd_texture)) {
@@ -8634,12 +8634,12 @@ bool RendererStorageRD::free(RID p_rid) {
 		if (t->is_proxy && t->proxy_to.is_valid()) {
 			Texture *proxy_to = texture_owner.getornull(t->proxy_to);
 			if (proxy_to) {
-				proxy_to->proxies.erase(p_rid);
+				proxy_to->proxies.remove(p_rid);
 			}
 		}
 
 		if (decal_atlas.textures.has(p_rid)) {
-			decal_atlas.textures.erase(p_rid);
+			decal_atlas.textures.remove(p_rid);
 			//there is not much a point of making it dirty, just let it be.
 		}
 
@@ -8700,7 +8700,7 @@ bool RendererStorageRD::free(RID p_rid) {
 	} else if (mesh_instance_owner.owns(p_rid)) {
 		MeshInstance *mi = mesh_instance_owner.getornull(p_rid);
 		_mesh_instance_clear(mi);
-		mi->mesh->instances.erase(mi->I);
+		mi->mesh->instances.remove(mi->I);
 		mi->I = nullptr;
 
 		mesh_instance_owner.free(p_rid);

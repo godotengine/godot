@@ -94,7 +94,7 @@ bool EditorSettings::_set_only(const StringName &p_name, const Variant &p_value)
 			Array events = action_dict["events"];
 
 			InputMap *im = InputMap::get_singleton();
-			im->action_erase_events(name);
+			im->action_remove_events(name);
 
 			builtin_action_overrides[name].clear();
 			for (int ev_idx = 0; ev_idx < events.size(); ev_idx++) {
@@ -109,7 +109,7 @@ bool EditorSettings::_set_only(const StringName &p_name, const Variant &p_value)
 
 	if (p_value.get_type() == Variant::NIL) {
 		if (props.has(p_name)) {
-			props.erase(p_name);
+			props.remove(p_name);
 			changed = true;
 		}
 	} else {
@@ -1092,10 +1092,10 @@ bool EditorSettings::has_setting(const String &p_setting) const {
 	return props.has(p_setting);
 }
 
-void EditorSettings::erase(const String &p_setting) {
+void EditorSettings::remove(const String &p_setting) {
 	_THREAD_SAFE_METHOD_
 
-	props.erase(p_setting);
+	props.remove(p_setting);
 }
 
 void EditorSettings::raise_order(const String &p_setting) {
@@ -1567,7 +1567,7 @@ void EditorSettings::set_builtin_action_override(const String &p_name, const Arr
 	List<Ref<InputEvent>> event_list;
 
 	// Override the whole list, since events may have their order changed or be added, removed or edited.
-	InputMap::get_singleton()->action_erase_events(p_name);
+	InputMap::get_singleton()->action_remove_events(p_name);
 	for (int i = 0; i < p_events.size(); i++) {
 		event_list.push_back(p_events[i]);
 		InputMap::get_singleton()->action_add_event(p_name, p_events[i]);
@@ -1597,7 +1597,7 @@ void EditorSettings::set_builtin_action_override(const String &p_name, const Arr
 	}
 
 	if (same_as_builtin && builtin_action_overrides.has(p_name)) {
-		builtin_action_overrides.erase(p_name);
+		builtin_action_overrides.remove(p_name);
 	} else {
 		builtin_action_overrides[p_name] = event_list;
 	}
@@ -1644,7 +1644,7 @@ void EditorSettings::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("has_setting", "name"), &EditorSettings::has_setting);
 	ClassDB::bind_method(D_METHOD("set_setting", "name", "value"), &EditorSettings::set_setting);
 	ClassDB::bind_method(D_METHOD("get_setting", "name"), &EditorSettings::get_setting);
-	ClassDB::bind_method(D_METHOD("erase", "property"), &EditorSettings::erase);
+	ClassDB::bind_method(D_METHOD("remove", "property"), &EditorSettings::remove);
 	ClassDB::bind_method(D_METHOD("set_initial_value", "name", "value", "update_current"), &EditorSettings::set_initial_value);
 	ClassDB::bind_method(D_METHOD("property_can_revert", "name"), &EditorSettings::property_can_revert);
 	ClassDB::bind_method(D_METHOD("property_get_revert", "name"), &EditorSettings::property_get_revert);

@@ -33,17 +33,17 @@
 #include "servers/camera/camera_feed.h"
 
 ////////////////////////////////////////////////////////
-// CameraServer
+// Camremoverver
 
-CameraServer::CreateFunc CameraServer::create_func = nullptr;
+Camremoverver::CreateFunc Camremoverver::create_func = nullptr;
 
-void CameraServer::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("get_feed", "index"), &CameraServer::get_feed);
-	ClassDB::bind_method(D_METHOD("get_feed_count"), &CameraServer::get_feed_count);
-	ClassDB::bind_method(D_METHOD("feeds"), &CameraServer::get_feeds);
+void Camremoverver::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("get_feed", "index"), &Camremoverver::get_feed);
+	ClassDB::bind_method(D_METHOD("get_feed_count"), &Camremoverver::get_feed_count);
+	ClassDB::bind_method(D_METHOD("feeds"), &Camremoverver::get_feeds);
 
-	ClassDB::bind_method(D_METHOD("add_feed", "feed"), &CameraServer::add_feed);
-	ClassDB::bind_method(D_METHOD("remove_feed", "feed"), &CameraServer::remove_feed);
+	ClassDB::bind_method(D_METHOD("add_feed", "feed"), &Camremoverver::add_feed);
+	ClassDB::bind_method(D_METHOD("remove_feed", "feed"), &Camremoverver::remove_feed);
 
 	ADD_SIGNAL(MethodInfo("camera_feed_added", PropertyInfo(Variant::INT, "id")));
 	ADD_SIGNAL(MethodInfo("camera_feed_removed", PropertyInfo(Variant::INT, "id")));
@@ -54,13 +54,13 @@ void CameraServer::_bind_methods() {
 	BIND_ENUM_CONSTANT(FEED_CBCR_IMAGE);
 };
 
-CameraServer *CameraServer::singleton = nullptr;
+Camremoverver *Camremoverver::singleton = nullptr;
 
-CameraServer *CameraServer::get_singleton() {
+Camremoverver *Camremoverver::get_singleton() {
 	return singleton;
 };
 
-int CameraServer::get_free_id() {
+int Camremoverver::get_free_id() {
 	bool id_exists = true;
 	int newid = 0;
 
@@ -78,7 +78,7 @@ int CameraServer::get_free_id() {
 	return newid;
 };
 
-int CameraServer::get_feed_index(int p_id) {
+int Camremoverver::get_feed_index(int p_id) {
 	for (int i = 0; i < feeds.size(); i++) {
 		if (feeds[i]->get_id() == p_id) {
 			return i;
@@ -88,7 +88,7 @@ int CameraServer::get_feed_index(int p_id) {
 	return -1;
 };
 
-Ref<CameraFeed> CameraServer::get_feed_by_id(int p_id) {
+Ref<CameraFeed> Camremoverver::get_feed_by_id(int p_id) {
 	int index = get_feed_index(p_id);
 
 	if (index == -1) {
@@ -98,7 +98,7 @@ Ref<CameraFeed> CameraServer::get_feed_by_id(int p_id) {
 	}
 };
 
-void CameraServer::add_feed(const Ref<CameraFeed> &p_feed) {
+void Camremoverver::add_feed(const Ref<CameraFeed> &p_feed) {
 	ERR_FAIL_COND(p_feed.is_null());
 
 	// add our feed
@@ -113,7 +113,7 @@ void CameraServer::add_feed(const Ref<CameraFeed> &p_feed) {
 	emit_signal("camera_feed_added", p_feed->get_id());
 };
 
-void CameraServer::remove_feed(const Ref<CameraFeed> &p_feed) {
+void Camremoverver::remove_feed(const Ref<CameraFeed> &p_feed) {
 	for (int i = 0; i < feeds.size(); i++) {
 		if (feeds[i] == p_feed) {
 			int feed_id = p_feed->get_id();
@@ -124,7 +124,7 @@ void CameraServer::remove_feed(const Ref<CameraFeed> &p_feed) {
 #endif
 
 			// remove it from our array, if this results in our feed being unreferenced it will be destroyed
-			feeds.remove(i);
+			feeds.remove_at(i);
 
 			// let whomever is interested know
 			emit_signal("camera_feed_removed", feed_id);
@@ -133,17 +133,17 @@ void CameraServer::remove_feed(const Ref<CameraFeed> &p_feed) {
 	};
 };
 
-Ref<CameraFeed> CameraServer::get_feed(int p_index) {
+Ref<CameraFeed> Camremoverver::get_feed(int p_index) {
 	ERR_FAIL_INDEX_V(p_index, feeds.size(), nullptr);
 
 	return feeds[p_index];
 };
 
-int CameraServer::get_feed_count() {
+int Camremoverver::get_feed_count() {
 	return feeds.size();
 };
 
-Array CameraServer::get_feeds() {
+Array Camremoverver::get_feeds() {
 	Array return_feeds;
 	int cc = get_feed_count();
 	return_feeds.resize(cc);
@@ -155,7 +155,7 @@ Array CameraServer::get_feeds() {
 	return return_feeds;
 };
 
-RID CameraServer::feed_texture(int p_id, CameraServer::FeedImage p_texture) {
+RID Camremoverver::feed_texture(int p_id, Camremoverver::FeedImage p_texture) {
 	int index = get_feed_index(p_id);
 	ERR_FAIL_COND_V(index == -1, RID());
 
@@ -164,10 +164,10 @@ RID CameraServer::feed_texture(int p_id, CameraServer::FeedImage p_texture) {
 	return feed->get_texture(p_texture);
 };
 
-CameraServer::CameraServer() {
+Camremoverver::Camremoverver() {
 	singleton = this;
 };
 
-CameraServer::~CameraServer() {
+Camremoverver::~Camremoverver() {
 	singleton = nullptr;
 };

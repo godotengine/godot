@@ -606,7 +606,7 @@ bool Label::_set(const StringName &p_name, const Variant &p_value) {
 		double value = p_value;
 		if (value == -1) {
 			if (opentype_features.has(tag)) {
-				opentype_features.erase(tag);
+				opentype_features.remove(tag);
 				dirty = true;
 				update();
 			}

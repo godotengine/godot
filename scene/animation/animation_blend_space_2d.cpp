@@ -123,17 +123,17 @@ void AnimationNodeBlendSpace2D::remove_blend_point(int p_point) {
 	blend_points[p_point].node->disconnect("tree_changed", callable_mp(this, &AnimationNodeBlendSpace2D::_tree_changed));
 
 	for (int i = 0; i < triangles.size(); i++) {
-		bool erase = false;
+		bool remove = false;
 		for (int j = 0; j < 3; j++) {
 			if (triangles[i].points[j] == p_point) {
-				erase = true;
+				remove = true;
 				break;
 			} else if (triangles[i].points[j] > p_point) {
 				triangles.write[i].points[j]--;
 			}
 		}
-		if (erase) {
-			triangles.remove(i);
+		if (remove) {
+			triangles.remove_at(i);
 
 			i--;
 		}
@@ -223,7 +223,7 @@ int AnimationNodeBlendSpace2D::get_triangle_point(int p_triangle, int p_point) {
 void AnimationNodeBlendSpace2D::remove_triangle(int p_triangle) {
 	ERR_FAIL_INDEX(p_triangle, triangles.size());
 
-	triangles.remove(p_triangle);
+	triangles.remove_at(p_triangle);
 }
 
 int AnimationNodeBlendSpace2D::get_triangle_count() const {
