@@ -471,7 +471,9 @@ Error SceneState::_parse_node(Node *p_owner, Node *p_node, int p_parent_idx, Map
 	StringName type = p_node->get_class();
 
 	Ref<Script> script = p_node->get_script();
-	if (script.is_valid()) {
+	if (Engine::get_singleton()->is_editor_hint() && script.is_valid()) {
+		// Should be called in the editor only and not at runtime,
+		// otherwise it can cause problems because of missing instance state support.
 		script->update_exports();
 	}
 
