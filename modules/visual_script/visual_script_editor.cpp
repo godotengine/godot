@@ -2044,19 +2044,17 @@ void VisualScriptEditor::drop_data_fw(const Point2 &p_point, const Variant &p_da
 		return;
 	}
 
+	Vector2 ofs = (graph->get_scroll_ofs() + p_point) / graph->get_zoom();
+	if (graph->is_using_snap()) {
+		int snap = graph->get_snap();
+		ofs = ofs.snapped(Vector2(snap, snap));
+	}
+	ofs /= EDSCALE;
+
 	if (String(d["type"]) == "visual_script_node_drag") {
 		if (!d.has("node_type") || String(d["node_type"]) == "Null") {
 			return;
 		}
-
-		Vector2 ofs = graph->get_scroll_ofs() + p_point;
-
-		if (graph->is_using_snap()) {
-			int snap = graph->get_snap();
-			ofs = ofs.snapped(Vector2(snap, snap));
-		}
-
-		ofs /= EDSCALE;
 
 		int new_id = _create_new_node_from_name(d["node_type"], ofs);
 
@@ -2073,14 +2071,6 @@ void VisualScriptEditor::drop_data_fw(const Point2 &p_point, const Variant &p_da
 #else
 		bool use_set = Input::get_singleton()->is_key_pressed(KEY_CTRL);
 #endif
-		Vector2 ofs = graph->get_scroll_ofs() + p_point;
-		if (graph->is_using_snap()) {
-			int snap = graph->get_snap();
-			ofs = ofs.snapped(Vector2(snap, snap));
-		}
-
-		ofs /= EDSCALE;
-
 		Ref<VisualScriptNode> vnode;
 		if (use_set) {
 			Ref<VisualScriptVariableSet> vnodes;
@@ -2111,14 +2101,6 @@ void VisualScriptEditor::drop_data_fw(const Point2 &p_point, const Variant &p_da
 	}
 
 	if (String(d["type"]) == "visual_script_function_drag") {
-		Vector2 ofs = graph->get_scroll_ofs() + p_point;
-		if (graph->is_using_snap()) {
-			int snap = graph->get_snap();
-			ofs = ofs.snapped(Vector2(snap, snap));
-		}
-
-		ofs /= EDSCALE;
-
 		Ref<VisualScriptFunctionCall> vnode;
 		vnode.instance();
 		vnode->set_call_mode(VisualScriptFunctionCall::CALL_MODE_SELF);
@@ -2143,14 +2125,6 @@ void VisualScriptEditor::drop_data_fw(const Point2 &p_point, const Variant &p_da
 	}
 
 	if (String(d["type"]) == "visual_script_signal_drag") {
-		Vector2 ofs = graph->get_scroll_ofs() + p_point;
-		if (graph->is_using_snap()) {
-			int snap = graph->get_snap();
-			ofs = ofs.snapped(Vector2(snap, snap));
-		}
-
-		ofs /= EDSCALE;
-
 		Ref<VisualScriptEmitSignal> vnode;
 		vnode.instance();
 		vnode->set_signal(d["signal"]);
@@ -2172,14 +2146,6 @@ void VisualScriptEditor::drop_data_fw(const Point2 &p_point, const Variant &p_da
 	}
 
 	if (String(d["type"]) == "resource") {
-		Vector2 ofs = graph->get_scroll_ofs() + p_point;
-		if (graph->is_using_snap()) {
-			int snap = graph->get_snap();
-			ofs = ofs.snapped(Vector2(snap, snap));
-		}
-
-		ofs /= EDSCALE;
-
 		Ref<VisualScriptPreload> prnode;
 		prnode.instance();
 		prnode->set_preload(d["resource"]);
@@ -2201,13 +2167,6 @@ void VisualScriptEditor::drop_data_fw(const Point2 &p_point, const Variant &p_da
 	}
 
 	if (String(d["type"]) == "files") {
-		Vector2 ofs = graph->get_scroll_ofs() + p_point;
-		if (graph->is_using_snap()) {
-			int snap = graph->get_snap();
-			ofs = ofs.snapped(Vector2(snap, snap));
-		}
-
-		ofs /= EDSCALE;
 
 		Array files = d["files"];
 
@@ -2264,52 +2223,36 @@ void VisualScriptEditor::drop_data_fw(const Point2 &p_point, const Variant &p_da
 
 		Array nodes = d["nodes"];
 
-		Vector2 ofs = graph->get_scroll_ofs() + p_point;
-
-		if (graph->is_using_snap()) {
-			int snap = graph->get_snap();
-			ofs = ofs.snapped(Vector2(snap, snap));
-		}
-		ofs /= EDSCALE;
 
 		undo_redo->create_action(TTR("Add Node(s) From Tree"));
 		int base_id = script->get_available_id();
 
-		if (nodes.size() > 1) {
-			use_node = true;
-		}
+		if (use_node || nodes.size() > 1) {
+			for (int i = 0; i < nodes.size(); i++) {
+				NodePath np = nodes[i];
+				Node *node = get_node(np);
+				if (!node) {
+					continue;
+				}
 
-		for (int i = 0; i < nodes.size(); i++) {
-			NodePath np = nodes[i];
-			Node *node = get_node(np);
-			if (!node) {
-				continue;
-			}
+				Ref<VisualScriptNode> n;
 
-			Ref<VisualScriptNode> n;
-
-			if (use_node) {
 				Ref<VisualScriptSceneNode> scene_node;
 				scene_node.instance();
 				scene_node->set_node_path(sn->get_path_to(node));
 				n = scene_node;
-			} else {
-				// ! Doesn't work properly.
-				Ref<VisualScriptFunctionCall> call;
-				call.instance();
-				call->set_call_mode(VisualScriptFunctionCall::CALL_MODE_NODE_PATH);
-				call->set_base_path(sn->get_path_to(node));
-				call->set_base_type(node->get_class());
-				n = call;
-				method_select->select_from_instance(node, "", true, node->get_class());
-				selecting_method_id = base_id;
+
+				undo_redo->add_do_method(script.ptr(), "add_node", base_id, n, ofs);
+				undo_redo->add_undo_method(script.ptr(), "remove_node", base_id);
+
+				base_id++;
+				ofs += Vector2(25, 25);
 			}
 
-			undo_redo->add_do_method(script.ptr(), "add_node", base_id, n, ofs);
-			undo_redo->add_undo_method(script.ptr(), "remove_node", base_id);
-
-			base_id++;
-			ofs += Vector2(25, 25);
+		} else {
+			NodePath np = nodes[0];
+			Node *node = get_node(np);
+			new_connect_node_select->select_from_instance(node, "", false, node->get_class());
 		}
 		undo_redo->add_do_method(this, "_update_graph");
 		undo_redo->add_undo_method(this, "_update_graph");
@@ -2434,6 +2377,7 @@ void VisualScriptEditor::drop_data_fw(const Point2 &p_point, const Variant &p_da
 	}
 }
 
+// Depresiated ??
 void VisualScriptEditor::_selected_method(const String &p_method, const String &p_type, const bool p_connecting) {
 	Ref<VisualScriptFunctionCall> vsfc = script->get_node(selecting_method_id);
 	if (!vsfc.is_valid()) {
@@ -2441,6 +2385,7 @@ void VisualScriptEditor::_selected_method(const String &p_method, const String &
 	}
 	vsfc->set_function(p_method);
 }
+// ?? Depresiated
 
 void VisualScriptEditor::_draw_color_over_button(Object *obj, Color p_color) {
 	Button *button = Object::cast_to<Button>(obj);
@@ -3235,18 +3180,62 @@ void VisualScriptEditor::_selected_connect_node(const String &p_text, const Stri
 	if (p_category == String("method")) {
 		Ref<VisualScriptFunctionCall> n;
 		n.instance();
+		if (!source_path.is_empty()) {
+			if (source_path == ".") {
+				n->set_call_mode(VisualScriptFunctionCall::CALL_MODE_SELF);
+			} else {
+				n->set_call_mode(VisualScriptFunctionCall::CALL_MODE_NODE_PATH);
+				n->set_base_path(source_path);
+			}
+		}
+		if (source_node) {
+			n->set_base_type(source_node->get_class());
+			if (source_node->get_script_instance()) {
+				n->set_base_script(source_node->get_script_instance()->get_script()->get_path());
+			}
+		}
 		vnode = n;
 	} else if (p_category == String("set")) {
 		Ref<VisualScriptPropertySet> n;
 		n.instance();
+		if (!source_path.is_empty()) {
+			if (source_path == ".") {
+				n->set_call_mode(VisualScriptPropertySet::CALL_MODE_SELF);
+			} else {
+				n->set_call_mode(VisualScriptPropertySet::CALL_MODE_NODE_PATH);
+				n->set_base_path(source_path);
+			}
+		}
+		if (source_node) {
+			n->set_base_type(source_node->get_class());
+			if (source_node->get_script_instance()) {
+				n->set_base_script(source_node->get_script_instance()->get_script()->get_path());
+			}
+		}
 		vnode = n;
 		script_prop_set = n;
 	} else if (p_category == String("get")) {
 		Ref<VisualScriptPropertyGet> n;
 		n.instance();
 		n->set_property(p_text);
+		if (!source_path.is_empty()) {
+			if (source_path == ".") {
+				n->set_call_mode(VisualScriptPropertyGet::CALL_MODE_SELF);
+			} else {
+				n->set_call_mode(VisualScriptPropertyGet::CALL_MODE_NODE_PATH);
+				n->set_base_path(source_path);
+			}
+		}
+		if (source_node) {
+			n->set_base_type(source_node->get_class());
+			if (source_node->get_script_instance()) {
+				n->set_base_script(source_node->get_script_instance()->get_script()->get_path());
+			}
+		}
 		vnode = n;
 	}
+	source_path = String();
+	source_node = NULL;
 
 	if (p_category == String("action")) {
 		if (p_text == "VisualScriptCondition") {

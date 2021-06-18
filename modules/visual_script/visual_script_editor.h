@@ -179,6 +179,8 @@ class VisualScriptEditor : public ScriptEditorBase {
 
 	void connect_data(Ref<VisualScriptNode> vnode_old, Ref<VisualScriptNode> vnode, int new_id);
 
+	NodePath source_path;
+	Node *source_node;
 	void _selected_connect_node(const String &p_text, const String &p_category, const bool p_connecting = true);
 	void connect_seq(Ref<VisualScriptNode> vnode_old, Ref<VisualScriptNode> vnode_new, int new_id);
 
