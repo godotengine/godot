@@ -181,6 +181,7 @@ class VisualScriptEditor : public ScriptEditorBase {
 
 	NodePath source_path;
 	Node *source_node;
+	Vector2 drop_position;
 	void _selected_connect_node(const String &p_text, const String &p_category, const bool p_connecting = true);
 	void connect_seq(Ref<VisualScriptNode> vnode_old, Ref<VisualScriptNode> vnode_new, int new_id);
 

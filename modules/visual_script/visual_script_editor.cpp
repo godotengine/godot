@@ -2252,6 +2252,7 @@ void VisualScriptEditor::drop_data_fw(const Point2 &p_point, const Variant &p_da
 		} else {
 			NodePath np = nodes[0];
 			Node *node = get_node(np);
+			drop_position = ofs;
 			new_connect_node_select->select_from_instance(node, "", false, node->get_class());
 		}
 		undo_redo->add_do_method(this, "_update_graph");
@@ -3106,6 +3107,11 @@ void VisualScriptEditor::_selected_connect_node(const String &p_text, const Stri
 	}
 	ofs /= EDSCALE;
 	ofs /= graph->get_zoom();
+
+	if (drop_position != Vector2() ) {
+		ofs = drop_position;
+	}
+	drop_position = Vector2();
 
 	Set<int> vn;
 
