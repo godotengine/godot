@@ -130,6 +130,7 @@ protected:
 	Mode mode = MODE_DYNAMIC;
 
 	real_t mass = 1.0;
+	Vector3 inertia;
 	Ref<PhysicsMaterial> physics_material_override;
 
 	Vector3 linear_velocity;
@@ -200,6 +201,9 @@ public:
 	real_t get_mass() const;
 
 	virtual real_t get_inverse_mass() const override { return 1.0 / mass; }
+
+	void set_inertia(const Vector3 &p_inertia);
+	Vector3 get_inertia() const;
 
 	void set_physics_material_override(const Ref<PhysicsMaterial> &p_physics_material_override);
 	Ref<PhysicsMaterial> get_physics_material_override() const;

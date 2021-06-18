@@ -68,13 +68,13 @@ static inline real_t k_scalar(Body2DSW *a, Body2DSW *b, const Vector2 &rA, const
 
 	{
 		value += a->get_inv_mass();
-		real_t rcn = rA.cross(n);
+		real_t rcn = (rA - a->get_center_of_mass()).cross(n);
 		value += a->get_inv_inertia() * rcn * rcn;
 	}
 
 	if (b) {
 		value += b->get_inv_mass();
-		real_t rcn = rB.cross(n);
+		real_t rcn = (rB - b->get_center_of_mass()).cross(n);
 		value += b->get_inv_inertia() * rcn * rcn;
 	}
 
@@ -83,9 +83,9 @@ static inline real_t k_scalar(Body2DSW *a, Body2DSW *b, const Vector2 &rA, const
 
 static inline Vector2
 relative_velocity(Body2DSW *a, Body2DSW *b, Vector2 rA, Vector2 rB) {
-	Vector2 sum = a->get_linear_velocity() - rA.orthogonal() * a->get_angular_velocity();
+	Vector2 sum = a->get_linear_velocity() - (rA - a->get_center_of_mass()).orthogonal() * a->get_angular_velocity();
 	if (b) {
-		return (b->get_linear_velocity() - rB.orthogonal() * b->get_angular_velocity()) - sum;
+		return (b->get_linear_velocity() - (rB - b->get_center_of_mass()).orthogonal() * b->get_angular_velocity()) - sum;
 	} else {
 		return -sum;
 	}
@@ -172,11 +172,11 @@ bool PinJoint2DSW::pre_solve(real_t p_step) {
 
 void PinJoint2DSW::solve(real_t p_step) {
 	// compute relative velocity
-	Vector2 vA = A->get_linear_velocity() - custom_cross(rA, A->get_angular_velocity());
+	Vector2 vA = A->get_linear_velocity() - custom_cross(rA - A->get_center_of_mass(), A->get_angular_velocity());
 
 	Vector2 rel_vel;
 	if (B) {
-		rel_vel = B->get_linear_velocity() - custom_cross(rB, B->get_angular_velocity()) - vA;
+		rel_vel = B->get_linear_velocity() - custom_cross(rB - B->get_center_of_mass(), B->get_angular_velocity()) - vA;
 	} else {
 		rel_vel = -vA;
 	}
@@ -237,6 +237,9 @@ k_tensor(Body2DSW *a, Body2DSW *b, Vector2 r1, Vector2 r2, Vector2 *k1, Vector2 
 	k12 = 0.0f;
 	k21 = 0.0f;
 	k22 = m_sum;
+
+	r1 -= a->get_center_of_mass();
+	r2 -= b->get_center_of_mass();
 
 	// add the influence from r1
 	real_t a_i_inv = a->get_inv_inertia();

@@ -118,6 +118,7 @@ private:
 	Mode mode = MODE_DYNAMIC;
 
 	real_t mass = 1.0;
+	real_t inertia = 0.0;
 	Ref<PhysicsMaterial> physics_material_override;
 	real_t gravity_scale = 1.0;
 	real_t linear_damp = -1.0;
