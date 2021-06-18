@@ -172,6 +172,54 @@ public:
 	static Variant::Type get_return_type() { return GetTypeInfo<R>::VARIANT_TYPE; }
 };
 
+template <>
+class OperatorEvaluatorDivNZ<Vector2i, Vector2i, Vector2i> {
+public:
+	static void evaluate(const Variant &p_left, const Variant &p_right, Variant *r_ret, bool &r_valid) {
+		const Vector2i &a = *VariantGetInternalPtr<Vector2i>::get_ptr(&p_left);
+		const Vector2i &b = *VariantGetInternalPtr<Vector2i>::get_ptr(&p_right);
+		if (unlikely(b.x == 0 || b.y == 0)) {
+			r_valid = false;
+			*r_ret = "Division by zero error";
+			return;
+		}
+		*r_ret = a / b;
+		r_valid = true;
+	}
+	static void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret) {
+		VariantTypeChanger<Vector2i>::change(r_ret);
+		*VariantGetInternalPtr<Vector2i>::get_ptr(r_ret) = *VariantGetInternalPtr<Vector2i>::get_ptr(left) / *VariantGetInternalPtr<Vector2i>::get_ptr(right);
+	}
+	static void ptr_evaluate(const void *left, const void *right, void *r_ret) {
+		PtrToArg<Vector2i>::encode(PtrToArg<Vector2i>::convert(left) / PtrToArg<Vector2i>::convert(right), r_ret);
+	}
+	static Variant::Type get_return_type() { return GetTypeInfo<Vector2i>::VARIANT_TYPE; }
+};
+
+template <>
+class OperatorEvaluatorDivNZ<Vector3i, Vector3i, Vector3i> {
+public:
+	static void evaluate(const Variant &p_left, const Variant &p_right, Variant *r_ret, bool &r_valid) {
+		const Vector3i &a = *VariantGetInternalPtr<Vector3i>::get_ptr(&p_left);
+		const Vector3i &b = *VariantGetInternalPtr<Vector3i>::get_ptr(&p_right);
+		if (unlikely(b.x == 0 || b.y == 0 || b.z == 0)) {
+			r_valid = false;
+			*r_ret = "Division by zero error";
+			return;
+		}
+		*r_ret = a / b;
+		r_valid = true;
+	}
+	static void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret) {
+		VariantTypeChanger<Vector3i>::change(r_ret);
+		*VariantGetInternalPtr<Vector3i>::get_ptr(r_ret) = *VariantGetInternalPtr<Vector3i>::get_ptr(left) / *VariantGetInternalPtr<Vector3i>::get_ptr(right);
+	}
+	static void ptr_evaluate(const void *left, const void *right, void *r_ret) {
+		PtrToArg<Vector3i>::encode(PtrToArg<Vector3i>::convert(left) / PtrToArg<Vector3i>::convert(right), r_ret);
+	}
+	static Variant::Type get_return_type() { return GetTypeInfo<Vector3i>::VARIANT_TYPE; }
+};
+
 template <class R, class A, class B>
 class OperatorEvaluatorMod {
 public:
@@ -213,6 +261,54 @@ public:
 		PtrToArg<R>::encode(PtrToArg<A>::convert(left) % PtrToArg<B>::convert(right), r_ret);
 	}
 	static Variant::Type get_return_type() { return GetTypeInfo<R>::VARIANT_TYPE; }
+};
+
+template <>
+class OperatorEvaluatorModNZ<Vector2i, Vector2i, Vector2i> {
+public:
+	static void evaluate(const Variant &p_left, const Variant &p_right, Variant *r_ret, bool &r_valid) {
+		const Vector2i &a = *VariantGetInternalPtr<Vector2i>::get_ptr(&p_left);
+		const Vector2i &b = *VariantGetInternalPtr<Vector2i>::get_ptr(&p_right);
+		if (unlikely(b.x == 0 || b.y == 0)) {
+			r_valid = false;
+			*r_ret = "Module by zero error";
+			return;
+		}
+		*r_ret = a % b;
+		r_valid = true;
+	}
+	static void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret) {
+		VariantTypeChanger<Vector2i>::change(r_ret);
+		*VariantGetInternalPtr<Vector2i>::get_ptr(r_ret) = *VariantGetInternalPtr<Vector2i>::get_ptr(left) % *VariantGetInternalPtr<Vector2i>::get_ptr(right);
+	}
+	static void ptr_evaluate(const void *left, const void *right, void *r_ret) {
+		PtrToArg<Vector2i>::encode(PtrToArg<Vector2i>::convert(left) / PtrToArg<Vector2i>::convert(right), r_ret);
+	}
+	static Variant::Type get_return_type() { return GetTypeInfo<Vector2i>::VARIANT_TYPE; }
+};
+
+template <>
+class OperatorEvaluatorModNZ<Vector3i, Vector3i, Vector3i> {
+public:
+	static void evaluate(const Variant &p_left, const Variant &p_right, Variant *r_ret, bool &r_valid) {
+		const Vector3i &a = *VariantGetInternalPtr<Vector3i>::get_ptr(&p_left);
+		const Vector3i &b = *VariantGetInternalPtr<Vector3i>::get_ptr(&p_right);
+		if (unlikely(b.x == 0 || b.y == 0 || b.z == 0)) {
+			r_valid = false;
+			*r_ret = "Module by zero error";
+			return;
+		}
+		*r_ret = a % b;
+		r_valid = true;
+	}
+	static void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret) {
+		VariantTypeChanger<Vector3i>::change(r_ret);
+		*VariantGetInternalPtr<Vector3i>::get_ptr(r_ret) = *VariantGetInternalPtr<Vector3i>::get_ptr(left) % *VariantGetInternalPtr<Vector3i>::get_ptr(right);
+	}
+	static void ptr_evaluate(const void *left, const void *right, void *r_ret) {
+		PtrToArg<Vector3i>::encode(PtrToArg<Vector3i>::convert(left) % PtrToArg<Vector3i>::convert(right), r_ret);
+	}
+	static Variant::Type get_return_type() { return GetTypeInfo<Vector3i>::VARIANT_TYPE; }
 };
 
 template <class R, class A>
@@ -1500,7 +1596,7 @@ void Variant::_register_variant_operators() {
 	register_op<OperatorEvaluatorDiv<Vector2, Vector2, double>>(Variant::OP_DIVIDE, Variant::VECTOR2, Variant::FLOAT);
 	register_op<OperatorEvaluatorDiv<Vector2, Vector2, int64_t>>(Variant::OP_DIVIDE, Variant::VECTOR2, Variant::INT);
 
-	register_op<OperatorEvaluatorDiv<Vector2i, Vector2i, Vector2i>>(Variant::OP_DIVIDE, Variant::VECTOR2I, Variant::VECTOR2I);
+	register_op<OperatorEvaluatorDivNZ<Vector2i, Vector2i, Vector2i>>(Variant::OP_DIVIDE, Variant::VECTOR2I, Variant::VECTOR2I);
 	register_op<OperatorEvaluatorDivNZ<Vector2i, Vector2i, double>>(Variant::OP_DIVIDE, Variant::VECTOR2I, Variant::FLOAT);
 	register_op<OperatorEvaluatorDivNZ<Vector2i, Vector2i, int64_t>>(Variant::OP_DIVIDE, Variant::VECTOR2I, Variant::INT);
 
@@ -1512,7 +1608,7 @@ void Variant::_register_variant_operators() {
 	register_op<OperatorEvaluatorDiv<Vector3, Vector3, double>>(Variant::OP_DIVIDE, Variant::VECTOR3, Variant::FLOAT);
 	register_op<OperatorEvaluatorDiv<Vector3, Vector3, int64_t>>(Variant::OP_DIVIDE, Variant::VECTOR3, Variant::INT);
 
-	register_op<OperatorEvaluatorDiv<Vector3i, Vector3i, Vector3i>>(Variant::OP_DIVIDE, Variant::VECTOR3I, Variant::VECTOR3I);
+	register_op<OperatorEvaluatorDivNZ<Vector3i, Vector3i, Vector3i>>(Variant::OP_DIVIDE, Variant::VECTOR3I, Variant::VECTOR3I);
 	register_op<OperatorEvaluatorDivNZ<Vector3i, Vector3i, double>>(Variant::OP_DIVIDE, Variant::VECTOR3I, Variant::FLOAT);
 	register_op<OperatorEvaluatorDivNZ<Vector3i, Vector3i, int64_t>>(Variant::OP_DIVIDE, Variant::VECTOR3I, Variant::INT);
 
@@ -1524,10 +1620,10 @@ void Variant::_register_variant_operators() {
 	register_op<OperatorEvaluatorDiv<Color, Color, int64_t>>(Variant::OP_DIVIDE, Variant::COLOR, Variant::INT);
 
 	register_op<OperatorEvaluatorModNZ<int64_t, int64_t, int64_t>>(Variant::OP_MODULE, Variant::INT, Variant::INT);
-	register_op<OperatorEvaluatorMod<Vector2i, Vector2i, Vector2i>>(Variant::OP_MODULE, Variant::VECTOR2I, Variant::VECTOR2I);
+	register_op<OperatorEvaluatorModNZ<Vector2i, Vector2i, Vector2i>>(Variant::OP_MODULE, Variant::VECTOR2I, Variant::VECTOR2I);
 	register_op<OperatorEvaluatorModNZ<Vector2i, Vector2i, int64_t>>(Variant::OP_MODULE, Variant::VECTOR2I, Variant::INT);
 
-	register_op<OperatorEvaluatorMod<Vector3i, Vector3i, Vector3i>>(Variant::OP_MODULE, Variant::VECTOR3I, Variant::VECTOR3I);
+	register_op<OperatorEvaluatorModNZ<Vector3i, Vector3i, Vector3i>>(Variant::OP_MODULE, Variant::VECTOR3I, Variant::VECTOR3I);
 	register_op<OperatorEvaluatorModNZ<Vector3i, Vector3i, int64_t>>(Variant::OP_MODULE, Variant::VECTOR3I, Variant::INT);
 
 	register_op<OperatorEvaluatorStringModNil>(Variant::OP_MODULE, Variant::STRING, Variant::NIL);
