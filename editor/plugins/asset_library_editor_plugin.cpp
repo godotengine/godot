@@ -230,7 +230,7 @@ void EditorAssetLibraryItemDescription::configure(const String &p_title, int p_a
 	description->add_text(TTR("View Files"));
 	description->pop();
 	description->add_text("\n" + TTR("Description:") + "\n\n");
-	description->append_bbcode(p_description);
+	description->append_text(p_description);
 	set_title(p_title);
 }
 

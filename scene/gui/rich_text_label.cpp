@@ -1366,8 +1366,8 @@ void RichTextLabel::_notification(int p_what) {
 		} break;
 		case NOTIFICATION_THEME_CHANGED:
 		case NOTIFICATION_ENTER_TREE: {
-			if (bbcode != "") {
-				set_bbcode(bbcode);
+			if (text != "") {
+				set_text(text);
 			}
 
 			main->first_invalid_line = 0; //invalidate ALL
@@ -2713,10 +2713,10 @@ bool RichTextLabel::is_scroll_following() const {
 
 Error RichTextLabel::parse_bbcode(const String &p_bbcode) {
 	clear();
-	return append_bbcode(p_bbcode);
+	return append_text(p_bbcode);
 }
 
-Error RichTextLabel::append_bbcode(const String &p_bbcode) {
+Error RichTextLabel::append_text(const String &p_bbcode) {
 	int pos = 0;
 
 	List<String> tag_stack;
@@ -3717,8 +3717,8 @@ int RichTextLabel::get_selection_to() const {
 	return selection.to_frame->lines[selection.to_line].char_offset + selection.to_char - 1;
 }
 
-void RichTextLabel::set_bbcode(const String &p_bbcode) {
-	bbcode = p_bbcode;
+void RichTextLabel::set_text(const String &p_bbcode) {
+	text = p_bbcode;
 	if (is_inside_tree() && use_bbcode) {
 		parse_bbcode(p_bbcode);
 	} else { // raw text
@@ -3727,8 +3727,8 @@ void RichTextLabel::set_bbcode(const String &p_bbcode) {
 	}
 }
 
-String RichTextLabel::get_bbcode() const {
-	return bbcode;
+String RichTextLabel::get_text() const {
+	return text;
 }
 
 void RichTextLabel::set_use_bbcode(bool p_enable) {
@@ -3736,15 +3736,15 @@ void RichTextLabel::set_use_bbcode(bool p_enable) {
 		return;
 	}
 	use_bbcode = p_enable;
-	set_bbcode(bbcode);
 	notify_property_list_changed();
+	set_text(text);
 }
 
 bool RichTextLabel::is_using_bbcode() const {
 	return use_bbcode;
 }
 
-String RichTextLabel::get_text() {
+String RichTextLabel::get_parsed_text() const {
 	String text = "";
 	Item *it = main;
 	while (it) {
@@ -3761,11 +3761,6 @@ String RichTextLabel::get_text() {
 		it = _get_next_item(it, true);
 	}
 	return text;
-}
-
-void RichTextLabel::set_text(const String &p_string) {
-	clear();
-	add_text(p_string);
 }
 
 void RichTextLabel::set_text_direction(Control::TextDirection p_text_direction) {
@@ -3846,8 +3841,8 @@ void RichTextLabel::set_effects(const Vector<Variant> &effects) {
 		custom_effects.push_back(effect);
 	}
 
-	if ((bbcode != "") && use_bbcode) {
-		parse_bbcode(bbcode);
+	if ((text != "") && use_bbcode) {
+		parse_bbcode(text);
 	}
 }
 
@@ -3865,8 +3860,8 @@ void RichTextLabel::install_effect(const Variant effect) {
 
 	if (rteffect.is_valid()) {
 		custom_effects.push_back(effect);
-		if ((bbcode != "") && use_bbcode) {
-			parse_bbcode(bbcode);
+		if ((text != "") && use_bbcode) {
+			parse_bbcode(text);
 		}
 	}
 }
@@ -3879,15 +3874,9 @@ int RichTextLabel::get_content_height() const {
 	return total_height;
 }
 
-void RichTextLabel::_validate_property(PropertyInfo &property) const {
-	if (!use_bbcode && property.name == "bbcode_text") {
-		property.usage = PROPERTY_USAGE_NOEDITOR;
-	}
-}
-
 void RichTextLabel::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_gui_input"), &RichTextLabel::_gui_input);
-	ClassDB::bind_method(D_METHOD("get_text"), &RichTextLabel::get_text);
+	ClassDB::bind_method(D_METHOD("get_parsed_text"), &RichTextLabel::get_parsed_text);
 	ClassDB::bind_method(D_METHOD("add_text", "text"), &RichTextLabel::add_text);
 	ClassDB::bind_method(D_METHOD("set_text", "text"), &RichTextLabel::set_text);
 	ClassDB::bind_method(D_METHOD("add_image", "image", "width", "height", "color", "inline_align"), &RichTextLabel::add_image, DEFVAL(0), DEFVAL(0), DEFVAL(Color(1.0, 1.0, 1.0)), DEFVAL(VALIGN_TOP));
@@ -3963,10 +3952,9 @@ void RichTextLabel::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_selected_text"), &RichTextLabel::get_selected_text);
 
 	ClassDB::bind_method(D_METHOD("parse_bbcode", "bbcode"), &RichTextLabel::parse_bbcode);
-	ClassDB::bind_method(D_METHOD("append_bbcode", "bbcode"), &RichTextLabel::append_bbcode);
+	ClassDB::bind_method(D_METHOD("append_text", "bbcode"), &RichTextLabel::append_text);
 
-	ClassDB::bind_method(D_METHOD("set_bbcode", "text"), &RichTextLabel::set_bbcode);
-	ClassDB::bind_method(D_METHOD("get_bbcode"), &RichTextLabel::get_bbcode);
+	ClassDB::bind_method(D_METHOD("get_text"), &RichTextLabel::get_text);
 
 	ClassDB::bind_method(D_METHOD("set_visible_characters", "amount"), &RichTextLabel::set_visible_characters);
 	ClassDB::bind_method(D_METHOD("get_visible_characters"), &RichTextLabel::get_visible_characters);
@@ -3993,16 +3981,13 @@ void RichTextLabel::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_effects"), &RichTextLabel::get_effects);
 	ClassDB::bind_method(D_METHOD("install_effect", "effect"), &RichTextLabel::install_effect);
 
-	ADD_GROUP("BBCode", "bbcode_");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "bbcode_enabled"), "set_use_bbcode", "is_using_bbcode");
-	ADD_PROPERTY(PropertyInfo(Variant::STRING, "bbcode_text", PROPERTY_HINT_MULTILINE_TEXT), "set_bbcode", "get_bbcode");
-
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "visible_characters", PROPERTY_HINT_RANGE, "-1,128000,1"), "set_visible_characters", "get_visible_characters");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "percent_visible", PROPERTY_HINT_RANGE, "0,1,0.001"), "set_percent_visible", "get_percent_visible");
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "meta_underlined"), "set_meta_underline", "is_meta_underlined");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "tab_size", PROPERTY_HINT_RANGE, "0,24,1"), "set_tab_size", "get_tab_size");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "text", PROPERTY_HINT_MULTILINE_TEXT), "set_text", "get_text");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "bbcode_enabled"), "set_use_bbcode", "is_using_bbcode");
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "fit_content_height"), "set_fit_content_height", "is_fit_content_height_enabled");
 
