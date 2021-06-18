@@ -87,6 +87,7 @@ class SpriteFramesEditor : public HSplitContainer {
 	Button *split_sheet_zoom_in;
 	EditorFileDialog *file_split_sheet;
 	Set<int> frames_selected;
+	Set<int> frames_toggled_by_mouse_hover;
 	int last_frame_selected;
 
 	float scale_ratio;

@@ -103,17 +103,16 @@ void SpriteFramesEditor::_sheet_preview_draw() {
 }
 
 void SpriteFramesEditor::_sheet_preview_input(const Ref<InputEvent> &p_event) {
-	Ref<InputEventMouseButton> mb = p_event;
-
+	const Ref<InputEventMouseButton> mb = p_event;
 	if (mb.is_valid() && mb->is_pressed() && mb->get_button_index() == MOUSE_BUTTON_LEFT) {
-		Size2i size = split_sheet_preview->get_size();
-		int h = split_sheet_h->get_value();
-		int v = split_sheet_v->get_value();
+		const Size2i size = split_sheet_preview->get_size();
+		const int h = split_sheet_h->get_value();
+		const int v = split_sheet_v->get_value();
 
-		int x = CLAMP(int(mb->get_position().x) * h / size.width, 0, h - 1);
-		int y = CLAMP(int(mb->get_position().y) * v / size.height, 0, v - 1);
+		const int x = CLAMP(int(mb->get_position().x) * h / size.width, 0, h - 1);
+		const int y = CLAMP(int(mb->get_position().y) * v / size.height, 0, v - 1);
 
-		int idx = h * y + x;
+		const int idx = h * y + x;
 
 		if (mb->is_shift_pressed() && last_frame_selected >= 0) {
 			//select multiple
@@ -124,6 +123,9 @@ void SpriteFramesEditor::_sheet_preview_input(const Ref<InputEvent> &p_event) {
 			}
 
 			for (int i = from; i <= to; i++) {
+				// Prevent double-toggling the same frame when moving the mouse when the mouse button is still held.
+				frames_toggled_by_mouse_hover.insert(idx);
+
 				if (mb->is_ctrl_pressed()) {
 					frames_selected.erase(i);
 				} else {
@@ -131,6 +133,9 @@ void SpriteFramesEditor::_sheet_preview_input(const Ref<InputEvent> &p_event) {
 				}
 			}
 		} else {
+			// Prevent double-toggling the same frame when moving the mouse when the mouse button is still held.
+			frames_toggled_by_mouse_hover.insert(idx);
+
 			if (frames_selected.has(idx)) {
 				frames_selected.erase(idx);
 			} else {
@@ -140,6 +145,39 @@ void SpriteFramesEditor::_sheet_preview_input(const Ref<InputEvent> &p_event) {
 
 		last_frame_selected = idx;
 		split_sheet_preview->update();
+	}
+
+	if (mb.is_valid() && !mb->is_pressed() && mb->get_button_index() == MOUSE_BUTTON_LEFT) {
+		frames_toggled_by_mouse_hover.clear();
+	}
+
+	const Ref<InputEventMouseMotion> mm = p_event;
+	if (mm.is_valid() && mm->get_button_mask() & MOUSE_BUTTON_MASK_LEFT) {
+		// Select by holding down the mouse button on frames.
+		const Size2i size = split_sheet_preview->get_size();
+		const int h = split_sheet_h->get_value();
+		const int v = split_sheet_v->get_value();
+
+		const int x = CLAMP(int(mm->get_position().x) * h / size.width, 0, h - 1);
+		const int y = CLAMP(int(mm->get_position().y) * v / size.height, 0, v - 1);
+
+		const int idx = h * y + x;
+
+		if (!frames_toggled_by_mouse_hover.has(idx)) {
+			// Only allow toggling each tile once per mouse hold.
+			// Otherwise, the selection would constantly "flicker" in and out when moving the mouse cursor.
+			// The mouse button must be released before it can be toggled again.
+			frames_toggled_by_mouse_hover.insert(idx);
+
+			if (frames_selected.has(idx)) {
+				frames_selected.erase(idx);
+			} else {
+				frames_selected.insert(idx);
+			}
+
+			last_frame_selected = idx;
+			split_sheet_preview->update();
+		}
 	}
 }
 
