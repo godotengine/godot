@@ -416,7 +416,7 @@
 				Returns [code]true[/code] if the [NodePath] points to a valid node and its subname points to a valid resource, e.g. [code]Area2D/CollisionShape2D:shape[/code]. Properties with a non-[Resource] type (e.g. nodes or primitive math types) are not considered resources.
 			</description>
 		</method>
-		<method name="is_a_parent_of" qualifiers="const">
+		<method name="is_ancestor_of" qualifiers="const">
 			<return type="bool">
 			</return>
 			<argument index="0" name="node" type="Node">

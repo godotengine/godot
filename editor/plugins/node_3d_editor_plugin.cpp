@@ -6370,7 +6370,7 @@ void Node3DEditor::_request_gizmo(Object *p_obj) {
 	if (!sp) {
 		return;
 	}
-	if (editor->get_edited_scene() && (sp == editor->get_edited_scene() || (sp->get_owner() && editor->get_edited_scene()->is_a_parent_of(sp)))) {
+	if (editor->get_edited_scene() && (sp == editor->get_edited_scene() || (sp->get_owner() && editor->get_edited_scene()->is_ancestor_of(sp)))) {
 		Ref<EditorNode3DGizmo> seg;
 
 		for (int i = 0; i < gizmo_plugins_by_priority.size(); ++i) {
@@ -6444,7 +6444,7 @@ void Node3DEditor::_toggle_maximize_view(Object *p_viewport) {
 }
 
 void Node3DEditor::_node_added(Node *p_node) {
-	if (EditorNode::get_singleton()->get_scene_root()->is_a_parent_of(p_node)) {
+	if (EditorNode::get_singleton()->get_scene_root()->is_ancestor_of(p_node)) {
 		if (Object::cast_to<WorldEnvironment>(p_node)) {
 			world_env_count++;
 			if (world_env_count == 1) {
@@ -6460,7 +6460,7 @@ void Node3DEditor::_node_added(Node *p_node) {
 }
 
 void Node3DEditor::_node_removed(Node *p_node) {
-	if (EditorNode::get_singleton()->get_scene_root()->is_a_parent_of(p_node)) {
+	if (EditorNode::get_singleton()->get_scene_root()->is_ancestor_of(p_node)) {
 		if (Object::cast_to<WorldEnvironment>(p_node)) {
 			world_env_count--;
 			if (world_env_count == 0) {

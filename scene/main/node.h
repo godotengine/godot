@@ -279,7 +279,7 @@ public:
 
 	_FORCE_INLINE_ bool is_inside_tree() const { return data.inside_tree; }
 
-	bool is_a_parent_of(const Node *p_node) const;
+	bool is_ancestor_of(const Node *p_node) const;
 	bool is_greater_than(const Node *p_node) const;
 
 	NodePath get_path() const;

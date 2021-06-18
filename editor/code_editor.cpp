@@ -117,7 +117,7 @@ void FindReplaceBar::_unhandled_input(const Ref<InputEvent> &p_event) {
 	}
 
 	Control *focus_owner = get_focus_owner();
-	if (text_editor->has_focus() || (focus_owner && vbc_lineedit->is_a_parent_of(focus_owner))) {
+	if (text_editor->has_focus() || (focus_owner && vbc_lineedit->is_ancestor_of(focus_owner))) {
 		bool accepted = true;
 
 		switch (k->get_keycode()) {
