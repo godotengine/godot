@@ -403,6 +403,7 @@ void Node::set_process_mode(ProcessMode p_mode) {
 	}
 
 	bool prev_can_process = can_process();
+	bool prev_enabled = _is_enabled();
 
 	data.process_mode = p_mode;
 
@@ -417,6 +418,7 @@ void Node::set_process_mode(ProcessMode p_mode) {
 	}
 
 	bool next_can_process = can_process();
+	bool next_enabled = _is_enabled();
 
 	int pause_notification = 0;
 
@@ -426,7 +428,16 @@ void Node::set_process_mode(ProcessMode p_mode) {
 		pause_notification = NOTIFICATION_UNPAUSED;
 	}
 
-	_propagate_process_owner(data.process_owner, pause_notification);
+	int enabled_notification = 0;
+
+	if (prev_enabled && !next_enabled) {
+		enabled_notification = NOTIFICATION_DISABLED;
+	} else if (!prev_enabled && next_enabled) {
+		enabled_notification = NOTIFICATION_ENABLED;
+	}
+
+	_propagate_process_owner(data.process_owner, pause_notification, enabled_notification);
+
 #ifdef TOOLS_ENABLED
 	// This is required for the editor to update the visibility of disabled nodes
 	// It's very expensive during runtime to change, so editor-only
@@ -455,17 +466,21 @@ Node::ProcessMode Node::get_process_mode() const {
 	return data.process_mode;
 }
 
-void Node::_propagate_process_owner(Node *p_owner, int p_notification) {
+void Node::_propagate_process_owner(Node *p_owner, int p_pause_notification, int p_enabled_notification) {
 	data.process_owner = p_owner;
 
-	if (p_notification != 0) {
-		notification(p_notification);
+	if (p_pause_notification != 0) {
+		notification(p_pause_notification);
+	}
+
+	if (p_enabled_notification != 0) {
+		notification(p_enabled_notification);
 	}
 
 	for (int i = 0; i < data.children.size(); i++) {
 		Node *c = data.children[i];
 		if (c->data.process_mode == PROCESS_MODE_INHERIT) {
-			c->_propagate_process_owner(p_owner, p_notification);
+			c->_propagate_process_owner(p_owner, p_pause_notification, p_enabled_notification);
 		}
 	}
 }
@@ -667,6 +682,27 @@ bool Node::_can_process(bool p_paused) const {
 	} else {
 		return process_mode == PROCESS_MODE_PAUSABLE;
 	}
+}
+
+bool Node::_is_enabled() const {
+	ProcessMode process_mode;
+
+	if (data.process_mode == PROCESS_MODE_INHERIT) {
+		if (!data.process_owner) {
+			process_mode = PROCESS_MODE_PAUSABLE;
+		} else {
+			process_mode = data.process_owner->data.process_mode;
+		}
+	} else {
+		process_mode = data.process_mode;
+	}
+
+	return (process_mode != PROCESS_MODE_DISABLED);
+}
+
+bool Node::is_enabled() const {
+	ERR_FAIL_COND_V(!is_inside_tree(), false);
+	return _is_enabled();
 }
 
 float Node::get_physics_process_delta_time() const {
@@ -2628,6 +2664,8 @@ void Node::_bind_methods() {
 	BIND_CONSTANT(NOTIFICATION_INTERNAL_PROCESS);
 	BIND_CONSTANT(NOTIFICATION_INTERNAL_PHYSICS_PROCESS);
 	BIND_CONSTANT(NOTIFICATION_POST_ENTER_TREE);
+	BIND_CONSTANT(NOTIFICATION_DISABLED);
+	BIND_CONSTANT(NOTIFICATION_ENABLED);
 
 	BIND_CONSTANT(NOTIFICATION_EDITOR_PRE_SAVE);
 	BIND_CONSTANT(NOTIFICATION_EDITOR_POST_SAVE);

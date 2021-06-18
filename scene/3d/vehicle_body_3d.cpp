@@ -79,26 +79,29 @@ public:
 };
 
 void VehicleWheel3D::_notification(int p_what) {
-	if (p_what == NOTIFICATION_ENTER_TREE) {
-		VehicleBody3D *cb = Object::cast_to<VehicleBody3D>(get_parent());
-		if (!cb) {
-			return;
-		}
-		body = cb;
-		local_xform = get_transform();
-		cb->wheels.push_back(this);
+	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE: {
+			VehicleBody3D *cb = Object::cast_to<VehicleBody3D>(get_parent());
+			if (!cb) {
+				return;
+			}
+			body = cb;
+			local_xform = get_transform();
+			cb->wheels.push_back(this);
 
-		m_chassisConnectionPointCS = get_transform().origin;
-		m_wheelDirectionCS = -get_transform().basis.get_axis(Vector3::AXIS_Y).normalized();
-		m_wheelAxleCS = get_transform().basis.get_axis(Vector3::AXIS_X).normalized();
-	}
-	if (p_what == NOTIFICATION_EXIT_TREE) {
-		VehicleBody3D *cb = Object::cast_to<VehicleBody3D>(get_parent());
-		if (!cb) {
-			return;
-		}
-		cb->wheels.erase(this);
-		body = nullptr;
+			m_chassisConnectionPointCS = get_transform().origin;
+			m_wheelDirectionCS = -get_transform().basis.get_axis(Vector3::AXIS_Y).normalized();
+			m_wheelAxleCS = get_transform().basis.get_axis(Vector3::AXIS_X).normalized();
+		} break;
+
+		case NOTIFICATION_EXIT_TREE: {
+			VehicleBody3D *cb = Object::cast_to<VehicleBody3D>(get_parent());
+			if (!cb) {
+				return;
+			}
+			cb->wheels.erase(this);
+			body = nullptr;
+		} break;
 	}
 }
 

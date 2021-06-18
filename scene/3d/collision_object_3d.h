@@ -33,16 +33,29 @@
 
 #include "scene/3d/node_3d.h"
 #include "scene/resources/shape_3d.h"
+#include "servers/physics_server_3d.h"
 
 class CollisionObject3D : public Node3D {
 	GDCLASS(CollisionObject3D, Node3D);
 
+public:
+	enum DisableMode {
+		DISABLE_MODE_REMOVE,
+		DISABLE_MODE_MAKE_STATIC,
+		DISABLE_MODE_KEEP_ACTIVE,
+	};
+
+private:
 	uint32_t collision_layer = 1;
 	uint32_t collision_mask = 1;
 
 	bool area = false;
 
 	RID rid;
+
+	DisableMode disable_mode = DISABLE_MODE_REMOVE;
+
+	PhysicsServer3D::BodyMode body_mode = PhysicsServer3D::BODY_MODE_STATIC;
 
 	struct ShapeData {
 		Object *owner = nullptr;
@@ -76,6 +89,9 @@ class CollisionObject3D : public Node3D {
 	void _update_debug_shapes();
 	void _clear_debug_shapes();
 
+	void _apply_disabled();
+	void _apply_enabled();
+
 protected:
 	CollisionObject3D(RID p_rid, bool p_area);
 
@@ -89,6 +105,8 @@ protected:
 	virtual void _mouse_enter();
 	virtual void _mouse_exit();
 
+	void set_body_mode(PhysicsServer3D::BodyMode p_mode);
+
 public:
 	void set_collision_layer(uint32_t p_layer);
 	uint32_t get_collision_layer() const;
@@ -101,6 +119,9 @@ public:
 
 	void set_collision_mask_bit(int p_bit, bool p_value);
 	bool get_collision_mask_bit(int p_bit) const;
+
+	void set_disable_mode(DisableMode p_mode);
+	DisableMode get_disable_mode() const;
 
 	uint32_t create_shape_owner(Object *p_owner);
 	void remove_shape_owner(uint32_t owner);
@@ -137,5 +158,7 @@ public:
 	CollisionObject3D();
 	~CollisionObject3D();
 };
+
+VARIANT_ENUM_CAST(CollisionObject3D::DisableMode);
 
 #endif // COLLISION_OBJECT__H

@@ -49,7 +49,7 @@ void PhysicsBody2D::_bind_methods() {
 
 PhysicsBody2D::PhysicsBody2D(PhysicsServer2D::BodyMode p_mode) :
 		CollisionObject2D(PhysicsServer2D::get_singleton()->body_create(), false) {
-	PhysicsServer2D::get_singleton()->body_set_mode(get_rid(), p_mode);
+	set_body_mode(p_mode);
 	set_pickable(false);
 }
 
@@ -219,9 +219,9 @@ void StaticBody2D::set_kinematic_motion_enabled(bool p_enabled) {
 	kinematic_motion = p_enabled;
 
 	if (kinematic_motion) {
-		PhysicsServer2D::get_singleton()->body_set_mode(get_rid(), PhysicsServer2D::BODY_MODE_KINEMATIC);
+		set_body_mode(PhysicsServer2D::BODY_MODE_KINEMATIC);
 	} else {
-		PhysicsServer2D::get_singleton()->body_set_mode(get_rid(), PhysicsServer2D::BODY_MODE_STATIC);
+		set_body_mode(PhysicsServer2D::BODY_MODE_STATIC);
 	}
 
 	_update_kinematic_motion();
@@ -232,28 +232,30 @@ bool StaticBody2D::is_kinematic_motion_enabled() const {
 }
 
 void StaticBody2D::_notification(int p_what) {
-	if (p_what == NOTIFICATION_INTERNAL_PHYSICS_PROCESS) {
+	switch (p_what) {
+		case NOTIFICATION_INTERNAL_PHYSICS_PROCESS: {
 #ifdef TOOLS_ENABLED
-		if (Engine::get_singleton()->is_editor_hint()) {
-			return;
-		}
+			if (Engine::get_singleton()->is_editor_hint()) {
+				return;
+			}
 #endif
 
-		ERR_FAIL_COND(!kinematic_motion);
+			ERR_FAIL_COND(!kinematic_motion);
 
-		real_t delta_time = get_physics_process_delta_time();
+			real_t delta_time = get_physics_process_delta_time();
 
-		Transform2D new_transform = get_global_transform();
+			Transform2D new_transform = get_global_transform();
 
-		new_transform.translate(constant_linear_velocity * delta_time);
-		new_transform.set_rotation(new_transform.get_rotation() + constant_angular_velocity * delta_time);
+			new_transform.translate(constant_linear_velocity * delta_time);
+			new_transform.set_rotation(new_transform.get_rotation() + constant_angular_velocity * delta_time);
 
-		PhysicsServer2D::get_singleton()->body_set_state(get_rid(), PhysicsServer2D::BODY_STATE_TRANSFORM, new_transform);
+			PhysicsServer2D::get_singleton()->body_set_state(get_rid(), PhysicsServer2D::BODY_STATE_TRANSFORM, new_transform);
 
-		// Propagate transform change to node.
-		set_block_transform_notify(true);
-		set_global_transform(new_transform);
-		set_block_transform_notify(false);
+			// Propagate transform change to node.
+			set_block_transform_notify(true);
+			set_global_transform(new_transform);
+			set_block_transform_notify(false);
+		} break;
 	}
 }
 
@@ -528,18 +530,18 @@ void RigidBody2D::set_mode(Mode p_mode) {
 	mode = p_mode;
 	switch (p_mode) {
 		case MODE_DYNAMIC: {
-			PhysicsServer2D::get_singleton()->body_set_mode(get_rid(), PhysicsServer2D::BODY_MODE_DYNAMIC);
+			set_body_mode(PhysicsServer2D::BODY_MODE_DYNAMIC);
 		} break;
 		case MODE_STATIC: {
-			PhysicsServer2D::get_singleton()->body_set_mode(get_rid(), PhysicsServer2D::BODY_MODE_STATIC);
+			set_body_mode(PhysicsServer2D::BODY_MODE_STATIC);
 
 		} break;
 		case MODE_KINEMATIC: {
-			PhysicsServer2D::get_singleton()->body_set_mode(get_rid(), PhysicsServer2D::BODY_MODE_KINEMATIC);
+			set_body_mode(PhysicsServer2D::BODY_MODE_KINEMATIC);
 
 		} break;
 		case MODE_DYNAMIC_LOCKED: {
-			PhysicsServer2D::get_singleton()->body_set_mode(get_rid(), PhysicsServer2D::BODY_MODE_DYNAMIC_LOCKED);
+			set_body_mode(PhysicsServer2D::BODY_MODE_DYNAMIC_LOCKED);
 
 		} break;
 	}
@@ -795,18 +797,19 @@ bool RigidBody2D::is_contact_monitor_enabled() const {
 
 void RigidBody2D::_notification(int p_what) {
 #ifdef TOOLS_ENABLED
-	if (p_what == NOTIFICATION_ENTER_TREE) {
-		if (Engine::get_singleton()->is_editor_hint()) {
-			set_notify_local_transform(true); //used for warnings and only in editor
-		}
-	}
+	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE: {
+			if (Engine::get_singleton()->is_editor_hint()) {
+				set_notify_local_transform(true); //used for warnings and only in editor
+			}
+		} break;
 
-	if (p_what == NOTIFICATION_LOCAL_TRANSFORM_CHANGED) {
-		if (Engine::get_singleton()->is_editor_hint()) {
-			update_configuration_warnings();
-		}
+		case NOTIFICATION_LOCAL_TRANSFORM_CHANGED: {
+			if (Engine::get_singleton()->is_editor_hint()) {
+				update_configuration_warnings();
+			}
+		} break;
 	}
-
 #endif
 }
 
@@ -1261,26 +1264,28 @@ void CharacterBody2D::set_up_direction(const Vector2 &p_up_direction) {
 }
 
 void CharacterBody2D::_notification(int p_what) {
-	if (p_what == NOTIFICATION_ENTER_TREE) {
-		last_valid_transform = get_global_transform();
+	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE: {
+			last_valid_transform = get_global_transform();
 
-		// Reset move_and_slide() data.
-		on_floor = false;
-		on_floor_body = RID();
-		on_ceiling = false;
-		on_wall = false;
-		motion_results.clear();
-		floor_velocity = Vector2();
-	}
+			// Reset move_and_slide() data.
+			on_floor = false;
+			on_floor_body = RID();
+			on_ceiling = false;
+			on_wall = false;
+			motion_results.clear();
+			floor_velocity = Vector2();
+		} break;
 
-	if (p_what == NOTIFICATION_LOCAL_TRANSFORM_CHANGED) {
-		//used by sync to physics, send the new transform to the physics
-		Transform2D new_transform = get_global_transform();
-		PhysicsServer2D::get_singleton()->body_set_state(get_rid(), PhysicsServer2D::BODY_STATE_TRANSFORM, new_transform);
-		//but then revert changes
-		set_notify_local_transform(false);
-		set_global_transform(last_valid_transform);
-		set_notify_local_transform(true);
+		case NOTIFICATION_LOCAL_TRANSFORM_CHANGED: {
+			// Used by sync to physics, send the new transform to the physics.
+			Transform2D new_transform = get_global_transform();
+			PhysicsServer2D::get_singleton()->body_set_state(get_rid(), PhysicsServer2D::BODY_STATE_TRANSFORM, new_transform);
+			// But then revert changes.
+			set_notify_local_transform(false);
+			set_global_transform(last_valid_transform);
+			set_notify_local_transform(true);
+		} break;
 	}
 }
 

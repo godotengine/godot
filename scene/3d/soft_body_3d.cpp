@@ -266,12 +266,13 @@ void SoftBody3D::_notification(int p_what) {
 			PhysicsServer3D::get_singleton()->soft_body_set_space(physics_rid, space);
 			prepare_physics_server();
 		} break;
+
 		case NOTIFICATION_READY: {
 			if (!parent_collision_ignore.is_empty()) {
 				add_collision_exception_with(get_node(parent_collision_ignore));
 			}
-
 		} break;
+
 		case NOTIFICATION_TRANSFORM_CHANGED: {
 			if (Engine::get_singleton()->is_editor_hint()) {
 				_reset_points_offsets();
@@ -285,27 +286,36 @@ void SoftBody3D::_notification(int p_what) {
 			set_as_top_level(true);
 			set_transform(Transform3D());
 			set_notify_transform(true);
-
 		} break;
+
 		case NOTIFICATION_VISIBILITY_CHANGED: {
 			_update_pickable();
-
 		} break;
+
 		case NOTIFICATION_EXIT_WORLD: {
 			PhysicsServer3D::get_singleton()->soft_body_set_space(physics_rid, RID());
-
 		} break;
-	}
+
+		case NOTIFICATION_DISABLED: {
+			if (is_inside_tree() && (disable_mode == DISABLE_MODE_REMOVE)) {
+				prepare_physics_server();
+			}
+		} break;
+
+		case NOTIFICATION_ENABLED: {
+			if (is_inside_tree() && (disable_mode == DISABLE_MODE_REMOVE)) {
+				prepare_physics_server();
+			}
+		} break;
 
 #ifdef TOOLS_ENABLED
-
-	if (p_what == NOTIFICATION_LOCAL_TRANSFORM_CHANGED) {
-		if (Engine::get_singleton()->is_editor_hint()) {
-			update_configuration_warnings();
-		}
-	}
-
+		case NOTIFICATION_LOCAL_TRANSFORM_CHANGED: {
+			if (Engine::get_singleton()->is_editor_hint()) {
+				update_configuration_warnings();
+			}
+		} break;
 #endif
+	}
 }
 
 void SoftBody3D::_bind_methods() {
@@ -325,6 +335,9 @@ void SoftBody3D::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_parent_collision_ignore", "parent_collision_ignore"), &SoftBody3D::set_parent_collision_ignore);
 	ClassDB::bind_method(D_METHOD("get_parent_collision_ignore"), &SoftBody3D::get_parent_collision_ignore);
+
+	ClassDB::bind_method(D_METHOD("set_disable_mode", "mode"), &SoftBody3D::set_disable_mode);
+	ClassDB::bind_method(D_METHOD("get_disable_mode"), &SoftBody3D::get_disable_mode);
 
 	ClassDB::bind_method(D_METHOD("get_collision_exceptions"), &SoftBody3D::get_collision_exceptions);
 	ClassDB::bind_method(D_METHOD("add_collision_exception_with", "body"), &SoftBody3D::add_collision_exception_with);
@@ -364,6 +377,11 @@ void SoftBody3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "drag_coefficient", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_drag_coefficient", "get_drag_coefficient");
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "ray_pickable"), "set_ray_pickable", "is_ray_pickable");
+
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "disable_mode", PROPERTY_HINT_ENUM, "Remove,KeepActive"), "set_disable_mode", "get_disable_mode");
+
+	BIND_ENUM_CONSTANT(DISABLE_MODE_REMOVE);
+	BIND_ENUM_CONSTANT(DISABLE_MODE_KEEP_ACTIVE);
 }
 
 TypedArray<String> SoftBody3D::get_configuration_warnings() const {
@@ -421,6 +439,7 @@ void SoftBody3D::_draw_soft_mesh() {
 }
 
 void SoftBody3D::prepare_physics_server() {
+#ifdef TOOLS_ENABLED
 	if (Engine::get_singleton()->is_editor_hint()) {
 		if (get_mesh().is_valid()) {
 			PhysicsServer3D::get_singleton()->soft_body_set_mesh(physics_rid, get_mesh());
@@ -430,8 +449,9 @@ void SoftBody3D::prepare_physics_server() {
 
 		return;
 	}
+#endif
 
-	if (get_mesh().is_valid()) {
+	if (get_mesh().is_valid() && (is_enabled() || (disable_mode != DISABLE_MODE_REMOVE))) {
 		become_mesh_owner();
 		PhysicsServer3D::get_singleton()->soft_body_set_mesh(physics_rid, get_mesh());
 		RS::get_singleton()->connect("frame_pre_draw", callable_mp(this, &SoftBody3D::_draw_soft_mesh));
@@ -525,6 +545,28 @@ void SoftBody3D::set_collision_layer_bit(int p_bit, bool p_value) {
 bool SoftBody3D::get_collision_layer_bit(int p_bit) const {
 	ERR_FAIL_INDEX_V_MSG(p_bit, 32, false, "Collision layer bit must be between 0 and 31 inclusive.");
 	return get_collision_layer() & (1 << p_bit);
+}
+
+void SoftBody3D::set_disable_mode(DisableMode p_mode) {
+	if (disable_mode == p_mode) {
+		return;
+	}
+
+	bool inside_tree = is_inside_tree();
+
+	if (inside_tree && (disable_mode == DISABLE_MODE_REMOVE)) {
+		prepare_physics_server();
+	}
+
+	disable_mode = p_mode;
+
+	if (inside_tree && (disable_mode == DISABLE_MODE_REMOVE)) {
+		prepare_physics_server();
+	}
+}
+
+SoftBody3D::DisableMode SoftBody3D::get_disable_mode() const {
+	return disable_mode;
 }
 
 void SoftBody3D::set_parent_collision_ignore(const NodePath &p_parent_collision_ignore) {

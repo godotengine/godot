@@ -230,6 +230,9 @@
 			The physics layers this CollisionObject3D scans. Collision objects can scan one or more of 32 different layers. See also [member collision_layer].
 			[b]Note:[/b] A contact is detected if object A is in any of the layers that object B scans, or object B is in any layers that object A scans. See [url=https://docs.godotengine.org/en/latest/tutorials/physics/physics_introduction.html#collision-layers-and-masks]Collision layers and masks[/url] in the documentation for more information.
 		</member>
+		<member name="disable_mode" type="int" setter="set_disable_mode" getter="get_disable_mode" enum="CollisionObject3D.DisableMode" default="0">
+			Defines the behavior in physics when [member Node.process_mode] is set to [constant Node.PROCESS_MODE_DISABLED]. See [enum DisableMode] for more details about the different modes.
+		</member>
 		<member name="input_capture_on_drag" type="bool" setter="set_capture_input_on_drag" getter="get_capture_input_on_drag" default="false">
 			If [code]true[/code], the [CollisionObject3D] will continue to receive input events as the mouse is dragged across its shapes.
 		</member>
@@ -265,5 +268,16 @@
 		</signal>
 	</signals>
 	<constants>
+		<constant name="DISABLE_MODE_REMOVE" value="0" enum="DisableMode">
+			When [member Node.process_mode] is set to [constant Node.PROCESS_MODE_DISABLED], remove from the physics simulation to stop all physics interactions with this [CollisionObject3D].
+			Automatically re-added to the physics simulation when the [Node] is processed again.
+		</constant>
+		<constant name="DISABLE_MODE_MAKE_STATIC" value="1" enum="DisableMode">
+			When [member Node.process_mode] is set to [constant Node.PROCESS_MODE_DISABLED], make the body static. Doesn't affect [Area2D]. [PhysicsBody3D] can't be affected by forces or other bodies while static.
+			Automatically set [PhysicsBody3D] back to its original mode when the [Node] is processed again.
+		</constant>
+		<constant name="DISABLE_MODE_KEEP_ACTIVE" value="2" enum="DisableMode">
+			When [member Node.process_mode] is set to [constant Node.PROCESS_MODE_DISABLED], do not affect the physics simulation.
+		</constant>
 	</constants>
 </class>
