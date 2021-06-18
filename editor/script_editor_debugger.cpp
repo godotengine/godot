@@ -814,7 +814,7 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 					msg_type = EditorLog::MSG_TYPE_ERROR;
 				} break;
 				default: {
-					WARN_PRINTS("Unhandled script debugger message type: " + itos(type));
+					WARN_PRINT("Unhandled script debugger message type: " + itos(type));
 					msg_type = EditorLog::MSG_TYPE_STD;
 				} break;
 			}

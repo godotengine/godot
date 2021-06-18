@@ -4099,7 +4099,7 @@ void EditorNode::show_warning(const String &p_text, const String &p_title) {
 		warning->set_title(p_title);
 		warning->popup_centered_minsize();
 	} else {
-		WARN_PRINTS(p_title + " " + p_text);
+		WARN_PRINT(p_title + " " + p_text);
 	}
 }
 

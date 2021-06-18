@@ -166,7 +166,7 @@ void BakedLightmapData::_set_user_data(const Array &p_data) {
 		}
 		if (is_old_format) {
 #ifdef DEBUG_ENABLED
-			WARN_PRINTS("Geometry at path " + String(p_data[0]) + " is using old lightmapper data. Please re-bake.");
+			WARN_PRINT("Geometry at path " + String(p_data[0]) + " is using old lightmapper data. Please re-bake.");
 #endif
 			Array adapted_data;
 			adapted_data.resize((p_data.size() / 3) * 5);
