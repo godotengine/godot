@@ -2274,14 +2274,6 @@ void VisualScriptEditor::drop_data_fw(const Point2 &p_point, const Variant &p_da
 		}
 
 		Node *node = Object::cast_to<Node>(obj);
-		Vector2 ofs = graph->get_scroll_ofs() + p_point;
-
-		if (graph->is_using_snap()) {
-			int snap = graph->get_snap();
-			ofs = ofs.snapped(Vector2(snap, snap));
-		}
-
-		ofs /= EDSCALE;
 #ifdef OSX_ENABLED
 		bool use_get = Input::get_singleton()->is_key_pressed(KEY_META);
 #else
@@ -2376,16 +2368,6 @@ void VisualScriptEditor::drop_data_fw(const Point2 &p_point, const Variant &p_da
 		}
 	}
 }
-
-// Depresiated ??
-void VisualScriptEditor::_selected_method(const String &p_method, const String &p_type, const bool p_connecting) {
-	Ref<VisualScriptFunctionCall> vsfc = script->get_node(selecting_method_id);
-	if (!vsfc.is_valid()) {
-		return;
-	}
-	vsfc->set_function(p_method);
-}
-// ?? Depresiated
 
 void VisualScriptEditor::_draw_color_over_button(Object *obj, Color p_color) {
 	Button *button = Object::cast_to<Button>(obj);
@@ -4463,11 +4445,6 @@ VisualScriptEditor::VisualScriptEditor() {
 	default_value_edit = memnew(CustomPropertyEditor);
 	add_child(default_value_edit);
 	default_value_edit->connect("variant_changed", callable_mp(this, &VisualScriptEditor::_default_value_changed));
-
-	method_select = memnew(VisualScriptPropertySelector);
-	add_child(method_select);
-	method_select->connect("selected", callable_mp(this, &VisualScriptEditor::_selected_method));
-	error_line = -1;
 
 	new_connect_node_select = memnew(VisualScriptPropertySelector);
 	add_child(new_connect_node_select);
