@@ -323,71 +323,16 @@ void EditorSceneImporterMesh::create_shadow_mesh() {
 	shadow_mesh.instantiate();
 
 	for (int i = 0; i < surfaces.size(); i++) {
-		LocalVector<int> vertex_remap;
-		Vector<Vector3> new_vertices;
 		Vector<Vector3> vertices = surfaces[i].arrays[RS::ARRAY_VERTEX];
-		int vertex_count = vertices.size();
-		{
-			Map<Vector3, int> unique_vertices;
-			const Vector3 *vptr = vertices.ptr();
-			for (int j = 0; j < vertex_count; j++) {
-				Vector3 v = vptr[j];
-
-				Map<Vector3, int>::Element *E = unique_vertices.find(v);
-
-				if (E) {
-					vertex_remap.push_back(E->get());
-				} else {
-					int vcount = unique_vertices.size();
-					unique_vertices[v] = vcount;
-					vertex_remap.push_back(vcount);
-					new_vertices.push_back(v);
-				}
-			}
-		}
-
+		Vector<int32_t> indices = surfaces[i].arrays[RS::ARRAY_INDEX];
 		Array new_surface;
 		new_surface.resize(RS::ARRAY_MAX);
+		new_surface[RS::ARRAY_INDEX] = indices;
+		new_surface[RS::ARRAY_VERTEX] = vertices;
 		Dictionary lods;
-
-		//		print_line("original vertex count: " + itos(vertices.size()) + " new vertex count: " + itos(new_vertices.size()));
-
-		new_surface[RS::ARRAY_VERTEX] = new_vertices;
-
-		Vector<int> indices = surfaces[i].arrays[RS::ARRAY_INDEX];
-		if (indices.size()) {
-			int index_count = indices.size();
-			const int *index_rptr = indices.ptr();
-			Vector<int> new_indices;
-			new_indices.resize(indices.size());
-			int *index_wptr = new_indices.ptrw();
-
-			for (int j = 0; j < index_count; j++) {
-				int index = index_rptr[j];
-				ERR_FAIL_INDEX(index, vertex_count);
-				index_wptr[j] = vertex_remap[index];
-			}
-
-			new_surface[RS::ARRAY_INDEX] = new_indices;
-
-			// Make sure the same LODs as the full version are used.
-			// This makes it more coherent between rendered model and its shadows.
-			for (int j = 0; j < surfaces[i].lods.size(); j++) {
-				indices = surfaces[i].lods[j].indices;
-
-				index_count = indices.size();
-				index_rptr = indices.ptr();
-				new_indices.resize(indices.size());
-				index_wptr = new_indices.ptrw();
-
-				for (int k = 0; k < index_count; k++) {
-					int index = index_rptr[j];
-					ERR_FAIL_INDEX(index, vertex_count);
-					index_wptr[j] = vertex_remap[index];
-				}
-
-				lods[surfaces[i].lods[j].distance] = new_indices;
-			}
+		for (int j = 0; j < surfaces[i].lods.size(); j++) {
+			Vector<int> lod_indices = surfaces[i].lods[j].indices;
+			lods[surfaces[i].lods[j].distance] = lod_indices;
 		}
 
 		shadow_mesh->add_surface(surfaces[i].primitive, new_surface, Array(), lods, Ref<Material>(), surfaces[i].name);
