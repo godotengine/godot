@@ -59,6 +59,10 @@ void BodySW::update_inertias() {
 			real_t total_area = 0;
 
 			for (int i = 0; i < get_shape_count(); i++) {
+				if (is_shape_disabled(i)) {
+					continue;
+				}
+
 				total_area += get_shape_area(i);
 			}
 
@@ -67,6 +71,10 @@ void BodySW::update_inertias() {
 
 			if (total_area != 0.0) {
 				for (int i = 0; i < get_shape_count(); i++) {
+					if (is_shape_disabled(i)) {
+						continue;
+					}
+
 					real_t area = get_shape_area(i);
 
 					real_t mass = area * this->mass / total_area;
