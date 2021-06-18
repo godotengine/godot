@@ -1770,7 +1770,7 @@ Control *Viewport::_gui_find_control_at_pos(CanvasItem *p_node, const Point2 &p_
 	}
 
 	Control *drag_preview = _gui_get_drag_preview();
-	if (!drag_preview || (c != drag_preview && !drag_preview->is_a_parent_of(c))) {
+	if (!drag_preview || (c != drag_preview && !drag_preview->is_ancestor_of(c))) {
 		r_inv_xform = matrix;
 		return c;
 	}
@@ -3023,7 +3023,7 @@ void Viewport::input(const Ref<InputEvent> &p_event, bool p_local_coords) {
 		return;
 	}
 
-	if (Engine::get_singleton()->is_editor_hint() && get_tree()->get_edited_scene_root() && get_tree()->get_edited_scene_root()->is_a_parent_of(this)) {
+	if (Engine::get_singleton()->is_editor_hint() && get_tree()->get_edited_scene_root() && get_tree()->get_edited_scene_root()->is_ancestor_of(this)) {
 		return;
 	}
 
@@ -3065,7 +3065,7 @@ void Viewport::unhandled_input(const Ref<InputEvent> &p_event, bool p_local_coor
 		return;
 	}
 
-	if (Engine::get_singleton()->is_editor_hint() && get_tree()->get_edited_scene_root() && get_tree()->get_edited_scene_root()->is_a_parent_of(this)) {
+	if (Engine::get_singleton()->is_editor_hint() && get_tree()->get_edited_scene_root() && get_tree()->get_edited_scene_root()->is_ancestor_of(this)) {
 		return;
 	}
 

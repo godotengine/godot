@@ -1068,7 +1068,7 @@ Rect2 Control::get_parent_anchorable_rect() const {
 	} else {
 #ifdef TOOLS_ENABLED
 		Node *edited_root = get_tree()->get_edited_scene_root();
-		if (edited_root && (this == edited_root || edited_root->is_a_parent_of(this))) {
+		if (edited_root && (this == edited_root || edited_root->is_ancestor_of(this))) {
 			parent_rect.size = Size2(ProjectSettings::get_singleton()->get("display/window/size/width"), ProjectSettings::get_singleton()->get("display/window/size/height"));
 		} else {
 			parent_rect = get_viewport()->get_visible_rect();

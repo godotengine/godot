@@ -525,7 +525,7 @@ void LiveEditor::_node_set_func(int p_id, const StringName &p_prop, const Varian
 	for (Set<Node *>::Element *F = E->get().front(); F; F = F->next()) {
 		Node *n = F->get();
 
-		if (base && !base->is_a_parent_of(n)) {
+		if (base && !base->is_ancestor_of(n)) {
 			continue;
 		}
 
@@ -569,7 +569,7 @@ void LiveEditor::_node_call_func(int p_id, const StringName &p_method, VARIANT_A
 	for (Set<Node *>::Element *F = E->get().front(); F; F = F->next()) {
 		Node *n = F->get();
 
-		if (base && !base->is_a_parent_of(n)) {
+		if (base && !base->is_ancestor_of(n)) {
 			continue;
 		}
 
@@ -652,7 +652,7 @@ void LiveEditor::_create_node_func(const NodePath &p_parent, const String &p_typ
 	for (Set<Node *>::Element *F = E->get().front(); F; F = F->next()) {
 		Node *n = F->get();
 
-		if (base && !base->is_a_parent_of(n)) {
+		if (base && !base->is_ancestor_of(n)) {
 			continue;
 		}
 
@@ -696,7 +696,7 @@ void LiveEditor::_instance_node_func(const NodePath &p_parent, const String &p_p
 	for (Set<Node *>::Element *F = E->get().front(); F; F = F->next()) {
 		Node *n = F->get();
 
-		if (base && !base->is_a_parent_of(n)) {
+		if (base && !base->is_ancestor_of(n)) {
 			continue;
 		}
 
@@ -736,7 +736,7 @@ void LiveEditor::_remove_node_func(const NodePath &p_at) {
 
 		Node *n = F->get();
 
-		if (base && !base->is_a_parent_of(n)) {
+		if (base && !base->is_ancestor_of(n)) {
 			continue;
 		}
 
@@ -772,7 +772,7 @@ void LiveEditor::_remove_and_keep_node_func(const NodePath &p_at, ObjectID p_kee
 
 		Node *n = F->get();
 
-		if (base && !base->is_a_parent_of(n)) {
+		if (base && !base->is_ancestor_of(n)) {
 			continue;
 		}
 
@@ -811,7 +811,7 @@ void LiveEditor::_restore_node_func(ObjectID p_id, const NodePath &p_at, int p_a
 
 		Node *n = F->get();
 
-		if (base && !base->is_a_parent_of(n)) {
+		if (base && !base->is_ancestor_of(n)) {
 			continue;
 		}
 
@@ -862,7 +862,7 @@ void LiveEditor::_duplicate_node_func(const NodePath &p_at, const String &p_new_
 	for (Set<Node *>::Element *F = E->get().front(); F; F = F->next()) {
 		Node *n = F->get();
 
-		if (base && !base->is_a_parent_of(n)) {
+		if (base && !base->is_ancestor_of(n)) {
 			continue;
 		}
 
@@ -901,7 +901,7 @@ void LiveEditor::_reparent_node_func(const NodePath &p_at, const NodePath &p_new
 	for (Set<Node *>::Element *F = E->get().front(); F; F = F->next()) {
 		Node *n = F->get();
 
-		if (base && !base->is_a_parent_of(n)) {
+		if (base && !base->is_ancestor_of(n)) {
 			continue;
 		}
 
