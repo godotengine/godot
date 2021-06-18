@@ -646,11 +646,11 @@ bool GDMono::copy_prebuilt_api_assembly(ApiAssemblyInfo::Type p_api_type, const 
 
 	String xml_file = assembly_name + ".xml";
 	if (da->copy(src_dir.plus_file(xml_file), dst_dir.plus_file(xml_file)) != OK)
-		WARN_PRINTS("Failed to copy '" + xml_file + "'.");
+		WARN_PRINT("Failed to copy '" + xml_file + "'.");
 
 	String pdb_file = assembly_name + ".pdb";
 	if (da->copy(src_dir.plus_file(pdb_file), dst_dir.plus_file(pdb_file)) != OK)
-		WARN_PRINTS("Failed to copy '" + pdb_file + "'.");
+		WARN_PRINT("Failed to copy '" + pdb_file + "'.");
 
 	String assembly_file = assembly_name + ".dll";
 	if (da->copy(src_dir.plus_file(assembly_file), dst_dir.plus_file(assembly_file)) != OK) {

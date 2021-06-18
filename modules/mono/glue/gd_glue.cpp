@@ -250,7 +250,7 @@ void godot_icall_GD_pusherror(MonoString *p_str) {
 }
 
 void godot_icall_GD_pushwarning(MonoString *p_str) {
-	WARN_PRINTS(GDMonoMarshal::mono_string_to_godot(p_str));
+	WARN_PRINT(GDMonoMarshal::mono_string_to_godot(p_str));
 }
 
 MonoArray *godot_icall_GD_var2bytes(MonoObject *p_var, MonoBoolean p_full_objects) {
