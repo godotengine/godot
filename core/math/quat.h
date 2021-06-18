@@ -48,6 +48,7 @@ public:
 	bool is_normalized() const;
 	Quat inverse() const;
 	_FORCE_INLINE_ real_t dot(const Quat &p_q) const;
+	real_t angle_to(const Quat &p_to) const;
 
 	void set_euler_xyz(const Vector3 &p_euler);
 	Vector3 get_euler_xyz() const;
