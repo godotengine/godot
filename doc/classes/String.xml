@@ -352,7 +352,7 @@
 				Returns [code]true[/code] if this string is a valid identifier. A valid identifier may contain only letters, digits and underscores ([code]_[/code]) and the first character may not be a digit.
 			</description>
 		</method>
-		<method name="is_valid_integer" qualifiers="const">
+		<method name="is_valid_int" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>

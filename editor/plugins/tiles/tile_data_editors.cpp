@@ -136,7 +136,7 @@ void TileDataOcclusionShapeEditor::draw_over_tile(CanvasItem *p_canvas_item, Tra
 	ERR_FAIL_COND(!tile_data);
 
 	Vector<String> components = String(p_property).split("/", true);
-	if (components[0].begins_with("occlusion_layer_") && components[0].trim_prefix("occlusion_layer_").is_valid_integer()) {
+	if (components[0].begins_with("occlusion_layer_") && components[0].trim_prefix("occlusion_layer_").is_valid_int()) {
 		int occlusion_layer = components[0].trim_prefix("occlusion_layer_").to_int();
 		if (occlusion_layer >= 0 && occlusion_layer < p_tile_set->get_occlusion_layers_count()) {
 			// Draw all shapes.
@@ -158,7 +158,7 @@ void TileDataCollisionShapeEditor::draw_over_tile(CanvasItem *p_canvas_item, Tra
 	ERR_FAIL_COND(!tile_data);
 
 	Vector<String> components = String(p_property).split("/", true);
-	if (components[0].begins_with("physics_layer_") && components[0].trim_prefix("physics_layer_").is_valid_integer()) {
+	if (components[0].begins_with("physics_layer_") && components[0].trim_prefix("physics_layer_").is_valid_int()) {
 		int physics_layer = components[0].trim_prefix("physics_layer_").to_int();
 		if (physics_layer >= 0 && physics_layer < p_tile_set->get_physics_layers_count()) {
 			// Draw all shapes.
@@ -190,7 +190,7 @@ void TileDataNavigationPolygonEditor::draw_over_tile(CanvasItem *p_canvas_item, 
 	ERR_FAIL_COND(!tile_data);
 
 	Vector<String> components = String(p_property).split("/", true);
-	if (components[0].begins_with("navigation_layer_") && components[0].trim_prefix("navigation_layer_").is_valid_integer()) {
+	if (components[0].begins_with("navigation_layer_") && components[0].trim_prefix("navigation_layer_").is_valid_int()) {
 		int navigation_layer = components[0].trim_prefix("navigation_layer_").to_int();
 		if (navigation_layer >= 0 && navigation_layer < p_tile_set->get_navigation_layers_count()) {
 			// Draw all shapes.

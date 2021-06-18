@@ -425,7 +425,7 @@ public:
 	String validate_node_name() const;
 
 	bool is_valid_identifier() const;
-	bool is_valid_integer() const;
+	bool is_valid_int() const;
 	bool is_valid_float() const;
 	bool is_valid_hex_number(bool p_with_prefix) const;
 	bool is_valid_html_color() const;
