@@ -33,6 +33,11 @@
 #include "core/math/basis.h"
 #include "core/string/print_string.h"
 
+real_t Quaternion::angle_to(const Quaternion &p_to) const {
+	real_t d = dot(p_to);
+	return Math::acos(CLAMP(d * d * 2 - 1, -1, 1));
+}
+
 // get_euler_xyz returns a vector containing the Euler angles in the format
 // (ax,ay,az), where ax is the angle of rotation around x axis,
 // and similar for other axes.
