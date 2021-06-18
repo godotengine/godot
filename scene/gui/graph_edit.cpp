@@ -447,7 +447,6 @@ void GraphEdit::remove_child_notify(Node *p_child) {
 void GraphEdit::_notification(int p_what) {
 	if (p_what == NOTIFICATION_ENTER_TREE || p_what == NOTIFICATION_THEME_CHANGED) {
 		port_grab_distance_horizontal = get_theme_constant("port_grab_distance_horizontal");
-		port_grab_distance_vertical = get_theme_constant("port_grab_distance_vertical");
 
 		zoom_minus->set_icon(get_theme_icon("minus"));
 		zoom_reset->set_icon(get_theme_icon("reset"));
@@ -532,14 +531,14 @@ bool GraphEdit::_filter_input(const Point2 &p_point) {
 
 		for (int j = 0; j < gn->get_connection_output_count(); j++) {
 			Vector2 pos = gn->get_connection_output_position(j) + gn->get_position();
-			if (is_in_hot_zone(pos / zoom, p_point / zoom)) {
+			if (is_in_hot_zone(pos / zoom, gn->get_connection_output_height(j), p_point / zoom)) {
 				return true;
 			}
 		}
 
 		for (int j = 0; j < gn->get_connection_input_count(); j++) {
 			Vector2 pos = gn->get_connection_input_position(j) + gn->get_position();
-			if (is_in_hot_zone(pos / zoom, p_point / zoom)) {
+			if (is_in_hot_zone(pos / zoom, gn->get_connection_input_height(j), p_point / zoom)) {
 				return true;
 			}
 		}
@@ -562,7 +561,7 @@ void GraphEdit::_top_layer_input(const Ref<InputEvent> &p_ev) {
 
 			for (int j = 0; j < gn->get_connection_output_count(); j++) {
 				Vector2 pos = gn->get_connection_output_position(j) + gn->get_position();
-				if (is_in_hot_zone(pos / zoom, click_pos)) {
+				if (is_in_hot_zone(pos / zoom, gn->get_connection_output_height(j), click_pos)) {
 					if (valid_left_disconnect_types.has(gn->get_connection_output_type(j))) {
 						//check disconnect
 						for (List<Connection>::Element *E = connections.front(); E; E = E->next()) {
@@ -604,7 +603,7 @@ void GraphEdit::_top_layer_input(const Ref<InputEvent> &p_ev) {
 
 			for (int j = 0; j < gn->get_connection_input_count(); j++) {
 				Vector2 pos = gn->get_connection_input_position(j) + gn->get_position();
-				if (is_in_hot_zone(pos / zoom, click_pos)) {
+				if (is_in_hot_zone(pos / zoom, gn->get_connection_input_height(j), click_pos)) {
 					if (right_disconnects || valid_right_disconnect_types.has(gn->get_connection_input_type(j))) {
 						//check disconnect
 						for (List<Connection>::Element *E = connections.front(); E; E = E->next()) {
@@ -668,7 +667,7 @@ void GraphEdit::_top_layer_input(const Ref<InputEvent> &p_ev) {
 					for (int j = 0; j < gn->get_connection_output_count(); j++) {
 						Vector2 pos = gn->get_connection_output_position(j) + gn->get_position();
 						int type = gn->get_connection_output_type(j);
-						if ((type == connecting_type || valid_connection_types.has(ConnType(type, connecting_type))) && is_in_hot_zone(pos / zoom, mpos)) {
+						if ((type == connecting_type || valid_connection_types.has(ConnType(type, connecting_type))) && is_in_hot_zone(pos / zoom, gn->get_connection_output_height(j), mpos)) {
 							connecting_target = true;
 							connecting_to = pos;
 							connecting_target_to = gn->get_name();
@@ -680,7 +679,7 @@ void GraphEdit::_top_layer_input(const Ref<InputEvent> &p_ev) {
 					for (int j = 0; j < gn->get_connection_input_count(); j++) {
 						Vector2 pos = gn->get_connection_input_position(j) + gn->get_position();
 						int type = gn->get_connection_input_type(j);
-						if ((type == connecting_type || valid_connection_types.has(ConnType(type, connecting_type))) && is_in_hot_zone(pos / zoom, mpos)) {
+						if ((type == connecting_type || valid_connection_types.has(ConnType(type, connecting_type))) && is_in_hot_zone(pos / zoom, gn->get_connection_input_height(j), mpos)) {
 							connecting_target = true;
 							connecting_to = pos;
 							connecting_target_to = gn->get_name();
@@ -751,8 +750,8 @@ bool GraphEdit::_check_clickable_control(Control *p_control, const Vector2 &pos)
 	}
 }
 
-bool GraphEdit::is_in_hot_zone(const Vector2 &pos, const Vector2 &p_mouse_pos) {
-	if (!Rect2(pos.x - port_grab_distance_horizontal, pos.y - port_grab_distance_vertical, port_grab_distance_horizontal * 2, port_grab_distance_vertical * 2).has_point(p_mouse_pos)) {
+bool GraphEdit::is_in_hot_zone(const Vector2 &pos, int hot_zone_height, const Vector2 &p_mouse_pos) {
+	if (!Rect2(pos.x - port_grab_distance_horizontal, pos.y - hot_zone_height / 2.0f, port_grab_distance_horizontal * 2, hot_zone_height).has_point(p_mouse_pos)) {
 		return false;
 	}
 
