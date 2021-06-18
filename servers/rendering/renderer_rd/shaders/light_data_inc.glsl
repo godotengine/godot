@@ -76,10 +76,6 @@ struct DirectionalLightData {
 	mat4 shadow_matrix2;
 	mat4 shadow_matrix3;
 	mat4 shadow_matrix4;
-	vec4 shadow_color1;
-	vec4 shadow_color2;
-	vec4 shadow_color3;
-	vec4 shadow_color4;
 	vec2 uv_scale1;
 	vec2 uv_scale2;
 	vec2 uv_scale3;

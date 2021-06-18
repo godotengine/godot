@@ -1239,7 +1239,6 @@ void main() {
 				float depth_z = -vertex.z;
 
 				vec4 pssm_coord;
-				vec3 shadow_color = vec3(0.0);
 				vec3 light_dir = directional_lights.data[i].direction;
 
 #define BIAS_FUNC(m_var, m_idx)                                                                                                                                       \
@@ -1265,9 +1264,6 @@ void main() {
 					} else {
 						shadow = sample_directional_pcf_shadow(directional_shadow_atlas, scene_data.directional_shadow_pixel_size * directional_lights.data[i].soft_shadow_scale, pssm_coord);
 					}
-
-					shadow_color = directional_lights.data[i].shadow_color1.rgb;
-
 				} else if (depth_z < directional_lights.data[i].shadow_split_offsets.y) {
 					vec4 v = vec4(vertex, 1.0);
 
@@ -1285,8 +1281,6 @@ void main() {
 					} else {
 						shadow = sample_directional_pcf_shadow(directional_shadow_atlas, scene_data.directional_shadow_pixel_size * directional_lights.data[i].soft_shadow_scale, pssm_coord);
 					}
-
-					shadow_color = directional_lights.data[i].shadow_color2.rgb;
 				} else if (depth_z < directional_lights.data[i].shadow_split_offsets.z) {
 					vec4 v = vec4(vertex, 1.0);
 
@@ -1304,9 +1298,6 @@ void main() {
 					} else {
 						shadow = sample_directional_pcf_shadow(directional_shadow_atlas, scene_data.directional_shadow_pixel_size * directional_lights.data[i].soft_shadow_scale, pssm_coord);
 					}
-
-					shadow_color = directional_lights.data[i].shadow_color3.rgb;
-
 				} else {
 					vec4 v = vec4(vertex, 1.0);
 
@@ -1324,12 +1315,9 @@ void main() {
 					} else {
 						shadow = sample_directional_pcf_shadow(directional_shadow_atlas, scene_data.directional_shadow_pixel_size * directional_lights.data[i].soft_shadow_scale, pssm_coord);
 					}
-
-					shadow_color = directional_lights.data[i].shadow_color4.rgb;
 				}
 
 				if (directional_lights.data[i].blend_splits) {
-					vec3 shadow_color_blend = vec3(0.0);
 					float pssm_blend;
 					float shadow2;
 
@@ -1350,7 +1338,6 @@ void main() {
 						}
 
 						pssm_blend = smoothstep(0.0, directional_lights.data[i].shadow_split_offsets.x, depth_z);
-						shadow_color_blend = directional_lights.data[i].shadow_color2.rgb;
 					} else if (depth_z < directional_lights.data[i].shadow_split_offsets.y) {
 						vec4 v = vec4(vertex, 1.0);
 						BIAS_FUNC(v, 2)
@@ -1368,8 +1355,6 @@ void main() {
 						}
 
 						pssm_blend = smoothstep(directional_lights.data[i].shadow_split_offsets.x, directional_lights.data[i].shadow_split_offsets.y, depth_z);
-
-						shadow_color_blend = directional_lights.data[i].shadow_color3.rgb;
 					} else if (depth_z < directional_lights.data[i].shadow_split_offsets.z) {
 						vec4 v = vec4(vertex, 1.0);
 						BIAS_FUNC(v, 3)
@@ -1386,7 +1371,6 @@ void main() {
 						}
 
 						pssm_blend = smoothstep(directional_lights.data[i].shadow_split_offsets.y, directional_lights.data[i].shadow_split_offsets.z, depth_z);
-						shadow_color_blend = directional_lights.data[i].shadow_color4.rgb;
 					} else {
 						pssm_blend = 0.0; //if no blend, same coord will be used (divide by z will result in same value, and already cached)
 					}
@@ -1394,7 +1378,6 @@ void main() {
 					pssm_blend = sqrt(pssm_blend);
 
 					shadow = mix(shadow, shadow2, pssm_blend);
-					shadow_color = mix(shadow_color, shadow_color_blend, pssm_blend);
 				}
 
 				shadow = mix(shadow, 1.0, smoothstep(directional_lights.data[i].fade_from, directional_lights.data[i].fade_to, vertex.z)); //done with negative values for performance
