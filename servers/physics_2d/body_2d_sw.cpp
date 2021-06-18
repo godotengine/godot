@@ -55,6 +55,9 @@ void Body2DSW::update_inertias() {
 			real_t total_area = 0;
 
 			for (int i = 0; i < get_shape_count(); i++) {
+				if (is_shape_disabled(i)) {
+					continue;
+				}
 
 				total_area += get_shape_aabb(i).get_area();
 			}
