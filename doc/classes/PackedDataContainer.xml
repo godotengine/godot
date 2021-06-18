@@ -23,7 +23,7 @@
 		</method>
 	</methods>
 	<members>
-		<member name="__data__" type="PackedByteArray" setter="_set_data" getter="_get_data" default="PackedByteArray(  )">
+		<member name="__data__" type="PackedByteArray" setter="_set_data" getter="_get_data" default="PackedByteArray()">
 		</member>
 	</members>
 	<constants>

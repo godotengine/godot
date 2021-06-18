@@ -16,7 +16,7 @@
 			</argument>
 			<argument index="1" name="shape" type="RID">
 			</argument>
-			<argument index="2" name="transform" type="Transform3D" default="Transform3D( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0 )">
+			<argument index="2" name="transform" type="Transform3D" default="Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)">
 			</argument>
 			<argument index="3" name="disabled" type="bool" default="false">
 			</argument>
@@ -325,7 +325,7 @@
 			</argument>
 			<argument index="1" name="force" type="Vector3">
 			</argument>
-			<argument index="2" name="position" type="Vector3" default="Vector3( 0, 0, 0 )">
+			<argument index="2" name="position" type="Vector3" default="Vector3(0, 0, 0)">
 			</argument>
 			<description>
 			</description>
@@ -337,7 +337,7 @@
 			</argument>
 			<argument index="1" name="shape" type="RID">
 			</argument>
-			<argument index="2" name="transform" type="Transform3D" default="Transform3D( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0 )">
+			<argument index="2" name="transform" type="Transform3D" default="Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)">
 			</argument>
 			<argument index="3" name="disabled" type="bool" default="false">
 			</argument>
@@ -372,7 +372,7 @@
 			</argument>
 			<argument index="1" name="impulse" type="Vector3">
 			</argument>
-			<argument index="2" name="position" type="Vector3" default="Vector3( 0, 0, 0 )">
+			<argument index="2" name="position" type="Vector3" default="Vector3(0, 0, 0)">
 			</argument>
 			<description>
 				Gives the body a push at a [code]position[/code] in the direction of the [code]impulse[/code].

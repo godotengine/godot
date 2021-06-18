@@ -39,7 +39,7 @@
 			</return>
 			<argument index="0" name="force" type="Vector2">
 			</argument>
-			<argument index="1" name="position" type="Vector2" default="Vector2( 0, 0 )">
+			<argument index="1" name="position" type="Vector2" default="Vector2(0, 0)">
 			</argument>
 			<description>
 				Adds a positioned force to the body. Both the force and the offset from the body origin are in global coordinates.
@@ -57,7 +57,7 @@
 		<method name="apply_central_impulse">
 			<return type="void">
 			</return>
-			<argument index="0" name="impulse" type="Vector2" default="Vector2( 0, 0 )">
+			<argument index="0" name="impulse" type="Vector2" default="Vector2(0, 0)">
 			</argument>
 			<description>
 				Applies a directional impulse without affecting rotation.
@@ -68,7 +68,7 @@
 			</return>
 			<argument index="0" name="impulse" type="Vector2">
 			</argument>
-			<argument index="1" name="position" type="Vector2" default="Vector2( 0, 0 )">
+			<argument index="1" name="position" type="Vector2" default="Vector2(0, 0)">
 			</argument>
 			<description>
 				Applies a positioned impulse to the body. An impulse is time-independent! Applying an impulse every frame would result in a framerate-dependent force. For this reason it should only be used when simulating one-time impacts (use the "_force" functions otherwise). The position uses the rotation of the global coordinate system, but is centered at the object's origin.
@@ -109,7 +109,7 @@
 		<member name="angular_velocity" type="float" setter="set_angular_velocity" getter="get_angular_velocity" default="0.0">
 			The body's rotational velocity.
 		</member>
-		<member name="applied_force" type="Vector2" setter="set_applied_force" getter="get_applied_force" default="Vector2( 0, 0 )">
+		<member name="applied_force" type="Vector2" setter="set_applied_force" getter="get_applied_force" default="Vector2(0, 0)">
 			The body's total applied force.
 		</member>
 		<member name="applied_torque" type="float" setter="set_applied_torque" getter="get_applied_torque" default="0.0">
@@ -142,7 +142,7 @@
 			Damps the body's [member linear_velocity]. If [code]-1[/code], the body will use the [b]Default Linear Damp[/b] in [b]Project &gt; Project Settings &gt; Physics &gt; 2d[/b].
 			See [member ProjectSettings.physics/2d/default_linear_damp] for more details about damping.
 		</member>
-		<member name="linear_velocity" type="Vector2" setter="set_linear_velocity" getter="get_linear_velocity" default="Vector2( 0, 0 )">
+		<member name="linear_velocity" type="Vector2" setter="set_linear_velocity" getter="get_linear_velocity" default="Vector2(0, 0)">
 			The body's linear velocity.
 		</member>
 		<member name="mass" type="float" setter="set_mass" getter="get_mass" default="1.0">

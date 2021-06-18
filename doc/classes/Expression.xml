@@ -54,7 +54,7 @@
 		<method name="execute">
 			<return type="Variant">
 			</return>
-			<argument index="0" name="inputs" type="Array" default="[  ]">
+			<argument index="0" name="inputs" type="Array" default="[]">
 			</argument>
 			<argument index="1" name="base_instance" type="Object" default="null">
 			</argument>
@@ -84,7 +84,7 @@
 			</return>
 			<argument index="0" name="expression" type="String">
 			</argument>
-			<argument index="1" name="input_names" type="PackedStringArray" default="PackedStringArray(  )">
+			<argument index="1" name="input_names" type="PackedStringArray" default="PackedStringArray()">
 			</argument>
 			<description>
 				Parses the expression and returns an [enum Error] code.

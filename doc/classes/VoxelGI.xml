@@ -36,7 +36,7 @@
 		<member name="data" type="VoxelGIData" setter="set_probe_data" getter="get_probe_data">
 			The [VoxelGIData] resource that holds the data for this [VoxelGI].
 		</member>
-		<member name="extents" type="Vector3" setter="set_extents" getter="get_extents" default="Vector3( 10, 10, 10 )">
+		<member name="extents" type="Vector3" setter="set_extents" getter="get_extents" default="Vector3(10, 10, 10)">
 			The size of the area covered by the [VoxelGI]. If you make the extents larger without increasing the subdivisions with [member subdiv], the size of each cell will increase and result in lower detailed lighting.
 		</member>
 		<member name="subdiv" type="int" setter="set_subdiv" getter="get_subdiv" enum="VoxelGI.Subdiv" default="1">

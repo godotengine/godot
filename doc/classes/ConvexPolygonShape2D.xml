@@ -21,7 +21,7 @@
 		</method>
 	</methods>
 	<members>
-		<member name="points" type="PackedVector2Array" setter="set_points" getter="get_points" default="PackedVector2Array(  )">
+		<member name="points" type="PackedVector2Array" setter="set_points" getter="get_points" default="PackedVector2Array()">
 			The polygon's list of vertices. Can be in either clockwise or counterclockwise order.
 		</member>
 	</members>

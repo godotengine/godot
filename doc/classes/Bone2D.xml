@@ -101,7 +101,7 @@
 		</method>
 	</methods>
 	<members>
-		<member name="rest" type="Transform2D" setter="set_rest" getter="get_rest" default="Transform2D( 0, 0, 0, 0, 0, 0 )">
+		<member name="rest" type="Transform2D" setter="set_rest" getter="get_rest" default="Transform2D(0, 0, 0, 0, 0, 0)">
 			Rest transform of the bone. You can reset the node's transforms to this value using [method apply_rest].
 		</member>
 	</members>

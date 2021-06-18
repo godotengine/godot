@@ -16,7 +16,7 @@
 			</argument>
 			<argument index="1" name="shape" type="RID">
 			</argument>
-			<argument index="2" name="transform" type="Transform2D" default="Transform2D( 1, 0, 0, 1, 0, 0 )">
+			<argument index="2" name="transform" type="Transform2D" default="Transform2D(1, 0, 0, 1, 0, 0)">
 			</argument>
 			<argument index="3" name="disabled" type="bool" default="false">
 			</argument>
@@ -333,7 +333,7 @@
 			</argument>
 			<argument index="1" name="force" type="Vector2">
 			</argument>
-			<argument index="2" name="position" type="Vector2" default="Vector2( 0, 0 )">
+			<argument index="2" name="position" type="Vector2" default="Vector2(0, 0)">
 			</argument>
 			<description>
 				Adds a positioned force to the applied force and torque. As with [method body_apply_impulse], both the force and the offset from the body origin are in global coordinates. A force differs from an impulse in that, while the two are forces, the impulse clears itself after being applied.
@@ -346,7 +346,7 @@
 			</argument>
 			<argument index="1" name="shape" type="RID">
 			</argument>
-			<argument index="2" name="transform" type="Transform2D" default="Transform2D( 1, 0, 0, 1, 0, 0 )">
+			<argument index="2" name="transform" type="Transform2D" default="Transform2D(1, 0, 0, 1, 0, 0)">
 			</argument>
 			<argument index="3" name="disabled" type="bool" default="false">
 			</argument>
@@ -381,7 +381,7 @@
 			</argument>
 			<argument index="1" name="impulse" type="Vector2">
 			</argument>
-			<argument index="2" name="position" type="Vector2" default="Vector2( 0, 0 )">
+			<argument index="2" name="position" type="Vector2" default="Vector2(0, 0)">
 			</argument>
 			<description>
 				Adds a positioned impulse to the applied force and torque. Both the force and the offset from the body origin are in global coordinates.

@@ -12,7 +12,7 @@
 	<methods>
 	</methods>
 	<members>
-		<member name="constant" type="Color" setter="set_constant" getter="get_constant" default="Color( 1, 1, 1, 1 )">
+		<member name="constant" type="Color" setter="set_constant" getter="get_constant" default="Color(1, 1, 1, 1)">
 			A [Color] constant which represents a state of this node.
 		</member>
 	</members>

@@ -149,7 +149,7 @@
 		<member name="color_regions" type="Dictionary" setter="set_color_regions" getter="get_color_regions" default="{}">
 			Sets the color regions. All existing regions will be removed. The [Dictionary] key is the region start and end key, separated by a space. The value is the region color.
 		</member>
-		<member name="function_color" type="Color" setter="set_function_color" getter="get_function_color" default="Color( 0, 0, 0, 1 )">
+		<member name="function_color" type="Color" setter="set_function_color" getter="get_function_color" default="Color(0, 0, 0, 1)">
 			Sets color for functions. A function is a non-keyword string followed by a '('.
 		</member>
 		<member name="keyword_colors" type="Dictionary" setter="set_keyword_colors" getter="get_keyword_colors" default="{}">
@@ -158,13 +158,13 @@
 		<member name="member_keyword_colors" type="Dictionary" setter="set_member_keyword_colors" getter="get_member_keyword_colors" default="{}">
 			Sets the member keyword colors. All existing member keyword will be removed. The [Dictionary] key is the member keyword. The value is the member keyword color.
 		</member>
-		<member name="member_variable_color" type="Color" setter="set_member_variable_color" getter="get_member_variable_color" default="Color( 0, 0, 0, 1 )">
+		<member name="member_variable_color" type="Color" setter="set_member_variable_color" getter="get_member_variable_color" default="Color(0, 0, 0, 1)">
 			Sets color for member variables. A member variable is non-keyword, non-function string proceeded with a '.'.
 		</member>
-		<member name="number_color" type="Color" setter="set_number_color" getter="get_number_color" default="Color( 0, 0, 0, 1 )">
+		<member name="number_color" type="Color" setter="set_number_color" getter="get_number_color" default="Color(0, 0, 0, 1)">
 			Sets the color for numbers.
 		</member>
-		<member name="symbol_color" type="Color" setter="set_symbol_color" getter="get_symbol_color" default="Color( 0, 0, 0, 1 )">
+		<member name="symbol_color" type="Color" setter="set_symbol_color" getter="get_symbol_color" default="Color(0, 0, 0, 1)">
 			Sets the color for symbols.
 		</member>
 	</members>

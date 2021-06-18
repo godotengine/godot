@@ -11,7 +11,7 @@
 	<methods>
 	</methods>
 	<members>
-		<member name="data" type="PackedByteArray" setter="set_data" getter="get_data" default="PackedByteArray(  )">
+		<member name="data" type="PackedByteArray" setter="set_data" getter="get_data" default="PackedByteArray()">
 			Contains the audio data in bytes.
 		</member>
 		<member name="loop" type="bool" setter="set_loop" getter="has_loop" default="false">

@@ -20,7 +20,7 @@
 		<member name="collision_mask" type="int" setter="set_collision_mask" getter="get_collision_mask" default="2147483647">
 			The physics layer(s) the query will take into account (as a bitmask). See [url=https://docs.godotengine.org/en/latest/tutorials/physics/physics_introduction.html#collision-layers-and-masks]Collision layers and masks[/url] in the documentation for more information.
 		</member>
-		<member name="exclude" type="Array" setter="set_exclude" getter="get_exclude" default="[  ]">
+		<member name="exclude" type="Array" setter="set_exclude" getter="get_exclude" default="[]">
 			The list of objects or object [RID]s that will be excluded from collisions.
 		</member>
 		<member name="margin" type="float" setter="set_margin" getter="get_margin" default="0.0">
@@ -60,7 +60,7 @@
 				[/csharp]
 				[/codeblocks]
 		</member>
-		<member name="transform" type="Transform3D" setter="set_transform" getter="get_transform" default="Transform3D( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0 )">
+		<member name="transform" type="Transform3D" setter="set_transform" getter="get_transform" default="Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)">
 			The queried shape's transform matrix.
 		</member>
 	</members>

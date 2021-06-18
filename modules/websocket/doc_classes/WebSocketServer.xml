@@ -63,7 +63,7 @@
 			</return>
 			<argument index="0" name="port" type="int">
 			</argument>
-			<argument index="1" name="protocols" type="PackedStringArray" default="PackedStringArray(  )">
+			<argument index="1" name="protocols" type="PackedStringArray" default="PackedStringArray()">
 			</argument>
 			<argument index="2" name="gd_mp_api" type="bool" default="false">
 			</argument>

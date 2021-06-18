@@ -72,7 +72,7 @@
 		</method>
 	</methods>
 	<members>
-		<member name="albedo_color" type="Color" setter="set_albedo" getter="get_albedo" default="Color( 1, 1, 1, 1 )">
+		<member name="albedo_color" type="Color" setter="set_albedo" getter="get_albedo" default="Color(1, 1, 1, 1)">
 			The material's base color.
 		</member>
 		<member name="albedo_tex_force_srgb" type="bool" setter="set_flag" getter="get_flag" default="false">
@@ -117,7 +117,7 @@
 		<member name="ao_texture_channel" type="int" setter="set_ao_texture_channel" getter="get_ao_texture_channel" enum="BaseMaterial3D.TextureChannel" default="0">
 			Specifies the channel of the [member ao_texture] in which the ambient occlusion information is stored. This is useful when you store the information for multiple effects in a single texture. For example if you stored metallic in the red channel, roughness in the blue, and ambient occlusion in the green you could reduce the number of textures you use.
 		</member>
-		<member name="backlight" type="Color" setter="set_backlight" getter="get_backlight" default="Color( 0, 0, 0, 1 )">
+		<member name="backlight" type="Color" setter="set_backlight" getter="get_backlight" default="Color(0, 0, 0, 1)">
 			The color used by the backlight effect. Represents the light passing through an object.
 		</member>
 		<member name="backlight_enabled" type="bool" setter="set_feature" getter="get_feature" default="false">
@@ -195,7 +195,7 @@
 		<member name="distance_fade_mode" type="int" setter="set_distance_fade" getter="get_distance_fade" enum="BaseMaterial3D.DistanceFadeMode" default="0">
 			Specifies which type of fade to use. Can be any of the [enum DistanceFadeMode]s.
 		</member>
-		<member name="emission" type="Color" setter="set_emission" getter="get_emission" default="Color( 0, 0, 0, 1 )">
+		<member name="emission" type="Color" setter="set_emission" getter="get_emission" default="Color(0, 0, 0, 1)">
 			The emitted light's color. See [member emission_enabled].
 		</member>
 		<member name="emission_enabled" type="bool" setter="set_feature" getter="get_feature" default="false">
@@ -345,7 +345,7 @@
 		</member>
 		<member name="subsurf_scatter_transmittance_boost" type="float" setter="set_transmittance_boost" getter="get_transmittance_boost" default="0.0">
 		</member>
-		<member name="subsurf_scatter_transmittance_color" type="Color" setter="set_transmittance_color" getter="get_transmittance_color" default="Color( 1, 1, 1, 1 )">
+		<member name="subsurf_scatter_transmittance_color" type="Color" setter="set_transmittance_color" getter="get_transmittance_color" default="Color(1, 1, 1, 1)">
 		</member>
 		<member name="subsurf_scatter_transmittance_curve" type="float" setter="set_transmittance_curve" getter="get_transmittance_curve" default="1.0">
 		</member>
@@ -370,10 +370,10 @@
 			If [code]true[/code], render point size can be changed.
 			[b]Note:[/b] this is only effective for objects whose geometry is point-based rather than triangle-based. See also [member point_size].
 		</member>
-		<member name="uv1_offset" type="Vector3" setter="set_uv1_offset" getter="get_uv1_offset" default="Vector3( 0, 0, 0 )">
+		<member name="uv1_offset" type="Vector3" setter="set_uv1_offset" getter="get_uv1_offset" default="Vector3(0, 0, 0)">
 			How much to offset the [code]UV[/code] coordinates. This amount will be added to [code]UV[/code] in the vertex function. This can be used to offset a texture.
 		</member>
-		<member name="uv1_scale" type="Vector3" setter="set_uv1_scale" getter="get_uv1_scale" default="Vector3( 1, 1, 1 )">
+		<member name="uv1_scale" type="Vector3" setter="set_uv1_scale" getter="get_uv1_scale" default="Vector3(1, 1, 1)">
 			How much to scale the [code]UV[/code] coordinates. This is multiplied by [code]UV[/code] in the vertex function.
 		</member>
 		<member name="uv1_triplanar" type="bool" setter="set_flag" getter="get_flag" default="false">
@@ -385,10 +385,10 @@
 		<member name="uv1_world_triplanar" type="bool" setter="set_flag" getter="get_flag" default="false">
 			If [code]true[/code], triplanar mapping for [code]UV[/code] is calculated in world space rather than object local space. See also [member uv1_triplanar].
 		</member>
-		<member name="uv2_offset" type="Vector3" setter="set_uv2_offset" getter="get_uv2_offset" default="Vector3( 0, 0, 0 )">
+		<member name="uv2_offset" type="Vector3" setter="set_uv2_offset" getter="get_uv2_offset" default="Vector3(0, 0, 0)">
 			How much to offset the [code]UV2[/code] coordinates. This amount will be added to [code]UV2[/code] in the vertex function. This can be used to offset a texture.
 		</member>
-		<member name="uv2_scale" type="Vector3" setter="set_uv2_scale" getter="get_uv2_scale" default="Vector3( 1, 1, 1 )">
+		<member name="uv2_scale" type="Vector3" setter="set_uv2_scale" getter="get_uv2_scale" default="Vector3(1, 1, 1)">
 			How much to scale the [code]UV2[/code] coordinates. This is multiplied by [code]UV2[/code] in the vertex function.
 		</member>
 		<member name="uv2_triplanar" type="bool" setter="set_flag" getter="get_flag" default="false">

@@ -301,7 +301,7 @@
 		</member>
 	</members>
 	<constants>
-		<constant name="IDENTITY" value="Quaternion( 0, 0, 0, 1 )">
+		<constant name="IDENTITY" value="Quaternion(0, 0, 0, 1)">
 			The identity quaternion, representing no rotation. Equivalent to an identity [Basis] matrix. If a vector is transformed by an identity quaternion, it will not change.
 		</constant>
 	</constants>
