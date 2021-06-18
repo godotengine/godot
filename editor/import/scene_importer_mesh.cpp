@@ -215,6 +215,7 @@ void EditorSceneImporterMesh::generate_lods() {
 		int index_target = indices.size() * threshold;
 		float max_mesh_error_percentage = 1e0f;
 		float mesh_error = 0.0f;
+		float scale = SurfaceTool::simplify_scale_func((const float *)vertices_ptr, vertex_count, sizeof(Vector3));
 		while (index_target > min_indices) {
 			Vector<int> new_indices;
 			new_indices.resize(indices.size());
@@ -223,7 +224,7 @@ void EditorSceneImporterMesh::generate_lods() {
 				break;
 			}
 			Surface::LOD lod;
-			lod.distance = mesh_error;
+			lod.distance = mesh_error * scale;
 			if (Math::is_zero_approx(mesh_error)) {
 				break;
 			}
