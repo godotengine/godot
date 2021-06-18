@@ -1475,8 +1475,6 @@ void EditorFileSystem::update_file(const String &p_file) {
 
 	if (cpos == -1) {
 		// The file did not exist, it was added.
-
-		late_added_files.insert(p_file); // Remember that it was added. This mean it will be scanned and imported on editor restart.
 		int idx = 0;
 		String file_name = p_file.get_file();
 
@@ -1723,9 +1721,6 @@ void EditorFileSystem::_reimport_file(const String &p_file, const Map<StringName
 				}
 			}
 		}
-
-	} else {
-		late_added_files.insert(p_file); //imported files do not call update_file(), but just in case..
 	}
 
 	if (importer_name == "keep") {
