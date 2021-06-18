@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  skeleton_modification_3d.h                                           */
+/*  skeleton_modification_3d_lookat.h                                    */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,49 +28,62 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef SKELETONMODIFICATION3D_H
-#define SKELETONMODIFICATION3D_H
-
 #include "scene/3d/skeleton_3d.h"
-#include "scene/resources/skeleton_modification_stack_3d.h"
+#include "scene/resources/skeleton_modification_3d.h"
 
-class SkeletonModificationStack3D;
+#ifndef SKELETONMODIFICATION3DLOOKAT_H
+#define SKELETONMODIFICATION3DLOOKAT_H
 
-class SkeletonModification3D : public Resource {
-	GDCLASS(SkeletonModification3D, Resource);
-	friend class Skeleton3D;
-	friend class SkeletonModificationStack3D;
+class SkeletonModification3DLookAt : public SkeletonModification3D {
+	GDCLASS(SkeletonModification3DLookAt, SkeletonModification3D);
+
+private:
+	String bone_name = "";
+	int bone_idx = -1;
+	NodePath target_node;
+	ObjectID target_node_cache;
+
+	Vector3 additional_rotation = Vector3(1, 0, 0);
+	bool lock_rotation_to_plane = false;
+	int lock_rotation_plane = ROTATION_PLANE_X;
+
+	void update_cache();
 
 protected:
 	static void _bind_methods();
-
-	SkeletonModificationStack3D *stack;
-	int execution_mode = 0; // 0 = process
-
-	bool enabled = true;
-	bool is_setup = false;
-	bool execution_error_found = false;
-
-	bool _print_execution_error(bool p_condition, String p_message);
+	bool _get(const StringName &p_path, Variant &r_ret) const;
+	bool _set(const StringName &p_path, const Variant &p_value);
+	void _get_property_list(List<PropertyInfo> *p_list) const;
 
 public:
-	virtual void execute(float delta);
-	virtual void setup_modification(SkeletonModificationStack3D *p_stack);
+	enum ROTATION_PLANE {
+		ROTATION_PLANE_X,
+		ROTATION_PLANE_Y,
+		ROTATION_PLANE_Z
+	};
 
-	float clamp_angle(float angle, float min_bound, float max_bound, bool invert);
+	void execute(float delta) override;
+	void setup_modification(SkeletonModificationStack3D *p_stack) override;
 
-	void set_enabled(bool p_enabled);
-	bool get_enabled();
+	void set_bone_name(String p_name);
+	String get_bone_name() const;
 
-	void set_execution_mode(int p_mode);
-	int get_execution_mode() const;
+	void set_bone_index(int p_idx);
+	int get_bone_index() const;
 
-	Ref<SkeletonModificationStack3D> get_modification_stack();
+	void set_target_node(const NodePath &p_target_node);
+	NodePath get_target_node() const;
 
-	void set_is_setup(bool p_setup);
-	bool get_is_setup() const;
+	void set_additional_rotation(Vector3 p_offset);
+	Vector3 get_additional_rotation() const;
 
-	SkeletonModification3D();
+	void set_lock_rotation_to_plane(bool p_lock_to_plane);
+	bool get_lock_rotation_to_plane() const;
+	void set_lock_rotation_plane(int p_plane);
+	int get_lock_rotation_plane() const;
+
+	SkeletonModification3DLookAt();
+	~SkeletonModification3DLookAt();
 };
 
-#endif // SKELETONMODIFICATION3D_H
+#endif //SKELETONMODIFICATION3DLOOKAT_H
