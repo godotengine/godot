@@ -31,33 +31,37 @@
 #include "physical_bone_2d.h"
 
 void PhysicalBone2D::_notification(int p_what) {
-	if (p_what == NOTIFICATION_INTERNAL_PHYSICS_PROCESS) {
-		// Position the RigidBody in the correct position
-		if (follow_bone_when_simulating) {
-			_position_at_bone2d();
-		}
+	switch (p_what) {
+		case NOTIFICATION_INTERNAL_PHYSICS_PROCESS: {
+			// Position the RigidBody in the correct position.
+			if (follow_bone_when_simulating) {
+				_position_at_bone2d();
+			}
 
-		// Keep the child joint in the correct position.
-		if (child_joint && auto_configure_joint) {
-			child_joint->set_global_position(get_global_position());
-		}
-	} else if (p_what == NOTIFICATION_READY) {
-		_find_skeleton_parent();
-		_find_joint_child();
+			// Keep the child joint in the correct position.
+			if (child_joint && auto_configure_joint) {
+				child_joint->set_global_position(get_global_position());
+			}
+		} break;
 
-		// Configure joint
-		if (child_joint && auto_configure_joint) {
-			_auto_configure_joint();
-		}
+		case NOTIFICATION_READY: {
+			_find_skeleton_parent();
+			_find_joint_child();
 
-		// Simulate physics if set
-		if (simulate_physics) {
-			_start_physics_simulation();
-		} else {
-			_stop_physics_simulation();
-		}
+			// Configure joint.
+			if (child_joint && auto_configure_joint) {
+				_auto_configure_joint();
+			}
 
-		set_physics_process_internal(true);
+			// Simulate physics if set.
+			if (simulate_physics) {
+				_start_physics_simulation();
+			} else {
+				_stop_physics_simulation();
+			}
+
+			set_physics_process_internal(true);
+		} break;
 	}
 }
 
@@ -156,16 +160,16 @@ void PhysicalBone2D::_start_physics_simulation() {
 	// Apply the correct mode
 	RigidBody2D::Mode rigid_mode = get_mode();
 	if (rigid_mode == RigidBody2D::MODE_STATIC) {
-		PhysicsServer2D::get_singleton()->body_set_mode(get_rid(), PhysicsServer2D::BodyMode::BODY_MODE_STATIC);
+		set_body_mode(PhysicsServer2D::BODY_MODE_STATIC);
 	} else if (rigid_mode == RigidBody2D::MODE_DYNAMIC) {
-		PhysicsServer2D::get_singleton()->body_set_mode(get_rid(), PhysicsServer2D::BodyMode::BODY_MODE_DYNAMIC);
+		set_body_mode(PhysicsServer2D::BODY_MODE_DYNAMIC);
 	} else if (rigid_mode == RigidBody2D::MODE_KINEMATIC) {
-		PhysicsServer2D::get_singleton()->body_set_mode(get_rid(), PhysicsServer2D::BodyMode::BODY_MODE_KINEMATIC);
+		set_body_mode(PhysicsServer2D::BODY_MODE_KINEMATIC);
 	} else if (rigid_mode == RigidBody2D::MODE_DYNAMIC_LOCKED) {
-		PhysicsServer2D::get_singleton()->body_set_mode(get_rid(), PhysicsServer2D::BodyMode::BODY_MODE_DYNAMIC_LOCKED);
+		set_body_mode(PhysicsServer2D::BODY_MODE_DYNAMIC_LOCKED);
 	} else {
-		// Default to Rigid
-		PhysicsServer2D::get_singleton()->body_set_mode(get_rid(), PhysicsServer2D::BodyMode::BODY_MODE_DYNAMIC);
+		// Default to Dynamic.
+		set_body_mode(PhysicsServer2D::BODY_MODE_DYNAMIC);
 	}
 
 	_internal_simulate_physics = true;

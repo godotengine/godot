@@ -32,7 +32,6 @@
 
 #include "core/config/engine.h"
 #include "scene/scene_string_names.h"
-#include "servers/physics_server_3d.h"
 
 void CollisionObject3D::_notification(int p_what) {
 	switch (p_what) {
@@ -59,15 +58,22 @@ void CollisionObject3D::_notification(int p_what) {
 				PhysicsServer3D::get_singleton()->body_set_state(rid, PhysicsServer3D::BODY_STATE_TRANSFORM, get_global_transform());
 			}
 
-			RID space = get_world_3d()->get_space();
-			if (area) {
-				PhysicsServer3D::get_singleton()->area_set_space(rid, space);
-			} else {
-				PhysicsServer3D::get_singleton()->body_set_space(rid, space);
+			bool disabled = !is_enabled();
+
+			if (disabled && (disable_mode != DISABLE_MODE_REMOVE)) {
+				_apply_disabled();
+			}
+
+			if (!disabled || (disable_mode != DISABLE_MODE_REMOVE)) {
+				RID space = get_world_3d()->get_space();
+				if (area) {
+					PhysicsServer3D::get_singleton()->area_set_space(rid, space);
+				} else {
+					PhysicsServer3D::get_singleton()->body_set_space(rid, space);
+				}
 			}
 
 			_update_pickable();
-			//get space
 		} break;
 
 		case NOTIFICATION_TRANSFORM_CHANGED: {
@@ -78,19 +84,34 @@ void CollisionObject3D::_notification(int p_what) {
 			}
 
 			_on_transform_changed();
-
 		} break;
+
 		case NOTIFICATION_VISIBILITY_CHANGED: {
 			_update_pickable();
-
 		} break;
+
 		case NOTIFICATION_EXIT_WORLD: {
-			if (area) {
-				PhysicsServer3D::get_singleton()->area_set_space(rid, RID());
-			} else {
-				PhysicsServer3D::get_singleton()->body_set_space(rid, RID());
+			bool disabled = !is_enabled();
+
+			if (!disabled || (disable_mode != DISABLE_MODE_REMOVE)) {
+				if (area) {
+					PhysicsServer3D::get_singleton()->area_set_space(rid, RID());
+				} else {
+					PhysicsServer3D::get_singleton()->body_set_space(rid, RID());
+				}
 			}
 
+			if (disabled && (disable_mode != DISABLE_MODE_REMOVE)) {
+				_apply_enabled();
+			}
+		} break;
+
+		case NOTIFICATION_DISABLED: {
+			_apply_disabled();
+		} break;
+
+		case NOTIFICATION_ENABLED: {
+			_apply_enabled();
 		} break;
 	}
 }
@@ -153,6 +174,79 @@ bool CollisionObject3D::get_collision_mask_bit(int p_bit) const {
 	return get_collision_mask() & (1 << p_bit);
 }
 
+void CollisionObject3D::set_disable_mode(DisableMode p_mode) {
+	if (disable_mode == p_mode) {
+		return;
+	}
+
+	bool disabled = is_inside_tree() && !is_enabled();
+
+	if (disabled) {
+		// Cancel previous disable mode.
+		_apply_enabled();
+	}
+
+	disable_mode = p_mode;
+
+	if (disabled) {
+		// Apply new disable mode.
+		_apply_disabled();
+	}
+}
+
+CollisionObject3D::DisableMode CollisionObject3D::get_disable_mode() const {
+	return disable_mode;
+}
+
+void CollisionObject3D::_apply_disabled() {
+	switch (disable_mode) {
+		case DISABLE_MODE_REMOVE: {
+			if (is_inside_tree()) {
+				if (area) {
+					PhysicsServer3D::get_singleton()->area_set_space(rid, RID());
+				} else {
+					PhysicsServer3D::get_singleton()->body_set_space(rid, RID());
+				}
+			}
+		} break;
+
+		case DISABLE_MODE_MAKE_STATIC: {
+			if (!area && (body_mode != PhysicsServer3D::BODY_MODE_STATIC)) {
+				PhysicsServer3D::get_singleton()->body_set_mode(rid, PhysicsServer3D::BODY_MODE_STATIC);
+			}
+		} break;
+
+		case DISABLE_MODE_KEEP_ACTIVE: {
+			// Nothing to do.
+		} break;
+	}
+}
+
+void CollisionObject3D::_apply_enabled() {
+	switch (disable_mode) {
+		case DISABLE_MODE_REMOVE: {
+			if (is_inside_tree()) {
+				RID space = get_world_3d()->get_space();
+				if (area) {
+					PhysicsServer3D::get_singleton()->area_set_space(rid, space);
+				} else {
+					PhysicsServer3D::get_singleton()->body_set_space(rid, space);
+				}
+			}
+		} break;
+
+		case DISABLE_MODE_MAKE_STATIC: {
+			if (!area && (body_mode != PhysicsServer3D::BODY_MODE_STATIC)) {
+				PhysicsServer3D::get_singleton()->body_set_mode(rid, body_mode);
+			}
+		} break;
+
+		case DISABLE_MODE_KEEP_ACTIVE: {
+			// Nothing to do.
+		} break;
+	}
+}
+
 void CollisionObject3D::_input_event(Node *p_camera, const Ref<InputEvent> &p_input_event, const Vector3 &p_pos, const Vector3 &p_normal, int p_shape) {
 	if (get_script_instance()) {
 		get_script_instance()->call(SceneStringNames::get_singleton()->_input_event, p_camera, p_input_event, p_pos, p_normal, p_shape);
@@ -172,6 +266,22 @@ void CollisionObject3D::_mouse_exit() {
 		get_script_instance()->call(SceneStringNames::get_singleton()->_mouse_exit);
 	}
 	emit_signal(SceneStringNames::get_singleton()->mouse_exited);
+}
+
+void CollisionObject3D::set_body_mode(PhysicsServer3D::BodyMode p_mode) {
+	ERR_FAIL_COND(area);
+
+	if (body_mode == p_mode) {
+		return;
+	}
+
+	body_mode = p_mode;
+
+	if (is_inside_tree() && !is_enabled() && (disable_mode == DISABLE_MODE_MAKE_STATIC)) {
+		return;
+	}
+
+	PhysicsServer3D::get_singleton()->body_set_mode(rid, p_mode);
 }
 
 void CollisionObject3D::_update_pickable() {
@@ -305,6 +415,8 @@ void CollisionObject3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_collision_layer_bit", "bit"), &CollisionObject3D::get_collision_layer_bit);
 	ClassDB::bind_method(D_METHOD("set_collision_mask_bit", "bit", "value"), &CollisionObject3D::set_collision_mask_bit);
 	ClassDB::bind_method(D_METHOD("get_collision_mask_bit", "bit"), &CollisionObject3D::get_collision_mask_bit);
+	ClassDB::bind_method(D_METHOD("set_disable_mode", "mode"), &CollisionObject3D::set_disable_mode);
+	ClassDB::bind_method(D_METHOD("get_disable_mode"), &CollisionObject3D::get_disable_mode);
 	ClassDB::bind_method(D_METHOD("set_ray_pickable", "ray_pickable"), &CollisionObject3D::set_ray_pickable);
 	ClassDB::bind_method(D_METHOD("is_ray_pickable"), &CollisionObject3D::is_ray_pickable);
 	ClassDB::bind_method(D_METHOD("set_capture_input_on_drag", "enable"), &CollisionObject3D::set_capture_input_on_drag);
@@ -332,6 +444,8 @@ void CollisionObject3D::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("mouse_entered"));
 	ADD_SIGNAL(MethodInfo("mouse_exited"));
 
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "disable_mode", PROPERTY_HINT_ENUM, "Remove,MakeStatic,KeepActive"), "set_disable_mode", "get_disable_mode");
+
 	ADD_GROUP("Collision", "collision_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "collision_layer", PROPERTY_HINT_LAYERS_3D_PHYSICS), "set_collision_layer", "get_collision_layer");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "collision_mask", PROPERTY_HINT_LAYERS_3D_PHYSICS), "set_collision_mask", "get_collision_mask");
@@ -339,6 +453,10 @@ void CollisionObject3D::_bind_methods() {
 	ADD_GROUP("Input", "input_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "input_ray_pickable"), "set_ray_pickable", "is_ray_pickable");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "input_capture_on_drag"), "set_capture_input_on_drag", "get_capture_input_on_drag");
+
+	BIND_ENUM_CONSTANT(DISABLE_MODE_REMOVE);
+	BIND_ENUM_CONSTANT(DISABLE_MODE_MAKE_STATIC);
+	BIND_ENUM_CONSTANT(DISABLE_MODE_KEEP_ACTIVE);
 }
 
 uint32_t CollisionObject3D::create_shape_owner(Object *p_owner) {
@@ -540,8 +658,8 @@ CollisionObject3D::CollisionObject3D(RID p_rid, bool p_area) {
 		PhysicsServer3D::get_singleton()->area_attach_object_instance_id(rid, get_instance_id());
 	} else {
 		PhysicsServer3D::get_singleton()->body_attach_object_instance_id(rid, get_instance_id());
+		PhysicsServer3D::get_singleton()->body_set_mode(rid, body_mode);
 	}
-	//set_transform_notify(true);
 }
 
 void CollisionObject3D::set_capture_input_on_drag(bool p_capture) {

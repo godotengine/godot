@@ -31,7 +31,6 @@
 #include "collision_object_2d.h"
 
 #include "scene/scene_string_names.h"
-#include "servers/physics_server_2d.h"
 
 void CollisionObject2D::_notification(int p_what) {
 	switch (p_what) {
@@ -44,16 +43,22 @@ void CollisionObject2D::_notification(int p_what) {
 				PhysicsServer2D::get_singleton()->body_set_state(rid, PhysicsServer2D::BODY_STATE_TRANSFORM, global_transform);
 			}
 
-			RID space = get_world_2d()->get_space();
-			if (area) {
-				PhysicsServer2D::get_singleton()->area_set_space(rid, space);
-			} else {
-				PhysicsServer2D::get_singleton()->body_set_space(rid, space);
+			bool disabled = !is_enabled();
+
+			if (disabled && (disable_mode != DISABLE_MODE_REMOVE)) {
+				_apply_disabled();
+			}
+
+			if (!disabled || (disable_mode != DISABLE_MODE_REMOVE)) {
+				RID space = get_world_2d()->get_space();
+				if (area) {
+					PhysicsServer2D::get_singleton()->area_set_space(rid, space);
+				} else {
+					PhysicsServer2D::get_singleton()->body_set_space(rid, space);
+				}
 			}
 
 			_update_pickable();
-
-			//get space
 		} break;
 
 		case NOTIFICATION_ENTER_CANVAS: {
@@ -67,6 +72,7 @@ void CollisionObject2D::_notification(int p_what) {
 		case NOTIFICATION_VISIBILITY_CHANGED: {
 			_update_pickable();
 		} break;
+
 		case NOTIFICATION_TRANSFORM_CHANGED: {
 			if (only_update_transform_changes) {
 				return;
@@ -79,15 +85,22 @@ void CollisionObject2D::_notification(int p_what) {
 			} else {
 				PhysicsServer2D::get_singleton()->body_set_state(rid, PhysicsServer2D::BODY_STATE_TRANSFORM, global_transform);
 			}
-
 		} break;
+
 		case NOTIFICATION_EXIT_TREE: {
-			if (area) {
-				PhysicsServer2D::get_singleton()->area_set_space(rid, RID());
-			} else {
-				PhysicsServer2D::get_singleton()->body_set_space(rid, RID());
+			bool disabled = !is_enabled();
+
+			if (!disabled || (disable_mode != DISABLE_MODE_REMOVE)) {
+				if (area) {
+					PhysicsServer2D::get_singleton()->area_set_space(rid, RID());
+				} else {
+					PhysicsServer2D::get_singleton()->body_set_space(rid, RID());
+				}
 			}
 
+			if (disabled && (disable_mode != DISABLE_MODE_REMOVE)) {
+				_apply_enabled();
+			}
 		} break;
 
 		case NOTIFICATION_EXIT_CANVAS: {
@@ -96,6 +109,14 @@ void CollisionObject2D::_notification(int p_what) {
 			} else {
 				PhysicsServer2D::get_singleton()->body_attach_canvas_instance_id(rid, ObjectID());
 			}
+		} break;
+
+		case NOTIFICATION_DISABLED: {
+			_apply_disabled();
+		} break;
+
+		case NOTIFICATION_ENABLED: {
+			_apply_enabled();
 		} break;
 	}
 }
@@ -156,6 +177,79 @@ void CollisionObject2D::set_collision_mask_bit(int p_bit, bool p_value) {
 bool CollisionObject2D::get_collision_mask_bit(int p_bit) const {
 	ERR_FAIL_INDEX_V_MSG(p_bit, 32, false, "Collision mask bit must be between 0 and 31 inclusive.");
 	return get_collision_mask() & (1 << p_bit);
+}
+
+void CollisionObject2D::set_disable_mode(DisableMode p_mode) {
+	if (disable_mode == p_mode) {
+		return;
+	}
+
+	bool disabled = is_inside_tree() && !is_enabled();
+
+	if (disabled) {
+		// Cancel previous disable mode.
+		_apply_enabled();
+	}
+
+	disable_mode = p_mode;
+
+	if (disabled) {
+		// Apply new disable mode.
+		_apply_disabled();
+	}
+}
+
+CollisionObject2D::DisableMode CollisionObject2D::get_disable_mode() const {
+	return disable_mode;
+}
+
+void CollisionObject2D::_apply_disabled() {
+	switch (disable_mode) {
+		case DISABLE_MODE_REMOVE: {
+			if (is_inside_tree()) {
+				if (area) {
+					PhysicsServer2D::get_singleton()->area_set_space(rid, RID());
+				} else {
+					PhysicsServer2D::get_singleton()->body_set_space(rid, RID());
+				}
+			}
+		} break;
+
+		case DISABLE_MODE_MAKE_STATIC: {
+			if (!area && (body_mode != PhysicsServer2D::BODY_MODE_STATIC)) {
+				PhysicsServer2D::get_singleton()->body_set_mode(rid, PhysicsServer2D::BODY_MODE_STATIC);
+			}
+		} break;
+
+		case DISABLE_MODE_KEEP_ACTIVE: {
+			// Nothing to do.
+		} break;
+	}
+}
+
+void CollisionObject2D::_apply_enabled() {
+	switch (disable_mode) {
+		case DISABLE_MODE_REMOVE: {
+			if (is_inside_tree()) {
+				RID space = get_world_2d()->get_space();
+				if (area) {
+					PhysicsServer2D::get_singleton()->area_set_space(rid, space);
+				} else {
+					PhysicsServer2D::get_singleton()->body_set_space(rid, space);
+				}
+			}
+		} break;
+
+		case DISABLE_MODE_MAKE_STATIC: {
+			if (!area && (body_mode != PhysicsServer2D::BODY_MODE_STATIC)) {
+				PhysicsServer2D::get_singleton()->body_set_mode(rid, body_mode);
+			}
+		} break;
+
+		case DISABLE_MODE_KEEP_ACTIVE: {
+			// Nothing to do.
+		} break;
+	}
 }
 
 uint32_t CollisionObject2D::create_shape_owner(Object *p_owner) {
@@ -412,6 +506,22 @@ bool CollisionObject2D::is_only_update_transform_changes_enabled() const {
 	return only_update_transform_changes;
 }
 
+void CollisionObject2D::set_body_mode(PhysicsServer2D::BodyMode p_mode) {
+	ERR_FAIL_COND(area);
+
+	if (body_mode == p_mode) {
+		return;
+	}
+
+	body_mode = p_mode;
+
+	if (is_inside_tree() && !is_enabled() && (disable_mode == DISABLE_MODE_MAKE_STATIC)) {
+		return;
+	}
+
+	PhysicsServer2D::get_singleton()->body_set_mode(rid, p_mode);
+}
+
 void CollisionObject2D::_update_pickable() {
 	if (!is_inside_tree()) {
 		return;
@@ -445,6 +555,8 @@ void CollisionObject2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_collision_layer_bit", "bit"), &CollisionObject2D::get_collision_layer_bit);
 	ClassDB::bind_method(D_METHOD("set_collision_mask_bit", "bit", "value"), &CollisionObject2D::set_collision_mask_bit);
 	ClassDB::bind_method(D_METHOD("get_collision_mask_bit", "bit"), &CollisionObject2D::get_collision_mask_bit);
+	ClassDB::bind_method(D_METHOD("set_disable_mode", "mode"), &CollisionObject2D::set_disable_mode);
+	ClassDB::bind_method(D_METHOD("get_disable_mode"), &CollisionObject2D::get_disable_mode);
 	ClassDB::bind_method(D_METHOD("set_pickable", "enabled"), &CollisionObject2D::set_pickable);
 	ClassDB::bind_method(D_METHOD("is_pickable"), &CollisionObject2D::is_pickable);
 	ClassDB::bind_method(D_METHOD("create_shape_owner", "owner"), &CollisionObject2D::create_shape_owner);
@@ -473,12 +585,18 @@ void CollisionObject2D::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("mouse_entered"));
 	ADD_SIGNAL(MethodInfo("mouse_exited"));
 
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "disable_mode", PROPERTY_HINT_ENUM, "Remove,MakeStatic,KeepActive"), "set_disable_mode", "get_disable_mode");
+
 	ADD_GROUP("Collision", "collision_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "collision_layer", PROPERTY_HINT_LAYERS_2D_PHYSICS), "set_collision_layer", "get_collision_layer");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "collision_mask", PROPERTY_HINT_LAYERS_2D_PHYSICS), "set_collision_mask", "get_collision_mask");
 
 	ADD_GROUP("Input", "input_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "input_pickable"), "set_pickable", "is_pickable");
+
+	BIND_ENUM_CONSTANT(DISABLE_MODE_REMOVE);
+	BIND_ENUM_CONSTANT(DISABLE_MODE_MAKE_STATIC);
+	BIND_ENUM_CONSTANT(DISABLE_MODE_KEEP_ACTIVE);
 }
 
 CollisionObject2D::CollisionObject2D(RID p_rid, bool p_area) {
@@ -493,6 +611,7 @@ CollisionObject2D::CollisionObject2D(RID p_rid, bool p_area) {
 		PhysicsServer2D::get_singleton()->area_attach_object_instance_id(rid, get_instance_id());
 	} else {
 		PhysicsServer2D::get_singleton()->body_attach_object_instance_id(rid, get_instance_id());
+		PhysicsServer2D::get_singleton()->body_set_mode(rid, body_mode);
 	}
 }
 

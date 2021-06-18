@@ -65,7 +65,7 @@ void PhysicsBody3D::_bind_methods() {
 
 PhysicsBody3D::PhysicsBody3D(PhysicsServer3D::BodyMode p_mode) :
 		CollisionObject3D(PhysicsServer3D::get_singleton()->body_create(), false) {
-	PhysicsServer3D::get_singleton()->body_set_mode(get_rid(), p_mode);
+	set_body_mode(p_mode);
 }
 
 PhysicsBody3D::~PhysicsBody3D() {
@@ -200,9 +200,9 @@ void StaticBody3D::set_kinematic_motion_enabled(bool p_enabled) {
 	kinematic_motion = p_enabled;
 
 	if (kinematic_motion) {
-		PhysicsServer3D::get_singleton()->body_set_mode(get_rid(), PhysicsServer3D::BODY_MODE_KINEMATIC);
+		set_body_mode(PhysicsServer3D::BODY_MODE_KINEMATIC);
 	} else {
-		PhysicsServer3D::get_singleton()->body_set_mode(get_rid(), PhysicsServer3D::BODY_MODE_STATIC);
+		set_body_mode(PhysicsServer3D::BODY_MODE_STATIC);
 	}
 
 	_update_kinematic_motion();
@@ -249,35 +249,37 @@ Vector3 StaticBody3D::get_angular_velocity() const {
 }
 
 void StaticBody3D::_notification(int p_what) {
-	if (p_what == NOTIFICATION_INTERNAL_PHYSICS_PROCESS) {
+	switch (p_what) {
+		case NOTIFICATION_INTERNAL_PHYSICS_PROCESS: {
 #ifdef TOOLS_ENABLED
-		if (Engine::get_singleton()->is_editor_hint()) {
-			return;
-		}
+			if (Engine::get_singleton()->is_editor_hint()) {
+				return;
+			}
 #endif
 
-		ERR_FAIL_COND(!kinematic_motion);
+			ERR_FAIL_COND(!kinematic_motion);
 
-		real_t delta_time = get_physics_process_delta_time();
+			real_t delta_time = get_physics_process_delta_time();
 
-		Transform3D new_transform = get_global_transform();
-		new_transform.origin += constant_linear_velocity * delta_time;
+			Transform3D new_transform = get_global_transform();
+			new_transform.origin += constant_linear_velocity * delta_time;
 
-		real_t ang_vel = constant_angular_velocity.length();
-		if (!Math::is_zero_approx(ang_vel)) {
-			Vector3 ang_vel_axis = constant_angular_velocity / ang_vel;
-			Basis rot(ang_vel_axis, ang_vel * delta_time);
-			new_transform.basis = rot * new_transform.basis;
-			new_transform.orthonormalize();
-		}
+			real_t ang_vel = constant_angular_velocity.length();
+			if (!Math::is_zero_approx(ang_vel)) {
+				Vector3 ang_vel_axis = constant_angular_velocity / ang_vel;
+				Basis rot(ang_vel_axis, ang_vel * delta_time);
+				new_transform.basis = rot * new_transform.basis;
+				new_transform.orthonormalize();
+			}
 
-		PhysicsServer3D::get_singleton()->body_set_state(get_rid(), PhysicsServer3D::BODY_STATE_TRANSFORM, new_transform);
+			PhysicsServer3D::get_singleton()->body_set_state(get_rid(), PhysicsServer3D::BODY_STATE_TRANSFORM, new_transform);
 
-		// Propagate transform change to node.
-		set_ignore_transform_notification(true);
-		set_global_transform(new_transform);
-		set_ignore_transform_notification(false);
-		_on_transform_changed();
+			// Propagate transform change to node.
+			set_ignore_transform_notification(true);
+			set_global_transform(new_transform);
+			set_ignore_transform_notification(false);
+			_on_transform_changed();
+		} break;
 	}
 }
 
@@ -565,18 +567,19 @@ void RigidBody3D::_direct_state_changed(Object *p_state) {
 
 void RigidBody3D::_notification(int p_what) {
 #ifdef TOOLS_ENABLED
-	if (p_what == NOTIFICATION_ENTER_TREE) {
-		if (Engine::get_singleton()->is_editor_hint()) {
-			set_notify_local_transform(true); //used for warnings and only in editor
-		}
-	}
+	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE: {
+			if (Engine::get_singleton()->is_editor_hint()) {
+				set_notify_local_transform(true); //used for warnings and only in editor
+			}
+		} break;
 
-	if (p_what == NOTIFICATION_LOCAL_TRANSFORM_CHANGED) {
-		if (Engine::get_singleton()->is_editor_hint()) {
-			update_configuration_warnings();
-		}
+		case NOTIFICATION_LOCAL_TRANSFORM_CHANGED: {
+			if (Engine::get_singleton()->is_editor_hint()) {
+				update_configuration_warnings();
+			}
+		} break;
 	}
-
 #endif
 }
 
@@ -584,18 +587,16 @@ void RigidBody3D::set_mode(Mode p_mode) {
 	mode = p_mode;
 	switch (p_mode) {
 		case MODE_DYNAMIC: {
-			PhysicsServer3D::get_singleton()->body_set_mode(get_rid(), PhysicsServer3D::BODY_MODE_DYNAMIC);
+			set_body_mode(PhysicsServer3D::BODY_MODE_DYNAMIC);
 		} break;
 		case MODE_STATIC: {
-			PhysicsServer3D::get_singleton()->body_set_mode(get_rid(), PhysicsServer3D::BODY_MODE_STATIC);
-
+			set_body_mode(PhysicsServer3D::BODY_MODE_STATIC);
 		} break;
 		case MODE_DYNAMIC_LOCKED: {
-			PhysicsServer3D::get_singleton()->body_set_mode(get_rid(), PhysicsServer3D::BODY_MODE_DYNAMIC_LOCKED);
-
+			set_body_mode(PhysicsServer3D::BODY_MODE_DYNAMIC_LOCKED);
 		} break;
 		case MODE_KINEMATIC: {
-			PhysicsServer3D::get_singleton()->body_set_mode(get_rid(), PhysicsServer3D::BODY_MODE_KINEMATIC);
+			set_body_mode(PhysicsServer3D::BODY_MODE_KINEMATIC);
 		} break;
 	}
 	update_configuration_warnings();
@@ -1233,14 +1234,16 @@ void CharacterBody3D::set_up_direction(const Vector3 &p_up_direction) {
 }
 
 void CharacterBody3D::_notification(int p_what) {
-	if (p_what == NOTIFICATION_ENTER_TREE) {
-		// Reset move_and_slide() data.
-		on_floor = false;
-		on_floor_body = RID();
-		on_ceiling = false;
-		on_wall = false;
-		motion_results.clear();
-		floor_velocity = Vector3();
+	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE: {
+			// Reset move_and_slide() data.
+			on_floor = false;
+			on_floor_body = RID();
+			on_ceiling = false;
+			on_wall = false;
+			motion_results.clear();
+			floor_velocity = Vector3();
+		} break;
 	}
 }
 
@@ -2095,7 +2098,8 @@ void PhysicalBone3D::_notification(int p_what) {
 				_reload_joint();
 			}
 			break;
-		case NOTIFICATION_EXIT_TREE:
+
+		case NOTIFICATION_EXIT_TREE: {
 			if (parent_skeleton) {
 				if (-1 != bone_id) {
 					parent_skeleton->unbind_physical_bone_from_bone(bone_id);
@@ -2105,12 +2109,13 @@ void PhysicalBone3D::_notification(int p_what) {
 			}
 			parent_skeleton = nullptr;
 			PhysicsServer3D::get_singleton()->joint_clear(joint);
-			break;
-		case NOTIFICATION_TRANSFORM_CHANGED:
+		} break;
+
+		case NOTIFICATION_TRANSFORM_CHANGED: {
 			if (Engine::get_singleton()->is_editor_hint()) {
 				update_offset();
 			}
-			break;
+		} break;
 	}
 }
 
@@ -2605,7 +2610,7 @@ void PhysicalBone3D::_start_physics_simulation() {
 		return;
 	}
 	reset_to_rest_position();
-	PhysicsServer3D::get_singleton()->body_set_mode(get_rid(), PhysicsServer3D::BODY_MODE_DYNAMIC);
+	set_body_mode(PhysicsServer3D::BODY_MODE_DYNAMIC);
 	PhysicsServer3D::get_singleton()->body_set_collision_layer(get_rid(), get_collision_layer());
 	PhysicsServer3D::get_singleton()->body_set_collision_mask(get_rid(), get_collision_mask());
 	PhysicsServer3D::get_singleton()->body_set_force_integration_callback(get_rid(), callable_mp(this, &PhysicalBone3D::_direct_state_changed));
@@ -2618,11 +2623,11 @@ void PhysicalBone3D::_stop_physics_simulation() {
 		return;
 	}
 	if (parent_skeleton->get_animate_physical_bones()) {
-		PhysicsServer3D::get_singleton()->body_set_mode(get_rid(), PhysicsServer3D::BODY_MODE_KINEMATIC);
+		set_body_mode(PhysicsServer3D::BODY_MODE_KINEMATIC);
 		PhysicsServer3D::get_singleton()->body_set_collision_layer(get_rid(), get_collision_layer());
 		PhysicsServer3D::get_singleton()->body_set_collision_mask(get_rid(), get_collision_mask());
 	} else {
-		PhysicsServer3D::get_singleton()->body_set_mode(get_rid(), PhysicsServer3D::BODY_MODE_STATIC);
+		set_body_mode(PhysicsServer3D::BODY_MODE_STATIC);
 		PhysicsServer3D::get_singleton()->body_set_collision_layer(get_rid(), 0);
 		PhysicsServer3D::get_singleton()->body_set_collision_mask(get_rid(), 0);
 	}
