@@ -100,34 +100,25 @@ void BoneAttachment3D::_get_property_list(List<PropertyInfo> *p_list) const {
 	}
 }
 
-String BoneAttachment3D::get_configuration_warning() const {
-	String warning = Node3D::get_configuration_warning();
+TypedArray<String> BoneAttachment3D::get_configuration_warnings() const {
+	TypedArray<String> warnings = Node3D::get_configuration_warnings();
 
 	if (use_external_skeleton) {
 		if (external_skeleton_node_cache.is_null()) {
-			if (warning != String()) {
-				warning += "\n\n";
-			}
-			warning += TTR("External Skeleton3D node not set! Please set a path to an external Skeleton3D node.");
+			warnings.append(TTR("External Skeleton3D node not set! Please set a path to an external Skeleton3D node."));
 		}
 	} else {
 		Skeleton3D *parent = Object::cast_to<Skeleton3D>(get_parent());
 		if (!parent) {
-			if (warning != String()) {
-				warning += "\n\n";
-			}
-			warning += TTR("Parent node is not a Skeleton3D node! Please use an extenral Skeleton3D if you intend to use the BoneAttachment3D without it being a child of a Skeleton3D node.");
+			warnings.append(TTR("Parent node is not a Skeleton3D node! Please use an extenral Skeleton3D if you intend to use the BoneAttachment3D without it being a child of a Skeleton3D node."));
 		}
 	}
 
 	if (bone_idx == -1) {
-		if (warning != String()) {
-			warning += "\n\n";
-		}
-		warning += TTR("BoneAttachment3D node is not bound to any bones! Please select a bone to attach this node.");
+		warnings.append(TTR("BoneAttachment3D node is not bound to any bones! Please select a bone to attach this node."));
 	}
 
-	return warning;
+	return warnings;
 }
 
 void BoneAttachment3D::_update_external_skeleton_cache() {
@@ -215,7 +206,7 @@ void BoneAttachment3D::_transform_changed() {
 		ERR_FAIL_COND_MSG(!sk, "Cannot override pose: Skeleton not found!");
 		ERR_FAIL_INDEX_MSG(bone_idx, sk->get_bone_count(), "Cannot override pose: Bone index is out of range!");
 
-		Transform our_trans = get_transform();
+		Transform3D our_trans = get_transform();
 		if (use_external_skeleton) {
 			our_trans = sk->world_transform_to_global_pose(get_global_transform());
 		}
@@ -263,7 +254,7 @@ void BoneAttachment3D::set_bone_idx(const int &p_idx) {
 		_check_bind();
 	}
 
-	_change_notify();
+	notify_property_list_changed();
 }
 
 int BoneAttachment3D::get_bone_idx() const {
@@ -279,16 +270,16 @@ void BoneAttachment3D::set_override_pose(bool p_override) {
 		Skeleton3D *sk = _get_skeleton3d();
 		if (sk) {
 			if (override_mode == OVERRIDE_MODES::MODE_GLOBAL_POSE) {
-				sk->set_bone_global_pose_override(bone_idx, Transform(), 0.0, false);
+				sk->set_bone_global_pose_override(bone_idx, Transform3D(), 0.0, false);
 			} else if (override_mode == OVERRIDE_MODES::MODE_LOCAL_POSE) {
-				sk->set_bone_local_pose_override(bone_idx, Transform(), 0.0, false);
+				sk->set_bone_local_pose_override(bone_idx, Transform3D(), 0.0, false);
 			} else if (override_mode == OVERRIDE_MODES::MODE_CUSTOM_POSE) {
-				sk->set_bone_custom_pose(bone_idx, Transform());
+				sk->set_bone_custom_pose(bone_idx, Transform3D());
 			}
 		}
 		_transform_changed();
 	}
-	_change_notify();
+	notify_property_list_changed();
 }
 
 bool BoneAttachment3D::get_override_pose() const {
@@ -300,11 +291,11 @@ void BoneAttachment3D::set_override_mode(int p_mode) {
 		Skeleton3D *sk = _get_skeleton3d();
 		if (sk) {
 			if (override_mode == OVERRIDE_MODES::MODE_GLOBAL_POSE) {
-				sk->set_bone_global_pose_override(bone_idx, Transform(), 0.0, false);
+				sk->set_bone_global_pose_override(bone_idx, Transform3D(), 0.0, false);
 			} else if (override_mode == OVERRIDE_MODES::MODE_LOCAL_POSE) {
-				sk->set_bone_local_pose_override(bone_idx, Transform(), 0.0, false);
+				sk->set_bone_local_pose_override(bone_idx, Transform3D(), 0.0, false);
 			} else if (override_mode == OVERRIDE_MODES::MODE_CUSTOM_POSE) {
-				sk->set_bone_custom_pose(bone_idx, Transform());
+				sk->set_bone_custom_pose(bone_idx, Transform3D());
 			}
 		}
 		override_mode = p_mode;
@@ -328,7 +319,7 @@ void BoneAttachment3D::set_use_external_skeleton(bool p_use_external) {
 		_transform_changed();
 	}
 
-	_change_notify();
+	notify_property_list_changed();
 }
 
 bool BoneAttachment3D::get_use_external_skeleton() const {
@@ -338,7 +329,7 @@ bool BoneAttachment3D::get_use_external_skeleton() const {
 void BoneAttachment3D::set_external_skeleton(NodePath p_path) {
 	external_skeleton_node = p_path;
 	_update_external_skeleton_cache();
-	_change_notify();
+	notify_property_list_changed();
 }
 
 NodePath BoneAttachment3D::get_external_skeleton() const {

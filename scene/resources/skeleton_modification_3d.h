@@ -302,8 +302,8 @@ private:
 	void update_joint_tip_cache(int p_joint_idx);
 
 	int final_joint_idx = 0;
-	Transform target_global_pose = Transform();
-	Transform origin_global_pose = Transform();
+	Transform3D target_global_pose = Transform3D();
+	Transform3D origin_global_pose = Transform3D();
 
 	void chain_backwards();
 	void chain_forwards();

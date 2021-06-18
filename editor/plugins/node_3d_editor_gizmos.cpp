@@ -2159,13 +2159,13 @@ void Skeleton3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 			int point_idx = 0;
 			for (int j = 0; j < 3; j++) {
 				bones.write[0] = current_bone_idx;
-				surface_tool->add_bones(bones);
-				surface_tool->add_weights(weights);
-				surface_tool->add_color(rootcolor);
+				surface_tool->set_bones(bones);
+				surface_tool->set_weights(weights);
+				surface_tool->set_color(rootcolor);
 				surface_tool->add_vertex(v0 - grests[current_bone_idx].basis[j].normalized() * dist * 0.05);
-				surface_tool->add_bones(bones);
-				surface_tool->add_weights(weights);
-				surface_tool->add_color(rootcolor);
+				surface_tool->set_bones(bones);
+				surface_tool->set_weights(weights);
+				surface_tool->set_color(rootcolor);
 				surface_tool->add_vertex(v0 + grests[current_bone_idx].basis[j].normalized() * dist * 0.05);
 
 				if (j == closest) {
@@ -2188,9 +2188,9 @@ void Skeleton3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 					point += axis * dist * 0.1;
 
 					bones.write[0] = current_bone_idx;
-					surface_tool->add_bones(bones);
-					surface_tool->add_weights(weights);
-					surface_tool->add_color(bonecolor);
+					surface_tool->set_bones(bones);
+					surface_tool->set_weights(weights);
+					surface_tool->set_color(bonecolor);
 					surface_tool->add_vertex(v0);
 					surface_tool->set_bones(bones);
 					surface_tool->set_weights(weights);
@@ -2198,14 +2198,14 @@ void Skeleton3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 					surface_tool->add_vertex(point);
 
 					bones.write[0] = current_bone_idx;
-					surface_tool->add_bones(bones);
-					surface_tool->add_weights(weights);
-					surface_tool->add_color(bonecolor);
+					surface_tool->set_bones(bones);
+					surface_tool->set_weights(weights);
+					surface_tool->set_color(bonecolor);
 					surface_tool->add_vertex(point);
 					bones.write[0] = child_bone_idx;
-					surface_tool->add_bones(bones);
-					surface_tool->add_weights(weights);
-					surface_tool->add_color(bonecolor);
+					surface_tool->set_bones(bones);
+					surface_tool->set_weights(weights);
+					surface_tool->set_color(bonecolor);
 					surface_tool->add_vertex(v1);
 					points[point_idx++] = point;
 				}
@@ -2213,9 +2213,9 @@ void Skeleton3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 			SWAP(points[1], points[2]);
 			for (int j = 0; j < 4; j++) {
 				bones.write[0] = current_bone_idx;
-				surface_tool->add_bones(bones);
-				surface_tool->add_weights(weights);
-				surface_tool->add_color(bonecolor);
+				surface_tool->set_bones(bones);
+				surface_tool->set_weights(weights);
+				surface_tool->set_color(bonecolor);
 				surface_tool->add_vertex(points[j]);
 				surface_tool->set_bones(bones);
 				surface_tool->set_weights(weights);
