@@ -146,7 +146,7 @@ void SkeletonModificationStack3D::set_modification(int p_mod_idx, Ref<SkeletonMo
 
 void SkeletonModificationStack3D::set_modification_count(int p_count) {
 	modifications.resize(p_count);
-	_change_notify();
+	notify_property_list_changed();
 }
 
 int SkeletonModificationStack3D::get_modification_count() const {
@@ -435,7 +435,7 @@ void SkeletonModification3DLookAt::execute(float delta) {
 		return;
 	}
 
-	Transform new_bone_trans = stack->skeleton->get_bone_local_pose_override(bone_idx);
+	Transform3D new_bone_trans = stack->skeleton->get_bone_local_pose_override(bone_idx);
 	Vector3 target_pos = stack->skeleton->global_pose_to_local_pose(bone_idx, stack->skeleton->world_transform_to_global_pose(target->get_global_transform())).origin;
 
 	// Lock the rotation to a plane relative to the bone by changing the target position
@@ -485,7 +485,7 @@ void SkeletonModification3DLookAt::set_bone_name(String p_name) {
 		}
 	}
 	execution_error_found = false;
-	_change_notify();
+	notify_property_list_changed();
 }
 
 String SkeletonModification3DLookAt::get_bone_name() const {
@@ -506,7 +506,7 @@ void SkeletonModification3DLookAt::set_bone_index(int p_bone_idx) {
 		}
 	}
 	execution_error_found = false;
-	_change_notify();
+	notify_property_list_changed();
 }
 
 void SkeletonModification3DLookAt::update_cache() {
@@ -555,7 +555,7 @@ bool SkeletonModification3DLookAt::get_lock_rotation_to_plane() const {
 
 void SkeletonModification3DLookAt::set_lock_rotation_to_plane(bool p_lock_rotation) {
 	lock_rotation_to_plane = p_lock_rotation;
-	_change_notify();
+	notify_property_list_changed();
 }
 
 int SkeletonModification3DLookAt::get_lock_rotation_plane() const {
@@ -739,9 +739,9 @@ void SkeletonModification3DCCDIK::_execute_ccdik_joint(int p_joint_idx, Node3D *
 		return;
 	}
 
-	Transform bone_trans = stack->skeleton->global_pose_to_local_pose(ccdik_data.bone_idx, stack->skeleton->get_bone_global_pose(ccdik_data.bone_idx));
-	Transform tip_trans = stack->skeleton->global_pose_to_local_pose(ccdik_data.bone_idx, stack->skeleton->world_transform_to_global_pose(tip->get_global_transform()));
-	Transform target_trans = stack->skeleton->global_pose_to_local_pose(ccdik_data.bone_idx, stack->skeleton->world_transform_to_global_pose(target->get_global_transform()));
+	Transform3D bone_trans = stack->skeleton->global_pose_to_local_pose(ccdik_data.bone_idx, stack->skeleton->get_bone_global_pose(ccdik_data.bone_idx));
+	Transform3D tip_trans = stack->skeleton->global_pose_to_local_pose(ccdik_data.bone_idx, stack->skeleton->world_transform_to_global_pose(tip->get_global_transform()));
+	Transform3D target_trans = stack->skeleton->global_pose_to_local_pose(ccdik_data.bone_idx, stack->skeleton->world_transform_to_global_pose(target->get_global_transform()));
 
 	if (tip_trans.origin.distance_to(target_trans.origin) <= 0.01) {
 		return;
@@ -902,7 +902,7 @@ void SkeletonModification3DCCDIK::set_ccdik_joint_bone_name(int p_joint_idx, Str
 		}
 	}
 	execution_error_found = false;
-	_change_notify();
+	notify_property_list_changed();
 }
 
 int SkeletonModification3DCCDIK::get_ccdik_joint_bone_index(int p_joint_idx) const {
@@ -921,7 +921,7 @@ void SkeletonModification3DCCDIK::set_ccdik_joint_bone_index(int p_joint_idx, in
 		}
 	}
 	execution_error_found = false;
-	_change_notify();
+	notify_property_list_changed();
 }
 
 int SkeletonModification3DCCDIK::get_ccdik_joint_ccdik_axis(int p_joint_idx) const {
@@ -933,7 +933,7 @@ void SkeletonModification3DCCDIK::set_ccdik_joint_ccdik_axis(int p_joint_idx, in
 	ERR_FAIL_INDEX(p_joint_idx, ccdik_data_chain.size());
 	ERR_FAIL_COND_MSG(p_axis < 0, "CCDIK axis is out of range: The axis mode is too low!");
 	ccdik_data_chain.write[p_joint_idx].ccdik_axis = p_axis;
-	_change_notify();
+	notify_property_list_changed();
 }
 
 bool SkeletonModification3DCCDIK::get_ccdik_joint_enable_constraint(int p_joint_idx) const {
@@ -944,7 +944,7 @@ bool SkeletonModification3DCCDIK::get_ccdik_joint_enable_constraint(int p_joint_
 void SkeletonModification3DCCDIK::set_ccdik_joint_enable_constraint(int p_joint_idx, bool p_enable) {
 	ERR_FAIL_INDEX(p_joint_idx, ccdik_data_chain.size());
 	ccdik_data_chain.write[p_joint_idx].enable_constraint = p_enable;
-	_change_notify();
+	notify_property_list_changed();
 }
 
 float SkeletonModification3DCCDIK::get_ccdik_joint_constraint_angle_min(int p_joint_idx) const {
@@ -984,7 +984,7 @@ void SkeletonModification3DCCDIK::set_ccdik_data_chain_length(int p_length) {
 	ERR_FAIL_COND(p_length < 0);
 	ccdik_data_chain.resize(p_length);
 	execution_error_found = false;
-	_change_notify();
+	notify_property_list_changed();
 }
 
 void SkeletonModification3DCCDIK::_bind_methods() {
@@ -1164,12 +1164,12 @@ void SkeletonModification3DFABRIK::execute(float delta) {
 			return;
 		}
 
-		Transform local_pose_override = stack->skeleton->get_bone_local_pose_override(fabrik_data_chain[i].bone_idx);
+		Transform3D local_pose_override = stack->skeleton->get_bone_local_pose_override(fabrik_data_chain[i].bone_idx);
 
 		// Apply magnet positions:
 		if (stack->skeleton->get_bone_parent(fabrik_data_chain[i].bone_idx) >= 0) {
 			int parent_bone_idx = stack->skeleton->get_bone_parent(fabrik_data_chain[i].bone_idx);
-			Transform conversion_transform = (stack->skeleton->get_bone_global_pose(parent_bone_idx) * stack->skeleton->get_bone_rest(parent_bone_idx));
+			Transform3D conversion_transform = (stack->skeleton->get_bone_global_pose(parent_bone_idx) * stack->skeleton->get_bone_rest(parent_bone_idx));
 			local_pose_override.origin += conversion_transform.basis.xform_inv(fabrik_data_chain[i].magnet_position);
 		} else {
 			local_pose_override.origin += fabrik_data_chain[i].magnet_position;
@@ -1206,11 +1206,11 @@ void SkeletonModification3DFABRIK::execute(float delta) {
 
 void SkeletonModification3DFABRIK::chain_backwards() {
 	int final_bone_idx = fabrik_data_chain[final_joint_idx].bone_idx;
-	Transform final_joint_trans = stack->skeleton->local_pose_to_global_pose(final_bone_idx, stack->skeleton->get_bone_local_pose_override(final_bone_idx));
+	Transform3D final_joint_trans = stack->skeleton->local_pose_to_global_pose(final_bone_idx, stack->skeleton->get_bone_local_pose_override(final_bone_idx));
 
 	// Get the direction the final bone is facing in.
 	stack->skeleton->update_bone_rest_forward_vector(final_bone_idx);
-	Transform final_bone_direction_trans = final_joint_trans.looking_at(target_global_pose.origin, Vector3(0, 1, 0));
+	Transform3D final_bone_direction_trans = final_joint_trans.looking_at(target_global_pose.origin, Vector3(0, 1, 0));
 	final_bone_direction_trans.basis = stack->skeleton->global_pose_z_forward_to_bone_forward(final_bone_idx, final_bone_direction_trans.basis);
 	Vector3 direction = final_bone_direction_trans.basis.xform(stack->skeleton->get_bone_axis_forward_vector(final_bone_idx)).normalized();
 
@@ -1228,10 +1228,10 @@ void SkeletonModification3DFABRIK::chain_backwards() {
 	int i = final_joint_idx;
 	while (i >= 1) {
 		int next_bone_idx = fabrik_data_chain[i].bone_idx;
-		Transform next_bone_trans = stack->skeleton->local_pose_to_global_pose(next_bone_idx, stack->skeleton->get_bone_local_pose_override(next_bone_idx));
+		Transform3D next_bone_trans = stack->skeleton->local_pose_to_global_pose(next_bone_idx, stack->skeleton->get_bone_local_pose_override(next_bone_idx));
 		i -= 1;
 		int current_bone_idx = fabrik_data_chain[i].bone_idx;
-		Transform current_trans = stack->skeleton->local_pose_to_global_pose(current_bone_idx, stack->skeleton->get_bone_local_pose_override(current_bone_idx));
+		Transform3D current_trans = stack->skeleton->local_pose_to_global_pose(current_bone_idx, stack->skeleton->get_bone_local_pose_override(current_bone_idx));
 
 		float length = fabrik_data_chain[i].length / (next_bone_trans.origin - current_trans.origin).length();
 		current_trans.origin = next_bone_trans.origin.lerp(current_trans.origin, length);
@@ -1244,15 +1244,15 @@ void SkeletonModification3DFABRIK::chain_backwards() {
 void SkeletonModification3DFABRIK::chain_forwards() {
 	// Set root at the initial position.
 	int origin_bone_idx = fabrik_data_chain[0].bone_idx;
-	Transform root_transform = stack->skeleton->local_pose_to_global_pose(origin_bone_idx, stack->skeleton->get_bone_local_pose_override(origin_bone_idx));
+	Transform3D root_transform = stack->skeleton->local_pose_to_global_pose(origin_bone_idx, stack->skeleton->get_bone_local_pose_override(origin_bone_idx));
 	root_transform.origin = origin_global_pose.origin;
 	stack->skeleton->set_bone_local_pose_override(origin_bone_idx, stack->skeleton->global_pose_to_local_pose(origin_bone_idx, root_transform), stack->strength, true);
 
 	for (int i = 0; i < fabrik_data_chain.size() - 1; i++) {
 		int current_bone_idx = fabrik_data_chain[i].bone_idx;
-		Transform current_trans = stack->skeleton->local_pose_to_global_pose(current_bone_idx, stack->skeleton->get_bone_local_pose_override(current_bone_idx));
+		Transform3D current_trans = stack->skeleton->local_pose_to_global_pose(current_bone_idx, stack->skeleton->get_bone_local_pose_override(current_bone_idx));
 		int next_bone_idx = fabrik_data_chain[i + 1].bone_idx;
-		Transform next_bone_trans = stack->skeleton->local_pose_to_global_pose(next_bone_idx, stack->skeleton->get_bone_local_pose_override(next_bone_idx));
+		Transform3D next_bone_trans = stack->skeleton->local_pose_to_global_pose(next_bone_idx, stack->skeleton->get_bone_local_pose_override(next_bone_idx));
 
 		float length = fabrik_data_chain[i].length / (current_trans.origin - next_bone_trans.origin).length();
 		next_bone_trans.origin = current_trans.origin.lerp(next_bone_trans.origin, length);
@@ -1265,7 +1265,7 @@ void SkeletonModification3DFABRIK::chain_forwards() {
 void SkeletonModification3DFABRIK::chain_apply() {
 	for (int i = 0; i < fabrik_data_chain.size(); i++) {
 		int current_bone_idx = fabrik_data_chain[i].bone_idx;
-		Transform current_trans = stack->skeleton->get_bone_local_pose_override(current_bone_idx);
+		Transform3D current_trans = stack->skeleton->get_bone_local_pose_override(current_bone_idx);
 		current_trans = stack->skeleton->local_pose_to_global_pose(current_bone_idx, current_trans);
 
 		// If this is the last bone in the chain...
@@ -1282,7 +1282,7 @@ void SkeletonModification3DFABRIK::chain_apply() {
 			}
 		} else { // every other bone in the chain...
 			int next_bone_idx = fabrik_data_chain[i + 1].bone_idx;
-			Transform next_trans = stack->skeleton->local_pose_to_global_pose(next_bone_idx, stack->skeleton->get_bone_local_pose_override(next_bone_idx));
+			Transform3D next_trans = stack->skeleton->local_pose_to_global_pose(next_bone_idx, stack->skeleton->get_bone_local_pose_override(next_bone_idx));
 
 			// Get the forward direction that the basis is facing in right now.
 			stack->skeleton->update_bone_rest_forward_vector(current_bone_idx);
@@ -1375,7 +1375,7 @@ void SkeletonModification3DFABRIK::set_fabrik_data_chain_length(int p_length) {
 	ERR_FAIL_COND(p_length < 0);
 	fabrik_data_chain.resize(p_length);
 	execution_error_found = false;
-	_change_notify();
+	notify_property_list_changed();
 }
 
 float SkeletonModification3DFABRIK::get_chain_tolerance() {
@@ -1411,7 +1411,7 @@ void SkeletonModification3DFABRIK::set_fabrik_joint_bone_name(int p_joint_idx, S
 		}
 	}
 	execution_error_found = false;
-	_change_notify();
+	notify_property_list_changed();
 }
 
 int SkeletonModification3DFABRIK::get_fabrik_joint_bone_index(int p_joint_idx) const {
@@ -1430,7 +1430,7 @@ void SkeletonModification3DFABRIK::set_fabrik_joint_bone_index(int p_joint_idx, 
 		}
 	}
 	execution_error_found = false;
-	_change_notify();
+	notify_property_list_changed();
 }
 
 float SkeletonModification3DFABRIK::get_fabrik_joint_length(int p_joint_idx) const {
@@ -1476,7 +1476,7 @@ void SkeletonModification3DFABRIK::set_fabrik_joint_auto_calculate_length(int p_
 	ERR_FAIL_INDEX(p_joint_idx, fabrik_data_chain.size());
 	fabrik_data_chain.write[p_joint_idx].auto_calculate_length = p_auto_calculate;
 	fabrik_joint_auto_calculate_length(p_joint_idx);
-	_change_notify();
+	notify_property_list_changed();
 }
 
 void SkeletonModification3DFABRIK::fabrik_joint_auto_calculate_length(int p_joint_idx) {
@@ -1500,7 +1500,7 @@ void SkeletonModification3DFABRIK::fabrik_joint_auto_calculate_length(int p_join
 		ERR_FAIL_COND_MSG(!tip_node, "Tip node for joint " + itos(p_joint_idx) + "is not a Node3D-based node. Cannot calculate length...");
 		ERR_FAIL_COND_MSG(!tip_node->is_inside_tree(), "Tip node for joint " + itos(p_joint_idx) + "is not in the scene tree. Cannot calculate length...");
 
-		Transform node_trans = tip_node->get_global_transform();
+		Transform3D node_trans = tip_node->get_global_transform();
 		node_trans = stack->skeleton->world_transform_to_global_pose(node_trans);
 		node_trans = stack->skeleton->global_pose_to_local_pose(fabrik_data_chain[p_joint_idx].bone_idx, node_trans);
 		fabrik_data_chain.write[p_joint_idx].length = node_trans.origin.length();
@@ -1513,13 +1513,13 @@ void SkeletonModification3DFABRIK::fabrik_joint_auto_calculate_length(int p_join
 
 		float final_length = 0;
 		for (int i = 0; i < bone_children.size(); i++) {
-			Transform child_transform = stack->skeleton->get_bone_global_pose(bone_children[i]);
+			Transform3D child_transform = stack->skeleton->get_bone_global_pose(bone_children[i]);
 			final_length += stack->skeleton->global_pose_to_local_pose(fabrik_data_chain[p_joint_idx].bone_idx, child_transform).origin.length();
 		}
 		fabrik_data_chain.write[p_joint_idx].length = final_length / bone_children.size();
 	}
 	execution_error_found = false;
-	_change_notify();
+	notify_property_list_changed();
 }
 
 bool SkeletonModification3DFABRIK::get_fabrik_joint_use_tip_node(int p_joint_idx) const {
@@ -1530,7 +1530,7 @@ bool SkeletonModification3DFABRIK::get_fabrik_joint_use_tip_node(int p_joint_idx
 void SkeletonModification3DFABRIK::set_fabrik_joint_use_tip_node(int p_joint_idx, bool p_use_tip_node) {
 	ERR_FAIL_INDEX(p_joint_idx, fabrik_data_chain.size());
 	fabrik_data_chain.write[p_joint_idx].use_tip_node = p_use_tip_node;
-	_change_notify();
+	notify_property_list_changed();
 }
 
 NodePath SkeletonModification3DFABRIK::get_fabrik_joint_tip_node(int p_joint_idx) const {
@@ -1750,7 +1750,7 @@ void SkeletonModification3DJiggle::_execute_jiggle_joint(int p_joint_idx, Node3D
 		return;
 	}
 
-	Transform new_bone_trans = stack->skeleton->local_pose_to_global_pose(jiggle_data_chain[p_joint_idx].bone_idx, stack->skeleton->get_bone_local_pose_override(jiggle_data_chain[p_joint_idx].bone_idx));
+	Transform3D new_bone_trans = stack->skeleton->local_pose_to_global_pose(jiggle_data_chain[p_joint_idx].bone_idx, stack->skeleton->get_bone_local_pose_override(jiggle_data_chain[p_joint_idx].bone_idx));
 	Vector3 target_position = stack->skeleton->world_transform_to_global_pose(target->get_global_transform()).origin;
 
 	jiggle_data_chain.write[p_joint_idx].force = (target_position - jiggle_data_chain[p_joint_idx].dynamic_position) * jiggle_data_chain[p_joint_idx].stiffness * delta;
@@ -1777,8 +1777,8 @@ void SkeletonModification3DJiggle::_execute_jiggle_joint(int p_joint_idx, Node3D
 			PhysicsDirectSpaceState3D::RayResult ray_result;
 
 			// Convert to world transforms, which is what the physics server needs
-			Transform new_bone_trans_world = stack->skeleton->global_pose_to_world_transform(new_bone_trans);
-			Transform dynamic_position_world = stack->skeleton->global_pose_to_world_transform(Transform(Basis(), jiggle_data_chain[p_joint_idx].dynamic_position));
+			Transform3D new_bone_trans_world = stack->skeleton->global_pose_to_world_transform(new_bone_trans);
+			Transform3D dynamic_position_world = stack->skeleton->global_pose_to_world_transform(Transform3D(Basis(), jiggle_data_chain[p_joint_idx].dynamic_position));
 
 			// Add exception support?
 			bool ray_hit = space_state->intersect_ray(new_bone_trans_world.origin, dynamic_position_world.get_origin(),
@@ -1927,7 +1927,7 @@ Vector3 SkeletonModification3DJiggle::get_gravity() const {
 
 void SkeletonModification3DJiggle::set_use_colliders(bool p_use_collider) {
 	use_colliders = p_use_collider;
-	_change_notify();
+	notify_property_list_changed();
 }
 
 bool SkeletonModification3DJiggle::get_use_colliders() const {
@@ -1951,7 +1951,7 @@ void SkeletonModification3DJiggle::set_jiggle_data_chain_length(int p_length) {
 	ERR_FAIL_COND(p_length < 0);
 	jiggle_data_chain.resize(p_length);
 	execution_error_found = false;
-	_change_notify();
+	notify_property_list_changed();
 }
 
 void SkeletonModification3DJiggle::set_jiggle_joint_bone_name(int joint_idx, String p_name) {
@@ -1962,7 +1962,7 @@ void SkeletonModification3DJiggle::set_jiggle_joint_bone_name(int joint_idx, Str
 		jiggle_data_chain.write[joint_idx].bone_idx = stack->skeleton->find_bone(p_name);
 	}
 	execution_error_found = false;
-	_change_notify();
+	notify_property_list_changed();
 }
 
 String SkeletonModification3DJiggle::get_jiggle_joint_bone_name(int joint_idx) const {
@@ -1986,14 +1986,14 @@ void SkeletonModification3DJiggle::set_jiggle_joint_bone_index(int joint_idx, in
 		}
 	}
 	execution_error_found = false;
-	_change_notify();
+	notify_property_list_changed();
 }
 
 void SkeletonModification3DJiggle::set_jiggle_joint_override(int joint_idx, bool p_override) {
 	ERR_FAIL_INDEX(joint_idx, jiggle_data_chain.size());
 	jiggle_data_chain.write[joint_idx].override_defaults = p_override;
 	_update_jiggle_joint_data();
-	_change_notify();
+	notify_property_list_changed();
 }
 
 bool SkeletonModification3DJiggle::get_jiggle_joint_override(int joint_idx) const {
@@ -2037,7 +2037,7 @@ float SkeletonModification3DJiggle::get_jiggle_joint_damping(int joint_idx) cons
 void SkeletonModification3DJiggle::set_jiggle_joint_use_gravity(int joint_idx, bool p_use_gravity) {
 	ERR_FAIL_INDEX(joint_idx, jiggle_data_chain.size());
 	jiggle_data_chain.write[joint_idx].use_gravity = p_use_gravity;
-	_change_notify();
+	notify_property_list_changed();
 }
 
 bool SkeletonModification3DJiggle::get_jiggle_joint_use_gravity(int joint_idx) const {
@@ -2264,10 +2264,10 @@ void SkeletonModification3DTwoBoneIK::execute(float delta) {
 	if (_print_execution_error(!target || !target->is_inside_tree(), "Target node is not in the scene tree. Cannot execute modification!")) {
 		return;
 	}
-	Transform target_trans = stack->skeleton->world_transform_to_global_pose(target->get_global_transform());
+	Transform3D target_trans = stack->skeleton->world_transform_to_global_pose(target->get_global_transform());
 
-	Transform bone_one_trans;
-	Transform bone_two_trans;
+	Transform3D bone_one_trans;
+	Transform3D bone_two_trans;
 
 	// Make the first joint look at the pole, and the second look at the target. That way, the
 	// TwoBoneIK solver has to really only handle extension/contraction, which should make it align with the pole.
@@ -2282,7 +2282,7 @@ void SkeletonModification3DTwoBoneIK::execute(float delta) {
 		if (_print_execution_error(!pole || !pole->is_inside_tree(), "Pole node is not in the scene tree. Cannot execute modification!")) {
 			return;
 		}
-		Transform pole_trans = stack->skeleton->world_transform_to_global_pose(pole->get_global_transform());
+		Transform3D pole_trans = stack->skeleton->world_transform_to_global_pose(pole->get_global_transform());
 
 		bone_one_trans = stack->skeleton->local_pose_to_global_pose(joint_one_bone_idx, stack->skeleton->get_bone_local_pose_override(joint_one_bone_idx));
 		bone_one_trans = bone_one_trans.looking_at(pole_trans.origin, Vector3(0, 1, 0));
@@ -2304,7 +2304,7 @@ void SkeletonModification3DTwoBoneIK::execute(float delta) {
 		bone_two_trans = stack->skeleton->local_pose_to_global_pose(joint_two_bone_idx, stack->skeleton->get_bone_local_pose_override(joint_two_bone_idx));
 	}
 
-	Transform bone_two_tip_trans;
+	Transform3D bone_two_tip_trans;
 	if (use_tip_node) {
 		if (tip_node_cache.is_null()) {
 			_print_execution_error(true, "Tip cache is out of date. Attempting to update...");
@@ -2346,10 +2346,10 @@ void SkeletonModification3DTwoBoneIK::execute(float delta) {
 	Vector3 axis_1 = bone_one_trans.origin.direction_to(bone_two_tip_trans.origin).cross(bone_one_trans.origin.direction_to(target_trans.origin));
 
 	// Make a quaternion with the delta rotation needed to rotate the first joint into alignment and apply it to the transform.
-	Quat bone_one_quat = bone_one_trans.basis.get_rotation_quat();
-	Quat rot_0 = Quat(bone_one_quat.inverse().xform(axis_0).normalized(), (ac_ab_1 - ac_ab_0));
-	Quat rot_2 = Quat(bone_one_quat.inverse().xform(axis_1).normalized(), ac_at_0);
-	bone_one_trans.basis.set_quat(bone_one_quat * (rot_0 * rot_2));
+	Quaternion bone_one_quat = bone_one_trans.basis.get_rotation_quaternion();
+	Quaternion rot_0 = Quaternion(bone_one_quat.inverse().xform(axis_0).normalized(), (ac_ab_1 - ac_ab_0));
+	Quaternion rot_2 = Quaternion(bone_one_quat.inverse().xform(axis_1).normalized(), ac_at_0);
+	bone_one_trans.basis.set_quaternion(bone_one_quat * (rot_0 * rot_2));
 
 	stack->skeleton->update_bone_rest_forward_vector(joint_one_bone_idx);
 	bone_one_trans.basis.rotate_local(stack->skeleton->get_bone_axis_forward_vector(joint_one_bone_idx), joint_one_roll);
@@ -2378,9 +2378,9 @@ void SkeletonModification3DTwoBoneIK::execute(float delta) {
 		// alignment, and then apply it to the second joint.
 		float ba_bc_0 = Math::acos(CLAMP(bone_two_trans.origin.direction_to(bone_one_trans.origin).dot(bone_two_trans.origin.direction_to(bone_two_tip_trans.origin)), -1, 1));
 		float ba_bc_1 = Math::acos(CLAMP((sqr_three_length - sqr_one_length - sqr_two_length) / (-2.0 * joint_one_length * joint_two_length), -1, 1));
-		Quat bone_two_quat = bone_two_trans.basis.get_rotation_quat();
-		Quat rot_1 = Quat(bone_two_quat.inverse().xform(axis_0).normalized(), (ba_bc_1 - ba_bc_0));
-		bone_two_trans.basis.set_quat(bone_two_quat * rot_1);
+		Quaternion bone_two_quat = bone_two_trans.basis.get_rotation_quaternion();
+		Quaternion rot_1 = Quaternion(bone_two_quat.inverse().xform(axis_0).normalized(), (ba_bc_1 - ba_bc_0));
+		bone_two_trans.basis.set_quaternion(bone_two_quat * rot_1);
 
 		stack->skeleton->update_bone_rest_forward_vector(joint_two_bone_idx);
 		bone_two_trans.basis.rotate_local(stack->skeleton->get_bone_axis_forward_vector(joint_two_bone_idx), joint_two_roll);
@@ -2483,7 +2483,7 @@ NodePath SkeletonModification3DTwoBoneIK::get_target_node() const {
 
 void SkeletonModification3DTwoBoneIK::set_use_tip_node(const bool p_use_tip_node) {
 	use_tip_node = p_use_tip_node;
-	_change_notify();
+	notify_property_list_changed();
 }
 
 bool SkeletonModification3DTwoBoneIK::get_use_tip_node() const {
@@ -2501,7 +2501,7 @@ NodePath SkeletonModification3DTwoBoneIK::get_tip_node() const {
 
 void SkeletonModification3DTwoBoneIK::set_use_pole_node(const bool p_use_pole_node) {
 	use_pole_node = p_use_pole_node;
-	_change_notify();
+	notify_property_list_changed();
 }
 
 bool SkeletonModification3DTwoBoneIK::get_use_pole_node() const {
@@ -2522,7 +2522,7 @@ void SkeletonModification3DTwoBoneIK::set_auto_calculate_joint_length(bool p_cal
 	if (p_calculate) {
 		calculate_joint_lengths();
 	}
-	_change_notify();
+	notify_property_list_changed();
 }
 
 bool SkeletonModification3DTwoBoneIK::get_auto_calculate_joint_length() const {
@@ -2538,8 +2538,8 @@ void SkeletonModification3DTwoBoneIK::calculate_joint_lengths() {
 	ERR_FAIL_COND_MSG(joint_one_bone_idx <= -1 || joint_two_bone_idx <= -1,
 			"One of the bones in the TwoBoneIK modification are not set! Cannot calculate joint lengths!");
 
-	Transform bone_one_rest_trans = stack->skeleton->get_bone_global_pose(joint_one_bone_idx);
-	Transform bone_two_rest_trans = stack->skeleton->get_bone_global_pose(joint_two_bone_idx);
+	Transform3D bone_one_rest_trans = stack->skeleton->get_bone_global_pose(joint_one_bone_idx);
+	Transform3D bone_two_rest_trans = stack->skeleton->get_bone_global_pose(joint_two_bone_idx);
 
 	joint_one_length = bone_one_rest_trans.origin.distance_to(bone_two_rest_trans.origin);
 
@@ -2551,7 +2551,7 @@ void SkeletonModification3DTwoBoneIK::calculate_joint_lengths() {
 
 		Node3D *tip = Object::cast_to<Node3D>(ObjectDB::get_instance(tip_node_cache));
 		if (tip) {
-			Transform bone_tip_trans = stack->skeleton->world_transform_to_global_pose(tip->get_global_transform());
+			Transform3D bone_tip_trans = stack->skeleton->world_transform_to_global_pose(tip->get_global_transform());
 			joint_two_length = bone_two_rest_trans.origin.distance_to(bone_tip_trans.origin);
 		}
 	} else {
@@ -2578,7 +2578,7 @@ void SkeletonModification3DTwoBoneIK::set_joint_one_bone_name(String p_bone_name
 		joint_one_bone_idx = stack->skeleton->find_bone(p_bone_name);
 	}
 	execution_error_found = false;
-	_change_notify();
+	notify_property_list_changed();
 }
 
 String SkeletonModification3DTwoBoneIK::get_joint_one_bone_name() const {
@@ -2591,7 +2591,7 @@ void SkeletonModification3DTwoBoneIK::set_joint_one_bone_idx(int p_bone_idx) {
 		joint_one_bone_name = stack->skeleton->get_bone_name(p_bone_idx);
 	}
 	execution_error_found = false;
-	_change_notify();
+	notify_property_list_changed();
 }
 
 int SkeletonModification3DTwoBoneIK::get_joint_one_bone_idx() const {
@@ -2612,7 +2612,7 @@ void SkeletonModification3DTwoBoneIK::set_joint_two_bone_name(String p_bone_name
 		joint_two_bone_idx = stack->skeleton->find_bone(p_bone_name);
 	}
 	execution_error_found = false;
-	_change_notify();
+	notify_property_list_changed();
 }
 
 String SkeletonModification3DTwoBoneIK::get_joint_two_bone_name() const {
@@ -2625,7 +2625,7 @@ void SkeletonModification3DTwoBoneIK::set_joint_two_bone_idx(int p_bone_idx) {
 		joint_two_bone_name = stack->skeleton->get_bone_name(p_bone_idx);
 	}
 	execution_error_found = false;
-	_change_notify();
+	notify_property_list_changed();
 }
 
 int SkeletonModification3DTwoBoneIK::get_joint_two_bone_idx() const {

@@ -353,7 +353,7 @@ Transform3D Skeleton3D::get_bone_global_pose_no_override(int p_bone) const {
 		const_cast<Skeleton3D *>(this)->notification(NOTIFICATION_UPDATE_SKELETON);
 	}
 	return bones[p_bone].pose_global_no_override;
-
+}
 
 void Skeleton3D::clear_bones_local_pose_override() {
 	for (int i = 0; i < bones.size(); i += 1) {
@@ -362,7 +362,7 @@ void Skeleton3D::clear_bones_local_pose_override() {
 	_make_dirty();
 }
 
-void Skeleton3D::set_bone_local_pose_override(int p_bone, const Transform &p_pose, float p_amount, bool p_persistent) {
+void Skeleton3D::set_bone_local_pose_override(int p_bone, const Transform3D &p_pose, float p_amount, bool p_persistent) {
 	ERR_FAIL_INDEX(p_bone, bones.size());
 	bones.write[p_bone].local_pose_override_amount = p_amount;
 	bones.write[p_bone].local_pose_override = p_pose;
@@ -370,8 +370,8 @@ void Skeleton3D::set_bone_local_pose_override(int p_bone, const Transform &p_pos
 	_make_dirty();
 }
 
-Transform Skeleton3D::get_bone_local_pose_override(int p_bone) const {
-	ERR_FAIL_INDEX_V(p_bone, bones.size(), Transform());
+Transform3D Skeleton3D::get_bone_local_pose_override(int p_bone) const {
+	ERR_FAIL_INDEX_V(p_bone, bones.size(), Transform3D());
 	return bones[p_bone].local_pose_override;
 }
 
@@ -583,7 +583,7 @@ Vector<int> Skeleton3D::get_parentless_bones() const {
 	return parentless_bones;
 }
 
-void Skeleton3D::set_bone_rest(int p_bone, const Transform &p_rest) {
+void Skeleton3D::set_bone_rest(int p_bone, const Transform3D &p_rest) {
 	ERR_FAIL_INDEX(p_bone, bones.size());
 
 	bones.write[p_bone].rest = p_rest;
@@ -924,7 +924,7 @@ void Skeleton3D::force_update_bone_children_transforms(int p_bone_idx) {
 
 		if (b.disable_rest) {
 			if (b.enabled) {
-				Transform pose = b.pose;
+				Transform3D pose = b.pose;
 				if (b.custom_pose_enable) {
 					pose = b.custom_pose * pose;
 				}
@@ -940,14 +940,14 @@ void Skeleton3D::force_update_bone_children_transforms(int p_bone_idx) {
 					b.pose_global = bonesptr[b.parent].pose_global;
 					b.pose_global_no_override = b.pose_global;
 				} else {
-					b.pose_global = Transform();
+					b.pose_global = Transform3D();
 					b.pose_global_no_override = b.pose_global;
 				}
 			}
 
 		} else {
 			if (b.enabled) {
-				Transform pose = b.pose;
+				Transform3D pose = b.pose;
 				if (b.custom_pose_enable) {
 					pose = b.custom_pose * pose;
 				}
@@ -970,7 +970,7 @@ void Skeleton3D::force_update_bone_children_transforms(int p_bone_idx) {
 		}
 
 		if (b.local_pose_override_amount >= CMP_EPSILON) {
-			Transform override_local_pose;
+			Transform3D override_local_pose;
 			if (b.parent >= 0) {
 				override_local_pose = bonesptr[b.parent].pose_global * (b.rest * b.local_pose_override);
 			} else {
@@ -1003,34 +1003,32 @@ void Skeleton3D::force_update_bone_children_transforms(int p_bone_idx) {
 
 // helper functions
 
-Transform Skeleton3D::global_pose_to_world_transform(Transform p_global_pose) {
+Transform3D Skeleton3D::global_pose_to_world_transform(Transform3D p_global_pose) {
 	return get_global_transform() * p_global_pose;
 }
 
-Transform Skeleton3D::world_transform_to_global_pose(Transform p_world_transform) {
+Transform3D Skeleton3D::world_transform_to_global_pose(Transform3D p_world_transform) {
 	return get_global_transform().affine_inverse() * p_world_transform;
 }
 
-Transform Skeleton3D::global_pose_to_local_pose(int p_bone_idx, Transform p_global_pose) {
+Transform3D Skeleton3D::global_pose_to_local_pose(int p_bone_idx, Transform3D p_global_pose) {
 	if (bones[p_bone_idx].parent >= 0) {
 		int parent_bone_idx = bones[p_bone_idx].parent;
-		Transform conversion_transform = (bones[parent_bone_idx].pose_global * bones[p_bone_idx].rest);
+		Transform3D conversion_transform = (bones[parent_bone_idx].pose_global * bones[p_bone_idx].rest);
 		return conversion_transform.affine_inverse() * p_global_pose;
 	} else {
 		// Cannot really turn a bone transform to a local bone transform without a parent...
-		// TODO: need to test this!
 		return p_global_pose;
 	}
 }
 
-Transform Skeleton3D::local_pose_to_global_pose(int p_bone_idx, Transform p_local_pose) {
+Transform3D Skeleton3D::local_pose_to_global_pose(int p_bone_idx, Transform3D p_local_pose) {
 	if (bones[p_bone_idx].parent >= 0) {
 		int parent_bone_idx = bones[p_bone_idx].parent;
-		Transform conversion_transform = (bones[parent_bone_idx].pose_global * bones[p_bone_idx].rest);
+		Transform3D conversion_transform = (bones[parent_bone_idx].pose_global * bones[p_bone_idx].rest);
 		return conversion_transform * p_local_pose;
 	} else {
 		// Cannot really turn a local bone transform to a bone transform without a parent...
-		// TODO: need to test this!
 		return p_local_pose;
 	}
 }
@@ -1046,15 +1044,15 @@ Basis Skeleton3D::global_pose_z_forward_to_bone_forward(int p_bone_idx, Basis p_
 
 	if (bones[p_bone_idx].rest_bone_forward_axis == BONE_AXIS_X_FORWARD) {
 		return_basis.rotate_local(Vector3(0, 1, 0), (Math_PI / 2.0));
-	} else if (bones[p_bone_idx].rest_bone_forward_axis == BONE_AXIS_NEGATIVE_X_FORWARD) { // Needs testing!
+	} else if (bones[p_bone_idx].rest_bone_forward_axis == BONE_AXIS_NEGATIVE_X_FORWARD) {
 		return_basis.rotate_local(Vector3(0, 1, 0), -(Math_PI / 2.0));
 	} else if (bones[p_bone_idx].rest_bone_forward_axis == BONE_AXIS_Y_FORWARD) {
 		return_basis.rotate_local(Vector3(1, 0, 0), -(Math_PI / 2.0));
-	} else if (bones[p_bone_idx].rest_bone_forward_axis == BONE_AXIS_NEGATIVE_Y_FORWARD) { // Needs testing!
+	} else if (bones[p_bone_idx].rest_bone_forward_axis == BONE_AXIS_NEGATIVE_Y_FORWARD) {
 		return_basis.rotate_local(Vector3(1, 0, 0), (Math_PI / 2.0));
 	} else if (bones[p_bone_idx].rest_bone_forward_axis == BONE_AXIS_Z_FORWARD) {
 		// Do nothing!
-	} else if (bones[p_bone_idx].rest_bone_forward_axis == BONE_AXIS_NEGATIVE_Z_FORWARD) { // Needs testing!
+	} else if (bones[p_bone_idx].rest_bone_forward_axis == BONE_AXIS_NEGATIVE_Z_FORWARD) {
 		return_basis.rotate_local(Vector3(0, 0, 1), Math_PI);
 	}
 
@@ -1167,10 +1165,9 @@ void Skeleton3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_modification_stack"), &Skeleton3D::get_modification_stack);
 	ClassDB::bind_method(D_METHOD("execute_modifications", "delta", "execution_mode"), &Skeleton3D::execute_modifications);
 
-#endif // _3D_DISABLED
-
 #ifndef _3D_DISABLED
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "animate_physical_bones"), "set_animate_physical_bones", "get_animate_physical_bones");
+#endif // _3D_DISABLED
 
 #ifdef TOOLS_ENABLED
 	ADD_SIGNAL(MethodInfo("pose_updated"));
