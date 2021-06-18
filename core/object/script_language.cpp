@@ -120,7 +120,7 @@ void Script::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("is_tool"), &Script::is_tool);
 
-	ADD_PROPERTY(PropertyInfo(Variant::STRING, "source_code", PROPERTY_HINT_NONE, "", 0), "set_source_code", "get_source_code");
+	ADD_PROPERTY(PropertyInfo(Variant::STRING, "source_code", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "set_source_code", "get_source_code");
 }
 
 void ScriptServer::set_scripting_enabled(bool p_enabled) {
