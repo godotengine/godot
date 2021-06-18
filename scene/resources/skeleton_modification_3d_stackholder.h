@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  skeleton_modification_3d.h                                           */
+/*  skeleton_modification_3d_stackholder.h                               */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,49 +28,32 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef SKELETONMODIFICATION3D_H
-#define SKELETONMODIFICATION3D_H
-
 #include "scene/3d/skeleton_3d.h"
-#include "scene/resources/skeleton_modification_stack_3d.h"
+#include "scene/resources/skeleton_modification_3d.h"
 
-class SkeletonModificationStack3D;
+#ifndef SKELETONMODIFICATION3DSTACKHOLDER_H
+#define SKELETONMODIFICATION3DSTACKHOLDER_H
 
-class SkeletonModification3D : public Resource {
-	GDCLASS(SkeletonModification3D, Resource);
-	friend class Skeleton3D;
-	friend class SkeletonModificationStack3D;
+class SkeletonModification3DStackHolder : public SkeletonModification3D {
+	GDCLASS(SkeletonModification3DStackHolder, SkeletonModification3D);
 
 protected:
 	static void _bind_methods();
-
-	SkeletonModificationStack3D *stack;
-	int execution_mode = 0; // 0 = process
-
-	bool enabled = true;
-	bool is_setup = false;
-	bool execution_error_found = false;
-
-	bool _print_execution_error(bool p_condition, String p_message);
+	bool _get(const StringName &p_path, Variant &r_ret) const;
+	bool _set(const StringName &p_path, const Variant &p_value);
+	void _get_property_list(List<PropertyInfo> *p_list) const;
 
 public:
-	virtual void execute(float delta);
-	virtual void setup_modification(SkeletonModificationStack3D *p_stack);
+	Ref<SkeletonModificationStack3D> held_modification_stack;
 
-	float clamp_angle(float angle, float min_bound, float max_bound, bool invert);
+	void execute(float delta) override;
+	void setup_modification(SkeletonModificationStack3D *p_stack) override;
 
-	void set_enabled(bool p_enabled);
-	bool get_enabled();
+	void set_held_modification_stack(Ref<SkeletonModificationStack3D> p_held_stack);
+	Ref<SkeletonModificationStack3D> get_held_modification_stack() const;
 
-	void set_execution_mode(int p_mode);
-	int get_execution_mode() const;
-
-	Ref<SkeletonModificationStack3D> get_modification_stack();
-
-	void set_is_setup(bool p_setup);
-	bool get_is_setup() const;
-
-	SkeletonModification3D();
+	SkeletonModification3DStackHolder();
+	~SkeletonModification3DStackHolder();
 };
 
-#endif // SKELETONMODIFICATION3D_H
+#endif //SKELETONMODIFICATION3DSTACKHOLDER_H
