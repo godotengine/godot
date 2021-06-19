@@ -175,7 +175,7 @@ void RendererSceneRender::CameraData::set_multiview_camera(uint32_t p_view_count
 	/////////////////////////////////////////////////////////////////////////////
 	// 3. Copy our view data
 	for (uint32_t v = 0; v < view_count; v++) {
-		view_offset[v] = p_transforms[v] * main_transform_inv;
-		view_projection[v] = p_projections[v] * CameraMatrix(view_offset[v]);
+		view_offset[v] = main_transform_inv * p_transforms[v];
+		view_projection[v] = p_projections[v] * CameraMatrix(view_offset[v].inverse());
 	}
 }
