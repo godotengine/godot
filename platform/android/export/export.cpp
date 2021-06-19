@@ -1849,7 +1849,7 @@ public:
 		err = OS::get_singleton()->execute(adb, args, &output, &rv, true);
 		print_verbose(output);
 		if (err || rv != 0) {
-			EditorNode::add_io_error("Could not install to device.");
+			EditorNode::add_io_error("Could not install to device: " + output);
 			CLEANUP_AND_RETURN(ERR_CANT_CREATE);
 		}
 
