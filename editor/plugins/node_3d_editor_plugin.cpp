@@ -3346,11 +3346,28 @@ void Node3DEditorViewport::update_transform_gizmo_view() {
 	const real_t d1 = camera->unproject_position(camera_xform.origin + camz * gizmo_d + camy).y;
 	const real_t dd = MAX(Math::abs(d0 - d1), CMP_EPSILON);
 
-	if (camera->is_position_in_frustum(spatial_editor->get_gizmo_target_center())) {
+	if (!spatial_editor->is_gizmo_visible() || camera->is_position_in_frustum(spatial_editor->get_gizmo_target_center())) {
 		xform.origin = spatial_editor->get_gizmo_target_center();
+		gizmo_offscreen_line->hide();
 	} else {
 		// When not in frustum, place the gizmo in the middle of the screen.
-		xform.origin = camera->project_position(viewport->get_size() / 2, gizmo_d);
+		const Vector2 half_viewport_size = viewport->get_size() / 2;
+		xform.origin = camera->project_position(half_viewport_size, gizmo_d);
+		// Calculate where to put the second point.
+		const Vector3 object_position = spatial_editor->get_gizmo_target_center();
+		Vector2 unprojected_position = camera->unproject_position(object_position);
+		// We would use "camera.is_position_behind(parent_translation)", except
+		// that it also accounts for the near clip plane, which we don't want.
+		if (camera_xform.basis.get_column(2).dot(object_position - camera_xform.origin) > 0) {
+			// When the object is behind, we need to flip and grow the line.
+			unprojected_position -= half_viewport_size;
+			unprojected_position = unprojected_position.normalized() * -half_viewport_size.length();
+			unprojected_position += half_viewport_size;
+		}
+		gizmo_offscreen_line->point1 = half_viewport_size;
+		gizmo_offscreen_line->point2 = unprojected_position;
+		gizmo_offscreen_line->update();
+		gizmo_offscreen_line->show();
 	}
 	spatial_editor->set_gizmo_transform(xform);
 
@@ -4001,6 +4018,9 @@ Node3DEditorViewport::Node3DEditorViewport(Node3DEditor *p_spatial_editor, Edito
 	viewport->add_child(camera);
 	camera->make_current();
 	surface->set_focus_mode(FOCUS_ALL);
+
+	gizmo_offscreen_line = memnew(GizmoOffScreenLine);
+	subviewport_container->add_child(gizmo_offscreen_line);
 
 	VBoxContainer *vbox = memnew(VBoxContainer);
 	surface->add_child(vbox);

@@ -173,6 +173,19 @@ public:
 	void set_viewport(Node3DEditorViewport *p_viewport);
 };
 
+class GizmoOffScreenLine : public Control {
+	GDCLASS(GizmoOffScreenLine, Control);
+
+public:
+	Vector2 point1;
+	Vector2 point2;
+	void _notification(int p_what) {
+		if (p_what == NOTIFICATION_DRAW && is_visible()) {
+			draw_line(point1, point2, Color(0.0f, 0.75f, 0.75f), 2);
+		}
+	}
+};
+
 class Node3DEditorViewport : public Control {
 	GDCLASS(Node3DEditorViewport, Control);
 	friend class Node3DEditor;
@@ -276,6 +289,7 @@ private:
 
 	CheckBox *preview_camera;
 	SubViewportContainer *subviewport_container;
+	GizmoOffScreenLine *gizmo_offscreen_line;
 
 	MenuButton *view_menu;
 	PopupMenu *display_submenu;
