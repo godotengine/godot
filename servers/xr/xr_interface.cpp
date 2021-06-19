@@ -137,7 +137,17 @@ PackedVector3Array XRInterface::get_play_area() const {
 	// Note implementation is responsible for applying our reference frame and world scale to the raw data.
 	// `play_area_changed` should be emitted if play area data is available and either the reference frame or world scale changes.
 	return PackedVector3Array();
-};
+}
+
+// optional render to external color texture which enhances performance on those platforms that require us to submit our end result into special textures.
+RID XRInterface::get_external_color_texture() {
+	return RID();
+}
+
+// optional render to external depth texture which enhances performance on those platforms that require us to submit our end result into special textures.
+RID XRInterface::get_external_depth_texture() {
+	return RID();
+}
 
 /** these will only be implemented on AR interfaces, so we want dummies for VR **/
 bool XRInterface::get_anchor_detection_is_enabled() const {

@@ -36,6 +36,16 @@
 			<description>
 			</description>
 		</method>
+		<method name="_get_external_color_texture" qualifiers="virtual">
+			<return type="RID" />
+			<description>
+			</description>
+		</method>
+		<method name="_get_external_depth_texture" qualifiers="virtual">
+			<return type="RID" />
+			<description>
+			</description>
+		</method>
 		<method name="_get_name" qualifiers="virtual const">
 			<return type="StringName" />
 			<description>

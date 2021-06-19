@@ -339,6 +339,7 @@ Error VulkanContext::_initialize_extensions() {
 			if (!strcmp(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME, instance_extensions[i].extensionName)) {
 				extension_names[enabled_extension_count++] = VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME;
 			}
+
 			if (enabled_extension_count >= MAX_EXTENSIONS) {
 				free(instance_extensions);
 				ERR_FAIL_V_MSG(ERR_BUG, "Enabled extension count reaches MAX_EXTENSIONS, BUG");
@@ -801,6 +802,7 @@ Error VulkanContext::_create_physical_device() {
 				// if multiview is supported, enable it
 				extension_names[enabled_extension_count++] = VK_KHR_MULTIVIEW_EXTENSION_NAME;
 			}
+
 			if (enabled_extension_count >= MAX_EXTENSIONS) {
 				free(device_extensions);
 				ERR_FAIL_V_MSG(ERR_BUG, "Enabled extension count reaches MAX_EXTENSIONS, BUG");

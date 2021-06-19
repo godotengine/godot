@@ -108,8 +108,13 @@ public:
 	GDVIRTUAL2R(Transform3D, _get_transform_for_view, uint32_t, const Transform3D &);
 	GDVIRTUAL4R(PackedFloat64Array, _get_projection_for_view, uint32_t, double, double, double);
 
+	virtual RID get_external_color_texture() override; /* if applicable return external color texture to render to */
+	virtual RID get_external_depth_texture() override; /* if applicable return external depth texture to render to */
 	void add_blit(RID p_render_target, Rect2 p_src_rect, Rect2i p_dst_rect, bool p_use_layer = false, uint32_t p_layer = 0, bool p_apply_lens_distortion = false, Vector2 p_eye_center = Vector2(), double p_k1 = 0.0, double p_k2 = 0.0, double p_upscale = 1.0, double p_aspect_ratio = 1.0);
 	virtual Vector<BlitToScreen> commit_views(RID p_render_target, const Rect2 &p_screen_rect) override;
+
+	GDVIRTUAL0R(RID, _get_external_color_texture);
+	GDVIRTUAL0R(RID, _get_external_depth_texture);
 	GDVIRTUAL2(_commit_views, RID, const Rect2 &);
 
 	virtual void process() override;

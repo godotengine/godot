@@ -3630,6 +3630,12 @@ RID RasterizerStorageGLES3::render_target_create() {
 	return render_target_owner.make_rid(rt);
 }
 
+void RasterizerStorageGLES3::render_target_update(RID p_render_target) {
+	// TODO need to look into if this applies here and how to implement it.
+	// The idea here is not to create the textures and framebuffer until we need it for the first time.
+	// Especially when XR is used we may end up creating things multiple times and then not using it.
+}
+
 void RasterizerStorageGLES3::render_target_set_position(RID p_render_target, int p_x, int p_y) {
 #ifdef OPENGL_DISABLE_RENDER_TARGETS
 	return;
@@ -3679,113 +3685,14 @@ RID RasterizerStorageGLES3::render_target_get_texture(RID p_render_target) {
 	}
 }
 
-void RasterizerStorageGLES3::render_target_set_external_texture(RID p_render_target, unsigned int p_texture_id) {
+void RasterizerStorageGLES3::render_target_set_external_textures(RID p_render_target, RID p_color, RID p_depth) {
 #ifdef OPENGL_DISABLE_RENDER_TARGETS
 	return;
 #endif
 
-	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
-	ERR_FAIL_COND(!rt);
+	// TODO re-implement this once stereo support has been added
 
-	if (p_texture_id == 0) {
-		if (rt->external.fbo != 0) {
-			// free this
-			glDeleteFramebuffers(1, &rt->external.fbo);
-
-			// and this
-			if (rt->external.depth != 0) {
-				glDeleteRenderbuffers(1, &rt->external.depth);
-			}
-
-			// clean up our texture
-			Texture *t = texture_owner.get_or_null(rt->external.texture);
-			t->alloc_height = 0;
-			t->alloc_width = 0;
-			t->width = 0;
-			t->height = 0;
-			t->active = false;
-			texture_owner.free(rt->external.texture);
-			memdelete(t);
-
-			rt->external.fbo = 0;
-			rt->external.color = 0;
-			rt->external.depth = 0;
-		}
-	} else {
-		Texture *t;
-
-		if (rt->external.fbo == 0) {
-			// create our fbo
-			glGenFramebuffers(1, &rt->external.fbo);
-			bind_framebuffer(rt->external.fbo);
-
-			// allocate a texture
-			t = memnew(Texture);
-
-			t->type = RenderingDevice::TEXTURE_TYPE_2D;
-			t->flags = 0;
-			t->width = 0;
-			t->height = 0;
-			t->alloc_height = 0;
-			t->alloc_width = 0;
-			t->format = Image::FORMAT_RGBA8;
-			t->target = GL_TEXTURE_2D;
-			t->gl_format_cache = 0;
-			t->gl_internal_format_cache = 0;
-			t->gl_type_cache = 0;
-			t->data_size = 0;
-			t->compressed = false;
-			t->srgb = false;
-			t->total_data_size = 0;
-			t->ignore_mipmaps = false;
-			t->mipmaps = 1;
-			t->active = true;
-			t->tex_id = 0;
-			t->render_target = rt;
-
-			rt->external.texture = texture_owner.make_rid(t);
-
-		} else {
-			// bind our frame buffer
-			bind_framebuffer(rt->external.fbo);
-
-			// find our texture
-			t = texture_owner.get_or_null(rt->external.texture);
-		}
-
-		// set our texture
-		t->tex_id = p_texture_id;
-		rt->external.color = p_texture_id;
-
-		// size shouldn't be different
-		t->width = rt->width;
-		t->height = rt->height;
-		t->alloc_height = rt->width;
-		t->alloc_width = rt->height;
-
-		// Switch our texture on our frame buffer
-		{
-			// set our texture as the destination for our framebuffer
-			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, p_texture_id, 0);
-
-			// seeing we're rendering into this directly, better also use our depth buffer, just use our existing one :)
-			if (config.support_depth_texture) {
-				glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, rt->depth, 0);
-			} else {
-				glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, rt->depth);
-			}
-		}
-
-		// check status and unbind
-		GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
-		bind_framebuffer_system();
-
-		if (status != GL_FRAMEBUFFER_COMPLETE) {
-			printf("framebuffer fail, status: %x\n", status);
-		}
-
-		ERR_FAIL_COND(status != GL_FRAMEBUFFER_COMPLETE);
-	}
+	return;
 }
 
 void RasterizerStorageGLES3::render_target_set_flag(RID p_render_target, RenderTargetFlags p_flag, bool p_value) {

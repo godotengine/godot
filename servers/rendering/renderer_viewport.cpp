@@ -582,6 +582,20 @@ void RendererViewport::draw_viewports() {
 
 		bool visible = vp->viewport_to_screen_rect != Rect2();
 
+		if (vp->use_xr) {
+			if (xr_interface.is_valid()) {
+				visible = true;
+
+				// override our size, make sure it matches our required size and is created as a stereo target
+				vp->size = xr_interface->get_render_target_size();
+				uint32_t view_count = xr_interface->get_view_count();
+				RSG::storage->render_target_set_size(vp->render_target, vp->size.x, vp->size.y, view_count);
+			} else {
+				visible = false;
+				vp->size = Size2(0.0, 0.0);
+			}
+		}
+
 		if (vp->update_mode == RS::VIEWPORT_UPDATE_ALWAYS || vp->update_mode == RS::VIEWPORT_UPDATE_ONCE) {
 			visible = true;
 		}
@@ -619,22 +633,17 @@ void RendererViewport::draw_viewports() {
 
 		RSG::storage->render_target_set_as_unused(vp->render_target);
 		if (vp->use_xr && xr_interface.is_valid()) {
-			// override our size, make sure it matches our required size and is created as a stereo target
-			vp->size = xr_interface->get_render_target_size();
-			uint32_t view_count = xr_interface->get_view_count();
-			RSG::storage->render_target_set_size(vp->render_target, vp->internal_size.x, vp->internal_size.y, view_count);
+			// check for an external texture destination
+			RSG::storage->render_target_set_external_textures(vp->render_target, xr_interface->get_external_color_texture(), xr_interface->get_external_depth_texture());
 
-			// check for an external texture destination (disabled for now, not yet supported)
-			// RSG::storage->render_target_set_external_texture(vp->render_target, xr_interface->get_external_texture_for_eye(leftOrMono));
-			RSG::storage->render_target_set_external_texture(vp->render_target, 0);
+			// (Re)create our RT if needed
+			RSG::storage->render_target_update(vp->render_target);
 
 			// render...
 			RSG::scene->set_debug_draw_mode(vp->debug_draw);
 
 			// and draw viewport
 			_draw_viewport(vp);
-
-			// measure
 
 			// commit our eyes
 			Vector<BlitToScreen> blits = xr_interface->commit_views(vp->render_target, vp->viewport_to_screen_rect);
@@ -651,7 +660,14 @@ void RendererViewport::draw_viewports() {
 			// and for our frame timing, mark when we've finished committing our eyes
 			XRServer::get_singleton()->_mark_commit();
 		} else {
-			RSG::storage->render_target_set_external_texture(vp->render_target, 0);
+			// clear our external texture if set
+			RSG::storage->render_target_set_external_textures(vp->render_target, RID(), RID());
+
+			// @TODO check if our viewport is full screen and is set to output to our display,
+			// if so we should create an RT that uses our current swap image (maybe set that as our external texture?)
+
+			// (Re)create our RT if needed
+			RSG::storage->render_target_update(vp->render_target);
 
 			RSG::scene->set_debug_draw_mode(vp->debug_draw);
 

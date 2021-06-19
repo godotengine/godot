@@ -547,6 +547,21 @@
 			<description>
 			</description>
 		</method>
+		<method name="texture_create_from_extension">
+			<return type="RID" />
+			<argument index="0" name="type" type="int" enum="RenderingDevice.TextureType" />
+			<argument index="1" name="format" type="int" enum="RenderingDevice.DataFormat" />
+			<argument index="2" name="samples" type="int" enum="RenderingDevice.TextureSamples" />
+			<argument index="3" name="flags" type="int" />
+			<argument index="4" name="image" type="int" />
+			<argument index="5" name="width" type="int" />
+			<argument index="6" name="height" type="int" />
+			<argument index="7" name="depth" type="int" />
+			<argument index="8" name="layers" type="int" />
+			<description>
+				Create a texture object based an image handle already created within an GDNative extension.
+			</description>
+		</method>
 		<method name="texture_create_shared">
 			<return type="RID" />
 			<argument index="0" name="view" type="RDTextureView" />

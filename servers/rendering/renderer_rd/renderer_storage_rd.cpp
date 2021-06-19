@@ -7594,6 +7594,20 @@ AABB RendererStorageRD::lightmap_get_aabb(RID p_lightmap) const {
 
 /* RENDER TARGET API */
 
+void RendererStorageRD::_mark_render_target_dirty(RenderTarget *rt) {
+	if (rt->texture.is_null()) {
+		//create a placeholder until updated
+		rt->texture = texture_allocate();
+		texture_2d_placeholder_initialize(rt->texture);
+		Texture *tex = texture_owner.get_or_null(rt->texture);
+		tex->is_render_target = true;
+	}
+
+	_clear_render_target(rt);
+
+	rt->is_dirty = true;
+}
+
 void RendererStorageRD::_clear_render_target(RenderTarget *rt) {
 	//free in reverse dependency order
 	if (rt->framebuffer.is_valid()) {
@@ -7636,44 +7650,57 @@ void RendererStorageRD::_update_render_target(RenderTarget *rt) {
 	if (rt->size.width == 0 || rt->size.height == 0) {
 		return;
 	}
+
 	//until we implement support for HDR monitors (and render target is attached to screen), this is enough.
 	rt->color_format = RD::DATA_FORMAT_R8G8B8A8_UNORM;
 	rt->color_format_srgb = RD::DATA_FORMAT_R8G8B8A8_SRGB;
 	rt->image_format = rt->flags[RENDER_TARGET_TRANSPARENT] ? Image::FORMAT_RGBA8 : Image::FORMAT_RGB8;
 
-	RD::TextureFormat rd_format;
-	RD::TextureView rd_view;
-	{ //attempt register
-		rd_format.format = rt->color_format;
-		rd_format.width = rt->size.width;
-		rd_format.height = rt->size.height;
-		rd_format.depth = 1;
-		rd_format.array_layers = rt->view_count; // for stereo we create two (or more) layers, need to see if we can make fallback work like this too if we don't have multiview
-		rd_format.mipmaps = 1;
-		if (rd_format.array_layers > 1) { // why are we not using rt->texture_type ??
-			rd_format.texture_type = RD::TEXTURE_TYPE_2D_ARRAY;
-		} else {
-			rd_format.texture_type = RD::TEXTURE_TYPE_2D;
+	if (rt->external_color.is_null()) {
+		// Create our color texture to render into
+		RD::TextureFormat rd_format;
+		RD::TextureView rd_view;
+		{ //attempt register
+			rd_format.format = rt->color_format;
+			rd_format.width = rt->size.width;
+			rd_format.height = rt->size.height;
+			rd_format.depth = 1;
+			rd_format.array_layers = rt->view_count; // for stereo we create two (or more) layers, need to see if we can make fallback work like this too if we don't have multiview
+			rd_format.mipmaps = 1;
+			if (rd_format.array_layers > 1) { // why are we not using rt->texture_type ??
+				rd_format.texture_type = RD::TEXTURE_TYPE_2D_ARRAY;
+			} else {
+				rd_format.texture_type = RD::TEXTURE_TYPE_2D;
+			}
+			rd_format.samples = RD::TEXTURE_SAMPLES_1;
+			rd_format.usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT | RD::TEXTURE_USAGE_CAN_COPY_FROM_BIT;
+			rd_format.shareable_formats.push_back(rt->color_format);
+			rd_format.shareable_formats.push_back(rt->color_format_srgb);
 		}
-		rd_format.samples = RD::TEXTURE_SAMPLES_1;
-		rd_format.usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT | RD::TEXTURE_USAGE_CAN_COPY_FROM_BIT;
-		rd_format.shareable_formats.push_back(rt->color_format);
-		rd_format.shareable_formats.push_back(rt->color_format_srgb);
-	}
 
-	rt->color = RD::get_singleton()->texture_create(rd_format, rd_view);
-	ERR_FAIL_COND(rt->color.is_null());
+		rt->color = RD::get_singleton()->texture_create(rd_format, rd_view);
+		ERR_FAIL_COND(rt->color.is_null());
 
-	Vector<RID> fb_textures;
-	fb_textures.push_back(rt->color);
-	rt->framebuffer = RD::get_singleton()->framebuffer_create(fb_textures, RenderingDevice::INVALID_ID, rt->view_count);
-	if (rt->framebuffer.is_null()) {
-		_clear_render_target(rt);
-		ERR_FAIL_COND(rt->framebuffer.is_null());
+		Vector<RID> fb_textures;
+		fb_textures.push_back(rt->color);
+		rt->framebuffer = RD::get_singleton()->framebuffer_create(fb_textures, RenderingDevice::INVALID_ID, rt->view_count);
+		if (rt->framebuffer.is_null()) {
+			_clear_render_target(rt);
+			ERR_FAIL_COND(rt->framebuffer.is_null());
+		}
+	} else {
+		// use our external texture for our frame buffer
+
+		Vector<RID> fb_textures;
+		fb_textures.push_back(rt->external_color);
+		rt->framebuffer = RD::get_singleton()->framebuffer_create(fb_textures, RenderingDevice::INVALID_ID, rt->view_count);
+		if (rt->framebuffer.is_null()) {
+			_clear_render_target(rt);
+			ERR_FAIL_COND(rt->framebuffer.is_null());
+		}
 	}
 
 	{ //update texture
-
 		Texture *tex = texture_owner.get_or_null(rt->texture);
 
 		//free existing textures
@@ -7694,10 +7721,10 @@ void RendererStorageRD::_update_render_target(RenderTarget *rt) {
 		if (!rt->flags[RENDER_TARGET_TRANSPARENT]) {
 			view.swizzle_a = RD::TEXTURE_SWIZZLE_ONE;
 		}
-		tex->rd_texture = RD::get_singleton()->texture_create_shared(view, rt->color);
+		tex->rd_texture = RD::get_singleton()->texture_create_shared(view, rt->external_color.is_null() ? rt->color : rt->external_color);
 		if (rt->color_format_srgb != RD::DATA_FORMAT_MAX) {
 			view.format_override = rt->color_format_srgb;
-			tex->rd_texture_srgb = RD::get_singleton()->texture_create_shared(view, rt->color);
+			tex->rd_texture_srgb = RD::get_singleton()->texture_create_shared(view, rt->external_color.is_null() ? rt->color : rt->external_color);
 		}
 		tex->rd_view = view;
 		tex->width = rt->size.width;
@@ -7772,8 +7799,18 @@ RID RendererStorageRD::render_target_create() {
 	for (int i = 0; i < RENDER_TARGET_FLAG_MAX; i++) {
 		render_target.flags[i] = false;
 	}
-	_update_render_target(&render_target);
+	_mark_render_target_dirty(&render_target);
 	return render_target_owner.make_rid(render_target);
+}
+
+void RendererStorageRD::render_target_update(RID p_render_target) {
+	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
+	ERR_FAIL_COND(!rt);
+
+	if (rt->is_dirty) {
+		_update_render_target(rt);
+		rt->is_dirty = false;
+	}
 }
 
 void RendererStorageRD::render_target_set_position(RID p_render_target, int p_x, int p_y) {
@@ -7787,7 +7824,7 @@ void RendererStorageRD::render_target_set_size(RID p_render_target, int p_width,
 		rt->size.x = p_width;
 		rt->size.y = p_height;
 		rt->view_count = p_view_count;
-		_update_render_target(rt);
+		_mark_render_target_dirty(rt);
 	}
 }
 
@@ -7798,14 +7835,69 @@ RID RendererStorageRD::render_target_get_texture(RID p_render_target) {
 	return rt->texture;
 }
 
-void RendererStorageRD::render_target_set_external_texture(RID p_render_target, unsigned int p_texture_id) {
+void RendererStorageRD::render_target_set_external_textures(RID p_render_target, RID p_color, RID p_depth) {
+	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
+	ERR_FAIL_COND(!rt);
+
+	if (rt->external_color != p_color || rt->external_depth != p_depth) {
+		if (!rt->is_dirty && rt->external_color.is_valid() && p_color.is_valid()) {
+			// We'll likely have a texture chain which means every frame we're cycling through textures
+			// We don't want to recreate it all, just change our framebuffer
+			rt->external_color = p_color;
+			rt->external_depth = p_depth;
+
+			{
+				// TODO change this so we update the attachment on the framebuffer instead of recreating it
+				if (rt->framebuffer.is_valid()) {
+					RD::get_singleton()->free(rt->framebuffer);
+					rt->framebuffer_uniform_set = RID(); //chain deleted
+				}
+
+				Vector<RID> fb_textures;
+				fb_textures.push_back(rt->external_color);
+				rt->framebuffer = RD::get_singleton()->framebuffer_create(fb_textures, RenderingDevice::INVALID_ID, rt->view_count);
+				if (rt->framebuffer.is_null()) {
+					_clear_render_target(rt);
+					ERR_FAIL_COND(rt->framebuffer.is_null());
+				}
+			}
+
+			{
+				Texture *tex = texture_owner.get_or_null(rt->texture);
+				if (tex) {
+					// TODO change this so we re-use our textures, maybe with a map?
+
+					//free existing textures
+					if (RD::get_singleton()->texture_is_valid(tex->rd_texture)) {
+						RD::get_singleton()->free(tex->rd_texture);
+					}
+					if (RD::get_singleton()->texture_is_valid(tex->rd_texture_srgb)) {
+						RD::get_singleton()->free(tex->rd_texture_srgb);
+					}
+
+					tex->rd_texture = RD::get_singleton()->texture_create_shared(tex->rd_view, rt->external_color);
+					if (rt->color_format_srgb != RD::DATA_FORMAT_MAX) {
+						tex->rd_texture_srgb = RD::get_singleton()->texture_create_shared(tex->rd_view, rt->external_color);
+					}
+				}
+			}
+
+			if (rt->external_depth.is_valid()) {
+				// TODO update depth attachment on 3D buffers (we're not supplying depth buffers yet so to be added later)
+			}
+		} else {
+			rt->external_color = p_color;
+			rt->external_depth = p_depth;
+			_mark_render_target_dirty(rt);
+		}
+	}
 }
 
 void RendererStorageRD::render_target_set_flag(RID p_render_target, RenderTargetFlags p_flag, bool p_value) {
 	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
 	ERR_FAIL_COND(!rt);
 	rt->flags[p_flag] = p_value;
-	_update_render_target(rt);
+	_mark_render_target_dirty(rt);
 }
 
 bool RendererStorageRD::render_target_was_used(RID p_render_target) {

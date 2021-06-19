@@ -52,6 +52,8 @@ void XRInterfaceExtension::_bind_methods() {
 	GDVIRTUAL_BIND(_get_transform_for_view, "view", "cam_transform");
 	GDVIRTUAL_BIND(_get_projection_for_view, "view", "aspect", "z_near", "z_far");
 
+	GDVIRTUAL_BIND(_get_external_color_texture);
+	GDVIRTUAL_BIND(_get_external_depth_texture);
 	GDVIRTUAL_BIND(_commit_views, "render_target", "screen_rect");
 
 	GDVIRTUAL_BIND(_process);
@@ -333,3 +335,25 @@ RID XRInterfaceExtension::get_render_target_depth(RID p_render_target) {
 	return rd_scene->render_buffers_get_depth_texture(????????????);
 }
 */
+
+// optional render to external color texture which enhances performance on those platforms that require us to submit our end result into special textures.
+RID XRInterfaceExtension::get_external_color_texture() {
+	RID texture;
+
+	if (GDVIRTUAL_CALL(_get_external_color_texture, texture)) {
+		return texture;
+	}
+
+	return RID();
+};
+
+// optional render to external depth texture which enhances performance on those platforms that require us to submit our end result into special textures.
+RID XRInterfaceExtension::get_external_depth_texture() {
+	RID texture;
+
+	if (GDVIRTUAL_CALL(_get_external_depth_texture, texture)) {
+		return texture;
+	}
+
+	return RID();
+};

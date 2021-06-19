@@ -125,6 +125,8 @@ public:
 
 	// note, external color/depth/vrs texture support will be added here soon.
 
+	virtual RID get_external_color_texture(); /* if applicable return external color texture to render to */
+	virtual RID get_external_depth_texture(); /* if applicable return external depth texture to render to */
 	virtual Vector<BlitToScreen> commit_views(RID p_render_target, const Rect2 &p_screen_rect) = 0; /* commit rendered views to the XR interface */
 
 	virtual void process() = 0;
