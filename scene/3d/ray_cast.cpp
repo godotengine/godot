@@ -415,6 +415,8 @@ void RayCast::_update_debug_shape_material(bool p_check_collision) {
 
 		material->set_flag(SpatialMaterial::FLAG_UNSHADED, true);
 		material->set_feature(SpatialMaterial::FEATURE_TRANSPARENT, true);
+		// Use double-sided rendering so that the RayCast can be seen if the camera is inside.
+		material->set_cull_mode(SpatialMaterial::CULL_DISABLED);
 	}
 
 	Color color = debug_shape_custom_color;
