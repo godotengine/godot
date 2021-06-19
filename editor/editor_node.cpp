@@ -491,7 +491,7 @@ void EditorNode::_update_from_settings() {
 	RS::get_singleton()->environment_set_volumetric_fog_filter_active(bool(GLOBAL_GET("rendering/environment/volumetric_fog/use_filter")));
 	RS::get_singleton()->canvas_set_shadow_texture_size(GLOBAL_GET("rendering/2d/shadow_atlas/size"));
 
-	bool use_half_res_gi = GLOBAL_DEF("rendering/global_illumination/gi/use_half_resolution", false);
+	bool use_half_res_gi = GLOBAL_DEF("rendering/global_illumination/gi/use_half_resolution", true);
 	RS::get_singleton()->gi_set_use_half_resolution(use_half_res_gi);
 
 	bool snap_2d_transforms = GLOBAL_GET("rendering/2d/snap/snap_2d_transforms_to_pixel");
