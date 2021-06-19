@@ -351,6 +351,9 @@ public:
 
 	String get_user_data_dir() const;
 	String get_external_data_dir() const;
+	String get_config_dir() const;
+	String get_data_dir() const;
+	String get_cache_dir() const;
 
 	void alert(const String &p_alert, const String &p_title = "ALERT!");
 
