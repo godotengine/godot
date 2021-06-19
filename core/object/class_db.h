@@ -204,6 +204,7 @@ public:
 	}
 
 	static void register_extension_class(ObjectNativeExtension *p_extension);
+	static void unregister_extension_class(const StringName &p_class);
 
 	template <class T>
 	static Object *_create_ptr_func() {
@@ -232,7 +233,8 @@ public:
 	static bool is_parent_class(const StringName &p_class, const StringName &p_inherits);
 	static bool can_instantiate(const StringName &p_class);
 	static Object *instantiate(const StringName &p_class);
-	static void instance_get_native_extension_data(ObjectNativeExtension **r_extension, void **r_extension_instance);
+	static void instance_get_native_extension_data(ObjectNativeExtension **r_extension, GDExtensionClassInstancePtr *r_extension_instance);
+
 	static APIType get_api_type(const StringName &p_class);
 
 	static uint64_t get_api_hash(APIType p_api);

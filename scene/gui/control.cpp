@@ -651,19 +651,10 @@ void Control::_notification(int p_notification) {
 }
 
 bool Control::has_point(const Point2 &p_point) const {
-	if (get_script_instance()) {
-		Variant v = p_point;
-		const Variant *p = &v;
-		Callable::CallError ce;
-		Variant ret = get_script_instance()->call(SceneStringNames::get_singleton()->_has_point, &p, 1, ce);
-		if (ce.error == Callable::CallError::CALL_OK) {
-			return ret;
-		}
+	bool ret;
+	if (GDVIRTUAL_CALL(_has_point, p_point, ret)) {
+		return ret;
 	}
-	/*if (has_stylebox("mask")) {
-		Ref<StyleBox> mask = get_stylebox("mask");
-		return mask->test_mask(p_point,Rect2(Point2(),get_size()));
-	}*/
 	return Rect2(Point2(), get_size()).has_point(p_point);
 }
 
@@ -2932,5 +2923,5 @@ void Control::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("minimum_size_changed"));
 	ADD_SIGNAL(MethodInfo("theme_changed"));
 
-	BIND_VMETHOD(MethodInfo(Variant::BOOL, "_has_point", PropertyInfo(Variant::VECTOR2, "point")));
+	GDVIRTUAL_BIND(_has_point);
 }

@@ -32,6 +32,7 @@
 #define CONTROL_H
 
 #include "core/math/transform_2d.h"
+#include "core/object/gdvirtual.gen.inc"
 #include "core/templates/rid.h"
 #include "scene/gui/shortcut.h"
 #include "scene/main/canvas_item.h"
@@ -264,6 +265,7 @@ private:
 	static bool has_theme_item_in_types(Control *p_theme_owner, Window *p_theme_owner_window, Theme::DataType p_data_type, const StringName &p_name, List<StringName> p_theme_types);
 	_FORCE_INLINE_ void _get_theme_type_dependencies(const StringName &p_theme_type, List<StringName> *p_list) const;
 
+	GDVIRTUAL1RC(bool, _has_point, Vector2)
 protected:
 	virtual void add_child_notify(Node *p_child) override;
 	virtual void remove_child_notify(Node *p_child) override;

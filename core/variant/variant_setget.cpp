@@ -871,7 +871,7 @@ struct VariantKeyedSetGetDictionary {
 		*r_valid = true;
 		return VariantGetInternalPtr<Dictionary>::get_ptr(base)->has(*key);
 	}
-	static bool ptr_has(const void *base, const void *key) {
+	static uint32_t ptr_has(const void *base, const void *key) {
 		/* avoid ptrconvert for performance*/
 		const Dictionary &v = *reinterpret_cast<const Dictionary *>(base);
 		return v.has(PtrToArg<Variant>::convert(key));
@@ -921,7 +921,7 @@ struct VariantKeyedSetGetObject {
 		obj->getvar(*key, &exists);
 		return exists;
 	}
-	static bool ptr_has(const void *base, const void *key) {
+	static uint32_t ptr_has(const void *base, const void *key) {
 		const Object *obj = PtrToArg<Object *>::convert(base);
 		ERR_FAIL_COND_V(!obj, false);
 		bool valid;

@@ -77,6 +77,7 @@ struct VariantCaster<const T &> {
 		_FORCE_INLINE_ static m_enum convert(const void *p_ptr) {            \
 			return m_enum(*reinterpret_cast<const int *>(p_ptr));            \
 		}                                                                    \
+		typedef int64_t EncodeT;                                             \
 		_FORCE_INLINE_ static void encode(m_enum p_val, const void *p_ptr) { \
 			*(int *)p_ptr = p_val;                                           \
 		}                                                                    \
@@ -117,6 +118,7 @@ struct PtrToArg<char32_t> {
 	_FORCE_INLINE_ static char32_t convert(const void *p_ptr) {
 		return char32_t(*reinterpret_cast<const int *>(p_ptr));
 	}
+	typedef int64_t EncodeT;
 	_FORCE_INLINE_ static void encode(char32_t p_val, const void *p_ptr) {
 		*(int *)p_ptr = p_val;
 	}

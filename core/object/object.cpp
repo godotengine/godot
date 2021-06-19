@@ -386,12 +386,20 @@ void Object::set(const StringName &p_name, const Variant &p_value, bool *r_valid
 	}
 
 	if (_extension && _extension->set) {
-		if (_extension->set(_extension_instance, &p_name, &p_value)) {
+// C style pointer casts should never trigger a compiler warning because the risk is assumed by the user, so GCC should keep quiet about it.
+#if defined(__GNUC__) && !defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wignored-qualifiers"
+#endif
+		if (_extension->set(_extension_instance, (const GDNativeStringNamePtr)&p_name, (const GDNativeVariantPtr)&p_value)) {
 			if (r_valid) {
 				*r_valid = true;
 			}
 			return;
 		}
+#if defined(__GNUC__) && !defined(__clang__)
+#pragma GCC diagnostic pop
+#endif
 	}
 
 	//try built-in setgetter
@@ -459,14 +467,22 @@ Variant Object::get(const StringName &p_name, bool *r_valid) const {
 			return ret;
 		}
 	}
-
 	if (_extension && _extension->get) {
-		if (_extension->get(_extension_instance, &p_name, &ret)) {
+// C style pointer casts should never trigger a compiler warning because the risk is assumed by the user, so GCC should keep quiet about it.
+#if defined(__GNUC__) && !defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wignored-qualifiers"
+#endif
+
+		if (_extension->get(_extension_instance, (const GDNativeStringNamePtr)&p_name, (GDNativeVariantPtr)&ret)) {
 			if (r_valid) {
 				*r_valid = true;
 			}
 			return ret;
 		}
+#if defined(__GNUC__) && !defined(__clang__)
+#pragma GCC diagnostic pop
+#endif
 	}
 
 	//try built-in setgetter
@@ -616,7 +632,7 @@ void Object::get_property_list(List<PropertyInfo> *p_list, bool p_reversed) cons
 
 	if (_extension && _extension->get_property_list) {
 		uint32_t pcount;
-		const ObjectNativeExtension::PInfo *pinfo = _extension->get_property_list(_extension_instance, &pcount);
+		const GDNativePropertyInfo *pinfo = _extension->get_property_list(_extension_instance, &pcount);
 		for (uint32_t i = 0; i < pcount; i++) {
 			p_list->push_back(PropertyInfo(Variant::Type(pinfo[i].type), pinfo[i].class_name, PropertyHint(pinfo[i].hint), pinfo[i].hint_string, pinfo[i].usage, pinfo[i].class_name));
 		}
@@ -1812,7 +1828,7 @@ Object::~Object() {
 	script_instance = nullptr;
 
 	if (_extension && _extension->free_instance) {
-		_extension->free_instance(_extension->create_instance_userdata, _extension_instance);
+		_extension->free_instance(_extension->class_userdata, _extension_instance);
 		_extension = nullptr;
 		_extension_instance = nullptr;
 	}

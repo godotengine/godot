@@ -499,6 +499,7 @@ public:
 	static bool is_builtin_method_vararg(Variant::Type p_type, const StringName &p_method);
 	static void get_builtin_method_list(Variant::Type p_type, List<StringName> *p_list);
 	static int get_builtin_method_count(Variant::Type p_type);
+	static uint32_t get_builtin_method_hash(Variant::Type p_type, const StringName &p_method);
 
 	void call(const StringName &p_method, const Variant **p_args, int p_argcount, Variant &r_ret, Callable::CallError &r_error);
 	Variant call(const StringName &p_method, const Variant &p_arg1 = Variant(), const Variant &p_arg2 = Variant(), const Variant &p_arg3 = Variant(), const Variant &p_arg4 = Variant(), const Variant &p_arg5 = Variant());
@@ -586,7 +587,7 @@ public:
 
 	typedef void (*PTRKeyedSetter)(void *base, const void *key, const void *value);
 	typedef void (*PTRKeyedGetter)(const void *base, const void *key, void *value);
-	typedef bool (*PTRKeyedChecker)(const void *base, const void *key);
+	typedef uint32_t (*PTRKeyedChecker)(const void *base, const void *key);
 
 	static PTRKeyedSetter get_member_ptr_keyed_setter(Variant::Type p_type);
 	static PTRKeyedGetter get_member_ptr_keyed_getter(Variant::Type p_type);
@@ -631,6 +632,7 @@ public:
 	static bool has_utility_function_return_value(const StringName &p_name);
 	static Variant::Type get_utility_function_return_type(const StringName &p_name);
 	static bool is_utility_function_vararg(const StringName &p_name);
+	static uint32_t get_utility_function_hash(const StringName &p_name);
 
 	static void get_utility_function_list(List<StringName> *r_functions);
 	static int get_utility_function_count();

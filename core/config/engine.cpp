@@ -236,9 +236,10 @@ Engine::Engine() {
 	singleton = this;
 }
 
-Engine::Singleton::Singleton(const StringName &p_name, Object *p_ptr) :
+Engine::Singleton::Singleton(const StringName &p_name, Object *p_ptr, const StringName &p_class_name) :
 		name(p_name),
-		ptr(p_ptr) {
+		ptr(p_ptr),
+		class_name(p_class_name) {
 #ifdef DEBUG_ENABLED
 	RefCounted *rc = Object::cast_to<RefCounted>(p_ptr);
 	if (rc && !rc->is_referenced()) {
