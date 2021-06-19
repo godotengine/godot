@@ -1625,15 +1625,6 @@ void EditorNode::_save_scene(String p_file, int idx) {
 		return;
 	}
 
-	// force creation of node path cache
-	// (hacky but needed for the tree to update properly)
-	Node *dummy_scene = sdata->instance(PackedScene::GEN_EDIT_STATE_INSTANCE);
-	if (!dummy_scene) {
-		show_accept(TTR("Couldn't save scene. Likely dependencies (instances or inheritance) couldn't be satisfied."), TTR("OK"));
-		return;
-	}
-	memdelete(dummy_scene);
-
 	int flg = 0;
 	if (EditorSettings::get_singleton()->get("filesystem/on_save/compress_binary_resources")) {
 		flg |= ResourceSaver::FLAG_COMPRESS;
