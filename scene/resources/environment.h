@@ -107,7 +107,7 @@ private:
 	// Tonemap
 	ToneMapper tone_mapper = TONE_MAPPER_LINEAR;
 	float tonemap_exposure = 1.0;
-	float tonemap_white = 1.0;
+	float tonemap_white = 6.0;
 	bool tonemap_auto_exposure_enabled = false;
 	float tonemap_auto_exposure_min = 0.05;
 	float tonemap_auto_exposure_max = 8.0;

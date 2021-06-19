@@ -7582,7 +7582,7 @@ void Node3DEditor::_preview_settings_changed() {
 		environment->set_ssao_enabled(environ_ao_button->is_pressed());
 		environment->set_glow_enabled(environ_glow_button->is_pressed());
 		environment->set_sdfgi_enabled(environ_gi_button->is_pressed());
-		environment->set_tonemapper(environ_tonemap_button->is_pressed() ? Environment::TONE_MAPPER_FILMIC : Environment::TONE_MAPPER_LINEAR);
+		environment->set_tonemapper(environ_tonemap_button->is_pressed() ? Environment::TONE_MAPPER_ACES : Environment::TONE_MAPPER_LINEAR);
 	}
 }
 
@@ -7603,8 +7603,8 @@ void Node3DEditor::_load_default_preview_settings() {
 	environ_sky_color->set_pick_color(Color(0.385, 0.454, 0.55));
 	environ_ground_color->set_pick_color(Color(0.2, 0.169, 0.133));
 	environ_energy->set_value(1.0);
-	environ_glow_button->set_pressed(true);
 	environ_tonemap_button->set_pressed(true);
+	environ_glow_button->set_pressed(true);
 	environ_ao_button->set_pressed(false);
 	environ_gi_button->set_pressed(false);
 	sun_max_distance->set_value(250);
@@ -8251,23 +8251,27 @@ void fragment() {
 		HBoxContainer *fx_vb = memnew(HBoxContainer);
 		fx_vb->set_h_size_flags(SIZE_EXPAND_FILL);
 
-		environ_ao_button = memnew(Button);
-		environ_ao_button->set_text(TTR("AO"));
-		environ_ao_button->set_toggle_mode(true);
-		environ_ao_button->connect("pressed", callable_mp(this, &Node3DEditor::_preview_settings_changed), CONNECT_DEFERRED);
-		fx_vb->add_child(environ_ao_button);
-		environ_glow_button = memnew(Button);
-		environ_glow_button->set_text(TTR("Glow"));
-		environ_glow_button->set_toggle_mode(true);
-		environ_glow_button->connect("pressed", callable_mp(this, &Node3DEditor::_preview_settings_changed), CONNECT_DEFERRED);
-		fx_vb->add_child(environ_glow_button);
 		environ_tonemap_button = memnew(Button);
-		environ_tonemap_button->set_text(TTR("Tonemap"));
+		environ_tonemap_button->set_text(TTR("ACES Tonemap"));
+		environ_tonemap_button->set_tooltip(TTR("Uses ACES tonemapping instead of linear tonemapping. This adjusts colors to avoid blowing out highlights.\nLow performance cost."));
 		environ_tonemap_button->set_toggle_mode(true);
 		environ_tonemap_button->connect("pressed", callable_mp(this, &Node3DEditor::_preview_settings_changed), CONNECT_DEFERRED);
 		fx_vb->add_child(environ_tonemap_button);
+		environ_glow_button = memnew(Button);
+		environ_glow_button->set_text(TTR("Glow"));
+		environ_glow_button->set_tooltip(TTR("Makes bright pixels \"bleed\" out, simulating real world vision.\nModerate performance cost."));
+		environ_glow_button->set_toggle_mode(true);
+		environ_glow_button->connect("pressed", callable_mp(this, &Node3DEditor::_preview_settings_changed), CONNECT_DEFERRED);
+		fx_vb->add_child(environ_glow_button);
+		environ_ao_button = memnew(Button);
+		environ_ao_button->set_text(TTR("SSAO"));
+		environ_ao_button->set_tooltip(TTR("Enables screen-space ambient occlusion, which helps objects stand out from each other.\nModerate performance cost."));
+		environ_ao_button->set_toggle_mode(true);
+		environ_ao_button->connect("pressed", callable_mp(this, &Node3DEditor::_preview_settings_changed), CONNECT_DEFERRED);
+		fx_vb->add_child(environ_ao_button);
 		environ_gi_button = memnew(Button);
-		environ_gi_button->set_text(TTR("GI"));
+		environ_gi_button->set_text(TTR("SDFGI"));
+		environ_gi_button->set_tooltip(TTR("Provides semi-real-time global illumination for the scene using signed distance field global illumination.\nMeshes must have their GI Mode set to Static for them to contribute to SDFGI.\nHigh performance cost."));
 		environ_gi_button->set_toggle_mode(true);
 		environ_gi_button->connect("pressed", callable_mp(this, &Node3DEditor::_preview_settings_changed), CONNECT_DEFERRED);
 		fx_vb->add_child(environ_gi_button);
