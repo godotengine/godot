@@ -13,71 +13,73 @@
 			<return type="Dictionary">
 			</return>
 			<argument index="0" name="method" type="String">
-				Name of the method being called.
 			</argument>
 			<argument index="1" name="params" type="Variant">
-				An array or dictionary of parameters being passed to the method.
-				</argument>
+			</argument>
 			<description>
 				Returns a dictionary in the form of a JSON-RPC notification. Notifications are one-shot messages which do not expect a response.
+				- [code]method[/code] Name of the method being called.
+				- [code]params[/code] An array or dictionary of parameters being passed to the method.
 			</description>
 		</method>
 		<method name="make_request">
 			<return type="Dictionary">
 			</return>
 			<argument index="0" name="method" type="String">
-				Name of the method being called.
 			</argument>
 			<argument index="1" name="params" type="Variant">
-				An array or dictionary of parameters being passed to the method.
 			</argument>
 			<argument index="2" name="id" type="Variant">
-				Uniquely identifies this request. The server is expected to send a response with the same ID.
 			</argument>
 			<description>
 				Returns a dictionary in the form of a JSON-RPC request. Requests are sent to a server with the expectation of a response. The ID field is used for the server to specify which exact request it is responding to.
+				[code]method[/code] Name of the method being called.
+				[code]params[/code] An array or dictionary of parameters being passed to the method.
+				[code]id[/code] Uniquely identifies this request. The server is expected to send a response with the same ID.
 			</description>
 		</method>
 		<method name="make_response">
 			<return type="Dictionary">
 			</return>
 			<argument index="0" name="result" type="Variant">
-				The return value of the function which was called.
 			</argument>
 			<argument index="1" name="id" type="Variant">
-				The ID of the request this response is targeted to.
 			</argument>
 			<description>
 				When a server has received and processed a request, it is expected to send a response. If you did not want a response then you need to have sent a Notification instead.
+				[code]result[/code] The return value of the function which was called.
+				[code]id[/code] The ID of the request this response is targeted to.
 			</description>
 		</method>
 		<method name="make_response_error" qualifiers="const">
 			<return type="Dictionary">
 			</return>
 			<argument index="0" name="code" type="int">
-				The error code corresponding to what kind of error this is. See the ErrorCode constants.
 			</argument>
 			<argument index="1" name="message" type="String">
-				A custom message about this error.
 			</argument>
 			<argument index="2" name="id" type="Variant" default="null">
-				The request this error is a response to.
 			</argument>
 			<description>
+			Creates a response which indicates a previous reply has failed in some way.
+			[code]The error code corresponding to what kind of error this is. See the ErrorCode constants.[/code]
+			[code]A custom message about this error.[/code]
+			[code]The request this error is a response to.[/code]
 			</description>
 		</method>
 		<method name="process_action">
 			<return type="Variant">
 			</return>
 			<argument index="0" name="action" type="Variant">
-				The action to be run, as a Dictionary in the form of a JSON-RPC request or notification.
+				
 			</argument>
 			<argument index="1" name="recurse" type="bool" default="false">
 			</argument>
 			<description>
 				Given a Dictionary which takes the form of a JSON-RPC request: unpack the request and run it. Methods are resolved by looking at the field called "method" and looking for an equivalently named function in the JSONRPC object. If one is found that method is called.
 				To add new supported methods extend the JSONRPC class and call [code]process_action[/code] on your subclass.
-				</description>
+				[code]The action to be run, as a Dictionary in the form of a JSON-RPC request or notification.[/code]
+			</description>
 		</method>
 		<method name="process_string">
 			<return type="String">
