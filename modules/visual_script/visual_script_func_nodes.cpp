@@ -254,25 +254,32 @@ PropertyInfo VisualScriptFunctionCall::get_output_value_port_info(int p_idx) con
 }
 
 String VisualScriptFunctionCall::get_caption() const {
-	if (call_mode == CALL_MODE_SELF) {
-		return "  " + String(function) + "()";
-	}
-	if (call_mode == CALL_MODE_SINGLETON) {
-		return String(singleton) + ":" + String(function) + "()";
-	} else if (call_mode == CALL_MODE_BASIC_TYPE) {
-		return Variant::get_type_name(basic_type) + "." + String(function) + "()";
-	} else if (call_mode == CALL_MODE_NODE_PATH) {
-		return " [" + String(base_path.simplified()) + "]." + String(function) + "()";
-	} else {
-		return "  " + base_type + "." + String(function) + "()";
-	}
+	return "  " + String(function) + "()";
 }
 
 String VisualScriptFunctionCall::get_text() const {
-	if (rpc_call_mode) {
-		return "RPC";
+	String text;
+
+	if (call_mode == CALL_MODE_BASIC_TYPE) {
+		text = String("On ") + Variant::get_type_name(basic_type);
+	} else if (call_mode == CALL_MODE_INSTANCE) {
+		text = String("On ") + base_type;
+	} else if (call_mode == CALL_MODE_NODE_PATH) {
+		text = "[" + String(base_path.simplified()) + "]";
+	} else if (call_mode == CALL_MODE_SELF) {
+		text = "On Self";
+	} else if (call_mode == CALL_MODE_SINGLETON) {
+		text = String(singleton) + ":" + String(function) + "()";
 	}
-	return "";
+
+	if (rpc_call_mode) {
+		text += " RPC";
+		if (rpc_call_mode == RPC_UNRELIABLE || rpc_call_mode == RPC_UNRELIABLE_TO_ID) {
+			text += " UNREL";
+		}
+	}
+
+	return text;
 }
 
 void VisualScriptFunctionCall::set_basic_type(Variant::Type p_type) {
