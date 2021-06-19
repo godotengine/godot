@@ -34,6 +34,7 @@
 #include "core/core_string_names.h"
 #include "core/crypto/crypto.h"
 #include "core/debugger/engine_debugger.h"
+#include "core/extension/extension_api_dump.h"
 #include "core/input/input.h"
 #include "core/input/input_map.h"
 #include "core/io/dir_access.h"
@@ -174,7 +175,9 @@ static int frame_delay = 0;
 static bool disable_render_loop = false;
 static int fixed_fps = -1;
 static bool print_fps = false;
-
+#ifdef TOOLS_ENABLED
+static bool dump_extension_api = false;
+#endif
 bool profile_gpu = false;
 
 /* Helper methods */
@@ -405,6 +408,8 @@ Error Main::test_setup() {
 			String("Please include this when reporting the bug on https://github.com/godotengine/godot/issues"));
 
 	translation_server = memnew(TranslationServer);
+
+	register_core_extensions();
 
 	// From `Main::setup2()`.
 	preregister_module_types();
@@ -887,7 +892,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 			auto_build_solutions = true;
 			editor = true;
 			cmdline_tool = true;
-#ifdef DEBUG_METHODS_ENABLED
+
 		} else if (I->get() == "--gdnative-generate-json-api" || I->get() == "--gdnative-generate-json-builtin-api") {
 			// Register as an editor instance to use low-end fallback if relevant.
 			editor = true;
@@ -895,7 +900,13 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 
 			// We still pass it to the main arguments since the argument handling itself is not done in this function
 			main_args.push_back(I->get());
-#endif
+		} else if (I->get() == "--dump-extension-api") {
+			// Register as an editor instance to use low-end fallback if relevant.
+			editor = true;
+			cmdline_tool = true;
+			dump_extension_api = true;
+			print_line("dump extension?");
+			main_args.push_back(I->get());
 		} else if (I->get() == "--export" || I->get() == "--export-debug" ||
 				   I->get() == "--export-pack") { // Export project
 			// Actually handling is done in start().
@@ -1197,6 +1208,8 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	Logger::set_flush_stdout_on_print(ProjectSettings::get_singleton()->get("application/run/flush_stdout_on_print"));
 
 	OS::get_singleton()->set_cmdline(execpath, main_args);
+
+	register_core_extensions(); //before display
 
 	GLOBAL_DEF("rendering/driver/driver_name", "Vulkan");
 	ProjectSettings::get_singleton()->set_custom_property_info("rendering/driver/driver_name",
@@ -2002,6 +2015,11 @@ bool Main::start() {
 		print_line("Generating new docs...");
 		doc.save_classes(index_path, doc_data_classes);
 
+		return false;
+	}
+
+	if (dump_extension_api) {
+		NativeExtensionAPIDump::generate_extension_json_file("extension_api.json");
 		return false;
 	}
 #endif

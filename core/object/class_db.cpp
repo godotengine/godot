@@ -503,9 +503,9 @@ void ClassDB::add_compatibility_class(const StringName &p_class, const StringNam
 
 thread_local bool initializing_with_extension = false;
 thread_local ObjectNativeExtension *initializing_extension = nullptr;
-thread_local void *initializing_extension_instance = nullptr;
+thread_local GDExtensionClassInstancePtr initializing_extension_instance = nullptr;
 
-void ClassDB::instance_get_native_extension_data(ObjectNativeExtension **r_extension, void **r_extension_instance) {
+void ClassDB::instance_get_native_extension_data(ObjectNativeExtension **r_extension, GDExtensionClassInstancePtr *r_extension_instance) {
 	if (initializing_with_extension) {
 		*r_extension = initializing_extension;
 		*r_extension_instance = initializing_extension_instance;
@@ -539,7 +539,7 @@ Object *ClassDB::instantiate(const StringName &p_class) {
 	if (ti->native_extension) {
 		initializing_with_extension = true;
 		initializing_extension = ti->native_extension;
-		initializing_extension_instance = ti->native_extension->create_instance(ti->native_extension->create_instance_userdata);
+		initializing_extension_instance = ti->native_extension->create_instance(ti->native_extension->class_userdata);
 	}
 	return ti->creation_func();
 }
@@ -1601,6 +1601,11 @@ void ClassDB::register_extension_class(ObjectNativeExtension *p_extension) {
 	c.inherits_ptr = parent;
 
 	classes[p_extension->class_name] = c;
+}
+
+void ClassDB::unregister_extension_class(const StringName &p_class) {
+	ERR_FAIL_COND(!classes.has(p_class));
+	classes.erase(p_class);
 }
 
 RWLock ClassDB::lock;

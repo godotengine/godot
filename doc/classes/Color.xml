@@ -80,14 +80,16 @@
 			</argument>
 			<argument index="2" name="b" type="float">
 			</argument>
+			<argument index="3" name="a" type="float">
+			</argument>
 			<description>
-				Constructs a [Color] from RGB values, typically between 0 and 1. Alpha will be 1.
+				Constructs a [Color] from RGBA values, typically between 0 and 1.
 				[codeblocks]
 				[gdscript]
-				var color = Color(0.2, 1.0, 0.7) # Similar to `Color8(51, 255, 178, 255)`
+				var color = Color(0.2, 1.0, 0.7, 0.8) # Similar to `Color8(51, 255, 178, 204)`
 				[/gdscript]
 				[csharp]
-				var color = new Color(0.2f, 1.0f, 0.7f); // Similar to `Color.Color8(51, 255, 178, 255)`
+				var color = new Color(0.2f, 1.0f, 0.7f, 0.8f); // Similar to `Color.Color8(51, 255, 178, 255, 204)`
 				[/csharp]
 				[/codeblocks]
 			</description>
@@ -101,16 +103,14 @@
 			</argument>
 			<argument index="2" name="b" type="float">
 			</argument>
-			<argument index="3" name="a" type="float">
-			</argument>
 			<description>
-				Constructs a [Color] from RGBA values, typically between 0 and 1.
+				Constructs a [Color] from RGB values, typically between 0 and 1. Alpha will be 1.
 				[codeblocks]
 				[gdscript]
-				var color = Color(0.2, 1.0, 0.7, 0.8) # Similar to `Color8(51, 255, 178, 204)`
+				var color = Color(0.2, 1.0, 0.7) # Similar to `Color8(51, 255, 178, 255)`
 				[/gdscript]
 				[csharp]
-				var color = new Color(0.2f, 1.0f, 0.7f, 0.8f); // Similar to `Color.Color8(51, 255, 178, 255, 204)`
+				var color = new Color(0.2f, 1.0f, 0.7f); // Similar to `Color.Color8(51, 255, 178, 255)`
 				[/csharp]
 				[/codeblocks]
 			</description>
@@ -349,20 +349,8 @@
 		<method name="operator +" qualifiers="operator">
 			<return type="Color">
 			</return>
-			<description>
-			</description>
-		</method>
-		<method name="operator +" qualifiers="operator">
-			<return type="Color">
-			</return>
 			<argument index="0" name="right" type="Color">
 			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="operator -" qualifiers="operator">
-			<return type="Color">
-			</return>
 			<description>
 			</description>
 		</method>
@@ -411,6 +399,18 @@
 			</return>
 			<argument index="0" name="index" type="int">
 			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="operator unary+" qualifiers="operator">
+			<return type="Color">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="operator unary-" qualifiers="operator">
+			<return type="Color">
+			</return>
 			<description>
 			</description>
 		</method>

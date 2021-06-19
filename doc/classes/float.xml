@@ -145,16 +145,6 @@
 		<method name="operator +" qualifiers="operator">
 			<return type="float">
 			</return>
-			<description>
-				Unary plus operator. Doesn't have any effect.
-				[codeblock]
-				var a = +2.5 # a is 2.5.
-				[/codeblock]
-			</description>
-		</method>
-		<method name="operator +" qualifiers="operator">
-			<return type="float">
-			</return>
 			<argument index="0" name="right" type="float">
 			</argument>
 			<description>
@@ -168,17 +158,6 @@
 			</argument>
 			<description>
 				Adds a [float] and an [int]. The result is a [float].
-			</description>
-		</method>
-		<method name="operator -" qualifiers="operator">
-			<return type="float">
-			</return>
-			<description>
-				Unary minus operator. Negates the number.
-				[codeblock]
-				var a = -2.5 # a is -2.5.
-				print(-a) # 2.5
-				[/codeblock]
 			</description>
 		</method>
 		<method name="operator -" qualifiers="operator">
@@ -306,6 +285,18 @@
 			</argument>
 			<description>
 				Returns [code]true[/code] if this [float] is greater than or equal to the given [int].
+			</description>
+		</method>
+		<method name="operator unary+" qualifiers="operator">
+			<return type="float">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="operator unary-" qualifiers="operator">
+			<return type="float">
+			</return>
+			<description>
 			</description>
 		</method>
 	</methods>

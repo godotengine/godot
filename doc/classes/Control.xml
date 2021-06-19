@@ -150,10 +150,10 @@
 				* it happens outside parent's rectangle and the parent has either [member rect_clip_content] enabled.
 			</description>
 		</method>
-		<method name="_has_point" qualifiers="virtual">
+		<method name="_has_point" qualifiers="virtual const">
 			<return type="bool">
 			</return>
-			<argument index="0" name="point" type="Vector2">
+			<argument index="0" name="" type="Vector2">
 			</argument>
 			<description>
 				Virtual method to be implemented by the user. Returns whether the given [code]point[/code] is inside this control.

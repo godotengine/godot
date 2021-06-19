@@ -169,23 +169,23 @@
 			<description>
 			</description>
 		</method>
-		<method name="operator +" qualifiers="operator">
-			<return type="Plane">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="operator -" qualifiers="operator">
-			<return type="Plane">
-			</return>
-			<description>
-			</description>
-		</method>
 		<method name="operator ==" qualifiers="operator">
 			<return type="bool">
 			</return>
 			<argument index="0" name="right" type="Plane">
 			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="operator unary+" qualifiers="operator">
+			<return type="Plane">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="operator unary-" qualifiers="operator">
+			<return type="Plane">
+			</return>
 			<description>
 			</description>
 		</method>

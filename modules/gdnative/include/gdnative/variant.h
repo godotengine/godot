@@ -164,7 +164,7 @@ typedef void (*godot_validated_keyed_getter)(const godot_variant *p_base, const 
 typedef bool (*godot_validated_keyed_checker)(const godot_variant *p_base, const godot_variant *p_key, bool *r_valid);
 typedef void (*godot_ptr_keyed_setter)(void *p_base, const void *p_key, const void *p_value);
 typedef void (*godot_ptr_keyed_getter)(const void *p_base, const void *p_key, void *r_value);
-typedef bool (*godot_ptr_keyed_checker)(const godot_variant *p_base, const godot_variant *p_key);
+typedef uint32_t (*godot_ptr_keyed_checker)(const godot_variant *p_base, const godot_variant *p_key);
 typedef void (*godot_validated_utility_function)(godot_variant *r_return, const godot_variant **p_arguments, int p_argument_count);
 typedef void (*godot_ptr_utility_function)(void *r_return, const void **p_arguments, int p_argument_count);
 
