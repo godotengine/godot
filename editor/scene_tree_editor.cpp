@@ -659,7 +659,14 @@ void SceneTreeEditor::_cell_multi_selected(Object *p_object, int p_cell, bool p_
 	} else {
 		editor_selection->remove_node(n);
 	}
-	emit_signal("node_changed");
+
+	// Selection changed to be single node, so emit "selected" (for single node) rather than "changed" (for multiple nodes)
+	if (editor_selection->get_selected_nodes().size() == 1) {
+		selected = editor_selection->get_selected_node_list()[0];
+		emit_signal("node_selected");
+	} else {
+		emit_signal("node_changed");
+	}
 }
 
 void SceneTreeEditor::_notification(int p_what) {
