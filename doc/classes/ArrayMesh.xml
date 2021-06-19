@@ -62,6 +62,13 @@
 				Removes all blend shapes from this [ArrayMesh].
 			</description>
 		</method>
+		<method name="clear_surfaces">
+			<return type="void">
+			</return>
+			<description>
+				Removes all surfaces from this [ArrayMesh].
+			</description>
+		</method>
 		<method name="get_blend_shape_count" qualifiers="const">
 			<return type="int">
 			</return>
