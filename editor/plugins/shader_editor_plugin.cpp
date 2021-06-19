@@ -240,7 +240,7 @@ void ShaderTextEditor::_validate_script() {
 		warnings.sort_custom<WarningsComparator>();
 		_update_warning_panel();
 	} else {
-		set_warning_nb(0);
+		set_warning_count(0);
 	}
 	emit_signal("script_changed");
 }
@@ -280,7 +280,7 @@ void ShaderTextEditor::_update_warning_panel() {
 	}
 	warnings_panel->pop(); // Table.
 
-	set_warning_nb(warning_count);
+	set_warning_count(warning_count);
 }
 
 void ShaderTextEditor::_bind_methods() {
