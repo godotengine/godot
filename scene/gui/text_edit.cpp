@@ -4625,14 +4625,6 @@ Color TextEdit::get_line_background_color(int p_line) {
 	return text.get_line_background_color(p_line);
 }
 
-void TextEdit::add_keyword(const String &p_keyword) {
-	keywords.insert(p_keyword);
-}
-
-void TextEdit::clear_keywords() {
-	keywords.clear();
-}
-
 void TextEdit::set_auto_indent(bool p_auto_indent) {
 	auto_indent = p_auto_indent;
 }
