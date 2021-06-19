@@ -20,7 +20,7 @@
 		<member name="radial_segments" type="int" setter="set_radial_segments" getter="get_radial_segments" default="64">
 			Number of radial segments on the cylinder. Higher values result in a more detailed cylinder/cone at the cost of performance.
 		</member>
-		<member name="rings" type="int" setter="set_rings" getter="get_rings" default="4">
+		<member name="rings" type="int" setter="set_rings" getter="get_rings" default="0">
 			Number of edge rings along the height of the cylinder. Changing [member rings] does not have any visual impact unless a shader or procedural mesh tool is used to alter the vertex data. Higher values result in more subdivisions, which can be used to create smoother-looking effects with shaders or procedural mesh tools (at the cost of performance). When not altering the vertex data using a shader or procedural mesh tool, [member rings] should be kept to its default value.
 		</member>
 		<member name="top_radius" type="float" setter="set_top_radius" getter="get_top_radius" default="1.0">

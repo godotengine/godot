@@ -176,7 +176,7 @@ private:
 	float bottom_radius = 1.0;
 	float height = 2.0;
 	int radial_segments = 64;
-	int rings = 4;
+	int rings = 0;
 
 protected:
 	static void _bind_methods();
