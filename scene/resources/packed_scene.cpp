@@ -893,6 +893,13 @@ Error SceneState::pack(Node *p_scene) {
 		node_paths.write[E->get()] = scene->get_path_to(E->key());
 	}
 
+	if (Engine::get_singleton()->is_editor_hint()) {
+		// Build node path cache
+		for (Map<Node *, int>::Element *E = node_map.front(); E; E = E->next()) {
+			node_path_cache[scene->get_path_to(E->key())] = E->get();
+		}
+	}
+
 	return OK;
 }
 
@@ -927,10 +934,12 @@ Ref<SceneState> SceneState::_get_base_scene_state() const {
 }
 
 int SceneState::find_node_by_path(const NodePath &p_node) const {
+	ERR_FAIL_COND_V_MSG(node_path_cache.size() == 0, -1, "This operation requires the node cache to have been built.");
+
 	if (!node_path_cache.has(p_node)) {
 		if (_get_base_scene_state().is_valid()) {
 			int idx = _get_base_scene_state()->find_node_by_path(p_node);
-			if (idx >= 0) {
+			if (idx != -1) {
 				int rkey = _find_base_scene_node_remap_key(idx);
 				if (rkey == -1) {
 					rkey = nodes.size() + base_scene_node_remap.size();
