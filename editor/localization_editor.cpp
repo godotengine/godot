@@ -327,7 +327,7 @@ void LocalizationEditor::_translation_filter_option_changed() {
 
 	f_locales.sort();
 
-	undo_redo->create_action(TTR("Changed Locale Filter"));
+	undo_redo->create_action(TTR("Change Locale Filter"));
 	undo_redo->add_do_property(ProjectSettings::get_singleton(), "internationalization/locale/locale_filter", f_locales_all);
 	undo_redo->add_undo_property(ProjectSettings::get_singleton(), "internationalization/locale/locale_filter", prev);
 	undo_redo->add_do_method(this, "update_translations");
@@ -359,7 +359,7 @@ void LocalizationEditor::_translation_filter_mode_changed(int p_mode) {
 		f_locales_all.append(Array());
 	}
 
-	undo_redo->create_action(TTR("Changed Locale Filter Mode"));
+	undo_redo->create_action(TTR("Change Locale Filter Mode"));
 	undo_redo->add_do_property(ProjectSettings::get_singleton(), "internationalization/locale/locale_filter", f_locales_all);
 	undo_redo->add_undo_property(ProjectSettings::get_singleton(), "internationalization/locale/locale_filter", prev);
 	undo_redo->add_do_method(this, "update_translations");
@@ -382,7 +382,7 @@ void LocalizationEditor::_pot_add(const PackedStringArray &p_paths) {
 		pot_translations.push_back(p_paths[i]);
 	}
 
-	undo_redo->create_action(vformat(TTR("Add %d file(s) for POT generation"), p_paths.size()));
+	undo_redo->create_action(vformat(TTR("Add %d File(s) for POT Generation"), p_paths.size()));
 	undo_redo->add_do_property(ProjectSettings::get_singleton(), "internationalization/locale/translations_pot_files", pot_translations);
 	undo_redo->add_undo_property(ProjectSettings::get_singleton(), "internationalization/locale/translations_pot_files", ProjectSettings::get_singleton()->get("internationalization/locale/translations_pot_files"));
 	undo_redo->add_do_method(this, "update_translations");
@@ -404,7 +404,7 @@ void LocalizationEditor::_pot_delete(Object *p_item, int p_column, int p_button)
 
 	pot_translations.remove(idx);
 
-	undo_redo->create_action(TTR("Remove file from POT generation"));
+	undo_redo->create_action(TTR("Remove File from POT Generation"));
 	undo_redo->add_do_property(ProjectSettings::get_singleton(), "internationalization/locale/translations_pot_files", pot_translations);
 	undo_redo->add_undo_property(ProjectSettings::get_singleton(), "internationalization/locale/translations_pot_files", ProjectSettings::get_singleton()->get("internationalization/locale/translations_pot_files"));
 	undo_redo->add_do_method(this, "update_translations");

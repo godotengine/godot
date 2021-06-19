@@ -408,7 +408,7 @@ bool TileMapEditorTilesPlugin::forward_canvas_gui_input(const Ref<InputEvent> &p
 		if (ED_IS_SHORTCUT("tiles_editor/cut", p_event)) {
 			// Delete selected tiles.
 			if (!tile_map_selection.is_empty()) {
-				undo_redo->create_action(TTR("Delete tiles"));
+				undo_redo->create_action(TTR("Delete Tiles"));
 				for (Set<Vector2i>::Element *E = tile_map_selection.front(); E; E = E->next()) {
 					undo_redo->add_do_method(tile_map, "set_cell", E->get(), -1, TileSetSource::INVALID_ATLAS_COORDS, TileSetSource::INVALID_TILE_ALTERNATIVE);
 					undo_redo->add_undo_method(tile_map, "set_cell", E->get(), tile_map->get_cell_source_id(E->get()), tile_map->get_cell_atlas_coords(E->get()), tile_map->get_cell_alternative_tile(E->get()));
@@ -439,7 +439,7 @@ bool TileMapEditorTilesPlugin::forward_canvas_gui_input(const Ref<InputEvent> &p
 	if (ED_IS_SHORTCUT("tiles_editor/delete", p_event)) {
 		// Delete selected tiles.
 		if (!tile_map_selection.is_empty()) {
-			undo_redo->create_action(TTR("Delete tiles"));
+			undo_redo->create_action(TTR("Delete Tiles"));
 			for (Set<Vector2i>::Element *E = tile_map_selection.front(); E; E = E->next()) {
 				undo_redo->add_do_method(tile_map, "set_cell", E->get(), -1, TileSetSource::INVALID_ATLAS_COORDS, TileSetSource::INVALID_TILE_ALTERNATIVE);
 				undo_redo->add_undo_method(tile_map, "set_cell", E->get(), tile_map->get_cell_source_id(E->get()), tile_map->get_cell_atlas_coords(E->get()), tile_map->get_cell_alternative_tile(E->get()));
@@ -1087,7 +1087,7 @@ void TileMapEditorTilesPlugin::_stop_dragging() {
 
 	switch (drag_type) {
 		case DRAG_TYPE_SELECT: {
-			undo_redo->create_action(TTR("Change selection"));
+			undo_redo->create_action(TTR("Change Selection"));
 			undo_redo->add_undo_method(this, "_set_tile_map_selection", _get_tile_map_selection());
 
 			if (!Input::get_singleton()->is_key_pressed(KEY_SHIFT) && !Input::get_singleton()->is_key_pressed(KEY_CTRL)) {
@@ -1146,7 +1146,7 @@ void TileMapEditorTilesPlugin::_stop_dragging() {
 				coords = tile_map->map_pattern(top_left + offset, selection_used_cells[i], selection_pattern);
 				cells_do[coords] = TileMapCell(selection_pattern->get_cell_source_id(selection_used_cells[i]), selection_pattern->get_cell_atlas_coords(selection_used_cells[i]), selection_pattern->get_cell_alternative_tile(selection_used_cells[i]));
 			}
-			undo_redo->create_action(TTR("Move tiles"));
+			undo_redo->create_action(TTR("Move Tiles"));
 			// Move the tiles.
 			for (Map<Vector2i, TileMapCell>::Element *E = cells_do.front(); E; E = E->next()) {
 				undo_redo->add_do_method(tile_map, "set_cell", E->key(), E->get().source_id, E->get().get_atlas_coords(), E->get().alternative_tile);
@@ -1187,7 +1187,7 @@ void TileMapEditorTilesPlugin::_stop_dragging() {
 			picker_button->set_pressed(false);
 		} break;
 		case DRAG_TYPE_PAINT: {
-			undo_redo->create_action(TTR("Paint tiles"));
+			undo_redo->create_action(TTR("Paint Tiles"));
 			for (Map<Vector2i, TileMapCell>::Element *E = drag_modified.front(); E; E = E->next()) {
 				undo_redo->add_do_method(tile_map, "set_cell", E->key(), tile_map->get_cell_source_id(E->key()), tile_map->get_cell_atlas_coords(E->key()), tile_map->get_cell_alternative_tile(E->key()));
 				undo_redo->add_undo_method(tile_map, "set_cell", E->key(), E->get().source_id, E->get().get_atlas_coords(), E->get().alternative_tile);
@@ -1196,7 +1196,7 @@ void TileMapEditorTilesPlugin::_stop_dragging() {
 		} break;
 		case DRAG_TYPE_LINE: {
 			Map<Vector2i, TileMapCell> to_draw = _draw_line(drag_start_mouse_pos, drag_start_mouse_pos, mpos);
-			undo_redo->create_action(TTR("Paint tiles"));
+			undo_redo->create_action(TTR("Paint Tiles"));
 			for (Map<Vector2i, TileMapCell>::Element *E = to_draw.front(); E; E = E->next()) {
 				if (!erase_button->is_pressed() && E->get().source_id == -1) {
 					continue;
@@ -1208,7 +1208,7 @@ void TileMapEditorTilesPlugin::_stop_dragging() {
 		} break;
 		case DRAG_TYPE_RECT: {
 			Map<Vector2i, TileMapCell> to_draw = _draw_rect(tile_map->world_to_map(drag_start_mouse_pos), tile_map->world_to_map(mpos));
-			undo_redo->create_action(TTR("Paint tiles"));
+			undo_redo->create_action(TTR("Paint Tiles"));
 			for (Map<Vector2i, TileMapCell>::Element *E = to_draw.front(); E; E = E->next()) {
 				if (!erase_button->is_pressed() && E->get().source_id == -1) {
 					continue;
@@ -1219,7 +1219,7 @@ void TileMapEditorTilesPlugin::_stop_dragging() {
 			undo_redo->commit_action();
 		} break;
 		case DRAG_TYPE_BUCKET: {
-			undo_redo->create_action(TTR("Paint tiles"));
+			undo_redo->create_action(TTR("Paint Tiles"));
 			for (Map<Vector2i, TileMapCell>::Element *E = drag_modified.front(); E; E = E->next()) {
 				if (!erase_button->is_pressed() && E->get().source_id == -1) {
 					continue;
@@ -1231,7 +1231,7 @@ void TileMapEditorTilesPlugin::_stop_dragging() {
 		} break;
 		case DRAG_TYPE_CLIPBOARD_PASTE: {
 			Vector2 mouse_offset = (Vector2(tile_map_clipboard->get_size()) / 2.0 - Vector2(0.5, 0.5)) * tile_set->get_tile_size();
-			undo_redo->create_action(TTR("Paste tiles"));
+			undo_redo->create_action(TTR("Paste Tiles"));
 			TypedArray<Vector2i> used_cells = tile_map_clipboard->get_used_cells();
 			for (int i = 0; i < used_cells.size(); i++) {
 				Vector2i coords = tile_map->map_pattern(tile_map->world_to_map(mpos - mouse_offset), used_cells[i], tile_map_clipboard);
@@ -2823,7 +2823,7 @@ bool TileMapEditorTerrainsPlugin::forward_canvas_gui_input(const Ref<InputEvent>
 						picker_button->set_pressed(false);
 					} break;
 					case DRAG_TYPE_PAINT: {
-						undo_redo->create_action(TTR("Paint terrain"));
+						undo_redo->create_action(TTR("Paint Terrain"));
 						for (Map<Vector2i, TileMapCell>::Element *E = drag_modified.front(); E; E = E->next()) {
 							undo_redo->add_do_method(tile_map, "set_cell", E->key(), tile_map->get_cell_source_id(E->key()), tile_map->get_cell_atlas_coords(E->key()), tile_map->get_cell_alternative_tile(E->key()));
 							undo_redo->add_undo_method(tile_map, "set_cell", E->key(), E->get().source_id, E->get().get_atlas_coords(), E->get().alternative_tile);

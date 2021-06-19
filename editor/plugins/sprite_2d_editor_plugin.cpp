@@ -336,7 +336,7 @@ void Sprite2DEditor::_convert_to_mesh_2d_node() {
 	mesh_instance->set_mesh(mesh);
 
 	UndoRedo *ur = EditorNode::get_singleton()->get_undo_redo();
-	ur->create_action(TTR("Convert to Mesh2D"));
+	ur->create_action(vformat(TTR("Convert Sprite2D \"%s\" to MeshInstance2D"), node->get_name()));
 	ur->add_do_method(EditorNode::get_singleton()->get_scene_tree_dock(), "replace_node", node, mesh_instance, true, false);
 	ur->add_do_reference(mesh_instance);
 	ur->add_undo_method(EditorNode::get_singleton()->get_scene_tree_dock(), "replace_node", mesh_instance, node, false, false);
@@ -394,7 +394,7 @@ void Sprite2DEditor::_convert_to_polygon_2d_node() {
 	polygon_2d_instance->set_polygons(polys);
 
 	UndoRedo *ur = EditorNode::get_singleton()->get_undo_redo();
-	ur->create_action(TTR("Convert to Polygon2D"));
+	ur->create_action(vformat(TTR("Convert Sprite2D \"%s\" to Polygon2D"), node->get_name()));
 	ur->add_do_method(EditorNode::get_singleton()->get_scene_tree_dock(), "replace_node", node, polygon_2d_instance, true, false);
 	ur->add_do_reference(polygon_2d_instance);
 	ur->add_undo_method(EditorNode::get_singleton()->get_scene_tree_dock(), "replace_node", polygon_2d_instance, node, false, false);
@@ -416,7 +416,7 @@ void Sprite2DEditor::_create_collision_polygon_2d_node() {
 		collision_polygon_2d_instance->set_polygon(outline);
 
 		UndoRedo *ur = EditorNode::get_singleton()->get_undo_redo();
-		ur->create_action(TTR("Create CollisionPolygon2D Sibling"));
+		ur->create_action(vformat(TTR("Create CollisionPolygon2D Sibling for Sprite2D \"%s\""), node->get_name()));
 		ur->add_do_method(this, "_add_as_sibling_or_child", node, collision_polygon_2d_instance);
 		ur->add_do_reference(collision_polygon_2d_instance);
 		ur->add_undo_method(node != this->get_tree()->get_edited_scene_root() ? node->get_parent() : this->get_tree()->get_edited_scene_root(), "remove_child", collision_polygon_2d_instance);
@@ -449,7 +449,7 @@ void Sprite2DEditor::_create_light_occluder_2d_node() {
 		light_occluder_2d_instance->set_occluder_polygon(polygon);
 
 		UndoRedo *ur = EditorNode::get_singleton()->get_undo_redo();
-		ur->create_action(TTR("Create LightOccluder2D Sibling"));
+		ur->create_action(vformat(TTR("Create LightOccluder2D Sibling for Sprite2D \"%s\""), node->get_name()));
 		ur->add_do_method(this, "_add_as_sibling_or_child", node, light_occluder_2d_instance);
 		ur->add_do_reference(light_occluder_2d_instance);
 		ur->add_undo_method(node != this->get_tree()->get_edited_scene_root() ? node->get_parent() : this->get_tree()->get_edited_scene_root(), "remove_child", light_occluder_2d_instance);

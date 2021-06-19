@@ -204,7 +204,7 @@ void CSGShape3DGizmoPlugin::commit_handle(EditorNode3DGizmo *p_gizmo, int p_idx,
 		}
 
 		UndoRedo *ur = Node3DEditor::get_singleton()->get_undo_redo();
-		ur->create_action(TTR("Change Sphere Shape Radius"));
+		ur->create_action(vformat(TTR("Change CSGSphere3D \"%s\" Shape Radius from %.2f to %.2f"), s->get_name(), p_restore, s->get_radius()));
 		ur->add_do_method(s, "set_radius", s->get_radius());
 		ur->add_undo_method(s, "set_radius", p_restore);
 		ur->commit_action();
@@ -218,7 +218,7 @@ void CSGShape3DGizmoPlugin::commit_handle(EditorNode3DGizmo *p_gizmo, int p_idx,
 		}
 
 		UndoRedo *ur = Node3DEditor::get_singleton()->get_undo_redo();
-		ur->create_action(TTR("Change Box Shape Size"));
+		ur->create_action(vformat(TTR("Change CSGBox3D \"%s\" Shape Size from %s to %s"), s->get_name(), p_restore, s->get_size()));
 		ur->add_do_method(s, "set_size", s->get_size());
 		ur->add_undo_method(s, "set_size", p_restore);
 		ur->commit_action();
@@ -237,11 +237,11 @@ void CSGShape3DGizmoPlugin::commit_handle(EditorNode3DGizmo *p_gizmo, int p_idx,
 
 		UndoRedo *ur = Node3DEditor::get_singleton()->get_undo_redo();
 		if (p_idx == 0) {
-			ur->create_action(TTR("Change Cylinder Radius"));
+			ur->create_action(vformat(TTR("Change CSGCylinder3D \"%s\" Radius from %.2f to %.2f"), s->get_name(), p_restore, s->get_radius()));
 			ur->add_do_method(s, "set_radius", s->get_radius());
 			ur->add_undo_method(s, "set_radius", p_restore);
 		} else {
-			ur->create_action(TTR("Change Cylinder Height"));
+			ur->create_action(vformat(TTR("Change CSGCylinder3D \"%s\" Height from %.2f to %.2f"), s->get_name(), p_restore, s->get_height()));
 			ur->add_do_method(s, "set_height", s->get_height());
 			ur->add_undo_method(s, "set_height", p_restore);
 		}
@@ -262,11 +262,11 @@ void CSGShape3DGizmoPlugin::commit_handle(EditorNode3DGizmo *p_gizmo, int p_idx,
 
 		UndoRedo *ur = Node3DEditor::get_singleton()->get_undo_redo();
 		if (p_idx == 0) {
-			ur->create_action(TTR("Change Torus Inner Radius"));
+			ur->create_action(vformat(TTR("Change CSGTorus3D \"%s\" Inner Radius from %.2f to %.2f"), s->get_name(), p_restore, s->get_inner_radius()));
 			ur->add_do_method(s, "set_inner_radius", s->get_inner_radius());
 			ur->add_undo_method(s, "set_inner_radius", p_restore);
 		} else {
-			ur->create_action(TTR("Change Torus Outer Radius"));
+			ur->create_action(vformat(TTR("Change CSGTorus3D \"%s\" Outer Radius from %.2f to %.2f"), s->get_name(), p_restore, s->get_outer_radius()));
 			ur->add_do_method(s, "set_outer_radius", s->get_outer_radius());
 			ur->add_undo_method(s, "set_outer_radius", p_restore);
 		}

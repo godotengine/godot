@@ -128,7 +128,7 @@ void GroupDialog::_add_pressed() {
 		return;
 	}
 
-	undo_redo->create_action(TTR("Add to Group"));
+	undo_redo->create_action(vformat(TTR("Add Node(s) to Group \"%s\""), selected_group));
 
 	while (selected) {
 		Node *node = scene_tree->get_edited_scene_root()->get_node(selected->get_metadata(0));
@@ -157,7 +157,7 @@ void GroupDialog::_removed_pressed() {
 		return;
 	}
 
-	undo_redo->create_action(TTR("Remove from Group"));
+	undo_redo->create_action(vformat(TTR("Remove Node(s) from Group \"%s\""), selected_group));
 
 	while (selected) {
 		Node *node = scene_tree->get_edited_scene_root()->get_node(selected->get_metadata(0));
@@ -235,7 +235,7 @@ void GroupDialog::_group_renamed() {
 
 	renamed_group->set_text(0, name); // Spaces trimmed.
 
-	undo_redo->create_action(TTR("Rename Group"));
+	undo_redo->create_action(vformat(TTR("Rename Group \"%s\" to \"%s\""), selected_group, name));
 
 	List<Node *> nodes;
 	scene_tree->get_nodes_in_group(selected_group, &nodes);
@@ -306,7 +306,7 @@ void GroupDialog::_delete_group_pressed(Object *p_item, int p_column, int p_id) 
 
 	String name = ti->get_text(0);
 
-	undo_redo->create_action(TTR("Delete Group"));
+	undo_redo->create_action(vformat(TTR("Delete Group \"%s\""), name));
 
 	List<Node *> nodes;
 	scene_tree->get_nodes_in_group(name, &nodes);
@@ -559,7 +559,7 @@ void GroupsEditor::_add_group(const String &p_group) {
 		return;
 	}
 
-	undo_redo->create_action(TTR("Add to Group"));
+	undo_redo->create_action(vformat(TTR("Add Node \"%s\" to Group \"%s\""), node->get_name(), name));
 
 	undo_redo->add_do_method(node, "add_to_group", name, true);
 	undo_redo->add_undo_method(node, "remove_from_group", name);
@@ -587,7 +587,7 @@ void GroupsEditor::_remove_group(Object *p_item, int p_column, int p_id) {
 
 	String name = ti->get_text(0);
 
-	undo_redo->create_action(TTR("Remove from Group"));
+	undo_redo->create_action(vformat(TTR("Remove Node \"%s\" from Group \"%s\""), node->get_name(), name));
 
 	undo_redo->add_do_method(node, "remove_from_group", name);
 	undo_redo->add_undo_method(node, "add_to_group", name, true);

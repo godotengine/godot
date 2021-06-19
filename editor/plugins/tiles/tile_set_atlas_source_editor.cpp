@@ -817,7 +817,7 @@ void TileSetAtlasSourceEditor::_tile_atlas_control_gui_input(const Ref<InputEven
 				// Set the selection if needed.
 				if (selection.size() <= 1) {
 					if (selected.tile != TileSetSource::INVALID_ATLAS_COORDS) {
-						undo_redo->create_action(TTR("Select tiles"));
+						undo_redo->create_action(TTR("Select Tiles"));
 						undo_redo->add_undo_method(this, "_set_selection_from_array", _get_selection_as_array());
 						selection.clear();
 						selection.insert(selected);
@@ -857,7 +857,7 @@ void TileSetAtlasSourceEditor::_tile_atlas_control_gui_input(const Ref<InputEven
 void TileSetAtlasSourceEditor::_end_dragging() {
 	switch (drag_type) {
 		case DRAG_TYPE_CREATE_TILES:
-			undo_redo->create_action(TTR("Create tiles"));
+			undo_redo->create_action(TTR("Create Tiles"));
 			for (Set<Vector2i>::Element *E = drag_modified_tiles.front(); E; E = E->next()) {
 				undo_redo->add_do_method(tile_set_atlas_source, "create_tile", E->get());
 				undo_redo->add_undo_method(tile_set_atlas_source, "remove_tile", E->get());
@@ -865,7 +865,7 @@ void TileSetAtlasSourceEditor::_end_dragging() {
 			undo_redo->commit_action(false);
 			break;
 		case DRAG_TYPE_CREATE_BIG_TILE:
-			undo_redo->create_action(TTR("Create a tile"));
+			undo_redo->create_action(TTR("Create Big Tile"));
 			undo_redo->add_do_method(tile_set_atlas_source, "create_tile", drag_current_tile, tile_set_atlas_source->get_tile_size_in_atlas(drag_current_tile));
 			undo_redo->add_undo_method(tile_set_atlas_source, "remove_tile", drag_current_tile);
 			undo_redo->commit_action(false);
@@ -874,7 +874,7 @@ void TileSetAtlasSourceEditor::_end_dragging() {
 			List<PropertyInfo> list;
 			tile_set_atlas_source->get_property_list(&list);
 			Map<Vector2i, List<const PropertyInfo *>> per_tile = _group_properties_per_tiles(list, tile_set_atlas_source);
-			undo_redo->create_action(TTR("Remove tiles"));
+			undo_redo->create_action(TTR("Remove Tiles"));
 			for (Set<Vector2i>::Element *E = drag_modified_tiles.front(); E; E = E->next()) {
 				Vector2i coords = E->get();
 				undo_redo->add_do_method(tile_set_atlas_source, "remove_tile", coords);
@@ -896,7 +896,7 @@ void TileSetAtlasSourceEditor::_end_dragging() {
 			Vector2i new_base_tiles_coords = tile_atlas_view->get_atlas_tile_coords_at_pos(tile_atlas_control->get_local_mouse_position());
 			Rect2i area = Rect2i(start_base_tiles_coords, new_base_tiles_coords - start_base_tiles_coords).abs();
 			area.set_end((area.get_end() + Vector2i(1, 1)).min(tile_set_atlas_source->get_atlas_grid_size()));
-			undo_redo->create_action(TTR("Create tiles"));
+			undo_redo->create_action(TTR("Create Tiles"));
 			for (int x = area.get_position().x; x < area.get_end().x; x++) {
 				for (int y = area.get_position().y; y < area.get_end().y; y++) {
 					Vector2i coords = Vector2i(x, y);
@@ -927,7 +927,7 @@ void TileSetAtlasSourceEditor::_end_dragging() {
 				}
 			}
 
-			undo_redo->create_action(TTR("Remove tiles"));
+			undo_redo->create_action(TTR("Remove Tiles"));
 			undo_redo->add_do_method(this, "_set_selection_from_array", Array());
 			for (Set<Vector2i>::Element *E = to_delete.front(); E; E = E->next()) {
 				Vector2i coords = E->get();
@@ -948,7 +948,7 @@ void TileSetAtlasSourceEditor::_end_dragging() {
 		} break;
 		case DRAG_TYPE_MOVE_TILE:
 			if (drag_current_tile != drag_start_tile_shape.position) {
-				undo_redo->create_action(TTR("Move a tile"));
+				undo_redo->create_action(TTR("Move Tile"));
 				undo_redo->add_do_method(tile_set_atlas_source, "move_tile_in_atlas", drag_start_tile_shape.position, drag_current_tile, tile_set_atlas_source->get_tile_size_in_atlas(drag_current_tile));
 				undo_redo->add_do_method(this, "_set_selection_from_array", _get_selection_as_array());
 				undo_redo->add_undo_method(tile_set_atlas_source, "move_tile_in_atlas", drag_current_tile, drag_start_tile_shape.position, drag_start_tile_shape.size);
@@ -968,7 +968,7 @@ void TileSetAtlasSourceEditor::_end_dragging() {
 			Rect2i region = Rect2i(start_base_tiles_coords, new_base_tiles_coords - start_base_tiles_coords).abs();
 			region.size += Vector2i(1, 1);
 
-			undo_redo->create_action(TTR("Select tiles"));
+			undo_redo->create_action(TTR("Select Tiles"));
 			undo_redo->add_undo_method(this, "_set_selection_from_array", _get_selection_as_array());
 
 			// Determine if we clear, then add or remove to the selection.
@@ -1013,7 +1013,7 @@ void TileSetAtlasSourceEditor::_end_dragging() {
 		case DRAG_TYPE_RESIZE_BOTTOM_LEFT:
 		case DRAG_TYPE_RESIZE_LEFT:
 			if (drag_start_tile_shape != Rect2i(drag_current_tile, tile_set_atlas_source->get_tile_size_in_atlas(drag_current_tile))) {
-				undo_redo->create_action(TTR("Resize a tile"));
+				undo_redo->create_action(TTR("Resize Tile"));
 				undo_redo->add_do_method(tile_set_atlas_source, "move_tile_in_atlas", drag_start_tile_shape.position, drag_current_tile, tile_set_atlas_source->get_tile_size_in_atlas(drag_current_tile));
 				undo_redo->add_do_method(this, "_set_selection_from_array", _get_selection_as_array());
 				undo_redo->add_undo_method(tile_set_atlas_source, "move_tile_in_atlas", drag_current_tile, drag_start_tile_shape.position, drag_start_tile_shape.size);
@@ -1055,7 +1055,7 @@ void TileSetAtlasSourceEditor::_menu_option(int p_option) {
 			List<PropertyInfo> list;
 			tile_set_atlas_source->get_property_list(&list);
 			Map<Vector2i, List<const PropertyInfo *>> per_tile = _group_properties_per_tiles(list, tile_set_atlas_source);
-			undo_redo->create_action(TTR("Remove tile"));
+			undo_redo->create_action(TTR("Remove Tile"));
 
 			// Remove tiles
 			Set<Vector2i> removed;
@@ -1104,7 +1104,7 @@ void TileSetAtlasSourceEditor::_menu_option(int p_option) {
 			_update_tile_id_label();
 		} break;
 		case TILE_CREATE: {
-			undo_redo->create_action(TTR("Create a tile"));
+			undo_redo->create_action(TTR("Create Tile"));
 			undo_redo->add_do_method(tile_set_atlas_source, "create_tile", menu_option_coords);
 			Array array;
 			array.push_back(menu_option_coords);
@@ -1116,7 +1116,7 @@ void TileSetAtlasSourceEditor::_menu_option(int p_option) {
 			_update_tile_id_label();
 		} break;
 		case TILE_CREATE_ALTERNATIVE: {
-			undo_redo->create_action(TTR("Create tile alternatives"));
+			undo_redo->create_action(TTR("Create Tile Alternatives"));
 			Array array;
 			for (Set<TileSelection>::Element *E = selection.front(); E; E = E->next()) {
 				if (E->get().alternative == 0) {
@@ -1518,7 +1518,7 @@ void TileSetAtlasSourceEditor::_auto_create_tiles() {
 		Vector2i separation = tile_set_atlas_source->get_separation();
 		Vector2i texture_region_size = tile_set_atlas_source->get_texture_region_size();
 		Size2i grid_size = tile_set_atlas_source->get_atlas_grid_size();
-		undo_redo->create_action(TTR("Create tiles in non-transparent texture regions"));
+		undo_redo->create_action(TTR("Create Tiles in Non-Transparent Texture Regions"));
 		for (int y = 0; y < grid_size.y; y++) {
 			for (int x = 0; x < grid_size.x; x++) {
 				// Check if we have a tile at the coord
@@ -1563,7 +1563,7 @@ void TileSetAtlasSourceEditor::_auto_remove_tiles() {
 		Vector2i texture_region_size = tile_set_atlas_source->get_texture_region_size();
 		Vector2i grid_size = tile_set_atlas_source->get_atlas_grid_size();
 
-		undo_redo->create_action(TTR("Remove tiles in fully transparent texture regions"));
+		undo_redo->create_action(TTR("Remove Tiles in Fully Transparent Texture Regions"));
 
 		List<PropertyInfo> list;
 		tile_set_atlas_source->get_property_list(&list);

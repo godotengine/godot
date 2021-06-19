@@ -108,7 +108,7 @@ void SceneTreeEditor::_cell_button_pressed(Object *p_item, int p_column, int p_i
 		}
 
 	} else if (p_id == BUTTON_GROUP) {
-		undo_redo->create_action(TTR("Button Group"));
+		undo_redo->create_action(TTR("Group Node"));
 
 		if (n->is_class("CanvasItem") || n->is_class("Node3D")) {
 			undo_redo->add_do_method(n, "remove_meta", "_edit_group_");
@@ -807,7 +807,7 @@ void SceneTreeEditor::_renamed() {
 		which->set_metadata(0, n->get_path());
 		emit_signal("node_renamed");
 	} else {
-		undo_redo->create_action(TTR("Rename Node"));
+		undo_redo->create_action(vformat(TTR("Rename Node from \"%s\" to \"%s\""), n->get_name(), new_name));
 		emit_signal("node_prerename", n, new_name);
 		undo_redo->add_do_method(this, "_rename_node", n->get_instance_id(), new_name);
 		undo_redo->add_undo_method(this, "_rename_node", n->get_instance_id(), n->get_name());

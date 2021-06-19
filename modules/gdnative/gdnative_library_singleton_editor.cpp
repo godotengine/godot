@@ -173,7 +173,7 @@ void GDNativeLibrarySingletonEditor::_item_edited() {
 		}
 	}
 
-	undo_redo->create_action(enabled ? TTR("Enabled GDNative Singleton") : TTR("Disabled GDNative Singleton"));
+	undo_redo->create_action(enabled ? TTR("Enable GDNative Singleton") : TTR("Disable GDNative Singleton"));
 	undo_redo->add_do_property(ProjectSettings::get_singleton(), "gdnative/singletons_disabled", disabled_paths);
 	undo_redo->add_do_method(this, "_update_libraries");
 	undo_redo->add_undo_property(ProjectSettings::get_singleton(), "gdnative/singletons_disabled", undo_paths);

@@ -2257,7 +2257,7 @@ void EditorInspector::_edit_set(const String &p_name, const Variant &p_value, bo
 		_edit_request_change(object, p_name);
 		emit_signal(_prop_edited, p_name);
 	} else {
-		undo_redo->create_action(TTR("Set") + " " + p_name, UndoRedo::MERGE_ENDS);
+		undo_redo->create_action(vformat(TTR("Set Property \"%s\""), p_name), UndoRedo::MERGE_ENDS);
 		undo_redo->add_do_property(object, p_name, p_value);
 		undo_redo->add_undo_property(object, p_name, object->get(p_name));
 
@@ -2338,11 +2338,11 @@ void EditorInspector::_multiple_properties_changed(Vector<String> p_paths, Array
 	String names;
 	for (int i = 0; i < p_paths.size(); i++) {
 		if (i > 0) {
-			names += ",";
+			names += ", ";
 		}
-		names += p_paths[i];
+		names += vformat("\"%s\"", p_paths[i]);
 	}
-	undo_redo->create_action(TTR("Set Multiple:") + " " + names, UndoRedo::MERGE_ENDS);
+	undo_redo->create_action(TTR("Set Multiple Properties:") + " " + names, UndoRedo::MERGE_ENDS);
 	for (int i = 0; i < p_paths.size(); i++) {
 		_edit_set(p_paths[i], p_values[i], false, "");
 		if (restart_request_props.has(p_paths[i])) {
