@@ -2896,8 +2896,7 @@ RenderingServer::RenderingServer() {
 
 	GLOBAL_DEF("rendering/environment/ssao/quality", 2);
 	ProjectSettings::get_singleton()->set_custom_property_info("rendering/environment/ssao/quality", PropertyInfo(Variant::INT, "rendering/environment/ssao/quality", PROPERTY_HINT_ENUM, "Very Low (Fast),Low (Fast),Medium (Average),High (Slow),Ultra (Custom)"));
-	GLOBAL_DEF("rendering/environment/ssao/half_size", false);
-	GLOBAL_DEF("rendering/environment/ssao/half_size.mobile", true);
+	GLOBAL_DEF("rendering/environment/ssao/half_size", true);
 	GLOBAL_DEF("rendering/environment/ssao/adaptive_target", 0.5);
 	ProjectSettings::get_singleton()->set_custom_property_info("rendering/environment/ssao/adaptive_target", PropertyInfo(Variant::FLOAT, "rendering/environment/ssao/adaptive_target", PROPERTY_HINT_RANGE, "0.0,1.0,0.01"));
 	GLOBAL_DEF("rendering/environment/ssao/blur_passes", 2);
