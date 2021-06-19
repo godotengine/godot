@@ -1739,7 +1739,6 @@ PropertyInfo VisualScriptPropertyGet::get_input_value_port_info(int p_idx) const
 }
 
 PropertyInfo VisualScriptPropertyGet::get_output_value_port_info(int p_idx) const {
-
 	if (call_mode == CALL_MODE_BASIC_TYPE && p_idx == 0) {
 		return PropertyInfo(basic_type, "out");
 	} else if (call_mode == CALL_MODE_INSTANCE && p_idx == 0) {
@@ -2209,7 +2208,6 @@ public:
 				}
 
 				*p_outputs[0] = v;
-
 			};
 		}
 

@@ -2167,7 +2167,6 @@ void VisualScriptEditor::drop_data_fw(const Point2 &p_point, const Variant &p_da
 	}
 
 	if (String(d["type"]) == "files") {
-
 		Array files = d["files"];
 
 		List<int> new_ids;
@@ -2222,7 +2221,6 @@ void VisualScriptEditor::drop_data_fw(const Point2 &p_point, const Variant &p_da
 #endif
 
 		Array nodes = d["nodes"];
-
 
 		undo_redo->create_action(TTR("Add Node(s) From Tree"));
 		int base_id = script->get_available_id();
@@ -3108,7 +3106,7 @@ void VisualScriptEditor::_selected_connect_node(const String &p_text, const Stri
 	ofs /= EDSCALE;
 	ofs /= graph->get_zoom();
 
-	if (drop_position != Vector2() ) {
+	if (drop_position != Vector2()) {
 		ofs = drop_position;
 	}
 	drop_position = Vector2();
