@@ -97,6 +97,12 @@ enum JoyAxis {
 	JOY_AXIS_MAX = 10, // OpenVR supports up to 5 Joysticks making a total of 10 axes.
 };
 
+enum JoyAxisRange {
+	NEGATIVE_HALF_AXIS = -1,
+	FULL_AXIS = 0,
+	POSITIVE_HALF_AXIS = 1
+};
+
 enum MIDIMessage {
 	MIDI_MESSAGE_NOTE_OFF = 0x8,
 	MIDI_MESSAGE_NOTE_ON = 0x9,
@@ -134,16 +140,18 @@ public:
 	float get_action_raw_strength(const StringName &p_action, bool p_exact_match = false) const;
 
 	// To be removed someday, since they do not make sense for all events
-	virtual bool is_pressed() const;
 	virtual bool is_echo() const;
 
 	virtual String as_text() const = 0;
 
 	virtual Ref<InputEvent> xformed_by(const Transform2D &p_xform, const Vector2 &p_local_ofs = Vector2()) const;
 
-	virtual bool action_match(const Ref<InputEvent> &p_event, bool *p_pressed, float *p_strength, float *p_raw_strength, float p_deadzone) const;
+	virtual bool action_match(const Ref<InputEvent> &p_event) const;
 	virtual bool shortcut_match(const Ref<InputEvent> &p_event) const;
 	virtual bool is_action_type() const;
+	virtual bool is_pressed() const;
+	virtual float get_strength(float p_deadzone = 0.0f) const;
+	virtual void copy_action_values(const Ref<InputEvent> &p_event) {}
 
 	virtual bool accumulate(const Ref<InputEvent> &p_event) { return false; }
 
@@ -251,10 +259,11 @@ public:
 	uint32_t get_keycode_with_modifiers() const;
 	uint32_t get_physical_keycode_with_modifiers() const;
 
-	virtual bool action_match(const Ref<InputEvent> &p_event, bool *p_pressed, float *p_strength, float *p_raw_strength, float p_deadzone) const override;
+	virtual bool action_match(const Ref<InputEvent> &p_event) const override;
 	virtual bool shortcut_match(const Ref<InputEvent> &p_event) const override;
 
 	virtual bool is_action_type() const override { return true; }
+	virtual void copy_action_values(const Ref<InputEvent> &p_event) override;
 
 	virtual String as_text() const override;
 	virtual String to_string() override;
@@ -313,9 +322,11 @@ public:
 	bool is_double_click() const;
 
 	virtual Ref<InputEvent> xformed_by(const Transform2D &p_xform, const Vector2 &p_local_ofs = Vector2()) const override;
-	virtual bool action_match(const Ref<InputEvent> &p_event, bool *p_pressed, float *p_strength, float *p_raw_strength, float p_deadzone) const override;
+	virtual bool action_match(const Ref<InputEvent> &p_event) const override;
 
 	virtual bool is_action_type() const override { return true; }
+	virtual void copy_action_values(const Ref<InputEvent> &p_event) override;
+
 	virtual String as_text() const override;
 	virtual String to_string() override;
 
@@ -359,6 +370,7 @@ class InputEventJoypadMotion : public InputEvent {
 	GDCLASS(InputEventJoypadMotion, InputEvent);
 	int axis = 0; ///< Joypad axis
 	float axis_value = 0; ///< -1 to 1
+	JoyAxisRange axis_range = FULL_AXIS;
 
 protected:
 	static void _bind_methods();
@@ -370,11 +382,17 @@ public:
 	void set_axis_value(float p_value);
 	float get_axis_value() const;
 
-	virtual bool is_pressed() const override;
+	void set_axis_range(JoyAxisRange p_range);
+	JoyAxisRange get_axis_range() const;
 
-	virtual bool action_match(const Ref<InputEvent> &p_event, bool *p_pressed, float *p_strength, float *p_raw_strength, float p_deadzone) const override;
+	virtual bool is_pressed() const override;
+	virtual float get_strength(float p_deadzone = 0.0f) const override;
+
+	virtual bool action_match(const Ref<InputEvent> &p_event) const override;
 
 	virtual bool is_action_type() const override { return true; }
+	virtual void copy_action_values(const Ref<InputEvent> &p_event) override;
+
 	virtual String as_text() const override;
 	virtual String to_string() override;
 
@@ -399,11 +417,14 @@ public:
 
 	void set_pressure(float p_pressure);
 	float get_pressure() const;
+	virtual float get_strength(float p_deadzone = 0.0f) const override;
 
-	virtual bool action_match(const Ref<InputEvent> &p_event, bool *p_pressed, float *p_strength, float *p_raw_strength, float p_deadzone) const override;
+	virtual bool action_match(const Ref<InputEvent> &p_event) const override;
 	virtual bool shortcut_match(const Ref<InputEvent> &p_event) const override;
 
 	virtual bool is_action_type() const override { return true; }
+	virtual void copy_action_values(const Ref<InputEvent> &p_event) override;
+
 	virtual String as_text() const override;
 	virtual String to_string() override;
 
@@ -473,7 +494,7 @@ class InputEventAction : public InputEvent {
 
 	StringName action;
 	bool pressed = false;
-	float strength = 1.0f;
+	float strength = 0.0f;
 
 protected:
 	static void _bind_methods();
@@ -486,14 +507,16 @@ public:
 	virtual bool is_pressed() const override;
 
 	void set_strength(float p_strength);
-	float get_strength() const;
+	virtual float get_strength(float p_deadzone = 0.0f) const override;
 
 	virtual bool is_action(const StringName &p_action) const;
 
-	virtual bool action_match(const Ref<InputEvent> &p_event, bool *p_pressed, float *p_strength, float *p_raw_strength, float p_deadzone) const override;
+	virtual bool action_match(const Ref<InputEvent> &p_event) const override;
 
 	virtual bool shortcut_match(const Ref<InputEvent> &p_event) const override;
 	virtual bool is_action_type() const override { return true; }
+	virtual void copy_action_values(const Ref<InputEvent> &p_event) override;
+
 	virtual String as_text() const override;
 	virtual String to_string() override;
 
