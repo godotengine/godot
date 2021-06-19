@@ -168,7 +168,6 @@ void ScriptTextEditor::enable_editor() {
 
 void ScriptTextEditor::_load_theme_settings() {
 	CodeEdit *text_edit = code_editor->get_text_editor();
-	text_edit->clear_keywords();
 
 	Color updated_marked_line_color = EDITOR_GET("text_editor/highlighting/mark_color");
 	Color updated_safe_line_number_color = EDITOR_GET("text_editor/highlighting/safe_line_number_color");
@@ -221,47 +220,6 @@ void ScriptTextEditor::_set_theme_for_script() {
 		String beg = comment.get_slice(" ", 0);
 		String end = comment.get_slice_count(" ") > 1 ? comment.get_slice(" ", 1) : String();
 		text_edit->add_comment_delimiter(beg, end, end == "");
-	}
-
-	/* add keywords for auto completion */
-	// singleton autoloads (as types, just as engine singletons are)
-	Map<StringName, ProjectSettings::AutoloadInfo> autoloads = ProjectSettings::get_singleton()->get_autoload_list();
-	for (Map<StringName, ProjectSettings::AutoloadInfo>::Element *E = autoloads.front(); E; E = E->next()) {
-		const ProjectSettings::AutoloadInfo &info = E->value();
-		if (info.is_singleton) {
-			text_edit->add_keyword(info.name);
-		}
-	}
-
-	// engine types
-	List<StringName> types;
-	ClassDB::get_class_list(&types);
-	for (List<StringName>::Element *E = types.front(); E; E = E->next()) {
-		String n = E->get();
-		if (n.begins_with("_")) {
-			n = n.substr(1, n.length());
-		}
-		text_edit->add_keyword(n);
-	}
-
-	// user types
-	List<StringName> global_classes;
-	ScriptServer::get_global_class_list(&global_classes);
-	for (List<StringName>::Element *E = global_classes.front(); E; E = E->next()) {
-		text_edit->add_keyword(E->get());
-	}
-
-	List<String> keywords;
-	script->get_language()->get_reserved_words(&keywords);
-	for (List<String>::Element *E = keywords.front(); E; E = E->next()) {
-		text_edit->add_keyword(E->get());
-	}
-
-	// core types
-	List<String> core_types;
-	script->get_language()->get_core_type_words(&core_types);
-	for (List<String>::Element *E = core_types.front(); E; E = E->next()) {
-		text_edit->add_keyword(E->get());
 	}
 }
 

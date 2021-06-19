@@ -744,9 +744,6 @@ public:
 	void set_insert_mode(bool p_enabled);
 	bool is_insert_mode() const;
 
-	void add_keyword(const String &p_keyword);
-	void clear_keywords();
-
 	double get_v_scroll() const;
 	void set_v_scroll(double p_scroll);
 
