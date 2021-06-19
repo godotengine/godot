@@ -1016,7 +1016,7 @@ public:
 		Instance *render_reflection_probe;
 		const RendererSceneOcclusionCull::HZBuffer *occlusion_buffer;
 		const CameraMatrix *camera_matrix;
-		const VisibilityCullData *visibility_cull_data;
+		uint64_t visibility_viewport_mask;
 	};
 
 	void _scene_cull_threaded(uint32_t p_thread, CullData *cull_data);
