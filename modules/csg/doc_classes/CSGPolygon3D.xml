@@ -42,13 +42,13 @@
 			The point array that defines the 2D polygon that is extruded.
 		</member>
 		<member name="smooth_faces" type="bool" setter="set_smooth_faces" getter="get_smooth_faces" default="false">
-			If [code]true[/code], applies smooth shading to the extrusions.
+			If [code]true[/code], applies smooth shading to the extrusions. If [code]false[/code], the polygon will have a flat shaded look.
 		</member>
 		<member name="spin_degrees" type="float" setter="set_spin_degrees" getter="get_spin_degrees">
 			When [member mode] is [constant MODE_SPIN], the total number of degrees the [member polygon] is rotated when extruding.
 		</member>
 		<member name="spin_sides" type="int" setter="set_spin_sides" getter="get_spin_sides">
-			When [member mode] is [constant MODE_SPIN], the number of extrusions made.
+			When [member mode] is [constant MODE_SPIN], the number of extrusions made. Higher values result in a smoother-looking shape, but are more demanding to render and update.
 		</member>
 	</members>
 	<constants>
