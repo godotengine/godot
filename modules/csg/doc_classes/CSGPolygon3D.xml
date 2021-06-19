@@ -21,7 +21,7 @@
 			Extrusion mode.
 		</member>
 		<member name="path_continuous_u" type="bool" setter="set_path_continuous_u" getter="is_path_continuous_u">
-			If [code]true[/code] the u component of our uv will continuously increase in unison with the distance traveled along our path when [member mode] is [constant MODE_PATH].
+			If [code]true[/code] the u component of our UV will continuously increase in unison with the distance traveled along our path when [member mode] is [constant MODE_PATH].
 		</member>
 		<member name="path_interval" type="float" setter="set_path_interval" getter="get_path_interval">
 			Interval at which a new extrusion slice is added along the path when [member mode] is [constant MODE_PATH].
@@ -42,13 +42,13 @@
 			Point array that defines the shape that we'll extrude.
 		</member>
 		<member name="smooth_faces" type="bool" setter="set_smooth_faces" getter="get_smooth_faces" default="false">
-			Generates smooth normals so smooth shading is applied to our mesh.
+			If [code]true[/code], the normals of the polygon are set to give a smooth effect making the polygon seem rounded. If [code]false[/code], the polygon will have a flat shaded look.
 		</member>
 		<member name="spin_degrees" type="float" setter="set_spin_degrees" getter="get_spin_degrees">
 			Degrees to rotate our extrusion for each slice when [member mode] is [constant MODE_SPIN].
 		</member>
 		<member name="spin_sides" type="int" setter="set_spin_sides" getter="get_spin_sides">
-			Number of extrusion when [member mode] is [constant MODE_SPIN].
+			Number of extrusions when [member mode] is [constant MODE_SPIN]. Higher values result in a smoother-looking shape, but are more demanding to render and update.
 		</member>
 	</members>
 	<constants>

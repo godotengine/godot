@@ -1082,8 +1082,9 @@ Ref<Material> CSGSphere3D::get_material() const {
 CSGSphere3D::CSGSphere3D() {
 	// defaults
 	radius = 1.0;
-	radial_segments = 12;
-	rings = 6;
+	// Use lower level of detail than MeshInstance3D's SphereMesh since CSG is expensive to update.
+	radial_segments = 16;
+	rings = 8;
 	smooth_faces = true;
 }
 
@@ -1443,8 +1444,10 @@ Ref<Material> CSGCylinder3D::get_material() const {
 CSGCylinder3D::CSGCylinder3D() {
 	// defaults
 	radius = 1.0;
-	height = 1.0;
-	sides = 8;
+	// Use the same height as a MeshInstance3D's CylinderMesh.
+	height = 2.0;
+	// Use lower level of detail than MeshInstance3D's SphereMesh since CSG is expensive to update.
+	sides = 16;
 	cone = false;
 	smooth_faces = true;
 }
@@ -1662,10 +1665,12 @@ Ref<Material> CSGTorus3D::get_material() const {
 
 CSGTorus3D::CSGTorus3D() {
 	// defaults
-	inner_radius = 2.0;
-	outer_radius = 3.0;
-	sides = 8;
-	ring_sides = 6;
+	// Match the size of a CSGSphere3D or CSGCylinder3D.
+	inner_radius = 0.5;
+	outer_radius = 1.0;
+	// Use lower level of detail than MeshInstance3D's SphereMesh since CSG is expensive to update.
+	sides = 16;
+	ring_sides = 8;
 	smooth_faces = true;
 }
 
@@ -2394,7 +2399,7 @@ CSGPolygon3D::CSGPolygon3D() {
 	polygon.push_back(Vector2(1, 0));
 	depth = 1.0;
 	spin_degrees = 360;
-	spin_sides = 8;
+	spin_sides = 16;
 	smooth_faces = false;
 	path_interval = 1;
 	path_rotation = PATH_ROTATION_PATH;
