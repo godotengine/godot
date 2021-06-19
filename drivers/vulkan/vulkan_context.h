@@ -124,6 +124,7 @@ private:
 		uint32_t current_buffer = 0;
 		int width = 0;
 		int height = 0;
+		DisplayServer::VSyncMode vsync_mode = DisplayServer::VSYNC_ENABLED;
 		VkCommandPool present_cmd_pool = VK_NULL_HANDLE; // For separate present queue.
 		VkRenderPass render_pass = VK_NULL_HANDLE;
 	};
@@ -222,7 +223,7 @@ private:
 protected:
 	virtual const char *_get_platform_surface_extension() const = 0;
 
-	virtual Error _window_create(DisplayServer::WindowID p_window_id, VkSurfaceKHR p_surface, int p_width, int p_height);
+	virtual Error _window_create(DisplayServer::WindowID p_window_id, DisplayServer::VSyncMode p_vsync_mode, VkSurfaceKHR p_surface, int p_width, int p_height);
 
 	virtual bool _use_validation_layers();
 
@@ -275,6 +276,9 @@ public:
 	String get_device_vendor_name() const;
 	String get_device_name() const;
 	String get_device_pipeline_cache_uuid() const;
+
+	void set_vsync_mode(DisplayServer::WindowID p_window, DisplayServer::VSyncMode p_mode);
+	DisplayServer::VSyncMode get_vsync_mode(DisplayServer::WindowID p_window = 0) const;
 
 	VulkanContext();
 	virtual ~VulkanContext();

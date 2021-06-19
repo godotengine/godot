@@ -151,9 +151,9 @@ static bool auto_build_solutions = false;
 
 static DisplayServer::WindowMode window_mode = DisplayServer::WINDOW_MODE_WINDOWED;
 static DisplayServer::ScreenOrientation window_orientation = DisplayServer::SCREEN_LANDSCAPE;
+static DisplayServer::VSyncMode window_vsync_mode = DisplayServer::VSYNC_ENABLED;
 static uint32_t window_flags = 0;
 static Size2i window_size = Size2i(1024, 600);
-static bool window_vsync_via_compositor = false;
 
 static int init_screen = -1;
 static bool init_fullscreen = false;
@@ -338,8 +338,6 @@ void Main::print_help(const char *p_binary) {
 	OS::get_singleton()->print("  --position <X>,<Y>                           Request window position.\n");
 	OS::get_singleton()->print("  --low-dpi                                    Force low-DPI mode (macOS and Windows only).\n");
 	OS::get_singleton()->print("  --no-window                                  Disable window creation (Windows only). Useful together with --script.\n");
-	OS::get_singleton()->print("  --enable-vsync-via-compositor                When vsync is enabled, vsync via the OS' window compositor (Windows only).\n");
-	OS::get_singleton()->print("  --disable-vsync-via-compositor               Disable vsync via the OS' window compositor (Windows only).\n");
 	OS::get_singleton()->print("  --single-window                              Use a single window (no separate subwindows).\n");
 	OS::get_singleton()->print("  --tablet-driver                              Pen tablet input driver.\n");
 	OS::get_singleton()->print("\n");
@@ -599,11 +597,9 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	Vector<String> breakpoints;
 	bool use_custom_res = true;
 	bool force_res = false;
-	bool saw_vsync_via_compositor_override = false;
 #ifdef TOOLS_ENABLED
 	bool found_project = false;
 #endif
-	bool use_vsync = false;
 
 	packed_data = PackedData::get_singleton();
 	if (!packed_data) {
@@ -825,12 +821,6 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		} else if (I->get() == "--no-window") { // disable window creation (Windows only)
 
 			OS::get_singleton()->set_no_window_mode(true);
-		} else if (I->get() == "--enable-vsync-via-compositor") {
-			window_vsync_via_compositor = true;
-			saw_vsync_via_compositor_override = true;
-		} else if (I->get() == "--disable-vsync-via-compositor") {
-			window_vsync_via_compositor = false;
-			saw_vsync_via_compositor_override = true;
 #endif
 		} else if (I->get() == "--profiling") { // enable profiling
 
@@ -1287,19 +1277,6 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		OS::get_singleton()->_allow_hidpi = GLOBAL_DEF("display/window/dpi/allow_hidpi", false);
 	}
 
-	use_vsync = GLOBAL_DEF_RST("display/window/vsync/use_vsync", true);
-	OS::get_singleton()->_use_vsync = use_vsync;
-
-	if (!saw_vsync_via_compositor_override) {
-		// If one of the command line options to enable/disable vsync via the
-		// window compositor ("--enable-vsync-via-compositor" or
-		// "--disable-vsync-via-compositor") was present then it overrides the
-		// project setting.
-		window_vsync_via_compositor = GLOBAL_DEF("display/window/vsync/vsync_via_compositor", false);
-	}
-
-	OS::get_singleton()->_vsync_via_compositor = window_vsync_via_compositor;
-
 	/* todo restore
     OS::get_singleton()->_allow_layered = GLOBAL_DEF("display/window/per_pixel_transparency/allowed", false);
     video_mode.layered = GLOBAL_DEF("display/window/per_pixel_transparency/enabled", false);
@@ -1357,7 +1334,22 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	{
 		window_orientation = DisplayServer::ScreenOrientation(int(GLOBAL_DEF_BASIC("display/window/handheld/orientation", DisplayServer::ScreenOrientation::SCREEN_LANDSCAPE)));
 	}
+	{
+		String vsync_mode = GLOBAL_DEF("display/window/vsync/vsync_mode", "Enabled");
 
+		if (vsync_mode == "Disabled") {
+			window_vsync_mode = DisplayServer::VSYNC_DISABLED;
+		} else if (vsync_mode == "Enabled") {
+			window_vsync_mode = DisplayServer::VSYNC_ENABLED;
+		} else if (vsync_mode == "Adaptive") {
+			window_vsync_mode = DisplayServer::VSYNC_ADAPTIVE;
+		} else if (vsync_mode == "Mailbox") {
+			window_vsync_mode = DisplayServer::VSYNC_MAILBOX;
+		} else {
+			WARN_PRINT("VSync mode unknown.");
+			window_vsync_mode = DisplayServer::VSYNC_ENABLED;
+		}
+	}
 	Engine::get_singleton()->set_iterations_per_second(GLOBAL_DEF_BASIC("physics/common/physics_fps", 60));
 	ProjectSettings::get_singleton()->set_custom_property_info("physics/common/physics_fps",
 			PropertyInfo(Variant::INT, "physics/common/physics_fps",
@@ -1550,14 +1542,14 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 		String rendering_driver; // temp broken
 
 		Error err;
-		display_server = DisplayServer::create(display_driver_idx, rendering_driver, window_mode, window_flags, window_size, err);
+		display_server = DisplayServer::create(display_driver_idx, rendering_driver, window_mode, window_vsync_mode, window_flags, window_size, err);
 		if (err != OK || display_server == nullptr) {
 			//ok i guess we can't use this display server, try other ones
 			for (int i = 0; i < DisplayServer::get_create_function_count(); i++) {
 				if (i == display_driver_idx) {
 					continue; //don't try the same twice
 				}
-				display_server = DisplayServer::create(i, rendering_driver, window_mode, window_flags, window_size, err);
+				display_server = DisplayServer::create(i, rendering_driver, window_mode, window_vsync_mode, window_flags, window_size, err);
 				if (err == OK && display_server != nullptr) {
 					break;
 				}

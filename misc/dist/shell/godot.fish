@@ -61,8 +61,6 @@ complete -c godot -l resolution -d "Request window resolution" -x
 complete -c godot -l position -d "Request window position" -x
 complete -c godot -l low-dpi -d "Force low-DPI mode (macOS and Windows only)"
 complete -c godot -l no-window -d "Disable window creation (Windows only), useful together with --script"
-complete -c godot -l enable-vsync-via-compositor -d "When Vsync is enabled, Vsync via the OS' window compositor (Windows only)"
-complete -c godot -l disable-vsync-via-compositor -d "Disable Vsync via the OS' window compositor (Windows only)"
 
 # Debug options:
 complete -c godot -s d -l debug -d "Debug (local stdout debugger)"

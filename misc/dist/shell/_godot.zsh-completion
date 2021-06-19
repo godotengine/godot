@@ -51,8 +51,6 @@ _arguments \
   '--position[request window position]:position in X,Y format' \
   '--low-dpi[force low-DPI mode (macOS and Windows only)]' \
   '--no-window[disable window creation (Windows only), useful together with --script]' \
-  "--enable-vsync-via-compositor[when Vsync is enabled, Vsync via the OS' window compositor (Windows only)]" \
-  "--disable-vsync-via-compositor[disable Vsync via the OS' window compositor (Windows only)]" \
   '(-d --debug)'{-d,--debug}'[debug (local stdout debugger)]' \
   '(-b --breakpoints)'{-b,--breakpoints}'[specify the breakpoint list as source::line comma-separated pairs, no spaces (use %20 instead)]:breakpoint list' \
   '--profiling[enable profiling in the script debugger]' \

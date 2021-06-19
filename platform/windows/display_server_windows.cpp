@@ -477,10 +477,10 @@ DisplayServer::WindowID DisplayServerWindows::get_window_at_screen_position(cons
 	return INVALID_WINDOW_ID;
 }
 
-DisplayServer::WindowID DisplayServerWindows::create_sub_window(WindowMode p_mode, uint32_t p_flags, const Rect2i &p_rect) {
+DisplayServer::WindowID DisplayServerWindows::create_sub_window(WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Rect2i &p_rect) {
 	_THREAD_SAFE_METHOD_
 
-	WindowID window_id = _create_window(p_mode, p_flags, p_rect);
+	WindowID window_id = _create_window(p_mode, p_vsync_mode, p_flags, p_rect);
 	ERR_FAIL_COND_V_MSG(window_id == INVALID_WINDOW_ID, INVALID_WINDOW_ID, "Failed to create sub window.");
 
 	WindowData &wd = windows[window_id];
@@ -1697,11 +1697,20 @@ void DisplayServerWindows::set_icon(const Ref<Image> &p_icon) {
 	SendMessage(windows[MAIN_WINDOW_ID].hWnd, WM_SETICON, ICON_BIG, (LPARAM)hicon);
 }
 
-void DisplayServerWindows::vsync_set_use_via_compositor(bool p_enable) {
+void DisplayServerWindows::window_set_vsync_mode(DisplayServer::VSyncMode p_vsync_mode, WindowID p_window) {
+	_THREAD_SAFE_METHOD_
+#if defined(VULKAN_ENABLED)
+	context_vulkan->set_vsync_mode(p_window, p_vsync_mode);
+#endif
 }
 
-bool DisplayServerWindows::vsync_is_using_via_compositor() const {
-	return false;
+DisplayServer::VSyncMode DisplayServerWindows::window_get_vsync_mode(WindowID p_window) const {
+	_THREAD_SAFE_METHOD_
+#if defined(VULKAN_ENABLED)
+	return context_vulkan->get_vsync_mode(p_window);
+#else
+	return DisplayServer::VSYNC_ENABLED;
+#endif
 }
 
 void DisplayServerWindows::set_context(Context p_context) {
@@ -2968,7 +2977,7 @@ void DisplayServerWindows::_update_tablet_ctx(const String &p_old_driver, const 
 	}
 }
 
-DisplayServer::WindowID DisplayServerWindows::_create_window(WindowMode p_mode, uint32_t p_flags, const Rect2i &p_rect) {
+DisplayServer::WindowID DisplayServerWindows::_create_window(WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Rect2i &p_rect) {
 	DWORD dwExStyle;
 	DWORD dwStyle;
 
@@ -3030,7 +3039,7 @@ DisplayServer::WindowID DisplayServerWindows::_create_window(WindowMode p_mode, 
 #ifdef VULKAN_ENABLED
 
 		if (rendering_driver == "vulkan") {
-			if (context_vulkan->window_create(id, wd.hWnd, hInstance, WindowRect.right - WindowRect.left, WindowRect.bottom - WindowRect.top) == -1) {
+			if (context_vulkan->window_create(id, p_vsync_mode, wd.hWnd, hInstance, WindowRect.right - WindowRect.left, WindowRect.bottom - WindowRect.top) == -1) {
 				memdelete(context_vulkan);
 				context_vulkan = nullptr;
 				windows.erase(id);
@@ -3151,7 +3160,7 @@ void DisplayServerWindows::tablet_set_current_driver(const String &p_driver) {
 	}
 }
 
-DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, WindowMode p_mode, uint32_t p_flags, const Vector2i &p_resolution, Error &r_error) {
+DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i &p_resolution, Error &r_error) {
 	drop_events = false;
 	key_event_pos = 0;
 
@@ -3270,7 +3279,6 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Win
 		}
 
 		context_gles2->set_use_vsync(video_mode.use_vsync);
-		set_vsync_via_compositor(video_mode.vsync_via_compositor);
 
 		if (RasterizerGLES2::is_viable() == OK) {
 			RasterizerGLES2::register_config();
@@ -3286,7 +3294,7 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Win
 			(screen_get_size(0).width - p_resolution.width) / 2,
 			(screen_get_size(0).height - p_resolution.height) / 2);
 
-	WindowID main_window = _create_window(p_mode, 0, Rect2i(window_position, p_resolution));
+	WindowID main_window = _create_window(p_mode, p_vsync_mode, 0, Rect2i(window_position, p_resolution));
 	ERR_FAIL_COND_MSG(main_window == INVALID_WINDOW_ID, "Failed to create main window.");
 
 	for (int i = 0; i < WINDOW_FLAG_MAX; i++) {
@@ -3347,8 +3355,8 @@ Vector<String> DisplayServerWindows::get_rendering_drivers_func() {
 	return drivers;
 }
 
-DisplayServer *DisplayServerWindows::create_func(const String &p_rendering_driver, WindowMode p_mode, uint32_t p_flags, const Vector2i &p_resolution, Error &r_error) {
-	DisplayServer *ds = memnew(DisplayServerWindows(p_rendering_driver, p_mode, p_flags, p_resolution, r_error));
+DisplayServer *DisplayServerWindows::create_func(const String &p_rendering_driver, WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i &p_resolution, Error &r_error) {
+	DisplayServer *ds = memnew(DisplayServerWindows(p_rendering_driver, p_mode, p_vsync_mode, p_flags, p_resolution, r_error));
 	if (r_error != OK) {
 		ds->alert("Your video card driver does not support any of the supported Vulkan versions.\n"
 				  "Please update your drivers or if you have a very old or integrated GPU upgrade it.",

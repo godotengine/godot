@@ -188,6 +188,8 @@ public:
 	virtual void window_move_to_foreground(WindowID p_window = MAIN_WINDOW_ID);
 	virtual bool window_can_draw(WindowID p_window = MAIN_WINDOW_ID) const;
 	virtual bool can_any_window_draw() const;
+	virtual void window_set_vsync_mode(DisplayServer::VSyncMode p_vsync_mode, WindowID p_window = MAIN_WINDOW_ID);
+	virtual DisplayServer::VSyncMode window_get_vsync_mode(WindowID p_vsync_mode) const;
 
 	virtual void alert(const String &p_alert, const String &p_title);
 
@@ -211,7 +213,7 @@ public:
 	void mouse_set_mode(MouseMode p_mode);
 	MouseMode mouse_get_mode() const;
 
-	static DisplayServer *create_func(const String &p_rendering_driver, WindowMode p_mode, uint32_t p_flags, const Vector2i &p_resolution, Error &r_error);
+	static DisplayServer *create_func(const String &p_rendering_driver, WindowMode p_mode, DisplayServer::VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i &p_resolution, Error &r_error);
 	static Vector<String> get_rendering_drivers_func();
 	static void register_android_driver();
 
@@ -221,7 +223,7 @@ public:
 	virtual Point2i mouse_get_position() const;
 	virtual MouseButton mouse_get_button_state() const;
 
-	DisplayServerAndroid(const String &p_rendering_driver, WindowMode p_mode, uint32_t p_flags, const Vector2i &p_resolution, Error &r_error);
+	DisplayServerAndroid(const String &p_rendering_driver, WindowMode p_mode, DisplayServer::VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i &p_resolution, Error &r_error);
 	~DisplayServerAndroid();
 };
 
