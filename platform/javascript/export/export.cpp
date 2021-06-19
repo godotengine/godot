@@ -29,7 +29,6 @@
 /*************************************************************************/
 
 #include "core/io/image_loader.h"
-#include "core/io/json.h"
 #include "core/io/stream_peer_ssl.h"
 #include "core/io/tcp_server.h"
 #include "core/io/zip_io.h"
@@ -465,7 +464,7 @@ void EditorExportPlatformJavaScript::_fix_html(Vector<uint8_t> &p_html, const Re
 	}
 
 	// Replaces HTML string
-	const String str_config = JSON::print(config);
+	const String str_config = Variant(config).to_json_string();
 	const String custom_head_include = p_preset->get("html/head_include");
 	Map<String, String> replaces;
 	replaces["$GODOT_URL"] = p_name + ".js";
@@ -518,7 +517,7 @@ Error EditorExportPlatformJavaScript::_build_pwa(const Ref<EditorExportPreset> &
 	replaces["@GODOT_NAME@"] = name;
 	replaces["@GODOT_OFFLINE_PAGE@"] = name + ".offline.html";
 	Array files;
-	replaces["@GODOT_OPT_CACHE@"] = JSON::print(files);
+	replaces["@GODOT_OPT_CACHE@"] = Variant(files).to_json_string();
 	files.push_back(name + ".html");
 	files.push_back(name + ".js");
 	files.push_back(name + ".wasm");
@@ -537,7 +536,7 @@ Error EditorExportPlatformJavaScript::_build_pwa(const Ref<EditorExportPreset> &
 			files.push_back(p_shared_objects[i].path.get_file());
 		}
 	}
-	replaces["@GODOT_CACHE@"] = JSON::print(files);
+	replaces["@GODOT_CACHE@"] = Variant(files).to_json_string();
 
 	const String sw_path = dir.plus_file(name + ".service.worker.js");
 	Vector<uint8_t> sw;
@@ -605,7 +604,7 @@ Error EditorExportPlatformJavaScript::_build_pwa(const Ref<EditorExportPreset> &
 	}
 	manifest["icons"] = icons_arr;
 
-	CharString cs = JSON::print(manifest).utf8();
+	CharString cs = Variant(manifest).to_json_string().utf8();
 	err = _write_or_error((const uint8_t *)cs.get_data(), cs.length(), dir.plus_file(name + ".manifest.json"));
 	if (err != OK) {
 		return err;

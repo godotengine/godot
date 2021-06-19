@@ -659,54 +659,6 @@ public:
 	_Engine() { singleton = this; }
 };
 
-class _JSON;
-
-class JSONParseResult : public RefCounted {
-	GDCLASS(JSONParseResult, RefCounted);
-
-	friend class _JSON;
-
-	Error error;
-	String error_string;
-	int error_line = -1;
-
-	Variant result;
-
-protected:
-	static void _bind_methods();
-
-public:
-	void set_error(Error p_error);
-	Error get_error() const;
-
-	void set_error_string(const String &p_error_string);
-	String get_error_string() const;
-
-	void set_error_line(int p_error_line);
-	int get_error_line() const;
-
-	void set_result(const Variant &p_result);
-	Variant get_result() const;
-
-	JSONParseResult() {}
-};
-
-class _JSON : public Object {
-	GDCLASS(_JSON, Object);
-
-protected:
-	static void _bind_methods();
-	static _JSON *singleton;
-
-public:
-	static _JSON *get_singleton() { return singleton; }
-
-	String print(const Variant &p_value, const String &p_indent = "", bool p_sort_keys = false, bool p_full_precision = false);
-	Ref<JSONParseResult> parse(const String &p_json);
-
-	_JSON() { singleton = this; }
-};
-
 class _EngineDebugger : public Object {
 	GDCLASS(_EngineDebugger, Object);
 

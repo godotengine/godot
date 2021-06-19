@@ -242,10 +242,8 @@ void ExportTemplateManager::_refresh_mirrors_completed(int p_status, int p_code,
 		response_json.parse_utf8((const char *)r, p_data.size());
 	}
 
-	Variant response;
-	String errs;
-	int errline;
-	Error err = JSON::parse(response_json, response, errs, errline);
+	JSON json;
+	Error err = json.parse(response_json);
 	if (err != OK) {
 		EditorNode::get_singleton()->show_warning(TTR("Error parsing JSON with the list of mirrors. Please report this issue!"));
 		is_refreshing_mirrors = false;
@@ -260,7 +258,7 @@ void ExportTemplateManager::_refresh_mirrors_completed(int p_status, int p_code,
 
 	mirrors_available = false;
 
-	Dictionary data = response;
+	Dictionary data = json.get_data();
 	if (data.has("mirrors")) {
 		Array mirrors = data["mirrors"];
 
