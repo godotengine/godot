@@ -58,8 +58,6 @@ class OS {
 	int _orientation;
 	bool _allow_hidpi = false;
 	bool _allow_layered = false;
-	bool _use_vsync;
-	bool _vsync_via_compositor;
 	bool _stdout_enabled = true;
 	bool _stderr_enabled = true;
 

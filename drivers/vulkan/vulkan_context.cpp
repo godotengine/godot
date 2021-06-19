@@ -1189,7 +1189,7 @@ bool VulkanContext::_use_validation_layers() {
 	return Engine::get_singleton()->is_validation_layers_enabled();
 }
 
-Error VulkanContext::_window_create(DisplayServer::WindowID p_window_id, VkSurfaceKHR p_surface, int p_width, int p_height) {
+Error VulkanContext::_window_create(DisplayServer::WindowID p_window_id, DisplayServer::VSyncMode p_vsync_mode, VkSurfaceKHR p_surface, int p_width, int p_height) {
 	ERR_FAIL_COND_V(windows.has(p_window_id), ERR_INVALID_PARAMETER);
 
 	if (!queues_initialized) {
@@ -1217,6 +1217,7 @@ Error VulkanContext::_window_create(DisplayServer::WindowID p_window_id, VkSurfa
 	window.surface = p_surface;
 	window.width = p_width;
 	window.height = p_height;
+	window.vsync_mode = p_vsync_mode;
 	Error err = _update_swap_chain(&window);
 	ERR_FAIL_COND_V(err != OK, ERR_CANT_CREATE);
 
@@ -1360,7 +1361,6 @@ Error VulkanContext::_update_swap_chain(Window *window) {
 	}
 	// The FIFO present mode is guaranteed by the spec to be supported
 	// and to have no tearing.  It's a great default present mode to use.
-	VkPresentModeKHR swapchainPresentMode = VK_PRESENT_MODE_FIFO_KHR;
 
 	//  There are times when you may wish to use another present mode.  The
 	//  following code shows how to select them, and the comments provide some
@@ -1389,16 +1389,41 @@ Error VulkanContext::_update_swap_chain(Window *window) {
 	// the application wants the late image to be immediately displayed, even
 	// though that may mean some tearing.
 
-	if (window->presentMode != swapchainPresentMode) {
-		for (size_t i = 0; i < presentModeCount; ++i) {
-			if (presentModes[i] == window->presentMode) {
-				swapchainPresentMode = window->presentMode;
-				break;
-			}
+	VkPresentModeKHR requested_present_mode = VkPresentModeKHR::VK_PRESENT_MODE_FIFO_KHR;
+	switch (window->vsync_mode) {
+		case DisplayServer::VSYNC_MAILBOX:
+			requested_present_mode = VkPresentModeKHR::VK_PRESENT_MODE_MAILBOX_KHR;
+			break;
+		case DisplayServer::VSYNC_ADAPTIVE:
+			requested_present_mode = VkPresentModeKHR::VK_PRESENT_MODE_FIFO_RELAXED_KHR;
+			break;
+		case DisplayServer::VSYNC_ENABLED:
+			requested_present_mode = VkPresentModeKHR::VK_PRESENT_MODE_FIFO_KHR;
+			break;
+		case DisplayServer::VSYNC_DISABLED:
+			requested_present_mode = VkPresentModeKHR::VK_PRESENT_MODE_IMMEDIATE_KHR;
+			break;
+	}
+
+	// Check if the requested mode is available.
+	bool present_mode_available = false;
+	for (uint32_t i = 0; i < presentModeCount; i++) {
+		if (presentModes[i] == requested_present_mode) {
+			present_mode_available = true;
 		}
 	}
+
+	// Set the windows present mode if it is available, otherwise FIFO is used (guaranteed supported).
+	if (present_mode_available) {
+		window->presentMode = requested_present_mode;
+	} else {
+		WARN_PRINT("Requested VSync mode is not available!");
+		window->vsync_mode = DisplayServer::VSYNC_ENABLED; //Set to default
+	}
+
+	print_verbose("Using present mode: " + String(string_VkPresentModeKHR(window->presentMode)));
+
 	free(presentModes);
-	ERR_FAIL_COND_V_MSG(swapchainPresentMode != window->presentMode, ERR_CANT_CREATE, "Present mode specified is not supported\n");
 
 	// Determine the number of VkImages to use in the swap chain.
 	// Application desires to acquire 3 images at a time for triple
@@ -1455,7 +1480,7 @@ Error VulkanContext::_update_swap_chain(Window *window) {
 		/*pQueueFamilyIndices*/ nullptr,
 		/*preTransform*/ (VkSurfaceTransformFlagBitsKHR)preTransform,
 		/*compositeAlpha*/ compositeAlpha,
-		/*presentMode*/ swapchainPresentMode,
+		/*presentMode*/ window->presentMode,
 		/*clipped*/ true,
 		/*oldSwapchain*/ VK_NULL_HANDLE,
 	};
@@ -2160,6 +2185,17 @@ String VulkanContext::get_device_name() const {
 }
 String VulkanContext::get_device_pipeline_cache_uuid() const {
 	return pipeline_cache_id;
+}
+
+DisplayServer::VSyncMode VulkanContext::get_vsync_mode(DisplayServer::WindowID p_window) const {
+	ERR_FAIL_COND_V_MSG(!windows.has(p_window), DisplayServer::VSYNC_ENABLED, "Could not get VSync mode for window with WindowID " + itos(p_window) + " because it does not exist.");
+	return windows[p_window].vsync_mode;
+}
+
+void VulkanContext::set_vsync_mode(DisplayServer::WindowID p_window, DisplayServer::VSyncMode p_mode) {
+	ERR_FAIL_COND_MSG(!windows.has(p_window), "Could not set VSync mode for window with WindowID " + itos(p_window) + " because it does not exist.");
+	windows[p_window].vsync_mode = p_mode;
+	_update_swap_chain(&windows[p_window]);
 }
 
 VulkanContext::VulkanContext() {
