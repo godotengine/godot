@@ -80,7 +80,7 @@
 		</member>
 		<member name="trail_sections" type="int" setter="set_trail_sections" getter="get_trail_sections" default="8">
 		</member>
-		<member name="visibility_rect" type="Rect2" setter="set_visibility_rect" getter="get_visibility_rect" default="Rect2( -100, -100, 200, 200 )">
+		<member name="visibility_rect" type="Rect2" setter="set_visibility_rect" getter="get_visibility_rect" default="Rect2(-100, -100, 200, 200)">
 			The [Rect2] that determines the node's region which needs to be visible on screen for the particle system to be active.
 			Grow the rect if particles suddenly appear/disappear when the node enters/exits the screen. The [Rect2] can be grown via code or with the [b]Particles → Generate Visibility Rect[/b] editor tool.
 		</member>

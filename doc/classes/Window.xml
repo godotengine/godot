@@ -218,7 +218,7 @@
 		<method name="popup">
 			<return type="void">
 			</return>
-			<argument index="0" name="rect" type="Rect2i" default="Rect2i( 0, 0, 0, 0 )">
+			<argument index="0" name="rect" type="Rect2i" default="Rect2i(0, 0, 0, 0)">
 			</argument>
 			<description>
 			</description>
@@ -226,7 +226,7 @@
 		<method name="popup_centered">
 			<return type="void">
 			</return>
-			<argument index="0" name="minsize" type="Vector2i" default="Vector2i( 0, 0 )">
+			<argument index="0" name="minsize" type="Vector2i" default="Vector2i(0, 0)">
 			</argument>
 			<description>
 			</description>
@@ -234,7 +234,7 @@
 		<method name="popup_centered_clamped">
 			<return type="void">
 			</return>
-			<argument index="0" name="minsize" type="Vector2i" default="Vector2i( 0, 0 )">
+			<argument index="0" name="minsize" type="Vector2i" default="Vector2i(0, 0)">
 			</argument>
 			<argument index="1" name="fallback_ratio" type="float" default="0.75">
 			</argument>
@@ -322,21 +322,21 @@
 		</member>
 		<member name="content_scale_mode" type="int" setter="set_content_scale_mode" getter="get_content_scale_mode" enum="Window.ContentScaleMode" default="0">
 		</member>
-		<member name="content_scale_size" type="Vector2i" setter="set_content_scale_size" getter="get_content_scale_size" default="Vector2i( 0, 0 )">
+		<member name="content_scale_size" type="Vector2i" setter="set_content_scale_size" getter="get_content_scale_size" default="Vector2i(0, 0)">
 		</member>
 		<member name="current_screen" type="int" setter="set_current_screen" getter="get_current_screen" default="0">
 		</member>
 		<member name="exclusive" type="bool" setter="set_exclusive" getter="is_exclusive" default="false">
 		</member>
-		<member name="max_size" type="Vector2i" setter="set_max_size" getter="get_max_size" default="Vector2i( 0, 0 )">
+		<member name="max_size" type="Vector2i" setter="set_max_size" getter="get_max_size" default="Vector2i(0, 0)">
 		</member>
-		<member name="min_size" type="Vector2i" setter="set_min_size" getter="get_min_size" default="Vector2i( 0, 0 )">
+		<member name="min_size" type="Vector2i" setter="set_min_size" getter="get_min_size" default="Vector2i(0, 0)">
 		</member>
 		<member name="mode" type="int" setter="set_mode" getter="get_mode" enum="Window.Mode" default="0">
 		</member>
-		<member name="position" type="Vector2i" setter="set_position" getter="get_position" default="Vector2i( 0, 0 )">
+		<member name="position" type="Vector2i" setter="set_position" getter="get_position" default="Vector2i(0, 0)">
 		</member>
-		<member name="size" type="Vector2i" setter="set_size" getter="get_size" default="Vector2i( 100, 100 )">
+		<member name="size" type="Vector2i" setter="set_size" getter="get_size" default="Vector2i(100, 100)">
 		</member>
 		<member name="theme" type="Theme" setter="set_theme" getter="get_theme">
 		</member>
@@ -472,7 +472,7 @@
 		</theme_item>
 		<theme_item name="scaleborder_size" type="int" default="4">
 		</theme_item>
-		<theme_item name="title_color" type="Color" default="Color( 0, 0, 0, 1 )">
+		<theme_item name="title_color" type="Color" default="Color(0, 0, 0, 1)">
 		</theme_item>
 		<theme_item name="title_font" type="Font">
 		</theme_item>
@@ -481,7 +481,7 @@
 		</theme_item>
 		<theme_item name="title_height" type="int" default="20">
 		</theme_item>
-		<theme_item name="title_outline_modulate" type="Color" default="Color( 1, 1, 1, 1 )">
+		<theme_item name="title_outline_modulate" type="Color" default="Color(1, 1, 1, 1)">
 			The color of the title outline.
 		</theme_item>
 		<theme_item name="title_outline_size" type="int" default="0">

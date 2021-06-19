@@ -20,7 +20,7 @@
 			</return>
 			<argument index="0" name="impulse" type="Vector3">
 			</argument>
-			<argument index="1" name="position" type="Vector3" default="Vector3( 0, 0, 0 )">
+			<argument index="1" name="position" type="Vector3" default="Vector3(0, 0, 0)">
 			</argument>
 			<description>
 			</description>
@@ -48,7 +48,7 @@
 		<member name="angular_damp" type="float" setter="set_angular_damp" getter="get_angular_damp" default="-1.0">
 			Damps the body's rotation if greater than [code]0[/code].
 		</member>
-		<member name="body_offset" type="Transform3D" setter="set_body_offset" getter="get_body_offset" default="Transform3D( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0 )">
+		<member name="body_offset" type="Transform3D" setter="set_body_offset" getter="get_body_offset" default="Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)">
 			Sets the body's transform.
 		</member>
 		<member name="bounce" type="float" setter="set_bounce" getter="get_bounce" default="0.0">
@@ -63,13 +63,13 @@
 		<member name="gravity_scale" type="float" setter="set_gravity_scale" getter="get_gravity_scale" default="1.0">
 			This is multiplied by the global 3D gravity setting found in [b]Project &gt; Project Settings &gt; Physics &gt; 3d[/b] to produce the body's gravity. For example, a value of 1 will be normal gravity, 2 will apply double gravity, and 0.5 will apply half gravity to this object.
 		</member>
-		<member name="joint_offset" type="Transform3D" setter="set_joint_offset" getter="get_joint_offset" default="Transform3D( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0 )">
+		<member name="joint_offset" type="Transform3D" setter="set_joint_offset" getter="get_joint_offset" default="Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)">
 			Sets the joint's transform.
 		</member>
 		<member name="joint_rotation" type="Vector3" setter="set_joint_rotation" getter="get_joint_rotation">
 			Sets the joint's rotation in radians.
 		</member>
-		<member name="joint_rotation_degrees" type="Vector3" setter="set_joint_rotation_degrees" getter="get_joint_rotation_degrees" default="Vector3( 0, 0, 0 )">
+		<member name="joint_rotation_degrees" type="Vector3" setter="set_joint_rotation_degrees" getter="get_joint_rotation_degrees" default="Vector3(0, 0, 0)">
 			Sets the joint's rotation in degrees.
 		</member>
 		<member name="joint_type" type="int" setter="set_joint_type" getter="get_joint_type" enum="PhysicalBone3D.JointType" default="0">

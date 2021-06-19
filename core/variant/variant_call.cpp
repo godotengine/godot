@@ -1380,7 +1380,7 @@ static void _register_variant_builtin_methods() {
 	bind_method(String, validate_node_name, sarray(), varray());
 
 	bind_method(String, is_valid_identifier, sarray(), varray());
-	bind_method(String, is_valid_integer, sarray(), varray());
+	bind_method(String, is_valid_int, sarray(), varray());
 	bind_method(String, is_valid_float, sarray(), varray());
 	bind_method(String, is_valid_hex_number, sarray("with_prefix"), varray(false));
 	bind_method(String, is_valid_html_color, sarray(), varray());
@@ -1552,6 +1552,7 @@ static void _register_variant_builtin_methods() {
 	bind_method(Quaternion, is_normalized, sarray(), varray());
 	bind_method(Quaternion, is_equal_approx, sarray("to"), varray());
 	bind_method(Quaternion, inverse, sarray(), varray());
+	bind_method(Quaternion, angle_to, sarray("to"), varray());
 	bind_method(Quaternion, dot, sarray("with"), varray());
 	bind_method(Quaternion, slerp, sarray("to", "weight"), varray());
 	bind_method(Quaternion, slerpni, sarray("to", "weight"), varray());

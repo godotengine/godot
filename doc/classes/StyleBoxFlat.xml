@@ -156,13 +156,13 @@
 		<member name="anti_aliasing_size" type="int" setter="set_aa_size" getter="get_aa_size" default="1">
 			This changes the size of the faded ring. Higher values can be used to achieve a "blurry" effect.
 		</member>
-		<member name="bg_color" type="Color" setter="set_bg_color" getter="get_bg_color" default="Color( 0.6, 0.6, 0.6, 1 )">
+		<member name="bg_color" type="Color" setter="set_bg_color" getter="get_bg_color" default="Color(0.6, 0.6, 0.6, 1)">
 			The background color of the stylebox.
 		</member>
 		<member name="border_blend" type="bool" setter="set_border_blend" getter="get_border_blend" default="false">
 			If [code]true[/code], the border will fade into the background color.
 		</member>
-		<member name="border_color" type="Color" setter="set_border_color" getter="get_border_color" default="Color( 0.8, 0.8, 0.8, 1 )">
+		<member name="border_color" type="Color" setter="set_border_color" getter="get_border_color" default="Color(0.8, 0.8, 0.8, 1)">
 			Sets the color of the border.
 		</member>
 		<member name="border_width_bottom" type="int" setter="set_border_width" getter="get_border_width" default="0">
@@ -209,10 +209,10 @@
 		<member name="expand_margin_top" type="float" setter="set_expand_margin" getter="get_expand_margin" default="0.0">
 			Expands the stylebox outside of the control rect on the top edge. Useful in combination with [member border_width_top] to draw a border outside the control rect.
 		</member>
-		<member name="shadow_color" type="Color" setter="set_shadow_color" getter="get_shadow_color" default="Color( 0, 0, 0, 0.6 )">
+		<member name="shadow_color" type="Color" setter="set_shadow_color" getter="get_shadow_color" default="Color(0, 0, 0, 0.6)">
 			The color of the shadow. This has no effect if [member shadow_size] is lower than 1.
 		</member>
-		<member name="shadow_offset" type="Vector2" setter="set_shadow_offset" getter="get_shadow_offset" default="Vector2( 0, 0 )">
+		<member name="shadow_offset" type="Vector2" setter="set_shadow_offset" getter="get_shadow_offset" default="Vector2(0, 0)">
 			The shadow offset in pixels. Adjusts the position of the shadow relatively to the stylebox.
 		</member>
 		<member name="shadow_size" type="int" setter="set_shadow_size" getter="get_shadow_size" default="0">

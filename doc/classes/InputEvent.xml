@@ -111,7 +111,7 @@
 			</return>
 			<argument index="0" name="xform" type="Transform2D">
 			</argument>
-			<argument index="1" name="local_ofs" type="Vector2" default="Vector2( 0, 0 )">
+			<argument index="1" name="local_ofs" type="Vector2" default="Vector2(0, 0)">
 			</argument>
 			<description>
 				Returns a copy of the given input event which has been offset by [code]local_ofs[/code] and transformed by [code]xform[/code]. Relevant for events of type [InputEventMouseButton], [InputEventMouseMotion], [InputEventScreenTouch], [InputEventScreenDrag], [InputEventMagnifyGesture] and [InputEventPanGesture].

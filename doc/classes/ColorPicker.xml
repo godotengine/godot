@@ -38,7 +38,7 @@
 		</method>
 	</methods>
 	<members>
-		<member name="color" type="Color" setter="set_pick_color" getter="get_pick_color" default="Color( 1, 1, 1, 1 )">
+		<member name="color" type="Color" setter="set_pick_color" getter="get_pick_color" default="Color(1, 1, 1, 1)">
 			The currently selected color.
 		</member>
 		<member name="deferred_mode" type="bool" setter="set_deferred_mode" getter="is_deferred_mode" default="false">

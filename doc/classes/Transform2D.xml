@@ -132,7 +132,7 @@
 		<method name="looking_at" qualifiers="const">
 			<return type="Transform2D">
 			</return>
-			<argument index="0" name="target" type="Vector2" default="Transform2D( 1, 0, 0, 1, 0, 0 )">
+			<argument index="0" name="target" type="Vector2" default="Transform2D(1, 0, 0, 1, 0, 0)">
 			</argument>
 			<description>
 				Returns a copy of the transform rotated such that it's rotation on the X-axis points towards the [code]target[/code] position.
@@ -141,6 +141,30 @@
 		</method>
 		<method name="operator !=" qualifiers="operator">
 			<return type="bool">
+			</return>
+			<argument index="0" name="right" type="Transform2D">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="operator *" qualifiers="operator">
+			<return type="Vector2">
+			</return>
+			<argument index="0" name="right" type="Vector2">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="operator *" qualifiers="operator">
+			<return type="Rect2">
+			</return>
+			<argument index="0" name="right" type="Rect2">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="operator *" qualifiers="operator">
+			<return type="Transform2D">
 			</return>
 			<argument index="0" name="right" type="Transform2D">
 			</argument>
@@ -158,25 +182,19 @@
 		<method name="operator *" qualifiers="operator">
 			<return type="Transform2D">
 			</return>
-			<argument index="0" name="right" type="Transform2D">
+			<argument index="0" name="right" type="float">
 			</argument>
 			<description>
+				This operator multiplies all components of the [Transform2D], including the origin vector, which scales it uniformly.
 			</description>
 		</method>
 		<method name="operator *" qualifiers="operator">
-			<return type="Rect2">
+			<return type="Transform2D">
 			</return>
-			<argument index="0" name="right" type="Rect2">
+			<argument index="0" name="right" type="int">
 			</argument>
 			<description>
-			</description>
-		</method>
-		<method name="operator *" qualifiers="operator">
-			<return type="Vector2">
-			</return>
-			<argument index="0" name="right" type="Vector2">
-			</argument>
-			<description>
+				This operator multiplies all components of the [Transform2D], including the origin vector, which scales it uniformly.
 			</description>
 		</method>
 		<method name="operator ==" qualifiers="operator">
@@ -241,24 +259,24 @@
 		</method>
 	</methods>
 	<members>
-		<member name="origin" type="Vector2" setter="" getter="" default="Vector2( 0, 0 )">
+		<member name="origin" type="Vector2" setter="" getter="" default="Vector2(0, 0)">
 			The origin vector (column 2, the third column). Equivalent to array index [code]2[/code]. The origin vector represents translation.
 		</member>
-		<member name="x" type="Vector2" setter="" getter="" default="Vector2( 1, 0 )">
+		<member name="x" type="Vector2" setter="" getter="" default="Vector2(1, 0)">
 			The basis matrix's X vector (column 0). Equivalent to array index [code]0[/code].
 		</member>
-		<member name="y" type="Vector2" setter="" getter="" default="Vector2( 0, 1 )">
+		<member name="y" type="Vector2" setter="" getter="" default="Vector2(0, 1)">
 			The basis matrix's Y vector (column 1). Equivalent to array index [code]1[/code].
 		</member>
 	</members>
 	<constants>
-		<constant name="IDENTITY" value="Transform2D( 1, 0, 0, 1, 0, 0 )">
+		<constant name="IDENTITY" value="Transform2D(1, 0, 0, 1, 0, 0)">
 			The identity [Transform2D] with no translation, rotation or scaling applied. When applied to other data structures, [constant IDENTITY] performs no transformation.
 		</constant>
-		<constant name="FLIP_X" value="Transform2D( -1, 0, 0, 1, 0, 0 )">
+		<constant name="FLIP_X" value="Transform2D(-1, 0, 0, 1, 0, 0)">
 			The [Transform2D] that will flip something along the X axis.
 		</constant>
-		<constant name="FLIP_Y" value="Transform2D( 1, 0, 0, -1, 0, 0 )">
+		<constant name="FLIP_Y" value="Transform2D(1, 0, 0, -1, 0, 0)">
 			The [Transform2D] that will flip something along the Y axis.
 		</constant>
 	</constants>

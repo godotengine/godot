@@ -36,7 +36,8 @@
 class LineShape2D : public Shape2D {
 	GDCLASS(LineShape2D, Shape2D);
 
-	Vector2 normal = Vector2(0, 1);
+	// LineShape2D is often used for one-way platforms, where the normal pointing up makes sense.
+	Vector2 normal = Vector2(0, -1);
 	real_t distance = 0.0;
 
 	void _update_shape();

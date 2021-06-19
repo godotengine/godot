@@ -40,7 +40,7 @@
 			</return>
 			<argument index="0" name="force" type="Vector3">
 			</argument>
-			<argument index="1" name="position" type="Vector3" default="Vector3( 0, 0, 0 )">
+			<argument index="1" name="position" type="Vector3" default="Vector3(0, 0, 0)">
 			</argument>
 			<description>
 				Adds a constant directional force (i.e. acceleration).
@@ -71,7 +71,7 @@
 			</return>
 			<argument index="0" name="impulse" type="Vector3">
 			</argument>
-			<argument index="1" name="position" type="Vector3" default="Vector3( 0, 0, 0 )">
+			<argument index="1" name="position" type="Vector3" default="Vector3(0, 0, 0)">
 			</argument>
 			<description>
 				Applies a positioned impulse to the body. An impulse is time independent! Applying an impulse every frame would result in a framerate-dependent force. For this reason it should only be used when simulating one-time impacts. The position uses the rotation of the global coordinate system, but is centered at the object's origin.
@@ -116,7 +116,7 @@
 			Damps RigidBody3D's rotational forces.
 			See [member ProjectSettings.physics/3d/default_angular_damp] for more details about damping.
 		</member>
-		<member name="angular_velocity" type="Vector3" setter="set_angular_velocity" getter="get_angular_velocity" default="Vector3( 0, 0, 0 )">
+		<member name="angular_velocity" type="Vector3" setter="set_angular_velocity" getter="get_angular_velocity" default="Vector3(0, 0, 0)">
 			RigidBody3D's rotational velocity.
 		</member>
 		<member name="can_sleep" type="bool" setter="set_can_sleep" getter="is_able_to_sleep" default="true">
@@ -143,7 +143,7 @@
 			The body's linear damp. Cannot be less than -1.0. If this value is different from -1.0, any linear damp derived from the world or areas will be overridden.
 			See [member ProjectSettings.physics/3d/default_linear_damp] for more details about damping.
 		</member>
-		<member name="linear_velocity" type="Vector3" setter="set_linear_velocity" getter="get_linear_velocity" default="Vector3( 0, 0, 0 )">
+		<member name="linear_velocity" type="Vector3" setter="set_linear_velocity" getter="get_linear_velocity" default="Vector3(0, 0, 0)">
 			The body's linear velocity. Can be used sporadically, but [b]don't set this every frame[/b], because physics may run in another thread and runs at a different granularity. Use [method _integrate_forces] as your process loop for precise control of the body state.
 		</member>
 		<member name="mass" type="float" setter="set_mass" getter="get_mass" default="1.0">

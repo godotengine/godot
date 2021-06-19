@@ -9,7 +9,7 @@
 		[section]
 		some_key=42
 		string_example="Hello World3D!"
-		a_vector=Vector3( 1, 0, 2 )
+		a_vector=Vector3(1, 0, 2)
 		[/codeblock]
 		The stored data can be saved to or parsed from a file, though ConfigFile objects can also be used directly without accessing the filesystem.
 		The following example shows how to parse an INI-style file from the system, read its contents and store new values in it:

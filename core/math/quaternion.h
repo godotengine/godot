@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef QUAT_H
-#define QUAT_H
+#ifndef QUATERNION_H
+#define QUATERNION_H
 
 #include "core/math/math_defs.h"
 #include "core/math/math_funcs.h"
@@ -62,6 +62,7 @@ public:
 	bool is_normalized() const;
 	Quaternion inverse() const;
 	_FORCE_INLINE_ real_t dot(const Quaternion &p_q) const;
+	real_t angle_to(const Quaternion &p_to) const;
 
 	Vector3 get_euler_xyz() const;
 	Vector3 get_euler_yxz() const;
@@ -235,4 +236,4 @@ _FORCE_INLINE_ Quaternion operator*(const real_t &p_real, const Quaternion &p_qu
 	return p_quaternion * p_real;
 }
 
-#endif // QUAT_H
+#endif // QUATERNION_H

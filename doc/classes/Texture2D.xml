@@ -19,7 +19,7 @@
 			</argument>
 			<argument index="1" name="position" type="Vector2">
 			</argument>
-			<argument index="2" name="modulate" type="Color" default="Color( 1, 1, 1, 1 )">
+			<argument index="2" name="modulate" type="Color" default="Color(1, 1, 1, 1)">
 			</argument>
 			<argument index="3" name="transpose" type="bool" default="false">
 			</argument>
@@ -36,7 +36,7 @@
 			</argument>
 			<argument index="2" name="tile" type="bool">
 			</argument>
-			<argument index="3" name="modulate" type="Color" default="Color( 1, 1, 1, 1 )">
+			<argument index="3" name="modulate" type="Color" default="Color(1, 1, 1, 1)">
 			</argument>
 			<argument index="4" name="transpose" type="bool" default="false">
 			</argument>
@@ -53,7 +53,7 @@
 			</argument>
 			<argument index="2" name="src_rect" type="Rect2">
 			</argument>
-			<argument index="3" name="modulate" type="Color" default="Color( 1, 1, 1, 1 )">
+			<argument index="3" name="modulate" type="Color" default="Color(1, 1, 1, 1)">
 			</argument>
 			<argument index="4" name="transpose" type="bool" default="false">
 			</argument>

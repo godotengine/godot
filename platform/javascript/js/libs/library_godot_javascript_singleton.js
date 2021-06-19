@@ -34,6 +34,7 @@ const GodotJSWrapper = {
 	$GodotJSWrapper__postset: 'GodotJSWrapper.proxies = new Map();',
 	$GodotJSWrapper: {
 		proxies: null,
+		cb_ret: null,
 
 		MyProxy: function (val) {
 			const id = IDHandler.add(this);
@@ -202,13 +203,25 @@ const GodotJSWrapper = {
 		let id = 0;
 		const cb = function () {
 			if (!GodotJSWrapper.get_proxied_value(id)) {
-				return;
+				return undefined;
 			}
+			// The callback will store the returned value in this variable via
+			// "godot_js_wrapper_object_set_cb_ret" upon calling the user function.
+			// This is safe! JavaScript is single threaded (and using it in threads is not a good idea anyway).
+			GodotJSWrapper.cb_ret = null;
 			const args = Array.from(arguments);
 			func(p_ref, GodotJSWrapper.get_proxied(args), args.length);
+			const ret = GodotJSWrapper.cb_ret;
+			GodotJSWrapper.cb_ret = null;
+			return ret;
 		};
 		id = GodotJSWrapper.get_proxied(cb);
 		return id;
+	},
+
+	godot_js_wrapper_object_set_cb_ret__sig: 'vii',
+	godot_js_wrapper_object_set_cb_ret: function (p_val_type, p_val_ex) {
+		GodotJSWrapper.cb_ret = GodotJSWrapper.variant2js(p_val_type, p_val_ex);
 	},
 
 	godot_js_wrapper_object_getvar__sig: 'iiii',

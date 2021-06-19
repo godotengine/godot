@@ -252,7 +252,7 @@ void GDNativeLibrary::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_symbol_prefix", "symbol_prefix"), &GDNativeLibrary::set_symbol_prefix);
 	ClassDB::bind_method(D_METHOD("set_reloadable", "reloadable"), &GDNativeLibrary::set_reloadable);
 
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "config_file", PROPERTY_HINT_RESOURCE_TYPE, "ConfigFile", 0), "set_config_file", "get_config_file");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "config_file", PROPERTY_HINT_RESOURCE_TYPE, "ConfigFile", PROPERTY_USAGE_NONE), "set_config_file", "get_config_file");
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "load_once"), "set_load_once", "should_load_once");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "singleton"), "set_singleton", "is_singleton");

@@ -1317,7 +1317,7 @@ TEST_CASE("[String] Is_*") {
 	for (int i = 0; i < 12; i++) {
 		String s = String(data[i]);
 		CHECK(s.is_numeric() == isnum[i]);
-		CHECK(s.is_valid_integer() == isint[i]);
+		CHECK(s.is_valid_int() == isint[i]);
 		CHECK(s.is_valid_hex_number(false) == ishex[i]);
 		CHECK(s.is_valid_hex_number(true) == ishex_p[i]);
 		CHECK(s.is_valid_float() == isflt[i]);

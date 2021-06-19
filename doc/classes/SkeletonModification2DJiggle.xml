@@ -208,7 +208,7 @@
 		<member name="damping" type="float" setter="set_damping" getter="get_damping" default="0.75">
 			The default amount of dampening applied to the Jiggle joints, if they are not overriden. Higher values lead to more of the calculated velocity being applied.
 		</member>
-		<member name="gravity" type="Vector2" setter="set_gravity" getter="get_gravity" default="Vector2( 0, 6 )">
+		<member name="gravity" type="Vector2" setter="set_gravity" getter="get_gravity" default="Vector2(0, 6)">
 			The default amount of gravity applied to the Jiggle joints, if they are not overriden.
 		</member>
 		<member name="jiggle_data_chain_length" type="int" setter="set_jiggle_data_chain_length" getter="get_jiggle_data_chain_length" default="0">

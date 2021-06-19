@@ -17,9 +17,9 @@
 		</member>
 		<member name="count" type="int" setter="set_count" getter="get_count" default="0">
 		</member>
-		<member name="max" type="PackedFloat64Array" setter="set_max" getter="get_max" default="PackedFloat64Array(  )">
+		<member name="max" type="PackedFloat64Array" setter="set_max" getter="get_max" default="PackedFloat64Array()">
 		</member>
-		<member name="min" type="PackedFloat64Array" setter="set_min" getter="get_min" default="PackedFloat64Array(  )">
+		<member name="min" type="PackedFloat64Array" setter="set_min" getter="get_min" default="PackedFloat64Array()">
 		</member>
 		<member name="normalized" type="bool" setter="set_normalized" getter="get_normalized" default="false">
 		</member>
