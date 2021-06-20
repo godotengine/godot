@@ -1532,41 +1532,61 @@
 			Lower-end override for [member rendering/shading/overrides/force_vertex_shading] on mobile devices, due to performance concerns or driver support.
 		</member>
 		<member name="rendering/shadows/directional_shadow/16_bits" type="bool" setter="" getter="" default="true">
+			If [code]true[/code], use faster 16-bit precision for directional shadow rendering. If [code]false[/code], use more accurate 24-bit precision for directional shadow rendering. See also [member rendering/shadows/shadow_atlas/16_bits].
+			Most of the time, this value should be set [code]true[/code] to improve performance. However, in particularly large scenes, 16-bit precision may not be sufficient. In this case, setting this value to [code]false[/code] will decrease the amount of visible shadow artifacts at the cost of performance.
+			[b]Note:[/b] This property is only read when the project starts. To change the directional shadow precision at runtime, use the following code sample:
+			[codeblock]
+			# Example with 8192x8192 shadows and 24-bit precision:
+			RenderingServer.directional_shadow_atlas_set_size(8192, false)
+			[/codeblock]
 		</member>
 		<member name="rendering/shadows/directional_shadow/size" type="int" setter="" getter="" default="4096">
 			The directional shadow's size in pixels. Higher values will result in sharper shadows, at the cost of performance. The value will be rounded up to the nearest power of 2.
+			[b]Note:[/b] This property is only read when the project starts. To change the directional shadow size at runtime, use the following code sample:
+			[codeblock]
+			# Example with 8192x8192 shadows and 24-bit precision:
+			RenderingServer.directional_shadow_atlas_set_size(8192, false)
+			[/codeblock]
 		</member>
 		<member name="rendering/shadows/directional_shadow/size.mobile" type="int" setter="" getter="" default="2048">
 			Lower-end override for [member rendering/shadows/directional_shadow/size] on mobile devices, due to performance concerns or driver support.
 		</member>
 		<member name="rendering/shadows/directional_shadow/soft_shadow_quality" type="int" setter="" getter="" default="2">
-			Quality setting for shadows cast by [DirectionalLight3D]s. Higher quality settings use more samples when reading from shadow maps and are thus slower. Low quality settings may result in shadows looking grainy.
+			Quality setting for shadows cast by [DirectionalLight3D]s. Higher quality settings use more samples when reading from shadow maps and are thus slower. Low quality settings may result in shadows looking grainy. See also [member rendering/shadows/shadows/soft_shadow_quality].
+			[b]Note:[/b] This property is only read when the project starts. To change the directional shadow quality at runtime, use the following code sample:
+			[codeblock]
+			# Example with Ultra shadow quality:
+			RenderingServer.directional_shadow_quality_set(RenderingServer.SHADOW_QUALITY_SOFT_ULTRA)
+			[/codeblock]
 		</member>
 		<member name="rendering/shadows/directional_shadow/soft_shadow_quality.mobile" type="int" setter="" getter="" default="0">
 			Lower-end override for [member rendering/shadows/directional_shadow/soft_shadow_quality] on mobile devices, due to performance concerns or driver support.
 		</member>
 		<member name="rendering/shadows/shadow_atlas/16_bits" type="bool" setter="" getter="" default="true">
+			If [code]true[/code], use faster 16-bit precision for [OmniLight3D] and [SpotLight3D] shadow rendering. If [code]false[/code], use more accurate 24-bit precision for [OmniLight3D] and [SpotLight3D] shadow rendering. See also [member rendering/shadows/directional_shadow/16_bits].
+			Most of the time, this value should be set [code]true[/code] to improve performance. However, in particularly large scenes, 16-bit precision may not be sufficient. In this case, setting this value to [code]false[/code] will decrease the amount of visible shadow artifacts at the cost of performance.
 		</member>
 		<member name="rendering/shadows/shadow_atlas/quadrant_0_subdiv" type="int" setter="" getter="" default="2">
-			Subdivision quadrant size for shadow mapping. See shadow mapping documentation.
+			Subdivision quadrant size for [OmniLight3D] and [SpotLight3D] shadow mapping. See shadow mapping documentation.
 		</member>
 		<member name="rendering/shadows/shadow_atlas/quadrant_1_subdiv" type="int" setter="" getter="" default="2">
-			Subdivision quadrant size for shadow mapping. See shadow mapping documentation.
+			Subdivision quadrant size for [OmniLight3D] and [SpotLight3D] shadow mapping. See shadow mapping documentation.
 		</member>
 		<member name="rendering/shadows/shadow_atlas/quadrant_2_subdiv" type="int" setter="" getter="" default="3">
-			Subdivision quadrant size for shadow mapping. See shadow mapping documentation.
+			Subdivision quadrant size for [OmniLight3D] and [SpotLight3D] shadow mapping. See shadow mapping documentation.
 		</member>
 		<member name="rendering/shadows/shadow_atlas/quadrant_3_subdiv" type="int" setter="" getter="" default="4">
-			Subdivision quadrant size for shadow mapping. See shadow mapping documentation.
+			Subdivision quadrant size for [OmniLight3D] and [SpotLight3D] shadow mapping. See shadow mapping documentation.
 		</member>
 		<member name="rendering/shadows/shadow_atlas/size" type="int" setter="" getter="" default="4096">
-			Size for shadow atlas (used for OmniLights and SpotLights). See documentation.
+			The size for shadow atlas in the default [Viewport] (used for [OmniLight3D]s and [SpotLight3D]s). If set to [code]0[/code], [OmniLight3D]s and [SpotLight3D]s will not be able to cast any shadows, which improves performance. See also [member rendering/shadows/directional_shadow/size].
+			[b]Note:[/b] When using custom [Viewport]s, this value must be set on a per-[Viewport] basis.
 		</member>
 		<member name="rendering/shadows/shadow_atlas/size.mobile" type="int" setter="" getter="" default="2048">
 			Lower-end override for [member rendering/shadows/shadow_atlas/size] on mobile devices, due to performance concerns or driver support.
 		</member>
 		<member name="rendering/shadows/shadows/soft_shadow_quality" type="int" setter="" getter="" default="2">
-			Quality setting for shadows cast by [OmniLight3D]s and [SpotLight3D]s. Higher quality settings use more samples when reading from shadow maps and are thus slower. Low quality settings may result in shadows looking grainy.
+			Quality setting for shadows cast by [OmniLight3D]s and [SpotLight3D]s. Higher quality settings use more samples when reading from shadow maps and are thus slower. Low quality settings may result in shadows looking grainy. See also [member rendering/shadows/directional_shadow/soft_shadow_quality].
 		</member>
 		<member name="rendering/shadows/shadows/soft_shadow_quality.mobile" type="int" setter="" getter="" default="0">
 			Lower-end override for [member rendering/shadows/shadows/soft_shadow_quality] on mobile devices, due to performance concerns or driver support.

@@ -576,6 +576,28 @@
 				To place in a scene, attach this directional light to an instance using [method instance_set_base] using the returned RID.
 			</description>
 		</method>
+		<method name="directional_shadow_atlas_set_size">
+			<return type="void">
+			</return>
+			<argument index="0" name="size" type="int">
+			</argument>
+			<argument index="1" name="use_16_bits" type="bool">
+			</argument>
+			<description>
+				The directional shadow's size in pixels. Higher values will result in sharper shadows, at the cost of performance. The value will be rounded up to the nearest power of 2.
+				See also [member ProjectSettings.rendering/shadows/directional_shadow/size].
+			</description>
+		</method>
+		<method name="directional_shadow_quality_set">
+			<return type="void">
+			</return>
+			<argument index="0" name="quality" type="int" enum="RenderingServer.ShadowQuality">
+			</argument>
+			<description>
+				Quality setting for shadows cast by [DirectionalLight3D]s. Higher quality settings use more samples when reading from shadow maps and are thus slower. Low quality settings may result in shadows looking grainy.
+				See also [member ProjectSettings.rendering/shadows/directional_shadow/soft_shadow_quality].
+			</description>
+		</method>
 		<method name="environment_create">
 			<return type="RID">
 			</return>
