@@ -327,8 +327,7 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 	scene_state.ubo.directional_light_count = 0;
 
 	Size2i screen_size;
-	RID opaque_framebuffer;
-	RID alpha_framebuffer;
+	RID framebuffer;
 	bool reverse_cull = false;
 
 	// I don't think we support either of these in our mobile renderer so probably should phase them out
@@ -340,15 +339,13 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 		screen_size.x = render_buffer->width;
 		screen_size.y = render_buffer->height;
 
-		opaque_framebuffer = render_buffer->color_fb;
-		alpha_framebuffer = opaque_framebuffer;
+		framebuffer = render_buffer->color_fb;
 	} else if (p_render_data->reflection_probe.is_valid()) {
 		uint32_t resolution = reflection_probe_instance_get_resolution(p_render_data->reflection_probe);
 		screen_size.x = resolution;
 		screen_size.y = resolution;
 
-		opaque_framebuffer = reflection_probe_instance_get_framebuffer(p_render_data->reflection_probe, p_render_data->reflection_probe_pass);
-		alpha_framebuffer = opaque_framebuffer;
+		framebuffer = reflection_probe_instance_get_framebuffer(p_render_data->reflection_probe, p_render_data->reflection_probe_pass);
 
 		if (storage->reflection_probe_is_interior(reflection_probe_instance_get_probe(p_render_data->reflection_probe))) {
 			p_render_data->environment = RID(); //no environment on interiors
@@ -464,77 +461,168 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 	// does trigger shadow map rendering so kinda important
 	_pre_opaque_render(p_render_data, false, false, RID(), RID());
 
-	RD::get_singleton()->draw_command_begin_label("Render Opaque Pass");
-
 	scene_state.ubo.directional_light_count = p_render_data->directional_light_count;
 
 	_setup_environment(p_render_data, p_render_data->reflection_probe.is_valid(), screen_size, !p_render_data->reflection_probe.is_valid(), p_default_bg_color, p_render_data->render_buffers.is_valid());
 
-	RENDER_TIMESTAMP("Render Opaque Pass");
-
-	RID rp_uniform_set = _setup_render_pass_uniform_set(RENDER_LIST_OPAQUE, p_render_data, radiance_texture, true);
-
 	bool can_continue_color = !scene_state.used_screen_texture && !using_ssr && !using_sss;
 	bool can_continue_depth = !scene_state.used_depth_texture && !using_ssr && !using_sss;
+	uint32_t element_count = render_list[RENDER_LIST_OPAQUE].elements.size() > render_list[RENDER_LIST_ALPHA].elements.size() ? render_list[RENDER_LIST_OPAQUE].elements.size() : render_list[RENDER_LIST_ALPHA].elements.size();
+	bool use_threaded = element_count > render_list_thread_threshold && false;
 
-	{
-		bool will_continue_color = (can_continue_color || draw_sky || draw_sky_fog_only);
-		bool will_continue_depth = (can_continue_depth || draw_sky || draw_sky_fog_only);
+	if (use_threaded) {
+		// TODO see if we can make this work with a single draw list as well.
 
-		// regular forward for now
-		Vector<Color> c;
-		c.push_back(clear_color.to_linear());
+		RD::get_singleton()->draw_command_begin_label("Render Opaque Pass");
 
-		RenderListParameters render_list_params(render_list[RENDER_LIST_OPAQUE].elements.ptr(), render_list[RENDER_LIST_OPAQUE].element_info.ptr(), render_list[RENDER_LIST_OPAQUE].elements.size(), reverse_cull, PASS_MODE_COLOR, rp_uniform_set, get_debug_draw_mode() == RS::VIEWPORT_DEBUG_DRAW_WIREFRAME, Vector2(), p_render_data->lod_camera_plane, p_render_data->lod_distance_multiplier, p_render_data->screen_lod_threshold, p_render_data->view_count);
-		_render_list_with_threads(&render_list_params, opaque_framebuffer, keep_color ? RD::INITIAL_ACTION_KEEP : RD::INITIAL_ACTION_CLEAR, will_continue_color ? RD::FINAL_ACTION_CONTINUE : RD::FINAL_ACTION_READ, RD::INITIAL_ACTION_CLEAR, will_continue_depth ? RD::FINAL_ACTION_CONTINUE : RD::FINAL_ACTION_READ, c, 1.0, 0);
-	}
+		RENDER_TIMESTAMP("Render Opaque Pass");
 
-	RD::get_singleton()->draw_command_end_label();
+		RID rp_uniform_set = _setup_render_pass_uniform_set(RENDER_LIST_OPAQUE, p_render_data, radiance_texture, true);
 
-	if (draw_sky || draw_sky_fog_only) {
-		RENDER_TIMESTAMP("Render Sky");
+		{
+			bool will_continue_color = (can_continue_color || draw_sky || draw_sky_fog_only);
+			bool will_continue_depth = (can_continue_depth || draw_sky || draw_sky_fog_only);
 
-		RD::get_singleton()->draw_command_begin_label("Draw Sky");
+			// regular forward for now
+			Vector<Color> c;
+			c.push_back(clear_color.to_linear());
 
-		if (p_render_data->reflection_probe.is_valid()) {
-			CameraMatrix correction;
-			correction.set_depth_correction(true);
-			CameraMatrix projection = correction * p_render_data->cam_projection;
-			sky.draw(env, can_continue_color, can_continue_depth, opaque_framebuffer, 1, &projection, p_render_data->cam_transform, time);
-		} else {
-			sky.draw(env, can_continue_color, can_continue_depth, opaque_framebuffer, p_render_data->view_count, p_render_data->view_projection, p_render_data->cam_transform, time);
+			RenderListParameters render_list_params(render_list[RENDER_LIST_OPAQUE].elements.ptr(), render_list[RENDER_LIST_OPAQUE].element_info.ptr(), render_list[RENDER_LIST_OPAQUE].elements.size(), reverse_cull, PASS_MODE_COLOR, rp_uniform_set, get_debug_draw_mode() == RS::VIEWPORT_DEBUG_DRAW_WIREFRAME, Vector2(), p_render_data->lod_camera_plane, p_render_data->lod_distance_multiplier, p_render_data->screen_lod_threshold, p_render_data->view_count);
+			_render_list_with_threads(&render_list_params, framebuffer, keep_color ? RD::INITIAL_ACTION_KEEP : RD::INITIAL_ACTION_CLEAR, will_continue_color ? RD::FINAL_ACTION_CONTINUE : RD::FINAL_ACTION_READ, RD::INITIAL_ACTION_CLEAR, will_continue_depth ? RD::FINAL_ACTION_CONTINUE : RD::FINAL_ACTION_READ, c, 1.0, 0);
 		}
+
+		RD::get_singleton()->draw_command_end_label();
+
+		if (draw_sky || draw_sky_fog_only) {
+			RENDER_TIMESTAMP("Render Sky");
+
+			RD::get_singleton()->draw_command_begin_label("Draw Sky");
+
+			if (p_render_data->reflection_probe.is_valid()) {
+				CameraMatrix correction;
+				correction.set_depth_correction(true);
+				CameraMatrix projection = correction * p_render_data->cam_projection;
+				sky.draw(env, can_continue_color, can_continue_depth, framebuffer, 1, &projection, p_render_data->cam_transform, time);
+			} else {
+				sky.draw(env, can_continue_color, can_continue_depth, framebuffer, p_render_data->view_count, p_render_data->view_projection, p_render_data->cam_transform, time);
+			}
+			RD::get_singleton()->draw_command_end_label();
+		}
+
+		if (render_buffer && !can_continue_color && render_buffer->msaa != RS::VIEWPORT_MSAA_DISABLED) {
+			RD::get_singleton()->texture_resolve_multisample(render_buffer->color_msaa, render_buffer->color);
+			/*
+			if (using_separate_specular) {
+				RD::get_singleton()->texture_resolve_multisample(render_buffer->specular_msaa, render_buffer->specular);
+			}
+			*/
+
+			RD::get_singleton()->texture_resolve_multisample(render_buffer->depth_msaa, render_buffer->depth);
+		}
+
+		RD::get_singleton()->draw_command_begin_label("Render Transparent Pass");
+
+		// transparent pass
+		RENDER_TIMESTAMP("Render Transparent Pass");
+
+		rp_uniform_set = _setup_render_pass_uniform_set(RENDER_LIST_ALPHA, p_render_data, radiance_texture, true);
+
+		_setup_environment(p_render_data, p_render_data->reflection_probe.is_valid(), screen_size, !p_render_data->reflection_probe.is_valid(), p_default_bg_color, false);
+
+		{
+			RenderListParameters render_list_params(render_list[RENDER_LIST_ALPHA].elements.ptr(), render_list[RENDER_LIST_ALPHA].element_info.ptr(), render_list[RENDER_LIST_ALPHA].elements.size(), reverse_cull, PASS_MODE_COLOR, rp_uniform_set, get_debug_draw_mode() == RS::VIEWPORT_DEBUG_DRAW_WIREFRAME, Vector2(), p_render_data->lod_camera_plane, p_render_data->lod_distance_multiplier, p_render_data->screen_lod_threshold, p_render_data->view_count);
+			_render_list_with_threads(&render_list_params, framebuffer, can_continue_color ? RD::INITIAL_ACTION_CONTINUE : RD::INITIAL_ACTION_KEEP, RD::FINAL_ACTION_READ, can_continue_depth ? RD::INITIAL_ACTION_CONTINUE : RD::INITIAL_ACTION_KEEP, RD::FINAL_ACTION_READ);
+		}
+
+		RD::get_singleton()->draw_list_end(RD::BARRIER_MASK_ALL);
+
+		RD::get_singleton()->draw_command_end_label();
+	} else {
+		// if applicable update our quarter/half res sky
+		if (draw_sky || draw_sky_fog_only) {
+			RENDER_TIMESTAMP("Render Sky Quad/Half");
+
+			RD::get_singleton()->draw_command_begin_label("Draw Sky Quad/Half");
+
+			if (p_render_data->reflection_probe.is_valid()) {
+				CameraMatrix correction;
+				correction.set_depth_correction(true);
+				CameraMatrix projection = correction * p_render_data->cam_projection;
+				sky.draw_res(env, 1, &projection, p_render_data->cam_transform, time);
+			} else {
+				sky.draw_res(env, p_render_data->view_count, p_render_data->view_projection, p_render_data->cam_transform, time);
+			}
+			RD::get_singleton()->draw_command_end_label();
+		}
+
+		RD::get_singleton()->draw_command_begin_label("Render Pass");
+
+		RENDER_TIMESTAMP("Render Opaque Pass");
+
+		RID rp_uniform_set = _setup_render_pass_uniform_set(RENDER_LIST_OPAQUE, p_render_data, radiance_texture, true);
+
+		RD::DrawListID draw_list;
+		RD::FramebufferFormatID fb_format = RD::get_singleton()->framebuffer_get_format(framebuffer);
+
+		{
+			bool will_continue_color = (can_continue_color || draw_sky || draw_sky_fog_only);
+			bool will_continue_depth = (can_continue_depth || draw_sky || draw_sky_fog_only);
+
+			// regular forward for now
+			Vector<Color> c;
+			c.push_back(clear_color.to_linear());
+
+			RenderListParameters render_list_params(render_list[RENDER_LIST_OPAQUE].elements.ptr(), render_list[RENDER_LIST_OPAQUE].element_info.ptr(), render_list[RENDER_LIST_OPAQUE].elements.size(), reverse_cull, PASS_MODE_COLOR, rp_uniform_set, get_debug_draw_mode() == RS::VIEWPORT_DEBUG_DRAW_WIREFRAME, Vector2(), p_render_data->lod_camera_plane, p_render_data->lod_distance_multiplier, p_render_data->screen_lod_threshold, p_render_data->view_count);
+			render_list_params.framebuffer_format = fb_format;
+
+			draw_list = RD::get_singleton()->draw_list_begin(framebuffer, keep_color ? RD::INITIAL_ACTION_KEEP : RD::INITIAL_ACTION_CLEAR, will_continue_color ? RD::FINAL_ACTION_CONTINUE : RD::FINAL_ACTION_READ, RD::INITIAL_ACTION_CLEAR, will_continue_depth ? RD::FINAL_ACTION_CONTINUE : RD::FINAL_ACTION_READ, c, 1.0, 0);
+			_render_list(draw_list, fb_format, &render_list_params, 0, render_list_params.element_count);
+		}
+
+		if (draw_sky || draw_sky_fog_only) {
+			RENDER_TIMESTAMP("Render Sky");
+
+			if (p_render_data->reflection_probe.is_valid()) {
+				CameraMatrix correction;
+				correction.set_depth_correction(true);
+				CameraMatrix projection = correction * p_render_data->cam_projection;
+				sky.draw(draw_list, env, framebuffer, 1, &projection, p_render_data->cam_transform, time);
+			} else {
+				sky.draw(draw_list, env, framebuffer, p_render_data->view_count, p_render_data->view_projection, p_render_data->cam_transform, time);
+			}
+		}
+
+		if (render_buffer && !can_continue_color && render_buffer->msaa != RS::VIEWPORT_MSAA_DISABLED) {
+			RD::get_singleton()->draw_list_end(RD::BARRIER_MASK_ALL);
+			RD::get_singleton()->draw_command_end_label();
+
+			RD::get_singleton()->texture_resolve_multisample(render_buffer->color_msaa, render_buffer->color);
+			/*
+			if (using_separate_specular) {
+				RD::get_singleton()->texture_resolve_multisample(render_buffer->specular_msaa, render_buffer->specular);
+			}
+			*/
+
+			RD::get_singleton()->texture_resolve_multisample(render_buffer->depth_msaa, render_buffer->depth);
+
+			RD::get_singleton()->draw_command_begin_label("Render Pass 2");
+			draw_list = RD::get_singleton()->draw_list_begin(framebuffer, can_continue_color ? RD::INITIAL_ACTION_CONTINUE : RD::INITIAL_ACTION_KEEP, RD::FINAL_ACTION_READ, can_continue_depth ? RD::INITIAL_ACTION_CONTINUE : RD::INITIAL_ACTION_KEEP, RD::FINAL_ACTION_READ);
+		}
+
+		RENDER_TIMESTAMP("Render Transparent Pass");
+
+		rp_uniform_set = _setup_render_pass_uniform_set(RENDER_LIST_ALPHA, p_render_data, radiance_texture, true);
+		_setup_environment(p_render_data, p_render_data->reflection_probe.is_valid(), screen_size, !p_render_data->reflection_probe.is_valid(), p_default_bg_color, false);
+
+		{
+			RenderListParameters render_list_params(render_list[RENDER_LIST_ALPHA].elements.ptr(), render_list[RENDER_LIST_ALPHA].element_info.ptr(), render_list[RENDER_LIST_ALPHA].elements.size(), reverse_cull, PASS_MODE_COLOR, rp_uniform_set, get_debug_draw_mode() == RS::VIEWPORT_DEBUG_DRAW_WIREFRAME, Vector2(), p_render_data->lod_camera_plane, p_render_data->lod_distance_multiplier, p_render_data->screen_lod_threshold, p_render_data->view_count);
+			_render_list(draw_list, fb_format, &render_list_params, 0, render_list_params.element_count);
+		}
+
+		RD::get_singleton()->draw_list_end(RD::BARRIER_MASK_ALL);
+
 		RD::get_singleton()->draw_command_end_label();
 	}
-
-	if (render_buffer && !can_continue_color && render_buffer->msaa != RS::VIEWPORT_MSAA_DISABLED) {
-		RD::get_singleton()->texture_resolve_multisample(render_buffer->color_msaa, render_buffer->color);
-		/*
-		if (using_separate_specular) {
-			RD::get_singleton()->texture_resolve_multisample(render_buffer->specular_msaa, render_buffer->specular);
-		}
-		*/
-	}
-
-	if (render_buffer && !can_continue_depth && render_buffer->msaa != RS::VIEWPORT_MSAA_DISABLED) {
-		RD::get_singleton()->texture_resolve_multisample(render_buffer->depth_msaa, render_buffer->depth);
-	}
-
-	// transparent pass
-	RENDER_TIMESTAMP("Render Transparent Pass");
-
-	RD::get_singleton()->draw_command_begin_label("Render Transparent Pass");
-
-	rp_uniform_set = _setup_render_pass_uniform_set(RENDER_LIST_ALPHA, p_render_data, radiance_texture, true);
-
-	_setup_environment(p_render_data, p_render_data->reflection_probe.is_valid(), screen_size, !p_render_data->reflection_probe.is_valid(), p_default_bg_color, false);
-
-	{
-		RenderListParameters render_list_params(render_list[RENDER_LIST_ALPHA].elements.ptr(), render_list[RENDER_LIST_ALPHA].element_info.ptr(), render_list[RENDER_LIST_ALPHA].elements.size(), reverse_cull, PASS_MODE_COLOR, rp_uniform_set, get_debug_draw_mode() == RS::VIEWPORT_DEBUG_DRAW_WIREFRAME, Vector2(), p_render_data->lod_camera_plane, p_render_data->lod_distance_multiplier, p_render_data->screen_lod_threshold, p_render_data->view_count);
-		_render_list_with_threads(&render_list_params, alpha_framebuffer, can_continue_color ? RD::INITIAL_ACTION_CONTINUE : RD::INITIAL_ACTION_KEEP, RD::FINAL_ACTION_READ, can_continue_depth ? RD::INITIAL_ACTION_CONTINUE : RD::INITIAL_ACTION_KEEP, RD::FINAL_ACTION_READ);
-	}
-
-	RD::get_singleton()->draw_command_end_label();
 
 	RD::get_singleton()->draw_command_begin_label("Resolve");
 

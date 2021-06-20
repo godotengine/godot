@@ -1336,6 +1336,184 @@ void RendererSceneSkyRD::draw(RendererSceneEnvironmentRD *p_env, bool p_can_cont
 	RD::get_singleton()->draw_list_end();
 }
 
+void RendererSceneSkyRD::draw(RD::DrawListID p_draw_list, RendererSceneEnvironmentRD *p_env, RID p_fb, uint32_t p_view_count, const CameraMatrix *p_projections, const Transform3D &p_transform, double p_time) {
+	ERR_FAIL_COND(!p_env);
+
+	ERR_FAIL_COND(p_view_count == 0);
+	ERR_FAIL_COND(p_view_count > RendererSceneRender::MAX_RENDER_VIEWS);
+
+	Sky *sky = get_sky(p_env->sky);
+	ERR_FAIL_COND(!sky);
+
+	SkyMaterialData *material = nullptr;
+	RID sky_material;
+
+	RS::EnvironmentBG background = p_env->background;
+
+	if (!(background == RS::ENV_BG_CLEAR_COLOR || background == RS::ENV_BG_COLOR) || sky) {
+		ERR_FAIL_COND(!sky);
+		sky_material = sky_get_material(p_env->sky);
+
+		if (sky_material.is_valid()) {
+			material = (SkyMaterialData *)storage->material_get_data(sky_material, RendererStorageRD::SHADER_TYPE_SKY);
+			if (!material || !material->shader_data->valid) {
+				material = nullptr;
+			}
+		}
+
+		if (!material) {
+			sky_material = sky_shader.default_material;
+			material = (SkyMaterialData *)storage->material_get_data(sky_material, RendererStorageRD::SHADER_TYPE_SKY);
+		}
+	}
+
+	if (background == RS::ENV_BG_CLEAR_COLOR || background == RS::ENV_BG_COLOR) {
+		sky_material = sky_scene_state.fog_material;
+		material = (SkyMaterialData *)storage->material_get_data(sky_material, RendererStorageRD::SHADER_TYPE_SKY);
+	}
+
+	ERR_FAIL_COND(!material);
+
+	SkyShaderData *shader_data = material->shader_data;
+
+	ERR_FAIL_COND(!shader_data);
+
+	Basis sky_transform = p_env->sky_orientation;
+	sky_transform.invert();
+
+	float multiplier = p_env->bg_energy;
+	float custom_fov = p_env->sky_custom_fov;
+
+	// Camera
+	CameraMatrix camera;
+	uint32_t view_count = p_view_count;
+	const CameraMatrix *projections = p_projections;
+
+	if (custom_fov) {
+		// With custom fov we don't support stereo...
+		float near_plane = p_projections[0].get_z_near();
+		float far_plane = p_projections[0].get_z_far();
+		float aspect = p_projections[0].get_aspect();
+
+		camera.set_perspective(custom_fov, aspect, near_plane, far_plane);
+
+		view_count = 1;
+		projections = &camera;
+	}
+
+	sky_transform = p_transform.basis * sky_transform;
+
+	PipelineCacheRD *pipeline = &shader_data->pipelines[view_count > 1 ? SKY_VERSION_BACKGROUND_MULTIVIEW : SKY_VERSION_BACKGROUND];
+
+	RID texture_uniform_set;
+	if (sky) {
+		texture_uniform_set = sky->get_textures(storage, SKY_TEXTURE_SET_BACKGROUND, sky_shader.default_shader_rd);
+	} else {
+		texture_uniform_set = sky_scene_state.fog_only_texture_uniform_set;
+	}
+
+	storage->get_effects()->render_sky(p_draw_list, p_time, p_fb, sky_scene_state.uniform_set, sky_scene_state.fog_uniform_set, pipeline, material->uniform_set, texture_uniform_set, view_count, projections, sky_transform, multiplier, p_transform.origin);
+}
+
+void RendererSceneSkyRD::draw_res(RendererSceneEnvironmentRD *p_env, uint32_t p_view_count, const CameraMatrix *p_projections, const Transform3D &p_transform, double p_time) {
+	ERR_FAIL_COND(!p_env);
+
+	ERR_FAIL_COND(p_view_count == 0);
+	ERR_FAIL_COND(p_view_count > RendererSceneRender::MAX_RENDER_VIEWS);
+
+	Sky *sky = get_sky(p_env->sky);
+	ERR_FAIL_COND(!sky);
+
+	SkyMaterialData *material = nullptr;
+	RID sky_material;
+
+	RS::EnvironmentBG background = p_env->background;
+
+	if (!(background == RS::ENV_BG_CLEAR_COLOR || background == RS::ENV_BG_COLOR) || sky) {
+		ERR_FAIL_COND(!sky);
+		sky_material = sky_get_material(p_env->sky);
+
+		if (sky_material.is_valid()) {
+			material = (SkyMaterialData *)storage->material_get_data(sky_material, RendererStorageRD::SHADER_TYPE_SKY);
+			if (!material || !material->shader_data->valid) {
+				material = nullptr;
+			}
+		}
+
+		if (!material) {
+			sky_material = sky_shader.default_material;
+			material = (SkyMaterialData *)storage->material_get_data(sky_material, RendererStorageRD::SHADER_TYPE_SKY);
+		}
+	}
+
+	if (background == RS::ENV_BG_CLEAR_COLOR || background == RS::ENV_BG_COLOR) {
+		sky_material = sky_scene_state.fog_material;
+		material = (SkyMaterialData *)storage->material_get_data(sky_material, RendererStorageRD::SHADER_TYPE_SKY);
+	}
+
+	ERR_FAIL_COND(!material);
+
+	SkyShaderData *shader_data = material->shader_data;
+
+	ERR_FAIL_COND(!shader_data);
+
+	if (!shader_data->uses_half_res && !shader_data->uses_quarter_res) {
+		// not needed...
+		return;
+	}
+
+	Basis sky_transform = p_env->sky_orientation;
+	sky_transform.invert();
+
+	float multiplier = p_env->bg_energy;
+	float custom_fov = p_env->sky_custom_fov;
+
+	// Camera
+	CameraMatrix camera;
+	uint32_t view_count = p_view_count;
+	const CameraMatrix *projections = p_projections;
+
+	if (custom_fov) {
+		// With custom fov we don't support stereo...
+		float near_plane = p_projections[0].get_z_near();
+		float far_plane = p_projections[0].get_z_far();
+		float aspect = p_projections[0].get_aspect();
+
+		camera.set_perspective(custom_fov, aspect, near_plane, far_plane);
+
+		view_count = 1;
+		projections = &camera;
+	}
+
+	sky_transform = p_transform.basis * sky_transform;
+
+	if (shader_data->uses_quarter_res) {
+		PipelineCacheRD *pipeline = &shader_data->pipelines[view_count > 1 ? SKY_VERSION_QUARTER_RES_MULTIVIEW : SKY_VERSION_QUARTER_RES];
+
+		RID texture_uniform_set = sky->get_textures(storage, SKY_TEXTURE_SET_QUARTER_RES, sky_shader.default_shader_rd);
+
+		Vector<Color> clear_colors;
+		clear_colors.push_back(Color(0.0, 0.0, 0.0));
+
+		RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(sky->quarter_res_framebuffer, RD::INITIAL_ACTION_CLEAR, RD::FINAL_ACTION_READ, RD::INITIAL_ACTION_CLEAR, RD::FINAL_ACTION_DISCARD, clear_colors);
+		storage->get_effects()->render_sky(draw_list, p_time, sky->quarter_res_framebuffer, sky_scene_state.uniform_set, sky_scene_state.fog_uniform_set, pipeline, material->uniform_set, texture_uniform_set, view_count, projections, sky_transform, multiplier, p_transform.origin);
+		RD::get_singleton()->draw_list_end();
+	}
+
+	if (shader_data->uses_half_res) {
+		PipelineCacheRD *pipeline = &shader_data->pipelines[view_count > 1 ? SKY_VERSION_HALF_RES_MULTIVIEW : SKY_VERSION_HALF_RES];
+
+		RID texture_uniform_set = sky->get_textures(storage, SKY_TEXTURE_SET_HALF_RES, sky_shader.default_shader_rd);
+
+		Vector<Color> clear_colors;
+		clear_colors.push_back(Color(0.0, 0.0, 0.0));
+
+		RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(sky->half_res_framebuffer, RD::INITIAL_ACTION_CLEAR, RD::FINAL_ACTION_READ, RD::INITIAL_ACTION_CLEAR, RD::FINAL_ACTION_DISCARD, clear_colors);
+		storage->get_effects()->render_sky(draw_list, p_time, sky->half_res_framebuffer, sky_scene_state.uniform_set, sky_scene_state.fog_uniform_set, pipeline, material->uniform_set, texture_uniform_set, view_count, projections, sky_transform, multiplier, p_transform.origin);
+		RD::get_singleton()->draw_list_end();
+	}
+}
+
 void RendererSceneSkyRD::invalidate_sky(Sky *p_sky) {
 	if (!p_sky->dirty) {
 		p_sky->dirty = true;
