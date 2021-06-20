@@ -656,6 +656,9 @@ public:
 	void set_editor_hint(bool p_enabled);
 	bool is_editor_hint() const;
 
+	void set_print_error_messages(bool p_enabled);
+	bool is_printing_error_messages() const;
+
 	_Engine() { singleton = this; }
 };
 

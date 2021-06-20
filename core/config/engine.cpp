@@ -190,6 +190,14 @@ bool Engine::is_validation_layers_enabled() const {
 	return use_validation_layers;
 }
 
+void Engine::set_print_error_messages(bool p_enabled) {
+	_print_error_enabled = p_enabled;
+}
+
+bool Engine::is_printing_error_messages() const {
+	return _print_error_enabled;
+}
+
 void Engine::add_singleton(const Singleton &p_singleton) {
 	singletons.push_back(p_singleton);
 	singleton_ptrs[p_singleton.name] = p_singleton.ptr;
