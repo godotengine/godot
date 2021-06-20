@@ -88,7 +88,7 @@ void ResourceImporterTexture::update_imports() {
 
 		for (Map<StringName, MakeInfo>::Element *E = make_flags.front(); E; E = E->next()) {
 			Ref<ConfigFile> cf;
-			cf.instance();
+			cf.instantiate();
 			String src_path = String(E->key()) + ".import";
 
 			Error err = cf->load(src_path);
@@ -411,13 +411,13 @@ Error ResourceImporterTexture::import(const String &p_source_file, const String 
 	Image::RoughnessChannel roughness_channel = Image::ROUGHNESS_CHANNEL_R;
 
 	if (mipmaps && roughness > 1 && FileAccess::exists(normal_map)) {
-		normal_image.instance();
+		normal_image.instantiate();
 		if (ImageLoader::load_image(normal_map, normal_image) == OK) {
 			roughness_channel = Image::RoughnessChannel(roughness - 2);
 		}
 	}
 	Ref<Image> image;
-	image.instance();
+	image.instantiate();
 	Error err = ImageLoader::load_image(p_source_file, image, nullptr, hdr_as_srgb, scale);
 	if (err != OK) {
 		return err;

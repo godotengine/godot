@@ -122,7 +122,7 @@ void CodeEdit::_notification(int p_what) {
 					ERR_CONTINUE(l < 0 || l >= code_completion_options_count);
 
 					Ref<TextLine> tl;
-					tl.instance();
+					tl.instantiate();
 					tl->add_string(code_completion_options[l].display, cache.font, cache.font_size);
 
 					int yofs = (row_height - tl->get_size().y) / 2;
@@ -615,7 +615,7 @@ bool CodeEdit::is_line_numbers_zero_padded() const {
 void CodeEdit::_line_number_draw_callback(int p_line, int p_gutter, const Rect2 &p_region) {
 	String fc = TS->format_number(String::num(p_line + 1).lpad(line_number_digits, line_number_padding));
 	Ref<TextLine> tl;
-	tl.instance();
+	tl.instantiate();
 	tl->add_string(fc, cache.font, cache.font_size);
 	int yofs = p_region.position.y + (get_row_height() - tl->get_size().y) / 2;
 	Color number_color = get_line_gutter_item_color(p_line, line_number_gutter);

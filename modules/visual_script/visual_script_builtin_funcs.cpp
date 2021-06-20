@@ -1187,7 +1187,7 @@ public:
 	}
 };
 
-VisualScriptNodeInstance *VisualScriptBuiltinFunc::instance(VisualScriptInstance *p_instance) {
+VisualScriptNodeInstance *VisualScriptBuiltinFunc::instantiate(VisualScriptInstance *p_instance) {
 	VisualScriptNodeInstanceBuiltinFunc *instance = memnew(VisualScriptNodeInstanceBuiltinFunc);
 	instance->node = this;
 	instance->instance = p_instance;

@@ -224,7 +224,7 @@ void DisplayServerIPhone::_window_callback(const Callable &p_callable, const Var
 void DisplayServerIPhone::touch_press(int p_idx, int p_x, int p_y, bool p_pressed, bool p_double_click) {
 	if (!GLOBAL_DEF("debug/disable_touch", false)) {
 		Ref<InputEventScreenTouch> ev;
-		ev.instance();
+		ev.instantiate();
 
 		ev->set_index(p_idx);
 		ev->set_pressed(p_pressed);
@@ -236,7 +236,7 @@ void DisplayServerIPhone::touch_press(int p_idx, int p_x, int p_y, bool p_presse
 void DisplayServerIPhone::touch_drag(int p_idx, int p_prev_x, int p_prev_y, int p_x, int p_y) {
 	if (!GLOBAL_DEF("debug/disable_touch", false)) {
 		Ref<InputEventScreenDrag> ev;
-		ev.instance();
+		ev.instantiate();
 		ev->set_index(p_idx);
 		ev->set_position(Vector2(p_x, p_y));
 		ev->set_relative(Vector2(p_x - p_prev_x, p_y - p_prev_y));
@@ -256,7 +256,7 @@ void DisplayServerIPhone::touches_cancelled(int p_idx) {
 
 void DisplayServerIPhone::key(uint32_t p_key, bool p_pressed) {
 	Ref<InputEventKey> ev;
-	ev.instance();
+	ev.instantiate();
 	ev->set_echo(false);
 	ev->set_pressed(p_pressed);
 	ev->set_keycode(p_key);

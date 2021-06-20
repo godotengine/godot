@@ -1021,6 +1021,6 @@ void GraphNode::_bind_methods() {
 }
 
 GraphNode::GraphNode() {
-	title_buf.instance();
+	title_buf.instantiate();
 	set_mouse_filter(MOUSE_FILTER_STOP);
 }

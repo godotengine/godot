@@ -51,7 +51,7 @@ protected:
 public:
 	_FORCE_INLINE_ const StringName &get_name() const { return name; }
 	Variant _new();
-	Object *instance();
+	Object *instantiate();
 	GDScriptNativeClass(const StringName &p_name);
 };
 
@@ -80,10 +80,10 @@ class GDScript : public Script {
 	GDScript *_base = nullptr; //fast pointer access
 	GDScript *_owner = nullptr; //for subclasses
 
-	Set<StringName> members; //members are just indices to the instanced script.
+	Set<StringName> members; //members are just indices to the instantiated script.
 	Map<StringName, Variant> constants;
 	Map<StringName, GDScriptFunction *> member_functions;
-	Map<StringName, MemberInfo> member_indices; //members are just indices to the instanced script.
+	Map<StringName, MemberInfo> member_indices; //members are just indices to the instantiated script.
 	Map<StringName, Ref<GDScript>> subclasses;
 	Map<StringName, Vector<StringName>> _signals;
 	Vector<MultiplayerAPI::RPCConfig> rpc_functions;
@@ -196,7 +196,7 @@ public:
 	StringName debug_get_member_by_index(int p_idx) const;
 
 	Variant _new(const Variant **p_args, int p_argcount, Callable::CallError &r_error);
-	virtual bool can_instance() const override;
+	virtual bool can_instantiate() const override;
 
 	virtual Ref<Script> get_base_script() const override;
 

@@ -717,7 +717,7 @@ LightmapGI::BakeError LightmapGI::bake(Node *p_from_node, String p_image_data_pa
 					w_albedo[i + 3] = 255;
 				}
 
-				md.albedo_on_uv2.instance();
+				md.albedo_on_uv2.instantiate();
 				md.albedo_on_uv2->create(lightmap_size.width, lightmap_size.height, false, Image::FORMAT_RGBA8, albedom);
 			}
 
@@ -940,7 +940,7 @@ LightmapGI::BakeError LightmapGI::bake(Node *p_from_node, String p_image_data_pa
 
 			} break;
 			case ENVIRONMENT_MODE_CUSTOM_COLOR: {
-				environment_image.instance();
+				environment_image.instantiate();
 				environment_image->create(128, 64, false, Image::FORMAT_RGBAF);
 				Color c = environment_custom_color;
 				c.r *= environment_custom_energy;
@@ -972,7 +972,7 @@ LightmapGI::BakeError LightmapGI::bake(Node *p_from_node, String p_image_data_pa
 		}
 		//we assume they are all the same, so let's create a large one for saving
 		Ref<Image> large_image;
-		large_image.instance();
+		large_image.instantiate();
 
 		large_image->create(images[0]->get_width(), images[0]->get_height() * images.size(), false, images[0]->get_format());
 
@@ -984,7 +984,7 @@ LightmapGI::BakeError LightmapGI::bake(Node *p_from_node, String p_image_data_pa
 
 		Ref<ConfigFile> config;
 
-		config.instance();
+		config.instantiate();
 		if (FileAccess::exists(base_path + ".import")) {
 			config->load(base_path + ".import");
 		}
@@ -1017,7 +1017,7 @@ LightmapGI::BakeError LightmapGI::bake(Node *p_from_node, String p_image_data_pa
 		set_light_data(Ref<LightmapGIData>()); //clear
 		data->clear();
 	} else {
-		data.instance();
+		data.instantiate();
 	}
 
 	data->set_light_texture(texture);

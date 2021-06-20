@@ -177,7 +177,7 @@
 				[b]Note:[/b] Resource paths can be obtained by right clicking on a resource in the Assets Panel and choosing "Copy Path" or by dragging the file from the FileSystem dock into the script.
 				[codeblock]
 				# Instance a scene.
-				var diamond = preload("res://diamond.tscn").instance()
+				var diamond = preload("res://diamond.tscn").instantiate()
 				[/codeblock]
 			</description>
 		</method>

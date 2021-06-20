@@ -420,7 +420,7 @@ DynamicFontDataAdvanced::Character DynamicFontDataAdvanced::bitmap_to_character(
 			Ref<Image> img = memnew(Image(tex.texture_size, tex.texture_size, 0, require_format, tex.imgdata));
 
 			if (tex.texture.is_null()) {
-				tex.texture.instance();
+				tex.texture.instantiate();
 				tex.texture->create_from_image(img);
 			} else {
 				tex.texture->update(img); //update

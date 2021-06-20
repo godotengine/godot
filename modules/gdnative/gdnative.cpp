@@ -52,7 +52,7 @@ extern const godot_gdnative_core_api_struct api_struct;
 Map<String, Vector<Ref<GDNative>>> GDNativeLibrary::loaded_libraries;
 
 GDNativeLibrary::GDNativeLibrary() {
-	config_file.instance();
+	config_file.instantiate();
 
 	symbol_prefix = default_symbol_prefix;
 	load_once = default_load_once;
@@ -112,7 +112,7 @@ bool GDNativeLibrary::_get(const StringName &p_name, Variant &r_property) const 
 }
 
 void GDNativeLibrary::reset_state() {
-	config_file.instance();
+	config_file.instantiate();
 	current_library_path = "";
 	current_dependencies.clear();
 	symbol_prefix = default_symbol_prefix;
@@ -532,7 +532,7 @@ Error GDNative::get_symbol(StringName p_procedure_name, void *&r_handle, bool p_
 
 RES GDNativeLibraryResourceLoader::load(const String &p_path, const String &p_original_path, Error *r_error, bool p_use_sub_threads, float *r_progress, CacheMode p_cache_mode) {
 	Ref<GDNativeLibrary> lib;
-	lib.instance();
+	lib.instantiate();
 
 	Ref<ConfigFile> config = lib->get_config_file();
 

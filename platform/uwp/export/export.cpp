@@ -1429,7 +1429,7 @@ public:
 
 	EditorExportPlatformUWP() {
 		Ref<Image> img = memnew(Image(_uwp_logo));
-		logo.instance();
+		logo.instantiate();
 		logo->create_from_image(img);
 	}
 };
@@ -1446,6 +1446,6 @@ void register_uwp_exporter() {
 #endif // WINDOWS_ENABLED
 
 	Ref<EditorExportPlatformUWP> exporter;
-	exporter.instance();
+	exporter.instantiate();
 	EditorExport::get_singleton()->add_export_platform(exporter);
 }

@@ -96,7 +96,7 @@ protected:
 	static void debug(uint64_t time_diff, int p_frame_count);
 
 public:
-	Ref<AudioEffectInstance> instance() override;
+	Ref<AudioEffectInstance> instantiate() override;
 	void set_recording_active(bool p_record);
 	bool is_recording_active() const;
 	void set_format(AudioStreamSample::Format p_format);

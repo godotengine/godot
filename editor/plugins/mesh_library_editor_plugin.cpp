@@ -193,7 +193,7 @@ void MeshLibraryEditor::_import_scene(Node *p_scene, Ref<MeshLibrary> p_library,
 void MeshLibraryEditor::_import_scene_cbk(const String &p_str) {
 	Ref<PackedScene> ps = ResourceLoader::load(p_str, "PackedScene");
 	ERR_FAIL_COND(ps.is_null());
-	Node *scene = ps->instance();
+	Node *scene = ps->instantiate();
 
 	ERR_FAIL_COND_MSG(!scene, "Cannot create an instance from PackedScene '" + p_str + "'.");
 

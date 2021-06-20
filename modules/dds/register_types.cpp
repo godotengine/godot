@@ -35,7 +35,7 @@
 static Ref<ResourceFormatDDS> resource_loader_dds;
 
 void register_dds_types() {
-	resource_loader_dds.instance();
+	resource_loader_dds.instantiate();
 	ResourceLoader::add_resource_format_loader(resource_loader_dds);
 }
 

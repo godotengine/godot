@@ -52,7 +52,7 @@ class EditorNode3DGizmo : public Node3DGizmo {
 	GDCLASS(EditorNode3DGizmo, Node3DGizmo);
 
 	bool selected;
-	bool instanced;
+	bool instantiated;
 
 public:
 	void set_selected(bool p_selected) { selected = p_selected; }

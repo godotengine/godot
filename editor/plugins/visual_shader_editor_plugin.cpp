@@ -818,7 +818,7 @@ void VisualShaderGraphPlugin::add_node(VisualShader::Type p_type, int p_id) {
 	if (is_expression) {
 		CodeEdit *expression_box = memnew(CodeEdit);
 		Ref<CodeHighlighter> expression_syntax_highlighter;
-		expression_syntax_highlighter.instance();
+		expression_syntax_highlighter.instantiate();
 		expression_node->set_ctrl_pressed(expression_box, 0);
 		node->add_child(expression_box);
 		register_expression_edit(p_id, expression_box);
@@ -1053,7 +1053,7 @@ void VisualShaderEditor::update_custom_nodes() {
 			Ref<Script> script = Ref<Script>(res);
 
 			Ref<VisualShaderNodeCustom> ref;
-			ref.instance();
+			ref.instantiate();
 			ref->set_script(script);
 
 			String name;
@@ -2209,7 +2209,7 @@ void VisualShaderEditor::_add_node(int p_idx, int p_op_idx, String p_resource_pa
 	bool is_custom = add_options[p_idx].is_custom;
 
 	if (!is_custom && add_options[p_idx].type != String()) {
-		VisualShaderNode *vsn = Object::cast_to<VisualShaderNode>(ClassDB::instance(add_options[p_idx].type));
+		VisualShaderNode *vsn = Object::cast_to<VisualShaderNode>(ClassDB::instantiate(add_options[p_idx].type));
 		ERR_FAIL_COND(!vsn);
 
 		VisualShaderNodeFloatConstant *constant = Object::cast_to<VisualShaderNodeFloatConstant>(vsn);
@@ -2234,7 +2234,7 @@ void VisualShaderEditor::_add_node(int p_idx, int p_op_idx, String p_resource_pa
 	} else {
 		ERR_FAIL_COND(add_options[p_idx].script.is_null());
 		String base_type = add_options[p_idx].script->get_instance_base_type();
-		VisualShaderNode *vsn = Object::cast_to<VisualShaderNode>(ClassDB::instance(base_type));
+		VisualShaderNode *vsn = Object::cast_to<VisualShaderNode>(ClassDB::instantiate(base_type));
 		ERR_FAIL_COND(!vsn);
 		vsnode = Ref<VisualShaderNode>(vsn);
 		vsnode->set_script(add_options[p_idx].script);
@@ -3835,7 +3835,7 @@ VisualShaderEditor::VisualShaderEditor() {
 	preview_vbox->add_theme_constant_override("separation", 0);
 
 	preview_text = memnew(CodeEdit);
-	syntax_highlighter.instance();
+	syntax_highlighter.instantiate();
 	preview_vbox->add_child(preview_text);
 	preview_text->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	preview_text->set_syntax_highlighter(syntax_highlighter);
@@ -4427,10 +4427,10 @@ VisualShaderEditor::VisualShaderEditor() {
 	undo_redo = EditorNode::get_singleton()->get_undo_redo();
 
 	Ref<VisualShaderNodePluginDefault> default_plugin;
-	default_plugin.instance();
+	default_plugin.instantiate();
 	add_plugin(default_plugin);
 
-	graph_plugin.instance();
+	graph_plugin.instantiate();
 
 	property_editor = memnew(CustomPropertyEditor);
 	add_child(property_editor);
@@ -4885,14 +4885,14 @@ void VisualShaderNodePortPreview::_shader_changed() {
 	String shader_code = shader->generate_preview_shader(type, node, port, default_textures);
 
 	Ref<Shader> preview_shader;
-	preview_shader.instance();
+	preview_shader.instantiate();
 	preview_shader->set_code(shader_code);
 	for (int i = 0; i < default_textures.size(); i++) {
 		preview_shader->set_default_texture_param(default_textures[i].name, default_textures[i].param);
 	}
 
 	Ref<ShaderMaterial> material;
-	material.instance();
+	material.instantiate();
 	material->set_shader(preview_shader);
 
 	//find if a material is also being edited and copy parameters to this one
@@ -4977,7 +4977,7 @@ Ref<Resource> VisualShaderConversionPlugin::convert(const Ref<Resource> &p_resou
 	ERR_FAIL_COND_V(!vshader.is_valid(), Ref<Resource>());
 
 	Ref<Shader> shader;
-	shader.instance();
+	shader.instantiate();
 
 	String code = vshader->get_code();
 	shader->set_code(code);

@@ -211,7 +211,7 @@ EditorSceneImporterMeshNode3D *FBXMeshData::create_fbx_mesh(const ImportState &s
 			const int surface_id = polygon_surfaces[*polygon_id];
 			if (surfaces.has(surface_id) == false) {
 				SurfaceData sd;
-				sd.surface_tool.instance();
+				sd.surface_tool.instantiate();
 				sd.surface_tool->begin(Mesh::PRIMITIVE_TRIANGLES);
 
 				if (surface_id < 0) {
@@ -316,7 +316,7 @@ EditorSceneImporterMeshNode3D *FBXMeshData::create_fbx_mesh(const ImportState &s
 			Vector3 *normals_ptr = morph_data->normals.ptrw();
 
 			Ref<SurfaceTool> morph_st;
-			morph_st.instance();
+			morph_st.instantiate();
 			morph_st->begin(Mesh::PRIMITIVE_TRIANGLES);
 
 			for (unsigned int vi = 0; vi < surface->vertices_map.size(); vi += 1) {
@@ -345,7 +345,7 @@ EditorSceneImporterMeshNode3D *FBXMeshData::create_fbx_mesh(const ImportState &s
 
 	// Phase 6. Compose the mesh and return it.
 	Ref<EditorSceneImporterMesh> mesh;
-	mesh.instance();
+	mesh.instantiate();
 
 	// Add blend shape info.
 	for (const String *morph_name = morphs.next(nullptr); morph_name != nullptr; morph_name = morphs.next(morph_name)) {

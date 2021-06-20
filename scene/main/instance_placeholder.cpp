@@ -88,7 +88,7 @@ Node *InstancePlaceholder::create_instance(bool p_replace, const Ref<PackedScene
 	if (!ps.is_valid()) {
 		return nullptr;
 	}
-	Node *scene = ps->instance();
+	Node *scene = ps->instantiate();
 	if (!scene) {
 		return nullptr;
 	}

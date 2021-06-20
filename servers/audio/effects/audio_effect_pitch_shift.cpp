@@ -298,9 +298,9 @@ void AudioEffectPitchShiftInstance::process(const AudioFrame *p_src_frames, Audi
 	shift_r.PitchShift(base->pitch_scale, p_frame_count, fft_size, base->oversampling, sample_rate, in_r, out_r, 2);
 }
 
-Ref<AudioEffectInstance> AudioEffectPitchShift::instance() {
+Ref<AudioEffectInstance> AudioEffectPitchShift::instantiate() {
 	Ref<AudioEffectPitchShiftInstance> ins;
-	ins.instance();
+	ins.instantiate();
 	ins->base = Ref<AudioEffectPitchShift>(this);
 	static const int fft_sizes[FFT_SIZE_MAX] = { 256, 512, 1024, 2048, 4096 };
 	ins->fft_size = fft_sizes[fft_size];

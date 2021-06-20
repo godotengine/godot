@@ -92,6 +92,6 @@ void EditorInspectorPluginGradient::parse_begin(Object *p_object) {
 
 GradientEditorPlugin::GradientEditorPlugin(EditorNode *p_node) {
 	Ref<EditorInspectorPluginGradient> plugin;
-	plugin.instance();
+	plugin.instantiate();
 	add_inspector_plugin(plugin);
 }

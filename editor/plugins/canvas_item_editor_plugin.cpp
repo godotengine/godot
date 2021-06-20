@@ -5698,7 +5698,7 @@ void CanvasItemEditorViewport::_create_preview(const Vector<String> &files) cons
 				label_desc->show();
 			} else {
 				if (scene.is_valid()) {
-					Node *instance = scene->instance();
+					Node *instance = scene->instantiate();
 					if (instance) {
 						preview_node->add_child(instance);
 					}
@@ -5811,26 +5811,26 @@ bool CanvasItemEditorViewport::_create_instance(Node *parent, String &path, cons
 		return false;
 	}
 
-	Node *instanced_scene = sdata->instance(PackedScene::GEN_EDIT_STATE_INSTANCE);
-	if (!instanced_scene) { // error on instancing
+	Node *instantiated_scene = sdata->instantiate(PackedScene::GEN_EDIT_STATE_INSTANCE);
+	if (!instantiated_scene) { // error on instancing
 		return false;
 	}
 
 	if (editor->get_edited_scene()->get_filename() != "") { // cyclical instancing
-		if (_cyclical_dependency_exists(editor->get_edited_scene()->get_filename(), instanced_scene)) {
-			memdelete(instanced_scene);
+		if (_cyclical_dependency_exists(editor->get_edited_scene()->get_filename(), instantiated_scene)) {
+			memdelete(instantiated_scene);
 			return false;
 		}
 	}
 
-	instanced_scene->set_filename(ProjectSettings::get_singleton()->localize_path(path));
+	instantiated_scene->set_filename(ProjectSettings::get_singleton()->localize_path(path));
 
-	editor_data->get_undo_redo().add_do_method(parent, "add_child", instanced_scene);
-	editor_data->get_undo_redo().add_do_method(instanced_scene, "set_owner", editor->get_edited_scene());
-	editor_data->get_undo_redo().add_do_reference(instanced_scene);
-	editor_data->get_undo_redo().add_undo_method(parent, "remove_child", instanced_scene);
+	editor_data->get_undo_redo().add_do_method(parent, "add_child", instantiated_scene);
+	editor_data->get_undo_redo().add_do_method(instantiated_scene, "set_owner", editor->get_edited_scene());
+	editor_data->get_undo_redo().add_do_reference(instantiated_scene);
+	editor_data->get_undo_redo().add_undo_method(parent, "remove_child", instantiated_scene);
 
-	String new_name = parent->validate_child_name(instanced_scene);
+	String new_name = parent->validate_child_name(instantiated_scene);
 	EditorDebuggerNode *ed = EditorDebuggerNode::get_singleton();
 	editor_data->get_undo_redo().add_do_method(ed, "live_debug_instance_node", editor->get_edited_scene()->get_path_to(parent), path, new_name);
 	editor_data->get_undo_redo().add_undo_method(ed, "live_debug_remove_node", NodePath(String(editor->get_edited_scene()->get_path_to(parent)) + "/" + new_name));
@@ -5841,11 +5841,11 @@ bool CanvasItemEditorViewport::_create_instance(Node *parent, String &path, cons
 		target_pos = canvas_item_editor->snap_point(target_pos);
 		target_pos = parent_ci->get_global_transform_with_canvas().affine_inverse().xform(target_pos);
 		// Preserve instance position of the original scene.
-		CanvasItem *instance_ci = Object::cast_to<CanvasItem>(instanced_scene);
+		CanvasItem *instance_ci = Object::cast_to<CanvasItem>(instantiated_scene);
 		if (instance_ci) {
 			target_pos += instance_ci->_edit_get_position();
 		}
-		editor_data->get_undo_redo().add_do_method(instanced_scene, "set_position", target_pos);
+		editor_data->get_undo_redo().add_do_method(instantiated_scene, "set_position", target_pos);
 	}
 
 	return true;
@@ -5928,7 +5928,7 @@ bool CanvasItemEditorViewport::can_drop_data(const Point2 &p_point, const Varian
 	if (d.has("type")) {
 		if (String(d["type"]) == "files") {
 			Vector<String> files = d["files"];
-			bool can_instance = false;
+			bool can_instantiate = false;
 			for (int i = 0; i < files.size(); i++) { // check if dragged files contain resource or scene can be created at least once
 				RES res = ResourceLoader::load(files[i]);
 				if (res.is_null()) {
@@ -5937,11 +5937,11 @@ bool CanvasItemEditorViewport::can_drop_data(const Point2 &p_point, const Varian
 				String type = res->get_class();
 				if (type == "PackedScene") {
 					Ref<PackedScene> sdata = Ref<PackedScene>(Object::cast_to<PackedScene>(*res));
-					Node *instanced_scene = sdata->instance(PackedScene::GEN_EDIT_STATE_INSTANCE);
-					if (!instanced_scene) {
+					Node *instantiated_scene = sdata->instantiate(PackedScene::GEN_EDIT_STATE_INSTANCE);
+					if (!instantiated_scene) {
 						continue;
 					}
-					memdelete(instanced_scene);
+					memdelete(instantiated_scene);
 				} else if (type == "Texture2D" ||
 						   type == "ImageTexture" ||
 						   type == "ViewportTexture" ||
@@ -5956,10 +5956,10 @@ bool CanvasItemEditorViewport::can_drop_data(const Point2 &p_point, const Varian
 				} else {
 					continue;
 				}
-				can_instance = true;
+				can_instantiate = true;
 				break;
 			}
-			if (can_instance) {
+			if (can_instantiate) {
 				if (!preview_node->get_parent()) { // create preview only once
 					_create_preview(files);
 				}
@@ -5967,7 +5967,7 @@ bool CanvasItemEditorViewport::can_drop_data(const Point2 &p_point, const Varian
 				preview_node->set_position((p_point - trans.get_origin()) / trans.get_scale().x);
 				label->set_text(vformat(TTR("Adding %s..."), default_type));
 			}
-			return can_instance;
+			return can_instantiate;
 		}
 	}
 	label->hide();
@@ -6092,7 +6092,7 @@ CanvasItemEditorViewport::CanvasItemEditorViewport(EditorNode *p_node, CanvasIte
 	vbc->add_child(btn_group);
 	btn_group->set_h_size_flags(0);
 
-	button_group.instance();
+	button_group.instantiate();
 	for (int i = 0; i < types.size(); i++) {
 		CheckBox *check = memnew(CheckBox);
 		btn_group->add_child(check);

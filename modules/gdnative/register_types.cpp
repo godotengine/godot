@@ -230,7 +230,7 @@ static void editor_init_callback() {
 	ProjectSettingsEditor::get_singleton()->get_tabs()->add_child(library_editor);
 
 	Ref<GDNativeExportPlugin> export_plugin;
-	export_plugin.instance();
+	export_plugin.instantiate();
 
 	EditorExport::get_singleton()->add_export_plugin(export_plugin);
 
@@ -262,10 +262,10 @@ void register_gdnative_types() {
 	ClassDB::register_class<GDNativeLibrary>();
 	ClassDB::register_class<GDNative>();
 
-	resource_loader_gdnlib.instance();
+	resource_loader_gdnlib.instantiate();
 	ResourceLoader::add_resource_format_loader(resource_loader_gdnlib);
 
-	resource_saver_gdnlib.instance();
+	resource_saver_gdnlib.instantiate();
 	ResourceSaver::add_resource_format_saver(resource_saver_gdnlib);
 
 	GDNativeCallRegistry::singleton = memnew(GDNativeCallRegistry);
@@ -298,7 +298,7 @@ void register_gdnative_types() {
 
 		Ref<GDNativeLibrary> lib = ResourceLoader::load(path);
 		Ref<GDNative> singleton;
-		singleton.instance();
+		singleton.instantiate();
 		singleton->set_library(lib);
 
 		if (!singleton->initialize()) {

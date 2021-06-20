@@ -52,7 +52,7 @@ void SpinBox::_value_changed(double) {
 
 void SpinBox::_text_submitted(const String &p_string) {
 	Ref<Expression> expr;
-	expr.instance();
+	expr.instantiate();
 
 	String num = TS->parse_number(p_string);
 	// Ignore the prefix and suffix in the expression

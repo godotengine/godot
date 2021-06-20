@@ -121,11 +121,11 @@ void AnimationPlayerEditor::_notification(int p_what) {
 				Ref<Image> reset_img = reset_icon->get_image();
 				Ref<Image> autoplay_reset_img;
 				Size2 icon_size = Size2(autoplay_img->get_width(), autoplay_img->get_height());
-				autoplay_reset_img.instance();
+				autoplay_reset_img.instantiate();
 				autoplay_reset_img->create(icon_size.x * 2, icon_size.y, false, autoplay_img->get_format());
 				autoplay_reset_img->blit_rect(autoplay_img, Rect2(Point2(), icon_size), Point2());
 				autoplay_reset_img->blit_rect(reset_img, Rect2(Point2(), icon_size), Point2(icon_size.x, 0));
-				autoplay_reset_icon.instance();
+				autoplay_reset_icon.instantiate();
 				autoplay_reset_icon->create_from_image(autoplay_reset_img);
 			}
 			stop->set_icon(get_theme_icon("Stop", "EditorIcons"));

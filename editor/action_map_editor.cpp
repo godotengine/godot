@@ -310,7 +310,7 @@ void InputEventConfigurationDialog::_update_input_list() {
 		MouseButton mouse_buttons[9] = { MOUSE_BUTTON_LEFT, MOUSE_BUTTON_RIGHT, MOUSE_BUTTON_MIDDLE, MOUSE_BUTTON_WHEEL_UP, MOUSE_BUTTON_WHEEL_DOWN, MOUSE_BUTTON_WHEEL_LEFT, MOUSE_BUTTON_WHEEL_RIGHT, MOUSE_BUTTON_XBUTTON1, MOUSE_BUTTON_XBUTTON2 };
 		for (int i = 0; i < 9; i++) {
 			Ref<InputEventMouseButton> mb;
-			mb.instance();
+			mb.instantiate();
 			mb->set_button_index(mouse_buttons[i]);
 			String desc = get_event_text(mb);
 
@@ -333,7 +333,7 @@ void InputEventConfigurationDialog::_update_input_list() {
 
 		for (int i = 0; i < JOY_BUTTON_MAX; i++) {
 			Ref<InputEventJoypadButton> joyb;
-			joyb.instance();
+			joyb.instantiate();
 			joyb->set_button_index(i);
 			String desc = get_event_text(joyb);
 
@@ -358,7 +358,7 @@ void InputEventConfigurationDialog::_update_input_list() {
 			int axis = i / 2;
 			int direction = (i & 1) ? 1 : -1;
 			Ref<InputEventJoypadMotion> joym;
-			joym.instance();
+			joym.instantiate();
 			joym->set_axis(axis);
 			joym->set_axis_value(direction);
 			String desc = get_event_text(joym);
@@ -458,7 +458,7 @@ void InputEventConfigurationDialog::_input_list_item_selected() {
 		case InputEventConfigurationDialog::INPUT_KEY: {
 			int kc = selected->get_meta("__keycode");
 			Ref<InputEventKey> k;
-			k.instance();
+			k.instantiate();
 
 			if (physical_key_checkbox->is_pressed()) {
 				k->set_physical_keycode(kc);
@@ -481,7 +481,7 @@ void InputEventConfigurationDialog::_input_list_item_selected() {
 		case InputEventConfigurationDialog::INPUT_MOUSE_BUTTON: {
 			int idx = selected->get_meta("__index");
 			Ref<InputEventMouseButton> mb;
-			mb.instance();
+			mb.instantiate();
 			mb->set_button_index(idx);
 			// Maintain modifier state from checkboxes
 			mb->set_alt_pressed(mod_checkboxes[MOD_ALT]->is_pressed());
@@ -503,7 +503,7 @@ void InputEventConfigurationDialog::_input_list_item_selected() {
 			int value = selected->get_meta("__value");
 
 			Ref<InputEventJoypadMotion> jm;
-			jm.instance();
+			jm.instantiate();
 			jm->set_axis(axis);
 			jm->set_axis_value(value);
 			_set_event(jm);

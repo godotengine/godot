@@ -500,7 +500,7 @@ void Input::_parse_input_event_impl(const Ref<InputEvent> &p_event, bool p_is_em
 
 		if (event_dispatch_function && emulate_touch_from_mouse && !p_is_emulated && mb->get_button_index() == 1) {
 			Ref<InputEventScreenTouch> touch_event;
-			touch_event.instance();
+			touch_event.instantiate();
 			touch_event->set_pressed(mb->is_pressed());
 			touch_event->set_position(mb->get_position());
 			event_dispatch_function(touch_event);
@@ -517,7 +517,7 @@ void Input::_parse_input_event_impl(const Ref<InputEvent> &p_event, bool p_is_em
 
 		if (event_dispatch_function && emulate_touch_from_mouse && !p_is_emulated && mm->get_button_mask() & 1) {
 			Ref<InputEventScreenDrag> drag_event;
-			drag_event.instance();
+			drag_event.instantiate();
 
 			drag_event->set_position(mm->get_position());
 			drag_event->set_relative(mm->get_relative());
@@ -555,7 +555,7 @@ void Input::_parse_input_event_impl(const Ref<InputEvent> &p_event, bool p_is_em
 
 			if (translate) {
 				Ref<InputEventMouseButton> button_event;
-				button_event.instance();
+				button_event.instantiate();
 
 				button_event->set_device(InputEvent::DEVICE_ID_TOUCH_MOUSE);
 				button_event->set_position(st->get_position());
@@ -582,7 +582,7 @@ void Input::_parse_input_event_impl(const Ref<InputEvent> &p_event, bool p_is_em
 
 		if (emulate_mouse_from_touch && sd->get_index() == mouse_from_touch_index) {
 			Ref<InputEventMouseMotion> motion_event;
-			motion_event.instance();
+			motion_event.instantiate();
 
 			motion_event->set_device(InputEvent::DEVICE_ID_TOUCH_MOUSE);
 			motion_event->set_position(sd->get_position());
@@ -787,7 +787,7 @@ void Input::ensure_touch_mouse_raised() {
 		mouse_from_touch_index = -1;
 
 		Ref<InputEventMouseButton> button_event;
-		button_event.instance();
+		button_event.instantiate();
 
 		button_event->set_device(InputEvent::DEVICE_ID_TOUCH_MOUSE);
 		button_event->set_position(mouse_pos);
@@ -821,7 +821,7 @@ void Input::set_default_cursor_shape(CursorShape p_shape) {
 	// The default shape is set in Viewport::_gui_input_event. To instantly
 	// see the shape in the viewport we need to trigger a mouse motion event.
 	Ref<InputEventMouseMotion> mm;
-	mm.instance();
+	mm.instantiate();
 	mm->set_position(mouse_pos);
 	mm->set_global_position(mouse_pos);
 	parse_input_event(mm);
@@ -1031,7 +1031,7 @@ void Input::joy_hat(int p_device, int p_val) {
 
 void Input::_button_event(int p_device, int p_index, bool p_pressed) {
 	Ref<InputEventJoypadButton> ievent;
-	ievent.instance();
+	ievent.instantiate();
 	ievent->set_device(p_device);
 	ievent->set_button_index(p_index);
 	ievent->set_pressed(p_pressed);
@@ -1041,7 +1041,7 @@ void Input::_button_event(int p_device, int p_index, bool p_pressed) {
 
 void Input::_axis_event(int p_device, int p_axis, float p_value) {
 	Ref<InputEventJoypadMotion> ievent;
-	ievent.instance();
+	ievent.instantiate();
 	ievent->set_device(p_device);
 	ievent->set_axis(p_axis);
 	ievent->set_axis_value(p_value);

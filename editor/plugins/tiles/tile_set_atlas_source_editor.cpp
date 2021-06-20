@@ -1719,7 +1719,7 @@ TileSetAtlasSourceEditor::TileSetAtlasSourceEditor() {
 	add_child(confirm_auto_create_tiles);
 
 	// -- Toolbox --
-	tools_button_group.instance();
+	tools_button_group.instantiate();
 
 	toolbox = memnew(HBoxContainer);
 	right_panel->add_child(toolbox);

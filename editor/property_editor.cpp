@@ -192,7 +192,7 @@ void CustomPropertyEditor::_menu_option(int p_which) {
 
 					String orig_type = res_orig->get_class();
 
-					Object *inst = ClassDB::instance(orig_type);
+					Object *inst = ClassDB::instantiate(orig_type);
 
 					Ref<Resource> res = Ref<Resource>(Object::cast_to<Resource>(inst));
 
@@ -262,7 +262,7 @@ void CustomPropertyEditor::_menu_option(int p_which) {
 						return;
 					}
 
-					Variant obj = ClassDB::instance(intype);
+					Variant obj = ClassDB::instantiate(intype);
 
 					if (!obj) {
 						if (ScriptServer::is_global_class(intype)) {
@@ -908,7 +908,7 @@ bool CustomPropertyEditor::edit(Object *p_owner, const String &p_name, Variant::
 							}
 						}
 
-						if (!is_custom_resource && !ClassDB::can_instance(t)) {
+						if (!is_custom_resource && !ClassDB::can_instantiate(t)) {
 							continue;
 						}
 
@@ -1078,7 +1078,7 @@ void CustomPropertyEditor::_type_create_selected(int p_idx) {
 
 		String intype = inheritors_array[p_idx];
 
-		Variant obj = ClassDB::instance(intype);
+		Variant obj = ClassDB::instantiate(intype);
 
 		if (!obj) {
 			if (ScriptServer::is_global_class(intype)) {
@@ -1111,7 +1111,7 @@ void CustomPropertyEditor::_node_path_selected(NodePath p_path) {
 		}
 
 		Ref<ViewportTexture> vt;
-		vt.instance();
+		vt.instantiate();
 		vt->set_viewport_path_in_scene(get_tree()->get_edited_scene_root()->get_path_to(to_node));
 		vt->setup_local_to_scene();
 		v = vt;
@@ -1268,7 +1268,7 @@ void CustomPropertyEditor::_action_pressed(int p_which) {
 				String intype = inheritors_array[0];
 
 				if (hint == PROPERTY_HINT_RESOURCE_TYPE) {
-					Variant obj = ClassDB::instance(intype);
+					Variant obj = ClassDB::instantiate(intype);
 
 					if (!obj) {
 						if (ScriptServer::is_global_class(intype)) {
@@ -1332,7 +1332,7 @@ void CustomPropertyEditor::_action_pressed(int p_which) {
 					propvalues.push_back(p);
 				}
 
-				Ref<Resource> res = Ref<Resource>(ClassDB::instance(res_orig->get_class()));
+				Ref<Resource> res = Ref<Resource>(ClassDB::instantiate(res_orig->get_class()));
 
 				ERR_FAIL_COND(res.is_null());
 
@@ -1453,7 +1453,7 @@ void CustomPropertyEditor::_modified(String p_string) {
 		case Variant::INT: {
 			String text = TS->parse_number(value_editor[0]->get_text());
 			Ref<Expression> expr;
-			expr.instance();
+			expr.instantiate();
 			Error err = expr->parse(text);
 			if (err != OK) {
 				v = value_editor[0]->get_text().to_int();
@@ -1629,7 +1629,7 @@ void CustomPropertyEditor::_modified(String p_string) {
 
 real_t CustomPropertyEditor::_parse_real_expression(String text) {
 	Ref<Expression> expr;
-	expr.instance();
+	expr.instantiate();
 	Error err = expr->parse(text);
 	real_t out;
 	if (err != OK) {

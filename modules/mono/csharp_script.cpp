@@ -375,7 +375,7 @@ Ref<Script> CSharpLanguage::get_template(const String &p_class_name, const Strin
 							  .replace("%CLASS%", class_name_no_spaces);
 
 	Ref<CSharpScript> script;
-	script.instance();
+	script.instantiate();
 	script->set_source_code(script_template);
 	script->set_name(class_name_no_spaces);
 
@@ -3049,7 +3049,7 @@ void CSharpScript::update_script_class_info(Ref<CSharpScript> p_script) {
 	p_script->load_script_signals(p_script->script_class, p_script->native);
 }
 
-bool CSharpScript::can_instance() const {
+bool CSharpScript::can_instantiate() const {
 #ifdef TOOLS_ENABLED
 	bool extra_cond = tool || ScriptServer::is_scripting_enabled();
 #else
@@ -3182,7 +3182,7 @@ Variant CSharpScript::_new(const Variant **p_args, int p_argcount, Callable::Cal
 
 	GD_MONO_SCOPE_THREAD_ATTACH;
 
-	Object *owner = ClassDB::instance(NATIVE_GDMONOCLASS_NAME(native));
+	Object *owner = ClassDB::instantiate(NATIVE_GDMONOCLASS_NAME(native));
 
 	REF ref;
 	RefCounted *r = Object::cast_to<RefCounted>(owner);
@@ -3216,10 +3216,10 @@ ScriptInstance *CSharpScript::instance_create(Object *p_this) {
 			if (EngineDebugger::is_active()) {
 				CSharpLanguage::get_singleton()->debug_break_parse(get_path(), 0,
 						"Script inherits from native type '" + String(native_name) +
-								"', so it can't be instanced in object of type: '" + p_this->get_class() + "'");
+								"', so it can't be instantiated in object of type: '" + p_this->get_class() + "'");
 			}
 			ERR_FAIL_V_MSG(nullptr, "Script inherits from native type '" + String(native_name) +
-											"', so it can't be instanced in object of type: '" + p_this->get_class() + "'.");
+											"', so it can't be instantiated in object of type: '" + p_this->get_class() + "'.");
 		}
 	}
 

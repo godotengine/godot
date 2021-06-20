@@ -273,7 +273,7 @@ int StreamPeerMbedTLS::get_available_bytes() const {
 }
 
 StreamPeerMbedTLS::StreamPeerMbedTLS() {
-	ssl_ctx.instance();
+	ssl_ctx.instantiate();
 }
 
 StreamPeerMbedTLS::~StreamPeerMbedTLS() {

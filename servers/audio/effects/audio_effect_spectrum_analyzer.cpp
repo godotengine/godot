@@ -207,9 +207,9 @@ Vector2 AudioEffectSpectrumAnalyzerInstance::get_magnitude_for_frequency_range(f
 	}
 }
 
-Ref<AudioEffectInstance> AudioEffectSpectrumAnalyzer::instance() {
+Ref<AudioEffectInstance> AudioEffectSpectrumAnalyzer::instantiate() {
 	Ref<AudioEffectSpectrumAnalyzerInstance> ins;
-	ins.instance();
+	ins.instantiate();
 	ins->base = Ref<AudioEffectSpectrumAnalyzer>(this);
 	static const int fft_sizes[FFT_SIZE_MAX] = { 256, 512, 1024, 2048, 4096 };
 	ins->fft_size = fft_sizes[fft_size];

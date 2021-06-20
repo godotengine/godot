@@ -373,7 +373,7 @@ Node3D *EditorSceneImporterFBX::_generate_scene(
 	scene_root->add_child(state.root);
 	state.root->set_owner(scene_root);
 
-	state.fbx_root_node.instance();
+	state.fbx_root_node.instantiate();
 	state.fbx_root_node->godot_node = state.root;
 
 	// Size relative to cm.
@@ -389,11 +389,11 @@ Node3D *EditorSceneImporterFBX::_generate_scene(
 	// Enabled by default.
 	state.enable_animation_import = true;
 	Ref<FBXNode> root_node;
-	root_node.instance();
+	root_node.instantiate();
 
 	// make sure fake noFBXDocParser::PropertyPtr ptrde always has a transform too ;)
 	Ref<PivotTransform> pivot_transform;
-	pivot_transform.instance();
+	pivot_transform.instantiate();
 	root_node->pivot_transform = pivot_transform;
 	root_node->node_name = "root node";
 	root_node->current_node_id = 0;
@@ -479,7 +479,7 @@ Node3D *EditorSceneImporterFBX::_generate_scene(
 			if (state.renderer_mesh_data.has(mesh_id)) {
 				mesh_vertex_data = state.renderer_mesh_data[mesh_id];
 			} else {
-				mesh_vertex_data.instance();
+				mesh_vertex_data.instantiate();
 				state.renderer_mesh_data.insert(mesh_id, mesh_vertex_data);
 			}
 
@@ -535,7 +535,7 @@ Node3D *EditorSceneImporterFBX::_generate_scene(
 			ERR_CONTINUE_MSG(!mat, "Could not convert fbx material by id: " + itos(material_id));
 
 			Ref<FBXMaterial> material;
-			material.instance();
+			material.instantiate();
 			material->set_imported_material(mat);
 
 			Ref<StandardMaterial3D> godot_material = material->import_material(state);
@@ -575,7 +575,7 @@ Node3D *EditorSceneImporterFBX::_generate_scene(
 			if (state.skeleton_map.has(armature_id)) {
 				fbx_skeleton_inst = state.skeleton_map[armature_id];
 			} else {
-				fbx_skeleton_inst.instance();
+				fbx_skeleton_inst.instantiate();
 				state.skeleton_map.insert(armature_id, fbx_skeleton_inst);
 			}
 
@@ -650,7 +650,7 @@ Node3D *EditorSceneImporterFBX::_generate_scene(
 						if (state.renderer_mesh_data.has(mesh_id)) {
 							mesh_data_precached = state.renderer_mesh_data[mesh_id];
 						} else {
-							mesh_data_precached.instance();
+							mesh_data_precached.instantiate();
 							state.renderer_mesh_data.insert(mesh_id, mesh_data_precached);
 						}
 
@@ -735,7 +735,7 @@ Node3D *EditorSceneImporterFBX::_generate_scene(
 		Ref<Skin> skin;
 		if (!state.MeshSkins.has(mesh_id)) {
 			print_verbose("Created new skin");
-			skin.instance();
+			skin.instantiate();
 			state.MeshSkins.insert(mesh_id, skin);
 		} else {
 			print_verbose("Grabbed skin");
@@ -848,7 +848,7 @@ Node3D *EditorSceneImporterFBX::_generate_scene(
 				}
 
 				Ref<Animation> animation;
-				animation.instance();
+				animation.instantiate();
 				animation->set_name(animation_name);
 				animation->set_length(duration);
 
@@ -1312,7 +1312,7 @@ void EditorSceneImporterFBX::BuildDocumentBones(Ref<FBXBone> p_parent_bone,
 
 		// declare our bone element reference (invalid, unless we create a bone in this step)
 		// this lets us pass valid armature information into children objects and this is why we moved this up here
-		// previously this was created .instanced() on the same line.
+		// previously this was created .instantiated() on the same line.
 		Ref<FBXBone> bone_element;
 
 		if (model != nullptr) {
@@ -1324,7 +1324,7 @@ void EditorSceneImporterFBX::BuildDocumentBones(Ref<FBXBone> p_parent_bone,
 				ERR_FAIL_COND_MSG(state.fbx_bone_map.has(limb_node->ID()), "[serious] duplicate LimbNode detected");
 
 				bool parent_is_bone = state.fbx_bone_map.find(p_id);
-				bone_element.instance();
+				bone_element.instantiate();
 
 				// used to build the bone hierarchy in the skeleton
 				bone_element->parent_bone_id = parent_is_bone ? p_id : 0;
@@ -1404,12 +1404,12 @@ void EditorSceneImporterFBX::BuildDocumentNodes(
 			uint64_t current_node_id = model->ID();
 
 			Ref<FBXNode> new_node;
-			new_node.instance();
+			new_node.instantiate();
 			new_node->current_node_id = current_node_id;
 			new_node->node_name = ImportUtils::FBXNodeToName(model->Name());
 
 			Ref<PivotTransform> fbx_transform;
-			fbx_transform.instance();
+			fbx_transform.instantiate();
 			fbx_transform->set_parent(parent_transform);
 			fbx_transform->set_model(model);
 			fbx_transform->debug_pivot_xform("name: " + new_node->node_name);

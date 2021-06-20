@@ -206,14 +206,14 @@ static Variant get_documentation_default_value(const StringName &p_class_name, c
 	Variant default_value = Variant();
 	r_default_value_valid = false;
 
-	if (ClassDB::can_instance(p_class_name)) {
+	if (ClassDB::can_instantiate(p_class_name)) {
 		default_value = ClassDB::class_get_default_property_value(p_class_name, p_property_name, &r_default_value_valid);
 	} else {
-		// Cannot get default value of classes that can't be instanced
+		// Cannot get default value of classes that can't be instantiated
 		List<StringName> inheriting_classes;
 		ClassDB::get_direct_inheriters_from_class(p_class_name, &inheriting_classes);
 		for (List<StringName>::Element *E2 = inheriting_classes.front(); E2; E2 = E2->next()) {
-			if (ClassDB::can_instance(E2->get())) {
+			if (ClassDB::can_instantiate(E2->get())) {
 				default_value = ClassDB::class_get_default_property_value(E2->get(), p_property_name, &r_default_value_valid);
 				if (r_default_value_valid) {
 					break;

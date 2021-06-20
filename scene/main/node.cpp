@@ -1813,7 +1813,7 @@ bool Node::get_scene_instance_load_placeholder() const {
 Node *Node::_duplicate(int p_flags, Map<const Node *, Node *> *r_duplimap) const {
 	Node *node = nullptr;
 
-	bool instanced = false;
+	bool instantiated = false;
 
 	if (Object::cast_to<InstancePlaceholder>(this)) {
 		const InstancePlaceholder *ip = Object::cast_to<const InstancePlaceholder>(this);
@@ -1830,13 +1830,13 @@ Node *Node::_duplicate(int p_flags, Map<const Node *, Node *> *r_duplimap) const
 			ges = PackedScene::GEN_EDIT_STATE_INSTANCE;
 		}
 #endif
-		node = res->instance(ges);
+		node = res->instantiate(ges);
 		ERR_FAIL_COND_V(!node, nullptr);
 
-		instanced = true;
+		instantiated = true;
 
 	} else {
-		Object *obj = ClassDB::instance(get_class());
+		Object *obj = ClassDB::instantiate(get_class());
 		ERR_FAIL_COND_V(!obj, nullptr);
 		node = Object::cast_to<Node>(obj);
 		if (!node) {
@@ -1856,9 +1856,9 @@ Node *Node::_duplicate(int p_flags, Map<const Node *, Node *> *r_duplimap) const
 	List<const Node *> node_tree;
 	node_tree.push_front(this);
 
-	if (instanced) {
-		// Since nodes in the instanced hierarchy won't be duplicated explicitly, we need to make an inventory
-		// of all the nodes in the tree of the instanced scene in order to transfer the values of the properties
+	if (instantiated) {
+		// Since nodes in the instantiated hierarchy won't be duplicated explicitly, we need to make an inventory
+		// of all the nodes in the tree of the instantiated scene in order to transfer the values of the properties
 
 		Vector<const Node *> instance_roots;
 		instance_roots.push_back(this);
@@ -1866,8 +1866,8 @@ Node *Node::_duplicate(int p_flags, Map<const Node *, Node *> *r_duplimap) const
 		for (List<const Node *>::Element *N = node_tree.front(); N; N = N->next()) {
 			for (int i = 0; i < N->get()->get_child_count(); ++i) {
 				Node *descendant = N->get()->get_child(i);
-				// Skip nodes not really belonging to the instanced hierarchy; they'll be processed normally later
-				// but remember non-instanced nodes that are hidden below instanced ones
+				// Skip nodes not really belonging to the instantiated hierarchy; they'll be processed normally later
+				// but remember non-instantiated nodes that are hidden below instantiated ones
 				if (!instance_roots.has(descendant->get_owner())) {
 					if (descendant->get_parent() && descendant->get_parent() != this && descendant->data.owner != descendant->get_parent()) {
 						hidden_roots.push_back(descendant);
@@ -1950,7 +1950,7 @@ Node *Node::_duplicate(int p_flags, Map<const Node *, Node *> *r_duplimap) const
 		if (get_child(i)->data.parent_owned) {
 			continue;
 		}
-		if (instanced && get_child(i)->data.owner == this) {
+		if (instantiated && get_child(i)->data.owner == this) {
 			continue; //part of instance
 		}
 

@@ -128,7 +128,7 @@ public:
 	void set_dry(float amount);
 	float get_dry() const;
 
-	Ref<AudioEffectInstance> instance() override;
+	Ref<AudioEffectInstance> instantiate() override;
 
 	AudioEffectChorus();
 };

@@ -820,7 +820,7 @@ Error EditorExportPlatformIOS::_export_loading_screen_file(const Ref<EditorExpor
 	if (custom_launch_image_2x.length() > 0 && custom_launch_image_3x.length() > 0) {
 		Ref<Image> image;
 		String image_path = p_dest_dir.plus_file("splash@2x.png");
-		image.instance();
+		image.instantiate();
 		Error err = image->load(custom_launch_image_2x);
 
 		if (err) {
@@ -834,7 +834,7 @@ Error EditorExportPlatformIOS::_export_loading_screen_file(const Ref<EditorExpor
 
 		image.unref();
 		image_path = p_dest_dir.plus_file("splash@3x.png");
-		image.instance();
+		image.instantiate();
 		err = image->load(custom_launch_image_3x);
 
 		if (err) {
@@ -851,7 +851,7 @@ Error EditorExportPlatformIOS::_export_loading_screen_file(const Ref<EditorExpor
 		const String splash_path = ProjectSettings::get_singleton()->get("application/boot_splash/image");
 
 		if (!splash_path.is_empty()) {
-			splash.instance();
+			splash.instantiate();
 			const Error err = splash->load(splash_path);
 			if (err) {
 				splash.unref();
@@ -1999,7 +1999,7 @@ bool EditorExportPlatformIOS::can_export(const Ref<EditorExportPreset> &p_preset
 
 EditorExportPlatformIOS::EditorExportPlatformIOS() {
 	Ref<Image> img = memnew(Image(_iphone_logo));
-	logo.instance();
+	logo.instantiate();
 	logo->create_from_image(img);
 
 	plugins_changed.set();
@@ -2014,7 +2014,7 @@ EditorExportPlatformIOS::~EditorExportPlatformIOS() {
 
 void register_iphone_exporter() {
 	Ref<EditorExportPlatformIOS> platform;
-	platform.instance();
+	platform.instantiate();
 
 	EditorExport::get_singleton()->add_export_platform(platform);
 }

@@ -349,14 +349,14 @@ Node *EditorAutoloadSettings::_create_autoload(const String &p_path) {
 	Node *n = nullptr;
 	if (res->is_class("PackedScene")) {
 		Ref<PackedScene> ps = res;
-		n = ps->instance();
+		n = ps->instantiate();
 	} else if (res->is_class("Script")) {
 		Ref<Script> s = res;
 		StringName ibt = s->get_instance_base_type();
 		bool valid_type = ClassDB::is_parent_class(ibt, "Node");
 		ERR_FAIL_COND_V_MSG(!valid_type, nullptr, "Script does not inherit a Node: " + p_path + ".");
 
-		Object *obj = ClassDB::instance(ibt);
+		Object *obj = ClassDB::instantiate(ibt);
 
 		ERR_FAIL_COND_V_MSG(obj == nullptr, nullptr, "Cannot instance script for autoload, expected 'Node' inheritance, got: " + String(ibt) + ".");
 

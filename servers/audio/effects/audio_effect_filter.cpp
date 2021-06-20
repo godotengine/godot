@@ -100,9 +100,9 @@ AudioEffectFilterInstance::AudioEffectFilterInstance() {
 	}
 }
 
-Ref<AudioEffectInstance> AudioEffectFilter::instance() {
+Ref<AudioEffectInstance> AudioEffectFilter::instantiate() {
 	Ref<AudioEffectFilterInstance> ins;
-	ins.instance();
+	ins.instantiate();
 	ins->base = Ref<AudioEffectFilter>(this);
 
 	return ins;

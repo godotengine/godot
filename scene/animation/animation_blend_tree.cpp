@@ -1164,7 +1164,7 @@ void AnimationNodeBlendTree::_bind_methods() {
 
 AnimationNodeBlendTree::AnimationNodeBlendTree() {
 	Ref<AnimationNodeOutput> output;
-	output.instance();
+	output.instantiate();
 	Node n;
 	n.node = output;
 	n.position = Vector2(300, 150);

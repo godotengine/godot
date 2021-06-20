@@ -93,6 +93,6 @@ StyleBoxPreview::StyleBoxPreview() {
 
 StyleBoxEditorPlugin::StyleBoxEditorPlugin(EditorNode *p_node) {
 	Ref<EditorInspectorPluginStyleBox> inspector_plugin;
-	inspector_plugin.instance();
+	inspector_plugin.instantiate();
 	add_inspector_plugin(inspector_plugin);
 }

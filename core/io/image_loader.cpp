@@ -163,7 +163,7 @@ RES ResourceFormatLoaderImage::load(const String &p_path, const String &p_origin
 	}
 
 	Ref<Image> image;
-	image.instance();
+	image.instantiate();
 
 	Error err = ImageLoader::loader[idx]->load_image(image, f, false, 1.0);
 

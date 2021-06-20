@@ -55,7 +55,7 @@
 // the custom spacings might only work with Noto Sans
 #define MAKE_DEFAULT_FONT(m_name)                        \
 	Ref<Font> m_name;                                    \
-	m_name.instance();                                   \
+	m_name.instantiate();                                \
 	if (CustomFont.is_valid()) {                         \
 		m_name->add_data(CustomFont);                    \
 		m_name->add_data(DefaultFont);                   \
@@ -68,7 +68,7 @@
 
 #define MAKE_BOLD_FONT(m_name)                           \
 	Ref<Font> m_name;                                    \
-	m_name.instance();                                   \
+	m_name.instantiate();                                \
 	if (CustomFontBold.is_valid()) {                     \
 		m_name->add_data(CustomFontBold);                \
 		m_name->add_data(DefaultFontBold);               \
@@ -81,7 +81,7 @@
 
 #define MAKE_SOURCE_FONT(m_name)                         \
 	Ref<Font> m_name;                                    \
-	m_name.instance();                                   \
+	m_name.instantiate();                                \
 	if (CustomFontSource.is_valid()) {                   \
 		m_name->add_data(CustomFontSource);              \
 		m_name->add_data(dfmono);                        \
@@ -129,7 +129,7 @@ void editor_register_fonts(Ref<Theme> p_theme) {
 	String custom_font_path = EditorSettings::get_singleton()->get("interface/editor/main_font");
 	Ref<FontData> CustomFont;
 	if (custom_font_path.length() > 0 && dir->file_exists(custom_font_path)) {
-		CustomFont.instance();
+		CustomFont.instantiate();
 		CustomFont->load_resource(custom_font_path, default_font_size);
 		CustomFont->set_antialiased(font_antialiased);
 		CustomFont->set_hinting(font_hinting);
@@ -143,7 +143,7 @@ void editor_register_fonts(Ref<Theme> p_theme) {
 	String custom_font_path_bold = EditorSettings::get_singleton()->get("interface/editor/main_font_bold");
 	Ref<FontData> CustomFontBold;
 	if (custom_font_path_bold.length() > 0 && dir->file_exists(custom_font_path_bold)) {
-		CustomFontBold.instance();
+		CustomFontBold.instantiate();
 		CustomFontBold->load_resource(custom_font_path_bold, default_font_size);
 		CustomFontBold->set_antialiased(font_antialiased);
 		CustomFontBold->set_hinting(font_hinting);
@@ -157,7 +157,7 @@ void editor_register_fonts(Ref<Theme> p_theme) {
 	String custom_font_path_source = EditorSettings::get_singleton()->get("interface/editor/code_font");
 	Ref<FontData> CustomFontSource;
 	if (custom_font_path_source.length() > 0 && dir->file_exists(custom_font_path_source)) {
-		CustomFontSource.instance();
+		CustomFontSource.instantiate();
 		CustomFontSource->load_resource(custom_font_path_source, default_font_size);
 		CustomFontSource->set_antialiased(font_antialiased);
 		CustomFontSource->set_hinting(font_hinting);
@@ -178,105 +178,105 @@ void editor_register_fonts(Ref<Theme> p_theme) {
 	/* Droid Sans */
 
 	Ref<FontData> DefaultFont;
-	DefaultFont.instance();
+	DefaultFont.instantiate();
 	DefaultFont->load_memory(_font_NotoSansUI_Regular, _font_NotoSansUI_Regular_size, "ttf", default_font_size);
 	DefaultFont->set_antialiased(font_antialiased);
 	DefaultFont->set_hinting(font_hinting);
 	DefaultFont->set_force_autohinter(true); //just looks better..i think?
 
 	Ref<FontData> DefaultFontBold;
-	DefaultFontBold.instance();
+	DefaultFontBold.instantiate();
 	DefaultFontBold->load_memory(_font_NotoSansUI_Bold, _font_NotoSansUI_Bold_size, "ttf", default_font_size);
 	DefaultFontBold->set_antialiased(font_antialiased);
 	DefaultFontBold->set_hinting(font_hinting);
 	DefaultFontBold->set_force_autohinter(true); // just looks better..i think?
 
 	Ref<FontData> FontFallback;
-	FontFallback.instance();
+	FontFallback.instantiate();
 	FontFallback->load_memory(_font_DroidSansFallback, _font_DroidSansFallback_size, "ttf", default_font_size);
 	FontFallback->set_antialiased(font_antialiased);
 	FontFallback->set_hinting(font_hinting);
 	FontFallback->set_force_autohinter(true); //just looks better..i think?
 
 	Ref<FontData> FontJapanese;
-	FontJapanese.instance();
+	FontJapanese.instantiate();
 	FontJapanese->load_memory(_font_DroidSansJapanese, _font_DroidSansJapanese_size, "ttf", default_font_size);
 	FontJapanese->set_antialiased(font_antialiased);
 	FontJapanese->set_hinting(font_hinting);
 	FontJapanese->set_force_autohinter(true); //just looks better..i think?
 
 	Ref<FontData> FontArabic;
-	FontArabic.instance();
+	FontArabic.instantiate();
 	FontArabic->load_memory(_font_NotoNaskhArabicUI_Regular, _font_NotoNaskhArabicUI_Regular_size, "ttf", default_font_size);
 	FontArabic->set_antialiased(font_antialiased);
 	FontArabic->set_hinting(font_hinting);
 	FontArabic->set_force_autohinter(true); //just looks better..i think?
 
 	Ref<FontData> FontBengali;
-	FontBengali.instance();
+	FontBengali.instantiate();
 	FontBengali->load_memory(_font_NotoSansBengali_Regular, _font_NotoSansBengali_Regular_size, "ttf", default_font_size);
 	FontBengali->set_antialiased(font_antialiased);
 	FontBengali->set_hinting(font_hinting);
 	FontBengali->set_force_autohinter(true); //just looks better..i think?
 
 	Ref<FontData> FontGeorgian;
-	FontGeorgian.instance();
+	FontGeorgian.instantiate();
 	FontGeorgian->load_memory(_font_NotoSansGeorgian_Regular, _font_NotoSansGeorgian_Regular_size, "ttf", default_font_size);
 	FontGeorgian->set_antialiased(font_antialiased);
 	FontGeorgian->set_hinting(font_hinting);
 	FontGeorgian->set_force_autohinter(true); //just looks better..i think?
 
 	Ref<FontData> FontHebrew;
-	FontHebrew.instance();
+	FontHebrew.instantiate();
 	FontHebrew->load_memory(_font_NotoSansHebrew_Regular, _font_NotoSansHebrew_Regular_size, "ttf", default_font_size);
 	FontHebrew->set_antialiased(font_antialiased);
 	FontHebrew->set_hinting(font_hinting);
 	FontHebrew->set_force_autohinter(true); //just looks better..i think?
 
 	Ref<FontData> FontMalayalam;
-	FontMalayalam.instance();
+	FontMalayalam.instantiate();
 	FontMalayalam->load_memory(_font_NotoSansMalayalamUI_Regular, _font_NotoSansMalayalamUI_Regular_size, "ttf", default_font_size);
 	FontMalayalam->set_antialiased(font_antialiased);
 	FontMalayalam->set_hinting(font_hinting);
 	FontMalayalam->set_force_autohinter(true); //just looks better..i think?
 
 	Ref<FontData> FontOriya;
-	FontOriya.instance();
+	FontOriya.instantiate();
 	FontOriya->load_memory(_font_NotoSansOriyaUI_Regular, _font_NotoSansOriyaUI_Regular_size, "ttf", default_font_size);
 	FontOriya->set_antialiased(font_antialiased);
 	FontOriya->set_hinting(font_hinting);
 	FontOriya->set_force_autohinter(true); //just looks better..i think?
 
 	Ref<FontData> FontSinhala;
-	FontSinhala.instance();
+	FontSinhala.instantiate();
 	FontSinhala->load_memory(_font_NotoSansSinhalaUI_Regular, _font_NotoSansSinhalaUI_Regular_size, "ttf", default_font_size);
 	FontSinhala->set_antialiased(font_antialiased);
 	FontSinhala->set_hinting(font_hinting);
 	FontSinhala->set_force_autohinter(true); //just looks better..i think?
 
 	Ref<FontData> FontTamil;
-	FontTamil.instance();
+	FontTamil.instantiate();
 	FontTamil->load_memory(_font_NotoSansTamilUI_Regular, _font_NotoSansTamilUI_Regular_size, "ttf", default_font_size);
 	FontTamil->set_antialiased(font_antialiased);
 	FontTamil->set_hinting(font_hinting);
 	FontTamil->set_force_autohinter(true); //just looks better..i think?
 
 	Ref<FontData> FontTelugu;
-	FontTelugu.instance();
+	FontTelugu.instantiate();
 	FontTelugu->load_memory(_font_NotoSansTeluguUI_Regular, _font_NotoSansTeluguUI_Regular_size, "ttf", default_font_size);
 	FontTelugu->set_antialiased(font_antialiased);
 	FontTelugu->set_hinting(font_hinting);
 	FontTelugu->set_force_autohinter(true); //just looks better..i think?
 
 	Ref<FontData> FontThai;
-	FontThai.instance();
+	FontThai.instantiate();
 	FontThai->load_memory(_font_NotoSansThaiUI_Regular, _font_NotoSansThaiUI_Regular_size, "ttf", default_font_size);
 	FontThai->set_antialiased(font_antialiased);
 	FontThai->set_hinting(font_hinting);
 	FontThai->set_force_autohinter(true); //just looks better..i think?
 
 	Ref<FontData> FontHindi;
-	FontHindi.instance();
+	FontHindi.instantiate();
 	FontHindi->load_memory(_font_NotoSansDevanagariUI_Regular, _font_NotoSansDevanagariUI_Regular_size, "ttf", default_font_size);
 	FontHindi->set_antialiased(font_antialiased);
 	FontHindi->set_hinting(font_hinting);
@@ -285,7 +285,7 @@ void editor_register_fonts(Ref<Theme> p_theme) {
 	/* Hack */
 
 	Ref<FontData> dfmono;
-	dfmono.instance();
+	dfmono.instantiate();
 	dfmono->load_memory(_font_Hack_Regular, _font_Hack_Regular_size, "ttf", default_font_size);
 	dfmono->set_antialiased(font_antialiased);
 	dfmono->set_hinting(font_hinting);

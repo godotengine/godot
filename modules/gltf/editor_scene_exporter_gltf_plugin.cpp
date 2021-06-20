@@ -49,7 +49,7 @@ bool SceneExporterGLTFPlugin::has_main_screen() const {
 
 SceneExporterGLTFPlugin::SceneExporterGLTFPlugin(EditorNode *p_node) {
 	editor = p_node;
-	convert_gltf2.instance();
+	convert_gltf2.instantiate();
 	file_export_lib = memnew(EditorFileDialog);
 	editor->get_gui_base()->add_child(file_export_lib);
 	file_export_lib->connect("file_selected", callable_mp(this, &SceneExporterGLTFPlugin::_gltf2_dialog_action));

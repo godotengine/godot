@@ -67,9 +67,9 @@ void AudioEffectLimiterInstance::process(const AudioFrame *p_src_frames, AudioFr
 	}
 }
 
-Ref<AudioEffectInstance> AudioEffectLimiter::instance() {
+Ref<AudioEffectInstance> AudioEffectLimiter::instantiate() {
 	Ref<AudioEffectLimiterInstance> ins;
-	ins.instance();
+	ins.instantiate();
 	ins->base = Ref<AudioEffectLimiter>(this);
 
 	return ins;

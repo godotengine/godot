@@ -160,7 +160,7 @@ Ref<StandardMaterial3D> FBXMaterial::import_material(ImportState &state) {
 	const String p_fbx_current_directory = state.path;
 
 	Ref<StandardMaterial3D> spatial_material;
-	spatial_material.instance();
+	spatial_material.instantiate();
 
 	// read the material file
 	// is material two sided
@@ -223,7 +223,7 @@ Ref<StandardMaterial3D> FBXMaterial::import_material(ImportState &state) {
 			} else if (fbx_texture_data != nullptr && fbx_texture_data->Media() != nullptr && fbx_texture_data->Media()->IsEmbedded()) {
 				// This is an embedded texture. Extract it.
 				Ref<Image> image;
-				//image.instance(); // oooo double instance bug? why make Image::_png_blah call
+				//image.instantiate(); // oooo double instance bug? why make Image::_png_blah call
 
 				const String extension = texture_name.get_extension().to_upper();
 				if (extension == "PNG") {
@@ -256,7 +256,7 @@ Ref<StandardMaterial3D> FBXMaterial::import_material(ImportState &state) {
 				}
 
 				Ref<ImageTexture> image_texture;
-				image_texture.instance();
+				image_texture.instantiate();
 				image_texture->create_from_image(image);
 
 				texture = image_texture;
@@ -324,7 +324,7 @@ Ref<StandardMaterial3D> FBXMaterial::import_material(ImportState &state) {
 
 		if (spatial_material.is_null()) {
 			// Done here so if no data no material is created.
-			spatial_material.instance();
+			spatial_material.instantiate();
 		}
 
 		const FBXDocParser::TypedProperty<real_t> *real_value = dynamic_cast<const FBXDocParser::TypedProperty<real_t> *>(prop);

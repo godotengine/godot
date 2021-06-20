@@ -607,7 +607,7 @@ Ref<ArrayMesh> SurfaceTool::commit(const Ref<ArrayMesh> &p_existing, uint32_t p_
 	if (p_existing.is_valid()) {
 		mesh = p_existing;
 	} else {
-		mesh.instance();
+		mesh.instantiate();
 	}
 
 	int varr_len = vertex_array.size();

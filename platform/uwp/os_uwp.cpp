@@ -562,7 +562,7 @@ void OS_UWP::process_key_events() {
 		KeyEvent &kev = key_event_buffer[i];
 
 		Ref<InputEventKey> key_event;
-		key_event.instance();
+		key_event.instantiate();
 		key_event->set_alt_pressed(kev.alt);
 		key_event->set_shift_pressed(kev.shift);
 		key_event->set_ctrl_pressed(kev.control);

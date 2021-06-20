@@ -245,7 +245,7 @@ int PacketPeerMbedDTLS::get_max_packet_size() const {
 }
 
 PacketPeerMbedDTLS::PacketPeerMbedDTLS() {
-	ssl_ctx.instance();
+	ssl_ctx.instantiate();
 }
 
 PacketPeerMbedDTLS::~PacketPeerMbedDTLS() {

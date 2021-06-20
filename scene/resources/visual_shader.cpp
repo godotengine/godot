@@ -617,7 +617,7 @@ void VisualShader::replace_node(Type p_type, int p_id, const StringName &p_new_c
 	if (g->nodes[p_id].node->get_class_name() == p_new_class) {
 		return;
 	}
-	VisualShaderNode *vsn = Object::cast_to<VisualShaderNode>(ClassDB::instance(p_new_class));
+	VisualShaderNode *vsn = Object::cast_to<VisualShaderNode>(ClassDB::instantiate(p_new_class));
 	vsn->connect("changed", callable_mp(this, &VisualShader::_queue_update));
 	g->nodes[p_id].node = Ref<VisualShaderNode>(vsn);
 
@@ -2020,13 +2020,13 @@ VisualShader::VisualShader() {
 	for (int i = 0; i < TYPE_MAX; i++) {
 		if (i > (int)TYPE_LIGHT && i < (int)TYPE_SKY) {
 			Ref<VisualShaderNodeParticleOutput> output;
-			output.instance();
+			output.instantiate();
 			output->shader_type = Type(i);
 			output->shader_mode = shader_mode;
 			graph[i].nodes[NODE_ID_OUTPUT].node = output;
 		} else {
 			Ref<VisualShaderNodeOutput> output;
-			output.instance();
+			output.instantiate();
 			output->shader_type = Type(i);
 			output->shader_mode = shader_mode;
 			graph[i].nodes[NODE_ID_OUTPUT].node = output;

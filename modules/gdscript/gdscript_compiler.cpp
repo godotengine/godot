@@ -2587,7 +2587,7 @@ void GDScriptCompiler::_make_scripts(GDScript *p_script, const GDScriptParser::C
 			if (orphan_subclass.is_valid()) {
 				subclass = orphan_subclass;
 			} else {
-				subclass.instance();
+				subclass.instantiate();
 			}
 		}
 

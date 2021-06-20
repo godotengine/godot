@@ -9,7 +9,7 @@
 	<tutorials>
 	</tutorials>
 	<methods>
-		<method name="can_instance" qualifiers="const">
+		<method name="can_instantiate" qualifiers="const">
 			<return type="bool">
 			</return>
 			<argument index="0" name="class" type="StringName">
@@ -187,7 +187,7 @@
 				Returns the parent class of [code]class[/code].
 			</description>
 		</method>
-		<method name="instance" qualifiers="const">
+		<method name="instantiate" qualifiers="const">
 			<return type="Variant">
 			</return>
 			<argument index="0" name="class" type="StringName">

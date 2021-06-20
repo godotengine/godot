@@ -1461,7 +1461,7 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 		String project_splash_path = ProjectSettings::get_singleton()->get("application/boot_splash/image");
 
 		if (!project_splash_path.is_empty()) {
-			splash_image.instance();
+			splash_image.instantiate();
 			print_verbose("Loading splash image: " + project_splash_path);
 			const Error err = ImageLoader::load_image(project_splash_path, splash_image);
 			if (err) {
@@ -1501,7 +1501,7 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 		}
 
 		print_verbose("Creating splash background color image.");
-		splash_bg_color_image.instance();
+		splash_bg_color_image.instantiate();
 		splash_bg_color_image->create(splash_image->get_width(), splash_image->get_height(), false, splash_image->get_format());
 		splash_bg_color_image->fill(bg_color);
 
@@ -1512,9 +1512,9 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 	void load_icon_refs(const Ref<EditorExportPreset> &p_preset, Ref<Image> &icon, Ref<Image> &foreground, Ref<Image> &background) {
 		String project_icon_path = ProjectSettings::get_singleton()->get("application/config/icon");
 
-		icon.instance();
-		foreground.instance();
-		background.instance();
+		icon.instantiate();
+		foreground.instantiate();
+		background.instantiate();
 
 		// Regular icon: user selection -> project icon -> default.
 		String path = static_cast<String>(p_preset->get(launcher_icon_option)).strip_edges();
@@ -2941,11 +2941,11 @@ public:
 
 	EditorExportPlatformAndroid() {
 		Ref<Image> img = memnew(Image(_android_logo));
-		logo.instance();
+		logo.instantiate();
 		logo->create_from_image(img);
 
 		img = Ref<Image>(memnew(Image(_android_run_icon)));
-		run_icon.instance();
+		run_icon.instantiate();
 		run_icon->create_from_image(img);
 
 		devices_changed.set();

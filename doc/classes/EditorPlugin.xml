@@ -404,7 +404,7 @@
 			</argument>
 			<description>
 				Adds a custom type, which will appear in the list of nodes or resources. An icon can be optionally passed.
-				When given node or resource is selected, the base type will be instanced (e.g. "Node3D", "Control", "Resource"), then the script will be loaded and set to this object.
+				When given node or resource is selected, the base type will be instantiated (e.g. "Node3D", "Control", "Resource"), then the script will be loaded and set to this object.
 				You can use the virtual method [method _handles] to check if your custom object is being edited by checking the script or using the [code]is[/code] keyword.
 				During run-time, this will be a simple object with a script so this function does not need to be called then.
 			</description>
