@@ -1274,13 +1274,13 @@ int PopupMenu::get_item_count() const {
 }
 
 bool PopupMenu::activate_item_by_event(const Ref<InputEvent> &p_event, bool p_for_global_only) {
-	uint32_t code = 0;
+	Key code = KEY_NONE;
 	Ref<InputEventKey> k = p_event;
 
 	if (k.is_valid()) {
 		code = k->get_keycode();
-		if (code == 0) {
-			code = k->get_unicode();
+		if (code == KEY_NONE) {
+			code = (Key)k->get_unicode();
 		}
 		if (k->is_ctrl_pressed()) {
 			code |= KEY_MASK_CTRL;

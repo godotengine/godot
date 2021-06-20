@@ -190,6 +190,8 @@ void EditorQuickOpen::_sbox_input(const Ref<InputEvent> &p_ie) {
 					current->set_as_cursor(0);
 				}
 			} break;
+			default:
+				break;
 		}
 	}
 }

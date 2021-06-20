@@ -5759,6 +5759,8 @@ void AnimationTrackEditor::_pick_track_filter_input(const Ref<InputEvent> &p_ie)
 				pick_track->get_scene_tree()->get_scene_tree()->call("_gui_input", k);
 				pick_track->get_filter_line_edit()->accept_event();
 			} break;
+			default:
+				break;
 		}
 	}
 }

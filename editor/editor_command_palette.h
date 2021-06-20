@@ -90,6 +90,6 @@ public:
 	static EditorCommandPalette *get_singleton();
 };
 
-Ref<Shortcut> ED_SHORTCUT_AND_COMMAND(const String &p_path, const String &p_name, uint32_t p_keycode = 0, String p_command = "");
+Ref<Shortcut> ED_SHORTCUT_AND_COMMAND(const String &p_path, const String &p_name, Key p_keycode = KEY_NONE, String p_command = "");
 
 #endif //EDITOR_COMMAND_PALETTE_H

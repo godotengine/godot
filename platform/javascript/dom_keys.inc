@@ -31,7 +31,7 @@
 #include "core/os/keyboard.h"
 
 // See https://w3c.github.io/uievents-code/#code-value-tables
-int dom_code2godot_scancode(EM_UTF8 const p_code[32], EM_UTF8 const p_key[32], bool p_physical) {
+Key dom_code2godot_scancode(EM_UTF8 const p_code[32], EM_UTF8 const p_key[32], bool p_physical) {
 #define DOM2GODOT(p_str, p_godot_code)                                         \
 	if (memcmp((const void *)p_str, (void *)p_code, strlen(p_str) + 1) == 0) { \
 		return KEY_##p_godot_code;                                             \
@@ -79,7 +79,7 @@ int dom_code2godot_scancode(EM_UTF8 const p_code[32], EM_UTF8 const p_key[32], b
 			if (b0 > 0x60 && b0 < 0x7B) { // Lowercase ASCII.
 				b0 -= 32;
 			}
-			return b0;
+			return (Key)b0;
 		}
 
 #define _U_2BYTES_MASK 0xE0
@@ -88,11 +88,11 @@ int dom_code2godot_scancode(EM_UTF8 const p_code[32], EM_UTF8 const p_key[32], b
 		if (b2 == 0 && (b0 & _U_2BYTES_MASK) == _U_2BYTES) { // 2-bytes utf8, only known latin.
 			uint32_t key = ((b0 & ~_U_2BYTES_MASK) << 6) | (b1 & 0x3F);
 			if (key >= 0xA0 && key <= 0xDF) {
-				return key;
+				return (Key)key;
 			}
 			if (key >= 0xE0 && key <= 0xFF) { // Lowercase known latin.
 				key -= 0x20;
-				return key;
+				return (Key)key;
 			}
 		}
 #undef _U_2BYTES_MASK
