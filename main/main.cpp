@@ -1656,9 +1656,10 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 	RenderingServer::get_singleton()->set_default_clear_color(clear);
 
 	if (show_logo) { //boot logo!
-		String boot_logo_path = GLOBAL_DEF("application/boot_splash/image", String());
-		bool boot_logo_scale = GLOBAL_DEF("application/boot_splash/fullsize", true);
-		bool boot_logo_filter = GLOBAL_DEF("application/boot_splash/use_filter", true);
+		const bool boot_logo_image = GLOBAL_DEF("application/boot_splash/show_image", true);
+		const String boot_logo_path = GLOBAL_DEF("application/boot_splash/image", String());
+		const bool boot_logo_scale = GLOBAL_DEF("application/boot_splash/fullsize", true);
+		const bool boot_logo_filter = GLOBAL_DEF("application/boot_splash/use_filter", true);
 		ProjectSettings::get_singleton()->set_custom_property_info("application/boot_splash/image",
 				PropertyInfo(Variant::STRING,
 						"application/boot_splash/image",
@@ -1666,14 +1667,19 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 
 		Ref<Image> boot_logo;
 
-		boot_logo_path = boot_logo_path.strip_edges();
-
-		if (boot_logo_path != String()) {
-			boot_logo.instance();
-			Error load_err = ImageLoader::load_image(boot_logo_path, boot_logo);
-			if (load_err) {
-				ERR_PRINT("Non-existing or invalid boot splash at '" + boot_logo_path + "'. Loading default splash.");
+		if (boot_logo_image) {
+			if (boot_logo_path != String()) {
+				boot_logo.instance();
+				Error load_err = ImageLoader::load_image(boot_logo_path, boot_logo);
+				if (load_err) {
+					ERR_PRINT("Non-existing or invalid boot splash at '" + boot_logo_path + "'. Loading default splash.");
+				}
 			}
+		} else {
+			// Create a 1×1 transparent image. This will effectively hide the splash image.
+			boot_logo.instance();
+			boot_logo->create(1, 1, false, Image::FORMAT_RGBA8);
+			boot_logo->set_pixel(0, 0, Color(0, 0, 0, 0));
 		}
 
 #if defined(TOOLS_ENABLED) && !defined(NO_EDITOR_SPLASH)
