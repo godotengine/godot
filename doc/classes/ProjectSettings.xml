@@ -266,10 +266,12 @@
 			Icon set in [code].ico[/code] format used on Windows to set the game's icon. This is done automatically on start by calling [method DisplayServer.set_native_icon].
 		</member>
 		<member name="application/run/disable_stderr" type="bool" setter="" getter="" default="false">
-			If [code]true[/code], disables printing to standard error in an exported build. If [code]true[/code], this also hides error and warning messages printed by [method @GlobalScope.push_error] and [method @GlobalScope.push_warning].
+			If [code]true[/code], disables printing to standard error. If [code]true[/code], this also hides error and warning messages printed by [method @GlobalScope.push_error] and [method @GlobalScope.push_warning]. See also [member application/run/disable_stdout].
+			Changes to this setting will only be applied upon restarting the application.
 		</member>
 		<member name="application/run/disable_stdout" type="bool" setter="" getter="" default="false">
-			If [code]true[/code], disables printing to standard output in an exported build.
+			If [code]true[/code], disables printing to standard output. This is equivalent to starting the editor or project with the [code]--quiet[/code] command line argument. See also [member application/run/disable_stderr].
+			Changes to this setting will only be applied upon restarting the application.
 		</member>
 		<member name="application/run/flush_stdout_on_print" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], flushes the standard output stream every time a line is printed. This affects both terminal logging and file logging.
