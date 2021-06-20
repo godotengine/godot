@@ -1,0 +1,29 @@
+#!/usr/bin/env python
+
+Import("env")
+Import("env_modules")
+
+env_bc7e = env_modules.Clone()
+thirdparty_dir = "#thirdparty/bc7e/"
+
+thirdparty_sources = [
+    "bc7decomp.cpp",
+    "bc7decomp_ref.cpp",
+    "bc7enc.cpp",
+    "ert.cpp",
+    "rdo_bc_encoder.cpp",
+    "rgbcx.cpp",
+    "utils.cpp",
+    "lodepng.cpp",
+]
+
+thirdparty_sources = [thirdparty_dir + file for file in thirdparty_sources]
+env_bc7e.Prepend(CPPPATH=[thirdparty_dir])
+
+env_thirdparty = env_bc7e.Clone()
+
+env_thirdparty.disable_warnings()
+env_thirdparty.add_source_files(env.modules_sources, thirdparty_sources)
+
+# Godot source files
+env_bc7e.add_source_files(env.modules_sources, "*.cpp")

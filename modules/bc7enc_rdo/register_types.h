@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  image_compress_cvtt.h                                                */
+/*  register_types.h                                                     */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,12 +28,15 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef IMAGE_COMPRESS_CVTT_H
-#define IMAGE_COMPRESS_CVTT_H
+#ifndef BC7E_REGISTER_TYPES_H
+#define BC7E_REGISTER_TYPES_H
 
-#include "core/io/image.h"
+#ifdef TOOLS_ENABLED
+#include "modules/register_module_types.h"
 
-void image_compress_cvtt(Image *p_image, float p_lossy_quality, Image::UsedChannels p_channels);
-void image_decompress_cvtt(Image *p_image);
+void initialize_bc7enc_rdo_module(ModuleInitializationLevel p_level);
+void uninitialize_bc7enc_rdo_module(ModuleInitializationLevel p_level);
 
-#endif // IMAGE_COMPRESS_CVTT_H
+#endif // TOOLS_ENABLED
+
+#endif // BC7E_REGISTER_TYPES_H

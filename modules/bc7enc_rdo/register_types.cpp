@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  register_types.h                                                     */
+/*  register_types.cpp                                                   */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,16 +28,26 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef CVTT_REGISTER_TYPES_H
-#define CVTT_REGISTER_TYPES_H
+#include "register_types.h"
 
 #ifdef TOOLS_ENABLED
 
-#include "modules/register_module_types.h"
+#include "core/io/image.h"
+#include "image_compress_bc7e.h"
+// zlib symbols required
+#include "thirdparty/tinyexr/tinyexr.h"
 
-void initialize_cvtt_module(ModuleInitializationLevel p_level);
-void uninitialize_cvtt_module(ModuleInitializationLevel p_level);
+void initialize_bc7enc_rdo_module(ModuleInitializationLevel p_level) {
+	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
+		return;
+	}
+	Image::set_compress_bptc_func(image_compress_bc7e);
+}
 
-#endif // TOOLS_ENABLED
+void uninitialize_bc7enc_rdo_module(ModuleInitializationLevel p_level) {
+	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
+		return;
+	}
+}
 
-#endif // CVTT_REGISTER_TYPES_H
+#endif
