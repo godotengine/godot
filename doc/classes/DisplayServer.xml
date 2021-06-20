@@ -436,7 +436,7 @@
 			</description>
 		</method>
 		<method name="mouse_get_button_state" qualifiers="const">
-			<return type="int">
+			<return type="int" enum="MouseButton">
 			</return>
 			<description>
 			</description>

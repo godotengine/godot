@@ -162,7 +162,7 @@ class DisplayServerX11 : public DisplayServer {
 	Point2i last_click_pos;
 	uint64_t last_click_ms;
 	int last_click_button_index;
-	uint32_t last_button_state;
+	MouseButton last_button_state = MOUSE_BUTTON_NONE;
 	bool app_focused = false;
 	uint64_t time_since_no_focus = 0;
 
@@ -187,7 +187,7 @@ class DisplayServerX11 : public DisplayServer {
 
 	bool _refresh_device_info();
 
-	unsigned int _get_mouse_button_state(unsigned int p_x11_button, int p_x11_type);
+	MouseButton _get_mouse_button_state(MouseButton p_x11_button, int p_x11_type);
 	void _get_key_modifier_state(unsigned int p_x11_state, Ref<InputEventWithModifiers> state);
 	void _flush_mouse_motion();
 
@@ -279,7 +279,7 @@ public:
 	virtual void mouse_warp_to_position(const Point2i &p_to);
 	virtual Point2i mouse_get_position() const;
 	virtual Point2i mouse_get_absolute_position() const;
-	virtual int mouse_get_button_state() const;
+	virtual MouseButton mouse_get_button_state() const;
 
 	virtual void clipboard_set(const String &p_text);
 	virtual String clipboard_get() const;

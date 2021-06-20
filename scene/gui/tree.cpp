@@ -3161,6 +3161,8 @@ void Tree::_gui_input(Ref<InputEvent> p_event) {
 				}
 
 			} break;
+			default:
+				break;
 		}
 	}
 

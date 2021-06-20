@@ -126,8 +126,6 @@ void OS_UWP::set_keep_screen_on(bool p_enabled) {
 }
 
 void OS_UWP::initialize_core() {
-	last_button_state = 0;
-
 	//RedirectIOToConsole();
 
 	FileAccess::make_default<FileAccessWindows>(FileAccess::ACCESS_RESOURCES);
@@ -423,7 +421,7 @@ Point2 OS_UWP::get_mouse_position() const {
 	return Point2(old_x, old_y);
 }
 
-int OS_UWP::get_mouse_button_state() const {
+MouseButton OS_UWP::get_mouse_button_state() const {
 	return last_button_state;
 }
 

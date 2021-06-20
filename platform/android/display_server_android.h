@@ -68,7 +68,7 @@ private:
 	bool control_mem = false;
 	bool meta_mem = false;
 
-	int buttons_state;
+	MouseButton buttons_state = MOUSE_BUTTON_NONE;
 
 	// https://developer.android.com/reference/android/view/PointerIcon
 	// mapping between Godot's cursor shape to Android's'
@@ -120,11 +120,11 @@ private:
 
 	void _set_key_modifier_state(Ref<InputEventWithModifiers> ev);
 
-	static int _button_index_from_mask(int button_mask);
+	static MouseButton _button_index_from_mask(MouseButton button_mask);
 
-	static int _android_button_mask_to_godot_button_mask(int android_button_mask);
+	static MouseButton _android_button_mask_to_godot_button_mask(int android_button_mask);
 
-	void _wheel_button_click(int event_buttons_mask, const Ref<InputEventMouseButton> &ev, int wheel_button, float factor);
+	void _wheel_button_click(MouseButton event_buttons_mask, const Ref<InputEventMouseButton> &ev, MouseButton wheel_button, float factor);
 
 public:
 	static DisplayServerAndroid *get_singleton();
@@ -219,7 +219,7 @@ public:
 	void notify_surface_changed(int p_width, int p_height);
 
 	virtual Point2i mouse_get_position() const;
-	virtual int mouse_get_button_state() const;
+	virtual MouseButton mouse_get_button_state() const;
 
 	DisplayServerAndroid(const String &p_rendering_driver, WindowMode p_mode, uint32_t p_flags, const Vector2i &p_resolution, Error &r_error);
 	~DisplayServerAndroid();

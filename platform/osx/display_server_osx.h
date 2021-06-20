@@ -173,7 +173,7 @@ public:
 
 	MouseMode mouse_mode;
 	Point2i last_mouse_pos;
-	uint32_t last_button_state;
+	MouseButton last_button_state = MOUSE_BUTTON_NONE;
 
 	bool window_focused;
 	bool drop_events;
@@ -217,7 +217,7 @@ public:
 	virtual void mouse_warp_to_position(const Point2i &p_to) override;
 	virtual Point2i mouse_get_position() const override;
 	virtual Point2i mouse_get_absolute_position() const override;
-	virtual int mouse_get_button_state() const override;
+	virtual MouseButton mouse_get_button_state() const override;
 
 	virtual void clipboard_set(const String &p_text) override;
 	virtual String clipboard_get() const override;

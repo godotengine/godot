@@ -161,7 +161,7 @@ Point2i DisplayServerWindows::mouse_get_position() const {
 	//return Point2(old_x, old_y);
 }
 
-int DisplayServerWindows::mouse_get_button_state() const {
+MouseButton DisplayServerWindows::mouse_get_button_state() const {
 	return last_button_state;
 }
 
@@ -2391,41 +2391,41 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 			switch (uMsg) {
 				case WM_LBUTTONDOWN: {
 					mb->set_pressed(true);
-					mb->set_button_index(1);
+					mb->set_button_index(MOUSE_BUTTON_LEFT);
 				} break;
 				case WM_LBUTTONUP: {
 					mb->set_pressed(false);
-					mb->set_button_index(1);
+					mb->set_button_index(MOUSE_BUTTON_LEFT);
 				} break;
 				case WM_MBUTTONDOWN: {
 					mb->set_pressed(true);
-					mb->set_button_index(3);
+					mb->set_button_index(MOUSE_BUTTON_MIDDLE);
 				} break;
 				case WM_MBUTTONUP: {
 					mb->set_pressed(false);
-					mb->set_button_index(3);
+					mb->set_button_index(MOUSE_BUTTON_MIDDLE);
 				} break;
 				case WM_RBUTTONDOWN: {
 					mb->set_pressed(true);
-					mb->set_button_index(2);
+					mb->set_button_index(MOUSE_BUTTON_RIGHT);
 				} break;
 				case WM_RBUTTONUP: {
 					mb->set_pressed(false);
-					mb->set_button_index(2);
+					mb->set_button_index(MOUSE_BUTTON_RIGHT);
 				} break;
 				case WM_LBUTTONDBLCLK: {
 					mb->set_pressed(true);
-					mb->set_button_index(1);
+					mb->set_button_index(MOUSE_BUTTON_LEFT);
 					mb->set_double_click(true);
 				} break;
 				case WM_RBUTTONDBLCLK: {
 					mb->set_pressed(true);
-					mb->set_button_index(2);
+					mb->set_button_index(MOUSE_BUTTON_RIGHT);
 					mb->set_double_click(true);
 				} break;
 				case WM_MBUTTONDBLCLK: {
 					mb->set_pressed(true);
-					mb->set_button_index(3);
+					mb->set_button_index(MOUSE_BUTTON_MIDDLE);
 					mb->set_double_click(true);
 				} break;
 				case WM_MOUSEWHEEL: {
@@ -2492,9 +2492,9 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 			mb->set_alt_pressed(alt_mem);
 			//mb->is_alt_pressed()=(wParam&MK_MENU)!=0;
 			if (mb->is_pressed()) {
-				last_button_state |= (1 << (mb->get_button_index() - 1));
+				last_button_state |= MouseButton(1 << (mb->get_button_index() - 1));
 			} else {
-				last_button_state &= ~(1 << (mb->get_button_index() - 1));
+				last_button_state &= (MouseButton) ~(1 << (mb->get_button_index() - 1));
 			}
 			mb->set_button_mask(last_button_state);
 
@@ -2534,7 +2534,7 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 				//send release for mouse wheel
 				Ref<InputEventMouseButton> mbd = mb->duplicate();
 				mbd->set_window_id(window_id);
-				last_button_state &= ~(1 << (mbd->get_button_index() - 1));
+				last_button_state &= (MouseButton) ~(1 << (mbd->get_button_index() - 1));
 				mbd->set_button_mask(last_button_state);
 				mbd->set_pressed(false);
 				Input::get_singleton()->accumulate_input_event(mbd);

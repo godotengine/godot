@@ -31,6 +31,7 @@
 #ifndef INPUT_EVENT_H
 #define INPUT_EVENT_H
 
+#include "core/input/input_enums.h"
 #include "core/io/resource.h"
 #include "core/math/transform_2d.h"
 #include "core/string/ustring.h"
@@ -40,72 +41,6 @@
  * Input Event classes. These are used in the main loop.
  * The events are pretty obvious.
  */
-
-enum MouseButton {
-	MOUSE_BUTTON_LEFT = 1,
-	MOUSE_BUTTON_RIGHT = 2,
-	MOUSE_BUTTON_MIDDLE = 3,
-	MOUSE_BUTTON_WHEEL_UP = 4,
-	MOUSE_BUTTON_WHEEL_DOWN = 5,
-	MOUSE_BUTTON_WHEEL_LEFT = 6,
-	MOUSE_BUTTON_WHEEL_RIGHT = 7,
-	MOUSE_BUTTON_XBUTTON1 = 8,
-	MOUSE_BUTTON_XBUTTON2 = 9,
-	MOUSE_BUTTON_MASK_LEFT = (1 << (MOUSE_BUTTON_LEFT - 1)),
-	MOUSE_BUTTON_MASK_RIGHT = (1 << (MOUSE_BUTTON_RIGHT - 1)),
-	MOUSE_BUTTON_MASK_MIDDLE = (1 << (MOUSE_BUTTON_MIDDLE - 1)),
-	MOUSE_BUTTON_MASK_XBUTTON1 = (1 << (MOUSE_BUTTON_XBUTTON1 - 1)),
-	MOUSE_BUTTON_MASK_XBUTTON2 = (1 << (MOUSE_BUTTON_XBUTTON2 - 1))
-};
-
-enum JoyButton {
-	JOY_BUTTON_INVALID = -1,
-	JOY_BUTTON_A = 0,
-	JOY_BUTTON_B = 1,
-	JOY_BUTTON_X = 2,
-	JOY_BUTTON_Y = 3,
-	JOY_BUTTON_BACK = 4,
-	JOY_BUTTON_GUIDE = 5,
-	JOY_BUTTON_START = 6,
-	JOY_BUTTON_LEFT_STICK = 7,
-	JOY_BUTTON_RIGHT_STICK = 8,
-	JOY_BUTTON_LEFT_SHOULDER = 9,
-	JOY_BUTTON_RIGHT_SHOULDER = 10,
-	JOY_BUTTON_DPAD_UP = 11,
-	JOY_BUTTON_DPAD_DOWN = 12,
-	JOY_BUTTON_DPAD_LEFT = 13,
-	JOY_BUTTON_DPAD_RIGHT = 14,
-	JOY_BUTTON_MISC1 = 15,
-	JOY_BUTTON_PADDLE1 = 16,
-	JOY_BUTTON_PADDLE2 = 17,
-	JOY_BUTTON_PADDLE3 = 18,
-	JOY_BUTTON_PADDLE4 = 19,
-	JOY_BUTTON_TOUCHPAD = 20,
-	JOY_BUTTON_SDL_MAX = 21,
-	JOY_BUTTON_MAX = 36, // Android supports up to 36 buttons.
-};
-
-enum JoyAxis {
-	JOY_AXIS_INVALID = -1,
-	JOY_AXIS_LEFT_X = 0,
-	JOY_AXIS_LEFT_Y = 1,
-	JOY_AXIS_RIGHT_X = 2,
-	JOY_AXIS_RIGHT_Y = 3,
-	JOY_AXIS_TRIGGER_LEFT = 4,
-	JOY_AXIS_TRIGGER_RIGHT = 5,
-	JOY_AXIS_SDL_MAX = 6,
-	JOY_AXIS_MAX = 10, // OpenVR supports up to 5 Joysticks making a total of 10 axes.
-};
-
-enum MIDIMessage {
-	MIDI_MESSAGE_NOTE_OFF = 0x8,
-	MIDI_MESSAGE_NOTE_ON = 0x9,
-	MIDI_MESSAGE_AFTERTOUCH = 0xA,
-	MIDI_MESSAGE_CONTROL_CHANGE = 0xB,
-	MIDI_MESSAGE_PROGRAM_CHANGE = 0xC,
-	MIDI_MESSAGE_CHANNEL_PRESSURE = 0xD,
-	MIDI_MESSAGE_PITCH_BEND = 0xE,
-};
 
 /**
  * Input Modifier Status
@@ -295,7 +230,7 @@ class InputEventMouseButton : public InputEventMouse {
 	GDCLASS(InputEventMouseButton, InputEventMouse);
 
 	float factor = 1;
-	int button_index = 0;
+	MouseButton button_index = MOUSE_BUTTON_NONE;
 	bool pressed = false; //otherwise released
 	bool double_click = false; //last even less than double click time
 
@@ -306,8 +241,8 @@ public:
 	void set_factor(float p_factor);
 	float get_factor() const;
 
-	void set_button_index(int p_index);
-	int get_button_index() const;
+	void set_button_index(MouseButton p_index);
+	MouseButton get_button_index() const;
 
 	void set_pressed(bool p_pressed);
 	virtual bool is_pressed() const override;
@@ -362,15 +297,15 @@ public:
 
 class InputEventJoypadMotion : public InputEvent {
 	GDCLASS(InputEventJoypadMotion, InputEvent);
-	int axis = 0; ///< Joypad axis
+	JoyAxis axis = (JoyAxis)0; ///< Joypad axis
 	float axis_value = 0; ///< -1 to 1
 
 protected:
 	static void _bind_methods();
 
 public:
-	void set_axis(int p_axis);
-	int get_axis() const;
+	void set_axis(JoyAxis p_axis);
+	JoyAxis get_axis() const;
 
 	void set_axis_value(float p_value);
 	float get_axis_value() const;
@@ -390,15 +325,15 @@ public:
 class InputEventJoypadButton : public InputEvent {
 	GDCLASS(InputEventJoypadButton, InputEvent);
 
-	int button_index = 0;
+	JoyButton button_index = (JoyButton)0;
 	bool pressed = false;
 	float pressure = 0; //0 to 1
 protected:
 	static void _bind_methods();
 
 public:
-	void set_button_index(int p_index);
-	int get_button_index() const;
+	void set_button_index(JoyButton p_index);
+	JoyButton get_button_index() const;
 
 	void set_pressed(bool p_pressed);
 	virtual bool is_pressed() const override;
@@ -414,7 +349,7 @@ public:
 	virtual String as_text() const override;
 	virtual String to_string() override;
 
-	static Ref<InputEventJoypadButton> create_reference(int p_btn_index);
+	static Ref<InputEventJoypadButton> create_reference(JoyButton p_btn_index);
 
 	InputEventJoypadButton() {}
 };
@@ -561,7 +496,7 @@ class InputEventMIDI : public InputEvent {
 	GDCLASS(InputEventMIDI, InputEvent);
 
 	int channel = 0;
-	int message = 0;
+	MIDIMessage message = MIDI_MESSAGE_NONE;
 	int pitch = 0;
 	int velocity = 0;
 	int instrument = 0;
@@ -576,8 +511,8 @@ public:
 	void set_channel(const int p_channel);
 	int get_channel() const;
 
-	void set_message(const int p_message);
-	int get_message() const;
+	void set_message(const MIDIMessage p_message);
+	MIDIMessage get_message() const;
 
 	void set_pitch(const int p_pitch);
 	int get_pitch() const;

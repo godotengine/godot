@@ -248,6 +248,8 @@ void CodeEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 					}
 					update();
 				} break;
+				default:
+					break;
 			}
 			return;
 		}
