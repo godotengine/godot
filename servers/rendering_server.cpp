@@ -412,26 +412,40 @@ Error RenderingServer::_surface_set_data(Array p_arrays, uint32_t p_format, uint
 			} break;
 
 			case RS::ARRAY_TANGENT: {
-				ERR_FAIL_COND_V(p_arrays[ai].get_type() != Variant::PACKED_FLOAT32_ARRAY, ERR_INVALID_PARAMETER);
+				Variant::Type type = p_arrays[ai].get_type();
+				ERR_FAIL_COND_V(type != Variant::PACKED_FLOAT32_ARRAY && type != Variant::PACKED_FLOAT64_ARRAY, ERR_INVALID_PARAMETER);
+				if (type == Variant::PACKED_FLOAT32_ARRAY) {
+					Vector<float> array = p_arrays[ai];
+					ERR_FAIL_COND_V(array.size() != p_vertex_array_len * 4, ERR_INVALID_PARAMETER);
+					const float *src = array.ptr();
 
-				Vector<real_t> array = p_arrays[ai];
+					for (int i = 0; i < p_vertex_array_len; i++) {
+						uint32_t value = 0;
+						value |= CLAMP(int((src[i * 4 + 0] * 0.5 + 0.5) * 1023.0), 0, 1023);
+						value |= CLAMP(int((src[i * 4 + 1] * 0.5 + 0.5) * 1023.0), 0, 1023) << 10;
+						value |= CLAMP(int((src[i * 4 + 2] * 0.5 + 0.5) * 1023.0), 0, 1023) << 20;
+						if (src[i * 4 + 3] > 0) {
+							value |= 3 << 30;
+						}
 
-				ERR_FAIL_COND_V(array.size() != p_vertex_array_len * 4, ERR_INVALID_PARAMETER);
-
-				const real_t *src = array.ptr();
-
-				for (int i = 0; i < p_vertex_array_len; i++) {
-					uint32_t value = 0;
-					value |= CLAMP(int((src[i * 4 + 0] * 0.5 + 0.5) * 1023.0), 0, 1023);
-					value |= CLAMP(int((src[i * 4 + 1] * 0.5 + 0.5) * 1023.0), 0, 1023) << 10;
-					value |= CLAMP(int((src[i * 4 + 2] * 0.5 + 0.5) * 1023.0), 0, 1023) << 20;
-					if (src[i * 4 + 3] > 0) {
-						value |= 3 << 30;
+						memcpy(&vw[p_offsets[ai] + i * p_vertex_stride], &value, 4);
 					}
+				} else { // if (type == Variant::PACKED_FLOAT64_ARRAY)
+					Vector<double> array = p_arrays[ai];
+					ERR_FAIL_COND_V(array.size() != p_vertex_array_len * 4, ERR_INVALID_PARAMETER);
+					const double *src = array.ptr();
 
-					memcpy(&vw[p_offsets[ai] + i * p_vertex_stride], &value, 4);
+					for (int i = 0; i < p_vertex_array_len; i++) {
+						uint32_t value = 0;
+						value |= CLAMP(int((src[i * 4 + 0] * 0.5 + 0.5) * 1023.0), 0, 1023);
+						value |= CLAMP(int((src[i * 4 + 1] * 0.5 + 0.5) * 1023.0), 0, 1023) << 10;
+						value |= CLAMP(int((src[i * 4 + 2] * 0.5 + 0.5) * 1023.0), 0, 1023) << 20;
+						if (src[i * 4 + 3] > 0) {
+							value |= 3 << 30;
+						}
+						memcpy(&vw[p_offsets[ai] + i * p_vertex_stride], &value, 4);
+					}
 				}
-
 			} break;
 			case RS::ARRAY_COLOR: {
 				ERR_FAIL_COND_V(p_arrays[ai].get_type() != Variant::PACKED_COLOR_ARRAY, ERR_INVALID_PARAMETER);
@@ -543,27 +557,38 @@ Error RenderingServer::_surface_set_data(Array p_arrays, uint32_t p_format, uint
 
 			} break;
 			case RS::ARRAY_WEIGHTS: {
-				ERR_FAIL_COND_V(p_arrays[ai].get_type() != Variant::PACKED_FLOAT32_ARRAY, ERR_INVALID_PARAMETER);
-
+				Variant::Type type = p_arrays[ai].get_type();
+				ERR_FAIL_COND_V(type != Variant::PACKED_FLOAT32_ARRAY && type != Variant::PACKED_FLOAT64_ARRAY, ERR_INVALID_PARAMETER);
 				uint32_t bone_count = (p_format & ARRAY_FLAG_USE_8_BONE_WEIGHTS) ? 8 : 4;
+				if (type == Variant::PACKED_FLOAT32_ARRAY) {
+					Vector<float> array = p_arrays[ai];
+					ERR_FAIL_COND_V(array.size() != (int32_t)(p_vertex_array_len * bone_count), ERR_INVALID_PARAMETER);
+					const float *src = array.ptr();
+					{
+						uint16_t data[8];
+						for (int i = 0; i < p_vertex_array_len; i++) {
+							for (uint32_t j = 0; j < bone_count; j++) {
+								data[j] = CLAMP(src[i * bone_count + j] * 65535, 0, 65535);
+							}
 
-				Vector<real_t> array = p_arrays[ai];
-
-				ERR_FAIL_COND_V(array.size() != (int32_t)(p_vertex_array_len * bone_count), ERR_INVALID_PARAMETER);
-
-				const real_t *src = array.ptr();
-
-				{
-					uint16_t data[8];
-					for (int i = 0; i < p_vertex_array_len; i++) {
-						for (uint32_t j = 0; j < bone_count; j++) {
-							data[j] = CLAMP(src[i * bone_count + j] * 65535, 0, 65535);
+							memcpy(&sw[p_offsets[ai] + i * p_skin_stride], data, 2 * bone_count);
 						}
+					}
+				} else { // if (type == Variant::PACKED_FLOAT64_ARRAY)
+					Vector<double> array = p_arrays[ai];
+					ERR_FAIL_COND_V(array.size() != (int32_t)(p_vertex_array_len * bone_count), ERR_INVALID_PARAMETER);
+					const double *src = array.ptr();
+					{
+						uint16_t data[8];
+						for (int i = 0; i < p_vertex_array_len; i++) {
+							for (uint32_t j = 0; j < bone_count; j++) {
+								data[j] = CLAMP(src[i * bone_count + j] * 65535, 0, 65535);
+							}
 
-						memcpy(&sw[p_offsets[ai] + i * p_skin_stride], data, 2 * bone_count);
+							memcpy(&sw[p_offsets[ai] + i * p_skin_stride], data, 2 * bone_count);
+						}
 					}
 				}
-
 			} break;
 			case RS::ARRAY_BONES: {
 				ERR_FAIL_COND_V(p_arrays[ai].get_type() != Variant::PACKED_INT32_ARRAY && p_arrays[ai].get_type() != Variant::PACKED_FLOAT32_ARRAY, ERR_INVALID_PARAMETER);
