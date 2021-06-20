@@ -865,8 +865,10 @@ Error GLTFDocument::_encode_accessors(Ref<GLTFState> state) {
 		d["type"] = _get_accessor_type_name(accessor->type);
 		d["byteOffset"] = accessor->byte_offset;
 		d["normalized"] = accessor->normalized;
-		d["max"] = accessor->max;
-		d["min"] = accessor->min;
+		if (accessor->max.size() && accessor->min.size()) {
+			d["max"] = accessor->max;
+			d["min"] = accessor->min;
+		}
 		d["bufferView"] = accessor->buffer_view; //optional because it may be sparse...
 
 		// Dictionary s;
@@ -1689,18 +1691,12 @@ GLTFAccessorIndex GLTFDocument::_encode_accessor_as_weights(Ref<GLTFState> state
 
 	const int element_count = 4;
 
-	Vector<double> type_max;
-	type_max.resize(element_count);
-	Vector<double> type_min;
-	type_min.resize(element_count);
 	for (int i = 0; i < p_attribs.size(); i++) {
 		Color attrib = p_attribs[i];
-		attribs.write[(i * element_count) + 0] = Math::snapped(attrib.r, CMP_NORMALIZE_TOLERANCE);
-		attribs.write[(i * element_count) + 1] = Math::snapped(attrib.g, CMP_NORMALIZE_TOLERANCE);
-		attribs.write[(i * element_count) + 2] = Math::snapped(attrib.b, CMP_NORMALIZE_TOLERANCE);
-		attribs.write[(i * element_count) + 3] = Math::snapped(attrib.a, CMP_NORMALIZE_TOLERANCE);
-
-		_calc_accessor_min_max(i, element_count, type_max, attribs, type_min);
+		attribs.write[(i * element_count) + 0] = attrib.r;
+		attribs.write[(i * element_count) + 1] = attrib.g;
+		attribs.write[(i * element_count) + 2] = attrib.b;
+		attribs.write[(i * element_count) + 3] = attrib.a;
 	}
 
 	ERR_FAIL_COND_V(attribs.size() % element_count != 0, -1);
@@ -1712,8 +1708,6 @@ GLTFAccessorIndex GLTFDocument::_encode_accessor_as_weights(Ref<GLTFState> state
 	const GLTFDocument::GLTFType type = GLTFDocument::TYPE_VEC4;
 	const int component_type = GLTFDocument::COMPONENT_TYPE_FLOAT;
 
-	accessor->max = type_max;
-	accessor->min = type_min;
 	accessor->normalized = false;
 	accessor->count = p_attribs.size();
 	accessor->type = type;
@@ -2237,118 +2231,147 @@ Error GLTFDocument::_serialize_meshes(Ref<GLTFState> state) {
 					break;
 				}
 			}
-			{
-				const Array &a = array[Mesh::ARRAY_BONES];
-				const Vector<Vector3> &vertex_array = array[Mesh::ARRAY_VERTEX];
-				if ((a.size() / JOINT_GROUP_SIZE) == vertex_array.size()) {
-					const int ret_size = a.size() / JOINT_GROUP_SIZE;
-					Vector<Color> attribs;
-					attribs.resize(ret_size);
+			const Array &array_weights = array[Mesh::ARRAY_WEIGHTS];
+			const Array &array_bones = array[Mesh::ARRAY_BONES];
+			const Vector<Vector3> &vertex_array = array[Mesh::ARRAY_VERTEX];
+			if ((array_weights.size() / (JOINT_GROUP_SIZE * 2)) >= vertex_array.size()) {
+				int32_t vertex_count = vertex_array.size();
+				Vector<Color> weights_0;
+				weights_0.resize(vertex_count);
+				Vector<Color> weights_1;
+				weights_1.resize(vertex_count);
+				int32_t WEIGHT_8_COUNT = JOINT_GROUP_SIZE * 2;
+				const int ret_size = array_weights.size() / JOINT_GROUP_SIZE;
+				Vector<Color> attribs;
+				attribs.resize(ret_size);
+				Vector<Color> joints_0;
+				joints_0.resize(vertex_count);
+				Vector<Color> joints_1;
+				joints_1.resize(vertex_count);
+				for (int32_t vertex_i = 0; vertex_i < vertex_count; vertex_i++) {
+					Color weight_0;
+					Color weight_1;
+					for (int bone_i = 0; bone_i < WEIGHT_8_COUNT; bone_i++) {
+						weight_0.r = array_weights[vertex_i * WEIGHT_8_COUNT + bone_i];
+					}
 					{
-						for (int array_i = 0; array_i < attribs.size(); array_i++) {
-							int32_t joint_0 = a[(array_i * JOINT_GROUP_SIZE) + 0];
-							int32_t joint_1 = a[(array_i * JOINT_GROUP_SIZE) + 1];
-							int32_t joint_2 = a[(array_i * JOINT_GROUP_SIZE) + 2];
-							int32_t joint_3 = a[(array_i * JOINT_GROUP_SIZE) + 3];
-							attribs.write[array_i] = Color(joint_0, joint_1, joint_2, joint_3);
+						float total = 0.0;
+						for (int bone_i = 0; bone_i < JOINT_GROUP_SIZE; bone_i++) {
+							total += weight_0[bone_i];
+						}
+						for (int bone_i = 0; bone_i < JOINT_GROUP_SIZE; bone_i++) {
+							total += weight_1[bone_i];
+						}
+						if (total > 0.0) {
+							weight_0 /= Color(total, total, total, total);
+							weight_1 /= Color(total, total, total, total);
 						}
 					}
-					attributes["JOINTS_0"] = _encode_accessor_as_joints(state, attribs, true);
-				} else if ((a.size() / (JOINT_GROUP_SIZE * 2)) >= vertex_array.size()) {
-					int32_t vertex_count = vertex_array.size();
-					Vector<Color> joints_0;
-					joints_0.resize(vertex_count);
-					Vector<Color> joints_1;
-					joints_1.resize(vertex_count);
-					int32_t weights_8_count = JOINT_GROUP_SIZE * 2;
-					for (int32_t vertex_i = 0; vertex_i < vertex_count; vertex_i++) {
-						Color joint_0;
-						joint_0.r = a[vertex_i * weights_8_count + 0];
-						joint_0.g = a[vertex_i * weights_8_count + 1];
-						joint_0.b = a[vertex_i * weights_8_count + 2];
-						joint_0.a = a[vertex_i * weights_8_count + 3];
-						joints_0.write[vertex_i] = joint_0;
-						Color joint_1;
-						joint_1.r = a[vertex_i * weights_8_count + 4];
-						joint_1.g = a[vertex_i * weights_8_count + 5];
-						joint_1.b = a[vertex_i * weights_8_count + 6];
-						joint_1.a = a[vertex_i * weights_8_count + 7];
-						joints_1.write[vertex_i] = joint_1;
+					Set<BoneId> set_bones;
+					{
+						Color joint = { 0.0f, 0.0f, 0.0f, 0.0f };
+						for (int bone_i = 0; bone_i < JOINT_GROUP_SIZE; bone_i++) {
+							_normalize_bone(array_bones[vertex_i * WEIGHT_8_COUNT + bone_i], set_bones, joint[bone_i], weight_0[bone_i]);
+						}
+						joints_0.write[vertex_i] = joint;
 					}
-					attributes["JOINTS_0"] = _encode_accessor_as_joints(state, joints_0, true);
-					attributes["JOINTS_1"] = _encode_accessor_as_joints(state, joints_1, true);
-				}
-			}
-			{
-				const Array &a = array[Mesh::ARRAY_WEIGHTS];
-				const Vector<Vector3> &vertex_array = array[Mesh::ARRAY_VERTEX];
-				if ((a.size() / JOINT_GROUP_SIZE) == vertex_array.size()) {
-					const int ret_size = a.size() / JOINT_GROUP_SIZE;
-					Vector<Color> attribs;
-					attribs.resize(ret_size);
-					for (int i = 0; i < ret_size; i++) {
-						attribs.write[i] = Color(a[(i * JOINT_GROUP_SIZE) + 0], a[(i * JOINT_GROUP_SIZE) + 1], a[(i * JOINT_GROUP_SIZE) + 2], a[(i * JOINT_GROUP_SIZE) + 3]);
+					{
+						Color joint = { 0.0f, 0.0f, 0.0f, 0.0f };
+						for (int bone_i = 0; bone_i < JOINT_GROUP_SIZE; bone_i++) {
+							_normalize_bone(array_bones[vertex_i * WEIGHT_8_COUNT + JOINT_GROUP_SIZE + bone_i], set_bones, joint[bone_i], weight_1[bone_i]);
+						}
+						joints_1.write[vertex_i] = joint;
 					}
-					attributes["WEIGHTS_0"] = _encode_accessor_as_weights(state, attribs, true);
-				} else if ((a.size() / (JOINT_GROUP_SIZE * 2)) >= vertex_array.size()) {
-					int32_t vertex_count = vertex_array.size();
-					Vector<Color> weights_0;
-					weights_0.resize(vertex_count);
-					Vector<Color> weights_1;
-					weights_1.resize(vertex_count);
-					int32_t weights_8_count = JOINT_GROUP_SIZE * 2;
-					for (int32_t vertex_i = 0; vertex_i < vertex_count; vertex_i++) {
-						Color weight_0;
-						weight_0.r = a[vertex_i * weights_8_count + 0];
-						weight_0.g = a[vertex_i * weights_8_count + 1];
-						weight_0.b = a[vertex_i * weights_8_count + 2];
-						weight_0.a = a[vertex_i * weights_8_count + 3];
-						weights_0.write[vertex_i] = weight_0;
-						Color weight_1;
-						weight_1.r = a[vertex_i * weights_8_count + 4];
-						weight_1.g = a[vertex_i * weights_8_count + 5];
-						weight_1.b = a[vertex_i * weights_8_count + 6];
-						weight_1.a = a[vertex_i * weights_8_count + 7];
-						weights_1.write[vertex_i] = weight_1;
-					}
-					attributes["WEIGHTS_0"] = _encode_accessor_as_weights(state, weights_0, true);
-					attributes["WEIGHTS_1"] = _encode_accessor_as_weights(state, weights_1, true);
-				}
-			}
-			{
-				Vector<int32_t> mesh_indices = array[Mesh::ARRAY_INDEX];
-				if (mesh_indices.size()) {
-					if (primitive_type == Mesh::PRIMITIVE_TRIANGLES) {
-						//swap around indices, convert ccw to cw for front face
-						const int is = mesh_indices.size();
-						for (int k = 0; k < is; k += 3) {
-							SWAP(mesh_indices.write[k + 0], mesh_indices.write[k + 2]);
+					{
+						float total = 0.0;
+						for (int bone_i = 0; bone_i < JOINT_GROUP_SIZE; bone_i++) {
+							total += weight_0[bone_i];
+						}
+						for (int bone_i = 0; bone_i < JOINT_GROUP_SIZE; bone_i++) {
+							total += weight_1[bone_i];
+						}
+						if (total > 0.0) {
+							weight_0 /= Color(total, total, total, total);
+							weight_1 /= Color(total, total, total, total);
 						}
 					}
-					primitive["indices"] = _encode_accessor_as_ints(state, mesh_indices, true);
-				} else {
-					if (primitive_type == Mesh::PRIMITIVE_TRIANGLES) {
-						//generate indices because they need to be swapped for CW/CCW
-						const Vector<Vector3> &vertices = array[Mesh::ARRAY_VERTEX];
-						Ref<SurfaceTool> st;
-						st.instantiate();
-						st->create_from_triangle_arrays(array);
-						st->index();
-						Vector<int32_t> generated_indices = st->commit_to_arrays()[Mesh::ARRAY_INDEX];
-						const int vs = vertices.size();
-						generated_indices.resize(vs);
-						{
-							for (int k = 0; k < vs; k += 3) {
-								generated_indices.write[k] = k;
-								generated_indices.write[k + 1] = k + 2;
-								generated_indices.write[k + 2] = k + 1;
-							}
-						}
-						primitive["indices"] = _encode_accessor_as_ints(state, generated_indices, true);
-					}
+					weights_0.write[vertex_i] = weight_0;
+					weights_1.write[vertex_i] = weight_1;
 				}
+				attributes["WEIGHTS_0"] = _encode_accessor_as_weights(state, weights_0, true);
+				attributes["WEIGHTS_1"] = _encode_accessor_as_weights(state, weights_1, true);
+				attributes["JOINTS_0"] = _encode_accessor_as_joints(state, joints_0, true);
+				attributes["JOINTS_1"] = _encode_accessor_as_joints(state, joints_1, true);
+			} else if ((array_weights.size() / JOINT_GROUP_SIZE) == vertex_array.size()) {
+				const int ret_size = array_weights.size() / JOINT_GROUP_SIZE;
+				Vector<Color> weight_attribs;
+				Vector<Color> joint_attribs;
+				weight_attribs.resize(ret_size);
+				joint_attribs.resize(ret_size);
+				for (int i = 0; i < ret_size; i++) {
+					Color weight_0;
+					for (int bone_i = 0; bone_i < JOINT_GROUP_SIZE; bone_i++) {
+						weight_0[bone_i] = array_weights[(i * JOINT_GROUP_SIZE) + bone_i];
+					}
+					{
+						float total = 0.0;
+						for (int bone_i = 0; bone_i < JOINT_GROUP_SIZE; bone_i++) {
+							total += weight_0[bone_i];
+						}
+						if (total > 0.0) {
+							weight_0 /= Color(total, total, total, total);
+						}
+					}
+					Color joint_0 = { 0.0f, 0.0f, 0.0f, 0.0f };
+					Set<BoneId> set_bones;
+					for (int bone_i = 0; bone_i < JOINT_GROUP_SIZE; bone_i++) {
+						_normalize_bone(array_bones[(i * JOINT_GROUP_SIZE) + 0], set_bones, joint_0[bone_i], weight_0[bone_i]);
+					}
+					joint_attribs.write[i] = joint_0;
+					{
+						float total = 0.0;
+						total += weight_0.r + weight_0.g + weight_0.b + weight_0.a;
+						if (total > 0.0) {
+							weight_0 /= Color(total, total, total, total);
+						}
+					}
+					weight_attribs.write[i] = weight_0;
+				}
+				attributes["WEIGHTS_0"] = _encode_accessor_as_weights(state, weight_attribs, true);
+				attributes["JOINTS_0"] = _encode_accessor_as_joints(state, joint_attribs, true);
 			}
 
+			Vector<int32_t> mesh_indices = array[Mesh::ARRAY_INDEX];
+			if (mesh_indices.size()) {
+				if (primitive_type == Mesh::PRIMITIVE_TRIANGLES) {
+					//swap around indices, convert ccw to cw for front face
+					const int is = mesh_indices.size();
+					for (int k = 0; k < is; k += 3) {
+						SWAP(mesh_indices.write[k + 0], mesh_indices.write[k + 2]);
+					}
+				}
+				primitive["indices"] = _encode_accessor_as_ints(state, mesh_indices, true);
+			} else {
+				if (primitive_type == Mesh::PRIMITIVE_TRIANGLES) {
+					//generate indices because they need to be swapped for CW/CCW
+					const Vector<Vector3> &vertices = array[Mesh::ARRAY_VERTEX];
+					Ref<SurfaceTool> st;
+					st.instantiate();
+					st->create_from_triangle_arrays(array);
+					st->index();
+					Array mesh_arrays = st->commit_to_arrays();
+					ERR_FAIL_INDEX_V(Mesh::ARRAY_INDEX, mesh_arrays.size(), ERR_PARSE_ERROR);
+					Vector<int32_t> generated_indices = mesh_arrays[Mesh::ARRAY_INDEX];
+					const int vs = vertices.size();
+					generated_indices.resize(vs);
+					for (int k = 0; k < vs; k += 3) {
+						generated_indices.write[k] = k;
+						generated_indices.write[k + 1] = k + 2;
+						generated_indices.write[k + 2] = k + 1;
+					}
+					primitive["indices"] = _encode_accessor_as_ints(state, generated_indices, true);
+				}
+			}
 			primitive["attributes"] = attributes;
 
 			//blend shapes
@@ -6626,4 +6649,12 @@ Error GLTFDocument::_serialize_file(Ref<GLTFState> state, const String p_path) {
 		f->close();
 	}
 	return err;
+}
+void GLTFDocument::_normalize_bone(int32_t p_bone, Set<BoneId> &r_bones, float &r_joint, float &r_weight) {
+	if (!Math::is_zero_approx(r_weight) && !r_bones.has(p_bone)) {
+		r_joint = p_bone;
+		r_bones.insert(r_joint);
+	} else {
+		r_weight = 0.0f;
+	}
 }
