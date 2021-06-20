@@ -696,7 +696,7 @@ void DisplayServerAndroid::process_hover(int p_type, Point2 p_pos) {
 	}
 }
 
-void DisplayServerAndroid::process_mouse_event(int input_device, int event_action, int event_android_buttons_mask, Point2 event_pos, float event_vertical_factor, float event_horizontal_factor) {
+void DisplayServerAndroid::process_mouse_event(int input_device, int event_action, int event_android_buttons_mask, Point2 event_pos, float event_vertical_factor, float event_horizontal_factor, float event_pressure) {
 	int event_buttons_mask = _android_button_mask_to_godot_button_mask(event_android_buttons_mask);
 	switch (event_action) {
 		case AMOTION_EVENT_ACTION_BUTTON_PRESS:
@@ -736,6 +736,7 @@ void DisplayServerAndroid::process_mouse_event(int input_device, int event_actio
 				ev->set_relative(event_pos);
 			}
 			ev->set_button_mask(event_buttons_mask);
+			ev->set_pressure(event_pressure);
 			Input::get_singleton()->accumulate_input_event(ev);
 		} break;
 		case AMOTION_EVENT_ACTION_SCROLL: {
