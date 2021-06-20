@@ -224,7 +224,7 @@ void EditorSceneImporterMesh::generate_lods() {
 			}
 			Surface::LOD lod;
 			lod.distance = mesh_error;
-			if (Math::is_equal_approx(mesh_error, 0.0f)) {
+			if (Math::is_zero_approx(mesh_error)) {
 				break;
 			}
 			if (new_len <= 0) {

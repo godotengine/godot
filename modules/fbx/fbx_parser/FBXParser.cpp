@@ -1167,7 +1167,7 @@ Transform3D ReadMatrix(const ElementPtr element) {
 
 	// clean values to prevent any IBM damage on inverse() / affine_inverse()
 	for (float &value : values) {
-		if (::Math::is_equal_approx(0, value)) {
+		if (::Math::is_zero_approx(value)) {
 			value = 0;
 		}
 	}

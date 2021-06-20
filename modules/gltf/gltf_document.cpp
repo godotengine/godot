@@ -3596,7 +3596,7 @@ void GLTFDocument::spec_gloss_to_rough_metal(Ref<GLTFSpecGloss> r_spec_gloss, Re
 			if (!Math::is_equal_approx(mr.g, 1.0f)) {
 				has_roughness = true;
 			}
-			if (!Math::is_equal_approx(mr.b, 0.0f)) {
+			if (!Math::is_zero_approx(mr.b)) {
 				has_metal = true;
 			}
 			mr.g *= r_spec_gloss->gloss_factor;
