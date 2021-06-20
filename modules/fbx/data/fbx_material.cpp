@@ -420,7 +420,7 @@ Ref<StandardMaterial3D> FBXMaterial::import_material(ImportState &state) {
 			} break;
 			case PROPERTY_DESC_COAT_ROUGHNESS: {
 				// meaning is that approx equal to zero is disabled not actually zero. ;)
-				if (real_value && Math::is_equal_approx(real_value->Value(), 0.0f)) {
+				if (real_value && Math::is_zero_approx(real_value->Value())) {
 					print_verbose("clearcoat real value: " + rtos(real_value->Value()));
 					spatial_material->set_clearcoat_gloss(1.0 - real_value->Value());
 				} else {
@@ -428,7 +428,7 @@ Ref<StandardMaterial3D> FBXMaterial::import_material(ImportState &state) {
 				}
 			} break;
 			case PROPERTY_DESC_EMISSIVE: {
-				if (real_value && Math::is_equal_approx(real_value->Value(), 0.0f)) {
+				if (real_value && Math::is_zero_approx(real_value->Value())) {
 					print_verbose("Emissive real value: " + rtos(real_value->Value()));
 					spatial_material->set_emission_energy(real_value->Value());
 				} else if (vector_value && !vector_value->Value().is_equal_approx(Vector3(0, 0, 0))) {

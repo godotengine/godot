@@ -137,15 +137,15 @@ public:
 
 	static Vector3 safe_import_vector3(const Vector3 &p_vec) {
 		Vector3 vector = p_vec;
-		if (Math::is_equal_approx(0, vector.x)) {
+		if (Math::is_zero_approx(vector.x)) {
 			vector.x = 0;
 		}
 
-		if (Math::is_equal_approx(0, vector.y)) {
+		if (Math::is_zero_approx(vector.y)) {
 			vector.y = 0;
 		}
 
-		if (Math::is_equal_approx(0, vector.z)) {
+		if (Math::is_zero_approx(vector.z)) {
 			vector.z = 0;
 		}
 		return vector;
