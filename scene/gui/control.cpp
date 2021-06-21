@@ -742,7 +742,7 @@ bool Control::has_point(const Point2 &p_point) const {
 	return Rect2(Point2(), get_size()).has_point(p_point);
 }
 
-void Control::set_drag_forwarding(Control *p_target) {
+void Control::set_drag_forwarding(Node *p_target) {
 	if (p_target) {
 		data.drag_owner = p_target->get_instance_id();
 	} else {
@@ -754,8 +754,7 @@ Variant Control::get_drag_data(const Point2 &p_point) {
 	if (data.drag_owner.is_valid()) {
 		Object *obj = ObjectDB::get_instance(data.drag_owner);
 		if (obj) {
-			Control *c = Object::cast_to<Control>(obj);
-			return c->call("_get_drag_data_fw", p_point, this);
+			return obj->call("_get_drag_data_fw", p_point, this);
 		}
 	}
 
@@ -771,8 +770,7 @@ bool Control::can_drop_data(const Point2 &p_point, const Variant &p_data) const 
 	if (data.drag_owner.is_valid()) {
 		Object *obj = ObjectDB::get_instance(data.drag_owner);
 		if (obj) {
-			Control *c = Object::cast_to<Control>(obj);
-			return c->call("_can_drop_data_fw", p_point, p_data, this);
+			return obj->call("_can_drop_data_fw", p_point, p_data, this);
 		}
 	}
 
@@ -787,8 +785,7 @@ void Control::drop_data(const Point2 &p_point, const Variant &p_data) {
 	if (data.drag_owner.is_valid()) {
 		Object *obj = ObjectDB::get_instance(data.drag_owner);
 		if (obj) {
-			Control *c = Object::cast_to<Control>(obj);
-			c->call("_drop_data_fw", p_point, p_data, this);
+			obj->call("_drop_data_fw", p_point, p_data, this);
 			return;
 		}
 	}
