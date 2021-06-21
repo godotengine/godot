@@ -323,19 +323,13 @@ void ShaderEditor::_menu_option(int p_option) {
 			if (shader.is_null()) {
 				return;
 			}
-
-			CodeEdit *tx = shader_editor->get_text_editor();
-			tx->indent_selected_lines_left();
-
+			shader_editor->get_text_editor()->unindent_lines();
 		} break;
 		case EDIT_INDENT_RIGHT: {
 			if (shader.is_null()) {
 				return;
 			}
-
-			CodeEdit *tx = shader_editor->get_text_editor();
-			tx->indent_selected_lines_right();
-
+			shader_editor->get_text_editor()->indent_lines();
 		} break;
 		case EDIT_DELETE_LINE: {
 			shader_editor->delete_lines();
