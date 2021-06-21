@@ -2483,8 +2483,14 @@ static bool is_shortcut_pressed(const String &p_path) {
 	if (shortcut.is_null()) {
 		return false;
 	}
-	InputEventKey *k = Object::cast_to<InputEventKey>(shortcut->get_event().ptr());
-	if (k == nullptr) {
+
+	const Array shortcuts = shortcut->get_events();
+	Ref<InputEventKey> k;
+	if (shortcuts.size() > 0) {
+		k = shortcuts.front();
+	}
+
+	if (k.is_null()) {
 		return false;
 	}
 	const Input &input = *Input::get_singleton();

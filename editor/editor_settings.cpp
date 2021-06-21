@@ -73,14 +73,15 @@ bool EditorSettings::_set_only(const StringName &p_name, const Variant &p_value)
 
 	if (p_name == "shortcuts") {
 		Array arr = p_value;
-		ERR_FAIL_COND_V(arr.size() && arr.size() & 1, true);
-		for (int i = 0; i < arr.size(); i += 2) {
-			String name = arr[i];
-			Ref<InputEvent> shortcut = arr[i + 1];
+		for (int i = 0; i < arr.size(); i++) {
+			Dictionary dict = arr[i];
+			String name = dict["name"];
+
+			Array shortcut_events = dict["shortcuts"];
 
 			Ref<Shortcut> sc;
 			sc.instantiate();
-			sc->set_event(shortcut);
+			sc->set_events(shortcut_events);
 			add_shortcut(name, sc);
 		}
 
@@ -138,11 +139,11 @@ bool EditorSettings::_get(const StringName &p_name, Variant &r_ret) const {
 	_THREAD_SAFE_METHOD_
 
 	if (p_name == "shortcuts") {
-		Array arr;
-		for (const KeyValue<String, Ref<Shortcut>> &E : shortcuts) {
-			Ref<Shortcut> sc = E.value;
+		Array save_array;
+		for (const KeyValue<String, Ref<Shortcut>> &shortcut_definition : shortcuts) {
+			Ref<Shortcut> sc = shortcut_definition.value;
 
-			if (builtin_action_overrides.has(E.key)) {
+			if (builtin_action_overrides.has(shortcut_definition.key)) {
 				// This shortcut was auto-generated from built in actions: don't save.
 				continue;
 			}
@@ -151,34 +152,57 @@ bool EditorSettings::_get(const StringName &p_name, Variant &r_ret) const {
 				if (!sc->has_meta("original")) {
 					continue; //this came from settings but is not any longer used
 				}
-
-				Ref<InputEvent> original = sc->get_meta("original");
-				if (sc->matches_event(original) || (original.is_null() && sc->get_event().is_null())) {
-					continue; //not changed from default, don't save
-				}
 			}
 
-			arr.push_back(E.key);
-			arr.push_back(sc->get_event());
+			Array original_events = sc->get_meta("original");
+			Array shortcut_events = sc->get_events();
+
+			bool is_same = Shortcut::is_event_array_equal(original_events, shortcut_events);
+			if (is_same) {
+				continue; // Not changed from default; don't save.
+			}
+
+			Dictionary dict;
+			dict["name"] = shortcut_definition.key;
+			dict["shortcuts"] = shortcut_events;
+
+			save_array.push_back(dict);
 		}
-		r_ret = arr;
+		r_ret = save_array;
 		return true;
 	} else if (p_name == "builtin_action_overrides") {
 		Array actions_arr;
-		for (const KeyValue<String, List<Ref<InputEvent>>> &E : builtin_action_overrides) {
-			List<Ref<InputEvent>> events = E.value;
+		for (const KeyValue<String, List<Ref<InputEvent>>> &action_override : builtin_action_overrides) {
+			List<Ref<InputEvent>> events = action_override.value;
 
-			// TODO: skip actions which are the same as the builtin.
 			Dictionary action_dict;
-			action_dict["name"] = E.key;
+			action_dict["name"] = action_override.key;
 
+			// Convert the list to an array, and only keep key events as this is for the editor.
 			Array events_arr;
-			for (List<Ref<InputEvent>>::Element *I = events.front(); I; I = I->next()) {
-				events_arr.push_back(I->get());
+			for (const Ref<InputEvent> &ie : events) {
+				Ref<InputEventKey> iek = ie;
+				if (iek.is_valid()) {
+					events_arr.append(iek);
+				}
+			}
+
+			Array defaults_arr;
+			List<Ref<InputEvent>> defaults = InputMap::get_singleton()->get_builtins()[action_override.key];
+			for (const Ref<InputEvent> &default_input_event : defaults) {
+				if (default_input_event.is_valid()) {
+					defaults_arr.append(default_input_event);
+				}
+			}
+
+			bool same = Shortcut::is_event_array_equal(events_arr, defaults_arr);
+
+			// Don't save if same as default.
+			if (same) {
+				continue;
 			}
 
 			action_dict["events"] = events_arr;
-
 			actions_arr.push_back(action_dict);
 		}
 
@@ -1405,7 +1429,7 @@ Ref<Shortcut> EditorSettings::get_shortcut(const String &p_name) const {
 	const Map<String, List<Ref<InputEvent>>>::Element *builtin_override = builtin_action_overrides.find(p_name);
 	if (builtin_override) {
 		sc.instantiate();
-		sc->set_event(builtin_override->get().front()->get());
+		sc->set_events_list(&builtin_override->get());
 		sc->set_name(InputMap::get_singleton()->get_builtin_display_name(p_name));
 	}
 
@@ -1414,7 +1438,7 @@ Ref<Shortcut> EditorSettings::get_shortcut(const String &p_name) const {
 		const OrderedHashMap<String, List<Ref<InputEvent>>>::ConstElement builtin_default = InputMap::get_singleton()->get_builtins_with_feature_overrides_applied().find(p_name);
 		if (builtin_default) {
 			sc.instantiate();
-			sc->set_event(builtin_default.get().front()->get());
+			sc->set_events_list(&builtin_default.get());
 			sc->set_name(InputMap::get_singleton()->get_builtin_display_name(p_name));
 		}
 	}
@@ -1450,52 +1474,91 @@ void ED_SHORTCUT_OVERRIDE(const String &p_path, const String &p_feature, Key p_k
 	Ref<Shortcut> sc = EditorSettings::get_singleton()->get_shortcut(p_path);
 	ERR_FAIL_COND_MSG(!sc.is_valid(), "Used ED_SHORTCUT_OVERRIDE with invalid shortcut: " + p_path + ".");
 
-	// Only add the override if the OS supports the provided feature.
-	if (OS::get_singleton()->has_feature(p_feature)) {
-		Ref<InputEventKey> ie;
-		if (p_keycode) {
-			ie = InputEventKey::create_reference(p_keycode);
-		}
+	PackedInt32Array arr;
+	arr.push_back(p_keycode);
 
-		// Directly override the existing shortcut.
-		sc->set_event(ie);
-		sc->set_meta("original", ie);
+	ED_SHORTCUT_OVERRIDE_ARRAY(p_path, p_feature, arr);
+}
+
+void ED_SHORTCUT_OVERRIDE_ARRAY(const String &p_path, const String &p_feature, const PackedInt32Array &p_keycodes) {
+	Ref<Shortcut> sc = EditorSettings::get_singleton()->get_shortcut(p_path);
+	ERR_FAIL_COND_MSG(!sc.is_valid(), "Used ED_SHORTCUT_OVERRIDE_ARRAY with invalid shortcut: " + p_path + ".");
+
+	// Only add the override if the OS supports the provided feature.
+	if (!OS::get_singleton()->has_feature(p_feature)) {
+		return;
 	}
+
+	Array events;
+
+	for (int i = 0; i < p_keycodes.size(); i++) {
+		Key keycode = (Key)p_keycodes[i];
+
+#ifdef OSX_ENABLED
+		// Use Cmd+Backspace as a general replacement for Delete shortcuts on macOS
+		if (keycode == KEY_DELETE) {
+			keycode = KEY_MASK_CMD | KEY_BACKSPACE;
+		}
+#endif
+
+		Ref<InputEventKey> ie;
+		if (keycode) {
+			ie = InputEventKey::create_reference(keycode);
+			events.push_back(ie);
+		}
+	}
+
+	// Directly override the existing shortcut.
+	sc->set_events(events);
+	sc->set_meta("original", events);
 }
 
 Ref<Shortcut> ED_SHORTCUT(const String &p_path, const String &p_name, Key p_keycode) {
+	PackedInt32Array arr;
+	arr.push_back(p_keycode);
+	return ED_SHORTCUT_ARRAY(p_path, p_name, arr);
+}
+
+Ref<Shortcut> ED_SHORTCUT_ARRAY(const String &p_path, const String &p_name, const PackedInt32Array &p_keycodes) {
+	Array events;
+
+	for (int i = 0; i < p_keycodes.size(); i++) {
+		Key keycode = (Key)p_keycodes[i];
+
 #ifdef OSX_ENABLED
-	// Use Cmd+Backspace as a general replacement for Delete shortcuts on macOS
-	if (p_keycode == KEY_DELETE) {
-		p_keycode = KEY_MASK_CMD | KEY_BACKSPACE;
-	}
+		// Use Cmd+Backspace as a general replacement for Delete shortcuts on macOS
+		if (keycode == KEY_DELETE) {
+			keycode = KEY_MASK_CMD | KEY_BACKSPACE;
+		}
 #endif
 
-	Ref<InputEventKey> ie;
-	if (p_keycode) {
-		ie = InputEventKey::create_reference(p_keycode);
+		Ref<InputEventKey> ie;
+		if (keycode) {
+			ie = InputEventKey::create_reference(keycode);
+			events.push_back(ie);
+		}
 	}
 
 	if (!EditorSettings::get_singleton()) {
 		Ref<Shortcut> sc;
 		sc.instantiate();
 		sc->set_name(p_name);
-		sc->set_event(ie);
-		sc->set_meta("original", ie);
+		sc->set_events(events);
+		sc->set_meta("original", events);
 		return sc;
 	}
 
 	Ref<Shortcut> sc = EditorSettings::get_singleton()->get_shortcut(p_path);
 	if (sc.is_valid()) {
 		sc->set_name(p_name); //keep name (the ones that come from disk have no name)
-		sc->set_meta("original", ie); //to compare against changes
+		sc->set_meta("original", events); //to compare against changes
 		return sc;
 	}
 
 	sc.instantiate();
 	sc->set_name(p_name);
-	sc->set_event(ie);
-	sc->set_meta("original", ie); //to compare against changes
+	sc->set_events(events);
+	sc->set_meta("original", events); //to compare against changes
 	EditorSettings::get_singleton()->add_shortcut(p_path, sc);
 
 	return sc;
@@ -1550,7 +1613,7 @@ void EditorSettings::set_builtin_action_override(const String &p_name, const Arr
 
 	// Update the shortcut (if it is used somewhere in the editor) to be the first event of the new list.
 	if (shortcuts.has(p_name)) {
-		shortcuts[p_name]->set_event(event_list.front()->get());
+		shortcuts[p_name]->set_events_list(&event_list);
 	}
 }
 
