@@ -724,7 +724,7 @@ Ref<Texture2D> EditorMeshPreviewPlugin::generate(const RES &p_from, const Size2 
 	xform.basis = Basis().rotated(Vector3(0, 1, 0), -Math_PI * 0.125);
 	xform.basis = Basis().rotated(Vector3(1, 0, 0), Math_PI * 0.125) * xform.basis;
 	AABB rot_aabb = xform.xform(aabb);
-	float m = MAX(rot_aabb.size.x, rot_aabb.size.y) * 0.5;
+	real_t m = MAX(rot_aabb.size.x, rot_aabb.size.y) * 0.5;
 	if (m == 0) {
 		return Ref<Texture2D>();
 	}

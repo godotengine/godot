@@ -400,25 +400,25 @@ void Polygon2DEditor::_set_show_grid(bool p_show) {
 	uv_edit_draw->update();
 }
 
-void Polygon2DEditor::_set_snap_off_x(float p_val) {
+void Polygon2DEditor::_set_snap_off_x(real_t p_val) {
 	snap_offset.x = p_val;
 	EditorSettings::get_singleton()->set_project_metadata("polygon_2d_uv_editor", "snap_offset", snap_offset);
 	uv_edit_draw->update();
 }
 
-void Polygon2DEditor::_set_snap_off_y(float p_val) {
+void Polygon2DEditor::_set_snap_off_y(real_t p_val) {
 	snap_offset.y = p_val;
 	EditorSettings::get_singleton()->set_project_metadata("polygon_2d_uv_editor", "snap_offset", snap_offset);
 	uv_edit_draw->update();
 }
 
-void Polygon2DEditor::_set_snap_step_x(float p_val) {
+void Polygon2DEditor::_set_snap_step_x(real_t p_val) {
 	snap_step.x = p_val;
 	EditorSettings::get_singleton()->set_project_metadata("polygon_2d_uv_editor", "snap_step", snap_step);
 	uv_edit_draw->update();
 }
 
-void Polygon2DEditor::_set_snap_step_y(float p_val) {
+void Polygon2DEditor::_set_snap_step_y(real_t p_val) {
 	snap_step.y = p_val;
 	EditorSettings::get_singleton()->set_project_metadata("polygon_2d_uv_editor", "snap_step", snap_step);
 	uv_edit_draw->update();
@@ -569,11 +569,11 @@ void Polygon2DEditor::_uv_input(const Ref<InputEvent> &p_input) {
 					}
 
 					int closest = -1;
-					float closest_dist = 1e20;
+					real_t closest_dist = 1e20;
 
 					for (int i = points_prev.size() - internal_vertices; i < points_prev.size(); i++) {
 						Vector2 tuv = mtx.xform(uv_create_poly_prev[i]);
-						float dist = tuv.distance_to(Vector2(mb->get_position().x, mb->get_position().y));
+						real_t dist = tuv.distance_to(Vector2(mb->get_position().x, mb->get_position().y));
 						if (dist < 8 && dist < closest_dist) {
 							closest = i;
 							closest_dist = dist;
@@ -639,11 +639,11 @@ void Polygon2DEditor::_uv_input(const Ref<InputEvent> &p_input) {
 
 				if (uv_move_current == UV_MODE_ADD_POLYGON) {
 					int closest = -1;
-					float closest_dist = 1e20;
+					real_t closest_dist = 1e20;
 
 					for (int i = 0; i < points_prev.size(); i++) {
 						Vector2 tuv = mtx.xform(points_prev[i]);
-						float dist = tuv.distance_to(Vector2(mb->get_position().x, mb->get_position().y));
+						real_t dist = tuv.distance_to(Vector2(mb->get_position().x, mb->get_position().y));
 						if (dist < 8 && dist < closest_dist) {
 							closest = i;
 							closest_dist = dist;
@@ -825,7 +825,7 @@ void Polygon2DEditor::_uv_input(const Ref<InputEvent> &p_input) {
 					}
 					center /= uv_new.size();
 
-					float angle = (uv_drag_from - mtx.xform(center)).normalized().angle_to((uv_drag_to - mtx.xform(center)).normalized());
+					real_t angle = (uv_drag_from - mtx.xform(center)).normalized().angle_to((uv_drag_to - mtx.xform(center)).normalized());
 
 					for (int i = 0; i < uv_new.size(); i++) {
 						Vector2 rel = points_prev[i] - center;
@@ -848,13 +848,13 @@ void Polygon2DEditor::_uv_input(const Ref<InputEvent> &p_input) {
 					}
 					center /= uv_new.size();
 
-					float from_dist = uv_drag_from.distance_to(mtx.xform(center));
-					float to_dist = uv_drag_to.distance_to(mtx.xform(center));
+					real_t from_dist = uv_drag_from.distance_to(mtx.xform(center));
+					real_t to_dist = uv_drag_to.distance_to(mtx.xform(center));
 					if (from_dist < 2) {
 						break;
 					}
 
-					float scale = to_dist / from_dist;
+					real_t scale = to_dist / from_dist;
 
 					for (int i = 0; i < uv_new.size(); i++) {
 						Vector2 rel = points_prev[i] - center;
@@ -881,8 +881,8 @@ void Polygon2DEditor::_uv_input(const Ref<InputEvent> &p_input) {
 
 				{
 					int pc = painted_weights.size();
-					float amount = bone_paint_strength->get_value();
-					float radius = bone_paint_radius->get_value() * EDSCALE;
+					real_t amount = bone_paint_strength->get_value();
+					real_t radius = bone_paint_radius->get_value() * EDSCALE;
 
 					if (uv_mode == UV_MODE_CLEAR_WEIGHT) {
 						amount = -amount;
@@ -925,7 +925,7 @@ void Polygon2DEditor::_uv_input(const Ref<InputEvent> &p_input) {
 	}
 }
 
-void Polygon2DEditor::_uv_scroll_changed(float) {
+void Polygon2DEditor::_uv_scroll_changed(real_t) {
 	if (updating_uv_scroll) {
 		return;
 	}
