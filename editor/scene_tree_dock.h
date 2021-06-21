@@ -247,6 +247,9 @@ class SceneTreeDock : public VBoxContainer {
 	static SceneTreeDock *singleton;
 	static void _update_configuration_warning();
 
+	static bool _update_node_path(const NodePath &p_root_path, NodePath &p_node_path, List<Pair<NodePath, NodePath>> *p_renames);
+	static bool _check_node_path_recursive(const NodePath &p_root_path, Variant &p_variant, List<Pair<NodePath, NodePath>> *p_renames);
+
 protected:
 	void _notification(int p_what);
 	static void _bind_methods();
