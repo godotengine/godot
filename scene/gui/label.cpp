@@ -453,6 +453,7 @@ void Label::set_text(const String &p_string) {
 		visible_chars = get_total_character_count() * percent_visible;
 	}
 	update();
+	minimum_size_changed();
 }
 
 void Label::set_text_direction(Control::TextDirection p_text_direction) {
