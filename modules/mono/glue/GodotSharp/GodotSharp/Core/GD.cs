@@ -109,6 +109,11 @@ namespace Godot
             return godot_icall_GD_randf();
         }
 
+        public static double Randfn(double mean, double deviation)
+        {
+            return godot_icall_GD_randfn(mean, deviation);
+        }
+
         public static uint Randi()
         {
             return godot_icall_GD_randi();
@@ -237,6 +242,9 @@ namespace Godot
 
         [MethodImpl(MethodImplOptions.InternalCall)]
         internal extern static double godot_icall_GD_randf_range(double from, double to);
+
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal extern static double godot_icall_GD_randfn(double mean, double deviation);
 
         [MethodImpl(MethodImplOptions.InternalCall)]
         internal extern static int godot_icall_GD_randi_range(int from, int to);

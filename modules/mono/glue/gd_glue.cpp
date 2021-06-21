@@ -198,6 +198,10 @@ double godot_icall_GD_randf_range(double from, double to) {
 	return Math::random(from, to);
 }
 
+double godot_icall_GD_randfn(double mean, double deviation) {
+	return Math::randfn(mean, deviation);
+}
+
 int32_t godot_icall_GD_randi_range(int32_t from, int32_t to) {
 	return Math::random(from, to);
 }
@@ -304,6 +308,7 @@ void godot_register_gd_icalls() {
 	GDMonoUtils::add_internal_call("Godot.GD::godot_icall_GD_randi", godot_icall_GD_randi);
 	GDMonoUtils::add_internal_call("Godot.GD::godot_icall_GD_randomize", godot_icall_GD_randomize);
 	GDMonoUtils::add_internal_call("Godot.GD::godot_icall_GD_randf_range", godot_icall_GD_randf_range);
+	GDMonoUtils::add_internal_call("Godot.GD::godot_icall_GD_randfn", godot_icall_GD_randfn);
 	GDMonoUtils::add_internal_call("Godot.GD::godot_icall_GD_randi_range", godot_icall_GD_randi_range);
 	GDMonoUtils::add_internal_call("Godot.GD::godot_icall_GD_rand_seed", godot_icall_GD_rand_seed);
 	GDMonoUtils::add_internal_call("Godot.GD::godot_icall_GD_seed", godot_icall_GD_seed);
