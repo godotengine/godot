@@ -32,6 +32,7 @@
 
 #include "core/os/os.h"
 #include "core/project_settings.h"
+#include "drivers/gles2/rasterizer_gles2.h"
 #include "drivers/gles_common/rasterizer_asserts.h"
 #include "rasterizer_scene_gles2.h"
 #include "servers/visual/visual_server_raster.h"
@@ -2363,6 +2364,7 @@ void RasterizerCanvasGLES2::gl_disable_scissor() const {
 }
 
 void RasterizerCanvasGLES2::initialize() {
+	RasterizerGLES2::gl_check_errors();
 	RasterizerCanvasBaseGLES2::initialize();
 
 	batch_initialize();
@@ -2402,6 +2404,7 @@ void RasterizerCanvasGLES2::initialize() {
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
 	} // only if there is a vertex buffer (batching is on)
+	RasterizerGLES2::gl_check_errors();
 }
 
 RasterizerCanvasGLES2::RasterizerCanvasGLES2() {

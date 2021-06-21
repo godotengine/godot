@@ -71,7 +71,7 @@ public:
 
 	virtual bool is_low_end() const { return true; }
 
-	virtual const char *gl_check_for_error(bool p_print_error = true);
+	static bool gl_check_errors();
 
 	RasterizerGLES2();
 	~RasterizerGLES2();
