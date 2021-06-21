@@ -367,6 +367,26 @@ void EditorExportPlatformIOS::get_export_options(List<ExportOption> *r_options) 
 	for (int i = 0; i < found_plugins.size(); i++) {
 		r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "plugins/" + found_plugins[i].name), false));
 	}
+
+	for (int i = 0; i < found_plugins.size(); i++) {
+		// Editable plugin plist values
+		PluginConfigIOS plugin = found_plugins[i];
+		const String *K = nullptr;
+
+		while ((K = plugin.plist.next(K))) {
+			String key = *K;
+			PluginConfigIOS::PlistItem item = plugin.plist[key];
+			switch (item.type) {
+				case PluginConfigIOS::PlistItemType::STRING_INPUT: {
+					String preset_name = "plugins_plist/" + key;
+					r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, preset_name), item.value));
+				} break;
+				default:
+					continue;
+			}
+		}
+	}
+
 	plugins_changed.clear();
 	plugins = found_plugins;
 
@@ -1467,13 +1487,28 @@ Error EditorExportPlatformIOS::_export_ios_plugins(const Ref<EditorExportPreset>
 
 		while ((K = plugin.plist.next(K))) {
 			String key = *K;
-			String value = plugin.plist[key];
+			PluginConfigIOS::PlistItem item = plugin.plist[key];
+
+			String value;
+
+			switch (item.type) {
+				case PluginConfigIOS::PlistItemType::STRING_INPUT: {
+					String preset_name = "plugins_plist/" + key;
+					String input_value = p_preset->get(preset_name);
+					value = "<string>" + input_value + "</string>";
+				} break;
+				default:
+					value = item.value;
+					break;
+			}
 
 			if (key.is_empty() || value.is_empty()) {
 				continue;
 			}
 
-			plist_values[key] = value;
+			String plist_key = "<key>" + key + "</key>";
+
+			plist_values[plist_key] = value;
 		}
 
 		// CPP Code
@@ -1500,7 +1535,7 @@ Error EditorExportPlatformIOS::_export_ios_plugins(const Ref<EditorExportPreset>
 				continue;
 			}
 
-			p_config_data.plist_content += "<key>" + key + "</key><string>" + value + "</string>\n";
+			p_config_data.plist_content += key + value + "\n";
 		}
 	}
 
