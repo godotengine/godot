@@ -1846,78 +1846,76 @@ int Tree::draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 
 		int prev_hl_ofs = base_ofs;
 
 		while (c) {
-			if (cache.draw_relationship_lines > 0 && (!hide_root || c->parent != root)) {
-				int root_ofs = children_pos.x + ((p_item->disable_folding || hide_folding) ? cache.hseparation : cache.item_margin);
-				int parent_ofs = p_pos.x + cache.item_margin;
-				Point2i root_pos = Point2i(root_ofs, children_pos.y + label_h / 2) - cache.offset + p_draw_ofs;
-
-				if (c->get_first_child() != nullptr) {
-					root_pos -= Point2i(cache.arrow->get_width(), 0);
-				}
-
-				float line_width = cache.relationship_line_width;
-				float parent_line_width = cache.parent_hl_line_width;
-				float children_line_width = cache.children_hl_line_width;
-
-#ifdef TOOLS_ENABLED
-				line_width *= Math::round(EDSCALE);
-				parent_line_width *= Math::round(EDSCALE);
-				children_line_width *= Math::round(EDSCALE);
-#endif
-
-				Point2i parent_pos = Point2i(parent_ofs - cache.arrow->get_width() / 2, p_pos.y + label_h / 2 + cache.arrow->get_height() / 2) - cache.offset + p_draw_ofs;
-
-				int more_prev_ofs = 0;
-
-				if (root_pos.y + line_width >= 0) {
-					if (rtl) {
-						root_pos.x = get_size().width - root_pos.x;
-						parent_pos.x = get_size().width - parent_pos.x;
-					}
-
-					// Order of parts on this bend: the horizontal line first, then the vertical line.
-					if (_is_branch_selected(c)) {
-						// If this item or one of its children is selected, we draw the line using parent highlight style.
-						RenderingServer::get_singleton()->canvas_item_add_line(ci, root_pos, Point2i(parent_pos.x + Math::floor(parent_line_width / 2), root_pos.y), cache.parent_hl_line_color, parent_line_width);
-						RenderingServer::get_singleton()->canvas_item_add_line(ci, Point2i(parent_pos.x, root_pos.y + Math::floor(parent_line_width / 2)), Point2i(parent_pos.x, prev_hl_ofs), cache.parent_hl_line_color, parent_line_width);
-
-						more_prev_ofs = cache.parent_hl_line_margin;
-						prev_hl_ofs = root_pos.y + Math::floor(parent_line_width / 2);
-					} else if (p_item->is_selected(0)) {
-						// If parent item is selected (but this item is not), we draw the line using children highlight style.
-						// Siblings of the selected branch can be drawn with a slight offset and their vertical line must appear as highlighted.
-						if (_is_sibling_branch_selected(c)) {
-							RenderingServer::get_singleton()->canvas_item_add_line(ci, root_pos, Point2i(parent_pos.x + Math::floor(parent_line_width / 2), root_pos.y), cache.children_hl_line_color, children_line_width);
-							RenderingServer::get_singleton()->canvas_item_add_line(ci, Point2i(parent_pos.x, root_pos.y + Math::floor(parent_line_width / 2)), Point2i(parent_pos.x, prev_hl_ofs), cache.parent_hl_line_color, parent_line_width);
-
-							prev_hl_ofs = root_pos.y + Math::floor(parent_line_width / 2);
-						} else {
-							RenderingServer::get_singleton()->canvas_item_add_line(ci, root_pos, Point2i(parent_pos.x + Math::floor(children_line_width / 2), root_pos.y), cache.children_hl_line_color, children_line_width);
-							RenderingServer::get_singleton()->canvas_item_add_line(ci, Point2i(parent_pos.x, root_pos.y + Math::floor(children_line_width / 2)), Point2i(parent_pos.x, prev_ofs + Math::floor(children_line_width / 2)), cache.children_hl_line_color, children_line_width);
-						}
-					} else {
-						// If nothing of the above is true, we draw the line using normal style.
-						// Siblings of the selected branch can be drawn with a slight offset and their vertical line must appear as highlighted.
-						if (_is_sibling_branch_selected(c)) {
-							RenderingServer::get_singleton()->canvas_item_add_line(ci, root_pos, Point2i(parent_pos.x + cache.parent_hl_line_margin, root_pos.y), cache.relationship_line_color, line_width);
-							RenderingServer::get_singleton()->canvas_item_add_line(ci, Point2i(parent_pos.x, root_pos.y + Math::floor(parent_line_width / 2)), Point2i(parent_pos.x, prev_hl_ofs), cache.parent_hl_line_color, parent_line_width);
-
-							prev_hl_ofs = root_pos.y + Math::floor(parent_line_width / 2);
-						} else {
-							RenderingServer::get_singleton()->canvas_item_add_line(ci, root_pos, Point2i(parent_pos.x + Math::floor(line_width / 2), root_pos.y), cache.relationship_line_color, line_width);
-							RenderingServer::get_singleton()->canvas_item_add_line(ci, Point2i(parent_pos.x, root_pos.y + Math::floor(line_width / 2)), Point2i(parent_pos.x, prev_ofs + Math::floor(line_width / 2)), cache.relationship_line_color, line_width);
-						}
-					}
-				}
-
-				if (htotal < 0) {
-					return -1;
-				}
-				prev_ofs = root_pos.y + more_prev_ofs;
-			}
-
 			if (htotal >= 0) {
 				int child_h = draw_item(children_pos, p_draw_ofs, p_draw_size, c);
+
+				// Draw relationship lines.
+				if (cache.draw_relationship_lines > 0 && (!hide_root || c->parent != root)) {
+					int root_ofs = children_pos.x + ((p_item->disable_folding || hide_folding) ? cache.hseparation : cache.item_margin);
+					int parent_ofs = p_pos.x + cache.item_margin;
+					Point2i root_pos = Point2i(root_ofs, children_pos.y + label_h / 2) - cache.offset + p_draw_ofs;
+
+					if (c->get_first_child() != nullptr) {
+						root_pos -= Point2i(cache.arrow->get_width(), 0);
+					}
+
+					float line_width = cache.relationship_line_width;
+					float parent_line_width = cache.parent_hl_line_width;
+					float children_line_width = cache.children_hl_line_width;
+
+#ifdef TOOLS_ENABLED
+					line_width *= Math::round(EDSCALE);
+					parent_line_width *= Math::round(EDSCALE);
+					children_line_width *= Math::round(EDSCALE);
+#endif
+
+					Point2i parent_pos = Point2i(parent_ofs - cache.arrow->get_width() / 2, p_pos.y + label_h / 2 + cache.arrow->get_height() / 2) - cache.offset + p_draw_ofs;
+
+					int more_prev_ofs = 0;
+
+					if (root_pos.y + line_width >= 0) {
+						if (rtl) {
+							root_pos.x = get_size().width - root_pos.x;
+							parent_pos.x = get_size().width - parent_pos.x;
+						}
+
+						// Order of parts on this bend: the horizontal line first, then the vertical line.
+						if (_is_branch_selected(c)) {
+							// If this item or one of its children is selected, we draw the line using parent highlight style.
+							RenderingServer::get_singleton()->canvas_item_add_line(ci, root_pos, Point2i(parent_pos.x + Math::floor(parent_line_width / 2), root_pos.y), cache.parent_hl_line_color, parent_line_width);
+							RenderingServer::get_singleton()->canvas_item_add_line(ci, Point2i(parent_pos.x, root_pos.y + Math::floor(parent_line_width / 2)), Point2i(parent_pos.x, prev_hl_ofs), cache.parent_hl_line_color, parent_line_width);
+
+							more_prev_ofs = cache.parent_hl_line_margin;
+							prev_hl_ofs = root_pos.y + Math::floor(parent_line_width / 2);
+						} else if (p_item->is_selected(0)) {
+							// If parent item is selected (but this item is not), we draw the line using children highlight style.
+							// Siblings of the selected branch can be drawn with a slight offset and their vertical line must appear as highlighted.
+							if (_is_sibling_branch_selected(c)) {
+								RenderingServer::get_singleton()->canvas_item_add_line(ci, root_pos, Point2i(parent_pos.x + Math::floor(parent_line_width / 2), root_pos.y), cache.children_hl_line_color, children_line_width);
+								RenderingServer::get_singleton()->canvas_item_add_line(ci, Point2i(parent_pos.x, root_pos.y + Math::floor(parent_line_width / 2)), Point2i(parent_pos.x, prev_hl_ofs), cache.parent_hl_line_color, parent_line_width);
+
+								prev_hl_ofs = root_pos.y + Math::floor(parent_line_width / 2);
+							} else {
+								RenderingServer::get_singleton()->canvas_item_add_line(ci, root_pos, Point2i(parent_pos.x + Math::floor(children_line_width / 2), root_pos.y), cache.children_hl_line_color, children_line_width);
+								RenderingServer::get_singleton()->canvas_item_add_line(ci, Point2i(parent_pos.x, root_pos.y + Math::floor(children_line_width / 2)), Point2i(parent_pos.x, prev_ofs + Math::floor(children_line_width / 2)), cache.children_hl_line_color, children_line_width);
+							}
+						} else {
+							// If nothing of the above is true, we draw the line using normal style.
+							// Siblings of the selected branch can be drawn with a slight offset and their vertical line must appear as highlighted.
+							if (_is_sibling_branch_selected(c)) {
+								RenderingServer::get_singleton()->canvas_item_add_line(ci, root_pos, Point2i(parent_pos.x + cache.parent_hl_line_margin, root_pos.y), cache.relationship_line_color, line_width);
+								RenderingServer::get_singleton()->canvas_item_add_line(ci, Point2i(parent_pos.x, root_pos.y + Math::floor(parent_line_width / 2)), Point2i(parent_pos.x, prev_hl_ofs), cache.parent_hl_line_color, parent_line_width);
+
+								prev_hl_ofs = root_pos.y + Math::floor(parent_line_width / 2);
+							} else {
+								RenderingServer::get_singleton()->canvas_item_add_line(ci, root_pos, Point2i(parent_pos.x + Math::floor(line_width / 2), root_pos.y), cache.relationship_line_color, line_width);
+								RenderingServer::get_singleton()->canvas_item_add_line(ci, Point2i(parent_pos.x, root_pos.y + Math::floor(line_width / 2)), Point2i(parent_pos.x, prev_ofs + Math::floor(line_width / 2)), cache.relationship_line_color, line_width);
+							}
+						}
+					}
+
+					prev_ofs = root_pos.y + more_prev_ofs;
+				}
 
 				if (child_h < 0) {
 					if (cache.draw_relationship_lines == 0) {
