@@ -408,6 +408,7 @@ void RendererCanvasRenderRD::_render_item(RD::DrawListID p_draw_list, RID p_rend
 
 	PushConstant push_constant;
 	Transform2D base_transform = p_canvas_transform_inverse * p_item->final_transform;
+	Transform2D draw_transform;
 	_update_transform_2d_to_mat2x3(base_transform, push_constant.world);
 
 	Color base_color = p_item->final_modulate;
@@ -731,7 +732,7 @@ void RendererCanvasRenderRD::_render_item(RD::DrawListID p_draw_list, RID p_rend
 					mesh_instance = m->mesh_instance;
 					texture = m->texture;
 					modulate = m->modulate;
-					_update_transform_2d_to_mat2x3(base_transform * m->transform, push_constant.world);
+					_update_transform_2d_to_mat2x3(base_transform * draw_transform * m->transform, push_constant.world);
 				} else if (c->type == Item::Command::TYPE_MULTIMESH) {
 					const Item::CommandMultiMesh *mm = static_cast<const Item::CommandMultiMesh *>(c);
 					RID multimesh = mm->multimesh;
@@ -864,10 +865,10 @@ void RendererCanvasRenderRD::_render_item(RD::DrawListID p_draw_list, RID p_rend
 				for (int j = 0; j < 6; j++) {
 					push_constant.world[j] = world_backup[j];
 				}
-
 			} break;
 			case Item::Command::TYPE_TRANSFORM: {
 				const Item::CommandTransform *transform = static_cast<const Item::CommandTransform *>(c);
+				draw_transform = transform->xform;
 				_update_transform_2d_to_mat2x3(base_transform * transform->xform, push_constant.world);
 
 			} break;
