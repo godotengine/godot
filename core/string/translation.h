@@ -113,6 +113,7 @@ public:
 	StringName translate_plural(const StringName &p_message, const StringName &p_message_plural, int p_n, const StringName &p_context = "") const;
 
 	StringName pseudolocalize(const StringName &p_message) const;
+	String double_vowels(String &message) const;
 	String replace_with_accented_string(String &message) const;
 	String wrap_with_fakebidi_characters(String &message) const;
 	String add_padding(String &message) const;

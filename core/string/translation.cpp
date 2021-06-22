@@ -1403,6 +1403,11 @@ void TranslationServer::set_pseudolocalization_suffix(String suffix) {
 
 StringName TranslationServer::pseudolocalize(const StringName &p_message) const {
 	String message = p_message;
+
+	if (pseudolocalization_double_vowels_enabled) {
+		message = double_vowels(message);
+	}
+
 	if (pseudolocalization_accents_enabled) {
 		message = replace_with_accented_string(message);
 	}
@@ -1414,6 +1419,18 @@ StringName TranslationServer::pseudolocalize(const StringName &p_message) const 
 	StringName res = add_padding(message);
 	return res;
 }
+
+String TranslationServer::double_vowels(String &message) const {
+	String res = "";
+	for (int i = 0; i < message.size(); i++) {
+		res += message[i];
+		if (message[i] == 'a' || message[i] == 'e' || message[i] == 'i' || message[i] == 'o' || message[i] == 'u' ||
+				message[i] == 'A' || message[i] == 'E' || message[i] == 'I' || message[i] == 'O' || message[i] == 'U') {
+			res += message[i];
+		}
+	}
+	return res;
+};
 
 String TranslationServer::replace_with_accented_string(String &message) const {
 	String res = "";
