@@ -3185,7 +3185,29 @@ bool EditorInspectorDefaultPlugin::parse_property(Object *p_object, Variant::Typ
 		} break;
 		case Variant::ARRAY: {
 			EditorPropertyArray *editor = memnew(EditorPropertyArray);
-			editor->setup(Variant::ARRAY, p_hint_text);
+			Variant::Type subtype = Variant::NIL;
+			PropertyHint hint = p_hint;
+
+			bool found_subtype = false;
+			if (p_hint == PROPERTY_HINT_ARRAY_TYPE) {
+				// Set subtype based on array type string.
+				for (int i = 0; i < Variant::VARIANT_MAX; i++) {
+					if (p_hint_text == Variant::get_type_name(Variant::Type(i))) {
+						subtype = Variant::Type(i);
+						found_subtype = true;
+						break;
+					}
+				}
+
+				// Hint text was not a built-in resource type. If the hint text is valid, then
+				// treat the text as a Resource which will be the type of the array.
+				if (!found_subtype && p_hint_text != String()) {
+					subtype = Variant::OBJECT;
+					hint = PROPERTY_HINT_RESOURCE_TYPE;
+				}
+			}
+
+			editor->setup(Variant::ARRAY, subtype, hint, p_hint_text);
 			add_property_editor(p_path, editor);
 		} break;
 		case Variant::PACKED_BYTE_ARRAY: {

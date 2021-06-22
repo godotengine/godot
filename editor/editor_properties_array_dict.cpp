@@ -547,23 +547,11 @@ void EditorPropertyArray::_length_changed(double p_page) {
 	update_property();
 }
 
-void EditorPropertyArray::setup(Variant::Type p_array_type, const String &p_hint_string) {
+void EditorPropertyArray::setup(Variant::Type p_array_type, Variant::Type p_subtype, PropertyHint p_subtype_hint, const String &p_subtype_hint_string) {
 	array_type = p_array_type;
-
-	if (array_type == Variant::ARRAY && !p_hint_string.is_empty()) {
-		int hint_subtype_separator = p_hint_string.find(":");
-		if (hint_subtype_separator >= 0) {
-			String subtype_string = p_hint_string.substr(0, hint_subtype_separator);
-			int slash_pos = subtype_string.find("/");
-			if (slash_pos >= 0) {
-				subtype_hint = PropertyHint(subtype_string.substr(slash_pos + 1, subtype_string.size() - slash_pos - 1).to_int());
-				subtype_string = subtype_string.substr(0, slash_pos);
-			}
-
-			subtype_hint_string = p_hint_string.substr(hint_subtype_separator + 1, p_hint_string.size() - hint_subtype_separator - 1);
-			subtype = Variant::Type(subtype_string.to_int());
-		}
-	}
+	subtype = p_subtype;
+	subtype_hint = p_subtype_hint;
+	subtype_hint_string = p_subtype_hint_string;
 }
 
 void EditorPropertyArray::_bind_methods() {

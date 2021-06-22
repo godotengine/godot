@@ -117,7 +117,7 @@ protected:
 	void _notification(int p_what);
 
 public:
-	void setup(Variant::Type p_array_type, const String &p_hint_string = "");
+	void setup(Variant::Type p_array_type, Variant::Type p_subtype = Variant::NIL, PropertyHint p_subtype_hint = PROPERTY_HINT_NONE, const String &p_subtype_hint_string = "");
 	virtual void update_property() override;
 	EditorPropertyArray();
 };
