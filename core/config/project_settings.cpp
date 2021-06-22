@@ -1137,6 +1137,8 @@ ProjectSettings::ProjectSettings() {
 	GLOBAL_DEF("internationalization/pseudolocalization/use_pseudolocalization", false);
 	GLOBAL_DEF("internationalization/pseudolocalization/replace_with_accents", true);
 	GLOBAL_DEF("internationalization/pseudolocalization/double_vowels", true);
+	GLOBAL_DEF("internationalization/pseudolocalization/expansion_ratio", 0);
+	custom_prop_info["internationalization/pseudolocalization/expansion_ratio"] = PropertyInfo(Variant::INT, "internationalization/pseudolocalization/expansion_ratio", PROPERTY_HINT_RANGE, "0, 100,1");
 	GLOBAL_DEF("internationalization/pseudolocalization/prefix", "[");
 	GLOBAL_DEF("internationalization/pseudolocalization/suffix", "]");
 	GLOBAL_DEF("internationalization/pseudolocalization/fake_bidi", false);

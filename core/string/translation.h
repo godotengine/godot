@@ -79,8 +79,9 @@ class TranslationServer : public Object {
 
 	bool pseudolocalization_enabled;
 	bool pseudolocalization_accents_enabled;
-	bool pseudolocalization_double_vowels;
-	bool pseudolocalization_fake_bidi;
+	bool pseudolocalization_double_vowels_enabled;
+	bool pseudolocalization_fake_bidi_enabled;
+	int expansion_ratio;
 	String pseudolocalization_prefix;
 	String pseudolocalization_suffix;
 
@@ -117,14 +118,16 @@ public:
 	String add_padding(String &message) const;
 	const wchar_t *get_accented_version(char c) const;
 
-	bool get_pseudolocalization_enabled() const;
+	bool is_pseudolocalization_enabled() const;
 	void set_pseudolocalization_enabled(bool enabled);
-	bool get_pseudolocalization_accents_enabled() const;
+	bool is_pseudolocalization_accents_enabled() const;
 	void set_pseudolocalization_accents_enabled(bool enabled);
-	bool get_pseudolocalization_double_vowels() const;
-	void set_pseudolocalization_double_vowels(bool enabled);
-	bool get_pseudolocalization_fake_bidi() const;
-	void set_pseudolocalization_fake_bidi(bool enabled);
+	bool is_pseudolocalization_double_vowels_enabled() const;
+	void set_pseudolocalization_double_vowels_enabled(bool enabled);
+	bool is_pseudolocalization_fake_bidi_enabled() const;
+	void set_pseudolocalization_fake_bidi_enabled(bool enabled);
+	int get_pseudolocalization_expansion_ratio() const;
+	void set_pseudolocalization_expansion_ratio(int ratio);
 	String get_pseudolocalization_prefix() const;
 	void set_pseudolocalization_prefix(String prefix);
 	String get_pseudolocalization_suffix() const;
