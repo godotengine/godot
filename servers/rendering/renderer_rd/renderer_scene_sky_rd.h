@@ -43,9 +43,6 @@
 class RendererSceneRenderRD;
 
 class RendererSceneSkyRD {
-private:
-	RendererStorageRD *storage;
-
 public:
 	enum SkySet {
 		SKY_SET_UNIFORMS,
@@ -54,6 +51,22 @@ public:
 		SKY_SET_FOG,
 		SKY_SET_MAX
 	};
+
+	// Skys need less info from Directional Lights than the normal shaders
+	struct SkyDirectionalLightData {
+		float direction[3];
+		float energy;
+		float color[3];
+		float size;
+		uint32_t enabled;
+		uint32_t pad[3];
+	};
+
+private:
+	RendererStorageRD *storage;
+
+	RID index_buffer;
+	RID index_array;
 
 	enum SkyTextureSetVersion {
 		SKY_TEXTURE_SET_BACKGROUND,
@@ -80,16 +93,53 @@ public:
 		SKY_VERSION_MAX
 	};
 
-	// Skys need less info from Directional Lights than the normal shaders
-	struct SkyDirectionalLightData {
-		float direction[3];
-		float energy;
-		float color[3];
-		float size;
-		uint32_t enabled;
-		uint32_t pad[3];
+	struct SkyPushConstant {
+		float orientation[12]; // 48 - 48
+		float projections[RendererSceneRender::MAX_RENDER_VIEWS][4]; // 2 x 16 - 80
+		float position[3]; // 12 - 92
+		float multiplier; // 4 - 96
+		float time; // 4 - 100
+		float pad[3]; // 12 - 112 // Using pad to align on 16 bytes
+		// 128 is the max size of a push constant. We can replace "pad" but we can't add any more.
 	};
 
+	struct SkyShaderData : public RendererStorageRD::ShaderData {
+		bool valid;
+		RID version;
+
+		PipelineCacheRD pipelines[SKY_VERSION_MAX];
+		Map<StringName, ShaderLanguage::ShaderNode::Uniform> uniforms;
+		Vector<ShaderCompilerRD::GeneratedCode::Texture> texture_uniforms;
+
+		Vector<uint32_t> ubo_offsets;
+		uint32_t ubo_size;
+
+		String path;
+		String code;
+		Map<StringName, RID> default_texture_params;
+
+		bool uses_time;
+		bool uses_position;
+		bool uses_half_res;
+		bool uses_quarter_res;
+		bool uses_light;
+
+		virtual void set_code(const String &p_Code);
+		virtual void set_default_texture_param(const StringName &p_name, RID p_texture);
+		virtual void get_param_list(List<PropertyInfo> *p_param_list) const;
+		virtual void get_instance_param_list(List<RendererStorage::InstanceShaderParam> *p_param_list) const;
+		virtual bool is_param_texture(const StringName &p_param) const;
+		virtual bool is_animated() const;
+		virtual bool casts_shadows() const;
+		virtual Variant get_default_parameter(const StringName &p_parameter) const;
+		virtual RS::ShaderNativeSourceCode get_native_source_code() const;
+		SkyShaderData();
+		virtual ~SkyShaderData();
+	};
+
+	void _render_sky(RD::DrawListID p_list, float p_time, RID p_fb, PipelineCacheRD *p_pipeline, RID p_uniform_set, RID p_texture_set, uint32_t p_view_count, const CameraMatrix *p_projections, const Basis &p_orientation, float p_multiplier, const Vector3 &p_position);
+
+public:
 	struct SkySceneState {
 		struct UBO {
 			uint32_t volumetric_fog_enabled;
@@ -158,40 +208,6 @@ public:
 		void create_reflection_fast_filter(RendererStorageRD *p_storage, bool p_use_arrays);
 		void create_reflection_importance_sample(RendererStorageRD *p_storage, bool p_use_arrays, int p_cube_side, int p_base_layer, uint32_t p_sky_ggx_samples_quality);
 		void update_reflection_mipmaps(RendererStorageRD *p_storage, int p_start, int p_end);
-	};
-
-	struct SkyShaderData : public RendererStorageRD::ShaderData {
-		bool valid;
-		RID version;
-
-		PipelineCacheRD pipelines[SKY_VERSION_MAX];
-		Map<StringName, ShaderLanguage::ShaderNode::Uniform> uniforms;
-		Vector<ShaderCompilerRD::GeneratedCode::Texture> texture_uniforms;
-
-		Vector<uint32_t> ubo_offsets;
-		uint32_t ubo_size;
-
-		String path;
-		String code;
-		Map<StringName, RID> default_texture_params;
-
-		bool uses_time;
-		bool uses_position;
-		bool uses_half_res;
-		bool uses_quarter_res;
-		bool uses_light;
-
-		virtual void set_code(const String &p_Code);
-		virtual void set_default_texture_param(const StringName &p_name, RID p_texture);
-		virtual void get_param_list(List<PropertyInfo> *p_param_list) const;
-		virtual void get_instance_param_list(List<RendererStorage::InstanceShaderParam> *p_param_list) const;
-		virtual bool is_param_texture(const StringName &p_param) const;
-		virtual bool is_animated() const;
-		virtual bool casts_shadows() const;
-		virtual Variant get_default_parameter(const StringName &p_parameter) const;
-		virtual RS::ShaderNativeSourceCode get_native_source_code() const;
-		SkyShaderData();
-		virtual ~SkyShaderData();
 	};
 
 	/* Sky shader */
@@ -270,8 +286,8 @@ public:
 	static RendererStorageRD::MaterialData *_create_sky_material_funcs(RendererStorageRD::ShaderData *p_shader);
 
 	RendererSceneSkyRD();
-
 	void init(RendererStorageRD *p_storage);
+	~RendererSceneSkyRD();
 
 	void setup(RendererSceneEnvironmentRD *p_env, RID p_render_buffers, const CameraMatrix &p_projection, const Transform3D &p_transform, const Size2i p_screen_size, RendererSceneRenderRD *p_scene_render);
 	void update(RendererSceneEnvironmentRD *p_env, const CameraMatrix &p_projection, const Transform3D &p_transform, double p_time);
