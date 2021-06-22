@@ -655,16 +655,17 @@ bool Node::_can_process(bool p_paused) const {
 		process_mode = data.process_mode;
 	}
 
-	if (process_mode == PROCESS_MODE_DISABLED) {
-		return false;
-	} else if (process_mode == PROCESS_MODE_ALWAYS) {
-		return true;
-	}
-
-	if (p_paused) {
-		return process_mode == PROCESS_MODE_WHEN_PAUSED;
-	} else {
-		return process_mode == PROCESS_MODE_PAUSABLE;
+	switch (process_mode) {
+		case PROCESS_MODE_DISABLED:
+			return false;
+		case PROCESS_MODE_ALWAYS:
+			return true;
+		case PROCESS_MODE_WHEN_PAUSED:
+			return p_paused;
+		case PROCESS_MODE_PAUSABLE:
+		case PROCESS_MODE_INHERIT:
+		default:
+			return !p_paused;
 	}
 }
 
