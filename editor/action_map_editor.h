@@ -70,7 +70,7 @@ private:
 	VBoxContainer *additional_options_container;
 
 	HBoxContainer *device_container;
-	OptionButton *device_id_option;
+	DropDownList *device_id_option;
 
 	HBoxContainer *mod_container; // Contains the subcontainer and the store command checkbox.
 

@@ -1268,13 +1268,13 @@ AnimationNodeStateMachineEditor::AnimationNodeStateMachineEditor() {
 
 	top_hb->add_child(memnew(VSeparator));
 	top_hb->add_child(memnew(Label(TTR("Transition: "))));
-	transition_mode = memnew(OptionButton);
+	transition_mode = memnew(DropDownList);
 	top_hb->add_child(transition_mode);
 
 	top_hb->add_spacer();
 
 	top_hb->add_child(memnew(Label(TTR("Play Mode:"))));
-	play_mode = memnew(OptionButton);
+	play_mode = memnew(DropDownList);
 	top_hb->add_child(play_mode);
 
 	panel = memnew(PanelContainer);

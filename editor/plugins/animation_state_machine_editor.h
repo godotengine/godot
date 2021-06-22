@@ -57,8 +57,8 @@ class AnimationNodeStateMachineEditor : public AnimationTreeNodeEditorPlugin {
 	Button *tool_autoplay;
 	Button *tool_end;
 
-	OptionButton *transition_mode;
-	OptionButton *play_mode;
+	DropDownList *transition_mode;
+	DropDownList *play_mode;
 
 	PanelContainer *panel;
 

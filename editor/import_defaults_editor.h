@@ -40,14 +40,14 @@
 #include "editor/shader_globals_editor.h"
 #include "editor_autoload_settings.h"
 #include "scene/gui/center_container.h"
-#include "scene/gui/option_button.h"
+#include "scene/gui/drop_down_list.h"
 
 class ImportDefaultsEditorSettings;
 
 class ImportDefaultsEditor : public VBoxContainer {
 	GDCLASS(ImportDefaultsEditor, VBoxContainer)
 
-	OptionButton *importers;
+	DropDownList *importers;
 	Button *save_defaults;
 	Button *reset_defaults;
 

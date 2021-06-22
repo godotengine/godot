@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="OptionButton" inherits="Button" version="4.0">
+<class name="DropDownList" inherits="Button" version="4.0">
 	<brief_description>
-		Button control that provides selectable options when pressed.
+		Provides a drop-down list when pressed.
 	</brief_description>
 	<description>
-		OptionButton is a type button that provides a selectable list of items when pressed. The item selected becomes the "current" item and is displayed as the button text.
-		See also [BaseButton] which contains common properties and methods associated with this node.
+		Provides a selectable list of items when pressed. The item selected becomes the current [member selected] item.
+		Also inherits all the properties and methods from [Button].
 	</description>
 	<tutorials>
 	</tutorials>
@@ -45,14 +45,14 @@
 			<return type="void">
 			</return>
 			<description>
-				Clears all the items in the [OptionButton].
+				Clears all the items in the [DropDownList].
 			</description>
 		</method>
 		<method name="get_item_count" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
-				Returns the amount of items in the OptionButton, including separators.
+				Returns the number of items in the [DropDownList], including separators.
 			</description>
 		</method>
 		<method name="get_item_icon" qualifiers="const">
@@ -104,7 +104,7 @@
 			<return type="PopupMenu">
 			</return>
 			<description>
-				Returns the [PopupMenu] contained in this button.
+				Returns the [PopupMenu] that the [DropDownList] uses to display the list.
 			</description>
 		</method>
 		<method name="get_selected_id" qualifiers="const">
@@ -233,64 +233,64 @@
 	</constants>
 	<theme_items>
 		<theme_item name="arrow" type="Texture2D">
-			The arrow icon to be drawn on the right end of the button.
+			The arrow icon to be drawn on the right side of the [DropDownList].
 		</theme_item>
 		<theme_item name="arrow_margin" type="int" default="2">
-			The horizontal space between the arrow icon and the right edge of the button.
+			The horizontal space between the arrow icon and the right edge of the list.
 		</theme_item>
 		<theme_item name="disabled" type="StyleBox">
-			[StyleBox] used when the [OptionButton] is disabled (for left-to-right layouts).
+			[StyleBox] used when the [DropDownList] is disabled (for left-to-right layouts).
 		</theme_item>
 		<theme_item name="disabled_mirrored" type="StyleBox">
-			[StyleBox] used when the [OptionButton] is disabled (for right-to-left layouts).
+			[StyleBox] used when the [DropDownList] is disabled (for right-to-left layouts).
 		</theme_item>
 		<theme_item name="focus" type="StyleBox">
-			[StyleBox] used when the [OptionButton] is focused. It is displayed over the current [StyleBox], so using [StyleBoxEmpty] will just disable the focus visual effect.
+			[StyleBox] used when the [DropDownList] is focused. It is displayed over the current [StyleBox], so using [StyleBoxEmpty] will just disable the focus visual effect.
 		</theme_item>
 		<theme_item name="font" type="Font">
-			[Font] of the [OptionButton]'s text.
+			[Font] of the [DropDownList]'s text.
 		</theme_item>
 		<theme_item name="font_color" type="Color" default="Color(0.88, 0.88, 0.88, 1)">
-			Default text [Color] of the [OptionButton].
+			Default text [Color] of the [DropDownList].
 		</theme_item>
 		<theme_item name="font_disabled_color" type="Color" default="Color(0.9, 0.9, 0.9, 0.2)">
-			Text [Color] used when the [OptionButton] is disabled.
+			Text [Color] used when the [DropDownList] is disabled.
 		</theme_item>
 		<theme_item name="font_hover_color" type="Color" default="Color(0.94, 0.94, 0.94, 1)">
-			Text [Color] used when the [OptionButton] is being hovered.
+			Text [Color] used when the [DropDownList] is being hovered.
 		</theme_item>
 		<theme_item name="font_outline_color" type="Color" default="Color(1, 1, 1, 1)">
-			The tint of text outline of the [OptionButton].
+			The tint of text outline of the [DropDownList].
 		</theme_item>
 		<theme_item name="font_pressed_color" type="Color" default="Color(1, 1, 1, 1)">
-			Text [Color] used when the [OptionButton] is being pressed.
+			Text [Color] used when the [DropDownList] is being pressed.
 		</theme_item>
 		<theme_item name="font_size" type="int">
-			Font size of the [OptionButton]'s text.
+			Font size of the [DropDownList]'s text.
 		</theme_item>
 		<theme_item name="hover" type="StyleBox">
-			[StyleBox] used when the [OptionButton] is being hovered (for left-to-right layouts).
+			[StyleBox] used when the [DropDownList] is being hovered (for left-to-right layouts).
 		</theme_item>
 		<theme_item name="hover_mirrored" type="StyleBox">
-			[StyleBox] used when the [OptionButton] is being hovered (for right-to-left layouts).
+			[StyleBox] used when the [DropDownList] is being hovered (for right-to-left layouts).
 		</theme_item>
 		<theme_item name="hseparation" type="int" default="2">
-			The horizontal space between [OptionButton]'s icon and text.
+			The horizontal space between [DropDownList]'s icon and text.
 		</theme_item>
 		<theme_item name="normal" type="StyleBox">
-			Default [StyleBox] for the [OptionButton] (for left-to-right layouts).
+			Default [StyleBox] for the [DropDownList] (for left-to-right layouts).
 		</theme_item>
 		<theme_item name="normal_mirrored" type="StyleBox">
-			Default [StyleBox] for the [OptionButton] (for right-to-left layouts).
+			Default [StyleBox] for the [DropDownList] (for right-to-left layouts).
 		</theme_item>
 		<theme_item name="outline_size" type="int" default="0">
 			The size of the text outline.
 		</theme_item>
 		<theme_item name="pressed" type="StyleBox">
-			[StyleBox] used when the [OptionButton] is being pressed (for left-to-right layouts).
+			[StyleBox] used when the [DropDownList] is being pressed (for left-to-right layouts).
 		</theme_item>
 		<theme_item name="pressed_mirrored" type="StyleBox">
-			[StyleBox] used when the [OptionButton] is being pressed (for right-to-left layouts).
+			[StyleBox] used when the [DropDownList] is being pressed (for right-to-left layouts).
 		</theme_item>
 	</theme_items>
 </class>

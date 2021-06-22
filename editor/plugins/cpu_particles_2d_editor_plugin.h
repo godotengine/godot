@@ -64,7 +64,7 @@ class CPUParticles2DEditorPlugin : public EditorPlugin {
 	SpinBox *epoints;
 
 	ConfirmationDialog *emission_mask;
-	OptionButton *emission_mask_mode;
+	DropDownList *emission_mask_mode;
 	CheckBox *emission_colors;
 
 	String source_emission_file;

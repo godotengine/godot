@@ -55,7 +55,7 @@ class TextureRegionEditor : public VBoxContainer {
 	};
 
 	friend class TextureRegionEditorPlugin;
-	OptionButton *snap_mode_button;
+	DropDownList *snap_mode_button;
 	Button *zoom_in;
 	Button *zoom_reset;
 	Button *zoom_out;

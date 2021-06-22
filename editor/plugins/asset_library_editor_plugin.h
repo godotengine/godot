@@ -36,10 +36,10 @@
 #include "editor/editor_plugin_settings.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/check_box.h"
+#include "scene/gui/drop_down_list.h"
 #include "scene/gui/grid_container.h"
 #include "scene/gui/line_edit.h"
 #include "scene/gui/link_button.h"
-#include "scene/gui/option_button.h"
 #include "scene/gui/panel_container.h"
 #include "scene/gui/progress_bar.h"
 #include "scene/gui/rich_text_label.h"
@@ -185,9 +185,9 @@ class EditorAssetLibrary : public PanelContainer {
 	Label *library_error;
 	LineEdit *filter;
 	Timer *filter_debounce_timer;
-	OptionButton *categories;
-	OptionButton *repository;
-	OptionButton *sort;
+	DropDownList *categories;
+	DropDownList *repository;
+	DropDownList *sort;
 	HBoxContainer *error_hb;
 	TextureRect *error_tr;
 	Label *error_label;

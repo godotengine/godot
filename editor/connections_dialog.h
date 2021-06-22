@@ -95,7 +95,7 @@ private:
 	SceneTreeEditor *tree;
 	AcceptDialog *error;
 	EditorInspector *bind_editor;
-	OptionButton *type_list;
+	DropDownList *type_list;
 	CheckBox *deferred;
 	CheckBox *oneshot;
 	CheckButton *advanced;

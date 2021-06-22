@@ -33,7 +33,7 @@
 
 #include "scene/gui/check_box.h"
 #include "scene/gui/dialogs.h"
-#include "scene/gui/option_button.h"
+#include "scene/gui/drop_down_list.h"
 #include "scene/gui/spin_box.h"
 
 #include "core/object/undo_redo.h"
@@ -89,8 +89,8 @@ class RenameDialog : public ConfirmationDialog {
 	SpinBox *spn_count_step;
 	SpinBox *spn_count_padding;
 
-	OptionButton *opt_style;
-	OptionButton *opt_case;
+	DropDownList *opt_style;
+	DropDownList *opt_case;
 
 	Label *lbl_preview_title;
 	Label *lbl_preview;

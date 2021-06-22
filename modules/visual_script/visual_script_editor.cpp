@@ -839,7 +839,7 @@ void VisualScriptEditor::_update_graph(int p_only_id) {
 					}
 
 					if (nd_list->is_input_port_type_editable()) {
-						OptionButton *opbtn = memnew(OptionButton);
+						DropDownList *opbtn = memnew(DropDownList);
 						for (int j = Variant::NIL; j < Variant::VARIANT_MAX; j++) {
 							opbtn->add_item(Variant::get_type_name(Variant::Type(j)));
 						}
@@ -911,7 +911,7 @@ void VisualScriptEditor::_update_graph(int p_only_id) {
 					rmbtn->connect("pressed", callable_mp(this, &VisualScriptEditor::_remove_output_port), varray(E->get(), i), CONNECT_DEFERRED);
 
 					if (nd_list->is_output_port_type_editable()) {
-						OptionButton *opbtn = memnew(OptionButton);
+						DropDownList *opbtn = memnew(DropDownList);
 						for (int j = Variant::NIL; j < Variant::VARIANT_MAX; j++) {
 							opbtn->add_item(Variant::get_type_name(Variant::Type(j)));
 						}
@@ -1307,7 +1307,7 @@ void VisualScriptEditor::_create_function() {
 	func_node->set_name(name);
 
 	for (int i = 0; i < func_input_vbox->get_child_count(); i++) {
-		OptionButton *opbtn = Object::cast_to<OptionButton>(func_input_vbox->get_child(i)->get_child(3));
+		DropDownList *opbtn = Object::cast_to<DropDownList>(func_input_vbox->get_child(i)->get_child(3));
 		LineEdit *lne = Object::cast_to<LineEdit>(func_input_vbox->get_child(i)->get_child(1));
 		if (!opbtn || !lne) {
 			continue;
@@ -1357,7 +1357,7 @@ void VisualScriptEditor::_add_func_input() {
 	type_label->set_text(TTR("Type:"));
 	hbox->add_child(type_label);
 
-	OptionButton *type_box = memnew(OptionButton);
+	DropDownList *type_box = memnew(DropDownList);
 	type_box->set_custom_minimum_size(Size2(120 * EDSCALE, 0));
 	for (int i = Variant::NIL; i < Variant::VARIANT_MAX; i++) {
 		type_box->add_item(Variant::get_type_name(Variant::Type(i)));

@@ -5878,7 +5878,7 @@ AnimationTrackEditor::AnimationTrackEditor() {
 	step->connect("value_changed", callable_mp(this, &AnimationTrackEditor::_update_step));
 	step->set_read_only(true);
 
-	snap_mode = memnew(OptionButton);
+	snap_mode = memnew(DropDownList);
 	snap_mode->add_item(TTR("Seconds"));
 	snap_mode->add_item(TTR("FPS"));
 	bottom_hb->add_child(snap_mode);

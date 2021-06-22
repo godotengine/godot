@@ -1177,7 +1177,7 @@ SceneImportSettings::SceneImportSettings() {
 	save_path->get_vbox()->add_child(extension_hb);
 	extension_hb->add_spacer();
 	extension_hb->add_child(memnew(Label(TTR("Save Extension: "))));
-	external_extension_type = memnew(OptionButton);
+	external_extension_type = memnew(DropDownList);
 	extension_hb->add_child(external_extension_type);
 	external_extension_type->add_item(TTR("Text: *.tres"));
 	external_extension_type->add_item(TTR("Binary: *.res"));

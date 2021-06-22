@@ -303,7 +303,7 @@ MultiMeshEditor::MultiMeshEditor() {
 	vbc->add_margin_child(TTR("Source Mesh:"), hbc);
 	b->connect("pressed", callable_mp(this, &MultiMeshEditor::_browse), make_binds(true));
 
-	populate_axis = memnew(OptionButton);
+	populate_axis = memnew(DropDownList);
 	populate_axis->add_item(TTR("X-Axis"));
 	populate_axis->add_item(TTR("Y-Axis"));
 	populate_axis->add_item(TTR("Z-Axis"));

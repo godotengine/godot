@@ -33,8 +33,8 @@
 
 #include "scene/gui/check_box.h"
 #include "scene/gui/dialogs.h"
+#include "scene/gui/drop_down_list.h"
 #include "scene/gui/line_edit.h"
-#include "scene/gui/option_button.h"
 #include "scene/gui/text_edit.h"
 
 class PluginConfigDialog : public ConfirmationDialog {
@@ -45,7 +45,7 @@ class PluginConfigDialog : public ConfirmationDialog {
 	TextEdit *desc_edit;
 	LineEdit *author_edit;
 	LineEdit *version_edit;
-	OptionButton *script_option_edit;
+	DropDownList *script_option_edit;
 	LineEdit *script_edit;
 	CheckBox *active_edit;
 

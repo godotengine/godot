@@ -31,8 +31,8 @@
 #ifndef THEME_EDITOR_PLUGIN_H
 #define THEME_EDITOR_PLUGIN_H
 
+#include "scene/gui/drop_down_list.h"
 #include "scene/gui/margin_container.h"
-#include "scene/gui/option_button.h"
 #include "scene/gui/scroll_container.h"
 #include "scene/gui/tabs.h"
 #include "scene/gui/texture_rect.h"
@@ -279,7 +279,7 @@ class ThemeTypeEditor : public MarginContainer {
 
 	LeadingStylebox leading_stylebox;
 
-	OptionButton *theme_type_list;
+	DropDownList *theme_type_list;
 	Button *add_type_button;
 	ConfirmationDialog *add_type_dialog;
 	LineEdit *add_type_filter;

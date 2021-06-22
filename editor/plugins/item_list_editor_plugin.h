@@ -35,8 +35,8 @@
 #include "editor/editor_inspector.h"
 #include "editor/editor_node.h"
 #include "editor/editor_plugin.h"
+#include "scene/gui/drop_down_list.h"
 #include "scene/gui/menu_button.h"
-#include "scene/gui/option_button.h"
 #include "scene/gui/popup_menu.h"
 
 class ItemListPlugin : public Object {
@@ -93,10 +93,10 @@ public:
 
 ///////////////////////////////////////////////////////////////
 
-class ItemListOptionButtonPlugin : public ItemListPlugin {
-	GDCLASS(ItemListOptionButtonPlugin, ItemListPlugin);
+class ItemListDropDownListPlugin : public ItemListPlugin {
+	GDCLASS(ItemListDropDownListPlugin, ItemListPlugin);
 
-	OptionButton *ob;
+	DropDownList *ob;
 
 public:
 	virtual void set_object(Object *p_object) override;
@@ -119,7 +119,7 @@ public:
 	virtual int get_item_count() const override;
 	virtual void erase(int p_idx) override;
 
-	ItemListOptionButtonPlugin();
+	ItemListDropDownListPlugin();
 };
 
 class ItemListPopupMenuPlugin : public ItemListPlugin {

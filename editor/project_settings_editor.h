@@ -61,8 +61,8 @@ class ProjectSettingsEditor : public AcceptDialog {
 	CheckButton *advanced;
 
 	LineEdit *property_box;
-	OptionButton *feature_box;
-	OptionButton *type_box;
+	DropDownList *feature_box;
+	DropDownList *type_box;
 	Button *add_button;
 	Button *del_button;
 

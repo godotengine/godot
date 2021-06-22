@@ -36,7 +36,7 @@
 #include "editor/editor_file_dialog.h"
 #include "editor_help.h"
 #include "scene/gui/dialogs.h"
-#include "scene/gui/option_button.h"
+#include "scene/gui/drop_down_list.h"
 #include "scene/gui/separator.h"
 #include "scene/gui/split_container.h"
 #include "scene/gui/tree.h"
@@ -123,7 +123,7 @@ class EditorFeatureProfileManager : public AcceptDialog {
 	LineEdit *new_profile_name;
 
 	LineEdit *current_profile_name;
-	OptionButton *profile_list;
+	DropDownList *profile_list;
 	Button *profile_actions[PROFILE_MAX];
 
 	HSplitContainer *h_split;

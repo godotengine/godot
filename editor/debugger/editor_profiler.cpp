@@ -587,7 +587,7 @@ EditorProfiler::EditorProfiler() {
 
 	hb->add_child(memnew(Label(TTR("Measure:"))));
 
-	display_mode = memnew(OptionButton);
+	display_mode = memnew(DropDownList);
 	display_mode->add_item(TTR("Frame Time (sec)"));
 	display_mode->add_item(TTR("Average Time (sec)"));
 	display_mode->add_item(TTR("Frame %"));
@@ -598,7 +598,7 @@ EditorProfiler::EditorProfiler() {
 
 	hb->add_child(memnew(Label(TTR("Time:"))));
 
-	display_time = memnew(OptionButton);
+	display_time = memnew(DropDownList);
 	display_time->add_item(TTR("Inclusive"));
 	display_time->add_item(TTR("Self"));
 	display_time->connect("item_selected", callable_mp(this, &EditorProfiler::_combo_changed));

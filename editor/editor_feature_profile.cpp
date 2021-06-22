@@ -873,7 +873,7 @@ EditorFeatureProfileManager::EditorFeatureProfileManager() {
 	main_vbc->add_child(memnew(HSeparator));
 
 	HBoxContainer *profiles_hbc = memnew(HBoxContainer);
-	profile_list = memnew(OptionButton);
+	profile_list = memnew(DropDownList);
 	profile_list->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	profiles_hbc->add_child(profile_list);
 	profile_list->connect("item_selected", callable_mp(this, &EditorFeatureProfileManager::_profile_selected));

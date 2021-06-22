@@ -210,7 +210,7 @@ void EditorPropertyTextEnum::_bind_methods() {
 }
 
 EditorPropertyTextEnum::EditorPropertyTextEnum() {
-	options = memnew(OptionButton);
+	options = memnew(DropDownList);
 	options->set_clip_text(true);
 	options->set_flat(true);
 	string_name = false;
@@ -503,7 +503,7 @@ void EditorPropertyEnum::setup(const Vector<String> &p_options) {
 	}
 }
 
-void EditorPropertyEnum::set_option_button_clip(bool p_enable) {
+void EditorPropertyEnum::set_drop_down_list_clip(bool p_enable) {
 	options->set_clip_text(p_enable);
 }
 
@@ -511,7 +511,7 @@ void EditorPropertyEnum::_bind_methods() {
 }
 
 EditorPropertyEnum::EditorPropertyEnum() {
-	options = memnew(OptionButton);
+	options = memnew(DropDownList);
 	options->set_clip_text(true);
 	options->set_flat(true);
 	add_child(options);

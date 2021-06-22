@@ -61,7 +61,7 @@ private:
 	VBoxContainer *set_up_vbc;
 	HBoxContainer *set_up_hbc;
 	Label *set_up_vcs_label;
-	OptionButton *set_up_choice;
+	DropDownList *set_up_choice;
 	PanelContainer *set_up_init_settings;
 	Button *set_up_init_button;
 	RichTextLabel *set_up_vcs_status;

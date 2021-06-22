@@ -297,7 +297,7 @@ class AnimationTrackEditor : public VBoxContainer {
 	EditorSpinSlider *step;
 	TextureRect *zoom_icon;
 	Button *snap;
-	OptionButton *snap_mode;
+	DropDownList *snap_mode;
 
 	Button *imported_anim_warning;
 	void _show_imported_anim_warning();

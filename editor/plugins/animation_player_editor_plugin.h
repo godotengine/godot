@@ -87,7 +87,7 @@ class AnimationPlayerEditor : public VBoxContainer {
 		RESOURCE_SAVE
 	};
 
-	OptionButton *animation;
+	DropDownList *animation;
 	Button *stop;
 	Button *play;
 	Button *play_from;
@@ -117,7 +117,7 @@ class AnimationPlayerEditor : public VBoxContainer {
 	struct BlendEditor {
 		AcceptDialog *dialog = nullptr;
 		Tree *tree = nullptr;
-		OptionButton *next = nullptr;
+		DropDownList *next = nullptr;
 
 	} blend_editor;
 

@@ -73,7 +73,7 @@ private:
 		Map<int, Port> output_ports;
 		VBoxContainer *preview_box = nullptr;
 		LineEdit *uniform_name = nullptr;
-		OptionButton *const_op = nullptr;
+		DropDownList *const_op = nullptr;
 		CodeEdit *expression_edit = nullptr;
 		CurveEditor *curve_editor = nullptr;
 	};
@@ -95,7 +95,7 @@ public:
 	void register_output_port(int p_id, int p_port, TextureButton *p_button);
 	void register_uniform_name(int p_id, LineEdit *p_uniform_name);
 	void register_default_input_button(int p_node_id, int p_port_id, Button *p_button);
-	void register_constant_option_btn(int p_node_id, OptionButton *p_button);
+	void register_constant_drop_down_list(int p_node_id, DropDownList *p_drop_down_list);
 	void register_expression_edit(int p_node_id, CodeEdit *p_expression_edit);
 	void register_curve_editor(int p_node_id, CurveEditor *p_curve_editor);
 	void clear_links();
@@ -141,10 +141,10 @@ class VisualShaderEditor : public VBoxContainer {
 	Button *add_node;
 	Button *preview_shader;
 
-	OptionButton *edit_type = nullptr;
-	OptionButton *edit_type_standard;
-	OptionButton *edit_type_particles;
-	OptionButton *edit_type_sky;
+	DropDownList *edit_type = nullptr;
+	DropDownList *edit_type_standard;
+	DropDownList *edit_type_particles;
+	DropDownList *edit_type_sky;
 	CheckBox *custom_mode_box;
 	bool custom_mode_enabled = false;
 
@@ -485,7 +485,7 @@ public:
 
 class EditorPropertyShaderMode : public EditorProperty {
 	GDCLASS(EditorPropertyShaderMode, EditorProperty);
-	OptionButton *options;
+	DropDownList *options;
 
 	void _option_selected(int p_which);
 
@@ -495,7 +495,7 @@ protected:
 public:
 	void setup(const Vector<String> &p_options);
 	virtual void update_property() override;
-	void set_option_button_clip(bool p_enable);
+	void set_drop_down_list_clip(bool p_enable);
 	EditorPropertyShaderMode();
 };
 

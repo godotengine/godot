@@ -2883,7 +2883,7 @@ ThemeTypeEditor::ThemeTypeEditor() {
 	type_list_label->set_text(TTR("Type:"));
 	type_list_hb->add_child(type_list_label);
 
-	theme_type_list = memnew(OptionButton);
+	theme_type_list = memnew(DropDownList);
 	theme_type_list->set_h_size_flags(SIZE_EXPAND_FILL);
 	type_list_hb->add_child(theme_type_list);
 	theme_type_list->connect("item_selected", callable_mp(this, &ThemeTypeEditor::_list_type_selected));

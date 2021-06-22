@@ -749,7 +749,7 @@ LocalizationEditor::LocalizationEditor() {
 		tmc->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 		tvb->add_child(tmc);
 
-		translation_locale_filter_mode = memnew(OptionButton);
+		translation_locale_filter_mode = memnew(DropDownList);
 		translation_locale_filter_mode->add_item(TTR("Show All Locales"), SHOW_ALL_LOCALES);
 		translation_locale_filter_mode->add_item(TTR("Show Selected Locales Only"), SHOW_ONLY_SELECTED_LOCALES);
 		translation_locale_filter_mode->select(0);

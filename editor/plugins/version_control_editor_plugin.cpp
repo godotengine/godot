@@ -374,7 +374,7 @@ VersionControlEditorPlugin::VersionControlEditorPlugin() {
 	set_up_vcs_label->set_text(TTR("Version Control System"));
 	set_up_hbc->add_child(set_up_vcs_label);
 
-	set_up_choice = memnew(OptionButton);
+	set_up_choice = memnew(DropDownList);
 	set_up_choice->set_h_size_flags(HBoxContainer::SIZE_EXPAND_FILL);
 	set_up_choice->connect("item_selected", callable_mp(this, &VersionControlEditorPlugin::_selected_a_vcs));
 	set_up_hbc->add_child(set_up_choice);

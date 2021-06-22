@@ -188,7 +188,7 @@ void ImportDefaultsEditor::_bind_methods() {
 ImportDefaultsEditor::ImportDefaultsEditor() {
 	HBoxContainer *hb = memnew(HBoxContainer);
 	hb->add_child(memnew(Label(TTR("Importer:"))));
-	importers = memnew(OptionButton);
+	importers = memnew(DropDownList);
 	hb->add_child(importers);
 	hb->add_spacer();
 	importers->connect("item_selected", callable_mp(this, &ImportDefaultsEditor::_importer_selected));

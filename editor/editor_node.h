@@ -215,7 +215,7 @@ private:
 	Control *theme_base;
 	Control *gui_base;
 	VBoxContainer *main_vbox;
-	OptionButton *video_driver;
+	DropDownList *video_driver;
 
 	ConfirmationDialog *video_restart_dialog;
 

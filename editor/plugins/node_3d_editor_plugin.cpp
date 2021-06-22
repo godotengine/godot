@@ -4717,7 +4717,7 @@ Dictionary Node3DEditor::get_state() const {
 	d["rotate_snap"] = get_rotate_snap();
 	d["scale_snap"] = get_scale_snap();
 
-	d["local_coords"] = tool_option_button[TOOL_OPT_LOCAL_COORDS]->is_pressed();
+	d["local_coords"] = tool_drop_down_list[TOOL_OPT_LOCAL_COORDS]->is_pressed();
 
 	int vc = 0;
 	if (view_menu->get_popup()->is_item_checked(view_menu->get_popup()->get_item_index(MENU_VIEW_USE_1_VIEWPORT))) {
@@ -4790,7 +4790,7 @@ void Node3DEditor::set_state(const Dictionary &p_state) {
 
 	if (d.has("snap_enabled")) {
 		snap_enabled = d["snap_enabled"];
-		tool_option_button[TOOL_OPT_USE_SNAP]->set_pressed(d["snap_enabled"]);
+		tool_drop_down_list[TOOL_OPT_USE_SNAP]->set_pressed(d["snap_enabled"]);
 	}
 
 	if (d.has("translate_snap")) {
@@ -4808,7 +4808,7 @@ void Node3DEditor::set_state(const Dictionary &p_state) {
 	_snap_update();
 
 	if (d.has("local_coords")) {
-		tool_option_button[TOOL_OPT_LOCAL_COORDS]->set_pressed(d["local_coords"]);
+		tool_drop_down_list[TOOL_OPT_LOCAL_COORDS]->set_pressed(d["local_coords"]);
 		update_transform_gizmo();
 	}
 
@@ -5010,12 +5010,12 @@ void Node3DEditor::_xform_dialog_action() {
 void Node3DEditor::_menu_item_toggled(bool pressed, int p_option) {
 	switch (p_option) {
 		case MENU_TOOL_LOCAL_COORDS: {
-			tool_option_button[TOOL_OPT_LOCAL_COORDS]->set_pressed(pressed);
+			tool_drop_down_list[TOOL_OPT_LOCAL_COORDS]->set_pressed(pressed);
 			update_transform_gizmo();
 		} break;
 
 		case MENU_TOOL_USE_SNAP: {
-			tool_option_button[TOOL_OPT_USE_SNAP]->set_pressed(pressed);
+			tool_drop_down_list[TOOL_OPT_USE_SNAP]->set_pressed(pressed);
 			snap_enabled = pressed;
 		} break;
 
@@ -5057,7 +5057,7 @@ void Node3DEditor::_menu_gizmo_toggled(int p_option) {
 }
 
 void Node3DEditor::_update_camera_override_button(bool p_game_running) {
-	Button *const button = tool_option_button[TOOL_OPT_OVERRIDE_CAMERA];
+	Button *const button = tool_drop_down_list[TOOL_OPT_OVERRIDE_CAMERA];
 
 	if (p_game_running) {
 		button->set_disabled(false);
@@ -6269,9 +6269,9 @@ void Node3DEditor::_notification(int p_what) {
 		tool_button[Node3DEditor::TOOL_GROUP_SELECTED]->set_icon(get_theme_icon("Group", "EditorIcons"));
 		tool_button[Node3DEditor::TOOL_UNGROUP_SELECTED]->set_icon(get_theme_icon("Ungroup", "EditorIcons"));
 
-		tool_option_button[Node3DEditor::TOOL_OPT_LOCAL_COORDS]->set_icon(get_theme_icon("Object", "EditorIcons"));
-		tool_option_button[Node3DEditor::TOOL_OPT_USE_SNAP]->set_icon(get_theme_icon("Snap", "EditorIcons"));
-		tool_option_button[Node3DEditor::TOOL_OPT_OVERRIDE_CAMERA]->set_icon(get_theme_icon("Camera3D", "EditorIcons"));
+		tool_drop_down_list[Node3DEditor::TOOL_OPT_LOCAL_COORDS]->set_icon(get_theme_icon("Object", "EditorIcons"));
+		tool_drop_down_list[Node3DEditor::TOOL_OPT_USE_SNAP]->set_icon(get_theme_icon("Snap", "EditorIcons"));
+		tool_drop_down_list[Node3DEditor::TOOL_OPT_OVERRIDE_CAMERA]->set_icon(get_theme_icon("Camera3D", "EditorIcons"));
 
 		view_menu->get_popup()->set_item_icon(view_menu->get_popup()->get_item_index(MENU_VIEW_USE_1_VIEWPORT), get_theme_icon("Panels1", "EditorIcons"));
 		view_menu->get_popup()->set_item_icon(view_menu->get_popup()->get_item_index(MENU_VIEW_USE_2_VIEWPORTS), get_theme_icon("Panels2", "EditorIcons"));
@@ -6323,8 +6323,8 @@ void Node3DEditor::_notification(int p_what) {
 		tool_button[Node3DEditor::TOOL_GROUP_SELECTED]->set_icon(get_theme_icon("Group", "EditorIcons"));
 		tool_button[Node3DEditor::TOOL_UNGROUP_SELECTED]->set_icon(get_theme_icon("Ungroup", "EditorIcons"));
 
-		tool_option_button[Node3DEditor::TOOL_OPT_LOCAL_COORDS]->set_icon(get_theme_icon("Object", "EditorIcons"));
-		tool_option_button[Node3DEditor::TOOL_OPT_USE_SNAP]->set_icon(get_theme_icon("Snap", "EditorIcons"));
+		tool_drop_down_list[Node3DEditor::TOOL_OPT_LOCAL_COORDS]->set_icon(get_theme_icon("Object", "EditorIcons"));
+		tool_drop_down_list[Node3DEditor::TOOL_OPT_USE_SNAP]->set_icon(get_theme_icon("Snap", "EditorIcons"));
 
 		view_menu->get_popup()->set_item_icon(view_menu->get_popup()->get_item_index(MENU_VIEW_USE_1_VIEWPORT), get_theme_icon("Panels1", "EditorIcons"));
 		view_menu->get_popup()->set_item_icon(view_menu->get_popup()->get_item_index(MENU_VIEW_USE_2_VIEWPORTS), get_theme_icon("Panels2", "EditorIcons"));
@@ -6337,11 +6337,11 @@ void Node3DEditor::_notification(int p_what) {
 		_finish_grid();
 		_init_grid();
 	} else if (p_what == NOTIFICATION_VISIBILITY_CHANGED) {
-		if (!is_visible() && tool_option_button[TOOL_OPT_OVERRIDE_CAMERA]->is_pressed()) {
+		if (!is_visible() && tool_drop_down_list[TOOL_OPT_OVERRIDE_CAMERA]->is_pressed()) {
 			EditorDebuggerNode *debugger = EditorDebuggerNode::get_singleton();
 
 			debugger->set_camera_override(EditorDebuggerNode::OVERRIDE_NONE);
-			tool_option_button[TOOL_OPT_OVERRIDE_CAMERA]->set_pressed(false);
+			tool_drop_down_list[TOOL_OPT_OVERRIDE_CAMERA]->set_pressed(false);
 		}
 	}
 }
@@ -6802,33 +6802,33 @@ Node3DEditor::Node3DEditor(EditorNode *p_editor) {
 
 	hbc_menu->add_child(memnew(VSeparator));
 
-	tool_option_button[TOOL_OPT_LOCAL_COORDS] = memnew(Button);
-	hbc_menu->add_child(tool_option_button[TOOL_OPT_LOCAL_COORDS]);
-	tool_option_button[TOOL_OPT_LOCAL_COORDS]->set_toggle_mode(true);
-	tool_option_button[TOOL_OPT_LOCAL_COORDS]->set_flat(true);
+	tool_drop_down_list[TOOL_OPT_LOCAL_COORDS] = memnew(Button);
+	hbc_menu->add_child(tool_drop_down_list[TOOL_OPT_LOCAL_COORDS]);
+	tool_drop_down_list[TOOL_OPT_LOCAL_COORDS]->set_toggle_mode(true);
+	tool_drop_down_list[TOOL_OPT_LOCAL_COORDS]->set_flat(true);
 	button_binds.write[0] = MENU_TOOL_LOCAL_COORDS;
-	tool_option_button[TOOL_OPT_LOCAL_COORDS]->connect("toggled", callable_mp(this, &Node3DEditor::_menu_item_toggled), button_binds);
-	tool_option_button[TOOL_OPT_LOCAL_COORDS]->set_shortcut(ED_SHORTCUT("spatial_editor/local_coords", TTR("Use Local Space"), KEY_T));
-	tool_option_button[TOOL_OPT_LOCAL_COORDS]->set_shortcut_context(this);
+	tool_drop_down_list[TOOL_OPT_LOCAL_COORDS]->connect("toggled", callable_mp(this, &Node3DEditor::_menu_item_toggled), button_binds);
+	tool_drop_down_list[TOOL_OPT_LOCAL_COORDS]->set_shortcut(ED_SHORTCUT("spatial_editor/local_coords", TTR("Use Local Space"), KEY_T));
+	tool_drop_down_list[TOOL_OPT_LOCAL_COORDS]->set_shortcut_context(this);
 
-	tool_option_button[TOOL_OPT_USE_SNAP] = memnew(Button);
-	hbc_menu->add_child(tool_option_button[TOOL_OPT_USE_SNAP]);
-	tool_option_button[TOOL_OPT_USE_SNAP]->set_toggle_mode(true);
-	tool_option_button[TOOL_OPT_USE_SNAP]->set_flat(true);
+	tool_drop_down_list[TOOL_OPT_USE_SNAP] = memnew(Button);
+	hbc_menu->add_child(tool_drop_down_list[TOOL_OPT_USE_SNAP]);
+	tool_drop_down_list[TOOL_OPT_USE_SNAP]->set_toggle_mode(true);
+	tool_drop_down_list[TOOL_OPT_USE_SNAP]->set_flat(true);
 	button_binds.write[0] = MENU_TOOL_USE_SNAP;
-	tool_option_button[TOOL_OPT_USE_SNAP]->connect("toggled", callable_mp(this, &Node3DEditor::_menu_item_toggled), button_binds);
-	tool_option_button[TOOL_OPT_USE_SNAP]->set_shortcut(ED_SHORTCUT("spatial_editor/snap", TTR("Use Snap"), KEY_Y));
-	tool_option_button[TOOL_OPT_USE_SNAP]->set_shortcut_context(this);
+	tool_drop_down_list[TOOL_OPT_USE_SNAP]->connect("toggled", callable_mp(this, &Node3DEditor::_menu_item_toggled), button_binds);
+	tool_drop_down_list[TOOL_OPT_USE_SNAP]->set_shortcut(ED_SHORTCUT("spatial_editor/snap", TTR("Use Snap"), KEY_Y));
+	tool_drop_down_list[TOOL_OPT_USE_SNAP]->set_shortcut_context(this);
 
 	hbc_menu->add_child(memnew(VSeparator));
 
-	tool_option_button[TOOL_OPT_OVERRIDE_CAMERA] = memnew(Button);
-	hbc_menu->add_child(tool_option_button[TOOL_OPT_OVERRIDE_CAMERA]);
-	tool_option_button[TOOL_OPT_OVERRIDE_CAMERA]->set_toggle_mode(true);
-	tool_option_button[TOOL_OPT_OVERRIDE_CAMERA]->set_flat(true);
-	tool_option_button[TOOL_OPT_OVERRIDE_CAMERA]->set_disabled(true);
+	tool_drop_down_list[TOOL_OPT_OVERRIDE_CAMERA] = memnew(Button);
+	hbc_menu->add_child(tool_drop_down_list[TOOL_OPT_OVERRIDE_CAMERA]);
+	tool_drop_down_list[TOOL_OPT_OVERRIDE_CAMERA]->set_toggle_mode(true);
+	tool_drop_down_list[TOOL_OPT_OVERRIDE_CAMERA]->set_flat(true);
+	tool_drop_down_list[TOOL_OPT_OVERRIDE_CAMERA]->set_disabled(true);
 	button_binds.write[0] = MENU_TOOL_OVERRIDE_CAMERA;
-	tool_option_button[TOOL_OPT_OVERRIDE_CAMERA]->connect("toggled", callable_mp(this, &Node3DEditor::_menu_item_toggled), button_binds);
+	tool_drop_down_list[TOOL_OPT_OVERRIDE_CAMERA]->connect("toggled", callable_mp(this, &Node3DEditor::_menu_item_toggled), button_binds);
 	_update_camera_override_button(false);
 
 	hbc_menu->add_child(memnew(VSeparator));
@@ -7065,7 +7065,7 @@ Node3DEditor::Node3DEditor(EditorNode *p_editor) {
 	l->set_text(TTR("Transform Type"));
 	xform_vbc->add_child(l);
 
-	xform_type = memnew(OptionButton);
+	xform_type = memnew(DropDownList);
 	xform_type->set_h_size_flags(SIZE_EXPAND_FILL);
 	xform_type->add_item(TTR("Pre"));
 	xform_type->add_item(TTR("Post"));

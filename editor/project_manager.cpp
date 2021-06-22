@@ -2494,7 +2494,7 @@ ProjectManager::ProjectManager() {
 		sort_label->set_text(TTR("Sort:"));
 		hb->add_child(sort_label);
 
-		filter_option = memnew(OptionButton);
+		filter_option = memnew(DropDownList);
 		filter_option->set_clip_text(true);
 		filter_option->set_custom_minimum_size(Size2(150 * EDSCALE, 10 * EDSCALE));
 		filter_option->connect("item_selected", callable_mp(this, &ProjectManager::_on_order_option_changed));
@@ -2616,7 +2616,7 @@ ProjectManager::ProjectManager() {
 		Control *h_spacer = memnew(Control);
 		settings_hb->add_child(h_spacer);
 
-		language_btn = memnew(OptionButton);
+		language_btn = memnew(DropDownList);
 		language_btn->set_flat(true);
 		language_btn->set_icon(get_theme_icon("Environment", "EditorIcons"));
 		language_btn->set_focus_mode(Control::FOCUS_NONE);

@@ -955,7 +955,7 @@ FileDialog::FileDialog() {
 	drives_container = memnew(HBoxContainer);
 	hbc->add_child(drives_container);
 
-	drives = memnew(OptionButton);
+	drives = memnew(DropDownList);
 	drives->connect("item_selected", callable_mp(this, &FileDialog::_select_drive));
 	hbc->add_child(drives);
 
@@ -1005,7 +1005,7 @@ FileDialog::FileDialog() {
 	file->set_stretch_ratio(4);
 	file->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	file_box->add_child(file);
-	filter = memnew(OptionButton);
+	filter = memnew(DropDownList);
 	filter->set_stretch_ratio(3);
 	filter->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	filter->set_clip_text(true); // too many extensions overflows it

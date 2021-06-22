@@ -42,11 +42,11 @@
 #include "scene/gui/check_button.h"
 #include "scene/gui/control.h"
 #include "scene/gui/dialogs.h"
+#include "scene/gui/drop_down_list.h"
 #include "scene/gui/file_dialog.h"
 #include "scene/gui/label.h"
 #include "scene/gui/link_button.h"
 #include "scene/gui/menu_button.h"
-#include "scene/gui/option_button.h"
 #include "scene/gui/rich_text_label.h"
 #include "scene/gui/slider.h"
 #include "scene/gui/tab_container.h"
@@ -77,7 +77,7 @@ private:
 	AcceptDialog *error_dialog;
 	ConfirmationDialog *delete_confirm;
 
-	OptionButton *export_filter;
+	DropDownList *export_filter;
 	LineEdit *include_filters;
 	LineEdit *exclude_filters;
 	Tree *include_files;
@@ -94,7 +94,7 @@ private:
 	LineEdit *custom_features;
 	RichTextLabel *custom_feature_display;
 
-	OptionButton *script_mode;
+	DropDownList *script_mode;
 	LineEdit *script_key;
 	Label *script_key_error;
 

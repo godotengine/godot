@@ -218,7 +218,7 @@ EditorHelpSearch::EditorHelpSearch() {
 	hierarchy_button->set_focus_mode(Control::FOCUS_NONE);
 	hbox->add_child(hierarchy_button);
 
-	filter_combo = memnew(OptionButton);
+	filter_combo = memnew(DropDownList);
 	filter_combo->set_custom_minimum_size(Size2(200, 0) * EDSCALE);
 	filter_combo->set_stretch_ratio(0); // Fixed width.
 	filter_combo->add_item(TTR("Display All"), SEARCH_ALL);

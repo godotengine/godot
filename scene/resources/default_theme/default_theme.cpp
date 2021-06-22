@@ -232,45 +232,45 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_constant("hseparation", "ColorPickerButton", 2 * scale);
 	theme->set_constant("outline_size", "ColorPickerButton", 0);
 
-	// OptionButton
+	// DropDownList
 
-	Ref<StyleBox> sb_optbutton_focus = sb_expand(make_stylebox(button_focus_png, 4, 4, 4, 4, 6, 2, 6, 2), 2, 2, 2, 2);
-	theme->set_stylebox("focus", "OptionButton", sb_optbutton_focus);
+	Ref<StyleBox> sb_drop_down_list_focus = sb_expand(make_stylebox(button_focus_png, 4, 4, 4, 4, 6, 2, 6, 2), 2, 2, 2, 2);
+	theme->set_stylebox("focus", "DropDownList", sb_drop_down_list_focus);
 
-	Ref<StyleBox> sb_optbutton_normal = sb_expand(make_stylebox(option_button_normal_png, 4, 4, 21, 4, 6, 3, 9, 3), 2, 2, 2, 2);
-	Ref<StyleBox> sb_optbutton_pressed = sb_expand(make_stylebox(option_button_pressed_png, 4, 4, 21, 4, 6, 3, 9, 3), 2, 2, 2, 2);
-	Ref<StyleBox> sb_optbutton_hover = sb_expand(make_stylebox(option_button_hover_png, 4, 4, 21, 4, 6, 2, 9, 2), 2, 2, 2, 2);
-	Ref<StyleBox> sb_optbutton_disabled = sb_expand(make_stylebox(option_button_disabled_png, 4, 4, 21, 4, 6, 2, 9, 2), 2, 2, 2, 2);
+	Ref<StyleBox> sb_drop_down_list_normal = sb_expand(make_stylebox(drop_down_list_normal_png, 4, 4, 21, 4, 6, 3, 9, 3), 2, 2, 2, 2);
+	Ref<StyleBox> sb_drop_down_list_pressed = sb_expand(make_stylebox(drop_down_list_pressed_png, 4, 4, 21, 4, 6, 3, 9, 3), 2, 2, 2, 2);
+	Ref<StyleBox> sb_drop_down_list_hover = sb_expand(make_stylebox(drop_down_list_hover_png, 4, 4, 21, 4, 6, 2, 9, 2), 2, 2, 2, 2);
+	Ref<StyleBox> sb_drop_down_list_disabled = sb_expand(make_stylebox(drop_down_list_disabled_png, 4, 4, 21, 4, 6, 2, 9, 2), 2, 2, 2, 2);
 
-	theme->set_stylebox("normal", "OptionButton", sb_optbutton_normal);
-	theme->set_stylebox("pressed", "OptionButton", sb_optbutton_pressed);
-	theme->set_stylebox("hover", "OptionButton", sb_optbutton_hover);
-	theme->set_stylebox("disabled", "OptionButton", sb_optbutton_disabled);
+	theme->set_stylebox("normal", "DropDownList", sb_drop_down_list_normal);
+	theme->set_stylebox("pressed", "DropDownList", sb_drop_down_list_pressed);
+	theme->set_stylebox("hover", "DropDownList", sb_drop_down_list_hover);
+	theme->set_stylebox("disabled", "DropDownList", sb_drop_down_list_disabled);
 
-	Ref<StyleBox> sb_optbutton_normal_mirrored = sb_expand(make_stylebox(option_button_normal_mirrored_png, 21, 4, 4, 4, 9, 3, 6, 3), 2, 2, 2, 2);
-	Ref<StyleBox> sb_optbutton_pressed_mirrored = sb_expand(make_stylebox(option_button_pressed_mirrored_png, 21, 4, 4, 4, 9, 3, 6, 3), 2, 2, 2, 2);
-	Ref<StyleBox> sb_optbutton_hover_mirrored = sb_expand(make_stylebox(option_button_hover_mirrored_png, 21, 4, 4, 4, 9, 2, 6, 2), 2, 2, 2, 2);
-	Ref<StyleBox> sb_optbutton_disabled_mirrored = sb_expand(make_stylebox(option_button_disabled_mirrored_png, 21, 4, 4, 4, 9, 2, 6, 2), 2, 2, 2, 2);
+	Ref<StyleBox> sb_drop_down_list_normal_mirrored = sb_expand(make_stylebox(drop_down_list_normal_mirrored_png, 21, 4, 4, 4, 9, 3, 6, 3), 2, 2, 2, 2);
+	Ref<StyleBox> sb_drop_down_list_pressed_mirrored = sb_expand(make_stylebox(drop_down_list_pressed_mirrored_png, 21, 4, 4, 4, 9, 3, 6, 3), 2, 2, 2, 2);
+	Ref<StyleBox> sb_drop_down_list_hover_mirrored = sb_expand(make_stylebox(drop_down_list_hover_mirrored_png, 21, 4, 4, 4, 9, 2, 6, 2), 2, 2, 2, 2);
+	Ref<StyleBox> sb_drop_down_list_disabled_mirrored = sb_expand(make_stylebox(drop_down_list_disabled_mirrored_png, 21, 4, 4, 4, 9, 2, 6, 2), 2, 2, 2, 2);
 
-	theme->set_stylebox("normal_mirrored", "OptionButton", sb_optbutton_normal_mirrored);
-	theme->set_stylebox("pressed_mirrored", "OptionButton", sb_optbutton_pressed_mirrored);
-	theme->set_stylebox("hover_mirrored", "OptionButton", sb_optbutton_hover_mirrored);
-	theme->set_stylebox("disabled_mirrored", "OptionButton", sb_optbutton_disabled_mirrored);
+	theme->set_stylebox("normal_mirrored", "DropDownList", sb_drop_down_list_normal_mirrored);
+	theme->set_stylebox("pressed_mirrored", "DropDownList", sb_drop_down_list_pressed_mirrored);
+	theme->set_stylebox("hover_mirrored", "DropDownList", sb_drop_down_list_hover_mirrored);
+	theme->set_stylebox("disabled_mirrored", "DropDownList", sb_drop_down_list_disabled_mirrored);
 
-	theme->set_icon("arrow", "OptionButton", make_icon(option_arrow_png));
+	theme->set_icon("arrow", "DropDownList", make_icon(option_arrow_png));
 
-	theme->set_font("font", "OptionButton", Ref<Font>());
-	theme->set_font_size("font_size", "OptionButton", -1);
+	theme->set_font("font", "DropDownList", Ref<Font>());
+	theme->set_font_size("font_size", "DropDownList", -1);
 
-	theme->set_color("font_color", "OptionButton", control_font_color);
-	theme->set_color("font_pressed_color", "OptionButton", control_font_pressed_color);
-	theme->set_color("font_hover_color", "OptionButton", control_font_hover_color);
-	theme->set_color("font_disabled_color", "OptionButton", control_font_disabled_color);
-	theme->set_color("font_outline_color", "OptionButton", Color(1, 1, 1));
+	theme->set_color("font_color", "DropDownList", control_font_color);
+	theme->set_color("font_pressed_color", "DropDownList", control_font_pressed_color);
+	theme->set_color("font_hover_color", "DropDownList", control_font_hover_color);
+	theme->set_color("font_disabled_color", "DropDownList", control_font_disabled_color);
+	theme->set_color("font_outline_color", "DropDownList", Color(1, 1, 1));
 
-	theme->set_constant("hseparation", "OptionButton", 2 * scale);
-	theme->set_constant("arrow_margin", "OptionButton", 2 * scale);
-	theme->set_constant("outline_size", "OptionButton", 0);
+	theme->set_constant("hseparation", "DropDownList", 2 * scale);
+	theme->set_constant("arrow_margin", "DropDownList", 2 * scale);
+	theme->set_constant("outline_size", "DropDownList", 0);
 
 	// MenuButton
 

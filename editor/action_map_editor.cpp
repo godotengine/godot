@@ -642,7 +642,7 @@ InputEventConfigurationDialog::InputEventConfigurationDialog() {
 	device_label->set_text("Device:");
 	device_container->add_child(device_label);
 
-	device_id_option = memnew(OptionButton);
+	device_id_option = memnew(DropDownList);
 	device_id_option->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	device_container->add_child(device_id_option);
 
