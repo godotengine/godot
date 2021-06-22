@@ -230,11 +230,6 @@ bool BodyPair3DSW::setup(real_t p_step) {
 		}
 	}
 
-	if (A->is_shape_set_as_disabled(shape_A) || B->is_shape_set_as_disabled(shape_B)) {
-		collided = false;
-		return false;
-	}
-
 	offset_B = B->get_transform().get_origin() - A->get_transform().get_origin();
 
 	validate_contacts();
@@ -603,11 +598,6 @@ bool BodySoftBodyPair3DSW::setup(real_t p_step) {
 	body_dynamic = (body->get_mode() > PhysicsServer3D::BODY_MODE_KINEMATIC);
 
 	if (!body->test_collision_mask(soft_body) || body->has_exception(soft_body->get_self()) || soft_body->has_exception(body->get_self())) {
-		collided = false;
-		return false;
-	}
-
-	if (body->is_shape_set_as_disabled(body_shape)) {
 		collided = false;
 		return false;
 	}
