@@ -96,6 +96,9 @@
 		<member name="parent_collision_ignore" type="NodePath" setter="set_parent_collision_ignore" getter="get_parent_collision_ignore" default="NodePath(&quot;&quot;)">
 			[NodePath] to a [CollisionObject] this SoftBody should avoid clipping.
 		</member>
+		<member name="physics_enabled" type="bool" setter="set_physics_enabled" getter="is_physics_enabled" default="true">
+			If [code]true[/code], the [SoftBody] is simulated in physics. Can be set to [code]false[/code] to pause the physics simulation.
+		</member>
 		<member name="pose_matching_coefficient" type="float" setter="set_pose_matching_coefficient" getter="get_pose_matching_coefficient" default="0.0">
 		</member>
 		<member name="pressure_coefficient" type="float" setter="set_pressure_coefficient" getter="get_pressure_coefficient" default="0.0">
