@@ -33,10 +33,7 @@
 
 bool AreaPair3DSW::setup(real_t p_step) {
 	bool result = false;
-
-	if (area->is_shape_set_as_disabled(area_shape) || body->is_shape_set_as_disabled(body_shape)) {
-		result = false;
-	} else if (area->test_collision_mask(body) && CollisionSolver3DSW::solve_static(body->get_shape(body_shape), body->get_transform() * body->get_shape_transform(body_shape), area->get_shape(area_shape), area->get_transform() * area->get_shape_transform(area_shape), nullptr, this)) {
+	if (area->test_collision_mask(body) && CollisionSolver3DSW::solve_static(body->get_shape(body_shape), body->get_transform() * body->get_shape_transform(body_shape), area->get_shape(area_shape), area->get_transform() * area->get_shape_transform(area_shape), nullptr, this)) {
 		result = true;
 	}
 
@@ -113,9 +110,7 @@ AreaPair3DSW::~AreaPair3DSW() {
 
 bool Area2Pair3DSW::setup(real_t p_step) {
 	bool result = false;
-	if (area_a->is_shape_set_as_disabled(shape_a) || area_b->is_shape_set_as_disabled(shape_b)) {
-		result = false;
-	} else if (area_a->test_collision_mask(area_b) && CollisionSolver3DSW::solve_static(area_a->get_shape(shape_a), area_a->get_transform() * area_a->get_shape_transform(shape_a), area_b->get_shape(shape_b), area_b->get_transform() * area_b->get_shape_transform(shape_b), nullptr, this)) {
+	if (area_a->test_collision_mask(area_b) && CollisionSolver3DSW::solve_static(area_a->get_shape(shape_a), area_a->get_transform() * area_a->get_shape_transform(shape_a), area_b->get_shape(shape_b), area_b->get_transform() * area_b->get_shape_transform(shape_b), nullptr, this)) {
 		result = true;
 	}
 
