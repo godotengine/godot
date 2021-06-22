@@ -1803,7 +1803,7 @@ void RendererSceneRenderRD::_render_buffers_post_process_and_tonemap(const Rende
 
 	{
 		//tonemap
-		EffectsRD::TonemapSettings tonemap;
+		TonemapRD::Settings tonemap;
 
 		if (can_use_effects && env && env->auto_exposure && rb->luminance.current.is_valid()) {
 			tonemap.use_auto_exposure = true;
@@ -1815,7 +1815,7 @@ void RendererSceneRenderRD::_render_buffers_post_process_and_tonemap(const Rende
 
 		if (can_use_effects && env && env->glow_enabled) {
 			tonemap.use_glow = true;
-			tonemap.glow_mode = EffectsRD::TonemapSettings::GlowMode(env->glow_blend_mode);
+			tonemap.glow_mode = TonemapRD::Settings::GlowMode(env->glow_blend_mode);
 			tonemap.glow_intensity = env->glow_blend_mode == RS::ENV_GLOW_BLEND_MODE_MIX ? env->glow_mix : env->glow_intensity;
 			for (int i = 0; i < RS::MAX_GLOW_LEVELS; i++) {
 				tonemap.glow_levels[i] = env->glow_levels[i];
@@ -1859,7 +1859,7 @@ void RendererSceneRenderRD::_render_buffers_post_process_and_tonemap(const Rende
 
 		tonemap.view_count = p_render_data->view_count;
 
-		storage->get_effects()->tonemapper(rb->texture, storage->render_target_get_rd_framebuffer(rb->render_target), tonemap);
+		storage->get_tonemap()->tonemapper(rb->texture, storage->render_target_get_rd_framebuffer(rb->render_target), tonemap);
 	}
 
 	storage->render_target_disable_clear_request(rb->render_target);

@@ -35,6 +35,7 @@
 #include "core/templates/local_vector.h"
 #include "core/templates/rid_owner.h"
 #include "servers/rendering/renderer_compositor.h"
+#include "servers/rendering/renderer_rd/effects/tonemap_rd.h"
 #include "servers/rendering/renderer_rd/effects_rd.h"
 #include "servers/rendering/renderer_rd/shader_compiler_rd.h"
 #include "servers/rendering/renderer_rd/shaders/canvas_sdf.glsl.gen.h"
@@ -1283,6 +1284,7 @@ private:
 	/* EFFECTS */
 
 	EffectsRD effects;
+	TonemapRD tonemap;
 
 public:
 	virtual bool can_create_resources_async() const;
@@ -2371,6 +2373,7 @@ public:
 	static RendererStorageRD *base_singleton;
 
 	EffectsRD *get_effects();
+	TonemapRD *get_tonemap();
 
 	RendererStorageRD();
 	~RendererStorageRD();

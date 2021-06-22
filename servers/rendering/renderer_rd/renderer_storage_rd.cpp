@@ -8792,6 +8792,10 @@ EffectsRD *RendererStorageRD::get_effects() {
 	return &effects;
 }
 
+TonemapRD *RendererStorageRD::get_tonemap() {
+	return &tonemap;
+}
+
 void RendererStorageRD::capture_timestamps_begin() {
 	RD::get_singleton()->capture_timestamp("Frame Begin");
 }
