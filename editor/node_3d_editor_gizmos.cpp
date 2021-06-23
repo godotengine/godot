@@ -598,8 +598,6 @@ bool EditorNode3DGizmo::intersect_ray(Camera3D *p_camera, const Point2 &p_point,
 			r_normal = -p_camera->project_ray_normal(p_point);
 			return true;
 		}
-
-		return false;
 	}
 
 	if (collision_segments.size()) {
@@ -650,8 +648,6 @@ bool EditorNode3DGizmo::intersect_ray(Camera3D *p_camera, const Point2 &p_point,
 			r_normal = -p_camera->project_ray_normal(p_point);
 			return true;
 		}
-
-		return false;
 	}
 
 	if (collision_mesh.is_valid()) {
