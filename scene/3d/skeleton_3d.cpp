@@ -404,7 +404,7 @@ void Skeleton3D::add_bone(const String &p_name) {
 	process_order_dirty = true;
 	version++;
 	_make_dirty();
-	update_gizmo();
+	update_gizmos();
 }
 
 int Skeleton3D::find_bone(const String &p_name) const {

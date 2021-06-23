@@ -101,7 +101,7 @@ void ReflectionProbe::set_extents(const Vector3 &p_extents) {
 	RS::get_singleton()->reflection_probe_set_extents(probe, extents);
 	RS::get_singleton()->reflection_probe_set_origin_offset(probe, origin_offset);
 
-	update_gizmo();
+	update_gizmos();
 }
 
 Vector3 ReflectionProbe::get_extents() const {
@@ -119,7 +119,7 @@ void ReflectionProbe::set_origin_offset(const Vector3 &p_extents) {
 	RS::get_singleton()->reflection_probe_set_extents(probe, extents);
 	RS::get_singleton()->reflection_probe_set_origin_offset(probe, origin_offset);
 
-	update_gizmo();
+	update_gizmos();
 }
 
 Vector3 ReflectionProbe::get_origin_offset() const {

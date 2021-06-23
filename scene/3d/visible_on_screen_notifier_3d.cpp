@@ -63,7 +63,7 @@ void VisibleOnScreenNotifier3D::set_aabb(const AABB &p_aabb) {
 
 	RS::get_singleton()->visibility_notifier_set_aabb(get_base(), aabb);
 
-	update_gizmo();
+	update_gizmos();
 }
 
 AABB VisibleOnScreenNotifier3D::get_aabb() const {

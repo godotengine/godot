@@ -174,7 +174,7 @@ void SpriteBase3D::_queue_update() {
 	}
 
 	triangle_mesh.unref();
-	update_gizmo();
+	update_gizmos();
 
 	pending_update = true;
 	call_deferred(SceneStringNames::get_singleton()->_im_update);

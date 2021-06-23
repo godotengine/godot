@@ -59,7 +59,7 @@ void NavigationRegion3D::set_enabled(bool p_enabled) {
 		}
 	}
 
-	update_gizmo();
+	update_gizmos();
 }
 
 bool NavigationRegion3D::is_enabled() const {
@@ -134,7 +134,7 @@ void NavigationRegion3D::set_navigation_mesh(const Ref<NavigationMesh> &p_navmes
 
 	emit_signal(SNAME("navigation_mesh_changed"));
 
-	update_gizmo();
+	update_gizmos();
 	update_configuration_warnings();
 }
 
@@ -211,7 +211,7 @@ void NavigationRegion3D::_bind_methods() {
 }
 
 void NavigationRegion3D::_navigation_changed() {
-	update_gizmo();
+	update_gizmos();
 	update_configuration_warnings();
 }
 

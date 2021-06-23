@@ -32,9 +32,9 @@
 
 #include "core/templates/sort_array.h"
 
-int TriangleMesh::_create_bvh(BVH *p_bvh, BVH **p_bb, int p_from, int p_size, int p_depth, int &max_depth, int &max_alloc) {
-	if (p_depth > max_depth) {
-		max_depth = p_depth;
+int TriangleMesh::_create_bvh(BVH *p_bvh, BVH **p_bb, int p_from, int p_size, int p_depth, int &r_max_depth, int &r_max_alloc) {
+	if (p_depth > r_max_depth) {
+		r_max_depth = p_depth;
 	}
 
 	if (p_size == 1) {
@@ -70,10 +70,10 @@ int TriangleMesh::_create_bvh(BVH *p_bvh, BVH **p_bb, int p_from, int p_size, in
 		} break;
 	}
 
-	int left = _create_bvh(p_bvh, p_bb, p_from, p_size / 2, p_depth + 1, max_depth, max_alloc);
-	int right = _create_bvh(p_bvh, p_bb, p_from + p_size / 2, p_size - p_size / 2, p_depth + 1, max_depth, max_alloc);
+	int left = _create_bvh(p_bvh, p_bb, p_from, p_size / 2, p_depth + 1, r_max_depth, r_max_alloc);
+	int right = _create_bvh(p_bvh, p_bb, p_from + p_size / 2, p_size - p_size / 2, p_depth + 1, r_max_depth, r_max_alloc);
 
-	int index = max_alloc++;
+	int index = r_max_alloc++;
 	BVH *_new = &p_bvh[index];
 	_new->aabb = aabb;
 	_new->center = aabb.position + aabb.size * 0.5;

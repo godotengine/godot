@@ -84,7 +84,7 @@ real_t SpringArm3D::get_length() const {
 
 void SpringArm3D::set_length(real_t p_length) {
 	if (is_inside_tree() && (Engine::get_singleton()->is_editor_hint() || get_tree()->is_debugging_collisions_hint())) {
-		update_gizmo();
+		update_gizmos();
 	}
 
 	spring_length = p_length;

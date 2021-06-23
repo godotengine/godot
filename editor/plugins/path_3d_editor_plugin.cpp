@@ -36,20 +36,20 @@
 #include "node_3d_editor_plugin.h"
 #include "scene/resources/curve.h"
 
-String Path3DGizmo::get_handle_name(int p_idx) const {
+String Path3DGizmo::get_handle_name(int p_id) const {
 	Ref<Curve3D> c = path->get_curve();
 	if (c.is_null()) {
 		return "";
 	}
 
-	if (p_idx < c->get_point_count()) {
-		return TTR("Curve Point #") + itos(p_idx);
+	if (p_id < c->get_point_count()) {
+		return TTR("Curve Point #") + itos(p_id);
 	}
 
-	p_idx = p_idx - c->get_point_count() + 1;
+	p_id = p_id - c->get_point_count() + 1;
 
-	int idx = p_idx / 2;
-	int t = p_idx % 2;
+	int idx = p_id / 2;
+	int t = p_id % 2;
 	String n = TTR("Curve Point #") + itos(idx);
 	if (t == 0) {
 		n += " In";
@@ -60,21 +60,21 @@ String Path3DGizmo::get_handle_name(int p_idx) const {
 	return n;
 }
 
-Variant Path3DGizmo::get_handle_value(int p_idx) {
+Variant Path3DGizmo::get_handle_value(int p_id) const {
 	Ref<Curve3D> c = path->get_curve();
 	if (c.is_null()) {
 		return Variant();
 	}
 
-	if (p_idx < c->get_point_count()) {
-		original = c->get_point_position(p_idx);
+	if (p_id < c->get_point_count()) {
+		original = c->get_point_position(p_id);
 		return original;
 	}
 
-	p_idx = p_idx - c->get_point_count() + 1;
+	p_id = p_id - c->get_point_count() + 1;
 
-	int idx = p_idx / 2;
-	int t = p_idx % 2;
+	int idx = p_id / 2;
+	int t = p_id % 2;
 
 	Vector3 ofs;
 	if (t == 0) {
@@ -88,7 +88,7 @@ Variant Path3DGizmo::get_handle_value(int p_idx) {
 	return ofs;
 }
 
-void Path3DGizmo::set_handle(int p_idx, Camera3D *p_camera, const Point2 &p_point) {
+void Path3DGizmo::set_handle(int p_id, Camera3D *p_camera, const Point2 &p_point) const {
 	Ref<Curve3D> c = path->get_curve();
 	if (c.is_null()) {
 		return;
@@ -100,7 +100,7 @@ void Path3DGizmo::set_handle(int p_idx, Camera3D *p_camera, const Point2 &p_poin
 	Vector3 ray_dir = p_camera->project_ray_normal(p_point);
 
 	// Setting curve point positions
-	if (p_idx < c->get_point_count()) {
+	if (p_id < c->get_point_count()) {
 		Plane p(gt.xform(original), p_camera->get_transform().basis.get_axis(2));
 
 		Vector3 inters;
@@ -112,16 +112,16 @@ void Path3DGizmo::set_handle(int p_idx, Camera3D *p_camera, const Point2 &p_poin
 			}
 
 			Vector3 local = gi.xform(inters);
-			c->set_point_position(p_idx, local);
+			c->set_point_position(p_id, local);
 		}
 
 		return;
 	}
 
-	p_idx = p_idx - c->get_point_count() + 1;
+	p_id = p_id - c->get_point_count() + 1;
 
-	int idx = p_idx / 2;
-	int t = p_idx % 2;
+	int idx = p_id / 2;
+	int t = p_id % 2;
 
 	Vector3 base = c->get_point_position(idx);
 
@@ -157,7 +157,7 @@ void Path3DGizmo::set_handle(int p_idx, Camera3D *p_camera, const Point2 &p_poin
 	}
 }
 
-void Path3DGizmo::commit_handle(int p_idx, const Variant &p_restore, bool p_cancel) {
+void Path3DGizmo::commit_handle(int p_id, const Variant &p_restore, bool p_cancel) const {
 	Ref<Curve3D> c = path->get_curve();
 	if (c.is_null()) {
 		return;
@@ -165,27 +165,27 @@ void Path3DGizmo::commit_handle(int p_idx, const Variant &p_restore, bool p_canc
 
 	UndoRedo *ur = Node3DEditor::get_singleton()->get_undo_redo();
 
-	if (p_idx < c->get_point_count()) {
+	if (p_id < c->get_point_count()) {
 		if (p_cancel) {
-			c->set_point_position(p_idx, p_restore);
+			c->set_point_position(p_id, p_restore);
 			return;
 		}
 		ur->create_action(TTR("Set Curve Point Position"));
-		ur->add_do_method(c.ptr(), "set_point_position", p_idx, c->get_point_position(p_idx));
-		ur->add_undo_method(c.ptr(), "set_point_position", p_idx, p_restore);
+		ur->add_do_method(c.ptr(), "set_point_position", p_id, c->get_point_position(p_id));
+		ur->add_undo_method(c.ptr(), "set_point_position", p_id, p_restore);
 		ur->commit_action();
 
 		return;
 	}
 
-	p_idx = p_idx - c->get_point_count() + 1;
+	p_id = p_id - c->get_point_count() + 1;
 
-	int idx = p_idx / 2;
-	int t = p_idx % 2;
+	int idx = p_id / 2;
+	int t = p_id % 2;
 
 	if (t == 0) {
 		if (p_cancel) {
-			c->set_point_in(p_idx, p_restore);
+			c->set_point_in(p_id, p_restore);
 			return;
 		}
 
@@ -282,7 +282,7 @@ void Path3DGizmo::redraw() {
 			add_handles(handles, handles_material);
 		}
 		if (sec_handles.size()) {
-			add_handles(sec_handles, sec_handles_material, false, true);
+			add_handles(sec_handles, sec_handles_material, Vector<int>(), false, true);
 		}
 	}
 }

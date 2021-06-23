@@ -122,7 +122,7 @@ void CollisionPolygon3D::set_polygon(const Vector<Point2> &p_polygon) {
 		_build_polygon();
 	}
 	update_configuration_warnings();
-	update_gizmo();
+	update_gizmos();
 }
 
 Vector<Point2> CollisionPolygon3D::get_polygon() const {
@@ -136,7 +136,7 @@ AABB CollisionPolygon3D::get_item_rect() const {
 void CollisionPolygon3D::set_depth(real_t p_depth) {
 	depth = p_depth;
 	_build_polygon();
-	update_gizmo();
+	update_gizmos();
 }
 
 real_t CollisionPolygon3D::get_depth() const {
@@ -145,7 +145,7 @@ real_t CollisionPolygon3D::get_depth() const {
 
 void CollisionPolygon3D::set_disabled(bool p_disabled) {
 	disabled = p_disabled;
-	update_gizmo();
+	update_gizmos();
 
 	if (parent) {
 		parent->shape_owner_set_disabled(owner_id, p_disabled);

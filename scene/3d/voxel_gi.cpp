@@ -265,7 +265,7 @@ Ref<VoxelGIData> VoxelGI::get_probe_data() const {
 void VoxelGI::set_subdiv(Subdiv p_subdiv) {
 	ERR_FAIL_INDEX(p_subdiv, SUBDIV_MAX);
 	subdiv = p_subdiv;
-	update_gizmo();
+	update_gizmos();
 }
 
 VoxelGI::Subdiv VoxelGI::get_subdiv() const {
@@ -274,7 +274,7 @@ VoxelGI::Subdiv VoxelGI::get_subdiv() const {
 
 void VoxelGI::set_extents(const Vector3 &p_extents) {
 	extents = p_extents;
-	update_gizmo();
+	update_gizmos();
 }
 
 Vector3 VoxelGI::get_extents() const {

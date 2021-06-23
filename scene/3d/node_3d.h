@@ -90,16 +90,16 @@ class Node3D : public Node {
 		bool disable_scale = false;
 
 #ifdef TOOLS_ENABLED
-		Ref<Node3DGizmo> gizmo;
-		bool gizmo_disabled = false;
-		bool gizmo_dirty = false;
+		Vector<Ref<Node3DGizmo>> gizmos;
+		bool gizmos_disabled = false;
+		bool gizmos_dirty = false;
 #endif
 
 	} data;
 
 	NodePath visibility_parent_path;
 
-	void _update_gizmo();
+	void _update_gizmos();
 	void _notify_dirty();
 	void _propagate_transform_changed(Node3D *p_origin);
 
@@ -154,10 +154,14 @@ public:
 	void set_disable_scale(bool p_enabled);
 	bool is_scale_disabled() const;
 
-	void set_disable_gizmo(bool p_enabled);
-	void update_gizmo();
-	void set_gizmo(const Ref<Node3DGizmo> &p_gizmo);
-	Ref<Node3DGizmo> get_gizmo() const;
+	void set_disable_gizmos(bool p_enabled);
+	void update_gizmos();
+	void clear_subgizmo_selection();
+	Vector<Ref<Node3DGizmo>> get_gizmos() const;
+	Array get_gizmos_bind() const;
+	void add_gizmo(Ref<Node3DGizmo> p_gizmo);
+	void remove_gizmo(Ref<Node3DGizmo> p_gizmo);
+	void clear_gizmos();
 
 	_FORCE_INLINE_ bool is_inside_world() const { return data.inside_world; }
 

@@ -34,6 +34,7 @@
 #include "editor/editor_node.h"
 #include "editor/editor_plugin.h"
 #include "editor/editor_scale.h"
+#include "editor/plugins/node_3d_editor_gizmos.h"
 #include "scene/3d/light_3d.h"
 #include "scene/3d/visual_instance_3d.h"
 #include "scene/3d/world_environment.h"
@@ -43,96 +44,10 @@
 
 class Camera3D;
 class Node3DEditor;
-class EditorNode3DGizmoPlugin;
 class Node3DEditorViewport;
 class SubViewportContainer;
-
-class EditorNode3DGizmo : public Node3DGizmo {
-	GDCLASS(EditorNode3DGizmo, Node3DGizmo);
-
-	bool selected;
-	bool instantiated;
-
-public:
-	void set_selected(bool p_selected) { selected = p_selected; }
-	bool is_selected() const { return selected; }
-
-	struct Instance {
-		RID instance;
-		Ref<ArrayMesh> mesh;
-		Ref<Material> material;
-		Ref<SkinReference> skin_reference;
-		RID skeleton;
-		bool billboard = false;
-		bool unscaled = false;
-		bool can_intersect = false;
-		bool extra_margin = false;
-
-		void create_instance(Node3D *p_base, bool p_hidden = false);
-	};
-
-	Vector<Vector3> collision_segments;
-	Ref<TriangleMesh> collision_mesh;
-
-	struct Handle {
-		Vector3 pos;
-		bool billboard = false;
-	};
-
-	Vector<Vector3> handles;
-	Vector<Vector3> secondary_handles;
-	float selectable_icon_size;
-	bool billboard_handle;
-
-	bool valid;
-	bool hidden;
-	Node3D *base;
-	Vector<Instance> instances;
-	Node3D *spatial_node;
-	EditorNode3DGizmoPlugin *gizmo_plugin;
-
-	void _set_spatial_node(Node *p_node) { set_spatial_node(Object::cast_to<Node3D>(p_node)); }
-
-protected:
-	static void _bind_methods();
-
-public:
-	void add_lines(const Vector<Vector3> &p_lines, const Ref<Material> &p_material, bool p_billboard = false, const Color &p_modulate = Color(1, 1, 1));
-	void add_vertices(const Vector<Vector3> &p_vertices, const Ref<Material> &p_material, Mesh::PrimitiveType p_primitive_type, bool p_billboard = false, const Color &p_modulate = Color(1, 1, 1));
-	void add_mesh(const Ref<ArrayMesh> &p_mesh, bool p_billboard = false, const Ref<SkinReference> &p_skin_reference = Ref<SkinReference>(), const Ref<Material> &p_material = Ref<Material>());
-	void add_collision_segments(const Vector<Vector3> &p_lines);
-	void add_collision_triangles(const Ref<TriangleMesh> &p_tmesh);
-	void add_unscaled_billboard(const Ref<Material> &p_material, float p_scale = 1, const Color &p_modulate = Color(1, 1, 1));
-	void add_handles(const Vector<Vector3> &p_handles, const Ref<Material> &p_material, bool p_billboard = false, bool p_secondary = false);
-	void add_solid_box(Ref<Material> &p_material, Vector3 p_size, Vector3 p_position = Vector3());
-
-	virtual bool is_handle_highlighted(int p_idx) const;
-	virtual String get_handle_name(int p_idx) const;
-	virtual Variant get_handle_value(int p_idx);
-	virtual void set_handle(int p_idx, Camera3D *p_camera, const Point2 &p_point);
-	virtual void commit_handle(int p_idx, const Variant &p_restore, bool p_cancel = false);
-
-	void set_spatial_node(Node3D *p_node);
-	Node3D *get_spatial_node() const { return spatial_node; }
-	Ref<EditorNode3DGizmoPlugin> get_plugin() const { return gizmo_plugin; }
-	Vector3 get_handle_pos(int p_idx) const;
-	bool intersect_frustum(const Camera3D *p_camera, const Vector<Plane> &p_frustum);
-	bool intersect_ray(Camera3D *p_camera, const Point2 &p_point, Vector3 &r_pos, Vector3 &r_normal, int *r_gizmo_handle = nullptr, bool p_sec_first = false);
-
-	virtual void clear() override;
-	virtual void create() override;
-	virtual void transform() override;
-	virtual void redraw() override;
-	virtual void free() override;
-
-	virtual bool is_editable() const;
-
-	void set_hidden(bool p_hidden);
-	void set_plugin(EditorNode3DGizmoPlugin *p_plugin);
-
-	EditorNode3DGizmo();
-	~EditorNode3DGizmo();
-};
+class DirectionalLight3D;
+class WorldEnvironment;
 
 class ViewportRotationControl : public Control {
 	GDCLASS(ViewportRotationControl, Control);
@@ -307,17 +222,15 @@ private:
 	struct _RayResult {
 		Node3D *item = nullptr;
 		float depth = 0;
-		int handle = 0;
 		_FORCE_INLINE_ bool operator<(const _RayResult &p_rr) const { return depth < p_rr.depth; }
 	};
 
 	void _update_name();
 	void _compute_edit(const Point2 &p_point);
 	void _clear_selected();
-	void _select_clicked(bool p_append, bool p_single, bool p_allow_locked = false);
-	void _select(Node *p_node, bool p_append, bool p_single);
-	ObjectID _select_ray(const Point2 &p_pos, bool p_append, bool &r_includes_current, int *r_gizmo_handle = nullptr, bool p_alt_select = false);
-	void _find_items_at_pos(const Point2 &p_pos, bool &r_includes_current, Vector<_RayResult> &results, bool p_alt_select = false, bool p_include_locked_nodes = false);
+	void _select_clicked(bool p_allow_locked);
+	ObjectID _select_ray(const Point2 &p_pos);
+	void _find_items_at_pos(const Point2 &p_pos, Vector<_RayResult> &r_results, bool p_include_locked);
 	Vector3 _get_ray_pos(const Vector2 &p_pos) const;
 	Vector3 _get_ray(const Vector2 &p_pos) const;
 	Point2 _point_to_screen(const Vector3 &p_point);
@@ -329,7 +242,8 @@ private:
 	Vector3 _get_screen_to_space(const Vector3 &p_vector3);
 
 	void _select_region();
-	bool _gizmo_select(const Vector2 &p_screenpos, bool p_highlight_only = false);
+	bool _transform_gizmo_select(const Vector2 &p_screenpos, bool p_highlight_only = false);
+	void _transform_gizmo_apply(Node3D *p_node, const Transform3D &p_transform, bool p_local);
 
 	void _nav_pan(Ref<InputEventWithModifiers> p_event, const Vector2 &p_relative);
 	void _nav_zoom(Ref<InputEventWithModifiers> p_event, const Vector2 &p_relative);
@@ -342,7 +256,6 @@ private:
 
 	ObjectID clicked;
 	Vector<_RayResult> selection_results;
-	bool clicked_includes_current;
 	bool clicked_wants_append;
 
 	PopupMenu *selection_menu;
@@ -383,15 +296,12 @@ private:
 		Vector3 click_ray;
 		Vector3 click_ray_pos;
 		Vector3 center;
-		Vector3 orig_gizmo_pos;
-		int edited_gizmo = 0;
 		Point2 mouse_pos;
 		Point2 original_mouse_pos;
 		bool snap = false;
 		Ref<EditorNode3DGizmo> gizmo;
 		int gizmo_handle = 0;
 		Variant gizmo_initial_value;
-		Vector3 gizmo_initial_pos;
 	} _edit;
 
 	struct Cursor {
@@ -472,6 +382,8 @@ private:
 
 	void _project_settings_changed();
 
+	Transform3D _compute_transform(TransformMode p_mode, const Transform3D &p_original, const Transform3D &p_original_local, Vector3 p_motion, double p_extra, bool p_local);
+
 protected:
 	void _notification(int p_what);
 	static void _bind_methods();
@@ -512,6 +424,8 @@ public:
 	Node3D *sp;
 	RID sbox_instance;
 	RID sbox_instance_xray;
+	Ref<EditorNode3DGizmo> gizmo;
+	Map<int, Transform3D> subgizmos; // map ID -> initial transform
 
 	Node3DEditorSelectedItem() {
 		sp = nullptr;
@@ -617,7 +531,9 @@ private:
 	Ref<StandardMaterial3D> plane_gizmo_color_hl[3];
 	Ref<ShaderMaterial> rotate_gizmo_color_hl[3];
 
-	int over_gizmo_handle;
+	Ref<Node3DGizmo> current_hover_gizmo;
+	int current_hover_gizmo_handle;
+
 	float snap_translate_value;
 	float snap_rotate_value;
 	float snap_scale_value;
@@ -688,7 +604,6 @@ private:
 	LineEdit *snap_translate;
 	LineEdit *snap_rotate;
 	LineEdit *snap_scale;
-	PanelContainer *menu_panel;
 
 	LineEdit *xform_translate[3];
 	LineEdit *xform_rotate[3];
@@ -734,6 +649,7 @@ private:
 	Node3D *selected;
 
 	void _request_gizmo(Object *p_obj);
+	void _clear_subgizmo_selection(Object *p_obj = nullptr);
 
 	static Node3DEditor *singleton;
 
@@ -746,8 +662,7 @@ private:
 
 	Node3DEditor();
 
-	bool is_any_freelook_active() const;
-
+	void _selection_changed();
 	void _refresh_menu_icons();
 
 	// Preview Sun and Environment
@@ -861,10 +776,16 @@ public:
 	VSplitContainer *get_shader_split();
 	HSplitContainer *get_palette_split();
 
-	Node3D *get_selected() { return selected; }
+	Node3D *get_single_selected_node() { return selected; }
+	bool is_current_selected_gizmo(const EditorNode3DGizmo *p_gizmo);
+	bool is_subgizmo_selected(int p_id);
+	Vector<int> get_subgizmo_selection();
 
-	int get_over_gizmo_handle() const { return over_gizmo_handle; }
-	void set_over_gizmo_handle(int idx) { over_gizmo_handle = idx; }
+	Ref<EditorNode3DGizmo> get_current_hover_gizmo() const { return current_hover_gizmo; }
+	void set_current_hover_gizmo(Ref<EditorNode3DGizmo> p_gizmo) { current_hover_gizmo = p_gizmo; }
+
+	void set_current_hover_gizmo_handle(int p_id) { current_hover_gizmo_handle = p_id; }
+	int get_current_hover_gizmo_handle() const { return current_hover_gizmo_handle; }
 
 	void set_can_preview(Camera3D *p_preview);
 
@@ -905,52 +826,6 @@ public:
 
 	Node3DEditorPlugin(EditorNode *p_node);
 	~Node3DEditorPlugin();
-};
-
-class EditorNode3DGizmoPlugin : public Resource {
-	GDCLASS(EditorNode3DGizmoPlugin, Resource);
-
-public:
-	static const int VISIBLE = 0;
-	static const int HIDDEN = 1;
-	static const int ON_TOP = 2;
-
-protected:
-	int current_state;
-	List<EditorNode3DGizmo *> current_gizmos;
-	HashMap<String, Vector<Ref<StandardMaterial3D>>> materials;
-
-	static void _bind_methods();
-	virtual bool has_gizmo(Node3D *p_spatial);
-	virtual Ref<EditorNode3DGizmo> create_gizmo(Node3D *p_spatial);
-
-public:
-	void create_material(const String &p_name, const Color &p_color, bool p_billboard = false, bool p_on_top = false, bool p_use_vertex_color = false);
-	void create_icon_material(const String &p_name, const Ref<Texture2D> &p_texture, bool p_on_top = false, const Color &p_albedo = Color(1, 1, 1, 1));
-	void create_handle_material(const String &p_name, bool p_billboard = false, const Ref<Texture2D> &p_texture = nullptr);
-	void add_material(const String &p_name, Ref<StandardMaterial3D> p_material);
-
-	Ref<StandardMaterial3D> get_material(const String &p_name, const Ref<EditorNode3DGizmo> &p_gizmo = Ref<EditorNode3DGizmo>());
-
-	virtual String get_gizmo_name() const;
-	virtual int get_priority() const;
-	virtual bool can_be_hidden() const;
-	virtual bool is_selectable_when_hidden() const;
-
-	virtual void redraw(EditorNode3DGizmo *p_gizmo);
-	virtual String get_handle_name(const EditorNode3DGizmo *p_gizmo, int p_idx) const;
-	virtual Variant get_handle_value(EditorNode3DGizmo *p_gizmo, int p_idx) const;
-	virtual void set_handle(EditorNode3DGizmo *p_gizmo, int p_idx, Camera3D *p_camera, const Point2 &p_point);
-	virtual void commit_handle(EditorNode3DGizmo *p_gizmo, int p_idx, const Variant &p_restore, bool p_cancel = false);
-	virtual bool is_handle_highlighted(const EditorNode3DGizmo *p_gizmo, int p_idx) const;
-
-	Ref<EditorNode3DGizmo> get_gizmo(Node3D *p_spatial);
-	void set_state(int p_state);
-	int get_state() const;
-	void unregister_gizmo(EditorNode3DGizmo *p_gizmo);
-
-	EditorNode3DGizmoPlugin();
-	virtual ~EditorNode3DGizmoPlugin();
 };
 
 #endif // NODE_3D_EDITOR_PLUGIN_H
