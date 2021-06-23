@@ -946,39 +946,69 @@ static const char *op_names[] = {
 };
 
 String VisualScriptOperator::get_caption() const {
-	static const char32_t *op_names[] = {
-		//comparison
-		U"A = B", //OP_EQUAL,
-		U"A \u2260 B", //OP_NOT_EQUAL,
-		U"A < B", //OP_LESS,
-		U"A \u2264 B", //OP_LESS_EQUAL,
-		U"A > B", //OP_GREATER,
-		U"A \u2265 B", //OP_GREATER_EQUAL,
-		//mathematic
-		U"A + B", //OP_ADD,
-		U"A - B", //OP_SUBTRACT,
-		U"A \u00D7 B", //OP_MULTIPLY,
-		U"A \u00F7 B", //OP_DIVIDE,
-		U"\u00AC A", //OP_NEGATE,
-		U"+ A", //OP_POSITIVE,
-		U"A mod B", //OP_MODULE,
-		U"A .. B", //OP_STRING_CONCAT,
-		//bitwise
-		U"A << B", //OP_SHIFT_LEFT,
-		U"A >> B", //OP_SHIFT_RIGHT,
-		U"A & B", //OP_BIT_AND,
-		U"A | B", //OP_BIT_OR,
-		U"A ^ B", //OP_BIT_XOR,
-		U"~A", //OP_BIT_NEGATE,
-		//logic
-		U"A and B", //OP_AND,
-		U"A or B", //OP_OR,
-		U"A xor B", //OP_XOR,
-		U"not A", //OP_NOT,
-		U"A in B", //OP_IN,
+	switch (op) {
+		// comparison
+		case Variant::OP_EQUAL:
+			return U"A = B";
+		case Variant::OP_NOT_EQUAL:
+			return U"A \u2260 B";
+		case Variant::OP_LESS:
+			return U"A < B";
+		case Variant::OP_LESS_EQUAL:
+			return U"A \u2264 B";
+		case Variant::OP_GREATER:
+			return U"A > B";
+		case Variant::OP_GREATER_EQUAL:
+			return U"A \u2265 B";
 
-	};
-	return op_names[op];
+		// mathematic
+		case Variant::OP_ADD:
+			return U"A + B";
+		case Variant::OP_SUBTRACT:
+			return U"A - B";
+		case Variant::OP_MULTIPLY:
+			return U"A \u00D7 B";
+		case Variant::OP_DIVIDE:
+			return U"A \u00F7 B";
+		case Variant::OP_NEGATE:
+			return U"\u00AC A";
+		case Variant::OP_POSITIVE:
+			return U"+ A";
+		case Variant::OP_MODULE:
+			return U"A mod B";
+
+		// bitwise
+		case Variant::OP_SHIFT_LEFT:
+			return U"A << B";
+		case Variant::OP_SHIFT_RIGHT:
+			return U"A >> B";
+		case Variant::OP_BIT_AND:
+			return U"A & B";
+		case Variant::OP_BIT_OR:
+			return U"A | B";
+		case Variant::OP_BIT_XOR:
+			return U"A ^ B";
+		case Variant::OP_BIT_NEGATE:
+			return U"~A";
+
+		// logic
+		case Variant::OP_AND:
+			return U"A and B";
+		case Variant::OP_OR:
+			return U"A or B";
+		case Variant::OP_XOR:
+			return U"A xor B";
+		case Variant::OP_NOT:
+			return U"not A";
+		case Variant::OP_IN:
+			return U"A in B";
+
+		default: {
+			ERR_FAIL_V_MSG(
+					U"Unknown node",
+					U"Unknown node type encountered, caption not available.");
+		}
+	}
 }
 
 void VisualScriptOperator::set_operator(Variant::Operator p_op) {
