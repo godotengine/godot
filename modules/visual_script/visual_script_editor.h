@@ -226,7 +226,8 @@ class VisualScriptEditor : public ScriptEditorBase {
 	void _update_node_size(int p_id);
 	void _port_name_focus_out(const Node *p_name_box, int p_id, int p_port, bool is_input);
 
-	Vector2 _get_available_pos(bool centered = true, Vector2 ofs = Vector2()) const;
+	Vector2 _get_pos_in_graph(Vector2 p_point) const;
+	Vector2 _get_available_pos(bool p_centered = true, Vector2 p_pos = Vector2()) const;
 
 	bool node_has_sequence_connections(int p_id);
 
