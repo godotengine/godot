@@ -153,14 +153,20 @@ void register_core_types() {
 	ClassDB::register_class<InputEventPanGesture>();
 	ClassDB::register_class<InputEventMIDI>();
 
+	// Network
+	ClassDB::register_virtual_class<IP>();
+
 	ClassDB::register_virtual_class<StreamPeer>();
 	ClassDB::register_class<StreamPeerBuffer>();
 	ClassDB::register_class<StreamPeerTCP>();
 	ClassDB::register_class<TCPServer>();
+
+	ClassDB::register_virtual_class<PacketPeer>();
+	ClassDB::register_class<PacketPeerStream>();
 	ClassDB::register_class<PacketPeerUDP>();
 	ClassDB::register_class<UDPServer>();
-	ClassDB::register_custom_instance_class<PacketPeerDTLS>();
-	ClassDB::register_custom_instance_class<DTLSServer>();
+
+	ClassDB::register_custom_instance_class<HTTPClient>();
 
 	// Crypto
 	ClassDB::register_class<HashingContext>();
@@ -170,22 +176,20 @@ void register_core_types() {
 	ClassDB::register_custom_instance_class<HMACContext>();
 	ClassDB::register_custom_instance_class<Crypto>();
 	ClassDB::register_custom_instance_class<StreamPeerSSL>();
+	ClassDB::register_custom_instance_class<PacketPeerDTLS>();
+	ClassDB::register_custom_instance_class<DTLSServer>();
 
 	resource_format_saver_crypto.instantiate();
 	ResourceSaver::add_resource_format_saver(resource_format_saver_crypto);
 	resource_format_loader_crypto.instantiate();
 	ResourceLoader::add_resource_format_loader(resource_format_loader_crypto);
 
-	ClassDB::register_virtual_class<IP>();
-	ClassDB::register_virtual_class<PacketPeer>();
-	ClassDB::register_class<PacketPeerStream>();
 	ClassDB::register_virtual_class<NetworkedMultiplayerPeer>();
 	ClassDB::register_class<MultiplayerAPI>();
 	ClassDB::register_class<MainLoop>();
 	ClassDB::register_class<Translation>();
 	ClassDB::register_class<OptimizedTranslation>();
 	ClassDB::register_class<UndoRedo>();
-	ClassDB::register_class<HTTPClient>();
 	ClassDB::register_class<TriangleMesh>();
 
 	ClassDB::register_class<ResourceFormatLoader>();

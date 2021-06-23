@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  http_client.h.inc                                                    */
+/*  http_client_tcp.h                                                    */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,24 +28,65 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-// HTTPClient's additional private members in the javascript platform
+#ifndef HTTP_CLIENT_TCP_H
+#define HTTP_CLIENT_TCP_H
 
-Error make_request(Method p_method, const String &p_url, const Vector<String> &p_headers, const uint8_t *p_body, int p_body_len);
-static void _parse_headers(int p_len, const char **p_headers, void *p_ref);
+#include "http_client.h"
 
-int js_id = 0;
-// 64 KiB by default (favors fast download speeds at the cost of memory usage).
-int read_limit = 65536;
-Status status = STATUS_DISCONNECTED;
+class HTTPClientTCP : public HTTPClient {
+private:
+	Status status = STATUS_DISCONNECTED;
+	IP::ResolverID resolving = IP::RESOLVER_INVALID_ID;
+	int conn_port = -1;
+	String conn_host;
+	bool ssl = false;
+	bool ssl_verify_host = false;
+	bool blocking = false;
+	bool handshaking = false;
+	bool head_request = false;
 
-String host;
-int port = -1;
-bool use_tls = false;
+	Vector<uint8_t> response_str;
 
-int polled_response_code = 0;
-Vector<String> response_headers;
-Vector<uint8_t> response_buffer;
+	bool chunked = false;
+	Vector<uint8_t> chunk;
+	int chunk_left = 0;
+	bool chunk_trailer_part = false;
+	int body_size = -1;
+	int body_left = 0;
+	bool read_until_eof = false;
 
-#ifdef DEBUG_ENABLED
-uint64_t last_polling_frame = 0;
-#endif
+	Ref<StreamPeerTCP> tcp_connection;
+	Ref<StreamPeer> connection;
+
+	int response_num = 0;
+	Vector<String> response_headers;
+	// 64 KiB by default (favors fast download speeds at the cost of memory usage).
+	int read_chunk_size = 65536;
+
+	Error _get_http_data(uint8_t *p_buffer, int p_bytes, int &r_received);
+
+public:
+	static HTTPClient *_create_func();
+
+	Error request(Method p_method, const String &p_url, const Vector<String> &p_headers, const uint8_t *p_body, int p_body_size) override;
+
+	Error connect_to_host(const String &p_host, int p_port = -1, bool p_ssl = false, bool p_verify_host = true) override;
+	void set_connection(const Ref<StreamPeer> &p_connection) override;
+	Ref<StreamPeer> get_connection() const override;
+	void close() override;
+	Status get_status() const override;
+	bool has_response() const override;
+	bool is_response_chunked() const override;
+	int get_response_code() const override;
+	Error get_response_headers(List<String> *r_response) override;
+	int get_response_body_length() const override;
+	PackedByteArray read_response_body_chunk() override;
+	void set_blocking_mode(bool p_enable) override;
+	bool is_blocking_mode_enabled() const override;
+	void set_read_chunk_size(int p_size) override;
+	int get_read_chunk_size() const override;
+	Error poll() override;
+	HTTPClientTCP();
+};
+
+#endif // HTTP_CLIENT_TCP_H
