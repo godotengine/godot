@@ -65,7 +65,7 @@ void main() {
 #elif defined(USE_ATTRIBUTES)
 
 	vec2 vertex = vertex_attrib;
-	vec4 color = color_attrib;
+	vec4 color = color_attrib * draw_data.modulation;
 	vec2 uv = uv_attrib;
 
 	uvec4 bones = bone_attrib;
