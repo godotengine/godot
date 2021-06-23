@@ -14,7 +14,7 @@
 			<return type="bool">
 			</return>
 			<description>
-				Override this method to define whether the gizmo can be hidden or not. Returns [code]true[/code] if not overridden.
+				Override this method to define whether the gizmos handled by this plugin can be hidden or not. Returns [code]true[/code] if not overridden.
 			</description>
 		</method>
 		<method name="_commit_handle" qualifiers="virtual">
@@ -22,14 +22,35 @@
 			</return>
 			<argument index="0" name="gizmo" type="EditorNode3DGizmo">
 			</argument>
-			<argument index="1" name="index" type="int">
+			<argument index="1" name="group_id" type="int">
 			</argument>
-			<argument index="2" name="restore" type="Variant">
+			<argument index="2" name="id" type="int">
 			</argument>
-			<argument index="3" name="cancel" type="bool" default="false">
+			<argument index="3" name="restore" type="Variant">
+			</argument>
+			<argument index="4" name="cancel" type="bool" default="false">
 			</argument>
 			<description>
-				Override this method to commit gizmo handles. Called for this plugin's active gizmos.
+				Override this method to commit a handle being edited (handles must have been previously added by [method EditorNode3DGizmo.add_handle_group] during [method _redraw]). This usually means creating an [UndoRedo] action for the change, using the current handle value as "do" and the [code]restore[/code] argument as "undo".
+				If the [code]cancel[/code] argument is [code]true[/code], the [code]restore[/code] value should be directly set, without any [UndoRedo] action. Called for this plugin's active gizmos.
+			</description>
+		</method>
+		<method name="_commit_transform_handle" qualifiers="virtual">
+			<return type="void">
+			</return>
+			<argument index="0" name="gizmo" type="EditorNode3DGizmo">
+			</argument>
+			<argument index="1" name="group_id" type="int">
+			</argument>
+			<argument index="2" name="id" type="int">
+			</argument>
+			<argument index="3" name="restore" type="Transform3D">
+			</argument>
+			<argument index="4" name="cancel" type="bool" default="false">
+			</argument>
+			<description>
+				Override this method to commit a transform handle being edited (handles must have been previously added by [method EditorNode3DGizmo.add_transform_handle_group] during [method _redraw]). This usually means creating an [UndoRedo] action for the change, using the current handle value as "do" and the [code]restore[/code] argument as "undo".
+				If the [code]cancel[/code] argument is [code]true[/code], the [code]restore[/code] value should be directly set, without any [UndoRedo] action. Called for this plugin's active gizmos.
 			</description>
 		</method>
 		<method name="_create_gizmo" qualifiers="virtual">
@@ -53,7 +74,9 @@
 			</return>
 			<argument index="0" name="gizmo" type="EditorNode3DGizmo">
 			</argument>
-			<argument index="1" name="index" type="int">
+			<argument index="1" name="group_id" type="int">
+			</argument>
+			<argument index="2" name="id" type="int">
 			</argument>
 			<description>
 				Override this method to provide gizmo's handle names. Called for this plugin's active gizmos.
@@ -64,18 +87,33 @@
 			</return>
 			<argument index="0" name="gizmo" type="EditorNode3DGizmo">
 			</argument>
-			<argument index="1" name="index" type="int">
+			<argument index="1" name="group_id" type="int">
+			</argument>
+			<argument index="2" name="id" type="int">
 			</argument>
 			<description>
-				Gets actual value of a handle from gizmo. Called for this plugin's active gizmos.
+				Override this method to return the actual value of a handle. This value will be requested at the start of an edit and used as the [code]restore[/code] argument in [method _commit_handle]. Called for this plugin's active gizmos.
 			</description>
 		</method>
 		<method name="_get_priority" qualifiers="virtual">
 			<return type="int">
 			</return>
 			<description>
-				Override this method to set the gizmo's priority. Higher values correspond to higher priority. If a gizmo with higher priority conflicts with another gizmo, only the gizmo with higher priority will be used.
+				Override this method to set the gizmo's priority, since a [Node3D] can only have one gizmo. Higher values correspond to higher priority. If a gizmo with higher priority conflicts with another gizmo, only the gizmo with higher priority will be used.
 				All built-in editor gizmos return a priority of [code]-1[/code]. If not overridden, this method will return [code]0[/code], which means custom gizmos will automatically override built-in gizmos.
+			</description>
+		</method>
+		<method name="_get_transform_handle_value" qualifiers="virtual">
+			<return type="Transform3D">
+			</return>
+			<argument index="0" name="gizmo" type="EditorNode3DGizmo">
+			</argument>
+			<argument index="1" name="group_id" type="int">
+			</argument>
+			<argument index="2" name="id" type="int">
+			</argument>
+			<description>
+				Override this method to return the actual value of a transform handle. This value will be used to update the 3D transform gizmo. It will also be requested at the start of an edit and used as the [code]restore[/code] argument in [method _commit_handle]. Called for this plugin's active gizmos.
 			</description>
 		</method>
 		<method name="_has_gizmo" qualifiers="virtual">
@@ -92,10 +130,12 @@
 			</return>
 			<argument index="0" name="gizmo" type="EditorNode3DGizmo">
 			</argument>
-			<argument index="1" name="index" type="int">
+			<argument index="1" name="group_id" type="int">
+			</argument>
+			<argument index="2" name="id" type="int">
 			</argument>
 			<description>
-				Gets whether a handle is highlighted or not. Called for this plugin's active gizmos.
+				Override this method to return [code]true[/code] whenever to given handle should be highlighted in the editor. Called for this plugin's active gizmos.
 			</description>
 		</method>
 		<method name="_is_selectable_when_hidden" qualifiers="virtual">
@@ -111,7 +151,7 @@
 			<argument index="0" name="gizmo" type="EditorNode3DGizmo">
 			</argument>
 			<description>
-				Callback to redraw the provided gizmo. Called for this plugin's active gizmos.
+				Override this method to add all the gizmo elements whenever a gizmo update is requested. Called for this plugin's active gizmos.
 			</description>
 		</method>
 		<method name="_set_handle" qualifiers="virtual">
@@ -119,14 +159,31 @@
 			</return>
 			<argument index="0" name="gizmo" type="EditorNode3DGizmo">
 			</argument>
-			<argument index="1" name="index" type="int">
+			<argument index="1" name="group_id" type="int">
 			</argument>
-			<argument index="2" name="camera" type="Camera3D">
+			<argument index="2" name="id" type="int">
 			</argument>
-			<argument index="3" name="point" type="Vector2">
+			<argument index="3" name="camera" type="Camera3D">
+			</argument>
+			<argument index="4" name="point" type="Vector2">
 			</argument>
 			<description>
-				Update the value of a handle after it has been updated. Called for this plugin's active gizmos.
+				Override this method to update the node properties when the user drags a gizmo handle (previously added with [method EditorNode3DGizmo.add_handle_group]). The provided [code]point[/code] is the mouse position in screen coordinates and the [code]camera[/code] can be used to convert it to raycasts. Called for this plugin's active gizmos.
+			</description>
+		</method>
+		<method name="_set_transform_handle" qualifiers="virtual">
+			<return type="void">
+			</return>
+			<argument index="0" name="gizmo" type="EditorNode3DGizmo">
+			</argument>
+			<argument index="1" name="group_id" type="int">
+			</argument>
+			<argument index="2" name="id" type="int">
+			</argument>
+			<argument index="3" name="transform" type="Transform3D">
+			</argument>
+			<description>
+				Override this method to update the node properties when the user manipulates a transform handle (previously added with [method EditorNode3DGizmo.add_transform_handle_group]).  Called for this plugin's active gizmos.
 			</description>
 		</method>
 		<method name="add_material">

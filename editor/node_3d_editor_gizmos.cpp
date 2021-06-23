@@ -33,7 +33,9 @@
 #include "core/math/convex_hull.h"
 #include "core/math/geometry_2d.h"
 #include "core/math/geometry_3d.h"
+#include "editor/plugins/node_3d_editor_plugin.h"
 #include "scene/3d/audio_stream_player_3d.h"
+#include "scene/3d/camera_3d.h"
 #include "scene/3d/collision_polygon_3d.h"
 #include "scene/3d/collision_shape_3d.h"
 #include "scene/3d/cpu_particles_3d.h"
@@ -99,65 +101,96 @@ void EditorNode3DGizmo::clear() {
 	collision_segments.clear();
 	collision_mesh = Ref<TriangleMesh>();
 	instances.clear();
-	handles.clear();
-	secondary_handles.clear();
+	handle_groups.clear();
 }
 
 void EditorNode3DGizmo::redraw() {
 	if (get_script_instance() && get_script_instance()->has_method("_redraw")) {
 		get_script_instance()->call("_redraw");
-		return;
+	} else {
+		ERR_FAIL_COND(!gizmo_plugin);
+		gizmo_plugin->redraw(this);
 	}
 
-	ERR_FAIL_COND(!gizmo_plugin);
-	gizmo_plugin->redraw(this);
+	if (Node3DEditor::get_singleton()->get_selected() == spatial_node) {
+		Node3DEditor::get_singleton()->update_transform_gizmo();
+	}
 }
 
-String EditorNode3DGizmo::get_handle_name(int p_idx) const {
+String EditorNode3DGizmo::get_handle_name(int p_group_id, int p_id) const {
 	if (get_script_instance() && get_script_instance()->has_method("_get_handle_name")) {
-		return get_script_instance()->call("_get_handle_name", p_idx);
+		return get_script_instance()->call("_get_handle_name", p_group_id, p_id);
 	}
 
 	ERR_FAIL_COND_V(!gizmo_plugin, "");
-	return gizmo_plugin->get_handle_name(this, p_idx);
+	return gizmo_plugin->get_handle_name(this, p_group_id, p_id);
 }
 
-bool EditorNode3DGizmo::is_handle_highlighted(int p_idx) const {
+bool EditorNode3DGizmo::is_handle_highlighted(int p_group_id, int p_id) const {
 	if (get_script_instance() && get_script_instance()->has_method("_is_handle_highlighted")) {
-		return get_script_instance()->call("_is_handle_highlighted", p_idx);
+		return get_script_instance()->call("_is_handle_highlighted", p_group_id, p_id);
 	}
 
 	ERR_FAIL_COND_V(!gizmo_plugin, false);
-	return gizmo_plugin->is_handle_highlighted(this, p_idx);
+	return gizmo_plugin->is_handle_highlighted(this, p_group_id, p_id);
 }
 
-Variant EditorNode3DGizmo::get_handle_value(int p_idx) {
+Variant EditorNode3DGizmo::get_handle_value(int p_group_id, int p_id) const {
 	if (get_script_instance() && get_script_instance()->has_method("_get_handle_value")) {
-		return get_script_instance()->call("_get_handle_value", p_idx);
+		return get_script_instance()->call("_get_handle_value", p_group_id, p_id);
 	}
 
 	ERR_FAIL_COND_V(!gizmo_plugin, Variant());
-	return gizmo_plugin->get_handle_value(this, p_idx);
+	return gizmo_plugin->get_handle_value(this, p_group_id, p_id);
 }
 
-void EditorNode3DGizmo::set_handle(int p_idx, Camera3D *p_camera, const Point2 &p_point) {
+void EditorNode3DGizmo::set_handle(int p_group_id, int p_id, Camera3D *p_camera, const Point2 &p_point) const {
 	if (get_script_instance() && get_script_instance()->has_method("_set_handle")) {
-		get_script_instance()->call("_set_handle", p_idx, p_camera, p_point);
+		get_script_instance()->call("_set_handle", p_group_id, p_id, p_camera, p_point);
 		return;
 	}
 
 	ERR_FAIL_COND(!gizmo_plugin);
-	gizmo_plugin->set_handle(this, p_idx, p_camera, p_point);
+	gizmo_plugin->set_handle(this, p_group_id, p_id, p_camera, p_point);
 }
 
-void EditorNode3DGizmo::commit_handle(int p_idx, const Variant &p_restore, bool p_cancel) {
+void EditorNode3DGizmo::commit_handle(int p_group_id, int p_id, const Variant &p_restore, bool p_cancel) const {
 	if (get_script_instance() && get_script_instance()->has_method("_commit_handle")) {
-		get_script_instance()->call("_commit_handle", p_idx, p_restore, p_cancel);
+		get_script_instance()->call("_commit_handle", p_group_id, p_id, p_restore, p_cancel);
 		return;
 	}
 
 	ERR_FAIL_COND(!gizmo_plugin);
-	gizmo_plugin->commit_handle(this, p_idx, p_restore, p_cancel);
+	gizmo_plugin->commit_handle(this, p_group_id, p_id, p_restore, p_cancel);
+}
+
+Transform3D EditorNode3DGizmo::get_transform_handle_value(int p_group_id, int p_id) const {
+	if (get_script_instance() && get_script_instance()->has_method("_get_transform_handle_value")) {
+		return get_script_instance()->call("_get_transform_handle_value", p_group_id, p_id);
+	}
+
+	ERR_FAIL_COND_V(!gizmo_plugin, Transform3D());
+	return gizmo_plugin->get_transform_handle_value(this, p_group_id, p_id);
+}
+
+void EditorNode3DGizmo::set_transform_handle(int p_group_id, int p_id, const Transform3D &p_transform) const {
+	if (get_script_instance() && get_script_instance()->has_method("_set_transform_handle")) {
+		get_script_instance()->call("_set_transform_handle", p_group_id, p_id, p_transform);
+		return;
+	}
+
+	ERR_FAIL_COND(!gizmo_plugin);
+	gizmo_plugin->set_transform_handle(this, p_group_id, p_id, p_transform);
+}
+
+void EditorNode3DGizmo::commit_transform_handle(int p_group_id, int p_id, const Transform3D &p_restore, bool p_cancel) const {
+	if (get_script_instance() && get_script_instance()->has_method("_commit_transform_handle")) {
+		get_script_instance()->call("_commit_transform_handle", p_group_id, p_id, p_restore, p_cancel);
+		return;
+	}
+
+	ERR_FAIL_COND(!gizmo_plugin);
+	gizmo_plugin->commit_transform_handle(this, p_group_id, p_id, p_restore, p_cancel);
 }
 
 void EditorNode3DGizmo::set_spatial_node(Node3D *p_node) {
@@ -180,11 +213,10 @@ void EditorNode3DGizmo::Instance::create_instance(Node3D *p_base, bool p_hidden)
 	RS::get_singleton()->instance_geometry_set_flag(instance, RS::INSTANCE_FLAG_IGNORE_OCCLUSION_CULLING, true);
 }
 
-void EditorNode3DGizmo::add_mesh(const Ref<ArrayMesh> &p_mesh, bool p_billboard, const Ref<SkinReference> &p_skin_reference, const Ref<Material> &p_material) {
+void EditorNode3DGizmo::add_mesh(const Ref<ArrayMesh> &p_mesh, const Ref<Material> &p_material, const Ref<SkinReference> &p_skin_reference) {
 	ERR_FAIL_COND(!spatial_node);
 	Instance ins;
 
-	ins.billboard = p_billboard;
 	ins.mesh = p_mesh;
 	ins.skin_reference = p_skin_reference;
 	ins.material = p_material;
@@ -245,7 +277,6 @@ void EditorNode3DGizmo::add_vertices(const Vector<Vector3> &p_vertices, const Re
 		}
 	}
 
-	ins.billboard = p_billboard;
 	ins.mesh = mesh;
 	if (valid) {
 		ins.create_instance(spatial_node, hidden);
@@ -307,8 +338,6 @@ void EditorNode3DGizmo::add_unscaled_billboard(const Ref<Material> &p_material, 
 	mesh->set_custom_aabb(AABB(Vector3(-selectable_icon_size, -selectable_icon_size, -selectable_icon_size) * 100.0f, Vector3(selectable_icon_size, selectable_icon_size, selectable_icon_size) * 200.0f));
 
 	ins.mesh = mesh;
-	ins.unscaled = true;
-	ins.billboard = true;
 	if (valid) {
 		ins.create_instance(spatial_node, hidden);
 		RS::get_singleton()->instance_set_transform(ins.instance, spatial_node->get_global_transform());
@@ -331,33 +360,33 @@ void EditorNode3DGizmo::add_collision_segments(const Vector<Vector3> &p_lines) {
 	}
 }
 
-void EditorNode3DGizmo::add_handles(const Vector<Vector3> &p_handles, const Ref<Material> &p_material, bool p_billboard, bool p_secondary) {
-	billboard_handle = p_billboard;
+void EditorNode3DGizmo::_add_handle_group_mesh(int p_group_id, const Vector<Vector3> &p_positions, const Vector<int> &p_ids, const Ref<Material> p_material, bool p_billboard) {
+	ERR_FAIL_COND(!p_ids.is_empty() && p_ids.size() != p_positions.size());
 
-	if (!is_selected() || !is_editable()) {
-		return;
-	}
+	int over_group_id = Node3DEditor::get_singleton()->get_over_gizmo_handle_group();
+	int over_id = Node3DEditor::get_singleton()->get_over_gizmo_handle();
 
-	ERR_FAIL_COND(!spatial_node);
+	int selected_group_id = Node3DEditor::get_singleton()->get_selected_gizmo_handle_group();
+	int selected_id = Node3DEditor::get_singleton()->get_selected_gizmo_handle();
 
 	Instance ins;
-
 	Ref<ArrayMesh> mesh = memnew(ArrayMesh);
 
 	Array a;
 	a.resize(RS::ARRAY_MAX);
-	a[RS::ARRAY_VERTEX] = p_handles;
+	a[RS::ARRAY_VERTEX] = p_positions;
 	Vector<Color> colors;
 	{
-		colors.resize(p_handles.size());
+		colors.resize(p_positions.size());
 		Color *w = colors.ptrw();
-		for (int i = 0; i < p_handles.size(); i++) {
+		for (int i = 0; i < p_positions.size(); i++) {
+			int id = p_ids.is_empty() ? i : p_ids[i];
 			Color col(1, 1, 1, 1);
-			if (is_handle_highlighted(i)) {
+			if (is_handle_highlighted(p_group_id, id) || (selected_group_id == p_group_id && selected_id == id)) {
 				col = Color(0, 0, 1, 0.9);
 			}
 
-			if (Node3DEditor::get_singleton()->get_over_gizmo_handle() != i) {
+			if (over_group_id != p_group_id || over_id != id) {
 				col.a = 0.8;
 			}
 
@@ -370,8 +399,8 @@ void EditorNode3DGizmo::add_handles(const Vector<Vector3> &p_handles, const Ref<
 
 	if (p_billboard) {
 		float md = 0;
-		for (int i = 0; i < p_handles.size(); i++) {
-			md = MAX(0, p_handles[i].length());
+		for (int i = 0; i < p_positions.size(); i++) {
+			md = MAX(0, p_positions[i].length());
 		}
 		if (md) {
 			mesh->set_custom_aabb(AABB(Vector3(-md, -md, -md), Vector3(md, md, md) * 2.0));
@@ -379,26 +408,89 @@ void EditorNode3DGizmo::add_handles(const Vector<Vector3> &p_handles, const Ref<
 	}
 
 	ins.mesh = mesh;
-	ins.billboard = p_billboard;
 	ins.extra_margin = true;
 	if (valid) {
 		ins.create_instance(spatial_node, hidden);
 		RS::get_singleton()->instance_set_transform(ins.instance, spatial_node->get_global_transform());
 	}
 	instances.push_back(ins);
-	if (!p_secondary) {
-		int chs = handles.size();
-		handles.resize(chs + p_handles.size());
-		for (int i = 0; i < p_handles.size(); i++) {
-			handles.write[i + chs] = p_handles[i];
-		}
+}
+
+void EditorNode3DGizmo::add_handles(const Vector<Vector3> &p_handles, const Ref<Material> &p_material, bool p_billboard, bool p_shift_priority) {
+	int group_id = p_shift_priority ? COMPAT_SEC_HANDLE_GROUP_ID : COMPAT_HANDLE_GROUP_ID;
+
+	if (!handle_groups.has(group_id)) {
+		add_handle_group(group_id, p_material, p_handles, Vector<int>(), p_billboard, p_shift_priority);
 	} else {
-		int chs = secondary_handles.size();
-		secondary_handles.resize(chs + p_handles.size());
-		for (int i = 0; i < p_handles.size(); i++) {
-			secondary_handles.write[i + chs] = p_handles[i];
+		_add_handle_group_mesh(group_id, p_handles, Vector<int>(), p_material, p_billboard);
+
+		HandleGroup &hg = handle_groups[group_id];
+		hg.billboard = p_billboard;
+		int new_handles_offset = hg.positions.size();
+		int new_positions_count = p_handles.size();
+
+		hg.positions.resize(new_handles_offset + new_positions_count);
+		for (int i = 0; i < new_positions_count; i++) {
+			hg.positions.write[new_handles_offset + i] = p_handles[i];
 		}
 	}
+}
+
+void EditorNode3DGizmo::add_handle_group(int p_group_id, const Ref<Material> &p_material, const Vector<Vector3> &p_positions, const Vector<int> &p_ids, bool p_billboard, bool p_shift_priority) {
+	if (!is_selected() || !is_editable()) {
+		return;
+	}
+
+	ERR_FAIL_COND_MSG(p_group_id == -1, "Handle group id -1 is a reserved group ID.");
+	ERR_FAIL_COND_MSG(!p_ids.is_empty() && p_ids.size() != p_positions.size(), "The ids size doesn't match the positions size.");
+	ERR_FAIL_COND(!spatial_node);
+	ERR_FAIL_COND(handle_groups.has(p_group_id));
+
+	HandleGroup hg;
+	hg.positions = p_positions;
+	hg.billboard = p_billboard;
+	hg.shift_priority = p_shift_priority;
+	hg.ids = p_ids;
+	handle_groups.insert(p_group_id, hg);
+
+	_add_handle_group_mesh(p_group_id, hg.positions, hg.ids, p_material, p_billboard);
+}
+
+void EditorNode3DGizmo::_add_transform_handle_group(int p_group_id, const Ref<Material> &p_material, const Array &p_transforms, const Vector<int> &p_ids, bool p_shift_priority) {
+	Vector<Transform3D> transforms;
+	transforms.resize(p_transforms.size());
+
+	for (int i = 0; i < p_transforms.size(); i++) {
+		ERR_FAIL_COND_MSG(p_transforms[i].get_type() != Variant::TRANSFORM3D, "Element " + itos(i) + " of the transforms array is not a Transform3D.");
+		transforms.write[i] = p_transforms[i];
+	}
+
+	add_transform_handle_group(p_group_id, p_material, transforms, p_ids, p_shift_priority);
+}
+
+void EditorNode3DGizmo::add_transform_handle_group(int p_group_id, const Ref<Material> &p_material, const Vector<Transform3D> &p_transforms, const Vector<int> &p_ids, bool p_shift_priority) {
+	if (!is_selected() || !is_editable()) {
+		return;
+	}
+
+	ERR_FAIL_COND_MSG(!p_ids.is_empty() && p_ids.size() != p_transforms.size(), "The ids size doesn't match the positions size.");
+	ERR_FAIL_COND(!spatial_node);
+	ERR_FAIL_COND(handle_groups.has(p_group_id));
+
+	HandleGroup hg;
+	hg.transforms = p_transforms;
+	hg.shift_priority = p_shift_priority;
+	hg.ids = p_ids;
+
+	handle_groups.insert(p_group_id, hg);
+
+	Vector<Vector3> positions;
+	positions.resize(p_transforms.size());
+
+	for (int i = 0; i < positions.size(); i++) {
+		positions.write[i] = p_transforms[i].origin;
+	}
+	_add_handle_group_mesh(p_group_id, positions, hg.ids, p_material);
 }
 
 void EditorNode3DGizmo::add_solid_box(Ref<Material> &p_material, Vector3 p_size, Vector3 p_position) {
@@ -499,64 +591,83 @@ bool EditorNode3DGizmo::intersect_frustum(const Camera3D *p_camera, const Vector
 	return false;
 }
 
-bool EditorNode3DGizmo::intersect_ray(Camera3D *p_camera, const Point2 &p_point, Vector3 &r_pos, Vector3 &r_normal, int *r_gizmo_handle, bool p_sec_first) {
+bool EditorNode3DGizmo::_handle_group_intersect_ray(const HandleGroup &p_handle_group, const Transform3D &p_xform, const Camera3D *p_camera, const Point2 &p_point, float &r_min_distance, int &r_idx) {
+	Transform3D t = p_xform;
+	Transform3D camera_xform = p_camera->get_transform();
+
+	if (p_handle_group.billboard) {
+		t.set_look_at(t.origin, t.origin - camera_xform.basis.get_axis(2), camera_xform.basis.get_axis(1));
+	}
+
+	bool in_group = false;
+	int handle_count = p_handle_group.positions.is_empty() ? p_handle_group.transforms.size() : p_handle_group.positions.size();
+	for (int i = 0; i < handle_count; i++) {
+		Vector3 local_pos = p_handle_group.positions.is_empty() ? p_handle_group.transforms[i].origin : p_handle_group.positions[i];
+		Vector3 global_pos = t.xform(local_pos);
+		Vector2 p = p_camera->unproject_position(global_pos);
+
+		if (p.distance_to(p_point) < HANDLE_HALF_SIZE) {
+			real_t dp = camera_xform.origin.distance_to(global_pos);
+			if (dp < r_min_distance - CMP_EPSILON) {
+				r_min_distance = dp;
+				r_idx = p_handle_group.ids.is_empty() ? i : p_handle_group.ids[i];
+				in_group = true;
+			}
+		}
+	}
+
+	return in_group;
+}
+
+void EditorNode3DGizmo::handles_intersect_ray(Camera3D *p_camera, const Vector2 &p_point, bool p_shift_pressed, int &r_group_id, int &r_idx) {
+	r_group_id = -1;
+	r_idx = -1;
+
+	ERR_FAIL_COND(!spatial_node);
+	ERR_FAIL_COND(!valid);
+
+	if (hidden) {
+		return;
+	}
+
+	Transform3D xform = spatial_node->get_global_transform();
+	float min_d = 1e20;
+
+	if (p_shift_pressed) {
+		for (OrderedHashMap<int, HandleGroup>::Element E = handle_groups.front(); E; E = E.next()) {
+			const HandleGroup &handle_group = E.get();
+
+			if (!handle_group.shift_priority) {
+				continue;
+			}
+
+			bool in_current_group = _handle_group_intersect_ray(handle_group, xform, p_camera, p_point, min_d, r_idx);
+			if (in_current_group) {
+				r_group_id = E.key();
+			}
+		}
+	}
+
+	for (OrderedHashMap<int, HandleGroup>::Element E = handle_groups.front(); E; E = E.next()) {
+		const HandleGroup &handle_group = E.get();
+
+		if (p_shift_pressed && handle_group.shift_priority) {
+			continue;
+		}
+
+		bool in_current_group = _handle_group_intersect_ray(handle_group, xform, p_camera, p_point, min_d, r_idx);
+		if (in_current_group) {
+			r_group_id = E.key();
+		}
+	}
+}
+
+bool EditorNode3DGizmo::intersect_ray(Camera3D *p_camera, const Point2 &p_point, Vector3 &r_pos, Vector3 &r_normal) {
 	ERR_FAIL_COND_V(!spatial_node, false);
 	ERR_FAIL_COND_V(!valid, false);
 
 	if (hidden && !gizmo_plugin->is_selectable_when_hidden()) {
 		return false;
-	}
-
-	if (r_gizmo_handle && !hidden) {
-		Transform3D t = spatial_node->get_global_transform();
-		if (billboard_handle) {
-			t.set_look_at(t.origin, t.origin - p_camera->get_transform().basis.get_axis(2), p_camera->get_transform().basis.get_axis(1));
-		}
-
-		float min_d = 1e20;
-		int idx = -1;
-
-		for (int i = 0; i < secondary_handles.size(); i++) {
-			Vector3 hpos = t.xform(secondary_handles[i]);
-			Vector2 p = p_camera->unproject_position(hpos);
-
-			if (p.distance_to(p_point) < HANDLE_HALF_SIZE) {
-				real_t dp = p_camera->get_transform().origin.distance_to(hpos);
-				if (dp < min_d) {
-					r_pos = t.xform(hpos);
-					r_normal = p_camera->get_transform().basis.get_axis(2);
-					min_d = dp;
-					idx = i + handles.size();
-				}
-			}
-		}
-
-		if (p_sec_first && idx != -1) {
-			*r_gizmo_handle = idx;
-			return true;
-		}
-
-		min_d = 1e20;
-
-		for (int i = 0; i < handles.size(); i++) {
-			Vector3 hpos = t.xform(handles[i]);
-			Vector2 p = p_camera->unproject_position(hpos);
-
-			if (p.distance_to(p_point) < HANDLE_HALF_SIZE) {
-				real_t dp = p_camera->get_transform().origin.distance_to(hpos);
-				if (dp < min_d) {
-					r_pos = t.xform(hpos);
-					r_normal = p_camera->get_transform().basis.get_axis(2);
-					min_d = dp;
-					idx = i;
-				}
-			}
-		}
-
-		if (idx >= 0) {
-			*r_gizmo_handle = idx;
-			return true;
-		}
 	}
 
 	if (selectable_icon_size > 0.0f) {
@@ -674,6 +785,11 @@ bool EditorNode3DGizmo::intersect_ray(Camera3D *p_camera, const Point2 &p_point,
 	return false;
 }
 
+bool EditorNode3DGizmo::is_handle_group_transform(int p_group_id) {
+	ERR_FAIL_COND_V(!handle_groups.has(p_group_id), false);
+	return !handle_groups[p_group_id].transforms.is_empty();
+}
+
 void EditorNode3DGizmo::create() {
 	ERR_FAIL_COND(!spatial_node);
 	ERR_FAIL_COND(valid);
@@ -724,11 +840,13 @@ void EditorNode3DGizmo::set_plugin(EditorNode3DGizmoPlugin *p_plugin) {
 
 void EditorNode3DGizmo::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("add_lines", "lines", "material", "billboard", "modulate"), &EditorNode3DGizmo::add_lines, DEFVAL(false), DEFVAL(Color(1, 1, 1)));
-	ClassDB::bind_method(D_METHOD("add_mesh", "mesh", "billboard", "skeleton", "material"), &EditorNode3DGizmo::add_mesh, DEFVAL(false), DEFVAL(Ref<SkinReference>()), DEFVAL(Variant()));
+	ClassDB::bind_method(D_METHOD("add_mesh", "mesh", "material", "skeleton"), &EditorNode3DGizmo::add_mesh, DEFVAL(Variant()), DEFVAL(Ref<SkinReference>()));
 	ClassDB::bind_method(D_METHOD("add_collision_segments", "segments"), &EditorNode3DGizmo::add_collision_segments);
 	ClassDB::bind_method(D_METHOD("add_collision_triangles", "triangles"), &EditorNode3DGizmo::add_collision_triangles);
 	ClassDB::bind_method(D_METHOD("add_unscaled_billboard", "material", "default_scale", "modulate"), &EditorNode3DGizmo::add_unscaled_billboard, DEFVAL(1), DEFVAL(Color(1, 1, 1)));
-	ClassDB::bind_method(D_METHOD("add_handles", "handles", "material", "billboard", "secondary"), &EditorNode3DGizmo::add_handles, DEFVAL(false), DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("add_handles", "handles", "material", "billboard", "shift_priority"), &EditorNode3DGizmo::add_handles, DEFVAL(false), DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("add_handle_group", "group_id", "material", "positions", "ids", "billboard", "shift_priority"), &EditorNode3DGizmo::add_handle_group, DEFVAL(Vector<int>()), DEFVAL(false), DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("add_transform_handle_group", "group_id", "material", "transforms", "ids", "shift_priority"), &EditorNode3DGizmo::_add_transform_handle_group, DEFVAL(Vector<int>()), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("set_spatial_node", "node"), &EditorNode3DGizmo::_set_spatial_node);
 	ClassDB::bind_method(D_METHOD("get_spatial_node"), &EditorNode3DGizmo::get_spatial_node);
 	ClassDB::bind_method(D_METHOD("get_plugin"), &EditorNode3DGizmo::get_plugin);
@@ -736,26 +854,30 @@ void EditorNode3DGizmo::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_hidden", "hidden"), &EditorNode3DGizmo::set_hidden);
 
 	BIND_VMETHOD(MethodInfo("_redraw"));
-	BIND_VMETHOD(MethodInfo(Variant::STRING, "_get_handle_name", PropertyInfo(Variant::INT, "index")));
-	BIND_VMETHOD(MethodInfo(Variant::BOOL, "_is_handle_highlighted", PropertyInfo(Variant::INT, "index")));
+	BIND_VMETHOD(MethodInfo(Variant::STRING, "_get_handle_name", PropertyInfo(Variant::INT, "group_id"), PropertyInfo(Variant::INT, "id")));
+	BIND_VMETHOD(MethodInfo(Variant::BOOL, "_is_handle_highlighted", PropertyInfo(Variant::INT, "group_id"), PropertyInfo(Variant::INT, "id")));
 
-	MethodInfo hvget(Variant::NIL, "_get_handle_value", PropertyInfo(Variant::INT, "index"));
+	MethodInfo hvget(Variant::NIL, "_get_handle_value", PropertyInfo(Variant::INT, "group_id"), PropertyInfo(Variant::INT, "id"));
 	hvget.return_val.usage |= PROPERTY_USAGE_NIL_IS_VARIANT;
 	BIND_VMETHOD(hvget);
 
-	BIND_VMETHOD(MethodInfo("_set_handle", PropertyInfo(Variant::INT, "index"), PropertyInfo(Variant::OBJECT, "camera", PROPERTY_HINT_RESOURCE_TYPE, "Camera3D"), PropertyInfo(Variant::VECTOR2, "point")));
-	MethodInfo cm = MethodInfo("_commit_handle", PropertyInfo(Variant::INT, "index"), PropertyInfo(Variant::NIL, "restore"), PropertyInfo(Variant::BOOL, "cancel"));
+	BIND_VMETHOD(MethodInfo("_set_handle", PropertyInfo(Variant::INT, "group_id"), PropertyInfo(Variant::INT, "id"), PropertyInfo(Variant::OBJECT, "camera", PROPERTY_HINT_RESOURCE_TYPE, "Camera3D"), PropertyInfo(Variant::VECTOR2, "point")));
+	MethodInfo cm = MethodInfo("_commit_handle", PropertyInfo(Variant::INT, "group_id"), PropertyInfo(Variant::INT, "id"), PropertyInfo(Variant::NIL, "restore"), PropertyInfo(Variant::BOOL, "cancel"));
 	cm.default_arguments.push_back(false);
 	BIND_VMETHOD(cm);
+
+	BIND_VMETHOD(MethodInfo(Variant::TRANSFORM3D, "_get_transform_handle_value", PropertyInfo(Variant::INT, "group_id"), PropertyInfo(Variant::INT, "id")));
+	BIND_VMETHOD(MethodInfo("_set_transform_handle", PropertyInfo(Variant::INT, "group_id"), PropertyInfo(Variant::INT, "id"), PropertyInfo(Variant::TRANSFORM3D, "transform")));
+	MethodInfo ctm = MethodInfo("_commit_transform_handle", PropertyInfo(Variant::INT, "group_id"), PropertyInfo(Variant::INT, "id"), PropertyInfo(Variant::TRANSFORM3D, "restore"), PropertyInfo(Variant::BOOL, "cancel"));
+	ctm.default_arguments.push_back(false);
+	BIND_VMETHOD(ctm);
 }
 
 EditorNode3DGizmo::EditorNode3DGizmo() {
 	valid = false;
 	billboard_handle = false;
 	hidden = false;
-	base = nullptr;
 	selected = false;
-	instantiated = false;
 	spatial_node = nullptr;
 	gizmo_plugin = nullptr;
 	selectable_icon_size = -1.0f;
@@ -768,10 +890,330 @@ EditorNode3DGizmo::~EditorNode3DGizmo() {
 	clear();
 }
 
-Vector3 EditorNode3DGizmo::get_handle_pos(int p_idx) const {
-	ERR_FAIL_INDEX_V(p_idx, handles.size(), Vector3());
+/////
 
-	return handles[p_idx];
+void EditorNode3DGizmoPlugin::create_material(const String &p_name, const Color &p_color, bool p_billboard, bool p_on_top, bool p_use_vertex_color) {
+	Color instantiated_color = EDITOR_DEF("editors/3d_gizmos/gizmo_colors/instantiated", Color(0.7, 0.7, 0.7, 0.6));
+
+	Vector<Ref<StandardMaterial3D>> mats;
+
+	for (int i = 0; i < 4; i++) {
+		bool selected = i % 2 == 1;
+		bool instantiated = i < 2;
+
+		Ref<StandardMaterial3D> material = Ref<StandardMaterial3D>(memnew(StandardMaterial3D));
+
+		Color color = instantiated ? instantiated_color : p_color;
+
+		if (!selected) {
+			color.a *= 0.3;
+		}
+
+		material->set_albedo(color);
+		material->set_shading_mode(StandardMaterial3D::SHADING_MODE_UNSHADED);
+		material->set_transparency(StandardMaterial3D::TRANSPARENCY_ALPHA);
+		material->set_render_priority(StandardMaterial3D::RENDER_PRIORITY_MIN + 1);
+		material->set_cull_mode(StandardMaterial3D::CULL_DISABLED);
+
+		if (p_use_vertex_color) {
+			material->set_flag(StandardMaterial3D::FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
+			material->set_flag(StandardMaterial3D::FLAG_SRGB_VERTEX_COLOR, true);
+		}
+
+		if (p_billboard) {
+			material->set_billboard_mode(StandardMaterial3D::BILLBOARD_ENABLED);
+		}
+
+		if (p_on_top && selected) {
+			material->set_on_top_of_alpha();
+		}
+
+		mats.push_back(material);
+	}
+
+	materials[p_name] = mats;
+}
+
+void EditorNode3DGizmoPlugin::create_icon_material(const String &p_name, const Ref<Texture2D> &p_texture, bool p_on_top, const Color &p_albedo) {
+	Color instantiated_color = EDITOR_DEF("editors/3d_gizmos/gizmo_colors/instantiated", Color(0.7, 0.7, 0.7, 0.6));
+
+	Vector<Ref<StandardMaterial3D>> icons;
+
+	for (int i = 0; i < 4; i++) {
+		bool selected = i % 2 == 1;
+		bool instantiated = i < 2;
+
+		Ref<StandardMaterial3D> icon = Ref<StandardMaterial3D>(memnew(StandardMaterial3D));
+
+		Color color = instantiated ? instantiated_color : p_albedo;
+
+		if (!selected) {
+			color.a *= 0.85;
+		}
+
+		icon->set_albedo(color);
+
+		icon->set_shading_mode(StandardMaterial3D::SHADING_MODE_UNSHADED);
+		icon->set_flag(StandardMaterial3D::FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
+		icon->set_flag(StandardMaterial3D::FLAG_SRGB_VERTEX_COLOR, true);
+		icon->set_cull_mode(StandardMaterial3D::CULL_DISABLED);
+		icon->set_depth_draw_mode(StandardMaterial3D::DEPTH_DRAW_DISABLED);
+		icon->set_transparency(StandardMaterial3D::TRANSPARENCY_ALPHA);
+		icon->set_texture(StandardMaterial3D::TEXTURE_ALBEDO, p_texture);
+		icon->set_flag(StandardMaterial3D::FLAG_FIXED_SIZE, true);
+		icon->set_billboard_mode(StandardMaterial3D::BILLBOARD_ENABLED);
+		icon->set_render_priority(StandardMaterial3D::RENDER_PRIORITY_MIN);
+
+		if (p_on_top && selected) {
+			icon->set_on_top_of_alpha();
+		}
+
+		icons.push_back(icon);
+	}
+
+	materials[p_name] = icons;
+}
+
+void EditorNode3DGizmoPlugin::create_handle_material(const String &p_name, bool p_billboard, const Ref<Texture2D> &p_icon) {
+	Ref<StandardMaterial3D> handle_material = Ref<StandardMaterial3D>(memnew(StandardMaterial3D));
+
+	handle_material->set_shading_mode(StandardMaterial3D::SHADING_MODE_UNSHADED);
+	handle_material->set_flag(StandardMaterial3D::FLAG_USE_POINT_SIZE, true);
+	Ref<Texture2D> handle_t = p_icon != nullptr ? p_icon : Node3DEditor::get_singleton()->get_theme_icon("Editor3DHandle", "EditorIcons");
+	handle_material->set_point_size(handle_t->get_width());
+	handle_material->set_texture(StandardMaterial3D::TEXTURE_ALBEDO, handle_t);
+	handle_material->set_albedo(Color(1, 1, 1));
+	handle_material->set_flag(StandardMaterial3D::FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
+	handle_material->set_flag(StandardMaterial3D::FLAG_SRGB_VERTEX_COLOR, true);
+	handle_material->set_on_top_of_alpha();
+	if (p_billboard) {
+		handle_material->set_billboard_mode(StandardMaterial3D::BILLBOARD_ENABLED);
+		handle_material->set_on_top_of_alpha();
+	}
+	handle_material->set_transparency(StandardMaterial3D::TRANSPARENCY_ALPHA);
+
+	materials[p_name] = Vector<Ref<StandardMaterial3D>>();
+	materials[p_name].push_back(handle_material);
+}
+
+void EditorNode3DGizmoPlugin::add_material(const String &p_name, Ref<StandardMaterial3D> p_material) {
+	materials[p_name] = Vector<Ref<StandardMaterial3D>>();
+	materials[p_name].push_back(p_material);
+}
+
+Ref<StandardMaterial3D> EditorNode3DGizmoPlugin::get_material(const String &p_name, const Ref<EditorNode3DGizmo> &p_gizmo) {
+	ERR_FAIL_COND_V(!materials.has(p_name), Ref<StandardMaterial3D>());
+	ERR_FAIL_COND_V(materials[p_name].size() == 0, Ref<StandardMaterial3D>());
+
+	if (p_gizmo.is_null() || materials[p_name].size() == 1) {
+		return materials[p_name][0];
+	}
+
+	int index = (p_gizmo->is_selected() ? 1 : 0) + (p_gizmo->is_editable() ? 2 : 0);
+
+	Ref<StandardMaterial3D> mat = materials[p_name][index];
+
+	if (current_state == ON_TOP && p_gizmo->is_selected()) {
+		mat->set_flag(StandardMaterial3D::FLAG_DISABLE_DEPTH_TEST, true);
+	} else {
+		mat->set_flag(StandardMaterial3D::FLAG_DISABLE_DEPTH_TEST, false);
+	}
+
+	return mat;
+}
+
+String EditorNode3DGizmoPlugin::get_gizmo_name() const {
+	if (get_script_instance() && get_script_instance()->has_method("_get_gizmo_name")) {
+		return get_script_instance()->call("_get_gizmo_name");
+	}
+	return TTR("Nameless gizmo");
+}
+
+int EditorNode3DGizmoPlugin::get_priority() const {
+	if (get_script_instance() && get_script_instance()->has_method("_get_priority")) {
+		return get_script_instance()->call("_get_priority");
+	}
+	return 0;
+}
+
+Ref<EditorNode3DGizmo> EditorNode3DGizmoPlugin::get_gizmo(Node3D *p_spatial) {
+	if (get_script_instance() && get_script_instance()->has_method("_get_gizmo")) {
+		return get_script_instance()->call("_get_gizmo", p_spatial);
+	}
+
+	Ref<EditorNode3DGizmo> ref = create_gizmo(p_spatial);
+
+	if (ref.is_null()) {
+		return ref;
+	}
+
+	ref->set_plugin(this);
+	ref->set_spatial_node(p_spatial);
+	ref->set_hidden(current_state == HIDDEN);
+
+	current_gizmos.push_back(ref.ptr());
+	return ref;
+}
+
+void EditorNode3DGizmoPlugin::_bind_methods() {
+#define GIZMO_REF PropertyInfo(Variant::OBJECT, "gizmo", PROPERTY_HINT_RESOURCE_TYPE, "EditorNode3DGizmo")
+
+	BIND_VMETHOD(MethodInfo(Variant::BOOL, "_has_gizmo", PropertyInfo(Variant::OBJECT, "spatial", PROPERTY_HINT_RESOURCE_TYPE, "Node3D")));
+	BIND_VMETHOD(MethodInfo(GIZMO_REF, "_create_gizmo", PropertyInfo(Variant::OBJECT, "spatial", PROPERTY_HINT_RESOURCE_TYPE, "Node3D")));
+
+	ClassDB::bind_method(D_METHOD("create_material", "name", "color", "billboard", "on_top", "use_vertex_color"), &EditorNode3DGizmoPlugin::create_material, DEFVAL(false), DEFVAL(false), DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("create_icon_material", "name", "texture", "on_top", "color"), &EditorNode3DGizmoPlugin::create_icon_material, DEFVAL(false), DEFVAL(Color(1, 1, 1, 1)));
+	ClassDB::bind_method(D_METHOD("create_handle_material", "name", "billboard", "texture"), &EditorNode3DGizmoPlugin::create_handle_material, DEFVAL(false), DEFVAL(Variant()));
+	ClassDB::bind_method(D_METHOD("add_material", "name", "material"), &EditorNode3DGizmoPlugin::add_material);
+
+	ClassDB::bind_method(D_METHOD("get_material", "name", "gizmo"), &EditorNode3DGizmoPlugin::get_material, DEFVAL(Ref<EditorNode3DGizmo>()));
+
+	BIND_VMETHOD(MethodInfo(Variant::STRING, "_get_gizmo_name"));
+	BIND_VMETHOD(MethodInfo(Variant::INT, "_get_priority"));
+	BIND_VMETHOD(MethodInfo(Variant::BOOL, "_can_be_hidden"));
+	BIND_VMETHOD(MethodInfo(Variant::BOOL, "_is_selectable_when_hidden"));
+
+	BIND_VMETHOD(MethodInfo("_redraw", GIZMO_REF));
+	BIND_VMETHOD(MethodInfo(Variant::STRING, "_get_handle_name", GIZMO_REF, PropertyInfo(Variant::INT, "group_id"), PropertyInfo(Variant::INT, "id")));
+	BIND_VMETHOD(MethodInfo(Variant::BOOL, "_is_handle_highlighted", GIZMO_REF, PropertyInfo(Variant::INT, "group_id"), PropertyInfo(Variant::INT, "id")));
+
+	MethodInfo hvget(Variant::NIL, "_get_handle_value", GIZMO_REF, PropertyInfo(Variant::INT, "group_id"), PropertyInfo(Variant::INT, "id"));
+	hvget.return_val.usage |= PROPERTY_USAGE_NIL_IS_VARIANT;
+	BIND_VMETHOD(hvget);
+
+	BIND_VMETHOD(MethodInfo("_set_handle", GIZMO_REF, PropertyInfo(Variant::INT, "group_id"), PropertyInfo(Variant::INT, "id"), PropertyInfo(Variant::OBJECT, "camera", PROPERTY_HINT_RESOURCE_TYPE, "Camera3D"), PropertyInfo(Variant::VECTOR2, "point")));
+	MethodInfo cm = MethodInfo("_commit_handle", GIZMO_REF, PropertyInfo(Variant::INT, "group_id"), PropertyInfo(Variant::INT, "id"), PropertyInfo(Variant::NIL, "restore"), PropertyInfo(Variant::BOOL, "cancel"));
+	cm.default_arguments.push_back(false);
+	BIND_VMETHOD(cm);
+
+	BIND_VMETHOD(MethodInfo(Variant::TRANSFORM3D, "_get_transform_handle_value", GIZMO_REF, PropertyInfo(Variant::INT, "group_id"), PropertyInfo(Variant::INT, "id")));
+	BIND_VMETHOD(MethodInfo("_set_transform_handle", GIZMO_REF, PropertyInfo(Variant::INT, "group_id"), PropertyInfo(Variant::INT, "id"), PropertyInfo(Variant::TRANSFORM3D, "transform")));
+	MethodInfo ctm = MethodInfo("_commit_transform_handle", GIZMO_REF, PropertyInfo(Variant::INT, "group_id"), PropertyInfo(Variant::INT, "id"), PropertyInfo(Variant::TRANSFORM3D, "restore"), PropertyInfo(Variant::BOOL, "cancel"));
+	ctm.default_arguments.push_back(false);
+	BIND_VMETHOD(ctm);
+
+#undef GIZMO_REF
+}
+
+bool EditorNode3DGizmoPlugin::has_gizmo(Node3D *p_spatial) {
+	if (get_script_instance() && get_script_instance()->has_method("_has_gizmo")) {
+		return get_script_instance()->call("_has_gizmo", p_spatial);
+	}
+	return false;
+}
+
+Ref<EditorNode3DGizmo> EditorNode3DGizmoPlugin::create_gizmo(Node3D *p_spatial) {
+	if (get_script_instance() && get_script_instance()->has_method("_create_gizmo")) {
+		return get_script_instance()->call("_create_gizmo", p_spatial);
+	}
+
+	Ref<EditorNode3DGizmo> ref;
+	if (has_gizmo(p_spatial)) {
+		ref.instantiate();
+	}
+	return ref;
+}
+
+bool EditorNode3DGizmoPlugin::can_be_hidden() const {
+	if (get_script_instance() && get_script_instance()->has_method("_can_be_hidden")) {
+		return get_script_instance()->call("_can_be_hidden");
+	}
+	return true;
+}
+
+bool EditorNode3DGizmoPlugin::is_selectable_when_hidden() const {
+	if (get_script_instance() && get_script_instance()->has_method("_is_selectable_when_hidden")) {
+		return get_script_instance()->call("_is_selectable_when_hidden");
+	}
+	return false;
+}
+
+void EditorNode3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
+	if (get_script_instance() && get_script_instance()->has_method("_redraw")) {
+		Ref<EditorNode3DGizmo> ref(p_gizmo);
+		get_script_instance()->call("_redraw", ref);
+	}
+}
+
+bool EditorNode3DGizmoPlugin::is_handle_highlighted(const EditorNode3DGizmo *p_gizmo, int p_group_id, int p_id) const {
+	if (get_script_instance() && get_script_instance()->has_method("_is_handle_highlighted")) {
+		return get_script_instance()->call("_is_handle_highlighted", p_gizmo, p_group_id, p_id);
+	}
+	return false;
+}
+
+String EditorNode3DGizmoPlugin::get_handle_name(const EditorNode3DGizmo *p_gizmo, int p_group_id, int p_id) const {
+	if (get_script_instance() && get_script_instance()->has_method("_get_handle_name")) {
+		return get_script_instance()->call("_get_handle_name", p_gizmo, p_group_id, p_id);
+	}
+	return "";
+}
+
+Variant EditorNode3DGizmoPlugin::get_handle_value(const EditorNode3DGizmo *p_gizmo, int p_group_id, int p_id) const {
+	if (get_script_instance() && get_script_instance()->has_method("_get_handle_value")) {
+		return get_script_instance()->call("_get_handle_value", p_gizmo, p_group_id, p_id);
+	}
+	return Variant();
+}
+
+void EditorNode3DGizmoPlugin::set_handle(const EditorNode3DGizmo *p_gizmo, int p_group_id, int p_id, Camera3D *p_camera, const Point2 &p_point) const {
+	if (get_script_instance() && get_script_instance()->has_method("_set_handle")) {
+		get_script_instance()->call("_set_handle", p_gizmo, p_group_id, p_id, p_camera, p_point);
+	}
+}
+
+void EditorNode3DGizmoPlugin::commit_handle(const EditorNode3DGizmo *p_gizmo, int p_group_id, int p_id, const Variant &p_restore, bool p_cancel) const {
+	if (get_script_instance() && get_script_instance()->has_method("_commit_handle")) {
+		get_script_instance()->call("_commit_handle", p_gizmo, p_group_id, p_id, p_restore, p_cancel);
+	}
+}
+
+Transform3D EditorNode3DGizmoPlugin::get_transform_handle_value(const EditorNode3DGizmo *p_gizmo, int p_group_id, int p_id) const {
+	if (get_script_instance() && get_script_instance()->has_method("_get_transform_handle_value")) {
+		return get_script_instance()->call("_get_transform_handle_value", p_gizmo, p_group_id, p_id);
+	}
+	return Transform3D();
+}
+
+void EditorNode3DGizmoPlugin::set_transform_handle(const EditorNode3DGizmo *p_gizmo, int p_group_id, int p_id, const Transform3D &p_transform) const {
+	if (get_script_instance() && get_script_instance()->has_method("_set_transform_handle")) {
+		get_script_instance()->call("_set_transform_handle", p_gizmo, p_group_id, p_id, p_transform);
+	}
+}
+
+void EditorNode3DGizmoPlugin::commit_transform_handle(const EditorNode3DGizmo *p_gizmo, int p_group_id, int p_id, const Transform3D &p_restore, bool p_cancel) const {
+	if (get_script_instance() && get_script_instance()->has_method("_commit_transform_handle")) {
+		get_script_instance()->call("_commit_transform_handle", p_gizmo, p_group_id, p_id, p_restore, p_cancel);
+	}
+}
+
+void EditorNode3DGizmoPlugin::set_state(int p_state) {
+	current_state = p_state;
+	for (int i = 0; i < current_gizmos.size(); ++i) {
+		current_gizmos[i]->set_hidden(current_state == HIDDEN);
+	}
+}
+
+int EditorNode3DGizmoPlugin::get_state() const {
+	return current_state;
+}
+
+void EditorNode3DGizmoPlugin::unregister_gizmo(EditorNode3DGizmo *p_gizmo) {
+	current_gizmos.erase(p_gizmo);
+}
+
+EditorNode3DGizmoPlugin::EditorNode3DGizmoPlugin() {
+	current_state = VISIBLE;
+}
+
+EditorNode3DGizmoPlugin::~EditorNode3DGizmoPlugin() {
+	for (int i = 0; i < current_gizmos.size(); ++i) {
+		current_gizmos[i]->set_plugin(nullptr);
+		current_gizmos[i]->get_spatial_node()->set_gizmo(nullptr);
+	}
+	if (Node3DEditor::get_singleton()) {
+		Node3DEditor::get_singleton()->update_all_gizmos();
+	}
 }
 
 //// light gizmo
@@ -802,20 +1244,20 @@ int Light3DGizmoPlugin::get_priority() const {
 	return -1;
 }
 
-String Light3DGizmoPlugin::get_handle_name(const EditorNode3DGizmo *p_gizmo, int p_idx) const {
-	if (p_idx == 0) {
+String Light3DGizmoPlugin::get_handle_name(const EditorNode3DGizmo *p_gizmo, int p_group_id, int p_id) const {
+	if (p_id == 0) {
 		return "Radius";
 	} else {
 		return "Aperture";
 	}
 }
 
-Variant Light3DGizmoPlugin::get_handle_value(EditorNode3DGizmo *p_gizmo, int p_idx) const {
+Variant Light3DGizmoPlugin::get_handle_value(const EditorNode3DGizmo *p_gizmo, int p_group_id, int p_id) const {
 	Light3D *light = Object::cast_to<Light3D>(p_gizmo->get_spatial_node());
-	if (p_idx == 0) {
+	if (p_id == 0) {
 		return light->get_param(Light3D::PARAM_RANGE);
 	}
-	if (p_idx == 1) {
+	if (p_id == 1) {
 		return light->get_param(Light3D::PARAM_SPOT_ANGLE);
 	}
 
@@ -849,7 +1291,7 @@ static float _find_closest_angle_to_half_pi_arc(const Vector3 &p_from, const Vec
 	return Math::rad2deg(a);
 }
 
-void Light3DGizmoPlugin::set_handle(EditorNode3DGizmo *p_gizmo, int p_idx, Camera3D *p_camera, const Point2 &p_point) {
+void Light3DGizmoPlugin::set_handle(const EditorNode3DGizmo *p_gizmo, int p_group_id, int p_id, Camera3D *p_camera, const Point2 &p_point) const {
 	Light3D *light = Object::cast_to<Light3D>(p_gizmo->get_spatial_node());
 	Transform3D gt = light->get_global_transform();
 	Transform3D gi = gt.affine_inverse();
@@ -858,7 +1300,7 @@ void Light3DGizmoPlugin::set_handle(EditorNode3DGizmo *p_gizmo, int p_idx, Camer
 	Vector3 ray_dir = p_camera->project_ray_normal(p_point);
 
 	Vector3 s[2] = { gi.xform(ray_from), gi.xform(ray_from + ray_dir * 4096) };
-	if (p_idx == 0) {
+	if (p_id == 0) {
 		if (Object::cast_to<SpotLight3D>(light)) {
 			Vector3 ra, rb;
 			Geometry3D::get_closest_points_between_segments(Vector3(), Vector3(0, 0, -4096), s[0], s[1], ra, rb);
@@ -887,24 +1329,24 @@ void Light3DGizmoPlugin::set_handle(EditorNode3DGizmo *p_gizmo, int p_idx, Camer
 			}
 		}
 
-	} else if (p_idx == 1) {
+	} else if (p_id == 1) {
 		float a = _find_closest_angle_to_half_pi_arc(s[0], s[1], light->get_param(Light3D::PARAM_RANGE), gt);
 		light->set_param(Light3D::PARAM_SPOT_ANGLE, CLAMP(a, 0.01, 89.99));
 	}
 }
 
-void Light3DGizmoPlugin::commit_handle(EditorNode3DGizmo *p_gizmo, int p_idx, const Variant &p_restore, bool p_cancel) {
+void Light3DGizmoPlugin::commit_handle(const EditorNode3DGizmo *p_gizmo, int p_group_id, int p_id, const Variant &p_restore, bool p_cancel) const {
 	Light3D *light = Object::cast_to<Light3D>(p_gizmo->get_spatial_node());
 	if (p_cancel) {
-		light->set_param(p_idx == 0 ? Light3D::PARAM_RANGE : Light3D::PARAM_SPOT_ANGLE, p_restore);
+		light->set_param(p_id == 0 ? Light3D::PARAM_RANGE : Light3D::PARAM_SPOT_ANGLE, p_restore);
 
-	} else if (p_idx == 0) {
+	} else if (p_id == 0) {
 		UndoRedo *ur = Node3DEditor::get_singleton()->get_undo_redo();
 		ur->create_action(TTR("Change Light Radius"));
 		ur->add_do_method(light, "set_param", Light3D::PARAM_RANGE, light->get_param(Light3D::PARAM_RANGE));
 		ur->add_undo_method(light, "set_param", Light3D::PARAM_RANGE, p_restore);
 		ur->commit_action();
-	} else if (p_idx == 1) {
+	} else if (p_id == 1) {
 		UndoRedo *ur = Node3DEditor::get_singleton()->get_undo_redo();
 		ur->create_action(TTR("Change Light Radius"));
 		ur->add_do_method(light, "set_param", Light3D::PARAM_SPOT_ANGLE, light->get_param(Light3D::PARAM_SPOT_ANGLE));
@@ -1068,16 +1510,16 @@ int AudioStreamPlayer3DGizmoPlugin::get_priority() const {
 	return -1;
 }
 
-String AudioStreamPlayer3DGizmoPlugin::get_handle_name(const EditorNode3DGizmo *p_gizmo, int p_idx) const {
+String AudioStreamPlayer3DGizmoPlugin::get_handle_name(const EditorNode3DGizmo *p_gizmo, int p_group_id, int p_id) const {
 	return "Emission Radius";
 }
 
-Variant AudioStreamPlayer3DGizmoPlugin::get_handle_value(EditorNode3DGizmo *p_gizmo, int p_idx) const {
+Variant AudioStreamPlayer3DGizmoPlugin::get_handle_value(const EditorNode3DGizmo *p_gizmo, int p_group_id, int p_id) const {
 	AudioStreamPlayer3D *player = Object::cast_to<AudioStreamPlayer3D>(p_gizmo->get_spatial_node());
 	return player->get_emission_angle();
 }
 
-void AudioStreamPlayer3DGizmoPlugin::set_handle(EditorNode3DGizmo *p_gizmo, int p_idx, Camera3D *p_camera, const Point2 &p_point) {
+void AudioStreamPlayer3DGizmoPlugin::set_handle(const EditorNode3DGizmo *p_gizmo, int p_group_id, int p_id, Camera3D *p_camera, const Point2 &p_point) const {
 	AudioStreamPlayer3D *player = Object::cast_to<AudioStreamPlayer3D>(p_gizmo->get_spatial_node());
 
 	Transform3D gt = player->get_global_transform();
@@ -1114,7 +1556,7 @@ void AudioStreamPlayer3DGizmoPlugin::set_handle(EditorNode3DGizmo *p_gizmo, int 
 	}
 }
 
-void AudioStreamPlayer3DGizmoPlugin::commit_handle(EditorNode3DGizmo *p_gizmo, int p_idx, const Variant &p_restore, bool p_cancel) {
+void AudioStreamPlayer3DGizmoPlugin::commit_handle(const EditorNode3DGizmo *p_gizmo, int p_group_id, int p_id, const Variant &p_restore, bool p_cancel) const {
 	AudioStreamPlayer3D *player = Object::cast_to<AudioStreamPlayer3D>(p_gizmo->get_spatial_node());
 
 	if (p_cancel) {
@@ -1203,7 +1645,7 @@ int Camera3DGizmoPlugin::get_priority() const {
 	return -1;
 }
 
-String Camera3DGizmoPlugin::get_handle_name(const EditorNode3DGizmo *p_gizmo, int p_idx) const {
+String Camera3DGizmoPlugin::get_handle_name(const EditorNode3DGizmo *p_gizmo, int p_group_id, int p_id) const {
 	Camera3D *camera = Object::cast_to<Camera3D>(p_gizmo->get_spatial_node());
 
 	if (camera->get_projection() == Camera3D::PROJECTION_PERSPECTIVE) {
@@ -1213,7 +1655,7 @@ String Camera3DGizmoPlugin::get_handle_name(const EditorNode3DGizmo *p_gizmo, in
 	}
 }
 
-Variant Camera3DGizmoPlugin::get_handle_value(EditorNode3DGizmo *p_gizmo, int p_idx) const {
+Variant Camera3DGizmoPlugin::get_handle_value(const EditorNode3DGizmo *p_gizmo, int p_group_id, int p_id) const {
 	Camera3D *camera = Object::cast_to<Camera3D>(p_gizmo->get_spatial_node());
 
 	if (camera->get_projection() == Camera3D::PROJECTION_PERSPECTIVE) {
@@ -1223,7 +1665,7 @@ Variant Camera3DGizmoPlugin::get_handle_value(EditorNode3DGizmo *p_gizmo, int p_
 	}
 }
 
-void Camera3DGizmoPlugin::set_handle(EditorNode3DGizmo *p_gizmo, int p_idx, Camera3D *p_camera, const Point2 &p_point) {
+void Camera3DGizmoPlugin::set_handle(const EditorNode3DGizmo *p_gizmo, int p_group_id, int p_id, Camera3D *p_camera, const Point2 &p_point) const {
 	Camera3D *camera = Object::cast_to<Camera3D>(p_gizmo->get_spatial_node());
 
 	Transform3D gt = camera->get_global_transform();
@@ -1252,7 +1694,7 @@ void Camera3DGizmoPlugin::set_handle(EditorNode3DGizmo *p_gizmo, int p_idx, Came
 	}
 }
 
-void Camera3DGizmoPlugin::commit_handle(EditorNode3DGizmo *p_gizmo, int p_idx, const Variant &p_restore, bool p_cancel) {
+void Camera3DGizmoPlugin::commit_handle(const EditorNode3DGizmo *p_gizmo, int p_group_id, int p_id, const Variant &p_restore, bool p_cancel) const {
 	Camera3D *camera = Object::cast_to<Camera3D>(p_gizmo->get_spatial_node());
 
 	if (camera->get_projection() == Camera3D::PROJECTION_PERSPECTIVE) {
@@ -1761,7 +2203,7 @@ void Skeleton3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 	}
 
 	Ref<ArrayMesh> m = surface_tool->commit();
-	p_gizmo->add_mesh(m, false, skel->register_skin(Ref<Skin>()));
+	p_gizmo->add_mesh(m, Ref<Material>(), skel->register_skin(Ref<Skin>()));
 }
 
 ////
@@ -2102,23 +2544,23 @@ void SoftBody3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 	p_gizmo->add_collision_triangles(tm);
 }
 
-String SoftBody3DGizmoPlugin::get_handle_name(const EditorNode3DGizmo *p_gizmo, int p_idx) const {
+String SoftBody3DGizmoPlugin::get_handle_name(const EditorNode3DGizmo *p_gizmo, int p_group_id, int p_id) const {
 	return "SoftBody3D pin point";
 }
 
-Variant SoftBody3DGizmoPlugin::get_handle_value(EditorNode3DGizmo *p_gizmo, int p_idx) const {
+Variant SoftBody3DGizmoPlugin::get_handle_value(const EditorNode3DGizmo *p_gizmo, int p_group_id, int p_id) const {
 	SoftBody3D *soft_body = Object::cast_to<SoftBody3D>(p_gizmo->get_spatial_node());
-	return Variant(soft_body->is_point_pinned(p_idx));
+	return Variant(soft_body->is_point_pinned(p_id));
 }
 
-void SoftBody3DGizmoPlugin::commit_handle(EditorNode3DGizmo *p_gizmo, int p_idx, const Variant &p_restore, bool p_cancel) {
+void SoftBody3DGizmoPlugin::commit_handle(const EditorNode3DGizmo *p_gizmo, int p_group_id, int p_id, const Variant &p_restore, bool p_cancel) const {
 	SoftBody3D *soft_body = Object::cast_to<SoftBody3D>(p_gizmo->get_spatial_node());
-	soft_body->pin_point_toggle(p_idx);
+	soft_body->pin_point_toggle(p_id);
 }
 
-bool SoftBody3DGizmoPlugin::is_handle_highlighted(const EditorNode3DGizmo *p_gizmo, int idx) const {
+bool SoftBody3DGizmoPlugin::is_handle_highlighted(const EditorNode3DGizmo *p_gizmo, int p_group_id, int p_id) const {
 	SoftBody3D *soft_body = Object::cast_to<SoftBody3D>(p_gizmo->get_spatial_node());
-	return soft_body->is_point_pinned(idx);
+	return soft_body->is_point_pinned(p_id);
 }
 
 ///////////
@@ -2143,8 +2585,8 @@ int VisibleOnScreenNotifier3DGizmoPlugin::get_priority() const {
 	return -1;
 }
 
-String VisibleOnScreenNotifier3DGizmoPlugin::get_handle_name(const EditorNode3DGizmo *p_gizmo, int p_idx) const {
-	switch (p_idx) {
+String VisibleOnScreenNotifier3DGizmoPlugin::get_handle_name(const EditorNode3DGizmo *p_gizmo, int p_group_id, int p_id) const {
+	switch (p_id) {
 		case 0:
 			return "Size X";
 		case 1:
@@ -2162,20 +2604,20 @@ String VisibleOnScreenNotifier3DGizmoPlugin::get_handle_name(const EditorNode3DG
 	return "";
 }
 
-Variant VisibleOnScreenNotifier3DGizmoPlugin::get_handle_value(EditorNode3DGizmo *p_gizmo, int p_idx) const {
+Variant VisibleOnScreenNotifier3DGizmoPlugin::get_handle_value(const EditorNode3DGizmo *p_gizmo, int p_group_id, int p_id) const {
 	VisibleOnScreenNotifier3D *notifier = Object::cast_to<VisibleOnScreenNotifier3D>(p_gizmo->get_spatial_node());
 	return notifier->get_aabb();
 }
 
-void VisibleOnScreenNotifier3DGizmoPlugin::set_handle(EditorNode3DGizmo *p_gizmo, int p_idx, Camera3D *p_camera, const Point2 &p_point) {
+void VisibleOnScreenNotifier3DGizmoPlugin::set_handle(const EditorNode3DGizmo *p_gizmo, int p_group_id, int p_id, Camera3D *p_camera, const Point2 &p_point) const {
 	VisibleOnScreenNotifier3D *notifier = Object::cast_to<VisibleOnScreenNotifier3D>(p_gizmo->get_spatial_node());
 
 	Transform3D gt = notifier->get_global_transform();
 
 	Transform3D gi = gt.affine_inverse();
 
-	bool move = p_idx >= 3;
-	p_idx = p_idx % 3;
+	bool move = p_id >= 3;
+	p_id = p_id % 3;
 
 	AABB aabb = notifier->get_aabb();
 	Vector3 ray_from = p_camera->project_ray_origin(p_point);
@@ -2186,25 +2628,25 @@ void VisibleOnScreenNotifier3DGizmoPlugin::set_handle(EditorNode3DGizmo *p_gizmo
 	Vector3 ofs = aabb.position + aabb.size * 0.5;
 
 	Vector3 axis;
-	axis[p_idx] = 1.0;
+	axis[p_id] = 1.0;
 
 	if (move) {
 		Vector3 ra, rb;
 		Geometry3D::get_closest_points_between_segments(ofs - axis * 4096, ofs + axis * 4096, sg[0], sg[1], ra, rb);
 
-		float d = ra[p_idx];
+		float d = ra[p_id];
 		if (Node3DEditor::get_singleton()->is_snap_enabled()) {
 			d = Math::snapped(d, Node3DEditor::get_singleton()->get_translate_snap());
 		}
 
-		aabb.position[p_idx] = d - 1.0 - aabb.size[p_idx] * 0.5;
+		aabb.position[p_id] = d - 1.0 - aabb.size[p_id] * 0.5;
 		notifier->set_aabb(aabb);
 
 	} else {
 		Vector3 ra, rb;
 		Geometry3D::get_closest_points_between_segments(ofs, ofs + axis * 4096, sg[0], sg[1], ra, rb);
 
-		float d = ra[p_idx] - ofs[p_idx];
+		float d = ra[p_id] - ofs[p_id];
 		if (Node3DEditor::get_singleton()->is_snap_enabled()) {
 			d = Math::snapped(d, Node3DEditor::get_singleton()->get_translate_snap());
 		}
@@ -2213,13 +2655,13 @@ void VisibleOnScreenNotifier3DGizmoPlugin::set_handle(EditorNode3DGizmo *p_gizmo
 			d = 0.001;
 		}
 		//resize
-		aabb.position[p_idx] = (aabb.position[p_idx] + aabb.size[p_idx] * 0.5) - d;
-		aabb.size[p_idx] = d * 2;
+		aabb.position[p_id] = (aabb.position[p_id] + aabb.size[p_id] * 0.5) - d;
+		aabb.size[p_id] = d * 2;
 		notifier->set_aabb(aabb);
 	}
 }
 
-void VisibleOnScreenNotifier3DGizmoPlugin::commit_handle(EditorNode3DGizmo *p_gizmo, int p_idx, const Variant &p_restore, bool p_cancel) {
+void VisibleOnScreenNotifier3DGizmoPlugin::commit_handle(const EditorNode3DGizmo *p_gizmo, int p_group_id, int p_id, const Variant &p_restore, bool p_cancel) const {
 	VisibleOnScreenNotifier3D *notifier = Object::cast_to<VisibleOnScreenNotifier3D>(p_gizmo->get_spatial_node());
 
 	if (p_cancel) {
@@ -2335,8 +2777,8 @@ bool GPUParticles3DGizmoPlugin::is_selectable_when_hidden() const {
 	return true;
 }
 
-String GPUParticles3DGizmoPlugin::get_handle_name(const EditorNode3DGizmo *p_gizmo, int p_idx) const {
-	switch (p_idx) {
+String GPUParticles3DGizmoPlugin::get_handle_name(const EditorNode3DGizmo *p_gizmo, int p_group_id, int p_id) const {
+	switch (p_id) {
 		case 0:
 			return "Size X";
 		case 1:
@@ -2350,23 +2792,22 @@ String GPUParticles3DGizmoPlugin::get_handle_name(const EditorNode3DGizmo *p_giz
 		case 5:
 			return "Pos Z";
 	}
-
 	return "";
 }
 
-Variant GPUParticles3DGizmoPlugin::get_handle_value(EditorNode3DGizmo *p_gizmo, int p_idx) const {
+Variant GPUParticles3DGizmoPlugin::get_handle_value(const EditorNode3DGizmo *p_gizmo, int p_group_id, int p_id) const {
 	GPUParticles3D *particles = Object::cast_to<GPUParticles3D>(p_gizmo->get_spatial_node());
 	return particles->get_visibility_aabb();
 }
 
-void GPUParticles3DGizmoPlugin::set_handle(EditorNode3DGizmo *p_gizmo, int p_idx, Camera3D *p_camera, const Point2 &p_point) {
+void GPUParticles3DGizmoPlugin::set_handle(const EditorNode3DGizmo *p_gizmo, int p_group_id, int p_id, Camera3D *p_camera, const Point2 &p_point) const {
 	GPUParticles3D *particles = Object::cast_to<GPUParticles3D>(p_gizmo->get_spatial_node());
 
 	Transform3D gt = particles->get_global_transform();
 	Transform3D gi = gt.affine_inverse();
 
-	bool move = p_idx >= 3;
-	p_idx = p_idx % 3;
+	bool move = p_id >= 3;
+	p_id = p_id % 3;
 
 	AABB aabb = particles->get_visibility_aabb();
 	Vector3 ray_from = p_camera->project_ray_origin(p_point);
@@ -2377,25 +2818,25 @@ void GPUParticles3DGizmoPlugin::set_handle(EditorNode3DGizmo *p_gizmo, int p_idx
 	Vector3 ofs = aabb.position + aabb.size * 0.5;
 
 	Vector3 axis;
-	axis[p_idx] = 1.0;
+	axis[p_id] = 1.0;
 
 	if (move) {
 		Vector3 ra, rb;
 		Geometry3D::get_closest_points_between_segments(ofs - axis * 4096, ofs + axis * 4096, sg[0], sg[1], ra, rb);
 
-		float d = ra[p_idx];
+		float d = ra[p_id];
 		if (Node3DEditor::get_singleton()->is_snap_enabled()) {
 			d = Math::snapped(d, Node3DEditor::get_singleton()->get_translate_snap());
 		}
 
-		aabb.position[p_idx] = d - 1.0 - aabb.size[p_idx] * 0.5;
+		aabb.position[p_id] = d - 1.0 - aabb.size[p_id] * 0.5;
 		particles->set_visibility_aabb(aabb);
 
 	} else {
 		Vector3 ra, rb;
 		Geometry3D::get_closest_points_between_segments(ofs, ofs + axis * 4096, sg[0], sg[1], ra, rb);
 
-		float d = ra[p_idx] - ofs[p_idx];
+		float d = ra[p_id] - ofs[p_id];
 		if (Node3DEditor::get_singleton()->is_snap_enabled()) {
 			d = Math::snapped(d, Node3DEditor::get_singleton()->get_translate_snap());
 		}
@@ -2404,13 +2845,13 @@ void GPUParticles3DGizmoPlugin::set_handle(EditorNode3DGizmo *p_gizmo, int p_idx
 			d = 0.001;
 		}
 		//resize
-		aabb.position[p_idx] = (aabb.position[p_idx] + aabb.size[p_idx] * 0.5) - d;
-		aabb.size[p_idx] = d * 2;
+		aabb.position[p_id] = (aabb.position[p_id] + aabb.size[p_id] * 0.5) - d;
+		aabb.size[p_id] = d * 2;
 		particles->set_visibility_aabb(aabb);
 	}
 }
 
-void GPUParticles3DGizmoPlugin::commit_handle(EditorNode3DGizmo *p_gizmo, int p_idx, const Variant &p_restore, bool p_cancel) {
+void GPUParticles3DGizmoPlugin::commit_handle(const EditorNode3DGizmo *p_gizmo, int p_group_id, int p_id, const Variant &p_restore, bool p_cancel) const {
 	GPUParticles3D *particles = Object::cast_to<GPUParticles3D>(p_gizmo->get_spatial_node());
 
 	if (p_cancel) {
@@ -2475,8 +2916,6 @@ void GPUParticles3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 
 ////
 
-////
-
 GPUParticlesCollision3DGizmoPlugin::GPUParticlesCollision3DGizmoPlugin() {
 	Color gizmo_color = EDITOR_DEF("editors/3d_gizmos/gizmo_colors/particle_collision", Color(0.5, 0.7, 1));
 	create_material("shape_material", gizmo_color);
@@ -2498,7 +2937,7 @@ int GPUParticlesCollision3DGizmoPlugin::get_priority() const {
 	return -1;
 }
 
-String GPUParticlesCollision3DGizmoPlugin::get_handle_name(const EditorNode3DGizmo *p_gizmo, int p_idx) const {
+String GPUParticlesCollision3DGizmoPlugin::get_handle_name(const EditorNode3DGizmo *p_gizmo, int p_group_id, int p_id) const {
 	const Node3D *cs = p_gizmo->get_spatial_node();
 
 	if (Object::cast_to<GPUParticlesCollisionSphere>(cs) || Object::cast_to<GPUParticlesAttractorSphere>(cs)) {
@@ -2512,7 +2951,7 @@ String GPUParticlesCollision3DGizmoPlugin::get_handle_name(const EditorNode3DGiz
 	return "";
 }
 
-Variant GPUParticlesCollision3DGizmoPlugin::get_handle_value(EditorNode3DGizmo *p_gizmo, int p_idx) const {
+Variant GPUParticlesCollision3DGizmoPlugin::get_handle_value(const EditorNode3DGizmo *p_gizmo, int p_group_id, int p_id) const {
 	const Node3D *cs = p_gizmo->get_spatial_node();
 
 	if (Object::cast_to<GPUParticlesCollisionSphere>(cs) || Object::cast_to<GPUParticlesAttractorSphere>(cs)) {
@@ -2526,7 +2965,7 @@ Variant GPUParticlesCollision3DGizmoPlugin::get_handle_value(EditorNode3DGizmo *
 	return Variant();
 }
 
-void GPUParticlesCollision3DGizmoPlugin::set_handle(EditorNode3DGizmo *p_gizmo, int p_idx, Camera3D *p_camera, const Point2 &p_point) {
+void GPUParticlesCollision3DGizmoPlugin::set_handle(const EditorNode3DGizmo *p_gizmo, int p_group_id, int p_id, Camera3D *p_camera, const Point2 &p_point) const {
 	Node3D *sn = p_gizmo->get_spatial_node();
 
 	Transform3D gt = sn->get_global_transform();
@@ -2554,10 +2993,10 @@ void GPUParticlesCollision3DGizmoPlugin::set_handle(EditorNode3DGizmo *p_gizmo, 
 
 	if (Object::cast_to<GPUParticlesCollisionBox>(sn) || Object::cast_to<GPUParticlesAttractorBox>(sn) || Object::cast_to<GPUParticlesAttractorVectorField>(sn) || Object::cast_to<GPUParticlesCollisionSDF>(sn) || Object::cast_to<GPUParticlesCollisionHeightField>(sn)) {
 		Vector3 axis;
-		axis[p_idx] = 1.0;
+		axis[p_id] = 1.0;
 		Vector3 ra, rb;
 		Geometry3D::get_closest_points_between_segments(Vector3(), axis * 4096, sg[0], sg[1], ra, rb);
-		float d = ra[p_idx];
+		float d = ra[p_id];
 		if (Node3DEditor::get_singleton()->is_snap_enabled()) {
 			d = Math::snapped(d, Node3DEditor::get_singleton()->get_translate_snap());
 		}
@@ -2567,12 +3006,12 @@ void GPUParticlesCollision3DGizmoPlugin::set_handle(EditorNode3DGizmo *p_gizmo, 
 		}
 
 		Vector3 he = sn->call("get_extents");
-		he[p_idx] = d;
+		he[p_id] = d;
 		sn->call("set_extents", he);
 	}
 }
 
-void GPUParticlesCollision3DGizmoPlugin::commit_handle(EditorNode3DGizmo *p_gizmo, int p_idx, const Variant &p_restore, bool p_cancel) {
+void GPUParticlesCollision3DGizmoPlugin::commit_handle(const EditorNode3DGizmo *p_gizmo, int p_group_id, int p_id, const Variant &p_restore, bool p_cancel) const {
 	Node3D *sn = p_gizmo->get_spatial_node();
 
 	if (Object::cast_to<GPUParticlesCollisionSphere>(sn) || Object::cast_to<GPUParticlesAttractorSphere>(sn)) {
@@ -2762,8 +3201,8 @@ int ReflectionProbeGizmoPlugin::get_priority() const {
 	return -1;
 }
 
-String ReflectionProbeGizmoPlugin::get_handle_name(const EditorNode3DGizmo *p_gizmo, int p_idx) const {
-	switch (p_idx) {
+String ReflectionProbeGizmoPlugin::get_handle_name(const EditorNode3DGizmo *p_gizmo, int p_group_id, int p_id) const {
+	switch (p_id) {
 		case 0:
 			return "Extents X";
 		case 1:
@@ -2781,18 +3220,18 @@ String ReflectionProbeGizmoPlugin::get_handle_name(const EditorNode3DGizmo *p_gi
 	return "";
 }
 
-Variant ReflectionProbeGizmoPlugin::get_handle_value(EditorNode3DGizmo *p_gizmo, int p_idx) const {
+Variant ReflectionProbeGizmoPlugin::get_handle_value(const EditorNode3DGizmo *p_gizmo, int p_group_id, int p_id) const {
 	ReflectionProbe *probe = Object::cast_to<ReflectionProbe>(p_gizmo->get_spatial_node());
 	return AABB(probe->get_extents(), probe->get_origin_offset());
 }
 
-void ReflectionProbeGizmoPlugin::set_handle(EditorNode3DGizmo *p_gizmo, int p_idx, Camera3D *p_camera, const Point2 &p_point) {
+void ReflectionProbeGizmoPlugin::set_handle(const EditorNode3DGizmo *p_gizmo, int p_group_id, int p_id, Camera3D *p_camera, const Point2 &p_point) const {
 	ReflectionProbe *probe = Object::cast_to<ReflectionProbe>(p_gizmo->get_spatial_node());
 	Transform3D gt = probe->get_global_transform();
 
 	Transform3D gi = gt.affine_inverse();
 
-	if (p_idx < 3) {
+	if (p_id < 3) {
 		Vector3 extents = probe->get_extents();
 
 		Vector3 ray_from = p_camera->project_ray_origin(p_point);
@@ -2801,11 +3240,11 @@ void ReflectionProbeGizmoPlugin::set_handle(EditorNode3DGizmo *p_gizmo, int p_id
 		Vector3 sg[2] = { gi.xform(ray_from), gi.xform(ray_from + ray_dir * 16384) };
 
 		Vector3 axis;
-		axis[p_idx] = 1.0;
+		axis[p_id] = 1.0;
 
 		Vector3 ra, rb;
 		Geometry3D::get_closest_points_between_segments(Vector3(), axis * 16384, sg[0], sg[1], ra, rb);
-		float d = ra[p_idx];
+		float d = ra[p_id];
 		if (Node3DEditor::get_singleton()->is_snap_enabled()) {
 			d = Math::snapped(d, Node3DEditor::get_singleton()->get_translate_snap());
 		}
@@ -2814,13 +3253,13 @@ void ReflectionProbeGizmoPlugin::set_handle(EditorNode3DGizmo *p_gizmo, int p_id
 			d = 0.001;
 		}
 
-		extents[p_idx] = d;
+		extents[p_id] = d;
 		probe->set_extents(extents);
 	} else {
-		p_idx -= 3;
+		p_id -= 3;
 
 		Vector3 origin = probe->get_origin_offset();
-		origin[p_idx] = 0;
+		origin[p_id] = 0;
 
 		Vector3 ray_from = p_camera->project_ray_origin(p_point);
 		Vector3 ray_dir = p_camera->project_ray_normal(p_point);
@@ -2828,22 +3267,22 @@ void ReflectionProbeGizmoPlugin::set_handle(EditorNode3DGizmo *p_gizmo, int p_id
 		Vector3 sg[2] = { gi.xform(ray_from), gi.xform(ray_from + ray_dir * 16384) };
 
 		Vector3 axis;
-		axis[p_idx] = 1.0;
+		axis[p_id] = 1.0;
 
 		Vector3 ra, rb;
 		Geometry3D::get_closest_points_between_segments(origin - axis * 16384, origin + axis * 16384, sg[0], sg[1], ra, rb);
 		// Adjust the actual position to account for the gizmo handle position
-		float d = ra[p_idx] + 0.25;
+		float d = ra[p_id] + 0.25;
 		if (Node3DEditor::get_singleton()->is_snap_enabled()) {
 			d = Math::snapped(d, Node3DEditor::get_singleton()->get_translate_snap());
 		}
 
-		origin[p_idx] = d;
+		origin[p_id] = d;
 		probe->set_origin_offset(origin);
 	}
 }
 
-void ReflectionProbeGizmoPlugin::commit_handle(EditorNode3DGizmo *p_gizmo, int p_idx, const Variant &p_restore, bool p_cancel) {
+void ReflectionProbeGizmoPlugin::commit_handle(const EditorNode3DGizmo *p_gizmo, int p_group_id, int p_id, const Variant &p_restore, bool p_cancel) const {
 	ReflectionProbe *probe = Object::cast_to<ReflectionProbe>(p_gizmo->get_spatial_node());
 
 	AABB restore = p_restore;
@@ -2947,8 +3386,8 @@ int DecalGizmoPlugin::get_priority() const {
 	return -1;
 }
 
-String DecalGizmoPlugin::get_handle_name(const EditorNode3DGizmo *p_gizmo, int p_idx) const {
-	switch (p_idx) {
+String DecalGizmoPlugin::get_handle_name(const EditorNode3DGizmo *p_gizmo, int p_group_id, int p_id) const {
+	switch (p_id) {
 		case 0:
 			return "Extents X";
 		case 1:
@@ -2960,12 +3399,12 @@ String DecalGizmoPlugin::get_handle_name(const EditorNode3DGizmo *p_gizmo, int p
 	return "";
 }
 
-Variant DecalGizmoPlugin::get_handle_value(EditorNode3DGizmo *p_gizmo, int p_idx) const {
+Variant DecalGizmoPlugin::get_handle_value(const EditorNode3DGizmo *p_gizmo, int p_group_id, int p_id) const {
 	Decal *decal = Object::cast_to<Decal>(p_gizmo->get_spatial_node());
 	return decal->get_extents();
 }
 
-void DecalGizmoPlugin::set_handle(EditorNode3DGizmo *p_gizmo, int p_idx, Camera3D *p_camera, const Point2 &p_point) {
+void DecalGizmoPlugin::set_handle(const EditorNode3DGizmo *p_gizmo, int p_group_id, int p_id, Camera3D *p_camera, const Point2 &p_point) const {
 	Decal *decal = Object::cast_to<Decal>(p_gizmo->get_spatial_node());
 	Transform3D gt = decal->get_global_transform();
 
@@ -2979,11 +3418,11 @@ void DecalGizmoPlugin::set_handle(EditorNode3DGizmo *p_gizmo, int p_idx, Camera3
 	Vector3 sg[2] = { gi.xform(ray_from), gi.xform(ray_from + ray_dir * 16384) };
 
 	Vector3 axis;
-	axis[p_idx] = 1.0;
+	axis[p_id] = 1.0;
 
 	Vector3 ra, rb;
 	Geometry3D::get_closest_points_between_segments(Vector3(), axis * 16384, sg[0], sg[1], ra, rb);
-	float d = ra[p_idx];
+	float d = ra[p_id];
 	if (Node3DEditor::get_singleton()->is_snap_enabled()) {
 		d = Math::snapped(d, Node3DEditor::get_singleton()->get_translate_snap());
 	}
@@ -2992,11 +3431,11 @@ void DecalGizmoPlugin::set_handle(EditorNode3DGizmo *p_gizmo, int p_idx, Camera3
 		d = 0.001;
 	}
 
-	extents[p_idx] = d;
+	extents[p_id] = d;
 	decal->set_extents(extents);
 }
 
-void DecalGizmoPlugin::commit_handle(EditorNode3DGizmo *p_gizmo, int p_idx, const Variant &p_restore, bool p_cancel) {
+void DecalGizmoPlugin::commit_handle(const EditorNode3DGizmo *p_gizmo, int p_group_id, int p_id, const Variant &p_restore, bool p_cancel) const {
 	Decal *decal = Object::cast_to<Decal>(p_gizmo->get_spatial_node());
 
 	Vector3 restore = p_restore;
@@ -3055,7 +3494,6 @@ void DecalGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 	Ref<Material> material = get_material("decal_material", p_gizmo);
 
 	p_gizmo->add_lines(lines, material);
-
 	p_gizmo->add_handles(handles, get_material("handles"));
 }
 
@@ -3088,8 +3526,8 @@ int VoxelGIGizmoPlugin::get_priority() const {
 	return -1;
 }
 
-String VoxelGIGizmoPlugin::get_handle_name(const EditorNode3DGizmo *p_gizmo, int p_idx) const {
-	switch (p_idx) {
+String VoxelGIGizmoPlugin::get_handle_name(const EditorNode3DGizmo *p_gizmo, int p_group_id, int p_id) const {
+	switch (p_id) {
 		case 0:
 			return "Extents X";
 		case 1:
@@ -3101,12 +3539,12 @@ String VoxelGIGizmoPlugin::get_handle_name(const EditorNode3DGizmo *p_gizmo, int
 	return "";
 }
 
-Variant VoxelGIGizmoPlugin::get_handle_value(EditorNode3DGizmo *p_gizmo, int p_idx) const {
+Variant VoxelGIGizmoPlugin::get_handle_value(const EditorNode3DGizmo *p_gizmo, int p_group_id, int p_id) const {
 	VoxelGI *probe = Object::cast_to<VoxelGI>(p_gizmo->get_spatial_node());
 	return probe->get_extents();
 }
 
-void VoxelGIGizmoPlugin::set_handle(EditorNode3DGizmo *p_gizmo, int p_idx, Camera3D *p_camera, const Point2 &p_point) {
+void VoxelGIGizmoPlugin::set_handle(const EditorNode3DGizmo *p_gizmo, int p_group_id, int p_id, Camera3D *p_camera, const Point2 &p_point) const {
 	VoxelGI *probe = Object::cast_to<VoxelGI>(p_gizmo->get_spatial_node());
 
 	Transform3D gt = probe->get_global_transform();
@@ -3120,11 +3558,11 @@ void VoxelGIGizmoPlugin::set_handle(EditorNode3DGizmo *p_gizmo, int p_idx, Camer
 	Vector3 sg[2] = { gi.xform(ray_from), gi.xform(ray_from + ray_dir * 16384) };
 
 	Vector3 axis;
-	axis[p_idx] = 1.0;
+	axis[p_id] = 1.0;
 
 	Vector3 ra, rb;
 	Geometry3D::get_closest_points_between_segments(Vector3(), axis * 16384, sg[0], sg[1], ra, rb);
-	float d = ra[p_idx];
+	float d = ra[p_id];
 	if (Node3DEditor::get_singleton()->is_snap_enabled()) {
 		d = Math::snapped(d, Node3DEditor::get_singleton()->get_translate_snap());
 	}
@@ -3133,11 +3571,11 @@ void VoxelGIGizmoPlugin::set_handle(EditorNode3DGizmo *p_gizmo, int p_idx, Camer
 		d = 0.001;
 	}
 
-	extents[p_idx] = d;
+	extents[p_id] = d;
 	probe->set_extents(extents);
 }
 
-void VoxelGIGizmoPlugin::commit_handle(EditorNode3DGizmo *p_gizmo, int p_idx, const Variant &p_restore, bool p_cancel) {
+void VoxelGIGizmoPlugin::commit_handle(const EditorNode3DGizmo *p_gizmo, int p_group_id, int p_id, const Variant &p_restore, bool p_cancel) const {
 	VoxelGI *probe = Object::cast_to<VoxelGI>(p_gizmo->get_spatial_node());
 
 	Vector3 restore = p_restore;
@@ -3257,18 +3695,18 @@ LightmapGIGizmoPlugin::LightmapGIGizmoPlugin() {
 	create_icon_material("baked_indirect_light_icon", Node3DEditor::get_singleton()->get_theme_icon("GizmoLightmapGI", "EditorIcons"));
 }
 
-String LightmapGIGizmoPlugin::get_handle_name(const EditorNode3DGizmo *p_gizmo, int p_idx) const {
+String LightmapGIGizmoPlugin::get_handle_name(const EditorNode3DGizmo *p_gizmo, int p_group_id, int p_id) const {
 	return "";
 }
 
-Variant LightmapGIGizmoPlugin::get_handle_value(EditorNode3DGizmo *p_gizmo, int p_idx) const {
+Variant LightmapGIGizmoPlugin::get_handle_value(const EditorNode3DGizmo *p_gizmo, int p_group_id, int p_id) const {
 	return Variant();
 }
 
-void LightmapGIGizmoPlugin::set_handle(EditorNode3DGizmo *p_gizmo, int p_idx, Camera3D *p_camera, const Point2 &p_point) {
+void LightmapGIGizmoPlugin::set_handle(const EditorNode3DGizmo *p_gizmo, int p_group_id, int p_id, Camera3D *p_camera, const Point2 &p_point) const {
 }
 
-void LightmapGIGizmoPlugin::commit_handle(EditorNode3DGizmo *p_gizmo, int p_idx, const Variant &p_restore, bool p_cancel) {
+void LightmapGIGizmoPlugin::commit_handle(const EditorNode3DGizmo *p_gizmo, int p_group_id, int p_id, const Variant &p_restore, bool p_cancel) const {
 }
 
 bool LightmapGIGizmoPlugin::has_gizmo(Node3D *p_spatial) {
@@ -3439,18 +3877,18 @@ LightmapProbeGizmoPlugin::LightmapProbeGizmoPlugin() {
 	create_material("lightprobe_lines", gizmo_color);
 }
 
-String LightmapProbeGizmoPlugin::get_handle_name(const EditorNode3DGizmo *p_gizmo, int p_idx) const {
+String LightmapProbeGizmoPlugin::get_handle_name(const EditorNode3DGizmo *p_gizmo, int p_group_id, int p_id) const {
 	return "";
 }
 
-Variant LightmapProbeGizmoPlugin::get_handle_value(EditorNode3DGizmo *p_gizmo, int p_idx) const {
+Variant LightmapProbeGizmoPlugin::get_handle_value(const EditorNode3DGizmo *p_gizmo, int p_group_id, int p_id) const {
 	return Variant();
 }
 
-void LightmapProbeGizmoPlugin::set_handle(EditorNode3DGizmo *p_gizmo, int p_idx, Camera3D *p_camera, const Point2 &p_point) {
+void LightmapProbeGizmoPlugin::set_handle(const EditorNode3DGizmo *p_gizmo, int p_group_id, int p_id, Camera3D *p_camera, const Point2 &p_point) const {
 }
 
-void LightmapProbeGizmoPlugin::commit_handle(EditorNode3DGizmo *p_gizmo, int p_idx, const Variant &p_restore, bool p_cancel) {
+void LightmapProbeGizmoPlugin::commit_handle(const EditorNode3DGizmo *p_gizmo, int p_group_id, int p_id, const Variant &p_restore, bool p_cancel) const {
 }
 
 bool LightmapProbeGizmoPlugin::has_gizmo(Node3D *p_spatial) {
@@ -3570,7 +4008,7 @@ void CollisionObject3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 				SurfaceTool st;
 				st.append_from(s->get_debug_mesh(), 0, xform);
 
-				p_gizmo->add_mesh(st.commit(), false, Ref<SkinReference>(), material);
+				p_gizmo->add_mesh(st.commit(), material);
 				p_gizmo->add_collision_segments(s->get_debug_mesh_lines());
 			}
 		}
@@ -3600,7 +4038,7 @@ int CollisionShape3DGizmoPlugin::get_priority() const {
 	return -1;
 }
 
-String CollisionShape3DGizmoPlugin::get_handle_name(const EditorNode3DGizmo *p_gizmo, int p_idx) const {
+String CollisionShape3DGizmoPlugin::get_handle_name(const EditorNode3DGizmo *p_gizmo, int p_group_id, int p_id) const {
 	const CollisionShape3D *cs = Object::cast_to<CollisionShape3D>(p_gizmo->get_spatial_node());
 
 	Ref<Shape3D> s = cs->get_shape();
@@ -3617,11 +4055,11 @@ String CollisionShape3DGizmoPlugin::get_handle_name(const EditorNode3DGizmo *p_g
 	}
 
 	if (Object::cast_to<CapsuleShape3D>(*s)) {
-		return p_idx == 0 ? "Radius" : "Height";
+		return p_id == 0 ? "Radius" : "Height";
 	}
 
 	if (Object::cast_to<CylinderShape3D>(*s)) {
-		return p_idx == 0 ? "Radius" : "Height";
+		return p_id == 0 ? "Radius" : "Height";
 	}
 
 	if (Object::cast_to<RayShape3D>(*s)) {
@@ -3631,7 +4069,7 @@ String CollisionShape3DGizmoPlugin::get_handle_name(const EditorNode3DGizmo *p_g
 	return "";
 }
 
-Variant CollisionShape3DGizmoPlugin::get_handle_value(EditorNode3DGizmo *p_gizmo, int p_idx) const {
+Variant CollisionShape3DGizmoPlugin::get_handle_value(const EditorNode3DGizmo *p_gizmo, int p_group_id, int p_id) const {
 	CollisionShape3D *cs = Object::cast_to<CollisionShape3D>(p_gizmo->get_spatial_node());
 
 	Ref<Shape3D> s = cs->get_shape();
@@ -3651,12 +4089,12 @@ Variant CollisionShape3DGizmoPlugin::get_handle_value(EditorNode3DGizmo *p_gizmo
 
 	if (Object::cast_to<CapsuleShape3D>(*s)) {
 		Ref<CapsuleShape3D> cs2 = s;
-		return p_idx == 0 ? cs2->get_radius() : cs2->get_height();
+		return p_id == 0 ? cs2->get_radius() : cs2->get_height();
 	}
 
 	if (Object::cast_to<CylinderShape3D>(*s)) {
 		Ref<CylinderShape3D> cs2 = s;
-		return p_idx == 0 ? cs2->get_radius() : cs2->get_height();
+		return p_id == 0 ? cs2->get_radius() : cs2->get_height();
 	}
 
 	if (Object::cast_to<RayShape3D>(*s)) {
@@ -3667,7 +4105,7 @@ Variant CollisionShape3DGizmoPlugin::get_handle_value(EditorNode3DGizmo *p_gizmo
 	return Variant();
 }
 
-void CollisionShape3DGizmoPlugin::set_handle(EditorNode3DGizmo *p_gizmo, int p_idx, Camera3D *p_camera, const Point2 &p_point) {
+void CollisionShape3DGizmoPlugin::set_handle(const EditorNode3DGizmo *p_gizmo, int p_group_id, int p_id, Camera3D *p_camera, const Point2 &p_point) const {
 	CollisionShape3D *cs = Object::cast_to<CollisionShape3D>(p_gizmo->get_spatial_node());
 
 	Ref<Shape3D> s = cs->get_shape();
@@ -3717,11 +4155,11 @@ void CollisionShape3DGizmoPlugin::set_handle(EditorNode3DGizmo *p_gizmo, int p_i
 
 	if (Object::cast_to<BoxShape3D>(*s)) {
 		Vector3 axis;
-		axis[p_idx] = 1.0;
+		axis[p_id] = 1.0;
 		Ref<BoxShape3D> bs = s;
 		Vector3 ra, rb;
 		Geometry3D::get_closest_points_between_segments(Vector3(), axis * 4096, sg[0], sg[1], ra, rb);
-		float d = ra[p_idx];
+		float d = ra[p_id];
 		if (Node3DEditor::get_singleton()->is_snap_enabled()) {
 			d = Math::snapped(d, Node3DEditor::get_singleton()->get_translate_snap());
 		}
@@ -3731,18 +4169,18 @@ void CollisionShape3DGizmoPlugin::set_handle(EditorNode3DGizmo *p_gizmo, int p_i
 		}
 
 		Vector3 he = bs->get_size();
-		he[p_idx] = d * 2;
+		he[p_id] = d * 2;
 		bs->set_size(he);
 	}
 
 	if (Object::cast_to<CapsuleShape3D>(*s)) {
 		Vector3 axis;
-		axis[p_idx == 0 ? 0 : 2] = 1.0;
+		axis[p_id == 0 ? 0 : 2] = 1.0;
 		Ref<CapsuleShape3D> cs2 = s;
 		Vector3 ra, rb;
 		Geometry3D::get_closest_points_between_segments(Vector3(), axis * 4096, sg[0], sg[1], ra, rb);
 		float d = axis.dot(ra);
-		if (p_idx == 1) {
+		if (p_id == 1) {
 			d -= cs2->get_radius();
 		}
 
@@ -3754,16 +4192,16 @@ void CollisionShape3DGizmoPlugin::set_handle(EditorNode3DGizmo *p_gizmo, int p_i
 			d = 0.001;
 		}
 
-		if (p_idx == 0) {
+		if (p_id == 0) {
 			cs2->set_radius(d);
-		} else if (p_idx == 1) {
+		} else if (p_id == 1) {
 			cs2->set_height(d * 2.0);
 		}
 	}
 
 	if (Object::cast_to<CylinderShape3D>(*s)) {
 		Vector3 axis;
-		axis[p_idx == 0 ? 0 : 1] = 1.0;
+		axis[p_id == 0 ? 0 : 1] = 1.0;
 		Ref<CylinderShape3D> cs2 = s;
 		Vector3 ra, rb;
 		Geometry3D::get_closest_points_between_segments(Vector3(), axis * 4096, sg[0], sg[1], ra, rb);
@@ -3776,15 +4214,15 @@ void CollisionShape3DGizmoPlugin::set_handle(EditorNode3DGizmo *p_gizmo, int p_i
 			d = 0.001;
 		}
 
-		if (p_idx == 0) {
+		if (p_id == 0) {
 			cs2->set_radius(d);
-		} else if (p_idx == 1) {
+		} else if (p_id == 1) {
 			cs2->set_height(d * 2.0);
 		}
 	}
 }
 
-void CollisionShape3DGizmoPlugin::commit_handle(EditorNode3DGizmo *p_gizmo, int p_idx, const Variant &p_restore, bool p_cancel) {
+void CollisionShape3DGizmoPlugin::commit_handle(const EditorNode3DGizmo *p_gizmo, int p_group_id, int p_id, const Variant &p_restore, bool p_cancel) const {
 	CollisionShape3D *cs = Object::cast_to<CollisionShape3D>(p_gizmo->get_spatial_node());
 
 	Ref<Shape3D> s = cs->get_shape();
@@ -3823,7 +4261,7 @@ void CollisionShape3DGizmoPlugin::commit_handle(EditorNode3DGizmo *p_gizmo, int 
 	if (Object::cast_to<CapsuleShape3D>(*s)) {
 		Ref<CapsuleShape3D> ss = s;
 		if (p_cancel) {
-			if (p_idx == 0) {
+			if (p_id == 0) {
 				ss->set_radius(p_restore);
 			} else {
 				ss->set_height(p_restore);
@@ -3832,7 +4270,7 @@ void CollisionShape3DGizmoPlugin::commit_handle(EditorNode3DGizmo *p_gizmo, int 
 		}
 
 		UndoRedo *ur = Node3DEditor::get_singleton()->get_undo_redo();
-		if (p_idx == 0) {
+		if (p_id == 0) {
 			ur->create_action(TTR("Change Capsule Shape Radius"));
 			ur->add_do_method(ss.ptr(), "set_radius", ss->get_radius());
 			ur->add_undo_method(ss.ptr(), "set_radius", p_restore);
@@ -3848,7 +4286,7 @@ void CollisionShape3DGizmoPlugin::commit_handle(EditorNode3DGizmo *p_gizmo, int 
 	if (Object::cast_to<CylinderShape3D>(*s)) {
 		Ref<CylinderShape3D> ss = s;
 		if (p_cancel) {
-			if (p_idx == 0) {
+			if (p_id == 0) {
 				ss->set_radius(p_restore);
 			} else {
 				ss->set_height(p_restore);
@@ -3857,7 +4295,7 @@ void CollisionShape3DGizmoPlugin::commit_handle(EditorNode3DGizmo *p_gizmo, int 
 		}
 
 		UndoRedo *ur = Node3DEditor::get_singleton()->get_undo_redo();
-		if (p_idx == 0) {
+		if (p_id == 0) {
 			ur->create_action(TTR("Change Cylinder Shape Radius"));
 			ur->add_do_method(ss.ptr(), "set_radius", ss->get_radius());
 			ur->add_undo_method(ss.ptr(), "set_radius", p_restore);
@@ -4153,7 +4591,7 @@ void CollisionShape3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 	if (Object::cast_to<ConcavePolygonShape3D>(*s)) {
 		Ref<ConcavePolygonShape3D> cs2 = s;
 		Ref<ArrayMesh> mesh = cs2->get_debug_mesh();
-		p_gizmo->add_mesh(mesh, false, Ref<SkinReference>(), material);
+		p_gizmo->add_mesh(mesh, material);
 		p_gizmo->add_collision_segments(cs2->get_debug_mesh_lines());
 	}
 
@@ -4174,7 +4612,7 @@ void CollisionShape3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 		Ref<HeightMapShape3D> hms = s;
 
 		Ref<ArrayMesh> mesh = hms->get_debug_mesh();
-		p_gizmo->add_mesh(mesh, false, Ref<SkinReference>(), material);
+		p_gizmo->add_mesh(mesh, material);
 	}
 }
 

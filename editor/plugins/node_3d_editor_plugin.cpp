@@ -35,20 +35,21 @@
 #include "core/math/camera_matrix.h"
 #include "core/math/math_funcs.h"
 #include "core/os/keyboard.h"
-#include "core/string/print_string.h"
+
 #include "core/templates/sort_array.h"
 #include "editor/debugger/editor_debugger_node.h"
 #include "editor/editor_node.h"
-#include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
 #include "editor/node_3d_editor_gizmos.h"
 #include "editor/plugins/animation_player_editor_plugin.h"
 #include "editor/plugins/script_editor_plugin.h"
 #include "scene/3d/camera_3d.h"
 #include "scene/3d/collision_shape_3d.h"
+#include "scene/3d/light_3d.h"
 #include "scene/3d/mesh_instance_3d.h"
 #include "scene/3d/physics_body_3d.h"
 #include "scene/3d/visual_instance_3d.h"
+#include "scene/3d/world_environment.h"
 #include "scene/gui/center_container.h"
 #include "scene/gui/subviewport_container.h"
 #include "scene/resources/packed_scene.h"
@@ -58,7 +59,6 @@
 
 #define GIZMO_ARROW_SIZE 0.35
 #define GIZMO_RING_HALF_WIDTH 0.1
-#define GIZMO_SCALE_DEFAULT 0.15
 #define GIZMO_PLANE_SIZE 0.2
 #define GIZMO_PLANE_DST 0.3
 #define GIZMO_CIRCLE_SIZE 1.1
@@ -436,21 +436,31 @@ Vector3 Node3DEditorViewport::_get_ray(const Vector2 &p_pos) const {
 }
 
 void Node3DEditorViewport::_clear_selected() {
-	editor_selection->clear();
+	_edit.gizmo = Ref<EditorNode3DGizmo>();
+	_edit.gizmo_handle_group = -1;
+	_edit.gizmo_handle = -1;
+	_edit.gizmo_initial_value = Variant();
+	if (spatial_editor->get_selected() && spatial_editor->get_selected_gizmo_handle() != -1) {
+		spatial_editor->set_selected_gizmo_handle(-1, -1);
+		spatial_editor->get_selected()->update_gizmo();
+	} else {
+		editor_selection->clear();
+		Node3DEditor::get_singleton()->edit(nullptr);
+	}
 }
 
-void Node3DEditorViewport::_select_clicked(bool p_append, bool p_single, bool p_allow_locked) {
-	if (clicked.is_null()) {
-		return;
-	}
-
-	Node *node = Object::cast_to<Node>(ObjectDB::get_instance(clicked));
+void Node3DEditorViewport::_select_clicked() {
+	Node *node = Object::cast_to<Node3D>(ObjectDB::get_instance(clicked));
 	Node3D *selected = Object::cast_to<Node3D>(node);
+	clicked = ObjectID();
+
 	if (!selected) {
 		return;
 	}
 
-	if (!p_allow_locked) {
+	bool allow_locked = spatial_editor->get_tool_mode() != Node3DEditor::TOOL_MODE_LIST_SELECT;
+
+	if (!allow_locked) {
 		// Replace the node by the group if grouped
 		while (node && node != editor->get_edited_scene()->get_parent()) {
 			Node3D *selected_tmp = Object::cast_to<Node3D>(node);
@@ -461,35 +471,32 @@ void Node3DEditorViewport::_select_clicked(bool p_append, bool p_single, bool p_
 		}
 	}
 
-	if (p_allow_locked || !_is_node_locked(selected)) {
-		_select(selected, clicked_wants_append, true);
-	}
-}
+	if (clicked_wants_append && !editor_selection->get_selected_node_list().is_empty()) {
+		if (editor_selection->is_selected(selected)) {
+			// Already in the selection, remove it from the selected nodes
+			editor_selection->remove_node(selected);
 
-void Node3DEditorViewport::_select(Node *p_node, bool p_append, bool p_single) {
-	if (!p_append) {
-		editor_selection->clear();
-	}
-
-	if (editor_selection->is_selected(p_node)) {
-		//erase
-		editor_selection->remove_node(p_node);
+			if (editor_selection->get_selected_node_list().size() == 1) {
+				editor->push_item(editor_selection->get_selected_node_list()[0]);
+			}
+		} else {
+			// Add the item to the selection
+			editor_selection->add_node(selected);
+		}
 	} else {
-		editor_selection->add_node(p_node);
-	}
-
-	if (p_single) {
-		if (Engine::get_singleton()->is_editor_hint()) {
-			editor->call("edit_node", p_node);
+		if (!editor_selection->is_selected(selected)) {
+			// Select a new one and clear previous selection
+			editor_selection->clear();
+			editor_selection->add_node(selected);
+			// Reselect
+			if (Engine::get_singleton()->is_editor_hint()) {
+				editor->call("edit_node", selected);
+			}
 		}
 	}
 }
 
-ObjectID Node3DEditorViewport::_select_ray(const Point2 &p_pos, bool p_append, bool &r_includes_current, int *r_gizmo_handle, bool p_alt_select) {
-	if (r_gizmo_handle) {
-		*r_gizmo_handle = -1;
-	}
-
+ObjectID Node3DEditorViewport::_select_ray(const Point2 &p_pos) {
 	Vector3 ray = _get_ray(p_pos);
 	Vector3 pos = _get_ray_pos(p_pos);
 	Vector2 shrinked_pos = p_pos / subviewport_container->get_stretch_shrink();
@@ -505,7 +512,6 @@ ObjectID Node3DEditorViewport::_select_ray(const Point2 &p_pos, bool p_append, b
 	ObjectID closest;
 	Node *item = nullptr;
 	float closest_dist = 1e20;
-	int selected_handle = -1;
 
 	for (int i = 0; i < instances.size(); i++) {
 		Node3D *spat = Object::cast_to<Node3D>(ObjectDB::get_instance(instances[i]));
@@ -524,8 +530,7 @@ ObjectID Node3DEditorViewport::_select_ray(const Point2 &p_pos, bool p_append, b
 		Vector3 point;
 		Vector3 normal;
 
-		int handle = -1;
-		bool inters = seg->intersect_ray(camera, shrinked_pos, point, normal, &handle, p_alt_select);
+		bool inters = seg->intersect_ray(camera, shrinked_pos, point, normal);
 
 		if (!inters) {
 			continue;
@@ -545,7 +550,6 @@ ObjectID Node3DEditorViewport::_select_ray(const Point2 &p_pos, bool p_append, b
 
 			closest = item->get_instance_id();
 			closest_dist = dist;
-			selected_handle = handle;
 		}
 	}
 
@@ -553,23 +557,15 @@ ObjectID Node3DEditorViewport::_select_ray(const Point2 &p_pos, bool p_append, b
 		return ObjectID();
 	}
 
-	if (!editor_selection->is_selected(item) || (r_gizmo_handle && selected_handle >= 0)) {
-		if (r_gizmo_handle) {
-			*r_gizmo_handle = selected_handle;
-		}
-	}
-
 	return closest;
 }
 
-void Node3DEditorViewport::_find_items_at_pos(const Point2 &p_pos, bool &r_includes_current, Vector<_RayResult> &results, bool p_alt_select) {
+void Node3DEditorViewport::_find_items_at_pos(const Point2 &p_pos, Vector<_RayResult> &r_results) {
 	Vector3 ray = _get_ray(p_pos);
 	Vector3 pos = _get_ray_pos(p_pos);
 
 	Vector<ObjectID> instances = RenderingServer::get_singleton()->instances_cull_ray(pos, ray, get_tree()->get_root()->get_world_3d()->get_scenario());
 	Set<Ref<EditorNode3DGizmo>> found_gizmos;
-
-	r_includes_current = false;
 
 	for (int i = 0; i < instances.size(); i++) {
 		Node3D *spat = Object::cast_to<Node3D>(ObjectDB::get_instance(instances[i]));
@@ -592,8 +588,7 @@ void Node3DEditorViewport::_find_items_at_pos(const Point2 &p_pos, bool &r_inclu
 		Vector3 point;
 		Vector3 normal;
 
-		int handle = -1;
-		bool inters = seg->intersect_ray(camera, p_pos, point, normal, nullptr, p_alt_select);
+		bool inters = seg->intersect_ray(camera, p_pos, point, normal);
 
 		if (!inters) {
 			continue;
@@ -605,22 +600,18 @@ void Node3DEditorViewport::_find_items_at_pos(const Point2 &p_pos, bool &r_inclu
 			continue;
 		}
 
-		if (editor_selection->is_selected(spat)) {
-			r_includes_current = true;
-		}
-
 		_RayResult res;
 		res.item = spat;
 		res.depth = dist;
-		res.handle = handle;
-		results.push_back(res);
+		res.handle = -1;
+		r_results.push_back(res);
 	}
 
-	if (results.is_empty()) {
+	if (r_results.is_empty()) {
 		return;
 	}
 
-	results.sort();
+	r_results.sort();
 }
 
 Vector3 Node3DEditorViewport::_get_screen_to_space(const Vector3 &p_vector3) {
@@ -737,9 +728,15 @@ void Node3DEditorViewport::_select_region() {
 		}
 	}
 
-	bool single = selected.size() == 1;
+	if (selected.size() == 1 && editor_selection->get_selected_node_list().is_empty()) {
+		editor->push_item(selected[0]);
+	}
 	for (int i = 0; i < selected.size(); i++) {
-		_select(selected[i], true, single);
+		if (editor_selection->is_selected(selected[i])) {
+			editor_selection->remove_node(selected[i]);
+		} else {
+			editor_selection->add_node(selected[i]);
+		}
 	}
 }
 
@@ -779,8 +776,19 @@ void Node3DEditorViewport::_compute_edit(const Point2 &p_point) {
 			continue;
 		}
 
-		se->original = se->sp->get_global_gizmo_transform();
-		se->original_local = se->sp->get_local_gizmo_transform();
+		se->original_local = Transform3D();
+		se->original = Transform3D();
+
+		if (spatial_editor->get_selected_gizmo_handle() != -1) {
+			Ref<EditorNode3DGizmo> seg = se->sp->get_gizmo();
+			if (seg.is_valid()) {
+				se->original_local = seg->get_transform_handle_value(spatial_editor->get_selected_gizmo_handle_group(), spatial_editor->get_selected_gizmo_handle());
+				se->original = se->sp->get_global_gizmo_transform() * se->original_local;
+			}
+		} else {
+			se->original_local = se->sp->get_local_gizmo_transform();
+			se->original = se->sp->get_global_gizmo_transform();
+		}
 	}
 }
 
@@ -816,7 +824,7 @@ static int _get_key_modifier(Ref<InputEventWithModifiers> e) {
 	return 0;
 }
 
-bool Node3DEditorViewport::_gizmo_select(const Vector2 &p_screenpos, bool p_highlight_only) {
+bool Node3DEditorViewport::_transform_gizmo_select(const Vector2 &p_screenpos, bool p_highlight_only) {
 	if (!spatial_editor->is_gizmo_visible()) {
 		return false;
 	}
@@ -1002,6 +1010,27 @@ bool Node3DEditorViewport::_gizmo_select(const Vector2 &p_screenpos, bool p_high
 	return false;
 }
 
+void Node3DEditorViewport::_transform_gizmo_apply(Node3D *p_node, const Transform3D &p_transform, bool p_local) {
+	if (p_transform.basis.determinant() == 0) {
+		return;
+	}
+
+	if (spatial_editor->get_selected_gizmo_handle() != -1) {
+		Ref<EditorNode3DGizmo> seg = p_node->get_gizmo();
+		if (seg.is_valid()) {
+			Transform3D t = p_local ? p_transform : p_node->get_global_gizmo_transform().inverse() * p_transform;
+			seg->set_transform_handle(spatial_editor->get_selected_gizmo_handle_group(), spatial_editor->get_selected_gizmo_handle(), t);
+			spatial_editor->update_transform_gizmo();
+		}
+	} else {
+		if (p_local) {
+			p_node->set_transform(p_transform);
+		} else {
+			p_node->set_global_transform(p_transform);
+		}
+	}
+}
+
 void Node3DEditorViewport::_surface_mouse_enter() {
 	if (!surface->has_focus() && (!get_focus_owner() || !get_focus_owner()->is_text_field())) {
 		surface->grab_focus();
@@ -1025,7 +1054,7 @@ bool Node3DEditorViewport ::_is_node_locked(const Node *p_node) {
 }
 
 void Node3DEditorViewport::_list_select(Ref<InputEventMouseButton> b) {
-	_find_items_at_pos(b->get_position(), clicked_includes_current, selection_results, b->is_shift_pressed());
+	_find_items_at_pos(b->get_position(), selection_results);
 
 	Node *scene = editor->get_edited_scene();
 
@@ -1045,8 +1074,7 @@ void Node3DEditorViewport::_list_select(Ref<InputEventMouseButton> b) {
 		selection_results.clear();
 
 		if (clicked.is_valid()) {
-			_select_clicked(clicked_wants_append, true, spatial_editor->get_tool_mode() != Node3DEditor::TOOL_MODE_LIST_SELECT);
-			clicked = ObjectID();
+			_select_clicked();
 		}
 
 	} else if (!selection_results.is_empty()) {
@@ -1145,7 +1173,7 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 
 				if (b->is_pressed() && _edit.gizmo.is_valid()) {
 					//restore
-					_edit.gizmo->commit_handle(_edit.gizmo_handle, _edit.gizmo_initial_value, true);
+					_edit.gizmo->commit_handle(_edit.gizmo_handle_group, _edit.gizmo_handle, _edit.gizmo_initial_value, true);
 					_edit.gizmo = Ref<EditorNode3DGizmo>();
 				}
 
@@ -1177,7 +1205,15 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 							continue;
 						}
 
-						sp->set_global_transform(se->original);
+						if (spatial_editor->get_selected_gizmo_handle() != -1) {
+							Ref<EditorNode3DGizmo> seg = se->sp->get_gizmo();
+							if (seg.is_valid()) {
+								seg->commit_transform_handle(spatial_editor->get_selected_gizmo_handle_group(), spatial_editor->get_selected_gizmo_handle(), se->original_local, true);
+								spatial_editor->update_transform_gizmo();
+							}
+						} else {
+							sp->set_global_transform(se->original);
+						}
 					}
 					surface->update();
 					set_message(TTR("Transform Aborted."), 3);
@@ -1261,25 +1297,30 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 					if (can_select_gizmos && spatial_editor->get_selected()) {
 						Ref<EditorNode3DGizmo> seg = spatial_editor->get_selected()->get_gizmo();
 						if (seg.is_valid()) {
-							int handle = -1;
-							Vector3 point;
-							Vector3 normal;
-							bool inters = seg->intersect_ray(camera, _edit.mouse_pos, point, normal, &handle, b->is_shift_pressed());
-							if (inters && handle != -1) {
-								_edit.gizmo = seg;
-								_edit.gizmo_handle = handle;
-								_edit.gizmo_initial_value = seg->get_handle_value(handle);
+							int gizmo_handle = -1;
+							int gizmo_handle_group = -1;
+							seg->handles_intersect_ray(camera, _edit.mouse_pos, b->is_shift_pressed(), gizmo_handle_group, gizmo_handle);
+							if (gizmo_handle_group != -1) {
+								if (seg->is_handle_group_transform(gizmo_handle_group)) {
+									spatial_editor->set_selected_gizmo_handle(gizmo_handle_group, gizmo_handle);
+									_edit.gizmo_initial_value = seg->get_transform_handle_value(gizmo_handle_group, gizmo_handle);
+									seg->redraw();
+								} else {
+									_edit.gizmo = seg;
+									_edit.gizmo_handle = gizmo_handle;
+									_edit.gizmo_handle_group = gizmo_handle_group;
+									_edit.gizmo_initial_value = seg->get_handle_value(gizmo_handle_group, gizmo_handle);
+								}
 								break;
 							}
 						}
 					}
 
-					if (_gizmo_select(_edit.mouse_pos)) {
+					if (_transform_gizmo_select(_edit.mouse_pos)) {
 						break;
 					}
 
 					clicked = ObjectID();
-					clicked_includes_current = false;
 
 					if ((spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_SELECT && b->is_command_pressed()) || spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_ROTATE) {
 						/* HANDLE ROTATION */
@@ -1314,49 +1355,28 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 
 					// todo scale
 
-					int gizmo_handle = -1;
-
-					clicked = _select_ray(b->get_position(), b->is_shift_pressed(), clicked_includes_current, &gizmo_handle, b->is_shift_pressed());
+					clicked = _select_ray(b->get_position());
 
 					//clicking is always deferred to either move or release
 
 					clicked_wants_append = b->is_shift_pressed();
 
 					if (clicked.is_null()) {
-						if (!clicked_wants_append) {
-							_clear_selected();
-						}
-
 						//default to regionselect
 						cursor.region_select = true;
 						cursor.region_begin = b->get_position();
 						cursor.region_end = b->get_position();
 					}
 
-					if (clicked.is_valid() && gizmo_handle >= 0) {
-						Node3D *spa = Object::cast_to<Node3D>(ObjectDB::get_instance(clicked));
-						if (spa) {
-							Ref<EditorNode3DGizmo> seg = spa->get_gizmo();
-							if (seg.is_valid()) {
-								_edit.gizmo = seg;
-								_edit.gizmo_handle = gizmo_handle;
-								_edit.gizmo_initial_value = seg->get_handle_value(gizmo_handle);
-								break;
-							}
-						}
-					}
-
 					surface->update();
 				} else {
 					if (_edit.gizmo.is_valid()) {
-						_edit.gizmo->commit_handle(_edit.gizmo_handle, _edit.gizmo_initial_value, false);
+						_edit.gizmo->commit_handle(_edit.gizmo_handle_group, _edit.gizmo_handle, _edit.gizmo_initial_value, false);
 						_edit.gizmo = Ref<EditorNode3DGizmo>();
 						break;
 					}
 					if (clicked.is_valid()) {
-						_select_clicked(clicked_wants_append, true);
-						// Processing was deferred.
-						clicked = ObjectID();
+						_select_clicked();
 					}
 
 					if (cursor.region_select) {
@@ -1370,26 +1390,34 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 					}
 
 					if (_edit.mode != TRANSFORM_NONE) {
-						static const char *_transform_name[4] = { "None", "Rotate", "Translate", "Scale" };
-						undo_redo->create_action(_transform_name[_edit.mode]);
-
-						List<Node *> &selection = editor_selection->get_selected_node_list();
-
-						for (List<Node *>::Element *E = selection.front(); E; E = E->next()) {
-							Node3D *sp = Object::cast_to<Node3D>(E->get());
-							if (!sp) {
-								continue;
+						if (spatial_editor->get_selected_gizmo_handle() != -1) {
+							Ref<EditorNode3DGizmo> seg = spatial_editor->get_selected()->get_gizmo();
+							if (seg.is_valid()) {
+								seg->commit_transform_handle(spatial_editor->get_selected_gizmo_handle_group(), spatial_editor->get_selected_gizmo_handle(), _edit.gizmo_initial_value, false);
+								spatial_editor->update_transform_gizmo();
 							}
+						} else {
+							static const char *_transform_name[4] = { "None", "Rotate", "Translate", "Scale" };
+							undo_redo->create_action(_transform_name[_edit.mode]);
 
-							Node3DEditorSelectedItem *se = editor_selection->get_node_editor_data<Node3DEditorSelectedItem>(sp);
-							if (!se) {
-								continue;
+							List<Node *> &selection = editor_selection->get_selected_node_list();
+
+							for (List<Node *>::Element *E = selection.front(); E; E = E->next()) {
+								Node3D *sp = Object::cast_to<Node3D>(E->get());
+								if (!sp) {
+									continue;
+								}
+
+								Node3DEditorSelectedItem *se = editor_selection->get_node_editor_data<Node3DEditorSelectedItem>(sp);
+								if (!se) {
+									continue;
+								}
+
+								undo_redo->add_do_method(sp, "set_global_transform", sp->get_global_gizmo_transform());
+								undo_redo->add_undo_method(sp, "set_global_transform", se->original);
 							}
-
-							undo_redo->add_do_method(sp, "set_global_transform", sp->get_global_gizmo_transform());
-							undo_redo->add_undo_method(sp, "set_global_transform", se->original);
+							undo_redo->commit_action();
 						}
-						undo_redo->commit_action();
 						_edit.mode = TRANSFORM_NONE;
 						set_message("");
 					}
@@ -1411,37 +1439,32 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 		if (spatial_editor->get_selected()) {
 			Ref<EditorNode3DGizmo> seg = spatial_editor->get_selected()->get_gizmo();
 			if (seg.is_valid()) {
-				int selected_handle = -1;
+				int gizmo_handle = -1;
+				int gizmo_handle_group = -1;
+				seg->handles_intersect_ray(camera, _edit.mouse_pos, false, gizmo_handle_group, gizmo_handle);
 
-				int handle = -1;
-				Vector3 point;
-				Vector3 normal;
-				bool inters = seg->intersect_ray(camera, _edit.mouse_pos, point, normal, &handle, false);
-				if (inters && handle != -1) {
-					selected_handle = handle;
+				if (gizmo_handle_group != spatial_editor->get_over_gizmo_handle_group() || gizmo_handle != spatial_editor->get_over_gizmo_handle()) {
+					spatial_editor->set_over_gizmo_handle(gizmo_handle_group, gizmo_handle);
+					spatial_editor->get_selected()->update_gizmo();
 				}
 
-				if (selected_handle != spatial_editor->get_over_gizmo_handle()) {
-					spatial_editor->set_over_gizmo_handle(selected_handle);
-					spatial_editor->get_selected()->update_gizmo();
-					if (selected_handle != -1) {
-						spatial_editor->select_gizmo_highlight_axis(-1);
-					}
+				if (gizmo_handle_group != -1) {
+					spatial_editor->select_gizmo_highlight_axis(-1);
 				}
 			}
 		}
 
-		if (spatial_editor->get_over_gizmo_handle() == -1 && !(m->get_button_mask() & 1) && !_edit.gizmo.is_valid()) {
-			_gizmo_select(_edit.mouse_pos, true);
+		if (spatial_editor->get_over_gizmo_handle_group() == -1 && !(m->get_button_mask() & 1) && !_edit.gizmo.is_valid()) {
+			_transform_gizmo_select(_edit.mouse_pos, true);
 		}
 
 		NavigationScheme nav_scheme = (NavigationScheme)EditorSettings::get_singleton()->get("editors/3d/navigation/navigation_scheme").operator int();
 		NavigationMode nav_mode = NAVIGATION_NONE;
 
 		if (_edit.gizmo.is_valid()) {
-			_edit.gizmo->set_handle(_edit.gizmo_handle, camera, m->get_position());
-			Variant v = _edit.gizmo->get_handle_value(_edit.gizmo_handle);
-			String n = _edit.gizmo->get_handle_name(_edit.gizmo_handle);
+			_edit.gizmo->set_handle(_edit.gizmo_handle_group, _edit.gizmo_handle, camera, m->get_position());
+			Variant v = _edit.gizmo->get_handle_value(_edit.gizmo_handle_group, _edit.gizmo_handle);
+			String n = _edit.gizmo->get_handle_name(_edit.gizmo_handle_group, _edit.gizmo_handle);
 			set_message(n + ": " + String(v));
 
 		} else if (m->get_button_mask() & MOUSE_BUTTON_MASK_LEFT) {
@@ -1456,11 +1479,6 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 			} else {
 				bool movement_threshold_passed = _edit.original_mouse_pos.distance_to(_edit.mouse_pos) > 10 * EDSCALE;
 				if (clicked.is_valid() && movement_threshold_passed) {
-					if (!clicked_includes_current) {
-						_select_clicked(clicked_wants_append, true);
-						// Processing was deferred.
-					}
-
 					_compute_edit(_edit.mouse_pos);
 					clicked = ObjectID();
 
@@ -1584,41 +1602,29 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 								continue;
 							}
 
-							Transform3D original = se->original;
-							Transform3D original_local = se->original_local;
-							Transform3D base = Transform3D(Basis(), _edit.center);
-							Transform3D t;
-							Vector3 local_scale;
-
 							if (local_coords) {
-								Basis g = original.basis.orthonormalized();
+								Basis g = se->original.basis.orthonormalized();
 								Vector3 local_motion = g.inverse().xform(motion);
 
 								if (_edit.snap || spatial_editor->is_snap_enabled()) {
 									local_motion.snap(Vector3(snap, snap, snap));
 								}
 
-								local_scale = original_local.basis.get_scale() * (local_motion + Vector3(1, 1, 1));
-
-								// Prevent scaling to 0 it would break the gizmo
-								Basis check = original_local.basis;
-								check.scale(local_scale);
-								if (check.determinant() != 0) {
-									// Apply scale
-									sp->set_scale(local_scale);
-								}
+								Vector3 local_scale = se->original_local.basis.get_scale() * (local_motion + Vector3(1, 1, 1));
+								Transform3D local_t = se->original_local;
+								local_t.basis.set_euler_scale(se->original_local.basis.get_rotation_euler(), local_scale);
+								_transform_gizmo_apply(se->sp, local_t, true);
 
 							} else {
+								Transform3D base = Transform3D(Basis(), _edit.center);
 								if (_edit.snap || spatial_editor->is_snap_enabled()) {
 									motion.snap(Vector3(snap, snap, snap));
 								}
 
 								Transform3D r;
 								r.basis.scale(motion + Vector3(1, 1, 1));
-								t = base * (r * (base.inverse() * original));
-
-								// Apply scale
-								sp->set_global_transform(t);
+								Transform3D t = base * (r * (base.inverse() * se->original));
+								_transform_gizmo_apply(se->sp, t, false);
 							}
 						}
 
@@ -1727,7 +1733,8 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 							// Apply translation
 							t = original;
 							t.origin += motion;
-							sp->set_global_transform(t);
+
+							_transform_gizmo_apply(se->sp, t, false);
 						}
 
 						surface->update();
@@ -1802,29 +1809,26 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 								continue;
 							}
 
-							Transform3D t;
-
 							if (local_coords) {
 								Transform3D original_local = se->original_local;
 								Basis rot = Basis(axis, angle);
 
-								t.basis = original_local.get_basis().orthonormalized() * rot;
+								Vector3 scale = original_local.basis.get_scale();
+								Vector3 euler = (original_local.get_basis().orthonormalized() * rot).get_euler();
+								Transform3D t;
+								t.basis.set_euler_scale(euler, scale);
 								t.origin = original_local.origin;
 
-								// Apply rotation
-								sp->set_transform(t);
-								sp->set_scale(original_local.basis.get_scale()); // re-apply original scale
-
+								_transform_gizmo_apply(se->sp, t, true);
 							} else {
 								Transform3D original = se->original;
 								Transform3D r;
 								Transform3D base = Transform3D(Basis(), _edit.center);
 
 								r.basis.rotate(plane.normal, angle);
-								t = base * r * base.inverse() * original;
+								Transform3D t = base * r * base.inverse() * original;
 
-								// Apply rotation
-								sp->set_global_transform(t);
+								_transform_gizmo_apply(se->sp, t, false);
 							}
 						}
 
@@ -3296,8 +3300,7 @@ void Node3DEditorViewport::_selection_result_pressed(int p_result) {
 	clicked = selection_results[p_result].item->get_instance_id();
 
 	if (clicked.is_valid()) {
-		_select_clicked(clicked_wants_append, true, spatial_editor->get_tool_mode() != Node3DEditor::TOOL_MODE_LIST_SELECT);
-		clicked = ObjectID();
+		_select_clicked();
 	}
 }
 
@@ -3641,7 +3644,7 @@ Vector3 Node3DEditorViewport::_get_instance_position(const Point2 &p_pos) const 
 
 		Vector3 hit_point;
 		Vector3 hit_normal;
-		bool inters = seg->intersect_ray(camera, p_pos, hit_point, hit_normal, nullptr, false);
+		bool inters = seg->intersect_ray(camera, p_pos, hit_point, hit_normal);
 
 		if (!inters) {
 			continue;
@@ -3959,9 +3962,9 @@ Node3DEditorViewport::Node3DEditorViewport(Node3DEditor *p_spatial_editor, Edito
 
 	_edit.mode = TRANSFORM_NONE;
 	_edit.plane = TRANSFORM_VIEW;
-	_edit.edited_gizmo = 0;
 	_edit.snap = true;
-	_edit.gizmo_handle = 0;
+	_edit.gizmo_handle = -1;
+	_edit.gizmo_handle_group = -1;
 
 	index = p_index;
 	editor = p_editor;
@@ -3969,7 +3972,6 @@ Node3DEditorViewport::Node3DEditorViewport(Node3DEditor *p_spatial_editor, Edito
 	editor_selection = editor->get_editor_selection();
 	undo_redo = editor->get_undo_redo();
 
-	clicked_includes_current = false;
 	orthogonal = false;
 	auto_orthogonal = false;
 	lock_rotation = false;
@@ -4581,6 +4583,14 @@ void Node3DEditor::update_transform_gizmo() {
 
 		Transform3D xf = se->sp->get_global_gizmo_transform();
 
+		if (selected_gizmo_handle_group != -1 && selected_gizmo_handle != -1) {
+			Ref<EditorNode3DGizmo> seg = se->sp->get_gizmo();
+			if (seg.is_valid()) {
+				Transform3D gxf = seg->get_transform_handle_value(selected_gizmo_handle_group, selected_gizmo_handle);
+				xf = xf * gxf;
+			}
+		}
+
 		if (first) {
 			center.position = xf.origin;
 			first = false;
@@ -4936,6 +4946,9 @@ void Node3DEditor::edit(Node3D *p_spatial) {
 
 		selected = p_spatial;
 		over_gizmo_handle = -1;
+		over_gizmo_handle_group = -1;
+		selected_gizmo_handle = -1;
+		selected_gizmo_handle_group = -1;
 
 		if (selected) {
 			Ref<EditorNode3DGizmo> seg = selected->get_gizmo();
@@ -6017,6 +6030,21 @@ bool Node3DEditor::is_any_freelook_active() const {
 	return false;
 }
 
+void Node3DEditor::_selection_changed() {
+	_refresh_menu_icons();
+	if (selected && editor_selection->get_selected_node_list().size() != 1) {
+		Ref<EditorNode3DGizmo> seg = selected->get_gizmo();
+		if (seg.is_valid()) {
+			seg->set_selected(false);
+			selected->update_gizmo();
+		}
+		selected = nullptr;
+		selected_gizmo_handle = -1;
+		selected_gizmo_handle_group = -1;
+	}
+	update_transform_gizmo();
+}
+
 void Node3DEditor::_refresh_menu_icons() {
 	bool all_locked = true;
 	bool all_grouped = true;
@@ -6287,7 +6315,7 @@ void Node3DEditor::_notification(int p_what) {
 		get_tree()->connect("node_removed", callable_mp(this, &Node3DEditor::_node_removed));
 		get_tree()->connect("node_added", callable_mp(this, &Node3DEditor::_node_added));
 		EditorNode::get_singleton()->get_scene_tree_dock()->get_tree_editor()->connect("node_changed", callable_mp(this, &Node3DEditor::_refresh_menu_icons));
-		editor_selection->connect("selection_changed", callable_mp(this, &Node3DEditor::_refresh_menu_icons));
+		editor_selection->connect("selection_changed", callable_mp(this, &Node3DEditor::_selection_changed));
 
 		editor->connect("stop_pressed", callable_mp(this, &Node3DEditor::_update_camera_override_button), make_binds(false));
 		editor->connect("play_pressed", callable_mp(this, &Node3DEditor::_update_camera_override_button), make_binds(true));
@@ -6382,8 +6410,9 @@ void Node3DEditor::_request_gizmo(Object *p_obj) {
 			if (seg.is_valid()) {
 				sp->set_gizmo(seg);
 
-				if (sp == selected) {
-					seg->set_selected(true);
+				bool is_selected = (sp == selected);
+				if (is_selected != seg->is_selected()) {
+					seg->set_selected(is_selected);
 					selected->update_gizmo();
 				}
 
@@ -6479,6 +6508,8 @@ void Node3DEditor::_node_removed(Node *p_node) {
 
 	if (p_node == selected) {
 		selected = nullptr;
+		selected_gizmo_handle = -1;
+		selected_gizmo_handle_group = -1;
 	}
 }
 
@@ -7076,6 +7107,8 @@ Node3DEditor::Node3DEditor(EditorNode *p_editor) {
 	scenario_debug = RenderingServer::SCENARIO_DEBUG_DISABLED;
 
 	selected = nullptr;
+	selected_gizmo_handle = -1;
+	selected_gizmo_handle_group = -1;
 
 	set_process_unhandled_key_input(true);
 	add_to_group("_spatial_editor_group");
@@ -7087,6 +7120,7 @@ Node3DEditor::Node3DEditor(EditorNode *p_editor) {
 	EDITOR_DEF("editors/3d/navigation/show_viewport_rotation_gizmo", true);
 
 	over_gizmo_handle = -1;
+	over_gizmo_handle_group = -1;
 	{
 		//sun popup
 
@@ -7382,304 +7416,4 @@ Node3DEditorPlugin::Node3DEditorPlugin(EditorNode *p_node) {
 }
 
 Node3DEditorPlugin::~Node3DEditorPlugin() {
-}
-
-void EditorNode3DGizmoPlugin::create_material(const String &p_name, const Color &p_color, bool p_billboard, bool p_on_top, bool p_use_vertex_color) {
-	Color instantiated_color = EDITOR_DEF("editors/3d_gizmos/gizmo_colors/instantiated", Color(0.7, 0.7, 0.7, 0.6));
-
-	Vector<Ref<StandardMaterial3D>> mats;
-
-	for (int i = 0; i < 4; i++) {
-		bool selected = i % 2 == 1;
-		bool instantiated = i < 2;
-
-		Ref<StandardMaterial3D> material = Ref<StandardMaterial3D>(memnew(StandardMaterial3D));
-
-		Color color = instantiated ? instantiated_color : p_color;
-
-		if (!selected) {
-			color.a *= 0.3;
-		}
-
-		material->set_albedo(color);
-		material->set_shading_mode(StandardMaterial3D::SHADING_MODE_UNSHADED);
-		material->set_transparency(StandardMaterial3D::TRANSPARENCY_ALPHA);
-		material->set_render_priority(StandardMaterial3D::RENDER_PRIORITY_MIN + 1);
-		material->set_cull_mode(StandardMaterial3D::CULL_DISABLED);
-
-		if (p_use_vertex_color) {
-			material->set_flag(StandardMaterial3D::FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
-			material->set_flag(StandardMaterial3D::FLAG_SRGB_VERTEX_COLOR, true);
-		}
-
-		if (p_billboard) {
-			material->set_billboard_mode(StandardMaterial3D::BILLBOARD_ENABLED);
-		}
-
-		if (p_on_top && selected) {
-			material->set_on_top_of_alpha();
-		}
-
-		mats.push_back(material);
-	}
-
-	materials[p_name] = mats;
-}
-
-void EditorNode3DGizmoPlugin::create_icon_material(const String &p_name, const Ref<Texture2D> &p_texture, bool p_on_top, const Color &p_albedo) {
-	Color instantiated_color = EDITOR_DEF("editors/3d_gizmos/gizmo_colors/instantiated", Color(0.7, 0.7, 0.7, 0.6));
-
-	Vector<Ref<StandardMaterial3D>> icons;
-
-	for (int i = 0; i < 4; i++) {
-		bool selected = i % 2 == 1;
-		bool instantiated = i < 2;
-
-		Ref<StandardMaterial3D> icon = Ref<StandardMaterial3D>(memnew(StandardMaterial3D));
-
-		Color color = instantiated ? instantiated_color : p_albedo;
-
-		if (!selected) {
-			color.a *= 0.85;
-		}
-
-		icon->set_albedo(color);
-
-		icon->set_shading_mode(StandardMaterial3D::SHADING_MODE_UNSHADED);
-		icon->set_flag(StandardMaterial3D::FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
-		icon->set_flag(StandardMaterial3D::FLAG_SRGB_VERTEX_COLOR, true);
-		icon->set_cull_mode(StandardMaterial3D::CULL_DISABLED);
-		icon->set_depth_draw_mode(StandardMaterial3D::DEPTH_DRAW_DISABLED);
-		icon->set_transparency(StandardMaterial3D::TRANSPARENCY_ALPHA);
-		icon->set_texture(StandardMaterial3D::TEXTURE_ALBEDO, p_texture);
-		icon->set_flag(StandardMaterial3D::FLAG_FIXED_SIZE, true);
-		icon->set_billboard_mode(StandardMaterial3D::BILLBOARD_ENABLED);
-		icon->set_render_priority(StandardMaterial3D::RENDER_PRIORITY_MIN);
-
-		if (p_on_top && selected) {
-			icon->set_on_top_of_alpha();
-		}
-
-		icons.push_back(icon);
-	}
-
-	materials[p_name] = icons;
-}
-
-void EditorNode3DGizmoPlugin::create_handle_material(const String &p_name, bool p_billboard, const Ref<Texture2D> &p_icon) {
-	Ref<StandardMaterial3D> handle_material = Ref<StandardMaterial3D>(memnew(StandardMaterial3D));
-
-	handle_material->set_shading_mode(StandardMaterial3D::SHADING_MODE_UNSHADED);
-	handle_material->set_flag(StandardMaterial3D::FLAG_USE_POINT_SIZE, true);
-	Ref<Texture2D> handle_t = p_icon != nullptr ? p_icon : Node3DEditor::get_singleton()->get_theme_icon("Editor3DHandle", "EditorIcons");
-	handle_material->set_point_size(handle_t->get_width());
-	handle_material->set_texture(StandardMaterial3D::TEXTURE_ALBEDO, handle_t);
-	handle_material->set_albedo(Color(1, 1, 1));
-	handle_material->set_flag(StandardMaterial3D::FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
-	handle_material->set_flag(StandardMaterial3D::FLAG_SRGB_VERTEX_COLOR, true);
-	handle_material->set_on_top_of_alpha();
-	if (p_billboard) {
-		handle_material->set_billboard_mode(StandardMaterial3D::BILLBOARD_ENABLED);
-		handle_material->set_on_top_of_alpha();
-	}
-	handle_material->set_transparency(StandardMaterial3D::TRANSPARENCY_ALPHA);
-
-	materials[p_name] = Vector<Ref<StandardMaterial3D>>();
-	materials[p_name].push_back(handle_material);
-}
-
-void EditorNode3DGizmoPlugin::add_material(const String &p_name, Ref<StandardMaterial3D> p_material) {
-	materials[p_name] = Vector<Ref<StandardMaterial3D>>();
-	materials[p_name].push_back(p_material);
-}
-
-Ref<StandardMaterial3D> EditorNode3DGizmoPlugin::get_material(const String &p_name, const Ref<EditorNode3DGizmo> &p_gizmo) {
-	ERR_FAIL_COND_V(!materials.has(p_name), Ref<StandardMaterial3D>());
-	ERR_FAIL_COND_V(materials[p_name].size() == 0, Ref<StandardMaterial3D>());
-
-	if (p_gizmo.is_null() || materials[p_name].size() == 1) {
-		return materials[p_name][0];
-	}
-
-	int index = (p_gizmo->is_selected() ? 1 : 0) + (p_gizmo->is_editable() ? 2 : 0);
-
-	Ref<StandardMaterial3D> mat = materials[p_name][index];
-
-	if (current_state == ON_TOP && p_gizmo->is_selected()) {
-		mat->set_flag(StandardMaterial3D::FLAG_DISABLE_DEPTH_TEST, true);
-	} else {
-		mat->set_flag(StandardMaterial3D::FLAG_DISABLE_DEPTH_TEST, false);
-	}
-
-	return mat;
-}
-
-String EditorNode3DGizmoPlugin::get_gizmo_name() const {
-	if (get_script_instance() && get_script_instance()->has_method("_get_gizmo_name")) {
-		return get_script_instance()->call("_get_gizmo_name");
-	}
-	return TTR("Nameless gizmo");
-}
-
-int EditorNode3DGizmoPlugin::get_priority() const {
-	if (get_script_instance() && get_script_instance()->has_method("_get_priority")) {
-		return get_script_instance()->call("_get_priority");
-	}
-	return 0;
-}
-
-Ref<EditorNode3DGizmo> EditorNode3DGizmoPlugin::get_gizmo(Node3D *p_spatial) {
-	if (get_script_instance() && get_script_instance()->has_method("get_gizmo")) {
-		return get_script_instance()->call("get_gizmo", p_spatial);
-	}
-
-	Ref<EditorNode3DGizmo> ref = create_gizmo(p_spatial);
-
-	if (ref.is_null()) {
-		return ref;
-	}
-
-	ref->set_plugin(this);
-	ref->set_spatial_node(p_spatial);
-	ref->set_hidden(current_state == HIDDEN);
-
-	current_gizmos.push_back(ref.ptr());
-	return ref;
-}
-
-void EditorNode3DGizmoPlugin::_bind_methods() {
-#define GIZMO_REF PropertyInfo(Variant::OBJECT, "gizmo", PROPERTY_HINT_RESOURCE_TYPE, "EditorNode3DGizmo")
-
-	BIND_VMETHOD(MethodInfo(Variant::BOOL, "_has_gizmo", PropertyInfo(Variant::OBJECT, "spatial", PROPERTY_HINT_RESOURCE_TYPE, "Node3D")));
-	BIND_VMETHOD(MethodInfo(GIZMO_REF, "_create_gizmo", PropertyInfo(Variant::OBJECT, "spatial", PROPERTY_HINT_RESOURCE_TYPE, "Node3D")));
-
-	ClassDB::bind_method(D_METHOD("create_material", "name", "color", "billboard", "on_top", "use_vertex_color"), &EditorNode3DGizmoPlugin::create_material, DEFVAL(false), DEFVAL(false), DEFVAL(false));
-	ClassDB::bind_method(D_METHOD("create_icon_material", "name", "texture", "on_top", "color"), &EditorNode3DGizmoPlugin::create_icon_material, DEFVAL(false), DEFVAL(Color(1, 1, 1, 1)));
-	ClassDB::bind_method(D_METHOD("create_handle_material", "name", "billboard", "texture"), &EditorNode3DGizmoPlugin::create_handle_material, DEFVAL(false), DEFVAL(Variant()));
-	ClassDB::bind_method(D_METHOD("add_material", "name", "material"), &EditorNode3DGizmoPlugin::add_material);
-
-	ClassDB::bind_method(D_METHOD("get_material", "name", "gizmo"), &EditorNode3DGizmoPlugin::get_material, DEFVAL(Ref<EditorNode3DGizmo>()));
-
-	BIND_VMETHOD(MethodInfo(Variant::STRING, "_get_gizmo_name"));
-	BIND_VMETHOD(MethodInfo(Variant::INT, "_get_priority"));
-	BIND_VMETHOD(MethodInfo(Variant::BOOL, "_can_be_hidden"));
-	BIND_VMETHOD(MethodInfo(Variant::BOOL, "_is_selectable_when_hidden"));
-
-	BIND_VMETHOD(MethodInfo("_redraw", GIZMO_REF));
-	BIND_VMETHOD(MethodInfo(Variant::STRING, "_get_handle_name", GIZMO_REF, PropertyInfo(Variant::INT, "index")));
-
-	MethodInfo hvget(Variant::NIL, "_get_handle_value", GIZMO_REF, PropertyInfo(Variant::INT, "index"));
-	hvget.return_val.usage |= PROPERTY_USAGE_NIL_IS_VARIANT;
-	BIND_VMETHOD(hvget);
-
-	BIND_VMETHOD(MethodInfo("_set_handle", GIZMO_REF, PropertyInfo(Variant::INT, "index"), PropertyInfo(Variant::OBJECT, "camera", PROPERTY_HINT_RESOURCE_TYPE, "Camera3D"), PropertyInfo(Variant::VECTOR2, "point")));
-	MethodInfo cm = MethodInfo("_commit_handle", GIZMO_REF, PropertyInfo(Variant::INT, "index"), PropertyInfo(Variant::NIL, "restore"), PropertyInfo(Variant::BOOL, "cancel"));
-	cm.default_arguments.push_back(false);
-	BIND_VMETHOD(cm);
-
-	BIND_VMETHOD(MethodInfo(Variant::BOOL, "_is_handle_highlighted", GIZMO_REF, PropertyInfo(Variant::INT, "index")));
-
-#undef GIZMO_REF
-}
-
-bool EditorNode3DGizmoPlugin::has_gizmo(Node3D *p_spatial) {
-	if (get_script_instance() && get_script_instance()->has_method("_has_gizmo")) {
-		return get_script_instance()->call("_has_gizmo", p_spatial);
-	}
-	return false;
-}
-
-Ref<EditorNode3DGizmo> EditorNode3DGizmoPlugin::create_gizmo(Node3D *p_spatial) {
-	if (get_script_instance() && get_script_instance()->has_method("_create_gizmo")) {
-		return get_script_instance()->call("_create_gizmo", p_spatial);
-	}
-
-	Ref<EditorNode3DGizmo> ref;
-	if (has_gizmo(p_spatial)) {
-		ref.instantiate();
-	}
-	return ref;
-}
-
-bool EditorNode3DGizmoPlugin::can_be_hidden() const {
-	if (get_script_instance() && get_script_instance()->has_method("_can_be_hidden")) {
-		return get_script_instance()->call("_can_be_hidden");
-	}
-	return true;
-}
-
-bool EditorNode3DGizmoPlugin::is_selectable_when_hidden() const {
-	if (get_script_instance() && get_script_instance()->has_method("_is_selectable_when_hidden")) {
-		return get_script_instance()->call("_is_selectable_when_hidden");
-	}
-	return false;
-}
-
-void EditorNode3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
-	if (get_script_instance() && get_script_instance()->has_method("_redraw")) {
-		Ref<EditorNode3DGizmo> ref(p_gizmo);
-		get_script_instance()->call("_redraw", ref);
-	}
-}
-
-String EditorNode3DGizmoPlugin::get_handle_name(const EditorNode3DGizmo *p_gizmo, int p_idx) const {
-	if (get_script_instance() && get_script_instance()->has_method("_get_handle_name")) {
-		return get_script_instance()->call("_get_handle_name", p_gizmo, p_idx);
-	}
-	return "";
-}
-
-Variant EditorNode3DGizmoPlugin::get_handle_value(EditorNode3DGizmo *p_gizmo, int p_idx) const {
-	if (get_script_instance() && get_script_instance()->has_method("_get_handle_value")) {
-		return get_script_instance()->call("_get_handle_value", p_gizmo, p_idx);
-	}
-	return Variant();
-}
-
-void EditorNode3DGizmoPlugin::set_handle(EditorNode3DGizmo *p_gizmo, int p_idx, Camera3D *p_camera, const Point2 &p_point) {
-	if (get_script_instance() && get_script_instance()->has_method("_set_handle")) {
-		get_script_instance()->call("_set_handle", p_gizmo, p_idx, p_camera, p_point);
-	}
-}
-
-void EditorNode3DGizmoPlugin::commit_handle(EditorNode3DGizmo *p_gizmo, int p_idx, const Variant &p_restore, bool p_cancel) {
-	if (get_script_instance() && get_script_instance()->has_method("_commit_handle")) {
-		get_script_instance()->call("_commit_handle", p_gizmo, p_idx, p_restore, p_cancel);
-	}
-}
-
-bool EditorNode3DGizmoPlugin::is_handle_highlighted(const EditorNode3DGizmo *p_gizmo, int p_idx) const {
-	if (get_script_instance() && get_script_instance()->has_method("_is_handle_highlighted")) {
-		return get_script_instance()->call("_is_handle_highlighted", p_gizmo, p_idx);
-	}
-	return false;
-}
-
-void EditorNode3DGizmoPlugin::set_state(int p_state) {
-	current_state = p_state;
-	for (int i = 0; i < current_gizmos.size(); ++i) {
-		current_gizmos[i]->set_hidden(current_state == HIDDEN);
-	}
-}
-
-int EditorNode3DGizmoPlugin::get_state() const {
-	return current_state;
-}
-
-void EditorNode3DGizmoPlugin::unregister_gizmo(EditorNode3DGizmo *p_gizmo) {
-	current_gizmos.erase(p_gizmo);
-}
-
-EditorNode3DGizmoPlugin::EditorNode3DGizmoPlugin() {
-	current_state = VISIBLE;
-}
-
-EditorNode3DGizmoPlugin::~EditorNode3DGizmoPlugin() {
-	for (int i = 0; i < current_gizmos.size(); ++i) {
-		current_gizmos[i]->set_plugin(nullptr);
-		current_gizmos[i]->get_spatial_node()->set_gizmo(nullptr);
-	}
-	if (Node3DEditor::get_singleton()) {
-		Node3DEditor::get_singleton()->update_all_gizmos();
-	}
 }

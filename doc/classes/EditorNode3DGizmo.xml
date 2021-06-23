@@ -4,7 +4,7 @@
 		Custom gizmo for editing Node3D objects.
 	</brief_description>
 	<description>
-		Custom gizmo that is used for providing custom visualization and editing (handles) for Node3D objects. See [EditorNode3DGizmoPlugin] for more information.
+		Gizmo that is used for providing custom visualization and editing (handles) for Node3D objects. Can be overridden to create custom gizmos, but for simple gizmos creating a [EditorNode3DGizmoPlugin] is usually recommended.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -12,64 +12,113 @@
 		<method name="_commit_handle" qualifiers="virtual">
 			<return type="void">
 			</return>
-			<argument index="0" name="index" type="int">
+			<argument index="0" name="group_id" type="int">
 			</argument>
-			<argument index="1" name="restore" type="Variant">
+			<argument index="1" name="id" type="int">
 			</argument>
-			<argument index="2" name="cancel" type="bool" default="false">
+			<argument index="2" name="restore" type="Variant">
+			</argument>
+			<argument index="3" name="cancel" type="bool" default="false">
 			</argument>
 			<description>
-				Commit a handle being edited (handles must have been previously added by [method add_handles]).
-				If the [code]cancel[/code] parameter is [code]true[/code], an option to restore the edited value to the original is provided.
+				Override this method to commit a handle being edited (handles must have been previously added by [method add_handle_group]). This usually means creating an [UndoRedo] action for the change, using the current handle value as "do" and the [code]restore[/code] argument as "undo".
+				If the [code]cancel[/code] argument is [code]true[/code], the [code]restore[/code] value should be directly set, without any [UndoRedo] action.
+			</description>
+		</method>
+		<method name="_commit_transform_handle" qualifiers="virtual">
+			<return type="void">
+			</return>
+			<argument index="0" name="group_id" type="int">
+			</argument>
+			<argument index="1" name="id" type="int">
+			</argument>
+			<argument index="2" name="restore" type="Transform3D">
+			</argument>
+			<argument index="3" name="cancel" type="bool" default="false">
+			</argument>
+			<description>
+				Override this method to commit a transform handle being edited (handles must have been previously added by [method add_transform_handle_group]). This usually means creating an [UndoRedo] action for the change, using the current handle value as "do" and the [code]restore[/code] argument as "undo".
+				If the [code]cancel[/code] argument is [code]true[/code], the [code]restore[/code] value should be directly set, without any [UndoRedo] action.
 			</description>
 		</method>
 		<method name="_get_handle_name" qualifiers="virtual">
 			<return type="String">
 			</return>
-			<argument index="0" name="index" type="int">
+			<argument index="0" name="group_id" type="int">
+			</argument>
+			<argument index="1" name="id" type="int">
 			</argument>
 			<description>
-				Gets the name of an edited handle (handles must have been previously added by [method add_handles]).
+				Override this method to return the name of an edited handle (handles must have been previously added by [method add_handle_group] or [method add_transform_handle_group]).
 				Handles can be named for reference to the user when editing.
 			</description>
 		</method>
 		<method name="_get_handle_value" qualifiers="virtual">
 			<return type="Variant">
 			</return>
-			<argument index="0" name="index" type="int">
+			<argument index="0" name="group_id" type="int">
+			</argument>
+			<argument index="1" name="id" type="int">
 			</argument>
 			<description>
-				Gets actual value of a handle. This value can be anything and used for eventually undoing the motion when calling [method _commit_handle].
+				Override this method to return the actual value of a handle. This value will be requested at the start of an edit and used as the [code]restore[/code] argument in [method _commit_handle].
+			</description>
+		</method>
+		<method name="_get_transform_handle_value" qualifiers="virtual">
+			<return type="Transform3D">
+			</return>
+			<argument index="0" name="group_id" type="int">
+			</argument>
+			<argument index="1" name="id" type="int">
+			</argument>
+			<description>
+				Override this method to return the actual value of a transform handle. This value will be used to update the 3D transform gizmo. It will also be requested at the start of an edit and used as the [code]restore[/code] argument in [method _commit_handle].
 			</description>
 		</method>
 		<method name="_is_handle_highlighted" qualifiers="virtual">
 			<return type="bool">
 			</return>
-			<argument index="0" name="index" type="int">
+			<argument index="0" name="group_id" type="int">
+			</argument>
+			<argument index="1" name="id" type="int">
 			</argument>
 			<description>
-				Returns [code]true[/code] if the handle at index [code]index[/code] is highlighted by being hovered with the mouse.
+				Override this method to return [code]true[/code] whenever to given handle should be highlighted in the editor.
 			</description>
 		</method>
 		<method name="_redraw" qualifiers="virtual">
 			<return type="void">
 			</return>
 			<description>
-				This function is called when the [Node3D] this gizmo refers to changes (the [method Node3D.update_gizmo] is called).
+				Override this method to add all the gizmo elements whenever a gizmo update is requested.
 			</description>
 		</method>
 		<method name="_set_handle" qualifiers="virtual">
 			<return type="void">
 			</return>
-			<argument index="0" name="index" type="int">
+			<argument index="0" name="group_id" type="int">
 			</argument>
-			<argument index="1" name="camera" type="Camera3D">
+			<argument index="1" name="id" type="int">
 			</argument>
-			<argument index="2" name="point" type="Vector2">
+			<argument index="2" name="camera" type="Camera3D">
+			</argument>
+			<argument index="3" name="point" type="Vector2">
 			</argument>
 			<description>
-				This function is used when the user drags a gizmo handle (previously added with [method add_handles]) in screen coordinates.
-				The [Camera3D] is also provided so screen coordinates can be converted to raycasts.
+				Override this method to update the node properties when the user drags a gizmo handle (previously added with [method add_handle_group]). The provided [code]point[/code] is the mouse position in screen coordinates and the [code]camera[/code] can be used to convert it to raycasts.
+			</description>
+		</method>
+		<method name="_set_transform_handle" qualifiers="virtual">
+			<return type="void">
+			</return>
+			<argument index="0" name="group_id" type="int">
+			</argument>
+			<argument index="1" name="id" type="int">
+			</argument>
+			<argument index="2" name="transform" type="Transform3D">
+			</argument>
+			<description>
+				Override this method to update the node properties when the user manipulates a transform handle (previously added with [method add_transform_handle_group]).
 			</description>
 		</method>
 		<method name="add_collision_segments">
@@ -78,7 +127,7 @@
 			<argument index="0" name="segments" type="PackedVector3Array">
 			</argument>
 			<description>
-				Adds the specified [code]segments[/code] to the gizmo's collision shape for picking. Call this function during [method _redraw].
+				Adds the specified [code]segments[/code] to the gizmo's collision shape for picking. Call this method during [method _redraw].
 			</description>
 		</method>
 		<method name="add_collision_triangles">
@@ -87,7 +136,30 @@
 			<argument index="0" name="triangles" type="TriangleMesh">
 			</argument>
 			<description>
-				Adds collision triangles to the gizmo for picking. A [TriangleMesh] can be generated from a regular [Mesh] too. Call this function during [method _redraw].
+				Adds collision triangles to the gizmo for picking. A [TriangleMesh] can be generated from a regular [Mesh] too. Call this method during [method _redraw].
+			</description>
+		</method>
+		<method name="add_handle_group">
+			<return type="void">
+			</return>
+			<argument index="0" name="group_id" type="int">
+			</argument>
+			<argument index="1" name="material" type="Material">
+			</argument>
+			<argument index="2" name="positions" type="PackedVector3Array">
+			</argument>
+			<argument index="3" name="ids" type="PackedInt32Array" default="PackedInt32Array()">
+			</argument>
+			<argument index="4" name="billboard" type="bool" default="false">
+			</argument>
+			<argument index="5" name="shift_priority" type="bool" default="false">
+			</argument>
+			<description>
+				Adds a group of handles to this gizmo. These handles are displayed in the 3D editor and can be used to edit the node the gizmo is attached to, by overriding the handle-related methods in this class.
+				Handle positions are defined in local space using the [code]positions[/code] argument, if [code]billboard[/code] is [code]true[/code] the local Z axis will always face the camera.
+				The handle group is identified by the provided [code]group_id[/code] and each individual handle can have it own ID using the [code]ids[/code] argument. If [code]ids[/code] is empty, the array index will be used as the handle identifier.
+				If [code]shift_priority[/code] is [code]true[/code] this handle group will have selection priority over others when the user is holding shift, this is useful when multiple handles share the same position.
+				Call this method during [method _redraw].
 			</description>
 		</method>
 		<method name="add_handles">
@@ -99,11 +171,12 @@
 			</argument>
 			<argument index="2" name="billboard" type="bool" default="false">
 			</argument>
-			<argument index="3" name="secondary" type="bool" default="false">
+			<argument index="3" name="shift_priority" type="bool" default="false">
 			</argument>
 			<description>
-				Adds a list of handles (points) which can be used to deform the object being edited.
-				There are virtual functions which will be called upon editing of these handles. Call this function during [method _redraw].
+				This method was left for compatibility with the old handle system. Use [method add_handle_group] instead.
+				Adds a list of handles (points) which can be used to modify the object being edited.
+				There are virtual methods which will be called upon editing of these handles. Call this method during [method _redraw].
 			</description>
 		</method>
 		<method name="add_lines">
@@ -118,7 +191,7 @@
 			<argument index="3" name="modulate" type="Color" default="Color(1, 1, 1, 1)">
 			</argument>
 			<description>
-				Adds lines to the gizmo (as sets of 2 points), with a given material. The lines are used for visualizing the gizmo. Call this function during [method _redraw].
+				Adds lines to the gizmo (as sets of 2 points), with a given material. The lines are used for visualizing the gizmo. Call this method during [method _redraw].
 			</description>
 		</method>
 		<method name="add_mesh">
@@ -126,14 +199,32 @@
 			</return>
 			<argument index="0" name="mesh" type="ArrayMesh">
 			</argument>
-			<argument index="1" name="billboard" type="bool" default="false">
+			<argument index="1" name="material" type="Material" default="null">
 			</argument>
 			<argument index="2" name="skeleton" type="SkinReference" default="null">
 			</argument>
-			<argument index="3" name="material" type="Material" default="null">
+			<description>
+			</description>
+		</method>
+		<method name="add_transform_handle_group">
+			<return type="void">
+			</return>
+			<argument index="0" name="group_id" type="int">
+			</argument>
+			<argument index="1" name="material" type="Material">
+			</argument>
+			<argument index="2" name="transforms" type="Array">
+			</argument>
+			<argument index="3" name="ids" type="PackedInt32Array" default="PackedInt32Array()">
+			</argument>
+			<argument index="4" name="shift_priority" type="bool" default="false">
 			</argument>
 			<description>
-				Adds a mesh to the gizmo with the specified [code]billboard[/code] state, [code]skeleton[/code] and [code]material[/code]. If [code]billboard[/code] is [code]true[/code], the mesh will rotate to always face the camera. Call this function during [method _redraw].
+				Adds a group of transform handles to this gizmo. These handles are displayed in the 3D editor and can be selected by the user to then modify them using the 3D transform tools.
+				Handle transforms are defined in local space using the [code]transforms[/code] argument.
+				The transform handle group is identified by the provided [code]group_id[/code] and each individual handle can have it own ID using the [code]ids[/code] argument. If [code]ids[/code] is empty, the array index will be used as the handle identifier.
+				If [code]shift_priority[/code] is [code]true[/code] this handle group will have selection priority over others when the user is holding shift, this is useful when multiple handles share the same position.
+				Call this method during [method _redraw].
 			</description>
 		</method>
 		<method name="add_unscaled_billboard">
@@ -146,7 +237,7 @@
 			<argument index="2" name="modulate" type="Color" default="Color(1, 1, 1, 1)">
 			</argument>
 			<description>
-				Adds an unscaled billboard for visualization. Call this function during [method _redraw].
+				Adds an unscaled billboard for visualization and selection. Call this method during [method _redraw].
 			</description>
 		</method>
 		<method name="clear">

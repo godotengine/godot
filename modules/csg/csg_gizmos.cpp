@@ -29,6 +29,8 @@
 /*************************************************************************/
 
 #include "csg_gizmos.h"
+#include "editor/plugins/node_3d_editor_plugin.h"
+#include "scene/3d/camera_3d.h"
 
 ///////////
 
@@ -48,7 +50,7 @@ CSGShape3DGizmoPlugin::CSGShape3DGizmoPlugin() {
 	create_handle_material("handles");
 }
 
-String CSGShape3DGizmoPlugin::get_handle_name(const EditorNode3DGizmo *p_gizmo, int p_idx) const {
+String CSGShape3DGizmoPlugin::get_handle_name(const EditorNode3DGizmo *p_gizmo, int p_group_id, int p_idx) const {
 	CSGShape3D *cs = Object::cast_to<CSGShape3D>(p_gizmo->get_spatial_node());
 
 	if (Object::cast_to<CSGSphere3D>(cs)) {
@@ -70,7 +72,7 @@ String CSGShape3DGizmoPlugin::get_handle_name(const EditorNode3DGizmo *p_gizmo, 
 	return "";
 }
 
-Variant CSGShape3DGizmoPlugin::get_handle_value(EditorNode3DGizmo *p_gizmo, int p_idx) const {
+Variant CSGShape3DGizmoPlugin::get_handle_value(const EditorNode3DGizmo *p_gizmo, int p_group_id, int p_idx) const {
 	CSGShape3D *cs = Object::cast_to<CSGShape3D>(p_gizmo->get_spatial_node());
 
 	if (Object::cast_to<CSGSphere3D>(cs)) {
@@ -96,7 +98,7 @@ Variant CSGShape3DGizmoPlugin::get_handle_value(EditorNode3DGizmo *p_gizmo, int 
 	return Variant();
 }
 
-void CSGShape3DGizmoPlugin::set_handle(EditorNode3DGizmo *p_gizmo, int p_idx, Camera3D *p_camera, const Point2 &p_point) {
+void CSGShape3DGizmoPlugin::set_handle(const EditorNode3DGizmo *p_gizmo, int p_group_id, int p_idx, Camera3D *p_camera, const Point2 &p_point) const {
 	CSGShape3D *cs = Object::cast_to<CSGShape3D>(p_gizmo->get_spatial_node());
 
 	Transform3D gt = cs->get_global_transform();
@@ -193,7 +195,7 @@ void CSGShape3DGizmoPlugin::set_handle(EditorNode3DGizmo *p_gizmo, int p_idx, Ca
 	}
 }
 
-void CSGShape3DGizmoPlugin::commit_handle(EditorNode3DGizmo *p_gizmo, int p_idx, const Variant &p_restore, bool p_cancel) {
+void CSGShape3DGizmoPlugin::commit_handle(const EditorNode3DGizmo *p_gizmo, int p_group_id, int p_idx, const Variant &p_restore, bool p_cancel) const {
 	CSGShape3D *cs = Object::cast_to<CSGShape3D>(p_gizmo->get_spatial_node());
 
 	if (Object::cast_to<CSGSphere3D>(cs)) {
@@ -356,7 +358,7 @@ void CSGShape3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 				break;
 		}
 
-		p_gizmo->add_mesh(mesh, false, Ref<SkinReference>(), solid_material);
+		p_gizmo->add_mesh(mesh, solid_material);
 	}
 
 	if (Object::cast_to<CSGSphere3D>(cs)) {
