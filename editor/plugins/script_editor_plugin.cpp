@@ -760,6 +760,7 @@ void ScriptEditor::_close_tab(int p_idx, bool p_save, bool p_history_back) {
 	_update_members_overview_visibility();
 	_update_help_overview_visibility();
 	_save_layout();
+	_update_find_replace_bar();
 }
 
 void ScriptEditor::_close_current_tab(bool p_save) {
@@ -829,6 +830,7 @@ void ScriptEditor::_close_all_tabs() {
 
 		_close_current_tab(false);
 	}
+	_update_find_replace_bar();
 }
 
 void ScriptEditor::_ask_close_current_unsaved_tab(ScriptEditorBase *current) {
@@ -1640,15 +1642,13 @@ void ScriptEditor::ensure_select_current() {
 		ScriptEditorBase *se = _get_current_editor();
 		if (se) {
 			se->enable_editor();
-			se->set_find_replace_bar(find_replace_bar);
 
 			if (!grab_focus_block && is_visible_in_tree()) {
 				se->ensure_focus();
 			}
-		} else {
-			find_replace_bar->hide();
 		}
 	}
+	_update_find_replace_bar();
 
 	_update_selected_editor_menu();
 }
@@ -2517,6 +2517,16 @@ void ScriptEditor::_file_removed(const String &p_removed_file) {
 			// The script is deleted with no undo, so just close the tab.
 			_close_tab(i, false, false);
 		}
+	}
+}
+
+void ScriptEditor::_update_find_replace_bar() {
+	ScriptEditorBase *se = _get_current_editor();
+	if (se) {
+		se->set_find_replace_bar(find_replace_bar);
+	} else {
+		find_replace_bar->set_text_edit(nullptr);
+		find_replace_bar->hide();
 	}
 }
 
