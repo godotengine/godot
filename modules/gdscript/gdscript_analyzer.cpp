@@ -2728,6 +2728,9 @@ void GDScriptAnalyzer::reduce_self(GDScriptParser::SelfNode *p_self) {
 }
 
 void GDScriptAnalyzer::reduce_subscript(GDScriptParser::SubscriptNode *p_subscript) {
+	if (p_subscript->base == nullptr) {
+		return;
+	}
 	if (p_subscript->base->type == GDScriptParser::Node::IDENTIFIER) {
 		reduce_identifier(static_cast<GDScriptParser::IdentifierNode *>(p_subscript->base), true);
 	} else {
