@@ -135,8 +135,11 @@ public:
 		// Wrong protocol
 		ERR_FAIL_COND_MSG(req[0] != "GET" || req[2] != "HTTP/1.1", "Invalid method or HTTP version.");
 
-		const String req_file = req[1].get_file();
-		const String req_ext = req[1].get_extension();
+		const int query_index = req[1].find_char('?');
+		const String path = (query_index == -1) ? req[1] : req[1].substr(0, query_index);
+
+		const String req_file = path.get_file();
+		const String req_ext = path.get_extension();
 		const String cache_path = EditorPaths::get_singleton()->get_cache_dir().plus_file("web");
 		const String filepath = cache_path.plus_file(req_file);
 
