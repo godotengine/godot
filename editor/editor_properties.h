@@ -91,7 +91,7 @@ public:
 
 class EditorPropertyTextEnum : public EditorProperty {
 	GDCLASS(EditorPropertyTextEnum, EditorProperty);
-	OptionButton *options;
+	DropDownList *options;
 
 	void _option_selected(int p_which);
 	bool string_name;
@@ -200,7 +200,7 @@ public:
 
 class EditorPropertyEnum : public EditorProperty {
 	GDCLASS(EditorPropertyEnum, EditorProperty);
-	OptionButton *options;
+	DropDownList *options;
 
 	void _option_selected(int p_which);
 
@@ -210,7 +210,7 @@ protected:
 public:
 	void setup(const Vector<String> &p_options);
 	virtual void update_property() override;
-	void set_option_button_clip(bool p_enable);
+	void set_drop_down_list_clip(bool p_enable);
 	EditorPropertyEnum();
 };
 

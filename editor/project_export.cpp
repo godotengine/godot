@@ -1078,7 +1078,7 @@ ProjectExportDialog::ProjectExportDialog() {
 	sections->add_child(resources_vb);
 	resources_vb->set_name(TTR("Resources"));
 
-	export_filter = memnew(OptionButton);
+	export_filter = memnew(DropDownList);
 	export_filter->add_item(TTR("Export all resources in the project"));
 	export_filter->add_item(TTR("Export selected scenes (and dependencies)"));
 	export_filter->add_item(TTR("Export selected resources (and dependencies)"));
@@ -1109,7 +1109,7 @@ ProjectExportDialog::ProjectExportDialog() {
 			exclude_filters);
 	exclude_filters->connect("text_changed", callable_mp(this, &ProjectExportDialog::_filter_changed));
 
-	script_mode = memnew(OptionButton);
+	script_mode = memnew(DropDownList);
 	resources_vb->add_margin_child(TTR("Script Export Mode:"), script_mode);
 	script_mode->add_item(TTR("Text"), (int)EditorExportPreset::MODE_SCRIPT_TEXT);
 	script_mode->add_item(TTR("Compiled"), (int)EditorExportPreset::MODE_SCRIPT_COMPILED);

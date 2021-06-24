@@ -568,7 +568,7 @@ ImportDock::ImportDock() {
 	add_child(imported);
 	HBoxContainer *hb = memnew(HBoxContainer);
 	add_margin_child(TTR("Import As:"), hb);
-	import_as = memnew(OptionButton);
+	import_as = memnew(DropDownList);
 	import_as->set_disabled(true);
 	import_as->connect("item_selected", callable_mp(this, &ImportDock::_importer_selected));
 	hb->add_child(import_as);

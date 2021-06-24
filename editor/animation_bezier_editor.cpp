@@ -1176,7 +1176,7 @@ AnimationBezierTrackEdit::AnimationBezierTrackEdit() {
 	panning_timeline = false;
 	set_clip_contents(true);
 	handle_mode = HANDLE_MODE_FREE;
-	handle_mode_option = memnew(OptionButton);
+	handle_mode_option = memnew(DropDownList);
 	add_child(handle_mode_option);
 
 	menu = memnew(PopupMenu);

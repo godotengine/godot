@@ -34,9 +34,9 @@
 #include "core/io/dir_access.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/dialogs.h"
+#include "scene/gui/drop_down_list.h"
 #include "scene/gui/item_list.h"
 #include "scene/gui/line_edit.h"
-#include "scene/gui/option_button.h"
 #include "scene/gui/separator.h"
 #include "scene/gui/split_container.h"
 #include "scene/gui/texture_rect.h"
@@ -100,7 +100,7 @@ private:
 
 	HBoxContainer *drives_container;
 	HBoxContainer *shortcuts_container;
-	OptionButton *drives;
+	DropDownList *drives;
 	ItemList *item_list;
 	PopupMenu *item_menu;
 	TextureRect *preview;
@@ -108,7 +108,7 @@ private:
 	HSplitContainer *list_hb;
 	HBoxContainer *file_box;
 	LineEdit *file;
-	OptionButton *filter;
+	DropDownList *filter;
 	AcceptDialog *mkdirerr;
 	DirAccess *dir_access;
 	ConfirmationDialog *confirm_save;

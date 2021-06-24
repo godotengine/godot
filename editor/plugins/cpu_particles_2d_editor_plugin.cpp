@@ -270,7 +270,7 @@ CPUParticles2DEditorPlugin::CPUParticles2DEditorPlugin(EditorNode *p_node) {
 	emission_mask->set_title(TTR("Load Emission Mask"));
 	VBoxContainer *emvb = memnew(VBoxContainer);
 	emission_mask->add_child(emvb);
-	emission_mask_mode = memnew(OptionButton);
+	emission_mask_mode = memnew(DropDownList);
 	emvb->add_margin_child(TTR("Emission Mask"), emission_mask_mode);
 	emission_mask_mode->add_item(TTR("Solid Pixels"), EMISSION_MODE_SOLID);
 	emission_mask_mode->add_item(TTR("Border Pixels"), EMISSION_MODE_BORDER);

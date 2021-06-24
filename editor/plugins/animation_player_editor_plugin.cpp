@@ -1590,7 +1590,7 @@ AnimationPlayerEditor::AnimationPlayerEditor(EditorNode *p_editor, AnimationPlay
 	tool_anim->get_popup()->add_shortcut(ED_SHORTCUT("animation_player_editor/remove_animation", TTR("Remove")), TOOL_REMOVE_ANIM);
 	hb->add_child(tool_anim);
 
-	animation = memnew(OptionButton);
+	animation = memnew(DropDownList);
 	hb->add_child(animation);
 	animation->set_h_size_flags(SIZE_EXPAND_FILL);
 	animation->set_tooltip(TTR("Display list of animations in player."));
@@ -1675,7 +1675,7 @@ AnimationPlayerEditor::AnimationPlayerEditor(EditorNode *p_editor, AnimationPlay
 	blend_editor.tree = memnew(Tree);
 	blend_editor.tree->set_columns(2);
 	blend_vb->add_margin_child(TTR("Blend Times:"), blend_editor.tree, true);
-	blend_editor.next = memnew(OptionButton);
+	blend_editor.next = memnew(DropDownList);
 	blend_vb->add_margin_child(TTR("Next (Auto Queue):"), blend_editor.next);
 	blend_editor.dialog->set_title(TTR("Cross-Animation Blend Times"));
 	updating_blends = false;

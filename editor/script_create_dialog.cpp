@@ -802,7 +802,7 @@ ScriptCreateDialog::ScriptCreateDialog() {
 
 	/* Language */
 
-	language_menu = memnew(OptionButton);
+	language_menu = memnew(DropDownList);
 	language_menu->set_custom_minimum_size(Size2(250, 0) * EDSCALE);
 	language_menu->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	gc->add_child(memnew(Label(TTR("Language:"))));
@@ -854,7 +854,7 @@ ScriptCreateDialog::ScriptCreateDialog() {
 
 	/* Templates */
 
-	template_menu = memnew(OptionButton);
+	template_menu = memnew(DropDownList);
 	gc->add_child(memnew(Label(TTR("Template:"))));
 	gc->add_child(template_menu);
 	template_menu->connect("item_selected", callable_mp(this, &ScriptCreateDialog::_template_changed));

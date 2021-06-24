@@ -34,8 +34,8 @@
 #include "scene/gui/box_container.h"
 #include "scene/gui/button.h"
 #include "scene/gui/check_box.h"
+#include "scene/gui/drop_down_list.h"
 #include "scene/gui/label.h"
-#include "scene/gui/option_button.h"
 #include "scene/gui/spin_box.h"
 #include "scene/gui/split_container.h"
 #include "scene/gui/texture_rect.h"
@@ -78,7 +78,7 @@ private:
 	CheckBox *frame_relative;
 	CheckBox *linked;
 
-	OptionButton *display_mode;
+	DropDownList *display_mode;
 
 	SpinBox *cursor_metric_edit;
 

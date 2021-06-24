@@ -622,28 +622,28 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_color("icon_hover_color", "Button", icon_hover_color);
 	theme->set_color("icon_pressed_color", "Button", icon_pressed_color);
 
-	// OptionButton
-	theme->set_stylebox("focus", "OptionButton", style_widget_focus);
+	// DropDownList
+	theme->set_stylebox("focus", "DropDownList", style_widget_focus);
 
-	theme->set_stylebox("normal", "OptionButton", style_widget);
-	theme->set_stylebox("hover", "OptionButton", style_widget_hover);
-	theme->set_stylebox("pressed", "OptionButton", style_widget_pressed);
-	theme->set_stylebox("disabled", "OptionButton", style_widget_disabled);
+	theme->set_stylebox("normal", "DropDownList", style_widget);
+	theme->set_stylebox("hover", "DropDownList", style_widget_hover);
+	theme->set_stylebox("pressed", "DropDownList", style_widget_pressed);
+	theme->set_stylebox("disabled", "DropDownList", style_widget_disabled);
 
-	theme->set_stylebox("normal_mirrored", "OptionButton", style_widget);
-	theme->set_stylebox("hover_mirrored", "OptionButton", style_widget_hover);
-	theme->set_stylebox("pressed_mirrored", "OptionButton", style_widget_pressed);
-	theme->set_stylebox("disabled_mirrored", "OptionButton", style_widget_disabled);
+	theme->set_stylebox("normal_mirrored", "DropDownList", style_widget);
+	theme->set_stylebox("hover_mirrored", "DropDownList", style_widget_hover);
+	theme->set_stylebox("pressed_mirrored", "DropDownList", style_widget_pressed);
+	theme->set_stylebox("disabled_mirrored", "DropDownList", style_widget_disabled);
 
-	theme->set_color("font_color", "OptionButton", font_color);
-	theme->set_color("font_hover_color", "OptionButton", font_hover_color);
-	theme->set_color("font_pressed_color", "OptionButton", accent_color);
-	theme->set_color("font_disabled_color", "OptionButton", font_disabled_color);
-	theme->set_color("icon_hover_color", "OptionButton", icon_hover_color);
-	theme->set_icon("arrow", "OptionButton", theme->get_icon("GuiOptionArrow", "EditorIcons"));
-	theme->set_constant("arrow_margin", "OptionButton", widget_default_margin.x - 2 * EDSCALE);
-	theme->set_constant("modulate_arrow", "OptionButton", true);
-	theme->set_constant("hseparation", "OptionButton", 4 * EDSCALE);
+	theme->set_color("font_color", "DropDownList", font_color);
+	theme->set_color("font_hover_color", "DropDownList", font_hover_color);
+	theme->set_color("font_pressed_color", "DropDownList", accent_color);
+	theme->set_color("font_disabled_color", "DropDownList", font_disabled_color);
+	theme->set_color("icon_hover_color", "DropDownList", icon_hover_color);
+	theme->set_icon("arrow", "DropDownList", theme->get_icon("GuiOptionArrow", "EditorIcons"));
+	theme->set_constant("arrow_margin", "DropDownList", widget_default_margin.x - 2 * EDSCALE);
+	theme->set_constant("modulate_arrow", "DropDownList", true);
+	theme->set_constant("hseparation", "DropDownList", 4 * EDSCALE);
 
 	// CheckButton
 	theme->set_stylebox("normal", "CheckButton", style_menu);

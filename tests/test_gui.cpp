@@ -38,10 +38,10 @@
 #include "scene/2d/sprite_2d.h"
 #include "scene/gui/button.h"
 #include "scene/gui/control.h"
+#include "scene/gui/drop_down_list.h"
 #include "scene/gui/label.h"
 #include "scene/gui/line_edit.h"
 #include "scene/gui/menu_button.h"
-#include "scene/gui/option_button.h"
 #include "scene/gui/panel.h"
 #include "scene/gui/popup_menu.h"
 #include "scene/gui/progress_bar.h"
@@ -185,7 +185,7 @@ public:
 		popup->set_item_checked(6, true);
 		popup->add_radio_check_item("Option B");
 
-		OptionButton *options = memnew(OptionButton);
+		DropDownList *options = memnew(DropDownList);
 
 		options->add_item("Hello, testing");
 		options->add_item("My Dearest");

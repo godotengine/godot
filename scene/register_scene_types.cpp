@@ -87,6 +87,7 @@
 #include "scene/gui/color_rect.h"
 #include "scene/gui/control.h"
 #include "scene/gui/dialogs.h"
+#include "scene/gui/drop_down_list.h"
 #include "scene/gui/file_dialog.h"
 #include "scene/gui/graph_edit.h"
 #include "scene/gui/graph_node.h"
@@ -98,7 +99,6 @@
 #include "scene/gui/margin_container.h"
 #include "scene/gui/menu_button.h"
 #include "scene/gui/nine_patch_rect.h"
-#include "scene/gui/option_button.h"
 #include "scene/gui/panel.h"
 #include "scene/gui/panel_container.h"
 #include "scene/gui/popup_menu.h"
@@ -375,7 +375,7 @@ void register_scene_types() {
 	ClassDB::register_class<CodeHighlighter>();
 
 	ClassDB::register_virtual_class<TreeItem>();
-	ClassDB::register_class<OptionButton>();
+	ClassDB::register_class<DropDownList>();
 	ClassDB::register_class<SpinBox>();
 	ClassDB::register_class<ColorPicker>();
 	ClassDB::register_class<ColorPickerButton>();

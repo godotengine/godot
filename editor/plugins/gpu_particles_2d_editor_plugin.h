@@ -69,7 +69,7 @@ class GPUParticles2DEditorPlugin : public EditorPlugin {
 	SpinBox *generate_seconds;
 
 	ConfirmationDialog *emission_mask;
-	OptionButton *emission_mask_mode;
+	DropDownList *emission_mask_mode;
 	CheckBox *emission_colors;
 
 	String source_emission_file;

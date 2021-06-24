@@ -49,7 +49,7 @@ protected:
 
 	ConfirmationDialog *emission_dialog;
 	SpinBox *emission_amount;
-	OptionButton *emission_fill;
+	DropDownList *emission_fill;
 
 	Vector<Face3> geometry;
 

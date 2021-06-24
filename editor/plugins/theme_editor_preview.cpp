@@ -288,13 +288,13 @@ DefaultThemeEditorPreview::DefaultThemeEditorPreview() {
 	test_submenu->add_item(TTR("Subitem 2"));
 	first_vb->add_child(test_menu_button);
 
-	OptionButton *test_option_button = memnew(OptionButton);
-	test_option_button->add_item("OptionButton");
-	test_option_button->add_separator();
-	test_option_button->add_item(TTR("Has"));
-	test_option_button->add_item(TTR("Many"));
-	test_option_button->add_item(TTR("Options"));
-	first_vb->add_child(test_option_button);
+	DropDownList *test_drop_down_list = memnew(DropDownList);
+	test_drop_down_list->add_item("DropDownList");
+	test_drop_down_list->add_separator();
+	test_drop_down_list->add_item(TTR("Has"));
+	test_drop_down_list->add_item(TTR("Many"));
+	test_drop_down_list->add_item(TTR("Options"));
+	first_vb->add_child(test_drop_down_list);
 	first_vb->add_child(memnew(ColorPickerButton));
 
 	VBoxContainer *second_vb = memnew(VBoxContainer);

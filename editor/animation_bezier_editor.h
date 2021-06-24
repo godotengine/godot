@@ -49,7 +49,7 @@ class AnimationBezierTrackEdit : public Control {
 	};
 
 	HandleMode handle_mode;
-	OptionButton *handle_mode_option;
+	DropDownList *handle_mode_option;
 
 	AnimationTimelineEdit *timeline;
 	UndoRedo *undo_redo;

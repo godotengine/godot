@@ -131,33 +131,33 @@ void ItemListPlugin::_get_property_list(List<PropertyInfo> *p_list) const {
 ///////////////////////// PLUGINS /////////////////////////////
 ///////////////////////////////////////////////////////////////
 
-void ItemListOptionButtonPlugin::set_object(Object *p_object) {
-	ob = Object::cast_to<OptionButton>(p_object);
+void ItemListDropDownListPlugin::set_object(Object *p_object) {
+	ob = Object::cast_to<DropDownList>(p_object);
 }
 
-bool ItemListOptionButtonPlugin::handles(Object *p_object) const {
-	return p_object->is_class("OptionButton");
+bool ItemListDropDownListPlugin::handles(Object *p_object) const {
+	return p_object->is_class("DropDownList");
 }
 
-int ItemListOptionButtonPlugin::get_flags() const {
+int ItemListDropDownListPlugin::get_flags() const {
 	return FLAG_ICON | FLAG_ID | FLAG_ENABLE;
 }
 
-void ItemListOptionButtonPlugin::add_item() {
+void ItemListDropDownListPlugin::add_item() {
 	ob->add_item(vformat(TTR("Item %d"), ob->get_item_count()));
 	notify_property_list_changed();
 }
 
-int ItemListOptionButtonPlugin::get_item_count() const {
+int ItemListDropDownListPlugin::get_item_count() const {
 	return ob->get_item_count();
 }
 
-void ItemListOptionButtonPlugin::erase(int p_idx) {
+void ItemListDropDownListPlugin::erase(int p_idx) {
 	ob->remove_item(p_idx);
 	notify_property_list_changed();
 }
 
-ItemListOptionButtonPlugin::ItemListOptionButtonPlugin() {
+ItemListDropDownListPlugin::ItemListDropDownListPlugin() {
 	ob = nullptr;
 }
 
@@ -389,7 +389,7 @@ ItemListEditorPlugin::ItemListEditorPlugin(EditorNode *p_node) {
 	CanvasItemEditor::get_singleton()->add_control_to_menu_panel(item_list_editor);
 
 	item_list_editor->hide();
-	item_list_editor->add_plugin(memnew(ItemListOptionButtonPlugin));
+	item_list_editor->add_plugin(memnew(ItemListDropDownListPlugin));
 	item_list_editor->add_plugin(memnew(ItemListPopupMenuPlugin));
 	item_list_editor->add_plugin(memnew(ItemListItemListPlugin));
 }

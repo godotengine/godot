@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  option_button.h                                                      */
+/*  drop_down_list.h                                                     */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,14 +28,14 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef OPTION_BUTTON_H
-#define OPTION_BUTTON_H
+#ifndef DROP_DOWN_LIST_H
+#define DROP_DOWN_LIST_H
 
 #include "scene/gui/button.h"
 #include "scene/gui/popup_menu.h"
 
-class OptionButton : public Button {
-	GDCLASS(OptionButton, Button);
+class DropDownList : public Button {
+	GDCLASS(DropDownList, Button);
 
 	PopupMenu *popup;
 	int current = -1;
@@ -89,8 +89,8 @@ public:
 
 	virtual void get_translatable_strings(List<String> *p_strings) const override;
 
-	OptionButton();
-	~OptionButton();
+	DropDownList();
+	~DropDownList();
 };
 
 #endif

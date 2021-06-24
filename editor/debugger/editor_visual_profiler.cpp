@@ -733,7 +733,7 @@ EditorVisualProfiler::EditorVisualProfiler() {
 
 	hb->add_child(memnew(Label(TTR("Measure:"))));
 
-	display_mode = memnew(OptionButton);
+	display_mode = memnew(DropDownList);
 	display_mode->add_item(TTR("Frame Time (msec)"));
 	display_mode->add_item(TTR("Frame %"));
 	display_mode->connect("item_selected", callable_mp(this, &EditorVisualProfiler::_combo_changed));

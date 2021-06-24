@@ -237,7 +237,7 @@ PluginConfigDialog::PluginConfigDialog() {
 	script_option_lb->set_text(TTR("Language:"));
 	grid->add_child(script_option_lb);
 
-	script_option_edit = memnew(OptionButton);
+	script_option_edit = memnew(DropDownList);
 	int default_lang = 0;
 	for (int i = 0; i < ScriptServer::get_language_count(); i++) {
 		ScriptLanguage *lang = ScriptServer::get_language(i);

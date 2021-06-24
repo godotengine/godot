@@ -431,7 +431,7 @@ ConnectDialog::ConnectDialog() {
 
 	HBoxContainer *add_bind_hb = memnew(HBoxContainer);
 
-	type_list = memnew(OptionButton);
+	type_list = memnew(DropDownList);
 	type_list->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	add_bind_hb->add_child(type_list);
 	type_list->add_item("bool", Variant::BOOL);

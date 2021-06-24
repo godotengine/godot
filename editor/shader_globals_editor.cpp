@@ -458,7 +458,7 @@ ShaderGlobalsEditor::ShaderGlobalsEditor() {
 	add_menu_hb->add_child(variable_name);
 
 	add_menu_hb->add_child(memnew(Label(TTR("Type:"))));
-	variable_type = memnew(OptionButton);
+	variable_type = memnew(DropDownList);
 	variable_type->set_h_size_flags(SIZE_EXPAND_FILL);
 	add_menu_hb->add_child(variable_type);
 

@@ -48,7 +48,7 @@ class ShaderGlobalsEditor : public VBoxContainer {
 	EditorInspector *inspector;
 
 	LineEdit *variable_name;
-	OptionButton *variable_type;
+	DropDownList *variable_type;
 	Button *variable_add;
 
 	void _variable_added();

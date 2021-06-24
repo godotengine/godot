@@ -873,7 +873,7 @@ ExportTemplateManager::ExportTemplateManager() {
 	mirrors_label->set_text(TTR("Download from:"));
 	download_install_hb->add_child(mirrors_label);
 
-	mirrors_list = memnew(OptionButton);
+	mirrors_list = memnew(DropDownList);
 	mirrors_list->set_custom_minimum_size(Size2(280, 0) * EDSCALE);
 	download_install_hb->add_child(mirrors_list);
 	mirrors_list->add_item(TTR("Best available mirror"), 0);

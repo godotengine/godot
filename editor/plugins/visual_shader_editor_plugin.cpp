@@ -257,8 +257,8 @@ void VisualShaderGraphPlugin::register_default_input_button(int p_node_id, int p
 	links[p_node_id].input_ports.insert(p_port_id, { p_button });
 }
 
-void VisualShaderGraphPlugin::register_constant_option_btn(int p_node_id, OptionButton *p_button) {
-	links[p_node_id].const_op = p_button;
+void VisualShaderGraphPlugin::register_constant_drop_down_list(int p_node_id, DropDownList *p_drop_down_list) {
+	links[p_node_id].const_op = p_drop_down_list;
 }
 
 void VisualShaderGraphPlugin::register_expression_edit(int p_node_id, CodeEdit *p_expression_edit) {
@@ -477,15 +477,15 @@ void VisualShaderGraphPlugin::add_node(VisualShader::Type p_type, int p_id) {
 		HBoxContainer *hbox = memnew(HBoxContainer);
 
 		hbox->add_child(custom_editor);
-		OptionButton *btn = memnew(OptionButton);
-		hbox->add_child(btn);
-		register_constant_option_btn(p_id, btn);
-		btn->add_item("");
+		DropDownList *ddl = memnew(DropDownList);
+		hbox->add_child(ddl);
+		register_constant_drop_down_list(p_id, ddl);
+		ddl->add_item("");
 		for (int i = 0; i < MAX_FLOAT_CONST_DEFS; i++) {
-			btn->add_item(float_constant_defs[i].name);
+			ddl->add_item(float_constant_defs[i].name);
 		}
-		btn->select(get_constant_index(float_const->get_constant()));
-		btn->connect("item_selected", callable_mp(VisualShaderEditor::get_singleton(), &VisualShaderEditor::_float_constant_selected), varray(p_id));
+		ddl->select(get_constant_index(float_const->get_constant()));
+		ddl->connect("item_selected", callable_mp(VisualShaderEditor::get_singleton(), &VisualShaderEditor::_float_constant_selected), varray(p_id));
 		custom_editor = hbox;
 	}
 
@@ -649,7 +649,7 @@ void VisualShaderGraphPlugin::add_node(VisualShader::Type p_type, int p_id) {
 		} else {
 			if (valid_left) {
 				if (is_group) {
-					OptionButton *type_box = memnew(OptionButton);
+					DropDownList *type_box = memnew(DropDownList);
 					hb->add_child(type_box);
 					type_box->add_item(TTR("Float"));
 					type_box->add_item(TTR("Int"));
@@ -710,7 +710,7 @@ void VisualShaderGraphPlugin::add_node(VisualShader::Type p_type, int p_id) {
 					name_box->connect("text_submitted", callable_mp(VisualShaderEditor::get_singleton(), &VisualShaderEditor::_change_output_port_name), varray(name_box, p_id, i), CONNECT_DEFERRED);
 					name_box->connect("focus_exited", callable_mp(VisualShaderEditor::get_singleton(), &VisualShaderEditor::_port_name_focus_out), varray(name_box, p_id, i, true), CONNECT_DEFERRED);
 
-					OptionButton *type_box = memnew(OptionButton);
+					DropDownList *type_box = memnew(DropDownList);
 					hb->add_child(type_box);
 					type_box->add_item(TTR("Float"));
 					type_box->add_item(TTR("Int"));
@@ -3775,21 +3775,21 @@ VisualShaderEditor::VisualShaderEditor() {
 	custom_mode_box->set_visible(false);
 	custom_mode_box->connect("toggled", callable_mp(this, &VisualShaderEditor::_custom_mode_toggled));
 
-	edit_type_standard = memnew(OptionButton);
+	edit_type_standard = memnew(DropDownList);
 	edit_type_standard->add_item(TTR("Vertex"));
 	edit_type_standard->add_item(TTR("Fragment"));
 	edit_type_standard->add_item(TTR("Light"));
 	edit_type_standard->select(1);
 	edit_type_standard->connect("item_selected", callable_mp(this, &VisualShaderEditor::_mode_selected));
 
-	edit_type_particles = memnew(OptionButton);
+	edit_type_particles = memnew(DropDownList);
 	edit_type_particles->add_item(TTR("Start"));
 	edit_type_particles->add_item(TTR("Process"));
 	edit_type_particles->add_item(TTR("Collide"));
 	edit_type_particles->select(0);
 	edit_type_particles->connect("item_selected", callable_mp(this, &VisualShaderEditor::_mode_selected));
 
-	edit_type_sky = memnew(OptionButton);
+	edit_type_sky = memnew(DropDownList);
 	edit_type_sky->add_item(TTR("Sky"));
 	edit_type_sky->select(0);
 	edit_type_sky->connect("item_selected", callable_mp(this, &VisualShaderEditor::_mode_selected));
@@ -4481,8 +4481,8 @@ VisualShaderEditorPlugin::~VisualShaderEditorPlugin() {
 
 ////////////////
 
-class VisualShaderNodePluginInputEditor : public OptionButton {
-	GDCLASS(VisualShaderNodePluginInputEditor, OptionButton);
+class VisualShaderNodePluginInputEditor : public DropDownList {
+	GDCLASS(VisualShaderNodePluginInputEditor, DropDownList);
 
 	Ref<VisualShaderNodeInput> input;
 
@@ -4525,8 +4525,8 @@ public:
 
 ////////////////
 
-class VisualShaderNodePluginUniformRefEditor : public OptionButton {
-	GDCLASS(VisualShaderNodePluginUniformRefEditor, OptionButton);
+class VisualShaderNodePluginUniformRefEditor : public DropDownList {
+	GDCLASS(VisualShaderNodePluginUniformRefEditor, DropDownList);
 
 	Ref<VisualShaderNodeUniformRef> uniform_ref;
 
@@ -4746,7 +4746,7 @@ Control *VisualShaderNodePluginDefault::create_editor(const Ref<Resource> &p_par
 			prop->set_custom_minimum_size(Size2(100 * EDSCALE, 0));
 		} else if (Object::cast_to<EditorPropertyEnum>(prop)) {
 			prop->set_custom_minimum_size(Size2(100 * EDSCALE, 0));
-			Object::cast_to<EditorPropertyEnum>(prop)->set_option_button_clip(false);
+			Object::cast_to<EditorPropertyEnum>(prop)->set_drop_down_list_clip(false);
 		}
 
 		editors.push_back(prop);
@@ -4834,7 +4834,7 @@ void EditorPropertyShaderMode::setup(const Vector<String> &p_options) {
 	}
 }
 
-void EditorPropertyShaderMode::set_option_button_clip(bool p_enable) {
+void EditorPropertyShaderMode::set_drop_down_list_clip(bool p_enable) {
 	options->set_clip_text(p_enable);
 }
 
@@ -4842,7 +4842,7 @@ void EditorPropertyShaderMode::_bind_methods() {
 }
 
 EditorPropertyShaderMode::EditorPropertyShaderMode() {
-	options = memnew(OptionButton);
+	options = memnew(DropDownList);
 	options->set_clip_text(true);
 	add_child(options);
 	add_focusable(options);

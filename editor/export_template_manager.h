@@ -61,7 +61,7 @@ class ExportTemplateManager : public AcceptDialog {
 	Button *current_uninstall_button;
 
 	VBoxContainer *install_options_vb;
-	OptionButton *mirrors_list;
+	DropDownList *mirrors_list;
 
 	enum MirrorAction {
 		VISIT_WEB_MIRROR,

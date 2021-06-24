@@ -674,7 +674,7 @@ private:
 	};
 
 	Button *tool_button[TOOL_MAX];
-	Button *tool_option_button[TOOL_OPT_MAX];
+	Button *tool_drop_down_list[TOOL_OPT_MAX];
 
 	MenuButton *transform_menu;
 	PopupMenu *gizmos_menu;
@@ -696,7 +696,7 @@ private:
 	LineEdit *xform_translate[3];
 	LineEdit *xform_rotate[3];
 	LineEdit *xform_scale[3];
-	OptionButton *xform_type;
+	DropDownList *xform_type;
 
 	VBoxContainer *settings_vbc;
 	SpinBox *settings_fov;
@@ -831,7 +831,7 @@ public:
 	bool is_gizmo_visible() const { return gizmo.visible; }
 
 	ToolMode get_tool_mode() const { return tool_mode; }
-	bool are_local_coords_enabled() const { return tool_option_button[Node3DEditor::TOOL_OPT_LOCAL_COORDS]->is_pressed(); }
+	bool are_local_coords_enabled() const { return tool_drop_down_list[Node3DEditor::TOOL_OPT_LOCAL_COORDS]->is_pressed(); }
 	bool is_snap_enabled() const { return snap_enabled ^ snap_key_enabled; }
 	float get_translate_snap() const;
 	float get_rotate_snap() const;

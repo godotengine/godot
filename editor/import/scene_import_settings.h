@@ -38,9 +38,9 @@
 #include "scene/3d/light_3d.h"
 #include "scene/3d/mesh_instance_3d.h"
 #include "scene/gui/dialogs.h"
+#include "scene/gui/drop_down_list.h"
 #include "scene/gui/item_list.h"
 #include "scene/gui/menu_button.h"
-#include "scene/gui/option_button.h"
 #include "scene/gui/split_container.h"
 #include "scene/gui/subviewport_container.h"
 #include "scene/gui/tab_container.h"
@@ -166,7 +166,7 @@ class SceneImportSettings : public ConfirmationDialog {
 	ConfirmationDialog *external_paths;
 	Tree *external_path_tree;
 	EditorFileDialog *save_path;
-	OptionButton *external_extension_type;
+	DropDownList *external_extension_type;
 
 	EditorFileDialog *item_save_path;
 

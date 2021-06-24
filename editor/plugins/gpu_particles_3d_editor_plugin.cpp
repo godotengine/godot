@@ -207,7 +207,7 @@ GPUParticles3DEditorBase::GPUParticles3DEditorBase() {
 	emission_amount->set_value(512);
 	emd_vb->add_margin_child(TTR("Emission Points:"), emission_amount);
 
-	emission_fill = memnew(OptionButton);
+	emission_fill = memnew(DropDownList);
 	emission_fill->add_item(TTR("Surface Points"));
 	emission_fill->add_item(TTR("Surface Points+Normal (Directed)"));
 	emission_fill->add_item(TTR("Volume"));

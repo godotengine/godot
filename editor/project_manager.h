@@ -56,7 +56,7 @@ class ProjectManager : public Control {
 
 	LineEdit *search_box;
 	Label *loading_label;
-	OptionButton *filter_option;
+	DropDownList *filter_option;
 
 	Button *run_btn;
 	Button *open_btn;
@@ -88,7 +88,7 @@ class ProjectManager : public Control {
 	AcceptDialog *dialog_error;
 	ProjectDialog *npdialog;
 
-	OptionButton *language_btn;
+	DropDownList *language_btn;
 	LinkButton *version_btn;
 
 	void _open_asset_library();
