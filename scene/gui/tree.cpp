@@ -1677,6 +1677,10 @@ void Tree::_range_click_timeout() {
 			}
 		}
 
+		if (!root) {
+			return;
+		}
+
 		click_handled = false;
 		Ref<InputEventMouseButton> mb;
 		mb.instance();
