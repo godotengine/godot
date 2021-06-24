@@ -466,6 +466,18 @@ int Physics2DTestMotionResult::get_collider_shape() const {
 	return result.collider_shape;
 }
 
+real_t Physics2DTestMotionResult::get_collision_depth() const {
+	return result.collision_depth;
+}
+
+real_t Physics2DTestMotionResult::get_collision_safe_fraction() const {
+	return result.collision_safe_fraction;
+}
+
+real_t Physics2DTestMotionResult::get_collision_unsafe_fraction() const {
+	return result.collision_unsafe_fraction;
+}
+
 void Physics2DTestMotionResult::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_motion"), &Physics2DTestMotionResult::get_motion);
 	ClassDB::bind_method(D_METHOD("get_motion_remainder"), &Physics2DTestMotionResult::get_motion_remainder);
@@ -476,6 +488,9 @@ void Physics2DTestMotionResult::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_collider_rid"), &Physics2DTestMotionResult::get_collider_rid);
 	ClassDB::bind_method(D_METHOD("get_collider"), &Physics2DTestMotionResult::get_collider);
 	ClassDB::bind_method(D_METHOD("get_collider_shape"), &Physics2DTestMotionResult::get_collider_shape);
+	ClassDB::bind_method(D_METHOD("get_collision_depth"), &Physics2DTestMotionResult::get_collision_depth);
+	ClassDB::bind_method(D_METHOD("get_collision_safe_fraction"), &Physics2DTestMotionResult::get_collision_safe_fraction);
+	ClassDB::bind_method(D_METHOD("get_collision_unsafe_fraction"), &Physics2DTestMotionResult::get_collision_unsafe_fraction);
 
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "motion"), "", "get_motion");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "motion_remainder"), "", "get_motion_remainder");
@@ -486,6 +501,9 @@ void Physics2DTestMotionResult::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::_RID, "collider_rid"), "", "get_collider_rid");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "collider"), "", "get_collider");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "collider_shape"), "", "get_collider_shape");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL, "collision_depth"), "", "get_collision_depth");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL, "collision_safe_fraction"), "", "get_collision_safe_fraction");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL, "collision_unsafe_fraction"), "", "get_collision_unsafe_fraction");
 }
 
 Physics2DTestMotionResult::Physics2DTestMotionResult() {
