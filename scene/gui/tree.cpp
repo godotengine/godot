@@ -2092,10 +2092,14 @@ void Tree::_range_click_timeout() {
 		Ref<InputEventMouseButton> mb;
 		mb.instantiate();
 
-		propagate_mouse_activated = false; // done from outside, so signal handler can't clear the tree in the middle of emit (which is a common case)
-		blocked++;
-		propagate_mouse_event(pos + cache.offset, 0, 0, false, root, MOUSE_BUTTON_LEFT, mb);
-		blocked--;
+		if(root) {
+			propagate_mouse_activated = false; // done from outside, so signal handler can't clear the tree in the middle of emit (which is a common case)
+			blocked++;
+			propagate_mouse_event(pos + cache.offset, 0, 0, false, root, MOUSE_BUTTON_LEFT, mb);
+			blocked--;
+		} else {
+			return;
+		}
 
 		if (range_click_timer->is_one_shot()) {
 			range_click_timer->set_wait_time(0.05);
