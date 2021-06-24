@@ -341,12 +341,28 @@
 			<description>
 			</description>
 		</method>
+		<method name="draw_list_switch_to_next_pass">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="draw_list_switch_to_next_pass_split">
+			<return type="PackedInt64Array">
+			</return>
+			<argument index="0" name="splits" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="framebuffer_create">
 			<return type="RID">
 			</return>
-			<argument index="0" name="textures" type="Array">
+			<argument index="0" name="textures" type="RID[]">
 			</argument>
 			<argument index="1" name="validate_with_format" type="int" default="-1">
+			</argument>
+			<argument index="2" name="view_count" type="int" default="1">
 			</argument>
 			<description>
 			</description>
@@ -363,10 +379,26 @@
 			<description>
 			</description>
 		</method>
+		<method name="framebuffer_create_multipass">
+			<return type="RID">
+			</return>
+			<argument index="0" name="textures" type="RID[]">
+			</argument>
+			<argument index="1" name="passes" type="RDFramebufferPass[]">
+			</argument>
+			<argument index="2" name="validate_with_format" type="int" default="-1">
+			</argument>
+			<argument index="3" name="view_count" type="int" default="1">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="framebuffer_format_create">
 			<return type="int">
 			</return>
 			<argument index="0" name="attachments" type="RDAttachmentFormat[]">
+			</argument>
+			<argument index="1" name="view_count" type="int" default="1">
 			</argument>
 			<description>
 			</description>
@@ -379,10 +411,24 @@
 			<description>
 			</description>
 		</method>
+		<method name="framebuffer_format_create_multipass">
+			<return type="int">
+			</return>
+			<argument index="0" name="attachments" type="RDAttachmentFormat[]">
+			</argument>
+			<argument index="1" name="passes" type="RDFramebufferPass[]">
+			</argument>
+			<argument index="2" name="view_count" type="int" default="1">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="framebuffer_format_get_texture_samples">
 			<return type="int" enum="RenderingDevice.TextureSamples">
 			</return>
 			<argument index="0" name="format" type="int">
+			</argument>
+			<argument index="1" name="render_pass" type="int" default="0">
 			</argument>
 			<description>
 			</description>
@@ -523,6 +569,8 @@
 			<argument index="7" name="color_blend_state" type="RDPipelineColorBlendState">
 			</argument>
 			<argument index="8" name="dynamic_state_flags" type="int" default="0">
+			</argument>
+			<argument index="9" name="for_render_pass" type="int" default="0">
 			</argument>
 			<description>
 			</description>

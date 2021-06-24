@@ -194,6 +194,7 @@ void register_server_types() {
 	ClassDB::register_class<RDTextureFormat>();
 	ClassDB::register_class<RDTextureView>();
 	ClassDB::register_class<RDAttachmentFormat>();
+	ClassDB::register_class<RDFramebufferPass>();
 	ClassDB::register_class<RDSamplerState>();
 	ClassDB::register_class<RDVertexAttribute>();
 	ClassDB::register_class<RDUniform>();

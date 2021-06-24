@@ -128,6 +128,34 @@ protected:
 	}
 };
 
+class RDFramebufferPass : public RefCounted {
+	GDCLASS(RDFramebufferPass, RefCounted)
+	friend class RenderingDevice;
+
+	RD::FramebufferPass base;
+
+public:
+	RD_SETGET(PackedInt32Array, color_attachments)
+	RD_SETGET(PackedInt32Array, input_attachments)
+	RD_SETGET(PackedInt32Array, resolve_attachments)
+	RD_SETGET(PackedInt32Array, preserve_attachments)
+	RD_SETGET(int32_t, depth_attachment)
+protected:
+	enum {
+		ATTACHMENT_UNUSED = -1
+	};
+
+	static void _bind_methods() {
+		RD_BIND(Variant::PACKED_INT32_ARRAY, RDFramebufferPass, color_attachments);
+		RD_BIND(Variant::PACKED_INT32_ARRAY, RDFramebufferPass, input_attachments);
+		RD_BIND(Variant::PACKED_INT32_ARRAY, RDFramebufferPass, resolve_attachments);
+		RD_BIND(Variant::PACKED_INT32_ARRAY, RDFramebufferPass, preserve_attachments);
+		RD_BIND(Variant::INT, RDFramebufferPass, depth_attachment);
+
+		BIND_CONSTANT(ATTACHMENT_UNUSED);
+	}
+};
+
 class RDSamplerState : public RefCounted {
 	GDCLASS(RDSamplerState, RefCounted)
 	friend class RenderingDevice;

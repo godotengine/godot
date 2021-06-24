@@ -31,20 +31,21 @@
 #include "pipeline_cache_rd.h"
 #include "core/os/memory.h"
 
-RID PipelineCacheRD::_generate_version(RD::VertexFormatID p_vertex_format_id, RD::FramebufferFormatID p_framebuffer_format_id, bool p_wireframe) {
+RID PipelineCacheRD::_generate_version(RD::VertexFormatID p_vertex_format_id, RD::FramebufferFormatID p_framebuffer_format_id, bool p_wireframe, uint32_t p_render_pass) {
 	RD::PipelineMultisampleState multisample_state_version = multisample_state;
-	multisample_state_version.sample_count = RD::get_singleton()->framebuffer_format_get_texture_samples(p_framebuffer_format_id);
+	multisample_state_version.sample_count = RD::get_singleton()->framebuffer_format_get_texture_samples(p_framebuffer_format_id, p_render_pass);
 
 	RD::PipelineRasterizationState raster_state_version = rasterization_state;
 	raster_state_version.wireframe = p_wireframe;
 
-	RID pipeline = RD::get_singleton()->render_pipeline_create(shader, p_framebuffer_format_id, p_vertex_format_id, render_primitive, raster_state_version, multisample_state_version, depth_stencil_state, blend_state, dynamic_state_flags);
+	RID pipeline = RD::get_singleton()->render_pipeline_create(shader, p_framebuffer_format_id, p_vertex_format_id, render_primitive, raster_state_version, multisample_state_version, depth_stencil_state, blend_state, dynamic_state_flags, p_render_pass);
 	ERR_FAIL_COND_V(pipeline.is_null(), RID());
 	versions = (Version *)memrealloc(versions, sizeof(Version) * (version_count + 1));
 	versions[version_count].framebuffer_id = p_framebuffer_format_id;
 	versions[version_count].vertex_id = p_vertex_format_id;
 	versions[version_count].wireframe = p_wireframe;
 	versions[version_count].pipeline = pipeline;
+	versions[version_count].render_pass = p_render_pass;
 	version_count++;
 	return pipeline;
 }
