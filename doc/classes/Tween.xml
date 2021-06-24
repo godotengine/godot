@@ -72,10 +72,9 @@
 			<argument index="0" name="delta" type="float">
 			</argument>
 			<description>
-				Processes the [Tween] by given [code]delta[/code] value, in seconds. Mostly useful when the [Tween] is paused, for controlling it manually.
+				Processes the [Tween] by given [code]delta[/code] value, in seconds. Mostly useful when the [Tween] is paused, for controlling it manually. Can also be used to end the [Tween] animation immediately, by using [code]delta[/code] longer than the whole duration.
 				Returns [code]true[/code] if the [Tween] still has [Tweener]s that haven't finished.
 				[b]Note:[/b] The [Tween] will become invalid after finished, but you can call [method stop] after the step, to keep it and reset.
-				[b]Note:[/b] [method custom_step] will process only one step of the [Tween]. If the [code]delta[/code] is greater than the remaining time, the excessive time will not have any effect.
 			</description>
 		</method>
 		<method name="interpolate_value">
