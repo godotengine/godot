@@ -1595,6 +1595,7 @@ void GradientTexture::_update() {
 }
 
 void GradientTexture::set_width(int p_width) {
+	ERR_FAIL_COND(p_width <= 0);
 	width = p_width;
 	_queue_update();
 }
