@@ -1165,15 +1165,11 @@ void GDScript::_init_rpc_methods_properties() {
 	while (cscript) {
 		// RPC Methods
 		for (Map<StringName, GDScriptFunction *>::Element *E = cscript->member_functions.front(); E; E = E->next()) {
-			if (E->get()->get_rpc_mode() != MultiplayerAPI::RPC_MODE_DISABLED) {
-				MultiplayerAPI::RPCConfig nd;
-				nd.name = E->key();
-				nd.rpc_mode = E->get()->get_rpc_mode();
-				// TODO
-				nd.transfer_mode = MultiplayerPeer::TRANSFER_MODE_RELIABLE;
-				nd.channel = 0;
-				if (-1 == rpc_functions.find(nd)) {
-					rpc_functions.push_back(nd);
+			MultiplayerAPI::RPCConfig config = E->get()->get_rpc_config();
+			if (config.rpc_mode != MultiplayerAPI::RPC_MODE_DISABLED) {
+				config.name = E->get()->get_name();
+				if (rpc_functions.find(config) == -1) {
+					rpc_functions.push_back(config);
 				}
 			}
 		}

@@ -143,9 +143,6 @@ void CachedData::clear_godot_api_cache() {
 	class_RemoteAttribute = nullptr;
 	class_MasterAttribute = nullptr;
 	class_PuppetAttribute = nullptr;
-	class_RemoteSyncAttribute = nullptr;
-	class_MasterSyncAttribute = nullptr;
-	class_PuppetSyncAttribute = nullptr;
 	class_GodotMethodAttribute = nullptr;
 	field_GodotMethodAttribute_methodName = nullptr;
 	class_ScriptPathAttribute = nullptr;
@@ -272,9 +269,6 @@ void update_godot_api_cache() {
 	CACHE_CLASS_AND_CHECK(RemoteAttribute, GODOT_API_CLASS(RemoteAttribute));
 	CACHE_CLASS_AND_CHECK(MasterAttribute, GODOT_API_CLASS(MasterAttribute));
 	CACHE_CLASS_AND_CHECK(PuppetAttribute, GODOT_API_CLASS(PuppetAttribute));
-	CACHE_CLASS_AND_CHECK(RemoteSyncAttribute, GODOT_API_CLASS(RemoteSyncAttribute));
-	CACHE_CLASS_AND_CHECK(MasterSyncAttribute, GODOT_API_CLASS(MasterSyncAttribute));
-	CACHE_CLASS_AND_CHECK(PuppetSyncAttribute, GODOT_API_CLASS(PuppetSyncAttribute));
 	CACHE_CLASS_AND_CHECK(GodotMethodAttribute, GODOT_API_CLASS(GodotMethodAttribute));
 	CACHE_FIELD_AND_CHECK(GodotMethodAttribute, methodName, CACHED_CLASS(GodotMethodAttribute)->get_field("methodName"));
 	CACHE_CLASS_AND_CHECK(ScriptPathAttribute, GODOT_API_CLASS(ScriptPathAttribute));

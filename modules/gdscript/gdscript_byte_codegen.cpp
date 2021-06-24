@@ -155,7 +155,7 @@ void GDScriptByteCodeGenerator::end_parameters() {
 	function->default_arguments.reverse();
 }
 
-void GDScriptByteCodeGenerator::write_start(GDScript *p_script, const StringName &p_function_name, bool p_static, MultiplayerAPI::RPCMode p_rpc_mode, const GDScriptDataType &p_return_type) {
+void GDScriptByteCodeGenerator::write_start(GDScript *p_script, const StringName &p_function_name, bool p_static, MultiplayerAPI::RPCConfig p_rpc_config, const GDScriptDataType &p_return_type) {
 	function = memnew(GDScriptFunction);
 	debug_stack = EngineDebugger::is_active();
 
@@ -170,7 +170,7 @@ void GDScriptByteCodeGenerator::write_start(GDScript *p_script, const StringName
 
 	function->_static = p_static;
 	function->return_type = p_return_type;
-	function->rpc_mode = p_rpc_mode;
+	function->rpc_config = p_rpc_config;
 	function->_argument_count = 0;
 }
 

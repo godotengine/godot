@@ -1859,7 +1859,7 @@ GDScriptFunction *GDScriptCompiler::_parse_function(Error &r_error, GDScript *p_
 
 	StringName func_name;
 	bool is_static = false;
-	MultiplayerAPI::RPCMode rpc_mode = MultiplayerAPI::RPC_MODE_DISABLED;
+	MultiplayerAPI::RPCConfig rpc_config;
 	GDScriptDataType return_type;
 	return_type.has_type = true;
 	return_type.kind = GDScriptDataType::BUILTIN;
@@ -1872,7 +1872,7 @@ GDScriptFunction *GDScriptCompiler::_parse_function(Error &r_error, GDScript *p_
 			func_name = "<anonymous lambda>";
 		}
 		is_static = p_func->is_static;
-		rpc_mode = p_func->rpc_mode;
+		rpc_config = p_func->rpc_config;
 		return_type = _gdtype_from_datatype(p_func->get_datatype(), p_script);
 	} else {
 		if (p_for_ready) {
@@ -1883,7 +1883,7 @@ GDScriptFunction *GDScriptCompiler::_parse_function(Error &r_error, GDScript *p_
 	}
 
 	codegen.function_name = func_name;
-	codegen.generator->write_start(p_script, func_name, is_static, rpc_mode, return_type);
+	codegen.generator->write_start(p_script, func_name, is_static, rpc_config, return_type);
 
 	int optional_parameters = 0;
 
@@ -2088,7 +2088,7 @@ Error GDScriptCompiler::_parse_setter_getter(GDScript *p_script, const GDScriptP
 		return_type = _gdtype_from_datatype(p_variable->get_datatype(), p_script);
 	}
 
-	codegen.generator->write_start(p_script, func_name, false, p_variable->rpc_mode, return_type);
+	codegen.generator->write_start(p_script, func_name, false, MultiplayerAPI::RPCConfig(), return_type);
 
 	if (p_is_setter) {
 		uint32_t par_addr = codegen.generator->add_parameter(p_variable->setter_parameter->name, false, _gdtype_from_datatype(p_variable->get_datatype()));
@@ -2268,7 +2268,6 @@ Error GDScriptCompiler::_parse_class_level(GDScript *p_script, const GDScriptPar
 						}
 						break;
 				}
-				minfo.rpc_mode = variable->rpc_mode;
 				minfo.data_type = _gdtype_from_datatype(variable->get_datatype(), p_script);
 
 				PropertyInfo prop_info = minfo.data_type;
