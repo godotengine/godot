@@ -1110,9 +1110,9 @@ ProjectExportDialog::ProjectExportDialog() {
 	exclude_filters->connect("text_changed", callable_mp(this, &ProjectExportDialog::_filter_changed));
 
 	script_mode = memnew(OptionButton);
-	resources_vb->add_margin_child(TTR("Script Export Mode:"), script_mode);
+	resources_vb->add_margin_child(TTR("GDScript Export Mode:"), script_mode);
 	script_mode->add_item(TTR("Text"), (int)EditorExportPreset::MODE_SCRIPT_TEXT);
-	script_mode->add_item(TTR("Compiled"), (int)EditorExportPreset::MODE_SCRIPT_COMPILED);
+	script_mode->add_item(TTR("Compiled Bytecode (Faster Loading)"), (int)EditorExportPreset::MODE_SCRIPT_COMPILED);
 	script_mode->connect("item_selected", callable_mp(this, &ProjectExportDialog::_script_export_mode_changed));
 
 	// Feature tags.
@@ -1137,12 +1137,12 @@ ProjectExportDialog::ProjectExportDialog() {
 
 	enc_pck = memnew(CheckButton);
 	enc_pck->connect("toggled", callable_mp(this, &ProjectExportDialog::_enc_pck_changed));
-	enc_pck->set_text(TTR("Encrypt exported PCK"));
+	enc_pck->set_text(TTR("Encrypt Exported PCK"));
 	sec_vb->add_child(enc_pck);
 
 	enc_directory = memnew(CheckButton);
 	enc_directory->connect("toggled", callable_mp(this, &ProjectExportDialog::_enc_directory_changed));
-	enc_directory->set_text("Encrypt index (file names and info).");
+	enc_directory->set_text("Encrypt Index (File Names and Info)");
 	sec_vb->add_child(enc_directory);
 
 	enc_in_filters = memnew(LineEdit);
@@ -1160,9 +1160,9 @@ ProjectExportDialog::ProjectExportDialog() {
 	script_key = memnew(LineEdit);
 	script_key->connect("text_changed", callable_mp(this, &ProjectExportDialog::_script_encryption_key_changed));
 	script_key_error = memnew(Label);
-	script_key_error->set_text("- " + TTR("Invalid Encryption Key (must be 64 characters long)"));
+	script_key_error->set_text("- " + TTR("Invalid Encryption Key (must be 64 hexadecimal characters long)"));
 	script_key_error->add_theme_color_override("font_color", EditorNode::get_singleton()->get_gui_base()->get_theme_color("error_color", "Editor"));
-	sec_vb->add_margin_child(TTR("Encryption Key (256-bits as hex):"), script_key);
+	sec_vb->add_margin_child(TTR("Encryption Key (256-bits as hexadecimal):"), script_key);
 	sec_vb->add_child(script_key_error);
 	sections->add_child(sec_vb);
 
