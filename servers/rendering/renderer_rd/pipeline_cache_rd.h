@@ -50,6 +50,7 @@ class PipelineCacheRD {
 	struct Version {
 		RD::VertexFormatID vertex_id;
 		RD::FramebufferFormatID framebuffer_id;
+		uint32_t render_pass;
 		bool wireframe;
 		RID pipeline;
 	};
@@ -57,7 +58,7 @@ class PipelineCacheRD {
 	Version *versions;
 	uint32_t version_count;
 
-	RID _generate_version(RD::VertexFormatID p_vertex_format_id, RD::FramebufferFormatID p_framebuffer_format_id, bool p_wireframe);
+	RID _generate_version(RD::VertexFormatID p_vertex_format_id, RD::FramebufferFormatID p_framebuffer_format_id, bool p_wireframe, uint32_t p_render_pass);
 
 	void _clear();
 
@@ -65,7 +66,7 @@ public:
 	void setup(RID p_shader, RD::RenderPrimitive p_primitive, const RD::PipelineRasterizationState &p_rasterization_state, RD::PipelineMultisampleState p_multisample, const RD::PipelineDepthStencilState &p_depth_stencil_state, const RD::PipelineColorBlendState &p_blend_state, int p_dynamic_state_flags = 0);
 	void update_shader(RID p_shader);
 
-	_FORCE_INLINE_ RID get_render_pipeline(RD::VertexFormatID p_vertex_format_id, RD::FramebufferFormatID p_framebuffer_format_id, bool p_wireframe = false) {
+	_FORCE_INLINE_ RID get_render_pipeline(RD::VertexFormatID p_vertex_format_id, RD::FramebufferFormatID p_framebuffer_format_id, bool p_wireframe = false, uint32_t p_render_pass = 0) {
 #ifdef DEBUG_ENABLED
 		ERR_FAIL_COND_V_MSG(shader.is_null(), RID(),
 				"Attempted to use an unused shader variant (shader is null),");
@@ -74,13 +75,13 @@ public:
 		spin_lock.lock();
 		RID result;
 		for (uint32_t i = 0; i < version_count; i++) {
-			if (versions[i].vertex_id == p_vertex_format_id && versions[i].framebuffer_id == p_framebuffer_format_id && versions[i].wireframe == p_wireframe) {
+			if (versions[i].vertex_id == p_vertex_format_id && versions[i].framebuffer_id == p_framebuffer_format_id && versions[i].wireframe == p_wireframe && versions[i].render_pass == p_render_pass) {
 				result = versions[i].pipeline;
 				spin_lock.unlock();
 				return result;
 			}
 		}
-		result = _generate_version(p_vertex_format_id, p_framebuffer_format_id, p_wireframe);
+		result = _generate_version(p_vertex_format_id, p_framebuffer_format_id, p_wireframe, p_render_pass);
 		spin_lock.unlock();
 		return result;
 	}
