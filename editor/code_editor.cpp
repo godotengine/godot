@@ -105,6 +105,11 @@ void FindReplaceBar::_notification(int p_what) {
 		hide_button->set_custom_minimum_size(hide_button->get_normal_texture()->get_size());
 	} else if (p_what == NOTIFICATION_THEME_CHANGED) {
 		matches_label->add_theme_color_override("font_color", results_count > 0 ? get_theme_color("font_color", "Label") : get_theme_color("error_color", "Editor"));
+	} else if (p_what == NOTIFICATION_PREDELETE) {
+		if (base_text_editor) {
+			base_text_editor->remove_find_replace_bar();
+			base_text_editor = nullptr;
+		}
 	}
 }
 
@@ -593,6 +598,10 @@ void FindReplaceBar::set_text_edit(CodeTextEditor *p_text_editor) {
 		base_text_editor = nullptr;
 		text_editor->disconnect("text_changed", callable_mp(this, &FindReplaceBar::_editor_text_changed));
 		text_editor = nullptr;
+	}
+
+	if (!p_text_editor) {
+		return;
 	}
 
 	results_count = -1;
@@ -1660,6 +1669,11 @@ void CodeTextEditor::_notification(int p_what) {
 				update_toggle_scripts_button();
 			}
 			set_process_input(is_visible_in_tree());
+		} break;
+		case NOTIFICATION_PREDELETE: {
+			if (find_replace_bar) {
+				find_replace_bar->set_text_edit(nullptr);
+			}
 		} break;
 		default:
 			break;
