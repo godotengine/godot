@@ -3502,7 +3502,7 @@ int CSharpScript::get_member_line(const StringName &p_member) const {
 	int p_line = -1;
 	//int p_col = 0;
 	for (int i = 0; i < source_code_line.size(); i = i + 1) {
-		int tmp_col = source_code_line[i].find(p_member);
+		int tmp_col = source_code_line[i].find("void " + p_member);
 		if (tmp_col > 0) {
 			p_line = i;
 			//p_col = tmp_col;//no place to output col
