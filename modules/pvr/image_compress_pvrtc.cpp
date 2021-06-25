@@ -43,6 +43,10 @@ static void _compress_pvrtc1_4bpp(Image *p_img) {
 	if (!img->is_size_po2() || img->get_width() != img->get_height()) {
 		make_mipmaps = img->has_mipmaps();
 		img->resize_to_po2(true);
+		// Resizing can fail for some formats
+		if (!img->is_size_po2() || img->get_width() != img->get_height()) {
+			ERR_FAIL_MSG("Failed to resize the image for compression.");
+		}
 	}
 	img->convert(Image::FORMAT_RGBA8);
 	if (!img->has_mipmaps() && make_mipmaps) {
