@@ -450,6 +450,7 @@ void EditorExportPlatformJavaScript::_fix_html(Vector<uint8_t> &p_html, const Re
 	}
 	config["canvasResizePolicy"] = p_preset->get("html/canvas_resize_policy");
 	config["experimentalVK"] = p_preset->get("html/experimental_virtual_keyboard");
+	config["focusCanvas"] = p_preset->get("html/focus_canvas_on_start");
 	config["gdnativeLibs"] = libs;
 	config["executable"] = p_name;
 	config["args"] = args;
@@ -650,6 +651,7 @@ void EditorExportPlatformJavaScript::get_export_options(List<ExportOption> *r_op
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "html/custom_html_shell", PROPERTY_HINT_FILE, "*.html"), ""));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "html/head_include", PROPERTY_HINT_MULTILINE_TEXT), ""));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "html/canvas_resize_policy", PROPERTY_HINT_ENUM, "None,Project,Adaptive"), 2));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "html/focus_canvas_on_start"), true));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "html/experimental_virtual_keyboard"), false));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "progressive_web_app/enabled"), false));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "progressive_web_app/offline_page", PROPERTY_HINT_FILE, "*.html"), ""));

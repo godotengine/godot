@@ -91,6 +91,14 @@ const InternalConfig = function (initConfig) { // eslint-disable-line no-unused-
 		 */
 		args: [],
 		/**
+		 * When enabled, the game canvas will automatically grab the focus when the engine starts.
+		 *
+		 * @memberof EngineConfig
+		 * @type {boolean}
+		 * @default
+		 */
+		focusCanvas: true,
+		/**
 		 * When enabled, this will turn on experimental virtual keyboard support on mobile.
 		 *
 		 * @memberof EngineConfig
@@ -238,6 +246,7 @@ const InternalConfig = function (initConfig) { // eslint-disable-line no-unused-
 		this.persistentPaths = parse('persistentPaths', this.persistentPaths);
 		this.persistentDrops = parse('persistentDrops', this.persistentDrops);
 		this.experimentalVK = parse('experimentalVK', this.experimentalVK);
+		this.focusCanvas = parse('focusCanvas', this.focusCanvas);
 		this.gdnativeLibs = parse('gdnativeLibs', this.gdnativeLibs);
 		this.fileSizes = parse('fileSizes', this.fileSizes);
 		this.args = parse('args', this.args);
@@ -324,6 +333,7 @@ const InternalConfig = function (initConfig) { // eslint-disable-line no-unused-
 			'locale': locale,
 			'persistentDrops': this.persistentDrops,
 			'virtualKeyboard': this.experimentalVK,
+			'focusCanvas': this.focusCanvas,
 			'onExecute': this.onExecute,
 			'onExit': function (p_code) {
 				cleanup(); // We always need to call the cleanup callback to free memory.
