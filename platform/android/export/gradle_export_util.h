@@ -96,14 +96,6 @@ Error create_directory(const String &p_dir) {
 	return OK;
 }
 
-// Implementation of EditorExportSaveSharedObject.
-// This method will only be called as an input to export_project_files.
-// This method lets the .so files for all ABIs to be copied
-// into the gradle project from the .AAR file
-Error ignore_so_file(void *p_userdata, const SharedObject &p_so) {
-	return OK;
-}
-
 // Writes p_data into a file at p_path, creating directories if necessary.
 // Note: this will overwrite the file at p_path if it already exists.
 Error store_file_at_path(const String &p_path, const Vector<uint8_t> &p_data) {
