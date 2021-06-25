@@ -50,14 +50,6 @@
 				[/codeblocks]
 			</description>
 		</method>
-		<method name="_clips_input" qualifiers="virtual">
-			<return type="bool">
-			</return>
-			<description>
-				Virtual method to be implemented by the user. Returns whether [method _gui_input] should not be called for children controls outside this control's rectangle. Input will be clipped to the Rect of this [Control]. Similar to [member rect_clip_content], but doesn't affect visibility.
-				If not overridden, defaults to [code]false[/code].
-			</description>
-		</method>
 		<method name="_drop_data" qualifiers="virtual">
 			<return type="void">
 			</return>
@@ -155,7 +147,7 @@
 				* control has [member mouse_filter] set to [constant MOUSE_FILTER_IGNORE];
 				* control is obstructed by another [Control] on top of it, which doesn't have [member mouse_filter] set to [constant MOUSE_FILTER_IGNORE];
 				* control's parent has [member mouse_filter] set to [constant MOUSE_FILTER_STOP] or has accepted the event;
-				* it happens outside parent's rectangle and the parent has either [member rect_clip_content] or [method _clips_input] enabled.
+				* it happens outside parent's rectangle and the parent has either [member rect_clip_content] enabled.
 			</description>
 		</method>
 		<method name="_has_point" qualifiers="virtual">
@@ -1135,7 +1127,7 @@
 			Offsets are often controlled by one or multiple parent [Container] nodes, so you should not modify them manually if your node is a direct child of a [Container]. Offsets update automatically when you move or resize the node.
 		</member>
 		<member name="rect_clip_content" type="bool" setter="set_clip_contents" getter="is_clipping_contents" default="false">
-			Enables whether rendering of [CanvasItem] based children should be clipped to this control's rectangle. If [code]true[/code], parts of a child which would be visibly outside of this control's rectangle will not be rendered.
+			Enables whether rendering of [CanvasItem] based children should be clipped to this control's rectangle. If [code]true[/code], parts of a child which would be visibly outside of this control's rectangle will not be rendered and won't receive input.
 		</member>
 		<member name="rect_global_position" type="Vector2" setter="_set_global_position" getter="get_global_position">
 			The node's global position, relative to the world (usually to the top-left corner of the window).
