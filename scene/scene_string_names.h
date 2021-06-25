@@ -129,7 +129,6 @@ public:
 	StringName _update_scroll;
 	StringName _update_xform;
 
-	StringName _clips_input;
 	StringName _structured_text_parser;
 
 	StringName _proxgroup_add;

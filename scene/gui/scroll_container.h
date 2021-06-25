@@ -108,8 +108,6 @@ public:
 	VScrollBar *get_v_scrollbar();
 	void ensure_control_visible(Control *p_control);
 
-	virtual bool clips_input() const override;
-
 	TypedArray<String> get_configuration_warnings() const override;
 
 	ScrollContainer();
