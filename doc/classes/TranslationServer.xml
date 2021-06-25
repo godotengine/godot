@@ -51,7 +51,7 @@
 			</description>
 		</method>
 		<method name="get_pseudolocalization_expansion_ratio" qualifiers="const">
-			<return type="int">
+			<return type="float">
 			</return>
 			<description>
 				Returns the [code]expansion_ratio[/code] to be used during Pseudolocalization.
@@ -166,7 +166,7 @@
 		<method name="set_pseudolocalization_expansion_ratio">
 			<return type="void">
 			</return>
-			<argument index="0" name="p_expansion_ratio" type="int">
+			<argument index="0" name="p_expansion_ratio" type="float">
 			</argument>
 			<description>
 				Sets the [code]expansion_ratio[/code] to be used during Pseudolocalization.
