@@ -45,6 +45,7 @@ struct PtrToArg {};
 		_FORCE_INLINE_ static m_type convert(const void *p_ptr) {      \
 			return *reinterpret_cast<const m_type *>(p_ptr);           \
 		}                                                              \
+		typedef m_type EncodeT;                                        \
 		_FORCE_INLINE_ static void encode(m_type p_val, void *p_ptr) { \
 			*((m_type *)p_ptr) = p_val;                                \
 		}                                                              \
@@ -54,6 +55,7 @@ struct PtrToArg {};
 		_FORCE_INLINE_ static m_type convert(const void *p_ptr) {      \
 			return *reinterpret_cast<const m_type *>(p_ptr);           \
 		}                                                              \
+		typedef m_type EncodeT;                                        \
 		_FORCE_INLINE_ static void encode(m_type p_val, void *p_ptr) { \
 			*((m_type *)p_ptr) = p_val;                                \
 		}                                                              \
@@ -65,6 +67,7 @@ struct PtrToArg {};
 		_FORCE_INLINE_ static m_type convert(const void *p_ptr) {                 \
 			return static_cast<m_type>(*reinterpret_cast<const m_conv *>(p_ptr)); \
 		}                                                                         \
+		typedef m_conv EncodeT;                                                   \
 		_FORCE_INLINE_ static void encode(m_type p_val, void *p_ptr) {            \
 			*((m_conv *)p_ptr) = static_cast<m_conv>(p_val);                      \
 		}                                                                         \
@@ -74,6 +77,7 @@ struct PtrToArg {};
 		_FORCE_INLINE_ static m_type convert(const void *p_ptr) {                 \
 			return static_cast<m_type>(*reinterpret_cast<const m_conv *>(p_ptr)); \
 		}                                                                         \
+		typedef m_conv EncodeT;                                                   \
 		_FORCE_INLINE_ static void encode(m_type p_val, void *p_ptr) {            \
 			*((m_conv *)p_ptr) = static_cast<m_conv>(p_val);                      \
 		}                                                                         \
@@ -85,6 +89,7 @@ struct PtrToArg {};
 		_FORCE_INLINE_ static m_type convert(const void *p_ptr) {             \
 			return *reinterpret_cast<const m_type *>(p_ptr);                  \
 		}                                                                     \
+		typedef m_type EncodeT;                                               \
 		_FORCE_INLINE_ static void encode(const m_type &p_val, void *p_ptr) { \
 			*((m_type *)p_ptr) = p_val;                                       \
 		}                                                                     \
@@ -94,12 +99,13 @@ struct PtrToArg {};
 		_FORCE_INLINE_ static m_type convert(const void *p_ptr) {             \
 			return *reinterpret_cast<const m_type *>(p_ptr);                  \
 		}                                                                     \
+		typedef m_type EncodeT;                                               \
 		_FORCE_INLINE_ static void encode(const m_type &p_val, void *p_ptr) { \
 			*((m_type *)p_ptr) = p_val;                                       \
 		}                                                                     \
 	}
 
-MAKE_PTRARG(bool);
+MAKE_PTRARGCONV(bool, uint32_t);
 // Integer types.
 MAKE_PTRARGCONV(uint8_t, int64_t);
 MAKE_PTRARGCONV(int8_t, int64_t);
@@ -153,7 +159,7 @@ struct PtrToArg<T *> {
 	_FORCE_INLINE_ static T *convert(const void *p_ptr) {
 		return const_cast<T *>(reinterpret_cast<const T *>(p_ptr));
 	}
-
+	typedef Object *EncodeT;
 	_FORCE_INLINE_ static void encode(T *p_var, void *p_ptr) {
 		*((T **)p_ptr) = p_var;
 	}
@@ -164,7 +170,7 @@ struct PtrToArg<const T *> {
 	_FORCE_INLINE_ static const T *convert(const void *p_ptr) {
 		return reinterpret_cast<const T *>(p_ptr);
 	}
-
+	typedef const Object *EncodeT;
 	_FORCE_INLINE_ static void encode(T *p_var, void *p_ptr) {
 		*((T **)p_ptr) = p_var;
 	}
@@ -177,7 +183,7 @@ struct PtrToArg<ObjectID> {
 	_FORCE_INLINE_ static const ObjectID convert(const void *p_ptr) {
 		return ObjectID(*reinterpret_cast<const uint64_t *>(p_ptr));
 	}
-
+	typedef uint64_t EncodeT;
 	_FORCE_INLINE_ static void encode(const ObjectID &p_val, void *p_ptr) {
 		*((uint64_t *)p_ptr) = p_val;
 	}

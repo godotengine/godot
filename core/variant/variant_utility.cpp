@@ -1348,8 +1348,8 @@ String Variant::get_utility_function_argument_name(const StringName &p_name, int
 	if (!bfi) {
 		return String();
 	}
-	ERR_FAIL_COND_V(bfi->is_vararg, String());
 	ERR_FAIL_INDEX_V(p_arg, bfi->argnames.size(), String());
+	ERR_FAIL_COND_V(bfi->is_vararg, String());
 	return bfi->argnames[p_arg];
 }
 
@@ -1377,6 +1377,23 @@ bool Variant::is_utility_function_vararg(const StringName &p_name) {
 	}
 
 	return bfi->is_vararg;
+}
+
+uint32_t Variant::get_utility_function_hash(const StringName &p_name) {
+	const VariantUtilityFunctionInfo *bfi = utility_function_table.lookup_ptr(p_name);
+	ERR_FAIL_COND_V(!bfi, 0);
+
+	uint32_t hash = hash_djb2_one_32(bfi->is_vararg);
+	hash = hash_djb2_one_32(bfi->returns_value, hash);
+	if (bfi->returns_value) {
+		hash = hash_djb2_one_32(bfi->return_type, hash);
+	}
+	hash = hash_djb2_one_32(bfi->argcount, hash);
+	for (int i = 0; i < bfi->argcount; i++) {
+		hash = hash_djb2_one_32(bfi->get_arg_type(i), hash);
+	}
+
+	return hash;
 }
 
 void Variant::get_utility_function_list(List<StringName> *r_functions) {

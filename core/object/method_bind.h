@@ -135,6 +135,8 @@ public:
 
 	void set_default_arguments(const Vector<Variant> &p_defargs);
 
+	uint32_t get_hash() const;
+
 	MethodBind();
 	virtual ~MethodBind();
 };

@@ -31,6 +31,7 @@
 #include "register_scene_types.h"
 
 #include "core/config/project_settings.h"
+#include "core/extension/native_extension_manager.h"
 #include "core/object/class_db.h"
 #include "core/os/os.h"
 #include "scene/2d/animated_sprite_2d.h"
@@ -1040,9 +1041,13 @@ void register_scene_types() {
 		}
 	}
 	SceneDebugger::initialize();
+
+	NativeExtensionManager::get_singleton()->initialize_extensions(NativeExtension::INITIALIZATION_LEVEL_SCENE);
 }
 
 void unregister_scene_types() {
+	NativeExtensionManager::get_singleton()->deinitialize_extensions(NativeExtension::INITIALIZATION_LEVEL_SCENE);
+
 	SceneDebugger::deinitialize();
 	clear_default_theme();
 

@@ -1,0 +1,7 @@
+#!/usr/bin/env python
+
+Import("env")
+
+env_extension = env.Clone()
+
+env_extension.add_source_files(env.core_sources, "*.cpp")

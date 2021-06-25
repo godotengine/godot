@@ -37,6 +37,8 @@
 #include "core/crypto/aes_context.h"
 #include "core/crypto/crypto.h"
 #include "core/crypto/hashing_context.h"
+#include "core/extension/native_extension.h"
+#include "core/extension/native_extension_manager.h"
 #include "core/input/input.h"
 #include "core/input/input_map.h"
 #include "core/io/config_file.h"
@@ -94,6 +96,8 @@ static _Geometry2D *_geometry_2d = nullptr;
 static _Geometry3D *_geometry_3d = nullptr;
 
 extern Mutex _global_mutex;
+
+static NativeExtensionManager *native_extension_manager = nullptr;
 
 extern void register_global_constants();
 extern void unregister_global_constants();
@@ -217,6 +221,12 @@ void register_core_types() {
 
 	ClassDB::register_virtual_class<ResourceImporter>();
 
+	ClassDB::register_class<NativeExtension>();
+
+	ClassDB::register_virtual_class<NativeExtensionManager>();
+
+	native_extension_manager = memnew(NativeExtensionManager);
+
 	ip = IP::create();
 
 	_geometry_2d = memnew(_Geometry2D);
@@ -261,7 +271,7 @@ void register_core_singletons() {
 	ClassDB::register_class<Time>();
 
 	Engine::get_singleton()->add_singleton(Engine::Singleton("ProjectSettings", ProjectSettings::get_singleton()));
-	Engine::get_singleton()->add_singleton(Engine::Singleton("IP", IP::get_singleton()));
+	Engine::get_singleton()->add_singleton(Engine::Singleton("IP", IP::get_singleton(), "IP"));
 	Engine::get_singleton()->add_singleton(Engine::Singleton("Geometry2D", _Geometry2D::get_singleton()));
 	Engine::get_singleton()->add_singleton(Engine::Singleton("Geometry3D", _Geometry3D::get_singleton()));
 	Engine::get_singleton()->add_singleton(Engine::Singleton("ResourceLoader", _ResourceLoader::get_singleton()));
@@ -275,9 +285,25 @@ void register_core_singletons() {
 	Engine::get_singleton()->add_singleton(Engine::Singleton("InputMap", InputMap::get_singleton()));
 	Engine::get_singleton()->add_singleton(Engine::Singleton("EngineDebugger", _EngineDebugger::get_singleton()));
 	Engine::get_singleton()->add_singleton(Engine::Singleton("Time", Time::get_singleton()));
+	Engine::get_singleton()->add_singleton(Engine::Singleton("NativeExtensionManager", NativeExtensionManager::get_singleton()));
+}
+
+void register_core_extensions() {
+	//harcoded for now
+	if (ProjectSettings::get_singleton()->has_setting("native_extensions/paths")) {
+		Vector<String> paths = ProjectSettings::get_singleton()->get("native_extensions/paths");
+		for (int i = 0; i < paths.size(); i++) {
+			NativeExtensionManager::LoadStatus status = native_extension_manager->load_extension(paths[i]);
+			ERR_CONTINUE_MSG(status != NativeExtensionManager::LOAD_STATUS_OK, "Error loading extension: " + paths[i]);
+		}
+	}
+	native_extension_manager->initialize_extensions(NativeExtension::INITIALIZATION_LEVEL_CORE);
 }
 
 void unregister_core_types() {
+	native_extension_manager->deinitialize_extensions(NativeExtension::INITIALIZATION_LEVEL_CORE);
+
+	memdelete(native_extension_manager);
 	memdelete(_resource_loader);
 	memdelete(_resource_saver);
 	memdelete(_os);

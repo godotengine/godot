@@ -318,20 +318,8 @@
 		<method name="operator +" qualifiers="operator">
 			<return type="Vector3">
 			</return>
-			<description>
-			</description>
-		</method>
-		<method name="operator +" qualifiers="operator">
-			<return type="Vector3">
-			</return>
 			<argument index="0" name="right" type="Vector3">
 			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="operator -" qualifiers="operator">
-			<return type="Vector3">
-			</return>
 			<description>
 			</description>
 		</method>
@@ -412,6 +400,18 @@
 			</return>
 			<argument index="0" name="index" type="int">
 			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="operator unary+" qualifiers="operator">
+			<return type="Vector3">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="operator unary-" qualifiers="operator">
+			<return type="Vector3">
+			</return>
 			<description>
 			</description>
 		</method>

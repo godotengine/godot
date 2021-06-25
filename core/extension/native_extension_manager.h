@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  register_core_types.h                                                */
+/*  native_extension_manager.h                                           */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,13 +28,44 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef REGISTER_CORE_TYPES_H
-#define REGISTER_CORE_TYPES_H
+#ifndef NATIVE_EXTENSION_MANAGER_H
+#define NATIVE_EXTENSION_MANAGER_H
 
-void register_core_types();
-void register_core_settings();
-void register_core_extensions();
-void register_core_singletons();
-void unregister_core_types();
+#include "core/extension/native_extension.h"
 
-#endif // REGISTER_CORE_TYPES_H
+class NativeExtensionManager : public Object {
+	GDCLASS(NativeExtensionManager, Object);
+
+	int32_t level = -1;
+	Map<String, Ref<NativeExtension>> native_extension_map;
+
+	static void _bind_methods();
+
+	static NativeExtensionManager *singleton;
+
+public:
+	enum LoadStatus {
+		LOAD_STATUS_OK,
+		LOAD_STATUS_FAILED,
+		LOAD_STATUS_ALREADY_LOADED,
+		LOAD_STATUS_NOT_LOADED,
+		LOAD_STATUS_NEEDS_RESTART,
+	};
+
+	LoadStatus load_extension(const String &p_path);
+	LoadStatus reload_extension(const String &p_path);
+	LoadStatus unload_extension(const String &p_path);
+	Vector<String> get_loaded_extensions() const;
+	Ref<NativeExtension> get_extension(const String &p_path);
+
+	void initialize_extensions(NativeExtension::InitializationLevel p_level);
+	void deinitialize_extensions(NativeExtension::InitializationLevel p_level);
+
+	static NativeExtensionManager *get_singleton();
+
+	NativeExtensionManager();
+};
+
+VARIANT_ENUM_CAST(NativeExtensionManager::LoadStatus)
+
+#endif // NATIVEEXTENSIONMANAGER_H

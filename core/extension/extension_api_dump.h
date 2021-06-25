@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  register_core_types.h                                                */
+/*  extension_api_dump.h                                                 */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,13 +28,18 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef REGISTER_CORE_TYPES_H
-#define REGISTER_CORE_TYPES_H
+#ifndef API_DUMP_H
+#define API_DUMP_H
 
-void register_core_types();
-void register_core_settings();
-void register_core_extensions();
-void register_core_singletons();
-void unregister_core_types();
+#include "core/extension/native_extension.h"
 
-#endif // REGISTER_CORE_TYPES_H
+#ifdef TOOLS_ENABLED
+
+class NativeExtensionAPIDump {
+public:
+	static Dictionary generate_extension_api();
+	static void generate_extension_json_file(const String &p_path);
+};
+#endif
+
+#endif // API_DUMP_H
