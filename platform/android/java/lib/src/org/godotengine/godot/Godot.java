@@ -357,6 +357,8 @@ public class Godot extends Fragment implements SensorEventListener, IDownloaderC
 		return deviceInfo.reqGlEsVersion;
 	}
 
+	private String COMMAND_LINE_INTENT_NAME = "command line args";
+
 	@CallSuper
 	protected String[] getCommandLine() {
 		String[] original = parseCommandLine();
@@ -375,6 +377,12 @@ public class Godot extends Fragment implements SensorEventListener, IDownloaderC
 
 	private String[] parseCommandLine() {
 		InputStream is;
+		String[] activityCommandLine = getActivity().getIntent().getStringArrayExtra(COMMAND_LINE_INTENT_NAME);
+		int activityCommandLineCount = 0;
+		if (activityCommandLine != null) {
+			activityCommandLineCount = activityCommandLine.length;
+		}
+
 		try {
 			is = getActivity().getAssets().open("_cl_");
 			byte[] len = new byte[4];
@@ -383,7 +391,7 @@ public class Godot extends Fragment implements SensorEventListener, IDownloaderC
 				return new String[0];
 			}
 			int argc = ((int)(len[3] & 0xFF) << 24) | ((int)(len[2] & 0xFF) << 16) | ((int)(len[1] & 0xFF) << 8) | ((int)(len[0] & 0xFF));
-			String[] cmdline = new String[argc];
+			String[] cmdline = new String[argc + activityCommandLineCount];
 
 			for (int i = 0; i < argc; i++) {
 				r = is.read(len);
@@ -400,10 +408,19 @@ public class Godot extends Fragment implements SensorEventListener, IDownloaderC
 					cmdline[i] = new String(arg, "UTF-8");
 				}
 			}
+
+			if (activityCommandLine != null) {
+				System.arraycopy(activityCommandLine, 0, cmdline, argc, activityCommandLine.length);
+			}
+
 			return cmdline;
 		} catch (Exception e) {
 			e.printStackTrace();
-			return new String[0];
+			if (activityCommandLine != null) {
+				return activityCommandLine;
+			} else {
+				return new String[0];
+			}
 		}
 	}
 
@@ -1006,6 +1023,7 @@ public class Godot extends Fragment implements SensorEventListener, IDownloaderC
 		mProgressFraction.setText(Helpers.getDownloadProgressString(progress.mOverallProgress,
 				progress.mOverallTotal));
 	}
+
 	public void initInputDevices() {
 		mRenderView.initInputDevices();
 	}
@@ -1013,5 +1031,13 @@ public class Godot extends Fragment implements SensorEventListener, IDownloaderC
 	@Keep
 	private GodotRenderView getRenderView() { // used by native side to get renderView
 		return mRenderView;
+	}
+
+	@Keep
+	private void callIntentWithCommandLineArgs(String intentName, String[] args) throws ClassNotFoundException {
+		Class<?> c = Class.forName(intentName);
+		Intent intent = new Intent(getActivity(), c);
+		intent.putExtra(COMMAND_LINE_INTENT_NAME, args);
+		startActivity(intent);
 	}
 }

@@ -81,17 +81,27 @@ void OS_Android::alert(const String &p_alert, const String &p_title) {
 void OS_Android::initialize_core() {
 	OS_Unix::initialize_core();
 
+#ifdef TOOLS_ENABLED
+	FileAccess::make_default<FileAccessUnix>(FileAccess::ACCESS_RESOURCES);
+#else
 	if (use_apk_expansion)
 		FileAccess::make_default<FileAccessUnix>(FileAccess::ACCESS_RESOURCES);
 	else {
 		FileAccess::make_default<FileAccessAndroid>(FileAccess::ACCESS_RESOURCES);
 	}
+#endif
 	FileAccess::make_default<FileAccessUnix>(FileAccess::ACCESS_USERDATA);
 	FileAccess::make_default<FileAccessUnix>(FileAccess::ACCESS_FILESYSTEM);
+
+#ifdef TOOLS_ENABLED
+	DirAccess::make_default<DirAccessUnix>(DirAccess::ACCESS_RESOURCES);
+#else
 	if (use_apk_expansion)
 		DirAccess::make_default<DirAccessUnix>(DirAccess::ACCESS_RESOURCES);
 	else
 		DirAccess::make_default<DirAccessJAndroid>(DirAccess::ACCESS_RESOURCES);
+#endif
+
 	DirAccess::make_default<DirAccessUnix>(DirAccess::ACCESS_USERDATA);
 	DirAccess::make_default<DirAccessUnix>(DirAccess::ACCESS_FILESYSTEM);
 
@@ -193,7 +203,11 @@ Error OS_Android::shell_open(String p_uri) {
 }
 
 String OS_Android::get_resource_dir() const {
+#ifdef TOOLS_ENABLED
+	return ProjectSettings::get_singleton()->get_resource_path();
+#else
 	return "/"; //android has its own filesystem for resources inside the APK
+#endif
 }
 
 String OS_Android::get_locale() const {
@@ -286,6 +300,10 @@ void OS_Android::vibrate_handheld(int p_duration_ms) {
 	godot_java->vibrate(p_duration_ms);
 }
 
+String OS_Android::get_config_path() const {
+	return "/sdcard/godot";
+}
+
 bool OS_Android::_check_internal_feature_support(const String &p_feature) {
 	if (p_feature == "mobile") {
 		return true;
@@ -333,6 +351,25 @@ OS_Android::OS_Android(GodotJavaWrapper *p_godot_java, GodotIOJavaWrapper *p_god
 	AudioDriverManager::add_driver(&audio_driver_android);
 
 	DisplayServerAndroid::register_android_driver();
+}
+
+Error OS_Android::create_process(const String &p_path, const List<String> &p_arguments, ProcessID *r_child_id) {
+	if (p_path == "/system/bin/app_process64") {
+		String activity = "org.godotengine.editor.GodotGame";
+		const List<String>::Element *arg_pointer = p_arguments.front();
+		while (arg_pointer) {
+			if (arg_pointer->get() == "--editor") {
+				activity = "org.godotengine.editor.GodotEditor";
+				break;
+			} else {
+				arg_pointer = arg_pointer->next();
+			}
+		}
+		godot_java->call_intent_with_command_line_args(activity, p_arguments);
+		return OK;
+	} else {
+		return OS_Unix::create_process(p_path, p_arguments, r_child_id);
+	}
 }
 
 OS_Android::~OS_Android() {

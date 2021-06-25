@@ -121,6 +121,10 @@ public:
 
 	void vibrate_handheld(int p_duration_ms) override;
 
+	virtual String get_config_path() const override;
+
+	virtual Error create_process(const String &p_path, const List<String> &p_arguments, ProcessID *r_child_id) override;
+
 	virtual bool _check_internal_feature_support(const String &p_feature) override;
 	OS_Android(GodotJavaWrapper *p_godot_java, GodotIOJavaWrapper *p_godot_io_java, bool p_use_apk_expansion);
 	~OS_Android();
