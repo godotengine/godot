@@ -550,6 +550,8 @@ void EditorPropertyArray::_length_changed(double p_page) {
 void EditorPropertyArray::setup(Variant::Type p_array_type, const String &p_hint_string) {
 	array_type = p_array_type;
 
+	// The format of p_hint_string is:
+	// subType/subTypeHint:nextSubtype ... etc
 	if (array_type == Variant::ARRAY && !p_hint_string.is_empty()) {
 		int hint_subtype_separator = p_hint_string.find(":");
 		if (hint_subtype_separator >= 0) {
