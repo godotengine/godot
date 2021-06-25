@@ -98,7 +98,7 @@ RID RenderingDevice::_texture_create_shared_from_slice(const Ref<RDTextureView> 
 	return texture_create_shared_from_slice(p_view->base, p_with_texture, p_layer, p_mipmap, p_slice_type);
 }
 
-RenderingDevice::FramebufferFormatID RenderingDevice::_framebuffer_format_create(const TypedArray<RDAttachmentFormat> &p_attachments) {
+RenderingDevice::FramebufferFormatID RenderingDevice::_framebuffer_format_create(const TypedArray<RDAttachmentFormat> &p_attachments, uint32_t p_view_count) {
 	Vector<AttachmentFormat> attachments;
 	attachments.resize(p_attachments.size());
 
@@ -107,12 +107,43 @@ RenderingDevice::FramebufferFormatID RenderingDevice::_framebuffer_format_create
 		ERR_FAIL_COND_V(af.is_null(), INVALID_FORMAT_ID);
 		attachments.write[i] = af->base;
 	}
-	return framebuffer_format_create(attachments);
+	return framebuffer_format_create(attachments, p_view_count);
 }
 
-RID RenderingDevice::_framebuffer_create(const Array &p_textures, FramebufferFormatID p_format_check) {
+RenderingDevice::FramebufferFormatID RenderingDevice::_framebuffer_format_create_multipass(const TypedArray<RDAttachmentFormat> &p_attachments, const TypedArray<RDFramebufferPass> &p_passes, uint32_t p_view_count) {
+	Vector<AttachmentFormat> attachments;
+	attachments.resize(p_attachments.size());
+
+	for (int i = 0; i < p_attachments.size(); i++) {
+		Ref<RDAttachmentFormat> af = p_attachments[i];
+		ERR_FAIL_COND_V(af.is_null(), INVALID_FORMAT_ID);
+		attachments.write[i] = af->base;
+	}
+
+	Vector<FramebufferPass> passes;
+	for (int i = 0; i < p_passes.size(); i++) {
+		Ref<RDFramebufferPass> pass = p_passes[i];
+		ERR_CONTINUE(pass.is_null());
+		passes.push_back(pass->base);
+	}
+
+	return framebuffer_format_create_multipass(attachments, passes, p_view_count);
+}
+
+RID RenderingDevice::_framebuffer_create(const TypedArray<RID> &p_textures, FramebufferFormatID p_format_check, uint32_t p_view_count) {
 	Vector<RID> textures = Variant(p_textures);
-	return framebuffer_create(textures, p_format_check);
+	return framebuffer_create(textures, p_format_check, p_view_count);
+}
+
+RID RenderingDevice::_framebuffer_create_multipass(const TypedArray<RID> &p_textures, const TypedArray<RDFramebufferPass> &p_passes, FramebufferFormatID p_format_check, uint32_t p_view_count) {
+	Vector<RID> textures = Variant(p_textures);
+	Vector<FramebufferPass> passes;
+	for (int i = 0; i < p_passes.size(); i++) {
+		Ref<RDFramebufferPass> pass = p_passes[i];
+		ERR_CONTINUE(pass.is_null());
+		passes.push_back(pass->base);
+	}
+	return framebuffer_create_multipass(textures, passes, p_format_check, p_view_count);
 }
 
 RID RenderingDevice::_sampler_create(const Ref<RDSamplerState> &p_state) {
@@ -190,7 +221,7 @@ Error RenderingDevice::_buffer_update(RID p_buffer, uint32_t p_offset, uint32_t 
 	return buffer_update(p_buffer, p_offset, p_size, p_data.ptr(), p_post_barrier);
 }
 
-RID RenderingDevice::_render_pipeline_create(RID p_shader, FramebufferFormatID p_framebuffer_format, VertexFormatID p_vertex_format, RenderPrimitive p_render_primitive, const Ref<RDPipelineRasterizationState> &p_rasterization_state, const Ref<RDPipelineMultisampleState> &p_multisample_state, const Ref<RDPipelineDepthStencilState> &p_depth_stencil_state, const Ref<RDPipelineColorBlendState> &p_blend_state, int p_dynamic_state_flags) {
+RID RenderingDevice::_render_pipeline_create(RID p_shader, FramebufferFormatID p_framebuffer_format, VertexFormatID p_vertex_format, RenderPrimitive p_render_primitive, const Ref<RDPipelineRasterizationState> &p_rasterization_state, const Ref<RDPipelineMultisampleState> &p_multisample_state, const Ref<RDPipelineDepthStencilState> &p_depth_stencil_state, const Ref<RDPipelineColorBlendState> &p_blend_state, int p_dynamic_state_flags, uint32_t p_for_render_pass) {
 	PipelineRasterizationState rasterization_state;
 	if (p_rasterization_state.is_valid()) {
 		rasterization_state = p_rasterization_state->base;
@@ -221,7 +252,7 @@ RID RenderingDevice::_render_pipeline_create(RID p_shader, FramebufferFormatID p
 		}
 	}
 
-	return render_pipeline_create(p_shader, p_framebuffer_format, p_vertex_format, p_render_primitive, rasterization_state, multisample_state, depth_stencil_state, color_blend_state, p_dynamic_state_flags);
+	return render_pipeline_create(p_shader, p_framebuffer_format, p_vertex_format, p_render_primitive, rasterization_state, multisample_state, depth_stencil_state, color_blend_state, p_dynamic_state_flags, p_for_render_pass);
 }
 
 Vector<int64_t> RenderingDevice::_draw_list_begin_split(RID p_framebuffer, uint32_t p_splits, InitialAction p_initial_color_action, FinalAction p_final_color_action, InitialAction p_initial_depth_action, FinalAction p_final_depth_action, const Vector<Color> &p_clear_color_values, float p_clear_depth, uint32_t p_clear_stencil, const Rect2 &p_region, const TypedArray<RID> &p_storage_textures) {
@@ -232,6 +263,22 @@ Vector<int64_t> RenderingDevice::_draw_list_begin_split(RID p_framebuffer, uint3
 		stextures.push_back(p_storage_textures[i]);
 	}
 	draw_list_begin_split(p_framebuffer, p_splits, splits.ptrw(), p_initial_color_action, p_final_color_action, p_initial_depth_action, p_final_depth_action, p_clear_color_values, p_clear_depth, p_clear_stencil, p_region, stextures);
+
+	Vector<int64_t> split_ids;
+	split_ids.resize(splits.size());
+	for (int i = 0; i < splits.size(); i++) {
+		split_ids.write[i] = splits[i];
+	}
+
+	return split_ids;
+}
+
+Vector<int64_t> RenderingDevice::_draw_list_switch_to_next_pass_split(uint32_t p_splits) {
+	Vector<DrawListID> splits;
+	splits.resize(p_splits);
+
+	Error err = draw_list_switch_to_next_pass_split(p_splits, splits.ptrw());
+	ERR_FAIL_COND_V(err != OK, Vector<int64_t>());
 
 	Vector<int64_t> split_ids;
 	split_ids.resize(splits.size());
@@ -269,10 +316,12 @@ void RenderingDevice::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("texture_clear", "texture", "color", "base_mipmap", "mipmap_count", "base_layer", "layer_count", "post_barrier"), &RenderingDevice::texture_clear, DEFVAL(BARRIER_MASK_ALL));
 	ClassDB::bind_method(D_METHOD("texture_resolve_multisample", "from_texture", "to_texture", "post_barrier"), &RenderingDevice::texture_resolve_multisample, DEFVAL(BARRIER_MASK_ALL));
 
-	ClassDB::bind_method(D_METHOD("framebuffer_format_create", "attachments"), &RenderingDevice::_framebuffer_format_create);
+	ClassDB::bind_method(D_METHOD("framebuffer_format_create", "attachments", "view_count"), &RenderingDevice::_framebuffer_format_create, DEFVAL(1));
+	ClassDB::bind_method(D_METHOD("framebuffer_format_create_multipass", "attachments", "passes", "view_count"), &RenderingDevice::_framebuffer_format_create_multipass, DEFVAL(1));
 	ClassDB::bind_method(D_METHOD("framebuffer_format_create_empty", "samples"), &RenderingDevice::framebuffer_format_create_empty, DEFVAL(TEXTURE_SAMPLES_1));
-	ClassDB::bind_method(D_METHOD("framebuffer_format_get_texture_samples", "format"), &RenderingDevice::framebuffer_format_get_texture_samples);
-	ClassDB::bind_method(D_METHOD("framebuffer_create", "textures", "validate_with_format"), &RenderingDevice::_framebuffer_create, DEFVAL(INVALID_FORMAT_ID));
+	ClassDB::bind_method(D_METHOD("framebuffer_format_get_texture_samples", "format", "render_pass"), &RenderingDevice::framebuffer_format_get_texture_samples, DEFVAL(0));
+	ClassDB::bind_method(D_METHOD("framebuffer_create", "textures", "validate_with_format", "view_count"), &RenderingDevice::_framebuffer_create, DEFVAL(INVALID_FORMAT_ID), DEFVAL(1));
+	ClassDB::bind_method(D_METHOD("framebuffer_create_multipass", "textures", "passes", "validate_with_format", "view_count"), &RenderingDevice::_framebuffer_create_multipass, DEFVAL(INVALID_FORMAT_ID), DEFVAL(1));
 	ClassDB::bind_method(D_METHOD("framebuffer_create_empty", "size", "samples", "validate_with_format"), &RenderingDevice::framebuffer_create_empty, DEFVAL(TEXTURE_SAMPLES_1), DEFVAL(INVALID_FORMAT_ID));
 	ClassDB::bind_method(D_METHOD("framebuffer_get_format", "framebuffer"), &RenderingDevice::framebuffer_get_format);
 
@@ -299,7 +348,7 @@ void RenderingDevice::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("buffer_clear", "buffer", "offset", "size_bytes", "post_barrier"), &RenderingDevice::buffer_clear, DEFVAL(BARRIER_MASK_ALL));
 	ClassDB::bind_method(D_METHOD("buffer_get_data", "buffer"), &RenderingDevice::buffer_get_data);
 
-	ClassDB::bind_method(D_METHOD("render_pipeline_create", "shader", "framebuffer_format", "vertex_format", "primitive", "rasterization_state", "multisample_state", "stencil_state", "color_blend_state", "dynamic_state_flags"), &RenderingDevice::_render_pipeline_create, DEFVAL(0));
+	ClassDB::bind_method(D_METHOD("render_pipeline_create", "shader", "framebuffer_format", "vertex_format", "primitive", "rasterization_state", "multisample_state", "stencil_state", "color_blend_state", "dynamic_state_flags", "for_render_pass"), &RenderingDevice::_render_pipeline_create, DEFVAL(0), DEFVAL(0));
 	ClassDB::bind_method(D_METHOD("render_pipeline_is_valid", "render_pipeline"), &RenderingDevice::render_pipeline_is_valid);
 
 	ClassDB::bind_method(D_METHOD("compute_pipeline_create", "shader"), &RenderingDevice::compute_pipeline_create);
@@ -324,6 +373,9 @@ void RenderingDevice::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("draw_list_enable_scissor", "draw_list", "rect"), &RenderingDevice::draw_list_enable_scissor, DEFVAL(Rect2i()));
 	ClassDB::bind_method(D_METHOD("draw_list_disable_scissor", "draw_list"), &RenderingDevice::draw_list_disable_scissor);
+
+	ClassDB::bind_method(D_METHOD("draw_list_switch_to_next_pass"), &RenderingDevice::draw_list_switch_to_next_pass);
+	ClassDB::bind_method(D_METHOD("draw_list_switch_to_next_pass_split", "splits"), &RenderingDevice::_draw_list_switch_to_next_pass_split);
 
 	ClassDB::bind_method(D_METHOD("draw_list_end", "post_barrier"), &RenderingDevice::draw_list_end, DEFVAL(BARRIER_MASK_ALL));
 

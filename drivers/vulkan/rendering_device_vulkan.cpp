@@ -3244,12 +3244,7 @@ bool RenderingDeviceVulkan::texture_is_format_supported_for_usage(DataFormat p_f
 /**** ATTACHMENT ****/
 /********************/
 
-VkRenderPass RenderingDeviceVulkan::_render_pass_create(const Vector<AttachmentFormat> &p_format, InitialAction p_initial_color_action, FinalAction p_final_color_action, InitialAction p_initial_depth_action, FinalAction p_final_depth_action, int *r_color_attachment_count, uint32_t p_view_count) {
-	Vector<VkAttachmentDescription> attachments;
-	Vector<VkAttachmentReference> color_references;
-	Vector<VkAttachmentReference> depth_stencil_references;
-	Vector<VkAttachmentReference> resolve_references;
-
+VkRenderPass RenderingDeviceVulkan::_render_pass_create(const Vector<AttachmentFormat> &p_attachments, const Vector<FramebufferPass> &p_passes, InitialAction p_initial_action, FinalAction p_final_action, InitialAction p_initial_depth_action, FinalAction p_final_depth_action, uint32_t p_view_count, Vector<TextureSamples> *r_samples) {
 	// Set up dependencies from/to external equivalent to the default (implicit) one, and then amend them
 	const VkPipelineStageFlags default_access_mask = VK_ACCESS_INPUT_ATTACHMENT_READ_BIT |
 													 VK_ACCESS_COLOR_ATTACHMENT_READ_BIT |
@@ -3262,27 +3257,31 @@ VkRenderPass RenderingDeviceVulkan::_render_pass_create(const Vector<AttachmentF
 		{ 0, VK_SUBPASS_EXTERNAL, VK_PIPELINE_STAGE_ALL_GRAPHICS_BIT, VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, default_access_mask, 0, 0 } };
 	VkSubpassDependency &dependency_from_external = dependencies[0];
 	VkSubpassDependency &dependency_to_external = dependencies[1];
+	LocalVector<int32_t> attachment_last_pass;
+	attachment_last_pass.resize(p_attachments.size());
 
-	for (int i = 0; i < p_format.size(); i++) {
-		ERR_FAIL_INDEX_V(p_format[i].format, DATA_FORMAT_MAX, VK_NULL_HANDLE);
-		ERR_FAIL_INDEX_V(p_format[i].samples, TEXTURE_SAMPLES_MAX, VK_NULL_HANDLE);
-		ERR_FAIL_COND_V_MSG(!(p_format[i].usage_flags & (TEXTURE_USAGE_COLOR_ATTACHMENT_BIT | TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | TEXTURE_USAGE_RESOLVE_ATTACHMENT_BIT)),
+	Vector<VkAttachmentDescription> attachments;
+
+	for (int i = 0; i < p_attachments.size(); i++) {
+		ERR_FAIL_INDEX_V(p_attachments[i].format, DATA_FORMAT_MAX, VK_NULL_HANDLE);
+		ERR_FAIL_INDEX_V(p_attachments[i].samples, TEXTURE_SAMPLES_MAX, VK_NULL_HANDLE);
+		ERR_FAIL_COND_V_MSG(!(p_attachments[i].usage_flags & (TEXTURE_USAGE_COLOR_ATTACHMENT_BIT | TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | TEXTURE_USAGE_RESOLVE_ATTACHMENT_BIT)),
 				VK_NULL_HANDLE, "Texture format for index (" + itos(i) + ") requires an attachment (depth, stencil or resolve) bit set.");
 
 		VkAttachmentDescription description = {};
 		description.flags = 0;
-		description.format = vulkan_formats[p_format[i].format];
-		description.samples = rasterization_sample_count[p_format[i].samples];
+		description.format = vulkan_formats[p_attachments[i].format];
+		description.samples = rasterization_sample_count[p_attachments[i].samples];
 
-		bool is_depth_stencil = p_format[i].usage_flags & TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
-		bool is_sampled = p_format[i].usage_flags & TEXTURE_USAGE_SAMPLING_BIT;
-		bool is_storage = p_format[i].usage_flags & TEXTURE_USAGE_STORAGE_BIT;
+		bool is_sampled = p_attachments[i].usage_flags & TEXTURE_USAGE_SAMPLING_BIT;
+		bool is_storage = p_attachments[i].usage_flags & TEXTURE_USAGE_STORAGE_BIT;
+		bool is_depth = p_attachments[i].usage_flags & TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
 
 		// For each UNDEFINED, assume the prior use was a *read*, as we'd be discarding the output of a write
 		// Also, each UNDEFINED will do an immediate layout transition (write), s.t. we must ensure execution synchronization vs.
 		// the read. If this is a performance issue, one could track the actual last accessor of each resource, adding only that
 		// stage
-		switch (is_depth_stencil ? p_initial_depth_action : p_initial_color_action) {
+		switch (is_depth ? p_initial_depth_action : p_initial_action) {
 			case INITIAL_ACTION_CLEAR_REGION:
 			case INITIAL_ACTION_CLEAR: {
 				description.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
@@ -3291,11 +3290,11 @@ VkRenderPass RenderingDeviceVulkan::_render_pass_create(const Vector<AttachmentF
 				dependency_from_external.srcStageMask |= reading_stages;
 			} break;
 			case INITIAL_ACTION_KEEP: {
-				if (p_format[i].usage_flags & TEXTURE_USAGE_COLOR_ATTACHMENT_BIT) {
+				if (p_attachments[i].usage_flags & TEXTURE_USAGE_COLOR_ATTACHMENT_BIT) {
 					description.loadOp = VK_ATTACHMENT_LOAD_OP_LOAD;
 					description.initialLayout = is_sampled ? VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL : (is_storage ? VK_IMAGE_LAYOUT_GENERAL : VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
 					description.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-				} else if (p_format[i].usage_flags & TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT) {
+				} else if (p_attachments[i].usage_flags & TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT) {
 					description.loadOp = VK_ATTACHMENT_LOAD_OP_LOAD;
 					description.initialLayout = is_sampled ? VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL : (is_storage ? VK_IMAGE_LAYOUT_GENERAL : VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
 					description.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_LOAD;
@@ -3308,11 +3307,11 @@ VkRenderPass RenderingDeviceVulkan::_render_pass_create(const Vector<AttachmentF
 				}
 			} break;
 			case INITIAL_ACTION_DROP: {
-				if (p_format[i].usage_flags & TEXTURE_USAGE_COLOR_ATTACHMENT_BIT) {
+				if (p_attachments[i].usage_flags & TEXTURE_USAGE_COLOR_ATTACHMENT_BIT) {
 					description.loadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
 					description.initialLayout = is_sampled ? VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL : (is_storage ? VK_IMAGE_LAYOUT_GENERAL : VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
 					description.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-				} else if (p_format[i].usage_flags & TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT) {
+				} else if (p_attachments[i].usage_flags & TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT) {
 					description.loadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
 					description.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED; //don't care what is there
 					description.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
@@ -3326,11 +3325,11 @@ VkRenderPass RenderingDeviceVulkan::_render_pass_create(const Vector<AttachmentF
 			} break;
 			case INITIAL_ACTION_CLEAR_REGION_CONTINUE:
 			case INITIAL_ACTION_CONTINUE: {
-				if (p_format[i].usage_flags & TEXTURE_USAGE_COLOR_ATTACHMENT_BIT) {
+				if (p_attachments[i].usage_flags & TEXTURE_USAGE_COLOR_ATTACHMENT_BIT) {
 					description.loadOp = VK_ATTACHMENT_LOAD_OP_LOAD;
 					description.initialLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 					description.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-				} else if (p_format[i].usage_flags & TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT) {
+				} else if (p_attachments[i].usage_flags & TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT) {
 					description.loadOp = VK_ATTACHMENT_LOAD_OP_LOAD;
 					description.initialLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
 					description.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_LOAD;
@@ -3346,14 +3345,14 @@ VkRenderPass RenderingDeviceVulkan::_render_pass_create(const Vector<AttachmentF
 			}
 		}
 
-		switch (is_depth_stencil ? p_final_depth_action : p_final_color_action) {
+		switch (is_depth ? p_final_depth_action : p_final_action) {
 			case FINAL_ACTION_READ: {
-				if (p_format[i].usage_flags & TEXTURE_USAGE_COLOR_ATTACHMENT_BIT) {
+				if (p_attachments[i].usage_flags & TEXTURE_USAGE_COLOR_ATTACHMENT_BIT) {
 					description.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
 					description.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
 					description.finalLayout = is_sampled ? VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL : (is_storage ? VK_IMAGE_LAYOUT_GENERAL : VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
 					update_external_dependency_for_store(dependency_to_external, is_sampled, is_storage, false);
-				} else if (p_format[i].usage_flags & TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT) {
+				} else if (p_attachments[i].usage_flags & TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT) {
 					description.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
 					description.stencilStoreOp = VK_ATTACHMENT_STORE_OP_STORE;
 					description.finalLayout = is_sampled ? VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL : (is_storage ? VK_IMAGE_LAYOUT_GENERAL : VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
@@ -3366,11 +3365,11 @@ VkRenderPass RenderingDeviceVulkan::_render_pass_create(const Vector<AttachmentF
 				}
 			} break;
 			case FINAL_ACTION_DISCARD: {
-				if (p_format[i].usage_flags & TEXTURE_USAGE_COLOR_ATTACHMENT_BIT) {
+				if (p_attachments[i].usage_flags & TEXTURE_USAGE_COLOR_ATTACHMENT_BIT) {
 					description.storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
 					description.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
 					description.finalLayout = is_sampled ? VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL : (is_storage ? VK_IMAGE_LAYOUT_GENERAL : VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
-				} else if (p_format[i].usage_flags & TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT) {
+				} else if (p_attachments[i].usage_flags & TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT) {
 					description.storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
 					description.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
 					description.finalLayout = is_sampled ? VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL : (is_storage ? VK_IMAGE_LAYOUT_GENERAL : VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
@@ -3381,11 +3380,11 @@ VkRenderPass RenderingDeviceVulkan::_render_pass_create(const Vector<AttachmentF
 				}
 			} break;
 			case FINAL_ACTION_CONTINUE: {
-				if (p_format[i].usage_flags & TEXTURE_USAGE_COLOR_ATTACHMENT_BIT) {
+				if (p_attachments[i].usage_flags & TEXTURE_USAGE_COLOR_ATTACHMENT_BIT) {
 					description.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
 					description.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
 					description.finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-				} else if (p_format[i].usage_flags & TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT) {
+				} else if (p_attachments[i].usage_flags & TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT) {
 					description.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
 					description.stencilStoreOp = VK_ATTACHMENT_STORE_OP_STORE;
 					description.finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
@@ -3401,27 +3400,191 @@ VkRenderPass RenderingDeviceVulkan::_render_pass_create(const Vector<AttachmentF
 			}
 		}
 
+		attachment_last_pass[i] = -1;
+
 		attachments.push_back(description);
+	}
 
-		VkAttachmentReference reference;
-		reference.attachment = i;
+	LocalVector<VkSubpassDescription> subpasses;
+	LocalVector<LocalVector<VkAttachmentReference>> color_reference_array;
+	LocalVector<LocalVector<VkAttachmentReference>> input_reference_array;
+	LocalVector<LocalVector<VkAttachmentReference>> resolve_reference_array;
+	LocalVector<LocalVector<uint32_t>> preserve_reference_array;
+	LocalVector<VkAttachmentReference> depth_reference_array;
 
-		if (p_format[i].usage_flags & TEXTURE_USAGE_COLOR_ATTACHMENT_BIT) {
-			reference.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+	subpasses.resize(p_passes.size());
+	color_reference_array.resize(p_passes.size());
+	input_reference_array.resize(p_passes.size());
+	resolve_reference_array.resize(p_passes.size());
+	preserve_reference_array.resize(p_passes.size());
+	depth_reference_array.resize(p_passes.size());
+
+	LocalVector<VkSubpassDependency> subpass_dependencies;
+
+	for (int i = 0; i < p_passes.size(); i++) {
+		const FramebufferPass *pass = &p_passes[i];
+
+		LocalVector<VkAttachmentReference> &color_references = color_reference_array[i];
+
+		TextureSamples texture_samples = TEXTURE_SAMPLES_1;
+		bool is_multisample_first = true;
+
+		for (int j = 0; j < pass->color_attachments.size(); j++) {
+			int32_t attachment = pass->color_attachments[j];
+			VkAttachmentReference reference;
+			if (attachment == FramebufferPass::ATTACHMENT_UNUSED) {
+				reference.attachment = VK_ATTACHMENT_UNUSED;
+				reference.layout = VK_IMAGE_LAYOUT_UNDEFINED;
+			} else {
+				ERR_FAIL_INDEX_V_MSG(attachment, p_attachments.size(), VK_NULL_HANDLE, "Invalid framebuffer format attachment(" + itos(attachment) + "), in pass (" + itos(i) + "), color attachment (" + itos(j) + ").");
+				ERR_FAIL_COND_V_MSG(!(p_attachments[attachment].usage_flags & TEXTURE_USAGE_COLOR_ATTACHMENT_BIT), VK_NULL_HANDLE, "Invalid framebuffer format attachment(" + itos(attachment) + "), in pass (" + itos(i) + "), it's marked as depth, but it's not usable as color attachment.");
+				ERR_FAIL_COND_V_MSG(attachment_last_pass[attachment] == i, VK_NULL_HANDLE, "Invalid framebuffer format attachment(" + itos(attachment) + "), in pass (" + itos(i) + "), it already was used for something else before in this pass.");
+
+				if (is_multisample_first) {
+					texture_samples = p_attachments[attachment].samples;
+					is_multisample_first = false;
+				} else {
+					ERR_FAIL_COND_V_MSG(texture_samples != p_attachments[attachment].samples, VK_NULL_HANDLE, "Invalid framebuffer format attachment(" + itos(attachment) + "), in pass (" + itos(i) + "), if an attachment is marked as multisample, all of them should be multisample and use the same number of samples.");
+				}
+				reference.attachment = attachment;
+				reference.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+				attachment_last_pass[attachment] = i;
+			}
 			color_references.push_back(reference);
-		} else if (p_format[i].usage_flags & TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT) {
-			reference.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
-			depth_stencil_references.push_back(reference);
-		} else if (p_format[i].usage_flags & TEXTURE_USAGE_RESOLVE_ATTACHMENT_BIT) {
-			reference.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-			resolve_references.push_back(reference);
-			// if resolves are done, we need to ensure the copy is safe
-			dependency_to_external.dstStageMask |= VK_PIPELINE_STAGE_TRANSFER_BIT;
-			dependency_to_external.dstAccessMask |= VK_ACCESS_TRANSFER_READ_BIT;
-		} else {
-			ERR_FAIL_V_MSG(VK_NULL_HANDLE, "Texture index " + itos(i) + " is neither color, depth stencil or resolve so it can't be used as attachment.");
 		}
 
+		LocalVector<VkAttachmentReference> &input_references = input_reference_array[i];
+
+		for (int j = 0; j < pass->input_attachments.size(); j++) {
+			int32_t attachment = pass->input_attachments[j];
+			VkAttachmentReference reference;
+			if (attachment == FramebufferPass::ATTACHMENT_UNUSED) {
+				reference.attachment = VK_ATTACHMENT_UNUSED;
+				reference.layout = VK_IMAGE_LAYOUT_UNDEFINED;
+			} else {
+				ERR_FAIL_INDEX_V_MSG(attachment, p_attachments.size(), VK_NULL_HANDLE, "Invalid framebuffer format attachment(" + itos(attachment) + "), in pass (" + itos(i) + "), input attachment (" + itos(j) + ").");
+				ERR_FAIL_COND_V_MSG(!(p_attachments[attachment].usage_flags & TEXTURE_USAGE_COLOR_ATTACHMENT_BIT), VK_NULL_HANDLE, "Invalid framebuffer format attachment(" + itos(attachment) + "), in pass (" + itos(i) + "), it's marked as depth, but it's not usable as input attachment.");
+				ERR_FAIL_COND_V_MSG(attachment_last_pass[attachment] == i, VK_NULL_HANDLE, "Invalid framebuffer format attachment(" + itos(attachment) + "), in pass (" + itos(i) + "), it already was used for something else before in this pass.");
+				reference.attachment = attachment;
+				reference.layout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+				attachment_last_pass[attachment] = i;
+			}
+			input_references.push_back(reference);
+		}
+
+		LocalVector<VkAttachmentReference> &resolve_references = resolve_reference_array[i];
+
+		if (pass->resolve_attachments.size() > 0) {
+			ERR_FAIL_COND_V_MSG(pass->resolve_attachments.size() != pass->color_attachments.size(), VK_NULL_HANDLE, "The amount of resolve attachments (" + itos(pass->resolve_attachments.size()) + ") must match the number of color attachments (" + itos(pass->color_attachments.size()) + ").");
+			ERR_FAIL_COND_V_MSG(texture_samples == TEXTURE_SAMPLES_1, VK_NULL_HANDLE, "Resolve attachments specified, but color attachments are not multisample.");
+		}
+		for (int j = 0; j < pass->resolve_attachments.size(); j++) {
+			int32_t attachment = pass->resolve_attachments[j];
+			VkAttachmentReference reference;
+			if (attachment == FramebufferPass::ATTACHMENT_UNUSED) {
+				reference.attachment = VK_ATTACHMENT_UNUSED;
+				reference.layout = VK_IMAGE_LAYOUT_UNDEFINED;
+			} else {
+				ERR_FAIL_INDEX_V_MSG(attachment, p_attachments.size(), VK_NULL_HANDLE, "Invalid framebuffer format attachment(" + itos(attachment) + "), in pass (" + itos(i) + "), resolve attachment (" + itos(j) + ").");
+				ERR_FAIL_COND_V_MSG(pass->color_attachments[j] == FramebufferPass::ATTACHMENT_UNUSED, VK_NULL_HANDLE, "Invalid framebuffer format attachment(" + itos(attachment) + "), in pass (" + itos(i) + "), resolve attachment (" + itos(j) + "), the respective color attachment is marked as unused.");
+				ERR_FAIL_COND_V_MSG(!(p_attachments[attachment].usage_flags & TEXTURE_USAGE_COLOR_ATTACHMENT_BIT), VK_NULL_HANDLE, "Invalid framebuffer format attachment(" + itos(attachment) + "), in pass (" + itos(i) + "), it's marked as depth, but it's not usable as resolve attachment.");
+				ERR_FAIL_COND_V_MSG(attachment_last_pass[attachment] == i, VK_NULL_HANDLE, "Invalid framebuffer format attachment(" + itos(attachment) + "), in pass (" + itos(i) + "), it already was used for something else before in this pass.");
+				bool multisample = p_attachments[attachment].samples > TEXTURE_SAMPLES_1;
+				ERR_FAIL_COND_V_MSG(multisample, VK_NULL_HANDLE, "Invalid framebuffer format attachment(" + itos(attachment) + "), in pass (" + itos(i) + "), resolve attachments can't be multisample.");
+				reference.attachment = attachment;
+				reference.layout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+				attachment_last_pass[attachment] = i;
+			}
+			resolve_references.push_back(reference);
+		}
+
+		LocalVector<uint32_t> &preserve_references = preserve_reference_array[i];
+
+		for (int j = 0; j < pass->preserve_attachments.size(); j++) {
+			int32_t attachment = pass->preserve_attachments[j];
+
+			ERR_FAIL_COND_V_MSG(attachment == FramebufferPass::ATTACHMENT_UNUSED, VK_NULL_HANDLE, "Invalid framebuffer format attachment(" + itos(attachment) + "), in pass (" + itos(i) + "), preserve attachment (" + itos(j) + "). Preserve attachments can't be unused.");
+
+			ERR_FAIL_INDEX_V_MSG(attachment, p_attachments.size(), VK_NULL_HANDLE, "Invalid framebuffer format attachment(" + itos(attachment) + "), in pass (" + itos(i) + "), preserve attachment (" + itos(j) + ").");
+			ERR_FAIL_COND_V_MSG(attachment_last_pass[attachment] == i, VK_NULL_HANDLE, "Invalid framebuffer format attachment(" + itos(attachment) + "), in pass (" + itos(i) + "), it already was used for something else before in this pass.");
+
+			attachment_last_pass[attachment] = i;
+
+			preserve_references.push_back(attachment);
+		}
+
+		VkAttachmentReference &depth_stencil_reference = depth_reference_array[i];
+
+		if (pass->depth_attachment != FramebufferPass::ATTACHMENT_UNUSED) {
+			int32_t attachment = pass->depth_attachment;
+			ERR_FAIL_INDEX_V_MSG(attachment, p_attachments.size(), VK_NULL_HANDLE, "Invalid framebuffer depth format attachment(" + itos(attachment) + "), in pass (" + itos(i) + "), depth attachment.");
+			ERR_FAIL_COND_V_MSG(!(p_attachments[attachment].usage_flags & TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT), VK_NULL_HANDLE, "Invalid framebuffer depth format attachment(" + itos(attachment) + "), in pass (" + itos(i) + "), it's marked as depth, but it's not a depth attachment.");
+			ERR_FAIL_COND_V_MSG(attachment_last_pass[attachment] == i, VK_NULL_HANDLE, "Invalid framebuffer depth format attachment(" + itos(attachment) + "), in pass (" + itos(i) + "), it already was used for something else before in this pass.");
+			depth_stencil_reference.attachment = attachment;
+			depth_stencil_reference.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+			attachment_last_pass[attachment] = i;
+
+			if (!is_multisample_first) {
+				ERR_FAIL_COND_V_MSG(texture_samples != p_attachments[attachment].samples, VK_NULL_HANDLE, "Invalid framebuffer depth format attachment(" + itos(attachment) + "), in pass (" + itos(i) + "), if an attachment is marked as multisample, all of them should be multisample and use the same number of samples including the depth.");
+			}
+
+		} else {
+			depth_stencil_reference.attachment = VK_ATTACHMENT_UNUSED;
+			depth_stencil_reference.layout = VK_IMAGE_LAYOUT_UNDEFINED;
+		}
+
+		VkSubpassDescription &subpass = subpasses[i];
+		subpass.flags = 0;
+		subpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
+		subpass.inputAttachmentCount = input_references.size();
+		if (input_references.size()) {
+			subpass.pInputAttachments = input_references.ptr();
+		} else {
+			subpass.pInputAttachments = nullptr;
+		}
+		subpass.colorAttachmentCount = color_references.size();
+		if (color_references.size()) {
+			subpass.pColorAttachments = color_references.ptr();
+		} else {
+			subpass.pColorAttachments = nullptr;
+		}
+		if (depth_stencil_reference.attachment != VK_ATTACHMENT_UNUSED) {
+			subpass.pDepthStencilAttachment = &depth_stencil_reference;
+		} else {
+			subpass.pDepthStencilAttachment = nullptr;
+		}
+
+		if (resolve_references.size()) {
+			subpass.pResolveAttachments = resolve_references.ptr();
+		} else {
+			subpass.pResolveAttachments = nullptr;
+		}
+
+		subpass.preserveAttachmentCount = preserve_references.size();
+		if (preserve_references.size()) {
+			subpass.pPreserveAttachments = preserve_references.ptr();
+		} else {
+			subpass.pPreserveAttachments = nullptr;
+		}
+
+		if (r_samples) {
+			r_samples->push_back(texture_samples);
+		}
+
+		if (i > 0) {
+			VkSubpassDependency dependency;
+			dependency.srcSubpass = i - 1;
+			dependency.dstSubpass = i;
+			dependency.srcStageMask = 0;
+			dependency.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT | VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT;
+			dependency.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT | VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT | VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
+
+			dependency.srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+			dependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT | VK_ACCESS_INPUT_ATTACHMENT_READ_BIT;
+			dependency.dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
+			subpass_dependencies.push_back(dependency);
+		}
+		/*
 		// NOTE: Big Mallet Approach -- any layout transition causes a full barrier
 		if (reference.layout != description.initialLayout) {
 			// NOTE: this should be smarter based on the texture's knowledge of its previous role
@@ -3433,25 +3596,8 @@ VkRenderPass RenderingDeviceVulkan::_render_pass_create(const Vector<AttachmentF
 			dependency_to_external.dstStageMask |= VK_PIPELINE_STAGE_ALL_COMMANDS_BIT;
 			dependency_to_external.dstAccessMask |= VK_ACCESS_MEMORY_READ_BIT | VK_ACCESS_MEMORY_WRITE_BIT;
 		}
+		*/
 	}
-
-	ERR_FAIL_COND_V_MSG(depth_stencil_references.size() > 1, VK_NULL_HANDLE,
-			"Formats can only have one depth/stencil attachment, supplied (" + itos(depth_stencil_references.size()) + ").");
-
-	ERR_FAIL_COND_V_MSG(resolve_references.size() > 1, VK_NULL_HANDLE,
-			"Formats can only have one resolve attachment, supplied (" + itos(resolve_references.size()) + ").");
-
-	VkSubpassDescription subpass;
-	subpass.flags = 0;
-	subpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
-	subpass.inputAttachmentCount = 0; //unsupported for now
-	subpass.pInputAttachments = nullptr;
-	subpass.colorAttachmentCount = color_references.size();
-	subpass.pColorAttachments = color_references.ptr();
-	subpass.pDepthStencilAttachment = depth_stencil_references.ptr();
-	subpass.pResolveAttachments = resolve_references.ptr();
-	subpass.preserveAttachmentCount = 0;
-	subpass.pPreserveAttachments = nullptr;
 
 	VkRenderPassCreateInfo render_pass_create_info;
 	render_pass_create_info.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
@@ -3459,15 +3605,19 @@ VkRenderPass RenderingDeviceVulkan::_render_pass_create(const Vector<AttachmentF
 	render_pass_create_info.flags = 0;
 	render_pass_create_info.attachmentCount = attachments.size();
 	render_pass_create_info.pAttachments = attachments.ptr();
-	render_pass_create_info.subpassCount = 1;
-	render_pass_create_info.pSubpasses = &subpass;
+	render_pass_create_info.subpassCount = subpasses.size();
+	render_pass_create_info.pSubpasses = subpasses.ptr();
 	// Commenting this because it seems it just avoids raster and compute to work at the same time.
 	// Other barriers seem to be protecting the render pass fine.
 	//	render_pass_create_info.dependencyCount = 2;
 	//	render_pass_create_info.pDependencies = dependencies;
 
-	render_pass_create_info.dependencyCount = 0;
-	render_pass_create_info.pDependencies = nullptr;
+	render_pass_create_info.dependencyCount = subpass_dependencies.size();
+	if (subpass_dependencies.size()) {
+		render_pass_create_info.pDependencies = subpass_dependencies.ptr();
+	} else {
+		render_pass_create_info.pDependencies = nullptr;
+	}
 
 	const uint32_t view_mask = (1 << p_view_count) - 1;
 	const uint32_t correlation_mask = (1 << p_view_count) - 1;
@@ -3498,17 +3648,29 @@ VkRenderPass RenderingDeviceVulkan::_render_pass_create(const Vector<AttachmentF
 	VkResult res = vkCreateRenderPass(device, &render_pass_create_info, nullptr, &render_pass);
 	ERR_FAIL_COND_V_MSG(res, VK_NULL_HANDLE, "vkCreateRenderPass failed with error " + itos(res) + ".");
 
-	if (r_color_attachment_count) {
-		*r_color_attachment_count = color_references.size();
-	}
 	return render_pass;
 }
 
 RenderingDevice::FramebufferFormatID RenderingDeviceVulkan::framebuffer_format_create(const Vector<AttachmentFormat> &p_format, uint32_t p_view_count) {
+	FramebufferPass pass;
+	for (int i = 0; i < p_format.size(); i++) {
+		if (p_format[i].usage_flags & TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT) {
+			pass.depth_attachment = i;
+		} else {
+			pass.color_attachments.push_back(i);
+		}
+	}
+
+	Vector<FramebufferPass> passes;
+	passes.push_back(pass);
+	return framebuffer_format_create_multipass(p_format, passes, p_view_count);
+}
+RenderingDevice::FramebufferFormatID RenderingDeviceVulkan::framebuffer_format_create_multipass(const Vector<AttachmentFormat> &p_attachments, Vector<FramebufferPass> &p_passes, uint32_t p_view_count) {
 	_THREAD_SAFE_METHOD_
 
 	FramebufferFormatKey key;
-	key.attachments = p_format;
+	key.attachments = p_attachments;
+	key.passes = p_passes;
 	key.view_count = p_view_count;
 
 	const Map<FramebufferFormatKey, FramebufferFormatID>::Element *E = framebuffer_format_cache.find(key);
@@ -3517,8 +3679,8 @@ RenderingDevice::FramebufferFormatID RenderingDeviceVulkan::framebuffer_format_c
 		return E->get();
 	}
 
-	int color_references;
-	VkRenderPass render_pass = _render_pass_create(p_format, INITIAL_ACTION_CLEAR, FINAL_ACTION_READ, INITIAL_ACTION_CLEAR, FINAL_ACTION_READ, &color_references, p_view_count); //actions don't matter for this use case
+	Vector<TextureSamples> samples;
+	VkRenderPass render_pass = _render_pass_create(p_attachments, p_passes, INITIAL_ACTION_CLEAR, FINAL_ACTION_READ, INITIAL_ACTION_CLEAR, FINAL_ACTION_READ, p_view_count, &samples); //actions don't matter for this use case
 
 	if (render_pass == VK_NULL_HANDLE) { //was likely invalid
 		return INVALID_ID;
@@ -3528,9 +3690,8 @@ RenderingDevice::FramebufferFormatID RenderingDeviceVulkan::framebuffer_format_c
 	E = framebuffer_format_cache.insert(key, id);
 	FramebufferFormat fb_format;
 	fb_format.E = E;
-	fb_format.color_attachments = color_references;
 	fb_format.render_pass = render_pass;
-	fb_format.samples = p_format[0].samples;
+	fb_format.pass_samples = samples;
 	fb_format.view_count = p_view_count;
 	framebuffer_formats[id] = fb_format;
 	return id;
@@ -3538,6 +3699,7 @@ RenderingDevice::FramebufferFormatID RenderingDeviceVulkan::framebuffer_format_c
 
 RenderingDevice::FramebufferFormatID RenderingDeviceVulkan::framebuffer_format_create_empty(TextureSamples p_samples) {
 	FramebufferFormatKey key;
+	key.passes.push_back(FramebufferPass());
 
 	const Map<FramebufferFormatKey, FramebufferFormatID>::Element *E = framebuffer_format_cache.find(key);
 	if (E) {
@@ -3583,18 +3745,18 @@ RenderingDevice::FramebufferFormatID RenderingDeviceVulkan::framebuffer_format_c
 
 	FramebufferFormat fb_format;
 	fb_format.E = E;
-	fb_format.color_attachments = 0;
 	fb_format.render_pass = render_pass;
-	fb_format.samples = p_samples;
+	fb_format.pass_samples.push_back(p_samples);
 	framebuffer_formats[id] = fb_format;
 	return id;
 }
 
-RenderingDevice::TextureSamples RenderingDeviceVulkan::framebuffer_format_get_texture_samples(FramebufferFormatID p_format) {
+RenderingDevice::TextureSamples RenderingDeviceVulkan::framebuffer_format_get_texture_samples(FramebufferFormatID p_format, uint32_t p_pass) {
 	Map<FramebufferFormatID, FramebufferFormat>::Element *E = framebuffer_formats.find(p_format);
 	ERR_FAIL_COND_V(!E, TEXTURE_SAMPLES_1);
+	ERR_FAIL_COND_V(p_pass >= uint32_t(E->get().pass_samples.size()), TEXTURE_SAMPLES_1);
 
-	return E->get().samples;
+	return E->get().pass_samples[p_pass];
 }
 
 /***********************/
@@ -3613,6 +3775,30 @@ RID RenderingDeviceVulkan::framebuffer_create_empty(const Size2i &p_size, Textur
 }
 
 RID RenderingDeviceVulkan::framebuffer_create(const Vector<RID> &p_texture_attachments, FramebufferFormatID p_format_check, uint32_t p_view_count) {
+	_THREAD_SAFE_METHOD_
+
+	FramebufferPass pass;
+
+	for (int i = 0; i < p_texture_attachments.size(); i++) {
+		Texture *texture = texture_owner.getornull(p_texture_attachments[i]);
+		ERR_FAIL_COND_V_MSG(!texture, RID(), "Texture index supplied for framebuffer (" + itos(i) + ") is not a valid texture.");
+
+		ERR_FAIL_COND_V_MSG(texture->layers != p_view_count, RID(), "Layers of our texture doesn't match view count for this framebuffer");
+
+		if (texture->usage_flags & TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT) {
+			pass.depth_attachment = i;
+		} else {
+			pass.color_attachments.push_back(i);
+		}
+	}
+
+	Vector<FramebufferPass> passes;
+	passes.push_back(pass);
+
+	return framebuffer_create_multipass(p_texture_attachments, passes, p_format_check, p_view_count);
+}
+
+RID RenderingDeviceVulkan::framebuffer_create_multipass(const Vector<RID> &p_texture_attachments, Vector<FramebufferPass> &p_passes, FramebufferFormatID p_format_check, uint32_t p_view_count) {
 	_THREAD_SAFE_METHOD_
 
 	Vector<AttachmentFormat> attachments;
@@ -3639,7 +3825,7 @@ RID RenderingDeviceVulkan::framebuffer_create(const Vector<RID> &p_texture_attac
 		attachments.push_back(af);
 	}
 
-	FramebufferFormatID format_id = framebuffer_format_create(attachments, p_view_count);
+	FramebufferFormatID format_id = framebuffer_format_create_multipass(attachments, p_passes, p_view_count);
 	if (format_id == INVALID_ID) {
 		return RID();
 	}
@@ -4401,8 +4587,9 @@ RID RenderingDeviceVulkan::shader_create(const Vector<ShaderStageData> &p_stages
 							"Reflection of SPIR-V shader stage '" + String(shader_stage_names[p_stages[i].shader_stage]) + "' failed obtaining output variables.");
 
 					for (uint32_t j = 0; j < ov_count; j++) {
-						if (output_vars[j]) {
-							fragment_outputs = MAX(fragment_outputs, output_vars[j]->location + 1);
+						const SpvReflectInterfaceVariable *refvar = output_vars[j];
+						if (refvar != nullptr && refvar->built_in != SpvBuiltInFragDepth) {
+							fragment_outputs |= 1 << refvar->location;
 						}
 					}
 				}
@@ -4453,7 +4640,7 @@ RID RenderingDeviceVulkan::shader_create(const Vector<ShaderStageData> &p_stages
 	Shader shader;
 
 	shader.vertex_input_mask = vertex_input_mask;
-	shader.fragment_outputs = fragment_outputs;
+	shader.fragment_output_mask = fragment_outputs;
 	shader.push_constant = push_constant;
 	shader.is_compute = is_compute;
 	shader.compute_local_size[0] = compute_local_size[0];
@@ -5194,6 +5381,49 @@ RID RenderingDeviceVulkan::uniform_set_create(const Vector<Uniform> &p_uniforms,
 				write.pTexelBufferView = nullptr;
 			} break;
 			case UNIFORM_TYPE_INPUT_ATTACHMENT: {
+				ERR_FAIL_COND_V_MSG(shader->is_compute, RID(), "InputAttachment (binding: " + itos(uniform.binding) + ") supplied for compute shader (this is not allowed).");
+
+				if (uniform.ids.size() != set_uniform.length) {
+					if (set_uniform.length > 1) {
+						ERR_FAIL_V_MSG(RID(), "InputAttachment (binding: " + itos(uniform.binding) + ") is an array of (" + itos(set_uniform.length) + ") textures, so it should be provided equal number of texture IDs to satisfy it (IDs provided: " + itos(uniform.ids.size()) + ").");
+					} else {
+						ERR_FAIL_V_MSG(RID(), "InputAttachment (binding: " + itos(uniform.binding) + ") should provide one ID referencing a texture (IDs provided: " + itos(uniform.ids.size()) + ").");
+					}
+				}
+
+				Vector<VkDescriptorImageInfo> image_info;
+
+				for (int j = 0; j < uniform.ids.size(); j++) {
+					Texture *texture = texture_owner.getornull(uniform.ids[j]);
+
+					ERR_FAIL_COND_V_MSG(!texture, RID(),
+							"InputAttachment (binding: " + itos(uniform.binding) + ", index " + itos(j) + ") is not a valid texture.");
+
+					ERR_FAIL_COND_V_MSG(!(texture->usage_flags & TEXTURE_USAGE_SAMPLING_BIT), RID(),
+							"InputAttachment (binding: " + itos(uniform.binding) + ", index " + itos(j) + ") needs the TEXTURE_USAGE_SAMPLING_BIT usage flag set in order to be used as uniform.");
+
+					VkDescriptorImageInfo img_info;
+					img_info.sampler = VK_NULL_HANDLE;
+					img_info.imageView = texture->view;
+
+					if (texture->owner.is_valid()) {
+						texture = texture_owner.getornull(texture->owner);
+						ERR_FAIL_COND_V(!texture, RID()); //bug, should never happen
+					}
+
+					img_info.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+
+					image_info.push_back(img_info);
+				}
+
+				write.dstArrayElement = 0;
+				write.descriptorCount = uniform.ids.size();
+				write.descriptorType = VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT;
+				write.pImageInfo = image_infos.push_back(image_info)->get().ptr();
+				write.pBufferInfo = nullptr;
+				write.pTexelBufferView = nullptr;
+
+				type_size = uniform.ids.size();
 			} break;
 			default: {
 			}
@@ -5404,7 +5634,7 @@ Vector<uint8_t> RenderingDeviceVulkan::buffer_get_data(RID p_buffer) {
 /**** RENDER PIPELINE ****/
 /*************************/
 
-RID RenderingDeviceVulkan::render_pipeline_create(RID p_shader, FramebufferFormatID p_framebuffer_format, VertexFormatID p_vertex_format, RenderPrimitive p_render_primitive, const PipelineRasterizationState &p_rasterization_state, const PipelineMultisampleState &p_multisample_state, const PipelineDepthStencilState &p_depth_stencil_state, const PipelineColorBlendState &p_blend_state, int p_dynamic_state_flags) {
+RID RenderingDeviceVulkan::render_pipeline_create(RID p_shader, FramebufferFormatID p_framebuffer_format, VertexFormatID p_vertex_format, RenderPrimitive p_render_primitive, const PipelineRasterizationState &p_rasterization_state, const PipelineMultisampleState &p_multisample_state, const PipelineDepthStencilState &p_depth_stencil_state, const PipelineColorBlendState &p_blend_state, int p_dynamic_state_flags, uint32_t p_for_render_pass) {
 	_THREAD_SAFE_METHOD_
 
 	//needs a shader
@@ -5423,8 +5653,16 @@ RID RenderingDeviceVulkan::render_pipeline_create(RID p_shader, FramebufferForma
 
 	{ //validate shader vs framebuffer
 
-		ERR_FAIL_COND_V_MSG(shader->fragment_outputs != fb_format.color_attachments, RID(),
-				"Mismatch fragment output bindings (" + itos(shader->fragment_outputs) + ") and framebuffer color buffers (" + itos(fb_format.color_attachments) + ") when binding both in render pipeline.");
+		ERR_FAIL_COND_V_MSG(p_for_render_pass >= uint32_t(fb_format.E->key().passes.size()), RID(), "Render pass requested for pipeline creation (" + itos(p_for_render_pass) + ") is out of bounds");
+		const FramebufferPass &pass = fb_format.E->key().passes[p_for_render_pass];
+		uint32_t output_mask = 0;
+		for (int i = 0; i < pass.color_attachments.size(); i++) {
+			if (pass.color_attachments[i] != FramebufferPass::ATTACHMENT_UNUSED) {
+				output_mask |= 1 << i;
+			}
+		}
+		ERR_FAIL_COND_V_MSG(shader->fragment_output_mask != output_mask, RID(),
+				"Mismatch fragment shader output mask (" + itos(shader->fragment_output_mask) + ") and framebuffer color output mask (" + itos(output_mask) + ") when binding both in render pipeline.");
 	}
 	//vertex
 	VkPipelineVertexInputStateCreateInfo pipeline_vertex_input_state_create_info;
@@ -5609,44 +5847,53 @@ RID RenderingDeviceVulkan::render_pipeline_create(RID p_shader, FramebufferForma
 	ERR_FAIL_INDEX_V(p_blend_state.logic_op, LOGIC_OP_MAX, RID());
 	color_blend_state_create_info.logicOp = logic_operations[p_blend_state.logic_op];
 
-	ERR_FAIL_COND_V(fb_format.color_attachments != p_blend_state.attachments.size(), RID());
-
 	Vector<VkPipelineColorBlendAttachmentState> attachment_states;
+	{
+		const FramebufferPass &pass = fb_format.E->key().passes[p_for_render_pass];
 
-	for (int i = 0; i < p_blend_state.attachments.size(); i++) {
-		VkPipelineColorBlendAttachmentState state;
-		state.blendEnable = p_blend_state.attachments[i].enable_blend;
+		for (int i = 0; i < pass.color_attachments.size(); i++) {
+			if (pass.color_attachments[i] != FramebufferPass::ATTACHMENT_UNUSED) {
+				int idx = attachment_states.size();
 
-		ERR_FAIL_INDEX_V(p_blend_state.attachments[i].src_color_blend_factor, BLEND_FACTOR_MAX, RID());
-		state.srcColorBlendFactor = blend_factors[p_blend_state.attachments[i].src_color_blend_factor];
-		ERR_FAIL_INDEX_V(p_blend_state.attachments[i].dst_color_blend_factor, BLEND_FACTOR_MAX, RID());
-		state.dstColorBlendFactor = blend_factors[p_blend_state.attachments[i].dst_color_blend_factor];
-		ERR_FAIL_INDEX_V(p_blend_state.attachments[i].color_blend_op, BLEND_OP_MAX, RID());
-		state.colorBlendOp = blend_operations[p_blend_state.attachments[i].color_blend_op];
+				ERR_FAIL_INDEX_V(idx, p_blend_state.attachments.size(), RID());
+				VkPipelineColorBlendAttachmentState state;
+				state.blendEnable = p_blend_state.attachments[idx].enable_blend;
 
-		ERR_FAIL_INDEX_V(p_blend_state.attachments[i].src_alpha_blend_factor, BLEND_FACTOR_MAX, RID());
-		state.srcAlphaBlendFactor = blend_factors[p_blend_state.attachments[i].src_alpha_blend_factor];
-		ERR_FAIL_INDEX_V(p_blend_state.attachments[i].dst_alpha_blend_factor, BLEND_FACTOR_MAX, RID());
-		state.dstAlphaBlendFactor = blend_factors[p_blend_state.attachments[i].dst_alpha_blend_factor];
-		ERR_FAIL_INDEX_V(p_blend_state.attachments[i].alpha_blend_op, BLEND_OP_MAX, RID());
-		state.alphaBlendOp = blend_operations[p_blend_state.attachments[i].alpha_blend_op];
+				ERR_FAIL_INDEX_V(p_blend_state.attachments[idx].src_color_blend_factor, BLEND_FACTOR_MAX, RID());
+				state.srcColorBlendFactor = blend_factors[p_blend_state.attachments[idx].src_color_blend_factor];
+				ERR_FAIL_INDEX_V(p_blend_state.attachments[idx].dst_color_blend_factor, BLEND_FACTOR_MAX, RID());
+				state.dstColorBlendFactor = blend_factors[p_blend_state.attachments[idx].dst_color_blend_factor];
+				ERR_FAIL_INDEX_V(p_blend_state.attachments[idx].color_blend_op, BLEND_OP_MAX, RID());
+				state.colorBlendOp = blend_operations[p_blend_state.attachments[idx].color_blend_op];
 
-		state.colorWriteMask = 0;
-		if (p_blend_state.attachments[i].write_r) {
-			state.colorWriteMask |= VK_COLOR_COMPONENT_R_BIT;
+				ERR_FAIL_INDEX_V(p_blend_state.attachments[idx].src_alpha_blend_factor, BLEND_FACTOR_MAX, RID());
+				state.srcAlphaBlendFactor = blend_factors[p_blend_state.attachments[idx].src_alpha_blend_factor];
+				ERR_FAIL_INDEX_V(p_blend_state.attachments[idx].dst_alpha_blend_factor, BLEND_FACTOR_MAX, RID());
+				state.dstAlphaBlendFactor = blend_factors[p_blend_state.attachments[idx].dst_alpha_blend_factor];
+				ERR_FAIL_INDEX_V(p_blend_state.attachments[idx].alpha_blend_op, BLEND_OP_MAX, RID());
+				state.alphaBlendOp = blend_operations[p_blend_state.attachments[idx].alpha_blend_op];
+
+				state.colorWriteMask = 0;
+				if (p_blend_state.attachments[idx].write_r) {
+					state.colorWriteMask |= VK_COLOR_COMPONENT_R_BIT;
+				}
+				if (p_blend_state.attachments[idx].write_g) {
+					state.colorWriteMask |= VK_COLOR_COMPONENT_G_BIT;
+				}
+				if (p_blend_state.attachments[idx].write_b) {
+					state.colorWriteMask |= VK_COLOR_COMPONENT_B_BIT;
+				}
+				if (p_blend_state.attachments[idx].write_a) {
+					state.colorWriteMask |= VK_COLOR_COMPONENT_A_BIT;
+				}
+
+				attachment_states.push_back(state);
+				idx++;
+			};
 		}
-		if (p_blend_state.attachments[i].write_g) {
-			state.colorWriteMask |= VK_COLOR_COMPONENT_G_BIT;
-		}
-		if (p_blend_state.attachments[i].write_b) {
-			state.colorWriteMask |= VK_COLOR_COMPONENT_B_BIT;
-		}
-		if (p_blend_state.attachments[i].write_a) {
-			state.colorWriteMask |= VK_COLOR_COMPONENT_A_BIT;
-		}
 
-		attachment_states.push_back(state);
-	};
+		ERR_FAIL_COND_V(attachment_states.size() != p_blend_state.attachments.size(), RID());
+	}
 
 	color_blend_state_create_info.attachmentCount = attachment_states.size();
 	color_blend_state_create_info.pAttachments = attachment_states.ptr();
@@ -5719,7 +5966,7 @@ RID RenderingDeviceVulkan::render_pipeline_create(RID p_shader, FramebufferForma
 	graphics_pipeline_create_info.layout = shader->pipeline_layout;
 	graphics_pipeline_create_info.renderPass = fb_format.render_pass;
 
-	graphics_pipeline_create_info.subpass = 0;
+	graphics_pipeline_create_info.subpass = p_for_render_pass;
 	graphics_pipeline_create_info.basePipelineHandle = VK_NULL_HANDLE;
 	graphics_pipeline_create_info.basePipelineIndex = 0;
 
@@ -5736,6 +5983,7 @@ RID RenderingDeviceVulkan::render_pipeline_create(RID p_shader, FramebufferForma
 #ifdef DEBUG_ENABLED
 	pipeline.validation.dynamic_state = p_dynamic_state_flags;
 	pipeline.validation.framebuffer_format = p_framebuffer_format;
+	pipeline.validation.render_pass = p_for_render_pass;
 	pipeline.validation.vertex_format = p_vertex_format;
 	pipeline.validation.uses_restart_indices = input_assembly_create_info.primitiveRestartEnable;
 
@@ -5874,13 +6122,14 @@ RenderingDevice::DrawListID RenderingDeviceVulkan::draw_list_begin_for_screen(Di
 	ERR_FAIL_COND_V_MSG(compute_list != nullptr, INVALID_ID, "Only one draw/compute list can be active at the same time.");
 
 	VkCommandBuffer command_buffer = frames[frame].draw_command_buffer;
-	draw_list = memnew(DrawList);
-	draw_list->command_buffer = command_buffer;
+
+	Size2i size = Size2i(context->window_get_width(p_screen), context->window_get_height(p_screen));
+
+	_draw_list_allocate(Rect2i(Vector2i(), size), 0, 0);
 #ifdef DEBUG_ENABLED
-	draw_list->validation.framebuffer_format = screen_get_framebuffer_format();
+	draw_list_framebuffer_format = screen_get_framebuffer_format();
 #endif
-	draw_list_count = 0;
-	draw_list_split = false;
+	draw_list_subpass_count = 1;
 
 	VkRenderPassBeginInfo render_pass_begin;
 	render_pass_begin.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
@@ -5888,8 +6137,8 @@ RenderingDevice::DrawListID RenderingDeviceVulkan::draw_list_begin_for_screen(Di
 	render_pass_begin.renderPass = context->window_get_render_pass(p_screen);
 	render_pass_begin.framebuffer = context->window_get_framebuffer(p_screen);
 
-	render_pass_begin.renderArea.extent.width = context->window_get_width(p_screen);
-	render_pass_begin.renderArea.extent.height = context->window_get_height(p_screen);
+	render_pass_begin.renderArea.extent.width = size.width;
+	render_pass_begin.renderArea.extent.height = size.height;
 	render_pass_begin.renderArea.offset.x = 0;
 	render_pass_begin.renderArea.offset.y = 0;
 
@@ -5929,7 +6178,7 @@ RenderingDevice::DrawListID RenderingDeviceVulkan::draw_list_begin_for_screen(Di
 	return int64_t(ID_TYPE_DRAW_LIST) << ID_BASE_SHIFT;
 }
 
-Error RenderingDeviceVulkan::_draw_list_setup_framebuffer(Framebuffer *p_framebuffer, InitialAction p_initial_color_action, FinalAction p_final_color_action, InitialAction p_initial_depth_action, FinalAction p_final_depth_action, VkFramebuffer *r_framebuffer, VkRenderPass *r_render_pass) {
+Error RenderingDeviceVulkan::_draw_list_setup_framebuffer(Framebuffer *p_framebuffer, InitialAction p_initial_color_action, FinalAction p_final_color_action, InitialAction p_initial_depth_action, FinalAction p_final_depth_action, VkFramebuffer *r_framebuffer, VkRenderPass *r_render_pass, uint32_t *r_subpass_count) {
 	Framebuffer::VersionKey vk;
 	vk.initial_color_action = p_initial_color_action;
 	vk.final_color_action = p_final_color_action;
@@ -5941,7 +6190,7 @@ Error RenderingDeviceVulkan::_draw_list_setup_framebuffer(Framebuffer *p_framebu
 		//need to create this version
 		Framebuffer::Version version;
 
-		version.render_pass = _render_pass_create(framebuffer_formats[p_framebuffer->format_id].E->key().attachments, p_initial_color_action, p_final_color_action, p_initial_depth_action, p_final_depth_action, nullptr, p_framebuffer->view_count);
+		version.render_pass = _render_pass_create(framebuffer_formats[p_framebuffer->format_id].E->key().attachments, framebuffer_formats[p_framebuffer->format_id].E->key().passes, p_initial_color_action, p_final_color_action, p_initial_depth_action, p_final_depth_action, p_framebuffer->view_count);
 
 		VkFramebufferCreateInfo framebuffer_create_info;
 		framebuffer_create_info.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
@@ -5965,11 +6214,14 @@ Error RenderingDeviceVulkan::_draw_list_setup_framebuffer(Framebuffer *p_framebu
 		VkResult err = vkCreateFramebuffer(device, &framebuffer_create_info, nullptr, &version.framebuffer);
 		ERR_FAIL_COND_V_MSG(err, ERR_CANT_CREATE, "vkCreateFramebuffer failed with error " + itos(err) + ".");
 
+		version.subpass_count = framebuffer_formats[p_framebuffer->format_id].E->key().passes.size();
+
 		p_framebuffer->framebuffers.insert(vk, version);
 	}
 	const Framebuffer::Version &version = p_framebuffer->framebuffers[vk];
 	*r_framebuffer = version.framebuffer;
 	*r_render_pass = version.render_pass;
+	*r_subpass_count = version.subpass_count;
 
 	return OK;
 }
@@ -6159,15 +6411,23 @@ RenderingDevice::DrawListID RenderingDeviceVulkan::draw_list_begin(RID p_framebu
 
 	if (p_initial_color_action == INITIAL_ACTION_CLEAR) { //check clear values
 
-		int color_attachments = framebuffer_formats[framebuffer->format_id].color_attachments;
-		ERR_FAIL_COND_V_MSG(p_clear_color_values.size() != color_attachments, INVALID_ID,
-				"Clear color values supplied (" + itos(p_clear_color_values.size()) + ") differ from the amount required for framebuffer (" + itos(color_attachments) + ").");
+		int color_count = 0;
+		for (int i = 0; i < framebuffer->texture_ids.size(); i++) {
+			Texture *texture = texture_owner.getornull(framebuffer->texture_ids[i]);
+
+			if (texture->usage_flags & TEXTURE_USAGE_COLOR_ATTACHMENT_BIT) {
+				color_count++;
+			}
+		}
+
+		ERR_FAIL_COND_V_MSG(p_clear_color_values.size() != color_count, INVALID_ID,
+				"Clear color values supplied (" + itos(p_clear_color_values.size()) + ") differ from the amount required for framebuffer color attachments (" + itos(color_count) + ").");
 	}
 
 	VkFramebuffer vkframebuffer;
 	VkRenderPass render_pass;
 
-	Error err = _draw_list_setup_framebuffer(framebuffer, p_initial_color_action, p_final_color_action, p_initial_depth_action, p_final_depth_action, &vkframebuffer, &render_pass);
+	Error err = _draw_list_setup_framebuffer(framebuffer, p_initial_color_action, p_final_color_action, p_initial_depth_action, p_final_depth_action, &vkframebuffer, &render_pass, &draw_list_subpass_count);
 	ERR_FAIL_COND_V(err != OK, INVALID_ID);
 
 	VkCommandBuffer command_buffer = frames[frame].draw_command_buffer;
@@ -6177,13 +6437,14 @@ RenderingDevice::DrawListID RenderingDeviceVulkan::draw_list_begin(RID p_framebu
 		return INVALID_ID;
 	}
 
-	draw_list = memnew(DrawList);
-	draw_list->command_buffer = command_buffer;
+	draw_list_render_pass = render_pass;
+	draw_list_vkframebuffer = vkframebuffer;
+
+	_draw_list_allocate(Rect2i(viewport_offset, viewport_size), 0, 0);
 #ifdef DEBUG_ENABLED
-	draw_list->validation.framebuffer_format = framebuffer->format_id;
+	draw_list_framebuffer_format = framebuffer->format_id;
 #endif
-	draw_list_count = 0;
-	draw_list_split = false;
+	draw_list_current_subpass = 0;
 
 	if (needs_clear_color || needs_clear_depth) {
 		_draw_list_insert_clear_region(draw_list, framebuffer, viewport_offset, viewport_size, needs_clear_color, p_clear_color_values, needs_clear_depth, p_clear_depth, p_clear_stencil);
@@ -6207,7 +6468,6 @@ RenderingDevice::DrawListID RenderingDeviceVulkan::draw_list_begin(RID p_framebu
 
 	vkCmdSetScissor(command_buffer, 0, 1, &scissor);
 
-	draw_list->viewport = Rect2i(viewport_offset, viewport_size);
 	return int64_t(ID_TYPE_DRAW_LIST) << ID_BASE_SHIFT;
 }
 
@@ -6249,47 +6509,23 @@ Error RenderingDeviceVulkan::draw_list_begin_split(RID p_framebuffer, uint32_t p
 
 	if (p_initial_color_action == INITIAL_ACTION_CLEAR) { //check clear values
 
-		int color_attachments = framebuffer_formats[framebuffer->format_id].color_attachments;
-		ERR_FAIL_COND_V_MSG(p_clear_color_values.size() != color_attachments, ERR_INVALID_PARAMETER,
-				"Clear color values supplied (" + itos(p_clear_color_values.size()) + ") differ from the amount required for framebuffer (" + itos(color_attachments) + ").");
-	}
+		int color_count = 0;
+		for (int i = 0; i < framebuffer->texture_ids.size(); i++) {
+			Texture *texture = texture_owner.getornull(framebuffer->texture_ids[i]);
 
-	if (p_splits > (uint32_t)split_draw_list_allocators.size()) {
-		uint32_t from = split_draw_list_allocators.size();
-		split_draw_list_allocators.resize(p_splits);
-		for (uint32_t i = from; i < p_splits; i++) {
-			VkCommandPoolCreateInfo cmd_pool_info;
-			cmd_pool_info.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
-			cmd_pool_info.pNext = nullptr;
-			cmd_pool_info.queueFamilyIndex = context->get_graphics_queue();
-			cmd_pool_info.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
-
-			VkResult res = vkCreateCommandPool(device, &cmd_pool_info, nullptr, &split_draw_list_allocators.write[i].command_pool);
-			ERR_FAIL_COND_V_MSG(res, ERR_CANT_CREATE, "vkCreateCommandPool failed with error " + itos(res) + ".");
-
-			for (int j = 0; j < frame_count; j++) {
-				VkCommandBuffer command_buffer;
-
-				VkCommandBufferAllocateInfo cmdbuf;
-				//no command buffer exists, create it.
-				cmdbuf.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-				cmdbuf.pNext = nullptr;
-				cmdbuf.commandPool = split_draw_list_allocators[i].command_pool;
-				cmdbuf.level = VK_COMMAND_BUFFER_LEVEL_SECONDARY;
-				cmdbuf.commandBufferCount = 1;
-
-				VkResult err = vkAllocateCommandBuffers(device, &cmdbuf, &command_buffer);
-				ERR_FAIL_COND_V_MSG(err, ERR_CANT_CREATE, "vkAllocateCommandBuffers failed with error " + itos(err) + ".");
-
-				split_draw_list_allocators.write[i].command_buffers.push_back(command_buffer);
+			if (texture->usage_flags & TEXTURE_USAGE_COLOR_ATTACHMENT_BIT) {
+				color_count++;
 			}
 		}
+
+		ERR_FAIL_COND_V_MSG(p_clear_color_values.size() != color_count, ERR_INVALID_PARAMETER,
+				"Clear color values supplied (" + itos(p_clear_color_values.size()) + ") differ from the amount required for framebuffer (" + itos(color_count) + ").");
 	}
 
 	VkFramebuffer vkframebuffer;
 	VkRenderPass render_pass;
 
-	Error err = _draw_list_setup_framebuffer(framebuffer, p_initial_color_action, p_final_color_action, p_initial_depth_action, p_final_depth_action, &vkframebuffer, &render_pass);
+	Error err = _draw_list_setup_framebuffer(framebuffer, p_initial_color_action, p_final_color_action, p_initial_depth_action, p_final_depth_action, &vkframebuffer, &render_pass, &draw_list_subpass_count);
 	ERR_FAIL_COND_V(err != OK, ERR_CANT_CREATE);
 
 	VkCommandBuffer frame_command_buffer = frames[frame].draw_command_buffer;
@@ -6299,53 +6535,24 @@ Error RenderingDeviceVulkan::draw_list_begin_split(RID p_framebuffer, uint32_t p
 		return ERR_CANT_CREATE;
 	}
 
-	draw_list = memnew_arr(DrawList, p_splits);
-	draw_list_count = p_splits;
-	draw_list_split = true;
+	draw_list_current_subpass = 0;
+
+#ifdef DEBUG_ENABLED
+	draw_list_framebuffer_format = framebuffer->format_id;
+#endif
+	draw_list_render_pass = render_pass;
+	draw_list_vkframebuffer = vkframebuffer;
+
+	err = _draw_list_allocate(Rect2i(viewport_offset, viewport_size), p_splits, 0);
+	if (err != OK) {
+		return err;
+	}
+
+	if (needs_clear_color || needs_clear_depth) {
+		_draw_list_insert_clear_region(&draw_list[0], framebuffer, viewport_offset, viewport_size, needs_clear_color, p_clear_color_values, needs_clear_depth, p_clear_depth, p_clear_stencil);
+	}
 
 	for (uint32_t i = 0; i < p_splits; i++) {
-		//take a command buffer and initialize it
-		VkCommandBuffer command_buffer = split_draw_list_allocators[i].command_buffers[frame];
-
-		VkCommandBufferInheritanceInfo inheritance_info;
-		inheritance_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_INFO;
-		inheritance_info.pNext = nullptr;
-		inheritance_info.renderPass = render_pass;
-		inheritance_info.subpass = 0;
-		inheritance_info.framebuffer = vkframebuffer;
-		inheritance_info.occlusionQueryEnable = false;
-		inheritance_info.queryFlags = 0; //?
-		inheritance_info.pipelineStatistics = 0;
-
-		VkCommandBufferBeginInfo cmdbuf_begin;
-		cmdbuf_begin.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-		cmdbuf_begin.pNext = nullptr;
-		cmdbuf_begin.flags = VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT | VK_COMMAND_BUFFER_USAGE_RENDER_PASS_CONTINUE_BIT;
-		cmdbuf_begin.pInheritanceInfo = &inheritance_info;
-
-		VkResult res = vkResetCommandBuffer(command_buffer, 0);
-		if (res) {
-			memdelete_arr(draw_list);
-			draw_list = nullptr;
-			ERR_FAIL_V_MSG(ERR_CANT_CREATE, "vkResetCommandBuffer failed with error " + itos(res) + ".");
-		}
-
-		res = vkBeginCommandBuffer(command_buffer, &cmdbuf_begin);
-		if (res) {
-			memdelete_arr(draw_list);
-			draw_list = nullptr;
-			ERR_FAIL_V_MSG(ERR_CANT_CREATE, "vkBeginCommandBuffer failed with error " + itos(res) + ".");
-		}
-
-		draw_list[i].command_buffer = command_buffer;
-#ifdef DEBUG_ENABLED
-		draw_list[i].validation.framebuffer_format = framebuffer->format_id;
-#endif
-
-		if (i == 0 && (needs_clear_color || needs_clear_depth)) {
-			_draw_list_insert_clear_region(draw_list, framebuffer, viewport_offset, viewport_size, needs_clear_color, p_clear_color_values, needs_clear_depth, p_clear_depth, p_clear_stencil);
-		}
-
 		VkViewport viewport;
 		viewport.x = viewport_offset.x;
 		viewport.y = viewport_offset.y;
@@ -6354,7 +6561,7 @@ Error RenderingDeviceVulkan::draw_list_begin_split(RID p_framebuffer, uint32_t p
 		viewport.minDepth = 0;
 		viewport.maxDepth = 1.0;
 
-		vkCmdSetViewport(command_buffer, 0, 1, &viewport);
+		vkCmdSetViewport(draw_list[i].command_buffer, 0, 1, &viewport);
 
 		VkRect2D scissor;
 		scissor.offset.x = viewport_offset.x;
@@ -6362,10 +6569,8 @@ Error RenderingDeviceVulkan::draw_list_begin_split(RID p_framebuffer, uint32_t p
 		scissor.extent.width = viewport_size.width;
 		scissor.extent.height = viewport_size.height;
 
-		vkCmdSetScissor(command_buffer, 0, 1, &scissor);
+		vkCmdSetScissor(draw_list[i].command_buffer, 0, 1, &scissor);
 		r_split_ids[i] = (int64_t(ID_TYPE_SPLIT_DRAW_LIST) << ID_BASE_SHIFT) + i;
-
-		draw_list[i].viewport = Rect2i(viewport_offset, viewport_size);
 	}
 
 	return OK;
@@ -6410,7 +6615,7 @@ void RenderingDeviceVulkan::draw_list_bind_render_pipeline(DrawListID p_list, RI
 	const RenderPipeline *pipeline = render_pipeline_owner.getornull(p_render_pipeline);
 	ERR_FAIL_COND(!pipeline);
 #ifdef DEBUG_ENABLED
-	ERR_FAIL_COND(pipeline->validation.framebuffer_format != dl->validation.framebuffer_format);
+	ERR_FAIL_COND(pipeline->validation.framebuffer_format != draw_list_framebuffer_format && pipeline->validation.render_pass != draw_list_current_subpass);
 #endif
 
 	if (p_render_pipeline == dl->state.pipeline) {
@@ -6749,30 +6954,162 @@ void RenderingDeviceVulkan::draw_list_disable_scissor(DrawListID p_list) {
 	vkCmdSetScissor(dl->command_buffer, 0, 1, &scissor);
 }
 
-void RenderingDeviceVulkan::draw_list_end(uint32_t p_post_barrier) {
-	_THREAD_SAFE_METHOD_
+RenderingDevice::DrawListID RenderingDeviceVulkan::draw_list_switch_to_next_pass() {
+	ERR_FAIL_COND_V(draw_list == nullptr, INVALID_ID);
+	ERR_FAIL_COND_V(draw_list_current_subpass >= draw_list_subpass_count - 1, INVALID_FORMAT_ID);
 
-	ERR_FAIL_COND_MSG(!draw_list, "Immediate draw list is already inactive.");
+	draw_list_current_subpass++;
 
+	Rect2i viewport;
+	_draw_list_free(&viewport);
+
+	vkCmdNextSubpass(frames[frame].draw_command_buffer, VK_SUBPASS_CONTENTS_INLINE);
+
+	_draw_list_allocate(viewport, 0, draw_list_current_subpass);
+
+	return int64_t(ID_TYPE_DRAW_LIST) << ID_BASE_SHIFT;
+}
+Error RenderingDeviceVulkan::draw_list_switch_to_next_pass_split(uint32_t p_splits, DrawListID *r_split_ids) {
+	ERR_FAIL_COND_V(draw_list == nullptr, ERR_INVALID_PARAMETER);
+	ERR_FAIL_COND_V(draw_list_current_subpass >= draw_list_subpass_count - 1, ERR_INVALID_PARAMETER);
+
+	draw_list_current_subpass++;
+
+	Rect2i viewport;
+	_draw_list_free(&viewport);
+
+	vkCmdNextSubpass(frames[frame].draw_command_buffer, VK_SUBPASS_CONTENTS_INLINE);
+
+	_draw_list_allocate(viewport, p_splits, draw_list_current_subpass);
+
+	for (uint32_t i = 0; i < p_splits; i++) {
+		r_split_ids[i] = (int64_t(ID_TYPE_SPLIT_DRAW_LIST) << ID_BASE_SHIFT) + i;
+	}
+
+	return OK;
+}
+
+Error RenderingDeviceVulkan::_draw_list_allocate(const Rect2i &p_viewport, uint32_t p_splits, uint32_t p_subpass) {
+	if (p_splits == 0) {
+		draw_list = memnew(DrawList);
+		draw_list->command_buffer = frames[frame].draw_command_buffer;
+		draw_list->viewport = p_viewport;
+		draw_list_count = 0;
+		draw_list_split = false;
+	} else {
+		if (p_splits > (uint32_t)split_draw_list_allocators.size()) {
+			uint32_t from = split_draw_list_allocators.size();
+			split_draw_list_allocators.resize(p_splits);
+			for (uint32_t i = from; i < p_splits; i++) {
+				VkCommandPoolCreateInfo cmd_pool_info;
+				cmd_pool_info.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
+				cmd_pool_info.pNext = nullptr;
+				cmd_pool_info.queueFamilyIndex = context->get_graphics_queue();
+				cmd_pool_info.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
+
+				VkResult res = vkCreateCommandPool(device, &cmd_pool_info, nullptr, &split_draw_list_allocators.write[i].command_pool);
+				ERR_FAIL_COND_V_MSG(res, ERR_CANT_CREATE, "vkCreateCommandPool failed with error " + itos(res) + ".");
+
+				for (int j = 0; j < frame_count; j++) {
+					VkCommandBuffer command_buffer;
+
+					VkCommandBufferAllocateInfo cmdbuf;
+					//no command buffer exists, create it.
+					cmdbuf.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+					cmdbuf.pNext = nullptr;
+					cmdbuf.commandPool = split_draw_list_allocators[i].command_pool;
+					cmdbuf.level = VK_COMMAND_BUFFER_LEVEL_SECONDARY;
+					cmdbuf.commandBufferCount = 1;
+
+					VkResult err = vkAllocateCommandBuffers(device, &cmdbuf, &command_buffer);
+					ERR_FAIL_COND_V_MSG(err, ERR_CANT_CREATE, "vkAllocateCommandBuffers failed with error " + itos(err) + ".");
+
+					split_draw_list_allocators.write[i].command_buffers.push_back(command_buffer);
+				}
+			}
+		}
+		draw_list = memnew_arr(DrawList, p_splits);
+		draw_list_count = p_splits;
+		draw_list_split = true;
+
+		for (uint32_t i = 0; i < p_splits; i++) {
+			//take a command buffer and initialize it
+			VkCommandBuffer command_buffer = split_draw_list_allocators[i].command_buffers[frame];
+
+			VkCommandBufferInheritanceInfo inheritance_info;
+			inheritance_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_INFO;
+			inheritance_info.pNext = nullptr;
+			inheritance_info.renderPass = draw_list_render_pass;
+			inheritance_info.subpass = p_subpass;
+			inheritance_info.framebuffer = draw_list_vkframebuffer;
+			inheritance_info.occlusionQueryEnable = false;
+			inheritance_info.queryFlags = 0; //?
+			inheritance_info.pipelineStatistics = 0;
+
+			VkCommandBufferBeginInfo cmdbuf_begin;
+			cmdbuf_begin.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+			cmdbuf_begin.pNext = nullptr;
+			cmdbuf_begin.flags = VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT | VK_COMMAND_BUFFER_USAGE_RENDER_PASS_CONTINUE_BIT;
+			cmdbuf_begin.pInheritanceInfo = &inheritance_info;
+
+			VkResult res = vkResetCommandBuffer(command_buffer, 0);
+			if (res) {
+				memdelete_arr(draw_list);
+				draw_list = nullptr;
+				ERR_FAIL_V_MSG(ERR_CANT_CREATE, "vkResetCommandBuffer failed with error " + itos(res) + ".");
+			}
+
+			res = vkBeginCommandBuffer(command_buffer, &cmdbuf_begin);
+			if (res) {
+				memdelete_arr(draw_list);
+				draw_list = nullptr;
+				ERR_FAIL_V_MSG(ERR_CANT_CREATE, "vkBeginCommandBuffer failed with error " + itos(res) + ".");
+			}
+
+			draw_list[i].command_buffer = command_buffer;
+			draw_list[i].viewport = p_viewport;
+		}
+	}
+
+	return OK;
+}
+
+void RenderingDeviceVulkan::_draw_list_free(Rect2i *r_last_viewport) {
 	if (draw_list_split) {
 		//send all command buffers
 		VkCommandBuffer *command_buffers = (VkCommandBuffer *)alloca(sizeof(VkCommandBuffer) * draw_list_count);
 		for (uint32_t i = 0; i < draw_list_count; i++) {
 			vkEndCommandBuffer(draw_list[i].command_buffer);
 			command_buffers[i] = draw_list[i].command_buffer;
+			if (r_last_viewport) {
+				if (i == 0 || draw_list[i].viewport_set) {
+					*r_last_viewport = draw_list[i].viewport;
+				}
+			}
 		}
 
 		vkCmdExecuteCommands(frames[frame].draw_command_buffer, draw_list_count, command_buffers);
-		vkCmdEndRenderPass(frames[frame].draw_command_buffer);
 		memdelete_arr(draw_list);
 		draw_list = nullptr;
 
 	} else {
+		if (r_last_viewport) {
+			*r_last_viewport = draw_list->viewport;
+		}
 		//just end the list
-		vkCmdEndRenderPass(draw_list->command_buffer);
 		memdelete(draw_list);
 		draw_list = nullptr;
 	}
+}
+
+void RenderingDeviceVulkan::draw_list_end(uint32_t p_post_barrier) {
+	_THREAD_SAFE_METHOD_
+
+	ERR_FAIL_COND_MSG(!draw_list, "Immediate draw list is already inactive.");
+
+	_draw_list_free();
+
+	vkCmdEndRenderPass(frames[frame].draw_command_buffer);
 
 	for (int i = 0; i < draw_list_bound_textures.size(); i++) {
 		Texture *texture = texture_owner.getornull(draw_list_bound_textures[i]);
