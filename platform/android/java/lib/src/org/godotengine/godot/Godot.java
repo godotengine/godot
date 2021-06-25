@@ -47,7 +47,6 @@ import android.app.AlertDialog;
 import android.app.PendingIntent;
 import android.content.ClipData;
 import android.content.ClipboardManager;
-import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -449,9 +448,11 @@ public class Godot extends Fragment implements SensorEventListener, IDownloaderC
 	}
 
 	public void restart() {
-		if (godotHost != null) {
-			godotHost.onGodotRestartRequested(this);
-		}
+		runOnUiThread(() -> {
+			if (godotHost != null) {
+				godotHost.onGodotRestartRequested(this);
+			}
+		});
 	}
 
 	public void alert(final String message, final String title) {
@@ -995,9 +996,11 @@ public class Godot extends Fragment implements SensorEventListener, IDownloaderC
 	private void forceQuit() {
 		// TODO: This is a temp solution. The proper fix will involve tracking down and properly shutting down each
 		// native Godot components that is started in Godot#onVideoInit.
-		if (godotHost != null) {
-			godotHost.onGodotForceQuit(this);
-		}
+		runOnUiThread(() -> {
+			if (godotHost != null) {
+				godotHost.onGodotForceQuit(this);
+			}
+		});
 	}
 
 	private boolean obbIsCorrupted(String f, String main_pack_md5) {
@@ -1146,7 +1149,17 @@ public class Godot extends Fragment implements SensorEventListener, IDownloaderC
 		mProgressFraction.setText(Helpers.getDownloadProgressString(progress.mOverallProgress,
 				progress.mOverallTotal));
 	}
+
 	public void initInputDevices() {
 		mView.initInputDevices();
+	}
+
+	@Keep
+	private void createNewGodotInstance(String[] args) {
+		runOnUiThread(() -> {
+			if (godotHost != null) {
+				godotHost.onNewGodotInstanceRequested(args);
+			}
+		});
 	}
 }

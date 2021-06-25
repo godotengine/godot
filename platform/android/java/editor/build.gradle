@@ -1,0 +1,55 @@
+// Gradle build config for Godot Engine's Android port.
+apply plugin: 'com.android.application'
+
+dependencies {
+    implementation libraries.kotlinStdLib
+    implementation libraries.androidxFragment
+    implementation project(":lib")
+}
+
+android {
+    compileSdkVersion versions.compileSdk
+    buildToolsVersion versions.buildTools
+    ndkVersion versions.ndkVersion
+
+    defaultConfig {
+        // The 'applicationId' suffix allows to install Godot 3.x(v3) and 4.x(v4) on the same device
+        applicationId "org.godotengine.editor.v3"
+        versionCode getGodotLibraryVersionCode()
+        versionName getGodotLibraryVersionName()
+        minSdkVersion versions.minSdk
+        //noinspection ExpiredTargetSdkVersion - Restrict to version 29 until https://github.com/godotengine/godot/pull/51815 is submitted
+        targetSdkVersion 29 // versions.targetSdk
+
+        missingDimensionStrategy 'tools', 'toolsEnabled'
+    }
+
+    compileOptions {
+        sourceCompatibility versions.javaVersion
+        targetCompatibility versions.javaVersion
+    }
+
+    buildTypes {
+        debug {
+            applicationIdSuffix ".debug"
+        }
+
+        release_debug {
+            initWith debug
+            applicationIdSuffix ".releaseDebug"
+        }
+    }
+
+    packagingOptions {
+        // 'doNotStrip' is enabled for development within Android Studio
+        if (shouldNotStrip()) {
+            doNotStrip '**/*.so'
+        }
+    }
+
+    applicationVariants.all { variant ->
+        variant.outputs.all { output ->
+            output.outputFileName = "android_editor_${variant.name}.apk"
+        }
+    }
+}

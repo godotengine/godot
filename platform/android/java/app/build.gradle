@@ -78,6 +78,7 @@ dependencies {
 android {
     compileSdkVersion versions.compileSdk
     buildToolsVersion versions.buildTools
+    ndkVersion versions.ndkVersion
 
     compileOptions {
         sourceCompatibility versions.javaVersion
@@ -105,6 +106,8 @@ android {
         versionName getExportVersionName()
         minSdkVersion getExportMinSdkVersion()
         targetSdkVersion getExportTargetSdkVersion()
+
+        missingDimensionStrategy 'tools', 'toolsDisabled'
 //CHUNK_ANDROID_DEFAULTCONFIG_BEGIN
 //CHUNK_ANDROID_DEFAULTCONFIG_END
     }
