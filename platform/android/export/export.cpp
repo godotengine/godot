@@ -31,6 +31,7 @@
 #include "export.h"
 
 #include "core/io/image_loader.h"
+#include "core/io/json.h"
 #include "core/io/marshalls.h"
 #include "core/io/zip_io.h"
 #include "core/os/dir_access.h"
@@ -206,6 +207,7 @@ static const char *LEGACY_BUILD_SPLASH_IMAGE_EXPORT_PATH = "res/drawable-nodpi-v
 static const char *SPLASH_BG_COLOR_PATH = "res/drawable-nodpi/splash_bg_color.png";
 static const char *LEGACY_BUILD_SPLASH_BG_COLOR_PATH = "res/drawable-nodpi-v4/splash_bg_color.png";
 static const char *SPLASH_CONFIG_PATH = "res://android/build/res/drawable/splash_drawable.xml";
+static const char *GDNATIVE_LIBS_PATH = "res://android/build/libs/gdnativelibs.json";
 
 const String SPLASH_CONFIG_XML_CONTENT = R"SPLASH(<?xml version="1.0" encoding="utf-8"?>
 <layer-list xmlns:android="http://schemas.android.com/apk/res/android">
@@ -278,6 +280,11 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 
 		zipFile apk;
 		EditorProgress *ep;
+	};
+
+	struct CustomExportData {
+		bool debug;
+		Vector<String> libs;
 	};
 
 	Vector<PluginConfigAndroid> plugins;
@@ -765,6 +772,33 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 	}
 
 	static Error ignore_apk_file(void *p_userdata, const String &p_path, const Vector<uint8_t> &p_data, int p_file, int p_total) {
+		return OK;
+	}
+
+	static Error copy_gradle_so(void *p_userdata, const SharedObject &p_so) {
+		ERR_FAIL_COND_V_MSG(!p_so.path.get_file().begins_with("lib"), FAILED,
+				"Android .so file names must start with \"lib\", but got: " + p_so.path);
+		Vector<String> abis = get_abis();
+		CustomExportData *export_data = (CustomExportData *)p_userdata;
+		bool exported = false;
+		for (int i = 0; i < p_so.tags.size(); ++i) {
+			int abi_index = abis.find(p_so.tags[i]);
+			if (abi_index != -1) {
+				exported = true;
+				String base = "res://android/build/libs";
+				String type = export_data->debug ? "debug" : "release";
+				String abi = abis[abi_index];
+				String filename = p_so.path.get_file();
+				String dst_path = base.plus_file(type).plus_file(abi).plus_file(filename);
+				Vector<uint8_t> data = FileAccess::get_file_as_array(p_so.path);
+				print_verbose("Copying .so file from " + p_so.path + " to " + dst_path);
+				Error err = store_file_at_path(dst_path, data);
+				ERR_FAIL_COND_V_MSG(err, err, "Failed to copy .so file from " + p_so.path + " to " + dst_path);
+				export_data->libs.push_back(dst_path);
+			}
+		}
+		ERR_FAIL_COND_V_MSG(!exported, FAILED,
+				"Cannot determine ABI for library \"" + p_so.path + "\". One of the supported ABIs must be used as a tag: " + String(" ").join(abis));
 		return OK;
 	}
 
@@ -2787,6 +2821,30 @@ public:
 		}
 	}
 
+	void _remove_copied_libs() {
+		print_verbose("Removing previously installed libraries...");
+		Error error;
+		String libs_json = FileAccess::get_file_as_string(GDNATIVE_LIBS_PATH, &error);
+		if (error || libs_json.empty()) {
+			print_verbose("No previously installed libraries found");
+			return;
+		}
+
+		Variant result;
+		String error_string;
+		int error_line;
+		error = JSON::parse(libs_json, result, error_string, error_line);
+		ERR_FAIL_COND_MSG(error, "Error parsing \"" + libs_json + "\" on line " + itos(error_line) + ": " + error_string);
+
+		Vector<String> libs = result;
+		DirAccessRef da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
+		for (int i = 0; i < libs.size(); i++) {
+			print_verbose("Removing previously installed library " + libs[i]);
+			da->remove(libs[i]);
+		}
+		da->remove(GDNATIVE_LIBS_PATH);
+	}
+
 	String join_list(List<String> parts, const String &separator) const {
 		String ret;
 		for (int i = 0; i < parts.size(); ++i) {
@@ -2899,12 +2957,20 @@ public:
 			_update_custom_build_project();
 			//stores all the project files inside the Gradle project directory. Also includes all ABIs
 			_clear_assets_directory();
+			_remove_copied_libs();
 			if (!apk_expansion) {
 				print_verbose("Exporting project files..");
-				err = export_project_files(p_preset, rename_and_store_file_in_gradle_project, NULL, ignore_so_file);
+				CustomExportData user_data;
+				user_data.debug = p_debug;
+				err = export_project_files(p_preset, rename_and_store_file_in_gradle_project, &user_data, copy_gradle_so);
 				if (err != OK) {
 					EditorNode::add_io_error("Could not export project files to gradle project\n");
 					return err;
+				}
+				if (user_data.libs.size() > 0) {
+					FileAccessRef fa = FileAccess::open(GDNATIVE_LIBS_PATH, FileAccess::WRITE);
+					fa->store_string(JSON::print(user_data.libs, "\t"));
+					fa->close();
 				}
 			} else {
 				print_verbose("Saving apk expansion file..");
