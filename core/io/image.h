@@ -336,11 +336,13 @@ public:
 		COMPRESS_ETC,
 		COMPRESS_ETC2,
 		COMPRESS_BPTC,
+		COMPRESS_MAX,
 	};
 	enum CompressSource {
 		COMPRESS_SOURCE_GENERIC,
 		COMPRESS_SOURCE_SRGB,
-		COMPRESS_SOURCE_NORMAL
+		COMPRESS_SOURCE_NORMAL,
+		COMPRESS_SOURCE_MAX,
 	};
 
 	Error compress(CompressMode p_mode, CompressSource p_source = COMPRESS_SOURCE_GENERIC, float p_lossy_quality = 0.7);
