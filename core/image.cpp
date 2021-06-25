@@ -2113,6 +2113,8 @@ Error Image::decompress() {
 }
 
 Error Image::compress(CompressMode p_mode, CompressSource p_source, float p_lossy_quality) {
+	ERR_FAIL_INDEX_V_MSG(p_mode, COMPRESS_MAX, ERR_INVALID_PARAMETER, "Invalid compress mode.");
+	ERR_FAIL_INDEX_V_MSG(p_source, COMPRESS_SOURCE_MAX, ERR_INVALID_PARAMETER, "Invalid compress source.");
 	switch (p_mode) {
 		case COMPRESS_S3TC: {
 			ERR_FAIL_COND_V(!_image_compress_bc_func, ERR_UNAVAILABLE);
@@ -2137,6 +2139,9 @@ Error Image::compress(CompressMode p_mode, CompressSource p_source, float p_loss
 		case COMPRESS_BPTC: {
 			ERR_FAIL_COND_V(!_image_compress_bptc_func, ERR_UNAVAILABLE);
 			_image_compress_bptc_func(this, p_lossy_quality, p_source);
+		} break;
+		case COMPRESS_MAX: {
+			ERR_FAIL_V(ERR_INVALID_PARAMETER);
 		} break;
 	}
 
