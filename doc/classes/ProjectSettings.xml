@@ -778,8 +778,8 @@
 		<member name="internationalization/pseudolocalization/double_vowels" type="bool" setter="" getter="" default="false">
 			Double vowels in strings during pseudolocalization.
 		</member>
-		<member name="internationalization/pseudolocalization/expansion_ratio" type="int" setter="" getter="" default="0">
-			Expansion percentage to be used during pseudolocalization.
+		<member name="internationalization/pseudolocalization/expansion_ratio" type="float" setter="" getter="" default="0.0">
+			Expansion ratio to be used during pseudolocalization.
 		</member>
 		<member name="internationalization/pseudolocalization/fake_bidi" type="bool" setter="" getter="" default="false">
 			Fake RTL text.

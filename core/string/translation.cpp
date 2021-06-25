@@ -1367,12 +1367,17 @@ void TranslationServer::set_pseudolocalization_fake_bidi_enabled(bool enabled) {
 	ResourceLoader::reload_translation_remaps();
 }
 
-int TranslationServer::get_pseudolocalization_expansion_ratio() const {
+float TranslationServer::get_pseudolocalization_expansion_ratio() const {
 	return expansion_ratio;
 }
 
-void TranslationServer::set_pseudolocalization_expansion_ratio(int ratio) {
+void TranslationServer::set_pseudolocalization_expansion_ratio(float ratio) {
 	expansion_ratio = ratio;
+
+	if (OS::get_singleton()->get_main_loop()) {
+		OS::get_singleton()->get_main_loop()->notification(MainLoop::NOTIFICATION_TRANSLATION_CHANGED);
+	}
+	ResourceLoader::reload_translation_remaps();
 }
 
 String TranslationServer::get_pseudolocalization_prefix() const {
@@ -1403,7 +1408,7 @@ void TranslationServer::set_pseudolocalization_suffix(String suffix) {
 
 StringName TranslationServer::pseudolocalize(const StringName &p_message) const {
 	String message = p_message;
-
+	int length = message.length();
 	if (pseudolocalization_double_vowels_enabled) {
 		message = double_vowels(message);
 	}
@@ -1416,7 +1421,7 @@ StringName TranslationServer::pseudolocalize(const StringName &p_message) const 
 		message = wrap_with_fakebidi_characters(message);
 	}
 
-	StringName res = add_padding(message);
+	StringName res = add_padding(message, length);
 	return res;
 }
 
@@ -1464,10 +1469,15 @@ String TranslationServer::wrap_with_fakebidi_characters(String &message) const {
 	return res;
 }
 
-String TranslationServer::add_padding(String &message) const {
+String TranslationServer::add_padding(String &message, int length) const {
 	String res = "";
 	String prefix = pseudolocalization_prefix;
-	String suffix = pseudolocalization_suffix;
+	String suffix = "";
+	for (int i = 0; i < length * expansion_ratio / 2; i++) {
+		prefix += "_";
+		suffix += "_";
+	}
+	suffix += pseudolocalization_suffix;
 	//replace with expansion logic here when implementing that
 	res += prefix;
 	res += message;
