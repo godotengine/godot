@@ -28,9 +28,9 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
+#include "scene/resources/skeleton_modification_3d_twoboneik.h"
 #include "scene/3d/skeleton_3d.h"
 #include "scene/resources/skeleton_modification_3d.h"
-#include "scene/resources/skeleton_modification_3d_twoboneik.h"
 
 bool SkeletonModification3DTwoBoneIK::_set(const StringName &p_path, const Variant &p_value) {
 	String path = p_path;
@@ -126,7 +126,7 @@ void SkeletonModification3DTwoBoneIK::_get_property_list(List<PropertyInfo> *p_l
 	p_list->push_back(PropertyInfo(Variant::FLOAT, "joint_two/roll", PROPERTY_HINT_RANGE, "-360, 360, 0.01", PROPERTY_USAGE_DEFAULT));
 }
 
-void SkeletonModification3DTwoBoneIK::execute(float delta) {
+void SkeletonModification3DTwoBoneIK::_execute(float p_delta) {
 	ERR_FAIL_COND_MSG(!stack || !is_setup || stack->skeleton == nullptr,
 			"Modification is not setup and therefore cannot execute!");
 
@@ -286,7 +286,7 @@ void SkeletonModification3DTwoBoneIK::execute(float delta) {
 	}
 }
 
-void SkeletonModification3DTwoBoneIK::setup_modification(SkeletonModificationStack3D *p_stack) {
+void SkeletonModification3DTwoBoneIK::_setup_modification(SkeletonModificationStack3D *p_stack) {
 	stack = p_stack;
 
 	if (stack != nullptr) {

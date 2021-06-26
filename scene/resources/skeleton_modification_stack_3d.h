@@ -48,9 +48,9 @@ protected:
 	bool _get(const StringName &p_path, Variant &r_ret) const;
 
 public:
-	Skeleton3D *skeleton;
+	Skeleton3D *skeleton = nullptr;
 	bool is_setup = false;
-	bool enabled = true;
+	bool enabled = false;
 	float strength = 1.0;
 
 	enum EXECUTION_MODE {
@@ -58,11 +58,11 @@ public:
 		execution_mode_physics_process,
 	};
 
-	Vector<Ref<SkeletonModification3D>> modifications;
+	Vector<Ref<SkeletonModification3D>> modifications = Vector<Ref<SkeletonModification3D>>();
 	int modifications_count = 0;
 
 	void setup();
-	void execute(float delta, int execution_mode);
+	void execute(float p_delta, int p_execution_mode);
 
 	void enable_all_modifications(bool p_enable);
 	Ref<SkeletonModification3D> get_modification(int p_mod_idx) const;

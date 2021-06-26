@@ -375,9 +375,9 @@ Transform3D Skeleton3D::get_bone_local_pose_override(int p_bone) const {
 	return bones[p_bone].local_pose_override;
 }
 
-void Skeleton3D::update_bone_rest_forward_vector(int p_bone, bool force_update) {
-	if (bones[p_bone].rest_bone_forward_vector.length_squared() > 0 && force_update == false) {
-		update_bone_rest_forward_axis(p_bone, force_update);
+void Skeleton3D::update_bone_rest_forward_vector(int p_bone, bool p_force_update) {
+	if (bones[p_bone].rest_bone_forward_vector.length_squared() > 0 && p_force_update == false) {
+		update_bone_rest_forward_axis(p_bone, p_force_update);
 	}
 
 	// If it is a child/leaf bone...
@@ -400,12 +400,12 @@ void Skeleton3D::update_bone_rest_forward_vector(int p_bone, bool force_update) 
 			bones.write[p_bone].rest_bone_forward_vector = Vector3(0, 1, 0);
 		}
 	}
-	update_bone_rest_forward_axis(p_bone, force_update);
+	update_bone_rest_forward_axis(p_bone, p_force_update);
 }
 
-void Skeleton3D::update_bone_rest_forward_axis(int p_bone, bool force_update) {
+void Skeleton3D::update_bone_rest_forward_axis(int p_bone, bool p_force_update) {
 	ERR_FAIL_INDEX(p_bone, bones.size());
-	if (bones[p_bone].rest_bone_forward_axis > -1 && force_update == false) {
+	if (bones[p_bone].rest_bone_forward_axis > -1 && p_force_update == false) {
 		return;
 	}
 
@@ -1079,7 +1079,7 @@ Ref<SkeletonModificationStack3D> Skeleton3D::get_modification_stack() {
 	return modification_stack;
 }
 
-void Skeleton3D::execute_modifications(float delta, int execution_mode) {
+void Skeleton3D::execute_modifications(float p_delta, int p_execution_mode) {
 	if (!modification_stack.is_valid()) {
 		return;
 	}
@@ -1089,7 +1089,7 @@ void Skeleton3D::execute_modifications(float delta, int execution_mode) {
 		modification_stack->set_skeleton(this);
 	}
 
-	modification_stack->execute(delta, execution_mode);
+	modification_stack->execute(p_delta, p_execution_mode);
 }
 
 #endif // _3D_DISABLED

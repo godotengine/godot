@@ -54,10 +54,10 @@ protected:
 	bool _print_execution_error(bool p_condition, String p_message);
 
 public:
-	virtual void execute(float delta);
-	virtual void setup_modification(SkeletonModificationStack3D *p_stack);
+	virtual void _execute(float p_delta);
+	virtual void _setup_modification(SkeletonModificationStack3D *p_stack);
 
-	float clamp_angle(float angle, float min_bound, float max_bound, bool invert);
+	float clamp_angle(float p_angle, float p_min_bound, float p_max_bound, bool p_invert);
 
 	void set_enabled(bool p_enabled);
 	bool get_enabled();

@@ -223,8 +223,8 @@ public:
 	void force_update_all_bone_transforms();
 	void force_update_bone_children_transforms(int bone_idx);
 
-	void update_bone_rest_forward_vector(int p_bone, bool force_update = false);
-	void update_bone_rest_forward_axis(int p_bone, bool force_update = false);
+	void update_bone_rest_forward_vector(int p_bone, bool p_force_update = false);
+	void update_bone_rest_forward_axis(int p_bone, bool p_force_update = false);
 	Vector3 get_bone_axis_forward_vector(int p_bone);
 	int get_bone_axis_forward_enum(int p_bone);
 
@@ -240,7 +240,7 @@ public:
 #ifndef _3D_DISABLED
 	Ref<SkeletonModificationStack3D> get_modification_stack();
 	void set_modification_stack(Ref<SkeletonModificationStack3D> p_stack);
-	void execute_modifications(float delta, int execution_mode);
+	void execute_modifications(float p_delta, int p_execution_mode);
 #endif // _3D_DISABLED
 
 	// Physical bone API
