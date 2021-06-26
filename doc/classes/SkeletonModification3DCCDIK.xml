@@ -39,15 +39,6 @@
 				Returns the integer representing the joint axis of the CCDIK joint at [code]joint_idx[/code].
 			</description>
 		</method>
-		<method name="get_ccdik_joint_enable_joint_constraint" qualifiers="const">
-			<return type="bool">
-			</return>
-			<argument index="0" name="joint_idx" type="int">
-			</argument>
-			<description>
-				Enables angle constraints to the CCDIK joint at [code]joint_idx[/code].
-			</description>
-		</method>
 		<method name="get_ccdik_joint_constraint_angle_max" qualifiers="const">
 			<return type="float">
 			</return>
@@ -73,6 +64,15 @@
 			</argument>
 			<description>
 				Returns whether the CCDIK joint at [code]joint_idx[/code] uses an inverted joint constraint. See [method set_ccdik_joint_constraint_invert] for details.
+			</description>
+		</method>
+		<method name="get_ccdik_joint_enable_joint_constraint" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="joint_idx" type="int">
+			</argument>
+			<description>
+				Enables angle constraints to the CCDIK joint at [code]joint_idx[/code].
 			</description>
 		</method>
 		<method name="set_ccdik_joint_bone_index">
@@ -108,39 +108,6 @@
 				Sets the joint axis of the CCDIK joint at [code]joint_idx[/code] to the passed-in joint axis, [code]axis[/code].
 			</description>
 		</method>
-		<method name="set_ccdik_joint_enable_joint_constraint">
-			<return type="void">
-			</return>
-			<argument index="0" name="joint_idx" type="int">
-			</argument>
-			<argument index="1" name="enable" type="bool">
-			</argument>
-			<description>
-				Sets whether joint constraints are enabled for the CCDIK joint at [code]joint_idx[/code].
-			</description>
-		</method>
-		<method name="set_ccdik_joint_constraint_angle_degrees_max">
-			<return type="void">
-			</return>
-			<argument index="0" name="joint_idx" type="int">
-			</argument>
-			<argument index="1" name="max_angle" type="float">
-			</argument>
-			<description>
-				Sets the maximum angle constraint for the joint at [code]joint_idx[/code]. [b]Note:[/b] This angle must be in degrees!
-			</description>
-		</method>
-		<method name="set_ccdik_joint_constraint_angle_degrees_min">
-			<return type="void">
-			</return>
-			<argument index="0" name="joint_idx" type="int">
-			</argument>
-			<argument index="1" name="min_angle" type="float">
-			</argument>
-			<description>
-				Sets the minimum angle constraint for the joint at [code]joint_idx[/code]. [b]Note:[/b] This angle must be in degrees!
-			</description>
-		</method>
 		<method name="set_ccdik_joint_constraint_angle_max">
 			<return type="void">
 			</return>
@@ -173,6 +140,17 @@
 			<description>
 				Sets whether the CCDIK joint at [code]joint_idx[/code] uses an inverted joint constraint.
 				An inverted joint constraint only constraints the CCDIK joint to the angles [i]outside of[/i] the inputted minimum and maximum angles. For this reason, it is referred to as an inverted joint constraint, as it constraints the joint to the outside of the inputted values.
+			</description>
+		</method>
+		<method name="set_ccdik_joint_enable_joint_constraint">
+			<return type="void">
+			</return>
+			<argument index="0" name="joint_idx" type="int">
+			</argument>
+			<argument index="1" name="enable" type="bool">
+			</argument>
+			<description>
+				Sets whether joint constraints are enabled for the CCDIK joint at [code]joint_idx[/code].
 			</description>
 		</method>
 	</methods>

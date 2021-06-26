@@ -22,10 +22,6 @@
 				Adds a bone, with name [code]name[/code]. [method get_bone_count] will become the bone index.
 			</description>
 		</method>
-		<method name="bone_transform_to_world_transform">
-			<return type="Transform3D">
-			</return>
-			<argument index="0" name="bone_transform" type="Transform3D">
 		<method name="add_bone_child">
 			<return type="void">
 			</return>
@@ -34,18 +30,6 @@
 			<argument index="1" name="child_bone_idx" type="int">
 			</argument>
 			<description>
-				Adds a child bone index, [code]child_bone_idx[/code], to the passed in bone, [code]bone_idx[/code].
-			</description>
-		</method>
-		<method name="bind_child_node_to_bone">
-			<return type="void">
-			</return>
-			<argument index="0" name="bone_idx" type="int">
-			</argument>
-			<argument index="1" name="node" type="Node">
-			</argument>
-			<description>
-				[i]Deprecated soon.[/i]
 			</description>
 		</method>
 		<method name="clear_bones">
@@ -141,13 +125,19 @@
 		</method>
 		<method name="get_bone_global_pose_no_override" qualifiers="const">
 			<return type="Transform3D">
+			</return>
+			<argument index="0" name="bone_idx" type="int">
+			</argument>
+			<description>
+				Returns the overall transform of the specified bone, with respect to the skeleton, but without any global pose overrides. Being relative to the skeleton frame, this is not the actual "global" transform of the bone.
+			</description>
+		</method>
 		<method name="get_bone_global_pose_override" qualifiers="const">
 			<return type="Transform3D">
 			</return>
 			<argument index="0" name="bone_idx" type="int">
 			</argument>
 			<description>
-				Returns the overall transform of the specified bone, with respect to the skeleton, but without any global pose overrides. Being relative to the skeleton frame, this is not the actual "global" transform of the bone.
 			</description>
 		</method>
 		<method name="get_bone_local_pose_override" qualifiers="const">
@@ -211,11 +201,11 @@
 			</description>
 		</method>
 		<method name="global_pose_to_local_pose">
-			<return type="Transform">
+			<return type="Transform3D">
 			</return>
 			<argument index="0" name="bone_idx" type="int">
 			</argument>
-			<argument index="1" name="global_pose" type="Transform">
+			<argument index="1" name="global_pose" type="Transform3D">
 			</argument>
 			<description>
 				Converts the passed-in global pose to a local pose relative to the inputted bone, [code]bone_idx[/code].
@@ -223,9 +213,9 @@
 			</description>
 		</method>
 		<method name="global_pose_to_world_transform">
-			<return type="Transform">
+			<return type="Transform3D">
 			</return>
-			<argument index="0" name="global_pose" type="Transform">
+			<argument index="0" name="global_pose" type="Transform3D">
 			</argument>
 			<description>
 				Takes the passed-in global pose and converts it to a world transform.
@@ -241,7 +231,7 @@
 			</argument>
 			<description>
 				Rotates the given [Basis] so that the forward axis of the Basis is facing in the forward direction of the bone at [code]bone_idx[/code].
-				This is helper function to make using [method Transform.looking_at] easier with bone poses.
+				This is helper function to make using [method Transform3D.looking_at] easier with bone poses.
 			</description>
 		</method>
 		<method name="is_bone_rest_disabled" qualifiers="const">
@@ -254,11 +244,11 @@
 			</description>
 		</method>
 		<method name="local_pose_to_global_pose">
-			<return type="Transform">
+			<return type="Transform3D">
 			</return>
 			<argument index="0" name="bone_idx" type="int">
 			</argument>
-			<argument index="1" name="local_pose" type="Transform">
+			<argument index="1" name="local_pose" type="Transform3D">
 			</argument>
 			<description>
 				Converts the passed-in local pose to a global pose relative to the inputted bone, [code]bone_idx[/code].
@@ -350,7 +340,7 @@
 			</argument>
 			<description>
 				Sets the custom pose transform, [code]custom_pose[/code], for the bone at [code]bone_idx[/code]. This pose is an addition to the bone rest pose.
-				[b]Note[/b]: The pose transform needs to be in bone space. Use [method world_transform_to_global_pose] to convert a world transform, like one you can get from a [Node3D], to bone space.
+				[b]Note:[/b] The pose transform needs to be in bone space. Use [method world_transform_to_global_pose] to convert a world transform, like one you can get from a [Node3D], to bone space.
 			</description>
 		</method>
 		<method name="set_bone_disable_rest">
@@ -378,7 +368,7 @@
 			<description>
 				Sets the global pose transform, [code]pose[/code], for the bone at [code]bone_idx[/code].
 				[code]amount[/code] is the interpolation strengh that will be used when applying the pose, and [code]persistent[/code] determines if the applied pose will remain.
-				[b]Note[/b]: The pose transform needs to be a global pose! Use [method world_transform_to_global_pose] to convert a world transform, like one you can get from a [Node3D], to a global pose.
+				[b]Note:[/b] The pose transform needs to be a global pose! Use [method world_transform_to_global_pose] to convert a world transform, like one you can get from a [Node3D], to a global pose.
 			</description>
 		</method>
 		<method name="set_bone_local_pose_override">
@@ -386,7 +376,7 @@
 			</return>
 			<argument index="0" name="bone_idx" type="int">
 			</argument>
-			<argument index="1" name="pose" type="Transform">
+			<argument index="1" name="pose" type="Transform3D">
 			</argument>
 			<argument index="2" name="amount" type="float">
 			</argument>
@@ -395,7 +385,7 @@
 			<description>
 				Sets the local pose transform, [code]pose[/code], for the bone at [code]bone_idx[/code].
 				[code]amount[/code] is the interpolation strengh that will be used when applying the pose, and [code]persistent[/code] determines if the applied pose will remain.
-				[b]Note[/b]: The pose transform needs to be a local pose! Use [method global_pose_to_local_pose] to convert a global pose to a local pose.
+				[b]Note:[/b] The pose transform needs to be a local pose! Use [method global_pose_to_local_pose] to convert a global pose to a local pose.
 			</description>
 		</method>
 		<method name="set_bone_name">
@@ -429,7 +419,7 @@
 			</argument>
 			<description>
 				Sets the pose transform for bone [code]bone_idx[/code].
-				[b]Note[/b]: The pose transform needs to be in bone space. Use [method world_transform_to_global_pose] to convert a world transform, like one you can get from a [Node3D], to bone space.
+				[b]Note:[/b] The pose transform needs to be in bone space. Use [method world_transform_to_global_pose] to convert a world transform, like one you can get from a [Node3D], to bone space.
 			</description>
 		</method>
 		<method name="set_bone_rest">
@@ -462,7 +452,7 @@
 			</description>
 		</method>
 		<method name="world_transform_to_global_pose">
-			<return type="Transform">
+			<return type="Transform3D">
 			</return>
 			<argument index="0" name="world_transform" type="Transform3D">
 			</argument>
