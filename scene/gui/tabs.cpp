@@ -365,7 +365,7 @@ void Tabs::_notification(int p_what) {
 					sb_rect = Rect2(w, 0, tabs[i].size_cache, h);
 				}
 				sb->draw(ci, sb_rect);
-				
+
 				if (i == current && has_focus()) {
 					Ref<StyleBox> style2 = get_theme_stylebox("focus");
 					style2->draw(ci, sb_rect);
