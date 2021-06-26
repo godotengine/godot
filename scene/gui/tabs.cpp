@@ -233,6 +233,20 @@ void Tabs::_gui_input(const Ref<InputEvent> &p_event) {
 			}
 		}
 	}
+	if (!mm.is_valid() && !mb.is_valid()) {
+		if (p_event->is_action_pressed("ui_right")) {
+			int next_tab = (get_current_tab() + 1) % get_tab_count();
+			set_current_tab(next_tab);
+			accept_event();
+			return;
+		}
+		else if (p_event->is_action_pressed("ui_left")) {
+			int prev_tab = (get_current_tab() > 0) ? (get_current_tab() - 1) : (get_tab_count() - 1);
+			set_current_tab(prev_tab);
+			accept_event();
+			return;
+		}
+	}
 }
 
 void Tabs::_shape(int p_tab) {
@@ -351,6 +365,11 @@ void Tabs::_notification(int p_what) {
 					sb_rect = Rect2(w, 0, tabs[i].size_cache, h);
 				}
 				sb->draw(ci, sb_rect);
+				
+				if (i == current && has_focus()) {
+					Ref<StyleBox> style2 = get_theme_stylebox("focus");
+					style2->draw(ci, sb_rect);
+				}
 
 				w += sb->get_margin(SIDE_LEFT);
 
@@ -1176,4 +1195,5 @@ void Tabs::_bind_methods() {
 
 Tabs::Tabs() {
 	connect("mouse_exited", callable_mp(this, &Tabs::_on_mouse_exited));
+	set_focus_mode(FOCUS_ALL);
 }

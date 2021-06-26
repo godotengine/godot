@@ -283,6 +283,28 @@ void TabContainer::_gui_input(const Ref<InputEvent> &p_event) {
 			}
 		}
 	}
+	if (!mm.is_valid() && !mb.is_valid()) {
+		if (p_event->is_action_pressed("ui_right")) {
+			int next_tab = (get_current_tab() + 1) % get_tab_count();
+			set_current_tab(next_tab);
+			accept_event();
+			return;
+		}
+		else if (p_event->is_action_pressed("ui_left")) {
+			int prev_tab = (get_current_tab() > 0) ? (get_current_tab() - 1) : (get_tab_count() - 1);
+			set_current_tab(prev_tab);
+			accept_event();
+			return;
+		}
+		else if (p_event->is_action_pressed("ui_down")) {
+			Control* next = find_next_valid_focus();
+			if (next)
+			{
+				next->grab_focus();
+				accept_event();
+			}
+		}
+	}
 }
 
 void TabContainer::_notification(int p_what) {
@@ -548,6 +570,10 @@ void TabContainer::_draw_tab(Ref<StyleBox> &p_tab_style, Color &p_font_color, in
 	Rect2 tab_rect(p_x, 0, tab_width, header_height);
 	p_tab_style->draw(canvas, tab_rect);
 
+	if (p_index == current && has_focus()) {
+		Ref<StyleBox> style2 = get_theme_stylebox("focus");
+		style2->draw(canvas, tab_rect);
+	}
 	// Draw the tab contents.
 	Control *control = Object::cast_to<Control>(tabs[p_index]);
 	String text = control->has_meta("_tab_name") ? String(tr(String(control->get_meta("_tab_name")))) : String(tr(control->get_name()));
@@ -1249,4 +1275,5 @@ void TabContainer::_bind_methods() {
 
 TabContainer::TabContainer() {
 	connect("mouse_exited", callable_mp(this, &TabContainer::_on_mouse_exited));
+	set_focus_mode(FOCUS_ALL);
 }

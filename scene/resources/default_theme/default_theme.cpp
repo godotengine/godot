@@ -765,6 +765,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_stylebox("tab_unselected", "TabContainer", sb_expand(make_stylebox(tab_behind_png, 5, 5, 5, 1, 16, 6, 16, 4), 3, 0, 3, 3));
 	theme->set_stylebox("tab_disabled", "TabContainer", sb_expand(make_stylebox(tab_disabled_png, 5, 5, 5, 1, 16, 6, 16, 4), 3, 0, 3, 3));
 	theme->set_stylebox("panel", "TabContainer", tc_sb);
+	theme->set_stylebox("focus", "TabContainer", sb_expand(make_stylebox(button_focus_png, 4, 4, 4, 4, 6, 2, 6, 2), 2, 2, 2, 2));
 
 	theme->set_icon("increment", "TabContainer", make_icon(scroll_button_right_png));
 	theme->set_icon("increment_highlight", "TabContainer", make_icon(scroll_button_right_hl_png));
@@ -792,6 +793,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_stylebox("tab_disabled", "Tabs", sb_expand(make_stylebox(tab_disabled_png, 5, 5, 5, 1, 16, 6, 16, 4), 3, 0, 3, 3));
 	theme->set_stylebox("button_pressed", "Tabs", make_stylebox(button_pressed_png, 4, 4, 4, 4));
 	theme->set_stylebox("button", "Tabs", make_stylebox(button_normal_png, 4, 4, 4, 4));
+	theme->set_stylebox("focus", "Tabs", sb_expand(make_stylebox(button_focus_png, 4, 4, 4, 4, 6, 2, 6, 2), 2, 2, 2, 2));
 
 	theme->set_icon("increment", "Tabs", make_icon(scroll_button_right_png));
 	theme->set_icon("increment_highlight", "Tabs", make_icon(scroll_button_right_hl_png));
