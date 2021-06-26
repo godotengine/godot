@@ -1633,7 +1633,7 @@ String Variant::stringify(List<const void *> &stack) const {
 		case INT:
 			return itos(_data._int);
 		case FLOAT:
-			return rtos(_data._float);
+			return String::num_real(_data._float, true);
 		case STRING:
 			return *reinterpret_cast<const String *>(_data._mem);
 		case VECTOR2:
