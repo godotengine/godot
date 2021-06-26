@@ -18,13 +18,6 @@
 				Returns the collision mask that the Jiggle modifier will take into account when performing physics calculations.
 			</description>
 		</method>
-		<method name="get_use_colliders" qualifiers="const">
-			<return type="bool">
-			</return>
-			<description>
-				Returns whether the Jiggle modifier is taking physics colliders into account when solving.
-			</description>
-		</method>
 		<method name="get_jiggle_joint_bone_index" qualifiers="const">
 			<return type="int">
 			</return>
@@ -104,6 +97,22 @@
 			</argument>
 			<description>
 				Returns a boolean that indiciates whether the joint at [code]joint_idx[/code] is using gravity or not.
+			</description>
+		</method>
+		<method name="get_use_colliders" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+				Returns whether the Jiggle modifier is taking physics colliders into account when solving.
+			</description>
+		</method>
+		<method name="set_collision_mask">
+			<return type="void">
+			</return>
+			<argument index="0" name="mask" type="int">
+			</argument>
+			<description>
+				Sets the collision mask that the Jiggle modifier takes into account when performing physics calculations.
 			</description>
 		</method>
 		<method name="set_jiggle_joint_bone_index">
@@ -205,15 +214,6 @@
 				Sets whether the Jiggle joint at [code]joint_idx[/code] should use gravity.
 			</description>
 		</method>
-		<method name="set_collision_mask">
-			<return type="void">
-			</return>
-			<argument index="0" name="mask" type="int">
-			</argument>
-			<description>
-				Sets the collision mask that the Jiggle modifier takes into account when performing physics calculations.
-			</description>
-		</method>
 		<method name="set_use_colliders">
 			<return type="void">
 			</return>
@@ -228,7 +228,7 @@
 		<member name="damping" type="float" setter="set_damping" getter="get_damping" default="0.75">
 			The default amount of dampening applied to the Jiggle joints, if they are not overriden. Higher values lead to more of the calculated velocity being applied.
 		</member>
-		<member name="gravity" type="Vector3" setter="set_gravity" getter="get_gravity" default="Vector3( 0, -6, 0 )">
+		<member name="gravity" type="Vector3" setter="set_gravity" getter="get_gravity" default="Vector3(0, -6, 0)">
 			The default amount of gravity applied to the Jiggle joints, if they are not overriden.
 		</member>
 		<member name="jiggle_data_chain_length" type="int" setter="set_jiggle_data_chain_length" getter="get_jiggle_data_chain_length" default="0">

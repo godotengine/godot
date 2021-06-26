@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  skeleton_modification_3d_lookat.h                                    */
+/*  skeleton_modification_3d_lookat.cpp                                  */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
