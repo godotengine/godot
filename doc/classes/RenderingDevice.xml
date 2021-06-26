@@ -1148,7 +1148,7 @@
 		</constant>
 		<constant name="TEXTURE_USAGE_CAN_COPY_TO_BIT" value="256" enum="TextureUsageBits">
 		</constant>
-		<constant name="TEXTURE_USAGE_RESOLVE_ATTACHMENT_BIT" value="512" enum="TextureUsageBits">
+		<constant name="TEXTURE_USAGE_INPUT_ATTACHMENT_BIT" value="512" enum="TextureUsageBits">
 		</constant>
 		<constant name="TEXTURE_SWIZZLE_IDENTITY" value="0" enum="TextureSwizzle">
 		</constant>
