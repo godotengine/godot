@@ -31,10 +31,10 @@
 #include "skeleton_modification_3d.h"
 #include "scene/3d/skeleton_3d.h"
 
-void SkeletonModification3D::execute(float delta) {
+void SkeletonModification3D::_execute(float p_delta) {
 	if (get_script_instance()) {
 		if (get_script_instance()->has_method("execute")) {
-			get_script_instance()->call("execute", delta);
+			get_script_instance()->call("execute", p_delta);
 		}
 	}
 
@@ -42,7 +42,7 @@ void SkeletonModification3D::execute(float delta) {
 		return;
 }
 
-void SkeletonModification3D::setup_modification(SkeletonModificationStack3D *p_stack) {
+void SkeletonModification3D::_setup_modification(SkeletonModificationStack3D *p_stack) {
 	stack = p_stack;
 	if (stack) {
 		is_setup = true;
@@ -65,53 +65,53 @@ bool SkeletonModification3D::get_enabled() {
 	return enabled;
 }
 
-// Helper function. Copied from the 2D IK PR. Needed for CCDIK.
-float SkeletonModification3D::clamp_angle(float angle, float min_bound, float max_bound, bool invert) {
+// Helper function. Needed for CCDIK.
+float SkeletonModification3D::clamp_angle(float p_angle, float p_min_bound, float p_max_bound, bool p_invert) {
 	// Map to the 0 to 360 range (in radians though) instead of the -180 to 180 range.
-	if (angle < 0) {
-		angle = (Math_PI * 2) + angle;
+	if (p_angle < 0) {
+		p_angle = Math_TAU + p_angle;
 	}
 
 	// Make min and max in the range of 0 to 360 (in radians), and make sure they are in the right order
-	if (min_bound < 0) {
-		min_bound = (Math_PI * 2) + min_bound;
+	if (p_min_bound < 0) {
+		p_min_bound = Math_TAU + p_min_bound;
 	}
-	if (max_bound < 0) {
-		max_bound = (Math_PI * 2) + max_bound;
+	if (p_max_bound < 0) {
+		p_max_bound = Math_TAU + p_max_bound;
 	}
-	if (min_bound > max_bound) {
-		float tmp = min_bound;
-		min_bound = max_bound;
-		max_bound = tmp;
+	if (p_min_bound > p_max_bound) {
+		float tmp = p_min_bound;
+		p_min_bound = p_max_bound;
+		p_max_bound = tmp;
 	}
 
 	// Note: May not be the most optimal way to clamp, but it always constraints to the nearest angle.
-	if (invert == false) {
-		if (angle < min_bound || angle > max_bound) {
-			Vector2 min_bound_vec = Vector2(Math::cos(min_bound), Math::sin(min_bound));
-			Vector2 max_bound_vec = Vector2(Math::cos(max_bound), Math::sin(max_bound));
-			Vector2 angle_vec = Vector2(Math::cos(angle), Math::sin(angle));
+	if (p_invert == false) {
+		if (p_angle < p_min_bound || p_angle > p_max_bound) {
+			Vector2 min_bound_vec = Vector2(Math::cos(p_min_bound), Math::sin(p_min_bound));
+			Vector2 max_bound_vec = Vector2(Math::cos(p_max_bound), Math::sin(p_max_bound));
+			Vector2 angle_vec = Vector2(Math::cos(p_angle), Math::sin(p_angle));
 
 			if (angle_vec.distance_squared_to(min_bound_vec) <= angle_vec.distance_squared_to(max_bound_vec)) {
-				angle = min_bound;
+				p_angle = p_min_bound;
 			} else {
-				angle = max_bound;
+				p_angle = p_max_bound;
 			}
 		}
 	} else {
-		if (angle > min_bound && angle < max_bound) {
-			Vector2 min_bound_vec = Vector2(Math::cos(min_bound), Math::sin(min_bound));
-			Vector2 max_bound_vec = Vector2(Math::cos(max_bound), Math::sin(max_bound));
-			Vector2 angle_vec = Vector2(Math::cos(angle), Math::sin(angle));
+		if (p_angle > p_min_bound && p_angle < p_max_bound) {
+			Vector2 min_bound_vec = Vector2(Math::cos(p_min_bound), Math::sin(p_min_bound));
+			Vector2 max_bound_vec = Vector2(Math::cos(p_max_bound), Math::sin(p_max_bound));
+			Vector2 angle_vec = Vector2(Math::cos(p_angle), Math::sin(p_angle));
 
 			if (angle_vec.distance_squared_to(min_bound_vec) <= angle_vec.distance_squared_to(max_bound_vec)) {
-				angle = min_bound;
+				p_angle = p_min_bound;
 			} else {
-				angle = max_bound;
+				p_angle = p_max_bound;
 			}
 		}
 	}
-	return angle;
+	return p_angle;
 }
 
 bool SkeletonModification3D::_print_execution_error(bool p_condition, String p_message) {
@@ -148,8 +148,8 @@ int SkeletonModification3D::get_execution_mode() const {
 }
 
 void SkeletonModification3D::_bind_methods() {
-	BIND_VMETHOD(MethodInfo("execute", PropertyInfo(Variant::FLOAT, "delta")));
-	BIND_VMETHOD(MethodInfo("setup_modification", PropertyInfo(Variant::OBJECT, "modification_stack", PROPERTY_HINT_RESOURCE_TYPE, "SkeletonModificationStack3D")));
+	BIND_VMETHOD(MethodInfo("_execute", PropertyInfo(Variant::FLOAT, "delta")));
+	BIND_VMETHOD(MethodInfo("_setup_modification", PropertyInfo(Variant::OBJECT, "modification_stack", PROPERTY_HINT_RESOURCE_TYPE, "SkeletonModificationStack3D")));
 
 	ClassDB::bind_method(D_METHOD("set_enabled", "enabled"), &SkeletonModification3D::set_enabled);
 	ClassDB::bind_method(D_METHOD("get_enabled"), &SkeletonModification3D::get_enabled);

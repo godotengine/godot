@@ -28,9 +28,9 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
+#include "scene/resources/skeleton_modification_3d_ccdik.h"
 #include "scene/3d/skeleton_3d.h"
 #include "scene/resources/skeleton_modification_3d.h"
-#include "scene/resources/skeleton_modification_3d_ccdik.h"
 
 bool SkeletonModification3DCCDIK::_set(const StringName &p_path, const Variant &p_value) {
 	String path = p_path;
@@ -107,7 +107,7 @@ void SkeletonModification3DCCDIK::_get_property_list(List<PropertyInfo> *p_list)
 	}
 }
 
-void SkeletonModification3DCCDIK::execute(float delta) {
+void SkeletonModification3DCCDIK::_execute(float p_delta) {
 	ERR_FAIL_COND_MSG(!stack || !is_setup || stack->skeleton == nullptr,
 			"Modification is not setup and therefore cannot execute!");
 	if (!enabled) {
@@ -157,7 +157,7 @@ void SkeletonModification3DCCDIK::execute(float delta) {
 	execution_error_found = false;
 }
 
-void SkeletonModification3DCCDIK::_execute_ccdik_joint(int p_joint_idx, Node3D *target, Node3D *tip) {
+void SkeletonModification3DCCDIK::_execute_ccdik_joint(int p_joint_idx, Node3D *p_target, Node3D *p_tip) {
 	CCDIK_Joint_Data ccdik_data = ccdik_data_chain[p_joint_idx];
 
 	if (_print_execution_error(ccdik_data.bone_idx < 0 || ccdik_data.bone_idx > stack->skeleton->get_bone_count(),
@@ -166,8 +166,8 @@ void SkeletonModification3DCCDIK::_execute_ccdik_joint(int p_joint_idx, Node3D *
 	}
 
 	Transform3D bone_trans = stack->skeleton->global_pose_to_local_pose(ccdik_data.bone_idx, stack->skeleton->get_bone_global_pose(ccdik_data.bone_idx));
-	Transform3D tip_trans = stack->skeleton->global_pose_to_local_pose(ccdik_data.bone_idx, stack->skeleton->world_transform_to_global_pose(tip->get_global_transform()));
-	Transform3D target_trans = stack->skeleton->global_pose_to_local_pose(ccdik_data.bone_idx, stack->skeleton->world_transform_to_global_pose(target->get_global_transform()));
+	Transform3D tip_trans = stack->skeleton->global_pose_to_local_pose(ccdik_data.bone_idx, stack->skeleton->world_transform_to_global_pose(p_tip->get_global_transform()));
+	Transform3D target_trans = stack->skeleton->global_pose_to_local_pose(ccdik_data.bone_idx, stack->skeleton->world_transform_to_global_pose(p_target->get_global_transform()));
 
 	if (tip_trans.origin.distance_to(target_trans.origin) <= 0.01) {
 		return;
@@ -230,7 +230,7 @@ void SkeletonModification3DCCDIK::_execute_ccdik_joint(int p_joint_idx, Node3D *
 	stack->skeleton->force_update_bone_children_transforms(ccdik_data.bone_idx);
 }
 
-void SkeletonModification3DCCDIK::setup_modification(SkeletonModificationStack3D *p_stack) {
+void SkeletonModification3DCCDIK::_setup_modification(SkeletonModificationStack3D *p_stack) {
 	stack = p_stack;
 	if (stack != nullptr) {
 		is_setup = true;

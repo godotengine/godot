@@ -46,8 +46,8 @@ protected:
 public:
 	Ref<SkeletonModificationStack3D> held_modification_stack;
 
-	void execute(float delta) override;
-	void setup_modification(SkeletonModificationStack3D *p_stack) override;
+	void _execute(float p_delta) override;
+	void _setup_modification(SkeletonModificationStack3D *p_stack) override;
 
 	void set_held_modification_stack(Ref<SkeletonModificationStack3D> p_held_stack);
 	Ref<SkeletonModificationStack3D> get_held_modification_stack() const;

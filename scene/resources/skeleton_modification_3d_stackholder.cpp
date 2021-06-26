@@ -28,9 +28,9 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
+#include "scene/resources/skeleton_modification_3d_stackholder.h"
 #include "scene/3d/skeleton_3d.h"
 #include "scene/resources/skeleton_modification_3d.h"
-#include "scene/resources/skeleton_modification_3d_stackholder.h"
 
 bool SkeletonModification3DStackHolder::_set(const StringName &p_path, const Variant &p_value) {
 	String path = p_path;
@@ -54,16 +54,16 @@ void SkeletonModification3DStackHolder::_get_property_list(List<PropertyInfo> *p
 	p_list->push_back(PropertyInfo(Variant::OBJECT, "held_modification_stack", PROPERTY_HINT_RESOURCE_TYPE, "SkeletonModificationStack3D", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_DO_NOT_SHARE_ON_DUPLICATE));
 }
 
-void SkeletonModification3DStackHolder::execute(float delta) {
+void SkeletonModification3DStackHolder::_execute(float p_delta) {
 	ERR_FAIL_COND_MSG(!stack || !is_setup || stack->skeleton == nullptr,
 			"Modification is not setup and therefore cannot execute!");
 
 	if (held_modification_stack.is_valid()) {
-		held_modification_stack->execute(delta, execution_mode);
+		held_modification_stack->execute(p_delta, execution_mode);
 	}
 }
 
-void SkeletonModification3DStackHolder::setup_modification(SkeletonModificationStack3D *p_stack) {
+void SkeletonModification3DStackHolder::_setup_modification(SkeletonModificationStack3D *p_stack) {
 	stack = p_stack;
 
 	if (stack != nullptr) {

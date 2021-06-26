@@ -78,14 +78,14 @@ void SkeletonModificationStack3D::setup() {
 			if (!modifications[i].is_valid()) {
 				continue;
 			}
-			modifications.get(i)->setup_modification(this);
+			modifications.get(i)->_setup_modification(this);
 		}
 	} else {
 		WARN_PRINT("Cannot setup SkeletonModificationStack3D: no skeleton set!");
 	}
 }
 
-void SkeletonModificationStack3D::execute(float delta, int execution_mode) {
+void SkeletonModificationStack3D::execute(float p_delta, int p_execution_mode) {
 	ERR_FAIL_COND_MSG(!is_setup || skeleton == nullptr || is_queued_for_deletion(),
 			"Modification stack is not properly setup and therefore cannot execute!");
 
@@ -103,8 +103,8 @@ void SkeletonModificationStack3D::execute(float delta, int execution_mode) {
 			continue;
 		}
 
-		if (modifications[i]->get_execution_mode() == execution_mode) {
-			modifications.get(i)->execute(delta);
+		if (modifications[i]->get_execution_mode() == p_execution_mode) {
+			modifications.get(i)->_execute(p_delta);
 		}
 	}
 }
@@ -124,7 +124,7 @@ Ref<SkeletonModification3D> SkeletonModificationStack3D::get_modification(int p_
 }
 
 void SkeletonModificationStack3D::add_modification(Ref<SkeletonModification3D> p_mod) {
-	p_mod->setup_modification(this);
+	p_mod->_setup_modification(this);
 	modifications.push_back(p_mod);
 }
 
@@ -139,7 +139,7 @@ void SkeletonModificationStack3D::set_modification(int p_mod_idx, Ref<SkeletonMo
 	if (p_mod == nullptr) {
 		modifications.set(p_mod_idx, nullptr);
 	} else {
-		p_mod->setup_modification(this);
+		p_mod->_setup_modification(this);
 		modifications.set(p_mod_idx, p_mod);
 	}
 }
@@ -216,10 +216,4 @@ void SkeletonModificationStack3D::_bind_methods() {
 }
 
 SkeletonModificationStack3D::SkeletonModificationStack3D() {
-	skeleton = nullptr;
-	modifications = Vector<Ref<SkeletonModification3D>>();
-	is_setup = false;
-	enabled = false;
-	modifications_count = 0;
-	strength = 1.0;
 }

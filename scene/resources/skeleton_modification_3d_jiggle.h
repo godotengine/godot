@@ -74,7 +74,7 @@ private:
 	uint32_t collision_mask = 1;
 
 	void update_cache();
-	void _execute_jiggle_joint(int p_joint_idx, Node3D *target, float delta);
+	void _execute_jiggle_joint(int p_joint_idx, Node3D *p_target, float p_delta);
 	void _update_jiggle_joint_data();
 
 protected:
@@ -84,8 +84,8 @@ protected:
 	void _get_property_list(List<PropertyInfo> *p_list) const;
 
 public:
-	void execute(float delta) override;
-	void setup_modification(SkeletonModificationStack3D *p_stack) override;
+	void _execute(float p_delta) override;
+	void _setup_modification(SkeletonModificationStack3D *p_stack) override;
 
 	void set_target_node(const NodePath &p_target_node);
 	NodePath get_target_node() const;
@@ -110,25 +110,25 @@ public:
 	int get_jiggle_data_chain_length();
 	void set_jiggle_data_chain_length(int p_new_length);
 
-	void set_jiggle_joint_bone_name(int joint_idx, String p_name);
-	String get_jiggle_joint_bone_name(int joint_idx) const;
-	void set_jiggle_joint_bone_index(int joint_idx, int p_idx);
-	int get_jiggle_joint_bone_index(int joint_idx) const;
+	void set_jiggle_joint_bone_name(int p_joint_idx, String p_name);
+	String get_jiggle_joint_bone_name(int p_joint_idx) const;
+	void set_jiggle_joint_bone_index(int p_joint_idx, int p_idx);
+	int get_jiggle_joint_bone_index(int p_joint_idx) const;
 
-	void set_jiggle_joint_override(int joint_idx, bool p_override);
-	bool get_jiggle_joint_override(int joint_idx) const;
-	void set_jiggle_joint_stiffness(int joint_idx, float p_stiffness);
-	float get_jiggle_joint_stiffness(int joint_idx) const;
-	void set_jiggle_joint_mass(int joint_idx, float p_mass);
-	float get_jiggle_joint_mass(int joint_idx) const;
-	void set_jiggle_joint_damping(int joint_idx, float p_damping);
-	float get_jiggle_joint_damping(int joint_idx) const;
-	void set_jiggle_joint_use_gravity(int joint_idx, bool p_use_gravity);
-	bool get_jiggle_joint_use_gravity(int joint_idx) const;
-	void set_jiggle_joint_gravity(int joint_idx, Vector3 p_gravity);
-	Vector3 get_jiggle_joint_gravity(int joint_idx) const;
-	void set_jiggle_joint_roll(int joint_idx, float p_roll);
-	float get_jiggle_joint_roll(int joint_idx) const;
+	void set_jiggle_joint_override(int p_joint_idx, bool p_override);
+	bool get_jiggle_joint_override(int p_joint_idx) const;
+	void set_jiggle_joint_stiffness(int p_joint_idx, float p_stiffness);
+	float get_jiggle_joint_stiffness(int p_joint_idx) const;
+	void set_jiggle_joint_mass(int p_joint_idx, float p_mass);
+	float get_jiggle_joint_mass(int p_joint_idx) const;
+	void set_jiggle_joint_damping(int p_joint_idx, float p_damping);
+	float get_jiggle_joint_damping(int p_joint_idx) const;
+	void set_jiggle_joint_use_gravity(int p_joint_idx, bool p_use_gravity);
+	bool get_jiggle_joint_use_gravity(int p_joint_idx) const;
+	void set_jiggle_joint_gravity(int p_joint_idx, Vector3 p_gravity);
+	Vector3 get_jiggle_joint_gravity(int p_joint_idx) const;
+	void set_jiggle_joint_roll(int p_joint_idx, float p_roll);
+	float get_jiggle_joint_roll(int p_joint_idx) const;
 
 	SkeletonModification3DJiggle();
 	~SkeletonModification3DJiggle();

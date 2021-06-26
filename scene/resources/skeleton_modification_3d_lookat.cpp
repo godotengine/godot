@@ -28,9 +28,9 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
+#include "scene/resources/skeleton_modification_3d_lookat.h"
 #include "scene/3d/skeleton_3d.h"
 #include "scene/resources/skeleton_modification_3d.h"
-#include "scene/resources/skeleton_modification_3d_lookat.h"
 
 bool SkeletonModification3DLookAt::_set(const StringName &p_path, const Variant &p_value) {
 	if (p_path == "lock_rotation_to_plane") {
@@ -72,7 +72,7 @@ void SkeletonModification3DLookAt::_get_property_list(List<PropertyInfo> *p_list
 	p_list->push_back(PropertyInfo(Variant::VECTOR3, "additional_rotation", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT));
 }
 
-void SkeletonModification3DLookAt::execute(float delta) {
+void SkeletonModification3DLookAt::_execute(float p_delta) {
 	ERR_FAIL_COND_MSG(!stack || !is_setup || stack->skeleton == nullptr,
 			"Modification is not setup and therefore cannot execute!");
 	if (!enabled) {
@@ -129,7 +129,7 @@ void SkeletonModification3DLookAt::execute(float delta) {
 	execution_error_found = false;
 }
 
-void SkeletonModification3DLookAt::setup_modification(SkeletonModificationStack3D *p_stack) {
+void SkeletonModification3DLookAt::_setup_modification(SkeletonModificationStack3D *p_stack) {
 	stack = p_stack;
 
 	if (stack != nullptr) {

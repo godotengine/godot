@@ -62,8 +62,8 @@ public:
 		ROTATION_PLANE_Z
 	};
 
-	void execute(float delta) override;
-	void setup_modification(SkeletonModificationStack3D *p_stack) override;
+	void _execute(float p_delta) override;
+	void _setup_modification(SkeletonModificationStack3D *p_stack) override;
 
 	void set_bone_name(String p_name);
 	String get_bone_name() const;

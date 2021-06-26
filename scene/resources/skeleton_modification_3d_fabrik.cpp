@@ -28,9 +28,9 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
+#include "scene/resources/skeleton_modification_3d_fabrik.h"
 #include "scene/3d/skeleton_3d.h"
 #include "scene/resources/skeleton_modification_3d.h"
-#include "scene/resources/skeleton_modification_3d_fabrik.h"
 
 bool SkeletonModification3DFABRIK::_set(const StringName &p_path, const Variant &p_value) {
 	String path = p_path;
@@ -125,7 +125,7 @@ void SkeletonModification3DFABRIK::_get_property_list(List<PropertyInfo> *p_list
 	}
 }
 
-void SkeletonModification3DFABRIK::execute(float delta) {
+void SkeletonModification3DFABRIK::_execute(float p_delta) {
 	ERR_FAIL_COND_MSG(!stack || !is_setup || stack->skeleton == nullptr,
 			"Modification is not setup and therefore cannot execute!");
 	if (!enabled) {
@@ -297,7 +297,7 @@ void SkeletonModification3DFABRIK::chain_apply() {
 	stack->skeleton->force_update_all_bone_transforms();
 }
 
-void SkeletonModification3DFABRIK::setup_modification(SkeletonModificationStack3D *p_stack) {
+void SkeletonModification3DFABRIK::_setup_modification(SkeletonModificationStack3D *p_stack) {
 	stack = p_stack;
 	if (stack != nullptr) {
 		is_setup = true;
