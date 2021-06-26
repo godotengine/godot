@@ -289,17 +289,14 @@ void TabContainer::_gui_input(const Ref<InputEvent> &p_event) {
 			set_current_tab(next_tab);
 			accept_event();
 			return;
-		}
-		else if (p_event->is_action_pressed("ui_left")) {
+		} else if (p_event->is_action_pressed("ui_left")) {
 			int prev_tab = (get_current_tab() > 0) ? (get_current_tab() - 1) : (get_tab_count() - 1);
 			set_current_tab(prev_tab);
 			accept_event();
 			return;
-		}
-		else if (p_event->is_action_pressed("ui_down")) {
+		} else if (p_event->is_action_pressed("ui_down")) {
 			Control* next = find_next_valid_focus();
-			if (next)
-			{
+			if (next) {
 				next->grab_focus();
 				accept_event();
 			}
