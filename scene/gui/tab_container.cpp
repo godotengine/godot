@@ -295,7 +295,7 @@ void TabContainer::_gui_input(const Ref<InputEvent> &p_event) {
 			accept_event();
 			return;
 		} else if (p_event->is_action_pressed("ui_down")) {
-			Control* next = find_next_valid_focus();
+			Control *next = find_next_valid_focus();
 			if (next) {
 				next->grab_focus();
 				accept_event();
