@@ -1179,7 +1179,7 @@ GDScriptParser::EnumNode *GDScriptParser::parse_enum() {
 			// If close bracket is same line as last value.
 			if (enum_node->values[i].line != previous.start_line && has_comment(enum_node->values[i].line)) {
 				if (named) {
-					enum_node->values.write[i].doc_description = get_doc_comment(enum_node->values[i].line, true);
+					enum_node->values.write()[i].doc_description = get_doc_comment(enum_node->values[i].line, true);
 				} else {
 					current_class->set_enum_value_doc(enum_node->values[i].identifier->name, get_doc_comment(enum_node->values[i].line, true));
 				}
@@ -1188,7 +1188,7 @@ GDScriptParser::EnumNode *GDScriptParser::parse_enum() {
 			// If two values are same line.
 			if (enum_node->values[i].line != enum_node->values[i + 1].line && has_comment(enum_node->values[i].line)) {
 				if (named) {
-					enum_node->values.write[i].doc_description = get_doc_comment(enum_node->values[i].line, true);
+					enum_node->values.write()[i].doc_description = get_doc_comment(enum_node->values[i].line, true);
 				} else {
 					current_class->set_enum_value_doc(enum_node->values[i].identifier->name, get_doc_comment(enum_node->values[i].line, true));
 				}

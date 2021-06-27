@@ -203,7 +203,7 @@ void EditorNode::disambiguate_filenames(const Vector<String> p_full_paths, Vecto
 			index_sets.append(Set<int>());
 			scene_name_to_set_index.insert(r_filenames[i], index_sets.size() - 1);
 		}
-		index_sets.write[scene_name_to_set_index[scene_name]].insert(i);
+		index_sets.write()[scene_name_to_set_index[scene_name]].insert(i);
 	}
 
 	// For each index set with a size > 1, we need to disambiguate
@@ -240,7 +240,7 @@ void EditorNode::disambiguate_filenames(const Vector<String> p_full_paths, Vecto
 					int slash_idx = parent.rfind("/");
 					slash_idx = parent.rfind("/", slash_idx - 1);
 					parent = slash_idx >= 0 ? parent.substr(slash_idx + 1) : parent;
-					r_filenames.write[set_idx] = parent + r_filenames[set_idx];
+					r_filenames.write()[set_idx] = parent + r_filenames[set_idx];
 				}
 			}
 
@@ -715,8 +715,8 @@ void EditorNode::_notification(int p_what) {
 			p->set_item_icon(p->get_item_index(HELP_SUPPORT_GODOT_DEVELOPMENT), gui_base->get_theme_icon("Heart", "EditorIcons"));
 
 			for (int i = 0; i < main_editor_buttons.size(); i++) {
-				main_editor_buttons.write[i]->add_theme_font_override("font", gui_base->get_theme_font("main_button_font", "EditorFonts"));
-				main_editor_buttons.write[i]->add_theme_font_size_override("font_size", gui_base->get_theme_font_size("main_button_font_size", "EditorFonts"));
+				main_editor_buttons.write()[i]->add_theme_font_override("font", gui_base->get_theme_font("main_button_font", "EditorFonts"));
+				main_editor_buttons.write()[i]->add_theme_font_size_override("font_size", gui_base->get_theme_font_size("main_button_font_size", "EditorFonts"));
 			}
 
 			_update_update_spinner();
@@ -4974,7 +4974,7 @@ void EditorNode::raise_bottom_panel_item(Control *p_item) {
 	for (int i = 0; i < bottom_panel_items.size(); i++) {
 		if (bottom_panel_items[i].control == p_item) {
 			bottom_panel_items[i].button->raise();
-			SWAP(bottom_panel_items.write[i], bottom_panel_items.write[bottom_panel_items.size() - 1]);
+			SWAP(bottom_panel_items.write()[i], bottom_panel_items.write()[bottom_panel_items.size() - 1]);
 			break;
 		}
 	}

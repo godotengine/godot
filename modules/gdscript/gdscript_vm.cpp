@@ -60,7 +60,7 @@ Variant *GDScriptFunction::_get_variant(int p_address, GDScriptInstance *p_insta
 			}
 #endif
 			//member indexing is O(1)
-			return &p_instance->members.write[address];
+			return &p_instance->members.write()[address];
 		} break;
 	}
 
@@ -2096,7 +2096,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 					gdfs->state.stack.resize(alloca_size);
 					//copy variant stack
 					for (int i = 0; i < _stack_size; i++) {
-						memnew_placement(&gdfs->state.stack.write[sizeof(Variant) * i], Variant(stack[i]));
+						memnew_placement(&gdfs->state.stack.write()[sizeof(Variant) * i], Variant(stack[i]));
 					}
 					gdfs->state.stack_size = _stack_size;
 					gdfs->state.alloca_size = alloca_size;
@@ -2167,7 +2167,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 				captures.resize(captures_count);
 				for (int i = 0; i < captures_count; i++) {
 					GET_INSTRUCTION_ARG(arg, i);
-					captures.write[i] = *arg;
+					captures.write()[i] = *arg;
 				}
 
 				GDScriptLambdaCallable *callable = memnew(GDScriptLambdaCallable(Ref<GDScript>(script), lambda, captures));

@@ -970,7 +970,7 @@ struct VariantInternalAccessor<Vector<Variant>> {
 		int s = VariantInternal::get_array(v)->size();
 		ret.resize(s);
 		for (int i = 0; i < s; i++) {
-			ret.write[i] = VariantInternal::get_array(v)->get(i);
+			ret.write()[i] = VariantInternal::get_array(v)->get(i);
 		}
 
 		return ret;

@@ -544,7 +544,7 @@ void RendererSceneRenderRD::reflection_atlas_set_size(RID p_ref_atlas, int p_ref
 		RD::get_singleton()->free(ra->depth_buffer);
 		ra->depth_buffer = RID();
 		for (int i = 0; i < ra->reflections.size(); i++) {
-			ra->reflections.write[i].data.clear_reflection_data();
+			ra->reflections.write()[i].data.clear_reflection_data();
 			if (ra->reflections[i].owner.is_null()) {
 				continue;
 			}
@@ -588,7 +588,7 @@ void RendererSceneRenderRD::reflection_probe_release_atlas_index(RID p_instance)
 	ReflectionAtlas *atlas = reflection_atlas_owner.getornull(rpi->atlas);
 	ERR_FAIL_COND(!atlas);
 	ERR_FAIL_INDEX(rpi->atlas_index, atlas->reflections.size());
-	atlas->reflections.write[rpi->atlas_index].owner = RID();
+	atlas->reflections.write()[rpi->atlas_index].owner = RID();
 	rpi->atlas_index = -1;
 	rpi->atlas = RID();
 }
@@ -673,12 +673,12 @@ bool RendererSceneRenderRD::reflection_probe_instance_begin_render(RID p_instanc
 		}
 		atlas->reflections.resize(atlas->count);
 		for (int i = 0; i < atlas->count; i++) {
-			atlas->reflections.write[i].data.update_reflection_data(atlas->size, mipmaps, false, atlas->reflection, i * 6, storage->reflection_probe_get_update_mode(rpi->probe) == RS::REFLECTION_PROBE_UPDATE_ALWAYS, sky.roughness_layers);
+			atlas->reflections.write()[i].data.update_reflection_data(atlas->size, mipmaps, false, atlas->reflection, i * 6, storage->reflection_probe_get_update_mode(rpi->probe) == RS::REFLECTION_PROBE_UPDATE_ALWAYS, sky.roughness_layers);
 			for (int j = 0; j < 6; j++) {
 				Vector<RID> fb;
-				fb.push_back(atlas->reflections.write[i].data.layers[0].mipmaps[0].views[j]);
+				fb.push_back(atlas->reflections.write()[i].data.layers[0].mipmaps[0].views[j]);
 				fb.push_back(atlas->depth_buffer);
-				atlas->reflections.write[i].fbs[j] = RD::get_singleton()->framebuffer_create(fb);
+				atlas->reflections.write()[i].fbs[j] = RD::get_singleton()->framebuffer_create(fb);
 			}
 		}
 
@@ -733,7 +733,7 @@ bool RendererSceneRenderRD::reflection_probe_instance_postprocess_step(RID p_ins
 
 	if (storage->reflection_probe_get_update_mode(rpi->probe) == RS::REFLECTION_PROBE_UPDATE_ALWAYS) {
 		// Using real time reflections, all roughness is done in one step
-		atlas->reflections.write[rpi->atlas_index].data.create_reflection_fast_filter(storage, false);
+		atlas->reflections.write()[rpi->atlas_index].data.create_reflection_fast_filter(storage, false);
 		rpi->rendering = false;
 		rpi->processing_side = 0;
 		rpi->processing_layer = 1;
@@ -741,7 +741,7 @@ bool RendererSceneRenderRD::reflection_probe_instance_postprocess_step(RID p_ins
 	}
 
 	if (rpi->processing_layer > 1) {
-		atlas->reflections.write[rpi->atlas_index].data.create_reflection_importance_sample(storage, false, 10, rpi->processing_layer, sky.sky_ggx_samples_quality);
+		atlas->reflections.write()[rpi->atlas_index].data.create_reflection_importance_sample(storage, false, 10, rpi->processing_layer, sky.sky_ggx_samples_quality);
 		rpi->processing_layer++;
 		if (rpi->processing_layer == atlas->reflections[rpi->atlas_index].data.layers[0].mipmaps.size()) {
 			rpi->rendering = false;
@@ -752,7 +752,7 @@ bool RendererSceneRenderRD::reflection_probe_instance_postprocess_step(RID p_ins
 		return false;
 
 	} else {
-		atlas->reflections.write[rpi->atlas_index].data.create_reflection_importance_sample(storage, false, rpi->processing_side, rpi->processing_layer, sky.sky_ggx_samples_quality);
+		atlas->reflections.write()[rpi->atlas_index].data.create_reflection_importance_sample(storage, false, rpi->processing_side, rpi->processing_layer, sky.sky_ggx_samples_quality);
 	}
 
 	rpi->processing_side++;
@@ -1023,7 +1023,7 @@ bool RendererSceneRenderRD::shadow_atlas_update_light(RID p_atlas, RID p_light_i
 		bool should_redraw = shadow_atlas->quadrants[q].shadows[s].version != p_light_version;
 
 		if (!should_realloc) {
-			shadow_atlas->quadrants[q].shadows.write[s].version = p_light_version;
+			shadow_atlas->quadrants[q].shadows.write()[s].version = p_light_version;
 			//already existing, see if it should redraw or it's just OK
 			return should_redraw;
 		}
@@ -1033,7 +1033,7 @@ bool RendererSceneRenderRD::shadow_atlas_update_light(RID p_atlas, RID p_light_i
 		//find a better place
 		if (_shadow_atlas_find_shadow(shadow_atlas, valid_quadrants, valid_quadrant_count, shadow_atlas->quadrants[q].subdivision, tick, new_quadrant, new_shadow)) {
 			//found a better place!
-			ShadowAtlas::Quadrant::Shadow *sh = &shadow_atlas->quadrants[new_quadrant].shadows.write[new_shadow];
+			ShadowAtlas::Quadrant::Shadow *sh = &shadow_atlas->quadrants[new_quadrant].shadows.write()[new_shadow];
 			if (sh->owner.is_valid()) {
 				//is taken, but is invalid, erasing it
 				shadow_atlas->shadow_owners.erase(sh->owner);
@@ -1042,8 +1042,8 @@ bool RendererSceneRenderRD::shadow_atlas_update_light(RID p_atlas, RID p_light_i
 			}
 
 			//erase previous
-			shadow_atlas->quadrants[q].shadows.write[s].version = 0;
-			shadow_atlas->quadrants[q].shadows.write[s].owner = RID();
+			shadow_atlas->quadrants[q].shadows.write()[s].version = 0;
+			shadow_atlas->quadrants[q].shadows.write()[s].owner = RID();
 
 			sh->owner = p_light_intance;
 			sh->alloc_tick = tick;
@@ -1063,7 +1063,7 @@ bool RendererSceneRenderRD::shadow_atlas_update_light(RID p_atlas, RID p_light_i
 
 		//already existing, see if it should redraw or it's just OK
 
-		shadow_atlas->quadrants[q].shadows.write[s].version = p_light_version;
+		shadow_atlas->quadrants[q].shadows.write()[s].version = p_light_version;
 
 		return should_redraw;
 	}
@@ -1073,7 +1073,7 @@ bool RendererSceneRenderRD::shadow_atlas_update_light(RID p_atlas, RID p_light_i
 	//find a better place
 	if (_shadow_atlas_find_shadow(shadow_atlas, valid_quadrants, valid_quadrant_count, -1, tick, new_quadrant, new_shadow)) {
 		//found a better place!
-		ShadowAtlas::Quadrant::Shadow *sh = &shadow_atlas->quadrants[new_quadrant].shadows.write[new_shadow];
+		ShadowAtlas::Quadrant::Shadow *sh = &shadow_atlas->quadrants[new_quadrant].shadows.write()[new_shadow];
 		if (sh->owner.is_valid()) {
 			//is taken, but is invalid, erasing it
 			shadow_atlas->shadow_owners.erase(sh->owner);
@@ -1762,7 +1762,7 @@ void RendererSceneRenderRD::_render_buffers_post_process_and_tonemap(const Rende
 		storage->get_effects()->luminance_reduction(rb->texture, Size2i(rb->width, rb->height), rb->luminance.reduce, rb->luminance.current, env->min_luminance, env->max_luminance, step, set_immediate);
 
 		//swap final reduce with prev luminance
-		SWAP(rb->luminance.current, rb->luminance.reduce.write[rb->luminance.reduce.size() - 1]);
+		SWAP(rb->luminance.current, rb->luminance.reduce.write()[rb->luminance.reduce.size() - 1]);
 		RenderingServerDefault::redraw_request(); //redraw all the time if auto exposure rendering is on
 	}
 
@@ -3278,7 +3278,7 @@ void RendererSceneRenderRD::_update_volumetric_fog(RID p_render_buffers, RID p_e
 
 		rb->volumetric_fog->uniform_set = RD::get_singleton()->uniform_set_create(uniforms, volumetric_fog.shader.version_get_shader(volumetric_fog.shader_version, 0), 0);
 
-		SWAP(uniforms.write[7].ids.write[0], uniforms.write[8].ids.write[0]);
+		SWAP(uniforms.write()[7].ids.write()[0], uniforms.write()[8].ids.write()[0]);
 
 		rb->volumetric_fog->uniform_set2 = RD::get_singleton()->uniform_set_create(uniforms, volumetric_fog.shader.version_get_shader(volumetric_fog.shader_version, 0), 0);
 	}
@@ -4066,7 +4066,7 @@ bool RendererSceneRenderRD::free(RID p_rid) {
 			uint32_t q = (key >> ShadowAtlas::QUADRANT_SHIFT) & 0x3;
 			uint32_t s = key & ShadowAtlas::SHADOW_INDEX_MASK;
 
-			shadow_atlas->quadrants[q].shadows.write[s].owner = RID();
+			shadow_atlas->quadrants[q].shadows.write()[s].owner = RID();
 			shadow_atlas->shadow_owners.erase(p_rid);
 		}
 
@@ -4155,7 +4155,7 @@ TypedArray<Image> RendererSceneRenderRD::bake_render_uv2(RID p_base, const Vecto
 
 	for (uint32_t i = 0; i < sc; i++) {
 		if (i < (uint32_t)p_material_overrides.size()) {
-			materials.write[i] = p_material_overrides[i];
+			materials.write()[i] = p_material_overrides[i];
 		}
 	}
 

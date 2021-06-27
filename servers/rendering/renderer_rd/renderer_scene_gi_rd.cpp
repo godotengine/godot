@@ -517,7 +517,7 @@ void RendererSceneGIRD::SDFGI::create(RendererSceneEnvironmentRD *p_env, const V
 		}
 
 		jump_flood_uniform_set[0] = RD::get_singleton()->uniform_set_create(uniforms, gi->sdfgi_shader.preprocess.version_get_shader(gi->sdfgi_shader.preprocess_shader, SDFGIShader::PRE_PROCESS_JUMP_FLOOD), 0);
-		SWAP(uniforms.write[0].ids.write[0], uniforms.write[1].ids.write[0]);
+		SWAP(uniforms.write()[0].ids.write()[0], uniforms.write()[1].ids.write()[0]);
 		jump_flood_uniform_set[1] = RD::get_singleton()->uniform_set_create(uniforms, gi->sdfgi_shader.preprocess.version_get_shader(gi->sdfgi_shader.preprocess_shader, SDFGIShader::PRE_PROCESS_JUMP_FLOOD), 0);
 	}
 	//jump flood half uniform set
@@ -539,7 +539,7 @@ void RendererSceneGIRD::SDFGI::create(RendererSceneEnvironmentRD *p_env, const V
 		}
 
 		jump_flood_half_uniform_set[0] = RD::get_singleton()->uniform_set_create(uniforms, gi->sdfgi_shader.preprocess.version_get_shader(gi->sdfgi_shader.preprocess_shader, SDFGIShader::PRE_PROCESS_JUMP_FLOOD), 0);
-		SWAP(uniforms.write[0].ids.write[0], uniforms.write[1].ids.write[0]);
+		SWAP(uniforms.write()[0].ids.write()[0], uniforms.write()[1].ids.write()[0]);
 		jump_flood_half_uniform_set[1] = RD::get_singleton()->uniform_set_create(uniforms, gi->sdfgi_shader.preprocess.version_get_shader(gi->sdfgi_shader.preprocess_shader, SDFGIShader::PRE_PROCESS_JUMP_FLOOD), 0);
 	}
 

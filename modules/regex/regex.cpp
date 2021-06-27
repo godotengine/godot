@@ -224,8 +224,8 @@ Ref<RegExMatch> RegEx::search(const String &p_subject, int p_offset, int p_end) 
 	result->data.resize(size);
 
 	for (uint32_t i = 0; i < size; i++) {
-		result->data.write[i].start = ovector[i * 2];
-		result->data.write[i].end = ovector[i * 2 + 1];
+		result->data.write()[i].start = ovector[i * 2];
+		result->data.write()[i].end = ovector[i * 2 + 1];
 	}
 
 	pcre2_match_data_free_32(match);

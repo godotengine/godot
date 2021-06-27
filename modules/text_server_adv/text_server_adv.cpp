@@ -1230,7 +1230,7 @@ bool TextServerAdvanced::shaped_text_resize_object(RID p_shaped, Variant p_key, 
 							sd->descent = MAX(sd->descent, sd->objects[key].rect.size.y);
 						} break;
 					}
-					sd->glyphs.write[i].advance = sd->objects[key].rect.size.x;
+					sd->glyphs.write()[i].advance = sd->objects[key].rect.size.x;
 				} else {
 					sd->objects[key].rect.position.y = sd->width;
 					sd->width += sd->objects[key].rect.size.y;
@@ -1246,7 +1246,7 @@ bool TextServerAdvanced::shaped_text_resize_object(RID p_shaped, Variant p_key, 
 							sd->descent = MAX(sd->descent, sd->objects[key].rect.size.x);
 						} break;
 					}
-					sd->glyphs.write[i].advance = sd->objects[key].rect.size.y;
+					sd->glyphs.write()[i].advance = sd->objects[key].rect.size.y;
 				}
 			} else {
 				const FontDataAdvanced *fd = font_owner.getornull(gl.font_rid);
@@ -1545,12 +1545,12 @@ float TextServerAdvanced::shaped_text_fit_to_width(RID p_shaped, float p_width, 
 	if ((p_jst_flags & JUSTIFICATION_TRIM_EDGE_SPACES) == JUSTIFICATION_TRIM_EDGE_SPACES) {
 		while ((start_pos < end_pos) && ((sd->glyphs[start_pos].flags & GRAPHEME_IS_SPACE) == GRAPHEME_IS_SPACE || (sd->glyphs[start_pos].flags & GRAPHEME_IS_BREAK_HARD) == GRAPHEME_IS_BREAK_HARD || (sd->glyphs[start_pos].flags & GRAPHEME_IS_BREAK_SOFT) == GRAPHEME_IS_BREAK_SOFT)) {
 			sd->width -= sd->glyphs[start_pos].advance * sd->glyphs[start_pos].repeat;
-			sd->glyphs.write[start_pos].advance = 0;
+			sd->glyphs.write()[start_pos].advance = 0;
 			start_pos += sd->glyphs[start_pos].count;
 		}
 		while ((start_pos < end_pos) && ((sd->glyphs[end_pos].flags & GRAPHEME_IS_SPACE) == GRAPHEME_IS_SPACE || (sd->glyphs[end_pos].flags & GRAPHEME_IS_BREAK_HARD) == GRAPHEME_IS_BREAK_HARD || (sd->glyphs[end_pos].flags & GRAPHEME_IS_BREAK_SOFT) == GRAPHEME_IS_BREAK_SOFT)) {
 			sd->width -= sd->glyphs[end_pos].advance * sd->glyphs[end_pos].repeat;
-			sd->glyphs.write[end_pos].advance = 0;
+			sd->glyphs.write()[end_pos].advance = 0;
 			end_pos -= sd->glyphs[end_pos].count;
 		}
 	}
@@ -1572,7 +1572,7 @@ float TextServerAdvanced::shaped_text_fit_to_width(RID p_shaped, float p_width, 
 	if ((elongation_count > 0) && ((p_jst_flags & JUSTIFICATION_KASHIDA) == JUSTIFICATION_KASHIDA)) {
 		float delta_width_per_kashida = (p_width - sd->width) / elongation_count;
 		for (int i = start_pos; i <= end_pos; i++) {
-			Glyph &gl = sd->glyphs.write[i];
+			Glyph &gl = sd->glyphs.write()[i];
 			if (gl.count > 0) {
 				if (((gl.flags & GRAPHEME_IS_ELONGATION) == GRAPHEME_IS_ELONGATION) && (gl.advance > 0)) {
 					int count = delta_width_per_kashida / gl.advance;
@@ -1591,7 +1591,7 @@ float TextServerAdvanced::shaped_text_fit_to_width(RID p_shaped, float p_width, 
 	if ((space_count > 0) && ((p_jst_flags & JUSTIFICATION_WORD_BOUND) == JUSTIFICATION_WORD_BOUND)) {
 		float delta_width_per_space = (p_width - sd->width) / space_count;
 		for (int i = start_pos; i <= end_pos; i++) {
-			Glyph &gl = sd->glyphs.write[i];
+			Glyph &gl = sd->glyphs.write()[i];
 			if (gl.count > 0) {
 				if ((gl.flags & GRAPHEME_IS_SPACE) == GRAPHEME_IS_SPACE) {
 					float old_adv = gl.advance;
@@ -1910,7 +1910,7 @@ bool TextServerAdvanced::shaped_text_update_justification_ops(RID p_shaped) {
 					}
 					if (jstops[sd->glyphs[i].start]) {
 						if (c == 0x0640) {
-							sd->glyphs.write[i].flags |= GRAPHEME_IS_ELONGATION;
+							sd->glyphs.write()[i].flags |= GRAPHEME_IS_ELONGATION;
 						} else {
 							if (sd->glyphs[i].font_rid != RID()) {
 								TextServer::Glyph gl = _shape_single_glyph(sd, 0x0640, HB_SCRIPT_ARABIC, HB_DIRECTION_RTL, sd->glyphs[i].font_rid, sd->glyphs[i].font_size);

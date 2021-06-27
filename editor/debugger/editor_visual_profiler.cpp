@@ -40,13 +40,13 @@ void EditorVisualProfiler::add_frame_metric(const Metric &p_metric) {
 		last_metric = 0;
 	}
 
-	frame_metrics.write[last_metric] = p_metric;
-	//	_make_metric_ptrs(frame_metrics.write[last_metric]);
+	frame_metrics.write()[last_metric] = p_metric;
+	//	_make_metric_ptrs(frame_metrics.write()[last_metric]);
 
 	List<String> stack;
 	for (int i = 0; i < frame_metrics[last_metric].areas.size(); i++) {
 		String name = frame_metrics[last_metric].areas[i].name;
-		frame_metrics.write[last_metric].areas.write[i].color_cache = _get_color_from_signature(name);
+		frame_metrics.write()[last_metric].areas.write()[i].color_cache = _get_color_from_signature(name);
 		String full_name;
 
 		if (name[0] == '<') {
@@ -63,7 +63,7 @@ void EditorVisualProfiler::add_frame_metric(const Metric &p_metric) {
 			stack.push_back(full_name + "/");
 		}
 
-		frame_metrics.write[last_metric].areas.write[i].fullpath_cache = full_name;
+		frame_metrics.write()[last_metric].areas.write()[i].fullpath_cache = full_name;
 	}
 
 	updating_frame = true;
@@ -705,10 +705,10 @@ Vector<Vector<String>> EditorVisualProfiler::get_data_as_csv() const {
 
 		for (int j = 0; j < frame_cat.size(); j++) {
 			const EditorFrameProfiler::Metric::Category &c = frame_cat[j];
-			values.write[it++] = String::num_real(c.total_time);
+			values.write()[it++] = String::num_real(c.total_time);
 
 			for (int k = 0; k < c.items.size(); k++) {
-				values.write[it++] = String::num_real(c.items[k].total);
+				values.write()[it++] = String::num_real(c.items[k].total);
 			}
 		}
 		res.push_back(values);

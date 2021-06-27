@@ -842,7 +842,7 @@ void RendererSceneCull::instance_set_surface_override_material(RID p_instance, i
 
 	ERR_FAIL_INDEX(p_surface, instance->materials.size());
 
-	instance->materials.write[p_surface] = p_material;
+	instance->materials.write()[p_surface] = p_material;
 
 	_instance_queue_update(instance, false, true);
 }
@@ -1876,7 +1876,7 @@ void RendererSceneCull::_update_instance_lightmap_captures(Instance *p_instance)
 		for (int j = 0; j < 9; j++) {
 			instance_sh[j] = accum_sh[j] / accum_blend;
 			if (first_set) {
-				p_instance->lightmap_sh.write[j] = instance_sh[j];
+				p_instance->lightmap_sh.write()[j] = instance_sh[j];
 			}
 		}
 	}
@@ -2083,14 +2083,14 @@ void RendererSceneCull::_light_instance_setup_directional_shadow(int p_shadow_in
 		light_frustum_planes.resize(6);
 
 		//right/left
-		light_frustum_planes.write[0] = Plane(x_vec, x_max);
-		light_frustum_planes.write[1] = Plane(-x_vec, -x_min);
+		light_frustum_planes.write()[0] = Plane(x_vec, x_max);
+		light_frustum_planes.write()[1] = Plane(-x_vec, -x_min);
 		//top/bottom
-		light_frustum_planes.write[2] = Plane(y_vec, y_max);
-		light_frustum_planes.write[3] = Plane(-y_vec, -y_min);
+		light_frustum_planes.write()[2] = Plane(y_vec, y_max);
+		light_frustum_planes.write()[3] = Plane(-y_vec, -y_min);
 		//near/far
-		light_frustum_planes.write[4] = Plane(z_vec, z_max + 1e6);
-		light_frustum_planes.write[5] = Plane(-z_vec, -z_min); // z_min is ok, since casters further than far-light plane are not needed
+		light_frustum_planes.write()[4] = Plane(z_vec, z_max + 1e6);
+		light_frustum_planes.write()[5] = Plane(-z_vec, -z_min); // z_min is ok, since casters further than far-light plane are not needed
 
 		// a pre pass will need to be needed to determine the actual z-near to be used
 
@@ -2206,12 +2206,12 @@ bool RendererSceneCull::_light_instance_update_shadow(Instance *p_instance, cons
 					real_t z = i == 0 ? -1 : 1;
 					Vector<Plane> planes;
 					planes.resize(6);
-					planes.write[0] = light_transform.xform(Plane(Vector3(0, 0, z), radius));
-					planes.write[1] = light_transform.xform(Plane(Vector3(1, 0, z).normalized(), radius));
-					planes.write[2] = light_transform.xform(Plane(Vector3(-1, 0, z).normalized(), radius));
-					planes.write[3] = light_transform.xform(Plane(Vector3(0, 1, z).normalized(), radius));
-					planes.write[4] = light_transform.xform(Plane(Vector3(0, -1, z).normalized(), radius));
-					planes.write[5] = light_transform.xform(Plane(Vector3(0, 0, -z), 0));
+					planes.write()[0] = light_transform.xform(Plane(Vector3(0, 0, z), radius));
+					planes.write()[1] = light_transform.xform(Plane(Vector3(1, 0, z).normalized(), radius));
+					planes.write()[2] = light_transform.xform(Plane(Vector3(-1, 0, z).normalized(), radius));
+					planes.write()[3] = light_transform.xform(Plane(Vector3(0, 1, z).normalized(), radius));
+					planes.write()[4] = light_transform.xform(Plane(Vector3(0, -1, z).normalized(), radius));
+					planes.write()[5] = light_transform.xform(Plane(Vector3(0, 0, -z), 0));
 
 					instance_shadow_cull_result.clear();
 

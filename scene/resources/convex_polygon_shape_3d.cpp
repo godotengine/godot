@@ -43,8 +43,8 @@ Vector<Vector3> ConvexPolygonShape3D::get_debug_mesh_lines() const {
 			Vector<Vector3> lines;
 			lines.resize(md.edges.size() * 2);
 			for (int i = 0; i < md.edges.size(); i++) {
-				lines.write[i * 2 + 0] = md.vertices[md.edges[i].a];
-				lines.write[i * 2 + 1] = md.vertices[md.edges[i].b];
+				lines.write()[i * 2 + 0] = md.vertices[md.edges[i].a];
+				lines.write()[i * 2 + 1] = md.vertices[md.edges[i].b];
 			}
 			return lines;
 		}

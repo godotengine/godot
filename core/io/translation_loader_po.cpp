@@ -226,7 +226,7 @@ RES TranslationLoaderPO::load_translation(FileAccess *f, Error *r_error) {
 		} else if (status == STATUS_READING_CONTEXT) {
 			msg_context += l;
 		} else if (status == STATUS_READING_PLURAL && plural_index >= 0) {
-			msgs_plural.write[plural_index] = msgs_plural[plural_index] + l;
+			msgs_plural.write()[plural_index] = msgs_plural[plural_index] + l;
 		}
 
 		line++;

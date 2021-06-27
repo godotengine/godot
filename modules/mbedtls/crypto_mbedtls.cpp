@@ -61,7 +61,7 @@ Error CryptoKeyMbedTLS::load(String p_path, bool p_public_only) {
 	uint64_t flen = f->get_length();
 	out.resize(flen + 1);
 	f->get_buffer(out.ptrw(), flen);
-	out.write[flen] = 0; // string terminator
+	out.write()[flen] = 0; // string terminator
 	memdelete(f);
 
 	int ret = 0;
@@ -149,7 +149,7 @@ Error X509CertificateMbedTLS::load(String p_path) {
 	uint64_t flen = f->get_length();
 	out.resize(flen + 1);
 	f->get_buffer(out.ptrw(), flen);
-	out.write[flen] = 0; // string terminator
+	out.write()[flen] = 0; // string terminator
 	memdelete(f);
 
 	int ret = mbedtls_x509_crt_parse(&cert, out.ptr(), out.size());
@@ -313,7 +313,7 @@ void CryptoMbedTLS::load_default_certificates(String p_path) {
 		PackedByteArray out;
 		out.resize(_certs_uncompressed_size + 1);
 		Compression::decompress(out.ptrw(), _certs_uncompressed_size, _certs_compressed, _certs_compressed_size, Compression::MODE_DEFLATE);
-		out.write[_certs_uncompressed_size] = 0; // Make sure it ends with string terminator
+		out.write()[_certs_uncompressed_size] = 0; // Make sure it ends with string terminator
 #ifdef DEBUG_ENABLED
 		print_verbose("Loaded builtin certs");
 #endif

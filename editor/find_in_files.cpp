@@ -162,7 +162,7 @@ void FindInFiles::_iterate() {
 	if (_folders_stack.size() != 0) {
 		// Scan folders first so we can build a list of files and have progress info later
 
-		PackedStringArray &folders_to_scan = _folders_stack.write[_folders_stack.size() - 1];
+		PackedStringArray &folders_to_scan = _folders_stack.write()[_folders_stack.size() - 1];
 
 		if (folders_to_scan.size() != 0) {
 			// Scan one folder below

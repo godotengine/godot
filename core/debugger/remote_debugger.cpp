@@ -119,12 +119,12 @@ public:
 			bandwidth_in_ptr = 0;
 			bandwidth_in.resize(16384); // ~128kB
 			for (int i = 0; i < bandwidth_in.size(); ++i) {
-				bandwidth_in.write[i].packet_size = -1;
+				bandwidth_in.write()[i].packet_size = -1;
 			}
 			bandwidth_out_ptr = 0;
 			bandwidth_out.resize(16384); // ~128kB
 			for (int i = 0; i < bandwidth_out.size(); ++i) {
-				bandwidth_out.write[i].packet_size = -1;
+				bandwidth_out.write()[i].packet_size = -1;
 			}
 		}
 	}
@@ -153,12 +153,12 @@ public:
 			int time = p_data[2];
 			int size = p_data[3];
 			if (inout == "in") {
-				bandwidth_in.write[bandwidth_in_ptr].timestamp = time;
-				bandwidth_in.write[bandwidth_in_ptr].packet_size = size;
+				bandwidth_in.write()[bandwidth_in_ptr].timestamp = time;
+				bandwidth_in.write()[bandwidth_in_ptr].packet_size = size;
 				bandwidth_in_ptr = (bandwidth_in_ptr + 1) % bandwidth_in.size();
 			} else if (inout == "out") {
-				bandwidth_out.write[bandwidth_out_ptr].timestamp = time;
-				bandwidth_out.write[bandwidth_out_ptr].packet_size = size;
+				bandwidth_out.write()[bandwidth_out_ptr].timestamp = time;
+				bandwidth_out.write()[bandwidth_out_ptr].packet_size = size;
 				bandwidth_out_ptr = (bandwidth_out_ptr + 1) % bandwidth_out.size();
 			}
 		}
@@ -221,14 +221,14 @@ struct RemoteDebugger::ScriptsProfiler {
 		int ofs = 0;
 		for (int i = 0; i < ScriptServer::get_language_count(); i++) {
 			if (p_accumulated) {
-				ofs += ScriptServer::get_language(i)->profiling_get_accumulated_data(&info.write[ofs], info.size() - ofs);
+				ofs += ScriptServer::get_language(i)->profiling_get_accumulated_data(&info.write()[ofs], info.size() - ofs);
 			} else {
-				ofs += ScriptServer::get_language(i)->profiling_get_frame_data(&info.write[ofs], info.size() - ofs);
+				ofs += ScriptServer::get_language(i)->profiling_get_frame_data(&info.write()[ofs], info.size() - ofs);
 			}
 		}
 
 		for (int i = 0; i < ofs; i++) {
-			ptrs.write[i] = &info.write[i];
+			ptrs.write()[i] = &info.write()[i];
 		}
 
 		SortArray<ScriptLanguage::ProfilingInfo *, ProfileInfoSort> sa;

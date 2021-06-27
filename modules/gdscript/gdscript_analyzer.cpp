@@ -659,7 +659,7 @@ void GDScriptAnalyzer::resolve_class_interface(GDScriptParser::ClassNode *p_clas
 				current_enum = member.m_enum;
 
 				for (int j = 0; j < member.m_enum->values.size(); j++) {
-					GDScriptParser::EnumNode::Value &element = member.m_enum->values.write[j];
+					GDScriptParser::EnumNode::Value &element = member.m_enum->values.write()[j];
 
 					if (element.custom_value) {
 						reduce_expression(element.custom_value);
@@ -718,8 +718,8 @@ void GDScriptAnalyzer::resolve_class_interface(GDScriptParser::ClassNode *p_clas
 					member.enum_value.resolved = true;
 				}
 				// Also update the original references.
-				member.enum_value.parent_enum->values.write[member.enum_value.index] = member.enum_value;
-				p_class->members.write[i].enum_value = member.enum_value;
+				member.enum_value.parent_enum->values.write()[member.enum_value.index] = member.enum_value;
+				p_class->members.write()[i].enum_value = member.enum_value;
 			} break;
 			case GDScriptParser::ClassNode::Member::CLASS:
 				break; // Done later.
@@ -1022,7 +1022,7 @@ void GDScriptAnalyzer::resolve_for(GDScriptParser::ForNode *p_for) {
 						if (!call->arguments[i]->is_constant) {
 							all_is_constant = false;
 						} else if (all_is_constant) {
-							args.write[i] = call->arguments[i]->reduced_value;
+							args.write()[i] = call->arguments[i]->reduced_value;
 						}
 
 						GDScriptParser::DataType arg_type = call->arguments[i]->get_datatype();
@@ -2657,7 +2657,7 @@ void GDScriptAnalyzer::reduce_lambda(GDScriptParser::LambdaNode *p_lambda) {
 		int param_count = p_lambda->function->parameters.size();
 		p_lambda->function->parameters.resize(param_count + captures_amount);
 		for (int i = param_count - 1; i >= 0; i--) {
-			p_lambda->function->parameters.write[i + captures_amount] = p_lambda->function->parameters[i];
+			p_lambda->function->parameters.write()[i + captures_amount] = p_lambda->function->parameters[i];
 			p_lambda->function->parameters_indices[p_lambda->function->parameters[i]->identifier->name] = i + captures_amount;
 		}
 
@@ -2669,7 +2669,7 @@ void GDScriptAnalyzer::reduce_lambda(GDScriptParser::LambdaNode *p_lambda) {
 			capture_param->usages = capture->usages;
 			capture_param->set_datatype(capture->get_datatype());
 
-			p_lambda->function->parameters.write[i] = capture_param;
+			p_lambda->function->parameters.write()[i] = capture_param;
 			p_lambda->function->parameters_indices[capture->name] = i;
 		}
 	}

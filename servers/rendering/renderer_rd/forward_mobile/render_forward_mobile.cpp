@@ -218,9 +218,9 @@ RID RenderForwardMobile::_setup_render_pass_uniform_set(RenderListType p_render_
 				RID base = lightmap_instance_get_lightmap((*p_render_data->lightmaps)[i]);
 				RID texture = storage->lightmap_get_texture(base);
 				RID rd_texture = storage->texture_get_rd_texture(texture);
-				u.ids.write[i] = rd_texture;
+				u.ids.write()[i] = rd_texture;
 			} else {
-				u.ids.write[i] = default_tex;
+				u.ids.write()[i] = default_tex;
 			}
 		}
 
@@ -240,9 +240,9 @@ RID RenderForwardMobile::_setup_render_pass_uniform_set(RenderListType p_render_
 				if (!tex.is_valid()) {
 					tex = default_tex;
 				}
-				u.ids.write[i] = tex;
+				u.ids.write()[i] = tex;
 			} else {
-				u.ids.write[i] = default_tex;
+				u.ids.write()[i] = default_tex;
 			}
 		}
 

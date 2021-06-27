@@ -231,7 +231,7 @@ DynamicFontDataFallback::TexturePosition DynamicFontDataFallback::find_texture_p
 		}
 		tex.offsets.resize(texsize);
 		for (int i = 0; i < texsize; i++) { //zero offsets
-			tex.offsets.write[i] = 0;
+			tex.offsets.write()[i] = 0;
 		}
 
 		p_data->textures.push_back(tex);
@@ -264,7 +264,7 @@ DynamicFontDataFallback::Character DynamicFontDataFallback::bitmap_to_character(
 
 	//fit character in char texture
 
-	CharTexture &tex = p_data->textures.write[tex_pos.index];
+	CharTexture &tex = p_data->textures.write()[tex_pos.index];
 
 	{
 		uint8_t *wr = tex.imgdata.ptrw();
@@ -316,7 +316,7 @@ DynamicFontDataFallback::Character DynamicFontDataFallback::bitmap_to_character(
 
 	// update height array
 	for (int k = tex_pos.x; k < tex_pos.x + mw; k++) {
-		tex.offsets.write[k] = tex_pos.y + mh;
+		tex.offsets.write()[k] = tex_pos.y + mh;
 	}
 
 	Character chr;

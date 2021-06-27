@@ -526,7 +526,7 @@ void TabContainer::_notification(int p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
 			Vector<Control *> tabs = _get_tabs();
 			for (int i = 0; i < tabs.size(); i++) {
-				text_buf.write[i]->clear();
+				text_buf.write()[i]->clear();
 			}
 			_theme_changing = true;
 			call_deferred("_on_theme_changed"); // Wait until all changed theme.

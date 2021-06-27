@@ -204,7 +204,7 @@ bool PackedSourcePCK::try_open_pack(const String &p_path, bool p_replace_files, 
 		Vector<uint8_t> key;
 		key.resize(32);
 		for (int i = 0; i < key.size(); i++) {
-			key.write[i] = script_encryption_key[i];
+			key.write()[i] = script_encryption_key[i];
 		}
 
 		Error err = fae->open_and_parse(f, key, FileAccessEncrypted::MODE_READ, false);
@@ -365,7 +365,7 @@ FileAccessPack::FileAccessPack(const String &p_path, const PackedData::PackedFil
 		Vector<uint8_t> key;
 		key.resize(32);
 		for (int i = 0; i < key.size(); i++) {
-			key.write[i] = script_encryption_key[i];
+			key.write()[i] = script_encryption_key[i];
 		}
 
 		Error err = fae->open_and_parse(f, key, FileAccessEncrypted::MODE_READ, false);

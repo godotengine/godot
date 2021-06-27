@@ -162,12 +162,12 @@ void ResourceImporterLayeredTexture::_save_tex(Vector<Ref<Image>> p_images, cons
 		//3D saves in its own way
 
 		for (int i = 0; i < p_images.size(); i++) {
-			if (p_images.write[i]->has_mipmaps()) {
-				p_images.write[i]->clear_mipmaps();
+			if (p_images.write()[i]->has_mipmaps()) {
+				p_images.write()[i]->clear_mipmaps();
 			}
 
 			if (p_force_po2) {
-				p_images.write[i]->resize_to_po2();
+				p_images.write()[i]->resize_to_po2();
 			}
 		}
 
@@ -245,13 +245,13 @@ void ResourceImporterLayeredTexture::_save_tex(Vector<Ref<Image>> p_images, cons
 	} else {
 		for (int i = 0; i < p_images.size(); i++) {
 			if (p_force_po2) {
-				p_images.write[i]->resize_to_po2();
+				p_images.write()[i]->resize_to_po2();
 			}
 
 			if (p_mipmaps) {
-				p_images.write[i]->generate_mipmaps();
+				p_images.write()[i]->generate_mipmaps();
 			} else {
-				p_images.write[i]->clear_mipmaps();
+				p_images.write()[i]->clear_mipmaps();
 			}
 		}
 	}
@@ -407,12 +407,12 @@ Error ResourceImporterLayeredTexture::import(const String &p_source_file, const 
 					//but user selected to compress hdr anyway, so force an alpha-less format.
 					if (image->get_format() == Image::FORMAT_RGBAF) {
 						for (int i = 0; i < slices.size(); i++) {
-							slices.write[i]->convert(Image::FORMAT_RGBF);
+							slices.write()[i]->convert(Image::FORMAT_RGBF);
 						}
 
 					} else if (image->get_format() == Image::FORMAT_RGBAH) {
 						for (int i = 0; i < slices.size(); i++) {
-							slices.write[i]->convert(Image::FORMAT_RGBH);
+							slices.write()[i]->convert(Image::FORMAT_RGBH);
 						}
 					}
 				} else {
@@ -425,7 +425,7 @@ Error ResourceImporterLayeredTexture::import(const String &p_source_file, const 
 					//default to rgbe
 					if (image->get_format() != Image::FORMAT_RGBE9995) {
 						for (int i = 0; i < slices.size(); i++) {
-							slices.write[i]->convert(Image::FORMAT_RGBE9995);
+							slices.write()[i]->convert(Image::FORMAT_RGBE9995);
 						}
 					}
 				}

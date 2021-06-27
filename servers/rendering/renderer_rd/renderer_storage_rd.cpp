@@ -742,7 +742,7 @@ void RendererStorageRD::texture_3d_initialize(RID p_texture, Image::Format p_for
 		images.resize(p_data.size());
 		for (int i = 0; i < p_data.size(); i++) {
 			TextureToRDFormat f;
-			images.write[i] = _validate_texture_format(p_data[i], f);
+			images.write()[i] = _validate_texture_format(p_data[i], f);
 			if (i == 0) {
 				ret_format = f;
 				validated_format = images[0]->get_format();
@@ -757,7 +757,7 @@ void RendererStorageRD::texture_3d_initialize(RID p_texture, Image::Format p_for
 		for (int i = 0; i < p_data.size(); i++) {
 			uint32_t s = images[i]->get_data().size();
 
-			memcpy(&all_data.write[offset], images[i]->get_data().ptr(), s);
+			memcpy(&all_data.write()[offset], images[i]->get_data().ptr(), s);
 			{
 				Texture::BufferSlice3D slice;
 				slice.size.width = images[i]->get_width();
@@ -920,7 +920,7 @@ void RendererStorageRD::texture_3d_update(RID p_texture, const Vector<Ref<Image>
 
 		for (int i = 0; i < p_data.size(); i++) {
 			uint32_t s = images[i]->get_data().size();
-			memcpy(&all_data.write[offset], images[i]->get_data().ptr(), s);
+			memcpy(&all_data.write()[offset], images[i]->get_data().ptr(), s);
 			offset += s;
 		}
 	}
@@ -2607,7 +2607,7 @@ void RendererStorageRD::mesh_add_surface(RID p_mesh, const RS::SurfaceData &p_su
 			mesh->bone_aabbs.resize(p_surface.bone_aabbs.size());
 		}
 		for (int i = 0; i < p_surface.bone_aabbs.size(); i++) {
-			mesh->bone_aabbs.write[i].merge_with(p_surface.bone_aabbs[i]);
+			mesh->bone_aabbs.write()[i].merge_with(p_surface.bone_aabbs[i]);
 		}
 		mesh->aabb.merge_with(p_surface.aabb);
 	}
@@ -3300,11 +3300,11 @@ void RendererStorageRD::_mesh_surface_generate_version_for_input_mask(Mesh::Surf
 		int loc = attributes[i].location;
 
 		if (loc < RS::ARRAY_COLOR) {
-			attributes.write[i].stride = stride;
+			attributes.write()[i].stride = stride;
 		} else if (loc < RS::ARRAY_BONES) {
-			attributes.write[i].stride = attribute_stride;
+			attributes.write()[i].stride = attribute_stride;
 		} else {
-			attributes.write[i].stride = skin_stride;
+			attributes.write()[i].stride = skin_stride;
 		}
 	}
 
@@ -4123,7 +4123,7 @@ void RendererStorageRD::particles_set_draw_pass_mesh(RID p_particles, int p_pass
 	Particles *particles = particles_owner.getornull(p_particles);
 	ERR_FAIL_COND(!particles);
 	ERR_FAIL_INDEX(p_pass, particles->draw_passes.size());
-	particles->draw_passes.write[p_pass] = p_mesh;
+	particles->draw_passes.write()[p_pass] = p_mesh;
 }
 
 void RendererStorageRD::particles_restart(RID p_particles) {
@@ -6765,7 +6765,7 @@ void RendererStorageRD::lightmap_set_textures(RID p_lightmap, RID p_light, bool 
 	if (!t) {
 		if (using_lightmap_array) {
 			if (lm->array_index >= 0) {
-				lightmap_textures.write[lm->array_index] = default_2d_array;
+				lightmap_textures.write()[lm->array_index] = default_2d_array;
 				lm->array_index = -1;
 			}
 		}
@@ -6787,7 +6787,7 @@ void RendererStorageRD::lightmap_set_textures(RID p_lightmap, RID p_light, bool 
 		}
 		ERR_FAIL_COND_MSG(lm->array_index < 0, "Maximum amount of lightmaps in use (" + itos(lightmap_textures.size()) + ") has been exceeded, lightmap will nod display properly.");
 
-		lightmap_textures.write[lm->array_index] = t->rd_texture;
+		lightmap_textures.write()[lm->array_index] = t->rd_texture;
 	}
 }
 
@@ -7389,7 +7389,7 @@ void RendererStorageRD::_render_target_allocate_sdf(RenderTarget *rt) {
 		}
 
 		rt->sdf_buffer_process_uniform_sets[0] = RD::get_singleton()->uniform_set_create(uniforms, rt_sdf.shader.version_get_shader(rt_sdf.shader_version, 0), 0);
-		SWAP(uniforms.write[2].ids.write[0], uniforms.write[3].ids.write[0]);
+		SWAP(uniforms.write()[2].ids.write()[0], uniforms.write()[3].ids.write()[0]);
 		rt->sdf_buffer_process_uniform_sets[1] = RD::get_singleton()->uniform_set_create(uniforms, rt_sdf.shader.version_get_shader(rt_sdf.shader_version, 0), 0);
 	}
 }
@@ -7754,7 +7754,7 @@ void RendererStorageRD::_update_decal_atlas() {
 
 		int idx = 0;
 		while ((K = decal_atlas.textures.next(K))) {
-			DecalAtlas::SortItem &si = itemsv.write[idx];
+			DecalAtlas::SortItem &si = itemsv.write()[idx];
 
 			Texture *src_tex = texture_owner.getornull(*K);
 
@@ -9271,7 +9271,7 @@ RendererStorageRD::RendererStorageRD() {
 		}
 
 		for (int i = 0; i < lightmap_textures.size(); i++) {
-			lightmap_textures.write[i] = default_rd_textures[DEFAULT_RD_TEXTURE_2D_ARRAY_WHITE];
+			lightmap_textures.write()[i] = default_rd_textures[DEFAULT_RD_TEXTURE_2D_ARRAY_WHITE];
 		}
 	}
 

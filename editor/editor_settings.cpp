@@ -939,7 +939,7 @@ fail:
 	if (extra_config->has_section("init_projects")) {
 		Vector<String> list = extra_config->get_value("init_projects", "list");
 		for (int i = 0; i < list.size(); i++) {
-			list.write[i] = exe_path.plus_file(list[i]);
+			list.write()[i] = exe_path.plus_file(list[i]);
 		}
 		extra_config->set_value("init_projects", "list", list);
 	}

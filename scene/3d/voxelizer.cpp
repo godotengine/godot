@@ -222,16 +222,16 @@ void Voxelizer::_plot_face(int p_idx, int p_level, int p_x, int p_y, int p_z, co
 		}
 
 		//put this temporarily here, corrected in a later step
-		bake_cells.write[p_idx].albedo[0] += albedo_accum.r;
-		bake_cells.write[p_idx].albedo[1] += albedo_accum.g;
-		bake_cells.write[p_idx].albedo[2] += albedo_accum.b;
-		bake_cells.write[p_idx].emission[0] += emission_accum.r;
-		bake_cells.write[p_idx].emission[1] += emission_accum.g;
-		bake_cells.write[p_idx].emission[2] += emission_accum.b;
-		bake_cells.write[p_idx].normal[0] += normal_accum.x;
-		bake_cells.write[p_idx].normal[1] += normal_accum.y;
-		bake_cells.write[p_idx].normal[2] += normal_accum.z;
-		bake_cells.write[p_idx].alpha += alpha;
+		bake_cells.write()[p_idx].albedo[0] += albedo_accum.r;
+		bake_cells.write()[p_idx].albedo[1] += albedo_accum.g;
+		bake_cells.write()[p_idx].albedo[2] += albedo_accum.b;
+		bake_cells.write()[p_idx].emission[0] += emission_accum.r;
+		bake_cells.write()[p_idx].emission[1] += emission_accum.g;
+		bake_cells.write()[p_idx].emission[2] += emission_accum.b;
+		bake_cells.write()[p_idx].normal[0] += normal_accum.x;
+		bake_cells.write()[p_idx].normal[1] += normal_accum.y;
+		bake_cells.write()[p_idx].normal[2] += normal_accum.z;
+		bake_cells.write()[p_idx].alpha += alpha;
 
 	} else {
 		//go down
@@ -278,12 +278,12 @@ void Voxelizer::_plot_face(int p_idx, int p_level, int p_x, int p_y, int p_z, co
 				//sub cell must be created
 
 				uint32_t child_idx = bake_cells.size();
-				bake_cells.write[p_idx].children[i] = child_idx;
+				bake_cells.write()[p_idx].children[i] = child_idx;
 				bake_cells.resize(bake_cells.size() + 1);
-				bake_cells.write[child_idx].level = p_level + 1;
-				bake_cells.write[child_idx].x = nx / half;
-				bake_cells.write[child_idx].y = ny / half;
-				bake_cells.write[child_idx].z = nz / half;
+				bake_cells.write()[child_idx].level = p_level + 1;
+				bake_cells.write()[child_idx].x = nx / half;
+				bake_cells.write()[child_idx].y = ny / half;
+				bake_cells.write()[child_idx].z = nz / half;
 			}
 
 			_plot_face(bake_cells[p_idx].children[i], p_level + 1, nx, ny, nz, p_vtx, p_normal, p_uv, p_material, aabb);
@@ -297,7 +297,7 @@ Vector<Color> Voxelizer::_get_bake_texture(Ref<Image> p_image, const Color &p_co
 	if (p_image.is_null() || p_image->is_empty()) {
 		ret.resize(bake_texture_size * bake_texture_size);
 		for (int i = 0; i < bake_texture_size * bake_texture_size; i++) {
-			ret.write[i] = p_color_add;
+			ret.write()[i] = p_color_add;
 		}
 
 		return ret;
@@ -321,7 +321,7 @@ Vector<Color> Voxelizer::_get_bake_texture(Ref<Image> p_image, const Color &p_co
 
 		c.a = r[i * 4 + 3] / 255.0;
 
-		ret.write[i] = c;
+		ret.write()[i] = c;
 	}
 
 	return ret;
@@ -550,33 +550,33 @@ void Voxelizer::_fixup_plot(int p_idx, int p_level) {
 		leaf_voxel_count++;
 		float alpha = bake_cells[p_idx].alpha;
 
-		bake_cells.write[p_idx].albedo[0] /= alpha;
-		bake_cells.write[p_idx].albedo[1] /= alpha;
-		bake_cells.write[p_idx].albedo[2] /= alpha;
+		bake_cells.write()[p_idx].albedo[0] /= alpha;
+		bake_cells.write()[p_idx].albedo[1] /= alpha;
+		bake_cells.write()[p_idx].albedo[2] /= alpha;
 
 		//transfer emission to light
-		bake_cells.write[p_idx].emission[0] /= alpha;
-		bake_cells.write[p_idx].emission[1] /= alpha;
-		bake_cells.write[p_idx].emission[2] /= alpha;
+		bake_cells.write()[p_idx].emission[0] /= alpha;
+		bake_cells.write()[p_idx].emission[1] /= alpha;
+		bake_cells.write()[p_idx].emission[2] /= alpha;
 
-		bake_cells.write[p_idx].normal[0] /= alpha;
-		bake_cells.write[p_idx].normal[1] /= alpha;
-		bake_cells.write[p_idx].normal[2] /= alpha;
+		bake_cells.write()[p_idx].normal[0] /= alpha;
+		bake_cells.write()[p_idx].normal[1] /= alpha;
+		bake_cells.write()[p_idx].normal[2] /= alpha;
 
 		Vector3 n(bake_cells[p_idx].normal[0], bake_cells[p_idx].normal[1], bake_cells[p_idx].normal[2]);
 		if (n.length() < 0.01) {
 			//too much fight over normal, zero it
-			bake_cells.write[p_idx].normal[0] = 0;
-			bake_cells.write[p_idx].normal[1] = 0;
-			bake_cells.write[p_idx].normal[2] = 0;
+			bake_cells.write()[p_idx].normal[0] = 0;
+			bake_cells.write()[p_idx].normal[1] = 0;
+			bake_cells.write()[p_idx].normal[2] = 0;
 		} else {
 			n.normalize();
-			bake_cells.write[p_idx].normal[0] = n.x;
-			bake_cells.write[p_idx].normal[1] = n.y;
-			bake_cells.write[p_idx].normal[2] = n.z;
+			bake_cells.write()[p_idx].normal[0] = n.x;
+			bake_cells.write()[p_idx].normal[1] = n.y;
+			bake_cells.write()[p_idx].normal[2] = n.z;
 		}
 
-		bake_cells.write[p_idx].alpha = 1.0;
+		bake_cells.write()[p_idx].alpha = 1.0;
 
 		/*if (bake_light.size()) {
 			for(int i=0;i<6;i++) {
@@ -586,15 +586,15 @@ void Voxelizer::_fixup_plot(int p_idx, int p_level) {
 	} else {
 		//go down
 
-		bake_cells.write[p_idx].emission[0] = 0;
-		bake_cells.write[p_idx].emission[1] = 0;
-		bake_cells.write[p_idx].emission[2] = 0;
-		bake_cells.write[p_idx].normal[0] = 0;
-		bake_cells.write[p_idx].normal[1] = 0;
-		bake_cells.write[p_idx].normal[2] = 0;
-		bake_cells.write[p_idx].albedo[0] = 0;
-		bake_cells.write[p_idx].albedo[1] = 0;
-		bake_cells.write[p_idx].albedo[2] = 0;
+		bake_cells.write()[p_idx].emission[0] = 0;
+		bake_cells.write()[p_idx].emission[1] = 0;
+		bake_cells.write()[p_idx].emission[2] = 0;
+		bake_cells.write()[p_idx].normal[0] = 0;
+		bake_cells.write()[p_idx].normal[1] = 0;
+		bake_cells.write()[p_idx].normal[2] = 0;
+		bake_cells.write()[p_idx].albedo[0] = 0;
+		bake_cells.write()[p_idx].albedo[1] = 0;
+		bake_cells.write()[p_idx].albedo[2] = 0;
 
 		float alpha_average = 0;
 		int children_found = 0;
@@ -612,7 +612,7 @@ void Voxelizer::_fixup_plot(int p_idx, int p_level) {
 			children_found++;
 		}
 
-		bake_cells.write[p_idx].alpha = alpha_average / 8.0;
+		bake_cells.write()[p_idx].alpha = alpha_average / 8.0;
 	}
 }
 

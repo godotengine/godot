@@ -300,7 +300,7 @@ RS::ShaderNativeSourceCode ShaderRD::version_get_native_source_code(RID p_versio
 			stage.name = "vertex";
 			stage.code = builder.as_string();
 
-			source_code.versions.write[i].stages.push_back(stage);
+			source_code.versions.write()[i].stages.push_back(stage);
 		}
 
 		if (!is_compute) {
@@ -313,7 +313,7 @@ RS::ShaderNativeSourceCode ShaderRD::version_get_native_source_code(RID p_versio
 			stage.name = "fragment";
 			stage.code = builder.as_string();
 
-			source_code.versions.write[i].stages.push_back(stage);
+			source_code.versions.write()[i].stages.push_back(stage);
 		}
 
 		if (is_compute) {
@@ -326,7 +326,7 @@ RS::ShaderNativeSourceCode ShaderRD::version_get_native_source_code(RID p_versio
 			stage.name = "compute";
 			stage.code = builder.as_string();
 
-			source_code.versions.write[i].stages.push_back(stage);
+			source_code.versions.write()[i].stages.push_back(stage);
 		}
 	}
 
@@ -395,7 +395,7 @@ bool ShaderRD::_load_from_cache(Version *p_version) {
 		uint32_t stage_count = f->get_32();
 		p_version->variant_stages[i].resize(stage_count);
 		for (uint32_t j = 0; j < stage_count; j++) {
-			p_version->variant_stages[i].write[j].shader_stage = RD::ShaderStage(f->get_32());
+			p_version->variant_stages[i].write()[j].shader_stage = RD::ShaderStage(f->get_32());
 
 			int compression = f->get_32();
 			uint32_t length = f->get_32();
@@ -406,7 +406,7 @@ bool ShaderRD::_load_from_cache(Version *p_version) {
 
 				f->get_buffer(data.ptrw(), length);
 
-				p_version->variant_stages[i].write[j].spir_v = data;
+				p_version->variant_stages[i].write()[j].spir_v = data;
 			} else {
 				Vector<uint8_t> data;
 
@@ -434,7 +434,7 @@ bool ShaderRD::_load_from_cache(Version *p_version) {
 					success = false;
 					break;
 				}
-				p_version->variant_stages[i].write[j].spir_v = spirv;
+				p_version->variant_stages[i].write()[j].spir_v = spirv;
 			}
 		}
 	}
@@ -665,7 +665,7 @@ bool ShaderRD::version_free(RID p_version) {
 void ShaderRD::set_variant_enabled(int p_variant, bool p_enabled) {
 	ERR_FAIL_COND(version_owner.get_rid_count() > 0); //versions exist
 	ERR_FAIL_INDEX(p_variant, variants_enabled.size());
-	variants_enabled.write[p_variant] = p_enabled;
+	variants_enabled.write()[p_variant] = p_enabled;
 }
 
 bool ShaderRD::is_variant_enabled(int p_variant) const {

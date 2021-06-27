@@ -410,7 +410,7 @@ public:
 		int size = src_arr.size();
 		dst_arr.resize(size);
 		for (int i = 0; i < size; i++) {
-			dst_arr.write[i] = src_arr[i];
+			dst_arr.write()[i] = src_arr[i];
 		}
 	}
 
@@ -422,7 +422,7 @@ public:
 		int size = src_arr.size();
 		dst_arr.resize(size);
 		for (int i = 0; i < size; i++) {
-			dst_arr.write[i] = src_arr[i];
+			dst_arr.write()[i] = src_arr[i];
 		}
 	}
 	static void ptr_construct(void *base, const void **p_args) {
@@ -432,7 +432,7 @@ public:
 		int size = src_arr.size();
 		dst_arr.resize(size);
 		for (int i = 0; i < size; i++) {
-			dst_arr.write[i] = src_arr[i];
+			dst_arr.write()[i] = src_arr[i];
 		}
 
 		PtrConstruct<T>::construct(dst_arr, base);

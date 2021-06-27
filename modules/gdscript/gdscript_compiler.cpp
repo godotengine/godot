@@ -1110,7 +1110,7 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 			Vector<GDScriptCodeGenerator::Address> captures;
 			captures.resize(lambda->captures.size());
 			for (int i = 0; i < lambda->captures.size(); i++) {
-				captures.write[i] = _parse_expression(codegen, r_error, lambda->captures[i]);
+				captures.write()[i] = _parse_expression(codegen, r_error, lambda->captures[i]);
 				if (r_error) {
 					return GDScriptCodeGenerator::Address();
 				}
@@ -2365,7 +2365,7 @@ Error GDScriptCompiler::_parse_class_level(GDScript *p_script, const GDScriptPar
 				Vector<StringName> parameters_names;
 				parameters_names.resize(signal->parameters.size());
 				for (int j = 0; j < signal->parameters.size(); j++) {
-					parameters_names.write[j] = signal->parameters[j]->identifier->name;
+					parameters_names.write()[j] = signal->parameters[j]->identifier->name;
 				}
 				p_script->_signals[name] = parameters_names;
 #ifdef TOOLS_ENABLED

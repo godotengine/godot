@@ -652,7 +652,7 @@ TileMapPattern *TileMap::get_pattern(TypedArray<Vector2i> p_coords_array) {
 				}
 			}
 		}
-		coords_in_pattern_array.write[i] = coords_in_pattern;
+		coords_in_pattern_array.write()[i] = coords_in_pattern;
 	}
 
 	for (int i = 0; i < coords_in_pattern_array.size(); i++) {
@@ -1698,7 +1698,7 @@ void TileMap::draw_cells_outline(Control *p_control, Set<Vector2i> p_cells, Colo
 		uvs.append(Vector2(0.5, 0.0));
 		if (tile_set->get_tile_offset_axis() == TileSet::TILE_OFFSET_AXIS_VERTICAL) {
 			for (int i = 0; i < uvs.size(); i++) {
-				uvs.write[i] = Vector2(uvs[i].y, uvs[i].x);
+				uvs.write()[i] = Vector2(uvs[i].y, uvs[i].x);
 			}
 		}
 	}

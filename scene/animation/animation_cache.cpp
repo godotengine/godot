@@ -42,7 +42,7 @@ void AnimationCache::_node_exit_tree(Node *p_node) {
 			continue;
 		}
 
-		path_cache.write[i].valid = false; //invalidate path cache
+		path_cache.write()[i].valid = false; //invalidate path cache
 	}
 }
 
@@ -175,7 +175,7 @@ void AnimationCache::set_track_transform(int p_idx, const Transform3D &p_transfo
 
 	ERR_FAIL_COND(!cache_valid);
 	ERR_FAIL_INDEX(p_idx, path_cache.size());
-	Path &p = path_cache.write[p_idx];
+	Path &p = path_cache.write()[p_idx];
 	if (!p.valid) {
 		return;
 	}
@@ -199,7 +199,7 @@ void AnimationCache::set_track_value(int p_idx, const Variant &p_value) {
 
 	ERR_FAIL_COND(!cache_valid);
 	ERR_FAIL_INDEX(p_idx, path_cache.size());
-	Path &p = path_cache.write[p_idx];
+	Path &p = path_cache.write()[p_idx];
 	if (!p.valid) {
 		return;
 	}
@@ -215,7 +215,7 @@ void AnimationCache::call_track(int p_idx, const StringName &p_method, const Var
 
 	ERR_FAIL_COND(!cache_valid);
 	ERR_FAIL_INDEX(p_idx, path_cache.size());
-	Path &p = path_cache.write[p_idx];
+	Path &p = path_cache.write()[p_idx];
 	if (!p.valid) {
 		return;
 	}
@@ -274,7 +274,7 @@ void AnimationCache::set_all(float p_time, float p_delta) {
 						Vector<const Variant *> argptrs;
 						argptrs.resize(args.size());
 						for (int j = 0; j < args.size(); j++) {
-							argptrs.write[j] = &args.write[j];
+							argptrs.write()[j] = &args.write()[j];
 						}
 
 						call_track(i, name, (const Variant **)&argptrs[0], args.size(), err);

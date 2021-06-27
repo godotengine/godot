@@ -449,7 +449,7 @@ void VisualShaderGraphPlugin::add_node(VisualShader::Type p_type, int p_id) {
 	for (int i = 0; i < VisualShaderEditor::get_singleton()->plugins.size(); i++) {
 		vsnode->set_meta("id", p_id);
 		vsnode->set_meta("shader_type", (int)p_type);
-		custom_editor = VisualShaderEditor::get_singleton()->plugins.write[i]->create_editor(visual_shader, vsnode);
+		custom_editor = VisualShaderEditor::get_singleton()->plugins.write()[i]->create_editor(visual_shader, vsnode);
 		vsnode->remove_meta("id");
 		vsnode->remove_meta("shader_type");
 		if (custom_editor) {

@@ -732,7 +732,7 @@ bool TextServerFallback::shaped_text_resize_object(RID p_shaped, Variant p_key, 
 							sd->descent = MAX(sd->descent, sd->objects[key].rect.size.y);
 						} break;
 					}
-					sd->glyphs.write[i].advance = sd->objects[key].rect.size.x;
+					sd->glyphs.write()[i].advance = sd->objects[key].rect.size.x;
 				} else {
 					sd->objects[key].rect.position.y = sd->width;
 					sd->width += sd->objects[key].rect.size.y;
@@ -748,7 +748,7 @@ bool TextServerFallback::shaped_text_resize_object(RID p_shaped, Variant p_key, 
 							sd->descent = MAX(sd->descent, sd->objects[key].rect.size.x);
 						} break;
 					}
-					sd->glyphs.write[i].advance = sd->objects[key].rect.size.y;
+					sd->glyphs.write()[i].advance = sd->objects[key].rect.size.y;
 				}
 			} else {
 				if (prev_rid != gl.font_rid) {
@@ -1003,12 +1003,12 @@ float TextServerFallback::shaped_text_fit_to_width(RID p_shaped, float p_width, 
 	if ((p_jst_flags & JUSTIFICATION_TRIM_EDGE_SPACES) == JUSTIFICATION_TRIM_EDGE_SPACES) {
 		while ((start_pos < end_pos) && ((sd->glyphs[start_pos].flags & GRAPHEME_IS_SPACE) == GRAPHEME_IS_SPACE || (sd->glyphs[start_pos].flags & GRAPHEME_IS_BREAK_HARD) == GRAPHEME_IS_BREAK_HARD || (sd->glyphs[start_pos].flags & GRAPHEME_IS_BREAK_SOFT) == GRAPHEME_IS_BREAK_SOFT)) {
 			sd->width -= sd->glyphs[start_pos].advance * sd->glyphs[start_pos].repeat;
-			sd->glyphs.write[start_pos].advance = 0;
+			sd->glyphs.write()[start_pos].advance = 0;
 			start_pos += sd->glyphs[start_pos].count;
 		}
 		while ((start_pos < end_pos) && ((sd->glyphs[end_pos].flags & GRAPHEME_IS_SPACE) == GRAPHEME_IS_SPACE || (sd->glyphs[end_pos].flags & GRAPHEME_IS_BREAK_HARD) == GRAPHEME_IS_BREAK_HARD || (sd->glyphs[end_pos].flags & GRAPHEME_IS_BREAK_SOFT) == GRAPHEME_IS_BREAK_SOFT)) {
 			sd->width -= sd->glyphs[end_pos].advance * sd->glyphs[end_pos].repeat;
-			sd->glyphs.write[end_pos].advance = 0;
+			sd->glyphs.write()[end_pos].advance = 0;
 			end_pos -= sd->glyphs[end_pos].count;
 		}
 	}
@@ -1026,7 +1026,7 @@ float TextServerFallback::shaped_text_fit_to_width(RID p_shaped, float p_width, 
 	if ((space_count > 0) && ((p_jst_flags & JUSTIFICATION_WORD_BOUND) == JUSTIFICATION_WORD_BOUND)) {
 		float delta_width_per_space = (p_width - sd->width) / space_count;
 		for (int i = start_pos; i <= end_pos; i++) {
-			Glyph &gl = sd->glyphs.write[i];
+			Glyph &gl = sd->glyphs.write()[i];
 			if (gl.count > 0) {
 				if ((gl.flags & GRAPHEME_IS_SPACE) == GRAPHEME_IS_SPACE) {
 					float old_adv = gl.advance;
@@ -1106,17 +1106,17 @@ bool TextServerFallback::shaped_text_update_breaks(RID p_shaped) {
 		if (sd->glyphs[i].count > 0) {
 			char32_t c = sd->text[sd->glyphs[i].start];
 			if (is_punct(c)) {
-				sd->glyphs.write[i].flags |= GRAPHEME_IS_PUNCTUATION;
+				sd->glyphs.write()[i].flags |= GRAPHEME_IS_PUNCTUATION;
 			}
 			if (is_whitespace(c) && !is_linebreak(c)) {
-				sd->glyphs.write[i].flags |= GRAPHEME_IS_SPACE;
-				sd->glyphs.write[i].flags |= GRAPHEME_IS_BREAK_SOFT;
+				sd->glyphs.write()[i].flags |= GRAPHEME_IS_SPACE;
+				sd->glyphs.write()[i].flags |= GRAPHEME_IS_BREAK_SOFT;
 			}
 			if (is_linebreak(c)) {
-				sd->glyphs.write[i].flags |= GRAPHEME_IS_BREAK_HARD;
+				sd->glyphs.write()[i].flags |= GRAPHEME_IS_BREAK_HARD;
 			}
 			if (c == 0x0009 || c == 0x000b) {
-				sd->glyphs.write[i].flags |= GRAPHEME_IS_TAB;
+				sd->glyphs.write()[i].flags |= GRAPHEME_IS_TAB;
 			}
 
 			i += (sd->glyphs[i].count - 1);
@@ -1266,7 +1266,7 @@ bool TextServerFallback::shaped_text_shape(RID p_shaped) {
 
 					// Add kerning to previous glyph.
 					if (sd->glyphs.size() > 0) {
-						Glyph &prev_gl = sd->glyphs.write[sd->glyphs.size() - 1];
+						Glyph &prev_gl = sd->glyphs.write()[sd->glyphs.size() - 1];
 						if (prev_gl.font_rid == gl.font_rid && prev_gl.font_size == gl.font_size) {
 							if (sd->orientation == ORIENTATION_HORIZONTAL) {
 								prev_gl.advance += fd->get_kerning(prev_gl.index, gl.index, gl.font_size).x;

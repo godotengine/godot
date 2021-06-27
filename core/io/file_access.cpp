@@ -266,7 +266,7 @@ class CharBuffer {
 		if (buffer == stack_buffer) { // first chunk?
 
 			for (int i = 0; i < written; i++) {
-				vector.write[i] = stack_buffer[i];
+				vector.write()[i] = stack_buffer[i];
 			}
 		}
 

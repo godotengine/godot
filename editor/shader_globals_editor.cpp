@@ -265,10 +265,10 @@ static Variant create_var(RS::GlobalVariableType p_type) {
 		case RS::GLOBAL_VAR_TYPE_IVEC4: {
 			Vector<int> v4;
 			v4.resize(4);
-			v4.write[0] = 0;
-			v4.write[1] = 0;
-			v4.write[2] = 0;
-			v4.write[3] = 0;
+			v4.write()[0] = 0;
+			v4.write()[1] = 0;
+			v4.write()[2] = 0;
+			v4.write()[3] = 0;
 			return v4;
 		}
 		case RS::GLOBAL_VAR_TYPE_RECT2I: {
@@ -286,10 +286,10 @@ static Variant create_var(RS::GlobalVariableType p_type) {
 		case RS::GLOBAL_VAR_TYPE_UVEC4: {
 			Vector<int> v4;
 			v4.resize(4);
-			v4.write[0] = 0;
-			v4.write[1] = 0;
-			v4.write[2] = 0;
-			v4.write[3] = 0;
+			v4.write()[0] = 0;
+			v4.write()[1] = 0;
+			v4.write()[2] = 0;
+			v4.write()[3] = 0;
 			return v4;
 		}
 		case RS::GLOBAL_VAR_TYPE_FLOAT: {
@@ -313,10 +313,10 @@ static Variant create_var(RS::GlobalVariableType p_type) {
 		case RS::GLOBAL_VAR_TYPE_MAT2: {
 			Vector<real_t> xform;
 			xform.resize(4);
-			xform.write[0] = 1;
-			xform.write[1] = 0;
-			xform.write[2] = 0;
-			xform.write[3] = 1;
+			xform.write()[0] = 1;
+			xform.write()[1] = 0;
+			xform.write()[2] = 0;
+			xform.write()[3] = 1;
 			return xform;
 		}
 		case RS::GLOBAL_VAR_TYPE_MAT3: {
@@ -331,25 +331,25 @@ static Variant create_var(RS::GlobalVariableType p_type) {
 		case RS::GLOBAL_VAR_TYPE_MAT4: {
 			Vector<real_t> xform;
 			xform.resize(16);
-			xform.write[0] = 1;
-			xform.write[1] = 0;
-			xform.write[2] = 0;
-			xform.write[3] = 0;
+			xform.write()[0] = 1;
+			xform.write()[1] = 0;
+			xform.write()[2] = 0;
+			xform.write()[3] = 0;
 
-			xform.write[4] = 0;
-			xform.write[5] = 1;
-			xform.write[6] = 0;
-			xform.write[7] = 0;
+			xform.write()[4] = 0;
+			xform.write()[5] = 1;
+			xform.write()[6] = 0;
+			xform.write()[7] = 0;
 
-			xform.write[8] = 0;
-			xform.write[9] = 0;
-			xform.write[10] = 1;
-			xform.write[11] = 0;
+			xform.write()[8] = 0;
+			xform.write()[9] = 0;
+			xform.write()[10] = 1;
+			xform.write()[11] = 0;
 
-			xform.write[12] = 0;
-			xform.write[13] = 0;
-			xform.write[14] = 0;
-			xform.write[15] = 1;
+			xform.write()[12] = 0;
+			xform.write()[13] = 0;
+			xform.write()[14] = 0;
+			xform.write()[15] = 1;
 
 			return xform;
 		}

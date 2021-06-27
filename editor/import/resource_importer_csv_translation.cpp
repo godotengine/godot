@@ -115,7 +115,7 @@ Error ResourceImporterCSVTranslation::import(const String &p_source_file, const 
 		String key = line[0];
 		if (key != "") {
 			for (int i = 1; i < line.size(); i++) {
-				translations.write[i - 1]->add_message(key, line[i].c_unescape());
+				translations.write()[i - 1]->add_message(key, line[i].c_unescape());
 			}
 		}
 

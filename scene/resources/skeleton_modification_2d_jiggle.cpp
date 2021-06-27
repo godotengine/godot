@@ -173,18 +173,18 @@ void SkeletonModification2DJiggle::_execute_jiggle_joint(int p_joint_idx, Node2D
 	Transform2D operation_bone_trans = operation_bone->get_global_transform();
 	Vector2 target_position = p_target->get_global_transform().get_origin();
 
-	jiggle_data_chain.write[p_joint_idx].force = (target_position - jiggle_data_chain[p_joint_idx].dynamic_position) * jiggle_data_chain[p_joint_idx].stiffness * p_delta;
+	jiggle_data_chain.write()[p_joint_idx].force = (target_position - jiggle_data_chain[p_joint_idx].dynamic_position) * jiggle_data_chain[p_joint_idx].stiffness * p_delta;
 
 	if (jiggle_data_chain[p_joint_idx].use_gravity) {
-		jiggle_data_chain.write[p_joint_idx].force += jiggle_data_chain[p_joint_idx].gravity * p_delta;
+		jiggle_data_chain.write()[p_joint_idx].force += jiggle_data_chain[p_joint_idx].gravity * p_delta;
 	}
 
-	jiggle_data_chain.write[p_joint_idx].acceleration = jiggle_data_chain[p_joint_idx].force / jiggle_data_chain[p_joint_idx].mass;
-	jiggle_data_chain.write[p_joint_idx].velocity += jiggle_data_chain[p_joint_idx].acceleration * (1 - jiggle_data_chain[p_joint_idx].damping);
+	jiggle_data_chain.write()[p_joint_idx].acceleration = jiggle_data_chain[p_joint_idx].force / jiggle_data_chain[p_joint_idx].mass;
+	jiggle_data_chain.write()[p_joint_idx].velocity += jiggle_data_chain[p_joint_idx].acceleration * (1 - jiggle_data_chain[p_joint_idx].damping);
 
-	jiggle_data_chain.write[p_joint_idx].dynamic_position += jiggle_data_chain[p_joint_idx].velocity + jiggle_data_chain[p_joint_idx].force;
-	jiggle_data_chain.write[p_joint_idx].dynamic_position += operation_bone_trans.get_origin() - jiggle_data_chain[p_joint_idx].last_position;
-	jiggle_data_chain.write[p_joint_idx].last_position = operation_bone_trans.get_origin();
+	jiggle_data_chain.write()[p_joint_idx].dynamic_position += jiggle_data_chain[p_joint_idx].velocity + jiggle_data_chain[p_joint_idx].force;
+	jiggle_data_chain.write()[p_joint_idx].dynamic_position += operation_bone_trans.get_origin() - jiggle_data_chain[p_joint_idx].last_position;
+	jiggle_data_chain.write()[p_joint_idx].last_position = operation_bone_trans.get_origin();
 
 	// Collision detection/response
 	if (use_colliders) {
@@ -199,11 +199,11 @@ void SkeletonModification2DJiggle::_execute_jiggle_joint(int p_joint_idx, Node2D
 					ray_result, Set<RID>(), collision_mask);
 
 			if (ray_hit) {
-				jiggle_data_chain.write[p_joint_idx].dynamic_position = jiggle_data_chain[p_joint_idx].last_noncollision_position;
-				jiggle_data_chain.write[p_joint_idx].acceleration = Vector2(0, 0);
-				jiggle_data_chain.write[p_joint_idx].velocity = Vector2(0, 0);
+				jiggle_data_chain.write()[p_joint_idx].dynamic_position = jiggle_data_chain[p_joint_idx].last_noncollision_position;
+				jiggle_data_chain.write()[p_joint_idx].acceleration = Vector2(0, 0);
+				jiggle_data_chain.write()[p_joint_idx].velocity = Vector2(0, 0);
 			} else {
-				jiggle_data_chain.write[p_joint_idx].last_noncollision_position = jiggle_data_chain[p_joint_idx].dynamic_position;
+				jiggle_data_chain.write()[p_joint_idx].last_noncollision_position = jiggle_data_chain[p_joint_idx].dynamic_position;
 			}
 		} else {
 			WARN_PRINT_ONCE("Jiggle 2D modifier: You cannot detect colliders without the stack mode being set to _physics_process!");
@@ -244,7 +244,7 @@ void SkeletonModification2DJiggle::_setup_modification(SkeletonModificationStack
 				int bone_idx = jiggle_data_chain[i].bone_idx;
 				if (bone_idx > 0 && bone_idx < stack->skeleton->get_bone_count()) {
 					Bone2D *bone2d_node = stack->skeleton->get_bone(bone_idx);
-					jiggle_data_chain.write[i].dynamic_position = bone2d_node->get_global_transform().get_origin();
+					jiggle_data_chain.write()[i].dynamic_position = bone2d_node->get_global_transform().get_origin();
 				}
 			}
 		}
@@ -281,7 +281,7 @@ void SkeletonModification2DJiggle::jiggle_joint_update_bone2d_cache(int p_joint_
 		return;
 	}
 
-	jiggle_data_chain.write[p_joint_idx].bone2d_node_cache = ObjectID();
+	jiggle_data_chain.write()[p_joint_idx].bone2d_node_cache = ObjectID();
 	if (stack->skeleton) {
 		if (stack->skeleton->is_inside_tree()) {
 			if (stack->skeleton->has_node(jiggle_data_chain[p_joint_idx].bone2d_node)) {
@@ -290,11 +290,11 @@ void SkeletonModification2DJiggle::jiggle_joint_update_bone2d_cache(int p_joint_
 						"Cannot update Jiggle joint " + itos(p_joint_idx) + " Bone2D cache: node is this modification's skeleton or cannot be found!");
 				ERR_FAIL_COND_MSG(!node->is_inside_tree(),
 						"Cannot update Jiggle joint " + itos(p_joint_idx) + " Bone2D cache: node is not in scene tree!");
-				jiggle_data_chain.write[p_joint_idx].bone2d_node_cache = node->get_instance_id();
+				jiggle_data_chain.write()[p_joint_idx].bone2d_node_cache = node->get_instance_id();
 
 				Bone2D *bone = Object::cast_to<Bone2D>(node);
 				if (bone) {
-					jiggle_data_chain.write[p_joint_idx].bone_idx = bone->get_index_in_skeleton();
+					jiggle_data_chain.write()[p_joint_idx].bone_idx = bone->get_index_in_skeleton();
 				} else {
 					ERR_FAIL_MSG("Jiggle joint " + itos(p_joint_idx) + " Bone2D cache: Nodepath to Bone2D is not a Bone2D node!");
 				}
@@ -391,7 +391,7 @@ void SkeletonModification2DJiggle::set_jiggle_data_chain_length(int p_length) {
 
 void SkeletonModification2DJiggle::set_jiggle_joint_bone2d_node(int p_joint_idx, const NodePath &p_target_node) {
 	ERR_FAIL_INDEX_MSG(p_joint_idx, jiggle_data_chain.size(), "Jiggle joint out of range!");
-	jiggle_data_chain.write[p_joint_idx].bone2d_node = p_target_node;
+	jiggle_data_chain.write()[p_joint_idx].bone2d_node = p_target_node;
 	jiggle_joint_update_bone2d_cache(p_joint_idx);
 
 	notify_property_list_changed();
@@ -409,16 +409,16 @@ void SkeletonModification2DJiggle::set_jiggle_joint_bone_index(int p_joint_idx, 
 	if (is_setup) {
 		if (stack->skeleton) {
 			ERR_FAIL_INDEX_MSG(p_bone_idx, stack->skeleton->get_bone_count(), "Passed-in Bone index is out of range!");
-			jiggle_data_chain.write[p_joint_idx].bone_idx = p_bone_idx;
-			jiggle_data_chain.write[p_joint_idx].bone2d_node_cache = stack->skeleton->get_bone(p_bone_idx)->get_instance_id();
-			jiggle_data_chain.write[p_joint_idx].bone2d_node = stack->skeleton->get_path_to(stack->skeleton->get_bone(p_bone_idx));
+			jiggle_data_chain.write()[p_joint_idx].bone_idx = p_bone_idx;
+			jiggle_data_chain.write()[p_joint_idx].bone2d_node_cache = stack->skeleton->get_bone(p_bone_idx)->get_instance_id();
+			jiggle_data_chain.write()[p_joint_idx].bone2d_node = stack->skeleton->get_path_to(stack->skeleton->get_bone(p_bone_idx));
 		} else {
 			WARN_PRINT("Cannot verify the Jiggle joint " + itos(p_joint_idx) + " bone index for this modification...");
-			jiggle_data_chain.write[p_joint_idx].bone_idx = p_bone_idx;
+			jiggle_data_chain.write()[p_joint_idx].bone_idx = p_bone_idx;
 		}
 	} else {
 		WARN_PRINT("Cannot verify the Jiggle joint " + itos(p_joint_idx) + " bone index for this modification...");
-		jiggle_data_chain.write[p_joint_idx].bone_idx = p_bone_idx;
+		jiggle_data_chain.write()[p_joint_idx].bone_idx = p_bone_idx;
 	}
 
 	notify_property_list_changed();
@@ -431,7 +431,7 @@ int SkeletonModification2DJiggle::get_jiggle_joint_bone_index(int p_joint_idx) c
 
 void SkeletonModification2DJiggle::set_jiggle_joint_override(int p_joint_idx, bool p_override) {
 	ERR_FAIL_INDEX(p_joint_idx, jiggle_data_chain.size());
-	jiggle_data_chain.write[p_joint_idx].override_defaults = p_override;
+	jiggle_data_chain.write()[p_joint_idx].override_defaults = p_override;
 	_update_jiggle_joint_data();
 	notify_property_list_changed();
 }
@@ -444,7 +444,7 @@ bool SkeletonModification2DJiggle::get_jiggle_joint_override(int p_joint_idx) co
 void SkeletonModification2DJiggle::set_jiggle_joint_stiffness(int p_joint_idx, float p_stiffness) {
 	ERR_FAIL_COND_MSG(p_stiffness < 0, "Stiffness cannot be set to a negative value!");
 	ERR_FAIL_INDEX(p_joint_idx, jiggle_data_chain.size());
-	jiggle_data_chain.write[p_joint_idx].stiffness = p_stiffness;
+	jiggle_data_chain.write()[p_joint_idx].stiffness = p_stiffness;
 }
 
 float SkeletonModification2DJiggle::get_jiggle_joint_stiffness(int p_joint_idx) const {
@@ -455,7 +455,7 @@ float SkeletonModification2DJiggle::get_jiggle_joint_stiffness(int p_joint_idx) 
 void SkeletonModification2DJiggle::set_jiggle_joint_mass(int p_joint_idx, float p_mass) {
 	ERR_FAIL_COND_MSG(p_mass < 0, "Mass cannot be set to a negative value!");
 	ERR_FAIL_INDEX(p_joint_idx, jiggle_data_chain.size());
-	jiggle_data_chain.write[p_joint_idx].mass = p_mass;
+	jiggle_data_chain.write()[p_joint_idx].mass = p_mass;
 }
 
 float SkeletonModification2DJiggle::get_jiggle_joint_mass(int p_joint_idx) const {
@@ -466,7 +466,7 @@ float SkeletonModification2DJiggle::get_jiggle_joint_mass(int p_joint_idx) const
 void SkeletonModification2DJiggle::set_jiggle_joint_damping(int p_joint_idx, float p_damping) {
 	ERR_FAIL_COND_MSG(p_damping < 0, "Damping cannot be set to a negative value!");
 	ERR_FAIL_INDEX(p_joint_idx, jiggle_data_chain.size());
-	jiggle_data_chain.write[p_joint_idx].damping = p_damping;
+	jiggle_data_chain.write()[p_joint_idx].damping = p_damping;
 }
 
 float SkeletonModification2DJiggle::get_jiggle_joint_damping(int p_joint_idx) const {
@@ -476,7 +476,7 @@ float SkeletonModification2DJiggle::get_jiggle_joint_damping(int p_joint_idx) co
 
 void SkeletonModification2DJiggle::set_jiggle_joint_use_gravity(int p_joint_idx, bool p_use_gravity) {
 	ERR_FAIL_INDEX(p_joint_idx, jiggle_data_chain.size());
-	jiggle_data_chain.write[p_joint_idx].use_gravity = p_use_gravity;
+	jiggle_data_chain.write()[p_joint_idx].use_gravity = p_use_gravity;
 	notify_property_list_changed();
 }
 
@@ -487,7 +487,7 @@ bool SkeletonModification2DJiggle::get_jiggle_joint_use_gravity(int p_joint_idx)
 
 void SkeletonModification2DJiggle::set_jiggle_joint_gravity(int p_joint_idx, Vector2 p_gravity) {
 	ERR_FAIL_INDEX(p_joint_idx, jiggle_data_chain.size());
-	jiggle_data_chain.write[p_joint_idx].gravity = p_gravity;
+	jiggle_data_chain.write()[p_joint_idx].gravity = p_gravity;
 }
 
 Vector2 SkeletonModification2DJiggle::get_jiggle_joint_gravity(int p_joint_idx) const {

@@ -102,12 +102,12 @@ bool DebuggerMarshalls::NetworkProfilerFrame::deserialize(const Array &p_arr) {
 	infos.resize(size);
 	int idx = 1;
 	for (uint32_t i = 0; i < size / 6; ++i) {
-		infos.write[i].node = uint64_t(p_arr[idx]);
-		infos.write[i].node_path = p_arr[idx + 1];
-		infos.write[i].incoming_rpc = p_arr[idx + 2];
-		infos.write[i].incoming_rset = p_arr[idx + 3];
-		infos.write[i].outgoing_rpc = p_arr[idx + 4];
-		infos.write[i].outgoing_rset = p_arr[idx + 5];
+		infos.write()[i].node = uint64_t(p_arr[idx]);
+		infos.write()[i].node_path = p_arr[idx + 1];
+		infos.write()[i].incoming_rpc = p_arr[idx + 2];
+		infos.write()[i].incoming_rset = p_arr[idx + 3];
+		infos.write()[i].outgoing_rpc = p_arr[idx + 4];
+		infos.write()[i].outgoing_rset = p_arr[idx + 5];
 	}
 	CHECK_END(p_arr, idx, "NetworkProfilerFrame");
 	return true;

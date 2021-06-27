@@ -168,7 +168,7 @@ void EditorLog::_process_message(const String &p_msg, MessageType p_type) {
 	if (messages.size() > 0 && messages[messages.size() - 1].text == p_msg) {
 		// If previous message is the same as the new one, increase previous count rather than adding another
 		// instance to the messages list.
-		LogMessage &previous = messages.write[messages.size() - 1];
+		LogMessage &previous = messages.write()[messages.size() - 1];
 		previous.count++;
 
 		_add_log_line(previous, collapse);

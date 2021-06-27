@@ -101,7 +101,7 @@ void NavigationPolygon::_set_polygons(const TypedArray<Vector<int32_t>> &p_array
 	}
 	polygons.resize(p_array.size());
 	for (int i = 0; i < p_array.size(); i++) {
-		polygons.write[i].indices = p_array[i];
+		polygons.write()[i].indices = p_array[i];
 	}
 }
 
@@ -118,7 +118,7 @@ Array NavigationPolygon::_get_polygons() const {
 void NavigationPolygon::_set_outlines(const TypedArray<Vector<Vector2>> &p_array) {
 	outlines.resize(p_array.size());
 	for (int i = 0; i < p_array.size(); i++) {
-		outlines.write[i] = p_array[i];
+		outlines.write()[i] = p_array[i];
 	}
 	rect_cache_dirty = true;
 }
@@ -202,7 +202,7 @@ int NavigationPolygon::get_outline_count() const {
 
 void NavigationPolygon::set_outline(int p_idx, const Vector<Vector2> &p_outline) {
 	ERR_FAIL_INDEX(p_idx, outlines.size());
-	outlines.write[p_idx] = p_outline;
+	outlines.write()[p_idx] = p_outline;
 	rect_cache_dirty = true;
 }
 
@@ -439,7 +439,7 @@ void NavigationRegion2D::_notification(int p_what) {
 					vertices.resize(polygon.size());
 					for (int j = 0; j < polygon.size(); j++) {
 						ERR_FAIL_INDEX(polygon[j], verts.size());
-						vertices.write[j] = verts[polygon[j]];
+						vertices.write()[j] = verts[polygon[j]];
 					}
 
 					// Generate the polygon color, slightly randomly modified from the settings one.

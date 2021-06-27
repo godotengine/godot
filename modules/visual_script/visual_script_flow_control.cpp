@@ -637,7 +637,7 @@ bool VisualScriptSwitch::_set(const StringName &p_name, const Variant &p_value) 
 		int idx = String(p_name).get_slice("/", 1).to_int();
 		ERR_FAIL_INDEX_V(idx, case_values.size(), false);
 
-		case_values.write[idx].type = Variant::Type(int(p_value));
+		case_values.write()[idx].type = Variant::Type(int(p_value));
 		notify_property_list_changed();
 		ports_changed_notify();
 

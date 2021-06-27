@@ -69,7 +69,7 @@ public:
 		if (name.begins_with("bind/argument_")) {
 			int which = name.get_slice("_", 1).to_int() - 1;
 			ERR_FAIL_INDEX_V(which, params.size(), false);
-			params.write[which] = p_value;
+			params.write()[which] = p_value;
 		} else {
 			return false;
 		}

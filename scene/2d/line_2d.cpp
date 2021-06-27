@@ -280,7 +280,7 @@ void Line2D::_draw() {
 	{
 		const Vector2 *points_read = _points.ptr();
 		for (int i = 0; i < len; ++i) {
-			points.write[i] = points_read[i];
+			points.write()[i] = points_read[i];
 		}
 	}
 

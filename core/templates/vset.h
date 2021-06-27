@@ -131,7 +131,7 @@ public:
 	_FORCE_INLINE_ int size() const { return _data.size(); }
 
 	inline T &operator[](int p_index) {
-		return _data.write[p_index];
+		return _data.write()[p_index];
 	}
 
 	inline const T &operator[](int p_index) const {

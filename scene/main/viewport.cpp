@@ -2902,7 +2902,7 @@ bool Viewport::_sub_windows_forward_input(const Ref<InputEvent> &p_event) {
 	if (mb.is_valid() && mb->is_pressed() && mb->get_button_index() == MOUSE_BUTTON_LEFT) {
 		bool click_on_window = false;
 		for (int i = gui.sub_windows.size() - 1; i >= 0; i--) {
-			SubWindow &sw = gui.sub_windows.write[i];
+			SubWindow &sw = gui.sub_windows.write()[i];
 
 			//clicked inside window?
 

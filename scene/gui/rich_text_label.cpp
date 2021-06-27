@@ -213,7 +213,7 @@ void RichTextLabel::_resize_line(ItemFrame *p_frame, int p_line, const Ref<Font>
 	ERR_FAIL_COND(p_frame == nullptr);
 	ERR_FAIL_COND(p_line < 0 || p_line >= p_frame->lines.size());
 
-	Line &l = p_frame->lines.write[p_line];
+	Line &l = p_frame->lines.write()[p_line];
 
 	l.offset.x = _find_margin(l.from, p_base_font, p_base_font_size);
 	l.text_buf->set_width(p_width - l.offset.x);
@@ -234,7 +234,7 @@ void RichTextLabel::_resize_line(ItemFrame *p_frame, int p_line, const Ref<Font>
 				int col_count = table->columns.size();
 
 				for (int i = 0; i < col_count; i++) {
-					table->columns.write[i].width = 0;
+					table->columns.write()[i].width = 0;
 				}
 
 				int idx = 0;
@@ -258,7 +258,7 @@ void RichTextLabel::_resize_line(ItemFrame *p_frame, int p_line, const Ref<Font>
 				for (int i = 0; i < col_count; i++) {
 					remaining_width -= table->columns[i].min_width;
 					if (table->columns[i].max_width > table->columns[i].min_width) {
-						table->columns.write[i].expand = true;
+						table->columns.write()[i].expand = true;
 					}
 					if (table->columns[i].expand) {
 						total_ratio += table->columns[i].expand_ratio;
@@ -267,9 +267,9 @@ void RichTextLabel::_resize_line(ItemFrame *p_frame, int p_line, const Ref<Font>
 
 				// Assign actual widths.
 				for (int i = 0; i < col_count; i++) {
-					table->columns.write[i].width = table->columns[i].min_width;
+					table->columns.write()[i].width = table->columns[i].min_width;
 					if (table->columns[i].expand && total_ratio > 0) {
-						table->columns.write[i].width += table->columns[i].expand_ratio * remaining_width / total_ratio;
+						table->columns.write()[i].width += table->columns[i].expand_ratio * remaining_width / total_ratio;
 					}
 					table->total_width += table->columns[i].width + hseparation;
 				}
@@ -286,7 +286,7 @@ void RichTextLabel::_resize_line(ItemFrame *p_frame, int p_line, const Ref<Font>
 						int dif = table->columns[i].width - table->columns[i].max_width;
 						if (dif > 0) {
 							table_need_fit = true;
-							table->columns.write[i].width = table->columns[i].max_width;
+							table->columns.write()[i].width = table->columns[i].max_width;
 							table->total_width -= dif;
 							total_ratio -= table->columns[i].expand_ratio;
 						}
@@ -300,7 +300,7 @@ void RichTextLabel::_resize_line(ItemFrame *p_frame, int p_line, const Ref<Font>
 								if (dif > 0) {
 									int slice = table->columns[i].expand_ratio * remaining_width / total_ratio;
 									int incr = MIN(dif, slice);
-									table->columns.write[i].width += incr;
+									table->columns.write()[i].width += incr;
 									table->total_width += incr;
 								}
 							}
@@ -325,15 +325,15 @@ void RichTextLabel::_resize_line(ItemFrame *p_frame, int p_line, const Ref<Font>
 					offset.x += frame->padding.position.x;
 					float yofs = frame->padding.position.y;
 					for (int i = 0; i < frame->lines.size(); i++) {
-						frame->lines.write[i].text_buf->set_width(table->columns[column].width);
-						table->columns.write[column].width = MAX(table->columns.write[column].width, ceil(frame->lines[i].text_buf->get_size().x));
+						frame->lines.write()[i].text_buf->set_width(table->columns[column].width);
+						table->columns.write()[column].width = MAX(table->columns.write()[column].width, ceil(frame->lines[i].text_buf->get_size().x));
 
 						if (i > 0) {
-							frame->lines.write[i].offset.y = frame->lines[i - 1].offset.y + frame->lines[i - 1].text_buf->get_size().y;
+							frame->lines.write()[i].offset.y = frame->lines[i - 1].offset.y + frame->lines[i - 1].text_buf->get_size().y;
 						} else {
-							frame->lines.write[i].offset.y = 0;
+							frame->lines.write()[i].offset.y = 0;
 						}
-						frame->lines.write[i].offset += Vector2(offset.x, offset.y);
+						frame->lines.write()[i].offset += Vector2(offset.x, offset.y);
 
 						float h = frame->lines[i].text_buf->get_size().y;
 						if (frame->min_size_over.y > 0) {
@@ -376,7 +376,7 @@ void RichTextLabel::_shape_line(ItemFrame *p_frame, int p_line, const Ref<Font> 
 	ERR_FAIL_COND(p_frame == nullptr);
 	ERR_FAIL_COND(p_line < 0 || p_line >= p_frame->lines.size());
 
-	Line &l = p_frame->lines.write[p_line];
+	Line &l = p_frame->lines.write()[p_line];
 
 	// Clear cache.
 	l.text_buf->clear();
@@ -464,9 +464,9 @@ void RichTextLabel::_shape_line(ItemFrame *p_frame, int p_line, const Ref<Font> 
 				int t_char_count = 0;
 				// Set minimums to zero.
 				for (int i = 0; i < col_count; i++) {
-					table->columns.write[i].min_width = 0;
-					table->columns.write[i].max_width = 0;
-					table->columns.write[i].width = 0;
+					table->columns.write()[i].min_width = 0;
+					table->columns.write()[i].max_width = 0;
+					table->columns.write()[i].width = 0;
 				}
 				// Compute minimum width for each cell.
 				const int available_width = p_width - hseparation * (col_count - 1);
@@ -484,8 +484,8 @@ void RichTextLabel::_shape_line(ItemFrame *p_frame, int p_line, const Ref<Font> 
 						l.char_count += cell_ch;
 						t_char_count += cell_ch;
 
-						table->columns.write[column].min_width = MAX(table->columns[column].min_width, ceil(frame->lines[i].text_buf->get_size().x));
-						table->columns.write[column].max_width = MAX(table->columns[column].max_width, ceil(frame->lines[i].text_buf->get_non_wraped_size().x));
+						table->columns.write()[column].min_width = MAX(table->columns[column].min_width, ceil(frame->lines[i].text_buf->get_size().x));
+						table->columns.write()[column].max_width = MAX(table->columns[column].max_width, ceil(frame->lines[i].text_buf->get_non_wraped_size().x));
 					}
 					idx++;
 				}
@@ -498,7 +498,7 @@ void RichTextLabel::_shape_line(ItemFrame *p_frame, int p_line, const Ref<Font> 
 				for (int i = 0; i < col_count; i++) {
 					remaining_width -= table->columns[i].min_width;
 					if (table->columns[i].max_width > table->columns[i].min_width) {
-						table->columns.write[i].expand = true;
+						table->columns.write()[i].expand = true;
 					}
 					if (table->columns[i].expand) {
 						total_ratio += table->columns[i].expand_ratio;
@@ -507,9 +507,9 @@ void RichTextLabel::_shape_line(ItemFrame *p_frame, int p_line, const Ref<Font> 
 
 				// Assign actual widths.
 				for (int i = 0; i < col_count; i++) {
-					table->columns.write[i].width = table->columns[i].min_width;
+					table->columns.write()[i].width = table->columns[i].min_width;
 					if (table->columns[i].expand && total_ratio > 0) {
-						table->columns.write[i].width += table->columns[i].expand_ratio * remaining_width / total_ratio;
+						table->columns.write()[i].width += table->columns[i].expand_ratio * remaining_width / total_ratio;
 					}
 					table->total_width += table->columns[i].width + hseparation;
 				}
@@ -526,7 +526,7 @@ void RichTextLabel::_shape_line(ItemFrame *p_frame, int p_line, const Ref<Font> 
 						int dif = table->columns[i].width - table->columns[i].max_width;
 						if (dif > 0) {
 							table_need_fit = true;
-							table->columns.write[i].width = table->columns[i].max_width;
+							table->columns.write()[i].width = table->columns[i].max_width;
 							table->total_width -= dif;
 							total_ratio -= table->columns[i].expand_ratio;
 						}
@@ -540,7 +540,7 @@ void RichTextLabel::_shape_line(ItemFrame *p_frame, int p_line, const Ref<Font> 
 								if (dif > 0) {
 									int slice = table->columns[i].expand_ratio * remaining_width / total_ratio;
 									int incr = MIN(dif, slice);
-									table->columns.write[i].width += incr;
+									table->columns.write()[i].width += incr;
 									table->total_width += incr;
 								}
 							}
@@ -565,15 +565,15 @@ void RichTextLabel::_shape_line(ItemFrame *p_frame, int p_line, const Ref<Font> 
 					offset.x += frame->padding.position.x;
 					float yofs = frame->padding.position.y;
 					for (int i = 0; i < frame->lines.size(); i++) {
-						frame->lines.write[i].text_buf->set_width(table->columns[column].width);
-						table->columns.write[column].width = MAX(table->columns.write[column].width, ceil(frame->lines[i].text_buf->get_size().x));
+						frame->lines.write()[i].text_buf->set_width(table->columns[column].width);
+						table->columns.write()[column].width = MAX(table->columns.write()[column].width, ceil(frame->lines[i].text_buf->get_size().x));
 
 						if (i > 0) {
-							frame->lines.write[i].offset.y = frame->lines[i - 1].offset.y + frame->lines[i - 1].text_buf->get_size().y;
+							frame->lines.write()[i].offset.y = frame->lines[i - 1].offset.y + frame->lines[i - 1].text_buf->get_size().y;
 						} else {
-							frame->lines.write[i].offset.y = 0;
+							frame->lines.write()[i].offset.y = 0;
 						}
-						frame->lines.write[i].offset += Vector2(offset.x, offset.y);
+						frame->lines.write()[i].offset += Vector2(offset.x, offset.y);
 
 						float h = frame->lines[i].text_buf->get_size().y;
 						if (frame->min_size_over.y > 0) {
@@ -626,7 +626,7 @@ int RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_o
 	ERR_FAIL_COND_V(p_frame == nullptr, 0);
 	ERR_FAIL_COND_V(p_line < 0 || p_line >= p_frame->lines.size(), 0);
 
-	Line &l = p_frame->lines.write[p_line];
+	Line &l = p_frame->lines.write()[p_line];
 
 	Item *it_from = l.from;
 	Item *it_to = (p_line + 1 < p_frame->lines.size()) ? p_frame->lines[p_line + 1].from : nullptr;
@@ -1142,7 +1142,7 @@ float RichTextLabel::_find_click_in_line(ItemFrame *p_frame, int p_line, const V
 	Vector2 off;
 
 	int char_pos = -1;
-	Line &l = p_frame->lines.write[p_line];
+	Line &l = p_frame->lines.write()[p_line];
 	bool rtl = (l.text_buf->get_direction() == TextServer::DIRECTION_RTL);
 	bool lrtl = is_layout_rtl();
 	bool table_hit = false;
@@ -2220,7 +2220,7 @@ void RichTextLabel::add_text(const String &p_text) {
 			_add_item(item, false);
 			current_frame->lines.resize(current_frame->lines.size() + 1);
 			if (item->type != ITEM_NEWLINE) {
-				current_frame->lines.write[current_frame->lines.size() - 1].from = item;
+				current_frame->lines.write()[current_frame->lines.size() - 1].from = item;
 			}
 			_invalidate_current_line(current_frame);
 		}
@@ -2255,7 +2255,7 @@ void RichTextLabel::_add_item(Item *p_item, bool p_enter, bool p_ensure_newline)
 	}
 
 	if (current_frame->lines[current_frame->lines.size() - 1].from == nullptr) {
-		current_frame->lines.write[current_frame->lines.size() - 1].from = p_item;
+		current_frame->lines.write()[current_frame->lines.size() - 1].from = p_item;
 	}
 	p_item->line = current_frame->lines.size() - 1;
 
@@ -2369,7 +2369,7 @@ bool RichTextLabel::remove_line(const int p_line) {
 	}
 
 	if (p_line == 0 && current->subitems.size() > 0) {
-		main->lines.write[0].from = main;
+		main->lines.write()[0].from = main;
 	}
 
 	main->first_invalid_line = 0; // p_line ???
@@ -2542,8 +2542,8 @@ void RichTextLabel::push_table(int p_columns, VAlign p_align) {
 	item->total_width = 0;
 	item->inline_align = p_align;
 	for (int i = 0; i < item->columns.size(); i++) {
-		item->columns.write[i].expand = false;
-		item->columns.write[i].expand_ratio = 1;
+		item->columns.write()[i].expand = false;
+		item->columns.write()[i].expand_ratio = 1;
 	}
 	_add_item(item, true, false);
 }
@@ -2611,8 +2611,8 @@ void RichTextLabel::set_table_column_expand(int p_column, bool p_expand, int p_r
 	ERR_FAIL_COND(current->type != ITEM_TABLE);
 	ItemTable *table = static_cast<ItemTable *>(current);
 	ERR_FAIL_INDEX(p_column, table->columns.size());
-	table->columns.write[p_column].expand = p_expand;
-	table->columns.write[p_column].expand_ratio = p_ratio;
+	table->columns.write()[p_column].expand = p_expand;
+	table->columns.write()[p_column].expand_ratio = p_ratio;
 }
 
 void RichTextLabel::set_cell_row_background_color(const Color &p_odd_row_bg, const Color &p_even_row_bg) {
@@ -2654,7 +2654,7 @@ void RichTextLabel::push_cell() {
 	current_frame = item;
 	item->cell = true;
 	item->lines.resize(1);
-	item->lines.write[0].from = nullptr;
+	item->lines.write()[0].from = nullptr;
 	item->first_invalid_line = 0; // parent frame last line ???
 }
 
@@ -3550,7 +3550,7 @@ bool RichTextLabel::_search_line(ItemFrame *p_frame, int p_line, const String &p
 	ERR_FAIL_COND_V(p_frame == nullptr, false);
 	ERR_FAIL_COND_V(p_line < 0 || p_line >= p_frame->lines.size(), false);
 
-	Line &l = p_frame->lines.write[p_line];
+	Line &l = p_frame->lines.write()[p_line];
 
 	String text;
 	Item *it_to = (p_line + 1 < p_frame->lines.size()) ? p_frame->lines[p_line + 1].from : nullptr;
@@ -3686,7 +3686,7 @@ String RichTextLabel::_get_line_text(ItemFrame *p_frame, int p_line, Selection p
 	ERR_FAIL_COND_V(p_frame == nullptr, text);
 	ERR_FAIL_COND_V(p_line < 0 || p_line >= p_frame->lines.size(), text);
 
-	Line &l = p_frame->lines.write[p_line];
+	Line &l = p_frame->lines.write()[p_line];
 
 	Item *it_to = (p_line + 1 < p_frame->lines.size()) ? p_frame->lines[p_line + 1].from : nullptr;
 	int end_idx = 0;
@@ -4320,7 +4320,7 @@ RichTextLabel::RichTextLabel() {
 	main->index = 0;
 	current = main;
 	main->lines.resize(1);
-	main->lines.write[0].from = main;
+	main->lines.write()[0].from = main;
 	main->first_invalid_line = 0;
 	main->first_resized_line = 0;
 	current_frame = main;

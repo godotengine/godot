@@ -329,7 +329,7 @@ String StreamPeer::get_string(int p_bytes) {
 	ERR_FAIL_COND_V(err != OK, String());
 	err = get_data((uint8_t *)&buf[0], p_bytes);
 	ERR_FAIL_COND_V(err != OK, String());
-	buf.write[p_bytes] = 0;
+	buf.write()[p_bytes] = 0;
 	return buf.ptr();
 }
 

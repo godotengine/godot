@@ -404,7 +404,7 @@ void RendererCanvasCull::canvas_set_item_mirroring(RID p_canvas, RID p_item, con
 
 	int idx = canvas->find_item(canvas_item);
 	ERR_FAIL_COND(idx == -1);
-	canvas->child_items.write[idx].mirror = p_mirroring;
+	canvas->child_items.write()[idx].mirror = p_mirroring;
 }
 
 void RendererCanvasCull::canvas_set_modulate(RID p_canvas, const Color &p_color) {
@@ -758,16 +758,16 @@ void RendererCanvasCull::canvas_item_add_circle(RID p_item, const Point2 &p_pos,
 
 	for (int i = 0; i < circle_points; i++) {
 		float angle = i * circle_point_step;
-		points.write[i].x = Math::cos(angle) * p_radius;
-		points.write[i].y = Math::sin(angle) * p_radius;
-		points.write[i] += p_pos;
+		points.write()[i].x = Math::cos(angle) * p_radius;
+		points.write()[i].y = Math::sin(angle) * p_radius;
+		points.write()[i] += p_pos;
 	}
 	indices.resize((circle_points - 2) * 3);
 
 	for (int i = 0; i < circle_points - 2; i++) {
-		indices.write[i * 3 + 0] = 0;
-		indices.write[i * 3 + 1] = i + 1;
-		indices.write[i * 3 + 2] = i + 2;
+		indices.write()[i * 3 + 0] = 0;
+		indices.write()[i * 3 + 1] = i + 1;
+		indices.write()[i * 3 + 2] = i + 2;
 	}
 
 	Vector<Color> color;
