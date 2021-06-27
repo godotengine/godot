@@ -38,6 +38,7 @@ const int InputEvent::DEVICE_ID_INTERNAL = -2;
 
 void InputEvent::set_device(int p_device) {
 	device = p_device;
+	emit_changed();
 }
 
 int InputEvent::get_device() const {
@@ -131,6 +132,7 @@ void InputEventFromWindow::_bind_methods() {
 
 void InputEventFromWindow::set_window_id(int64_t p_id) {
 	window_id = p_id;
+	emit_changed();
 }
 
 int64_t InputEventFromWindow::get_window_id() const {
@@ -141,6 +143,7 @@ int64_t InputEventFromWindow::get_window_id() const {
 
 void InputEventWithModifiers::set_store_command(bool p_enabled) {
 	store_command = p_enabled;
+	emit_changed();
 }
 
 bool InputEventWithModifiers::is_storing_command() const {
@@ -149,6 +152,7 @@ bool InputEventWithModifiers::is_storing_command() const {
 
 void InputEventWithModifiers::set_shift_pressed(bool p_enabled) {
 	shift_pressed = p_enabled;
+	emit_changed();
 }
 
 bool InputEventWithModifiers::is_shift_pressed() const {
@@ -157,6 +161,7 @@ bool InputEventWithModifiers::is_shift_pressed() const {
 
 void InputEventWithModifiers::set_alt_pressed(bool p_enabled) {
 	alt_pressed = p_enabled;
+	emit_changed();
 }
 
 bool InputEventWithModifiers::is_alt_pressed() const {
@@ -165,6 +170,7 @@ bool InputEventWithModifiers::is_alt_pressed() const {
 
 void InputEventWithModifiers::set_ctrl_pressed(bool p_enabled) {
 	ctrl_pressed = p_enabled;
+	emit_changed();
 }
 
 bool InputEventWithModifiers::is_ctrl_pressed() const {
@@ -173,6 +179,7 @@ bool InputEventWithModifiers::is_ctrl_pressed() const {
 
 void InputEventWithModifiers::set_meta_pressed(bool p_enabled) {
 	meta_pressed = p_enabled;
+	emit_changed();
 }
 
 bool InputEventWithModifiers::is_meta_pressed() const {
@@ -181,6 +188,7 @@ bool InputEventWithModifiers::is_meta_pressed() const {
 
 void InputEventWithModifiers::set_command_pressed(bool p_enabled) {
 	command_pressed = p_enabled;
+	emit_changed();
 }
 
 bool InputEventWithModifiers::is_command_pressed() const {
@@ -291,6 +299,7 @@ void InputEventWithModifiers::_validate_property(PropertyInfo &property) const {
 
 void InputEventKey::set_pressed(bool p_pressed) {
 	pressed = p_pressed;
+	emit_changed();
 }
 
 bool InputEventKey::is_pressed() const {
@@ -299,6 +308,7 @@ bool InputEventKey::is_pressed() const {
 
 void InputEventKey::set_keycode(uint32_t p_keycode) {
 	keycode = p_keycode;
+	emit_changed();
 }
 
 uint32_t InputEventKey::get_keycode() const {
@@ -307,6 +317,7 @@ uint32_t InputEventKey::get_keycode() const {
 
 void InputEventKey::set_physical_keycode(uint32_t p_keycode) {
 	physical_keycode = p_keycode;
+	emit_changed();
 }
 
 uint32_t InputEventKey::get_physical_keycode() const {
@@ -315,6 +326,7 @@ uint32_t InputEventKey::get_physical_keycode() const {
 
 void InputEventKey::set_unicode(uint32_t p_unicode) {
 	unicode = p_unicode;
+	emit_changed();
 }
 
 uint32_t InputEventKey::get_unicode() const {
@@ -323,6 +335,7 @@ uint32_t InputEventKey::get_unicode() const {
 
 void InputEventKey::set_echo(bool p_enable) {
 	echo = p_enable;
+	emit_changed();
 }
 
 bool InputEventKey::is_echo() const {
@@ -469,6 +482,7 @@ void InputEventKey::_bind_methods() {
 
 void InputEventMouse::set_button_mask(int p_mask) {
 	button_mask = p_mask;
+	emit_changed();
 }
 
 int InputEventMouse::get_button_mask() const {
@@ -518,6 +532,7 @@ float InputEventMouseButton::get_factor() const {
 
 void InputEventMouseButton::set_button_index(MouseButton p_index) {
 	button_index = p_index;
+	emit_changed();
 }
 
 MouseButton InputEventMouseButton::get_button_index() const {
@@ -847,6 +862,7 @@ void InputEventMouseMotion::_bind_methods() {
 
 void InputEventJoypadMotion::set_axis(JoyAxis p_axis) {
 	axis = p_axis;
+	emit_changed();
 }
 
 JoyAxis InputEventJoypadMotion::get_axis() const {
@@ -855,6 +871,7 @@ JoyAxis InputEventJoypadMotion::get_axis() const {
 
 void InputEventJoypadMotion::set_axis_value(float p_value) {
 	axis_value = p_value;
+	emit_changed();
 }
 
 float InputEventJoypadMotion::get_axis_value() const {
@@ -949,6 +966,7 @@ void InputEventJoypadMotion::_bind_methods() {
 
 void InputEventJoypadButton::set_button_index(JoyButton p_index) {
 	button_index = p_index;
+	emit_changed();
 }
 
 JoyButton InputEventJoypadButton::get_button_index() const {
