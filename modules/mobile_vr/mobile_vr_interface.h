@@ -143,6 +143,10 @@ public:
 	virtual bool initialize() override;
 	virtual void uninitialize() override;
 
+	virtual bool supports_play_area_mode(XRInterface::PlayAreaMode p_mode) override;
+	virtual XRInterface::PlayAreaMode get_play_area_mode() const override;
+	virtual bool set_play_area_mode(XRInterface::PlayAreaMode p_mode) override;
+
 	virtual Size2 get_render_target_size() override;
 	virtual uint32_t get_view_count() override;
 	virtual Transform3D get_camera_transform() override;

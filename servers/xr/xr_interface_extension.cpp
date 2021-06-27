@@ -41,6 +41,13 @@ void XRInterfaceExtension::_bind_methods() {
 	GDVIRTUAL_BIND(_initialize);
 	GDVIRTUAL_BIND(_uninitialize);
 
+	GDVIRTUAL_BIND(_get_tracking_status);
+
+	GDVIRTUAL_BIND(_supports_play_area_mode, "mode");
+	GDVIRTUAL_BIND(_get_play_area_mode);
+	GDVIRTUAL_BIND(_set_play_area_mode, "mode");
+	GDVIRTUAL_BIND(_get_play_area);
+
 	GDVIRTUAL_BIND(_get_render_target_size);
 	GDVIRTUAL_BIND(_get_view_count);
 	GDVIRTUAL_BIND(_get_camera_transform);
@@ -144,6 +151,44 @@ XRInterface::TrackingStatus XRInterfaceExtension::get_tracking_status() const {
 
 void XRInterfaceExtension::trigger_haptic_pulse(const String &p_action_name, const StringName &p_tracker_name, double p_frequency, double p_amplitude, double p_duration_sec, double p_delay_sec) {
 	GDVIRTUAL_CALL(_trigger_haptic_pulse, p_action_name, p_tracker_name, p_frequency, p_amplitude, p_duration_sec, p_delay_sec);
+}
+
+bool XRInterfaceExtension::supports_play_area_mode(XRInterface::PlayAreaMode p_mode) {
+	bool is_supported;
+
+	if (GDVIRTUAL_CALL(_supports_play_area_mode, p_mode, is_supported)) {
+		return is_supported;
+	}
+
+	return false;
+}
+
+XRInterface::PlayAreaMode XRInterfaceExtension::get_play_area_mode() const {
+	uint32_t mode;
+
+	if (GDVIRTUAL_CALL(_get_play_area_mode, mode)) {
+		return XRInterface::PlayAreaMode(mode);
+	}
+
+	return XRInterface::XR_PLAY_AREA_UNKNOWN;
+}
+
+bool XRInterfaceExtension::set_play_area_mode(XRInterface::PlayAreaMode p_mode) {
+	bool success;
+
+	if (GDVIRTUAL_CALL(_set_play_area_mode, p_mode, success)) {
+		return success;
+	}
+
+	return false;
+}
+
+PackedVector3Array XRInterfaceExtension::get_play_area() const {
+	PackedVector3Array arr;
+
+	GDVIRTUAL_CALL(_get_play_area, arr);
+
+	return arr;
 }
 
 /** these will only be implemented on AR interfaces, so we want dummies for VR **/

@@ -41,6 +41,16 @@
 			<description>
 			</description>
 		</method>
+		<method name="_get_play_area" qualifiers="virtual const">
+			<return type="PackedVector3Array" />
+			<description>
+			</description>
+		</method>
+		<method name="_get_play_area_mode" qualifiers="virtual const">
+			<return type="int" />
+			<description>
+			</description>
+		</method>
 		<method name="_get_projection_for_view" qualifiers="virtual">
 			<return type="PackedFloat64Array" />
 			<argument index="0" name="view" type="int" />
@@ -63,6 +73,11 @@
 		</method>
 		<method name="_get_suggested_tracker_names" qualifiers="virtual const">
 			<return type="PackedStringArray" />
+			<description>
+			</description>
+		</method>
+		<method name="_get_tracking_status" qualifiers="virtual const">
+			<return type="int" />
 			<description>
 			</description>
 		</method>
@@ -107,6 +122,18 @@
 		<method name="_set_anchor_detection_is_enabled" qualifiers="virtual">
 			<return type="void" />
 			<argument index="0" name="enabled" type="bool" />
+			<description>
+			</description>
+		</method>
+		<method name="_set_play_area_mode" qualifiers="virtual const">
+			<return type="bool" />
+			<argument index="0" name="mode" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="_supports_play_area_mode" qualifiers="virtual const">
+			<return type="bool" />
+			<argument index="0" name="mode" type="int" enum="XRInterface.PlayAreaMode" />
 			<description>
 			</description>
 		</method>

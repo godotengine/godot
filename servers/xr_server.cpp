@@ -116,35 +116,43 @@ Transform3D XRServer::get_reference_frame() const {
 };
 
 void XRServer::center_on_hmd(RotationMode p_rotation_mode, bool p_keep_height) {
-	if (primary_interface != nullptr) {
-		// clear our current reference frame or we'll end up double adjusting it
+	if (primary_interface == nullptr) {
+		return;
+	}
+
+	if (primary_interface->get_play_area_mode() == XRInterface::XR_PLAY_AREA_STAGE) {
+		// center_on_hmd is not available in this mode
 		reference_frame = Transform3D();
+		return;
+	}
 
-		// requesting our EYE_MONO transform should return our current HMD position
-		Transform3D new_reference_frame = primary_interface->get_camera_transform();
+	// clear our current reference frame or we'll end up double adjusting it
+	reference_frame = Transform3D();
 
-		// remove our tilt
-		if (p_rotation_mode == 1) {
-			// take the Y out of our Z
-			new_reference_frame.basis.set_axis(2, Vector3(new_reference_frame.basis.elements[0][2], 0.0, new_reference_frame.basis.elements[2][2]).normalized());
+	// requesting our EYE_MONO transform should return our current HMD position
+	Transform3D new_reference_frame = primary_interface->get_camera_transform();
 
-			// Y is straight up
-			new_reference_frame.basis.set_axis(1, Vector3(0.0, 1.0, 0.0));
+	// remove our tilt
+	if (p_rotation_mode == 1) {
+		// take the Y out of our Z
+		new_reference_frame.basis.set_axis(2, Vector3(new_reference_frame.basis.elements[0][2], 0.0, new_reference_frame.basis.elements[2][2]).normalized());
 
-			// and X is our cross reference
-			new_reference_frame.basis.set_axis(0, new_reference_frame.basis.get_axis(1).cross(new_reference_frame.basis.get_axis(2)).normalized());
-		} else if (p_rotation_mode == 2) {
-			// remove our rotation, we're only interesting in centering on position
-			new_reference_frame.basis = Basis();
-		};
+		// Y is straight up
+		new_reference_frame.basis.set_axis(1, Vector3(0.0, 1.0, 0.0));
 
-		// don't negate our height
-		if (p_keep_height) {
-			new_reference_frame.origin.y = 0.0;
-		};
-
-		reference_frame = new_reference_frame.inverse();
+		// and X is our cross reference
+		new_reference_frame.basis.set_axis(0, new_reference_frame.basis.get_axis(1).cross(new_reference_frame.basis.get_axis(2)).normalized());
+	} else if (p_rotation_mode == 2) {
+		// remove our rotation, we're only interesting in centering on position
+		new_reference_frame.basis = Basis();
 	};
+
+	// don't negate our height
+	if (p_keep_height) {
+		new_reference_frame.origin.y = 0.0;
+	};
+
+	reference_frame = new_reference_frame.inverse();
 };
 
 Transform3D XRServer::get_hmd_transform() {
