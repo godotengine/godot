@@ -55,7 +55,7 @@ private:
 	RID probe;
 	float intensity = 1.0;
 	float max_distance = 0.0;
-	Vector3 extents = Vector3(1, 1, 1);
+	Vector3 extents = Vector3(10, 10, 10);
 	Vector3 origin_offset = Vector3(0, 0, 0);
 	bool box_projection = false;
 	bool enable_shadows = false;

@@ -28,8 +28,8 @@
 		<member name="enable_shadows" type="bool" setter="set_enable_shadows" getter="are_shadows_enabled" default="false">
 			If [code]true[/code], computes shadows in the reflection probe. This makes the reflection probe slower to render; you may want to disable this if using the [constant UPDATE_ALWAYS] [member update_mode].
 		</member>
-		<member name="extents" type="Vector3" setter="set_extents" getter="get_extents" default="Vector3(1, 1, 1)">
-			The size of the reflection probe. The larger the extents the more space covered by the probe which will lower the perceived resolution. It is best to keep the extents only as large as you need them.
+		<member name="extents" type="Vector3" setter="set_extents" getter="get_extents" default="Vector3(10, 10, 10)">
+			The size of the reflection probe. The larger the extents, the more space covered by the probe, which will lower the perceived resolution. It is best to keep the extents only as large as you need them.
 		</member>
 		<member name="intensity" type="float" setter="set_intensity" getter="get_intensity" default="1.0">
 			Defines the reflection intensity. Intensity modulates the strength of the reflection.
