@@ -32,6 +32,13 @@
 				Returns the name of this interface (OpenVR, OpenHMD, ARKit, etc).
 			</description>
 		</method>
+		<method name="get_play_area" qualifiers="const">
+			<return type="PackedVector3Array">
+			</return>
+			<description>
+				Returns an array of vectors that denotes the physical play area mapped to the virtual space around the [XROrigin3D] point. The points form a convex polygon that can be used to react to or visualise the play area. This returns an empty array if this feature is not supported or if the information is not yet available.
+			</description>
+		</method>
 		<method name="get_render_targetsize">
 			<return type="Vector2">
 			</return>
@@ -64,6 +71,24 @@
 				While currently not used, you can activate additional interfaces. You may wish to do this if you want to track controllers from other platforms. However, at this point in time only one interface can render to an HMD.
 			</description>
 		</method>
+		<method name="set_play_area_mode">
+			<return type="bool">
+			</return>
+			<argument index="0" name="mode" type="int" enum="XRInterface.PlayAreaMode">
+			</argument>
+			<description>
+				Sets the active play area mode, will return [code]false[/code] if the mode can't be used with this interface.
+			</description>
+		</method>
+		<method name="supports_play_area_mode">
+			<return type="bool">
+			</return>
+			<argument index="0" name="mode" type="int" enum="XRInterface.PlayAreaMode">
+			</argument>
+			<description>
+				Call this to find out if a given play area mode is supported by this interface.
+			</description>
+		</method>
 		<method name="uninitialize">
 			<return type="void">
 			</return>
@@ -82,7 +107,19 @@
 		<member name="interface_is_primary" type="bool" setter="set_is_primary" getter="is_primary" default="false">
 			[code]true[/code] if this is the primary interface.
 		</member>
+		<member name="vr_play_area_mode" type="int" setter="set_play_area_mode" getter="get_play_area_mode" enum="XRInterface.PlayAreaMode" default="1">
+			The play area mode for this interface.
+		</member>
 	</members>
+	<signals>
+		<signal name="play_area_changed">
+			<argument index="0" name="mode" type="int">
+			</argument>
+			<description>
+				Emitted when the play area is changed. This can be a result of the player resetting the boundary or entering a new play area, the player changing the play area mode, the world scale changing or the player resetting their headset orientation.
+			</description>
+		</signal>
+	</signals>
 	<constants>
 		<constant name="XR_NONE" value="0" enum="Capabilities">
 			No XR capabilities.
@@ -122,6 +159,21 @@
 		</constant>
 		<constant name="XR_NOT_TRACKING" value="4" enum="Tracking_status">
 			Tracking is not functional (camera not plugged in or obscured, lighthouses turned off, etc.).
+		</constant>
+		<constant name="XR_PLAY_AREA_UNKNOWN" value="0" enum="PlayAreaMode">
+			Play area mode not set or not available
+		</constant>
+		<constant name="XR_PLAY_AREA_3DOF" value="1" enum="PlayAreaMode">
+			Play area only supports orientation tracking, no positional tracking, area will center around player
+		</constant>
+		<constant name="XR_PLAY_AREA_SITTING" value="2" enum="PlayAreaMode">
+			Player is in seated position, limited positional tracking, fixed guardian around player
+		</constant>
+		<constant name="XR_PLAY_AREA_ROOMSCALE" value="3" enum="PlayAreaMode">
+			Player is free to move around, full positional tracking
+		</constant>
+		<constant name="XR_PLAY_AREA_STAGE" value="4" enum="PlayAreaMode">
+			Same as roomscale but origin point is fixed to the center of the physical space, XRServer.center_on_hmd disabled
 		</constant>
 	</constants>
 </class>
