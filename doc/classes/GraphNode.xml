@@ -313,6 +313,11 @@
 				Emitted when the GraphNode is requested to be closed. Happens on clicking the close button (see [member show_close]).
 			</description>
 		</signal>
+		<signal name="double_clicked">
++			<description>
+				Emitted when the GraphNode is double clicked.
++			</description>
++		</signal>
 		<signal name="dragged">
 			<argument index="0" name="from" type="Vector2">
 			</argument>
