@@ -285,15 +285,59 @@ void TabContainer::_gui_input(const Ref<InputEvent> &p_event) {
 	}
 	if (!mm.is_valid() && !mb.is_valid()) {
 		if (p_event->is_action_pressed("ui_right")) {
-			int next_tab = (get_current_tab() + 1) % get_tab_count();
-			set_current_tab(next_tab);
-			accept_event();
-			return;
+			int next_tab = get_current_tab() + 1;
+			bool valid = true;
+			while (valid) {
+				if (next_tab == get_current_tab()) {
+					valid = false;
+					break;
+				}
+
+				if (next_tab < get_tab_count()) {
+					if (get_tab_disabled(next_tab)) {
+						++next_tab;
+					} else {
+						break;
+					}
+				} else {
+					if (rollover) {
+						next_tab = 0;
+					} else {
+						valid = false;
+					}
+				}
+			}
+			if (valid) {
+				set_current_tab(next_tab);
+				accept_event();
+			}
 		} else if (p_event->is_action_pressed("ui_left")) {
-			int prev_tab = (get_current_tab() > 0) ? (get_current_tab() - 1) : (get_tab_count() - 1);
-			set_current_tab(prev_tab);
-			accept_event();
-			return;
+			int prev_tab = get_current_tab() - 1;
+			bool valid = true;
+			while (valid) {
+				if (prev_tab == get_current_tab()) {
+					valid = false;
+					break;
+				}
+
+				if (prev_tab >= 0) {
+					if (get_tab_disabled(prev_tab)) {
+						--prev_tab;
+					} else {
+						break;
+					}
+				} else {
+					if (rollover) {
+						prev_tab = get_tab_count() - 1;
+					} else {
+						valid = false;
+					}
+				}
+			}
+			if (valid) {
+				set_current_tab(prev_tab);
+				accept_event();
+			}
 		} else if (p_event->is_action_pressed("ui_down")) {
 			Control *next = find_next_valid_focus();
 			if (next) {
@@ -1221,6 +1265,14 @@ bool TabContainer::get_use_hidden_tabs_for_min_size() const {
 	return use_hidden_tabs_for_min_size;
 }
 
+void TabContainer::set_rollover(bool p_enabled) {
+	rollover = p_enabled;
+}
+
+bool TabContainer::get_rollover() const {
+	return rollover;
+}
+
 void TabContainer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_gui_input"), &TabContainer::_gui_input);
 	ClassDB::bind_method(D_METHOD("get_tab_count"), &TabContainer::get_tab_count);
@@ -1251,6 +1303,9 @@ void TabContainer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_use_hidden_tabs_for_min_size", "enabled"), &TabContainer::set_use_hidden_tabs_for_min_size);
 	ClassDB::bind_method(D_METHOD("get_use_hidden_tabs_for_min_size"), &TabContainer::get_use_hidden_tabs_for_min_size);
 
+	ClassDB::bind_method(D_METHOD("set_rollover", "enabled"), &TabContainer::set_rollover);
+	ClassDB::bind_method(D_METHOD("get_rollover"), &TabContainer::get_rollover);
+
 	ClassDB::bind_method(D_METHOD("_on_theme_changed"), &TabContainer::_on_theme_changed);
 	ClassDB::bind_method(D_METHOD("_update_current_tab"), &TabContainer::_update_current_tab);
 
@@ -1264,6 +1319,7 @@ void TabContainer::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "all_tabs_in_front"), "set_all_tabs_in_front", "is_all_tabs_in_front");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "drag_to_rearrange_enabled"), "set_drag_to_rearrange_enabled", "get_drag_to_rearrange_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_hidden_tabs_for_min_size"), "set_use_hidden_tabs_for_min_size", "get_use_hidden_tabs_for_min_size");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "rollover"), "set_rollover", "get_rollover");
 
 	BIND_ENUM_CONSTANT(ALIGN_LEFT);
 	BIND_ENUM_CONSTANT(ALIGN_CENTER);
@@ -1271,6 +1327,6 @@ void TabContainer::_bind_methods() {
 }
 
 TabContainer::TabContainer() {
-	connect("mouse_exited", callable_mp(this, &TabContainer::_on_mouse_exited));
 	set_focus_mode(FOCUS_ALL);
+	connect("mouse_exited", callable_mp(this, &TabContainer::_on_mouse_exited));
 }

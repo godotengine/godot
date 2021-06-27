@@ -63,6 +63,7 @@ private:
 	bool drag_to_rearrange_enabled = false;
 	bool use_hidden_tabs_for_min_size = false;
 	int tabs_rearrange_group = -1;
+	bool rollover = false;
 
 	Vector<Ref<TextLine>> text_buf;
 	Vector<Control *> _get_tabs() const;
@@ -134,6 +135,8 @@ public:
 	void set_use_hidden_tabs_for_min_size(bool p_use_hidden_tabs);
 	bool get_use_hidden_tabs_for_min_size() const;
 
+	void set_rollover(bool p_enabled);
+	bool get_rollover() const;
 	TabContainer();
 };
 
