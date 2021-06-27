@@ -11,7 +11,7 @@
 	<members>
 		<member name="bias" type="float" setter="set_bias" getter="get_bias" default="0.0005">
 		</member>
-		<member name="bounces" type="int" setter="set_bounces" getter="get_bounces" default="1">
+		<member name="bounces" type="int" setter="set_bounces" getter="get_bounces" default="3">
 		</member>
 		<member name="directional" type="bool" setter="set_directional" getter="is_directional" default="false">
 		</member>
@@ -21,9 +21,9 @@
 		</member>
 		<member name="environment_custom_sky" type="Sky" setter="set_environment_custom_sky" getter="get_environment_custom_sky">
 		</member>
-		<member name="environment_mode" type="int" setter="set_environment_mode" getter="get_environment_mode" enum="LightmapGI.EnvironmentMode" default="0">
+		<member name="environment_mode" type="int" setter="set_environment_mode" getter="get_environment_mode" enum="LightmapGI.EnvironmentMode" default="1">
 		</member>
-		<member name="generate_probes_subdiv" type="int" setter="set_generate_probes" getter="get_generate_probes" enum="LightmapGI.GenerateProbes" default="0">
+		<member name="generate_probes_subdiv" type="int" setter="set_generate_probes" getter="get_generate_probes" enum="LightmapGI.GenerateProbes" default="2">
 		</member>
 		<member name="interior" type="bool" setter="set_interior" getter="is_interior" default="false">
 		</member>
