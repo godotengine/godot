@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="KinematicCollision2D" inherits="Reference" version="3.3">
+<class name="KinematicCollision2D" inherits="Reference" version="3.4">
 	<brief_description>
 		Collision data for [KinematicBody2D] collisions.
 	</brief_description>
@@ -20,6 +20,9 @@
 		</member>
 		<member name="collider_metadata" type="Variant" setter="" getter="get_collider_metadata">
 			The colliding body's metadata. See [Object].
+		</member>
+		<member name="collider_rid" type="RID" setter="" getter="get_collider_rid">
+			The colliding body's [RID] used by the [Physics2DServer].
 		</member>
 		<member name="collider_shape" type="Object" setter="" getter="get_collider_shape">
 			The colliding body's shape.

@@ -43,7 +43,6 @@
 #include <stdlib.h>
 
 class OS {
-
 	static OS *singleton;
 	static uint64_t target_ticks;
 	String _execpath;
@@ -95,7 +94,6 @@ public:
 		RENDER_SEPARATE_THREAD
 	};
 	struct VideoMode {
-
 		int width, height;
 		bool fullscreen;
 		bool resizable;
@@ -251,7 +249,7 @@ public:
 		OPENGL_CONTEXT, // HGLRC, X11::GLXContext, NSOpenGLContext*, EGLContext* ...
 	};
 
-	virtual void *get_native_handle(int p_handle_type) { return NULL; };
+	virtual void *get_native_handle(int p_handle_type) { return nullptr; };
 
 	// Returns window area free of hardware controls and other obstacles.
 	// The application should use this to determine where to place UI elements.
@@ -266,7 +264,7 @@ public:
 	}
 
 	virtual void set_borderless_window(bool p_borderless) {}
-	virtual bool get_borderless_window() { return 0; }
+	virtual bool get_borderless_window() { return false; }
 
 	virtual bool get_window_per_pixel_transparency_enabled() const { return false; }
 	virtual void set_window_per_pixel_transparency_enabled(bool p_enabled) {}
@@ -288,7 +286,7 @@ public:
 	virtual int get_low_processor_usage_mode_sleep_usec() const;
 
 	virtual String get_executable_path() const;
-	virtual Error execute(const String &p_path, const List<String> &p_arguments, bool p_blocking = true, ProcessID *r_child_id = NULL, String *r_pipe = NULL, int *r_exitcode = NULL, bool read_stderr = false, Mutex *p_pipe_mutex = NULL) = 0;
+	virtual Error execute(const String &p_path, const List<String> &p_arguments, bool p_blocking = true, ProcessID *r_child_id = nullptr, String *r_pipe = nullptr, int *r_exitcode = nullptr, bool read_stderr = false, Mutex *p_pipe_mutex = nullptr) = 0;
 	virtual Error kill(const ProcessID &p_pid) = 0;
 	virtual int get_process_id() const;
 	virtual void vibrate_handheld(int p_duration_ms = 500);
@@ -338,7 +336,6 @@ public:
 	};
 
 	struct Date {
-
 		int year;
 		Month month;
 		int day;
@@ -347,7 +344,6 @@ public:
 	};
 
 	struct Time {
-
 		int hour;
 		int min;
 		int sec;
@@ -440,6 +436,7 @@ public:
 	virtual String get_bundle_resource_dir() const;
 
 	virtual String get_user_data_dir() const;
+	virtual String get_external_data_dir() const;
 	virtual String get_resource_dir() const;
 
 	enum SystemDir {
@@ -475,6 +472,7 @@ public:
 
 	virtual void set_screen_orientation(ScreenOrientation p_orientation);
 	virtual ScreenOrientation get_screen_orientation() const;
+	ScreenOrientation get_screen_orientation_from_string(const String &p_orientation) const;
 
 	virtual void enable_for_stealing_focus(ProcessID pid) {}
 	virtual void move_window_to_foreground() {}

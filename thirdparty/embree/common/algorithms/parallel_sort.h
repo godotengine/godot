@@ -1,4 +1,4 @@
-// Copyright 2009-2020 Intel Corporation
+// Copyright 2009-2021 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
 #pragma once
@@ -320,7 +320,7 @@ namespace embree
 #pragma nounroll      
 #endif
       for (size_t i=startID; i<endID; i++) {
-#if defined(__X86_64__)
+#if defined(__64BIT__)
         const size_t index = ((size_t)(Key)src[i] >> (size_t)shift) & (size_t)mask;
 #else
         const Key index = ((Key)src[i] >> shift) & mask;
@@ -382,7 +382,7 @@ namespace embree
 #endif
       for (size_t i=startID; i<endID; i++) {
         const Ty elt = src[i];
-#if defined(__X86_64__)
+#if defined(__64BIT__)
         const size_t index = ((size_t)(Key)src[i] >> (size_t)shift) & (size_t)mask;
 #else
         const size_t index = ((Key)src[i] >> shift) & mask;

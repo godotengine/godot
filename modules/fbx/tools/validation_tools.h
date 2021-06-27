@@ -43,7 +43,7 @@
 class ValidationTracker {
 protected:
 	struct Entries {
-		Map<String, LocalVector<String> > validation_entries = Map<String, LocalVector<String> >();
+		Map<String, LocalVector<String>> validation_entries = Map<String, LocalVector<String>>();
 
 		// for printing our CSV to dump validation problems of files
 		// later we can make some agnostic tooling for this but this is fine for the time being.
@@ -55,7 +55,7 @@ protected:
 			String csv_header = "file_path, error message, extra data\n";
 			massive_log_file += csv_header;
 
-			for (Map<String, LocalVector<String> >::Element *element = validation_entries.front(); element; element = element->next()) {
+			for (Map<String, LocalVector<String>>::Element *element = validation_entries.front(); element; element = element->next()) {
 				for (unsigned int x = 0; x < element->value().size(); x++) {
 					const String &line_entry = element->key() + ", " + element->value()[x].c_escape() + "\n";
 					massive_log_file += line_entry;
@@ -66,8 +66,9 @@ protected:
 			Error err;
 			FileAccess *file = FileAccess::open(path, FileAccess::WRITE, &err);
 			if (!file || err) {
-				if (file)
+				if (file) {
 					memdelete(file);
+				}
 				print_error("ValidationTracker Error - failed to create file - path: %s\n" + path);
 				return;
 			}

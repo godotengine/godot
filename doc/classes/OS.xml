@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="OS" inherits="Object" version="3.3">
+<class name="OS" inherits="Object" version="3.4">
 	<brief_description>
 		Operating System functions.
 	</brief_description>
@@ -150,6 +150,14 @@
 				Returns the audio driver name for the given index.
 			</description>
 		</method>
+		<method name="get_cache_dir" qualifiers="const">
+			<return type="String">
+			</return>
+			<description>
+				Returns the [i]global[/i] cache data directory according to the operating system's standards. On desktop platforms, this path can be overridden by setting the [code]XDG_CACHE_HOME[/code] environment variable before starting the project. See [url=https://docs.godotengine.org/en/latest/tutorials/io/data_paths.html]File paths in Godot projects[/url] in the documentation for more information. See also [method get_config_dir] and [method get_data_dir].
+				Not to be confused with [method get_user_data_dir], which returns the [i]project-specific[/i] user data path.
+			</description>
+		</method>
 		<method name="get_cmdline_args">
 			<return type="PoolStringArray">
 			</return>
@@ -157,7 +165,7 @@
 				Returns the command-line arguments passed to the engine.
 				Command-line arguments can be written in any form, including both [code]--key value[/code] and [code]--key=value[/code] forms so they can be properly parsed, as long as custom command-line arguments do not conflict with engine arguments.
 				You can also incorporate environment variables using the [method get_environment] method.
-				You can set [code]editor/main_run_args[/code] in the Project Settings to define command-line arguments to be passed by the editor when running the project.
+				You can set [member ProjectSettings.editor/main_run_args] to define command-line arguments to be passed by the editor when running the project.
 				Here's a minimal example on how to parse command-line arguments into a dictionary using the [code]--key=value[/code] form for arguments:
 				[codeblock]
 				var arguments = {}
@@ -166,6 +174,14 @@
 				        var key_value = argument.split("=")
 				        arguments[key_value[0].lstrip("--")] = key_value[1]
 				[/codeblock]
+			</description>
+		</method>
+		<method name="get_config_dir" qualifiers="const">
+			<return type="String">
+			</return>
+			<description>
+				Returns the [i]global[/i] user configuration directory according to the operating system's standards. On desktop platforms, this path can be overridden by setting the [code]XDG_CONFIG_HOME[/code] environment variable before starting the project. See [url=https://docs.godotengine.org/en/latest/tutorials/io/data_paths.html]File paths in Godot projects[/url] in the documentation for more information. See also [method get_cache_dir] and [method get_data_dir].
+				Not to be confused with [method get_user_data_dir], which returns the [i]project-specific[/i] user data path.
 			</description>
 		</method>
 		<method name="get_connected_midi_inputs">
@@ -182,6 +198,14 @@
 			</return>
 			<description>
 				Returns the currently used video driver, using one of the values from [enum VideoDriver].
+			</description>
+		</method>
+		<method name="get_data_dir" qualifiers="const">
+			<return type="String">
+			</return>
+			<description>
+				Returns the [i]global[/i] user data directory according to the operating system's standards. On desktop platforms, this path can be overridden by setting the [code]XDG_DATA_HOME[/code] environment variable before starting the project. See [url=https://docs.godotengine.org/en/latest/tutorials/io/data_paths.html]File paths in Godot projects[/url] in the documentation for more information. See also [method get_cache_dir] and [method get_config_dir].
+				Not to be confused with [method get_user_data_dir], which returns the [i]project-specific[/i] user data path.
 			</description>
 		</method>
 		<method name="get_date" qualifiers="const">
@@ -234,6 +258,13 @@
 			</return>
 			<description>
 				Returns the path to the current engine executable.
+			</description>
+		</method>
+		<method name="get_external_data_dir" qualifiers="const">
+			<return type="String">
+			</return>
+			<description>
+				On Android, returns the absolute directory path where user data can be written to external storage if available. On all other platforms, this will return the same location as [method get_user_data_dir].
 			</description>
 		</method>
 		<method name="get_granted_permissions" qualifiers="const">
@@ -530,6 +561,7 @@
 			</return>
 			<description>
 				Returns a string that is unique to the device.
+				[b]Note:[/b] This string may change without notice if the user reinstalls/upgrades their operating system or changes their hardware. This means it should generally not be used to encrypt persistent data as the data saved prior to an unexpected ID change would become inaccessible. The returned string may also be falsified using external programs, so do not rely on the string returned by [method get_unique_id] for security purposes.
 				[b]Note:[/b] Returns an empty string on HTML5 and UWP, as this method isn't implemented on those platforms yet.
 			</description>
 		</method>
@@ -538,7 +570,7 @@
 			</return>
 			<description>
 				Returns the current UNIX epoch timestamp in seconds.
-				[b]Important:[/b] This is the system clock that the user can manully set. [b]Never use[/b] this method for precise time calculation since its results are also subject to automatic adjustments by the operating system. [b]Always use[/b] [method get_ticks_usec] or [method get_ticks_msec] for precise time calculation instead, since they are guaranteed to be monotonic (i.e. never decrease).
+				[b]Important:[/b] This is the system clock that the user can manually set. [b]Never use[/b] this method for precise time calculation since its results are also subject to automatic adjustments by the operating system. [b]Always use[/b] [method get_ticks_usec] or [method get_ticks_msec] for precise time calculation instead, since they are guaranteed to be monotonic (i.e. never decrease).
 			</description>
 		</method>
 		<method name="get_unix_time_from_datetime" qualifiers="const">
@@ -549,7 +581,7 @@
 			<description>
 				Gets an epoch time value from a dictionary of time values.
 				[code]datetime[/code] must be populated with the following keys: [code]year[/code], [code]month[/code], [code]day[/code], [code]hour[/code], [code]minute[/code], [code]second[/code].
-				If the dictionary is empty [code]0[/code] is returned.
+				If the dictionary is empty [code]0[/code] is returned. If some keys are omitted, they default to the equivalent values for the UNIX epoch timestamp 0 (1970-01-01 at 00:00:00 UTC).
 				You can pass the output from [method get_datetime_from_unix_time] directly into this function. Daylight Savings Time ([code]dst[/code]), if present, is ignored.
 			</description>
 		</method>
@@ -562,6 +594,7 @@
 				On macOS, this is [code]~/Library/Application Support/Godot/app_userdata/[project_name][/code], or [code]~/Library/Application Support/[custom_name][/code] if [code]use_custom_user_dir[/code] is set.
 				On Windows, this is [code]%APPDATA%\Godot\app_userdata\[project_name][/code], or [code]%APPDATA%\[custom_name][/code] if [code]use_custom_user_dir[/code] is set. [code]%APPDATA%[/code] expands to [code]%USERPROFILE%\AppData\Roaming[/code].
 				If the project name is empty, [code]user://[/code] falls back to [code]res://[/code].
+				Not to be confused with [method get_data_dir], which returns the [i]global[/i] (non-project-specific) user data directory.
 			</description>
 		</method>
 		<method name="get_video_driver_count" qualifiers="const">
@@ -807,7 +840,7 @@
 			</return>
 			<description>
 				Returns [code]true[/code] if native video is playing.
-				[b]Note:[/b] This method is implemented on Android and iOS.
+				[b]Note:[/b] This method is only implemented on iOS.
 			</description>
 		</method>
 		<method name="native_video_pause">
@@ -815,7 +848,7 @@
 			</return>
 			<description>
 				Pauses native video playback.
-				[b]Note:[/b] This method is implemented on Android and iOS.
+				[b]Note:[/b] This method is only implemented on iOS.
 			</description>
 		</method>
 		<method name="native_video_play">
@@ -831,7 +864,7 @@
 			</argument>
 			<description>
 				Plays native video from the specified path, at the given volume and with audio and subtitle tracks.
-				[b]Note:[/b] This method is implemented on Android and iOS, and the current Android implementation does not support the [code]volume[/code], [code]audio_track[/code] and [code]subtitle_track[/code] options.
+				[b]Note:[/b] This method is only implemented on iOS.
 			</description>
 		</method>
 		<method name="native_video_stop">
@@ -839,7 +872,7 @@
 			</return>
 			<description>
 				Stops native video playback.
-				[b]Note:[/b] This method is implemented on Android and iOS.
+				[b]Note:[/b] This method is implemented on iOS.
 			</description>
 		</method>
 		<method name="native_video_unpause">
@@ -847,7 +880,7 @@
 			</return>
 			<description>
 				Resumes native video playback.
-				[b]Note:[/b] This method is implemented on Android and iOS.
+				[b]Note:[/b] This method is implemented on iOS.
 			</description>
 		</method>
 		<method name="open_midi_inputs">

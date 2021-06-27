@@ -33,9 +33,7 @@
 #include "servers/visual_server.h"
 
 void TextureRect::_notification(int p_what) {
-
 	if (p_what == NOTIFICATION_DRAW) {
-
 		if (texture.is_null()) {
 			return;
 		}
@@ -116,7 +114,6 @@ void TextureRect::_notification(int p_what) {
 }
 
 Size2 TextureRect::get_minimum_size() const {
-
 	if (!expand && !texture.is_null()) {
 		return texture->get_size();
 	} else {
@@ -125,7 +122,6 @@ Size2 TextureRect::get_minimum_size() const {
 }
 
 void TextureRect::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("set_texture", "texture"), &TextureRect::set_texture);
 	ClassDB::bind_method(D_METHOD("get_texture"), &TextureRect::get_texture);
 	ClassDB::bind_method(D_METHOD("set_expand", "enable"), &TextureRect::set_expand);
@@ -155,7 +151,6 @@ void TextureRect::_bind_methods() {
 }
 
 void TextureRect::_texture_changed() {
-
 	if (texture.is_valid()) {
 		update();
 		minimum_size_changed();
@@ -163,7 +158,6 @@ void TextureRect::_texture_changed() {
 }
 
 void TextureRect::set_texture(const Ref<Texture> &p_tex) {
-
 	if (p_tex == texture) {
 		return;
 	}
@@ -183,57 +177,47 @@ void TextureRect::set_texture(const Ref<Texture> &p_tex) {
 }
 
 Ref<Texture> TextureRect::get_texture() const {
-
 	return texture;
 }
 
 void TextureRect::set_expand(bool p_expand) {
-
 	expand = p_expand;
 	update();
 	minimum_size_changed();
 }
 
 bool TextureRect::has_expand() const {
-
 	return expand;
 }
 
 void TextureRect::set_stretch_mode(StretchMode p_mode) {
-
 	stretch_mode = p_mode;
 	update();
 }
 
 TextureRect::StretchMode TextureRect::get_stretch_mode() const {
-
 	return stretch_mode;
 }
 
 void TextureRect::set_flip_h(bool p_flip) {
-
 	hflip = p_flip;
 	update();
 }
 
 bool TextureRect::is_flipped_h() const {
-
 	return hflip;
 }
 
 void TextureRect::set_flip_v(bool p_flip) {
-
 	vflip = p_flip;
 	update();
 }
 
 bool TextureRect::is_flipped_v() const {
-
 	return vflip;
 }
 
 TextureRect::TextureRect() {
-
 	expand = false;
 	hflip = false;
 	vflip = false;

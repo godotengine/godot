@@ -50,7 +50,7 @@ private:
 	AccessType _access_type;
 	static CreateFunc create_func[ACCESS_MAX]; ///< set this to instance a filesystem object
 
-	Error _copy_dir(DirAccess *p_target_da, String p_to, int p_chmod_flags);
+	Error _copy_dir(DirAccess *p_target_da, String p_to, int p_chmod_flags, bool p_copy_links);
 
 protected:
 	String _get_root_path() const;
@@ -61,7 +61,6 @@ protected:
 
 	template <class T>
 	static DirAccess *_create_builtin() {
-
 		return memnew(T);
 	}
 
@@ -88,12 +87,16 @@ public:
 	virtual bool file_exists(String p_file) = 0;
 	virtual bool dir_exists(String p_dir) = 0;
 	static bool exists(String p_dir);
-	virtual size_t get_space_left() = 0;
+	virtual uint64_t get_space_left() = 0;
 
-	Error copy_dir(String p_from, String p_to, int p_chmod_flags = -1);
+	Error copy_dir(String p_from, String p_to, int p_chmod_flags = -1, bool p_copy_links = false);
 	virtual Error copy(String p_from, String p_to, int p_chmod_flags = -1);
 	virtual Error rename(String p_from, String p_to) = 0;
 	virtual Error remove(String p_name) = 0;
+
+	virtual bool is_link(String p_file) = 0;
+	virtual String read_link(String p_file) = 0;
+	virtual Error create_link(String p_source, String p_target) = 0;
 
 	// Meant for editor code when we want to quickly remove a file without custom
 	// handling (e.g. removing a cache file).
@@ -125,28 +128,27 @@ public:
 
 	template <class T>
 	static void make_default(AccessType p_access) {
-
 		create_func[p_access] = _create_builtin<T>;
 	}
 
-	static DirAccess *open(const String &p_path, Error *r_error = NULL);
+	static DirAccess *open(const String &p_path, Error *r_error = nullptr);
 
 	DirAccess();
 	virtual ~DirAccess();
 };
 
 struct DirAccessRef {
-
 	_FORCE_INLINE_ DirAccess *operator->() {
-
 		return f;
 	}
 
-	operator bool() const { return f != NULL; }
+	operator bool() const { return f != nullptr; }
 	DirAccess *f;
 	DirAccessRef(DirAccess *fa) { f = fa; }
 	~DirAccessRef() {
-		if (f) memdelete(f);
+		if (f) {
+			memdelete(f);
+		}
 	}
 };
 

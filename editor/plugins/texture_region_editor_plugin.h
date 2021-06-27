@@ -45,7 +45,6 @@
 */
 
 class TextureRegionEditor : public VBoxContainer {
-
 	GDCLASS(TextureRegionEditor, VBoxContainer);
 
 	enum SnapMode {
@@ -94,7 +93,7 @@ class TextureRegionEditor : public VBoxContainer {
 	Rect2 rect_prev;
 	float prev_margin;
 	int edited_margin;
-	Map<RID, List<Rect2> > cache_map;
+	Map<RID, List<Rect2>> cache_map;
 	List<Rect2> autoslice_cache;
 	bool autoslice_is_dirty;
 

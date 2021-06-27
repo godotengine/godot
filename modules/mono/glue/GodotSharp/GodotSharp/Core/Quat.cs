@@ -114,16 +114,34 @@ namespace Godot
         }
 
         /// <summary>
+        /// Returns the angle between this quaternion and `to`.
+        /// This is the magnitude of the angle you would need to rotate
+        /// by to get from one to the other.
+        ///
+        /// Note: This method has an abnormally high amount
+        /// of floating-point error, so methods such as
+        /// <see cref="Mathf.IsZeroApprox"/> will not work reliably.
+        /// </summary>
+        /// <param name="to">The other quaternion.</param>
+        /// <returns>The angle between the quaternions.</returns>
+        public real_t AngleTo(Quat to)
+        {
+            real_t dot = Dot(to);
+            return Mathf.Acos(Mathf.Clamp(dot * dot * 2 - 1, -1, 1));
+        }
+
+        /// <summary>
         /// Performs a cubic spherical interpolation between quaternions `preA`,
         /// this vector, `b`, and `postB`, by the given amount `t`.
         /// </summary>
         /// <param name="b">The destination quaternion.</param>
         /// <param name="preA">A quaternion before this quaternion.</param>
         /// <param name="postB">A quaternion after `b`.</param>
-        /// <param name="t">A value on the range of 0.0 to 1.0, representing the amount of interpolation.</param>
+        /// <param name="weight">A value on the range of 0.0 to 1.0, representing the amount of interpolation.</param>
         /// <returns>The interpolated quaternion.</returns>
-        public Quat CubicSlerp(Quat b, Quat preA, Quat postB, real_t t)
+        public Quat CubicSlerp(Quat b, Quat preA, Quat postB, real_t weight)
         {
+            real_t t = weight;
             real_t t2 = (1.0f - t) * t * 2f;
             Quat sp = Slerp(b, t);
             Quat sq = preA.Slerpni(postB, t);

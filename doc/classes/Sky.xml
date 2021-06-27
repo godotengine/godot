@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Sky" inherits="Resource" version="3.3">
+<class name="Sky" inherits="Resource" version="3.4">
 	<brief_description>
 		The base class for [PanoramaSky] and [ProceduralSky].
 	</brief_description>
@@ -14,7 +14,7 @@
 		<member name="radiance_size" type="int" setter="set_radiance_size" getter="get_radiance_size" enum="Sky.RadianceSize" default="2">
 			The [Sky]'s radiance map size. The higher the radiance map size, the more detailed the lighting from the [Sky] will be.
 			See [enum RadianceSize] constants for values.
-			[b]Note:[/b] Some hardware will have trouble with higher radiance sizes, especially [constant RADIANCE_SIZE_512] and above. Only use such high values on high-end hardware.
+			[b]Note:[/b] You will only benefit from high radiance sizes if you have perfectly sharp reflective surfaces in your project and are not using [ReflectionProbe]s or [GIProbe]s. For most projects, keeping [member radiance_size] to the default value is the best compromise between visuals and performance. Be careful when using high radiance size values as these can cause crashes on low-end GPUs.
 		</member>
 	</members>
 	<constants>
@@ -35,9 +35,11 @@
 		</constant>
 		<constant name="RADIANCE_SIZE_1024" value="5" enum="RadianceSize">
 			Radiance texture size is 1024×1024 pixels.
+			[b]Note:[/b] [constant RADIANCE_SIZE_1024] is not exposed in the inspector as it is known to cause GPU hangs on certain systems.
 		</constant>
 		<constant name="RADIANCE_SIZE_2048" value="6" enum="RadianceSize">
 			Radiance texture size is 2048×2048 pixels.
+			[b]Note:[/b] [constant RADIANCE_SIZE_2048] is not exposed in the inspector as it is known to cause GPU hangs on certain systems.
 		</constant>
 		<constant name="RADIANCE_SIZE_MAX" value="7" enum="RadianceSize">
 			Represents the size of the [enum RadianceSize] enum.

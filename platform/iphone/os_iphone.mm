@@ -100,7 +100,6 @@ String OSIPhone::get_unique_id() const {
 };
 
 void OSIPhone::initialize_core() {
-
 	OS_Unix::initialize_core();
 
 	set_data_dir(data_dir);
@@ -121,7 +120,6 @@ void OSIPhone::start() {
 }
 
 Error OSIPhone::initialize(const VideoMode &p_desired, int p_video_driver, int p_audio_driver) {
-
 	bool use_gl3 = GLOBAL_GET("rendering/quality/driver/driver_name") == "GLES3";
 	bool gl_initialization_error = false;
 
@@ -189,7 +187,6 @@ Error OSIPhone::initialize(const VideoMode &p_desired, int p_video_driver, int p
 };
 
 MainLoop *OSIPhone::get_main_loop() const {
-
 	return main_loop;
 };
 
@@ -216,9 +213,35 @@ void OSIPhone::key(uint32_t p_key, bool p_pressed) {
 	ev->set_echo(false);
 	ev->set_pressed(p_pressed);
 	ev->set_scancode(p_key);
+	ev->set_physical_scancode(p_key);
 	ev->set_unicode(p_key);
 	perform_event(ev);
 };
+
+void OSIPhone::pencil_press(int p_idx, int p_x, int p_y, bool p_pressed, bool p_doubleclick) {
+	Ref<InputEventMouseButton> ev;
+	ev.instance();
+	ev->set_button_index(1);
+	ev->set_pressed(p_pressed);
+	ev->set_position(Vector2(p_x, p_y));
+	ev->set_global_position(Vector2(p_x, p_y));
+	ev->set_doubleclick(p_doubleclick);
+	perform_event(ev);
+};
+
+void OSIPhone::pencil_drag(int p_idx, int p_prev_x, int p_prev_y, int p_x, int p_y, float p_force) {
+	Ref<InputEventMouseMotion> ev;
+	ev.instance();
+	ev->set_pressure(p_force);
+	ev->set_position(Vector2(p_x, p_y));
+	ev->set_global_position(Vector2(p_x, p_y));
+	ev->set_relative(Vector2(p_x - p_prev_x, p_y - p_prev_y));
+	perform_event(ev);
+};
+
+void OSIPhone::pencil_cancelled(int p_idx) {
+	pencil_press(p_idx, -1, -1, false, false);
+}
 
 void OSIPhone::touch_press(int p_idx, int p_x, int p_y, bool p_pressed, bool p_doubleclick) {
 	if (GLOBAL_DEF("debug/disable_touch", false)) {
@@ -262,7 +285,6 @@ void OSIPhone::update_gravity(float p_x, float p_y, float p_z) {
 };
 
 void OSIPhone::update_accelerometer(float p_x, float p_y, float p_z) {
-
 	// Found out the Z should not be negated! Pass as is!
 	input->set_accelerometer(Vector3(p_x / (float)ACCEL_RANGE, p_y / (float)ACCEL_RANGE, p_z / (float)ACCEL_RANGE));
 };
@@ -292,7 +314,6 @@ void OSIPhone::joy_axis(int p_device, int p_axis, const InputDefault::JoyAxis &p
 };
 
 void OSIPhone::delete_main_loop() {
-
 	if (main_loop) {
 		main_loop->finish();
 		memdelete(main_loop);
@@ -302,7 +323,6 @@ void OSIPhone::delete_main_loop() {
 };
 
 void OSIPhone::finalize() {
-
 	delete_main_loop();
 
 	if (joypad_iphone) {
@@ -394,7 +414,6 @@ void OSIPhone::set_video_mode(const VideoMode &p_video_mode, int p_screen) {
 }
 
 OS::VideoMode OSIPhone::get_video_mode(int p_screen) const {
-
 	return video_mode;
 }
 
@@ -403,7 +422,6 @@ void OSIPhone::get_fullscreen_mode_list(List<VideoMode> *p_list, int p_screen) c
 }
 
 bool OSIPhone::can_draw() const {
-
 	if (native_video_is_playing())
 		return false;
 	return true;

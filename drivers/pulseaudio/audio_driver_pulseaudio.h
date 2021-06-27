@@ -40,7 +40,6 @@
 #include "pulse-so_wrap.h"
 
 class AudioDriverPulseAudio : public AudioDriver {
-
 	Thread thread;
 	Mutex mutex;
 
@@ -90,7 +89,7 @@ class AudioDriverPulseAudio : public AudioDriver {
 	Error capture_init_device();
 	void capture_finish_device();
 
-	void detect_channels(bool capture = false);
+	Error detect_channels(bool capture = false);
 
 	static void thread_func(void *p_udata);
 

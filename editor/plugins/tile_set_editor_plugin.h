@@ -41,7 +41,6 @@
 class TilesetEditorContext;
 
 class TileSetEditor : public HSplitContainer {
-
 	friend class TileSetEditorPlugin;
 	friend class TilesetEditorContext;
 
@@ -114,7 +113,7 @@ class TileSetEditor : public HSplitContainer {
 	int option;
 	ToolButton *tileset_toolbar_buttons[TOOL_TILESET_MAX];
 	MenuButton *tileset_toolbar_tools;
-	Map<String, Ref<Texture> > texture_map;
+	Map<String, Ref<Texture>> texture_map;
 
 	bool creating_shape;
 	int dragging_point;
@@ -253,7 +252,6 @@ private:
 };
 
 class TilesetEditorContext : public Object {
-
 	friend class TileSetEditor;
 	GDCLASS(TilesetEditorContext, Object);
 
@@ -279,7 +277,6 @@ public:
 };
 
 class TileSetEditorPlugin : public EditorPlugin {
-
 	GDCLASS(TileSetEditorPlugin, EditorPlugin);
 
 	TileSetEditor *tileset_editor;

@@ -37,7 +37,6 @@
 #include "script_editor_plugin.h"
 
 class ConnectionInfoDialog : public AcceptDialog {
-
 	GDCLASS(ConnectionInfoDialog, AcceptDialog);
 
 	Label *method;
@@ -52,7 +51,6 @@ public:
 };
 
 class ScriptTextEditor : public ScriptEditorBase {
-
 	GDCLASS(ScriptTextEditor, ScriptEditorBase);
 
 	CodeTextEditor *code_editor;
@@ -93,6 +91,7 @@ class ScriptTextEditor : public ScriptEditorBase {
 	struct ColorsCache {
 		Color symbol_color;
 		Color keyword_color;
+		Color control_flow_keyword_color;
 		Color basetype_color;
 		Color type_color;
 		Color usertype_color;

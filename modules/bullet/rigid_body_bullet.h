@@ -68,7 +68,7 @@ public:
 
 	static void destroySingleton() {
 		memdelete(singleton);
-		singleton = NULL;
+		singleton = nullptr;
 	}
 
 	static void singleton_setDeltaTime(real_t p_deltaTime) {
@@ -142,7 +142,6 @@ public:
 };
 
 class RigidBodyBullet : public RigidCollisionObjectBullet {
-
 public:
 	struct CollisionData {
 		RigidBodyBullet *otherObject;
@@ -166,7 +165,7 @@ public:
 		btTransform transform;
 
 		KinematicShape() :
-				shape(NULL) {}
+				shape(nullptr) {}
 		bool is_active() const { return shape; }
 	};
 
@@ -250,7 +249,6 @@ public:
 	virtual void on_collision_checker_end();
 
 	void set_max_collisions_detection(int p_maxCollisionsDetection) {
-
 		ERR_FAIL_COND(0 > p_maxCollisionsDetection);
 
 		maxCollisionsDetection = p_maxCollisionsDetection;

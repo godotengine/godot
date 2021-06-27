@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Tabs" inherits="Control" version="3.3">
+<class name="Tabs" inherits="Control" version="3.4">
 	<brief_description>
 		Tabs control.
 	</brief_description>
@@ -307,8 +307,6 @@
 		<theme_item name="label_valign_bg" type="int" default="2">
 		</theme_item>
 		<theme_item name="label_valign_fg" type="int" default="0">
-		</theme_item>
-		<theme_item name="panel" type="StyleBox">
 		</theme_item>
 		<theme_item name="tab_bg" type="StyleBox">
 			The style of an inactive tab.

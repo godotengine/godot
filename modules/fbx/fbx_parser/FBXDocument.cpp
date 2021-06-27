@@ -392,7 +392,6 @@ void Document::ReadObjects() {
 
 	const ScopePtr sobjects = eobjects->Compound();
 	for (const ElementMap::value_type &iter : sobjects->Elements()) {
-
 		// extract ID
 		const TokenList &tok = iter.second->Tokens();
 
@@ -565,7 +564,7 @@ const std::vector<const AnimationStack *> &Document::AnimationStacks() const {
 		const AnimationStack *stack = lazy->Get<AnimationStack>();
 		ERR_CONTINUE_MSG(!stack, "invalid ptr to AnimationStack - conversion failure");
 
-		// We push back the weak reference :) to keep things simple, as ownership is on the parser side so it wont be cleaned up.
+		// We push back the weak reference :) to keep things simple, as ownership is on the parser side so it won't be cleaned up.
 		animationStacksResolved.push_back(stack);
 	}
 

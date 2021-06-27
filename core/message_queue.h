@@ -35,7 +35,6 @@
 #include "core/os/thread_safe.h"
 
 class MessageQueue {
-
 	_THREAD_SAFE_CLASS_
 
 	enum {
@@ -52,7 +51,6 @@ class MessageQueue {
 	};
 
 	struct Message {
-
 		ObjectID instance_id;
 		StringName target;
 		int16_t type;

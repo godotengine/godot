@@ -34,7 +34,6 @@
 #include "scene/resources/shape.h"
 
 class BoxShape : public Shape {
-
 	GDCLASS(BoxShape, Shape);
 	Vector3 extents;
 

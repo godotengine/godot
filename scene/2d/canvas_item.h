@@ -45,7 +45,6 @@ class Font;
 class StyleBox;
 
 class CanvasItemMaterial : public Material {
-
 	GDCLASS(CanvasItemMaterial, Material);
 
 public:
@@ -66,7 +65,6 @@ public:
 
 private:
 	union MaterialKey {
-
 		struct {
 			uint32_t blend_mode : 4;
 			uint32_t light_mode : 4;
@@ -99,7 +97,6 @@ private:
 	MaterialKey current_key;
 
 	_FORCE_INLINE_ MaterialKey _compute_key() const {
-
 		MaterialKey mk;
 		mk.key = 0;
 		mk.blend_mode = blend_mode;
@@ -162,7 +159,6 @@ VARIANT_ENUM_CAST(CanvasItemMaterial::BlendMode)
 VARIANT_ENUM_CAST(CanvasItemMaterial::LightMode)
 
 class CanvasItem : public Node {
-
 	GDCLASS(CanvasItem, Node);
 
 public:
@@ -226,9 +222,13 @@ private:
 
 protected:
 	_FORCE_INLINE_ void _notify_transform() {
-		if (!is_inside_tree()) return;
+		if (!is_inside_tree()) {
+			return;
+		}
 		_notify_transform(this);
-		if (!block_transform_notify && notify_local_transform) notification(NOTIFICATION_LOCAL_TRANSFORM_CHANGED);
+		if (!block_transform_notify && notify_local_transform) {
+			notification(NOTIFICATION_LOCAL_TRANSFORM_CHANGED);
+		}
 	}
 
 	void item_rect_changed(bool p_size_changed = true);

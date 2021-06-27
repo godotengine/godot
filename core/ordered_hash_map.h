@@ -45,7 +45,7 @@
  */
 template <class K, class V, class Hasher = HashMapHasherDefault, class Comparator = HashMapComparatorDefault<K>, uint8_t MIN_HASH_TABLE_POWER = 3, uint8_t RELATIONSHIP = 8>
 class OrderedHashMap {
-	typedef List<Pair<const K *, V> > InternalList;
+	typedef List<Pair<const K *, V>> InternalList;
 	typedef HashMap<K, typename InternalList::Element *, Hasher, Comparator, MIN_HASH_TABLE_POWER, RELATIONSHIP> InternalMap;
 
 	InternalList list;
@@ -70,9 +70,9 @@ public:
 
 	public:
 		_FORCE_INLINE_ Element() :
-				list_element(NULL),
-				prev_element(NULL),
-				next_element(NULL) {
+				list_element(nullptr),
+				prev_element(nullptr),
+				next_element(nullptr) {
 		}
 
 		Element next() const {
@@ -104,7 +104,7 @@ public:
 		}
 
 		operator bool() const {
-			return (list_element != NULL);
+			return (list_element != nullptr);
 		}
 
 		const K &key() const {
@@ -157,7 +157,7 @@ public:
 		}
 
 		ConstElement next() const {
-			return ConstElement(list_element ? list_element->next() : NULL);
+			return ConstElement(list_element ? list_element->next() : nullptr);
 		}
 
 		ConstElement prev() const {
@@ -172,7 +172,7 @@ public:
 		}
 
 		operator bool() const {
-			return (list_element != NULL);
+			return (list_element != nullptr);
 		}
 
 		const K &key() const {
@@ -196,7 +196,7 @@ public:
 		if (list_element) {
 			return ConstElement(*list_element);
 		}
-		return ConstElement(NULL);
+		return ConstElement(nullptr);
 	}
 
 	Element find(const K &p_key) {
@@ -204,7 +204,7 @@ public:
 		if (list_element) {
 			return Element(*list_element);
 		}
-		return Element(NULL);
+		return Element(nullptr);
 	}
 
 	Element insert(const K &p_key, const V &p_value) {
@@ -223,7 +223,7 @@ public:
 	void erase(Element &p_element) {
 		map.erase(p_element.key());
 		list.erase(p_element.list_element);
-		p_element.list_element = NULL;
+		p_element.list_element = nullptr;
 	}
 
 	bool erase(const K &p_key) {

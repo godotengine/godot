@@ -68,14 +68,16 @@ void InspectorDock::_menu_option(int p_option) {
 
 		case OBJECT_COPY_PARAMS: {
 			editor_data->apply_changes_in_editors();
-			if (current)
+			if (current) {
 				editor_data->copy_object_params(current);
+			}
 		} break;
 
 		case OBJECT_PASTE_PARAMS: {
 			editor_data->apply_changes_in_editors();
-			if (current)
+			if (current) {
 				editor_data->paste_object_params(current);
+			}
 		} break;
 
 		case OBJECT_UNIQUE_RESOURCES: {
@@ -85,18 +87,16 @@ void InspectorDock::_menu_option(int p_option) {
 				current->get_property_list(&props);
 				Map<RES, RES> duplicates;
 				for (List<PropertyInfo>::Element *E = props.front(); E; E = E->next()) {
-
-					if (!(E->get().usage & PROPERTY_USAGE_STORAGE))
+					if (!(E->get().usage & PROPERTY_USAGE_STORAGE)) {
 						continue;
+					}
 
 					Variant v = current->get(E->get().name);
 					if (v.is_ref()) {
 						REF ref = v;
 						if (ref.is_valid()) {
-
 							RES res = ref;
 							if (res.is_valid()) {
-
 								if (!duplicates.has(res)) {
 									duplicates[res] = res->duplicate();
 								}
@@ -112,7 +112,7 @@ void InspectorDock::_menu_option(int p_option) {
 
 			editor_data->get_undo_redo().clear_history();
 
-			editor->get_editor_plugins_over()->edit(NULL);
+			editor->get_editor_plugins_over()->edit(nullptr);
 			editor->get_editor_plugins_over()->edit(current);
 
 		} break;
@@ -166,21 +166,22 @@ void InspectorDock::_resource_file_selected(String p_file) {
 
 void InspectorDock::_save_resource(bool save_as) const {
 	uint32_t current = EditorNode::get_singleton()->get_editor_history()->get_current();
-	Object *current_obj = current > 0 ? ObjectDB::get_instance(current) : NULL;
+	Object *current_obj = current > 0 ? ObjectDB::get_instance(current) : nullptr;
 
 	ERR_FAIL_COND(!Object::cast_to<Resource>(current_obj));
 
 	RES current_res = RES(Object::cast_to<Resource>(current_obj));
 
-	if (save_as)
+	if (save_as) {
 		editor->save_resource_as(current_res);
-	else
+	} else {
 		editor->save_resource(current_res);
+	}
 }
 
 void InspectorDock::_unref_resource() const {
 	uint32_t current = EditorNode::get_singleton()->get_editor_history()->get_current();
-	Object *current_obj = current > 0 ? ObjectDB::get_instance(current) : NULL;
+	Object *current_obj = current > 0 ? ObjectDB::get_instance(current) : nullptr;
 
 	ERR_FAIL_COND(!Object::cast_to<Resource>(current_obj));
 
@@ -191,7 +192,7 @@ void InspectorDock::_unref_resource() const {
 
 void InspectorDock::_copy_resource() const {
 	uint32_t current = EditorNode::get_singleton()->get_editor_history()->get_current();
-	Object *current_obj = current > 0 ? ObjectDB::get_instance(current) : NULL;
+	Object *current_obj = current > 0 ? ObjectDB::get_instance(current) : nullptr;
 
 	ERR_FAIL_COND(!Object::cast_to<Resource>(current_obj));
 
@@ -217,7 +218,6 @@ void InspectorDock::_prepare_history() {
 	Ref<Texture> base_icon = get_icon("Object", "EditorIcons");
 	Set<ObjectID> already;
 	for (int i = editor_history->get_history_len() - 1; i >= history_to; i--) {
-
 		ObjectID id = editor_history->get_history_obj(i);
 		Object *obj = ObjectDB::get_instance(id);
 		if (!obj || already.has(id)) {
@@ -237,9 +237,9 @@ void InspectorDock::_prepare_history() {
 		String text;
 		if (Object::cast_to<Resource>(obj)) {
 			Resource *r = Object::cast_to<Resource>(obj);
-			if (r->get_path().is_resource_file())
+			if (r->get_path().is_resource_file()) {
 				text = r->get_path().get_file();
-			else if (r->get_name() != String()) {
+			} else if (r->get_name() != String()) {
 				text = r->get_name();
 			} else {
 				text = r->get_class();
@@ -263,8 +263,9 @@ void InspectorDock::_select_history(int p_idx) const {
 	//push it to the top, it is not correct, but it's more useful
 	ObjectID id = EditorNode::get_singleton()->get_editor_history()->get_history_obj(p_idx);
 	Object *obj = ObjectDB::get_instance(id);
-	if (!obj)
+	if (!obj) {
 		return;
+	}
 	editor->push_item(obj);
 }
 
@@ -279,21 +280,24 @@ void InspectorDock::_resource_created() const {
 }
 
 void InspectorDock::_resource_selected(const RES &p_res, const String &p_property) const {
-	if (p_res.is_null())
+	if (p_res.is_null()) {
 		return;
+	}
 
 	RES r = p_res;
 	editor->push_item(r.operator->(), p_property);
 }
 
 void InspectorDock::_edit_forward() {
-	if (EditorNode::get_singleton()->get_editor_history()->next())
+	if (EditorNode::get_singleton()->get_editor_history()->next()) {
 		editor->edit_current();
+	}
 }
 void InspectorDock::_edit_back() {
 	EditorHistory *editor_history = EditorNode::get_singleton()->get_editor_history();
-	if ((current && editor_history->previous()) || editor_history->get_path_size() == 1)
+	if ((current && editor_history->previous()) || editor_history->get_path_size() == 1) {
 		editor->edit_current();
+	}
 }
 
 void InspectorDock::_menu_collapseall() {
@@ -310,8 +314,9 @@ void InspectorDock::_property_keyed(const String &p_keyed, const Variant &p_valu
 
 void InspectorDock::_transform_keyed(Object *sp, const String &p_sub, const Transform &p_key) {
 	Spatial *s = Object::cast_to<Spatial>(sp);
-	if (!s)
+	if (!s) {
 		return;
+	}
 	AnimationPlayerEditor::singleton->get_track_editor()->insert_transform_key(s, p_sub, p_key);
 }
 
@@ -335,6 +340,7 @@ void InspectorDock::_notification(int p_what) {
 			history_menu->set_icon(get_icon("History", "EditorIcons"));
 			object_menu->set_icon(get_icon("Tools", "EditorIcons"));
 			warning->set_icon(get_icon("NodeWarning", "EditorIcons"));
+			warning->add_color_override("font_color", get_color("warning_color", "Editor"));
 		} break;
 	}
 }
@@ -386,7 +392,6 @@ void InspectorDock::clear() {
 }
 
 void InspectorDock::update(Object *p_object) {
-
 	EditorHistory *editor_history = EditorNode::get_singleton()->get_editor_history();
 	backward_button->set_disabled(editor_history->is_at_beginning());
 	forward_button->set_disabled(editor_history->is_at_end());
@@ -407,7 +412,7 @@ void InspectorDock::update(Object *p_object) {
 		editor_path->set_disabled(true);
 		editor_path->set_text("");
 		editor_path->set_tooltip("");
-		editor_path->set_icon(NULL);
+		editor_path->set_icon(nullptr);
 
 		return;
 	}
@@ -452,12 +457,10 @@ void InspectorDock::update(Object *p_object) {
 	p_object->get_method_list(&methods);
 
 	if (!methods.empty()) {
-
 		bool found = false;
 		List<MethodInfo>::Element *I = methods.front();
 		int i = 0;
 		while (I) {
-
 			if (I->get().flags & METHOD_FLAG_EDITOR) {
 				if (!found) {
 					p->add_separator();
@@ -479,13 +482,10 @@ void InspectorDock::update_keying() {
 	bool valid = false;
 
 	if (AnimationPlayerEditor::singleton->get_track_editor()->has_keying()) {
-
 		EditorHistory *editor_history = EditorNode::get_singleton()->get_editor_history();
 		if (editor_history->get_path_size() >= 1) {
-
 			Object *obj = ObjectDB::get_instance(editor_history->get_path_object(0));
 			if (Object::cast_to<Node>(obj)) {
-
 				valid = true;
 			}
 		}
@@ -582,6 +582,7 @@ InspectorDock::InspectorDock(EditorNode *p_editor, EditorData &p_editor_data) {
 	add_child(warning);
 	warning->set_text(TTR("Changes may be lost!"));
 	warning->set_icon(get_icon("NodeWarning", "EditorIcons"));
+	warning->add_color_override("font_color", get_color("warning_color", "Editor"));
 	warning->set_clip_text(true);
 	warning->hide();
 	warning->connect("pressed", this, "_warning_pressed");

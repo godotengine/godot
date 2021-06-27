@@ -1,10 +1,11 @@
-// Copyright 2009-2020 Intel Corporation
+// Copyright 2009-2021 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
 #pragma once
 
 #include "../common/default.h"
-#include "../common/scene_curves.h"
+//#include "../common/scene_curves.h"
+#include "../common/context.h"
 
 namespace embree
 {
@@ -659,6 +660,7 @@ namespace embree
     return numRoots(v0,v1) + numRoots(v1,v2) + numRoots(v2,v3);
   }
 
+  template<typename CurveGeometry>
   __forceinline CubicBezierCurve<Vec3ff> enlargeRadiusToMinWidth(const IntersectContext* context, const CurveGeometry* geom, const Vec3fa& ray_org, const CubicBezierCurve<Vec3ff>& curve)
   {
     return CubicBezierCurve<Vec3ff>(enlargeRadiusToMinWidth(context,geom,ray_org,curve.v0),

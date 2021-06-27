@@ -151,6 +151,11 @@ PropertyTable::PropertyTable() :
 }
 
 // ------------------------------------------------------------------------------------------------
+PropertyTable::PropertyTable(const PropertyTable *templateProps) :
+		templateProps(templateProps), element() {
+}
+
+// ------------------------------------------------------------------------------------------------
 PropertyTable::PropertyTable(const ElementPtr element, const PropertyTable *templateProps) :
 		templateProps(templateProps), element(element) {
 	const ScopePtr scope = GetRequiredScope(element);
@@ -216,9 +221,10 @@ DirectPropertyMap PropertyTable::GetUnparsedProperties() const {
 
 	// Loop through all the lazy properties (which is all the properties)
 	for (const LazyPropertyMap::value_type &element : lazyProps) {
-
 		// Skip parsed properties
-		if (props.end() != props.find(element.first)) continue;
+		if (props.end() != props.find(element.first)) {
+			continue;
+		}
 
 		// Read the element's value.
 		// Wrap the naked pointer (since the call site is required to acquire ownership)
@@ -226,7 +232,9 @@ DirectPropertyMap PropertyTable::GetUnparsedProperties() const {
 		Property *prop = ReadTypedProperty(element.second);
 
 		// Element could not be read. Skip it.
-		if (!prop) continue;
+		if (!prop) {
+			continue;
+		}
 
 		// Add to result
 		result[element.first] = prop;

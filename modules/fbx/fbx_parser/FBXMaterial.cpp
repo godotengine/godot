@@ -123,7 +123,6 @@ Material::Material(uint64_t id, const ElementPtr element, const Document &doc, c
 	// resolve texture links
 	const std::vector<const Connection *> &conns = doc.GetConnectionsByDestinationSequenced(ID());
 	for (const Connection *con : conns) {
-
 		// texture link to properties, not objects
 		if (!con->PropertyName().length()) {
 			continue;
@@ -268,10 +267,10 @@ LayeredTexture::LayeredTexture(uint64_t id, const ElementPtr element, const Docu
 	ElementPtr BlendModes = sc->GetElement("BlendModes");
 	ElementPtr Alphas = sc->GetElement("Alphas");
 
-	if (BlendModes != 0) {
+	if (BlendModes != nullptr) {
 		blendMode = (BlendMode)ParseTokenAsInt(GetRequiredToken(BlendModes, 0));
 	}
-	if (Alphas != 0) {
+	if (Alphas != nullptr) {
 		alpha = ParseTokenAsFloat(GetRequiredToken(Alphas, 0));
 	}
 }
@@ -298,7 +297,7 @@ void LayeredTexture::fillTexture(const Document &doc) {
 
 // ------------------------------------------------------------------------------------------------
 Video::Video(uint64_t id, const ElementPtr element, const Document &doc, const std::string &name) :
-		Object(id, element, name), contentLength(0), content(0) {
+		Object(id, element, name), contentLength(0), content(nullptr) {
 	const ScopePtr sc = GetRequiredScope(element);
 
 	const ElementPtr Type = sc->GetElement("Type");

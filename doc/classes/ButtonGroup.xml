@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="ButtonGroup" inherits="Resource" version="3.3">
+<class name="ButtonGroup" inherits="Resource" version="3.4">
 	<brief_description>
 		Group of Buttons.
 	</brief_description>
@@ -28,6 +28,15 @@
 	<members>
 		<member name="resource_local_to_scene" type="bool" setter="set_local_to_scene" getter="is_local_to_scene" override="true" default="true" />
 	</members>
+	<signals>
+		<signal name="pressed">
+			<argument index="0" name="button" type="Object">
+			</argument>
+			<description>
+				Emitted when one of the buttons of the group is pressed.
+			</description>
+		</signal>
+	</signals>
 	<constants>
 	</constants>
 </class>

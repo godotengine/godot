@@ -40,7 +40,6 @@
 #include <stdio.h>
 
 void Resource::emit_changed() {
-
 	emit_signal(CoreStringNames::get_singleton()->changed);
 }
 
@@ -48,12 +47,11 @@ void Resource::_resource_path_changed() {
 }
 
 void Resource::set_path(const String &p_path, bool p_take_over) {
-
-	if (path_cache == p_path)
+	if (path_cache == p_path) {
 		return;
+	}
 
 	if (path_cache != "") {
-
 		ResourceCache::lock.write_lock();
 		ResourceCache::resources.erase(path_cache);
 		ResourceCache::lock.write_unlock();
@@ -67,7 +65,6 @@ void Resource::set_path(const String &p_path, bool p_take_over) {
 
 	if (has_path) {
 		if (p_take_over) {
-
 			ResourceCache::lock.write_lock();
 			Resource **res = ResourceCache::resources.getptr(p_path);
 			if (res) {
@@ -85,7 +82,6 @@ void Resource::set_path(const String &p_path, bool p_take_over) {
 	path_cache = p_path;
 
 	if (path_cache != "") {
-
 		ResourceCache::lock.write_lock();
 		ResourceCache::resources[path_cache] = this;
 		ResourceCache::lock.write_unlock();
@@ -96,62 +92,57 @@ void Resource::set_path(const String &p_path, bool p_take_over) {
 }
 
 String Resource::get_path() const {
-
 	return path_cache;
 }
 
 void Resource::set_subindex(int p_sub_index) {
-
 	subindex = p_sub_index;
 }
 
 int Resource::get_subindex() const {
-
 	return subindex;
 }
 
 void Resource::set_name(const String &p_name) {
-
 	name = p_name;
 	_change_notify("resource_name");
 }
 String Resource::get_name() const {
-
 	return name;
 }
 
 bool Resource::editor_can_reload_from_file() {
-
 	return true; //by default yes
 }
 
 void Resource::reload_from_file() {
-
 	String path = get_path();
-	if (!path.is_resource_file())
+	if (!path.is_resource_file()) {
 		return;
+	}
 
 	Ref<Resource> s = ResourceLoader::load(ResourceLoader::path_remap(path), get_class(), true);
 
-	if (!s.is_valid())
+	if (!s.is_valid()) {
 		return;
+	}
 
 	List<PropertyInfo> pi;
 	s->get_property_list(&pi);
 
 	for (List<PropertyInfo>::Element *E = pi.front(); E; E = E->next()) {
-
-		if (!(E->get().usage & PROPERTY_USAGE_STORAGE))
+		if (!(E->get().usage & PROPERTY_USAGE_STORAGE)) {
 			continue;
-		if (E->get().name == "resource_path")
+		}
+		if (E->get().name == "resource_path") {
 			continue; //do not change path
+		}
 
 		set(E->get().name, s->get(E->get().name));
 	}
 }
 
-Ref<Resource> Resource::duplicate_for_local_scene(Node *p_for_scene, Map<Ref<Resource>, Ref<Resource> > &remap_cache) {
-
+Ref<Resource> Resource::duplicate_for_local_scene(Node *p_for_scene, Map<Ref<Resource>, Ref<Resource>> &remap_cache) {
 	List<PropertyInfo> plist;
 	get_property_list(&plist);
 
@@ -161,20 +152,17 @@ Ref<Resource> Resource::duplicate_for_local_scene(Node *p_for_scene, Map<Ref<Res
 	r->local_scene = p_for_scene;
 
 	for (List<PropertyInfo>::Element *E = plist.front(); E; E = E->next()) {
-
-		if (!(E->get().usage & PROPERTY_USAGE_STORAGE))
+		if (!(E->get().usage & PROPERTY_USAGE_STORAGE)) {
 			continue;
+		}
 		Variant p = get(E->get().name);
 		if (p.get_type() == Variant::OBJECT) {
-
 			RES sr = p;
 			if (sr.is_valid()) {
-
 				if (sr->is_local_to_scene()) {
 					if (remap_cache.has(sr)) {
 						p = remap_cache[sr];
 					} else {
-
 						RES dupe = sr->duplicate_for_local_scene(p_for_scene, remap_cache);
 						p = dupe;
 						remap_cache[sr] = dupe;
@@ -189,23 +177,20 @@ Ref<Resource> Resource::duplicate_for_local_scene(Node *p_for_scene, Map<Ref<Res
 	return r;
 }
 
-void Resource::configure_for_local_scene(Node *p_for_scene, Map<Ref<Resource>, Ref<Resource> > &remap_cache) {
-
+void Resource::configure_for_local_scene(Node *p_for_scene, Map<Ref<Resource>, Ref<Resource>> &remap_cache) {
 	List<PropertyInfo> plist;
 	get_property_list(&plist);
 
 	local_scene = p_for_scene;
 
 	for (List<PropertyInfo>::Element *E = plist.front(); E; E = E->next()) {
-
-		if (!(E->get().usage & PROPERTY_USAGE_STORAGE))
+		if (!(E->get().usage & PROPERTY_USAGE_STORAGE)) {
 			continue;
+		}
 		Variant p = get(E->get().name);
 		if (p.get_type() == Variant::OBJECT) {
-
 			RES sr = p;
 			if (sr.is_valid()) {
-
 				if (sr->is_local_to_scene()) {
 					if (!remap_cache.has(sr)) {
 						sr->configure_for_local_scene(p_for_scene, remap_cache);
@@ -218,7 +203,6 @@ void Resource::configure_for_local_scene(Node *p_for_scene, Map<Ref<Resource>, R
 }
 
 Ref<Resource> Resource::duplicate(bool p_subresources) const {
-
 	List<PropertyInfo> plist;
 	get_property_list(&plist);
 
@@ -226,21 +210,19 @@ Ref<Resource> Resource::duplicate(bool p_subresources) const {
 	ERR_FAIL_COND_V(r.is_null(), Ref<Resource>());
 
 	for (List<PropertyInfo>::Element *E = plist.front(); E; E = E->next()) {
-
-		if (!(E->get().usage & PROPERTY_USAGE_STORAGE))
+		if (!(E->get().usage & PROPERTY_USAGE_STORAGE)) {
 			continue;
+		}
 		Variant p = get(E->get().name);
 
 		if ((p.get_type() == Variant::DICTIONARY || p.get_type() == Variant::ARRAY)) {
 			r->set(E->get().name, p.duplicate(p_subresources));
 		} else if (p.get_type() == Variant::OBJECT && (p_subresources || (E->get().usage & PROPERTY_USAGE_DO_NOT_SHARE_ON_DUPLICATE))) {
-
 			RES sr = p;
 			if (sr.is_valid()) {
 				r->set(E->get().name, sr->duplicate(p_subresources));
 			}
 		} else {
-
 			r->set(E->get().name, p);
 		}
 	}
@@ -249,34 +231,27 @@ Ref<Resource> Resource::duplicate(bool p_subresources) const {
 }
 
 void Resource::_set_path(const String &p_path) {
-
 	set_path(p_path, false);
 }
 
 void Resource::_take_over_path(const String &p_path) {
-
 	set_path(p_path, true);
 }
 
 RID Resource::get_rid() const {
-
 	return RID();
 }
 
 void Resource::register_owner(Object *p_owner) {
-
 	owners.insert(p_owner->get_instance_id());
 }
 
 void Resource::unregister_owner(Object *p_owner) {
-
 	owners.erase(p_owner->get_instance_id());
 }
 
 void Resource::notify_change_to_owners() {
-
 	for (Set<ObjectID>::Element *E = owners.front(); E; E = E->next()) {
-
 		Object *obj = ObjectDB::get_instance(E->get());
 		ERR_CONTINUE_MSG(!obj, "Object was deleted, while still owning a resource."); //wtf
 		//TODO store string
@@ -287,14 +262,12 @@ void Resource::notify_change_to_owners() {
 #ifdef TOOLS_ENABLED
 
 uint32_t Resource::hash_edited_version() const {
-
 	uint32_t hash = hash_djb2_one_32(get_edited_version());
 
 	List<PropertyInfo> plist;
 	get_property_list(&plist);
 
 	for (List<PropertyInfo>::Element *E = plist.front(); E; E = E->next()) {
-
 		if (E->get().usage & PROPERTY_USAGE_STORAGE && E->get().type == Variant::OBJECT && E->get().hint == PROPERTY_HINT_RESOURCE_TYPE) {
 			RES res = get(E->get().name);
 			if (res.is_valid()) {
@@ -309,39 +282,37 @@ uint32_t Resource::hash_edited_version() const {
 #endif
 
 void Resource::set_local_to_scene(bool p_enable) {
-
 	local_to_scene = p_enable;
 }
 
 bool Resource::is_local_to_scene() const {
-
 	return local_to_scene;
 }
 
 Node *Resource::get_local_scene() const {
-
-	if (local_scene)
+	if (local_scene) {
 		return local_scene;
+	}
 
 	if (_get_local_scene_func) {
 		return _get_local_scene_func();
 	}
 
-	return NULL;
+	return nullptr;
 }
 
 void Resource::setup_local_to_scene() {
-
-	if (get_script_instance())
+	if (get_script_instance()) {
 		get_script_instance()->call("_setup_local_to_scene");
+	}
 }
 
-Node *(*Resource::_get_local_scene_func)() = NULL;
+Node *(*Resource::_get_local_scene_func)() = nullptr;
 
 void Resource::set_as_translation_remapped(bool p_remapped) {
-
-	if (remapped_list.in_list() == p_remapped)
+	if (remapped_list.in_list() == p_remapped) {
 		return;
+	}
 
 	ResourceCache::lock.write_lock();
 
@@ -355,7 +326,6 @@ void Resource::set_as_translation_remapped(bool p_remapped) {
 }
 
 bool Resource::is_translation_remapped() const {
-
 	return remapped_list.in_list();
 }
 
@@ -387,7 +357,6 @@ int Resource::get_id_for_path(const String &p_path) const {
 #endif
 
 void Resource::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("set_path", "path"), &Resource::_set_path);
 	ClassDB::bind_method(D_METHOD("take_over_path", "path"), &Resource::_take_over_path);
 	ClassDB::bind_method(D_METHOD("get_path"), &Resource::get_path);
@@ -412,7 +381,6 @@ void Resource::_bind_methods() {
 
 Resource::Resource() :
 		remapped_list(this) {
-
 #ifdef TOOLS_ENABLED
 	last_modified_time = 0;
 	import_last_modified_time = 0;
@@ -420,11 +388,10 @@ Resource::Resource() :
 
 	subindex = 0;
 	local_to_scene = false;
-	local_scene = NULL;
+	local_scene = nullptr;
 }
 
 Resource::~Resource() {
-
 	if (path_cache != "") {
 		ResourceCache::lock.write_lock();
 		ResourceCache::resources.erase(path_cache);
@@ -437,7 +404,7 @@ Resource::~Resource() {
 
 HashMap<String, Resource *> ResourceCache::resources;
 #ifdef TOOLS_ENABLED
-HashMap<String, HashMap<String, int> > ResourceCache::resource_path_cache;
+HashMap<String, HashMap<String, int>> ResourceCache::resource_path_cache;
 #endif
 
 RWLock ResourceCache::lock;
@@ -464,7 +431,6 @@ void ResourceCache::reload_externals() {
 }
 
 bool ResourceCache::has(const String &p_path) {
-
 	lock.read_lock();
 	bool b = resources.has(p_path);
 	lock.read_unlock();
@@ -472,7 +438,6 @@ bool ResourceCache::has(const String &p_path) {
 	return b;
 }
 Resource *ResourceCache::get(const String &p_path) {
-
 	lock.read_lock();
 
 	Resource **res = resources.getptr(p_path);
@@ -480,18 +445,16 @@ Resource *ResourceCache::get(const String &p_path) {
 	lock.read_unlock();
 
 	if (!res) {
-		return NULL;
+		return nullptr;
 	}
 
 	return *res;
 }
 
-void ResourceCache::get_cached_resources(List<Ref<Resource> > *p_resources) {
-
+void ResourceCache::get_cached_resources(List<Ref<Resource>> *p_resources) {
 	lock.read_lock();
-	const String *K = NULL;
+	const String *K = nullptr;
 	while ((K = resources.next(K))) {
-
 		Resource *r = resources[*K];
 		p_resources->push_back(Ref<Resource>(r));
 	}
@@ -499,7 +462,6 @@ void ResourceCache::get_cached_resources(List<Ref<Resource> > *p_resources) {
 }
 
 int ResourceCache::get_cached_resource_count() {
-
 	lock.read_lock();
 	int rc = resources.size();
 	lock.read_unlock();
@@ -513,15 +475,14 @@ void ResourceCache::dump(const char *p_file, bool p_short) {
 
 	Map<String, int> type_count;
 
-	FileAccess *f = NULL;
+	FileAccess *f = nullptr;
 	if (p_file) {
 		f = FileAccess::open(p_file, FileAccess::WRITE);
 		ERR_FAIL_COND_MSG(!f, "Cannot create file at path '" + String(p_file) + "'.");
 	}
 
-	const String *K = NULL;
+	const String *K = nullptr;
 	while ((K = resources.next(K))) {
-
 		Resource *r = resources[*K];
 
 		if (!type_count.has(r->get_class())) {
@@ -531,15 +492,16 @@ void ResourceCache::dump(const char *p_file, bool p_short) {
 		type_count[r->get_class()]++;
 
 		if (!p_short) {
-			if (f)
+			if (f) {
 				f->store_line(r->get_class() + ": " + r->get_path());
+			}
 		}
 	}
 
 	for (Map<String, int>::Element *E = type_count.front(); E; E = E->next()) {
-
-		if (f)
+		if (f) {
 			f->store_line(E->key() + " count: " + itos(E->get()));
+		}
 	}
 	if (f) {
 		f->close();

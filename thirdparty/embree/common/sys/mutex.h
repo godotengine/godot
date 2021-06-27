@@ -1,4 +1,4 @@
-// Copyright 2009-2020 Intel Corporation
+// Copyright 2009-2021 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
 #pragma once
@@ -47,7 +47,7 @@ namespace embree
       {
         while (flag.load()) 
         {
-          _mm_pause();
+          _mm_pause(); 
           _mm_pause();
         }
         
@@ -74,7 +74,7 @@ namespace embree
     {
       while(flag.load())
       {
-        _mm_pause();
+        _mm_pause(); 
         _mm_pause();
       }
     }

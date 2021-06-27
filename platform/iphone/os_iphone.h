@@ -48,7 +48,6 @@ extern void godot_ios_plugins_initialize();
 extern void godot_ios_plugins_deinitialize();
 
 class OSIPhone : public OS_Unix {
-
 private:
 	static HashMap<String, void *> dynamic_symbol_lookup_table;
 	friend void register_dynamic_symbol(char *name, void *address);
@@ -127,9 +126,12 @@ public:
 
 	virtual int get_screen_dpi(int p_screen = -1) const;
 
+	void pencil_press(int p_idx, int p_x, int p_y, bool p_pressed, bool p_doubleclick);
 	void touch_press(int p_idx, int p_x, int p_y, bool p_pressed, bool p_doubleclick);
+	void pencil_drag(int p_idx, int p_prev_x, int p_prev_y, int p_x, int p_y, float p_force);
 	void touch_drag(int p_idx, int p_prev_x, int p_prev_y, int p_x, int p_y);
 	void touches_cancelled(int p_idx);
+	void pencil_cancelled(int p_idx);
 	void key(uint32_t p_key, bool p_pressed);
 	void set_virtual_keyboard_height(int p_height);
 

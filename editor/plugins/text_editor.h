@@ -34,7 +34,6 @@
 #include "script_editor_plugin.h"
 
 class TextEditor : public ScriptEditorBase {
-
 	GDCLASS(TextEditor, ScriptEditorBase);
 
 private:
@@ -56,6 +55,7 @@ private:
 		Color font_color;
 		Color symbol_color;
 		Color keyword_color;
+		Color control_flow_keyword_color;
 		Color basetype_color;
 		Color type_color;
 		Color comment_color;

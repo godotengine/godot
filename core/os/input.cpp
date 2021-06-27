@@ -38,10 +38,9 @@
 #include "editor/editor_settings.h"
 #endif
 
-Input *Input::singleton = NULL;
+Input *Input::singleton = nullptr;
 
 Input *Input::get_singleton() {
-
 	return singleton;
 }
 
@@ -51,12 +50,10 @@ void Input::set_mouse_mode(MouseMode p_mode) {
 }
 
 Input::MouseMode Input::get_mouse_mode() const {
-
 	return (MouseMode)OS::get_singleton()->get_mouse_mode();
 }
 
 void Input::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("is_key_pressed", "scancode"), &Input::is_key_pressed);
 	ClassDB::bind_method(D_METHOD("is_mouse_button_pressed", "button"), &Input::is_mouse_button_pressed);
 	ClassDB::bind_method(D_METHOD("is_joy_button_pressed", "device", "button"), &Input::is_joy_button_pressed);
@@ -132,15 +129,15 @@ void Input::get_argument_options(const StringName &p_function, int p_idx, List<S
 
 	String pf = p_function;
 	if (p_idx == 0 && (pf == "is_action_pressed" || pf == "action_press" || pf == "action_release" || pf == "is_action_just_pressed" || pf == "is_action_just_released" || pf == "get_action_strength")) {
-
 		List<PropertyInfo> pinfo;
 		ProjectSettings::get_singleton()->get_property_list(&pinfo);
 
 		for (List<PropertyInfo>::Element *E = pinfo.front(); E; E = E->next()) {
 			const PropertyInfo &pi = E->get();
 
-			if (!pi.name.begins_with("input/"))
+			if (!pi.name.begins_with("input/")) {
 				continue;
+			}
 
 			String name = pi.name.substr(pi.name.find("/") + 1, pi.name.length());
 			r_options->push_back(quote_style + name + quote_style);
@@ -150,7 +147,6 @@ void Input::get_argument_options(const StringName &p_function, int p_idx, List<S
 }
 
 Input::Input() {
-
 	singleton = this;
 }
 

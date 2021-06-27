@@ -31,13 +31,11 @@
 #ifndef OS_ANDROID_H
 #define OS_ANDROID_H
 
-#include "audio_driver_jandroid.h"
 #include "audio_driver_opensl.h"
 #include "core/os/input.h"
 #include "core/os/main_loop.h"
 #include "drivers/unix/os_unix.h"
 #include "main/input_default.h"
-//#include "power_android.h"
 #include "servers/audio_server.h"
 #include "servers/visual/rasterizer.h"
 
@@ -58,7 +56,6 @@ public:
 	};
 
 	struct JoypadEvent {
-
 		int device;
 		int type;
 		int index;
@@ -81,7 +78,6 @@ private:
 
 	mutable String data_dir_cache;
 
-	//AudioDriverAndroid audio_driver_android;
 	AudioDriverOpenSL audio_driver_android;
 
 	const char *gl_extensions;
@@ -188,6 +184,7 @@ public:
 
 	virtual Error shell_open(String p_uri);
 	virtual String get_user_data_dir() const;
+	virtual String get_external_data_dir() const;
 	virtual String get_resource_dir() const;
 	virtual String get_locale() const;
 	virtual void set_clipboard(const String &p_text);
@@ -209,14 +206,9 @@ public:
 	void process_double_tap(int event_android_button_mask, Point2 p_pos);
 	void process_scroll(Point2 p_pos);
 	void process_joy_event(JoypadEvent p_event);
-	void process_key_event(int p_scancode, int p_unicode_char, bool p_pressed);
+	void process_key_event(int p_keycode, int p_scancode, int p_unicode_char, bool p_pressed);
 	void process_event(Ref<InputEvent> p_event);
 	void init_video_mode(int p_video_width, int p_video_height);
-
-	virtual Error native_video_play(String p_path, float p_volume, String p_audio_track, String p_subtitle_track);
-	virtual bool native_video_is_playing() const;
-	virtual void native_video_pause();
-	virtual void native_video_stop();
 
 	virtual bool is_joy_known(int p_device);
 	virtual String get_joy_guid(int p_device) const;

@@ -38,7 +38,6 @@
 #include <pluginscript/godot_pluginscript.h>
 
 class PluginScript : public Script {
-
 	GDCLASS(PluginScript, Script);
 
 	friend class PluginScriptInstance;

@@ -1,4 +1,4 @@
-// Copyright 2009-2020 Intel Corporation
+// Copyright 2009-2021 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
 #pragma once
@@ -297,11 +297,7 @@ namespace embree
     }
 
     static const size_t threadLocalAllocOverhead = 20; //! 20 means 5% parallel allocation overhead through unfilled thread local blocks
-#if defined(__AVX512ER__) // KNL
-    static const size_t mainAllocOverheadStatic  = 15;  //! 15 means 7.5% allocation overhead through unfilled main alloc blocks
-#else
     static const size_t mainAllocOverheadStatic  = 20;  //! 20 means 5% allocation overhead through unfilled main alloc blocks
-#endif
     static const size_t mainAllocOverheadDynamic = 8;  //! 20 means 12.5% allocation overhead through unfilled main alloc blocks
 
     /* calculates a single threaded threshold for the builders such

@@ -29,7 +29,7 @@
 /*************************************************************************/
 
 const GodotFetch = {
-	$GodotFetch__deps: ['$GodotRuntime'],
+	$GodotFetch__deps: ['$IDHandler', '$GodotRuntime'],
 	$GodotFetch: {
 
 		onread: function (id, result) {
@@ -49,25 +49,14 @@ const GodotFetch = {
 			if (!obj) {
 				return;
 			}
-			let size = -1;
-			let compressed = false;
 			let chunked = false;
 			response.headers.forEach(function (value, header) {
 				const v = value.toLowerCase().trim();
 				const h = header.toLowerCase().trim();
-				if (h === 'content-encoding') {
-					compressed = true;
-					size = -1;
-				} else if (h === 'content-length') {
-					const len = Number.parseInt(value, 10);
-					if (!Number.isNaN(len) && !compressed) {
-						size = len;
-					}
-				} else if (h === 'transfer-encoding' && v === 'chunked') {
+				if (h === 'transfer-encoding' && v === 'chunked') {
 					chunked = true;
 				}
 			});
-			obj.bodySize = size;
 			obj.status = response.status;
 			obj.response = response;
 			obj.reader = response.body.getReader();
@@ -137,7 +126,7 @@ const GodotFetch = {
 		},
 	},
 
-	godot_js_fetch_create__sig: 'iii',
+	godot_js_fetch_create__sig: 'iiiiiii',
 	godot_js_fetch_create: function (p_method, p_url, p_headers, p_headers_size, p_body, p_body_size) {
 		const method = GodotRuntime.parseString(p_method);
 		const url = GodotRuntime.parseString(p_url);
@@ -187,7 +176,7 @@ const GodotFetch = {
 		return obj.status;
 	},
 
-	godot_js_fetch_read_headers__sig: 'iii',
+	godot_js_fetch_read_headers__sig: 'iiii',
 	godot_js_fetch_read_headers: function (p_id, p_parse_cb, p_ref) {
 		const obj = IDHandler.get(p_id);
 		if (!obj || !obj.response) {
@@ -204,7 +193,7 @@ const GodotFetch = {
 		return 0;
 	},
 
-	godot_js_fetch_read_chunk__sig: 'ii',
+	godot_js_fetch_read_chunk__sig: 'iiii',
 	godot_js_fetch_read_chunk: function (p_id, p_buf, p_buf_size) {
 		const obj = IDHandler.get(p_id);
 		if (!obj || !obj.response) {

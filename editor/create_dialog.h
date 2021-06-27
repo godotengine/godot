@@ -40,7 +40,6 @@
 #include "scene/gui/tree.h"
 
 class CreateDialog : public ConfirmationDialog {
-
 	GDCLASS(CreateDialog, ConfirmationDialog);
 
 	Vector<String> favorite_list;

@@ -40,12 +40,12 @@
 #include "skeleton.h"
 
 bool MeshInstance::_set(const StringName &p_name, const Variant &p_value) {
-
 	//this is not _too_ bad performance wise, really. it only arrives here if the property was not set anywhere else.
 	//add to it that it's probably found on first call to _set anyway.
 
-	if (!get_instance().is_valid())
+	if (!get_instance().is_valid()) {
 		return false;
+	}
 
 	Map<StringName, BlendShapeTrack>::Element *E = blend_shape_tracks.find(p_name);
 	if (E) {
@@ -56,8 +56,9 @@ bool MeshInstance::_set(const StringName &p_name, const Variant &p_value) {
 
 	if (p_name.operator String().begins_with("material/")) {
 		int idx = p_name.operator String().get_slicec('/', 1).to_int();
-		if (idx >= materials.size() || idx < 0)
+		if (idx >= materials.size() || idx < 0) {
 			return false;
+		}
 
 		set_surface_material(idx, p_value);
 		return true;
@@ -67,9 +68,9 @@ bool MeshInstance::_set(const StringName &p_name, const Variant &p_value) {
 }
 
 bool MeshInstance::_get(const StringName &p_name, Variant &r_ret) const {
-
-	if (!get_instance().is_valid())
+	if (!get_instance().is_valid()) {
 		return false;
+	}
 
 	const Map<StringName, BlendShapeTrack>::Element *E = blend_shape_tracks.find(p_name);
 	if (E) {
@@ -79,8 +80,9 @@ bool MeshInstance::_get(const StringName &p_name, Variant &r_ret) const {
 
 	if (p_name.operator String().begins_with("material/")) {
 		int idx = p_name.operator String().get_slicec('/', 1).to_int();
-		if (idx >= materials.size() || idx < 0)
+		if (idx >= materials.size() || idx < 0) {
 			return false;
+		}
 		r_ret = materials[idx];
 		return true;
 	}
@@ -88,10 +90,8 @@ bool MeshInstance::_get(const StringName &p_name, Variant &r_ret) const {
 }
 
 void MeshInstance::_get_property_list(List<PropertyInfo> *p_list) const {
-
 	List<String> ls;
 	for (const Map<StringName, BlendShapeTrack>::Element *E = blend_shape_tracks.front(); E; E = E->next()) {
-
 		ls.push_back(E->key());
 	}
 
@@ -109,9 +109,9 @@ void MeshInstance::_get_property_list(List<PropertyInfo> *p_list) const {
 }
 
 void MeshInstance::set_mesh(const Ref<Mesh> &p_mesh) {
-
-	if (mesh == p_mesh)
+	if (mesh == p_mesh) {
 		return;
+	}
 
 	if (mesh.is_valid()) {
 		mesh->disconnect(CoreStringNames::get_singleton()->changed, this, SceneStringNames::get_singleton()->_mesh_changed);
@@ -131,9 +131,7 @@ void MeshInstance::set_mesh(const Ref<Mesh> &p_mesh) {
 
 	blend_shape_tracks.clear();
 	if (mesh.is_valid()) {
-
 		for (int i = 0; i < mesh->get_blend_shape_count(); i++) {
-
 			BlendShapeTrack mt;
 			mt.idx = i;
 			mt.value = 0;
@@ -143,9 +141,8 @@ void MeshInstance::set_mesh(const Ref<Mesh> &p_mesh) {
 		mesh->connect(CoreStringNames::get_singleton()->changed, this, SceneStringNames::get_singleton()->_mesh_changed);
 		materials.resize(mesh->get_surface_count());
 
-		_initialize_skinning();
+		_initialize_skinning(false, false);
 	} else {
-
 		set_base(RID());
 	}
 
@@ -154,12 +151,10 @@ void MeshInstance::set_mesh(const Ref<Mesh> &p_mesh) {
 	_change_notify();
 }
 Ref<Mesh> MeshInstance::get_mesh() const {
-
 	return mesh;
 }
 
 void MeshInstance::_resolve_skeleton_path() {
-
 	Ref<SkinReference> new_skin_reference;
 
 	if (!skeleton_path.is_empty()) {
@@ -208,7 +203,7 @@ bool MeshInstance::_is_software_skinning_enabled() const {
 	return global_software_skinning;
 }
 
-void MeshInstance::_initialize_skinning(bool p_force_reset) {
+void MeshInstance::_initialize_skinning(bool p_force_reset, bool p_call_attach_skeleton) {
 	if (mesh.is_null()) {
 		return;
 	}
@@ -324,10 +319,12 @@ void MeshInstance::_initialize_skinning(bool p_force_reset) {
 				update_mesh = true;
 			}
 
-			visual_server->instance_attach_skeleton(get_instance(), RID());
+			if (p_call_attach_skeleton) {
+				visual_server->instance_attach_skeleton(get_instance(), RID());
+			}
 
 			if (is_visible_in_tree() && (software_skinning_flags & SoftwareSkinning::FLAG_BONES_READY)) {
-				// Intialize from current skeleton pose.
+				// Initialize from current skeleton pose.
 				_update_skinning();
 			}
 		} else {
@@ -336,7 +333,9 @@ void MeshInstance::_initialize_skinning(bool p_force_reset) {
 				skin_ref->get_skeleton_node()->disconnect("skeleton_updated", this, "_update_skinning");
 			}
 
-			visual_server->instance_attach_skeleton(get_instance(), skin_ref->get_skeleton());
+			if (p_call_attach_skeleton) {
+				visual_server->instance_attach_skeleton(get_instance(), skin_ref->get_skeleton());
+			}
 
 			if (software_skinning) {
 				memdelete(software_skinning);
@@ -345,7 +344,9 @@ void MeshInstance::_initialize_skinning(bool p_force_reset) {
 			}
 		}
 	} else {
-		visual_server->instance_attach_skeleton(get_instance(), RID());
+		if (p_call_attach_skeleton) {
+			visual_server->instance_attach_skeleton(get_instance(), RID());
+		}
 		if (software_skinning) {
 			memdelete(software_skinning);
 			software_skinning = nullptr;
@@ -503,8 +504,9 @@ void MeshInstance::_update_skinning() {
 void MeshInstance::set_skin(const Ref<Skin> &p_skin) {
 	skin_internal = p_skin;
 	skin = p_skin;
-	if (!is_inside_tree())
+	if (!is_inside_tree()) {
 		return;
+	}
 	_resolve_skeleton_path();
 }
 
@@ -513,10 +515,10 @@ Ref<Skin> MeshInstance::get_skin() const {
 }
 
 void MeshInstance::set_skeleton_path(const NodePath &p_skeleton) {
-
 	skeleton_path = p_skeleton;
-	if (!is_inside_tree())
+	if (!is_inside_tree()) {
 		return;
+	}
 	_resolve_skeleton_path();
 }
 
@@ -525,32 +527,34 @@ NodePath MeshInstance::get_skeleton_path() {
 }
 
 AABB MeshInstance::get_aabb() const {
-
-	if (!mesh.is_null())
+	if (!mesh.is_null()) {
 		return mesh->get_aabb();
+	}
 
 	return AABB();
 }
 
 PoolVector<Face3> MeshInstance::get_faces(uint32_t p_usage_flags) const {
-
-	if (!(p_usage_flags & (FACES_SOLID | FACES_ENCLOSING)))
+	if (!(p_usage_flags & (FACES_SOLID | FACES_ENCLOSING))) {
 		return PoolVector<Face3>();
+	}
 
-	if (mesh.is_null())
+	if (mesh.is_null()) {
 		return PoolVector<Face3>();
+	}
 
 	return mesh->get_faces();
 }
 
 Node *MeshInstance::create_trimesh_collision_node() {
-
-	if (mesh.is_null())
-		return NULL;
+	if (mesh.is_null()) {
+		return nullptr;
+	}
 
 	Ref<Shape> shape = mesh->create_trimesh_shape();
-	if (shape.is_null())
-		return NULL;
+	if (shape.is_null()) {
+		return nullptr;
+	}
 
 	StaticBody *static_body = memnew(StaticBody);
 	CollisionShape *cshape = memnew(CollisionShape);
@@ -560,7 +564,6 @@ Node *MeshInstance::create_trimesh_collision_node() {
 }
 
 void MeshInstance::create_trimesh_collision() {
-
 	StaticBody *static_body = Object::cast_to<StaticBody>(create_trimesh_collision_node());
 	ERR_FAIL_COND(!static_body);
 	static_body->set_name(String(get_name()) + "_col");
@@ -573,14 +576,50 @@ void MeshInstance::create_trimesh_collision() {
 	}
 }
 
-Node *MeshInstance::create_convex_collision_node() {
+Node *MeshInstance::create_multiple_convex_collisions_node() {
+	if (mesh.is_null()) {
+		return nullptr;
+	}
 
-	if (mesh.is_null())
-		return NULL;
+	Vector<Ref<Shape>> shapes = mesh->convex_decompose();
+	if (!shapes.size()) {
+		return nullptr;
+	}
+
+	StaticBody *static_body = memnew(StaticBody);
+	for (int i = 0; i < shapes.size(); i++) {
+		CollisionShape *cshape = memnew(CollisionShape);
+		cshape->set_shape(shapes[i]);
+		static_body->add_child(cshape);
+	}
+	return static_body;
+}
+
+void MeshInstance::create_multiple_convex_collisions() {
+	StaticBody *static_body = Object::cast_to<StaticBody>(create_multiple_convex_collisions_node());
+	ERR_FAIL_COND(!static_body);
+	static_body->set_name(String(get_name()) + "_col");
+
+	add_child(static_body);
+	if (get_owner()) {
+		static_body->set_owner(get_owner());
+		int count = static_body->get_child_count();
+		for (int i = 0; i < count; i++) {
+			CollisionShape *cshape = Object::cast_to<CollisionShape>(static_body->get_child(i));
+			cshape->set_owner(get_owner());
+		}
+	}
+}
+
+Node *MeshInstance::create_convex_collision_node() {
+	if (mesh.is_null()) {
+		return nullptr;
+	}
 
 	Ref<Shape> shape = mesh->create_convex_shape();
-	if (shape.is_null())
-		return NULL;
+	if (shape.is_null()) {
+		return nullptr;
+	}
 
 	StaticBody *static_body = memnew(StaticBody);
 	CollisionShape *cshape = memnew(CollisionShape);
@@ -590,7 +629,6 @@ Node *MeshInstance::create_convex_collision_node() {
 }
 
 void MeshInstance::create_convex_collision() {
-
 	StaticBody *static_body = Object::cast_to<StaticBody>(create_convex_collision_node());
 	ERR_FAIL_COND(!static_body);
 	static_body->set_name(String(get_name()) + "_col");
@@ -604,7 +642,6 @@ void MeshInstance::create_convex_collision() {
 }
 
 void MeshInstance::_notification(int p_what) {
-
 	if (p_what == NOTIFICATION_ENTER_TREE) {
 		_resolve_skeleton_path();
 	}
@@ -622,20 +659,19 @@ void MeshInstance::_notification(int p_what) {
 }
 
 int MeshInstance::get_surface_material_count() const {
-
 	return materials.size();
 }
 
 void MeshInstance::set_surface_material(int p_surface, const Ref<Material> &p_material) {
-
 	ERR_FAIL_INDEX(p_surface, materials.size());
 
 	materials.write[p_surface] = p_material;
 
-	if (materials[p_surface].is_valid())
+	if (materials[p_surface].is_valid()) {
 		VS::get_singleton()->instance_set_surface_material(get_instance(), p_surface, materials[p_surface]->get_rid());
-	else
+	} else {
 		VS::get_singleton()->instance_set_surface_material(get_instance(), p_surface, RID());
+	}
 
 	if (software_skinning) {
 		_initialize_skinning(true);
@@ -643,7 +679,6 @@ void MeshInstance::set_surface_material(int p_surface, const Ref<Material> &p_ma
 }
 
 Ref<Material> MeshInstance::get_surface_material(int p_surface) const {
-
 	ERR_FAIL_INDEX_V(p_surface, materials.size(), Ref<Material>());
 
 	return materials[p_surface];
@@ -710,23 +745,25 @@ void MeshInstance::_mesh_changed() {
 }
 
 void MeshInstance::create_debug_tangents() {
-
 	Vector<Vector3> lines;
 	Vector<Color> colors;
 
 	Ref<Mesh> mesh = get_mesh();
-	if (!mesh.is_valid())
+	if (!mesh.is_valid()) {
 		return;
+	}
 
 	for (int i = 0; i < mesh->get_surface_count(); i++) {
 		Array arrays = mesh->surface_get_arrays(i);
 		Vector<Vector3> verts = arrays[Mesh::ARRAY_VERTEX];
 		Vector<Vector3> norms = arrays[Mesh::ARRAY_NORMAL];
-		if (norms.size() == 0)
+		if (norms.size() == 0) {
 			continue;
+		}
 		Vector<float> tangents = arrays[Mesh::ARRAY_TANGENT];
-		if (tangents.size() == 0)
+		if (tangents.size() == 0) {
 			continue;
+		}
 
 		for (int j = 0; j < verts.size(); j++) {
 			Vector3 v = verts[j];
@@ -752,7 +789,6 @@ void MeshInstance::create_debug_tangents() {
 	}
 
 	if (lines.size()) {
-
 		Ref<SpatialMaterial> sm;
 		sm.instance();
 
@@ -776,16 +812,16 @@ void MeshInstance::create_debug_tangents() {
 		add_child(mi);
 #ifdef TOOLS_ENABLED
 
-		if (this == get_tree()->get_edited_scene_root())
+		if (is_inside_tree() && this == get_tree()->get_edited_scene_root()) {
 			mi->set_owner(this);
-		else
+		} else {
 			mi->set_owner(get_owner());
+		}
 #endif
 	}
 }
 
 void MeshInstance::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("set_mesh", "mesh"), &MeshInstance::set_mesh);
 	ClassDB::bind_method(D_METHOD("get_mesh"), &MeshInstance::get_mesh);
 	ClassDB::bind_method(D_METHOD("set_skeleton_path", "skeleton_path"), &MeshInstance::set_skeleton_path);
@@ -803,6 +839,8 @@ void MeshInstance::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("create_trimesh_collision"), &MeshInstance::create_trimesh_collision);
 	ClassDB::set_method_flags("MeshInstance", "create_trimesh_collision", METHOD_FLAGS_DEFAULT);
+	ClassDB::bind_method(D_METHOD("create_multiple_convex_collisions"), &MeshInstance::create_multiple_convex_collisions);
+	ClassDB::set_method_flags("MeshInstance", "create_multiple_convex_collisions", METHOD_FLAGS_DEFAULT);
 	ClassDB::bind_method(D_METHOD("create_convex_collision"), &MeshInstance::create_convex_collision);
 	ClassDB::set_method_flags("MeshInstance", "create_convex_collision", METHOD_FLAGS_DEFAULT);
 	ClassDB::bind_method(D_METHOD("_mesh_changed"), &MeshInstance::_mesh_changed);

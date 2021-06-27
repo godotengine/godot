@@ -59,12 +59,17 @@
 # A <kaieltroll@gmail.com>, 2021.
 # Lucasdelpiero <lucasdelpiero98@gmail.com>, 2021.
 # SteamGoblin <SteamGoblin860@gmail.com>, 2021.
+# Francisco C <pruebasfrancisco17@gmail.com>, 2021.
+# Cam <cameron.toms@gmail.com>, 2021.
+# Juan camilo <jugarciago01@gmail.com>, 2021.
+# Manuel González <mgoopazo@gmail.com>, 2021.
+# softonicblip <blazeawardspace@gmail.com>, 2021.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2021-03-10 22:14+0000\n"
-"Last-Translator: Javier Ocampos <xavier.ocampos@gmail.com>\n"
+"PO-Revision-Date: 2021-06-03 22:23+0000\n"
+"Last-Translator: softonicblip <blazeawardspace@gmail.com>\n"
 "Language-Team: Spanish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/es/>\n"
 "Language: es\n"
@@ -72,7 +77,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.5.2-dev\n"
+"X-Generator: Weblate 4.7-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -211,7 +216,7 @@ msgstr "Cambiar Transformación de la Animación"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Change Keyframe Value"
-msgstr "Cambiar Valor de la Clave de Animación"
+msgstr "Cambiar Valor de Fotogramas Clave de Animación"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Change Call"
@@ -219,7 +224,7 @@ msgstr "Cambiar Llamada de Animación"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Multi Change Keyframe Time"
-msgstr "Cambiar Tiempo de Múltiples Keyframes de Animación"
+msgstr "Cambiar Tiempo de Múltiples Fotogramas Clave de Animación"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Multi Change Transition"
@@ -231,7 +236,7 @@ msgstr "Cambiar Múltiples Transforms de Animación"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Multi Change Keyframe Value"
-msgstr "Cambiar Valor de Múltiples Keyframes de Animación"
+msgstr "Cambiar Valor de Múltiples Fotogramas Clave de Animación"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Multi Change Call"
@@ -272,7 +277,7 @@ msgstr "Pista de Reproducción de Animación"
 
 #: editor/animation_track_editor.cpp
 msgid "Animation length (frames)"
-msgstr "Duración de la animación (frames)"
+msgstr "Duración de la animación (fotogramas)"
 
 #: editor/animation_track_editor.cpp
 msgid "Animation length (seconds)"
@@ -657,7 +662,7 @@ msgstr "Usar Curvas Bezier"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim. Optimizer"
-msgstr "Optimizador de Animación"
+msgstr "Optimizar animación"
 
 #: editor/animation_track_editor.cpp
 msgid "Max. Linear Error:"
@@ -864,7 +869,7 @@ msgstr "Eliminar"
 
 #: editor/connections_dialog.cpp
 msgid "Add Extra Call Argument:"
-msgstr "Añadir Argumento Extra de Llamada:"
+msgstr "Añadir argumento extra de llamada:"
 
 #: editor/connections_dialog.cpp
 msgid "Extra Call Arguments:"
@@ -1180,6 +1185,10 @@ msgstr "Cambiar Valor del Diccionario"
 #: editor/editor_about.cpp
 msgid "Thanks from the Godot community!"
 msgstr "¡Muchas gracias de parte de la comunidad de Godot!"
+
+#: editor/editor_about.cpp editor/editor_node.cpp editor/project_manager.cpp
+msgid "Click to copy."
+msgstr ""
 
 #: editor/editor_about.cpp
 msgid "Godot Engine contributors"
@@ -1825,7 +1834,7 @@ msgstr "Nuevo"
 #: editor/editor_feature_profile.cpp editor/editor_node.cpp
 #: editor/project_manager.cpp
 msgid "Import"
-msgstr "Importación"
+msgstr "Importar"
 
 #: editor/editor_feature_profile.cpp editor/project_export.cpp
 msgid "Export"
@@ -2073,7 +2082,7 @@ msgstr "Métodos"
 
 #: editor/editor_help.cpp
 msgid "Theme Properties"
-msgstr "Propiedades del Tema"
+msgstr "Propiedades de Temas"
 
 #: editor/editor_help.cpp
 msgid "Enumerations"
@@ -2085,7 +2094,7 @@ msgstr "Constantes"
 
 #: editor/editor_help.cpp
 msgid "Property Descriptions"
-msgstr "Descripciones de Propiedad"
+msgstr "Descripciones de Propiedades"
 
 #: editor/editor_help.cpp
 msgid "(value)"
@@ -2610,11 +2619,13 @@ msgstr "No se pudo cargar el script addon desde la ruta: '%s'."
 
 #: editor/editor_node.cpp
 msgid ""
-"Unable to load addon script from path: '%s' There seems to be an error in "
-"the code, please check the syntax."
+"Unable to load addon script from path: '%s'. This might be due to a code "
+"error in that script.\n"
+"Disabling the addon at '%s' to prevent further errors."
 msgstr ""
 "No se puede cargar el script de addon desde la ruta: '%s' Parece que hay un "
-"error en el código, por favor compruebe la sintaxis."
+"error en el código, por favor compruebe la sintaxis.\n"
+"Desactivar el addon en '%s' para prevenir mas errores."
 
 #: editor/editor_node.cpp
 msgid ""
@@ -3064,6 +3075,10 @@ msgid "About"
 msgstr "Acerca de"
 
 #: editor/editor_node.cpp
+msgid "Support Godot Development"
+msgstr "Apoyar el desarrollo de Godot"
+
+#: editor/editor_node.cpp
 msgid "Play the project."
 msgstr "Reproducir el proyecto."
 
@@ -3314,7 +3329,7 @@ msgstr "Medida:"
 
 #: editor/editor_profiler.cpp
 msgid "Frame Time (sec)"
-msgstr "Duración de Frame (seg)"
+msgstr "Duración de Fotogramas (seg)"
 
 #: editor/editor_profiler.cpp
 msgid "Average Time (sec)"
@@ -3322,11 +3337,11 @@ msgstr "Tiempo Promedio (seg)"
 
 #: editor/editor_profiler.cpp
 msgid "Frame %"
-msgstr "Frame %"
+msgstr "Fotograma %"
 
 #: editor/editor_profiler.cpp
 msgid "Physics Frame %"
-msgstr "Frames de Física %"
+msgstr "Fotogramas de Física %"
 
 #: editor/editor_profiler.cpp
 msgid "Inclusive"
@@ -3338,7 +3353,7 @@ msgstr "Propio"
 
 #: editor/editor_profiler.cpp
 msgid "Frame #:"
-msgstr "Frame #:"
+msgstr "Fotograma #:"
 
 #: editor/editor_profiler.cpp
 msgid "Time"
@@ -3759,6 +3774,8 @@ msgstr ""
 msgid ""
 "Importing has been disabled for this file, so it can't be opened for editing."
 msgstr ""
+"Se ha desactivado la importación de este archivo, por lo que no se puede "
+"abrir para editarlo."
 
 #: editor/filesystem_dock.cpp
 msgid "Cannot move/rename resources root."
@@ -4163,7 +4180,7 @@ msgstr "Restablecer Valores por Defecto"
 
 #: editor/import_dock.cpp
 msgid "Keep File (No Import)"
-msgstr ""
+msgstr "Mantener Archivo (No Importar)"
 
 #: editor/import_dock.cpp
 msgid "%d Files"
@@ -5309,7 +5326,7 @@ msgstr ""
 msgid ""
 "Godot editor was built without ray tracing support, lightmaps can't be baked."
 msgstr ""
-"El editor de Godot se construyó sin soporte de trazado de rayos, los "
+"El editor de Godot se construyó sin soporte para trazado de rayos, los "
 "lightmaps no pueden ser bakeados."
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
@@ -5805,7 +5822,7 @@ msgstr "Centrar Selección"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Frame Selection"
-msgstr "Encuadrar Selección"
+msgstr "Seleccionar Fotogramas"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Preview Canvas Scale"
@@ -7642,6 +7659,13 @@ msgstr "Bloquear Rotación de Vista"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid ""
+"To zoom further, change the camera's clipping planes (View -> Settings...)"
+msgstr ""
+"Para alejar más, cambia los planos de corte de la cámara (Vista -> "
+"Configuración...)"
+
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid ""
 "Note: The FPS value displayed is the editor's framerate.\n"
 "It cannot be used as a reliable indication of in-game performance."
 msgstr ""
@@ -7954,15 +7978,15 @@ msgstr "Configuración:"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "No Frames Selected"
-msgstr "No hay Frames Seleccionados"
+msgstr "No hay Fotogramas Seleccionados"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Add %d Frame(s)"
-msgstr "Añadir %d Frame(s)"
+msgstr "Añadir %d Fotograma(s)"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Add Frame"
-msgstr "Añadir Frame"
+msgstr "Añadir Fotograma"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Unable to load images"
@@ -7970,7 +7994,7 @@ msgstr "No se pueden cargar las imágenes"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "ERROR: Couldn't load frame resource!"
-msgstr "ERROR: ¡No se pudo cargar el recurso de frames!"
+msgstr "ERROR: ¡No se pudo cargar el recurso de fotogramas!"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Resource clipboard is empty or not a texture!"
@@ -7978,7 +8002,7 @@ msgstr "¡El portapapeles de recursos esta vacío o no es una textura!"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Paste Frame"
-msgstr "Pegar Frame"
+msgstr "Pegar Fotograma"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Add Empty"
@@ -7994,7 +8018,7 @@ msgstr "(vacío)"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Move Frame"
-msgstr "Mover Frame"
+msgstr "Mover Fotograma"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Animations:"
@@ -8014,7 +8038,7 @@ msgstr "Loop"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Animation Frames:"
-msgstr "Frames de Animación:"
+msgstr "Fotogramas de Animación:"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Add a Texture from File"
@@ -8022,7 +8046,7 @@ msgstr "Añadir Textura desde Archivo"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Add Frames from a Sprite Sheet"
-msgstr "Añadir Frames desde un Sprite Sheet"
+msgstr "Añadir Fotogramas desde un Sprite Sheet"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Insert Empty (Before)"
@@ -8042,7 +8066,7 @@ msgstr "Mover (Después)"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Select Frames"
-msgstr "Seleccionar Frames"
+msgstr "Seleccionar Fotogramas"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Horizontal:"
@@ -8054,11 +8078,11 @@ msgstr "Vertical:"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Select/Clear All Frames"
-msgstr "Seleccionar/Limpiar Todos los Frames"
+msgstr "Seleccionar/Limpiar Todos los Fotogramas"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Create Frames from Sprite Sheet"
-msgstr "Crear Frames a partir de Sprite Sheet"
+msgstr "Crear Fotogramas a partir de un Sprite Sheet"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "SpriteFrames"
@@ -10226,7 +10250,7 @@ msgstr "Botón del Mouse"
 
 #: editor/project_settings_editor.cpp
 msgid ""
-"Invalid action name. it cannot be empty nor contain '/', ':', '=', '\\' or "
+"Invalid action name. It cannot be empty nor contain '/', ':', '=', '\\' or "
 "'\"'"
 msgstr ""
 "Nombre de acción inválido. No puede estar vacío o contener '/', ':', '=', "
@@ -11035,6 +11059,16 @@ msgid "Remote"
 msgstr "Remoto"
 
 #: editor/scene_tree_dock.cpp
+msgid ""
+"If selected, the Remote scene tree dock will cause the project to stutter "
+"every time it updates.\n"
+"Switch back to the Local scene tree dock to improve performance."
+msgstr ""
+"Si está seleccionado, el panel de árbol de escena Remota provocará saltos de "
+"framerate en el proyecto cada vez que se actualice.\n"
+"Vuelve a seleccionar el árbol de escena Local para mejorar el rendimiento."
+
+#: editor/scene_tree_dock.cpp
 msgid "Local"
 msgstr "Local"
 
@@ -11333,7 +11367,7 @@ msgstr "Inspeccionar Instancia Siguiente"
 
 #: editor/script_editor_debugger.cpp
 msgid "Stack Frames"
-msgstr "Frames del Stack"
+msgstr "Fotogramas Apilados"
 
 #: editor/script_editor_debugger.cpp
 msgid "Profiler"
@@ -12290,9 +12324,21 @@ msgstr ""
 "Instalala desde el menú de Proyecto."
 
 #: platform/android/export/export.cpp
+msgid ""
+"Either Debug Keystore, Debug User AND Debug Password settings must be "
+"configured OR none of them."
+msgstr ""
+
+#: platform/android/export/export.cpp
 msgid "Debug keystore not configured in the Editor Settings nor in the preset."
 msgstr ""
 "Debug keystore no configurada en Configuración del Editor ni en el preset."
+
+#: platform/android/export/export.cpp
+msgid ""
+"Either Release Keystore, Release User AND Release Password settings must be "
+"configured OR none of them."
+msgstr ""
 
 #: platform/android/export/export.cpp
 msgid "Release keystore incorrectly configured in the export preset."
@@ -12570,7 +12616,7 @@ msgid ""
 "order for AnimatedSprite to display frames."
 msgstr ""
 "Se debe crear o establecer un recurso SpriteFrames en la propiedad \"Frames"
-"\" para que AnimatedSprite pueda mostrar frames."
+"\" para que AnimatedSprite pueda mostrar los fotogramas."
 
 #: scene/2d/canvas_modulate.cpp
 msgid ""
@@ -13055,7 +13101,7 @@ msgid ""
 "order for AnimatedSprite3D to display frames."
 msgstr ""
 "Se debe crear o establecer un recurso SpriteFrames en la propiedad \"Frames"
-"\" para que AnimatedSprite3D pueda mostrar frames."
+"\" para que AnimatedSprite3D pueda mostrar los fotogramas."
 
 #: scene/3d/vehicle_body.cpp
 msgid ""

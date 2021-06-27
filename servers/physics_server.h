@@ -37,7 +37,6 @@
 class PhysicsDirectSpaceState;
 
 class PhysicsDirectBodyState : public Object {
-
 	GDCLASS(PhysicsDirectBodyState, Object);
 
 protected:
@@ -98,7 +97,6 @@ public:
 class PhysicsShapeQueryResult;
 
 class PhysicsShapeQueryParameters : public Reference {
-
 	GDCLASS(PhysicsShapeQueryParameters, Reference);
 	friend class PhysicsDirectSpaceState;
 
@@ -141,7 +139,6 @@ public:
 };
 
 class PhysicsDirectSpaceState : public Object {
-
 	GDCLASS(PhysicsDirectSpaceState, Object);
 
 private:
@@ -156,23 +153,21 @@ protected:
 
 public:
 	struct ShapeResult {
-
 		RID rid;
-		ObjectID collider_id;
-		Object *collider;
-		int shape;
+		ObjectID collider_id = 0;
+		Object *collider = nullptr;
+		int shape = 0;
 	};
 
 	virtual int intersect_point(const Vector3 &p_point, ShapeResult *r_results, int p_result_max, const Set<RID> &p_exclude = Set<RID>(), uint32_t p_collision_mask = 0xFFFFFFFF, bool p_collide_with_bodies = true, bool p_collide_with_areas = false) = 0;
 
 	struct RayResult {
-
 		Vector3 position;
 		Vector3 normal;
 		RID rid;
-		ObjectID collider_id;
-		Object *collider;
-		int shape;
+		ObjectID collider_id = 0;
+		Object *collider = nullptr;
+		int shape = 0;
 	};
 
 	virtual bool intersect_ray(const Vector3 &p_from, const Vector3 &p_to, RayResult &r_result, const Set<RID> &p_exclude = Set<RID>(), uint32_t p_collision_mask = 0xFFFFFFFF, bool p_collide_with_bodies = true, bool p_collide_with_areas = false, bool p_pick_ray = false) = 0;
@@ -180,16 +175,15 @@ public:
 	virtual int intersect_shape(const RID &p_shape, const Transform &p_xform, float p_margin, ShapeResult *r_results, int p_result_max, const Set<RID> &p_exclude = Set<RID>(), uint32_t p_collision_mask = 0xFFFFFFFF, bool p_collide_with_bodies = true, bool p_collide_with_areas = false) = 0;
 
 	struct ShapeRestInfo {
-
 		Vector3 point;
 		Vector3 normal;
 		RID rid;
-		ObjectID collider_id;
-		int shape;
+		ObjectID collider_id = 0;
+		int shape = 0;
 		Vector3 linear_velocity; //velocity at contact point
 	};
 
-	virtual bool cast_motion(const RID &p_shape, const Transform &p_xform, const Vector3 &p_motion, float p_margin, float &p_closest_safe, float &p_closest_unsafe, const Set<RID> &p_exclude = Set<RID>(), uint32_t p_collision_mask = 0xFFFFFFFF, bool p_collide_with_bodies = true, bool p_collide_with_areas = false, ShapeRestInfo *r_info = NULL) = 0;
+	virtual bool cast_motion(const RID &p_shape, const Transform &p_xform, const Vector3 &p_motion, float p_margin, float &p_closest_safe, float &p_closest_unsafe, const Set<RID> &p_exclude = Set<RID>(), uint32_t p_collision_mask = 0xFFFFFFFF, bool p_collide_with_bodies = true, bool p_collide_with_areas = false, ShapeRestInfo *r_info = nullptr) = 0;
 
 	virtual bool collide_shape(RID p_shape, const Transform &p_shape_xform, float p_margin, Vector3 *r_results, int p_result_max, int &r_result_count, const Set<RID> &p_exclude = Set<RID>(), uint32_t p_collision_mask = 0xFFFFFFFF, bool p_collide_with_bodies = true, bool p_collide_with_areas = false) = 0;
 
@@ -201,7 +195,6 @@ public:
 };
 
 class PhysicsShapeQueryResult : public Reference {
-
 	GDCLASS(PhysicsShapeQueryResult, Reference);
 
 	Vector<PhysicsDirectSpaceState::ShapeResult> result;
@@ -222,7 +215,6 @@ public:
 };
 
 class PhysicsServer : public Object {
-
 	GDCLASS(PhysicsServer, Object);
 
 	static PhysicsServer *singleton;
@@ -481,7 +473,6 @@ public:
 	virtual PhysicsDirectBodyState *body_get_direct_state(RID p_body) = 0;
 
 	struct MotionResult {
-
 		Vector3 motion;
 		Vector3 remainder;
 
@@ -500,10 +491,9 @@ public:
 		}
 	};
 
-	virtual bool body_test_motion(RID p_body, const Transform &p_from, const Vector3 &p_motion, bool p_infinite_inertia, MotionResult *r_result = NULL, bool p_exclude_raycast_shapes = true) = 0;
+	virtual bool body_test_motion(RID p_body, const Transform &p_from, const Vector3 &p_motion, bool p_infinite_inertia, MotionResult *r_result = nullptr, bool p_exclude_raycast_shapes = true) = 0;
 
 	struct SeparationResult {
-
 		float collision_depth;
 		Vector3 collision_point;
 		Vector3 collision_normal;
@@ -781,7 +771,7 @@ class PhysicsServerManager {
 
 		ClassInfo() :
 				name(""),
-				create_callback(NULL) {}
+				create_callback(nullptr) {}
 
 		ClassInfo(String p_name, CreatePhysicsServerCallback p_create_callback) :
 				name(p_name),

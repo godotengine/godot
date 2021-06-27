@@ -66,7 +66,6 @@ TScriptInstance *cast_script_instance(ScriptInstance *p_inst) {
 #define CAST_CSHARP_INSTANCE(m_inst) (cast_script_instance<CSharpInstance, CSharpLanguage>(m_inst))
 
 class CSharpScript : public Script {
-
 	GDCLASS(CSharpScript, Script);
 
 	friend class CSharpInstance;
@@ -91,7 +90,7 @@ class CSharpScript : public Script {
 		// TODO
 		// Replace with buffer containing the serialized state of managed scripts.
 		// Keep variant state backup to use only with script instance placeholders.
-		List<Pair<StringName, Variant> > properties;
+		List<Pair<StringName, Variant>> properties;
 	};
 
 	Set<ObjectID> pending_reload_instances;
@@ -110,7 +109,7 @@ class CSharpScript : public Script {
 		Variant::Type type;
 	};
 
-	Map<StringName, Vector<Argument> > _signals;
+	Map<StringName, Vector<Argument>> _signals;
 	bool signals_invalidated;
 
 #ifdef TOOLS_ENABLED
@@ -136,7 +135,8 @@ class CSharpScript : public Script {
 	void load_script_signals(GDMonoClass *p_class, GDMonoClass *p_native_class);
 	bool _get_signal(GDMonoClass *p_class, GDMonoClass *p_delegate, Vector<Argument> &params);
 
-	bool _update_exports();
+	bool _update_exports(PlaceHolderScriptInstance *p_instance_to_update = nullptr);
+
 	bool _get_member_export(IMonoClassMember *p_member, bool p_inspect_export, PropertyInfo &r_prop_info, bool &r_exported);
 #ifdef TOOLS_ENABLED
 	static int _try_get_member_export_hint(IMonoClassMember *p_member, ManagedType p_type, Variant::Type p_variant_type, bool p_allow_generics, PropertyHint &r_hint, String &r_hint_string);
@@ -206,7 +206,6 @@ public:
 };
 
 class CSharpInstance : public ScriptInstance {
-
 	friend class CSharpScript;
 	friend class CSharpLanguage;
 
@@ -240,7 +239,7 @@ class CSharpInstance : public ScriptInstance {
 
 	MultiplayerAPI::RPCMode _member_get_rpc_mode(IMonoClassMember *p_member) const;
 
-	void get_properties_state_for_reloading(List<Pair<StringName, Variant> > &r_state);
+	void get_properties_state_for_reloading(List<Pair<StringName, Variant>> &r_state);
 
 public:
 	MonoObject *get_mono_object() const;
@@ -296,7 +295,6 @@ struct CSharpScriptBinding {
 };
 
 class CSharpLanguage : public ScriptLanguage {
-
 	friend class CSharpScript;
 	friend class CSharpInstance;
 
@@ -320,7 +318,6 @@ class CSharpLanguage : public ScriptLanguage {
 #endif
 
 	struct StringNameCache {
-
 		StringName _signal_callback;
 		StringName _set;
 		StringName _get;
@@ -403,6 +400,7 @@ public:
 
 	/* EDITOR FUNCTIONS */
 	virtual void get_reserved_words(List<String> *p_words) const;
+	virtual bool is_control_flow_keyword(String p_keyword) const;
 	virtual void get_comment_delimiters(List<String> *p_delimiters) const;
 	virtual void get_string_delimiters(List<String> *p_delimiters) const;
 	virtual Ref<Script> get_template(const String &p_class_name, const String &p_base_class_name) const;
@@ -440,7 +438,7 @@ public:
 	virtual void frame();
 
 	/* TODO? */ virtual void get_public_functions(List<MethodInfo> *p_functions) const {}
-	/* TODO? */ virtual void get_public_constants(List<Pair<String, Variant> > *p_constants) const {}
+	/* TODO? */ virtual void get_public_constants(List<Pair<String, Variant>> *p_constants) const {}
 
 	virtual void reload_all_scripts();
 	virtual void reload_tool_script(const Ref<Script> &p_script, bool p_soft_reload);

@@ -35,7 +35,6 @@
 #include "editor_settings.h"
 
 PoolVector<String> EditorFolding::_get_unfolds(const Object *p_object) {
-
 	PoolVector<String> sections;
 	sections.resize(p_object->editor_get_section_folding().size());
 	if (sections.size()) {
@@ -61,7 +60,6 @@ void EditorFolding::save_resource_folding(const RES &p_resource, const String &p
 }
 
 void EditorFolding::_set_unfolds(Object *p_object, const PoolVector<String> &p_unfolds) {
-
 	int uc = p_unfolds.size();
 	PoolVector<String>::Read r = p_unfolds.read();
 	p_object->editor_clear_section_folding();
@@ -71,7 +69,6 @@ void EditorFolding::_set_unfolds(Object *p_object, const PoolVector<String> &p_u
 }
 
 void EditorFolding::load_resource_folding(RES p_resource, const String &p_path) {
-
 	Ref<ConfigFile> config;
 	config.instance();
 
@@ -117,7 +114,6 @@ void EditorFolding::_fill_folds(const Node *p_root, const Node *p_node, Array &p
 			if (E->get().type == Variant::OBJECT) {
 				RES res = p_node->get(E->get().name);
 				if (res.is_valid() && !resources.has(res) && res->get_path() != String() && !res->get_path().is_resource_file()) {
-
 					PoolVector<String> res_unfolds = _get_unfolds(res.ptr());
 					resource_folds.push_back(res->get_path());
 					resource_folds.push_back(res_unfolds);
@@ -132,12 +128,12 @@ void EditorFolding::_fill_folds(const Node *p_root, const Node *p_node, Array &p
 	}
 }
 void EditorFolding::save_scene_folding(const Node *p_scene, const String &p_path) {
-
 	ERR_FAIL_NULL(p_scene);
 
 	FileAccessRef file_check = FileAccess::create(FileAccess::ACCESS_RESOURCES);
-	if (!file_check->file_exists(p_path)) //This can happen when creating scene from FilesystemDock. It has path, but no file.
+	if (!file_check->file_exists(p_path)) { //This can happen when creating scene from FilesystemDock. It has path, but no file.
 		return;
+	}
 
 	Ref<ConfigFile> config;
 	config.instance();
@@ -156,7 +152,6 @@ void EditorFolding::save_scene_folding(const Node *p_scene, const String &p_path
 	config->save(file);
 }
 void EditorFolding::load_scene_folding(Node *p_scene, const String &p_path) {
-
 	Ref<ConfigFile> config;
 	config.instance();
 
@@ -218,14 +213,12 @@ void EditorFolding::load_scene_folding(Node *p_scene, const String &p_path) {
 }
 
 bool EditorFolding::has_folding_data(const String &p_path) {
-
 	String file = p_path.get_file() + "-folding-" + p_path.md5_text() + ".cfg";
 	file = EditorSettings::get_singleton()->get_project_settings_dir().plus_file(file);
 	return FileAccess::exists(file);
 }
 
 void EditorFolding::_do_object_unfolds(Object *p_object, Set<RES> &resources) {
-
 	List<PropertyInfo> plist;
 	p_object->get_property_list(&plist);
 	String group_base;
@@ -234,7 +227,6 @@ void EditorFolding::_do_object_unfolds(Object *p_object, Set<RES> &resources) {
 	Set<String> unfold_group;
 
 	for (List<PropertyInfo>::Element *E = plist.front(); E; E = E->next()) {
-
 		if (E->get().usage & PROPERTY_USAGE_CATEGORY) {
 			group = "";
 			group_base = "";
@@ -249,7 +241,6 @@ void EditorFolding::_do_object_unfolds(Object *p_object, Set<RES> &resources) {
 
 		//can unfold
 		if (E->get().usage & PROPERTY_USAGE_EDITOR) {
-
 			if (group != "") { //group
 				if (group_base == String() || E->get().name.begins_with(group_base)) {
 					bool can_revert = EditorPropertyRevert::can_property_revert(p_object, E->get().name);
@@ -271,7 +262,6 @@ void EditorFolding::_do_object_unfolds(Object *p_object, Set<RES> &resources) {
 		if (E->get().type == Variant::OBJECT) {
 			RES res = p_object->get(E->get().name);
 			if (res.is_valid() && !resources.has(res) && res->get_path() != String() && !res->get_path().is_resource_file()) {
-
 				resources.insert(res);
 				_do_object_unfolds(res.ptr(), resources);
 			}
@@ -301,7 +291,6 @@ void EditorFolding::_do_node_unfolds(Node *p_root, Node *p_node, Set<RES> &resou
 }
 
 void EditorFolding::unfold_scene(Node *p_scene) {
-
 	Set<RES> resources;
 	_do_node_unfolds(p_scene, p_scene, resources);
 }

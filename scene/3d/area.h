@@ -35,7 +35,6 @@
 #include "scene/3d/collision_object.h"
 
 class Area : public CollisionObject {
-
 	GDCLASS(Area, CollisionObject);
 
 public:
@@ -55,8 +54,6 @@ private:
 	real_t gravity_distance_scale;
 	real_t angular_damp;
 	real_t linear_damp;
-	uint32_t collision_mask;
-	uint32_t collision_layer;
 	int priority;
 	bool monitoring;
 	bool monitorable;
@@ -68,14 +65,14 @@ private:
 	void _body_exit_tree(ObjectID p_id);
 
 	struct ShapePair {
-
 		int body_shape;
 		int area_shape;
 		bool operator<(const ShapePair &p_sp) const {
-			if (body_shape == p_sp.body_shape)
+			if (body_shape == p_sp.body_shape) {
 				return area_shape < p_sp.area_shape;
-			else
+			} else {
 				return body_shape < p_sp.body_shape;
+			}
 		}
 
 		ShapePair() {}
@@ -86,7 +83,7 @@ private:
 	};
 
 	struct BodyState {
-
+		RID rid;
 		int rc;
 		bool in_tree;
 		VSet<ShapePair> shapes;
@@ -100,14 +97,14 @@ private:
 	void _area_exit_tree(ObjectID p_id);
 
 	struct AreaShapePair {
-
 		int area_shape;
 		int self_shape;
 		bool operator<(const AreaShapePair &p_sp) const {
-			if (area_shape == p_sp.area_shape)
+			if (area_shape == p_sp.area_shape) {
 				return self_shape < p_sp.self_shape;
-			else
+			} else {
 				return area_shape < p_sp.area_shape;
+			}
 		}
 
 		AreaShapePair() {}
@@ -118,7 +115,7 @@ private:
 	};
 
 	struct AreaState {
-
+		RID rid;
 		int rc;
 		bool in_tree;
 		VSet<AreaShapePair> shapes;
@@ -171,18 +168,6 @@ public:
 
 	void set_monitorable(bool p_enable);
 	bool is_monitorable() const;
-
-	void set_collision_mask(uint32_t p_mask);
-	uint32_t get_collision_mask() const;
-
-	void set_collision_layer(uint32_t p_layer);
-	uint32_t get_collision_layer() const;
-
-	void set_collision_mask_bit(int p_bit, bool p_value);
-	bool get_collision_mask_bit(int p_bit) const;
-
-	void set_collision_layer_bit(int p_bit, bool p_value);
-	bool get_collision_layer_bit(int p_bit) const;
 
 	Array get_overlapping_bodies() const;
 	Array get_overlapping_areas() const; //function for script

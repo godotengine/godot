@@ -35,7 +35,6 @@
 #define PARTICLES_MATERIAL_H
 
 class ParticlesMaterial : public Material {
-
 	GDCLASS(ParticlesMaterial, Material);
 
 public:
@@ -69,12 +68,12 @@ public:
 		EMISSION_SHAPE_BOX,
 		EMISSION_SHAPE_POINTS,
 		EMISSION_SHAPE_DIRECTED_POINTS,
+		EMISSION_SHAPE_RING,
 		EMISSION_SHAPE_MAX
 	};
 
 private:
 	union MaterialKey {
-
 		struct {
 			uint32_t texture_mask : 16;
 			uint32_t texture_color : 1;
@@ -103,7 +102,6 @@ private:
 	MaterialKey current_key;
 
 	_FORCE_INLINE_ MaterialKey _compute_key() const {
-
 		MaterialKey mk;
 		mk.key = 0;
 		for (int i = 0; i < PARAM_MAX; i++) {
@@ -180,6 +178,10 @@ private:
 		StringName emission_texture_points;
 		StringName emission_texture_normal;
 		StringName emission_texture_color;
+		StringName emission_ring_radius;
+		StringName emission_ring_inner_radius;
+		StringName emission_ring_height;
+		StringName emission_ring_axis;
 
 		StringName trail_divisor;
 		StringName trail_size_modifier;
@@ -218,6 +220,10 @@ private:
 	Ref<Texture> emission_normal_texture;
 	Ref<Texture> emission_color_texture;
 	int emission_point_count;
+	float emission_ring_height;
+	float emission_ring_radius;
+	float emission_ring_inner_radius;
+	Vector3 emission_ring_axis;
 
 	bool anim_loop;
 
@@ -271,6 +277,10 @@ public:
 	void set_emission_normal_texture(const Ref<Texture> &p_normals);
 	void set_emission_color_texture(const Ref<Texture> &p_colors);
 	void set_emission_point_count(int p_count);
+	void set_emission_ring_radius(float p_radius);
+	void set_emission_ring_inner_radius(float p_offset);
+	void set_emission_ring_height(float p_height);
+	void set_emission_ring_axis(Vector3 p_axis);
 
 	EmissionShape get_emission_shape() const;
 	float get_emission_sphere_radius() const;
@@ -279,6 +289,10 @@ public:
 	Ref<Texture> get_emission_normal_texture() const;
 	Ref<Texture> get_emission_color_texture() const;
 	int get_emission_point_count() const;
+	float get_emission_ring_radius() const;
+	float get_emission_ring_inner_radius() const;
+	float get_emission_ring_height() const;
+	Vector3 get_emission_ring_axis() const;
 
 	void set_trail_divisor(int p_divisor);
 	int get_trail_divisor() const;

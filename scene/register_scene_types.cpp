@@ -225,7 +225,6 @@ static Ref<ResourceFormatSaverShader> resource_saver_shader;
 static Ref<ResourceFormatLoaderShader> resource_loader_shader;
 
 void register_scene_types() {
-
 	SceneStringNames::create();
 
 	OS::get_singleton()->yield(); //may take time to init
@@ -753,7 +752,7 @@ void register_scene_types() {
 	if (font_path != String()) {
 		font = ResourceLoader::load(font_path);
 		if (!font.is_valid()) {
-			ERR_PRINTS("Error loading custom font '" + font_path + "'");
+			ERR_PRINT("Error loading custom font '" + font_path + "'");
 		}
 	}
 
@@ -768,13 +767,12 @@ void register_scene_types() {
 				Theme::set_default_font(font);
 			}
 		} else {
-			ERR_PRINTS("Error loading custom theme '" + theme_path + "'");
+			ERR_PRINT("Error loading custom theme '" + theme_path + "'");
 		}
 	}
 }
 
 void unregister_scene_types() {
-
 	clear_default_theme();
 
 	ResourceLoader::remove_resource_format_loader(resource_loader_dynamic_font);

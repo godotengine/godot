@@ -31,12 +31,10 @@
 #include "shader_types.h"
 
 const Map<StringName, ShaderLanguage::FunctionInfo> &ShaderTypes::get_functions(VS::ShaderMode p_mode) {
-
 	return shader_modes[p_mode].functions;
 }
 
 const Vector<StringName> &ShaderTypes::get_modes(VS::ShaderMode p_mode) {
-
 	return shader_modes[p_mode].modes;
 }
 
@@ -44,10 +42,9 @@ const Set<String> &ShaderTypes::get_types() {
 	return shader_types;
 }
 
-ShaderTypes *ShaderTypes::singleton = NULL;
+ShaderTypes *ShaderTypes::singleton = nullptr;
 
 static ShaderLanguage::BuiltInInfo constt(ShaderLanguage::DataType p_type) {
-
 	return ShaderLanguage::BuiltInInfo(p_type, true);
 }
 
@@ -78,6 +75,9 @@ ShaderTypes::ShaderTypes() {
 	shader_modes[VS::SHADER_SPATIAL].functions["vertex"].built_ins["MODELVIEW_MATRIX"] = ShaderLanguage::TYPE_MAT4;
 	shader_modes[VS::SHADER_SPATIAL].functions["vertex"].built_ins["INV_PROJECTION_MATRIX"] = constt(ShaderLanguage::TYPE_MAT4);
 	shader_modes[VS::SHADER_SPATIAL].functions["vertex"].built_ins["TIME"] = constt(ShaderLanguage::TYPE_FLOAT);
+	shader_modes[VS::SHADER_SPATIAL].functions["vertex"].built_ins["VIEW_INDEX"] = constt(ShaderLanguage::TYPE_INT);
+	shader_modes[VS::SHADER_SPATIAL].functions["vertex"].built_ins["VIEW_MONO_LEFT"] = constt(ShaderLanguage::TYPE_INT);
+	shader_modes[VS::SHADER_SPATIAL].functions["vertex"].built_ins["VIEW_RIGHT"] = constt(ShaderLanguage::TYPE_INT);
 	shader_modes[VS::SHADER_SPATIAL].functions["vertex"].built_ins["VIEWPORT_SIZE"] = constt(ShaderLanguage::TYPE_VEC2);
 	shader_modes[VS::SHADER_SPATIAL].functions["vertex"].built_ins["OUTPUT_IS_SRGB"] = constt(ShaderLanguage::TYPE_BOOL);
 
@@ -115,6 +115,9 @@ ShaderTypes::ShaderTypes() {
 	shader_modes[VS::SHADER_SPATIAL].functions["fragment"].built_ins["SCREEN_UV"] = ShaderLanguage::TYPE_VEC2;
 	shader_modes[VS::SHADER_SPATIAL].functions["fragment"].built_ins["POINT_COORD"] = constt(ShaderLanguage::TYPE_VEC2);
 	shader_modes[VS::SHADER_SPATIAL].functions["fragment"].built_ins["ALPHA_SCISSOR"] = ShaderLanguage::TYPE_FLOAT;
+	shader_modes[VS::SHADER_SPATIAL].functions["fragment"].built_ins["VIEW_INDEX"] = constt(ShaderLanguage::TYPE_INT);
+	shader_modes[VS::SHADER_SPATIAL].functions["fragment"].built_ins["VIEW_MONO_LEFT"] = constt(ShaderLanguage::TYPE_INT);
+	shader_modes[VS::SHADER_SPATIAL].functions["fragment"].built_ins["VIEW_RIGHT"] = constt(ShaderLanguage::TYPE_INT);
 
 	shader_modes[VS::SHADER_SPATIAL].functions["fragment"].built_ins["OUTPUT_IS_SRGB"] = constt(ShaderLanguage::TYPE_BOOL);
 

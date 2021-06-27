@@ -52,12 +52,11 @@
 
 // PRIVATE METHODS
 
-Ref<EditorSettings> EditorSettings::singleton = NULL;
+Ref<EditorSettings> EditorSettings::singleton = nullptr;
 
 // Properties
 
 bool EditorSettings::_set(const StringName &p_name, const Variant &p_value) {
-
 	_THREAD_SAFE_METHOD_
 
 	bool changed = _set_only(p_name, p_value);
@@ -68,15 +67,12 @@ bool EditorSettings::_set(const StringName &p_name, const Variant &p_value) {
 }
 
 bool EditorSettings::_set_only(const StringName &p_name, const Variant &p_value) {
-
 	_THREAD_SAFE_METHOD_
 
 	if (p_name.operator String() == "shortcuts") {
-
 		Array arr = p_value;
 		ERR_FAIL_COND_V(arr.size() && arr.size() & 1, true);
 		for (int i = 0; i < arr.size(); i += 2) {
-
 			String name = arr[i];
 			Ref<InputEvent> shortcut = arr[i + 1];
 
@@ -119,14 +115,11 @@ bool EditorSettings::_set_only(const StringName &p_name, const Variant &p_value)
 }
 
 bool EditorSettings::_get(const StringName &p_name, Variant &r_ret) const {
-
 	_THREAD_SAFE_METHOD_
 
 	if (p_name.operator String() == "shortcuts") {
-
 		Array arr;
-		for (const Map<String, Ref<ShortCut> >::Element *E = shortcuts.front(); E; E = E->next()) {
-
+		for (const Map<String, Ref<ShortCut>>::Element *E = shortcuts.front(); E; E = E->next()) {
 			Ref<ShortCut> sc = E->get();
 
 			if (optimize_save) {
@@ -135,8 +128,9 @@ bool EditorSettings::_get(const StringName &p_name, Variant &r_ret) const {
 				}
 
 				Ref<InputEvent> original = sc->get_meta("original");
-				if (sc->is_shortcut(original) || (original.is_null() && sc->get_shortcut().is_null()))
+				if (sc->is_shortcut(original) || (original.is_null() && sc->get_shortcut().is_null())) {
 					continue; //not changed from default, don't save
+				}
 			}
 
 			arr.push_back(E->key());
@@ -148,7 +142,7 @@ bool EditorSettings::_get(const StringName &p_name, Variant &r_ret) const {
 
 	const VariantContainer *v = props.getptr(p_name);
 	if (!v) {
-		WARN_PRINTS("EditorSettings::_get - Property not found: " + String(p_name));
+		WARN_PRINT("EditorSettings::_get - Property not found: " + String(p_name));
 		return false;
 	}
 	r_ret = v->variant;
@@ -162,7 +156,6 @@ void EditorSettings::_initial_set(const StringName &p_name, const Variant &p_val
 }
 
 struct _EVCSort {
-
 	String name;
 	Variant::Type type;
 	int order;
@@ -173,18 +166,17 @@ struct _EVCSort {
 };
 
 void EditorSettings::_get_property_list(List<PropertyInfo> *p_list) const {
-
 	_THREAD_SAFE_METHOD_
 
-	const String *k = NULL;
+	const String *k = nullptr;
 	Set<_EVCSort> vclist;
 
 	while ((k = props.next(k))) {
-
 		const VariantContainer *v = props.getptr(*k);
 
-		if (v->hide_from_editor)
+		if (v->hide_from_editor) {
 			continue;
+		}
 
 		_EVCSort vc;
 		vc.name = *k;
@@ -202,7 +194,6 @@ void EditorSettings::_get_property_list(List<PropertyInfo> *p_list) const {
 	}
 
 	for (Set<_EVCSort>::Element *E = vclist.front(); E; E = E->next()) {
-
 		int pinfo = 0;
 		if (E->get().save || !optimize_save) {
 			pinfo |= PROPERTY_USAGE_STORAGE;
@@ -216,8 +207,9 @@ void EditorSettings::_get_property_list(List<PropertyInfo> *p_list) const {
 
 		PropertyInfo pi(E->get().type, E->get().name);
 		pi.usage = pinfo;
-		if (hints.has(E->get().name))
+		if (hints.has(E->get().name)) {
 			pi = hints[E->get().name];
+		}
 
 		if (E->get().restart_if_changed) {
 			pi.usage |= PROPERTY_USAGE_RESTART_IF_CHANGED;
@@ -230,7 +222,6 @@ void EditorSettings::_get_property_list(List<PropertyInfo> *p_list) const {
 }
 
 void EditorSettings::_add_property_info_bind(const Dictionary &p_info) {
-
 	ERR_FAIL_COND(!p_info.has("name"));
 	ERR_FAIL_COND(!p_info.has("type"));
 
@@ -240,26 +231,27 @@ void EditorSettings::_add_property_info_bind(const Dictionary &p_info) {
 	pinfo.type = Variant::Type(p_info["type"].operator int());
 	ERR_FAIL_INDEX(pinfo.type, Variant::VARIANT_MAX);
 
-	if (p_info.has("hint"))
+	if (p_info.has("hint")) {
 		pinfo.hint = PropertyHint(p_info["hint"].operator int());
-	if (p_info.has("hint_string"))
+	}
+	if (p_info.has("hint_string")) {
 		pinfo.hint_string = p_info["hint_string"];
+	}
 
 	add_property_hint(pinfo);
 }
 
 // Default configs
 bool EditorSettings::has_default_value(const String &p_setting) const {
-
 	_THREAD_SAFE_METHOD_
 
-	if (!props.has(p_setting))
+	if (!props.has(p_setting)) {
 		return false;
+	}
 	return props[p_setting].has_default_value;
 }
 
 void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
-
 	_THREAD_SAFE_METHOD_
 
 	/* Languages */
@@ -279,7 +271,6 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 		EditorTranslationList *etl = _editor_translations;
 
 		while (etl->data) {
-
 			const String &locale = etl->lang;
 
 			// Skip locales which we can't render properly (see above comment).
@@ -318,28 +309,7 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	// Editor
 	_initial_set("interface/editor/display_scale", 0);
 	// Display what the Auto display scale setting effectively corresponds to.
-	// The code below is adapted in `editor/editor_node.cpp` and `editor/project_manager.cpp`.
-	// Make sure to update those when modifying the code below.
-#ifdef OSX_ENABLED
-	float scale = OS::get_singleton()->get_screen_max_scale();
-#else
-	const int screen = OS::get_singleton()->get_current_screen();
-	float scale;
-	if (OS::get_singleton()->get_screen_dpi(screen) >= 192 && OS::get_singleton()->get_screen_size(screen).y >= 1400) {
-		// hiDPI display.
-		scale = 2.0;
-	} else if (OS::get_singleton()->get_screen_size(screen).y >= 1700) {
-		// Likely a hiDPI display, but we aren't certain due to the returned DPI.
-		// Use an intermediate scale to handle this situation.
-		scale = 1.5;
-	} else if (OS::get_singleton()->get_screen_size(screen).y <= 800) {
-		// Small loDPI display. Use a smaller display scale so that editor elements fit more easily.
-		// Icons won't look great, but this is better than having editor elements overflow from its window.
-		scale = 0.75;
-	} else {
-		scale = 1.0;
-	}
-#endif
+	float scale = get_auto_display_scale();
 	hints["interface/editor/display_scale"] = PropertyInfo(Variant::INT, "interface/editor/display_scale", PROPERTY_HINT_ENUM, vformat("Auto (%d%%),75%%,100%%,125%%,150%%,175%%,200%%,Custom", Math::round(scale * 100)), PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED);
 	_initial_set("interface/editor/custom_display_scale", 1.0f);
 	hints["interface/editor/custom_display_scale"] = PropertyInfo(Variant::REAL, "interface/editor/custom_display_scale", PROPERTY_HINT_RANGE, "0.5,3,0.01", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED);
@@ -363,8 +333,12 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	_initial_set("interface/editor/dim_editor_on_dialog_popup", true);
 	_initial_set("interface/editor/low_processor_mode_sleep_usec", 6900); // ~144 FPS
 	hints["interface/editor/low_processor_mode_sleep_usec"] = PropertyInfo(Variant::REAL, "interface/editor/low_processor_mode_sleep_usec", PROPERTY_HINT_RANGE, "1,100000,1", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED);
-	_initial_set("interface/editor/unfocused_low_processor_mode_sleep_usec", 50000); // 20 FPS
-	hints["interface/editor/unfocused_low_processor_mode_sleep_usec"] = PropertyInfo(Variant::REAL, "interface/editor/unfocused_low_processor_mode_sleep_usec", PROPERTY_HINT_RANGE, "1,100000,1", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED);
+	_initial_set("interface/editor/unfocused_low_processor_mode_sleep_usec", 100000); // 10 FPS
+	// Allow an unfocused FPS limit as low as 1 FPS for those who really need low power usage
+	// (but don't need to preview particles or shaders while the editor is unfocused).
+	// With very low FPS limits, the editor can take a small while to become usable after being focused again,
+	// so this should be used at the user's discretion.
+	hints["interface/editor/unfocused_low_processor_mode_sleep_usec"] = PropertyInfo(Variant::REAL, "interface/editor/unfocused_low_processor_mode_sleep_usec", PROPERTY_HINT_RANGE, "1,1000000,1", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED);
 	_initial_set("interface/editor/separate_distraction_mode", false);
 	_initial_set("interface/editor/automatically_open_screenshots", true);
 	_initial_set("interface/editor/hide_console_window", false);
@@ -385,7 +359,7 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	_initial_set("interface/theme/accent_color", Color(0.41, 0.61, 0.91));
 	hints["interface/theme/accent_color"] = PropertyInfo(Variant::COLOR, "interface/theme/accent_color", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT);
 	_initial_set("interface/theme/contrast", 0.25);
-	hints["interface/theme/contrast"] = PropertyInfo(Variant::REAL, "interface/theme/contrast", PROPERTY_HINT_RANGE, "0.01, 1, 0.01");
+	hints["interface/theme/contrast"] = PropertyInfo(Variant::REAL, "interface/theme/contrast", PROPERTY_HINT_RANGE, "-1, 1, 0.01");
 	_initial_set("interface/theme/relationship_line_opacity", 0.1);
 	hints["interface/theme/relationship_line_opacity"] = PropertyInfo(Variant::REAL, "interface/theme/relationship_line_opacity", PROPERTY_HINT_RANGE, "0.00, 1, 0.01");
 	_initial_set("interface/theme/highlight_tabs", false);
@@ -395,10 +369,9 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	_initial_set("interface/theme/additional_spacing", 0);
 	hints["interface/theme/additional_spacing"] = PropertyInfo(Variant::REAL, "interface/theme/additional_spacing", PROPERTY_HINT_RANGE, "0,5,0.1", PROPERTY_USAGE_DEFAULT);
 	_initial_set("interface/theme/custom_theme", "");
-	hints["interface/theme/custom_theme"] = PropertyInfo(Variant::STRING, "interface/theme/custom_theme", PROPERTY_HINT_GLOBAL_FILE, "*.res,*.tres,*.theme", PROPERTY_USAGE_DEFAULT);
+	hints["interface/theme/custom_theme"] = PropertyInfo(Variant::STRING, "interface/theme/custom_theme", PROPERTY_HINT_GLOBAL_FILE, "*.res,*.tres,*.theme", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED);
 
 	// Scene tabs
-	_initial_set("interface/scene_tabs/show_extension", false);
 	_initial_set("interface/scene_tabs/show_thumbnail_on_hover", true);
 	_initial_set("interface/scene_tabs/resize_if_many_tabs", true);
 	_initial_set("interface/scene_tabs/minimum_width", 50);
@@ -480,9 +453,11 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	_initial_set("text_editor/appearance/show_info_gutter", true);
 	_initial_set("text_editor/appearance/code_folding", true);
 	_initial_set("text_editor/appearance/word_wrap", false);
-	_initial_set("text_editor/appearance/show_line_length_guideline", true);
-	_initial_set("text_editor/appearance/line_length_guideline_column", 80);
-	hints["text_editor/appearance/line_length_guideline_column"] = PropertyInfo(Variant::INT, "text_editor/appearance/line_length_guideline_column", PROPERTY_HINT_RANGE, "20, 160, 1");
+	_initial_set("text_editor/appearance/show_line_length_guidelines", true);
+	_initial_set("text_editor/appearance/line_length_guideline_soft_column", 80);
+	hints["text_editor/appearance/line_length_guideline_soft_column"] = PropertyInfo(Variant::INT, "text_editor/appearance/line_length_guideline_soft_column", PROPERTY_HINT_RANGE, "20, 160, 1");
+	_initial_set("text_editor/appearance/line_length_guideline_hard_column", 100);
+	hints["text_editor/appearance/line_length_guideline_hard_column"] = PropertyInfo(Variant::INT, "text_editor/appearance/line_length_guideline_hard_column", PROPERTY_HINT_RANGE, "20, 160, 1");
 
 	// Script list
 	_initial_set("text_editor/script_list/show_members_overview", true);
@@ -637,6 +612,8 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	// Animation
 	_initial_set("editors/animation/autorename_animation_tracks", true);
 	_initial_set("editors/animation/confirm_insert_track", true);
+	_initial_set("editors/animation/default_create_bezier_tracks", false);
+	_initial_set("editors/animation/default_create_reset_tracks", true);
 	_initial_set("editors/animation/onion_layers_past_color", Color(1, 0, 0));
 	_initial_set("editors/animation/onion_layers_future_color", Color(0, 1, 0));
 
@@ -685,24 +662,19 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	hints["project_manager/sorting_order"] = PropertyInfo(Variant::INT, "project_manager/sorting_order", PROPERTY_HINT_ENUM, "Name,Path,Last Modified");
 
 	if (p_extra_config.is_valid()) {
-
 		if (p_extra_config->has_section("init_projects") && p_extra_config->has_section_key("init_projects", "list")) {
-
 			Vector<String> list = p_extra_config->get_value("init_projects", "list");
 			for (int i = 0; i < list.size(); i++) {
-
 				String name = list[i].replace("/", "::");
 				set("projects/" + name, list[i]);
 			};
 		};
 
 		if (p_extra_config->has_section("presets")) {
-
 			List<String> keys;
 			p_extra_config->get_section_keys("presets", &keys);
 
 			for (List<String>::Element *E = keys.front(); E; E = E->next()) {
-
 				String key = E->get();
 				Variant val = p_extra_config->get_value("presets", key);
 				set(key, val);
@@ -712,11 +684,11 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 }
 
 void EditorSettings::_load_default_text_editor_theme() {
-
 	bool dark_theme = is_dark_theme();
 
 	_initial_set("text_editor/highlighting/symbol_color", Color(0.73, 0.87, 1.0));
 	_initial_set("text_editor/highlighting/keyword_color", Color(1.0, 1.0, 0.7));
+	_initial_set("text_editor/highlighting/control_flow_keyword_color", Color(1.0, 0.85, 0.7));
 	_initial_set("text_editor/highlighting/base_type_color", Color(0.64, 1.0, 0.83));
 	_initial_set("text_editor/highlighting/engine_type_color", Color(0.51, 0.83, 1.0));
 	_initial_set("text_editor/highlighting/user_type_color", Color(0.42, 0.67, 0.93));
@@ -796,7 +768,6 @@ static Dictionary _get_builtin_script_templates() {
 }
 
 static void _create_script_templates(const String &p_path) {
-
 	Dictionary templates = _get_builtin_script_templates();
 	List<Variant> keys;
 	templates.get_key_list(&keys);
@@ -820,16 +791,15 @@ static void _create_script_templates(const String &p_path) {
 // PUBLIC METHODS
 
 EditorSettings *EditorSettings::get_singleton() {
-
 	return singleton.ptr();
 }
 
 void EditorSettings::create() {
-
-	if (singleton.ptr())
+	if (singleton.ptr()) {
 		return; //pointless
+	}
 
-	DirAccess *dir = NULL;
+	DirAccess *dir = nullptr;
 
 	String data_path;
 	String data_dir;
@@ -848,19 +818,18 @@ void EditorSettings::create() {
 		self_contained = true;
 		Error err = extra_config->load(exe_path + "/._sc_");
 		if (err != OK) {
-			ERR_PRINTS("Can't load config from path '" + exe_path + "/._sc_'.");
+			ERR_PRINT("Can't load config from path '" + exe_path + "/._sc_'.");
 		}
 	} else if (d->file_exists(exe_path + "/_sc_")) {
 		self_contained = true;
 		Error err = extra_config->load(exe_path + "/_sc_");
 		if (err != OK) {
-			ERR_PRINTS("Can't load config from path '" + exe_path + "/_sc_'.");
+			ERR_PRINT("Can't load config from path '" + exe_path + "/_sc_'.");
 		}
 	}
 	memdelete(d);
 
 	if (self_contained) {
-
 		// editor is self contained, all in same folder
 		data_path = exe_path;
 		data_dir = data_path.plus_file("editor_data");
@@ -869,7 +838,6 @@ void EditorSettings::create() {
 		cache_path = exe_path;
 		cache_dir = data_dir.plus_file("cache");
 	} else {
-
 		// Typically XDG_DATA_HOME or %APPDATA%
 		data_path = OS::get_singleton()->get_data_path();
 		data_dir = data_path.plus_file(OS::get_singleton()->get_godot_dir_name());
@@ -890,7 +858,6 @@ void EditorSettings::create() {
 	String config_file_path;
 
 	if (data_path != "" && config_path != "" && cache_path != "") {
-
 		// Validate/create data dir and subdirectories
 
 		dir = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
@@ -961,8 +928,9 @@ void EditorSettings::create() {
 
 		dir->change_dir("projects");
 		String project_config_dir = ProjectSettings::get_singleton()->get_resource_path();
-		if (project_config_dir.ends_with("/"))
+		if (project_config_dir.ends_with("/")) {
 			project_config_dir = config_path.substr(0, project_config_dir.size() - 1);
+		}
 		project_config_dir = project_config_dir.get_file() + "-" + project_config_dir.md5_text();
 
 		if (dir->change_dir(project_config_dir) != OK) {
@@ -1013,7 +981,6 @@ fail:
 	if (extra_config->has_section("init_projects")) {
 		Vector<String> list = extra_config->get_value("init_projects", "list");
 		for (int i = 0; i < list.size(); i++) {
-
 			list.write[i] = exe_path.plus_file(list[i]);
 		};
 		extra_config->set_value("init_projects", "list", list);
@@ -1032,17 +999,15 @@ fail:
 }
 
 void EditorSettings::setup_language() {
-
 	String lang = get("interface/editor/editor_language");
-	if (lang == "en")
+	if (lang == "en") {
 		return; //none to do
+	}
 
 	EditorTranslationList *etl = _editor_translations;
 
 	while (etl->data) {
-
 		if (etl->lang == lang) {
-
 			Vector<uint8_t> data;
 			data.resize(etl->uncomp_size);
 			Compression::decompress(data.ptrw(), etl->uncomp_size, etl->data, etl->comp_size, Compression::MODE_DEFLATE);
@@ -1050,7 +1015,7 @@ void EditorSettings::setup_language() {
 			FileAccessMemory *fa = memnew(FileAccessMemory);
 			fa->open_custom(data.ptr(), data.size());
 
-			Ref<Translation> tr = TranslationLoaderPO::load_translation(fa, NULL);
+			Ref<Translation> tr = TranslationLoaderPO::load_translation(fa, nullptr);
 
 			if (tr.is_valid()) {
 				tr->set_locale(etl->lang);
@@ -1064,7 +1029,6 @@ void EditorSettings::setup_language() {
 }
 
 void EditorSettings::setup_network() {
-
 	List<IP_Address> local_ip;
 	IP::get_singleton()->get_local_addresses(&local_ip);
 	String hint;
@@ -1073,20 +1037,23 @@ void EditorSettings::setup_network() {
 
 	// Check that current remote_host is a valid interface address and populate hints.
 	for (List<IP_Address>::Element *E = local_ip.front(); E; E = E->next()) {
-
 		String ip = E->get();
 
 		// link-local IPv6 addresses don't work, skipping them
-		if (ip.begins_with("fe80:0:0:0:")) // fe80::/64
+		if (ip.begins_with("fe80:0:0:0:")) { // fe80::/64
 			continue;
+		}
 		// Same goes for IPv4 link-local (APIPA) addresses.
-		if (ip.begins_with("169.254.")) // 169.254.0.0/16
+		if (ip.begins_with("169.254.")) { // 169.254.0.0/16
 			continue;
+		}
 		// Select current IP (found)
-		if (ip == current)
+		if (ip == current) {
 			selected = ip;
-		if (hint != "")
+		}
+		if (hint != "") {
 			hint += ",";
+		}
 		hint += ip;
 	}
 
@@ -1097,11 +1064,11 @@ void EditorSettings::setup_network() {
 }
 
 void EditorSettings::save() {
-
 	//_THREAD_SAFE_METHOD_
 
-	if (!singleton.ptr())
+	if (!singleton.ptr()) {
 		return;
+	}
 
 	if (singleton->config_file_path == "") {
 		ERR_PRINT("Cannot save EditorSettings config, no valid path");
@@ -1111,22 +1078,21 @@ void EditorSettings::save() {
 	Error err = ResourceSaver::save(singleton->config_file_path, singleton);
 
 	if (err != OK) {
-		ERR_PRINTS("Error saving editor settings to " + singleton->config_file_path);
+		ERR_PRINT("Error saving editor settings to " + singleton->config_file_path);
 	} else {
 		print_verbose("EditorSettings: Save OK!");
 	}
 }
 
 void EditorSettings::destroy() {
-
-	if (!singleton.ptr())
+	if (!singleton.ptr()) {
 		return;
+	}
 	save();
 	singleton = Ref<EditorSettings>();
 }
 
 void EditorSettings::set_optimize_save(bool p_optimize) {
-
 	optimize_save = p_optimize;
 }
 
@@ -1143,14 +1109,12 @@ Variant EditorSettings::get_setting(const String &p_setting) const {
 }
 
 bool EditorSettings::has_setting(const String &p_setting) const {
-
 	_THREAD_SAFE_METHOD_
 
 	return props.has(p_setting);
 }
 
 void EditorSettings::erase(const String &p_setting) {
-
 	_THREAD_SAFE_METHOD_
 
 	props.erase(p_setting);
@@ -1166,17 +1130,18 @@ void EditorSettings::raise_order(const String &p_setting) {
 void EditorSettings::set_restart_if_changed(const StringName &p_setting, bool p_restart) {
 	_THREAD_SAFE_METHOD_
 
-	if (!props.has(p_setting))
+	if (!props.has(p_setting)) {
 		return;
+	}
 	props[p_setting].restart_if_changed = p_restart;
 }
 
 void EditorSettings::set_initial_value(const StringName &p_setting, const Variant &p_value, bool p_update_current) {
-
 	_THREAD_SAFE_METHOD_
 
-	if (!props.has(p_setting))
+	if (!props.has(p_setting)) {
 		return;
+	}
 	props[p_setting].initial = p_value;
 	props[p_setting].has_default_value = true;
 	if (p_update_current) {
@@ -1185,7 +1150,6 @@ void EditorSettings::set_initial_value(const StringName &p_setting, const Varian
 }
 
 Variant _EDITOR_DEF(const String &p_setting, const Variant &p_default, bool p_restart_if_changed) {
-
 	Variant ret = p_default;
 	if (EditorSettings::get_singleton()->has_setting(p_setting)) {
 		ret = EditorSettings::get_singleton()->get(p_setting);
@@ -1202,32 +1166,31 @@ Variant _EDITOR_DEF(const String &p_setting, const Variant &p_default, bool p_re
 }
 
 Variant _EDITOR_GET(const String &p_setting) {
-
 	ERR_FAIL_COND_V(!EditorSettings::get_singleton()->has_setting(p_setting), Variant());
 	return EditorSettings::get_singleton()->get(p_setting);
 }
 
 bool EditorSettings::property_can_revert(const String &p_setting) {
-
-	if (!props.has(p_setting))
+	if (!props.has(p_setting)) {
 		return false;
+	}
 
-	if (!props[p_setting].has_default_value)
+	if (!props[p_setting].has_default_value) {
 		return false;
+	}
 
 	return props[p_setting].initial != props[p_setting].variant;
 }
 
 Variant EditorSettings::property_get_revert(const String &p_setting) {
-
-	if (!props.has(p_setting) || !props[p_setting].has_default_value)
+	if (!props.has(p_setting) || !props[p_setting].has_default_value) {
 		return Variant();
+	}
 
 	return props[p_setting].initial;
 }
 
 void EditorSettings::add_property_hint(const PropertyInfo &p_hint) {
-
 	_THREAD_SAFE_METHOD_
 
 	hints[p_hint.name] = p_hint;
@@ -1236,51 +1199,42 @@ void EditorSettings::add_property_hint(const PropertyInfo &p_hint) {
 // Data directories
 
 String EditorSettings::get_data_dir() const {
-
 	return data_dir;
 }
 
 String EditorSettings::get_templates_dir() const {
-
 	return get_data_dir().plus_file("templates");
 }
 
 // Config directories
 
 String EditorSettings::get_settings_dir() const {
-
 	return settings_dir;
 }
 
 String EditorSettings::get_project_settings_dir() const {
-
 	return get_settings_dir().plus_file("projects").plus_file(project_config_dir);
 }
 
 String EditorSettings::get_text_editor_themes_dir() const {
-
 	return get_settings_dir().plus_file("text_editor_themes");
 }
 
 String EditorSettings::get_script_templates_dir() const {
-
 	return get_settings_dir().plus_file("script_templates");
 }
 
 String EditorSettings::get_project_script_templates_dir() const {
-
 	return ProjectSettings::get_singleton()->get("editor/script_templates_search_path");
 }
 
 // Cache directory
 
 String EditorSettings::get_cache_dir() const {
-
 	return cache_dir;
 }
 
 String EditorSettings::get_feature_profiles_dir() const {
-
 	return get_settings_dir().plus_file("feature_profiles");
 }
 
@@ -1308,39 +1262,36 @@ Variant EditorSettings::get_project_metadata(const String &p_section, const Stri
 }
 
 void EditorSettings::set_favorites(const Vector<String> &p_favorites) {
-
 	favorites = p_favorites;
 	FileAccess *f = FileAccess::open(get_project_settings_dir().plus_file("favorites"), FileAccess::WRITE);
 	if (f) {
-		for (int i = 0; i < favorites.size(); i++)
+		for (int i = 0; i < favorites.size(); i++) {
 			f->store_line(favorites[i]);
+		}
 		memdelete(f);
 	}
 }
 
 Vector<String> EditorSettings::get_favorites() const {
-
 	return favorites;
 }
 
 void EditorSettings::set_recent_dirs(const Vector<String> &p_recent_dirs) {
-
 	recent_dirs = p_recent_dirs;
 	FileAccess *f = FileAccess::open(get_project_settings_dir().plus_file("recent_dirs"), FileAccess::WRITE);
 	if (f) {
-		for (int i = 0; i < recent_dirs.size(); i++)
+		for (int i = 0; i < recent_dirs.size(); i++) {
 			f->store_line(recent_dirs[i]);
+		}
 		memdelete(f);
 	}
 }
 
 Vector<String> EditorSettings::get_recent_dirs() const {
-
 	return recent_dirs;
 }
 
 void EditorSettings::load_favorites() {
-
 	FileAccess *f = FileAccess::open(get_project_settings_dir().plus_file("favorites"), FileAccess::READ);
 	if (f) {
 		String line = f->get_line().strip_edges();
@@ -1423,7 +1374,6 @@ void EditorSettings::load_text_editor_theme() {
 
 		// don't load if it's not already there!
 		if (has_setting("text_editor/highlighting/" + key)) {
-
 			// make sure it is actually a color
 			if (val.is_valid_html_color() && key.find("color") >= 0) {
 				props["text_editor/highlighting/" + key].variant = Color::html(val); // change manually to prevent "Settings changed" console spam
@@ -1435,7 +1385,6 @@ void EditorSettings::load_text_editor_theme() {
 }
 
 bool EditorSettings::import_text_editor_theme(String p_file) {
-
 	if (!p_file.ends_with(".tet")) {
 		return false;
 	} else {
@@ -1454,7 +1403,6 @@ bool EditorSettings::import_text_editor_theme(String p_file) {
 }
 
 bool EditorSettings::save_text_editor_theme() {
-
 	String p_file = get("text_editor/theme/color_theme");
 
 	if (_is_default_text_editor_theme(p_file.get_file().to_lower())) {
@@ -1473,7 +1421,6 @@ bool EditorSettings::save_text_editor_theme_as(String p_file) {
 		return false;
 	}
 	if (_save_text_editor_theme(p_file)) {
-
 		// switch to theme is saved in the theme directory
 		list_text_editor_themes();
 		String theme_name = p_file.substr(0, p_file.length() - 4).get_file();
@@ -1493,7 +1440,6 @@ bool EditorSettings::is_default_text_editor_theme() {
 }
 
 Vector<String> EditorSettings::get_script_templates(const String &p_extension, const String &p_custom_path) {
-
 	Vector<String> templates;
 	String template_dir = get_script_templates_dir();
 	if (!p_custom_path.empty()) {
@@ -1516,46 +1462,63 @@ Vector<String> EditorSettings::get_script_templates(const String &p_extension, c
 }
 
 String EditorSettings::get_editor_layouts_config() const {
-
 	return get_settings_dir().plus_file("editor_layouts.cfg");
+}
+
+float EditorSettings::get_auto_display_scale() const {
+#ifdef OSX_ENABLED
+	return OS::get_singleton()->get_screen_max_scale();
+#else
+	const int screen = OS::get_singleton()->get_current_screen();
+	// Use the smallest dimension to use a correct display scale on portait displays.
+	const int smallest_dimension = MIN(OS::get_singleton()->get_screen_size(screen).x, OS::get_singleton()->get_screen_size(screen).y);
+	if (OS::get_singleton()->get_screen_dpi(screen) >= 192 && smallest_dimension >= 1400) {
+		// hiDPI display.
+		return 2.0;
+	} else if (smallest_dimension >= 1700) {
+		// Likely a hiDPI display, but we aren't certain due to the returned DPI.
+		// Use an intermediate scale to handle this situation.
+		return 1.5;
+	} else if (smallest_dimension <= 800) {
+		// Small loDPI display. Use a smaller display scale so that editor elements fit more easily.
+		// Icons won't look great, but this is better than having editor elements overflow from its window.
+		return 0.75;
+	}
+	return 1.0;
+#endif
 }
 
 // Shortcuts
 
 void EditorSettings::add_shortcut(const String &p_name, Ref<ShortCut> &p_shortcut) {
-
 	shortcuts[p_name] = p_shortcut;
 }
 
 bool EditorSettings::is_shortcut(const String &p_name, const Ref<InputEvent> &p_event) const {
-
-	const Map<String, Ref<ShortCut> >::Element *E = shortcuts.find(p_name);
+	const Map<String, Ref<ShortCut>>::Element *E = shortcuts.find(p_name);
 	ERR_FAIL_COND_V_MSG(!E, false, "Unknown Shortcut: " + p_name + ".");
 
 	return E->get()->is_shortcut(p_event);
 }
 
 Ref<ShortCut> EditorSettings::get_shortcut(const String &p_name) const {
-
-	const Map<String, Ref<ShortCut> >::Element *E = shortcuts.find(p_name);
-	if (!E)
+	const Map<String, Ref<ShortCut>>::Element *E = shortcuts.find(p_name);
+	if (!E) {
 		return Ref<ShortCut>();
+	}
 
 	return E->get();
 }
 
 void EditorSettings::get_shortcut_list(List<String> *r_shortcuts) {
-
-	for (const Map<String, Ref<ShortCut> >::Element *E = shortcuts.front(); E; E = E->next()) {
-
+	for (const Map<String, Ref<ShortCut>>::Element *E = shortcuts.front(); E; E = E->next()) {
 		r_shortcuts->push_back(E->key());
 	}
 }
 
 Ref<ShortCut> ED_GET_SHORTCUT(const String &p_path) {
-
 	if (!EditorSettings::get_singleton()) {
-		return NULL;
+		return nullptr;
 	}
 
 	Ref<ShortCut> sc = EditorSettings::get_singleton()->get_shortcut(p_path);
@@ -1571,7 +1534,6 @@ struct ShortCutMapping {
 };
 
 Ref<ShortCut> ED_SHORTCUT(const String &p_path, const String &p_name, uint32_t p_keycode) {
-
 #ifdef OSX_ENABLED
 	// Use Cmd+Backspace as a general replacement for Delete shortcuts on macOS
 	if (p_keycode == KEY_DELETE) {
@@ -1602,7 +1564,6 @@ Ref<ShortCut> ED_SHORTCUT(const String &p_path, const String &p_name, uint32_t p
 
 	Ref<ShortCut> sc = EditorSettings::get_singleton()->get_shortcut(p_path);
 	if (sc.is_valid()) {
-
 		sc->set_name(p_name); //keep name (the ones that come from disk have no name)
 		sc->set_meta("original", ie); //to compare against changes
 		return sc;
@@ -1618,7 +1579,6 @@ Ref<ShortCut> ED_SHORTCUT(const String &p_path, const String &p_name, uint32_t p
 }
 
 void EditorSettings::notify_changes() {
-
 	_THREAD_SAFE_METHOD_
 
 	SceneTree *sml = Object::cast_to<SceneTree>(OS::get_singleton()->get_main_loop());
@@ -1636,7 +1596,6 @@ void EditorSettings::notify_changes() {
 }
 
 void EditorSettings::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("has_setting", "name"), &EditorSettings::has_setting);
 	ClassDB::bind_method(D_METHOD("set_setting", "name", "value"), &EditorSettings::set_setting);
 	ClassDB::bind_method(D_METHOD("get_setting", "name"), &EditorSettings::get_setting);
@@ -1663,7 +1622,6 @@ void EditorSettings::_bind_methods() {
 }
 
 EditorSettings::EditorSettings() {
-
 	last_order = 0;
 	optimize_save = true;
 	save_changed_setting = true;

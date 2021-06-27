@@ -1,4 +1,4 @@
-// Copyright 2009-2020 Intel Corporation
+// Copyright 2009-2021 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
 #include "scene.h"
@@ -792,16 +792,18 @@ namespace embree
     }
 
     /* initiate build */
-    try {
+    // -- GODOT start --
+    // try {
       scheduler->spawn_root([&]() { commit_task(); Lock<MutexSys> lock(schedulerMutex); this->scheduler = nullptr; }, 1, !join);
-    }
-    catch (...) {
-      accels_clear();
-      updateInterface();
-      Lock<MutexSys> lock(schedulerMutex);
-      this->scheduler = nullptr;
-      throw;
-    }
+    // }
+    // catch (...) {
+    //   accels_clear();
+    //   updateInterface();
+    //   Lock<MutexSys> lock(schedulerMutex);
+    //   this->scheduler = nullptr;
+    //   throw;
+    // }
+    // -- GODOT end --
   }
 
 #endif

@@ -77,7 +77,6 @@ private:
 			const FBXDocParser::Document *doc,
 			uint64_t current_element,
 			bool reverse_lookup = false) {
-
 		const std::vector<const FBXDocParser::Connection *> &conns = reverse_lookup ? doc->GetConnectionsByDestinationSequenced(current_element) : doc->GetConnectionsBySourceSequenced(current_element);
 		//print_verbose("[doc] looking for " + String(element_to_find));
 		// using the temp pattern here so we can debug before it returns
@@ -129,7 +128,7 @@ public:
 
 	virtual void get_extensions(List<String> *r_extensions) const;
 	virtual uint32_t get_import_flags() const;
-	virtual Node *import_scene(const String &p_path, uint32_t p_flags, int p_bake_fps, List<String> *r_missing_deps, Error *r_err = NULL);
+	virtual Node *import_scene(const String &p_path, uint32_t p_flags, int p_bake_fps, List<String> *r_missing_deps, Error *r_err = nullptr);
 	void create_mesh_data_skin(ImportState &state, const Ref<FBXNode> &fbx_node, uint64_t mesh_id);
 };
 

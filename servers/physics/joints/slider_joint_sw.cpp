@@ -116,7 +116,6 @@ SliderJointSW::SliderJointSW(BodySW *rbA, BodySW *rbB, const Transform &frameInA
 		JointSW(_arr, 2),
 		m_frameInA(frameInA),
 		m_frameInB(frameInB) {
-
 	A = rbA;
 	B = rbB;
 
@@ -129,6 +128,9 @@ SliderJointSW::SliderJointSW(BodySW *rbA, BodySW *rbB, const Transform &frameInA
 //-----------------------------------------------------------------------------
 
 bool SliderJointSW::setup(real_t p_step) {
+	if ((A->get_mode() <= PhysicsServer::BODY_MODE_KINEMATIC) && (B->get_mode() <= PhysicsServer::BODY_MODE_KINEMATIC)) {
+		return false;
+	}
 
 	//calculate transforms
 	m_calculatedTransformA = A->get_transform() * m_frameInA;
@@ -182,7 +184,6 @@ bool SliderJointSW::setup(real_t p_step) {
 //-----------------------------------------------------------------------------
 
 void SliderJointSW::solve(real_t p_step) {
-
 	int i;
 	// linear
 	Vector3 velA = A->get_velocity_in_local_point(m_relPosA);
@@ -304,7 +305,7 @@ void SliderJointSW::solve(real_t p_step) {
 
 //-----------------------------------------------------------------------------
 
-void SliderJointSW::calculateTransforms(void) {
+void SliderJointSW::calculateTransforms() {
 	m_calculatedTransformA = A->get_transform() * m_frameInA;
 	m_calculatedTransformB = B->get_transform() * m_frameInB;
 	m_realPivotAInW = m_calculatedTransformA.origin;
@@ -323,7 +324,7 @@ void SliderJointSW::calculateTransforms(void) {
 
 //-----------------------------------------------------------------------------
 
-void SliderJointSW::testLinLimits(void) {
+void SliderJointSW::testLinLimits() {
 	m_solveLinLim = false;
 	m_linPos = m_depth[0];
 	if (m_lowerLinLimit <= m_upperLinLimit) {
@@ -343,7 +344,7 @@ void SliderJointSW::testLinLimits(void) {
 
 //-----------------------------------------------------------------------------
 
-void SliderJointSW::testAngLimits(void) {
+void SliderJointSW::testAngLimits() {
 	m_angDepth = real_t(0.);
 	m_solveAngLim = false;
 	if (m_lowerAngLimit <= m_upperAngLimit) {
@@ -363,7 +364,7 @@ void SliderJointSW::testAngLimits(void) {
 
 //-----------------------------------------------------------------------------
 
-Vector3 SliderJointSW::getAncorInA(void) {
+Vector3 SliderJointSW::getAncorInA() {
 	Vector3 ancorInA;
 	ancorInA = m_realPivotAInW + (m_lowerLinLimit + m_upperLinLimit) * real_t(0.5) * m_sliderAxis;
 	ancorInA = A->get_transform().inverse().xform(ancorInA);
@@ -372,71 +373,137 @@ Vector3 SliderJointSW::getAncorInA(void) {
 
 //-----------------------------------------------------------------------------
 
-Vector3 SliderJointSW::getAncorInB(void) {
+Vector3 SliderJointSW::getAncorInB() {
 	Vector3 ancorInB;
 	ancorInB = m_frameInB.origin;
 	return ancorInB;
 } // SliderJointSW::getAncorInB();
 
 void SliderJointSW::set_param(PhysicsServer::SliderJointParam p_param, real_t p_value) {
-
 	switch (p_param) {
-		case PhysicsServer::SLIDER_JOINT_LINEAR_LIMIT_UPPER: m_upperLinLimit = p_value; break;
-		case PhysicsServer::SLIDER_JOINT_LINEAR_LIMIT_LOWER: m_lowerLinLimit = p_value; break;
-		case PhysicsServer::SLIDER_JOINT_LINEAR_LIMIT_SOFTNESS: m_softnessLimLin = p_value; break;
-		case PhysicsServer::SLIDER_JOINT_LINEAR_LIMIT_RESTITUTION: m_restitutionLimLin = p_value; break;
-		case PhysicsServer::SLIDER_JOINT_LINEAR_LIMIT_DAMPING: m_dampingLimLin = p_value; break;
-		case PhysicsServer::SLIDER_JOINT_LINEAR_MOTION_SOFTNESS: m_softnessDirLin = p_value; break;
-		case PhysicsServer::SLIDER_JOINT_LINEAR_MOTION_RESTITUTION: m_restitutionDirLin = p_value; break;
-		case PhysicsServer::SLIDER_JOINT_LINEAR_MOTION_DAMPING: m_dampingDirLin = p_value; break;
-		case PhysicsServer::SLIDER_JOINT_LINEAR_ORTHOGONAL_SOFTNESS: m_softnessOrthoLin = p_value; break;
-		case PhysicsServer::SLIDER_JOINT_LINEAR_ORTHOGONAL_RESTITUTION: m_restitutionOrthoLin = p_value; break;
-		case PhysicsServer::SLIDER_JOINT_LINEAR_ORTHOGONAL_DAMPING: m_dampingOrthoLin = p_value; break;
+		case PhysicsServer::SLIDER_JOINT_LINEAR_LIMIT_UPPER:
+			m_upperLinLimit = p_value;
+			break;
+		case PhysicsServer::SLIDER_JOINT_LINEAR_LIMIT_LOWER:
+			m_lowerLinLimit = p_value;
+			break;
+		case PhysicsServer::SLIDER_JOINT_LINEAR_LIMIT_SOFTNESS:
+			m_softnessLimLin = p_value;
+			break;
+		case PhysicsServer::SLIDER_JOINT_LINEAR_LIMIT_RESTITUTION:
+			m_restitutionLimLin = p_value;
+			break;
+		case PhysicsServer::SLIDER_JOINT_LINEAR_LIMIT_DAMPING:
+			m_dampingLimLin = p_value;
+			break;
+		case PhysicsServer::SLIDER_JOINT_LINEAR_MOTION_SOFTNESS:
+			m_softnessDirLin = p_value;
+			break;
+		case PhysicsServer::SLIDER_JOINT_LINEAR_MOTION_RESTITUTION:
+			m_restitutionDirLin = p_value;
+			break;
+		case PhysicsServer::SLIDER_JOINT_LINEAR_MOTION_DAMPING:
+			m_dampingDirLin = p_value;
+			break;
+		case PhysicsServer::SLIDER_JOINT_LINEAR_ORTHOGONAL_SOFTNESS:
+			m_softnessOrthoLin = p_value;
+			break;
+		case PhysicsServer::SLIDER_JOINT_LINEAR_ORTHOGONAL_RESTITUTION:
+			m_restitutionOrthoLin = p_value;
+			break;
+		case PhysicsServer::SLIDER_JOINT_LINEAR_ORTHOGONAL_DAMPING:
+			m_dampingOrthoLin = p_value;
+			break;
 
-		case PhysicsServer::SLIDER_JOINT_ANGULAR_LIMIT_UPPER: m_upperAngLimit = p_value; break;
-		case PhysicsServer::SLIDER_JOINT_ANGULAR_LIMIT_LOWER: m_lowerAngLimit = p_value; break;
-		case PhysicsServer::SLIDER_JOINT_ANGULAR_LIMIT_SOFTNESS: m_softnessLimAng = p_value; break;
-		case PhysicsServer::SLIDER_JOINT_ANGULAR_LIMIT_RESTITUTION: m_restitutionLimAng = p_value; break;
-		case PhysicsServer::SLIDER_JOINT_ANGULAR_LIMIT_DAMPING: m_dampingLimAng = p_value; break;
-		case PhysicsServer::SLIDER_JOINT_ANGULAR_MOTION_SOFTNESS: m_softnessDirAng = p_value; break;
-		case PhysicsServer::SLIDER_JOINT_ANGULAR_MOTION_RESTITUTION: m_restitutionDirAng = p_value; break;
-		case PhysicsServer::SLIDER_JOINT_ANGULAR_MOTION_DAMPING: m_dampingDirAng = p_value; break;
-		case PhysicsServer::SLIDER_JOINT_ANGULAR_ORTHOGONAL_SOFTNESS: m_softnessOrthoAng = p_value; break;
-		case PhysicsServer::SLIDER_JOINT_ANGULAR_ORTHOGONAL_RESTITUTION: m_restitutionOrthoAng = p_value; break;
-		case PhysicsServer::SLIDER_JOINT_ANGULAR_ORTHOGONAL_DAMPING: m_dampingOrthoAng = p_value; break;
+		case PhysicsServer::SLIDER_JOINT_ANGULAR_LIMIT_UPPER:
+			m_upperAngLimit = p_value;
+			break;
+		case PhysicsServer::SLIDER_JOINT_ANGULAR_LIMIT_LOWER:
+			m_lowerAngLimit = p_value;
+			break;
+		case PhysicsServer::SLIDER_JOINT_ANGULAR_LIMIT_SOFTNESS:
+			m_softnessLimAng = p_value;
+			break;
+		case PhysicsServer::SLIDER_JOINT_ANGULAR_LIMIT_RESTITUTION:
+			m_restitutionLimAng = p_value;
+			break;
+		case PhysicsServer::SLIDER_JOINT_ANGULAR_LIMIT_DAMPING:
+			m_dampingLimAng = p_value;
+			break;
+		case PhysicsServer::SLIDER_JOINT_ANGULAR_MOTION_SOFTNESS:
+			m_softnessDirAng = p_value;
+			break;
+		case PhysicsServer::SLIDER_JOINT_ANGULAR_MOTION_RESTITUTION:
+			m_restitutionDirAng = p_value;
+			break;
+		case PhysicsServer::SLIDER_JOINT_ANGULAR_MOTION_DAMPING:
+			m_dampingDirAng = p_value;
+			break;
+		case PhysicsServer::SLIDER_JOINT_ANGULAR_ORTHOGONAL_SOFTNESS:
+			m_softnessOrthoAng = p_value;
+			break;
+		case PhysicsServer::SLIDER_JOINT_ANGULAR_ORTHOGONAL_RESTITUTION:
+			m_restitutionOrthoAng = p_value;
+			break;
+		case PhysicsServer::SLIDER_JOINT_ANGULAR_ORTHOGONAL_DAMPING:
+			m_dampingOrthoAng = p_value;
+			break;
 
-		case PhysicsServer::SLIDER_JOINT_MAX: break; // Can't happen, but silences warning
+		case PhysicsServer::SLIDER_JOINT_MAX:
+			break; // Can't happen, but silences warning
 	}
 }
 
 real_t SliderJointSW::get_param(PhysicsServer::SliderJointParam p_param) const {
-
 	switch (p_param) {
-		case PhysicsServer::SLIDER_JOINT_LINEAR_LIMIT_UPPER: return m_upperLinLimit;
-		case PhysicsServer::SLIDER_JOINT_LINEAR_LIMIT_LOWER: return m_lowerLinLimit;
-		case PhysicsServer::SLIDER_JOINT_LINEAR_LIMIT_SOFTNESS: return m_softnessLimLin;
-		case PhysicsServer::SLIDER_JOINT_LINEAR_LIMIT_RESTITUTION: return m_restitutionLimLin;
-		case PhysicsServer::SLIDER_JOINT_LINEAR_LIMIT_DAMPING: return m_dampingLimLin;
-		case PhysicsServer::SLIDER_JOINT_LINEAR_MOTION_SOFTNESS: return m_softnessDirLin;
-		case PhysicsServer::SLIDER_JOINT_LINEAR_MOTION_RESTITUTION: return m_restitutionDirLin;
-		case PhysicsServer::SLIDER_JOINT_LINEAR_MOTION_DAMPING: return m_dampingDirLin;
-		case PhysicsServer::SLIDER_JOINT_LINEAR_ORTHOGONAL_SOFTNESS: return m_softnessOrthoLin;
-		case PhysicsServer::SLIDER_JOINT_LINEAR_ORTHOGONAL_RESTITUTION: return m_restitutionOrthoLin;
-		case PhysicsServer::SLIDER_JOINT_LINEAR_ORTHOGONAL_DAMPING: return m_dampingOrthoLin;
+		case PhysicsServer::SLIDER_JOINT_LINEAR_LIMIT_UPPER:
+			return m_upperLinLimit;
+		case PhysicsServer::SLIDER_JOINT_LINEAR_LIMIT_LOWER:
+			return m_lowerLinLimit;
+		case PhysicsServer::SLIDER_JOINT_LINEAR_LIMIT_SOFTNESS:
+			return m_softnessLimLin;
+		case PhysicsServer::SLIDER_JOINT_LINEAR_LIMIT_RESTITUTION:
+			return m_restitutionLimLin;
+		case PhysicsServer::SLIDER_JOINT_LINEAR_LIMIT_DAMPING:
+			return m_dampingLimLin;
+		case PhysicsServer::SLIDER_JOINT_LINEAR_MOTION_SOFTNESS:
+			return m_softnessDirLin;
+		case PhysicsServer::SLIDER_JOINT_LINEAR_MOTION_RESTITUTION:
+			return m_restitutionDirLin;
+		case PhysicsServer::SLIDER_JOINT_LINEAR_MOTION_DAMPING:
+			return m_dampingDirLin;
+		case PhysicsServer::SLIDER_JOINT_LINEAR_ORTHOGONAL_SOFTNESS:
+			return m_softnessOrthoLin;
+		case PhysicsServer::SLIDER_JOINT_LINEAR_ORTHOGONAL_RESTITUTION:
+			return m_restitutionOrthoLin;
+		case PhysicsServer::SLIDER_JOINT_LINEAR_ORTHOGONAL_DAMPING:
+			return m_dampingOrthoLin;
 
-		case PhysicsServer::SLIDER_JOINT_ANGULAR_LIMIT_UPPER: return m_upperAngLimit;
-		case PhysicsServer::SLIDER_JOINT_ANGULAR_LIMIT_LOWER: return m_lowerAngLimit;
-		case PhysicsServer::SLIDER_JOINT_ANGULAR_LIMIT_SOFTNESS: return m_softnessLimAng;
-		case PhysicsServer::SLIDER_JOINT_ANGULAR_LIMIT_RESTITUTION: return m_restitutionLimAng;
-		case PhysicsServer::SLIDER_JOINT_ANGULAR_LIMIT_DAMPING: return m_dampingLimAng;
-		case PhysicsServer::SLIDER_JOINT_ANGULAR_MOTION_SOFTNESS: return m_softnessDirAng;
-		case PhysicsServer::SLIDER_JOINT_ANGULAR_MOTION_RESTITUTION: return m_restitutionDirAng;
-		case PhysicsServer::SLIDER_JOINT_ANGULAR_MOTION_DAMPING: return m_dampingDirAng;
-		case PhysicsServer::SLIDER_JOINT_ANGULAR_ORTHOGONAL_SOFTNESS: return m_softnessOrthoAng;
-		case PhysicsServer::SLIDER_JOINT_ANGULAR_ORTHOGONAL_RESTITUTION: return m_restitutionOrthoAng;
-		case PhysicsServer::SLIDER_JOINT_ANGULAR_ORTHOGONAL_DAMPING: return m_dampingOrthoAng;
+		case PhysicsServer::SLIDER_JOINT_ANGULAR_LIMIT_UPPER:
+			return m_upperAngLimit;
+		case PhysicsServer::SLIDER_JOINT_ANGULAR_LIMIT_LOWER:
+			return m_lowerAngLimit;
+		case PhysicsServer::SLIDER_JOINT_ANGULAR_LIMIT_SOFTNESS:
+			return m_softnessLimAng;
+		case PhysicsServer::SLIDER_JOINT_ANGULAR_LIMIT_RESTITUTION:
+			return m_restitutionLimAng;
+		case PhysicsServer::SLIDER_JOINT_ANGULAR_LIMIT_DAMPING:
+			return m_dampingLimAng;
+		case PhysicsServer::SLIDER_JOINT_ANGULAR_MOTION_SOFTNESS:
+			return m_softnessDirAng;
+		case PhysicsServer::SLIDER_JOINT_ANGULAR_MOTION_RESTITUTION:
+			return m_restitutionDirAng;
+		case PhysicsServer::SLIDER_JOINT_ANGULAR_MOTION_DAMPING:
+			return m_dampingDirAng;
+		case PhysicsServer::SLIDER_JOINT_ANGULAR_ORTHOGONAL_SOFTNESS:
+			return m_softnessOrthoAng;
+		case PhysicsServer::SLIDER_JOINT_ANGULAR_ORTHOGONAL_RESTITUTION:
+			return m_restitutionOrthoAng;
+		case PhysicsServer::SLIDER_JOINT_ANGULAR_ORTHOGONAL_DAMPING:
+			return m_dampingOrthoAng;
 
-		case PhysicsServer::SLIDER_JOINT_MAX: break; // Can't happen, but silences warning
+		case PhysicsServer::SLIDER_JOINT_MAX:
+			break; // Can't happen, but silences warning
 	}
 
 	return 0;

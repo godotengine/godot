@@ -44,7 +44,6 @@
 class ViewportContainer;
 
 class MaterialEditor : public Control {
-
 	GDCLASS(MaterialEditor, Control);
 
 	ViewportContainer *vc;
@@ -91,7 +90,6 @@ public:
 };
 
 class MaterialEditorPlugin : public EditorPlugin {
-
 	GDCLASS(MaterialEditorPlugin, EditorPlugin);
 
 public:

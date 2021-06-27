@@ -1,4 +1,4 @@
-// Copyright 2009-2020 Intel Corporation
+// Copyright 2009-2021 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
 #pragma once
@@ -10,7 +10,7 @@ namespace embree
 {
   namespace isa
   {
-    template<int M, int Mx, bool filter>
+    template<int M, bool filter>
     struct ConeCurveMiIntersector1
     {
       typedef LineMi<M> Primitive;
@@ -23,8 +23,8 @@ namespace embree
         Vec4vf<M> v0,v1; 
         vbool<M> cL,cR;
         line.gather(v0,v1,cL,cR,geom);
-        const vbool<Mx> valid = line.template valid<Mx>();
-        ConeCurveIntersector1<Mx>::intersect(valid,ray,context,geom,pre,v0,v1,cL,cR,Intersect1EpilogM<M,Mx,filter>(ray,context,line.geomID(),line.primID()));
+        const vbool<M> valid = line.valid();
+        ConeCurveIntersector1<M>::intersect(valid,ray,context,geom,pre,v0,v1,cL,cR,Intersect1EpilogM<M,filter>(ray,context,line.geomID(),line.primID()));
       }
 
       static __forceinline bool occluded(const Precalculations& pre, Ray& ray, IntersectContext* context, const Primitive& line)
@@ -34,8 +34,8 @@ namespace embree
         Vec4vf<M> v0,v1; 
         vbool<M> cL,cR;
         line.gather(v0,v1,cL,cR,geom);
-        const vbool<Mx> valid = line.template valid<Mx>();
-        return ConeCurveIntersector1<Mx>::intersect(valid,ray,context,geom,pre,v0,v1,cL,cR,Occluded1EpilogM<M,Mx,filter>(ray,context,line.geomID(),line.primID()));
+        const vbool<M> valid = line.valid();
+        return ConeCurveIntersector1<M>::intersect(valid,ray,context,geom,pre,v0,v1,cL,cR,Occluded1EpilogM<M,filter>(ray,context,line.geomID(),line.primID()));
         return false;
       }
       
@@ -45,7 +45,7 @@ namespace embree
       }
     };
 
-    template<int M, int Mx, bool filter>
+    template<int M, bool filter>
     struct ConeCurveMiMBIntersector1
     {
       typedef LineMi<M> Primitive;
@@ -58,8 +58,8 @@ namespace embree
         Vec4vf<M> v0,v1; 
         vbool<M> cL,cR;
         line.gather(v0,v1,cL,cR,geom,ray.time());
-        const vbool<Mx> valid = line.template valid<Mx>();
-        ConeCurveIntersector1<Mx>::intersect(valid,ray,context,geom,pre,v0,v1,cL,cR,Intersect1EpilogM<M,Mx,filter>(ray,context,line.geomID(),line.primID()));
+        const vbool<M> valid = line.valid();
+        ConeCurveIntersector1<M>::intersect(valid,ray,context,geom,pre,v0,v1,cL,cR,Intersect1EpilogM<M,filter>(ray,context,line.geomID(),line.primID()));
       }
 
       static __forceinline bool occluded(const Precalculations& pre, Ray& ray, IntersectContext* context, const Primitive& line)
@@ -69,8 +69,8 @@ namespace embree
         Vec4vf<M> v0,v1; 
         vbool<M> cL,cR;
         line.gather(v0,v1,cL,cR,geom,ray.time());
-        const vbool<Mx> valid = line.template valid<Mx>();
-        return ConeCurveIntersector1<Mx>::intersect(valid,ray,context,geom,pre,v0,v1,cL,cR,Occluded1EpilogM<M,Mx,filter>(ray,context,line.geomID(),line.primID()));
+        const vbool<M> valid = line.valid();
+        return ConeCurveIntersector1<M>::intersect(valid,ray,context,geom,pre,v0,v1,cL,cR,Occluded1EpilogM<M,filter>(ray,context,line.geomID(),line.primID()));
         return false;
       }
       
@@ -80,7 +80,7 @@ namespace embree
       }
     };
 
-    template<int M, int Mx, int K, bool filter>
+    template<int M, int K, bool filter>
     struct ConeCurveMiIntersectorK
     {
       typedef LineMi<M> Primitive;
@@ -93,8 +93,8 @@ namespace embree
         Vec4vf<M> v0,v1; 
         vbool<M> cL,cR;
         line.gather(v0,v1,cL,cR,geom);
-        const vbool<Mx> valid = line.template valid<Mx>();
-        ConeCurveIntersectorK<Mx,K>::intersect(valid,ray,k,context,geom,pre,v0,v1,cL,cR,Intersect1KEpilogM<M,Mx,K,filter>(ray,k,context,line.geomID(),line.primID()));
+        const vbool<M> valid = line.valid();
+        ConeCurveIntersectorK<M,K>::intersect(valid,ray,k,context,geom,pre,v0,v1,cL,cR,Intersect1KEpilogM<M,K,filter>(ray,k,context,line.geomID(),line.primID()));
       }
 
       static __forceinline bool occluded(const Precalculations& pre, RayK<K>& ray, size_t k, IntersectContext* context, const Primitive& line)
@@ -104,12 +104,12 @@ namespace embree
         Vec4vf<M> v0,v1; 
         vbool<M> cL,cR;
         line.gather(v0,v1,cL,cR,geom);
-        const vbool<Mx> valid = line.template valid<Mx>();
-        return ConeCurveIntersectorK<Mx,K>::intersect(valid,ray,k,context,geom,pre,v0,v1,cL,cR,Occluded1KEpilogM<M,Mx,K,filter>(ray,k,context,line.geomID(),line.primID()));
+        const vbool<M> valid = line.valid();
+        return ConeCurveIntersectorK<M,K>::intersect(valid,ray,k,context,geom,pre,v0,v1,cL,cR,Occluded1KEpilogM<M,K,filter>(ray,k,context,line.geomID(),line.primID()));
       }
     };
 
-    template<int M, int Mx, int K, bool filter>
+    template<int M, int K, bool filter>
     struct ConeCurveMiMBIntersectorK
     {
       typedef LineMi<M> Primitive;
@@ -122,8 +122,8 @@ namespace embree
         Vec4vf<M> v0,v1; 
         vbool<M> cL,cR;
         line.gather(v0,v1,cL,cR,geom,ray.time()[k]);
-        const vbool<Mx> valid = line.template valid<Mx>();
-        ConeCurveIntersectorK<Mx,K>::intersect(valid,ray,k,context,geom,pre,v0,v1,cL,cR,Intersect1KEpilogM<M,Mx,K,filter>(ray,k,context,line.geomID(),line.primID()));
+        const vbool<M> valid = line.valid();
+        ConeCurveIntersectorK<M,K>::intersect(valid,ray,k,context,geom,pre,v0,v1,cL,cR,Intersect1KEpilogM<M,K,filter>(ray,k,context,line.geomID(),line.primID()));
       }
 
       static __forceinline bool occluded(const Precalculations& pre, RayK<K>& ray, size_t k, IntersectContext* context, const Primitive& line)
@@ -133,8 +133,8 @@ namespace embree
         Vec4vf<M> v0,v1; 
         vbool<M> cL,cR;
         line.gather(v0,v1,cL,cR,geom,ray.time()[k]);
-        const vbool<Mx> valid = line.template valid<Mx>();
-        return ConeCurveIntersectorK<Mx,K>::intersect(valid,ray,k,context,geom,pre,v0,v1,cL,cR,Occluded1KEpilogM<M,Mx,K,filter>(ray,k,context,line.geomID(),line.primID()));
+        const vbool<M> valid = line.valid();
+        return ConeCurveIntersectorK<M,K>::intersect(valid,ray,k,context,geom,pre,v0,v1,cL,cR,Occluded1KEpilogM<M,K,filter>(ray,k,context,line.geomID(),line.primID()));
       }
     };
   }

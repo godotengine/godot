@@ -42,7 +42,6 @@
 class EditorPlugin;
 
 class EditorSettings : public Resource {
-
 	GDCLASS(EditorSettings, Resource);
 
 private:
@@ -50,7 +49,6 @@ private:
 
 public:
 	struct Plugin {
-
 		EditorPlugin *instance;
 		String path;
 		String name;
@@ -95,7 +93,7 @@ private:
 	int last_order;
 
 	Ref<Resource> clipboard;
-	Map<String, Ref<ShortCut> > shortcuts;
+	Map<String, Ref<ShortCut>> shortcuts;
 
 	String resource_path;
 	String settings_dir;
@@ -117,7 +115,7 @@ private:
 	void _get_property_list(List<PropertyInfo> *p_list) const;
 	void _add_property_info_bind(const Dictionary &p_info);
 
-	void _load_defaults(Ref<ConfigFile> p_extra_config = NULL);
+	void _load_defaults(Ref<ConfigFile> p_extra_config = nullptr);
 	void _load_default_text_editor_theme();
 	bool _save_text_editor_theme(String p_file);
 	bool _is_default_text_editor_theme(String p_theme_name);
@@ -148,10 +146,11 @@ public:
 	void set_initial_value(const StringName &p_setting, const Variant &p_value, bool p_update_current = false);
 	void set_restart_if_changed(const StringName &p_setting, bool p_restart);
 	void set_manually(const StringName &p_setting, const Variant &p_value, bool p_emit_signal = false) {
-		if (p_emit_signal)
+		if (p_emit_signal) {
 			_set(p_setting, p_value);
-		else
+		} else {
 			_set_only(p_setting, p_value);
+		}
 	}
 	bool property_can_revert(const String &p_setting);
 	Variant property_get_revert(const String &p_setting);
@@ -190,6 +189,7 @@ public:
 
 	Vector<String> get_script_templates(const String &p_extension, const String &p_custom_path = String());
 	String get_editor_layouts_config() const;
+	float get_auto_display_scale() const;
 
 	void add_shortcut(const String &p_name, Ref<ShortCut> &p_shortcut);
 	bool is_shortcut(const String &p_name, const Ref<InputEvent> &p_event) const;

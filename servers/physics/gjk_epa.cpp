@@ -316,7 +316,8 @@ struct	GJK
 							m_free[m_nfree++]	=	cs.c[i];
 						}
 					}
-					if(mask==15) m_status=eStatus::Inside;
+					if(mask==15) { m_status=eStatus::Inside;
+}
 				}
 				else
 				{/* Return old simplex				*/
@@ -345,10 +346,12 @@ struct	GJK
 						Vector3		axis=Vector3(0,0,0);
 						axis[i]=1;
 						appendvertice(*m_simplex, axis);
-						if(EncloseOrigin())	return(true);
+						if(EncloseOrigin()) {	return(true);
+}
 						removevertice(*m_simplex);
 						appendvertice(*m_simplex,-axis);
-						if(EncloseOrigin())	return(true);
+						if(EncloseOrigin()) {	return(true);
+}
 						removevertice(*m_simplex);
 					}
 				}
@@ -364,10 +367,12 @@ struct	GJK
 						if(p.length_squared()>0)
 						{
 							appendvertice(*m_simplex, p);
-							if(EncloseOrigin())	return(true);
+							if(EncloseOrigin()) {	return(true);
+}
 							removevertice(*m_simplex);
 							appendvertice(*m_simplex,-p);
-							if(EncloseOrigin())	return(true);
+							if(EncloseOrigin()) {	return(true);
+}
 							removevertice(*m_simplex);
 						}
 					}
@@ -380,10 +385,12 @@ struct	GJK
 					if(n.length_squared()>0)
 					{
 						appendvertice(*m_simplex,n);
-						if(EncloseOrigin())	return(true);
+						if(EncloseOrigin()) {	return(true);
+}
 						removevertice(*m_simplex);
 						appendvertice(*m_simplex,-n);
-						if(EncloseOrigin())	return(true);
+						if(EncloseOrigin()) {	return(true);
+}
 						removevertice(*m_simplex);
 					}
 				}
@@ -392,8 +399,9 @@ struct	GJK
 				{
 					if(Math::abs(det(	m_simplex->c[0]->w-m_simplex->c[3]->w,
 						m_simplex->c[1]->w-m_simplex->c[3]->w,
-						m_simplex->c[2]->w-m_simplex->c[3]->w))>0)
+						m_simplex->c[2]->w-m_simplex->c[3]->w))>0) {
 						return(true);
+}
 				}
 				break;
 			}
@@ -552,14 +560,14 @@ struct	GJK
 		{
 			sFace*		root;
 			U			count;
-			sList() : root(0),count(0)	{}
+			sList() : root(nullptr),count(0)	{}
 		};
 		struct	sHorizon
 		{
 			sFace*		cf;
 			sFace*		ff;
 			U			nf;
-			sHorizon() : cf(0),ff(0),nf(0)	{}
+			sHorizon() : cf(nullptr),ff(nullptr),nf(0)	{}
 		};
 		struct	eStatus { enum _ {
 			Valid,
@@ -596,17 +604,21 @@ struct	GJK
 			}
 			static inline void		append(sList& list,sFace* face)
 			{
-				face->l[0]	=	0;
+				face->l[0]	=	nullptr;
 				face->l[1]	=	list.root;
-				if(list.root) list.root->l[0]=face;
+				if(list.root) { list.root->l[0]=face;
+}
 				list.root	=	face;
 				++list.count;
 			}
 			static inline void		remove(sList& list,sFace* face)
 			{
-				if(face->l[1]) face->l[1]->l[0]=face->l[0];
-				if(face->l[0]) face->l[0]->l[1]=face->l[1];
-				if(face==list.root) list.root=face->l[1];
+				if(face->l[1]) { face->l[1]->l[0]=face->l[0];
+}
+				if(face->l[0]) { face->l[0]->l[1]=face->l[1];
+}
+				if(face==list.root) { list.root=face->l[1];
+}
 				--list.count;
 			}
 
@@ -716,10 +728,11 @@ struct	GJK
 				m_status	=	eStatus::FallBack;
 				m_normal	=	-guess;
 				const real_t	nl=m_normal.length();
-				if(nl>0)
+				if(nl>0) {
 					m_normal	=	m_normal/nl;
-				else
+				} else {
 					m_normal	=	Vector3(1,0,0);
+}
 				m_depth	=	0;
 				m_result.rank=1;
 				m_result.c[0]=simplex.c[0];
@@ -792,17 +805,19 @@ struct	GJK
 						if(forced||(face->d>=-EPA_PLANE_EPS))
 						{
 							return(face);
-						} else m_status=eStatus::NonConvex;
-					} else m_status=eStatus::Degenerated;
+						} else { m_status=eStatus::NonConvex;
+}
+					} else { m_status=eStatus::Degenerated;
+}
 					remove(m_hull,face);
 					append(m_stock,face);
-					return(0);
+					return(nullptr);
 				}
 				// -- GODOT start --
 				//m_status=m_stock.root?eStatus::OutOfVertices:eStatus::OutOfFaces;
 				m_status=eStatus::OutOfFaces;
 				// -- GODOT end --
-				return(0);
+				return(nullptr);
 			}
 			sFace*				findbest()
 			{
@@ -832,7 +847,8 @@ struct	GJK
 						if(nf)
 						{
 							bind(nf,0,f,e);
-							if(horizon.cf) bind(horizon.cf,1,nf,2); else horizon.ff=nf;
+							if(horizon.cf) { bind(horizon.cf,1,nf,2); } else { horizon.ff=nf;
+}
 							horizon.cf=nf;
 							++horizon.nf;
 							return(true);
@@ -953,7 +969,8 @@ bool Penetration(	const ShapeSW*	shape0,
 				results.normal			=	-epa.m_normal;
 				results.distance		=	-epa.m_depth;
 				return(true);
-			} else results.status=sResults::EPA_Failed;
+			} else { results.status=sResults::EPA_Failed;
+}
 		}
 		break;
 	case	GJK::eStatus::Failed:
@@ -989,11 +1006,9 @@ bool Penetration(	const ShapeSW*	shape0,
 /* clang-format on */
 
 bool gjk_epa_calculate_distance(const ShapeSW *p_shape_A, const Transform &p_transform_A, const ShapeSW *p_shape_B, const Transform &p_transform_B, Vector3 &r_result_A, Vector3 &r_result_B) {
-
 	GjkEpa2::sResults res;
 
 	if (GjkEpa2::Distance(p_shape_A, p_transform_A, 0.0, p_shape_B, p_transform_B, 0.0, p_transform_B.origin - p_transform_A.origin, res)) {
-
 		r_result_A = res.witnesses[0];
 		r_result_B = res.witnesses[1];
 		return true;
@@ -1003,15 +1018,15 @@ bool gjk_epa_calculate_distance(const ShapeSW *p_shape_A, const Transform &p_tra
 }
 
 bool gjk_epa_calculate_penetration(const ShapeSW *p_shape_A, const Transform &p_transform_A, const ShapeSW *p_shape_B, const Transform &p_transform_B, CollisionSolverSW::CallbackResult p_result_callback, void *p_userdata, bool p_swap, real_t p_margin_A, real_t p_margin_B) {
-
 	GjkEpa2::sResults res;
 
 	if (GjkEpa2::Penetration(p_shape_A, p_transform_A, p_margin_A, p_shape_B, p_transform_B, p_margin_B, p_transform_B.origin - p_transform_A.origin, res)) {
 		if (p_result_callback) {
-			if (p_swap)
+			if (p_swap) {
 				p_result_callback(res.witnesses[1], res.witnesses[0], p_userdata);
-			else
+			} else {
 				p_result_callback(res.witnesses[0], res.witnesses[1], p_userdata);
+			}
 		}
 		return true;
 	}

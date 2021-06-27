@@ -39,14 +39,15 @@ void NavigationMesh::create_from_mesh(const Ref<Mesh> &p_mesh) {
 	clear_polygons();
 
 	for (int i = 0; i < p_mesh->get_surface_count(); i++) {
-
-		if (p_mesh->surface_get_primitive_type(i) != Mesh::PRIMITIVE_TRIANGLES)
+		if (p_mesh->surface_get_primitive_type(i) != Mesh::PRIMITIVE_TRIANGLES) {
 			continue;
+		}
 		Array arr = p_mesh->surface_get_arrays(i);
 		PoolVector<Vector3> varr = arr[Mesh::ARRAY_VERTEX];
 		PoolVector<int> iarr = arr[Mesh::ARRAY_INDEX];
-		if (varr.size() == 0 || iarr.size() == 0)
+		if (varr.size() == 0 || iarr.size() == 0) {
 			continue;
+		}
 
 		int from = vertices.size();
 		vertices.append_array(varr);
@@ -85,27 +86,24 @@ int NavigationMesh::get_parsed_geometry_type() const {
 }
 
 void NavigationMesh::set_collision_mask(uint32_t p_mask) {
-
 	collision_mask = p_mask;
 }
 
 uint32_t NavigationMesh::get_collision_mask() const {
-
 	return collision_mask;
 }
 
 void NavigationMesh::set_collision_mask_bit(int p_bit, bool p_value) {
-
 	uint32_t mask = get_collision_mask();
-	if (p_value)
+	if (p_value) {
 		mask |= 1 << p_bit;
-	else
+	} else {
 		mask &= ~(1 << p_bit);
+	}
 	set_collision_mask(mask);
 }
 
 bool NavigationMesh::get_collision_mask_bit(int p_bit) const {
-
 	return get_collision_mask() & (1 << p_bit);
 }
 
@@ -256,18 +254,15 @@ bool NavigationMesh::get_filter_walkable_low_height_spans() const {
 }
 
 void NavigationMesh::set_vertices(const PoolVector<Vector3> &p_vertices) {
-
 	vertices = p_vertices;
 	_change_notify();
 }
 
 PoolVector<Vector3> NavigationMesh::get_vertices() const {
-
 	return vertices;
 }
 
 void NavigationMesh::_set_polygons(const Array &p_array) {
-
 	polygons.resize(p_array.size());
 	for (int i = 0; i < p_array.size(); i++) {
 		polygons.write[i].indices = p_array[i];
@@ -276,7 +271,6 @@ void NavigationMesh::_set_polygons(const Array &p_array) {
 }
 
 Array NavigationMesh::_get_polygons() const {
-
 	Array ret;
 	ret.resize(polygons.size());
 	for (int i = 0; i < ret.size(); i++) {
@@ -287,30 +281,26 @@ Array NavigationMesh::_get_polygons() const {
 }
 
 void NavigationMesh::add_polygon(const Vector<int> &p_polygon) {
-
 	Polygon polygon;
 	polygon.indices = p_polygon;
 	polygons.push_back(polygon);
 	_change_notify();
 }
 int NavigationMesh::get_polygon_count() const {
-
 	return polygons.size();
 }
 Vector<int> NavigationMesh::get_polygon(int p_idx) {
-
 	ERR_FAIL_INDEX_V(p_idx, polygons.size(), Vector<int>());
 	return polygons[p_idx].indices;
 }
 void NavigationMesh::clear_polygons() {
-
 	polygons.clear();
 }
 
 Ref<Mesh> NavigationMesh::get_debug_mesh() {
-
-	if (debug_mesh.is_valid())
+	if (debug_mesh.is_valid()) {
 		return debug_mesh;
+	}
 
 	PoolVector<Vector3> vertices = get_vertices();
 	PoolVector<Vector3>::Read vr = vertices.read();
@@ -337,26 +327,23 @@ Ref<Mesh> NavigationMesh::get_debug_mesh() {
 		int tidx = 0;
 
 		for (List<Face3>::Element *E = faces.front(); E; E = E->next()) {
-
 			const Face3 &f = E->get();
 
 			for (int j = 0; j < 3; j++) {
-
 				tw[tidx++] = f.vertex[j];
 				_EdgeKey ek;
 				ek.from = f.vertex[j].snapped(Vector3(CMP_EPSILON, CMP_EPSILON, CMP_EPSILON));
 				ek.to = f.vertex[(j + 1) % 3].snapped(Vector3(CMP_EPSILON, CMP_EPSILON, CMP_EPSILON));
-				if (ek.from < ek.to)
+				if (ek.from < ek.to) {
 					SWAP(ek.from, ek.to);
+				}
 
 				Map<_EdgeKey, bool>::Element *F = edge_map.find(ek);
 
 				if (F) {
-
 					F->get() = false;
 
 				} else {
-
 					edge_map[ek] = true;
 				}
 			}
@@ -365,7 +352,6 @@ Ref<Mesh> NavigationMesh::get_debug_mesh() {
 	List<Vector3> lines;
 
 	for (Map<_EdgeKey, bool>::Element *E = edge_map.front(); E; E = E->next()) {
-
 		if (E->get()) {
 			lines.push_back(E->key().from);
 			lines.push_back(E->key().to);
@@ -551,26 +537,23 @@ NavigationMesh::NavigationMesh() {
 }
 
 void NavigationMeshInstance::set_enabled(bool p_enabled) {
-
-	if (enabled == p_enabled)
+	if (enabled == p_enabled) {
 		return;
+	}
 	enabled = p_enabled;
 
-	if (!is_inside_tree())
+	if (!is_inside_tree()) {
 		return;
+	}
 
 	if (!enabled) {
-
 		if (nav_id != -1) {
 			navigation->navmesh_remove(nav_id);
 			nav_id = -1;
 		}
 	} else {
-
 		if (navigation) {
-
 			if (navmesh.is_valid()) {
-
 				nav_id = navigation->navmesh_add(navmesh, get_relative_transform(navigation), this);
 			}
 		}
@@ -589,25 +572,19 @@ void NavigationMeshInstance::set_enabled(bool p_enabled) {
 }
 
 bool NavigationMeshInstance::is_enabled() const {
-
 	return enabled;
 }
 
 /////////////////////////////
 
 void NavigationMeshInstance::_notification(int p_what) {
-
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
-
 			Spatial *c = this;
 			while (c) {
-
 				navigation = Object::cast_to<Navigation>(c);
 				if (navigation) {
-
 					if (enabled && navmesh.is_valid()) {
-
 						nav_id = navigation->navmesh_add(navmesh, get_relative_transform(navigation), this);
 					}
 					break;
@@ -617,7 +594,6 @@ void NavigationMeshInstance::_notification(int p_what) {
 			}
 
 			if (navmesh.is_valid() && get_tree()->is_debugging_navigation_hint()) {
-
 				MeshInstance *dm = memnew(MeshInstance);
 				dm->set_mesh(navmesh->get_debug_mesh());
 				if (is_enabled()) {
@@ -631,16 +607,13 @@ void NavigationMeshInstance::_notification(int p_what) {
 
 		} break;
 		case NOTIFICATION_TRANSFORM_CHANGED: {
-
 			if (navigation && nav_id != -1) {
 				navigation->navmesh_set_transform(nav_id, get_relative_transform(navigation));
 			}
 
 		} break;
 		case NOTIFICATION_EXIT_TREE: {
-
 			if (navigation) {
-
 				if (nav_id != -1) {
 					navigation->navmesh_remove(nav_id);
 					nav_id = -1;
@@ -649,17 +622,17 @@ void NavigationMeshInstance::_notification(int p_what) {
 
 			if (debug_view) {
 				debug_view->queue_delete();
-				debug_view = NULL;
+				debug_view = nullptr;
 			}
-			navigation = NULL;
+			navigation = nullptr;
 		} break;
 	}
 }
 
 void NavigationMeshInstance::set_navigation_mesh(const Ref<NavigationMesh> &p_navmesh) {
-
-	if (p_navmesh == navmesh)
+	if (p_navmesh == navmesh) {
 		return;
+	}
 
 	if (navigation && nav_id != -1) {
 		navigation->navmesh_remove(nav_id);
@@ -689,14 +662,13 @@ void NavigationMeshInstance::set_navigation_mesh(const Ref<NavigationMesh> &p_na
 }
 
 Ref<NavigationMesh> NavigationMeshInstance::get_navigation_mesh() const {
-
 	return navmesh;
 }
 
 String NavigationMeshInstance::get_configuration_warning() const {
-
-	if (!is_visible_in_tree() || !is_inside_tree())
+	if (!is_visible_in_tree() || !is_inside_tree()) {
 		return String();
+	}
 
 	String warning = Spatial::get_configuration_warning();
 	if (!navmesh.is_valid()) {
@@ -708,9 +680,9 @@ String NavigationMeshInstance::get_configuration_warning() const {
 	}
 	const Spatial *c = this;
 	while (c) {
-
-		if (Object::cast_to<Navigation>(c))
+		if (Object::cast_to<Navigation>(c)) {
 			return warning;
+		}
 
 		c = Object::cast_to<Spatial>(c->get_parent());
 	}
@@ -723,7 +695,6 @@ String NavigationMeshInstance::get_configuration_warning() const {
 }
 
 void NavigationMeshInstance::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("set_navigation_mesh", "navmesh"), &NavigationMeshInstance::set_navigation_mesh);
 	ClassDB::bind_method(D_METHOD("get_navigation_mesh"), &NavigationMeshInstance::get_navigation_mesh);
 
@@ -740,15 +711,15 @@ void NavigationMeshInstance::_changed_callback(Object *p_changed, const char *p_
 }
 
 NavigationMeshInstance::NavigationMeshInstance() {
-
-	debug_view = NULL;
-	navigation = NULL;
+	debug_view = nullptr;
+	navigation = nullptr;
 	nav_id = -1;
 	enabled = true;
 	set_notify_transform(true);
 }
 
 NavigationMeshInstance::~NavigationMeshInstance() {
-	if (navmesh.is_valid())
+	if (navmesh.is_valid()) {
 		navmesh->remove_change_receptor(this);
+	}
 }

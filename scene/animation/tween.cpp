@@ -33,7 +33,6 @@
 #include "core/method_bind_ext.gen.inc"
 
 void Tween::_add_pending_command(StringName p_key, const Variant &p_arg1, const Variant &p_arg2, const Variant &p_arg3, const Variant &p_arg4, const Variant &p_arg5, const Variant &p_arg6, const Variant &p_arg7, const Variant &p_arg8, const Variant &p_arg9, const Variant &p_arg10) {
-
 	// Add a new pending command and reference it
 	pending_commands.push_back(PendingCommand());
 	PendingCommand &cmd = pending_commands.back()->get();
@@ -43,57 +42,66 @@ void Tween::_add_pending_command(StringName p_key, const Variant &p_arg1, const 
 
 	// Determine command argument count
 	int &count = cmd.args;
-	if (p_arg10.get_type() != Variant::NIL)
+	if (p_arg10.get_type() != Variant::NIL) {
 		count = 10;
-	else if (p_arg9.get_type() != Variant::NIL)
+	} else if (p_arg9.get_type() != Variant::NIL) {
 		count = 9;
-	else if (p_arg8.get_type() != Variant::NIL)
+	} else if (p_arg8.get_type() != Variant::NIL) {
 		count = 8;
-	else if (p_arg7.get_type() != Variant::NIL)
+	} else if (p_arg7.get_type() != Variant::NIL) {
 		count = 7;
-	else if (p_arg6.get_type() != Variant::NIL)
+	} else if (p_arg6.get_type() != Variant::NIL) {
 		count = 6;
-	else if (p_arg5.get_type() != Variant::NIL)
+	} else if (p_arg5.get_type() != Variant::NIL) {
 		count = 5;
-	else if (p_arg4.get_type() != Variant::NIL)
+	} else if (p_arg4.get_type() != Variant::NIL) {
 		count = 4;
-	else if (p_arg3.get_type() != Variant::NIL)
+	} else if (p_arg3.get_type() != Variant::NIL) {
 		count = 3;
-	else if (p_arg2.get_type() != Variant::NIL)
+	} else if (p_arg2.get_type() != Variant::NIL) {
 		count = 2;
-	else if (p_arg1.get_type() != Variant::NIL)
+	} else if (p_arg1.get_type() != Variant::NIL) {
 		count = 1;
-	else
+	} else {
 		count = 0;
+	}
 
 	// Add the specified arguments to the command
-	if (count > 0)
+	if (count > 0) {
 		cmd.arg[0] = p_arg1;
-	if (count > 1)
+	}
+	if (count > 1) {
 		cmd.arg[1] = p_arg2;
-	if (count > 2)
+	}
+	if (count > 2) {
 		cmd.arg[2] = p_arg3;
-	if (count > 3)
+	}
+	if (count > 3) {
 		cmd.arg[3] = p_arg4;
-	if (count > 4)
+	}
+	if (count > 4) {
 		cmd.arg[4] = p_arg5;
-	if (count > 5)
+	}
+	if (count > 5) {
 		cmd.arg[5] = p_arg6;
-	if (count > 6)
+	}
+	if (count > 6) {
 		cmd.arg[6] = p_arg7;
-	if (count > 7)
+	}
+	if (count > 7) {
 		cmd.arg[7] = p_arg8;
-	if (count > 8)
+	}
+	if (count > 8) {
 		cmd.arg[8] = p_arg9;
-	if (count > 9)
+	}
+	if (count > 9) {
 		cmd.arg[9] = p_arg10;
+	}
 }
 
 void Tween::_process_pending_commands() {
-
 	// For each pending command...
 	for (List<PendingCommand>::Element *E = pending_commands.front(); E; E = E->next()) {
-
 		// Get the command
 		PendingCommand &cmd = E->get();
 		Variant::CallError err;
@@ -121,7 +129,6 @@ void Tween::_process_pending_commands() {
 }
 
 bool Tween::_set(const StringName &p_name, const Variant &p_value) {
-
 	// Set the correct attribute based on the given name
 	String name = p_name;
 	if (name == "playback/speed" || name == "speed") { // Backwards compatibility
@@ -140,7 +147,6 @@ bool Tween::_set(const StringName &p_name, const Variant &p_value) {
 }
 
 bool Tween::_get(const StringName &p_name, Variant &r_ret) const {
-
 	// Get the correct attribute based on the given name
 	String name = p_name;
 	if (name == "playback/speed") { // Backwards compatibility
@@ -168,7 +174,6 @@ void Tween::_get_property_list(List<PropertyInfo> *p_list) const {
 void Tween::_notification(int p_what) {
 	// What notification did we receive?
 	switch (p_what) {
-
 		case NOTIFICATION_ENTER_TREE: {
 			// Are we not already active?
 			if (!is_active()) {
@@ -185,26 +190,30 @@ void Tween::_notification(int p_what) {
 
 		case NOTIFICATION_INTERNAL_PROCESS: {
 			// Are we processing during physics time?
-			if (tween_process_mode == TWEEN_PROCESS_PHYSICS)
+			if (tween_process_mode == TWEEN_PROCESS_PHYSICS) {
 				// Do nothing since we aren't aligned with physics when we should be
 				break;
+			}
 
 			// Should we update?
-			if (is_active())
+			if (is_active()) {
 				// Update the tweens
 				_tween_process(get_process_delta_time());
+			}
 		} break;
 
 		case NOTIFICATION_INTERNAL_PHYSICS_PROCESS: {
 			// Are we processing during 'regular' time?
-			if (tween_process_mode == TWEEN_PROCESS_IDLE)
+			if (tween_process_mode == TWEEN_PROCESS_IDLE) {
 				// Do nothing since we would only process during idle time
 				break;
+			}
 
 			// Should we update?
-			if (is_active())
+			if (is_active()) {
 				// Update the tweens
 				_tween_process(get_physics_process_delta_time());
+			}
 		} break;
 
 		case NOTIFICATION_EXIT_TREE: {
@@ -289,7 +298,6 @@ void Tween::_bind_methods() {
 }
 
 Variant Tween::_get_initial_val(const InterpolateData &p_data) const {
-
 	// What type of data are we interpolating?
 	switch (p_data.type) {
 		case INTER_PROPERTY:
@@ -303,7 +311,7 @@ Variant Tween::_get_initial_val(const InterpolateData &p_data) const {
 		case TARGETING_METHOD: {
 			// Get the object that is being targeted
 			Object *object = ObjectDB::get_instance(p_data.target_id);
-			ERR_FAIL_COND_V(object == NULL, p_data.initial_val);
+			ERR_FAIL_COND_V(object == nullptr, p_data.initial_val);
 
 			// Are we targeting a property or a method?
 			Variant initial_val;
@@ -315,7 +323,7 @@ Variant Tween::_get_initial_val(const InterpolateData &p_data) const {
 			} else {
 				// Call the method and get the initial value from it
 				Variant::CallError error;
-				initial_val = object->call(p_data.target_key[0], NULL, 0, error);
+				initial_val = object->call(p_data.target_key[0], nullptr, 0, error);
 				ERR_FAIL_COND_V(error.error != Variant::CallError::CALL_OK, p_data.initial_val);
 			}
 			return initial_val;
@@ -335,7 +343,7 @@ Variant Tween::_get_final_val(const InterpolateData &p_data) const {
 		case FOLLOW_METHOD: {
 			// Get the object that is being followed
 			Object *target = ObjectDB::get_instance(p_data.target_id);
-			ERR_FAIL_COND_V(target == NULL, p_data.initial_val);
+			ERR_FAIL_COND_V(target == nullptr, p_data.initial_val);
 
 			// We want to figure out the final value
 			Variant final_val;
@@ -347,13 +355,15 @@ Variant Tween::_get_final_val(const InterpolateData &p_data) const {
 			} else {
 				// We're looking at a method. Call the method on the target object
 				Variant::CallError error;
-				final_val = target->call(p_data.target_key[0], NULL, 0, error);
+				final_val = target->call(p_data.target_key[0], nullptr, 0, error);
 				ERR_FAIL_COND_V(error.error != Variant::CallError::CALL_OK, p_data.initial_val);
 			}
 
 			// If we're looking at an INT value, instead convert it to a REAL
 			// This is better for interpolation
-			if (final_val.get_type() == Variant::INT) final_val = final_val.operator real_t();
+			if (final_val.get_type() == Variant::INT) {
+				final_val = final_val.operator real_t();
+			}
 
 			return final_val;
 		}
@@ -365,7 +375,6 @@ Variant Tween::_get_final_val(const InterpolateData &p_data) const {
 }
 
 Variant &Tween::_get_delta_val(InterpolateData &p_data) {
-
 	// What kind of data are we interpolating?
 	switch (p_data.type) {
 		case INTER_PROPERTY:
@@ -377,7 +386,7 @@ Variant &Tween::_get_delta_val(InterpolateData &p_data) {
 		case FOLLOW_METHOD: {
 			// We're following an object, so grab that instance
 			Object *target = ObjectDB::get_instance(p_data.target_id);
-			ERR_FAIL_COND_V(target == NULL, p_data.initial_val);
+			ERR_FAIL_COND_V(target == nullptr, p_data.initial_val);
 
 			// We want to figure out the final value
 			Variant final_val;
@@ -389,13 +398,15 @@ Variant &Tween::_get_delta_val(InterpolateData &p_data) {
 			} else {
 				// We're looking at a method. Call the method on the target object
 				Variant::CallError error;
-				final_val = target->call(p_data.target_key[0], NULL, 0, error);
+				final_val = target->call(p_data.target_key[0], nullptr, 0, error);
 				ERR_FAIL_COND_V(error.error != Variant::CallError::CALL_OK, p_data.initial_val);
 			}
 
 			// If we're looking at an INT value, instead convert it to a REAL
 			// This is better for interpolation
-			if (final_val.get_type() == Variant::INT) final_val = final_val.operator real_t();
+			if (final_val.get_type() == Variant::INT) {
+				final_val = final_val.operator real_t();
+			}
 
 			// Calculate the delta based on the initial value and the final value
 			_calc_delta_val(p_data.initial_val, final_val, p_data.delta_val);
@@ -409,7 +420,9 @@ Variant &Tween::_get_delta_val(InterpolateData &p_data) {
 
 			// If we're looking at an INT value, instead convert it to a REAL
 			// This is better for interpolation
-			if (initial_val.get_type() == Variant::INT) initial_val = initial_val.operator real_t();
+			if (initial_val.get_type() == Variant::INT) {
+				initial_val = initial_val.operator real_t();
+			}
 
 			// Calculate the delta based on the initial value and the final value
 			_calc_delta_val(initial_val, p_data.final_val, p_data.delta_val);
@@ -435,7 +448,6 @@ Variant Tween::_run_equation(InterpolateData &p_data) {
 
 	// What type of data are we interpolating?
 	switch (initial_val.get_type()) {
-
 		case Variant::BOOL:
 			// Run the boolean specific equation (checking if it is at least 0.5)
 			result = (_run_equation(p_data.trans_type, p_data.ease_type, p_data.elapsed - p_data.delay, initial_val, delta_val, p_data.duration)) >= 0.5;
@@ -610,14 +622,12 @@ Variant Tween::_run_equation(InterpolateData &p_data) {
 }
 
 bool Tween::_apply_tween_value(InterpolateData &p_data, Variant &value) {
-
 	// Get the object we want to apply the new value to
 	Object *object = ObjectDB::get_instance(p_data.id);
-	ERR_FAIL_COND_V(object == NULL, false);
+	ERR_FAIL_COND_V(object == nullptr, false);
 
 	// What kind of data are we mutating?
 	switch (p_data.type) {
-
 		case INTER_PROPERTY:
 		case FOLLOW_PROPERTY:
 		case TARGETING_PROPERTY: {
@@ -640,7 +650,7 @@ bool Tween::_apply_tween_value(InterpolateData &p_data, Variant &value) {
 				object->call(p_data.key[0], (const Variant **)arg, 1, error);
 			} else {
 				// Don't pass any argument
-				object->call(p_data.key[0], NULL, 0, error);
+				object->call(p_data.key[0], nullptr, 0, error);
 			}
 
 			// Did we get an error from the function call?
@@ -660,8 +670,9 @@ void Tween::_tween_process(float p_delta) {
 	_process_pending_commands();
 
 	// If the scale is 0, make no progress on the tweens
-	if (speed_scale == 0)
+	if (speed_scale == 0) {
 		return;
+	}
 
 	// Update the delta and whether we are pending an update
 	p_delta *= speed_scale;
@@ -684,8 +695,9 @@ void Tween::_tween_process(float p_delta) {
 		}
 
 		// If we are all finished, we can reset all of the tweens
-		if (repeats_finished)
+		if (repeats_finished) {
 			reset_all();
+		}
 	}
 
 	// Are all of the tweens complete?
@@ -693,7 +705,6 @@ void Tween::_tween_process(float p_delta) {
 
 	// For each tween we wish to interpolate...
 	for (List<InterpolateData>::Element *E = interpolates.front(); E; E = E->next()) {
-
 		// Get the data from it
 		InterpolateData &data = E->get();
 
@@ -701,20 +712,22 @@ void Tween::_tween_process(float p_delta) {
 		all_finished = all_finished && data.finish;
 
 		// Is the data not active or already finished? No need to go any further
-		if (!data.active || data.finish)
+		if (!data.active || data.finish) {
 			continue;
+		}
 
 		// Get the target object for this interpolation
 		Object *object = ObjectDB::get_instance(data.id);
-		if (object == NULL)
+		if (object == nullptr) {
 			continue;
+		}
 
 		// Are we still delaying this tween?
 		bool prev_delaying = data.elapsed <= data.delay;
 		data.elapsed += p_delta;
-		if (data.elapsed < data.delay)
+		if (data.elapsed < data.delay) {
 			continue;
-		else if (prev_delaying) {
+		} else if (prev_delaying) {
 			// We can apply the tween's value to the data and emit that the tween has started
 			_apply_tween_value(data, data.initial_val);
 			emit_signal("tween_started", object, NodePath(Vector<StringName>(), data.key, false));
@@ -787,8 +800,9 @@ void Tween::_tween_process(float p_delta) {
 			emit_signal("tween_completed", object, NodePath(Vector<StringName>(), data.key, false));
 
 			// If we are not repeating the tween, remove it
-			if (!repeat)
+			if (!repeat) {
 				call_deferred("_remove_by_uid", data.uid);
+			}
 		} else if (!repeat) {
 			// Check whether all tweens are finished
 			all_finished = all_finished && data.finish;
@@ -818,13 +832,18 @@ bool Tween::is_active() const {
 
 void Tween::set_active(bool p_active) {
 	// Do nothing if it's the same active mode that we currently are
-	if (is_active() == p_active)
+	if (is_active() == p_active) {
 		return;
+	}
 
 	// Depending on physics or idle, set processing
 	switch (tween_process_mode) {
-		case TWEEN_PROCESS_IDLE: set_process_internal(p_active); break;
-		case TWEEN_PROCESS_PHYSICS: set_physics_process_internal(p_active); break;
+		case TWEEN_PROCESS_IDLE:
+			set_process_internal(p_active);
+			break;
+		case TWEEN_PROCESS_PHYSICS:
+			set_physics_process_internal(p_active);
+			break;
 	}
 }
 
@@ -845,7 +864,6 @@ float Tween::get_speed_scale() const {
 }
 
 bool Tween::start() {
-
 	ERR_FAIL_COND_V_MSG(!is_inside_tree(), false, "Tween was not added to the SceneTree!");
 
 	// Are there any pending updates?
@@ -855,8 +873,22 @@ bool Tween::start() {
 		return true;
 	}
 
+	pending_update++;
+	for (List<InterpolateData>::Element *E = interpolates.front(); E; E = E->next()) {
+		InterpolateData &data = E->get();
+		data.active = true;
+	}
+	pending_update--;
+
 	// We want to be activated
 	set_active(true);
+
+	// Don't resume from current position if stop_all() function has been used
+	if (was_stopped) {
+		seek(0);
+	}
+	was_stopped = false;
+
 	return true;
 }
 
@@ -867,8 +899,9 @@ bool Tween::reset(Object *p_object, StringName p_key) {
 		// Get the target object
 		InterpolateData &data = E->get();
 		Object *object = ObjectDB::get_instance(data.id);
-		if (object == NULL)
+		if (object == nullptr) {
 			continue;
+		}
 
 		// Do we have the correct object and key?
 		if (object == p_object && (data.concatenated_key == p_key || p_key == "")) {
@@ -877,8 +910,9 @@ bool Tween::reset(Object *p_object, StringName p_key) {
 			data.finish = false;
 
 			// Also apply the initial state if there isn't a delay
-			if (data.delay == 0)
+			if (data.delay == 0) {
 				_apply_tween_value(data, data.initial_val);
+			}
 		}
 	}
 	pending_update--;
@@ -895,8 +929,9 @@ bool Tween::reset_all() {
 		data.finish = false;
 
 		// If there isn't a delay, apply the value to the object
-		if (data.delay == 0)
+		if (data.delay == 0) {
 			_apply_tween_value(data, data.initial_val);
+		}
 	}
 	pending_update--;
 	return true;
@@ -906,17 +941,18 @@ bool Tween::stop(Object *p_object, StringName p_key) {
 	// Find the tween that has the given target object and string key
 	pending_update++;
 	for (List<InterpolateData>::Element *E = interpolates.front(); E; E = E->next()) {
-
 		// Get the object the tween is targeting
 		InterpolateData &data = E->get();
 		Object *object = ObjectDB::get_instance(data.id);
-		if (object == NULL)
+		if (object == nullptr) {
 			continue;
+		}
 
 		// Is this the correct object and does it have the given key?
-		if (object == p_object && (data.concatenated_key == p_key || p_key == ""))
+		if (object == p_object && (data.concatenated_key == p_key || p_key == "")) {
 			// Disable the tween
 			data.active = false;
+		}
 	}
 	pending_update--;
 	return true;
@@ -925,6 +961,7 @@ bool Tween::stop(Object *p_object, StringName p_key) {
 bool Tween::stop_all() {
 	// We no longer need to be active since all tweens have been stopped
 	set_active(false);
+	was_stopped = true;
 
 	// For each interpolation...
 	pending_update++;
@@ -948,12 +985,14 @@ bool Tween::resume(Object *p_object, StringName p_key) {
 		// Grab the object
 		InterpolateData &data = E->get();
 		Object *object = ObjectDB::get_instance(data.id);
-		if (object == NULL)
+		if (object == nullptr) {
 			continue;
+		}
 
 		// If the object and string key match, activate it
-		if (object == p_object && (data.concatenated_key == p_key || p_key == ""))
+		if (object == p_object && (data.concatenated_key == p_key || p_key == "")) {
 			data.active = true;
+		}
 	}
 	pending_update--;
 	return true;
@@ -988,8 +1027,9 @@ bool Tween::remove(Object *p_object, StringName p_key) {
 		// Get the target object
 		InterpolateData &data = E->get();
 		Object *object = ObjectDB::get_instance(data.id);
-		if (object == NULL)
+		if (object == nullptr) {
 			continue;
+		}
 
 		// If the target object and string key match, queue it for removal
 		if (object == p_object && (data.concatenated_key == p_key || p_key == "")) {
@@ -1094,9 +1134,10 @@ real_t Tween::tell() const {
 	for (const List<InterpolateData>::Element *E = interpolates.front(); E; E = E->next()) {
 		// Get the data and figure out if it's position is further along than the previous ones
 		const InterpolateData &data = E->get();
-		if (data.elapsed > pos)
+		if (data.elapsed > pos) {
 			// Save it if so
 			pos = data.elapsed;
+		}
 	}
 	pending_update--;
 	return pos;
@@ -1116,9 +1157,10 @@ real_t Tween::get_runtime() const {
 		// Get the tween data and see if it's runtime is greater than the previous tweens
 		const InterpolateData &data = E->get();
 		real_t t = data.delay + data.duration;
-		if (t > runtime)
+		if (t > runtime) {
 			// This is the longest running tween
 			runtime = t;
+		}
 	}
 	pending_update--;
 
@@ -1127,7 +1169,6 @@ real_t Tween::get_runtime() const {
 }
 
 bool Tween::_calc_delta_val(const Variant &p_initial_val, const Variant &p_final_val, Variant &p_delta_val) {
-
 	// Get the initial, final, and delta values
 	const Variant &initial_val = p_initial_val;
 	const Variant &final_val = p_final_val;
@@ -1135,7 +1176,6 @@ bool Tween::_calc_delta_val(const Variant &p_initial_val, const Variant &p_final
 
 	// What kind of data are we interpolating?
 	switch (initial_val.get_type()) {
-
 		case Variant::BOOL:
 			// We'll treat booleans just like integers
 		case Variant::INT:
@@ -1267,7 +1307,6 @@ bool Tween::_calc_delta_val(const Variant &p_initial_val, const Variant &p_final
 }
 
 bool Tween::_build_interpolation(InterpolateType p_interpolation_type, Object *p_object, NodePath *p_property, StringName *p_method, Variant p_initial_val, Variant p_final_val, real_t p_duration, TransitionType p_trans_type, EaseType p_ease_type, real_t p_delay) {
-
 	// TODO: Add initialization+implementation for remaining interpolation types
 	// TODO: Fix this method's organization to take advantage of the type
 
@@ -1281,7 +1320,7 @@ bool Tween::_build_interpolation(InterpolateType p_interpolation_type, Object *p
 	// Validate and apply interpolation data
 
 	// Give it the object
-	ERR_FAIL_COND_V_MSG(p_object == NULL, false, "Invalid object provided to Tween.");
+	ERR_FAIL_COND_V_MSG(p_object == nullptr, false, "Invalid object provided to Tween.");
 	ERR_FAIL_COND_V_MSG(!ObjectDB::instance_validate(p_object), false, "Invalid object provided to Tween.");
 	data.id = p_object->get_instance_id();
 
@@ -1327,8 +1366,9 @@ bool Tween::_build_interpolation(InterpolateType p_interpolation_type, Object *p
 	}
 
 	// Is there not a valid delta?
-	if (!_calc_delta_val(data.initial_val, data.final_val, data.delta_val))
+	if (!_calc_delta_val(data.initial_val, data.final_val, data.delta_val)) {
 		return false;
+	}
 
 	// Add this interpolation to the total
 	_push_interpolate_data(data);
@@ -1350,14 +1390,20 @@ bool Tween::interpolate_property(Object *p_object, NodePath p_property, Variant 
 
 	// If no initial value given, grab the initial value from the object
 	// TODO: Is this documented? This is very useful and removes a lot of clutter from tweens!
-	if (p_initial_val.get_type() == Variant::NIL) p_initial_val = p_object->get_indexed(p_property.get_subnames());
+	if (p_initial_val.get_type() == Variant::NIL) {
+		p_initial_val = p_object->get_indexed(p_property.get_subnames());
+	}
 
 	// Convert any integers into REALs as they are better for interpolation
-	if (p_initial_val.get_type() == Variant::INT) p_initial_val = p_initial_val.operator real_t();
-	if (p_final_val.get_type() == Variant::INT) p_final_val = p_final_val.operator real_t();
+	if (p_initial_val.get_type() == Variant::INT) {
+		p_initial_val = p_initial_val.operator real_t();
+	}
+	if (p_final_val.get_type() == Variant::INT) {
+		p_final_val = p_final_val.operator real_t();
+	}
 
 	// Build the interpolation data
-	bool result = _build_interpolation(INTER_PROPERTY, p_object, &p_property, NULL, p_initial_val, p_final_val, p_duration, p_trans_type, p_ease_type, p_delay);
+	bool result = _build_interpolation(INTER_PROPERTY, p_object, &p_property, nullptr, p_initial_val, p_final_val, p_duration, p_trans_type, p_ease_type, p_delay);
 	return result;
 }
 
@@ -1372,11 +1418,15 @@ bool Tween::interpolate_method(Object *p_object, StringName p_method, Variant p_
 	ERR_FAIL_COND_V_MSG(p_object == nullptr, false, vformat("The Tween \"%s\"'s target node is `null`. Is the node reference correct?", get_name()));
 
 	// Convert any integers into REALs as they are better for interpolation
-	if (p_initial_val.get_type() == Variant::INT) p_initial_val = p_initial_val.operator real_t();
-	if (p_final_val.get_type() == Variant::INT) p_final_val = p_final_val.operator real_t();
+	if (p_initial_val.get_type() == Variant::INT) {
+		p_initial_val = p_initial_val.operator real_t();
+	}
+	if (p_final_val.get_type() == Variant::INT) {
+		p_final_val = p_final_val.operator real_t();
+	}
 
 	// Build the interpolation data
-	bool result = _build_interpolation(INTER_METHOD, p_object, NULL, &p_method, p_initial_val, p_final_val, p_duration, p_trans_type, p_ease_type, p_delay);
+	bool result = _build_interpolation(INTER_METHOD, p_object, nullptr, &p_method, p_initial_val, p_final_val, p_duration, p_trans_type, p_ease_type, p_delay);
 	return result;
 }
 
@@ -1388,7 +1438,7 @@ bool Tween::interpolate_callback(Object *p_object, real_t p_duration, String p_c
 	}
 
 	// Check that the target object is valid
-	ERR_FAIL_COND_V(p_object == NULL, false);
+	ERR_FAIL_COND_V(p_object == nullptr, false);
 	ERR_FAIL_COND_V(!ObjectDB::instance_validate(p_object), false);
 
 	// Duration cannot be negative
@@ -1414,18 +1464,19 @@ bool Tween::interpolate_callback(Object *p_object, real_t p_duration, String p_c
 
 	// Add arguments to the interpolation
 	int args = 0;
-	if (p_arg5.get_type() != Variant::NIL)
+	if (p_arg5.get_type() != Variant::NIL) {
 		args = 5;
-	else if (p_arg4.get_type() != Variant::NIL)
+	} else if (p_arg4.get_type() != Variant::NIL) {
 		args = 4;
-	else if (p_arg3.get_type() != Variant::NIL)
+	} else if (p_arg3.get_type() != Variant::NIL) {
 		args = 3;
-	else if (p_arg2.get_type() != Variant::NIL)
+	} else if (p_arg2.get_type() != Variant::NIL) {
 		args = 2;
-	else if (p_arg1.get_type() != Variant::NIL)
+	} else if (p_arg1.get_type() != Variant::NIL) {
 		args = 1;
-	else
+	} else {
 		args = 0;
+	}
 
 	data.args = args;
 	data.arg[0] = p_arg1;
@@ -1447,7 +1498,7 @@ bool Tween::interpolate_deferred_callback(Object *p_object, real_t p_duration, S
 	}
 
 	// Check that the target object is valid
-	ERR_FAIL_COND_V(p_object == NULL, false);
+	ERR_FAIL_COND_V(p_object == nullptr, false);
 	ERR_FAIL_COND_V(!ObjectDB::instance_validate(p_object), false);
 
 	// No negative durations allowed
@@ -1473,18 +1524,19 @@ bool Tween::interpolate_deferred_callback(Object *p_object, real_t p_duration, S
 
 	// Collect arguments for the callback
 	int args = 0;
-	if (p_arg5.get_type() != Variant::NIL)
+	if (p_arg5.get_type() != Variant::NIL) {
 		args = 5;
-	else if (p_arg4.get_type() != Variant::NIL)
+	} else if (p_arg4.get_type() != Variant::NIL) {
 		args = 4;
-	else if (p_arg3.get_type() != Variant::NIL)
+	} else if (p_arg3.get_type() != Variant::NIL) {
 		args = 3;
-	else if (p_arg2.get_type() != Variant::NIL)
+	} else if (p_arg2.get_type() != Variant::NIL) {
 		args = 2;
-	else if (p_arg1.get_type() != Variant::NIL)
+	} else if (p_arg1.get_type() != Variant::NIL) {
 		args = 1;
-	else
+	} else {
 		args = 0;
+	}
 
 	data.args = args;
 	data.arg[0] = p_arg1;
@@ -1511,15 +1563,19 @@ bool Tween::follow_property(Object *p_object, NodePath p_property, Variant p_ini
 
 	// If no initial value is given, grab it from the source object
 	// TODO: Is this documented? It's really helpful for decluttering tweens
-	if (p_initial_val.get_type() == Variant::NIL) p_initial_val = p_object->get_indexed(p_property.get_subnames());
+	if (p_initial_val.get_type() == Variant::NIL) {
+		p_initial_val = p_object->get_indexed(p_property.get_subnames());
+	}
 
 	// Convert initial INT values to REAL as they are better for interpolation
-	if (p_initial_val.get_type() == Variant::INT) p_initial_val = p_initial_val.operator real_t();
+	if (p_initial_val.get_type() == Variant::INT) {
+		p_initial_val = p_initial_val.operator real_t();
+	}
 
 	// Confirm the source and target objects are valid
-	ERR_FAIL_COND_V(p_object == NULL, false);
+	ERR_FAIL_COND_V(p_object == nullptr, false);
 	ERR_FAIL_COND_V(!ObjectDB::instance_validate(p_object), false);
-	ERR_FAIL_COND_V(p_target == NULL, false);
+	ERR_FAIL_COND_V(p_target == nullptr, false);
 	ERR_FAIL_COND_V(!ObjectDB::instance_validate(p_target), false);
 
 	// No negative durations
@@ -1542,7 +1598,9 @@ bool Tween::follow_property(Object *p_object, NodePath p_property, Variant p_ini
 	ERR_FAIL_COND_V(!target_prop_valid, false);
 
 	// Convert target INT to REAL since it is better for interpolation
-	if (target_val.get_type() == Variant::INT) target_val = target_val.operator real_t();
+	if (target_val.get_type() == Variant::INT) {
+		target_val = target_val.operator real_t();
+	}
 
 	// Verify that the target value and initial value are the same type
 	ERR_FAIL_COND_V(target_val.get_type() != p_initial_val.get_type(), false);
@@ -1578,12 +1636,14 @@ bool Tween::follow_method(Object *p_object, StringName p_method, Variant p_initi
 		return true;
 	}
 	// Convert initial INT values to REAL as they are better for interpolation
-	if (p_initial_val.get_type() == Variant::INT) p_initial_val = p_initial_val.operator real_t();
+	if (p_initial_val.get_type() == Variant::INT) {
+		p_initial_val = p_initial_val.operator real_t();
+	}
 
 	// Verify the source and target objects are valid
-	ERR_FAIL_COND_V(p_object == NULL, false);
+	ERR_FAIL_COND_V(p_object == nullptr, false);
 	ERR_FAIL_COND_V(!ObjectDB::instance_validate(p_object), false);
-	ERR_FAIL_COND_V(p_target == NULL, false);
+	ERR_FAIL_COND_V(p_target == nullptr, false);
 	ERR_FAIL_COND_V(!ObjectDB::instance_validate(p_target), false);
 
 	// No negative durations
@@ -1602,11 +1662,13 @@ bool Tween::follow_method(Object *p_object, StringName p_method, Variant p_initi
 
 	// Call the method to get the target value
 	Variant::CallError error;
-	Variant target_val = p_target->call(p_target_method, NULL, 0, error);
+	Variant target_val = p_target->call(p_target_method, nullptr, 0, error);
 	ERR_FAIL_COND_V(error.error != Variant::CallError::CALL_OK, false);
 
 	// Convert target INT values to REAL as they are better for interpolation
-	if (target_val.get_type() == Variant::INT) target_val = target_val.operator real_t();
+	if (target_val.get_type() == Variant::INT) {
+		target_val = target_val.operator real_t();
+	}
 	ERR_FAIL_COND_V(target_val.get_type() != p_initial_val.get_type(), false);
 
 	// Make the new InterpolateData for the method follow
@@ -1644,12 +1706,14 @@ bool Tween::targeting_property(Object *p_object, NodePath p_property, Object *p_
 	p_initial_property = p_initial_property.get_as_property_path();
 
 	// Convert the initial INT values to REAL as they are better for Interpolation
-	if (p_final_val.get_type() == Variant::INT) p_final_val = p_final_val.operator real_t();
+	if (p_final_val.get_type() == Variant::INT) {
+		p_final_val = p_final_val.operator real_t();
+	}
 
 	// Verify both objects are valid
-	ERR_FAIL_COND_V(p_object == NULL, false);
+	ERR_FAIL_COND_V(p_object == nullptr, false);
 	ERR_FAIL_COND_V(!ObjectDB::instance_validate(p_object), false);
-	ERR_FAIL_COND_V(p_initial == NULL, false);
+	ERR_FAIL_COND_V(p_initial == nullptr, false);
 	ERR_FAIL_COND_V(!ObjectDB::instance_validate(p_initial), false);
 
 	// No negative durations
@@ -1672,7 +1736,9 @@ bool Tween::targeting_property(Object *p_object, NodePath p_property, Object *p_
 	ERR_FAIL_COND_V(!initial_prop_valid, false);
 
 	// Convert the initial INT value to REAL as it is better for interpolation
-	if (initial_val.get_type() == Variant::INT) initial_val = initial_val.operator real_t();
+	if (initial_val.get_type() == Variant::INT) {
+		initial_val = initial_val.operator real_t();
+	}
 	ERR_FAIL_COND_V(initial_val.get_type() != p_final_val.get_type(), false);
 
 	// Build the InterpolateData object
@@ -1696,8 +1762,9 @@ bool Tween::targeting_property(Object *p_object, NodePath p_property, Object *p_
 	data.delay = p_delay;
 
 	// Ensure there is a valid delta
-	if (!_calc_delta_val(data.initial_val, data.final_val, data.delta_val))
+	if (!_calc_delta_val(data.initial_val, data.final_val, data.delta_val)) {
 		return false;
+	}
 
 	// Add the interpolation
 	_push_interpolate_data(data);
@@ -1712,12 +1779,14 @@ bool Tween::targeting_method(Object *p_object, StringName p_method, Object *p_in
 	}
 
 	// Convert final INT values to REAL as they are better for interpolation
-	if (p_final_val.get_type() == Variant::INT) p_final_val = p_final_val.operator real_t();
+	if (p_final_val.get_type() == Variant::INT) {
+		p_final_val = p_final_val.operator real_t();
+	}
 
 	// Make sure the given objects are valid
-	ERR_FAIL_COND_V(p_object == NULL, false);
+	ERR_FAIL_COND_V(p_object == nullptr, false);
 	ERR_FAIL_COND_V(!ObjectDB::instance_validate(p_object), false);
-	ERR_FAIL_COND_V(p_initial == NULL, false);
+	ERR_FAIL_COND_V(p_initial == nullptr, false);
 	ERR_FAIL_COND_V(!ObjectDB::instance_validate(p_initial), false);
 
 	// No negative durations
@@ -1736,11 +1805,13 @@ bool Tween::targeting_method(Object *p_object, StringName p_method, Object *p_in
 
 	// Call the method to get the initial value
 	Variant::CallError error;
-	Variant initial_val = p_initial->call(p_initial_method, NULL, 0, error);
+	Variant initial_val = p_initial->call(p_initial_method, nullptr, 0, error);
 	ERR_FAIL_COND_V(error.error != Variant::CallError::CALL_OK, false);
 
 	// Convert initial INT values to REAL as they aer better for interpolation
-	if (initial_val.get_type() == Variant::INT) initial_val = initial_val.operator real_t();
+	if (initial_val.get_type() == Variant::INT) {
+		initial_val = initial_val.operator real_t();
+	}
 	ERR_FAIL_COND_V(initial_val.get_type() != p_final_val.get_type(), false);
 
 	// Build the new InterpolateData object
@@ -1764,8 +1835,9 @@ bool Tween::targeting_method(Object *p_object, StringName p_method, Object *p_in
 	data.delay = p_delay;
 
 	// Ensure there is a valid delta
-	if (!_calc_delta_val(data.initial_val, data.final_val, data.delta_val))
+	if (!_calc_delta_val(data.initial_val, data.final_val, data.delta_val)) {
 		return false;
+	}
 
 	// Add the interpolation
 	_push_interpolate_data(data);

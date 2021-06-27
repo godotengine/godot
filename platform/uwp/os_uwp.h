@@ -50,10 +50,8 @@
 #include <windows.h>
 
 class OS_UWP : public OS {
-
 public:
 	struct KeyEvent {
-
 		enum MessageType {
 			KEY_EVENT_MESSAGE,
 			CHAR_EVENT_MESSAGE
@@ -63,6 +61,7 @@ public:
 		MessageType type;
 		bool pressed;
 		unsigned int scancode;
+		unsigned int physical_scancode;
 		unsigned int unicode;
 		bool echo;
 		CorePhysicalKeyStatus status;

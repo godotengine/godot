@@ -52,7 +52,6 @@ public:
 	};
 
 	struct Input {
-
 		String name;
 	};
 
@@ -63,7 +62,6 @@ public:
 	friend class AnimationTree;
 
 	struct AnimationState {
-
 		Ref<Animation> animation;
 		float time;
 		float delta;
@@ -73,7 +71,6 @@ public:
 	};
 
 	struct State {
-
 		int track_count;
 		HashMap<NodePath, int> track_map;
 		List<AnimationState> animation_states;
@@ -101,7 +98,7 @@ public:
 	Array _get_filters() const;
 	void _set_filters(const Array &p_filters);
 	friend class AnimationNodeBlendTree;
-	float _blend_node(const StringName &p_subpath, const Vector<StringName> &p_connections, AnimationNode *p_new_parent, Ref<AnimationNode> p_node, float p_time, bool p_seek, float p_blend, FilterAction p_filter = FILTER_IGNORE, bool p_optimize = true, float *r_max = NULL);
+	float _blend_node(const StringName &p_subpath, const Vector<StringName> &p_connections, AnimationNode *p_new_parent, Ref<AnimationNode> p_node, float p_time, bool p_seek, float p_blend, FilterAction p_filter = FILTER_IGNORE, bool p_optimize = true, float *r_max = nullptr);
 
 protected:
 	void blend_animation(const StringName &p_animation, float p_time, float p_delta, bool p_seeked, float p_blend);
@@ -174,7 +171,6 @@ public:
 
 private:
 	struct TrackCache {
-
 		bool root_motion;
 		uint64_t setup_pass;
 		uint64_t process_pass;
@@ -186,7 +182,7 @@ private:
 			root_motion = false;
 			setup_pass = 0;
 			process_pass = 0;
-			object = NULL;
+			object = nullptr;
 			object_id = 0;
 		}
 		virtual ~TrackCache() {}
@@ -203,26 +199,23 @@ private:
 
 		TrackCacheTransform() {
 			type = Animation::TYPE_TRANSFORM;
-			spatial = NULL;
+			spatial = nullptr;
 			bone_idx = -1;
-			skeleton = NULL;
+			skeleton = nullptr;
 		}
 	};
 
 	struct TrackCacheValue : public TrackCache {
-
 		Variant value;
 		Vector<StringName> subpath;
 		TrackCacheValue() { type = Animation::TYPE_VALUE; }
 	};
 
 	struct TrackCacheMethod : public TrackCache {
-
 		TrackCacheMethod() { type = Animation::TYPE_METHOD; }
 	};
 
 	struct TrackCacheBezier : public TrackCache {
-
 		float value;
 		Vector<StringName> subpath;
 		TrackCacheBezier() {
@@ -232,7 +225,6 @@ private:
 	};
 
 	struct TrackCacheAudio : public TrackCache {
-
 		bool playing;
 		float start;
 		float len;
@@ -246,7 +238,6 @@ private:
 	};
 
 	struct TrackCacheAnimation : public TrackCache {
-
 		bool playing;
 
 		TrackCacheAnimation() {
@@ -286,7 +277,7 @@ private:
 	void _tree_changed();
 	void _update_properties();
 	List<PropertyInfo> properties;
-	HashMap<StringName, HashMap<StringName, StringName> > property_parent_map;
+	HashMap<StringName, HashMap<StringName, StringName>> property_parent_map;
 	HashMap<StringName, Variant> property_map;
 
 	struct Activity {
@@ -294,7 +285,7 @@ private:
 		float activity;
 	};
 
-	HashMap<StringName, Vector<Activity> > input_activity_map;
+	HashMap<StringName, Vector<Activity>> input_activity_map;
 	HashMap<StringName, Vector<Activity> *> input_activity_map_get;
 
 	void _update_properties_for_node(const String &p_base_path, Ref<AnimationNode> node);

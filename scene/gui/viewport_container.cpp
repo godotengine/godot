@@ -34,15 +34,15 @@
 #include "scene/main/viewport.h"
 
 Size2 ViewportContainer::get_minimum_size() const {
-
-	if (stretch)
+	if (stretch) {
 		return Size2();
+	}
 	Size2 ms;
 	for (int i = 0; i < get_child_count(); i++) {
-
 		Viewport *c = Object::cast_to<Viewport>(get_child(i));
-		if (!c)
+		if (!c) {
 			continue;
+		}
 
 		Size2 minsize = c->get_size();
 		ms.width = MAX(ms.width, minsize.width);
@@ -53,33 +53,32 @@ Size2 ViewportContainer::get_minimum_size() const {
 }
 
 void ViewportContainer::set_stretch(bool p_enable) {
-
 	stretch = p_enable;
 	queue_sort();
 	update();
 }
 
 bool ViewportContainer::is_stretch_enabled() const {
-
 	return stretch;
 }
 
 void ViewportContainer::set_stretch_shrink(int p_shrink) {
-
 	ERR_FAIL_COND(p_shrink < 1);
-	if (shrink == p_shrink)
+	if (shrink == p_shrink) {
 		return;
+	}
 
 	shrink = p_shrink;
 
-	if (!stretch)
+	if (!stretch) {
 		return;
+	}
 
 	for (int i = 0; i < get_child_count(); i++) {
-
 		Viewport *c = Object::cast_to<Viewport>(get_child(i));
-		if (!c)
+		if (!c) {
 			continue;
+		}
 
 		c->set_size(get_size() / shrink);
 	}
@@ -88,39 +87,37 @@ void ViewportContainer::set_stretch_shrink(int p_shrink) {
 }
 
 int ViewportContainer::get_stretch_shrink() const {
-
 	return shrink;
 }
 
 void ViewportContainer::_notification(int p_what) {
-
 	if (p_what == NOTIFICATION_RESIZED) {
-
-		if (!stretch)
+		if (!stretch) {
 			return;
+		}
 
 		for (int i = 0; i < get_child_count(); i++) {
-
 			Viewport *c = Object::cast_to<Viewport>(get_child(i));
-			if (!c)
+			if (!c) {
 				continue;
+			}
 
 			c->set_size(get_size() / shrink);
 		}
 	}
 
 	if (p_what == NOTIFICATION_ENTER_TREE || p_what == NOTIFICATION_VISIBILITY_CHANGED) {
-
 		for (int i = 0; i < get_child_count(); i++) {
-
 			Viewport *c = Object::cast_to<Viewport>(get_child(i));
-			if (!c)
+			if (!c) {
 				continue;
+			}
 
-			if (is_visible_in_tree())
+			if (is_visible_in_tree()) {
 				c->set_update_mode(Viewport::UPDATE_ALWAYS);
-			else
+			} else {
 				c->set_update_mode(Viewport::UPDATE_DISABLED);
+			}
 
 			// #46982: the reason for this is unknown - commented - this causes issues with input in viewport
 			//         please either document behaviour or explain why this is here
@@ -129,25 +126,27 @@ void ViewportContainer::_notification(int p_what) {
 	}
 
 	if (p_what == NOTIFICATION_DRAW) {
-
 		for (int i = 0; i < get_child_count(); i++) {
-
 			Viewport *c = Object::cast_to<Viewport>(get_child(i));
-			if (!c)
+			if (!c) {
 				continue;
+			}
 
-			if (stretch)
+			if (stretch) {
 				draw_texture_rect(c->get_texture(), Rect2(Vector2(), get_size() * Size2(1, -1)));
-			else
+			} else {
 				draw_texture_rect(c->get_texture(), Rect2(Vector2(), c->get_size() * Size2(1, -1)));
+			}
 		}
 	}
 }
 
 void ViewportContainer::_input(const Ref<InputEvent> &p_event) {
+	ERR_FAIL_COND(p_event.is_null());
 
-	if (Engine::get_singleton()->is_editor_hint())
+	if (Engine::get_singleton()->is_editor_hint()) {
 		return;
+	}
 
 	Transform2D xform = get_global_transform();
 
@@ -160,19 +159,21 @@ void ViewportContainer::_input(const Ref<InputEvent> &p_event) {
 	Ref<InputEvent> ev = p_event->xformed_by(xform.affine_inverse());
 
 	for (int i = 0; i < get_child_count(); i++) {
-
 		Viewport *c = Object::cast_to<Viewport>(get_child(i));
-		if (!c || c->is_input_disabled())
+		if (!c || c->is_input_disabled()) {
 			continue;
+		}
 
 		c->input(ev);
 	}
 }
 
 void ViewportContainer::_unhandled_input(const Ref<InputEvent> &p_event) {
+	ERR_FAIL_COND(p_event.is_null());
 
-	if (Engine::get_singleton()->is_editor_hint())
+	if (Engine::get_singleton()->is_editor_hint()) {
 		return;
+	}
 
 	Transform2D xform = get_global_transform();
 
@@ -185,17 +186,16 @@ void ViewportContainer::_unhandled_input(const Ref<InputEvent> &p_event) {
 	Ref<InputEvent> ev = p_event->xformed_by(xform.affine_inverse());
 
 	for (int i = 0; i < get_child_count(); i++) {
-
 		Viewport *c = Object::cast_to<Viewport>(get_child(i));
-		if (!c || c->is_input_disabled())
+		if (!c || c->is_input_disabled()) {
 			continue;
+		}
 
 		c->unhandled_input(ev);
 	}
 }
 
 void ViewportContainer::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("_unhandled_input", "event"), &ViewportContainer::_unhandled_input);
 	ClassDB::bind_method(D_METHOD("_input", "event"), &ViewportContainer::_input);
 	ClassDB::bind_method(D_METHOD("set_stretch", "enable"), &ViewportContainer::set_stretch);
@@ -209,7 +209,6 @@ void ViewportContainer::_bind_methods() {
 }
 
 ViewportContainer::ViewportContainer() {
-
 	stretch = false;
 	shrink = 1;
 	set_process_input(true);

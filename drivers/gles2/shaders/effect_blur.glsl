@@ -23,7 +23,6 @@ uniform vec4 blur_section;
 #endif
 
 void main() {
-
 	uv_interp = uv_in;
 	gl_Position = vec4(vertex_attrib, 0.0, 1.0);
 #ifdef USE_BLUR_SECTION
@@ -127,7 +126,6 @@ uniform float camera_z_far;
 uniform float camera_z_near;
 
 void main() {
-
 #ifdef GLOW_GAUSSIAN_HORIZONTAL
 	vec2 pix_size = pixel_size;
 	pix_size *= 0.5; //reading from larger buffer, so use more samples
@@ -228,7 +226,6 @@ void main() {
 	float k_accum = 0.0;
 
 	for (int i = 0; i < dof_kernel_size; i++) {
-
 		int int_ofs = i - dof_kernel_from;
 		vec2 tap_uv = uv_interp + dof_dir * float(int_ofs) * amount * dof_radius;
 
@@ -265,7 +262,6 @@ void main() {
 	float max_accum = 0.0;
 
 	for (int i = 0; i < dof_kernel_size; i++) {
-
 		int int_ofs = i - dof_kernel_from;
 		vec2 tap_uv = uv_interp + dof_dir * float(int_ofs) * dof_radius;
 		float ofs_influence = max(0.0, 1.0 - abs(float(int_ofs)) / float(dof_kernel_from));

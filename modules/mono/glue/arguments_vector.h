@@ -35,7 +35,6 @@
 
 template <typename T, int POOL_SIZE = 5>
 struct ArgumentsVector {
-
 private:
 	T pool[POOL_SIZE];
 	T *_ptr;

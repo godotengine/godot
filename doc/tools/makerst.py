@@ -437,7 +437,7 @@ def make_rst_class(class_def, state, dry_run, output_dir):  # type: (ClassDef, S
         for property_def in class_def.properties.values():
             type_rst = property_def.type_name.to_rst(state)
             default = property_def.default_value
-            if property_def.overridden:
+            if default is not None and property_def.overridden:
                 ml.append((type_rst, property_def.name, default + " *(parent override)*"))
             else:
                 ref = ":ref:`{0}<class_{1}_property_{0}>`".format(property_def.name, class_name)

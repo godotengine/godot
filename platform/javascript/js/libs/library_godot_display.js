@@ -683,7 +683,7 @@ const GodotDisplay = {
 		return GodotDisplayScreen.exitFullscreen();
 	},
 
-	godot_js_display_desired_size_set__sig: 'v',
+	godot_js_display_desired_size_set__sig: 'vii',
 	godot_js_display_desired_size_set: function (width, height) {
 		GodotDisplayScreen.desired_size = [width, height];
 		GodotDisplayScreen.updateSize();
@@ -717,6 +717,17 @@ const GodotDisplay = {
 		const rh = canvas.height / rect.height;
 		GodotRuntime.setHeapValue(r_x, (x - rect.x) * rw, 'i32');
 		GodotRuntime.setHeapValue(r_y, (y - rect.y) * rh, 'i32');
+	},
+
+	godot_js_display_has_webgl__sig: 'ii',
+	godot_js_display_has_webgl: function (p_version) {
+		if (p_version !== 1 && p_version !== 2) {
+			return false;
+		}
+		try {
+			return !!document.createElement('canvas').getContext(p_version === 2 ? 'webgl2' : 'webgl');
+		} catch (e) { /* Not available */ }
+		return false;
 	},
 
 	/*

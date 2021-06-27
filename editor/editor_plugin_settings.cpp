@@ -39,7 +39,6 @@
 #include "scene/gui/margin_container.h"
 
 void EditorPluginSettings::_notification(int p_what) {
-
 	if (p_what == MainLoop::NOTIFICATION_WM_FOCUS_IN) {
 		update_plugins();
 	} else if (p_what == Node::NOTIFICATION_READY) {
@@ -49,7 +48,6 @@ void EditorPluginSettings::_notification(int p_what) {
 }
 
 void EditorPluginSettings::update_plugins() {
-
 	plugin_list->clear();
 	updating = true;
 	TreeItem *root = plugin_list->create_item();
@@ -58,7 +56,6 @@ void EditorPluginSettings::update_plugins() {
 	plugins.sort();
 
 	for (int i = 0; i < plugins.size(); i++) {
-
 		Ref<ConfigFile> cf;
 		cf.instance();
 		const String path = plugins[i];
@@ -66,28 +63,28 @@ void EditorPluginSettings::update_plugins() {
 		Error err2 = cf->load(path);
 
 		if (err2 != OK) {
-			WARN_PRINTS("Can't load plugin config: " + path);
+			WARN_PRINT("Can't load plugin config: " + path);
 		} else {
 			bool key_missing = false;
 
 			if (!cf->has_section_key("plugin", "name")) {
-				WARN_PRINTS("Plugin config misses \"plugin/name\" key: " + path);
+				WARN_PRINT("Plugin config misses \"plugin/name\" key: " + path);
 				key_missing = true;
 			}
 			if (!cf->has_section_key("plugin", "author")) {
-				WARN_PRINTS("Plugin config misses \"plugin/author\" key: " + path);
+				WARN_PRINT("Plugin config misses \"plugin/author\" key: " + path);
 				key_missing = true;
 			}
 			if (!cf->has_section_key("plugin", "version")) {
-				WARN_PRINTS("Plugin config misses \"plugin/version\" key: " + path);
+				WARN_PRINT("Plugin config misses \"plugin/version\" key: " + path);
 				key_missing = true;
 			}
 			if (!cf->has_section_key("plugin", "description")) {
-				WARN_PRINTS("Plugin config misses \"plugin/description\" key: " + path);
+				WARN_PRINT("Plugin config misses \"plugin/description\" key: " + path);
 				key_missing = true;
 			}
 			if (!cf->has_section_key("plugin", "script")) {
-				WARN_PRINTS("Plugin config misses \"plugin/script\" key: " + path);
+				WARN_PRINT("Plugin config misses \"plugin/script\" key: " + path);
 				key_missing = true;
 			}
 
@@ -120,9 +117,9 @@ void EditorPluginSettings::update_plugins() {
 }
 
 void EditorPluginSettings::_plugin_activity_changed() {
-
-	if (updating)
+	if (updating) {
 		return;
+	}
 
 	TreeItem *ti = plugin_list->get_edited();
 	ERR_FAIL_COND(!ti);
@@ -147,8 +144,9 @@ void EditorPluginSettings::_create_clicked() {
 
 void EditorPluginSettings::_cell_button_pressed(Object *p_item, int p_column, int p_id) {
 	TreeItem *item = Object::cast_to<TreeItem>(p_item);
-	if (!item)
+	if (!item) {
 		return;
+	}
 	if (p_id == BUTTON_PLUGIN_EDIT) {
 		if (p_column == 4) {
 			String dir = item->get_metadata(0);
@@ -186,7 +184,6 @@ Vector<String> EditorPluginSettings::_get_plugins(const String &p_dir) {
 }
 
 void EditorPluginSettings::_bind_methods() {
-
 	ClassDB::bind_method("update_plugins", &EditorPluginSettings::update_plugins);
 	ClassDB::bind_method("_create_clicked", &EditorPluginSettings::_create_clicked);
 	ClassDB::bind_method("_plugin_activity_changed", &EditorPluginSettings::_plugin_activity_changed);
@@ -194,7 +191,6 @@ void EditorPluginSettings::_bind_methods() {
 }
 
 EditorPluginSettings::EditorPluginSettings() {
-
 	plugin_config_dialog = memnew(PluginConfigDialog);
 	plugin_config_dialog->config("");
 	add_child(plugin_config_dialog);

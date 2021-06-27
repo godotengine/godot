@@ -34,7 +34,6 @@
 #include "scene/2d/node_2d.h"
 
 class Position2D : public Node2D {
-
 	GDCLASS(Position2D, Node2D);
 
 	void _draw_cross();

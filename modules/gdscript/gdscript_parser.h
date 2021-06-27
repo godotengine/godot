@@ -102,11 +102,10 @@ public:
 				infer_type(false),
 				may_yield(false),
 				builtin_type(Variant::NIL),
-				class_type(NULL) {}
+				class_type(nullptr) {}
 	};
 
 	struct Node {
-
 		enum Type {
 			TYPE_CLASS,
 			TYPE_FUNCTION,
@@ -145,7 +144,6 @@ public:
 	struct OperatorNode;
 
 	struct ClassNode : public Node {
-
 		bool tool;
 		StringName name;
 		bool extends_used;
@@ -201,12 +199,11 @@ public:
 			extends_used = false;
 			classname_used = false;
 			end_line = -1;
-			owner = NULL;
+			owner = nullptr;
 		}
 	};
 
 	struct FunctionNode : public Node {
-
 		bool _static;
 		MultiplayerAPI::RPCMode rpc_mode;
 		bool has_yield;
@@ -235,7 +232,6 @@ public:
 	};
 
 	struct BlockNode : public Node {
-
 		ClassNode *parent_class;
 		BlockNode *parent_block;
 		List<Node *> statements;
@@ -250,16 +246,15 @@ public:
 		List<BlockNode *> sub_blocks;
 		int end_line;
 		BlockNode() {
-			if_condition = NULL;
+			if_condition = nullptr;
 			type = TYPE_BLOCK;
 			end_line = -1;
-			parent_block = NULL;
-			parent_class = NULL;
+			parent_block = nullptr;
+			parent_class = nullptr;
 		}
 	};
 
 	struct TypeNode : public Node {
-
 		Variant::Type vtype;
 		TypeNode() { type = TYPE_TYPE; }
 	};
@@ -269,7 +264,6 @@ public:
 	};
 
 	struct IdentifierNode : public Node {
-
 		StringName name;
 		BlockNode *declared_block; // Simplify lookup by checking if it is declared locally
 		DataType datatype;
@@ -277,12 +271,11 @@ public:
 		virtual void set_datatype(const DataType &p_datatype) { datatype = p_datatype; }
 		IdentifierNode() {
 			type = TYPE_IDENTIFIER;
-			declared_block = NULL;
+			declared_block = nullptr;
 		}
 	};
 
 	struct LocalVarNode : public Node {
-
 		StringName name;
 		Node *assign;
 		OperatorNode *assign_op;
@@ -293,8 +286,8 @@ public:
 		virtual void set_datatype(const DataType &p_datatype) { datatype = p_datatype; }
 		LocalVarNode() {
 			type = TYPE_LOCAL_VAR;
-			assign = NULL;
-			assign_op = NULL;
+			assign = nullptr;
+			assign_op = nullptr;
 			assignments = 0;
 			usages = 0;
 		}
@@ -309,7 +302,6 @@ public:
 	};
 
 	struct ArrayNode : public Node {
-
 		Vector<Node *> elements;
 		DataType datatype;
 		virtual DataType get_datatype() const { return datatype; }
@@ -323,9 +315,7 @@ public:
 	};
 
 	struct DictionaryNode : public Node {
-
 		struct Pair {
-
 			Node *key;
 			Node *value;
 		};
@@ -409,7 +399,6 @@ public:
 	};
 
 	struct PatternNode : public Node {
-
 		enum PatternType {
 			PT_CONSTANT,
 			PT_BIND,
@@ -466,8 +455,8 @@ public:
 		ControlFlowNode() {
 			type = TYPE_CONTROL_FLOW;
 			cf_type = CF_IF;
-			body = NULL;
-			body_else = NULL;
+			body = nullptr;
+			body_else = nullptr;
 		}
 	};
 
@@ -484,8 +473,8 @@ public:
 		Node *condition;
 		Node *message;
 		AssertNode() :
-				condition(0),
-				message(0) {
+				condition(nullptr),
+				message(nullptr) {
 			type = TYPE_ASSERT;
 		}
 	};
@@ -499,7 +488,6 @@ public:
 	};
 
 	struct Expression {
-
 		bool is_op;
 		union {
 			OperatorNode::Operator op;
@@ -610,7 +598,7 @@ private:
 	bool _recover_from_completion();
 
 	bool _parse_arguments(Node *p_parent, Vector<Node *> &p_args, bool p_static, bool p_can_codecomplete = false, bool p_parsing_constant = false);
-	bool _enter_indent_block(BlockNode *p_block = NULL);
+	bool _enter_indent_block(BlockNode *p_block = nullptr);
 	bool _parse_newline();
 	Node *_parse_expression(Node *p_parent, bool p_static, bool p_allow_assign = false, bool p_parsing_constant = false);
 	Node *_reduce_expression(Node *p_node, bool p_to_const = false);
@@ -650,12 +638,16 @@ private:
 	void _check_block_types(BlockNode *p_block);
 	_FORCE_INLINE_ void _mark_line_as_safe(int p_line) const {
 #ifdef DEBUG_ENABLED
-		if (safe_lines) safe_lines->insert(p_line);
+		if (safe_lines) {
+			safe_lines->insert(p_line);
+		}
 #endif // DEBUG_ENABLED
 	}
 	_FORCE_INLINE_ void _mark_line_as_unsafe(int p_line) const {
 #ifdef DEBUG_ENABLED
-		if (safe_lines) safe_lines->erase(p_line);
+		if (safe_lines) {
+			safe_lines->erase(p_line);
+		}
 #endif // DEBUG_ENABLED
 	}
 
@@ -669,7 +661,7 @@ public:
 #ifdef DEBUG_ENABLED
 	const List<GDScriptWarning> &get_warnings() const { return warnings; }
 #endif // DEBUG_ENABLED
-	Error parse(const String &p_code, const String &p_base_path = "", bool p_just_validate = false, const String &p_self_path = "", bool p_for_completion = false, Set<int> *r_safe_lines = NULL, bool p_dependencies_only = false);
+	Error parse(const String &p_code, const String &p_base_path = "", bool p_just_validate = false, const String &p_self_path = "", bool p_for_completion = false, Set<int> *r_safe_lines = nullptr, bool p_dependencies_only = false);
 	Error parse_bytecode(const Vector<uint8_t> &p_bytecode, const String &p_base_path = "", const String &p_self_path = "");
 
 	bool is_tool_script() const;

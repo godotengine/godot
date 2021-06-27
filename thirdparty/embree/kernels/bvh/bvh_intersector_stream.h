@@ -1,4 +1,4 @@
-// Copyright 2009-2020 Intel Corporation
+// Copyright 2009-2021 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
 #pragma once
@@ -12,11 +12,9 @@ namespace embree
   namespace isa 
   {
     /*! BVH ray stream intersector. */
-    template<int N, int Nx, int types, bool robust, typename PrimitiveIntersector>
+    template<int N, int types, bool robust, typename PrimitiveIntersector>
     class BVHNIntersectorStream
     {
-      static const int Nxd = (Nx == N) ? N : Nx/2;
-
       /* shortcuts for frequently used types */
       template<int K> using PrimitiveIntersectorK = typename PrimitiveIntersector::template Type<K>;
       template<int K> using PrimitiveK = typename PrimitiveIntersectorK<K>::PrimitiveK;
@@ -128,13 +126,13 @@ namespace embree
                                                          const AABBNode* __restrict__ node,
                                                          const Frustum<robust>& frustum,
                                                          size_t* maskK,
-                                                         vfloat<Nx>& dist)
+                                                         vfloat<N>& dist)
       {
-        size_t m_node_hit = intersectNodeFrustum<N,Nx>(node, frustum, dist);
+        size_t m_node_hit = intersectNodeFrustum<N>(node, frustum, dist);
         const size_t first_index    = bsf(m_active);
         const size_t first_packetID = first_index / K;
         const size_t first_rayID    = first_index % K;
-        size_t m_first_hit = intersectNode1<N,Nx>(node, packets[first_packetID], first_rayID, frustum.nf);
+        size_t m_first_hit = intersectNode1<N>(node, packets[first_packetID], first_rayID, frustum.nf);
 
         /* this make traversal independent of the ordering of rays */
         size_t m_node = m_node_hit ^ m_first_hit;
@@ -150,20 +148,20 @@ namespace embree
       
       // TODO: explicit 16-wide path for KNL
       template<int K>
-      __forceinline static vint<Nx> traverseIncoherentStream(size_t m_active,
+      __forceinline static vint<N> traverseIncoherentStream(size_t m_active,
                                                              TravRayKStreamFast<K>* __restrict__ packets,
                                                              const AABBNode* __restrict__ node,
                                                              const NearFarPrecalculations& nf,
                                                              const int shiftTable[32])
       {
-        const vfloat<Nx> bminX = vfloat<Nx>(*(const vfloat<N>*)((const char*)&node->lower_x + nf.nearX));
-        const vfloat<Nx> bminY = vfloat<Nx>(*(const vfloat<N>*)((const char*)&node->lower_x + nf.nearY));
-        const vfloat<Nx> bminZ = vfloat<Nx>(*(const vfloat<N>*)((const char*)&node->lower_x + nf.nearZ));
-        const vfloat<Nx> bmaxX = vfloat<Nx>(*(const vfloat<N>*)((const char*)&node->lower_x + nf.farX));
-        const vfloat<Nx> bmaxY = vfloat<Nx>(*(const vfloat<N>*)((const char*)&node->lower_x + nf.farY));
-        const vfloat<Nx> bmaxZ = vfloat<Nx>(*(const vfloat<N>*)((const char*)&node->lower_x + nf.farZ));
+        const vfloat<N> bminX = vfloat<N>(*(const vfloat<N>*)((const char*)&node->lower_x + nf.nearX));
+        const vfloat<N> bminY = vfloat<N>(*(const vfloat<N>*)((const char*)&node->lower_x + nf.nearY));
+        const vfloat<N> bminZ = vfloat<N>(*(const vfloat<N>*)((const char*)&node->lower_x + nf.nearZ));
+        const vfloat<N> bmaxX = vfloat<N>(*(const vfloat<N>*)((const char*)&node->lower_x + nf.farX));
+        const vfloat<N> bmaxY = vfloat<N>(*(const vfloat<N>*)((const char*)&node->lower_x + nf.farY));
+        const vfloat<N> bmaxZ = vfloat<N>(*(const vfloat<N>*)((const char*)&node->lower_x + nf.farZ));
         assert(m_active);
-        vint<Nx> vmask(zero);
+        vint<N> vmask(zero);
         do
         {   
           STAT3(shadow.trav_nodes,1,1,1);
@@ -171,47 +169,41 @@ namespace embree
           assert(rayID < MAX_INTERNAL_STREAM_SIZE);
           TravRayKStream<K,robust> &p = packets[rayID / K];
           const size_t i = rayID % K;
-          const vint<Nx> bitmask(shiftTable[rayID]);
-          const vfloat<Nx> tNearX = msub(bminX, p.rdir.x[i], p.org_rdir.x[i]);
-          const vfloat<Nx> tNearY = msub(bminY, p.rdir.y[i], p.org_rdir.y[i]);
-          const vfloat<Nx> tNearZ = msub(bminZ, p.rdir.z[i], p.org_rdir.z[i]);
-          const vfloat<Nx> tFarX  = msub(bmaxX, p.rdir.x[i], p.org_rdir.x[i]);
-          const vfloat<Nx> tFarY  = msub(bmaxY, p.rdir.y[i], p.org_rdir.y[i]);
-          const vfloat<Nx> tFarZ  = msub(bmaxZ, p.rdir.z[i], p.org_rdir.z[i]); 
-          const vfloat<Nx> tNear  = maxi(tNearX, tNearY, tNearZ, vfloat<Nx>(p.tnear[i]));
-          const vfloat<Nx> tFar   = mini(tFarX , tFarY , tFarZ,  vfloat<Nx>(p.tfar[i]));      
+          const vint<N> bitmask(shiftTable[rayID]);
+          const vfloat<N> tNearX = msub(bminX, p.rdir.x[i], p.org_rdir.x[i]);
+          const vfloat<N> tNearY = msub(bminY, p.rdir.y[i], p.org_rdir.y[i]);
+          const vfloat<N> tNearZ = msub(bminZ, p.rdir.z[i], p.org_rdir.z[i]);
+          const vfloat<N> tFarX  = msub(bmaxX, p.rdir.x[i], p.org_rdir.x[i]);
+          const vfloat<N> tFarY  = msub(bmaxY, p.rdir.y[i], p.org_rdir.y[i]);
+          const vfloat<N> tFarZ  = msub(bmaxZ, p.rdir.z[i], p.org_rdir.z[i]); 
+          const vfloat<N> tNear  = maxi(tNearX, tNearY, tNearZ, vfloat<N>(p.tnear[i]));
+          const vfloat<N> tFar   = mini(tFarX , tFarY , tFarZ,  vfloat<N>(p.tfar[i]));      
 
-#if defined(__AVX512ER__)
-          const vboolx m_node((1 << N)-1);
-          const vbool<Nx> hit_mask = le(m_node, tNear, tFar);
-          vmask = mask_or(hit_mask, vmask, vmask, bitmask);
-#else
-          const vbool<Nx> hit_mask = tNear <= tFar;
+          const vbool<N> hit_mask = tNear <= tFar;
 #if defined(__AVX2__)
-          vmask = vmask | (bitmask & vint<Nx>(hit_mask));
+          vmask = vmask | (bitmask & vint<N>(hit_mask));
 #else
           vmask = select(hit_mask, vmask | bitmask, vmask);
-#endif
 #endif
         } while(m_active);
         return vmask;        
       }
 
       template<int K>
-      __forceinline static vint<Nx> traverseIncoherentStream(size_t m_active,
+      __forceinline static vint<N> traverseIncoherentStream(size_t m_active,
                                                              TravRayKStreamRobust<K>* __restrict__ packets,
                                                              const AABBNode* __restrict__ node,
                                                              const NearFarPrecalculations& nf,
                                                              const int shiftTable[32])
       {
-        const vfloat<Nx> bminX = vfloat<Nx>(*(const vfloat<N>*)((const char*)&node->lower_x + nf.nearX));
-        const vfloat<Nx> bminY = vfloat<Nx>(*(const vfloat<N>*)((const char*)&node->lower_x + nf.nearY));
-        const vfloat<Nx> bminZ = vfloat<Nx>(*(const vfloat<N>*)((const char*)&node->lower_x + nf.nearZ));
-        const vfloat<Nx> bmaxX = vfloat<Nx>(*(const vfloat<N>*)((const char*)&node->lower_x + nf.farX));
-        const vfloat<Nx> bmaxY = vfloat<Nx>(*(const vfloat<N>*)((const char*)&node->lower_x + nf.farY));
-        const vfloat<Nx> bmaxZ = vfloat<Nx>(*(const vfloat<N>*)((const char*)&node->lower_x + nf.farZ));
+        const vfloat<N> bminX = vfloat<N>(*(const vfloat<N>*)((const char*)&node->lower_x + nf.nearX));
+        const vfloat<N> bminY = vfloat<N>(*(const vfloat<N>*)((const char*)&node->lower_x + nf.nearY));
+        const vfloat<N> bminZ = vfloat<N>(*(const vfloat<N>*)((const char*)&node->lower_x + nf.nearZ));
+        const vfloat<N> bmaxX = vfloat<N>(*(const vfloat<N>*)((const char*)&node->lower_x + nf.farX));
+        const vfloat<N> bmaxY = vfloat<N>(*(const vfloat<N>*)((const char*)&node->lower_x + nf.farY));
+        const vfloat<N> bmaxZ = vfloat<N>(*(const vfloat<N>*)((const char*)&node->lower_x + nf.farZ));
         assert(m_active);
-        vint<Nx> vmask(zero);
+        vint<N> vmask(zero);
         do
         {   
           STAT3(shadow.trav_nodes,1,1,1);
@@ -219,28 +211,22 @@ namespace embree
           assert(rayID < MAX_INTERNAL_STREAM_SIZE);
           TravRayKStream<K,robust> &p = packets[rayID / K];
           const size_t i = rayID % K;
-          const vint<Nx> bitmask(shiftTable[rayID]);
-          const vfloat<Nx> tNearX = (bminX - p.org.x[i]) * p.rdir.x[i];
-          const vfloat<Nx> tNearY = (bminY - p.org.y[i]) * p.rdir.y[i];
-          const vfloat<Nx> tNearZ = (bminZ - p.org.z[i]) * p.rdir.z[i];
-          const vfloat<Nx> tFarX  = (bmaxX - p.org.x[i]) * p.rdir.x[i];
-          const vfloat<Nx> tFarY  = (bmaxY - p.org.y[i]) * p.rdir.y[i];
-          const vfloat<Nx> tFarZ  = (bmaxZ - p.org.z[i]) * p.rdir.z[i];
-          const vfloat<Nx> tNear  = maxi(tNearX, tNearY, tNearZ, vfloat<Nx>(p.tnear[i]));
-          const vfloat<Nx> tFar   = mini(tFarX , tFarY , tFarZ,  vfloat<Nx>(p.tfar[i]));
+          const vint<N> bitmask(shiftTable[rayID]);
+          const vfloat<N> tNearX = (bminX - p.org.x[i]) * p.rdir.x[i];
+          const vfloat<N> tNearY = (bminY - p.org.y[i]) * p.rdir.y[i];
+          const vfloat<N> tNearZ = (bminZ - p.org.z[i]) * p.rdir.z[i];
+          const vfloat<N> tFarX  = (bmaxX - p.org.x[i]) * p.rdir.x[i];
+          const vfloat<N> tFarY  = (bmaxY - p.org.y[i]) * p.rdir.y[i];
+          const vfloat<N> tFarZ  = (bmaxZ - p.org.z[i]) * p.rdir.z[i];
+          const vfloat<N> tNear  = maxi(tNearX, tNearY, tNearZ, vfloat<N>(p.tnear[i]));
+          const vfloat<N> tFar   = mini(tFarX , tFarY , tFarZ,  vfloat<N>(p.tfar[i]));
           const float round_down  = 1.0f-2.0f*float(ulp);
           const float round_up    = 1.0f+2.0f*float(ulp);
-#if defined(__AVX512ER__)
-          const vboolx m_node((1 << N)-1);
-          const vbool<Nx> hit_mask = le(m_node, round_down*tNear, round_up*tFar);
-          vmask = mask_or(hit_mask, vmask, vmask, bitmask);
-#else
-          const vbool<Nx> hit_mask = round_down*tNear <= round_up*tFar;
+          const vbool<N> hit_mask = round_down*tNear <= round_up*tFar;
 #if defined(__AVX2__)
-          vmask = vmask | (bitmask & vint<Nx>(hit_mask));
+          vmask = vmask | (bitmask & vint<N>(hit_mask));
 #else
           vmask = select(hit_mask, vmask | bitmask, vmask);
-#endif
 #endif
         } while(m_active);
         return vmask;
@@ -266,7 +252,7 @@ namespace embree
 
 
     /*! BVH ray stream intersector with direct fallback to packets. */
-    template<int N, int Nx>
+    template<int N>
     class BVHNIntersectorStreamPacketFallback
     {
     public:

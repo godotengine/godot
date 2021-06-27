@@ -1,4 +1,4 @@
-// Copyright 2009-2020 Intel Corporation
+// Copyright 2009-2021 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
 #pragma once
@@ -137,7 +137,7 @@ namespace embree
           assert(isSmallGeometry(mesh));
           
           mvector<PrimRef> prefs(topBuilder->scene->device, meshSize);
-          auto pinfo = createPrimRefArray(mesh,objectID_,prefs,topBuilder->bvh->scene->progressInterface);
+          auto pinfo = createPrimRefArray(mesh,objectID_,meshSize,prefs,topBuilder->bvh->scene->progressInterface);
 
           size_t begin=0;
           while (begin < pinfo.size())

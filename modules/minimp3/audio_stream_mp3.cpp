@@ -99,8 +99,9 @@ float AudioStreamPlaybackMP3::get_playback_position() const {
 }
 
 void AudioStreamPlaybackMP3::seek(float p_time) {
-	if (!active)
+	if (!active) {
 		return;
+	}
 
 	if (p_time >= mp3_stream->get_length()) {
 		p_time = 0;
@@ -181,7 +182,7 @@ PoolVector<uint8_t> AudioStreamMP3::get_data() const {
 		vdata.resize(data_len);
 		{
 			PoolVector<uint8_t>::Write w = vdata.write();
-			copymem(w.ptr(), data, data_len);
+			memcpy(w.ptr(), data, data_len);
 		}
 	}
 

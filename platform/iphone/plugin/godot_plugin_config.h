@@ -52,7 +52,6 @@ The `plist` section are optional.
  */
 
 struct PluginConfigIOS {
-
 	static const char *PLUGIN_CONFIG_EXT;
 
 	static const char *CONFIG_SECTION;
@@ -70,6 +69,20 @@ struct PluginConfigIOS {
 	static const char *DEPENDENCIES_LINKER_FLAGS;
 
 	static const char *PLIST_SECTION;
+
+	enum PlistItemType {
+		UNKNOWN,
+		STRING,
+		INTEGER,
+		BOOLEAN,
+		RAW,
+		STRING_INPUT,
+	};
+
+	struct PlistItem {
+		PlistItemType type;
+		String value;
+	};
 
 	// Set to true when the config file is properly loaded.
 	bool valid_config = false;
@@ -94,8 +107,10 @@ struct PluginConfigIOS {
 	Vector<String> linker_flags;
 
 	// Optional plist section
-	// Supports only string types for now
-	HashMap<String, String> plist;
+	// String value is default value.
+	// Currently supports `string`, `boolean`, `integer`, `raw`, `string_input` types
+	// <name>:<type> = <value>
+	HashMap<String, PlistItem> plist;
 };
 
 const char *PluginConfigIOS::PLUGIN_CONFIG_EXT = ".gdip";
@@ -237,8 +252,9 @@ static inline uint64_t get_plugin_modification_time(const PluginConfigIOS &plugi
 	} else {
 		String file_path = plugin_config.binary.get_base_dir();
 		String file_name = plugin_config.binary.get_basename().get_file();
-		String release_file_name = file_path.plus_file(file_name + ".release.a");
-		String debug_file_name = file_path.plus_file(file_name + ".debug.a");
+		String plugin_extension = plugin_config.binary.get_extension();
+		String release_file_name = file_path.plus_file(file_name + ".release." + plugin_extension);
+		String debug_file_name = file_path.plus_file(file_name + ".debug." + plugin_extension);
 
 		last_updated = MAX(last_updated, FileAccess::get_modified_time(release_file_name));
 		last_updated = MAX(last_updated, FileAccess::get_modified_time(debug_file_name));
@@ -291,13 +307,68 @@ static inline PluginConfigIOS load_plugin_config(Ref<ConfigFile> config_file, co
 		config_file->get_section_keys(PluginConfigIOS::PLIST_SECTION, &keys);
 
 		for (int i = 0; i < keys.size(); i++) {
-			String value = config_file->get_value(PluginConfigIOS::PLIST_SECTION, keys[i], String());
+			Vector<String> key_components = keys[i].split(":");
 
-			if (value.empty()) {
+			String key_value = "";
+			PluginConfigIOS::PlistItemType key_type = PluginConfigIOS::PlistItemType::UNKNOWN;
+
+			if (key_components.size() == 1) {
+				key_value = key_components[0];
+				key_type = PluginConfigIOS::PlistItemType::STRING;
+			} else if (key_components.size() == 2) {
+				key_value = key_components[0];
+
+				if (key_components[1].to_lower() == "string") {
+					key_type = PluginConfigIOS::PlistItemType::STRING;
+				} else if (key_components[1].to_lower() == "integer") {
+					key_type = PluginConfigIOS::PlistItemType::INTEGER;
+				} else if (key_components[1].to_lower() == "boolean") {
+					key_type = PluginConfigIOS::PlistItemType::BOOLEAN;
+				} else if (key_components[1].to_lower() == "raw") {
+					key_type = PluginConfigIOS::PlistItemType::RAW;
+				} else if (key_components[1].to_lower() == "string_input") {
+					key_type = PluginConfigIOS::PlistItemType::STRING_INPUT;
+				}
+			}
+
+			if (key_value.empty() || key_type == PluginConfigIOS::PlistItemType::UNKNOWN) {
 				continue;
 			}
 
-			plugin_config.plist[keys[i]] = value;
+			String value;
+
+			switch (key_type) {
+				case PluginConfigIOS::PlistItemType::STRING: {
+					String raw_value = config_file->get_value(PluginConfigIOS::PLIST_SECTION, keys[i], String());
+					value = "<string>" + raw_value + "</string>";
+				} break;
+				case PluginConfigIOS::PlistItemType::INTEGER: {
+					int raw_value = config_file->get_value(PluginConfigIOS::PLIST_SECTION, keys[i], 0);
+					Dictionary value_dictionary;
+					String value_format = "<integer>$value</integer>";
+					value_dictionary["value"] = raw_value;
+					value = value_format.format(value_dictionary, "$_");
+				} break;
+				case PluginConfigIOS::PlistItemType::BOOLEAN:
+					if (config_file->get_value(PluginConfigIOS::PLIST_SECTION, keys[i], false)) {
+						value = "<true/>";
+					} else {
+						value = "<false/>";
+					}
+					break;
+				case PluginConfigIOS::PlistItemType::RAW: {
+					String raw_value = config_file->get_value(PluginConfigIOS::PLIST_SECTION, keys[i], String());
+					value = raw_value;
+				} break;
+				case PluginConfigIOS::PlistItemType::STRING_INPUT: {
+					String raw_value = config_file->get_value(PluginConfigIOS::PLIST_SECTION, keys[i], String());
+					value = raw_value;
+				} break;
+				default:
+					continue;
+			}
+
+			plugin_config.plist[key_value] = PluginConfigIOS::PlistItem{ key_type, value };
 		}
 	}
 

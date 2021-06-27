@@ -67,12 +67,10 @@
 #include "visual_server.h"
 
 static void _debugger_get_resource_usage(List<ScriptDebuggerRemote::ResourceUsage> *r_usage) {
-
 	List<VS::TextureInfo> tinfo;
 	VS::get_singleton()->texture_debug_usage(&tinfo);
 
 	for (List<VS::TextureInfo>::Element *E = tinfo.front(); E; E = E->next()) {
-
 		ScriptDebuggerRemote::ResourceUsage usage;
 		usage.path = E->get().path;
 		usage.vram = E->get().bytes;
@@ -87,7 +85,7 @@ static void _debugger_get_resource_usage(List<ScriptDebuggerRemote::ResourceUsag
 	}
 }
 
-ShaderTypes *shader_types = NULL;
+ShaderTypes *shader_types = nullptr;
 
 PhysicsServer *_createGodotPhysicsCallback() {
 	return memnew(PhysicsServerSW);
@@ -98,7 +96,6 @@ Physics2DServer *_createGodotPhysics2DCallback() {
 }
 
 static bool has_server_feature_callback(const String &p_feature) {
-
 	if (VisualServer::get_singleton()) {
 		if (VisualServer::get_singleton()->has_os_feature(p_feature)) {
 			return true;
@@ -109,7 +106,6 @@ static bool has_server_feature_callback(const String &p_feature) {
 }
 
 void register_server_types() {
-
 	OS::get_singleton()->set_has_server_feature_callback(has_server_feature_callback);
 
 	ClassDB::register_virtual_class<VisualServer>();
@@ -206,7 +202,6 @@ void register_server_types() {
 }
 
 void unregister_server_types() {
-
 	memdelete(shader_types);
 }
 

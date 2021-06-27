@@ -1,4 +1,4 @@
-// Copyright 2009-2020 Intel Corporation
+// Copyright 2009-2021 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
 #include "thread.h"
@@ -6,7 +6,11 @@
 #include "string.h"
 
 #include <iostream>
+#if defined(__ARM_NEON)
+#include "../simd/arm/emulation.h"
+#else
 #include <xmmintrin.h>
+#endif
 
 #if defined(PTHREADS_WIN32)
 #pragma comment (lib, "pthreadVC.lib")
@@ -154,7 +158,9 @@ namespace embree
 /// Linux Platform
 ////////////////////////////////////////////////////////////////////////////////
 
-#if defined(__LINUX__)
+// -- GODOT start --
+#if defined(__LINUX__) && !defined(__ANDROID__)
+// -- GODOT end --
 
 #include <fstream>
 #include <sstream>
@@ -243,6 +249,28 @@ namespace embree
 }
 #endif
 
+// -- GODOT start --
+////////////////////////////////////////////////////////////////////////////////
+/// Android Platform
+////////////////////////////////////////////////////////////////////////////////
+
+#if defined(__ANDROID__)
+
+namespace embree
+{
+  /*! set affinity of the calling thread */
+  void setAffinity(ssize_t affinity)
+  {
+    cpu_set_t cset;
+    CPU_ZERO(&cset);
+    CPU_SET(affinity, &cset);
+
+    sched_setaffinity(0, sizeof(cset), &cset);
+  }
+}
+#endif
+// -- GODOT end --
+
 ////////////////////////////////////////////////////////////////////////////////
 /// FreeBSD Platform
 ////////////////////////////////////////////////////////////////////////////////
@@ -280,10 +308,14 @@ namespace embree
   /*! set affinity of the calling thread */
   void setAffinity(ssize_t affinity)
   {
+#if !defined(__ARM_NEON) // affinity seems not supported on M1 chip
+    
     thread_affinity_policy ap;
     ap.affinity_tag = affinity;
     if (thread_policy_set(mach_thread_self(),THREAD_AFFINITY_POLICY,(thread_policy_t)&ap,THREAD_AFFINITY_POLICY_COUNT) != KERN_SUCCESS)
       WARNING("setting thread affinity failed"); // on purpose only a warning
+    
+#endif
   }
 }
 #endif
@@ -347,7 +379,9 @@ namespace embree
     pthread_attr_destroy(&attr);
 
     /* set affinity */
-#if defined(__LINUX__)
+// -- GODOT start --
+#if defined(__LINUX__) && !defined(__ANDROID__)
+// -- GODOT end --
     if (threadID >= 0) {
       cpu_set_t cset;
       CPU_ZERO(&cset);
@@ -362,7 +396,16 @@ namespace embree
       CPU_SET(threadID, &cset);
       pthread_setaffinity_np(*tid, sizeof(cset), &cset);
     }
+// -- GODOT start --
+#elif defined(__ANDROID__)
+    if (threadID >= 0) {
+      cpu_set_t cset;
+      CPU_ZERO(&cset);
+      CPU_SET(threadID, &cset);
+      sched_setaffinity(pthread_gettid_np(*tid), sizeof(cset), &cset);
+    }
 #endif
+// -- GODOT end --
 
     return thread_t(tid);
   }
@@ -381,8 +424,14 @@ namespace embree
 
   /*! destroy a hardware thread by its handle */
   void destroyThread(thread_t tid) {
+// -- GODOT start --
+#if defined(__ANDROID__)
+    FATAL("Can't destroy threads on Android.");
+#else
     pthread_cancel(*(pthread_t*)tid);
     delete (pthread_t*)tid;
+#endif
+// -- GODOT end --
   }
 
   /*! creates thread local storage */

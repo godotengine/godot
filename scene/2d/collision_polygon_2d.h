@@ -37,7 +37,6 @@
 class CollisionObject2D;
 
 class CollisionPolygon2D : public Node2D {
-
 	GDCLASS(CollisionPolygon2D, Node2D);
 
 public:
@@ -56,7 +55,7 @@ protected:
 	bool one_way_collision;
 	float one_way_collision_margin;
 
-	Vector<Vector<Vector2> > _decompose_in_convex();
+	Vector<Vector<Vector2>> _decompose_in_convex();
 
 	void _build_polygon();
 

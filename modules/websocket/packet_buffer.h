@@ -31,12 +31,10 @@
 #ifndef PACKET_BUFFER_H
 #define PACKET_BUFFER_H
 
-#include "core/os/copymem.h"
 #include "core/ring_buffer.h"
 
 template <class T>
 class PacketBuffer {
-
 private:
 	typedef struct {
 		uint32_t size;
@@ -67,7 +65,7 @@ public:
 		if (p_info) {
 			_Packet p;
 			p.size = p_size;
-			copymem(&p.info, p_info, sizeof(T));
+			memcpy(&p.info, p_info, sizeof(T));
 			_packets.write(p);
 		}
 
@@ -87,7 +85,7 @@ public:
 		ERR_FAIL_COND_V(p_bytes < (int)p.size, ERR_OUT_OF_MEMORY);
 
 		r_read = p.size;
-		copymem(r_info, &p.info, sizeof(T));
+		memcpy(r_info, &p.info, sizeof(T));
 		_payload.read(r_payload, p.size);
 		return OK;
 	}

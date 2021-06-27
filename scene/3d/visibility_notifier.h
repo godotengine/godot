@@ -36,7 +36,6 @@
 class World;
 class Camera;
 class VisibilityNotifier : public Spatial {
-
 	GDCLASS(VisibilityNotifier, Spatial);
 
 	Ref<World> world;
@@ -64,7 +63,6 @@ public:
 };
 
 class VisibilityEnabler : public VisibilityNotifier {
-
 	GDCLASS(VisibilityEnabler, VisibilityNotifier);
 
 public:

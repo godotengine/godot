@@ -40,7 +40,6 @@ void GDNativeLibraryEditor::edit(Ref<GDNativeLibrary> p_library) {
 
 	for (Map<String, NativePlatformConfig>::Element *E = platforms.front(); E; E = E->next()) {
 		for (List<String>::Element *it = E->value().entries.front(); it; it = it->next()) {
-
 			String target = E->key() + "." + it->get();
 			TargetConfig ecfg;
 			ecfg.library = config->get_value("entry", target, "");
@@ -53,7 +52,6 @@ void GDNativeLibraryEditor::edit(Ref<GDNativeLibrary> p_library) {
 }
 
 void GDNativeLibraryEditor::_bind_methods() {
-
 	ClassDB::bind_method("_on_item_button", &GDNativeLibraryEditor::_on_item_button);
 	ClassDB::bind_method("_on_library_selected", &GDNativeLibraryEditor::_on_library_selected);
 	ClassDB::bind_method("_on_dependencies_selected", &GDNativeLibraryEditor::_on_dependencies_selected);
@@ -64,14 +62,12 @@ void GDNativeLibraryEditor::_bind_methods() {
 }
 
 void GDNativeLibraryEditor::_update_tree() {
-
 	tree->clear();
 	TreeItem *root = tree->create_item();
 
 	PopupMenu *filter_list = filter->get_popup();
 	String text = "";
 	for (int i = 0; i < filter_list->get_item_count(); i++) {
-
 		if (!filter_list->is_item_checked(i)) {
 			continue;
 		}
@@ -92,7 +88,6 @@ void GDNativeLibraryEditor::_update_tree() {
 		platform->set_expand_right(0, true);
 
 		for (List<String>::Element *it = E->value().entries.front(); it; it = it->next()) {
-
 			String target = E->key() + "." + it->get();
 			TreeItem *bit = tree->create_item(platform);
 
@@ -127,26 +122,24 @@ void GDNativeLibraryEditor::_update_tree() {
 		new_arch->set_expand_right(0, true);
 		new_arch->set_metadata(1, E->key());
 
-		platform->set_collapsed(collapsed_items.find(E->get().name) != NULL);
+		platform->set_collapsed(collapsed_items.find(E->get().name) != nullptr);
 	}
 	filter->set_text(text);
 }
 
 void GDNativeLibraryEditor::_on_item_button(Object *item, int column, int id) {
-
 	String target = Object::cast_to<TreeItem>(item)->get_metadata(0);
 	String platform = target.substr(0, target.find("."));
 	String entry = target.substr(platform.length() + 1, target.length());
 	String section = (id == BUTTON_SELECT_DEPENDENCES || id == BUTTON_CLEAR_DEPENDENCES) ? "dependencies" : "entry";
 
 	if (id == BUTTON_SELECT_LIBRARY || id == BUTTON_SELECT_DEPENDENCES) {
-
 		TreeItem *treeItem = Object::cast_to<TreeItem>(item)->get_parent();
 		EditorFileDialog::Mode mode = EditorFileDialog::MODE_OPEN_FILE;
 
 		if (id == BUTTON_SELECT_DEPENDENCES) {
 			mode = EditorFileDialog::MODE_OPEN_FILES;
-		} else if (treeItem->get_text(0) == "iOS") {
+		} else if (treeItem->get_text(0) == "iOS" || treeItem->get_text(0) == "macOS") {
 			mode = EditorFileDialog::MODE_OPEN_ANY;
 		}
 
@@ -175,24 +168,20 @@ void GDNativeLibraryEditor::_on_item_button(Object *item, int column, int id) {
 }
 
 void GDNativeLibraryEditor::_on_library_selected(const String &file) {
-
 	_set_target_value(file_dialog->get_meta("section"), file_dialog->get_meta("target"), file);
 }
 
 void GDNativeLibraryEditor::_on_dependencies_selected(const PoolStringArray &files) {
-
 	_set_target_value(file_dialog->get_meta("section"), file_dialog->get_meta("target"), files);
 }
 
 void GDNativeLibraryEditor::_on_filter_selected(int index) {
-
 	PopupMenu *filter_list = filter->get_popup();
 	filter_list->set_item_checked(index, !filter_list->is_item_checked(index));
 	_update_tree();
 }
 
 void GDNativeLibraryEditor::_on_item_collapsed(Object *p_item) {
-
 	TreeItem *item = Object::cast_to<TreeItem>(p_item);
 	String name = item->get_text(0);
 
@@ -204,7 +193,6 @@ void GDNativeLibraryEditor::_on_item_collapsed(Object *p_item) {
 }
 
 void GDNativeLibraryEditor::_on_item_activated() {
-
 	TreeItem *item = tree->get_selected();
 	if (item && tree->get_selected_column() == 0 && item->get_metadata(0).get_type() == Variant::NIL) {
 		new_architecture_dialog->set_meta("platform", item->get_metadata(1));
@@ -213,7 +201,6 @@ void GDNativeLibraryEditor::_on_item_activated() {
 }
 
 void GDNativeLibraryEditor::_on_create_new_entry() {
-
 	String platform = new_architecture_dialog->get_meta("platform");
 	String entry = new_architecture_input->get_text().strip_edges();
 	if (!entry.empty()) {
@@ -223,19 +210,18 @@ void GDNativeLibraryEditor::_on_create_new_entry() {
 }
 
 void GDNativeLibraryEditor::_set_target_value(const String &section, const String &target, Variant file) {
-	if (section == "entry")
+	if (section == "entry") {
 		entry_configs[target].library = file;
-	else if (section == "dependencies")
+	} else if (section == "dependencies") {
 		entry_configs[target].dependencies = file;
+	}
 	_translate_to_config_file();
 	_update_tree();
 }
 
 void GDNativeLibraryEditor::_erase_entry(const String &platform, const String &entry) {
-
 	if (platforms.has(platform)) {
 		if (List<String>::Element *E = platforms[platform].entries.find(entry)) {
-
 			String target = platform + "." + entry;
 
 			platforms[platform].entries.erase(E);
@@ -262,19 +248,17 @@ void GDNativeLibraryEditor::_move_entry(const String &platform, const String &en
 }
 
 void GDNativeLibraryEditor::_translate_to_config_file() {
-
 	if (!library.is_null()) {
-
 		Ref<ConfigFile> config = library->get_config_file();
 		config->erase_section("entry");
 		config->erase_section("dependencies");
 
 		for (Map<String, NativePlatformConfig>::Element *E = platforms.front(); E; E = E->next()) {
 			for (List<String>::Element *it = E->value().entries.front(); it; it = it->next()) {
-
 				String target = E->key() + "." + it->get();
-				if (entry_configs[target].library.empty() && entry_configs[target].dependencies.empty())
+				if (entry_configs[target].library.empty() && entry_configs[target].dependencies.empty()) {
 					continue;
+				}
 
 				config->set_value("entry", target, entry_configs[target].library);
 				config->set_value("dependencies", target, entry_configs[target].dependencies);
@@ -286,7 +270,6 @@ void GDNativeLibraryEditor::_translate_to_config_file() {
 }
 
 GDNativeLibraryEditor::GDNativeLibraryEditor() {
-
 	{ // Define platforms
 		NativePlatformConfig platform_windows;
 		platform_windows.name = "Windows";
@@ -303,10 +286,9 @@ GDNativeLibraryEditor::GDNativeLibraryEditor() {
 		platforms["X11"] = platform_linux;
 
 		NativePlatformConfig platform_osx;
-		platform_osx.name = "Mac OSX";
+		platform_osx.name = "macOS";
 		platform_osx.entries.push_back("64");
-		platform_osx.entries.push_back("32");
-		platform_osx.library_extension = "*.dylib";
+		platform_osx.library_extension = "*.framework; Framework, *.dylib; Dynamic Library";
 		platforms["OSX"] = platform_osx;
 
 		NativePlatformConfig platform_haiku;
@@ -411,32 +393,30 @@ GDNativeLibraryEditor::GDNativeLibraryEditor() {
 }
 
 void GDNativeLibraryEditorPlugin::edit(Object *p_node) {
-
 	Ref<GDNativeLibrary> new_library = Object::cast_to<GDNativeLibrary>(p_node);
-	if (new_library.is_valid())
+	if (new_library.is_valid()) {
 		library_editor->edit(new_library);
+	}
 }
 
 bool GDNativeLibraryEditorPlugin::handles(Object *p_node) const {
-
 	return p_node->is_class("GDNativeLibrary");
 }
 
 void GDNativeLibraryEditorPlugin::make_visible(bool p_visible) {
-
 	if (p_visible) {
 		button->show();
 		EditorNode::get_singleton()->make_bottom_panel_item_visible(library_editor);
 
 	} else {
-		if (library_editor->is_visible_in_tree())
+		if (library_editor->is_visible_in_tree()) {
 			EditorNode::get_singleton()->hide_bottom_panel();
+		}
 		button->hide();
 	}
 }
 
 GDNativeLibraryEditorPlugin::GDNativeLibraryEditorPlugin(EditorNode *p_node) {
-
 	library_editor = memnew(GDNativeLibraryEditor);
 	library_editor->set_custom_minimum_size(Size2(0, 250 * EDSCALE));
 	button = p_node->add_bottom_panel_item(TTR("GDNativeLibrary"), library_editor);

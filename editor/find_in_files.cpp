@@ -59,14 +59,14 @@ static bool is_text_char(CharType c) {
 }
 
 static bool find_next(const String &line, String pattern, int from, bool match_case, bool whole_words, int &out_begin, int &out_end) {
-
 	int end = from;
 
 	while (true) {
 		int begin = match_case ? line.find(pattern, end) : line.findn(pattern, end);
 
-		if (begin == -1)
+		if (begin == -1) {
 			return false;
+		}
 
 		end = begin + pattern.length();
 		out_begin = begin;
@@ -157,15 +157,14 @@ void FindInFiles::_process() {
 	while (is_processing()) {
 		_iterate();
 		float elapsed = (os.get_ticks_msec() - time_before);
-		if (elapsed > 1000.0 / 120.0)
+		if (elapsed > 1000.0 / 120.0) {
 			break;
+		}
 	}
 }
 
 void FindInFiles::_iterate() {
-
 	if (_folders_stack.size() != 0) {
-
 		// Scan folders first so we can build a list of files and have progress info later
 
 		PoolStringArray &folders_to_scan = _folders_stack.write[_folders_stack.size() - 1];
@@ -196,7 +195,6 @@ void FindInFiles::_iterate() {
 		}
 
 	} else if (_files_to_scan.size() != 0) {
-
 		// Then scan files
 
 		String fpath = _files_to_scan[_files_to_scan.size() - 1];
@@ -220,7 +218,6 @@ float FindInFiles::get_progress() const {
 }
 
 void FindInFiles::_scan_dir(String path, PoolStringArray &out_folders) {
-
 	DirAccessRef dir = DirAccess::open(path);
 	if (!dir) {
 		print_verbose("Cannot open directory! " + path);
@@ -232,19 +229,22 @@ void FindInFiles::_scan_dir(String path, PoolStringArray &out_folders) {
 	for (int i = 0; i < 1000; ++i) {
 		String file = dir->get_next();
 
-		if (file == "")
+		if (file == "") {
 			break;
+		}
 
 		// Ignore special dirs (such as .git and .import)
-		if (file == "." || file == ".." || file.begins_with("."))
+		if (file == "." || file == ".." || file.begins_with(".")) {
 			continue;
-		if (dir->current_is_hidden())
+		}
+		if (dir->current_is_hidden()) {
 			continue;
+		}
 
-		if (dir->current_is_dir())
+		if (dir->current_is_dir()) {
 			out_folders.append(file);
 
-		else {
+		} else {
 			String file_ext = file.get_extension();
 			if (_extension_filter.has(file_ext)) {
 				_files_to_scan.push_back(path.plus_file(file));
@@ -254,7 +254,6 @@ void FindInFiles::_scan_dir(String path, PoolStringArray &out_folders) {
 }
 
 void FindInFiles::_scan_file(String fpath) {
-
 	FileAccessRef f = FileAccess::open(fpath, FileAccess::READ);
 	if (!f) {
 		print_verbose(String("Cannot open file ") + fpath);
@@ -264,7 +263,6 @@ void FindInFiles::_scan_file(String fpath) {
 	int line_number = 0;
 
 	while (!f->eof_reached()) {
-
 		// line number starts at 1
 		++line_number;
 
@@ -282,7 +280,6 @@ void FindInFiles::_scan_file(String fpath) {
 }
 
 void FindInFiles::_bind_methods() {
-
 	ADD_SIGNAL(MethodInfo(SIGNAL_RESULT_FOUND,
 			PropertyInfo(Variant::STRING, "path"),
 			PropertyInfo(Variant::INT, "line_number"),
@@ -298,7 +295,6 @@ const char *FindInFilesDialog::SIGNAL_FIND_REQUESTED = "find_requested";
 const char *FindInFilesDialog::SIGNAL_REPLACE_REQUESTED = "replace_requested";
 
 FindInFilesDialog::FindInFilesDialog() {
-
 	set_custom_minimum_size(Size2(500 * EDSCALE, 0));
 	set_title(TTR("Find in Files"));
 
@@ -463,7 +459,6 @@ void FindInFilesDialog::custom_action(const String &p_action) {
 }
 
 void FindInFilesDialog::_on_search_text_modified(String text) {
-
 	ERR_FAIL_COND(!_find_button);
 	ERR_FAIL_COND(!_replace_button);
 
@@ -473,19 +468,20 @@ void FindInFilesDialog::_on_search_text_modified(String text) {
 
 void FindInFilesDialog::_on_search_text_entered(String text) {
 	// This allows to trigger a global search without leaving the keyboard
-	if (!_find_button->is_disabled())
+	if (!_find_button->is_disabled()) {
 		custom_action("find");
+	}
 }
 
 void FindInFilesDialog::_on_folder_selected(String path) {
 	int i = path.find("://");
-	if (i != -1)
+	if (i != -1) {
 		path = path.right(i + 3);
+	}
 	_folder_line_edit->set_text(path);
 }
 
 void FindInFilesDialog::_bind_methods() {
-
 	ClassDB::bind_method("_on_folder_button_pressed", &FindInFilesDialog::_on_folder_button_pressed);
 	ClassDB::bind_method("_on_folder_selected", &FindInFilesDialog::_on_folder_selected);
 	ClassDB::bind_method("_on_search_text_modified", &FindInFilesDialog::_on_search_text_modified);
@@ -500,7 +496,6 @@ const char *FindInFilesPanel::SIGNAL_RESULT_SELECTED = "result_selected";
 const char *FindInFilesPanel::SIGNAL_FILES_MODIFIED = "files_modified";
 
 FindInFilesPanel::FindInFilesPanel() {
-
 	_finder = memnew(FindInFiles);
 	_finder->connect(FindInFiles::SIGNAL_RESULT_FOUND, this, "_on_result_found");
 	_finder->connect(FindInFiles::SIGNAL_FINISHED, this, "_on_finished");
@@ -585,7 +580,6 @@ FindInFilesPanel::FindInFilesPanel() {
 }
 
 void FindInFilesPanel::set_with_replace(bool with_replace) {
-
 	_with_replace = with_replace;
 	_replace_container->set_visible(with_replace);
 
@@ -610,7 +604,6 @@ void FindInFilesPanel::clear() {
 }
 
 void FindInFilesPanel::start_search() {
-
 	clear();
 
 	_status_label->set_text(TTR("Searching..."));
@@ -627,7 +620,6 @@ void FindInFilesPanel::start_search() {
 }
 
 void FindInFilesPanel::stop_search() {
-
 	_finder->stop();
 
 	_status_label->set_text("");
@@ -647,11 +639,10 @@ void FindInFilesPanel::_notification(int p_what) {
 }
 
 void FindInFilesPanel::_on_result_found(String fpath, int line_number, int begin, int end, String text) {
-
 	TreeItem *file_item;
 	Map<String, TreeItem *>::Element *E = _file_items.find(fpath);
 
-	if (E == NULL) {
+	if (E == nullptr) {
 		file_item = _results_display->create_item();
 		file_item->set_text(0, fpath);
 		file_item->set_metadata(0, fpath);
@@ -697,14 +688,15 @@ void FindInFilesPanel::_on_result_found(String fpath, int line_number, int begin
 }
 
 void FindInFilesPanel::draw_result_text(Object *item_obj, Rect2 rect) {
-
 	TreeItem *item = Object::cast_to<TreeItem>(item_obj);
-	if (!item)
+	if (!item) {
 		return;
+	}
 
 	Map<TreeItem *, Result>::Element *E = _result_items.find(item);
-	if (!E)
+	if (!E) {
 		return;
+	}
 	Result r = E->value();
 	String item_text = item->get_text(_with_replace ? 1 : 0);
 	Ref<Font> font = _results_display->get_font("font");
@@ -715,12 +707,13 @@ void FindInFilesPanel::draw_result_text(Object *item_obj, Rect2 rect) {
 	match_rect.position.y += 1 * EDSCALE;
 	match_rect.size.y -= 2 * EDSCALE;
 
-	_results_display->draw_rect(match_rect, Color(0, 0, 0, 0.5));
-	// Text is drawn by Tree already
+	// Use the inverted accent color to help match rectangles stand out even on the currently selected line.
+	_results_display->draw_rect(match_rect, get_color("accent_color", "Editor").inverted() * Color(1, 1, 1, 0.5));
+
+	// Text is drawn by Tree already.
 }
 
 void FindInFilesPanel::_on_item_edited() {
-
 	TreeItem *item = _results_display->get_selected();
 
 	if (item->is_checked(0)) {
@@ -763,12 +756,12 @@ void FindInFilesPanel::_on_cancel_button_clicked() {
 }
 
 void FindInFilesPanel::_on_result_selected() {
-
 	TreeItem *item = _results_display->get_selected();
 	Map<TreeItem *, Result>::Element *E = _result_items.find(item);
 
-	if (E == NULL)
+	if (E == nullptr) {
 		return;
+	}
 	Result r = E->value();
 
 	TreeItem *file_item = item->get_parent();
@@ -782,24 +775,22 @@ void FindInFilesPanel::_on_replace_text_changed(String text) {
 }
 
 void FindInFilesPanel::_on_replace_all_clicked() {
-
 	String replace_text = get_replace_text();
 
 	PoolStringArray modified_files;
 
 	for (Map<String, TreeItem *>::Element *E = _file_items.front(); E; E = E->next()) {
-
 		TreeItem *file_item = E->value();
 		String fpath = file_item->get_metadata(0);
 
 		Vector<Result> locations;
 		for (TreeItem *item = file_item->get_children(); item; item = item->get_next()) {
-
-			if (!item->is_checked(0))
+			if (!item->is_checked(0)) {
 				continue;
+			}
 
 			Map<TreeItem *, Result>::Element *F = _result_items.find(item);
-			ERR_FAIL_COND(F == NULL);
+			ERR_FAIL_COND(F == nullptr);
 			locations.push_back(F->value());
 		}
 
@@ -820,13 +811,11 @@ void FindInFilesPanel::_on_replace_all_clicked() {
 class ConservativeGetLine {
 public:
 	String get_line(FileAccess *f) {
-
 		_line_buffer.clear();
 
 		CharType c = f->get_8();
 
 		while (!f->eof_reached()) {
-
 			if (c == '\n') {
 				_line_buffer.push_back(c);
 				_line_buffer.push_back(0);
@@ -852,7 +841,6 @@ private:
 };
 
 void FindInFilesPanel::apply_replaces_in_file(String fpath, const Vector<Result> &locations, String new_text) {
-
 	// If the file is already open, I assume the editor will reload it.
 	// If there are unsaved changes, the user will be asked on focus,
 	// however that means either losing changes or losing replaces.
@@ -871,7 +859,6 @@ void FindInFilesPanel::apply_replaces_in_file(String fpath, const Vector<Result>
 	int offset = 0;
 
 	for (int i = 0; i < locations.size(); ++i) {
-
 		int repl_line_number = locations[i].line_number;
 
 		while (current_line < repl_line_number) {
@@ -917,7 +904,6 @@ String FindInFilesPanel::get_replace_text() {
 }
 
 void FindInFilesPanel::update_replace_buttons() {
-
 	bool disabled = _finder->is_searching();
 
 	_replace_all_button->set_disabled(disabled);
@@ -928,7 +914,6 @@ void FindInFilesPanel::set_progress_visible(bool visible) {
 }
 
 void FindInFilesPanel::_bind_methods() {
-
 	ClassDB::bind_method("_on_result_found", &FindInFilesPanel::_on_result_found);
 	ClassDB::bind_method("_on_item_edited", &FindInFilesPanel::_on_item_edited);
 	ClassDB::bind_method("_on_finished", &FindInFilesPanel::_on_finished);

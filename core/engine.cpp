@@ -37,18 +37,17 @@
 #include "core/version_hash.gen.h"
 
 void Engine::set_iterations_per_second(int p_ips) {
-
 	ERR_FAIL_COND_MSG(p_ips <= 0, "Engine iterations per second must be greater than 0.");
 	ips = p_ips;
 }
 int Engine::get_iterations_per_second() const {
-
 	return ips;
 }
 
 void Engine::set_physics_jitter_fix(float p_threshold) {
-	if (p_threshold < 0)
+	if (p_threshold < 0) {
 		p_threshold = 0;
+	}
 	physics_jitter_fix = p_threshold;
 }
 
@@ -65,32 +64,26 @@ int Engine::get_target_fps() const {
 }
 
 uint64_t Engine::get_frames_drawn() {
-
 	return frames_drawn;
 }
 
 void Engine::set_frame_delay(uint32_t p_msec) {
-
 	_frame_delay = p_msec;
 }
 
 uint32_t Engine::get_frame_delay() const {
-
 	return _frame_delay;
 }
 
 void Engine::set_time_scale(float p_scale) {
-
 	_time_scale = p_scale;
 }
 
 float Engine::get_time_scale() const {
-
 	return _time_scale;
 }
 
 Dictionary Engine::get_version_info() const {
-
 	Dictionary dict;
 	dict["major"] = VERSION_MAJOR;
 	dict["minor"] = VERSION_MINOR;
@@ -104,8 +97,9 @@ Dictionary Engine::get_version_info() const {
 	dict["hash"] = hash.length() == 0 ? String("unknown") : hash;
 
 	String stringver = String(dict["major"]) + "." + String(dict["minor"]);
-	if ((int)dict["patch"] != 0)
+	if ((int)dict["patch"] != 0) {
 		stringver += "." + String(dict["patch"]);
+	}
 	stringver += "-" + String(dict["status"]) + " (" + String(dict["build"]) + ")";
 	dict["string"] = stringver;
 
@@ -114,7 +108,7 @@ Dictionary Engine::get_version_info() const {
 
 static Array array_from_info(const char *const *info_list) {
 	Array arr;
-	for (int i = 0; info_list[i] != NULL; i++) {
+	for (int i = 0; info_list[i] != nullptr; i++) {
 		arr.push_back(info_list[i]);
 	}
 	return arr;
@@ -187,37 +181,33 @@ String Engine::get_license_text() const {
 }
 
 void Engine::add_singleton(const Singleton &p_singleton) {
-
 	singletons.push_back(p_singleton);
 	singleton_ptrs[p_singleton.name] = p_singleton.ptr;
 }
 
 Object *Engine::get_singleton_object(const String &p_name) const {
-
 	const Map<StringName, Object *>::Element *E = singleton_ptrs.find(p_name);
-	ERR_FAIL_COND_V_MSG(!E, NULL, "Failed to retrieve non-existent singleton '" + p_name + "'.");
+	ERR_FAIL_COND_V_MSG(!E, nullptr, "Failed to retrieve non-existent singleton '" + p_name + "'.");
 	return E->get();
 };
 
 bool Engine::has_singleton(const String &p_name) const {
-
 	return singleton_ptrs.has(p_name);
 };
 
 void Engine::get_singletons(List<Singleton> *p_singletons) {
-
-	for (List<Singleton>::Element *E = singletons.front(); E; E = E->next())
+	for (List<Singleton>::Element *E = singletons.front(); E; E = E->next()) {
 		p_singletons->push_back(E->get());
+	}
 }
 
-Engine *Engine::singleton = NULL;
+Engine *Engine::singleton = nullptr;
 
 Engine *Engine::get_singleton() {
 	return singleton;
 }
 
 Engine::Engine() {
-
 	singleton = this;
 	frames_drawn = 0;
 	ips = 60;

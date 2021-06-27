@@ -52,7 +52,6 @@ Gradient::~Gradient() {
 }
 
 void Gradient::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("add_point", "offset", "color"), &Gradient::add_point);
 	ClassDB::bind_method(D_METHOD("remove_point", "point"), &Gradient::remove_point);
 
@@ -104,8 +103,9 @@ void Gradient::set_offsets(const Vector<float> &p_offsets) {
 }
 
 void Gradient::set_colors(const Vector<Color> &p_colors) {
-	if (points.size() < p_colors.size())
+	if (points.size() < p_colors.size()) {
 		is_sorted = false;
+	}
 	points.resize(p_colors.size());
 	for (int i = 0; i < points.size(); i++) {
 		points.write[i].color = p_colors[i];
@@ -118,7 +118,6 @@ Vector<Gradient::Point> &Gradient::get_points() {
 }
 
 void Gradient::add_point(float p_offset, const Color &p_color) {
-
 	Point p;
 	p.offset = p_offset;
 	p.color = p_color;
@@ -129,7 +128,6 @@ void Gradient::add_point(float p_offset, const Color &p_color) {
 }
 
 void Gradient::remove_point(int p_index) {
-
 	ERR_FAIL_INDEX(p_index, points.size());
 	ERR_FAIL_COND(points.size() <= 1);
 	points.remove(p_index);

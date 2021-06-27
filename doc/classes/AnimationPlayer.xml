@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="AnimationPlayer" inherits="Node" version="3.3">
+<class name="AnimationPlayer" inherits="Node" version="3.4">
 	<brief_description>
 		Container and player of [Animation] resources.
 	</brief_description>
@@ -260,6 +260,10 @@
 		<member name="playback_speed" type="float" setter="set_speed_scale" getter="get_speed_scale" default="1.0">
 			The speed scaling ratio. For instance, if this value is 1, then the animation plays at normal speed. If it's 0.5, then it plays at half speed. If it's 2, then it plays at double speed.
 		</member>
+		<member name="reset_on_save" type="bool" setter="set_reset_on_save_enabled" getter="is_reset_on_save_enabled" default="true">
+			This is used by the editor. If set to [code]true[/code], the scene will be saved with the effects of the reset animation applied (as if it had been seeked to time 0), then reverted after saving.
+			In other words, the saved scene file will contain the "default pose", as defined by the reset animation, if any, with the editor keeping the values that the nodes had before saving.
+		</member>
 		<member name="root_node" type="NodePath" setter="set_root" getter="get_root" default="NodePath(&quot;..&quot;)">
 			The node from which node path references will travel.
 		</member>
@@ -271,7 +275,8 @@
 			<argument index="1" name="new_name" type="String">
 			</argument>
 			<description>
-				If the currently being played animation changes, this signal will notify of such change.
+				Emitted when a queued animation plays after the previous animation was finished. See [method queue].
+				[b]Note:[/b] The signal is not emitted when the animation is changed via [method play] or from [AnimationTree].
 			</description>
 		</signal>
 		<signal name="animation_finished">

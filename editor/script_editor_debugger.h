@@ -56,7 +56,6 @@ class EditorNetworkProfiler;
 class ScriptEditorDebuggerInspectedObject;
 
 class ScriptEditorDebugger : public MarginContainer {
-
 	GDCLASS(ScriptEditorDebugger, MarginContainer);
 
 public:
@@ -80,6 +79,7 @@ private:
 		ITEM_MENU_COPY_ERROR,
 		ITEM_MENU_SAVE_REMOTE_NODE,
 		ITEM_MENU_COPY_NODE_PATH,
+		ITEM_MENU_OPEN_SOURCE,
 	};
 
 	AcceptDialog *msgdialog;
@@ -124,6 +124,7 @@ private:
 	int last_warning_count;
 
 	bool hide_on_stop;
+	int remote_port;
 	bool enable_external_editor;
 
 	bool skip_breakpoints_value = false;
@@ -142,7 +143,7 @@ private:
 	Button *dobreak;
 	Button *docontinue;
 
-	List<Vector<float> > perf_history;
+	List<Vector<float>> perf_history;
 	Vector<float> perf_max;
 	Vector<TreeItem *> perf_items;
 
@@ -280,6 +281,7 @@ public:
 	void set_hide_on_stop(bool p_hide);
 
 	bool get_debug_with_external_editor() const;
+	String get_connection_string() const;
 	void set_debug_with_external_editor(bool p_enabled);
 
 	Ref<Script> get_dump_stack_script() const;
@@ -291,7 +293,7 @@ public:
 	bool is_skip_breakpoints();
 
 	virtual Size2 get_minimum_size() const;
-	ScriptEditorDebugger(EditorNode *p_editor = NULL);
+	ScriptEditorDebugger(EditorNode *p_editor = nullptr);
 	~ScriptEditorDebugger();
 };
 

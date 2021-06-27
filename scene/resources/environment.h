@@ -37,7 +37,6 @@
 #include "servers/visual_server.h"
 
 class Environment : public Resource {
-
 	GDCLASS(Environment, Resource);
 
 public:
@@ -208,7 +207,7 @@ public:
 	Color get_ambient_light_color() const;
 	float get_ambient_light_energy() const;
 	float get_ambient_light_sky_contribution() const;
-	int get_camera_feed_id(void) const;
+	int get_camera_feed_id() const;
 
 	void set_tonemapper(ToneMapper p_tone_mapper);
 	ToneMapper get_tonemapper() const;

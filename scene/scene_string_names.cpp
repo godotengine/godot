@@ -30,10 +30,9 @@
 
 #include "scene_string_names.h"
 
-SceneStringNames *SceneStringNames::singleton = NULL;
+SceneStringNames *SceneStringNames::singleton = nullptr;
 
 SceneStringNames::SceneStringNames() {
-
 	_estimate_cost = StaticCString::create("_estimate_cost");
 	_compute_cost = StaticCString::create("_compute_cost");
 
@@ -194,11 +193,6 @@ SceneStringNames::SceneStringNames() {
 	path_pp = NodePath("..");
 
 	_default = StaticCString::create("default");
-
-	for (int i = 0; i < MAX_MATERIALS; i++) {
-
-		mesh_materials[i] = "material/" + itos(i);
-	}
 
 	_mesh_changed = StaticCString::create("_mesh_changed");
 

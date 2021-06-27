@@ -36,7 +36,6 @@
 class VehicleBody;
 
 class VehicleWheel : public Spatial {
-
 	GDCLASS(VehicleWheel, Spatial);
 
 	friend class VehicleBody;
@@ -152,7 +151,6 @@ public:
 };
 
 class VehicleBody : public RigidBody {
-
 	GDCLASS(VehicleBody, RigidBody);
 
 	float engine_force;

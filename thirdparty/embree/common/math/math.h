@@ -1,4 +1,4 @@
-// Copyright 2009-2020 Intel Corporation
+// Copyright 2009-2021 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
 #pragma once
@@ -8,9 +8,13 @@
 #include "constants.h"
 #include <cmath>
 
+#if defined(__ARM_NEON)
+#include "../simd/arm/emulation.h"
+#else
 #include <emmintrin.h>
 #include <xmmintrin.h>
 #include <immintrin.h>
+#endif
 
 #if defined(__WIN32__)
 #if defined(_MSC_VER) && (_MSC_VER <= 1700)
@@ -77,13 +81,15 @@ namespace embree
   {
     const __m128 a = _mm_set_ss(x);
 #if defined(__AVX512VL__)
-    const __m128 r = _mm_rsqrt14_ss(_mm_set_ss(0.0f),a);
+    __m128 r = _mm_rsqrt14_ss(_mm_set_ss(0.0f),a);
 #else
-    const __m128 r = _mm_rsqrt_ss(a);
+    __m128 r = _mm_rsqrt_ss(a);
 #endif
-    const __m128 c = _mm_add_ss(_mm_mul_ss(_mm_set_ss(1.5f), r),
-                                _mm_mul_ss(_mm_mul_ss(_mm_mul_ss(a, _mm_set_ss(-0.5f)), r), _mm_mul_ss(r, r)));
-    return _mm_cvtss_f32(c);
+    r = _mm_add_ss(_mm_mul_ss(_mm_set_ss(1.5f), r), _mm_mul_ss(_mm_mul_ss(_mm_mul_ss(a, _mm_set_ss(-0.5f)), r), _mm_mul_ss(r, r)));
+#if defined(__ARM_NEON)
+    r = _mm_add_ss(_mm_mul_ss(_mm_set_ss(1.5f), r), _mm_mul_ss(_mm_mul_ss(_mm_mul_ss(a, _mm_set_ss(-0.5f)), r), _mm_mul_ss(r, r)));
+#endif
+    return _mm_cvtss_f32(r);
   }
 
 #if defined(__WIN32__) && defined(_MSC_VER) && (_MSC_VER <= 1700)
@@ -166,7 +172,7 @@ namespace embree
   __forceinline  int64_t min(int64_t  a, int64_t  b) { return a<b ? a:b; }
   __forceinline    float min(float    a, float    b) { return a<b ? a:b; }
   __forceinline   double min(double   a, double   b) { return a<b ? a:b; }
-#if defined(__X86_64__)
+#if defined(__64BIT__)
   __forceinline   size_t min(size_t   a, size_t   b) { return a<b ? a:b; }
 #endif
 
@@ -183,7 +189,7 @@ namespace embree
   __forceinline  int64_t max(int64_t  a, int64_t  b) { return a<b ? b:a; }
   __forceinline    float max(float    a, float    b) { return a<b ? b:a; }
   __forceinline   double max(double   a, double   b) { return a<b ? b:a; }
-#if defined(__X86_64__)
+#if defined(__64BIT__)
   __forceinline   size_t max(size_t   a, size_t   b) { return a<b ? b:a; }
 #endif
 
@@ -273,6 +279,17 @@ namespace embree
   /*! exchange */
   template<typename T> __forceinline void xchg ( T& a, T& b ) { const T tmp = a; a = b; b = tmp; }
 
+  /*  load/store */
+  template<typename Ty> struct mem;
+ 
+  template<> struct mem<float> {
+    static __forceinline float load (bool mask, const void* ptr) { return mask ? *(float*)ptr : 0.0f; }
+    static __forceinline float loadu(bool mask, const void* ptr) { return mask ? *(float*)ptr : 0.0f; }
+  
+    static __forceinline void store (bool mask, void* ptr, const float v) { if (mask) *(float*)ptr = v; }
+    static __forceinline void storeu(bool mask, void* ptr, const float v) { if (mask) *(float*)ptr = v; }
+  };
+  
   /*! bit reverse operation */
   template<class T>
     __forceinline T bitReverse(const T& vin)

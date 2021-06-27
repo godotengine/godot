@@ -72,8 +72,9 @@ public:
 
 		int datalen = p_data.size();
 		int datamax = datalen;
-		if (datalen & 1)
+		if (datalen & 1) {
 			datalen++;
+		}
 
 		dst_data.resize(datalen / 2 + 4);
 		PoolVector<uint8_t>::Write w = dst_data.write();
@@ -96,10 +97,9 @@ public:
 			uint8_t nibble;
 			int16_t xm_sample;
 
-			if (i >= datamax)
+			if (i >= datamax) {
 				xm_sample = 0;
-			else {
-
+			} else {
 				xm_sample = CLAMP(in[i] * 32767.0, -32768, 32767);
 				/*
 				if (xm_sample==32767 || xm_sample==-32768)
@@ -121,9 +121,7 @@ public:
 			}
 			mask = 4;
 			while (mask) {
-
 				if (diff >= step) {
-
 					nibble |= mask;
 					diff -= step;
 					vpdiff += step;
@@ -133,10 +131,11 @@ public:
 				mask >>= 1;
 			};
 
-			if (nibble & 8)
+			if (nibble & 8) {
 				prev -= vpdiff;
-			else
+			} else {
 				prev += vpdiff;
+			}
 
 			if (prev > 32767) {
 				//printf("%i,xms %i, prev %i,diff %i, vpdiff %i, clip up %i\n",i,xm_sample,prev,diff,vpdiff,prev);
@@ -147,10 +146,11 @@ public:
 			}
 
 			step_idx += _ima_adpcm_index_table[nibble];
-			if (step_idx < 0)
+			if (step_idx < 0) {
 				step_idx = 0;
-			else if (step_idx > 88)
+			} else if (step_idx > 88) {
 				step_idx = 88;
+			}
 
 			if (i & 1) {
 				*out |= nibble << 4;
@@ -162,7 +162,7 @@ public:
 		}
 	}
 
-	virtual Error import(const String &p_source_file, const String &p_save_path, const Map<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files = NULL, Variant *r_metadata = NULL);
+	virtual Error import(const String &p_source_file, const String &p_save_path, const Map<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files = nullptr, Variant *r_metadata = nullptr);
 
 	ResourceImporterWAV();
 };

@@ -79,12 +79,11 @@ public:
 };
 
 void VehicleWheel::_notification(int p_what) {
-
 	if (p_what == NOTIFICATION_ENTER_TREE) {
-
 		VehicleBody *cb = Object::cast_to<VehicleBody>(get_parent());
-		if (!cb)
+		if (!cb) {
 			return;
+		}
 		body = cb;
 		local_xform = get_transform();
 		cb->wheels.push_back(this);
@@ -94,12 +93,12 @@ void VehicleWheel::_notification(int p_what) {
 		m_wheelAxleCS = get_transform().basis.get_axis(Vector3::AXIS_X).normalized();
 	}
 	if (p_what == NOTIFICATION_EXIT_TREE) {
-
 		VehicleBody *cb = Object::cast_to<VehicleBody>(get_parent());
-		if (!cb)
+		if (!cb) {
 			return;
+		}
 		cb->wheels.erase(this);
-		body = NULL;
+		body = nullptr;
 	}
 }
 
@@ -116,7 +115,6 @@ String VehicleWheel::get_configuration_warning() const {
 }
 
 void VehicleWheel::_update(PhysicsDirectBodyState *s) {
-
 	if (m_raycastInfo.m_isInContact)
 
 	{
@@ -149,77 +147,61 @@ void VehicleWheel::_update(PhysicsDirectBodyState *s) {
 }
 
 void VehicleWheel::set_radius(float p_radius) {
-
 	m_wheelRadius = p_radius;
 	update_gizmo();
 }
 
 float VehicleWheel::get_radius() const {
-
 	return m_wheelRadius;
 }
 
 void VehicleWheel::set_suspension_rest_length(float p_length) {
-
 	m_suspensionRestLength = p_length;
 	update_gizmo();
 }
 float VehicleWheel::get_suspension_rest_length() const {
-
 	return m_suspensionRestLength;
 }
 
 void VehicleWheel::set_suspension_travel(float p_length) {
-
 	m_maxSuspensionTravelCm = p_length / 0.01;
 }
 float VehicleWheel::get_suspension_travel() const {
-
 	return m_maxSuspensionTravelCm * 0.01;
 }
 
 void VehicleWheel::set_suspension_stiffness(float p_value) {
-
 	m_suspensionStiffness = p_value;
 }
 float VehicleWheel::get_suspension_stiffness() const {
-
 	return m_suspensionStiffness;
 }
 
 void VehicleWheel::set_suspension_max_force(float p_value) {
-
 	m_maxSuspensionForce = p_value;
 }
 float VehicleWheel::get_suspension_max_force() const {
-
 	return m_maxSuspensionForce;
 }
 
 void VehicleWheel::set_damping_compression(float p_value) {
-
 	m_wheelsDampingCompression = p_value;
 }
 float VehicleWheel::get_damping_compression() const {
-
 	return m_wheelsDampingCompression;
 }
 
 void VehicleWheel::set_damping_relaxation(float p_value) {
-
 	m_wheelsDampingRelaxation = p_value;
 }
 float VehicleWheel::get_damping_relaxation() const {
-
 	return m_wheelsDampingRelaxation;
 }
 
 void VehicleWheel::set_friction_slip(float p_value) {
-
 	m_frictionSlip = p_value;
 }
 float VehicleWheel::get_friction_slip() const {
-
 	return m_frictionSlip;
 }
 
@@ -236,7 +218,6 @@ bool VehicleWheel::is_in_contact() const {
 }
 
 void VehicleWheel::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("set_radius", "length"), &VehicleWheel::set_radius);
 	ClassDB::bind_method(D_METHOD("get_radius"), &VehicleWheel::get_radius);
 
@@ -307,65 +288,52 @@ void VehicleWheel::_bind_methods() {
 }
 
 void VehicleWheel::set_engine_force(float p_engine_force) {
-
 	m_engineForce = p_engine_force;
 }
 
 float VehicleWheel::get_engine_force() const {
-
 	return m_engineForce;
 }
 
 void VehicleWheel::set_brake(float p_brake) {
-
 	m_brake = p_brake;
 }
 float VehicleWheel::get_brake() const {
-
 	return m_brake;
 }
 
 void VehicleWheel::set_steering(float p_steering) {
-
 	m_steering = p_steering;
 }
 float VehicleWheel::get_steering() const {
-
 	return m_steering;
 }
 
 void VehicleWheel::set_use_as_traction(bool p_enable) {
-
 	engine_traction = p_enable;
 }
 
 bool VehicleWheel::is_used_as_traction() const {
-
 	return engine_traction;
 }
 
 void VehicleWheel::set_use_as_steering(bool p_enabled) {
-
 	steers = p_enabled;
 }
 
 bool VehicleWheel::is_used_as_steering() const {
-
 	return steers;
 }
 
 float VehicleWheel::get_skidinfo() const {
-
 	return m_skidInfo;
 }
 
 float VehicleWheel::get_rpm() const {
-
 	return m_rpm;
 }
 
 VehicleWheel::VehicleWheel() {
-
 	steers = false;
 	engine_traction = false;
 
@@ -391,11 +359,10 @@ VehicleWheel::VehicleWheel() {
 	m_raycastInfo.m_isInContact = false;
 	m_raycastInfo.m_suspensionLength = 0.0;
 
-	body = NULL;
+	body = nullptr;
 }
 
 void VehicleBody::_update_wheel_transform(VehicleWheel &wheel, PhysicsDirectBodyState *s) {
-
 	wheel.m_raycastInfo.m_isInContact = false;
 
 	Transform chassisTrans = s->get_transform();
@@ -412,7 +379,6 @@ void VehicleBody::_update_wheel_transform(VehicleWheel &wheel, PhysicsDirectBody
 }
 
 void VehicleBody::_update_wheel(int p_idx, PhysicsDirectBodyState *s) {
-
 	VehicleWheel &wheel = *wheels[p_idx];
 	_update_wheel_transform(wheel, s);
 
@@ -437,7 +403,6 @@ void VehicleBody::_update_wheel(int p_idx, PhysicsDirectBodyState *s) {
 }
 
 real_t VehicleBody::_ray_cast(int p_idx, PhysicsDirectBodyState *s) {
-
 	VehicleWheel &wheel = *wheels[p_idx];
 
 	_update_wheel_transform(wheel, s);
@@ -460,7 +425,7 @@ real_t VehicleBody::_ray_cast(int p_idx, PhysicsDirectBodyState *s) {
 
 	bool col = ss->intersect_ray(source, target, rr, exclude, get_collision_mask());
 
-	wheel.m_raycastInfo.m_groundObject = 0;
+	wheel.m_raycastInfo.m_groundObject = nullptr;
 
 	if (col) {
 		param = source.distance_to(rr.position) / source.distance_to(target);
@@ -468,8 +433,9 @@ real_t VehicleBody::_ray_cast(int p_idx, PhysicsDirectBodyState *s) {
 		wheel.m_raycastInfo.m_contactNormalWS = rr.normal;
 
 		wheel.m_raycastInfo.m_isInContact = true;
-		if (rr.collider)
+		if (rr.collider) {
 			wheel.m_raycastInfo.m_groundObject = Object::cast_to<PhysicsBody>(rr.collider);
+		}
 
 		real_t hitDistance = param * raylen;
 		wheel.m_raycastInfo.m_suspensionLength = hitDistance - wheel.m_wheelRadius;
@@ -520,7 +486,6 @@ real_t VehicleBody::_ray_cast(int p_idx, PhysicsDirectBodyState *s) {
 }
 
 void VehicleBody::_update_suspension(PhysicsDirectBodyState *s) {
-
 	real_t chassisMass = mass;
 
 	for (int w_it = 0; w_it < wheels.size(); w_it++) {
@@ -566,7 +531,6 @@ void VehicleBody::_update_suspension(PhysicsDirectBodyState *s) {
 //bilateral constraint between two dynamic objects
 void VehicleBody::_resolve_single_bilateral(PhysicsDirectBodyState *s, const Vector3 &pos1,
 		PhysicsBody *body2, const Vector3 &pos2, const Vector3 &normal, real_t &impulse, const real_t p_rollInfluence) {
-
 	real_t normalLenSqr = normal.length_squared();
 	//ERR_FAIL_COND( normalLenSqr < real_t(1.1));
 
@@ -577,15 +541,17 @@ void VehicleBody::_resolve_single_bilateral(PhysicsDirectBodyState *s, const Vec
 
 	Vector3 rel_pos1 = pos1 - s->get_transform().origin;
 	Vector3 rel_pos2;
-	if (body2)
+	if (body2) {
 		rel_pos2 = pos2 - body2->get_global_transform().origin;
+	}
 	//this jacobian entry could be re-used for all iterations
 
 	Vector3 vel1 = s->get_linear_velocity() + (s->get_angular_velocity()).cross(rel_pos1); // * mPos);
 	Vector3 vel2;
 
-	if (body2)
+	if (body2) {
 		vel2 = body2->get_linear_velocity() + body2->get_angular_velocity().cross(rel_pos2);
+	}
 
 	Vector3 vel = vel1 - vel2;
 
@@ -674,15 +640,15 @@ VehicleBody::btVehicleWheelContactPoint::btVehicleWheelContactPoint(PhysicsDirec
 }
 
 real_t VehicleBody::_calc_rolling_friction(btVehicleWheelContactPoint &contactPoint) {
-
 	real_t j1 = 0.f;
 
 	const Vector3 &contactPosWorld = contactPoint.m_frictionPositionWorld;
 
 	Vector3 rel_pos1 = contactPosWorld - contactPoint.m_s->get_transform().origin;
 	Vector3 rel_pos2;
-	if (contactPoint.m_body1)
+	if (contactPoint.m_body1) {
 		rel_pos2 = contactPosWorld - contactPoint.m_body1->get_global_transform().origin;
+	}
 
 	real_t maxImpulse = contactPoint.m_maxImpulse;
 
@@ -705,11 +671,11 @@ real_t VehicleBody::_calc_rolling_friction(btVehicleWheelContactPoint &contactPo
 
 static const real_t sideFrictionStiffness2 = real_t(1.0);
 void VehicleBody::_update_friction(PhysicsDirectBodyState *s) {
-
 	//calculate the impulse, so that the wheels don't move sidewards
 	int numWheel = wheels.size();
-	if (!numWheel)
+	if (!numWheel) {
 		return;
+	}
 
 	m_forwardWS.resize(numWheel);
 	m_axle.resize(numWheel);
@@ -723,13 +689,10 @@ void VehicleBody::_update_friction(PhysicsDirectBodyState *s) {
 	}
 
 	{
-
 		for (int i = 0; i < wheels.size(); i++) {
-
 			VehicleWheel &wheelInfo = *wheels[i];
 
 			if (wheelInfo.m_raycastInfo.m_isInContact) {
-
 				//const btTransform& wheelTrans = getWheelTransformWS( i );
 
 				Basis wheelBasis0 = wheelInfo.m_worldTransform.basis; //get_global_transform().basis;
@@ -857,20 +820,18 @@ void VehicleBody::_update_friction(PhysicsDirectBodyState *s) {
 }
 
 void VehicleBody::_direct_state_changed(Object *p_state) {
-
 	RigidBody::_direct_state_changed(p_state);
 
 	state = Object::cast_to<PhysicsDirectBodyState>(p_state);
+	ERR_FAIL_COND_MSG(!state, "Method '_direct_state_changed' must receive a valid PhysicsDirectBodyState object as argument");
 
 	float step = state->get_step();
 
 	for (int i = 0; i < wheels.size(); i++) {
-
 		_update_wheel(i, state);
 	}
 
 	for (int i = 0; i < wheels.size(); i++) {
-
 		_ray_cast(i, state);
 		wheels[i]->set_transform(state->get_transform().inverse() * wheels[i]->m_worldTransform);
 	}
@@ -878,7 +839,6 @@ void VehicleBody::_direct_state_changed(Object *p_state) {
 	_update_suspension(state);
 
 	for (int i = 0; i < wheels.size(); i++) {
-
 		//apply suspension force
 		VehicleWheel &wheel = *wheels[i];
 
@@ -923,26 +883,24 @@ void VehicleBody::_direct_state_changed(Object *p_state) {
 		wheel.m_deltaRotation *= real_t(0.99); //damping of rotation when not in contact
 	}
 
-	state = NULL;
+	state = nullptr;
 }
 
 void VehicleBody::set_engine_force(float p_engine_force) {
-
 	engine_force = p_engine_force;
 	for (int i = 0; i < wheels.size(); i++) {
 		VehicleWheel &wheelInfo = *wheels[i];
-		if (wheelInfo.engine_traction)
+		if (wheelInfo.engine_traction) {
 			wheelInfo.m_engineForce = p_engine_force;
+		}
 	}
 }
 
 float VehicleBody::get_engine_force() const {
-
 	return engine_force;
 }
 
 void VehicleBody::set_brake(float p_brake) {
-
 	brake = p_brake;
 	for (int i = 0; i < wheels.size(); i++) {
 		VehicleWheel &wheelInfo = *wheels[i];
@@ -950,26 +908,23 @@ void VehicleBody::set_brake(float p_brake) {
 	}
 }
 float VehicleBody::get_brake() const {
-
 	return brake;
 }
 
 void VehicleBody::set_steering(float p_steering) {
-
 	m_steeringValue = p_steering;
 	for (int i = 0; i < wheels.size(); i++) {
 		VehicleWheel &wheelInfo = *wheels[i];
-		if (wheelInfo.steers)
+		if (wheelInfo.steers) {
 			wheelInfo.m_steering = p_steering;
+		}
 	}
 }
 float VehicleBody::get_steering() const {
-
 	return m_steeringValue;
 }
 
 void VehicleBody::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("set_engine_force", "engine_force"), &VehicleBody::set_engine_force);
 	ClassDB::bind_method(D_METHOD("get_engine_force"), &VehicleBody::get_engine_force);
 
@@ -986,7 +941,6 @@ void VehicleBody::_bind_methods() {
 }
 
 VehicleBody::VehicleBody() {
-
 	m_pitchControl = 0;
 	m_currentVehicleSpeedKmHour = real_t(0.);
 	m_steeringValue = real_t(0.);
@@ -994,7 +948,7 @@ VehicleBody::VehicleBody() {
 	engine_force = 0;
 	brake = 0;
 
-	state = NULL;
+	state = nullptr;
 	ccd = false;
 
 	exclude.insert(get_rid());

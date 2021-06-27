@@ -31,7 +31,6 @@
 #include "udp_server.h"
 
 void UDPServer::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("listen", "port", "bind_address"), &UDPServer::listen, DEFVAL("*"));
 	ClassDB::bind_method(D_METHOD("poll"), &UDPServer::poll);
 	ClassDB::bind_method(D_METHOD("is_connection_available"), &UDPServer::is_connection_available);
@@ -88,7 +87,6 @@ Error UDPServer::poll() {
 }
 
 Error UDPServer::listen(uint16_t p_port, const IP_Address &p_bind_address) {
-
 	ERR_FAIL_COND_V(!_sock.is_valid(), ERR_UNAVAILABLE);
 	ERR_FAIL_COND_V(_sock->is_open(), ERR_ALREADY_IN_USE);
 	ERR_FAIL_COND_V(!p_bind_address.is_valid() && !p_bind_address.is_wildcard(), ERR_INVALID_PARAMETER);
@@ -96,13 +94,15 @@ Error UDPServer::listen(uint16_t p_port, const IP_Address &p_bind_address) {
 	Error err;
 	IP::Type ip_type = IP::TYPE_ANY;
 
-	if (p_bind_address.is_valid())
+	if (p_bind_address.is_valid()) {
 		ip_type = p_bind_address.is_ipv4() ? IP::TYPE_IPV4 : IP::TYPE_IPV6;
+	}
 
 	err = _sock->open(NetSocket::TYPE_UDP, ip_type);
 
-	if (err != OK)
+	if (err != OK) {
 		return ERR_CANT_CREATE;
+	}
 
 	_sock->set_blocking_enabled(false);
 	_sock->set_reuse_address_enabled(true);
@@ -124,11 +124,11 @@ bool UDPServer::is_listening() const {
 }
 
 bool UDPServer::is_connection_available() const {
-
 	ERR_FAIL_COND_V(!_sock.is_valid(), false);
 
-	if (!_sock->is_open())
+	if (!_sock->is_open()) {
 		return false;
+	}
 
 	return pending.size() > 0;
 }
@@ -151,7 +151,6 @@ int UDPServer::get_max_pending_connections() const {
 }
 
 Ref<PacketPeerUDP> UDPServer::take_connection() {
-
 	Ref<PacketPeerUDP> conn;
 	if (!is_connection_available()) {
 		return conn;
@@ -174,7 +173,6 @@ void UDPServer::remove_peer(IP_Address p_ip, int p_port) {
 }
 
 void UDPServer::stop() {
-
 	if (_sock.is_valid()) {
 		_sock->close();
 	}
@@ -200,6 +198,5 @@ UDPServer::UDPServer() :
 }
 
 UDPServer::~UDPServer() {
-
 	stop();
 }

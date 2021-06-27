@@ -350,6 +350,10 @@ public:
 	String get_system_dir(SystemDir p_dir) const;
 
 	String get_user_data_dir() const;
+	String get_external_data_dir() const;
+	String get_config_dir() const;
+	String get_data_dir() const;
+	String get_cache_dir() const;
 
 	void alert(const String &p_alert, const String &p_title = "ALERT!");
 
@@ -399,7 +403,6 @@ VARIANT_ENUM_CAST(_OS::ScreenOrientation);
 VARIANT_ENUM_CAST(_OS::HandleType);
 
 class _Geometry : public Object {
-
 	GDCLASS(_Geometry, Object);
 
 	static _Geometry *singleton;
@@ -480,7 +483,6 @@ VARIANT_ENUM_CAST(_Geometry::PolyJoinType);
 VARIANT_ENUM_CAST(_Geometry::PolyEndType);
 
 class _File : public Reference {
-
 	GDCLASS(_File, Reference);
 	FileAccess *f;
 	bool eswap;
@@ -518,8 +520,8 @@ public:
 
 	void seek(int64_t p_position); // Seek to a given position.
 	void seek_end(int64_t p_position = 0); // Seek from the end of file.
-	int64_t get_position() const; // Get position in the file.
-	int64_t get_len() const; // Get size of the file.
+	uint64_t get_position() const; // Get position in the file.
+	uint64_t get_len() const; // Get size of the file.
 
 	bool eof_reached() const; // Reading passed EOF.
 
@@ -534,7 +536,7 @@ public:
 
 	Variant get_var(bool p_allow_objects = false) const;
 
-	PoolVector<uint8_t> get_buffer(int p_length) const; // Get an array of bytes.
+	PoolVector<uint8_t> get_buffer(int64_t p_length) const; // Get an array of bytes.
 	String get_line() const;
 	Vector<String> get_csv_line(const String &p_delim = ",") const;
 	String get_as_text() const;
@@ -583,7 +585,6 @@ VARIANT_ENUM_CAST(_File::ModeFlags);
 VARIANT_ENUM_CAST(_File::CompressionMode);
 
 class _Directory : public Reference {
-
 	GDCLASS(_Directory, Reference);
 	DirAccess *d;
 
@@ -612,7 +613,7 @@ public:
 	bool file_exists(String p_file);
 	bool dir_exists(String p_dir);
 
-	int get_space_left();
+	uint64_t get_space_left();
 
 	Error copy(String p_from, String p_to);
 	Error rename(String p_from, String p_to);
@@ -627,7 +628,6 @@ private:
 };
 
 class _Marshalls : public Object {
-
 	GDCLASS(_Marshalls, Object);
 
 	static _Marshalls *singleton;
@@ -648,11 +648,10 @@ public:
 	String base64_to_utf8(const String &p_str);
 
 	_Marshalls() { singleton = this; }
-	~_Marshalls() { singleton = NULL; }
+	~_Marshalls() { singleton = nullptr; }
 };
 
 class _Mutex : public Reference {
-
 	GDCLASS(_Mutex, Reference);
 	Mutex mutex;
 
@@ -665,7 +664,6 @@ public:
 };
 
 class _Semaphore : public Reference {
-
 	GDCLASS(_Semaphore, Reference);
 	Semaphore semaphore;
 
@@ -677,7 +675,6 @@ public:
 };
 
 class _Thread : public Reference {
-
 	GDCLASS(_Thread, Reference);
 
 protected:
@@ -711,7 +708,6 @@ public:
 VARIANT_ENUM_CAST(_Thread::Priority);
 
 class _ClassDB : public Object {
-
 	GDCLASS(_ClassDB, Object);
 
 protected:

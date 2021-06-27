@@ -201,7 +201,7 @@ struct m2n_arg_cast_helper<T, 'F'> {
 template <typename T>
 struct m2n_arg_cast_helper<T, 'D'> {
 	static T cast(Mono_InterpMethodArguments *p_margs, size_t p_idx) {
-		return (T)(size_t)p_margs->fargs[p_idx];
+		return (T)p_margs->fargs[p_idx];
 	}
 };
 

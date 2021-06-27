@@ -32,7 +32,6 @@
 #include "servers/physics_server.h"
 
 Vector<Vector3> BoxShape::get_debug_mesh_lines() {
-
 	Vector<Vector3> lines;
 	AABB aabb;
 	aabb.position = -get_extents();
@@ -49,13 +48,11 @@ Vector<Vector3> BoxShape::get_debug_mesh_lines() {
 }
 
 void BoxShape::_update_shape() {
-
 	PhysicsServer::get_singleton()->shape_set_data(get_shape(), extents);
 	Shape::_update_shape();
 }
 
 void BoxShape::set_extents(const Vector3 &p_extents) {
-
 	extents = p_extents;
 	_update_shape();
 	notify_change_to_owners();
@@ -63,12 +60,10 @@ void BoxShape::set_extents(const Vector3 &p_extents) {
 }
 
 Vector3 BoxShape::get_extents() const {
-
 	return extents;
 }
 
 void BoxShape::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("set_extents", "extents"), &BoxShape::set_extents);
 	ClassDB::bind_method(D_METHOD("get_extents"), &BoxShape::get_extents);
 
@@ -77,6 +72,5 @@ void BoxShape::_bind_methods() {
 
 BoxShape::BoxShape() :
 		Shape(PhysicsServer::get_singleton()->shape_create(PhysicsServer::SHAPE_BOX)) {
-
 	set_extents(Vector3(1, 1, 1));
 }

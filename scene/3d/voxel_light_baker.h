@@ -59,7 +59,6 @@ private:
 	};
 
 	struct Cell {
-
 		uint32_t children[8];
 		float albedo[3]; //albedo in RGB24
 		float emission[3]; //accumulated light in 16:16 fixed point (needs to be integer for moving lights fast)
@@ -147,7 +146,7 @@ private:
 
 public:
 	void begin_bake(int p_subdiv, const AABB &p_bounds);
-	void plot_mesh(const Transform &p_xform, Ref<Mesh> &p_mesh, const Vector<Ref<Material> > &p_materials, const Ref<Material> &p_override_material);
+	void plot_mesh(const Transform &p_xform, Ref<Mesh> &p_mesh, const Vector<Ref<Material>> &p_materials, const Ref<Material> &p_override_material);
 	void begin_bake_light(BakeQuality p_quality = BAKE_QUALITY_MEDIUM, float p_propagation = 0.85);
 	void plot_light_directional(const Vector3 &p_direction, const Color &p_color, float p_energy, float p_indirect_energy, bool p_direct);
 	void plot_light_omni(const Vector3 &p_pos, const Color &p_color, float p_energy, float p_indirect_energy, float p_radius, float p_attenutation, bool p_direct);

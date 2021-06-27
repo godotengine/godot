@@ -32,13 +32,13 @@
 
 #include "core/engine.h"
 
-StreamPeerSSL *(*StreamPeerSSL::_create)() = NULL;
+StreamPeerSSL *(*StreamPeerSSL::_create)() = nullptr;
 
 StreamPeerSSL *StreamPeerSSL::create() {
-
-	if (_create)
+	if (_create) {
 		return _create();
-	return NULL;
+	}
+	return nullptr;
 }
 
 bool StreamPeerSSL::available = false;
@@ -56,7 +56,6 @@ bool StreamPeerSSL::is_blocking_handshake_enabled() const {
 }
 
 void StreamPeerSSL::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("poll"), &StreamPeerSSL::poll);
 	ClassDB::bind_method(D_METHOD("accept_stream", "stream", "private_key", "certificate", "chain"), &StreamPeerSSL::accept_stream, DEFVAL(Ref<X509Certificate>()));
 	ClassDB::bind_method(D_METHOD("connect_to_stream", "stream", "validate_certs", "for_hostname", "valid_certificate"), &StreamPeerSSL::connect_to_stream, DEFVAL(false), DEFVAL(String()), DEFVAL(Ref<X509Certificate>()));

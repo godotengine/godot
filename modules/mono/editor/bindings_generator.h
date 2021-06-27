@@ -41,7 +41,6 @@
 #include "core/ustring.h"
 
 class BindingsGenerator {
-
 	struct ConstantInterface {
 		String name;
 		String proxy_name;
@@ -441,7 +440,6 @@ class BindingsGenerator {
 		}
 
 		TypeInterface() {
-
 			api_type = ClassDB::API_NONE;
 
 			is_enum = false;
@@ -510,7 +508,7 @@ class BindingsGenerator {
 	List<InternalCall> core_custom_icalls;
 	List<InternalCall> editor_custom_icalls;
 
-	Map<StringName, List<StringName> > blacklisted_methods;
+	Map<StringName, List<StringName>> blacklisted_methods;
 
 	void _initialize_blacklisted_methods();
 
@@ -573,7 +571,8 @@ class BindingsGenerator {
 	const List<InternalCall>::Element *find_icall_by_name(const String &p_name, const List<InternalCall> &p_list) {
 		const List<InternalCall>::Element *it = p_list.front();
 		while (it) {
-			if (it->get().name == p_name) return it;
+			if (it->get().name == p_name)
+				return it;
 			it = it->next();
 		}
 		return NULL;

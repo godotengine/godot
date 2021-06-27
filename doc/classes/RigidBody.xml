@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="RigidBody" inherits="PhysicsBody" version="3.3">
+<class name="RigidBody" inherits="PhysicsBody" version="3.4">
 	<brief_description>
 		Physics Body whose position is determined through physics simulation in 3D space.
 	</brief_description>
@@ -228,7 +228,7 @@
 			</description>
 		</signal>
 		<signal name="body_shape_entered">
-			<argument index="0" name="body_id" type="int">
+			<argument index="0" name="body_rid" type="RID">
 			</argument>
 			<argument index="1" name="body" type="Node">
 			</argument>
@@ -246,7 +246,7 @@
 			</description>
 		</signal>
 		<signal name="body_shape_exited">
-			<argument index="0" name="body_id" type="int">
+			<argument index="0" name="body_rid" type="RID">
 			</argument>
 			<argument index="1" name="body" type="Node">
 			</argument>

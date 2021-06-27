@@ -44,7 +44,7 @@
 # datenbauer <d-vaupel@web.de>, 2019.
 # Alexander Hausmann <alexander-hausmann+weblate@posteo.de>, 2019.
 # Nicolas Mohr <81moni1bif@hft-stuttgart.de>, 2019.
-# Linux User <no-ads@mail.de>, 2019.
+# Linux User <no-ads@mail.de>, 2019, 2021.
 # David May <wasser@gmail.com>, 2019.
 # Draco Drache <jan.holger.te@gmail.com>, 2019.
 # Jonas <dotchucknorris@gmx.de>, 2019.
@@ -52,7 +52,7 @@
 # artism90 <artism90@googlemail.com>, 2020.
 # Jaigskim <filzstift112@gmail.com>, 2020.
 # Jacqueline Ulken <Jacqueline.Ulken@protonmail.com>, 2020.
-# Günther Bohn <ciscouser@gmx.de>, 2020.
+# Günther Bohn <ciscouser@gmx.de>, 2020, 2021.
 # Tom Wor <mail@tomwor.com>, 2020.
 # Bjarne Hiller <bjarne.hiller@gmail.com>, 2020.
 # Dirk Federmann <weblategodot@dirkfedermann.de>, 2020.
@@ -67,12 +67,14 @@
 # Raphipod <podraphi@googlemail.com>, 2021.
 # Daniel Plaster <danimineiromc@googlemail.com>, 2021.
 # El Captian <elcaptian@posteo.me>, 2021.
+# Ron Eric Hackländer <mail@roneric.net>, 2021.
+# Stephan Kerbl <stephankerbl@gmail.com>, 2021.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2021-03-09 04:13+0000\n"
-"Last-Translator: So Wieso <sowieso@dukun.de>\n"
+"PO-Revision-Date: 2021-06-07 23:43+0000\n"
+"Last-Translator: Linux User <no-ads@mail.de>\n"
 "Language-Team: German <https://hosted.weblate.org/projects/godot-engine/"
 "godot/de/>\n"
 "Language: de\n"
@@ -80,7 +82,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.5.1\n"
+"X-Generator: Weblate 4.7-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -176,15 +178,15 @@ msgstr "Wert:"
 
 #: editor/animation_bezier_editor.cpp
 msgid "Insert Key Here"
-msgstr "Hier Schlüsselbild einfügen"
+msgstr "Schlüsselbild hier einfügen"
 
 #: editor/animation_bezier_editor.cpp
 msgid "Duplicate Selected Key(s)"
-msgstr "Ausgewählte Schlüssel duplizieren"
+msgstr "Ausgewählte Schlüsselbilder duplizieren"
 
 #: editor/animation_bezier_editor.cpp
 msgid "Delete Selected Key(s)"
-msgstr "Ausgewählte Schlüssel löschen"
+msgstr "Ausgewählte Schlüsselbilder löschen"
 
 #: editor/animation_bezier_editor.cpp
 msgid "Add Bezier Point"
@@ -1185,6 +1187,10 @@ msgstr "Wörterbuchwert ändern"
 msgid "Thanks from the Godot community!"
 msgstr "Die Godot-Gemeinschaft bedankt sich!"
 
+#: editor/editor_about.cpp editor/editor_node.cpp editor/project_manager.cpp
+msgid "Click to copy."
+msgstr ""
+
 #: editor/editor_about.cpp
 msgid "Godot Engine contributors"
 msgstr "Mitwirkende der Godot Engine"
@@ -1372,15 +1378,15 @@ msgstr "Mittels Drag&Drop umordnen."
 
 #: editor/editor_audio_buses.cpp
 msgid "Solo"
-msgstr "Solo"
+msgstr "Allein"
 
 #: editor/editor_audio_buses.cpp
 msgid "Mute"
-msgstr "Stumm"
+msgstr "Stummschalten"
 
 #: editor/editor_audio_buses.cpp
 msgid "Bypass"
-msgstr "Bypass"
+msgstr "Überbrückung"
 
 #: editor/editor_audio_buses.cpp
 msgid "Bus options"
@@ -1572,7 +1578,7 @@ msgstr "Name"
 
 #: editor/editor_autoload_settings.cpp
 msgid "Singleton"
-msgstr "Singleton"
+msgstr "Einzelelement"
 
 #: editor/editor_data.cpp editor/inspector_dock.cpp
 msgid "Paste Params"
@@ -1728,7 +1734,7 @@ msgstr "Skript Editor"
 
 #: editor/editor_feature_profile.cpp
 msgid "Asset Library"
-msgstr "Bestandsbibliothek"
+msgstr "Bestandsbibliothek (AssetLib)"
 
 #: editor/editor_feature_profile.cpp
 msgid "Scene Tree Editing"
@@ -2169,7 +2175,7 @@ msgstr "Methode"
 
 #: editor/editor_help_search.cpp editor/plugins/script_text_editor.cpp
 msgid "Signal"
-msgstr "Signal"
+msgstr "Ereignis"
 
 #: editor/editor_help_search.cpp editor/plugins/theme_editor_plugin.cpp
 msgid "Constant"
@@ -2447,8 +2453,7 @@ msgid ""
 "Please read the documentation relevant to debugging to better understand "
 "this workflow."
 msgstr ""
-"Dies ist ein Laufzeit-Objekt Objekt, Änderungen an ihm werden nicht "
-"gespeichert.\n"
+"Dies ist ein Laufzeit-Objekt, Änderungen werden nicht gespeichert.\n"
 "Die Dokumentation zum Debugging beschreibt den nötigen Arbeitsablauf."
 
 #: editor/editor_node.cpp
@@ -2617,11 +2622,13 @@ msgstr "Erweiterungsskript konnte nicht geladen werden: ‚%s‘."
 
 #: editor/editor_node.cpp
 msgid ""
-"Unable to load addon script from path: '%s' There seems to be an error in "
-"the code, please check the syntax."
+"Unable to load addon script from path: '%s'. This might be due to a code "
+"error in that script.\n"
+"Disabling the addon at '%s' to prevent further errors."
 msgstr ""
-"Erweiterungsskript konnte nicht von folgendem Pfad geladen werden: ‚%s‘. Es "
-"scheint ein Fehler im Quellcode zu sein. Bitte Syntax überprüfen."
+"Erweiterungsskript auf folgendem Pfad konnte nicht geladen werden: ‚%s‘. Es "
+"scheint ein Fehler in dessen Quellcode zu sein.\n"
+"Die Erweiterung ‚%s‘ wird deaktiviert um weitere Fehler zu verhindern."
 
 #: editor/editor_node.cpp
 msgid ""
@@ -3065,11 +3072,15 @@ msgstr "Dokumentationsvorschläge senden"
 
 #: editor/editor_node.cpp editor/plugins/asset_library_editor_plugin.cpp
 msgid "Community"
-msgstr "Gemeinschaft"
+msgstr "Community"
 
 #: editor/editor_node.cpp
 msgid "About"
 msgstr "Über"
+
+#: editor/editor_node.cpp
+msgid "Support Godot Development"
+msgstr "Unterstützung der Godot-Entwicklung"
 
 #: editor/editor_node.cpp
 msgid "Play the project."
@@ -3761,6 +3772,8 @@ msgstr ""
 msgid ""
 "Importing has been disabled for this file, so it can't be opened for editing."
 msgstr ""
+"Für diese Datei wurde die Import-Funktion deaktiviert, sie kann folglich "
+"nicht zum Bearbeiten geöffnet werden."
 
 #: editor/filesystem_dock.cpp
 msgid "Cannot move/rename resources root."
@@ -4158,7 +4171,7 @@ msgstr "Importer auswählen"
 
 #: editor/import_defaults_editor.cpp
 msgid "Importer:"
-msgstr "Importer:"
+msgstr "Importierer:"
 
 #: editor/import_defaults_editor.cpp
 msgid "Reset to Defaults"
@@ -4166,7 +4179,7 @@ msgstr "Auf Standardwerte zurücksetzen"
 
 #: editor/import_dock.cpp
 msgid "Keep File (No Import)"
-msgstr ""
+msgstr "Datei behalten (kein Import)"
 
 #: editor/import_dock.cpp
 msgid "%d Files"
@@ -4931,7 +4944,7 @@ msgstr "Abspielmodus:"
 #: editor/plugins/animation_tree_editor_plugin.cpp
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "AnimationTree"
-msgstr "AnimationsBaum"
+msgstr "AnimationTree"
 
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "New name:"
@@ -5310,7 +5323,7 @@ msgstr ""
 msgid ""
 "Godot editor was built without ray tracing support, lightmaps can't be baked."
 msgstr ""
-"Diese Godot-Version wurde ohne Raytracing-Unterstützung erstellt, Lightmaps "
+"Der Godot-Editor wurde ohne Raytracing-Unterstützung erstellt; Lightmaps "
 "können damit nicht gebacken werden."
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
@@ -7140,7 +7153,7 @@ msgstr ""
 
 #: editor/plugins/script_editor_plugin.cpp editor/script_editor_debugger.cpp
 msgid "Debugger"
-msgstr "Debugger"
+msgstr "Testhilfsprogramm"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Search Results"
@@ -7645,6 +7658,13 @@ msgstr "Sichtrotation gesperrt"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid ""
+"To zoom further, change the camera's clipping planes (View -> Settings...)"
+msgstr ""
+"Um weiter zoomen zu können müssen die Kameraausschnittebenen geändert werden "
+"(Anzeige -> Einstellungen… )"
+
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid ""
 "Note: The FPS value displayed is the editor's framerate.\n"
 "It cannot be used as a reliable indication of in-game performance."
 msgstr ""
@@ -7936,7 +7956,7 @@ msgstr "LightOccluder2D erzeugen"
 
 #: editor/plugins/sprite_editor_plugin.cpp
 msgid "Sprite"
-msgstr "Sprite"
+msgstr "Bild"
 
 #: editor/plugins/sprite_editor_plugin.cpp
 msgid "Simplification: "
@@ -8705,7 +8725,7 @@ msgstr "Diese Eigenschaft kann nicht geändert werden."
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "TileSet"
-msgstr "TileSet"
+msgstr "Kachelsatz"
 
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "No VCS addons are available."
@@ -8816,7 +8836,7 @@ msgstr "Boolean"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Sampler"
-msgstr "Sampler"
+msgstr "Abtaster"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Add input port"
@@ -8897,7 +8917,7 @@ msgstr "UniformRef-Name geändert"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Vertex"
-msgstr "Vertex"
+msgstr "Eckpunkt"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Fragment"
@@ -10233,7 +10253,7 @@ msgstr "Maustaste"
 
 #: editor/project_settings_editor.cpp
 msgid ""
-"Invalid action name. it cannot be empty nor contain '/', ':', '=', '\\' or "
+"Invalid action name. It cannot be empty nor contain '/', ':', '=', '\\' or "
 "'\"'"
 msgstr ""
 "Ungültiger Aktionsname. Er kann weder leer sein noch ‚/‘, ‚:‘, ‚=‘, ‘\\‘ "
@@ -10610,7 +10630,7 @@ msgstr "Präfix:"
 
 #: editor/rename_dialog.cpp
 msgid "Suffix:"
-msgstr "Suffix:"
+msgstr "Endung:"
 
 #: editor/rename_dialog.cpp
 msgid "Use Regular Expressions"
@@ -10911,7 +10931,7 @@ msgstr "Benutzerschnittstelle"
 
 #: editor/scene_tree_dock.cpp
 msgid "Other Node"
-msgstr "Anderer Node"
+msgstr "Anderes Node"
 
 #: editor/scene_tree_dock.cpp
 msgid "Can't operate on nodes from a foreign scene!"
@@ -11041,6 +11061,17 @@ msgstr "Skript vom ausgewählten Node loslösen."
 #: editor/scene_tree_dock.cpp
 msgid "Remote"
 msgstr "Fern"
+
+#: editor/scene_tree_dock.cpp
+msgid ""
+"If selected, the Remote scene tree dock will cause the project to stutter "
+"every time it updates.\n"
+"Switch back to the Local scene tree dock to improve performance."
+msgstr ""
+"Falls ausgewählt wird das Panel für den Fern-Szenenbaum jedes mal beim "
+"Aktualisieren das Projekt zum Ruckeln bringen.\n"
+"Für bessere Geschwindigkeit sollte diese Option auf Lokaler Szenenbaum "
+"gestellt werden."
 
 #: editor/scene_tree_dock.cpp
 msgid "Local"
@@ -12295,10 +12326,22 @@ msgstr ""
 "im Projektmenü installiert werden."
 
 #: platform/android/export/export.cpp
+msgid ""
+"Either Debug Keystore, Debug User AND Debug Password settings must be "
+"configured OR none of them."
+msgstr ""
+
+#: platform/android/export/export.cpp
 msgid "Debug keystore not configured in the Editor Settings nor in the preset."
 msgstr ""
 "Debug-Keystore wurde weder in den Editoreinstellungen noch in der Vorlage "
 "konfiguriert."
+
+#: platform/android/export/export.cpp
+msgid ""
+"Either Release Keystore, Release User AND Release Password settings must be "
+"configured OR none of them."
+msgstr ""
 
 #: platform/android/export/export.cpp
 msgid "Release keystore incorrectly configured in the export preset."
@@ -13298,6 +13341,18 @@ msgstr "Varyings können nur in Vertex-Funktion zugewiesen werden."
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "Konstanten können nicht verändert werden."
+
+#~ msgid ""
+#~ "Godot editor was built without ray tracing support; lightmaps can't be "
+#~ "baked.\n"
+#~ "If you are using an Apple Silicon-based Mac, try forcing Rosetta "
+#~ "emulation on Godot.app in the application settings\n"
+#~ "then restart the editor."
+#~ msgstr ""
+#~ "Der Godot-Editor wurde ohne Raytracing-Unterstützung gebaut; Lightmaps "
+#~ "können nicht gebacken werden.\n"
+#~ "Nutzer eines Macs basierend auf Apple Silicon sollten Rosetta-Emulation "
+#~ "in den Anwendungseinstellungen aktivieren und den Editor neu starten."
 
 #~ msgid ""
 #~ "InterpolatedCamera has been deprecated and will be removed in Godot 4.0."

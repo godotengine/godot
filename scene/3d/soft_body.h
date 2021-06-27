@@ -36,7 +36,6 @@
 class SoftBody;
 
 class SoftBodyVisualServerHandler {
-
 	friend class SoftBody;
 
 	RID mesh;

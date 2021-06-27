@@ -45,7 +45,6 @@ class SpaceBullet;
 class btTypedConstraint;
 
 class ConstraintBullet : public RIDBullet {
-
 protected:
 	SpaceBullet *space;
 	btTypedConstraint *constraint;
@@ -64,7 +63,7 @@ public:
 public:
 	virtual ~ConstraintBullet() {
 		bulletdelete(constraint);
-		constraint = NULL;
+		constraint = nullptr;
 	}
 
 	_FORCE_INLINE_ btTypedConstraint *get_bt_constraint() { return constraint; }

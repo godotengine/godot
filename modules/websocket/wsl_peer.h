@@ -44,7 +44,6 @@
 #define WSL_MAX_HEADER_SIZE 4096
 
 class WSLPeer : public WebSocketPeer {
-
 	GDCIIMPL(WSLPeer, WebSocketPeer);
 
 public:
@@ -67,10 +66,10 @@ public:
 			valid = false;
 			is_server = false;
 			id = 1;
-			ctx = NULL;
-			obj = NULL;
+			ctx = nullptr;
+			obj = nullptr;
 			closing = false;
-			peer = NULL;
+			peer = nullptr;
 		}
 	};
 

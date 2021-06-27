@@ -47,12 +47,10 @@ public:
 
 	real_t get_area() const; /// get area
 	_FORCE_INLINE_ bool has_no_area() const {
-
 		return (size.x <= 0 || size.y <= 0 || size.z <= 0);
 	}
 
 	_FORCE_INLINE_ bool has_no_surface() const {
-
 		return (size.x <= 0 && size.y <= 0 && size.z <= 0);
 	}
 
@@ -72,8 +70,8 @@ public:
 	AABB merge(const AABB &p_with) const;
 	void merge_with(const AABB &p_aabb); ///merge with another AABB
 	AABB intersection(const AABB &p_aabb) const; ///get box where two intersect, empty if no intersection occurs
-	bool intersects_segment(const Vector3 &p_from, const Vector3 &p_to, Vector3 *r_clip = NULL, Vector3 *r_normal = NULL) const;
-	bool intersects_ray(const Vector3 &p_from, const Vector3 &p_dir, Vector3 *r_clip = NULL, Vector3 *r_normal = NULL) const;
+	bool intersects_segment(const Vector3 &p_from, const Vector3 &p_to, Vector3 *r_clip = nullptr, Vector3 *r_normal = nullptr) const;
+	bool intersects_ray(const Vector3 &p_from, const Vector3 &p_dir, Vector3 *r_clip = nullptr, Vector3 *r_normal = nullptr) const;
 	_FORCE_INLINE_ bool smits_intersect_ray(const Vector3 &p_from, const Vector3 &p_dir, real_t t0, real_t t1) const;
 
 	_FORCE_INLINE_ bool intersects_convex_shape(const Plane *p_planes, int p_plane_count, const Vector3 *p_points, int p_point_count) const;
@@ -115,43 +113,52 @@ public:
 };
 
 inline bool AABB::intersects(const AABB &p_aabb) const {
-
-	if (position.x >= (p_aabb.position.x + p_aabb.size.x))
+	if (position.x >= (p_aabb.position.x + p_aabb.size.x)) {
 		return false;
-	if ((position.x + size.x) <= p_aabb.position.x)
+	}
+	if ((position.x + size.x) <= p_aabb.position.x) {
 		return false;
-	if (position.y >= (p_aabb.position.y + p_aabb.size.y))
+	}
+	if (position.y >= (p_aabb.position.y + p_aabb.size.y)) {
 		return false;
-	if ((position.y + size.y) <= p_aabb.position.y)
+	}
+	if ((position.y + size.y) <= p_aabb.position.y) {
 		return false;
-	if (position.z >= (p_aabb.position.z + p_aabb.size.z))
+	}
+	if (position.z >= (p_aabb.position.z + p_aabb.size.z)) {
 		return false;
-	if ((position.z + size.z) <= p_aabb.position.z)
+	}
+	if ((position.z + size.z) <= p_aabb.position.z) {
 		return false;
+	}
 
 	return true;
 }
 
 inline bool AABB::intersects_inclusive(const AABB &p_aabb) const {
-
-	if (position.x > (p_aabb.position.x + p_aabb.size.x))
+	if (position.x > (p_aabb.position.x + p_aabb.size.x)) {
 		return false;
-	if ((position.x + size.x) < p_aabb.position.x)
+	}
+	if ((position.x + size.x) < p_aabb.position.x) {
 		return false;
-	if (position.y > (p_aabb.position.y + p_aabb.size.y))
+	}
+	if (position.y > (p_aabb.position.y + p_aabb.size.y)) {
 		return false;
-	if ((position.y + size.y) < p_aabb.position.y)
+	}
+	if ((position.y + size.y) < p_aabb.position.y) {
 		return false;
-	if (position.z > (p_aabb.position.z + p_aabb.size.z))
+	}
+	if (position.z > (p_aabb.position.z + p_aabb.size.z)) {
 		return false;
-	if ((position.z + size.z) < p_aabb.position.z)
+	}
+	if ((position.z + size.z) < p_aabb.position.z) {
 		return false;
+	}
 
 	return true;
 }
 
 inline bool AABB::encloses(const AABB &p_aabb) const {
-
 	Vector3 src_min = position;
 	Vector3 src_max = position + size;
 	Vector3 dst_min = p_aabb.position;
@@ -167,7 +174,6 @@ inline bool AABB::encloses(const AABB &p_aabb) const {
 }
 
 Vector3 AABB::get_support(const Vector3 &p_normal) const {
-
 	Vector3 half_extents = size * 0.5;
 	Vector3 ofs = position + half_extents;
 
@@ -179,23 +185,29 @@ Vector3 AABB::get_support(const Vector3 &p_normal) const {
 }
 
 Vector3 AABB::get_endpoint(int p_point) const {
-
 	switch (p_point) {
-		case 0: return Vector3(position.x, position.y, position.z);
-		case 1: return Vector3(position.x, position.y, position.z + size.z);
-		case 2: return Vector3(position.x, position.y + size.y, position.z);
-		case 3: return Vector3(position.x, position.y + size.y, position.z + size.z);
-		case 4: return Vector3(position.x + size.x, position.y, position.z);
-		case 5: return Vector3(position.x + size.x, position.y, position.z + size.z);
-		case 6: return Vector3(position.x + size.x, position.y + size.y, position.z);
-		case 7: return Vector3(position.x + size.x, position.y + size.y, position.z + size.z);
+		case 0:
+			return Vector3(position.x, position.y, position.z);
+		case 1:
+			return Vector3(position.x, position.y, position.z + size.z);
+		case 2:
+			return Vector3(position.x, position.y + size.y, position.z);
+		case 3:
+			return Vector3(position.x, position.y + size.y, position.z + size.z);
+		case 4:
+			return Vector3(position.x + size.x, position.y, position.z);
+		case 5:
+			return Vector3(position.x + size.x, position.y, position.z + size.z);
+		case 6:
+			return Vector3(position.x + size.x, position.y + size.y, position.z);
+		case 7:
+			return Vector3(position.x + size.x, position.y + size.y, position.z + size.z);
 	};
 
 	ERR_FAIL_V(Vector3());
 }
 
 bool AABB::intersects_convex_shape(const Plane *p_planes, int p_plane_count, const Vector3 *p_points, int p_point_count) const {
-
 	Vector3 half_extents = size * 0.5;
 	Vector3 ofs = position + half_extents;
 
@@ -206,8 +218,9 @@ bool AABB::intersects_convex_shape(const Plane *p_planes, int p_plane_count, con
 				(p.normal.y > 0) ? -half_extents.y : half_extents.y,
 				(p.normal.z > 0) ? -half_extents.z : half_extents.z);
 		point += ofs;
-		if (p.is_point_over(point))
+		if (p.is_point_over(point)) {
 			return false;
+		}
 	}
 
 	// Make sure all points in the shape aren't fully separated from the AABB on
@@ -216,7 +229,6 @@ bool AABB::intersects_convex_shape(const Plane *p_planes, int p_plane_count, con
 	int bad_point_counts_negative[3] = { 0 };
 
 	for (int k = 0; k < 3; k++) {
-
 		for (int i = 0; i < p_point_count; i++) {
 			if (p_points[i].coord[k] > ofs.coord[k] + half_extents.coord[k]) {
 				bad_point_counts_positive[k]++;
@@ -238,7 +250,6 @@ bool AABB::intersects_convex_shape(const Plane *p_planes, int p_plane_count, con
 }
 
 bool AABB::inside_convex_shape(const Plane *p_planes, int p_plane_count) const {
-
 	Vector3 half_extents = size * 0.5;
 	Vector3 ofs = position + half_extents;
 
@@ -249,56 +260,66 @@ bool AABB::inside_convex_shape(const Plane *p_planes, int p_plane_count) const {
 				(p.normal.y < 0) ? -half_extents.y : half_extents.y,
 				(p.normal.z < 0) ? -half_extents.z : half_extents.z);
 		point += ofs;
-		if (p.is_point_over(point))
+		if (p.is_point_over(point)) {
 			return false;
+		}
 	}
 
 	return true;
 }
 
 bool AABB::has_point(const Vector3 &p_point) const {
-
-	if (p_point.x < position.x)
+	if (p_point.x < position.x) {
 		return false;
-	if (p_point.y < position.y)
+	}
+	if (p_point.y < position.y) {
 		return false;
-	if (p_point.z < position.z)
+	}
+	if (p_point.z < position.z) {
 		return false;
-	if (p_point.x > position.x + size.x)
+	}
+	if (p_point.x > position.x + size.x) {
 		return false;
-	if (p_point.y > position.y + size.y)
+	}
+	if (p_point.y > position.y + size.y) {
 		return false;
-	if (p_point.z > position.z + size.z)
+	}
+	if (p_point.z > position.z + size.z) {
 		return false;
+	}
 
 	return true;
 }
 
 inline void AABB::expand_to(const Vector3 &p_vector) {
-
 	Vector3 begin = position;
 	Vector3 end = position + size;
 
-	if (p_vector.x < begin.x)
+	if (p_vector.x < begin.x) {
 		begin.x = p_vector.x;
-	if (p_vector.y < begin.y)
+	}
+	if (p_vector.y < begin.y) {
 		begin.y = p_vector.y;
-	if (p_vector.z < begin.z)
+	}
+	if (p_vector.z < begin.z) {
 		begin.z = p_vector.z;
+	}
 
-	if (p_vector.x > end.x)
+	if (p_vector.x > end.x) {
 		end.x = p_vector.x;
-	if (p_vector.y > end.y)
+	}
+	if (p_vector.y > end.y) {
 		end.y = p_vector.y;
-	if (p_vector.z > end.z)
+	}
+	if (p_vector.z > end.z) {
 		end.z = p_vector.z;
+	}
 
 	position = begin;
 	size = end - begin;
 }
 
 void AABB::project_range_in_plane(const Plane &p_plane, real_t &r_min, real_t &r_max) const {
-
 	Vector3 half_extents(size.x * 0.5, size.y * 0.5, size.z * 0.5);
 	Vector3 center(position.x + half_extents.x, position.y + half_extents.y, position.z + half_extents.z);
 
@@ -309,7 +330,6 @@ void AABB::project_range_in_plane(const Plane &p_plane, real_t &r_min, real_t &r
 }
 
 inline real_t AABB::get_longest_axis_size() const {
-
 	real_t max_size = size.x;
 
 	if (size.y > max_size) {
@@ -324,7 +344,6 @@ inline real_t AABB::get_longest_axis_size() const {
 }
 
 inline real_t AABB::get_shortest_axis_size() const {
-
 	real_t max_size = size.x;
 
 	if (size.y < max_size) {
@@ -339,7 +358,6 @@ inline real_t AABB::get_shortest_axis_size() const {
 }
 
 bool AABB::smits_intersect_ray(const Vector3 &p_from, const Vector3 &p_dir, real_t t0, real_t t1) const {
-
 	real_t divx = 1.0 / p_dir.x;
 	real_t divy = 1.0 / p_dir.y;
 	real_t divz = 1.0 / p_dir.z;
@@ -360,12 +378,15 @@ bool AABB::smits_intersect_ray(const Vector3 &p_from, const Vector3 &p_dir, real
 		tymin = (upbound.y - p_from.y) * divy;
 		tymax = (position.y - p_from.y) * divy;
 	}
-	if ((tmin > tymax) || (tymin > tmax))
+	if ((tmin > tymax) || (tymin > tmax)) {
 		return false;
-	if (tymin > tmin)
+	}
+	if (tymin > tmin) {
 		tmin = tymin;
-	if (tymax < tmax)
+	}
+	if (tymax < tmax) {
 		tmax = tymax;
+	}
 	if (p_dir.z >= 0) {
 		tzmin = (position.z - p_from.z) * divz;
 		tzmax = (upbound.z - p_from.z) * divz;
@@ -373,17 +394,19 @@ bool AABB::smits_intersect_ray(const Vector3 &p_from, const Vector3 &p_dir, real
 		tzmin = (upbound.z - p_from.z) * divz;
 		tzmax = (position.z - p_from.z) * divz;
 	}
-	if ((tmin > tzmax) || (tzmin > tmax))
+	if ((tmin > tzmax) || (tzmin > tmax)) {
 		return false;
-	if (tzmin > tmin)
+	}
+	if (tzmin > tmin) {
 		tmin = tzmin;
-	if (tzmax < tmax)
+	}
+	if (tzmax < tmax) {
 		tmax = tzmax;
+	}
 	return ((tmin < t1) && (tmax > t0));
 }
 
 void AABB::grow_by(real_t p_amount) {
-
 	position.x -= p_amount;
 	position.y -= p_amount;
 	position.z -= p_amount;

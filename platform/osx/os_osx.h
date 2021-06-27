@@ -62,6 +62,7 @@ public:
 		bool echo;
 		bool raw;
 		uint32_t scancode;
+		uint32_t physical_scancode;
 		uint32_t unicode;
 	};
 
@@ -120,7 +121,7 @@ public:
 
 	CursorShape cursor_shape;
 	NSCursor *cursors[CURSOR_MAX];
-	Map<CursorShape, Vector<Variant> > cursors_cache;
+	Map<CursorShape, Vector<Variant>> cursors_cache;
 	MouseMode mouse_mode;
 
 	String title;
@@ -169,7 +170,7 @@ public:
 		}
 	};
 
-	Map<String, Vector<GlobalMenuItem> > global_menus;
+	Map<String, Vector<GlobalMenuItem>> global_menus;
 	List<String> global_menus_order;
 
 	void _update_global_menu();

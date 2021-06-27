@@ -37,7 +37,6 @@
 #include "scene/gui/line_edit.h"
 
 class RunSettingsDialog : public AcceptDialog {
-
 	GDCLASS(RunSettingsDialog, AcceptDialog);
 
 public:

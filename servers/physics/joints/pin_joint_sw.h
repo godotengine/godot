@@ -54,7 +54,6 @@ subject to the following restrictions:
 */
 
 class PinJointSW : public JointSW {
-
 	union {
 		struct {
 			BodySW *A;

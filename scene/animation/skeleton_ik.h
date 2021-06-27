@@ -41,14 +41,12 @@
 #include "scene/3d/skeleton.h"
 
 class FabrikInverseKinematic {
-
 	struct EndEffector {
 		BoneId tip_bone;
 		Transform goal_transform;
 	};
 
 	struct ChainItem {
-
 		Vector<ChainItem> children;
 		ChainItem *parent_item;
 
@@ -63,7 +61,7 @@ class FabrikInverseKinematic {
 		Vector3 current_ori;
 
 		ChainItem() :
-				parent_item(NULL),
+				parent_item(nullptr),
 				bone(-1),
 				length(0) {}
 
@@ -76,8 +74,8 @@ class FabrikInverseKinematic {
 		const EndEffector *end_effector;
 
 		ChainTip() :
-				chain_item(NULL),
-				end_effector(NULL) {}
+				chain_item(nullptr),
+				end_effector(nullptr) {}
 
 		ChainTip(ChainItem *p_chain_item, const EndEffector *p_end_effector) :
 				chain_item(p_chain_item),
@@ -109,7 +107,7 @@ public:
 		Transform goal_global_transform;
 
 		Task() :
-				skeleton(NULL),
+				skeleton(nullptr),
 				min_distance(0.01),
 				max_iterations(10),
 				root_bone(-1) {}
@@ -119,10 +117,10 @@ private:
 	/// Init a chain that starts from the root to tip
 	static bool build_chain(Task *p_task, bool p_force_simple_chain = true);
 
-	static void solve_simple(Task *p_task, bool p_solve_magnet);
+	static void solve_simple(Task *p_task, bool p_solve_magnet, Vector3 p_origin_pos);
 	/// Special solvers that solve only chains with one end effector
 	static void solve_simple_backwards(Chain &r_chain, bool p_solve_magnet);
-	static void solve_simple_forwards(Chain &r_chain, bool p_solve_magnet);
+	static void solve_simple_forwards(Chain &r_chain, bool p_solve_magnet, Vector3 p_origin_pos);
 
 public:
 	static Task *create_simple_task(Skeleton *p_sk, BoneId root_bone, BoneId tip_bone, const Transform &goal_transform);
@@ -131,6 +129,8 @@ public:
 	static void set_goal(Task *p_task, const Transform &p_goal);
 	static void make_goal(Task *p_task, const Transform &p_inverse_transf, real_t blending_delta);
 	static void solve(Task *p_task, real_t blending_delta, bool override_tip_basis, bool p_use_magnet, const Vector3 &p_magnet_position);
+
+	static void _update_chain(const Skeleton *p_skeleton, ChainItem *p_chain_item);
 };
 
 class SkeletonIK : public Node {

@@ -33,7 +33,6 @@
 #include "space_sw.h"
 
 void CollisionObjectSW::add_shape(ShapeSW *p_shape, const Transform &p_transform, bool p_disabled) {
-
 	Shape s;
 	s.shape = p_shape;
 	s.xform = p_transform;
@@ -51,7 +50,6 @@ void CollisionObjectSW::add_shape(ShapeSW *p_shape, const Transform &p_transform
 }
 
 void CollisionObjectSW::set_shape(int p_index, ShapeSW *p_shape) {
-
 	ERR_FAIL_INDEX(p_index, shapes.size());
 	shapes[p_index].shape->remove_owner(this);
 	shapes.write[p_index].shape = p_shape;
@@ -64,7 +62,6 @@ void CollisionObjectSW::set_shape(int p_index, ShapeSW *p_shape) {
 	//_shapes_changed();
 }
 void CollisionObjectSW::set_shape_transform(int p_index, const Transform &p_transform) {
-
 	ERR_FAIL_INDEX(p_index, shapes.size());
 
 	shapes.write[p_index].xform = p_transform;
@@ -84,10 +81,8 @@ void CollisionObjectSW::set_shape_as_disabled(int p_idx, bool p_enable) {
 }
 
 void CollisionObjectSW::remove_shape(ShapeSW *p_shape) {
-
 	//remove a shape, all the times it appears
 	for (int i = 0; i < shapes.size(); i++) {
-
 		if (shapes[i].shape == p_shape) {
 			remove_shape(i);
 			i--;
@@ -96,13 +91,12 @@ void CollisionObjectSW::remove_shape(ShapeSW *p_shape) {
 }
 
 void CollisionObjectSW::remove_shape(int p_index) {
-
 	//remove anything from shape to be erased to end, so subindices don't change
 	ERR_FAIL_INDEX(p_index, shapes.size());
 	for (int i = p_index; i < shapes.size(); i++) {
-
-		if (shapes[i].bpid == 0)
+		if (shapes[i].bpid == 0) {
 			continue;
+		}
 		//should never get here with a null owner
 		space->get_broadphase()->remove(shapes[i].bpid);
 		shapes.write[i].bpid = 0;
@@ -118,12 +112,14 @@ void CollisionObjectSW::remove_shape(int p_index) {
 }
 
 void CollisionObjectSW::_set_static(bool p_static) {
-	if (_static == p_static)
+	if (_static == p_static) {
 		return;
+	}
 	_static = p_static;
 
-	if (!space)
+	if (!space) {
 		return;
+	}
 	for (int i = 0; i < get_shape_count(); i++) {
 		const Shape &s = shapes[i];
 		if (s.bpid > 0) {
@@ -133,9 +129,7 @@ void CollisionObjectSW::_set_static(bool p_static) {
 }
 
 void CollisionObjectSW::_unregister_shapes() {
-
 	for (int i = 0; i < shapes.size(); i++) {
-
 		Shape &s = shapes.write[i];
 		if (s.bpid > 0) {
 			space->get_broadphase()->remove(s.bpid);
@@ -145,9 +139,9 @@ void CollisionObjectSW::_unregister_shapes() {
 }
 
 void CollisionObjectSW::_update_shapes() {
-
-	if (!space)
+	if (!space) {
 		return;
+	}
 
 	for (int i = 0; i < shapes.size(); i++) {
 		Shape &s = shapes.write[i];
@@ -156,24 +150,25 @@ void CollisionObjectSW::_update_shapes() {
 		AABB shape_aabb = s.shape->get_aabb();
 		Transform xform = transform * s.xform;
 		shape_aabb = xform.xform(shape_aabb);
+		shape_aabb.grow_by((s.aabb_cache.size.x + s.aabb_cache.size.y) * 0.5 * 0.05);
 		s.aabb_cache = shape_aabb;
-		s.aabb_cache = s.aabb_cache.grow((s.aabb_cache.size.x + s.aabb_cache.size.y) * 0.5 * 0.05);
 
 		Vector3 scale = xform.get_basis().get_scale();
 		s.area_cache = s.shape->get_area() * scale.x * scale.y * scale.z;
 
 		if (s.bpid == 0) {
-			s.bpid = space->get_broadphase()->create(this, i, s.aabb_cache);
+			s.bpid = space->get_broadphase()->create(this, i, shape_aabb, _static);
 			space->get_broadphase()->set_static(s.bpid, _static);
 		}
-		space->get_broadphase()->move(s.bpid, s.aabb_cache);
+
+		space->get_broadphase()->move(s.bpid, shape_aabb);
 	}
 }
 
 void CollisionObjectSW::_update_shapes_with_motion(const Vector3 &p_motion) {
-
-	if (!space)
+	if (!space) {
 		return;
+	}
 
 	for (int i = 0; i < shapes.size(); i++) {
 		Shape &s = shapes.write[i];
@@ -182,25 +177,23 @@ void CollisionObjectSW::_update_shapes_with_motion(const Vector3 &p_motion) {
 		AABB shape_aabb = s.shape->get_aabb();
 		Transform xform = transform * s.xform;
 		shape_aabb = xform.xform(shape_aabb);
-		shape_aabb = shape_aabb.merge(AABB(shape_aabb.position + p_motion, shape_aabb.size)); //use motion
+		shape_aabb.merge_with(AABB(shape_aabb.position + p_motion, shape_aabb.size)); //use motion
 		s.aabb_cache = shape_aabb;
 
 		if (s.bpid == 0) {
-			s.bpid = space->get_broadphase()->create(this, i, s.aabb_cache);
+			s.bpid = space->get_broadphase()->create(this, i, shape_aabb, _static);
 			space->get_broadphase()->set_static(s.bpid, _static);
 		}
+
 		space->get_broadphase()->move(s.bpid, shape_aabb);
 	}
 }
 
 void CollisionObjectSW::_set_space(SpaceSW *p_space) {
-
 	if (space) {
-
 		space->remove_object(this);
 
 		for (int i = 0; i < shapes.size(); i++) {
-
 			Shape &s = shapes.write[i];
 			if (s.bpid) {
 				space->get_broadphase()->remove(s.bpid);
@@ -212,24 +205,21 @@ void CollisionObjectSW::_set_space(SpaceSW *p_space) {
 	space = p_space;
 
 	if (space) {
-
 		space->add_object(this);
 		_update_shapes();
 	}
 }
 
 void CollisionObjectSW::_shape_changed() {
-
 	_update_shapes();
 	_shapes_changed();
 }
 
 CollisionObjectSW::CollisionObjectSW(Type p_type) :
 		pending_shape_update_list(this) {
-
 	_static = true;
 	type = p_type;
-	space = NULL;
+	space = nullptr;
 	instance_id = 0;
 	collision_layer = 1;
 	collision_mask = 1;

@@ -34,6 +34,7 @@
 #include "core/class_db.h"
 #include "core/compressed_translation.h"
 #include "core/core_string_names.h"
+#include "core/crypto/aes_context.h"
 #include "core/crypto/crypto.h"
 #include "core/crypto/hashing_context.h"
 #include "core/engine.h"
@@ -78,17 +79,17 @@ static Ref<TranslationLoaderPO> resource_format_po;
 static Ref<ResourceFormatSaverCrypto> resource_format_saver_crypto;
 static Ref<ResourceFormatLoaderCrypto> resource_format_loader_crypto;
 
-static _ResourceLoader *_resource_loader = NULL;
-static _ResourceSaver *_resource_saver = NULL;
-static _OS *_os = NULL;
-static _Engine *_engine = NULL;
-static _ClassDB *_classdb = NULL;
-static _Marshalls *_marshalls = NULL;
-static _JSON *_json = NULL;
+static _ResourceLoader *_resource_loader = nullptr;
+static _ResourceSaver *_resource_saver = nullptr;
+static _OS *_os = nullptr;
+static _Engine *_engine = nullptr;
+static _ClassDB *_classdb = nullptr;
+static _Marshalls *_marshalls = nullptr;
+static _JSON *_json = nullptr;
 
-static IP *ip = NULL;
+static IP *ip = nullptr;
 
-static _Geometry *_geometry = NULL;
+static _Geometry *_geometry = nullptr;
 
 extern Mutex _global_mutex;
 
@@ -98,7 +99,6 @@ extern void register_variant_methods();
 extern void unregister_variant_methods();
 
 void register_core_types() {
-
 	MemoryPool::setup();
 
 	StringName::setup();
@@ -159,8 +159,10 @@ void register_core_types() {
 
 	// Crypto
 	ClassDB::register_class<HashingContext>();
+	ClassDB::register_class<AESContext>();
 	ClassDB::register_custom_instance_class<X509Certificate>();
 	ClassDB::register_custom_instance_class<CryptoKey>();
+	ClassDB::register_custom_instance_class<HMACContext>();
 	ClassDB::register_custom_instance_class<Crypto>();
 	ClassDB::register_custom_instance_class<StreamPeerSSL>();
 
@@ -234,7 +236,6 @@ void register_core_settings() {
 }
 
 void register_core_singletons() {
-
 	ClassDB::register_class<ProjectSettings>();
 	ClassDB::register_virtual_class<IP>();
 	ClassDB::register_class<_Geometry>();
@@ -266,7 +267,6 @@ void register_core_singletons() {
 }
 
 void unregister_core_types() {
-
 	memdelete(_resource_loader);
 	memdelete(_resource_saver);
 	memdelete(_os);
@@ -297,8 +297,9 @@ void unregister_core_types() {
 	ResourceLoader::remove_resource_format_loader(resource_format_loader_crypto);
 	resource_format_loader_crypto.unref();
 
-	if (ip)
+	if (ip) {
 		memdelete(ip);
+	}
 
 	ResourceLoader::finalize();
 

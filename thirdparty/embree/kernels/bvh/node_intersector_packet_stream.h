@@ -1,4 +1,4 @@
-// Copyright 2009-2020 Intel Corporation
+// Copyright 2009-2021 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
 #pragma once
@@ -76,27 +76,27 @@ namespace embree
     // Fast AABBNode intersection
     //////////////////////////////////////////////////////////////////////////////////////
 
-    template<int N, int Nx, int K>
+    template<int N, int K>
     __forceinline size_t intersectNode1(const typename BVHN<N>::AABBNode* __restrict__ node,
                                         const TravRayKStreamFast<K>& ray, size_t k, const NearFarPrecalculations& nf)
     {
-      const vfloat<Nx> bminX = vfloat<Nx>(*(const vfloat<N>*)((const char*)&node->lower_x + nf.nearX));
-      const vfloat<Nx> bminY = vfloat<Nx>(*(const vfloat<N>*)((const char*)&node->lower_x + nf.nearY));
-      const vfloat<Nx> bminZ = vfloat<Nx>(*(const vfloat<N>*)((const char*)&node->lower_x + nf.nearZ));
-      const vfloat<Nx> bmaxX = vfloat<Nx>(*(const vfloat<N>*)((const char*)&node->lower_x + nf.farX));
-      const vfloat<Nx> bmaxY = vfloat<Nx>(*(const vfloat<N>*)((const char*)&node->lower_x + nf.farY));
-      const vfloat<Nx> bmaxZ = vfloat<Nx>(*(const vfloat<N>*)((const char*)&node->lower_x + nf.farZ));
+      const vfloat<N> bminX = vfloat<N>(*(const vfloat<N>*)((const char*)&node->lower_x + nf.nearX));
+      const vfloat<N> bminY = vfloat<N>(*(const vfloat<N>*)((const char*)&node->lower_x + nf.nearY));
+      const vfloat<N> bminZ = vfloat<N>(*(const vfloat<N>*)((const char*)&node->lower_x + nf.nearZ));
+      const vfloat<N> bmaxX = vfloat<N>(*(const vfloat<N>*)((const char*)&node->lower_x + nf.farX));
+      const vfloat<N> bmaxY = vfloat<N>(*(const vfloat<N>*)((const char*)&node->lower_x + nf.farY));
+      const vfloat<N> bmaxZ = vfloat<N>(*(const vfloat<N>*)((const char*)&node->lower_x + nf.farZ));
 
-      const vfloat<Nx> rminX = msub(bminX, vfloat<Nx>(ray.rdir.x[k]), vfloat<Nx>(ray.org_rdir.x[k]));
-      const vfloat<Nx> rminY = msub(bminY, vfloat<Nx>(ray.rdir.y[k]), vfloat<Nx>(ray.org_rdir.y[k]));
-      const vfloat<Nx> rminZ = msub(bminZ, vfloat<Nx>(ray.rdir.z[k]), vfloat<Nx>(ray.org_rdir.z[k]));
-      const vfloat<Nx> rmaxX = msub(bmaxX, vfloat<Nx>(ray.rdir.x[k]), vfloat<Nx>(ray.org_rdir.x[k]));
-      const vfloat<Nx> rmaxY = msub(bmaxY, vfloat<Nx>(ray.rdir.y[k]), vfloat<Nx>(ray.org_rdir.y[k]));
-      const vfloat<Nx> rmaxZ = msub(bmaxZ, vfloat<Nx>(ray.rdir.z[k]), vfloat<Nx>(ray.org_rdir.z[k]));
-      const vfloat<Nx> rmin  = maxi(rminX, rminY, rminZ, vfloat<Nx>(ray.tnear[k]));
-      const vfloat<Nx> rmax  = mini(rmaxX, rmaxY, rmaxZ, vfloat<Nx>(ray.tfar[k]));
+      const vfloat<N> rminX = msub(bminX, vfloat<N>(ray.rdir.x[k]), vfloat<N>(ray.org_rdir.x[k]));
+      const vfloat<N> rminY = msub(bminY, vfloat<N>(ray.rdir.y[k]), vfloat<N>(ray.org_rdir.y[k]));
+      const vfloat<N> rminZ = msub(bminZ, vfloat<N>(ray.rdir.z[k]), vfloat<N>(ray.org_rdir.z[k]));
+      const vfloat<N> rmaxX = msub(bmaxX, vfloat<N>(ray.rdir.x[k]), vfloat<N>(ray.org_rdir.x[k]));
+      const vfloat<N> rmaxY = msub(bmaxY, vfloat<N>(ray.rdir.y[k]), vfloat<N>(ray.org_rdir.y[k]));
+      const vfloat<N> rmaxZ = msub(bmaxZ, vfloat<N>(ray.rdir.z[k]), vfloat<N>(ray.org_rdir.z[k]));
+      const vfloat<N> rmin  = maxi(rminX, rminY, rminZ, vfloat<N>(ray.tnear[k]));
+      const vfloat<N> rmax  = mini(rmaxX, rmaxY, rmaxZ, vfloat<N>(ray.tfar[k]));
 
-      const vbool<Nx> vmask_first_hit = rmin <= rmax;
+      const vbool<N> vmask_first_hit = rmin <= rmax;
 
       return movemask(vmask_first_hit) & (((size_t)1 << N)-1);
     }
@@ -132,28 +132,28 @@ namespace embree
     // Robust AABBNode intersection
     //////////////////////////////////////////////////////////////////////////////////////
 
-    template<int N, int Nx, int K>
+    template<int N, int K>
     __forceinline size_t intersectNode1(const typename BVHN<N>::AABBNode* __restrict__ node,
                                         const TravRayKStreamRobust<K>& ray, size_t k, const NearFarPrecalculations& nf)
     {
-      const vfloat<Nx> bminX = vfloat<Nx>(*(const vfloat<N>*)((const char*)&node->lower_x + nf.nearX));
-      const vfloat<Nx> bminY = vfloat<Nx>(*(const vfloat<N>*)((const char*)&node->lower_x + nf.nearY));
-      const vfloat<Nx> bminZ = vfloat<Nx>(*(const vfloat<N>*)((const char*)&node->lower_x + nf.nearZ));
-      const vfloat<Nx> bmaxX = vfloat<Nx>(*(const vfloat<N>*)((const char*)&node->lower_x + nf.farX));
-      const vfloat<Nx> bmaxY = vfloat<Nx>(*(const vfloat<N>*)((const char*)&node->lower_x + nf.farY));
-      const vfloat<Nx> bmaxZ = vfloat<Nx>(*(const vfloat<N>*)((const char*)&node->lower_x + nf.farZ));
+      const vfloat<N> bminX = vfloat<N>(*(const vfloat<N>*)((const char*)&node->lower_x + nf.nearX));
+      const vfloat<N> bminY = vfloat<N>(*(const vfloat<N>*)((const char*)&node->lower_x + nf.nearY));
+      const vfloat<N> bminZ = vfloat<N>(*(const vfloat<N>*)((const char*)&node->lower_x + nf.nearZ));
+      const vfloat<N> bmaxX = vfloat<N>(*(const vfloat<N>*)((const char*)&node->lower_x + nf.farX));
+      const vfloat<N> bmaxY = vfloat<N>(*(const vfloat<N>*)((const char*)&node->lower_x + nf.farY));
+      const vfloat<N> bmaxZ = vfloat<N>(*(const vfloat<N>*)((const char*)&node->lower_x + nf.farZ));
 
-      const vfloat<Nx> rminX = (bminX - vfloat<Nx>(ray.org.x[k])) * vfloat<Nx>(ray.rdir.x[k]);
-      const vfloat<Nx> rminY = (bminY - vfloat<Nx>(ray.org.y[k])) * vfloat<Nx>(ray.rdir.y[k]);
-      const vfloat<Nx> rminZ = (bminZ - vfloat<Nx>(ray.org.z[k])) * vfloat<Nx>(ray.rdir.z[k]);
-      const vfloat<Nx> rmaxX = (bmaxX - vfloat<Nx>(ray.org.x[k])) * vfloat<Nx>(ray.rdir.x[k]);
-      const vfloat<Nx> rmaxY = (bmaxY - vfloat<Nx>(ray.org.y[k])) * vfloat<Nx>(ray.rdir.y[k]);
-      const vfloat<Nx> rmaxZ = (bmaxZ - vfloat<Nx>(ray.org.z[k])) * vfloat<Nx>(ray.rdir.z[k]);
+      const vfloat<N> rminX = (bminX - vfloat<N>(ray.org.x[k])) * vfloat<N>(ray.rdir.x[k]);
+      const vfloat<N> rminY = (bminY - vfloat<N>(ray.org.y[k])) * vfloat<N>(ray.rdir.y[k]);
+      const vfloat<N> rminZ = (bminZ - vfloat<N>(ray.org.z[k])) * vfloat<N>(ray.rdir.z[k]);
+      const vfloat<N> rmaxX = (bmaxX - vfloat<N>(ray.org.x[k])) * vfloat<N>(ray.rdir.x[k]);
+      const vfloat<N> rmaxY = (bmaxY - vfloat<N>(ray.org.y[k])) * vfloat<N>(ray.rdir.y[k]);
+      const vfloat<N> rmaxZ = (bmaxZ - vfloat<N>(ray.org.z[k])) * vfloat<N>(ray.rdir.z[k]);
       const float round_up = 1.0f+3.0f*float(ulp); // FIXME: use per instruction rounding for AVX512
-      const vfloat<Nx> rmin  =            max(rminX, rminY, rminZ, vfloat<Nx>(ray.tnear[k]));
-      const vfloat<Nx> rmax  = round_up  *min(rmaxX, rmaxY, rmaxZ, vfloat<Nx>(ray.tfar[k]));
+      const vfloat<N> rmin  =            max(rminX, rminY, rminZ, vfloat<N>(ray.tnear[k]));
+      const vfloat<N> rmax  = round_up  *min(rmaxX, rmaxY, rmaxZ, vfloat<N>(ray.tfar[k]));
 
-      const vbool<Nx> vmask_first_hit = rmin <= rmax;
+      const vbool<N> vmask_first_hit = rmin <= rmax;
 
       return movemask(vmask_first_hit) & (((size_t)1 << N)-1);
     }

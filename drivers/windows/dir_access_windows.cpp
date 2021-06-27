@@ -53,7 +53,6 @@
 */
 
 struct DirAccessWindowsPrivate {
-
 	HANDLE h; //handle for findfirstfile
 	WIN32_FIND_DATA f;
 	WIN32_FIND_DATAW fu; //unicode version
@@ -62,7 +61,6 @@ struct DirAccessWindowsPrivate {
 // CreateFolderAsync
 
 Error DirAccessWindows::list_dir_begin() {
-
 	_cisdir = false;
 	_cishidden = false;
 
@@ -73,7 +71,6 @@ Error DirAccessWindows::list_dir_begin() {
 }
 
 String DirAccessWindows::get_next() {
-
 	if (p->h == INVALID_HANDLE_VALUE)
 		return "";
 
@@ -83,7 +80,6 @@ String DirAccessWindows::get_next() {
 	String name = p->fu.cFileName;
 
 	if (FindNextFileW(p->h, &p->fu) == 0) {
-
 		FindClose(p->h);
 		p->h = INVALID_HANDLE_VALUE;
 	}
@@ -92,29 +88,23 @@ String DirAccessWindows::get_next() {
 }
 
 bool DirAccessWindows::current_is_dir() const {
-
 	return _cisdir;
 }
 
 bool DirAccessWindows::current_is_hidden() const {
-
 	return _cishidden;
 }
 
 void DirAccessWindows::list_dir_end() {
-
 	if (p->h != INVALID_HANDLE_VALUE) {
-
 		FindClose(p->h);
 		p->h = INVALID_HANDLE_VALUE;
 	}
 }
 int DirAccessWindows::get_drive_count() {
-
 	return drive_count;
 }
 String DirAccessWindows::get_drive(int p_drive) {
-
 	if (p_drive < 0 || p_drive >= drive_count)
 		return "";
 
@@ -122,7 +112,6 @@ String DirAccessWindows::get_drive(int p_drive) {
 }
 
 Error DirAccessWindows::change_dir(String p_dir) {
-
 	GLOBAL_LOCK_FUNCTION
 
 	p_dir = fix_path(p_dir);
@@ -136,7 +125,6 @@ Error DirAccessWindows::change_dir(String p_dir) {
 
 	String base = _get_root_path();
 	if (base != "") {
-
 		GetCurrentDirectoryW(2048, real_current_dir_name);
 		String new_dir;
 		new_dir = String(real_current_dir_name).replace("\\", "/");
@@ -146,7 +134,6 @@ Error DirAccessWindows::change_dir(String p_dir) {
 	}
 
 	if (worked) {
-
 		GetCurrentDirectoryW(2048, real_current_dir_name);
 		current_dir = real_current_dir_name; // TODO, utf8 parser
 		current_dir = current_dir.replace("\\", "/");
@@ -160,7 +147,6 @@ Error DirAccessWindows::change_dir(String p_dir) {
 }
 
 Error DirAccessWindows::make_dir(String p_dir) {
-
 	GLOBAL_LOCK_FUNCTION
 
 	p_dir = fix_path(p_dir);
@@ -190,10 +176,8 @@ Error DirAccessWindows::make_dir(String p_dir) {
 }
 
 String DirAccessWindows::get_current_dir() {
-
 	String base = _get_root_path();
 	if (base != "") {
-
 		String bd = current_dir.replace("\\", "/").replace_first(base, "");
 		if (bd.begins_with("/"))
 			return _get_root_string() + bd.substr(1, bd.length());
@@ -207,7 +191,6 @@ String DirAccessWindows::get_current_dir() {
 }
 
 String DirAccessWindows::get_current_dir_without_drive() {
-
 	String dir = get_current_dir();
 
 	if (_get_root_string() == "") {
@@ -221,7 +204,6 @@ String DirAccessWindows::get_current_dir_without_drive() {
 }
 
 bool DirAccessWindows::file_exists(String p_file) {
-
 	GLOBAL_LOCK_FUNCTION
 
 	if (!p_file.is_abs_path())
@@ -243,7 +225,6 @@ bool DirAccessWindows::file_exists(String p_file) {
 }
 
 bool DirAccessWindows::dir_exists(String p_dir) {
-
 	GLOBAL_LOCK_FUNCTION
 
 	if (p_dir.is_rel_path())
@@ -264,7 +245,6 @@ bool DirAccessWindows::dir_exists(String p_dir) {
 }
 
 Error DirAccessWindows::rename(String p_path, String p_new_path) {
-
 	if (p_path.is_rel_path())
 		p_path = get_current_dir().plus_file(p_path);
 
@@ -302,7 +282,6 @@ Error DirAccessWindows::rename(String p_path, String p_new_path) {
 }
 
 Error DirAccessWindows::remove(String p_path) {
-
 	if (p_path.is_rel_path())
 		p_path = get_current_dir().plus_file(p_path);
 
@@ -346,14 +325,14 @@ FileType DirAccessWindows::get_file_type(const String& p_file) const {
 	return (attr&FILE_ATTRIBUTE_DIRECTORY)?FILE_TYPE_
 }
 */
-size_t DirAccessWindows::get_space_left() {
 
+uint64_t DirAccessWindows::get_space_left() {
 	uint64_t bytes = 0;
 	if (!GetDiskFreeSpaceEx(NULL, (PULARGE_INTEGER)&bytes, NULL, NULL))
 		return 0;
 
 	//this is either 0 or a value in bytes.
-	return (size_t)bytes;
+	return bytes;
 }
 
 String DirAccessWindows::get_filesystem_type() const {
@@ -377,7 +356,6 @@ String DirAccessWindows::get_filesystem_type() const {
 				&dwFileSystemFlags,
 				szFileSystemName,
 				sizeof(szFileSystemName)) == TRUE) {
-
 		return String(szFileSystemName);
 	}
 
@@ -385,7 +363,6 @@ String DirAccessWindows::get_filesystem_type() const {
 }
 
 DirAccessWindows::DirAccessWindows() {
-
 	p = memnew(DirAccessWindowsPrivate);
 	p->h = INVALID_HANDLE_VALUE;
 	current_dir = ".";
@@ -401,7 +378,6 @@ DirAccessWindows::DirAccessWindows() {
 	DWORD mask = GetLogicalDrives();
 
 	for (int i = 0; i < MAX_DRIVES; i++) {
-
 		if (mask & (1 << i)) { //DRIVE EXISTS
 
 			drives[drive_count] = 'A' + i;
@@ -414,7 +390,6 @@ DirAccessWindows::DirAccessWindows() {
 }
 
 DirAccessWindows::~DirAccessWindows() {
-
 	memdelete(p);
 }
 

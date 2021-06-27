@@ -41,7 +41,6 @@
 #endif
 
 class AudioDriverCoreAudio : public AudioDriver {
-
 	AudioComponentInstance audio_unit;
 	AudioComponentInstance input_unit;
 

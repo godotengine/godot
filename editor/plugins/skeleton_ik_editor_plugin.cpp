@@ -33,12 +33,13 @@
 #include "scene/animation/skeleton_ik.h"
 
 void SkeletonIKEditorPlugin::_play() {
-
-	if (!skeleton_ik)
+	if (!skeleton_ik) {
 		return;
+	}
 
-	if (!skeleton_ik->get_parent_skeleton())
+	if (!skeleton_ik->get_parent_skeleton()) {
 		return;
+	}
 
 	if (play_btn->is_pressed()) {
 		skeleton_ik->start();
@@ -49,7 +50,6 @@ void SkeletonIKEditorPlugin::_play() {
 }
 
 void SkeletonIKEditorPlugin::edit(Object *p_object) {
-
 	if (p_object != skeleton_ik) {
 		if (skeleton_ik) {
 			play_btn->set_pressed(false);
@@ -58,32 +58,30 @@ void SkeletonIKEditorPlugin::edit(Object *p_object) {
 	}
 
 	SkeletonIK *s = Object::cast_to<SkeletonIK>(p_object);
-	if (!s)
+	if (!s) {
 		return;
+	}
 
 	skeleton_ik = s;
 }
 
 bool SkeletonIKEditorPlugin::handles(Object *p_object) const {
-
 	return p_object->is_class("SkeletonIK");
 }
 
 void SkeletonIKEditorPlugin::make_visible(bool p_visible) {
-
-	if (p_visible)
+	if (p_visible) {
 		play_btn->show();
-	else
+	} else {
 		play_btn->hide();
+	}
 }
 
 void SkeletonIKEditorPlugin::_bind_methods() {
-
 	ClassDB::bind_method("_play", &SkeletonIKEditorPlugin::_play);
 }
 
 SkeletonIKEditorPlugin::SkeletonIKEditorPlugin(EditorNode *p_node) {
-
 	editor = p_node;
 	play_btn = memnew(Button);
 	play_btn->set_icon(editor->get_gui_base()->get_icon("Play", "EditorIcons"));
@@ -92,7 +90,7 @@ SkeletonIKEditorPlugin::SkeletonIKEditorPlugin(EditorNode *p_node) {
 	play_btn->hide();
 	play_btn->connect("pressed", this, "_play");
 	add_control_to_container(CONTAINER_SPATIAL_EDITOR_MENU, play_btn);
-	skeleton_ik = NULL;
+	skeleton_ik = nullptr;
 }
 
 SkeletonIKEditorPlugin::~SkeletonIKEditorPlugin() {}

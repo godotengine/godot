@@ -1,4 +1,4 @@
-// Copyright 2009-2020 Intel Corporation
+// Copyright 2009-2021 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
 #include "stringstream.h"
@@ -39,7 +39,10 @@ namespace embree
     std::vector<char> str; str.reserve(64);
     while (cin->peek() != EOF && !isSeparator(cin->peek())) {
       int c = cin->get();
-      if (!isValidChar(c)) throw std::runtime_error("invalid character "+std::string(1,c)+" in input");
+      // -- GODOT start --
+      // if (!isValidChar(c)) throw std::runtime_error("invalid character "+std::string(1,c)+" in input");
+      if (!isValidChar(c)) abort();
+      // -- GODOT end --
       str.push_back((char)c);
     }
     str.push_back(0);

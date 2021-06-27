@@ -1,4 +1,4 @@
-// Copyright 2009-2020 Intel Corporation
+// Copyright 2009-2021 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
 #pragma once
@@ -349,7 +349,7 @@ namespace embree
       const QuadMesh* mesh = scene->get<QuadMesh>(geomID(index));
 
       vfloat<K> ftime;
-      const vint<K> itime = mesh->timeSegment(time, ftime);
+      const vint<K> itime = mesh->timeSegment<K>(time, ftime);
 
       const size_t first = bsf(movemask(valid));
       if (likely(all(valid,itime[first] == itime)))
@@ -361,10 +361,10 @@ namespace embree
       }
       else
       {
-        p0 = getVertex<0>(valid, index, scene, itime, ftime);
-        p1 = getVertex<1>(valid, index, scene, itime, ftime);
-        p2 = getVertex<2>(valid, index, scene, itime, ftime);
-        p3 = getVertex<3>(valid, index, scene, itime, ftime);
+        p0 = getVertex<0,K>(valid, index, scene, itime, ftime);
+        p1 = getVertex<1,K>(valid, index, scene, itime, ftime);
+        p2 = getVertex<2,K>(valid, index, scene, itime, ftime);
+        p3 = getVertex<3,K>(valid, index, scene, itime, ftime);
       }
     }
 

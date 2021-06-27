@@ -46,22 +46,18 @@
 typedef GLXContext (*GLXCREATECONTEXTATTRIBSARBPROC)(Display *, GLXFBConfig, GLXContext, Bool, const int *);
 
 struct ContextGL_X11_Private {
-
 	::GLXContext glx_context;
 };
 
 void ContextGL_X11::release_current() {
-
-	glXMakeCurrent(x11_display, None, NULL);
+	glXMakeCurrent(x11_display, None, nullptr);
 }
 
 void ContextGL_X11::make_current() {
-
 	glXMakeCurrent(x11_display, x11_window, p->glx_context);
 }
 
 void ContextGL_X11::swap_buffers() {
-
 	glXSwapBuffers(x11_display, x11_window);
 }
 
@@ -85,7 +81,6 @@ static void set_class_hint(Display *p_display, Window p_window) {
 }
 
 Error ContextGL_X11::initialize() {
-
 	//const char *extensions = glXQueryExtensionsString(x11_display, DefaultScreen(x11_display));
 
 	GLXCREATECONTEXTATTRIBSARBPROC glXCreateContextAttribsARB = (GLXCREATECONTEXTATTRIBSARBPROC)glXGetProcAddress((const GLubyte *)"glXCreateContextAttribsARB");
@@ -116,8 +111,8 @@ Error ContextGL_X11::initialize() {
 	};
 
 	int fbcount;
-	GLXFBConfig fbconfig = 0;
-	XVisualInfo *vi = NULL;
+	GLXFBConfig fbconfig = nullptr;
+	XVisualInfo *vi = nullptr;
 
 	XSetWindowAttributes swa;
 	swa.event_mask = StructureNotifyMask;
@@ -130,13 +125,14 @@ Error ContextGL_X11::initialize() {
 
 		for (int i = 0; i < fbcount; i++) {
 			vi = (XVisualInfo *)glXGetVisualFromFBConfig(x11_display, fbc[i]);
-			if (!vi)
+			if (!vi) {
 				continue;
+			}
 
 			XRenderPictFormat *pict_format = XRenderFindVisualFormat(x11_display, vi->visual);
 			if (!pict_format) {
 				XFree(vi);
-				vi = NULL;
+				vi = nullptr;
 				continue;
 			}
 
@@ -167,17 +163,14 @@ Error ContextGL_X11::initialize() {
 
 	switch (context_type) {
 		case OLDSTYLE: {
-
-			p->glx_context = glXCreateContext(x11_display, vi, 0, GL_TRUE);
+			p->glx_context = glXCreateContext(x11_display, vi, nullptr, GL_TRUE);
 			ERR_FAIL_COND_V(!p->glx_context, ERR_UNCONFIGURED);
 		} break;
 		case GLES_2_0_COMPATIBLE: {
-
-			p->glx_context = glXCreateNewContext(x11_display, fbconfig, GLX_RGBA_TYPE, 0, true);
+			p->glx_context = glXCreateNewContext(x11_display, fbconfig, GLX_RGBA_TYPE, nullptr, true);
 			ERR_FAIL_COND_V(!p->glx_context, ERR_UNCONFIGURED);
 		} break;
 		case GLES_3_0_COMPATIBLE: {
-
 			static int context_attribs[] = {
 				GLX_CONTEXT_MAJOR_VERSION_ARB, 3,
 				GLX_CONTEXT_MINOR_VERSION_ARB, 3,
@@ -186,7 +179,7 @@ Error ContextGL_X11::initialize() {
 				None
 			};
 
-			p->glx_context = glXCreateContextAttribsARB(x11_display, fbconfig, NULL, true, context_attribs);
+			p->glx_context = glXCreateContextAttribsARB(x11_display, fbconfig, nullptr, true, context_attribs);
 			ERR_FAIL_COND_V(ctxErrorOccurred || !p->glx_context, ERR_UNCONFIGURED);
 		} break;
 	}
@@ -213,7 +206,6 @@ Error ContextGL_X11::initialize() {
 }
 
 int ContextGL_X11::get_window_width() {
-
 	XWindowAttributes xwa;
 	XGetWindowAttributes(x11_display, x11_window, &xwa);
 
@@ -228,28 +220,31 @@ int ContextGL_X11::get_window_height() {
 }
 
 void *ContextGL_X11::get_glx_context() {
-	if (p != NULL) {
+	if (p != nullptr) {
 		return p->glx_context;
 	} else {
-		return NULL;
+		return nullptr;
 	}
 }
 
 void ContextGL_X11::set_use_vsync(bool p_use) {
 	static bool setup = false;
-	static PFNGLXSWAPINTERVALEXTPROC glXSwapIntervalEXT = NULL;
-	static PFNGLXSWAPINTERVALSGIPROC glXSwapIntervalMESA = NULL;
-	static PFNGLXSWAPINTERVALSGIPROC glXSwapIntervalSGI = NULL;
+	static PFNGLXSWAPINTERVALEXTPROC glXSwapIntervalEXT = nullptr;
+	static PFNGLXSWAPINTERVALSGIPROC glXSwapIntervalMESA = nullptr;
+	static PFNGLXSWAPINTERVALSGIPROC glXSwapIntervalSGI = nullptr;
 
 	if (!setup) {
 		setup = true;
 		String extensions = glXQueryExtensionsString(x11_display, DefaultScreen(x11_display));
-		if (extensions.find("GLX_EXT_swap_control") != -1)
+		if (extensions.find("GLX_EXT_swap_control") != -1) {
 			glXSwapIntervalEXT = (PFNGLXSWAPINTERVALEXTPROC)glXGetProcAddressARB((const GLubyte *)"glXSwapIntervalEXT");
-		if (extensions.find("GLX_MESA_swap_control") != -1)
+		}
+		if (extensions.find("GLX_MESA_swap_control") != -1) {
 			glXSwapIntervalMESA = (PFNGLXSWAPINTERVALSGIPROC)glXGetProcAddressARB((const GLubyte *)"glXSwapIntervalMESA");
-		if (extensions.find("GLX_SGI_swap_control") != -1)
+		}
+		if (extensions.find("GLX_SGI_swap_control") != -1) {
 			glXSwapIntervalSGI = (PFNGLXSWAPINTERVALSGIPROC)glXGetProcAddressARB((const GLubyte *)"glXSwapIntervalSGI");
+		}
 	}
 	int val = p_use ? 1 : 0;
 	if (glXSwapIntervalMESA) {
@@ -259,18 +254,17 @@ void ContextGL_X11::set_use_vsync(bool p_use) {
 	} else if (glXSwapIntervalEXT) {
 		GLXDrawable drawable = glXGetCurrentDrawable();
 		glXSwapIntervalEXT(x11_display, drawable, val);
-	} else
+	} else {
 		return;
+	}
 	use_vsync = p_use;
 }
 bool ContextGL_X11::is_using_vsync() const {
-
 	return use_vsync;
 }
 
 ContextGL_X11::ContextGL_X11(::Display *p_x11_display, ::Window &p_x11_window, const OS::VideoMode &p_default_video_mode, ContextType p_context_type) :
 		x11_window(p_x11_window) {
-
 	default_video_mode = p_default_video_mode;
 	x11_display = p_x11_display;
 
@@ -280,7 +274,7 @@ ContextGL_X11::ContextGL_X11(::Display *p_x11_display, ::Window &p_x11_window, c
 	direct_render = false;
 	glx_minor = glx_major = 0;
 	p = memnew(ContextGL_X11_Private);
-	p->glx_context = 0;
+	p->glx_context = nullptr;
 	use_vsync = false;
 }
 

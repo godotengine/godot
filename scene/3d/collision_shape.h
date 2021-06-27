@@ -35,7 +35,6 @@
 #include "scene/resources/shape.h"
 class CollisionObject;
 class CollisionShape : public Spatial {
-
 	GDCLASS(CollisionShape, Spatial);
 	OBJ_CATEGORY("3D Physics Nodes");
 
@@ -48,8 +47,6 @@ class CollisionShape : public Spatial {
 	bool disabled;
 
 protected:
-	void _shape_changed();
-
 	void _update_in_shape_owner(bool p_xform_only = false);
 
 protected:

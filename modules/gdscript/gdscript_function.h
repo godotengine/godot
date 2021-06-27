@@ -57,7 +57,9 @@ struct GDScriptDataType {
 	Ref<Script> script_type_ref;
 
 	bool is_type(const Variant &p_variant, bool p_allow_implicit_conversion = false) const {
-		if (!has_type) return true; // Can't type check
+		if (!has_type) {
+			return true; // Can't type check
+		}
 
 		switch (kind) {
 			case UNINITIALIZED:
@@ -106,7 +108,7 @@ struct GDScriptDataType {
 					return false;
 				}
 
-				Ref<Script> base = obj && obj->get_script_instance() ? obj->get_script_instance()->get_script() : NULL;
+				Ref<Script> base = obj && obj->get_script_instance() ? obj->get_script_instance()->get_script() : nullptr;
 				bool valid = false;
 				while (base.is_valid()) {
 					if (base == script_type) {
@@ -151,7 +153,7 @@ struct GDScriptDataType {
 			has_type(false),
 			kind(UNINITIALIZED),
 			builtin_type(Variant::NIL),
-			script_type(NULL) {}
+			script_type(nullptr) {}
 };
 
 class GDScriptFunction {
@@ -216,7 +218,6 @@ public:
 	};
 
 	struct StackDebug {
-
 		int line;
 		int pos;
 		bool added;
@@ -294,7 +295,6 @@ private:
 
 public:
 	struct CallState {
-
 		GDScript *script;
 		GDScriptInstance *instance;
 #ifdef DEBUG_ENABLED
@@ -326,7 +326,7 @@ public:
 	GDScript *get_script() const { return _script; }
 	StringName get_source() const { return source; }
 
-	void debug_get_stack_member_state(int p_line, List<Pair<StringName, int> > *r_stackvars) const;
+	void debug_get_stack_member_state(int p_line, List<Pair<StringName, int>> *r_stackvars) const;
 
 	_FORCE_INLINE_ bool is_empty() const { return _code_size == 0; }
 
@@ -344,7 +344,7 @@ public:
 		return default_arguments[p_idx];
 	}
 
-	Variant call(GDScriptInstance *p_instance, const Variant **p_args, int p_argcount, Variant::CallError &r_err, CallState *p_state = NULL);
+	Variant call(GDScriptInstance *p_instance, const Variant **p_args, int p_argcount, Variant::CallError &r_err, CallState *p_state = nullptr);
 
 	_FORCE_INLINE_ MultiplayerAPI::RPCMode get_rpc_mode() const { return rpc_mode; }
 	GDScriptFunction();
@@ -352,7 +352,6 @@ public:
 };
 
 class GDScriptFunctionState : public Reference {
-
 	GDCLASS(GDScriptFunctionState, Reference);
 	friend class GDScriptFunction;
 	GDScriptFunction *function;

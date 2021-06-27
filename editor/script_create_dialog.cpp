@@ -41,7 +41,6 @@
 #include "editor_file_system.h"
 
 void ScriptCreateDialog::_notification(int p_what) {
-
 	switch (p_what) {
 		case NOTIFICATION_THEME_CHANGED:
 		case NOTIFICATION_ENTER_TREE: {
@@ -97,7 +96,6 @@ bool ScriptCreateDialog::_can_be_built_in() {
 }
 
 void ScriptCreateDialog::config(const String &p_base_name, const String &p_base_path, bool p_built_in_enabled, bool p_load_enabled) {
-
 	class_name->set_text("");
 	class_name->deselect();
 	parent_name->set_text(p_base_name);
@@ -122,54 +120,60 @@ void ScriptCreateDialog::config(const String &p_base_name, const String &p_base_
 }
 
 void ScriptCreateDialog::set_inheritance_base_type(const String &p_base) {
-
 	base_type = p_base;
 }
 
 bool ScriptCreateDialog::_validate_parent(const String &p_string) {
-
-	if (p_string.length() == 0)
+	if (p_string.length() == 0) {
 		return false;
+	}
 
 	if (can_inherit_from_file && p_string.is_quoted()) {
 		String p = p_string.substr(1, p_string.length() - 2);
-		if (_validate_path(p, true) == "")
+		if (_validate_path(p, true) == "") {
 			return true;
+		}
 	}
 
 	return ClassDB::class_exists(p_string) || ScriptServer::is_global_class(p_string);
 }
 
 bool ScriptCreateDialog::_validate_class(const String &p_string) {
-
-	if (p_string.length() == 0)
+	if (p_string.length() == 0) {
 		return false;
+	}
 
 	for (int i = 0; i < p_string.length(); i++) {
-
 		if (i == 0) {
-			if (p_string[0] >= '0' && p_string[0] <= '9')
+			if (p_string[0] >= '0' && p_string[0] <= '9') {
 				return false; // no start with number plz
+			}
 		}
 
 		bool valid_char = (p_string[i] >= '0' && p_string[i] <= '9') || (p_string[i] >= 'a' && p_string[i] <= 'z') || (p_string[i] >= 'A' && p_string[i] <= 'Z') || p_string[i] == '_' || p_string[i] == '.';
 
-		if (!valid_char)
+		if (!valid_char) {
 			return false;
+		}
 	}
 
 	return true;
 }
 
 String ScriptCreateDialog::_validate_path(const String &p_path, bool p_file_must_exist) {
-
 	String p = p_path.strip_edges();
 
-	if (p == "") return TTR("Path is empty.");
-	if (p.get_file().get_basename() == "") return TTR("Filename is empty.");
+	if (p == "") {
+		return TTR("Path is empty.");
+	}
+	if (p.get_file().get_basename() == "") {
+		return TTR("Filename is empty.");
+	}
 
 	p = ProjectSettings::get_singleton()->localize_path(p);
-	if (!p.begins_with("res://")) return TTR("Path is not local.");
+	if (!p.begins_with("res://")) {
+		return TTR("Path is not local.");
+	}
 
 	DirAccess *d = DirAccess::create(DirAccess::ACCESS_RESOURCES);
 	if (d->change_dir(p.get_base_dir()) != OK) {
@@ -214,19 +218,32 @@ String ScriptCreateDialog::_validate_path(const String &p_path, bool p_file_must
 		index++;
 	}
 
-	if (!found) return TTR("Invalid extension.");
-	if (!match) return TTR("Wrong extension chosen.");
+	if (!found) {
+		return TTR("Invalid extension.");
+	}
+	if (!match) {
+		return TTR("Wrong extension chosen.");
+	}
 
 	/* Let ScriptLanguage do custom validation */
 	String path_error = ScriptServer::get_language(language_menu->get_selected())->validate_path(p);
-	if (path_error != "") return path_error;
+	if (path_error != "") {
+		return path_error;
+	}
 
 	/* All checks passed */
 	return "";
 }
 
-void ScriptCreateDialog::_class_name_changed(const String &p_name) {
+String ScriptCreateDialog::_get_class_name() const {
+	if (has_named_classes) {
+		return class_name->get_text();
+	} else {
+		return ProjectSettings::get_singleton()->localize_path(file_path->get_text()).get_file().get_basename();
+	}
+}
 
+void ScriptCreateDialog::_class_name_changed(const String &p_name) {
 	if (_validate_class(class_name->get_text())) {
 		is_class_name_valid = true;
 	} else {
@@ -236,7 +253,6 @@ void ScriptCreateDialog::_class_name_changed(const String &p_name) {
 }
 
 void ScriptCreateDialog::_parent_name_changed(const String &p_parent) {
-
 	if (_validate_parent(parent_name->get_text())) {
 		is_parent_name_valid = true;
 	} else {
@@ -246,7 +262,6 @@ void ScriptCreateDialog::_parent_name_changed(const String &p_parent) {
 }
 
 void ScriptCreateDialog::_template_changed(int p_template) {
-
 	String selected_template = p_template == 0 ? "" : template_menu->get_item_text(p_template);
 	EditorSettings::get_singleton()->set_project_metadata("script_setup", "last_selected_template", selected_template);
 	if (p_template == 0) {
@@ -266,7 +281,6 @@ void ScriptCreateDialog::_template_changed(int p_template) {
 }
 
 void ScriptCreateDialog::ok_pressed() {
-
 	if (is_new_script_created) {
 		_create_new();
 	} else {
@@ -278,14 +292,7 @@ void ScriptCreateDialog::ok_pressed() {
 }
 
 void ScriptCreateDialog::_create_new() {
-
-	String cname_param;
-
-	if (has_named_classes) {
-		cname_param = class_name->get_text();
-	} else {
-		cname_param = ProjectSettings::get_singleton()->localize_path(file_path->get_text()).get_file().get_basename();
-	}
+	String cname_param = _get_class_name();
 
 	Ref<Script> scr;
 	if (script_template != "") {
@@ -303,8 +310,9 @@ void ScriptCreateDialog::_create_new() {
 
 	if (has_named_classes) {
 		String cname = class_name->get_text();
-		if (cname.length())
+		if (cname.length()) {
 			scr->set_name(cname);
+		}
 	}
 
 	if (!is_built_in) {
@@ -323,7 +331,6 @@ void ScriptCreateDialog::_create_new() {
 }
 
 void ScriptCreateDialog::_load_exist() {
-
 	String path = file_path->get_text();
 	RES p_script = ResourceLoader::load(path, "Script");
 	if (p_script.is_null()) {
@@ -337,14 +344,14 @@ void ScriptCreateDialog::_load_exist() {
 }
 
 void ScriptCreateDialog::_lang_changed(int l) {
-
 	ScriptLanguage *language = ScriptServer::get_language(l);
 
 	has_named_classes = language->has_named_classes();
 	can_inherit_from_file = language->can_inherit_from_file();
 	supports_built_in = language->supports_builtin_mode();
-	if (!supports_built_in)
+	if (!supports_built_in) {
 		is_built_in = false;
+	}
 
 	String selected_ext = "." + language->get_extension();
 	String path = file_path->get_text();
@@ -401,7 +408,6 @@ void ScriptCreateDialog::_lang_changed(int l) {
 
 		// Populate script template items previously sorted and now grouped by origin
 		for (int i = 0; i < template_list.size(); i++) {
-
 			if (int(templates[i].origin) != cur_origin) {
 				template_menu->add_separator();
 
@@ -419,7 +425,7 @@ void ScriptCreateDialog::_lang_changed(int l) {
 			templates[i].id = new_id;
 		}
 		// Disable overridden
-		for (Map<String, Vector<int> >::Element *E = template_overrides.front(); E; E = E->next()) {
+		for (Map<String, Vector<int>>::Element *E = template_overrides.front(); E; E = E->next()) {
 			const Vector<int> &overrides = E->get();
 
 			if (overrides.size() == 1) {
@@ -466,7 +472,6 @@ void ScriptCreateDialog::_lang_changed(int l) {
 }
 
 void ScriptCreateDialog::_update_script_templates(const String &p_extension) {
-
 	template_list.clear();
 	template_overrides.clear();
 
@@ -477,7 +482,6 @@ void ScriptCreateDialog::_update_script_templates(const String &p_extension) {
 	dirs.push_back(EditorSettings::get_singleton()->get_script_templates_dir());
 
 	for (int i = 0; i < dirs.size(); i++) {
-
 		Vector<String> list = EditorSettings::get_singleton()->get_script_templates(p_extension, dirs[i]);
 
 		for (int j = 0; j < list.size(); j++) {
@@ -501,7 +505,6 @@ void ScriptCreateDialog::_update_script_templates(const String &p_extension) {
 }
 
 void ScriptCreateDialog::_built_in_pressed() {
-
 	if (internal->is_pressed()) {
 		is_built_in = true;
 		is_new_script_created = true;
@@ -510,11 +513,9 @@ void ScriptCreateDialog::_built_in_pressed() {
 		_path_changed(file_path->get_text());
 	}
 	_update_dialog();
-	minimum_size_changed();
 }
 
 void ScriptCreateDialog::_browse_path(bool browse_parent, bool p_save) {
-
 	is_browsing_parent = browse_parent;
 
 	if (p_save) {
@@ -542,7 +543,6 @@ void ScriptCreateDialog::_browse_path(bool browse_parent, bool p_save) {
 }
 
 void ScriptCreateDialog::_file_selected(const String &p_file) {
-
 	String p = ProjectSettings::get_singleton()->localize_path(p_file);
 	if (is_browsing_parent) {
 		parent_name->set_text("\"" + p + "\"");
@@ -560,19 +560,16 @@ void ScriptCreateDialog::_file_selected(const String &p_file) {
 }
 
 void ScriptCreateDialog::_create() {
-
 	parent_name->set_text(select_class->get_selected_type().split(" ")[0]);
 	_parent_name_changed(parent_name->get_text());
 }
 
 void ScriptCreateDialog::_browse_class_in_tree() {
-
 	select_class->set_base_type(base_type);
 	select_class->popup_create(true);
 }
 
 void ScriptCreateDialog::_path_changed(const String &p_path) {
-
 	if (is_built_in) {
 		return;
 	}
@@ -605,7 +602,6 @@ void ScriptCreateDialog::_path_entered(const String &p_path) {
 }
 
 void ScriptCreateDialog::_msg_script_valid(bool valid, const String &p_msg) {
-
 	error_label->set_text("- " + TTR(p_msg));
 	if (valid) {
 		error_label->add_color_override("font_color", get_color("success_color", "Editor"));
@@ -615,7 +611,6 @@ void ScriptCreateDialog::_msg_script_valid(bool valid, const String &p_msg) {
 }
 
 void ScriptCreateDialog::_msg_path_valid(bool valid, const String &p_msg) {
-
 	path_error_label->set_text("- " + TTR(p_msg));
 	if (valid) {
 		path_error_label->add_color_override("font_color", get_color("success_color", "Editor"));
@@ -625,7 +620,6 @@ void ScriptCreateDialog::_msg_path_valid(bool valid, const String &p_msg) {
 }
 
 void ScriptCreateDialog::_update_dialog() {
-
 	/* "Add Script Dialog" GUI logic and script checks. */
 
 	bool script_ok = true;
@@ -690,6 +684,10 @@ void ScriptCreateDialog::_update_dialog() {
 
 	builtin_warning_label->set_visible(is_built_in);
 
+	// Check if the script name is the same as the parent class.
+	// This warning isn't relevant if the script is built-in.
+	script_name_warning_label->set_visible(!is_built_in && _get_class_name() == parent_name->get_text());
+
 	if (is_built_in) {
 		get_ok()->set_text(TTR("Create"));
 		parent_name->set_editable(true);
@@ -727,10 +725,11 @@ void ScriptCreateDialog::_update_dialog() {
 	}
 
 	get_ok()->set_disabled(!script_ok);
+	set_size(Vector2());
+	minimum_size_changed();
 }
 
 void ScriptCreateDialog::_bind_methods() {
-
 	ClassDB::bind_method("_path_hbox_sorted", &ScriptCreateDialog::_path_hbox_sorted);
 	ClassDB::bind_method("_class_name_changed", &ScriptCreateDialog::_class_name_changed);
 	ClassDB::bind_method("_parent_name_changed", &ScriptCreateDialog::_parent_name_changed);
@@ -750,7 +749,6 @@ void ScriptCreateDialog::_bind_methods() {
 }
 
 ScriptCreateDialog::ScriptCreateDialog() {
-
 	/* DIALOG */
 
 	/* Main Controls */
@@ -761,6 +759,7 @@ ScriptCreateDialog::ScriptCreateDialog() {
 	/* Error Messages Field */
 
 	VBoxContainer *vb = memnew(VBoxContainer);
+	vb->set_custom_minimum_size(Size2(340, 30) * EDSCALE);
 
 	error_label = memnew(Label);
 	vb->add_child(error_label);
@@ -769,13 +768,24 @@ ScriptCreateDialog::ScriptCreateDialog() {
 	vb->add_child(path_error_label);
 
 	builtin_warning_label = memnew(Label);
+	builtin_warning_label->set_custom_minimum_size(Size2(340, 10) * EDSCALE);
 	builtin_warning_label->set_text(
 			TTR("Note: Built-in scripts have some limitations and can't be edited using an external editor."));
 	vb->add_child(builtin_warning_label);
 	builtin_warning_label->set_autowrap(true);
 	builtin_warning_label->hide();
 
+	script_name_warning_label = memnew(Label);
+	script_name_warning_label->set_custom_minimum_size(Size2(340, 10) * EDSCALE);
+	script_name_warning_label->set_text(
+			TTR("Warning: Having the script name be the same as a built-in type is usually not desired."));
+	vb->add_child(script_name_warning_label);
+	script_name_warning_label->add_color_override("font_color", Color(1, 0.85, 0.4));
+	script_name_warning_label->set_autowrap(true);
+	script_name_warning_label->hide();
+
 	status_panel = memnew(PanelContainer);
+	status_panel->set_custom_minimum_size(Size2(350, 40) * EDSCALE);
 	status_panel->set_h_size_flags(Control::SIZE_FILL);
 	status_panel->add_child(vb);
 
@@ -803,7 +813,6 @@ ScriptCreateDialog::ScriptCreateDialog() {
 
 	default_language = -1;
 	for (int i = 0; i < ScriptServer::get_language_count(); i++) {
-
 		String lang = ScriptServer::get_language(i)->get_name();
 		language_menu->add_item(lang);
 		if (lang == "GDScript") {

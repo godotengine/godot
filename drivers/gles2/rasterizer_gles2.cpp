@@ -86,51 +86,55 @@
 
 #ifdef CAN_DEBUG
 static void GLAPIENTRY _gl_debug_print(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar *message, const GLvoid *userParam) {
-
-	if (type == _EXT_DEBUG_TYPE_OTHER_ARB)
+	if (type == _EXT_DEBUG_TYPE_OTHER_ARB) {
 		return;
+	}
 
-	if (type == _EXT_DEBUG_TYPE_PERFORMANCE_ARB)
+	if (type == _EXT_DEBUG_TYPE_PERFORMANCE_ARB) {
 		return; //these are ultimately annoying, so removing for now
+	}
 
 	char debSource[256], debType[256], debSev[256];
 
-	if (source == _EXT_DEBUG_SOURCE_API_ARB)
+	if (source == _EXT_DEBUG_SOURCE_API_ARB) {
 		strcpy(debSource, "OpenGL");
-	else if (source == _EXT_DEBUG_SOURCE_WINDOW_SYSTEM_ARB)
+	} else if (source == _EXT_DEBUG_SOURCE_WINDOW_SYSTEM_ARB) {
 		strcpy(debSource, "Windows");
-	else if (source == _EXT_DEBUG_SOURCE_SHADER_COMPILER_ARB)
+	} else if (source == _EXT_DEBUG_SOURCE_SHADER_COMPILER_ARB) {
 		strcpy(debSource, "Shader Compiler");
-	else if (source == _EXT_DEBUG_SOURCE_THIRD_PARTY_ARB)
+	} else if (source == _EXT_DEBUG_SOURCE_THIRD_PARTY_ARB) {
 		strcpy(debSource, "Third Party");
-	else if (source == _EXT_DEBUG_SOURCE_APPLICATION_ARB)
+	} else if (source == _EXT_DEBUG_SOURCE_APPLICATION_ARB) {
 		strcpy(debSource, "Application");
-	else if (source == _EXT_DEBUG_SOURCE_OTHER_ARB)
+	} else if (source == _EXT_DEBUG_SOURCE_OTHER_ARB) {
 		strcpy(debSource, "Other");
+	}
 
-	if (type == _EXT_DEBUG_TYPE_ERROR_ARB)
+	if (type == _EXT_DEBUG_TYPE_ERROR_ARB) {
 		strcpy(debType, "Error");
-	else if (type == _EXT_DEBUG_TYPE_DEPRECATED_BEHAVIOR_ARB)
+	} else if (type == _EXT_DEBUG_TYPE_DEPRECATED_BEHAVIOR_ARB) {
 		strcpy(debType, "Deprecated behavior");
-	else if (type == _EXT_DEBUG_TYPE_UNDEFINED_BEHAVIOR_ARB)
+	} else if (type == _EXT_DEBUG_TYPE_UNDEFINED_BEHAVIOR_ARB) {
 		strcpy(debType, "Undefined behavior");
-	else if (type == _EXT_DEBUG_TYPE_PORTABILITY_ARB)
+	} else if (type == _EXT_DEBUG_TYPE_PORTABILITY_ARB) {
 		strcpy(debType, "Portability");
-	else if (type == _EXT_DEBUG_TYPE_PERFORMANCE_ARB)
+	} else if (type == _EXT_DEBUG_TYPE_PERFORMANCE_ARB) {
 		strcpy(debType, "Performance");
-	else if (type == _EXT_DEBUG_TYPE_OTHER_ARB)
+	} else if (type == _EXT_DEBUG_TYPE_OTHER_ARB) {
 		strcpy(debType, "Other");
+	}
 
-	if (severity == _EXT_DEBUG_SEVERITY_HIGH_ARB)
+	if (severity == _EXT_DEBUG_SEVERITY_HIGH_ARB) {
 		strcpy(debSev, "High");
-	else if (severity == _EXT_DEBUG_SEVERITY_MEDIUM_ARB)
+	} else if (severity == _EXT_DEBUG_SEVERITY_MEDIUM_ARB) {
 		strcpy(debSev, "Medium");
-	else if (severity == _EXT_DEBUG_SEVERITY_LOW_ARB)
+	} else if (severity == _EXT_DEBUG_SEVERITY_LOW_ARB) {
 		strcpy(debSev, "Low");
+	}
 
 	String output = String() + "GL ERROR: Source: " + debSource + "\tType: " + debType + "\tID: " + itos(id) + "\tSeverity: " + debSev + "\tMessage: " + message;
 
-	ERR_PRINTS(output);
+	ERR_PRINT(output);
 }
 #endif // CAN_DEBUG
 
@@ -145,22 +149,18 @@ typedef void (*DEBUGPROCARB)(GLenum source,
 typedef void (*DebugMessageCallbackARB)(DEBUGPROCARB callback, const void *userParam);
 
 RasterizerStorage *RasterizerGLES2::get_storage() {
-
 	return storage;
 }
 
 RasterizerCanvas *RasterizerGLES2::get_canvas() {
-
 	return canvas;
 }
 
 RasterizerScene *RasterizerGLES2::get_scene() {
-
 	return scene;
 }
 
 Error RasterizerGLES2::is_viable() {
-
 #ifdef GLAD_ENABLED
 	if (!gladLoadGL()) {
 		ERR_PRINT("Error initializing GLAD");
@@ -214,14 +214,13 @@ Error RasterizerGLES2::is_viable() {
 }
 
 void RasterizerGLES2::initialize() {
-
 	print_verbose("Using GLES2 video driver");
 
 #ifdef GLAD_ENABLED
 	if (OS::get_singleton()->is_stdout_verbose()) {
 		if (GLAD_GL_ARB_debug_output) {
 			glEnable(_EXT_DEBUG_OUTPUT_SYNCHRONOUS_ARB);
-			glDebugMessageCallbackARB(_gl_debug_print, NULL);
+			glDebugMessageCallbackARB(_gl_debug_print, nullptr);
 			glEnable(_EXT_DEBUG_OUTPUT);
 		} else {
 			print_line("OpenGL debugging not supported!");
@@ -233,12 +232,12 @@ void RasterizerGLES2::initialize() {
 #ifdef CAN_DEBUG
 #ifdef GLES_OVER_GL
 	if (OS::get_singleton()->is_stdout_verbose() && GLAD_GL_ARB_debug_output) {
-		glDebugMessageControlARB(_EXT_DEBUG_SOURCE_API_ARB, _EXT_DEBUG_TYPE_ERROR_ARB, _EXT_DEBUG_SEVERITY_HIGH_ARB, 0, NULL, GL_TRUE);
-		glDebugMessageControlARB(_EXT_DEBUG_SOURCE_API_ARB, _EXT_DEBUG_TYPE_DEPRECATED_BEHAVIOR_ARB, _EXT_DEBUG_SEVERITY_HIGH_ARB, 0, NULL, GL_TRUE);
-		glDebugMessageControlARB(_EXT_DEBUG_SOURCE_API_ARB, _EXT_DEBUG_TYPE_UNDEFINED_BEHAVIOR_ARB, _EXT_DEBUG_SEVERITY_HIGH_ARB, 0, NULL, GL_TRUE);
-		glDebugMessageControlARB(_EXT_DEBUG_SOURCE_API_ARB, _EXT_DEBUG_TYPE_PORTABILITY_ARB, _EXT_DEBUG_SEVERITY_HIGH_ARB, 0, NULL, GL_TRUE);
-		glDebugMessageControlARB(_EXT_DEBUG_SOURCE_API_ARB, _EXT_DEBUG_TYPE_PERFORMANCE_ARB, _EXT_DEBUG_SEVERITY_HIGH_ARB, 0, NULL, GL_TRUE);
-		glDebugMessageControlARB(_EXT_DEBUG_SOURCE_API_ARB, _EXT_DEBUG_TYPE_OTHER_ARB, _EXT_DEBUG_SEVERITY_HIGH_ARB, 0, NULL, GL_TRUE);
+		glDebugMessageControlARB(_EXT_DEBUG_SOURCE_API_ARB, _EXT_DEBUG_TYPE_ERROR_ARB, _EXT_DEBUG_SEVERITY_HIGH_ARB, 0, nullptr, GL_TRUE);
+		glDebugMessageControlARB(_EXT_DEBUG_SOURCE_API_ARB, _EXT_DEBUG_TYPE_DEPRECATED_BEHAVIOR_ARB, _EXT_DEBUG_SEVERITY_HIGH_ARB, 0, nullptr, GL_TRUE);
+		glDebugMessageControlARB(_EXT_DEBUG_SOURCE_API_ARB, _EXT_DEBUG_TYPE_UNDEFINED_BEHAVIOR_ARB, _EXT_DEBUG_SEVERITY_HIGH_ARB, 0, nullptr, GL_TRUE);
+		glDebugMessageControlARB(_EXT_DEBUG_SOURCE_API_ARB, _EXT_DEBUG_TYPE_PORTABILITY_ARB, _EXT_DEBUG_SEVERITY_HIGH_ARB, 0, nullptr, GL_TRUE);
+		glDebugMessageControlARB(_EXT_DEBUG_SOURCE_API_ARB, _EXT_DEBUG_TYPE_PERFORMANCE_ARB, _EXT_DEBUG_SEVERITY_HIGH_ARB, 0, nullptr, GL_TRUE);
+		glDebugMessageControlARB(_EXT_DEBUG_SOURCE_API_ARB, _EXT_DEBUG_TYPE_OTHER_ARB, _EXT_DEBUG_SEVERITY_HIGH_ARB, 0, nullptr, GL_TRUE);
 		/* glDebugMessageInsertARB(
 			GL_DEBUG_SOURCE_API_ARB,
 			GL_DEBUG_TYPE_OTHER_ARB, 1,
@@ -253,7 +252,6 @@ void RasterizerGLES2::initialize() {
 		}
 
 		if (callback) {
-
 			print_line("godot: ENABLING GL DEBUG");
 			glEnable(_EXT_DEBUG_OUTPUT_SYNCHRONOUS_ARB);
 			callback(_gl_debug_print, NULL);
@@ -296,7 +294,6 @@ void RasterizerGLES2::begin_frame(double frame_step) {
 }
 
 void RasterizerGLES2::set_current_render_target(RID p_render_target) {
-
 	if (!p_render_target.is_valid() && storage->frame.current_rt && storage->frame.clear_request) {
 		// pending clear request. Do that first.
 		glBindFramebuffer(GL_FRAMEBUFFER, storage->frame.current_rt->fbo);
@@ -315,7 +312,7 @@ void RasterizerGLES2::set_current_render_target(RID p_render_target) {
 
 		glViewport(0, 0, rt->width, rt->height);
 	} else {
-		storage->frame.current_rt = NULL;
+		storage->frame.current_rt = nullptr;
 		storage->frame.clear_request = false;
 		glViewport(0, 0, OS::get_singleton()->get_window_size().width, OS::get_singleton()->get_window_size().height);
 		glBindFramebuffer(GL_FRAMEBUFFER, RasterizerStorageGLES2::system_fbo);
@@ -323,7 +320,7 @@ void RasterizerGLES2::set_current_render_target(RID p_render_target) {
 }
 
 void RasterizerGLES2::restore_render_target(bool p_3d_was_drawn) {
-	ERR_FAIL_COND(storage->frame.current_rt == NULL);
+	ERR_FAIL_COND(storage->frame.current_rt == nullptr);
 	RasterizerStorageGLES2::RenderTarget *rt = storage->frame.current_rt;
 	glBindFramebuffer(GL_FRAMEBUFFER, rt->fbo);
 	glViewport(0, 0, rt->width, rt->height);
@@ -337,9 +334,9 @@ void RasterizerGLES2::clear_render_target(const Color &p_color) {
 }
 
 void RasterizerGLES2::set_boot_image(const Ref<Image> &p_image, const Color &p_color, bool p_scale, bool p_use_filter) {
-
-	if (p_image.is_null() || p_image->empty())
+	if (p_image.is_null() || p_image->empty()) {
 		return;
+	}
 
 	int window_w = OS::get_singleton()->get_video_mode(0).width;
 	int window_h = OS::get_singleton()->get_video_mode(0).height;
@@ -364,7 +361,6 @@ void RasterizerGLES2::set_boot_image(const Ref<Image> &p_image, const Color &p_c
 	Rect2 imgrect(0, 0, p_image->get_width(), p_image->get_height());
 	Rect2 screenrect;
 	if (p_scale) {
-
 		if (window_w > window_h) {
 			//scale horizontally
 			screenrect.size.y = window_h;
@@ -378,7 +374,6 @@ void RasterizerGLES2::set_boot_image(const Ref<Image> &p_image, const Color &p_c
 			screenrect.position.y = (window_h - screenrect.size.y) / 2;
 		}
 	} else {
-
 		screenrect = imgrect;
 		screenrect.position += ((Size2(window_w, window_h) - screenrect.size) / 2.0).floor();
 	}
@@ -396,12 +391,10 @@ void RasterizerGLES2::set_boot_image(const Ref<Image> &p_image, const Color &p_c
 }
 
 void RasterizerGLES2::set_shader_time_scale(float p_scale) {
-
 	time_scale = p_scale;
 }
 
 void RasterizerGLES2::blit_render_target_to_screen(RID p_render_target, const Rect2 &p_screen_rect, int p_screen) {
-
 	ERR_FAIL_COND(storage->frame.current_rt);
 
 	RasterizerStorageGLES2::RenderTarget *rt = storage->render_target_owner.getornull(p_render_target);
@@ -451,7 +444,6 @@ void RasterizerGLES2::output_lens_distorted_to_screen(RID p_render_target, const
 }
 
 void RasterizerGLES2::end_frame(bool p_swap_buffers) {
-
 	if (OS::get_singleton()->is_layered_allowed()) {
 		if (!OS::get_singleton()->get_window_per_pixel_transparency_enabled()) {
 			//clear alpha
@@ -462,17 +454,17 @@ void RasterizerGLES2::end_frame(bool p_swap_buffers) {
 		}
 	}
 
-	if (p_swap_buffers)
+	if (p_swap_buffers) {
 		OS::get_singleton()->swap_buffers();
-	else
+	} else {
 		glFinish();
+	}
 }
 
 void RasterizerGLES2::finalize() {
 }
 
 Rasterizer *RasterizerGLES2::_create_current() {
-
 	return memnew(RasterizerGLES2);
 }
 
@@ -483,44 +475,49 @@ void RasterizerGLES2::make_current() {
 void RasterizerGLES2::register_config() {
 }
 
-// returns NULL if no error, or an error string
-const char *RasterizerGLES2::gl_check_for_error(bool p_print_error) {
-	GLenum err = glGetError();
-
-	const char *err_string = nullptr;
-
-	switch (err) {
-		default: {
-			// not recognised
-		} break;
-		case GL_NO_ERROR: {
-		} break;
-		case GL_INVALID_ENUM: {
-			err_string = "GL_INVALID_ENUM";
-		} break;
-		case GL_INVALID_VALUE: {
-			err_string = "GL_INVALID_VALUE";
-		} break;
-		case GL_INVALID_OPERATION: {
-			err_string = "GL_INVALID_OPERATION";
-		} break;
-		case GL_INVALID_FRAMEBUFFER_OPERATION: {
-			err_string = "GL_INVALID_FRAMEBUFFER_OPERATION";
-		} break;
-		case GL_OUT_OF_MEMORY: {
-			err_string = "GL_OUT_OF_MEMORY";
-		} break;
+bool RasterizerGLES2::gl_check_errors() {
+	bool error_found = false;
+	GLenum error = glGetError();
+	while (error != GL_NO_ERROR) {
+		switch (error) {
+#ifdef DEBUG_ENABLED
+			case GL_INVALID_ENUM: {
+				WARN_PRINT("GL_INVALID_ENUM: An unacceptable value is specified for an enumerated argument.");
+			} break;
+			case GL_INVALID_VALUE: {
+				WARN_PRINT("GL_INVALID_VALUE: A numeric argument is out of range.");
+			} break;
+			case GL_INVALID_OPERATION: {
+				WARN_PRINT("GL_INVALID_OPERATION: The specified operation is not allowed in the current state.");
+			} break;
+			case GL_INVALID_FRAMEBUFFER_OPERATION: {
+				WARN_PRINT("GL_INVALID_FRAMEBUFFER_OPERATION: The framebuffer object is not complete.");
+			} break;
+#endif // DEBUG_ENABLED
+			case GL_OUT_OF_MEMORY: {
+				ERR_PRINT("GL_OUT_OF_MEMORY: There is not enough memory left to execute the command. The state of the GL is undefined.");
+			} break;
+			// GL_STACK_UNDERFLOW and GL_STACK_OVERFLOW are undefined in GLES2/gl2.h, which is used when not using GLAD.
+			//case GL_STACK_UNDERFLOW: {
+			//	ERR_PRINT("GL_STACK_UNDERFLOW: An attempt has been made to perform an operation that would cause an internal stack to underflow.");
+			//} break;
+			//case GL_STACK_OVERFLOW: {
+			//	ERR_PRINT("GL_STACK_OVERFLOW: An attempt has been made to perform an operation that would cause an internal stack to overflow.");
+			//} break;
+			default: {
+#ifdef DEBUG_ENABLED
+				ERR_PRINT("Unrecognized GLError");
+#endif // DEBUG_ENABLED
+			} break;
+		}
+		error_found = true;
+		error = glGetError();
 	}
 
-	if (p_print_error && err_string) {
-		print_line(err_string);
-	}
-
-	return err_string;
+	return error_found;
 }
 
 RasterizerGLES2::RasterizerGLES2() {
-
 	storage = memnew(RasterizerStorageGLES2);
 	canvas = memnew(RasterizerCanvasGLES2);
 	scene = memnew(RasterizerSceneGLES2);
@@ -535,7 +532,6 @@ RasterizerGLES2::RasterizerGLES2() {
 }
 
 RasterizerGLES2::~RasterizerGLES2() {
-
 	memdelete(storage);
 	memdelete(canvas);
 }

@@ -61,16 +61,15 @@ class String;
 typedef void (*ErrorHandlerFunc)(void *, const char *, const char *, int p_line, const char *, const char *, ErrorHandlerType p_type);
 
 struct ErrorHandlerList {
-
 	ErrorHandlerFunc errfunc;
 	void *userdata;
 
 	ErrorHandlerList *next;
 
 	ErrorHandlerList() {
-		errfunc = 0;
-		next = 0;
-		userdata = 0;
+		errfunc = nullptr;
+		next = nullptr;
+		userdata = nullptr;
 	}
 };
 
@@ -476,15 +475,6 @@ void _err_print_index_error(const char *p_function, const char *p_file, int p_li
 	}
 
 /**
- * Prints an error message without returning.
- * FIXME: Remove this macro and replace all uses with `ERR_PRINT` as it's identical.
- */
-#define ERR_PRINTS(m_string)                                          \
-	{                                                                 \
-		_err_print_error(FUNCTION_STR, __FILE__, __LINE__, m_string); \
-	}
-
-/**
  * Prints an error message without returning, but only do so once in the application lifecycle.
  * This can be used to avoid spamming the console with error messages.
  */
@@ -502,15 +492,6 @@ void _err_print_index_error(const char *p_function, const char *p_file, int p_li
  * use `WARN_DEPRECATED` or `WARN_DEPRECATED_MSG` instead.
  */
 #define WARN_PRINT(m_string)                                                               \
-	{                                                                                      \
-		_err_print_error(FUNCTION_STR, __FILE__, __LINE__, m_string, ERR_HANDLER_WARNING); \
-	}
-
-/**
- * Prints a warning message without returning.
- * FIXME: Remove this macro and replace all uses with `WARN_PRINT` as it's identical.
- */
-#define WARN_PRINTS(m_string)                                                              \
 	{                                                                                      \
 		_err_print_error(FUNCTION_STR, __FILE__, __LINE__, m_string, ERR_HANDLER_WARNING); \
 	}

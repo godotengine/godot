@@ -4,7 +4,7 @@ on: [push, pull_request]
 # Global Settings
 # SCONS_CACHE for windows must be set in the build environment
 env:
-  GODOT_BASE_BRANCH: 3.2
+  GODOT_BASE_BRANCH: 3.x
   SCONSFLAGS: platform=windows verbose=yes warnings=all werror=yes debug_symbols=no --jobs=2
   SCONS_CACHE_MSVC_CONFIG: true
   SCONS_CACHE_LIMIT: 4096
@@ -46,7 +46,7 @@ jobs:
     - name: Configuring Python packages
       run: |
         python -c "import sys; print(sys.version)"
-        python -m pip install scons pywin32
+        python -m pip install scons
         python --version
         scons --version
 
@@ -97,7 +97,7 @@ jobs:
     - name: Configuring Python packages
       run: |
         python -c "import sys; print(sys.version)"
-        python -m pip install scons pywin32
+        python -m pip install scons
         python --version
         scons --version
 

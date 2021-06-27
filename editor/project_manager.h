@@ -31,6 +31,7 @@
 #ifndef PROJECT_MANAGER_H
 #define PROJECT_MANAGER_H
 
+#include "editor/editor_about.h"
 #include "editor/plugins/asset_library_editor_plugin.h"
 #include "scene/gui/dialogs.h"
 #include "scene/gui/file_dialog.h"
@@ -43,7 +44,6 @@ class ProjectList;
 class ProjectListFilter;
 
 class ProjectManager : public Control {
-
 	GDCLASS(ProjectManager, Control);
 
 	Button *erase_btn;
@@ -51,6 +51,7 @@ class ProjectManager : public Control {
 	Button *open_btn;
 	Button *rename_btn;
 	Button *run_btn;
+	Button *about_btn;
 
 	EditorAssetLibrary *asset_library;
 
@@ -67,6 +68,7 @@ class ProjectManager : public Control {
 	ConfirmationDialog *multi_scan_ask;
 	ConfirmationDialog *ask_update_settings;
 	ConfirmationDialog *open_templates;
+	EditorAbout *about;
 	AcceptDialog *run_error_diag;
 	AcceptDialog *dialog_error;
 	ProjectDialog *npdialog;
@@ -75,6 +77,7 @@ class ProjectManager : public Control {
 	TabContainer *tabs;
 	ProjectList *_project_list;
 
+	LinkButton *version_btn;
 	OptionButton *language_btn;
 	Control *gui_base;
 
@@ -93,6 +96,7 @@ class ProjectManager : public Control {
 	void _erase_missing_projects();
 	void _erase_project_confirm();
 	void _erase_missing_projects_confirm();
+	void _show_about();
 	void _update_project_buttons();
 	void _language_selected(int p_id);
 	void _restart_confirm();
@@ -115,6 +119,7 @@ class ProjectManager : public Control {
 	void _files_dropped(PoolStringArray p_files, int p_screen);
 	void _scan_multiple_folders(PoolStringArray p_files);
 
+	void _version_button_pressed();
 	void _on_order_option_changed();
 	void _on_filter_option_changed();
 
@@ -128,7 +133,6 @@ public:
 };
 
 class ProjectListFilter : public HBoxContainer {
-
 	GDCLASS(ProjectListFilter, HBoxContainer);
 
 public:

@@ -1,4 +1,4 @@
-// Copyright 2009-2020 Intel Corporation
+// Copyright 2009-2021 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
 #pragma once
@@ -19,7 +19,9 @@ typedef int ssize_t;
 #endif
 #endif
 
+// -- GODOT start --
 #if defined(_WIN32) && defined(_MSC_VER)
+// -- GODOT end --
 #  define RTC_ALIGN(...) __declspec(align(__VA_ARGS__))
 #else
 #  define RTC_ALIGN(...) __attribute__((aligned(__VA_ARGS__)))

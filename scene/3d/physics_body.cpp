@@ -46,69 +46,14 @@ void PhysicsBody::_notification(int p_what) {
 }
 
 Vector3 PhysicsBody::get_linear_velocity() const {
-
 	return Vector3();
 }
 Vector3 PhysicsBody::get_angular_velocity() const {
-
 	return Vector3();
 }
 
 float PhysicsBody::get_inverse_mass() const {
-
 	return 0;
-}
-
-void PhysicsBody::set_collision_layer(uint32_t p_layer) {
-
-	collision_layer = p_layer;
-	PhysicsServer::get_singleton()->body_set_collision_layer(get_rid(), p_layer);
-}
-
-uint32_t PhysicsBody::get_collision_layer() const {
-
-	return collision_layer;
-}
-
-void PhysicsBody::set_collision_mask(uint32_t p_mask) {
-
-	collision_mask = p_mask;
-	PhysicsServer::get_singleton()->body_set_collision_mask(get_rid(), p_mask);
-}
-
-uint32_t PhysicsBody::get_collision_mask() const {
-
-	return collision_mask;
-}
-
-void PhysicsBody::set_collision_mask_bit(int p_bit, bool p_value) {
-
-	uint32_t mask = get_collision_mask();
-	if (p_value)
-		mask |= 1 << p_bit;
-	else
-		mask &= ~(1 << p_bit);
-	set_collision_mask(mask);
-}
-
-bool PhysicsBody::get_collision_mask_bit(int p_bit) const {
-
-	return get_collision_mask() & (1 << p_bit);
-}
-
-void PhysicsBody::set_collision_layer_bit(int p_bit, bool p_value) {
-
-	uint32_t mask = get_collision_layer();
-	if (p_value)
-		mask |= 1 << p_bit;
-	else
-		mask &= ~(1 << p_bit);
-	set_collision_layer(mask);
-}
-
-bool PhysicsBody::get_collision_layer_bit(int p_bit) const {
-
-	return get_collision_layer() & (1 << p_bit);
 }
 
 Array PhysicsBody::get_collision_exceptions() {
@@ -126,7 +71,6 @@ Array PhysicsBody::get_collision_exceptions() {
 }
 
 void PhysicsBody::add_collision_exception_with(Node *p_node) {
-
 	ERR_FAIL_NULL(p_node);
 	CollisionObject *collision_object = Object::cast_to<CollisionObject>(p_node);
 	ERR_FAIL_COND_MSG(!collision_object, "Collision exception only works between two CollisionObject.");
@@ -134,7 +78,6 @@ void PhysicsBody::add_collision_exception_with(Node *p_node) {
 }
 
 void PhysicsBody::remove_collision_exception_with(Node *p_node) {
-
 	ERR_FAIL_NULL(p_node);
 	CollisionObject *collision_object = Object::cast_to<CollisionObject>(p_node);
 	ERR_FAIL_COND_MSG(!collision_object, "Collision exception only works between two CollisionObject.");
@@ -147,41 +90,20 @@ void PhysicsBody::_set_layers(uint32_t p_mask) {
 }
 
 uint32_t PhysicsBody::_get_layers() const {
-
 	return get_collision_layer();
 }
 
 void PhysicsBody::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("set_collision_layer", "layer"), &PhysicsBody::set_collision_layer);
-	ClassDB::bind_method(D_METHOD("get_collision_layer"), &PhysicsBody::get_collision_layer);
-
-	ClassDB::bind_method(D_METHOD("set_collision_mask", "mask"), &PhysicsBody::set_collision_mask);
-	ClassDB::bind_method(D_METHOD("get_collision_mask"), &PhysicsBody::get_collision_mask);
-
-	ClassDB::bind_method(D_METHOD("set_collision_mask_bit", "bit", "value"), &PhysicsBody::set_collision_mask_bit);
-	ClassDB::bind_method(D_METHOD("get_collision_mask_bit", "bit"), &PhysicsBody::get_collision_mask_bit);
-
-	ClassDB::bind_method(D_METHOD("set_collision_layer_bit", "bit", "value"), &PhysicsBody::set_collision_layer_bit);
-	ClassDB::bind_method(D_METHOD("get_collision_layer_bit", "bit"), &PhysicsBody::get_collision_layer_bit);
-
 	ClassDB::bind_method(D_METHOD("_set_layers", "mask"), &PhysicsBody::_set_layers);
 	ClassDB::bind_method(D_METHOD("_get_layers"), &PhysicsBody::_get_layers);
-
-	ADD_GROUP("Collision", "collision_");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "collision_layer", PROPERTY_HINT_LAYERS_3D_PHYSICS), "set_collision_layer", "get_collision_layer");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "collision_mask", PROPERTY_HINT_LAYERS_3D_PHYSICS), "set_collision_mask", "get_collision_mask");
 }
 
 PhysicsBody::PhysicsBody(PhysicsServer::BodyMode p_mode) :
 		CollisionObject(PhysicsServer::get_singleton()->body_create(p_mode), false) {
-
-	collision_layer = 1;
-	collision_mask = 1;
 }
 
 #ifndef DISABLE_DEPRECATED
 void StaticBody::set_friction(real_t p_friction) {
-
 	if (p_friction == 1.0 && physics_material_override.is_null()) { // default value, don't create an override for that
 		return;
 	}
@@ -198,7 +120,6 @@ void StaticBody::set_friction(real_t p_friction) {
 }
 
 real_t StaticBody::get_friction() const {
-
 	WARN_DEPRECATED_MSG("The method get_friction has been deprecated and will be removed in the future, use physics material instead.");
 
 	if (physics_material_override.is_null()) {
@@ -209,7 +130,6 @@ real_t StaticBody::get_friction() const {
 }
 
 void StaticBody::set_bounce(real_t p_bounce) {
-
 	if (p_bounce == 0.0 && physics_material_override.is_null()) { // default value, don't create an override for that
 		return;
 	}
@@ -226,7 +146,6 @@ void StaticBody::set_bounce(real_t p_bounce) {
 }
 
 real_t StaticBody::get_bounce() const {
-
 	WARN_DEPRECATED_MSG("The method get_bounce has been deprecated and will be removed in the future, use physics material instead.");
 
 	if (physics_material_override.is_null()) {
@@ -239,8 +158,9 @@ real_t StaticBody::get_bounce() const {
 
 void StaticBody::set_physics_material_override(const Ref<PhysicsMaterial> &p_physics_material_override) {
 	if (physics_material_override.is_valid()) {
-		if (physics_material_override->is_connected(CoreStringNames::get_singleton()->changed, this, "_reload_physics_characteristics"))
+		if (physics_material_override->is_connected(CoreStringNames::get_singleton()->changed, this, "_reload_physics_characteristics")) {
 			physics_material_override->disconnect(CoreStringNames::get_singleton()->changed, this, "_reload_physics_characteristics");
+		}
 	}
 
 	physics_material_override = p_physics_material_override;
@@ -256,28 +176,23 @@ Ref<PhysicsMaterial> StaticBody::get_physics_material_override() const {
 }
 
 void StaticBody::set_constant_linear_velocity(const Vector3 &p_vel) {
-
 	constant_linear_velocity = p_vel;
 	PhysicsServer::get_singleton()->body_set_state(get_rid(), PhysicsServer::BODY_STATE_LINEAR_VELOCITY, constant_linear_velocity);
 }
 
 void StaticBody::set_constant_angular_velocity(const Vector3 &p_vel) {
-
 	constant_angular_velocity = p_vel;
 	PhysicsServer::get_singleton()->body_set_state(get_rid(), PhysicsServer::BODY_STATE_ANGULAR_VELOCITY, constant_angular_velocity);
 }
 
 Vector3 StaticBody::get_constant_linear_velocity() const {
-
 	return constant_linear_velocity;
 }
 Vector3 StaticBody::get_constant_angular_velocity() const {
-
 	return constant_angular_velocity;
 }
 
 void StaticBody::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("set_constant_linear_velocity", "vel"), &StaticBody::set_constant_linear_velocity);
 	ClassDB::bind_method(D_METHOD("set_constant_angular_velocity", "vel"), &StaticBody::set_constant_angular_velocity);
 	ClassDB::bind_method(D_METHOD("get_constant_linear_velocity"), &StaticBody::get_constant_linear_velocity);
@@ -326,7 +241,6 @@ void StaticBody::_reload_physics_characteristics() {
 }
 
 void RigidBody::_body_enter_tree(ObjectID p_id) {
-
 	Object *obj = ObjectDB::get_instance(p_id);
 	Node *node = Object::cast_to<Node>(obj);
 	ERR_FAIL_COND(!node);
@@ -343,15 +257,13 @@ void RigidBody::_body_enter_tree(ObjectID p_id) {
 	emit_signal(SceneStringNames::get_singleton()->body_entered, node);
 
 	for (int i = 0; i < E->get().shapes.size(); i++) {
-
-		emit_signal(SceneStringNames::get_singleton()->body_shape_entered, p_id, node, E->get().shapes[i].body_shape, E->get().shapes[i].local_shape);
+		emit_signal(SceneStringNames::get_singleton()->body_shape_entered, E->get().rid, node, E->get().shapes[i].body_shape, E->get().shapes[i].local_shape);
 	}
 
 	contact_monitor->locked = false;
 }
 
 void RigidBody::_body_exit_tree(ObjectID p_id) {
-
 	Object *obj = ObjectDB::get_instance(p_id);
 	Node *node = Object::cast_to<Node>(obj);
 	ERR_FAIL_COND(!node);
@@ -366,15 +278,13 @@ void RigidBody::_body_exit_tree(ObjectID p_id) {
 	emit_signal(SceneStringNames::get_singleton()->body_exited, node);
 
 	for (int i = 0; i < E->get().shapes.size(); i++) {
-
-		emit_signal(SceneStringNames::get_singleton()->body_shape_exited, p_id, node, E->get().shapes[i].body_shape, E->get().shapes[i].local_shape);
+		emit_signal(SceneStringNames::get_singleton()->body_shape_exited, E->get().rid, node, E->get().shapes[i].body_shape, E->get().shapes[i].local_shape);
 	}
 
 	contact_monitor->locked = false;
 }
 
-void RigidBody::_body_inout(int p_status, ObjectID p_instance, int p_body_shape, int p_local_shape) {
-
+void RigidBody::_body_inout(int p_status, const RID &p_body, ObjectID p_instance, int p_body_shape, int p_local_shape) {
 	bool body_in = p_status == 1;
 	ObjectID objid = p_instance;
 
@@ -388,8 +298,8 @@ void RigidBody::_body_inout(int p_status, ObjectID p_instance, int p_body_shape,
 
 	if (body_in) {
 		if (!E) {
-
 			E = contact_monitor->body_map.insert(objid, BodyState());
+			E->get().rid = p_body;
 			//E->get().rc=0;
 			E->get().in_tree = node && node->is_inside_tree();
 			if (node) {
@@ -401,53 +311,50 @@ void RigidBody::_body_inout(int p_status, ObjectID p_instance, int p_body_shape,
 			}
 		}
 		//E->get().rc++;
-		if (node)
+		if (node) {
 			E->get().shapes.insert(ShapePair(p_body_shape, p_local_shape));
+		}
 
 		if (E->get().in_tree) {
-			emit_signal(SceneStringNames::get_singleton()->body_shape_entered, objid, node, p_body_shape, p_local_shape);
+			emit_signal(SceneStringNames::get_singleton()->body_shape_entered, p_body, node, p_body_shape, p_local_shape);
 		}
 
 	} else {
-
 		//E->get().rc--;
 
-		if (node)
+		if (node) {
 			E->get().shapes.erase(ShapePair(p_body_shape, p_local_shape));
+		}
 
 		bool in_tree = E->get().in_tree;
 
 		if (E->get().shapes.empty()) {
-
 			if (node) {
 				node->disconnect(SceneStringNames::get_singleton()->tree_entered, this, SceneStringNames::get_singleton()->_body_enter_tree);
 				node->disconnect(SceneStringNames::get_singleton()->tree_exiting, this, SceneStringNames::get_singleton()->_body_exit_tree);
-				if (in_tree)
+				if (in_tree) {
 					emit_signal(SceneStringNames::get_singleton()->body_exited, node);
+				}
 			}
 
 			contact_monitor->body_map.erase(E);
 		}
 		if (node && in_tree) {
-			emit_signal(SceneStringNames::get_singleton()->body_shape_exited, objid, obj, p_body_shape, p_local_shape);
+			emit_signal(SceneStringNames::get_singleton()->body_shape_exited, p_body, obj, p_body_shape, p_local_shape);
 		}
 	}
 }
 
 struct _RigidBodyInOut {
-
+	RID rid;
 	ObjectID id;
 	int shape;
 	int local_shape;
 };
 
 void RigidBody::_direct_state_changed(Object *p_state) {
-
-#ifdef DEBUG_ENABLED
 	state = Object::cast_to<PhysicsDirectBodyState>(p_state);
-#else
-	state = (PhysicsDirectBodyState *)p_state; //trust it
-#endif
+	ERR_FAIL_COND_MSG(!state, "Method '_direct_state_changed' must receive a valid PhysicsDirectBodyState object as argument");
 
 	set_ignore_transform_notification(true);
 	set_global_transform(state->get_transform());
@@ -458,20 +365,19 @@ void RigidBody::_direct_state_changed(Object *p_state) {
 		sleeping = state->is_sleeping();
 		emit_signal(SceneStringNames::get_singleton()->sleeping_state_changed);
 	}
-	if (get_script_instance())
+	if (get_script_instance()) {
 		get_script_instance()->call("_integrate_forces", state);
+	}
 	set_ignore_transform_notification(false);
+	_on_transform_changed();
 
 	if (contact_monitor) {
-
 		contact_monitor->locked = true;
 
 		//untag all
 		int rc = 0;
 		for (Map<ObjectID, BodyState>::Element *E = contact_monitor->body_map.front(); E; E = E->next()) {
-
 			for (int i = 0; i < E->get().shapes.size(); i++) {
-
 				E->get().shapes[i].tagged = false;
 				rc++;
 			}
@@ -485,7 +391,7 @@ void RigidBody::_direct_state_changed(Object *p_state) {
 		//put the ones to add
 
 		for (int i = 0; i < state->get_contact_count(); i++) {
-
+			RID rid = state->get_contact_collider(i);
 			ObjectID obj = state->get_contact_collider_id(i);
 			int local_shape = state->get_contact_local_shape(i);
 			int shape = state->get_contact_collider_shape(i);
@@ -494,6 +400,7 @@ void RigidBody::_direct_state_changed(Object *p_state) {
 
 			Map<ObjectID, BodyState>::Element *E = contact_monitor->body_map.find(obj);
 			if (!E) {
+				toadd[toadd_count].rid = rid;
 				toadd[toadd_count].local_shape = local_shape;
 				toadd[toadd_count].id = obj;
 				toadd[toadd_count].shape = shape;
@@ -504,7 +411,7 @@ void RigidBody::_direct_state_changed(Object *p_state) {
 			ShapePair sp(shape, local_shape);
 			int idx = E->get().shapes.find(sp);
 			if (idx == -1) {
-
+				toadd[toadd_count].rid = rid;
 				toadd[toadd_count].local_shape = local_shape;
 				toadd[toadd_count].id = obj;
 				toadd[toadd_count].shape = shape;
@@ -518,11 +425,9 @@ void RigidBody::_direct_state_changed(Object *p_state) {
 		//put the ones to remove
 
 		for (Map<ObjectID, BodyState>::Element *E = contact_monitor->body_map.front(); E; E = E->next()) {
-
 			for (int i = 0; i < E->get().shapes.size(); i++) {
-
 				if (!E->get().shapes[i].tagged) {
-
+					toremove[toremove_count].rid = E->get().rid;
 					toremove[toremove_count].body_id = E->key();
 					toremove[toremove_count].pair = E->get().shapes[i];
 					toremove_count++;
@@ -533,25 +438,22 @@ void RigidBody::_direct_state_changed(Object *p_state) {
 		//process remotions
 
 		for (int i = 0; i < toremove_count; i++) {
-
-			_body_inout(0, toremove[i].body_id, toremove[i].pair.body_shape, toremove[i].pair.local_shape);
+			_body_inout(0, toremove[i].rid, toremove[i].body_id, toremove[i].pair.body_shape, toremove[i].pair.local_shape);
 		}
 
 		//process aditions
 
 		for (int i = 0; i < toadd_count; i++) {
-
-			_body_inout(1, toadd[i].id, toadd[i].shape, toadd[i].local_shape);
+			_body_inout(1, toadd[i].rid, toadd[i].id, toadd[i].shape, toadd[i].local_shape);
 		}
 
 		contact_monitor->locked = false;
 	}
 
-	state = NULL;
+	state = nullptr;
 }
 
 void RigidBody::_notification(int p_what) {
-
 #ifdef TOOLS_ENABLED
 	if (p_what == NOTIFICATION_ENTER_TREE) {
 		if (Engine::get_singleton()->is_editor_hint()) {
@@ -569,16 +471,12 @@ void RigidBody::_notification(int p_what) {
 }
 
 void RigidBody::set_mode(Mode p_mode) {
-
 	mode = p_mode;
 	switch (p_mode) {
-
 		case MODE_RIGID: {
-
 			PhysicsServer::get_singleton()->body_set_mode(get_rid(), PhysicsServer::BODY_MODE_RIGID);
 		} break;
 		case MODE_STATIC: {
-
 			PhysicsServer::get_singleton()->body_set_mode(get_rid(), PhysicsServer::BODY_MODE_STATIC);
 
 		} break;
@@ -587,7 +485,6 @@ void RigidBody::set_mode(Mode p_mode) {
 
 		} break;
 		case MODE_KINEMATIC: {
-
 			PhysicsServer::get_singleton()->body_set_mode(get_rid(), PhysicsServer::BODY_MODE_KINEMATIC);
 		} break;
 	}
@@ -595,12 +492,10 @@ void RigidBody::set_mode(Mode p_mode) {
 }
 
 RigidBody::Mode RigidBody::get_mode() const {
-
 	return mode;
 }
 
 void RigidBody::set_mass(real_t p_mass) {
-
 	ERR_FAIL_COND(p_mass <= 0);
 	mass = p_mass;
 	_change_notify("mass");
@@ -608,22 +503,18 @@ void RigidBody::set_mass(real_t p_mass) {
 	PhysicsServer::get_singleton()->body_set_param(get_rid(), PhysicsServer::BODY_PARAM_MASS, mass);
 }
 real_t RigidBody::get_mass() const {
-
 	return mass;
 }
 
 void RigidBody::set_weight(real_t p_weight) {
-
 	set_mass(p_weight / real_t(GLOBAL_DEF("physics/3d/default_gravity", 9.8)));
 }
 real_t RigidBody::get_weight() const {
-
 	return mass * real_t(GLOBAL_DEF("physics/3d/default_gravity", 9.8));
 }
 
 #ifndef DISABLE_DEPRECATED
 void RigidBody::set_friction(real_t p_friction) {
-
 	if (p_friction == 1.0 && physics_material_override.is_null()) { // default value, don't create an override for that
 		return;
 	}
@@ -639,7 +530,6 @@ void RigidBody::set_friction(real_t p_friction) {
 	physics_material_override->set_friction(p_friction);
 }
 real_t RigidBody::get_friction() const {
-
 	WARN_DEPRECATED_MSG("The method get_friction has been deprecated and will be removed in the future, use physics material instead.");
 
 	if (physics_material_override.is_null()) {
@@ -650,7 +540,6 @@ real_t RigidBody::get_friction() const {
 }
 
 void RigidBody::set_bounce(real_t p_bounce) {
-
 	if (p_bounce == 0.0 && physics_material_override.is_null()) { // default value, don't create an override for that
 		return;
 	}
@@ -677,8 +566,9 @@ real_t RigidBody::get_bounce() const {
 
 void RigidBody::set_physics_material_override(const Ref<PhysicsMaterial> &p_physics_material_override) {
 	if (physics_material_override.is_valid()) {
-		if (physics_material_override->is_connected(CoreStringNames::get_singleton()->changed, this, "_reload_physics_characteristics"))
+		if (physics_material_override->is_connected(CoreStringNames::get_singleton()->changed, this, "_reload_physics_characteristics")) {
 			physics_material_override->disconnect(CoreStringNames::get_singleton()->changed, this, "_reload_physics_characteristics");
+		}
 	}
 
 	physics_material_override = p_physics_material_override;
@@ -694,39 +584,32 @@ Ref<PhysicsMaterial> RigidBody::get_physics_material_override() const {
 }
 
 void RigidBody::set_gravity_scale(real_t p_gravity_scale) {
-
 	gravity_scale = p_gravity_scale;
 	PhysicsServer::get_singleton()->body_set_param(get_rid(), PhysicsServer::BODY_PARAM_GRAVITY_SCALE, gravity_scale);
 }
 real_t RigidBody::get_gravity_scale() const {
-
 	return gravity_scale;
 }
 
 void RigidBody::set_linear_damp(real_t p_linear_damp) {
-
 	ERR_FAIL_COND(p_linear_damp < -1);
 	linear_damp = p_linear_damp;
 	PhysicsServer::get_singleton()->body_set_param(get_rid(), PhysicsServer::BODY_PARAM_LINEAR_DAMP, linear_damp);
 }
 real_t RigidBody::get_linear_damp() const {
-
 	return linear_damp;
 }
 
 void RigidBody::set_angular_damp(real_t p_angular_damp) {
-
 	ERR_FAIL_COND(p_angular_damp < -1);
 	angular_damp = p_angular_damp;
 	PhysicsServer::get_singleton()->body_set_param(get_rid(), PhysicsServer::BODY_PARAM_ANGULAR_DAMP, angular_damp);
 }
 real_t RigidBody::get_angular_damp() const {
-
 	return angular_damp;
 }
 
 void RigidBody::set_axis_velocity(const Vector3 &p_axis) {
-
 	Vector3 v = state ? state->get_linear_velocity() : linear_velocity;
 	Vector3 axis = p_axis.normalized();
 	v -= axis * axis.dot(v);
@@ -740,29 +623,27 @@ void RigidBody::set_axis_velocity(const Vector3 &p_axis) {
 }
 
 void RigidBody::set_linear_velocity(const Vector3 &p_velocity) {
-
 	linear_velocity = p_velocity;
-	if (state)
+	if (state) {
 		state->set_linear_velocity(linear_velocity);
-	else
+	} else {
 		PhysicsServer::get_singleton()->body_set_state(get_rid(), PhysicsServer::BODY_STATE_LINEAR_VELOCITY, linear_velocity);
+	}
 }
 
 Vector3 RigidBody::get_linear_velocity() const {
-
 	return linear_velocity;
 }
 
 void RigidBody::set_angular_velocity(const Vector3 &p_velocity) {
-
 	angular_velocity = p_velocity;
-	if (state)
+	if (state) {
 		state->set_angular_velocity(angular_velocity);
-	else
+	} else {
 		PhysicsServer::get_singleton()->body_set_state(get_rid(), PhysicsServer::BODY_STATE_ANGULAR_VELOCITY, angular_velocity);
+	}
 }
 Vector3 RigidBody::get_angular_velocity() const {
-
 	return angular_velocity;
 }
 
@@ -771,48 +652,41 @@ Basis RigidBody::get_inverse_inertia_tensor() {
 }
 
 void RigidBody::set_use_custom_integrator(bool p_enable) {
-
-	if (custom_integrator == p_enable)
+	if (custom_integrator == p_enable) {
 		return;
+	}
 
 	custom_integrator = p_enable;
 	PhysicsServer::get_singleton()->body_set_omit_force_integration(get_rid(), p_enable);
 }
 bool RigidBody::is_using_custom_integrator() {
-
 	return custom_integrator;
 }
 
 void RigidBody::set_sleeping(bool p_sleeping) {
-
 	sleeping = p_sleeping;
 	PhysicsServer::get_singleton()->body_set_state(get_rid(), PhysicsServer::BODY_STATE_SLEEPING, sleeping);
 }
 
 void RigidBody::set_can_sleep(bool p_active) {
-
 	can_sleep = p_active;
 	PhysicsServer::get_singleton()->body_set_state(get_rid(), PhysicsServer::BODY_STATE_CAN_SLEEP, p_active);
 }
 
 bool RigidBody::is_able_to_sleep() const {
-
 	return can_sleep;
 }
 
 bool RigidBody::is_sleeping() const {
-
 	return sleeping;
 }
 
 void RigidBody::set_max_contacts_reported(int p_amount) {
-
 	max_contacts_reported = p_amount;
 	PhysicsServer::get_singleton()->body_set_max_contacts_reported(get_rid(), p_amount);
 }
 
 int RigidBody::get_max_contacts_reported() const {
-
 	return max_contacts_reported;
 }
 
@@ -833,7 +707,6 @@ void RigidBody::apply_central_impulse(const Vector3 &p_impulse) {
 }
 
 void RigidBody::apply_impulse(const Vector3 &p_pos, const Vector3 &p_impulse) {
-
 	PhysicsServer::get_singleton()->body_apply_impulse(get_rid(), p_pos, p_impulse);
 }
 
@@ -842,50 +715,43 @@ void RigidBody::apply_torque_impulse(const Vector3 &p_impulse) {
 }
 
 void RigidBody::set_use_continuous_collision_detection(bool p_enable) {
-
 	ccd = p_enable;
 	PhysicsServer::get_singleton()->body_set_enable_continuous_collision_detection(get_rid(), p_enable);
 }
 
 bool RigidBody::is_using_continuous_collision_detection() const {
-
 	return ccd;
 }
 
 void RigidBody::set_contact_monitor(bool p_enabled) {
-
-	if (p_enabled == is_contact_monitor_enabled())
+	if (p_enabled == is_contact_monitor_enabled()) {
 		return;
+	}
 
 	if (!p_enabled) {
-
 		ERR_FAIL_COND_MSG(contact_monitor->locked, "Can't disable contact monitoring during in/out callback. Use call_deferred(\"set_contact_monitor\", false) instead.");
 
 		for (Map<ObjectID, BodyState>::Element *E = contact_monitor->body_map.front(); E; E = E->next()) {
-
 			//clean up mess
 			Object *obj = ObjectDB::get_instance(E->key());
 			Node *node = Object::cast_to<Node>(obj);
 
 			if (node) {
-
 				node->disconnect(SceneStringNames::get_singleton()->tree_entered, this, SceneStringNames::get_singleton()->_body_enter_tree);
 				node->disconnect(SceneStringNames::get_singleton()->tree_exiting, this, SceneStringNames::get_singleton()->_body_exit_tree);
 			}
 		}
 
 		memdelete(contact_monitor);
-		contact_monitor = NULL;
+		contact_monitor = nullptr;
 	} else {
-
 		contact_monitor = memnew(ContactMonitor);
 		contact_monitor->locked = false;
 	}
 }
 
 bool RigidBody::is_contact_monitor_enabled() const {
-
-	return contact_monitor != NULL;
+	return contact_monitor != nullptr;
 }
 
 void RigidBody::set_axis_lock(PhysicsServer::BodyAxis p_axis, bool p_lock) {
@@ -897,7 +763,6 @@ bool RigidBody::get_axis_lock(PhysicsServer::BodyAxis p_axis) const {
 }
 
 Array RigidBody::get_colliding_bodies() const {
-
 	ERR_FAIL_COND_V(!contact_monitor, Array());
 
 	Array ret;
@@ -916,7 +781,6 @@ Array RigidBody::get_colliding_bodies() const {
 }
 
 String RigidBody::get_configuration_warning() const {
-
 	Transform t = get_transform();
 
 	String warning = CollisionObject::get_configuration_warning();
@@ -932,7 +796,6 @@ String RigidBody::get_configuration_warning() const {
 }
 
 void RigidBody::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("set_mode", "mode"), &RigidBody::set_mode);
 	ClassDB::bind_method(D_METHOD("get_mode"), &RigidBody::get_mode);
 
@@ -1040,8 +903,8 @@ void RigidBody::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "angular_velocity"), "set_angular_velocity", "get_angular_velocity");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "angular_damp", PROPERTY_HINT_RANGE, "-1,100,0.001,or_greater"), "set_angular_damp", "get_angular_damp");
 
-	ADD_SIGNAL(MethodInfo("body_shape_entered", PropertyInfo(Variant::INT, "body_id"), PropertyInfo(Variant::OBJECT, "body", PROPERTY_HINT_RESOURCE_TYPE, "Node"), PropertyInfo(Variant::INT, "body_shape"), PropertyInfo(Variant::INT, "local_shape")));
-	ADD_SIGNAL(MethodInfo("body_shape_exited", PropertyInfo(Variant::INT, "body_id"), PropertyInfo(Variant::OBJECT, "body", PROPERTY_HINT_RESOURCE_TYPE, "Node"), PropertyInfo(Variant::INT, "body_shape"), PropertyInfo(Variant::INT, "local_shape")));
+	ADD_SIGNAL(MethodInfo("body_shape_entered", PropertyInfo(Variant::_RID, "body_rid"), PropertyInfo(Variant::OBJECT, "body", PROPERTY_HINT_RESOURCE_TYPE, "Node"), PropertyInfo(Variant::INT, "body_shape"), PropertyInfo(Variant::INT, "local_shape")));
+	ADD_SIGNAL(MethodInfo("body_shape_exited", PropertyInfo(Variant::_RID, "body_rid"), PropertyInfo(Variant::OBJECT, "body", PROPERTY_HINT_RESOURCE_TYPE, "Node"), PropertyInfo(Variant::INT, "body_shape"), PropertyInfo(Variant::INT, "local_shape")));
 	ADD_SIGNAL(MethodInfo("body_entered", PropertyInfo(Variant::OBJECT, "body", PROPERTY_HINT_RESOURCE_TYPE, "Node")));
 	ADD_SIGNAL(MethodInfo("body_exited", PropertyInfo(Variant::OBJECT, "body", PROPERTY_HINT_RESOURCE_TYPE, "Node")));
 	ADD_SIGNAL(MethodInfo("sleeping_state_changed"));
@@ -1054,12 +917,11 @@ void RigidBody::_bind_methods() {
 
 RigidBody::RigidBody() :
 		PhysicsBody(PhysicsServer::BODY_MODE_RIGID) {
-
 	mode = MODE_RIGID;
 
 	mass = 1;
 	max_contacts_reported = 0;
-	state = NULL;
+	state = nullptr;
 
 	gravity_scale = 1;
 	linear_damp = -1;
@@ -1070,16 +932,16 @@ RigidBody::RigidBody() :
 	ccd = false;
 
 	custom_integrator = false;
-	contact_monitor = NULL;
+	contact_monitor = nullptr;
 	can_sleep = true;
 
 	PhysicsServer::get_singleton()->body_set_force_integration_callback(get_rid(), this, "_direct_state_changed");
 }
 
 RigidBody::~RigidBody() {
-
-	if (contact_monitor)
+	if (contact_monitor) {
 		memdelete(contact_monitor);
+	}
 }
 
 void RigidBody::_reload_physics_characteristics() {
@@ -1096,7 +958,6 @@ void RigidBody::_reload_physics_characteristics() {
 //////////////////////////
 
 Ref<KinematicCollision> KinematicBody::_move(const Vector3 &p_motion, bool p_infinite_inertia, bool p_exclude_raycast_shapes, bool p_test_only) {
-
 	Collision col;
 	if (move_and_collide(p_motion, p_infinite_inertia, col, p_exclude_raycast_shapes, p_test_only)) {
 		if (motion_cache.is_null()) {
@@ -1113,7 +974,6 @@ Ref<KinematicCollision> KinematicBody::_move(const Vector3 &p_motion, bool p_inf
 }
 
 bool KinematicBody::move_and_collide(const Vector3 &p_motion, bool p_infinite_inertia, Collision &r_collision, bool p_exclude_raycast_shapes, bool p_test_only) {
-
 	Transform gt = get_global_transform();
 	PhysicsServer::MotionResult result;
 	bool colliding = PhysicsServer::get_singleton()->body_test_motion(get_rid(), gt, p_motion, p_infinite_inertia, &result, p_exclude_raycast_shapes);
@@ -1149,7 +1009,6 @@ bool KinematicBody::move_and_collide(const Vector3 &p_motion, bool p_infinite_in
 #define FLOOR_ANGLE_THRESHOLD 0.01
 
 Vector3 KinematicBody::move_and_slide(const Vector3 &p_linear_velocity, const Vector3 &p_up_direction, bool p_stop_on_slope, int p_max_slides, float p_floor_max_angle, bool p_infinite_inertia) {
-
 	Vector3 body_velocity = p_linear_velocity;
 	Vector3 body_velocity_normal = body_velocity.normalized();
 	Vector3 up_direction = p_up_direction.normalized();
@@ -1172,7 +1031,6 @@ Vector3 KinematicBody::move_and_slide(const Vector3 &p_linear_velocity, const Ve
 	floor_velocity = Vector3();
 
 	while (p_max_slides) {
-
 		Collision collision;
 		bool found_collision = false;
 
@@ -1234,8 +1092,9 @@ Vector3 KinematicBody::move_and_slide(const Vector3 &p_linear_velocity, const Ve
 			}
 		}
 
-		if (!found_collision || motion == Vector3())
+		if (!found_collision || motion == Vector3()) {
 			break;
+		}
 
 		--p_max_slides;
 	}
@@ -1244,7 +1103,6 @@ Vector3 KinematicBody::move_and_slide(const Vector3 &p_linear_velocity, const Ve
 }
 
 Vector3 KinematicBody::move_and_slide_with_snap(const Vector3 &p_linear_velocity, const Vector3 &p_snap, const Vector3 &p_up_direction, bool p_stop_on_slope, int p_max_slides, float p_floor_max_angle, bool p_infinite_inertia) {
-
 	Vector3 up_direction = p_up_direction.normalized();
 	bool was_on_floor = on_floor;
 
@@ -1257,7 +1115,6 @@ Vector3 KinematicBody::move_and_slide_with_snap(const Vector3 &p_linear_velocity
 	Transform gt = get_global_transform();
 
 	if (move_and_collide(p_snap, p_infinite_inertia, col, false, true)) {
-
 		bool apply = true;
 		if (up_direction != Vector3()) {
 			if (Math::acos(col.normal.dot(up_direction)) <= p_floor_max_angle + FLOOR_ANGLE_THRESHOLD) {
@@ -1284,38 +1141,31 @@ Vector3 KinematicBody::move_and_slide_with_snap(const Vector3 &p_linear_velocity
 }
 
 bool KinematicBody::is_on_floor() const {
-
 	return on_floor;
 }
 
 bool KinematicBody::is_on_wall() const {
-
 	return on_wall;
 }
 bool KinematicBody::is_on_ceiling() const {
-
 	return on_ceiling;
 }
 
 Vector3 KinematicBody::get_floor_normal() const {
-
 	return floor_normal;
 }
 
 Vector3 KinematicBody::get_floor_velocity() const {
-
 	return floor_velocity;
 }
 
 bool KinematicBody::test_move(const Transform &p_from, const Vector3 &p_motion, bool p_infinite_inertia) {
-
 	ERR_FAIL_COND_V(!is_inside_tree(), false);
 
 	return PhysicsServer::get_singleton()->body_test_motion(get_rid(), p_from, p_motion, p_infinite_inertia);
 }
 
 bool KinematicBody::separate_raycast_shapes(bool p_infinite_inertia, Collision &r_collision) {
-
 	PhysicsServer::SeparationResult sep_res[8]; //max 8 rays
 
 	Transform gt = get_global_transform();
@@ -1360,17 +1210,14 @@ bool KinematicBody::get_axis_lock(PhysicsServer::BodyAxis p_axis) const {
 }
 
 void KinematicBody::set_safe_margin(float p_margin) {
-
 	margin = p_margin;
 	PhysicsServer::get_singleton()->body_set_kinematic_safe_margin(get_rid(), margin);
 }
 
 float KinematicBody::get_safe_margin() const {
-
 	return margin;
 }
 int KinematicBody::get_slide_count() const {
-
 	return colliders.size();
 }
 
@@ -1380,7 +1227,6 @@ KinematicBody::Collision KinematicBody::get_slide_collision(int p_bounce) const 
 }
 
 Ref<KinematicCollision> KinematicBody::_get_slide_collision(int p_bounce) {
-
 	ERR_FAIL_INDEX_V(p_bounce, colliders.size(), Ref<KinematicCollision>());
 	if (p_bounce >= slide_colliders.size()) {
 		slide_colliders.resize(p_bounce + 1);
@@ -1408,7 +1254,6 @@ void KinematicBody::_notification(int p_what) {
 }
 
 void KinematicBody::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("move_and_collide", "rel_vec", "infinite_inertia", "exclude_raycast_shapes", "test_only"), &KinematicBody::_move, DEFVAL(true), DEFVAL(true), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("move_and_slide", "linear_velocity", "up_direction", "stop_on_slope", "max_slides", "floor_max_angle", "infinite_inertia"), &KinematicBody::move_and_slide, DEFVAL(Vector3(0, 0, 0)), DEFVAL(false), DEFVAL(4), DEFVAL(Math::deg2rad((float)45)), DEFVAL(true));
 	ClassDB::bind_method(D_METHOD("move_and_slide_with_snap", "linear_velocity", "snap", "up_direction", "stop_on_slope", "max_slides", "floor_max_angle", "infinite_inertia"), &KinematicBody::move_and_slide_with_snap, DEFVAL(Vector3(0, 0, 0)), DEFVAL(false), DEFVAL(4), DEFVAL(Math::deg2rad((float)45)), DEFVAL(true));
@@ -1448,21 +1293,19 @@ KinematicBody::KinematicBody() :
 }
 
 KinematicBody::~KinematicBody() {
-
 	if (motion_cache.is_valid()) {
-		motion_cache->owner = NULL;
+		motion_cache->owner = nullptr;
 	}
 
 	for (int i = 0; i < slide_colliders.size(); i++) {
 		if (slide_colliders[i].is_valid()) {
-			slide_colliders.write[i]->owner = NULL;
+			slide_colliders.write[i]->owner = nullptr;
 		}
 	}
 }
 ///////////////////////////////////////
 
 Vector3 KinematicCollision::get_position() const {
-
 	return collision.collision;
 }
 Vector3 KinematicCollision::get_normal() const {
@@ -1475,25 +1318,27 @@ Vector3 KinematicCollision::get_remainder() const {
 	return collision.remainder;
 }
 Object *KinematicCollision::get_local_shape() const {
-	if (!owner) return NULL;
+	if (!owner) {
+		return nullptr;
+	}
 	uint32_t ownerid = owner->shape_find_owner(collision.local_shape);
 	return owner->shape_owner_get_owner(ownerid);
 }
 
 Object *KinematicCollision::get_collider() const {
-
 	if (collision.collider) {
 		return ObjectDB::get_instance(collision.collider);
 	}
 
-	return NULL;
+	return nullptr;
 }
 ObjectID KinematicCollision::get_collider_id() const {
-
 	return collision.collider;
 }
+RID KinematicCollision::get_collider_rid() const {
+	return collision.collider_rid;
+}
 Object *KinematicCollision::get_collider_shape() const {
-
 	Object *collider = get_collider();
 	if (collider) {
 		CollisionObject *obj2d = Object::cast_to<CollisionObject>(collider);
@@ -1503,23 +1348,19 @@ Object *KinematicCollision::get_collider_shape() const {
 		}
 	}
 
-	return NULL;
+	return nullptr;
 }
 int KinematicCollision::get_collider_shape_index() const {
-
 	return collision.collider_shape;
 }
 Vector3 KinematicCollision::get_collider_velocity() const {
-
 	return collision.collider_vel;
 }
 Variant KinematicCollision::get_collider_metadata() const {
-
 	return Variant();
 }
 
 void KinematicCollision::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("get_position"), &KinematicCollision::get_position);
 	ClassDB::bind_method(D_METHOD("get_normal"), &KinematicCollision::get_normal);
 	ClassDB::bind_method(D_METHOD("get_travel"), &KinematicCollision::get_travel);
@@ -1527,6 +1368,7 @@ void KinematicCollision::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_local_shape"), &KinematicCollision::get_local_shape);
 	ClassDB::bind_method(D_METHOD("get_collider"), &KinematicCollision::get_collider);
 	ClassDB::bind_method(D_METHOD("get_collider_id"), &KinematicCollision::get_collider_id);
+	ClassDB::bind_method(D_METHOD("get_collider_rid"), &KinematicCollision::get_collider_rid);
 	ClassDB::bind_method(D_METHOD("get_collider_shape"), &KinematicCollision::get_collider_shape);
 	ClassDB::bind_method(D_METHOD("get_collider_shape_index"), &KinematicCollision::get_collider_shape_index);
 	ClassDB::bind_method(D_METHOD("get_collider_velocity"), &KinematicCollision::get_collider_velocity);
@@ -1539,6 +1381,7 @@ void KinematicCollision::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "local_shape"), "", "get_local_shape");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "collider"), "", "get_collider");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "collider_id"), "", "get_collider_id");
+	ADD_PROPERTY(PropertyInfo(Variant::_RID, "collider_rid"), "", "get_collider_rid");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "collider_shape"), "", "get_collider_shape");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "collider_shape_index"), "", "get_collider_shape_index");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "collider_velocity"), "", "get_collider_velocity");
@@ -1549,7 +1392,7 @@ KinematicCollision::KinematicCollision() {
 	collision.collider = 0;
 	collision.collider_shape = 0;
 	collision.local_shape = 0;
-	owner = NULL;
+	owner = nullptr;
 }
 
 ///////////////////////////////////////
@@ -1580,18 +1423,21 @@ bool PhysicalBone::PinJointData::_set(const StringName &p_name, const Variant &p
 
 	if ("joint_constraints/bias" == p_name) {
 		bias = p_value;
-		if (j.is_valid())
+		if (j.is_valid()) {
 			PhysicsServer::get_singleton()->pin_joint_set_param(j, PhysicsServer::PIN_JOINT_BIAS, bias);
+		}
 
 	} else if ("joint_constraints/damping" == p_name) {
 		damping = p_value;
-		if (j.is_valid())
+		if (j.is_valid()) {
 			PhysicsServer::get_singleton()->pin_joint_set_param(j, PhysicsServer::PIN_JOINT_DAMPING, damping);
+		}
 
 	} else if ("joint_constraints/impulse_clamp" == p_name) {
 		impulse_clamp = p_value;
-		if (j.is_valid())
+		if (j.is_valid()) {
 			PhysicsServer::get_singleton()->pin_joint_set_param(j, PhysicsServer::PIN_JOINT_IMPULSE_CLAMP, impulse_clamp);
+		}
 
 	} else {
 		return false;
@@ -1633,28 +1479,33 @@ bool PhysicalBone::ConeJointData::_set(const StringName &p_name, const Variant &
 
 	if ("joint_constraints/swing_span" == p_name) {
 		swing_span = Math::deg2rad(real_t(p_value));
-		if (j.is_valid())
+		if (j.is_valid()) {
 			PhysicsServer::get_singleton()->cone_twist_joint_set_param(j, PhysicsServer::CONE_TWIST_JOINT_SWING_SPAN, swing_span);
+		}
 
 	} else if ("joint_constraints/twist_span" == p_name) {
 		twist_span = Math::deg2rad(real_t(p_value));
-		if (j.is_valid())
+		if (j.is_valid()) {
 			PhysicsServer::get_singleton()->cone_twist_joint_set_param(j, PhysicsServer::CONE_TWIST_JOINT_TWIST_SPAN, twist_span);
+		}
 
 	} else if ("joint_constraints/bias" == p_name) {
 		bias = p_value;
-		if (j.is_valid())
+		if (j.is_valid()) {
 			PhysicsServer::get_singleton()->cone_twist_joint_set_param(j, PhysicsServer::CONE_TWIST_JOINT_BIAS, bias);
+		}
 
 	} else if ("joint_constraints/softness" == p_name) {
 		softness = p_value;
-		if (j.is_valid())
+		if (j.is_valid()) {
 			PhysicsServer::get_singleton()->cone_twist_joint_set_param(j, PhysicsServer::CONE_TWIST_JOINT_SOFTNESS, softness);
+		}
 
 	} else if ("joint_constraints/relaxation" == p_name) {
 		relaxation = p_value;
-		if (j.is_valid())
+		if (j.is_valid()) {
 			PhysicsServer::get_singleton()->cone_twist_joint_set_param(j, PhysicsServer::CONE_TWIST_JOINT_RELAXATION, relaxation);
+		}
 
 	} else {
 		return false;
@@ -1702,33 +1553,39 @@ bool PhysicalBone::HingeJointData::_set(const StringName &p_name, const Variant 
 
 	if ("joint_constraints/angular_limit_enabled" == p_name) {
 		angular_limit_enabled = p_value;
-		if (j.is_valid())
+		if (j.is_valid()) {
 			PhysicsServer::get_singleton()->hinge_joint_set_flag(j, PhysicsServer::HINGE_JOINT_FLAG_USE_LIMIT, angular_limit_enabled);
+		}
 
 	} else if ("joint_constraints/angular_limit_upper" == p_name) {
 		angular_limit_upper = Math::deg2rad(real_t(p_value));
-		if (j.is_valid())
+		if (j.is_valid()) {
 			PhysicsServer::get_singleton()->hinge_joint_set_param(j, PhysicsServer::HINGE_JOINT_LIMIT_UPPER, angular_limit_upper);
+		}
 
 	} else if ("joint_constraints/angular_limit_lower" == p_name) {
 		angular_limit_lower = Math::deg2rad(real_t(p_value));
-		if (j.is_valid())
+		if (j.is_valid()) {
 			PhysicsServer::get_singleton()->hinge_joint_set_param(j, PhysicsServer::HINGE_JOINT_LIMIT_LOWER, angular_limit_lower);
+		}
 
 	} else if ("joint_constraints/angular_limit_bias" == p_name) {
 		angular_limit_bias = p_value;
-		if (j.is_valid())
+		if (j.is_valid()) {
 			PhysicsServer::get_singleton()->hinge_joint_set_param(j, PhysicsServer::HINGE_JOINT_LIMIT_BIAS, angular_limit_bias);
+		}
 
 	} else if ("joint_constraints/angular_limit_softness" == p_name) {
 		angular_limit_softness = p_value;
-		if (j.is_valid())
+		if (j.is_valid()) {
 			PhysicsServer::get_singleton()->hinge_joint_set_param(j, PhysicsServer::HINGE_JOINT_LIMIT_SOFTNESS, angular_limit_softness);
+		}
 
 	} else if ("joint_constraints/angular_limit_relaxation" == p_name) {
 		angular_limit_relaxation = p_value;
-		if (j.is_valid())
+		if (j.is_valid()) {
 			PhysicsServer::get_singleton()->hinge_joint_set_param(j, PhysicsServer::HINGE_JOINT_LIMIT_RELAXATION, angular_limit_relaxation);
+		}
 
 	} else {
 		return false;
@@ -1779,53 +1636,63 @@ bool PhysicalBone::SliderJointData::_set(const StringName &p_name, const Variant
 
 	if ("joint_constraints/linear_limit_upper" == p_name) {
 		linear_limit_upper = p_value;
-		if (j.is_valid())
+		if (j.is_valid()) {
 			PhysicsServer::get_singleton()->slider_joint_set_param(j, PhysicsServer::SLIDER_JOINT_LINEAR_LIMIT_UPPER, linear_limit_upper);
+		}
 
 	} else if ("joint_constraints/linear_limit_lower" == p_name) {
 		linear_limit_lower = p_value;
-		if (j.is_valid())
+		if (j.is_valid()) {
 			PhysicsServer::get_singleton()->slider_joint_set_param(j, PhysicsServer::SLIDER_JOINT_LINEAR_LIMIT_LOWER, linear_limit_lower);
+		}
 
 	} else if ("joint_constraints/linear_limit_softness" == p_name) {
 		linear_limit_softness = p_value;
-		if (j.is_valid())
+		if (j.is_valid()) {
 			PhysicsServer::get_singleton()->slider_joint_set_param(j, PhysicsServer::SLIDER_JOINT_LINEAR_LIMIT_SOFTNESS, linear_limit_softness);
+		}
 
 	} else if ("joint_constraints/linear_limit_restitution" == p_name) {
 		linear_limit_restitution = p_value;
-		if (j.is_valid())
+		if (j.is_valid()) {
 			PhysicsServer::get_singleton()->slider_joint_set_param(j, PhysicsServer::SLIDER_JOINT_LINEAR_LIMIT_RESTITUTION, linear_limit_restitution);
+		}
 
 	} else if ("joint_constraints/linear_limit_damping" == p_name) {
 		linear_limit_damping = p_value;
-		if (j.is_valid())
+		if (j.is_valid()) {
 			PhysicsServer::get_singleton()->slider_joint_set_param(j, PhysicsServer::SLIDER_JOINT_LINEAR_LIMIT_DAMPING, linear_limit_restitution);
+		}
 
 	} else if ("joint_constraints/angular_limit_upper" == p_name) {
 		angular_limit_upper = Math::deg2rad(real_t(p_value));
-		if (j.is_valid())
+		if (j.is_valid()) {
 			PhysicsServer::get_singleton()->slider_joint_set_param(j, PhysicsServer::SLIDER_JOINT_ANGULAR_LIMIT_UPPER, angular_limit_upper);
+		}
 
 	} else if ("joint_constraints/angular_limit_lower" == p_name) {
 		angular_limit_lower = Math::deg2rad(real_t(p_value));
-		if (j.is_valid())
+		if (j.is_valid()) {
 			PhysicsServer::get_singleton()->slider_joint_set_param(j, PhysicsServer::SLIDER_JOINT_ANGULAR_LIMIT_LOWER, angular_limit_lower);
+		}
 
 	} else if ("joint_constraints/angular_limit_softness" == p_name) {
 		angular_limit_softness = p_value;
-		if (j.is_valid())
+		if (j.is_valid()) {
 			PhysicsServer::get_singleton()->slider_joint_set_param(j, PhysicsServer::SLIDER_JOINT_ANGULAR_LIMIT_SOFTNESS, angular_limit_softness);
+		}
 
 	} else if ("joint_constraints/angular_limit_restitution" == p_name) {
 		angular_limit_restitution = p_value;
-		if (j.is_valid())
+		if (j.is_valid()) {
 			PhysicsServer::get_singleton()->slider_joint_set_param(j, PhysicsServer::SLIDER_JOINT_ANGULAR_LIMIT_SOFTNESS, angular_limit_softness);
+		}
 
 	} else if ("joint_constraints/angular_limit_damping" == p_name) {
 		angular_limit_damping = p_value;
-		if (j.is_valid())
+		if (j.is_valid()) {
 			PhysicsServer::get_singleton()->slider_joint_set_param(j, PhysicsServer::SLIDER_JOINT_ANGULAR_LIMIT_DAMPING, angular_limit_damping);
+		}
 
 	} else {
 		return false;
@@ -1911,108 +1778,129 @@ bool PhysicalBone::SixDOFJointData::_set(const StringName &p_name, const Variant
 
 	if ("linear_limit_enabled" == var_name) {
 		axis_data[axis].linear_limit_enabled = p_value;
-		if (j.is_valid())
+		if (j.is_valid()) {
 			PhysicsServer::get_singleton()->generic_6dof_joint_set_flag(j, axis, PhysicsServer::G6DOF_JOINT_FLAG_ENABLE_LINEAR_LIMIT, axis_data[axis].linear_limit_enabled);
+		}
 
 	} else if ("linear_limit_upper" == var_name) {
 		axis_data[axis].linear_limit_upper = p_value;
-		if (j.is_valid())
+		if (j.is_valid()) {
 			PhysicsServer::get_singleton()->generic_6dof_joint_set_param(j, axis, PhysicsServer::G6DOF_JOINT_LINEAR_UPPER_LIMIT, axis_data[axis].linear_limit_upper);
+		}
 
 	} else if ("linear_limit_lower" == var_name) {
 		axis_data[axis].linear_limit_lower = p_value;
-		if (j.is_valid())
+		if (j.is_valid()) {
 			PhysicsServer::get_singleton()->generic_6dof_joint_set_param(j, axis, PhysicsServer::G6DOF_JOINT_LINEAR_LOWER_LIMIT, axis_data[axis].linear_limit_lower);
+		}
 
 	} else if ("linear_limit_softness" == var_name) {
 		axis_data[axis].linear_limit_softness = p_value;
-		if (j.is_valid())
+		if (j.is_valid()) {
 			PhysicsServer::get_singleton()->generic_6dof_joint_set_param(j, axis, PhysicsServer::G6DOF_JOINT_LINEAR_LIMIT_SOFTNESS, axis_data[axis].linear_limit_softness);
+		}
 
 	} else if ("linear_spring_enabled" == var_name) {
 		axis_data[axis].linear_spring_enabled = p_value;
-		if (j.is_valid())
+		if (j.is_valid()) {
 			PhysicsServer::get_singleton()->generic_6dof_joint_set_flag(j, axis, PhysicsServer::G6DOF_JOINT_FLAG_ENABLE_LINEAR_SPRING, axis_data[axis].linear_spring_enabled);
+		}
 
 	} else if ("linear_spring_stiffness" == var_name) {
 		axis_data[axis].linear_spring_stiffness = p_value;
-		if (j.is_valid())
+		if (j.is_valid()) {
 			PhysicsServer::get_singleton()->generic_6dof_joint_set_param(j, axis, PhysicsServer::G6DOF_JOINT_LINEAR_SPRING_STIFFNESS, axis_data[axis].linear_spring_stiffness);
+		}
 
 	} else if ("linear_spring_damping" == var_name) {
 		axis_data[axis].linear_spring_damping = p_value;
-		if (j.is_valid())
+		if (j.is_valid()) {
 			PhysicsServer::get_singleton()->generic_6dof_joint_set_param(j, axis, PhysicsServer::G6DOF_JOINT_LINEAR_SPRING_DAMPING, axis_data[axis].linear_spring_damping);
+		}
 
 	} else if ("linear_equilibrium_point" == var_name) {
 		axis_data[axis].linear_equilibrium_point = p_value;
-		if (j.is_valid())
+		if (j.is_valid()) {
 			PhysicsServer::get_singleton()->generic_6dof_joint_set_param(j, axis, PhysicsServer::G6DOF_JOINT_LINEAR_SPRING_EQUILIBRIUM_POINT, axis_data[axis].linear_equilibrium_point);
+		}
 
 	} else if ("linear_restitution" == var_name) {
 		axis_data[axis].linear_restitution = p_value;
-		if (j.is_valid())
+		if (j.is_valid()) {
 			PhysicsServer::get_singleton()->generic_6dof_joint_set_param(j, axis, PhysicsServer::G6DOF_JOINT_LINEAR_RESTITUTION, axis_data[axis].linear_restitution);
+		}
 
 	} else if ("linear_damping" == var_name) {
 		axis_data[axis].linear_damping = p_value;
-		if (j.is_valid())
+		if (j.is_valid()) {
 			PhysicsServer::get_singleton()->generic_6dof_joint_set_param(j, axis, PhysicsServer::G6DOF_JOINT_LINEAR_DAMPING, axis_data[axis].linear_damping);
+		}
 
 	} else if ("angular_limit_enabled" == var_name) {
 		axis_data[axis].angular_limit_enabled = p_value;
-		if (j.is_valid())
+		if (j.is_valid()) {
 			PhysicsServer::get_singleton()->generic_6dof_joint_set_flag(j, axis, PhysicsServer::G6DOF_JOINT_FLAG_ENABLE_ANGULAR_LIMIT, axis_data[axis].angular_limit_enabled);
+		}
 
 	} else if ("angular_limit_upper" == var_name) {
 		axis_data[axis].angular_limit_upper = Math::deg2rad(real_t(p_value));
-		if (j.is_valid())
+		if (j.is_valid()) {
 			PhysicsServer::get_singleton()->generic_6dof_joint_set_param(j, axis, PhysicsServer::G6DOF_JOINT_ANGULAR_UPPER_LIMIT, axis_data[axis].angular_limit_upper);
+		}
 
 	} else if ("angular_limit_lower" == var_name) {
 		axis_data[axis].angular_limit_lower = Math::deg2rad(real_t(p_value));
-		if (j.is_valid())
+		if (j.is_valid()) {
 			PhysicsServer::get_singleton()->generic_6dof_joint_set_param(j, axis, PhysicsServer::G6DOF_JOINT_ANGULAR_LOWER_LIMIT, axis_data[axis].angular_limit_lower);
+		}
 
 	} else if ("angular_limit_softness" == var_name) {
 		axis_data[axis].angular_limit_softness = p_value;
-		if (j.is_valid())
+		if (j.is_valid()) {
 			PhysicsServer::get_singleton()->generic_6dof_joint_set_param(j, axis, PhysicsServer::G6DOF_JOINT_ANGULAR_LIMIT_SOFTNESS, axis_data[axis].angular_limit_softness);
+		}
 
 	} else if ("angular_restitution" == var_name) {
 		axis_data[axis].angular_restitution = p_value;
-		if (j.is_valid())
+		if (j.is_valid()) {
 			PhysicsServer::get_singleton()->generic_6dof_joint_set_param(j, axis, PhysicsServer::G6DOF_JOINT_ANGULAR_RESTITUTION, axis_data[axis].angular_restitution);
+		}
 
 	} else if ("angular_damping" == var_name) {
 		axis_data[axis].angular_damping = p_value;
-		if (j.is_valid())
+		if (j.is_valid()) {
 			PhysicsServer::get_singleton()->generic_6dof_joint_set_param(j, axis, PhysicsServer::G6DOF_JOINT_ANGULAR_DAMPING, axis_data[axis].angular_damping);
+		}
 
 	} else if ("erp" == var_name) {
 		axis_data[axis].erp = p_value;
-		if (j.is_valid())
+		if (j.is_valid()) {
 			PhysicsServer::get_singleton()->generic_6dof_joint_set_param(j, axis, PhysicsServer::G6DOF_JOINT_ANGULAR_ERP, axis_data[axis].erp);
+		}
 
 	} else if ("angular_spring_enabled" == var_name) {
 		axis_data[axis].angular_spring_enabled = p_value;
-		if (j.is_valid())
+		if (j.is_valid()) {
 			PhysicsServer::get_singleton()->generic_6dof_joint_set_flag(j, axis, PhysicsServer::G6DOF_JOINT_FLAG_ENABLE_ANGULAR_SPRING, axis_data[axis].angular_spring_enabled);
+		}
 
 	} else if ("angular_spring_stiffness" == var_name) {
 		axis_data[axis].angular_spring_stiffness = p_value;
-		if (j.is_valid())
+		if (j.is_valid()) {
 			PhysicsServer::get_singleton()->generic_6dof_joint_set_param(j, axis, PhysicsServer::G6DOF_JOINT_ANGULAR_SPRING_STIFFNESS, axis_data[axis].angular_spring_stiffness);
+		}
 
 	} else if ("angular_spring_damping" == var_name) {
 		axis_data[axis].angular_spring_damping = p_value;
-		if (j.is_valid())
+		if (j.is_valid()) {
 			PhysicsServer::get_singleton()->generic_6dof_joint_set_param(j, axis, PhysicsServer::G6DOF_JOINT_ANGULAR_SPRING_DAMPING, axis_data[axis].angular_spring_damping);
+		}
 
 	} else if ("angular_equilibrium_point" == var_name) {
 		axis_data[axis].angular_equilibrium_point = p_value;
-		if (j.is_valid())
+		if (j.is_valid()) {
 			PhysicsServer::get_singleton()->generic_6dof_joint_set_param(j, axis, PhysicsServer::G6DOF_JOINT_ANGULAR_SPRING_EQUILIBRIUM_POINT, axis_data[axis].angular_equilibrium_point);
+		}
 
 	} else {
 		return false;
@@ -2131,10 +2019,11 @@ bool PhysicalBone::_set(const StringName &p_name, const Variant &p_value) {
 	}
 
 	if (joint_data) {
-		if (joint_data->_set(p_name, p_value)) {
+		if (joint_data->_set(p_name, p_value, joint)) {
 #ifdef TOOLS_ENABLED
-			if (get_gizmo().is_valid())
+			if (get_gizmo().is_valid()) {
 				get_gizmo()->redraw();
+			}
 #endif
 			return true;
 		}
@@ -2157,21 +2046,19 @@ bool PhysicalBone::_get(const StringName &p_name, Variant &r_ret) const {
 }
 
 void PhysicalBone::_get_property_list(List<PropertyInfo> *p_list) const {
-
 	Skeleton *parent = find_skeleton_parent(get_parent());
 
 	if (parent) {
-
 		String names;
 		for (int i = 0; i < parent->get_bone_count(); i++) {
-			if (i > 0)
+			if (i > 0) {
 				names += ",";
+			}
 			names += parent->get_bone_name(i);
 		}
 
 		p_list->push_back(PropertyInfo(Variant::STRING, "bone_name", PROPERTY_HINT_ENUM, names));
 	} else {
-
 		p_list->push_back(PropertyInfo(Variant::STRING, "bone_name"));
 	}
 
@@ -2195,9 +2082,11 @@ void PhysicalBone::_notification(int p_what) {
 			if (parent_skeleton) {
 				if (-1 != bone_id) {
 					parent_skeleton->unbind_physical_bone_from_bone(bone_id);
+					parent_skeleton->unbind_child_node_from_bone(bone_id, this);
+					bone_id = -1;
 				}
 			}
-			parent_skeleton = NULL;
+			parent_skeleton = nullptr;
 			if (joint.is_valid()) {
 				PhysicsServer::get_singleton()->free(joint);
 				joint = RID();
@@ -2205,7 +2094,6 @@ void PhysicalBone::_notification(int p_what) {
 			break;
 		case NOTIFICATION_TRANSFORM_CHANGED:
 			if (Engine::get_singleton()->is_editor_hint()) {
-
 				update_offset();
 			}
 			break;
@@ -2213,26 +2101,21 @@ void PhysicalBone::_notification(int p_what) {
 }
 
 void PhysicalBone::_direct_state_changed(Object *p_state) {
-
 	if (!simulate_physics || !_internal_simulate_physics) {
 		return;
 	}
 
 	/// Update bone transform
 
-	PhysicsDirectBodyState *state;
-
-#ifdef DEBUG_ENABLED
-	state = Object::cast_to<PhysicsDirectBodyState>(p_state);
-#else
-	state = (PhysicsDirectBodyState *)p_state; //trust it
-#endif
+	PhysicsDirectBodyState *state = Object::cast_to<PhysicsDirectBodyState>(p_state);
+	ERR_FAIL_COND_MSG(!state, "Method '_direct_state_changed' must receive a valid PhysicsDirectBodyState object as argument");
 
 	Transform global_transform(state->get_transform());
 
 	set_ignore_transform_notification(true);
 	set_global_transform(global_transform);
 	set_ignore_transform_notification(false);
+	_on_transform_changed();
 
 	// Update skeleton
 	if (parent_skeleton) {
@@ -2302,7 +2185,7 @@ void PhysicalBone::_bind_methods() {
 
 Skeleton *PhysicalBone::find_skeleton_parent(Node *p_parent) {
 	if (!p_parent) {
-		return NULL;
+		return nullptr;
 	}
 	Skeleton *s = Object::cast_to<Skeleton>(p_parent);
 	return s ? s : find_skeleton_parent(p_parent->get_parent());
@@ -2316,7 +2199,6 @@ void PhysicalBone::_fix_joint_offset() {
 }
 
 void PhysicalBone::_reload_joint() {
-
 	if (joint.is_valid()) {
 		PhysicsServer::get_singleton()->free(joint);
 		joint = RID();
@@ -2337,7 +2219,6 @@ void PhysicalBone::_reload_joint() {
 
 	switch (get_joint_type()) {
 		case JOINT_TYPE_PIN: {
-
 			joint = PhysicsServer::get_singleton()->joint_create_pin(body_a->get_rid(), local_a.origin, get_rid(), joint_offset.origin);
 			const PinJointData *pjd(static_cast<const PinJointData *>(joint_data));
 			PhysicsServer::get_singleton()->pin_joint_set_param(joint, PhysicsServer::PIN_JOINT_BIAS, pjd->bias);
@@ -2346,7 +2227,6 @@ void PhysicalBone::_reload_joint() {
 
 		} break;
 		case JOINT_TYPE_CONE: {
-
 			joint = PhysicsServer::get_singleton()->joint_create_cone_twist(body_a->get_rid(), local_a, get_rid(), joint_offset);
 			const ConeJointData *cjd(static_cast<const ConeJointData *>(joint_data));
 			PhysicsServer::get_singleton()->cone_twist_joint_set_param(joint, PhysicsServer::CONE_TWIST_JOINT_SWING_SPAN, cjd->swing_span);
@@ -2357,7 +2237,6 @@ void PhysicalBone::_reload_joint() {
 
 		} break;
 		case JOINT_TYPE_HINGE: {
-
 			joint = PhysicsServer::get_singleton()->joint_create_hinge(body_a->get_rid(), local_a, get_rid(), joint_offset);
 			const HingeJointData *hjd(static_cast<const HingeJointData *>(joint_data));
 			PhysicsServer::get_singleton()->hinge_joint_set_flag(joint, PhysicsServer::HINGE_JOINT_FLAG_USE_LIMIT, hjd->angular_limit_enabled);
@@ -2369,7 +2248,6 @@ void PhysicalBone::_reload_joint() {
 
 		} break;
 		case JOINT_TYPE_SLIDER: {
-
 			joint = PhysicsServer::get_singleton()->joint_create_slider(body_a->get_rid(), local_a, get_rid(), joint_offset);
 			const SliderJointData *sjd(static_cast<const SliderJointData *>(joint_data));
 			PhysicsServer::get_singleton()->slider_joint_set_param(joint, PhysicsServer::SLIDER_JOINT_LINEAR_LIMIT_UPPER, sjd->linear_limit_upper);
@@ -2385,7 +2263,6 @@ void PhysicalBone::_reload_joint() {
 
 		} break;
 		case JOINT_TYPE_6DOF: {
-
 			joint = PhysicsServer::get_singleton()->joint_create_generic_6dof(body_a->get_rid(), local_a, get_rid(), joint_offset);
 			const SixDOFJointData *g6dofjd(static_cast<const SixDOFJointData *>(joint_data));
 			for (int axis = 0; axis < 3; ++axis) {
@@ -2448,13 +2325,14 @@ Skeleton *PhysicalBone::find_skeleton_parent() {
 }
 
 void PhysicalBone::set_joint_type(JointType p_joint_type) {
-
-	if (p_joint_type == get_joint_type())
+	if (p_joint_type == get_joint_type()) {
 		return;
+	}
 
-	if (joint_data)
+	if (joint_data) {
 		memdelete(joint_data);
-	joint_data = NULL;
+	}
+	joint_data = nullptr;
 	switch (p_joint_type) {
 		case JOINT_TYPE_PIN:
 			joint_data = memnew(PinJointData);
@@ -2479,8 +2357,9 @@ void PhysicalBone::set_joint_type(JointType p_joint_type) {
 
 #ifdef TOOLS_ENABLED
 	_change_notify();
-	if (get_gizmo().is_valid())
+	if (get_gizmo().is_valid()) {
 		get_gizmo()->redraw();
+	}
 #endif
 }
 
@@ -2498,8 +2377,9 @@ void PhysicalBone::set_joint_offset(const Transform &p_offset) {
 	set_ignore_transform_notification(false);
 
 #ifdef TOOLS_ENABLED
-	if (get_gizmo().is_valid())
+	if (get_gizmo().is_valid()) {
 		get_gizmo()->redraw();
+	}
 #endif
 }
 
@@ -2518,8 +2398,9 @@ void PhysicalBone::set_body_offset(const Transform &p_offset) {
 	set_ignore_transform_notification(false);
 
 #ifdef TOOLS_ENABLED
-	if (get_gizmo().is_valid())
+	if (get_gizmo().is_valid()) {
 		get_gizmo()->redraw();
+	}
 #endif
 }
 
@@ -2528,7 +2409,6 @@ const Transform &PhysicalBone::get_joint_offset() const {
 }
 
 void PhysicalBone::set_static_body(bool p_static) {
-
 	static_body = p_static;
 
 	set_as_toplevel(!static_body);
@@ -2558,7 +2438,6 @@ bool PhysicalBone::is_simulating_physics() {
 }
 
 void PhysicalBone::set_bone_name(const String &p_name) {
-
 	bone_name = p_name;
 	bone_id = -1;
 
@@ -2567,34 +2446,28 @@ void PhysicalBone::set_bone_name(const String &p_name) {
 }
 
 const String &PhysicalBone::get_bone_name() const {
-
 	return bone_name;
 }
 
 void PhysicalBone::set_mass(real_t p_mass) {
-
 	ERR_FAIL_COND(p_mass <= 0);
 	mass = p_mass;
 	PhysicsServer::get_singleton()->body_set_param(get_rid(), PhysicsServer::BODY_PARAM_MASS, mass);
 }
 
 real_t PhysicalBone::get_mass() const {
-
 	return mass;
 }
 
 void PhysicalBone::set_weight(real_t p_weight) {
-
 	set_mass(p_weight / real_t(GLOBAL_DEF("physics/3d/default_gravity", 9.8)));
 }
 
 real_t PhysicalBone::get_weight() const {
-
 	return mass * real_t(GLOBAL_DEF("physics/3d/default_gravity", 9.8));
 }
 
 void PhysicalBone::set_friction(real_t p_friction) {
-
 	ERR_FAIL_COND(p_friction < 0 || p_friction > 1);
 
 	friction = p_friction;
@@ -2602,12 +2475,10 @@ void PhysicalBone::set_friction(real_t p_friction) {
 }
 
 real_t PhysicalBone::get_friction() const {
-
 	return friction;
 }
 
 void PhysicalBone::set_bounce(real_t p_bounce) {
-
 	ERR_FAIL_COND(p_bounce < 0 || p_bounce > 1);
 
 	bounce = p_bounce;
@@ -2615,18 +2486,15 @@ void PhysicalBone::set_bounce(real_t p_bounce) {
 }
 
 real_t PhysicalBone::get_bounce() const {
-
 	return bounce;
 }
 
 void PhysicalBone::set_gravity_scale(real_t p_gravity_scale) {
-
 	gravity_scale = p_gravity_scale;
 	PhysicsServer::get_singleton()->body_set_param(get_rid(), PhysicsServer::BODY_PARAM_GRAVITY_SCALE, gravity_scale);
 }
 
 real_t PhysicalBone::get_gravity_scale() const {
-
 	return gravity_scale;
 }
 
@@ -2635,8 +2503,8 @@ PhysicalBone::PhysicalBone() :
 #ifdef TOOLS_ENABLED
 		gizmo_move_joint(false),
 #endif
-		joint_data(NULL),
-		parent_skeleton(NULL),
+		joint_data(nullptr),
+		parent_skeleton(nullptr),
 		static_body(false),
 		_internal_static_body(false),
 		simulate_physics(false),
@@ -2653,8 +2521,9 @@ PhysicalBone::PhysicalBone() :
 }
 
 PhysicalBone::~PhysicalBone() {
-	if (joint_data)
+	if (joint_data) {
 		memdelete(joint_data);
+	}
 }
 
 void PhysicalBone::update_bone_id() {
@@ -2684,10 +2553,10 @@ void PhysicalBone::update_bone_id() {
 void PhysicalBone::update_offset() {
 #ifdef TOOLS_ENABLED
 	if (parent_skeleton) {
-
 		Transform bone_transform(parent_skeleton->get_global_transform());
-		if (-1 != bone_id)
+		if (-1 != bone_id) {
 			bone_transform *= parent_skeleton->get_bone_global_pose(bone_id);
+		}
 
 		if (gizmo_move_joint) {
 			bone_transform *= body_offset;
@@ -2720,7 +2589,6 @@ void PhysicalBone::_reset_physics_simulation_state() {
 }
 
 void PhysicalBone::_reset_staticness_state() {
-
 	if (parent_skeleton && -1 != bone_id) {
 		if (static_body && simulate_physics) { // With this check I'm sure the position of this body is updated only when it's necessary
 
@@ -2731,7 +2599,6 @@ void PhysicalBone::_reset_staticness_state() {
 			parent_skeleton->bind_child_node_to_bone(bone_id, this);
 			_internal_static_body = true;
 		} else {
-
 			if (!_internal_static_body) {
 				return;
 			}
@@ -2761,7 +2628,7 @@ void PhysicalBone::_stop_physics_simulation() {
 	PhysicsServer::get_singleton()->body_set_mode(get_rid(), PhysicsServer::BODY_MODE_STATIC);
 	PhysicsServer::get_singleton()->body_set_collision_layer(get_rid(), 0);
 	PhysicsServer::get_singleton()->body_set_collision_mask(get_rid(), 0);
-	PhysicsServer::get_singleton()->body_set_force_integration_callback(get_rid(), NULL, "");
+	PhysicsServer::get_singleton()->body_set_force_integration_callback(get_rid(), nullptr, "");
 	parent_skeleton->set_bone_global_pose_override(bone_id, Transform(), 0.0, false);
 	_internal_simulate_physics = false;
 }

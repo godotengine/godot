@@ -1,8 +1,9 @@
-// Copyright 2009-2020 Intel Corporation
+// Copyright 2009-2021 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
 #include "bvh.h"
 #include "../builders/bvh_builder_sah.h"
+#include "../builders/bvh_builder_msmblur.h"
 
 namespace embree
 {

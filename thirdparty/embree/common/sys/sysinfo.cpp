@@ -1,4 +1,4 @@
-// Copyright 2009-2020 Intel Corporation
+// Copyright 2009-2021 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
 #include "sysinfo.h"
@@ -21,29 +21,29 @@ namespace embree
   
   std::string getPlatformName() 
   {
-#if defined(__LINUX__) && !defined(__X86_64__)
+#if defined(__LINUX__) && !defined(__64BIT__)
     return "Linux (32bit)";
-#elif defined(__LINUX__) && defined(__X86_64__)
+#elif defined(__LINUX__) && defined(__64BIT__)
     return "Linux (64bit)";
-#elif defined(__FREEBSD__) && !defined(__X86_64__)
+#elif defined(__FREEBSD__) && !defined(__64BIT__)
     return "FreeBSD (32bit)";
-#elif defined(__FREEBSD__) && defined(__X86_64__)
+#elif defined(__FREEBSD__) && defined(__64BIT__)
     return "FreeBSD (64bit)";
-#elif defined(__CYGWIN__) && !defined(__X86_64__)
+#elif defined(__CYGWIN__) && !defined(__64BIT__)
     return "Cygwin (32bit)";
-#elif defined(__CYGWIN__) && defined(__X86_64__)
+#elif defined(__CYGWIN__) && defined(__64BIT__)
     return "Cygwin (64bit)";
-#elif defined(__WIN32__) && !defined(__X86_64__)
+#elif defined(__WIN32__) && !defined(__64BIT__)
     return "Windows (32bit)";
-#elif defined(__WIN32__) && defined(__X86_64__)
+#elif defined(__WIN32__) && defined(__64BIT__)
     return "Windows (64bit)";
-#elif defined(__MACOSX__) && !defined(__X86_64__)
+#elif defined(__MACOSX__) && !defined(__64BIT__)
     return "Mac OS X (32bit)";
-#elif defined(__MACOSX__) && defined(__X86_64__)
+#elif defined(__MACOSX__) && defined(__64BIT__)
     return "Mac OS X (64bit)";
-#elif defined(__UNIX__) && !defined(__X86_64__)
+#elif defined(__UNIX__) && !defined(__64BIT__)
     return "Unix (32bit)";
-#elif defined(__UNIX__) && defined(__X86_64__)
+#elif defined(__UNIX__) && defined(__64BIT__)
     return "Unix (64bit)";
 #else
     return "Unknown";
@@ -79,6 +79,7 @@ namespace embree
 
   std::string getCPUVendor()
   {
+#if defined(__X86_ASM__)
     int cpuinfo[4]; 
     __cpuid (cpuinfo, 0); 
     int name[4];
@@ -87,10 +88,16 @@ namespace embree
     name[2] = cpuinfo[2];
     name[3] = 0;
     return (char*)name;
+#elif defined(__ARM_NEON)
+    return "ARM";
+#else
+    return "Unknown";
+#endif
   }
 
   CPU getCPUModel() 
   {
+#if defined(__X86_ASM__)
     if (getCPUVendor() != "GenuineIntel")
       return CPU::UNKNOWN;
     
@@ -157,6 +164,10 @@ namespace embree
     if (DisplayFamily_DisplayModel == 0x0685) return CPU::XEON_PHI_KNIGHTS_MILL;
     if (DisplayFamily_DisplayModel == 0x0657) return CPU::XEON_PHI_KNIGHTS_LANDING;
     
+#elif defined(__ARM_NEON)
+    return CPU::ARM;
+#endif
+    
     return CPU::UNKNOWN;
   }
 
@@ -183,11 +194,13 @@ namespace embree
     case CPU::NEHALEM                 : return "Nehalem";
     case CPU::CORE2                   : return "Core2";
     case CPU::CORE1                   : return "Core";
+    case CPU::ARM                     : return "ARM";
     case CPU::UNKNOWN                 : return "Unknown CPU";
     }
     return "Unknown CPU (error)";
   }
 
+#if defined(__X86_ASM__)
   /* constants to access destination registers of CPUID instruction */
   static const int EAX = 0;
   static const int EBX = 1;
@@ -230,10 +243,14 @@ namespace embree
   
   /* cpuid[eax=7,ecx=0].ecx */
   static const int CPU_FEATURE_BIT_AVX512VBMI = 1 << 1;   // AVX512VBMI (vector bit manipulation instructions)
+#endif
 
+#if defined(__X86_ASM__)
   __noinline int64_t get_xcr0() 
   {
-#if defined (__WIN32__) /* -- GODOT start -- */ && !defined (__MINGW32__) /* -- GODOT end -- */
+// -- GODOT start --
+#if defined (__WIN32__) && !defined (__MINGW32__)
+// -- GODOT end --
     int64_t xcr0 = 0; // int64_t is workaround for compiler bug under VS2013, Win32
     xcr0 = _xgetbv(0);
     return xcr0;
@@ -243,9 +260,11 @@ namespace embree
     return xcr0;
 #endif
   }
+#endif
 
   int getCPUFeatures()
   {
+#if defined(__X86_ASM__)
     /* cache CPU features access */
     static int cpu_features = 0;
     if (cpu_features) 
@@ -318,6 +337,13 @@ namespace embree
     if (cpuid_leaf_7[ECX] & CPU_FEATURE_BIT_AVX512VBMI) cpu_features |= CPU_FEATURE_AVX512VBMI;
 
     return cpu_features;
+#elif defined(__ARM_NEON)
+    /* emulated features with sse2neon */
+    return CPU_FEATURE_SSE|CPU_FEATURE_SSE2|CPU_FEATURE_XMM_ENABLED;
+#else
+    /* Unknown CPU. */
+    return 0;
+#endif
   }
 
   std::string stringOfCPUFeatures(int features)
@@ -363,8 +389,7 @@ namespace embree
     if (isa == SSE42) return "SSE4.2";
     if (isa == AVX) return "AVX";
     if (isa == AVX2) return "AVX2";
-    if (isa == AVX512KNL) return "AVX512KNL";
-    if (isa == AVX512SKX) return "AVX512SKX";
+    if (isa == AVX512) return "AVX512";
     return "UNKNOWN";
   }
 
@@ -384,8 +409,7 @@ namespace embree
     if (hasISA(features,AVX)) v += "AVX ";
     if (hasISA(features,AVXI)) v += "AVXI ";
     if (hasISA(features,AVX2)) v += "AVX2 ";
-    if (hasISA(features,AVX512KNL)) v += "AVX512KNL ";
-    if (hasISA(features,AVX512SKX)) v += "AVX512SKX ";
+    if (hasISA(features,AVX512)) v += "AVX512 ";
     return v;
   }
 }
@@ -596,7 +620,10 @@ namespace embree
     static int nThreads = -1;
     if (nThreads != -1) return nThreads;
 
-#if defined(__MACOSX__)
+// -- GODOT start --
+// #if defined(__MACOSX__)
+#if defined(__MACOSX__) || defined(__ANDROID__)
+// -- GODOT end --
     nThreads = sysconf(_SC_NPROCESSORS_ONLN); // does not work in Linux LXC container
     assert(nThreads);
 #else

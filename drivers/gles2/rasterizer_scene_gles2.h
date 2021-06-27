@@ -94,7 +94,6 @@ private:
 public:
 	RasterizerStorageGLES2 *storage;
 	struct State {
-
 		bool texscreen_copied;
 		int current_blend_mode;
 		float current_line_width;
@@ -309,7 +308,6 @@ public:
 	/* REFLECTION PROBE INSTANCE */
 
 	struct ReflectionProbeInstance : public RID_Data {
-
 		RasterizerStorageGLES2::ReflectionProbe *probe_ptr;
 		RID probe;
 		RID self;
@@ -502,7 +500,6 @@ public:
 	/* LIGHT INSTANCE */
 
 	struct LightInstance : public RID_Data {
-
 		struct ShadowTransform {
 			CameraMatrix camera;
 			Transform transform;
@@ -568,7 +565,6 @@ public:
 	};
 
 	struct RenderList {
-
 		enum {
 			MAX_LIGHTS = 255,
 			MAX_REFLECTION_PROBES = 255,
@@ -653,7 +649,6 @@ public:
 		}
 
 		struct SortByDepth {
-
 			_FORCE_INLINE_ bool operator()(const Element *A, const Element *B) const {
 				return A->instance->depth < B->instance->depth;
 			}
@@ -670,7 +665,6 @@ public:
 		}
 
 		struct SortByReverseDepthAndPriority {
-
 			_FORCE_INLINE_ bool operator()(const Element *A, const Element *B) const {
 				if (A->priority == B->priority) {
 					return A->instance->depth > B->instance->depth;
@@ -693,8 +687,9 @@ public:
 		// element adding and stuff
 
 		_FORCE_INLINE_ Element *add_element() {
-			if (element_count + alpha_element_count >= max_elements)
-				return NULL;
+			if (element_count + alpha_element_count >= max_elements) {
+				return nullptr;
+			}
 
 			elements[element_count] = &base_elements[element_count];
 			return elements[element_count++];
@@ -702,7 +697,7 @@ public:
 
 		_FORCE_INLINE_ Element *add_alpha_element() {
 			if (element_count + alpha_element_count >= max_elements) {
-				return NULL;
+				return nullptr;
 			}
 
 			int idx = max_elements - alpha_element_count - 1;
@@ -743,6 +738,7 @@ public:
 	void _render_render_list(RenderList::Element **p_elements, int p_element_count,
 			const Transform &p_view_transform,
 			const CameraMatrix &p_projection,
+			const int p_eye,
 			RID p_shadow_atlas,
 			Environment *p_env,
 			GLuint p_base_env,
@@ -764,7 +760,7 @@ public:
 
 	void _post_process(Environment *env, const CameraMatrix &p_cam_projection);
 
-	virtual void render_scene(const Transform &p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_ortogonal, InstanceBase **p_cull_result, int p_cull_count, RID *p_light_cull_result, int p_light_cull_count, RID *p_reflection_probe_cull_result, int p_reflection_probe_cull_count, RID p_environment, RID p_shadow_atlas, RID p_reflection_atlas, RID p_reflection_probe, int p_reflection_probe_pass);
+	virtual void render_scene(const Transform &p_cam_transform, const CameraMatrix &p_cam_projection, const int p_eye, bool p_cam_ortogonal, InstanceBase **p_cull_result, int p_cull_count, RID *p_light_cull_result, int p_light_cull_count, RID *p_reflection_probe_cull_result, int p_reflection_probe_cull_count, RID p_environment, RID p_shadow_atlas, RID p_reflection_atlas, RID p_reflection_probe, int p_reflection_probe_pass);
 	virtual void render_shadow(RID p_light, RID p_shadow_atlas, int p_pass, InstanceBase **p_cull_result, int p_cull_count);
 	virtual bool free(RID p_rid);
 

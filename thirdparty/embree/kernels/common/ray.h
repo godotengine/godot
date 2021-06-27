@@ -1,4 +1,4 @@
-// Copyright 2009-2020 Intel Corporation
+// Copyright 2009-2021 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
 #pragma once
@@ -292,7 +292,7 @@ namespace embree
     ray.u = u[i]; ray.v = v[i];
     ray.primID = primID[i]; ray.geomID = geomID[i]; 
 
-    instance_id_stack::copy(instID, ray.instID, i);
+    instance_id_stack::copy_VU<K>(instID, ray.instID, i);
   }
 
   /* Converts single rays to ray packet */
@@ -331,7 +331,7 @@ namespace embree
     u[i] = ray.u; v[i] = ray.v;
     primID[i] = ray.primID; geomID[i] = ray.geomID;
 
-    instance_id_stack::copy(ray.instID, instID, i);
+    instance_id_stack::copy_UV<K>(ray.instID, instID, i);
   }
 
   /* copies a ray packet element into another element*/
@@ -353,7 +353,7 @@ namespace embree
     u[dest] = u[source]; v[dest] = v[source];
     primID[dest] = primID[source]; geomID[dest] = geomID[source];  
 
-    instance_id_stack::copy(instID, instID, source, dest);
+    instance_id_stack::copy_VV<K>(instID, instID, source, dest);
   }
 
   /* Shortcuts */
@@ -1112,7 +1112,7 @@ namespace embree
     __forceinline RayK<K> getRayByOffset(const vbool<K>& valid, const vint<K>& offset)
     {
       const vint<K> valid_offset = select(valid, offset, vintx(zero));
-      return getRayByOffset(valid_offset);
+      return getRayByOffset<K>(valid_offset);
     }
 
     template<int K>
@@ -1153,7 +1153,7 @@ namespace embree
           ray_k->primID = ray.primID[k];
           ray_k->geomID = ray.geomID[k];
 
-          instance_id_stack::copy(ray.instID, ray_k->instID, k);
+          instance_id_stack::copy_VU<K>(ray.instID, ray_k->instID, k);
         }
 #endif
       }
@@ -1185,7 +1185,7 @@ namespace embree
   };
 
   template<>
-  __forceinline Ray4 RayStreamAOS::getRayByOffset(const vint4& offset)
+  __forceinline Ray4 RayStreamAOS::getRayByOffset<4>(const vint4& offset)
   {
     Ray4 ray;
 
@@ -1222,7 +1222,7 @@ namespace embree
 
 #if defined(__AVX__)
   template<>
-  __forceinline Ray8 RayStreamAOS::getRayByOffset(const vint8& offset)
+  __forceinline Ray8 RayStreamAOS::getRayByOffset<8>(const vint8& offset)
   {
     Ray8 ray;
 
@@ -1260,7 +1260,7 @@ namespace embree
 
 #if defined(__AVX512F__)
   template<>
-  __forceinline Ray16 RayStreamAOS::getRayByOffset(const vint16& offset)
+  __forceinline Ray16 RayStreamAOS::getRayByOffset<16>(const vint16& offset)
   {
     Ray16 ray;
 
@@ -1332,7 +1332,7 @@ namespace embree
     __forceinline RayK<K> getRayByIndex(const vbool<K>& valid, const vint<K>& index)
     {
       const vint<K> valid_index = select(valid, index, vintx(zero));
-      return getRayByIndex(valid_index);
+      return getRayByIndex<K>(valid_index);
     }
 
     template<int K>
@@ -1357,7 +1357,7 @@ namespace embree
           ray_k->v      = ray.v[k];
           ray_k->primID = ray.primID[k];
           ray_k->geomID = ray.geomID[k];
-          instance_id_stack::copy(ray.instID, ray_k->instID, k);
+          instance_id_stack::copy_VU<K>(ray.instID, ray_k->instID, k);
         }
       }
     }
@@ -1385,7 +1385,7 @@ namespace embree
   };
 
   template<>
-  __forceinline Ray4 RayStreamAOP::getRayByIndex(const vint4& index)
+  __forceinline Ray4 RayStreamAOP::getRayByIndex<4>(const vint4& index)
   {
     Ray4 ray;
 
@@ -1422,7 +1422,7 @@ namespace embree
 
 #if defined(__AVX__)
   template<>
-  __forceinline Ray8 RayStreamAOP::getRayByIndex(const vint8& index)
+  __forceinline Ray8 RayStreamAOP::getRayByIndex<8>(const vint8& index)
   {
     Ray8 ray;
 
@@ -1460,7 +1460,7 @@ namespace embree
 
 #if defined(__AVX512F__)
   template<>
-  __forceinline Ray16 RayStreamAOP::getRayByIndex(const vint16& index)
+  __forceinline Ray16 RayStreamAOP::getRayByIndex<16>(const vint16& index)
   {
     Ray16 ray;
 

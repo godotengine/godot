@@ -70,6 +70,7 @@ public:
 
 	Control *get_editor_viewport();
 	void edit_resource(const Ref<Resource> &p_resource);
+	void edit_node(Node *p_node);
 	void open_scene_from_path(const String &scene_path);
 	void reload_scene_from_path(const String &scene_path);
 
@@ -99,6 +100,7 @@ public:
 	FileSystemDock *get_file_system_dock();
 
 	Control *get_base_control();
+	float get_editor_scale() const;
 
 	void set_plugin_enabled(const String &p_plugin, bool p_enabled);
 	bool is_plugin_enabled(const String &p_plugin) const;
@@ -108,7 +110,7 @@ public:
 	Error save_scene();
 	void save_scene_as(const String &p_scene, bool p_with_preview = true);
 
-	Vector<Ref<Texture> > make_mesh_previews(const Vector<Ref<Mesh> > &p_meshes, Vector<Transform> *p_transforms, int p_preview_size);
+	Vector<Ref<Texture>> make_mesh_previews(const Vector<Ref<Mesh>> &p_meshes, Vector<Transform> *p_transforms, int p_preview_size);
 
 	void set_main_screen_editor(const String &p_name);
 	void set_distraction_free_mode(bool p_enter);
@@ -118,7 +120,6 @@ public:
 };
 
 class EditorPlugin : public Node {
-
 	GDCLASS(EditorPlugin, Node);
 	friend class EditorData;
 	UndoRedo *undo_redo;
@@ -260,7 +261,6 @@ VARIANT_ENUM_CAST(EditorPlugin::DockSlot);
 typedef EditorPlugin *(*EditorPluginCreateFunc)(EditorNode *);
 
 class EditorPlugins {
-
 	enum {
 		MAX_CREATE_FUNCS = 64
 	};
@@ -276,7 +276,7 @@ class EditorPlugins {
 public:
 	static int get_plugin_count() { return creation_func_count; }
 	static EditorPlugin *create(int p_idx, EditorNode *p_editor) {
-		ERR_FAIL_INDEX_V(p_idx, creation_func_count, NULL);
+		ERR_FAIL_INDEX_V(p_idx, creation_func_count, nullptr);
 		return creation_funcs[p_idx](p_editor);
 	}
 
@@ -286,7 +286,6 @@ public:
 	}
 
 	static void add_create_func(EditorPluginCreateFunc p_func) {
-
 		ERR_FAIL_COND(creation_func_count >= MAX_CREATE_FUNCS);
 		creation_funcs[creation_func_count++] = p_func;
 	}

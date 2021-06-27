@@ -42,7 +42,6 @@
 
 Generic6DOFJointBullet::Generic6DOFJointBullet(RigidBodyBullet *rbA, RigidBodyBullet *rbB, const Transform &frameInA, const Transform &frameInB) :
 		JointBullet() {
-
 	Transform scaled_AFrame(frameInA.scaled(rbA->get_body_scale()));
 
 	scaled_AFrame.basis.rotref_posscale_decomposition(scaled_AFrame.basis);

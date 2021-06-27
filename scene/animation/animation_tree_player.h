@@ -37,7 +37,6 @@
 #include "scene/resources/animation.h"
 
 class AnimationTreePlayer : public Node {
-
 	GDCLASS(AnimationTreePlayer, Node);
 	OBJ_CATEGORY("Animation Nodes");
 
@@ -77,20 +76,20 @@ private:
 	};
 
 	struct TrackKey {
-
 		uint32_t id;
 		StringName subpath_concatenated;
 		int bone_idx;
 
 		inline bool operator<(const TrackKey &p_right) const {
-
 			if (id == p_right.id) {
 				if (bone_idx == p_right.bone_idx) {
 					return subpath_concatenated < p_right.subpath_concatenated;
-				} else
+				} else {
 					return bone_idx < p_right.bone_idx;
-			} else
+				}
+			} else {
 				return id < p_right.id;
+			}
 		}
 	};
 
@@ -112,9 +111,9 @@ private:
 
 		Track() :
 				id(0),
-				object(NULL),
-				spatial(NULL),
-				skeleton(NULL),
+				object(nullptr),
+				spatial(nullptr),
+				skeleton(nullptr),
 				bone_idx(-1),
 				skip(false) {}
 	};
@@ -124,13 +123,11 @@ private:
 	TrackMap track_map;
 
 	struct Input {
-
 		StringName node;
 		//Input() { node=-1;  }
 	};
 
 	struct NodeBase {
-
 		bool cycletest;
 
 		NodeType type;
@@ -143,7 +140,6 @@ private:
 	};
 
 	struct NodeOut : public NodeBase {
-
 		NodeOut() {
 			type = NODE_OUTPUT;
 			inputs.resize(1);
@@ -151,7 +147,6 @@ private:
 	};
 
 	struct AnimationNode : public NodeBase {
-
 		Ref<Animation> animation;
 
 		struct TrackRef {
@@ -172,14 +167,13 @@ private:
 
 		AnimationNode() {
 			type = NODE_ANIMATION;
-			next = NULL;
+			next = nullptr;
 			last_version = 0;
 			skip = false;
 		}
 	};
 
 	struct OneShotNode : public NodeBase {
-
 		bool active;
 		bool start;
 		float fade_in;
@@ -211,7 +205,6 @@ private:
 	};
 
 	struct MixNode : public NodeBase {
-
 		float amount;
 		MixNode() {
 			type = NODE_MIX;
@@ -220,7 +213,6 @@ private:
 	};
 
 	struct Blend2Node : public NodeBase {
-
 		float value;
 		HashMap<NodePath, bool> filter;
 		Blend2Node() {
@@ -231,7 +223,6 @@ private:
 	};
 
 	struct Blend3Node : public NodeBase {
-
 		float value;
 		Blend3Node() {
 			type = NODE_BLEND3;
@@ -241,7 +232,6 @@ private:
 	};
 
 	struct Blend4Node : public NodeBase {
-
 		Point2 value;
 		Blend4Node() {
 			type = NODE_BLEND4;
@@ -250,7 +240,6 @@ private:
 	};
 
 	struct TimeScaleNode : public NodeBase {
-
 		float scale;
 		TimeScaleNode() {
 			type = NODE_TIMESCALE;
@@ -260,7 +249,6 @@ private:
 	};
 
 	struct TimeSeekNode : public NodeBase {
-
 		float seek_pos;
 
 		TimeSeekNode() {
@@ -271,9 +259,7 @@ private:
 	};
 
 	struct TransitionNode : public NodeBase {
-
 		struct InputData {
-
 			bool auto_advance;
 			InputData() { auto_advance = false; }
 		};
@@ -321,7 +307,7 @@ private:
 	Map<StringName, NodeBase *> node_map;
 
 	// return time left to finish animation
-	float _process_node(const StringName &p_node, AnimationNode **r_prev_anim, float p_time, bool p_seek = false, float p_fallback_weight = 1.0, HashMap<NodePath, float> *p_weights = NULL);
+	float _process_node(const StringName &p_node, AnimationNode **r_prev_anim, float p_time, bool p_seek = false, float p_fallback_weight = 1.0, HashMap<NodePath, float> *p_weights = nullptr);
 	void _process_animation(float p_delta);
 	bool reset_request;
 
@@ -333,7 +319,7 @@ private:
 	void _recompute_caches(const StringName &p_node);
 	PoolVector<String> _get_node_list();
 
-	void _compute_weights(float *p_fallback_weight, HashMap<NodePath, float> *p_weights, float p_coeff, const HashMap<NodePath, bool> *p_filter = NULL, float p_filtered_coeff = 0);
+	void _compute_weights(float *p_fallback_weight, HashMap<NodePath, float> *p_weights, float p_coeff, const HashMap<NodePath, bool> *p_filter = nullptr, float p_filtered_coeff = 0);
 
 protected:
 	bool _set(const StringName &p_name, const Variant &p_value);
@@ -451,7 +437,6 @@ public:
 	NodePath get_master_player() const;
 
 	struct Connection {
-
 		StringName src_node;
 		StringName dst_node;
 		int dst_input;

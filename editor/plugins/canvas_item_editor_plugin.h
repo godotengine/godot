@@ -43,7 +43,6 @@
 class CanvasItemEditorViewport;
 
 class CanvasItemEditorSelectedItem : public Object {
-
 	GDCLASS(CanvasItemEditorSelectedItem, Object);
 
 public:
@@ -68,7 +67,6 @@ public:
 };
 
 class CanvasItemEditor : public VBoxContainer {
-
 	GDCLASS(CanvasItemEditor, VBoxContainer);
 
 public:
@@ -289,7 +287,6 @@ private:
 	MenuOption last_option;
 
 	struct _SelectResult {
-
 		CanvasItem *item;
 		float z_index;
 		bool has_z;
@@ -300,7 +297,6 @@ private:
 	Vector<_SelectResult> selection_results;
 
 	struct _HoverResult {
-
 		Point2 position;
 		Ref<Texture> icon;
 		String name;
@@ -308,7 +304,6 @@ private:
 	Vector<_HoverResult> hovering_results;
 
 	struct BoneList {
-
 		Transform2D xform;
 		float length;
 		uint64_t last_pass;
@@ -324,10 +319,11 @@ private:
 		ObjectID from;
 		ObjectID to;
 		_FORCE_INLINE_ bool operator<(const BoneKey &p_key) const {
-			if (from == p_key.from)
+			if (from == p_key.from) {
 				return to < p_key.to;
-			else
+			} else {
 				return from < p_key.from;
+			}
 		}
 	};
 
@@ -610,7 +606,7 @@ public:
 		SNAP_DEFAULT = SNAP_GRID | SNAP_GUIDES | SNAP_PIXEL,
 	};
 
-	Point2 snap_point(Point2 p_target, unsigned int p_modes = SNAP_DEFAULT, unsigned int p_forced_modes = 0, const CanvasItem *p_self_canvas_item = NULL, List<CanvasItem *> p_other_nodes_exceptions = List<CanvasItem *>());
+	Point2 snap_point(Point2 p_target, unsigned int p_modes = SNAP_DEFAULT, unsigned int p_forced_modes = 0, const CanvasItem *p_self_canvas_item = nullptr, List<CanvasItem *> p_other_nodes_exceptions = List<CanvasItem *>());
 	float snap_angle(float p_target, float p_start = 0) const;
 
 	Transform2D get_canvas_transform() const { return transform; }
@@ -648,7 +644,6 @@ public:
 };
 
 class CanvasItemEditorPlugin : public EditorPlugin {
-
 	GDCLASS(CanvasItemEditorPlugin, EditorPlugin);
 
 	CanvasItemEditor *canvas_item_editor;

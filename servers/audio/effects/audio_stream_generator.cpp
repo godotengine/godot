@@ -35,21 +35,17 @@ void AudioStreamGenerator::set_mix_rate(float p_mix_rate) {
 }
 
 float AudioStreamGenerator::get_mix_rate() const {
-
 	return mix_rate;
 }
 
 void AudioStreamGenerator::set_buffer_length(float p_seconds) {
-
 	buffer_len = p_seconds;
 }
 float AudioStreamGenerator::get_buffer_length() const {
-
 	return buffer_len;
 }
 
 Ref<AudioStreamPlayback> AudioStreamGenerator::instance_playback() {
-
 	Ref<AudioStreamGeneratorPlayback> playback;
 	playback.instance();
 	playback->generator = this;
@@ -59,7 +55,6 @@ Ref<AudioStreamPlayback> AudioStreamGenerator::instance_playback() {
 	return playback;
 }
 String AudioStreamGenerator::get_stream_name() const {
-
 	return "UserFeed";
 }
 
@@ -100,7 +95,6 @@ bool AudioStreamGeneratorPlayback::can_push_buffer(int p_frames) const {
 	return buffer.space_left() >= p_frames;
 }
 bool AudioStreamGeneratorPlayback::push_buffer(const PoolVector2Array &p_frames) {
-
 	int to_write = p_frames.size();
 	if (buffer.space_left() < to_write) {
 		return false;
@@ -115,7 +109,6 @@ bool AudioStreamGeneratorPlayback::push_buffer(const PoolVector2Array &p_frames)
 		AudioFrame buf[2048];
 		int ofs = 0;
 		while (to_write) {
-
 			int w = MIN(to_write, 2048);
 			for (int i = 0; i < w; i++) {
 				buf[i] = r[i + ofs];
@@ -143,7 +136,6 @@ void AudioStreamGeneratorPlayback::clear_buffer() {
 }
 
 void AudioStreamGeneratorPlayback::_mix_internal(AudioFrame *p_buffer, int p_frames) {
-
 	int read_amount = buffer.data_left();
 	if (p_frames < read_amount) {
 		read_amount = p_frames;
@@ -167,7 +159,6 @@ float AudioStreamGeneratorPlayback::get_stream_sampling_rate() {
 }
 
 void AudioStreamGeneratorPlayback::start(float p_from_pos) {
-
 	if (mixed == 0.0) {
 		_begin_resample();
 	}
@@ -180,7 +171,6 @@ void AudioStreamGeneratorPlayback::stop() {
 	active = false;
 }
 bool AudioStreamGeneratorPlayback::is_playing() const {
-
 	return active; //always playing, can't be stopped
 }
 
@@ -205,7 +195,7 @@ void AudioStreamGeneratorPlayback::_bind_methods() {
 }
 
 AudioStreamGeneratorPlayback::AudioStreamGeneratorPlayback() {
-	generator = NULL;
+	generator = nullptr;
 	skips = 0;
 	active = false;
 	mixed = 0;

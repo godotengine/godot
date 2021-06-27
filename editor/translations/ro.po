@@ -1127,6 +1127,10 @@ msgstr "Schimbaţi Valoarea Dicţionar"
 msgid "Thanks from the Godot community!"
 msgstr "Mulțumesc din partea comunităţii Godot!"
 
+#: editor/editor_about.cpp editor/editor_node.cpp editor/project_manager.cpp
+msgid "Click to copy."
+msgstr ""
+
 #: editor/editor_about.cpp
 msgid "Godot Engine contributors"
 msgstr "Contribuabili Motor Godot"
@@ -2557,9 +2561,11 @@ msgid "Unable to load addon script from path: '%s'."
 msgstr "Nu a putut fi încărcat scriptul add-on din calea: '%s'."
 
 #: editor/editor_node.cpp
+#, fuzzy
 msgid ""
-"Unable to load addon script from path: '%s' There seems to be an error in "
-"the code, please check the syntax."
+"Unable to load addon script from path: '%s'. This might be due to a code "
+"error in that script.\n"
+"Disabling the addon at '%s' to prevent further errors."
 msgstr ""
 "Imposibil de încărcat scriptul addon din cale: '%s' Se pare că există o "
 "eroare în cod, verificați sintaxa."
@@ -3007,6 +3013,10 @@ msgstr "Comunitate"
 #: editor/editor_node.cpp
 msgid "About"
 msgstr "Despre"
+
+#: editor/editor_node.cpp
+msgid "Support Godot Development"
+msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Play the project."
@@ -7645,6 +7655,11 @@ msgstr "Curăță Rotația Cursorului"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid ""
+"To zoom further, change the camera's clipping planes (View -> Settings...)"
+msgstr ""
+
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid ""
 "Note: The FPS value displayed is the editor's framerate.\n"
 "It cannot be used as a reliable indication of in-game performance."
 msgstr ""
@@ -10170,7 +10185,7 @@ msgstr ""
 
 #: editor/project_settings_editor.cpp
 msgid ""
-"Invalid action name. it cannot be empty nor contain '/', ':', '=', '\\' or "
+"Invalid action name. It cannot be empty nor contain '/', ':', '=', '\\' or "
 "'\"'"
 msgstr ""
 
@@ -10977,6 +10992,13 @@ msgstr "Curăță un script pentru nodul selectat."
 
 #: editor/scene_tree_dock.cpp
 msgid "Remote"
+msgstr ""
+
+#: editor/scene_tree_dock.cpp
+msgid ""
+"If selected, the Remote scene tree dock will cause the project to stutter "
+"every time it updates.\n"
+"Switch back to the Local scene tree dock to improve performance."
 msgstr ""
 
 #: editor/scene_tree_dock.cpp
@@ -12238,7 +12260,19 @@ msgid ""
 msgstr ""
 
 #: platform/android/export/export.cpp
+msgid ""
+"Either Debug Keystore, Debug User AND Debug Password settings must be "
+"configured OR none of them."
+msgstr ""
+
+#: platform/android/export/export.cpp
 msgid "Debug keystore not configured in the Editor Settings nor in the preset."
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid ""
+"Either Release Keystore, Release User AND Release Password settings must be "
+"configured OR none of them."
 msgstr ""
 
 #: platform/android/export/export.cpp

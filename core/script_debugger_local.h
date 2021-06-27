@@ -35,7 +35,6 @@
 #include "core/script_language.h"
 
 class ScriptDebuggerLocal : public ScriptDebugger {
-
 	bool profiling;
 	float frame_time, idle_time, physics_time, physics_frame_time;
 	uint64_t idle_accum;

@@ -12,10 +12,10 @@ void _integrity_check_all() {
 void _integrity_check_up(uint32_t p_node_id) {
 	TNode &node = _nodes[p_node_id];
 
-	BVH_ABB abb = node.aabb;
+	BVHABB_CLASS abb = node.aabb;
 	node_update_aabb(node);
 
-	BVH_ABB abb2 = node.aabb;
+	BVHABB_CLASS abb2 = node.aabb;
 	abb2.expand(-_node_expansion);
 
 	CRASH_COND(!abb.is_other_within(abb2));

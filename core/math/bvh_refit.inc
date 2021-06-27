@@ -1,10 +1,10 @@
 void _debug_node_verify_bound(uint32_t p_node_id) {
 	TNode &node = _nodes[p_node_id];
-	BVH_ABB abb_before = node.aabb;
+	BVHABB_CLASS abb_before = node.aabb;
 
 	node_update_aabb(node);
 
-	BVH_ABB abb_after = node.aabb;
+	BVHABB_CLASS abb_after = node.aabb;
 	CRASH_COND(abb_before != abb_after);
 }
 
@@ -21,8 +21,9 @@ void node_update_aabb(TNode &tnode) {
 			tnode.aabb.merge(tchild.aabb);
 
 			// do heights at the same time
-			if (tchild.height > tnode.height)
+			if (tchild.height > tnode.height) {
 				tnode.height = tchild.height;
+			}
 		}
 
 		// the height of a non leaf is always 1 bigger than the biggest child
@@ -65,10 +66,10 @@ void refit_upward(uint32_t p_node_id) {
 	}
 }
 
-void refit_upward_and_balance(uint32_t p_node_id) {
+void refit_upward_and_balance(uint32_t p_node_id, uint32_t p_tree_id) {
 	while (p_node_id != BVHCommon::INVALID) {
 		uint32_t before = p_node_id;
-		p_node_id = _logic_balance(p_node_id);
+		p_node_id = _logic_balance(p_node_id, p_tree_id);
 
 		if (before != p_node_id) {
 			VERBOSE_PRINT("REBALANCED!");
@@ -117,13 +118,11 @@ void refit_branch(uint32_t p_node_id) {
 
 	// while there are still more nodes on the stack
 	while (ii.pop(rp)) {
-
 		TNode &tnode = _nodes[rp.node_id];
 
 		// do children first
 		if (!tnode.is_leaf()) {
 			for (int n = 0; n < tnode.num_children; n++) {
-
 				uint32_t child_id = tnode.children[n];
 
 				// add to the stack

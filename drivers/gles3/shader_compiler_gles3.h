@@ -39,8 +39,7 @@
 class ShaderCompilerGLES3 {
 public:
 	struct IdentifierActions {
-
-		Map<StringName, Pair<int *, int> > render_mode_values;
+		Map<StringName, Pair<int *, int>> render_mode_values;
 		Map<StringName, bool *> render_mode_flags;
 		Map<StringName, bool *> usage_flag_pointers;
 		Map<StringName, bool *> write_flag_pointers;
@@ -49,7 +48,6 @@ public:
 	};
 
 	struct GeneratedCode {
-
 		Vector<CharString> defines;
 		Vector<StringName> texture_uniforms;
 		Vector<ShaderLanguage::DataType> texture_types;
@@ -72,15 +70,16 @@ private:
 	ShaderLanguage parser;
 
 	struct DefaultIdentifierActions {
-
 		Map<StringName, String> renames;
 		Map<StringName, String> render_mode_defines;
 		Map<StringName, String> usage_defines;
 	};
 
-	void _dump_function_deps(ShaderLanguage::ShaderNode *p_node, const StringName &p_for_func, const Map<StringName, String> &p_func_code, String &r_to_add, Set<StringName> &added);
-	String _dump_node_code(ShaderLanguage::Node *p_node, int p_level, GeneratedCode &r_gen_code, IdentifierActions &p_actions, const DefaultIdentifierActions &p_default_actions, bool p_assigning, bool p_use_scope = true);
+	void _dump_function_deps(const ShaderLanguage::ShaderNode *p_node, const StringName &p_for_func, const Map<StringName, String> &p_func_code, String &r_to_add, Set<StringName> &added);
+	String _dump_node_code(const ShaderLanguage::Node *p_node, int p_level, GeneratedCode &r_gen_code, IdentifierActions &p_actions, const DefaultIdentifierActions &p_default_actions, bool p_assigning, bool p_use_scope = true);
 
+	const ShaderLanguage::ShaderNode *shader;
+	const ShaderLanguage::FunctionNode *function;
 	StringName current_func_name;
 	StringName vertex_name;
 	StringName fragment_name;
@@ -91,6 +90,7 @@ private:
 	Set<StringName> used_flag_pointers;
 	Set<StringName> used_rmode_defines;
 	Set<StringName> internal_functions;
+	Set<StringName> fragment_varyings;
 
 	DefaultIdentifierActions actions[VS::SHADER_MAX];
 

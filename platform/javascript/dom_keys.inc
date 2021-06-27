@@ -31,7 +31,7 @@
 #include "core/os/keyboard.h"
 
 // See https://w3c.github.io/uievents-code/#code-value-tables
-int dom_code2godot_scancode(EM_UTF8 const p_code[32], EM_UTF8 const p_key[32]) {
+int dom_code2godot_scancode(EM_UTF8 const p_code[32], EM_UTF8 const p_key[32], bool p_physical) {
 #define DOM2GODOT(p_str, p_godot_code)                                         \
 	if (memcmp((const void *)p_str, (void *)p_code, strlen(p_str) + 1) == 0) { \
 		return KEY_##p_godot_code;                                             \
@@ -71,31 +71,33 @@ int dom_code2godot_scancode(EM_UTF8 const p_code[32], EM_UTF8 const p_key[32]) {
 	DOM2GODOT("NumpadSubtract", KP_SUBTRACT);
 
 	// Printable ASCII.
-	uint8_t b0 = (uint8_t)p_key[0];
-	uint8_t b1 = (uint8_t)p_key[1];
-	uint8_t b2 = (uint8_t)p_key[2];
-	if (b1 == 0 && b0 > 0x1F && b0 < 0x7F) { // ASCII.
-		if (b0 > 0x60 && b0 < 0x7B) { // Lowercase ASCII.
-			b0 -= 32;
+	if (!p_physical) {
+		uint8_t b0 = (uint8_t)p_key[0];
+		uint8_t b1 = (uint8_t)p_key[1];
+		uint8_t b2 = (uint8_t)p_key[2];
+		if (b1 == 0 && b0 > 0x1F && b0 < 0x7F) { // ASCII.
+			if (b0 > 0x60 && b0 < 0x7B) { // Lowercase ASCII.
+				b0 -= 32;
+			}
+			return b0;
 		}
-		return b0;
-	}
 
 #define _U_2BYTES_MASK 0xE0
 #define _U_2BYTES 0xC0
-	// Latin-1 codes.
-	if (b2 == 0 && (b0 & _U_2BYTES_MASK) == _U_2BYTES) { // 2-bytes utf8, only known latin.
-		uint32_t key = ((b0 & ~_U_2BYTES_MASK) << 6) | (b1 & 0x3F);
-		if (key >= 0xA0 && key <= 0xDF) {
-			return key;
+		// Latin-1 codes.
+		if (b2 == 0 && (b0 & _U_2BYTES_MASK) == _U_2BYTES) { // 2-bytes utf8, only known latin.
+			uint32_t key = ((b0 & ~_U_2BYTES_MASK) << 6) | (b1 & 0x3F);
+			if (key >= 0xA0 && key <= 0xDF) {
+				return key;
+			}
+			if (key >= 0xE0 && key <= 0xFF) { // Lowercase known latin.
+				key -= 0x20;
+				return key;
+			}
 		}
-		if (key >= 0xE0 && key <= 0xFF) { // Lowercase known latin.
-			key -= 0x20;
-			return key;
-		}
-	}
 #undef _U_2BYTES_MASK
 #undef _U_2BYTES
+	}
 
 	// Alphanumeric section.
 	DOM2GODOT("Backquote", QUOTELEFT);

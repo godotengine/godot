@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="LargeTexture" inherits="Texture" version="3.3">
+<class name="LargeTexture" inherits="Texture" version="3.4">
 	<brief_description>
-		A [Texture] capable of storing many smaller textures with offsets.
+		[i]Deprecated.[/i] A [Texture] capable of storing many smaller textures with offsets.
 	</brief_description>
 	<description>
-		A [Texture] capable of storing many smaller textures with offsets.
+		[i]Deprecated (will be removed in Godot 4.0).[/i] A [Texture] capable of storing many smaller textures with offsets.
 		You can dynamically add pieces ([Texture]s) to this [LargeTexture] using different offsets.
 	</description>
 	<tutorials>

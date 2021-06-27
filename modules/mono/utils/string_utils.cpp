@@ -132,7 +132,6 @@ String sformat(const String &p_text, const Variant &p1, const Variant &p2, const
 
 #ifdef TOOLS_ENABLED
 bool is_csharp_keyword(const String &p_name) {
-
 	// Reserved keywords
 
 	return p_name == "abstract" || p_name == "as" || p_name == "base" || p_name == "bool" ||
@@ -167,10 +166,10 @@ Error read_all_file_utf8(const String &p_path, String &r_content) {
 	FileAccess *f = FileAccess::open(p_path, FileAccess::READ, &err);
 	ERR_FAIL_COND_V_MSG(err != OK, err, "Cannot open file '" + p_path + "'.");
 
-	int len = f->get_len();
+	uint64_t len = f->get_len();
 	sourcef.resize(len + 1);
 	PoolVector<uint8_t>::Write w = sourcef.write();
-	int r = f->get_buffer(w.ptr(), len);
+	uint64_t r = f->get_buffer(w.ptr(), len);
 	f->close();
 	memdelete(f);
 	ERR_FAIL_COND_V(r != len, ERR_CANT_OPEN);

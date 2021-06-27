@@ -32,6 +32,7 @@
 #define BVH_ABB_H
 
 // special optimized version of axis aligned bounding box
+template <class Bounds = AABB, class Point = Vector3>
 struct BVH_ABB {
 	struct ConvexHull {
 		// convex hulls (optional)
@@ -42,8 +43,8 @@ struct BVH_ABB {
 	};
 
 	struct Segment {
-		Vector3 from;
-		Vector3 to;
+		Point from;
+		Point to;
 	};
 
 	enum IntersectResult {
@@ -53,49 +54,50 @@ struct BVH_ABB {
 	};
 
 	// we store mins with a negative value in order to test them with SIMD
-	Vector3 min;
-	Vector3 neg_max;
+	Point min;
+	Point neg_max;
 
 	bool operator==(const BVH_ABB &o) const { return (min == o.min) && (neg_max == o.neg_max); }
 	bool operator!=(const BVH_ABB &o) const { return (*this == o) == false; }
 
-	void set(const Vector3 &_min, const Vector3 &_max) {
+	void set(const Point &_min, const Point &_max) {
 		min = _min;
 		neg_max = -_max;
 	}
 
 	// to and from standard AABB
-	void from(const AABB &p_aabb) {
+	void from(const Bounds &p_aabb) {
 		min = p_aabb.position;
 		neg_max = -(p_aabb.position + p_aabb.size);
 	}
 
-	void to(AABB &r_aabb) const {
+	void to(Bounds &r_aabb) const {
 		r_aabb.position = min;
 		r_aabb.size = calculate_size();
 	}
 
 	void merge(const BVH_ABB &p_o) {
-		neg_max.x = MIN(neg_max.x, p_o.neg_max.x);
-		neg_max.y = MIN(neg_max.y, p_o.neg_max.y);
-		neg_max.z = MIN(neg_max.z, p_o.neg_max.z);
-
-		min.x = MIN(min.x, p_o.min.x);
-		min.y = MIN(min.y, p_o.min.y);
-		min.z = MIN(min.z, p_o.min.z);
+		for (int axis = 0; axis < Point::AXIS_COUNT; ++axis) {
+			neg_max[axis] = MIN(neg_max[axis], p_o.neg_max[axis]);
+			min[axis] = MIN(min[axis], p_o.min[axis]);
+		}
 	}
 
-	Vector3 calculate_size() const {
+	Point calculate_size() const {
 		return -neg_max - min;
 	}
 
-	Vector3 calculate_centre() const {
-		return Vector3((calculate_size() * 0.5) + min);
+	Point calculate_centre() const {
+		return Point((calculate_size() * 0.5) + min);
 	}
 
 	real_t get_proximity_to(const BVH_ABB &p_b) const {
-		const Vector3 d = (min - neg_max) - (p_b.min - p_b.neg_max);
-		return (Math::abs(d.x) + Math::abs(d.y) + Math::abs(d.z));
+		const Point d = (min - neg_max) - (p_b.min - p_b.neg_max);
+		real_t proximity = 0.0;
+		for (int axis = 0; axis < Point::AXIS_COUNT; ++axis) {
+			proximity += Math::abs(d[axis]);
+		}
+		return proximity;
 	}
 
 	int select_by_proximity(const BVH_ABB &p_a, const BVH_ABB &p_b) const {
@@ -127,12 +129,14 @@ struct BVH_ABB {
 				(p_p.normal.z < 0) ? -half_extents.z : half_extents.z);
 		Vector3 point = point_offset + ofs;
 
-		if (!p_p.is_point_over(point))
+		if (!p_p.is_point_over(point)) {
 			return false;
+		}
 
 		point = -point_offset + ofs;
-		if (p_p.is_point_over(point))
+		if (p_p.is_point_over(point)) {
 			return false;
+		}
 
 		return true;
 	}
@@ -143,22 +147,22 @@ struct BVH_ABB {
 		Vector3 ofs = min + half_extents;
 
 		for (unsigned int i = 0; i < p_num_planes; i++) {
-
 			const Plane &p = p_hull.planes[p_plane_ids[i]];
 			Vector3 point(
 					(p.normal.x > 0) ? -half_extents.x : half_extents.x,
 					(p.normal.y > 0) ? -half_extents.y : half_extents.y,
 					(p.normal.z > 0) ? -half_extents.z : half_extents.z);
 			point += ofs;
-			if (p.is_point_over(point))
+			if (p.is_point_over(point)) {
 				return false;
+			}
 		}
 
 		return true;
 	}
 
 	bool intersects_convex_partial(const ConvexHull &p_hull) const {
-		AABB bb;
+		Bounds bb;
 		to(bb);
 		return bb.intersects_convex_shape(p_hull.planes, p_hull.num_planes, p_hull.points, p_hull.num_points);
 	}
@@ -178,73 +182,93 @@ struct BVH_ABB {
 
 	bool is_within_convex(const ConvexHull &p_hull) const {
 		// use half extents routine
-		AABB bb;
+		Bounds bb;
 		to(bb);
 		return bb.inside_convex_shape(p_hull.planes, p_hull.num_planes);
 	}
 
 	bool is_point_within_hull(const ConvexHull &p_hull, const Vector3 &p_pt) const {
 		for (int n = 0; n < p_hull.num_planes; n++) {
-			if (p_hull.planes[n].distance_to(p_pt) > 0.0f)
+			if (p_hull.planes[n].distance_to(p_pt) > 0.0f) {
 				return false;
+			}
 		}
 		return true;
 	}
 
 	bool intersects_segment(const Segment &p_s) const {
-		AABB bb;
+		Bounds bb;
 		to(bb);
 		return bb.intersects_segment(p_s.from, p_s.to);
 	}
 
-	bool intersects_point(const Vector3 &p_pt) const {
-		if (_vector3_any_lessthan(-p_pt, neg_max)) return false;
-		if (_vector3_any_lessthan(p_pt, min)) return false;
+	bool intersects_point(const Point &p_pt) const {
+		if (_any_lessthan(-p_pt, neg_max)) {
+			return false;
+		}
+		if (_any_lessthan(p_pt, min)) {
+			return false;
+		}
 		return true;
 	}
 
 	bool intersects(const BVH_ABB &p_o) const {
-		if (_vector3_any_morethan(p_o.min, -neg_max)) return false;
-		if (_vector3_any_morethan(min, -p_o.neg_max)) return false;
+		if (_any_morethan(p_o.min, -neg_max)) {
+			return false;
+		}
+		if (_any_morethan(min, -p_o.neg_max)) {
+			return false;
+		}
 		return true;
 	}
 
 	bool is_other_within(const BVH_ABB &p_o) const {
-		if (_vector3_any_lessthan(p_o.neg_max, neg_max)) return false;
-		if (_vector3_any_lessthan(p_o.min, min)) return false;
+		if (_any_lessthan(p_o.neg_max, neg_max)) {
+			return false;
+		}
+		if (_any_lessthan(p_o.min, min)) {
+			return false;
+		}
 		return true;
 	}
 
-	void grow(const Vector3 &p_change) {
+	void grow(const Point &p_change) {
 		neg_max -= p_change;
 		min -= p_change;
 	}
 
 	void expand(real_t p_change) {
-		grow(Vector3(p_change, p_change, p_change));
+		Point change;
+		change.set_all(p_change);
+		grow(change);
 	}
 
-	float get_area() const // actually surface area metric
-	{
-		Vector3 d = calculate_size();
+	// Actually surface area metric.
+	float get_area() const {
+		Point d = calculate_size();
 		return 2.0f * (d.x * d.y + d.y * d.z + d.z * d.x);
 	}
+
 	void set_to_max_opposite_extents() {
-		neg_max = Vector3(FLT_MAX, FLT_MAX, FLT_MAX);
+		neg_max.set_all(FLT_MAX);
 		min = neg_max;
 	}
 
-	bool _vector3_any_morethan(const Vector3 &p_a, const Vector3 &p_b) const {
-		if (p_a.x > p_b.x) return true;
-		if (p_a.y > p_b.y) return true;
-		if (p_a.z > p_b.z) return true;
+	bool _any_morethan(const Point &p_a, const Point &p_b) const {
+		for (int axis = 0; axis < Point::AXIS_COUNT; ++axis) {
+			if (p_a[axis] > p_b[axis]) {
+				return true;
+			}
+		}
 		return false;
 	}
 
-	bool _vector3_any_lessthan(const Vector3 &p_a, const Vector3 &p_b) const {
-		if (p_a.x < p_b.x) return true;
-		if (p_a.y < p_b.y) return true;
-		if (p_a.z < p_b.z) return true;
+	bool _any_lessthan(const Point &p_a, const Point &p_b) const {
+		for (int axis = 0; axis < Point::AXIS_COUNT; ++axis) {
+			if (p_a[axis] < p_b[axis]) {
+				return true;
+			}
+		}
 		return false;
 	}
 };

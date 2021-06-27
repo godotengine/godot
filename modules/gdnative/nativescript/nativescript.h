@@ -50,7 +50,6 @@
 #endif
 
 struct NativeScriptDesc {
-
 	struct Method {
 		godot_instance_method method;
 		MethodInfo info;
@@ -93,9 +92,9 @@ struct NativeScriptDesc {
 			base(),
 			base_native_type(),
 			documentation(),
-			type_tag(NULL) {
-		zeromem(&create_func, sizeof(godot_instance_create_func));
-		zeromem(&destroy_func, sizeof(godot_instance_destroy_func));
+			type_tag(nullptr) {
+		memset(&create_func, 0, sizeof(godot_instance_create_func));
+		memset(&destroy_func, 0, sizeof(godot_instance_destroy_func));
 	}
 };
 
@@ -185,7 +184,6 @@ public:
 };
 
 class NativeScriptInstance : public ScriptInstance {
-
 	friend class NativeScript;
 
 	Object *owner;
@@ -225,7 +223,6 @@ public:
 class NativeReloadNode;
 
 class NativeScriptLanguage : public ScriptLanguage {
-
 	friend class NativeScript;
 	friend class NativeScriptInstance;
 	friend class NativeReloadNode;
@@ -239,7 +236,7 @@ private:
 #ifndef NO_THREADS
 	Mutex mutex;
 
-	Set<Ref<GDNativeLibrary> > libs_to_init;
+	Set<Ref<GDNativeLibrary>> libs_to_init;
 	Set<NativeScript *> scripts_to_register;
 	SafeFlag has_objects_to_register; // so that we don't lock mutex every frame - it's rarely needed
 	void defer_init_library(Ref<GDNativeLibrary> lib, NativeScript *script);
@@ -251,10 +248,10 @@ private:
 
 	void call_libraries_cb(const StringName &name);
 
-	Vector<Pair<bool, godot_instance_binding_functions> > binding_functions;
+	Vector<Pair<bool, godot_instance_binding_functions>> binding_functions;
 	Set<Vector<void *> *> binding_instances;
 
-	Map<int, HashMap<StringName, const void *> > global_type_tags;
+	Map<int, HashMap<StringName, const void *>> global_type_tags;
 
 	struct ProfileData {
 		StringName signature;
@@ -274,10 +271,10 @@ private:
 
 public:
 	// These two maps must only be touched on the main thread
-	Map<String, Map<StringName, NativeScriptDesc> > library_classes;
-	Map<String, Ref<GDNative> > library_gdnatives;
+	Map<String, Map<StringName, NativeScriptDesc>> library_classes;
+	Map<String, Ref<GDNative>> library_gdnatives;
 
-	Map<String, Set<NativeScript *> > library_script_users;
+	Map<String, Set<NativeScript *>> library_script_users;
 
 	StringName _init_call_type;
 	StringName _init_call_name;
@@ -314,10 +311,11 @@ public:
 	virtual Error execute_file(const String &p_path);
 	virtual void finish();
 	virtual void get_reserved_words(List<String> *p_words) const;
+	virtual bool is_control_flow_keyword(String p_keyword) const;
 	virtual void get_comment_delimiters(List<String> *p_delimiters) const;
 	virtual void get_string_delimiters(List<String> *p_delimiters) const;
 	virtual Ref<Script> get_template(const String &p_class_name, const String &p_base_class_name) const;
-	virtual bool validate(const String &p_script, int &r_line_error, int &r_col_error, String &r_test_error, const String &p_path, List<String> *r_functions, List<ScriptLanguage::Warning> *r_warnings = NULL, Set<int> *r_safe_lines = NULL) const;
+	virtual bool validate(const String &p_script, int &r_line_error, int &r_col_error, String &r_test_error, const String &p_path, List<String> *r_functions, List<ScriptLanguage::Warning> *r_warnings = nullptr, Set<int> *r_safe_lines = nullptr) const;
 	virtual Script *create_script() const;
 	virtual bool has_named_classes() const;
 	virtual bool supports_builtin_mode() const;
@@ -338,7 +336,7 @@ public:
 	virtual void reload_tool_script(const Ref<Script> &p_script, bool p_soft_reload);
 	virtual void get_recognized_extensions(List<String> *p_extensions) const;
 	virtual void get_public_functions(List<MethodInfo> *p_functions) const;
-	virtual void get_public_constants(List<Pair<String, Variant> > *p_constants) const;
+	virtual void get_public_constants(List<Pair<String, Variant>> *p_constants) const;
 	virtual void profiling_start();
 	virtual void profiling_stop();
 	virtual int profiling_get_accumulated_data(ProfilingInfo *p_info_arr, int p_info_max);
@@ -365,7 +363,7 @@ public:
 
 inline NativeScriptDesc *NativeScript::get_script_desc() const {
 	Map<StringName, NativeScriptDesc>::Element *E = NativeScriptLanguage::singleton->library_classes[lib_path].find(class_name);
-	return E ? &E->get() : NULL;
+	return E ? &E->get() : nullptr;
 }
 
 class NativeReloadNode : public Node {
@@ -382,7 +380,7 @@ public:
 
 class ResourceFormatLoaderNativeScript : public ResourceFormatLoader {
 public:
-	virtual RES load(const String &p_path, const String &p_original_path = "", Error *r_error = NULL);
+	virtual RES load(const String &p_path, const String &p_original_path = "", Error *r_error = nullptr);
 	virtual void get_recognized_extensions(List<String> *p_extensions) const;
 	virtual bool handles_type(const String &p_type) const;
 	virtual String get_resource_type(const String &p_path) const;

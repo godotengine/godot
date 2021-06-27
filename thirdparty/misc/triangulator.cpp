@@ -1166,7 +1166,7 @@ int TriangulatorPartition::MonotonePartition(List<TriangulatorPoly> *inpolys, Li
 				newedge.p1 = v->p;
 				newedge.p2 = v->p;
 				edgeIter = edgeTree.lower_bound(newedge);
-				if(edgeIter == edgeTree.front()) {
+				if(edgeIter == nullptr || edgeIter == edgeTree.front()) {
 					error = true;
 					break;
 				}
@@ -1202,7 +1202,7 @@ int TriangulatorPartition::MonotonePartition(List<TriangulatorPoly> *inpolys, Li
 				newedge.p1 = v->p;
 				newedge.p2 = v->p;
 				edgeIter = edgeTree.lower_bound(newedge);
-				if(edgeIter == edgeTree.front()) {
+				if(edgeIter == nullptr || edgeIter == edgeTree.front()) {
 					error = true;
 					break;
 				}
@@ -1241,7 +1241,7 @@ int TriangulatorPartition::MonotonePartition(List<TriangulatorPoly> *inpolys, Li
 					newedge.p1 = v->p;
 					newedge.p2 = v->p;
 					edgeIter = edgeTree.lower_bound(newedge);
-					if(edgeIter == edgeTree.front()) {
+					if(edgeIter == nullptr || edgeIter == edgeTree.front()) {
 						error = true;
 						break;
 					}

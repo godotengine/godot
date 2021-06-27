@@ -11,11 +11,12 @@
 # Tapani Niemi <tapani.niemi@kapsi.fi>, 2018, 2019, 2020, 2021.
 # Tuomas Lähteenmäki <lahtis@gmail.com>, 2019.
 # Matti Niskanen <matti.t.niskanen@gmail.com>, 2020.
+# Severi Vidnäs <severi.vidnas@gmail.com>, 2021.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2021-03-10 22:14+0000\n"
+"PO-Revision-Date: 2021-05-19 20:16+0000\n"
 "Last-Translator: Tapani Niemi <tapani.niemi@kapsi.fi>\n"
 "Language-Team: Finnish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/fi/>\n"
@@ -24,7 +25,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.5.2-dev\n"
+"X-Generator: Weblate 4.7-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -1117,6 +1118,10 @@ msgstr "Vaihda hakurakenteen arvoa"
 msgid "Thanks from the Godot community!"
 msgstr "Kiitos Godot-yhteisöltä!"
 
+#: editor/editor_about.cpp editor/editor_node.cpp editor/project_manager.cpp
+msgid "Click to copy."
+msgstr ""
+
 #: editor/editor_about.cpp
 msgid "Godot Engine contributors"
 msgstr "Godot moottorin kehittäjät"
@@ -1760,7 +1765,7 @@ msgstr "Uusi"
 #: editor/editor_feature_profile.cpp editor/editor_node.cpp
 #: editor/project_manager.cpp
 msgid "Import"
-msgstr "Tuonti"
+msgstr "Tuo"
 
 #: editor/editor_feature_profile.cpp editor/project_export.cpp
 msgid "Export"
@@ -2539,11 +2544,13 @@ msgstr "Virhe ladattaessa lisäosaa polusta: '%s'."
 
 #: editor/editor_node.cpp
 msgid ""
-"Unable to load addon script from path: '%s' There seems to be an error in "
-"the code, please check the syntax."
+"Unable to load addon script from path: '%s'. This might be due to a code "
+"error in that script.\n"
+"Disabling the addon at '%s' to prevent further errors."
 msgstr ""
-"Virhe ladattaessa lisäosaa polusta: '%s'. Koodissa vaikuttaa olevan virhe, "
-"ole hyvä ja tarkista syntaksi."
+"Lisäosaskriptin lataus ei onnistunut polusta: '%s'. Tämä saattaa johtua "
+"koodivirheestä skriptissä.\n"
+"Lisäosa '%s' poistetaan käytöstä tulevien virheiden estämiseksi."
 
 #: editor/editor_node.cpp
 msgid ""
@@ -2980,6 +2987,10 @@ msgstr "Yhteisö"
 #: editor/editor_node.cpp
 msgid "About"
 msgstr "Tietoja"
+
+#: editor/editor_node.cpp
+msgid "Support Godot Development"
+msgstr "Tue Godotin kehitystä"
 
 #: editor/editor_node.cpp
 msgid "Play the project."
@@ -3669,6 +3680,8 @@ msgstr ""
 msgid ""
 "Importing has been disabled for this file, so it can't be opened for editing."
 msgstr ""
+"Tuonti on poistettu käytöstä tälle tiedostolle, joten sitä ei voi avata "
+"muokkausta varten."
 
 #: editor/filesystem_dock.cpp
 msgid "Cannot move/rename resources root."
@@ -4074,7 +4087,7 @@ msgstr "Palauta oletusarvoihin"
 
 #: editor/import_dock.cpp
 msgid "Keep File (No Import)"
-msgstr ""
+msgstr "Pidä tiedosto (ei tuontia)"
 
 #: editor/import_dock.cpp
 msgid "%d Files"
@@ -7540,6 +7553,13 @@ msgstr "Näkymän kierto lukittu"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid ""
+"To zoom further, change the camera's clipping planes (View -> Settings...)"
+msgstr ""
+"Lähentääksesi tai loitontaaksesi enemmän, muuta kameran leikkaustasoja "
+"(Näytä -> Asetukset...)"
+
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid ""
 "Note: The FPS value displayed is the editor's framerate.\n"
 "It cannot be used as a reliable indication of in-game performance."
 msgstr ""
@@ -10112,7 +10132,7 @@ msgstr "Hiiren painike"
 
 #: editor/project_settings_editor.cpp
 msgid ""
-"Invalid action name. it cannot be empty nor contain '/', ':', '=', '\\' or "
+"Invalid action name. It cannot be empty nor contain '/', ':', '=', '\\' or "
 "'\"'"
 msgstr ""
 "Virheellinen toiminnon nimi. Se ei voi olla tyhjä eikä voi sisältää merkkejä "
@@ -10920,6 +10940,16 @@ msgstr "Irrota skripti valitusta solmusta."
 #: editor/scene_tree_dock.cpp
 msgid "Remote"
 msgstr "Etäinen"
+
+#: editor/scene_tree_dock.cpp
+msgid ""
+"If selected, the Remote scene tree dock will cause the project to stutter "
+"every time it updates.\n"
+"Switch back to the Local scene tree dock to improve performance."
+msgstr ""
+"Jos tämä on valittuna, etäskenepuun telakka saa projektin nykimään aina "
+"päivittyessään.\n"
+"Vaihda takaisin paikallisen skenepuun telakkaan parantaaksesi suorituskykyä."
 
 #: editor/scene_tree_dock.cpp
 msgid "Local"
@@ -12170,9 +12200,21 @@ msgstr ""
 "valikosta."
 
 #: platform/android/export/export.cpp
+msgid ""
+"Either Debug Keystore, Debug User AND Debug Password settings must be "
+"configured OR none of them."
+msgstr ""
+
+#: platform/android/export/export.cpp
 msgid "Debug keystore not configured in the Editor Settings nor in the preset."
 msgstr ""
 "Debug keystore ei ole määritettynä editorin asetuksissa eikä esiasetuksissa."
+
+#: platform/android/export/export.cpp
+msgid ""
+"Either Release Keystore, Release User AND Release Password settings must be "
+"configured OR none of them."
+msgstr ""
 
 #: platform/android/export/export.cpp
 msgid "Release keystore incorrectly configured in the export preset."
@@ -13140,6 +13182,19 @@ msgstr "Varying tyypin voi sijoittaa vain vertex-funktiossa."
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "Vakioita ei voi muokata."
+
+#~ msgid ""
+#~ "Godot editor was built without ray tracing support; lightmaps can't be "
+#~ "baked.\n"
+#~ "If you are using an Apple Silicon-based Mac, try forcing Rosetta "
+#~ "emulation on Godot.app in the application settings\n"
+#~ "then restart the editor."
+#~ msgstr ""
+#~ "Godot-editori on käännetty ilman ray tracing -tukea, joten lightmappeja "
+#~ "ei voi kehittää.\n"
+#~ "Jos käytät Apple Silicon -pohjaista Mac-tietokonetta, yritä pakottaa "
+#~ "Rosetta-emulaatio Godot.app:iin sovelluksen asetuksissa\n"
+#~ "ja käynnistä sitten editori uudestaan."
 
 #~ msgid ""
 #~ "InterpolatedCamera has been deprecated and will be removed in Godot 4.0."

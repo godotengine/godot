@@ -35,14 +35,12 @@
 #include "scene/resources/texture.h"
 
 class SpriteFrames : public Resource {
-
 	GDCLASS(SpriteFrames, Resource);
 
 	struct Anim {
-
 		float speed;
 		bool loop;
-		Vector<Ref<Texture> > frames;
+		Vector<Ref<Texture>> frames;
 
 		Anim() {
 			loop = true;
@@ -83,26 +81,26 @@ public:
 	void add_frame(const StringName &p_anim, const Ref<Texture> &p_frame, int p_at_pos = -1);
 	int get_frame_count(const StringName &p_anim) const;
 	_FORCE_INLINE_ Ref<Texture> get_frame(const StringName &p_anim, int p_idx) const {
-
 		const Map<StringName, Anim>::Element *E = animations.find(p_anim);
 		ERR_FAIL_COND_V_MSG(!E, Ref<Texture>(), "Animation '" + String(p_anim) + "' doesn't exist.");
 		ERR_FAIL_COND_V(p_idx < 0, Ref<Texture>());
-		if (p_idx >= E->get().frames.size())
+		if (p_idx >= E->get().frames.size()) {
 			return Ref<Texture>();
+		}
 
 		return E->get().frames[p_idx];
 	}
 
 	_FORCE_INLINE_ Ref<Texture> get_normal_frame(const StringName &p_anim, int p_idx) const {
-
 		const Map<StringName, Anim>::Element *E = animations.find(p_anim);
 		ERR_FAIL_COND_V_MSG(!E, Ref<Texture>(), "Animation '" + String(p_anim) + "' doesn't exist.");
 		ERR_FAIL_COND_V(p_idx < 0, Ref<Texture>());
 
 		const Map<StringName, Anim>::Element *EN = animations.find(E->get().normal_name);
 
-		if (!EN || p_idx >= EN->get().frames.size())
+		if (!EN || p_idx >= EN->get().frames.size()) {
 			return Ref<Texture>();
+		}
 
 		return EN->get().frames[p_idx];
 	}
@@ -111,8 +109,9 @@ public:
 		Map<StringName, Anim>::Element *E = animations.find(p_anim);
 		ERR_FAIL_COND_MSG(!E, "Animation '" + String(p_anim) + "' doesn't exist.");
 		ERR_FAIL_COND(p_idx < 0);
-		if (p_idx >= E->get().frames.size())
+		if (p_idx >= E->get().frames.size()) {
 			return;
+		}
 		E->get().frames.write[p_idx] = p_frame;
 	}
 	void remove_frame(const StringName &p_anim, int p_idx);
@@ -123,7 +122,6 @@ public:
 };
 
 class AnimatedSprite : public Node2D {
-
 	GDCLASS(AnimatedSprite, Node2D);
 
 	Ref<SpriteFrames> frames;

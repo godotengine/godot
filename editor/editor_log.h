@@ -44,7 +44,6 @@
 #include "scene/gui/tool_button.h"
 
 class EditorLog : public VBoxContainer {
-
 	GDCLASS(EditorLog, VBoxContainer);
 
 	Button *clearbutton;

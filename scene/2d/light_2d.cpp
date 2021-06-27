@@ -59,8 +59,9 @@ bool Light2D::_edit_use_pivot() const {
 }
 
 Rect2 Light2D::_edit_get_rect() const {
-	if (texture.is_null())
+	if (texture.is_null()) {
 		return Rect2();
+	}
 
 	Size2 s = texture->get_size() * _scale;
 	return Rect2(texture_offset - s / 2.0, s);
@@ -72,17 +73,18 @@ bool Light2D::_edit_use_rect() const {
 #endif
 
 Rect2 Light2D::get_anchorable_rect() const {
-	if (texture.is_null())
+	if (texture.is_null()) {
 		return Rect2();
+	}
 
 	Size2 s = texture->get_size() * _scale;
 	return Rect2(texture_offset - s / 2.0, s);
 }
 
 void Light2D::_update_light_visibility() {
-
-	if (!is_inside_tree())
+	if (!is_inside_tree()) {
 		return;
+	}
 
 	bool editor_ok = true;
 
@@ -104,45 +106,39 @@ void Light2D::_update_light_visibility() {
 }
 
 void Light2D::set_enabled(bool p_enabled) {
-
 	enabled = p_enabled;
 	_update_light_visibility();
 }
 
 bool Light2D::is_enabled() const {
-
 	return enabled;
 }
 
 void Light2D::set_editor_only(bool p_editor_only) {
-
 	editor_only = p_editor_only;
 	_update_light_visibility();
 }
 
 bool Light2D::is_editor_only() const {
-
 	return editor_only;
 }
 
 void Light2D::set_texture(const Ref<Texture> &p_texture) {
-
 	texture = p_texture;
-	if (texture.is_valid())
+	if (texture.is_valid()) {
 		VS::get_singleton()->canvas_light_set_texture(canvas_light, texture->get_rid());
-	else
+	} else {
 		VS::get_singleton()->canvas_light_set_texture(canvas_light, RID());
+	}
 
 	update_configuration_warning();
 }
 
 Ref<Texture> Light2D::get_texture() const {
-
 	return texture;
 }
 
 void Light2D::set_texture_offset(const Vector2 &p_offset) {
-
 	texture_offset = p_offset;
 	VS::get_singleton()->canvas_light_set_texture_offset(canvas_light, texture_offset);
 	item_rect_changed();
@@ -150,44 +146,36 @@ void Light2D::set_texture_offset(const Vector2 &p_offset) {
 }
 
 Vector2 Light2D::get_texture_offset() const {
-
 	return texture_offset;
 }
 
 void Light2D::set_color(const Color &p_color) {
-
 	color = p_color;
 	VS::get_singleton()->canvas_light_set_color(canvas_light, color);
 }
 Color Light2D::get_color() const {
-
 	return color;
 }
 
 void Light2D::set_height(float p_height) {
-
 	height = p_height;
 	VS::get_singleton()->canvas_light_set_height(canvas_light, height);
 }
 
 float Light2D::get_height() const {
-
 	return height;
 }
 
 void Light2D::set_energy(float p_energy) {
-
 	energy = p_energy;
 	VS::get_singleton()->canvas_light_set_energy(canvas_light, energy);
 }
 
 float Light2D::get_energy() const {
-
 	return energy;
 }
 
 void Light2D::set_texture_scale(float p_scale) {
-
 	_scale = p_scale;
 	// Avoid having 0 scale values, can lead to errors in physics and rendering.
 	if (_scale == 0) {
@@ -198,112 +186,91 @@ void Light2D::set_texture_scale(float p_scale) {
 }
 
 float Light2D::get_texture_scale() const {
-
 	return _scale;
 }
 
 void Light2D::set_z_range_min(int p_min_z) {
-
 	z_min = p_min_z;
 	VS::get_singleton()->canvas_light_set_z_range(canvas_light, z_min, z_max);
 }
 int Light2D::get_z_range_min() const {
-
 	return z_min;
 }
 
 void Light2D::set_z_range_max(int p_max_z) {
-
 	z_max = p_max_z;
 	VS::get_singleton()->canvas_light_set_z_range(canvas_light, z_min, z_max);
 }
 int Light2D::get_z_range_max() const {
-
 	return z_max;
 }
 
 void Light2D::set_layer_range_min(int p_min_layer) {
-
 	layer_min = p_min_layer;
 	VS::get_singleton()->canvas_light_set_layer_range(canvas_light, layer_min, layer_max);
 }
 int Light2D::get_layer_range_min() const {
-
 	return layer_min;
 }
 
 void Light2D::set_layer_range_max(int p_max_layer) {
-
 	layer_max = p_max_layer;
 	VS::get_singleton()->canvas_light_set_layer_range(canvas_light, layer_min, layer_max);
 }
 int Light2D::get_layer_range_max() const {
-
 	return layer_max;
 }
 
 void Light2D::set_item_cull_mask(int p_mask) {
-
 	item_mask = p_mask;
 	VS::get_singleton()->canvas_light_set_item_cull_mask(canvas_light, item_mask);
 }
 
 int Light2D::get_item_cull_mask() const {
-
 	return item_mask;
 }
 
 void Light2D::set_item_shadow_cull_mask(int p_mask) {
-
 	item_shadow_mask = p_mask;
 	VS::get_singleton()->canvas_light_set_item_shadow_cull_mask(canvas_light, item_shadow_mask);
 }
 
 int Light2D::get_item_shadow_cull_mask() const {
-
 	return item_shadow_mask;
 }
 
 void Light2D::set_mode(Mode p_mode) {
-
 	mode = p_mode;
 	VS::get_singleton()->canvas_light_set_mode(canvas_light, VS::CanvasLightMode(p_mode));
 }
 
 Light2D::Mode Light2D::get_mode() const {
-
 	return mode;
 }
 
 void Light2D::set_shadow_enabled(bool p_enabled) {
-
 	shadow = p_enabled;
 	VS::get_singleton()->canvas_light_set_shadow_enabled(canvas_light, shadow);
 }
 bool Light2D::is_shadow_enabled() const {
-
 	return shadow;
 }
 
 void Light2D::set_shadow_buffer_size(int p_size) {
-
 	shadow_buffer_size = p_size;
 	VS::get_singleton()->canvas_light_set_shadow_buffer_size(canvas_light, shadow_buffer_size);
 }
 
 int Light2D::get_shadow_buffer_size() const {
-
 	return shadow_buffer_size;
 }
 
 void Light2D::set_shadow_gradient_length(float p_multiplier) {
-
 	shadow_gradient_length = p_multiplier;
 	VS::get_singleton()->canvas_light_set_shadow_gradient_length(canvas_light, p_multiplier);
 }
 
 float Light2D::get_shadow_gradient_length() const {
-
 	return shadow_gradient_length;
 }
 
@@ -313,7 +280,6 @@ void Light2D::set_shadow_filter(ShadowFilter p_filter) {
 }
 
 Light2D::ShadowFilter Light2D::get_shadow_filter() const {
-
 	return shadow_filter;
 }
 
@@ -327,31 +293,25 @@ Color Light2D::get_shadow_color() const {
 }
 
 void Light2D::_notification(int p_what) {
-
 	if (p_what == NOTIFICATION_ENTER_TREE) {
-
 		VS::get_singleton()->canvas_light_attach_to_canvas(canvas_light, get_canvas());
 		_update_light_visibility();
 	}
 
 	if (p_what == NOTIFICATION_TRANSFORM_CHANGED) {
-
 		VS::get_singleton()->canvas_light_set_transform(canvas_light, get_global_transform());
 	}
 	if (p_what == NOTIFICATION_VISIBILITY_CHANGED) {
-
 		_update_light_visibility();
 	}
 
 	if (p_what == NOTIFICATION_EXIT_TREE) {
-
 		VS::get_singleton()->canvas_light_attach_to_canvas(canvas_light, RID());
 		_update_light_visibility();
 	}
 }
 
 String Light2D::get_configuration_warning() const {
-
 	String warning = Node2D::get_configuration_warning();
 	if (!texture.is_valid()) {
 		if (warning != String()) {
@@ -364,18 +324,15 @@ String Light2D::get_configuration_warning() const {
 }
 
 void Light2D::set_shadow_smooth(float p_amount) {
-
 	shadow_smooth = p_amount;
 	VS::get_singleton()->canvas_light_set_shadow_smooth(canvas_light, shadow_smooth);
 }
 
 float Light2D::get_shadow_smooth() const {
-
 	return shadow_smooth;
 }
 
 void Light2D::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("set_enabled", "enabled"), &Light2D::set_enabled);
 	ClassDB::bind_method(D_METHOD("is_enabled"), &Light2D::is_enabled);
 
@@ -478,7 +435,6 @@ void Light2D::_bind_methods() {
 }
 
 Light2D::Light2D() {
-
 	canvas_light = VisualServer::get_singleton()->canvas_light_create();
 	enabled = true;
 	editor_only = false;
@@ -504,6 +460,5 @@ Light2D::Light2D() {
 }
 
 Light2D::~Light2D() {
-
 	VisualServer::get_singleton()->free(canvas_light);
 }

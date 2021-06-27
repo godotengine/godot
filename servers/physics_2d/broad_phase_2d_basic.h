@@ -34,9 +34,7 @@
 #include "core/map.h"
 #include "space_2d_sw.h"
 class BroadPhase2DBasic : public BroadPhase2DSW {
-
 	struct Element {
-
 		CollisionObject2DSW *owner;
 		bool _static;
 		Rect2 aabb;
@@ -48,7 +46,6 @@ class BroadPhase2DBasic : public BroadPhase2DSW {
 	ID current;
 
 	struct PairKey {
-
 		union {
 			struct {
 				ID a;
@@ -82,7 +79,7 @@ class BroadPhase2DBasic : public BroadPhase2DSW {
 
 public:
 	// 0 is an invalid ID
-	virtual ID create(CollisionObject2DSW *p_object_, int p_subindex = 0);
+	virtual ID create(CollisionObject2DSW *p_object_, int p_subindex = 0, const Rect2 &p_aabb = Rect2(), bool p_static = false);
 	virtual void move(ID p_id, const Rect2 &p_aabb);
 	virtual void set_static(ID p_id, bool p_static);
 	virtual void remove(ID p_id);
@@ -91,8 +88,8 @@ public:
 	virtual bool is_static(ID p_id) const;
 	virtual int get_subindex(ID p_id) const;
 
-	virtual int cull_segment(const Vector2 &p_from, const Vector2 &p_to, CollisionObject2DSW **p_results, int p_max_results, int *p_result_indices = NULL);
-	virtual int cull_aabb(const Rect2 &p_aabb, CollisionObject2DSW **p_results, int p_max_results, int *p_result_indices = NULL);
+	virtual int cull_segment(const Vector2 &p_from, const Vector2 &p_to, CollisionObject2DSW **p_results, int p_max_results, int *p_result_indices = nullptr);
+	virtual int cull_aabb(const Rect2 &p_aabb, CollisionObject2DSW **p_results, int p_max_results, int *p_result_indices = nullptr);
 
 	virtual void set_pair_callback(PairCallback p_pair_callback, void *p_userdata);
 	virtual void set_unpair_callback(UnpairCallback p_unpair_callback, void *p_userdata);

@@ -32,15 +32,13 @@
 
 #include "image_loader_jpegd.h"
 
-static ImageLoaderJPG *image_loader_jpg = NULL;
+static ImageLoaderJPG *image_loader_jpg = nullptr;
 
 void register_jpg_types() {
-
 	image_loader_jpg = memnew(ImageLoaderJPG);
 	ImageLoader::add_image_format_loader(image_loader_jpg);
 }
 
 void unregister_jpg_types() {
-
 	memdelete(image_loader_jpg);
 }

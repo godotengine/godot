@@ -36,7 +36,6 @@
 class FileAccess;
 
 class PCKPacker : public Reference {
-
 	GDCLASS(PCKPacker, Reference);
 
 	FileAccess *file;
@@ -45,10 +44,9 @@ class PCKPacker : public Reference {
 	static void _bind_methods();
 
 	struct File {
-
 		String path;
 		String src_path;
-		int size;
+		uint64_t size;
 		uint64_t offset_offset;
 	};
 	Vector<File> files;

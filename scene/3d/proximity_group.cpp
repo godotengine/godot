@@ -33,7 +33,6 @@
 #include "core/math/math_funcs.h"
 
 void ProximityGroup::_clear_groups() {
-
 	Map<StringName, uint32_t>::Element *E;
 
 	{
@@ -42,7 +41,6 @@ void ProximityGroup::_clear_groups() {
 		E = groups.front();
 		int num = 0;
 		while (E && num < size) {
-
 			if (E->get() != group_version) {
 				remove_list[num++] = E->key();
 			}
@@ -50,7 +48,6 @@ void ProximityGroup::_clear_groups() {
 			E = E->next();
 		}
 		for (int i = 0; i < num; i++) {
-
 			groups.erase(remove_list[i]);
 		}
 	}
@@ -61,9 +58,9 @@ void ProximityGroup::_clear_groups() {
 }
 
 void ProximityGroup::_update_groups() {
-
-	if (grid_radius == Vector3(0, 0, 0))
+	if (grid_radius == Vector3(0, 0, 0)) {
 		return;
+	}
 
 	++group_version;
 
@@ -77,10 +74,8 @@ void ProximityGroup::_update_groups() {
 }
 
 void ProximityGroup::_add_groups(int *p_cell, String p_base, int p_depth) {
-
 	p_base = p_base + "|";
 	if (grid_radius[p_depth] == 0) {
-
 		if (p_depth == 2) {
 			_new_group(p_base);
 		} else {
@@ -92,7 +87,6 @@ void ProximityGroup::_add_groups(int *p_cell, String p_base, int p_depth) {
 	int end = p_cell[p_depth] + grid_radius[p_depth];
 
 	for (int i = start; i <= end; i++) {
-
 		String gname = p_base + itos(i);
 		if (p_depth == 2) {
 			_new_group(gname);
@@ -103,7 +97,6 @@ void ProximityGroup::_add_groups(int *p_cell, String p_base, int p_depth) {
 }
 
 void ProximityGroup::_new_group(StringName p_name) {
-
 	const Map<StringName, uint32_t>::Element *E = groups.find(p_name);
 	if (!E) {
 		add_to_group(p_name);
@@ -113,9 +106,7 @@ void ProximityGroup::_new_group(StringName p_name) {
 }
 
 void ProximityGroup::_notification(int p_what) {
-
 	switch (p_what) {
-
 		case NOTIFICATION_EXIT_TREE:
 			++group_version;
 			_clear_groups();
@@ -127,59 +118,47 @@ void ProximityGroup::_notification(int p_what) {
 }
 
 void ProximityGroup::broadcast(String p_method, Variant p_parameters) {
-
 	Map<StringName, uint32_t>::Element *E;
 	E = groups.front();
 	while (E) {
-
 		get_tree()->call_group_flags(SceneTree::GROUP_CALL_DEFAULT, E->key(), "_proximity_group_broadcast", p_method, p_parameters);
 		E = E->next();
 	}
 }
 
 void ProximityGroup::_proximity_group_broadcast(String p_method, Variant p_parameters) {
-
 	if (dispatch_mode == MODE_PROXY) {
-
 		get_parent()->call(p_method, p_parameters);
 	} else {
-
 		emit_signal("broadcast", p_method, p_parameters);
 	}
 }
 
 void ProximityGroup::set_group_name(const String &p_group_name) {
-
 	group_name = p_group_name;
 }
 
 String ProximityGroup::get_group_name() const {
-
 	return group_name;
 }
 
 void ProximityGroup::set_dispatch_mode(DispatchMode p_mode) {
-
 	dispatch_mode = p_mode;
 }
 
 ProximityGroup::DispatchMode ProximityGroup::get_dispatch_mode() const {
-
 	return dispatch_mode;
 }
 
 void ProximityGroup::set_grid_radius(const Vector3 &p_radius) {
-
 	grid_radius = p_radius;
 }
 
 Vector3 ProximityGroup::get_grid_radius() const {
-
 	return grid_radius;
 }
 
 void ProximityGroup::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("set_group_name", "name"), &ProximityGroup::set_group_name);
 	ClassDB::bind_method(D_METHOD("get_group_name"), &ProximityGroup::get_group_name);
 	ClassDB::bind_method(D_METHOD("set_dispatch_mode", "mode"), &ProximityGroup::set_dispatch_mode);
@@ -202,7 +181,6 @@ void ProximityGroup::_bind_methods() {
 }
 
 ProximityGroup::ProximityGroup() {
-
 	group_version = 0;
 	dispatch_mode = MODE_PROXY;
 

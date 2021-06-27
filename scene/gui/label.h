@@ -34,7 +34,6 @@
 #include "scene/gui/control.h"
 
 class Label : public Control {
-
 	GDCLASS(Label, Control);
 
 public:
@@ -68,7 +67,6 @@ private:
 	int get_longest_line_width() const;
 
 	struct WordCache {
-
 		enum {
 			CHAR_NEWLINE = -1,
 			CHAR_WRAPLINE = -2
@@ -82,7 +80,7 @@ private:
 			char_pos = 0;
 			word_len = 0;
 			pixel_width = 0;
-			next = 0;
+			next = nullptr;
 			space_count = 0;
 		}
 	};

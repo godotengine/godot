@@ -32,7 +32,6 @@
 #include "core/print_string.h"
 
 Size2 OptionButton::get_minimum_size() const {
-
 	Size2 minsize = Button::get_minimum_size();
 
 	if (has_icon("arrow")) {
@@ -50,12 +49,11 @@ Size2 OptionButton::get_minimum_size() const {
 }
 
 void OptionButton::_notification(int p_what) {
-
 	switch (p_what) {
 		case NOTIFICATION_DRAW: {
-
-			if (!has_icon("arrow"))
+			if (!has_icon("arrow")) {
 				return;
+			}
 
 			RID ci = get_canvas_item();
 			Ref<Texture> arrow = Control::get_icon("arrow");
@@ -82,13 +80,11 @@ void OptionButton::_notification(int p_what) {
 			arrow->draw(ci, ofs, clr);
 		} break;
 		case NOTIFICATION_THEME_CHANGED: {
-
 			if (has_icon("arrow")) {
 				_set_internal_margin(MARGIN_RIGHT, Control::get_icon("arrow")->get_width());
 			}
 		} break;
 		case NOTIFICATION_VISIBILITY_CHANGED: {
-
 			if (!is_visible_in_tree()) {
 				popup->hide();
 			}
@@ -101,12 +97,10 @@ void OptionButton::_focused(int p_which) {
 }
 
 void OptionButton::_selected(int p_which) {
-
 	_select(p_which, true);
 }
 
 void OptionButton::pressed() {
-
 	Size2 size = get_size();
 	popup->set_global_position(get_global_position() + Size2(0, size.height * get_global_transform().get_scale().y));
 	popup->set_size(Size2(size.width, 0));
@@ -115,105 +109,93 @@ void OptionButton::pressed() {
 }
 
 void OptionButton::add_icon_item(const Ref<Texture> &p_icon, const String &p_label, int p_id) {
-
 	popup->add_icon_radio_check_item(p_icon, p_label, p_id);
-	if (popup->get_item_count() == 1)
+	if (popup->get_item_count() == 1) {
 		select(0);
+	}
 }
 void OptionButton::add_item(const String &p_label, int p_id) {
-
 	popup->add_radio_check_item(p_label, p_id);
-	if (popup->get_item_count() == 1)
+	if (popup->get_item_count() == 1) {
 		select(0);
+	}
 }
 
 void OptionButton::set_item_text(int p_idx, const String &p_text) {
-
 	popup->set_item_text(p_idx, p_text);
 
-	if (current == p_idx)
+	if (current == p_idx) {
 		set_text(p_text);
+	}
 }
 void OptionButton::set_item_icon(int p_idx, const Ref<Texture> &p_icon) {
-
 	popup->set_item_icon(p_idx, p_icon);
 
-	if (current == p_idx)
+	if (current == p_idx) {
 		set_icon(p_icon);
+	}
 }
 void OptionButton::set_item_id(int p_idx, int p_id) {
-
 	popup->set_item_id(p_idx, p_id);
 }
 
 void OptionButton::set_item_metadata(int p_idx, const Variant &p_metadata) {
-
 	popup->set_item_metadata(p_idx, p_metadata);
 }
 
 void OptionButton::set_item_disabled(int p_idx, bool p_disabled) {
-
 	popup->set_item_disabled(p_idx, p_disabled);
 }
 
 String OptionButton::get_item_text(int p_idx) const {
-
 	return popup->get_item_text(p_idx);
 }
 
 Ref<Texture> OptionButton::get_item_icon(int p_idx) const {
-
 	return popup->get_item_icon(p_idx);
 }
 
 int OptionButton::get_item_id(int p_idx) const {
-
 	return popup->get_item_id(p_idx);
 }
 
 int OptionButton::get_item_index(int p_id) const {
-
 	return popup->get_item_index(p_id);
 }
 
 Variant OptionButton::get_item_metadata(int p_idx) const {
-
 	return popup->get_item_metadata(p_idx);
 }
 
 bool OptionButton::is_item_disabled(int p_idx) const {
-
 	return popup->is_item_disabled(p_idx);
 }
 
 int OptionButton::get_item_count() const {
-
 	return popup->get_item_count();
 }
 
 void OptionButton::add_separator() {
-
 	popup->add_separator();
 }
 
 void OptionButton::clear() {
-
 	popup->clear();
 	set_text("");
 	current = -1;
 }
 
 void OptionButton::_select(int p_which, bool p_emit) {
-
-	if (p_which < 0)
+	if (p_which < 0) {
 		return;
-	if (p_which == current)
+	}
+	if (p_which == current) {
 		return;
+	}
 
 	ERR_FAIL_INDEX(p_which, popup->get_item_count());
 
 	for (int i = 0; i < popup->get_item_count(); i++) {
-
 		popup->set_item_checked(i, i == p_which);
 	}
 
@@ -221,57 +203,52 @@ void OptionButton::_select(int p_which, bool p_emit) {
 	set_text(popup->get_item_text(current));
 	set_icon(popup->get_item_icon(current));
 
-	if (is_inside_tree() && p_emit)
+	if (is_inside_tree() && p_emit) {
 		emit_signal("item_selected", current);
+	}
 }
 
 void OptionButton::_select_int(int p_which) {
-
-	if (p_which < 0 || p_which >= popup->get_item_count())
+	if (p_which < 0 || p_which >= popup->get_item_count()) {
 		return;
+	}
 	_select(p_which, false);
 }
 
 void OptionButton::select(int p_idx) {
-
 	_select(p_idx, false);
 }
 
 int OptionButton::get_selected() const {
-
 	return current;
 }
 
 int OptionButton::get_selected_id() const {
-
 	int idx = get_selected();
-	if (idx < 0)
+	if (idx < 0) {
 		return 0;
+	}
 	return get_item_id(current);
 }
 Variant OptionButton::get_selected_metadata() const {
-
 	int idx = get_selected();
-	if (idx < 0)
+	if (idx < 0) {
 		return Variant();
+	}
 	return get_item_metadata(current);
 }
 
 void OptionButton::remove_item(int p_idx) {
-
 	popup->remove_item(p_idx);
 }
 
 PopupMenu *OptionButton::get_popup() const {
-
 	return popup;
 }
 
 Array OptionButton::_get_items() const {
-
 	Array items;
 	for (int i = 0; i < get_item_count(); i++) {
-
 		items.push_back(get_item_text(i));
 		items.push_back(get_item_icon(i));
 		items.push_back(is_item_disabled(i));
@@ -282,12 +259,10 @@ Array OptionButton::_get_items() const {
 	return items;
 }
 void OptionButton::_set_items(const Array &p_items) {
-
 	ERR_FAIL_COND(p_items.size() % 5);
 	clear();
 
 	for (int i = 0; i < p_items.size(); i += 5) {
-
 		String text = p_items[i + 0];
 		Ref<Texture> icon = p_items[i + 1];
 		bool disabled = p_items[i + 2];
@@ -303,12 +278,10 @@ void OptionButton::_set_items(const Array &p_items) {
 }
 
 void OptionButton::get_translatable_strings(List<String> *p_strings) const {
-
 	popup->get_translatable_strings(p_strings);
 }
 
 void OptionButton::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("_selected"), &OptionButton::_selected);
 	ClassDB::bind_method(D_METHOD("_focused"), &OptionButton::_focused);
 
@@ -348,7 +321,6 @@ void OptionButton::_bind_methods() {
 }
 
 OptionButton::OptionButton() {
-
 	current = -1;
 	set_toggle_mode(true);
 	set_text_align(ALIGN_LEFT);

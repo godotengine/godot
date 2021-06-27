@@ -42,7 +42,6 @@ class RasterizerSceneGLES3;
 class RasterizerCanvasBaseGLES3 : public RasterizerCanvas {
 public:
 	struct CanvasItemUBO {
-
 		float projection_matrix[16];
 		float time;
 		uint8_t padding[12];
@@ -51,7 +50,6 @@ public:
 	RasterizerSceneGLES3 *scene_render;
 
 	struct Data {
-
 		enum { NUM_QUAD_ARRAY_VARIATIONS = 8 };
 
 		GLuint canvas_quad_vertices;
@@ -106,9 +104,7 @@ public:
 	GLenum _buffer_upload_usage_flag;
 
 	struct LightInternal : public RID_Data {
-
 		struct UBOData {
-
 			float light_matrix[16];
 			float local_matrix[16];
 			float shadow_matrix[16];

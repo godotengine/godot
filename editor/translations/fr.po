@@ -78,12 +78,14 @@
 # Joseph Boudou <joseph.boudou@matabio.net>, 2020.
 # Vincent Foulon <vincent.foulon80@gmail.com>, 2020.
 # TechnoPorg <jonah.janzen@gmail.com>, 2021.
+# ASTRALE <jules.cercy@etu.univ-lyon1.fr>, 2021.
+# Julien Vanelian <julienvanelian@hotmail.com>, 2021.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2021-03-21 12:25+0000\n"
-"Last-Translator: Pierre Caye <pierrecaye@laposte.net>\n"
+"PO-Revision-Date: 2021-04-30 23:03+0000\n"
+"Last-Translator: Julien Vanelian <julienvanelian@hotmail.com>\n"
 "Language-Team: French <https://hosted.weblate.org/projects/godot-engine/"
 "godot/fr/>\n"
 "Language: fr\n"
@@ -91,7 +93,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 4.5.2-dev\n"
+"X-Generator: Weblate 4.7-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -107,7 +109,7 @@ msgstr "Une chaîne de caractères de longueur 1 est attendue (un caractère)."
 #: modules/mono/glue/gd_glue.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
 msgid "Not enough bytes for decoding bytes, or invalid format."
-msgstr "Pas assez d’octets pour le décodage, ou format non valide."
+msgstr "Pas assez d’octets pour le décodage, ou format invalide."
 
 #: core/math/expression.cpp
 msgid "Invalid input %i (not passed) in expression"
@@ -1199,6 +1201,10 @@ msgstr "Modifier valeur du dictionnaire"
 msgid "Thanks from the Godot community!"
 msgstr "La communauté Godot vous dit merci !"
 
+#: editor/editor_about.cpp editor/editor_node.cpp editor/project_manager.cpp
+msgid "Click to copy."
+msgstr ""
+
 #: editor/editor_about.cpp
 msgid "Godot Engine contributors"
 msgstr "Contributeurs de Godot Engine"
@@ -1244,7 +1250,7 @@ msgstr "Sponsors Bronze"
 
 #: editor/editor_about.cpp
 msgid "Mini Sponsors"
-msgstr "Mini Sponsors"
+msgstr "Petits Sponsors"
 
 #: editor/editor_about.cpp
 msgid "Gold Donors"
@@ -2633,11 +2639,13 @@ msgstr ""
 
 #: editor/editor_node.cpp
 msgid ""
-"Unable to load addon script from path: '%s' There seems to be an error in "
-"the code, please check the syntax."
+"Unable to load addon script from path: '%s'. This might be due to a code "
+"error in that script.\n"
+"Disabling the addon at '%s' to prevent further errors."
 msgstr ""
-"Impossible de charger le script de l’extension depuis le chemin : « %s ». Il "
-"semble y avoir une erreur dans le code, merci de vérifier la syntaxe."
+"Impossible de charger le script de l’extension depuis le chemin : « %s ». "
+"Cela peut être dû à une erreur de programmation dans ce script.\n"
+"L'extension « %s » a été désactivée pour prévenir de nouvelles erreures."
 
 #: editor/editor_node.cpp
 msgid ""
@@ -3088,6 +3096,10 @@ msgid "About"
 msgstr "À propos"
 
 #: editor/editor_node.cpp
+msgid "Support Godot Development"
+msgstr "Soutenir le développement de Godot"
+
+#: editor/editor_node.cpp
 msgid "Play the project."
 msgstr "Lancer le projet."
 
@@ -3194,7 +3206,7 @@ msgstr ""
 "personnalisé à l'exportation (ajout de modules, modification du fichier "
 "AndroidManifest.xml, etc.).\n"
 "Notez que pour faire des compilations personnalisées au lieu d'utiliser des "
-"APKs pré-construits, l'option \"Use Custom Build\" doit être activée dans le "
+"APKs préconstruits, l'option \"Use Custom Build\" doit être activée dans le "
 "Preset d'exportation Android."
 
 #: editor/editor_node.cpp
@@ -5337,7 +5349,7 @@ msgid ""
 "Godot editor was built without ray tracing support, lightmaps can't be baked."
 msgstr ""
 "L'éditeur Godot a été compilé sans support du ray tracing, les lightmaps ne "
-"peuvent pas être pré-calculées."
+"peuvent pas être précalculées."
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
 msgid "Bake Lightmaps"
@@ -5345,7 +5357,7 @@ msgstr "Précalculer les lightmaps"
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
 msgid "Select lightmap bake file:"
-msgstr "Sélectionnez le fichier de pré-calcul de lightmap :"
+msgstr "Sélectionnez le fichier de précalcul de lightmap :"
 
 #: editor/plugins/camera_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -6315,7 +6327,7 @@ msgstr ""
 
 #: editor/plugins/mesh_library_editor_plugin.cpp
 msgid "Mesh Library"
-msgstr "Mesh Library"
+msgstr "Librairie de maillages"
 
 #: editor/plugins/mesh_library_editor_plugin.cpp
 #: editor/plugins/theme_editor_plugin.cpp
@@ -7392,7 +7404,7 @@ msgstr ""
 
 #: editor/plugins/shader_editor_plugin.cpp
 msgid "Shader"
-msgstr "Shader"
+msgstr "Ombrage"
 
 #: editor/plugins/skeleton_2d_editor_plugin.cpp
 msgid "This skeleton has no bones, create some children Bone2D nodes."
@@ -7675,6 +7687,13 @@ msgstr "Ralentissement de la vue libre"
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "View Rotation Locked"
 msgstr "Rotation de la vue verrouillée"
+
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid ""
+"To zoom further, change the camera's clipping planes (View -> Settings...)"
+msgstr ""
+"Pour zoomer d'avantage, modifiez les plans de détourage de la caméra "
+"(Affichage -> Paramètres...)"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid ""
@@ -10270,7 +10289,7 @@ msgstr "Bouton de souris"
 
 #: editor/project_settings_editor.cpp
 msgid ""
-"Invalid action name. it cannot be empty nor contain '/', ':', '=', '\\' or "
+"Invalid action name. It cannot be empty nor contain '/', ':', '=', '\\' or "
 "'\"'"
 msgstr ""
 "Nom d'action invalide. Il ne peut être vide ni contenir « / », « : », « = », "
@@ -11078,6 +11097,17 @@ msgid "Remote"
 msgstr "Distant"
 
 #: editor/scene_tree_dock.cpp
+msgid ""
+"If selected, the Remote scene tree dock will cause the project to stutter "
+"every time it updates.\n"
+"Switch back to the Local scene tree dock to improve performance."
+msgstr ""
+"S'il est sélectionné, le dock de l'arborescence de la scène distante sera "
+"instable à chaque mise à jour de celui-ci.\n"
+"Revenez au dock de l'arborescence de la scène locale afin d'améliorer les "
+"performances."
+
+#: editor/scene_tree_dock.cpp
 msgid "Local"
 msgstr "Local"
 
@@ -11777,7 +11807,7 @@ msgstr ""
 
 #: modules/lightmapper_cpu/lightmapper_cpu.cpp
 msgid "Begin Bake"
-msgstr "Commencer le pré-calcul"
+msgstr "Commencer le précalcul"
 
 #: modules/lightmapper_cpu/lightmapper_cpu.cpp
 msgid "Preparing data structures"
@@ -12336,10 +12366,22 @@ msgstr ""
 "Installez-le à partir du menu Projet."
 
 #: platform/android/export/export.cpp
+msgid ""
+"Either Debug Keystore, Debug User AND Debug Password settings must be "
+"configured OR none of them."
+msgstr ""
+
+#: platform/android/export/export.cpp
 msgid "Debug keystore not configured in the Editor Settings nor in the preset."
 msgstr ""
 "Le Debug keystore n'est pas configuré dans les Paramètres de l'éditeur, ni "
 "dans le préréglage."
+
+#: platform/android/export/export.cpp
+msgid ""
+"Either Release Keystore, Release User AND Release Password settings must be "
+"configured OR none of them."
+msgstr ""
 
 #: platform/android/export/export.cpp
 msgid "Release keystore incorrectly configured in the export preset."

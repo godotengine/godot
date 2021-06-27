@@ -43,7 +43,6 @@ class EditorFileSystemDirectory;
 struct EditorProgress;
 
 class EditorExportPreset : public Reference {
-
 	GDCLASS(EditorExportPreset, Reference);
 
 public:
@@ -146,7 +145,6 @@ struct SharedObject {
 };
 
 class EditorExportPlatform : public Reference {
-
 	GDCLASS(EditorExportPlatform, Reference);
 
 public:
@@ -155,7 +153,6 @@ public:
 
 private:
 	struct SavedData {
-
 		uint64_t ofs;
 		uint64_t size;
 		Vector<uint8_t> md5;
@@ -167,7 +164,6 @@ private:
 	};
 
 	struct PackData {
-
 		FileAccess *f;
 		Vector<SavedData> file_ofs;
 		EditorProgress *ep;
@@ -175,7 +171,6 @@ private:
 	};
 
 	struct ZipData {
-
 		void *zip;
 		EditorProgress *ep;
 	};
@@ -206,7 +201,7 @@ protected:
 	FeatureContainers get_feature_containers(const Ref<EditorExportPreset> &p_preset);
 
 	bool exists_export_template(String template_file_name, String *err) const;
-	String find_export_template(String template_file_name, String *err = NULL) const;
+	String find_export_template(String template_file_name, String *err = nullptr) const;
 	void gen_export_flags(Vector<String> &r_flags, int p_flags);
 
 public:
@@ -233,9 +228,9 @@ public:
 	virtual String get_name() const = 0;
 	virtual Ref<Texture> get_logo() const = 0;
 
-	Error export_project_files(const Ref<EditorExportPreset> &p_preset, EditorExportSaveFunction p_func, void *p_udata, EditorExportSaveSharedObject p_so_func = NULL);
+	Error export_project_files(const Ref<EditorExportPreset> &p_preset, EditorExportSaveFunction p_func, void *p_udata, EditorExportSaveSharedObject p_so_func = nullptr);
 
-	Error save_pack(const Ref<EditorExportPreset> &p_preset, const String &p_path, Vector<SharedObject> *p_so_files = NULL, bool p_embed = false, int64_t *r_embedded_start = NULL, int64_t *r_embedded_size = NULL);
+	Error save_pack(const Ref<EditorExportPreset> &p_preset, const String &p_path, Vector<SharedObject> *p_so_files = nullptr, bool p_embed = false, int64_t *r_embedded_start = nullptr, int64_t *r_embedded_size = nullptr);
 	Error save_zip(const Ref<EditorExportPreset> &p_preset, const String &p_path);
 
 	virtual bool poll_export() { return false; }
@@ -350,9 +345,9 @@ public:
 class EditorExport : public Node {
 	GDCLASS(EditorExport, Node);
 
-	Vector<Ref<EditorExportPlatform> > export_platforms;
-	Vector<Ref<EditorExportPreset> > export_presets;
-	Vector<Ref<EditorExportPlugin> > export_plugins;
+	Vector<Ref<EditorExportPlatform>> export_platforms;
+	Vector<Ref<EditorExportPreset>> export_presets;
+	Vector<Ref<EditorExportPlugin>> export_plugins;
 
 	StringName _export_presets_updated;
 
@@ -384,7 +379,7 @@ public:
 
 	void add_export_plugin(const Ref<EditorExportPlugin> &p_plugin);
 	void remove_export_plugin(const Ref<EditorExportPlugin> &p_plugin);
-	Vector<Ref<EditorExportPlugin> > get_export_plugins();
+	Vector<Ref<EditorExportPlugin>> get_export_plugins();
 
 	void load_config();
 	void update_export_presets();
@@ -395,7 +390,6 @@ public:
 };
 
 class EditorExportPlatformPC : public EditorExportPlatform {
-
 	GDCLASS(EditorExportPlatformPC, EditorExportPlatform);
 
 public:
@@ -457,7 +451,6 @@ public:
 };
 
 class EditorExportTextSceneToBinaryPlugin : public EditorExportPlugin {
-
 	GDCLASS(EditorExportTextSceneToBinaryPlugin, EditorExportPlugin);
 
 public:

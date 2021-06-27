@@ -35,7 +35,6 @@
   PrimitiveMesh
 */
 void PrimitiveMesh::_update() const {
-
 	Array arr;
 	arr.resize(VS::ARRAY_MAX);
 	_create_mesh_array(arr);
@@ -47,13 +46,13 @@ void PrimitiveMesh::_update() const {
 	int pc = points.size();
 	ERR_FAIL_COND(pc == 0);
 	{
-
 		PoolVector<Vector3>::Read r = points.read();
 		for (int i = 0; i < pc; i++) {
-			if (i == 0)
+			if (i == 0) {
 				aabb.position = r[i];
-			else
+			} else {
 				aabb.expand_to(r[i]);
+			}
 		}
 	}
 
@@ -61,7 +60,6 @@ void PrimitiveMesh::_update() const {
 		PoolVector<Vector3> normals = arr[VS::ARRAY_NORMAL];
 		PoolVector<int> indices = arr[VS::ARRAY_INDEX];
 		if (normals.size() && indices.size()) {
-
 			{
 				int nc = normals.size();
 				PoolVector<Vector3>::Write w = normals.write();
@@ -95,9 +93,9 @@ void PrimitiveMesh::_update() const {
 }
 
 void PrimitiveMesh::_request_update() {
-
-	if (pending_request)
+	if (pending_request) {
 		return;
+	}
 	_update();
 }
 
@@ -164,7 +162,7 @@ void PrimitiveMesh::surface_set_material(int p_idx, const Ref<Material> &p_mater
 }
 
 Ref<Material> PrimitiveMesh::surface_get_material(int p_idx) const {
-	ERR_FAIL_INDEX_V(p_idx, 1, NULL);
+	ERR_FAIL_INDEX_V(p_idx, 1, nullptr);
 
 	return material;
 }
@@ -175,6 +173,9 @@ int PrimitiveMesh::get_blend_shape_count() const {
 
 StringName PrimitiveMesh::get_blend_shape_name(int p_index) const {
 	return StringName();
+}
+
+void PrimitiveMesh::set_blend_shape_name(int p_index, const StringName &p_name) {
 }
 
 AABB PrimitiveMesh::get_aabb() const {
@@ -230,14 +231,12 @@ Array PrimitiveMesh::get_mesh_arrays() const {
 }
 
 void PrimitiveMesh::set_custom_aabb(const AABB &p_custom) {
-
 	custom_aabb = p_custom;
 	VS::get_singleton()->mesh_set_custom_aabb(mesh, custom_aabb);
 	emit_changed();
 }
 
 AABB PrimitiveMesh::get_custom_aabb() const {
-
 	return custom_aabb;
 }
 
@@ -251,7 +250,6 @@ bool PrimitiveMesh::get_flip_faces() const {
 }
 
 PrimitiveMesh::PrimitiveMesh() {
-
 	flip_faces = false;
 	// defaults
 	mesh = VisualServer::get_singleton()->mesh_create();
@@ -892,7 +890,7 @@ void CylinderMesh::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "bottom_radius", PROPERTY_HINT_RANGE, "0.001,100.0,0.001,or_greater"), "set_bottom_radius", "get_bottom_radius");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "height", PROPERTY_HINT_RANGE, "0.001,100.0,0.001,or_greater"), "set_height", "get_height");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "radial_segments", PROPERTY_HINT_RANGE, "1,100,1,or_greater"), "set_radial_segments", "get_radial_segments");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "rings", PROPERTY_HINT_RANGE, "1,100,1,or_greater"), "set_rings", "get_rings");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "rings", PROPERTY_HINT_RANGE, "0,100,1,or_greater"), "set_rings", "get_rings");
 }
 
 void CylinderMesh::set_top_radius(const float p_radius) {
@@ -1167,7 +1165,7 @@ void PrismMesh::_create_mesh_array(Array &p_arr) const {
 	Vector3 normal_left, normal_right;
 
 	normal_left = Vector3(-size.y, size.x * left_to_right, 0.0);
-	normal_right = Vector3(size.y, size.x * left_to_right, 0.0);
+	normal_right = Vector3(size.y, size.x * (1.0 - left_to_right), 0.0);
 	normal_left.normalize();
 	normal_right.normalize();
 
@@ -1379,7 +1377,6 @@ void QuadMesh::_create_mesh_array(Array &p_arr) const {
 	};
 
 	for (int i = 0; i < 6; i++) {
-
 		int j = indices[i];
 		faces.set(i, quad_faces[j]);
 		normals.set(i, Vector3(0, 0, 1));

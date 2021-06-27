@@ -31,7 +31,6 @@
 #include "file_access_encrypted.h"
 
 #include "core/crypto/crypto_core.h"
-#include "core/os/copymem.h"
 #include "core/print_string.h"
 #include "core/variant.h"
 
@@ -40,15 +39,13 @@
 #define COMP_MAGIC 0x43454447
 
 Error FileAccessEncrypted::open_and_parse(FileAccess *p_base, const Vector<uint8_t> &p_key, Mode p_mode) {
-
-	ERR_FAIL_COND_V_MSG(file != NULL, ERR_ALREADY_IN_USE, "Can't open file while another file from path '" + file->get_path_absolute() + "' is open.");
+	ERR_FAIL_COND_V_MSG(file != nullptr, ERR_ALREADY_IN_USE, "Can't open file while another file from path '" + file->get_path_absolute() + "' is open.");
 	ERR_FAIL_COND_V(p_key.size() != 32, ERR_INVALID_PARAMETER);
 
 	pos = 0;
 	eofed = false;
 
 	if (p_mode == MODE_WRITE_AES256) {
-
 		data.clear();
 		writing = true;
 		file = p_base;
@@ -56,7 +53,6 @@ Error FileAccessEncrypted::open_and_parse(FileAccess *p_base, const Vector<uint8
 		key = p_key;
 
 	} else if (p_mode == MODE_READ) {
-
 		writing = false;
 		key = p_key;
 		uint32_t magic = p_base->get_32();
@@ -71,21 +67,20 @@ Error FileAccessEncrypted::open_and_parse(FileAccess *p_base, const Vector<uint8
 		length = p_base->get_64();
 		base = p_base->get_position();
 		ERR_FAIL_COND_V(p_base->get_len() < base + length, ERR_FILE_CORRUPT);
-		uint32_t ds = length;
+		uint64_t ds = length;
 		if (ds % 16) {
 			ds += 16 - (ds % 16);
 		}
 
 		data.resize(ds);
 
-		uint32_t blen = p_base->get_buffer(data.ptrw(), ds);
+		uint64_t blen = p_base->get_buffer(data.ptrw(), ds);
 		ERR_FAIL_COND_V(blen != ds, ERR_FILE_CORRUPT);
 
 		CryptoCore::AESContext ctx;
 		ctx.set_decode_key(key.ptrw(), 256);
 
-		for (size_t i = 0; i < ds; i += 16) {
-
+		for (uint64_t i = 0; i < ds; i += 16) {
 			ctx.decrypt_ecb(&data.write[i], &data.write[i]);
 		}
 
@@ -103,13 +98,11 @@ Error FileAccessEncrypted::open_and_parse(FileAccess *p_base, const Vector<uint8
 }
 
 Error FileAccessEncrypted::open_and_parse_password(FileAccess *p_base, const String &p_key, Mode p_mode) {
-
 	String cs = p_key.md5_text();
 	ERR_FAIL_COND_V(cs.length() != 32, ERR_INVALID_PARAMETER);
 	Vector<uint8_t> key;
 	key.resize(32);
 	for (int i = 0; i < 32; i++) {
-
 		key.write[i] = cs[i];
 	}
 
@@ -117,18 +110,16 @@ Error FileAccessEncrypted::open_and_parse_password(FileAccess *p_base, const Str
 }
 
 Error FileAccessEncrypted::_open(const String &p_path, int p_mode_flags) {
-
 	return OK;
 }
 void FileAccessEncrypted::close() {
-
-	if (!file)
+	if (!file) {
 		return;
+	}
 
 	if (writing) {
-
 		Vector<uint8_t> compressed;
-		size_t len = data.size();
+		uint64_t len = data.size();
 		if (len % 16) {
 			len += 16 - (len % 16);
 		}
@@ -137,7 +128,7 @@ void FileAccessEncrypted::close() {
 		ERR_FAIL_COND(CryptoCore::md5(data.ptr(), data.size(), hash) != OK); // Bug?
 
 		compressed.resize(len);
-		zeromem(compressed.ptrw(), len);
+		memset(compressed.ptrw(), 0, len);
 		for (int i = 0; i < data.size(); i++) {
 			compressed.write[i] = data[i];
 		}
@@ -145,8 +136,7 @@ void FileAccessEncrypted::close() {
 		CryptoCore::AESContext ctx;
 		ctx.set_encode_key(key.ptrw(), 256);
 
-		for (size_t i = 0; i < len; i += 16) {
-
+		for (uint64_t i = 0; i < len; i += 16) {
 			ctx.encrypt_ecb(&compressed.write[i], &compressed.write[i]);
 		}
 
@@ -159,70 +149,65 @@ void FileAccessEncrypted::close() {
 		file->store_buffer(compressed.ptr(), compressed.size());
 		file->close();
 		memdelete(file);
-		file = NULL;
+		file = nullptr;
 		data.clear();
 
 	} else {
-
 		file->close();
 		memdelete(file);
 		data.clear();
-		file = NULL;
+		file = nullptr;
 	}
 }
 
 bool FileAccessEncrypted::is_open() const {
-
-	return file != NULL;
+	return file != nullptr;
 }
 
 String FileAccessEncrypted::get_path() const {
-
-	if (file)
+	if (file) {
 		return file->get_path();
-	else
+	} else {
 		return "";
+	}
 }
 
 String FileAccessEncrypted::get_path_absolute() const {
-
-	if (file)
+	if (file) {
 		return file->get_path_absolute();
-	else
+	} else {
 		return "";
+	}
 }
 
-void FileAccessEncrypted::seek(size_t p_position) {
-
-	if (p_position > (size_t)data.size())
-		p_position = data.size();
+void FileAccessEncrypted::seek(uint64_t p_position) {
+	if (p_position > get_len()) {
+		p_position = get_len();
+	}
 
 	pos = p_position;
 	eofed = false;
 }
 
 void FileAccessEncrypted::seek_end(int64_t p_position) {
-
-	seek(data.size() + p_position);
+	seek(get_len() + p_position);
 }
-size_t FileAccessEncrypted::get_position() const {
 
+uint64_t FileAccessEncrypted::get_position() const {
 	return pos;
 }
-size_t FileAccessEncrypted::get_len() const {
 
+uint64_t FileAccessEncrypted::get_len() const {
 	return data.size();
 }
 
 bool FileAccessEncrypted::eof_reached() const {
-
 	return eofed;
 }
 
 uint8_t FileAccessEncrypted::get_8() const {
-
 	ERR_FAIL_COND_V_MSG(writing, 0, "File has not been opened in read mode.");
-	if (pos >= data.size()) {
+	if (pos >= get_len()) {
 		eofed = true;
 		return 0;
 	}
@@ -232,14 +217,12 @@ uint8_t FileAccessEncrypted::get_8() const {
 	return b;
 }
 
-int FileAccessEncrypted::get_buffer(uint8_t *p_dst, int p_length) const {
+uint64_t FileAccessEncrypted::get_buffer(uint8_t *p_dst, uint64_t p_length) const {
 	ERR_FAIL_COND_V(!p_dst && p_length > 0, -1);
-	ERR_FAIL_COND_V(p_length < 0, -1);
 	ERR_FAIL_COND_V_MSG(writing, -1, "File has not been opened in read mode.");
 
-	int to_copy = MIN(p_length, data.size() - pos);
-	for (int i = 0; i < to_copy; i++) {
-
+	uint64_t to_copy = MIN(p_length, get_len() - pos);
+	for (uint64_t i = 0; i < to_copy; i++) {
 		p_dst[i] = data[pos++];
 	}
 
@@ -251,25 +234,20 @@ int FileAccessEncrypted::get_buffer(uint8_t *p_dst, int p_length) const {
 }
 
 Error FileAccessEncrypted::get_error() const {
-
 	return eofed ? ERR_FILE_EOF : OK;
 }
 
-void FileAccessEncrypted::store_buffer(const uint8_t *p_src, int p_length) {
-
+void FileAccessEncrypted::store_buffer(const uint8_t *p_src, uint64_t p_length) {
 	ERR_FAIL_COND_MSG(!writing, "File has not been opened in write mode.");
+	ERR_FAIL_COND(!p_src && p_length > 0);
 
-	if (pos < data.size()) {
-
-		for (int i = 0; i < p_length; i++) {
-
+	if (pos < get_len()) {
+		for (uint64_t i = 0; i < p_length; i++) {
 			store_8(p_src[i]);
 		}
-	} else if (pos == data.size()) {
-
+	} else if (pos == get_len()) {
 		data.resize(pos + p_length);
-		for (int i = 0; i < p_length; i++) {
-
+		for (uint64_t i = 0; i < p_length; i++) {
 			data.write[pos + i] = p_src[i];
 		}
 		pos += p_length;
@@ -283,34 +261,31 @@ void FileAccessEncrypted::flush() {
 }
 
 void FileAccessEncrypted::store_8(uint8_t p_dest) {
-
 	ERR_FAIL_COND_MSG(!writing, "File has not been opened in write mode.");
 
-	if (pos < data.size()) {
+	if (pos < get_len()) {
 		data.write[pos] = p_dest;
 		pos++;
-	} else if (pos == data.size()) {
+	} else if (pos == get_len()) {
 		data.push_back(p_dest);
 		pos++;
 	}
 }
 
 bool FileAccessEncrypted::file_exists(const String &p_name) {
-
 	FileAccess *fa = FileAccess::open(p_name, FileAccess::READ);
-	if (!fa)
+	if (!fa) {
 		return false;
+	}
 	memdelete(fa);
 	return true;
 }
 
 uint64_t FileAccessEncrypted::_get_modified_time(const String &p_file) {
-
 	return 0;
 }
 
 uint32_t FileAccessEncrypted::_get_unix_permissions(const String &p_file) {
-
 	return 0;
 }
 
@@ -320,8 +295,7 @@ Error FileAccessEncrypted::_set_unix_permissions(const String &p_file, uint32_t 
 }
 
 FileAccessEncrypted::FileAccessEncrypted() {
-
-	file = NULL;
+	file = nullptr;
 	pos = 0;
 	eofed = false;
 	mode = MODE_MAX;
@@ -329,7 +303,7 @@ FileAccessEncrypted::FileAccessEncrypted() {
 }
 
 FileAccessEncrypted::~FileAccessEncrypted() {
-
-	if (file)
+	if (file) {
 		close();
+	}
 }

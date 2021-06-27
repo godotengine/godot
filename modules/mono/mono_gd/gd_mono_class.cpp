@@ -105,7 +105,6 @@ GDMonoClass *GDMonoClass::get_nesting_class() const {
 
 #ifdef TOOLS_ENABLED
 Vector<MonoClassField *> GDMonoClass::get_enum_fields() {
-
 	bool class_is_enum = mono_class_is_enum(mono_class);
 	ERR_FAIL_COND_V(!class_is_enum, Vector<MonoClassField *>());
 
@@ -128,7 +127,6 @@ Vector<MonoClassField *> GDMonoClass::get_enum_fields() {
 #endif
 
 bool GDMonoClass::has_attribute(GDMonoClass *p_attr_class) {
-
 #ifdef DEBUG_ENABLED
 	ERR_FAIL_NULL_V(p_attr_class, false);
 #endif
@@ -143,7 +141,6 @@ bool GDMonoClass::has_attribute(GDMonoClass *p_attr_class) {
 }
 
 MonoObject *GDMonoClass::get_attribute(GDMonoClass *p_attr_class) {
-
 #ifdef DEBUG_ENABLED
 	ERR_FAIL_NULL_V(p_attr_class, NULL);
 #endif
@@ -158,7 +155,6 @@ MonoObject *GDMonoClass::get_attribute(GDMonoClass *p_attr_class) {
 }
 
 void GDMonoClass::fetch_attributes() {
-
 	ERR_FAIL_COND(attributes != NULL);
 
 	attributes = mono_custom_attrs_from_class(get_mono_ptr());
@@ -166,7 +162,6 @@ void GDMonoClass::fetch_attributes() {
 }
 
 void GDMonoClass::fetch_methods_with_godot_api_checks(GDMonoClass *p_native_base) {
-
 	CRASH_COND(!CACHED_CLASS(GodotObject)->is_assignable_from(this));
 
 	if (methods_fetched)
@@ -182,11 +177,10 @@ void GDMonoClass::fetch_methods_with_godot_api_checks(GDMonoClass *p_native_base
 		ERR_CONTINUE(!method);
 
 		if (method->get_name() != name) {
-
 #ifdef DEBUG_ENABLED
 			String fullname = method->get_ret_type_full_name() + " " + name + "(" + method->get_signature_desc(true) + ")";
-			WARN_PRINTS("Method '" + fullname + "' is hidden by Godot API method. Should be '" +
-						method->get_full_name_no_class() + "'. In class '" + namespace_name + "." + class_name + "'.");
+			WARN_PRINT("Method '" + fullname + "' is hidden by Godot API method. Should be '" +
+					   method->get_full_name_no_class() + "'. In class '" + namespace_name + "." + class_name + "'.");
 #endif
 			continue;
 		}
@@ -196,7 +190,6 @@ void GDMonoClass::fetch_methods_with_godot_api_checks(GDMonoClass *p_native_base
 		// This allows us to warn the user here if he is using snake_case by mistake.
 
 		if (p_native_base != this) {
-
 			GDMonoClass *native_top = p_native_base;
 			while (native_top) {
 				GDMonoMethod *m = native_top->get_method(name, method->get_parameters_count());
@@ -204,8 +197,8 @@ void GDMonoClass::fetch_methods_with_godot_api_checks(GDMonoClass *p_native_base
 				if (m && m->get_name() != name) {
 					// found
 					String fullname = m->get_ret_type_full_name() + " " + name + "(" + m->get_signature_desc(true) + ")";
-					WARN_PRINTS("Method '" + fullname + "' should be '" + m->get_full_name_no_class() +
-								"'. In class '" + namespace_name + "." + class_name + "'.");
+					WARN_PRINT("Method '" + fullname + "' should be '" + m->get_full_name_no_class() +
+							   "'. In class '" + namespace_name + "." + class_name + "'.");
 					break;
 				}
 
@@ -260,7 +253,6 @@ void GDMonoClass::fetch_methods_with_godot_api_checks(GDMonoClass *p_native_base
 }
 
 GDMonoMethod *GDMonoClass::get_fetched_method_unknown_params(const StringName &p_name) {
-
 	ERR_FAIL_COND_V(!methods_fetched, NULL);
 
 	const MethodKey *k = NULL;
@@ -274,23 +266,19 @@ GDMonoMethod *GDMonoClass::get_fetched_method_unknown_params(const StringName &p
 }
 
 bool GDMonoClass::has_fetched_method_unknown_params(const StringName &p_name) {
-
 	return get_fetched_method_unknown_params(p_name) != NULL;
 }
 
 bool GDMonoClass::implements_interface(GDMonoClass *p_interface) {
-
 	return mono_class_implements_interface(mono_class, p_interface->get_mono_ptr());
 }
 
 bool GDMonoClass::has_public_parameterless_ctor() {
-
 	GDMonoMethod *ctor = get_method(".ctor", 0);
 	return ctor && ctor->get_visibility() == IMonoClassMember::PUBLIC;
 }
 
 GDMonoMethod *GDMonoClass::get_method(const StringName &p_name, int p_params_count) {
-
 	MethodKey key = MethodKey(p_name, p_params_count);
 
 	GDMonoMethod **match = methods.getptr(key);
@@ -314,7 +302,6 @@ GDMonoMethod *GDMonoClass::get_method(const StringName &p_name, int p_params_cou
 }
 
 GDMonoMethod *GDMonoClass::get_method(MonoMethod *p_raw_method) {
-
 	MonoMethodSignature *sig = mono_method_signature(p_raw_method);
 
 	int params_count = mono_signature_get_param_count(sig);
@@ -324,14 +311,12 @@ GDMonoMethod *GDMonoClass::get_method(MonoMethod *p_raw_method) {
 }
 
 GDMonoMethod *GDMonoClass::get_method(MonoMethod *p_raw_method, const StringName &p_name) {
-
 	MonoMethodSignature *sig = mono_method_signature(p_raw_method);
 	int params_count = mono_signature_get_param_count(sig);
 	return get_method(p_raw_method, p_name, params_count);
 }
 
 GDMonoMethod *GDMonoClass::get_method(MonoMethod *p_raw_method, const StringName &p_name, int p_params_count) {
-
 	ERR_FAIL_NULL_V(p_raw_method, NULL);
 
 	MethodKey key = MethodKey(p_name, p_params_count);
@@ -348,7 +333,6 @@ GDMonoMethod *GDMonoClass::get_method(MonoMethod *p_raw_method, const StringName
 }
 
 GDMonoMethod *GDMonoClass::get_method_with_desc(const String &p_description, bool p_include_namespace) {
-
 	MonoMethodDesc *desc = mono_method_desc_new(p_description.utf8().get_data(), p_include_namespace);
 	MonoMethod *method = mono_method_desc_search_in_class(desc, mono_class);
 	mono_method_desc_free(desc);
@@ -362,7 +346,6 @@ GDMonoMethod *GDMonoClass::get_method_with_desc(const String &p_description, boo
 }
 
 GDMonoField *GDMonoClass::get_field(const StringName &p_name) {
-
 	Map<StringName, GDMonoField *>::Element *result = fields.find(p_name);
 
 	if (result)
@@ -384,7 +367,6 @@ GDMonoField *GDMonoClass::get_field(const StringName &p_name) {
 }
 
 const Vector<GDMonoField *> &GDMonoClass::get_all_fields() {
-
 	if (fields_fetched)
 		return fields_list;
 
@@ -410,7 +392,6 @@ const Vector<GDMonoField *> &GDMonoClass::get_all_fields() {
 }
 
 GDMonoProperty *GDMonoClass::get_property(const StringName &p_name) {
-
 	Map<StringName, GDMonoProperty *>::Element *result = properties.find(p_name);
 
 	if (result)
@@ -432,7 +413,6 @@ GDMonoProperty *GDMonoClass::get_property(const StringName &p_name) {
 }
 
 const Vector<GDMonoProperty *> &GDMonoClass::get_all_properties() {
-
 	if (properties_fetched)
 		return properties_list;
 
@@ -485,7 +465,6 @@ const Vector<GDMonoClass *> &GDMonoClass::get_all_delegates() {
 }
 
 const Vector<GDMonoMethod *> &GDMonoClass::get_all_methods() {
-
 	if (!method_list_fetched) {
 		void *iter = NULL;
 		MonoMethod *raw_method = NULL;
@@ -500,7 +479,6 @@ const Vector<GDMonoMethod *> &GDMonoClass::get_all_methods() {
 }
 
 GDMonoClass::GDMonoClass(const StringName &p_namespace, const StringName &p_name, MonoClass *p_class, GDMonoAssembly *p_assembly) {
-
 	namespace_name = p_namespace;
 	class_name = p_name;
 	mono_class = p_class;
@@ -517,7 +495,6 @@ GDMonoClass::GDMonoClass(const StringName &p_namespace, const StringName &p_name
 }
 
 GDMonoClass::~GDMonoClass() {
-
 	if (attributes) {
 		mono_custom_attrs_free(attributes);
 	}

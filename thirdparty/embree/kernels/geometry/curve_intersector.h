@@ -1,4 +1,4 @@
-// Copyright 2009-2020 Intel Corporation
+// Copyright 2009-2021 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
 #pragma once
@@ -23,8 +23,8 @@ namespace embree
       typedef unsigned char Primitive;
       typedef CurvePrecalculations1 Precalculations;
       
-      template<int N, int Nx, bool robust>
-        static __forceinline void intersect(const Accel::Intersectors* This, Precalculations& pre, RayHit& ray, IntersectContext* context, const Primitive* prim, size_t num, const TravRay<N,Nx,robust> &tray, size_t& lazy_node)
+      template<int N, bool robust>
+        static __forceinline void intersect(const Accel::Intersectors* This, Precalculations& pre, RayHit& ray, IntersectContext* context, const Primitive* prim, size_t num, const TravRay<N,robust> &tray, size_t& lazy_node)
       {
         assert(num == 1);
         RTCGeometryType ty = (RTCGeometryType)(*prim);
@@ -33,8 +33,8 @@ namespace embree
         leafIntersector.intersect<1>(&pre,&ray,context,prim);
       }
       
-      template<int N, int Nx, bool robust>        
-        static __forceinline bool occluded(const Accel::Intersectors* This, Precalculations& pre, Ray& ray, IntersectContext* context, const Primitive* prim, size_t num, const TravRay<N,Nx,robust> &tray, size_t& lazy_node)
+      template<int N, bool robust>        
+        static __forceinline bool occluded(const Accel::Intersectors* This, Precalculations& pre, Ray& ray, IntersectContext* context, const Primitive* prim, size_t num, const TravRay<N,robust> &tray, size_t& lazy_node)
       {
         assert(num == 1);
         RTCGeometryType ty = (RTCGeometryType)(*prim);

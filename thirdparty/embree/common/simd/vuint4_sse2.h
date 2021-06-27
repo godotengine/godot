@@ -1,9 +1,17 @@
-// Copyright 2009-2020 Intel Corporation
+// Copyright 2009-2021 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
 #pragma once
 
 #include "../math/math.h"
+
+#define vboolf vboolf_impl
+#define vboold vboold_impl
+#define vint vint_impl
+#define vuint vuint_impl
+#define vllong vllong_impl
+#define vfloat vfloat_impl
+#define vdouble vdouble_impl
 
 namespace embree
 {
@@ -105,23 +113,6 @@ namespace embree
       return vuint4(ptr[0],ptr[1],ptr[2],ptr[3]);
 #endif
     } 
-
-    static __forceinline void store_uchar(unsigned char* ptr, const vuint4& v) {
-#if defined(__SSE4_1__)
-      __m128i x = v;
-      x = _mm_packus_epi32(x, x);
-      x = _mm_packus_epi16(x, x);
-      *(unsigned*)ptr = _mm_cvtsi128_si32(x);
-#else
-      for (size_t i=0;i<4;i++)
-        ptr[i] = (unsigned char)v[i];
-#endif
-    }
-
-    static __forceinline void store_uchar(unsigned short* ptr, const vuint4& v) {
-      for (size_t i=0;i<4;i++)
-        ptr[i] = (unsigned short)v[i];
-    }
 
     static __forceinline vuint4 load_nt(void* ptr) {
 #if defined(__SSE4_1__)
@@ -426,3 +417,10 @@ namespace embree
   }
 }
 
+#undef vboolf
+#undef vboold
+#undef vint
+#undef vuint
+#undef vllong
+#undef vfloat
+#undef vdouble

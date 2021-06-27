@@ -37,7 +37,6 @@ import java.util.List;
  * Denotate a component (e.g: Activity, Fragment) that hosts the {@link Godot} fragment.
  */
 public interface GodotHost {
-
 	/**
 	 * Provides a set of command line parameters to setup the engine.
 	 */

@@ -36,7 +36,6 @@
 #include "core/set.h"
 
 class ProjectSettings : public Object {
-
 	GDCLASS(ProjectSettings, Object);
 	_THREAD_SAFE_CLASS_
 
@@ -98,8 +97,8 @@ protected:
 	Error _load_settings_binary(const String &p_path);
 	Error _load_settings_text_or_binary(const String &p_text_path, const String &p_bin_path);
 
-	Error _save_settings_text(const String &p_file, const Map<String, List<String> > &props, const CustomMap &p_custom = CustomMap(), const String &p_custom_features = String());
-	Error _save_settings_binary(const String &p_file, const Map<String, List<String> > &props, const CustomMap &p_custom = CustomMap(), const String &p_custom_features = String());
+	Error _save_settings_text(const String &p_file, const Map<String, List<String>> &props, const CustomMap &p_custom = CustomMap(), const String &p_custom_features = String());
+	Error _save_settings_binary(const String &p_file, const Map<String, List<String>> &props, const CustomMap &p_custom = CustomMap(), const String &p_custom_features = String());
 
 	Error _save_custom_bnd(const String &p_file);
 

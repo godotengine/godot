@@ -51,7 +51,6 @@ extern "C" void _native_script_hook() {
 // Script API
 
 void GDAPI godot_nativescript_register_class(void *p_gdnative_handle, const char *p_name, const char *p_base, godot_instance_create_func p_create_func, godot_instance_destroy_func p_destroy_func) {
-
 	String *s = (String *)p_gdnative_handle;
 
 	Map<StringName, NativeScriptDesc> *classes = &NSL->library_classes[*s];
@@ -68,7 +67,7 @@ void GDAPI godot_nativescript_register_class(void *p_gdnative_handle, const char
 		desc.base_data = &(*classes)[p_base];
 		desc.base_native_type = desc.base_data->base_native_type;
 	} else {
-		desc.base_data = NULL;
+		desc.base_data = nullptr;
 		desc.base_native_type = p_base;
 	}
 
@@ -76,7 +75,6 @@ void GDAPI godot_nativescript_register_class(void *p_gdnative_handle, const char
 }
 
 void GDAPI godot_nativescript_register_tool_class(void *p_gdnative_handle, const char *p_name, const char *p_base, godot_instance_create_func p_create_func, godot_instance_destroy_func p_destroy_func) {
-
 	String *s = (String *)p_gdnative_handle;
 
 	Map<StringName, NativeScriptDesc> *classes = &NSL->library_classes[*s];
@@ -92,7 +90,7 @@ void GDAPI godot_nativescript_register_tool_class(void *p_gdnative_handle, const
 		desc.base_data = &(*classes)[p_base];
 		desc.base_native_type = desc.base_data->base_native_type;
 	} else {
-		desc.base_data = NULL;
+		desc.base_data = nullptr;
 		desc.base_native_type = p_base;
 	}
 
@@ -100,7 +98,6 @@ void GDAPI godot_nativescript_register_tool_class(void *p_gdnative_handle, const
 }
 
 void GDAPI godot_nativescript_register_method(void *p_gdnative_handle, const char *p_name, const char *p_function_name, godot_method_attributes p_attr, godot_instance_method p_method) {
-
 	String *s = (String *)p_gdnative_handle;
 
 	Map<StringName, NativeScriptDesc>::Element *E = NSL->library_classes[*s].find(p_name);
@@ -115,7 +112,6 @@ void GDAPI godot_nativescript_register_method(void *p_gdnative_handle, const cha
 }
 
 void GDAPI godot_nativescript_register_property(void *p_gdnative_handle, const char *p_name, const char *p_path, godot_property_attributes *p_attr, godot_property_set_func p_set_func, godot_property_get_func p_get_func) {
-
 	String *s = (String *)p_gdnative_handle;
 
 	Map<StringName, NativeScriptDesc>::Element *E = NSL->library_classes[*s].find(p_name);
@@ -136,7 +132,6 @@ void GDAPI godot_nativescript_register_property(void *p_gdnative_handle, const c
 }
 
 void GDAPI godot_nativescript_register_signal(void *p_gdnative_handle, const char *p_name, const godot_signal *p_signal) {
-
 	String *s = (String *)p_gdnative_handle;
 
 	Map<StringName, NativeScriptDesc>::Element *E = NSL->library_classes[*s].find(p_name);
@@ -181,12 +176,13 @@ void GDAPI godot_nativescript_register_signal(void *p_gdnative_handle, const cha
 
 void GDAPI *godot_nativescript_get_userdata(godot_object *p_instance) {
 	Object *instance = (Object *)p_instance;
-	if (!instance)
-		return NULL;
+	if (!instance) {
+		return nullptr;
+	}
 	if (instance->get_script_instance() && instance->get_script_instance()->get_language() == NativeScriptLanguage::get_singleton()) {
 		return ((NativeScriptInstance *)instance->get_script_instance())->userdata;
 	}
-	return NULL;
+	return nullptr;
 }
 
 /*
@@ -287,22 +283,22 @@ void GDAPI godot_nativescript_set_type_tag(void *p_gdnative_handle, const char *
 }
 
 const void GDAPI *godot_nativescript_get_type_tag(const godot_object *p_object) {
-
 	const Object *o = (Object *)p_object;
 
 	if (!o->get_script_instance()) {
-		return NULL;
+		return nullptr;
 	} else {
 		NativeScript *script = Object::cast_to<NativeScript>(o->get_script_instance()->get_script().ptr());
 		if (!script) {
-			return NULL;
+			return nullptr;
 		}
 
-		if (script->get_script_desc())
+		if (script->get_script_desc()) {
 			return script->get_script_desc()->type_tag;
+		}
 	}
 
-	return NULL;
+	return nullptr;
 }
 
 int GDAPI godot_nativescript_register_instance_binding_data_functions(godot_instance_binding_functions p_binding_functions) {

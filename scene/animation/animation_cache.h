@@ -35,11 +35,9 @@
 #include "scene/resources/animation.h"
 
 class AnimationCache : public Object {
-
 	GDCLASS(AnimationCache, Object);
 
 	struct Path {
-
 		RES resource;
 		Object *object;
 		Skeleton *skeleton; // haxor
@@ -50,12 +48,12 @@ class AnimationCache : public Object {
 		Vector<StringName> subpath;
 		bool valid;
 		Path() {
-			object = NULL;
-			skeleton = NULL;
-			node = NULL;
+			object = nullptr;
+			skeleton = nullptr;
+			node = nullptr;
 			bone_idx = -1;
 			valid = false;
-			spatial = NULL;
+			spatial = nullptr;
 		}
 	};
 

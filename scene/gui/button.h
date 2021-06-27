@@ -34,7 +34,6 @@
 #include "scene/gui/base_button.h"
 
 class Button : public BaseButton {
-
 	GDCLASS(Button, BaseButton);
 
 public:

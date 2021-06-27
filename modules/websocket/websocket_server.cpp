@@ -41,7 +41,6 @@ WebSocketServer::~WebSocketServer() {
 }
 
 void WebSocketServer::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("is_listening"), &WebSocketServer::is_listening);
 	ClassDB::bind_method(D_METHOD("listen", "port", "protocols", "gd_mp_api"), &WebSocketServer::listen, DEFVAL(Vector<String>()), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("stop"), &WebSocketServer::stop);
@@ -110,19 +109,18 @@ void WebSocketServer::set_ca_chain(Ref<X509Certificate> p_ca_chain) {
 }
 
 NetworkedMultiplayerPeer::ConnectionStatus WebSocketServer::get_connection_status() const {
-	if (is_listening())
+	if (is_listening()) {
 		return CONNECTION_CONNECTED;
+	}
 
 	return CONNECTION_DISCONNECTED;
 }
 
 bool WebSocketServer::is_server() const {
-
 	return true;
 }
 
 void WebSocketServer::_on_peer_packet(int32_t p_peer_id) {
-
 	if (_is_multiplayer) {
 		_process_multiplayer(get_peer(p_peer_id), p_peer_id);
 	} else {
@@ -131,7 +129,6 @@ void WebSocketServer::_on_peer_packet(int32_t p_peer_id) {
 }
 
 void WebSocketServer::_on_connect(int32_t p_peer_id, String p_protocol) {
-
 	if (_is_multiplayer) {
 		// Send add to clients
 		_send_add(p_peer_id);
@@ -142,7 +139,6 @@ void WebSocketServer::_on_connect(int32_t p_peer_id, String p_protocol) {
 }
 
 void WebSocketServer::_on_disconnect(int32_t p_peer_id, bool p_was_clean) {
-
 	if (_is_multiplayer) {
 		// Send delete to clients
 		_send_del(p_peer_id);
@@ -153,6 +149,5 @@ void WebSocketServer::_on_disconnect(int32_t p_peer_id, bool p_was_clean) {
 }
 
 void WebSocketServer::_on_close_request(int32_t p_peer_id, int p_code, String p_reason) {
-
 	emit_signal("client_close_request", p_peer_id, p_code, p_reason);
 }

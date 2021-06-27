@@ -40,7 +40,6 @@ class VPXDecoder;
 class OpusVorbisDecoder;
 
 class VideoStreamPlaybackWebm : public VideoStreamPlayback {
-
 	GDCLASS(VideoStreamPlaybackWebm, VideoStreamPlayback);
 
 	String file_name;
@@ -107,7 +106,6 @@ private:
 /**/
 
 class VideoStreamWebm : public VideoStream {
-
 	GDCLASS(VideoStreamWebm, VideoStream);
 
 	String file;
@@ -128,7 +126,7 @@ public:
 
 class ResourceFormatLoaderWebm : public ResourceFormatLoader {
 public:
-	virtual RES load(const String &p_path, const String &p_original_path = "", Error *r_error = NULL);
+	virtual RES load(const String &p_path, const String &p_original_path = "", Error *r_error = nullptr);
 	virtual void get_recognized_extensions(List<String> *p_extensions) const;
 	virtual bool handles_type(const String &p_type) const;
 	virtual String get_resource_type(const String &p_path) const;

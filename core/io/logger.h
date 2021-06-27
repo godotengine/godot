@@ -66,7 +66,6 @@ public:
  * Writes messages to stdout/stderr.
  */
 class StdLogger : public Logger {
-
 public:
 	virtual void logv(const char *p_format, va_list p_list, bool p_err) _PRINTF_FORMAT_ATTRIBUTE_2_0;
 	virtual ~StdLogger();

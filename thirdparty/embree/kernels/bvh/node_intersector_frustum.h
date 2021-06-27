@@ -1,4 +1,4 @@
-// Copyright 2009-2020 Intel Corporation
+// Copyright 2009-2021 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
 #pragma once
@@ -36,12 +36,6 @@ namespace embree
     struct Frustum<false>
     {
       __forceinline Frustum() {}
-
-      template<int K>
-      __forceinline Frustum(const vbool<K>& valid, const Vec3vf<K>& org, const Vec3vf<K>& rdir, const vfloat<K>& ray_tnear, const vfloat<K>& ray_tfar, int N)
-      {
-        init(valid, org, rdir, ray_tnear, ray_tfar, N);
-      }
 
       template<int K>
       __forceinline void init(const vbool<K>& valid, const Vec3vf<K>& org, const Vec3vf<K>& rdir, const vfloat<K>& ray_tnear, const vfloat<K>& ray_tfar, int N)
@@ -117,12 +111,6 @@ namespace embree
       __forceinline Frustum() {}
 
       template<int K>
-      __forceinline Frustum(const vbool<K>& valid, const Vec3vf<K>& org, const Vec3vf<K>& rdir, const vfloat<K>& ray_tnear, const vfloat<K>& ray_tfar, int N)
-      {
-        init(valid, org, rdir, ray_tnear, ray_tfar, N);
-      }
-
-      template<int K>
       __forceinline void init(const vbool<K>& valid, const Vec3vf<K>& org, const Vec3vf<K>& rdir, const vfloat<K>& ray_tnear, const vfloat<K>& ray_tfar, int N)
       {
         const Vec3fa reduced_min_org(reduce_min(select(valid, org.x, pos_inf)),
@@ -192,28 +180,28 @@ namespace embree
     // Fast AABBNode intersection
     //////////////////////////////////////////////////////////////////////////////////////
 
-    template<int N, int Nx>
+    template<int N>
     __forceinline size_t intersectNodeFrustum(const typename BVHN<N>::AABBNode* __restrict__ node,
-                                       const FrustumFast& frustum, vfloat<Nx>& dist)
+                                       const FrustumFast& frustum, vfloat<N>& dist)
     {
-      const vfloat<Nx> bminX = *(const vfloat<N>*)((const char*)&node->lower_x + frustum.nf.nearX);
-      const vfloat<Nx> bminY = *(const vfloat<N>*)((const char*)&node->lower_x + frustum.nf.nearY);
-      const vfloat<Nx> bminZ = *(const vfloat<N>*)((const char*)&node->lower_x + frustum.nf.nearZ);
-      const vfloat<Nx> bmaxX = *(const vfloat<N>*)((const char*)&node->lower_x + frustum.nf.farX);
-      const vfloat<Nx> bmaxY = *(const vfloat<N>*)((const char*)&node->lower_x + frustum.nf.farY);
-      const vfloat<Nx> bmaxZ = *(const vfloat<N>*)((const char*)&node->lower_x + frustum.nf.farZ);
+      const vfloat<N> bminX = *(const vfloat<N>*)((const char*)&node->lower_x + frustum.nf.nearX);
+      const vfloat<N> bminY = *(const vfloat<N>*)((const char*)&node->lower_x + frustum.nf.nearY);
+      const vfloat<N> bminZ = *(const vfloat<N>*)((const char*)&node->lower_x + frustum.nf.nearZ);
+      const vfloat<N> bmaxX = *(const vfloat<N>*)((const char*)&node->lower_x + frustum.nf.farX);
+      const vfloat<N> bmaxY = *(const vfloat<N>*)((const char*)&node->lower_x + frustum.nf.farY);
+      const vfloat<N> bmaxZ = *(const vfloat<N>*)((const char*)&node->lower_x + frustum.nf.farZ);
 
-      const vfloat<Nx> fminX = msub(bminX, vfloat<Nx>(frustum.min_rdir.x), vfloat<Nx>(frustum.min_org_rdir.x));
-      const vfloat<Nx> fminY = msub(bminY, vfloat<Nx>(frustum.min_rdir.y), vfloat<Nx>(frustum.min_org_rdir.y));
-      const vfloat<Nx> fminZ = msub(bminZ, vfloat<Nx>(frustum.min_rdir.z), vfloat<Nx>(frustum.min_org_rdir.z));
-      const vfloat<Nx> fmaxX = msub(bmaxX, vfloat<Nx>(frustum.max_rdir.x), vfloat<Nx>(frustum.max_org_rdir.x));
-      const vfloat<Nx> fmaxY = msub(bmaxY, vfloat<Nx>(frustum.max_rdir.y), vfloat<Nx>(frustum.max_org_rdir.y));
-      const vfloat<Nx> fmaxZ = msub(bmaxZ, vfloat<Nx>(frustum.max_rdir.z), vfloat<Nx>(frustum.max_org_rdir.z));
+      const vfloat<N> fminX = msub(bminX, vfloat<N>(frustum.min_rdir.x), vfloat<N>(frustum.min_org_rdir.x));
+      const vfloat<N> fminY = msub(bminY, vfloat<N>(frustum.min_rdir.y), vfloat<N>(frustum.min_org_rdir.y));
+      const vfloat<N> fminZ = msub(bminZ, vfloat<N>(frustum.min_rdir.z), vfloat<N>(frustum.min_org_rdir.z));
+      const vfloat<N> fmaxX = msub(bmaxX, vfloat<N>(frustum.max_rdir.x), vfloat<N>(frustum.max_org_rdir.x));
+      const vfloat<N> fmaxY = msub(bmaxY, vfloat<N>(frustum.max_rdir.y), vfloat<N>(frustum.max_org_rdir.y));
+      const vfloat<N> fmaxZ = msub(bmaxZ, vfloat<N>(frustum.max_rdir.z), vfloat<N>(frustum.max_org_rdir.z));
 
-      const vfloat<Nx> fmin  = maxi(fminX, fminY, fminZ, vfloat<Nx>(frustum.min_dist));
+      const vfloat<N> fmin  = maxi(fminX, fminY, fminZ, vfloat<N>(frustum.min_dist));
       dist = fmin;
-      const vfloat<Nx> fmax  = mini(fmaxX, fmaxY, fmaxZ, vfloat<Nx>(frustum.max_dist));
-      const vbool<Nx> vmask_node_hit = fmin <= fmax;
+      const vfloat<N> fmax  = mini(fmaxX, fmaxY, fmaxZ, vfloat<N>(frustum.max_dist));
+      const vbool<N> vmask_node_hit = fmin <= fmax;
       size_t m_node = movemask(vmask_node_hit) & (((size_t)1 << N)-1);
       return m_node;
     }
@@ -222,30 +210,30 @@ namespace embree
     // Robust AABBNode intersection
     //////////////////////////////////////////////////////////////////////////////////////
 
-    template<int N, int Nx>
+    template<int N>
     __forceinline size_t intersectNodeFrustum(const typename BVHN<N>::AABBNode* __restrict__ node,
-                                       const FrustumRobust& frustum, vfloat<Nx>& dist)
+                                       const FrustumRobust& frustum, vfloat<N>& dist)
     {
-      const vfloat<Nx> bminX = *(const vfloat<N>*)((const char*)&node->lower_x + frustum.nf.nearX);
-      const vfloat<Nx> bminY = *(const vfloat<N>*)((const char*)&node->lower_x + frustum.nf.nearY);
-      const vfloat<Nx> bminZ = *(const vfloat<N>*)((const char*)&node->lower_x + frustum.nf.nearZ);
-      const vfloat<Nx> bmaxX = *(const vfloat<N>*)((const char*)&node->lower_x + frustum.nf.farX);
-      const vfloat<Nx> bmaxY = *(const vfloat<N>*)((const char*)&node->lower_x + frustum.nf.farY);
-      const vfloat<Nx> bmaxZ = *(const vfloat<N>*)((const char*)&node->lower_x + frustum.nf.farZ);
+      const vfloat<N> bminX = *(const vfloat<N>*)((const char*)&node->lower_x + frustum.nf.nearX);
+      const vfloat<N> bminY = *(const vfloat<N>*)((const char*)&node->lower_x + frustum.nf.nearY);
+      const vfloat<N> bminZ = *(const vfloat<N>*)((const char*)&node->lower_x + frustum.nf.nearZ);
+      const vfloat<N> bmaxX = *(const vfloat<N>*)((const char*)&node->lower_x + frustum.nf.farX);
+      const vfloat<N> bmaxY = *(const vfloat<N>*)((const char*)&node->lower_x + frustum.nf.farY);
+      const vfloat<N> bmaxZ = *(const vfloat<N>*)((const char*)&node->lower_x + frustum.nf.farZ);
 
-      const vfloat<Nx> fminX = (bminX - vfloat<Nx>(frustum.min_org.x)) * vfloat<Nx>(frustum.min_rdir.x);
-      const vfloat<Nx> fminY = (bminY - vfloat<Nx>(frustum.min_org.y)) * vfloat<Nx>(frustum.min_rdir.y);
-      const vfloat<Nx> fminZ = (bminZ - vfloat<Nx>(frustum.min_org.z)) * vfloat<Nx>(frustum.min_rdir.z);
-      const vfloat<Nx> fmaxX = (bmaxX - vfloat<Nx>(frustum.max_org.x)) * vfloat<Nx>(frustum.max_rdir.x);
-      const vfloat<Nx> fmaxY = (bmaxY - vfloat<Nx>(frustum.max_org.y)) * vfloat<Nx>(frustum.max_rdir.y);
-      const vfloat<Nx> fmaxZ = (bmaxZ - vfloat<Nx>(frustum.max_org.z)) * vfloat<Nx>(frustum.max_rdir.z);
+      const vfloat<N> fminX = (bminX - vfloat<N>(frustum.min_org.x)) * vfloat<N>(frustum.min_rdir.x);
+      const vfloat<N> fminY = (bminY - vfloat<N>(frustum.min_org.y)) * vfloat<N>(frustum.min_rdir.y);
+      const vfloat<N> fminZ = (bminZ - vfloat<N>(frustum.min_org.z)) * vfloat<N>(frustum.min_rdir.z);
+      const vfloat<N> fmaxX = (bmaxX - vfloat<N>(frustum.max_org.x)) * vfloat<N>(frustum.max_rdir.x);
+      const vfloat<N> fmaxY = (bmaxY - vfloat<N>(frustum.max_org.y)) * vfloat<N>(frustum.max_rdir.y);
+      const vfloat<N> fmaxZ = (bmaxZ - vfloat<N>(frustum.max_org.z)) * vfloat<N>(frustum.max_rdir.z);
 
       const float round_down = 1.0f-2.0f*float(ulp); // FIXME: use per instruction rounding for AVX512
       const float round_up   = 1.0f+2.0f*float(ulp);
-      const vfloat<Nx> fmin  = max(fminX, fminY, fminZ, vfloat<Nx>(frustum.min_dist));
+      const vfloat<N> fmin  = max(fminX, fminY, fminZ, vfloat<N>(frustum.min_dist));
       dist = fmin;
-      const vfloat<Nx> fmax  = min(fmaxX, fmaxY, fmaxZ, vfloat<Nx>(frustum.max_dist));
-      const vbool<Nx> vmask_node_hit = (round_down*fmin <= round_up*fmax);
+      const vfloat<N> fmax  = min(fmaxX, fmaxY, fmaxZ, vfloat<N>(frustum.max_dist));
+      const vbool<N> vmask_node_hit = (round_down*fmin <= round_up*fmax);
       size_t m_node = movemask(vmask_node_hit) & (((size_t)1 << N)-1);
       return m_node;
     }

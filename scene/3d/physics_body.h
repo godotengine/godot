@@ -38,11 +38,7 @@
 #include "skeleton.h"
 
 class PhysicsBody : public CollisionObject {
-
 	GDCLASS(PhysicsBody, CollisionObject);
-
-	uint32_t collision_layer;
-	uint32_t collision_mask;
 
 	void _set_layers(uint32_t p_mask);
 	uint32_t _get_layers() const;
@@ -57,18 +53,6 @@ public:
 	virtual Vector3 get_angular_velocity() const;
 	virtual float get_inverse_mass() const;
 
-	void set_collision_layer(uint32_t p_layer);
-	uint32_t get_collision_layer() const;
-
-	void set_collision_mask(uint32_t p_mask);
-	uint32_t get_collision_mask() const;
-
-	void set_collision_layer_bit(int p_bit, bool p_value);
-	bool get_collision_layer_bit(int p_bit) const;
-
-	void set_collision_mask_bit(int p_bit, bool p_value);
-	bool get_collision_mask_bit(int p_bit) const;
-
 	Array get_collision_exceptions();
 	void add_collision_exception_with(Node *p_node); //must be physicsbody
 	void remove_collision_exception_with(Node *p_node);
@@ -77,7 +61,6 @@ public:
 };
 
 class StaticBody : public PhysicsBody {
-
 	GDCLASS(StaticBody, PhysicsBody);
 
 	Vector3 constant_linear_velocity;
@@ -114,7 +97,6 @@ private:
 };
 
 class RigidBody : public PhysicsBody {
-
 	GDCLASS(RigidBody, PhysicsBody);
 
 public:
@@ -148,15 +130,15 @@ protected:
 	bool custom_integrator;
 
 	struct ShapePair {
-
 		int body_shape;
 		int local_shape;
 		bool tagged;
 		bool operator<(const ShapePair &p_sp) const {
-			if (body_shape == p_sp.body_shape)
+			if (body_shape == p_sp.body_shape) {
 				return local_shape < p_sp.local_shape;
-			else
+			} else {
 				return body_shape < p_sp.body_shape;
+			}
 		}
 
 		ShapePair() {}
@@ -167,19 +149,17 @@ protected:
 		}
 	};
 	struct RigidBody_RemoveAction {
-
+		RID rid;
 		ObjectID body_id;
 		ShapePair pair;
 	};
 	struct BodyState {
-
-		//int rc;
+		RID rid;
 		bool in_tree;
 		VSet<ShapePair> shapes;
 	};
 
 	struct ContactMonitor {
-
 		bool locked;
 		Map<ObjectID, BodyState> body_map;
 	};
@@ -188,7 +168,7 @@ protected:
 	void _body_enter_tree(ObjectID p_id);
 	void _body_exit_tree(ObjectID p_id);
 
-	void _body_inout(int p_status, ObjectID p_instance, int p_body_shape, int p_local_shape);
+	void _body_inout(int p_status, const RID &p_body, ObjectID p_instance, int p_body_shape, int p_local_shape);
 	virtual void _direct_state_changed(Object *p_state);
 
 	void _notification(int p_what);
@@ -281,7 +261,6 @@ VARIANT_ENUM_CAST(RigidBody::Mode);
 class KinematicCollision;
 
 class KinematicBody : public PhysicsBody {
-
 	GDCLASS(KinematicBody, PhysicsBody);
 
 public:
@@ -310,7 +289,7 @@ private:
 	bool on_ceiling;
 	bool on_wall;
 	Vector<Collision> colliders;
-	Vector<Ref<KinematicCollision> > slide_colliders;
+	Vector<Ref<KinematicCollision>> slide_colliders;
 	Ref<KinematicCollision> motion_cache;
 
 	_FORCE_INLINE_ bool _ignores_mode(PhysicsServer::BodyMode) const;
@@ -350,7 +329,6 @@ public:
 };
 
 class KinematicCollision : public Reference {
-
 	GDCLASS(KinematicCollision, Reference);
 
 	KinematicBody *owner;
@@ -368,6 +346,7 @@ public:
 	Object *get_local_shape() const;
 	Object *get_collider() const;
 	ObjectID get_collider_id() const;
+	RID get_collider_rid() const;
 	Object *get_collider_shape() const;
 	int get_collider_shape_index() const;
 	Vector3 get_collider_velocity() const;
@@ -377,7 +356,6 @@ public:
 };
 
 class PhysicalBone : public PhysicsBody {
-
 	GDCLASS(PhysicalBone, PhysicsBody);
 
 public:
@@ -394,7 +372,7 @@ public:
 		virtual JointType get_joint_type() { return JOINT_TYPE_NONE; }
 
 		/// "j" is used to set the parameter inside the PhysicsServer
-		virtual bool _set(const StringName &p_name, const Variant &p_value, RID j = RID());
+		virtual bool _set(const StringName &p_name, const Variant &p_value, RID j);
 		virtual bool _get(const StringName &p_name, Variant &r_ret) const;
 		virtual void _get_property_list(List<PropertyInfo> *p_list) const;
 
@@ -404,7 +382,7 @@ public:
 	struct PinJointData : public JointData {
 		virtual JointType get_joint_type() { return JOINT_TYPE_PIN; }
 
-		virtual bool _set(const StringName &p_name, const Variant &p_value, RID j = RID());
+		virtual bool _set(const StringName &p_name, const Variant &p_value, RID j);
 		virtual bool _get(const StringName &p_name, Variant &r_ret) const;
 		virtual void _get_property_list(List<PropertyInfo> *p_list) const;
 
@@ -421,7 +399,7 @@ public:
 	struct ConeJointData : public JointData {
 		virtual JointType get_joint_type() { return JOINT_TYPE_CONE; }
 
-		virtual bool _set(const StringName &p_name, const Variant &p_value, RID j = RID());
+		virtual bool _set(const StringName &p_name, const Variant &p_value, RID j);
 		virtual bool _get(const StringName &p_name, Variant &r_ret) const;
 		virtual void _get_property_list(List<PropertyInfo> *p_list) const;
 
@@ -442,7 +420,7 @@ public:
 	struct HingeJointData : public JointData {
 		virtual JointType get_joint_type() { return JOINT_TYPE_HINGE; }
 
-		virtual bool _set(const StringName &p_name, const Variant &p_value, RID j = RID());
+		virtual bool _set(const StringName &p_name, const Variant &p_value, RID j);
 		virtual bool _get(const StringName &p_name, Variant &r_ret) const;
 		virtual void _get_property_list(List<PropertyInfo> *p_list) const;
 
@@ -465,7 +443,7 @@ public:
 	struct SliderJointData : public JointData {
 		virtual JointType get_joint_type() { return JOINT_TYPE_SLIDER; }
 
-		virtual bool _set(const StringName &p_name, const Variant &p_value, RID j = RID());
+		virtual bool _set(const StringName &p_name, const Variant &p_value, RID j);
 		virtual bool _get(const StringName &p_name, Variant &r_ret) const;
 		virtual void _get_property_list(List<PropertyInfo> *p_list) const;
 
@@ -543,7 +521,7 @@ public:
 
 		virtual JointType get_joint_type() { return JOINT_TYPE_6DOF; }
 
-		virtual bool _set(const StringName &p_name, const Variant &p_value, RID j = RID());
+		virtual bool _set(const StringName &p_name, const Variant &p_value, RID j);
 		virtual bool _get(const StringName &p_name, Variant &r_ret) const;
 		virtual void _get_property_list(List<PropertyInfo> *p_list) const;
 

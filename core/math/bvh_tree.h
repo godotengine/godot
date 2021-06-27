@@ -48,6 +48,8 @@
 #include "core/print_string.h"
 #include <limits.h>
 
+#define BVHABB_CLASS BVH_ABB<Bounds, Point>
+
 // never do these checks in release
 #if defined(TOOLS_ENABLED) && defined(DEBUG_ENABLED)
 //#define BVH_VERBOSE
@@ -135,7 +137,7 @@ public:
 		if (depth > threshold) {
 			if (aux_stack.empty()) {
 				aux_stack.resize(ALLOCA_STACK_SIZE * 2);
-				copymem(aux_stack.ptr(), stack, get_alloca_stacksize());
+				memcpy(aux_stack.ptr(), stack, get_alloca_stacksize());
 			} else {
 				aux_stack.resize(aux_stack.size() * 2);
 			}
@@ -146,7 +148,7 @@ public:
 	}
 };
 
-template <class T, int MAX_CHILDREN, int MAX_ITEMS, bool USE_PAIRS = false>
+template <class T, int MAX_CHILDREN, int MAX_ITEMS, bool USE_PAIRS = false, class Bounds = AABB, class Point = Vector3>
 class BVH_Tree {
 	friend class BVH;
 
@@ -168,8 +170,9 @@ public:
 private:
 	bool node_add_child(uint32_t p_node_id, uint32_t p_child_node_id) {
 		TNode &tnode = _nodes[p_node_id];
-		if (tnode.is_full_of_children())
+		if (tnode.is_full_of_children()) {
 			return false;
+		}
 
 		tnode.children[tnode.num_children] = p_child_node_id;
 		tnode.num_children += 1;
@@ -193,7 +196,7 @@ private:
 		new_child.parent_id = p_parent_id;
 	}
 
-	void node_remove_child(uint32_t p_parent_id, uint32_t p_child_id, bool p_prevent_sibling = false) {
+	void node_remove_child(uint32_t p_parent_id, uint32_t p_child_id, uint32_t p_tree_id, bool p_prevent_sibling = false) {
 		TNode &parent = _nodes[p_parent_id];
 		BVH_ASSERT(!parent.is_leaf());
 
@@ -228,7 +231,7 @@ private:
 		if (grandparent_id == BVHCommon::INVALID) {
 			if (sibling_present) {
 				// change the root node
-				change_root_node(sibling_id);
+				change_root_node(sibling_id, p_tree_id);
 
 				// delete the old root node as no longer needed
 				_nodes.free(p_parent_id);
@@ -240,16 +243,15 @@ private:
 		if (sibling_present) {
 			node_replace_child(grandparent_id, p_parent_id, sibling_id);
 		} else {
-			node_remove_child(grandparent_id, p_parent_id, true);
+			node_remove_child(grandparent_id, p_parent_id, p_tree_id, true);
 		}
 
 		// put the node on the free list to recycle
 		_nodes.free(p_parent_id);
 	}
 
-	// this relies on _current_tree being accurate
-	void change_root_node(uint32_t p_new_root_id) {
-		_root_node_id[_current_tree] = p_new_root_id;
+	void change_root_node(uint32_t p_new_root_id, uint32_t p_tree_id) {
+		_root_node_id[p_tree_id] = p_new_root_id;
 		TNode &root = _nodes[p_new_root_id];
 
 		// mark no parent
@@ -269,15 +271,16 @@ private:
 		node.neg_leaf_id = -(int)child_leaf_id;
 	}
 
-	void node_remove_item(uint32_t p_ref_id, BVH_ABB *r_old_aabb = nullptr) {
+	void node_remove_item(uint32_t p_ref_id, uint32_t p_tree_id, BVHABB_CLASS *r_old_aabb = nullptr) {
 		// get the reference
 		ItemRef &ref = _refs[p_ref_id];
 		uint32_t owner_node_id = ref.tnode_id;
 
 		// debug draw special
 		// This may not be needed
-		if (owner_node_id == BVHCommon::INVALID)
+		if (owner_node_id == BVHCommon::INVALID) {
 			return;
+		}
 
 		TNode &tnode = _nodes[owner_node_id];
 		CRASH_COND(!tnode.is_leaf());
@@ -286,7 +289,7 @@ private:
 
 		// if the aabb is not determining the corner size, then there is no need to refit!
 		// (optimization, as merging AABBs takes a lot of time)
-		const BVH_ABB &old_aabb = leaf.get_aabb(ref.item_id);
+		const BVHABB_CLASS &old_aabb = leaf.get_aabb(ref.item_id);
 
 		// shrink a little to prevent using corner aabbs
 		// in order to miss the corners first we shrink by node_expansion
@@ -294,7 +297,7 @@ private:
 		// shrink by an epsilon, in order to miss out the very corner aabbs
 		// which are important in determining the bound. Any other aabb
 		// within this can be removed and not affect the overall bound.
-		BVH_ABB node_bound = tnode.aabb;
+		BVHABB_CLASS node_bound = tnode.aabb;
 		node_bound.expand(-_node_expansion - 0.001f);
 		bool refit = true;
 
@@ -332,7 +335,7 @@ private:
 
 				uint32_t parent_id = tnode.parent_id;
 
-				node_remove_child(parent_id, owner_node_id);
+				node_remove_child(parent_id, owner_node_id, p_tree_id);
 				refit_upward(parent_id);
 
 				// put the node on the free list to recycle
@@ -348,7 +351,7 @@ private:
 
 	// returns true if needs refit of PARENT tree only, the node itself AABB is calculated
 	// within this routine
-	bool _node_add_item(uint32_t p_node_id, uint32_t p_ref_id, const BVH_ABB &p_aabb) {
+	bool _node_add_item(uint32_t p_node_id, uint32_t p_ref_id, const BVHABB_CLASS &p_aabb) {
 		ItemRef &ref = _refs[p_ref_id];
 		ref.tnode_id = p_node_id;
 
@@ -362,7 +365,7 @@ private:
 		bool needs_refit = true;
 
 		// expand bound now
-		BVH_ABB expanded = p_aabb;
+		BVHABB_CLASS expanded = p_aabb;
 		expanded.expand(_node_expansion);
 
 		// the bound will only be valid if there is an item in there already
@@ -390,7 +393,7 @@ private:
 		return needs_refit;
 	}
 
-	uint32_t _node_create_another_child(uint32_t p_node_id, const BVH_ABB &p_aabb) {
+	uint32_t _node_create_another_child(uint32_t p_node_id, const BVHABB_CLASS &p_aabb) {
 		uint32_t child_node_id;
 		TNode *child_node = _nodes.request(child_node_id);
 		child_node->clear();

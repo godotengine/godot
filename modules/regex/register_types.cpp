@@ -33,7 +33,6 @@
 #include "regex.h"
 
 void register_regex_types() {
-
 	ClassDB::register_class<RegExMatch>();
 	ClassDB::register_class<RegEx>();
 }

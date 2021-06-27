@@ -1097,6 +1097,10 @@ msgstr ""
 msgid "Thanks from the Godot community!"
 msgstr "Благодарности от общността на Godot!"
 
+#: editor/editor_about.cpp editor/editor_node.cpp editor/project_manager.cpp
+msgid "Click to copy."
+msgstr ""
+
 #: editor/editor_about.cpp
 msgid "Godot Engine contributors"
 msgstr ""
@@ -2454,9 +2458,11 @@ msgid "Unable to load addon script from path: '%s'."
 msgstr "Не може да се зареди добавката-скрипт от: „%s“."
 
 #: editor/editor_node.cpp
+#, fuzzy
 msgid ""
-"Unable to load addon script from path: '%s' There seems to be an error in "
-"the code, please check the syntax."
+"Unable to load addon script from path: '%s'. This might be due to a code "
+"error in that script.\n"
+"Disabling the addon at '%s' to prevent further errors."
 msgstr ""
 "Не може да се зареди добавката-скрипт от: „%s“. Изглежда има грешка в кода. "
 "Моля, проверете синтаксиса."
@@ -2882,6 +2888,10 @@ msgstr ""
 #: editor/editor_node.cpp
 msgid "About"
 msgstr "Относно"
+
+#: editor/editor_node.cpp
+msgid "Support Godot Development"
+msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Play the project."
@@ -5063,6 +5073,7 @@ msgstr ""
 "принадлежат на квадратната област [0.0,1.0]."
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
+#, fuzzy
 msgid ""
 "Godot editor was built without ray tracing support, lightmaps can't be baked."
 msgstr ""
@@ -7354,6 +7365,11 @@ msgstr "Модификатор за забавяне на свободния и�
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "View Rotation Locked"
+msgstr ""
+
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid ""
+"To zoom further, change the camera's clipping planes (View -> Settings...)"
 msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -9778,7 +9794,7 @@ msgstr ""
 
 #: editor/project_settings_editor.cpp
 msgid ""
-"Invalid action name. it cannot be empty nor contain '/', ':', '=', '\\' or "
+"Invalid action name. It cannot be empty nor contain '/', ':', '=', '\\' or "
 "'\"'"
 msgstr ""
 
@@ -10563,6 +10579,13 @@ msgstr ""
 #: editor/scene_tree_dock.cpp
 msgid "Remote"
 msgstr "Отдалечен"
+
+#: editor/scene_tree_dock.cpp
+msgid ""
+"If selected, the Remote scene tree dock will cause the project to stutter "
+"every time it updates.\n"
+"Switch back to the Local scene tree dock to improve performance."
+msgstr ""
 
 #: editor/scene_tree_dock.cpp
 msgid "Local"
@@ -11788,7 +11811,19 @@ msgid ""
 msgstr ""
 
 #: platform/android/export/export.cpp
+msgid ""
+"Either Debug Keystore, Debug User AND Debug Password settings must be "
+"configured OR none of them."
+msgstr ""
+
+#: platform/android/export/export.cpp
 msgid "Debug keystore not configured in the Editor Settings nor in the preset."
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid ""
+"Either Release Keystore, Release User AND Release Password settings must be "
+"configured OR none of them."
 msgstr ""
 
 #: platform/android/export/export.cpp

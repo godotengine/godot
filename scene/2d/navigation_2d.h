@@ -35,11 +35,9 @@
 #include "scene/2d/node_2d.h"
 
 class Navigation2D : public Node2D {
-
 	GDCLASS(Navigation2D, Node2D);
 
 	union Point {
-
 		struct {
 			int64_t x : 32;
 			int64_t y : 32;
@@ -50,7 +48,6 @@ class Navigation2D : public Node2D {
 	};
 
 	struct EdgeKey {
-
 		Point a;
 		Point b;
 
@@ -71,22 +68,20 @@ class Navigation2D : public Node2D {
 	struct Polygon;
 
 	struct ConnectionPending {
-
 		Polygon *polygon;
 		int edge;
 	};
 
 	struct Polygon {
-
 		struct Edge {
 			Point point;
 			Polygon *C; //connection
 			int C_edge;
 			List<ConnectionPending>::Element *P;
 			Edge() {
-				C = NULL;
+				C = nullptr;
 				C_edge = -1;
-				P = NULL;
+				P = nullptr;
 			}
 		};
 
@@ -104,7 +99,6 @@ class Navigation2D : public Node2D {
 	};
 
 	struct Connection {
-
 		Polygon *A;
 		int A_edge;
 		Polygon *B;
@@ -113,8 +107,8 @@ class Navigation2D : public Node2D {
 		List<ConnectionPending> pending;
 
 		Connection() {
-			A = NULL;
-			B = NULL;
+			A = nullptr;
+			B = nullptr;
 			A_edge = -1;
 			B_edge = -1;
 		}
@@ -123,7 +117,6 @@ class Navigation2D : public Node2D {
 	Map<EdgeKey, Connection> connections;
 
 	struct NavMesh {
-
 		Object *owner;
 		Transform2D xform;
 		bool linked;
@@ -132,7 +125,6 @@ class Navigation2D : public Node2D {
 	};
 
 	_FORCE_INLINE_ Point _get_point(const Vector2 &p_pos) const {
-
 		int x = int(Math::floor(p_pos.x / cell_size));
 		int y = int(Math::floor(p_pos.y / cell_size));
 
@@ -144,7 +136,6 @@ class Navigation2D : public Node2D {
 	}
 
 	_FORCE_INLINE_ Vector2 _get_vertex(const Point &p_point) const {
-
 		return Vector2(p_point.x, p_point.y) * cell_size;
 	}
 
@@ -160,7 +151,7 @@ protected:
 
 public:
 	//API should be as dynamic as possible
-	int navpoly_add(const Ref<NavigationPolygon> &p_mesh, const Transform2D &p_xform, Object *p_owner = NULL);
+	int navpoly_add(const Ref<NavigationPolygon> &p_mesh, const Transform2D &p_xform, Object *p_owner = nullptr);
 	void navpoly_set_transform(int p_id, const Transform2D &p_xform);
 	void navpoly_remove(int p_id);
 

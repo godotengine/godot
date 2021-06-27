@@ -47,7 +47,6 @@ void GDAPI godot_rect2_new_with_position_and_size(godot_rect2 *r_dest, const god
 }
 
 void GDAPI godot_rect2_new(godot_rect2 *r_dest, const godot_real p_x, const godot_real p_y, const godot_real p_width, const godot_real p_height) {
-
 	Rect2 *dest = (Rect2 *)r_dest;
 	*dest = Rect2(p_x, p_y, p_width, p_height);
 }

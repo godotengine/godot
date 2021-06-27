@@ -35,32 +35,31 @@
 #include "core/map.h"
 
 class BroadPhase2DHashGrid : public BroadPhase2DSW {
-
 	struct PairData {
-
 		bool colliding;
 		int rc;
 		void *ud;
 		PairData() {
 			colliding = false;
 			rc = 1;
-			ud = NULL;
+			ud = nullptr;
 		}
 	};
 
 	struct Element {
-
 		ID self;
 		CollisionObject2DSW *owner;
 		bool _static;
 		Rect2 aabb;
+		// Owner's collision_mask/layer, used to detect changes in layers.
+		uint32_t collision_mask;
+		uint32_t collision_layer;
 		int subindex;
 		uint64_t pass;
 		Map<Element *, PairData *> paired;
 	};
 
 	struct RC {
-
 		int ref;
 
 		_FORCE_INLINE_ int inc() {
@@ -85,7 +84,6 @@ class BroadPhase2DHashGrid : public BroadPhase2DSW {
 	uint64_t pass;
 
 	struct PairKey {
-
 		union {
 			struct {
 				ID a;
@@ -120,13 +118,16 @@ class BroadPhase2DHashGrid : public BroadPhase2DSW {
 	UnpairCallback unpair_callback;
 	void *unpair_userdata;
 
-	void _enter_grid(Element *p_elem, const Rect2 &p_rect, bool p_static);
-	void _exit_grid(Element *p_elem, const Rect2 &p_rect, bool p_static);
+	static _FORCE_INLINE_ bool _test_collision_mask(uint32_t p_mask1, uint32_t p_layer1, uint32_t p_mask2, uint32_t p_layer2) {
+		return p_mask1 & p_layer2 || p_mask2 & p_layer1;
+	}
+
+	void _enter_grid(Element *p_elem, const Rect2 &p_rect, bool p_static, bool p_force_enter);
+	void _exit_grid(Element *p_elem, const Rect2 &p_rect, bool p_static, bool p_force_exit);
 	template <bool use_aabb, bool use_segment>
 	_FORCE_INLINE_ void _cull(const Point2i p_cell, const Rect2 &p_aabb, const Point2 &p_from, const Point2 &p_to, CollisionObject2DSW **p_results, int p_max_results, int *p_result_indices, int &index);
 
 	struct PosKey {
-
 		union {
 			struct {
 				int32_t x;
@@ -153,7 +154,6 @@ class BroadPhase2DHashGrid : public BroadPhase2DSW {
 	};
 
 	struct PosBin {
-
 		PosKey key;
 		Map<Element *, RC> object_set;
 		Map<Element *, RC> static_object_set;
@@ -168,7 +168,7 @@ class BroadPhase2DHashGrid : public BroadPhase2DSW {
 	void _check_motion(Element *p_elem);
 
 public:
-	virtual ID create(CollisionObject2DSW *p_object, int p_subindex = 0);
+	virtual ID create(CollisionObject2DSW *p_object, int p_subindex = 0, const Rect2 &p_aabb = Rect2(), bool p_static = false);
 	virtual void move(ID p_id, const Rect2 &p_aabb);
 	virtual void set_static(ID p_id, bool p_static);
 	virtual void remove(ID p_id);
@@ -177,8 +177,8 @@ public:
 	virtual bool is_static(ID p_id) const;
 	virtual int get_subindex(ID p_id) const;
 
-	virtual int cull_segment(const Vector2 &p_from, const Vector2 &p_to, CollisionObject2DSW **p_results, int p_max_results, int *p_result_indices = NULL);
-	virtual int cull_aabb(const Rect2 &p_aabb, CollisionObject2DSW **p_results, int p_max_results, int *p_result_indices = NULL);
+	virtual int cull_segment(const Vector2 &p_from, const Vector2 &p_to, CollisionObject2DSW **p_results, int p_max_results, int *p_result_indices = nullptr);
+	virtual int cull_aabb(const Rect2 &p_aabb, CollisionObject2DSW **p_results, int p_max_results, int *p_result_indices = nullptr);
 
 	virtual void set_pair_callback(PairCallback p_pair_callback, void *p_userdata);
 	virtual void set_unpair_callback(UnpairCallback p_unpair_callback, void *p_userdata);

@@ -34,7 +34,6 @@
 #include "scene/gui/control.h"
 
 class Popup : public Control {
-
 	GDCLASS(Popup, Control);
 
 	bool exclusive;
@@ -74,7 +73,6 @@ public:
 };
 
 class PopupPanel : public Popup {
-
 	GDCLASS(PopupPanel, Popup);
 
 protected:

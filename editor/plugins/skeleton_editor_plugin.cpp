@@ -63,22 +63,18 @@ void SkeletonEditor::create_physical_skeleton() {
 	bones_infos.resize(bc);
 
 	for (int bone_id = 0; bc > bone_id; ++bone_id) {
-
 		const int parent = skeleton->get_bone_parent(bone_id);
 
 		if (parent < 0) {
-
 			bones_infos.write[bone_id].relative_rest = skeleton->get_bone_rest(bone_id);
 
 		} else {
-
 			const int parent_parent = skeleton->get_bone_parent(parent);
 
 			bones_infos.write[bone_id].relative_rest = bones_infos[parent].relative_rest * skeleton->get_bone_rest(bone_id);
 
 			/// create physical bone on parent
 			if (!bones_infos[parent].physical_bone) {
-
 				bones_infos.write[parent].physical_bone = create_physical_bone(parent, bone_id, bones_infos);
 
 				ur->create_action(TTR("Create physical bones"));
@@ -93,7 +89,6 @@ void SkeletonEditor::create_physical_skeleton() {
 
 				/// Create joint between parent of parent
 				if (-1 != parent_parent) {
-
 					bones_infos[parent].physical_bone->set_joint_type(PhysicalBone::JOINT_TYPE_PIN);
 				}
 			}
@@ -102,7 +97,6 @@ void SkeletonEditor::create_physical_skeleton() {
 }
 
 PhysicalBone *SkeletonEditor::create_physical_bone(int bone_id, int bone_child_id, const Vector<BoneInfo> &bones_infos) {
-
 	real_t half_height(skeleton->get_bone_rest(bone_child_id).origin.length() * 0.5);
 	real_t radius(half_height * 0.2);
 
@@ -132,7 +126,6 @@ PhysicalBone *SkeletonEditor::create_physical_bone(int bone_id, int bone_child_i
 }
 
 void SkeletonEditor::edit(Skeleton *p_node) {
-
 	skeleton = p_node;
 }
 
@@ -143,9 +136,8 @@ void SkeletonEditor::_notification(int p_what) {
 }
 
 void SkeletonEditor::_node_removed(Node *p_node) {
-
 	if (p_node == skeleton) {
-		skeleton = NULL;
+		skeleton = nullptr;
 		options->hide();
 	}
 }
@@ -156,7 +148,7 @@ void SkeletonEditor::_bind_methods() {
 }
 
 SkeletonEditor::SkeletonEditor() {
-	skeleton = NULL;
+	skeleton = nullptr;
 	options = memnew(MenuButton);
 	SpatialEditor::get_singleton()->add_control_to_menu_panel(options);
 
@@ -183,9 +175,8 @@ void SkeletonEditorPlugin::make_visible(bool p_visible) {
 	if (p_visible) {
 		skeleton_editor->options->show();
 	} else {
-
 		skeleton_editor->options->hide();
-		skeleton_editor->edit(NULL);
+		skeleton_editor->edit(nullptr);
 	}
 }
 

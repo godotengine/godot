@@ -1,4 +1,4 @@
-// Copyright 2009-2020 Intel Corporation
+// Copyright 2009-2021 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
 #pragma once
@@ -29,7 +29,7 @@ namespace embree
 
     __forceinline PrimRef (const BBox3fa& bounds, size_t id) 
     {
-#if defined(__X86_64__)
+#if defined(__64BIT__)
       lower = Vec3fx(bounds.lower, (unsigned)(id & 0xFFFFFFFF));
       upper = Vec3fx(bounds.upper, (unsigned)((id >> 32) & 0xFFFFFFFF));
 #else
@@ -79,7 +79,7 @@ namespace embree
 
     /*! returns an size_t sized ID */
     __forceinline size_t ID() const { 
-#if defined(__X86_64__)
+#if defined(__64BIT__)
       return size_t(lower.u) + (size_t(upper.u) << 32);
 #else
       return size_t(lower.u);

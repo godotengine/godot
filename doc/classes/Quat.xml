@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Quat" version="3.3">
+<class name="Quat" version="3.4">
 	<brief_description>
 		Quaternion.
 	</brief_description>
@@ -57,6 +57,16 @@
 				Constructs a quaternion defined by the given values.
 			</description>
 		</method>
+		<method name="angle_to">
+			<return type="float">
+			</return>
+			<argument index="0" name="to" type="Quat">
+			</argument>
+			<description>
+				Returns the angle between this quaternion and [code]to[/code]. This is the magnitude of the angle you would need to rotate by to get from one to the other.
+				[b]Note:[/b] This method has an abnormally high amount of floating-point error, so methods such as [method @GDScript.is_zero_approx] will not work reliably.
+			</description>
+		</method>
 		<method name="cubic_slerp">
 			<return type="Quat">
 			</return>
@@ -66,10 +76,10 @@
 			</argument>
 			<argument index="2" name="post_b" type="Quat">
 			</argument>
-			<argument index="3" name="t" type="float">
+			<argument index="3" name="weight" type="float">
 			</argument>
 			<description>
-				Performs a cubic spherical interpolation between quaternions [code]preA[/code], this vector, [code]b[/code], and [code]postB[/code], by the given amount [code]t[/code].
+				Performs a cubic spherical interpolation between quaternions [code]pre_a[/code], this vector, [code]b[/code], and [code]post_b[/code], by the given amount [code]weight[/code].
 			</description>
 		</method>
 		<method name="dot">
@@ -151,9 +161,9 @@
 		<method name="slerp">
 			<return type="Quat">
 			</return>
-			<argument index="0" name="b" type="Quat">
+			<argument index="0" name="to" type="Quat">
 			</argument>
-			<argument index="1" name="t" type="float">
+			<argument index="1" name="weight" type="float">
 			</argument>
 			<description>
 				Returns the result of the spherical linear interpolation between this quaternion and [code]to[/code] by amount [code]weight[/code].
@@ -163,9 +173,9 @@
 		<method name="slerpni">
 			<return type="Quat">
 			</return>
-			<argument index="0" name="b" type="Quat">
+			<argument index="0" name="to" type="Quat">
 			</argument>
-			<argument index="1" name="t" type="float">
+			<argument index="1" name="weight" type="float">
 			</argument>
 			<description>
 				Returns the result of the spherical linear interpolation between this quaternion and [code]to[/code] by amount [code]weight[/code], but without checking if the rotation path is not bigger than 90 degrees.

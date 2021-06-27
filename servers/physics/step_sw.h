@@ -34,7 +34,6 @@
 #include "space_sw.h"
 
 class StepSW {
-
 	uint64_t _step;
 
 	void _populate_island(BodySW *p_body, BodySW **p_island, ConstraintSW **p_constraint_island);

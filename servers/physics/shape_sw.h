@@ -57,7 +57,6 @@ public:
 };
 
 class ShapeSW : public RID_Data {
-
 	RID self;
 	AABB aabb;
 	bool configured;
@@ -83,7 +82,7 @@ public:
 
 	virtual PhysicsServer::ShapeType get_type() const = 0;
 
-	_FORCE_INLINE_ AABB get_aabb() const { return aabb; }
+	_FORCE_INLINE_ const AABB &get_aabb() const { return aabb; }
 	_FORCE_INLINE_ bool is_configured() const { return configured; }
 
 	virtual bool is_concave() const { return false; }
@@ -112,7 +111,6 @@ public:
 };
 
 class ConcaveShapeSW : public ShapeSW {
-
 public:
 	virtual bool is_concave() const { return true; }
 	typedef void (*Callback)(void *p_userdata, ShapeSW *p_convex);
@@ -124,7 +122,6 @@ public:
 };
 
 class PlaneShapeSW : public ShapeSW {
-
 	Plane plane;
 
 	void _setup(const Plane &p_plane);
@@ -150,7 +147,6 @@ public:
 };
 
 class RayShapeSW : public ShapeSW {
-
 	real_t length;
 	bool slips_on_slope;
 
@@ -179,7 +175,6 @@ public:
 };
 
 class SphereShapeSW : public ShapeSW {
-
 	real_t radius;
 
 	void _setup(real_t p_radius);
@@ -207,7 +202,6 @@ public:
 };
 
 class BoxShapeSW : public ShapeSW {
-
 	Vector3 half_extents;
 	void _setup(const Vector3 &p_half_extents);
 
@@ -233,7 +227,6 @@ public:
 };
 
 class CapsuleShapeSW : public ShapeSW {
-
 	real_t height;
 	real_t radius;
 
@@ -292,7 +285,6 @@ public:
 };
 
 struct ConvexPolygonShapeSW : public ShapeSW {
-
 	Geometry::MeshData mesh;
 
 	void _setup(const Vector<Vector3> &p_vertices);
@@ -324,7 +316,6 @@ struct ConcavePolygonShapeSW : public ConcaveShapeSW {
 	// always a trimesh
 
 	struct Face {
-
 		Vector3 normal;
 		int indices[3];
 	};
@@ -333,7 +324,6 @@ struct ConcavePolygonShapeSW : public ConcaveShapeSW {
 	PoolVector<Vector3> vertices;
 
 	struct BVH {
-
 		AABB aabb;
 		int left;
 		int right;
@@ -344,7 +334,6 @@ struct ConcavePolygonShapeSW : public ConcaveShapeSW {
 	PoolVector<BVH> bvh;
 
 	struct _CullParams {
-
 		AABB aabb;
 		Callback callback;
 		void *userdata;
@@ -355,7 +344,6 @@ struct ConcavePolygonShapeSW : public ConcaveShapeSW {
 	};
 
 	struct _SegmentCullParams {
-
 		Vector3 from;
 		Vector3 to;
 		const Face *faces;
@@ -399,22 +387,31 @@ public:
 };
 
 struct HeightMapShapeSW : public ConcaveShapeSW {
+	friend struct _HeightmapSegmentCullParams;
 
 	PoolVector<real_t> heights;
 	int width;
 	int depth;
-	real_t cell_size;
+	Vector3 local_origin;
 
-	//void _cull_segment(int p_idx,_SegmentCullParams *p_params) const;
-	//void _cull(int p_idx,_CullParams *p_params) const;
+	_FORCE_INLINE_ real_t _get_height(int p_x, int p_z) const {
+		return heights[(p_z * width) + p_x];
+	}
 
-	void _setup(PoolVector<real_t> p_heights, int p_width, int p_depth, real_t p_cell_size);
+	_FORCE_INLINE_ void _get_point(int p_x, int p_z, Vector3 &r_point) const {
+		r_point.x = p_x - 0.5 * (width - 1.0);
+		r_point.y = _get_height(p_x, p_z);
+		r_point.z = p_z - 0.5 * (depth - 1.0);
+	}
+
+	void _get_cell(const Vector3 &p_point, int &r_x, int &r_y, int &r_z) const;
+
+	void _setup(const PoolVector<real_t> &p_heights, int p_width, int p_depth, real_t p_min_height, real_t p_max_height);
 
 public:
 	PoolVector<real_t> get_heights() const;
 	int get_width() const;
 	int get_depth() const;
-	real_t get_cell_size() const;
 
 	virtual PhysicsServer::ShapeType get_type() const { return PhysicsServer::SHAPE_HEIGHTMAP; }
 
@@ -436,7 +433,6 @@ public:
 
 //used internally
 struct FaceShapeSW : public ShapeSW {
-
 	Vector3 normal; //cache
 	Vector3 vertex[3];
 
@@ -460,14 +456,12 @@ struct FaceShapeSW : public ShapeSW {
 };
 
 struct MotionShapeSW : public ShapeSW {
-
 	ShapeSW *shape;
 	Vector3 motion;
 
 	virtual PhysicsServer::ShapeType get_type() const { return PhysicsServer::SHAPE_CONVEX_POLYGON; }
 
 	void project_range(const Vector3 &p_normal, const Transform &p_transform, real_t &r_min, real_t &r_max) const {
-
 		Vector3 cast = p_transform.basis.xform(motion);
 		real_t mina, maxa;
 		real_t minb, maxb;
@@ -480,7 +474,6 @@ struct MotionShapeSW : public ShapeSW {
 	}
 
 	Vector3 get_support(const Vector3 &p_normal) const {
-
 		Vector3 support = shape->get_support(p_normal);
 		if (p_normal.dot(motion) > 0) {
 			support += motion;
@@ -501,13 +494,11 @@ struct MotionShapeSW : public ShapeSW {
 };
 
 struct _ShapeTestConvexBSPSW {
-
 	const BSP_Tree *bsp;
 	const ShapeSW *shape;
 	Transform transform;
 
 	_FORCE_INLINE_ void project_range(const Vector3 &p_normal, real_t &r_min, real_t &r_max) const {
-
 		shape->project_range(p_normal, transform, r_min, r_max);
 	}
 };

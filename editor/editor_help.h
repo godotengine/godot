@@ -88,7 +88,6 @@ public:
 };
 
 class EditorHelp : public VBoxContainer {
-
 	GDCLASS(EditorHelp, VBoxContainer);
 
 	enum Page {
@@ -108,14 +107,14 @@ class EditorHelp : public VBoxContainer {
 
 	String edited_class;
 
-	Vector<Pair<String, int> > section_line;
+	Vector<Pair<String, int>> section_line;
 	Map<String, int> method_line;
 	Map<String, int> signal_line;
 	Map<String, int> property_line;
 	Map<String, int> theme_property_line;
 	Map<String, int> constant_line;
 	Map<String, int> enum_line;
-	Map<String, Map<String, int> > enum_values_line;
+	Map<String, Map<String, int>> enum_values_line;
 	int description_line;
 
 	RichTextLabel *class_desc;
@@ -175,7 +174,7 @@ public:
 	void go_to_help(const String &p_help);
 	void go_to_class(const String &p_class, int p_scroll = 0);
 
-	Vector<Pair<String, int> > get_sections();
+	Vector<Pair<String, int>> get_sections();
 	void scroll_to_section(int p_section_index);
 
 	void popup_search();
@@ -193,7 +192,6 @@ public:
 };
 
 class EditorHelpBit : public PanelContainer {
-
 	GDCLASS(EditorHelpBit, PanelContainer);
 
 	RichTextLabel *rich_text;

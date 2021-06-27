@@ -50,7 +50,7 @@ struct VertexWeightMapping {
 	Vector<int> bones;
 	// This extra vector is used because the bone id is computed in a second step.
 	// TODO Get rid of this extra step is a good idea.
-	Vector<Ref<FBXBone> > bones_ref;
+	Vector<Ref<FBXBone>> bones_ref;
 };
 
 template <class T>
@@ -107,10 +107,10 @@ private:
 			HashMap<int, Vector2> &r_uv_2,
 			HashMap<int, Color> &r_color,
 			HashMap<String, MorphVertexData> &r_morphs,
-			HashMap<int, HashMap<int, Vector3> > &r_normals_raw,
-			HashMap<int, HashMap<int, Color> > &r_colors_raw,
-			HashMap<int, HashMap<int, Vector2> > &r_uv_1_raw,
-			HashMap<int, HashMap<int, Vector2> > &r_uv_2_raw);
+			HashMap<int, HashMap<int, Vector3>> &r_normals_raw,
+			HashMap<int, HashMap<int, Color>> &r_colors_raw,
+			HashMap<int, HashMap<int, Vector2>> &r_uv_1_raw,
+			HashMap<int, HashMap<int, Vector2>> &r_uv_2_raw);
 
 	void add_vertex(
 			const ImportState &state,
@@ -138,7 +138,7 @@ private:
 	/// [0, 2, 1, 3, 4]
 	/// The negative values are computed using this formula: `(-value) - 1`
 	///
-	/// Returns the vertex index from the poligon vertex.
+	/// Returns the vertex index from the polygon vertex.
 	/// Returns -1 if `p_index` is invalid.
 	int get_vertex_from_polygon_vertex(const std::vector<int> &p_face_indices, int p_index) const;
 
@@ -160,7 +160,7 @@ private:
 			const std::vector<FBXDocParser::MeshGeometry::Edge> &p_edges,
 			const std::vector<int> &p_mesh_indices,
 			const FBXDocParser::MeshGeometry::MappingData<T> &p_mapping_data,
-			R (*collector_function)(const Vector<VertexData<T> > *p_vertex_data, R p_fall_back),
+			R (*collector_function)(const Vector<VertexData<T>> *p_vertex_data, R p_fall_back),
 			R p_fall_back) const;
 
 	/// Used to extract data from the `MappingData` organized per polygon.

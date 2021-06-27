@@ -77,11 +77,13 @@
 # Magian <magian1127@gmail.com>, 2021.
 # Weiduo Xie <xwditfr@gmail.com>, 2021.
 # suplife <2634557184@qq.com>, 2021.
+# luoji <564144019@qq.com>, 2021.
+# zeng haochen <m18621006730@163.com>, 2021.
 msgid ""
 msgstr ""
 "Project-Id-Version: Chinese (Simplified) (Godot Engine)\n"
 "POT-Creation-Date: 2018-01-20 12:15+0200\n"
-"PO-Revision-Date: 2021-03-21 12:25+0000\n"
+"PO-Revision-Date: 2021-05-29 13:49+0000\n"
 "Last-Translator: Haoyu Qiu <timothyqiu32@gmail.com>\n"
 "Language-Team: Chinese (Simplified) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/zh_Hans/>\n"
@@ -90,7 +92,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 4.5.2-dev\n"
+"X-Generator: Weblate 4.7-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -99,7 +101,7 @@ msgstr "convert() 的参数类型无效，请使用 TYPE_* 常量。"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 msgid "Expected a string of length 1 (a character)."
-msgstr "应为长度为 1 的字符串（1 字符）。"
+msgstr "应为长度为 1 的字符串（1个字符）。"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/mono/glue/gd_glue.cpp
@@ -1175,6 +1177,10 @@ msgstr "改变字典值"
 msgid "Thanks from the Godot community!"
 msgstr "Godot 社区感谢你！"
 
+#: editor/editor_about.cpp editor/editor_node.cpp editor/project_manager.cpp
+msgid "Click to copy."
+msgstr ""
+
 #: editor/editor_about.cpp
 msgid "Godot Engine contributors"
 msgstr "Godot Engine 贡献者"
@@ -1376,7 +1382,7 @@ msgstr "总线选项"
 #: editor/editor_audio_buses.cpp editor/filesystem_dock.cpp
 #: editor/plugins/animation_player_editor_plugin.cpp editor/scene_tree_dock.cpp
 msgid "Duplicate"
-msgstr "拷贝"
+msgstr "制作副本"
 
 #: editor/editor_audio_buses.cpp
 msgid "Reset Volume"
@@ -2564,9 +2570,12 @@ msgstr "无法从路径 “%s” 中加载加载项脚本。"
 
 #: editor/editor_node.cpp
 msgid ""
-"Unable to load addon script from path: '%s' There seems to be an error in "
-"the code, please check the syntax."
-msgstr "无法从路径 “%s” 加载加载项脚本：脚本似乎有代码错误，请检查其语法。"
+"Unable to load addon script from path: '%s'. This might be due to a code "
+"error in that script.\n"
+"Disabling the addon at '%s' to prevent further errors."
+msgstr ""
+"无法从路径“%s”加载加载项脚本：该脚本可能有代码错误。\n"
+"禁用加载项“%s”可阻止其进一步报错。"
 
 #: editor/editor_node.cpp
 msgid ""
@@ -2990,6 +2999,10 @@ msgstr "社区"
 #: editor/editor_node.cpp
 msgid "About"
 msgstr "关于"
+
+#: editor/editor_node.cpp
+msgid "Support Godot Development"
+msgstr "支持 Godot 开发"
 
 #: editor/editor_node.cpp
 msgid "Play the project."
@@ -3662,7 +3675,7 @@ msgstr "状态：导入文件失败。请手动修复文件后重新导入。"
 #: editor/filesystem_dock.cpp
 msgid ""
 "Importing has been disabled for this file, so it can't be opened for editing."
-msgstr ""
+msgstr "该文件的导入已被禁用，因此不能打开进行编辑。"
 
 #: editor/filesystem_dock.cpp
 msgid "Cannot move/rename resources root."
@@ -4063,7 +4076,7 @@ msgstr "重置为默认值"
 
 #: editor/import_dock.cpp
 msgid "Keep File (No Import)"
-msgstr ""
+msgstr "保留文件（不导入）"
 
 #: editor/import_dock.cpp
 msgid "%d Files"
@@ -5183,7 +5196,7 @@ msgstr "某些网格无效。确保UV2通道值包含在[0.0,1.0]平方区域内
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
 msgid ""
 "Godot editor was built without ray tracing support, lightmaps can't be baked."
-msgstr "Godot编辑器是在没有光线跟踪支持的情况下构建的，光照贴图无法烘焙。"
+msgstr "Godot 编辑器是在没有光线跟踪支持的情况下构建的，无法烘焙光照贴图。"
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
 msgid "Bake Lightmaps"
@@ -5204,11 +5217,11 @@ msgstr "设置吸附"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Grid Offset:"
-msgstr "网格偏移量:"
+msgstr "网格偏移："
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Grid Step:"
-msgstr "网格大小:"
+msgstr "网格步长："
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Primary Line Every:"
@@ -5220,11 +5233,11 @@ msgstr "步"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Rotation Offset:"
-msgstr "旋转偏移量:"
+msgstr "旋转偏移："
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Rotation Step:"
-msgstr "旋转步长:"
+msgstr "旋转步长："
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Scale Step:"
@@ -7476,7 +7489,12 @@ msgstr "缓慢自由视图速度"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "View Rotation Locked"
-msgstr "锁定视角旋转"
+msgstr "已锁定视角旋转"
+
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid ""
+"To zoom further, change the camera's clipping planes (View -> Settings...)"
+msgstr "修改相机的裁剪平面后才能进一步缩放（视图 -> 设置...）"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid ""
@@ -7502,7 +7520,7 @@ msgstr ""
 "\n"
 "睁眼：Gizmo 可见。\n"
 "闭眼：Gizmo 隐藏。\n"
-"半睁眼：Gizmo 也可穿过不透明的表面可见（“X-Ray - X 光”）。"
+"半睁眼：Gizmo 也可穿过不透明的表面可见（“X 光”）。"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Snap Nodes To Floor"
@@ -7589,27 +7607,27 @@ msgstr "变换对话框..."
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "1 Viewport"
-msgstr "1 个视口"
+msgstr "1 个视窗"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "2 Viewports"
-msgstr "2 个视口"
+msgstr "2 个视窗"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "2 Viewports (Alt)"
-msgstr "2 个视口（备选）"
+msgstr "2 个视窗（备选）"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "3 Viewports"
-msgstr "3 个视口"
+msgstr "3 个视窗"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "3 Viewports (Alt)"
-msgstr "3 个视口（备选）"
+msgstr "3 个视窗（备选）"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "4 Viewports"
-msgstr "4 个视口"
+msgstr "4 个视窗"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Gizmos"
@@ -7666,7 +7684,7 @@ msgstr "修改变换"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Translate:"
-msgstr "移动:"
+msgstr "移动："
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Rotate (deg.):"
@@ -7931,7 +7949,7 @@ msgstr "自动裁剪"
 
 #: editor/plugins/texture_region_editor_plugin.cpp
 msgid "Offset:"
-msgstr "偏移量："
+msgstr "偏移："
 
 #: editor/plugins/texture_region_editor_plugin.cpp
 msgid "Step:"
@@ -8628,7 +8646,7 @@ msgstr "标量"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Vector"
-msgstr "矢量"
+msgstr "向量"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Boolean"
@@ -9188,11 +9206,11 @@ msgid ""
 "whose number of rows is the number of components in 'c' and whose number of "
 "columns is the number of components in 'r'."
 msgstr ""
-"计算一对矢量的外积。\n"
+"计算一对向量的外积。\n"
 "\n"
-"OuterProduct 将第一个参数 “c” 视为列矢量（包含一列的矩阵），将第二个参数 “r” "
-"视为行矢量（具有一行的矩阵），并执行线性代数矩阵乘以 “c * r”，生成行数为 “c” "
-"中的组件，其列数是 “r” 中的组件数。"
+"OuterProduct 将第一个参数 “c” 视为列向量（只有一列的矩阵），将第二个参数 “r” "
+"视为行向量（只有一行的矩阵），并执行线性代数矩阵乘法 “c * r”。所生成的矩阵"
+"中，行数为 “c” 中元素的数量，列数为 “r” 中元素的数量。"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Composes transform from four vectors."
@@ -9232,7 +9250,7 @@ msgstr "变换统一。"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Vector function."
-msgstr "向量功能。"
+msgstr "向量函数。"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Vector operator."
@@ -9248,7 +9266,7 @@ msgstr "将向量分解为三个标量。"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Calculates the cross product of two vectors."
-msgstr "计算两个向量的叉乘。"
+msgstr "计算两个向量的叉积。"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Returns the distance between two points."
@@ -9256,7 +9274,7 @@ msgstr "返回两点之间的距离。"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Calculates the dot product of two vectors."
-msgstr "计算两个向量的点乘。"
+msgstr "计算两个向量的点积。"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid ""
@@ -9266,7 +9284,7 @@ msgid ""
 "Nref is smaller than zero the return value is N. Otherwise -N is returned."
 msgstr ""
 "返回指向与参考向量相同方向的向量。该函数有三个向量参数：N，方向向量；I，入射"
-"向量；Nref，参考向量。如果 I 和 Nref 的点乘小于零，返回值为 N，否则返回 -N。"
+"向量；Nref，参考向量。如果 I 和 Nref 的点积小于零，返回值为 N，否则返回 -N。"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Calculates the length of a vector."
@@ -9278,7 +9296,7 @@ msgstr "两个向量之间的线性插值。"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Linear interpolation between two vectors using scalar."
-msgstr "使用标量的两个矢量之间的线性插值。"
+msgstr "使用标量在两个向量之间进行线性插值。"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Calculates the normalize product of vector."
@@ -9300,7 +9318,7 @@ msgstr "返回指向反射方向的向量（a：入射向量，b：法向量）�
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Returns the vector that points in the direction of refraction."
-msgstr "返回指向折射方向的矢量。"
+msgstr "返回指向折射方向的向量。"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid ""
@@ -9411,13 +9429,13 @@ msgstr "（仅限片段/光照模式）标量导数函数。"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "(Fragment/Light mode only) Vector derivative function."
-msgstr "（仅限片段/灯光模式）矢量导数功能。"
+msgstr "（仅限片段/光照模式）向量导数函数。"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid ""
 "(Fragment/Light mode only) (Vector) Derivative in 'x' using local "
 "differencing."
-msgstr "（仅限片段/光照模式）（矢量）使用局部差分的 “x” 中的导数。"
+msgstr "（仅限片段/光照模式）（向量）使用局部差分的 “x” 中的导数。"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid ""
@@ -9429,7 +9447,7 @@ msgstr "（仅限片段/光照模式）（标量）使用本地差分的“ x”
 msgid ""
 "(Fragment/Light mode only) (Vector) Derivative in 'y' using local "
 "differencing."
-msgstr "（仅适用于片段/光照模式）（矢量）使用局部差分的'y'导数。"
+msgstr "（仅适用于片段/光照模式）（向量）使用局部差分的'y'导数。"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid ""
@@ -9994,7 +10012,7 @@ msgstr "鼠标按键"
 
 #: editor/project_settings_editor.cpp
 msgid ""
-"Invalid action name. it cannot be empty nor contain '/', ':', '=', '\\' or "
+"Invalid action name. It cannot be empty nor contain '/', ':', '=', '\\' or "
 "'\"'"
 msgstr "无效的操作名称。操作名不能为空，也不能包含 “/”, “:”, “=”, “\\” 或 “\"”"
 
@@ -10785,6 +10803,15 @@ msgstr "从选中节点分离脚本。"
 #: editor/scene_tree_dock.cpp
 msgid "Remote"
 msgstr "远程"
+
+#: editor/scene_tree_dock.cpp
+msgid ""
+"If selected, the Remote scene tree dock will cause the project to stutter "
+"every time it updates.\n"
+"Switch back to the Local scene tree dock to improve performance."
+msgstr ""
+"选中后，远程场景树面板在更新时会造成项目的卡顿。\n"
+"切回本地场景树面板可以提升性能。"
 
 #: editor/scene_tree_dock.cpp
 msgid "Local"
@@ -12013,8 +12040,20 @@ msgid ""
 msgstr "未在项目中安装 Android 构建模板。从项目菜单安装它。"
 
 #: platform/android/export/export.cpp
+msgid ""
+"Either Debug Keystore, Debug User AND Debug Password settings must be "
+"configured OR none of them."
+msgstr ""
+
+#: platform/android/export/export.cpp
 msgid "Debug keystore not configured in the Editor Settings nor in the preset."
 msgstr "未在编辑器设置或预设中配置调试密钥库。"
+
+#: platform/android/export/export.cpp
+msgid ""
+"Either Release Keystore, Release User AND Release Password settings must be "
+"configured OR none of them."
+msgstr ""
 
 #: platform/android/export/export.cpp
 msgid "Release keystore incorrectly configured in the export preset."
@@ -12906,6 +12945,18 @@ msgstr "变量只能在顶点函数中指定。"
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "不允许修改常量。"
+
+#~ msgid ""
+#~ "Godot editor was built without ray tracing support; lightmaps can't be "
+#~ "baked.\n"
+#~ "If you are using an Apple Silicon-based Mac, try forcing Rosetta "
+#~ "emulation on Godot.app in the application settings\n"
+#~ "then restart the editor."
+#~ msgstr ""
+#~ "Godot 编辑器是在没有光线跟踪支持的情况下构建的；无法烘焙光照贴图。\n"
+#~ "如果你使用的是基于 Apple Silicon 的 Mac，可以尝试在应用设置中让 Godot.app "
+#~ "强制使用 Rosetta 模拟\n"
+#~ "并重启编辑器。"
 
 #~ msgid ""
 #~ "InterpolatedCamera has been deprecated and will be removed in Godot 4.0."

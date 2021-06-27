@@ -35,11 +35,9 @@
 #include "scene/3d/spatial.h"
 
 class Navigation : public Spatial {
-
 	GDCLASS(Navigation, Spatial);
 
 	union Point {
-
 		struct {
 			int64_t x : 21;
 			int64_t y : 22;
@@ -51,7 +49,6 @@ class Navigation : public Spatial {
 	};
 
 	struct EdgeKey {
-
 		Point a;
 		Point b;
 
@@ -72,22 +69,20 @@ class Navigation : public Spatial {
 	struct Polygon;
 
 	struct ConnectionPending {
-
 		Polygon *polygon;
 		int edge;
 	};
 
 	struct Polygon {
-
 		struct Edge {
 			Point point;
 			Polygon *C; //connection
 			int C_edge;
 			List<ConnectionPending>::Element *P;
 			Edge() {
-				C = NULL;
+				C = nullptr;
 				C_edge = -1;
-				P = NULL;
+				P = nullptr;
 			}
 		};
 
@@ -104,7 +99,6 @@ class Navigation : public Spatial {
 	};
 
 	struct Connection {
-
 		Polygon *A;
 		int A_edge;
 		Polygon *B;
@@ -113,8 +107,8 @@ class Navigation : public Spatial {
 		List<ConnectionPending> pending;
 
 		Connection() {
-			A = NULL;
-			B = NULL;
+			A = nullptr;
+			B = nullptr;
 			A_edge = -1;
 			B_edge = -1;
 		}
@@ -123,7 +117,6 @@ class Navigation : public Spatial {
 	Map<EdgeKey, Connection> connections;
 
 	struct NavMesh {
-
 		Object *owner;
 		Transform xform;
 		bool linked;
@@ -132,7 +125,6 @@ class Navigation : public Spatial {
 	};
 
 	_FORCE_INLINE_ Point _get_point(const Vector3 &p_pos) const {
-
 		int x = int(Math::floor(p_pos.x / cell_size));
 		int y = int(Math::floor(p_pos.y / cell_size));
 		int z = int(Math::floor(p_pos.z / cell_size));
@@ -146,7 +138,6 @@ class Navigation : public Spatial {
 	}
 
 	_FORCE_INLINE_ Vector3 _get_vertex(const Point &p_point) const {
-
 		return Vector3(p_point.x, p_point.y, p_point.z) * cell_size;
 	}
 
@@ -168,7 +159,7 @@ public:
 	Vector3 get_up_vector() const;
 
 	//API should be as dynamic as possible
-	int navmesh_add(const Ref<NavigationMesh> &p_mesh, const Transform &p_xform, Object *p_owner = NULL);
+	int navmesh_add(const Ref<NavigationMesh> &p_mesh, const Transform &p_xform, Object *p_owner = nullptr);
 	void navmesh_set_transform(int p_id, const Transform &p_xform);
 	void navmesh_remove(int p_id);
 

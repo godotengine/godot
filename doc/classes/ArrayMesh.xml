@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="ArrayMesh" inherits="Mesh" version="3.3">
+<class name="ArrayMesh" inherits="Mesh" version="3.4">
 	<brief_description>
 		[Mesh] type that provides utility for constructing a surface from arrays.
 	</brief_description>
@@ -53,7 +53,6 @@
 				Creates a new surface.
 				Surfaces are created to be rendered using a [code]primitive[/code], which may be any of the types defined in [enum Mesh.PrimitiveType]. (As a note, when using indices, it is recommended to only use points, lines or triangles.) [method Mesh.get_surface_count] will become the [code]surf_idx[/code] for this new surface.
 				The [code]arrays[/code] argument is an array of arrays. See [enum ArrayType] for the values used in this array. For example, [code]arrays[0][/code] is the array of vertices. That first vertex sub-array is always required; the others are optional. Adding an index array puts this function into "index mode" where the vertex and other arrays become the sources of data and the index array defines the vertex order. All sub-arrays must have the same length as the vertex array or be empty, except for [constant ARRAY_INDEX] if it is used.
-				Adding an index array puts this function into "index mode" where the vertex and other arrays become the sources of data, and the index array defines the order of the vertices.
 			</description>
 		</method>
 		<method name="clear_blend_shapes">
@@ -61,6 +60,13 @@
 			</return>
 			<description>
 				Removes all blend shapes from this [ArrayMesh].
+			</description>
+		</method>
+		<method name="clear_surfaces">
+			<return type="void">
+			</return>
+			<description>
+				Removes all surfaces from this [ArrayMesh].
 			</description>
 		</method>
 		<method name="get_blend_shape_count" qualifiers="const">
@@ -95,6 +101,16 @@
 			</return>
 			<description>
 				Will regenerate normal maps for the [ArrayMesh].
+			</description>
+		</method>
+		<method name="set_blend_shape_name">
+			<return type="void">
+			</return>
+			<argument index="0" name="index" type="int">
+			</argument>
+			<argument index="1" name="name" type="String">
+			</argument>
+			<description>
 			</description>
 		</method>
 		<method name="surface_find_by_name" qualifiers="const">

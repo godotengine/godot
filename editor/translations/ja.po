@@ -32,12 +32,13 @@
 # Wataru Onuki <bettawat@yahoo.co.jp>, 2020, 2021.
 # sporeball <sporeballdev@gmail.com>, 2020.
 # BinotaLIU <me@binota.org>, 2020, 2021.
+# 都築 本成 <motonari728@gmail.com>, 2021.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2021-03-08 15:33+0000\n"
-"Last-Translator: Wataru Onuki <bettawat@yahoo.co.jp>\n"
+"PO-Revision-Date: 2021-05-29 13:49+0000\n"
+"Last-Translator: 都築 本成 <motonari728@gmail.com>\n"
 "Language-Team: Japanese <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ja/>\n"
 "Language: ja\n"
@@ -45,7 +46,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 4.5.1\n"
+"X-Generator: Weblate 4.7-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -1141,6 +1142,10 @@ msgstr "Dictionary 値の変更"
 #: editor/editor_about.cpp
 msgid "Thanks from the Godot community!"
 msgstr "Godot コミュニティより感謝を！"
+
+#: editor/editor_about.cpp editor/editor_node.cpp editor/project_manager.cpp
+msgid "Click to copy."
+msgstr ""
 
 #: editor/editor_about.cpp
 msgid "Godot Engine contributors"
@@ -2563,11 +2568,13 @@ msgstr "パス '%s' からアドオンスクリプトを読込めません。"
 
 #: editor/editor_node.cpp
 msgid ""
-"Unable to load addon script from path: '%s' There seems to be an error in "
-"the code, please check the syntax."
+"Unable to load addon script from path: '%s'. This might be due to a code "
+"error in that script.\n"
+"Disabling the addon at '%s' to prevent further errors."
 msgstr ""
 "パス '%s' からアドオンスクリプトを読み込めません。コードにエラーがある可能性"
-"があります。構文を確認してください。"
+"があります。\n"
+"構文を確認してください。"
 
 #: editor/editor_node.cpp
 msgid ""
@@ -3009,6 +3016,10 @@ msgstr "コミュニティ"
 #: editor/editor_node.cpp
 msgid "About"
 msgstr "概要"
+
+#: editor/editor_node.cpp
+msgid "Support Godot Development"
+msgstr "Godotの開発をサポートする"
 
 #: editor/editor_node.cpp
 msgid "Play the project."
@@ -3695,6 +3706,8 @@ msgstr ""
 msgid ""
 "Importing has been disabled for this file, so it can't be opened for editing."
 msgstr ""
+"このファイルのインポートは無効化されているため、編集のために開くことはできま"
+"せん。"
 
 #: editor/filesystem_dock.cpp
 msgid "Cannot move/rename resources root."
@@ -4095,13 +4108,12 @@ msgid "Importer:"
 msgstr "インポート"
 
 #: editor/import_defaults_editor.cpp
-#, fuzzy
 msgid "Reset to Defaults"
-msgstr "デフォルトを読込む"
+msgstr "デフォルトにリセットする"
 
 #: editor/import_dock.cpp
 msgid "Keep File (No Import)"
-msgstr ""
+msgstr "ファイルを保持 (インポートしない)"
 
 #: editor/import_dock.cpp
 msgid "%d Files"
@@ -5235,6 +5247,7 @@ msgstr ""
 "ことを確認してください。"
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
+#, fuzzy
 msgid ""
 "Godot editor was built without ray tracing support, lightmaps can't be baked."
 msgstr ""
@@ -7556,6 +7569,11 @@ msgstr "フリールックの減速調整"
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "View Rotation Locked"
 msgstr "ビューの回転を固定中"
+
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid ""
+"To zoom further, change the camera's clipping planes (View -> Settings...)"
+msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid ""
@@ -10126,7 +10144,7 @@ msgstr "マウスボタン"
 
 #: editor/project_settings_editor.cpp
 msgid ""
-"Invalid action name. it cannot be empty nor contain '/', ':', '=', '\\' or "
+"Invalid action name. It cannot be empty nor contain '/', ':', '=', '\\' or "
 "'\"'"
 msgstr ""
 "アクション名が無効です。空にしたり、'/'、':'、'='、'\\'、'\"'を含めることはで"
@@ -10933,6 +10951,13 @@ msgid "Remote"
 msgstr "リモート"
 
 #: editor/scene_tree_dock.cpp
+msgid ""
+"If selected, the Remote scene tree dock will cause the project to stutter "
+"every time it updates.\n"
+"Switch back to the Local scene tree dock to improve performance."
+msgstr ""
+
+#: editor/scene_tree_dock.cpp
 msgid "Local"
 msgstr "ローカル"
 
@@ -11258,7 +11283,7 @@ msgstr "グラフを表示するには、リストからアイテムを1つ以�
 
 #: editor/script_editor_debugger.cpp
 msgid "List of Video Memory Usage by Resource:"
-msgstr "リソースによるビデオメモリーの使用一覧:"
+msgstr "リソースによるビデオメモリーの消費量一覧:"
 
 #: editor/script_editor_debugger.cpp
 msgid "Total:"
@@ -11282,7 +11307,7 @@ msgstr "フォーマット"
 
 #: editor/script_editor_debugger.cpp
 msgid "Usage"
-msgstr "使用法"
+msgstr "消費量"
 
 #: editor/script_editor_debugger.cpp
 msgid "Misc"
@@ -12181,8 +12206,20 @@ msgstr ""
 "ジェクト] メニューからインストールします。"
 
 #: platform/android/export/export.cpp
+msgid ""
+"Either Debug Keystore, Debug User AND Debug Password settings must be "
+"configured OR none of them."
+msgstr ""
+
+#: platform/android/export/export.cpp
 msgid "Debug keystore not configured in the Editor Settings nor in the preset."
 msgstr "デバッグキーストアがエディタ設定にもプリセットにも設定されていません。"
+
+#: platform/android/export/export.cpp
+msgid ""
+"Either Release Keystore, Release User AND Release Password settings must be "
+"configured OR none of them."
+msgstr ""
 
 #: platform/android/export/export.cpp
 msgid "Release keystore incorrectly configured in the export preset."

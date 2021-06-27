@@ -47,6 +47,7 @@ private:
 
 	jmethodID _open_URI = 0;
 	jmethodID _get_data_dir = 0;
+	jmethodID _get_external_data_dir = 0;
 	jmethodID _get_locale = 0;
 	jmethodID _get_model = 0;
 	jmethodID _get_screen_DPI = 0;
@@ -57,10 +58,6 @@ private:
 	jmethodID _set_screen_orientation = 0;
 	jmethodID _get_screen_orientation = 0;
 	jmethodID _get_system_dir = 0;
-	jmethodID _play_video = 0;
-	jmethodID _is_video_playing = 0;
-	jmethodID _pause_video = 0;
-	jmethodID _stop_video = 0;
 
 public:
 	GodotIOJavaWrapper(JNIEnv *p_env, jobject p_godot_io_instance);
@@ -70,6 +67,7 @@ public:
 
 	Error open_uri(const String &p_uri);
 	String get_user_data_dir();
+	String get_external_data_dir();
 	String get_locale();
 	String get_model();
 	int get_screen_dpi();
@@ -83,10 +81,6 @@ public:
 	void set_screen_orientation(int p_orient);
 	int get_screen_orientation() const;
 	String get_system_dir(int p_dir);
-	void play_video(const String &p_path);
-	bool is_video_playing();
-	void pause_video();
-	void stop_video();
 };
 
 #endif /* !JAVA_GODOT_IO_WRAPPER_H */

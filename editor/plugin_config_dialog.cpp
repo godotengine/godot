@@ -51,13 +51,13 @@ void PluginConfigDialog::_clear_fields() {
 }
 
 void PluginConfigDialog::_on_confirmed() {
-
 	String path = "res://addons/" + subfolder_edit->get_text();
 
 	if (!_edit_mode) {
 		DirAccess *d = DirAccess::create(DirAccess::ACCESS_RESOURCES);
-		if (!d || d->make_dir_recursive(path) != OK)
+		if (!d || d->make_dir_recursive(path) != OK) {
 			return;
+		}
 	}
 
 	Ref<ConfigFile> cf = memnew(ConfigFile);
@@ -209,6 +209,7 @@ PluginConfigDialog::PluginConfigDialog() {
 
 	desc_edit = memnew(TextEdit);
 	desc_edit->set_custom_minimum_size(Size2(400, 80) * EDSCALE);
+	desc_edit->set_wrap_enabled(true);
 	grid->add_child(desc_edit);
 
 	Label *author_lb = memnew(Label);

@@ -37,7 +37,6 @@
 namespace GDMonoCache {
 
 struct CachedData {
-
 	// -----------------------------------------------
 	// corlib classes
 

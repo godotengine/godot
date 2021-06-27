@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="SpriteFrames" inherits="Resource" version="3.3">
+<class name="SpriteFrames" inherits="Resource" version="3.4">
 	<brief_description>
 		Sprite frame library for AnimatedSprite.
 	</brief_description>
@@ -54,7 +54,7 @@
 			<argument index="0" name="anim" type="String">
 			</argument>
 			<description>
-				If [code]true[/code], the given animation will loop.
+				Returns [code]true[/code] if the given animation is configured to loop when it finishes playing. Otherwise, returns [code]false[/code].
 			</description>
 		</method>
 		<method name="get_animation_names" qualifiers="const">

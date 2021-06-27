@@ -71,7 +71,7 @@ public:
 	virtual String get_requested_reference_space_types() const;
 	void _set_reference_space_type(String p_reference_space_type);
 	virtual String get_reference_space_type() const;
-	virtual ARVRPositionalTracker *get_controller(int p_controller_id) const;
+	virtual Ref<ARVRPositionalTracker> get_controller(int p_controller_id) const;
 	virtual String get_visibility_state() const;
 	virtual PoolVector3Array get_bounds_geometry() const;
 

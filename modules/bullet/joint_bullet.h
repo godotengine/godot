@@ -42,7 +42,6 @@ class RigidBodyBullet;
 class btTypedConstraint;
 
 class JointBullet : public ConstraintBullet {
-
 public:
 	JointBullet();
 	virtual ~JointBullet();

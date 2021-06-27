@@ -83,31 +83,28 @@ void BakedLightmapEditorPlugin::_bake() {
 }
 
 void BakedLightmapEditorPlugin::edit(Object *p_object) {
-
 	BakedLightmap *s = Object::cast_to<BakedLightmap>(p_object);
-	if (!s)
+	if (!s) {
 		return;
+	}
 
 	lightmap = s;
 }
 
 bool BakedLightmapEditorPlugin::handles(Object *p_object) const {
-
 	return p_object->is_class("BakedLightmap");
 }
 
 void BakedLightmapEditorPlugin::make_visible(bool p_visible) {
-
 	if (p_visible) {
 		bake->show();
 	} else {
-
 		bake->hide();
 	}
 }
 
-EditorProgress *BakedLightmapEditorPlugin::tmp_progress = NULL;
-EditorProgress *BakedLightmapEditorPlugin::tmp_subprogress = NULL;
+EditorProgress *BakedLightmapEditorPlugin::tmp_progress = nullptr;
+EditorProgress *BakedLightmapEditorPlugin::tmp_subprogress = nullptr;
 
 bool BakedLightmapEditorPlugin::bake_func_step(float p_progress, const String &p_description, void *, bool p_force_refresh) {
 	if (!tmp_progress) {
@@ -138,13 +135,11 @@ void BakedLightmapEditorPlugin::bake_func_end() {
 }
 
 void BakedLightmapEditorPlugin::_bind_methods() {
-
 	ClassDB::bind_method("_bake", &BakedLightmapEditorPlugin::_bake);
 	ClassDB::bind_method("_bake_select_file", &BakedLightmapEditorPlugin::_bake_select_file);
 }
 
 BakedLightmapEditorPlugin::BakedLightmapEditorPlugin(EditorNode *p_node) {
-
 	editor = p_node;
 	bake = memnew(ToolButton);
 	bake->set_icon(editor->get_gui_base()->get_icon("Bake", "EditorIcons"));
@@ -160,7 +155,7 @@ BakedLightmapEditorPlugin::BakedLightmapEditorPlugin(EditorNode *p_node) {
 	bake->add_child(file_dialog);
 
 	add_control_to_container(CONTAINER_SPATIAL_EDITOR_MENU, bake);
-	lightmap = NULL;
+	lightmap = nullptr;
 
 	BakedLightmap::bake_step_function = bake_func_step;
 	BakedLightmap::bake_substep_function = bake_func_substep;

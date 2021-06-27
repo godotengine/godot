@@ -35,7 +35,6 @@
 #include "core/resource.h"
 
 class ResourceInteractiveLoader : public Reference {
-
 	GDCLASS(ResourceInteractiveLoader, Reference);
 	friend class ResourceLoader;
 	String path_loading;
@@ -58,15 +57,14 @@ public:
 };
 
 class ResourceFormatLoader : public Reference {
-
 	GDCLASS(ResourceFormatLoader, Reference);
 
 protected:
 	static void _bind_methods();
 
 public:
-	virtual Ref<ResourceInteractiveLoader> load_interactive(const String &p_path, const String &p_original_path = "", Error *r_error = NULL);
-	virtual RES load(const String &p_path, const String &p_original_path = "", Error *r_error = NULL);
+	virtual Ref<ResourceInteractiveLoader> load_interactive(const String &p_path, const String &p_original_path = "", Error *r_error = nullptr);
+	virtual RES load(const String &p_path, const String &p_original_path = "", Error *r_error = nullptr);
 	virtual bool exists(const String &p_path) const;
 	virtual void get_recognized_extensions(List<String> *p_extensions) const;
 	virtual void get_recognized_extensions_for_type(const String &p_type, List<String> *p_extensions) const;
@@ -90,7 +88,6 @@ typedef Error (*ResourceLoaderImport)(const String &p_path);
 typedef void (*ResourceLoadedCallback)(RES p_resource, const String &p_path);
 
 class ResourceLoader {
-
 	enum {
 		MAX_LOADERS = 64
 	};
@@ -104,10 +101,10 @@ class ResourceLoader {
 	static void *dep_err_notify_ud;
 	static DependencyErrorNotify dep_err_notify;
 	static bool abort_on_missing_resource;
-	static HashMap<String, Vector<String> > translation_remaps;
+	static HashMap<String, Vector<String>> translation_remaps;
 	static HashMap<String, String> path_remaps;
 
-	static String _path_remap(const String &p_path, bool *r_translation_remapped = NULL);
+	static String _path_remap(const String &p_path, bool *r_translation_remapped = nullptr);
 	friend class Resource;
 
 	static SelfList<Resource>::List remapped_list;
@@ -131,7 +128,6 @@ class ResourceLoader {
 		}
 	};
 	struct LoadingMapKeyHasher {
-
 		static _FORCE_INLINE_ uint32_t hash(const LoadingMapKey &p_key) { return p_key.path.hash() + HashMapHasherDefault::hash(p_key.thread); }
 	};
 
@@ -142,8 +138,8 @@ class ResourceLoader {
 	static void _remove_from_loading_map_and_thread(const String &p_path, Thread::ID p_thread);
 
 public:
-	static Ref<ResourceInteractiveLoader> load_interactive(const String &p_path, const String &p_type_hint = "", bool p_no_cache = false, Error *r_error = NULL);
-	static RES load(const String &p_path, const String &p_type_hint = "", bool p_no_cache = false, Error *r_error = NULL);
+	static Ref<ResourceInteractiveLoader> load_interactive(const String &p_path, const String &p_type_hint = "", bool p_no_cache = false, Error *r_error = nullptr);
+	static RES load(const String &p_path, const String &p_type_hint = "", bool p_no_cache = false, Error *r_error = nullptr);
 	static bool exists(const String &p_path, const String &p_type_hint = "");
 
 	static void get_recognized_extensions_for_type(const String &p_type, List<String> *p_extensions);
@@ -161,7 +157,9 @@ public:
 	static bool get_timestamp_on_load() { return timestamp_on_load; }
 
 	static void notify_load_error(const String &p_err) {
-		if (err_notify) err_notify(err_notify_ud, p_err);
+		if (err_notify) {
+			err_notify(err_notify_ud, p_err);
+		}
 	}
 	static void set_error_notify_func(void *p_ud, ResourceLoadErrorNotify p_err_notify) {
 		err_notify = p_err_notify;
@@ -169,7 +167,9 @@ public:
 	}
 
 	static void notify_dependency_error(const String &p_path, const String &p_dependency, const String &p_type) {
-		if (dep_err_notify) dep_err_notify(dep_err_notify_ud, p_path, p_dependency, p_type);
+		if (dep_err_notify) {
+			dep_err_notify(dep_err_notify_ud, p_path, p_dependency, p_type);
+		}
 	}
 	static void set_dependency_error_notify_func(void *p_ud, DependencyErrorNotify p_err_notify) {
 		dep_err_notify = p_err_notify;

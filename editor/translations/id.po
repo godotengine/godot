@@ -30,12 +30,13 @@
 # Habib Rohman <revolusi147id@gmail.com>, 2020.
 # Hanz <hanzhaxors@gmail.com>, 2021.
 # Reza Almanda <rezaalmanda27@gmail.com>, 2021.
+# Naufal Adriansyah <naufaladrn90@gmail.com>, 2021.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2021-03-29 21:57+0000\n"
-"Last-Translator: Hanz <hanzhaxors@gmail.com>\n"
+"PO-Revision-Date: 2021-04-05 14:28+0000\n"
+"Last-Translator: Naufal Adriansyah <naufaladrn90@gmail.com>\n"
 "Language-Team: Indonesian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/id/>\n"
 "Language: id\n"
@@ -1140,6 +1141,10 @@ msgstr "Ubah Nilai Kamus"
 #: editor/editor_about.cpp
 msgid "Thanks from the Godot community!"
 msgstr "Terimakasih dari komunitas Godot!"
+
+#: editor/editor_about.cpp editor/editor_node.cpp editor/project_manager.cpp
+msgid "Click to copy."
+msgstr ""
 
 #: editor/editor_about.cpp
 msgid "Godot Engine contributors"
@@ -2560,9 +2565,11 @@ msgid "Unable to load addon script from path: '%s'."
 msgstr "Tidak bisa memuat script addon dari lokasi: '%s'."
 
 #: editor/editor_node.cpp
+#, fuzzy
 msgid ""
-"Unable to load addon script from path: '%s' There seems to be an error in "
-"the code, please check the syntax."
+"Unable to load addon script from path: '%s'. This might be due to a code "
+"error in that script.\n"
+"Disabling the addon at '%s' to prevent further errors."
 msgstr ""
 "Tidak dapat memuat script addon dari path: '%s' Mungkin ada kesalahan dalam "
 "kode, mohon periksa sintaks."
@@ -3006,6 +3013,10 @@ msgstr "Komunitas"
 #: editor/editor_node.cpp
 msgid "About"
 msgstr "Tentang"
+
+#: editor/editor_node.cpp
+msgid "Support Godot Development"
+msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Play the project."
@@ -3693,6 +3704,8 @@ msgstr ""
 msgid ""
 "Importing has been disabled for this file, so it can't be opened for editing."
 msgstr ""
+"Mengimpor telah didisable untuk berkas ini, jadi itu tidak bisa dibuka untuk "
+"disunting."
 
 #: editor/filesystem_dock.cpp
 msgid "Cannot move/rename resources root."
@@ -4096,7 +4109,7 @@ msgstr "Kembalikan ke Nilai Baku"
 
 #: editor/import_dock.cpp
 msgid "Keep File (No Import)"
-msgstr ""
+msgstr "Simpan Berkas (Tanpa Impor)"
 
 #: editor/import_dock.cpp
 msgid "%d Files"
@@ -5226,6 +5239,7 @@ msgstr ""
 "persegi [0.0,1.0]."
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
+#, fuzzy
 msgid ""
 "Godot editor was built without ray tracing support, lightmaps can't be baked."
 msgstr ""
@@ -7553,6 +7567,11 @@ msgstr "Pengubah Lambat Tampilan Bebas"
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "View Rotation Locked"
 msgstr "Rotasi Tampilan Terkunci"
+
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid ""
+"To zoom further, change the camera's clipping planes (View -> Settings...)"
+msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid ""
@@ -10139,7 +10158,7 @@ msgstr "Tombol Mouse"
 
 #: editor/project_settings_editor.cpp
 msgid ""
-"Invalid action name. it cannot be empty nor contain '/', ':', '=', '\\' or "
+"Invalid action name. It cannot be empty nor contain '/', ':', '=', '\\' or "
 "'\"'"
 msgstr ""
 "Nama aksi tidak valid. Tidak boleh kosong atau mengandung '/', ':', '=', "
@@ -10948,6 +10967,13 @@ msgstr "Lepas skrip dari node yang dipilih."
 #: editor/scene_tree_dock.cpp
 msgid "Remote"
 msgstr "Remot"
+
+#: editor/scene_tree_dock.cpp
+msgid ""
+"If selected, the Remote scene tree dock will cause the project to stutter "
+"every time it updates.\n"
+"Switch back to the Local scene tree dock to improve performance."
+msgstr ""
 
 #: editor/scene_tree_dock.cpp
 msgid "Local"
@@ -12195,10 +12221,22 @@ msgstr ""
 "Proyek."
 
 #: platform/android/export/export.cpp
+msgid ""
+"Either Debug Keystore, Debug User AND Debug Password settings must be "
+"configured OR none of them."
+msgstr ""
+
+#: platform/android/export/export.cpp
 msgid "Debug keystore not configured in the Editor Settings nor in the preset."
 msgstr ""
 "Berkas debug keystore belum dikonfigurasi dalam Pengaturan Editor maupun di "
 "prasetel proyek."
+
+#: platform/android/export/export.cpp
+msgid ""
+"Either Release Keystore, Release User AND Release Password settings must be "
+"configured OR none of them."
+msgstr ""
 
 #: platform/android/export/export.cpp
 msgid "Release keystore incorrectly configured in the export preset."

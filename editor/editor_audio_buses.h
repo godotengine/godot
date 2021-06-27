@@ -51,7 +51,6 @@
 class EditorAudioBuses;
 
 class EditorAudioBus : public PanelContainer {
-
 	GDCLASS(EditorAudioBus, PanelContainer);
 
 	Ref<Texture> disabled_vu;
@@ -134,11 +133,10 @@ public:
 	void update_bus();
 	void update_send();
 
-	EditorAudioBus(EditorAudioBuses *p_buses = NULL, bool p_is_master = false);
+	EditorAudioBus(EditorAudioBuses *p_buses = nullptr, bool p_is_master = false);
 };
 
 class EditorAudioBusDrop : public Control {
-
 	GDCLASS(EditorAudioBusDrop, Control);
 
 	virtual bool can_drop_data(const Point2 &p_point, const Variant &p_data) const;
@@ -155,7 +153,6 @@ public:
 };
 
 class EditorAudioBuses : public VBoxContainer {
-
 	GDCLASS(EditorAudioBuses, VBoxContainer);
 
 	HBoxContainer *top_hb;
@@ -247,10 +244,10 @@ private:
 	List<AudioNotch> notches;
 
 public:
-	float line_length;
-	float label_space;
-	float btm_padding;
-	float top_padding;
+	const float line_length = 5.0f;
+	const float label_space = 2.0f;
+	const float btm_padding = 9.0f;
+	const float top_padding = 5.0f;
 	Color notch_color;
 
 	void add_notch(float p_normalized_offset, float p_db_value, bool p_render_value = false);
@@ -266,7 +263,6 @@ public:
 };
 
 class AudioBusesEditorPlugin : public EditorPlugin {
-
 	GDCLASS(AudioBusesEditorPlugin, EditorPlugin);
 
 	EditorAudioBuses *audio_bus_editor;

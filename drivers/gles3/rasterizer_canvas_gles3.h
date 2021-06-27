@@ -58,7 +58,7 @@ private:
 	void canvas_render_items_implementation(Item *p_item_list, int p_z, const Color &p_modulate, Light *p_light, const Transform2D &p_base_transform);
 	void render_joined_item(const BItemJoined &p_bij, RenderItemState &r_ris);
 	bool try_join_item(Item *p_ci, RenderItemState &r_ris, bool &r_batch_break);
-	void render_batches(Item::Command *const *p_commands, Item *p_current_clip, bool &r_reclip, RasterizerStorageGLES3::Material *p_material);
+	void render_batches(Item *p_current_clip, bool &r_reclip, RasterizerStorageGLES3::Material *p_material);
 
 	// low level batch funcs
 	void _batch_upload_buffers();
@@ -69,8 +69,6 @@ private:
 	// funcs used from rasterizer_canvas_batcher template
 	void gl_enable_scissor(int p_x, int p_y, int p_width, int p_height) const;
 	void gl_disable_scissor() const;
-
-	void gl_checkerror();
 
 public:
 	void initialize();

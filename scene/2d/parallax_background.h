@@ -36,7 +36,6 @@
 #include "scene/main/canvas_layer.h"
 
 class ParallaxBackground : public CanvasLayer {
-
 	GDCLASS(ParallaxBackground, CanvasLayer);
 
 	Point2 offset;

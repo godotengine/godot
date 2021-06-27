@@ -1,4 +1,4 @@
-// Copyright 2009-2020 Intel Corporation
+// Copyright 2009-2021 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
 #pragma once
@@ -700,7 +700,11 @@ namespace embree
   /// Rounding Functions
   ////////////////////////////////////////////////////////////////////////////////
 
-#if defined (__SSE4_1__)
+#if defined(__aarch64__)
+  __forceinline Vec3fx trunc(const Vec3fx& a) { return vrndq_f32(a.m128); }
+  __forceinline Vec3fx floor(const Vec3fx& a) { return vrndmq_f32(a.m128); }
+  __forceinline Vec3fx ceil (const Vec3fx& a) { return vrndpq_f32(a.m128); }
+#elif defined (__SSE4_1__)
   __forceinline Vec3fx trunc( const Vec3fx& a ) { return _mm_round_ps(a.m128, _MM_FROUND_TO_NEAREST_INT); }
   __forceinline Vec3fx floor( const Vec3fx& a ) { return _mm_round_ps(a.m128, _MM_FROUND_TO_NEG_INF    ); }
   __forceinline Vec3fx ceil ( const Vec3fx& a ) { return _mm_round_ps(a.m128, _MM_FROUND_TO_POS_INF    ); }

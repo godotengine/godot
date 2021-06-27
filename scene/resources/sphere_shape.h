@@ -34,7 +34,6 @@
 #include "scene/resources/shape.h"
 
 class SphereShape : public Shape {
-
 	GDCLASS(SphereShape, Shape);
 	float radius;
 

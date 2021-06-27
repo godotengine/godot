@@ -33,7 +33,7 @@
 #include "navigation_mesh_editor_plugin.h"
 
 #ifdef TOOLS_ENABLED
-EditorNavigationMeshGenerator *_nav_mesh_generator = NULL;
+EditorNavigationMeshGenerator *_nav_mesh_generator = nullptr;
 #endif
 
 void register_recast_types() {

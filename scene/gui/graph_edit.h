@@ -42,7 +42,6 @@
 class GraphEdit;
 
 class GraphEditFilter : public Control {
-
 	GDCLASS(GraphEditFilter, Control);
 
 	friend class GraphEdit;
@@ -94,7 +93,6 @@ private:
 };
 
 class GraphEdit : public Control {
-
 	GDCLASS(GraphEdit, Control);
 
 public:
@@ -126,41 +124,43 @@ private:
 	float port_grab_distance_horizontal;
 	float port_grab_distance_vertical;
 
-	bool connecting;
+	bool connecting = false;
 	String connecting_from;
-	bool connecting_out;
+	bool connecting_out = false;
 	int connecting_index;
 	int connecting_type;
 	Color connecting_color;
-	bool connecting_target;
+	bool connecting_target = false;
 	Vector2 connecting_to;
 	String connecting_target_to;
 	int connecting_target_index;
-	bool just_disconnected;
+	bool just_disconnected = false;
+	bool connecting_valid = false;
+	Vector2 click_pos;
 
-	bool dragging;
-	bool just_selected;
-	bool moving_selection;
+	bool dragging = false;
+	bool just_selected = false;
+	bool moving_selection = false;
 	Vector2 drag_accum;
 
-	float zoom;
+	float zoom = 1.0f;
 
-	bool box_selecting;
-	bool box_selection_mode_additive;
+	bool box_selecting = false;
+	bool box_selection_mode_additive = false;
 	Point2 box_selecting_from;
 	Point2 box_selecting_to;
 	Rect2 box_selecting_rect;
 	List<GraphNode *> previous_selected;
 
-	bool setting_scroll_ofs;
-	bool right_disconnects;
-	bool updating;
-	bool awaiting_scroll_offset_update;
+	bool setting_scroll_ofs = false;
+	bool right_disconnects = false;
+	bool updating = false;
+	bool awaiting_scroll_offset_update = false;
 	List<Connection> connections;
 
 	void _bake_segment2d(Vector<Vector2> &points, Vector<Color> &colors, float p_begin, float p_end, const Vector2 &p_a, const Vector2 &p_out, const Vector2 &p_b, const Vector2 &p_in, int p_depth, int p_min_depth, int p_max_depth, float p_tol, const Color &p_color, const Color &p_to_color, int &lines) const;
 
-	void _draw_cos_line(CanvasItem *p_where, const Vector2 &p_from, const Vector2 &p_to, const Color &p_color, const Color &p_to_color, float p_width, float p_bezier_ratio);
+	void _draw_cos_line(CanvasItem *p_where, const Vector2 &p_from, const Vector2 &p_to, const Color &p_color, const Color &p_to_color, float p_width = 2.0, float p_bezier_ratio = 1.0);
 
 	void _graph_node_raised(Node *p_gn);
 	void _graph_node_moved(Node *p_gn);
@@ -187,7 +187,6 @@ private:
 	bool lines_on_bg;
 
 	struct ConnType {
-
 		union {
 			struct {
 				uint32_t type_a;

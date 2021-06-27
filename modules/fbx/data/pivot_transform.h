@@ -56,7 +56,6 @@ enum TransformationComp {
 };
 // Abstract away pivot data so its simpler to handle
 struct PivotTransform : Reference, ModelAbstraction {
-
 	// at the end we want to keep geometric_ everything, post and pre rotation
 	// these are used during animation data processing / keyframe ingestion the rest can be simplified down / out.
 	Quat pre_rotation = Quat();

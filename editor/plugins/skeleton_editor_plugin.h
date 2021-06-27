@@ -49,7 +49,7 @@ class SkeletonEditor : public Node {
 		PhysicalBone *physical_bone;
 		Transform relative_rest; // Relative to skeleton node
 		BoneInfo() :
-				physical_bone(NULL) {}
+				physical_bone(nullptr) {}
 	};
 
 	Skeleton *skeleton;
@@ -76,7 +76,6 @@ public:
 };
 
 class SkeletonEditorPlugin : public EditorPlugin {
-
 	GDCLASS(SkeletonEditorPlugin, EditorPlugin);
 
 	EditorNode *editor;

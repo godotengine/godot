@@ -41,13 +41,11 @@
 #include <xaudio2.h>
 
 class AudioDriverXAudio2 : public AudioDriver {
-
 	enum {
 		AUDIO_BUFFERS = 2
 	};
 
 	struct XAudio2DriverVoiceCallback : public IXAudio2VoiceCallback {
-
 		HANDLE buffer_end_event;
 		XAudio2DriverVoiceCallback() :
 				buffer_end_event(CreateEvent(NULL, FALSE, FALSE, NULL)) {}

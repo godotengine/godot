@@ -41,7 +41,6 @@
  */
 
 class FileAccess {
-
 public:
 	enum AccessType {
 		ACCESS_RESOURCES,
@@ -73,7 +72,6 @@ private:
 	static CreateFunc create_func[ACCESS_MAX]; /** default file access creation function for a platform */
 	template <class T>
 	static FileAccess *_create_builtin() {
-
 		return memnew(T);
 	}
 
@@ -96,10 +94,10 @@ public:
 	virtual String get_path() const { return ""; } /// returns the path for the current open file
 	virtual String get_path_absolute() const { return ""; } /// returns the absolute path for the current open file
 
-	virtual void seek(size_t p_position) = 0; ///< seek to a given position
-	virtual void seek_end(int64_t p_position = 0) = 0; ///< seek from the end of file
-	virtual size_t get_position() const = 0; ///< get position in the file
-	virtual size_t get_len() const = 0; ///< get size of the file
+	virtual void seek(uint64_t p_position) = 0; ///< seek to a given position
+	virtual void seek_end(int64_t p_position = 0) = 0; ///< seek from the end of file with negative offset
+	virtual uint64_t get_position() const = 0; ///< get position in the file
+	virtual uint64_t get_len() const = 0; ///< get size of the file
 
 	virtual bool eof_reached() const = 0; ///< reading passed EOF
 
@@ -112,7 +110,7 @@ public:
 	virtual double get_double() const;
 	virtual real_t get_real() const;
 
-	virtual int get_buffer(uint8_t *p_dst, int p_length) const; ///< get an array of bytes
+	virtual uint64_t get_buffer(uint8_t *p_dst, uint64_t p_length) const; ///< get an array of bytes
 	virtual String get_line() const;
 	virtual String get_token() const;
 	virtual Vector<String> get_csv_line(const String &p_delim = ",") const;
@@ -145,7 +143,7 @@ public:
 	virtual void store_pascal_string(const String &p_string);
 	virtual String get_pascal_string();
 
-	virtual void store_buffer(const uint8_t *p_src, int p_length); ///< store an array of bytes
+	virtual void store_buffer(const uint8_t *p_src, uint64_t p_length); ///< store an array of bytes
 
 	virtual bool file_exists(const String &p_name) = 0; ///< return true if a file exists
 
@@ -153,7 +151,7 @@ public:
 
 	static FileAccess *create(AccessType p_access); /// Create a file access (for the current platform) this is the only portable way of accessing files.
 	static FileAccess *create_for_path(const String &p_path);
-	static FileAccess *open(const String &p_path, int p_mode_flags, Error *r_error = NULL); /// Create a file access (for the current platform) this is the only portable way of accessing files.
+	static FileAccess *open(const String &p_path, int p_mode_flags, Error *r_error = nullptr); /// Create a file access (for the current platform) this is the only portable way of accessing files.
 	static CreateFunc get_create_func(AccessType p_access);
 	static bool exists(const String &p_name); ///< return true if a file exists
 	static uint64_t get_modified_time(const String &p_file);
@@ -167,12 +165,11 @@ public:
 	static String get_sha256(const String &p_file);
 	static String get_multiple_md5(const Vector<String> &p_file);
 
-	static Vector<uint8_t> get_file_as_array(const String &p_path, Error *r_error = NULL);
-	static String get_file_as_string(const String &p_path, Error *r_error = NULL);
+	static Vector<uint8_t> get_file_as_array(const String &p_path, Error *r_error = nullptr);
+	static String get_file_as_string(const String &p_path, Error *r_error = nullptr);
 
 	template <class T>
 	static void make_default(AccessType p_access) {
-
 		create_func[p_access] = _create_builtin<T>;
 	}
 
@@ -181,18 +178,18 @@ public:
 };
 
 struct FileAccessRef {
-
 	_FORCE_INLINE_ FileAccess *operator->() {
-
 		return f;
 	}
 
-	operator bool() const { return f != NULL; }
+	operator bool() const { return f != nullptr; }
 	FileAccess *f;
 	operator FileAccess *() { return f; }
 	FileAccessRef(FileAccess *fa) { f = fa; }
 	~FileAccessRef() {
-		if (f) memdelete(f);
+		if (f) {
+			memdelete(f);
+		}
 	}
 };
 

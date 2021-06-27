@@ -35,7 +35,6 @@
 #include "scene/3d/visual_instance.h"
 
 class SpriteBase3D : public GeometryInstance {
-
 	GDCLASS(SpriteBase3D, GeometryInstance);
 
 	mutable Ref<TriangleMesh> triangle_mesh; //cached
@@ -153,7 +152,6 @@ public:
 };
 
 class Sprite3D : public SpriteBase3D {
-
 	GDCLASS(Sprite3D, SpriteBase3D);
 	Ref<Texture> texture;
 
@@ -200,7 +198,6 @@ public:
 };
 
 class AnimatedSprite3D : public SpriteBase3D {
-
 	GDCLASS(AnimatedSprite3D, SpriteBase3D);
 
 	Ref<SpriteFrames> frames;

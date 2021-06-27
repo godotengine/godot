@@ -1,7 +1,15 @@
-// Copyright 2009-2020 Intel Corporation
+// Copyright 2009-2021 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
 #pragma once
+
+#define vboolf vboolf_impl
+#define vboold vboold_impl
+#define vint vint_impl
+#define vuint vuint_impl
+#define vllong vllong_impl
+#define vfloat vfloat_impl
+#define vdouble vdouble_impl
 
 namespace embree
 {
@@ -371,8 +379,6 @@ namespace embree
   template<> __forceinline vuint8 shuffle<1, 1, 3, 3>(const vuint8& v) { return _mm256_castps_si256(_mm256_movehdup_ps(_mm256_castsi256_ps(v))); }
   template<> __forceinline vuint8 shuffle<0, 1, 0, 1>(const vuint8& v) { return _mm256_castps_si256(_mm256_castpd_ps(_mm256_movedup_pd(_mm256_castps_pd(_mm256_castsi256_ps(v))))); }
 
-  __forceinline vuint8 broadcast(const unsigned int* ptr) { return _mm256_castps_si256(_mm256_broadcast_ss((const float*)ptr)); }
-
   template<int i> __forceinline vuint8 insert4(const vuint8& a, const vuint4& b) { return _mm256_insertf128_si256(a, b, i); }
   template<int i> __forceinline vuint4 extract4(const vuint8& a) { return _mm256_extractf128_si256(a, i); }
   template<> __forceinline vuint4 extract4<0>(const vuint8& a) { return _mm256_castsi256_si128(a); }
@@ -422,8 +428,6 @@ namespace embree
   //__forceinline size_t select_min(const vboolf8& valid, const vuint8& v) { const vuint8 a = select(valid,v,vuint8(pos_inf)); return bsf(movemask(valid & (a == vreduce_min(a)))); }
   //__forceinline size_t select_max(const vboolf8& valid, const vuint8& v) { const vuint8 a = select(valid,v,vuint8(neg_inf)); return bsf(movemask(valid & (a == vreduce_max(a)))); }
 
-  __forceinline vuint8 assign(const vuint4& a) { return _mm256_castsi128_si256(a); }
-
   ////////////////////////////////////////////////////////////////////////////////
   /// Output Operators
   ////////////////////////////////////////////////////////////////////////////////
@@ -432,3 +436,11 @@ namespace embree
     return cout << "<" << a[0] << ", " << a[1] << ", " << a[2] << ", " << a[3] << ", " << a[4] << ", " << a[5] << ", " << a[6] << ", " << a[7] << ">";
   }
 }
+
+#undef vboolf
+#undef vboold
+#undef vint
+#undef vuint
+#undef vllong
+#undef vfloat
+#undef vdouble

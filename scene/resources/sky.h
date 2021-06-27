@@ -190,7 +190,7 @@ public:
 	void set_texture_size(TextureSize p_size);
 	TextureSize get_texture_size() const;
 
-	Ref<Image> get_panorama() const;
+	Ref<Image> get_data() const;
 
 	virtual RID get_rid() const;
 

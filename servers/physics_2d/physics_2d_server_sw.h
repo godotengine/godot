@@ -38,7 +38,6 @@
 #include "step_2d_sw.h"
 
 class Physics2DServerSW : public Physics2DServer {
-
 	GDCLASS(Physics2DServerSW, Physics2DServer);
 
 	friend class Physics2DDirectSpaceStateSW;
@@ -78,7 +77,6 @@ class Physics2DServerSW : public Physics2DServer {
 
 public:
 	struct CollCbkData {
-
 		Vector2 valid_dir;
 		real_t valid_depth;
 		int max;
@@ -248,7 +246,7 @@ public:
 
 	virtual void body_set_pickable(RID p_body, bool p_pickable);
 
-	virtual bool body_test_motion(RID p_body, const Transform2D &p_from, const Vector2 &p_motion, bool p_infinite_inertia, real_t p_margin = 0.001, MotionResult *r_result = NULL, bool p_exclude_raycast_shapes = true);
+	virtual bool body_test_motion(RID p_body, const Transform2D &p_from, const Vector2 &p_motion, bool p_infinite_inertia, real_t p_margin = 0.001, MotionResult *r_result = nullptr, bool p_exclude_raycast_shapes = true);
 	virtual int body_test_ray_separation(RID p_body, const Transform2D &p_transform, bool p_infinite_inertia, Vector2 &r_recover_motion, SeparationResult *r_results, int p_result_max, float p_margin = 0.001);
 
 	// this function only works on physics process, errors and returns null otherwise
@@ -283,6 +281,8 @@ public:
 	virtual void flush_queries();
 	virtual void end_sync();
 	virtual void finish();
+
+	virtual void set_collision_iterations(int p_iterations);
 
 	virtual bool is_flushing_queries() const { return flushing_queries; }
 

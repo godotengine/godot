@@ -40,7 +40,6 @@
 #include "core/print_string.h"
 
 struct ThreadLocalStorage::Impl {
-
 #ifdef WINDOWS_ENABLED
 	DWORD dwFlsIndex;
 #else

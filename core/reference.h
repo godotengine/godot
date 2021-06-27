@@ -37,7 +37,6 @@
 #include "core/safe_refcount.h"
 
 class Reference : public Object {
-
 	GDCLASS(Reference, Object);
 	friend class RefBase;
 	SafeRefCount refcount;
@@ -59,27 +58,27 @@ public:
 
 template <class T>
 class Ref {
-
 	T *reference;
 
 	void ref(const Ref &p_from) {
-
-		if (p_from.reference == reference)
+		if (p_from.reference == reference) {
 			return;
+		}
 
 		unref();
 
 		reference = p_from.reference;
-		if (reference)
+		if (reference) {
 			reference->reference();
+		}
 	}
 
 	void ref_pointer(T *p_ref) {
-
 		ERR_FAIL_COND(!p_ref);
 
-		if (p_ref->init_ref())
+		if (p_ref->init_ref()) {
 			reference = p_ref;
+		}
 	}
 
 	//virtual Reference * get_reference() const { return reference; }
@@ -92,49 +91,39 @@ public:
 	}
 
 	_FORCE_INLINE_ bool operator<(const Ref<T> &p_r) const {
-
 		return reference < p_r.reference;
 	}
 	_FORCE_INLINE_ bool operator==(const Ref<T> &p_r) const {
-
 		return reference == p_r.reference;
 	}
 	_FORCE_INLINE_ bool operator!=(const Ref<T> &p_r) const {
-
 		return reference != p_r.reference;
 	}
 
 	_FORCE_INLINE_ T *operator->() {
-
 		return reference;
 	}
 
 	_FORCE_INLINE_ T *operator*() {
-
 		return reference;
 	}
 
 	_FORCE_INLINE_ const T *operator->() const {
-
 		return reference;
 	}
 
 	_FORCE_INLINE_ const T *ptr() const {
-
 		return reference;
 	}
 	_FORCE_INLINE_ T *ptr() {
-
 		return reference;
 	}
 
 	_FORCE_INLINE_ const T *operator*() const {
-
 		return reference;
 	}
 
 	RefPtr get_ref_ptr() const {
-
 		RefPtr refptr;
 		Ref<Reference> *irr = reinterpret_cast<Ref<Reference> *>(refptr.get_data());
 		*irr = *this;
@@ -142,18 +131,15 @@ public:
 	};
 
 	operator Variant() const {
-
 		return Variant(get_ref_ptr());
 	}
 
 	void operator=(const Ref &p_from) {
-
 		ref(p_from);
 	}
 
 	template <class T_Other>
 	void operator=(const Ref<T_Other> &p_from) {
-
 		Reference *refb = const_cast<Reference *>(static_cast<const Reference *>(p_from.ptr()));
 		if (!refb) {
 			unref();
@@ -162,11 +148,10 @@ public:
 		Ref r;
 		r.reference = Object::cast_to<T>(refb);
 		ref(r);
-		r.reference = NULL;
+		r.reference = nullptr;
 	}
 
 	void operator=(const RefPtr &p_refptr) {
-
 		Ref<Reference> *irr = reinterpret_cast<Ref<Reference> *>(p_refptr.get_data());
 		Reference *refb = irr->ptr();
 		if (!refb) {
@@ -176,11 +161,10 @@ public:
 		Ref r;
 		r.reference = Object::cast_to<T>(refb);
 		ref(r);
-		r.reference = NULL;
+		r.reference = nullptr;
 	}
 
 	void operator=(const Variant &p_variant) {
-
 		RefPtr refptr = p_variant;
 		Ref<Reference> *irr = reinterpret_cast<Ref<Reference> *>(refptr.get_data());
 		Reference *refb = irr->ptr();
@@ -191,7 +175,7 @@ public:
 		Ref r;
 		r.reference = Object::cast_to<T>(refb);
 		ref(r);
-		r.reference = NULL;
+		r.reference = nullptr;
 	}
 
 	template <class T_Other>
@@ -208,15 +192,13 @@ public:
 	}
 
 	Ref(const Ref &p_from) {
-
-		reference = NULL;
+		reference = nullptr;
 		ref(p_from);
 	}
 
 	template <class T_Other>
 	Ref(const Ref<T_Other> &p_from) {
-
-		reference = NULL;
+		reference = nullptr;
 		Reference *refb = const_cast<Reference *>(static_cast<const Reference *>(p_from.ptr()));
 		if (!refb) {
 			unref();
@@ -225,21 +207,20 @@ public:
 		Ref r;
 		r.reference = Object::cast_to<T>(refb);
 		ref(r);
-		r.reference = NULL;
+		r.reference = nullptr;
 	}
 
 	Ref(T *p_reference) {
-
-		reference = NULL;
-		if (p_reference)
+		reference = nullptr;
+		if (p_reference) {
 			ref_pointer(p_reference);
+		}
 	}
 
 	Ref(const Variant &p_variant) {
-
 		RefPtr refptr = p_variant;
 		Ref<Reference> *irr = reinterpret_cast<Ref<Reference> *>(refptr.get_data());
-		reference = NULL;
+		reference = nullptr;
 		Reference *refb = irr->ptr();
 		if (!refb) {
 			unref();
@@ -248,13 +229,12 @@ public:
 		Ref r;
 		r.reference = Object::cast_to<T>(refb);
 		ref(r);
-		r.reference = NULL;
+		r.reference = nullptr;
 	}
 
 	Ref(const RefPtr &p_refptr) {
-
 		Ref<Reference> *irr = reinterpret_cast<Ref<Reference> *>(p_refptr.get_data());
-		reference = NULL;
+		reference = nullptr;
 		Reference *refb = irr->ptr();
 		if (!refb) {
 			unref();
@@ -263,11 +243,11 @@ public:
 		Ref r;
 		r.reference = Object::cast_to<T>(refb);
 		ref(r);
-		r.reference = NULL;
+		r.reference = nullptr;
 	}
 
-	inline bool is_valid() const { return reference != NULL; }
-	inline bool is_null() const { return reference == NULL; }
+	inline bool is_valid() const { return reference != nullptr; }
+	inline bool is_null() const { return reference == nullptr; }
 
 	void unref() {
 		//TODO this should be moved to mutexes, since this engine does not really
@@ -275,10 +255,9 @@ public:
 		// mutexes will avoid more crashes?
 
 		if (reference && reference->unreference()) {
-
 			memdelete(reference);
 		}
-		reference = NULL;
+		reference = nullptr;
 	}
 
 	void instance() {
@@ -286,12 +265,10 @@ public:
 	}
 
 	Ref() {
-
-		reference = NULL;
+		reference = nullptr;
 	}
 
 	~Ref() {
-
 		unref();
 	}
 };
@@ -299,7 +276,6 @@ public:
 typedef Ref<Reference> REF;
 
 class WeakRef : public Reference {
-
 	GDCLASS(WeakRef, Reference);
 
 	ObjectID ref;
@@ -318,24 +294,19 @@ public:
 #ifdef PTRCALL_ENABLED
 
 template <class T>
-struct PtrToArg<Ref<T> > {
-
+struct PtrToArg<Ref<T>> {
 	_FORCE_INLINE_ static Ref<T> convert(const void *p_ptr) {
-
 		return Ref<T>(const_cast<T *>(reinterpret_cast<const T *>(p_ptr)));
 	}
 
 	_FORCE_INLINE_ static void encode(Ref<T> p_val, const void *p_ptr) {
-
 		*(Ref<Reference> *)p_ptr = p_val;
 	}
 };
 
 template <class T>
 struct PtrToArg<const Ref<T> &> {
-
 	_FORCE_INLINE_ static Ref<T> convert(const void *p_ptr) {
-
 		return Ref<T>((T *)p_ptr);
 	}
 };
@@ -344,14 +315,11 @@ struct PtrToArg<const Ref<T> &> {
 
 template <>
 struct PtrToArg<RefPtr> {
-
 	_FORCE_INLINE_ static RefPtr convert(const void *p_ptr) {
-
 		return Ref<Reference>(const_cast<Reference *>(reinterpret_cast<const Reference *>(p_ptr))).get_ref_ptr();
 	}
 
 	_FORCE_INLINE_ static void encode(RefPtr p_val, const void *p_ptr) {
-
 		Ref<Reference> r = p_val;
 		*(Ref<Reference> *)p_ptr = r;
 	}
@@ -359,9 +327,7 @@ struct PtrToArg<RefPtr> {
 
 template <>
 struct PtrToArg<const RefPtr &> {
-
 	_FORCE_INLINE_ static RefPtr convert(const void *p_ptr) {
-
 		return Ref<Reference>(const_cast<Reference *>(reinterpret_cast<const Reference *>(p_ptr))).get_ref_ptr();
 	}
 };
@@ -371,7 +337,7 @@ struct PtrToArg<const RefPtr &> {
 #ifdef DEBUG_METHODS_ENABLED
 
 template <class T>
-struct GetTypeInfo<Ref<T> > {
+struct GetTypeInfo<Ref<T>> {
 	static const Variant::Type VARIANT_TYPE = Variant::OBJECT;
 	static const GodotTypeInfo::Metadata METADATA = GodotTypeInfo::METADATA_NONE;
 

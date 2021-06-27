@@ -84,25 +84,25 @@
 // Singletons
 
 // Initialized in setup()
-static Engine *engine = NULL;
-static ProjectSettings *globals = NULL;
-static InputMap *input_map = NULL;
-static TranslationServer *translation_server = NULL;
-static Performance *performance = NULL;
-static PackedData *packed_data = NULL;
+static Engine *engine = nullptr;
+static ProjectSettings *globals = nullptr;
+static InputMap *input_map = nullptr;
+static TranslationServer *translation_server = nullptr;
+static Performance *performance = nullptr;
+static PackedData *packed_data = nullptr;
 #ifdef MINIZIP_ENABLED
-static ZipArchive *zip_packed_data = NULL;
+static ZipArchive *zip_packed_data = nullptr;
 #endif
-static FileAccessNetworkClient *file_access_network_client = NULL;
-static ScriptDebugger *script_debugger = NULL;
-static MessageQueue *message_queue = NULL;
+static FileAccessNetworkClient *file_access_network_client = nullptr;
+static ScriptDebugger *script_debugger = nullptr;
+static MessageQueue *message_queue = nullptr;
 
 // Initialized in setup2()
-static AudioServer *audio_server = NULL;
-static CameraServer *camera_server = NULL;
-static ARVRServer *arvr_server = NULL;
-static PhysicsServer *physics_server = NULL;
-static Physics2DServer *physics_2d_server = NULL;
+static AudioServer *audio_server = nullptr;
+static CameraServer *camera_server = nullptr;
+static ARVRServer *arvr_server = nullptr;
+static PhysicsServer *physics_server = nullptr;
+static Physics2DServer *physics_2d_server = nullptr;
 // We error out if setup2() doesn't turn this true
 static bool _start_success = false;
 
@@ -162,15 +162,15 @@ static String unescape_cmdline(const String &p_str) {
 
 static String get_full_version_string() {
 	String hash = String(VERSION_HASH);
-	if (hash.length() != 0)
+	if (hash.length() != 0) {
 		hash = "." + hash.left(9);
+	}
 	return String(VERSION_FULL_BUILD) + hash;
 }
 
 // FIXME: Could maybe be moved to PhysicsServerManager and Physics2DServerManager directly
 // to have less code in main.cpp.
 void initialize_physics() {
-
 	// This must be defined BEFORE the 3d physics server is created
 	GLOBAL_DEF("physics/3d/godot_physics/use_bvh", true);
 
@@ -209,7 +209,6 @@ void finalize_physics() {
 #endif
 
 void Main::print_help(const char *p_binary) {
-
 	print_line(String(VERSION_NAME) + " v" + get_full_version_string() + " - " + String(VERSION_WEBSITE));
 	OS::get_singleton()->print("Free and open source software under the terms of the MIT license.\n");
 	OS::get_singleton()->print("(c) 2007-2021 Juan Linietsky, Ariel Manzur.\n");
@@ -240,15 +239,17 @@ void Main::print_help(const char *p_binary) {
 	OS::get_singleton()->print("  --remote-fs-password <password>  Password for remote filesystem.\n");
 	OS::get_singleton()->print("  --audio-driver <driver>          Audio driver (");
 	for (int i = 0; i < OS::get_singleton()->get_audio_driver_count(); i++) {
-		if (i != 0)
+		if (i != 0) {
 			OS::get_singleton()->print(", ");
+		}
 		OS::get_singleton()->print("'%s'", OS::get_singleton()->get_audio_driver_name(i));
 	}
 	OS::get_singleton()->print(").\n");
 	OS::get_singleton()->print("  --video-driver <driver>          Video driver (");
 	for (int i = 0; i < OS::get_singleton()->get_video_driver_count(); i++) {
-		if (i != 0)
+		if (i != 0) {
 			OS::get_singleton()->print(", ");
+		}
 		OS::get_singleton()->print("'%s'", OS::get_singleton()->get_video_driver_name(i));
 	}
 	OS::get_singleton()->print(").\n");
@@ -268,8 +269,9 @@ void Main::print_help(const char *p_binary) {
 	OS::get_singleton()->print("  --disable-vsync-via-compositor   Disable vsync via the OS' window compositor (Windows only).\n");
 	OS::get_singleton()->print("  --tablet-driver                  Tablet input driver (");
 	for (int i = 0; i < OS::get_singleton()->get_tablet_driver_count(); i++) {
-		if (i != 0)
+		if (i != 0) {
 			OS::get_singleton()->print(", ");
+		}
 		OS::get_singleton()->print("'%s'", OS::get_singleton()->get_tablet_driver_name(i).utf8().get_data());
 	}
 	OS::get_singleton()->print(") (Windows only).\n");
@@ -301,7 +303,7 @@ void Main::print_help(const char *p_binary) {
 	OS::get_singleton()->print("                                   <path> should be absolute or relative to the project directory, and include the filename for the binary (e.g. 'builds/game.exe'). The target directory should exist.\n");
 	OS::get_singleton()->print("  --export-debug <preset> <path>   Same as --export, but using the debug template.\n");
 	OS::get_singleton()->print("  --export-pack <preset> <path>    Same as --export, but only export the game pack for the given preset. The <path> extension determines whether it will be in PCK or ZIP format.\n");
-	OS::get_singleton()->print("  --doctool <path>                 Dump the engine API reference to the given <path> in XML format, merging if existing files are found.\n");
+	OS::get_singleton()->print("  --doctool [<path>]               Dump the engine API reference to the given <path> (defaults to current dir) in XML format, merging if existing files are found.\n");
 	OS::get_singleton()->print("  --no-docbase                     Disallow dumping the base types (used with --doctool).\n");
 	OS::get_singleton()->print("  --build-solutions                Build the scripting solutions (e.g. for C# projects). Implies --editor and requires a valid project to edit.\n");
 #ifdef DEBUG_METHODS_ENABLED
@@ -382,7 +384,6 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	List<String> main_args;
 
 	for (int i = 0; i < argc; i++) {
-
 		args.push_back(String::utf8(argv[i]));
 	}
 
@@ -391,7 +392,6 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	I = args.front();
 
 	while (I) {
-
 		I->get() = unescape_cmdline(I->get().strip_edges());
 		I = I->next();
 	}
@@ -422,8 +422,9 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 #endif
 
 	packed_data = PackedData::get_singleton();
-	if (!packed_data)
+	if (!packed_data) {
 		packed_data = memnew(PackedData);
+	}
 
 #ifdef MINIZIP_ENABLED
 
@@ -456,7 +457,6 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 			goto error;
 
 		} else if (I->get() == "--version") {
-
 			print_line(get_full_version_string());
 			goto error;
 
@@ -470,7 +470,6 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		} else if (I->get() == "--audio-driver") { // audio driver
 
 			if (I->next()) {
-
 				audio_driver = I->next()->get();
 
 				bool found = false;
@@ -507,7 +506,6 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		} else if (I->get() == "--video-driver") { // force video driver
 
 			if (I->next()) {
-
 				video_driver = I->next()->get();
 
 				bool found = false;
@@ -558,7 +556,6 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		} else if (I->get() == "--resolution") { // force resolution
 
 			if (I->next()) {
-
 				String vm = I->next()->get();
 
 				if (vm.find("x") == -1) { // invalid parameter format
@@ -571,7 +568,6 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 				int h = vm.get_slice("x", 1).to_int();
 
 				if (w <= 0 || h <= 0) {
-
 					OS::get_singleton()->print("Invalid resolution '%s', width and height must be above 0.\n", vm.utf8().get_data());
 					goto error;
 				}
@@ -589,7 +585,6 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		} else if (I->get() == "--position") { // set window position
 
 			if (I->next()) {
-
 				String vm = I->next()->get();
 
 				if (vm.find(",") == -1) { // invalid parameter format
@@ -637,11 +632,9 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 				goto error;
 			}
 		} else if (I->get() == "--enable-vsync-via-compositor") {
-
 			video_mode.vsync_via_compositor = true;
 			saw_vsync_via_compositor_override = true;
 		} else if (I->get() == "--disable-vsync-via-compositor") {
-
 			video_mode.vsync_via_compositor = false;
 			saw_vsync_via_compositor_override = true;
 #endif
@@ -652,7 +645,6 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		} else if (I->get() == "-l" || I->get() == "--language") { // language
 
 			if (I->next()) {
-
 				locale = I->next()->get();
 				N = I->next()->next();
 			} else {
@@ -663,7 +655,6 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		} else if (I->get() == "--remote-fs") { // remote filesystem
 
 			if (I->next()) {
-
 				remotefs = I->next()->get();
 				N = I->next()->next();
 			} else {
@@ -673,7 +664,6 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		} else if (I->get() == "--remote-fs-password") { // remote filesystem password
 
 			if (I->next()) {
-
 				remotefs_pass = I->next()->get();
 				N = I->next()->next();
 			} else {
@@ -683,13 +673,13 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		} else if (I->get() == "--render-thread") { // render thread mode
 
 			if (I->next()) {
-
-				if (I->next()->get() == "safe")
+				if (I->next()->get() == "safe") {
 					rtm = OS::RENDER_THREAD_SAFE;
-				else if (I->next()->get() == "unsafe")
+				} else if (I->next()->get() == "unsafe") {
 					rtm = OS::RENDER_THREAD_UNSAFE;
-				else if (I->next()->get() == "separate")
+				} else if (I->next()->get() == "separate") {
 					rtm = OS::RENDER_SEPARATE_THREAD;
+				}
 
 				N = I->next()->next();
 			} else {
@@ -723,7 +713,6 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		} else if (I->get() == "--path") { // set path of project to start or edit
 
 			if (I->next()) {
-
 				String p = I->next()->get();
 				if (OS::get_singleton()->set_cwd(p) == OK) {
 					//nothing
@@ -743,9 +732,9 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 			String path;
 			String file = I->get();
 			int sep = MAX(file.find_last("/"), file.find_last("\\"));
-			if (sep == -1)
+			if (sep == -1) {
 				path = ".";
-			else {
+			} else {
 				path = file.substr(0, sep);
 			}
 			if (OS::get_singleton()->set_cwd(path) == OK) {
@@ -759,7 +748,6 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		} else if (I->get() == "-b" || I->get() == "--breakpoints") { // add breakpoints
 
 			if (I->next()) {
-
 				String bplist = I->next()->get();
 				breakpoints = bplist.split(",");
 				N = I->next()->next();
@@ -771,7 +759,6 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		} else if (I->get() == "--frame-delay") { // force frame delay
 
 			if (I->next()) {
-
 				frame_delay = I->next()->get().to_int();
 				N = I->next()->next();
 			} else {
@@ -782,7 +769,6 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		} else if (I->get() == "--time-scale") { // force time scale
 
 			if (I->next()) {
-
 				Engine::get_singleton()->set_time_scale(I->next()->get().to_double());
 				N = I->next()->next();
 			} else {
@@ -791,9 +777,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 			}
 
 		} else if (I->get() == "--main-pack") {
-
 			if (I->next()) {
-
 				main_pack = I->next()->get();
 				N = I->next()->next();
 			} else {
@@ -812,7 +796,6 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 #endif
 		} else if (I->get() == "--remote-debug") {
 			if (I->next()) {
-
 				debug_mode = "remote";
 				debug_host = I->next()->get();
 				if (debug_host.find(":") == -1) { // wrong address
@@ -826,7 +809,6 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 			}
 		} else if (I->get() == "--allow_focus_steal_pid") { // not exposed to user
 			if (I->next()) {
-
 				allow_focus_steal_pid = I->next()->get().to_int64();
 				N = I->next()->next();
 			} else {
@@ -867,7 +849,6 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	// 'project.godot' file which will only be available through the network if this is enabled
 	FileAccessNetwork::configure();
 	if (remotefs != "") {
-
 		file_access_network_client = memnew(FileAccessNetworkClient);
 		int port;
 		if (remotefs.find(":") != -1) {
@@ -891,7 +872,6 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		found_project = true;
 #endif
 	} else {
-
 #ifdef TOOLS_ENABLED
 		editor = false;
 #else
@@ -918,7 +898,6 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	ProjectSettings::get_singleton()->set_custom_property_info("network/limits/debugger_stdout/max_warnings_per_second", PropertyInfo(Variant::INT, "network/limits/debugger_stdout/max_warnings_per_second", PROPERTY_HINT_RANGE, "0, 200, 1, or_greater"));
 
 	if (debug_mode == "remote") {
-
 		ScriptDebuggerRemote *sdr = memnew(ScriptDebuggerRemote);
 		uint16_t debug_port = 6007;
 		if (debug_host.find(":") != -1) {
@@ -937,7 +916,6 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 			sdr->set_allow_focus_steal_pid(allow_focus_steal_pid);
 		}
 	} else if (debug_mode == "local") {
-
 		script_debugger = memnew(ScriptDebuggerLocal);
 		OS::get_singleton()->initialize_debugging();
 	}
@@ -945,7 +923,6 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		//there is a debugger, parse breakpoints
 
 		for (int i = 0; i < breakpoints.size(); i++) {
-
 			String bp = breakpoints[i];
 			int sp = bp.find_last(":");
 			ERR_CONTINUE_MSG(sp == -1, "Invalid breakpoint: '" + bp + "', expected file:line format.");
@@ -1026,8 +1003,9 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		_print_error_enabled = false;
 	};
 
-	if (quiet_stdout)
+	if (quiet_stdout) {
 		_print_line_enabled = false;
+	}
 
 	Logger::set_flush_stdout_on_print(ProjectSettings::get_singleton()->get("application/run/flush_stdout_on_print"));
 
@@ -1058,13 +1036,11 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	ProjectSettings::get_singleton()->set_custom_property_info("display/window/size/test_height", PropertyInfo(Variant::INT, "display/window/size/test_height", PROPERTY_HINT_RANGE, "0,4320,or_greater")); // 8K resolution
 
 	if (use_custom_res) {
-
 		if (!force_res) {
 			video_mode.width = GLOBAL_GET("display/window/size/width");
 			video_mode.height = GLOBAL_GET("display/window/size/height");
 
 			if (globals->has_setting("display/window/size/test_width") && globals->has_setting("display/window/size/test_height")) {
-
 				int tw = globals->get("display/window/size/test_width");
 				if (tw > 0) {
 					video_mode.width = tw;
@@ -1147,9 +1123,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	/* Determine audio and video drivers */
 
 	for (int i = 0; i < OS::get_singleton()->get_video_driver_count(); i++) {
-
 		if (video_driver == OS::get_singleton()->get_video_driver_name(i)) {
-
 			video_driver_idx = i;
 			break;
 		}
@@ -1164,9 +1138,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	}
 
 	for (int i = 0; i < OS::get_singleton()->get_audio_driver_count(); i++) {
-
 		if (audio_driver == OS::get_singleton()->get_audio_driver_name(i)) {
-
 			audio_driver_idx = i;
 			break;
 		}
@@ -1179,27 +1151,28 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	{
 		String orientation = GLOBAL_DEF("display/window/handheld/orientation", "landscape");
 
-		if (orientation == "portrait")
+		if (orientation == "portrait") {
 			OS::get_singleton()->set_screen_orientation(OS::SCREEN_PORTRAIT);
-		else if (orientation == "reverse_landscape")
+		} else if (orientation == "reverse_landscape") {
 			OS::get_singleton()->set_screen_orientation(OS::SCREEN_REVERSE_LANDSCAPE);
-		else if (orientation == "reverse_portrait")
+		} else if (orientation == "reverse_portrait") {
 			OS::get_singleton()->set_screen_orientation(OS::SCREEN_REVERSE_PORTRAIT);
-		else if (orientation == "sensor_landscape")
+		} else if (orientation == "sensor_landscape") {
 			OS::get_singleton()->set_screen_orientation(OS::SCREEN_SENSOR_LANDSCAPE);
-		else if (orientation == "sensor_portrait")
+		} else if (orientation == "sensor_portrait") {
 			OS::get_singleton()->set_screen_orientation(OS::SCREEN_SENSOR_PORTRAIT);
-		else if (orientation == "sensor")
+		} else if (orientation == "sensor") {
 			OS::get_singleton()->set_screen_orientation(OS::SCREEN_SENSOR);
-		else
+		} else {
 			OS::get_singleton()->set_screen_orientation(OS::SCREEN_LANDSCAPE);
+		}
 	}
 
 	Engine::get_singleton()->set_iterations_per_second(GLOBAL_DEF("physics/common/physics_fps", 60));
-	ProjectSettings::get_singleton()->set_custom_property_info("physics/common/physics_fps", PropertyInfo(Variant::INT, "physics/common/physics_fps", PROPERTY_HINT_RANGE, "1,120,1,or_greater"));
+	ProjectSettings::get_singleton()->set_custom_property_info("physics/common/physics_fps", PropertyInfo(Variant::INT, "physics/common/physics_fps", PROPERTY_HINT_RANGE, "1,1000,1"));
 	Engine::get_singleton()->set_physics_jitter_fix(GLOBAL_DEF("physics/common/physics_jitter_fix", 0.5));
 	Engine::get_singleton()->set_target_fps(GLOBAL_DEF("debug/settings/fps/force_fps", 0));
-	ProjectSettings::get_singleton()->set_custom_property_info("debug/settings/fps/force_fps", PropertyInfo(Variant::INT, "debug/settings/fps/force_fps", PROPERTY_HINT_RANGE, "0,120,1,or_greater"));
+	ProjectSettings::get_singleton()->set_custom_property_info("debug/settings/fps/force_fps", PropertyInfo(Variant::INT, "debug/settings/fps/force_fps", PROPERTY_HINT_RANGE, "0,1000,1"));
 	GLOBAL_DEF("physics/common/enable_pause_aware_picking", false);
 
 	GLOBAL_DEF("debug/settings/stdout/print_fps", false);
@@ -1225,8 +1198,9 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 
 	message_queue = memnew(MessageQueue);
 
-	if (p_second_phase)
+	if (p_second_phase) {
 		return setup2();
+	}
 
 	return OK;
 
@@ -1240,33 +1214,43 @@ error:
 	args.clear();
 	main_args.clear();
 
-	if (show_help)
+	if (show_help) {
 		print_help(execpath);
+	}
 
-	if (performance)
+	if (performance) {
 		memdelete(performance);
-	if (input_map)
+	}
+	if (input_map) {
 		memdelete(input_map);
-	if (translation_server)
+	}
+	if (translation_server) {
 		memdelete(translation_server);
-	if (globals)
+	}
+	if (globals) {
 		memdelete(globals);
-	if (engine)
+	}
+	if (engine) {
 		memdelete(engine);
-	if (script_debugger)
+	}
+	if (script_debugger) {
 		memdelete(script_debugger);
-	if (packed_data)
+	}
+	if (packed_data) {
 		memdelete(packed_data);
-	if (file_access_network_client)
+	}
+	if (file_access_network_client) {
 		memdelete(file_access_network_client);
+	}
 
 	unregister_core_driver_types();
 	unregister_core_types();
 
 	OS::get_singleton()->_cmdline.clear();
 
-	if (message_queue)
+	if (message_queue) {
 		memdelete(message_queue);
+	}
 	OS::get_singleton()->finalize_core();
 	locale = String();
 
@@ -1274,7 +1258,6 @@ error:
 }
 
 Error Main::setup2(Thread::ID p_main_tid_override) {
-
 	// Print engine name and version
 	print_line(String(VERSION_NAME) + " v" + get_full_version_string() + " - " + String(VERSION_WEBSITE));
 
@@ -1351,7 +1334,7 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 			boot_logo.instance();
 			Error load_err = ImageLoader::load_image(boot_logo_path, boot_logo);
 			if (load_err)
-				ERR_PRINTS("Non-existing or invalid boot splash at '" + boot_logo_path + "'. Loading default splash.");
+				ERR_PRINT("Non-existing or invalid boot splash at '" + boot_logo_path + "'. Loading default splash.");
 		}
 
 #if defined(TOOLS_ENABLED) && !defined(NO_EDITOR_SPLASH)
@@ -1447,7 +1430,6 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 	ProjectSettings::get_singleton()->set_custom_property_info("display/mouse_cursor/custom_image", PropertyInfo(Variant::STRING, "display/mouse_cursor/custom_image", PROPERTY_HINT_FILE, "*.png,*.webp"));
 
 	if (String(ProjectSettings::get_singleton()->get("display/mouse_cursor/custom_image")) != String()) {
-
 		Ref<Texture> cursor = ResourceLoader::load(ProjectSettings::get_singleton()->get("display/mouse_cursor/custom_image"));
 		if (cursor.is_valid()) {
 			Vector2 hotspot = ProjectSettings::get_singleton()->get("display/mouse_cursor/custom_image_hotspot");
@@ -1486,12 +1468,10 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 static MainTimerSync main_timer_sync;
 
 bool Main::start() {
-
 	ERR_FAIL_COND_V(!_start_success, false);
 
 	bool hasicon = false;
-	String doc_tool;
-	List<String> removal_docs;
+	String doc_tool_path;
 	String positional_arg;
 	String game_path;
 	String script;
@@ -1546,9 +1526,12 @@ bool Main::start() {
 				test = args[i + 1];
 #ifdef TOOLS_ENABLED
 			} else if (args[i] == "--doctool") {
-				doc_tool = args[i + 1];
-				for (int j = i + 2; j < args.size(); j++)
-					removal_docs.push_back(args[j]);
+				doc_tool_path = args[i + 1];
+				if (doc_tool_path.begins_with("-")) {
+					// Assuming other command line arg, so default to cwd.
+					doc_tool_path = ".";
+					parsed_pair = false;
+				}
 			} else if (args[i] == "--export") {
 				editor = true; //needs editor
 				_export_preset = args[i + 1];
@@ -1568,17 +1551,19 @@ bool Main::start() {
 			if (parsed_pair) {
 				i++;
 			}
+		} else if (args[i] == "--doctool") {
+			// Handle case where no path is given to --doctool.
+			doc_tool_path = ".";
 		}
 	}
 
 	String main_loop_type;
 #ifdef TOOLS_ENABLED
-	if (doc_tool != "") {
-
+	if (doc_tool_path != "") {
 		Engine::get_singleton()->set_editor_hint(true); // Needed to instance editor-only classes for their default values
 
 		{
-			DirAccessRef da = DirAccess::open(doc_tool);
+			DirAccessRef da = DirAccess::open(doc_tool_path);
 			ERR_FAIL_COND_V_MSG(!da, false, "Argument supplied to --doctool must be a valid directory path.");
 		}
 		DocData doc;
@@ -1593,7 +1578,7 @@ bool Main::start() {
 			// Custom modules are always located by absolute path.
 			String path = _doc_data_class_paths[i].path;
 			if (path.is_rel_path()) {
-				path = doc_tool.plus_file(path);
+				path = doc_tool_path.plus_file(path);
 			}
 			String name = _doc_data_class_paths[i].name;
 			doc_data_classes[name] = path;
@@ -1610,7 +1595,7 @@ bool Main::start() {
 			}
 		}
 
-		String index_path = doc_tool.plus_file("doc/classes");
+		String index_path = doc_tool_path.plus_file("doc/classes");
 		// Create the main documentation directory if it doesn't exist
 		DirAccess *da = DirAccess::create_for_path(index_path);
 		da->make_dir_recursive(index_path);
@@ -1639,7 +1624,7 @@ bool Main::start() {
 		game_path = GLOBAL_DEF("application/run/main_scene", "");
 	}
 
-	MainLoop *main_loop = NULL;
+	MainLoop *main_loop = nullptr;
 	if (editor) {
 		main_loop = memnew(SceneTree);
 	};
@@ -1648,12 +1633,12 @@ bool Main::start() {
 #ifdef TOOLS_ENABLED
 		main_loop = test_main(test, args);
 
-		if (!main_loop)
+		if (!main_loop) {
 			return false;
+		}
 #endif
 
 	} else if (script != "") {
-
 		Ref<Script> script_res = ResourceLoader::load(script);
 		ERR_FAIL_COND_V_MSG(script_res.is_null(), false, "Can't load script: " + script);
 
@@ -1665,20 +1650,19 @@ bool Main::start() {
 		}
 
 		if (script_res->can_instance()) {
-
 			StringName instance_type = script_res->get_instance_base_type();
 			Object *obj = ClassDB::instance(instance_type);
 			MainLoop *script_loop = Object::cast_to<MainLoop>(obj);
 			if (!script_loop) {
-				if (obj)
+				if (obj) {
 					memdelete(obj);
+				}
 				ERR_FAIL_V_MSG(false, vformat("Can't load the script \"%s\" as it doesn't inherit from SceneTree or MainLoop.", script));
 			}
 
 			script_loop->set_init_script(script_res);
 			main_loop = script_loop;
 		} else {
-
 			return false;
 		}
 
@@ -1686,21 +1670,20 @@ bool Main::start() {
 		main_loop_type = GLOBAL_DEF("application/run/main_loop_type", "");
 	}
 
-	if (!main_loop && main_loop_type == "")
+	if (!main_loop && main_loop_type == "") {
 		main_loop_type = "SceneTree";
+	}
 
 	if (!main_loop) {
 		if (!ClassDB::class_exists(main_loop_type)) {
 			OS::get_singleton()->alert("Error: MainLoop type doesn't exist: " + main_loop_type);
 			return false;
 		} else {
-
 			Object *ml = ClassDB::instance(main_loop_type);
 			ERR_FAIL_COND_V_MSG(!ml, false, "Can't instance MainLoop type.");
 
 			main_loop = Object::cast_to<MainLoop>(ml);
 			if (!main_loop) {
-
 				memdelete(ml);
 				ERR_FAIL_V_MSG(false, "Invalid MainLoop type.");
 			}
@@ -1708,7 +1691,6 @@ bool Main::start() {
 	}
 
 	if (main_loop->is_class("SceneTree")) {
-
 		SceneTree *sml = Object::cast_to<SceneTree>(main_loop);
 
 #ifdef DEBUG_ENABLED
@@ -1737,10 +1719,10 @@ bool Main::start() {
 
 				//first pass, add the constants so they exist before any script is loaded
 				for (List<PropertyInfo>::Element *E = props.front(); E; E = E->next()) {
-
 					String s = E->get().name;
-					if (!s.begins_with("autoload/"))
+					if (!s.begins_with("autoload/")) {
 						continue;
+					}
 					String name = s.get_slicec('/', 1);
 					String path = ProjectSettings::get_singleton()->get(s);
 					bool global_var = false;
@@ -1758,10 +1740,10 @@ bool Main::start() {
 				//second pass, load into global constants
 				List<Node *> to_add;
 				for (List<PropertyInfo>::Element *E = props.front(); E; E = E->next()) {
-
 					String s = E->get().name;
-					if (!s.begins_with("autoload/"))
+					if (!s.begins_with("autoload/")) {
 						continue;
+					}
 					String name = s.get_slicec('/', 1);
 					String path = ProjectSettings::get_singleton()->get(s);
 					bool global_var = false;
@@ -1772,7 +1754,7 @@ bool Main::start() {
 
 					RES res = ResourceLoader::load(path);
 					ERR_CONTINUE_MSG(res.is_null(), "Can't autoload: " + path);
-					Node *n = NULL;
+					Node *n = nullptr;
 					if (res->is_class("PackedScene")) {
 						Ref<PackedScene> ps = res;
 						n = ps->instance();
@@ -1784,7 +1766,7 @@ bool Main::start() {
 
 						Object *obj = ClassDB::instance(ibt);
 
-						ERR_CONTINUE_MSG(obj == NULL, "Cannot instance script for autoload, expected 'Node' inheritance, got: " + String(ibt));
+						ERR_CONTINUE_MSG(obj == nullptr, "Cannot instance script for autoload, expected 'Node' inheritance, got: " + String(ibt));
 
 						n = Object::cast_to<Node>(obj);
 						n->set_script(script_res.get_ref_ptr());
@@ -1804,14 +1786,13 @@ bool Main::start() {
 				}
 
 				for (List<Node *>::Element *E = to_add.front(); E; E = E->next()) {
-
 					sml->get_root()->add_child(E->get());
 				}
 			}
 		}
 
 #ifdef TOOLS_ENABLED
-		EditorNode *editor_node = NULL;
+		EditorNode *editor_node = nullptr;
 		if (editor) {
 			editor_node = memnew(EditorNode);
 			sml->get_root()->add_child(editor_node);
@@ -1832,20 +1813,22 @@ bool Main::start() {
 			real_t stretch_shrink = GLOBAL_DEF("display/window/stretch/shrink", 1.0);
 
 			SceneTree::StretchMode sml_sm = SceneTree::STRETCH_MODE_DISABLED;
-			if (stretch_mode == "2d")
+			if (stretch_mode == "2d") {
 				sml_sm = SceneTree::STRETCH_MODE_2D;
-			else if (stretch_mode == "viewport")
+			} else if (stretch_mode == "viewport") {
 				sml_sm = SceneTree::STRETCH_MODE_VIEWPORT;
+			}
 
 			SceneTree::StretchAspect sml_aspect = SceneTree::STRETCH_ASPECT_IGNORE;
-			if (stretch_aspect == "keep")
+			if (stretch_aspect == "keep") {
 				sml_aspect = SceneTree::STRETCH_ASPECT_KEEP;
-			else if (stretch_aspect == "keep_width")
+			} else if (stretch_aspect == "keep_width") {
 				sml_aspect = SceneTree::STRETCH_ASPECT_KEEP_WIDTH;
-			else if (stretch_aspect == "keep_height")
+			} else if (stretch_aspect == "keep_height") {
 				sml_aspect = SceneTree::STRETCH_ASPECT_KEEP_HEIGHT;
-			else if (stretch_aspect == "expand")
+			} else if (stretch_aspect == "expand") {
 				sml_aspect = SceneTree::STRETCH_ASPECT_EXPAND;
+			}
 
 			sml->set_screen_stretch(sml_sm, sml_aspect, stretch_size, stretch_shrink);
 
@@ -1883,7 +1866,6 @@ bool Main::start() {
 			sml->set_use_font_oversampling(font_oversampling);
 
 		} else {
-
 			GLOBAL_DEF("display/window/stretch/mode", "disabled");
 			ProjectSettings::get_singleton()->set_custom_property_info("display/window/stretch/mode", PropertyInfo(Variant::STRING, "display/window/stretch/mode", PROPERTY_HINT_ENUM, "disabled,2d,viewport"));
 			GLOBAL_DEF("display/window/stretch/aspect", "ignore");
@@ -1898,16 +1880,13 @@ bool Main::start() {
 
 		String local_game_path;
 		if (game_path != "" && !project_manager) {
-
 			local_game_path = game_path.replace("\\", "/");
 
 			if (!local_game_path.begins_with("res://")) {
 				bool absolute = (local_game_path.size() > 1) && (local_game_path[0] == '/' || local_game_path[1] == ':');
 
 				if (!absolute) {
-
 					if (ProjectSettings::get_singleton()->is_using_datapack()) {
-
 						local_game_path = "res://" + local_game_path;
 
 					} else {
@@ -1918,7 +1897,6 @@ bool Main::start() {
 							local_game_path = da->get_current_dir().plus_file(local_game_path);
 							memdelete(da);
 						} else {
-
 							DirAccess *da = DirAccess::open(local_game_path.substr(0, sep));
 							if (da) {
 								local_game_path = da->get_current_dir().plus_file(local_game_path.substr(sep + 1, local_game_path.length()));
@@ -1933,7 +1911,6 @@ bool Main::start() {
 
 #ifdef TOOLS_ENABLED
 			if (editor) {
-
 				if (game_path != GLOBAL_GET("application/run/main_scene") || !editor_node->has_scenes_in_session()) {
 					Error serr = editor_node->load_scene(local_game_path);
 					if (serr != OK)
@@ -1953,10 +1930,11 @@ bool Main::start() {
 			Crypto::load_default_certificates(GLOBAL_DEF("network/ssl/certificates", ""));
 
 			if (game_path != "") {
-				Node *scene = NULL;
+				Node *scene = nullptr;
 				Ref<PackedScene> scenedata = ResourceLoader::load(local_game_path);
-				if (scenedata.is_valid())
+				if (scenedata.is_valid()) {
 					scene = scenedata->instance();
+				}
 
 				ERR_FAIL_COND_V_MSG(!scene, false, "Failed loading scene: " + local_game_path);
 				sml->add_current_scene(scene);
@@ -1991,7 +1969,6 @@ bool Main::start() {
 
 #ifdef TOOLS_ENABLED
 		if (project_manager || (script == "" && test == "" && game_path == "" && !editor)) {
-
 			Engine::get_singleton()->set_editor_hint(true);
 			ProjectManager *pmanager = memnew(ProjectManager);
 			ProgressDialog *progress_dialog = memnew(ProgressDialog);
@@ -2046,7 +2023,6 @@ static uint64_t physics_process_max = 0;
 static uint64_t idle_process_max = 0;
 
 bool Main::iteration() {
-
 	//for now do not error on this
 	//ERR_FAIL_COND_V(iterating, false);
 
@@ -2089,7 +2065,6 @@ bool Main::iteration() {
 	Engine::get_singleton()->_in_physics = true;
 
 	for (int iters = 0; iters < advance.physics_steps; ++iters) {
-
 		uint64_t physics_begin = OS::get_singleton()->get_ticks_usec();
 
 		PhysicsServer::get_singleton()->flush_queries();
@@ -2128,7 +2103,6 @@ bool Main::iteration() {
 	VisualServer::get_singleton()->sync(); //sync if still drawing from previous frames.
 
 	if (OS::get_singleton()->can_draw() && VisualServer::get_singleton()->is_render_loop_enabled()) {
-
 		if ((!force_redraw_requested) && OS::get_singleton()->is_in_low_processor_usage_mode()) {
 			if (VisualServer::get_singleton()->has_changed()) {
 				VisualServer::get_singleton()->draw(true, scaled_step); // flush visual commands
@@ -2162,13 +2136,12 @@ bool Main::iteration() {
 	Engine::get_singleton()->_idle_frames++;
 
 	if (frame > 1000000) {
-
 		if (editor || project_manager) {
 			if (print_fps) {
-				print_line("Editor FPS: " + itos(frames));
+				print_line(vformat("Editor FPS: %d (%s mspf)", frames, rtos(1000.0 / frames).pad_decimals(1)));
 			}
 		} else if (GLOBAL_GET("debug/settings/stdout/print_fps") || print_fps) {
-			print_line("Game FPS: " + itos(frames));
+			print_line(vformat("Project FPS: %d (%s mspf)", frames, rtos(1000.0 / frames).pad_decimals(1)));
 		}
 
 		Engine::get_singleton()->_fps = frames;
@@ -2183,8 +2156,9 @@ bool Main::iteration() {
 
 	iterating--;
 
-	if (fixed_fps != -1)
+	if (fixed_fps != -1) {
 		return exit;
+	}
 
 	OS::get_singleton()->add_frame_delay(OS::get_singleton()->can_draw());
 
@@ -2281,20 +2255,27 @@ void Main::cleanup(bool p_force) {
 	OS::get_singleton()->finalize();
 	finalize_physics();
 
-	if (packed_data)
+	if (packed_data) {
 		memdelete(packed_data);
-	if (file_access_network_client)
+	}
+	if (file_access_network_client) {
 		memdelete(file_access_network_client);
-	if (performance)
+	}
+	if (performance) {
 		memdelete(performance);
-	if (input_map)
+	}
+	if (input_map) {
 		memdelete(input_map);
-	if (translation_server)
+	}
+	if (translation_server) {
 		memdelete(translation_server);
-	if (globals)
+	}
+	if (globals) {
 		memdelete(globals);
-	if (engine)
+	}
+	if (engine) {
 		memdelete(engine);
+	}
 
 	if (OS::get_singleton()->is_restart_on_exit_set()) {
 		//attempt to restart with arguments

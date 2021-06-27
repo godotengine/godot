@@ -44,7 +44,6 @@
 	ARVRCamera is a subclass of camera which will register itself with its parent ARVROrigin and as a result is automatically positioned
 */
 class ARVRCamera : public Camera {
-
 	GDCLASS(ARVRCamera, Camera);
 
 protected:
@@ -69,7 +68,6 @@ public:
 */
 
 class ARVRController : public Spatial {
-
 	GDCLASS(ARVRController, Spatial);
 
 private:
@@ -84,8 +82,8 @@ protected:
 
 public:
 	void set_controller_id(int p_controller_id);
-	int get_controller_id(void) const;
-	String get_controller_name(void) const;
+	int get_controller_id() const;
+	String get_controller_name() const;
 
 	int get_joystick_id() const;
 	int is_button_pressed(int p_button) const;
@@ -97,7 +95,7 @@ public:
 	bool get_is_active() const;
 	ARVRPositionalTracker::TrackerHand get_hand() const;
 
-	Ref<Mesh> get_mesh(void) const;
+	Ref<Mesh> get_mesh() const;
 
 	String get_configuration_warning() const;
 
@@ -125,15 +123,15 @@ protected:
 
 public:
 	void set_anchor_id(int p_anchor_id);
-	int get_anchor_id(void) const;
-	String get_anchor_name(void) const;
+	int get_anchor_id() const;
+	String get_anchor_name() const;
 
 	bool get_is_active() const;
 	Vector3 get_size() const;
 
 	Plane get_plane() const;
 
-	Ref<Mesh> get_mesh(void) const;
+	Ref<Mesh> get_mesh() const;
 
 	String get_configuration_warning() const;
 
@@ -150,7 +148,6 @@ public:
 	This node will automatically locate any camera child nodes and update its position while our ARVRController node will handle tracked controllers.
 */
 class ARVROrigin : public Spatial {
-
 	GDCLASS(ARVROrigin, Spatial);
 
 private:

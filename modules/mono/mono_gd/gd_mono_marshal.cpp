@@ -277,7 +277,7 @@ String mono_to_utf8_string(MonoString *p_mono_string) {
 	char *utf8 = mono_string_to_utf8_checked(p_mono_string, &error);
 
 	if (!mono_error_ok(&error)) {
-		ERR_PRINTS(String() + "Failed to convert MonoString* to UTF-8: '" + mono_error_get_message(&error) + "'.");
+		ERR_PRINT(String() + "Failed to convert MonoString* to UTF-8: '" + mono_error_get_message(&error) + "'.");
 		mono_error_cleanup(&error);
 		return String();
 	}
@@ -691,7 +691,6 @@ MonoObject *variant_to_mono_object(const Variant *p_var, const ManagedType &p_ty
 }
 
 Variant mono_object_to_variant_impl(MonoObject *p_obj, const ManagedType &p_type, bool p_fail_with_err = true) {
-
 	ERR_FAIL_COND_V(!p_type.type_class, Variant());
 
 	switch (p_type.type_encoding) {

@@ -37,7 +37,6 @@ void Popup::_gui_input(Ref<InputEvent> p_event) {
 }
 
 void Popup::_notification(int p_what) {
-
 	if (p_what == NOTIFICATION_VISIBILITY_CHANGED) {
 		if (popped_up && !is_visible_in_tree()) {
 			popped_up = false;
@@ -71,40 +70,43 @@ void Popup::_notification(int p_what) {
 }
 
 void Popup::_fix_size() {
-
 	Point2 pos = get_global_position();
 	Size2 size = get_size() * get_scale();
 	Point2 window_size = get_viewport_rect().size - get_viewport_transform().get_origin();
 
-	if (pos.x + size.width > window_size.width)
+	if (pos.x + size.width > window_size.width) {
 		pos.x = window_size.width - size.width;
-	if (pos.x < 0)
+	}
+	if (pos.x < 0) {
 		pos.x = 0;
+	}
 
-	if (pos.y + size.height > window_size.height)
+	if (pos.y + size.height > window_size.height) {
 		pos.y = window_size.height - size.height;
-	if (pos.y < 0)
+	}
+	if (pos.y < 0) {
 		pos.y = 0;
-	if (pos != get_position())
+	}
+	if (pos != get_position()) {
 		set_global_position(pos);
+	}
 }
 
 void Popup::set_as_minsize() {
-
 	Size2 total_minsize;
 
 	for (int i = 0; i < get_child_count(); i++) {
-
 		Control *c = Object::cast_to<Control>(get_child(i));
-		if (!c)
+		if (!c) {
 			continue;
-		if (!c->is_visible())
+		}
+		if (!c->is_visible()) {
 			continue;
+		}
 
 		Size2 minsize = c->get_combined_minimum_size();
 
 		for (int j = 0; j < 2; j++) {
-
 			Margin m_beg = Margin(0 + j);
 			Margin m_end = Margin(2 + j);
 
@@ -124,7 +126,6 @@ void Popup::set_as_minsize() {
 }
 
 void Popup::popup_centered_clamped(const Size2 &p_size, float p_fallback_ratio) {
-
 	Size2 popup_size = p_size;
 	Size2 window_size = get_viewport_rect().size;
 
@@ -136,14 +137,12 @@ void Popup::popup_centered_clamped(const Size2 &p_size, float p_fallback_ratio) 
 }
 
 void Popup::popup_centered_minsize(const Size2 &p_minsize) {
-
 	set_custom_minimum_size(p_minsize);
 	_fix_size();
 	popup_centered();
 }
 
 void Popup::popup_centered(const Size2 &p_size) {
-
 	Rect2 rect;
 	Size2 window_size = get_viewport_rect().size;
 	rect.size = p_size == Size2() ? get_size() : p_size;
@@ -153,7 +152,6 @@ void Popup::popup_centered(const Size2 &p_size) {
 }
 
 void Popup::popup_centered_ratio(float p_screen_ratio) {
-
 	Rect2 rect;
 	Size2 window_size = get_viewport_rect().size;
 	rect.size = (window_size * p_screen_ratio).floor();
@@ -163,12 +161,10 @@ void Popup::popup_centered_ratio(float p_screen_ratio) {
 }
 
 void Popup::popup(const Rect2 &p_bounds) {
-
 	_popup(p_bounds);
 }
 
 void Popup::_popup(const Rect2 &p_bounds, const bool p_centered) {
-
 	emit_signal("about_to_show");
 	show_modal(exclusive);
 
@@ -187,8 +183,9 @@ void Popup::_popup(const Rect2 &p_bounds, const bool p_centered) {
 
 	Control *focusable = find_next_valid_focus();
 
-	if (focusable)
+	if (focusable) {
 		focusable->grab_focus();
+	}
 
 	_post_popup();
 	notification(NOTIFICATION_POST_POPUP);
@@ -196,17 +193,14 @@ void Popup::_popup(const Rect2 &p_bounds, const bool p_centered) {
 }
 
 void Popup::set_exclusive(bool p_exclusive) {
-
 	exclusive = p_exclusive;
 }
 
 bool Popup::is_exclusive() const {
-
 	return exclusive;
 }
 
 void Popup::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("set_as_minsize"), &Popup::set_as_minsize);
 	ClassDB::bind_method(D_METHOD("popup_centered", "size"), &Popup::popup_centered, DEFVAL(Size2()));
 	ClassDB::bind_method(D_METHOD("popup_centered_ratio", "ratio"), &Popup::popup_centered_ratio, DEFVAL(0.75));
@@ -225,7 +219,6 @@ void Popup::_bind_methods() {
 }
 
 Popup::Popup() {
-
 	set_as_toplevel(true);
 	exclusive = false;
 	popped_up = false;
@@ -233,7 +226,6 @@ Popup::Popup() {
 }
 
 String Popup::get_configuration_warning() const {
-
 	String warning = Control::get_configuration_warning();
 	if (is_visible_in_tree()) {
 		if (warning != String()) {
@@ -249,18 +241,19 @@ Popup::~Popup() {
 }
 
 Size2 PopupPanel::get_minimum_size() const {
-
 	Ref<StyleBox> p = get_stylebox("panel");
 
 	Size2 ms;
 
 	for (int i = 0; i < get_child_count(); i++) {
 		Control *c = Object::cast_to<Control>(get_child(i));
-		if (!c)
+		if (!c) {
 			continue;
+		}
 
-		if (c->is_set_as_toplevel())
+		if (c->is_set_as_toplevel()) {
 			continue;
+		}
 
 		Size2 cms = c->get_combined_minimum_size();
 		ms.x = MAX(cms.x, ms.x);
@@ -271,7 +264,6 @@ Size2 PopupPanel::get_minimum_size() const {
 }
 
 void PopupPanel::_update_child_rects() {
-
 	Ref<StyleBox> p = get_stylebox("panel");
 
 	Vector2 cpos(p->get_offset());
@@ -279,11 +271,13 @@ void PopupPanel::_update_child_rects() {
 
 	for (int i = 0; i < get_child_count(); i++) {
 		Control *c = Object::cast_to<Control>(get_child(i));
-		if (!c)
+		if (!c) {
 			continue;
+		}
 
-		if (c->is_set_as_toplevel())
+		if (c->is_set_as_toplevel()) {
 			continue;
+		}
 
 		c->set_position(cpos);
 		c->set_size(csize);
@@ -291,15 +285,11 @@ void PopupPanel::_update_child_rects() {
 }
 
 void PopupPanel::_notification(int p_what) {
-
 	if (p_what == NOTIFICATION_DRAW) {
-
 		get_stylebox("panel")->draw(get_canvas_item(), Rect2(Point2(), get_size()));
 	} else if (p_what == NOTIFICATION_READY) {
-
 		_update_child_rects();
 	} else if (p_what == NOTIFICATION_RESIZED) {
-
 		_update_child_rects();
 	}
 }

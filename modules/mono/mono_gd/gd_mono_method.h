@@ -36,7 +36,6 @@
 #include "i_mono_class_member.h"
 
 class GDMonoMethod : public IMonoClassMember {
-
 	StringName name;
 
 	int params_count;

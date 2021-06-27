@@ -40,16 +40,15 @@ void Sky::set_radiance_size(RadianceSize p_size) {
 }
 
 Sky::RadianceSize Sky::get_radiance_size() const {
-
 	return radiance_size;
 }
 
 void Sky::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("set_radiance_size", "size"), &Sky::set_radiance_size);
 	ClassDB::bind_method(D_METHOD("get_radiance_size"), &Sky::get_radiance_size);
 
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "radiance_size", PROPERTY_HINT_ENUM, "32,64,128,256,512,1024,2048"), "set_radiance_size", "get_radiance_size");
+	// Don't expose 1024 and 2048 in the property hint as these sizes will cause GPU hangs on many systems.
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "radiance_size", PROPERTY_HINT_ENUM, "32,64,128,256,512"), "set_radiance_size", "get_radiance_size");
 
 	BIND_ENUM_CONSTANT(RADIANCE_SIZE_32);
 	BIND_ENUM_CONSTANT(RADIANCE_SIZE_64);
@@ -68,7 +67,6 @@ Sky::Sky() {
 /////////////////////////////////////////
 
 void PanoramaSky::_radiance_changed() {
-
 	if (panorama.is_valid()) {
 		static const int size[RADIANCE_SIZE_MAX] = {
 			32, 64, 128, 256, 512, 1024, 2048
@@ -78,11 +76,9 @@ void PanoramaSky::_radiance_changed() {
 }
 
 void PanoramaSky::set_panorama(const Ref<Texture> &p_panorama) {
-
 	panorama = p_panorama;
 
 	if (panorama.is_valid()) {
-
 		_radiance_changed();
 
 	} else {
@@ -91,17 +87,14 @@ void PanoramaSky::set_panorama(const Ref<Texture> &p_panorama) {
 }
 
 Ref<Texture> PanoramaSky::get_panorama() const {
-
 	return panorama;
 }
 
 RID PanoramaSky::get_rid() const {
-
 	return sky;
 }
 
 void PanoramaSky::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("set_panorama", "texture"), &PanoramaSky::set_panorama);
 	ClassDB::bind_method(D_METHOD("get_panorama"), &PanoramaSky::get_panorama);
 
@@ -109,20 +102,18 @@ void PanoramaSky::_bind_methods() {
 }
 
 PanoramaSky::PanoramaSky() {
-
 	sky = VS::get_singleton()->sky_create();
 }
 
 PanoramaSky::~PanoramaSky() {
-
 	VS::get_singleton()->free(sky);
 }
 //////////////////////////////////
 
 void ProceduralSky::_radiance_changed() {
-
-	if (update_queued)
+	if (update_queued) {
 		return; //do nothing yet
+	}
 
 	static const int size[RADIANCE_SIZE_MAX] = {
 		32, 64, 128, 256, 512, 1024, 2048
@@ -131,7 +122,6 @@ void ProceduralSky::_radiance_changed() {
 }
 
 Ref<Image> ProceduralSky::_generate_sky() {
-
 	update_queued = false;
 
 	PoolVector<uint8_t> imgdata;
@@ -169,12 +159,10 @@ Ref<Image> ProceduralSky::_generate_sky() {
 		sun.normalize();
 
 		for (int i = 0; i < w; i++) {
-
 			float u = float(i) / (w - 1);
 			float phi = u * 2.0 * Math_PI;
 
 			for (int j = 0; j < h; j++) {
-
 				float v = float(j) / (h - 1);
 				float theta = v * Math_PI;
 
@@ -209,7 +197,6 @@ Ref<Image> ProceduralSky::_generate_sky() {
 					if (sun_angle < sun_angle_min) {
 						color = color.blend(sun_linear);
 					} else if (sun_angle < sun_angle_max) {
-
 						float c2 = (sun_angle - sun_angle_min) / (sun_angle_max - sun_angle_min);
 						c2 = Math::ease(c2, sun_curve);
 
@@ -230,153 +217,123 @@ Ref<Image> ProceduralSky::_generate_sky() {
 }
 
 void ProceduralSky::set_sky_top_color(const Color &p_sky_top) {
-
 	sky_top_color = p_sky_top;
 	_queue_update();
 }
 
 Color ProceduralSky::get_sky_top_color() const {
-
 	return sky_top_color;
 }
 
 void ProceduralSky::set_sky_horizon_color(const Color &p_sky_horizon) {
-
 	sky_horizon_color = p_sky_horizon;
 	_queue_update();
 }
 Color ProceduralSky::get_sky_horizon_color() const {
-
 	return sky_horizon_color;
 }
 
 void ProceduralSky::set_sky_curve(float p_curve) {
-
 	sky_curve = p_curve;
 	_queue_update();
 }
 float ProceduralSky::get_sky_curve() const {
-
 	return sky_curve;
 }
 
 void ProceduralSky::set_sky_energy(float p_energy) {
-
 	sky_energy = p_energy;
 	_queue_update();
 }
 float ProceduralSky::get_sky_energy() const {
-
 	return sky_energy;
 }
 
 void ProceduralSky::set_ground_bottom_color(const Color &p_ground_bottom) {
-
 	ground_bottom_color = p_ground_bottom;
 	_queue_update();
 }
 Color ProceduralSky::get_ground_bottom_color() const {
-
 	return ground_bottom_color;
 }
 
 void ProceduralSky::set_ground_horizon_color(const Color &p_ground_horizon) {
-
 	ground_horizon_color = p_ground_horizon;
 	_queue_update();
 }
 Color ProceduralSky::get_ground_horizon_color() const {
-
 	return ground_horizon_color;
 }
 
 void ProceduralSky::set_ground_curve(float p_curve) {
-
 	ground_curve = p_curve;
 	_queue_update();
 }
 float ProceduralSky::get_ground_curve() const {
-
 	return ground_curve;
 }
 
 void ProceduralSky::set_ground_energy(float p_energy) {
-
 	ground_energy = p_energy;
 	_queue_update();
 }
 float ProceduralSky::get_ground_energy() const {
-
 	return ground_energy;
 }
 
 void ProceduralSky::set_sun_color(const Color &p_sun) {
-
 	sun_color = p_sun;
 	_queue_update();
 }
 Color ProceduralSky::get_sun_color() const {
-
 	return sun_color;
 }
 
 void ProceduralSky::set_sun_latitude(float p_angle) {
-
 	sun_latitude = p_angle;
 	_queue_update();
 }
 float ProceduralSky::get_sun_latitude() const {
-
 	return sun_latitude;
 }
 
 void ProceduralSky::set_sun_longitude(float p_angle) {
-
 	sun_longitude = p_angle;
 	_queue_update();
 }
 float ProceduralSky::get_sun_longitude() const {
-
 	return sun_longitude;
 }
 
 void ProceduralSky::set_sun_angle_min(float p_angle) {
-
 	sun_angle_min = p_angle;
 	_queue_update();
 }
 float ProceduralSky::get_sun_angle_min() const {
-
 	return sun_angle_min;
 }
 
 void ProceduralSky::set_sun_angle_max(float p_angle) {
-
 	sun_angle_max = p_angle;
 	_queue_update();
 }
 float ProceduralSky::get_sun_angle_max() const {
-
 	return sun_angle_max;
 }
 
 void ProceduralSky::set_sun_curve(float p_curve) {
-
 	sun_curve = p_curve;
 	_queue_update();
 }
 float ProceduralSky::get_sun_curve() const {
-
 	return sun_curve;
 }
 
 void ProceduralSky::set_sun_energy(float p_energy) {
-
 	sun_energy = p_energy;
 	_queue_update();
 }
 float ProceduralSky::get_sun_energy() const {
-
 	return sun_energy;
 }
 
@@ -390,8 +347,8 @@ ProceduralSky::TextureSize ProceduralSky::get_texture_size() const {
 	return texture_size;
 }
 
-Ref<Image> ProceduralSky::get_panorama() const {
-	return panorama;
+Ref<Image> ProceduralSky::get_data() const {
+	return panorama->duplicate();
 }
 
 RID ProceduralSky::get_rid() const {
@@ -399,7 +356,6 @@ RID ProceduralSky::get_rid() const {
 }
 
 void ProceduralSky::_update_sky() {
-
 	bool use_thread = true;
 	if (first_time) {
 		use_thread = false;
@@ -409,7 +365,6 @@ void ProceduralSky::_update_sky() {
 	use_thread = false;
 #endif
 	if (use_thread) {
-
 		if (!sky_thread.is_started()) {
 			sky_thread.start(_thread_function, this);
 			regen_queued = false;
@@ -426,16 +381,15 @@ void ProceduralSky::_update_sky() {
 }
 
 void ProceduralSky::_queue_update() {
-
-	if (update_queued)
+	if (update_queued) {
 		return;
+	}
 
 	update_queued = true;
 	call_deferred("_update_sky");
 }
 
 void ProceduralSky::_thread_done(const Ref<Image> &p_image) {
-
 	panorama = p_image;
 	VS::get_singleton()->texture_allocate(texture, panorama->get_width(), panorama->get_height(), 0, Image::FORMAT_RGBE9995, VS::TEXTURE_TYPE_2D, VS::TEXTURE_FLAG_FILTER | VS::TEXTURE_FLAG_REPEAT);
 	VS::get_singleton()->texture_set_data(texture, panorama);
@@ -448,13 +402,11 @@ void ProceduralSky::_thread_done(const Ref<Image> &p_image) {
 }
 
 void ProceduralSky::_thread_function(void *p_ud) {
-
 	ProceduralSky *psky = (ProceduralSky *)p_ud;
 	psky->call_deferred("_thread_done", psky->_generate_sky());
 }
 
 void ProceduralSky::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("_update_sky"), &ProceduralSky::_update_sky);
 
 	ClassDB::bind_method(D_METHOD("set_sky_top_color", "color"), &ProceduralSky::set_sky_top_color);
@@ -540,7 +492,6 @@ void ProceduralSky::_bind_methods() {
 }
 
 ProceduralSky::ProceduralSky(bool p_desaturate) {
-
 	sky = VS::get_singleton()->sky_create();
 	texture = VS::get_singleton()->texture_create();
 
@@ -577,7 +528,6 @@ ProceduralSky::ProceduralSky(bool p_desaturate) {
 }
 
 ProceduralSky::~ProceduralSky() {
-
 	if (sky_thread.is_started()) {
 		sky_thread.wait_to_finish();
 	}

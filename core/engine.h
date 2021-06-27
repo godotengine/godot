@@ -37,12 +37,11 @@
 #include "core/vector.h"
 
 class Engine {
-
 public:
 	struct Singleton {
 		StringName name;
 		Object *ptr;
-		Singleton(const StringName &p_name = StringName(), Object *p_ptr = NULL);
+		Singleton(const StringName &p_name = StringName(), Object *p_ptr = nullptr);
 	};
 
 private:

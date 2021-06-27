@@ -36,7 +36,6 @@
 #include "main/main.h"
 
 void BackgroundProgress::_add_task(const String &p_task, const String &p_label, int p_steps) {
-
 	_THREAD_SAFE_METHOD_
 	ERR_FAIL_COND_MSG(tasks.has(p_task), "Task '" + p_task + "' already exists.");
 	BackgroundProgress::Task t;
@@ -61,11 +60,9 @@ void BackgroundProgress::_add_task(const String &p_task, const String &p_label, 
 }
 
 void BackgroundProgress::_update() {
-
 	_THREAD_SAFE_METHOD_
 
 	for (Map<String, int>::Element *E = updates.front(); E; E = E->next()) {
-
 		if (tasks.has(E->key())) {
 			_task_step(E->key(), E->get());
 		}
@@ -75,19 +72,18 @@ void BackgroundProgress::_update() {
 }
 
 void BackgroundProgress::_task_step(const String &p_task, int p_step) {
-
 	_THREAD_SAFE_METHOD_
 
 	ERR_FAIL_COND(!tasks.has(p_task));
 
 	Task &t = tasks[p_task];
-	if (p_step < 0)
+	if (p_step < 0) {
 		t.progress->set_value(t.progress->get_value() + 1);
-	else
+	} else {
 		t.progress->set_value(p_step);
+	}
 }
 void BackgroundProgress::_end_task(const String &p_task) {
-
 	_THREAD_SAFE_METHOD_
 
 	ERR_FAIL_COND(!tasks.has(p_task));
@@ -98,7 +94,6 @@ void BackgroundProgress::_end_task(const String &p_task) {
 }
 
 void BackgroundProgress::_bind_methods() {
-
 	ClassDB::bind_method("_add_task", &BackgroundProgress::_add_task);
 	ClassDB::bind_method("_task_step", &BackgroundProgress::_task_step);
 	ClassDB::bind_method("_end_task", &BackgroundProgress::_end_task);
@@ -106,11 +101,9 @@ void BackgroundProgress::_bind_methods() {
 }
 
 void BackgroundProgress::add_task(const String &p_task, const String &p_label, int p_steps) {
-
 	MessageQueue::get_singleton()->push_call(this, "_add_task", p_task, p_label, p_steps);
 }
 void BackgroundProgress::task_step(const String &p_task, int p_step) {
-
 	//this code is weird, but it prevents deadlock.
 	bool no_updates = true;
 	{
@@ -118,8 +111,9 @@ void BackgroundProgress::task_step(const String &p_task, int p_step) {
 		no_updates = updates.empty();
 	}
 
-	if (no_updates)
+	if (no_updates) {
 		MessageQueue::get_singleton()->push_call(this, "_update");
+	}
 
 	{
 		_THREAD_SAFE_METHOD_
@@ -128,20 +122,16 @@ void BackgroundProgress::task_step(const String &p_task, int p_step) {
 }
 
 void BackgroundProgress::end_task(const String &p_task) {
-
 	MessageQueue::get_singleton()->push_call(this, "_end_task", p_task);
 }
 
 ////////////////////////////////////////////////
 
-ProgressDialog *ProgressDialog::singleton = NULL;
+ProgressDialog *ProgressDialog::singleton = nullptr;
 
 void ProgressDialog::_notification(int p_what) {
-
 	switch (p_what) {
-
 		case NOTIFICATION_DRAW: {
-
 			Ref<StyleBox> style = get_stylebox("panel", "PopupMenu");
 			draw_style_box(style, Rect2(Point2(), get_size()));
 
@@ -150,7 +140,6 @@ void ProgressDialog::_notification(int p_what) {
 }
 
 void ProgressDialog::_popup() {
-
 	Size2 ms = main->get_combined_minimum_size();
 	ms.width = MAX(500 * EDSCALE, ms.width);
 
@@ -166,7 +155,6 @@ void ProgressDialog::_popup() {
 }
 
 void ProgressDialog::add_task(const String &p_task, const String &p_label, int p_steps, bool p_can_cancel) {
-
 	if (MessageQueue::get_singleton()->is_flushing()) {
 		ERR_PRINT("Do not use progress dialog (task) while flushing the message queue or using call_deferred()!");
 		return;
@@ -202,20 +190,21 @@ void ProgressDialog::add_task(const String &p_task, const String &p_label, int p
 }
 
 bool ProgressDialog::task_step(const String &p_task, const String &p_state, int p_step, bool p_force_redraw) {
-
 	ERR_FAIL_COND_V(!tasks.has(p_task), cancelled);
 
 	Task &t = tasks[p_task];
 	if (!p_force_redraw) {
 		uint64_t tus = OS::get_singleton()->get_ticks_usec();
-		if (tus - t.last_progress_tick < 200000) //200ms
+		if (tus - t.last_progress_tick < 200000) { //200ms
 			return cancelled;
+		}
 	}
 
-	if (p_step < 0)
+	if (p_step < 0) {
 		t.progress->set_value(t.progress->get_value() + 1);
-	else
+	} else {
 		t.progress->set_value(p_step);
+	}
 
 	t.state->set_text(p_state);
 	t.last_progress_tick = OS::get_singleton()->get_ticks_usec();
@@ -228,17 +217,17 @@ bool ProgressDialog::task_step(const String &p_task, const String &p_state, int 
 }
 
 void ProgressDialog::end_task(const String &p_task) {
-
 	ERR_FAIL_COND(!tasks.has(p_task));
 	Task &t = tasks[p_task];
 
 	memdelete(t.vb);
 	tasks.erase(p_task);
 
-	if (tasks.empty())
+	if (tasks.empty()) {
 		hide();
-	else
+	} else {
 		_popup();
+	}
 }
 
 void ProgressDialog::_cancel_pressed() {
@@ -250,7 +239,6 @@ void ProgressDialog::_bind_methods() {
 }
 
 ProgressDialog::ProgressDialog() {
-
 	main = memnew(VBoxContainer);
 	add_child(main);
 	main->set_anchors_and_margins_preset(Control::PRESET_WIDE);

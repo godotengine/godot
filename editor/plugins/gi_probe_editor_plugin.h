@@ -37,7 +37,6 @@
 #include "scene/resources/material.h"
 
 class GIProbeEditorPlugin : public EditorPlugin {
-
 	GDCLASS(GIProbeEditorPlugin, EditorPlugin);
 
 	GIProbe *gi_probe;

@@ -414,7 +414,7 @@ static const char *locale_list[] = {
 	"zh_SG", //  Chinese (Singapore)
 	"zh_TW", //  Chinese (Taiwan)
 	"zu_ZA", //  Zulu (South Africa)
-	0
+	nullptr
 };
 
 static const char *locale_names[] = {
@@ -788,7 +788,7 @@ static const char *locale_names[] = {
 	"Chinese (Singapore)",
 	"Chinese (Taiwan)",
 	"Zulu (South Africa)",
-	0
+	nullptr
 };
 
 // Windows has some weird locale identifiers which do not honor the ISO 639-1
@@ -802,18 +802,16 @@ static const char *locale_renames[][2] = {
 	{ "in", "id" }, //  Indonesian
 	{ "iw", "he" }, //  Hebrew
 	{ "no", "nb" }, //  Norwegian Bokmål
-	{ NULL, NULL }
+	{ nullptr, nullptr }
 };
 
 ///////////////////////////////////////////////
 
 PoolVector<String> Translation::_get_messages() const {
-
 	PoolVector<String> msgs;
 	msgs.resize(translation_map.size() * 2);
 	int idx = 0;
 	for (const Map<StringName, StringName>::Element *E = translation_map.front(); E; E = E->next()) {
-
 		msgs.set(idx + 0, E->key());
 		msgs.set(idx + 1, E->get());
 		idx += 2;
@@ -823,12 +821,10 @@ PoolVector<String> Translation::_get_messages() const {
 }
 
 PoolVector<String> Translation::_get_message_list() const {
-
 	PoolVector<String> msgs;
 	msgs.resize(translation_map.size());
 	int idx = 0;
 	for (const Map<StringName, StringName>::Element *E = translation_map.front(); E; E = E->next()) {
-
 		msgs.set(idx, E->key());
 		idx += 1;
 	}
@@ -837,20 +833,17 @@ PoolVector<String> Translation::_get_message_list() const {
 }
 
 void Translation::_set_messages(const PoolVector<String> &p_messages) {
-
 	int msg_count = p_messages.size();
 	ERR_FAIL_COND(msg_count % 2);
 
 	PoolVector<String>::Read r = p_messages.read();
 
 	for (int i = 0; i < msg_count; i += 2) {
-
 		add_message(r[i + 0], r[i + 1]);
 	}
 }
 
 void Translation::set_locale(const String &p_locale) {
-
 	String univ_locale = TranslationServer::standardize_locale(p_locale);
 
 	if (!TranslationServer::is_locale_valid(univ_locale)) {
@@ -869,38 +862,32 @@ void Translation::set_locale(const String &p_locale) {
 }
 
 void Translation::add_message(const StringName &p_src_text, const StringName &p_xlated_text) {
-
 	translation_map[p_src_text] = p_xlated_text;
 }
 StringName Translation::get_message(const StringName &p_src_text) const {
-
 	const Map<StringName, StringName>::Element *E = translation_map.find(p_src_text);
-	if (!E)
+	if (!E) {
 		return StringName();
+	}
 
 	return E->get();
 }
 
 void Translation::erase_message(const StringName &p_src_text) {
-
 	translation_map.erase(p_src_text);
 }
 
 void Translation::get_message_list(List<StringName> *r_messages) const {
-
 	for (const Map<StringName, StringName>::Element *E = translation_map.front(); E; E = E->next()) {
-
 		r_messages->push_back(E->key());
 	}
 }
 
 int Translation::get_message_count() const {
-
 	return translation_map.size();
 };
 
 void Translation::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("set_locale", "locale"), &Translation::set_locale);
 	ClassDB::bind_method(D_METHOD("get_locale"), &Translation::get_locale);
 	ClassDB::bind_method(D_METHOD("add_message", "src_message", "xlated_message"), &Translation::add_message);
@@ -922,13 +909,12 @@ Translation::Translation() :
 ///////////////////////////////////////////////
 
 bool TranslationServer::is_locale_valid(const String &p_locale) {
-
 	const char **ptr = locale_list;
 
 	while (*ptr) {
-
-		if (*ptr == p_locale)
+		if (*ptr == p_locale) {
 			return true;
+		}
 		ptr++;
 	}
 
@@ -936,13 +922,12 @@ bool TranslationServer::is_locale_valid(const String &p_locale) {
 }
 
 String TranslationServer::standardize_locale(const String &p_locale) {
-
 	// Replaces '-' with '_' for macOS Sierra-style locales
 	String univ_locale = p_locale.replace("-", "_");
 
 	// Handles known non-ISO locale names used e.g. on Windows
 	int idx = 0;
-	while (locale_renames[idx][0] != NULL) {
+	while (locale_renames[idx][0] != nullptr) {
 		if (locale_renames[idx][0] == univ_locale) {
 			univ_locale = locale_renames[idx][1];
 			break;
@@ -954,7 +939,6 @@ String TranslationServer::standardize_locale(const String &p_locale) {
 }
 
 String TranslationServer::get_language_code(const String &p_locale) {
-
 	ERR_FAIL_COND_V_MSG(p_locale.length() < 2, p_locale, "Invalid locale '" + p_locale + "'.");
 	// Most language codes are two letters, but some are three,
 	// so we have to look for a regional code separator ('_' or '-')
@@ -971,7 +955,6 @@ String TranslationServer::get_language_code(const String &p_locale) {
 }
 
 void TranslationServer::set_locale(const String &p_locale) {
-
 	String univ_locale = standardize_locale(p_locale);
 
 	if (!is_locale_valid(univ_locale)) {
@@ -979,7 +962,7 @@ void TranslationServer::set_locale(const String &p_locale) {
 		print_verbose(vformat("Unsupported locale '%s', falling back to '%s'.", p_locale, trimmed_locale));
 
 		if (!is_locale_valid(trimmed_locale)) {
-			ERR_PRINTS(vformat("Unsupported locale '%s', falling back to 'en'.", trimmed_locale));
+			ERR_PRINT(vformat("Unsupported locale '%s', falling back to 'en'.", trimmed_locale));
 			locale = "en";
 		} else {
 			locale = trimmed_locale;
@@ -996,20 +979,19 @@ void TranslationServer::set_locale(const String &p_locale) {
 }
 
 String TranslationServer::get_locale() const {
-
 	return locale;
 }
 
 String TranslationServer::get_locale_name(const String &p_locale) const {
-
-	if (!locale_name_map.has(p_locale)) return String();
+	if (!locale_name_map.has(p_locale)) {
+		return String();
+	}
 	return locale_name_map[p_locale];
 }
 
 Array TranslationServer::get_loaded_locales() const {
 	Array locales;
-	for (const Set<Ref<Translation> >::Element *E = translations.front(); E; E = E->next()) {
-
+	for (const Set<Ref<Translation>>::Element *E = translations.front(); E; E = E->next()) {
 		const Ref<Translation> &t = E->get();
 		ERR_FAIL_COND_V(t.is_null(), Array());
 		String l = t->get_locale();
@@ -1021,7 +1003,6 @@ Array TranslationServer::get_loaded_locales() const {
 }
 
 Vector<String> TranslationServer::get_all_locales() {
-
 	Vector<String> locales;
 
 	const char **ptr = locale_list;
@@ -1035,7 +1016,6 @@ Vector<String> TranslationServer::get_all_locales() {
 }
 
 Vector<String> TranslationServer::get_all_locale_names() {
-
 	Vector<String> locales;
 
 	const char **ptr = locale_names;
@@ -1049,25 +1029,22 @@ Vector<String> TranslationServer::get_all_locale_names() {
 }
 
 void TranslationServer::add_translation(const Ref<Translation> &p_translation) {
-
 	translations.insert(p_translation);
 }
 void TranslationServer::remove_translation(const Ref<Translation> &p_translation) {
-
 	translations.erase(p_translation);
 }
 
 void TranslationServer::clear() {
-
 	translations.clear();
 };
 
 StringName TranslationServer::translate(const StringName &p_message) const {
-
 	// Match given message against the translation catalog for the project locale.
 
-	if (!enabled)
+	if (!enabled) {
 		return p_message;
+	}
 
 	ERR_FAIL_COND_V_MSG(locale.length() < 2, p_message, "Could not translate message as configured locale '" + locale + "' is invalid.");
 
@@ -1085,7 +1062,7 @@ StringName TranslationServer::translate(const StringName &p_message) const {
 	String lang = get_language_code(locale);
 	bool near_match = false;
 
-	for (const Set<Ref<Translation> >::Element *E = translations.front(); E; E = E->next()) {
+	for (const Set<Ref<Translation>>::Element *E = translations.front(); E; E = E->next()) {
 		const Ref<Translation> &t = E->get();
 		ERR_FAIL_COND_V(t.is_null(), p_message);
 		String l = t->get_locale();
@@ -1118,7 +1095,7 @@ StringName TranslationServer::translate(const StringName &p_message) const {
 		String fallback_lang = get_language_code(fallback);
 		near_match = false;
 
-		for (const Set<Ref<Translation> >::Element *E = translations.front(); E; E = E->next()) {
+		for (const Set<Ref<Translation>>::Element *E = translations.front(); E; E = E->next()) {
 			const Ref<Translation> &t = E->get();
 			ERR_FAIL_COND_V(t.is_null(), p_message);
 			String l = t->get_locale();
@@ -1154,10 +1131,9 @@ StringName TranslationServer::translate(const StringName &p_message) const {
 	return res;
 }
 
-TranslationServer *TranslationServer::singleton = NULL;
+TranslationServer *TranslationServer::singleton = nullptr;
 
 bool TranslationServer::_load_translations(const String &p_from) {
-
 	if (ProjectSettings::get_singleton()->has_setting(p_from)) {
 		PoolVector<String> translations = ProjectSettings::get_singleton()->get(p_from);
 
@@ -1167,10 +1143,10 @@ bool TranslationServer::_load_translations(const String &p_from) {
 			PoolVector<String>::Read r = translations.read();
 
 			for (int i = 0; i < tcount; i++) {
-
 				Ref<Translation> tr = ResourceLoader::load(r[i]);
-				if (tr.is_valid())
+				if (tr.is_valid()) {
 					add_translation(tr);
+				}
 			}
 		}
 		return true;
@@ -1180,13 +1156,13 @@ bool TranslationServer::_load_translations(const String &p_from) {
 }
 
 void TranslationServer::setup() {
-
 	String test = GLOBAL_DEF("locale/test", "");
 	test = test.strip_edges();
-	if (test != "")
+	if (test != "") {
 		set_locale(test);
-	else
+	} else {
 		set_locale(OS::get_singleton()->get_locale());
+	}
 	fallback = GLOBAL_DEF("locale/fallback", "en");
 #ifdef TOOLS_ENABLED
 
@@ -1194,8 +1170,9 @@ void TranslationServer::setup() {
 		String options = "";
 		int idx = 0;
 		while (locale_list[idx]) {
-			if (idx > 0)
+			if (idx > 0) {
 				options += ",";
+			}
 			options += locale_list[idx];
 			idx++;
 		}
@@ -1210,7 +1187,6 @@ void TranslationServer::set_tool_translation(const Ref<Translation> &p_translati
 }
 
 StringName TranslationServer::tool_translate(const StringName &p_message) const {
-
 	if (tool_translation.is_valid()) {
 		StringName r = tool_translation->get_message(p_message);
 
@@ -1223,7 +1199,6 @@ StringName TranslationServer::tool_translate(const StringName &p_message) const 
 }
 
 void TranslationServer::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("set_locale", "locale"), &TranslationServer::set_locale);
 	ClassDB::bind_method(D_METHOD("get_locale"), &TranslationServer::get_locale);
 
@@ -1240,7 +1215,6 @@ void TranslationServer::_bind_methods() {
 }
 
 void TranslationServer::load_translations() {
-
 	String locale = get_locale();
 	_load_translations("locale/translations"); //all
 	_load_translations("locale/translations_" + locale.substr(0, 2));
@@ -1256,7 +1230,6 @@ TranslationServer::TranslationServer() :
 	singleton = this;
 
 	for (int i = 0; locale_list[i]; ++i) {
-
 		locale_name_map.insert(locale_list[i], String::utf8(locale_names[i]));
 	}
 }

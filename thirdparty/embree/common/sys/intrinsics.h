@@ -1,4 +1,4 @@
-// Copyright 2009-2020 Intel Corporation
+// Copyright 2009-2021 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
 #pragma once
@@ -9,7 +9,11 @@
 #include <intrin.h>
 #endif
 
+#if defined(__ARM_NEON)
+#include "../simd/arm/emulation.h"
+#else
 #include <immintrin.h>
+#endif
 
 #if defined(__BMI__) && defined(__GNUC__) && !defined(__INTEL_COMPILER)
   #if !defined(_tzcnt_u32)
@@ -207,8 +211,8 @@ namespace embree
                   : "0" (op1), "2" (op2)); 
   }
   
-#else
-  
+#elif defined(__X86_ASM__)
+
   __forceinline void __cpuid(int out[4], int op) {
     asm volatile ("cpuid" : "=a"(out[0]), "=b"(out[1]), "=c"(out[2]), "=d"(out[3]) : "a"(op)); 
   }
@@ -220,26 +224,35 @@ namespace embree
 #endif
   
   __forceinline uint64_t read_tsc()  {
+#if defined(__X86_ASM__)
     uint32_t high,low;
     asm volatile ("rdtsc" : "=d"(high), "=a"(low));
     return (((uint64_t)high) << 32) + (uint64_t)low;
+#else
+    /* Not supported yet, meaning measuring traversal cost per pixel does not work. */
+    return 0;
+#endif
   }
   
   __forceinline int bsf(int v) {
 #if defined(__AVX2__) 
     return _tzcnt_u32(v);
-#else
+#elif defined(__X86_ASM__)
     int r = 0; asm ("bsf %1,%0" : "=r"(r) : "r"(v)); return r;
+#else
+    return __builtin_ctz(v);
 #endif
   }
   
-#if defined(__X86_64__)
+#if defined(__64BIT__)
   __forceinline unsigned bsf(unsigned v) 
   {
 #if defined(__AVX2__) 
     return _tzcnt_u32(v);
-#else
+#elif defined(__X86_ASM__)
     unsigned r = 0; asm ("bsf %1,%0" : "=r"(r) : "r"(v)); return r;
+#else
+    return __builtin_ctz(v);
 #endif
   }
 #endif
@@ -251,8 +264,10 @@ namespace embree
 #else
     return _tzcnt_u32(v);
 #endif
-#else
+#elif defined(__X86_ASM__)
     size_t r = 0; asm ("bsf %1,%0" : "=r"(r) : "r"(v)); return r;
+#else
+    return __builtin_ctzl(v);
 #endif
   }
 
@@ -263,7 +278,7 @@ namespace embree
     return i;
   }
   
-#if defined(__X86_64__)
+#if defined(__64BIT__)
   __forceinline unsigned int bscf(unsigned int& v) 
   {
     unsigned int i = bsf(v);
@@ -282,17 +297,21 @@ namespace embree
   __forceinline int bsr(int v) {
 #if defined(__AVX2__) 
     return 31 - _lzcnt_u32(v);
-#else
+#elif defined(__X86_ASM__)
     int r = 0; asm ("bsr %1,%0" : "=r"(r) : "r"(v)); return r;
+#else
+    return __builtin_clz(v) ^ 31;
 #endif
   }
   
-#if defined(__X86_64__)
+#if defined(__64BIT__)
   __forceinline unsigned bsr(unsigned v) {
 #if defined(__AVX2__) 
     return 31 - _lzcnt_u32(v);
-#else
+#elif defined(__X86_ASM__)
     unsigned r = 0; asm ("bsr %1,%0" : "=r"(r) : "r"(v)); return r;
+#else
+    return __builtin_clz(v) ^ 31;
 #endif
   }
 #endif
@@ -304,8 +323,10 @@ namespace embree
 #else
     return 31 - _lzcnt_u32(v);
 #endif
-#else
+#elif defined(__X86_ASM__)
     size_t r = 0; asm ("bsr %1,%0" : "=r"(r) : "r"(v)); return r;
+#else
+    return (sizeof(v) * 8 - 1) - __builtin_clzl(v);
 #endif
   }
   
@@ -336,27 +357,51 @@ namespace embree
   }
   
   __forceinline int btc(int v, int i) {
+#if defined(__X86_ASM__)
     int r = 0; asm ("btc %1,%0" : "=r"(r) : "r"(i), "0"(v) : "flags" ); return r;
+#else
+    return (v ^ (1 << i));
+#endif
   }
   
   __forceinline int bts(int v, int i) {
+#if defined(__X86_ASM__)
     int r = 0; asm ("bts %1,%0" : "=r"(r) : "r"(i), "0"(v) : "flags"); return r;
+#else
+    return (v | (v << i));
+#endif
   }
   
   __forceinline int btr(int v, int i) {
+#if defined(__X86_ASM__)
     int r = 0; asm ("btr %1,%0" : "=r"(r) : "r"(i), "0"(v) : "flags"); return r;
+#else
+    return (v & ~(v << i));
+#endif
   }
   
   __forceinline size_t btc(size_t v, size_t i) {
+#if defined(__X86_ASM__)
     size_t r = 0; asm ("btc %1,%0" : "=r"(r) : "r"(i), "0"(v) : "flags" ); return r;
+#else
+    return (v ^ (1 << i));
+#endif
   }
   
   __forceinline size_t bts(size_t v, size_t i) {
+#if defined(__X86_ASM__)
     size_t r = 0; asm ("bts %1,%0" : "=r"(r) : "r"(i), "0"(v) : "flags"); return r;
+#else
+    return (v | (v << i));
+#endif
   }
   
   __forceinline size_t btr(size_t v, size_t i) {
+#if defined(__X86_ASM__)
     size_t r = 0; asm ("btr %1,%0" : "=r"(r) : "r"(i), "0"(v) : "flags"); return r;
+#else
+    return (v & ~(v << i));
+#endif
   }
 
   __forceinline int32_t atomic_cmpxchg(int32_t volatile* value, int32_t comparand, const int32_t input) {
@@ -400,7 +445,7 @@ namespace embree
     return _mm_popcnt_u32(in);
   }
   
-#if defined(__X86_64__)
+#if defined(__64BIT__)
   __forceinline size_t popcnt(size_t in) {
     return _mm_popcnt_u64(in);
   }
@@ -408,6 +453,7 @@ namespace embree
   
 #endif
 
+#if defined(__X86_ASM__)
   __forceinline uint64_t rdtsc()
   {
     int dummy[4]; 
@@ -416,11 +462,12 @@ namespace embree
     __cpuid(dummy,0); 
     return clock;
   }
+#endif
   
   __forceinline void pause_cpu(const size_t N = 8)
   {
     for (size_t i=0; i<N; i++)
-      _mm_pause();
+      _mm_pause();    
   }
   
   /* prefetches */

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="InputEventKey" inherits="InputEventWithModifiers" version="3.3">
+<class name="InputEventKey" inherits="InputEventWithModifiers" version="3.4">
 	<brief_description>
 		Input event type for keyboard events.
 	</brief_description>
@@ -10,6 +10,14 @@
 		<link>https://docs.godotengine.org/en/3.3/tutorials/inputs/inputevent.html</link>
 	</tutorials>
 	<methods>
+		<method name="get_physical_scancode_with_modifiers" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+				Returns the physical scancode combined with modifier keys such as [code]Shift[/code] or [code]Alt[/code]. See also [InputEventWithModifiers].
+				To get a human-readable representation of the [InputEventKey] with modifiers, use [code]OS.get_scancode_string(event.get_physical_scancode_with_modifiers())[/code] where [code]event[/code] is the [InputEventKey].
+			</description>
+		</method>
 		<method name="get_scancode_with_modifiers" qualifiers="const">
 			<return type="int">
 			</return>
@@ -23,11 +31,15 @@
 		<member name="echo" type="bool" setter="set_echo" getter="is_echo" default="false">
 			If [code]true[/code], the key was already pressed before this event. It means the user is holding the key down.
 		</member>
+		<member name="physical_scancode" type="int" setter="set_physical_scancode" getter="get_physical_scancode" default="0">
+			Key physical scancode, which corresponds to one of the [enum KeyList] constants. Represent the physical location of a key on the 101/102-key US QWERTY keyboard.
+			To get a human-readable representation of the [InputEventKey], use [code]OS.get_scancode_string(event.physical_scancode)[/code] where [code]event[/code] is the [InputEventKey].
+		</member>
 		<member name="pressed" type="bool" setter="set_pressed" getter="is_pressed" default="false">
 			If [code]true[/code], the key's state is pressed. If [code]false[/code], the key's state is released.
 		</member>
 		<member name="scancode" type="int" setter="set_scancode" getter="get_scancode" default="0">
-			The key scancode, which corresponds to one of the [enum KeyList] constants.
+			The key scancode, which corresponds to one of the [enum KeyList] constants. Represent key in the current keyboard layout.
 			To get a human-readable representation of the [InputEventKey], use [code]OS.get_scancode_string(event.scancode)[/code] where [code]event[/code] is the [InputEventKey].
 		</member>
 		<member name="unicode" type="int" setter="set_unicode" getter="get_unicode" default="0">

@@ -61,12 +61,11 @@ static void _compress_pvrtc4(Image *p_img) {
 		PoolVector<uint8_t>::Read r = img->get_data().read();
 
 		for (int i = 0; i <= new_img->get_mipmap_count(); i++) {
-
 			int ofs, size, w, h;
 			img->get_mipmap_offset_size_and_dimensions(i, ofs, size, w, h);
 			Javelin::RgbaBitmap bm(w, h);
 			void *dst = (void *)bm.GetData();
-			copymem(dst, &r[ofs], size);
+			memcpy(dst, &r[ofs], size);
 			Javelin::ColorRgba<unsigned char> *dp = bm.GetData();
 			for (int j = 0; j < size / 4; j++) {
 				// Red and blue colors are swapped.

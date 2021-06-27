@@ -9,7 +9,6 @@ layout(location = 4) in highp vec2 uv;
 out highp vec2 uv_interp;
 
 void main() {
-
 	uv_interp = uv;
 	gl_Position = vec4(vertex, 0, 1);
 }
@@ -197,7 +196,6 @@ uniform bool z_flip;
 #ifdef USE_SOURCE_PANORAMA
 
 vec4 texturePanorama(vec3 normal, sampler2D pano, float mipLevel) {
-
 	vec2 st = vec2(
 			atan(normal.x, normal.z),
 			acos(normal.y));
@@ -215,7 +213,6 @@ vec4 texturePanorama(vec3 normal, sampler2D pano, float mipLevel) {
 #ifdef USE_SOURCE_DUAL_PARABOLOID_ARRAY
 
 vec4 textureDualParaboloidArray(vec3 normal) {
-
 	vec3 norm = normalize(normal);
 	norm.xy /= 1.0 + abs(norm.z);
 	norm.xy = norm.xy * vec2(0.5, 0.25) + vec2(0.5, 0.25);
@@ -229,7 +226,6 @@ vec4 textureDualParaboloidArray(vec3 normal) {
 
 #ifdef USE_SOURCE_DUAL_PARABOLOID
 vec4 textureDualParaboloid(vec3 normal) {
-
 	vec3 norm = normalize(normal);
 	norm.xy /= 1.0 + abs(norm.z);
 	norm.xy = norm.xy * vec2(0.5, 0.25) + vec2(0.5, 0.25);
@@ -242,7 +238,6 @@ vec4 textureDualParaboloid(vec3 normal) {
 #endif
 
 void main() {
-
 #ifdef USE_DUAL_PARABOLOID
 
 	vec3 N = vec3(uv_interp * 2.0 - 1.0, 0.0);

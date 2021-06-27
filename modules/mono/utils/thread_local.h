@@ -72,7 +72,6 @@
 #endif
 
 struct ThreadLocalStorage {
-
 	void *get_value() const;
 	void set_value(void *p_value) const;
 
@@ -86,7 +85,6 @@ private:
 
 template <typename T>
 class ThreadLocal {
-
 	ThreadLocalStorage storage;
 
 	T init_val;
@@ -146,7 +144,6 @@ public:
 };
 
 struct FlagScopeGuard {
-
 	FlagScopeGuard(bool &p_flag) :
 			flag(p_flag) {
 		flag = !flag;

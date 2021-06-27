@@ -78,16 +78,12 @@ FileAccessRef PowerX11::open_power_file(const char *base, const char *node, cons
 }
 
 bool PowerX11::read_power_file(const char *base, const char *node, const char *key, char *buf, size_t buflen) {
-	ssize_t br = 0;
 	FileAccessRef fd = open_power_file(base, node, key);
 	if (!fd) {
 		return false;
 	}
-	br = fd->get_buffer(reinterpret_cast<uint8_t *>(buf), buflen - 1);
+	uint64_t br = fd->get_buffer(reinterpret_cast<uint8_t *>(buf), buflen - 1);
 	fd->close();
-	if (br < 0) {
-		return false;
-	}
 	buf[br] = '\0'; // null-terminate the string
 	return true;
 }
@@ -141,9 +137,9 @@ void PowerX11::check_proc_acpi_battery(const char *node, bool *have_battery, boo
 	const char *base = proc_acpi_battery_path;
 	char info[1024];
 	char state[1024];
-	char *ptr = NULL;
-	char *key = NULL;
-	char *val = NULL;
+	char *ptr = nullptr;
+	char *key = nullptr;
+	char *val = nullptr;
 	bool charge = false;
 	bool choose = false;
 	int maximum = -1;
@@ -154,8 +150,9 @@ void PowerX11::check_proc_acpi_battery(const char *node, bool *have_battery, boo
 	if (!read_power_file(base, node, "state", state, sizeof(state))) {
 		return;
 	} else {
-		if (!read_power_file(base, node, "info", info, sizeof(info)))
+		if (!read_power_file(base, node, "info", info, sizeof(info))) {
 			return;
+		}
 	}
 
 	ptr = &state[0];
@@ -226,9 +223,9 @@ void PowerX11::check_proc_acpi_battery(const char *node, bool *have_battery, boo
 void PowerX11::check_proc_acpi_ac_adapter(const char *node, bool *have_ac) {
 	const char *base = proc_acpi_ac_adapter_path;
 	char state[256];
-	char *ptr = NULL;
-	char *key = NULL;
-	char *val = NULL;
+	char *ptr = nullptr;
+	char *key = nullptr;
+	char *val = nullptr;
 
 	if (!read_power_file(base, node, "state", state, sizeof(state))) {
 		return;
@@ -308,11 +305,13 @@ bool PowerX11::next_string(char **_ptr, char **_str) {
 	}
 
 	str = ptr;
-	while ((*ptr != ' ') && (*ptr != '\n') && (*ptr != '\0'))
+	while ((*ptr != ' ') && (*ptr != '\n') && (*ptr != '\0')) {
 		ptr++;
+	}
 
-	if (*ptr != '\0')
+	if (*ptr != '\0') {
 		*(ptr++) = '\0';
+	}
 
 	*_str = str;
 	*_ptr = ptr;
@@ -336,19 +335,14 @@ bool PowerX11::GetPowerInfo_Linux_proc_apm() {
 	FileAccessRef fd = FileAccess::open(proc_apm_path, FileAccess::READ);
 	char buf[128];
 	char *ptr = &buf[0];
-	char *str = NULL;
-	ssize_t br;
+	char *str = nullptr;
 
 	if (!fd) {
 		return false; /* can't use this interface. */
 	}
 
-	br = fd->get_buffer(reinterpret_cast<uint8_t *>(buf), sizeof(buf) - 1);
+	uint64_t br = fd->get_buffer(reinterpret_cast<uint8_t *>(buf), sizeof(buf) - 1);
 	fd->close();
-
-	if (br < 0) {
-		return false;
-	}
 
 	buf[br] = '\0'; /* null-terminate the string. */
 	if (!next_string(&ptr, &str)) { /* driver version */

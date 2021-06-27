@@ -38,7 +38,6 @@
 #include "step_sw.h"
 
 class PhysicsServerSW : public PhysicsServer {
-
 	GDCLASS(PhysicsServerSW, PhysicsServer);
 
 	friend class PhysicsDirectSpaceStateSW;
@@ -72,7 +71,6 @@ public:
 	static PhysicsServerSW *singleton;
 
 	struct CollCbkData {
-
 		int max;
 		int amount;
 		Vector3 *ptr;
@@ -235,7 +233,7 @@ public:
 	virtual void body_set_ray_pickable(RID p_body, bool p_enable);
 	virtual bool body_is_ray_pickable(RID p_body) const;
 
-	virtual bool body_test_motion(RID p_body, const Transform &p_from, const Vector3 &p_motion, bool p_infinite_inertia, MotionResult *r_result = NULL, bool p_exclude_raycast_shapes = true);
+	virtual bool body_test_motion(RID p_body, const Transform &p_from, const Vector3 &p_motion, bool p_infinite_inertia, MotionResult *r_result = nullptr, bool p_exclude_raycast_shapes = true);
 	virtual int body_test_ray_separation(RID p_body, const Transform &p_transform, bool p_infinite_inertia, Vector3 &r_recover_motion, SeparationResult *r_results, int p_result_max, float p_margin = 0.001);
 
 	// this function only works on physics process, errors and returns null otherwise
@@ -305,7 +303,7 @@ public:
 
 	virtual void soft_body_remove_all_pinned_points(RID p_body) {}
 	virtual void soft_body_pin_point(RID p_body, int p_point_index, bool p_pin) {}
-	virtual bool soft_body_is_point_pinned(RID p_body, int p_point_index) { return 0; }
+	virtual bool soft_body_is_point_pinned(RID p_body, int p_point_index) { return false; }
 
 	/* JOINT API */
 

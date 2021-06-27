@@ -1,4 +1,4 @@
-// Copyright 2009-2020 Intel Corporation
+// Copyright 2009-2021 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
 #pragma once
@@ -102,7 +102,7 @@ namespace embree
     
     /*! Sets the barrier bit. */
     __forceinline void setBarrier() {
-#if defined(__X86_64__)
+#if defined(__64BIT__)
       assert(!isBarrier());
       ptr |= barrier_mask;
 #else
@@ -112,7 +112,7 @@ namespace embree
     
     /*! Clears the barrier bit. */
     __forceinline void clearBarrier() {
-#if defined(__X86_64__)
+#if defined(__64BIT__)
       ptr &= ~barrier_mask;
 #else
       assert(false);

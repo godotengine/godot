@@ -1,7 +1,15 @@
-// Copyright 2009-2020 Intel Corporation
+// Copyright 2009-2021 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
 #pragma once
+
+#define vboolf vboolf_impl
+#define vboold vboold_impl
+#define vint vint_impl
+#define vuint vuint_impl
+#define vllong vllong_impl
+#define vfloat vfloat_impl
+#define vdouble vdouble_impl
 
 namespace embree
 {
@@ -61,20 +69,6 @@ namespace embree
       return _mm256_broadcast_ss((float*)a); 
     }
 
-    static __forceinline vfloat8 broadcast2(const float* a, const float* b) {
-#if defined(__INTEL_COMPILER)
-      const vfloat8 v0 = _mm256_broadcast_ss(a); 
-      const vfloat8 v1 = _mm256_broadcast_ss(b); 
-      return _mm256_blend_ps(v1, v0, 0xf);
-#else
-      return _mm256_set_ps(*b,*b,*b,*b,*a,*a,*a,*a);
-#endif
-    }
-
-    static __forceinline vfloat8 broadcast4f(const vfloat4* ptr) {
-      return _mm256_broadcast_ps((__m128*)ptr); 
-    }
-
     static __forceinline vfloat8 load(const char* ptr) {
 #if defined(__AVX2__)
       return _mm256_cvtepi32_ps(_mm256_cvtepi8_epi32(_mm_loadu_si128((__m128i*)ptr)));
@@ -106,13 +100,6 @@ namespace embree
     static __forceinline void storeu(void* ptr, const vfloat8& v) { return _mm256_storeu_ps((float*)ptr,v); }
 
 #if defined(__AVX512VL__)
-
-    static __forceinline vfloat8 compact(const vboolf8& mask, vfloat8 &v) {
-      return _mm256_mask_compress_ps(v, mask, v);
-    }
-    static __forceinline vfloat8 compact(const vboolf8& mask, vfloat8 &a, const vfloat8& b) {
-      return _mm256_mask_compress_ps(a, mask, b);
-    }
 
     static __forceinline vfloat8 load (const vboolf8& mask, const void* ptr) { return _mm256_mask_load_ps (_mm256_setzero_ps(),mask,(float*)ptr); }
     static __forceinline vfloat8 loadu(const vboolf8& mask, const void* ptr) { return _mm256_mask_loadu_ps(_mm256_setzero_ps(),mask,(float*)ptr); }
@@ -206,13 +193,6 @@ namespace embree
       if (likely(mask[6])) *(float*)(((char*)ptr)+scale*ofs[6]) = v[6];
       if (likely(mask[7])) *(float*)(((char*)ptr)+scale*ofs[7]) = v[7];
 #endif
-    }
-
-    static __forceinline void store(const vboolf8& mask, char* ptr, const vint8& ofs, const vfloat8& v) {
-      scatter<1>(mask,ptr,ofs,v);
-    }
-    static __forceinline void store(const vboolf8& mask, float* ptr, const vint8& ofs, const vfloat8& v) {
-      scatter<4>(mask,ptr,ofs,v);
     }
 
     ////////////////////////////////////////////////////////////////////////////////
@@ -532,8 +512,6 @@ namespace embree
 
   __forceinline float toScalar(const vfloat8& v) { return _mm_cvtss_f32(_mm256_castps256_ps128(v)); }
 
-  __forceinline vfloat8 assign(const vfloat4& a) { return _mm256_castps128_ps256(a); }
-
 #if defined (__AVX2__)
   static __forceinline vfloat8 permute(const vfloat8& a, const __m256i& index) {
     return _mm256_permutevar8x32_ps(a, index);
@@ -557,14 +535,6 @@ namespace embree
     return _mm256_cvtph_ps(a);
   }
 #endif
-
-  __forceinline vfloat4 broadcast4f(const vfloat8& a, const size_t k) {
-    return vfloat4::broadcast(&a[k]);
-  }
-
-  __forceinline vfloat8 broadcast8f(const vfloat8& a, const size_t k) {
-    return vfloat8::broadcast(&a[k]);
-  }
 
 #if defined(__AVX512VL__)
   static __forceinline vfloat8 shift_right_1(const vfloat8& x) {
@@ -778,3 +748,11 @@ namespace embree
     return cout << "<" << a[0] << ", " << a[1] << ", " << a[2] << ", " << a[3] << ", " << a[4] << ", " << a[5] << ", " << a[6] << ", " << a[7] << ">";
   }
 }
+
+#undef vboolf
+#undef vboold
+#undef vint
+#undef vuint
+#undef vllong
+#undef vfloat
+#undef vdouble

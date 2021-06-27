@@ -40,7 +40,6 @@
 #include "gd_mono_utils.h"
 
 class GDMonoAssembly {
-
 	struct ClassKey {
 		struct Hasher {
 			static _FORCE_INLINE_ uint32_t hash(const ClassKey &p_key) {

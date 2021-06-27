@@ -93,10 +93,9 @@ Node *EditorSceneImporterFBX::import_scene(const String &p_path, uint32_t p_flag
 	Error err;
 	FileAccessRef f = FileAccess::open(p_path, FileAccess::READ, &err);
 
-	ERR_FAIL_COND_V(!f, NULL);
+	ERR_FAIL_COND_V(!f, nullptr);
 
 	{
-
 		PoolByteArray data;
 		// broadphase tokenizing pass in which we identify the core
 		// syntax elements of FBX (brackets, commas, key:value mappings)
@@ -104,6 +103,9 @@ Node *EditorSceneImporterFBX::import_scene(const String &p_path, uint32_t p_flag
 
 		bool is_binary = false;
 		data.resize(f->get_len());
+
+		ERR_FAIL_COND_V(data.size() < 64, nullptr);
+
 		f->get_buffer(data.write().ptr(), data.size());
 		PoolByteArray fbx_header;
 		fbx_header.resize(64);
@@ -207,14 +209,11 @@ Node *EditorSceneImporterFBX::import_scene(const String &p_path, uint32_t p_flag
 
 template <class T>
 struct EditorSceneImporterAssetImportInterpolate {
-
 	T lerp(const T &a, const T &b, float c) const {
-
 		return a + (b - a) * c;
 	}
 
 	T catmull_rom(const T &p0, const T &p1, const T &p2, const T &p3, float t) {
-
 		float t2 = t * t;
 		float t3 = t2 * t;
 
@@ -237,7 +236,6 @@ struct EditorSceneImporterAssetImportInterpolate {
 //thank you for existing, partial specialization
 template <>
 struct EditorSceneImporterAssetImportInterpolate<Quat> {
-
 	Quat lerp(const Quat &a, const Quat &b, float c) const {
 		ERR_FAIL_COND_V(!a.is_normalized(), Quat());
 		ERR_FAIL_COND_V(!b.is_normalized(), Quat());
@@ -266,8 +264,9 @@ T EditorSceneImporterFBX::_interpolate_track(const Vector<float> &p_times, const
 	//could use binary search, worth it?
 	int idx = -1;
 	for (int i = 0; i < p_times.size(); i++) {
-		if (p_times[i] > p_time)
+		if (p_times[i] > p_time) {
 			break;
+		}
 		idx++;
 	}
 
@@ -275,7 +274,6 @@ T EditorSceneImporterFBX::_interpolate_track(const Vector<float> &p_times, const
 
 	switch (p_interp) {
 		case AssetImportAnimation::INTERP_LINEAR: {
-
 			if (idx == -1) {
 				return p_values[0];
 			} else if (idx >= p_times.size() - 1) {
@@ -288,7 +286,6 @@ T EditorSceneImporterFBX::_interpolate_track(const Vector<float> &p_times, const
 
 		} break;
 		case AssetImportAnimation::INTERP_STEP: {
-
 			if (idx == -1) {
 				return p_values[0];
 			} else if (idx >= p_times.size() - 1) {
@@ -299,7 +296,6 @@ T EditorSceneImporterFBX::_interpolate_track(const Vector<float> &p_times, const
 
 		} break;
 		case AssetImportAnimation::INTERP_CATMULLROMSPLINE: {
-
 			if (idx == -1) {
 				return p_values[1];
 			} else if (idx >= p_times.size() - 1) {
@@ -312,7 +308,6 @@ T EditorSceneImporterFBX::_interpolate_track(const Vector<float> &p_times, const
 
 		} break;
 		case AssetImportAnimation::INTERP_CUBIC_SPLINE: {
-
 			if (idx == -1) {
 				return p_values[1];
 			} else if (idx >= p_times.size() - 1) {
@@ -372,11 +367,10 @@ Spatial *EditorSceneImporterFBX::_generate_scene(
 		int p_bake_fps,
 		const int32_t p_max_bone_weights,
 		bool p_is_blender_fbx) {
-
 	ImportState state;
 	state.is_blender_fbx = p_is_blender_fbx;
 	state.path = p_path;
-	state.animation_player = NULL;
+	state.animation_player = nullptr;
 
 	// create new root node for scene
 	Spatial *scene_root = memnew(Spatial);
@@ -544,7 +538,6 @@ Spatial *EditorSceneImporterFBX::_generate_scene(
 		const std::vector<uint64_t> &materials = p_document->GetMaterialIDs();
 
 		for (uint64_t material_id : materials) {
-
 			FBXDocParser::LazyObject *lazy_material = p_document->GetObject(material_id);
 			FBXDocParser::Material *mat = (FBXDocParser::Material *)lazy_material->Get<FBXDocParser::Material>();
 			ERR_CONTINUE_MSG(!mat, "Could not convert fbx material by id: " + itos(material_id));
@@ -582,7 +575,7 @@ Spatial *EditorSceneImporterFBX::_generate_scene(
 		// this means that the nodes from maya kLocators will be preserved as bones
 		// in the same rig without having to match this across skeletons and merge by detection
 		// we can just merge and undo any parent transforms
-		for (Map<uint64_t, Ref<FBXBone> >::Element *bone_element = state.fbx_bone_map.front(); bone_element; bone_element = bone_element->next()) {
+		for (Map<uint64_t, Ref<FBXBone>>::Element *bone_element = state.fbx_bone_map.front(); bone_element; bone_element = bone_element->next()) {
 			Ref<FBXBone> bone = bone_element->value();
 			Ref<FBXSkeleton> fbx_skeleton_inst;
 
@@ -624,7 +617,7 @@ Spatial *EditorSceneImporterFBX::_generate_scene(
 		}
 
 		// setup skeleton instances if required :)
-		for (Map<uint64_t, Ref<FBXSkeleton> >::Element *skeleton_node = state.skeleton_map.front(); skeleton_node; skeleton_node = skeleton_node->next()) {
+		for (Map<uint64_t, Ref<FBXSkeleton>>::Element *skeleton_node = state.skeleton_map.front(); skeleton_node; skeleton_node = skeleton_node->next()) {
 			Ref<FBXSkeleton> &skeleton = skeleton_node->value();
 			skeleton->init_skeleton(state);
 
@@ -632,13 +625,13 @@ Spatial *EditorSceneImporterFBX::_generate_scene(
 		}
 
 		// This list is not populated
-		for (Map<uint64_t, Ref<FBXNode> >::Element *skin_mesh = state.MeshNodes.front(); skin_mesh; skin_mesh = skin_mesh->next()) {
+		for (Map<uint64_t, Ref<FBXNode>>::Element *skin_mesh = state.MeshNodes.front(); skin_mesh; skin_mesh = skin_mesh->next()) {
 		}
 	}
 
 	// build godot node tree
 	if (state.fbx_node_list.size() > 0) {
-		for (List<Ref<FBXNode> >::Element *node_element = state.fbx_node_list.front();
+		for (List<Ref<FBXNode>>::Element *node_element = state.fbx_node_list.front();
 				node_element;
 				node_element = node_element->next()) {
 			Ref<FBXNode> fbx_node = node_element->get();
@@ -653,8 +646,9 @@ Spatial *EditorSceneImporterFBX::_generate_scene(
 				for (const FBXDocParser::Geometry *mesh : geometry) {
 					print_verbose("[doc] [" + itos(mesh->ID()) + "] mesh: " + fbx_node->node_name);
 
-					if (mesh == nullptr)
+					if (mesh == nullptr) {
 						continue;
+					}
 
 					const FBXDocParser::MeshGeometry *mesh_geometry = dynamic_cast<const FBXDocParser::MeshGeometry *>(mesh);
 					if (mesh_geometry) {
@@ -713,7 +707,7 @@ Spatial *EditorSceneImporterFBX::_generate_scene(
 		}
 	}
 
-	for (Map<uint64_t, Ref<FBXMeshData> >::Element *mesh_data = state.renderer_mesh_data.front(); mesh_data; mesh_data = mesh_data->next()) {
+	for (Map<uint64_t, Ref<FBXMeshData>>::Element *mesh_data = state.renderer_mesh_data.front(); mesh_data; mesh_data = mesh_data->next()) {
 		const uint64_t mesh_id = mesh_data->key();
 		Ref<FBXMeshData> mesh = mesh_data->value();
 
@@ -779,7 +773,7 @@ Spatial *EditorSceneImporterFBX::_generate_scene(
 	}
 
 	// mesh data iteration for populating skeleton mapping
-	for (Map<uint64_t, Ref<FBXMeshData> >::Element *mesh_data = state.renderer_mesh_data.front(); mesh_data; mesh_data = mesh_data->next()) {
+	for (Map<uint64_t, Ref<FBXMeshData>>::Element *mesh_data = state.renderer_mesh_data.front(); mesh_data; mesh_data = mesh_data->next()) {
 		Ref<FBXMeshData> mesh = mesh_data->value();
 		const uint64_t mesh_id = mesh_data->key();
 		MeshInstance *mesh_instance = mesh->godot_mesh_instance;
@@ -888,7 +882,7 @@ Spatial *EditorSceneImporterFBX::_generate_scene(
 
 					// target id, [ track name, [time index, vector] ]
 					// new map needs to be [ track name, keyframe_data ]
-					Map<uint64_t, Map<StringName, FBXTrack> > AnimCurveNodes;
+					Map<uint64_t, Map<StringName, FBXTrack>> AnimCurveNodes;
 
 					// struct AnimTrack {
 					// 	// Animation track can be
@@ -1018,8 +1012,7 @@ Spatial *EditorSceneImporterFBX::_generate_scene(
 
 					// target id, [ track name, [time index, vector] ]
 					//std::map<uint64_t, std::map<StringName, FBXTrack > > AnimCurveNodes;
-					for (Map<uint64_t, Map<StringName, FBXTrack> >::Element *track = AnimCurveNodes.front(); track; track = track->next()) {
-
+					for (Map<uint64_t, Map<StringName, FBXTrack>>::Element *track = AnimCurveNodes.front(); track; track = track->next()) {
 						// 5 tracks
 						// current track index
 						// track count is 5
@@ -1054,7 +1047,6 @@ Spatial *EditorSceneImporterFBX::_generate_scene(
 						// if this is a skeleton mapped track we can just set the path for the track.
 						// todo: implement node paths here at some
 						if (state.fbx_bone_map.size() > 0 && state.fbx_bone_map.has(target_id)) {
-
 							if (bone->fbx_skeleton.is_valid() && bone.is_valid()) {
 								Ref<FBXSkeleton> fbx_skeleton = bone->fbx_skeleton;
 								String bone_path = state.root->get_path_to(fbx_skeleton->skeleton);
@@ -1073,7 +1065,7 @@ Spatial *EditorSceneImporterFBX::_generate_scene(
 								//print_verbose("[doc] node animation path: " + node_path);
 							}
 						} else {
-							// note: this could actually be unsafe this means we should be careful about continuing here, if we see bizzare effects later we should disable this.
+							// note: this could actually be unsafe this means we should be careful about continuing here, if we see bizarre effects later we should disable this.
 							// I am not sure if this is unsafe or not, testing will tell us this.
 							print_error("[doc] invalid fbx target detected for this track");
 							continue;
@@ -1276,14 +1268,14 @@ Spatial *EditorSceneImporterFBX::_generate_scene(
 	state.fbx_target_map.clear();
 	state.fbx_node_list.clear();
 
-	for (Map<uint64_t, Ref<FBXBone> >::Element *element = state.fbx_bone_map.front(); element; element = element->next()) {
+	for (Map<uint64_t, Ref<FBXBone>>::Element *element = state.fbx_bone_map.front(); element; element = element->next()) {
 		Ref<FBXBone> bone = element->value();
 		bone->parent_bone.unref();
 		bone->node.unref();
 		bone->fbx_skeleton.unref();
 	}
 
-	for (Map<uint64_t, Ref<FBXSkeleton> >::Element *element = state.skeleton_map.front(); element; element = element->next()) {
+	for (Map<uint64_t, Ref<FBXSkeleton>>::Element *element = state.skeleton_map.front(); element; element = element->next()) {
 		Ref<FBXSkeleton> skel = element->value();
 		skel->fbx_node.unref();
 		skel->skeleton_bones.clear();
@@ -1391,14 +1383,12 @@ void EditorSceneImporterFBX::BuildDocumentNodes(
 		const FBXDocParser::Document *p_doc,
 		uint64_t id,
 		Ref<FBXNode> parent_node) {
-
 	// tree
 	// here we get the node 0 on the root by default
 	const std::vector<const FBXDocParser::Connection *> &conns = p_doc->GetConnectionsByDestinationSequenced(id, "Model");
 
 	// branch
 	for (const FBXDocParser::Connection *con : conns) {
-
 		// ignore object-property links
 		if (con->PropertyName().length()) {
 			// really important we document why this is ignored.
@@ -1461,7 +1451,6 @@ void EditorSceneImporterFBX::BuildDocumentNodes(
 
 			state.fbx_node_list.push_back(new_node);
 			if (!state.fbx_target_map.has(new_node->current_node_id)) {
-
 				state.fbx_target_map[new_node->current_node_id] = new_node;
 			}
 

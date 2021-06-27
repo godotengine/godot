@@ -39,7 +39,6 @@
 #include "core/local_vector.h"
 
 class MeshInstance : public GeometryInstance {
-
 	GDCLASS(MeshInstance, GeometryInstance);
 
 protected:
@@ -75,7 +74,6 @@ protected:
 	uint32_t software_skinning_flags;
 
 	struct BlendShapeTrack {
-
 		int idx;
 		float value;
 		BlendShapeTrack() {
@@ -85,7 +83,7 @@ protected:
 	};
 
 	Map<StringName, BlendShapeTrack> blend_shape_tracks;
-	Vector<Ref<Material> > materials;
+	Vector<Ref<Material>> materials;
 
 	void _mesh_changed();
 	void _resolve_skeleton_path();
@@ -93,7 +91,7 @@ protected:
 	bool _is_software_skinning_enabled() const;
 	static bool _is_global_software_skinning_enabled();
 
-	void _initialize_skinning(bool p_force_reset = false);
+	void _initialize_skinning(bool p_force_reset = false, bool p_call_attach_skeleton = true);
 	void _update_skinning();
 
 protected:
@@ -126,6 +124,9 @@ public:
 
 	Node *create_trimesh_collision_node();
 	void create_trimesh_collision();
+
+	Node *create_multiple_convex_collisions_node();
+	void create_multiple_convex_collisions();
 
 	Node *create_convex_collision_node();
 	void create_convex_collision();

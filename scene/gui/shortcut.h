@@ -35,7 +35,6 @@
 #include "core/resource.h"
 
 class ShortCut : public Resource {
-
 	GDCLASS(ShortCut, Resource);
 
 	Ref<InputEvent> shortcut;

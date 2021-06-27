@@ -41,7 +41,6 @@ import android.view.MotionEvent;
  * https://developer.android.com/reference/android/view/GestureDetector.SimpleOnGestureListener
  */
 public class GodotGestureHandler extends GestureDetector.SimpleOnGestureListener {
-
 	private final GodotView godotView;
 
 	public GodotGestureHandler(GodotView godotView) {

@@ -36,12 +36,14 @@
 	</array>
 	<key>NSPrincipalClass</key>
 	<string>NSApplication</string>
+	<key>LSApplicationCategoryType</key>
+	<string>public.app-category.$app_category</string>
 	<key>LSMinimumSystemVersion</key>
-	<string>10.9</string>
+	<string>10.12</string>
 	<key>LSMinimumSystemVersionByArchitecture</key>
 	<dict>
 		<key>x86_64</key>
-		<string>10.9</string>
+		<string>10.12</string>
 	</dict>
 	<key>NSHighResolutionCapable</key>
 	$highres

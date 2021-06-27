@@ -46,7 +46,6 @@ class RigidBodyBullet;
 /// DOC:
 /// http://www.bulletphysics.org/mediawiki-1.5.8/index.php/MotionStates#What.27s_a_MotionState.3F
 class GodotMotionState : public btMotionState {
-
 	/// This data is used to store the new world position for kinematic body
 	btTransform bodyKinematicWorldTransf;
 	/// This data is used to store last world position

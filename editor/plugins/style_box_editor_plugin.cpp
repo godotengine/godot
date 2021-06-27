@@ -33,12 +33,10 @@
 #include "editor/editor_scale.h"
 
 bool EditorInspectorPluginStyleBox::can_handle(Object *p_object) {
-
-	return Object::cast_to<StyleBox>(p_object) != NULL;
+	return Object::cast_to<StyleBox>(p_object) != nullptr;
 }
 
 void EditorInspectorPluginStyleBox::parse_begin(Object *p_object) {
-
 	Ref<StyleBox> sb = Ref<StyleBox>(Object::cast_to<StyleBox>(p_object));
 
 	StyleBoxPreview *preview = memnew(StyleBoxPreview);
@@ -52,9 +50,9 @@ void EditorInspectorPluginStyleBox::parse_end() {
 }
 
 void StyleBoxPreview::edit(const Ref<StyleBox> &p_stylebox) {
-
-	if (stylebox.is_valid())
+	if (stylebox.is_valid()) {
 		stylebox->disconnect("changed", this, "_sb_changed");
+	}
 	stylebox = p_stylebox;
 	if (p_stylebox.is_valid()) {
 		preview->add_style_override("panel", stylebox);
@@ -64,7 +62,6 @@ void StyleBoxPreview::edit(const Ref<StyleBox> &p_stylebox) {
 }
 
 void StyleBoxPreview::_sb_changed() {
-
 	preview->update();
 }
 
@@ -82,7 +79,6 @@ void StyleBoxPreview::_redraw() {
 }
 
 void StyleBoxPreview::_bind_methods() {
-
 	ClassDB::bind_method("_sb_changed", &StyleBoxPreview::_sb_changed);
 	ClassDB::bind_method("_redraw", &StyleBoxPreview::_redraw);
 }
@@ -96,7 +92,6 @@ StyleBoxPreview::StyleBoxPreview() {
 }
 
 StyleBoxEditorPlugin::StyleBoxEditorPlugin(EditorNode *p_node) {
-
 	Ref<EditorInspectorPluginStyleBox> inspector_plugin;
 	inspector_plugin.instance();
 	add_inspector_plugin(inspector_plugin);

@@ -56,7 +56,6 @@ AreaBullet::AreaBullet() :
 		spOv_angularDump(0.1),
 		spOv_priority(0),
 		isScratched(false) {
-
 	btGhost = bulletnew(btGhostObject);
 	reload_shapes();
 	setupBulletCollisionObject(btGhost);
@@ -64,19 +63,22 @@ AreaBullet::AreaBullet() :
 	/// In order to use collision objects as trigger, you have to disable the collision response.
 	set_collision_enabled(false);
 
-	for (int i = 0; i < 5; ++i)
+	for (int i = 0; i < 5; ++i) {
 		call_event_res_ptr[i] = &call_event_res[i];
+	}
 }
 
 AreaBullet::~AreaBullet() {
 	// signal are handled by godot, so just clear without notify
-	for (int i = overlappingObjects.size() - 1; 0 <= i; --i)
+	for (int i = overlappingObjects.size() - 1; 0 <= i; --i) {
 		overlappingObjects[i].object->on_exit_area(this);
+	}
 }
 
 void AreaBullet::dispatch_callbacks() {
-	if (!isScratched)
+	if (!isScratched) {
 		return;
+	}
 	isScratched = false;
 
 	// Reverse order because I've to remove EXIT objects
@@ -102,7 +104,6 @@ void AreaBullet::dispatch_callbacks() {
 }
 
 void AreaBullet::call_event(CollisionObjectBullet *p_otherObject, PhysicsServer::AreaBodyStatus p_status) {
-
 	InOutEventCallback &event = eventsCallbacks[static_cast<int>(p_otherObject->getType())];
 	Object *areaGodoObject = ObjectDB::get_instance(event.event_callback_id);
 
@@ -122,15 +123,17 @@ void AreaBullet::call_event(CollisionObjectBullet *p_otherObject, PhysicsServer:
 }
 
 void AreaBullet::scratch() {
-	if (isScratched)
+	if (isScratched) {
 		return;
+	}
 	isScratched = true;
 }
 
 void AreaBullet::clear_overlaps(bool p_notify) {
 	for (int i = overlappingObjects.size() - 1; 0 <= i; --i) {
-		if (p_notify)
+		if (p_notify) {
 			call_event(overlappingObjects[i].object, PhysicsServer::AREA_BODY_REMOVED);
+		}
 		overlappingObjects[i].object->on_exit_area(this);
 	}
 	overlappingObjects.clear();
@@ -139,8 +142,9 @@ void AreaBullet::clear_overlaps(bool p_notify) {
 void AreaBullet::remove_overlap(CollisionObjectBullet *p_object, bool p_notify) {
 	for (int i = overlappingObjects.size() - 1; 0 <= i; --i) {
 		if (overlappingObjects[i].object == p_object) {
-			if (p_notify)
+			if (p_notify) {
 				call_event(overlappingObjects[i].object, PhysicsServer::AREA_BODY_REMOVED);
+			}
 			overlappingObjects[i].object->on_exit_area(this);
 			overlappingObjects.remove(i);
 			break;
@@ -246,7 +250,7 @@ void AreaBullet::set_param(PhysicsServer::AreaParameter p_param, const Variant &
 			set_spOv_gravityPointAttenuation(p_value);
 			break;
 		default:
-			WARN_PRINTS("Area doesn't support this parameter in the Bullet backend: " + itos(p_param));
+			WARN_PRINT("Area doesn't support this parameter in the Bullet backend: " + itos(p_param));
 	}
 }
 
@@ -269,7 +273,7 @@ Variant AreaBullet::get_param(PhysicsServer::AreaParameter p_param) const {
 		case PhysicsServer::AREA_PARAM_GRAVITY_POINT_ATTENUATION:
 			return spOv_gravityPointAttenuation;
 		default:
-			WARN_PRINTS("Area doesn't support this parameter in the Bullet backend: " + itos(p_param));
+			WARN_PRINT("Area doesn't support this parameter in the Bullet backend: " + itos(p_param));
 			return Variant();
 	}
 }

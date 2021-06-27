@@ -1,4 +1,4 @@
-// Copyright 2009-2020 Intel Corporation
+// Copyright 2009-2021 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
 #pragma once
@@ -41,7 +41,7 @@ namespace embree
         }
         const size_t gridBytes = 4*size_t(width)*size_t(height)*sizeof(float);  
         size_t rootBytes = time_steps*sizeof(BVH4::NodeRef);
-#if !defined(__X86_64__)
+#if !defined(__64BIT__)
         rootBytes += 4; // We read 2 elements behind the grid. As we store at least 8 root bytes after the grid we are fine in 64 bit mode. But in 32 bit mode we have to do additional padding.
 #endif
         void* data = alloc(offsetof(GridSOA,data)+bvhBytes+time_steps*gridBytes+rootBytes);
@@ -132,7 +132,7 @@ namespace embree
         __forceinline MapUV(const float* const grid_uv, size_t line_offset, const size_t lines)
           : grid_uv(grid_uv), line_offset(line_offset), lines(lines) {}
 
-        __forceinline void operator() (vfloat& u, vfloat& v) const {
+        __forceinline void operator() (vfloat& u, vfloat& v, Vec3<vfloat>& Ng) const {
           const Vec3<vfloat> tri_v012_uv = Loader::gather(grid_uv,line_offset,lines);	
           const Vec2<vfloat> uv0 = GridSOA::decodeUV(tri_v012_uv[0]);
           const Vec2<vfloat> uv1 = GridSOA::decodeUV(tri_v012_uv[1]);
@@ -253,7 +253,7 @@ namespace embree
 
     public:
       BVH4::NodeRef troot;
-#if !defined(__X86_64__)
+#if !defined(__64BIT__)
       unsigned align1;
 #endif
       unsigned time_steps;

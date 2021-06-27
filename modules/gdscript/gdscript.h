@@ -37,7 +37,6 @@
 #include "gdscript_function.h"
 
 class GDScriptNativeClass : public Reference {
-
 	GDCLASS(GDScriptNativeClass, Reference);
 
 	StringName name;
@@ -54,7 +53,6 @@ public:
 };
 
 class GDScript : public Script {
-
 	GDCLASS(GDScript, Script);
 	bool tool;
 	bool valid;
@@ -82,8 +80,8 @@ class GDScript : public Script {
 	Map<StringName, Variant> constants;
 	Map<StringName, GDScriptFunction *> member_functions;
 	Map<StringName, MemberInfo> member_indices; //members are just indices to the instanced script.
-	Map<StringName, Ref<GDScript> > subclasses;
-	Map<StringName, Vector<StringName> > _signals;
+	Map<StringName, Ref<GDScript>> subclasses;
+	Map<StringName, Vector<StringName>> _signals;
 
 #ifdef TOOLS_ENABLED
 
@@ -127,11 +125,11 @@ class GDScript : public Script {
 
 #ifdef DEBUG_ENABLED
 
-	Map<ObjectID, List<Pair<StringName, Variant> > > pending_reload_state;
+	Map<ObjectID, List<Pair<StringName, Variant>>> pending_reload_state;
 
 #endif
 
-	bool _update_exports(bool *r_err = nullptr, bool p_recursive_call = false);
+	bool _update_exports(bool *r_err = nullptr, bool p_recursive_call = false, PlaceHolderScriptInstance *p_instance_to_update = nullptr);
 
 	void _save_orphaned_subclasses();
 
@@ -148,7 +146,7 @@ protected:
 public:
 	virtual bool is_valid() const { return valid; }
 
-	const Map<StringName, Ref<GDScript> > &get_subclasses() const { return subclasses; }
+	const Map<StringName, Ref<GDScript>> &get_subclasses() const { return subclasses; }
 	const Map<StringName, Variant> &get_constants() const { return constants; }
 	const Set<StringName> &get_members() const { return members; }
 	const GDScriptDataType &get_member_type(const StringName &p_member) const {
@@ -204,11 +202,11 @@ public:
 
 	virtual int get_member_line(const StringName &p_member) const {
 #ifdef TOOLS_ENABLED
-		if (member_lines.has(p_member))
+		if (member_lines.has(p_member)) {
 			return member_lines[p_member];
-		else
+		}
 #endif
-			return -1;
+		return -1;
 	}
 
 	virtual void get_constants(Map<StringName, Variant> *p_constants);
@@ -246,7 +244,7 @@ public:
 	virtual bool set(const StringName &p_name, const Variant &p_value);
 	virtual bool get(const StringName &p_name, Variant &r_ret) const;
 	virtual void get_property_list(List<PropertyInfo> *p_properties) const;
-	virtual Variant::Type get_property_type(const StringName &p_name, bool *r_is_valid = NULL) const;
+	virtual Variant::Type get_property_type(const StringName &p_name, bool *r_is_valid = nullptr) const;
 
 	virtual void get_method_list(List<MethodInfo> *p_list) const;
 	virtual bool has_method(const StringName &p_method) const;
@@ -321,7 +319,6 @@ struct GDScriptWarning {
 #endif // DEBUG_ENABLED
 
 class GDScriptLanguage : public ScriptLanguage {
-
 	friend class GDScriptFunctionState;
 
 	static GDScriptLanguage *singleton;
@@ -332,7 +329,6 @@ class GDScriptLanguage : public ScriptLanguage {
 	Map<StringName, Variant> named_globals;
 
 	struct CallLevel {
-
 		Variant *stack;
 		GDScriptFunction *function;
 		GDScriptInstance *instance;
@@ -371,12 +367,13 @@ public:
 	bool debug_break_parse(const String &p_file, int p_line, const String &p_error);
 
 	_FORCE_INLINE_ void enter_function(GDScriptInstance *p_instance, GDScriptFunction *p_function, Variant *p_stack, int *p_ip, int *p_line) {
-
-		if (Thread::get_main_id() != Thread::get_caller_id())
+		if (Thread::get_main_id() != Thread::get_caller_id()) {
 			return; //no support for other threads than main for now
+		}
 
-		if (ScriptDebugger::get_singleton()->get_lines_left() > 0 && ScriptDebugger::get_singleton()->get_depth() >= 0)
+		if (ScriptDebugger::get_singleton()->get_lines_left() > 0 && ScriptDebugger::get_singleton()->get_depth() >= 0) {
 			ScriptDebugger::get_singleton()->set_depth(ScriptDebugger::get_singleton()->get_depth() + 1);
+		}
 
 		if (_debug_call_stack_pos >= _debug_max_call_stack) {
 			//stack overflow
@@ -394,15 +391,15 @@ public:
 	}
 
 	_FORCE_INLINE_ void exit_function() {
-
-		if (Thread::get_main_id() != Thread::get_caller_id())
+		if (Thread::get_main_id() != Thread::get_caller_id()) {
 			return; //no support for other threads than main for now
+		}
 
-		if (ScriptDebugger::get_singleton()->get_lines_left() > 0 && ScriptDebugger::get_singleton()->get_depth() >= 0)
+		if (ScriptDebugger::get_singleton()->get_lines_left() > 0 && ScriptDebugger::get_singleton()->get_depth() >= 0) {
 			ScriptDebugger::get_singleton()->set_depth(ScriptDebugger::get_singleton()->get_depth() - 1);
+		}
 
 		if (_debug_call_stack_pos == 0) {
-
 			_debug_error = "Stack Underflow (Engine Bug)";
 			ScriptDebugger::get_singleton()->debug(this);
 			return;
@@ -412,8 +409,9 @@ public:
 	}
 
 	virtual Vector<StackInfo> debug_get_current_stack_info() {
-		if (Thread::get_main_id() != Thread::get_caller_id())
+		if (Thread::get_main_id() != Thread::get_caller_id()) {
 			return Vector<StackInfo>();
+		}
 
 		Vector<StackInfo> csi;
 		csi.resize(_debug_call_stack_pos);
@@ -428,7 +426,6 @@ public:
 	}
 
 	struct {
-
 		StringName _init;
 		StringName _notification;
 		StringName _set;
@@ -456,13 +453,14 @@ public:
 
 	/* EDITOR FUNCTIONS */
 	virtual void get_reserved_words(List<String> *p_words) const;
+	virtual bool is_control_flow_keyword(String p_keywords) const;
 	virtual void get_comment_delimiters(List<String> *p_delimiters) const;
 	virtual void get_string_delimiters(List<String> *p_delimiters) const;
 	virtual String _get_processed_template(const String &p_template, const String &p_base_class_name) const;
 	virtual Ref<Script> get_template(const String &p_class_name, const String &p_base_class_name) const;
 	virtual bool is_using_templates();
 	virtual void make_template(const String &p_class_name, const String &p_base_class_name, Ref<Script> &p_script);
-	virtual bool validate(const String &p_script, int &r_line_error, int &r_col_error, String &r_test_error, const String &p_path = "", List<String> *r_functions = NULL, List<ScriptLanguage::Warning> *r_warnings = NULL, Set<int> *r_safe_lines = NULL) const;
+	virtual bool validate(const String &p_script, int &r_line_error, int &r_col_error, String &r_test_error, const String &p_path = "", List<String> *r_functions = nullptr, List<ScriptLanguage::Warning> *r_warnings = nullptr, Set<int> *r_safe_lines = nullptr) const;
 	virtual Script *create_script() const;
 	virtual bool has_named_classes() const;
 	virtual bool supports_builtin_mode() const;
@@ -498,7 +496,7 @@ public:
 	virtual void frame();
 
 	virtual void get_public_functions(List<MethodInfo> *p_functions) const;
-	virtual void get_public_constants(List<Pair<String, Variant> > *p_constants) const;
+	virtual void get_public_constants(List<Pair<String, Variant>> *p_constants) const;
 
 	virtual void profiling_start();
 	virtual void profiling_stop();
@@ -513,7 +511,7 @@ public:
 	/* GLOBAL CLASSES */
 
 	virtual bool handles_global_class_type(const String &p_type) const;
-	virtual String get_global_class_name(const String &p_path, String *r_base_type = NULL, String *r_icon_path = NULL) const;
+	virtual String get_global_class_name(const String &p_path, String *r_base_type = nullptr, String *r_icon_path = nullptr) const;
 
 	void add_orphan_subclass(const String &p_qualified_name, const ObjectID &p_subclass);
 	Ref<GDScript> get_orphan_subclass(const String &p_qualified_name);
@@ -524,7 +522,7 @@ public:
 
 class ResourceFormatLoaderGDScript : public ResourceFormatLoader {
 public:
-	virtual RES load(const String &p_path, const String &p_original_path = "", Error *r_error = NULL);
+	virtual RES load(const String &p_path, const String &p_original_path = "", Error *r_error = nullptr);
 	virtual void get_recognized_extensions(List<String> *p_extensions) const;
 	virtual bool handles_type(const String &p_type) const;
 	virtual String get_resource_type(const String &p_path) const;

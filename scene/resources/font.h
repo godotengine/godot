@@ -36,7 +36,6 @@
 #include "scene/resources/texture.h"
 
 class Font : public Resource {
-
 	GDCLASS(Font, Resource);
 
 protected:
@@ -104,15 +103,13 @@ public:
 };
 
 class BitmapFont : public Font {
-
 	GDCLASS(BitmapFont, Font);
 	RES_BASE_EXTENSION("font");
 
-	Vector<Ref<Texture> > textures;
+	Vector<Ref<Texture>> textures;
 
 public:
 	struct Character {
-
 		int texture_idx;
 		Rect2 rect;
 		float v_align;
@@ -126,7 +123,6 @@ public:
 	};
 
 	struct KerningPairKey {
-
 		union {
 			struct {
 				uint32_t A, B;
@@ -200,7 +196,7 @@ public:
 
 class ResourceFormatLoaderBMFont : public ResourceFormatLoader {
 public:
-	virtual RES load(const String &p_path, const String &p_original_path = "", Error *r_error = NULL);
+	virtual RES load(const String &p_path, const String &p_original_path = "", Error *r_error = nullptr);
 	virtual void get_recognized_extensions(List<String> *p_extensions) const;
 	virtual bool handles_type(const String &p_type) const;
 	virtual String get_resource_type(const String &p_path) const;

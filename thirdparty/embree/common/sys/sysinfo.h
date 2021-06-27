@@ -1,4 +1,4 @@
-// Copyright 2009-2020 Intel Corporation
+// Copyright 2009-2021 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
 #pragma once
@@ -16,13 +16,9 @@
 
 /* define isa namespace and ISA bitvector */
 #if defined (__AVX512VL__)
-#  define isa avx512skx
-#  define ISA AVX512SKX
-#  define ISA_STR "AVX512SKX"
-#elif defined (__AVX512F__)
-#  define isa avx512knl
-#  define ISA AVX512KNL
-#  define ISA_STR "AVX512KNL"
+#  define isa avx512
+#  define ISA AVX512
+#  define ISA_STR "AVX512"
 #elif defined (__AVX2__)
 #  define isa avx2
 #  define ISA AVX2
@@ -87,6 +83,7 @@ namespace embree
     NEHALEM,
     CORE2,
     CORE1,
+    ARM,
     UNKNOWN,
   };
   
@@ -156,8 +153,7 @@ namespace embree
   static const int AVX    = SSE42 | CPU_FEATURE_AVX | CPU_FEATURE_YMM_ENABLED;
   static const int AVXI   = AVX | CPU_FEATURE_F16C | CPU_FEATURE_RDRAND;
   static const int AVX2   = AVXI | CPU_FEATURE_AVX2 | CPU_FEATURE_FMA3 | CPU_FEATURE_BMI1 | CPU_FEATURE_BMI2 | CPU_FEATURE_LZCNT;
-  static const int AVX512KNL = AVX2 | CPU_FEATURE_AVX512F | CPU_FEATURE_AVX512PF | CPU_FEATURE_AVX512ER | CPU_FEATURE_AVX512CD | CPU_FEATURE_ZMM_ENABLED;
-  static const int AVX512SKX = AVX2 | CPU_FEATURE_AVX512F | CPU_FEATURE_AVX512DQ | CPU_FEATURE_AVX512CD | CPU_FEATURE_AVX512BW | CPU_FEATURE_AVX512VL | CPU_FEATURE_ZMM_ENABLED;
+  static const int AVX512 = AVX2 | CPU_FEATURE_AVX512F | CPU_FEATURE_AVX512DQ | CPU_FEATURE_AVX512CD | CPU_FEATURE_AVX512BW | CPU_FEATURE_AVX512VL | CPU_FEATURE_ZMM_ENABLED;
 
   /*! converts ISA bitvector into a string */
   std::string stringOfISA(int features);

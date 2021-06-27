@@ -37,28 +37,23 @@
 #include "voxel_light_baker.h"
 
 void BakedLightmapData::set_bounds(const AABB &p_bounds) {
-
 	bounds = p_bounds;
 	VS::get_singleton()->lightmap_capture_set_bounds(baked_light, p_bounds);
 }
 
 AABB BakedLightmapData::get_bounds() const {
-
 	return bounds;
 }
 
 void BakedLightmapData::set_octree(const PoolVector<uint8_t> &p_octree) {
-
 	VS::get_singleton()->lightmap_capture_set_octree(baked_light, p_octree);
 }
 
 PoolVector<uint8_t> BakedLightmapData::get_octree() const {
-
 	return VS::get_singleton()->lightmap_capture_get_octree(baked_light);
 }
 
 void BakedLightmapData::set_cell_space_transform(const Transform &p_xform) {
-
 	cell_space_xform = p_xform;
 	VS::get_singleton()->lightmap_capture_set_octree_cell_transform(baked_light, p_xform);
 }
@@ -77,29 +72,24 @@ int BakedLightmapData::get_cell_subdiv() const {
 }
 
 void BakedLightmapData::set_energy(float p_energy) {
-
 	energy = p_energy;
 	VS::get_singleton()->lightmap_capture_set_energy(baked_light, energy);
 }
 
 float BakedLightmapData::get_energy() const {
-
 	return energy;
 }
 
 void BakedLightmapData::set_interior(bool p_interior) {
-
 	interior = p_interior;
 	VS::get_singleton()->lightmap_capture_set_interior(baked_light, interior);
 }
 
 bool BakedLightmapData::is_interior() const {
-
 	return interior;
 }
 
 void BakedLightmapData::add_user(const NodePath &p_path, const Ref<Resource> &p_lightmap, int p_lightmap_slice, const Rect2 &p_lightmap_uv_rect, int p_instance) {
-
 	ERR_FAIL_COND_MSG(p_lightmap.is_null(), "It's not a reference to a valid Texture object.");
 	ERR_FAIL_COND(p_lightmap_slice == -1 && !Object::cast_to<Texture>(p_lightmap.ptr()));
 	ERR_FAIL_COND(p_lightmap_slice != -1 && !Object::cast_to<TextureLayered>(p_lightmap.ptr()));
@@ -118,16 +108,13 @@ void BakedLightmapData::add_user(const NodePath &p_path, const Ref<Resource> &p_
 }
 
 int BakedLightmapData::get_user_count() const {
-
 	return users.size();
 }
 NodePath BakedLightmapData::get_user_path(int p_user) const {
-
 	ERR_FAIL_INDEX_V(p_user, users.size(), NodePath());
 	return users[p_user].path;
 }
 Ref<Resource> BakedLightmapData::get_user_lightmap(int p_user) const {
-
 	ERR_FAIL_INDEX_V(p_user, users.size(), Ref<Resource>());
 	if (users[p_user].lightmap_slice == -1) {
 		return users[p_user].lightmap.single;
@@ -137,19 +124,16 @@ Ref<Resource> BakedLightmapData::get_user_lightmap(int p_user) const {
 }
 
 int BakedLightmapData::get_user_lightmap_slice(int p_user) const {
-
 	ERR_FAIL_INDEX_V(p_user, users.size(), -1);
 	return users[p_user].lightmap_slice;
 }
 
 Rect2 BakedLightmapData::get_user_lightmap_uv_rect(int p_user) const {
-
 	ERR_FAIL_INDEX_V(p_user, users.size(), Rect2(0, 0, 1, 1));
 	return users[p_user].lightmap_uv_rect;
 }
 
 int BakedLightmapData::get_user_instance(int p_user) const {
-
 	ERR_FAIL_INDEX_V(p_user, users.size(), -1);
 	return users[p_user].instance_index;
 }
@@ -182,7 +166,7 @@ void BakedLightmapData::_set_user_data(const Array &p_data) {
 		}
 		if (is_old_format) {
 #ifdef DEBUG_ENABLED
-			WARN_PRINTS("Geometry at path " + String(p_data[0]) + " is using old lightmapper data. Please re-bake.");
+			WARN_PRINT("Geometry at path " + String(p_data[0]) + " is using old lightmapper data. Please re-bake.");
 #endif
 			Array adapted_data;
 			adapted_data.resize((p_data.size() / 3) * 5);
@@ -206,7 +190,6 @@ void BakedLightmapData::_set_user_data(const Array &p_data) {
 }
 
 Array BakedLightmapData::_get_user_data() const {
-
 	Array ret;
 	for (int i = 0; i < users.size(); i++) {
 		ret.push_back(users[i].path);
@@ -222,7 +205,6 @@ RID BakedLightmapData::get_rid() const {
 	return baked_light;
 }
 void BakedLightmapData::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("_set_user_data", "data"), &BakedLightmapData::_set_user_data);
 	ClassDB::bind_method(D_METHOD("_get_user_data"), &BakedLightmapData::_get_user_data);
 
@@ -261,7 +243,6 @@ void BakedLightmapData::_bind_methods() {
 }
 
 BakedLightmapData::BakedLightmapData() {
-
 	baked_light = VS::get_singleton()->lightmap_capture_create();
 	energy = 1;
 	cell_subdiv = 1;
@@ -269,7 +250,6 @@ BakedLightmapData::BakedLightmapData() {
 }
 
 BakedLightmapData::~BakedLightmapData() {
-
 	VS::get_singleton()->free(baked_light);
 }
 
@@ -343,7 +323,6 @@ Size2i BakedLightmap::_compute_lightmap_size(const MeshesFound &p_mesh) {
 }
 
 void BakedLightmap::_find_meshes_and_lights(Node *p_at_node, Vector<MeshesFound> &meshes, Vector<LightsFound> &lights) {
-
 	AABB bounds = AABB(-extents, extents * 2.0);
 
 	MeshInstance *mi = Object::cast_to<MeshInstance>(p_at_node);
@@ -368,7 +347,6 @@ void BakedLightmap::_find_meshes_and_lights(Node *p_at_node, Vector<MeshesFound>
 			}
 
 			if (surfaces_found && all_have_uv2_and_normal) {
-
 				Transform mesh_xform = get_global_transform().affine_inverse() * mi->get_global_transform();
 
 				AABB aabb = mesh_xform.xform(mesh->get_aabb());
@@ -470,8 +448,7 @@ void BakedLightmap::_find_meshes_and_lights(Node *p_at_node, Vector<MeshesFound>
 	}
 }
 
-void BakedLightmap::_get_material_images(const MeshesFound &p_found_mesh, Lightmapper::MeshData &r_mesh_data, Vector<Ref<Texture> > &r_albedo_textures, Vector<Ref<Texture> > &r_emission_textures) {
-
+void BakedLightmap::_get_material_images(const MeshesFound &p_found_mesh, Lightmapper::MeshData &r_mesh_data, Vector<Ref<Texture>> &r_albedo_textures, Vector<Ref<Texture>> &r_emission_textures) {
 	for (int i = 0; i < p_found_mesh.mesh->get_surface_count(); ++i) {
 		Ref<SpatialMaterial> mat = p_found_mesh.overrides[i];
 
@@ -488,7 +465,6 @@ void BakedLightmap::_get_material_images(const MeshesFound &p_found_mesh, Lightm
 		Color emission_mul = Color(1, 1, 1, 1);
 
 		if (mat.is_valid()) {
-
 			albedo_texture = mat->get_texture(SpatialMaterial::TEXTURE_ALBEDO);
 
 			if (albedo_texture.is_valid()) {
@@ -595,7 +571,6 @@ bool BakedLightmap::_lightmap_bake_step_function(float p_completion, const Strin
 }
 
 BakedLightmap::BakeError BakedLightmap::bake(Node *p_from_node, String p_data_save_path) {
-
 	bool no_save_path = false;
 	if (p_data_save_path == "" && (get_light_data().is_null() || !get_light_data()->get_path().is_resource_file())) {
 		no_save_path = true;
@@ -613,7 +588,6 @@ BakedLightmap::BakeError BakedLightmap::bake(Node *p_from_node, String p_data_sa
 	}
 
 	if (no_save_path) {
-
 		if (image_path == "") {
 			return BAKE_ERROR_NO_SAVE_PATH;
 		} else {
@@ -750,8 +724,8 @@ BakedLightmap::BakeError BakedLightmap::bake(Node *p_from_node, String p_data_sa
 			}
 		}
 
-		Vector<Ref<Texture> > albedo_textures;
-		Vector<Ref<Texture> > emission_textures;
+		Vector<Ref<Texture>> albedo_textures;
+		Vector<Ref<Texture>> emission_textures;
 
 		_get_material_images(mf, md, albedo_textures, emission_textures);
 
@@ -810,7 +784,7 @@ BakedLightmap::BakeError BakedLightmap::bake(Node *p_from_node, String p_data_sa
 			} break;
 			case ENVIRONMENT_MODE_CUSTOM_SKY: {
 				if (environment_custom_sky.is_valid()) {
-					environment_image = _get_irradiance_from_sky(environment_custom_sky, Vector2i(128, 64));
+					environment_image = _get_irradiance_from_sky(environment_custom_sky, environment_custom_energy, Vector2i(128, 64));
 					environment_xform.set_euler(environment_custom_sky_rotation_degrees * Math_PI / 180.0);
 				}
 
@@ -870,7 +844,6 @@ BakedLightmap::BakeError BakedLightmap::bake(Node *p_from_node, String p_data_sa
 	}
 
 	if (capture_enabled) {
-
 		if (bake_step_function) {
 			bool cancelled = bake_step_function(0.85, TTR("Generating capture"), nullptr, true);
 			if (cancelled) {
@@ -957,7 +930,7 @@ BakedLightmap::BakeError BakedLightmap::bake(Node *p_from_node, String p_data_sa
 		}
 	}
 
-	Vector<Ref<Image> > images;
+	Vector<Ref<Image>> images;
 	for (int i = 0; i < lightmapper->get_bake_texture_count(); i++) {
 		images.push_back(lightmapper->get_bake_texture(i));
 	}
@@ -965,7 +938,6 @@ BakedLightmap::BakeError BakedLightmap::bake(Node *p_from_node, String p_data_sa
 	bool use_srgb = use_color && !use_hdr;
 
 	if (gen_atlas) {
-
 		Ref<Image> large_image;
 		large_image.instance();
 		large_image->create(images[0]->get_width(), images[0]->get_height() * images.size(), false, images[0]->get_format());
@@ -1001,7 +973,6 @@ BakedLightmap::BakeError BakedLightmap::bake(Node *p_from_node, String p_data_sa
 			ResourceLoader::import(base_path);
 			texture = ResourceLoader::load(base_path); //if already loaded, it will be updated on refocus?
 		} else {
-
 			base_path += ".texarr";
 			Ref<TextureLayered> tex;
 			bool set_path = true;
@@ -1042,7 +1013,6 @@ BakedLightmap::BakeError BakedLightmap::bake(Node *p_from_node, String p_data_sa
 		}
 	} else {
 		for (int i = 0; i < lightmapper->get_bake_mesh_count(); i++) {
-
 			if (!meshes_found[i].generate_lightmap) {
 				continue;
 			}
@@ -1051,7 +1021,6 @@ BakedLightmap::BakeError BakedLightmap::bake(Node *p_from_node, String p_data_sa
 			String base_path = p_data_save_path.get_base_dir().plus_file(images[i]->get_name());
 
 			if (ResourceLoader::import) {
-
 				_save_image(base_path, images[i], use_srgb);
 
 				Ref<ConfigFile> config;
@@ -1075,7 +1044,6 @@ BakedLightmap::BakeError BakedLightmap::bake(Node *p_from_node, String p_data_sa
 				ResourceLoader::import(base_path);
 				texture = ResourceLoader::load(base_path); //if already loaded, it will be updated on refocus?
 			} else {
-
 				base_path += ".tex";
 				Ref<ImageTexture> tex;
 				bool set_path = true;
@@ -1166,7 +1134,6 @@ bool BakedLightmap::get_capture_enabled() const {
 
 void BakedLightmap::_notification(int p_what) {
 	if (p_what == NOTIFICATION_READY) {
-
 		if (light_data.is_valid()) {
 			_assign_lightmaps();
 		}
@@ -1174,7 +1141,6 @@ void BakedLightmap::_notification(int p_what) {
 	}
 
 	if (p_what == NOTIFICATION_EXIT_TREE) {
-
 		if (light_data.is_valid()) {
 			_clear_lightmaps();
 		}
@@ -1182,7 +1148,6 @@ void BakedLightmap::_notification(int p_what) {
 }
 
 void BakedLightmap::_assign_lightmaps() {
-
 	ERR_FAIL_COND(!light_data.is_valid());
 
 	bool atlassed_on_gles2 = false;
@@ -1233,7 +1198,7 @@ void BakedLightmap::_clear_lightmaps() {
 	}
 }
 
-Ref<Image> BakedLightmap::_get_irradiance_from_sky(Ref<Sky> p_sky, Vector2i p_size) {
+Ref<Image> BakedLightmap::_get_irradiance_from_sky(Ref<Sky> p_sky, float p_energy, Vector2i p_size) {
 	if (p_sky.is_null()) {
 		return Ref<Image>();
 	}
@@ -1245,7 +1210,7 @@ Ref<Image> BakedLightmap::_get_irradiance_from_sky(Ref<Sky> p_sky, Vector2i p_si
 	}
 	Ref<ProceduralSky> procedural = p_sky;
 	if (procedural.is_valid()) {
-		sky_image = procedural->get_panorama();
+		sky_image = procedural->get_data();
 	}
 
 	if (sky_image.is_null()) {
@@ -1254,6 +1219,17 @@ Ref<Image> BakedLightmap::_get_irradiance_from_sky(Ref<Sky> p_sky, Vector2i p_si
 
 	sky_image->convert(Image::FORMAT_RGBF);
 	sky_image->resize(p_size.x, p_size.y, Image::INTERPOLATE_CUBIC);
+
+	if (p_energy != 1.0) {
+		sky_image->lock();
+		for (int i = 0; i < p_size.y; i++) {
+			for (int j = 0; j < p_size.x; j++) {
+				sky_image->set_pixel(j, i, sky_image->get_pixel(j, i) * p_energy);
+			}
+		}
+		sky_image->unlock();
+	}
+
 	return sky_image;
 }
 
@@ -1261,7 +1237,7 @@ Ref<Image> BakedLightmap::_get_irradiance_map(Ref<Environment> p_env, Vector2i p
 	Environment::BGMode bg_mode = p_env->get_background();
 	switch (bg_mode) {
 		case Environment::BG_SKY: {
-			return _get_irradiance_from_sky(p_env->get_sky(), Vector2i(128, 64));
+			return _get_irradiance_from_sky(p_env->get_sky(), p_env->get_bg_energy(), Vector2i(128, 64));
 		}
 		case Environment::BG_CLEAR_COLOR:
 		case Environment::BG_COLOR: {
@@ -1283,7 +1259,6 @@ Ref<Image> BakedLightmap::_get_irradiance_map(Ref<Environment> p_env, Vector2i p
 }
 
 void BakedLightmap::set_light_data(const Ref<BakedLightmapData> &p_data) {
-
 	if (light_data.is_valid()) {
 		if (is_inside_tree()) {
 			_clear_lightmaps();
@@ -1302,7 +1277,6 @@ void BakedLightmap::set_light_data(const Ref<BakedLightmapData> &p_data) {
 }
 
 Ref<BakedLightmapData> BakedLightmap::get_light_data() const {
-
 	return light_data;
 }
 
@@ -1311,7 +1285,6 @@ void BakedLightmap::set_capture_propagation(float p_propagation) {
 }
 
 float BakedLightmap::get_capture_propagation() const {
-
 	return capture_propagation;
 }
 
@@ -1360,32 +1333,26 @@ String BakedLightmap::get_image_path() const {
 #endif
 
 void BakedLightmap::set_use_denoiser(bool p_enable) {
-
 	use_denoiser = p_enable;
 }
 
 bool BakedLightmap::is_using_denoiser() const {
-
 	return use_denoiser;
 }
 
 void BakedLightmap::set_use_hdr(bool p_enable) {
-
 	use_hdr = p_enable;
 }
 
 bool BakedLightmap::is_using_hdr() const {
-
 	return use_hdr;
 }
 
 void BakedLightmap::set_use_color(bool p_enable) {
-
 	use_color = p_enable;
 }
 
 bool BakedLightmap::is_using_color() const {
-
 	return use_color;
 }
 
@@ -1446,7 +1413,7 @@ int BakedLightmap::get_bounces() const {
 }
 
 void BakedLightmap::set_bias(float p_bias) {
-	ERR_FAIL_COND(p_bias < 0.00001);
+	ERR_FAIL_COND(p_bias < 0.00001f);
 	bias = p_bias;
 }
 
@@ -1462,7 +1429,6 @@ PoolVector<Face3> BakedLightmap::get_faces(uint32_t p_usage_flags) const {
 }
 
 void BakedLightmap::_validate_property(PropertyInfo &property) const {
-
 	if (property.name.begins_with("environment_custom_sky") && environment_mode != ENVIRONMENT_MODE_CUSTOM_SKY) {
 		property.usage = 0;
 	}
@@ -1485,7 +1451,6 @@ void BakedLightmap::_validate_property(PropertyInfo &property) const {
 }
 
 void BakedLightmap::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("set_light_data", "data"), &BakedLightmap::set_light_data);
 	ClassDB::bind_method(D_METHOD("get_light_data"), &BakedLightmap::get_light_data);
 
@@ -1610,7 +1575,6 @@ void BakedLightmap::_bind_methods() {
 }
 
 BakedLightmap::BakedLightmap() {
-
 	extents = Vector3(10, 10, 10);
 
 	default_texels_per_unit = 16.0f;

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="MeshInstance" inherits="GeometryInstance" version="3.3">
+<class name="MeshInstance" inherits="GeometryInstance" version="3.4">
 	<brief_description>
 		Node that instances meshes into a scenario.
 	</brief_description>
@@ -25,6 +25,13 @@
 			</return>
 			<description>
 				This helper creates a [MeshInstance] child node with gizmos at every vertex calculated from the mesh geometry. It's mainly used for testing.
+			</description>
+		</method>
+		<method name="create_multiple_convex_collisions">
+			<return type="void">
+			</return>
+			<description>
+				This helper creates a [StaticBody] child node with multiple [ConvexPolygonShape] collision shapes calculated from the mesh geometry via convex decomposition. It's mainly used for testing.
 			</description>
 		</method>
 		<method name="create_trimesh_collision">

@@ -36,7 +36,6 @@
 #include "core/variant.h"
 
 struct _GlobalConstant {
-
 #ifdef DEBUG_METHODS_ENABLED
 	StringName enum_name;
 #endif
@@ -92,7 +91,6 @@ VARIANT_ENUM_CAST(JoystickList);
 VARIANT_ENUM_CAST(MidiMessageList);
 
 void register_global_constants() {
-
 	//{ KEY_BACKSPACE, VK_BACK },// (0x08) // backspace
 
 	BIND_GLOBAL_ENUM_CONSTANT(MARGIN_LEFT);
@@ -415,6 +413,7 @@ void register_global_constants() {
 	BIND_GLOBAL_ENUM_CONSTANT(JOY_BUTTON_19);
 	BIND_GLOBAL_ENUM_CONSTANT(JOY_BUTTON_20);
 	BIND_GLOBAL_ENUM_CONSTANT(JOY_BUTTON_21);
+	BIND_GLOBAL_ENUM_CONSTANT(JOY_BUTTON_22);
 	BIND_GLOBAL_ENUM_CONSTANT(JOY_BUTTON_MAX);
 
 	BIND_GLOBAL_ENUM_CONSTANT(JOY_SONY_CIRCLE);
@@ -448,6 +447,7 @@ void register_global_constants() {
 	BIND_GLOBAL_ENUM_CONSTANT(JOY_DPAD_DOWN);
 	BIND_GLOBAL_ENUM_CONSTANT(JOY_DPAD_LEFT);
 	BIND_GLOBAL_ENUM_CONSTANT(JOY_DPAD_RIGHT);
+	BIND_GLOBAL_ENUM_CONSTANT(JOY_GUIDE);
 	BIND_GLOBAL_ENUM_CONSTANT(JOY_MISC1);
 	BIND_GLOBAL_ENUM_CONSTANT(JOY_PADDLE1);
 	BIND_GLOBAL_ENUM_CONSTANT(JOY_PADDLE2);
@@ -667,33 +667,27 @@ void register_global_constants() {
 }
 
 void unregister_global_constants() {
-
 	_global_constants.clear();
 }
 
 int GlobalConstants::get_global_constant_count() {
-
 	return _global_constants.size();
 }
 
 #ifdef DEBUG_METHODS_ENABLED
 StringName GlobalConstants::get_global_constant_enum(int p_idx) {
-
 	return _global_constants[p_idx].enum_name;
 }
 #else
 StringName GlobalConstants::get_global_constant_enum(int p_idx) {
-
 	return StringName();
 }
 #endif
 
 const char *GlobalConstants::get_global_constant_name(int p_idx) {
-
 	return _global_constants[p_idx].name;
 }
 
 int GlobalConstants::get_global_constant_value(int p_idx) {
-
 	return _global_constants[p_idx].value;
 }

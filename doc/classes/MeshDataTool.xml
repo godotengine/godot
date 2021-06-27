@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="MeshDataTool" inherits="Reference" version="3.3">
+<class name="MeshDataTool" inherits="Reference" version="3.4">
 	<brief_description>
 		Helper tool to access and edit [Mesh] data.
 	</brief_description>
@@ -14,7 +14,7 @@
 		mdt.create_from_surface(mesh, 0)
 		for i in range(mdt.get_vertex_count()):
 		    var vertex = mdt.get_vertex(i)
-		    # In this example we extend the mesh by one unit, which results in seperated faces as it is flat shaded.
+		    # In this example we extend the mesh by one unit, which results in separated faces as it is flat shaded.
 		    vertex += mdt.get_vertex_normal(i)
 		    # Save your change.
 		    mdt.set_vertex(i, vertex)

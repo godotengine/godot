@@ -1,4 +1,4 @@
-// Copyright 2009-2020 Intel Corporation
+// Copyright 2009-2021 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
 #include "bvh_statistics.h"
@@ -150,7 +150,10 @@ namespace embree
       }
     }
     else {
-      throw std::runtime_error("not supported node type in bvh_statistics");
+      // -- GODOT start --
+      // throw std::runtime_error("not supported node type in bvh_statistics");
+      abort();
+      // -- GODOT end --
     }
     return s;
   } 

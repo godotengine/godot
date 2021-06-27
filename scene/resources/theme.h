@@ -39,25 +39,50 @@
 #include "scene/resources/texture.h"
 
 class Theme : public Resource {
-
 	GDCLASS(Theme, Resource);
 	RES_BASE_EXTENSION("theme");
 
+#ifdef TOOLS_ENABLED
+	friend class ThemeItemImportTree;
+	friend class ThemeItemEditorDialog;
+	friend class ThemeTypeEditor;
+#endif
+
+public:
+	enum DataType {
+		DATA_TYPE_COLOR,
+		DATA_TYPE_CONSTANT,
+		DATA_TYPE_FONT,
+		DATA_TYPE_ICON,
+		DATA_TYPE_STYLEBOX,
+		DATA_TYPE_MAX
+	};
+
+private:
+	bool no_change_propagation = false;
+
 	void _emit_theme_changed();
 
-	HashMap<StringName, HashMap<StringName, Ref<Texture> > > icon_map;
-	HashMap<StringName, HashMap<StringName, Ref<StyleBox> > > style_map;
-	HashMap<StringName, HashMap<StringName, Ref<Font> > > font_map;
-	HashMap<StringName, HashMap<StringName, Ref<Shader> > > shader_map;
-	HashMap<StringName, HashMap<StringName, Color> > color_map;
-	HashMap<StringName, HashMap<StringName, int> > constant_map;
+	HashMap<StringName, HashMap<StringName, Ref<Texture>>> icon_map;
+	HashMap<StringName, HashMap<StringName, Ref<StyleBox>>> style_map;
+	HashMap<StringName, HashMap<StringName, Ref<Font>>> font_map;
+	HashMap<StringName, HashMap<StringName, Ref<Shader>>> shader_map;
+	HashMap<StringName, HashMap<StringName, Color>> color_map;
+	HashMap<StringName, HashMap<StringName, int>> constant_map;
 
 	PoolVector<String> _get_icon_list(const String &p_node_type) const;
+	PoolVector<String> _get_icon_types() const;
 	PoolVector<String> _get_stylebox_list(const String &p_node_type) const;
-	PoolVector<String> _get_stylebox_types(void) const;
+	PoolVector<String> _get_stylebox_types() const;
 	PoolVector<String> _get_font_list(const String &p_node_type) const;
+	PoolVector<String> _get_font_types() const;
 	PoolVector<String> _get_color_list(const String &p_node_type) const;
+	PoolVector<String> _get_color_types() const;
 	PoolVector<String> _get_constant_list(const String &p_node_type) const;
+	PoolVector<String> _get_constant_types() const;
+
+	PoolVector<String> _get_theme_item_list(DataType p_data_type, const String &p_node_type) const;
+	PoolVector<String> _get_theme_item_types(DataType p_data_type) const;
 	PoolVector<String> _get_type_list(const String &p_node_type) const;
 
 protected:
@@ -74,6 +99,9 @@ protected:
 	Ref<Font> default_theme_font;
 
 	static void _bind_methods();
+
+	void _freeze_change_propagation();
+	void _unfreeze_and_propagate_changes();
 
 public:
 	static Ref<Theme> get_default();
@@ -92,8 +120,12 @@ public:
 	void set_icon(const StringName &p_name, const StringName &p_node_type, const Ref<Texture> &p_icon);
 	Ref<Texture> get_icon(const StringName &p_name, const StringName &p_node_type) const;
 	bool has_icon(const StringName &p_name, const StringName &p_node_type) const;
+	bool has_icon_nocheck(const StringName &p_name, const StringName &p_node_type) const;
+	void rename_icon(const StringName &p_old_name, const StringName &p_name, const StringName &p_node_type);
 	void clear_icon(const StringName &p_name, const StringName &p_node_type);
 	void get_icon_list(StringName p_node_type, List<StringName> *p_list) const;
+	void add_icon_type(const StringName &p_node_type);
+	void get_icon_types(List<StringName> *p_list) const;
 
 	void set_shader(const StringName &p_name, const StringName &p_node_type, const Ref<Shader> &p_shader);
 	Ref<Shader> get_shader(const StringName &p_name, const StringName &p_node_type) const;
@@ -104,27 +136,52 @@ public:
 	void set_stylebox(const StringName &p_name, const StringName &p_node_type, const Ref<StyleBox> &p_style);
 	Ref<StyleBox> get_stylebox(const StringName &p_name, const StringName &p_node_type) const;
 	bool has_stylebox(const StringName &p_name, const StringName &p_node_type) const;
+	bool has_stylebox_nocheck(const StringName &p_name, const StringName &p_node_type) const;
+	void rename_stylebox(const StringName &p_old_name, const StringName &p_name, const StringName &p_node_type);
 	void clear_stylebox(const StringName &p_name, const StringName &p_node_type);
 	void get_stylebox_list(StringName p_node_type, List<StringName> *p_list) const;
+	void add_stylebox_type(const StringName &p_node_type);
 	void get_stylebox_types(List<StringName> *p_list) const;
 
 	void set_font(const StringName &p_name, const StringName &p_node_type, const Ref<Font> &p_font);
 	Ref<Font> get_font(const StringName &p_name, const StringName &p_node_type) const;
 	bool has_font(const StringName &p_name, const StringName &p_node_type) const;
+	bool has_font_nocheck(const StringName &p_name, const StringName &p_node_type) const;
+	void rename_font(const StringName &p_old_name, const StringName &p_name, const StringName &p_node_type);
 	void clear_font(const StringName &p_name, const StringName &p_node_type);
 	void get_font_list(StringName p_node_type, List<StringName> *p_list) const;
+	void add_font_type(const StringName &p_node_type);
+	void get_font_types(List<StringName> *p_list) const;
 
 	void set_color(const StringName &p_name, const StringName &p_node_type, const Color &p_color);
 	Color get_color(const StringName &p_name, const StringName &p_node_type) const;
 	bool has_color(const StringName &p_name, const StringName &p_node_type) const;
+	bool has_color_nocheck(const StringName &p_name, const StringName &p_node_type) const;
+	void rename_color(const StringName &p_old_name, const StringName &p_name, const StringName &p_node_type);
 	void clear_color(const StringName &p_name, const StringName &p_node_type);
 	void get_color_list(StringName p_node_type, List<StringName> *p_list) const;
+	void add_color_type(const StringName &p_node_type);
+	void get_color_types(List<StringName> *p_list) const;
 
 	void set_constant(const StringName &p_name, const StringName &p_node_type, int p_constant);
 	int get_constant(const StringName &p_name, const StringName &p_node_type) const;
 	bool has_constant(const StringName &p_name, const StringName &p_node_type) const;
+	bool has_constant_nocheck(const StringName &p_name, const StringName &p_node_type) const;
+	void rename_constant(const StringName &p_old_name, const StringName &p_name, const StringName &p_node_type);
 	void clear_constant(const StringName &p_name, const StringName &p_node_type);
 	void get_constant_list(StringName p_node_type, List<StringName> *p_list) const;
+	void add_constant_type(const StringName &p_node_type);
+	void get_constant_types(List<StringName> *p_list) const;
+
+	void set_theme_item(DataType p_data_type, const StringName &p_name, const StringName &p_node_type, const Variant &p_value);
+	Variant get_theme_item(DataType p_data_type, const StringName &p_name, const StringName &p_node_type) const;
+	bool has_theme_item(DataType p_data_type, const StringName &p_name, const StringName &p_node_type) const;
+	bool has_theme_item_nocheck(DataType p_data_type, const StringName &p_name, const StringName &p_node_type) const;
+	void rename_theme_item(DataType p_data_type, const StringName &p_old_name, const StringName &p_name, const StringName &p_node_type);
+	void clear_theme_item(DataType p_data_type, const StringName &p_name, const StringName &p_node_type);
+	void get_theme_item_list(DataType p_data_type, StringName p_node_type, List<StringName> *p_list) const;
+	void add_theme_item_type(DataType p_data_type, const StringName &p_node_type);
+	void get_theme_item_types(DataType p_data_type, List<StringName> *p_list) const;
 
 	void get_type_list(List<StringName> *p_list) const;
 
@@ -135,5 +192,7 @@ public:
 	Theme();
 	~Theme();
 };
+
+VARIANT_ENUM_CAST(Theme::DataType);
 
 #endif

@@ -35,19 +35,20 @@
 #include "scene/resources/shape.h"
 
 class CollisionObject : public Spatial {
-
 	GDCLASS(CollisionObject, Spatial);
+
+	uint32_t collision_layer = 1;
+	uint32_t collision_mask = 1;
 
 	bool area;
 
 	RID rid;
 
 	struct ShapeData {
-
 		Object *owner;
 		Transform xform;
 		struct ShapeBase {
-			Node *debug_shape = nullptr;
+			RID debug_shape;
 			Ref<Shape> shape;
 			int index;
 		};
@@ -57,7 +58,7 @@ class CollisionObject : public Spatial {
 
 		ShapeData() {
 			disabled = false;
-			owner = NULL;
+			owner = nullptr;
 		}
 	};
 
@@ -69,10 +70,16 @@ class CollisionObject : public Spatial {
 	bool ray_pickable;
 
 	Set<uint32_t> debug_shapes_to_update;
+	int debug_shapes_count = 0;
+	Transform debug_shape_old_transform;
 
 	void _update_pickable();
 
+	bool _are_collision_shapes_visible();
 	void _update_shape_data(uint32_t p_owner);
+	void _shape_changed(const Ref<Shape> &p_shape);
+	void _update_debug_shapes();
+	void _clear_debug_shapes();
 
 protected:
 	CollisionObject(RID p_rid, bool p_area);
@@ -84,9 +91,21 @@ protected:
 	virtual void _mouse_enter();
 	virtual void _mouse_exit();
 
-	void _update_debug_shapes();
+	void _on_transform_changed();
 
 public:
+	void set_collision_layer(uint32_t p_layer);
+	uint32_t get_collision_layer() const;
+
+	void set_collision_mask(uint32_t p_mask);
+	uint32_t get_collision_mask() const;
+
+	void set_collision_layer_bit(int p_bit, bool p_value);
+	bool get_collision_layer_bit(int p_bit) const;
+
+	void set_collision_mask_bit(int p_bit, bool p_value);
+	bool get_collision_mask_bit(int p_bit) const;
+
 	uint32_t create_shape_owner(Object *p_owner);
 	void remove_shape_owner(uint32_t owner);
 	void get_shape_owners(List<uint32_t> *r_owners);

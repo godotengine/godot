@@ -70,7 +70,7 @@ OSStatus AudioDriverCoreAudio::output_device_address_cb(AudioObjectID inObjectID
 
 Error AudioDriverCoreAudio::init() {
 	AudioComponentDescription desc;
-	zeromem(&desc, sizeof(desc));
+	memset(&desc, 0, sizeof(desc));
 	desc.componentType = kAudioUnitType_Output;
 #ifdef OSX_ENABLED
 	desc.componentSubType = kAudioUnitSubType_HALOutput;
@@ -97,7 +97,7 @@ Error AudioDriverCoreAudio::init() {
 
 	AudioStreamBasicDescription strdesc;
 
-	zeromem(&strdesc, sizeof(strdesc));
+	memset(&strdesc, 0, sizeof(strdesc));
 	UInt32 size = sizeof(strdesc);
 	result = AudioUnitGetProperty(audio_unit, kAudioUnitProperty_StreamFormat, kAudioUnitScope_Output, kOutputBus, &strdesc, &size);
 	ERR_FAIL_COND_V(result != noErr, FAILED);
@@ -118,7 +118,7 @@ Error AudioDriverCoreAudio::init() {
 
 	mix_rate = GLOBAL_GET("audio/mix_rate");
 
-	zeromem(&strdesc, sizeof(strdesc));
+	memset(&strdesc, 0, sizeof(strdesc));
 	strdesc.mFormatID = kAudioFormatLinearPCM;
 	strdesc.mFormatFlags = kLinearPCMFormatFlagIsSignedInteger | kLinearPCMFormatFlagIsPacked;
 	strdesc.mChannelsPerFrame = channels;
@@ -148,7 +148,7 @@ Error AudioDriverCoreAudio::init() {
 	print_verbose("CoreAudio: audio buffer frames: " + itos(buffer_frames) + " calculated latency: " + itos(buffer_frames * 1000 / mix_rate) + "ms");
 
 	AURenderCallbackStruct callback;
-	zeromem(&callback, sizeof(AURenderCallbackStruct));
+	memset(&callback, 0, sizeof(AURenderCallbackStruct));
 	callback.inputProc = &AudioDriverCoreAudio::output_callback;
 	callback.inputProcRefCon = this;
 	result = AudioUnitSetProperty(audio_unit, kAudioUnitProperty_SetRenderCallback, kAudioUnitScope_Input, kOutputBus, &callback, sizeof(callback));
@@ -168,13 +168,12 @@ OSStatus AudioDriverCoreAudio::output_callback(void *inRefCon,
 		const AudioTimeStamp *inTimeStamp,
 		UInt32 inBusNumber, UInt32 inNumberFrames,
 		AudioBufferList *ioData) {
-
 	AudioDriverCoreAudio *ad = (AudioDriverCoreAudio *)inRefCon;
 
 	if (!ad->active || !ad->try_lock()) {
 		for (unsigned int i = 0; i < ioData->mNumberBuffers; i++) {
 			AudioBuffer *abuf = &ioData->mBuffers[i];
-			zeromem(abuf->mData, abuf->mDataByteSize);
+			memset(abuf->mData, 0, abuf->mDataByteSize);
 		};
 		return 0;
 	};
@@ -182,18 +181,15 @@ OSStatus AudioDriverCoreAudio::output_callback(void *inRefCon,
 	ad->start_counting_ticks();
 
 	for (unsigned int i = 0; i < ioData->mNumberBuffers; i++) {
-
 		AudioBuffer *abuf = &ioData->mBuffers[i];
 		unsigned int frames_left = inNumberFrames;
 		int16_t *out = (int16_t *)abuf->mData;
 
 		while (frames_left) {
-
 			unsigned int frames = MIN(frames_left, ad->buffer_frames);
 			ad->audio_server_process(frames, ad->samples_in.ptrw());
 
 			for (unsigned int j = 0; j < frames * ad->channels; j++) {
-
 				out[j] = ad->samples_in[j] >> 16;
 			}
 
@@ -213,7 +209,6 @@ OSStatus AudioDriverCoreAudio::input_callback(void *inRefCon,
 		const AudioTimeStamp *inTimeStamp,
 		UInt32 inBusNumber, UInt32 inNumberFrames,
 		AudioBufferList *ioData) {
-
 	AudioDriverCoreAudio *ad = (AudioDriverCoreAudio *)inRefCon;
 	if (!ad->active) {
 		return 0;
@@ -239,7 +234,7 @@ OSStatus AudioDriverCoreAudio::input_callback(void *inRefCon,
 			}
 		}
 	} else {
-		ERR_PRINTS("AudioUnitRender failed, code: " + itos(result));
+		ERR_PRINT("AudioUnitRender failed, code: " + itos(result));
 	}
 
 	ad->unlock();
@@ -251,7 +246,7 @@ void AudioDriverCoreAudio::start() {
 	if (!active) {
 		OSStatus result = AudioOutputUnitStart(audio_unit);
 		if (result != noErr) {
-			ERR_PRINTS("AudioOutputUnitStart failed, code: " + itos(result));
+			ERR_PRINT("AudioOutputUnitStart failed, code: " + itos(result));
 		} else {
 			active = true;
 		}
@@ -262,7 +257,7 @@ void AudioDriverCoreAudio::stop() {
 	if (active) {
 		OSStatus result = AudioOutputUnitStop(audio_unit);
 		if (result != noErr) {
-			ERR_PRINTS("AudioOutputUnitStop failed, code: " + itos(result));
+			ERR_PRINT("AudioOutputUnitStop failed, code: " + itos(result));
 		} else {
 			active = false;
 		}
@@ -298,7 +293,7 @@ void AudioDriverCoreAudio::finish() {
 		lock();
 
 		AURenderCallbackStruct callback;
-		zeromem(&callback, sizeof(AURenderCallbackStruct));
+		memset(&callback, 0, sizeof(AURenderCallbackStruct));
 		result = AudioUnitSetProperty(audio_unit, kAudioUnitProperty_SetRenderCallback, kAudioUnitScope_Input, kOutputBus, &callback, sizeof(callback));
 		if (result != noErr) {
 			ERR_PRINT("AudioUnitSetProperty failed");
@@ -342,7 +337,7 @@ void AudioDriverCoreAudio::finish() {
 
 Error AudioDriverCoreAudio::capture_init() {
 	AudioComponentDescription desc;
-	zeromem(&desc, sizeof(desc));
+	memset(&desc, 0, sizeof(desc));
 	desc.componentType = kAudioUnitType_Output;
 #ifdef OSX_ENABLED
 	desc.componentSubType = kAudioUnitSubType_HALOutput;
@@ -388,7 +383,7 @@ Error AudioDriverCoreAudio::capture_init() {
 #endif
 
 	AudioStreamBasicDescription strdesc;
-	zeromem(&strdesc, sizeof(strdesc));
+	memset(&strdesc, 0, sizeof(strdesc));
 	size = sizeof(strdesc);
 	result = AudioUnitGetProperty(input_unit, kAudioUnitProperty_StreamFormat, kAudioUnitScope_Output, kInputBus, &strdesc, &size);
 	ERR_FAIL_COND_V(result != noErr, FAILED);
@@ -410,7 +405,7 @@ Error AudioDriverCoreAudio::capture_init() {
 
 	mix_rate = GLOBAL_GET("audio/mix_rate");
 
-	zeromem(&strdesc, sizeof(strdesc));
+	memset(&strdesc, 0, sizeof(strdesc));
 	strdesc.mFormatID = kAudioFormatLinearPCM;
 	strdesc.mFormatFlags = kLinearPCMFormatFlagIsSignedInteger | kLinearPCMFormatFlagIsPacked;
 	strdesc.mChannelsPerFrame = capture_channels;
@@ -424,7 +419,7 @@ Error AudioDriverCoreAudio::capture_init() {
 	ERR_FAIL_COND_V(result != noErr, FAILED);
 
 	AURenderCallbackStruct callback;
-	zeromem(&callback, sizeof(AURenderCallbackStruct));
+	memset(&callback, 0, sizeof(AURenderCallbackStruct));
 	callback.inputProc = &AudioDriverCoreAudio::input_callback;
 	callback.inputProcRefCon = this;
 	result = AudioUnitSetProperty(input_unit, kAudioOutputUnitProperty_SetInputCallback, kAudioUnitScope_Global, kInputBus, &callback, sizeof(callback));
@@ -441,7 +436,7 @@ void AudioDriverCoreAudio::capture_finish() {
 		lock();
 
 		AURenderCallbackStruct callback;
-		zeromem(&callback, sizeof(AURenderCallbackStruct));
+		memset(&callback, 0, sizeof(AURenderCallbackStruct));
 		OSStatus result = AudioUnitSetProperty(input_unit, kAudioOutputUnitProperty_SetInputCallback, kAudioUnitScope_Global, 0, &callback, sizeof(callback));
 		if (result != noErr) {
 			ERR_PRINT("AudioUnitSetProperty failed");
@@ -475,23 +470,21 @@ void AudioDriverCoreAudio::capture_finish() {
 }
 
 Error AudioDriverCoreAudio::capture_start() {
-
 	input_buffer_init(buffer_frames);
 
 	OSStatus result = AudioOutputUnitStart(input_unit);
 	if (result != noErr) {
-		ERR_PRINTS("AudioOutputUnitStart failed, code: " + itos(result));
+		ERR_PRINT("AudioOutputUnitStart failed, code: " + itos(result));
 	}
 
 	return OK;
 }
 
 Error AudioDriverCoreAudio::capture_stop() {
-
 	if (input_unit) {
 		OSStatus result = AudioOutputUnitStop(input_unit);
 		if (result != noErr) {
-			ERR_PRINTS("AudioOutputUnitStop failed, code: " + itos(result));
+			ERR_PRINT("AudioOutputUnitStop failed, code: " + itos(result));
 		}
 	}
 
@@ -501,7 +494,6 @@ Error AudioDriverCoreAudio::capture_stop() {
 #ifdef OSX_ENABLED
 
 Array AudioDriverCoreAudio::_get_device_list(bool capture) {
-
 	Array list;
 
 	list.push_back("Default");
@@ -561,7 +553,6 @@ Array AudioDriverCoreAudio::_get_device_list(bool capture) {
 }
 
 void AudioDriverCoreAudio::_set_device(const String &device, bool capture) {
-
 	AudioDeviceID deviceId;
 	bool found = false;
 	if (device != "Default") {
@@ -645,17 +636,14 @@ void AudioDriverCoreAudio::_set_device(const String &device, bool capture) {
 }
 
 Array AudioDriverCoreAudio::get_device_list() {
-
 	return _get_device_list();
 }
 
 String AudioDriverCoreAudio::get_device() {
-
 	return device_name;
 }
 
 void AudioDriverCoreAudio::set_device(String device) {
-
 	device_name = device;
 	if (active) {
 		_set_device(device_name);
@@ -663,7 +651,6 @@ void AudioDriverCoreAudio::set_device(String device) {
 }
 
 void AudioDriverCoreAudio::capture_set_device(const String &p_name) {
-
 	capture_device_name = p_name;
 	if (active) {
 		_set_device(capture_device_name, true);
@@ -671,12 +658,10 @@ void AudioDriverCoreAudio::capture_set_device(const String &p_name) {
 }
 
 Array AudioDriverCoreAudio::capture_get_device_list() {
-
 	return _get_device_list(true);
 }
 
 String AudioDriverCoreAudio::capture_get_device() {
-
 	return capture_device_name;
 }
 

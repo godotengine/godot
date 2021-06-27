@@ -36,7 +36,6 @@
 #include "android_keys_utils.h"
 #include "api/java_class_wrapper.h"
 #include "api/jni_singleton.h"
-#include "audio_driver_jandroid.h"
 #include "core/engine.h"
 #include "core/project_settings.h"
 #include "dir_access_jandroid.h"
@@ -67,7 +66,6 @@ static Vector3 magnetometer;
 static Vector3 gyroscope;
 
 static void _initialize_java_modules() {
-
 	if (!ProjectSettings::get_singleton()->has_setting("android/modules")) {
 		return;
 	}
@@ -89,7 +87,6 @@ static void _initialize_java_modules() {
 		jmethodID findClass = env->GetMethodID(classLoader, "loadClass", "(Ljava/lang/String;)Ljava/lang/Class;");
 
 		for (int i = 0; i < mods.size(); i++) {
-
 			String m = mods[i];
 
 			// Deprecated in Godot 3.2.2, it's now a plugin to enable in export preset.
@@ -122,7 +119,6 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_setVirtualKeyboardHei
 }
 
 JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_initialize(JNIEnv *env, jclass clazz, jobject activity, jobject godot_instance, jobject p_asset_manager, jboolean p_use_apk_expansion) {
-
 	initialized = true;
 
 	JavaVM *jvm;
@@ -139,7 +135,6 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_initialize(JNIEnv *en
 	FileAccessAndroid::asset_manager = AAssetManager_fromJava(env, amgr);
 
 	DirAccessJAndroid::setup(godot_io_java->get_instance());
-	AudioDriverAndroid::setup(godot_io_java->get_instance());
 	NetSocketAndroid::setup(godot_java->get_member_object("netUtils", "Lorg/godotengine/godot/utils/GodotNetUtils;", env));
 
 	os_android = new OS_Android(godot_java, godot_io_java, p_use_apk_expansion);
@@ -179,7 +174,6 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_setup(JNIEnv *env, jc
 			ERR_FAIL_NULL_MSG(j_cmdline, "Out of memory.");
 
 			for (int i = 0; i < cmdlen; i++) {
-
 				jstring string = (jstring)env->GetObjectArrayElement(p_cmdline, i);
 				const char *rawString = env->GetStringUTFChars(string, 0);
 
@@ -210,13 +204,11 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_setup(JNIEnv *env, jc
 }
 
 JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_resize(JNIEnv *env, jclass clazz, jint width, jint height) {
-
 	if (os_android)
 		os_android->set_display_size(Size2(width, height));
 }
 
 JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_newcontext(JNIEnv *env, jclass clazz, jboolean p_32_bits) {
-
 	if (os_android) {
 		if (step == 0) {
 			// During startup
@@ -242,7 +234,6 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_step(JNIEnv *env, jcl
 		return;
 
 	if (step == 0) {
-
 		// Since Godot is initialized on the UI thread, _main_thread_id was set to that thread's id,
 		// but for Godot purposes, the main thread is the one running the game loop
 		Main::setup2(Thread::get_caller_id());
@@ -267,7 +258,6 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_step(JNIEnv *env, jcl
 	os_android->process_gyroscope(gyroscope);
 
 	if (os_android->main_loop_iterate()) {
-
 		godot_java->force_quit(env);
 	}
 }
@@ -384,11 +374,11 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_joyconnectionchanged(
 	}
 }
 
-JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_key(JNIEnv *env, jclass clazz, jint p_scancode, jint p_unicode_char, jboolean p_pressed) {
+JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_key(JNIEnv *env, jclass clazz, jint p_keycode, jint p_scancode, jint p_unicode_char, jboolean p_pressed) {
 	if (step == 0)
 		return;
 
-	os_android->process_key_event(p_scancode, p_unicode_char, p_pressed);
+	os_android->process_key_event(p_keycode, p_scancode, p_unicode_char, p_pressed);
 }
 
 JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_accelerometer(JNIEnv *env, jclass clazz, jfloat x, jfloat y, jfloat z) {
@@ -408,7 +398,6 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_gyroscope(JNIEnv *env
 }
 
 JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_focusin(JNIEnv *env, jclass clazz) {
-
 	if (step == 0)
 		return;
 
@@ -416,21 +405,13 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_focusin(JNIEnv *env, 
 }
 
 JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_focusout(JNIEnv *env, jclass clazz) {
-
 	if (step == 0)
 		return;
 
 	os_android->main_loop_focusout();
 }
 
-JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_audio(JNIEnv *env, jclass clazz) {
-
-	setup_android_thread();
-	AudioDriverAndroid::thread_func(env);
-}
-
 JNIEXPORT jstring JNICALL Java_org_godotengine_godot_GodotLib_getGlobal(JNIEnv *env, jclass clazz, jstring path) {
-
 	String js = jstring_to_string(path, env);
 
 	return env->NewStringUTF(ProjectSettings::get_singleton()->get(js).operator String().utf8().get_data());
@@ -449,7 +430,6 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_callobject(JNIEnv *en
 	Variant *vlist = (Variant *)alloca(sizeof(Variant) * count);
 	Variant **vptr = (Variant **)alloca(sizeof(Variant *) * count);
 	for (int i = 0; i < count; i++) {
-
 		jobject obj = env->GetObjectArrayElement(params, i);
 		Variant v;
 		if (obj)
@@ -480,7 +460,6 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_calldeferred(JNIEnv *
 	Variant args[VARIANT_ARG_MAX];
 
 	for (int i = 0; i < MIN(count, VARIANT_ARG_MAX); i++) {
-
 		jobject obj = env->GetObjectArrayElement(params, i);
 		if (obj)
 			args[i] = _jobject_to_variant(env, obj);

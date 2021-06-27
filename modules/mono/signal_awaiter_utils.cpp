@@ -39,7 +39,6 @@
 namespace SignalAwaiterUtils {
 
 Error connect_signal_awaiter(Object *p_source, const String &p_signal, Object *p_target, MonoObject *p_awaiter) {
-
 	ERR_FAIL_NULL_V(p_source, ERR_INVALID_DATA);
 	ERR_FAIL_NULL_V(p_target, ERR_INVALID_DATA);
 
@@ -66,7 +65,6 @@ Error connect_signal_awaiter(Object *p_source, const String &p_signal, Object *p
 } // namespace SignalAwaiterUtils
 
 Variant SignalAwaiterHandle::_signal_callback(const Variant **p_args, int p_argcount, Variant::CallError &r_error) {
-
 #ifdef DEBUG_ENABLED
 	ERR_FAIL_COND_V_MSG(conn_target_id && !ObjectDB::get_instance(conn_target_id), Variant(),
 			"Resumed after await, but class instance is gone.");
@@ -111,20 +109,17 @@ Variant SignalAwaiterHandle::_signal_callback(const Variant **p_args, int p_argc
 }
 
 void SignalAwaiterHandle::_bind_methods() {
-
 	ClassDB::bind_vararg_method(METHOD_FLAGS_DEFAULT, "_signal_callback", &SignalAwaiterHandle::_signal_callback, MethodInfo("_signal_callback"));
 }
 
 SignalAwaiterHandle::SignalAwaiterHandle(MonoObject *p_managed) :
 		MonoGCHandle(MonoGCHandle::new_strong_handle(p_managed), STRONG_HANDLE) {
-
 #ifdef DEBUG_ENABLED
 	conn_target_id = 0;
 #endif
 }
 
 SignalAwaiterHandle::~SignalAwaiterHandle() {
-
 	if (!completed) {
 		MonoObject *awaiter = get_target();
 

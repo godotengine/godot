@@ -1,26 +1,15 @@
 // This service worker is required to expose an exported Godot project as a
 // Progressive Web App. It provides an offline fallback page telling the user
-// that they need an Internet conneciton to run the project if desired.
+// that they need an Internet connection to run the project if desired.
 // Incrementing CACHE_VERSION will kick off the install event and force
 // previously cached resources to be updated from the network.
 const CACHE_VERSION = "@GODOT_VERSION@";
 const CACHE_NAME = "@GODOT_NAME@-cache";
-const OFFLINE_URL = "offline.html";
+const OFFLINE_URL = "@GODOT_OFFLINE_PAGE@";
 // Files that will be cached on load.
-const CACHED_FILES = [
-	"godot.tools.html",
-	"offline.html",
-	"godot.tools.js",
-	"godot.tools.worker.js",
-	"godot.tools.audio.worklet.js",
-	"logo.svg",
-	"favicon.png",
-];
-
+const CACHED_FILES = @GODOT_CACHE@;
 // Files that we might not want the user to preload, and will only be cached on first load.
-const CACHABLE_FILES = [
-	"godot.tools.wasm",
-];
+const CACHABLE_FILES = @GODOT_OPT_CACHE@;
 const FULL_CACHE = CACHED_FILES.concat(CACHABLE_FILES);
 
 self.addEventListener("install", (event) => {

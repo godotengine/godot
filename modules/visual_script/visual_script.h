@@ -87,7 +87,6 @@ public:
 	virtual VisualScriptNodeInstance *instance(VisualScriptInstance *p_instance) = 0;
 
 	struct TypeGuess {
-
 		Variant::Type type;
 		StringName gdclass;
 		Ref<Script> script;
@@ -164,16 +163,13 @@ public:
 };
 
 class VisualScript : public Script {
-
 	GDCLASS(VisualScript, Script);
 
 	RES_BASE_EXTENSION("vs");
 
 public:
 	struct SequenceConnection {
-
 		union {
-
 			struct {
 				uint64_t from_node : 24;
 				uint64_t from_output : 16;
@@ -183,15 +179,12 @@ public:
 		};
 
 		bool operator<(const SequenceConnection &p_connection) const {
-
 			return id < p_connection.id;
 		}
 	};
 
 	struct DataConnection {
-
 		union {
-
 			struct {
 				uint64_t from_node : 24;
 				uint64_t from_port : 8;
@@ -202,7 +195,6 @@ public:
 		};
 
 		bool operator<(const DataConnection &p_connection) const {
-
 			return id < p_connection.id;
 		}
 	};
@@ -244,7 +236,7 @@ private:
 
 	Map<StringName, Function> functions;
 	Map<StringName, Variable> variables;
-	Map<StringName, Vector<Argument> > custom_signals;
+	Map<StringName, Vector<Argument>> custom_signals;
 
 	Map<Object *, VisualScriptInstance *> instances;
 
@@ -404,7 +396,7 @@ public:
 	virtual bool set(const StringName &p_name, const Variant &p_value);
 	virtual bool get(const StringName &p_name, Variant &r_ret) const;
 	virtual void get_property_list(List<PropertyInfo> *p_properties) const;
-	virtual Variant::Type get_property_type(const StringName &p_name, bool *r_is_valid = NULL) const;
+	virtual Variant::Type get_property_type(const StringName &p_name, bool *r_is_valid = nullptr) const;
 
 	virtual void get_method_list(List<MethodInfo> *p_list) const;
 	virtual bool has_method(const StringName &p_method) const;
@@ -413,20 +405,20 @@ public:
 	String to_string(bool *r_valid);
 
 	bool set_variable(const StringName &p_variable, const Variant &p_value) {
-
 		Map<StringName, Variant>::Element *E = variables.find(p_variable);
-		if (!E)
+		if (!E) {
 			return false;
+		}
 
 		E->get() = p_value;
 		return true;
 	}
 
 	bool get_variable(const StringName &p_variable, Variant *r_variable) const {
-
 		const Map<StringName, Variant>::Element *E = variables.find(p_variable);
-		if (!E)
+		if (!E) {
 			return false;
+		}
 
 		*r_variable = E->get();
 		return true;
@@ -449,7 +441,6 @@ public:
 };
 
 class VisualScriptFunctionState : public Reference {
-
 	GDCLASS(VisualScriptFunctionState, Reference);
 	friend class VisualScriptInstance;
 
@@ -480,11 +471,9 @@ public:
 typedef Ref<VisualScriptNode> (*VisualScriptNodeRegisterFunc)(const String &p_type);
 
 class VisualScriptLanguage : public ScriptLanguage {
-
 	Map<String, VisualScriptNodeRegisterFunc> register_funcs;
 
 	struct CallLevel {
-
 		Variant *stack;
 		Variant **work_mem;
 		const StringName *function;
@@ -513,12 +502,13 @@ public:
 	bool debug_break_parse(const String &p_file, int p_node, const String &p_error);
 
 	_FORCE_INLINE_ void enter_function(VisualScriptInstance *p_instance, const StringName *p_function, Variant *p_stack, Variant **p_work_mem, int *current_id) {
-
-		if (Thread::get_main_id() != Thread::get_caller_id())
+		if (Thread::get_main_id() != Thread::get_caller_id()) {
 			return; //no support for other threads than main for now
+		}
 
-		if (ScriptDebugger::get_singleton()->get_lines_left() > 0 && ScriptDebugger::get_singleton()->get_depth() >= 0)
+		if (ScriptDebugger::get_singleton()->get_lines_left() > 0 && ScriptDebugger::get_singleton()->get_depth() >= 0) {
 			ScriptDebugger::get_singleton()->set_depth(ScriptDebugger::get_singleton()->get_depth() + 1);
+		}
 
 		if (_debug_call_stack_pos >= _debug_max_call_stack) {
 			//stack overflow
@@ -536,15 +526,15 @@ public:
 	}
 
 	_FORCE_INLINE_ void exit_function() {
-
-		if (Thread::get_main_id() != Thread::get_caller_id())
+		if (Thread::get_main_id() != Thread::get_caller_id()) {
 			return; //no support for other threads than main for now
+		}
 
-		if (ScriptDebugger::get_singleton()->get_lines_left() > 0 && ScriptDebugger::get_singleton()->get_depth() >= 0)
+		if (ScriptDebugger::get_singleton()->get_lines_left() > 0 && ScriptDebugger::get_singleton()->get_depth() >= 0) {
 			ScriptDebugger::get_singleton()->set_depth(ScriptDebugger::get_singleton()->get_depth() - 1);
+		}
 
 		if (_debug_call_stack_pos == 0) {
-
 			_debug_error = "Stack Underflow (Engine Bug)";
 			ScriptDebugger::get_singleton()->debug(this);
 			return;
@@ -566,12 +556,13 @@ public:
 
 	/* EDITOR FUNCTIONS */
 	virtual void get_reserved_words(List<String> *p_words) const;
+	virtual bool is_control_flow_keyword(String p_keyword) const;
 	virtual void get_comment_delimiters(List<String> *p_delimiters) const;
 	virtual void get_string_delimiters(List<String> *p_delimiters) const;
 	virtual Ref<Script> get_template(const String &p_class_name, const String &p_base_class_name) const;
 	virtual bool is_using_templates();
 	virtual void make_template(const String &p_class_name, const String &p_base_class_name, Ref<Script> &p_script);
-	virtual bool validate(const String &p_script, int &r_line_error, int &r_col_error, String &r_test_error, const String &p_path = "", List<String> *r_functions = NULL, List<ScriptLanguage::Warning> *r_warnings = NULL, Set<int> *r_safe_lines = NULL) const;
+	virtual bool validate(const String &p_script, int &r_line_error, int &r_col_error, String &r_test_error, const String &p_path = "", List<String> *r_functions = nullptr, List<ScriptLanguage::Warning> *r_warnings = nullptr, Set<int> *r_safe_lines = nullptr) const;
 	virtual Script *create_script() const;
 	virtual bool has_named_classes() const;
 	virtual bool supports_builtin_mode() const;
@@ -598,7 +589,7 @@ public:
 
 	virtual void get_recognized_extensions(List<String> *p_extensions) const;
 	virtual void get_public_functions(List<MethodInfo> *p_functions) const;
-	virtual void get_public_constants(List<Pair<String, Variant> > *p_constants) const;
+	virtual void get_public_constants(List<Pair<String, Variant>> *p_constants) const;
 
 	virtual void profiling_start();
 	virtual void profiling_stop();
@@ -618,7 +609,6 @@ public:
 //aid for registering
 template <class T>
 static Ref<VisualScriptNode> create_node_generic(const String &p_name) {
-
 	Ref<T> node;
 	node.instance();
 	return node;

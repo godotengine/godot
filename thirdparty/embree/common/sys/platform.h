@@ -1,4 +1,4 @@
-// Copyright 2009-2020 Intel Corporation
+// Copyright 2009-2021 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
 #pragma once
@@ -23,9 +23,17 @@
 /// detect platform
 ////////////////////////////////////////////////////////////////////////////////
 
-/* detect 32 or 64 platform */
+/* detect 32 or 64 Intel platform */
 #if defined(__x86_64__) || defined(__ia64__) || defined(_M_X64)
 #define __X86_64__
+#define __X86_ASM__
+#elif defined(__i386__) || defined(_M_IX86)
+#define __X86_ASM__
+#endif
+
+/* detect 64 bit platform */
+#if defined(__X86_64__) || defined(__aarch64__)
+#define __64BIT__
 #endif
 
 /* detect Linux platform */
@@ -91,7 +99,9 @@
 #define dll_import 
 #endif
 
+// -- GODOT start --
 #if defined(__WIN32__) && !defined(__MINGW32__)
+// -- GODOT end --
 #if !defined(__noinline)
 #define __noinline             __declspec(noinline)
 #endif
@@ -169,11 +179,19 @@
 #define PRINT4(x,y,z,w) embree_cout << STRING(x) << " = " << (x) << ", " << STRING(y) << " = " << (y) << ", " << STRING(z) << " = " << (z) << ", " << STRING(w) << " = " << (w) << embree_endl
 
 #if defined(DEBUG) // only report file and line in debug mode
+  // -- GODOT start --
+  // #define THROW_RUNTIME_ERROR(str)
+  //   throw std::runtime_error(std::string(__FILE__) + " (" + toString(__LINE__) + "): " + std::string(str));
   #define THROW_RUNTIME_ERROR(str) \
-    throw std::runtime_error(std::string(__FILE__) + " (" + toString(__LINE__) + "): " + std::string(str));
+    printf(std::string(__FILE__) + " (" + toString(__LINE__) + "): " + std::string(str)), abort();
+  // -- GODOT end --
 #else
+  // -- GODOT start --
+  // #define THROW_RUNTIME_ERROR(str)
+  //   throw std::runtime_error(str);
   #define THROW_RUNTIME_ERROR(str) \
-    throw std::runtime_error(str);
+    abort();
+  // -- GODOT end --
 #endif
 
 #define FATAL(x)   THROW_RUNTIME_ERROR(x)
@@ -192,7 +210,7 @@ namespace embree {
 
 /* windows does not have ssize_t */
 #if defined(__WIN32__)
-#if defined(__X86_64__)
+#if defined(__64BIT__)
 typedef int64_t ssize_t;
 #else
 typedef int32_t ssize_t;

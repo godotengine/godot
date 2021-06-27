@@ -1,7 +1,15 @@
-// Copyright 2009-2020 Intel Corporation
+// Copyright 2009-2021 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
 #pragma once
+
+#define vboolf vboolf_impl
+#define vboold vboold_impl
+#define vint vint_impl
+#define vuint vuint_impl
+#define vllong vllong_impl
+#define vfloat vfloat_impl
+#define vdouble vdouble_impl
 
 namespace embree
 { 
@@ -239,18 +247,6 @@ namespace embree
 #endif
   }
 
-  __forceinline void xchg(const vboold4& m, vdouble4& a, vdouble4& b) {
-    const vdouble4 c = a; a = select(m,b,a); b = select(m,c,b);
-  }
-
-  __forceinline vboold4 test(const vdouble4& a, const vdouble4& b) {
-#if defined(__AVX512VL__)
-    return _mm256_test_epi64_mask(_mm256_castpd_si256(a),_mm256_castpd_si256(b));
-#else
-    return _mm256_testz_si256(_mm256_castpd_si256(a),_mm256_castpd_si256(b));
-#endif
-  }
-
   ////////////////////////////////////////////////////////////////////////////////
   // Movement/Shifting/Shuffling Functions
   ////////////////////////////////////////////////////////////////////////////////
@@ -315,3 +311,11 @@ namespace embree
     return cout;
   }
 }
+
+#undef vboolf
+#undef vboold
+#undef vint
+#undef vuint
+#undef vllong
+#undef vfloat
+#undef vdouble

@@ -35,27 +35,22 @@
 using Platform::Exception;
 
 void ContextEGL_UWP::release_current() {
-
 	eglMakeCurrent(mEglDisplay, EGL_NO_SURFACE, EGL_NO_SURFACE, mEglContext);
 };
 
 void ContextEGL_UWP::make_current() {
-
 	eglMakeCurrent(mEglDisplay, mEglSurface, mEglSurface, mEglContext);
 };
 
 int ContextEGL_UWP::get_window_width() {
-
 	return width;
 };
 
 int ContextEGL_UWP::get_window_height() {
-
 	return height;
 };
 
 void ContextEGL_UWP::reset() {
-
 	cleanup();
 
 	window = CoreWindow::GetForCurrentThread();
@@ -63,7 +58,6 @@ void ContextEGL_UWP::reset() {
 };
 
 void ContextEGL_UWP::swap_buffers() {
-
 	if (eglSwapBuffers(mEglDisplay, mEglSurface) != EGL_TRUE) {
 		cleanup();
 
@@ -75,7 +69,6 @@ void ContextEGL_UWP::swap_buffers() {
 };
 
 Error ContextEGL_UWP::initialize() {
-
 	EGLint configAttribList[] = {
 		EGL_RED_SIZE, 8,
 		EGL_GREEN_SIZE, 8,
@@ -115,7 +108,6 @@ Error ContextEGL_UWP::initialize() {
 	}
 
 	try {
-
 		const EGLint displayAttributes[] = {
 			/*EGL_PLATFORM_ANGLE_TYPE_ANGLE, EGL_PLATFORM_ANGLE_TYPE_D3D11_ANGLE,
 			EGL_PLATFORM_ANGLE_MAX_VERSION_MAJOR_ANGLE, 9,
@@ -191,7 +183,6 @@ Error ContextEGL_UWP::initialize() {
 };
 
 void ContextEGL_UWP::cleanup() {
-
 	if (mEglDisplay != EGL_NO_DISPLAY && mEglSurface != EGL_NO_SURFACE) {
 		eglDestroySurface(mEglDisplay, mEglSurface);
 		mEglSurface = EGL_NO_SURFACE;
@@ -216,6 +207,5 @@ ContextEGL_UWP::ContextEGL_UWP(CoreWindow ^ p_window, Driver p_driver) :
 		window(p_window) {}
 
 ContextEGL_UWP::~ContextEGL_UWP() {
-
 	cleanup();
 };

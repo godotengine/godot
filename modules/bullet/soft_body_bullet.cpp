@@ -37,7 +37,7 @@
 
 SoftBodyBullet::SoftBodyBullet() :
 		CollisionObjectBullet(CollisionObjectBullet::TYPE_SOFT_BODY),
-		bt_soft_body(NULL),
+		bt_soft_body(nullptr),
 		isScratched(false),
 		simulation_precision(5),
 		total_mass(1.),
@@ -77,8 +77,9 @@ void SoftBodyBullet::on_enter_area(AreaBullet *p_area) {}
 void SoftBodyBullet::on_exit_area(AreaBullet *p_area) {}
 
 void SoftBodyBullet::update_visual_server(SoftBodyVisualServerHandler *p_visual_server_handler) {
-	if (!bt_soft_body)
+	if (!bt_soft_body) {
 		return;
+	}
 
 	/// Update visual server vertices
 	const btSoftBody::tNodeArray &nodes(bt_soft_body->m_nodes);
@@ -116,14 +117,13 @@ void SoftBodyBullet::update_visual_server(SoftBodyVisualServerHandler *p_visual_
 }
 
 void SoftBodyBullet::set_soft_mesh(const Ref<Mesh> &p_mesh) {
-
-	if (p_mesh.is_null())
+	if (p_mesh.is_null()) {
 		soft_mesh.unref();
-	else
+	} else {
 		soft_mesh = p_mesh;
+	}
 
 	if (soft_mesh.is_null()) {
-
 		destroy_soft_body();
 		return;
 	}
@@ -134,9 +134,9 @@ void SoftBodyBullet::set_soft_mesh(const Ref<Mesh> &p_mesh) {
 }
 
 void SoftBodyBullet::destroy_soft_body() {
-
-	if (!bt_soft_body)
+	if (!bt_soft_body) {
 		return;
+	}
 
 	if (space) {
 		/// Remove from world before deletion
@@ -144,7 +144,7 @@ void SoftBodyBullet::destroy_soft_body() {
 	}
 
 	destroyBulletCollisionObject();
-	bt_soft_body = NULL;
+	bt_soft_body = nullptr;
 }
 
 void SoftBodyBullet::set_soft_transform(const Transform &p_transform) {
@@ -153,8 +153,9 @@ void SoftBodyBullet::set_soft_transform(const Transform &p_transform) {
 }
 
 void SoftBodyBullet::move_all_nodes(const Transform &p_transform) {
-	if (!bt_soft_body)
+	if (!bt_soft_body) {
 		return;
+	}
 	btTransform bt_transf;
 	G_TO_B(p_transform, bt_transf);
 	bt_soft_body->transform(bt_transf);
@@ -180,8 +181,9 @@ void SoftBodyBullet::get_node_position(int p_node_index, Vector3 &r_position) co
 }
 
 void SoftBodyBullet::get_node_offset(int p_node_index, Vector3 &r_offset) const {
-	if (soft_mesh.is_null())
+	if (soft_mesh.is_null()) {
 		return;
+	}
 
 	Array arrays = soft_mesh->surface_get_arrays(0);
 	PoolVector<Vector3> vertices(arrays[VS::ARRAY_VERTEX]);
@@ -226,15 +228,15 @@ void SoftBodyBullet::reset_all_node_mass() {
 }
 
 void SoftBodyBullet::reset_all_node_positions() {
-	if (soft_mesh.is_null())
+	if (soft_mesh.is_null()) {
 		return;
+	}
 
 	Array arrays = soft_mesh->surface_get_arrays(0);
 	PoolVector<Vector3> vs_vertices(arrays[VS::ARRAY_VERTEX]);
 	PoolVector<Vector3>::Read vs_vertices_read = vs_vertices.read();
 
 	for (int vertex_index = bt_soft_body->m_nodes.size() - 1; 0 <= vertex_index; --vertex_index) {
-
 		G_TO_B(vs_vertices_read[indices_table[vertex_index][0]], bt_soft_body->m_nodes[vertex_index].m_x);
 
 		bt_soft_body->m_nodes[vertex_index].m_q = bt_soft_body->m_nodes[vertex_index].m_x;
@@ -342,7 +344,6 @@ void SoftBodyBullet::set_trimesh_body_shape(PoolVector<int> p_indices, PoolVecto
 			PoolVector<Vector3>::Read p_vertices_read = p_vertices.read();
 
 			for (int vs_vertex_index = 0; vs_vertex_index < vs_vertices_size; ++vs_vertex_index) {
-
 				Map<Vector3, int>::Element *e = unique_vertices.find(p_vertices_read[vs_vertex_index]);
 				int vertex_id;
 				if (e) {
@@ -398,13 +399,13 @@ void SoftBodyBullet::set_trimesh_body_shape(PoolVector<int> p_indices, PoolVecto
 }
 
 void SoftBodyBullet::setup_soft_body() {
-
-	if (!bt_soft_body)
+	if (!bt_soft_body) {
 		return;
+	}
 
 	// Soft body setup
 	setupBulletCollisionObject(bt_soft_body);
-	bt_soft_body->m_worldInfo = NULL; // Remove fake world info
+	bt_soft_body->m_worldInfo = nullptr; // Remove fake world info
 	bt_soft_body->getCollisionShape()->setMargin(0.01);
 	bt_soft_body->setCollisionFlags(bt_soft_body->getCollisionFlags() & (~(btCollisionObject::CF_KINEMATIC_OBJECT | btCollisionObject::CF_STATIC_OBJECT)));
 

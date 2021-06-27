@@ -1,4 +1,4 @@
-// Copyright 2009-2020 Intel Corporation
+// Copyright 2009-2021 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
 #pragma once
@@ -58,15 +58,19 @@ namespace embree
     const Value v = tbb::parallel_reduce(tbb::blocked_range<Index>(first,last,minStepSize),identity,
       [&](const tbb::blocked_range<Index>& r, const Value& start) { return reduction(start,func(range<Index>(r.begin(),r.end()))); },
       reduction,context);
-    if (context.is_group_execution_cancelled())
-      throw std::runtime_error("task cancelled");
+    // -- GODOT start --
+    // if (context.is_group_execution_cancelled())
+    //   throw std::runtime_error("task cancelled");
+    // -- GODOT end --
     return v;
   #else
     const Value v = tbb::parallel_reduce(tbb::blocked_range<Index>(first,last,minStepSize),identity,
       [&](const tbb::blocked_range<Index>& r, const Value& start) { return reduction(start,func(range<Index>(r.begin(),r.end()))); },
       reduction);
-    if (tbb::task::self().is_cancelled())
-      throw std::runtime_error("task cancelled");
+    // -- GODOT start --
+    // if (tbb::task::self().is_cancelled())
+    //   throw std::runtime_error("task cancelled");
+    // -- GODOT end --
     return v;
   #endif
 #else // TASKING_PPL

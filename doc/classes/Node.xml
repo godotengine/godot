@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Node" inherits="Object" version="3.3">
+<class name="Node" inherits="Object" version="3.4">
 	<brief_description>
 		Base class for all [i]scene[/i] objects.
 	</brief_description>
@@ -564,6 +564,7 @@
 			</return>
 			<description>
 				Queues a node for deletion at the end of the current frame. When deleted, all of its child nodes will be deleted as well. This method ensures it's safe to delete the node, contrary to [method Object.free]. Use [method Object.is_queued_for_deletion] to check whether a node will be deleted at the end of the frame.
+				[b]Important:[/b] If you have a variable pointing to a node, it will [i]not[/i] be assigned to [code]null[/code] once the node is freed. Instead, it will point to a [i]previously freed instance[/i] and you should validate it with [method @GDScript.is_instance_valid] before attempting to call its methods or access its properties.
 			</description>
 		</method>
 		<method name="raise">

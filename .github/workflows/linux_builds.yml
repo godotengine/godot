@@ -3,7 +3,7 @@ on: [push, pull_request]
 
 # Global Settings
 env:
-  GODOT_BASE_BRANCH: 3.2
+  GODOT_BASE_BRANCH: 3.x
   SCONSFLAGS: platform=linuxbsd verbose=yes warnings=all werror=yes debug_symbols=no --jobs=2
   SCONS_CACHE_LIMIT: 4096
 
@@ -208,3 +208,11 @@ jobs:
           echo "----- Run and test project -----"
           DRI_PRIME=0 xvfb-run bin/godot.x11.tools.64s 30 --video-driver GLES3 --audio-driver Dummy --path test_project 2>&1 | tee sanitizers_log.txt || true
           misc/scripts/check_ci_log.py sanitizers_log.txt
+
+      # Check class reference
+      - name: Check for class reference updates
+        run: |
+          echo "Running --doctool to see if this changes the public API without updating the documentation."
+          echo -e "If a diff is shown, it means that your code/doc changes are incomplete and you should update the class reference with --doctool.\n\n"
+          DRI_PRIME=0 xvfb-run bin/godot.x11.tools.64s --doctool . 2>&1 > /dev/null || true
+          git diff --color --exit-code

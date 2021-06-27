@@ -1,4 +1,4 @@
-// Copyright 2009-2020 Intel Corporation
+// Copyright 2009-2021 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
 #pragma once
@@ -299,10 +299,6 @@ namespace embree
 #endif
 
 #if defined(__SSE__)
-  __forceinline Vec3<vfloat4> broadcast4f(const Vec3<vfloat4>& a, const size_t k) {
-    return Vec3<vfloat4>(vfloat4::broadcast(&a.x[k]), vfloat4::broadcast(&a.y[k]), vfloat4::broadcast(&a.z[k]));
-  }
-
   template<>
   __forceinline Vec3<vfloat4> broadcast<vfloat4,vfloat4>(const Vec3<vfloat4>& a, const size_t k) {
     return Vec3<vfloat4>(vfloat4::broadcast(&a.x[k]), vfloat4::broadcast(&a.y[k]), vfloat4::broadcast(&a.z[k]));
@@ -318,15 +314,6 @@ namespace embree
   template<>
   __forceinline Vec3<vfloat8>::Vec3(const Vec3fa& a) {
     x = a.x; y = a.y; z = a.z;
-  }
-  __forceinline Vec3<vfloat4> broadcast4f(const Vec3<vfloat8>& a, const size_t k) {
-    return Vec3<vfloat4>(vfloat4::broadcast(&a.x[k]), vfloat4::broadcast(&a.y[k]), vfloat4::broadcast(&a.z[k]));
-  }
-  __forceinline Vec3<vfloat8> broadcast8f(const Vec3<vfloat4>& a, const size_t k) {
-    return Vec3<vfloat8>(vfloat8::broadcast(&a.x[k]), vfloat8::broadcast(&a.y[k]), vfloat8::broadcast(&a.z[k]));
-  }
-  __forceinline Vec3<vfloat8> broadcast8f(const Vec3<vfloat8>& a, const size_t k) {
-    return Vec3<vfloat8>(vfloat8::broadcast(&a.x[k]), vfloat8::broadcast(&a.y[k]), vfloat8::broadcast(&a.z[k]));
   }
 
   template<>

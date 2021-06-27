@@ -81,7 +81,7 @@ public:
 
 	//! temp_variables
 	//!@{
-	real_t m_currentLimitError; //!  How much is violated this limit
+	real_t m_currentLimitError; //!< How much is violated this limit
 	int m_currentLimit; //!< 0=free, 1=at lo limit, 2=at hi limit
 	real_t m_accumulatedImpulse;
 	//!@}
@@ -113,7 +113,7 @@ public:
 		return (m_enableMotor || m_currentLimit != 0);
 	}
 
-	//! calculates  error
+	//! calculates error
 	/*!
 	calculates m_currentLimit and m_currentLimitError.
 	*/
@@ -326,7 +326,7 @@ public:
 		return &m_angularLimits[index];
 	}
 
-	//! Retrieves the  limit informacion
+	//! Retrieves the limit informacion
 	G6DOFTranslationalLimitMotorSW *getTranslationalLimitMotor() {
 		return &m_linearLimits;
 	}
@@ -363,7 +363,7 @@ public:
 		return B;
 	}
 
-	virtual void calcAnchorPos(void); // overridable
+	virtual void calcAnchorPos(); // overridable
 
 	void set_param(Vector3::Axis p_axis, PhysicsServer::G6DOFJointAxisParam p_param, real_t p_value);
 	real_t get_param(Vector3::Axis p_axis, PhysicsServer::G6DOFJointAxisParam p_param) const;

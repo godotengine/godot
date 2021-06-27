@@ -37,8 +37,8 @@
 
 /*
  The `config` section and fields are required and defined as follow:
-- **name**: name of the plugin
-- **binary_type**: can be either `local` or `remote`.  The type affects the **binary** field
+- **name**: name of the plugin.
+- **binary_type**: can be either `local` or `remote`. The type affects the **binary** field.
 - **binary**:
   - if **binary_type** is `local`, then this should be the filename of the plugin `aar` file in the `res://android/plugins` directory (e.g: `MyPlugin.aar`).
   - if **binary_type** is `remote`, then this should be a declaration for a remote gradle binary (e.g: "org.godot.example:my-plugin:0.0.0").
@@ -51,7 +51,6 @@ The `dependencies` section and fields are optional and defined as follow:
  See https://github.com/godotengine/godot/issues/38157#issuecomment-618773871
  */
 struct PluginConfigAndroid {
-
 	static const char *PLUGIN_CONFIG_EXT;
 
 	static const char *CONFIG_SECTION;

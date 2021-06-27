@@ -88,7 +88,7 @@
 # Lucas Araujo <lucassants2808@gmail.com>, 2020.
 # Sr Half <flavio05@outlook.com>, 2020.
 # Matheus Pesegoginski <pese.ek.tk@outlook.com>, 2020.
-# DeeJayLSP <djlsplays@gmail.com>, 2020.
+# DeeJayLSP <djlsplays@gmail.com>, 2020, 2021.
 # Anonymous <noreply@weblate.org>, 2020.
 # André Sousa <andrelvsousa@gmail.com>, 2020.
 # Kleyton Luiz de Sousa Vieira <kleytonluizdesouzavieira@gmail.com>, 2020.
@@ -101,7 +101,7 @@
 # Jairo Tuboi <tuboi.jairo@gmail.com>, 2020.
 # Felipe Fetter <felipetfetter@gmail.com>, 2020.
 # Rafael Henrique Capati <rhcapati@gmail.com>, 2020.
-# NogardRyuu <nogardryuu@gmail.com>, 2020.
+# NogardRyuu <nogardryuu@gmail.com>, 2020, 2021.
 # Elton <eltondeoliveira@outlook.com>, 2020.
 # ThiagoCTN <thiagocampostn@gmail.com>, 2020.
 # Alec Santos <alecsantos96@gmail.com>, 2020.
@@ -113,12 +113,16 @@
 # Ricardo Zamarrenho Carvalho Correa <ricardozcc17@gmail.com>, 2021.
 # Diego dos Reis Macedo <diego_dragon97@hotmail.com>, 2021.
 # Lucas E. <lukas.ed45@gmail.com>, 2021.
+# Gabriel Silveira <gabomfim99@gmail.com>, 2021.
+# Arthur Phillip D. Silva <artphil.dev@gmail.com>, 2021.
+# Gustavo HM 102 <gustavohm102@gmail.com>, 2021.
+# Douglas Leão <djlsplays@gmail.com>, 2021.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: 2016-05-30\n"
-"PO-Revision-Date: 2021-03-24 23:44+0000\n"
-"Last-Translator: Renato Rotenberg <renato.rotenberg@gmail.com>\n"
+"PO-Revision-Date: 2021-06-12 01:23+0000\n"
+"Last-Translator: Douglas Leão <djlsplays@gmail.com>\n"
 "Language-Team: Portuguese (Brazil) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/pt_BR/>\n"
 "Language: pt_BR\n"
@@ -126,7 +130,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 4.5.2-dev\n"
+"X-Generator: Weblate 4.7-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -772,7 +776,7 @@ msgstr "Mudar Deslocamento do Início do Clip de Trilha de Audio"
 
 #: editor/animation_track_editor_plugins.cpp
 msgid "Change Audio Track Clip End Offset"
-msgstr "Alterar deslocamento de fim do clipe de faixa de áudio"
+msgstr "Alterar Deslocamento de Fim do Clipe de Faixa de Áudio"
 
 #: editor/array_property_edit.cpp
 msgid "Resize Array"
@@ -1140,8 +1144,8 @@ msgid ""
 "You can find the removed files in the system trash to restore them."
 msgstr ""
 "Remover arquivos selecionados do projeto? (irreversível)\n"
-"Você pode encontrar os arquivos removidos na lixeira e restaurá-los caso "
-"seja necessário."
+"Você pode encontrar os arquivos removidos na lixeira do sistema para "
+"restaurá-los."
 
 #: editor/dependency_editor.cpp
 msgid ""
@@ -1153,8 +1157,8 @@ msgstr ""
 "Os arquivos sendo removidos são requeridos por outros recursos para que "
 "funcionem.\n"
 "Removê-los mesmo assim? (irreversível)\n"
-"Você pode encontrar os arquivos removidos na lixeira e restaurá-los caso "
-"necessário."
+"Você pode encontrar os arquivos removidos na lixeira do sistema para "
+"restaurá-los."
 
 #: editor/dependency_editor.cpp
 msgid "Cannot remove:"
@@ -1223,6 +1227,10 @@ msgstr "Alterar Valor do Dicionário"
 #: editor/editor_about.cpp
 msgid "Thanks from the Godot community!"
 msgstr "Agradecimentos da comunidade Godot!"
+
+#: editor/editor_about.cpp editor/editor_node.cpp editor/project_manager.cpp
+msgid "Click to copy."
+msgstr ""
 
 #: editor/editor_about.cpp
 msgid "Godot Engine contributors"
@@ -1565,7 +1573,7 @@ msgstr "Renomear Autoload"
 
 #: editor/editor_autoload_settings.cpp
 msgid "Toggle AutoLoad Globals"
-msgstr "Alternar Auto Carregamentos de Globais"
+msgstr "Alternar Globais de AutoLoad"
 
 #: editor/editor_autoload_settings.cpp
 msgid "Move Autoload"
@@ -1719,8 +1727,8 @@ msgid ""
 "Target platform requires 'ETC2' or 'PVRTC' texture compression for GLES3. "
 "Enable 'Import Etc 2' or 'Import Pvrtc' in Project Settings."
 msgstr ""
-"A plataforma de destino requer compactação de textura 'ETC2' ou 'PVRTC' para "
-"GLES3. Ativar 'Importar Etc 2' ou 'Importar Pvrtc' nas Configurações do "
+"A plataforma de destino requer compressão de textura 'ETC2' ou 'PVRTC' para "
+"GLES3. Habilite 'Importar Etc 2' ou 'Importar Pvrtc' nas Configurações do "
 "Projeto."
 
 #: editor/editor_export.cpp
@@ -1867,7 +1875,7 @@ msgstr "Importar"
 
 #: editor/editor_feature_profile.cpp editor/project_export.cpp
 msgid "Export"
-msgstr "Exportar"
+msgstr "Exportação"
 
 #: editor/editor_feature_profile.cpp
 msgid "Available Profiles:"
@@ -2070,7 +2078,7 @@ msgstr "(Re)Importando Assets"
 
 #: editor/editor_help.cpp editor/plugins/spatial_editor_plugin.cpp
 msgid "Top"
-msgstr "Cima"
+msgstr "Início"
 
 #: editor/editor_help.cpp
 msgid "Class:"
@@ -2649,11 +2657,13 @@ msgstr ""
 
 #: editor/editor_node.cpp
 msgid ""
-"Unable to load addon script from path: '%s' There seems to be an error in "
-"the code, please check the syntax."
+"Unable to load addon script from path: '%s'. This might be due to a code "
+"error in that script.\n"
+"Disabling the addon at '%s' to prevent further errors."
 msgstr ""
-"Não foi possível localizar a área do script para o complemento do plugin em: "
-"'%s'."
+"Não foi possível localizar o script do caminho: '%s'. Isso pode ser devido a "
+"um erro de código nesse script.\n"
+"Desativando o addon em '%s' para prevenir erros futuros."
 
 #: editor/editor_node.cpp
 msgid ""
@@ -3098,6 +3108,10 @@ msgid "About"
 msgstr "Sobre"
 
 #: editor/editor_node.cpp
+msgid "Support Godot Development"
+msgstr "Apoie o Desenvolvimento do Godot"
+
+#: editor/editor_node.cpp
 msgid "Play the project."
 msgstr "Roda o projeto."
 
@@ -3529,7 +3543,7 @@ msgstr "Não foi possível instanciar o script:"
 
 #: editor/editor_run_script.cpp
 msgid "Did you forget the 'tool' keyword?"
-msgstr "Você esqueceu da palavra-chave \"tool\"?"
+msgstr "Você esqueceu da palavra-chave 'tool'?"
 
 #: editor/editor_run_script.cpp
 msgid "Couldn't run script:"
@@ -3790,6 +3804,8 @@ msgstr ""
 msgid ""
 "Importing has been disabled for this file, so it can't be opened for editing."
 msgstr ""
+"A importação foi desativada para este arquivo, por isso não pode ser aberto "
+"para edição."
 
 #: editor/filesystem_dock.cpp
 msgid "Cannot move/rename resources root."
@@ -4193,7 +4209,7 @@ msgstr "Redefinir para os padrões"
 
 #: editor/import_dock.cpp
 msgid "Keep File (No Import)"
-msgstr ""
+msgstr "Manter Arquivo (Sem Importação)"
 
 #: editor/import_dock.cpp
 msgid "%d Files"
@@ -5339,7 +5355,7 @@ msgid ""
 "Godot editor was built without ray tracing support, lightmaps can't be baked."
 msgstr ""
 "O editor Godot foi construído sem suporte à ray tracing, os lightmaps não "
-"podem ser bakeados."
+"podem ser refinados."
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
 msgid "Bake Lightmaps"
@@ -5853,7 +5869,7 @@ msgstr "Máscara de Escala para inserir chaves."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Insert keys (based on mask)."
-msgstr "Inserir Chaves (baseado na máscara)"
+msgstr "Inserir Chaves (baseado na máscara)."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid ""
@@ -5863,9 +5879,9 @@ msgid ""
 "Keys must be inserted manually for the first time."
 msgstr ""
 "Inserir chaves automaticamente quando os objetos são transladados, "
-"rotacionados ou escalados (com base na máscara). \n"
+"rotacionados ou escalados (com base na máscara).\n"
 "As chaves são adicionadas apenas às faixas existentes, nenhuma nova trilha "
-"será criada. \n"
+"será criada.\n"
 "As chaves devem ser inseridas manualmente pela primeira vez."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
@@ -6665,8 +6681,8 @@ msgid ""
 "Polygon 2D has internal vertices, so it can no longer be edited in the "
 "viewport."
 msgstr ""
-"Polygon2D tem vértices internos, portanto não pode mais ser editado no "
-"Viewport."
+"Polygon2D tem vértices internos, portanto não pode mais ser editado na "
+"viewport."
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Create Polygon & UV"
@@ -7011,7 +7027,7 @@ msgstr "Alternar ordenação alfabética da lista de métodos."
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Filter methods"
-msgstr "Métodos de filtragem"
+msgstr "Filtrar métodos"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Sort"
@@ -7658,6 +7674,13 @@ msgstr "Modificador de velocidade lenta da Visão Livre"
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "View Rotation Locked"
 msgstr "Ver Rotação Bloqueada"
+
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid ""
+"To zoom further, change the camera's clipping planes (View -> Settings...)"
+msgstr ""
+"Para dar mais zoom, altere os planos de clipping da câmera (Visão -> "
+"Configurações...)"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid ""
@@ -9818,7 +9841,7 @@ msgstr "Compilado"
 
 #: editor/project_export.cpp
 msgid "Encrypted (Provide Key Below)"
-msgstr "Criptografado (forneça chave abaixo)"
+msgstr "Criptografado (Forneça Chave Abaixo)"
 
 #: editor/project_export.cpp
 msgid "Invalid Encryption Key (must be 64 characters long)"
@@ -10219,7 +10242,7 @@ msgstr ""
 
 #: editor/project_settings_editor.cpp
 msgid "Key "
-msgstr "Chave "
+msgstr "Tecla "
 
 #: editor/project_settings_editor.cpp
 msgid "Joy Button"
@@ -10231,11 +10254,11 @@ msgstr "Eixo do Joystick"
 
 #: editor/project_settings_editor.cpp
 msgid "Mouse Button"
-msgstr "Botão do Mous"
+msgstr "Botão do Mouse"
 
 #: editor/project_settings_editor.cpp
 msgid ""
-"Invalid action name. it cannot be empty nor contain '/', ':', '=', '\\' or "
+"Invalid action name. It cannot be empty nor contain '/', ':', '=', '\\' or "
 "'\"'"
 msgstr ""
 "Nome da ação inválido. Não pode estar vazio nem conter '/', ':', '=', '\\' "
@@ -10271,7 +10294,7 @@ msgstr "Pressione uma Tecla..."
 
 #: editor/project_settings_editor.cpp
 msgid "Mouse Button Index:"
-msgstr "Botão do Mouse:"
+msgstr "Índice do Botão do Mouse:"
 
 #: editor/project_settings_editor.cpp
 msgid "Left Button"
@@ -10531,7 +10554,7 @@ msgstr "Idiomas:"
 
 #: editor/project_settings_editor.cpp
 msgid "AutoLoad"
-msgstr "O AutoLoad"
+msgstr "AutoLoad"
 
 #: editor/project_settings_editor.cpp
 msgid "Plugins"
@@ -11040,6 +11063,16 @@ msgstr "Remove o script do nó selecionado."
 #: editor/scene_tree_dock.cpp
 msgid "Remote"
 msgstr "Remoto"
+
+#: editor/scene_tree_dock.cpp
+msgid ""
+"If selected, the Remote scene tree dock will cause the project to stutter "
+"every time it updates.\n"
+"Switch back to the Local scene tree dock to improve performance."
+msgstr ""
+"Se selecionado, o painel da árvore de cena Remota vai fazer o projeto travar "
+"toda vez que atualizar.\n"
+"Volte para o painel da árvore de cena Local para melhorar o desempenho."
 
 #: editor/scene_tree_dock.cpp
 msgid "Local"
@@ -12291,10 +12324,22 @@ msgstr ""
 "através do menu Projeto."
 
 #: platform/android/export/export.cpp
+msgid ""
+"Either Debug Keystore, Debug User AND Debug Password settings must be "
+"configured OR none of them."
+msgstr ""
+
+#: platform/android/export/export.cpp
 msgid "Debug keystore not configured in the Editor Settings nor in the preset."
 msgstr ""
 "Porta-chaves de depuração não configurado nas Configurações do Editor e nem "
 "na predefinição."
+
+#: platform/android/export/export.cpp
+msgid ""
+"Either Release Keystore, Release User AND Release Password settings must be "
+"configured OR none of them."
+msgstr ""
 
 #: platform/android/export/export.cpp
 msgid "Release keystore incorrectly configured in the export preset."

@@ -133,10 +133,10 @@ class VisualScriptEditor : public ScriptEditorBase {
 		String name;
 		Variant::Type ret;
 		bool ret_variant;
-		Vector<Pair<Variant::Type, String> > args;
+		Vector<Pair<Variant::Type, String>> args;
 	};
 
-	HashMap<StringName, Ref<StyleBox> > node_styles;
+	HashMap<StringName, Ref<StyleBox>> node_styles;
 	StringName edited_func;
 	StringName default_func;
 
@@ -153,8 +153,7 @@ class VisualScriptEditor : public ScriptEditorBase {
 	String _validate_name(const String &p_name) const;
 
 	struct Clipboard {
-
-		Map<int, Ref<VisualScriptNode> > nodes;
+		Map<int, Ref<VisualScriptNode>> nodes;
 		Map<int, Vector2> nodes_positions;
 
 		Set<VisualScript::SequenceConnection> sequence_connections;

@@ -43,20 +43,17 @@
 #include "servers/visual_server.h"
 
 void CollisionShape::make_convex_from_brothers() {
-
 	Node *p = get_parent();
-	if (!p)
+	if (!p) {
 		return;
+	}
 
 	for (int i = 0; i < p->get_child_count(); i++) {
-
 		Node *n = p->get_child(i);
 		MeshInstance *mi = Object::cast_to<MeshInstance>(n);
 		if (mi) {
-
 			Ref<Mesh> m = mi->get_mesh();
 			if (m.is_valid()) {
-
 				Ref<Shape> s = m->create_convex_shape();
 				set_shape(s);
 			}
@@ -66,15 +63,14 @@ void CollisionShape::make_convex_from_brothers() {
 
 void CollisionShape::_update_in_shape_owner(bool p_xform_only) {
 	parent->shape_owner_set_transform(owner_id, get_transform());
-	if (p_xform_only)
+	if (p_xform_only) {
 		return;
+	}
 	parent->shape_owner_set_disabled(owner_id, disabled);
 }
 
 void CollisionShape::_notification(int p_what) {
-
 	switch (p_what) {
-
 		case NOTIFICATION_PARENTED: {
 			parent = Object::cast_to<CollisionObject>(get_parent());
 			if (parent) {
@@ -100,18 +96,16 @@ void CollisionShape::_notification(int p_what) {
 				parent->remove_shape_owner(owner_id);
 			}
 			owner_id = 0;
-			parent = NULL;
+			parent = nullptr;
 		} break;
 	}
 }
 
 void CollisionShape::resource_changed(RES res) {
-
 	update_gizmo();
 }
 
 String CollisionShape::get_configuration_warning() const {
-
 	String warning = Spatial::get_configuration_warning();
 
 	if (!Object::cast_to<CollisionObject>(get_parent())) {
@@ -148,7 +142,6 @@ String CollisionShape::get_configuration_warning() const {
 }
 
 void CollisionShape::_bind_methods() {
-
 	//not sure if this should do anything
 	ClassDB::bind_method(D_METHOD("resource_changed", "resource"), &CollisionShape::resource_changed);
 	ClassDB::bind_method(D_METHOD("set_shape", "shape"), &CollisionShape::set_shape);
@@ -157,8 +150,6 @@ void CollisionShape::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_disabled"), &CollisionShape::is_disabled);
 	ClassDB::bind_method(D_METHOD("make_convex_from_brothers"), &CollisionShape::make_convex_from_brothers);
 	ClassDB::set_method_flags("CollisionShape", "make_convex_from_brothers", METHOD_FLAGS_DEFAULT | METHOD_FLAG_EDITOR);
-
-	ClassDB::bind_method(D_METHOD("_shape_changed"), &CollisionShape::_shape_changed);
 
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "shape", PROPERTY_HINT_RESOURCE_TYPE, "Shape"), "set_shape", "get_shape");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "disabled"), "set_disabled", "is_disabled");
@@ -170,12 +161,10 @@ void CollisionShape::set_shape(const Ref<Shape> &p_shape) {
 	}
 	if (!shape.is_null()) {
 		shape->unregister_owner(this);
-		shape->disconnect("changed", this, "_shape_changed");
 	}
 	shape = p_shape;
 	if (!shape.is_null()) {
 		shape->register_owner(this);
-		shape->connect("changed", this, "_shape_changed");
 	}
 	update_gizmo();
 	if (parent) {
@@ -185,18 +174,18 @@ void CollisionShape::set_shape(const Ref<Shape> &p_shape) {
 		}
 	}
 
-	if (is_inside_tree())
-		_shape_changed();
+	if (is_inside_tree() && parent) {
+		// If this is a heightfield shape our center may have changed
+		_update_in_shape_owner(true);
+	}
 	update_configuration_warning();
 }
 
 Ref<Shape> CollisionShape::get_shape() const {
-
 	return shape;
 }
 
 void CollisionShape::set_disabled(bool p_disabled) {
-
 	disabled = p_disabled;
 	update_gizmo();
 	if (parent) {
@@ -205,28 +194,20 @@ void CollisionShape::set_disabled(bool p_disabled) {
 }
 
 bool CollisionShape::is_disabled() const {
-
 	return disabled;
 }
 
 CollisionShape::CollisionShape() {
-
 	//indicator = VisualServer::get_singleton()->mesh_create();
 	disabled = false;
-	parent = NULL;
+	parent = nullptr;
 	owner_id = 0;
 	set_notify_local_transform(true);
 }
 
 CollisionShape::~CollisionShape() {
-	if (!shape.is_null())
+	if (!shape.is_null()) {
 		shape->unregister_owner(this);
-	//VisualServer::get_singleton()->free(indicator);
-}
-
-void CollisionShape::_shape_changed() {
-	// If this is a heightfield shape our center may have changed
-	if (parent) {
-		_update_in_shape_owner(true);
 	}
+	//VisualServer::get_singleton()->free(indicator);
 }

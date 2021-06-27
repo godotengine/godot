@@ -34,7 +34,6 @@
 #include "scene/2d/node_2d.h"
 
 class OccluderPolygon2D : public Resource {
-
 	GDCLASS(OccluderPolygon2D, Resource);
 
 public:

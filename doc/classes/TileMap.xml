@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="TileMap" inherits="Node2D" version="3.3">
+<class name="TileMap" inherits="Node2D" version="3.4">
 	<brief_description>
 		Node for 2D tile-based maps.
 	</brief_description>
@@ -178,7 +178,7 @@
 				If you need these to be immediately updated, you can call [method update_dirty_quadrants].
 				Overriding this method also overrides it internally, allowing custom logic to be implemented when tiles are placed/removed:
 				[codeblock]
-				func set_cell(x, y, tile, flip_x=false, flip_y=false, transpose=false, autotile_coord=Vector2())
+				func set_cell(x, y, tile, flip_x=false, flip_y=false, transpose=false, autotile_coord=Vector2()):
 				    # Write your custom logic here.
 				    # To call the default method:
 				    .set_cell(x, y, tile, flip_x, flip_y, transpose, autotile_coord)
@@ -326,8 +326,8 @@
 		<member name="occluder_light_mask" type="int" setter="set_occluder_light_mask" getter="get_occluder_light_mask" default="1">
 			The light mask assigned to all light occluders in the TileMap. The TileSet's light occluders will cast shadows only from Light2D(s) that have the same light mask(s).
 		</member>
-		<member name="show_collision" type="bool" setter="set_show_collision" getter="is_show_collision_enabled" default="true">
-			If [code]true[/code], collision shapes are shown in the editor and at run-time. Requires [b]Visible Collision Shapes[/b] to be enabled in the [b]Debug[/b] menu for collision shapes to be visible at run-time.
+		<member name="show_collision" type="bool" setter="set_show_collision" getter="is_show_collision_enabled" default="false">
+			If [code]true[/code], collision shapes are visible in the editor. Doesn't affect collision shapes visibility at runtime. To show collision shapes at runtime, enable [b]Visible Collision Shapes[/b] in the [b]Debug[/b] menu instead.
 		</member>
 		<member name="tile_set" type="TileSet" setter="set_tileset" getter="get_tileset">
 			The assigned [TileSet].

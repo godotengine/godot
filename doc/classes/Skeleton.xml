@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Skeleton" inherits="Spatial" version="3.3">
+<class name="Skeleton" inherits="Spatial" version="3.4">
 	<brief_description>
 		Skeleton for characters and animated objects.
 	</brief_description>
@@ -78,6 +78,15 @@
 			</argument>
 			<description>
 				Returns the overall transform of the specified bone, with respect to the skeleton. Being relative to the skeleton frame, this is not the actual "global" transform of the bone.
+			</description>
+		</method>
+		<method name="get_bone_global_pose_no_override" qualifiers="const">
+			<return type="Transform">
+			</return>
+			<argument index="0" name="bone_idx" type="int">
+			</argument>
+			<description>
+				Returns the overall transform of the specified bone, with respect to the skeleton, but without any global pose overrides. Being relative to the skeleton frame, this is not the actual "global" transform of the bone.
 			</description>
 		</method>
 		<method name="get_bone_name" qualifiers="const">
@@ -208,6 +217,16 @@
 			<argument index="2" name="amount" type="float">
 			</argument>
 			<argument index="3" name="persistent" type="bool" default="false">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_bone_name">
+			<return type="void">
+			</return>
+			<argument index="0" name="bone_idx" type="int">
+			</argument>
+			<argument index="1" name="name" type="String">
 			</argument>
 			<description>
 			</description>

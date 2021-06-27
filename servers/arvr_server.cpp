@@ -33,7 +33,7 @@
 #include "arvr/arvr_positional_tracker.h"
 #include "core/project_settings.h"
 
-ARVRServer *ARVRServer::singleton = NULL;
+ARVRServer *ARVRServer::singleton = nullptr;
 
 ARVRServer *ARVRServer::get_singleton() {
 	return singleton;
@@ -48,12 +48,17 @@ void ARVRServer::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "world_scale"), "set_world_scale", "get_world_scale");
 
+	ClassDB::bind_method(D_METHOD("add_interface", "interface"), &ARVRServer::add_interface);
+	ClassDB::bind_method(D_METHOD("clear_primary_interface_if", "interface"), &ARVRServer::clear_primary_interface_if);
 	ClassDB::bind_method(D_METHOD("get_interface_count"), &ARVRServer::get_interface_count);
+	ClassDB::bind_method(D_METHOD("remove_interface", "interface"), &ARVRServer::remove_interface);
 	ClassDB::bind_method(D_METHOD("get_interface", "idx"), &ARVRServer::get_interface);
 	ClassDB::bind_method(D_METHOD("get_interfaces"), &ARVRServer::get_interfaces);
 	ClassDB::bind_method(D_METHOD("find_interface", "name"), &ARVRServer::find_interface);
 	ClassDB::bind_method(D_METHOD("get_tracker_count"), &ARVRServer::get_tracker_count);
 	ClassDB::bind_method(D_METHOD("get_tracker", "idx"), &ARVRServer::get_tracker);
+	ClassDB::bind_method(D_METHOD("add_tracker", "tracker"), &ARVRServer::add_tracker);
+	ClassDB::bind_method(D_METHOD("remove_tracker", "tracker"), &ARVRServer::remove_tracker);
 
 	ClassDB::bind_method(D_METHOD("get_primary_interface"), &ARVRServer::get_primary_interface);
 	ClassDB::bind_method(D_METHOD("set_primary_interface", "interface"), &ARVRServer::set_primary_interface);
@@ -109,7 +114,7 @@ Transform ARVRServer::get_reference_frame() const {
 };
 
 void ARVRServer::center_on_hmd(RotationMode p_rotation_mode, bool p_keep_height) {
-	if (primary_interface != NULL) {
+	if (primary_interface != nullptr) {
 		// clear our current reference frame or we'll end up double adjusting it
 		reference_frame = Transform();
 
@@ -142,7 +147,7 @@ void ARVRServer::center_on_hmd(RotationMode p_rotation_mode, bool p_keep_height)
 
 Transform ARVRServer::get_hmd_transform() {
 	Transform hmd_transform;
-	if (primary_interface != NULL) {
+	if (primary_interface != nullptr) {
 		hmd_transform = primary_interface->get_transform_for_eye(ARVRInterface::EYE_MONO, hmd_transform);
 	};
 	return hmd_transform;
@@ -152,7 +157,6 @@ void ARVRServer::add_interface(const Ref<ARVRInterface> &p_interface) {
 	ERR_FAIL_COND(p_interface.is_null());
 
 	for (int i = 0; i < interfaces.size(); i++) {
-
 		if (interfaces[i] == p_interface) {
 			ERR_PRINT("Interface was already added");
 			return;
@@ -168,9 +172,7 @@ void ARVRServer::remove_interface(const Ref<ARVRInterface> &p_interface) {
 
 	int idx = -1;
 	for (int i = 0; i < interfaces.size(); i++) {
-
 		if (interfaces[i] == p_interface) {
-
 			idx = i;
 			break;
 		};
@@ -189,7 +191,7 @@ int ARVRServer::get_interface_count() const {
 };
 
 Ref<ARVRInterface> ARVRServer::get_interface(int p_index) const {
-	ERR_FAIL_INDEX_V(p_index, interfaces.size(), NULL);
+	ERR_FAIL_INDEX_V(p_index, interfaces.size(), nullptr);
 
 	return interfaces[p_index];
 };
@@ -197,15 +199,13 @@ Ref<ARVRInterface> ARVRServer::get_interface(int p_index) const {
 Ref<ARVRInterface> ARVRServer::find_interface(const String &p_name) const {
 	int idx = -1;
 	for (int i = 0; i < interfaces.size(); i++) {
-
 		if (interfaces[i]->get_name() == p_name) {
-
 			idx = i;
 			break;
 		};
 	};
 
-	ERR_FAIL_COND_V(idx == -1, NULL);
+	ERR_FAIL_COND_V(idx == -1, nullptr);
 
 	return interfaces[idx];
 };
@@ -265,21 +265,19 @@ int ARVRServer::get_free_tracker_id_for_type(TrackerType p_tracker_type) {
 	return tracker_id;
 };
 
-void ARVRServer::add_tracker(ARVRPositionalTracker *p_tracker) {
-	ERR_FAIL_NULL(p_tracker);
+void ARVRServer::add_tracker(Ref<ARVRPositionalTracker> p_tracker) {
+	ERR_FAIL_COND(p_tracker.is_null());
 
 	trackers.push_back(p_tracker);
 	emit_signal("tracker_added", p_tracker->get_name(), p_tracker->get_type(), p_tracker->get_tracker_id());
 };
 
-void ARVRServer::remove_tracker(ARVRPositionalTracker *p_tracker) {
-	ERR_FAIL_NULL(p_tracker);
+void ARVRServer::remove_tracker(Ref<ARVRPositionalTracker> p_tracker) {
+	ERR_FAIL_COND(p_tracker.is_null());
 
 	int idx = -1;
 	for (int i = 0; i < trackers.size(); i++) {
-
 		if (trackers[i] == p_tracker) {
-
 			idx = i;
 			break;
 		};
@@ -295,14 +293,14 @@ int ARVRServer::get_tracker_count() const {
 	return trackers.size();
 };
 
-ARVRPositionalTracker *ARVRServer::get_tracker(int p_index) const {
-	ERR_FAIL_INDEX_V(p_index, trackers.size(), NULL);
+Ref<ARVRPositionalTracker> ARVRServer::get_tracker(int p_index) const {
+	ERR_FAIL_INDEX_V(p_index, trackers.size(), Ref<ARVRPositionalTracker>());
 
 	return trackers[p_index];
 };
 
-ARVRPositionalTracker *ARVRServer::find_by_type_and_id(TrackerType p_tracker_type, int p_tracker_id) const {
-	ERR_FAIL_COND_V(p_tracker_id == 0, NULL);
+Ref<ARVRPositionalTracker> ARVRServer::find_by_type_and_id(TrackerType p_tracker_type, int p_tracker_id) const {
+	ERR_FAIL_COND_V(p_tracker_id == 0, Ref<ARVRPositionalTracker>());
 
 	for (int i = 0; i < trackers.size(); i++) {
 		if (trackers[i]->get_type() == p_tracker_type && trackers[i]->get_tracker_id() == p_tracker_id) {
@@ -310,7 +308,7 @@ ARVRPositionalTracker *ARVRServer::find_by_type_and_id(TrackerType p_tracker_typ
 		};
 	};
 
-	return NULL;
+	return Ref<ARVRPositionalTracker>();
 };
 
 Ref<ARVRInterface> ARVRServer::get_primary_interface() const {
@@ -383,5 +381,5 @@ ARVRServer::~ARVRServer() {
 		trackers.remove(0);
 	}
 
-	singleton = NULL;
+	singleton = nullptr;
 };

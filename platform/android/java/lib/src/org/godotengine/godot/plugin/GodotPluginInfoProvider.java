@@ -39,7 +39,6 @@ import java.util.Set;
  * Provides the set of information expected from a Godot plugin.
  */
 public interface GodotPluginInfoProvider {
-
 	/**
 	 * Returns the name of the plugin.
 	 */

@@ -254,7 +254,6 @@ void GDMonoMethod::get_parameter_types(Vector<ManagedType> &types) const {
 }
 
 const MethodInfo &GDMonoMethod::get_method_info() {
-
 	if (!method_info_fetched) {
 		method_info.name = name;
 		method_info.return_val = PropertyInfo(GDMonoMarshal::managed_to_variant_type(return_type), "");
