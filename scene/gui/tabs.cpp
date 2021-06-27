@@ -1251,5 +1251,4 @@ void Tabs::_bind_methods() {
 Tabs::Tabs() {
 	set_focus_mode(FOCUS_ALL);
 	connect("mouse_exited", callable_mp(this, &Tabs::_on_mouse_exited));
-	
 }
