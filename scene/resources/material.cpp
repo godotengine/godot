@@ -886,7 +886,7 @@ void BaseMaterial3D::_update_shader() {
 			code += "\t\tfloat num_layers = mix(float(heightmap_max_layers),float(heightmap_min_layers), abs(dot(vec3(0.0, 0.0, 1.0), view_dir)));\n";
 			code += "\t\tfloat layer_depth = 1.0 / num_layers;\n";
 			code += "\t\tfloat current_layer_depth = 0.0;\n";
-			code += "\t\tvec2 P = view_dir.xy * heightmap_scale;\n";
+			code += "\t\tvec2 P = view_dir.xy * heightmap_scale * 0.05;\n"; // Multiply by 0.05 to improve heightmap scale usability.
 			code += "\t\tvec2 delta = P / num_layers;\n";
 			code += "\t\tvec2 ofs = base_uv;\n";
 			if (flags[FLAG_INVERT_HEIGHTMAP]) {
@@ -920,7 +920,7 @@ void BaseMaterial3D::_update_shader() {
 			} else {
 				code += "\t\tfloat depth = 1.0 - texture(texture_heightmap, base_uv).r;\n";
 			}
-			code += "\t\tvec2 ofs = base_uv - view_dir.xy / view_dir.z * (depth * heightmap_scale);\n";
+			code += "\t\tvec2 ofs = base_uv - view_dir.xy / view_dir.z * (depth * heightmap_scale * 0.05);\n"; // Multiply by 0.05 to improve heightmap scale usability.
 		}
 
 		code += "\t\tbase_uv=ofs;\n";
@@ -2695,7 +2695,7 @@ BaseMaterial3D::BaseMaterial3D(bool p_orm) :
 	set_clearcoat(1);
 	set_clearcoat_gloss(0.5);
 	set_anisotropy(0);
-	set_heightmap_scale(0.05);
+	set_heightmap_scale(1.0);
 	set_subsurface_scattering_strength(0);
 	set_backlight(Color(0, 0, 0));
 	set_transmittance_color(Color(1, 1, 1, 1));
@@ -2734,6 +2734,8 @@ BaseMaterial3D::BaseMaterial3D(bool p_orm) :
 
 	set_grow(0.0);
 
+	// Deep parallax disabled only has limited use cases. Deep Parallax is more general-purpose.
+	set_heightmap_deep_parallax(true);
 	set_heightmap_deep_parallax_min_layers(8);
 	set_heightmap_deep_parallax_max_layers(32);
 	set_heightmap_deep_parallax_flip_tangent(false); //also sets binormal
