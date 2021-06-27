@@ -1985,6 +1985,7 @@ void Image::create(int p_width, int p_height, bool p_use_mipmaps, Format p_forma
 	ERR_FAIL_COND_MSG(p_width > MAX_WIDTH, "Image width cannot be greater than " + itos(MAX_WIDTH) + ".");
 	ERR_FAIL_COND_MSG(p_height > MAX_HEIGHT, "Image height cannot be greater than " + itos(MAX_HEIGHT) + ".");
 	ERR_FAIL_COND_MSG(p_width * p_height > MAX_PIXELS, "Too many pixels for image, maximum is " + itos(MAX_PIXELS));
+	ERR_FAIL_INDEX_MSG(p_format, FORMAT_MAX, "Image format out of range, please see Image's Format enum.");
 
 	int mm = 0;
 	int size = _get_dst_image_size(p_width, p_height, p_format, mm, p_use_mipmaps ? -1 : 0);
@@ -2007,6 +2008,7 @@ void Image::create(int p_width, int p_height, bool p_use_mipmaps, Format p_forma
 	ERR_FAIL_COND_MSG(p_width > MAX_WIDTH, "Image width cannot be greater than " + itos(MAX_WIDTH) + ".");
 	ERR_FAIL_COND_MSG(p_height > MAX_HEIGHT, "Image height cannot be greater than " + itos(MAX_HEIGHT) + ".");
 	ERR_FAIL_COND_MSG(p_width * p_height > MAX_PIXELS, "Too many pixels for image, maximum is " + itos(MAX_PIXELS));
+	ERR_FAIL_INDEX_MSG(p_format, FORMAT_MAX, "Image format out of range, please see Image's Format enum.");
 
 	int mm;
 	int size = _get_dst_image_size(p_width, p_height, p_format, mm, p_use_mipmaps ? -1 : 0);
@@ -2997,6 +2999,8 @@ void Image::set_pixel(int p_x, int p_y, const Color &p_color) {
 }
 
 void Image::adjust_bcs(float p_brightness, float p_contrast, float p_saturation) {
+	ERR_FAIL_COND_MSG(!_can_modify(format), "Cannot adjust_bcs in compressed or custom image formats.");
+
 	uint8_t *w = data.ptrw();
 	uint32_t pixel_size = get_format_pixel_size(format);
 	uint32_t pixel_count = data.size() / pixel_size;
