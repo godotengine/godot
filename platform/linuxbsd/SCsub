@@ -9,6 +9,7 @@ common_linuxbsd = [
     "crash_handler_linuxbsd.cpp",
     "os_linuxbsd.cpp",
     "joypad_linux.cpp",
+    "freedesktop_screensaver.cpp",
 ]
 
 if "x11" in env and env["x11"]:

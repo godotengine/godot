@@ -121,6 +121,9 @@ bool DisplayServerX11::has_feature(Feature p_feature) const {
 		case FEATURE_ICON:
 		case FEATURE_NATIVE_ICON:
 		case FEATURE_SWAP_BUFFERS:
+#ifdef DBUS_ENABLED
+		case FEATURE_KEEP_SCREEN_ON:
+#endif
 			return true;
 		default: {
 		}
@@ -821,6 +824,26 @@ bool DisplayServerX11::screen_is_touchscreen(int p_screen) const {
 
 	return DisplayServer::screen_is_touchscreen(p_screen);
 }
+
+#ifdef DBUS_ENABLED
+void DisplayServerX11::screen_set_keep_on(bool p_enable) {
+	if (screen_is_kept_on() == p_enable) {
+		return;
+	}
+
+	if (p_enable) {
+		screensaver->inhibit();
+	} else {
+		screensaver->uninhibit();
+	}
+
+	keep_screen_on = p_enable;
+}
+
+bool DisplayServerX11::screen_is_kept_on() const {
+	return keep_screen_on;
+}
+#endif
 
 Vector<DisplayServer::WindowID> DisplayServerX11::get_window_list() const {
 	_THREAD_SAFE_METHOD_
@@ -4270,6 +4293,11 @@ DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, WindowMode 
 
 	_update_real_mouse_position(windows[MAIN_WINDOW_ID]);
 
+#ifdef DBUS_ENABLED
+	screensaver = memnew(FreeDesktopScreenSaver);
+	screen_set_keep_on(GLOBAL_DEF("display/window/energy_saving/keep_screen_on", true));
+#endif
+
 	r_error = OK;
 }
 
@@ -4334,6 +4362,10 @@ DisplayServerX11::~DisplayServerX11() {
 	if (xmbstring) {
 		memfree(xmbstring);
 	}
+
+#ifdef DBUS_ENABLED
+	memdelete(screensaver);
+#endif
 }
 
 void DisplayServerX11::register_x11_driver() {
