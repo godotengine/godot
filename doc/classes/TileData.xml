@@ -15,8 +15,8 @@
 			<description>
 			</description>
 		</method>
-		<method name="get_collision_shape_one_way_margin" qualifiers="const">
-			<return type="float">
+		<method name="get_collision_shape" qualifiers="const">
+			<return type="Shape2D">
 			</return>
 			<argument index="0" name="layer_id" type="int">
 			</argument>
@@ -25,8 +25,8 @@
 			<description>
 			</description>
 		</method>
-		<method name="get_collision_shape_shape" qualifiers="const">
-			<return type="Shape2D">
+		<method name="get_collision_shape_one_way_margin" qualifiers="const">
+			<return type="float">
 			</return>
 			<argument index="0" name="layer_id" type="int">
 			</argument>
@@ -103,6 +103,18 @@
 			<description>
 			</description>
 		</method>
+		<method name="set_collision_shape">
+			<return type="void">
+			</return>
+			<argument index="0" name="layer_id" type="int">
+			</argument>
+			<argument index="1" name="shape_index" type="int">
+			</argument>
+			<argument index="2" name="shape" type="Shape2D">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="set_collision_shape_one_way">
 			<return type="void">
 			</return>
@@ -123,18 +135,6 @@
 			<argument index="1" name="shape_index" type="int">
 			</argument>
 			<argument index="2" name="one_way_margin" type="float">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_collision_shape_shape">
-			<return type="void">
-			</return>
-			<argument index="0" name="layer_id" type="int">
-			</argument>
-			<argument index="1" name="shape_index" type="int">
-			</argument>
-			<argument index="2" name="shape" type="Shape2D">
 			</argument>
 			<description>
 			</description>

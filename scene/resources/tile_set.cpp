@@ -751,7 +751,7 @@ void TileSet::compatibility_conversion() {
 									int index = tile_data->get_collision_shapes_count(0) - 1;
 									tile_data->set_collision_shape_one_way(0, index, csd.one_way);
 									tile_data->set_collision_shape_one_way_margin(0, index, csd.one_way_margin);
-									tile_data->set_collision_shape_shape(0, index, csd.shape);
+									tile_data->set_collision_shape(0, index, csd.shape);
 									// Ignores transform for now.
 								}
 							}
@@ -2399,14 +2399,14 @@ void TileData::remove_collision_shape(int p_layer_id, int p_shape_index) {
 	emit_signal("changed");
 }
 
-void TileData::set_collision_shape_shape(int p_layer_id, int p_shape_index, Ref<Shape2D> p_shape) {
+void TileData::set_collision_shape(int p_layer_id, int p_shape_index, Ref<Shape2D> p_shape) {
 	ERR_FAIL_INDEX(p_layer_id, physics.size());
 	ERR_FAIL_INDEX(p_shape_index, physics[p_layer_id].shapes.size());
 	physics.write[p_layer_id].shapes.write[p_shape_index].shape = p_shape;
 	emit_signal("changed");
 }
 
-Ref<Shape2D> TileData::get_collision_shape_shape(int p_layer_id, int p_shape_index) const {
+Ref<Shape2D> TileData::get_collision_shape(int p_layer_id, int p_shape_index) const {
 	ERR_FAIL_INDEX_V(p_layer_id, physics.size(), Ref<Shape2D>());
 	ERR_FAIL_INDEX_V(p_shape_index, physics[p_layer_id].shapes.size(), Ref<Shape2D>());
 	return physics[p_layer_id].shapes[p_shape_index].shape;
@@ -2583,7 +2583,7 @@ bool TileData::_set(const StringName &p_name, const Variant &p_value) {
 			}
 			if (components[2] == "shape") {
 				Ref<Shape2D> shape = p_value;
-				set_collision_shape_shape(layer_index, shape_index, shape);
+				set_collision_shape(layer_index, shape_index, shape);
 				return true;
 			} else if (components[2] == "one_way") {
 				set_collision_shape_one_way(layer_index, shape_index, p_value);
@@ -2703,7 +2703,7 @@ bool TileData::_get(const StringName &p_name, Variant &r_ret) const {
 					return false;
 				}
 				if (components[2] == "shape") {
-					r_ret = get_collision_shape_shape(layer_index, shape_index);
+					r_ret = get_collision_shape(layer_index, shape_index);
 					return true;
 				} else if (components[2] == "one_way") {
 					r_ret = is_collision_shape_one_way(layer_index, shape_index);
@@ -2990,8 +2990,8 @@ void TileData::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_collision_shapes_count", "layer_id", "shapes_count"), &TileData::set_collision_shapes_count);
 	ClassDB::bind_method(D_METHOD("add_collision_shape", "layer_id"), &TileData::add_collision_shape);
 	ClassDB::bind_method(D_METHOD("remove_collision_shape", "layer_id", "shape_index"), &TileData::remove_collision_shape);
-	ClassDB::bind_method(D_METHOD("set_collision_shape_shape", "layer_id", "shape_index", "shape"), &TileData::set_collision_shape_shape);
-	ClassDB::bind_method(D_METHOD("get_collision_shape_shape", "layer_id", "shape_index"), &TileData::get_collision_shape_shape);
+	ClassDB::bind_method(D_METHOD("set_collision_shape", "layer_id", "shape_index", "shape"), &TileData::set_collision_shape);
+	ClassDB::bind_method(D_METHOD("get_collision_shape", "layer_id", "shape_index"), &TileData::get_collision_shape);
 	ClassDB::bind_method(D_METHOD("set_collision_shape_one_way", "layer_id", "shape_index", "one_way"), &TileData::set_collision_shape_one_way);
 	ClassDB::bind_method(D_METHOD("is_collision_shape_one_way", "layer_id", "shape_index"), &TileData::is_collision_shape_one_way);
 	ClassDB::bind_method(D_METHOD("set_collision_shape_one_way_margin", "layer_id", "shape_index", "one_way_margin"), &TileData::set_collision_shape_one_way_margin);
@@ -4221,7 +4221,7 @@ void TileSetPluginAtlasPhysics::update_dirty_quadrants(TileMap *p_tile_map, Self
 						for (int shape_index = 0; shape_index < tile_data->get_collision_shapes_count(body_index); shape_index++) {
 							bool one_way_collision = tile_data->is_collision_shape_one_way(body_index, shape_index);
 							float one_way_collision_margin = tile_data->get_collision_shape_one_way_margin(body_index, shape_index);
-							Ref<Shape2D> shape = tile_data->get_collision_shape_shape(body_index, shape_index);
+							Ref<Shape2D> shape = tile_data->get_collision_shape(body_index, shape_index);
 							if (shape.is_valid()) {
 								Transform2D xform = Transform2D();
 								xform.set_origin(p_tile_map->map_to_world(E_cell->get()) - quadrant_pos);
@@ -4345,7 +4345,7 @@ void TileSetPluginAtlasPhysics::draw_quadrant_debug(TileMap *p_tile_map, TileMap
 				for (int body_index = 0; body_index < p_quadrant->bodies.size(); body_index++) {
 					for (int shape_index = 0; shape_index < tile_data->get_collision_shapes_count(body_index); shape_index++) {
 						// Draw the debug shape.
-						Ref<Shape2D> shape = tile_data->get_collision_shape_shape(body_index, shape_index);
+						Ref<Shape2D> shape = tile_data->get_collision_shape(body_index, shape_index);
 						if (shape.is_valid()) {
 							shape->draw(p_quadrant->debug_canvas_item, debug_collision_color);
 						}

@@ -165,7 +165,7 @@ void TileDataCollisionShapeEditor::draw_over_tile(CanvasItem *p_canvas_item, Tra
 			Color debug_collision_color = p_canvas_item->get_tree()->get_debug_collisions_color();
 			RenderingServer::get_singleton()->canvas_item_add_set_transform(p_canvas_item->get_canvas_item(), p_transform);
 			for (int i = 0; i < tile_data->get_collision_shapes_count(physics_layer); i++) {
-				Ref<Shape2D> shape = tile_data->get_collision_shape_shape(physics_layer, i);
+				Ref<Shape2D> shape = tile_data->get_collision_shape(physics_layer, i);
 				if (shape.is_valid()) {
 					shape->draw(p_canvas_item->get_canvas_item(), debug_collision_color);
 				}

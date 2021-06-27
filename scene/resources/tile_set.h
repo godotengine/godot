@@ -574,8 +574,8 @@ public:
 	void set_collision_shapes_count(int p_layer_id, int p_shapes_count);
 	void add_collision_shape(int p_layer_id);
 	void remove_collision_shape(int p_layer_id, int p_shape_index);
-	void set_collision_shape_shape(int p_layer_id, int p_shape_index, Ref<Shape2D> p_shape);
-	Ref<Shape2D> get_collision_shape_shape(int p_layer_id, int p_shape_index) const;
+	void set_collision_shape(int p_layer_id, int p_shape_index, Ref<Shape2D> p_shape);
+	Ref<Shape2D> get_collision_shape(int p_layer_id, int p_shape_index) const;
 	void set_collision_shape_one_way(int p_layer_id, int p_shape_index, bool p_one_way);
 	bool is_collision_shape_one_way(int p_layer_id, int p_shape_index) const;
 	void set_collision_shape_one_way_margin(int p_layer_id, int p_shape_index, float p_one_way_margin);
