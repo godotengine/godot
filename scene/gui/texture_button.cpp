@@ -265,7 +265,7 @@ void TextureButton::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_expand"), &TextureButton::get_expand);
 	ClassDB::bind_method(D_METHOD("get_stretch_mode"), &TextureButton::get_stretch_mode);
 
-	ADD_GROUP("Textures", "texture_");
+	BEGIN_GROUP("Textures", "texture_");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "texture_normal", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_normal_texture", "get_normal_texture");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "texture_pressed", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_pressed_texture", "get_pressed_texture");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "texture_hover", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_hover_texture", "get_hover_texture");

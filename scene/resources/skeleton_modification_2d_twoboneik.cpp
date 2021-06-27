@@ -467,7 +467,7 @@ void SkeletonModification2DTwoBoneIK::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "target_minimum_distance", PROPERTY_HINT_RANGE, "0, 100000000, 0.01"), "set_target_minimum_distance", "get_target_minimum_distance");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "target_maximum_distance", PROPERTY_HINT_NONE, "0, 100000000, 0.01"), "set_target_maximum_distance", "get_target_maximum_distance");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "flip_bend_direction", PROPERTY_HINT_NONE, ""), "set_flip_bend_direction", "get_flip_bend_direction");
-	ADD_GROUP("", "");
+	END_GROUP();
 }
 
 SkeletonModification2DTwoBoneIK::SkeletonModification2DTwoBoneIK() {

@@ -48,7 +48,7 @@ void XRInterface::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_render_targetsize"), &XRInterface::get_render_targetsize);
 	ClassDB::bind_method(D_METHOD("get_view_count"), &XRInterface::get_view_count);
 
-	ADD_GROUP("Interface", "interface_");
+	BEGIN_GROUP("Interface", "interface_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "interface_is_primary"), "set_is_primary", "is_primary");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "interface_is_initialized"), "set_is_initialized", "is_initialized");
 
@@ -59,7 +59,7 @@ void XRInterface::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_anchor_detection_is_enabled", "enable"), &XRInterface::set_anchor_detection_is_enabled);
 	ClassDB::bind_method(D_METHOD("get_camera_feed_id"), &XRInterface::get_camera_feed_id);
 
-	ADD_GROUP("AR", "ar_");
+	BEGIN_GROUP("AR", "ar_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "ar_is_anchor_detection_enabled"), "set_anchor_detection_is_enabled", "get_anchor_detection_is_enabled");
 
 	BIND_ENUM_CONSTANT(XR_NONE);

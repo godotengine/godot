@@ -109,7 +109,7 @@ void FontData::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "hinting", PROPERTY_HINT_ENUM, "None,Light,Normal"), "set_hinting", "get_hinting");
 
-	ADD_GROUP("Extra Spacing", "extra_spacing");
+	BEGIN_GROUP("Extra Spacing", "extra_spacing");
 	ADD_PROPERTYI(PropertyInfo(Variant::INT, "extra_spacing_glyph"), "set_spacing", "get_spacing", SPACING_GLYPH);
 	ADD_PROPERTYI(PropertyInfo(Variant::INT, "extra_spacing_space"), "set_spacing", "get_spacing", SPACING_SPACE);
 
@@ -568,7 +568,7 @@ void Font::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("update_changes"), &Font::update_changes);
 
-	ADD_GROUP("Extra Spacing", "extra_spacing");
+	BEGIN_GROUP("Extra Spacing", "extra_spacing");
 	ADD_PROPERTYI(PropertyInfo(Variant::INT, "extra_spacing_top"), "set_spacing", "get_spacing", SPACING_TOP);
 	ADD_PROPERTYI(PropertyInfo(Variant::INT, "extra_spacing_bottom"), "set_spacing", "get_spacing", SPACING_BOTTOM);
 

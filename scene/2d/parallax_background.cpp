@@ -175,7 +175,7 @@ void ParallaxBackground::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_ignore_camera_zoom", "ignore"), &ParallaxBackground::set_ignore_camera_zoom);
 	ClassDB::bind_method(D_METHOD("is_ignore_camera_zoom"), &ParallaxBackground::is_ignore_camera_zoom);
 
-	ADD_GROUP("Scroll", "scroll_");
+	BEGIN_GROUP("Scroll", "scroll_");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "scroll_offset"), "set_scroll_offset", "get_scroll_offset");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "scroll_base_offset"), "set_scroll_base_offset", "get_scroll_base_offset");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "scroll_base_scale"), "set_scroll_base_scale", "get_scroll_base_scale");
