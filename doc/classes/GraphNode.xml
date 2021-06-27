@@ -314,10 +314,10 @@
 			</description>
 		</signal>
 		<signal name="double_clicked">
-+			<description>
+			<description>
 				Emitted when the GraphNode is double clicked.
-+			</description>
-+		</signal>
+			</description>
+		</signal>
 		<signal name="dragged">
 			<argument index="0" name="from" type="Vector2">
 			</argument>
