@@ -89,6 +89,9 @@
 		<member name="ca_chain" type="X509Certificate" setter="set_ca_chain" getter="get_ca_chain">
 			When using SSL (see [member private_key] and [member ssl_certificate]), you can set this to a valid [X509Certificate] to be provided as additional CA chain information during the SSL handshake.
 		</member>
+		<member name="handshake_timeout" type="float" setter="set_handshake_timeout" getter="get_handshake_timeout" default="3.0">
+			The time in seconds before a pending client (i.e. a client that has not yet finished the HTTP handshake) is considered stale and forcefully disconnected.
+		</member>
 		<member name="private_key" type="CryptoKey" setter="set_private_key" getter="get_private_key">
 			When set to a valid [CryptoKey] (along with [member ssl_certificate]) will cause the server to require SSL instead of regular TCP (i.e. the [code]wss://[/code] protocol).
 		</member>
