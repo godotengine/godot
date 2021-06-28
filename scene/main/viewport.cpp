@@ -3022,11 +3022,6 @@ Control *Viewport::get_modal_stack_top() const {
 }
 
 String Viewport::get_configuration_warning() const {
-	/*if (get_parent() && !Object::cast_to<Control>(get_parent()) && !render_target) {
-
-		return TTR("This viewport is not set as render target. If you intend for it to display its contents directly to the screen, make it a child of a Control so it can obtain a size. Otherwise, make it a RenderTarget and assign its internal texture to some node for display.");
-	}*/
-
 	String warning = Node::get_configuration_warning();
 
 	if (size.x <= 1 || size.y <= 1) {
@@ -3035,6 +3030,14 @@ String Viewport::get_configuration_warning() const {
 		}
 		warning += TTR("The Viewport size must be greater than or equal to 2 pixels on both dimensions to render anything.");
 	}
+
+	if (hdr && (usage == USAGE_2D || usage == USAGE_2D_NO_SAMPLING)) {
+		if (warning != String()) {
+			warning += "\n\n";
+		}
+		warning += TTR("This Viewport has HDR enabled, but its Usage is set to 2D or 2D No-Sampling.\nHDR is only supported in Viewports that have their Usage set to 3D or 3D No-Effects.\nHDR will be disabled for this Viewport.");
+	}
+
 	return warning;
 }
 
@@ -3101,6 +3104,7 @@ void Viewport::set_hdr(bool p_hdr) {
 
 	hdr = p_hdr;
 	VS::get_singleton()->viewport_set_hdr(viewport, p_hdr);
+	update_configuration_warning();
 }
 
 bool Viewport::get_hdr() const {
@@ -3121,8 +3125,13 @@ bool Viewport::is_using_32_bpc_depth() const {
 }
 
 void Viewport::set_usage(Usage p_usage) {
+	if (usage == p_usage) {
+		return;
+	}
+
 	usage = p_usage;
 	VS::get_singleton()->viewport_set_usage(viewport, VS::ViewportUsage(p_usage));
+	update_configuration_warning();
 }
 
 Viewport::Usage Viewport::get_usage() const {
