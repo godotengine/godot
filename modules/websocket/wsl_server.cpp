@@ -95,7 +95,7 @@ bool WSLServer::PendingPeer::_parse_request(const Vector<String> p_protocols) {
 	return true;
 }
 
-Error WSLServer::PendingPeer::do_handshake(const Vector<String> p_protocols) {
+Error WSLServer::PendingPeer::do_handshake(const Vector<String> p_protocols, Vector<String> &extra_headers) {
 	if (OS::get_singleton()->get_ticks_msec() - time > WSL_SERVER_TIMEOUT) {
 		return ERR_TIMEOUT;
 	}
@@ -135,6 +135,9 @@ Error WSLServer::PendingPeer::do_handshake(const Vector<String> p_protocols) {
 				if (protocol != "") {
 					s += "Sec-WebSocket-Protocol: " + protocol + "\r\n";
 				}
+				for (int i = 0; i < extra_headers.size(); i++) {
+					s += extra_headers[i] + "\r\n";
+				}
 				s += "\r\n";
 				response = s.utf8();
 				has_request = true;
@@ -155,6 +158,10 @@ Error WSLServer::PendingPeer::do_handshake(const Vector<String> p_protocols) {
 		return ERR_BUSY;
 	}
 	return OK;
+}
+
+void WSLServer::set_extra_headers(Vector<String> headers) {
+	_extra_headers = headers;
 }
 
 Error WSLServer::listen(int p_port, const Vector<String> p_protocols, bool gd_mp_api) {
@@ -188,7 +195,7 @@ void WSLServer::poll() {
 	List<Ref<PendingPeer>> remove_peers;
 	for (List<Ref<PendingPeer>>::Element *E = _pending.front(); E; E = E->next()) {
 		Ref<PendingPeer> ppeer = E->get();
-		Error err = ppeer->do_handshake(_protocols);
+		Error err = ppeer->do_handshake(_protocols, _extra_headers);
 		if (err == ERR_BUSY) {
 			continue;
 		} else if (err != OK) {
