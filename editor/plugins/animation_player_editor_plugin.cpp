@@ -1274,7 +1274,7 @@ void AnimationPlayerEditor::_allocate_onion_layers() {
 		bool is_present = onion.differences_only && i == captures - 1;
 
 		// Each capture is a viewport with a canvas item attached that renders a full-size rect with the contents of the main viewport.
-		onion.captures.write[i] = RS::get_singleton()->viewport_create();
+		onion.captures.write()[i] = RS::get_singleton()->viewport_create();
 
 		RS::get_singleton()->viewport_set_size(onion.captures[i], capture_size.width, capture_size.height);
 		RS::get_singleton()->viewport_set_update_mode(onion.captures[i], RS::VIEWPORT_UPDATE_ALWAYS);
@@ -1419,7 +1419,7 @@ void AnimationPlayerEditor::_prepare_onion_layers_2() {
 		float pos = cpos + step_off * anim->get_step();
 
 		bool valid = anim->has_loop() || (pos >= 0 && pos <= anim->get_length());
-		onion.captures_valid.write[cidx] = valid;
+		onion.captures_valid.write()[cidx] = valid;
 		if (valid) {
 			player->seek(pos, true);
 			get_tree()->flush_transform_notifications(); // Needed for transforms of Node3Ds.

@@ -532,7 +532,7 @@ MainLoop *test() {
 	uint64_t flen = fa->get_length();
 	buf.resize(fa->get_length() + 1);
 	fa->get_buffer(buf.ptrw(), flen);
-	buf.write[flen] = 0;
+	buf.write()[flen] = 0;
 
 	String code;
 	code.parse_utf8((const char *)&buf[0]);

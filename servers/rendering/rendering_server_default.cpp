@@ -155,9 +155,9 @@ void RenderingServerDefault::_draw(bool p_swap_buffers, double frame_step) {
 			}
 
 			if (RSG::storage->capturing_timestamps) {
-				new_profile.write[i].gpu_msec = float((time_gpu - base_gpu) / 1000) / 1000.0;
-				new_profile.write[i].cpu_msec = float(time_cpu - base_cpu) / 1000.0;
-				new_profile.write[i].name = RSG::storage->get_captured_timestamp_name(i);
+				new_profile.write()[i].gpu_msec = float((time_gpu - base_gpu) / 1000) / 1000.0;
+				new_profile.write()[i].cpu_msec = float(time_cpu - base_cpu) / 1000.0;
+				new_profile.write()[i].name = RSG::storage->get_captured_timestamp_name(i);
 			}
 		}
 

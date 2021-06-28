@@ -146,7 +146,7 @@ public:
 	_FORCE_INLINE_ void add_area(Area3DSW *p_area) {
 		int index = areas.find(AreaCMP(p_area));
 		if (index > -1) {
-			areas.write[index].refCount += 1;
+			areas.write()[index].refCount += 1;
 		} else {
 			areas.ordered_insert(AreaCMP(p_area));
 		}
@@ -155,7 +155,7 @@ public:
 	_FORCE_INLINE_ void remove_area(Area3DSW *p_area) {
 		int index = areas.find(AreaCMP(p_area));
 		if (index > -1) {
-			areas.write[index].refCount -= 1;
+			areas.write()[index].refCount -= 1;
 			if (areas[index].refCount < 1) {
 				areas.remove(index);
 			}

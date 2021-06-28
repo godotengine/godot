@@ -1493,7 +1493,7 @@ Error RenderingDeviceVulkan::_staging_buffer_allocate(uint32_t p_amount, uint32_
 							return err;
 						}
 						//claim for this frame
-						staging_buffer_blocks.write[staging_buffer_current].frame_used = frames_drawn;
+						staging_buffer_blocks.write()[staging_buffer_current].frame_used = frames_drawn;
 					} else {
 						// Ok, worst case scenario, all the staging buffers belong to this frame
 						// and this frame is not even done.
@@ -1510,11 +1510,11 @@ Error RenderingDeviceVulkan::_staging_buffer_allocate(uint32_t p_amount, uint32_
 
 							//clear the whole staging buffer
 							for (int i = 0; i < staging_buffer_blocks.size(); i++) {
-								staging_buffer_blocks.write[i].frame_used = 0;
-								staging_buffer_blocks.write[i].fill_amount = 0;
+								staging_buffer_blocks.write()[i].frame_used = 0;
+								staging_buffer_blocks.write()[i].fill_amount = 0;
 							}
 							//claim current
-							staging_buffer_blocks.write[staging_buffer_current].frame_used = frames_drawn;
+							staging_buffer_blocks.write()[staging_buffer_current].frame_used = frames_drawn;
 						}
 					}
 
@@ -1526,8 +1526,8 @@ Error RenderingDeviceVulkan::_staging_buffer_allocate(uint32_t p_amount, uint32_
 
 		} else if (staging_buffer_blocks[staging_buffer_current].frame_used <= frames_drawn - frame_count) {
 			//this is an old block, which was already processed, let's reuse
-			staging_buffer_blocks.write[staging_buffer_current].frame_used = frames_drawn;
-			staging_buffer_blocks.write[staging_buffer_current].fill_amount = 0;
+			staging_buffer_blocks.write()[staging_buffer_current].frame_used = frames_drawn;
+			staging_buffer_blocks.write()[staging_buffer_current].fill_amount = 0;
 		} else if (staging_buffer_blocks[staging_buffer_current].frame_used > frames_drawn - frame_count) {
 			//this block may still be in use, let's not touch it unless we have to, so.. can we create a new one?
 			if ((uint64_t)staging_buffer_blocks.size() * staging_buffer_block_size < staging_buffer_max_size) {
@@ -1537,7 +1537,7 @@ Error RenderingDeviceVulkan::_staging_buffer_allocate(uint32_t p_amount, uint32_
 					return err;
 				}
 				//claim for this frame
-				staging_buffer_blocks.write[staging_buffer_current].frame_used = frames_drawn;
+				staging_buffer_blocks.write()[staging_buffer_current].frame_used = frames_drawn;
 			} else {
 				// oops, we are out of room and we can't create more.
 				// let's flush older frames.
@@ -1558,12 +1558,12 @@ Error RenderingDeviceVulkan::_staging_buffer_allocate(uint32_t p_amount, uint32_
 							break; //ok, we reached something from this frame, abort
 						}
 
-						staging_buffer_blocks.write[block_idx].frame_used = 0;
-						staging_buffer_blocks.write[block_idx].fill_amount = 0;
+						staging_buffer_blocks.write()[block_idx].frame_used = 0;
+						staging_buffer_blocks.write()[block_idx].fill_amount = 0;
 					}
 
 					//claim for current frame
-					staging_buffer_blocks.write[staging_buffer_current].frame_used = frames_drawn;
+					staging_buffer_blocks.write()[staging_buffer_current].frame_used = frames_drawn;
 				}
 			}
 		}
@@ -1613,7 +1613,7 @@ Error RenderingDeviceVulkan::_buffer_update(Buffer *p_buffer, size_t p_offset, c
 
 		vkCmdCopyBuffer(p_use_draw_command_buffer ? frames[frame].draw_command_buffer : frames[frame].setup_command_buffer, staging_buffer_blocks[staging_buffer_current].buffer, p_buffer->buffer, 1, &region);
 
-		staging_buffer_blocks.write[staging_buffer_current].fill_amount = block_write_offset + block_write_amount;
+		staging_buffer_blocks.write()[staging_buffer_current].fill_amount = block_write_offset + block_write_amount;
 
 		to_submit -= block_write_amount;
 		submit_from += block_write_amount;
@@ -2455,7 +2455,7 @@ Error RenderingDeviceVulkan::texture_update(RID p_texture, uint32_t p_layer, con
 
 					vkCmdCopyBufferToImage(command_buffer, staging_buffer_blocks[staging_buffer_current].buffer, texture->image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &buffer_image_copy);
 
-					staging_buffer_blocks.write[staging_buffer_current].fill_amount += alloc_size;
+					staging_buffer_blocks.write()[staging_buffer_current].fill_amount += alloc_size;
 				}
 			}
 		}
@@ -4323,8 +4323,8 @@ bool RenderingDeviceVulkan::_uniform_add_binding(Vector<Vector<VkDescriptorSetLa
 				}
 
 				//just append stage mask and return
-				bindings.write[set].write[i].stageFlags |= shader_stage_masks[p_stage];
-				uniform_infos.write[set].write[i].stages |= 1 << p_stage;
+				bindings.write()[set].write()[i].stageFlags |= shader_stage_masks[p_stage];
+				uniform_infos.write()[set].write()[i].stages |= 1 << p_stage;
 				return true;
 			}
 		}
@@ -4343,8 +4343,8 @@ bool RenderingDeviceVulkan::_uniform_add_binding(Vector<Vector<VkDescriptorSetLa
 #if 0
 	print_line("stage: " + String(shader_stage_names[p_stage]) + " set: " + itos(set) + " binding: " + itos(info.binding) + " type:" + shader_uniform_names[info.type] + " length: " + itos(info.length));
 #endif
-	bindings.write[set].push_back(layout_binding);
-	uniform_infos.write[set].push_back(info);
+	bindings.write()[set].push_back(layout_binding);
+	uniform_infos.write()[set].push_back(info);
 
 	return true;
 }
@@ -4522,8 +4522,8 @@ RID RenderingDeviceVulkan::shader_create(const Vector<ShaderStageData> &p_stages
 										"On shader stage '" + String(shader_stage_names[stage]) + "', uniform '" + binding.name + "' trying to re-use location for set=" + itos(set) + ", binding=" + itos(info.binding) + " with different uniform size.");
 
 								//just append stage mask and return
-								set_bindings.write[set].write[k].stageFlags |= shader_stage_masks[stage];
-								uniform_info.write[set].write[k].stages |= 1 << stage;
+								set_bindings.write()[set].write()[k].stageFlags |= shader_stage_masks[stage];
+								uniform_info.write()[set].write()[k].stages |= 1 << stage;
 								exists = true;
 							}
 						}
@@ -4545,8 +4545,8 @@ RID RenderingDeviceVulkan::shader_create(const Vector<ShaderStageData> &p_stages
 						uniform_info.resize(set + 1);
 					}
 
-					set_bindings.write[set].push_back(layout_binding);
-					uniform_info.write[set].push_back(info);
+					set_bindings.write()[set].push_back(layout_binding);
+					uniform_info.write()[set].push_back(info);
 				}
 			}
 
@@ -4745,7 +4745,7 @@ RID RenderingDeviceVulkan::shader_create(const Vector<ShaderStageData> &p_stages
 		layouts.resize(shader.sets.size());
 
 		for (int i = 0; i < layouts.size(); i++) {
-			layouts.write[i] = shader.sets[i].descriptor_set_layout;
+			layouts.write()[i] = shader.sets[i].descriptor_set_layout;
 		}
 
 		pipeline_layout_create_info.pSetLayouts = layouts.ptr();
@@ -5483,7 +5483,7 @@ RID RenderingDeviceVulkan::uniform_set_create(const Vector<Uniform> &p_uniforms,
 	//write the contents
 	if (writes.size()) {
 		for (int i = 0; i < writes.size(); i++) {
-			writes.write[i].dstSet = descriptor_set;
+			writes.write()[i].dstSet = descriptor_set;
 		}
 		vkUpdateDescriptorSets(device, writes.size(), writes.ptr(), 0, nullptr);
 	}
@@ -6271,7 +6271,7 @@ Error RenderingDeviceVulkan::_draw_list_render_pass_begin(Framebuffer *framebuff
 				clear_value.color.float32[2] = 0;
 				clear_value.color.float32[3] = 0;
 			}
-			clear_values.write[i] = clear_value;
+			clear_values.write()[i] = clear_value;
 		}
 	}
 
@@ -7007,7 +7007,7 @@ Error RenderingDeviceVulkan::_draw_list_allocate(const Rect2i &p_viewport, uint3
 				cmd_pool_info.queueFamilyIndex = context->get_graphics_queue();
 				cmd_pool_info.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
 
-				VkResult res = vkCreateCommandPool(device, &cmd_pool_info, nullptr, &split_draw_list_allocators.write[i].command_pool);
+				VkResult res = vkCreateCommandPool(device, &cmd_pool_info, nullptr, &split_draw_list_allocators.write()[i].command_pool);
 				ERR_FAIL_COND_V_MSG(res, ERR_CANT_CREATE, "vkCreateCommandPool failed with error " + itos(res) + ".");
 
 				for (int j = 0; j < frame_count; j++) {
@@ -7024,7 +7024,7 @@ Error RenderingDeviceVulkan::_draw_list_allocate(const Rect2i &p_viewport, uint3
 					VkResult err = vkAllocateCommandBuffers(device, &cmdbuf, &command_buffer);
 					ERR_FAIL_COND_V_MSG(err, ERR_CANT_CREATE, "vkAllocateCommandBuffers failed with error " + itos(err) + ".");
 
-					split_draw_list_allocators.write[i].command_buffers.push_back(command_buffer);
+					split_draw_list_allocators.write()[i].command_buffers.push_back(command_buffer);
 				}
 			}
 		}

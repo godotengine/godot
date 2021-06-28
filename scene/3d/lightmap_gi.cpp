@@ -663,14 +663,14 @@ LightmapGI::BakeError LightmapGI::bake(Node *p_from_node, String p_image_data_pa
 				p_bake_step(p * 0.1, vformat(TTR("Preparing geometry %d/%d"), m_i, meshes_found.size()), p_bake_userdata, false);
 			}
 
-			MeshesFound &mf = meshes_found.write[m_i];
+			MeshesFound &mf = meshes_found.write()[m_i];
 
 			Size2i lightmap_size = mf.mesh->get_lightmap_size_hint() * mf.lightmap_scale;
 			Vector<RID> overrides;
 			overrides.resize(mf.overrides.size());
 			for (int i = 0; i < mf.overrides.size(); i++) {
 				if (mf.overrides[i].is_valid()) {
-					overrides.write[i] = mf.overrides[i]->get_rid();
+					overrides.write()[i] = mf.overrides[i]->get_rid();
 				}
 			}
 			TypedArray<Image> images = RS::get_singleton()->bake_render_uv2(mf.mesh->get_rid(), overrides, lightmap_size);
@@ -1043,11 +1043,11 @@ LightmapGI::BakeError LightmapGI::bake(Node *p_from_node, String p_image_data_pa
 		points.resize(lightmapper->get_bake_probe_count());
 		sh.resize(lightmapper->get_bake_probe_count() * 9);
 		for (int i = 0; i < lightmapper->get_bake_probe_count(); i++) {
-			points.write[i] = lightmapper->get_bake_probe_point(i);
+			points.write()[i] = lightmapper->get_bake_probe_point(i);
 			Vector<Color> colors = lightmapper->get_bake_probe_sh(i);
 			ERR_CONTINUE(colors.size() != 9);
 			for (int j = 0; j < 9; j++) {
-				sh.write[i * 9 + j] = colors[j];
+				sh.write()[i * 9 + j] = colors[j];
 			}
 		}
 

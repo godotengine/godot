@@ -158,7 +158,7 @@ String GDScriptCache::get_source_code(const String &p_path) {
 	uint64_t r = f->get_buffer(source_file.ptrw(), len);
 	f->close();
 	ERR_FAIL_COND_V(r != len, "");
-	source_file.write[len] = 0;
+	source_file.write()[len] = 0;
 
 	String source;
 	if (source.parse_utf8((const char *)source_file.ptr())) {

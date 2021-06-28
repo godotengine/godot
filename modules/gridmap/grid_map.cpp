@@ -486,7 +486,7 @@ bool GridMap::_octant_update(const OctantKey &p_key) {
 			}
 			PhysicsServer3D::get_singleton()->body_add_shape(g.static_body, shapes[i].shape->get_rid(), xform * shapes[i].local_transform);
 			if (g.collision_debug.is_valid()) {
-				shapes.write[i].shape->add_vertices_to_array(col_debug, xform * shapes[i].local_transform);
+				shapes.write()[i].shape->add_vertices_to_array(col_debug, xform * shapes[i].local_transform);
 			}
 		}
 

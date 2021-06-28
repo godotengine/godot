@@ -415,7 +415,7 @@ bool GDNative::initialize() {
 	if (library->should_load_once() && !GDNativeLibrary::loaded_libraries.has(lib_path)) {
 		Vector<Ref<GDNative>> gdnatives;
 		gdnatives.resize(1);
-		gdnatives.write[0] = Ref<GDNative>(this);
+		gdnatives.write()[0] = Ref<GDNative>(this);
 		GDNativeLibrary::loaded_libraries.insert(lib_path, gdnatives);
 	}
 
@@ -484,7 +484,7 @@ Vector<StringName> GDNativeCallRegistry::get_native_call_types() {
 
 	size_t idx = 0;
 	for (Map<StringName, native_call_cb>::Element *E = native_calls.front(); E; E = E->next(), idx++) {
-		call_types.write[idx] = E->key();
+		call_types.write()[idx] = E->key();
 	}
 
 	return call_types;

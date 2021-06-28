@@ -49,7 +49,7 @@ typedef struct {
 } godot_glyph;
 #endif
 
-#define GODOT_PACKED_GLYPH_ARRAY_SIZE (2 * sizeof(void *))
+#define GODOT_PACKED_GLYPH_ARRAY_SIZE (sizeof(void *))
 
 #ifndef GODOT_TEXT_API_GODOT_PACKED_GLYPH_ARRAY_TYPE_DEFINED
 #define GODOT_TEXT_API_GODOT_PACKED_GLYPH_ARRAY_TYPE_DEFINED

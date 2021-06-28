@@ -188,7 +188,7 @@ void POTGenerator::_add_new_msgid(const String &p_msgid, const String &p_context
 				if (!v_mdata[i].plural.is_empty() && !p_plural.is_empty() && v_mdata[i].plural != p_plural) {
 					WARN_PRINT("Redefinition of plural message (msgid_plural), under the same message (msgid) and context (msgctxt)");
 				}
-				v_mdata.write[i].locations.insert(p_location);
+				v_mdata.write()[i].locations.insert(p_location);
 				return;
 			}
 		}

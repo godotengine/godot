@@ -202,7 +202,7 @@ struct PtrToArg<ObjectID> {
 			{                                                                            \
 				const m_type *r = dvs->ptr();                                            \
 				for (int i = 0; i < len; i++) {                                          \
-					ret.write[i] = r[i];                                                 \
+					ret.write()[i] = r[i];                                               \
 				}                                                                        \
 			}                                                                            \
 			return ret;                                                                  \
@@ -229,7 +229,7 @@ struct PtrToArg<ObjectID> {
 			{                                                                            \
 				const m_type *r = dvs->ptr();                                            \
 				for (int i = 0; i < len; i++) {                                          \
-					ret.write[i] = r[i];                                                 \
+					ret.write()[i] = r[i];                                               \
 				}                                                                        \
 			}                                                                            \
 			return ret;                                                                  \
@@ -247,7 +247,7 @@ struct PtrToArg<ObjectID> {
 			{                                                                            \
 				const m_type *r = dvs->ptr();                                            \
 				for (int i = 0; i < len; i++) {                                          \
-					ret.write[i] = r[i];                                                 \
+					ret.write()[i] = r[i];                                               \
 				}                                                                        \
 			}                                                                            \
 			return ret;                                                                  \
@@ -274,7 +274,7 @@ struct PtrToArg<ObjectID> {
 			{                                                                            \
 				const m_type *r = dvs->ptr();                                            \
 				for (int i = 0; i < len; i++) {                                          \
-					ret.write[i] = r[i];                                                 \
+					ret.write()[i] = r[i];                                               \
 				}                                                                        \
 			}                                                                            \
 			return ret;                                                                  \
@@ -294,7 +294,7 @@ MAKE_VECARG_ALT(String, StringName);
 			int len = arr->size();                                             \
 			ret.resize(len);                                                   \
 			for (int i = 0; i < len; i++) {                                    \
-				ret.write[i] = (*arr)[i];                                      \
+				ret.write()[i] = (*arr)[i];                                    \
 			}                                                                  \
 			return ret;                                                        \
 		}                                                                      \
@@ -315,7 +315,7 @@ MAKE_VECARG_ALT(String, StringName);
 			int len = arr->size();                                             \
 			ret.resize(len);                                                   \
 			for (int i = 0; i < len; i++) {                                    \
-				ret.write[i] = (*arr)[i];                                      \
+				ret.write()[i] = (*arr)[i];                                    \
 			}                                                                  \
 			return ret;                                                        \
 		}                                                                      \

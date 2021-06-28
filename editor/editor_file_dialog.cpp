@@ -1172,7 +1172,7 @@ void EditorFileDialog::_favorite_move_up() {
 		if (a_idx == -1 || b_idx == -1) {
 			return;
 		}
-		SWAP(favorited.write[a_idx], favorited.write[b_idx]);
+		SWAP(favorited.write()[a_idx], favorited.write()[b_idx]);
 
 		EditorSettings::get_singleton()->set_favorites(favorited);
 
@@ -1193,7 +1193,7 @@ void EditorFileDialog::_favorite_move_down() {
 		if (a_idx == -1 || b_idx == -1) {
 			return;
 		}
-		SWAP(favorited.write[a_idx], favorited.write[b_idx]);
+		SWAP(favorited.write()[a_idx], favorited.write()[b_idx]);
 
 		EditorSettings::get_singleton()->set_favorites(favorited);
 

@@ -87,7 +87,7 @@ static void _push_to_key_event_buffer(const DisplayServerOSX::KeyEvent &p_event)
 	if (DS_OSX->key_event_pos >= buffer.size()) {
 		buffer.resize(1 + DS_OSX->key_event_pos);
 	}
-	buffer.write[DS_OSX->key_event_pos++] = p_event;
+	buffer.write()[DS_OSX->key_event_pos++] = p_event;
 }
 
 static NSCursor *_cursorFromSelector(SEL selector, SEL fallback = nil) {
@@ -3492,10 +3492,10 @@ void DisplayServerOSX::set_native_icon(const String &p_filename) {
 	Vector<uint8_t> data;
 	uint64_t len = f->get_length();
 	data.resize(len);
-	f->get_buffer((uint8_t *)&data.write[0], len);
+	f->get_buffer((uint8_t *)&data.write()[0], len);
 	memdelete(f);
 
-	NSData *icon_data = [[[NSData alloc] initWithBytes:&data.write[0] length:len] autorelease];
+	NSData *icon_data = [[[NSData alloc] initWithBytes:&data.write()[0] length:len] autorelease];
 	ERR_FAIL_COND_MSG(!icon_data, "Error reading icon data.");
 
 	NSImage *icon = [[[NSImage alloc] initWithData:icon_data] autorelease];

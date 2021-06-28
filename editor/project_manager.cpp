@@ -1126,7 +1126,7 @@ void ProjectList::_notification(int p_what) {
 	if (p_what == NOTIFICATION_PROCESS) {
 		// Load icons as a coroutine to speed up launch when you have hundreds of projects
 		if (_icon_load_index < _projects.size()) {
-			Item &item = _projects.write[_icon_load_index];
+			Item &item = _projects.write()[_icon_load_index];
 			if (item.control->icon_needs_reload) {
 				load_project_icon(_icon_load_index);
 			}
@@ -1139,7 +1139,7 @@ void ProjectList::_notification(int p_what) {
 }
 
 void ProjectList::load_project_icon(int p_index) {
-	Item &item = _projects.write[p_index];
+	Item &item = _projects.write()[p_index];
 
 	Ref<Texture2D> default_icon = get_theme_icon("DefaultProjectIcon", "EditorIcons");
 	Ref<Texture2D> icon;
@@ -1221,7 +1221,7 @@ void ProjectList::load_projects() {
 
 	// Clear whole list
 	for (int i = 0; i < _projects.size(); ++i) {
-		Item &project = _projects.write[i];
+		Item &project = _projects.write()[i];
 		CRASH_COND(project.control == nullptr);
 		memdelete(project.control); // Why not queue_free()?
 	}
@@ -1324,7 +1324,7 @@ void ProjectList::create_project_item_control(int p_index) {
 	// Will be added last in the list, so make sure indexes match
 	ERR_FAIL_COND(p_index != _scroll_children->get_child_count());
 
-	Item &item = _projects.write[p_index];
+	Item &item = _projects.write()[p_index];
 	ERR_FAIL_COND(item.control != nullptr); // Already created
 
 	Ref<Texture2D> favorite_icon = get_theme_icon("Favorites", "EditorIcons");
@@ -1429,7 +1429,7 @@ void ProjectList::sort_projects() {
 	sorter.sort(_projects.ptrw(), _projects.size());
 
 	for (int i = 0; i < _projects.size(); ++i) {
-		Item &item = _projects.write[i];
+		Item &item = _projects.write()[i];
 
 		bool visible = true;
 		if (_search_term != "") {
@@ -1450,7 +1450,7 @@ void ProjectList::sort_projects() {
 	}
 
 	for (int i = 0; i < _projects.size(); ++i) {
-		Item &item = _projects.write[i];
+		Item &item = _projects.write()[i];
 		item.control->get_parent()->move_child(item.control, i);
 	}
 
@@ -1475,7 +1475,7 @@ Vector<ProjectList::Item> ProjectList::get_selected_projects() const {
 	for (int i = 0; i < _projects.size(); ++i) {
 		const Item &item = _projects[i];
 		if (_selected_project_keys.has(item.project_key)) {
-			items.write[j++] = item;
+			items.write()[j++] = item;
 		}
 	}
 	ERR_FAIL_COND_V(j != items.size(), items);
@@ -1683,7 +1683,7 @@ void ProjectList::select_range(int p_begin, int p_end) {
 }
 
 void ProjectList::toggle_select(int p_index) {
-	Item &item = _projects.write[p_index];
+	Item &item = _projects.write()[p_index];
 	if (_selected_project_keys.has(item.project_key)) {
 		_selected_project_keys.erase(item.project_key);
 	} else {
@@ -1698,7 +1698,7 @@ void ProjectList::erase_selected_projects(bool p_delete_project_contents) {
 	}
 
 	for (int i = 0; i < _projects.size(); ++i) {
-		Item &item = _projects.write[i];
+		Item &item = _projects.write()[i];
 		if (_selected_project_keys.has(item.project_key) && item.control->is_visible()) {
 			EditorSettings::get_singleton()->erase("projects/" + item.project_key);
 			EditorSettings::get_singleton()->erase("favorite_projects/" + item.project_key);
@@ -1777,7 +1777,7 @@ void ProjectList::_favorite_pressed(Node *p_hb) {
 	ProjectListItemControl *control = Object::cast_to<ProjectListItemControl>(p_hb);
 
 	int index = control->get_index();
-	Item item = _projects.write[index]; // Take copy
+	Item item = _projects.write()[index]; // Take copy
 
 	item.favorite = !item.favorite;
 
@@ -1788,7 +1788,7 @@ void ProjectList::_favorite_pressed(Node *p_hb) {
 	}
 	EditorSettings::get_singleton()->save();
 
-	_projects.write[index] = item;
+	_projects.write()[index] = item;
 
 	control->set_is_favorite(item.favorite);
 

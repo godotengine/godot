@@ -583,8 +583,8 @@ void DisplayServerAndroid::process_touch(int p_event, int p_pointer, const Vecto
 
 			touch.resize(p_points.size());
 			for (int i = 0; i < p_points.size(); i++) {
-				touch.write[i].id = p_points[i].id;
-				touch.write[i].pos = p_points[i].pos;
+				touch.write()[i].id = p_points[i].id;
+				touch.write()[i].pos = p_points[i].pos;
 			}
 
 			//send touch
@@ -621,7 +621,7 @@ void DisplayServerAndroid::process_touch(int p_event, int p_pointer, const Vecto
 				ev->set_position(p_points[idx].pos);
 				ev->set_relative(p_points[idx].pos - touch[i].pos);
 				Input::get_singleton()->accumulate_input_event(ev);
-				touch.write[i].pos = p_points[idx].pos;
+				touch.write()[i].pos = p_points[idx].pos;
 			}
 
 		} break;

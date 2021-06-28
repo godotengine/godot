@@ -322,7 +322,7 @@ void SoftBodyBullet::set_trimesh_body_shape(Vector<int> p_indices, Vector<Vector
 					indices_table.push_back(Vector<int>());
 				}
 
-				indices_table.write[vertex_id].push_back(vs_vertex_index);
+				indices_table.write()[vertex_id].push_back(vs_vertex_index);
 				vs_indices_to_physics_table.push_back(vertex_id);
 			}
 		}
@@ -337,9 +337,9 @@ void SoftBodyBullet::set_trimesh_body_shape(Vector<int> p_indices, Vector<Vector
 			const Vector3 *p_vertices_read = p_vertices.ptr();
 
 			for (int i = 0; i < indices_map_size; ++i) {
-				bt_vertices.write[3 * i + 0] = p_vertices_read[indices_table[i][0]].x;
-				bt_vertices.write[3 * i + 1] = p_vertices_read[indices_table[i][0]].y;
-				bt_vertices.write[3 * i + 2] = p_vertices_read[indices_table[i][0]].z;
+				bt_vertices.write()[3 * i + 0] = p_vertices_read[indices_table[i][0]].x;
+				bt_vertices.write()[3 * i + 1] = p_vertices_read[indices_table[i][0]].y;
+				bt_vertices.write()[3 * i + 2] = p_vertices_read[indices_table[i][0]].z;
 			}
 		}
 
@@ -353,9 +353,9 @@ void SoftBodyBullet::set_trimesh_body_shape(Vector<int> p_indices, Vector<Vector
 			const int *p_indices_read = p_indices.ptr();
 
 			for (int i = 0; i < triangles_size; ++i) {
-				bt_triangles.write[3 * i + 0] = vs_indices_to_physics_table[p_indices_read[3 * i + 2]];
-				bt_triangles.write[3 * i + 1] = vs_indices_to_physics_table[p_indices_read[3 * i + 1]];
-				bt_triangles.write[3 * i + 2] = vs_indices_to_physics_table[p_indices_read[3 * i + 0]];
+				bt_triangles.write()[3 * i + 0] = vs_indices_to_physics_table[p_indices_read[3 * i + 2]];
+				bt_triangles.write()[3 * i + 1] = vs_indices_to_physics_table[p_indices_read[3 * i + 1]];
+				bt_triangles.write()[3 * i + 2] = vs_indices_to_physics_table[p_indices_read[3 * i + 0]];
 			}
 		}
 

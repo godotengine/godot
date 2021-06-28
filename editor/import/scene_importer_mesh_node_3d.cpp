@@ -50,7 +50,7 @@ void EditorSceneImporterMeshNode3D::set_surface_material(int p_idx, const Ref<Ma
 		surface_materials.resize(p_idx + 1);
 	}
 
-	surface_materials.write[p_idx] = p_material;
+	surface_materials.write()[p_idx] = p_material;
 }
 Ref<Material> EditorSceneImporterMeshNode3D::get_surface_material(int p_idx) const {
 	ERR_FAIL_COND_V(p_idx < 0, Ref<Material>());

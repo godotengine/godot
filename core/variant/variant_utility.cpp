@@ -425,8 +425,8 @@ struct VariantUtilityFunctions {
 		uint64_t s = seed;
 		PackedInt64Array arr;
 		arr.resize(2);
-		arr.write[0] = Math::rand_from_seed(&s);
-		arr.write[1] = s;
+		arr.write()[0] = Math::rand_from_seed(&s);
+		arr.write()[1] = s;
 		return arr;
 	}
 

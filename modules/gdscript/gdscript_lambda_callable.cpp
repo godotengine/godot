@@ -73,10 +73,10 @@ void GDScriptLambdaCallable::call(const Variant **p_arguments, int p_argcount, V
 		Vector<const Variant *> args;
 		args.resize(p_argcount + captures_amount);
 		for (int i = 0; i < captures_amount; i++) {
-			args.write[i] = &captures[i];
+			args.write()[i] = &captures[i];
 		}
 		for (int i = 0; i < p_argcount; i++) {
-			args.write[i + captures_amount] = p_arguments[i];
+			args.write()[i + captures_amount] = p_arguments[i];
 		}
 
 		r_return_value = function->call(nullptr, args.ptrw(), args.size(), r_call_error);

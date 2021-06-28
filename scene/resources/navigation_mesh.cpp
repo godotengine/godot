@@ -55,9 +55,9 @@ void NavigationMesh::create_from_mesh(const Ref<Mesh> &p_mesh) {
 		for (int j = 0; j < rlen; j += 3) {
 			Vector<int> vi;
 			vi.resize(3);
-			vi.write[0] = r[j + 0] + from;
-			vi.write[1] = r[j + 1] + from;
-			vi.write[2] = r[j + 2] + from;
+			vi.write()[0] = r[j + 0] + from;
+			vi.write()[1] = r[j + 1] + from;
+			vi.write()[2] = r[j + 2] + from;
 
 			add_polygon(vi);
 		}
@@ -265,7 +265,7 @@ Vector<Vector3> NavigationMesh::get_vertices() const {
 void NavigationMesh::_set_polygons(const Array &p_array) {
 	polygons.resize(p_array.size());
 	for (int i = 0; i < p_array.size(); i++) {
-		polygons.write[i].indices = p_array[i];
+		polygons.write()[i].indices = p_array[i];
 	}
 	notify_property_list_changed();
 }

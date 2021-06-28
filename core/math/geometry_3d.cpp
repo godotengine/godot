@@ -46,7 +46,7 @@ void Geometry3D::MeshData::optimize_vertices() {
 				vtx_remap[idx] = ni;
 			}
 
-			faces.write[i].indices.write[j] = vtx_remap[idx];
+			faces.write()[i].indices.write()[j] = vtx_remap[idx];
 		}
 	}
 
@@ -63,8 +63,8 @@ void Geometry3D::MeshData::optimize_vertices() {
 			vtx_remap[b] = ni;
 		}
 
-		edges.write[i].a = vtx_remap[a];
-		edges.write[i].b = vtx_remap[b];
+		edges.write()[i].a = vtx_remap[a];
+		edges.write()[i].b = vtx_remap[b];
 	}
 
 	Vector<Vector3> new_vertices;
@@ -72,7 +72,7 @@ void Geometry3D::MeshData::optimize_vertices() {
 
 	for (int i = 0; i < vertices.size(); i++) {
 		if (vtx_remap.has(i)) {
-			new_vertices.write[vtx_remap[i]] = vertices[i];
+			new_vertices.write()[vtx_remap[i]] = vertices[i];
 		}
 	}
 	vertices = new_vertices;

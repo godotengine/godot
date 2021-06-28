@@ -1233,8 +1233,8 @@ int NativeScriptLanguage::register_binding_functions(godot_nativescript_instance
 	}
 
 	// set the functions
-	binding_functions.write[idx].first = true;
-	binding_functions.write[idx].second = p_binding_functions;
+	binding_functions.write()[idx].first = true;
+	binding_functions.write()[idx].second = p_binding_functions;
 
 	return idx;
 }
@@ -1250,7 +1250,7 @@ void NativeScriptLanguage::unregister_binding_functions(int p_idx) {
 		}
 	}
 
-	binding_functions.write[p_idx].first = false;
+	binding_functions.write()[p_idx].first = false;
 
 	if (binding_functions[p_idx].second.free_func) {
 		binding_functions[p_idx].second.free_func(binding_functions[p_idx].second.data);
@@ -1275,7 +1275,7 @@ void *NativeScriptLanguage::get_instance_binding_data(int p_idx, Object *p_objec
 		binding_data->resize(p_idx + 1);
 
 		for (int i = old_size; i <= p_idx; i++) {
-			(*binding_data).write[i] = nullptr;
+			(*binding_data).write()[i] = nullptr;
 		}
 	}
 
@@ -1283,7 +1283,7 @@ void *NativeScriptLanguage::get_instance_binding_data(int p_idx, Object *p_objec
 		const void *global_type_tag = get_global_type_tag(p_idx, p_object->get_class_name());
 
 		// no binding data yet, soooooo alloc new one \o/
-		(*binding_data).write[p_idx] = binding_functions[p_idx].second.alloc_instance_binding_data(binding_functions[p_idx].second.data, global_type_tag, (godot_object *)p_object);
+		(*binding_data).write()[p_idx] = binding_functions[p_idx].second.alloc_instance_binding_data(binding_functions[p_idx].second.data, global_type_tag, (godot_object *)p_object);
 	}
 
 	return (*binding_data)[p_idx];
@@ -1295,7 +1295,7 @@ void *NativeScriptLanguage::alloc_instance_binding_data(Object *p_object) {
 	binding_data->resize(binding_functions.size());
 
 	for (int i = 0; i < binding_functions.size(); i++) {
-		(*binding_data).write[i] = nullptr;
+		(*binding_data).write()[i] = nullptr;
 	}
 
 	binding_instances.insert(binding_data);

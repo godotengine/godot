@@ -297,7 +297,7 @@ Variant Performance::MonitorCall::call(bool &r_error, String &r_error_message) {
 	Vector<const Variant *> arguments_mem;
 	arguments_mem.resize(_arguments.size());
 	for (int i = 0; i < _arguments.size(); i++) {
-		arguments_mem.write[i] = &_arguments[i];
+		arguments_mem.write()[i] = &_arguments[i];
 	}
 	const Variant **args = (const Variant **)arguments_mem.ptr();
 	int argc = _arguments.size();

@@ -183,19 +183,19 @@ void TextEdit::Text::invalidate_cache(int p_line, int p_column, const String &p_
 		return; // Not in tree?
 	}
 
-	text.write[p_line].data_buf->clear();
-	text.write[p_line].data_buf->set_width(width);
-	text.write[p_line].data_buf->set_direction((TextServer::Direction)direction);
-	text.write[p_line].data_buf->set_preserve_control(draw_control_chars);
+	text.write()[p_line].data_buf->clear();
+	text.write()[p_line].data_buf->set_width(width);
+	text.write()[p_line].data_buf->set_direction((TextServer::Direction)direction);
+	text.write()[p_line].data_buf->set_preserve_control(draw_control_chars);
 	if (p_ime_text.length() > 0) {
-		text.write[p_line].data_buf->add_string(p_ime_text, font, font_size, opentype_features, language);
+		text.write()[p_line].data_buf->add_string(p_ime_text, font, font_size, opentype_features, language);
 		if (!p_bidi_override.is_empty()) {
-			TS->shaped_text_set_bidi_override(text.write[p_line].data_buf->get_rid(), p_bidi_override);
+			TS->shaped_text_set_bidi_override(text.write()[p_line].data_buf->get_rid(), p_bidi_override);
 		}
 	} else {
-		text.write[p_line].data_buf->add_string(text[p_line].data, font, font_size, opentype_features, language);
+		text.write()[p_line].data_buf->add_string(text[p_line].data, font, font_size, opentype_features, language);
 		if (!text[p_line].bidi_override.is_empty()) {
-			TS->shaped_text_set_bidi_override(text.write[p_line].data_buf->get_rid(), text[p_line].bidi_override);
+			TS->shaped_text_set_bidi_override(text.write()[p_line].data_buf->get_rid(), text[p_line].bidi_override);
 		}
 	}
 
@@ -203,17 +203,17 @@ void TextEdit::Text::invalidate_cache(int p_line, int p_column, const String &p_
 	if (tab_size > 0) {
 		Vector<float> tabs;
 		tabs.push_back(font->get_char_size(' ', 0, font_size).width * tab_size);
-		text.write[p_line].data_buf->tab_align(tabs);
+		text.write()[p_line].data_buf->tab_align(tabs);
 	}
 }
 
 void TextEdit::Text::invalidate_all_lines() {
 	for (int i = 0; i < text.size(); i++) {
-		text.write[i].data_buf->set_width(width);
+		text.write()[i].data_buf->set_width(width);
 		if (tab_size > 0) {
 			Vector<float> tabs;
 			tabs.push_back(font->get_char_size(' ', 0, font_size).width * tab_size);
-			text.write[i].data_buf->tab_align(tabs);
+			text.write()[i].data_buf->tab_align(tabs);
 		}
 	}
 }
@@ -244,8 +244,8 @@ int TextEdit::Text::get_max_width(bool p_exclude_hidden) const {
 void TextEdit::Text::set(int p_line, const String &p_text, const Vector<Vector2i> &p_bidi_override) {
 	ERR_FAIL_INDEX(p_line, text.size());
 
-	text.write[p_line].data = p_text;
-	text.write[p_line].bidi_override = p_bidi_override;
+	text.write()[p_line].data = p_text;
+	text.write()[p_line].bidi_override = p_bidi_override;
 	invalidate_cache(p_line);
 }
 
@@ -267,9 +267,9 @@ void TextEdit::Text::remove(int p_at) {
 void TextEdit::Text::add_gutter(int p_at) {
 	for (int i = 0; i < text.size(); i++) {
 		if (p_at < 0 || p_at > gutter_count) {
-			text.write[i].gutters.push_back(Gutter());
+			text.write()[i].gutters.push_back(Gutter());
 		} else {
-			text.write[i].gutters.insert(p_at, Gutter());
+			text.write()[i].gutters.insert(p_at, Gutter());
 		}
 	}
 	gutter_count++;
@@ -277,15 +277,15 @@ void TextEdit::Text::add_gutter(int p_at) {
 
 void TextEdit::Text::remove_gutter(int p_gutter) {
 	for (int i = 0; i < text.size(); i++) {
-		text.write[i].gutters.remove(p_gutter);
+		text.write()[i].gutters.remove(p_gutter);
 	}
 	gutter_count--;
 }
 
 void TextEdit::Text::move_gutters(int p_from_line, int p_to_line) {
-	text.write[p_to_line].gutters = text[p_from_line].gutters;
-	text.write[p_from_line].gutters.clear();
-	text.write[p_from_line].gutters.resize(gutter_count);
+	text.write()[p_to_line].gutters = text[p_from_line].gutters;
+	text.write()[p_from_line].gutters.clear();
+	text.write()[p_from_line].gutters.resize(gutter_count);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -4142,7 +4142,7 @@ int TextEdit::get_gutter_count() const {
 
 void TextEdit::set_gutter_name(int p_gutter, const String &p_name) {
 	ERR_FAIL_INDEX(p_gutter, gutters.size());
-	gutters.write[p_gutter].name = p_name;
+	gutters.write()[p_gutter].name = p_name;
 }
 
 String TextEdit::get_gutter_name(int p_gutter) const {
@@ -4152,7 +4152,7 @@ String TextEdit::get_gutter_name(int p_gutter) const {
 
 void TextEdit::set_gutter_type(int p_gutter, GutterType p_type) {
 	ERR_FAIL_INDEX(p_gutter, gutters.size());
-	gutters.write[p_gutter].type = p_type;
+	gutters.write()[p_gutter].type = p_type;
 	update();
 }
 
@@ -4163,7 +4163,7 @@ TextEdit::GutterType TextEdit::get_gutter_type(int p_gutter) const {
 
 void TextEdit::set_gutter_width(int p_gutter, int p_width) {
 	ERR_FAIL_INDEX(p_gutter, gutters.size());
-	gutters.write[p_gutter].width = p_width;
+	gutters.write()[p_gutter].width = p_width;
 	_update_gutter_width();
 }
 
@@ -4178,7 +4178,7 @@ int TextEdit::get_total_gutter_width() const {
 
 void TextEdit::set_gutter_draw(int p_gutter, bool p_draw) {
 	ERR_FAIL_INDEX(p_gutter, gutters.size());
-	gutters.write[p_gutter].draw = p_draw;
+	gutters.write()[p_gutter].draw = p_draw;
 	_update_gutter_width();
 }
 
@@ -4189,7 +4189,7 @@ bool TextEdit::is_gutter_drawn(int p_gutter) const {
 
 void TextEdit::set_gutter_clickable(int p_gutter, bool p_clickable) {
 	ERR_FAIL_INDEX(p_gutter, gutters.size());
-	gutters.write[p_gutter].clickable = p_clickable;
+	gutters.write()[p_gutter].clickable = p_clickable;
 	update();
 }
 
@@ -4200,7 +4200,7 @@ bool TextEdit::is_gutter_clickable(int p_gutter) const {
 
 void TextEdit::set_gutter_overwritable(int p_gutter, bool p_overwritable) {
 	ERR_FAIL_INDEX(p_gutter, gutters.size());
-	gutters.write[p_gutter].overwritable = p_overwritable;
+	gutters.write()[p_gutter].overwritable = p_overwritable;
 }
 
 bool TextEdit::is_gutter_overwritable(int p_gutter) const {
@@ -4245,8 +4245,8 @@ void TextEdit::set_gutter_custom_draw(int p_gutter, Object *p_object, const Stri
 	ERR_FAIL_INDEX(p_gutter, gutters.size());
 	ERR_FAIL_NULL(p_object);
 
-	gutters.write[p_gutter].custom_draw_obj = p_object->get_instance_id();
-	gutters.write[p_gutter].custom_draw_callback = p_callback;
+	gutters.write()[p_gutter].custom_draw_obj = p_object->get_instance_id();
+	gutters.write()[p_gutter].custom_draw_callback = p_callback;
 	update();
 }
 

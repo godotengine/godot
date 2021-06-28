@@ -1494,7 +1494,7 @@ public:
 		if (mesh->material_cache.is_empty()) {
 			mesh->material_cache.resize(mesh->surface_count);
 			for (uint32_t i = 0; i < r_surface_count; i++) {
-				mesh->material_cache.write[i] = mesh->surfaces[i]->material;
+				mesh->material_cache.write()[i] = mesh->surfaces[i]->material;
 			}
 		}
 

@@ -139,7 +139,7 @@ Error GLTFDocument::serialize(Ref<GLTFState> state, Node *p_root, const String &
 	}
 
 	for (GLTFBufferViewIndex i = 0; i < state->buffer_views.size(); i++) {
-		state->buffer_views.write[i]->buffer = 0;
+		state->buffer_views.write()[i]->buffer = 0;
 	}
 
 	/* STEP 11 SERIALIZE BUFFER VIEWS */
@@ -369,25 +369,25 @@ static Vector<real_t> _xform_to_array(const Transform3D p_transform) {
 	Vector<real_t> array;
 	array.resize(16);
 	Vector3 axis_x = p_transform.get_basis().get_axis(Vector3::AXIS_X);
-	array.write[0] = axis_x.x;
-	array.write[1] = axis_x.y;
-	array.write[2] = axis_x.z;
-	array.write[3] = 0.0f;
+	array.write()[0] = axis_x.x;
+	array.write()[1] = axis_x.y;
+	array.write()[2] = axis_x.z;
+	array.write()[3] = 0.0f;
 	Vector3 axis_y = p_transform.get_basis().get_axis(Vector3::AXIS_Y);
-	array.write[4] = axis_y.x;
-	array.write[5] = axis_y.y;
-	array.write[6] = axis_y.z;
-	array.write[7] = 0.0f;
+	array.write()[4] = axis_y.x;
+	array.write()[5] = axis_y.y;
+	array.write()[6] = axis_y.z;
+	array.write()[7] = 0.0f;
 	Vector3 axis_z = p_transform.get_basis().get_axis(Vector3::AXIS_Z);
-	array.write[8] = axis_z.x;
-	array.write[9] = axis_z.y;
-	array.write[10] = axis_z.z;
-	array.write[11] = 0.0f;
+	array.write()[8] = axis_z.x;
+	array.write()[9] = axis_z.y;
+	array.write()[10] = axis_z.z;
+	array.write()[11] = 0.0f;
 	Vector3 origin = p_transform.get_origin();
-	array.write[12] = origin.x;
-	array.write[13] = origin.y;
-	array.write[14] = origin.z;
-	array.write[15] = 1.0f;
+	array.write()[12] = origin.x;
+	array.write()[13] = origin.y;
+	array.write()[14] = origin.z;
+	array.write()[15] = 1.0f;
 	return array;
 }
 
@@ -526,7 +526,7 @@ String GLTFDocument::_gen_unique_bone_name(Ref<GLTFState> state, const GLTFSkele
 		index++;
 	}
 
-	state->skeletons.write[skel_i]->unique_names.insert(name);
+	state->skeletons.write()[skel_i]->unique_names.insert(name);
 
 	return name;
 }
@@ -626,7 +626,7 @@ Error GLTFDocument::_parse_nodes(Ref<GLTFState> state) {
 			ERR_FAIL_INDEX_V(child_i, state->nodes.size(), ERR_FILE_CORRUPT);
 			ERR_CONTINUE(state->nodes[child_i]->parent != -1); //node already has a parent, wtf.
 
-			state->nodes.write[child_i]->parent = node_i;
+			state->nodes.write()[child_i]->parent = node_i;
 		}
 	}
 
@@ -1116,7 +1116,7 @@ Error GLTFDocument::_encode_buffer_view(Ref<GLTFState> state, const double *src,
 	Ref<GLTFBufferView> bv;
 	bv.instantiate();
 	const uint32_t offset = bv->byte_offset = byte_offset;
-	Vector<uint8_t> &gltf_buffer = state->buffers.write[0];
+	Vector<uint8_t> &gltf_buffer = state->buffers.write()[0];
 
 	int stride = _get_component_type_size(component_type);
 	if (for_vertex && stride % 4) {
@@ -1143,9 +1143,9 @@ Error GLTFDocument::_encode_buffer_view(Ref<GLTFState> state, const double *src,
 					}
 					double d = *src;
 					if (normalized) {
-						buffer.write[dst_i] = d * 128.0;
+						buffer.write()[dst_i] = d * 128.0;
 					} else {
-						buffer.write[dst_i] = d;
+						buffer.write()[dst_i] = d;
 					}
 					src++;
 					dst_i++;
@@ -1167,9 +1167,9 @@ Error GLTFDocument::_encode_buffer_view(Ref<GLTFState> state, const double *src,
 					}
 					double d = *src;
 					if (normalized) {
-						buffer.write[dst_i] = d * 255.0;
+						buffer.write()[dst_i] = d * 255.0;
 					} else {
-						buffer.write[dst_i] = d;
+						buffer.write()[dst_i] = d;
 					}
 					src++;
 					dst_i++;
@@ -1189,9 +1189,9 @@ Error GLTFDocument::_encode_buffer_view(Ref<GLTFState> state, const double *src,
 					}
 					double d = *src;
 					if (normalized) {
-						buffer.write[dst_i] = d * 32768.0;
+						buffer.write()[dst_i] = d * 32768.0;
 					} else {
-						buffer.write[dst_i] = d;
+						buffer.write()[dst_i] = d;
 					}
 					src++;
 					dst_i++;
@@ -1213,9 +1213,9 @@ Error GLTFDocument::_encode_buffer_view(Ref<GLTFState> state, const double *src,
 					}
 					double d = *src;
 					if (normalized) {
-						buffer.write[dst_i] = d * 65535.0;
+						buffer.write()[dst_i] = d * 65535.0;
 					} else {
-						buffer.write[dst_i] = d;
+						buffer.write()[dst_i] = d;
 					}
 					src++;
 					dst_i++;
@@ -1236,7 +1236,7 @@ Error GLTFDocument::_encode_buffer_view(Ref<GLTFState> state, const double *src,
 						dst_i += skip_bytes;
 					}
 					double d = *src;
-					buffer.write[dst_i] = d;
+					buffer.write()[dst_i] = d;
 					src++;
 					dst_i++;
 				}
@@ -1256,7 +1256,7 @@ Error GLTFDocument::_encode_buffer_view(Ref<GLTFState> state, const double *src,
 						dst_i += skip_bytes;
 					}
 					double d = *src;
-					buffer.write[dst_i] = d;
+					buffer.write()[dst_i] = d;
 					src++;
 					dst_i++;
 				}
@@ -1443,7 +1443,7 @@ Vector<double> GLTFDocument::_decode_accessor(Ref<GLTFState> state, const GLTFAc
 	} else {
 		//fill with zeros, as bufferview is not defined.
 		for (int i = 0; i < (a->count * component_count); i++) {
-			dst_buffer.write[i] = 0;
+			dst_buffer.write()[i] = 0;
 		}
 	}
 
@@ -1490,18 +1490,18 @@ GLTFAccessorIndex GLTFDocument::_encode_accessor_as_ints(Ref<GLTFState> state, c
 	Vector<double> type_min;
 	type_min.resize(element_count);
 	for (int i = 0; i < p_attribs.size(); i++) {
-		attribs.write[i] = Math::snapped(p_attribs[i], 1.0);
+		attribs.write()[i] = Math::snapped(p_attribs[i], 1.0);
 		if (i == 0) {
 			for (int32_t type_i = 0; type_i < element_count; type_i++) {
-				type_max.write[type_i] = attribs[(i * element_count) + type_i];
-				type_min.write[type_i] = attribs[(i * element_count) + type_i];
+				type_max.write()[type_i] = attribs[(i * element_count) + type_i];
+				type_min.write()[type_i] = attribs[(i * element_count) + type_i];
 			}
 		}
 		for (int32_t type_i = 0; type_i < element_count; type_i++) {
-			type_max.write[type_i] = MAX(attribs[(i * element_count) + type_i], type_max[type_i]);
-			type_min.write[type_i] = MIN(attribs[(i * element_count) + type_i], type_min[type_i]);
-			type_max.write[type_i] = _filter_number(type_max.write[type_i]);
-			type_min.write[type_i] = _filter_number(type_min.write[type_i]);
+			type_max.write()[type_i] = MAX(attribs[(i * element_count) + type_i], type_max[type_i]);
+			type_min.write()[type_i] = MIN(attribs[(i * element_count) + type_i], type_min[type_i]);
+			type_max.write()[type_i] = _filter_number(type_max.write()[type_i]);
+			type_min.write()[type_i] = _filter_number(type_min.write()[type_i]);
 		}
 	}
 
@@ -1543,7 +1543,7 @@ Vector<int> GLTFDocument::_decode_accessor_as_ints(Ref<GLTFState> state, const G
 	ret.resize(ret_size);
 	{
 		for (int i = 0; i < ret_size; i++) {
-			ret.write[i] = int(attribs_ptr[i]);
+			ret.write()[i] = int(attribs_ptr[i]);
 		}
 	}
 	return ret;
@@ -1562,7 +1562,7 @@ Vector<float> GLTFDocument::_decode_accessor_as_floats(Ref<GLTFState> state, con
 	ret.resize(ret_size);
 	{
 		for (int i = 0; i < ret_size; i++) {
-			ret.write[i] = float(attribs_ptr[i]);
+			ret.write()[i] = float(attribs_ptr[i]);
 		}
 	}
 	return ret;
@@ -1584,8 +1584,8 @@ GLTFAccessorIndex GLTFDocument::_encode_accessor_as_vec2(Ref<GLTFState> state, c
 
 	for (int i = 0; i < p_attribs.size(); i++) {
 		Vector2 attrib = p_attribs[i];
-		attribs.write[(i * element_count) + 0] = Math::snapped(attrib.x, CMP_NORMALIZE_TOLERANCE);
-		attribs.write[(i * element_count) + 1] = Math::snapped(attrib.y, CMP_NORMALIZE_TOLERANCE);
+		attribs.write()[(i * element_count) + 0] = Math::snapped(attrib.x, CMP_NORMALIZE_TOLERANCE);
+		attribs.write()[(i * element_count) + 1] = Math::snapped(attrib.y, CMP_NORMALIZE_TOLERANCE);
 		_calc_accessor_min_max(i, element_count, type_max, attribs, type_min);
 	}
 
@@ -1630,10 +1630,10 @@ GLTFAccessorIndex GLTFDocument::_encode_accessor_as_color(Ref<GLTFState> state, 
 	type_min.resize(element_count);
 	for (int i = 0; i < p_attribs.size(); i++) {
 		Color attrib = p_attribs[i];
-		attribs.write[(i * element_count) + 0] = Math::snapped(attrib.r, CMP_NORMALIZE_TOLERANCE);
-		attribs.write[(i * element_count) + 1] = Math::snapped(attrib.g, CMP_NORMALIZE_TOLERANCE);
-		attribs.write[(i * element_count) + 2] = Math::snapped(attrib.b, CMP_NORMALIZE_TOLERANCE);
-		attribs.write[(i * element_count) + 3] = Math::snapped(attrib.a, CMP_NORMALIZE_TOLERANCE);
+		attribs.write()[(i * element_count) + 0] = Math::snapped(attrib.r, CMP_NORMALIZE_TOLERANCE);
+		attribs.write()[(i * element_count) + 1] = Math::snapped(attrib.g, CMP_NORMALIZE_TOLERANCE);
+		attribs.write()[(i * element_count) + 2] = Math::snapped(attrib.b, CMP_NORMALIZE_TOLERANCE);
+		attribs.write()[(i * element_count) + 3] = Math::snapped(attrib.a, CMP_NORMALIZE_TOLERANCE);
 
 		_calc_accessor_min_max(i, element_count, type_max, attribs, type_min);
 	}
@@ -1666,15 +1666,15 @@ GLTFAccessorIndex GLTFDocument::_encode_accessor_as_color(Ref<GLTFState> state, 
 void GLTFDocument::_calc_accessor_min_max(int i, const int element_count, Vector<double> &type_max, Vector<double> attribs, Vector<double> &type_min) {
 	if (i == 0) {
 		for (int32_t type_i = 0; type_i < element_count; type_i++) {
-			type_max.write[type_i] = attribs[(i * element_count) + type_i];
-			type_min.write[type_i] = attribs[(i * element_count) + type_i];
+			type_max.write()[type_i] = attribs[(i * element_count) + type_i];
+			type_min.write()[type_i] = attribs[(i * element_count) + type_i];
 		}
 	}
 	for (int32_t type_i = 0; type_i < element_count; type_i++) {
-		type_max.write[type_i] = MAX(attribs[(i * element_count) + type_i], type_max[type_i]);
-		type_min.write[type_i] = MIN(attribs[(i * element_count) + type_i], type_min[type_i]);
-		type_max.write[type_i] = _filter_number(type_max.write[type_i]);
-		type_min.write[type_i] = _filter_number(type_min.write[type_i]);
+		type_max.write()[type_i] = MAX(attribs[(i * element_count) + type_i], type_max[type_i]);
+		type_min.write()[type_i] = MIN(attribs[(i * element_count) + type_i], type_min[type_i]);
+		type_max.write()[type_i] = _filter_number(type_max.write()[type_i]);
+		type_min.write()[type_i] = _filter_number(type_min.write()[type_i]);
 	}
 }
 
@@ -1695,10 +1695,10 @@ GLTFAccessorIndex GLTFDocument::_encode_accessor_as_weights(Ref<GLTFState> state
 	type_min.resize(element_count);
 	for (int i = 0; i < p_attribs.size(); i++) {
 		Color attrib = p_attribs[i];
-		attribs.write[(i * element_count) + 0] = Math::snapped(attrib.r, CMP_NORMALIZE_TOLERANCE);
-		attribs.write[(i * element_count) + 1] = Math::snapped(attrib.g, CMP_NORMALIZE_TOLERANCE);
-		attribs.write[(i * element_count) + 2] = Math::snapped(attrib.b, CMP_NORMALIZE_TOLERANCE);
-		attribs.write[(i * element_count) + 3] = Math::snapped(attrib.a, CMP_NORMALIZE_TOLERANCE);
+		attribs.write()[(i * element_count) + 0] = Math::snapped(attrib.r, CMP_NORMALIZE_TOLERANCE);
+		attribs.write()[(i * element_count) + 1] = Math::snapped(attrib.g, CMP_NORMALIZE_TOLERANCE);
+		attribs.write()[(i * element_count) + 2] = Math::snapped(attrib.b, CMP_NORMALIZE_TOLERANCE);
+		attribs.write()[(i * element_count) + 3] = Math::snapped(attrib.a, CMP_NORMALIZE_TOLERANCE);
 
 		_calc_accessor_min_max(i, element_count, type_max, attribs, type_min);
 	}
@@ -1744,10 +1744,10 @@ GLTFAccessorIndex GLTFDocument::_encode_accessor_as_joints(Ref<GLTFState> state,
 	type_min.resize(element_count);
 	for (int i = 0; i < p_attribs.size(); i++) {
 		Color attrib = p_attribs[i];
-		attribs.write[(i * element_count) + 0] = Math::snapped(attrib.r, CMP_NORMALIZE_TOLERANCE);
-		attribs.write[(i * element_count) + 1] = Math::snapped(attrib.g, CMP_NORMALIZE_TOLERANCE);
-		attribs.write[(i * element_count) + 2] = Math::snapped(attrib.b, CMP_NORMALIZE_TOLERANCE);
-		attribs.write[(i * element_count) + 3] = Math::snapped(attrib.a, CMP_NORMALIZE_TOLERANCE);
+		attribs.write()[(i * element_count) + 0] = Math::snapped(attrib.r, CMP_NORMALIZE_TOLERANCE);
+		attribs.write()[(i * element_count) + 1] = Math::snapped(attrib.g, CMP_NORMALIZE_TOLERANCE);
+		attribs.write()[(i * element_count) + 2] = Math::snapped(attrib.b, CMP_NORMALIZE_TOLERANCE);
+		attribs.write()[(i * element_count) + 3] = Math::snapped(attrib.a, CMP_NORMALIZE_TOLERANCE);
 		_calc_accessor_min_max(i, element_count, type_max, attribs, type_min);
 	}
 	ERR_FAIL_COND_V(attribs.size() % element_count != 0, -1);
@@ -1791,10 +1791,10 @@ GLTFAccessorIndex GLTFDocument::_encode_accessor_as_quaternions(Ref<GLTFState> s
 	type_min.resize(element_count);
 	for (int i = 0; i < p_attribs.size(); i++) {
 		Quaternion quaternion = p_attribs[i];
-		attribs.write[(i * element_count) + 0] = Math::snapped(quaternion.x, CMP_NORMALIZE_TOLERANCE);
-		attribs.write[(i * element_count) + 1] = Math::snapped(quaternion.y, CMP_NORMALIZE_TOLERANCE);
-		attribs.write[(i * element_count) + 2] = Math::snapped(quaternion.z, CMP_NORMALIZE_TOLERANCE);
-		attribs.write[(i * element_count) + 3] = Math::snapped(quaternion.w, CMP_NORMALIZE_TOLERANCE);
+		attribs.write()[(i * element_count) + 0] = Math::snapped(quaternion.x, CMP_NORMALIZE_TOLERANCE);
+		attribs.write()[(i * element_count) + 1] = Math::snapped(quaternion.y, CMP_NORMALIZE_TOLERANCE);
+		attribs.write()[(i * element_count) + 2] = Math::snapped(quaternion.z, CMP_NORMALIZE_TOLERANCE);
+		attribs.write()[(i * element_count) + 3] = Math::snapped(quaternion.w, CMP_NORMALIZE_TOLERANCE);
 
 		_calc_accessor_min_max(i, element_count, type_max, attribs, type_min);
 	}
@@ -1838,7 +1838,7 @@ Vector<Vector2> GLTFDocument::_decode_accessor_as_vec2(Ref<GLTFState> state, con
 	ret.resize(ret_size);
 	{
 		for (int i = 0; i < ret_size; i++) {
-			ret.write[i] = Vector2(attribs_ptr[i * 2 + 0], attribs_ptr[i * 2 + 1]);
+			ret.write()[i] = Vector2(attribs_ptr[i * 2 + 0], attribs_ptr[i * 2 + 1]);
 		}
 	}
 	return ret;
@@ -1859,7 +1859,7 @@ GLTFAccessorIndex GLTFDocument::_encode_accessor_as_floats(Ref<GLTFState> state,
 	type_min.resize(element_count);
 
 	for (int i = 0; i < p_attribs.size(); i++) {
-		attribs.write[i] = Math::snapped(p_attribs[i], CMP_NORMALIZE_TOLERANCE);
+		attribs.write()[i] = Math::snapped(p_attribs[i], CMP_NORMALIZE_TOLERANCE);
 
 		_calc_accessor_min_max(i, element_count, type_max, attribs, type_min);
 	}
@@ -1904,9 +1904,9 @@ GLTFAccessorIndex GLTFDocument::_encode_accessor_as_vec3(Ref<GLTFState> state, c
 	type_min.resize(element_count);
 	for (int i = 0; i < p_attribs.size(); i++) {
 		Vector3 attrib = p_attribs[i];
-		attribs.write[(i * element_count) + 0] = Math::snapped(attrib.x, CMP_NORMALIZE_TOLERANCE);
-		attribs.write[(i * element_count) + 1] = Math::snapped(attrib.y, CMP_NORMALIZE_TOLERANCE);
-		attribs.write[(i * element_count) + 2] = Math::snapped(attrib.z, CMP_NORMALIZE_TOLERANCE);
+		attribs.write()[(i * element_count) + 0] = Math::snapped(attrib.x, CMP_NORMALIZE_TOLERANCE);
+		attribs.write()[(i * element_count) + 1] = Math::snapped(attrib.y, CMP_NORMALIZE_TOLERANCE);
+		attribs.write()[(i * element_count) + 2] = Math::snapped(attrib.z, CMP_NORMALIZE_TOLERANCE);
 
 		_calc_accessor_min_max(i, element_count, type_max, attribs, type_min);
 	}
@@ -1953,28 +1953,28 @@ GLTFAccessorIndex GLTFDocument::_encode_accessor_as_xform(Ref<GLTFState> state, 
 		Basis basis = attrib.get_basis();
 		Vector3 axis_0 = basis.get_axis(Vector3::AXIS_X);
 
-		attribs.write[i * element_count + 0] = Math::snapped(axis_0.x, CMP_NORMALIZE_TOLERANCE);
-		attribs.write[i * element_count + 1] = Math::snapped(axis_0.y, CMP_NORMALIZE_TOLERANCE);
-		attribs.write[i * element_count + 2] = Math::snapped(axis_0.z, CMP_NORMALIZE_TOLERANCE);
-		attribs.write[i * element_count + 3] = 0.0;
+		attribs.write()[i * element_count + 0] = Math::snapped(axis_0.x, CMP_NORMALIZE_TOLERANCE);
+		attribs.write()[i * element_count + 1] = Math::snapped(axis_0.y, CMP_NORMALIZE_TOLERANCE);
+		attribs.write()[i * element_count + 2] = Math::snapped(axis_0.z, CMP_NORMALIZE_TOLERANCE);
+		attribs.write()[i * element_count + 3] = 0.0;
 
 		Vector3 axis_1 = basis.get_axis(Vector3::AXIS_Y);
-		attribs.write[i * element_count + 4] = Math::snapped(axis_1.x, CMP_NORMALIZE_TOLERANCE);
-		attribs.write[i * element_count + 5] = Math::snapped(axis_1.y, CMP_NORMALIZE_TOLERANCE);
-		attribs.write[i * element_count + 6] = Math::snapped(axis_1.z, CMP_NORMALIZE_TOLERANCE);
-		attribs.write[i * element_count + 7] = 0.0;
+		attribs.write()[i * element_count + 4] = Math::snapped(axis_1.x, CMP_NORMALIZE_TOLERANCE);
+		attribs.write()[i * element_count + 5] = Math::snapped(axis_1.y, CMP_NORMALIZE_TOLERANCE);
+		attribs.write()[i * element_count + 6] = Math::snapped(axis_1.z, CMP_NORMALIZE_TOLERANCE);
+		attribs.write()[i * element_count + 7] = 0.0;
 
 		Vector3 axis_2 = basis.get_axis(Vector3::AXIS_Z);
-		attribs.write[i * element_count + 8] = Math::snapped(axis_2.x, CMP_NORMALIZE_TOLERANCE);
-		attribs.write[i * element_count + 9] = Math::snapped(axis_2.y, CMP_NORMALIZE_TOLERANCE);
-		attribs.write[i * element_count + 10] = Math::snapped(axis_2.z, CMP_NORMALIZE_TOLERANCE);
-		attribs.write[i * element_count + 11] = 0.0;
+		attribs.write()[i * element_count + 8] = Math::snapped(axis_2.x, CMP_NORMALIZE_TOLERANCE);
+		attribs.write()[i * element_count + 9] = Math::snapped(axis_2.y, CMP_NORMALIZE_TOLERANCE);
+		attribs.write()[i * element_count + 10] = Math::snapped(axis_2.z, CMP_NORMALIZE_TOLERANCE);
+		attribs.write()[i * element_count + 11] = 0.0;
 
 		Vector3 origin = attrib.get_origin();
-		attribs.write[i * element_count + 12] = Math::snapped(origin.x, CMP_NORMALIZE_TOLERANCE);
-		attribs.write[i * element_count + 13] = Math::snapped(origin.y, CMP_NORMALIZE_TOLERANCE);
-		attribs.write[i * element_count + 14] = Math::snapped(origin.z, CMP_NORMALIZE_TOLERANCE);
-		attribs.write[i * element_count + 15] = 1.0;
+		attribs.write()[i * element_count + 12] = Math::snapped(origin.x, CMP_NORMALIZE_TOLERANCE);
+		attribs.write()[i * element_count + 13] = Math::snapped(origin.y, CMP_NORMALIZE_TOLERANCE);
+		attribs.write()[i * element_count + 14] = Math::snapped(origin.z, CMP_NORMALIZE_TOLERANCE);
+		attribs.write()[i * element_count + 15] = 1.0;
 
 		_calc_accessor_min_max(i, element_count, type_max, attribs, type_min);
 	}
@@ -2017,7 +2017,7 @@ Vector<Vector3> GLTFDocument::_decode_accessor_as_vec3(Ref<GLTFState> state, con
 	ret.resize(ret_size);
 	{
 		for (int i = 0; i < ret_size; i++) {
-			ret.write[i] = Vector3(attribs_ptr[i * 3 + 0], attribs_ptr[i * 3 + 1], attribs_ptr[i * 3 + 2]);
+			ret.write()[i] = Vector3(attribs_ptr[i * 3 + 0], attribs_ptr[i * 3 + 1], attribs_ptr[i * 3 + 2]);
 		}
 	}
 	return ret;
@@ -2044,7 +2044,7 @@ Vector<Color> GLTFDocument::_decode_accessor_as_color(Ref<GLTFState> state, cons
 	ret.resize(ret_size);
 	{
 		for (int i = 0; i < ret_size; i++) {
-			ret.write[i] = Color(attribs_ptr[i * vec_len + 0], attribs_ptr[i * vec_len + 1], attribs_ptr[i * vec_len + 2], vec_len == 4 ? attribs_ptr[i * 4 + 3] : 1.0);
+			ret.write()[i] = Color(attribs_ptr[i * vec_len + 0], attribs_ptr[i * vec_len + 1], attribs_ptr[i * vec_len + 2], vec_len == 4 ? attribs_ptr[i * 4 + 3] : 1.0);
 		}
 	}
 	return ret;
@@ -2063,7 +2063,7 @@ Vector<Quaternion> GLTFDocument::_decode_accessor_as_quaternion(Ref<GLTFState> s
 	ret.resize(ret_size);
 	{
 		for (int i = 0; i < ret_size; i++) {
-			ret.write[i] = Quaternion(attribs_ptr[i * 4 + 0], attribs_ptr[i * 4 + 1], attribs_ptr[i * 4 + 2], attribs_ptr[i * 4 + 3]).normalized();
+			ret.write()[i] = Quaternion(attribs_ptr[i * 4 + 0], attribs_ptr[i * 4 + 1], attribs_ptr[i * 4 + 2], attribs_ptr[i * 4 + 3]).normalized();
 		}
 	}
 	return ret;
@@ -2079,8 +2079,8 @@ Vector<Transform2D> GLTFDocument::_decode_accessor_as_xform2d(Ref<GLTFState> sta
 	ERR_FAIL_COND_V(attribs.size() % 4 != 0, ret);
 	ret.resize(attribs.size() / 4);
 	for (int i = 0; i < ret.size(); i++) {
-		ret.write[i][0] = Vector2(attribs[i * 4 + 0], attribs[i * 4 + 1]);
-		ret.write[i][1] = Vector2(attribs[i * 4 + 2], attribs[i * 4 + 3]);
+		ret.write()[i][0] = Vector2(attribs[i * 4 + 0], attribs[i * 4 + 1]);
+		ret.write()[i][1] = Vector2(attribs[i * 4 + 2], attribs[i * 4 + 3]);
 	}
 	return ret;
 }
@@ -2096,9 +2096,9 @@ Vector<Basis> GLTFDocument::_decode_accessor_as_basis(Ref<GLTFState> state, cons
 	ERR_FAIL_COND_V(attribs.size() % 9 != 0, ret);
 	ret.resize(attribs.size() / 9);
 	for (int i = 0; i < ret.size(); i++) {
-		ret.write[i].set_axis(0, Vector3(attribs[i * 9 + 0], attribs[i * 9 + 1], attribs[i * 9 + 2]));
-		ret.write[i].set_axis(1, Vector3(attribs[i * 9 + 3], attribs[i * 9 + 4], attribs[i * 9 + 5]));
-		ret.write[i].set_axis(2, Vector3(attribs[i * 9 + 6], attribs[i * 9 + 7], attribs[i * 9 + 8]));
+		ret.write()[i].set_axis(0, Vector3(attribs[i * 9 + 0], attribs[i * 9 + 1], attribs[i * 9 + 2]));
+		ret.write()[i].set_axis(1, Vector3(attribs[i * 9 + 3], attribs[i * 9 + 4], attribs[i * 9 + 5]));
+		ret.write()[i].set_axis(2, Vector3(attribs[i * 9 + 6], attribs[i * 9 + 7], attribs[i * 9 + 8]));
 	}
 	return ret;
 }
@@ -2114,10 +2114,10 @@ Vector<Transform3D> GLTFDocument::_decode_accessor_as_xform(Ref<GLTFState> state
 	ERR_FAIL_COND_V(attribs.size() % 16 != 0, ret);
 	ret.resize(attribs.size() / 16);
 	for (int i = 0; i < ret.size(); i++) {
-		ret.write[i].basis.set_axis(0, Vector3(attribs[i * 16 + 0], attribs[i * 16 + 1], attribs[i * 16 + 2]));
-		ret.write[i].basis.set_axis(1, Vector3(attribs[i * 16 + 4], attribs[i * 16 + 5], attribs[i * 16 + 6]));
-		ret.write[i].basis.set_axis(2, Vector3(attribs[i * 16 + 8], attribs[i * 16 + 9], attribs[i * 16 + 10]));
-		ret.write[i].set_origin(Vector3(attribs[i * 16 + 12], attribs[i * 16 + 13], attribs[i * 16 + 14]));
+		ret.write()[i].basis.set_axis(0, Vector3(attribs[i * 16 + 0], attribs[i * 16 + 1], attribs[i * 16 + 2]));
+		ret.write()[i].basis.set_axis(1, Vector3(attribs[i * 16 + 4], attribs[i * 16 + 5], attribs[i * 16 + 6]));
+		ret.write()[i].basis.set_axis(2, Vector3(attribs[i * 16 + 8], attribs[i * 16 + 9], attribs[i * 16 + 10]));
+		ret.write()[i].set_origin(Vector3(attribs[i * 16 + 12], attribs[i * 16 + 13], attribs[i * 16 + 14]));
 	}
 	return ret;
 }
@@ -2126,7 +2126,7 @@ Error GLTFDocument::_serialize_meshes(Ref<GLTFState> state) {
 	Array meshes;
 	for (GLTFMeshIndex gltf_mesh_i = 0; gltf_mesh_i < state->meshes.size(); gltf_mesh_i++) {
 		print_verbose("glTF: Serializing mesh: " + itos(gltf_mesh_i));
-		Ref<EditorSceneImporterMesh> import_mesh = state->meshes.write[gltf_mesh_i]->get_mesh();
+		Ref<EditorSceneImporterMesh> import_mesh = state->meshes.write()[gltf_mesh_i]->get_mesh();
 		if (import_mesh.is_null()) {
 			continue;
 		}
@@ -2191,7 +2191,7 @@ Error GLTFDocument::_serialize_meshes(Ref<GLTFState> state) {
 						out.g = a[(i * 4) + 1];
 						out.b = a[(i * 4) + 2];
 						out.a = a[(i * 4) + 3];
-						attribs.write[i] = out;
+						attribs.write()[i] = out;
 					}
 					attributes["TANGENT"] = _encode_accessor_as_color(state, attribs, true);
 				}
@@ -2203,7 +2203,7 @@ Error GLTFDocument::_serialize_meshes(Ref<GLTFState> state) {
 					Vector<Vector3> attribs;
 					attribs.resize(ret_size);
 					for (int i = 0; i < ret_size; i++) {
-						attribs.write[i] = Vector3(a[i]).normalized();
+						attribs.write()[i] = Vector3(a[i]).normalized();
 					}
 					attributes["NORMAL"] = _encode_accessor_as_vec3(state, attribs, true);
 				}
@@ -2250,7 +2250,7 @@ Error GLTFDocument::_serialize_meshes(Ref<GLTFState> state) {
 							int32_t joint_1 = a[(array_i * JOINT_GROUP_SIZE) + 1];
 							int32_t joint_2 = a[(array_i * JOINT_GROUP_SIZE) + 2];
 							int32_t joint_3 = a[(array_i * JOINT_GROUP_SIZE) + 3];
-							attribs.write[array_i] = Color(joint_0, joint_1, joint_2, joint_3);
+							attribs.write()[array_i] = Color(joint_0, joint_1, joint_2, joint_3);
 						}
 					}
 					attributes["JOINTS_0"] = _encode_accessor_as_joints(state, attribs, true);
@@ -2267,13 +2267,13 @@ Error GLTFDocument::_serialize_meshes(Ref<GLTFState> state) {
 						joint_0.g = a[vertex_i * weights_8_count + 1];
 						joint_0.b = a[vertex_i * weights_8_count + 2];
 						joint_0.a = a[vertex_i * weights_8_count + 3];
-						joints_0.write[vertex_i] = joint_0;
+						joints_0.write()[vertex_i] = joint_0;
 						Color joint_1;
 						joint_1.r = a[vertex_i * weights_8_count + 4];
 						joint_1.g = a[vertex_i * weights_8_count + 5];
 						joint_1.b = a[vertex_i * weights_8_count + 6];
 						joint_1.a = a[vertex_i * weights_8_count + 7];
-						joints_1.write[vertex_i] = joint_1;
+						joints_1.write()[vertex_i] = joint_1;
 					}
 					attributes["JOINTS_0"] = _encode_accessor_as_joints(state, joints_0, true);
 					attributes["JOINTS_1"] = _encode_accessor_as_joints(state, joints_1, true);
@@ -2287,7 +2287,7 @@ Error GLTFDocument::_serialize_meshes(Ref<GLTFState> state) {
 					Vector<Color> attribs;
 					attribs.resize(ret_size);
 					for (int i = 0; i < ret_size; i++) {
-						attribs.write[i] = Color(a[(i * JOINT_GROUP_SIZE) + 0], a[(i * JOINT_GROUP_SIZE) + 1], a[(i * JOINT_GROUP_SIZE) + 2], a[(i * JOINT_GROUP_SIZE) + 3]);
+						attribs.write()[i] = Color(a[(i * JOINT_GROUP_SIZE) + 0], a[(i * JOINT_GROUP_SIZE) + 1], a[(i * JOINT_GROUP_SIZE) + 2], a[(i * JOINT_GROUP_SIZE) + 3]);
 					}
 					attributes["WEIGHTS_0"] = _encode_accessor_as_weights(state, attribs, true);
 				} else if ((a.size() / (JOINT_GROUP_SIZE * 2)) >= vertex_array.size()) {
@@ -2303,13 +2303,13 @@ Error GLTFDocument::_serialize_meshes(Ref<GLTFState> state) {
 						weight_0.g = a[vertex_i * weights_8_count + 1];
 						weight_0.b = a[vertex_i * weights_8_count + 2];
 						weight_0.a = a[vertex_i * weights_8_count + 3];
-						weights_0.write[vertex_i] = weight_0;
+						weights_0.write()[vertex_i] = weight_0;
 						Color weight_1;
 						weight_1.r = a[vertex_i * weights_8_count + 4];
 						weight_1.g = a[vertex_i * weights_8_count + 5];
 						weight_1.b = a[vertex_i * weights_8_count + 6];
 						weight_1.a = a[vertex_i * weights_8_count + 7];
-						weights_1.write[vertex_i] = weight_1;
+						weights_1.write()[vertex_i] = weight_1;
 					}
 					attributes["WEIGHTS_0"] = _encode_accessor_as_weights(state, weights_0, true);
 					attributes["WEIGHTS_1"] = _encode_accessor_as_weights(state, weights_1, true);
@@ -2322,7 +2322,7 @@ Error GLTFDocument::_serialize_meshes(Ref<GLTFState> state) {
 						//swap around indices, convert ccw to cw for front face
 						const int is = mesh_indices.size();
 						for (int k = 0; k < is; k += 3) {
-							SWAP(mesh_indices.write[k + 0], mesh_indices.write[k + 2]);
+							SWAP(mesh_indices.write()[k + 0], mesh_indices.write()[k + 2]);
 						}
 					}
 					primitive["indices"] = _encode_accessor_as_ints(state, mesh_indices, true);
@@ -2339,9 +2339,9 @@ Error GLTFDocument::_serialize_meshes(Ref<GLTFState> state) {
 						generated_indices.resize(vs);
 						{
 							for (int k = 0; k < vs; k += 3) {
-								generated_indices.write[k] = k;
-								generated_indices.write[k + 1] = k + 2;
-								generated_indices.write[k + 2] = k + 1;
+								generated_indices.write()[k] = k;
+								generated_indices.write()[k + 1] = k + 2;
+								generated_indices.write()[k + 2] = k + 1;
 							}
 						}
 						primitive["indices"] = _encode_accessor_as_ints(state, generated_indices, true);
@@ -2366,7 +2366,7 @@ Error GLTFDocument::_serialize_meshes(Ref<GLTFState> state) {
 						if (shape_mode == ArrayMesh::BlendShapeMode::BLEND_SHAPE_MODE_NORMALIZED) {
 							const int max_idx = src_varr.size();
 							for (int blend_i = 0; blend_i < max_idx; blend_i++) {
-								varr.write[blend_i] = Vector3(varr[blend_i]) - src_varr[blend_i];
+								varr.write()[blend_i] = Vector3(varr[blend_i]) - src_varr[blend_i];
 							}
 						}
 
@@ -2420,8 +2420,8 @@ Error GLTFDocument::_serialize_meshes(Ref<GLTFState> state) {
 
 		for (int j = 0; j < target_names.size(); j++) {
 			real_t weight = 0.0;
-			if (j < state->meshes.write[gltf_mesh_i]->get_blend_weights().size()) {
-				weight = state->meshes.write[gltf_mesh_i]->get_blend_weights()[j];
+			if (j < state->meshes.write()[gltf_mesh_i]->get_blend_weights().size()) {
+				weight = state->meshes.write()[gltf_mesh_i]->get_blend_weights()[j];
 			}
 			weights.push_back(weight);
 		}
@@ -2532,14 +2532,14 @@ Error GLTFDocument::_parse_meshes(Ref<GLTFState> state) {
 				Vector<int> joints;
 				joints.resize(vertex_count * weight_8_count);
 				for (int32_t vertex_i = 0; vertex_i < vertex_count; vertex_i++) {
-					joints.write[vertex_i * weight_8_count + 0] = joints_0[vertex_i * JOINT_GROUP_SIZE + 0];
-					joints.write[vertex_i * weight_8_count + 1] = joints_0[vertex_i * JOINT_GROUP_SIZE + 1];
-					joints.write[vertex_i * weight_8_count + 2] = joints_0[vertex_i * JOINT_GROUP_SIZE + 2];
-					joints.write[vertex_i * weight_8_count + 3] = joints_0[vertex_i * JOINT_GROUP_SIZE + 3];
-					joints.write[vertex_i * weight_8_count + 4] = joints_1[vertex_i * JOINT_GROUP_SIZE + 0];
-					joints.write[vertex_i * weight_8_count + 5] = joints_1[vertex_i * JOINT_GROUP_SIZE + 1];
-					joints.write[vertex_i * weight_8_count + 6] = joints_1[vertex_i * JOINT_GROUP_SIZE + 2];
-					joints.write[vertex_i * weight_8_count + 7] = joints_1[vertex_i * JOINT_GROUP_SIZE + 3];
+					joints.write()[vertex_i * weight_8_count + 0] = joints_0[vertex_i * JOINT_GROUP_SIZE + 0];
+					joints.write()[vertex_i * weight_8_count + 1] = joints_0[vertex_i * JOINT_GROUP_SIZE + 1];
+					joints.write()[vertex_i * weight_8_count + 2] = joints_0[vertex_i * JOINT_GROUP_SIZE + 2];
+					joints.write()[vertex_i * weight_8_count + 3] = joints_0[vertex_i * JOINT_GROUP_SIZE + 3];
+					joints.write()[vertex_i * weight_8_count + 4] = joints_1[vertex_i * JOINT_GROUP_SIZE + 0];
+					joints.write()[vertex_i * weight_8_count + 5] = joints_1[vertex_i * JOINT_GROUP_SIZE + 1];
+					joints.write()[vertex_i * weight_8_count + 6] = joints_1[vertex_i * JOINT_GROUP_SIZE + 2];
+					joints.write()[vertex_i * weight_8_count + 7] = joints_1[vertex_i * JOINT_GROUP_SIZE + 3];
 				}
 				array[Mesh::ARRAY_BONES] = joints;
 			}
@@ -2573,14 +2573,14 @@ Error GLTFDocument::_parse_meshes(Ref<GLTFState> state) {
 				int32_t vertex_count = weights_0.size() / JOINT_GROUP_SIZE;
 				weights.resize(vertex_count * weight_8_count);
 				for (int32_t vertex_i = 0; vertex_i < vertex_count; vertex_i++) {
-					weights.write[vertex_i * weight_8_count + 0] = weights_0[vertex_i * JOINT_GROUP_SIZE + 0];
-					weights.write[vertex_i * weight_8_count + 1] = weights_0[vertex_i * JOINT_GROUP_SIZE + 1];
-					weights.write[vertex_i * weight_8_count + 2] = weights_0[vertex_i * JOINT_GROUP_SIZE + 2];
-					weights.write[vertex_i * weight_8_count + 3] = weights_0[vertex_i * JOINT_GROUP_SIZE + 3];
-					weights.write[vertex_i * weight_8_count + 4] = weights_1[vertex_i * JOINT_GROUP_SIZE + 0];
-					weights.write[vertex_i * weight_8_count + 5] = weights_1[vertex_i * JOINT_GROUP_SIZE + 1];
-					weights.write[vertex_i * weight_8_count + 6] = weights_1[vertex_i * JOINT_GROUP_SIZE + 2];
-					weights.write[vertex_i * weight_8_count + 7] = weights_1[vertex_i * JOINT_GROUP_SIZE + 3];
+					weights.write()[vertex_i * weight_8_count + 0] = weights_0[vertex_i * JOINT_GROUP_SIZE + 0];
+					weights.write()[vertex_i * weight_8_count + 1] = weights_0[vertex_i * JOINT_GROUP_SIZE + 1];
+					weights.write()[vertex_i * weight_8_count + 2] = weights_0[vertex_i * JOINT_GROUP_SIZE + 2];
+					weights.write()[vertex_i * weight_8_count + 3] = weights_0[vertex_i * JOINT_GROUP_SIZE + 3];
+					weights.write()[vertex_i * weight_8_count + 4] = weights_1[vertex_i * JOINT_GROUP_SIZE + 0];
+					weights.write()[vertex_i * weight_8_count + 5] = weights_1[vertex_i * JOINT_GROUP_SIZE + 1];
+					weights.write()[vertex_i * weight_8_count + 6] = weights_1[vertex_i * JOINT_GROUP_SIZE + 2];
+					weights.write()[vertex_i * weight_8_count + 7] = weights_1[vertex_i * JOINT_GROUP_SIZE + 3];
 				}
 				{ //gltf does not seem to normalize the weights for some reason..
 					int wc = weights.size();
@@ -2806,7 +2806,7 @@ Error GLTFDocument::_parse_meshes(Ref<GLTFState> state) {
 		Vector<float> blend_weights;
 		blend_weights.resize(import_mesh->get_blend_shape_count());
 		for (int32_t weight_i = 0; weight_i < blend_weights.size(); weight_i++) {
-			blend_weights.write[weight_i] = 0.0f;
+			blend_weights.write()[weight_i] = 0.0f;
 		}
 
 		if (d.has("weights")) {
@@ -2815,7 +2815,7 @@ Error GLTFDocument::_parse_meshes(Ref<GLTFState> state) {
 				if (j >= blend_weights.size()) {
 					break;
 				}
-				blend_weights.write[j] = weights[j];
+				blend_weights.write()[j] = weights[j];
 			}
 		}
 		mesh->set_blend_weights(blend_weights);
@@ -2859,8 +2859,8 @@ Error GLTFDocument::_serialize_images(Ref<GLTFState> state, const String &p_path
 			ERR_FAIL_COND_V_MSG(err, err, "Can't convert image to PNG.");
 
 			bv->byte_length = buffer.size();
-			state->buffers.write[bi].resize(state->buffers[bi].size() + bv->byte_length);
-			memcpy(&state->buffers.write[bi].write[bv->byte_offset], buffer.ptr(), buffer.size());
+			state->buffers.write()[bi].resize(state->buffers[bi].size() + bv->byte_length);
+			memcpy(&state->buffers.write()[bi].write()[bv->byte_offset], buffer.ptr(), buffer.size());
 			ERR_FAIL_COND_V(bv->byte_offset + bv->byte_length > state->buffers[bi].size(), ERR_FILE_CORRUPT);
 
 			state->buffer_views.push_back(bv);
@@ -3736,7 +3736,7 @@ void GLTFDocument::_capture_nodes_for_multirooted_skin(Ref<GLTFState> state, Ref
 		}
 
 		// replace the roots
-		roots.write[i] = current_node;
+		roots.write()[i] = current_node;
 	}
 
 	// Climb up the tree until they all have the same parent
@@ -3761,7 +3761,7 @@ void GLTFDocument::_capture_nodes_for_multirooted_skin(Ref<GLTFState> state, Ref
 					skin->non_joints.push_back(parent);
 				}
 
-				roots.write[i] = parent;
+				roots.write()[i] = parent;
 			}
 		}
 
@@ -3908,7 +3908,7 @@ Error GLTFDocument::_parse_skins(Ref<GLTFState> state) {
 			skin->joints.push_back(node);
 			skin->joints_original.push_back(node);
 
-			state->nodes.write[node]->joint = true;
+			state->nodes.write()[node]->joint = true;
 		}
 
 		if (d.has("name") && !String(d["name"]).is_empty()) {
@@ -3925,7 +3925,7 @@ Error GLTFDocument::_parse_skins(Ref<GLTFState> state) {
 	}
 
 	for (GLTFSkinIndex i = 0; i < state->skins.size(); ++i) {
-		Ref<GLTFSkin> skin = state->skins.write[i];
+		Ref<GLTFSkin> skin = state->skins.write()[i];
 
 		// Expand the skin to capture all the extra non-joints that lie in between the actual joints,
 		// and expand the hierarchy to ensure multi-rooted trees lie on the same height level
@@ -4024,7 +4024,7 @@ Error GLTFDocument::_determine_skeletons(Ref<GLTFState> state) {
 		skeleton_sets.get_members(skeleton_nodes, skeleton_owner);
 
 		for (GLTFSkinIndex skin_i = 0; skin_i < state->skins.size(); ++skin_i) {
-			Ref<GLTFSkin> skin = state->skins.write[skin_i];
+			Ref<GLTFSkin> skin = state->skins.write()[skin_i];
 
 			// If any of the the skeletons nodes exist in a skin, that skin now maps to the skeleton
 			for (int i = 0; i < skeleton_nodes.size(); ++i) {
@@ -4049,11 +4049,11 @@ Error GLTFDocument::_determine_skeletons(Ref<GLTFState> state) {
 
 		state->skeletons.push_back(skeleton);
 
-		_reparent_non_joint_skeleton_subtrees(state, state->skeletons.write[skel_i], non_joints);
+		_reparent_non_joint_skeleton_subtrees(state, state->skeletons.write()[skel_i], non_joints);
 	}
 
 	for (GLTFSkeletonIndex skel_i = 0; skel_i < state->skeletons.size(); ++skel_i) {
-		Ref<GLTFSkeleton> skeleton = state->skeletons.write[skel_i];
+		Ref<GLTFSkeleton> skeleton = state->skeletons.write()[skel_i];
 
 		for (int i = 0; i < skeleton->joints.size(); ++i) {
 			const GLTFNodeIndex node_i = skeleton->joints[i];
@@ -4131,7 +4131,7 @@ Error GLTFDocument::_determine_skeleton_roots(Ref<GLTFState> state, const GLTFSk
 		}
 	}
 
-	Ref<GLTFSkeleton> skeleton = state->skeletons.write[skel_i];
+	Ref<GLTFSkeleton> skeleton = state->skeletons.write()[skel_i];
 
 	Vector<GLTFNodeIndex> owners;
 	disjoint_set.get_representatives(owners);
@@ -4169,7 +4169,7 @@ Error GLTFDocument::_determine_skeleton_roots(Ref<GLTFState> state, const GLTFSk
 
 Error GLTFDocument::_create_skeletons(Ref<GLTFState> state) {
 	for (GLTFSkeletonIndex skel_i = 0; skel_i < state->skeletons.size(); ++skel_i) {
-		Ref<GLTFSkeleton> gltf_skeleton = state->skeletons.write[skel_i];
+		Ref<GLTFSkeleton> gltf_skeleton = state->skeletons.write()[skel_i];
 
 		Skeleton3D *skeleton = memnew(Skeleton3D);
 		gltf_skeleton->godot_skeleton = skeleton;
@@ -4238,7 +4238,7 @@ Error GLTFDocument::_create_skeletons(Ref<GLTFState> state) {
 
 Error GLTFDocument::_map_skin_joints_indices_to_skeleton_bone_indices(Ref<GLTFState> state) {
 	for (GLTFSkinIndex skin_i = 0; skin_i < state->skins.size(); ++skin_i) {
-		Ref<GLTFSkin> skin = state->skins.write[skin_i];
+		Ref<GLTFSkin> skin = state->skins.write()[skin_i];
 
 		Ref<GLTFSkeleton> skeleton = state->skeletons[skin->skeleton];
 
@@ -4263,7 +4263,7 @@ Error GLTFDocument::_serialize_skins(Ref<GLTFState> state) {
 
 Error GLTFDocument::_create_skins(Ref<GLTFState> state) {
 	for (GLTFSkinIndex skin_i = 0; skin_i < state->skins.size(); ++skin_i) {
-		Ref<GLTFSkin> gltf_skin = state->skins.write[skin_i];
+		Ref<GLTFSkin> gltf_skin = state->skins.write()[skin_i];
 
 		Ref<Skin> skin;
 		skin.instantiate();
@@ -4296,7 +4296,7 @@ Error GLTFDocument::_create_skins(Ref<GLTFState> state) {
 
 	// Create unique names now, after removing duplicates
 	for (GLTFSkinIndex skin_i = 0; skin_i < state->skins.size(); ++skin_i) {
-		Ref<Skin> skin = state->skins.write[skin_i]->godot_skin;
+		Ref<Skin> skin = state->skins.write()[skin_i]->godot_skin;
 		if (skin->get_name().is_empty()) {
 			// Make a unique name, no gltf node represents this skin
 			skin->set_name(_gen_unique_name(state, "Skin"));
@@ -4338,7 +4338,7 @@ void GLTFDocument::_remove_duplicate_skins(Ref<GLTFState> state) {
 
 			if (_skins_are_same(skin_i, skin_j)) {
 				// replace it and delete the old
-				state->skins.write[j]->godot_skin = skin_i;
+				state->skins.write()[j]->godot_skin = skin_i;
 			}
 		}
 	}
@@ -4653,7 +4653,7 @@ Error GLTFDocument::_serialize_animations(Ref<GLTFState> state) {
 				for (int k = 0; k < track.weight_tracks.size(); k++) {
 					Vector<float> wdata = track.weight_tracks[k].values;
 					for (int l = 0; l < wdata.size(); l++) {
-						values.write[l * track.weight_tracks.size() + k] = wdata.write[l];
+						values.write()[l * track.weight_tracks.size() + k] = wdata.write()[l];
 					}
 				}
 
@@ -4803,11 +4803,11 @@ Error GLTFDocument::_parse_animations(Ref<GLTFState> state) {
 					Vector<float> wdata;
 					wdata.resize(wlen);
 					for (int l = 0; l < wlen; l++) {
-						wdata.write[l] = weights[l * wc + k];
+						wdata.write()[l] = weights[l * wc + k];
 					}
 
 					cf.values = wdata;
-					track->weight_tracks.write[k] = cf;
+					track->weight_tracks.write()[k] = cf;
 				}
 			} else {
 				WARN_PRINT("Invalid path '" + path + "'.");
@@ -4876,7 +4876,7 @@ GLTFMeshIndex GLTFDocument::_convert_mesh_instance(Ref<GLTFState> state, MeshIns
 	blend_weights.resize(blend_count);
 	for (int32_t blend_i = 0; blend_i < godot_mesh->get_blend_shape_count(); blend_i++) {
 		String blend_name = godot_mesh->get_blend_shape_name(blend_i);
-		blend_names.write[blend_i] = blend_name;
+		blend_names.write()[blend_i] = blend_name;
 		import_mesh->add_blend_shape(blend_name);
 	}
 	for (int32_t surface_i = 0; surface_i < godot_mesh->get_surface_count(); surface_i++) {
@@ -4898,7 +4898,7 @@ GLTFMeshIndex GLTFDocument::_convert_mesh_instance(Ref<GLTFState> state, MeshIns
 		import_mesh->add_surface(primitive_type, arrays, blend_shape_arrays, Dictionary(), mat, surface_name);
 	}
 	for (int32_t blend_i = 0; blend_i < blend_count; blend_i++) {
-		blend_weights.write[blend_i] = 0.0f;
+		blend_weights.write()[blend_i] = 0.0f;
 	}
 	Ref<GLTFMesh> gltf_mesh;
 	gltf_mesh.instantiate();
@@ -4917,7 +4917,7 @@ EditorSceneImporterMeshNode3D *GLTFDocument::_generate_mesh_instance(Ref<GLTFSta
 	EditorSceneImporterMeshNode3D *mi = memnew(EditorSceneImporterMeshNode3D);
 	print_verbose("glTF: Creating mesh for: " + gltf_node->get_name());
 
-	Ref<GLTFMesh> mesh = state->meshes.write[gltf_node->mesh];
+	Ref<GLTFMesh> mesh = state->meshes.write()[gltf_node->mesh];
 	if (mesh.is_null()) {
 		return mi;
 	}
@@ -5184,7 +5184,7 @@ void GLTFDocument::_create_gltf_node(Ref<GLTFState> state, Node *p_scene_parent,
 	if (p_parent_node_index == -1) {
 		return;
 	}
-	state->nodes.write[p_parent_node_index]->children.push_back(current_node_i);
+	state->nodes.write()[p_parent_node_index]->children.push_back(current_node_i);
 }
 
 void GLTFDocument::_convert_animation_player_to_gltf(AnimationPlayer *animation_player, Ref<GLTFState> state, const GLTFNodeIndex &p_gltf_current, const GLTFNodeIndex &p_gltf_root_index, Ref<GLTFNode> p_gltf_node, Node *p_scene_parent, Node *p_root) {
@@ -5327,7 +5327,7 @@ void GLTFDocument::_convert_bone_attachment_to_gltf(Node *p_scene_parent, Ref<GL
 					if (state->skeletons[skeleton_i]->godot_skeleton != bone_attachment_skeleton) {
 						continue;
 					}
-					state->skeletons.write[skeleton_i]->bone_attachments.push_back(bone_attachment);
+					state->skeletons.write()[skeleton_i]->bone_attachments.push_back(bone_attachment);
 					break;
 				}
 				break;
@@ -5829,7 +5829,7 @@ void GLTFDocument::_convert_mesh_instances(Ref<GLTFState> state) {
 		NodePath skeleton_path = mi->get_skeleton_path();
 		bool is_unique = true;
 		for (int32_t skin_i = 0; skin_i < state->skins.size(); skin_i++) {
-			Ref<GLTFSkin> prev_gltf_skin = state->skins.write[skin_i];
+			Ref<GLTFSkin> prev_gltf_skin = state->skins.write()[skin_i];
 			if (gltf_skin.is_null()) {
 				continue;
 			}
@@ -5851,7 +5851,7 @@ void GLTFDocument::_convert_mesh_instances(Ref<GLTFState> state) {
 		skeleton_gltf_i = skeleton_i;
 		ERR_CONTINUE(skeleton_gltf_i == -1);
 		gltf_skin->skeleton = skeleton_gltf_i;
-		Ref<GLTFSkeleton> gltf_skeleton = state->skeletons.write[skeleton_gltf_i];
+		Ref<GLTFSkeleton> gltf_skeleton = state->skeletons.write()[skeleton_gltf_i];
 		for (int32_t bind_i = 0; bind_i < skin->get_bind_count(); bind_i++) {
 			String godot_bone_name = skin->get_bind_name(bind_i);
 			if (godot_bone_name.is_empty()) {
@@ -5909,7 +5909,7 @@ void GLTFDocument::_convert_mesh_instances(Ref<GLTFState> state) {
 			ERR_CONTINUE(joint_node_i >= state->nodes.size());
 			if (bone_parent != -1) {
 				GLTFNodeIndex parent_joint_gltf_node = gltf_skin->joints[bone_parent];
-				Ref<GLTFNode> parent_joint_node = state->nodes.write[parent_joint_gltf_node];
+				Ref<GLTFNode> parent_joint_node = state->nodes.write()[parent_joint_gltf_node];
 				parent_joint_node->children.push_back(joint_node_i);
 			} else {
 				Node *node_parent = skeleton->get_parent();
@@ -5917,7 +5917,7 @@ void GLTFDocument::_convert_mesh_instances(Ref<GLTFState> state) {
 				for (Map<GLTFNodeIndex, Node *>::Element *E = state->scene_nodes.front(); E; E = E->next()) {
 					if (E->get() == node_parent) {
 						GLTFNodeIndex gltf_node_i = E->key();
-						Ref<GLTFNode> gltf_node = state->nodes.write[gltf_node_i];
+						Ref<GLTFNode> gltf_node = state->nodes.write()[gltf_node_i];
 						gltf_node->children.push_back(joint_node_i);
 						break;
 					}
@@ -5980,8 +5980,8 @@ void GLTFDocument::_process_mesh_instances(Ref<GLTFState> state, Node *scene_roo
 			EditorSceneImporterMeshNode3D *mi = Object::cast_to<EditorSceneImporterMeshNode3D>(mi_element->get());
 			ERR_CONTINUE_MSG(mi == nullptr, vformat("Unable to cast node %d of type %s to EditorSceneImporterMeshNode3D", node_i, mi_element->get()->get_class_name()));
 
-			const GLTFSkeletonIndex skel_i = state->skins.write[node->skin]->skeleton;
-			Ref<GLTFSkeleton> gltf_skeleton = state->skeletons.write[skel_i];
+			const GLTFSkeletonIndex skel_i = state->skins.write()[node->skin]->skeleton;
+			Ref<GLTFSkeleton> gltf_skeleton = state->skeletons.write()[skel_i];
 			Skeleton3D *skeleton = gltf_skeleton->godot_skeleton;
 			ERR_CONTINUE_MSG(skeleton == nullptr, vformat("Unable to find Skeleton for node %d skin %d", node_i, skin_i));
 
@@ -5989,7 +5989,7 @@ void GLTFDocument::_process_mesh_instances(Ref<GLTFState> state, Node *scene_roo
 			skeleton->add_child(mi);
 			mi->set_owner(skeleton->get_owner());
 
-			mi->set_skin(state->skins.write[skin_i]->godot_skin);
+			mi->set_skin(state->skins.write()[skin_i]->godot_skin);
 			mi->set_skeleton_path(mi->get_path_to(skeleton));
 			mi->set_transform(Transform3D());
 		}
@@ -6013,7 +6013,7 @@ GLTFAnimation::Track GLTFDocument::_convert_animation_track(Ref<GLTFState> state
 	times.resize(key_count);
 	String path = p_animation->track_get_path(p_track_i);
 	for (int32_t key_i = 0; key_i < key_count; key_i++) {
-		times.write[key_i] = p_animation->track_get_key_time(p_track_i, key_i);
+		times.write()[key_i] = p_animation->track_get_key_time(p_track_i, key_i);
 	}
 	const float BAKE_FPS = 30.0f;
 	if (track_type == Animation::TYPE_TRANSFORM3D) {
@@ -6040,9 +6040,9 @@ GLTFAnimation::Track GLTFDocument::_convert_animation_track(Ref<GLTFState> state
 			xform.basis.set_quaternion_scale(rotation, scale);
 			xform.origin = translation;
 			xform = p_bone_rest * xform;
-			p_track.translation_track.values.write[key_i] = xform.get_origin();
-			p_track.rotation_track.values.write[key_i] = xform.basis.get_rotation_quaternion();
-			p_track.scale_track.values.write[key_i] = xform.basis.get_scale();
+			p_track.translation_track.values.write()[key_i] = xform.get_origin();
+			p_track.rotation_track.values.write()[key_i] = xform.basis.get_rotation_quaternion();
+			p_track.scale_track.values.write()[key_i] = xform.basis.get_scale();
 		}
 	} else if (path.find(":transform") != -1) {
 		p_track.translation_track.times = times;
@@ -6060,9 +6060,9 @@ GLTFAnimation::Track GLTFDocument::_convert_animation_track(Ref<GLTFState> state
 		p_track.rotation_track.interpolation = gltf_interpolation;
 		for (int32_t key_i = 0; key_i < key_count; key_i++) {
 			Transform3D xform = p_animation->track_get_key_value(p_track_i, key_i);
-			p_track.translation_track.values.write[key_i] = xform.get_origin();
-			p_track.rotation_track.values.write[key_i] = xform.basis.get_rotation_quaternion();
-			p_track.scale_track.values.write[key_i] = xform.basis.get_scale();
+			p_track.translation_track.values.write()[key_i] = xform.get_origin();
+			p_track.rotation_track.values.write()[key_i] = xform.basis.get_rotation_quaternion();
+			p_track.scale_track.values.write()[key_i] = xform.basis.get_scale();
 		}
 	} else if (track_type == Animation::TYPE_VALUE) {
 		if (path.find("/rotation_quat") != -1) {
@@ -6074,7 +6074,7 @@ GLTFAnimation::Track GLTFDocument::_convert_animation_track(Ref<GLTFState> state
 
 			for (int32_t key_i = 0; key_i < key_count; key_i++) {
 				Quaternion rotation_track = p_animation->track_get_key_value(p_track_i, key_i);
-				p_track.rotation_track.values.write[key_i] = rotation_track;
+				p_track.rotation_track.values.write()[key_i] = rotation_track;
 			}
 		} else if (path.find(":translation") != -1) {
 			p_track.translation_track.times = times;
@@ -6085,7 +6085,7 @@ GLTFAnimation::Track GLTFDocument::_convert_animation_track(Ref<GLTFState> state
 
 			for (int32_t key_i = 0; key_i < key_count; key_i++) {
 				Vector3 translation = p_animation->track_get_key_value(p_track_i, key_i);
-				p_track.translation_track.values.write[key_i] = translation;
+				p_track.translation_track.values.write()[key_i] = translation;
 			}
 		} else if (path.find(":rotation_degrees") != -1) {
 			p_track.rotation_track.times = times;
@@ -6100,7 +6100,7 @@ GLTFAnimation::Track GLTFDocument::_convert_animation_track(Ref<GLTFState> state
 				rotation_radian.x = Math::deg2rad(rotation_degrees.x);
 				rotation_radian.y = Math::deg2rad(rotation_degrees.y);
 				rotation_radian.z = Math::deg2rad(rotation_degrees.z);
-				p_track.rotation_track.values.write[key_i] = Quaternion(rotation_radian);
+				p_track.rotation_track.values.write()[key_i] = Quaternion(rotation_radian);
 			}
 		} else if (path.find(":scale") != -1) {
 			p_track.scale_track.times = times;
@@ -6111,7 +6111,7 @@ GLTFAnimation::Track GLTFDocument::_convert_animation_track(Ref<GLTFState> state
 
 			for (int32_t key_i = 0; key_i < key_count; key_i++) {
 				Vector3 scale_track = p_animation->track_get_key_value(p_track_i, key_i);
-				p_track.scale_track.values.write[key_i] = scale_track;
+				p_track.scale_track.values.write()[key_i] = scale_track;
 			}
 		}
 	} else if (track_type == Animation::TYPE_BEZIER) {
@@ -6121,7 +6121,7 @@ GLTFAnimation::Track GLTFDocument::_convert_animation_track(Ref<GLTFState> state
 				Vector<float> new_times;
 				new_times.resize(keys);
 				for (int32_t key_i = 0; key_i < keys; key_i++) {
-					new_times.write[key_i] = key_i / BAKE_FPS;
+					new_times.write()[key_i] = key_i / BAKE_FPS;
 				}
 				p_track.scale_track.times = new_times;
 				p_track.scale_track.interpolation = gltf_interpolation;
@@ -6129,7 +6129,7 @@ GLTFAnimation::Track GLTFDocument::_convert_animation_track(Ref<GLTFState> state
 				p_track.scale_track.values.resize(keys);
 
 				for (int32_t key_i = 0; key_i < keys; key_i++) {
-					p_track.scale_track.values.write[key_i] = Vector3(1.0f, 1.0f, 1.0f);
+					p_track.scale_track.values.write()[key_i] = Vector3(1.0f, 1.0f, 1.0f);
 				}
 				p_track.scale_track.interpolation = gltf_interpolation;
 			}
@@ -6146,7 +6146,7 @@ GLTFAnimation::Track GLTFDocument::_convert_animation_track(Ref<GLTFState> state
 					bezier_track.z = p_animation->bezier_track_interpolate(p_track_i, key_i / BAKE_FPS);
 					bezier_track.z = p_bone_rest.affine_inverse().basis.get_scale().z * bezier_track.z;
 				}
-				p_track.scale_track.values.write[key_i] = bezier_track;
+				p_track.scale_track.values.write()[key_i] = bezier_track;
 			}
 		} else if (path.find("/translation") != -1) {
 			const int32_t keys = p_animation->track_get_key_time(p_track_i, key_count - 1) * BAKE_FPS;
@@ -6154,7 +6154,7 @@ GLTFAnimation::Track GLTFDocument::_convert_animation_track(Ref<GLTFState> state
 				Vector<float> new_times;
 				new_times.resize(keys);
 				for (int32_t key_i = 0; key_i < keys; key_i++) {
-					new_times.write[key_i] = key_i / BAKE_FPS;
+					new_times.write()[key_i] = key_i / BAKE_FPS;
 				}
 				p_track.translation_track.times = new_times;
 				p_track.translation_track.interpolation = gltf_interpolation;
@@ -6175,7 +6175,7 @@ GLTFAnimation::Track GLTFDocument::_convert_animation_track(Ref<GLTFState> state
 					bezier_track.z = p_animation->bezier_track_interpolate(p_track_i, key_i / BAKE_FPS);
 					bezier_track.z = p_bone_rest.affine_inverse().origin.z * bezier_track.z;
 				}
-				p_track.translation_track.values.write[key_i] = bezier_track;
+				p_track.translation_track.values.write()[key_i] = bezier_track;
 			}
 		}
 	}
@@ -6307,11 +6307,11 @@ void GLTFDocument::_convert_animation(Ref<GLTFState> state, AnimationPlayer *ap,
 							weight.interpolation = gltf_interpolation;
 							weight.times.resize(key_count);
 							for (int32_t time_i = 0; time_i < key_count; time_i++) {
-								weight.times.write[time_i] = animation->track_get_key_time(track_i, time_i);
+								weight.times.write()[time_i] = animation->track_get_key_time(track_i, time_i);
 							}
 							weight.values.resize(key_count);
 							for (int32_t value_i = 0; value_i < key_count; value_i++) {
-								weight.values.write[value_i] = animation->track_get_key_value(track_i, value_i);
+								weight.values.write()[value_i] = animation->track_get_key_value(track_i, value_i);
 							}
 							track.weight_tracks.push_back(weight);
 						}

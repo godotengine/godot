@@ -495,7 +495,7 @@ bool Node::is_network_master() const {
 uint16_t Node::rpc_config(const StringName &p_method, MultiplayerAPI::RPCMode p_rpc_mode, NetworkedMultiplayerPeer::TransferMode p_transfer_mode, int p_channel) {
 	for (int i = 0; i < data.rpc_methods.size(); i++) {
 		if (data.rpc_methods[i].name == p_method) {
-			MultiplayerAPI::RPCConfig &nd = data.rpc_methods.write[i];
+			MultiplayerAPI::RPCConfig &nd = data.rpc_methods.write()[i];
 			nd.rpc_mode = p_rpc_mode;
 			nd.transfer_mode = p_transfer_mode;
 			nd.channel = p_channel;

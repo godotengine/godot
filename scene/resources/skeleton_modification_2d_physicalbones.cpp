@@ -159,7 +159,7 @@ void SkeletonModification2DPhysicalBones::_physical_bone_update_cache(int p_join
 		return;
 	}
 
-	physical_bone_chain.write[p_joint_idx].physical_bone_node_cache = ObjectID();
+	physical_bone_chain.write()[p_joint_idx].physical_bone_node_cache = ObjectID();
 	if (stack->skeleton) {
 		if (stack->skeleton->is_inside_tree()) {
 			if (stack->skeleton->has_node(physical_bone_chain[p_joint_idx].physical_bone_node)) {
@@ -168,7 +168,7 @@ void SkeletonModification2DPhysicalBones::_physical_bone_update_cache(int p_join
 						"Cannot update Physical Bone2D " + itos(p_joint_idx) + " cache: node is this modification's skeleton or cannot be found!");
 				ERR_FAIL_COND_MSG(!node->is_inside_tree(),
 						"Cannot update Physical Bone2D " + itos(p_joint_idx) + " cache: node is not in scene tree!");
-				physical_bone_chain.write[p_joint_idx].physical_bone_node_cache = node->get_instance_id();
+				physical_bone_chain.write()[p_joint_idx].physical_bone_node_cache = node->get_instance_id();
 			}
 		}
 	}
@@ -262,7 +262,7 @@ void SkeletonModification2DPhysicalBones::_update_simulation_state() {
 
 void SkeletonModification2DPhysicalBones::set_physical_bone_node(int p_joint_idx, const NodePath &p_nodepath) {
 	ERR_FAIL_INDEX_MSG(p_joint_idx, physical_bone_chain.size(), "Joint index out of range!");
-	physical_bone_chain.write[p_joint_idx].physical_bone_node = p_nodepath;
+	physical_bone_chain.write()[p_joint_idx].physical_bone_node = p_nodepath;
 	_physical_bone_update_cache(p_joint_idx);
 }
 

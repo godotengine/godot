@@ -123,7 +123,7 @@ void Label::_shape() {
 	if (lines_dirty) { // Fill after min_size calculation.
 		if (align == ALIGN_FILL) {
 			for (int i = 0; i < lines_rid.size(); i++) {
-				TS->shaped_text_fit_to_width(lines_rid.write[i], width);
+				TS->shaped_text_fit_to_width(lines_rid.write()[i], width);
 			}
 		}
 		lines_dirty = false;

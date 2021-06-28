@@ -673,7 +673,7 @@ void Font::add_data(const Ref<FontData> &p_data) {
 	data.push_back(p_data);
 
 	if (data[data.size() - 1].is_valid()) {
-		data.write[data.size() - 1]->connect("changed", callable_mp(this, &Font::_data_changed), varray(), CONNECT_REFERENCE_COUNTED);
+		data.write()[data.size() - 1]->connect("changed", callable_mp(this, &Font::_data_changed), varray(), CONNECT_REFERENCE_COUNTED);
 	}
 
 	cache.clear();
@@ -688,13 +688,13 @@ void Font::set_data(int p_idx, const Ref<FontData> &p_data) {
 	ERR_FAIL_INDEX(p_idx, data.size());
 
 	if (data[p_idx].is_valid()) {
-		data.write[p_idx]->disconnect("changed", callable_mp(this, &Font::_data_changed));
+		data.write()[p_idx]->disconnect("changed", callable_mp(this, &Font::_data_changed));
 	}
 
-	data.write[p_idx] = p_data;
+	data.write()[p_idx] = p_data;
 
 	if (data[p_idx].is_valid()) {
-		data.write[p_idx]->connect("changed", callable_mp(this, &Font::_data_changed), varray(), CONNECT_REFERENCE_COUNTED);
+		data.write()[p_idx]->connect("changed", callable_mp(this, &Font::_data_changed), varray(), CONNECT_REFERENCE_COUNTED);
 	}
 
 	cache.clear();
@@ -717,7 +717,7 @@ void Font::remove_data(int p_idx) {
 	ERR_FAIL_INDEX(p_idx, data.size());
 
 	if (data[p_idx].is_valid()) {
-		data.write[p_idx]->disconnect("changed", callable_mp(this, &Font::_data_changed));
+		data.write()[p_idx]->disconnect("changed", callable_mp(this, &Font::_data_changed));
 	}
 
 	data.remove(p_idx);

@@ -292,15 +292,15 @@ private:
 	void _calc_accessor_vec2_min_max(int i, const int element_count, Vector<double> &type_max, Vector2 attribs, Vector<double> &type_min) {
 		if (i == 0) {
 			for (int32_t type_i = 0; type_i < element_count; type_i++) {
-				type_max.write[type_i] = attribs[(i * element_count) + type_i];
-				type_min.write[type_i] = attribs[(i * element_count) + type_i];
+				type_max.write()[type_i] = attribs[(i * element_count) + type_i];
+				type_min.write()[type_i] = attribs[(i * element_count) + type_i];
 			}
 		}
 		for (int32_t type_i = 0; type_i < element_count; type_i++) {
-			type_max.write[type_i] = MAX(attribs[(i * element_count) + type_i], type_max[type_i]);
-			type_min.write[type_i] = MIN(attribs[(i * element_count) + type_i], type_min[type_i]);
-			type_max.write[type_i] = _filter_number(type_max.write[type_i]);
-			type_min.write[type_i] = _filter_number(type_min.write[type_i]);
+			type_max.write()[type_i] = MAX(attribs[(i * element_count) + type_i], type_max[type_i]);
+			type_min.write()[type_i] = MIN(attribs[(i * element_count) + type_i], type_min[type_i]);
+			type_max.write()[type_i] = _filter_number(type_max.write()[type_i]);
+			type_min.write()[type_i] = _filter_number(type_min.write()[type_i]);
 		}
 	}
 

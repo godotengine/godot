@@ -1632,7 +1632,7 @@ Error VulkanContext::initialize() {
 }
 
 void VulkanContext::set_setup_buffer(const VkCommandBuffer &pCommandBuffer) {
-	command_buffer_queue.write[0] = pCommandBuffer;
+	command_buffer_queue.write()[0] = pCommandBuffer;
 }
 
 void VulkanContext::append_command_buffer(const VkCommandBuffer &pCommandBuffer) {
@@ -1640,7 +1640,7 @@ void VulkanContext::append_command_buffer(const VkCommandBuffer &pCommandBuffer)
 		command_buffer_queue.resize(command_buffer_count + 1);
 	}
 
-	command_buffer_queue.write[command_buffer_count] = pCommandBuffer;
+	command_buffer_queue.write()[command_buffer_count] = pCommandBuffer;
 	command_buffer_count++;
 }
 
@@ -1663,7 +1663,7 @@ void VulkanContext::flush(bool p_flush_setup, bool p_flush_pending) {
 		submit_info.signalSemaphoreCount = 0;
 		submit_info.pSignalSemaphores = nullptr;
 		VkResult err = vkQueueSubmit(graphics_queue, 1, &submit_info, VK_NULL_HANDLE);
-		command_buffer_queue.write[0] = nullptr;
+		command_buffer_queue.write()[0] = nullptr;
 		ERR_FAIL_COND(err);
 		vkDeviceWaitIdle(device);
 	}
@@ -1790,7 +1790,7 @@ Error VulkanContext::swap_buffers() {
 	err = vkQueueSubmit(graphics_queue, 1, &submit_info, fences[frame_index]);
 	ERR_FAIL_COND_V(err, ERR_CANT_CREATE);
 
-	command_buffer_queue.write[0] = nullptr;
+	command_buffer_queue.write()[0] = nullptr;
 	command_buffer_count = 1;
 
 	if (separate_present_queue) {
@@ -2124,7 +2124,7 @@ String VulkanContext::get_device_pipeline_cache_uuid() const {
 
 VulkanContext::VulkanContext() {
 	command_buffer_queue.resize(1); // First one is always the setup command.
-	command_buffer_queue.write[0] = nullptr;
+	command_buffer_queue.write()[0] = nullptr;
 }
 
 VulkanContext::~VulkanContext() {

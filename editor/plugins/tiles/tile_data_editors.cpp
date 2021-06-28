@@ -213,7 +213,7 @@ void TileDataNavigationPolygonEditor::draw_over_tile(CanvasItem *p_canvas_item, 
 					vertices.resize(polygon.size());
 					for (int j = 0; j < polygon.size(); j++) {
 						ERR_FAIL_INDEX(polygon[j], verts.size());
-						vertices.write[j] = verts[polygon[j]];
+						vertices.write()[j] = verts[polygon[j]];
 					}
 
 					// Generate the polygon color, slightly randomly modified from the settings one.

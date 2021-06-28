@@ -548,7 +548,7 @@ void GDScript::_update_doc() {
 			if (doc_enums.has(E->key())) {
 				is_enum = true;
 				for (int i = 0; i < doc_enums[E->key()].values.size(); i++) {
-					doc_enums[E->key()].values.write[i].enumeration = E->key();
+					doc_enums[E->key()].values.write()[i].enumeration = E->key();
 					doc.constants.push_back(doc_enums[E->key()].values[i]);
 				}
 			}
@@ -680,7 +680,7 @@ bool GDScript::_update_exports(bool *r_err, bool p_recursive_call, PlaceHolderSc
 						Vector<StringName> parameters_names;
 						parameters_names.resize(member.signal->parameters.size());
 						for (int j = 0; j < member.signal->parameters.size(); j++) {
-							parameters_names.write[j] = member.signal->parameters[j]->identifier->name;
+							parameters_names.write()[j] = member.signal->parameters[j]->identifier->name;
 						}
 						_signals[member.signal->identifier->name] = parameters_names;
 					} break;
@@ -1253,7 +1253,7 @@ bool GDScriptInstance::set(const StringName &p_name, const Variant &p_value) {
 					if (member->data_type.builtin_type == Variant::ARRAY && member->data_type.has_container_element_type()) {
 						// Typed array.
 						if (p_value.get_type() == Variant::ARRAY) {
-							return VariantInternal::get_array(&members.write[member->index])->typed_assign(p_value);
+							return VariantInternal::get_array(&members.write()[member->index])->typed_assign(p_value);
 						} else {
 							return false;
 						}
@@ -1264,14 +1264,14 @@ bool GDScriptInstance::set(const StringName &p_name, const Variant &p_value) {
 						Variant converted;
 						Variant::construct(member->data_type.builtin_type, converted, &value, 1, ce);
 						if (ce.error == Callable::CallError::CALL_OK) {
-							members.write[member->index] = converted;
+							members.write()[member->index] = converted;
 							return true;
 						} else {
 							return false;
 						}
 					}
 				}
-				members.write[member->index] = p_value;
+				members.write()[member->index] = p_value;
 			}
 			return true;
 		}
@@ -1562,7 +1562,7 @@ void GDScriptInstance::reload_members() {
 	for (Map<StringName, GDScript::MemberInfo>::Element *E = script->member_indices.front(); E; E = E->next()) {
 		if (member_indices_cache.has(E->key())) {
 			Variant value = members[member_indices_cache[E->key()]];
-			new_members.write[E->get().index] = value;
+			new_members.write()[E->get().index] = value;
 		}
 	}
 
@@ -1611,7 +1611,7 @@ String GDScriptLanguage::get_name() const {
 void GDScriptLanguage::_add_global(const StringName &p_name, const Variant &p_value) {
 	if (globals.has(p_name)) {
 		//overwrite existing
-		global_array.write[globals[p_name]] = p_value;
+		global_array.write()[globals[p_name]] = p_value;
 		return;
 	}
 	globals[p_name] = global_array.size();
@@ -2209,7 +2209,7 @@ GDScriptLanguage::~GDScriptLanguage() {
 		for (Map<StringName, GDScriptFunction *>::Element *E = script->member_functions.front(); E; E = E->next()) {
 			GDScriptFunction *func = E->get();
 			for (int i = 0; i < func->argument_types.size(); i++) {
-				func->argument_types.write[i].script_type_ref = Ref<Script>();
+				func->argument_types.write()[i].script_type_ref = Ref<Script>();
 			}
 			func->return_type.script_type_ref = Ref<Script>();
 		}

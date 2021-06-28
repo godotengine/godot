@@ -239,15 +239,15 @@ void Tabs::_shape(int p_tab) {
 	Ref<Font> font = get_theme_font("font");
 	int font_size = get_theme_font_size("font_size");
 
-	tabs.write[p_tab].xl_text = tr(tabs[p_tab].text);
-	tabs.write[p_tab].text_buf->clear();
+	tabs.write()[p_tab].xl_text = tr(tabs[p_tab].text);
+	tabs.write()[p_tab].text_buf->clear();
 	if (tabs[p_tab].text_direction == Control::TEXT_DIRECTION_INHERITED) {
-		tabs.write[p_tab].text_buf->set_direction(is_layout_rtl() ? TextServer::DIRECTION_RTL : TextServer::DIRECTION_LTR);
+		tabs.write()[p_tab].text_buf->set_direction(is_layout_rtl() ? TextServer::DIRECTION_RTL : TextServer::DIRECTION_LTR);
 	} else {
-		tabs.write[p_tab].text_buf->set_direction((TextServer::Direction)tabs[p_tab].text_direction);
+		tabs.write()[p_tab].text_buf->set_direction((TextServer::Direction)tabs[p_tab].text_direction);
 	}
 
-	tabs.write[p_tab].text_buf->add_string(tabs.write[p_tab].xl_text, font, font_size, tabs[p_tab].opentype_features, (tabs[p_tab].language != "") ? tabs[p_tab].language : TranslationServer::get_singleton()->get_tool_locale());
+	tabs.write()[p_tab].text_buf->add_string(tabs.write()[p_tab].xl_text, font, font_size, tabs[p_tab].opentype_features, (tabs[p_tab].language != "") ? tabs[p_tab].language : TranslationServer::get_singleton()->get_tool_locale());
 }
 
 void Tabs::_notification(int p_what) {
@@ -292,7 +292,7 @@ void Tabs::_notification(int p_what) {
 			int mw = 0;
 
 			for (int i = 0; i < tabs.size(); i++) {
-				tabs.write[i].ofs_cache = mw;
+				tabs.write()[i].ofs_cache = mw;
 				mw += get_tab_width(i);
 			}
 
@@ -317,7 +317,7 @@ void Tabs::_notification(int p_what) {
 			missing_right = false;
 
 			for (int i = offset; i < tabs.size(); i++) {
-				tabs.write[i].ofs_cache = w;
+				tabs.write()[i].ofs_cache = w;
 
 				int lsize = tabs[i].size_cache;
 
@@ -412,7 +412,7 @@ void Tabs::_notification(int p_what) {
 						rb->draw(ci, Point2i(w + style->get_margin(SIDE_LEFT), rb_rect.position.y + style->get_margin(SIDE_TOP)));
 					}
 					w += rb->get_width();
-					tabs.write[i].rb_rect = rb_rect;
+					tabs.write()[i].rb_rect = rb_rect;
 				}
 
 				if (cb_displaypolicy == CLOSE_BUTTON_SHOW_ALWAYS || (cb_displaypolicy == CLOSE_BUTTON_SHOW_ACTIVE_ONLY && i == current)) {
@@ -444,7 +444,7 @@ void Tabs::_notification(int p_what) {
 						cb->draw(ci, Point2i(w + style->get_margin(SIDE_LEFT), cb_rect.position.y + style->get_margin(SIDE_TOP)));
 					}
 					w += cb->get_width();
-					tabs.write[i].cb_rect = cb_rect;
+					tabs.write()[i].cb_rect = cb_rect;
 				}
 
 				w += sb->get_margin(SIDE_RIGHT);
@@ -528,8 +528,8 @@ bool Tabs::get_offset_buttons_visible() const {
 
 void Tabs::set_tab_title(int p_tab, const String &p_title) {
 	ERR_FAIL_INDEX(p_tab, tabs.size());
-	tabs.write[p_tab].text = p_title;
-	tabs.write[p_tab].xl_text = tr(p_title);
+	tabs.write()[p_tab].text = p_title;
+	tabs.write()[p_tab].xl_text = tr(p_title);
 	_shape(p_tab);
 	update();
 	minimum_size_changed();
@@ -544,7 +544,7 @@ void Tabs::set_tab_text_direction(int p_tab, Control::TextDirection p_text_direc
 	ERR_FAIL_INDEX(p_tab, tabs.size());
 	ERR_FAIL_COND((int)p_text_direction < -1 || (int)p_text_direction > 3);
 	if (tabs[p_tab].text_direction != p_text_direction) {
-		tabs.write[p_tab].text_direction = p_text_direction;
+		tabs.write()[p_tab].text_direction = p_text_direction;
 		_shape(p_tab);
 		update();
 	}
@@ -557,7 +557,7 @@ Control::TextDirection Tabs::get_tab_text_direction(int p_tab) const {
 
 void Tabs::clear_tab_opentype_features(int p_tab) {
 	ERR_FAIL_INDEX(p_tab, tabs.size());
-	tabs.write[p_tab].opentype_features.clear();
+	tabs.write()[p_tab].opentype_features.clear();
 	_shape(p_tab);
 	update();
 }
@@ -566,7 +566,7 @@ void Tabs::set_tab_opentype_feature(int p_tab, const String &p_name, int p_value
 	ERR_FAIL_INDEX(p_tab, tabs.size());
 	int32_t tag = TS->name_to_tag(p_name);
 	if (!tabs[p_tab].opentype_features.has(tag) || (int)tabs[p_tab].opentype_features[tag] != p_value) {
-		tabs.write[p_tab].opentype_features[tag] = p_value;
+		tabs.write()[p_tab].opentype_features[tag] = p_value;
 		_shape(p_tab);
 		update();
 	}
@@ -584,7 +584,7 @@ int Tabs::get_tab_opentype_feature(int p_tab, const String &p_name) const {
 void Tabs::set_tab_language(int p_tab, const String &p_language) {
 	ERR_FAIL_INDEX(p_tab, tabs.size());
 	if (tabs[p_tab].language != p_language) {
-		tabs.write[p_tab].language = p_language;
+		tabs.write()[p_tab].language = p_language;
 		_shape(p_tab);
 		update();
 	}
@@ -597,7 +597,7 @@ String Tabs::get_tab_language(int p_tab) const {
 
 void Tabs::set_tab_icon(int p_tab, const Ref<Texture2D> &p_icon) {
 	ERR_FAIL_INDEX(p_tab, tabs.size());
-	tabs.write[p_tab].icon = p_icon;
+	tabs.write()[p_tab].icon = p_icon;
 	update();
 	minimum_size_changed();
 }
@@ -609,7 +609,7 @@ Ref<Texture2D> Tabs::get_tab_icon(int p_tab) const {
 
 void Tabs::set_tab_disabled(int p_tab, bool p_disabled) {
 	ERR_FAIL_INDEX(p_tab, tabs.size());
-	tabs.write[p_tab].disabled = p_disabled;
+	tabs.write()[p_tab].disabled = p_disabled;
 	update();
 }
 
@@ -620,7 +620,7 @@ bool Tabs::get_tab_disabled(int p_tab) const {
 
 void Tabs::set_tab_right_button(int p_tab, const Ref<Texture2D> &p_right_button) {
 	ERR_FAIL_INDEX(p_tab, tabs.size());
-	tabs.write[p_tab].right_button = p_right_button;
+	tabs.write()[p_tab].right_button = p_right_button;
 	_update_cache();
 	update();
 	minimum_size_changed();
@@ -681,10 +681,10 @@ void Tabs::_update_cache() {
 	int size_fixed = 0;
 	int count_resize = 0;
 	for (int i = 0; i < tabs.size(); i++) {
-		tabs.write[i].ofs_cache = mw;
-		tabs.write[i].size_cache = get_tab_width(i);
-		tabs.write[i].size_text = Math::ceil(tabs[i].text_buf->get_size().x);
-		tabs.write[i].text_buf->set_width(-1);
+		tabs.write()[i].ofs_cache = mw;
+		tabs.write()[i].size_cache = get_tab_width(i);
+		tabs.write()[i].size_text = Math::ceil(tabs[i].text_buf->get_size().x);
+		tabs.write()[i].text_buf->set_width(-1);
 		mw += tabs[i].size_cache;
 		if (tabs[i].size_cache <= min_width || i == current) {
 			size_fixed += tabs[i].size_cache;
@@ -723,10 +723,10 @@ void Tabs::_update_cache() {
 				lsize = m_width;
 			}
 		}
-		tabs.write[i].ofs_cache = w;
-		tabs.write[i].size_cache = lsize;
-		tabs.write[i].size_text = slen;
-		tabs.write[i].text_buf->set_width(slen);
+		tabs.write()[i].ofs_cache = w;
+		tabs.write()[i].size_cache = lsize;
+		tabs.write()[i].size_text = slen;
+		tabs.write()[i].text_buf->set_width(slen);
 		w += lsize;
 	}
 }

@@ -245,7 +245,7 @@ Error PacketPeerStream::put_packet(const uint8_t *p_buffer, int p_buffer_size) {
 	ERR_FAIL_COND_V(p_buffer_size + 4 > output_buffer.size(), ERR_INVALID_PARAMETER);
 
 	encode_uint32(p_buffer_size, output_buffer.ptrw());
-	uint8_t *dst = &output_buffer.write[4];
+	uint8_t *dst = &output_buffer.write()[4];
 	for (int i = 0; i < p_buffer_size; i++) {
 		dst[i] = p_buffer[i];
 	}

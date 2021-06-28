@@ -327,7 +327,7 @@ void EditorNode3DGizmo::add_collision_segments(const Vector<Vector3> &p_lines) {
 	int from = collision_segments.size();
 	collision_segments.resize(from + p_lines.size());
 	for (int i = 0; i < p_lines.size(); i++) {
-		collision_segments.write[from + i] = p_lines[i];
+		collision_segments.write()[from + i] = p_lines[i];
 	}
 }
 
@@ -390,13 +390,13 @@ void EditorNode3DGizmo::add_handles(const Vector<Vector3> &p_handles, const Ref<
 		int chs = handles.size();
 		handles.resize(chs + p_handles.size());
 		for (int i = 0; i < p_handles.size(); i++) {
-			handles.write[i + chs] = p_handles[i];
+			handles.write()[i + chs] = p_handles[i];
 		}
 	} else {
 		int chs = secondary_handles.size();
 		secondary_handles.resize(chs + p_handles.size());
 		for (int i = 0; i < p_handles.size(); i++) {
-			secondary_handles.write[i + chs] = p_handles[i];
+			secondary_handles.write()[i + chs] = p_handles[i];
 		}
 	}
 }
@@ -680,7 +680,7 @@ void EditorNode3DGizmo::create() {
 	valid = true;
 
 	for (int i = 0; i < instances.size(); i++) {
-		instances.write[i].create_instance(spatial_node, hidden);
+		instances.write()[i].create_instance(spatial_node, hidden);
 	}
 
 	transform();
@@ -702,7 +702,7 @@ void EditorNode3DGizmo::free() {
 		if (instances[i].instance.is_valid()) {
 			RS::get_singleton()->free(instances[i].instance);
 		}
-		instances.write[i].instance = RID();
+		instances.write()[i].instance = RID();
 	}
 
 	clear();
@@ -1152,8 +1152,8 @@ void AudioStreamPlayer3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 			const Vector3 from(Math::sin(a) * radius, Math::cos(a) * radius, ofs);
 			const Vector3 to(Math::sin(an) * radius, Math::cos(an) * radius, ofs);
 
-			points_primary.write[i * 2 + 0] = from;
-			points_primary.write[i * 2 + 1] = to;
+			points_primary.write()[i * 2 + 0] = from;
+			points_primary.write()[i * 2 + 1] = to;
 		}
 
 		const Ref<Material> material_primary = get_material("stream_player_3d_material_primary", p_gizmo);
@@ -1166,8 +1166,8 @@ void AudioStreamPlayer3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 			const float a = i * (Math_TAU / 8.0);
 			const Vector3 from(Math::sin(a) * radius, Math::cos(a) * radius, ofs);
 
-			points_secondary.write[i * 2 + 0] = from;
-			points_secondary.write[i * 2 + 1] = Vector3();
+			points_secondary.write()[i * 2 + 0] = from;
+			points_secondary.write()[i * 2 + 1] = Vector3();
 		}
 
 		const Ref<Material> material_secondary = get_material("stream_player_3d_material_secondary", p_gizmo);
@@ -1416,7 +1416,7 @@ void Camera3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 
 		Transform3D local = camera->get_global_transform().affine_inverse();
 		for (int i = 0; i < lines.size(); i++) {
-			lines.write[i] = local.xform(lines[i]);
+			lines.write()[i] = local.xform(lines[i]);
 		}
 
 		p_gizmo->add_lines(lines, material);
@@ -1649,11 +1649,11 @@ void Skeleton3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 	weights.resize(4);
 
 	for (int i = 0; i < 4; i++) {
-		bones.write[i] = 0;
-		weights.write[i] = 0;
+		bones.write()[i] = 0;
+		weights.write()[i] = 0;
 	}
 
-	weights.write[0] = 1;
+	weights.write()[0] = 1;
 
 	AABB aabb;
 
@@ -1666,7 +1666,7 @@ void Skeleton3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 		int parent = skel->get_bone_parent(i);
 
 		if (parent >= 0) {
-			grests.write[i] = grests[parent] * skel->get_bone_rest(i);
+			grests.write()[i] = grests[parent] * skel->get_bone_rest(i);
 
 			Vector3 v0 = grests[parent].origin;
 			Vector3 v1 = grests[i].origin;
@@ -1689,7 +1689,7 @@ void Skeleton3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 			Vector3 points[4];
 			int pointidx = 0;
 			for (int j = 0; j < 3; j++) {
-				bones.write[0] = parent;
+				bones.write()[0] = parent;
 				surface_tool->set_bones(bones);
 				surface_tool->set_weights(weights);
 				surface_tool->set_color(rootcolor);
@@ -1718,7 +1718,7 @@ void Skeleton3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 					Vector3 point = v0 + d * dist * 0.2;
 					point += axis * dist * 0.1;
 
-					bones.write[0] = parent;
+					bones.write()[0] = parent;
 					surface_tool->set_bones(bones);
 					surface_tool->set_weights(weights);
 					surface_tool->set_color(bonecolor);
@@ -1728,12 +1728,12 @@ void Skeleton3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 					surface_tool->set_color(bonecolor);
 					surface_tool->add_vertex(point);
 
-					bones.write[0] = parent;
+					bones.write()[0] = parent;
 					surface_tool->set_bones(bones);
 					surface_tool->set_weights(weights);
 					surface_tool->set_color(bonecolor);
 					surface_tool->add_vertex(point);
-					bones.write[0] = i;
+					bones.write()[0] = i;
 					surface_tool->set_bones(bones);
 					surface_tool->set_weights(weights);
 					surface_tool->set_color(bonecolor);
@@ -1744,7 +1744,7 @@ void Skeleton3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 
 			SWAP(points[1], points[2]);
 			for (int j = 0; j < 4; j++) {
-				bones.write[0] = parent;
+				bones.write()[0] = parent;
 				surface_tool->set_bones(bones);
 				surface_tool->set_weights(weights);
 				surface_tool->set_color(bonecolor);
@@ -1755,8 +1755,8 @@ void Skeleton3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 				surface_tool->add_vertex(points[(j + 1) % 4]);
 			}
 		} else {
-			grests.write[i] = skel->get_bone_rest(i);
-			bones.write[0] = i;
+			grests.write()[i] = skel->get_bone_rest(i);
+			bones.write()[0] = i;
 		}
 	}
 
@@ -4140,8 +4140,8 @@ void CollisionShape3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 				Vector<Vector3> points2;
 				points2.resize(md.edges.size() * 2);
 				for (int i = 0; i < md.edges.size(); i++) {
-					points2.write[i * 2 + 0] = md.vertices[md.edges[i].a];
-					points2.write[i * 2 + 1] = md.vertices[md.edges[i].b];
+					points2.write()[i * 2 + 0] = md.vertices[md.edges[i].a];
+					points2.write()[i * 2 + 1] = md.vertices[md.edges[i].b];
 				}
 
 				p_gizmo->add_lines(points2, material);

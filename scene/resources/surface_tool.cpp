@@ -171,11 +171,11 @@ void SurfaceTool::add_vertex(const Vector3 &p_vertex) {
 
 			for (int i = 0; i < expected_vertices; i++) {
 				if (total > 0) {
-					vtx.weights.write[i] = weights[i].weight / total;
+					vtx.weights.write()[i] = weights[i].weight / total;
 				} else {
-					vtx.weights.write[i] = 0;
+					vtx.weights.write()[i] = 0;
 				}
-				vtx.bones.write[i] = weights[i].index;
+				vtx.bones.write()[i] = weights[i].index;
 			}
 		}
 	}
@@ -780,7 +780,7 @@ void SurfaceTool::create_vertex_array_from_triangle_arrays(const Array &p_arrays
 			Vector<int> b;
 			b.resize(wcount);
 			for (int j = 0; j < wcount; j++) {
-				b.write[j] = barr[i * wcount + j];
+				b.write()[j] = barr[i * wcount + j];
 			}
 			v.bones = b;
 		}
@@ -788,7 +788,7 @@ void SurfaceTool::create_vertex_array_from_triangle_arrays(const Array &p_arrays
 			Vector<float> w;
 			w.resize(wcount);
 			for (int j = 0; j < wcount; j++) {
-				w.write[j] = warr[i * wcount + j];
+				w.write()[j] = warr[i * wcount + j];
 			}
 			v.weights = w;
 		}

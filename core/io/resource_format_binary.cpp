@@ -357,7 +357,7 @@ Error ResourceLoaderBinary::parse_variant(Variant &r_v) {
 							//cache not here yet, wait for it?
 							if (use_sub_threads) {
 								Error err;
-								external_resources.write[erindex].cache = ResourceLoader::load_threaded_get(external_resources[erindex].path, &err);
+								external_resources.write()[erindex].cache = ResourceLoader::load_threaded_get(external_resources[erindex].path, &err);
 
 								if (err != OK || external_resources[erindex].cache.is_null()) {
 									if (!ResourceLoader::get_abort_on_missing_resources()) {
@@ -625,10 +625,10 @@ Error ResourceLoaderBinary::load() {
 			path = ProjectSettings::get_singleton()->localize_path(path.get_base_dir().plus_file(external_resources[i].path));
 		}
 
-		external_resources.write[i].path = path; //remap happens here, not on load because on load it can actually be used for filesystem dock resource remap
+		external_resources.write()[i].path = path; //remap happens here, not on load because on load it can actually be used for filesystem dock resource remap
 
 		if (!use_sub_threads) {
-			external_resources.write[i].cache = ResourceLoader::load(path, external_resources[i].type);
+			external_resources.write()[i].cache = ResourceLoader::load(path, external_resources[i].type);
 
 			if (external_resources[i].cache.is_null()) {
 				if (!ResourceLoader::get_abort_on_missing_resources()) {
@@ -887,7 +887,7 @@ void ResourceLoaderBinary::open(FileAccess *p_f) {
 	string_map.resize(string_table_size);
 	for (uint32_t i = 0; i < string_table_size; i++) {
 		StringName s = get_unicode_string();
-		string_map.write[i] = s;
+		string_map.write()[i] = s;
 	}
 
 	print_bl("strings: " + itos(string_table_size));
@@ -1874,7 +1874,7 @@ Error ResourceFormatSaverBinaryInstance::save(const String &p_path, const RES &p
 	save_order.resize(external_resources.size());
 
 	for (Map<RES, int>::Element *E = external_resources.front(); E; E = E->next()) {
-		save_order.write[E->get()] = E->key();
+		save_order.write()[E->get()] = E->key();
 	}
 
 	for (int i = 0; i < save_order.size(); i++) {

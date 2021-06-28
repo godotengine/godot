@@ -159,7 +159,7 @@ Lightmapper::BakeError LightmapperRD::_blit_meshes_into_atlas(int p_max_texture_
 	Vector<Size2i> sizes;
 
 	for (int m_i = 0; m_i < mesh_instances.size(); m_i++) {
-		MeshInstance &mi = mesh_instances.write[m_i];
+		MeshInstance &mi = mesh_instances.write()[m_i];
 		Size2i s = Size2i(mi.data.albedo_on_uv2->get_width(), mi.data.albedo_on_uv2->get_height());
 		sizes.push_back(s);
 		atlas_size.width = MAX(atlas_size.width, s.width + 2);
@@ -191,8 +191,8 @@ Lightmapper::BakeError LightmapperRD::_blit_meshes_into_atlas(int p_max_texture_
 		source_sizes.resize(sizes.size());
 		source_indices.resize(sizes.size());
 		for (int i = 0; i < source_indices.size(); i++) {
-			source_sizes.write[i] = sizes[i] + Vector2i(2, 2); // Add padding between lightmaps
-			source_indices.write[i] = i;
+			source_sizes.write()[i] = sizes[i] + Vector2i(2, 2); // Add padding between lightmaps
+			source_indices.write()[i] = i;
 		}
 		Vector<Vector3i> atlas_offsets;
 		atlas_offsets.resize(source_sizes.size());
@@ -209,7 +209,7 @@ Lightmapper::BakeError LightmapperRD::_blit_meshes_into_atlas(int p_max_texture_
 				if (ofs.z > 0) {
 					//valid
 					ofs.z = slices;
-					atlas_offsets.write[sidx] = ofs + Vector3i(1, 1, 0); // Center lightmap in the reserved oversized region
+					atlas_offsets.write()[sidx] = ofs + Vector3i(1, 1, 0); // Center lightmap in the reserved oversized region
 				} else {
 					new_indices.push_back(sidx);
 					new_sources.push_back(source_sizes[i]);
@@ -251,24 +251,24 @@ Lightmapper::BakeError LightmapperRD::_blit_meshes_into_atlas(int p_max_texture_
 		albedo.instantiate();
 		albedo->create(atlas_size.width, atlas_size.height, false, Image::FORMAT_RGBA8);
 		albedo->set_as_black();
-		albedo_images.write[i] = albedo;
+		albedo_images.write()[i] = albedo;
 
 		Ref<Image> emission;
 		emission.instantiate();
 		emission->create(atlas_size.width, atlas_size.height, false, Image::FORMAT_RGBAH);
 		emission->set_as_black();
-		emission_images.write[i] = emission;
+		emission_images.write()[i] = emission;
 	}
 
 	//assign uv positions
 
 	for (int m_i = 0; m_i < mesh_instances.size(); m_i++) {
-		MeshInstance &mi = mesh_instances.write[m_i];
+		MeshInstance &mi = mesh_instances.write()[m_i];
 		mi.offset.x = best_atlas_offsets[m_i].x;
 		mi.offset.y = best_atlas_offsets[m_i].y;
 		mi.slice = best_atlas_offsets[m_i].z;
-		albedo_images.write[mi.slice]->blit_rect(mi.data.albedo_on_uv2, Rect2(Vector2(), Size2i(mi.data.albedo_on_uv2->get_width(), mi.data.albedo_on_uv2->get_height())), mi.offset);
-		emission_images.write[mi.slice]->blit_rect(mi.data.emission_on_uv2, Rect2(Vector2(), Size2i(mi.data.emission_on_uv2->get_width(), mi.data.emission_on_uv2->get_height())), mi.offset);
+		albedo_images.write()[mi.slice]->blit_rect(mi.data.albedo_on_uv2, Rect2(Vector2(), Size2i(mi.data.albedo_on_uv2->get_width(), mi.data.albedo_on_uv2->get_height())), mi.offset);
+		emission_images.write()[mi.slice]->blit_rect(mi.data.emission_on_uv2, Rect2(Vector2(), Size2i(mi.data.emission_on_uv2->get_width(), mi.data.emission_on_uv2->get_height())), mi.offset);
 	}
 
 	return BAKE_OK;
@@ -287,8 +287,8 @@ void LightmapperRD::_create_acceleration_structures(RenderingDevice *rd, Size2i 
 	slice_seam_count.resize(atlas_slices);
 
 	for (int i = 0; i < atlas_slices; i++) {
-		slice_triangle_count.write[i] = 0;
-		slice_seam_count.write[i] = 0;
+		slice_triangle_count.write()[i] = 0;
+		slice_seam_count.write()[i] = 0;
 	}
 
 	bounds = AABB();
@@ -301,7 +301,7 @@ void LightmapperRD::_create_acceleration_structures(RenderingDevice *rd, Size2i 
 
 		HashMap<Edge, EdgeUV2, EdgeHash> edges;
 
-		MeshInstance &mi = mesh_instances.write[m_i];
+		MeshInstance &mi = mesh_instances.write()[m_i];
 
 		Vector2 uv_scale = Vector2(mi.data.albedo_on_uv2->get_width(), mi.data.albedo_on_uv2->get_height()) / Vector2(atlas_size);
 		Vector2 uv_offset = Vector2(mi.offset) / Vector2(atlas_size);
@@ -382,7 +382,7 @@ void LightmapperRD::_create_acceleration_structures(RenderingDevice *rd, Size2i 
 					seam.b = euv2->indices;
 					seam.slice = mi.slice;
 					seams.push_back(seam);
-					slice_seam_count.write[mi.slice]++;
+					slice_seam_count.write()[mi.slice]++;
 					euv2->seam_found = true;
 				}
 			}
@@ -398,7 +398,7 @@ void LightmapperRD::_create_acceleration_structures(RenderingDevice *rd, Size2i 
 			box_array.push_back(box);
 
 			triangles.push_back(t);
-			slice_triangle_count.write[t.slice]++;
+			slice_triangle_count.write()[t.slice]++;
 		}
 	}
 
@@ -461,8 +461,8 @@ void LightmapperRD::_create_acceleration_structures(RenderingDevice *rd, Size2i 
 		for (int j = 0; j < grid_size; j++) {
 			for (int k = 0; k < grid_size; k++) {
 				uint32_t index = i * (grid_size * grid_size) + j * grid_size + k;
-				grid_indices.write[index * 2] = float(i) / grid_size * 255;
-				grid_indices.write[index * 2 + 1] = float(j) / grid_size * 255;
+				grid_indices.write()[index * 2] = float(i) / grid_size * 255;
+				grid_indices.write()[index * 2 + 1] = float(j) / grid_size * 255;
 			}
 		}
 	}
@@ -475,7 +475,7 @@ void LightmapperRD::_create_acceleration_structures(RenderingDevice *rd, Size2i 
 		for (int j = 0; j < grid_usage.size(); j++) {
 			uint32_t ofs = i * grid_size * grid_size + j;
 			uint32_t count = grid_indices[ofs * 2];
-			grid_usage.write[j] = count > 0 ? 255 : 0;
+			grid_usage.write()[j] = count > 0 ? 255 : 0;
 		}
 
 		Ref<Image> img;
@@ -494,8 +494,8 @@ void LightmapperRD::_create_acceleration_structures(RenderingDevice *rd, Size2i 
 	Vector<Vector2i> seam_buffer_vec;
 	seam_buffer_vec.resize(seams.size() * 2);
 	for (uint32_t i = 0; i < seams.size(); i++) {
-		seam_buffer_vec.write[i * 2 + 0] = seams[i].a;
-		seam_buffer_vec.write[i * 2 + 1] = seams[i].b;
+		seam_buffer_vec.write()[i * 2 + 0] = seams[i].a;
+		seam_buffer_vec.write()[i * 2 + 1] = seams[i].b;
 	}
 
 	{ //buffers
@@ -543,7 +543,7 @@ void LightmapperRD::_create_acceleration_structures(RenderingDevice *rd, Size2i 
 		texdata.resize(1);
 		//grid and indices
 		tf.format = RD::DATA_FORMAT_R32G32_UINT;
-		texdata.write[0] = grid_indices.to_byte_array();
+		texdata.write()[0] = grid_indices.to_byte_array();
 		grid_texture = rd->texture_create(tf, RD::TextureView(), texdata);
 	}
 }
@@ -1196,8 +1196,8 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 
 		RID secondary_uniform_set[2];
 		secondary_uniform_set[0] = rd->uniform_set_create(uniforms, compute_shader_secondary, 1);
-		uniforms.write[0].ids.write[0] = light_source_tex;
-		uniforms.write[1].ids.write[0] = light_dest_tex;
+		uniforms.write()[0].ids.write()[0] = light_source_tex;
+		uniforms.write()[1].ids.write()[0] = light_dest_tex;
 		secondary_uniform_set[1] = rd->uniform_set_create(uniforms, compute_shader_secondary, 1);
 
 		switch (p_quality) {
@@ -1548,8 +1548,8 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 
 		bool debug = false;
 		RD::PipelineColorBlendState bs = RD::PipelineColorBlendState::create_blend(1);
-		bs.attachments.write[0].src_alpha_blend_factor = RD::BLEND_FACTOR_ZERO;
-		bs.attachments.write[0].dst_alpha_blend_factor = RD::BLEND_FACTOR_ONE;
+		bs.attachments.write()[0].src_alpha_blend_factor = RD::BLEND_FACTOR_ZERO;
+		bs.attachments.write()[0].dst_alpha_blend_factor = RD::BLEND_FACTOR_ONE;
 
 		RD::PipelineDepthStencilState ds;
 		ds.enable_depth_test = true;

@@ -139,7 +139,7 @@ Ref<Material> EditorSceneImporterMesh::get_surface_material(int p_surface) const
 
 void EditorSceneImporterMesh::set_surface_material(int p_surface, const Ref<Material> &p_material) {
 	ERR_FAIL_INDEX(p_surface, surfaces.size());
-	surfaces.write[p_surface].material = p_material;
+	surfaces.write()[p_surface].material = p_material;
 }
 
 Basis EditorSceneImporterMesh::compute_rotation_matrix_from_ortho_6d(Vector3 p_x_raw, Vector3 p_y_raw) {
@@ -173,7 +173,7 @@ void EditorSceneImporterMesh::generate_lods() {
 			continue;
 		}
 
-		surfaces.write[i].lods.clear();
+		surfaces.write()[i].lods.clear();
 		Vector<Vector3> vertices = surfaces[i].arrays[RS::ARRAY_VERTEX];
 		Vector<int> indices = surfaces[i].arrays[RS::ARRAY_INDEX];
 		if (indices.size() == 0) {
@@ -195,16 +195,16 @@ void EditorSceneImporterMesh::generate_lods() {
 				basis = compute_rotation_matrix_from_ortho_6d(basis_x, basis_y);
 				basis_x = basis.get_axis(0);
 				basis_y = basis.get_axis(1);
-				attributes.write[normal_i * attribute_count + 0] = basis_x.x;
-				attributes.write[normal_i * attribute_count + 1] = basis_x.y;
-				attributes.write[normal_i * attribute_count + 2] = basis_x.z;
-				attributes.write[normal_i * attribute_count + 3] = basis_y.x;
-				attributes.write[normal_i * attribute_count + 4] = basis_y.y;
-				attributes.write[normal_i * attribute_count + 5] = basis_y.z;
+				attributes.write()[normal_i * attribute_count + 0] = basis_x.x;
+				attributes.write()[normal_i * attribute_count + 1] = basis_x.y;
+				attributes.write()[normal_i * attribute_count + 2] = basis_x.z;
+				attributes.write()[normal_i * attribute_count + 3] = basis_y.x;
+				attributes.write()[normal_i * attribute_count + 4] = basis_y.y;
+				attributes.write()[normal_i * attribute_count + 5] = basis_y.z;
 			}
 			normal_weights.resize(vertex_count);
 			for (int32_t weight_i = 0; weight_i < normal_weights.size(); weight_i++) {
-				normal_weights.write[weight_i] = 1.0;
+				normal_weights.write()[weight_i] = 1.0;
 			}
 		} else {
 			attribute_count = 0;
@@ -233,8 +233,8 @@ void EditorSceneImporterMesh::generate_lods() {
 			}
 			new_indices.resize(new_len);
 			lod.indices = new_indices;
-			print_line("Lod " + itos(surfaces.write[i].lods.size()) + " begin with " + itos(indices.size() / 3) + " triangles and shoot for " + itos(index_target / 3) + " triangles. Got " + itos(new_len / 3) + " triangles. Lod screen ratio " + rtos(lod.distance));
-			surfaces.write[i].lods.push_back(lod);
+			print_line("Lod " + itos(surfaces.write()[i].lods.size()) + " begin with " + itos(indices.size() / 3) + " triangles and shoot for " + itos(index_target / 3) + " triangles. Got " + itos(new_len / 3) + " triangles. Lod screen ratio " + rtos(lod.distance));
+			surfaces.write()[i].lods.push_back(lod);
 			index_target *= threshold;
 		}
 	}
@@ -584,7 +584,7 @@ Ref<NavigationMesh> EditorSceneImporterMesh::create_navigation_mesh() {
 	Vector<Vector3> vertices;
 	vertices.resize(unique_vertices.size());
 	for (Map<Vector3, int>::Element *E = unique_vertices.front(); E; E = E->next()) {
-		vertices.write[E->get()] = E->key();
+		vertices.write()[E->get()] = E->key();
 	}
 
 	Ref<NavigationMesh> nm;
@@ -594,9 +594,9 @@ Ref<NavigationMesh> EditorSceneImporterMesh::create_navigation_mesh() {
 	Vector<int> v3;
 	v3.resize(3);
 	for (uint32_t i = 0; i < face_indices.size(); i += 3) {
-		v3.write[0] = face_indices[i + 0];
-		v3.write[1] = face_indices[i + 1];
-		v3.write[2] = face_indices[i + 2];
+		v3.write()[0] = face_indices[i + 0];
+		v3.write()[1] = face_indices[i + 1];
+		v3.write()[2] = face_indices[i + 2];
 		nm->add_polygon(v3);
 	}
 

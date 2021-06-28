@@ -409,7 +409,7 @@ void RendererSceneSkyRD::ReflectionData::update_reflection_data(int p_size, int 
 			layer.mipmaps.resize(mipmaps);
 			layer.views.resize(mipmaps);
 			for (int j = 0; j < mipmaps; j++) {
-				ReflectionData::Layer::Mipmap &mm = layer.mipmaps.write[j];
+				ReflectionData::Layer::Mipmap &mm = layer.mipmaps.write()[j];
 				mm.size.width = mmw;
 				mm.size.height = mmh;
 				for (int k = 0; k < 6; k++) {
@@ -419,7 +419,7 @@ void RendererSceneSkyRD::ReflectionData::update_reflection_data(int p_size, int 
 					mm.framebuffers[k] = RD::get_singleton()->framebuffer_create(fbtex);
 				}
 
-				layer.views.write[j] = RD::get_singleton()->texture_create_shared_from_slice(RD::TextureView(), p_base_cube, p_base_layer + i * 6, j, RD::TEXTURE_SLICE_CUBEMAP);
+				layer.views.write()[j] = RD::get_singleton()->texture_create_shared_from_slice(RD::TextureView(), p_base_cube, p_base_layer + i * 6, j, RD::TEXTURE_SLICE_CUBEMAP);
 
 				mmw = MAX(1, mmw >> 1);
 				mmh = MAX(1, mmh >> 1);
@@ -437,7 +437,7 @@ void RendererSceneSkyRD::ReflectionData::update_reflection_data(int p_size, int 
 		layer.mipmaps.resize(mipmaps);
 		layer.views.resize(mipmaps);
 		for (int j = 0; j < mipmaps; j++) {
-			ReflectionData::Layer::Mipmap &mm = layer.mipmaps.write[j];
+			ReflectionData::Layer::Mipmap &mm = layer.mipmaps.write()[j];
 			mm.size.width = mmw;
 			mm.size.height = mmh;
 			for (int k = 0; k < 6; k++) {
@@ -447,7 +447,7 @@ void RendererSceneSkyRD::ReflectionData::update_reflection_data(int p_size, int 
 				mm.framebuffers[k] = RD::get_singleton()->framebuffer_create(fbtex);
 			}
 
-			layer.views.write[j] = RD::get_singleton()->texture_create_shared_from_slice(RD::TextureView(), p_base_cube, p_base_layer, j, RD::TEXTURE_SLICE_CUBEMAP);
+			layer.views.write()[j] = RD::get_singleton()->texture_create_shared_from_slice(RD::TextureView(), p_base_cube, p_base_layer, j, RD::TEXTURE_SLICE_CUBEMAP);
 
 			mmw = MAX(1, mmw >> 1);
 			mmh = MAX(1, mmh >> 1);
@@ -473,7 +473,7 @@ void RendererSceneSkyRD::ReflectionData::update_reflection_data(int p_size, int 
 		uint32_t mmh = 64;
 		downsampled_layer.mipmaps.resize(7);
 		for (int j = 0; j < downsampled_layer.mipmaps.size(); j++) {
-			ReflectionData::DownsampleLayer::Mipmap &mm = downsampled_layer.mipmaps.write[j];
+			ReflectionData::DownsampleLayer::Mipmap &mm = downsampled_layer.mipmaps.write()[j];
 			mm.size.width = mmw;
 			mm.size.height = mmh;
 			mm.view = RD::get_singleton()->texture_create_shared_from_slice(RD::TextureView(), downsampled_radiance_cubemap, 0, j, RD::TEXTURE_SLICE_CUBEMAP);

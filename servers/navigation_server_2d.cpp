@@ -124,7 +124,7 @@ static Vector<Vector2> vector_v3_to_v2(const Vector<Vector3> &d) {
 	Vector<Vector2> nd;
 	nd.resize(d.size());
 	for (int i(0); i < nd.size(); i++) {
-		nd.write[i] = v3_to_v2(d[i]);
+		nd.write()[i] = v3_to_v2(d[i]);
 	}
 	return nd;
 }

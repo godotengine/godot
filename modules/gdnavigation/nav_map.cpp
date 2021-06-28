@@ -119,8 +119,8 @@ Vector<Vector3> NavMap::get_path(Vector3 p_origin, Vector3 p_destination, bool p
 	if (begin_poly == end_poly) {
 		Vector<Vector3> path;
 		path.resize(2);
-		path.write[0] = begin_point;
-		path.write[1] = end_point;
+		path.write()[0] = begin_point;
+		path.write()[1] = end_point;
 		return path;
 	}
 
@@ -616,8 +616,8 @@ void NavMap::sync() {
 		for (Map<gd::EdgeKey, Vector<gd::Edge::Connection>>::Element *E = connections.front(); E; E = E->next()) {
 			if (E->get().size() == 2) {
 				// Connect edge that are shared in different polygons.
-				gd::Edge::Connection &c1 = E->get().write[0];
-				gd::Edge::Connection &c2 = E->get().write[1];
+				gd::Edge::Connection &c1 = E->get().write()[0];
+				gd::Edge::Connection &c2 = E->get().write()[1];
 				c1.polygon->edges[c1.edge].connections.push_back(c2);
 				c2.polygon->edges[c2.edge].connections.push_back(c1);
 				// Note: The pathway_start/end are full for those connection and do not need to be modified.

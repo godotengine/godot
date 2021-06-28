@@ -171,7 +171,7 @@ void ScriptEditorDebugger::_file_selected(const String &p_file) {
 
 			// signatures
 			for (int i = 0; i < Performance::MONITOR_MAX; i++) {
-				line.write[i] = Performance::get_singleton()->get_monitor_name(Performance::Monitor(i));
+				line.write()[i] = Performance::get_singleton()->get_monitor_name(Performance::Monitor(i));
 			}
 			file->store_csv_line(line);
 
@@ -180,17 +180,17 @@ void ScriptEditorDebugger::_file_selected(const String &p_file) {
 			iterators.resize(Performance::MONITOR_MAX);
 			bool continue_iteration = false;
 			for (int i = 0; i < Performance::MONITOR_MAX; i++) {
-				iterators.write[i] = performance_profiler->get_monitor_data(Performance::get_singleton()->get_monitor_name(Performance::Monitor(i)))->back();
+				iterators.write()[i] = performance_profiler->get_monitor_data(Performance::get_singleton()->get_monitor_name(Performance::Monitor(i)))->back();
 				continue_iteration = continue_iteration || iterators[i];
 			}
 			while (continue_iteration) {
 				continue_iteration = false;
 				for (int i = 0; i < Performance::MONITOR_MAX; i++) {
 					if (iterators[i]) {
-						line.write[i] = String::num_real(iterators[i]->get());
-						iterators.write[i] = iterators[i]->prev();
+						line.write()[i] = String::num_real(iterators[i]->get());
+						iterators.write()[i] = iterators[i]->prev();
 					} else {
-						line.write[i] = "";
+						line.write()[i] = "";
 					}
 					continue_iteration = continue_iteration || iterators[i];
 				}
@@ -215,7 +215,7 @@ void ScriptEditorDebugger::_file_selected(const String &p_file) {
 			Vector<String> headers;
 			headers.resize(vmem_tree->get_columns());
 			for (int i = 0; i < vmem_tree->get_columns(); ++i) {
-				headers.write[i] = vmem_tree->get_column_title(i);
+				headers.write()[i] = vmem_tree->get_column_title(i);
 			}
 			file->store_csv_line(headers);
 
@@ -225,7 +225,7 @@ void ScriptEditorDebugger::_file_selected(const String &p_file) {
 					Vector<String> values;
 					values.resize(vmem_tree->get_columns());
 					for (int i = 0; i < vmem_tree->get_columns(); ++i) {
-						values.write[i] = ti->get_text(i);
+						values.write()[i] = ti->get_text(i);
 					}
 					file->store_csv_line(values);
 
@@ -427,7 +427,7 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 		Vector<float> frame_data;
 		frame_data.resize(p_data.size());
 		for (int i = 0; i < p_data.size(); i++) {
-			frame_data.write[i] = p_data[i];
+			frame_data.write()[i] = p_data[i];
 		}
 		performance_profiler->add_profile_frame(frame_data);
 
@@ -636,7 +636,7 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 				item.signature = "categ::" + name + "::" + item.name;
 				item.name = item.name.capitalize();
 				c.total_time += item.total;
-				c.items.write[j] = item;
+				c.items.write()[j] = item;
 			}
 			metric.categories.push_back(c);
 		}
@@ -675,7 +675,7 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 			item.calls = calls;
 			item.self = self;
 			item.total = total;
-			funcs.items.write[i] = item;
+			funcs.items.write()[i] = item;
 		}
 
 		metric.categories.push_back(funcs);

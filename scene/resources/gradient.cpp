@@ -35,10 +35,10 @@
 Gradient::Gradient() {
 	//Set initial gradient transition from black to white
 	points.resize(2);
-	points.write[0].color = Color(0, 0, 0, 1);
-	points.write[0].offset = 0;
-	points.write[1].color = Color(1, 1, 1, 1);
-	points.write[1].offset = 1;
+	points.write()[0].color = Color(0, 0, 0, 1);
+	points.write()[0].offset = 0;
+	points.write()[1].color = Color(1, 1, 1, 1);
+	points.write()[1].offset = 1;
 }
 
 Gradient::~Gradient() {
@@ -72,7 +72,7 @@ Vector<float> Gradient::get_offsets() const {
 	Vector<float> offsets;
 	offsets.resize(points.size());
 	for (int i = 0; i < points.size(); i++) {
-		offsets.write[i] = points[i].offset;
+		offsets.write()[i] = points[i].offset;
 	}
 	return offsets;
 }
@@ -81,7 +81,7 @@ Vector<Color> Gradient::get_colors() const {
 	Vector<Color> colors;
 	colors.resize(points.size());
 	for (int i = 0; i < points.size(); i++) {
-		colors.write[i] = points[i].color;
+		colors.write()[i] = points[i].color;
 	}
 	return colors;
 }
@@ -89,7 +89,7 @@ Vector<Color> Gradient::get_colors() const {
 void Gradient::set_offsets(const Vector<float> &p_offsets) {
 	points.resize(p_offsets.size());
 	for (int i = 0; i < points.size(); i++) {
-		points.write[i].offset = p_offsets[i];
+		points.write()[i].offset = p_offsets[i];
 	}
 	is_sorted = false;
 	emit_signal(CoreStringNames::get_singleton()->changed);
@@ -101,7 +101,7 @@ void Gradient::set_colors(const Vector<Color> &p_colors) {
 	}
 	points.resize(p_colors.size());
 	for (int i = 0; i < points.size(); i++) {
-		points.write[i].color = p_colors[i];
+		points.write()[i].color = p_colors[i];
 	}
 	emit_signal(CoreStringNames::get_singleton()->changed);
 }
@@ -136,7 +136,7 @@ void Gradient::set_points(Vector<Gradient::Point> &p_points) {
 void Gradient::set_offset(int pos, const float offset) {
 	ERR_FAIL_INDEX(pos, points.size());
 	_update_sorting();
-	points.write[pos].offset = offset;
+	points.write()[pos].offset = offset;
 	is_sorted = false;
 	emit_signal(CoreStringNames::get_singleton()->changed);
 }
@@ -150,7 +150,7 @@ float Gradient::get_offset(int pos) {
 void Gradient::set_color(int pos, const Color &color) {
 	ERR_FAIL_INDEX(pos, points.size());
 	_update_sorting();
-	points.write[pos].color = color;
+	points.write()[pos].color = color;
 	emit_signal(CoreStringNames::get_singleton()->changed);
 }
 

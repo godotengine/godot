@@ -125,16 +125,16 @@ void Mesh::generate_debug_mesh_lines(Vector<Vector3> &r_lines) {
 	const Vector3 *ver_r = vertices.ptr();
 	for (int j = 0, x = 0, i = 0; i < triangles_num; j += 6, x += 3, ++i) {
 		// Triangle line 1
-		debug_lines.write[j + 0] = ver_r[ind_r[x + 0]];
-		debug_lines.write[j + 1] = ver_r[ind_r[x + 1]];
+		debug_lines.write()[j + 0] = ver_r[ind_r[x + 0]];
+		debug_lines.write()[j + 1] = ver_r[ind_r[x + 1]];
 
 		// Triangle line 2
-		debug_lines.write[j + 2] = ver_r[ind_r[x + 1]];
-		debug_lines.write[j + 3] = ver_r[ind_r[x + 2]];
+		debug_lines.write()[j + 2] = ver_r[ind_r[x + 1]];
+		debug_lines.write()[j + 3] = ver_r[ind_r[x + 2]];
 
 		// Triangle line 3
-		debug_lines.write[j + 4] = ver_r[ind_r[x + 2]];
-		debug_lines.write[j + 5] = ver_r[ind_r[x + 0]];
+		debug_lines.write()[j + 4] = ver_r[ind_r[x + 2]];
+		debug_lines.write()[j + 5] = ver_r[ind_r[x + 0]];
 	}
 
 	r_lines = debug_lines;
@@ -151,7 +151,7 @@ void Mesh::generate_debug_mesh_indices(Vector<Vector3> &r_points) {
 	int vertices_size = vertices.size();
 	r_points.resize(vertices_size);
 	for (int i = 0; i < vertices_size; ++i) {
-		r_points.write[i] = vertices[i];
+		r_points.write()[i] = vertices[i];
 	}
 }
 
@@ -844,7 +844,7 @@ bool ArrayMesh::_set(const StringName &p_name, const Variant &p_value) {
 				bone_aabb.resize(baabb.size());
 
 				for (int i = 0; i < baabb.size(); i++) {
-					bone_aabb.write[i] = baabb[i];
+					bone_aabb.write()[i] = baabb[i];
 				}
 			}
 
@@ -873,7 +873,7 @@ void ArrayMesh::_set_blend_shape_names(const PackedStringArray &p_names) {
 
 	blend_shapes.resize(p_names.size());
 	for (int i = 0; i < p_names.size(); i++) {
-		blend_shapes.write[i] = p_names[i];
+		blend_shapes.write()[i] = p_names[i];
 	}
 
 	if (mesh.is_valid()) {
@@ -885,7 +885,7 @@ PackedStringArray ArrayMesh::_get_blend_shape_names() const {
 	PackedStringArray sarr;
 	sarr.resize(blend_shapes.size());
 	for (int i = 0; i < blend_shapes.size(); i++) {
-		sarr.write[i] = blend_shapes[i];
+		sarr.write()[i] = blend_shapes[i];
 	}
 	return sarr;
 }
@@ -1259,7 +1259,7 @@ void ArrayMesh::set_blend_shape_name(int p_index, const StringName &p_name) {
 		} while (blend_shapes.find(name) != -1);
 	}
 
-	blend_shapes.write[p_index] = name;
+	blend_shapes.write()[p_index] = name;
 }
 
 void ArrayMesh::clear_blend_shapes() {
@@ -1308,7 +1308,7 @@ void ArrayMesh::surface_set_material(int p_idx, const Ref<Material> &p_material)
 	if (surfaces[p_idx].material == p_material) {
 		return;
 	}
-	surfaces.write[p_idx].material = p_material;
+	surfaces.write()[p_idx].material = p_material;
 	RenderingServer::get_singleton()->mesh_surface_set_material(mesh, p_idx, p_material.is_null() ? RID() : p_material->get_rid());
 
 	emit_changed();
@@ -1326,7 +1326,7 @@ int ArrayMesh::surface_find_by_name(const String &p_name) const {
 void ArrayMesh::surface_set_name(int p_idx, const String &p_name) {
 	ERR_FAIL_INDEX(p_idx, surfaces.size());
 
-	surfaces.write[p_idx].name = p_name;
+	surfaces.write()[p_idx].name = p_name;
 	emit_changed();
 }
 
@@ -1343,7 +1343,7 @@ void ArrayMesh::surface_update_region(int p_surface, int p_offset, const Vector<
 
 void ArrayMesh::surface_set_custom_aabb(int p_idx, const AABB &p_aabb) {
 	ERR_FAIL_INDEX(p_idx, surfaces.size());
-	surfaces.write[p_idx].aabb = p_aabb;
+	surfaces.write()[p_idx].aabb = p_aabb;
 	// set custom aabb too?
 	emit_changed();
 }
@@ -1396,8 +1396,8 @@ void ArrayMesh::regen_normal_maps() {
 	clear_surfaces();
 
 	for (int i = 0; i < surfs.size(); i++) {
-		surfs.write[i]->generate_tangents();
-		surfs.write[i]->commit(Ref<ArrayMesh>(this));
+		surfs.write()[i]->generate_tangents();
+		surfs.write()[i]->commit(Ref<ArrayMesh>(this));
 	}
 }
 

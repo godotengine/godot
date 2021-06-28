@@ -162,11 +162,11 @@ DynamicFontDataAdvanced::DataAtSize *DynamicFontDataAdvanced::get_data_for_size(
 				// Reset to default.
 				var.tag = amaster->axis[i].tag;
 				var.value = (double)amaster->axis[i].def / 65536.f;
-				coords.write[i] = amaster->axis[i].def;
+				coords.write()[i] = amaster->axis[i].def;
 
 				if (variations.has(var.tag)) {
 					var.value = variations[var.tag];
-					coords.write[i] = CLAMP(variations[var.tag] * 65536.f, amaster->axis[i].minimum, amaster->axis[i].maximum);
+					coords.write()[i] = CLAMP(variations[var.tag] * 65536.f, amaster->axis[i].minimum, amaster->axis[i].maximum);
 				}
 
 				hb_vars.push_back(var);
@@ -345,7 +345,7 @@ DynamicFontDataAdvanced::TexturePosition DynamicFontDataAdvanced::find_texture_p
 		}
 		tex.offsets.resize(texsize);
 		for (int i = 0; i < texsize; i++) { //zero offsets
-			tex.offsets.write[i] = 0;
+			tex.offsets.write()[i] = 0;
 		}
 
 		p_data->textures.push_back(tex);
@@ -378,7 +378,7 @@ DynamicFontDataAdvanced::Character DynamicFontDataAdvanced::bitmap_to_character(
 
 	//fit character in char texture
 
-	CharTexture &tex = p_data->textures.write[tex_pos.index];
+	CharTexture &tex = p_data->textures.write()[tex_pos.index];
 
 	{
 		uint8_t *wr = tex.imgdata.ptrw();
@@ -430,7 +430,7 @@ DynamicFontDataAdvanced::Character DynamicFontDataAdvanced::bitmap_to_character(
 
 	// update height array
 	for (int k = tex_pos.x; k < tex_pos.x + mw; k++) {
-		tex.offsets.write[k] = tex_pos.y + mh;
+		tex.offsets.write()[k] = tex_pos.y + mh;
 	}
 
 	Character chr;

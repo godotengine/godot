@@ -220,10 +220,10 @@ protected:
 		grid.resize(p_width);
 
 		for (int i = 0; i < p_width; i++) {
-			grid.write[i].resize(p_height);
+			grid.write()[i].resize(p_height);
 
 			for (int j = 0; j < p_height; j++) {
-				grid.write[i].write[j] = 1.0 + Math::random(-p_cellheight, p_cellheight);
+				grid.write()[i].write()[j] = 1.0 + Math::random(-p_cellheight, p_cellheight);
 			}
 		}
 

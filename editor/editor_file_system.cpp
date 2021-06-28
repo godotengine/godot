@@ -1959,7 +1959,7 @@ void EditorFileSystem::reimport_files(const Vector<String> &p_files) {
 		EditorFileSystemDirectory *fs = nullptr;
 		int cpos = -1;
 		if (_find_file(p_files[i], &fs, cpos)) {
-			fs->files.write[cpos]->import_group_file = group_file;
+			fs->files.write()[cpos]->import_group_file = group_file;
 		}
 	}
 

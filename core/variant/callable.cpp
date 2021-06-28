@@ -81,7 +81,7 @@ Callable Callable::bind(const Variant **p_arguments, int p_argcount) const {
 	Vector<Variant> args;
 	args.resize(p_argcount);
 	for (int i = 0; i < p_argcount; i++) {
-		args.write[i] = *p_arguments[i];
+		args.write()[i] = *p_arguments[i];
 	}
 	return Callable(memnew(CallableCustomBind(*this, args)));
 }

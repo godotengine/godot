@@ -589,7 +589,7 @@ bool Environment::is_glow_enabled() const {
 void Environment::set_glow_level(int p_level, float p_intensity) {
 	ERR_FAIL_INDEX(p_level, RS::MAX_GLOW_LEVELS);
 
-	glow_levels.write[p_level] = p_intensity;
+	glow_levels.write()[p_level] = p_intensity;
 
 	_update_glow();
 }
@@ -692,7 +692,7 @@ void Environment::_update_glow() {
 			size += glow_levels[i];
 		}
 		for (int i = 0; i < glow_levels.size(); i++) {
-			normalized_levels.write[i] = glow_levels[i] / size;
+			normalized_levels.write()[i] = glow_levels[i] / size;
 		}
 	} else {
 		normalized_levels = glow_levels;
@@ -1406,13 +1406,13 @@ Environment::Environment() {
 	set_camera_feed_id(bg_camera_feed_id);
 
 	glow_levels.resize(7);
-	glow_levels.write[0] = 0.0;
-	glow_levels.write[1] = 0.0;
-	glow_levels.write[2] = 1.0;
-	glow_levels.write[3] = 0.0;
-	glow_levels.write[4] = 1.0;
-	glow_levels.write[5] = 0.0;
-	glow_levels.write[6] = 0.0;
+	glow_levels.write()[0] = 0.0;
+	glow_levels.write()[1] = 0.0;
+	glow_levels.write()[2] = 1.0;
+	glow_levels.write()[3] = 0.0;
+	glow_levels.write()[4] = 1.0;
+	glow_levels.write()[5] = 0.0;
+	glow_levels.write()[6] = 0.0;
 
 	_update_ambient_light();
 	_update_tonemap();

@@ -39,7 +39,7 @@
 FabrikInverseKinematic::ChainItem *FabrikInverseKinematic::ChainItem::find_child(const BoneId p_bone_id) {
 	for (int i = children.size() - 1; 0 <= i; --i) {
 		if (p_bone_id == children[i].bone) {
-			return &children.write[i];
+			return &children.write()[i];
 		}
 	}
 	return nullptr;
@@ -48,9 +48,9 @@ FabrikInverseKinematic::ChainItem *FabrikInverseKinematic::ChainItem::find_child
 FabrikInverseKinematic::ChainItem *FabrikInverseKinematic::ChainItem::add_child(const BoneId p_bone_id) {
 	const int infant_child_id = children.size();
 	children.resize(infant_child_id + 1);
-	children.write[infant_child_id].bone = p_bone_id;
-	children.write[infant_child_id].parent_item = this;
-	return &children.write[infant_child_id];
+	children.write()[infant_child_id].bone = p_bone_id;
+	children.write()[infant_child_id].parent_item = this;
+	return &children.write()[infant_child_id];
 }
 
 /// Build a chain that starts from the root to tip
@@ -81,7 +81,7 @@ bool FabrikInverseKinematic::build_chain(Task *p_task, bool p_force_simple_chain
 		// Picks all IDs that composing a single chain in reverse order (except the root)
 		BoneId chain_sub_tip(ee->tip_bone);
 		while (chain_sub_tip > p_task->root_bone) {
-			chain_ids.write[sub_chain_size++] = chain_sub_tip;
+			chain_ids.write()[sub_chain_size++] = chain_sub_tip;
 			chain_sub_tip = p_task->skeleton->get_bone_parent(chain_sub_tip);
 		}
 
@@ -115,8 +115,8 @@ bool FabrikInverseKinematic::build_chain(Task *p_task, bool p_force_simple_chain
 		}
 
 		// Initialize current tip
-		chain.tips.write[x].chain_item = sub_chain;
-		chain.tips.write[x].end_effector = ee;
+		chain.tips.write()[x].chain_item = sub_chain;
+		chain.tips.write()[x].end_effector = ee;
 
 		if (p_force_simple_chain) {
 			// NOTE:
@@ -188,7 +188,7 @@ void FabrikInverseKinematic::solve_simple_forwards(Chain &r_chain, bool p_solve_
 		sub_chain_root->current_pos = origin;
 
 		if (!sub_chain_root->children.is_empty()) {
-			ChainItem &child(sub_chain_root->children.write[0]);
+			ChainItem &child(sub_chain_root->children.write()[0]);
 
 			// Is not tip
 			// So calculate next origin location
@@ -243,13 +243,13 @@ void FabrikInverseKinematic::set_goal(Task *p_task, const Transform3D &p_goal) {
 void FabrikInverseKinematic::make_goal(Task *p_task, const Transform3D &p_inverse_transf, real_t blending_delta) {
 	if (blending_delta >= 0.99f) {
 		// Update the end_effector (local transform) without blending
-		p_task->end_effectors.write[0].goal_transform = p_inverse_transf * p_task->goal_global_transform;
+		p_task->end_effectors.write()[0].goal_transform = p_inverse_transf * p_task->goal_global_transform;
 	} else {
 		// End effector in local transform
 		const Transform3D end_effector_pose(p_task->skeleton->get_bone_global_pose_no_override(p_task->end_effectors[0].tip_bone));
 
 		// Update the end_effector (local transform) by blending with current pose
-		p_task->end_effectors.write[0].goal_transform = end_effector_pose.interpolate_with(p_inverse_transf * p_task->goal_global_transform, blending_delta);
+		p_task->end_effectors.write()[0].goal_transform = end_effector_pose.interpolate_with(p_inverse_transf * p_task->goal_global_transform, blending_delta);
 	}
 }
 
@@ -261,7 +261,7 @@ void FabrikInverseKinematic::solve(Task *p_task, real_t blending_delta, bool ove
 			p_task->skeleton->set_bone_global_pose_override(ci->bone, ci->initial_transform, 0.0, false);
 
 			if (!ci->children.is_empty()) {
-				ci = &ci->children.write[0];
+				ci = &ci->children.write()[0];
 			} else {
 				ci = nullptr;
 			}
@@ -316,7 +316,7 @@ void FabrikInverseKinematic::solve(Task *p_task, real_t blending_delta, bool ove
 		p_task->skeleton->set_bone_global_pose_override(ci->bone, new_bone_pose, 1.0, true);
 
 		if (!ci->children.is_empty()) {
-			ci = &ci->children.write[0];
+			ci = &ci->children.write()[0];
 		} else {
 			ci = nullptr;
 		}

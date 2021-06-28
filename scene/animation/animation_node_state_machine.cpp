@@ -617,7 +617,7 @@ void AnimationNodeStateMachine::remove_node(const StringName &p_name) {
 
 	for (int i = 0; i < transitions.size(); i++) {
 		if (transitions[i].from == p_name || transitions[i].to == p_name) {
-			transitions.write[i].transition->disconnect("advance_condition_changed", callable_mp(this, &AnimationNodeStateMachine::_tree_changed));
+			transitions.write()[i].transition->disconnect("advance_condition_changed", callable_mp(this, &AnimationNodeStateMachine::_tree_changed));
 			transitions.remove(i);
 			i--;
 		}
@@ -648,11 +648,11 @@ void AnimationNodeStateMachine::rename_node(const StringName &p_name, const Stri
 
 	for (int i = 0; i < transitions.size(); i++) {
 		if (transitions[i].from == p_name) {
-			transitions.write[i].from = p_new_name;
+			transitions.write()[i].from = p_new_name;
 		}
 
 		if (transitions[i].to == p_name) {
-			transitions.write[i].to = p_new_name;
+			transitions.write()[i].to = p_new_name;
 		}
 	}
 
@@ -744,7 +744,7 @@ int AnimationNodeStateMachine::get_transition_count() const {
 void AnimationNodeStateMachine::remove_transition(const StringName &p_from, const StringName &p_to) {
 	for (int i = 0; i < transitions.size(); i++) {
 		if (transitions[i].from == p_from && transitions[i].to == p_to) {
-			transitions.write[i].transition->disconnect("advance_condition_changed", callable_mp(this, &AnimationNodeStateMachine::_tree_changed));
+			transitions.write()[i].transition->disconnect("advance_condition_changed", callable_mp(this, &AnimationNodeStateMachine::_tree_changed));
 			transitions.remove(i);
 			return;
 		}
@@ -757,7 +757,7 @@ void AnimationNodeStateMachine::remove_transition(const StringName &p_from, cons
 
 void AnimationNodeStateMachine::remove_transition_by_index(int p_transition) {
 	ERR_FAIL_INDEX(p_transition, transitions.size());
-	transitions.write[p_transition].transition->disconnect("advance_condition_changed", callable_mp(this, &AnimationNodeStateMachine::_tree_changed));
+	transitions.write()[p_transition].transition->disconnect("advance_condition_changed", callable_mp(this, &AnimationNodeStateMachine::_tree_changed));
 	transitions.remove(p_transition);
 	/*if (playing) {
 		path.clear();

@@ -309,7 +309,7 @@ void SkeletonModification2DCCDIK::ccdik_joint_update_bone2d_cache(int p_joint_id
 		return;
 	}
 
-	ccdik_data_chain.write[p_joint_idx].bone2d_node_cache = ObjectID();
+	ccdik_data_chain.write()[p_joint_idx].bone2d_node_cache = ObjectID();
 	if (stack->skeleton) {
 		if (stack->skeleton->is_inside_tree()) {
 			if (stack->skeleton->has_node(ccdik_data_chain[p_joint_idx].bone2d_node)) {
@@ -318,11 +318,11 @@ void SkeletonModification2DCCDIK::ccdik_joint_update_bone2d_cache(int p_joint_id
 						"Cannot update CCDIK joint " + itos(p_joint_idx) + " Bone2D cache: node is this modification's skeleton or cannot be found!");
 				ERR_FAIL_COND_MSG(!node->is_inside_tree(),
 						"Cannot update CCDIK joint " + itos(p_joint_idx) + " Bone2D cache: node is not in the scene tree!");
-				ccdik_data_chain.write[p_joint_idx].bone2d_node_cache = node->get_instance_id();
+				ccdik_data_chain.write()[p_joint_idx].bone2d_node_cache = node->get_instance_id();
 
 				Bone2D *bone = Object::cast_to<Bone2D>(node);
 				if (bone) {
-					ccdik_data_chain.write[p_joint_idx].bone_idx = bone->get_index_in_skeleton();
+					ccdik_data_chain.write()[p_joint_idx].bone_idx = bone->get_index_in_skeleton();
 				} else {
 					ERR_FAIL_MSG("CCDIK joint " + itos(p_joint_idx) + " Bone2D cache: Nodepath to Bone2D is not a Bone2D node!");
 				}
@@ -360,7 +360,7 @@ int SkeletonModification2DCCDIK::get_ccdik_data_chain_length() {
 
 void SkeletonModification2DCCDIK::set_ccdik_joint_bone2d_node(int p_joint_idx, const NodePath &p_target_node) {
 	ERR_FAIL_INDEX_MSG(p_joint_idx, ccdik_data_chain.size(), "CCDIK joint out of range!");
-	ccdik_data_chain.write[p_joint_idx].bone2d_node = p_target_node;
+	ccdik_data_chain.write()[p_joint_idx].bone2d_node = p_target_node;
 	ccdik_joint_update_bone2d_cache(p_joint_idx);
 
 	notify_property_list_changed();
@@ -378,16 +378,16 @@ void SkeletonModification2DCCDIK::set_ccdik_joint_bone_index(int p_joint_idx, in
 	if (is_setup) {
 		if (stack->skeleton) {
 			ERR_FAIL_INDEX_MSG(p_bone_idx, stack->skeleton->get_bone_count(), "Passed-in Bone index is out of range!");
-			ccdik_data_chain.write[p_joint_idx].bone_idx = p_bone_idx;
-			ccdik_data_chain.write[p_joint_idx].bone2d_node_cache = stack->skeleton->get_bone(p_bone_idx)->get_instance_id();
-			ccdik_data_chain.write[p_joint_idx].bone2d_node = stack->skeleton->get_path_to(stack->skeleton->get_bone(p_bone_idx));
+			ccdik_data_chain.write()[p_joint_idx].bone_idx = p_bone_idx;
+			ccdik_data_chain.write()[p_joint_idx].bone2d_node_cache = stack->skeleton->get_bone(p_bone_idx)->get_instance_id();
+			ccdik_data_chain.write()[p_joint_idx].bone2d_node = stack->skeleton->get_path_to(stack->skeleton->get_bone(p_bone_idx));
 		} else {
 			WARN_PRINT("Cannot verify the CCDIK joint " + itos(p_joint_idx) + " bone index for this modification...");
-			ccdik_data_chain.write[p_joint_idx].bone_idx = p_bone_idx;
+			ccdik_data_chain.write()[p_joint_idx].bone_idx = p_bone_idx;
 		}
 	} else {
 		WARN_PRINT("Cannot verify the CCDIK joint " + itos(p_joint_idx) + " bone index for this modification...");
-		ccdik_data_chain.write[p_joint_idx].bone_idx = p_bone_idx;
+		ccdik_data_chain.write()[p_joint_idx].bone_idx = p_bone_idx;
 	}
 
 	notify_property_list_changed();
@@ -400,7 +400,7 @@ int SkeletonModification2DCCDIK::get_ccdik_joint_bone_index(int p_joint_idx) con
 
 void SkeletonModification2DCCDIK::set_ccdik_joint_rotate_from_joint(int p_joint_idx, bool p_rotate_from_joint) {
 	ERR_FAIL_INDEX_MSG(p_joint_idx, ccdik_data_chain.size(), "CCDIK joint out of range!");
-	ccdik_data_chain.write[p_joint_idx].rotate_from_joint = p_rotate_from_joint;
+	ccdik_data_chain.write()[p_joint_idx].rotate_from_joint = p_rotate_from_joint;
 }
 
 bool SkeletonModification2DCCDIK::get_ccdik_joint_rotate_from_joint(int p_joint_idx) const {
@@ -410,7 +410,7 @@ bool SkeletonModification2DCCDIK::get_ccdik_joint_rotate_from_joint(int p_joint_
 
 void SkeletonModification2DCCDIK::set_ccdik_joint_enable_constraint(int p_joint_idx, bool p_constraint) {
 	ERR_FAIL_INDEX_MSG(p_joint_idx, ccdik_data_chain.size(), "CCDIK joint out of range!");
-	ccdik_data_chain.write[p_joint_idx].enable_constraint = p_constraint;
+	ccdik_data_chain.write()[p_joint_idx].enable_constraint = p_constraint;
 	notify_property_list_changed();
 
 #ifdef TOOLS_ENABLED
@@ -427,7 +427,7 @@ bool SkeletonModification2DCCDIK::get_ccdik_joint_enable_constraint(int p_joint_
 
 void SkeletonModification2DCCDIK::set_ccdik_joint_constraint_angle_min(int p_joint_idx, float p_angle_min) {
 	ERR_FAIL_INDEX_MSG(p_joint_idx, ccdik_data_chain.size(), "CCDIK joint out of range!");
-	ccdik_data_chain.write[p_joint_idx].constraint_angle_min = p_angle_min;
+	ccdik_data_chain.write()[p_joint_idx].constraint_angle_min = p_angle_min;
 
 #ifdef TOOLS_ENABLED
 	if (stack && is_setup) {
@@ -443,7 +443,7 @@ float SkeletonModification2DCCDIK::get_ccdik_joint_constraint_angle_min(int p_jo
 
 void SkeletonModification2DCCDIK::set_ccdik_joint_constraint_angle_max(int p_joint_idx, float p_angle_max) {
 	ERR_FAIL_INDEX_MSG(p_joint_idx, ccdik_data_chain.size(), "CCDIK joint out of range!");
-	ccdik_data_chain.write[p_joint_idx].constraint_angle_max = p_angle_max;
+	ccdik_data_chain.write()[p_joint_idx].constraint_angle_max = p_angle_max;
 
 #ifdef TOOLS_ENABLED
 	if (stack && is_setup) {
@@ -459,7 +459,7 @@ float SkeletonModification2DCCDIK::get_ccdik_joint_constraint_angle_max(int p_jo
 
 void SkeletonModification2DCCDIK::set_ccdik_joint_constraint_angle_invert(int p_joint_idx, bool p_invert) {
 	ERR_FAIL_INDEX_MSG(p_joint_idx, ccdik_data_chain.size(), "CCDIK joint out of range!");
-	ccdik_data_chain.write[p_joint_idx].constraint_angle_invert = p_invert;
+	ccdik_data_chain.write()[p_joint_idx].constraint_angle_invert = p_invert;
 
 #ifdef TOOLS_ENABLED
 	if (stack && is_setup) {
@@ -475,7 +475,7 @@ bool SkeletonModification2DCCDIK::get_ccdik_joint_constraint_angle_invert(int p_
 
 void SkeletonModification2DCCDIK::set_ccdik_joint_constraint_in_localspace(int p_joint_idx, bool p_constraint_in_localspace) {
 	ERR_FAIL_INDEX_MSG(p_joint_idx, ccdik_data_chain.size(), "CCDIK joint out of range!");
-	ccdik_data_chain.write[p_joint_idx].constraint_in_localspace = p_constraint_in_localspace;
+	ccdik_data_chain.write()[p_joint_idx].constraint_in_localspace = p_constraint_in_localspace;
 
 #ifdef TOOLS_ENABLED
 	if (stack && is_setup) {
@@ -491,7 +491,7 @@ bool SkeletonModification2DCCDIK::get_ccdik_joint_constraint_in_localspace(int p
 
 void SkeletonModification2DCCDIK::set_ccdik_joint_editor_draw_gizmo(int p_joint_idx, bool p_draw_gizmo) {
 	ERR_FAIL_INDEX_MSG(p_joint_idx, ccdik_data_chain.size(), "CCDIK joint out of range!");
-	ccdik_data_chain.write[p_joint_idx].editor_draw_gizmo = p_draw_gizmo;
+	ccdik_data_chain.write()[p_joint_idx].editor_draw_gizmo = p_draw_gizmo;
 
 #ifdef TOOLS_ENABLED
 	if (stack && is_setup) {
