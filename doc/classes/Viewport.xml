@@ -291,6 +291,7 @@
 		</member>
 		<member name="usage" type="int" setter="set_usage" getter="get_usage" enum="Viewport.Usage" default="2">
 			The rendering mode of viewport.
+			[b]Note:[/b] If set to [constant USAGE_2D] or [constant USAGE_2D_NO_SAMPLING], [member hdr] will have no effect when enabled since HDR is not supported for 2D.
 		</member>
 		<member name="use_32_bpc_depth" type="bool" setter="set_use_32_bpc_depth" getter="get_use_32_bpc_depth" default="false">
 			If [code]true[/code], allocates the viewport's framebuffer with full floating-point precision (32-bit) instead of half floating-point precision (16-bit). Only effective when [member hdr] is also enabled.
