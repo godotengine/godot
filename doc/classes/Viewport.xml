@@ -315,6 +315,7 @@
 		</member>
 		<member name="usage" type="int" setter="set_usage" getter="get_usage" enum="Viewport.Usage" default="2">
 			The rendering mode of viewport.
+			[b]Note:[/b] If set to [constant USAGE_2D] or [constant USAGE_2D_NO_SAMPLING], [member hdr] will have no effect when enabled since HDR is not supported for 2D.
 		</member>
 		<member name="world" type="World" setter="set_world" getter="get_world">
 			The custom [World] which can be used as 3D environment source.
