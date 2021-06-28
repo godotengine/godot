@@ -158,6 +158,10 @@ void ShaderTextEditor::_load_theme_settings() {
 	text_editor->add_comment_delimiter("/*", "*/", false);
 	text_editor->add_comment_delimiter("//", "", true);
 
+	if (!text_editor->has_auto_brace_completion_open_key("/*")) {
+		text_editor->add_auto_brace_completion_pair("/*", "*/");
+	}
+
 	if (warnings_panel) {
 		// Warnings panel
 		warnings_panel->add_theme_font_override("normal_font", EditorNode::get_singleton()->get_gui_base()->get_theme_font(SNAME("main"), SNAME("EditorFonts")));

@@ -66,6 +66,19 @@ private:
 
 	void _new_line(bool p_split_current_line = true, bool p_above = false);
 
+	/* Auto brace completion */
+	bool auto_brace_completion_enabled = false;
+
+	/* BracePair open_key must be uniquie and ordered by length. */
+	struct BracePair {
+		String open_key = "";
+		String close_key = "";
+	};
+	Vector<BracePair> auto_brace_completion_pairs;
+
+	int _get_auto_brace_pair_open_at_pos(int p_line, int p_col);
+	int _get_auto_brace_pair_close_at_pos(int p_line, int p_col);
+
 	/* Main Gutter */
 	enum MainGutterType {
 		MAIN_GUTTER_BREAKPOINT = 0x01,
@@ -217,7 +230,9 @@ protected:
 	static void _bind_methods();
 
 public:
+	/* General overrides */
 	virtual CursorShape get_cursor_shape(const Point2 &p_pos = Point2i()) const override;
+	virtual void handle_unicode_input(uint32_t p_unicode) override;
 
 	/* Indent management */
 	void set_indent_size(const int p_size);
@@ -239,6 +254,19 @@ public:
 	void unindent_lines();
 
 	virtual void backspace() override;
+
+	/* Auto brace completion */
+	void set_auto_brace_completion_enabled(bool p_enabled);
+	bool is_auto_brace_completion_enabled() const;
+
+	void add_auto_brace_completion_pair(const String &p_open_key, const String &p_close_key);
+	void set_auto_brace_completion_pairs(const Dictionary &p_auto_brace_completion_pairs);
+	Dictionary get_auto_brace_completion_pairs() const;
+
+	bool has_auto_brace_completion_open_key(const String &p_open_key) const;
+	bool has_auto_brace_completion_close_key(const String &p_close_key) const;
+
+	String get_auto_brace_completion_close_key(const String &p_open_key) const;
 
 	/* Main Gutter */
 	void set_draw_breakpoints_gutter(bool p_draw);

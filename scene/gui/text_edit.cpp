@@ -63,45 +63,6 @@ static bool _is_char(char32_t c) {
 	return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || c == '_';
 }
 
-static bool _is_pair_right_symbol(char32_t c) {
-	return c == '"' ||
-		   c == '\'' ||
-		   c == ')' ||
-		   c == ']' ||
-		   c == '}';
-}
-
-static bool _is_pair_left_symbol(char32_t c) {
-	return c == '"' ||
-		   c == '\'' ||
-		   c == '(' ||
-		   c == '[' ||
-		   c == '{';
-}
-
-static bool _is_pair_symbol(char32_t c) {
-	return _is_pair_left_symbol(c) || _is_pair_right_symbol(c);
-}
-
-static char32_t _get_right_pair_symbol(char32_t c) {
-	if (c == '"') {
-		return '"';
-	}
-	if (c == '\'') {
-		return '\'';
-	}
-	if (c == '(') {
-		return ')';
-	}
-	if (c == '[') {
-		return ']';
-	}
-	if (c == '{') {
-		return '}';
-	}
-	return 0;
-}
-
 ///////////////////////////////////////////////////////////////////////////////
 
 void TextEdit::Text::set_font(const Ref<Font> &p_font) {
@@ -1567,130 +1528,6 @@ void TextEdit::_notification(int p_what) {
 	}
 }
 
-void TextEdit::_consume_pair_symbol(char32_t ch) {
-	int cursor_position_to_move = cursor_get_column() + 1;
-
-	char32_t ch_single[2] = { ch, 0 };
-	char32_t ch_single_pair[2] = { _get_right_pair_symbol(ch), 0 };
-	char32_t ch_pair[3] = { ch, _get_right_pair_symbol(ch), 0 };
-
-	if (is_selection_active()) {
-		int new_column, new_line;
-
-		begin_complex_operation();
-		_insert_text(get_selection_from_line(), get_selection_from_column(),
-				ch_single,
-				&new_line, &new_column);
-
-		int to_col_offset = 0;
-		if (get_selection_from_line() == get_selection_to_line()) {
-			to_col_offset = 1;
-		}
-
-		_insert_text(get_selection_to_line(),
-				get_selection_to_column() + to_col_offset,
-				ch_single_pair,
-				&new_line, &new_column);
-		end_complex_operation();
-
-		cursor_set_line(get_selection_to_line());
-		cursor_set_column(get_selection_to_column() + to_col_offset);
-
-		deselect();
-		update();
-		return;
-	}
-
-	if ((ch == '\'' || ch == '"') &&
-			cursor_get_column() > 0 && _is_text_char(text[cursor.line][cursor_get_column() - 1]) && !_is_pair_right_symbol(text[cursor.line][cursor_get_column()])) {
-		insert_text_at_cursor(ch_single);
-		cursor_set_column(cursor_position_to_move);
-		return;
-	}
-
-	if (cursor_get_column() < text[cursor.line].length()) {
-		if (_is_text_char(text[cursor.line][cursor_get_column()])) {
-			insert_text_at_cursor(ch_single);
-			cursor_set_column(cursor_position_to_move);
-			return;
-		}
-		if (_is_pair_right_symbol(ch) &&
-				text[cursor.line][cursor_get_column()] == ch) {
-			cursor_set_column(cursor_position_to_move);
-			return;
-		}
-	}
-
-	String line = text[cursor.line];
-
-	bool in_single_quote = false;
-	bool in_double_quote = false;
-	bool found_comment = false;
-
-	int c = 0;
-	while (c < line.length()) {
-		if (line[c] == '\\') {
-			c++; // Skip quoted anything.
-
-			if (cursor.column == c) {
-				break;
-			}
-		} else if (!in_single_quote && !in_double_quote && line[c] == '#') {
-			found_comment = true;
-			break;
-		} else {
-			if (line[c] == '\'' && !in_double_quote) {
-				in_single_quote = !in_single_quote;
-			} else if (line[c] == '"' && !in_single_quote) {
-				in_double_quote = !in_double_quote;
-			}
-		}
-
-		c++;
-
-		if (cursor.column == c) {
-			break;
-		}
-	}
-
-	// Do not need to duplicate quotes while in comments
-	if (found_comment) {
-		insert_text_at_cursor(ch_single);
-		cursor_set_column(cursor_position_to_move);
-
-		return;
-	}
-
-	// Disallow inserting duplicated quotes while already in string
-	if ((in_single_quote || in_double_quote) && (ch == '"' || ch == '\'')) {
-		insert_text_at_cursor(ch_single);
-		cursor_set_column(cursor_position_to_move);
-
-		return;
-	}
-
-	insert_text_at_cursor(ch_pair);
-	cursor_set_column(cursor_position_to_move);
-}
-
-void TextEdit::_consume_backspace_for_pair_symbol(int prev_line, int prev_column) {
-	bool remove_right_symbol = false;
-
-	if (cursor.column < text[cursor.line].length() && cursor.column > 0) {
-		char32_t left_char = text[cursor.line][cursor.column - 1];
-		char32_t right_char = text[cursor.line][cursor.column];
-
-		if (right_char == _get_right_pair_symbol(left_char)) {
-			remove_right_symbol = true;
-		}
-	}
-	if (remove_right_symbol) {
-		_remove_text(prev_line, prev_column, cursor.line, cursor.column + 1);
-	} else {
-		_remove_text(prev_line, prev_column, cursor.line, cursor.column);
-	}
-}
-
 void TextEdit::backspace() {
 	ScriptInstance *si = get_script_instance();
 	if (si && si->has_method("_backspace")) {
@@ -1719,14 +1556,7 @@ void TextEdit::backspace() {
 	if (is_line_hidden(cursor.line)) {
 		set_line_as_hidden(prev_line, true);
 	}
-
-	if (auto_brace_completion_enabled &&
-			cursor.column > 0 &&
-			_is_pair_left_symbol(text[cursor.line][cursor.column - 1])) {
-		_consume_backspace_for_pair_symbol(prev_line, prev_column);
-	} else {
-		_remove_text(prev_line, prev_column, cursor.line, cursor.column);
-	}
+	_remove_text(prev_line, prev_column, cursor.line, cursor.column);
 
 	cursor_set_line(prev_line, false, true);
 	cursor_set_column(prev_column);
@@ -2101,6 +1931,7 @@ void TextEdit::delete_selection() {
 	}
 
 	selection.active = false;
+	selection.selecting_mode = SelectionMode::SELECTION_MODE_NONE;
 	_remove_text(selection.from_line, selection.from_column, selection.to_line, selection.to_column);
 	cursor_set_line(selection.from_line, false, false);
 	cursor_set_column(selection.from_column);
@@ -2137,13 +1968,21 @@ void TextEdit::_move_cursor_document_end(bool p_select) {
 	}
 }
 
-void TextEdit::_handle_unicode_character(uint32_t unicode, bool p_had_selection) {
-	if (p_had_selection) {
+void TextEdit::handle_unicode_input(uint32_t p_unicode) {
+	ScriptInstance *si = get_script_instance();
+	if (si && si->has_method("_handle_unicode_input")) {
+		si->call("_handle_unicode_input", p_unicode);
+		return;
+	}
+
+	bool had_selection = selection.active;
+	if (had_selection) {
+		begin_complex_operation();
 		delete_selection();
 	}
 
 	// Remove the old character if in insert mode and no selection.
-	if (insert_mode && !p_had_selection) {
+	if (insert_mode && !had_selection) {
 		begin_complex_operation();
 
 		// Make sure we don't try and remove empty space.
@@ -2152,15 +1991,10 @@ void TextEdit::_handle_unicode_character(uint32_t unicode, bool p_had_selection)
 		}
 	}
 
-	const char32_t chr[2] = { (char32_t)unicode, 0 };
+	const char32_t chr[2] = { (char32_t)p_unicode, 0 };
+	insert_text_at_cursor(chr);
 
-	if (auto_brace_completion_enabled && _is_pair_symbol(chr[0])) {
-		_consume_pair_symbol(chr[0]);
-	} else {
-		_insert_text_at_cursor(chr);
-	}
-
-	if ((insert_mode && !p_had_selection) || (selection.active != p_had_selection)) {
+	if ((insert_mode && !had_selection) || (had_selection)) {
 		end_complex_operation();
 	}
 }
@@ -2598,9 +2432,6 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 		// * No Modifiers are pressed (except shift)
 		bool allow_unicode_handling = !(k->is_command_pressed() || k->is_ctrl_pressed() || k->is_alt_pressed() || k->is_meta_pressed());
 
-		// Save here for insert mode, just in case it is cleared in the following section.
-		bool had_selection = selection.active;
-
 		selection.selecting_text = false;
 
 		// Check and handle all built in shortcuts.
@@ -2806,9 +2637,9 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 			return;
 		}
 
+		// Handle Unicode (if no modifiers active).
 		if (allow_unicode_handling && !readonly && k->get_unicode() >= 32) {
-			// Handle Unicode (if no modifiers active).
-			_handle_unicode_character(k->get_unicode(), had_selection);
+			handle_unicode_input(k->get_unicode());
 			accept_event();
 			return;
 		}
@@ -3149,16 +2980,6 @@ void TextEdit::_remove_text(int p_from_line, int p_from_column, int p_to_line, i
 	op.prev_version = get_version();
 	_push_current_op();
 	current_op = op;
-}
-
-void TextEdit::_insert_text_at_cursor(const String &p_text) {
-	int new_column, new_line;
-	_insert_text(cursor.line, cursor.column, p_text, &new_line, &new_column);
-	_update_scrollbars();
-	cursor_set_line(new_line, false);
-	cursor_set_column(new_column);
-
-	update();
 }
 
 int TextEdit::get_char_count() {
@@ -3704,15 +3525,15 @@ int TextEdit::get_column_x_offset_for_line(int p_char, int p_line) const {
 
 void TextEdit::insert_text_at_cursor(const String &p_text) {
 	if (selection.active) {
-		cursor_set_line(selection.from_line, false);
-		cursor_set_column(selection.from_column);
-
-		_remove_text(selection.from_line, selection.from_column, selection.to_line, selection.to_column);
-		selection.active = false;
-		selection.selecting_mode = SelectionMode::SELECTION_MODE_NONE;
+		delete_selection();
 	}
 
-	_insert_text_at_cursor(p_text);
+	int new_column, new_line;
+	_insert_text(cursor.line, cursor.column, p_text, &new_line, &new_column);
+	_update_scrollbars();
+
+	cursor_set_line(new_line, false);
+	cursor_set_column(new_column);
 	update();
 }
 
@@ -3753,7 +3574,7 @@ void TextEdit::set_text(String p_text) {
 	setting_text = true;
 	if (!undo_enabled) {
 		_clear();
-		_insert_text_at_cursor(p_text);
+		insert_text_at_cursor(p_text);
 	}
 
 	if (undo_enabled) {
@@ -3762,7 +3583,7 @@ void TextEdit::set_text(String p_text) {
 
 		begin_complex_operation();
 		_remove_text(0, 0, MAX(0, get_line_count() - 1), MAX(get_line(MAX(get_line_count() - 1, 0)).size() - 1, 0));
-		_insert_text_at_cursor(p_text);
+		insert_text_at_cursor(p_text);
 		end_complex_operation();
 		selection.active = false;
 	}
@@ -4364,7 +4185,7 @@ void TextEdit::paste() {
 		clipboard += ins;
 	}
 
-	_insert_text_at_cursor(clipboard);
+	insert_text_at_cursor(clipboard);
 	end_complex_operation();
 
 	update();
@@ -5719,6 +5540,7 @@ void TextEdit::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("delete_selection"), &TextEdit::delete_selection);
 	ClassDB::bind_method(D_METHOD("backspace"), &TextEdit::backspace);
 	BIND_VMETHOD(MethodInfo("_backspace"));
+	BIND_VMETHOD(MethodInfo("_handle_unicode_input", PropertyInfo(Variant::INT, "unicode")))
 
 	ClassDB::bind_method(D_METHOD("cut"), &TextEdit::cut);
 	ClassDB::bind_method(D_METHOD("copy"), &TextEdit::copy);

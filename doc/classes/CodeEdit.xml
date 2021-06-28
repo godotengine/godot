@@ -30,6 +30,18 @@
 				Override this method to define what happens when the user requests code completion. If [code]force[/code] is true, any checks should be bypassed.
 			</description>
 		</method>
+		<method name="add_auto_brace_completion_pair">
+			<return type="void">
+			</return>
+			<argument index="0" name="start_key" type="String">
+			</argument>
+			<argument index="1" name="end_key" type="String">
+			</argument>
+			<description>
+				Adds a brace pair.
+				Both the start and end keys must be symbols. Only the start key has to be unique.
+			</description>
+		</method>
 		<method name="add_code_completion_option">
 			<return type="void" />
 			<argument index="0" name="type" type="int" enum="CodeEdit.CodeCompletionKind" />
@@ -137,6 +149,15 @@
 				Folds the given line, if possible (see [method can_fold_line]).
 			</description>
 		</method>
+		<method name="get_auto_brace_completion_close_key" qualifiers="const">
+			<return type="String">
+			</return>
+			<argument index="0" name="open_key" type="String">
+			</argument>
+			<description>
+				Gets the matching auto brace close key for [code]open_key[/code].
+			</description>
+		</method>
 		<method name="get_bookmarked_lines" qualifiers="const">
 			<return type="Array" />
 			<description>
@@ -217,6 +238,24 @@
 			<return type="String" />
 			<description>
 				Returns the full text with char [code]0xFFFF[/code] at the caret location.
+			</description>
+		</method>
+		<method name="has_auto_brace_completion_close_key" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="close_key" type="String">
+			</argument>
+			<description>
+				Returns [code]true[/code] if close key [code]close_key[/code] exists.
+			</description>
+		</method>
+		<method name="has_auto_brace_completion_open_key" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="open_key" type="String">
+			</argument>
+			<description>
+				Returns [code]true[/code] if open key [code]open_key[/code] exists.
 			</description>
 		</method>
 		<method name="has_comment_delimiter" qualifiers="const">
@@ -378,6 +417,12 @@
 		</method>
 	</methods>
 	<members>
+		<member name="auto_brace_completion_enabled" type="bool" setter="set_auto_brace_completion_enabled" getter="is_auto_brace_completion_enabled" default="false">
+			Sets whether brace pairs should be autocompleted.
+		</member>
+		<member name="auto_brace_completion_pairs" type="Dictionary" setter="set_auto_brace_completion_pairs" getter="get_auto_brace_completion_pairs" default="{&quot;\&quot;&quot;: &quot;\&quot;&quot;,&quot;&apos;&quot;: &quot;&apos;&quot;,&quot;(&quot;: &quot;)&quot;,&quot;[&quot;: &quot;]&quot;,&quot;{&quot;: &quot;}&quot;}">
+			Sets the brace pairs to be autocompleted.
+		</member>
 		<member name="code_completion_enabled" type="bool" setter="set_code_completion_enabled" getter="is_code_completion_enabled" default="false">
 			Sets whether code completion is allowed.
 		</member>

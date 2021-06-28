@@ -16,6 +16,14 @@
 				A virtual method that is called whenever backspace is triggered.
 			</description>
 		</method>
+		<method name="_handle_unicode_input" qualifiers="virtual">
+			<return type="void">
+			</return>
+			<argument index="0" name="unicode" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="add_gutter">
 			<return type="void" />
 			<argument index="0" name="at" type="int" default="-1" />

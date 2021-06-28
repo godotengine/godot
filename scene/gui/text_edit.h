@@ -431,11 +431,8 @@ private:
 	void _delete(bool p_word = false, bool p_all_to_right = false);
 	void _move_cursor_document_start(bool p_select);
 	void _move_cursor_document_end(bool p_select);
-	void _handle_unicode_character(uint32_t unicode, bool p_had_selection);
 
 protected:
-	bool auto_brace_completion_enabled = false;
-
 	struct Cache {
 		Ref<Texture2D> tab_icon;
 		Ref<Texture2D> space_icon;
@@ -470,12 +467,8 @@ protected:
 
 	void _insert_text(int p_line, int p_char, const String &p_text, int *r_end_line = nullptr, int *r_end_char = nullptr);
 	void _remove_text(int p_from_line, int p_from_column, int p_to_line, int p_to_column);
-	void _insert_text_at_cursor(const String &p_text);
 	virtual void _gui_input(const Ref<InputEvent> &p_gui_input);
 	void _notification(int p_what);
-
-	void _consume_pair_symbol(char32_t ch);
-	void _consume_backspace_for_pair_symbol(int prev_line, int prev_column);
 
 	static void _bind_methods();
 
@@ -635,9 +628,6 @@ public:
 		scroll_past_end_of_file_enabled = p_enabled;
 		update();
 	}
-	inline void set_auto_brace_completion(bool p_enabled) {
-		auto_brace_completion_enabled = p_enabled;
-	}
 	inline void set_brace_matching(bool p_enabled) {
 		brace_matching_enabled = p_enabled;
 		update();
@@ -686,6 +676,7 @@ public:
 
 	void delete_selection();
 
+	virtual void handle_unicode_input(uint32_t p_unicode);
 	virtual void backspace();
 	void cut();
 	void copy();

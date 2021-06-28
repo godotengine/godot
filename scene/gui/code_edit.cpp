@@ -437,6 +437,7 @@ void CodeEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 	}
 }
 
+/* General overrides */
 Control::CursorShape CodeEdit::get_cursor_shape(const Point2 &p_pos) const {
 	if ((code_completion_active && code_completion_rect.has_point(p_pos)) || (is_readonly() && (!is_selecting_enabled() || get_line_count() == 0))) {
 		return CURSOR_ARROW;
@@ -457,6 +458,58 @@ Control::CursorShape CodeEdit::get_cursor_shape(const Point2 &p_pos) const {
 	}
 
 	return TextEdit::get_cursor_shape(p_pos);
+}
+
+void CodeEdit::handle_unicode_input(uint32_t p_unicode) {
+	bool had_selection = is_selection_active();
+	if (had_selection) {
+		begin_complex_operation();
+		delete_selection();
+	}
+
+	// Remove the old character if in insert mode and no selection.
+	if (is_insert_mode() && !had_selection) {
+		begin_complex_operation();
+
+		// Make sure we don't try and remove empty space.
+		if (cursor_get_column() < get_line(cursor_get_line()).length()) {
+			_remove_text(cursor_get_line(), cursor_get_column(), cursor_get_line(), cursor_get_column() + 1);
+		}
+	}
+
+	const char32_t chr[2] = { (char32_t)p_unicode, 0 };
+
+	if (auto_brace_completion_enabled) {
+		int cl = cursor_get_line();
+		int cc = cursor_get_column();
+		int caret_move_offset = 1;
+
+		int post_brace_pair = cc < get_line(cl).length() ? _get_auto_brace_pair_close_at_pos(cl, cc) : -1;
+
+		if (has_string_delimiter(chr) && cc > 0 && _is_char(get_line(cl)[cc - 1]) && post_brace_pair == -1) {
+			insert_text_at_cursor(chr);
+		} else if (cc < get_line(cl).length() && _is_char(get_line(cl)[cc])) {
+			insert_text_at_cursor(chr);
+		} else if (post_brace_pair != -1 && auto_brace_completion_pairs[post_brace_pair].close_key[0] == chr[0]) {
+			caret_move_offset = auto_brace_completion_pairs[post_brace_pair].close_key.length();
+		} else if (is_in_comment(cl, cc) != -1 || (is_in_string(cl, cc) != -1 && has_string_delimiter(chr))) {
+			insert_text_at_cursor(chr);
+		} else {
+			insert_text_at_cursor(chr);
+
+			int pre_brace_pair = _get_auto_brace_pair_open_at_pos(cl, cc + 1);
+			if (pre_brace_pair != -1) {
+				insert_text_at_cursor(auto_brace_completion_pairs[pre_brace_pair].close_key);
+			}
+		}
+		cursor_set_column(cc + caret_move_offset);
+	} else {
+		insert_text_at_cursor(chr);
+	}
+
+	if ((is_insert_mode() && !had_selection) || (had_selection)) {
+		end_complex_operation();
+	}
 }
 
 /* Indent management */
@@ -527,13 +580,13 @@ void CodeEdit::do_indent() {
 	}
 
 	if (!indent_using_spaces) {
-		_insert_text_at_cursor("\t");
+		insert_text_at_cursor("\t");
 		return;
 	}
 
 	int spaces_to_add = _calculate_spaces_till_next_right_indent(cursor_get_column());
 	if (spaces_to_add > 0) {
-		_insert_text_at_cursor(String(" ").repeat(spaces_to_add));
+		insert_text_at_cursor(String(" ").repeat(spaces_to_add));
 	}
 }
 
@@ -713,34 +766,6 @@ int CodeEdit::_calculate_spaces_till_next_right_indent(int p_column) const {
 	return indent_size - p_column % indent_size;
 }
 
-/* TODO: remove once brace completion is refactored. */
-static char32_t _get_right_pair_symbol(char32_t c) {
-	if (c == '"') {
-		return '"';
-	}
-	if (c == '\'') {
-		return '\'';
-	}
-	if (c == '(') {
-		return ')';
-	}
-	if (c == '[') {
-		return ']';
-	}
-	if (c == '{') {
-		return '}';
-	}
-	return 0;
-}
-
-static bool _is_pair_left_symbol(char32_t c) {
-	return c == '"' ||
-		   c == '\'' ||
-		   c == '(' ||
-		   c == '[' ||
-		   c == '{';
-}
-
 void CodeEdit::_new_line(bool p_split_current_line, bool p_above) {
 	if (is_readonly()) {
 		return;
@@ -803,9 +828,8 @@ void CodeEdit::_new_line(bool p_split_current_line, bool p_above) {
 		if (should_indent) {
 			ins += indent_text;
 
-			/* TODO: Change when brace completion is refactored. */
-			char32_t closing_char = _get_right_pair_symbol(indent_char);
-			if (closing_char != 0 && closing_char == line[cc]) {
+			String closing_pair = get_auto_brace_completion_close_key(String::chr(indent_char));
+			if (!closing_pair.is_empty() && line.find(closing_pair, cc) == cc) {
 				/* No need to move the brace below if we are not taking the text with us. */
 				if (p_split_current_line) {
 					brace_indent = true;
@@ -873,12 +897,20 @@ void CodeEdit::backspace() {
 
 	merge_gutters(cl, prev_line);
 
-	/* TODO: Change when brace completion is refactored. */
-	if (auto_brace_completion_enabled && cc > 0 && _is_pair_left_symbol(get_line(cl)[cc - 1])) {
-		_consume_backspace_for_pair_symbol(prev_line, prev_column);
-		cursor_set_line(prev_line, false, true);
-		cursor_set_column(prev_column);
-		return;
+	if (auto_brace_completion_enabled && cc > 0) {
+		int idx = _get_auto_brace_pair_open_at_pos(cl, cc);
+		if (idx != -1) {
+			prev_column = cc - auto_brace_completion_pairs[idx].open_key.length();
+
+			if (_get_auto_brace_pair_close_at_pos(cl, cc) == idx) {
+				_remove_text(prev_line, prev_column, cl, cc + auto_brace_completion_pairs[idx].close_key.length());
+			} else {
+				_remove_text(prev_line, prev_column, cl, cc);
+			}
+			cursor_set_line(prev_line, false, true);
+			cursor_set_column(prev_column);
+			return;
+		}
 	}
 
 	/* For space indentation we need to do a simple unindent if there are no chars to the left, acting in the */
@@ -894,6 +926,84 @@ void CodeEdit::backspace() {
 
 	cursor_set_line(prev_line, false, true);
 	cursor_set_column(prev_column);
+}
+
+/* Auto brace completion */
+void CodeEdit::set_auto_brace_completion_enabled(bool p_enabled) {
+	auto_brace_completion_enabled = p_enabled;
+}
+
+bool CodeEdit::is_auto_brace_completion_enabled() const {
+	return auto_brace_completion_enabled;
+}
+
+void CodeEdit::add_auto_brace_completion_pair(const String &p_open_key, const String &p_close_key) {
+	ERR_FAIL_COND_MSG(p_open_key.is_empty(), "auto brace completion open key cannot be empty");
+	ERR_FAIL_COND_MSG(p_close_key.is_empty(), "auto brace completion close key cannot be empty");
+
+	for (int i = 0; i < p_open_key.length(); i++) {
+		ERR_FAIL_COND_MSG(!is_symbol(p_open_key[i]), "auto brace completion open key must be a symbol");
+	}
+	for (int i = 0; i < p_close_key.length(); i++) {
+		ERR_FAIL_COND_MSG(!is_symbol(p_close_key[i]), "auto brace completion close key must be a symbol");
+	}
+
+	int at = 0;
+	for (int i = 0; i < auto_brace_completion_pairs.size(); i++) {
+		ERR_FAIL_COND_MSG(auto_brace_completion_pairs[i].open_key == p_open_key, "auto brace completion open key '" + p_open_key + "' already exists.");
+		if (p_open_key.length() < auto_brace_completion_pairs[i].open_key.length()) {
+			at++;
+		}
+	}
+
+	BracePair brace_pair;
+	brace_pair.open_key = p_open_key;
+	brace_pair.close_key = p_close_key;
+	auto_brace_completion_pairs.insert(at, brace_pair);
+}
+
+void CodeEdit::set_auto_brace_completion_pairs(const Dictionary &p_auto_brace_completion_pairs) {
+	auto_brace_completion_pairs.clear();
+
+	Array keys = p_auto_brace_completion_pairs.keys();
+	for (int i = 0; i < keys.size(); i++) {
+		add_auto_brace_completion_pair(keys[i], p_auto_brace_completion_pairs[keys[i]]);
+	}
+}
+
+Dictionary CodeEdit::get_auto_brace_completion_pairs() const {
+	Dictionary brace_pairs;
+	for (int i = 0; i < auto_brace_completion_pairs.size(); i++) {
+		brace_pairs[auto_brace_completion_pairs[i].open_key] = auto_brace_completion_pairs[i].close_key;
+	}
+	return brace_pairs;
+}
+
+bool CodeEdit::has_auto_brace_completion_open_key(const String &p_open_key) const {
+	for (int i = 0; i < auto_brace_completion_pairs.size(); i++) {
+		if (auto_brace_completion_pairs[i].open_key == p_open_key) {
+			return true;
+		}
+	}
+	return false;
+}
+
+bool CodeEdit::has_auto_brace_completion_close_key(const String &p_close_key) const {
+	for (int i = 0; i < auto_brace_completion_pairs.size(); i++) {
+		if (auto_brace_completion_pairs[i].close_key == p_close_key) {
+			return true;
+		}
+	}
+	return false;
+}
+
+String CodeEdit::get_auto_brace_completion_close_key(const String &p_open_key) const {
+	for (int i = 0; i < auto_brace_completion_pairs.size(); i++) {
+		if (auto_brace_completion_pairs[i].open_key == p_open_key) {
+			return auto_brace_completion_pairs[i].close_key;
+		}
+	}
+	return String();
 }
 
 /* Main Gutter */
@@ -1700,35 +1810,40 @@ void CodeEdit::confirm_code_completion(bool p_replace) {
 		insert_text_at_cursor(insert_text.substr(matching_chars));
 	}
 
-	/* TODO: merge with autobrace completion, when in CodeEdit. */
 	/* Handle merging of symbols eg strings, brackets. */
 	const String line = get_line(caret_line);
 	char32_t next_char = line[cursor_get_column()];
 	char32_t last_completion_char = insert_text[insert_text.length() - 1];
 	char32_t last_completion_char_display = display_text[display_text.length() - 1];
 
-	if ((last_completion_char == '"' || last_completion_char == '\'') && (last_completion_char == next_char || last_completion_char_display == next_char)) {
+	int pre_brace_pair = cursor_get_column() > 0 ? _get_auto_brace_pair_open_at_pos(caret_line, cursor_get_column()) : -1;
+	int post_brace_pair = cursor_get_column() < get_line(caret_line).length() ? _get_auto_brace_pair_close_at_pos(caret_line, cursor_get_column()) : -1;
+
+	if (post_brace_pair != -1 && (last_completion_char == next_char || last_completion_char_display == next_char)) {
 		_remove_text(caret_line, cursor_get_column(), caret_line, cursor_get_column() + 1);
 	}
 
-	if (last_completion_char == '(') {
-		if (next_char == last_completion_char) {
-			_remove_text(caret_line, cursor_get_column() - 1, caret_line, cursor_get_column());
-		} else if (auto_brace_completion_enabled) {
-			insert_text_at_cursor(")");
-			cursor_set_column(cursor_get_column() - 1);
-		}
-	} else if (last_completion_char == ')' && next_char == '(') {
-		_remove_text(caret_line, cursor_get_column() - 2, caret_line, cursor_get_column());
-		if (line[cursor_get_column() + 1] != ')') {
-			cursor_set_column(cursor_get_column() - 1);
+	if (pre_brace_pair != -1 && pre_brace_pair != post_brace_pair && (last_completion_char == next_char || last_completion_char_display == next_char)) {
+		_remove_text(caret_line, cursor_get_column(), caret_line, cursor_get_column() + 1);
+	} else if (auto_brace_completion_enabled && pre_brace_pair != -1 && post_brace_pair == -1) {
+		insert_text_at_cursor(auto_brace_completion_pairs[pre_brace_pair].close_key);
+		cursor_set_column(cursor_get_column() - auto_brace_completion_pairs[pre_brace_pair].close_key.length());
+	}
+
+	if (pre_brace_pair == -1 && post_brace_pair == -1 && cursor_get_column() > 0 && cursor_get_column() < get_line(caret_line).length()) {
+		pre_brace_pair = _get_auto_brace_pair_open_at_pos(caret_line, cursor_get_column() + 1);
+		if (pre_brace_pair == _get_auto_brace_pair_close_at_pos(caret_line, cursor_get_column() - 1)) {
+			_remove_text(caret_line, cursor_get_column() - 2, caret_line, cursor_get_column());
+			if (_get_auto_brace_pair_close_at_pos(caret_line, cursor_get_column() - 1) != pre_brace_pair) {
+				cursor_set_column(cursor_get_column() - 1);
+			}
 		}
 	}
 
 	end_complex_operation();
 
 	cancel_code_completion();
-	if (last_completion_char == '(') {
+	if (code_completion_prefixes.has(String::chr(last_completion_char))) {
 		request_code_completion();
 	}
 }
@@ -1761,6 +1876,19 @@ void CodeEdit::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("indent_lines"), &CodeEdit::indent_lines);
 	ClassDB::bind_method(D_METHOD("unindent_lines"), &CodeEdit::unindent_lines);
+
+	/* Auto brace completion */
+	ClassDB::bind_method(D_METHOD("set_auto_brace_completion_enabled", "enable"), &CodeEdit::set_auto_brace_completion_enabled);
+	ClassDB::bind_method(D_METHOD("is_auto_brace_completion_enabled"), &CodeEdit::is_auto_brace_completion_enabled);
+
+	ClassDB::bind_method(D_METHOD("add_auto_brace_completion_pair", "start_key", "end_key"), &CodeEdit::add_auto_brace_completion_pair);
+	ClassDB::bind_method(D_METHOD("set_auto_brace_completion_pairs", "pairs"), &CodeEdit::set_auto_brace_completion_pairs);
+	ClassDB::bind_method(D_METHOD("get_auto_brace_completion_pairs"), &CodeEdit::get_auto_brace_completion_pairs);
+
+	ClassDB::bind_method(D_METHOD("has_auto_brace_completion_open_key", "open_key"), &CodeEdit::has_auto_brace_completion_open_key);
+	ClassDB::bind_method(D_METHOD("has_auto_brace_completion_close_key", "close_key"), &CodeEdit::has_auto_brace_completion_close_key);
+
+	ClassDB::bind_method(D_METHOD("get_auto_brace_completion_close_key", "open_key"), &CodeEdit::get_auto_brace_completion_close_key);
 
 	/* Main Gutter */
 	ClassDB::bind_method(D_METHOD("_main_gutter_draw_callback"), &CodeEdit::_main_gutter_draw_callback);
@@ -1918,11 +2046,66 @@ void CodeEdit::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "indent_automatic"), "set_auto_indent_enabled", "is_auto_indent_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::PACKED_STRING_ARRAY, "indent_automatic_prefixes"), "set_auto_indent_prefixes", "get_auto_indent_prefixes");
 
+	ADD_GROUP("Auto brace completion", "auto_brace_completion_");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "auto_brace_completion_enabled"), "set_auto_brace_completion_enabled", "is_auto_brace_completion_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY, "auto_brace_completion_pairs"), "set_auto_brace_completion_pairs", "get_auto_brace_completion_pairs");
+
 	/* Signals */
 	ADD_SIGNAL(MethodInfo("breakpoint_toggled", PropertyInfo(Variant::INT, "line")));
 	ADD_SIGNAL(MethodInfo("request_code_completion"));
 }
 
+/* Auto brace completion */
+int CodeEdit::_get_auto_brace_pair_open_at_pos(int p_line, int p_col) {
+	const String &line = get_line(p_line);
+
+	/* Should be fast enough, expecting low amount of pairs... */
+	for (int i = 0; i < auto_brace_completion_pairs.size(); i++) {
+		const String &open_key = auto_brace_completion_pairs[i].open_key;
+		if (p_col - open_key.length() < 0) {
+			continue;
+		}
+
+		bool is_match = true;
+		for (int j = 0; j < open_key.length(); j++) {
+			if (line[(p_col - 1) - j] != open_key[(open_key.length() - 1) - j]) {
+				is_match = false;
+				break;
+			}
+		}
+
+		if (is_match) {
+			return i;
+		}
+	}
+	return -1;
+}
+
+int CodeEdit::_get_auto_brace_pair_close_at_pos(int p_line, int p_col) {
+	const String &line = get_line(p_line);
+
+	/* Should be fast enough, expecting low amount of pairs... */
+	for (int i = 0; i < auto_brace_completion_pairs.size(); i++) {
+		if (p_col + auto_brace_completion_pairs[i].close_key.length() > line.length()) {
+			continue;
+		}
+
+		bool is_match = true;
+		for (int j = 0; j < auto_brace_completion_pairs[i].close_key.length(); j++) {
+			if (line[p_col + j] != auto_brace_completion_pairs[i].close_key[j]) {
+				is_match = false;
+				break;
+			}
+		}
+
+		if (is_match) {
+			return i;
+		}
+	}
+	return -1;
+}
+
+/* Gutters */
 void CodeEdit::_gutter_clicked(int p_line, int p_gutter) {
 	if (p_gutter == main_gutter) {
 		if (draw_breakpoints) {
@@ -2546,6 +2729,13 @@ CodeEdit::CodeEdit() {
 	auto_indent_prefixes.insert('{');
 	auto_indent_prefixes.insert('[');
 	auto_indent_prefixes.insert('(');
+
+	/* Auto brace completion */
+	add_auto_brace_completion_pair("(", ")");
+	add_auto_brace_completion_pair("{", "}");
+	add_auto_brace_completion_pair("[", "]");
+	add_auto_brace_completion_pair("\"", "\"");
+	add_auto_brace_completion_pair("\'", "\'");
 
 	/* Text Direction */
 	set_layout_direction(LAYOUT_DIRECTION_LTR);

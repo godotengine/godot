@@ -958,7 +958,7 @@ void CodeTextEditor::update_editor_settings() {
 	text_editor->cursor_set_block_mode(EditorSettings::get_singleton()->get("text_editor/cursor/block_caret"));
 	text_editor->cursor_set_blink_enabled(EditorSettings::get_singleton()->get("text_editor/cursor/caret_blink"));
 	text_editor->cursor_set_blink_speed(EditorSettings::get_singleton()->get("text_editor/cursor/caret_blink_speed"));
-	text_editor->set_auto_brace_completion(EditorSettings::get_singleton()->get("text_editor/completion/auto_brace_complete"));
+	text_editor->set_auto_brace_completion_enabled(EditorSettings::get_singleton()->get("text_editor/completion/auto_brace_complete"));
 }
 
 void CodeTextEditor::set_find_replace_bar(FindReplaceBar *p_bar) {
@@ -1609,16 +1609,9 @@ void CodeTextEditor::_apply_settings_change() {
 		} break;
 	}
 
-	// Auto brace completion.
-	text_editor->set_auto_brace_completion(
-			EDITOR_GET("text_editor/completion/auto_brace_complete"));
-
-	code_complete_timer->set_wait_time(
-			EDITOR_GET("text_editor/completion/code_complete_delay"));
-
-	// Call hint settings.
 	text_editor->set_code_hint_draw_below(EDITOR_GET("text_editor/completion/put_callhint_tooltip_below_current_line"));
 
+	code_complete_timer->set_wait_time(EDITOR_GET("text_editor/completion/code_complete_delay"));
 	idle->set_wait_time(EDITOR_GET("text_editor/completion/idle_parse_delay"));
 }
 
