@@ -44,9 +44,9 @@ Error WebSocketClient::connect_to_url(String p_url, const Vector<String> p_proto
 	_is_multiplayer = gd_mp_api;
 
 	String host = p_url;
-	String path = "/";
-	String scheme = "";
-	int port = 80;
+	String path;
+	String scheme;
+	int port = 0;
 	Error err = p_url.parse_url(scheme, host, port, path);
 	ERR_FAIL_COND_V_MSG(err != OK, err, "Invalid URL: " + p_url);
 
@@ -56,6 +56,9 @@ Error WebSocketClient::connect_to_url(String p_url, const Vector<String> p_proto
 	}
 	if (port == 0) {
 		port = ssl ? 443 : 80;
+	}
+	if (path.empty()) {
+		path = "/";
 	}
 	return connect_to_host(host, path, port, ssl, p_protocols, p_custom_headers);
 }
