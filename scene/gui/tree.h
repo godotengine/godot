@@ -315,16 +315,18 @@ public:
 	void set_disable_folding(bool p_disable);
 	bool is_folding_disabled() const;
 
+	Size2 get_minimum_size(int p_column);
+
 	/* Item manipulation */
 
 	TreeItem *create_child(int p_idx = -1);
 
-	Tree *get_tree();
+	Tree *get_tree() const;
 
 	TreeItem *get_prev();
-	TreeItem *get_next();
-	TreeItem *get_parent();
-	TreeItem *get_first_child();
+	TreeItem *get_next() const;
+	TreeItem *get_parent() const;
+	TreeItem *get_first_child() const;
 
 	TreeItem *get_prev_visible(bool p_wrap = false);
 	TreeItem *get_next_visible(bool p_wrap = false);
@@ -408,7 +410,7 @@ private:
 	int drop_mode_flags = 0;
 
 	struct ColumnInfo {
-		int min_width = 1;
+		int custom_min_width = 0;
 		bool expand = true;
 		String title;
 		Ref<TextLine> text_buf;
@@ -545,6 +547,8 @@ private:
 	void _scroll_moved(float p_value);
 	HScrollBar *h_scroll;
 	VScrollBar *v_scroll;
+	bool h_scroll_enabled = true;
+	bool v_scroll_enabled = true;
 
 	Size2 get_internal_min_size() const;
 	void update_cache();
@@ -623,11 +627,12 @@ public:
 	void clear();
 
 	TreeItem *create_item(TreeItem *p_parent = nullptr, int p_idx = -1);
-	TreeItem *get_root();
-	TreeItem *get_last_item();
+	TreeItem *get_root() const;
+	TreeItem *get_last_item() const;
 
-	void set_column_min_width(int p_column, int p_min_width);
+	void set_column_custom_minimum_width(int p_column, int p_min_width);
 	void set_column_expand(int p_column, bool p_expand);
+	int get_column_minimum_width(int p_column) const;
 	int get_column_width(int p_column) const;
 
 	void set_hide_root(bool p_enabled);
@@ -679,6 +684,10 @@ public:
 
 	Point2 get_scroll() const;
 	void scroll_to_item(TreeItem *p_item);
+	void set_h_scroll_enabled(bool p_enable);
+	bool is_h_scroll_enabled() const;
+	void set_v_scroll_enabled(bool p_enable);
+	bool is_v_scroll_enabled() const;
 
 	void set_cursor_can_exit_tree(bool p_enable);
 

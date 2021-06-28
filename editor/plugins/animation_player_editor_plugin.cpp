@@ -569,8 +569,8 @@ void AnimationPlayerEditor::_animation_blend() {
 	blend_editor.dialog->popup_centered(Size2(400, 400) * EDSCALE);
 
 	blend_editor.tree->set_hide_root(true);
-	blend_editor.tree->set_column_min_width(0, 10);
-	blend_editor.tree->set_column_min_width(1, 3);
+	blend_editor.tree->set_column_custom_minimum_width(0, 10);
+	blend_editor.tree->set_column_custom_minimum_width(1, 3);
 
 	List<StringName> anims;
 	player->get_animation_list(&anims);

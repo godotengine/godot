@@ -178,19 +178,19 @@ EditorNetworkProfiler::EditorNetworkProfiler() {
 	counters_display->set_column_titles_visible(true);
 	counters_display->set_column_title(0, TTR("Node"));
 	counters_display->set_column_expand(0, true);
-	counters_display->set_column_min_width(0, 60 * EDSCALE);
+	counters_display->set_column_custom_minimum_width(0, 60 * EDSCALE);
 	counters_display->set_column_title(1, TTR("Incoming RPC"));
 	counters_display->set_column_expand(1, false);
-	counters_display->set_column_min_width(1, 120 * EDSCALE);
+	counters_display->set_column_custom_minimum_width(1, 120 * EDSCALE);
 	counters_display->set_column_title(2, TTR("Incoming RSET"));
 	counters_display->set_column_expand(2, false);
-	counters_display->set_column_min_width(2, 120 * EDSCALE);
+	counters_display->set_column_custom_minimum_width(2, 120 * EDSCALE);
 	counters_display->set_column_title(3, TTR("Outgoing RPC"));
 	counters_display->set_column_expand(3, false);
-	counters_display->set_column_min_width(3, 120 * EDSCALE);
+	counters_display->set_column_custom_minimum_width(3, 120 * EDSCALE);
 	counters_display->set_column_title(4, TTR("Outgoing RSET"));
 	counters_display->set_column_expand(4, false);
-	counters_display->set_column_min_width(4, 120 * EDSCALE);
+	counters_display->set_column_custom_minimum_width(4, 120 * EDSCALE);
 	add_child(counters_display);
 
 	frame_delay = memnew(Timer);

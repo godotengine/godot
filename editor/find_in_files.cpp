@@ -638,7 +638,7 @@ void FindInFilesPanel::set_with_replace(bool with_replace) {
 		// Results show checkboxes on their left so they can be opted out
 		_results_display->set_columns(2);
 		_results_display->set_column_expand(0, false);
-		_results_display->set_column_min_width(0, 48 * EDSCALE);
+		_results_display->set_column_custom_minimum_width(0, 48 * EDSCALE);
 
 	} else {
 		// Results are single-cell items

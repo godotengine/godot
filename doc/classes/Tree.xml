@@ -232,7 +232,7 @@
 				Returns the last pressed button's index.
 			</description>
 		</method>
-		<method name="get_root">
+		<method name="get_root" qualifiers="const">
 			<return type="TreeItem">
 			</return>
 			<description>
@@ -272,6 +272,17 @@
 			<description>
 			</description>
 		</method>
+		<method name="set_column_custom_minimum_width">
+			<return type="void">
+			</return>
+			<argument index="0" name="column" type="int">
+			</argument>
+			<argument index="1" name="min_width" type="int">
+			</argument>
+			<description>
+				Overrides the calculated minimum width of a column. It can be set to `0` to restore the default behavior. Columns that have the "Expand" flag will use their "min_width" in a similar fashion to [member Control.size_flags_stretch_ratio].
+			</description>
+		</method>
 		<method name="set_column_expand">
 			<return type="void">
 			</return>
@@ -281,17 +292,6 @@
 			</argument>
 			<description>
 				If [code]true[/code], the column will have the "Expand" flag of [Control]. Columns that have the "Expand" flag will use their "min_width" in a similar fashion to [member Control.size_flags_stretch_ratio].
-			</description>
-		</method>
-		<method name="set_column_min_width">
-			<return type="void">
-			</return>
-			<argument index="0" name="column" type="int">
-			</argument>
-			<argument index="1" name="min_width" type="int">
-			</argument>
-			<description>
-				Sets the minimum width of a column. Columns that have the "Expand" flag will use their "min_width" in a similar fashion to [member Control.size_flags_stretch_ratio].
 			</description>
 		</method>
 		<method name="set_column_title">
@@ -372,6 +372,12 @@
 			If [code]true[/code], the tree's root is hidden.
 		</member>
 		<member name="rect_clip_content" type="bool" setter="set_clip_contents" getter="is_clipping_contents" override="true" default="true" />
+		<member name="scroll_horizontal_enabled" type="bool" setter="set_h_scroll_enabled" getter="is_h_scroll_enabled" default="true">
+			If [code]true[/code], enables horizontal scrolling.
+		</member>
+		<member name="scroll_vertical_enabled" type="bool" setter="set_v_scroll_enabled" getter="is_v_scroll_enabled" default="true">
+			If [code]true[/code], enables vertical scrolling.
+		</member>
 		<member name="select_mode" type="int" setter="set_select_mode" getter="get_select_mode" enum="Tree.SelectMode" default="0">
 			Allows single or multiple selection. See the [enum SelectMode] constants.
 		</member>
