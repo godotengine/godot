@@ -2262,15 +2262,15 @@ Error ConvexHullComputer::convex_hull(const Vector<Vector3> &p_points, Geometry:
 
 	r_mesh.edges.resize(ch.edges.size());
 	for (uint32_t i = 0; i < ch.edges.size(); i++) {
-		r_mesh.edges.write[i].a = (&ch.edges[i])->get_source_vertex();
-		r_mesh.edges.write[i].b = (&ch.edges[i])->get_target_vertex();
+		r_mesh.edges.write()[i].a = (&ch.edges[i])->get_source_vertex();
+		r_mesh.edges.write()[i].b = (&ch.edges[i])->get_target_vertex();
 	}
 
 	r_mesh.faces.resize(ch.faces.size());
 	for (uint32_t i = 0; i < ch.faces.size(); i++) {
 		const Edge *e_start = &ch.edges[ch.faces[i]];
 		const Edge *e = e_start;
-		Geometry::MeshData::Face &face = r_mesh.faces.write[i];
+		Geometry::MeshData::Face &face = r_mesh.faces.write()[i];
 
 		do {
 			face.indices.push_back(e->get_target_vertex());

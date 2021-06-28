@@ -482,17 +482,17 @@ String ShaderCompilerGLES3::_dump_node_code(const SL::Node *p_node, int p_level,
 				if (SL::is_sampler_type(E->get().type)) {
 					r_gen_code.vertex_global += ucode;
 					r_gen_code.fragment_global += ucode;
-					r_gen_code.texture_uniforms.write[E->get().texture_order] = _mkid(E->key());
-					r_gen_code.texture_hints.write[E->get().texture_order] = E->get().hint;
-					r_gen_code.texture_types.write[E->get().texture_order] = E->get().type;
+					r_gen_code.texture_uniforms.write()[E->get().texture_order] = _mkid(E->key());
+					r_gen_code.texture_hints.write()[E->get().texture_order] = E->get().hint;
+					r_gen_code.texture_types.write()[E->get().texture_order] = E->get().type;
 				} else {
 					if (!uses_uniforms) {
 						r_gen_code.defines.push_back(String("#define USE_MATERIAL\n").ascii());
 						uses_uniforms = true;
 					}
-					uniform_defines.write[E->get().order] = ucode;
-					uniform_sizes.write[E->get().order] = _get_datatype_size(E->get().type);
-					uniform_alignments.write[E->get().order] = _get_datatype_alignment(E->get().type);
+					uniform_defines.write()[E->get().order] = ucode;
+					uniform_sizes.write()[E->get().order] = _get_datatype_size(E->get().type);
+					uniform_alignments.write()[E->get().order] = _get_datatype_alignment(E->get().type);
 				}
 
 				p_actions.uniforms->insert(E->key(), E->get());

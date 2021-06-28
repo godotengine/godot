@@ -473,7 +473,7 @@ void CollisionObject::shape_owner_remove_shape(uint32_t p_owner, int p_shape) {
 	ERR_FAIL_COND(!shapes.has(p_owner));
 	ERR_FAIL_INDEX(p_shape, shapes[p_owner].shapes.size());
 
-	ShapeData::ShapeBase &s = shapes[p_owner].shapes.write[p_shape];
+	ShapeData::ShapeBase &s = shapes[p_owner].shapes.write()[p_shape];
 	int index_to_remove = s.index;
 
 	if (area) {
@@ -495,7 +495,7 @@ void CollisionObject::shape_owner_remove_shape(uint32_t p_owner, int p_shape) {
 	for (Map<uint32_t, ShapeData>::Element *E = shapes.front(); E; E = E->next()) {
 		for (int i = 0; i < E->get().shapes.size(); i++) {
 			if (E->get().shapes[i].index > index_to_remove) {
-				E->get().shapes.write[i].index -= 1;
+				E->get().shapes.write()[i].index -= 1;
 			}
 		}
 	}

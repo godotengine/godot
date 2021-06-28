@@ -291,7 +291,7 @@ Error EditorExportPlatform::_save_pack_file(void *p_userdata, const String &p_pa
 		CryptoCore::md5(p_data.ptr(), p_data.size(), hash);
 		sd.md5.resize(16);
 		for (int i = 0; i < 16; i++) {
-			sd.md5.write[i] = hash[i];
+			sd.md5.write()[i] = hash[i];
 		}
 	}
 
@@ -636,9 +636,9 @@ EditorExportPlatform::ExportNotifier::ExportNotifier(EditorExportPlatform &p_pla
 	//initial export plugin callback
 	for (int i = 0; i < export_plugins.size(); i++) {
 		if (export_plugins[i]->get_script_instance()) { //script based
-			export_plugins.write[i]->_export_begin_script(features.features_pv, p_debug, p_path, p_flags);
+			export_plugins.write()[i]->_export_begin_script(features.features_pv, p_debug, p_path, p_flags);
 		} else {
-			export_plugins.write[i]->_export_begin(features.features, p_debug, p_path, p_flags);
+			export_plugins.write()[i]->_export_begin(features.features, p_debug, p_path, p_flags);
 		}
 	}
 }
@@ -647,9 +647,9 @@ EditorExportPlatform::ExportNotifier::~ExportNotifier() {
 	Vector<Ref<EditorExportPlugin>> export_plugins = EditorExport::get_singleton()->get_export_plugins();
 	for (int i = 0; i < export_plugins.size(); i++) {
 		if (export_plugins[i]->get_script_instance()) {
-			export_plugins.write[i]->_export_end_script();
+			export_plugins.write()[i]->_export_end_script();
 		}
-		export_plugins.write[i]->_export_end();
+		export_plugins.write()[i]->_export_end();
 	}
 }
 
@@ -708,7 +708,7 @@ Error EditorExportPlatform::export_project_files(const Ref<EditorExportPreset> &
 	Vector<Ref<EditorExportPlugin>> export_plugins = EditorExport::get_singleton()->get_export_plugins();
 
 	for (int i = 0; i < export_plugins.size(); i++) {
-		export_plugins.write[i]->set_export_preset(p_preset);
+		export_plugins.write()[i]->set_export_preset(p_preset);
 
 		if (p_so_func) {
 			for (int j = 0; j < export_plugins[i]->shared_objects.size(); j++) {
@@ -725,7 +725,7 @@ Error EditorExportPlatform::export_project_files(const Ref<EditorExportPreset> &
 			}
 		}
 
-		export_plugins.write[i]->_clear();
+		export_plugins.write()[i]->_clear();
 	}
 
 	FeatureContainers feature_containers = get_feature_containers(p_preset);
@@ -816,9 +816,9 @@ Error EditorExportPlatform::export_project_files(const Ref<EditorExportPreset> &
 			bool do_export = true;
 			for (int i = 0; i < export_plugins.size(); i++) {
 				if (export_plugins[i]->get_script_instance()) { //script based
-					export_plugins.write[i]->_export_file_script(path, type, features_pv);
+					export_plugins.write()[i]->_export_file_script(path, type, features_pv);
 				} else {
-					export_plugins.write[i]->_export_file(path, type, features);
+					export_plugins.write()[i]->_export_file(path, type, features);
 				}
 				if (p_so_func) {
 					for (int j = 0; j < export_plugins[i]->shared_objects.size(); j++) {
@@ -844,7 +844,7 @@ Error EditorExportPlatform::export_project_files(const Ref<EditorExportPreset> &
 				if (export_plugins[i]->skipped) {
 					do_export = false;
 				}
-				export_plugins.write[i]->_clear();
+				export_plugins.write()[i]->_clear();
 
 				if (!do_export) {
 					break; //apologies, not exporting
@@ -889,7 +889,7 @@ Error EditorExportPlatform::export_project_files(const Ref<EditorExportPreset> &
 				Vector<uint8_t> new_file;
 				new_file.resize(utf8.length());
 				for (int j = 0; j < utf8.length(); j++) {
-					new_file.write[j] = utf8[j];
+					new_file.write()[j] = utf8[j];
 				}
 
 				err = p_func(p_udata, from + ".remap", new_file, idx, total);
@@ -1370,7 +1370,7 @@ void EditorExport::load_config() {
 
 		for (int i = 0; i < export_platforms.size(); i++) {
 			if (export_platforms[i]->get_name() == platform) {
-				preset = export_platforms.write[i]->create_preset();
+				preset = export_platforms.write()[i]->create_preset();
 				break;
 			}
 		}
@@ -1489,7 +1489,7 @@ void EditorExport::update_export_presets() {
 bool EditorExport::poll_export_platforms() {
 	bool changed = false;
 	for (int i = 0; i < export_platforms.size(); i++) {
-		if (export_platforms.write[i]->poll_export()) {
+		if (export_platforms.write()[i]->poll_export()) {
 			changed = true;
 		}
 	}

@@ -210,7 +210,7 @@ void SpriteEditor::_update_mesh_data() {
 
 	Size2 img_size = Vector2(image->get_width(), image->get_height());
 	for (int i = 0; i < lines.size(); i++) {
-		lines.write[i] = expand(lines[i], rect, epsilon);
+		lines.write()[i] = expand(lines[i], rect, epsilon);
 	}
 
 	if (selected_menu_item == MENU_OPTION_CONVERT_TO_MESH_2D) {
@@ -269,7 +269,7 @@ void SpriteEditor::_update_mesh_data() {
 			for (int i = 0; i < lines[pi].size(); i++) {
 				Vector2 vtx = lines[pi][i];
 
-				ol.write[i] = vtx;
+				ol.write()[i] = vtx;
 
 				vtx -= rect.position; //offset by rect position
 
@@ -285,11 +285,11 @@ void SpriteEditor::_update_mesh_data() {
 					vtx -= rect.size / 2.0;
 				}
 
-				col.write[i] = vtx;
+				col.write()[i] = vtx;
 			}
 
-			outline_lines.write[pi] = ol;
-			computed_outline_lines.write[pi] = col;
+			outline_lines.write()[pi] = ol;
+			computed_outline_lines.write()[pi] = col;
 		}
 	}
 

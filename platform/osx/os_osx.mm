@@ -95,7 +95,7 @@ static void push_to_key_event_buffer(const OS_OSX::KeyEvent &p_event) {
 	if (OS_OSX::singleton->key_event_pos >= buffer.size()) {
 		buffer.resize(1 + OS_OSX::singleton->key_event_pos);
 	}
-	buffer.write[OS_OSX::singleton->key_event_pos++] = p_event;
+	buffer.write()[OS_OSX::singleton->key_event_pos++] = p_event;
 }
 
 static int mouse_x = 0;
@@ -2183,10 +2183,10 @@ void OS_OSX::set_native_icon(const String &p_filename) {
 	Vector<uint8_t> data;
 	uint64_t len = f->get_len();
 	data.resize(len);
-	f->get_buffer((uint8_t *)&data.write[0], len);
+	f->get_buffer((uint8_t *)&data.write()[0], len);
 	memdelete(f);
 
-	NSData *icon_data = [[[NSData alloc] initWithBytes:&data.write[0] length:len] autorelease];
+	NSData *icon_data = [[[NSData alloc] initWithBytes:&data.write()[0] length:len] autorelease];
 	ERR_FAIL_COND_MSG(!icon_data, "Error reading icon data.");
 
 	NSImage *icon = [[[NSImage alloc] initWithData:icon_data] autorelease];

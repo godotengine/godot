@@ -691,7 +691,7 @@ void Polygon2DEditor::_uv_input(const Ref<InputEvent> &p_input) {
 							if (idx < 0 || idx >= points_prev.size()) {
 								continue;
 							}
-							polys.write[j] = mtx.xform(points_prev[idx]);
+							polys.write()[j] = mtx.xform(points_prev[idx]);
 						}
 
 						if (Geometry::is_point_in_polygon(Vector2(mb->get_position().x, mb->get_position().y), polys)) {

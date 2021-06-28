@@ -155,8 +155,8 @@ public:
 
 	_FORCE_INLINE_ void set_shape_as_one_way_collision(int p_idx, bool p_one_way_collision, float p_margin) {
 		CRASH_BAD_INDEX(p_idx, shapes.size());
-		shapes.write[p_idx].one_way_collision = p_one_way_collision;
-		shapes.write[p_idx].one_way_collision_margin = p_margin;
+		shapes.write()[p_idx].one_way_collision = p_one_way_collision;
+		shapes.write()[p_idx].one_way_collision_margin = p_margin;
 	}
 	_FORCE_INLINE_ bool is_shape_set_as_one_way_collision(int p_idx) const {
 		CRASH_BAD_INDEX(p_idx, shapes.size());

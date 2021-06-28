@@ -116,24 +116,24 @@ public:
 		int get_line_wrap_amount(int p_line) const;
 		const Map<int, ColorRegionInfo> &get_color_region_info(int p_line) const;
 		void set(int p_line, const String &p_text);
-		void set_marked(int p_line, bool p_marked) { text.write[p_line].marked = p_marked; }
+		void set_marked(int p_line, bool p_marked) { text.write()[p_line].marked = p_marked; }
 		bool is_marked(int p_line) const { return text[p_line].marked; }
-		void set_bookmark(int p_line, bool p_bookmark) { text.write[p_line].bookmark = p_bookmark; }
+		void set_bookmark(int p_line, bool p_bookmark) { text.write()[p_line].bookmark = p_bookmark; }
 		bool is_bookmark(int p_line) const { return text[p_line].bookmark; }
-		void set_breakpoint(int p_line, bool p_breakpoint) { text.write[p_line].breakpoint = p_breakpoint; }
+		void set_breakpoint(int p_line, bool p_breakpoint) { text.write()[p_line].breakpoint = p_breakpoint; }
 		bool is_breakpoint(int p_line) const { return text[p_line].breakpoint; }
-		void set_hidden(int p_line, bool p_hidden) { text.write[p_line].hidden = p_hidden; }
+		void set_hidden(int p_line, bool p_hidden) { text.write()[p_line].hidden = p_hidden; }
 		bool is_hidden(int p_line) const { return text[p_line].hidden; }
-		void set_safe(int p_line, bool p_safe) { text.write[p_line].safe = p_safe; }
+		void set_safe(int p_line, bool p_safe) { text.write()[p_line].safe = p_safe; }
 		bool is_safe(int p_line) const { return text[p_line].safe; }
 		void set_info_icon(int p_line, Ref<Texture> p_icon, String p_info) {
 			if (p_icon.is_null()) {
-				text.write[p_line].has_info = false;
+				text.write()[p_line].has_info = false;
 				return;
 			}
-			text.write[p_line].info_icon = p_icon;
-			text.write[p_line].info = p_info;
-			text.write[p_line].has_info = true;
+			text.write()[p_line].info_icon = p_icon;
+			text.write()[p_line].info = p_info;
+			text.write()[p_line].has_info = true;
 		}
 		bool has_info_icon(int p_line) const { return text[p_line].has_info; }
 		const Ref<Texture> &get_info_icon(int p_line) const { return text[p_line].info_icon; }

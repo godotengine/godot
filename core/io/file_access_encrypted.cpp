@@ -81,7 +81,7 @@ Error FileAccessEncrypted::open_and_parse(FileAccess *p_base, const Vector<uint8
 		ctx.set_decode_key(key.ptrw(), 256);
 
 		for (uint64_t i = 0; i < ds; i += 16) {
-			ctx.decrypt_ecb(&data.write[i], &data.write[i]);
+			ctx.decrypt_ecb(&data.write()[i], &data.write()[i]);
 		}
 
 		data.resize(length);
@@ -103,7 +103,7 @@ Error FileAccessEncrypted::open_and_parse_password(FileAccess *p_base, const Str
 	Vector<uint8_t> key;
 	key.resize(32);
 	for (int i = 0; i < 32; i++) {
-		key.write[i] = cs[i];
+		key.write()[i] = cs[i];
 	}
 
 	return open_and_parse(p_base, key, p_mode);
@@ -130,14 +130,14 @@ void FileAccessEncrypted::close() {
 		compressed.resize(len);
 		memset(compressed.ptrw(), 0, len);
 		for (int i = 0; i < data.size(); i++) {
-			compressed.write[i] = data[i];
+			compressed.write()[i] = data[i];
 		}
 
 		CryptoCore::AESContext ctx;
 		ctx.set_encode_key(key.ptrw(), 256);
 
 		for (uint64_t i = 0; i < len; i += 16) {
-			ctx.encrypt_ecb(&compressed.write[i], &compressed.write[i]);
+			ctx.encrypt_ecb(&compressed.write()[i], &compressed.write()[i]);
 		}
 
 		file->store_32(COMP_MAGIC);
@@ -248,7 +248,7 @@ void FileAccessEncrypted::store_buffer(const uint8_t *p_src, uint64_t p_length) 
 	} else if (pos == get_len()) {
 		data.resize(pos + p_length);
 		for (uint64_t i = 0; i < p_length; i++) {
-			data.write[pos + i] = p_src[i];
+			data.write()[pos + i] = p_src[i];
 		}
 		pos += p_length;
 	}
@@ -264,7 +264,7 @@ void FileAccessEncrypted::store_8(uint8_t p_dest) {
 	ERR_FAIL_COND_MSG(!writing, "File has not been opened in write mode.");
 
 	if (pos < get_len()) {
-		data.write[pos] = p_dest;
+		data.write()[pos] = p_dest;
 		pos++;
 	} else if (pos == get_len()) {
 		data.push_back(p_dest);

@@ -124,7 +124,7 @@ void AnimationTrackEditColor::draw_key_link(int p_index, float p_pixels_sec, int
 				color_samples.resize(1 + (x_to - x_from) / 64); // Make a color sample every 64 px.
 				for (int i = 1; i < color_samples.size(); i++) {
 					float j = i;
-					color_samples.write[i] = get_animation()->value_track_interpolate(
+					color_samples.write()[i] = get_animation()->value_track_interpolate(
 							get_track(),
 							Math::lerp(start_time, end_time, j / color_samples.size()));
 				}
@@ -307,8 +307,8 @@ void AnimationTrackEditAudio::draw_key(int p_index, float p_pixels_sec, int p_x,
 			float min = preview->get_min(ofs, ofs_n) * 0.5 + 0.5;
 
 			int idx = i - from_x;
-			lines.write[idx * 2 + 0] = Vector2(i, rect.position.y + min * rect.size.y);
-			lines.write[idx * 2 + 1] = Vector2(i, rect.position.y + max * rect.size.y);
+			lines.write()[idx * 2 + 0] = Vector2(i, rect.position.y + min * rect.size.y);
+			lines.write()[idx * 2 + 1] = Vector2(i, rect.position.y + max * rect.size.y);
 		}
 
 		Vector<Color> color;
@@ -910,8 +910,8 @@ void AnimationTrackEditTypeAudio::draw_key(int p_index, float p_pixels_sec, int 
 		float min = preview->get_min(ofs, ofs_n) * 0.5 + 0.5;
 
 		int idx = i - from_x;
-		lines.write[idx * 2 + 0] = Vector2(i, rect.position.y + min * rect.size.y);
-		lines.write[idx * 2 + 1] = Vector2(i, rect.position.y + max * rect.size.y);
+		lines.write()[idx * 2 + 0] = Vector2(i, rect.position.y + min * rect.size.y);
+		lines.write()[idx * 2 + 1] = Vector2(i, rect.position.y + max * rect.size.y);
 	}
 
 	Vector<Color> color;

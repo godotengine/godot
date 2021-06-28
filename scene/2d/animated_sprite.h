@@ -112,7 +112,7 @@ public:
 		if (p_idx >= E->get().frames.size()) {
 			return;
 		}
-		E->get().frames.write[p_idx] = p_frame;
+		E->get().frames.write()[p_idx] = p_frame;
 	}
 	void remove_frame(const StringName &p_anim, int p_idx);
 	void clear(const StringName &p_anim);

@@ -2820,7 +2820,7 @@ Error OS_Windows::execute(const String &p_path, const List<String> &p_arguments,
 	Vector<CharType> modstr; // Windows wants to change this no idea why.
 	modstr.resize(cmdline.size());
 	for (int i = 0; i < cmdline.size(); i++) {
-		modstr.write[i] = cmdline[i];
+		modstr.write()[i] = cmdline[i];
 	}
 
 	int ret = CreateProcessW(NULL, modstr.ptrw(), NULL, NULL, 0, NORMAL_PRIORITY_CLASS & CREATE_NO_WINDOW, NULL, NULL, si_w, &pi.pi);
@@ -2940,8 +2940,8 @@ void OS_Windows::set_native_icon(const String &p_filename) {
 	data_big.resize(bytecount_big);
 	pos = icon_dir->idEntries[big_icon_index].dwImageOffset;
 	f->seek(pos);
-	f->get_buffer((uint8_t *)&data_big.write[0], bytecount_big);
-	HICON icon_big = CreateIconFromResource((PBYTE)&data_big.write[0], bytecount_big, TRUE, 0x00030000);
+	f->get_buffer((uint8_t *)&data_big.write()[0], bytecount_big);
+	HICON icon_big = CreateIconFromResource((PBYTE)&data_big.write()[0], bytecount_big, TRUE, 0x00030000);
 	ERR_FAIL_COND_MSG(!icon_big, "Could not create " + itos(big_icon_width) + "x" + itos(big_icon_width) + " @" + itos(big_icon_cc) + " icon, error: " + format_error_message(GetLastError()) + ".");
 
 	// Read the small icon
@@ -2950,8 +2950,8 @@ void OS_Windows::set_native_icon(const String &p_filename) {
 	data_small.resize(bytecount_small);
 	pos = icon_dir->idEntries[small_icon_index].dwImageOffset;
 	f->seek(pos);
-	f->get_buffer((uint8_t *)&data_small.write[0], bytecount_small);
-	HICON icon_small = CreateIconFromResource((PBYTE)&data_small.write[0], bytecount_small, TRUE, 0x00030000);
+	f->get_buffer((uint8_t *)&data_small.write()[0], bytecount_small);
+	HICON icon_small = CreateIconFromResource((PBYTE)&data_small.write()[0], bytecount_small, TRUE, 0x00030000);
 	ERR_FAIL_COND_MSG(!icon_small, "Could not create 16x16 @" + itos(small_icon_cc) + " icon, error: " + format_error_message(GetLastError()) + ".");
 
 	// Online tradition says to be sure last error is cleared and set the small icon first

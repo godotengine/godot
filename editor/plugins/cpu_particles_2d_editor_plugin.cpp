@@ -117,12 +117,12 @@ void CPUParticles2DEditorPlugin::_generate_emission_mask() {
 				if (a > 128) {
 					if (emode == EMISSION_MODE_SOLID) {
 						if (capture_colors) {
-							valid_colors.write[vpc * 4 + 0] = r[(j * s.width + i) * 4 + 0];
-							valid_colors.write[vpc * 4 + 1] = r[(j * s.width + i) * 4 + 1];
-							valid_colors.write[vpc * 4 + 2] = r[(j * s.width + i) * 4 + 2];
-							valid_colors.write[vpc * 4 + 3] = r[(j * s.width + i) * 4 + 3];
+							valid_colors.write()[vpc * 4 + 0] = r[(j * s.width + i) * 4 + 0];
+							valid_colors.write()[vpc * 4 + 1] = r[(j * s.width + i) * 4 + 1];
+							valid_colors.write()[vpc * 4 + 2] = r[(j * s.width + i) * 4 + 2];
+							valid_colors.write()[vpc * 4 + 3] = r[(j * s.width + i) * 4 + 3];
 						}
-						valid_positions.write[vpc++] = Point2(i, j);
+						valid_positions.write()[vpc++] = Point2(i, j);
 
 					} else {
 						bool on_border = false;
@@ -140,7 +140,7 @@ void CPUParticles2DEditorPlugin::_generate_emission_mask() {
 						}
 
 						if (on_border) {
-							valid_positions.write[vpc] = Point2(i, j);
+							valid_positions.write()[vpc] = Point2(i, j);
 
 							if (emode == EMISSION_MODE_BORDER_DIRECTED) {
 								Vector2 normal;
@@ -157,14 +157,14 @@ void CPUParticles2DEditorPlugin::_generate_emission_mask() {
 								}
 
 								normal.normalize();
-								valid_normals.write[vpc] = normal;
+								valid_normals.write()[vpc] = normal;
 							}
 
 							if (capture_colors) {
-								valid_colors.write[vpc * 4 + 0] = r[(j * s.width + i) * 4 + 0];
-								valid_colors.write[vpc * 4 + 1] = r[(j * s.width + i) * 4 + 1];
-								valid_colors.write[vpc * 4 + 2] = r[(j * s.width + i) * 4 + 2];
-								valid_colors.write[vpc * 4 + 3] = r[(j * s.width + i) * 4 + 3];
+								valid_colors.write()[vpc * 4 + 0] = r[(j * s.width + i) * 4 + 0];
+								valid_colors.write()[vpc * 4 + 1] = r[(j * s.width + i) * 4 + 1];
+								valid_colors.write()[vpc * 4 + 2] = r[(j * s.width + i) * 4 + 2];
+								valid_colors.write()[vpc * 4 + 3] = r[(j * s.width + i) * 4 + 3];
 							}
 
 							vpc++;

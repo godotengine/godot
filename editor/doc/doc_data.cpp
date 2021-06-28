@@ -55,7 +55,7 @@ void DocData::merge_from(const DocData &p_data) {
 		c.tutorials = cf.tutorials;
 
 		for (int i = 0; i < c.methods.size(); i++) {
-			MethodDoc &m = c.methods.write[i];
+			MethodDoc &m = c.methods.write()[i];
 
 			for (int j = 0; j < cf.methods.size(); j++) {
 				if (cf.methods[j].name != m.name) {
@@ -70,14 +70,14 @@ void DocData::merge_from(const DocData &p_data) {
 				Vector<bool> arg_used;
 				arg_used.resize(arg_count);
 				for (int l = 0; l < arg_count; ++l) {
-					arg_used.write[l] = false;
+					arg_used.write()[l] = false;
 				}
 				// also there is no guarantee that argument ordering will match, so we
 				// have to check one by one so we make sure we have an exact match
 				for (int k = 0; k < arg_count; ++k) {
 					for (int l = 0; l < arg_count; ++l) {
 						if (cf.methods[j].arguments[k].type == m.arguments[l].type && !arg_used[l]) {
-							arg_used.write[l] = true;
+							arg_used.write()[l] = true;
 							break;
 						}
 					}
@@ -100,7 +100,7 @@ void DocData::merge_from(const DocData &p_data) {
 		}
 
 		for (int i = 0; i < c.signals.size(); i++) {
-			MethodDoc &m = c.signals.write[i];
+			MethodDoc &m = c.signals.write()[i];
 
 			for (int j = 0; j < cf.signals.size(); j++) {
 				if (cf.signals[j].name != m.name) {
@@ -114,7 +114,7 @@ void DocData::merge_from(const DocData &p_data) {
 		}
 
 		for (int i = 0; i < c.constants.size(); i++) {
-			ConstantDoc &m = c.constants.write[i];
+			ConstantDoc &m = c.constants.write()[i];
 
 			for (int j = 0; j < cf.constants.size(); j++) {
 				if (cf.constants[j].name != m.name) {
@@ -128,7 +128,7 @@ void DocData::merge_from(const DocData &p_data) {
 		}
 
 		for (int i = 0; i < c.properties.size(); i++) {
-			PropertyDoc &p = c.properties.write[i];
+			PropertyDoc &p = c.properties.write()[i];
 
 			for (int j = 0; j < cf.properties.size(); j++) {
 				if (cf.properties[j].name != p.name) {
@@ -142,7 +142,7 @@ void DocData::merge_from(const DocData &p_data) {
 		}
 
 		for (int i = 0; i < c.theme_properties.size(); i++) {
-			PropertyDoc &p = c.theme_properties.write[i];
+			PropertyDoc &p = c.theme_properties.write()[i];
 
 			for (int j = 0; j < cf.theme_properties.size(); j++) {
 				if (cf.theme_properties[j].name != p.name) {

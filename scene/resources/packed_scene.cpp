@@ -321,7 +321,7 @@ Node *SceneState::instance(GenEditState p_edit_state) const {
 		if (c.binds.size()) {
 			binds.resize(c.binds.size());
 			for (int j = 0; j < c.binds.size(); j++) {
-				binds.write[j] = props[c.binds[j]];
+				binds.write()[j] = props[c.binds[j]];
 			}
 		}
 
@@ -878,19 +878,19 @@ Error SceneState::pack(Node *p_scene) {
 	names.resize(name_map.size());
 
 	for (Map<StringName, int>::Element *E = name_map.front(); E; E = E->next()) {
-		names.write[E->get()] = E->key();
+		names.write()[E->get()] = E->key();
 	}
 
 	variants.resize(variant_map.size());
 	const Variant *K = nullptr;
 	while ((K = variant_map.next(K))) {
 		int idx = variant_map[*K];
-		variants.write[idx] = *K;
+		variants.write()[idx] = *K;
 	}
 
 	node_paths.resize(nodepath_map.size());
 	for (Map<Node *, int>::Element *E = nodepath_map.front(); E; E = E->next()) {
-		node_paths.write[E->get()] = scene->get_path_to(E->key());
+		node_paths.write()[E->get()] = scene->get_path_to(E->key());
 	}
 
 	return OK;
@@ -1082,7 +1082,7 @@ void SceneState::set_bundled_scene(const Dictionary &p_dictionary) {
 		names.resize(namecount);
 		PoolVector<String>::Read r = snames.read();
 		for (int i = 0; i < names.size(); i++) {
-			names.write[i] = r[i];
+			names.write()[i] = r[i];
 		}
 	}
 
@@ -1092,7 +1092,7 @@ void SceneState::set_bundled_scene(const Dictionary &p_dictionary) {
 		int varcount = svariants.size();
 		variants.resize(varcount);
 		for (int i = 0; i < varcount; i++) {
-			variants.write[i] = svariants[i];
+			variants.write()[i] = svariants[i];
 		}
 
 	} else {
@@ -1104,7 +1104,7 @@ void SceneState::set_bundled_scene(const Dictionary &p_dictionary) {
 		PoolVector<int>::Read r = snodes.read();
 		int idx = 0;
 		for (int i = 0; i < node_count; i++) {
-			NodeData &nd = nodes.write[i];
+			NodeData &nd = nodes.write()[i];
 			nd.parent = r[idx++];
 			nd.owner = r[idx++];
 			nd.type = r[idx++];
@@ -1115,12 +1115,12 @@ void SceneState::set_bundled_scene(const Dictionary &p_dictionary) {
 			nd.instance = r[idx++];
 			nd.properties.resize(r[idx++]);
 			for (int j = 0; j < nd.properties.size(); j++) {
-				nd.properties.write[j].name = r[idx++];
-				nd.properties.write[j].value = r[idx++];
+				nd.properties.write()[j].name = r[idx++];
+				nd.properties.write()[j].value = r[idx++];
 			}
 			nd.groups.resize(r[idx++]);
 			for (int j = 0; j < nd.groups.size(); j++) {
-				nd.groups.write[j] = r[idx++];
+				nd.groups.write()[j] = r[idx++];
 			}
 		}
 	}
@@ -1130,7 +1130,7 @@ void SceneState::set_bundled_scene(const Dictionary &p_dictionary) {
 		PoolVector<int>::Read r = sconns.read();
 		int idx = 0;
 		for (int i = 0; i < conn_count; i++) {
-			ConnectionData &cd = connections.write[i];
+			ConnectionData &cd = connections.write()[i];
 			cd.from = r[idx++];
 			cd.to = r[idx++];
 			cd.signal = r[idx++];
@@ -1139,7 +1139,7 @@ void SceneState::set_bundled_scene(const Dictionary &p_dictionary) {
 			cd.binds.resize(r[idx++]);
 
 			for (int j = 0; j < cd.binds.size(); j++) {
-				cd.binds.write[j] = r[idx++];
+				cd.binds.write()[j] = r[idx++];
 			}
 		}
 	}
@@ -1150,7 +1150,7 @@ void SceneState::set_bundled_scene(const Dictionary &p_dictionary) {
 	}
 	node_paths.resize(np.size());
 	for (int i = 0; i < np.size(); i++) {
-		node_paths.write[i] = np[i];
+		node_paths.write()[i] = np[i];
 	}
 
 	Array ei;
@@ -1164,7 +1164,7 @@ void SceneState::set_bundled_scene(const Dictionary &p_dictionary) {
 
 	editable_instances.resize(ei.size());
 	for (int i = 0; i < editable_instances.size(); i++) {
-		editable_instances.write[i] = ei[i];
+		editable_instances.write()[i] = ei[i];
 	}
 
 	//path=p_dictionary["path"];
@@ -1520,12 +1520,12 @@ void SceneState::add_node_property(int p_node, int p_name, int p_value) {
 	NodeData::Property prop;
 	prop.name = p_name;
 	prop.value = p_value;
-	nodes.write[p_node].properties.push_back(prop);
+	nodes.write()[p_node].properties.push_back(prop);
 }
 void SceneState::add_node_group(int p_node, int p_group) {
 	ERR_FAIL_INDEX(p_node, nodes.size());
 	ERR_FAIL_INDEX(p_group, names.size());
-	nodes.write[p_node].groups.push_back(p_group);
+	nodes.write()[p_node].groups.push_back(p_group);
 }
 void SceneState::set_base_scene(int p_idx) {
 	ERR_FAIL_INDEX(p_idx, variants.size());

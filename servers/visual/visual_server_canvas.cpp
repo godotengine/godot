@@ -310,7 +310,7 @@ void VisualServerCanvas::canvas_set_item_mirroring(RID p_canvas, RID p_item, con
 
 	int idx = canvas->find_item(canvas_item);
 	ERR_FAIL_COND(idx == -1);
-	canvas->child_items.write[idx].mirror = p_mirroring;
+	canvas->child_items.write()[idx].mirror = p_mirroring;
 }
 void VisualServerCanvas::canvas_set_modulate(RID p_canvas, const Color &p_color) {
 	Canvas *canvas = canvas_owner.get(p_canvas);
@@ -522,20 +522,20 @@ void VisualServerCanvas::canvas_item_add_polyline(RID p_item, const Vector<Point
 			Vector2 tangent = ((t + prev_t).normalized()) * p_width * 0.5;
 
 			if (p_antialiased) {
-				pline->lines.write[i] = p_points[i] + tangent;
-				pline->lines.write[p_points.size() * 2 - i - 1] = p_points[i] - tangent;
+				pline->lines.write()[i] = p_points[i] + tangent;
+				pline->lines.write()[p_points.size() * 2 - i - 1] = p_points[i] - tangent;
 				if (pline->line_colors.size() > 1) {
-					pline->line_colors.write[i] = p_colors[i];
-					pline->line_colors.write[p_points.size() * 2 - i - 1] = p_colors[i];
+					pline->line_colors.write()[i] = p_colors[i];
+					pline->line_colors.write()[p_points.size() * 2 - i - 1] = p_colors[i];
 				}
 			}
 
-			pline->triangles.write[i * 2 + 0] = p_points[i] + tangent;
-			pline->triangles.write[i * 2 + 1] = p_points[i] - tangent;
+			pline->triangles.write()[i * 2 + 0] = p_points[i] + tangent;
+			pline->triangles.write()[i * 2 + 1] = p_points[i] - tangent;
 
 			if (pline->triangle_colors.size() > 1) {
-				pline->triangle_colors.write[i * 2 + 0] = p_colors[i];
-				pline->triangle_colors.write[i * 2 + 1] = p_colors[i];
+				pline->triangle_colors.write()[i * 2 + 0] = p_colors[i];
+				pline->triangle_colors.write()[i * 2 + 1] = p_colors[i];
 			}
 
 			prev_t = t;

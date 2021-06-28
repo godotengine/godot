@@ -672,10 +672,10 @@ static void run_dummy_preprocessor(String &r_source, const String &p_filepath) {
 						is_branch_being_compiled.push_back(if_level == 0 || is_branch_being_compiled[if_level - 1]);
 					} else if (directive == "elif") {
 						ERR_CONTINUE_MSG(if_level == -1, "Found unexpected '#elif' directive. File: '" + p_filepath + "'.");
-						is_branch_being_compiled.write[if_level] = false;
+						is_branch_being_compiled.write()[if_level] = false;
 					} else if (directive == "else") {
 						ERR_CONTINUE_MSG(if_level == -1, "Found unexpected '#else' directive. File: '" + p_filepath + "'.");
-						is_branch_being_compiled.write[if_level] = false;
+						is_branch_being_compiled.write()[if_level] = false;
 					} else if (directive == "endif") {
 						ERR_CONTINUE_MSG(if_level == -1, "Found unexpected '#endif' directive. File: '" + p_filepath + "'.");
 						is_branch_being_compiled.remove(if_level);

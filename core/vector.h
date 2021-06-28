@@ -44,25 +44,26 @@
 
 template <class T>
 class VectorWriteProxy {
+protected:
+	VectorWriteProxy() = default;
+	VectorWriteProxy(const VectorWriteProxy &) = delete;
+
 public:
 	_FORCE_INLINE_ T &operator[](int p_index) {
-		CRASH_BAD_INDEX(p_index, ((Vector<T> *)(this))->_cowdata.size());
-
-		return ((Vector<T> *)(this))->_cowdata.ptrw()[p_index];
+		Vector<T> &vec = static_cast<Vector<T> &>(*this);
+		CRASH_BAD_INDEX(p_index, vec.size());
+		return vec.ptrw()[p_index];
 	}
 };
 
 template <class T>
-class Vector {
-	friend class VectorWriteProxy<T>;
-
-public:
-	VectorWriteProxy<T> write;
-
+class Vector : public VectorWriteProxy<T> {
 private:
 	CowData<T> _cowdata;
 
 public:
+	_FORCE_INLINE_ VectorWriteProxy<T> &write() { return *this; }
+
 	bool push_back(T p_elem);
 
 	void remove(int p_index) { _cowdata.remove(p_index); }

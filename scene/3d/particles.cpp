@@ -175,7 +175,7 @@ int Particles::get_draw_passes() const {
 void Particles::set_draw_pass_mesh(int p_pass, const Ref<Mesh> &p_mesh) {
 	ERR_FAIL_INDEX(p_pass, draw_passes.size());
 
-	draw_passes.write[p_pass] = p_mesh;
+	draw_passes.write()[p_pass] = p_mesh;
 
 	RID mesh_rid;
 	if (p_mesh.is_valid()) {

@@ -159,10 +159,10 @@ void PackedSceneGLTF::_build_parent_hierachy(Ref<GLTFState> state) {
 		for (int j = 0; j < state->nodes[node_i]->children.size(); j++) {
 			GLTFNodeIndex child_i = state->nodes[node_i]->children[j];
 			ERR_FAIL_INDEX(child_i, state->nodes.size());
-			if (state->nodes.write[child_i]->parent != -1) {
+			if (state->nodes.write()[child_i]->parent != -1) {
 				continue;
 			}
-			state->nodes.write[child_i]->parent = node_i;
+			state->nodes.write()[child_i]->parent = node_i;
 		}
 	}
 }

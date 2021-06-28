@@ -701,7 +701,7 @@ void SpaceBullet::check_ghost_overlaps() {
 
 		/// 1. Reset all states
 		for (i = area->overlappingObjects.size() - 1; 0 <= i; --i) {
-			AreaBullet::OverlappingObjectData &otherObj = area->overlappingObjects.write[i];
+			AreaBullet::OverlappingObjectData &otherObj = area->overlappingObjects.write()[i];
 			// This check prevent the overwrite of ENTER state
 			// if this function is called more times before dispatchCallbacks
 			if (otherObj.state != AreaBullet::OVERLAP_STATE_ENTER) {

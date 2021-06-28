@@ -720,7 +720,7 @@ void TileSet::tile_set_shape(int p_id, int p_shape_id, const Ref<Shape2D> &p_sha
 	if (p_shape_id >= tile_map[p_id].shapes_data.size()) {
 		tile_map[p_id].shapes_data.resize(p_shape_id + 1);
 	}
-	tile_map[p_id].shapes_data.write[p_shape_id].shape = p_shape;
+	tile_map[p_id].shapes_data.write()[p_shape_id].shape = p_shape;
 	_decompose_convex_shape(p_shape);
 	emit_changed();
 }
@@ -743,7 +743,7 @@ void TileSet::tile_set_shape_transform(int p_id, int p_shape_id, const Transform
 	if (p_shape_id >= tile_map[p_id].shapes_data.size()) {
 		tile_map[p_id].shapes_data.resize(p_shape_id + 1);
 	}
-	tile_map[p_id].shapes_data.write[p_shape_id].shape_transform = p_offset;
+	tile_map[p_id].shapes_data.write()[p_shape_id].shape_transform = p_offset;
 	emit_changed();
 }
 
@@ -775,7 +775,7 @@ void TileSet::tile_set_shape_one_way(int p_id, int p_shape_id, const bool p_one_
 	if (p_shape_id >= tile_map[p_id].shapes_data.size()) {
 		tile_map[p_id].shapes_data.resize(p_shape_id + 1);
 	}
-	tile_map[p_id].shapes_data.write[p_shape_id].one_way_collision = p_one_way;
+	tile_map[p_id].shapes_data.write()[p_shape_id].one_way_collision = p_one_way;
 	emit_changed();
 }
 
@@ -797,7 +797,7 @@ void TileSet::tile_set_shape_one_way_margin(int p_id, int p_shape_id, float p_ma
 	if (p_shape_id >= tile_map[p_id].shapes_data.size()) {
 		tile_map[p_id].shapes_data.resize(p_shape_id + 1);
 	}
-	tile_map[p_id].shapes_data.write[p_shape_id].one_way_collision_margin = p_margin;
+	tile_map[p_id].shapes_data.write()[p_shape_id].one_way_collision_margin = p_margin;
 	emit_changed();
 }
 

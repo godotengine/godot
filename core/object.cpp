@@ -1208,10 +1208,10 @@ Error Object::emit_signal(const StringName &p_name, const Variant **p_args, int 
 			bind_mem.resize(p_argcount + c.binds.size());
 
 			for (int j = 0; j < p_argcount; j++) {
-				bind_mem.write[j] = p_args[j];
+				bind_mem.write()[j] = p_args[j];
 			}
 			for (int j = 0; j < c.binds.size(); j++) {
-				bind_mem.write[p_argcount + j] = &c.binds[j];
+				bind_mem.write()[p_argcount + j] = &c.binds[j];
 			}
 
 			args = (const Variant **)bind_mem.ptr();
