@@ -878,6 +878,20 @@ void BaseMaterial3D::_update_shader() {
 		code += "\tvec2 base_uv2 = UV2;\n";
 	}
 
+	if (features[FEATURE_HEIGHT_MAPPING] && flags[FLAG_UV1_USE_TRIPLANAR]) {
+		// Display both resource name and albedo texture name.
+		// Materials are often built-in to scenes, so displaying the resource name alone may not be meaningful.
+		// On the other hand, albedo textures are almost always external to the scene.
+		if (textures[TEXTURE_ALBEDO].is_valid()) {
+			WARN_PRINT(vformat("%s (albedo %s): Height mapping is not supported on triplanar materials. Ignoring height mapping in favor of triplanar mapping.", get_path(), textures[TEXTURE_ALBEDO]->get_path()));
+		} else if (!get_path().is_empty()) {
+			WARN_PRINT(vformat("%s: Height mapping is not supported on triplanar materials. Ignoring height mapping in favor of triplanar mapping.", get_path()));
+		} else {
+			// Resource wasn't saved yet.
+			WARN_PRINT("Height mapping is not supported on triplanar materials. Ignoring height mapping in favor of triplanar mapping.");
+		}
+	}
+
 	if (!RenderingServer::get_singleton()->is_low_end() && features[FEATURE_HEIGHT_MAPPING] && !flags[FLAG_UV1_USE_TRIPLANAR]) { //heightmap not supported with triplanar
 		code += "\t{\n";
 		code += "\t\tvec3 view_dir = normalize(normalize(-VERTEX)*mat3(TANGENT*heightmap_flip.x,-BINORMAL*heightmap_flip.y,NORMAL));\n"; // binormal is negative due to mikktspace, flip 'unflips' it ;-)
