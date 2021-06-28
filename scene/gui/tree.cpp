@@ -489,11 +489,11 @@ TreeItem *TreeItem::create_child(int p_idx) {
 	return ti;
 }
 
-Tree *TreeItem::get_tree() {
+Tree *TreeItem::get_tree() const {
 	return tree;
 }
 
-TreeItem *TreeItem::get_next() {
+TreeItem *TreeItem::get_next() const {
 	return next;
 }
 
@@ -516,11 +516,11 @@ TreeItem *TreeItem::get_prev() {
 	return prev;
 }
 
-TreeItem *TreeItem::get_parent() {
+TreeItem *TreeItem::get_parent() const {
 	return parent;
 }
 
-TreeItem *TreeItem::get_first_child() {
+TreeItem *TreeItem::get_first_child() const {
 	return first_child;
 }
 
@@ -951,6 +951,53 @@ void TreeItem::set_disable_folding(bool p_disable) {
 
 bool TreeItem::is_folding_disabled() const {
 	return disable_folding;
+}
+
+Size2 TreeItem::get_minimum_size(int p_column) {
+	ERR_FAIL_INDEX_V(p_column, cells.size(), Size2());
+	Tree *tree = get_tree();
+	ERR_FAIL_COND_V(!tree, Size2());
+
+	Size2 size;
+
+	// Default offset?
+	//size.width += (disable_folding || tree->hide_folding) ? tree->cache.hseparation : tree->cache.item_margin;
+
+	// Text.
+	const TreeItem::Cell &cell = cells[p_column];
+	if (!cell.text.is_empty()) {
+		if (cell.dirty) {
+			tree->update_item_cell(this, p_column);
+		}
+		Size2 text_size = cell.text_buf->get_size();
+		size.width += text_size.width;
+		size.height = MAX(size.height, text_size.height);
+	}
+
+	// Icon.
+	if (cell.icon.is_valid()) {
+		Size2i icon_size = cell.get_icon_size();
+		if (cell.icon_max_w > 0 && icon_size.width > cell.icon_max_w) {
+			icon_size.width = cell.icon_max_w;
+		}
+		size.width += icon_size.width + tree->cache.hseparation;
+		size.height = MAX(size.height, icon_size.height);
+	}
+
+	// Buttons.
+	for (int i = 0; i < cell.buttons.size(); i++) {
+		Ref<Texture2D> texture = cell.buttons[i].texture;
+		if (texture.is_valid()) {
+			Size2 button_size = texture->get_size() + tree->cache.button_pressed->get_minimum_size();
+			size.width += button_size.width;
+			size.height = MAX(size.height, button_size.height);
+		}
+	}
+	if (cell.buttons.size() >= 2) {
+		size.width += (cell.buttons.size() - 1) * tree->cache.button_margin;
+	}
+
+	return size;
 }
 
 Variant TreeItem::_call_recursive_bind(const Variant **p_args, int p_argcount, Callable::CallError &r_error) {
@@ -3276,7 +3323,7 @@ Size2 Tree::get_internal_min_size() const {
 		size.height += get_item_height(root);
 	}
 	for (int i = 0; i < columns.size(); i++) {
-		size.width += columns[i].min_width;
+		size.width += get_column_minimum_width(i);
 	}
 
 	return size;
@@ -3457,7 +3504,7 @@ void Tree::_notification(int p_what) {
 		draw_ofs.y += tbh;
 		draw_size.y -= tbh;
 
-		if (root) {
+		if (root && get_size().x > 0 && get_size().y > 0) {
 			draw_item(Point2(), draw_ofs, draw_size, root);
 		}
 
@@ -3563,11 +3610,11 @@ TreeItem *Tree::create_item(TreeItem *p_parent, int p_idx) {
 	return ti;
 }
 
-TreeItem *Tree::get_root() {
+TreeItem *Tree::get_root() const {
 	return root;
 }
 
-TreeItem *Tree::get_last_item() {
+TreeItem *Tree::get_last_item() const {
 	TreeItem *last = root;
 
 	while (last) {
@@ -3697,13 +3744,13 @@ bool Tree::is_root_hidden() const {
 	return hide_root;
 }
 
-void Tree::set_column_min_width(int p_column, int p_min_width) {
+void Tree::set_column_custom_minimum_width(int p_column, int p_min_width) {
 	ERR_FAIL_INDEX(p_column, columns.size());
 
-	if (p_min_width < 1) {
+	if (p_min_width < 0) {
 		return;
 	}
-	columns.write[p_column].min_width = p_min_width;
+	columns.write[p_column].custom_min_width = p_min_width;
 	update();
 }
 
@@ -3770,44 +3817,79 @@ TreeItem *Tree::get_next_selected(TreeItem *p_item) {
 	return nullptr;
 }
 
+int Tree::get_column_minimum_width(int p_column) const {
+	ERR_FAIL_INDEX_V(p_column, columns.size(), -1);
+
+	if (columns[p_column].custom_min_width != 0) {
+		return columns[p_column].custom_min_width;
+	} else {
+		int depth = 0;
+		int min_width = 0;
+		TreeItem *next;
+		for (TreeItem *item = get_root(); item; item = next) {
+			next = item->get_next_visible();
+			// Compute the depth in tree.
+			if (next && p_column == 0) {
+				if (next->get_parent() == item) {
+					depth += 1;
+				} else {
+					TreeItem *common_parent = item->get_parent();
+					while (common_parent != next->get_parent()) {
+						common_parent = common_parent->get_parent();
+						depth -= 1;
+					}
+				}
+			}
+
+			// Get the item minimum size.
+			Size2 item_size = item->get_minimum_size(p_column);
+			if (p_column == 0) {
+				item_size.width += cache.item_margin * depth;
+			}
+			min_width = MAX(min_width, item_size.width);
+		}
+		return min_width;
+	}
+}
+
 int Tree::get_column_width(int p_column) const {
 	ERR_FAIL_INDEX_V(p_column, columns.size(), -1);
 
-	if (!columns[p_column].expand) {
-		return columns[p_column].min_width;
-	}
+	if (columns[p_column].expand) {
+		int expand_area = get_size().width;
 
-	int expand_area = get_size().width;
+		Ref<StyleBox> bg = cache.bg;
 
-	Ref<StyleBox> bg = cache.bg;
-
-	if (bg.is_valid()) {
-		expand_area -= bg->get_margin(SIDE_LEFT) + bg->get_margin(SIDE_RIGHT);
-	}
-
-	if (v_scroll->is_visible_in_tree()) {
-		expand_area -= v_scroll->get_combined_minimum_size().width;
-	}
-
-	int expanding_columns = 0;
-	int expanding_total = 0;
-
-	for (int i = 0; i < columns.size(); i++) {
-		if (!columns[i].expand) {
-			expand_area -= columns[i].min_width;
-		} else {
-			expanding_total += columns[i].min_width;
-			expanding_columns++;
+		if (bg.is_valid()) {
+			expand_area -= bg->get_margin(SIDE_LEFT) + bg->get_margin(SIDE_RIGHT);
 		}
+
+		if (v_scroll->is_visible_in_tree()) {
+			expand_area -= v_scroll->get_combined_minimum_size().width;
+		}
+
+		int expanding_columns = 0;
+		int expanding_total = 0;
+
+		for (int i = 0; i < columns.size(); i++) {
+			if (!columns[i].expand) {
+				expand_area -= get_column_minimum_width(i);
+			} else {
+				expanding_total += get_column_minimum_width(i);
+				expanding_columns++;
+			}
+		}
+
+		if (expand_area < expanding_total) {
+			return get_column_minimum_width(p_column);
+		}
+
+		ERR_FAIL_COND_V(expanding_columns == 0, -1); // shouldn't happen
+
+		return expand_area * get_column_minimum_width(p_column) / expanding_total;
+	} else {
+		return get_column_minimum_width(p_column);
 	}
-
-	if (expand_area < expanding_total) {
-		return columns[p_column].min_width;
-	}
-
-	ERR_FAIL_COND_V(expanding_columns == 0, -1); // shouldn't happen
-
-	return expand_area * columns[p_column].min_width / expanding_total;
 }
 
 void Tree::propagate_set_columns(TreeItem *p_item) {
@@ -4462,7 +4544,7 @@ void Tree::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("create_item", "parent", "idx"), &Tree::_create_item, DEFVAL(Variant()), DEFVAL(-1));
 
 	ClassDB::bind_method(D_METHOD("get_root"), &Tree::get_root);
-	ClassDB::bind_method(D_METHOD("set_column_min_width", "column", "min_width"), &Tree::set_column_min_width);
+	ClassDB::bind_method(D_METHOD("set_column_custom_minimum_width", "column", "min_width"), &Tree::set_column_custom_minimum_width);
 	ClassDB::bind_method(D_METHOD("set_column_expand", "column", "expand"), &Tree::set_column_expand);
 	ClassDB::bind_method(D_METHOD("get_column_width", "column"), &Tree::get_column_width);
 

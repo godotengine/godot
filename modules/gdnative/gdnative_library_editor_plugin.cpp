@@ -356,12 +356,12 @@ GDNativeLibraryEditor::GDNativeLibraryEditor() {
 	tree->set_column_titles_visible(true);
 	tree->set_columns(4);
 	tree->set_column_expand(0, false);
-	tree->set_column_min_width(0, int(200 * EDSCALE));
+	tree->set_column_custom_minimum_width(0, int(200 * EDSCALE));
 	tree->set_column_title(0, TTR("Platform"));
 	tree->set_column_title(1, TTR("Dynamic Library"));
 	tree->set_column_title(2, TTR("Dependencies"));
 	tree->set_column_expand(3, false);
-	tree->set_column_min_width(3, int(110 * EDSCALE));
+	tree->set_column_custom_minimum_width(3, int(110 * EDSCALE));
 	tree->connect("button_pressed", callable_mp(this, &GDNativeLibraryEditor::_on_item_button));
 	tree->connect("item_collapsed", callable_mp(this, &GDNativeLibraryEditor::_on_item_collapsed));
 	tree->connect("item_activated", callable_mp(this, &GDNativeLibraryEditor::_on_item_activated));

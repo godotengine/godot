@@ -1163,13 +1163,13 @@ SceneImportSettings::SceneImportSettings() {
 	external_path_tree->set_columns(3);
 	external_path_tree->set_column_titles_visible(true);
 	external_path_tree->set_column_expand(0, true);
-	external_path_tree->set_column_min_width(0, 100 * EDSCALE);
+	external_path_tree->set_column_custom_minimum_width(0, 100 * EDSCALE);
 	external_path_tree->set_column_title(0, TTR("Resource"));
 	external_path_tree->set_column_expand(1, true);
-	external_path_tree->set_column_min_width(1, 100 * EDSCALE);
+	external_path_tree->set_column_custom_minimum_width(1, 100 * EDSCALE);
 	external_path_tree->set_column_title(1, TTR("Path"));
 	external_path_tree->set_column_expand(2, false);
-	external_path_tree->set_column_min_width(2, 200 * EDSCALE);
+	external_path_tree->set_column_custom_minimum_width(2, 200 * EDSCALE);
 	external_path_tree->set_column_title(2, TTR("Status"));
 	save_path = memnew(EditorFileDialog);
 	save_path->set_file_mode(EditorFileDialog::FILE_MODE_OPEN_DIR);

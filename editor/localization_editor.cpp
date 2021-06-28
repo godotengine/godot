@@ -729,7 +729,7 @@ LocalizationEditor::LocalizationEditor() {
 		translation_remap_options->set_column_titles_visible(true);
 		translation_remap_options->set_column_expand(0, true);
 		translation_remap_options->set_column_expand(1, false);
-		translation_remap_options->set_column_min_width(1, 200);
+		translation_remap_options->set_column_custom_minimum_width(1, 200);
 		translation_remap_options->connect("item_edited", callable_mp(this, &LocalizationEditor::_translation_res_option_changed));
 		translation_remap_options->connect("button_pressed", callable_mp(this, &LocalizationEditor::_translation_res_option_delete));
 		tmc->add_child(translation_remap_options);
