@@ -158,6 +158,7 @@ bool WSLClient::_verify_headers(String &r_protocol) {
 
 Error WSLClient::connect_to_host(String p_host, String p_path, uint16_t p_port, bool p_ssl, const Vector<String> p_protocols, const Vector<String> p_custom_headers) {
 	ERR_FAIL_COND_V(_connection.is_valid(), ERR_ALREADY_IN_USE);
+	ERR_FAIL_COND_V(p_path.is_empty(), ERR_INVALID_PARAMETER);
 
 	_peer = Ref<WSLPeer>(memnew(WSLPeer));
 	IPAddress addr;
