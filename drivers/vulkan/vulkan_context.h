@@ -70,7 +70,6 @@ private:
 	};
 
 	VkInstance inst = VK_NULL_HANDLE;
-	VkSurfaceKHR surface = VK_NULL_HANDLE;
 	VkPhysicalDevice gpu = VK_NULL_HANDLE;
 	VkPhysicalDeviceProperties gpu_props;
 	uint32_t queue_family_count = 0;
@@ -101,7 +100,6 @@ private:
 	VkQueue present_queue = VK_NULL_HANDLE;
 	VkColorSpaceKHR color_space;
 	VkFormat format;
-	VkSemaphore image_acquired_semaphores[FRAME_LAG];
 	VkSemaphore draw_complete_semaphores[FRAME_LAG];
 	VkSemaphore image_ownership_semaphores[FRAME_LAG];
 	int frame_index = 0;
@@ -121,6 +119,8 @@ private:
 		VkSwapchainKHR swapchain = VK_NULL_HANDLE;
 		SwapchainImageResources *swapchain_image_resources = VK_NULL_HANDLE;
 		VkPresentModeKHR presentMode = VK_PRESENT_MODE_FIFO_KHR;
+		VkSemaphore image_acquired_semaphores[FRAME_LAG];
+		bool semaphore_acquired = false;
 		uint32_t current_buffer = 0;
 		int width = 0;
 		int height = 0;
@@ -208,7 +208,7 @@ private:
 
 	Error _create_physical_device();
 
-	Error _initialize_queues(VkSurfaceKHR surface);
+	Error _initialize_queues(VkSurfaceKHR p_surface);
 
 	Error _create_device();
 

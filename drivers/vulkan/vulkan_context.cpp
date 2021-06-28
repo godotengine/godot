@@ -1013,11 +1013,11 @@ Error VulkanContext::_create_device() {
 	return OK;
 }
 
-Error VulkanContext::_initialize_queues(VkSurfaceKHR surface) {
+Error VulkanContext::_initialize_queues(VkSurfaceKHR p_surface) {
 	// Iterate over each queue to learn whether it supports presenting:
 	VkBool32 *supportsPresent = (VkBool32 *)malloc(queue_family_count * sizeof(VkBool32));
 	for (uint32_t i = 0; i < queue_family_count; i++) {
-		fpGetPhysicalDeviceSurfaceSupportKHR(gpu, i, surface, &supportsPresent[i]);
+		fpGetPhysicalDeviceSurfaceSupportKHR(gpu, i, p_surface, &supportsPresent[i]);
 	}
 
 	// Search for a graphics and a present queue in the array of queue
@@ -1091,10 +1091,10 @@ Error VulkanContext::_initialize_queues(VkSurfaceKHR surface) {
 
 	// Get the list of VkFormat's that are supported:
 	uint32_t formatCount;
-	VkResult err = fpGetPhysicalDeviceSurfaceFormatsKHR(gpu, surface, &formatCount, nullptr);
+	VkResult err = fpGetPhysicalDeviceSurfaceFormatsKHR(gpu, p_surface, &formatCount, nullptr);
 	ERR_FAIL_COND_V(err, ERR_CANT_CREATE);
 	VkSurfaceFormatKHR *surfFormats = (VkSurfaceFormatKHR *)malloc(formatCount * sizeof(VkSurfaceFormatKHR));
-	err = fpGetPhysicalDeviceSurfaceFormatsKHR(gpu, surface, &formatCount, surfFormats);
+	err = fpGetPhysicalDeviceSurfaceFormatsKHR(gpu, p_surface, &formatCount, surfFormats);
 	if (err) {
 		free(surfFormats);
 		ERR_FAIL_V(ERR_CANT_CREATE);
@@ -1169,9 +1169,6 @@ Error VulkanContext::_create_semaphores() {
 		err = vkCreateFence(device, &fence_ci, nullptr, &fences[i]);
 		ERR_FAIL_COND_V(err, ERR_CANT_CREATE);
 
-		err = vkCreateSemaphore(device, &semaphoreCreateInfo, nullptr, &image_acquired_semaphores[i]);
-		ERR_FAIL_COND_V(err, ERR_CANT_CREATE);
-
 		err = vkCreateSemaphore(device, &semaphoreCreateInfo, nullptr, &draw_complete_semaphores[i]);
 		ERR_FAIL_COND_V(err, ERR_CANT_CREATE);
 
@@ -1201,6 +1198,19 @@ Error VulkanContext::_window_create(DisplayServer::WindowID p_window_id, VkSurfa
 		// is created.
 		Error err = _initialize_queues(p_surface);
 		ERR_FAIL_COND_V(err != OK, ERR_CANT_CREATE);
+	} else {
+		// make sure any of the surfaces supports present (validation layer complains if this is not done).
+		bool any_supports_present = false;
+		for (uint32_t i = 0; i < queue_family_count; i++) {
+			VkBool32 supports;
+			fpGetPhysicalDeviceSurfaceSupportKHR(gpu, i, p_surface, &supports);
+			if (supports) {
+				any_supports_present = true;
+				break;
+			}
+		}
+
+		ERR_FAIL_COND_V_MSG(!any_supports_present, ERR_CANT_CREATE, "Surface passed for sub-window creation does not support presenting");
 	}
 
 	Window window;
@@ -1209,6 +1219,17 @@ Error VulkanContext::_window_create(DisplayServer::WindowID p_window_id, VkSurfa
 	window.height = p_height;
 	Error err = _update_swap_chain(&window);
 	ERR_FAIL_COND_V(err != OK, ERR_CANT_CREATE);
+
+	VkSemaphoreCreateInfo semaphoreCreateInfo = {
+		/*sType*/ VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO,
+		/*pNext*/ nullptr,
+		/*flags*/ 0,
+	};
+
+	for (uint32_t i = 0; i < FRAME_LAG; i++) {
+		VkResult vkerr = vkCreateSemaphore(device, &semaphoreCreateInfo, nullptr, &window.image_acquired_semaphores[i]);
+		ERR_FAIL_COND_V(vkerr, ERR_CANT_CREATE);
+	}
 
 	windows[p_window_id] = window;
 	return OK;
@@ -1249,6 +1270,10 @@ VkFramebuffer VulkanContext::window_get_framebuffer(DisplayServer::WindowID p_wi
 void VulkanContext::window_destroy(DisplayServer::WindowID p_window_id) {
 	ERR_FAIL_COND(!windows.has(p_window_id));
 	_clean_up_swap_chain(&windows[p_window_id]);
+	for (uint32_t i = 0; i < FRAME_LAG; i++) {
+		vkDestroySemaphore(device, windows[p_window_id].image_acquired_semaphores[i], nullptr);
+	}
+
 	vkDestroySurfaceKHR(inst, windows[p_window_id].surface, nullptr);
 	windows.erase(p_window_id);
 }
@@ -1703,6 +1728,8 @@ Error VulkanContext::prepare_buffers() {
 	for (Map<int, Window>::Element *E = windows.front(); E; E = E->next()) {
 		Window *w = &E->get();
 
+		w->semaphore_acquired = false;
+
 		if (w->swapchain == VK_NULL_HANDLE) {
 			continue;
 		}
@@ -1711,7 +1738,7 @@ Error VulkanContext::prepare_buffers() {
 			// Get the index of the next available swapchain image:
 			err =
 					fpAcquireNextImageKHR(device, w->swapchain, UINT64_MAX,
-							image_acquired_semaphores[frame_index], VK_NULL_HANDLE, &w->current_buffer);
+							w->image_acquired_semaphores[frame_index], VK_NULL_HANDLE, &w->current_buffer);
 
 			if (err == VK_ERROR_OUT_OF_DATE_KHR) {
 				// swapchain is out of date (e.g. the window was resized) and
@@ -1724,8 +1751,10 @@ Error VulkanContext::prepare_buffers() {
 				// presentation engine will still present the image correctly.
 				print_verbose("Vulkan: Early suboptimal swapchain.");
 				break;
+			} else if (err != VK_SUCCESS) {
+				ERR_BREAK(ERR_CANT_CREATE);
 			} else {
-				ERR_FAIL_COND_V(err, ERR_CANT_CREATE);
+				w->semaphore_acquired = true;
 			}
 		} while (err != VK_SUCCESS);
 	}
@@ -1775,14 +1804,25 @@ Error VulkanContext::swap_buffers() {
 		commands_to_submit = command_buffer_count;
 	}
 
+	VkSemaphore *semaphores_to_acquire = (VkSemaphore *)alloca(windows.size() * sizeof(VkSemaphore));
+	uint32_t semaphores_to_acquire_count = 0;
+
+	for (Map<int, Window>::Element *E = windows.front(); E; E = E->next()) {
+		Window *w = &E->get();
+
+		if (w->semaphore_acquired) {
+			semaphores_to_acquire[semaphores_to_acquire_count++] = w->image_acquired_semaphores[frame_index];
+		}
+	}
+
 	VkPipelineStageFlags pipe_stage_flags;
 	VkSubmitInfo submit_info;
 	submit_info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
 	submit_info.pNext = nullptr;
 	submit_info.pWaitDstStageMask = &pipe_stage_flags;
 	pipe_stage_flags = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-	submit_info.waitSemaphoreCount = 1;
-	submit_info.pWaitSemaphores = &image_acquired_semaphores[frame_index];
+	submit_info.waitSemaphoreCount = semaphores_to_acquire_count;
+	submit_info.pWaitSemaphores = semaphores_to_acquire;
 	submit_info.commandBufferCount = commands_to_submit;
 	submit_info.pCommandBuffers = commands_ptr;
 	submit_info.signalSemaphoreCount = 1;
@@ -2134,7 +2174,6 @@ VulkanContext::~VulkanContext() {
 	if (device_initialized) {
 		for (uint32_t i = 0; i < FRAME_LAG; i++) {
 			vkDestroyFence(device, fences[i], nullptr);
-			vkDestroySemaphore(device, image_acquired_semaphores[i], nullptr);
 			vkDestroySemaphore(device, draw_complete_semaphores[i], nullptr);
 			if (separate_present_queue) {
 				vkDestroySemaphore(device, image_ownership_semaphores[i], nullptr);

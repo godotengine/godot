@@ -3524,7 +3524,10 @@ VkRenderPass RenderingDeviceVulkan::_render_pass_create(const Vector<AttachmentF
 			depth_stencil_reference.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
 			attachment_last_pass[attachment] = i;
 
-			if (!is_multisample_first) {
+			if (is_multisample_first) {
+				texture_samples = p_attachments[attachment].samples;
+				is_multisample_first = false;
+			} else {
 				ERR_FAIL_COND_V_MSG(texture_samples != p_attachments[attachment].samples, VK_NULL_HANDLE, "Invalid framebuffer depth format attachment(" + itos(attachment) + "), in pass (" + itos(i) + "), if an attachment is marked as multisample, all of them should be multisample and use the same number of samples including the depth.");
 			}
 
