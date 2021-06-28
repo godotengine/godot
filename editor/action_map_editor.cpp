@@ -1125,9 +1125,9 @@ ActionMapEditor::ActionMapEditor() {
 	action_tree->set_column_title(0, TTR("Action"));
 	action_tree->set_column_title(1, TTR("Deadzone"));
 	action_tree->set_column_expand(1, false);
-	action_tree->set_column_min_width(1, 80 * EDSCALE);
+	action_tree->set_column_custom_minimum_width(1, 80 * EDSCALE);
 	action_tree->set_column_expand(2, false);
-	action_tree->set_column_min_width(2, 50 * EDSCALE);
+	action_tree->set_column_custom_minimum_width(2, 50 * EDSCALE);
 	action_tree->connect("item_edited", callable_mp(this, &ActionMapEditor::_action_edited));
 	action_tree->connect("item_activated", callable_mp(this, &ActionMapEditor::_tree_item_activated));
 	action_tree->connect("button_pressed", callable_mp(this, &ActionMapEditor::_tree_button_pressed));

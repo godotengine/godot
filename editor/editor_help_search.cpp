@@ -239,7 +239,7 @@ EditorHelpSearch::EditorHelpSearch() {
 	results_tree->set_column_title(0, TTR("Name"));
 	results_tree->set_column_title(1, TTR("Member Type"));
 	results_tree->set_column_expand(1, false);
-	results_tree->set_column_min_width(1, 150 * EDSCALE);
+	results_tree->set_column_custom_minimum_width(1, 150 * EDSCALE);
 	results_tree->set_custom_minimum_size(Size2(0, 100) * EDSCALE);
 	results_tree->set_hide_root(true);
 	results_tree->set_select_mode(Tree::SELECT_ROW);
