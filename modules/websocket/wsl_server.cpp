@@ -95,8 +95,8 @@ bool WSLServer::PendingPeer::_parse_request(const Vector<String> p_protocols) {
 	return true;
 }
 
-Error WSLServer::PendingPeer::do_handshake(const Vector<String> p_protocols) {
-	if (OS::get_singleton()->get_ticks_msec() - time > WSL_SERVER_TIMEOUT) {
+Error WSLServer::PendingPeer::do_handshake(const Vector<String> p_protocols, uint64_t p_timeout) {
+	if (OS::get_singleton()->get_ticks_msec() - time > p_timeout) {
 		return ERR_TIMEOUT;
 	}
 	if (use_ssl) {
@@ -188,7 +188,7 @@ void WSLServer::poll() {
 	List<Ref<PendingPeer>> remove_peers;
 	for (List<Ref<PendingPeer>>::Element *E = _pending.front(); E; E = E->next()) {
 		Ref<PendingPeer> ppeer = E->get();
-		Error err = ppeer->do_handshake(_protocols);
+		Error err = ppeer->do_handshake(_protocols, handshake_timeout);
 		if (err == ERR_BUSY) {
 			continue;
 		} else if (err != OK) {

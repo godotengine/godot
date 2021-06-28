@@ -48,6 +48,7 @@ protected:
 	Ref<CryptoKey> private_key;
 	Ref<X509Certificate> ssl_cert;
 	Ref<X509Certificate> ca_chain;
+	uint32_t handshake_timeout = 3000;
 
 public:
 	virtual Error listen(int p_port, const Vector<String> p_protocols = Vector<String>(), bool gd_mp_api = false) = 0;
@@ -77,6 +78,9 @@ public:
 
 	Ref<X509Certificate> get_ca_chain() const;
 	void set_ca_chain(Ref<X509Certificate> p_ca_chain);
+
+	float get_handshake_timeout() const;
+	void set_handshake_timeout(float p_timeout);
 
 	WebSocketServer();
 	~WebSocketServer();
