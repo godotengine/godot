@@ -757,7 +757,7 @@ void GraphNode::_connpos_update() {
 			continue;
 		}
 
-		Size2i size = c->get_combined_minimum_size();
+		Size2i size = c->get_rect().size;
 
 		int y = sb->get_margin(SIDE_TOP) + vofs;
 		int h = size.y;
