@@ -40,8 +40,6 @@
 #include "core/io/stream_peer_tcp.h"
 #include "core/io/tcp_server.h"
 
-#define WSL_SERVER_TIMEOUT 1000
-
 class WSLServer : public WebSocketServer {
 	GDCIIMPL(WSLServer, WebSocketServer);
 
@@ -64,7 +62,7 @@ private:
 		CharString response;
 		int response_sent = 0;
 
-		Error do_handshake(const Vector<String> p_protocols);
+		Error do_handshake(const Vector<String> p_protocols, uint64_t p_timeout);
 	};
 
 	int _in_buf_size = DEF_BUF_SHIFT;

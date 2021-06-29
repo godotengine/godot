@@ -65,6 +65,10 @@ void WebSocketServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_ca_chain"), &WebSocketServer::set_ca_chain);
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "ca_chain", PROPERTY_HINT_RESOURCE_TYPE, "X509Certificate", PROPERTY_USAGE_NONE), "set_ca_chain", "get_ca_chain");
 
+	ClassDB::bind_method(D_METHOD("get_handshake_timeout"), &WebSocketServer::get_handshake_timeout);
+	ClassDB::bind_method(D_METHOD("set_handshake_timeout", "timeout"), &WebSocketServer::set_handshake_timeout);
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "handshake_timeout"), "set_handshake_timeout", "get_handshake_timeout");
+
 	ADD_SIGNAL(MethodInfo("client_close_request", PropertyInfo(Variant::INT, "id"), PropertyInfo(Variant::INT, "code"), PropertyInfo(Variant::STRING, "reason")));
 	ADD_SIGNAL(MethodInfo("client_disconnected", PropertyInfo(Variant::INT, "id"), PropertyInfo(Variant::BOOL, "was_clean_close")));
 	ADD_SIGNAL(MethodInfo("client_connected", PropertyInfo(Variant::INT, "id"), PropertyInfo(Variant::STRING, "protocol")));
@@ -106,6 +110,15 @@ Ref<X509Certificate> WebSocketServer::get_ca_chain() const {
 void WebSocketServer::set_ca_chain(Ref<X509Certificate> p_ca_chain) {
 	ERR_FAIL_COND(is_listening());
 	ca_chain = p_ca_chain;
+}
+
+float WebSocketServer::get_handshake_timeout() const {
+	return handshake_timeout / 1000.0;
+}
+
+void WebSocketServer::set_handshake_timeout(float p_timeout) {
+	ERR_FAIL_COND(p_timeout <= 0.0);
+	handshake_timeout = p_timeout * 1000;
 }
 
 NetworkedMultiplayerPeer::ConnectionStatus WebSocketServer::get_connection_status() const {
