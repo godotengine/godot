@@ -172,7 +172,7 @@ public:
 
 	uint64_t draw_viewports_pass = 0;
 
-	mutable RID_PtrOwner<Viewport, true> viewport_owner;
+	mutable RID_Owner<Viewport, true> viewport_owner;
 
 	struct ViewportSort {
 		_FORCE_INLINE_ bool operator()(const Viewport *p_left, const Viewport *p_right) const {

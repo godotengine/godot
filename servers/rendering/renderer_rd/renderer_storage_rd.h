@@ -221,7 +221,7 @@ private:
 		~CanvasTexture();
 	};
 
-	RID_PtrOwner<CanvasTexture, true> canvas_texture_owner;
+	RID_Owner<CanvasTexture, true> canvas_texture_owner;
 
 	/* TEXTURE API */
 	struct Texture {
@@ -513,7 +513,7 @@ private:
 	void _mesh_instance_clear(MeshInstance *mi);
 	void _mesh_instance_add_surface(MeshInstance *mi, Mesh *mesh, uint32_t p_surface);
 
-	mutable RID_PtrOwner<MeshInstance> mesh_instance_owner;
+	mutable RID_Owner<MeshInstance> mesh_instance_owner;
 
 	SelfList<MeshInstance>::List dirty_mesh_instance_weights;
 	SelfList<MeshInstance>::List dirty_mesh_instance_arrays;
