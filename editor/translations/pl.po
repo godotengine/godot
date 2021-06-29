@@ -52,7 +52,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2021-05-19 20:16+0000\n"
+"PO-Revision-Date: 2021-06-20 13:35+0000\n"
 "Last-Translator: Tomek <kobewi4e@gmail.com>\n"
 "Language-Team: Polish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/pl/>\n"
@@ -62,7 +62,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=n==1 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 "
 "|| n%100>=20) ? 1 : 2;\n"
-"X-Generator: Weblate 4.7-dev\n"
+"X-Generator: Weblate 4.7\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -86,7 +86,7 @@ msgstr "Niewłaściwe dane %i (nie przekazane) w wyrażeniu"
 #: core/math/expression.cpp
 msgid "self can't be used because instance is null (not passed)"
 msgstr ""
-"self nie może być użyte, ponieważ instancja jest nullem (nie przekazano)"
+"self nie może zostać użyte, ponieważ instancja jest nullem (nie przekazana)"
 
 #: core/math/expression.cpp
 msgid "Invalid operands to operator %s, %s and %s."
@@ -1159,7 +1159,7 @@ msgstr "Podziękowania od społeczności Godota!"
 
 #: editor/editor_about.cpp editor/editor_node.cpp editor/project_manager.cpp
 msgid "Click to copy."
-msgstr ""
+msgstr "Kliknij, by skopiować."
 
 #: editor/editor_about.cpp
 msgid "Godot Engine contributors"
@@ -12236,6 +12236,8 @@ msgid ""
 "Either Debug Keystore, Debug User AND Debug Password settings must be "
 "configured OR none of them."
 msgstr ""
+"Albo ustawienia Debug Keystore, Debug User ORAZ Debug Password muszą być "
+"skonfigurowane, ALBO żadne z nich."
 
 #: platform/android/export/export.cpp
 msgid "Debug keystore not configured in the Editor Settings nor in the preset."
@@ -12248,6 +12250,8 @@ msgid ""
 "Either Release Keystore, Release User AND Release Password settings must be "
 "configured OR none of them."
 msgstr ""
+"Albo ustawienia Release Keystore, Release User ORAZ Release Password muszą "
+"być skonfigurowane, ALBO żadne z nich."
 
 #: platform/android/export/export.cpp
 msgid "Release keystore incorrectly configured in the export preset."

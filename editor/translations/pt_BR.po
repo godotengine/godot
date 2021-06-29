@@ -117,12 +117,13 @@
 # Arthur Phillip D. Silva <artphil.dev@gmail.com>, 2021.
 # Gustavo HM 102 <gustavohm102@gmail.com>, 2021.
 # Douglas Leão <djlsplays@gmail.com>, 2021.
+# PauloFRs <paulofr1@hotmail.com>, 2021.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: 2016-05-30\n"
-"PO-Revision-Date: 2021-06-12 01:23+0000\n"
-"Last-Translator: Douglas Leão <djlsplays@gmail.com>\n"
+"PO-Revision-Date: 2021-06-29 08:04+0000\n"
+"Last-Translator: PauloFRs <paulofr1@hotmail.com>\n"
 "Language-Team: Portuguese (Brazil) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/pt_BR/>\n"
 "Language: pt_BR\n"
@@ -130,7 +131,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 4.7-dev\n"
+"X-Generator: Weblate 4.7.1-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -153,7 +154,7 @@ msgstr "Entrada inválida %i (não passada) na expressão"
 
 #: core/math/expression.cpp
 msgid "self can't be used because instance is null (not passed)"
-msgstr "self não pode ser usado porque a instância é nula (não passada)"
+msgstr "self não pode ser usado porque sua instância é null (não passado)"
 
 #: core/math/expression.cpp
 msgid "Invalid operands to operator %s, %s and %s."
@@ -1230,7 +1231,7 @@ msgstr "Agradecimentos da comunidade Godot!"
 
 #: editor/editor_about.cpp editor/editor_node.cpp editor/project_manager.cpp
 msgid "Click to copy."
-msgstr ""
+msgstr "Clique para copiar."
 
 #: editor/editor_about.cpp
 msgid "Godot Engine contributors"
@@ -1911,7 +1912,7 @@ msgstr "Gerenciar perfis de recurso do editor"
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
 msgid "Select Current Folder"
-msgstr "Selecione a Pasta Atual"
+msgstr "Selecionar a Pasta Atual"
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
 msgid "File Exists, Overwrite?"
@@ -12328,6 +12329,8 @@ msgid ""
 "Either Debug Keystore, Debug User AND Debug Password settings must be "
 "configured OR none of them."
 msgstr ""
+"As configurações Debug Keystore, Debug User E Debug Password devem ser "
+"configuradas OU nenhuma delas."
 
 #: platform/android/export/export.cpp
 msgid "Debug keystore not configured in the Editor Settings nor in the preset."
@@ -12340,6 +12343,8 @@ msgid ""
 "Either Release Keystore, Release User AND Release Password settings must be "
 "configured OR none of them."
 msgstr ""
+"As configurações de Release Keystore, Release User AND Release Password "
+"devem ser definidas OU nenhuma delas."
 
 #: platform/android/export/export.cpp
 msgid "Release keystore incorrectly configured in the export preset."
