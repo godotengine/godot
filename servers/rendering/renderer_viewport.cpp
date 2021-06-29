@@ -122,7 +122,7 @@ void RendererViewport::_draw_viewport(Viewport *p_viewport, uint32_t p_view_coun
 		}
 	}
 
-	bool can_draw_3d = RSG::scene->is_camera(p_viewport->camera);
+	bool can_draw_3d = RSG::scene->is_camera(p_viewport->camera) && !p_viewport->disable_3d;
 
 	if (p_viewport->clear_mode != RS::VIEWPORT_CLEAR_NEVER) {
 		if (p_viewport->transparent_bg) {
@@ -810,6 +810,13 @@ void RendererViewport::viewport_set_disable_environment(RID p_viewport, bool p_d
 	ERR_FAIL_COND(!viewport);
 
 	viewport->disable_environment = p_disable;
+}
+
+void RendererViewport::viewport_set_disable_3d(RID p_viewport, bool p_disable) {
+	Viewport *viewport = viewport_owner.getornull(p_viewport);
+	ERR_FAIL_COND(!viewport);
+
+	viewport->disable_3d = p_disable;
 }
 
 void RendererViewport::viewport_attach_camera(RID p_viewport, RID p_camera) {
