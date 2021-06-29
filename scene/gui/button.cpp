@@ -49,9 +49,14 @@ Size2 Button::get_minimum_size() const {
 
 		if (!_icon.is_null()) {
 			minsize.height = MAX(minsize.height, _icon->get_height());
-			minsize.width += _icon->get_width();
-			if (xl_text != "") {
-				minsize.width += get_theme_constant("hseparation");
+
+			if (icon_align != ALIGN_CENTER) {
+				minsize.width += _icon->get_width();
+				if (xl_text != "") {
+					minsize.width += get_theme_constant("hseparation");
+				}
+			} else {
+				minsize.width = MAX(minsize.width, _icon->get_width());
 			}
 		}
 	}
@@ -202,6 +207,21 @@ void Button::_notification(int p_what) {
 			}
 
 			Rect2 icon_region = Rect2();
+			TextAlign icon_align_rtl_checked = icon_align;
+			TextAlign align_rtl_checked = align;
+			// Swap icon and text alignment sides if right-to-left layout is set.
+			if (rtl) {
+				if (icon_align == ALIGN_RIGHT) {
+					icon_align_rtl_checked = ALIGN_LEFT;
+				} else if (icon_align == ALIGN_LEFT) {
+					icon_align_rtl_checked = ALIGN_RIGHT;
+				}
+				if (align == ALIGN_RIGHT) {
+					align_rtl_checked = ALIGN_LEFT;
+				} else if (align == ALIGN_LEFT) {
+					align_rtl_checked = ALIGN_RIGHT;
+				}
+			}
 			if (!_icon.is_null()) {
 				int valign = size.height - style->get_minimum_size().y;
 				if (is_disabled()) {
@@ -209,20 +229,27 @@ void Button::_notification(int p_what) {
 				}
 
 				float icon_ofs_region = 0.0;
-				if (rtl) {
-					if (_internal_margin[SIDE_RIGHT] > 0) {
-						icon_ofs_region = _internal_margin[SIDE_RIGHT] + get_theme_constant("hseparation");
-					}
-				} else {
+				Point2 style_offset;
+				Size2 icon_size = _icon->get_size();
+				if (icon_align_rtl_checked == ALIGN_LEFT) {
+					style_offset.x = style->get_margin(SIDE_LEFT);
 					if (_internal_margin[SIDE_LEFT] > 0) {
 						icon_ofs_region = _internal_margin[SIDE_LEFT] + get_theme_constant("hseparation");
 					}
+				} else if (icon_align_rtl_checked == ALIGN_CENTER) {
+					style_offset.x = 0.0;
+				} else if (icon_align_rtl_checked == ALIGN_RIGHT) {
+					style_offset.x = -style->get_margin(SIDE_RIGHT);
+					if (_internal_margin[SIDE_RIGHT] > 0) {
+						icon_ofs_region = -_internal_margin[SIDE_RIGHT] - get_theme_constant("hseparation");
+					}
 				}
+				style_offset.y = style->get_margin(SIDE_TOP);
 
 				if (expand_icon) {
 					Size2 _size = get_size() - style->get_offset() * 2;
 					_size.width -= get_theme_constant("hseparation") + icon_ofs_region;
-					if (!clip_text) {
+					if (!clip_text && icon_align_rtl_checked != ALIGN_CENTER) {
 						_size.width -= text_buf->get_size().width;
 					}
 					float icon_width = _icon->get_width() * _size.height / _icon->get_height();
@@ -233,21 +260,26 @@ void Button::_notification(int p_what) {
 						icon_height = _icon->get_height() * icon_width / _icon->get_width();
 					}
 
-					if (rtl) {
-						icon_region = Rect2(Point2(size.width - (icon_ofs_region + icon_width + style->get_margin(SIDE_RIGHT)), style->get_margin(SIDE_TOP) + (_size.height - icon_height) / 2), Size2(icon_width, icon_height));
-					} else {
-						icon_region = Rect2(style->get_offset() + Point2(icon_ofs_region, (_size.height - icon_height) / 2), Size2(icon_width, icon_height));
-					}
+					icon_size = Size2(icon_width, icon_height);
+				}
+
+				if (icon_align_rtl_checked == ALIGN_LEFT) {
+					icon_region = Rect2(style_offset + Point2(icon_ofs_region, Math::floor((valign - icon_size.y) * 0.5)), icon_size);
+				} else if (icon_align_rtl_checked == ALIGN_CENTER) {
+					icon_region = Rect2(style_offset + Point2(icon_ofs_region + Math::floor((size.x - icon_size.x) * 0.5), Math::floor((valign - icon_size.y) * 0.5)), icon_size);
 				} else {
-					if (rtl) {
-						icon_region = Rect2(Point2(size.width - (icon_ofs_region + _icon->get_size().width + style->get_margin(SIDE_RIGHT)), style->get_margin(SIDE_TOP) + Math::floor((valign - _icon->get_height()) / 2.0)), _icon->get_size());
-					} else {
-						icon_region = Rect2(style->get_offset() + Point2(icon_ofs_region, Math::floor((valign - _icon->get_height()) / 2.0)), _icon->get_size());
-					}
+					icon_region = Rect2(style_offset + Point2(icon_ofs_region + size.x - icon_size.x, Math::floor((valign - icon_size.y) * 0.5)), icon_size);
+				}
+
+				if (icon_region.size.width > 0) {
+					draw_texture_rect_region(_icon, icon_region, Rect2(Point2(), _icon->get_size()), color_icon);
 				}
 			}
 
 			Point2 icon_ofs = !_icon.is_null() ? Point2(icon_region.size.width + get_theme_constant("hseparation"), 0) : Point2();
+			if (align_rtl_checked == ALIGN_CENTER && icon_align_rtl_checked == ALIGN_CENTER) {
+				icon_ofs.x = 0.0;
+			}
 			int text_clip = size.width - style->get_minimum_size().width - icon_ofs.width;
 			text_buf->set_width(clip_text ? text_clip : -1);
 
@@ -262,20 +294,15 @@ void Button::_notification(int p_what) {
 
 			Point2 text_ofs = (size - style->get_minimum_size() - icon_ofs - text_buf->get_size() - Point2(_internal_margin[SIDE_RIGHT] - _internal_margin[SIDE_LEFT], 0)) / 2.0;
 
-			switch (align) {
+			switch (align_rtl_checked) {
 				case ALIGN_LEFT: {
-					if (rtl) {
-						if (_internal_margin[SIDE_RIGHT] > 0) {
-							text_ofs.x = size.x - style->get_margin(SIDE_RIGHT) - text_width - _internal_margin[SIDE_RIGHT] - get_theme_constant("hseparation");
-						} else {
-							text_ofs.x = size.x - style->get_margin(SIDE_RIGHT) - text_width;
-						}
+					if (icon_align_rtl_checked != ALIGN_LEFT) {
+						icon_ofs.x = 0.0;
+					}
+					if (_internal_margin[SIDE_LEFT] > 0) {
+						text_ofs.x = style->get_margin(SIDE_LEFT) + icon_ofs.x + _internal_margin[SIDE_LEFT] + get_theme_constant("hseparation");
 					} else {
-						if (_internal_margin[SIDE_LEFT] > 0) {
-							text_ofs.x = style->get_margin(SIDE_LEFT) + icon_ofs.x + _internal_margin[SIDE_LEFT] + get_theme_constant("hseparation");
-						} else {
-							text_ofs.x = style->get_margin(SIDE_LEFT) + icon_ofs.x;
-						}
+						text_ofs.x = style->get_margin(SIDE_LEFT) + icon_ofs.x;
 					}
 					text_ofs.y += style->get_offset().y;
 				} break;
@@ -283,29 +310,22 @@ void Button::_notification(int p_what) {
 					if (text_ofs.x < 0) {
 						text_ofs.x = 0;
 					}
-					text_ofs += icon_ofs;
+					if (icon_align_rtl_checked == ALIGN_LEFT) {
+						text_ofs += icon_ofs;
+					}
 					text_ofs += style->get_offset();
 				} break;
 				case ALIGN_RIGHT: {
-					if (rtl) {
-						if (_internal_margin[SIDE_LEFT] > 0) {
-							text_ofs.x = style->get_margin(SIDE_LEFT) + icon_ofs.x + _internal_margin[SIDE_LEFT] + get_theme_constant("hseparation");
-						} else {
-							text_ofs.x = style->get_margin(SIDE_LEFT) + icon_ofs.x;
-						}
+					if (_internal_margin[SIDE_RIGHT] > 0) {
+						text_ofs.x = size.x - style->get_margin(SIDE_RIGHT) - text_width - _internal_margin[SIDE_RIGHT] - get_theme_constant("hseparation");
 					} else {
-						if (_internal_margin[SIDE_RIGHT] > 0) {
-							text_ofs.x = size.x - style->get_margin(SIDE_RIGHT) - text_width - _internal_margin[SIDE_RIGHT] - get_theme_constant("hseparation");
-						} else {
-							text_ofs.x = size.x - style->get_margin(SIDE_RIGHT) - text_width;
-						}
+						text_ofs.x = size.x - style->get_margin(SIDE_RIGHT) - text_width;
 					}
 					text_ofs.y += style->get_offset().y;
+					if (icon_align_rtl_checked == ALIGN_RIGHT) {
+						text_ofs.x -= icon_ofs.x;
+					}
 				} break;
-			}
-
-			if (rtl) {
-				text_ofs.x -= icon_ofs.x;
 			}
 
 			Color font_outline_color = get_theme_color("font_outline_color");
@@ -315,10 +335,6 @@ void Button::_notification(int p_what) {
 			}
 
 			text_buf->draw(ci, text_ofs, color);
-
-			if (!_icon.is_null() && icon_region.size.width > 0) {
-				draw_texture_rect_region(_icon, icon_region, Rect2(Point2(), _icon->get_size()), color_icon);
-			}
 		} break;
 	}
 }
@@ -457,6 +473,16 @@ Button::TextAlign Button::get_text_align() const {
 	return align;
 }
 
+void Button::set_icon_align(TextAlign p_align) {
+	icon_align = p_align;
+	minimum_size_changed();
+	update();
+}
+
+Button::TextAlign Button::get_icon_align() const {
+	return icon_align;
+}
+
 bool Button::_set(const StringName &p_name, const Variant &p_value) {
 	String str = p_name;
 	if (str.begins_with("opentype_features/")) {
@@ -519,14 +545,16 @@ void Button::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_language"), &Button::get_language);
 	ClassDB::bind_method(D_METHOD("set_button_icon", "texture"), &Button::set_icon);
 	ClassDB::bind_method(D_METHOD("get_button_icon"), &Button::get_icon);
-	ClassDB::bind_method(D_METHOD("set_expand_icon"), &Button::set_expand_icon);
-	ClassDB::bind_method(D_METHOD("is_expand_icon"), &Button::is_expand_icon);
 	ClassDB::bind_method(D_METHOD("set_flat", "enabled"), &Button::set_flat);
+	ClassDB::bind_method(D_METHOD("is_flat"), &Button::is_flat);
 	ClassDB::bind_method(D_METHOD("set_clip_text", "enabled"), &Button::set_clip_text);
 	ClassDB::bind_method(D_METHOD("get_clip_text"), &Button::get_clip_text);
 	ClassDB::bind_method(D_METHOD("set_text_align", "align"), &Button::set_text_align);
 	ClassDB::bind_method(D_METHOD("get_text_align"), &Button::get_text_align);
-	ClassDB::bind_method(D_METHOD("is_flat"), &Button::is_flat);
+	ClassDB::bind_method(D_METHOD("set_icon_align", "icon_align"), &Button::set_icon_align);
+	ClassDB::bind_method(D_METHOD("get_icon_align"), &Button::get_icon_align);
+	ClassDB::bind_method(D_METHOD("set_expand_icon"), &Button::set_expand_icon);
+	ClassDB::bind_method(D_METHOD("is_expand_icon"), &Button::is_expand_icon);
 
 	BIND_ENUM_CONSTANT(ALIGN_LEFT);
 	BIND_ENUM_CONSTANT(ALIGN_CENTER);
@@ -539,6 +567,7 @@ void Button::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "flat"), "set_flat", "is_flat");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "clip_text"), "set_clip_text", "get_clip_text");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "align", PROPERTY_HINT_ENUM, "Left,Center,Right"), "set_text_align", "get_text_align");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "icon_align", PROPERTY_HINT_ENUM, "Left,Center,Right"), "set_icon_align", "get_icon_align");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "expand_icon"), "set_expand_icon", "is_expand_icon");
 }
 
