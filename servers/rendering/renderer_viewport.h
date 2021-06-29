@@ -71,6 +71,7 @@ public:
 		bool hide_scenario;
 		bool hide_canvas;
 		bool disable_environment;
+		bool disable_3d = false;
 		bool measure_render_time;
 
 		bool snap_2d_transforms_to_pixel;
@@ -220,6 +221,7 @@ public:
 	void viewport_set_hide_scenario(RID p_viewport, bool p_hide);
 	void viewport_set_hide_canvas(RID p_viewport, bool p_hide);
 	void viewport_set_disable_environment(RID p_viewport, bool p_disable);
+	void viewport_set_disable_3d(RID p_viewport, bool p_disable);
 
 	void viewport_attach_camera(RID p_viewport, RID p_camera);
 	void viewport_set_scenario(RID p_viewport, RID p_scenario);
