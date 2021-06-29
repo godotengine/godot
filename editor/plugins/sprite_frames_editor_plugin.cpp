@@ -622,7 +622,7 @@ void SpriteFramesEditor::_animation_name_edited() {
 	List<Node *> nodes;
 	_find_anim_sprites(EditorNode::get_singleton()->get_edited_scene(), &nodes, Ref<SpriteFrames>(frames));
 
-	undo_redo->create_action(TTR("Rename Animation"));
+	undo_redo->create_action(vformat(TTR("Rename SpriteFrames Animation from \"%s\" to \"%s\""), edited_anim, name));
 	undo_redo->add_do_method(frames, "rename_animation", edited_anim, name);
 	undo_redo->add_undo_method(frames, "rename_animation", name, edited_anim);
 
@@ -651,7 +651,7 @@ void SpriteFramesEditor::_animation_add() {
 	List<Node *> nodes;
 	_find_anim_sprites(EditorNode::get_singleton()->get_edited_scene(), &nodes, Ref<SpriteFrames>(frames));
 
-	undo_redo->create_action(TTR("Add Animation"));
+	undo_redo->create_action(vformat(TTR("Add SpriteFrames Animation \"%s\""), name));
 	undo_redo->add_do_method(frames, "add_animation", name);
 	undo_redo->add_undo_method(frames, "remove_animation", name);
 	undo_redo->add_do_method(this, "_update_library");
@@ -683,7 +683,7 @@ void SpriteFramesEditor::_animation_remove() {
 }
 
 void SpriteFramesEditor::_animation_remove_confirmed() {
-	undo_redo->create_action(TTR("Remove Animation"));
+	undo_redo->create_action(vformat(TTR("Remove SpriteFrames Animation \"%s\""), edited_anim));
 	undo_redo->add_do_method(frames, "remove_animation", edited_anim);
 	undo_redo->add_undo_method(frames, "add_animation", edited_anim);
 	undo_redo->add_undo_method(frames, "set_animation_speed", edited_anim, frames->get_animation_speed(edited_anim));
@@ -706,7 +706,11 @@ void SpriteFramesEditor::_animation_loop_changed() {
 		return;
 	}
 
-	undo_redo->create_action(TTR("Change Animation Loop"));
+	if (anim_loop->is_pressed()) {
+		undo_redo->create_action(vformat(TTR("Enable SpriteFrames Animation \"%s\" Loop"), edited_anim));
+	} else {
+		undo_redo->create_action(vformat(TTR("Disable SpriteFrames Animation \"%s\" Loop"), edited_anim));
+	}
 	undo_redo->add_do_method(frames, "set_animation_loop", edited_anim, anim_loop->is_pressed());
 	undo_redo->add_undo_method(frames, "set_animation_loop", edited_anim, frames->get_animation_loop(edited_anim));
 	undo_redo->add_do_method(this, "_update_library", true);
@@ -719,7 +723,12 @@ void SpriteFramesEditor::_animation_fps_changed(double p_value) {
 		return;
 	}
 
-	undo_redo->create_action(TTR("Change Animation FPS"), UndoRedo::MERGE_ENDS);
+	undo_redo->create_action(
+			vformat(TTR("Change SpriteFrames Animation \"%s\" FPS from %.2f to %.2f"),
+					edited_anim,
+					frames->get_animation_speed(edited_anim),
+					p_value),
+			UndoRedo::MERGE_ENDS);
 	undo_redo->add_do_method(frames, "set_animation_speed", edited_anim, p_value);
 	undo_redo->add_undo_method(frames, "set_animation_speed", edited_anim, frames->get_animation_speed(edited_anim));
 	undo_redo->add_do_method(this, "_update_library", true);
@@ -970,7 +979,7 @@ void SpriteFramesEditor::drop_data_fw(const Point2 &p_point, const Variant &p_da
 					from_frame = d["frame"];
 				}
 
-				undo_redo->create_action(TTR("Move Frame"));
+				undo_redo->create_action(vformat(TTR("Move Frame in SpriteFrames Animation \"%s\""), edited_anim));
 				undo_redo->add_do_method(frames, "remove_frame", edited_anim, from_frame == -1 ? frames->get_frame_count(edited_anim) : from_frame);
 				undo_redo->add_do_method(frames, "add_frame", edited_anim, texture, at_pos == -1 ? -1 : at_pos);
 				undo_redo->add_undo_method(frames, "remove_frame", edited_anim, at_pos == -1 ? frames->get_frame_count(edited_anim) - 1 : at_pos);
@@ -979,7 +988,7 @@ void SpriteFramesEditor::drop_data_fw(const Point2 &p_point, const Variant &p_da
 				undo_redo->add_undo_method(this, "_update_library");
 				undo_redo->commit_action();
 			} else {
-				undo_redo->create_action(TTR("Add Frame"));
+				undo_redo->create_action(vformat(TTR("Add Frame to SpriteFrames Animation \"%s\""), edited_anim));
 				undo_redo->add_do_method(frames, "add_frame", edited_anim, texture, at_pos == -1 ? -1 : at_pos);
 				undo_redo->add_undo_method(frames, "remove_frame", edited_anim, at_pos == -1 ? frames->get_frame_count(edited_anim) : at_pos);
 				undo_redo->add_do_method(this, "_update_library");

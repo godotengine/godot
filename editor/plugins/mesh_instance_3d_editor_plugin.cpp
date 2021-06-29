@@ -78,7 +78,7 @@ void MeshInstance3DEditor::_menu_option(int p_option) {
 
 				Node *owner = node == get_tree()->get_edited_scene_root() ? node : node->get_owner();
 
-				ur->create_action(TTR("Create Static Trimesh Body"));
+				ur->create_action(vformat(TTR("Create Static Trimesh Body for MeshInstance3D \"%s\""), node->get_name()));
 				ur->add_do_method(node, "add_child", body);
 				ur->add_do_method(body, "set_owner", owner);
 				ur->add_do_method(cshape, "set_owner", owner);
@@ -88,7 +88,7 @@ void MeshInstance3DEditor::_menu_option(int p_option) {
 				return;
 			}
 
-			ur->create_action(TTR("Create Static Trimesh Body"));
+			ur->create_action(vformat(TTR("Create Static Trimesh Body for MeshInstance3D \"%s\""), node->get_name()));
 
 			for (List<Node *>::Element *E = selection.front(); E; E = E->next()) {
 				MeshInstance3D *instance = Object::cast_to<MeshInstance3D>(E->get());
@@ -144,7 +144,7 @@ void MeshInstance3DEditor::_menu_option(int p_option) {
 
 			UndoRedo *ur = EditorNode::get_singleton()->get_undo_redo();
 
-			ur->create_action(TTR("Create Trimesh Static Shape"));
+			ur->create_action(vformat(TTR("Create Trimesh Static Shape for MeshInstance3D \"%s\""), node->get_name()));
 
 			ur->add_do_method(node->get_parent(), "add_child", cshape);
 			ur->add_do_method(node->get_parent(), "move_child", cshape, node->get_index() + 1);
@@ -169,7 +169,7 @@ void MeshInstance3DEditor::_menu_option(int p_option) {
 			}
 			UndoRedo *ur = EditorNode::get_singleton()->get_undo_redo();
 
-			ur->create_action(TTR("Create Single Convex Shape"));
+			ur->create_action(vformat(TTR("Create Single Convex Shape for MeshInstance3D \"%s\""), node->get_name()));
 
 			CollisionShape3D *cshape = memnew(CollisionShape3D);
 			cshape->set_shape(shape);
@@ -202,7 +202,7 @@ void MeshInstance3DEditor::_menu_option(int p_option) {
 			}
 			UndoRedo *ur = EditorNode::get_singleton()->get_undo_redo();
 
-			ur->create_action(TTR("Create Multiple Convex Shapes"));
+			ur->create_action(vformat(TTR("Create Multiple Convex Shapes for MeshInstance3D \"%s\""), node->get_name()));
 
 			for (int i = 0; i < shapes.size(); i++) {
 				CollisionShape3D *cshape = memnew(CollisionShape3D);
@@ -235,7 +235,7 @@ void MeshInstance3DEditor::_menu_option(int p_option) {
 			Node *owner = node == get_tree()->get_edited_scene_root() ? node : node->get_owner();
 
 			UndoRedo *ur = EditorNode::get_singleton()->get_undo_redo();
-			ur->create_action(TTR("Create Navigation Mesh"));
+			ur->create_action(vformat(TTR("Create Navigation Mesh for MeshInstance3D \"%s\""), node->get_name()));
 
 			ur->add_do_method(node, "add_child", nmi);
 			ur->add_do_method(nmi, "set_owner", owner);
@@ -413,7 +413,7 @@ void MeshInstance3DEditor::_create_outline_mesh() {
 
 	UndoRedo *ur = EditorNode::get_singleton()->get_undo_redo();
 
-	ur->create_action(TTR("Create Outline"));
+	ur->create_action(vformat(TTR("Create MeshInstance3D Outline for MeshInstance3D \"%s\""), node->get_name()));
 
 	ur->add_do_method(node, "add_child", mi);
 	ur->add_do_method(mi, "set_owner", owner);

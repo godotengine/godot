@@ -221,7 +221,7 @@ void EditorSettingsDialog::_event_config_confirmed() {
 void EditorSettingsDialog::_update_builtin_action(const String &p_name, const Array &p_events) {
 	Array old_input_array = EditorSettings::get_singleton()->get_builtin_action_overrides(current_action);
 
-	undo_redo->create_action(TTR("Edit Built-in Action"));
+	undo_redo->create_action(vformat(TTR("Edit Built-in Action \"%s\""), p_name));
 	undo_redo->add_do_method(EditorSettings::get_singleton(), "set_builtin_action_override", p_name, p_events);
 	undo_redo->add_undo_method(EditorSettings::get_singleton(), "set_builtin_action_override", p_name, old_input_array);
 	undo_redo->add_do_method(this, "_settings_changed");

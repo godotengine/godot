@@ -95,7 +95,7 @@ void ProjectSettingsEditor::_add_setting() {
 	Variant value;
 	Variant::construct(Variant::Type(type_box->get_selected_id()), value, nullptr, 0, ce);
 
-	undo_redo->create_action(TTR("Add Project Setting"));
+	undo_redo->create_action(vformat(TTR("Add Project Setting \"%s\""), setting));
 	undo_redo->add_do_property(ps, setting, value);
 	undo_redo->add_undo_property(ps, setting, ps->has_setting(setting) ? ps->get(setting) : Variant());
 
@@ -114,7 +114,7 @@ void ProjectSettingsEditor::_delete_setting() {
 	Variant value = ps->get(setting);
 	int order = ps->get_order(setting);
 
-	undo_redo->create_action(TTR("Delete Item"));
+	undo_redo->create_action(vformat(TTR("Delete Project Setting \"%s\""), setting));
 
 	undo_redo->add_do_method(ps, "clear", setting);
 	undo_redo->add_undo_method(ps, "set", setting, value);
@@ -285,7 +285,7 @@ void ProjectSettingsEditor::_action_added(const String &p_name) {
 	action["events"] = Array();
 	action["deadzone"] = 0.5f;
 
-	undo_redo->create_action(TTR("Add Input Action"));
+	undo_redo->create_action(vformat(TTR("Add Input Action \"%s\""), p_name));
 	undo_redo->add_do_method(ProjectSettings::get_singleton(), "set", name, action);
 	undo_redo->add_undo_method(ProjectSettings::get_singleton(), "clear", name);
 
@@ -302,7 +302,7 @@ void ProjectSettingsEditor::_action_edited(const String &p_name, const Dictionar
 
 	if (old_val["deadzone"] != p_action["deadzone"]) {
 		// Deadzone Changed
-		undo_redo->create_action(TTR("Change Action deadzone"));
+		undo_redo->create_action(vformat(TTR("Change Action \"%s\" Deadzone from %.2f to %.2f"), p_name, old_val["deadzone"], p_action["deadzone"]));
 		undo_redo->add_do_method(ProjectSettings::get_singleton(), "set", property_name, p_action);
 		undo_redo->add_undo_method(ProjectSettings::get_singleton(), "set", property_name, old_val);
 
@@ -312,11 +312,11 @@ void ProjectSettingsEditor::_action_edited(const String &p_name, const Dictionar
 		int old_event_count = ((Array)old_val["events"]).size();
 
 		if (event_count == old_event_count) {
-			undo_redo->create_action(TTR("Edit Input Action Event"));
+			undo_redo->create_action(vformat(TTR("Edit Input Action Event in \"%s\""), p_name));
 		} else if (event_count > old_event_count) {
-			undo_redo->create_action(TTR("Add Input Action Event"));
+			undo_redo->create_action(vformat(TTR("Add Input Action Event to \"%s\""), p_name));
 		} else if (event_count < old_event_count) {
-			undo_redo->create_action(TTR("Remove Input Action Event"));
+			undo_redo->create_action(vformat(TTR("Remove Input Action Event from \"%s\""), p_name));
 		}
 
 		undo_redo->add_do_method(ProjectSettings::get_singleton(), "set", property_name, p_action);
@@ -336,7 +336,7 @@ void ProjectSettingsEditor::_action_removed(const String &p_name) {
 	Dictionary old_val = ProjectSettings::get_singleton()->get(property_name);
 	int order = ProjectSettings::get_singleton()->get_order(property_name);
 
-	undo_redo->create_action(TTR("Erase Input Action"));
+	undo_redo->create_action(TTR(vformat("Remove Input Action \"%s\""), p_name));
 	undo_redo->add_do_method(ProjectSettings::get_singleton(), "clear", property_name);
 	undo_redo->add_undo_method(ProjectSettings::get_singleton(), "set", property_name, old_val);
 	undo_redo->add_undo_method(ProjectSettings::get_singleton(), "set_order", property_name, order);
@@ -360,7 +360,7 @@ void ProjectSettingsEditor::_action_renamed(const String &p_old_name, const Stri
 	int order = ProjectSettings::get_singleton()->get_order(old_property_name);
 	Dictionary action = ProjectSettings::get_singleton()->get(old_property_name);
 
-	undo_redo->create_action(TTR("Rename Input Action Event"));
+	undo_redo->create_action(vformat(TTR("Rename Input Action from \"%s\" to \"%s\""), p_old_name, p_new_name));
 	// Do: clear old, set new
 	undo_redo->add_do_method(ProjectSettings::get_singleton(), "clear", old_property_name);
 	undo_redo->add_do_method(ProjectSettings::get_singleton(), "set", new_property_name, action);

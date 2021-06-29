@@ -63,7 +63,7 @@ void TileSetEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data, C
 				// Actually create the new source.
 				Ref<TileSetAtlasSource> atlas_source = memnew(TileSetAtlasSource);
 				atlas_source->set_texture(resource);
-				undo_redo->create_action(TTR("Add a new atlas source"));
+				undo_redo->create_action(TTR("Add New TileSet Atlas Source"));
 				undo_redo->add_do_method(*tile_set, "add_source", atlas_source, source_id);
 				undo_redo->add_do_method(*atlas_source, "set_texture_region_size", tile_set->get_tile_size());
 				undo_redo->add_undo_method(*tile_set, "remove_source", source_id);
@@ -245,7 +245,7 @@ void TileSetEditor::_source_add_id_pressed(int p_id_pressed) {
 			Ref<TileSetAtlasSource> atlas_source = memnew(TileSetAtlasSource);
 
 			// Add a new source.
-			undo_redo->create_action(TTR("Add atlas source"));
+			undo_redo->create_action(TTR("Add TileSet Atlas Source"));
 			undo_redo->add_do_method(*tile_set, "add_source", atlas_source, source_id);
 			undo_redo->add_do_method(*atlas_source, "set_texture_region_size", tile_set->get_tile_size());
 			undo_redo->add_undo_method(*tile_set, "remove_source", source_id);
@@ -259,7 +259,7 @@ void TileSetEditor::_source_add_id_pressed(int p_id_pressed) {
 			Ref<TileSetScenesCollectionSource> scene_collection_source = memnew(TileSetScenesCollectionSource);
 
 			// Add a new source.
-			undo_redo->create_action(TTR("Add atlas source"));
+			undo_redo->create_action(TTR("Add TileSet Atlas Source"));
 			undo_redo->add_do_method(*tile_set, "add_source", scene_collection_source, source_id);
 			undo_redo->add_undo_method(*tile_set, "remove_source", source_id);
 			undo_redo->commit_action();
@@ -280,7 +280,7 @@ void TileSetEditor::_source_delete_pressed() {
 	Ref<TileSetSource> source = tile_set->get_source(to_delete);
 
 	// Remove the source.
-	undo_redo->create_action(TTR("Remove source"));
+	undo_redo->create_action(TTR("Remove TileSet Source"));
 	undo_redo->add_do_method(*tile_set, "remove_source", to_delete);
 	undo_redo->add_undo_method(*tile_set, "add_source", source, to_delete);
 	undo_redo->commit_action();

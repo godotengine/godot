@@ -51,7 +51,7 @@ bool MultiNodeEdit::_set_impl(const StringName &p_name, const Variant &p_value, 
 
 	UndoRedo *ur = EditorNode::get_undo_redo();
 
-	ur->create_action(TTR("MultiNode Set") + " " + String(name), UndoRedo::MERGE_ENDS);
+	ur->create_action(vformat(TTR("Set Property \"%s\" on %d Nodes"), name, nodes.size()), UndoRedo::MERGE_ENDS);
 	for (const List<NodePath>::Element *E = nodes.front(); E; E = E->next()) {
 		if (!es->has_node(E->get())) {
 			continue;

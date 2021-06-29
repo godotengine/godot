@@ -94,7 +94,7 @@ void LightOccluder2DEditor::_create_resource() {
 		return;
 	}
 
-	undo_redo->create_action(TTR("Create Occluder Polygon"));
+	undo_redo->create_action(TTR("Create LightOccluder2D Polygon"));
 	undo_redo->add_do_method(node, "set_occluder_polygon", Ref<OccluderPolygon2D>(memnew(OccluderPolygon2D)));
 	undo_redo->add_undo_method(node, "set_occluder_polygon", Variant(REF()));
 	undo_redo->commit_action();

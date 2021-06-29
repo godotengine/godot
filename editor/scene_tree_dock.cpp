@@ -2141,7 +2141,11 @@ void SceneTreeDock::_create() {
 		ERR_FAIL_COND(selection.size() <= 0);
 
 		UndoRedo *ur = EditorNode::get_singleton()->get_undo_redo();
-		ur->create_action(TTR("Change type of node(s)"));
+		if (selection.size() != 1) {
+			ur->create_action(vformat(TTR("Change Type of %d Nodes"), selection.size()));
+		} else {
+			ur->create_action(vformat(TTR("Change Type of Node \"%s\""), selection[0]->get_name()));
+		}
 
 		for (List<Node *>::Element *E = selection.front(); E; E = E->next()) {
 			Node *n = E->get();
@@ -2467,7 +2471,7 @@ void SceneTreeDock::_script_dropped(String p_file, NodePath p_to) {
 	ERR_FAIL_COND(!scr.is_valid());
 	Node *n = get_node(p_to);
 	if (n) {
-		editor_data->get_undo_redo().create_action(TTR("Attach Script"));
+		editor_data->get_undo_redo().create_action(vformat(TTR("Attach Script \"%s\" to Node \"%s\""), scr->get_path(), n->get_name()));
 		editor_data->get_undo_redo().add_do_method(n, "set_script", scr);
 		editor_data->get_undo_redo().add_undo_method(n, "set_script", n->get_script());
 		editor_data->get_undo_redo().add_do_method(this, "_update_script_button");

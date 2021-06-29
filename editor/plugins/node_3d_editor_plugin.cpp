@@ -4976,7 +4976,7 @@ void Node3DEditor::_xform_dialog_action() {
 	t.basis.rotate(rotate);
 	t.origin = translate;
 
-	undo_redo->create_action(TTR("XForm Dialog"));
+	undo_redo->create_action(TTR("Apply 3D Transform Dialog"));
 
 	List<Node *> &selection = editor_selection->get_selected_node_list();
 
@@ -5213,7 +5213,7 @@ void Node3DEditor::_menu_item_pressed(int p_option) {
 			snap_selected_nodes_to_floor();
 		} break;
 		case MENU_LOCK_SELECTED: {
-			undo_redo->create_action(TTR("Lock Selected"));
+			undo_redo->create_action(TTR("Lock Selected Node(s)"));
 
 			List<Node *> &selection = editor_selection->get_selected_node_list();
 
@@ -5238,7 +5238,7 @@ void Node3DEditor::_menu_item_pressed(int p_option) {
 			undo_redo->commit_action();
 		} break;
 		case MENU_UNLOCK_SELECTED: {
-			undo_redo->create_action(TTR("Unlock Selected"));
+			undo_redo->create_action(TTR("Unlock Selected Node(s)"));
 
 			List<Node *> &selection = editor_selection->get_selected_node_list();
 
@@ -5263,7 +5263,7 @@ void Node3DEditor::_menu_item_pressed(int p_option) {
 			undo_redo->commit_action();
 		} break;
 		case MENU_GROUP_SELECTED: {
-			undo_redo->create_action(TTR("Group Selected"));
+			undo_redo->create_action(TTR("Group Selected Node(s)"));
 
 			List<Node *> &selection = editor_selection->get_selected_node_list();
 
@@ -5288,7 +5288,7 @@ void Node3DEditor::_menu_item_pressed(int p_option) {
 			undo_redo->commit_action();
 		} break;
 		case MENU_UNGROUP_SELECTED: {
-			undo_redo->create_action(TTR("Ungroup Selected"));
+			undo_redo->create_action(TTR("Ungroup Selected Node(s)"));
 			List<Node *> &selection = editor_selection->get_selected_node_list();
 
 			for (List<Node *>::Element *E = selection.front(); E; E = E->next()) {
@@ -6172,7 +6172,7 @@ void Node3DEditor::snap_selected_nodes_to_floor() {
 		}
 
 		if (snapped_to_floor) {
-			undo_redo->create_action(TTR("Snap Nodes To Floor"));
+			undo_redo->create_action(TTR("Snap Node(s) To Floor"));
 
 			// Perform snapping if at least one node can be snapped
 			for (int i = 0; i < keys.size(); i++) {
