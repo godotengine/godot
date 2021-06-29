@@ -52,6 +52,7 @@ layout(set = 0, binding = 1) uniform sampler material_samplers[12];
 
 layout(set = 0, binding = 2) uniform sampler shadow_sampler;
 
+#define INSTANCE_FLAGS_NON_UNIFORM_SCALE (1 << 5)
 #define INSTANCE_FLAGS_USE_GI_BUFFERS (1 << 6)
 #define INSTANCE_FLAGS_USE_SDFGI (1 << 7)
 #define INSTANCE_FLAGS_USE_LIGHTMAP_CAPTURE (1 << 8)
@@ -65,8 +66,6 @@ layout(set = 0, binding = 2) uniform sampler shadow_sampler;
 #define INSTANCE_FLAGS_PARTICLE_TRAIL_SHIFT 16
 //3 bits of stride
 #define INSTANCE_FLAGS_PARTICLE_TRAIL_MASK 0xFF
-
-#define INSTANCE_FLAGS_NON_UNIFORM_SCALE (1 << 24)
 
 layout(set = 0, binding = 3, std430) restrict readonly buffer OmniLights {
 	LightData data[];
