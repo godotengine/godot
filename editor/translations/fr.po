@@ -73,7 +73,7 @@
 # Kevin Bouancheau <kevin.bouancheau@gmail.com>, 2020.
 # LaurentOngaro <laurent@gameamea.com>, 2020.
 # Julien Humbert <julroy67@gmail.com>, 2020.
-# Nathan <bonnemainsnathan@gmail.com>, 2020.
+# Nathan <bonnemainsnathan@gmail.com>, 2020, 2021.
 # Léo Vincent <l009.vincent@gmail.com>, 2020.
 # Joseph Boudou <joseph.boudou@matabio.net>, 2020.
 # Vincent Foulon <vincent.foulon80@gmail.com>, 2020.
@@ -84,8 +84,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2021-04-30 23:03+0000\n"
-"Last-Translator: Julien Vanelian <julienvanelian@hotmail.com>\n"
+"PO-Revision-Date: 2021-06-20 13:35+0000\n"
+"Last-Translator: Nathan <bonnemainsnathan@gmail.com>\n"
 "Language-Team: French <https://hosted.weblate.org/projects/godot-engine/"
 "godot/fr/>\n"
 "Language: fr\n"
@@ -93,7 +93,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 4.7-dev\n"
+"X-Generator: Weblate 4.7\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -1203,7 +1203,7 @@ msgstr "La communauté Godot vous dit merci !"
 
 #: editor/editor_about.cpp editor/editor_node.cpp editor/project_manager.cpp
 msgid "Click to copy."
-msgstr ""
+msgstr "Cliquez pour copier."
 
 #: editor/editor_about.cpp
 msgid "Godot Engine contributors"
@@ -12370,6 +12370,8 @@ msgid ""
 "Either Debug Keystore, Debug User AND Debug Password settings must be "
 "configured OR none of them."
 msgstr ""
+"Il faut configurer soit les paramètres Debug Keystore, Debug User ET Debug "
+"Password, soit aucun d'entre eux."
 
 #: platform/android/export/export.cpp
 msgid "Debug keystore not configured in the Editor Settings nor in the preset."
@@ -12382,6 +12384,8 @@ msgid ""
 "Either Release Keystore, Release User AND Release Password settings must be "
 "configured OR none of them."
 msgstr ""
+"Il faut configurer soit les paramètres Release Keystore, Release User ET "
+"Release Password, soit aucun d'entre eux."
 
 #: platform/android/export/export.cpp
 msgid "Release keystore incorrectly configured in the export preset."

@@ -15,12 +15,13 @@
 # Carles Pastor Badosa <cpbadosa@gmail.com>, 2021.
 # Roberto Pérez <djleizar@gmail.com>, 2021.
 # Joel Garcia Cascalló <jocsencat@gmail.com>, 2021.
+# DFC <damiafluixacanals28@gmail.com>, 2021.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2021-05-14 11:19+0000\n"
-"Last-Translator: Joel Garcia Cascalló <jocsencat@gmail.com>\n"
+"PO-Revision-Date: 2021-06-29 12:48+0000\n"
+"Last-Translator: DFC <damiafluixacanals28@gmail.com>\n"
 "Language-Team: Catalan <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ca/>\n"
 "Language: ca\n"
@@ -28,7 +29,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.7-dev\n"
+"X-Generator: Weblate 4.7.1-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -1129,7 +1130,7 @@ msgstr "Gràcies de la part de la Comunitat del Godot!"
 
 #: editor/editor_about.cpp editor/editor_node.cpp editor/project_manager.cpp
 msgid "Click to copy."
-msgstr ""
+msgstr "Fes click per a copiar."
 
 #: editor/editor_about.cpp
 msgid "Godot Engine contributors"
@@ -2331,6 +2332,8 @@ msgid ""
 "An error occurred while trying to save the editor layout.\n"
 "Make sure the editor's user data path is writable."
 msgstr ""
+"S'ha produit un error al desar el diseny de l'editor.\n"
+"Assegura't de que el directori de dades d'usuari de l'editor és editable."
 
 #: editor/editor_node.cpp
 msgid ""
@@ -2338,6 +2341,9 @@ msgid ""
 "To restore the Default layout to its base settings, use the Delete Layout "
 "option and delete the Default layout."
 msgstr ""
+"S'ha anulat el diseny per defecte de l'editor.\n"
+"Per a restaurar el Diseny per defecte a la seva configuració base, usa la "
+"opció d'Esborrar el Diseny i esborra el Diseny per defecte."
 
 #: editor/editor_node.cpp
 msgid "Layout name not found!"
@@ -2401,7 +2407,7 @@ msgstr "No s'ha definit cap escena per executar."
 
 #: editor/editor_node.cpp
 msgid "Save scene before running..."
-msgstr ""
+msgstr "Desar l'escena abans de executar-la..."
 
 #: editor/editor_node.cpp
 msgid "Could not start subprocess!"
@@ -3022,7 +3028,7 @@ msgstr "Quant a"
 
 #: editor/editor_node.cpp
 msgid "Support Godot Development"
-msgstr ""
+msgstr "Contribueix a el Desenvolupament de Godot"
 
 #: editor/editor_node.cpp
 msgid "Play the project."
@@ -3726,6 +3732,8 @@ msgstr "Estat: No s'ha pogut importar. Corregiu el fitxer i torneu a importar."
 msgid ""
 "Importing has been disabled for this file, so it can't be opened for editing."
 msgstr ""
+"La importació s'ha desactivat per a aquest fitxer, per tant aquest no pot "
+"ser obert per a editar."
 
 #: editor/filesystem_dock.cpp
 msgid "Cannot move/rename resources root."
@@ -3772,6 +3780,12 @@ msgid ""
 "\n"
 "Do you wish to overwrite them?"
 msgstr ""
+"Els fitxers o directoris següents entren en conflicte amb els elements de la "
+"ubicació de destí '%s':\n"
+"\n"
+"%s\n"
+"\n"
+"Vols reemplaçar-los?"
 
 #: editor/filesystem_dock.cpp
 msgid "Renaming file:"
@@ -4136,7 +4150,7 @@ msgstr "Carrega Valors predeterminats"
 
 #: editor/import_dock.cpp
 msgid "Keep File (No Import)"
-msgstr ""
+msgstr "Mantenir Fitxer (No Importar)"
 
 #: editor/import_dock.cpp
 msgid "%d Files"

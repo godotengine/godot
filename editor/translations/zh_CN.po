@@ -83,7 +83,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Chinese (Simplified) (Godot Engine)\n"
 "POT-Creation-Date: 2018-01-20 12:15+0200\n"
-"PO-Revision-Date: 2021-05-29 13:49+0000\n"
+"PO-Revision-Date: 2021-06-20 13:35+0000\n"
 "Last-Translator: Haoyu Qiu <timothyqiu32@gmail.com>\n"
 "Language-Team: Chinese (Simplified) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/zh_Hans/>\n"
@@ -92,7 +92,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 4.7-dev\n"
+"X-Generator: Weblate 4.7\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -1179,7 +1179,7 @@ msgstr "Godot 社区感谢你！"
 
 #: editor/editor_about.cpp editor/editor_node.cpp editor/project_manager.cpp
 msgid "Click to copy."
-msgstr ""
+msgstr "点击复制。"
 
 #: editor/editor_about.cpp
 msgid "Godot Engine contributors"
@@ -12043,7 +12043,7 @@ msgstr "未在项目中安装 Android 构建模板。从项目菜单安装它。
 msgid ""
 "Either Debug Keystore, Debug User AND Debug Password settings must be "
 "configured OR none of them."
-msgstr ""
+msgstr "Debug Keystore、Debug User、Debug Password 必须全部填写或者全部留空。"
 
 #: platform/android/export/export.cpp
 msgid "Debug keystore not configured in the Editor Settings nor in the preset."
@@ -12054,6 +12054,7 @@ msgid ""
 "Either Release Keystore, Release User AND Release Password settings must be "
 "configured OR none of them."
 msgstr ""
+"Release Keystore、Release User、Release Password 必须全部填写或者全部留空。"
 
 #: platform/android/export/export.cpp
 msgid "Release keystore incorrectly configured in the export preset."

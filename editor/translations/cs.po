@@ -30,8 +30,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2021-05-21 11:33+0000\n"
-"Last-Translator: swifterik <blaha.j502@gmail.com>\n"
+"PO-Revision-Date: 2021-06-25 02:57+0000\n"
+"Last-Translator: Vojtěch Šamla <auzkok@seznam.cz>\n"
 "Language-Team: Czech <https://hosted.weblate.org/projects/godot-engine/godot/"
 "cs/>\n"
 "Language: cs\n"
@@ -39,7 +39,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=(n==1) ? 0 : (n>=2 && n<=4) ? 1 : 2;\n"
-"X-Generator: Weblate 4.7-dev\n"
+"X-Generator: Weblate 4.7.1-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -5224,11 +5224,11 @@ msgstr ""
 "čtvercové oblasti [0.0, 1.0]."
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
-#, fuzzy
 msgid ""
 "Godot editor was built without ray tracing support, lightmaps can't be baked."
 msgstr ""
-"Godot byl sestaven bez podpory ray tracingu, světelné mapy nelze zapéct."
+"Editor Godot byl sestaven bez podpory ray tracingu, světelné mapy nelze "
+"zapéct."
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
 msgid "Bake Lightmaps"

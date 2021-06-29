@@ -21,7 +21,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2021-05-29 13:49+0000\n"
+"PO-Revision-Date: 2021-06-20 13:35+0000\n"
 "Last-Translator: Lisandro Lorea <lisandrolorea@gmail.com>\n"
 "Language-Team: Spanish (Argentina) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/es_AR/>\n"
@@ -30,7 +30,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.7-dev\n"
+"X-Generator: Weblate 4.7\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -1138,7 +1138,7 @@ msgstr "Gracias de parte de la comunidad Godot!"
 
 #: editor/editor_about.cpp editor/editor_node.cpp editor/project_manager.cpp
 msgid "Click to copy."
-msgstr ""
+msgstr "Click para copiar."
 
 #: editor/editor_about.cpp
 msgid "Godot Engine contributors"
@@ -12265,6 +12265,8 @@ msgid ""
 "Either Debug Keystore, Debug User AND Debug Password settings must be "
 "configured OR none of them."
 msgstr ""
+"Deben estar configurados o bien Debug Keystore, Debug User Y Debug Password "
+"o bien ninguno de ellos."
 
 #: platform/android/export/export.cpp
 msgid "Debug keystore not configured in the Editor Settings nor in the preset."
@@ -12276,6 +12278,8 @@ msgid ""
 "Either Release Keystore, Release User AND Release Password settings must be "
 "configured OR none of them."
 msgstr ""
+"Deben estar configurados o bien Release Keystore, Release User y Release "
+"Passoword o bien ninguno de ellos."
 
 #: platform/android/export/export.cpp
 msgid "Release keystore incorrectly configured in the export preset."
