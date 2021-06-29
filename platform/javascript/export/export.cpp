@@ -430,7 +430,7 @@ void EditorExportPlatformJavaScript::_replace_strings(Map<String, String> p_repl
 	CharString cs = out.utf8();
 	r_template.resize(cs.length());
 	for (int i = 0; i < cs.length(); i++) {
-		r_template.write[i] = cs[i];
+		r_template.write()[i] = cs[i];
 	}
 }
 

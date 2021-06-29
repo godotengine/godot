@@ -135,13 +135,13 @@ void TextEdit::Text::_update_line_cache(int p_line) const {
 		w += get_char_width(str[i], str[i + 1], w);
 	}
 
-	text.write[p_line].width_cache = w;
+	text.write()[p_line].width_cache = w;
 
-	text.write[p_line].wrap_amount_cache = -1;
+	text.write()[p_line].wrap_amount_cache = -1;
 
 	// Update regions.
 
-	text.write[p_line].region_info.clear();
+	text.write()[p_line].region_info.clear();
 
 	for (int i = 0; i < len; i++) {
 		if (!_is_symbol(str[i])) {
@@ -179,7 +179,7 @@ void TextEdit::Text::_update_line_cache(int p_line) const {
 					ColorRegionInfo cri;
 					cri.end = false;
 					cri.region = j;
-					text.write[p_line].region_info[i] = cri;
+					text.write()[p_line].region_info[i] = cri;
 					i += lr - 1;
 
 					break;
@@ -205,7 +205,7 @@ void TextEdit::Text::_update_line_cache(int p_line) const {
 					ColorRegionInfo cri;
 					cri.end = true;
 					cri.region = j;
-					text.write[p_line].region_info[i] = cri;
+					text.write()[p_line].region_info[i] = cri;
 					i += lr - 1;
 
 					break;
@@ -239,7 +239,7 @@ int TextEdit::Text::get_line_width(int p_line) const {
 void TextEdit::Text::set_line_wrap_amount(int p_line, int p_wrap_amount) const {
 	ERR_FAIL_INDEX(p_line, text.size());
 
-	text.write[p_line].wrap_amount_cache = p_wrap_amount;
+	text.write()[p_line].wrap_amount_cache = p_wrap_amount;
 }
 
 int TextEdit::Text::get_line_wrap_amount(int p_line) const {
@@ -250,19 +250,19 @@ int TextEdit::Text::get_line_wrap_amount(int p_line) const {
 
 void TextEdit::Text::clear_width_cache() {
 	for (int i = 0; i < text.size(); i++) {
-		text.write[i].width_cache = -1;
+		text.write()[i].width_cache = -1;
 	}
 }
 
 void TextEdit::Text::clear_wrap_cache() {
 	for (int i = 0; i < text.size(); i++) {
-		text.write[i].wrap_amount_cache = -1;
+		text.write()[i].wrap_amount_cache = -1;
 	}
 }
 
 void TextEdit::Text::clear_info_icons() {
 	for (int i = 0; i < text.size(); i++) {
-		text.write[i].has_info = false;
+		text.write()[i].has_info = false;
 	}
 }
 
@@ -286,9 +286,9 @@ int TextEdit::Text::get_max_width(bool p_exclude_hidden) const {
 void TextEdit::Text::set(int p_line, const String &p_text) {
 	ERR_FAIL_INDEX(p_line, text.size());
 
-	text.write[p_line].width_cache = -1;
-	text.write[p_line].wrap_amount_cache = -1;
-	text.write[p_line].data = p_text;
+	text.write()[p_line].width_cache = -1;
+	text.write()[p_line].wrap_amount_cache = -1;
+	text.write()[p_line].data = p_text;
 }
 
 void TextEdit::Text::insert(int p_at, const String &p_text) {

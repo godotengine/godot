@@ -189,14 +189,14 @@ void AudioDriverALSA::thread_func(void *p_udata) {
 
 		if (!ad->active) {
 			for (uint64_t i = 0; i < ad->period_size * ad->channels; i++) {
-				ad->samples_out.write[i] = 0;
+				ad->samples_out.write()[i] = 0;
 			}
 
 		} else {
 			ad->audio_server_process(ad->period_size, ad->samples_in.ptrw());
 
 			for (uint64_t i = 0; i < ad->period_size * ad->channels; i++) {
-				ad->samples_out.write[i] = ad->samples_in[i] >> 16;
+				ad->samples_out.write()[i] = ad->samples_in[i] >> 16;
 			}
 		}
 

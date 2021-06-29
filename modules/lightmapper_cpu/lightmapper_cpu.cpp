@@ -103,20 +103,20 @@ Error LightmapperCPU::_layout_atlas(int p_max_size, Vector2i *r_atlas_size, int 
 				for (unsigned int i = 0; i < mesh_instances.size(); i++) {
 					if (mesh_instances[i].generate_lightmap) {
 						if (recovery_percent == 0) {
-							scaled_sizes.write[i] = mesh_instances[i].size;
+							scaled_sizes.write()[i] = mesh_instances[i].size;
 						} else {
 							Vector2i scaled_size = Vector2i(
 									static_cast<int>(recovery_scale * mesh_instances[i].size.x),
 									static_cast<int>(recovery_scale * mesh_instances[i].size.y));
 							if (scaled_size.x + 2 <= atlas_size.x && scaled_size.y + 2 <= atlas_size.y) {
-								scaled_sizes.write[i] = scaled_size;
+								scaled_sizes.write()[i] = scaled_size;
 							} else {
-								scaled_sizes.write[i] = mesh_instances[i].size;
+								scaled_sizes.write()[i] = mesh_instances[i].size;
 							}
 						}
 					} else {
 						// Don't consider meshes with no generated lightmap here; will compensate later
-						scaled_sizes.write[i] = Vector2i();
+						scaled_sizes.write()[i] = Vector2i();
 					}
 				}
 			}
@@ -126,8 +126,8 @@ Error LightmapperCPU::_layout_atlas(int p_max_size, Vector2i *r_atlas_size, int 
 			Vector<int> source_indices;
 			source_indices.resize(scaled_sizes.size());
 			for (int i = 0; i < source_sizes.size(); i++) {
-				source_sizes.write[i] = scaled_sizes[i] + Vector2i(2, 2); // Add padding between lightmaps
-				source_indices.write[i] = i;
+				source_sizes.write()[i] = scaled_sizes[i] + Vector2i(2, 2); // Add padding between lightmaps
+				source_indices.write()[i] = i;
 			}
 
 			Vector<AtlasOffset> curr_atlas_offsets;
@@ -143,7 +143,7 @@ Error LightmapperCPU::_layout_atlas(int p_max_size, Vector2i *r_atlas_size, int 
 					Geometry::PackRectsResult ofs = offsets[i];
 					int sidx = source_indices[i];
 					if (ofs.packed) {
-						curr_atlas_offsets.write[sidx] = { slices, ofs.x + 1, ofs.y + 1 };
+						curr_atlas_offsets.write()[sidx] = { slices, ofs.x + 1, ofs.y + 1 };
 					} else {
 						new_indices.push_back(sidx);
 						new_sources.push_back(source_sizes[i]);
@@ -498,7 +498,7 @@ void LightmapperCPU::_plot_triangle(const Vector2 *p_vertices, const Vector3 *p_
 			bool intersected = false;
 
 			for (int k = 0; k < 4; k++) {
-				pixel_polygon.write[k] = Vector2(i, j) + corners[k];
+				pixel_polygon.write()[k] = Vector2(i, j) + corners[k];
 			}
 
 			const float max_dist = 0.05;
@@ -512,14 +512,14 @@ void LightmapperCPU::_plot_triangle(const Vector2 *p_vertices, const Vector3 *p_
 				Vector<Vector2> segment;
 				segment.resize(2);
 				if (v0eqv1) {
-					segment.write[0] = v0;
-					segment.write[1] = v2;
+					segment.write()[0] = v0;
+					segment.write()[1] = v2;
 				} else if (v1eqv2) {
-					segment.write[0] = v1;
-					segment.write[1] = v0;
+					segment.write()[0] = v1;
+					segment.write()[1] = v0;
 				} else {
-					segment.write[0] = v0;
-					segment.write[1] = v1;
+					segment.write()[0] = v0;
+					segment.write()[1] = v1;
 				}
 
 				Vector<Vector<Vector2>> intersected_segments = Geometry::intersect_polyline_with_polygon_2d(segment, pixel_polygon);

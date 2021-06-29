@@ -177,8 +177,8 @@ void MultiplayerAPI::_process_packet(int p_from, const uint8_t *p_packet, int p_
 
 #ifdef DEBUG_ENABLED
 	if (profiling) {
-		bandwidth_incoming_data.write[bandwidth_incoming_pointer].timestamp = OS::get_singleton()->get_ticks_msec();
-		bandwidth_incoming_data.write[bandwidth_incoming_pointer].packet_size = p_packet_len;
+		bandwidth_incoming_data.write()[bandwidth_incoming_pointer].timestamp = OS::get_singleton()->get_ticks_msec();
+		bandwidth_incoming_data.write()[bandwidth_incoming_pointer].packet_size = p_packet_len;
 		bandwidth_incoming_pointer = (bandwidth_incoming_pointer + 1) % bandwidth_incoming_data.size();
 	}
 #endif
@@ -304,10 +304,10 @@ void MultiplayerAPI::_process_rpc(Node *p_node, const StringName &p_name, int p_
 		ERR_FAIL_COND_MSG(p_offset >= p_packet_len, "Invalid packet received. Size too small.");
 
 		int vlen;
-		Error err = decode_variant(args.write[i], &p_packet[p_offset], p_packet_len - p_offset, &vlen, allow_object_decoding || network_peer->is_object_decoding_allowed());
+		Error err = decode_variant(args.write()[i], &p_packet[p_offset], p_packet_len - p_offset, &vlen, allow_object_decoding || network_peer->is_object_decoding_allowed());
 		ERR_FAIL_COND_MSG(err != OK, "Invalid packet received. Unable to decode RPC argument.");
 
-		argp.write[i] = &args[i];
+		argp.write()[i] = &args[i];
 		p_offset += vlen;
 	}
 
@@ -384,8 +384,8 @@ void MultiplayerAPI::_process_simplify_path(int p_from, const uint8_t *p_packet,
 	Vector<uint8_t> packet;
 
 	packet.resize(1 + len);
-	packet.write[0] = NETWORK_COMMAND_CONFIRM_PATH;
-	encode_cstring(pname.get_data(), &packet.write[1]);
+	packet.write()[0] = NETWORK_COMMAND_CONFIRM_PATH;
+	encode_cstring(pname.get_data(), &packet.write()[1]);
 
 	network_peer->set_transfer_mode(NetworkedMultiplayerPeer::TRANSFER_MODE_RELIABLE);
 	network_peer->set_target_peer(p_from);
@@ -444,9 +444,9 @@ bool MultiplayerAPI::_send_confirm_path(NodePath p_path, PathSentCache *psc, int
 		Vector<uint8_t> packet;
 
 		packet.resize(1 + 4 + len);
-		packet.write[0] = NETWORK_COMMAND_SIMPLIFY_PATH;
-		encode_uint32(psc->id, &packet.write[1]);
-		encode_cstring(pname.get_data(), &packet.write[5]);
+		packet.write()[0] = NETWORK_COMMAND_SIMPLIFY_PATH;
+		encode_uint32(psc->id, &packet.write()[1]);
+		encode_cstring(pname.get_data(), &packet.write()[5]);
 
 		network_peer->set_target_peer(E->get()); // To all of you.
 		network_peer->set_transfer_mode(NetworkedMultiplayerPeer::TRANSFER_MODE_RELIABLE);
@@ -495,19 +495,19 @@ void MultiplayerAPI::_send_rpc(Node *p_from, int p_to, bool p_unreliable, bool p
 
 	// Encode type.
 	MAKE_ROOM(1);
-	packet_cache.write[0] = p_set ? NETWORK_COMMAND_REMOTE_SET : NETWORK_COMMAND_REMOTE_CALL;
+	packet_cache.write()[0] = p_set ? NETWORK_COMMAND_REMOTE_SET : NETWORK_COMMAND_REMOTE_CALL;
 	ofs += 1;
 
 	// Encode ID.
 	MAKE_ROOM(ofs + 4);
-	encode_uint32(psc->id, &(packet_cache.write[ofs]));
+	encode_uint32(psc->id, &(packet_cache.write()[ofs]));
 	ofs += 4;
 
 	// Encode function name.
 	CharString name = String(p_name).utf8();
 	int len = encode_cstring(name.get_data(), nullptr);
 	MAKE_ROOM(ofs + len);
-	encode_cstring(name.get_data(), &(packet_cache.write[ofs]));
+	encode_cstring(name.get_data(), &(packet_cache.write()[ofs]));
 	ofs += len;
 
 	if (p_set) {
@@ -515,27 +515,27 @@ void MultiplayerAPI::_send_rpc(Node *p_from, int p_to, bool p_unreliable, bool p
 		Error err = encode_variant(*p_arg[0], nullptr, len, allow_object_decoding || network_peer->is_object_decoding_allowed());
 		ERR_FAIL_COND_MSG(err != OK, "Unable to encode RSET value. THIS IS LIKELY A BUG IN THE ENGINE!");
 		MAKE_ROOM(ofs + len);
-		encode_variant(*p_arg[0], &(packet_cache.write[ofs]), len, allow_object_decoding || network_peer->is_object_decoding_allowed());
+		encode_variant(*p_arg[0], &(packet_cache.write()[ofs]), len, allow_object_decoding || network_peer->is_object_decoding_allowed());
 		ofs += len;
 
 	} else {
 		// Call arguments.
 		MAKE_ROOM(ofs + 1);
-		packet_cache.write[ofs] = p_argcount;
+		packet_cache.write()[ofs] = p_argcount;
 		ofs += 1;
 		for (int i = 0; i < p_argcount; i++) {
 			Error err = encode_variant(*p_arg[i], nullptr, len, allow_object_decoding || network_peer->is_object_decoding_allowed());
 			ERR_FAIL_COND_MSG(err != OK, "Unable to encode RPC argument. THIS IS LIKELY A BUG IN THE ENGINE!");
 			MAKE_ROOM(ofs + len);
-			encode_variant(*p_arg[i], &(packet_cache.write[ofs]), len, allow_object_decoding || network_peer->is_object_decoding_allowed());
+			encode_variant(*p_arg[i], &(packet_cache.write()[ofs]), len, allow_object_decoding || network_peer->is_object_decoding_allowed());
 			ofs += len;
 		}
 	}
 
 #ifdef DEBUG_ENABLED
 	if (profiling) {
-		bandwidth_outgoing_data.write[bandwidth_outgoing_pointer].timestamp = OS::get_singleton()->get_ticks_msec();
-		bandwidth_outgoing_data.write[bandwidth_outgoing_pointer].packet_size = ofs;
+		bandwidth_outgoing_data.write()[bandwidth_outgoing_pointer].timestamp = OS::get_singleton()->get_ticks_msec();
+		bandwidth_outgoing_data.write()[bandwidth_outgoing_pointer].packet_size = ofs;
 		bandwidth_outgoing_pointer = (bandwidth_outgoing_pointer + 1) % bandwidth_outgoing_data.size();
 	}
 #endif
@@ -557,7 +557,7 @@ void MultiplayerAPI::_send_rpc(Node *p_from, int p_to, bool p_unreliable, bool p
 		CharString pname = String(from_path).utf8();
 		int path_len = encode_cstring(pname.get_data(), nullptr);
 		MAKE_ROOM(ofs + path_len);
-		encode_cstring(pname.get_data(), &(packet_cache.write[ofs]));
+		encode_cstring(pname.get_data(), &(packet_cache.write()[ofs]));
 
 		for (Set<int>::Element *E = connected_peers.front(); E; E = E->next()) {
 			if (p_to < 0 && E->get() == -p_to) {
@@ -575,11 +575,11 @@ void MultiplayerAPI::_send_rpc(Node *p_from, int p_to, bool p_unreliable, bool p
 
 			if (F->get()) {
 				// This one confirmed path, so use id.
-				encode_uint32(psc->id, &(packet_cache.write[1]));
+				encode_uint32(psc->id, &(packet_cache.write()[1]));
 				network_peer->put_packet(packet_cache.ptr(), ofs);
 			} else {
 				// This one did not confirm path yet, so use entire path (sorry!).
-				encode_uint32(0x80000000 | ofs, &(packet_cache.write[1])); // Offset to path and flag.
+				encode_uint32(0x80000000 | ofs, &(packet_cache.write()[1])); // Offset to path and flag.
 				network_peer->put_packet(packet_cache.ptr(), ofs + path_len);
 			}
 		}
@@ -768,8 +768,8 @@ Error MultiplayerAPI::send_bytes(PoolVector<uint8_t> p_data, int p_to, Networked
 
 	MAKE_ROOM(p_data.size() + 1);
 	PoolVector<uint8_t>::Read r = p_data.read();
-	packet_cache.write[0] = NETWORK_COMMAND_RAW;
-	memcpy(&packet_cache.write[1], &r[0], p_data.size());
+	packet_cache.write()[0] = NETWORK_COMMAND_RAW;
+	memcpy(&packet_cache.write()[1], &r[0], p_data.size());
 
 	network_peer->set_target_peer(p_to);
 	network_peer->set_transfer_mode(p_mode);
@@ -838,13 +838,13 @@ void MultiplayerAPI::profiling_start() {
 	bandwidth_incoming_pointer = 0;
 	bandwidth_incoming_data.resize(16384); // ~128kB
 	for (int i = 0; i < bandwidth_incoming_data.size(); ++i) {
-		bandwidth_incoming_data.write[i].packet_size = -1;
+		bandwidth_incoming_data.write()[i].packet_size = -1;
 	}
 
 	bandwidth_outgoing_pointer = 0;
 	bandwidth_outgoing_data.resize(16384); // ~128kB
 	for (int i = 0; i < bandwidth_outgoing_data.size(); ++i) {
-		bandwidth_outgoing_data.write[i].packet_size = -1;
+		bandwidth_outgoing_data.write()[i].packet_size = -1;
 	}
 #endif
 }

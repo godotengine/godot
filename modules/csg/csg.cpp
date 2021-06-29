@@ -187,10 +187,10 @@ inline static bool are_segements_parallel(const Vector2 p_segment1_points[2], co
 
 void CSGBrush::_regen_face_aabbs() {
 	for (int i = 0; i < faces.size(); i++) {
-		faces.write[i].aabb = AABB();
-		faces.write[i].aabb.position = faces[i].vertices[0];
-		faces.write[i].aabb.expand_to(faces[i].vertices[1]);
-		faces.write[i].aabb.expand_to(faces[i].vertices[2]);
+		faces.write()[i].aabb = AABB();
+		faces.write()[i].aabb.position = faces[i].vertices[0];
+		faces.write()[i].aabb.expand_to(faces[i].vertices[1]);
+		faces.write()[i].aabb.expand_to(faces[i].vertices[2]);
 	}
 }
 
@@ -216,7 +216,7 @@ void CSGBrush::build_from_faces(const PoolVector<Vector3> &p_vertices, const Poo
 	faces.resize(p_vertices.size() / 3);
 
 	for (int i = 0; i < faces.size(); i++) {
-		Face &f = faces.write[i];
+		Face &f = faces.write()[i];
 		f.vertices[0] = rv[i * 3 + 0];
 		f.vertices[1] = rv[i * 3 + 1];
 		f.vertices[2] = rv[i * 3 + 2];
@@ -259,7 +259,7 @@ void CSGBrush::build_from_faces(const PoolVector<Vector3> &p_vertices, const Poo
 
 	materials.resize(material_map.size());
 	for (Map<Ref<Material>, int>::Element *E = material_map.front(); E; E = E->next()) {
-		materials.write[E->get()] = E->key();
+		materials.write()[E->get()] = E->key();
 	}
 
 	_regen_face_aabbs();
@@ -271,7 +271,7 @@ void CSGBrush::copy_from(const CSGBrush &p_brush, const Transform &p_xform) {
 
 	for (int i = 0; i < faces.size(); i++) {
 		for (int j = 0; j < 3; j++) {
-			faces.write[i].vertices[j] = p_xform.xform(p_brush.faces[i].vertices[j]);
+			faces.write()[i].vertices[j] = p_xform.xform(p_brush.faces[i].vertices[j]);
 		}
 	}
 
@@ -360,13 +360,13 @@ void CSGBrushOperation::merge_brushes(Operation p_operation, const CSGBrush &p_b
 				}
 
 				for (int j = 0; j < 3; j++) {
-					r_merged_brush.faces.write[outside_count].vertices[j] = mesh_merge.points[mesh_merge.faces[i].points[j]];
-					r_merged_brush.faces.write[outside_count].uvs[j] = mesh_merge.faces[i].uvs[j];
+					r_merged_brush.faces.write()[outside_count].vertices[j] = mesh_merge.points[mesh_merge.faces[i].points[j]];
+					r_merged_brush.faces.write()[outside_count].uvs[j] = mesh_merge.faces[i].uvs[j];
 				}
 
-				r_merged_brush.faces.write[outside_count].smooth = mesh_merge.faces[i].smooth;
-				r_merged_brush.faces.write[outside_count].invert = mesh_merge.faces[i].invert;
-				r_merged_brush.faces.write[outside_count].material = mesh_merge.faces[i].material_idx;
+				r_merged_brush.faces.write()[outside_count].smooth = mesh_merge.faces[i].smooth;
+				r_merged_brush.faces.write()[outside_count].invert = mesh_merge.faces[i].invert;
+				r_merged_brush.faces.write()[outside_count].material = mesh_merge.faces[i].material_idx;
 				outside_count++;
 			}
 
@@ -394,13 +394,13 @@ void CSGBrushOperation::merge_brushes(Operation p_operation, const CSGBrush &p_b
 				}
 
 				for (int j = 0; j < 3; j++) {
-					r_merged_brush.faces.write[inside_count].vertices[j] = mesh_merge.points[mesh_merge.faces[i].points[j]];
-					r_merged_brush.faces.write[inside_count].uvs[j] = mesh_merge.faces[i].uvs[j];
+					r_merged_brush.faces.write()[inside_count].vertices[j] = mesh_merge.points[mesh_merge.faces[i].points[j]];
+					r_merged_brush.faces.write()[inside_count].uvs[j] = mesh_merge.faces[i].uvs[j];
 				}
 
-				r_merged_brush.faces.write[inside_count].smooth = mesh_merge.faces[i].smooth;
-				r_merged_brush.faces.write[inside_count].invert = mesh_merge.faces[i].invert;
-				r_merged_brush.faces.write[inside_count].material = mesh_merge.faces[i].material_idx;
+				r_merged_brush.faces.write()[inside_count].smooth = mesh_merge.faces[i].smooth;
+				r_merged_brush.faces.write()[inside_count].invert = mesh_merge.faces[i].invert;
+				r_merged_brush.faces.write()[inside_count].material = mesh_merge.faces[i].material_idx;
 				inside_count++;
 			}
 
@@ -434,19 +434,19 @@ void CSGBrushOperation::merge_brushes(Operation p_operation, const CSGBrush &p_b
 				}
 
 				for (int j = 0; j < 3; j++) {
-					r_merged_brush.faces.write[face_count].vertices[j] = mesh_merge.points[mesh_merge.faces[i].points[j]];
-					r_merged_brush.faces.write[face_count].uvs[j] = mesh_merge.faces[i].uvs[j];
+					r_merged_brush.faces.write()[face_count].vertices[j] = mesh_merge.points[mesh_merge.faces[i].points[j]];
+					r_merged_brush.faces.write()[face_count].uvs[j] = mesh_merge.faces[i].uvs[j];
 				}
 
 				if (mesh_merge.faces[i].from_b) {
 					//invert facing of insides of B
-					SWAP(r_merged_brush.faces.write[face_count].vertices[1], r_merged_brush.faces.write[face_count].vertices[2]);
-					SWAP(r_merged_brush.faces.write[face_count].uvs[1], r_merged_brush.faces.write[face_count].uvs[2]);
+					SWAP(r_merged_brush.faces.write()[face_count].vertices[1], r_merged_brush.faces.write()[face_count].vertices[2]);
+					SWAP(r_merged_brush.faces.write()[face_count].uvs[1], r_merged_brush.faces.write()[face_count].uvs[2]);
 				}
 
-				r_merged_brush.faces.write[face_count].smooth = mesh_merge.faces[i].smooth;
-				r_merged_brush.faces.write[face_count].invert = mesh_merge.faces[i].invert;
-				r_merged_brush.faces.write[face_count].material = mesh_merge.faces[i].material_idx;
+				r_merged_brush.faces.write()[face_count].smooth = mesh_merge.faces[i].smooth;
+				r_merged_brush.faces.write()[face_count].invert = mesh_merge.faces[i].invert;
+				r_merged_brush.faces.write()[face_count].material = mesh_merge.faces[i].material_idx;
 				face_count++;
 			}
 
@@ -458,7 +458,7 @@ void CSGBrushOperation::merge_brushes(Operation p_operation, const CSGBrush &p_b
 	// Update the list of materials.
 	r_merged_brush.materials.resize(mesh_merge.materials.size());
 	for (const Map<Ref<Material>, int>::Element *E = mesh_merge.materials.front(); E; E = E->next()) {
-		r_merged_brush.materials.write[E->get()] = E->key();
+		r_merged_brush.materials.write()[E->get()] = E->key();
 	}
 }
 
@@ -724,7 +724,7 @@ void CSGBrushOperation::MeshMerge::mark_inside_faces() {
 		}
 
 		if (_bvh_inside(facebvh, max_depth, max_alloc - 1, i)) {
-			faces.write[i].inside = true;
+			faces.write()[i].inside = true;
 		}
 	}
 }

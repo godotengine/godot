@@ -902,7 +902,7 @@ MainLoop *test(TestType p_type) {
 	uint64_t flen = fa->get_len();
 	buf.resize(fa->get_len() + 1);
 	fa->get_buffer(buf.ptrw(), flen);
-	buf.write[flen] = 0;
+	buf.write()[flen] = 0;
 
 	String code;
 	code.parse_utf8((const char *)&buf[0]);

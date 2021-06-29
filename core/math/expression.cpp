@@ -1831,8 +1831,8 @@ Expression::ENode *Expression::_parse_expression() {
 				op->op = expression[i].op;
 				op->nodes[0] = expression[i + 1].node;
 				op->nodes[1] = nullptr;
-				expression.write[i].is_op = false;
-				expression.write[i].node = op;
+				expression.write()[i].is_op = false;
+				expression.write()[i].node = op;
 				expression.remove(i + 1);
 			}
 
@@ -1864,7 +1864,7 @@ Expression::ENode *Expression::_parse_expression() {
 			op->nodes[1] = expression[next_op + 1].node; //next expression goes as right
 
 			//replace all 3 nodes by this operator and make it an expression
-			expression.write[next_op - 1].node = op;
+			expression.write()[next_op - 1].node = op;
 			expression.remove(next_op);
 			expression.remove(next_op);
 		}
@@ -2048,8 +2048,8 @@ bool Expression::_execute(const Array &p_inputs, Object *p_instance, Expression:
 				if (ret) {
 					return true;
 				}
-				arr.write[i] = value;
-				argp.write[i] = &arr[i];
+				arr.write()[i] = value;
+				argp.write()[i] = &arr[i];
 			}
 
 			Variant::CallError ce;
@@ -2075,8 +2075,8 @@ bool Expression::_execute(const Array &p_inputs, Object *p_instance, Expression:
 				if (ret) {
 					return true;
 				}
-				arr.write[i] = value;
-				argp.write[i] = &arr[i];
+				arr.write()[i] = value;
+				argp.write()[i] = &arr[i];
 			}
 
 			Variant::CallError ce;
@@ -2110,8 +2110,8 @@ bool Expression::_execute(const Array &p_inputs, Object *p_instance, Expression:
 				if (ret) {
 					return true;
 				}
-				arr.write[i] = value;
-				argp.write[i] = &arr[i];
+				arr.write()[i] = value;
+				argp.write()[i] = &arr[i];
 			}
 
 			Variant::CallError ce;

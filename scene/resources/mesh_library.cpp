@@ -213,7 +213,7 @@ Vector<int> MeshLibrary::get_item_list() const {
 	ret.resize(item_map.size());
 	int idx = 0;
 	for (Map<int, Item>::Element *E = item_map.front(); E; E = E->next()) {
-		ret.write[idx++] = E->key();
+		ret.write()[idx++] = E->key();
 	}
 
 	return ret;

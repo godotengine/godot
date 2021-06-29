@@ -40,10 +40,10 @@ static Vector<Vector<Face3>> convex_decompose(const Vector<Face3> &p_faces) {
 
 	for (int i = 0; i < p_faces.size(); i++) {
 		for (int j = 0; j < 3; j++) {
-			vertices.write[i * 9 + j * 3 + 0] = p_faces[i].vertex[j].x;
-			vertices.write[i * 9 + j * 3 + 1] = p_faces[i].vertex[j].y;
-			vertices.write[i * 9 + j * 3 + 2] = p_faces[i].vertex[j].z;
-			indices.write[i * 3 + j] = i * 3 + j;
+			vertices.write()[i * 9 + j * 3 + 0] = p_faces[i].vertex[j].x;
+			vertices.write()[i * 9 + j * 3 + 1] = p_faces[i].vertex[j].y;
+			vertices.write()[i * 9 + j * 3 + 2] = p_faces[i].vertex[j].z;
+			indices.write()[i * 3 + j] = i * 3 + j;
 		}
 	}
 
@@ -67,7 +67,7 @@ static Vector<Vector<Face3>> convex_decompose(const Vector<Face3> &p_faces) {
 					f.vertex[k][l] = hull.m_points[hull.m_triangles[j * 3 + k] * 3 + l];
 				}
 			}
-			triangles.write[j] = f;
+			triangles.write()[j] = f;
 		}
 		ret.push_back(triangles);
 	}

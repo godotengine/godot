@@ -285,7 +285,7 @@ public:
 				}
 				if (total) {
 					for (int i = 0; i < 4; i++) {
-						weights.write[i].weight /= total;
+						weights.write()[i].weight /= total;
 					}
 				}
 			}

@@ -343,7 +343,7 @@ public:
 			names.resize(p_info.arguments.size());
 			for (int i = 0; i < p_info.arguments.size(); i++) {
 				at[i + 1] = p_info.arguments[i].type;
-				names.write[i] = p_info.arguments[i].name;
+				names.write()[i] = p_info.arguments[i].name;
 			}
 
 			set_argument_names(names);

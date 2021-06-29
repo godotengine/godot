@@ -233,8 +233,8 @@ void FileAccessNetwork::_set_block(uint64_t p_offset, const Vector<uint8_t> &p_b
 	}
 
 	buffer_mutex.lock();
-	pages.write[page].buffer = p_block;
-	pages.write[page].queued = false;
+	pages.write()[page].buffer = p_block;
+	pages.write()[page].queued = false;
 	buffer_mutex.unlock();
 
 	if (waiting_on_page == page) {
@@ -359,7 +359,7 @@ void FileAccessNetwork::_queue_page(int32_t p_page) const {
 		br.offset = (uint64_t)p_page * page_size;
 		br.size = page_size;
 		nc->block_requests.push_back(br);
-		pages.write[p_page].queued = true;
+		pages.write()[p_page].queued = true;
 		nc->blockrequest_mutex.unlock();
 		DEBUG_PRINT("QUEUE PAGE POST");
 		nc->sem.post();
@@ -400,7 +400,7 @@ uint64_t FileAccessNetwork::get_buffer(uint8_t *p_dst, uint64_t p_length) const 
 				buffer_mutex.unlock();
 			}
 
-			buff = pages.write[page].buffer.ptrw();
+			buff = pages.write()[page].buffer.ptrw();
 			last_page_buff = buff;
 			last_page = page;
 		}

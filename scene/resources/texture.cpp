@@ -1240,7 +1240,7 @@ bool LargeTexture::has_alpha() const {
 
 void LargeTexture::set_flags(uint32_t p_flags) {
 	for (int i = 0; i < pieces.size(); i++) {
-		pieces.write[i].texture->set_flags(p_flags);
+		pieces.write()[i].texture->set_flags(p_flags);
 	}
 }
 
@@ -1264,14 +1264,14 @@ int LargeTexture::add_piece(const Point2 &p_offset, const Ref<Texture> &p_textur
 
 void LargeTexture::set_piece_offset(int p_idx, const Point2 &p_offset) {
 	ERR_FAIL_INDEX(p_idx, pieces.size());
-	pieces.write[p_idx].offset = p_offset;
+	pieces.write()[p_idx].offset = p_offset;
 };
 
 void LargeTexture::set_piece_texture(int p_idx, const Ref<Texture> &p_texture) {
 	ERR_FAIL_COND(p_texture == this);
 	ERR_FAIL_COND(p_texture.is_null());
 	ERR_FAIL_INDEX(p_idx, pieces.size());
-	pieces.write[p_idx].texture = p_texture;
+	pieces.write()[p_idx].texture = p_texture;
 };
 
 void LargeTexture::set_size(const Size2 &p_size) {

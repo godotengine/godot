@@ -634,7 +634,7 @@ BakedLightmap::BakeError BakedLightmap::bake(Node *p_from_node, String p_data_sa
 			}
 		}
 
-		MeshesFound &mf = meshes_found.write[m_i];
+		MeshesFound &mf = meshes_found.write()[m_i];
 
 		Size2i lightmap_size = mf.mesh->get_lightmap_size_hint();
 
@@ -873,7 +873,7 @@ BakedLightmap::BakeError BakedLightmap::bake(Node *p_from_node, String p_data_sa
 		voxel_baker.begin_bake(capture_subdiv + 1, bake_bounds);
 
 		for (int mesh_id = 0; mesh_id < meshes_found.size(); mesh_id++) {
-			MeshesFound &mf = meshes_found.write[mesh_id];
+			MeshesFound &mf = meshes_found.write()[mesh_id];
 			voxel_baker.plot_mesh(mf.xform, mf.mesh, mf.overrides, Ref<Material>());
 		}
 
@@ -887,7 +887,7 @@ BakedLightmap::BakeError BakedLightmap::bake(Node *p_from_node, String p_data_sa
 		voxel_baker.begin_bake_light(capt_quality, capture_propagation);
 
 		for (int i = 0; i < lights_found.size(); i++) {
-			LightsFound &lf = lights_found.write[i];
+			LightsFound &lf = lights_found.write()[i];
 			switch (lf.light->get_light_type()) {
 				case VS::LIGHT_DIRECTIONAL: {
 					voxel_baker.plot_light_directional(-lf.xform.basis.get_axis(2), lf.light->get_color(), lf.light->get_param(Light::PARAM_ENERGY), lf.light->get_param(Light::PARAM_INDIRECT_ENERGY), lf.light->get_bake_mode() == Light::BAKE_ALL);

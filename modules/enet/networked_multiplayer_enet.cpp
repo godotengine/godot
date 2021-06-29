@@ -674,7 +674,7 @@ size_t NetworkedMultiplayerENet::enet_compress(void *context, const ENetBuffer *
 	while (total) {
 		for (size_t i = 0; i < inBufferCount; i++) {
 			int to_copy = MIN(total, int(inBuffers[i].dataLength));
-			memcpy(&enet->src_compressor_mem.write[ofs], inBuffers[i].data, to_copy);
+			memcpy(&enet->src_compressor_mem.write()[ofs], inBuffers[i].data, to_copy);
 			ofs += to_copy;
 			total -= to_copy;
 		}

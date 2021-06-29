@@ -109,7 +109,7 @@ public:
 						}
 						v |= ct;
 					}
-					key.write[i] = v;
+					key.write()[i] = v;
 				}
 				FileAccessEncrypted *fae = memnew(FileAccessEncrypted);
 				Error err = fae->open_and_parse(fa, key, FileAccessEncrypted::MODE_WRITE_AES256);

@@ -247,7 +247,7 @@ Vector<int> TileMapEditor::get_selected_tiles() const {
 	}
 
 	for (int i = items.size() - 1; i >= 0; i--) {
-		items.write[i] = palette->get_item_metadata(items[i]);
+		items.write()[i] = palette->get_item_metadata(items[i]);
 	}
 	return items;
 }
@@ -1116,7 +1116,7 @@ bool TileMapEditor::forward_gui_input(const Ref<InputEvent> &p_event) {
 						_start_undo(TTR("Paste"));
 						ids.push_back(0);
 						for (List<TileData>::Element *E = copydata.front(); E; E = E->next()) {
-							ids.write[0] = E->get().cell;
+							ids.write()[0] = E->get().cell;
 							_set_cell(E->get().pos + ofs, ids, E->get().flip_h, E->get().flip_v, E->get().transpose, E->get().autotile_coord);
 						}
 						_finish_undo();
@@ -1319,7 +1319,7 @@ bool TileMapEditor::forward_gui_input(const Ref<InputEvent> &p_event) {
 			tmp_cell.push_back(0);
 			if (erasing && paint_undo.size()) {
 				for (Map<Point2i, CellOp>::Element *E = paint_undo.front(); E; E = E->next()) {
-					tmp_cell.write[0] = E->get().idx;
+					tmp_cell.write()[0] = E->get().idx;
 					_set_cell(E->key(), tmp_cell, E->get().xf, E->get().yf, E->get().tr);
 				}
 			}
@@ -1351,7 +1351,7 @@ bool TileMapEditor::forward_gui_input(const Ref<InputEvent> &p_event) {
 			if (tool == TOOL_RECTANGLE_ERASE) {
 				if (paint_undo.size()) {
 					for (Map<Point2i, CellOp>::Element *E = paint_undo.front(); E; E = E->next()) {
-						tmp_cell.write[0] = E->get().idx;
+						tmp_cell.write()[0] = E->get().idx;
 						_set_cell(E->key(), tmp_cell, E->get().xf, E->get().yf, E->get().tr);
 					}
 				}
@@ -1934,7 +1934,7 @@ TileMapEditor::TileMapEditor(EditorNode *p_editor) {
 	bucket_cache_visited = nullptr;
 
 	invalid_cell.resize(1);
-	invalid_cell.write[0] = TileMap::INVALID_CELL;
+	invalid_cell.write()[0] = TileMap::INVALID_CELL;
 
 	ED_SHORTCUT("tile_map_editor/erase_selection", TTR("Erase Selection"), KEY_DELETE);
 	ED_SHORTCUT("tile_map_editor/find_tile", TTR("Find Tile"), KEY_MASK_CMD + KEY_F);

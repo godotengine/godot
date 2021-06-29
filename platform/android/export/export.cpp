@@ -947,11 +947,11 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 							ucstring.resize(len + 1);
 							for (uint32_t j = 0; j < len; j++) {
 								uint16_t c = decode_uint16(&p_manifest[string_at + 2 + 2 * j]);
-								ucstring.write[j] = c;
+								ucstring.write()[j] = c;
 							}
 							string_end = MAX(string_at + 2 + 2 * len, string_end);
-							ucstring.write[len] = 0;
-							string_table.write[i] = ucstring.ptr();
+							ucstring.write()[len] = 0;
+							string_table.write()[i] = ucstring.ptr();
 						}
 					}
 
@@ -983,73 +983,73 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 
 						//replace project information
 						if (tname == "manifest" && attrname == "package") {
-							string_table.write[attr_value] = get_package_name(package_name);
+							string_table.write()[attr_value] = get_package_name(package_name);
 						}
 
 						if (tname == "manifest" && attrname == "versionCode") {
-							encode_uint32(version_code, &p_manifest.write[iofs + 16]);
+							encode_uint32(version_code, &p_manifest.write()[iofs + 16]);
 						}
 
 						if (tname == "manifest" && attrname == "versionName") {
 							if (attr_value == 0xFFFFFFFF) {
 								WARN_PRINT("Version name in a resource, should be plain text");
 							} else {
-								string_table.write[attr_value] = version_name;
+								string_table.write()[attr_value] = version_name;
 							}
 						}
 
 						if (tname == "application" && attrname == "requestLegacyExternalStorage") {
-							encode_uint32(has_storage_permission ? 0xFFFFFFFF : 0, &p_manifest.write[iofs + 16]);
+							encode_uint32(has_storage_permission ? 0xFFFFFFFF : 0, &p_manifest.write()[iofs + 16]);
 						}
 
 						if (tname == "application" && attrname == "allowBackup") {
-							encode_uint32(backup_allowed, &p_manifest.write[iofs + 16]);
+							encode_uint32(backup_allowed, &p_manifest.write()[iofs + 16]);
 						}
 
 						if (tname == "instrumentation" && attrname == "targetPackage") {
-							string_table.write[attr_value] = get_package_name(package_name);
+							string_table.write()[attr_value] = get_package_name(package_name);
 						}
 
 						if (tname == "activity" && attrname == "screenOrientation") {
-							encode_uint32(screen_orientation, &p_manifest.write[iofs + 16]);
+							encode_uint32(screen_orientation, &p_manifest.write()[iofs + 16]);
 						}
 
 						if (tname == "supports-screens") {
 							if (attrname == "smallScreens") {
-								encode_uint32(screen_support_small ? 0xFFFFFFFF : 0, &p_manifest.write[iofs + 16]);
+								encode_uint32(screen_support_small ? 0xFFFFFFFF : 0, &p_manifest.write()[iofs + 16]);
 
 							} else if (attrname == "normalScreens") {
-								encode_uint32(screen_support_normal ? 0xFFFFFFFF : 0, &p_manifest.write[iofs + 16]);
+								encode_uint32(screen_support_normal ? 0xFFFFFFFF : 0, &p_manifest.write()[iofs + 16]);
 
 							} else if (attrname == "largeScreens") {
-								encode_uint32(screen_support_large ? 0xFFFFFFFF : 0, &p_manifest.write[iofs + 16]);
+								encode_uint32(screen_support_large ? 0xFFFFFFFF : 0, &p_manifest.write()[iofs + 16]);
 
 							} else if (attrname == "xlargeScreens") {
-								encode_uint32(screen_support_xlarge ? 0xFFFFFFFF : 0, &p_manifest.write[iofs + 16]);
+								encode_uint32(screen_support_xlarge ? 0xFFFFFFFF : 0, &p_manifest.write()[iofs + 16]);
 							}
 						}
 
 						if (tname == "uses-feature" && attrname == "glEsVersion") {
-							encode_uint32(min_gles3 ? 0x00030000 : 0x00020000, &p_manifest.write[iofs + 16]);
+							encode_uint32(min_gles3 ? 0x00030000 : 0x00020000, &p_manifest.write()[iofs + 16]);
 						}
 
 						if (tname == "meta-data" && attrname == "name" && value == "xr_mode_metadata_name") {
 							// Update the meta-data 'android:name' attribute based on the selected XR mode.
 							if (xr_mode_index == 1 /* XRMode.OVR */) {
-								string_table.write[attr_value] = "com.samsung.android.vr.application.mode";
+								string_table.write()[attr_value] = "com.samsung.android.vr.application.mode";
 							}
 						}
 
 						if (tname == "meta-data" && attrname == "value" && value == "xr_mode_metadata_value") {
 							// Update the meta-data 'android:value' attribute based on the selected XR mode.
 							if (xr_mode_index == 1 /* XRMode.OVR */) {
-								string_table.write[attr_value] = "vr_only";
+								string_table.write()[attr_value] = "vr_only";
 							}
 						}
 
 						if (tname == "meta-data" && attrname == "value" && is_focus_aware_metadata) {
 							// Update the focus awareness meta-data value
-							encode_uint32(xr_mode_index == /* XRMode.OVR */ 1 && focus_awareness ? 0xFFFFFFFF : 0, &p_manifest.write[iofs + 16]);
+							encode_uint32(xr_mode_index == /* XRMode.OVR */ 1 && focus_awareness ? 0xFFFFFFFF : 0, &p_manifest.write()[iofs + 16]);
 						}
 
 						is_focus_aware_metadata = tname == "meta-data" && attrname == "name" && value == "com.oculus.vr.focusaware";
@@ -1165,65 +1165,65 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 								p_manifest.resize(manifest_cur_size);
 
 								// start tag
-								encode_uint16(0x102, &p_manifest.write[ofs]); // type
-								encode_uint16(16, &p_manifest.write[ofs + 2]); // headersize
-								encode_uint32(tag_size, &p_manifest.write[ofs + 4]); // size
-								encode_uint32(0, &p_manifest.write[ofs + 8]); // lineno
-								encode_uint32(-1, &p_manifest.write[ofs + 12]); // comment
-								encode_uint32(-1, &p_manifest.write[ofs + 16]); // ns
-								encode_uint32(attr_uses_feature_string, &p_manifest.write[ofs + 20]); // name
-								encode_uint16(20, &p_manifest.write[ofs + 24]); // attr_start
-								encode_uint16(20, &p_manifest.write[ofs + 26]); // attr_size
-								encode_uint16(attr_count, &p_manifest.write[ofs + 28]); // num_attrs
-								encode_uint16(0, &p_manifest.write[ofs + 30]); // id_index
-								encode_uint16(0, &p_manifest.write[ofs + 32]); // class_index
-								encode_uint16(0, &p_manifest.write[ofs + 34]); // style_index
+								encode_uint16(0x102, &p_manifest.write()[ofs]); // type
+								encode_uint16(16, &p_manifest.write()[ofs + 2]); // headersize
+								encode_uint32(tag_size, &p_manifest.write()[ofs + 4]); // size
+								encode_uint32(0, &p_manifest.write()[ofs + 8]); // lineno
+								encode_uint32(-1, &p_manifest.write()[ofs + 12]); // comment
+								encode_uint32(-1, &p_manifest.write()[ofs + 16]); // ns
+								encode_uint32(attr_uses_feature_string, &p_manifest.write()[ofs + 20]); // name
+								encode_uint16(20, &p_manifest.write()[ofs + 24]); // attr_start
+								encode_uint16(20, &p_manifest.write()[ofs + 26]); // attr_size
+								encode_uint16(attr_count, &p_manifest.write()[ofs + 28]); // num_attrs
+								encode_uint16(0, &p_manifest.write()[ofs + 30]); // id_index
+								encode_uint16(0, &p_manifest.write()[ofs + 32]); // class_index
+								encode_uint16(0, &p_manifest.write()[ofs + 34]); // style_index
 
 								// android:name attribute
-								encode_uint32(ns_android_string, &p_manifest.write[ofs + 36]); // ns
-								encode_uint32(attr_name_string, &p_manifest.write[ofs + 40]); // 'name'
-								encode_uint32(feature_string, &p_manifest.write[ofs + 44]); // raw_value
-								encode_uint16(8, &p_manifest.write[ofs + 48]); // typedvalue_size
-								p_manifest.write[ofs + 50] = 0; // typedvalue_always0
-								p_manifest.write[ofs + 51] = 0x03; // typedvalue_type (string)
-								encode_uint32(feature_string, &p_manifest.write[ofs + 52]); // typedvalue reference
+								encode_uint32(ns_android_string, &p_manifest.write()[ofs + 36]); // ns
+								encode_uint32(attr_name_string, &p_manifest.write()[ofs + 40]); // 'name'
+								encode_uint32(feature_string, &p_manifest.write()[ofs + 44]); // raw_value
+								encode_uint16(8, &p_manifest.write()[ofs + 48]); // typedvalue_size
+								p_manifest.write()[ofs + 50] = 0; // typedvalue_always0
+								p_manifest.write()[ofs + 51] = 0x03; // typedvalue_type (string)
+								encode_uint32(feature_string, &p_manifest.write()[ofs + 52]); // typedvalue reference
 
 								// android:required attribute
-								encode_uint32(ns_android_string, &p_manifest.write[ofs + 56]); // ns
-								encode_uint32(attr_required_string, &p_manifest.write[ofs + 60]); // 'name'
-								encode_uint32(required_value, &p_manifest.write[ofs + 64]); // raw_value
-								encode_uint16(8, &p_manifest.write[ofs + 68]); // typedvalue_size
-								p_manifest.write[ofs + 70] = 0; // typedvalue_always0
-								p_manifest.write[ofs + 71] = 0x03; // typedvalue_type (string)
-								encode_uint32(required_value, &p_manifest.write[ofs + 72]); // typedvalue reference
+								encode_uint32(ns_android_string, &p_manifest.write()[ofs + 56]); // ns
+								encode_uint32(attr_required_string, &p_manifest.write()[ofs + 60]); // 'name'
+								encode_uint32(required_value, &p_manifest.write()[ofs + 64]); // raw_value
+								encode_uint16(8, &p_manifest.write()[ofs + 68]); // typedvalue_size
+								p_manifest.write()[ofs + 70] = 0; // typedvalue_always0
+								p_manifest.write()[ofs + 71] = 0x03; // typedvalue_type (string)
+								encode_uint32(required_value, &p_manifest.write()[ofs + 72]); // typedvalue reference
 
 								ofs += 76;
 
 								if (has_version_attribute) {
 									// android:version attribute
-									encode_uint32(ns_android_string, &p_manifest.write[ofs]); // ns
-									encode_uint32(attr_version_string, &p_manifest.write[ofs + 4]); // 'name'
-									encode_uint32(version_value, &p_manifest.write[ofs + 8]); // raw_value
-									encode_uint16(8, &p_manifest.write[ofs + 12]); // typedvalue_size
-									p_manifest.write[ofs + 14] = 0; // typedvalue_always0
-									p_manifest.write[ofs + 15] = 0x03; // typedvalue_type (string)
-									encode_uint32(version_value, &p_manifest.write[ofs + 16]); // typedvalue reference
+									encode_uint32(ns_android_string, &p_manifest.write()[ofs]); // ns
+									encode_uint32(attr_version_string, &p_manifest.write()[ofs + 4]); // 'name'
+									encode_uint32(version_value, &p_manifest.write()[ofs + 8]); // raw_value
+									encode_uint16(8, &p_manifest.write()[ofs + 12]); // typedvalue_size
+									p_manifest.write()[ofs + 14] = 0; // typedvalue_always0
+									p_manifest.write()[ofs + 15] = 0x03; // typedvalue_type (string)
+									encode_uint32(version_value, &p_manifest.write()[ofs + 16]); // typedvalue reference
 
 									ofs += 20;
 								}
 
 								// end tag
-								encode_uint16(0x103, &p_manifest.write[ofs]); // type
-								encode_uint16(16, &p_manifest.write[ofs + 2]); // headersize
-								encode_uint32(24, &p_manifest.write[ofs + 4]); // size
-								encode_uint32(0, &p_manifest.write[ofs + 8]); // lineno
-								encode_uint32(-1, &p_manifest.write[ofs + 12]); // comment
-								encode_uint32(-1, &p_manifest.write[ofs + 16]); // ns
-								encode_uint32(attr_uses_feature_string, &p_manifest.write[ofs + 20]); // name
+								encode_uint16(0x103, &p_manifest.write()[ofs]); // type
+								encode_uint16(16, &p_manifest.write()[ofs + 2]); // headersize
+								encode_uint32(24, &p_manifest.write()[ofs + 4]); // size
+								encode_uint32(0, &p_manifest.write()[ofs + 8]); // lineno
+								encode_uint32(-1, &p_manifest.write()[ofs + 12]); // comment
+								encode_uint32(-1, &p_manifest.write()[ofs + 16]); // ns
+								encode_uint32(attr_uses_feature_string, &p_manifest.write()[ofs + 20]); // name
 
 								ofs += 24;
 							}
-							memcpy(&p_manifest.write[ofs], manifest_end.ptr(), manifest_end.size());
+							memcpy(&p_manifest.write()[ofs], manifest_end.ptr(), manifest_end.size());
 							ofs -= 24; // go back over back end
 						}
 					}
@@ -1261,45 +1261,45 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 							}
 
 							// start tag
-							encode_uint16(0x102, &p_manifest.write[ofs]); // type
-							encode_uint16(16, &p_manifest.write[ofs + 2]); // headersize
-							encode_uint32(56, &p_manifest.write[ofs + 4]); // size
-							encode_uint32(0, &p_manifest.write[ofs + 8]); // lineno
-							encode_uint32(-1, &p_manifest.write[ofs + 12]); // comment
-							encode_uint32(-1, &p_manifest.write[ofs + 16]); // ns
-							encode_uint32(attr_uses_permission_string, &p_manifest.write[ofs + 20]); // name
-							encode_uint16(20, &p_manifest.write[ofs + 24]); // attr_start
-							encode_uint16(20, &p_manifest.write[ofs + 26]); // attr_size
-							encode_uint16(1, &p_manifest.write[ofs + 28]); // num_attrs
-							encode_uint16(0, &p_manifest.write[ofs + 30]); // id_index
-							encode_uint16(0, &p_manifest.write[ofs + 32]); // class_index
-							encode_uint16(0, &p_manifest.write[ofs + 34]); // style_index
+							encode_uint16(0x102, &p_manifest.write()[ofs]); // type
+							encode_uint16(16, &p_manifest.write()[ofs + 2]); // headersize
+							encode_uint32(56, &p_manifest.write()[ofs + 4]); // size
+							encode_uint32(0, &p_manifest.write()[ofs + 8]); // lineno
+							encode_uint32(-1, &p_manifest.write()[ofs + 12]); // comment
+							encode_uint32(-1, &p_manifest.write()[ofs + 16]); // ns
+							encode_uint32(attr_uses_permission_string, &p_manifest.write()[ofs + 20]); // name
+							encode_uint16(20, &p_manifest.write()[ofs + 24]); // attr_start
+							encode_uint16(20, &p_manifest.write()[ofs + 26]); // attr_size
+							encode_uint16(1, &p_manifest.write()[ofs + 28]); // num_attrs
+							encode_uint16(0, &p_manifest.write()[ofs + 30]); // id_index
+							encode_uint16(0, &p_manifest.write()[ofs + 32]); // class_index
+							encode_uint16(0, &p_manifest.write()[ofs + 34]); // style_index
 
 							// attribute
-							encode_uint32(ns_android_string, &p_manifest.write[ofs + 36]); // ns
-							encode_uint32(attr_name_string, &p_manifest.write[ofs + 40]); // 'name'
-							encode_uint32(perm_string, &p_manifest.write[ofs + 44]); // raw_value
-							encode_uint16(8, &p_manifest.write[ofs + 48]); // typedvalue_size
-							p_manifest.write[ofs + 50] = 0; // typedvalue_always0
-							p_manifest.write[ofs + 51] = 0x03; // typedvalue_type (string)
-							encode_uint32(perm_string, &p_manifest.write[ofs + 52]); // typedvalue reference
+							encode_uint32(ns_android_string, &p_manifest.write()[ofs + 36]); // ns
+							encode_uint32(attr_name_string, &p_manifest.write()[ofs + 40]); // 'name'
+							encode_uint32(perm_string, &p_manifest.write()[ofs + 44]); // raw_value
+							encode_uint16(8, &p_manifest.write()[ofs + 48]); // typedvalue_size
+							p_manifest.write()[ofs + 50] = 0; // typedvalue_always0
+							p_manifest.write()[ofs + 51] = 0x03; // typedvalue_type (string)
+							encode_uint32(perm_string, &p_manifest.write()[ofs + 52]); // typedvalue reference
 
 							ofs += 56;
 
 							// end tag
-							encode_uint16(0x103, &p_manifest.write[ofs]); // type
-							encode_uint16(16, &p_manifest.write[ofs + 2]); // headersize
-							encode_uint32(24, &p_manifest.write[ofs + 4]); // size
-							encode_uint32(0, &p_manifest.write[ofs + 8]); // lineno
-							encode_uint32(-1, &p_manifest.write[ofs + 12]); // comment
-							encode_uint32(-1, &p_manifest.write[ofs + 16]); // ns
-							encode_uint32(attr_uses_permission_string, &p_manifest.write[ofs + 20]); // name
+							encode_uint16(0x103, &p_manifest.write()[ofs]); // type
+							encode_uint16(16, &p_manifest.write()[ofs + 2]); // headersize
+							encode_uint32(24, &p_manifest.write()[ofs + 4]); // size
+							encode_uint32(0, &p_manifest.write()[ofs + 8]); // lineno
+							encode_uint32(-1, &p_manifest.write()[ofs + 12]); // comment
+							encode_uint32(-1, &p_manifest.write()[ofs + 16]); // ns
+							encode_uint32(attr_uses_permission_string, &p_manifest.write()[ofs + 20]); // name
 
 							ofs += 24;
 						}
 
 						// copy footer back in
-						memcpy(&p_manifest.write[ofs], manifest_end.ptr(), manifest_end.size());
+						memcpy(&p_manifest.write()[ofs], manifest_end.ptr(), manifest_end.size());
 					}
 				} break;
 			}
@@ -1313,18 +1313,18 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 		ret.resize(string_table_begins + string_table.size() * 4);
 
 		for (uint32_t i = 0; i < string_table_begins; i++) {
-			ret.write[i] = p_manifest[i];
+			ret.write()[i] = p_manifest[i];
 		}
 
 		ofs = 0;
 		for (int i = 0; i < string_table.size(); i++) {
-			encode_uint32(ofs, &ret.write[string_table_begins + i * 4]);
+			encode_uint32(ofs, &ret.write()[string_table_begins + i * 4]);
 			ofs += string_table[i].length() * 2 + 2 + 2;
 		}
 
 		ret.resize(ret.size() + ofs);
 		string_data_offset = ret.size() - ofs;
-		uint8_t *chars = &ret.write[string_data_offset];
+		uint8_t *chars = &ret.write()[string_data_offset];
 		for (int i = 0; i < string_table.size(); i++) {
 			String s = string_table[i];
 			encode_uint16(s.length(), chars);
@@ -1351,17 +1351,17 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 		uint32_t extra = (p_manifest.size() - string_table_ends);
 		ret.resize(new_stable_end + extra);
 		for (uint32_t i = 0; i < extra; i++) {
-			ret.write[new_stable_end + i] = p_manifest[string_table_ends + i];
+			ret.write()[new_stable_end + i] = p_manifest[string_table_ends + i];
 		}
 
 		while (ret.size() % 4) {
 			ret.push_back(0);
 		}
-		encode_uint32(ret.size(), &ret.write[4]); //update new file size
+		encode_uint32(ret.size(), &ret.write()[4]); //update new file size
 
-		encode_uint32(new_stable_end - 8, &ret.write[12]); //update new string table size
-		encode_uint32(string_table.size(), &ret.write[16]); //update new number of strings
-		encode_uint32(string_data_offset - 8, &ret.write[28]); //update new string data offset
+		encode_uint32(new_stable_end - 8, &ret.write()[12]); //update new string table size
+		encode_uint32(string_table.size(), &ret.write()[16]); //update new number of strings
+		encode_uint32(string_data_offset - 8, &ret.write()[28]); //update new string data offset
 
 		p_manifest = ret;
 	}
@@ -1400,9 +1400,9 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 			Vector<uint8_t> str8;
 			str8.resize(len + 1);
 			for (uint32_t i = 0; i < len; i++) {
-				str8.write[i] = p_bytes[offset + i];
+				str8.write()[i] = p_bytes[offset + i];
 			}
-			str8.write[len] = 0;
+			str8.write()[len] = 0;
 			String str;
 			str.parse_utf8((const char *)str8.ptr());
 			return str;
@@ -1461,17 +1461,17 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 		ret.resize(string_table_begins + string_table.size() * 4);
 
 		for (uint32_t i = 0; i < string_table_begins; i++) {
-			ret.write[i] = r_manifest[i];
+			ret.write()[i] = r_manifest[i];
 		}
 
 		int ofs = 0;
 		for (int i = 0; i < string_table.size(); i++) {
-			encode_uint32(ofs, &ret.write[string_table_begins + i * 4]);
+			encode_uint32(ofs, &ret.write()[string_table_begins + i * 4]);
 			ofs += string_table[i].length() * 2 + 2 + 2;
 		}
 
 		ret.resize(ret.size() + ofs);
-		uint8_t *chars = &ret.write[ret.size() - ofs];
+		uint8_t *chars = &ret.write()[ret.size() - ofs];
 		for (int i = 0; i < string_table.size(); i++) {
 			String s = string_table[i];
 			encode_uint16(s.length(), chars);
@@ -1490,19 +1490,19 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 		}
 
 		//change flags to not use utf8
-		encode_uint32(string_flags & ~0x100, &ret.write[28]);
+		encode_uint32(string_flags & ~0x100, &ret.write()[28]);
 		//change length
-		encode_uint32(ret.size() - 12, &ret.write[16]);
+		encode_uint32(ret.size() - 12, &ret.write()[16]);
 		//append the rest...
 		int rest_from = 12 + string_block_len;
 		int rest_to = ret.size();
 		int rest_len = (r_manifest.size() - rest_from);
 		ret.resize(ret.size() + (r_manifest.size() - rest_from));
 		for (int i = 0; i < rest_len; i++) {
-			ret.write[rest_to + i] = r_manifest[rest_from + i];
+			ret.write()[rest_to + i] = r_manifest[rest_from + i];
 		}
 		//finally update the size
-		encode_uint32(ret.size(), &ret.write[4]);
+		encode_uint32(ret.size(), &ret.write()[4]);
 
 		r_manifest = ret;
 		//printf("end\n");
@@ -2657,7 +2657,7 @@ public:
 
 		if (command_line_strings.size()) {
 			r_command_line_flags.resize(4);
-			encode_uint32(command_line_strings.size(), &r_command_line_flags.write[0]);
+			encode_uint32(command_line_strings.size(), &r_command_line_flags.write()[0]);
 			for (int i = 0; i < command_line_strings.size(); i++) {
 				print_line(itos(i) + " param: " + command_line_strings[i]);
 				CharString command_line_argument = command_line_strings[i].utf8();
@@ -2667,8 +2667,8 @@ public:
 					continue;
 				}
 				r_command_line_flags.resize(base + 4 + length);
-				encode_uint32(length, &r_command_line_flags.write[base]);
-				memcpy(&r_command_line_flags.write[base + 4], command_line_argument.ptr(), length);
+				encode_uint32(length, &r_command_line_flags.write()[base]);
+				memcpy(&r_command_line_flags.write()[base + 4], command_line_argument.ptr(), length);
 			}
 		}
 	}

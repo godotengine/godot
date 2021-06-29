@@ -298,7 +298,7 @@ void ScriptDebuggerLocal::idle_poll() {
 
 	int ofs = 0;
 	for (int i = 0; i < ScriptServer::get_language_count(); i++) {
-		ofs += ScriptServer::get_language(i)->profiling_get_frame_data(&pinfo.write[ofs], pinfo.size() - ofs);
+		ofs += ScriptServer::get_language(i)->profiling_get_frame_data(&pinfo.write()[ofs], pinfo.size() - ofs);
 	}
 
 	SortArray<ScriptLanguage::ProfilingInfo, _ScriptDebuggerLocalProfileInfoSort> sort;
@@ -346,7 +346,7 @@ void ScriptDebuggerLocal::profiling_end() {
 	int ofs = 0;
 
 	for (int i = 0; i < ScriptServer::get_language_count(); i++) {
-		ofs += ScriptServer::get_language(i)->profiling_get_accumulated_data(&pinfo.write[ofs], pinfo.size() - ofs);
+		ofs += ScriptServer::get_language(i)->profiling_get_accumulated_data(&pinfo.write()[ofs], pinfo.size() - ofs);
 	}
 
 	SortArray<ScriptLanguage::ProfilingInfo, _ScriptDebuggerLocalProfileInfoSort> sort;

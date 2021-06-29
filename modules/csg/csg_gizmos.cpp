@@ -347,8 +347,8 @@ void CSGShapeSpatialGizmoPlugin::redraw(EditorSpatialGizmo *p_gizmo) {
 			int f = i / 6;
 			for (int j = 0; j < 3; j++) {
 				int j_n = (j + 1) % 3;
-				lines.write[i + j * 2 + 0] = r[f * 3 + j];
-				lines.write[i + j * 2 + 1] = r[f * 3 + j_n];
+				lines.write()[i + j * 2 + 0] = r[f * 3 + j];
+				lines.write()[i + j * 2 + 1] = r[f * 3 + j_n];
 			}
 		}
 	}

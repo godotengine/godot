@@ -219,9 +219,9 @@ Ref<AudioEffectInstance> AudioEffectSpectrumAnalyzer::instance() {
 	ins->temporal_fft.resize(ins->fft_size * 8); //x2 stereo, x2 amount of samples for freqs, x2 for input
 	ins->temporal_fft_pos = 0;
 	for (int i = 0; i < ins->fft_count; i++) {
-		ins->fft_history.write[i].resize(ins->fft_size); //only magnitude matters
+		ins->fft_history.write()[i].resize(ins->fft_size); //only magnitude matters
 		for (int j = 0; j < ins->fft_size; j++) {
-			ins->fft_history.write[i].write[j] = AudioFrame(0, 0);
+			ins->fft_history.write()[i].write()[j] = AudioFrame(0, 0);
 		}
 	}
 	return ins;

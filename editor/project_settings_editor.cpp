@@ -1614,7 +1614,7 @@ void ProjectSettingsEditor::_update_translations() {
 						langnames += ",";
 					}
 					langnames += names[i];
-					translation_locales_idxs_remap.write[l_idx] = i;
+					translation_locales_idxs_remap.write()[l_idx] = i;
 					l_idx++;
 				}
 			}

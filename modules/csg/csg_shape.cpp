@@ -289,7 +289,7 @@ void CSGShape::_update_shape() {
 	Vector<int> face_count;
 	face_count.resize(n->materials.size() + 1);
 	for (int i = 0; i < face_count.size(); i++) {
-		face_count.write[i] = 0;
+		face_count.write()[i] = 0;
 	}
 
 	for (int i = 0; i < n->faces.size(); i++) {
@@ -310,7 +310,7 @@ void CSGShape::_update_shape() {
 			vec_map.set(v, add);
 		}
 
-		face_count.write[idx]++;
+		face_count.write()[idx]++;
 	}
 
 	Vector<ShapeUpdateSurface> surfaces;
@@ -319,23 +319,23 @@ void CSGShape::_update_shape() {
 
 	//create arrays
 	for (int i = 0; i < surfaces.size(); i++) {
-		surfaces.write[i].vertices.resize(face_count[i] * 3);
-		surfaces.write[i].normals.resize(face_count[i] * 3);
-		surfaces.write[i].uvs.resize(face_count[i] * 3);
+		surfaces.write()[i].vertices.resize(face_count[i] * 3);
+		surfaces.write()[i].normals.resize(face_count[i] * 3);
+		surfaces.write()[i].uvs.resize(face_count[i] * 3);
 		if (calculate_tangents) {
-			surfaces.write[i].tans.resize(face_count[i] * 3 * 4);
+			surfaces.write()[i].tans.resize(face_count[i] * 3 * 4);
 		}
-		surfaces.write[i].last_added = 0;
+		surfaces.write()[i].last_added = 0;
 
 		if (i != surfaces.size() - 1) {
-			surfaces.write[i].material = n->materials[i];
+			surfaces.write()[i].material = n->materials[i];
 		}
 
-		surfaces.write[i].verticesw = surfaces.write[i].vertices.write();
-		surfaces.write[i].normalsw = surfaces.write[i].normals.write();
-		surfaces.write[i].uvsw = surfaces.write[i].uvs.write();
+		surfaces.write()[i].verticesw = surfaces.write()[i].vertices.write();
+		surfaces.write()[i].normalsw = surfaces.write()[i].normals.write();
+		surfaces.write()[i].uvsw = surfaces.write()[i].uvs.write();
 		if (calculate_tangents) {
-			surfaces.write[i].tansw = surfaces.write[i].tans.write();
+			surfaces.write()[i].tansw = surfaces.write()[i].tans.write();
 		}
 	}
 
@@ -405,7 +405,7 @@ void CSGShape::_update_shape() {
 				}
 			}
 
-			surfaces.write[idx].last_added += 3;
+			surfaces.write()[idx].last_added += 3;
 		}
 	}
 
@@ -427,15 +427,15 @@ void CSGShape::_update_shape() {
 
 			SMikkTSpaceContext msc;
 			msc.m_pInterface = &mkif;
-			msc.m_pUserData = &surfaces.write[i];
+			msc.m_pUserData = &surfaces.write()[i];
 			have_tangents = genTangSpaceDefault(&msc);
 		}
 
 		// unset write access
-		surfaces.write[i].verticesw.release();
-		surfaces.write[i].normalsw.release();
-		surfaces.write[i].uvsw.release();
-		surfaces.write[i].tansw.release();
+		surfaces.write()[i].verticesw.release();
+		surfaces.write()[i].normalsw.release();
+		surfaces.write()[i].uvsw.release();
+		surfaces.write()[i].tansw.release();
 
 		if (surfaces[i].last_added == 0) {
 			continue;

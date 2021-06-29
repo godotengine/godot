@@ -224,7 +224,7 @@ ShaderGLES2::Version *ShaderGLES2::get_current_version() {
 
 	if (cc) {
 		for (int i = 0; i < cc->custom_defines.size(); i++) {
-			strings.push_back(cc->custom_defines.write[i]);
+			strings.push_back(cc->custom_defines.write()[i]);
 			DEBUG_PRINT("CD #" + itos(i) + ": " + String(cc->custom_defines[i].get_data()));
 		}
 	}

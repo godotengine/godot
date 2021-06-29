@@ -209,19 +209,19 @@ Error ResourceImporterWAV::import(const String &p_source_file, const String &p_s
 				for (int i = 0; i < frames * format_channels; i++) {
 					// 8 bit samples are UNSIGNED
 
-					data.write[i] = int8_t(file->get_8() - 128) / 128.f;
+					data.write()[i] = int8_t(file->get_8() - 128) / 128.f;
 				}
 			} else if (format_bits == 32 && compression_code == 3) {
 				for (int i = 0; i < frames * format_channels; i++) {
 					//32 bit IEEE Float
 
-					data.write[i] = file->get_float();
+					data.write()[i] = file->get_float();
 				}
 			} else if (format_bits == 16) {
 				for (int i = 0; i < frames * format_channels; i++) {
 					//16 bit SIGNED
 
-					data.write[i] = int16_t(file->get_16()) / 32768.f;
+					data.write()[i] = int16_t(file->get_16()) / 32768.f;
 				}
 			} else {
 				for (int i = 0; i < frames * format_channels; i++) {
@@ -234,7 +234,7 @@ Error ResourceImporterWAV::import(const String &p_source_file, const String &p_s
 					}
 					s <<= (32 - format_bits);
 
-					data.write[i] = (int32_t(s) >> 16) / 32768.f;
+					data.write()[i] = (int32_t(s) >> 16) / 32768.f;
 				}
 			}
 
@@ -331,7 +331,7 @@ Error ResourceImporterWAV::import(const String &p_source_file, const String &p_s
 
 				float res = (a0 * mu * mu2 + a1 * mu2 + a2 * mu + a3);
 
-				new_data.write[i * format_channels + c] = res;
+				new_data.write()[i * format_channels + c] = res;
 
 				// update position and always keep fractional part within ]0...1]
 				// in order to avoid 32bit floating point precision errors
@@ -367,7 +367,7 @@ Error ResourceImporterWAV::import(const String &p_source_file, const String &p_s
 		if (max > 0) {
 			float mult = 1.0 / max;
 			for (int i = 0; i < data.size(); i++) {
-				data.write[i] *= mult;
+				data.write()[i] *= mult;
 			}
 		}
 	}
@@ -409,7 +409,7 @@ Error ResourceImporterWAV::import(const String &p_source_file, const String &p_s
 				}
 
 				for (int j = 0; j < format_channels; j++) {
-					new_data.write[((i - first) * format_channels) + j] = data[(i * format_channels) + j] * fadeOutMult;
+					new_data.write()[((i - first) * format_channels) + j] = data[(i * format_channels) + j] * fadeOutMult;
 				}
 			}
 
@@ -433,7 +433,7 @@ Error ResourceImporterWAV::import(const String &p_source_file, const String &p_s
 		Vector<float> new_data;
 		new_data.resize(data.size() / 2);
 		for (int i = 0; i < frames; i++) {
-			new_data.write[i] = (data[i * 2 + 0] + data[i * 2 + 1]) / 2.0;
+			new_data.write()[i] = (data[i * 2 + 0] + data[i * 2 + 1]) / 2.0;
 		}
 
 		data = new_data;
@@ -462,8 +462,8 @@ Error ResourceImporterWAV::import(const String &p_source_file, const String &p_s
 			right.resize(tframes);
 
 			for (int i = 0; i < tframes; i++) {
-				left.write[i] = data[i * 2 + 0];
-				right.write[i] = data[i * 2 + 1];
+				left.write()[i] = data[i * 2 + 0];
+				right.write()[i] = data[i * 2 + 1];
 			}
 
 			PoolVector<uint8_t> bleft;
