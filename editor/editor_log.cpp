@@ -123,20 +123,19 @@ void EditorLog::_load_state() {
 
 	Ref<ConfigFile> config;
 	config.instantiate();
-	Error err = config->load(EditorSettings::get_singleton()->get_project_settings_dir().plus_file("editor_layout.cfg"));
+	config->load(EditorSettings::get_singleton()->get_project_settings_dir().plus_file("editor_layout.cfg"));
 
-	if (err == OK) {
-		const String section = "editor_log";
-		for (Map<MessageType, LogFilter *>::Element *E = type_filter_map.front(); E; E = E->next()) {
-			E->get()->set_active(config->get_value(section, "log_filter_" + itos(E->key()), false));
-		}
-
-		collapse = config->get_value(section, "collapse", false);
-		collapse_button->set_pressed(collapse);
-		bool show_search = config->get_value(section, "show_search", true);
-		search_box->set_visible(show_search);
-		show_search_button->set_pressed(show_search);
+	// Run the below code even if config->load returns an error, since we want the defaults to be set even if the file does not exist yet.
+	const String section = "editor_log";
+	for (Map<MessageType, LogFilter *>::Element *E = type_filter_map.front(); E; E = E->next()) {
+		E->get()->set_active(config->get_value(section, "log_filter_" + itos(E->key()), true));
 	}
+
+	collapse = config->get_value(section, "collapse", false);
+	collapse_button->set_pressed(collapse);
+	bool show_search = config->get_value(section, "show_search", true);
+	search_box->set_visible(show_search);
+	show_search_button->set_pressed(show_search);
 
 	is_loading_state = false;
 }
