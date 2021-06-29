@@ -324,7 +324,7 @@ void OccluderInstance3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_occluder"), &OccluderInstance3D::get_occluder);
 
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "occluder", PROPERTY_HINT_RESOURCE_TYPE, "Occluder3D"), "set_occluder", "get_occluder");
-	ADD_GROUP("Bake", "bake_");
+	BEGIN_GROUP("Bake", "bake_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "bake_mask", PROPERTY_HINT_LAYERS_3D_RENDER), "set_bake_mask", "get_bake_mask");
 }
 

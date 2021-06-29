@@ -73,7 +73,7 @@ void Texture2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("draw_rect_region", "canvas_item", "rect", "src_rect", "modulate", "transpose", "clip_uv"), &Texture2D::draw_rect_region, DEFVAL(Color(1, 1, 1)), DEFVAL(false), DEFVAL(true));
 	ClassDB::bind_method(D_METHOD("get_image"), &Texture2D::get_image);
 
-	ADD_GROUP("", "");
+	END_GROUP();
 }
 
 Texture2D::Texture2D() {

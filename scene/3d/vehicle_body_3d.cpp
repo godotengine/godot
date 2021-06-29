@@ -271,23 +271,23 @@ void VehicleWheel3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_steering", "steering"), &VehicleWheel3D::set_steering);
 	ClassDB::bind_method(D_METHOD("get_steering"), &VehicleWheel3D::get_steering);
 
-	ADD_GROUP("Per-Wheel Motion", "");
+	BEGIN_GROUP("Per-Wheel Motion", "");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "engine_force", PROPERTY_HINT_RANGE, "0.00,1024.0,0.01,or_greater"), "set_engine_force", "get_engine_force");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "brake", PROPERTY_HINT_RANGE, "0.0,1.0,0.01"), "set_brake", "get_brake");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "steering", PROPERTY_HINT_RANGE, "-180,180.0,0.01"), "set_steering", "get_steering");
-	ADD_GROUP("VehicleBody3D Motion", "");
+	BEGIN_GROUP("VehicleBody3D Motion", "");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_as_traction"), "set_use_as_traction", "is_used_as_traction");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_as_steering"), "set_use_as_steering", "is_used_as_steering");
-	ADD_GROUP("Wheel", "wheel_");
+	BEGIN_GROUP("Wheel", "wheel_");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "wheel_roll_influence"), "set_roll_influence", "get_roll_influence");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "wheel_radius"), "set_radius", "get_radius");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "wheel_rest_length"), "set_suspension_rest_length", "get_suspension_rest_length");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "wheel_friction_slip"), "set_friction_slip", "get_friction_slip");
-	ADD_GROUP("Suspension", "suspension_");
+	BEGIN_GROUP("Suspension", "suspension_");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "suspension_travel"), "set_suspension_travel", "get_suspension_travel");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "suspension_stiffness"), "set_suspension_stiffness", "get_suspension_stiffness");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "suspension_max_force"), "set_suspension_max_force", "get_suspension_max_force");
-	ADD_GROUP("Damping", "damping_");
+	BEGIN_GROUP("Damping", "damping_");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "damping_compression"), "set_damping_compression", "get_damping_compression");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "damping_relaxation"), "set_damping_relaxation", "get_damping_relaxation");
 }
@@ -915,7 +915,7 @@ void VehicleBody3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_steering", "steering"), &VehicleBody3D::set_steering);
 	ClassDB::bind_method(D_METHOD("get_steering"), &VehicleBody3D::get_steering);
 
-	ADD_GROUP("Motion", "");
+	BEGIN_GROUP("Motion", "");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "engine_force", PROPERTY_HINT_RANGE, "0.00,1024.0,0.01,or_greater"), "set_engine_force", "get_engine_force");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "brake", PROPERTY_HINT_RANGE, "0.0,1.0,0.01"), "set_brake", "get_brake");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "steering", PROPERTY_HINT_RANGE, "-180,180.0,0.01"), "set_steering", "get_steering");

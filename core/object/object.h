@@ -141,8 +141,17 @@ enum PropertyUsageFlags {
 #define ADD_PROPERTY(m_property, m_setter, m_getter) ClassDB::add_property(get_class_static(), m_property, _scs_create(m_setter), _scs_create(m_getter))
 #define ADD_PROPERTYI(m_property, m_setter, m_getter, m_index) ClassDB::add_property(get_class_static(), m_property, _scs_create(m_setter), _scs_create(m_getter), m_index)
 #define ADD_PROPERTY_DEFAULT(m_property, m_default) ClassDB::set_property_default_value(get_class_static(), m_property, m_default)
-#define ADD_GROUP(m_name, m_prefix) ClassDB::add_property_group(get_class_static(), m_name, m_prefix)
-#define ADD_SUBGROUP(m_name, m_prefix) ClassDB::add_property_subgroup(get_class_static(), m_name, m_prefix)
+
+// Adds properties defined below this call to a foldable category in the inspector.
+#define BEGIN_GROUP(m_name, m_prefix) ClassDB::add_property_group(get_class_static(), m_name, m_prefix)
+
+// Resets the foldable category in the inspector. Properties added below this call
+// will not be part of the category that was created before using `BEGIN_GROUP()`.
+// Equivalent to `BEGIN_GROUP("", "")`.
+#define END_GROUP() ClassDB::add_property_group(get_class_static(), "", "")
+
+// Adds properties defined below this call to a foldable subcategory in the inspector.
+#define BEGIN_SUBGROUP(m_name, m_prefix) ClassDB::add_property_subgroup(get_class_static(), m_name, m_prefix)
 
 struct PropertyInfo {
 	Variant::Type type = Variant::NIL;

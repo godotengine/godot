@@ -173,7 +173,7 @@ void CameraEffects::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_dof_blur_amount", "amount"), &CameraEffects::set_dof_blur_amount);
 	ClassDB::bind_method(D_METHOD("get_dof_blur_amount"), &CameraEffects::get_dof_blur_amount);
 
-	ADD_GROUP("DOF Blur", "dof_blur_");
+	BEGIN_GROUP("DOF Blur", "dof_blur_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "dof_blur_far_enabled"), "set_dof_blur_far_enabled", "is_dof_blur_far_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "dof_blur_far_distance", PROPERTY_HINT_EXP_RANGE, "0.01,8192,0.01"), "set_dof_blur_far_distance", "get_dof_blur_far_distance");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "dof_blur_far_transition", PROPERTY_HINT_EXP_RANGE, "0.01,8192,0.01"), "set_dof_blur_far_transition", "get_dof_blur_far_transition");
@@ -189,7 +189,7 @@ void CameraEffects::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_override_exposure", "exposure"), &CameraEffects::set_override_exposure);
 	ClassDB::bind_method(D_METHOD("get_override_exposure"), &CameraEffects::get_override_exposure);
 
-	ADD_GROUP("Override Exposure", "override_");
+	BEGIN_GROUP("Override Exposure", "override_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "override_exposure_enabled"), "set_override_exposure_enabled", "is_override_exposure_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "override_exposure", PROPERTY_HINT_RANGE, "0,16,0.01"), "set_override_exposure", "get_override_exposure");
 }

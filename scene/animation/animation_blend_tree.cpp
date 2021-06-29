@@ -326,13 +326,13 @@ void AnimationNodeOneShot::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "fadein_time", PROPERTY_HINT_RANGE, "0,60,0.01,or_greater"), "set_fadein_time", "get_fadein_time");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "fadeout_time", PROPERTY_HINT_RANGE, "0,60,0.01,or_greater"), "set_fadeout_time", "get_fadeout_time");
 
-	ADD_GROUP("autorestart_", "Auto Restart");
+	BEGIN_GROUP("autorestart_", "Auto Restart");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "autorestart"), "set_autorestart", "has_autorestart");
 
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "autorestart_delay", PROPERTY_HINT_RANGE, "0,60,0.01,or_greater"), "set_autorestart_delay", "get_autorestart_delay");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "autorestart_random_delay", PROPERTY_HINT_RANGE, "0,60,0.01,or_greater"), "set_autorestart_random_delay", "get_autorestart_random_delay");
 
-	ADD_GROUP("", "");
+	END_GROUP();
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "sync"), "set_use_sync", "is_using_sync");
 
 	BIND_ENUM_CONSTANT(MIX_MODE_BLEND);

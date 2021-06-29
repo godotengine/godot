@@ -157,7 +157,7 @@ void AspectRatioContainer::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "ratio"), "set_ratio", "get_ratio");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "stretch_mode", PROPERTY_HINT_ENUM, "Width Controls Height,Height Controls Width,Fit,Cover"), "set_stretch_mode", "get_stretch_mode");
 
-	ADD_GROUP("Alignment", "alignment_");
+	BEGIN_GROUP("Alignment", "alignment_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "alignment_horizontal", PROPERTY_HINT_ENUM, "Begin,Center,End"), "set_alignment_horizontal", "get_alignment_horizontal");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "alignment_vertical", PROPERTY_HINT_ENUM, "Begin,Center,End"), "set_alignment_vertical", "get_alignment_vertical");
 
