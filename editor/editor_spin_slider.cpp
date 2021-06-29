@@ -255,7 +255,15 @@ void EditorSpinSlider::_notification(int p_what) {
 
 		draw_string(font, Vector2(Math::round(sb->get_offset().x), vofs), label, HALIGN_LEFT, -1, font_size, lc * Color(1, 1, 1, 0.5));
 
-		draw_string(font, Vector2(Math::round(sb->get_offset().x + string_width + sep), vofs), numstr, HALIGN_LEFT, number_width, font_size, fc);
+		Vector2 text_ofs = Vector2(Math::round(sb->get_offset().x + string_width + sep), vofs);
+		draw_string(font, text_ofs, numstr, HALIGN_LEFT, number_width, font_size, fc);
+
+		if (suffix != String()) {
+			int sw = font->get_string_size(numstr).width;
+			text_ofs.x += sw;
+			fc.a *= 0.4;
+			draw_string(font, text_ofs, suffix, HALIGN_LEFT, MAX(0, number_width - sw), font_size, fc);
+		}
 
 		if (get_step() == 1) {
 			Ref<Texture2D> updown2 = get_theme_icon("updown", "SpinBox");
@@ -365,6 +373,15 @@ String EditorSpinSlider::get_label() const {
 	return label;
 }
 
+void EditorSpinSlider::set_suffix(const String &p_suffix) {
+	suffix = p_suffix;
+	update();
+}
+
+String EditorSpinSlider::get_suffix() const {
+	return suffix;
+}
+
 void EditorSpinSlider::_evaluate_input_text() {
 	// Replace comma with dot to support it as decimal separator (GH-6028).
 	// This prevents using functions like `pow()`, but using functions
@@ -468,6 +485,9 @@ void EditorSpinSlider::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_label", "label"), &EditorSpinSlider::set_label);
 	ClassDB::bind_method(D_METHOD("get_label"), &EditorSpinSlider::get_label);
 
+	ClassDB::bind_method(D_METHOD("set_suffix", "suffix"), &EditorSpinSlider::set_suffix);
+	ClassDB::bind_method(D_METHOD("get_suffix"), &EditorSpinSlider::get_suffix);
+
 	ClassDB::bind_method(D_METHOD("set_read_only", "read_only"), &EditorSpinSlider::set_read_only);
 	ClassDB::bind_method(D_METHOD("is_read_only"), &EditorSpinSlider::is_read_only);
 
@@ -477,6 +497,7 @@ void EditorSpinSlider::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_gui_input"), &EditorSpinSlider::_gui_input);
 
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "label"), "set_label", "get_label");
+	ADD_PROPERTY(PropertyInfo(Variant::STRING, "suffix"), "set_suffix", "get_suffix");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "read_only"), "set_read_only", "is_read_only");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "flat"), "set_flat", "is_flat");
 }

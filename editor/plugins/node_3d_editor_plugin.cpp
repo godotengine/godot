@@ -2508,8 +2508,8 @@ void Node3DEditorViewport::_notification(int p_what) {
 			text += "X: " + rtos(current_camera->get_position().x).pad_decimals(1) + "\n";
 			text += "Y: " + rtos(current_camera->get_position().y).pad_decimals(1) + "\n";
 			text += "Z: " + rtos(current_camera->get_position().z).pad_decimals(1) + "\n";
-			text += TTR("Pitch") + ": " + itos(Math::round(current_camera->get_rotation_degrees().x)) + "\n";
-			text += TTR("Yaw") + ": " + itos(Math::round(current_camera->get_rotation_degrees().y)) + "\n\n";
+			text += TTR("Pitch") + ": " + itos(Math::round(Math::rad2deg(current_camera->get_rotation().x))) + "\n";
+			text += TTR("Yaw") + ": " + itos(Math::round(Math::rad2deg(current_camera->get_rotation().y))) + "\n\n";
 
 			text += TTR("Size") +
 					vformat(

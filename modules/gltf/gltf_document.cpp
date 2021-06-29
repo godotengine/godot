@@ -6089,7 +6089,7 @@ GLTFAnimation::Track GLTFDocument::_convert_animation_track(Ref<GLTFState> state
 				Vector3 translation = p_animation->track_get_key_value(p_track_i, key_i);
 				p_track.translation_track.values.write[key_i] = translation;
 			}
-		} else if (path.find(":rotation_degrees") != -1) {
+		} else if (path.find(":rotation") != -1) {
 			p_track.rotation_track.times = times;
 			p_track.rotation_track.interpolation = gltf_interpolation;
 
@@ -6097,11 +6097,7 @@ GLTFAnimation::Track GLTFDocument::_convert_animation_track(Ref<GLTFState> state
 			p_track.rotation_track.interpolation = gltf_interpolation;
 
 			for (int32_t key_i = 0; key_i < key_count; key_i++) {
-				Vector3 rotation_degrees = p_animation->track_get_key_value(p_track_i, key_i);
-				Vector3 rotation_radian;
-				rotation_radian.x = Math::deg2rad(rotation_degrees.x);
-				rotation_radian.y = Math::deg2rad(rotation_degrees.y);
-				rotation_radian.z = Math::deg2rad(rotation_degrees.z);
+				Vector3 rotation_radian = p_animation->track_get_key_value(p_track_i, key_i);
 				p_track.rotation_track.values.write[key_i] = Quaternion(rotation_radian);
 			}
 		} else if (path.find(":scale") != -1) {

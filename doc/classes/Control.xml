@@ -1144,9 +1144,6 @@
 		<member name="rect_rotation" type="float" setter="set_rotation" getter="get_rotation" default="0.0">
 			The node's rotation around its pivot, in radians. See [member rect_pivot_offset] to change the pivot's position.
 		</member>
-		<member name="rect_rotation_degrees" type="float" setter="set_rotation_degrees" getter="get_rotation_degrees" default="0.0">
-			The node's rotation around its pivot, in degrees. See [member rect_pivot_offset] to change the pivot's position.
-		</member>
 		<member name="rect_scale" type="Vector2" setter="set_scale" getter="get_scale" default="Vector2(1, 1)">
 			The node's scale, relative to its [member rect_size]. Change this property to scale the node around its [member rect_pivot_offset]. The Control's [member hint_tooltip] will also scale according to this value.
 			[b]Note:[/b] This property is mainly intended to be used for animation purposes. Text inside the Control will look pixelated or blurry when the Control is scaled. To support multiple resolutions in your project, use an appropriate viewport stretch mode as described in the [url=https://docs.godotengine.org/en/latest/tutorials/viewports/multiple_resolutions.html]documentation[/url] instead of scaling Controls individually.

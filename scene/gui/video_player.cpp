@@ -452,7 +452,7 @@ void VideoPlayer::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "stream", PROPERTY_HINT_RESOURCE_TYPE, "VideoStream"), "set_stream", "get_stream");
 	//ADD_PROPERTY( PropertyInfo(Variant::BOOL, "stream/loop"), "set_loop", "has_loop") ;
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "volume_db", PROPERTY_HINT_RANGE, "-80,24,0.01"), "set_volume_db", "get_volume_db");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "volume", PROPERTY_HINT_EXP_RANGE, "0,15,0.01", PROPERTY_USAGE_NONE), "set_volume", "get_volume");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "volume", PROPERTY_HINT_RANGE, "0,15,0.01,exp", PROPERTY_USAGE_NONE), "set_volume", "get_volume");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "autoplay"), "set_autoplay", "has_autoplay");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "paused"), "set_paused", "is_paused");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "expand"), "set_expand", "has_expand");

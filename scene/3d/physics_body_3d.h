@@ -307,9 +307,6 @@ private:
 	real_t get_floor_max_angle() const;
 	void set_floor_max_angle(real_t p_radians);
 
-	real_t get_floor_max_angle_degrees() const;
-	void set_floor_max_angle_degrees(real_t p_degrees);
-
 	const Vector3 &get_snap() const;
 	void set_snap(const Vector3 &p_snap);
 
@@ -550,9 +547,6 @@ public:
 
 	void set_joint_rotation(const Vector3 &p_euler_rad);
 	Vector3 get_joint_rotation() const;
-
-	void set_joint_rotation_degrees(const Vector3 &p_euler_deg);
-	Vector3 get_joint_rotation_degrees() const;
 
 	void set_body_offset(const Transform3D &p_offset);
 	const Transform3D &get_body_offset() const;

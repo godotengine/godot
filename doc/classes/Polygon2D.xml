@@ -118,11 +118,8 @@
 		<member name="texture_offset" type="Vector2" setter="set_texture_offset" getter="get_texture_offset" default="Vector2(0, 0)">
 			Amount to offset the polygon's [code]texture[/code]. If [code](0, 0)[/code] the texture's origin (its top-left corner) will be placed at the polygon's [code]position[/code].
 		</member>
-		<member name="texture_rotation" type="float" setter="set_texture_rotation" getter="get_texture_rotation">
+		<member name="texture_rotation" type="float" setter="set_texture_rotation" getter="get_texture_rotation" default="0.0">
 			The texture's rotation in radians.
-		</member>
-		<member name="texture_rotation_degrees" type="float" setter="set_texture_rotation_degrees" getter="get_texture_rotation_degrees" default="0.0">
-			The texture's rotation in degrees.
 		</member>
 		<member name="texture_scale" type="Vector2" setter="set_texture_scale" getter="get_texture_scale" default="Vector2(1, 1)">
 			Amount to multiply the [code]uv[/code] coordinates when using a [code]texture[/code]. Larger values make the texture smaller, and vice versa.

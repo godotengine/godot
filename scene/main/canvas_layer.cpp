@@ -103,14 +103,6 @@ real_t CanvasLayer::get_rotation() const {
 	return rot;
 }
 
-void CanvasLayer::set_rotation_degrees(real_t p_degrees) {
-	set_rotation(Math::deg2rad(p_degrees));
-}
-
-real_t CanvasLayer::get_rotation_degrees() const {
-	return Math::rad2deg(get_rotation());
-}
-
 void CanvasLayer::set_scale(const Vector2 &p_scale) {
 	if (locrotscale_dirty) {
 		_update_locrotscale();
@@ -277,9 +269,6 @@ void CanvasLayer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_rotation", "radians"), &CanvasLayer::set_rotation);
 	ClassDB::bind_method(D_METHOD("get_rotation"), &CanvasLayer::get_rotation);
 
-	ClassDB::bind_method(D_METHOD("set_rotation_degrees", "degrees"), &CanvasLayer::set_rotation_degrees);
-	ClassDB::bind_method(D_METHOD("get_rotation_degrees"), &CanvasLayer::get_rotation_degrees);
-
 	ClassDB::bind_method(D_METHOD("set_scale", "scale"), &CanvasLayer::set_scale);
 	ClassDB::bind_method(D_METHOD("get_scale"), &CanvasLayer::get_scale);
 
@@ -298,8 +287,7 @@ void CanvasLayer::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "layer", PROPERTY_HINT_RANGE, "-128,128,1"), "set_layer", "get_layer");
 	ADD_GROUP("Transform", "");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "offset"), "set_offset", "get_offset");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "rotation_degrees", PROPERTY_HINT_RANGE, "-1080,1080,0.1,or_lesser,or_greater", PROPERTY_USAGE_EDITOR), "set_rotation_degrees", "get_rotation_degrees");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "rotation", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR), "set_rotation", "get_rotation");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "rotation", PROPERTY_HINT_RANGE, "-1080,1080,0.1,or_lesser,or_greater,radians"), "set_rotation", "get_rotation");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "scale"), "set_scale", "get_scale");
 	ADD_PROPERTY(PropertyInfo(Variant::TRANSFORM2D, "transform"), "set_transform", "get_transform");
 	ADD_GROUP("", "");

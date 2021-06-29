@@ -462,14 +462,6 @@ real_t Polygon2D::get_texture_rotation() const {
 	return tex_rot;
 }
 
-void Polygon2D::set_texture_rotation_degrees(real_t p_rot) {
-	set_texture_rotation(Math::deg2rad(p_rot));
-}
-
-real_t Polygon2D::get_texture_rotation_degrees() const {
-	return Math::rad2deg(get_texture_rotation());
-}
-
 void Polygon2D::set_texture_scale(const Size2 &p_scale) {
 	tex_scale = p_scale;
 	update();
@@ -613,9 +605,6 @@ void Polygon2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_texture_rotation", "texture_rotation"), &Polygon2D::set_texture_rotation);
 	ClassDB::bind_method(D_METHOD("get_texture_rotation"), &Polygon2D::get_texture_rotation);
 
-	ClassDB::bind_method(D_METHOD("set_texture_rotation_degrees", "texture_rotation"), &Polygon2D::set_texture_rotation_degrees);
-	ClassDB::bind_method(D_METHOD("get_texture_rotation_degrees"), &Polygon2D::get_texture_rotation_degrees);
-
 	ClassDB::bind_method(D_METHOD("set_texture_scale", "texture_scale"), &Polygon2D::set_texture_scale);
 	ClassDB::bind_method(D_METHOD("get_texture_scale"), &Polygon2D::get_texture_scale);
 
@@ -657,8 +646,7 @@ void Polygon2D::_bind_methods() {
 	ADD_GROUP("Texture2D", "texture_");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "texture_offset"), "set_texture_offset", "get_texture_offset");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "texture_scale"), "set_texture_scale", "get_texture_scale");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "texture_rotation_degrees", PROPERTY_HINT_RANGE, "-360,360,0.1,or_lesser,or_greater"), "set_texture_rotation_degrees", "get_texture_rotation_degrees");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "texture_rotation", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "set_texture_rotation", "get_texture_rotation");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "texture_rotation", PROPERTY_HINT_RANGE, "-360,360,0.1,or_lesser,or_greater,radians"), "set_texture_rotation", "get_texture_rotation");
 	ADD_GROUP("Skeleton", "");
 	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "skeleton", PROPERTY_HINT_NODE_PATH_VALID_TYPES, "Skeleton2D"), "set_skeleton", "get_skeleton");
 

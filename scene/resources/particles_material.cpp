@@ -1292,7 +1292,7 @@ void ParticlesMaterial::_bind_methods() {
 	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "damping_random", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_param_randomness", "get_param_randomness", PARAM_DAMPING);
 	ADD_PROPERTYI(PropertyInfo(Variant::OBJECT, "damping_curve", PROPERTY_HINT_RESOURCE_TYPE, "CurveTexture"), "set_param_texture", "get_param_texture", PARAM_DAMPING);
 	ADD_GROUP("Angle", "");
-	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "angle", PROPERTY_HINT_RANGE, "-720,720,0.1,or_lesser,or_greater"), "set_param", "get_param", PARAM_ANGLE);
+	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "angle", PROPERTY_HINT_RANGE, "-720,720,0.1,or_lesser,or_greater,degrees"), "set_param", "get_param", PARAM_ANGLE);
 	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "angle_random", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_param_randomness", "get_param_randomness", PARAM_ANGLE);
 	ADD_PROPERTYI(PropertyInfo(Variant::OBJECT, "angle_curve", PROPERTY_HINT_RESOURCE_TYPE, "CurveTexture"), "set_param_texture", "get_param_texture", PARAM_ANGLE);
 	ADD_GROUP("Scale", "");
