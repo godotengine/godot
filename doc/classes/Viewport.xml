@@ -208,6 +208,9 @@
 		<member name="debug_draw" type="int" setter="set_debug_draw" getter="get_debug_draw" enum="Viewport.DebugDraw" default="0">
 			The overlay mode for test rendered geometry in debug purposes.
 		</member>
+		<member name="disable_3d" type="bool" setter="set_disable_3d" getter="is_3d_disabled" default="false">
+			Disable 3D rendering (but keep 2D rendering).
+		</member>
 		<member name="global_canvas_transform" type="Transform2D" setter="set_global_canvas_transform" getter="get_global_canvas_transform">
 			The global canvas transform of the viewport. The canvas transform is relative to this.
 		</member>
