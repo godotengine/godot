@@ -903,6 +903,9 @@ void RenderForwardClustered::_fill_render_list(RenderListType p_render_list, con
 
 		uint32_t flags = inst->base_flags; //fill flags if appropriate
 
+		if (inst->non_uniform_scale) {
+			flags |= INSTANCE_DATA_FLAGS_NON_UNIFORM_SCALE;
+		}
 		bool uses_lightmap = false;
 		bool uses_gi = false;
 
@@ -2594,6 +2597,8 @@ void RenderForwardClustered::_geometry_instance_update(GeometryInstance *p_geome
 
 	//Fill push constant
 
+	ginstance->base_flags = 0;
+
 	bool store_transform = true;
 
 	if (ginstance->data->base_type == RS::INSTANCE_MULTIMESH) {
@@ -2737,6 +2742,7 @@ void RenderForwardClustered::geometry_instance_set_transform(GeometryInstance *p
 
 	float max_scale = MAX(model_scale_vec.x, MAX(model_scale_vec.y, model_scale_vec.z));
 	float min_scale = MIN(model_scale_vec.x, MIN(model_scale_vec.y, model_scale_vec.z));
+
 	ginstance->non_uniform_scale = max_scale >= 0.0 && (min_scale / max_scale) < 0.9;
 
 	ginstance->lod_model_scale = max_scale;
