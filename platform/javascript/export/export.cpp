@@ -136,8 +136,11 @@ public:
 		// Wrong protocol
 		ERR_FAIL_COND_MSG(req[0] != "GET" || req[2] != "HTTP/1.1", "Invalid method or HTTP version.");
 
-		const String req_file = req[1].get_file();
-		const String req_ext = req[1].get_extension();
+		const int query_index = req[1].find_char('?');
+		const String path = (query_index == -1) ? req[1] : req[1].substr(0, query_index);
+
+		const String req_file = path.get_file();
+		const String req_ext = path.get_extension();
 		const String cache_path = EditorSettings::get_singleton()->get_cache_dir().plus_file("web");
 		const String filepath = cache_path.plus_file(req_file);
 
@@ -446,6 +449,7 @@ void EditorExportPlatformJavaScript::_fix_html(Vector<uint8_t> &p_html, const Re
 	}
 	config["canvasResizePolicy"] = p_preset->get("html/canvas_resize_policy");
 	config["experimentalVK"] = p_preset->get("html/experimental_virtual_keyboard");
+	config["focusCanvas"] = p_preset->get("html/focus_canvas_on_start");
 	config["gdnativeLibs"] = libs;
 	config["executable"] = p_name;
 	config["args"] = args;
@@ -648,6 +652,7 @@ void EditorExportPlatformJavaScript::get_export_options(List<ExportOption> *r_op
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "html/custom_html_shell", PROPERTY_HINT_FILE, "*.html"), ""));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "html/head_include", PROPERTY_HINT_MULTILINE_TEXT), ""));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "html/canvas_resize_policy", PROPERTY_HINT_ENUM, "None,Project,Adaptive"), 2));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "html/focus_canvas_on_start"), true));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "html/experimental_virtual_keyboard"), false));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "progressive_web_app/enabled"), false));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "progressive_web_app/offline_page", PROPERTY_HINT_FILE, "*.html"), ""));

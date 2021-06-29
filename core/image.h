@@ -124,6 +124,7 @@ public:
 		COMPRESS_SOURCE_SRGB,
 		COMPRESS_SOURCE_NORMAL,
 		COMPRESS_SOURCE_LAYERED,
+		COMPRESS_SOURCE_MAX,
 	};
 
 	//some functions provided by something else
@@ -304,7 +305,8 @@ public:
 		COMPRESS_PVRTC4,
 		COMPRESS_ETC,
 		COMPRESS_ETC2,
-		COMPRESS_BPTC
+		COMPRESS_BPTC,
+		COMPRESS_MAX,
 	};
 
 	Error compress(CompressMode p_mode = COMPRESS_S3TC, CompressSource p_source = COMPRESS_SOURCE_GENERIC, float p_lossy_quality = 0.7);

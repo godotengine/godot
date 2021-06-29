@@ -1740,6 +1740,7 @@ void Image::create(int p_width, int p_height, bool p_use_mipmaps, Format p_forma
 	ERR_FAIL_COND_MSG(p_width > MAX_WIDTH, "Image width cannot be greater than " + itos(MAX_WIDTH) + ".");
 	ERR_FAIL_COND_MSG(p_height > MAX_HEIGHT, "Image height cannot be greater than " + itos(MAX_HEIGHT) + ".");
 	ERR_FAIL_COND_MSG(write_lock.ptr(), "Cannot create image when it is locked.");
+	ERR_FAIL_INDEX_MSG(p_format, FORMAT_MAX, "Image format out of range, please see Image's Format enum.");
 
 	int mm = 0;
 	int size = _get_dst_image_size(p_width, p_height, p_format, mm, p_use_mipmaps ? -1 : 0);
@@ -1760,6 +1761,7 @@ void Image::create(int p_width, int p_height, bool p_use_mipmaps, Format p_forma
 	ERR_FAIL_COND_MSG(p_height <= 0, "Image height must be greater than 0.");
 	ERR_FAIL_COND_MSG(p_width > MAX_WIDTH, "Image width cannot be greater than " + itos(MAX_WIDTH) + ".");
 	ERR_FAIL_COND_MSG(p_height > MAX_HEIGHT, "Image height cannot be greater than " + itos(MAX_HEIGHT) + ".");
+	ERR_FAIL_INDEX_MSG(p_format, FORMAT_MAX, "Image format out of range, please see Image's Format enum.");
 
 	int mm;
 	int size = _get_dst_image_size(p_width, p_height, p_format, mm, p_use_mipmaps ? -1 : 0);
@@ -2113,6 +2115,8 @@ Error Image::decompress() {
 }
 
 Error Image::compress(CompressMode p_mode, CompressSource p_source, float p_lossy_quality) {
+	ERR_FAIL_INDEX_V_MSG(p_mode, COMPRESS_MAX, ERR_INVALID_PARAMETER, "Invalid compress mode.");
+	ERR_FAIL_INDEX_V_MSG(p_source, COMPRESS_SOURCE_MAX, ERR_INVALID_PARAMETER, "Invalid compress source.");
 	switch (p_mode) {
 		case COMPRESS_S3TC: {
 			ERR_FAIL_COND_V(!_image_compress_bc_func, ERR_UNAVAILABLE);
@@ -2137,6 +2141,9 @@ Error Image::compress(CompressMode p_mode, CompressSource p_source, float p_loss
 		case COMPRESS_BPTC: {
 			ERR_FAIL_COND_V(!_image_compress_bptc_func, ERR_UNAVAILABLE);
 			_image_compress_bptc_func(this, p_lossy_quality, p_source);
+		} break;
+		case COMPRESS_MAX: {
+			ERR_FAIL_V(ERR_INVALID_PARAMETER);
 		} break;
 	}
 

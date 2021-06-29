@@ -3295,6 +3295,12 @@ void OS_OSX::set_mouse_mode(MouseMode p_mode) {
 	ignore_warp = true;
 	warp_events.clear();
 	mouse_mode = p_mode;
+
+	if (mouse_mode == MOUSE_MODE_VISIBLE || mouse_mode == MOUSE_MODE_CONFINED) {
+		CursorShape p_shape = cursor_shape;
+		cursor_shape = OS::CURSOR_MAX;
+		set_cursor_shape(p_shape);
+	}
 }
 
 OS::MouseMode OS_OSX::get_mouse_mode() const {

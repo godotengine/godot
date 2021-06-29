@@ -310,7 +310,7 @@ Error EditorExportPlatformWindows::_code_sign(const Ref<EditorExportPreset> &p_p
 	args.push_back(p_path);
 #ifndef WINDOWS_ENABLED
 	args.push_back("-out");
-	args.push_back(p_path);
+	args.push_back(p_path + "_signed");
 #endif
 
 	String str;
@@ -325,6 +325,16 @@ Error EditorExportPlatformWindows::_code_sign(const Ref<EditorExportPreset> &p_p
 #endif
 		return FAILED;
 	}
+
+#ifndef WINDOWS_ENABLED
+	DirAccessRef tmp_dir = DirAccess::create_for_path(p_path.get_base_dir());
+
+	err = tmp_dir->remove(p_path);
+	ERR_FAIL_COND_V(err != OK, err);
+
+	err = tmp_dir->rename(p_path + "_signed", p_path);
+	ERR_FAIL_COND_V(err != OK, err);
+#endif
 
 	return OK;
 }
