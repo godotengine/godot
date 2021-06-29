@@ -140,6 +140,7 @@ void EditorAssetInstaller::open(const String &p_path, int p_depth) {
 		extension_guess["atlastex"] = get_icon("AtlasTexture", "EditorIcons");
 		extension_guess["scn"] = get_icon("PackedScene", "EditorIcons");
 		extension_guess["tscn"] = get_icon("PackedScene", "EditorIcons");
+		extension_guess["gdshader"] = get_icon("Shader", "EditorIcons");
 		extension_guess["shader"] = get_icon("Shader", "EditorIcons");
 		extension_guess["gd"] = get_icon("GDScript", "EditorIcons");
 		extension_guess["vs"] = get_icon("VisualScript", "EditorIcons");

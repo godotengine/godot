@@ -1057,6 +1057,7 @@ ProjectSettings::ProjectSettings() {
 	extensions.push_back("gd");
 	if (Engine::get_singleton()->has_singleton("GodotSharp"))
 		extensions.push_back("cs");
+	extensions.push_back("gdshader");
 	extensions.push_back("shader");
 
 	GLOBAL_DEF("editor/search_in_file_extensions", extensions);
