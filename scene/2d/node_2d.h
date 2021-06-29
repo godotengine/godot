@@ -75,9 +75,7 @@ public:
 
 	void set_position(const Point2 &p_pos);
 	void set_rotation(real_t p_radians);
-	void set_rotation_degrees(real_t p_degrees);
 	void set_skew(real_t p_radians);
-	void set_skew_degrees(real_t p_radians);
 	void set_scale(const Size2 &p_scale);
 
 	void rotate(real_t p_radians);
@@ -90,20 +88,16 @@ public:
 	Point2 get_position() const;
 	real_t get_rotation() const;
 	real_t get_skew() const;
-	real_t get_rotation_degrees() const;
-	real_t get_skew_degrees() const;
 	Size2 get_scale() const;
 
 	Point2 get_global_position() const;
 	real_t get_global_rotation() const;
-	real_t get_global_rotation_degrees() const;
 	Size2 get_global_scale() const;
 
 	void set_transform(const Transform2D &p_transform);
 	void set_global_transform(const Transform2D &p_transform);
 	void set_global_position(const Point2 &p_pos);
 	void set_global_rotation(real_t p_radians);
-	void set_global_rotation_degrees(real_t p_degrees);
 	void set_global_scale(const Size2 &p_scale);
 
 	void set_z_index(int p_z);

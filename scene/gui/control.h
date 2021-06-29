@@ -385,9 +385,7 @@ public:
 	void set_rect(const Rect2 &p_rect); // Reset anchors to begin and set rect, for faster container children sorting.
 
 	void set_rotation(real_t p_radians);
-	void set_rotation_degrees(real_t p_degrees);
 	real_t get_rotation() const;
-	real_t get_rotation_degrees() const;
 
 	void set_h_grow_direction(GrowDirection p_direction);
 	GrowDirection get_h_grow_direction() const;

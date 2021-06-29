@@ -303,9 +303,6 @@ private:
 	real_t get_floor_max_angle() const;
 	void set_floor_max_angle(real_t p_radians);
 
-	real_t get_floor_max_angle_degrees() const;
-	void set_floor_max_angle_degrees(real_t p_degrees);
-
 	const Vector2 &get_snap() const;
 	void set_snap(const Vector2 &p_snap);
 
