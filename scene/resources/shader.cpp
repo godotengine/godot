@@ -204,6 +204,7 @@ RES ResourceFormatLoaderShader::load(const String &p_path, const String &p_origi
 }
 
 void ResourceFormatLoaderShader::get_recognized_extensions(List<String> *p_extensions) const {
+	p_extensions->push_back("gdshader");
 	p_extensions->push_back("shader");
 }
 
@@ -213,7 +214,7 @@ bool ResourceFormatLoaderShader::handles_type(const String &p_type) const {
 
 String ResourceFormatLoaderShader::get_resource_type(const String &p_path) const {
 	String el = p_path.get_extension().to_lower();
-	if (el == "shader") {
+	if (el == "gdshader" || el == "shader") {
 		return "Shader";
 	}
 	return "";
@@ -244,10 +245,12 @@ Error ResourceFormatSaverShader::save(const String &p_path, const RES &p_resourc
 void ResourceFormatSaverShader::get_recognized_extensions(const RES &p_resource, List<String> *p_extensions) const {
 	if (const Shader *shader = Object::cast_to<Shader>(*p_resource)) {
 		if (shader->is_text_shader()) {
+			p_extensions->push_back("gdshader");
 			p_extensions->push_back("shader");
 		}
 	}
 }
+
 bool ResourceFormatSaverShader::recognize(const RES &p_resource) const {
 	return p_resource->get_class_name() == "Shader"; //only shader, not inherited
 }

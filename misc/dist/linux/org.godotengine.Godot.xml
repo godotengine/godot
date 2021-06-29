@@ -21,6 +21,12 @@
     <glob pattern="*.escn"/>
   </mime-type>
 
+  <mime-type type="application/x-godot-shader">
+    <comment>Godot Engine shader</comment>
+    <icon name="x-godot-shader" />
+    <glob pattern="*.gdshader"/>
+  </mime-type>
+
   <mime-type type="application/x-gdscript">
     <comment>GDScript script</comment>
     <icon name="x-gdscript" />
