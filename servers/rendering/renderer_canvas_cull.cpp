@@ -97,7 +97,7 @@ void _collect_ysort_children(RendererCanvasCull::Item *p_canvas_item, Transform2
 	}
 }
 
-void _mark_ysort_dirty(RendererCanvasCull::Item *ysort_owner, RID_PtrOwner<RendererCanvasCull::Item, true> &canvas_item_owner) {
+void _mark_ysort_dirty(RendererCanvasCull::Item *ysort_owner, RID_Owner<RendererCanvasCull::Item, true> &canvas_item_owner) {
 	do {
 		ysort_owner->ysort_children_count = -1;
 		ysort_owner = canvas_item_owner.owns(ysort_owner->parent) ? canvas_item_owner.getornull(ysort_owner->parent) : nullptr;
@@ -392,8 +392,7 @@ RID RendererCanvasCull::canvas_allocate() {
 	return canvas_owner.allocate_rid();
 }
 void RendererCanvasCull::canvas_initialize(RID p_rid) {
-	Canvas *canvas = memnew(Canvas);
-	canvas_owner.initialize_rid(p_rid, canvas);
+	canvas_owner.initialize_rid(p_rid);
 }
 
 void RendererCanvasCull::canvas_set_item_mirroring(RID p_canvas, RID p_item, const Point2 &p_mirroring) {
@@ -429,8 +428,7 @@ RID RendererCanvasCull::canvas_item_allocate() {
 	return canvas_item_owner.allocate_rid();
 }
 void RendererCanvasCull::canvas_item_initialize(RID p_rid) {
-	Item *canvas_item = memnew(Item);
-	canvas_item_owner.initialize_rid(p_rid, canvas_item);
+	canvas_item_owner.initialize_rid(p_rid);
 }
 
 void RendererCanvasCull::canvas_item_set_parent(RID p_item, RID p_parent) {
@@ -1171,9 +1169,9 @@ RID RendererCanvasCull::canvas_light_allocate() {
 	return canvas_light_owner.allocate_rid();
 }
 void RendererCanvasCull::canvas_light_initialize(RID p_rid) {
-	RendererCanvasRender::Light *clight = memnew(RendererCanvasRender::Light);
+	canvas_light_owner.initialize_rid(p_rid);
+	RendererCanvasRender::Light *clight = canvas_light_owner.getornull(p_rid);
 	clight->light_internal = RSG::canvas_render->light_create();
-	return canvas_light_owner.initialize_rid(p_rid, clight);
 }
 
 void RendererCanvasCull::canvas_light_set_mode(RID p_light, RS::CanvasLightMode p_mode) {
@@ -1367,9 +1365,7 @@ RID RendererCanvasCull::canvas_light_occluder_allocate() {
 	return canvas_light_occluder_owner.allocate_rid();
 }
 void RendererCanvasCull::canvas_light_occluder_initialize(RID p_rid) {
-	RendererCanvasRender::LightOccluderInstance *occluder = memnew(RendererCanvasRender::LightOccluderInstance);
-
-	return canvas_light_occluder_owner.initialize_rid(p_rid, occluder);
+	return canvas_light_occluder_owner.initialize_rid(p_rid);
 }
 
 void RendererCanvasCull::canvas_light_occluder_attach_to_canvas(RID p_occluder, RID p_canvas) {
@@ -1451,9 +1447,9 @@ RID RendererCanvasCull::canvas_occluder_polygon_allocate() {
 	return canvas_light_occluder_polygon_owner.allocate_rid();
 }
 void RendererCanvasCull::canvas_occluder_polygon_initialize(RID p_rid) {
-	LightOccluderPolygon *occluder_poly = memnew(LightOccluderPolygon);
+	canvas_light_occluder_polygon_owner.initialize_rid(p_rid);
+	LightOccluderPolygon *occluder_poly = canvas_light_occluder_polygon_owner.getornull(p_rid);
 	occluder_poly->occluder = RSG::canvas_render->occluder_polygon_create();
-	return canvas_light_occluder_polygon_owner.initialize_rid(p_rid, occluder_poly);
 }
 
 void RendererCanvasCull::canvas_occluder_polygon_set_shape(RID p_occluder_polygon, const Vector<Vector2> &p_shape, bool p_closed) {
@@ -1596,8 +1592,6 @@ bool RendererCanvasCull::free(RID p_rid) {
 
 		canvas_owner.free(p_rid);
 
-		memdelete(canvas);
-
 	} else if (canvas_item_owner.owns(p_rid)) {
 		Item *canvas_item = canvas_item_owner.getornull(p_rid);
 		ERR_FAIL_COND_V(!canvas_item, true);
@@ -1632,8 +1626,6 @@ bool RendererCanvasCull::free(RID p_rid) {
 
 		canvas_item_owner.free(p_rid);
 
-		memdelete(canvas_item);
-
 	} else if (canvas_light_owner.owns(p_rid)) {
 		RendererCanvasRender::Light *canvas_light = canvas_light_owner.getornull(p_rid);
 		ERR_FAIL_COND_V(!canvas_light, true);
@@ -1648,7 +1640,6 @@ bool RendererCanvasCull::free(RID p_rid) {
 		RSG::canvas_render->free(canvas_light->light_internal);
 
 		canvas_light_owner.free(p_rid);
-		memdelete(canvas_light);
 
 	} else if (canvas_light_occluder_owner.owns(p_rid)) {
 		RendererCanvasRender::LightOccluderInstance *occluder = canvas_light_occluder_owner.getornull(p_rid);
@@ -1667,7 +1658,6 @@ bool RendererCanvasCull::free(RID p_rid) {
 		}
 
 		canvas_light_occluder_owner.free(p_rid);
-		memdelete(occluder);
 
 	} else if (canvas_light_occluder_polygon_owner.owns(p_rid)) {
 		LightOccluderPolygon *occluder_poly = canvas_light_occluder_polygon_owner.getornull(p_rid);
@@ -1680,7 +1670,6 @@ bool RendererCanvasCull::free(RID p_rid) {
 		}
 
 		canvas_light_occluder_polygon_owner.free(p_rid);
-		memdelete(occluder_poly);
 	} else {
 		return false;
 	}

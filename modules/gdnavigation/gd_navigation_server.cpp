@@ -132,8 +132,8 @@ void GdNavigationServer::add_command(SetCommand *command) const {
 RID GdNavigationServer::map_create() const {
 	GdNavigationServer *mut_this = const_cast<GdNavigationServer *>(this);
 	MutexLock lock(mut_this->operations_mutex);
-	NavMap *space = memnew(NavMap);
-	RID rid = map_owner.make_rid(space);
+	RID rid = map_owner.make_rid();
+	NavMap *space = map_owner.getornull(rid);
 	space->set_self(rid);
 	return rid;
 }
@@ -242,8 +242,8 @@ RID GdNavigationServer::map_get_closest_point_owner(RID p_map, const Vector3 &p_
 RID GdNavigationServer::region_create() const {
 	GdNavigationServer *mut_this = const_cast<GdNavigationServer *>(this);
 	MutexLock lock(mut_this->operations_mutex);
-	NavRegion *reg = memnew(NavRegion);
-	RID rid = region_owner.make_rid(reg);
+	RID rid = region_owner.make_rid();
+	NavRegion *reg = region_owner.getornull(rid);
 	reg->set_self(rid);
 	return rid;
 }
@@ -332,8 +332,8 @@ Vector3 GdNavigationServer::region_get_connection_pathway_end(RID p_region, int 
 RID GdNavigationServer::agent_create() const {
 	GdNavigationServer *mut_this = const_cast<GdNavigationServer *>(this);
 	MutexLock lock(mut_this->operations_mutex);
-	RvoAgent *agent = memnew(RvoAgent());
-	RID rid = agent_owner.make_rid(agent);
+	RID rid = agent_owner.make_rid();
+	RvoAgent *agent = agent_owner.getornull(rid);
 	agent->set_self(rid);
 	return rid;
 }
@@ -472,7 +472,6 @@ COMMAND_1(free, RID, p_object) {
 		active_maps.remove(map_index);
 		active_maps_update_id.remove(map_index);
 		map_owner.free(p_object);
-		memdelete(map);
 
 	} else if (region_owner.owns(p_object)) {
 		NavRegion *region = region_owner.getornull(p_object);
@@ -484,7 +483,6 @@ COMMAND_1(free, RID, p_object) {
 		}
 
 		region_owner.free(p_object);
-		memdelete(region);
 
 	} else if (agent_owner.owns(p_object)) {
 		RvoAgent *agent = agent_owner.getornull(p_object);
@@ -496,7 +494,6 @@ COMMAND_1(free, RID, p_object) {
 		}
 
 		agent_owner.free(p_object);
-		memdelete(agent);
 
 	} else {
 		ERR_FAIL_COND("Invalid ID.");

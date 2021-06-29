@@ -630,15 +630,14 @@ RID RendererViewport::viewport_allocate() {
 }
 
 void RendererViewport::viewport_initialize(RID p_rid) {
-	Viewport *viewport = memnew(Viewport);
+	viewport_owner.initialize_rid(p_rid);
+	Viewport *viewport = viewport_owner.getornull(p_rid);
 	viewport->self = p_rid;
 	viewport->hide_scenario = false;
 	viewport->hide_canvas = false;
 	viewport->render_target = RSG::storage->render_target_create();
 	viewport->shadow_atlas = RSG::scene->shadow_atlas_create();
 	viewport->viewport_render_direct_to_screen = false;
-
-	viewport_owner.initialize_rid(p_rid, viewport);
 }
 
 void RendererViewport::viewport_set_use_xr(RID p_viewport, bool p_use_xr) {
@@ -1085,7 +1084,6 @@ bool RendererViewport::free(RID p_rid) {
 		}
 
 		viewport_owner.free(p_rid);
-		memdelete(viewport);
 
 		return true;
 	}

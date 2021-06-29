@@ -97,7 +97,7 @@ public:
 		}
 	};
 
-	mutable RID_PtrOwner<Camera, true> camera_owner;
+	mutable RID_Owner<Camera, true> camera_owner;
 
 	virtual RID camera_allocate();
 	virtual void camera_initialize(RID p_rid);
@@ -345,7 +345,7 @@ public:
 
 	int indexer_update_iterations = 0;
 
-	mutable RID_PtrOwner<Scenario, true> scenario_owner;
+	mutable RID_Owner<Scenario, true> scenario_owner;
 
 	static void _instance_pair(Instance *p_A, Instance *p_B);
 	static void _instance_unpair(Instance *p_A, Instance *p_B);
@@ -895,7 +895,7 @@ public:
 
 	uint32_t thread_cull_threshold = 200;
 
-	RID_PtrOwner<Instance, true> instance_owner;
+	RID_Owner<Instance, true> instance_owner;
 
 	uint32_t geometry_instance_pair_mask; // used in traditional forward, unnecessary on clustered
 

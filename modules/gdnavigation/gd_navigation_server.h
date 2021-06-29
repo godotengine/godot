@@ -75,9 +75,9 @@ class GdNavigationServer : public NavigationServer3D {
 
 	std::vector<SetCommand *> commands;
 
-	mutable RID_PtrOwner<NavMap> map_owner;
-	mutable RID_PtrOwner<NavRegion> region_owner;
-	mutable RID_PtrOwner<RvoAgent> agent_owner;
+	mutable RID_Owner<NavMap> map_owner;
+	mutable RID_Owner<NavRegion> region_owner;
+	mutable RID_Owner<RvoAgent> agent_owner;
 
 	bool active = true;
 	LocalVector<NavMap *> active_maps;
