@@ -95,12 +95,13 @@
 # nec-trou <darya.bilyalova@gmail.com>, 2021.
 # IindinAndEdresia <kapitan_pol@inbox.ru>, 2021.
 # Bualma Show <appleaidar6@gmail.com>, 2021.
+# enderlorde <madel.laboratories@gmail.com>, 2021.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2021-06-07 23:43+0000\n"
-"Last-Translator: Bualma Show <appleaidar6@gmail.com>\n"
+"PO-Revision-Date: 2021-06-27 07:10+0000\n"
+"Last-Translator: Danil Alexeev <danil@alexeev.xyz>\n"
 "Language-Team: Russian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ru/>\n"
 "Language: ru\n"
@@ -109,7 +110,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=n%10==1 && n%100!=11 ? 0 : n%10>=2 && n"
 "%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2;\n"
-"X-Generator: Weblate 4.7-dev\n"
+"X-Generator: Weblate 4.7.1-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -1207,7 +1208,7 @@ msgstr "Спасибо от сообщества Godot!"
 
 #: editor/editor_about.cpp editor/editor_node.cpp editor/project_manager.cpp
 msgid "Click to copy."
-msgstr ""
+msgstr "Нажмите, чтобы скопировать."
 
 #: editor/editor_about.cpp
 msgid "Godot Engine contributors"
@@ -3154,7 +3155,7 @@ msgstr "Инспектор"
 
 #: editor/editor_node.cpp
 msgid "Expand Bottom Panel"
-msgstr "Расширить боковую панель"
+msgstr "Развернуть нижнюю панель"
 
 #: editor/editor_node.cpp
 msgid "Output"
@@ -5813,7 +5814,7 @@ msgstr "Кадрировать выбранное"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Preview Canvas Scale"
-msgstr "Предпросмотр Canvas Scale"
+msgstr "Предпросмотр масштаба холста"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Translation mask for inserting keys."
@@ -8437,7 +8438,7 @@ msgstr "Приоритет"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Z Index"
-msgstr "Положение по оси Z"
+msgstr "Z-индекс"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Region Mode"
@@ -12287,6 +12288,8 @@ msgid ""
 "Either Debug Keystore, Debug User AND Debug Password settings must be "
 "configured OR none of them."
 msgstr ""
+"ЛИБО должны быть заданы настройки Debug Keystore, Debug User И Debug "
+"Password, ЛИБО ни одна из них."
 
 #: platform/android/export/export.cpp
 msgid "Debug keystore not configured in the Editor Settings nor in the preset."
@@ -12299,6 +12302,8 @@ msgid ""
 "Either Release Keystore, Release User AND Release Password settings must be "
 "configured OR none of them."
 msgstr ""
+"ЛИБО должны быть заданы настройки Release Keystore, Release User И Release "
+"Password, ЛИБО ни одна из них."
 
 #: platform/android/export/export.cpp
 msgid "Release keystore incorrectly configured in the export preset."
