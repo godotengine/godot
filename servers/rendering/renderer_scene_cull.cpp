@@ -43,7 +43,7 @@ RID RendererSceneCull::camera_allocate() {
 	return camera_owner.allocate_rid();
 }
 void RendererSceneCull::camera_initialize(RID p_rid) {
-	camera_owner.initialize_rid(p_rid, memnew(Camera));
+	camera_owner.initialize_rid(p_rid);
 }
 
 void RendererSceneCull::camera_set_perspective(RID p_camera, float p_fovy_degrees, float p_z_near, float p_z_far) {
@@ -310,7 +310,9 @@ RID RendererSceneCull::scenario_allocate() {
 	return scenario_owner.allocate_rid();
 }
 void RendererSceneCull::scenario_initialize(RID p_rid) {
-	Scenario *scenario = memnew(Scenario);
+	scenario_owner.initialize_rid(p_rid);
+
+	Scenario *scenario = scenario_owner.getornull(p_rid);
 	scenario->self = p_rid;
 
 	scenario->reflection_probe_shadow_atlas = scene_render->shadow_atlas_create();
@@ -326,8 +328,6 @@ void RendererSceneCull::scenario_initialize(RID p_rid) {
 	scenario->instance_visibility.set_page_pool(&instance_visibility_data_page_pool);
 
 	RendererSceneOcclusionCull::get_singleton()->add_scenario(p_rid);
-
-	scenario_owner.initialize_rid(p_rid, scenario);
 }
 
 void RendererSceneCull::scenario_set_debug(RID p_scenario, RS::ScenarioDebugMode p_debug_mode) {
@@ -422,10 +422,9 @@ RID RendererSceneCull::instance_allocate() {
 	return instance_owner.allocate_rid();
 }
 void RendererSceneCull::instance_initialize(RID p_rid) {
-	Instance *instance = memnew(Instance);
+	instance_owner.initialize_rid(p_rid);
+	Instance *instance = instance_owner.getornull(p_rid);
 	instance->self = p_rid;
-
-	instance_owner.initialize_rid(p_rid, instance);
 }
 
 void RendererSceneCull::_instance_update_mesh_instance(Instance *p_instance) {
@@ -3818,10 +3817,7 @@ bool RendererSceneCull::free(RID p_rid) {
 	}
 
 	if (camera_owner.owns(p_rid)) {
-		Camera *camera = camera_owner.getornull(p_rid);
-
 		camera_owner.free(p_rid);
-		memdelete(camera);
 
 	} else if (scenario_owner.owns(p_rid)) {
 		Scenario *scenario = scenario_owner.getornull(p_rid);
@@ -3837,7 +3833,6 @@ bool RendererSceneCull::free(RID p_rid) {
 		scene_render->free(scenario->reflection_atlas);
 		scenario_owner.free(p_rid);
 		RendererSceneOcclusionCull::get_singleton()->remove_scenario(p_rid);
-		memdelete(scenario);
 
 	} else if (RendererSceneOcclusionCull::get_singleton()->is_occluder(p_rid)) {
 		RendererSceneOcclusionCull::get_singleton()->free_occluder(p_rid);
@@ -3861,7 +3856,6 @@ bool RendererSceneCull::free(RID p_rid) {
 		update_dirty_instances(); //in case something changed this
 
 		instance_owner.free(p_rid);
-		memdelete(instance);
 	} else {
 		return false;
 	}

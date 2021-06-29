@@ -1234,7 +1234,7 @@ RID RendererStorageRD::canvas_texture_allocate() {
 	return canvas_texture_owner.allocate_rid();
 }
 void RendererStorageRD::canvas_texture_initialize(RID p_rid) {
-	canvas_texture_owner.initialize_rid(p_rid, memnew(CanvasTexture));
+	canvas_texture_owner.initialize_rid(p_rid);
 }
 
 void RendererStorageRD::canvas_texture_set_channel(RID p_canvas_texture, RS::CanvasTextureChannel p_channel, RID p_texture) {
@@ -2934,7 +2934,8 @@ RID RendererStorageRD::mesh_instance_create(RID p_base) {
 	Mesh *mesh = mesh_owner.getornull(p_base);
 	ERR_FAIL_COND_V(!mesh, RID());
 
-	MeshInstance *mi = memnew(MeshInstance);
+	RID rid = mesh_instance_owner.make_rid();
+	MeshInstance *mi = mesh_instance_owner.getornull(rid);
 
 	mi->mesh = mesh;
 
@@ -2946,7 +2947,7 @@ RID RendererStorageRD::mesh_instance_create(RID p_base) {
 
 	mi->dirty = true;
 
-	return mesh_instance_owner.make_rid(mi);
+	return rid;
 }
 void RendererStorageRD::mesh_instance_set_skeleton(RID p_mesh_instance, RID p_skeleton) {
 	MeshInstance *mi = mesh_instance_owner.getornull(p_mesh_instance);
@@ -8657,8 +8658,6 @@ bool RendererStorageRD::free(RID p_rid) {
 		texture_owner.free(p_rid);
 
 	} else if (canvas_texture_owner.owns(p_rid)) {
-		CanvasTexture *ct = canvas_texture_owner.getornull(p_rid);
-		memdelete(ct);
 		canvas_texture_owner.free(p_rid);
 	} else if (shader_owner.owns(p_rid)) {
 		Shader *shader = shader_owner.getornull(p_rid);
@@ -8704,7 +8703,6 @@ bool RendererStorageRD::free(RID p_rid) {
 		mi->I = nullptr;
 
 		mesh_instance_owner.free(p_rid);
-		memdelete(mi);
 
 	} else if (multimesh_owner.owns(p_rid)) {
 		_update_dirty_multimeshes();

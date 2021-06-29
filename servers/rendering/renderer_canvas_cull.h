@@ -116,9 +116,9 @@ public:
 		}
 	};
 
-	RID_PtrOwner<LightOccluderPolygon, true> canvas_light_occluder_polygon_owner;
+	RID_Owner<LightOccluderPolygon, true> canvas_light_occluder_polygon_owner;
 
-	RID_PtrOwner<RendererCanvasRender::LightOccluderInstance, true> canvas_light_occluder_owner;
+	RID_Owner<RendererCanvasRender::LightOccluderInstance, true> canvas_light_occluder_owner;
 
 	struct Canvas : public RendererViewport::CanvasBase {
 		Set<RID> viewports;
@@ -163,9 +163,9 @@ public:
 		}
 	};
 
-	mutable RID_PtrOwner<Canvas, true> canvas_owner;
-	RID_PtrOwner<Item, true> canvas_item_owner;
-	RID_PtrOwner<RendererCanvasRender::Light, true> canvas_light_owner;
+	mutable RID_Owner<Canvas, true> canvas_owner;
+	RID_Owner<Item, true> canvas_item_owner;
+	RID_Owner<RendererCanvasRender::Light, true> canvas_light_owner;
 
 	bool disable_scale;
 	bool sdf_used = false;
