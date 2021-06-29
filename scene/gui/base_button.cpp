@@ -391,7 +391,7 @@ bool BaseButton::_is_focus_owner_in_shorcut_context() const {
 	Control *vp_focus = get_focus_owner();
 
 	// If the context is valid and the viewport focus is valid, check if the context is the focus or is a parent of it.
-	return ctx_node && vp_focus && (ctx_node == vp_focus || ctx_node->is_a_parent_of(vp_focus));
+	return ctx_node && vp_focus && (ctx_node == vp_focus || ctx_node->is_ancestor_of(vp_focus));
 }
 
 void BaseButton::_bind_methods() {

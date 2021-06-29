@@ -451,7 +451,7 @@ void GPUParticles2D::_notification(int p_what) {
 		RS::get_singleton()->canvas_item_add_particles(get_canvas_item(), particles, texture_rid);
 
 #ifdef TOOLS_ENABLED
-		if (Engine::get_singleton()->is_editor_hint() && (this == get_tree()->get_edited_scene_root() || get_tree()->get_edited_scene_root()->is_a_parent_of(this))) {
+		if (Engine::get_singleton()->is_editor_hint() && (this == get_tree()->get_edited_scene_root() || get_tree()->get_edited_scene_root()->is_ancestor_of(this))) {
 			draw_rect(visibility_rect, Color(0, 0.7, 0.9, 0.4), false);
 		}
 #endif

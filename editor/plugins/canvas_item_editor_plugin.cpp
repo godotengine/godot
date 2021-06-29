@@ -1241,7 +1241,7 @@ bool CanvasItemEditor::_gui_input_zoom_or_pan(const Ref<InputEvent> &p_event, bo
 
 	Ref<InputEventPanGesture> pan_gesture = p_event;
 	if (pan_gesture.is_valid() && !p_already_accepted) {
-		// If control key pressed, then zoom instead of pan
+		// If ctrl key pressed, then zoom instead of pan.
 		if (pan_gesture->is_ctrl_pressed()) {
 			const float factor = pan_gesture->get_delta().y;
 

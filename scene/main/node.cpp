@@ -1041,7 +1041,7 @@ void Node::add_child(Node *p_child, bool p_legible_unique_name) {
 	ERR_FAIL_COND_MSG(p_child == this, vformat("Can't add child '%s' to itself.", p_child->get_name())); // adding to itself!
 	ERR_FAIL_COND_MSG(p_child->data.parent, vformat("Can't add child '%s' to '%s', already has a parent '%s'.", p_child->get_name(), get_name(), p_child->data.parent->get_name())); //Fail if node has a parent
 #ifdef DEBUG_ENABLED
-	ERR_FAIL_COND_MSG(p_child->is_a_parent_of(this), vformat("Can't add child '%s' to '%s' as it would result in a cyclic dependency since '%s' is already a parent of '%s'.", p_child->get_name(), get_name(), p_child->get_name(), get_name()));
+	ERR_FAIL_COND_MSG(p_child->is_ancestor_of(this), vformat("Can't add child '%s' to '%s' as it would result in a cyclic dependency since '%s' is already a parent of '%s'.", p_child->get_name(), get_name(), p_child->get_name(), get_name()));
 #endif
 	ERR_FAIL_COND_MSG(data.blocked > 0, "Parent node is busy setting up children, add_node() failed. Consider using call_deferred(\"add_child\", child) instead.");
 
@@ -1284,7 +1284,7 @@ Node *Node::find_parent(const String &p_mask) const {
 	return nullptr;
 }
 
-bool Node::is_a_parent_of(const Node *p_node) const {
+bool Node::is_ancestor_of(const Node *p_node) const {
 	ERR_FAIL_NULL_V(p_node, false);
 	Node *p = p_node->data.parent;
 	while (p) {
@@ -1749,7 +1749,7 @@ String Node::get_editor_description() const {
 
 void Node::set_editable_instance(Node *p_node, bool p_editable) {
 	ERR_FAIL_NULL(p_node);
-	ERR_FAIL_COND(!is_a_parent_of(p_node));
+	ERR_FAIL_COND(!is_ancestor_of(p_node));
 	if (!p_editable) {
 		p_node->data.editable_instance = false;
 		// Avoid this flag being needlessly saved;
@@ -1764,13 +1764,13 @@ bool Node::is_editable_instance(const Node *p_node) const {
 	if (!p_node) {
 		return false; // Easier, null is never editable. :)
 	}
-	ERR_FAIL_COND_V(!is_a_parent_of(p_node), false);
+	ERR_FAIL_COND_V(!is_ancestor_of(p_node), false);
 	return p_node->data.editable_instance;
 }
 
 Node *Node::get_deepest_editable_node(Node *p_start_node) const {
 	ERR_FAIL_NULL_V(p_start_node, nullptr);
-	ERR_FAIL_COND_V(!is_a_parent_of(p_start_node), p_start_node);
+	ERR_FAIL_COND_V(!is_ancestor_of(p_start_node), p_start_node);
 
 	Node const *iterated_item = p_start_node;
 	Node *node = p_start_node;
@@ -2074,7 +2074,7 @@ void Node::remap_nested_resources(RES p_resource, const Map<RES, RES> &p_resourc
 // because re-targeting of connections from some descendant to another is not possible
 // if the emitter node comes later in tree order than the receiver
 void Node::_duplicate_signals(const Node *p_original, Node *p_copy) const {
-	if ((this != p_original) && !(p_original->is_a_parent_of(this))) {
+	if ((this != p_original) && !(p_original->is_ancestor_of(this))) {
 		return;
 	}
 
@@ -2467,7 +2467,7 @@ void Node::update_configuration_warnings() {
 	if (!is_inside_tree()) {
 		return;
 	}
-	if (get_tree()->get_edited_scene_root() && (get_tree()->get_edited_scene_root() == this || get_tree()->get_edited_scene_root()->is_a_parent_of(this))) {
+	if (get_tree()->get_edited_scene_root() && (get_tree()->get_edited_scene_root() == this || get_tree()->get_edited_scene_root()->is_ancestor_of(this))) {
 		get_tree()->emit_signal(SceneStringNames::get_singleton()->node_configuration_warning_changed, this);
 	}
 #endif
@@ -2514,7 +2514,7 @@ void Node::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_node_and_resource", "path"), &Node::_get_node_and_resource);
 
 	ClassDB::bind_method(D_METHOD("is_inside_tree"), &Node::is_inside_tree);
-	ClassDB::bind_method(D_METHOD("is_a_parent_of", "node"), &Node::is_a_parent_of);
+	ClassDB::bind_method(D_METHOD("is_ancestor_of", "node"), &Node::is_ancestor_of);
 	ClassDB::bind_method(D_METHOD("is_greater_than", "node"), &Node::is_greater_than);
 	ClassDB::bind_method(D_METHOD("get_path"), &Node::get_path);
 	ClassDB::bind_method(D_METHOD("get_path_to", "node"), &Node::get_path_to);
