@@ -31,8 +31,9 @@
 #include "register_types.h"
 
 #include "core/config/engine.h"
-#include "gd_navigation_server.h"
 #include "servers/navigation_server_3d.h"
+
+#include "godot_navigation_server.h"
 
 #ifndef _3D_DISABLED
 #include "navigation_mesh_generator.h"
@@ -42,19 +43,15 @@
 #include "navigation_mesh_editor_plugin.h"
 #endif
 
-/**
-	@author AndreaCatania
-*/
-
 #ifndef _3D_DISABLED
 NavigationMeshGenerator *_nav_mesh_generator = nullptr;
 #endif
 
 NavigationServer3D *new_server() {
-	return memnew(GdNavigationServer);
+	return memnew(GodotNavigationServer);
 }
 
-void register_gdnavigation_types() {
+void register_navigation_types() {
 	NavigationServer3DManager::set_default_server(new_server);
 
 #ifndef _3D_DISABLED
@@ -65,15 +62,10 @@ void register_gdnavigation_types() {
 
 #ifdef TOOLS_ENABLED
 	EditorPlugins::add_by_type<NavigationMeshEditorPlugin>();
-
-	ClassDB::APIType prev_api = ClassDB::get_current_api();
-	ClassDB::set_current_api(ClassDB::API_EDITOR);
-
-	ClassDB::set_current_api(prev_api);
 #endif
 }
 
-void unregister_gdnavigation_types() {
+void unregister_navigation_types() {
 #ifndef _3D_DISABLED
 	if (_nav_mesh_generator) {
 		memdelete(_nav_mesh_generator);

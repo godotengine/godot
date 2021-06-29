@@ -28,14 +28,10 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-/**
-	@author AndreaCatania
-*/
+#ifndef NAVIGATION_REGISTER_TYPES_H
+#define NAVIGATION_REGISTER_TYPES_H
 
-#ifndef GDNAVIGATION_REGISTER_TYPES_H
-#define GDNAVIGATION_REGISTER_TYPES_H
+void register_navigation_types();
+void unregister_navigation_types();
 
-void register_gdnavigation_types();
-void unregister_gdnavigation_types();
-
-#endif // GDNAVIGATION_REGISTER_TYPES_H
+#endif // NAVIGATION_REGISTER_TYPES_H
