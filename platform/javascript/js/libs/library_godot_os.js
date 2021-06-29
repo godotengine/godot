@@ -72,6 +72,9 @@ const GodotConfig = {
 			GodotConfig.persistent_drops = !!p_opts['persistentDrops'];
 			GodotConfig.on_execute = p_opts['onExecute'];
 			GodotConfig.on_exit = p_opts['onExit'];
+			if (p_opts['focusCanvas']) {
+				GodotConfig.canvas.focus();
+			}
 		},
 
 		locate_file: function (file) {
