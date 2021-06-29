@@ -8,7 +8,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
-"PO-Revision-Date: 2021-06-14 12:34+0000\n"
+"PO-Revision-Date: 2021-06-20 13:35+0000\n"
 "Last-Translator: Erik Zubiria <erik@ezsd.net>\n"
 "Language-Team: Basque <https://hosted.weblate.org/projects/godot-engine/"
 "godot/eu/>\n"
@@ -16,7 +16,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8-bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.7-dev\n"
+"X-Generator: Weblate 4.7\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -259,93 +259,93 @@ msgstr "Interpolazio mota"
 
 #: editor/animation_track_editor.cpp
 msgid "Loop Wrap Mode (Interpolate end with beginning on loop)"
-msgstr ""
+msgstr "Loop Modu Bildua (bukaera interpolatu looparen hasierarekin)"
 
 #: editor/animation_track_editor.cpp
 msgid "Remove this track."
-msgstr ""
+msgstr "Pista hau ezabatu."
 
 #: editor/animation_track_editor.cpp
 msgid "Time (s): "
-msgstr ""
+msgstr "Denbora (s): "
 
 #: editor/animation_track_editor.cpp
 msgid "Toggle Track Enabled"
-msgstr ""
+msgstr "Pista Akt./Desakt."
 
 #: editor/animation_track_editor.cpp
 msgid "Continuous"
-msgstr ""
+msgstr "Etengabea"
 
 #: editor/animation_track_editor.cpp
 msgid "Discrete"
-msgstr ""
+msgstr "Diskretua"
 
 #: editor/animation_track_editor.cpp
 msgid "Trigger"
-msgstr ""
+msgstr "Kakoa"
 
 #: editor/animation_track_editor.cpp
 msgid "Capture"
-msgstr ""
+msgstr "Kaptura"
 
 #: editor/animation_track_editor.cpp
 msgid "Nearest"
-msgstr ""
+msgstr "Gertukoena"
 
 #: editor/animation_track_editor.cpp editor/plugins/curve_editor_plugin.cpp
 #: editor/property_editor.cpp
 msgid "Linear"
-msgstr ""
+msgstr "Lineal"
 
 #: editor/animation_track_editor.cpp
 msgid "Cubic"
-msgstr ""
+msgstr "Kubiko"
 
 #: editor/animation_track_editor.cpp
 msgid "Clamp Loop Interp"
-msgstr ""
+msgstr "Loop Ebakitzailearen Interp"
 
 #: editor/animation_track_editor.cpp
 msgid "Wrap Loop Interp"
-msgstr ""
+msgstr "Loop Inguratzailearen Interp"
 
 #: editor/animation_track_editor.cpp
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Insert Key"
-msgstr ""
+msgstr "Sartu Giltza"
 
 #: editor/animation_track_editor.cpp
 msgid "Duplicate Key(s)"
-msgstr ""
+msgstr "Bikoiztu Giltza(k)"
 
 #: editor/animation_track_editor.cpp
 msgid "Delete Key(s)"
-msgstr ""
+msgstr "Ezabatu Giltza(k)"
 
 #: editor/animation_track_editor.cpp
 msgid "Change Animation Update Mode"
-msgstr ""
+msgstr "Animazioaren Eguneraketa Modua Aldatu"
 
 #: editor/animation_track_editor.cpp
 msgid "Change Animation Interpolation Mode"
-msgstr ""
+msgstr "Animazioaren Interpolazio Modua Aldatu"
 
 #: editor/animation_track_editor.cpp
 msgid "Change Animation Loop Mode"
-msgstr ""
+msgstr "Animazioaren Loop Modua Aldatu"
 
 #: editor/animation_track_editor.cpp
 msgid "Remove Anim Track"
-msgstr ""
+msgstr "Ezabatu Animazio Pista"
 
 #: editor/animation_track_editor.cpp
 msgid "Create NEW track for %s and insert key?"
-msgstr ""
+msgstr "%s-rentzat pista berria sortu eta giltza sartu?"
 
 #: editor/animation_track_editor.cpp
 msgid "Create %d NEW tracks and insert keys?"
-msgstr ""
+msgstr "%d pista berri sortu eta giltzak sartu?"
 
 #: editor/animation_track_editor.cpp editor/create_dialog.cpp
 #: editor/editor_audio_buses.cpp editor/editor_feature_profile.cpp
@@ -357,39 +357,41 @@ msgstr ""
 #: editor/script_create_dialog.cpp
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Create"
-msgstr ""
+msgstr "Sortu"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Insert"
-msgstr ""
+msgstr "Animazioa Sartu"
 
 #: editor/animation_track_editor.cpp
 msgid "AnimationPlayer can't animate itself, only other players."
-msgstr ""
+msgstr "AnimationPlayer bat ezin da norbera animatu, soilik beste playerrak."
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Create & Insert"
-msgstr ""
+msgstr "Animazioa Sortu eta Txertatu"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Insert Track & Key"
-msgstr ""
+msgstr "Pista eta Animazio Giltza Sartu"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Insert Key"
-msgstr ""
+msgstr "Animazio Giltza Sartu"
 
 #: editor/animation_track_editor.cpp
 msgid "Change Animation Step"
-msgstr ""
+msgstr "Animazioaren Urratsa Aldatu"
 
 #: editor/animation_track_editor.cpp
 msgid "Rearrange Tracks"
-msgstr ""
+msgstr "Pistak Berrantolatu"
 
 #: editor/animation_track_editor.cpp
 msgid "Transform tracks only apply to Spatial-based nodes."
 msgstr ""
+"Transformazio pistak Spatial-en oinarritutako nodoetan bakarrik aplikatzen "
+"dira."
 
 #: editor/animation_track_editor.cpp
 msgid ""
@@ -398,38 +400,42 @@ msgid ""
 "-AudioStreamPlayer2D\n"
 "-AudioStreamPlayer3D"
 msgstr ""
+"Audio pistek era hontako nodoak bakarrik apunta ditzakete:\n"
+"-AudioStreamPlayer\n"
+"-AudioStreamPlayer2D\n"
+"-AudioStreamPlayer3D"
 
 #: editor/animation_track_editor.cpp
 msgid "Animation tracks can only point to AnimationPlayer nodes."
-msgstr ""
+msgstr "Animazio pistek AnimationPlayer nodoak bakarrik apunta ditzakete."
 
 #: editor/animation_track_editor.cpp
 msgid "An animation player can't animate itself, only other players."
-msgstr ""
+msgstr "Animazio irakurgailua ezin da norbera animatu, bakarrik beste batzuk."
 
 #: editor/animation_track_editor.cpp
 msgid "Not possible to add a new track without a root"
-msgstr ""
+msgstr "Ez da posiblea pista berri bat gehitzea sustrairik gabe"
 
 #: editor/animation_track_editor.cpp
 msgid "Invalid track for Bezier (no suitable sub-properties)"
-msgstr ""
+msgstr "Bezier-entzat pista baliogabea (ez dago azpipropietate egokirik)"
 
 #: editor/animation_track_editor.cpp
 msgid "Add Bezier Track"
-msgstr ""
+msgstr "Gehitu Bezier Pista"
 
 #: editor/animation_track_editor.cpp
 msgid "Track path is invalid, so can't add a key."
-msgstr ""
+msgstr "Pistaren bidea baliogabea da, beraz ezin da giltzarik gehitu."
 
 #: editor/animation_track_editor.cpp
 msgid "Track is not of type Spatial, can't insert key"
-msgstr ""
+msgstr "Pista ez da Spatial erakoa, ezin da giltza txertatu"
 
 #: editor/animation_track_editor.cpp
 msgid "Add Transform Track Key"
-msgstr ""
+msgstr "Gehitu Pistaren Transformazio Giltza"
 
 #: editor/animation_track_editor.cpp
 msgid "Add Track Key"

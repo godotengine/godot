@@ -20,7 +20,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Ukrainian (Godot Engine)\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2021-05-18 14:51+0000\n"
+"PO-Revision-Date: 2021-06-20 13:35+0000\n"
 "Last-Translator: Yuri Chornoivan <yurchor@ukr.net>\n"
 "Language-Team: Ukrainian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/uk/>\n"
@@ -30,7 +30,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=n%10==1 && n%100!=11 ? 0 : n%10>=2 && n"
 "%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2;\n"
-"X-Generator: Weblate 4.7-dev\n"
+"X-Generator: Weblate 4.7\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -1137,7 +1137,7 @@ msgstr "Спасибі від спільноти Godot!"
 
 #: editor/editor_about.cpp editor/editor_node.cpp editor/project_manager.cpp
 msgid "Click to copy."
-msgstr ""
+msgstr "Клацніть, щоб скопіювати."
 
 #: editor/editor_about.cpp
 msgid "Godot Engine contributors"
@@ -12244,6 +12244,8 @@ msgid ""
 "Either Debug Keystore, Debug User AND Debug Password settings must be "
 "configured OR none of them."
 msgstr ""
+"Має бути налаштовано діагностику сховища ключів, діагностику користувача АБО "
+"діагностику пароля АБО не налаштовано діагностику жодного з цих компонентів."
 
 #: platform/android/export/export.cpp
 msgid "Debug keystore not configured in the Editor Settings nor in the preset."
@@ -12256,6 +12258,8 @@ msgid ""
 "Either Release Keystore, Release User AND Release Password settings must be "
 "configured OR none of them."
 msgstr ""
+"Має бути налаштовано параметри сховища ключів випуску, користувача випуску і "
+"пароля випуску або не налаштовано жоден з цих параметрів."
 
 #: platform/android/export/export.cpp
 msgid "Release keystore incorrectly configured in the export preset."

@@ -69,12 +69,14 @@
 # El Captian <elcaptian@posteo.me>, 2021.
 # Ron Eric Hackländer <mail@roneric.net>, 2021.
 # Stephan Kerbl <stephankerbl@gmail.com>, 2021.
+# Philipp Wabnitz <philipp.wabnitz@s2011.tu-chemnitz.de>, 2021.
+# jmih03 <joerni@mail.de>, 2021.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2021-06-07 23:43+0000\n"
-"Last-Translator: Linux User <no-ads@mail.de>\n"
+"PO-Revision-Date: 2021-06-28 22:34+0000\n"
+"Last-Translator: jmih03 <joerni@mail.de>\n"
 "Language-Team: German <https://hosted.weblate.org/projects/godot-engine/"
 "godot/de/>\n"
 "Language: de\n"
@@ -82,7 +84,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.7-dev\n"
+"X-Generator: Weblate 4.7.1-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -1189,7 +1191,7 @@ msgstr "Die Godot-Gemeinschaft bedankt sich!"
 
 #: editor/editor_about.cpp editor/editor_node.cpp editor/project_manager.cpp
 msgid "Click to copy."
-msgstr ""
+msgstr "Zum kopieren klicken."
 
 #: editor/editor_about.cpp
 msgid "Godot Engine contributors"
@@ -7153,7 +7155,7 @@ msgstr ""
 
 #: editor/plugins/script_editor_plugin.cpp editor/script_editor_debugger.cpp
 msgid "Debugger"
-msgstr "Testhilfsprogramm"
+msgstr "Debugger"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Search Results"
@@ -7416,6 +7418,7 @@ msgid "Play IK"
 msgstr "IK abspielen"
 
 #: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
 msgid "Orthogonal"
 msgstr "Orthogonal"
 
@@ -7661,7 +7664,7 @@ msgid ""
 "To zoom further, change the camera's clipping planes (View -> Settings...)"
 msgstr ""
 "Um weiter zoomen zu können müssen die Kameraausschnittebenen geändert werden "
-"(Anzeige -> Einstellungen… )"
+"(Ansicht -> Einstellungen… )"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid ""
@@ -10353,7 +10356,7 @@ msgstr "Ereignis hinzufügen"
 
 #: editor/project_settings_editor.cpp
 msgid "Button"
-msgstr "Knopf"
+msgstr "Button"
 
 #: editor/project_settings_editor.cpp
 msgid "Left Button."
@@ -12330,6 +12333,8 @@ msgid ""
 "Either Debug Keystore, Debug User AND Debug Password settings must be "
 "configured OR none of them."
 msgstr ""
+"Die drei Einstellungen Debug Keystore, Debug User und Debug Password müssen "
+"entweder alle angegeben, oder alle nicht angegeben sein."
 
 #: platform/android/export/export.cpp
 msgid "Debug keystore not configured in the Editor Settings nor in the preset."
@@ -12342,6 +12347,8 @@ msgid ""
 "Either Release Keystore, Release User AND Release Password settings must be "
 "configured OR none of them."
 msgstr ""
+"Die drei Einstellungen Release Keystore, Release User und Release Password "
+"müssen entweder alle angegeben, oder alle nicht angegeben sein."
 
 #: platform/android/export/export.cpp
 msgid "Release keystore incorrectly configured in the export preset."
