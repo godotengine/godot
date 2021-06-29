@@ -776,13 +776,16 @@
 			If non-empty, this locale will be used when running the project from the editor.
 		</member>
 		<member name="internationalization/pseudolocalization/double_vowels" type="bool" setter="" getter="" default="false">
-			Double vowels in strings during pseudolocalization.
+			Double vowels in strings during pseudolocalization to simulate the lengthening of text due to localization.
 		</member>
 		<member name="internationalization/pseudolocalization/expansion_ratio" type="float" setter="" getter="" default="0.0">
-			Expansion ratio to be used during pseudolocalization.
+			Expansion ratio to be used during pseudolocalization. A value of 0.3 is sufficient for most practical purposes.
 		</member>
 		<member name="internationalization/pseudolocalization/fake_bidi" type="bool" setter="" getter="" default="false">
 			Fake RTL text.
+		</member>
+		<member name="internationalization/pseudolocalization/override" type="bool" setter="" getter="" default="false">
+			Replace all characters in the string with '*'. Useful for finding non-localizable strings.
 		</member>
 		<member name="internationalization/pseudolocalization/prefix" type="String" setter="" getter="" default="&quot;[&quot;">
 			Prefix that will be prepended to the pseudolocalized string.

@@ -81,6 +81,7 @@ class TranslationServer : public Object {
 	bool pseudolocalization_accents_enabled;
 	bool pseudolocalization_double_vowels_enabled;
 	bool pseudolocalization_fake_bidi_enabled;
+	bool pseudolocalization_override_enabled;
 	float expansion_ratio;
 	String pseudolocalization_prefix;
 	String pseudolocalization_suffix;
@@ -127,6 +128,8 @@ public:
 	void set_pseudolocalization_double_vowels_enabled(bool enabled);
 	bool is_pseudolocalization_fake_bidi_enabled() const;
 	void set_pseudolocalization_fake_bidi_enabled(bool enabled);
+	bool is_pseudolocalization_override_enabled() const;
+	void set_pseudolocalization_override_enabled(bool enabled);
 	float get_pseudolocalization_expansion_ratio() const;
 	void set_pseudolocalization_expansion_ratio(float ratio);
 	String get_pseudolocalization_prefix() const;

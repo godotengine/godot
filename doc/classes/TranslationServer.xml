@@ -109,6 +109,13 @@
 				Returns a boolean suggesting whether the fake_bidi option of Pseudolocalization is enabled.
 			</description>
 		</method>
+		<method name="is_pseudolocalization_override_enabled" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+				Returns a boolean suggesting whether the override option of Pseudolocalization is enabled.
+			</description>
+		</method>
 		<method name="pseudolocalize" qualifiers="const">
 			<return type="StringName">
 			</return>
@@ -179,6 +186,15 @@
 			</argument>
 			<description>
 				Sets the fake_bidi boolean option of Pseudolocalization.
+			</description>
+		</method>
+		<method name="set_pseudolocalization_override_enabled">
+			<return type="void">
+			</return>
+			<argument index="0" name="enabled" type="bool">
+			</argument>
+			<description>
+				Sets the override boolean option of Pseudolocalization.
 			</description>
 		</method>
 		<method name="set_pseudolocalization_prefix">
