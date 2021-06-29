@@ -79,7 +79,7 @@
 			If [code]true[/code], wraps the text inside the node's bounding rectangle. If you resize the node, it will change its height automatically to show all the text.
 		</member>
 		<member name="clip_text" type="bool" setter="set_clip_text" getter="is_clipping_text" default="false">
-			If [code]true[/code], the Label only shows the text that fits inside its bounding rectangle. It also lets you scale the node down freely.
+			If [code]true[/code], the Label only shows the text that fits inside its bounding rectangle and will clip text horizontally.
 		</member>
 		<member name="language" type="String" setter="set_language" getter="get_language" default="&quot;&quot;">
 			Language code used for line-breaking and text shaping algorithms, if left empty current locale is used instead.
