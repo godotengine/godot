@@ -4875,11 +4875,11 @@ void SpatialEditor::_update_camera_override_button(bool p_game_running) {
 
 	if (p_game_running) {
 		button->set_disabled(false);
-		button->set_tooltip(TTR("Project Camera Override\nOverrides the running project's camera with the editor viewport camera."));
+		button->set_tooltip(TTR("Game Camera Override\nOverrides game camera with editor viewport camera."));
 	} else {
 		button->set_disabled(true);
 		button->set_pressed(false);
-		button->set_tooltip(TTR("Project Camera Override\nNo project instance running. Run the project from the editor to use this feature."));
+		button->set_tooltip(TTR("Game Camera Override\nNo game instance running."));
 	}
 }
 
