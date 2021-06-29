@@ -1409,9 +1409,102 @@ void SceneTreeDock::fill_path_renames(Node *p_node, Node *p_new_parent, List<Pai
 	_fill_path_renames(base_path, new_base_path, p_node, p_renames);
 }
 
+bool SceneTreeDock::_update_node_path(const NodePath &p_root_path, NodePath &p_node_path, List<Pair<NodePath, NodePath>> *p_renames) {
+	NodePath root_path_new = p_root_path;
+	for (List<Pair<NodePath, NodePath>>::Element *F = p_renames->front(); F; F = F->next()) {
+		if (p_root_path == F->get().first) {
+			root_path_new = F->get().second;
+			break;
+		}
+	}
+
+	// Goes through all paths to check if it's matching.
+	for (List<Pair<NodePath, NodePath>>::Element *F = p_renames->front(); F; F = F->next()) {
+		NodePath rel_path_old = p_root_path.rel_path_to(F->get().first);
+
+		// If old path detected, then it needs to be replaced with the new one.
+		if (p_node_path == rel_path_old) {
+			NodePath rel_path_new = F->get().second;
+
+			// If not empty, get new relative path.
+			if (!rel_path_new.is_empty()) {
+				rel_path_new = root_path_new.rel_path_to(rel_path_new);
+			}
+
+			p_node_path = rel_path_new;
+			return true;
+		}
+
+		// Update the node itself if it has a valid node path and has not been deleted.
+		if (p_root_path == F->get().first && p_node_path != NodePath() && F->get().second != NodePath()) {
+			NodePath abs_path = NodePath(String(root_path_new).plus_file(p_node_path)).simplified();
+			NodePath rel_path_new = F->get().second.rel_path_to(abs_path);
+
+			p_node_path = rel_path_new;
+			return true;
+		}
+	}
+
+	return false;
+}
+
+bool SceneTreeDock::_check_node_path_recursive(const NodePath &p_root_path, Variant &p_variant, List<Pair<NodePath, NodePath>> *p_renames) {
+	switch (p_variant.get_type()) {
+		case Variant::NODE_PATH: {
+			NodePath node_path = p_variant;
+			if (_update_node_path(p_root_path, node_path, p_renames)) {
+				p_variant = node_path;
+				return true;
+			}
+		} break;
+
+		case Variant::ARRAY: {
+			Array a = p_variant;
+			bool updated = false;
+			for (int i = 0; i < a.size(); i++) {
+				Variant value = a[i];
+				if (_check_node_path_recursive(p_root_path, value, p_renames)) {
+					if (!updated) {
+						a = a.duplicate(); // Need to duplicate for undo-redo to work.
+						updated = true;
+					}
+					a[i] = value;
+				}
+			}
+			if (updated) {
+				p_variant = a;
+				return true;
+			}
+		} break;
+
+		case Variant::DICTIONARY: {
+			Dictionary d = p_variant;
+			bool updated = false;
+			for (int i = 0; i < d.size(); i++) {
+				Variant value = d.get_value_at_index(i);
+				if (_check_node_path_recursive(p_root_path, value, p_renames)) {
+					if (!updated) {
+						d = d.duplicate(); // Need to duplicate for undo-redo to work.
+						updated = true;
+					}
+					d[d.get_key_at_index(i)] = value;
+				}
+			}
+			if (updated) {
+				p_variant = d;
+				return true;
+			}
+		} break;
+
+		default: {
+		}
+	}
+
+	return false;
+}
+
 void SceneTreeDock::perform_node_renames(Node *p_base, List<Pair<NodePath, NodePath>> *p_renames, Map<Ref<Animation>, Set<int>> *r_rem_anims) {
 	Map<Ref<Animation>, Set<int>> rem_anims;
-
 	if (!r_rem_anims) {
 		r_rem_anims = &rem_anims;
 	}
@@ -1424,60 +1517,22 @@ void SceneTreeDock::perform_node_renames(Node *p_base, List<Pair<NodePath, NodeP
 		return;
 	}
 
-	// Renaming node paths used in script instances
-	if (p_base->get_script_instance()) {
-		ScriptInstance *si = p_base->get_script_instance();
+	// Renaming node paths used in node properties.
+	List<PropertyInfo> properties;
+	p_base->get_property_list(&properties);
+	NodePath base_root_path = p_base->get_path();
 
-		if (si) {
-			List<PropertyInfo> properties;
-			si->get_property_list(&properties);
-			NodePath root_path = p_base->get_path();
-
-			for (List<PropertyInfo>::Element *E = properties.front(); E; E = E->next()) {
-				String propertyname = E->get().name;
-				Variant p = p_base->get(propertyname);
-				if (p.get_type() == Variant::NODE_PATH) {
-					NodePath root_path_new = root_path;
-					for (List<Pair<NodePath, NodePath>>::Element *F = p_renames->front(); F; F = F->next()) {
-						if (root_path == F->get().first) {
-							root_path_new = F->get().second;
-							break;
-						}
-					}
-
-					// Goes through all paths to check if its matching
-					for (List<Pair<NodePath, NodePath>>::Element *F = p_renames->front(); F; F = F->next()) {
-						NodePath rel_path_old = root_path.rel_path_to(F->get().first);
-
-						// if old path detected, then it needs to be replaced with the new one
-						if (p == rel_path_old) {
-							NodePath rel_path_new = F->get().second;
-
-							// if not empty, get new relative path
-							if (!rel_path_new.is_empty()) {
-								rel_path_new = root_path_new.rel_path_to(F->get().second);
-							}
-
-							editor_data->get_undo_redo().add_do_property(p_base, propertyname, rel_path_new);
-							editor_data->get_undo_redo().add_undo_property(p_base, propertyname, rel_path_old);
-
-							p_base->set(propertyname, rel_path_new);
-							break;
-						}
-
-						// update the node itself if it has a valid node path and has not been deleted
-						if (root_path == F->get().first && p != NodePath() && F->get().second != NodePath()) {
-							NodePath abs_path = NodePath(String(root_path).plus_file(p)).simplified();
-							NodePath rel_path_new = F->get().second.rel_path_to(abs_path);
-
-							editor_data->get_undo_redo().add_do_property(p_base, propertyname, rel_path_new);
-							editor_data->get_undo_redo().add_undo_property(p_base, propertyname, p);
-
-							p_base->set(propertyname, rel_path_new);
-						}
-					}
-				}
-			}
+	for (List<PropertyInfo>::Element *E = properties.front(); E; E = E->next()) {
+		if (!(E->get().usage & (PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_EDITOR))) {
+			continue;
+		}
+		String propertyname = E->get().name;
+		Variant old_variant = p_base->get(propertyname);
+		Variant updated_variant = old_variant;
+		if (_check_node_path_recursive(base_root_path, updated_variant, p_renames)) {
+			editor_data->get_undo_redo().add_do_property(p_base, propertyname, updated_variant);
+			editor_data->get_undo_redo().add_undo_property(p_base, propertyname, old_variant);
+			p_base->set(propertyname, updated_variant);
 		}
 	}
 

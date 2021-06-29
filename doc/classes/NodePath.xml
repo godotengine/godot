@@ -20,6 +20,7 @@
 		@"/root/Main" # If your main scene's root node were named "Main".
 		@"/root/MyAutoload" # If you have an autoloaded node or scene.
 		[/codeblock]
+		[b]Note:[/b] In the editor, [NodePath] properties are automatically updated when moving, renaming or deleting a node in the scene tree, but they are never updated at runtime.
 	</description>
 	<tutorials>
 		<link title="2D Role Playing Game Demo">https://godotengine.org/asset-library/asset/520</link>
