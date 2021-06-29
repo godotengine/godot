@@ -784,6 +784,7 @@ ScriptCreateDialog::ScriptCreateDialog() {
 
 	status_panel = memnew(PanelContainer);
 	status_panel->set_h_size_flags(Control::SIZE_FILL);
+	status_panel->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	status_panel->add_child(vb);
 
 	/* Spacing */
@@ -795,10 +796,7 @@ ScriptCreateDialog::ScriptCreateDialog() {
 	vb->add_child(gc);
 	vb->add_child(spacing);
 	vb->add_child(status_panel);
-	HBoxContainer *hb = memnew(HBoxContainer);
-	hb->add_child(vb);
-
-	add_child(hb);
+	add_child(vb);
 
 	/* Language */
 
@@ -827,7 +825,7 @@ ScriptCreateDialog::ScriptCreateDialog() {
 
 	base_type = "Object";
 
-	hb = memnew(HBoxContainer);
+	HBoxContainer *hb = memnew(HBoxContainer);
 	hb->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	parent_name = memnew(LineEdit);
 	parent_name->connect("text_changed", callable_mp(this, &ScriptCreateDialog::_parent_name_changed));
