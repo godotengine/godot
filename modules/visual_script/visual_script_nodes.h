@@ -227,6 +227,8 @@ public:
 	void set_typed(Variant::Type p_op);
 	Variant::Type get_typed() const;
 
+	static String get_operator_name(Variant::Operator p_op);
+
 	virtual VisualScriptNodeInstance *instantiate(VisualScriptInstance *p_instance) override;
 
 	VisualScriptOperator();

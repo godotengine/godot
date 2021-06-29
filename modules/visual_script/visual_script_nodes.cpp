@@ -912,39 +912,6 @@ PropertyInfo VisualScriptOperator::get_output_value_port_info(int p_idx) const {
 	return pinfo;
 }
 
-static const char *op_names[] = {
-	//comparison
-	"Are Equal", //OP_EQUAL,
-	"Are Not Equal", //OP_NOT_EQUAL,
-	"Less Than", //OP_LESS,
-	"Less Than or Equal", //OP_LESS_EQUAL,
-	"Greater Than", //OP_GREATER,
-	"Greater Than or Equal", //OP_GREATER_EQUAL,
-	//mathematic
-	"Add", //OP_ADD,
-	"Subtract", //OP_SUBTRACT,
-	"Multiply", //OP_MULTIPLY,
-	"Divide", //OP_DIVIDE,
-	"Negate", //OP_NEGATE,
-	"Positive", //OP_POSITIVE,
-	"Remainder", //OP_MODULE,
-	"Concatenate", //OP_STRING_CONCAT,
-	//bitwise
-	"Bit Shift Left", //OP_SHIFT_LEFT,
-	"Bit Shift Right", //OP_SHIFT_RIGHT,
-	"Bit And", //OP_BIT_AND,
-	"Bit Or", //OP_BIT_OR,
-	"Bit Xor", //OP_BIT_XOR,
-	"Bit Negate", //OP_BIT_NEGATE,
-	//logic
-	"And", //OP_AND,
-	"Or", //OP_OR,
-	"Xor", //OP_XOR,
-	"Not", //OP_NOT,
-	//containment
-	"In", //OP_IN,
-};
-
 String VisualScriptOperator::get_caption() const {
 	switch (op) {
 		// comparison
@@ -1011,6 +978,71 @@ String VisualScriptOperator::get_caption() const {
 	}
 }
 
+String VisualScriptOperator::get_operator_name(Variant::Operator p_op) {
+	switch (p_op) {
+		// comparison
+		case Variant::OP_EQUAL:
+			return "Are Equal";
+		case Variant::OP_NOT_EQUAL:
+			return "Are Not Equal";
+		case Variant::OP_LESS:
+			return "Less Than";
+		case Variant::OP_LESS_EQUAL:
+			return "Less Than or Equal";
+		case Variant::OP_GREATER:
+			return "Greater Than";
+		case Variant::OP_GREATER_EQUAL:
+			return "Greater Than or Equal";
+
+		// mathematic
+		case Variant::OP_ADD:
+			return "Add";
+		case Variant::OP_SUBTRACT:
+			return "Subtract";
+		case Variant::OP_MULTIPLY:
+			return "Multiply";
+		case Variant::OP_DIVIDE:
+			return "Divide";
+		case Variant::OP_NEGATE:
+			return "Negate";
+		case Variant::OP_POSITIVE:
+			return "Positive";
+		case Variant::OP_MODULE:
+			return "Remainder";
+
+		// bitwise
+		case Variant::OP_SHIFT_LEFT:
+			return "Bit Shift Left";
+		case Variant::OP_SHIFT_RIGHT:
+			return "Bit Shift Right";
+		case Variant::OP_BIT_AND:
+			return "Bit And";
+		case Variant::OP_BIT_OR:
+			return "Bit Or";
+		case Variant::OP_BIT_XOR:
+			return "Bit Xor";
+		case Variant::OP_BIT_NEGATE:
+			return "Bit Negate";
+
+		// logic
+		case Variant::OP_AND:
+			return "And";
+		case Variant::OP_OR:
+			return "Or";
+		case Variant::OP_XOR:
+			return "Xor";
+		case Variant::OP_NOT:
+			return "Not";
+		case Variant::OP_IN:
+			return "In";
+
+		default: {
+			ERR_FAIL_INDEX_V(p_op, Variant::OP_MAX, "");
+			return "Unknown Operator";
+		}
+	}
+}
+
 void VisualScriptOperator::set_operator(Variant::Operator p_op) {
 	if (op == p_op) {
 		return;
@@ -1048,7 +1080,7 @@ void VisualScriptOperator::_bind_methods() {
 		if (i > 0) {
 			types += ",";
 		}
-		types += op_names[i];
+		types += get_operator_name(static_cast<Variant::Operator>(i));
 	}
 
 	String argt = "Any";
@@ -1081,9 +1113,9 @@ public:
 				r_error_str = *p_outputs[0];
 			} else {
 				if (unary) {
-					r_error_str = String(op_names[op]) + RTR(": Invalid argument of type: ") + Variant::get_type_name(p_inputs[0]->get_type());
+					r_error_str = String(Variant::get_operator_name(op)) + RTR(": Invalid argument of type: ") + Variant::get_type_name(p_inputs[0]->get_type());
 				} else {
-					r_error_str = String(op_names[op]) + RTR(": Invalid arguments: ") + "A: " + Variant::get_type_name(p_inputs[0]->get_type()) + "  B: " + Variant::get_type_name(p_inputs[1]->get_type());
+					r_error_str = String(Variant::get_operator_name(op)) + RTR(": Invalid arguments: ") + "A: " + Variant::get_type_name(p_inputs[0]->get_type()) + "  B: " + Variant::get_type_name(p_inputs[1]->get_type());
 				}
 			}
 		}
