@@ -30,6 +30,8 @@
 
 #include "editor_properties.h"
 
+#include "core/input/input.h"
+#include "core/os/keyboard.h"
 #include "editor/editor_resource_preview.h"
 #include "editor/filesystem_dock.h"
 #include "editor_node.h"
@@ -1145,8 +1147,22 @@ void EditorPropertyVector2::_value_changed(double val, const String &p_name) {
 	}
 
 	Vector2 v2;
-	v2.x = spin[0]->get_value();
-	v2.y = spin[1]->get_value();
+	if (Input::get_singleton()->is_key_pressed(KEY_CONTROL)) {
+		// Set all components to the edited value to quickly set "linked" values such as scale.
+		if (p_name == "x") {
+			v2.x = spin[0]->get_value();
+			v2.y = spin[0]->get_value();
+		} else if (p_name == "y") {
+			v2.x = spin[1]->get_value();
+			v2.y = spin[1]->get_value();
+		} else {
+			ERR_PRINT("Unexpected component name (please report).");
+		}
+	} else {
+		v2.x = spin[0]->get_value();
+		v2.y = spin[1]->get_value();
+	}
+
 	emit_changed(get_edited_property(), v2, p_name);
 }
 
@@ -1229,8 +1245,24 @@ void EditorPropertyRect2::_value_changed(double val, const String &p_name) {
 	Rect2 r2;
 	r2.position.x = spin[0]->get_value();
 	r2.position.y = spin[1]->get_value();
-	r2.size.x = spin[2]->get_value();
-	r2.size.y = spin[3]->get_value();
+	if (Input::get_singleton()->is_key_pressed(KEY_CONTROL)) {
+		// Set all components to the edited value to quickly set "linked" values such as a size.
+		if (p_name == "w") {
+			r2.size.x = spin[2]->get_value();
+			r2.size.y = spin[2]->get_value();
+		} else if (p_name == "h") {
+			r2.size.x = spin[3]->get_value();
+			r2.size.y = spin[3]->get_value();
+		} else {
+			// "x"/"y" (setting both of their coordinates at the same time doesn't make much sense).
+			r2.size.x = spin[2]->get_value();
+			r2.size.y = spin[3]->get_value();
+		}
+	} else {
+		r2.size.x = spin[2]->get_value();
+		r2.size.y = spin[3]->get_value();
+	}
+
 	emit_changed(get_edited_property(), r2, p_name);
 }
 
@@ -1323,9 +1355,29 @@ void EditorPropertyVector3::_value_changed(double val, const String &p_name) {
 	}
 
 	Vector3 v3;
-	v3.x = spin[0]->get_value();
-	v3.y = spin[1]->get_value();
-	v3.z = spin[2]->get_value();
+	if (Input::get_singleton()->is_key_pressed(KEY_CONTROL)) {
+		// Set all components to the edited value to quickly set "linked" values such as scale.
+		if (p_name == "x") {
+			v3.x = spin[0]->get_value();
+			v3.y = spin[0]->get_value();
+			v3.z = spin[0]->get_value();
+		} else if (p_name == "y") {
+			v3.x = spin[1]->get_value();
+			v3.y = spin[1]->get_value();
+			v3.z = spin[1]->get_value();
+		} else if (p_name == "z") {
+			v3.x = spin[2]->get_value();
+			v3.y = spin[2]->get_value();
+			v3.z = spin[2]->get_value();
+		} else {
+			ERR_PRINT("Unexpected component name (please report).");
+		}
+	} else {
+		v3.x = spin[0]->get_value();
+		v3.y = spin[1]->get_value();
+		v3.z = spin[2]->get_value();
+	}
+
 	emit_changed(get_edited_property(), v3, p_name);
 }
 
@@ -1418,8 +1470,22 @@ void EditorPropertyVector2i::_value_changed(double val, const String &p_name) {
 	}
 
 	Vector2i v2;
-	v2.x = spin[0]->get_value();
-	v2.y = spin[1]->get_value();
+	if (Input::get_singleton()->is_key_pressed(KEY_CONTROL)) {
+		// Set all components to the edited value to quickly set "linked" values such as scale.
+		if (p_name == "x") {
+			v2.x = spin[0]->get_value();
+			v2.y = spin[0]->get_value();
+		} else if (p_name == "y") {
+			v2.x = spin[1]->get_value();
+			v2.y = spin[1]->get_value();
+		} else {
+			ERR_PRINT("Unexpected component name (please report).");
+		}
+	} else {
+		v2.x = spin[0]->get_value();
+		v2.y = spin[1]->get_value();
+	}
+
 	emit_changed(get_edited_property(), v2, p_name);
 }
 
@@ -1502,8 +1568,24 @@ void EditorPropertyRect2i::_value_changed(double val, const String &p_name) {
 	Rect2i r2;
 	r2.position.x = spin[0]->get_value();
 	r2.position.y = spin[1]->get_value();
-	r2.size.x = spin[2]->get_value();
-	r2.size.y = spin[3]->get_value();
+	if (Input::get_singleton()->is_key_pressed(KEY_CONTROL)) {
+		// Set all components to the edited value to quickly set "linked" values such as a size.
+		if (p_name == "w") {
+			r2.size.x = spin[2]->get_value();
+			r2.size.y = spin[2]->get_value();
+		} else if (p_name == "h") {
+			r2.size.x = spin[3]->get_value();
+			r2.size.y = spin[3]->get_value();
+		} else {
+			// "x"/"y" (setting both of their coordinates at the same time doesn't make much sense).
+			r2.size.x = spin[2]->get_value();
+			r2.size.y = spin[3]->get_value();
+		}
+	} else {
+		r2.size.x = spin[2]->get_value();
+		r2.size.y = spin[3]->get_value();
+	}
+
 	emit_changed(get_edited_property(), r2, p_name);
 }
 
@@ -1596,9 +1678,29 @@ void EditorPropertyVector3i::_value_changed(double val, const String &p_name) {
 	}
 
 	Vector3i v3;
-	v3.x = spin[0]->get_value();
-	v3.y = spin[1]->get_value();
-	v3.z = spin[2]->get_value();
+	if (Input::get_singleton()->is_key_pressed(KEY_CONTROL)) {
+		// Set all components to the edited value to quickly set "linked" values such as scale.
+		if (p_name == "x") {
+			v3.x = spin[0]->get_value();
+			v3.y = spin[0]->get_value();
+			v3.z = spin[0]->get_value();
+		} else if (p_name == "y") {
+			v3.x = spin[1]->get_value();
+			v3.y = spin[1]->get_value();
+			v3.z = spin[1]->get_value();
+		} else if (p_name == "z") {
+			v3.x = spin[2]->get_value();
+			v3.y = spin[2]->get_value();
+			v3.z = spin[2]->get_value();
+		} else {
+			ERR_PRINT("Unexpected component name (please report).");
+		}
+	} else {
+		v3.x = spin[0]->get_value();
+		v3.y = spin[1]->get_value();
+		v3.z = spin[2]->get_value();
+	}
+
 	emit_changed(get_edited_property(), v3, p_name);
 }
 
@@ -1851,10 +1953,31 @@ void EditorPropertyAABB::_value_changed(double val, const String &p_name) {
 	p.position.x = spin[0]->get_value();
 	p.position.y = spin[1]->get_value();
 	p.position.z = spin[2]->get_value();
-	p.size.x = spin[3]->get_value();
-	p.size.y = spin[4]->get_value();
-	p.size.z = spin[5]->get_value();
-
+	if (Input::get_singleton()->is_key_pressed(KEY_CONTROL)) {
+		// Set all components to the edited value to quickly set "linked" values such as a size.
+		if (p_name == "w") {
+			p.size.x = spin[3]->get_value();
+			p.size.y = spin[3]->get_value();
+			p.size.z = spin[3]->get_value();
+		} else if (p_name == "h") {
+			p.size.x = spin[4]->get_value();
+			p.size.y = spin[4]->get_value();
+			p.size.z = spin[4]->get_value();
+		} else if (p_name == "d") {
+			p.size.x = spin[5]->get_value();
+			p.size.y = spin[5]->get_value();
+			p.size.z = spin[5]->get_value();
+		} else {
+			// "x"/"y"/"z" (setting both of their coordinates at the same time doesn't make much sense).
+			p.size.x = spin[3]->get_value();
+			p.size.y = spin[4]->get_value();
+			p.size.z = spin[5]->get_value();
+		}
+	} else {
+		p.size.x = spin[3]->get_value();
+		p.size.y = spin[4]->get_value();
+		p.size.z = spin[5]->get_value();
+	}
 	emit_changed(get_edited_property(), p, p_name);
 }
 
