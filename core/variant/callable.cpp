@@ -89,6 +89,10 @@ Callable Callable::unbind(int p_argcount) const {
 	return Callable(memnew(CallableCustomUnbind(*this, p_argcount)));
 }
 
+bool Callable::is_valid() const {
+	return get_object() && (is_custom() || get_object()->has_method(get_method()));
+}
+
 Object *Callable::get_object() const {
 	if (is_null()) {
 		return nullptr;

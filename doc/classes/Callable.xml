@@ -133,6 +133,13 @@
 				Returns [code]true[/code] if this [Callable] is a standard callable, referencing an object and a method using a [StringName].
 			</description>
 		</method>
+		<method name="is_valid" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+				Returns [code]true[/code] if the object exists and has a valid function assigned, or is a custom callable.
+			</description>
+		</method>
 		<method name="operator !=" qualifiers="operator">
 			<return type="bool">
 			</return>
