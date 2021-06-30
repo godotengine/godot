@@ -1752,7 +1752,7 @@ Error VulkanContext::prepare_buffers() {
 				print_verbose("Vulkan: Early suboptimal swapchain.");
 				break;
 			} else if (err != VK_SUCCESS) {
-				ERR_BREAK(ERR_CANT_CREATE);
+				ERR_BREAK_MSG(err != VK_SUCCESS, "Vulkan: Did not create swapchain successfully.");
 			} else {
 				w->semaphore_acquired = true;
 			}
