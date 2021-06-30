@@ -522,39 +522,70 @@ void NavigationMeshGenerator::bake(Ref<NavigationMesh> p_nav_mesh, Node *p_node)
 	}
 
 	if (vertices.size() > 0 && indices.size() > 0) {
-		rcHeightfield *hf = nullptr;
-		rcCompactHeightfield *chf = nullptr;
-		rcContourSet *cset = nullptr;
-		rcPolyMesh *poly_mesh = nullptr;
-		rcPolyMeshDetail *detail_mesh = nullptr;
+		if (p_nav_mesh->get_sample_partition_type() == NavigationMesh::SAMPLE_PARTITION_SIMPLE) {
+			if (p_nav_mesh.is_valid()) {
+				p_nav_mesh->clear_polygons();
+				p_nav_mesh->set_vertices(Vector<Vector3>());
 
-		_build_recast_navigation_mesh(
-				p_nav_mesh,
+				const float *verts = vertices.ptr();
+				const unsigned int nverts = vertices.size() / 3;
+				const int *tris = indices.ptr();
+				const unsigned int ntris = indices.size() / 3;
+
+				Vector<Vector3> nav_vertices;
+
+				for (unsigned int i = 0; i < nverts; i++) {
+					const float *v = &verts[i * 3];
+					nav_vertices.append(Vector3(v[0], v[1], v[2]));
+				}
+				p_nav_mesh->set_vertices(nav_vertices);
+
+				for (unsigned int j = 0; j < ntris; j++) {
+					Vector<int> nav_indices;
+					nav_indices.resize(3);
+
+					nav_indices.write[2] = tris[j * 3 + 0];
+					nav_indices.write[1] = tris[j * 3 + 1];
+					nav_indices.write[0] = tris[j * 3 + 2];
+					p_nav_mesh->add_polygon(nav_indices);
+				}
+			}
+
+		} else {
+			rcHeightfield *hf = nullptr;
+			rcCompactHeightfield *chf = nullptr;
+			rcContourSet *cset = nullptr;
+			rcPolyMesh *poly_mesh = nullptr;
+			rcPolyMeshDetail *detail_mesh = nullptr;
+
+			_build_recast_navigation_mesh(
+					p_nav_mesh,
 #ifdef TOOLS_ENABLED
-				ep,
+					ep,
 #endif
-				hf,
-				chf,
-				cset,
-				poly_mesh,
-				detail_mesh,
-				vertices,
-				indices);
+					hf,
+					chf,
+					cset,
+					poly_mesh,
+					detail_mesh,
+					vertices,
+					indices);
 
-		rcFreeHeightField(hf);
-		hf = nullptr;
+			rcFreeHeightField(hf);
+			hf = nullptr;
 
-		rcFreeCompactHeightfield(chf);
-		chf = nullptr;
+			rcFreeCompactHeightfield(chf);
+			chf = nullptr;
 
-		rcFreeContourSet(cset);
-		cset = nullptr;
+			rcFreeContourSet(cset);
+			cset = nullptr;
 
-		rcFreePolyMesh(poly_mesh);
-		poly_mesh = nullptr;
+			rcFreePolyMesh(poly_mesh);
+			poly_mesh = nullptr;
 
-		rcFreePolyMeshDetail(detail_mesh);
-		detail_mesh = nullptr;
+			rcFreePolyMeshDetail(detail_mesh);
+			detail_mesh = nullptr;
+		}
 	}
 
 #ifdef TOOLS_ENABLED
