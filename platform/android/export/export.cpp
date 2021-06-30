@@ -892,6 +892,7 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 		int xr_mode_index = p_preset->get("xr_features/xr_mode");
 
 		bool backup_allowed = p_preset->get("user_data_backup/allow");
+		bool classify_as_game = p_preset->get("package/classify_as_game");
 
 		Vector<String> perms;
 		// Write permissions into the perms variable.
@@ -987,6 +988,10 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 
 						if (tname == "application" && attrname == "allowBackup") {
 							encode_uint32(backup_allowed, &p_manifest.write[iofs + 16]);
+						}
+
+						if (tname == "application" && attrname == "isGame") {
+							encode_uint32(classify_as_game, &p_manifest.write[iofs + 16]);
 						}
 
 						if (tname == "instrumentation" && attrname == "targetPackage") {
@@ -1707,6 +1712,7 @@ public:
 		r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "package/unique_name", PROPERTY_HINT_PLACEHOLDER_TEXT, "ext.domain.name"), "org.godotengine.$genname"));
 		r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "package/name", PROPERTY_HINT_PLACEHOLDER_TEXT, "Game Name [default if blank]"), ""));
 		r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "package/signed"), true));
+		r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "package/classify_as_game"), true));
 
 		r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, launcher_icon_option, PROPERTY_HINT_FILE, "*.png"), ""));
 		r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, launcher_adaptive_icon_foreground_option, PROPERTY_HINT_FILE, "*.png"), ""));
