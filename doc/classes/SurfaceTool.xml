@@ -24,7 +24,7 @@
 		The above [SurfaceTool] now contains one vertex of a triangle which has a UV coordinate and a specified [Color]. If another vertex were added without calling [method set_uv] or [method set_color], then the last values would be used.
 		Vertex attributes must be passed [b]before[/b] calling [method add_vertex]. Failure to do so will result in an error when committing the vertex information to a mesh.
 		Additionally, the attributes used before the first vertex is added determine the format of the mesh. For example, if you only add UVs to the first vertex, you cannot add color to any of the subsequent vertices.
-		See also [ArrayMesh], [ImmediateGeometry3D] and [MeshDataTool] for procedural geometry generation.
+		See also [ArrayMesh], [ImmediateMesh] and [MeshDataTool] for procedural geometry generation.
 		[b]Note:[/b] Godot uses clockwise [url=https://learnopengl.com/Advanced-OpenGL/Face-culling]winding order[/url] for front faces of triangle primitive modes.
 	</description>
 	<tutorials>

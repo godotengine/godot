@@ -324,7 +324,9 @@ public:
 	void mesh_set_blend_shape_mode(RID p_mesh, RS::BlendShapeMode p_mode) override {}
 	RS::BlendShapeMode mesh_get_blend_shape_mode(RID p_mesh) const override { return RS::BLEND_SHAPE_MODE_NORMALIZED; }
 
-	void mesh_surface_update_region(RID p_mesh, int p_surface, int p_offset, const Vector<uint8_t> &p_data) override {}
+	void mesh_surface_update_vertex_region(RID p_mesh, int p_surface, int p_offset, const Vector<uint8_t> &p_data) override {}
+	void mesh_surface_update_attribute_region(RID p_mesh, int p_surface, int p_offset, const Vector<uint8_t> &p_data) override {}
+	void mesh_surface_update_skin_region(RID p_mesh, int p_surface, int p_offset, const Vector<uint8_t> &p_data) override {}
 
 	void mesh_surface_set_material(RID p_mesh, int p_surface, RID p_material) override {}
 	RID mesh_surface_get_material(RID p_mesh, int p_surface) const override { return RID(); }
@@ -364,23 +366,6 @@ public:
 
 	void multimesh_set_visible_instances(RID p_multimesh, int p_visible) override {}
 	int multimesh_get_visible_instances(RID p_multimesh) const override { return 0; }
-
-	/* IMMEDIATE API */
-
-	RID immediate_allocate() override { return RID(); }
-	void immediate_initialize(RID p_rid) override {}
-	void immediate_begin(RID p_immediate, RS::PrimitiveType p_rimitive, RID p_texture = RID()) override {}
-	void immediate_vertex(RID p_immediate, const Vector3 &p_vertex) override {}
-	void immediate_normal(RID p_immediate, const Vector3 &p_normal) override {}
-	void immediate_tangent(RID p_immediate, const Plane &p_tangent) override {}
-	void immediate_color(RID p_immediate, const Color &p_color) override {}
-	void immediate_uv(RID p_immediate, const Vector2 &tex_uv) override {}
-	void immediate_uv2(RID p_immediate, const Vector2 &tex_uv) override {}
-	void immediate_end(RID p_immediate) override {}
-	void immediate_clear(RID p_immediate) override {}
-	void immediate_set_material(RID p_immediate, RID p_material) override {}
-	RID immediate_get_material(RID p_immediate) const override { return RID(); }
-	AABB immediate_get_aabb(RID p_immediate) const override { return AABB(); }
 
 	/* SKELETON API */
 

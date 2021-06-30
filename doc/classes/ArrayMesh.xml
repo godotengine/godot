@@ -43,7 +43,7 @@
 		[/csharp]
 		[/codeblocks]
 		The [MeshInstance3D] is ready to be added to the [SceneTree] to be shown.
-		See also [ImmediateGeometry3D], [MeshDataTool] and [SurfaceTool] for procedural geometry generation.
+		See also [ImmediateMesh], [MeshDataTool] and [SurfaceTool] for procedural geometry generation.
 		[b]Note:[/b] Godot uses clockwise [url=https://learnopengl.com/Advanced-OpenGL/Face-culling]winding order[/url] for front faces of triangle primitive modes.
 	</description>
 	<tutorials>
@@ -202,7 +202,7 @@
 				Sets a name for a given surface.
 			</description>
 		</method>
-		<method name="surface_update_region">
+		<method name="surface_update_attribute_region">
 			<return type="void">
 			</return>
 			<argument index="0" name="surf_idx" type="int">
@@ -212,8 +212,30 @@
 			<argument index="2" name="data" type="PackedByteArray">
 			</argument>
 			<description>
-				Updates a specified region of mesh arrays on the GPU.
-				[b]Warning:[/b] Only use if you know what you are doing. You can easily cause crashes by calling this function with improper arguments.
+			</description>
+		</method>
+		<method name="surface_update_skin_region">
+			<return type="void">
+			</return>
+			<argument index="0" name="surf_idx" type="int">
+			</argument>
+			<argument index="1" name="offset" type="int">
+			</argument>
+			<argument index="2" name="data" type="PackedByteArray">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="surface_update_vertex_region">
+			<return type="void">
+			</return>
+			<argument index="0" name="surf_idx" type="int">
+			</argument>
+			<argument index="1" name="offset" type="int">
+			</argument>
+			<argument index="2" name="data" type="PackedByteArray">
+			</argument>
+			<description>
 			</description>
 		</method>
 	</methods>

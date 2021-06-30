@@ -1335,9 +1335,21 @@ String ArrayMesh::surface_get_name(int p_idx) const {
 	return surfaces[p_idx].name;
 }
 
-void ArrayMesh::surface_update_region(int p_surface, int p_offset, const Vector<uint8_t> &p_data) {
+void ArrayMesh::surface_update_vertex_region(int p_surface, int p_offset, const Vector<uint8_t> &p_data) {
 	ERR_FAIL_INDEX(p_surface, surfaces.size());
-	RS::get_singleton()->mesh_surface_update_region(mesh, p_surface, p_offset, p_data);
+	RS::get_singleton()->mesh_surface_update_vertex_region(mesh, p_surface, p_offset, p_data);
+	emit_changed();
+}
+
+void ArrayMesh::surface_update_attribute_region(int p_surface, int p_offset, const Vector<uint8_t> &p_data) {
+	ERR_FAIL_INDEX(p_surface, surfaces.size());
+	RS::get_singleton()->mesh_surface_update_attribute_region(mesh, p_surface, p_offset, p_data);
+	emit_changed();
+}
+
+void ArrayMesh::surface_update_skin_region(int p_surface, int p_offset, const Vector<uint8_t> &p_data) {
+	ERR_FAIL_INDEX(p_surface, surfaces.size());
+	RS::get_singleton()->mesh_surface_update_skin_region(mesh, p_surface, p_offset, p_data);
 	emit_changed();
 }
 
@@ -1635,7 +1647,9 @@ void ArrayMesh::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("add_surface_from_arrays", "primitive", "arrays", "blend_shapes", "lods", "compress_flags"), &ArrayMesh::add_surface_from_arrays, DEFVAL(Array()), DEFVAL(Dictionary()), DEFVAL(0));
 	ClassDB::bind_method(D_METHOD("clear_surfaces"), &ArrayMesh::clear_surfaces);
-	ClassDB::bind_method(D_METHOD("surface_update_region", "surf_idx", "offset", "data"), &ArrayMesh::surface_update_region);
+	ClassDB::bind_method(D_METHOD("surface_update_vertex_region", "surf_idx", "offset", "data"), &ArrayMesh::surface_update_vertex_region);
+	ClassDB::bind_method(D_METHOD("surface_update_attribute_region", "surf_idx", "offset", "data"), &ArrayMesh::surface_update_attribute_region);
+	ClassDB::bind_method(D_METHOD("surface_update_skin_region", "surf_idx", "offset", "data"), &ArrayMesh::surface_update_skin_region);
 	ClassDB::bind_method(D_METHOD("surface_get_array_len", "surf_idx"), &ArrayMesh::surface_get_array_len);
 	ClassDB::bind_method(D_METHOD("surface_get_array_index_len", "surf_idx"), &ArrayMesh::surface_get_array_index_len);
 	ClassDB::bind_method(D_METHOD("surface_get_format", "surf_idx"), &ArrayMesh::surface_get_format);

@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="ImmediateMesh" inherits="Mesh" version="4.0">
+	<brief_description>
+		Mesh optimized for creating geometry manually.
+	</brief_description>
+	<description>
+		Mesh optimized for creating geometry manually, similar to OpenGL1.x immediate mode.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="clear_surfaces">
+			<return type="void">
+			</return>
+			<description>
+				Clear all surfaces.
+			</description>
+		</method>
+		<method name="surface_add_vertex">
+			<return type="void">
+			</return>
+			<argument index="0" name="vertex" type="Vector3">
+			</argument>
+			<description>
+				Add a 3D vertex using the current attributes previously set.
+			</description>
+		</method>
+		<method name="surface_add_vertex_2d">
+			<return type="void">
+			</return>
+			<argument index="0" name="vertex" type="Vector2">
+			</argument>
+			<description>
+				Add a 2D vertex using the current attributes previously set.
+			</description>
+		</method>
+		<method name="surface_begin">
+			<return type="void">
+			</return>
+			<argument index="0" name="primitive" type="int" enum="Mesh.PrimitiveType">
+			</argument>
+			<argument index="1" name="material" type="Material" default="null">
+			</argument>
+			<description>
+				Begin a new surface.
+			</description>
+		</method>
+		<method name="surface_end">
+			<return type="void">
+			</return>
+			<description>
+				End and commit current surface. Note that surface being created will not be visible until this function is called.
+			</description>
+		</method>
+		<method name="surface_set_color">
+			<return type="void">
+			</return>
+			<argument index="0" name="color" type="Color">
+			</argument>
+			<description>
+				Set the color attribute that will be pushed with the next vertex.
+			</description>
+		</method>
+		<method name="surface_set_normal">
+			<return type="void">
+			</return>
+			<argument index="0" name="normal" type="Vector3">
+			</argument>
+			<description>
+				Set the normal attribute that will be pushed with the next vertex.
+			</description>
+		</method>
+		<method name="surface_set_tangent">
+			<return type="void">
+			</return>
+			<argument index="0" name="tangent" type="Plane">
+			</argument>
+			<description>
+				Set the tangent attribute that will be pushed with the next vertex.
+			</description>
+		</method>
+		<method name="surface_set_uv">
+			<return type="void">
+			</return>
+			<argument index="0" name="uv" type="Vector2">
+			</argument>
+			<description>
+				Set the UV attribute that will be pushed with the next vertex.
+			</description>
+		</method>
+		<method name="surface_set_uv2">
+			<return type="void">
+			</return>
+			<argument index="0" name="uv2" type="Vector2">
+			</argument>
+			<description>
+				Set the UV2 attribute that will be pushed with the next vertex.
+			</description>
+		</method>
+	</methods>
+	<constants>
+	</constants>
+</class>

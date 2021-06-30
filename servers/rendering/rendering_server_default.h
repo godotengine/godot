@@ -290,7 +290,9 @@ public:
 	FUNC2(mesh_set_blend_shape_mode, RID, BlendShapeMode)
 	FUNC1RC(BlendShapeMode, mesh_get_blend_shape_mode, RID)
 
-	FUNC4(mesh_surface_update_region, RID, int, int, const Vector<uint8_t> &)
+	FUNC4(mesh_surface_update_vertex_region, RID, int, int, const Vector<uint8_t> &)
+	FUNC4(mesh_surface_update_attribute_region, RID, int, int, const Vector<uint8_t> &)
+	FUNC4(mesh_surface_update_skin_region, RID, int, int, const Vector<uint8_t> &)
 
 	FUNC3(mesh_surface_set_material, RID, int, RID)
 	FUNC2RC(RID, mesh_surface_get_material, RID, int)
@@ -332,21 +334,6 @@ public:
 
 	FUNC2(multimesh_set_visible_instances, RID, int)
 	FUNC1RC(int, multimesh_get_visible_instances, RID)
-
-	/* IMMEDIATE API */
-
-	FUNCRIDSPLIT(immediate)
-	FUNC3(immediate_begin, RID, PrimitiveType, RID)
-	FUNC2(immediate_vertex, RID, const Vector3 &)
-	FUNC2(immediate_normal, RID, const Vector3 &)
-	FUNC2(immediate_tangent, RID, const Plane &)
-	FUNC2(immediate_color, RID, const Color &)
-	FUNC2(immediate_uv, RID, const Vector2 &)
-	FUNC2(immediate_uv2, RID, const Vector2 &)
-	FUNC1(immediate_end, RID)
-	FUNC1(immediate_clear, RID)
-	FUNC2(immediate_set_material, RID, RID)
-	FUNC1RC(RID, immediate_get_material, RID)
 
 	/* SKELETON API */
 
