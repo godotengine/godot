@@ -1539,7 +1539,7 @@ const Vector2i TileSetSource::INVALID_ATLAS_COORDS = Vector2i(-1, -1);
 const int TileSetSource::INVALID_TILE_ALTERNATIVE = -1;
 
 #ifndef DISABLE_DEPRECATED
-void TileSet::compatibility_conversion() {
+void TileSet::_compatibility_conversion() {
 	for (Map<int, CompatibilityTileData *>::Element *E = compatibility_data.front(); E; E = E->next()) {
 		CompatibilityTileData *ctd = E->value();
 
@@ -1551,13 +1551,94 @@ void TileSet::compatibility_conversion() {
 
 		// Handle each tile as a new source. Not optimal but at least it should stay compatible.
 		switch (ctd->tile_mode) {
-			case 0: // SINGLE_TILE
+			case COMPATIBILITY_TILE_MODE_SINGLE_TILE: {
+				atlas_source->set_margins(ctd->region.get_position());
+				atlas_source->set_texture_region_size(ctd->region.get_size());
+
+				Vector2i coords = Vector2i(0, 0);
+				for (int flags = 0; flags < 8; flags++) {
+					bool flip_h = flags & 1;
+					bool flip_v = flags & 2;
+					bool transpose = flags & 4;
+
+					int alternative_tile = 0;
+					if (!atlas_source->has_tile(coords)) {
+						atlas_source->create_tile(coords);
+					} else {
+						alternative_tile = atlas_source->create_alternative_tile(coords);
+					}
+
+					// Add to the mapping.
+					Array key_array;
+					key_array.push_back(flip_h);
+					key_array.push_back(flip_v);
+					key_array.push_back(transpose);
+
+					Array value_array;
+					value_array.push_back(source_id);
+					value_array.push_back(coords);
+					value_array.push_back(alternative_tile);
+
+					if (!compatibility_tilemap_mapping.has(E->key())) {
+						compatibility_tilemap_mapping[E->key()] = Map<Array, Array>();
+					}
+					compatibility_tilemap_mapping[E->key()][key_array] = value_array;
+					compatibility_tilemap_mapping_tile_modes[E->key()] = COMPATIBILITY_TILE_MODE_SINGLE_TILE;
+					print_line(vformat("Added conversion from:%s to%s", key_array, value_array));
+
+					TileData *tile_data = Object::cast_to<TileData>(atlas_source->get_tile_data(coords, alternative_tile));
+
+					tile_data->set_flip_h(flip_h);
+					tile_data->set_flip_v(flip_v);
+					tile_data->set_transpose(transpose);
+					tile_data->tile_set_material(ctd->material);
+					tile_data->set_modulate(ctd->modulate);
+					tile_data->set_z_index(ctd->z_index);
+
+					if (ctd->occluder.is_valid()) {
+						if (get_occlusion_layers_count() < 1) {
+							set_occlusion_layers_count(1);
+						}
+						tile_data->set_occluder(0, ctd->occluder);
+					}
+					if (ctd->navigation.is_valid()) {
+						if (get_navigation_layers_count() < 1) {
+							set_navigation_layers_count(1);
+						}
+						tile_data->set_navigation_polygon(0, ctd->autotile_navpoly_map[coords]);
+					}
+
+					tile_data->set_z_index(ctd->z_index);
+
+					// Add the shapes.
+					if (ctd->shapes.size() > 0) {
+						if (get_physics_layers_count() < 1) {
+							set_physics_layers_count(1);
+						}
+					}
+					for (int k = 0; k < ctd->shapes.size(); k++) {
+						CompatibilityShapeData csd = ctd->shapes[k];
+						if (csd.autotile_coords == coords) {
+							Ref<ConvexPolygonShape2D> convex_shape = csd.shape; // Only ConvexPolygonShape2D are supported, which is the default type used by the 3.x editor
+							if (convex_shape.is_valid()) {
+								Vector<Vector2> polygon = convex_shape->get_points();
+								for (int point_index = 0; point_index < polygon.size(); point_index++) {
+									polygon.write[point_index] = csd.transform.xform(polygon[point_index]);
+								}
+								tile_data->set_collision_polygons_count(0, tile_data->get_collision_polygons_count(0) + 1);
+								int index = tile_data->get_collision_polygons_count(0) - 1;
+								tile_data->set_collision_polygon_one_way(0, index, csd.one_way);
+								tile_data->set_collision_polygon_one_way_margin(0, index, csd.one_way_margin);
+								tile_data->set_collision_polygon_points(0, index, polygon);
+							}
+						}
+					}
+				}
+			} break;
+			case COMPATIBILITY_TILE_MODE_AUTO_TILE: {
 				// TODO
-				break;
-			case 1: // AUTO_TILE
-				// TODO
-				break;
-			case 2: // ATLAS_TILE
+			} break;
+			case COMPATIBILITY_TILE_MODE_ATLAS_TILE: {
 				atlas_source->set_margins(ctd->region.get_position());
 				atlas_source->set_separation(Vector2i(ctd->autotile_spacing, ctd->autotile_spacing));
 				atlas_source->set_texture_region_size(ctd->autotile_tile_size);
@@ -1578,6 +1659,26 @@ void TileSet::compatibility_conversion() {
 							} else {
 								alternative_tile = atlas_source->create_alternative_tile(coords);
 							}
+
+							// Add to the mapping.
+							Array key_array;
+							key_array.push_back(coords);
+							key_array.push_back(flip_h);
+							key_array.push_back(flip_v);
+							key_array.push_back(transpose);
+
+							Array value_array;
+							value_array.push_back(source_id);
+							value_array.push_back(coords);
+							value_array.push_back(alternative_tile);
+
+							if (!compatibility_tilemap_mapping.has(E->key())) {
+								compatibility_tilemap_mapping[E->key()] = Map<Array, Array>();
+							}
+							compatibility_tilemap_mapping[E->key()][key_array] = value_array;
+							compatibility_tilemap_mapping_tile_modes[E->key()] = COMPATIBILITY_TILE_MODE_ATLAS_TILE;
+							print_line(vformat("Added conversion from:%s to%s", key_array, value_array));
+
 							TileData *tile_data = Object::cast_to<TileData>(atlas_source->get_tile_data(coords, alternative_tile));
 
 							tile_data->set_flip_h(flip_h);
@@ -1641,7 +1742,7 @@ void TileSet::compatibility_conversion() {
 						}
 					}
 				}
-				break;
+			} break;
 		}
 
 		// Offset all shapes
@@ -1655,9 +1756,6 @@ void TileSet::compatibility_conversion() {
 				convex->set_points(points);
 			}
 		}
-
-		// Add the mapping to the map
-		compatibility_source_mapping.insert(E->key(), source_id);
 	}
 
 	// Reset compatibility data
@@ -1666,6 +1764,43 @@ void TileSet::compatibility_conversion() {
 	}
 	compatibility_data = Map<int, CompatibilityTileData *>();
 }
+
+Array TileSet::compatibility_tilemap_map(int p_tile_id, Vector2i p_coords, bool p_flip_h, bool p_flip_v, bool p_transpose) {
+	Array cannot_convert_array;
+	cannot_convert_array.push_back(-1);
+	cannot_convert_array.push_back(TileSetAtlasSource::INVALID_ATLAS_COORDS);
+	cannot_convert_array.push_back(TileSetAtlasSource::INVALID_TILE_ALTERNATIVE);
+
+	if (!compatibility_tilemap_mapping.has(p_tile_id)) {
+		return cannot_convert_array;
+	}
+
+	int tile_mode = compatibility_tilemap_mapping_tile_modes[p_tile_id];
+	switch (tile_mode) {
+		case COMPATIBILITY_TILE_MODE_SINGLE_TILE: {
+			Array a;
+			a.push_back(p_flip_h);
+			a.push_back(p_flip_v);
+			a.push_back(p_transpose);
+			return compatibility_tilemap_mapping[p_tile_id][a];
+		}
+		case COMPATIBILITY_TILE_MODE_AUTO_TILE:
+			return cannot_convert_array;
+			break;
+		case COMPATIBILITY_TILE_MODE_ATLAS_TILE: {
+			Array a;
+			a.push_back(p_coords);
+			a.push_back(p_flip_h);
+			a.push_back(p_flip_v);
+			a.push_back(p_transpose);
+			return compatibility_tilemap_mapping[p_tile_id][a];
+		}
+		default:
+			return cannot_convert_array;
+			break;
+	}
+};
+
 #endif // DISABLE_DEPRECATED
 
 bool TileSet::_set(const StringName &p_name, const Variant &p_value) {
@@ -1831,7 +1966,7 @@ bool TileSet::_set(const StringName &p_name, const Variant &p_value) {
 			ctd->z_index = p_value;
 
 			// TODO: remove the conversion from here, it's not where it should be done
-			compatibility_conversion();
+			_compatibility_conversion();
 		} else {
 			return false;
 		}

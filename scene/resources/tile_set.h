@@ -79,15 +79,15 @@ private:
 		Vector2 tex_offset;
 		Ref<ShaderMaterial> material;
 		Rect2 region;
-		int tile_mode;
-		Color modulate;
+		int tile_mode = 0;
+		Color modulate = Color(1, 1, 1);
 
 		// Atlas or autotiles data
-		int autotile_bitmask_mode;
+		int autotile_bitmask_mode = 0;
 		Vector2 autotile_icon_coordinate;
 		Size2i autotile_tile_size = Size2i(16, 16);
 
-		int autotile_spacing;
+		int autotile_spacing = 0;
 		Map<Vector2i, int> autotile_bitmask_flags;
 		Map<Vector2i, Ref<OccluderPolygon2D>> autotile_occluder_map;
 		Map<Vector2i, Ref<NavigationPolygon>> autotile_navpoly_map;
@@ -99,20 +99,24 @@ private:
 		Vector2 occluder_offset;
 		Ref<NavigationPolygon> navigation;
 		Vector2 navigation_offset;
-		int z_index;
+		int z_index = 0;
 	};
 
-	Map<int, CompatibilityTileData *> compatibility_data = Map<int, CompatibilityTileData *>();
-	Map<int, int> compatibility_source_mapping = Map<int, int>();
+	enum CompatibilityTileMode {
+		COMPATIBILITY_TILE_MODE_SINGLE_TILE = 0,
+		COMPATIBILITY_TILE_MODE_AUTO_TILE,
+		COMPATIBILITY_TILE_MODE_ATLAS_TILE,
+	};
 
-private:
-	void compatibility_conversion();
+	Map<int, CompatibilityTileData *> compatibility_data;
+	Map<int, int> compatibility_tilemap_mapping_tile_modes;
+	Map<int, Map<Array, Array>> compatibility_tilemap_mapping;
+
+	void _compatibility_conversion();
 
 public:
-	int compatibility_get_source_for_tile_id(int p_old_source) {
-		return compatibility_source_mapping[p_old_source];
-	};
-
+	// Format of output array [source_id, atlas_coords, alternative]
+	Array compatibility_tilemap_map(int p_tile_id, Vector2i p_coords, bool p_flip_h, bool p_flip_v, bool p_transpose);
 #endif // DISABLE_DEPRECATED
 
 public:

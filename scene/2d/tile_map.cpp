@@ -805,19 +805,16 @@ void TileMap::_set_tile_data(const Vector<int> &p_data) {
 		if (format == FORMAT_3) {
 			uint16_t source_id = decode_uint16(&local[4]);
 			uint16_t atlas_coords_x = decode_uint16(&local[6]);
-			uint16_t atlas_coords_y = decode_uint32(&local[8]);
+			uint16_t atlas_coords_y = decode_uint16(&local[8]);
 			uint16_t alternative_tile = decode_uint16(&local[10]);
 			set_cell(Vector2i(x, y), source_id, Vector2i(atlas_coords_x, atlas_coords_y), alternative_tile);
 		} else {
 #ifndef DISABLE_DEPRECATED
 			uint32_t v = decode_uint32(&local[4]);
-			v &= (1 << 29) - 1;
-
-			// We generate an alternative tile number out of the the flags
-			// An option should create the alternative in the tileset for compatibility
 			bool flip_h = v & (1 << 29);
 			bool flip_v = v & (1 << 30);
 			bool transpose = v & (1 << 31);
+			v &= (1 << 29) - 1;
 			int16_t coord_x = 0;
 			int16_t coord_y = 0;
 			if (format == FORMAT_2) {
@@ -825,13 +822,17 @@ void TileMap::_set_tile_data(const Vector<int> &p_data) {
 				coord_y = decode_uint16(&local[10]);
 			}
 
-			int compatibility_alternative_tile = ((int)flip_h) + ((int)flip_v << 1) + ((int)transpose << 2);
-
 			if (tile_set.is_valid()) {
-				v = tile_set->compatibility_get_source_for_tile_id(v);
+				Array a = tile_set->compatibility_tilemap_map(v, Vector2i(coord_x, coord_y), flip_h, flip_v, transpose);
+				if (a.size() == 3) {
+					set_cell(Vector2i(x, y), a[0], a[1], a[2]);
+				} else {
+					ERR_PRINT(vformat("No valid tile in Tileset for: tile:%s coords:%s flip_h:%s flip_v:%s transpose:%s", v, Vector2i(coord_x, coord_y), flip_h, flip_v, transpose));
+				}
+			} else {
+				int compatibility_alternative_tile = ((int)flip_h) + ((int)flip_v << 1) + ((int)transpose << 2);
+				set_cell(Vector2i(x, y), v, Vector2i(coord_x, coord_y), compatibility_alternative_tile);
 			}
-
-			set_cell(Vector2i(x, y), v, Vector2i(coord_x, coord_y), compatibility_alternative_tile);
 #endif
 		}
 	}
