@@ -46,7 +46,7 @@ class Joystick {
 	/*
 	 * Keep track of values so we can prevent flooding the engine with useless events.
 	 */
-	protected final SparseArray axesValues = new SparseArray<Float>(4);
+	protected final SparseArray<Float> axesValues = new SparseArray<Float>(4);
 	protected int hatX;
 	protected int hatY;
 }
