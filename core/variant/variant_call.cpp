@@ -1630,6 +1630,7 @@ static void _register_variant_builtin_methods() {
 	bind_method(Callable, is_null, sarray(), varray());
 	bind_method(Callable, is_custom, sarray(), varray());
 	bind_method(Callable, is_standard, sarray(), varray());
+	bind_method(Callable, is_valid, sarray(), varray());
 	bind_method(Callable, get_object, sarray(), varray());
 	bind_method(Callable, get_object_id, sarray(), varray());
 	bind_method(Callable, get_method, sarray(), varray());
