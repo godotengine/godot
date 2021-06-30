@@ -206,24 +206,34 @@ void EditorSpinSlider::_notification(int p_what) {
 		// EditorSpinSliders with a label have more space on the left, so add an
 		// higher margin to match the location where the text begins.
 		// The margin values below were determined by empirical testing.
-		stylebox->set_default_margin(SIDE_LEFT, (get_label() != String() ? 23 : 16) * EDSCALE);
+		if (is_layout_rtl()) {
+			stylebox->set_default_margin(SIDE_LEFT, 0);
+			stylebox->set_default_margin(SIDE_RIGHT, (get_label() != String() ? 23 : 16) * EDSCALE);
+		} else {
+			stylebox->set_default_margin(SIDE_LEFT, (get_label() != String() ? 23 : 16) * EDSCALE);
+			stylebox->set_default_margin(SIDE_RIGHT, 0);
+		}
 		value_input->add_theme_style_override("normal", stylebox);
 	}
 
 	if (p_what == NOTIFICATION_DRAW) {
 		updown_offset = -1;
 
+		RID ci = get_canvas_item();
+		bool rtl = is_layout_rtl();
+		Vector2 size = get_size();
+
 		Ref<StyleBox> sb = get_theme_stylebox("normal", "LineEdit");
 		if (!flat) {
-			draw_style_box(sb, Rect2(Vector2(), get_size()));
+			draw_style_box(sb, Rect2(Vector2(), size));
 		}
 		Ref<Font> font = get_theme_font("font", "LineEdit");
 		int font_size = get_theme_font_size("font_size", "LineEdit");
 		int sep_base = 4 * EDSCALE;
 		int sep = sep_base + sb->get_offset().x; //make it have the same margin on both sides, looks better
 
-		int string_width = font->get_string_size(label, font_size).width;
-		int number_width = get_size().width - sb->get_minimum_size().width - string_width - sep;
+		int label_width = font->get_string_size(label, font_size).width;
+		int number_width = size.width - sb->get_minimum_size().width - label_width - sep;
 
 		Ref<Texture2D> updown = get_theme_icon("updown", "SpinBox");
 
@@ -233,7 +243,7 @@ void EditorSpinSlider::_notification(int p_what) {
 
 		String numstr = get_text_value();
 
-		int vofs = (get_size().height - font->get_height(font_size)) / 2 + font->get_ascent(font_size);
+		int vofs = (size.height - font->get_height(font_size)) / 2 + font->get_ascent(font_size);
 
 		Color fc = get_theme_color("font_color", "LineEdit");
 		Color lc;
@@ -245,30 +255,59 @@ void EditorSpinSlider::_notification(int p_what) {
 
 		if (flat && label != String()) {
 			Color label_bg_color = get_theme_color("dark_color_3", "Editor");
-			draw_rect(Rect2(Vector2(), Vector2(sb->get_offset().x * 2 + string_width, get_size().height)), label_bg_color);
+			if (rtl) {
+				draw_rect(Rect2(Vector2(size.width - (sb->get_offset().x * 2 + label_width), 0), Vector2(sb->get_offset().x * 2 + label_width, size.height)), label_bg_color);
+			} else {
+				draw_rect(Rect2(Vector2(), Vector2(sb->get_offset().x * 2 + label_width, size.height)), label_bg_color);
+			}
 		}
 
 		if (has_focus()) {
 			Ref<StyleBox> focus = get_theme_stylebox("focus", "LineEdit");
-			draw_style_box(focus, Rect2(Vector2(), get_size()));
+			draw_style_box(focus, Rect2(Vector2(), size));
 		}
 
-		draw_string(font, Vector2(Math::round(sb->get_offset().x), vofs), label, HALIGN_LEFT, -1, font_size, lc * Color(1, 1, 1, 0.5));
-
-		Vector2 text_ofs = Vector2(Math::round(sb->get_offset().x + string_width + sep), vofs);
-		draw_string(font, text_ofs, numstr, HALIGN_LEFT, number_width, font_size, fc);
-
-		if (suffix != String()) {
-			int sw = font->get_string_size(numstr).width;
-			text_ofs.x += sw;
-			fc.a *= 0.4;
-			draw_string(font, text_ofs, suffix, HALIGN_LEFT, MAX(0, number_width - sw), font_size, fc);
+		if (rtl) {
+			draw_string(font, Vector2(Math::round(size.width - sb->get_offset().x - label_width), vofs), label, HALIGN_RIGHT, -1, font_size, lc * Color(1, 1, 1, 0.5));
+		} else {
+			draw_string(font, Vector2(Math::round(sb->get_offset().x), vofs), label, HALIGN_LEFT, -1, font_size, lc * Color(1, 1, 1, 0.5));
 		}
+
+		int suffix_start = numstr.length();
+		RID num_rid = TS->create_shaped_text();
+		TS->shaped_text_add_string(num_rid, numstr + U"\u2009" + suffix, font->get_rids(), font_size);
+
+		float text_start = rtl ? Math::round(sb->get_offset().x) : Math::round(sb->get_offset().x + label_width + sep);
+		Vector2 text_ofs = rtl ? Vector2(text_start + (number_width - TS->shaped_text_get_width(num_rid)), vofs) : Vector2(text_start, vofs);
+		const Vector<TextServer::Glyph> visual = TS->shaped_text_get_glyphs(num_rid);
+		int v_size = visual.size();
+		const TextServer::Glyph *glyphs = visual.ptr();
+		for (int i = 0; i < v_size; i++) {
+			for (int j = 0; j < glyphs[i].repeat; j++) {
+				if (text_ofs.x >= text_start && (text_ofs.x + glyphs[i].advance) <= (text_start + number_width)) {
+					Color color = fc;
+					if (glyphs[i].start >= suffix_start) {
+						color.a *= 0.4;
+					}
+					if (glyphs[i].font_rid != RID()) {
+						TS->font_draw_glyph(glyphs[i].font_rid, ci, glyphs[i].font_size, text_ofs + Vector2(glyphs[i].x_off, glyphs[i].y_off), glyphs[i].index, color);
+					} else if ((glyphs[i].flags & TextServer::GRAPHEME_IS_VIRTUAL) != TextServer::GRAPHEME_IS_VIRTUAL) {
+						TS->draw_hex_code_box(ci, glyphs[i].font_size, text_ofs + Vector2(glyphs[i].x_off, glyphs[i].y_off), glyphs[i].index, color);
+					}
+				}
+				text_ofs.x += glyphs[i].advance;
+			}
+		}
+		TS->free(num_rid);
 
 		if (get_step() == 1) {
 			Ref<Texture2D> updown2 = get_theme_icon("updown", "SpinBox");
-			int updown_vofs = (get_size().height - updown2->get_height()) / 2;
-			updown_offset = get_size().width - sb->get_margin(SIDE_RIGHT) - updown2->get_width();
+			int updown_vofs = (size.height - updown2->get_height()) / 2;
+			if (rtl) {
+				updown_offset = sb->get_margin(SIDE_LEFT);
+			} else {
+				updown_offset = size.width - sb->get_margin(SIDE_RIGHT) - updown2->get_width();
+			}
 			Color c(1, 1, 1);
 			if (hover_updown) {
 				c *= Color(1.2, 1.2, 1.2);
@@ -279,9 +318,9 @@ void EditorSpinSlider::_notification(int p_what) {
 			}
 		} else if (!hide_slider) {
 			int grabber_w = 4 * EDSCALE;
-			int width = get_size().width - sb->get_minimum_size().width - grabber_w;
+			int width = size.width - sb->get_minimum_size().width - grabber_w;
 			int ofs = sb->get_offset().x;
-			int svofs = (get_size().height + vofs) / 2 - 1;
+			int svofs = (size.height + vofs) / 2 - 1;
 			Color c = fc;
 			c.a = 0.2;
 
