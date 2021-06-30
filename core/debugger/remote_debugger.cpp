@@ -409,8 +409,9 @@ struct RemoteDebugger::PerformanceProfiler {
 			if (!monitor_value.is_num()) {
 				ERR_PRINT("Value of custom monitor '" + String(custom_monitor_names[i]) + "' is not a number");
 				arr[i + max] = Variant();
+			} else {
+				arr[i + max] = monitor_value;
 			}
-			arr[i + max] = monitor_value;
 		}
 
 		EngineDebugger::get_singleton()->send_message("performance:profile_frame", arr);
