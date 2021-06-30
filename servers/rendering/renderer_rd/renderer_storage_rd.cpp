@@ -3258,8 +3258,8 @@ void RendererStorageRD::_mesh_surface_generate_version_for_input_mask(Mesh::Surf
 				case RS::ARRAY_COLOR: {
 					vd.offset = attribute_stride;
 
-					vd.format = RD::DATA_FORMAT_R16G16B16A16_SFLOAT;
-					attribute_stride += sizeof(int16_t) * 4;
+					vd.format = RD::DATA_FORMAT_R8G8B8A8_UNORM;
+					attribute_stride += sizeof(int8_t) * 4;
 					buffer = s->attribute_buffer;
 				} break;
 				case RS::ARRAY_TEX_UV: {
