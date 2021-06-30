@@ -438,13 +438,14 @@ Error RenderingServer::_surface_set_data(Array p_arrays, uint32_t p_format, uint
 				ERR_FAIL_COND_V(array.size() != p_vertex_array_len, ERR_INVALID_PARAMETER);
 
 				const Color *src = array.ptr();
-				uint16_t color16[4];
 				for (int i = 0; i < p_vertex_array_len; i++) {
-					color16[0] = Math::make_half_float(src[i].r);
-					color16[1] = Math::make_half_float(src[i].g);
-					color16[2] = Math::make_half_float(src[i].b);
-					color16[3] = Math::make_half_float(src[i].a);
-					memcpy(&aw[p_offsets[ai] + i * p_attrib_stride], color16, 8);
+					uint8_t color8[4] = {
+						uint8_t(CLAMP(src[i].r * 255.0, 0.0, 255.0)),
+						uint8_t(CLAMP(src[i].g * 255.0, 0.0, 255.0)),
+						uint8_t(CLAMP(src[i].b * 255.0, 0.0, 255.0)),
+						uint8_t(CLAMP(src[i].a * 255.0, 0.0, 255.0))
+					};
+					memcpy(&aw[p_offsets[ai] + i * p_attrib_stride], color8, 4);
 				}
 			} break;
 			case RS::ARRAY_TEX_UV: {
@@ -761,7 +762,7 @@ void RenderingServer::mesh_surface_make_offsets_from_format(uint32_t p_format, i
 				elem_size = 4;
 			} break;
 			case RS::ARRAY_COLOR: {
-				elem_size = 8;
+				elem_size = 4;
 			} break;
 			case RS::ARRAY_TEX_UV: {
 				elem_size = 8;
@@ -1123,8 +1124,9 @@ Array RenderingServer::_get_array_from_surface(uint32_t p_format, Vector<uint8_t
 				Color *w = arr.ptrw();
 
 				for (int32_t j = 0; j < p_vertex_len; j++) {
-					const uint16_t *v = (const uint16_t *)&ar[j * attrib_elem_size + offsets[i]];
-					w[j] = Color(Math::half_to_float(v[0]), Math::half_to_float(v[1]), Math::half_to_float(v[2]), Math::half_to_float(v[3]));
+					const uint8_t *v = (const uint8_t *)&ar[j * attrib_elem_size + offsets[i]];
+
+					w[j] = Color(v[0] / 255.0, v[1] / 255.0, v[2] / 255.0, v[3] / 255.0);
 				}
 
 				ret[i] = arr;

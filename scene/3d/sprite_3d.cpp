@@ -565,11 +565,11 @@ void Sprite3D::_draw() {
 		v_tangent = value;
 	}
 
-	uint16_t v_color[4] = {
-		Math::make_half_float(color.r),
-		Math::make_half_float(color.g),
-		Math::make_half_float(color.b),
-		Math::make_half_float(color.a),
+	uint8_t v_color[4] = {
+		uint8_t(CLAMP(color.r * 255.0, 0.0, 255.0)),
+		uint8_t(CLAMP(color.g * 255.0, 0.0, 255.0)),
+		uint8_t(CLAMP(color.b * 255.0, 0.0, 255.0)),
+		uint8_t(CLAMP(color.a * 255.0, 0.0, 255.0))
 	};
 
 	for (int i = 0; i < 4; i++) {
@@ -591,7 +591,7 @@ void Sprite3D::_draw() {
 		memcpy(&vertex_write_buffer[i * vertex_stride + mesh_surface_offsets[RS::ARRAY_VERTEX]], &v_vertex, sizeof(float) * 3);
 		memcpy(&vertex_write_buffer[i * vertex_stride + mesh_surface_offsets[RS::ARRAY_NORMAL]], &v_normal, 4);
 		memcpy(&vertex_write_buffer[i * vertex_stride + mesh_surface_offsets[RS::ARRAY_TANGENT]], &v_tangent, 4);
-		memcpy(&attribute_write_buffer[i * attrib_stride + mesh_surface_offsets[RS::ARRAY_COLOR]], v_color, 8);
+		memcpy(&attribute_write_buffer[i * attrib_stride + mesh_surface_offsets[RS::ARRAY_COLOR]], v_color, 4);
 	}
 
 	RID mesh = get_mesh();
@@ -931,11 +931,11 @@ void AnimatedSprite3D::_draw() {
 		v_tangent = value;
 	}
 
-	uint16_t v_color[4] = {
-		Math::make_half_float(color.r),
-		Math::make_half_float(color.g),
-		Math::make_half_float(color.b),
-		Math::make_half_float(color.a),
+	uint8_t v_color[4] = {
+		uint8_t(CLAMP(color.r * 255.0, 0.0, 255.0)),
+		uint8_t(CLAMP(color.g * 255.0, 0.0, 255.0)),
+		uint8_t(CLAMP(color.b * 255.0, 0.0, 255.0)),
+		uint8_t(CLAMP(color.a * 255.0, 0.0, 255.0))
 	};
 
 	for (int i = 0; i < 4; i++) {
@@ -956,7 +956,7 @@ void AnimatedSprite3D::_draw() {
 		memcpy(&vertex_write_buffer[i * vertex_stride + mesh_surface_offsets[RS::ARRAY_VERTEX]], &v_vertex, sizeof(float) * 3);
 		memcpy(&vertex_write_buffer[i * vertex_stride + mesh_surface_offsets[RS::ARRAY_NORMAL]], &v_normal, 4);
 		memcpy(&vertex_write_buffer[i * vertex_stride + mesh_surface_offsets[RS::ARRAY_TANGENT]], &v_tangent, 4);
-		memcpy(&attribute_write_buffer[i * attrib_stride + mesh_surface_offsets[RS::ARRAY_COLOR]], v_color, 8);
+		memcpy(&attribute_write_buffer[i * attrib_stride + mesh_surface_offsets[RS::ARRAY_COLOR]], v_color, 4);
 	}
 
 	RID mesh = get_mesh();
