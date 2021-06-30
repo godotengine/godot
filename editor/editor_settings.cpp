@@ -446,6 +446,7 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 
 	// Inspector
 	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_RANGE, "interface/inspector/max_array_dictionary_items_per_page", 20, "10,100,1")
+	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_ENUM, "interface/inspector/rotation_unit", (int64_t)RotationUnit::DEGREES, "Degrees,Radians,Turns");
 
 	// Theme
 	EDITOR_SETTING(Variant::STRING, PROPERTY_HINT_ENUM, "interface/theme/preset", "Default", "Default,Breeze Dark,Godot 2,Grey,Light,Solarized (Dark),Solarized (Light),Custom")
@@ -1159,6 +1160,47 @@ String EditorSettings::get_project_script_templates_dir() const {
 
 String EditorSettings::get_feature_profiles_dir() const {
 	return EditorPaths::get_singleton()->get_config_dir().plus_file("feature_profiles");
+}
+
+String EditorSettings::get_preferred_unit_suffix(const PropertyUnitType p_unit_type) const {
+	if (p_unit_type == PropertyUnitType::ANGLE_RADIANS || p_unit_type == PropertyUnitType::ANGLE_DEGREES) {
+		RotationUnit unit = (RotationUnit)(int)get_setting("interface/inspector/rotation_unit");
+		if (unit == RotationUnit::DEGREES) {
+			return U"\u00B0"; // Degree symbol (small raised circle).
+		} else if (unit == RotationUnit::RADIANS) {
+			return "rad";
+		} else if (unit == RotationUnit::TURNS) {
+			return "turns";
+		}
+	} else if (p_unit_type == PropertyUnitType::DISTANCE_2D) {
+		return "px";
+	} else if (p_unit_type == PropertyUnitType::DISTANCE_3D) {
+		return "m";
+	}
+	return String();
+}
+
+double EditorSettings::get_preferred_unit_scale(const PropertyUnitType p_unit_type) const {
+	if (p_unit_type == PropertyUnitType::ANGLE_RADIANS) {
+		RotationUnit unit = (RotationUnit)(int)get_setting("interface/inspector/rotation_unit");
+		if (unit == RotationUnit::DEGREES) {
+			return Math_TAU / 360.0;
+		} else if (unit == RotationUnit::RADIANS) {
+			return 1.0;
+		} else if (unit == RotationUnit::TURNS) {
+			return Math_TAU;
+		}
+	} else if (p_unit_type == PropertyUnitType::ANGLE_DEGREES) {
+		RotationUnit unit = (RotationUnit)(int)get_setting("interface/inspector/rotation_unit");
+		if (unit == RotationUnit::DEGREES) {
+			return 1.0;
+		} else if (unit == RotationUnit::RADIANS) {
+			return 360.0 / Math_TAU;
+		} else if (unit == RotationUnit::TURNS) {
+			return 360.0;
+		}
+	}
+	return 1.0;
 }
 
 // Metadata

@@ -2993,10 +2993,10 @@ void Control::_bind_methods() {
 	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "anchor_bottom", PROPERTY_HINT_RANGE, "0,1,0.001,or_lesser,or_greater"), "_set_anchor", "get_anchor", SIDE_BOTTOM);
 
 	ADD_GROUP("Offset", "offset_");
-	ADD_PROPERTYI(PropertyInfo(Variant::INT, "offset_left", PROPERTY_HINT_RANGE, "-4096,4096"), "set_offset", "get_offset", SIDE_LEFT);
-	ADD_PROPERTYI(PropertyInfo(Variant::INT, "offset_top", PROPERTY_HINT_RANGE, "-4096,4096"), "set_offset", "get_offset", SIDE_TOP);
-	ADD_PROPERTYI(PropertyInfo(Variant::INT, "offset_right", PROPERTY_HINT_RANGE, "-4096,4096"), "set_offset", "get_offset", SIDE_RIGHT);
-	ADD_PROPERTYI(PropertyInfo(Variant::INT, "offset_bottom", PROPERTY_HINT_RANGE, "-4096,4096"), "set_offset", "get_offset", SIDE_BOTTOM);
+	ADD_PROPERTYI(PropertyInfo(Variant::INT, "offset_left", PROPERTY_HINT_RANGE, "-4096,4096,suffix:px"), "set_offset", "get_offset", SIDE_LEFT);
+	ADD_PROPERTYI(PropertyInfo(Variant::INT, "offset_top", PROPERTY_HINT_RANGE, "-4096,4096,suffix:px"), "set_offset", "get_offset", SIDE_TOP);
+	ADD_PROPERTYI(PropertyInfo(Variant::INT, "offset_right", PROPERTY_HINT_RANGE, "-4096,4096,suffix:px"), "set_offset", "get_offset", SIDE_RIGHT);
+	ADD_PROPERTYI(PropertyInfo(Variant::INT, "offset_bottom", PROPERTY_HINT_RANGE, "-4096,4096,suffix:px"), "set_offset", "get_offset", SIDE_BOTTOM);
 
 	ADD_GROUP("Grow Direction", "grow_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "grow_horizontal", PROPERTY_HINT_ENUM, "Begin,End,Both"), "set_h_grow_direction", "get_h_grow_direction");
@@ -3009,13 +3009,13 @@ void Control::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "auto_translate"), "set_auto_translate", "is_auto_translating");
 
 	ADD_GROUP("Rect", "rect_");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "rect_position", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR), "_set_position", "get_position");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "rect_global_position", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "_set_global_position", "get_global_position");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "rect_size", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR), "_set_size", "get_size");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "rect_min_size"), "set_custom_minimum_size", "get_custom_minimum_size");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "rect_position", PROPERTY_HINT_NONE, "suffix:px", PROPERTY_USAGE_EDITOR), "_set_position", "get_position");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "rect_global_position", PROPERTY_HINT_NONE, "suffix:px", PROPERTY_USAGE_NONE), "_set_global_position", "get_global_position");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "rect_size", PROPERTY_HINT_NONE, "suffix:px", PROPERTY_USAGE_EDITOR), "_set_size", "get_size");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "rect_min_size", PROPERTY_HINT_NONE, "suffix:px", PROPERTY_USAGE_EDITOR), "set_custom_minimum_size", "get_custom_minimum_size");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "rect_rotation", PROPERTY_HINT_RANGE, "-360,360,0.1,or_lesser,or_greater,radians"), "set_rotation", "get_rotation");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "rect_scale"), "set_scale", "get_scale");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "rect_pivot_offset"), "set_pivot_offset", "get_pivot_offset");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "rect_pivot_offset", PROPERTY_HINT_NONE, "suffix:px", PROPERTY_USAGE_EDITOR), "set_pivot_offset", "get_pivot_offset");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "rect_clip_content"), "set_clip_contents", "is_clipping_contents");
 
 	ADD_GROUP("Hint", "hint_");

@@ -39,6 +39,15 @@
 #include "core/string/translation.h"
 #include "editor/editor_paths.h"
 
+// The type of unit consumed by the API.
+enum class PropertyUnitType {
+	NONE,
+	DISTANCE_2D,
+	DISTANCE_3D,
+	ANGLE_RADIANS,
+	ANGLE_DEGREES,
+};
+
 class EditorPlugin;
 
 class EditorSettings : public Resource {
@@ -115,6 +124,13 @@ public:
 		NOTIFICATION_EDITOR_SETTINGS_CHANGED = 10000
 	};
 
+	// The user's preference for rotation units in the editor.
+	enum class RotationUnit {
+		DEGREES,
+		RADIANS,
+		TURNS,
+	};
+
 	static EditorSettings *get_singleton();
 
 	static void create();
@@ -153,6 +169,9 @@ public:
 	String get_script_templates_dir() const;
 	String get_project_script_templates_dir() const;
 	String get_feature_profiles_dir() const;
+
+	String get_preferred_unit_suffix(const PropertyUnitType p_hint) const;
+	double get_preferred_unit_scale(const PropertyUnitType p_hint) const;
 
 	void set_project_metadata(const String &p_section, const String &p_key, Variant p_data);
 	Variant get_project_metadata(const String &p_section, const String &p_key, Variant p_default) const;

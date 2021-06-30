@@ -932,10 +932,9 @@ void Node3D::_bind_methods() {
 	BIND_ENUM_CONSTANT(ROTATION_ORDER_ZXY);
 	BIND_ENUM_CONSTANT(ROTATION_ORDER_ZYX);
 
-	//ADD_PROPERTY( PropertyInfo(Variant::TRANSFORM3D,"transform/global",PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR ), "set_global_transform", "get_global_transform") ;
 	ADD_GROUP("Transform", "");
-	ADD_PROPERTY(PropertyInfo(Variant::TRANSFORM3D, "global_transform", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "set_global_transform", "get_global_transform");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "position", PROPERTY_HINT_RANGE, "-99999,99999,0,or_greater,or_lesser,noslider,suffix:m", PROPERTY_USAGE_EDITOR), "set_position", "get_position");
+	ADD_PROPERTY(PropertyInfo(Variant::TRANSFORM3D, "global_transform", PROPERTY_HINT_NONE, "distance_3d", PROPERTY_USAGE_NONE), "set_global_transform", "get_global_transform");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "position", PROPERTY_HINT_RANGE, "-99999,99999,0,or_greater,or_lesser,noslider,distance_3d", PROPERTY_USAGE_EDITOR), "set_position", "get_position");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "rotation", PROPERTY_HINT_RANGE, "-360,360,0.1,or_lesser,or_greater,radians", PROPERTY_USAGE_EDITOR), "set_rotation", "get_rotation");
 	ADD_PROPERTY(PropertyInfo(Variant::QUATERNION, "quaternion", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR), "set_quaternion", "get_quaternion");
 	ADD_PROPERTY(PropertyInfo(Variant::BASIS, "basis", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR), "set_basis", "get_basis");
@@ -943,7 +942,7 @@ void Node3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "rotation_edit_mode", PROPERTY_HINT_ENUM, "Euler,Quaternion,Basis"), "set_rotation_edit_mode", "get_rotation_edit_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "rotation_order", PROPERTY_HINT_ENUM, "XYZ,XZY,YXZ,YZX,ZXY,ZYX"), "set_rotation_order", "get_rotation_order");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "top_level"), "set_as_top_level", "is_set_as_top_level");
-	ADD_PROPERTY(PropertyInfo(Variant::TRANSFORM3D, "transform", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_transform", "get_transform");
+	ADD_PROPERTY(PropertyInfo(Variant::TRANSFORM3D, "transform", PROPERTY_HINT_NONE, "distance_3d", PROPERTY_USAGE_NO_EDITOR), "set_transform", "get_transform");
 	ADD_GROUP("Visibility", "");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "visible"), "set_visible", "is_visible");
 	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "visibility_parent", PROPERTY_HINT_NODE_PATH_VALID_TYPES, "GeometryInstance3D"), "set_visibility_parent", "get_visibility_parent");

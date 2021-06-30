@@ -41,6 +41,17 @@
 #include "scene/main/window.h"
 #include "scene/resources/font.h"
 
+#define UNIT_SETUP                                                                        \
+	unit_type = p_unit_type;                                                              \
+	String suffix;                                                                        \
+	double scale = 1.0;                                                                   \
+	if (unit_type == PropertyUnitType::NONE) {                                            \
+		suffix = p_suffix; /* No unit provided, use the given suffix (if any). */         \
+	} else {                                                                              \
+		suffix = EditorSettings::get_singleton()->get_preferred_unit_suffix(p_unit_type); \
+		scale = EditorSettings::get_singleton()->get_preferred_unit_scale(p_unit_type);   \
+	}
+
 ///////////////////// Nil /////////////////////////
 
 void EditorPropertyNil::update_property() {
@@ -1157,12 +1168,13 @@ void EditorPropertyInteger::update_property() {
 void EditorPropertyInteger::_bind_methods() {
 }
 
-void EditorPropertyInteger::setup(int64_t p_min, int64_t p_max, int64_t p_step, bool p_allow_greater, bool p_allow_lesser) {
+void EditorPropertyInteger::setup(int64_t p_min, int64_t p_max, int64_t p_step, bool p_allow_greater, bool p_allow_lesser, const String &p_suffix) {
 	spin->set_min(p_min);
 	spin->set_max(p_max);
 	spin->set_step(p_step);
 	spin->set_allow_greater(p_allow_greater);
 	spin->set_allow_lesser(p_allow_lesser);
+	spin->set_suffix(p_suffix);
 }
 
 EditorPropertyInteger::EditorPropertyInteger() {
@@ -1171,7 +1183,6 @@ EditorPropertyInteger::EditorPropertyInteger() {
 	add_child(spin);
 	add_focusable(spin);
 	spin->connect("value_changed", callable_mp(this, &EditorPropertyInteger::_value_changed));
-	setting = false;
 }
 
 ///////////////////// OBJECT ID /////////////////////////
@@ -1227,17 +1238,13 @@ void EditorPropertyFloat::_value_changed(double val) {
 		return;
 	}
 
-	if (angle_in_radians) {
-		val = Math::deg2rad(val);
-	}
+	val *= EditorSettings::get_singleton()->get_preferred_unit_scale(unit_type);
 	emit_changed(get_edited_property(), val);
 }
 
 void EditorPropertyFloat::update_property() {
 	double val = get_edited_object()->get(get_edited_property());
-	if (angle_in_radians) {
-		val = Math::rad2deg(val);
-	}
+	val /= EditorSettings::get_singleton()->get_preferred_unit_scale(unit_type);
 	setting = true;
 	spin->set_value(val);
 	setting = false;
@@ -1246,16 +1253,16 @@ void EditorPropertyFloat::update_property() {
 void EditorPropertyFloat::_bind_methods() {
 }
 
-void EditorPropertyFloat::setup(double p_min, double p_max, double p_step, bool p_no_slider, bool p_exp_range, bool p_greater, bool p_lesser, const String &p_suffix, bool p_angle_in_radians) {
-	angle_in_radians = p_angle_in_radians;
-	spin->set_min(p_min);
-	spin->set_max(p_max);
-	spin->set_step(p_step);
+void EditorPropertyFloat::setup(double p_min, double p_max, double p_step, bool p_no_slider, bool p_exp_range, bool p_greater, bool p_lesser, const String &p_suffix, const PropertyUnitType p_unit_type) {
+	UNIT_SETUP
+	spin->set_min(p_min / scale);
+	spin->set_max(p_max / scale);
+	spin->set_step(p_step / scale);
 	spin->set_hide_slider(p_no_slider);
 	spin->set_exp_ratio(p_exp_range);
 	spin->set_allow_greater(p_greater);
 	spin->set_allow_lesser(p_lesser);
-	spin->set_suffix(p_suffix);
+	spin->set_suffix(suffix);
 }
 
 EditorPropertyFloat::EditorPropertyFloat() {
@@ -1501,11 +1508,13 @@ void EditorPropertyVector2::_value_changed(double val, const String &p_name) {
 	Vector2 v2;
 	v2.x = spin[0]->get_value();
 	v2.y = spin[1]->get_value();
+	v2 *= EditorSettings::get_singleton()->get_preferred_unit_scale(unit_type);
 	emit_changed(get_edited_property(), v2, p_name);
 }
 
 void EditorPropertyVector2::update_property() {
 	Vector2 val = get_edited_object()->get(get_edited_property());
+	val /= EditorSettings::get_singleton()->get_preferred_unit_scale(unit_type);
 	setting = true;
 	spin[0]->set_value(val.x);
 	spin[1]->set_value(val.y);
@@ -1524,15 +1533,16 @@ void EditorPropertyVector2::_notification(int p_what) {
 void EditorPropertyVector2::_bind_methods() {
 }
 
-void EditorPropertyVector2::setup(double p_min, double p_max, double p_step, bool p_no_slider, const String &p_suffix) {
+void EditorPropertyVector2::setup(double p_min, double p_max, double p_step, bool p_no_slider, const String &p_suffix, const PropertyUnitType p_unit_type) {
+	UNIT_SETUP
 	for (int i = 0; i < 2; i++) {
-		spin[i]->set_min(p_min);
-		spin[i]->set_max(p_max);
-		spin[i]->set_step(p_step);
+		spin[i]->set_min(p_min / scale);
+		spin[i]->set_max(p_max / scale);
+		spin[i]->set_step(p_step / scale);
 		spin[i]->set_hide_slider(p_no_slider);
 		spin[i]->set_allow_greater(true);
 		spin[i]->set_allow_lesser(true);
-		spin[i]->set_suffix(p_suffix);
+		spin[i]->set_suffix(suffix);
 	}
 }
 
@@ -1569,7 +1579,6 @@ EditorPropertyVector2::EditorPropertyVector2(bool p_force_wide) {
 	if (!horizontal) {
 		set_label_reference(spin[0]); //show text and buttons around this
 	}
-	setting = false;
 }
 
 ///////////////////// RECT2 /////////////////////////
@@ -1590,11 +1599,15 @@ void EditorPropertyRect2::_value_changed(double val, const String &p_name) {
 	r2.position.y = spin[1]->get_value();
 	r2.size.x = spin[2]->get_value();
 	r2.size.y = spin[3]->get_value();
+	r2.position *= EditorSettings::get_singleton()->get_preferred_unit_scale(unit_type);
+	r2.size *= EditorSettings::get_singleton()->get_preferred_unit_scale(unit_type);
 	emit_changed(get_edited_property(), r2, p_name);
 }
 
 void EditorPropertyRect2::update_property() {
 	Rect2 val = get_edited_object()->get(get_edited_property());
+	val.position /= EditorSettings::get_singleton()->get_preferred_unit_scale(unit_type);
+	val.size /= EditorSettings::get_singleton()->get_preferred_unit_scale(unit_type);
 	setting = true;
 	spin[0]->set_value(val.position.x);
 	spin[1]->set_value(val.position.y);
@@ -1615,15 +1628,16 @@ void EditorPropertyRect2::_notification(int p_what) {
 void EditorPropertyRect2::_bind_methods() {
 }
 
-void EditorPropertyRect2::setup(double p_min, double p_max, double p_step, bool p_no_slider, const String &p_suffix) {
+void EditorPropertyRect2::setup(double p_min, double p_max, double p_step, bool p_no_slider, const String &p_suffix, const PropertyUnitType p_unit_type) {
+	UNIT_SETUP
 	for (int i = 0; i < 4; i++) {
-		spin[i]->set_min(p_min);
-		spin[i]->set_max(p_max);
-		spin[i]->set_step(p_step);
+		spin[i]->set_min(p_min / scale);
+		spin[i]->set_max(p_max / scale);
+		spin[i]->set_step(p_step / scale);
 		spin[i]->set_hide_slider(p_no_slider);
 		spin[i]->set_allow_greater(true);
 		spin[i]->set_allow_lesser(true);
-		spin[i]->set_suffix(p_suffix);
+		spin[i]->set_suffix(suffix);
 	}
 }
 
@@ -1670,7 +1684,6 @@ EditorPropertyRect2::EditorPropertyRect2(bool p_force_wide) {
 	if (!horizontal) {
 		set_label_reference(spin[0]); //show text and buttons around this
 	}
-	setting = false;
 }
 
 ///////////////////// VECTOR3 /////////////////////////
@@ -1690,11 +1703,8 @@ void EditorPropertyVector3::_value_changed(double val, const String &p_name) {
 	v3.x = spin[0]->get_value();
 	v3.y = spin[1]->get_value();
 	v3.z = spin[2]->get_value();
-	if (angle_in_radians) {
-		v3.x = Math::deg2rad(v3.x);
-		v3.y = Math::deg2rad(v3.y);
-		v3.z = Math::deg2rad(v3.z);
-	}
+	v3 *= EditorSettings::get_singleton()->get_preferred_unit_scale(unit_type);
+
 	emit_changed(get_edited_property(), v3, p_name);
 }
 
@@ -1703,15 +1713,11 @@ void EditorPropertyVector3::update_property() {
 }
 
 void EditorPropertyVector3::update_using_vector(Vector3 p_vector) {
-	if (angle_in_radians) {
-		p_vector.x = Math::rad2deg(p_vector.x);
-		p_vector.y = Math::rad2deg(p_vector.y);
-		p_vector.z = Math::rad2deg(p_vector.z);
-	}
+	const double scale = EditorSettings::get_singleton()->get_preferred_unit_scale(unit_type);
 	setting = true;
-	spin[0]->set_value(p_vector.x);
-	spin[1]->set_value(p_vector.y);
-	spin[2]->set_value(p_vector.z);
+	spin[0]->set_value(p_vector.x / scale);
+	spin[1]->set_value(p_vector.y / scale);
+	spin[2]->set_value(p_vector.z / scale);
 	setting = false;
 }
 
@@ -1720,12 +1726,7 @@ Vector3 EditorPropertyVector3::get_vector() {
 	v3.x = spin[0]->get_value();
 	v3.y = spin[1]->get_value();
 	v3.z = spin[2]->get_value();
-	if (angle_in_radians) {
-		v3.x = Math::deg2rad(v3.x);
-		v3.y = Math::deg2rad(v3.y);
-		v3.z = Math::deg2rad(v3.z);
-	}
-
+	v3 *= EditorSettings::get_singleton()->get_preferred_unit_scale(unit_type);
 	return v3;
 }
 
@@ -1741,16 +1742,16 @@ void EditorPropertyVector3::_notification(int p_what) {
 void EditorPropertyVector3::_bind_methods() {
 }
 
-void EditorPropertyVector3::setup(double p_min, double p_max, double p_step, bool p_no_slider, const String &p_suffix, bool p_angle_in_radians) {
-	angle_in_radians = p_angle_in_radians;
+void EditorPropertyVector3::setup(double p_min, double p_max, double p_step, bool p_no_slider, const String &p_suffix, const PropertyUnitType p_unit_type) {
+	UNIT_SETUP
 	for (int i = 0; i < 3; i++) {
-		spin[i]->set_min(p_min);
-		spin[i]->set_max(p_max);
-		spin[i]->set_step(p_step);
+		spin[i]->set_min(p_min / scale);
+		spin[i]->set_max(p_max / scale);
+		spin[i]->set_step(p_step / scale);
 		spin[i]->set_hide_slider(p_no_slider);
 		spin[i]->set_allow_greater(true);
 		spin[i]->set_allow_lesser(true);
-		spin[i]->set_suffix(p_suffix);
+		spin[i]->set_suffix(suffix);
 	}
 }
 
@@ -1873,7 +1874,6 @@ EditorPropertyVector2i::EditorPropertyVector2i(bool p_force_wide) {
 	if (!horizontal) {
 		set_label_reference(spin[0]); //show text and buttons around this
 	}
-	setting = false;
 }
 
 ///////////////////// RECT2i /////////////////////////
@@ -1974,7 +1974,6 @@ EditorPropertyRect2i::EditorPropertyRect2i(bool p_force_wide) {
 	if (!horizontal) {
 		set_label_reference(spin[0]); //show text and buttons around this
 	}
-	setting = false;
 }
 
 ///////////////////// VECTOR3i /////////////////////////
@@ -2062,7 +2061,6 @@ EditorPropertyVector3i::EditorPropertyVector3i(bool p_force_wide) {
 	if (!horizontal) {
 		set_label_reference(spin[0]); //show text and buttons around this
 	}
-	setting = false;
 }
 
 ///////////////////// PLANE /////////////////////////
@@ -2082,7 +2080,7 @@ void EditorPropertyPlane::_value_changed(double val, const String &p_name) {
 	p.normal.x = spin[0]->get_value();
 	p.normal.y = spin[1]->get_value();
 	p.normal.z = spin[2]->get_value();
-	p.d = spin[3]->get_value();
+	p.d = spin[3]->get_value() * EditorSettings::get_singleton()->get_preferred_unit_scale(unit_type);
 	emit_changed(get_edited_property(), p, p_name);
 }
 
@@ -2092,7 +2090,7 @@ void EditorPropertyPlane::update_property() {
 	spin[0]->set_value(val.normal.x);
 	spin[1]->set_value(val.normal.y);
 	spin[2]->set_value(val.normal.z);
-	spin[3]->set_value(val.d);
+	spin[3]->set_value(val.d / EditorSettings::get_singleton()->get_preferred_unit_scale(unit_type));
 	setting = false;
 }
 
@@ -2108,15 +2106,22 @@ void EditorPropertyPlane::_notification(int p_what) {
 void EditorPropertyPlane::_bind_methods() {
 }
 
-void EditorPropertyPlane::setup(double p_min, double p_max, double p_step, bool p_no_slider, const String &p_suffix) {
+void EditorPropertyPlane::setup(double p_min, double p_max, double p_step, bool p_no_slider, const String &p_suffix, const PropertyUnitType p_unit_type) {
+	UNIT_SETUP
 	for (int i = 0; i < 4; i++) {
-		spin[i]->set_min(p_min);
-		spin[i]->set_max(p_max);
-		spin[i]->set_step(p_step);
 		spin[i]->set_hide_slider(p_no_slider);
 		spin[i]->set_allow_greater(true);
 		spin[i]->set_allow_lesser(true);
-		spin[i]->set_suffix(p_suffix);
+		if (i == 3) {
+			spin[i]->set_suffix(suffix);
+			spin[i]->set_min(p_min / scale);
+			spin[i]->set_max(p_max / scale);
+			spin[i]->set_step(p_step / scale);
+		} else {
+			spin[i]->set_min(p_min);
+			spin[i]->set_max(p_max);
+			spin[i]->set_step(p_step);
+		}
 	}
 }
 
@@ -2153,7 +2158,6 @@ EditorPropertyPlane::EditorPropertyPlane(bool p_force_wide) {
 	if (!horizontal) {
 		set_label_reference(spin[0]); //show text and buttons around this
 	}
-	setting = false;
 }
 
 ///////////////////// QUATERNION /////////////////////////
@@ -2199,7 +2203,7 @@ void EditorPropertyQuaternion::_notification(int p_what) {
 void EditorPropertyQuaternion::_bind_methods() {
 }
 
-void EditorPropertyQuaternion::setup(double p_min, double p_max, double p_step, bool p_no_slider, const String &p_suffix) {
+void EditorPropertyQuaternion::setup(double p_min, double p_max, double p_step, bool p_no_slider) {
 	for (int i = 0; i < 4; i++) {
 		spin[i]->set_min(p_min);
 		spin[i]->set_max(p_max);
@@ -2207,7 +2211,6 @@ void EditorPropertyQuaternion::setup(double p_min, double p_max, double p_step, 
 		spin[i]->set_hide_slider(p_no_slider);
 		spin[i]->set_allow_greater(true);
 		spin[i]->set_allow_lesser(true);
-		spin[i]->set_suffix(p_suffix);
 	}
 }
 
@@ -2241,7 +2244,6 @@ EditorPropertyQuaternion::EditorPropertyQuaternion() {
 	if (!horizontal) {
 		set_label_reference(spin[0]); //show text and buttons around this
 	}
-	setting = false;
 }
 
 ///////////////////// AABB /////////////////////////
@@ -2264,12 +2266,16 @@ void EditorPropertyAABB::_value_changed(double val, const String &p_name) {
 	p.size.x = spin[3]->get_value();
 	p.size.y = spin[4]->get_value();
 	p.size.z = spin[5]->get_value();
+	p.position *= EditorSettings::get_singleton()->get_preferred_unit_scale(unit_type);
+	p.size *= EditorSettings::get_singleton()->get_preferred_unit_scale(unit_type);
 
 	emit_changed(get_edited_property(), p, p_name);
 }
 
 void EditorPropertyAABB::update_property() {
 	AABB val = get_edited_object()->get(get_edited_property());
+	val.position /= EditorSettings::get_singleton()->get_preferred_unit_scale(unit_type);
+	val.size /= EditorSettings::get_singleton()->get_preferred_unit_scale(unit_type);
 	setting = true;
 	spin[0]->set_value(val.position.x);
 	spin[1]->set_value(val.position.y);
@@ -2293,15 +2299,16 @@ void EditorPropertyAABB::_notification(int p_what) {
 void EditorPropertyAABB::_bind_methods() {
 }
 
-void EditorPropertyAABB::setup(double p_min, double p_max, double p_step, bool p_no_slider, const String &p_suffix) {
+void EditorPropertyAABB::setup(double p_min, double p_max, double p_step, bool p_no_slider, const String &p_suffix, const PropertyUnitType p_unit_type) {
+	UNIT_SETUP
 	for (int i = 0; i < 6; i++) {
-		spin[i]->set_min(p_min);
-		spin[i]->set_max(p_max);
-		spin[i]->set_step(p_step);
+		spin[i]->set_min(p_min / scale);
+		spin[i]->set_max(p_max / scale);
+		spin[i]->set_step(p_step / scale);
 		spin[i]->set_hide_slider(p_no_slider);
 		spin[i]->set_allow_greater(true);
 		spin[i]->set_allow_lesser(true);
-		spin[i]->set_suffix(p_suffix);
+		spin[i]->set_suffix(suffix);
 	}
 }
 
@@ -2322,7 +2329,6 @@ EditorPropertyAABB::EditorPropertyAABB() {
 		spin[i]->connect("value_changed", callable_mp(this, &EditorPropertyAABB::_value_changed), varray(desc[i]));
 	}
 	set_bottom_editor(g);
-	setting = false;
 }
 
 ///////////////////// TRANSFORM2D /////////////////////////
@@ -2345,12 +2351,14 @@ void EditorPropertyTransform2D::_value_changed(double val, const String &p_name)
 	p[0][1] = spin[3]->get_value();
 	p[1][1] = spin[4]->get_value();
 	p[2][1] = spin[5]->get_value();
+	p.elements[2] *= EditorSettings::get_singleton()->get_preferred_unit_scale(unit_type);
 
 	emit_changed(get_edited_property(), p, p_name);
 }
 
 void EditorPropertyTransform2D::update_property() {
 	Transform2D val = get_edited_object()->get(get_edited_property());
+	val.elements[2] /= EditorSettings::get_singleton()->get_preferred_unit_scale(unit_type);
 	setting = true;
 	spin[0]->set_value(val[0][0]);
 	spin[1]->set_value(val[1][0]);
@@ -2379,15 +2387,22 @@ void EditorPropertyTransform2D::_notification(int p_what) {
 void EditorPropertyTransform2D::_bind_methods() {
 }
 
-void EditorPropertyTransform2D::setup(double p_min, double p_max, double p_step, bool p_no_slider, const String &p_suffix) {
+void EditorPropertyTransform2D::setup(double p_min, double p_max, double p_step, bool p_no_slider, const String &p_suffix, const PropertyUnitType p_unit_type) {
+	UNIT_SETUP
 	for (int i = 0; i < 6; i++) {
-		spin[i]->set_min(p_min);
-		spin[i]->set_max(p_max);
-		spin[i]->set_step(p_step);
 		spin[i]->set_hide_slider(p_no_slider);
 		spin[i]->set_allow_greater(true);
 		spin[i]->set_allow_lesser(true);
-		spin[i]->set_suffix(p_suffix);
+		if (i > 3) {
+			spin[i]->set_suffix(suffix);
+			spin[i]->set_min(p_min / scale);
+			spin[i]->set_max(p_max / scale);
+			spin[i]->set_step(p_step / scale);
+		} else {
+			spin[i]->set_min(p_min);
+			spin[i]->set_max(p_max);
+			spin[i]->set_step(p_step);
+		}
 	}
 }
 
@@ -2409,7 +2424,6 @@ EditorPropertyTransform2D::EditorPropertyTransform2D(bool p_include_origin) {
 		spin[i]->connect("value_changed", callable_mp(this, &EditorPropertyTransform2D::_value_changed), varray(desc[i]));
 	}
 	set_bottom_editor(g);
-	setting = false;
 }
 
 ///////////////////// BASIS /////////////////////////
@@ -2467,7 +2481,7 @@ void EditorPropertyBasis::_notification(int p_what) {
 void EditorPropertyBasis::_bind_methods() {
 }
 
-void EditorPropertyBasis::setup(double p_min, double p_max, double p_step, bool p_no_slider, const String &p_suffix) {
+void EditorPropertyBasis::setup(double p_min, double p_max, double p_step, bool p_no_slider) {
 	for (int i = 0; i < 9; i++) {
 		spin[i]->set_min(p_min);
 		spin[i]->set_max(p_max);
@@ -2475,7 +2489,6 @@ void EditorPropertyBasis::setup(double p_min, double p_max, double p_step, bool 
 		spin[i]->set_hide_slider(p_no_slider);
 		spin[i]->set_allow_greater(true);
 		spin[i]->set_allow_lesser(true);
-		spin[i]->set_suffix(p_suffix);
 	}
 }
 
@@ -2495,7 +2508,6 @@ EditorPropertyBasis::EditorPropertyBasis() {
 		spin[i]->connect("value_changed", callable_mp(this, &EditorPropertyBasis::_value_changed), varray(desc[i]));
 	}
 	set_bottom_editor(g);
-	setting = false;
 }
 
 ///////////////////// TRANSFORM /////////////////////////
@@ -2524,6 +2536,7 @@ void EditorPropertyTransform3D::_value_changed(double val, const String &p_name)
 	p.basis[2][1] = spin[9]->get_value();
 	p.basis[2][2] = spin[10]->get_value();
 	p.origin[2] = spin[11]->get_value();
+	p.origin *= EditorSettings::get_singleton()->get_preferred_unit_scale(unit_type);
 
 	emit_changed(get_edited_property(), p, p_name);
 }
@@ -2533,6 +2546,7 @@ void EditorPropertyTransform3D::update_property() {
 }
 
 void EditorPropertyTransform3D::update_using_transform(Transform3D p_transform) {
+	p_transform.origin /= EditorSettings::get_singleton()->get_preferred_unit_scale(unit_type);
 	setting = true;
 	spin[0]->set_value(p_transform.basis[0][0]);
 	spin[1]->set_value(p_transform.basis[0][1]);
@@ -2561,15 +2575,22 @@ void EditorPropertyTransform3D::_notification(int p_what) {
 void EditorPropertyTransform3D::_bind_methods() {
 }
 
-void EditorPropertyTransform3D::setup(double p_min, double p_max, double p_step, bool p_no_slider, const String &p_suffix) {
+void EditorPropertyTransform3D::setup(double p_min, double p_max, double p_step, bool p_no_slider, const String &p_suffix, const PropertyUnitType p_unit_type) {
+	UNIT_SETUP
 	for (int i = 0; i < 12; i++) {
-		spin[i]->set_min(p_min);
-		spin[i]->set_max(p_max);
-		spin[i]->set_step(p_step);
 		spin[i]->set_hide_slider(p_no_slider);
 		spin[i]->set_allow_greater(true);
 		spin[i]->set_allow_lesser(true);
-		spin[i]->set_suffix(p_suffix);
+		if (i > 8) {
+			spin[i]->set_suffix(suffix);
+			spin[i]->set_min(p_min / scale);
+			spin[i]->set_max(p_max / scale);
+			spin[i]->set_step(p_step / scale);
+		} else {
+			spin[i]->set_min(p_min);
+			spin[i]->set_max(p_max);
+			spin[i]->set_step(p_step);
+		}
 	}
 }
 
@@ -2589,7 +2610,6 @@ EditorPropertyTransform3D::EditorPropertyTransform3D() {
 		spin[i]->connect("value_changed", callable_mp(this, &EditorPropertyTransform3D::_value_changed), varray(desc[i]));
 	}
 	set_bottom_editor(g);
-	setting = false;
 }
 
 ////////////// COLOR PICKER //////////////////////
@@ -3182,7 +3202,7 @@ bool EditorInspectorDefaultPlugin::parse_property(Object *p_object, const Varian
 }
 
 struct EditorPropertyRangeHint {
-	bool angle_in_degrees = false;
+	PropertyUnitType unit_type = PropertyUnitType::NONE;
 	bool greater = true;
 	bool lesser = true;
 	double min = -99999;
@@ -3191,47 +3211,48 @@ struct EditorPropertyRangeHint {
 	String suffix;
 	bool exp_range = false;
 	bool hide_slider = true;
-	bool radians = false;
 };
 
 static EditorPropertyRangeHint _parse_range_hint(PropertyHint p_hint, const String &p_hint_text, double p_default_step) {
 	EditorPropertyRangeHint hint;
 	hint.step = p_default_step;
-	bool degrees = false;
-	if (p_hint == PROPERTY_HINT_RANGE && p_hint_text.get_slice_count(",") >= 2) {
+	int slice_count = p_hint_text.get_slice_count(",");
+	if (p_hint == PROPERTY_HINT_RANGE && slice_count >= 2) {
 		hint.greater = false; //if using ranged, assume false by default
 		hint.lesser = false;
 
 		hint.min = p_hint_text.get_slice(",", 0).to_float();
 		hint.max = p_hint_text.get_slice(",", 1).to_float();
-		if (p_hint_text.get_slice_count(",") >= 3) {
+		if (slice_count >= 3) {
 			hint.step = p_hint_text.get_slice(",", 2).to_float();
 		}
 		hint.hide_slider = false;
-		for (int i = 2; i < p_hint_text.get_slice_count(","); i++) {
-			String slice = p_hint_text.get_slice(",", i).strip_edges();
-			if (slice == "radians") {
-				hint.radians = true;
-			} else if (slice == "degrees") {
-				degrees = true;
-			} else if (slice == "or_greater") {
-				hint.greater = true;
-			} else if (slice == "or_lesser") {
-				hint.lesser = true;
-			} else if (slice == "noslider") {
-				hint.hide_slider = true;
-			} else if (slice == "exp") {
-				hint.exp_range = true;
-			} else if (slice.begins_with("suffix:")) {
-				hint.suffix = " " + slice.replace_first("suffix:", "").strip_edges();
-			}
+	}
+	for (int i = 0; i < MAX(1, slice_count); i++) {
+		String slice = p_hint_text.get_slice(",", i).strip_edges();
+		if (slice == "distance_2d") {
+			hint.unit_type = PropertyUnitType::DISTANCE_2D;
+		} else if (slice == "distance_3d") {
+			hint.unit_type = PropertyUnitType::DISTANCE_3D;
+		} else if (slice == "radians") {
+			hint.unit_type = PropertyUnitType::ANGLE_RADIANS;
+		} else if (slice == "degrees") {
+			hint.unit_type = PropertyUnitType::ANGLE_DEGREES;
+		} else if (slice == "or_greater") {
+			hint.greater = true;
+		} else if (slice == "or_lesser") {
+			hint.lesser = true;
+		} else if (slice == "noslider") {
+			hint.hide_slider = true;
+		} else if (slice == "exp") {
+			hint.exp_range = true;
+		} else if (slice.begins_with("suffix:")) {
+			hint.suffix = slice.replace_first("suffix:", "").strip_edges();
+		} else {
+			ERR_CONTINUE_MSG(!slice.is_valid_float() && !slice.is_empty(), "Unknown string property hint: '" + slice + "'.");
 		}
 	}
-
-	if ((hint.radians || degrees) && hint.suffix == String()) {
-		hint.suffix = U"\u00B0";
-	}
-
+	hint.step = p_default_step * EditorSettings::get_singleton()->get_preferred_unit_scale(hint.unit_type);
 	return hint;
 }
 
@@ -3297,14 +3318,10 @@ EditorProperty *EditorInspectorDefaultPlugin::get_editor_for_property(Object *p_
 				EditorPropertyObjectID *editor = memnew(EditorPropertyObjectID);
 				editor->setup(p_hint_text);
 				return editor;
-
 			} else {
 				EditorPropertyInteger *editor = memnew(EditorPropertyInteger);
-
 				EditorPropertyRangeHint hint = _parse_range_hint(p_hint, p_hint_text, 1);
-
-				editor->setup(hint.min, hint.max, hint.step, hint.greater, hint.lesser);
-
+				editor->setup(hint.min, hint.max, hint.step, hint.greater, hint.lesser, hint.suffix);
 				return editor;
 			}
 		} break;
@@ -3329,10 +3346,8 @@ EditorProperty *EditorInspectorDefaultPlugin::get_editor_for_property(Object *p_
 
 			} else {
 				EditorPropertyFloat *editor = memnew(EditorPropertyFloat);
-
 				EditorPropertyRangeHint hint = _parse_range_hint(p_hint, p_hint_text, default_float_step);
-				editor->setup(hint.min, hint.max, hint.step, hint.hide_slider, hint.exp_range, hint.greater, hint.lesser, hint.suffix, hint.radians);
-
+				editor->setup(hint.min, hint.max, hint.step, hint.hide_slider, hint.exp_range, hint.greater, hint.lesser, hint.suffix, hint.unit_type);
 				return editor;
 			}
 		} break;
@@ -3412,82 +3427,75 @@ EditorProperty *EditorInspectorDefaultPlugin::get_editor_for_property(Object *p_
 
 		case Variant::VECTOR2: {
 			EditorPropertyVector2 *editor = memnew(EditorPropertyVector2(p_wide));
-
 			EditorPropertyRangeHint hint = _parse_range_hint(p_hint, p_hint_text, default_float_step);
-			editor->setup(hint.min, hint.max, hint.step, hint.hide_slider, hint.suffix);
+			editor->setup(hint.min, hint.max, hint.step, hint.hide_slider, hint.suffix, hint.unit_type);
 			return editor;
-
 		} break;
 		case Variant::VECTOR2I: {
 			EditorPropertyVector2i *editor = memnew(EditorPropertyVector2i(p_wide));
 			EditorPropertyRangeHint hint = _parse_range_hint(p_hint, p_hint_text, 1);
 			editor->setup(hint.min, hint.max, hint.hide_slider, hint.suffix);
 			return editor;
-
 		} break;
 		case Variant::RECT2: {
 			EditorPropertyRect2 *editor = memnew(EditorPropertyRect2(p_wide));
 			EditorPropertyRangeHint hint = _parse_range_hint(p_hint, p_hint_text, default_float_step);
-			editor->setup(hint.min, hint.max, hint.step, hint.hide_slider, hint.suffix);
+			editor->setup(hint.min, hint.max, hint.step, hint.hide_slider, hint.suffix, hint.unit_type);
 			return editor;
 		} break;
 		case Variant::RECT2I: {
 			EditorPropertyRect2i *editor = memnew(EditorPropertyRect2i(p_wide));
 			EditorPropertyRangeHint hint = _parse_range_hint(p_hint, p_hint_text, 1);
 			editor->setup(hint.min, hint.max, hint.hide_slider, hint.suffix);
-
 			return editor;
 		} break;
 		case Variant::VECTOR3: {
 			EditorPropertyVector3 *editor = memnew(EditorPropertyVector3(p_wide));
 			EditorPropertyRangeHint hint = _parse_range_hint(p_hint, p_hint_text, default_float_step);
-			editor->setup(hint.min, hint.max, hint.step, hint.hide_slider, hint.suffix, hint.radians);
+			editor->setup(hint.min, hint.max, hint.step, hint.hide_slider, hint.suffix, hint.unit_type);
 			return editor;
-
 		} break;
 		case Variant::VECTOR3I: {
 			EditorPropertyVector3i *editor = memnew(EditorPropertyVector3i(p_wide));
 			EditorPropertyRangeHint hint = _parse_range_hint(p_hint, p_hint_text, 1);
 			editor->setup(hint.min, hint.max, hint.hide_slider, hint.suffix);
 			return editor;
-
 		} break;
 		case Variant::TRANSFORM2D: {
 			EditorPropertyTransform2D *editor = memnew(EditorPropertyTransform2D);
 			EditorPropertyRangeHint hint = _parse_range_hint(p_hint, p_hint_text, default_float_step);
-			editor->setup(hint.min, hint.max, hint.step, hint.hide_slider, hint.suffix);
+			editor->setup(hint.min, hint.max, hint.step, hint.hide_slider, hint.suffix, hint.unit_type);
 			return editor;
 		} break;
 		case Variant::PLANE: {
 			EditorPropertyPlane *editor = memnew(EditorPropertyPlane(p_wide));
 			EditorPropertyRangeHint hint = _parse_range_hint(p_hint, p_hint_text, default_float_step);
-			editor->setup(hint.min, hint.max, hint.step, hint.hide_slider, hint.suffix);
+			editor->setup(hint.min, hint.max, hint.step, hint.hide_slider, hint.suffix, hint.unit_type);
 			return editor;
 		} break;
 		case Variant::QUATERNION: {
 			EditorPropertyQuaternion *editor = memnew(EditorPropertyQuaternion);
 			EditorPropertyRangeHint hint = _parse_range_hint(p_hint, p_hint_text, default_float_step);
-			editor->setup(hint.min, hint.max, hint.step, hint.hide_slider, hint.suffix);
+			editor->setup(hint.min, hint.max, hint.step, hint.hide_slider);
 			return editor;
 		} break;
 		case Variant::AABB: {
 			EditorPropertyAABB *editor = memnew(EditorPropertyAABB);
 			EditorPropertyRangeHint hint = _parse_range_hint(p_hint, p_hint_text, default_float_step);
-			editor->setup(hint.min, hint.max, hint.step, hint.hide_slider, hint.suffix);
+			editor->setup(hint.min, hint.max, hint.step, hint.hide_slider, hint.suffix, hint.unit_type);
 			return editor;
 		} break;
 		case Variant::BASIS: {
 			EditorPropertyBasis *editor = memnew(EditorPropertyBasis);
 			EditorPropertyRangeHint hint = _parse_range_hint(p_hint, p_hint_text, default_float_step);
-			editor->setup(hint.min, hint.max, hint.step, hint.hide_slider, hint.suffix);
+			editor->setup(hint.min, hint.max, hint.step, hint.hide_slider);
 			return editor;
 		} break;
 		case Variant::TRANSFORM3D: {
 			EditorPropertyTransform3D *editor = memnew(EditorPropertyTransform3D);
 			EditorPropertyRangeHint hint = _parse_range_hint(p_hint, p_hint_text, default_float_step);
-			editor->setup(hint.min, hint.max, hint.step, hint.hide_slider, hint.suffix);
+			editor->setup(hint.min, hint.max, hint.step, hint.hide_slider, hint.suffix, hint.unit_type);
 			return editor;
-
 		} break;
 
 		// misc types
