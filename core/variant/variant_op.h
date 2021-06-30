@@ -1261,8 +1261,10 @@ public:
 
 		const String &a = *VariantGetInternalPtr<String>::get_ptr(&p_left);
 
-		b->get(a, &r_valid);
-		*r_ret = r_valid;
+		bool exist;
+		b->get(a, &exist);
+		*r_ret = exist;
+		r_valid = true;
 	}
 	static inline void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret) {
 		Object *l = right->get_validated_object();
@@ -1293,8 +1295,10 @@ public:
 
 		const StringName &a = *VariantGetInternalPtr<StringName>::get_ptr(&p_left);
 
-		b->get(a, &r_valid);
-		*r_ret = r_valid;
+		bool exist;
+		b->get(a, &exist);
+		*r_ret = exist;
+		r_valid = true;
 	}
 	static inline void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret) {
 		Object *l = right->get_validated_object();
