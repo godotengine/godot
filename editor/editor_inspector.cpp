@@ -1182,15 +1182,19 @@ void EditorInspectorSection::_notification(int p_what) {
 
 		Size2 size = get_size();
 		Point2 offset;
+		Rect2 rect;
 		offset.y = font->get_height(font_size);
 		if (arrow.is_valid()) {
 			offset.y = MAX(offset.y, arrow->get_height());
 		}
 
 		offset.y += get_theme_constant("vseparation", "Tree");
-		offset.x += get_theme_constant("inspector_margin", "Editor");
-
-		Rect2 rect(offset, size - offset);
+		if (is_layout_rtl()) {
+			rect = Rect2(offset, size - offset - Vector2(get_theme_constant("inspector_margin", "Editor"), 0));
+		} else {
+			offset.x += get_theme_constant("inspector_margin", "Editor");
+			rect = Rect2(offset, size - offset);
+		}
 
 		//set children
 		for (int i = 0; i < get_child_count(); i++) {
