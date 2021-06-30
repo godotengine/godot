@@ -497,6 +497,9 @@ public:
 		Vector3 collision_point;
 		Vector3 collision_normal;
 		Vector3 collider_velocity;
+		real_t collision_depth = 0.0;
+		real_t collision_safe_fraction = 0.0;
+		real_t collision_unsafe_fraction = 0.0;
 		int collision_local_shape = 0;
 		ObjectID collider_id;
 		RID collider;
