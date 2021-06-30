@@ -3038,9 +3038,9 @@ static Error _lookup_symbol_from_base(const GDScriptParser::DataType &p_base, co
 			if (!is_function) {
 				// Guess in autoloads as singletons.
 				if (ProjectSettings::get_singleton()->has_autoload(p_symbol)) {
-					const ProjectSettings::AutoloadInfo &singleton = ProjectSettings::get_singleton()->get_autoload(p_symbol);
-					if (singleton.is_singleton) {
-						String script = singleton.path;
+					const ProjectSettings::AutoloadInfo &autoload = ProjectSettings::get_singleton()->get_autoload(p_symbol);
+					if (autoload.is_singleton) {
+						String script = autoload.path;
 						if (!script.ends_with(".gd")) {
 							// Not a script, try find the script anyway,
 							// may have some success.
