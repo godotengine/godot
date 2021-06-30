@@ -478,7 +478,6 @@ void RendererSceneCull::instance_set_base(RID p_instance, RID p_base) {
 		switch (instance->base_type) {
 			case RS::INSTANCE_MESH:
 			case RS::INSTANCE_MULTIMESH:
-			case RS::INSTANCE_IMMEDIATE:
 			case RS::INSTANCE_PARTICLES: {
 				InstanceGeometryData *geom = static_cast<InstanceGeometryData *>(instance->base_data);
 				scene_render->geometry_instance_free(geom->geometry_instance);
@@ -590,7 +589,6 @@ void RendererSceneCull::instance_set_base(RID p_instance, RID p_base) {
 			} break;
 			case RS::INSTANCE_MESH:
 			case RS::INSTANCE_MULTIMESH:
-			case RS::INSTANCE_IMMEDIATE:
 			case RS::INSTANCE_PARTICLES: {
 				InstanceGeometryData *geom = memnew(InstanceGeometryData);
 				instance->base_data = geom;
@@ -888,7 +886,7 @@ void RendererSceneCull::instance_set_visible(RID p_instance, bool p_visible) {
 }
 
 inline bool is_geometry_instance(RenderingServer::InstanceType p_type) {
-	return p_type == RS::INSTANCE_MESH || p_type == RS::INSTANCE_MULTIMESH || p_type == RS::INSTANCE_PARTICLES || p_type == RS::INSTANCE_IMMEDIATE;
+	return p_type == RS::INSTANCE_MESH || p_type == RS::INSTANCE_MULTIMESH || p_type == RS::INSTANCE_PARTICLES;
 }
 
 void RendererSceneCull::instance_set_custom_aabb(RID p_instance, AABB p_aabb) {
@@ -1529,7 +1527,6 @@ void RendererSceneCull::_update_instance(Instance *p_instance) {
 		switch (p_instance->base_type) {
 			case RS::INSTANCE_MESH:
 			case RS::INSTANCE_MULTIMESH:
-			case RS::INSTANCE_IMMEDIATE:
 			case RS::INSTANCE_PARTICLES: {
 				InstanceGeometryData *geom = static_cast<InstanceGeometryData *>(p_instance->base_data);
 				idata.instance_geometry = geom->geometry_instance;
@@ -1745,14 +1742,6 @@ void RendererSceneCull::_update_instance_aabb(Instance *p_instance) {
 				new_aabb = *p_instance->custom_aabb;
 			} else {
 				new_aabb = RSG::storage->multimesh_get_aabb(p_instance->base);
-			}
-
-		} break;
-		case RenderingServer::INSTANCE_IMMEDIATE: {
-			if (p_instance->custom_aabb) {
-				new_aabb = *p_instance->custom_aabb;
-			} else {
-				new_aabb = RSG::storage->immediate_get_aabb(p_instance->base);
 			}
 
 		} break;
@@ -3681,25 +3670,6 @@ void RendererSceneCull::_update_dirty_instance(Instance *p_instance) {
 
 						RSG::storage->base_update_dependency(mesh, &p_instance->dependency_tracker);
 					}
-				} else if (p_instance->base_type == RS::INSTANCE_IMMEDIATE) {
-					RID mat = RSG::storage->immediate_get_material(p_instance->base);
-
-					if (!(!mat.is_valid() || RSG::storage->material_casts_shadows(mat))) {
-						can_cast_shadows = false;
-					}
-
-					if (mat.is_valid() && RSG::storage->material_is_animated(mat)) {
-						is_animated = true;
-					}
-
-					if (mat.is_valid()) {
-						_update_instance_shader_parameters_from_material(isparams, p_instance->instance_shader_parameters, mat);
-					}
-
-					if (mat.is_valid()) {
-						RSG::storage->material_update_dependency(mat, &p_instance->dependency_tracker);
-					}
-
 				} else if (p_instance->base_type == RS::INSTANCE_PARTICLES) {
 					bool cast_shadows = false;
 

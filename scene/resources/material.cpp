@@ -2077,7 +2077,7 @@ BaseMaterial3D::TextureChannel BaseMaterial3D::get_refraction_texture_channel() 
 	return refraction_texture_channel;
 }
 
-RID BaseMaterial3D::get_material_rid_for_2d(bool p_shaded, bool p_transparent, bool p_double_sided, bool p_cut_alpha, bool p_opaque_prepass, bool p_billboard, bool p_billboard_y) {
+Ref<Material> BaseMaterial3D::get_material_for_2d(bool p_shaded, bool p_transparent, bool p_double_sided, bool p_cut_alpha, bool p_opaque_prepass, bool p_billboard, bool p_billboard_y, RID *r_shader_rid) {
 	int version = 0;
 	if (p_shaded) {
 		version = 1;
@@ -2102,7 +2102,10 @@ RID BaseMaterial3D::get_material_rid_for_2d(bool p_shaded, bool p_transparent, b
 	}
 
 	if (materials_for_2d[version].is_valid()) {
-		return materials_for_2d[version]->get_rid();
+		if (r_shader_rid) {
+			*r_shader_rid = materials_for_2d[version]->get_shader_rid();
+		}
+		return materials_for_2d[version];
 	}
 
 	Ref<StandardMaterial3D> material;
@@ -2120,7 +2123,11 @@ RID BaseMaterial3D::get_material_rid_for_2d(bool p_shaded, bool p_transparent, b
 
 	materials_for_2d[version] = material;
 
-	return materials_for_2d[version]->get_rid();
+	if (r_shader_rid) {
+		*r_shader_rid = materials_for_2d[version]->get_shader_rid();
+	}
+
+	return materials_for_2d[version];
 }
 
 void BaseMaterial3D::set_on_top_of_alpha() {
@@ -2189,6 +2196,8 @@ BaseMaterial3D::EmissionOperator BaseMaterial3D::get_emission_operator() const {
 }
 
 RID BaseMaterial3D::get_shader_rid() const {
+	MutexLock lock(material_mutex);
+	((BaseMaterial3D *)this)->_update_shader();
 	ERR_FAIL_COND_V(!shader_map.has(current_key), RID());
 	return shader_map[current_key].shader;
 }

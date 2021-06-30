@@ -988,143 +988,6 @@
 				Returns [code]true[/code] if the OS supports a certain feature. Features might be [code]s3tc[/code], [code]etc[/code], [code]etc2[/code] and [code]pvrtc[/code].
 			</description>
 		</method>
-		<method name="immediate_begin">
-			<return type="void">
-			</return>
-			<argument index="0" name="immediate" type="RID">
-			</argument>
-			<argument index="1" name="primitive" type="int" enum="RenderingServer.PrimitiveType">
-			</argument>
-			<argument index="2" name="texture" type="RID">
-			</argument>
-			<description>
-				Sets up [ImmediateGeometry3D] internals to prepare for drawing. Equivalent to [method ImmediateGeometry3D.begin].
-			</description>
-		</method>
-		<method name="immediate_clear">
-			<return type="void">
-			</return>
-			<argument index="0" name="immediate" type="RID">
-			</argument>
-			<description>
-				Clears everything that was set up between [method immediate_begin] and [method immediate_end]. Equivalent to [method ImmediateGeometry3D.clear].
-			</description>
-		</method>
-		<method name="immediate_color">
-			<return type="void">
-			</return>
-			<argument index="0" name="immediate" type="RID">
-			</argument>
-			<argument index="1" name="color" type="Color">
-			</argument>
-			<description>
-				Sets the color to be used with next vertex. Equivalent to [method ImmediateGeometry3D.set_color].
-			</description>
-		</method>
-		<method name="immediate_create">
-			<return type="RID">
-			</return>
-			<description>
-				Creates an immediate geometry and adds it to the RenderingServer. It can be accessed with the RID that is returned. This RID will be used in all [code]immediate_*[/code] RenderingServer functions.
-				Once finished with your RID, you will want to free the RID using the RenderingServer's [method free_rid] static method.
-				To place in a scene, attach this immediate geometry to an instance using [method instance_set_base] using the returned RID.
-			</description>
-		</method>
-		<method name="immediate_end">
-			<return type="void">
-			</return>
-			<argument index="0" name="immediate" type="RID">
-			</argument>
-			<description>
-				Ends drawing the [ImmediateGeometry3D] and displays it. Equivalent to [method ImmediateGeometry3D.end].
-			</description>
-		</method>
-		<method name="immediate_get_material" qualifiers="const">
-			<return type="RID">
-			</return>
-			<argument index="0" name="immediate" type="RID">
-			</argument>
-			<description>
-				Returns the material assigned to the [ImmediateGeometry3D].
-			</description>
-		</method>
-		<method name="immediate_normal">
-			<return type="void">
-			</return>
-			<argument index="0" name="immediate" type="RID">
-			</argument>
-			<argument index="1" name="normal" type="Vector3">
-			</argument>
-			<description>
-				Sets the normal to be used with next vertex. Equivalent to [method ImmediateGeometry3D.set_normal].
-			</description>
-		</method>
-		<method name="immediate_set_material">
-			<return type="void">
-			</return>
-			<argument index="0" name="immediate" type="RID">
-			</argument>
-			<argument index="1" name="material" type="RID">
-			</argument>
-			<description>
-				Sets the material to be used to draw the [ImmediateGeometry3D].
-			</description>
-		</method>
-		<method name="immediate_tangent">
-			<return type="void">
-			</return>
-			<argument index="0" name="immediate" type="RID">
-			</argument>
-			<argument index="1" name="tangent" type="Plane">
-			</argument>
-			<description>
-				Sets the tangent to be used with next vertex. Equivalent to [method ImmediateGeometry3D.set_tangent].
-			</description>
-		</method>
-		<method name="immediate_uv">
-			<return type="void">
-			</return>
-			<argument index="0" name="immediate" type="RID">
-			</argument>
-			<argument index="1" name="tex_uv" type="Vector2">
-			</argument>
-			<description>
-				Sets the UV to be used with next vertex. Equivalent to [method ImmediateGeometry3D.set_uv].
-			</description>
-		</method>
-		<method name="immediate_uv2">
-			<return type="void">
-			</return>
-			<argument index="0" name="immediate" type="RID">
-			</argument>
-			<argument index="1" name="tex_uv" type="Vector2">
-			</argument>
-			<description>
-				Sets the UV2 to be used with next vertex. Equivalent to [method ImmediateGeometry3D.set_uv2].
-			</description>
-		</method>
-		<method name="immediate_vertex">
-			<return type="void">
-			</return>
-			<argument index="0" name="immediate" type="RID">
-			</argument>
-			<argument index="1" name="vertex" type="Vector3">
-			</argument>
-			<description>
-				Adds the next vertex using the information provided in advance. Equivalent to [method ImmediateGeometry3D.add_vertex].
-			</description>
-		</method>
-		<method name="immediate_vertex_2d">
-			<return type="void">
-			</return>
-			<argument index="0" name="immediate" type="RID">
-			</argument>
-			<argument index="1" name="vertex" type="Vector2">
-			</argument>
-			<description>
-				Adds the next vertex using the information provided in advance. This is a helper class that calls [method immediate_vertex] under the hood. Equivalent to [method ImmediateGeometry3D.add_vertex].
-			</description>
-		</method>
 		<method name="init">
 			<return type="void">
 			</return>
@@ -1785,21 +1648,6 @@
 			</argument>
 			<description>
 				Sets a mesh's surface's material.
-			</description>
-		</method>
-		<method name="mesh_surface_update_region">
-			<return type="void">
-			</return>
-			<argument index="0" name="mesh" type="RID">
-			</argument>
-			<argument index="1" name="surface" type="int">
-			</argument>
-			<argument index="2" name="offset" type="int">
-			</argument>
-			<argument index="3" name="data" type="PackedByteArray">
-			</argument>
-			<description>
-				Updates a specific region of a vertex buffer for the specified surface. Warning: this function alters the vertex buffer directly with no safety mechanisms, you can easily corrupt your mesh.
 			</description>
 		</method>
 		<method name="multimesh_allocate_data">
@@ -3677,35 +3525,32 @@
 		<constant name="INSTANCE_MULTIMESH" value="2" enum="InstanceType">
 			The instance is a multimesh.
 		</constant>
-		<constant name="INSTANCE_IMMEDIATE" value="3" enum="InstanceType">
-			The instance is an immediate geometry.
-		</constant>
-		<constant name="INSTANCE_PARTICLES" value="4" enum="InstanceType">
+		<constant name="INSTANCE_PARTICLES" value="3" enum="InstanceType">
 			The instance is a particle emitter.
 		</constant>
-		<constant name="INSTANCE_PARTICLES_COLLISION" value="5" enum="InstanceType">
+		<constant name="INSTANCE_PARTICLES_COLLISION" value="4" enum="InstanceType">
 		</constant>
-		<constant name="INSTANCE_LIGHT" value="6" enum="InstanceType">
+		<constant name="INSTANCE_LIGHT" value="5" enum="InstanceType">
 			The instance is a light.
 		</constant>
-		<constant name="INSTANCE_REFLECTION_PROBE" value="7" enum="InstanceType">
+		<constant name="INSTANCE_REFLECTION_PROBE" value="6" enum="InstanceType">
 			The instance is a reflection probe.
 		</constant>
-		<constant name="INSTANCE_DECAL" value="8" enum="InstanceType">
+		<constant name="INSTANCE_DECAL" value="7" enum="InstanceType">
 			The instance is a decal.
 		</constant>
-		<constant name="INSTANCE_VOXEL_GI" value="9" enum="InstanceType">
+		<constant name="INSTANCE_VOXEL_GI" value="8" enum="InstanceType">
 			The instance is a VoxelGI.
 		</constant>
-		<constant name="INSTANCE_LIGHTMAP" value="10" enum="InstanceType">
+		<constant name="INSTANCE_LIGHTMAP" value="9" enum="InstanceType">
 			The instance is a lightmap.
 		</constant>
-		<constant name="INSTANCE_OCCLUDER" value="11" enum="InstanceType">
+		<constant name="INSTANCE_OCCLUDER" value="10" enum="InstanceType">
 		</constant>
-		<constant name="INSTANCE_MAX" value="13" enum="InstanceType">
+		<constant name="INSTANCE_MAX" value="12" enum="InstanceType">
 			Represents the size of the [enum InstanceType] enum.
 		</constant>
-		<constant name="INSTANCE_GEOMETRY_MASK" value="30" enum="InstanceType">
+		<constant name="INSTANCE_GEOMETRY_MASK" value="14" enum="InstanceType">
 			A combination of the flags of geometry instances (mesh, multimesh, immediate and particles).
 		</constant>
 		<constant name="INSTANCE_FLAG_USE_BAKED_LIGHT" value="0" enum="InstanceFlags">

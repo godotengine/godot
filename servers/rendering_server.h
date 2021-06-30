@@ -342,7 +342,9 @@ public:
 	virtual void mesh_set_blend_shape_mode(RID p_mesh, BlendShapeMode p_mode) = 0;
 	virtual BlendShapeMode mesh_get_blend_shape_mode(RID p_mesh) const = 0;
 
-	virtual void mesh_surface_update_region(RID p_mesh, int p_surface, int p_offset, const Vector<uint8_t> &p_data) = 0;
+	virtual void mesh_surface_update_vertex_region(RID p_mesh, int p_surface, int p_offset, const Vector<uint8_t> &p_data) = 0;
+	virtual void mesh_surface_update_attribute_region(RID p_mesh, int p_surface, int p_offset, const Vector<uint8_t> &p_data) = 0;
+	virtual void mesh_surface_update_skin_region(RID p_mesh, int p_surface, int p_offset, const Vector<uint8_t> &p_data) = 0;
 
 	virtual void mesh_surface_set_material(RID p_mesh, int p_surface, RID p_material) = 0;
 	virtual RID mesh_surface_get_material(RID p_mesh, int p_surface) const = 0;
@@ -389,22 +391,6 @@ public:
 
 	virtual void multimesh_set_visible_instances(RID p_multimesh, int p_visible) = 0;
 	virtual int multimesh_get_visible_instances(RID p_multimesh) const = 0;
-
-	/* IMMEDIATE API */
-
-	virtual RID immediate_create() = 0;
-	virtual void immediate_begin(RID p_immediate, PrimitiveType p_rimitive, RID p_texture = RID()) = 0;
-	virtual void immediate_vertex(RID p_immediate, const Vector3 &p_vertex) = 0;
-	virtual void immediate_vertex_2d(RID p_immediate, const Vector2 &p_vertex);
-	virtual void immediate_normal(RID p_immediate, const Vector3 &p_normal) = 0;
-	virtual void immediate_tangent(RID p_immediate, const Plane &p_tangent) = 0;
-	virtual void immediate_color(RID p_immediate, const Color &p_color) = 0;
-	virtual void immediate_uv(RID p_immediate, const Vector2 &tex_uv) = 0;
-	virtual void immediate_uv2(RID p_immediate, const Vector2 &tex_uv) = 0;
-	virtual void immediate_end(RID p_immediate) = 0;
-	virtual void immediate_clear(RID p_immediate) = 0;
-	virtual void immediate_set_material(RID p_immediate, RID p_material) = 0;
-	virtual RID immediate_get_material(RID p_immediate) const = 0;
 
 	/* SKELETON API */
 
@@ -1146,7 +1132,6 @@ public:
 		INSTANCE_NONE,
 		INSTANCE_MESH,
 		INSTANCE_MULTIMESH,
-		INSTANCE_IMMEDIATE,
 		INSTANCE_PARTICLES,
 		INSTANCE_PARTICLES_COLLISION,
 		INSTANCE_LIGHT,
@@ -1158,7 +1143,7 @@ public:
 		INSTANCE_VISIBLITY_NOTIFIER,
 		INSTANCE_MAX,
 
-		INSTANCE_GEOMETRY_MASK = (1 << INSTANCE_MESH) | (1 << INSTANCE_MULTIMESH) | (1 << INSTANCE_IMMEDIATE) | (1 << INSTANCE_PARTICLES)
+		INSTANCE_GEOMETRY_MASK = (1 << INSTANCE_MESH) | (1 << INSTANCE_MULTIMESH) | (1 << INSTANCE_PARTICLES)
 	};
 
 	virtual RID instance_create2(RID p_base, RID p_scenario);

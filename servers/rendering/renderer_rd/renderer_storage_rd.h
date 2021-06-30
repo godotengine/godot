@@ -1457,7 +1457,9 @@ public:
 	virtual void mesh_set_blend_shape_mode(RID p_mesh, RS::BlendShapeMode p_mode);
 	virtual RS::BlendShapeMode mesh_get_blend_shape_mode(RID p_mesh) const;
 
-	virtual void mesh_surface_update_region(RID p_mesh, int p_surface, int p_offset, const Vector<uint8_t> &p_data);
+	virtual void mesh_surface_update_vertex_region(RID p_mesh, int p_surface, int p_offset, const Vector<uint8_t> &p_data);
+	virtual void mesh_surface_update_attribute_region(RID p_mesh, int p_surface, int p_offset, const Vector<uint8_t> &p_data);
+	virtual void mesh_surface_update_skin_region(RID p_mesh, int p_surface, int p_offset, const Vector<uint8_t> &p_data);
 
 	virtual void mesh_surface_set_material(RID p_mesh, int p_surface, RID p_material);
 	virtual RID mesh_surface_get_material(RID p_mesh, int p_surface) const;
@@ -1745,24 +1747,6 @@ public:
 
 		return multimesh->uniform_set_2d;
 	}
-
-	/* IMMEDIATE API */
-
-	RID immediate_allocate() { return RID(); }
-	void immediate_initialize(RID p_immediate) {}
-
-	virtual void immediate_begin(RID p_immediate, RS::PrimitiveType p_rimitive, RID p_texture = RID()) {}
-	virtual void immediate_vertex(RID p_immediate, const Vector3 &p_vertex) {}
-	virtual void immediate_normal(RID p_immediate, const Vector3 &p_normal) {}
-	virtual void immediate_tangent(RID p_immediate, const Plane &p_tangent) {}
-	virtual void immediate_color(RID p_immediate, const Color &p_color) {}
-	virtual void immediate_uv(RID p_immediate, const Vector2 &tex_uv) {}
-	virtual void immediate_uv2(RID p_immediate, const Vector2 &tex_uv) {}
-	virtual void immediate_end(RID p_immediate) {}
-	virtual void immediate_clear(RID p_immediate) {}
-	virtual void immediate_set_material(RID p_immediate, RID p_material) {}
-	virtual RID immediate_get_material(RID p_immediate) const { return RID(); }
-	virtual AABB immediate_get_aabb(RID p_immediate) const { return AABB(); }
 
 	/* SKELETON API */
 
