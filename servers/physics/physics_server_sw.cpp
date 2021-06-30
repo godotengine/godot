@@ -320,7 +320,7 @@ void PhysicsServerSW::area_set_shape_disabled(RID p_area, int p_shape_idx, bool 
 	ERR_FAIL_COND(!area);
 	ERR_FAIL_INDEX(p_shape_idx, area->get_shape_count());
 	FLUSH_QUERY_CHECK(area);
-	area->set_shape_as_disabled(p_shape_idx, p_disabled);
+	area->set_shape_disabled(p_shape_idx, p_disabled);
 }
 
 void PhysicsServerSW::area_attach_object_instance_id(RID p_area, ObjectID p_id) {
@@ -533,7 +533,7 @@ void PhysicsServerSW::body_set_shape_disabled(RID p_body, int p_shape_idx, bool 
 	ERR_FAIL_INDEX(p_shape_idx, body->get_shape_count());
 	FLUSH_QUERY_CHECK(body);
 
-	body->set_shape_as_disabled(p_shape_idx, p_disabled);
+	body->set_shape_disabled(p_shape_idx, p_disabled);
 }
 
 Transform PhysicsServerSW::body_get_shape_transform(RID p_body, int p_shape_idx) const {

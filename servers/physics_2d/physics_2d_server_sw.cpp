@@ -361,7 +361,7 @@ void Physics2DServerSW::area_set_shape_disabled(RID p_area, int p_shape, bool p_
 	ERR_FAIL_INDEX(p_shape, area->get_shape_count());
 	FLUSH_QUERY_CHECK(area);
 
-	area->set_shape_as_disabled(p_shape, p_disabled);
+	area->set_shape_disabled(p_shape, p_disabled);
 }
 
 int Physics2DServerSW::area_get_shape_count(RID p_area) const {
@@ -651,7 +651,7 @@ void Physics2DServerSW::body_set_shape_disabled(RID p_body, int p_shape_idx, boo
 	ERR_FAIL_INDEX(p_shape_idx, body->get_shape_count());
 	FLUSH_QUERY_CHECK(body);
 
-	body->set_shape_as_disabled(p_shape_idx, p_disabled);
+	body->set_shape_disabled(p_shape_idx, p_disabled);
 }
 void Physics2DServerSW::body_set_shape_as_one_way_collision(RID p_body, int p_shape_idx, bool p_enable, float p_margin) {
 	Body2DSW *body = body_owner.get(p_body);

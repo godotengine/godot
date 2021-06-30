@@ -45,8 +45,6 @@ void CollisionObjectSW::add_shape(ShapeSW *p_shape, const Transform &p_transform
 	if (!pending_shape_update_list.in_list()) {
 		PhysicsServerSW::singleton->pending_shape_update_list.add(&pending_shape_update_list);
 	}
-	//_update_shapes();
-	//_shapes_changed();
 }
 
 void CollisionObjectSW::set_shape(int p_index, ShapeSW *p_shape) {
@@ -58,8 +56,6 @@ void CollisionObjectSW::set_shape(int p_index, ShapeSW *p_shape) {
 	if (!pending_shape_update_list.in_list()) {
 		PhysicsServerSW::singleton->pending_shape_update_list.add(&pending_shape_update_list);
 	}
-	//_update_shapes();
-	//_shapes_changed();
 }
 void CollisionObjectSW::set_shape_transform(int p_index, const Transform &p_transform) {
 	ERR_FAIL_INDEX(p_index, shapes.size());
@@ -69,14 +65,32 @@ void CollisionObjectSW::set_shape_transform(int p_index, const Transform &p_tran
 	if (!pending_shape_update_list.in_list()) {
 		PhysicsServerSW::singleton->pending_shape_update_list.add(&pending_shape_update_list);
 	}
-	//_update_shapes();
-	//_shapes_changed();
 }
 
-void CollisionObjectSW::set_shape_as_disabled(int p_idx, bool p_enable) {
-	shapes.write[p_idx].disabled = p_enable;
-	if (!pending_shape_update_list.in_list()) {
-		PhysicsServerSW::singleton->pending_shape_update_list.add(&pending_shape_update_list);
+void CollisionObjectSW::set_shape_disabled(int p_idx, bool p_disabled) {
+	ERR_FAIL_INDEX(p_idx, shapes.size());
+
+	CollisionObjectSW::Shape &shape = shapes.write[p_idx];
+	if (shape.disabled == p_disabled) {
+		return;
+	}
+
+	shape.disabled = p_disabled;
+
+	if (!space) {
+		return;
+	}
+
+	if (p_disabled && shape.bpid != 0) {
+		space->get_broadphase()->remove(shape.bpid);
+		shape.bpid = 0;
+		if (!pending_shape_update_list.in_list()) {
+			PhysicsServerSW::singleton->pending_shape_update_list.add(&pending_shape_update_list);
+		}
+	} else if (!p_disabled && shape.bpid == 0) {
+		if (!pending_shape_update_list.in_list()) {
+			PhysicsServerSW::singleton->pending_shape_update_list.add(&pending_shape_update_list);
+		}
 	}
 }
 
@@ -107,8 +121,6 @@ void CollisionObjectSW::remove_shape(int p_index) {
 	if (!pending_shape_update_list.in_list()) {
 		PhysicsServerSW::singleton->pending_shape_update_list.add(&pending_shape_update_list);
 	}
-	//_update_shapes();
-	//_shapes_changed();
 }
 
 void CollisionObjectSW::_set_static(bool p_static) {
@@ -145,6 +157,9 @@ void CollisionObjectSW::_update_shapes() {
 
 	for (int i = 0; i < shapes.size(); i++) {
 		Shape &s = shapes.write[i];
+		if (s.disabled) {
+			continue;
+		}
 
 		//not quite correct, should compute the next matrix..
 		AABB shape_aabb = s.shape->get_aabb();
@@ -172,6 +187,9 @@ void CollisionObjectSW::_update_shapes_with_motion(const Vector3 &p_motion) {
 
 	for (int i = 0; i < shapes.size(); i++) {
 		Shape &s = shapes.write[i];
+		if (s.disabled) {
+			continue;
+		}
 
 		//not quite correct, should compute the next matrix..
 		AABB shape_aabb = s.shape->get_aabb();
