@@ -1409,7 +1409,7 @@ void SceneTreeDock::fill_path_renames(Node *p_node, Node *p_new_parent, List<Pai
 	_fill_path_renames(base_path, new_base_path, p_node, p_renames);
 }
 
-bool SceneTreeDock::_update_node_path(const NodePath &p_root_path, NodePath &p_node_path, List<Pair<NodePath, NodePath>> *p_renames) {
+bool SceneTreeDock::_update_node_path(const NodePath &p_root_path, NodePath &r_node_path, List<Pair<NodePath, NodePath>> *p_renames) {
 	NodePath root_path_new = p_root_path;
 	for (List<Pair<NodePath, NodePath>>::Element *F = p_renames->front(); F; F = F->next()) {
 		if (p_root_path == F->get().first) {
@@ -1423,7 +1423,7 @@ bool SceneTreeDock::_update_node_path(const NodePath &p_root_path, NodePath &p_n
 		NodePath rel_path_old = p_root_path.rel_path_to(F->get().first);
 
 		// If old path detected, then it needs to be replaced with the new one.
-		if (p_node_path == rel_path_old) {
+		if (r_node_path == rel_path_old) {
 			NodePath rel_path_new = F->get().second;
 
 			// If not empty, get new relative path.
@@ -1431,16 +1431,16 @@ bool SceneTreeDock::_update_node_path(const NodePath &p_root_path, NodePath &p_n
 				rel_path_new = root_path_new.rel_path_to(rel_path_new);
 			}
 
-			p_node_path = rel_path_new;
+			r_node_path = rel_path_new;
 			return true;
 		}
 
 		// Update the node itself if it has a valid node path and has not been deleted.
-		if (p_root_path == F->get().first && p_node_path != NodePath() && F->get().second != NodePath()) {
-			NodePath abs_path = NodePath(String(root_path_new).plus_file(p_node_path)).simplified();
+		if (p_root_path == F->get().first && r_node_path != NodePath() && F->get().second != NodePath()) {
+			NodePath abs_path = NodePath(String(root_path_new).plus_file(r_node_path)).simplified();
 			NodePath rel_path_new = F->get().second.rel_path_to(abs_path);
 
-			p_node_path = rel_path_new;
+			r_node_path = rel_path_new;
 			return true;
 		}
 	}
@@ -1448,18 +1448,18 @@ bool SceneTreeDock::_update_node_path(const NodePath &p_root_path, NodePath &p_n
 	return false;
 }
 
-bool SceneTreeDock::_check_node_path_recursive(const NodePath &p_root_path, Variant &p_variant, List<Pair<NodePath, NodePath>> *p_renames) {
-	switch (p_variant.get_type()) {
+bool SceneTreeDock::_check_node_path_recursive(const NodePath &p_root_path, Variant &r_variant, List<Pair<NodePath, NodePath>> *p_renames) {
+	switch (r_variant.get_type()) {
 		case Variant::NODE_PATH: {
-			NodePath node_path = p_variant;
+			NodePath node_path = r_variant;
 			if (_update_node_path(p_root_path, node_path, p_renames)) {
-				p_variant = node_path;
+				r_variant = node_path;
 				return true;
 			}
 		} break;
 
 		case Variant::ARRAY: {
-			Array a = p_variant;
+			Array a = r_variant;
 			bool updated = false;
 			for (int i = 0; i < a.size(); i++) {
 				Variant value = a[i];
@@ -1472,13 +1472,13 @@ bool SceneTreeDock::_check_node_path_recursive(const NodePath &p_root_path, Vari
 				}
 			}
 			if (updated) {
-				p_variant = a;
+				r_variant = a;
 				return true;
 			}
 		} break;
 
 		case Variant::DICTIONARY: {
-			Dictionary d = p_variant;
+			Dictionary d = r_variant;
 			bool updated = false;
 			for (int i = 0; i < d.size(); i++) {
 				Variant value = d.get_value_at_index(i);
@@ -1491,7 +1491,7 @@ bool SceneTreeDock::_check_node_path_recursive(const NodePath &p_root_path, Vari
 				}
 			}
 			if (updated) {
-				p_variant = d;
+				r_variant = d;
 				return true;
 			}
 		} break;
