@@ -1482,7 +1482,7 @@ void RenderingServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("mesh_get_blend_shape_count", "mesh"), &RenderingServer::mesh_get_blend_shape_count);
 	ClassDB::bind_method(D_METHOD("mesh_set_blend_shape_mode", "mesh", "mode"), &RenderingServer::mesh_set_blend_shape_mode);
 	ClassDB::bind_method(D_METHOD("mesh_get_blend_shape_mode", "mesh"), &RenderingServer::mesh_get_blend_shape_mode);
-	ClassDB::bind_method(D_METHOD("mesh_surface_update_region", "mesh", "surface", "offset", "data"), &RenderingServer::mesh_surface_update_region);
+
 	ClassDB::bind_method(D_METHOD("mesh_surface_set_material", "mesh", "surface", "material"), &RenderingServer::mesh_surface_set_material);
 	ClassDB::bind_method(D_METHOD("mesh_surface_get_material", "mesh", "surface"), &RenderingServer::mesh_surface_get_material);
 	ClassDB::bind_method(D_METHOD("mesh_surface_get_arrays", "mesh", "surface"), &RenderingServer::mesh_surface_get_arrays);
@@ -1510,21 +1510,6 @@ void RenderingServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("multimesh_get_visible_instances", "multimesh"), &RenderingServer::multimesh_get_visible_instances);
 	ClassDB::bind_method(D_METHOD("multimesh_set_buffer", "multimesh", "buffer"), &RenderingServer::multimesh_set_buffer);
 	ClassDB::bind_method(D_METHOD("multimesh_get_buffer", "multimesh"), &RenderingServer::multimesh_get_buffer);
-#ifndef _3D_DISABLED
-	ClassDB::bind_method(D_METHOD("immediate_create"), &RenderingServer::immediate_create);
-	ClassDB::bind_method(D_METHOD("immediate_begin", "immediate", "primitive", "texture"), &RenderingServer::immediate_begin, DEFVAL(RID()));
-	ClassDB::bind_method(D_METHOD("immediate_vertex", "immediate", "vertex"), &RenderingServer::immediate_vertex);
-	ClassDB::bind_method(D_METHOD("immediate_vertex_2d", "immediate", "vertex"), &RenderingServer::immediate_vertex_2d);
-	ClassDB::bind_method(D_METHOD("immediate_normal", "immediate", "normal"), &RenderingServer::immediate_normal);
-	ClassDB::bind_method(D_METHOD("immediate_tangent", "immediate", "tangent"), &RenderingServer::immediate_tangent);
-	ClassDB::bind_method(D_METHOD("immediate_color", "immediate", "color"), &RenderingServer::immediate_color);
-	ClassDB::bind_method(D_METHOD("immediate_uv", "immediate", "tex_uv"), &RenderingServer::immediate_uv);
-	ClassDB::bind_method(D_METHOD("immediate_uv2", "immediate", "tex_uv"), &RenderingServer::immediate_uv2);
-	ClassDB::bind_method(D_METHOD("immediate_end", "immediate"), &RenderingServer::immediate_end);
-	ClassDB::bind_method(D_METHOD("immediate_clear", "immediate"), &RenderingServer::immediate_clear);
-	ClassDB::bind_method(D_METHOD("immediate_set_material", "immediate", "material"), &RenderingServer::immediate_set_material);
-	ClassDB::bind_method(D_METHOD("immediate_get_material", "immediate"), &RenderingServer::immediate_get_material);
-#endif
 
 	ClassDB::bind_method(D_METHOD("skeleton_create"), &RenderingServer::skeleton_create);
 	ClassDB::bind_method(D_METHOD("skeleton_allocate_data", "skeleton", "bones", "is_2d_skeleton"), &RenderingServer::skeleton_allocate_data, DEFVAL(false));
@@ -2113,7 +2098,6 @@ void RenderingServer::_bind_methods() {
 	BIND_ENUM_CONSTANT(INSTANCE_NONE);
 	BIND_ENUM_CONSTANT(INSTANCE_MESH);
 	BIND_ENUM_CONSTANT(INSTANCE_MULTIMESH);
-	BIND_ENUM_CONSTANT(INSTANCE_IMMEDIATE);
 	BIND_ENUM_CONSTANT(INSTANCE_PARTICLES);
 	BIND_ENUM_CONSTANT(INSTANCE_PARTICLES_COLLISION);
 	BIND_ENUM_CONSTANT(INSTANCE_LIGHT);
@@ -2251,10 +2235,6 @@ void RenderingServer::mesh_add_surface_from_mesh_data(RID p_mesh, const Geometry
 void RenderingServer::mesh_add_surface_from_planes(RID p_mesh, const Vector<Plane> &p_planes) {
 	Geometry3D::MeshData mdata = Geometry3D::build_convex_mesh(p_planes);
 	mesh_add_surface_from_mesh_data(p_mesh, mdata);
-}
-
-void RenderingServer::immediate_vertex_2d(RID p_immediate, const Vector2 &p_vertex) {
-	immediate_vertex(p_immediate, Vector3(p_vertex.x, p_vertex.y, 0));
 }
 
 RID RenderingServer::instance_create2(RID p_base, RID p_scenario) {

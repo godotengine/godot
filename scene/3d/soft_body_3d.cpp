@@ -81,7 +81,7 @@ void SoftBodyRenderingServerHandler::close() {
 }
 
 void SoftBodyRenderingServerHandler::commit_changes() {
-	RS::get_singleton()->mesh_surface_update_region(mesh, surface, 0, buffer);
+	RS::get_singleton()->mesh_surface_update_vertex_region(mesh, surface, 0, buffer);
 }
 
 void SoftBodyRenderingServerHandler::set_vertex(int p_vertex_id, const void *p_vector3) {
