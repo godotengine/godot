@@ -1423,6 +1423,10 @@ void TranslationServer::set_pseudolocalization_suffix(String suffix) {
 StringName TranslationServer::pseudolocalize(const StringName &p_message) const {
 	String message = p_message;
 	int length = message.length();
+	if (pseudolocalization_override_enabled) {
+		message = get_override_string(length);
+	}
+
 	if (pseudolocalization_double_vowels_enabled) {
 		message = double_vowels(message);
 	}
@@ -1438,7 +1442,13 @@ StringName TranslationServer::pseudolocalize(const StringName &p_message) const 
 	StringName res = add_padding(message, length);
 	return res;
 }
-
+String TranslationServer::get_override_string(int length) const {
+	String res = "";
+	for (int i = 0; i < length; i++) {
+		res += '*';
+	}
+	return res;
+}
 String TranslationServer::double_vowels(String &message) const {
 	String res = "";
 	for (int i = 0; i < message.size(); i++) {
