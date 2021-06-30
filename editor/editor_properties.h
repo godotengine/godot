@@ -268,7 +268,7 @@ public:
 class EditorPropertyInteger : public EditorProperty {
 	GDCLASS(EditorPropertyInteger, EditorProperty);
 	EditorSpinSlider *spin;
-	bool setting;
+	bool setting = false;
 	void _value_changed(int64_t p_val);
 
 protected:
@@ -276,7 +276,7 @@ protected:
 
 public:
 	virtual void update_property() override;
-	void setup(int64_t p_min, int64_t p_max, int64_t p_step, bool p_allow_greater, bool p_allow_lesser);
+	void setup(int64_t p_min, int64_t p_max, int64_t p_step, bool p_allow_greater, bool p_allow_lesser, const String &p_suffix = String());
 	EditorPropertyInteger();
 };
 
@@ -298,8 +298,8 @@ public:
 class EditorPropertyFloat : public EditorProperty {
 	GDCLASS(EditorPropertyFloat, EditorProperty);
 	EditorSpinSlider *spin;
+	PropertyUnitType unit_type = PROPERTY_UNIT_TYPE_NONE;
 	bool setting = false;
-	bool angle_in_radians = false;
 	void _value_changed(double p_val);
 
 protected:
@@ -307,7 +307,7 @@ protected:
 
 public:
 	virtual void update_property() override;
-	void setup(double p_min, double p_max, double p_step, bool p_no_slider, bool p_exp_range, bool p_greater, bool p_lesser, const String &p_suffix = String(), bool p_angle_in_radians = false);
+	void setup(double p_min, double p_max, double p_step, bool p_no_slider, bool p_exp_range, bool p_greater, bool p_lesser, const String &p_suffix = String(), const PropertyUnitType p_unit_type = PROPERTY_UNIT_TYPE_NONE);
 	EditorPropertyFloat();
 };
 
@@ -316,7 +316,7 @@ class EditorPropertyEasing : public EditorProperty {
 	Control *easing_draw;
 	PopupMenu *preset;
 	EditorSpinSlider *spin;
-	bool setting;
+	bool setting = false;
 
 	bool dragging;
 	bool full;
@@ -355,7 +355,8 @@ public:
 class EditorPropertyVector2 : public EditorProperty {
 	GDCLASS(EditorPropertyVector2, EditorProperty);
 	EditorSpinSlider *spin[2];
-	bool setting;
+	PropertyUnitType unit_type = PROPERTY_UNIT_TYPE_NONE;
+	bool setting = false;
 	void _value_changed(double p_val, const String &p_name);
 
 protected:
@@ -364,14 +365,15 @@ protected:
 
 public:
 	virtual void update_property() override;
-	void setup(double p_min, double p_max, double p_step, bool p_no_slider, const String &p_suffix = String());
+	void setup(double p_min, double p_max, double p_step, bool p_no_slider, const String &p_suffix = String(), const PropertyUnitType p_unit_type = PROPERTY_UNIT_TYPE_NONE);
 	EditorPropertyVector2(bool p_force_wide = false);
 };
 
 class EditorPropertyRect2 : public EditorProperty {
 	GDCLASS(EditorPropertyRect2, EditorProperty);
 	EditorSpinSlider *spin[4];
-	bool setting;
+	PropertyUnitType unit_type = PROPERTY_UNIT_TYPE_NONE;
+	bool setting = false;
 	void _value_changed(double p_val, const String &p_name);
 
 protected:
@@ -380,15 +382,15 @@ protected:
 
 public:
 	virtual void update_property() override;
-	void setup(double p_min, double p_max, double p_step, bool p_no_slider, const String &p_suffix = String());
+	void setup(double p_min, double p_max, double p_step, bool p_no_slider, const String &p_suffix = String(), const PropertyUnitType p_unit_type = PROPERTY_UNIT_TYPE_NONE);
 	EditorPropertyRect2(bool p_force_wide = false);
 };
 
 class EditorPropertyVector3 : public EditorProperty {
 	GDCLASS(EditorPropertyVector3, EditorProperty);
 	EditorSpinSlider *spin[3];
+	PropertyUnitType unit_type = PROPERTY_UNIT_TYPE_NONE;
 	bool setting = false;
-	bool angle_in_radians = false;
 	void _value_changed(double p_val, const String &p_name);
 
 protected:
@@ -399,14 +401,14 @@ public:
 	virtual void update_property() override;
 	virtual void update_using_vector(Vector3 p_vector);
 	virtual Vector3 get_vector();
-	void setup(double p_min, double p_max, double p_step, bool p_no_slider, const String &p_suffix = String(), bool p_angle_in_radians = false);
+	void setup(double p_min, double p_max, double p_step, bool p_no_slider, const String &p_suffix = String(), const PropertyUnitType p_unit_type = PROPERTY_UNIT_TYPE_NONE);
 	EditorPropertyVector3(bool p_force_wide = false);
 };
 
 class EditorPropertyVector2i : public EditorProperty {
 	GDCLASS(EditorPropertyVector2i, EditorProperty);
 	EditorSpinSlider *spin[2];
-	bool setting;
+	bool setting = false;
 	void _value_changed(double p_val, const String &p_name);
 
 protected:
@@ -422,7 +424,7 @@ public:
 class EditorPropertyRect2i : public EditorProperty {
 	GDCLASS(EditorPropertyRect2i, EditorProperty);
 	EditorSpinSlider *spin[4];
-	bool setting;
+	bool setting = false;
 	void _value_changed(double p_val, const String &p_name);
 
 protected:
@@ -438,7 +440,7 @@ public:
 class EditorPropertyVector3i : public EditorProperty {
 	GDCLASS(EditorPropertyVector3i, EditorProperty);
 	EditorSpinSlider *spin[3];
-	bool setting;
+	bool setting = false;
 	void _value_changed(double p_val, const String &p_name);
 
 protected:
@@ -454,7 +456,8 @@ public:
 class EditorPropertyPlane : public EditorProperty {
 	GDCLASS(EditorPropertyPlane, EditorProperty);
 	EditorSpinSlider *spin[4];
-	bool setting;
+	PropertyUnitType unit_type = PROPERTY_UNIT_TYPE_NONE;
+	bool setting = false;
 	void _value_changed(double p_val, const String &p_name);
 
 protected:
@@ -463,14 +466,14 @@ protected:
 
 public:
 	virtual void update_property() override;
-	void setup(double p_min, double p_max, double p_step, bool p_no_slider, const String &p_suffix = String());
+	void setup(double p_min, double p_max, double p_step, bool p_no_slider, const String &p_suffix = String(), const PropertyUnitType p_unit_type = PROPERTY_UNIT_TYPE_NONE);
 	EditorPropertyPlane(bool p_force_wide = false);
 };
 
 class EditorPropertyQuaternion : public EditorProperty {
 	GDCLASS(EditorPropertyQuaternion, EditorProperty);
 	EditorSpinSlider *spin[4];
-	bool setting;
+	bool setting = false;
 	void _value_changed(double p_val, const String &p_name);
 
 protected:
@@ -479,14 +482,15 @@ protected:
 
 public:
 	virtual void update_property() override;
-	void setup(double p_min, double p_max, double p_step, bool p_no_slider, const String &p_suffix = String());
+	void setup(double p_min, double p_max, double p_step, bool p_no_slider);
 	EditorPropertyQuaternion();
 };
 
 class EditorPropertyAABB : public EditorProperty {
 	GDCLASS(EditorPropertyAABB, EditorProperty);
 	EditorSpinSlider *spin[6];
-	bool setting;
+	PropertyUnitType unit_type = PROPERTY_UNIT_TYPE_NONE;
+	bool setting = false;
 	void _value_changed(double p_val, const String &p_name);
 
 protected:
@@ -495,14 +499,15 @@ protected:
 
 public:
 	virtual void update_property() override;
-	void setup(double p_min, double p_max, double p_step, bool p_no_slider, const String &p_suffix = String());
+	void setup(double p_min, double p_max, double p_step, bool p_no_slider, const String &p_suffix = String(), const PropertyUnitType p_unit_type = PROPERTY_UNIT_TYPE_NONE);
 	EditorPropertyAABB();
 };
 
 class EditorPropertyTransform2D : public EditorProperty {
 	GDCLASS(EditorPropertyTransform2D, EditorProperty);
 	EditorSpinSlider *spin[6];
-	bool setting;
+	PropertyUnitType unit_type = PROPERTY_UNIT_TYPE_NONE;
+	bool setting = false;
 	void _value_changed(double p_val, const String &p_name);
 
 protected:
@@ -511,14 +516,14 @@ protected:
 
 public:
 	virtual void update_property() override;
-	void setup(double p_min, double p_max, double p_step, bool p_no_slider, const String &p_suffix = String());
+	void setup(double p_min, double p_max, double p_step, bool p_no_slider, const String &p_suffix = String(), const PropertyUnitType p_unit_type = PROPERTY_UNIT_TYPE_NONE);
 	EditorPropertyTransform2D();
 };
 
 class EditorPropertyBasis : public EditorProperty {
 	GDCLASS(EditorPropertyBasis, EditorProperty);
 	EditorSpinSlider *spin[9];
-	bool setting;
+	bool setting = false;
 	void _value_changed(double p_val, const String &p_name);
 
 protected:
@@ -527,14 +532,15 @@ protected:
 
 public:
 	virtual void update_property() override;
-	void setup(double p_min, double p_max, double p_step, bool p_no_slider, const String &p_suffix = String());
+	void setup(double p_min, double p_max, double p_step, bool p_no_slider);
 	EditorPropertyBasis();
 };
 
 class EditorPropertyTransform3D : public EditorProperty {
 	GDCLASS(EditorPropertyTransform3D, EditorProperty);
 	EditorSpinSlider *spin[12];
-	bool setting;
+	PropertyUnitType unit_type = PROPERTY_UNIT_TYPE_NONE;
+	bool setting = false;
 	void _value_changed(double p_val, const String &p_name);
 
 protected:
@@ -544,7 +550,7 @@ protected:
 public:
 	virtual void update_property() override;
 	virtual void update_using_transform(Transform3D p_transform);
-	void setup(double p_min, double p_max, double p_step, bool p_no_slider, const String &p_suffix = String());
+	void setup(double p_min, double p_max, double p_step, bool p_no_slider, const String &p_suffix = String(), const PropertyUnitType p_unit_type = PROPERTY_UNIT_TYPE_NONE);
 	EditorPropertyTransform3D();
 };
 
