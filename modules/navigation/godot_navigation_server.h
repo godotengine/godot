@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  gd_navigation_server.h                                               */
+/*  godot_navigation_server.h                                            */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef GD_NAVIGATION_SERVER_H
-#define GD_NAVIGATION_SERVER_H
+#ifndef GODOT_NAVIGATION_SERVER_H
+#define GODOT_NAVIGATION_SERVER_H
 
 #include "core/templates/local_vector.h"
 #include "core/templates/rid.h"
@@ -61,14 +61,14 @@
 	virtual void F_NAME(T_0 D_0, T_1 D_1, T_2 D_2, T_3 D_3 = D_3_DEF) const;   \
 	void MERGE(_cmd_, F_NAME)(T_0 D_0, T_1 D_1, T_2 D_2, T_3 D_3)
 
-class GdNavigationServer;
+class GodotNavigationServer;
 
 struct SetCommand {
 	virtual ~SetCommand() {}
-	virtual void exec(GdNavigationServer *server) = 0;
+	virtual void exec(GodotNavigationServer *server) = 0;
 };
 
-class GdNavigationServer : public NavigationServer3D {
+class GodotNavigationServer : public NavigationServer3D {
 	Mutex commands_mutex;
 	/// Mutex used to make any operation threadsafe.
 	Mutex operations_mutex;
@@ -84,8 +84,8 @@ class GdNavigationServer : public NavigationServer3D {
 	LocalVector<uint32_t> active_maps_update_id;
 
 public:
-	GdNavigationServer();
-	virtual ~GdNavigationServer();
+	GodotNavigationServer();
+	virtual ~GodotNavigationServer();
 
 	void add_command(SetCommand *command) const;
 
@@ -146,4 +146,4 @@ public:
 #undef COMMAND_2
 #undef COMMAND_4_DEF
 
-#endif // GD_NAVIGATION_SERVER_H
+#endif // GODOT_NAVIGATION_SERVER_H
