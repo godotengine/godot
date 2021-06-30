@@ -155,10 +155,10 @@ typedef struct Node {
 // clang-format on
 
 // clang-format off
-typedef struct String {
+typedef struct SpvString {
   uint32_t              result_id;
   const char*           string;
-} String;
+} SpvString;
 // clang-format on
 
 // clang-format off
@@ -195,7 +195,7 @@ typedef struct Parser {
   size_t                spirv_word_count;
   uint32_t*             spirv_code;
   uint32_t              string_count;
-  String*               strings;
+  SpvString*            strings;
   SpvSourceLanguage     source_language;
   uint32_t              source_language_version;
   uint32_t              source_file_id;
@@ -915,7 +915,7 @@ static SpvReflectResult ParseStrings(Parser* p_parser)
 
   if (IsNotNull(p_parser) && IsNotNull(p_parser->spirv_code) && IsNotNull(p_parser->nodes)) {
     // Allocate string storage
-    p_parser->strings = (String*)calloc(p_parser->string_count, sizeof(*(p_parser->strings)));  
+    p_parser->strings = (SpvString*)calloc(p_parser->string_count, sizeof(*(p_parser->strings)));  
 
     uint32_t string_index = 0;
     for (size_t i = 0; i < p_parser->node_count; ++i) {
@@ -931,7 +931,7 @@ static SpvReflectResult ParseStrings(Parser* p_parser)
       }
 
       // Result id
-      String* p_string = &(p_parser->strings[string_index]);
+      SpvString* p_string = &(p_parser->strings[string_index]);
       CHECKED_READU32(p_parser, p_node->word_offset + 1, p_string->result_id);
 
       // String
@@ -955,7 +955,7 @@ static SpvReflectResult ParseSource(Parser* p_parser, SpvReflectShaderModule* p_
     // Source file
     if (IsNotNull(p_parser->strings)) {
       for (uint32_t i = 0; i < p_parser->string_count; ++i) {
-        String* p_string = &(p_parser->strings[i]);
+        SpvString* p_string = &(p_parser->strings[i]);
         if (p_string->result_id == p_parser->source_file_id) {
           p_module->source_file = p_string->string;
           break;
