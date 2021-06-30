@@ -229,7 +229,7 @@ bool BodyPair2DSW::setup(real_t p_step) {
 	dynamic_A = (A->get_mode() > PhysicsServer2D::BODY_MODE_KINEMATIC);
 	dynamic_B = (B->get_mode() > PhysicsServer2D::BODY_MODE_KINEMATIC);
 
-	if (!A->test_collision_mask(B) || A->has_exception(B->get_self()) || B->has_exception(A->get_self())) {
+	if (!A->interacts_with(B) || A->has_exception(B->get_self()) || B->has_exception(A->get_self())) {
 		collided = false;
 		return false;
 	}
@@ -403,12 +403,12 @@ bool BodyPair2DSW::pre_solve(real_t p_step) {
 		c.rA = global_A;
 		c.rB = global_B - offset_B;
 
-		if (A->can_report_contacts()) {
+		if (A->can_report_contacts() && B->layer_in_mask(A)) {
 			Vector2 crB(-B->get_angular_velocity() * c.rB.y, B->get_angular_velocity() * c.rB.x);
 			A->add_contact(global_A + offset_A, -c.normal, depth, shape_A, global_B + offset_A, shape_B, B->get_instance_id(), B->get_self(), crB + B->get_linear_velocity());
 		}
 
-		if (B->can_report_contacts()) {
+		if (B->can_report_contacts() && A->layer_in_mask(B)) {
 			Vector2 crA(-A->get_angular_velocity() * c.rA.y, A->get_angular_velocity() * c.rA.x);
 			B->add_contact(global_B + offset_A, c.normal, depth, shape_B, global_A + offset_A, shape_A, A->get_instance_id(), A->get_self(), crA + A->get_linear_velocity());
 		}
@@ -441,10 +441,10 @@ bool BodyPair2DSW::pre_solve(real_t p_step) {
 			// Apply normal + friction impulse
 			Vector2 P = c.acc_normal_impulse * c.normal + c.acc_tangent_impulse * tangent;
 
-			if (dynamic_A) {
+			if (dynamic_A && A->layer_in_mask(B)) {
 				A->apply_impulse(-P, c.rA);
 			}
-			if (dynamic_B) {
+			if (dynamic_B && B->layer_in_mask(A)) {
 				B->apply_impulse(P, c.rB);
 			}
 		}
@@ -498,10 +498,10 @@ void BodyPair2DSW::solve(real_t p_step) {
 
 		Vector2 jb = c.normal * (c.acc_bias_impulse - jbnOld);
 
-		if (dynamic_A) {
+		if (dynamic_A && A->layer_in_mask(B)) {
 			A->apply_bias_impulse(-jb, c.rA);
 		}
-		if (dynamic_B) {
+		if (dynamic_B && B->layer_in_mask(A)) {
 			B->apply_bias_impulse(jb, c.rB);
 		}
 
@@ -518,10 +518,10 @@ void BodyPair2DSW::solve(real_t p_step) {
 
 		Vector2 j = c.normal * (c.acc_normal_impulse - jnOld) + tangent * (c.acc_tangent_impulse - jtOld);
 
-		if (dynamic_A) {
+		if (dynamic_A && A->layer_in_mask(B)) {
 			A->apply_impulse(-j, c.rA);
 		}
-		if (dynamic_B) {
+		if (dynamic_B && B->layer_in_mask(A)) {
 			B->apply_impulse(j, c.rB);
 		}
 	}
