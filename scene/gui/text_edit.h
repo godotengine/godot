@@ -280,9 +280,6 @@ private:
 	bool cursor_changed_dirty = false;
 	bool text_changed_dirty = false;
 	bool undo_enabled = true;
-	bool line_length_guidelines = false;
-	int line_length_guideline_soft_col = 80;
-	int line_length_guideline_hard_col = 100;
 	bool hiding_enabled = false;
 	bool draw_minimap = false;
 	int minimap_width = 80;
@@ -453,7 +450,6 @@ protected:
 		Color selection_color;
 		Color code_folding_color;
 		Color current_line_color;
-		Color line_length_guideline_color;
 		Color brace_mismatch_color;
 		Color word_highlighted_color;
 		Color search_result_color;
@@ -738,10 +734,6 @@ public:
 
 	void set_highlight_current_line(bool p_enabled);
 	bool is_highlight_current_line_enabled() const;
-
-	void set_show_line_length_guidelines(bool p_show);
-	void set_line_length_guideline_soft_column(int p_column);
-	void set_line_length_guideline_hard_column(int p_column);
 
 	void set_draw_minimap(bool p_draw);
 	bool is_drawing_minimap() const;

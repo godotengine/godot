@@ -223,6 +223,10 @@ private:
 
 	void _lines_edited_from(int p_from_line, int p_to_line);
 
+	/* Line length guidelines */
+	TypedArray<int> line_length_guideline_columns;
+	Color line_length_guideline_color;
+
 protected:
 	void _gui_input(const Ref<InputEvent> &p_gui_input) override;
 	void _notification(int p_what);
@@ -377,6 +381,10 @@ public:
 
 	void confirm_code_completion(bool p_replace = false);
 	void cancel_code_completion();
+
+	/* Line length guidelines */
+	void set_line_length_guidelines(TypedArray<int> p_guideline_columns);
+	TypedArray<int> get_line_length_guidelines() const;
 
 	CodeEdit();
 	~CodeEdit();

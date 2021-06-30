@@ -594,29 +594,6 @@ void TextEdit::_notification(int p_what) {
 				RenderingServer::get_singleton()->canvas_item_add_rect(ci, Rect2(Point2i(), get_size()), cache.background_color);
 			}
 
-			if (line_length_guidelines) {
-				const int hard_x = xmargin_beg + (int)cache.font->get_char_size('0', 0, cache.font_size).width * line_length_guideline_hard_col - cursor.x_ofs;
-				if (hard_x > xmargin_beg && hard_x < xmargin_end) {
-					if (rtl) {
-						RenderingServer::get_singleton()->canvas_item_add_line(ci, Point2(size.width - hard_x, 0), Point2(size.width - hard_x, size.height), cache.line_length_guideline_color);
-					} else {
-						RenderingServer::get_singleton()->canvas_item_add_line(ci, Point2(hard_x, 0), Point2(hard_x, size.height), cache.line_length_guideline_color);
-					}
-				}
-
-				// Draw a "Soft" line length guideline, less visible than the hard line length guideline.
-				// It's usually set to a lower column compared to the hard line length guideline.
-				// Only drawn if its column differs from the hard line length guideline.
-				const int soft_x = xmargin_beg + (int)cache.font->get_char_size('0', 0, cache.font_size).width * line_length_guideline_soft_col - cursor.x_ofs;
-				if (hard_x != soft_x && soft_x > xmargin_beg && soft_x < xmargin_end) {
-					if (rtl) {
-						RenderingServer::get_singleton()->canvas_item_add_line(ci, Point2(size.width - soft_x, 0), Point2(size.width - soft_x, size.height), cache.line_length_guideline_color * Color(1, 1, 1, 0.5));
-					} else {
-						RenderingServer::get_singleton()->canvas_item_add_line(ci, Point2(soft_x, 0), Point2(soft_x, size.height), cache.line_length_guideline_color * Color(1, 1, 1, 0.5));
-					}
-				}
-			}
-
 			int brace_open_match_line = -1;
 			int brace_open_match_column = -1;
 			bool brace_open_matching = false;
@@ -3836,7 +3813,6 @@ void TextEdit::_update_caches() {
 	cache.font_readonly_color = get_theme_color(SNAME("font_readonly_color"));
 	cache.selection_color = get_theme_color(SNAME("selection_color"));
 	cache.current_line_color = get_theme_color(SNAME("current_line_color"));
-	cache.line_length_guideline_color = get_theme_color(SNAME("line_length_guideline_color"));
 	cache.code_folding_color = get_theme_color(SNAME("code_folding_color"), SNAME("CodeEdit"));
 	cache.brace_mismatch_color = get_theme_color(SNAME("brace_mismatch_color"), SNAME("CodeEdit"));
 	cache.word_highlighted_color = get_theme_color(SNAME("word_highlighted_color"));
@@ -5145,21 +5121,6 @@ void TextEdit::insert_at(const String &p_text, int at) {
 	}
 }
 
-void TextEdit::set_show_line_length_guidelines(bool p_show) {
-	line_length_guidelines = p_show;
-	update();
-}
-
-void TextEdit::set_line_length_guideline_soft_column(int p_column) {
-	line_length_guideline_soft_col = p_column;
-	update();
-}
-
-void TextEdit::set_line_length_guideline_hard_column(int p_column) {
-	line_length_guideline_hard_col = p_column;
-	update();
-}
-
 void TextEdit::set_draw_minimap(bool p_draw) {
 	if (draw_minimap != p_draw) {
 		draw_minimap = p_draw;
@@ -5599,6 +5560,7 @@ void TextEdit::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_gutter_overwritable", "gutter"), &TextEdit::is_gutter_overwritable);
 	ClassDB::bind_method(D_METHOD("merge_gutters", "from_line", "to_line"), &TextEdit::merge_gutters);
 	ClassDB::bind_method(D_METHOD("set_gutter_custom_draw", "column", "object", "callback"), &TextEdit::set_gutter_custom_draw);
+	ClassDB::bind_method(D_METHOD("get_total_gutter_width"), &TextEdit::get_total_gutter_width);
 
 	// Line gutters.
 	ClassDB::bind_method(D_METHOD("set_line_gutter_metadata", "line", "gutter", "metadata"), &TextEdit::set_line_gutter_metadata);

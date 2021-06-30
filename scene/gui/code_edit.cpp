@@ -72,12 +72,33 @@ void CodeEdit::_notification(int p_what) {
 			code_completion_background_color = get_theme_color(SNAME("completion_background_color"));
 			code_completion_selected_color = get_theme_color(SNAME("completion_selected_color"));
 			code_completion_existing_color = get_theme_color(SNAME("completion_existing_color"));
+
+			line_length_guideline_color = get_theme_color(SNAME("line_length_guideline_color"));
 		} break;
 		case NOTIFICATION_DRAW: {
 			RID ci = get_canvas_item();
+			const Size2 size = get_size();
 			const bool caret_visible = is_caret_visible();
 			const bool rtl = is_layout_rtl();
 			const int row_height = get_row_height();
+
+			if (line_length_guideline_columns.size() > 0) {
+				const int xmargin_beg = cache.style_normal->get_margin(SIDE_LEFT) + get_total_gutter_width();
+				const int xmargin_end = size.width - cache.style_normal->get_margin(SIDE_RIGHT) - (is_drawing_minimap() ? get_minimap_width() : 0);
+				const int char_size = (int)cache.font->get_char_size('0', 0, cache.font_size).width;
+
+				for (int i = 0; i < line_length_guideline_columns.size(); i++) {
+					const int xoffset = xmargin_beg + char_size * (int)line_length_guideline_columns[i] - get_h_scroll();
+					if (xoffset > xmargin_beg && xoffset < xmargin_end) {
+						Color guideline_color = (i == 0) ? line_length_guideline_color : line_length_guideline_color * Color(1, 1, 1, 0.5);
+						if (rtl) {
+							RenderingServer::get_singleton()->canvas_item_add_line(ci, Point2(size.width - xoffset, 0), Point2(size.width - xoffset, size.height), guideline_color);
+							continue;
+						}
+						RenderingServer::get_singleton()->canvas_item_add_line(ci, Point2(xoffset, 0), Point2(xoffset, size.height), guideline_color);
+					}
+				}
+			}
 
 			bool code_completion_below = false;
 			if (caret_visible && code_completion_active && code_completion_options.size() > 0) {
@@ -1866,6 +1887,16 @@ void CodeEdit::cancel_code_completion() {
 	update();
 }
 
+/* Line length guidelines */
+void CodeEdit::set_line_length_guidelines(TypedArray<int> p_guideline_columns) {
+	line_length_guideline_columns = p_guideline_columns;
+	update();
+}
+
+TypedArray<int> CodeEdit::get_line_length_guidelines() const {
+	return line_length_guideline_columns;
+}
+
 void CodeEdit::_bind_methods() {
 	/* Indent management */
 	ClassDB::bind_method(D_METHOD("set_indent_size", "size"), &CodeEdit::set_indent_size);
@@ -2030,7 +2061,13 @@ void CodeEdit::_bind_methods() {
 	BIND_VMETHOD(MethodInfo("_request_code_completion", PropertyInfo(Variant::BOOL, "force")));
 	BIND_VMETHOD(MethodInfo(Variant::ARRAY, "_filter_code_completion_candidates", PropertyInfo(Variant::ARRAY, "candidates")));
 
+	/* Line length guidelines */
+	ClassDB::bind_method(D_METHOD("set_line_length_guidelines", "guideline_columns"), &CodeEdit::set_line_length_guidelines);
+	ClassDB::bind_method(D_METHOD("get_line_length_guidelines"), &CodeEdit::get_line_length_guidelines);
+
 	/* Inspector */
+	ADD_PROPERTY(PropertyInfo(Variant::PACKED_INT32_ARRAY, "line_length_guidelines"), "set_line_length_guidelines", "get_line_length_guidelines");
+
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "draw_breakpoints_gutter"), "set_draw_breakpoints_gutter", "is_drawing_breakpoints_gutter");
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "draw_bookmarks"), "set_draw_bookmarks_gutter", "is_drawing_bookmarks_gutter");

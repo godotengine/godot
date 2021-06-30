@@ -503,6 +503,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_color("line_number_color", "CodeEdit", Color(0.67, 0.67, 0.67, 0.4));
 	theme->set_color("safe_line_number_color", "CodeEdit", Color(0.67, 0.78, 0.67, 0.6));
 	theme->set_color("word_highlighted_color", "CodeEdit", Color(0.8, 0.9, 0.9, 0.15));
+	theme->set_color("line_length_guideline_color", "CodeEdit", Color(0.3, 0.5, 0.8, 0.1));
 
 	theme->set_constant("completion_lines", "CodeEdit", 7);
 	theme->set_constant("completion_max_width", "CodeEdit", 50);

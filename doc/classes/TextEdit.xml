@@ -264,6 +264,12 @@
 				Returns the [TextEdit]'s' tab size.
 			</description>
 		</method>
+		<method name="get_total_gutter_width" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
 		<method name="get_visible_line_count" qualifiers="const">
 			<return type="int" />
 			<description>
