@@ -457,7 +457,6 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_color("current_line_color", "TextEdit", Color(0.25, 0.25, 0.26, 0.8));
 	theme->set_color("caret_color", "TextEdit", control_font_color);
 	theme->set_color("caret_background_color", "TextEdit", Color(0, 0, 0));
-	theme->set_color("brace_mismatch_color", "TextEdit", Color(1, 0.2, 0.2));
 	theme->set_color("word_highlighted_color", "TextEdit", Color(0.8, 0.9, 0.9, 0.15));
 
 	theme->set_constant("line_spacing", "TextEdit", 4 * scale);

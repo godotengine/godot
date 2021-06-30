@@ -937,6 +937,15 @@ bool CodeEdit::is_auto_brace_completion_enabled() const {
 	return auto_brace_completion_enabled;
 }
 
+void CodeEdit::set_highlight_matching_braces_enabled(bool p_enabled) {
+	highlight_matching_braces_enabled = p_enabled;
+	update();
+}
+
+bool CodeEdit::is_highlight_matching_braces_enabled() const {
+	return highlight_matching_braces_enabled;
+}
+
 void CodeEdit::add_auto_brace_completion_pair(const String &p_open_key, const String &p_close_key) {
 	ERR_FAIL_COND_MSG(p_open_key.is_empty(), "auto brace completion open key cannot be empty");
 	ERR_FAIL_COND_MSG(p_close_key.is_empty(), "auto brace completion close key cannot be empty");
@@ -1881,6 +1890,9 @@ void CodeEdit::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_auto_brace_completion_enabled", "enable"), &CodeEdit::set_auto_brace_completion_enabled);
 	ClassDB::bind_method(D_METHOD("is_auto_brace_completion_enabled"), &CodeEdit::is_auto_brace_completion_enabled);
 
+	ClassDB::bind_method(D_METHOD("set_highlight_matching_braces_enabled", "enable"), &CodeEdit::set_highlight_matching_braces_enabled);
+	ClassDB::bind_method(D_METHOD("is_highlight_matching_braces_enabled"), &CodeEdit::is_highlight_matching_braces_enabled);
+
 	ClassDB::bind_method(D_METHOD("add_auto_brace_completion_pair", "start_key", "end_key"), &CodeEdit::add_auto_brace_completion_pair);
 	ClassDB::bind_method(D_METHOD("set_auto_brace_completion_pairs", "pairs"), &CodeEdit::set_auto_brace_completion_pairs);
 	ClassDB::bind_method(D_METHOD("get_auto_brace_completion_pairs"), &CodeEdit::get_auto_brace_completion_pairs);
@@ -2048,6 +2060,7 @@ void CodeEdit::_bind_methods() {
 
 	ADD_GROUP("Auto brace completion", "auto_brace_completion_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "auto_brace_completion_enabled"), "set_auto_brace_completion_enabled", "is_auto_brace_completion_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "auto_brace_completion_highlight_matching"), "set_highlight_matching_braces_enabled", "is_highlight_matching_braces_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY, "auto_brace_completion_pairs"), "set_auto_brace_completion_pairs", "get_auto_brace_completion_pairs");
 
 	/* Signals */

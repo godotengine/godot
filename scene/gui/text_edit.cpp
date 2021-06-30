@@ -626,7 +626,7 @@ void TextEdit::_notification(int p_what) {
 			bool brace_close_matching = false;
 			bool brace_close_mismatch = false;
 
-			if (brace_matching_enabled && cursor.line >= 0 && cursor.line < text.size() && cursor.column >= 0) {
+			if (highlight_matching_braces_enabled && cursor.line >= 0 && cursor.line < text.size() && cursor.column >= 0) {
 				if (cursor.column < text[cursor.line].length()) {
 					// Check for open.
 					char32_t c = text[cursor.line][cursor.column];
@@ -1269,7 +1269,7 @@ void TextEdit::_notification(int p_what) {
 
 						int char_pos = char_ofs + char_margin + ofs_x;
 						if (char_pos >= xmargin_beg) {
-							if (brace_matching_enabled) {
+							if (highlight_matching_braces_enabled) {
 								if ((brace_open_match_line == line && brace_open_match_column == glyphs[j].start) ||
 										(cursor.column == glyphs[j].start && cursor.line == line && cursor_wrap_index == line_wrap_index && (brace_open_matching || brace_open_mismatch))) {
 									if (brace_open_mismatch) {
@@ -3838,7 +3838,7 @@ void TextEdit::_update_caches() {
 	cache.current_line_color = get_theme_color(SNAME("current_line_color"));
 	cache.line_length_guideline_color = get_theme_color(SNAME("line_length_guideline_color"));
 	cache.code_folding_color = get_theme_color(SNAME("code_folding_color"), SNAME("CodeEdit"));
-	cache.brace_mismatch_color = get_theme_color(SNAME("brace_mismatch_color"));
+	cache.brace_mismatch_color = get_theme_color(SNAME("brace_mismatch_color"), SNAME("CodeEdit"));
 	cache.word_highlighted_color = get_theme_color(SNAME("word_highlighted_color"));
 	cache.search_result_color = get_theme_color(SNAME("search_result_color"));
 	cache.search_result_border_color = get_theme_color(SNAME("search_result_border_color"));

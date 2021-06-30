@@ -259,6 +259,9 @@ public:
 	void set_auto_brace_completion_enabled(bool p_enabled);
 	bool is_auto_brace_completion_enabled() const;
 
+	void set_highlight_matching_braces_enabled(bool p_enabled);
+	bool is_highlight_matching_braces_enabled() const;
+
 	void add_auto_brace_completion_pair(const String &p_open_key, const String &p_close_key);
 	void set_auto_brace_completion_pairs(const Dictionary &p_auto_brace_completion_pairs);
 	Dictionary get_auto_brace_completion_pairs() const;

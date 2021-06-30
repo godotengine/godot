@@ -1825,7 +1825,7 @@ CodeTextEditor::CodeTextEditor() {
 	}
 
 	text_editor->set_draw_line_numbers(true);
-	text_editor->set_brace_matching(true);
+	text_editor->set_highlight_matching_braces_enabled(true);
 	text_editor->set_auto_indent_enabled(true);
 
 	status_bar = memnew(HBoxContainer);

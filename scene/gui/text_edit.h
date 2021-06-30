@@ -291,7 +291,6 @@ private:
 
 	bool highlight_all_occurrences = false;
 	bool scroll_past_end_of_file_enabled = false;
-	bool brace_matching_enabled = false;
 	bool highlight_current_line = false;
 
 	String cut_copy_line;
@@ -433,6 +432,8 @@ private:
 	void _move_cursor_document_end(bool p_select);
 
 protected:
+	bool highlight_matching_braces_enabled = false;
+
 	struct Cache {
 		Ref<Texture2D> tab_icon;
 		Ref<Texture2D> space_icon;
@@ -626,10 +627,6 @@ public:
 
 	inline void set_scroll_pass_end_of_file(bool p_enabled) {
 		scroll_past_end_of_file_enabled = p_enabled;
-		update();
-	}
-	inline void set_brace_matching(bool p_enabled) {
-		brace_matching_enabled = p_enabled;
 		update();
 	}
 
