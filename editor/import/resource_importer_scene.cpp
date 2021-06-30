@@ -623,19 +623,23 @@ Node *ResourceImporterScene::_post_fix_node(Node *p_node, Node *p_root, Map<Ref<
 						switch (mesh_physics_mode) {
 							case MESH_PHYSICS_MESH_AND_STATIC_COLLIDER: {
 								StaticBody3D *col = memnew(StaticBody3D);
-								p_node->add_child(col);
-								base = col;
+								col->set_name(p_node->get_name());
+								p_node->replace_by(col);
+								memdelete(p_node);
+								p_node = col;
+								col->set_transform(mi->get_transform());
+								col->add_child(mi);
+								mi->set_transform(Transform3D());
 							} break;
 							case MESH_PHYSICS_RIGID_BODY_AND_MESH: {
 								RigidBody3D *rigid_body = memnew(RigidBody3D);
 								rigid_body->set_name(p_node->get_name());
 								p_node->replace_by(rigid_body);
-								rigid_body->set_transform(mi->get_transform());
+								memdelete(p_node);
 								p_node = rigid_body;
-								mi->set_transform(Transform3D());
+								rigid_body->set_transform(mi->get_transform());
 								rigid_body->add_child(mi);
-								mi->set_owner(rigid_body->get_owner());
-								base = rigid_body;
+								mi->set_transform(Transform3D());
 							} break;
 							case MESH_PHYSICS_STATIC_COLLIDER_ONLY: {
 								StaticBody3D *col = memnew(StaticBody3D);
