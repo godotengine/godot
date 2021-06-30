@@ -23,8 +23,28 @@
 		var mi = MeshInstance.new()
 		mi.mesh = mesh
 		add_child(mi)
-		[/codeblock]
-		See also [ArrayMesh], [ImmediateGeometry] and [SurfaceTool] for procedural geometry generation.
+		[/gdscript]
+		[csharp]
+		var mesh = new ArrayMesh();
+		mesh.AddSurfaceFromArrays(Mesh.PrimitiveType.Triangles, new BoxMesh().GetMeshArrays());
+		var mdt = new MeshDataTool();
+		mdt.CreateFromSurface(mesh, 0);
+		for (var i = 0; i &lt; mdt.GetVertexCount(); i++)
+		{
+		    Vector3 vertex = mdt.GetVertex(i);
+		    // In this example we extend the mesh by one unit, which results in separated faces as it is flat shaded.
+		    vertex += mdt.GetVertexNormal(i);
+		    // Save your change.
+		    mdt.SetVertex(i, vertex);
+		}
+		mesh.SurfaceRemove(0);
+		mdt.CommitToSurface(mesh);
+		var mi = new MeshInstance();
+		mi.Mesh = mesh;
+		AddChild(mi);
+		[/csharp]
+		[/codeblocks]
+		See also [ArrayMesh], [ImmediateMesh] and [SurfaceTool] for procedural geometry generation.
 		[b]Note:[/b] Godot uses clockwise [url=https://learnopengl.com/Advanced-OpenGL/Face-culling]winding order[/url] for front faces of triangle primitive modes.
 	</description>
 	<tutorials>

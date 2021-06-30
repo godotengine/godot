@@ -34,9 +34,9 @@
 #include "editor/editor_node.h"
 #include "editor/editor_plugin.h"
 #include "scene/3d/collision_polygon.h"
-#include "scene/3d/immediate_geometry.h"
 #include "scene/3d/mesh_instance.h"
 #include "scene/gui/tool_button.h"
+#include "scene/resources/immediate_mesh.h"
 
 class CanvasItemEditor;
 
@@ -62,9 +62,10 @@ class Polygon3DEditor : public HBoxContainer {
 
 	EditorNode *editor;
 	Panel *panel;
-	Spatial *node;
-	ImmediateGeometry *imgeom;
-	MeshInstance *pointsm;
+	Node3D *node;
+	Ref<ImmediateMesh> imesh;
+	MeshInstance3D *imgeom;
+	MeshInstance3D *pointsm;
 	Ref<ArrayMesh> m;
 
 	MenuButton *options;

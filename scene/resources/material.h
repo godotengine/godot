@@ -444,7 +444,7 @@ private:
 
 	static const int MAX_MATERIALS_FOR_2D = 128;
 
-	static Ref<SpatialMaterial> materials_for_2d[MAX_MATERIALS_FOR_2D]; //used by Sprite3D and other stuff
+	static RID get_material_rid_for_2d(bool p_shaded, bool p_transparent, bool p_double_sided, bool p_cut_alpha, bool p_opaque_prepass, bool p_billboard = false, bool p_billboard_y = false);
 
 	void _validate_high_end(const String &text, PropertyInfo &property) const;
 
@@ -629,7 +629,7 @@ public:
 	static void finish_shaders();
 	static void flush_changes();
 
-	static RID get_material_rid_for_2d(bool p_shaded, bool p_transparent, bool p_double_sided, bool p_cut_alpha, bool p_opaque_prepass, bool p_billboard = false, bool p_billboard_y = false);
+	static Ref<Material> get_material_for_2d(bool p_shaded, bool p_transparent, bool p_double_sided, bool p_cut_alpha, bool p_opaque_prepass, bool p_billboard = false, bool p_billboard_y = false, RID *r_shader_rid = nullptr);
 
 	RID get_shader_rid() const;
 

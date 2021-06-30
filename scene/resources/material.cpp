@@ -1808,7 +1808,10 @@ RID SpatialMaterial::get_material_rid_for_2d(bool p_shaded, bool p_transparent, 
 		version |= 64;
 
 	if (materials_for_2d[version].is_valid()) {
-		return materials_for_2d[version]->get_rid();
+		if (r_shader_rid) {
+			*r_shader_rid = materials_for_2d[version]->get_shader_rid();
+		}
+		return materials_for_2d[version];
 	}
 
 	Ref<SpatialMaterial> material;
@@ -1830,7 +1833,11 @@ RID SpatialMaterial::get_material_rid_for_2d(bool p_shaded, bool p_transparent, 
 	// flush before using so we can access the shader right away
 	flush_changes();
 
-	return materials_for_2d[version]->get_rid();
+	if (r_shader_rid) {
+		*r_shader_rid = materials_for_2d[version]->get_shader_rid();
+	}
+
+	return materials_for_2d[version];
 }
 
 void SpatialMaterial::set_on_top_of_alpha() {

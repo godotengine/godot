@@ -160,10 +160,10 @@ class Sprite3D : public SpriteBase3D {
 	bool region;
 	Rect2 region_rect;
 
-	int frame;
+	int frame = 0;
 
-	int vframes;
-	int hframes;
+	int vframes = 1;
+	int hframes = 1;
 
 protected:
 	virtual void _draw();
@@ -223,6 +223,9 @@ class AnimatedSprite3D : public SpriteBase3D {
 	void _set_playing(bool p_playing);
 	bool _is_playing() const;
 
+	RID last_shader;
+	RID last_texture;
+
 protected:
 	virtual void _draw();
 	static void _bind_methods();
@@ -251,4 +254,5 @@ public:
 
 VARIANT_ENUM_CAST(SpriteBase3D::DrawFlags);
 VARIANT_ENUM_CAST(SpriteBase3D::AlphaCutMode);
+
 #endif // SPRITE_3D_H

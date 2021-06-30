@@ -34,7 +34,6 @@
 #include "editor/editor_node.h"
 #include "editor/editor_plugin.h"
 #include "editor/editor_scale.h"
-#include "scene/3d/immediate_geometry.h"
 #include "scene/3d/light.h"
 #include "scene/3d/visual_instance.h"
 #include "scene/gui/panel_container.h"

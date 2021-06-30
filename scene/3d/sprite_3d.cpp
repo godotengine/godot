@@ -518,6 +518,7 @@ void Sprite3D::_draw() {
 		SWAP(uvs[0], uvs[1]);
 		SWAP(uvs[2], uvs[3]);
 	}
+
 	if (is_flipped_v()) {
 
 		SWAP(uvs[0], uvs[3]);
@@ -719,7 +720,6 @@ Rect2 Sprite3D::get_item_rect() const {
 	Size2i s;
 
 	if (region) {
-
 		s = region_rect.size;
 	} else {
 		s = texture->get_size();
