@@ -66,11 +66,8 @@
 		<member name="joint_offset" type="Transform3D" setter="set_joint_offset" getter="get_joint_offset" default="Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)">
 			Sets the joint's transform.
 		</member>
-		<member name="joint_rotation" type="Vector3" setter="set_joint_rotation" getter="get_joint_rotation">
+		<member name="joint_rotation" type="Vector3" setter="set_joint_rotation" getter="get_joint_rotation" default="Vector3(0, 0, 0)">
 			Sets the joint's rotation in radians.
-		</member>
-		<member name="joint_rotation_degrees" type="Vector3" setter="set_joint_rotation_degrees" getter="get_joint_rotation_degrees" default="Vector3(0, 0, 0)">
-			Sets the joint's rotation in degrees.
 		</member>
 		<member name="joint_type" type="int" setter="set_joint_type" getter="get_joint_type" enum="PhysicalBone3D.JointType" default="0">
 			Sets the joint type. See [enum JointType] for possible values.

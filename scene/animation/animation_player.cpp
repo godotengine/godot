@@ -513,7 +513,7 @@ void AnimationPlayer::_animation_process_animation(AnimationData *p_anim, float 
 								}
 #endif
 
-								static_cast<Node2D *>(pa->object)->set_rotation(Math::deg2rad((double)value));
+								static_cast<Node2D *>(pa->object)->set_rotation((double)value);
 							} break;
 							case SP_NODE2D_SCALE: {
 #ifdef DEBUG_ENABLED

@@ -328,10 +328,6 @@ void Node3D::set_rotation(const Vector3 &p_euler_rad) {
 	}
 }
 
-void Node3D::set_rotation_degrees(const Vector3 &p_euler_deg) {
-	set_rotation(p_euler_deg * (Math_PI / 180.0));
-}
-
 void Node3D::set_scale(const Vector3 &p_scale) {
 	if (data.dirty & DIRTY_VECTORS) {
 		data.rotation = data.local_transform.basis.get_rotation();
@@ -359,10 +355,6 @@ Vector3 Node3D::get_rotation() const {
 	}
 
 	return data.rotation;
-}
-
-Vector3 Node3D::get_rotation_degrees() const {
-	return get_rotation() * (180.0 / Math_PI);
 }
 
 Vector3 Node3D::get_scale() const {
@@ -749,8 +741,6 @@ void Node3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_position"), &Node3D::get_position);
 	ClassDB::bind_method(D_METHOD("set_rotation", "euler"), &Node3D::set_rotation);
 	ClassDB::bind_method(D_METHOD("get_rotation"), &Node3D::get_rotation);
-	ClassDB::bind_method(D_METHOD("set_rotation_degrees", "euler_degrees"), &Node3D::set_rotation_degrees);
-	ClassDB::bind_method(D_METHOD("get_rotation_degrees"), &Node3D::get_rotation_degrees);
 	ClassDB::bind_method(D_METHOD("set_scale", "scale"), &Node3D::set_scale);
 	ClassDB::bind_method(D_METHOD("get_scale"), &Node3D::get_scale);
 	ClassDB::bind_method(D_METHOD("set_global_transform", "global"), &Node3D::set_global_transform);
@@ -814,9 +804,8 @@ void Node3D::_bind_methods() {
 	//ADD_PROPERTY( PropertyInfo(Variant::TRANSFORM3D,"transform/global",PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR ), "set_global_transform", "get_global_transform") ;
 	ADD_GROUP("Transform", "");
 	ADD_PROPERTY(PropertyInfo(Variant::TRANSFORM3D, "global_transform", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "set_global_transform", "get_global_transform");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "position", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR), "set_position", "get_position");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "rotation_degrees", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR), "set_rotation_degrees", "get_rotation_degrees");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "rotation", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "set_rotation", "get_rotation");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "position", PROPERTY_HINT_RANGE, "-99999,99999,0,or_greater,or_lesser,noslider,suffix:m", PROPERTY_USAGE_EDITOR), "set_position", "get_position");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "rotation", PROPERTY_HINT_RANGE, "-360,360,0.1,or_lesser,or_greater,radians", PROPERTY_USAGE_EDITOR), "set_rotation", "get_rotation");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "scale", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR), "set_scale", "get_scale");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "top_level"), "set_as_top_level", "is_set_as_top_level");
 	ADD_GROUP("Matrix", "");
