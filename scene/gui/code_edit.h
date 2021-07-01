@@ -125,7 +125,7 @@ private:
 	void _update_gutter_indexes();
 
 	/* Line Folding */
-	bool line_folding_enabled = true;
+	bool line_folding_enabled = false;
 
 	/* Delimiters */
 	enum DelimiterType {

@@ -17,10 +17,8 @@
 			</description>
 		</method>
 		<method name="_handle_unicode_input" qualifiers="virtual">
-			<return type="void">
-			</return>
-			<argument index="0" name="unicode" type="int">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="unicode" type="int" />
 			<description>
 			</description>
 		</method>
@@ -265,8 +263,7 @@
 			</description>
 		</method>
 		<method name="get_total_gutter_width" qualifiers="const">
-			<return type="int">
-			</return>
+			<return type="int" />
 			<description>
 			</description>
 		</method>
@@ -296,8 +293,7 @@
 			</description>
 		</method>
 		<method name="is_dragging_cursor" qualifiers="const">
-			<return type="bool">
-			</return>
+			<return type="bool" />
 			<description>
 			</description>
 		</method>

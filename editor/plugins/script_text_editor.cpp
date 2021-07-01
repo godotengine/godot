@@ -204,7 +204,9 @@ void ScriptTextEditor::_set_theme_for_script() {
 	for (const String &string : strings) {
 		String beg = string.get_slice(" ", 0);
 		String end = string.get_slice_count(" ") > 1 ? string.get_slice(" ", 1) : String();
-		text_edit->add_string_delimiter(beg, end, end == "");
+		if (!text_edit->has_string_delimiter(beg)) {
+			text_edit->add_string_delimiter(beg, end, end == "");
+		}
 
 		if (!end.is_empty() && !text_edit->has_auto_brace_completion_open_key(beg)) {
 			text_edit->add_auto_brace_completion_pair(beg, end);

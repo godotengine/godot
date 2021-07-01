@@ -2173,21 +2173,21 @@ void CodeEdit::_bind_methods() {
 
 	/* Inspector */
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "symbol_lookup_on_click"), "set_symbol_lookup_on_click_enabled", "is_symbol_lookup_on_click_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "line_folding"), "set_line_folding_enabled", "is_line_folding_enabled");
 
 	ADD_PROPERTY(PropertyInfo(Variant::PACKED_INT32_ARRAY, "line_length_guidelines"), "set_line_length_guidelines", "get_line_length_guidelines");
 
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "draw_breakpoints_gutter"), "set_draw_breakpoints_gutter", "is_drawing_breakpoints_gutter");
+	ADD_GROUP("Gutters", "gutters_");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "gutters_draw_breakpoints_gutter"), "set_draw_breakpoints_gutter", "is_drawing_breakpoints_gutter");
 
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "draw_bookmarks"), "set_draw_bookmarks_gutter", "is_drawing_bookmarks_gutter");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "gutters_draw_bookmarks"), "set_draw_bookmarks_gutter", "is_drawing_bookmarks_gutter");
 
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "draw_executing_lines"), "set_draw_executing_lines_gutter", "is_drawing_executing_lines_gutter");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "gutters_draw_executing_lines"), "set_draw_executing_lines_gutter", "is_drawing_executing_lines_gutter");
 
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "draw_line_numbers"), "set_draw_line_numbers", "is_draw_line_numbers_enabled");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "zero_pad_line_numbers"), "set_line_numbers_zero_padded", "is_line_numbers_zero_padded");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "gutters_draw_line_numbers"), "set_draw_line_numbers", "is_draw_line_numbers_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "gutters_zero_pad_line_numbers"), "set_line_numbers_zero_padded", "is_line_numbers_zero_padded");
 
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "draw_fold_gutter"), "set_draw_fold_gutter", "is_drawing_fold_gutter");
-
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "line_folding"), "set_line_folding_enabled", "is_line_folding_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "gutters_draw_fold_gutter"), "set_draw_fold_gutter", "is_drawing_fold_gutter");
 
 	ADD_GROUP("Delimiters", "delimiter_");
 	ADD_PROPERTY(PropertyInfo(Variant::PACKED_STRING_ARRAY, "delimiter_strings"), "set_string_delimiters", "get_string_delimiters");
@@ -2901,6 +2901,10 @@ CodeEdit::CodeEdit() {
 	add_auto_brace_completion_pair("[", "]");
 	add_auto_brace_completion_pair("\"", "\"");
 	add_auto_brace_completion_pair("\'", "\'");
+
+	/* Delimiter traking */
+	add_string_delimiter("\"", "\"", false);
+	add_string_delimiter("\'", "\'", false);
 
 	/* Text Direction */
 	set_layout_direction(LAYOUT_DIRECTION_LTR);
