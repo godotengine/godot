@@ -778,7 +778,7 @@ void GridMap::_update_octants_callback() {
 
 	while (to_delete.front()) {
 		octant_map.erase(to_delete.front()->get());
-		to_delete.pop_back();
+		to_delete.pop_front();
 	}
 
 	_update_visibility();
