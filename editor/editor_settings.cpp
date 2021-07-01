@@ -240,19 +240,19 @@ void EditorSettings::_get_property_list(List<PropertyInfo> *p_list) const {
 	}
 
 	for (Set<_EVCSort>::Element *E = vclist.front(); E; E = E->next()) {
-		int pinfo = 0;
+		uint32_t pusage = PROPERTY_USAGE_NONE;
 		if (E->get().save || !optimize_save) {
-			pinfo |= PROPERTY_USAGE_STORAGE;
+			pusage |= PROPERTY_USAGE_STORAGE;
 		}
 
 		if (!E->get().name.begins_with("_") && !E->get().name.begins_with("projects/")) {
-			pinfo |= PROPERTY_USAGE_EDITOR;
+			pusage |= PROPERTY_USAGE_EDITOR;
 		} else {
-			pinfo |= PROPERTY_USAGE_STORAGE; //hiddens must always be saved
+			pusage |= PROPERTY_USAGE_STORAGE; //hiddens must always be saved
 		}
 
 		PropertyInfo pi(E->get().type, E->get().name);
-		pi.usage = pinfo;
+		pi.usage = pusage;
 		if (hints.has(E->get().name)) {
 			pi = hints[E->get().name];
 		}

@@ -34,8 +34,8 @@
 
 void AnimationNodeBlendSpace2D::get_parameter_list(List<PropertyInfo> *r_list) const {
 	r_list->push_back(PropertyInfo(Variant::VECTOR2, blend_position));
-	r_list->push_back(PropertyInfo(Variant::INT, closest, PROPERTY_HINT_NONE, "", 0));
-	r_list->push_back(PropertyInfo(Variant::FLOAT, length_internal, PROPERTY_HINT_NONE, "", 0));
+	r_list->push_back(PropertyInfo(Variant::INT, closest, PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE));
+	r_list->push_back(PropertyInfo(Variant::FLOAT, length_internal, PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE));
 }
 
 Variant AnimationNodeBlendSpace2D::get_parameter_default_value(const StringName &p_parameter) const {
@@ -556,13 +556,13 @@ String AnimationNodeBlendSpace2D::get_caption() const {
 
 void AnimationNodeBlendSpace2D::_validate_property(PropertyInfo &property) const {
 	if (auto_triangles && property.name == "triangles") {
-		property.usage = 0;
+		property.usage = PROPERTY_USAGE_NONE;
 	}
 	if (property.name.begins_with("blend_point_")) {
 		String left = property.name.get_slicec('/', 0);
 		int idx = left.get_slicec('_', 2).to_int();
 		if (idx >= blend_points_used) {
-			property.usage = 0;
+			property.usage = PROPERTY_USAGE_NONE;
 		}
 	}
 	AnimationRootNode::_validate_property(property);
