@@ -501,14 +501,14 @@ void NavigationMesh::_bind_methods() {
 void NavigationMesh::_validate_property(PropertyInfo &property) const {
 	if (property.name == "geometry/collision_mask") {
 		if (parsed_geometry_type == PARSED_GEOMETRY_MESH_INSTANCES) {
-			property.usage = 0;
+			property.usage = PROPERTY_USAGE_NONE;
 			return;
 		}
 	}
 
 	if (property.name == "geometry/source_group_name") {
 		if (source_geometry_mode == SOURCE_GEOMETRY_NAVMESH_CHILDREN) {
-			property.usage = 0;
+			property.usage = PROPERTY_USAGE_NONE;
 			return;
 		}
 	}

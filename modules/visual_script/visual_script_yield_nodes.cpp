@@ -174,7 +174,7 @@ float VisualScriptYield::get_wait_time() {
 void VisualScriptYield::_validate_property(PropertyInfo &property) const {
 	if (property.name == "wait_time") {
 		if (yield_mode != YIELD_WAIT) {
-			property.usage = 0;
+			property.usage = PROPERTY_USAGE_NONE;
 		}
 	}
 }
@@ -421,7 +421,7 @@ void VisualScriptYieldSignal::_validate_property(PropertyInfo &property) const {
 
 	if (property.name == "node_path") {
 		if (call_mode != CALL_MODE_NODE_PATH) {
-			property.usage = 0;
+			property.usage = PROPERTY_USAGE_NONE;
 		} else {
 			Node *bnode = _get_base_node();
 			if (bnode) {

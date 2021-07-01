@@ -47,7 +47,7 @@ void AnimationNodeBlendSpace1D::_validate_property(PropertyInfo &property) const
 		String left = property.name.get_slicec('/', 0);
 		int idx = left.get_slicec('_', 2).to_int();
 		if (idx >= blend_points_used) {
-			property.usage = 0;
+			property.usage = PROPERTY_USAGE_NONE;
 		}
 	}
 	AnimationRootNode::_validate_property(property);
