@@ -1076,8 +1076,6 @@ private:
 
 		float dynamic_range = 4.0;
 		float energy = 1.0;
-		float ao = 0.0;
-		float ao_size = 0.5;
 		float bias = 1.4;
 		float normal_bias = 0.0;
 		float propagation = 0.7;
@@ -1298,7 +1296,6 @@ public:
 
 	virtual void _texture_2d_update(RID p_texture, const Ref<Image> &p_image, int p_layer, bool p_immediate);
 
-	virtual void texture_2d_update_immediate(RID p_texture, const Ref<Image> &p_image, int p_layer = 0); //mostly used for video and streaming
 	virtual void texture_2d_update(RID p_texture, const Ref<Image> &p_image, int p_layer = 0);
 	virtual void texture_3d_update(RID p_texture, const Vector<Ref<Image>> &p_data);
 	virtual void texture_proxy_update(RID p_texture, RID p_proxy_to);
@@ -2039,12 +2036,6 @@ public:
 
 	void voxel_gi_set_energy(RID p_voxel_gi, float p_energy);
 	float voxel_gi_get_energy(RID p_voxel_gi) const;
-
-	void voxel_gi_set_ao(RID p_voxel_gi, float p_ao);
-	float voxel_gi_get_ao(RID p_voxel_gi) const;
-
-	void voxel_gi_set_ao_size(RID p_voxel_gi, float p_strength);
-	float voxel_gi_get_ao_size(RID p_voxel_gi) const;
 
 	void voxel_gi_set_bias(RID p_voxel_gi, float p_bias);
 	float voxel_gi_get_bias(RID p_voxel_gi) const;

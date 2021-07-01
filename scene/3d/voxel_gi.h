@@ -51,15 +51,11 @@ class VoxelGIData : public Resource {
 	float bias = 1.5;
 	float normal_bias = 0.0;
 	float propagation = 0.7;
-	float anisotropy_strength = 0.5;
-	float ao = 0.0;
-	float ao_size = 0.5;
 	bool interior = false;
 	bool use_two_bounces = false;
 
 protected:
 	static void _bind_methods();
-	void _validate_property(PropertyInfo &property) const override;
 
 public:
 	void allocate(const Transform3D &p_to_cell_xform, const AABB &p_aabb, const Vector3 &p_octree_size, const Vector<uint8_t> &p_octree_cells, const Vector<uint8_t> &p_data_cells, const Vector<uint8_t> &p_distance_field, const Vector<int> &p_level_counts);
@@ -76,15 +72,6 @@ public:
 
 	void set_propagation(float p_propagation);
 	float get_propagation() const;
-
-	void set_anisotropy_strength(float p_anisotropy_strength);
-	float get_anisotropy_strength() const;
-
-	void set_ao(float p_ao);
-	float get_ao() const;
-
-	void set_ao_size(float p_ao_size);
-	float get_ao_size() const;
 
 	void set_energy(float p_energy);
 	float get_energy() const;

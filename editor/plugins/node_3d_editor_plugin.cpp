@@ -7073,8 +7073,6 @@ Node3DEditor::Node3DEditor(EditorNode *p_editor) {
 
 	xform_dialog->connect("confirmed", callable_mp(this, &Node3DEditor::_xform_dialog_action));
 
-	scenario_debug = RenderingServer::SCENARIO_DEBUG_DISABLED;
-
 	selected = nullptr;
 
 	set_process_unhandled_key_input(true);

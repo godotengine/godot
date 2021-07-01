@@ -600,8 +600,6 @@ private:
 
 	ToolMode tool_mode;
 
-	RenderingServer::ScenarioDebugMode scenario_debug;
-
 	RID origin;
 	RID origin_instance;
 	bool origin_enabled;
