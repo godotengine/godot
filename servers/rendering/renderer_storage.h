@@ -130,7 +130,6 @@ public:
 	virtual void texture_3d_initialize(RID p_texture, Image::Format, int p_width, int p_height, int p_depth, bool p_mipmaps, const Vector<Ref<Image>> &p_data) = 0;
 	virtual void texture_proxy_initialize(RID p_texture, RID p_base) = 0; //all slices, then all the mipmaps, must be coherent
 
-	virtual void texture_2d_update_immediate(RID p_texture, const Ref<Image> &p_image, int p_layer = 0) = 0; //mostly used for video and streaming
 	virtual void texture_2d_update(RID p_texture, const Ref<Image> &p_image, int p_layer = 0) = 0;
 	virtual void texture_3d_update(RID p_texture, const Vector<Ref<Image>> &p_data) = 0;
 	virtual void texture_proxy_update(RID p_proxy, RID p_base) = 0;
@@ -421,12 +420,6 @@ public:
 
 	virtual void voxel_gi_set_energy(RID p_voxel_gi, float p_energy) = 0;
 	virtual float voxel_gi_get_energy(RID p_voxel_gi) const = 0;
-
-	virtual void voxel_gi_set_ao(RID p_voxel_gi, float p_ao) = 0;
-	virtual float voxel_gi_get_ao(RID p_voxel_gi) const = 0;
-
-	virtual void voxel_gi_set_ao_size(RID p_voxel_gi, float p_strength) = 0;
-	virtual float voxel_gi_get_ao_size(RID p_voxel_gi) const = 0;
 
 	virtual void voxel_gi_set_bias(RID p_voxel_gi, float p_bias) = 0;
 	virtual float voxel_gi_get_bias(RID p_voxel_gi) const = 0;

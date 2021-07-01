@@ -225,7 +225,6 @@ public:
 	}
 
 	void texture_2d_layered_initialize(RID p_texture, const Vector<Ref<Image>> &p_layers, RS::TextureLayeredType p_layered_type) override {}
-	void texture_2d_update_immediate(RID p_texture, const Ref<Image> &p_image, int p_layer = 0) override {}
 	void texture_2d_update(RID p_texture, const Ref<Image> &p_image, int p_layer = 0) override {}
 	void texture_3d_initialize(RID p_texture, Image::Format, int p_width, int p_height, int p_depth, bool p_mipmaps, const Vector<Ref<Image>> &p_data) override {}
 	void texture_3d_update(RID p_texture, const Vector<Ref<Image>> &p_data) override {}
@@ -491,12 +490,6 @@ public:
 	void voxel_gi_set_energy(RID p_voxel_gi, float p_range) override {}
 	float voxel_gi_get_energy(RID p_voxel_gi) const override { return 0.0; }
 
-	void voxel_gi_set_ao(RID p_voxel_gi, float p_ao) override {}
-	float voxel_gi_get_ao(RID p_voxel_gi) const override { return 0; }
-
-	void voxel_gi_set_ao_size(RID p_voxel_gi, float p_strength) override {}
-	float voxel_gi_get_ao_size(RID p_voxel_gi) const override { return 0; }
-
 	void voxel_gi_set_bias(RID p_voxel_gi, float p_range) override {}
 	float voxel_gi_get_bias(RID p_voxel_gi) const override { return 0.0; }
 
@@ -718,8 +711,6 @@ public:
 	void occluder_polygon_set_shape(RID p_occluder, const Vector<Vector2> &p_points, bool p_closed) override {}
 	void occluder_polygon_set_cull_mode(RID p_occluder, RS::CanvasOccluderPolygonCullMode p_mode) override {}
 	void set_shadow_texture_size(int p_size) override {}
-
-	void draw_window_margins(int *p_margins, RID *p_margin_textures) override {}
 
 	bool free(RID p_rid) override { return true; }
 	void update() override {}

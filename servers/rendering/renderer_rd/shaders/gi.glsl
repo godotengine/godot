@@ -77,9 +77,9 @@ struct VoxelGIData {
 	bool blend_ambient;
 	uint texture_slot;
 
-	float anisotropy_strength;
-	float ambient_occlusion;
-	float ambient_occlusion_size;
+	uint pad0;
+	uint pad1;
+	uint pad2;
 	uint mipmaps;
 };
 
@@ -549,27 +549,6 @@ void voxel_gi_compute(uint index, vec3 position, vec3 normal, vec3 ref_vec, mat3
 			vec3 dir = normalize(dir_xform * cone_dirs[i]);
 			light += cone_weights[i] * voxel_cone_trace_45_degrees(voxel_gi_textures[index], cell_size, position, dir, max_distance, voxel_gi_instances.data[index].bias);
 		}
-	}
-
-	if (voxel_gi_instances.data[index].ambient_occlusion > 0.001) {
-		float size = 1.0 + voxel_gi_instances.data[index].ambient_occlusion_size * 7.0;
-
-		float taps, blend;
-		blend = modf(size, taps);
-		float ao = 0.0;
-		for (float i = 1.0; i <= taps; i++) {
-			vec3 ofs = (position + normal * (i * 0.5 + 1.0)) * cell_size;
-			ao += textureLod(sampler3D(voxel_gi_textures[index], linear_sampler_with_mipmaps), ofs, i - 1.0).a * i;
-		}
-
-		if (blend > 0.001) {
-			vec3 ofs = (position + normal * ((taps + 1.0) * 0.5 + 1.0)) * cell_size;
-			ao += textureLod(sampler3D(voxel_gi_textures[index], linear_sampler_with_mipmaps), ofs, taps).a * (taps + 1.0) * blend;
-		}
-
-		ao = 1.0 - min(1.0, ao);
-
-		light.rgb = mix(params.ao_color, light.rgb, mix(1.0, ao, voxel_gi_instances.data[index].ambient_occlusion));
 	}
 
 	light.rgb *= voxel_gi_instances.data[index].dynamic_range;

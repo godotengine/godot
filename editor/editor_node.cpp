@@ -591,8 +591,7 @@ void EditorNode::_notification(int p_what) {
 				_initializing_addons = false;
 			}
 
-			RenderingServer::get_singleton()->viewport_set_hide_scenario(get_scene_root()->get_viewport_rid(), true);
-			RenderingServer::get_singleton()->viewport_set_hide_canvas(get_scene_root()->get_viewport_rid(), true);
+			RenderingServer::get_singleton()->viewport_set_disable_2d(get_scene_root()->get_viewport_rid(), true);
 			RenderingServer::get_singleton()->viewport_set_disable_environment(get_viewport()->get_viewport_rid(), true);
 
 			feature_profile_manager->notify_changed();
@@ -6119,7 +6118,6 @@ EditorNode::EditorNode() {
 	scene_root->set_embed_subwindows_hint(true);
 	scene_root->set_disable_3d(true);
 
-	RenderingServer::get_singleton()->viewport_set_hide_scenario(scene_root->get_viewport_rid(), true);
 	scene_root->set_disable_input(true);
 	scene_root->set_as_audio_listener_2d(true);
 

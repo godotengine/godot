@@ -3078,9 +3078,6 @@ void RendererSceneGIRD::setup_voxel_gi_instances(RID p_render_buffers, const Tra
 				gipd.bias = storage->voxel_gi_get_bias(base_probe);
 				gipd.normal_bias = storage->voxel_gi_get_normal_bias(base_probe);
 				gipd.blend_ambient = !storage->voxel_gi_is_interior(base_probe);
-				gipd.anisotropy_strength = 0;
-				gipd.ao = storage->voxel_gi_get_ao(base_probe);
-				gipd.ao_size = Math::pow(storage->voxel_gi_get_ao_size(base_probe), 4.0f);
 				gipd.mipmaps = gipi->mipmaps.size();
 			}
 

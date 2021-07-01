@@ -107,7 +107,7 @@ public:
 
 	Image::Format get_format() const;
 
-	void update(const Ref<Image> &p_image, bool p_immediate = false);
+	void update(const Ref<Image> &p_image);
 	Ref<Image> get_image() const override;
 
 	int get_width() const override;

@@ -608,8 +608,6 @@ public:
 	virtual void occluder_polygon_set_cull_mode(RID p_occluder, RS::CanvasOccluderPolygonCullMode p_mode) = 0;
 	virtual void set_shadow_texture_size(int p_size) = 0;
 
-	virtual void draw_window_margins(int *p_margins, RID *p_margin_textures) = 0;
-
 	virtual bool free(RID p_rid) = 0;
 	virtual void update() = 0;
 

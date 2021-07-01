@@ -173,7 +173,7 @@ Image::Format ImageTexture::get_format() const {
 	return format;
 }
 
-void ImageTexture::update(const Ref<Image> &p_image, bool p_immediate) {
+void ImageTexture::update(const Ref<Image> &p_image) {
 	ERR_FAIL_COND_MSG(p_image.is_null(), "Invalid image");
 	ERR_FAIL_COND_MSG(texture.is_null(), "Texture is not initialized.");
 	ERR_FAIL_COND_MSG(p_image->get_width() != w || p_image->get_height() != h,
@@ -183,11 +183,7 @@ void ImageTexture::update(const Ref<Image> &p_image, bool p_immediate) {
 	ERR_FAIL_COND_MSG(mipmaps != p_image->has_mipmaps(),
 			"The new image mipmaps configuration must match the texture's image mipmaps configuration");
 
-	if (p_immediate) {
-		RenderingServer::get_singleton()->texture_2d_update_immediate(texture, p_image);
-	} else {
-		RenderingServer::get_singleton()->texture_2d_update(texture, p_image);
-	}
+	RenderingServer::get_singleton()->texture_2d_update(texture, p_image);
 
 	notify_property_list_changed();
 	emit_changed();
@@ -305,7 +301,7 @@ void ImageTexture::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("create_from_image", "image"), &ImageTexture::create_from_image);
 	ClassDB::bind_method(D_METHOD("get_format"), &ImageTexture::get_format);
 
-	ClassDB::bind_method(D_METHOD("update", "image", "immediate"), &ImageTexture::update, DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("update", "image"), &ImageTexture::update);
 	ClassDB::bind_method(D_METHOD("set_size_override", "size"), &ImageTexture::set_size_override);
 	ClassDB::bind_method(D_METHOD("_reload_hook", "rid"), &ImageTexture::_reload_hook);
 }

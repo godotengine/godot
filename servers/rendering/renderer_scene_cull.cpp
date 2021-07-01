@@ -330,12 +330,6 @@ void RendererSceneCull::scenario_initialize(RID p_rid) {
 	RendererSceneOcclusionCull::get_singleton()->add_scenario(p_rid);
 }
 
-void RendererSceneCull::scenario_set_debug(RID p_scenario, RS::ScenarioDebugMode p_debug_mode) {
-	Scenario *scenario = scenario_owner.getornull(p_scenario);
-	ERR_FAIL_COND(!scenario);
-	scenario->debug = p_debug_mode;
-}
-
 void RendererSceneCull::scenario_set_environment(RID p_scenario, RID p_environment) {
 	Scenario *scenario = scenario_owner.getornull(p_scenario);
 	ERR_FAIL_COND(!scenario);
@@ -937,9 +931,6 @@ void RendererSceneCull::instance_attach_skeleton(RID p_instance, RID p_skeleton)
 		InstanceGeometryData *geom = static_cast<InstanceGeometryData *>(instance->base_data);
 		scene_render->geometry_instance_set_skeleton(geom->geometry_instance, p_skeleton);
 	}
-}
-
-void RendererSceneCull::instance_set_exterior(RID p_instance, bool p_enabled) {
 }
 
 void RendererSceneCull::instance_set_extra_visibility_margin(RID p_instance, real_t p_margin) {

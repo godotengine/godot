@@ -35,6 +35,7 @@
 #include "core/io/resource_loader.h"
 #include "core/math/math_defs.h"
 #include "renderer_compositor_rd.h"
+#include "servers/rendering/rendering_server_globals.h"
 #include "servers/rendering/shader_language.h"
 
 bool RendererStorageRD::can_create_resources_async() const {
@@ -881,10 +882,6 @@ void RendererStorageRD::_texture_2d_update(RID p_texture, const Ref<Image> &p_im
 	Ref<Image> validated = _validate_texture_format(p_image, f);
 
 	RD::get_singleton()->texture_update(tex->rd_texture, p_layer, validated->get_data());
-}
-
-void RendererStorageRD::texture_2d_update_immediate(RID p_texture, const Ref<Image> &p_image, int p_layer) {
-	_texture_2d_update(p_texture, p_image, p_layer, true);
 }
 
 void RendererStorageRD::texture_2d_update(RID p_texture, const Ref<Image> &p_image, int p_layer) {
@@ -3921,6 +3918,7 @@ void RendererStorageRD::particles_set_emitting(RID p_particles, bool p_emitting)
 }
 
 bool RendererStorageRD::particles_get_emitting(RID p_particles) {
+	ERR_FAIL_COND_V_MSG(RSG::threaded, false, "This function should never be used with threaded rendering, as it stalls the renderer.");
 	Particles *particles = particles_owner.getornull(p_particles);
 	ERR_FAIL_COND_V(!particles, false);
 
@@ -4243,6 +4241,10 @@ void RendererStorageRD::particles_request_process(RID p_particles) {
 }
 
 AABB RendererStorageRD::particles_get_current_aabb(RID p_particles) {
+	if (RSG::threaded) {
+		WARN_PRINT_ONCE("Calling this function with threaded rendering enabled stalls the renderer, use with care.");
+	}
+
 	const Particles *particles = particles_owner.getornull(p_particles);
 	ERR_FAIL_COND_V(!particles, AABB());
 
@@ -5127,6 +5129,7 @@ void RendererStorageRD::update_particles() {
 }
 
 bool RendererStorageRD::particles_is_inactive(RID p_particles) const {
+	ERR_FAIL_COND_V_MSG(RSG::threaded, false, "This function should never be used with threaded rendering, as it stalls the renderer.");
 	const Particles *particles = particles_owner.getornull(p_particles);
 	ERR_FAIL_COND_V(!particles, false);
 	return !particles->emitting && particles->inactive;
@@ -6633,32 +6636,6 @@ float RendererStorageRD::voxel_gi_get_energy(RID p_voxel_gi) const {
 	VoxelGI *voxel_gi = voxel_gi_owner.getornull(p_voxel_gi);
 	ERR_FAIL_COND_V(!voxel_gi, 0);
 	return voxel_gi->energy;
-}
-
-void RendererStorageRD::voxel_gi_set_ao(RID p_voxel_gi, float p_ao) {
-	VoxelGI *voxel_gi = voxel_gi_owner.getornull(p_voxel_gi);
-	ERR_FAIL_COND(!voxel_gi);
-
-	voxel_gi->ao = p_ao;
-}
-
-float RendererStorageRD::voxel_gi_get_ao(RID p_voxel_gi) const {
-	VoxelGI *voxel_gi = voxel_gi_owner.getornull(p_voxel_gi);
-	ERR_FAIL_COND_V(!voxel_gi, 0);
-	return voxel_gi->ao;
-}
-
-void RendererStorageRD::voxel_gi_set_ao_size(RID p_voxel_gi, float p_strength) {
-	VoxelGI *voxel_gi = voxel_gi_owner.getornull(p_voxel_gi);
-	ERR_FAIL_COND(!voxel_gi);
-
-	voxel_gi->ao_size = p_strength;
-}
-
-float RendererStorageRD::voxel_gi_get_ao_size(RID p_voxel_gi) const {
-	VoxelGI *voxel_gi = voxel_gi_owner.getornull(p_voxel_gi);
-	ERR_FAIL_COND_V(!voxel_gi, 0);
-	return voxel_gi->ao_size;
 }
 
 void RendererStorageRD::voxel_gi_set_bias(RID p_voxel_gi, float p_bias) {

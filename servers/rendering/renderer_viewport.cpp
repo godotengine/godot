@@ -114,7 +114,7 @@ void RendererViewport::_draw_viewport(Viewport *p_viewport, uint32_t p_view_coun
 
 	Color bgcolor = RSG::storage->get_default_clear_color();
 
-	if (!p_viewport->hide_canvas && !p_viewport->disable_environment && RSG::scene->is_scenario(p_viewport->scenario)) {
+	if (!p_viewport->disable_2d && !p_viewport->disable_environment && RSG::scene->is_scenario(p_viewport->scenario)) {
 		RID environment = RSG::scene->scenario_get_environment(p_viewport->scenario);
 		if (RSG::scene->is_environment(environment)) {
 			scenario_draw_canvas_bg = RSG::scene->environment_get_background(environment) == RS::ENV_BG_CANVAS;
@@ -145,7 +145,7 @@ void RendererViewport::_draw_viewport(Viewport *p_viewport, uint32_t p_view_coun
 		_draw_3d(p_viewport);
 	}
 
-	if (!p_viewport->hide_canvas) {
+	if (!p_viewport->disable_2d) {
 		int i = 0;
 
 		Map<Viewport::CanvasKey, Viewport::CanvasData *> canvas_map;
@@ -633,8 +633,6 @@ void RendererViewport::viewport_initialize(RID p_rid) {
 	viewport_owner.initialize_rid(p_rid);
 	Viewport *viewport = viewport_owner.getornull(p_rid);
 	viewport->self = p_rid;
-	viewport->hide_scenario = false;
-	viewport->hide_canvas = false;
 	viewport->render_target = RSG::storage->render_target_create();
 	viewport->shadow_atlas = RSG::scene->shadow_atlas_create();
 	viewport->viewport_render_direct_to_screen = false;
@@ -791,18 +789,11 @@ RID RendererViewport::viewport_get_occluder_debug_texture(RID p_viewport) const 
 	return RID();
 }
 
-void RendererViewport::viewport_set_hide_scenario(RID p_viewport, bool p_hide) {
+void RendererViewport::viewport_set_disable_2d(RID p_viewport, bool p_disable) {
 	Viewport *viewport = viewport_owner.getornull(p_viewport);
 	ERR_FAIL_COND(!viewport);
 
-	viewport->hide_scenario = p_hide;
-}
-
-void RendererViewport::viewport_set_hide_canvas(RID p_viewport, bool p_hide) {
-	Viewport *viewport = viewport_owner.getornull(p_viewport);
-	ERR_FAIL_COND(!viewport);
-
-	viewport->hide_canvas = p_hide;
+	viewport->disable_2d = p_disable;
 }
 
 void RendererViewport::viewport_set_disable_environment(RID p_viewport, bool p_disable) {

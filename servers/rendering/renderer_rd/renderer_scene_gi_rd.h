@@ -611,9 +611,9 @@ public:
 		uint32_t blend_ambient;
 		uint32_t texture_slot;
 
-		float anisotropy_strength;
-		float ao;
-		float ao_size;
+		uint32_t pad0;
+		uint32_t pad1;
+		uint32_t pad2;
 		uint32_t mipmaps;
 	};
 
