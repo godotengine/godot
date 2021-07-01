@@ -1424,7 +1424,7 @@ StringName TranslationServer::pseudolocalize(const StringName &p_message) const 
 	String message = p_message;
 	int length = message.length();
 	if (pseudolocalization_override_enabled) {
-		message = get_override_string(length);
+		message = get_override_string(message);
 	}
 
 	if (pseudolocalization_double_vowels_enabled) {
@@ -1442,9 +1442,17 @@ StringName TranslationServer::pseudolocalize(const StringName &p_message) const 
 	StringName res = add_padding(message, length);
 	return res;
 }
-String TranslationServer::get_override_string(int length) const {
+String TranslationServer::get_override_string(String &message) const {
 	String res = "";
-	for (int i = 0; i < length; i++) {
+	for (int i = 0; i < message.size(); i++) {
+		if (message[i] == '%' && i < message.size() - 1 &&
+				(message[i + 1] == 's' || message[i + 1] == 'c' || message[i + 1] == 'd' ||
+						message[i + 1] == 'o' || message[i + 1] == 'x' || message[i + 1] == 'X' || message[i + 1] == 'f')) {
+			res += message[i];
+			res += message[i + 1];
+			i++;
+			continue;
+		}
 		res += '*';
 	}
 	return res;
@@ -1452,6 +1460,14 @@ String TranslationServer::get_override_string(int length) const {
 String TranslationServer::double_vowels(String &message) const {
 	String res = "";
 	for (int i = 0; i < message.size(); i++) {
+		if (message[i] == '%' && i < message.size() - 1 &&
+				(message[i + 1] == 's' || message[i + 1] == 'c' || message[i + 1] == 'd' ||
+						message[i + 1] == 'o' || message[i + 1] == 'x' || message[i + 1] == 'X' || message[i + 1] == 'f')) {
+			res += message[i];
+			res += message[i + 1];
+			i++;
+			continue;
+		}
 		res += message[i];
 		if (message[i] == 'a' || message[i] == 'e' || message[i] == 'i' || message[i] == 'o' || message[i] == 'u' ||
 				message[i] == 'A' || message[i] == 'E' || message[i] == 'I' || message[i] == 'O' || message[i] == 'U') {
@@ -1464,6 +1480,14 @@ String TranslationServer::double_vowels(String &message) const {
 String TranslationServer::replace_with_accented_string(String &message) const {
 	String res = "";
 	for (int i = 0; i < message.size(); i++) {
+		if (message[i] == '%' && i < message.size() - 1 &&
+				(message[i + 1] == 's' || message[i + 1] == 'c' || message[i + 1] == 'd' ||
+						message[i + 1] == 'o' || message[i + 1] == 'x' || message[i + 1] == 'X' || message[i + 1] == 'f')) {
+			res += message[i];
+			res += message[i + 1];
+			i++;
+			continue;
+		}
 		const wchar_t *accented = get_accented_version(message[i]);
 		if (accented) {
 			res += accented;
@@ -1485,6 +1509,14 @@ String TranslationServer::wrap_with_fakebidi_characters(String &message) const {
 			res += fakebidisuffix;
 			res += message[i];
 			res += fakebidiprefix;
+		} else if (message[i] == '%' && i < message.size() - 1 &&
+				   (message[i + 1] == 's' || message[i + 1] == 'c' || message[i + 1] == 'd' ||
+						   message[i + 1] == 'o' || message[i + 1] == 'x' || message[i + 1] == 'X' || message[i + 1] == 'f')) {
+			res += fakebidisuffix;
+			res += message[i];
+			res += message[i + 1];
+			res += fakebidiprefix;
+			i++;
 		} else {
 			res += message[i];
 		}
