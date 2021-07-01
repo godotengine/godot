@@ -580,8 +580,8 @@
 		<constant name="FORWARD" value="Vector3(0, 0, -1)">
 			Forward unit vector. Represents the local direction of forward, and the global direction of north.
 		</constant>
-		<constant name="BACK" value="Vector3(0, 0, 1)">
-			Back unit vector. Represents the local direction of back, and the global direction of south.
+		<constant name="BACKWARD" value="Vector3(0, 0, 1)">
+			Backward unit vector. Represents the local direction of back, and the global direction of south.
 		</constant>
 	</constants>
 </class>

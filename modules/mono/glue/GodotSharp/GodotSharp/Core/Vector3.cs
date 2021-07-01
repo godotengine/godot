@@ -599,7 +599,7 @@ namespace Godot
         private static readonly Vector3 _right = new Vector3(1, 0, 0);
         private static readonly Vector3 _left = new Vector3(-1, 0, 0);
         private static readonly Vector3 _forward = new Vector3(0, 0, -1);
-        private static readonly Vector3 _back = new Vector3(0, 0, 1);
+        private static readonly Vector3 _backward = new Vector3(0, 0, 1);
 
         /// <summary>
         /// Zero vector, a vector with all components set to `0`.
@@ -646,11 +646,11 @@ namespace Godot
         /// <value>Equivalent to `new Vector3(0, 0, -1)`</value>
         public static Vector3 Forward { get { return _forward; } }
         /// <summary>
-        /// Back unit vector. Represents the local direction of back,
+        /// Backward unit vector. Represents the local direction of back,
         /// and the global direction of south.
         /// </summary>
         /// <value>Equivalent to `new Vector3(0, 0, 1)`</value>
-        public static Vector3 Back { get { return _back; } }
+        public static Vector3 Backward { get { return _backward; } }
 
         /// <summary>
         /// Constructs a new <see cref="Vector3"/> with the given components.
