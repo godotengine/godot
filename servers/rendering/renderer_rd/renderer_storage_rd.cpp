@@ -2460,7 +2460,7 @@ void RendererStorageRD::mesh_add_surface(RID p_mesh, const RS::SurfaceData &p_su
 
 					} break;
 					case RS::ARRAY_COLOR: {
-						attrib_stride += sizeof(int16_t) * 4;
+						attrib_stride += sizeof(uint32_t);
 					} break;
 					case RS::ARRAY_TEX_UV: {
 						attrib_stride += sizeof(float) * 2;
