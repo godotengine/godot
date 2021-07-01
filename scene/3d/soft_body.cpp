@@ -308,6 +308,9 @@ void SoftBody::_notification(int p_what) {
 void SoftBody::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_draw_soft_mesh"), &SoftBody::_draw_soft_mesh);
 
+	ClassDB::bind_method(D_METHOD("set_physics_enabled", "enabled"), &SoftBody::set_physics_enabled);
+	ClassDB::bind_method(D_METHOD("is_physics_enabled"), &SoftBody::is_physics_enabled);
+
 	ClassDB::bind_method(D_METHOD("set_collision_mask", "collision_mask"), &SoftBody::set_collision_mask);
 	ClassDB::bind_method(D_METHOD("get_collision_mask"), &SoftBody::get_collision_mask);
 
@@ -356,6 +359,8 @@ void SoftBody::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_ray_pickable", "ray_pickable"), &SoftBody::set_ray_pickable);
 	ClassDB::bind_method(D_METHOD("is_ray_pickable"), &SoftBody::is_ray_pickable);
+
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "physics_enabled"), "set_physics_enabled", "is_physics_enabled");
 
 	ADD_GROUP("Collision", "collision_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "collision_layer", PROPERTY_HINT_LAYERS_3D_PHYSICS), "set_collision_layer", "get_collision_layer");
@@ -448,7 +453,7 @@ void SoftBody::prepare_physics_server() {
 		return;
 	}
 
-	if (get_mesh().is_valid()) {
+	if (get_mesh().is_valid() && physics_enabled) {
 		become_mesh_owner();
 		PhysicsServer::get_singleton()->soft_body_set_mesh(physics_rid, get_mesh());
 		VS::get_singleton()->connect("frame_pre_draw", this, "_draw_soft_mesh");
@@ -549,6 +554,22 @@ void SoftBody::set_parent_collision_ignore(const NodePath &p_parent_collision_ig
 
 const NodePath &SoftBody::get_parent_collision_ignore() const {
 	return parent_collision_ignore;
+}
+
+void SoftBody::set_physics_enabled(bool p_enabled) {
+	if (p_enabled == physics_enabled) {
+		return;
+	}
+
+	physics_enabled = p_enabled;
+
+	if (is_inside_tree()) {
+		prepare_physics_server();
+	}
+}
+
+bool SoftBody::is_physics_enabled() const {
+	return physics_enabled;
 }
 
 void SoftBody::set_pinned_points_indices(PoolVector<SoftBody::PinnedPoint> p_pinned_points_indices) {
