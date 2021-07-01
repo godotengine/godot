@@ -1042,11 +1042,11 @@ bool KinematicBody2D::move_and_collide(const Vector2 &p_motion, bool p_infinite_
 	// Restore direction of motion to be along original motion,
 	// in order to avoid sliding due to recovery,
 	// but only if collision depth is low enough to avoid tunneling.
-	real_t motion_length = p_motion.length();
-	if (motion_length > CMP_EPSILON) {
+	if (p_cancel_sliding) {
+		real_t motion_length = p_motion.length();
 		real_t precision = 0.001;
 
-		if (colliding && p_cancel_sliding) {
+		if (colliding) {
 			// Can't just use margin as a threshold because collision depth is calculated on unsafe motion,
 			// so even in normal resting cases the depth can be a bit more than the margin.
 			precision += motion_length * (result.collision_unsafe_fraction - result.collision_safe_fraction);
@@ -1057,16 +1057,21 @@ bool KinematicBody2D::move_and_collide(const Vector2 &p_motion, bool p_infinite_
 		}
 
 		if (p_cancel_sliding) {
+			// When motion is null, recovery is the resulting motion.
+			Vector2 motion_normal;
+			if (motion_length > CMP_EPSILON) {
+				motion_normal = p_motion / motion_length;
+			}
+
 			// Check depth of recovery.
-			Vector2 motion_normal = p_motion / motion_length;
-			real_t dot = result.motion.dot(motion_normal);
-			Vector2 recovery = result.motion - motion_normal * dot;
+			real_t projected_length = result.motion.dot(motion_normal);
+			Vector2 recovery = result.motion - motion_normal * projected_length;
 			real_t recovery_length = recovery.length();
 			// Fixes cases where canceling slide causes the motion to go too deep into the ground,
-			// Becauses we're only taking rest information into account and not general recovery.
+			// because we're only taking rest information into account and not general recovery.
 			if (recovery_length < (real_t)margin + precision) {
 				// Apply adjustment to motion.
-				result.motion = motion_normal * dot;
+				result.motion = motion_normal * projected_length;
 				result.remainder = p_motion - result.motion;
 			}
 		}
@@ -1134,8 +1139,9 @@ Vector2 KinematicBody2D::move_and_slide(const Vector2 &p_linear_velocity, const 
 	on_floor_body = RID();
 	Vector2 motion = body_velocity * delta;
 
-	// No sliding on first attempt to keep floor motion stable when possible.
-	bool sliding_enabled = false;
+	// No sliding on first attempt to keep floor motion stable when possible,
+	// when stop on slope is enabled.
+	bool sliding_enabled = !p_stop_on_slope;
 	for (int iteration = 0; iteration < p_max_slides; ++iteration) {
 		Collision collision;
 		bool found_collision = false;
@@ -1165,7 +1171,11 @@ Vector2 KinematicBody2D::move_and_slide(const Vector2 &p_linear_velocity, const 
 				if (on_floor && p_stop_on_slope) {
 					if ((body_velocity_normal + up_direction).length() < 0.01) {
 						Transform2D gt = get_global_transform();
-						gt.elements[2] -= collision.travel.slide(up_direction);
+						if (collision.travel.length() > margin) {
+							gt.elements[2] -= collision.travel.slide(up_direction);
+						} else {
+							gt.elements[2] -= collision.travel;
+						}
 						set_global_transform(gt);
 						return Vector2();
 					}
@@ -1207,7 +1217,7 @@ Vector2 KinematicBody2D::move_and_slide_with_snap(const Vector2 &p_linear_veloci
 	Collision col;
 	Transform2D gt = get_global_transform();
 
-	if (move_and_collide(p_snap, p_infinite_inertia, col, false, true)) {
+	if (move_and_collide(p_snap, p_infinite_inertia, col, false, true, false)) {
 		bool apply = true;
 		if (up_direction != Vector2()) {
 			if (Math::acos(col.normal.dot(up_direction)) <= p_floor_max_angle + FLOOR_ANGLE_THRESHOLD) {
@@ -1218,9 +1228,12 @@ Vector2 KinematicBody2D::move_and_slide_with_snap(const Vector2 &p_linear_veloci
 				if (p_stop_on_slope) {
 					// move and collide may stray the object a bit because of pre un-stucking,
 					// so only ensure that motion happens on floor direction in this case.
-					col.travel = up_direction * up_direction.dot(col.travel);
+					if (col.travel.length() > margin) {
+						col.travel = up_direction * up_direction.dot(col.travel);
+					} else {
+						col.travel = Vector2();
+					}
 				}
-
 			} else {
 				apply = false;
 			}

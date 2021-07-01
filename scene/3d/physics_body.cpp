@@ -985,11 +985,11 @@ bool KinematicBody::move_and_collide(const Vector3 &p_motion, bool p_infinite_in
 	// Restore direction of motion to be along original motion,
 	// in order to avoid sliding due to recovery,
 	// but only if collision depth is low enough to avoid tunneling.
-	real_t motion_length = p_motion.length();
-	if (motion_length > CMP_EPSILON) {
-		real_t precision = CMP_EPSILON;
+	if (p_cancel_sliding) {
+		real_t motion_length = p_motion.length();
+		real_t precision = 0.001;
 
-		if (colliding && p_cancel_sliding) {
+		if (colliding) {
 			// Can't just use margin as a threshold because collision depth is calculated on unsafe motion,
 			// so even in normal resting cases the depth can be a bit more than the margin.
 			precision += motion_length * (result.collision_unsafe_fraction - result.collision_safe_fraction);
@@ -1000,16 +1000,21 @@ bool KinematicBody::move_and_collide(const Vector3 &p_motion, bool p_infinite_in
 		}
 
 		if (p_cancel_sliding) {
+			// When motion is null, recovery is the resulting motion.
+			Vector3 motion_normal;
+			if (motion_length > CMP_EPSILON) {
+				motion_normal = p_motion / motion_length;
+			}
+
 			// Check depth of recovery.
-			Vector3 motion_normal = p_motion / motion_length;
-			real_t dot = result.motion.dot(motion_normal);
-			Vector3 recovery = result.motion - motion_normal * dot;
+			real_t projected_length = result.motion.dot(motion_normal);
+			Vector3 recovery = result.motion - motion_normal * projected_length;
 			real_t recovery_length = recovery.length();
 			// Fixes cases where canceling slide causes the motion to go too deep into the ground,
-			// Becauses we're only taking rest information into account and not general recovery.
+			// because we're only taking rest information into account and not general recovery.
 			if (recovery_length < (real_t)margin + precision) {
 				// Apply adjustment to motion.
-				result.motion = motion_normal * dot;
+				result.motion = motion_normal * projected_length;
 				result.remainder = p_motion - result.motion;
 			}
 		}
@@ -1076,8 +1081,9 @@ Vector3 KinematicBody::move_and_slide(const Vector3 &p_linear_velocity, const Ve
 	floor_normal = Vector3();
 	floor_velocity = Vector3();
 
-	// No sliding on first attempt to keep motion stable when possible.
-	bool sliding_enabled = false;
+	// No sliding on first attempt to keep floor motion stable when possible,
+	// when stop on slope is enabled.
+	bool sliding_enabled = !p_stop_on_slope;
 	for (int iteration = 0; iteration < p_max_slides; ++iteration) {
 		Collision collision;
 		bool found_collision = false;
@@ -1116,7 +1122,11 @@ Vector3 KinematicBody::move_and_slide(const Vector3 &p_linear_velocity, const Ve
 						if (p_stop_on_slope) {
 							if ((body_velocity_normal + up_direction).length() < 0.01) {
 								Transform gt = get_global_transform();
-								gt.origin -= collision.travel.slide(up_direction);
+								if (collision.travel.length() > margin) {
+									gt.origin -= collision.travel.slide(up_direction);
+								} else {
+									gt.origin -= collision.travel;
+								}
 								set_global_transform(gt);
 								return Vector3();
 							}
@@ -1165,7 +1175,7 @@ Vector3 KinematicBody::move_and_slide_with_snap(const Vector3 &p_linear_velocity
 	Collision col;
 	Transform gt = get_global_transform();
 
-	if (move_and_collide(p_snap, p_infinite_inertia, col, false, true)) {
+	if (move_and_collide(p_snap, p_infinite_inertia, col, false, true, false)) {
 		bool apply = true;
 		if (up_direction != Vector3()) {
 			if (Math::acos(col.normal.dot(up_direction)) <= p_floor_max_angle + FLOOR_ANGLE_THRESHOLD) {
@@ -1176,7 +1186,11 @@ Vector3 KinematicBody::move_and_slide_with_snap(const Vector3 &p_linear_velocity
 				if (p_stop_on_slope) {
 					// move and collide may stray the object a bit because of pre un-stucking,
 					// so only ensure that motion happens on floor direction in this case.
-					col.travel = col.travel.project(up_direction);
+					if (col.travel.length() > margin) {
+						col.travel = col.travel.project(up_direction);
+					} else {
+						col.travel = Vector3();
+					}
 				}
 			} else {
 				apply = false; //snapped with floor direction, but did not snap to a floor, do not snap.
