@@ -125,11 +125,11 @@ bool PhysicsBody3D::move_and_collide(const Vector3 &p_motion, bool p_infinite_in
 	// Restore direction of motion to be along original motion,
 	// in order to avoid sliding due to recovery,
 	// but only if collision depth is low enough to avoid tunneling.
-	real_t motion_length = p_motion.length();
-	if (motion_length > CMP_EPSILON) {
-		real_t precision = CMP_EPSILON;
+	if (p_cancel_sliding) {
+		real_t motion_length = p_motion.length();
+		real_t precision = 0.001;
 
-		if (colliding && p_cancel_sliding) {
+		if (colliding) {
 			// Can't just use margin as a threshold because collision depth is calculated on unsafe motion,
 			// so even in normal resting cases the depth can be a bit more than the margin.
 			precision += motion_length * (r_result.collision_unsafe_fraction - r_result.collision_safe_fraction);
@@ -140,16 +140,21 @@ bool PhysicsBody3D::move_and_collide(const Vector3 &p_motion, bool p_infinite_in
 		}
 
 		if (p_cancel_sliding) {
+			// When motion is null, recovery is the resulting motion.
+			Vector3 motion_normal;
+			if (motion_length > CMP_EPSILON) {
+				motion_normal = p_motion / motion_length;
+			}
+
 			// Check depth of recovery.
-			Vector3 motion_normal = p_motion / motion_length;
-			real_t dot = r_result.motion.dot(motion_normal);
-			Vector3 recovery = r_result.motion - motion_normal * dot;
+			real_t projected_length = r_result.motion.dot(motion_normal);
+			Vector3 recovery = r_result.motion - motion_normal * projected_length;
 			real_t recovery_length = recovery.length();
 			// Fixes cases where canceling slide causes the motion to go too deep into the ground,
-			// Becauses we're only taking rest information into account and not general recovery.
+			// because we're only taking rest information into account and not general recovery.
 			if (recovery_length < (real_t)p_margin + precision) {
 				// Apply adjustment to motion.
-				r_result.motion = motion_normal * dot;
+				r_result.motion = motion_normal * projected_length;
 				r_result.remainder = p_motion - r_result.motion;
 			}
 		}
@@ -1012,8 +1017,9 @@ void CharacterBody3D::move_and_slide() {
 	floor_normal = Vector3();
 	floor_velocity = Vector3();
 
-	// No sliding on first attempt to keep motion stable when possible.
-	bool sliding_enabled = false;
+	// No sliding on first attempt to keep floor motion stable when possible,
+	// when stop on slope is enabled.
+	bool sliding_enabled = !stop_on_slope;
 	for (int iteration = 0; iteration < max_slides; ++iteration) {
 		PhysicsServer3D::MotionResult result;
 		bool found_collision = false;
@@ -1052,7 +1058,11 @@ void CharacterBody3D::move_and_slide() {
 						if (stop_on_slope) {
 							if ((body_velocity_normal + up_direction).length() < 0.01) {
 								Transform3D gt = get_global_transform();
-								gt.origin -= result.motion.slide(up_direction);
+								if (result.motion.length() > margin) {
+									gt.origin -= result.motion.slide(up_direction);
+								} else {
+									gt.origin -= result.motion;
+								}
 								set_global_transform(gt);
 								linear_velocity = Vector3();
 								return;
@@ -1094,7 +1104,7 @@ void CharacterBody3D::move_and_slide() {
 	// Apply snap.
 	Transform3D gt = get_global_transform();
 	PhysicsServer3D::MotionResult result;
-	if (move_and_collide(snap, infinite_inertia, result, margin, false, true)) {
+	if (move_and_collide(snap, infinite_inertia, result, margin, false, true, false)) {
 		bool apply = true;
 		if (up_direction != Vector3()) {
 			if (Math::acos(result.collision_normal.dot(up_direction)) <= floor_max_angle + FLOOR_ANGLE_THRESHOLD) {
@@ -1105,7 +1115,11 @@ void CharacterBody3D::move_and_slide() {
 				if (stop_on_slope) {
 					// move and collide may stray the object a bit because of pre un-stucking,
 					// so only ensure that motion happens on floor direction in this case.
-					result.motion = result.motion.project(up_direction);
+					if (result.motion.length() > margin) {
+						result.motion = result.motion.project(up_direction);
+					} else {
+						result.motion = Vector3();
+					}
 				}
 			} else {
 				apply = false; //snapped with floor direction, but did not snap to a floor, do not snap.
