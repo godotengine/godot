@@ -191,7 +191,7 @@ public:
 
 	virtual RID render_buffers_create() = 0;
 
-	virtual void render_buffers_configure(RID p_render_buffers, RID p_render_target, int p_width, int p_height, RS::ViewportMSAA p_msaa, RS::ViewportScreenSpaceAA p_screen_space_aa, bool p_use_debanding, uint32_t p_view_count) = 0;
+	virtual void render_buffers_configure(RID p_render_buffers, RID p_render_target, int p_width, int p_height, RS::ViewportMSAA p_msaa, RS::ViewportScreenSpaceAA p_screen_space_aa, bool p_use_debanding, float p_sharpen_intensity, uint32_t p_view_count) = 0;
 
 	virtual void gi_set_use_half_resolution(bool p_enable) = 0;
 

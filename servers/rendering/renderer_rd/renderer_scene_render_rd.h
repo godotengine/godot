@@ -415,6 +415,7 @@ private:
 		RS::ViewportMSAA msaa = RS::VIEWPORT_MSAA_DISABLED;
 		RS::ViewportScreenSpaceAA screen_space_aa = RS::VIEWPORT_SCREEN_SPACE_AA_DISABLED;
 		bool use_debanding = false;
+		float sharpen_intensity = 0.0;
 		uint32_t view_count = 1;
 
 		RID render_target;
@@ -1127,7 +1128,7 @@ public:
 	/* render buffers */
 
 	RID render_buffers_create();
-	void render_buffers_configure(RID p_render_buffers, RID p_render_target, int p_width, int p_height, RS::ViewportMSAA p_msaa, RS::ViewportScreenSpaceAA p_screen_space_aa, bool p_use_debanding, uint32_t p_view_count);
+	void render_buffers_configure(RID p_render_buffers, RID p_render_target, int p_width, int p_height, RS::ViewportMSAA p_msaa, RS::ViewportScreenSpaceAA p_screen_space_aa, bool p_use_debanding, float p_sharpen_intensity, uint32_t p_view_count);
 	void gi_set_use_half_resolution(bool p_enable);
 
 	RID render_buffers_get_ao_texture(RID p_render_buffers);
