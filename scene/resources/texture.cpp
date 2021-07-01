@@ -1407,14 +1407,26 @@ void CurveTexture::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_curve", "curve"), &CurveTexture::set_curve);
 	ClassDB::bind_method(D_METHOD("get_curve"), &CurveTexture::get_curve);
 
+	ClassDB::bind_method(D_METHOD("set_texture_mode", "texture_mode"), &CurveTexture::set_texture_mode);
+	ClassDB::bind_method(D_METHOD("get_texture_mode"), &CurveTexture::get_texture_mode);
+
 	ClassDB::bind_method(D_METHOD("_update"), &CurveTexture::_update);
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "width", PROPERTY_HINT_RANGE, "32,4096"), "set_width", "get_width");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "texture_mode", PROPERTY_HINT_ENUM, "RGB,Red"), "set_texture_mode", "get_texture_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "curve", PROPERTY_HINT_RESOURCE_TYPE, "Curve"), "set_curve", "get_curve");
+
+	BIND_ENUM_CONSTANT(TEXTURE_MODE_RGB);
+	BIND_ENUM_CONSTANT(TEXTURE_MODE_RED);
 }
 
 void CurveTexture::set_width(int p_width) {
 	ERR_FAIL_COND(p_width < 32 || p_width > 4096);
+
+	if (_width == p_width) {
+		return;
+	}
+
 	_width = p_width;
 	_update();
 }
@@ -1450,7 +1462,7 @@ void CurveTexture::set_curve(Ref<Curve> p_curve) {
 
 void CurveTexture::_update() {
 	Vector<uint8_t> data;
-	data.resize(_width * sizeof(float));
+	data.resize(_width * sizeof(float) * (texture_mode == TEXTURE_MODE_RGB ? 3 : 1));
 
 	// The array is locked in that scope
 	{
@@ -1461,30 +1473,59 @@ void CurveTexture::_update() {
 			Curve &curve = **_curve;
 			for (int i = 0; i < _width; ++i) {
 				float t = i / static_cast<float>(_width);
-				wd[i] = curve.interpolate_baked(t);
+				if (texture_mode == TEXTURE_MODE_RGB) {
+					wd[i * 3 + 0] = curve.interpolate_baked(t);
+					wd[i * 3 + 1] = wd[i * 3 + 0];
+					wd[i * 3 + 2] = wd[i * 3 + 0];
+				} else {
+					wd[i] = curve.interpolate_baked(t);
+				}
 			}
 
 		} else {
 			for (int i = 0; i < _width; ++i) {
-				wd[i] = 0;
+				if (texture_mode == TEXTURE_MODE_RGB) {
+					wd[i * 3 + 0] = 0;
+					wd[i * 3 + 1] = 0;
+					wd[i * 3 + 2] = 0;
+				} else {
+					wd[i] = 0;
+				}
 			}
 		}
 	}
 
-	Ref<Image> image = memnew(Image(_width, 1, false, Image::FORMAT_RF, data));
+	Ref<Image> image = memnew(Image(_width, 1, false, texture_mode == TEXTURE_MODE_RGB ? Image::FORMAT_RGBF : Image::FORMAT_RF, data));
 
 	if (_texture.is_valid()) {
-		RID new_texture = RS::get_singleton()->texture_2d_create(image);
-		RS::get_singleton()->texture_replace(_texture, new_texture);
+		if (_current_texture_mode != texture_mode || _current_width != _width) {
+			RID new_texture = RS::get_singleton()->texture_2d_create(image);
+			RS::get_singleton()->texture_replace(_texture, new_texture);
+		} else {
+			RS::get_singleton()->texture_2d_update(_texture, image);
+		}
 	} else {
 		_texture = RS::get_singleton()->texture_2d_create(image);
 	}
+	_current_texture_mode = texture_mode;
+	_current_width = _width;
 
 	emit_changed();
 }
 
 Ref<Curve> CurveTexture::get_curve() const {
 	return _curve;
+}
+
+void CurveTexture::set_texture_mode(TextureMode p_mode) {
+	if (texture_mode == p_mode) {
+		return;
+	}
+	texture_mode = p_mode;
+	_update();
+}
+CurveTexture::TextureMode CurveTexture::get_texture_mode() const {
+	return texture_mode;
 }
 
 RID CurveTexture::get_rid() const {
@@ -1497,6 +1538,204 @@ RID CurveTexture::get_rid() const {
 CurveTexture::CurveTexture() {}
 
 CurveTexture::~CurveTexture() {
+	if (_texture.is_valid()) {
+		RS::get_singleton()->free(_texture);
+	}
+}
+
+//////////////////
+
+void Curve3Texture::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("set_width", "width"), &Curve3Texture::set_width);
+
+	ClassDB::bind_method(D_METHOD("set_curve_x", "curve"), &Curve3Texture::set_curve_x);
+	ClassDB::bind_method(D_METHOD("get_curve_x"), &Curve3Texture::get_curve_x);
+
+	ClassDB::bind_method(D_METHOD("set_curve_y", "curve"), &Curve3Texture::set_curve_y);
+	ClassDB::bind_method(D_METHOD("get_curve_y"), &Curve3Texture::get_curve_y);
+
+	ClassDB::bind_method(D_METHOD("set_curve_z", "curve"), &Curve3Texture::set_curve_z);
+	ClassDB::bind_method(D_METHOD("get_curve_z"), &Curve3Texture::get_curve_z);
+
+	ClassDB::bind_method(D_METHOD("_update"), &Curve3Texture::_update);
+
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "width", PROPERTY_HINT_RANGE, "32,4096"), "set_width", "get_width");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "curve_x", PROPERTY_HINT_RESOURCE_TYPE, "Curve"), "set_curve_x", "get_curve_x");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "curve_y", PROPERTY_HINT_RESOURCE_TYPE, "Curve"), "set_curve_y", "get_curve_y");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "curve_z", PROPERTY_HINT_RESOURCE_TYPE, "Curve"), "set_curve_z", "get_curve_z");
+}
+
+void Curve3Texture::set_width(int p_width) {
+	ERR_FAIL_COND(p_width < 32 || p_width > 4096);
+
+	if (_width == p_width) {
+		return;
+	}
+
+	_width = p_width;
+	_update();
+}
+
+int Curve3Texture::get_width() const {
+	return _width;
+}
+
+void Curve3Texture::ensure_default_setup(float p_min, float p_max) {
+	if (_curve_x.is_null()) {
+		Ref<Curve> curve = Ref<Curve>(memnew(Curve));
+		curve->add_point(Vector2(0, 1));
+		curve->add_point(Vector2(1, 1));
+		curve->set_min_value(p_min);
+		curve->set_max_value(p_max);
+		set_curve_x(curve);
+	}
+
+	if (_curve_y.is_null()) {
+		Ref<Curve> curve = Ref<Curve>(memnew(Curve));
+		curve->add_point(Vector2(0, 1));
+		curve->add_point(Vector2(1, 1));
+		curve->set_min_value(p_min);
+		curve->set_max_value(p_max);
+		set_curve_y(curve);
+	}
+
+	if (_curve_z.is_null()) {
+		Ref<Curve> curve = Ref<Curve>(memnew(Curve));
+		curve->add_point(Vector2(0, 1));
+		curve->add_point(Vector2(1, 1));
+		curve->set_min_value(p_min);
+		curve->set_max_value(p_max);
+		set_curve_z(curve);
+	}
+}
+
+void Curve3Texture::set_curve_x(Ref<Curve> p_curve) {
+	if (_curve_x != p_curve) {
+		if (_curve_x.is_valid()) {
+			_curve_x->disconnect(CoreStringNames::get_singleton()->changed, callable_mp(this, &Curve3Texture::_update));
+		}
+		_curve_x = p_curve;
+		if (_curve_x.is_valid()) {
+			_curve_x->connect(CoreStringNames::get_singleton()->changed, callable_mp(this, &Curve3Texture::_update), varray(), CONNECT_REFERENCE_COUNTED);
+		}
+		_update();
+	}
+}
+
+void Curve3Texture::set_curve_y(Ref<Curve> p_curve) {
+	if (_curve_y != p_curve) {
+		if (_curve_y.is_valid()) {
+			_curve_y->disconnect(CoreStringNames::get_singleton()->changed, callable_mp(this, &Curve3Texture::_update));
+		}
+		_curve_y = p_curve;
+		if (_curve_y.is_valid()) {
+			_curve_y->connect(CoreStringNames::get_singleton()->changed, callable_mp(this, &Curve3Texture::_update), varray(), CONNECT_REFERENCE_COUNTED);
+		}
+		_update();
+	}
+}
+
+void Curve3Texture::set_curve_z(Ref<Curve> p_curve) {
+	if (_curve_z != p_curve) {
+		if (_curve_z.is_valid()) {
+			_curve_z->disconnect(CoreStringNames::get_singleton()->changed, callable_mp(this, &Curve3Texture::_update));
+		}
+		_curve_z = p_curve;
+		if (_curve_z.is_valid()) {
+			_curve_z->connect(CoreStringNames::get_singleton()->changed, callable_mp(this, &Curve3Texture::_update), varray(), CONNECT_REFERENCE_COUNTED);
+		}
+		_update();
+	}
+}
+
+void Curve3Texture::_update() {
+	Vector<uint8_t> data;
+	data.resize(_width * sizeof(float) * 3);
+
+	// The array is locked in that scope
+	{
+		uint8_t *wd8 = data.ptrw();
+		float *wd = (float *)wd8;
+
+		if (_curve_x.is_valid()) {
+			Curve &curve_x = **_curve_x;
+			for (int i = 0; i < _width; ++i) {
+				float t = i / static_cast<float>(_width);
+				wd[i * 3 + 0] = curve_x.interpolate_baked(t);
+			}
+
+		} else {
+			for (int i = 0; i < _width; ++i) {
+				wd[i * 3 + 0] = 0;
+			}
+		}
+
+		if (_curve_y.is_valid()) {
+			Curve &curve_y = **_curve_y;
+			for (int i = 0; i < _width; ++i) {
+				float t = i / static_cast<float>(_width);
+				wd[i * 3 + 1] = curve_y.interpolate_baked(t);
+			}
+
+		} else {
+			for (int i = 0; i < _width; ++i) {
+				wd[i * 3 + 1] = 0;
+			}
+		}
+
+		if (_curve_z.is_valid()) {
+			Curve &curve_z = **_curve_z;
+			for (int i = 0; i < _width; ++i) {
+				float t = i / static_cast<float>(_width);
+				wd[i * 3 + 2] = curve_z.interpolate_baked(t);
+			}
+
+		} else {
+			for (int i = 0; i < _width; ++i) {
+				wd[i * 3 + 2] = 0;
+			}
+		}
+	}
+
+	Ref<Image> image = memnew(Image(_width, 1, false, Image::FORMAT_RGBF, data));
+
+	if (_texture.is_valid()) {
+		if (_current_width != _width) {
+			RID new_texture = RS::get_singleton()->texture_2d_create(image);
+			RS::get_singleton()->texture_replace(_texture, new_texture);
+		} else {
+			RS::get_singleton()->texture_2d_update(_texture, image);
+		}
+	} else {
+		_texture = RS::get_singleton()->texture_2d_create(image);
+	}
+	_current_width = _width;
+
+	emit_changed();
+}
+
+Ref<Curve> Curve3Texture::get_curve_x() const {
+	return _curve_x;
+}
+
+Ref<Curve> Curve3Texture::get_curve_y() const {
+	return _curve_y;
+}
+
+Ref<Curve> Curve3Texture::get_curve_z() const {
+	return _curve_z;
+}
+
+RID Curve3Texture::get_rid() const {
+	if (!_texture.is_valid()) {
+		_texture = RS::get_singleton()->texture_2d_placeholder_create();
+	}
+	return _texture;
+}
+
+Curve3Texture::Curve3Texture() {}
+
+Curve3Texture::~Curve3Texture() {
 	if (_texture.is_valid()) {
 		RS::get_singleton()->free(_texture);
 	}
