@@ -1177,11 +1177,11 @@ void TextEdit::_notification(int p_what) {
 						}
 					}
 
-					if (!clipped && select_identifiers_enabled && highlighted_word.length() != 0) { // Highlight word
-						if (_is_char(highlighted_word[0]) || highlighted_word[0] == '.') {
-							int highlighted_word_col = _get_column_pos_of_word(highlighted_word, str, SEARCH_MATCH_CASE | SEARCH_WHOLE_WORDS, 0);
+					if (!clipped && lookup_symbol_word.length() != 0) { // Highlight word
+						if (_is_char(lookup_symbol_word[0]) || lookup_symbol_word[0] == '.') {
+							int highlighted_word_col = _get_column_pos_of_word(lookup_symbol_word, str, SEARCH_MATCH_CASE | SEARCH_WHOLE_WORDS, 0);
 							while (highlighted_word_col != -1) {
-								Vector<Vector2> sel = TS->shaped_text_get_selection(rid, highlighted_word_col + start, highlighted_word_col + highlighted_word.length() + start);
+								Vector<Vector2> sel = TS->shaped_text_get_selection(rid, highlighted_word_col + start, highlighted_word_col + lookup_symbol_word.length() + start);
 								for (int j = 0; j < sel.size(); j++) {
 									Rect2 rect = Rect2(sel[j].x + char_margin + ofs_x, ofs_y, sel[j].y - sel[j].x, row_height);
 									if (rect.position.x + rect.size.x <= xmargin_beg || rect.position.x > xmargin_end) {
@@ -1198,7 +1198,7 @@ void TextEdit::_notification(int p_what) {
 									draw_rect(rect, cache.font_selected_color);
 								}
 
-								highlighted_word_col = _get_column_pos_of_word(highlighted_word, str, SEARCH_MATCH_CASE | SEARCH_WHOLE_WORDS, highlighted_word_col + 1);
+								highlighted_word_col = _get_column_pos_of_word(lookup_symbol_word, str, SEARCH_MATCH_CASE | SEARCH_WHOLE_WORDS, highlighted_word_col + 1);
 							}
 						}
 					}
@@ -2112,6 +2112,10 @@ void TextEdit::_get_minimap_mouse_row(const Point2i &p_mouse, int &r_row) const 
 	r_row = row;
 }
 
+bool TextEdit::is_dragging_cursor() const {
+	return dragging_selection || dragging_minimap;
+}
+
 void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 	ERR_FAIL_COND(p_gui_input.is_null());
 
@@ -2289,14 +2293,6 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 			}
 		} else {
 			if (mb->get_button_index() == MOUSE_BUTTON_LEFT) {
-				if (mb->is_command_pressed() && highlighted_word != String()) {
-					int row, col;
-					_get_mouse_pos(Point2i(mpos.x, mpos.y), row, col);
-
-					emit_signal(SNAME("symbol_lookup"), highlighted_word, row, col);
-					return;
-				}
-
 				dragging_minimap = false;
 				dragging_selection = false;
 				can_drag_minimap = false;
@@ -2330,18 +2326,6 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 		Vector2i mpos = mm->get_position();
 		if (is_layout_rtl()) {
 			mpos.x = get_size().x - mpos.x;
-		}
-		if (select_identifiers_enabled) {
-			if (!dragging_minimap && !dragging_selection && mm->is_command_pressed() && mm->get_button_mask() == 0) {
-				String new_word = get_word_at_pos(mpos);
-				if (new_word != highlighted_word) {
-					emit_signal(SNAME("symbol_validate"), new_word);
-				}
-			} else {
-				if (highlighted_word != String()) {
-					set_highlighted_word(String());
-				}
-			}
 		}
 
 		if (mm->get_button_mask() & MOUSE_BUTTON_MASK_LEFT && get_viewport()->gui_get_drag_data() == Variant()) { // Ignore if dragging.
@@ -2377,23 +2361,6 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 	Ref<InputEventKey> k = p_gui_input;
 
 	if (k.is_valid()) {
-		// Ctrl + Hover symbols
-#ifdef OSX_ENABLED
-		if (k->get_keycode() == KEY_META) {
-#else
-		if (k->get_keycode() == KEY_CTRL) {
-#endif
-			if (select_identifiers_enabled) {
-				if (k->is_pressed() && !dragging_minimap && !dragging_selection) {
-					Point2 mp = _get_local_mouse_pos();
-					emit_signal(SNAME("symbol_validate"), get_word_at_pos(mp));
-				} else {
-					set_highlighted_word(String());
-				}
-			}
-			return;
-		}
-
 		if (!k->is_pressed()) {
 			return;
 		}
@@ -3515,10 +3482,6 @@ void TextEdit::insert_text_at_cursor(const String &p_text) {
 }
 
 Control::CursorShape TextEdit::get_cursor_shape(const Point2 &p_pos) const {
-	if (highlighted_word != String()) {
-		return CURSOR_POINTING_HAND;
-	}
-
 	int row, col;
 	_get_mouse_pos(p_pos, row, col);
 
@@ -3699,30 +3662,6 @@ void TextEdit::set_draw_control_chars(bool p_draw_control_chars) {
 
 bool TextEdit::get_draw_control_chars() const {
 	return draw_control_chars;
-}
-
-String TextEdit::get_text_for_lookup_completion() {
-	int row, col;
-	Point2i mp = _get_local_mouse_pos();
-	_get_mouse_pos(mp, row, col);
-
-	String longthing;
-	int len = text.size();
-	for (int i = 0; i < len; i++) {
-		if (i == row) {
-			longthing += text[i].substr(0, col);
-			longthing += String::chr(0xFFFF); // Not unicode, represents the cursor.
-			longthing += text[i].substr(col, text[i].size());
-		} else {
-			longthing += text[i];
-		}
-
-		if (i != len - 1) {
-			longthing += "\n";
-		}
-	}
-
-	return longthing;
 }
 
 String TextEdit::get_line(int line) const {
@@ -5297,17 +5236,9 @@ void TextEdit::menu_option(int p_option) {
 	}
 }
 
-void TextEdit::set_highlighted_word(const String &new_word) {
-	highlighted_word = new_word;
+void TextEdit::_set_symbol_lookup_word(const String &p_symbol) {
+	lookup_symbol_word = p_symbol;
 	update();
-}
-
-void TextEdit::set_select_identifiers_on_hover(bool p_enable) {
-	select_identifiers_enabled = p_enable;
-}
-
-bool TextEdit::is_selecting_identifiers_on_hover_enabled() const {
-	return select_identifiers_enabled;
 }
 
 void TextEdit::set_context_menu_enabled(bool p_enable) {
@@ -5510,6 +5441,7 @@ void TextEdit::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("select", "from_line", "from_column", "to_line", "to_column"), &TextEdit::select);
 	ClassDB::bind_method(D_METHOD("select_all"), &TextEdit::select_all);
 	ClassDB::bind_method(D_METHOD("deselect"), &TextEdit::deselect);
+	ClassDB::bind_method(D_METHOD("is_dragging_cursor"), &TextEdit::is_dragging_cursor);
 
 	ClassDB::bind_method(D_METHOD("is_selection_active"), &TextEdit::is_selection_active);
 	ClassDB::bind_method(D_METHOD("get_selection_from_line"), &TextEdit::get_selection_from_line);
@@ -5642,8 +5574,6 @@ void TextEdit::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("gutter_clicked", PropertyInfo(Variant::INT, "line"), PropertyInfo(Variant::INT, "gutter")));
 	ADD_SIGNAL(MethodInfo("gutter_added"));
 	ADD_SIGNAL(MethodInfo("gutter_removed"));
-	ADD_SIGNAL(MethodInfo("symbol_lookup", PropertyInfo(Variant::STRING, "symbol"), PropertyInfo(Variant::INT, "row"), PropertyInfo(Variant::INT, "column")));
-	ADD_SIGNAL(MethodInfo("symbol_validate", PropertyInfo(Variant::STRING, "symbol")));
 
 	BIND_ENUM_CONSTANT(MENU_CUT);
 	BIND_ENUM_CONSTANT(MENU_COPY);

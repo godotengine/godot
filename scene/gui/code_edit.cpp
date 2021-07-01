@@ -299,6 +299,39 @@ void CodeEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 					}
 				}
 			}
+		} else {
+			if (mb->get_button_index() == MOUSE_BUTTON_LEFT) {
+				if (mb->is_command_pressed() && symbol_lookup_word != String()) {
+					Vector2i mpos = mb->get_position();
+					if (is_layout_rtl()) {
+						mpos.x = get_size().x - mpos.x;
+					}
+					int line, col;
+					_get_mouse_pos(Point2i(mpos.x, mpos.y), line, col);
+
+					emit_signal(SNAME("symbol_lookup"), symbol_lookup_word, line, col);
+					return;
+				}
+			}
+		}
+	}
+
+	Ref<InputEventMouseMotion> mm = p_gui_input;
+	if (mm.is_valid()) {
+		Vector2i mpos = mm->get_position();
+		if (is_layout_rtl()) {
+			mpos.x = get_size().x - mpos.x;
+		}
+
+		if (symbol_lookup_on_click_enabled) {
+			if (mm->is_command_pressed() && mm->get_button_mask() == 0 && !is_dragging_cursor()) {
+				symbol_lookup_new_word = get_word_at_pos(mpos);
+				if (symbol_lookup_new_word != symbol_lookup_word) {
+					emit_signal(SNAME("symbol_validate"), symbol_lookup_new_word);
+				}
+			} else {
+				set_symbol_lookup_word_as_valid(false);
+			}
 		}
 	}
 
@@ -306,6 +339,25 @@ void CodeEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 	bool update_code_completion = false;
 	if (!k.is_valid()) {
 		TextEdit::_gui_input(p_gui_input);
+		return;
+	}
+
+	/* Ctrl + Hover symbols */
+#ifdef OSX_ENABLED
+	if (k->get_keycode() == KEY_META) {
+#else
+	if (k->get_keycode() == KEY_CTRL) {
+#endif
+		if (symbol_lookup_on_click_enabled) {
+			if (k->is_pressed() && !is_dragging_cursor()) {
+				symbol_lookup_new_word = get_word_at_pos(_get_local_mouse_pos());
+				if (symbol_lookup_new_word != symbol_lookup_word) {
+					emit_signal(SNAME("symbol_validate"), symbol_lookup_new_word);
+				}
+			} else {
+				set_symbol_lookup_word_as_valid(false);
+			}
+		}
 		return;
 	}
 
@@ -460,6 +512,10 @@ void CodeEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 
 /* General overrides */
 Control::CursorShape CodeEdit::get_cursor_shape(const Point2 &p_pos) const {
+	if (symbol_lookup_word != String()) {
+		return CURSOR_POINTING_HAND;
+	}
+
 	if ((code_completion_active && code_completion_rect.has_point(p_pos)) || (is_readonly() && (!is_selecting_enabled() || get_line_count() == 0))) {
 		return CURSOR_ARROW;
 	}
@@ -1897,6 +1953,48 @@ TypedArray<int> CodeEdit::get_line_length_guidelines() const {
 	return line_length_guideline_columns;
 }
 
+/* Symbol lookup */
+void CodeEdit::set_symbol_lookup_on_click_enabled(bool p_enabled) {
+	symbol_lookup_on_click_enabled = p_enabled;
+	set_symbol_lookup_word_as_valid(false);
+}
+
+bool CodeEdit::is_symbol_lookup_on_click_enabled() const {
+	return symbol_lookup_on_click_enabled;
+}
+
+String CodeEdit::get_text_for_symbol_lookup() {
+	int line, col;
+	Point2i mp = _get_local_mouse_pos();
+	_get_mouse_pos(mp, line, col);
+
+	StringBuilder lookup_text;
+	const int text_size = get_line_count();
+	for (int i = 0; i < text_size; i++) {
+		String text = get_line(i);
+
+		if (i == line) {
+			lookup_text += text.substr(0, col);
+			/* Not unicode, represents the cursor. */
+			lookup_text += String::chr(0xFFFF);
+			lookup_text += text.substr(col, text.size());
+		} else {
+			lookup_text += text;
+		}
+
+		if (i != text_size - 1) {
+			lookup_text += "\n";
+		}
+	}
+	return lookup_text.as_string();
+}
+
+void CodeEdit::set_symbol_lookup_word_as_valid(bool p_valid) {
+	symbol_lookup_word = p_valid ? symbol_lookup_new_word : "";
+	symbol_lookup_new_word = "";
+	_set_symbol_lookup_word(symbol_lookup_word);
+}
+
 void CodeEdit::_bind_methods() {
 	/* Indent management */
 	ClassDB::bind_method(D_METHOD("set_indent_size", "size"), &CodeEdit::set_indent_size);
@@ -2065,7 +2163,17 @@ void CodeEdit::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_line_length_guidelines", "guideline_columns"), &CodeEdit::set_line_length_guidelines);
 	ClassDB::bind_method(D_METHOD("get_line_length_guidelines"), &CodeEdit::get_line_length_guidelines);
 
+	/* Symbol lookup */
+	ClassDB::bind_method(D_METHOD("set_symbol_lookup_on_click_enabled", "enable"), &CodeEdit::set_symbol_lookup_on_click_enabled);
+	ClassDB::bind_method(D_METHOD("is_symbol_lookup_on_click_enabled"), &CodeEdit::is_symbol_lookup_on_click_enabled);
+
+	ClassDB::bind_method(D_METHOD("get_text_for_symbol_lookup"), &CodeEdit::get_text_for_symbol_lookup);
+
+	ClassDB::bind_method(D_METHOD("set_symbol_lookup_word_as_valid", "valid"), &CodeEdit::set_symbol_lookup_word_as_valid);
+
 	/* Inspector */
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "symbol_lookup_on_click"), "set_symbol_lookup_on_click_enabled", "is_symbol_lookup_on_click_enabled");
+
 	ADD_PROPERTY(PropertyInfo(Variant::PACKED_INT32_ARRAY, "line_length_guidelines"), "set_line_length_guidelines", "get_line_length_guidelines");
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "draw_breakpoints_gutter"), "set_draw_breakpoints_gutter", "is_drawing_breakpoints_gutter");
@@ -2101,8 +2209,15 @@ void CodeEdit::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY, "auto_brace_completion_pairs"), "set_auto_brace_completion_pairs", "get_auto_brace_completion_pairs");
 
 	/* Signals */
+	/* Gutters */
 	ADD_SIGNAL(MethodInfo("breakpoint_toggled", PropertyInfo(Variant::INT, "line")));
+
+	/* Code Completion */
 	ADD_SIGNAL(MethodInfo("request_code_completion"));
+
+	/* Symbol lookup */
+	ADD_SIGNAL(MethodInfo("symbol_lookup", PropertyInfo(Variant::STRING, "symbol"), PropertyInfo(Variant::INT, "line"), PropertyInfo(Variant::INT, "column")));
+	ADD_SIGNAL(MethodInfo("symbol_validate", PropertyInfo(Variant::STRING, "symbol")));
 }
 
 /* Auto brace completion */

@@ -227,6 +227,12 @@ private:
 	TypedArray<int> line_length_guideline_columns;
 	Color line_length_guideline_color;
 
+	/* Symbol lookup */
+	bool symbol_lookup_on_click_enabled = false;
+
+	String symbol_lookup_new_word = "";
+	String symbol_lookup_word = "";
+
 protected:
 	void _gui_input(const Ref<InputEvent> &p_gui_input) override;
 	void _notification(int p_what);
@@ -385,6 +391,14 @@ public:
 	/* Line length guidelines */
 	void set_line_length_guidelines(TypedArray<int> p_guideline_columns);
 	TypedArray<int> get_line_length_guidelines() const;
+
+	/* Symbol lookup */
+	void set_symbol_lookup_on_click_enabled(bool p_enabled);
+	bool is_symbol_lookup_on_click_enabled() const;
+
+	String get_text_for_symbol_lookup();
+
+	void set_symbol_lookup_word_as_valid(bool p_valid);
 
 	CodeEdit();
 	~CodeEdit();

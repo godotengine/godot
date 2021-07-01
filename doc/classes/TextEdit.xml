@@ -295,6 +295,12 @@
 				Returns [code]true[/code] if the caret is visible on the screen.
 			</description>
 		</method>
+		<method name="is_dragging_cursor" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+			</description>
+		</method>
 		<method name="is_gutter_clickable" qualifiers="const">
 			<return type="bool" />
 			<argument index="0" name="gutter" type="int" />
@@ -665,18 +671,6 @@
 		<signal name="lines_edited_from">
 			<argument index="0" name="from_line" type="int" />
 			<argument index="1" name="to_line" type="int" />
-			<description>
-			</description>
-		</signal>
-		<signal name="symbol_lookup">
-			<argument index="0" name="symbol" type="String" />
-			<argument index="1" name="row" type="int" />
-			<argument index="2" name="column" type="int" />
-			<description>
-			</description>
-		</signal>
-		<signal name="symbol_validate">
-			<argument index="0" name="symbol" type="String" />
 			<description>
 			</description>
 		</signal>

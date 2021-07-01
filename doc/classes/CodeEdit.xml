@@ -240,6 +240,13 @@
 				Returns the full text with char [code]0xFFFF[/code] at the caret location.
 			</description>
 		</method>
+		<method name="get_text_for_symbol_lookup">
+			<return type="String">
+			</return>
+			<description>
+				Returns the full text with char [code]0xFFFF[/code] at the cursor location.
+			</description>
+		</method>
 		<method name="has_auto_brace_completion_close_key" qualifiers="const">
 			<return type="bool">
 			</return>
@@ -382,6 +389,15 @@
 			<description>
 			</description>
 		</method>
+		<method name="set_symbol_lookup_word_as_valid">
+			<return type="void">
+			</return>
+			<argument index="0" name="valid" type="bool">
+			</argument>
+			<description>
+				Sets the symbol emitted by [signal symbol_validate] as a valid lookup.
+			</description>
+		</method>
 		<method name="toggle_foldable_line">
 			<return type="void" />
 			<argument index="0" name="line" type="int" />
@@ -466,8 +482,10 @@
 		</member>
 		<member name="line_length_guidelines" type="int[]" setter="set_line_length_guidelines" getter="get_line_length_guidelines" default="[]">
 		</member>
-			Draws vertical lines at the provided columns. The first entry is considered a main hard guideline and is draw more prominently.
 		<member name="structured_text_bidi_override_options" type="Array" setter="set_structured_text_bidi_override_options" getter="get_structured_text_bidi_override_options" override="true" default="[]" />
+		<member name="symbol_lookup_on_click" type="bool" setter="set_symbol_lookup_on_click_enabled" getter="is_symbol_lookup_on_click_enabled" default="false">
+			Set when a validated word from [signal symbol_validate] is clicked, the [signal symbol_lookup] should be emitted.
+		</member>
 		<member name="text_direction" type="int" setter="set_text_direction" getter="get_text_direction" override="true" enum="Control.TextDirection" default="1" />
 		<member name="zero_pad_line_numbers" type="bool" setter="set_line_numbers_zero_padded" getter="is_line_numbers_zero_padded" default="false">
 		</member>
@@ -481,6 +499,24 @@
 		<signal name="request_code_completion">
 			<description>
 				Emitted when the user requests code completion.
+			</description>
+		</signal>
+		<signal name="symbol_lookup">
+			<argument index="0" name="symbol" type="String">
+			</argument>
+			<argument index="1" name="line" type="int">
+			</argument>
+			<argument index="2" name="column" type="int">
+			</argument>
+			<description>
+				Emitted when the user has clicked on a valid symbol.
+			</description>
+		</signal>
+		<signal name="symbol_validate">
+			<argument index="0" name="symbol" type="String">
+			</argument>
+			<description>
+				Emitted when the user hovers over a symbol. The symbol should be validated and responded to, by calling [method set_symbol_lookup_word_as_valid].
 			</description>
 		</signal>
 	</signals>

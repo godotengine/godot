@@ -663,7 +663,7 @@ ShaderEditor::ShaderEditor(EditorNode *p_node) {
 
 	shader_editor->get_text_editor()->set_code_hint_draw_below(EditorSettings::get_singleton()->get("text_editor/completion/put_callhint_tooltip_below_current_line"));
 
-	shader_editor->get_text_editor()->set_select_identifiers_on_hover(true);
+	shader_editor->get_text_editor()->set_symbol_lookup_on_click_enabled(true);
 	shader_editor->get_text_editor()->set_context_menu_enabled(false);
 	shader_editor->get_text_editor()->connect("gui_input", callable_mp(this, &ShaderEditor::_text_edit_gui_input));
 

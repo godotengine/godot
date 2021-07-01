@@ -305,7 +305,7 @@ private:
 	float target_v_scroll = 0.0;
 	float v_scroll_speed = 80.0;
 
-	String highlighted_word;
+	String lookup_symbol_word;
 
 	uint64_t last_dblclk = 0;
 
@@ -382,7 +382,6 @@ private:
 	Size2 get_minimum_size() const override;
 	int _get_control_height() const;
 
-	Point2 _get_local_mouse_pos() const;
 	int _get_menu_action_accelerator(const String &p_action);
 
 	void _reset_caret_blink_timer();
@@ -472,6 +471,8 @@ protected:
 	bool _set(const StringName &p_name, const Variant &p_value);
 	bool _get(const StringName &p_name, Variant &r_ret) const;
 	void _get_property_list(List<PropertyInfo> *p_list) const;
+
+	void _set_symbol_lookup_word(const String &p_symbol);
 
 public:
 	/* Syntax Highlighting. */
@@ -567,8 +568,10 @@ public:
 
 	virtual CursorShape get_cursor_shape(const Point2 &p_pos = Point2i()) const override;
 
+	Point2 _get_local_mouse_pos() const;
 	void _get_mouse_pos(const Point2i &p_mouse, int &r_row, int &r_col) const;
 	void _get_minimap_mouse_row(const Point2i &p_mouse, int &r_row) const;
+	bool is_dragging_cursor() const;
 
 	//void delete_char();
 	//void delete_line();
@@ -597,7 +600,6 @@ public:
 	void set_structured_text_bidi_override_options(Array p_args);
 	Array get_structured_text_bidi_override_options() const;
 
-	void set_highlighted_word(const String &new_word);
 	void set_text(String p_text);
 	void insert_text_at_cursor(const String &p_text);
 	void insert_at(const String &p_text, int at);
@@ -746,9 +748,6 @@ public:
 
 	void set_tooltip_request_func(Object *p_obj, const StringName &p_function, const Variant &p_udata);
 
-	void set_select_identifiers_on_hover(bool p_enable);
-	bool is_selecting_identifiers_on_hover_enabled() const;
-
 	void set_context_menu_enabled(bool p_enable);
 	bool is_context_menu_enabled();
 
@@ -763,8 +762,6 @@ public:
 
 	bool is_menu_visible() const;
 	PopupMenu *get_menu() const;
-
-	String get_text_for_lookup_completion();
 
 	virtual bool is_text_field() const override;
 	TextEdit();
