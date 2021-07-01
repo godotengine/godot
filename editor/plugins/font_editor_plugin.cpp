@@ -290,7 +290,7 @@ void EditorInspectorPluginFont::parse_begin(Object *p_object) {
 	add_custom_control(editor);
 }
 
-bool EditorInspectorPluginFont::parse_property(Object *p_object, Variant::Type p_type, const String &p_path, PropertyHint p_hint, const String &p_hint_text, int p_usage, bool p_wide) {
+bool EditorInspectorPluginFont::parse_property(Object *p_object, const Variant::Type p_type, const String &p_path, const PropertyHint p_hint, const String &p_hint_text, const uint32_t p_usage, const bool p_wide) {
 	if (p_path.begins_with("language_support_override/") && p_object->is_class("FontData")) {
 		String lang = p_path.replace("language_support_override/", "");
 

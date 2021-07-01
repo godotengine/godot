@@ -2158,13 +2158,13 @@ void CSGPolygon3D::_notification(int p_what) {
 
 void CSGPolygon3D::_validate_property(PropertyInfo &property) const {
 	if (property.name.begins_with("spin") && mode != MODE_SPIN) {
-		property.usage = 0;
+		property.usage = PROPERTY_USAGE_NONE;
 	}
 	if (property.name.begins_with("path") && mode != MODE_PATH) {
-		property.usage = 0;
+		property.usage = PROPERTY_USAGE_NONE;
 	}
 	if (property.name == "depth" && mode != MODE_DEPTH) {
-		property.usage = 0;
+		property.usage = PROPERTY_USAGE_NONE;
 	}
 
 	CSGShape3D::_validate_property(property);

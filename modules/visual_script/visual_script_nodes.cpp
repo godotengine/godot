@@ -1534,7 +1534,7 @@ void VisualScriptConstant::_validate_property(PropertyInfo &property) const {
 	if (property.name == "value") {
 		property.type = type;
 		if (type == Variant::NIL) {
-			property.usage = 0; //do not save if nil
+			property.usage = PROPERTY_USAGE_NONE; //do not save if nil
 		}
 	}
 }
@@ -2124,7 +2124,7 @@ void VisualScriptBasicTypeConstant::_validate_property(PropertyInfo &property) c
 		Variant::get_constants_for_type(type, &constants);
 
 		if (constants.size() == 0) {
-			property.usage = 0;
+			property.usage = PROPERTY_USAGE_NONE;
 			return;
 		}
 		property.hint_string = "";

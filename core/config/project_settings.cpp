@@ -248,7 +248,7 @@ struct _VCSort {
 	String name;
 	Variant::Type type;
 	int order;
-	int flags;
+	uint32_t flags;
 
 	bool operator<(const _VCSort &p_vcs) const { return order == p_vcs.order ? name < p_vcs.name : order < p_vcs.order; }
 };

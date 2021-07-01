@@ -77,7 +77,7 @@ RID Material::get_rid() const {
 
 void Material::_validate_property(PropertyInfo &property) const {
 	if (!_can_do_next_pass() && property.name == "next_pass") {
-		property.usage = 0;
+		property.usage = PROPERTY_USAGE_NONE;
 	}
 }
 
@@ -1710,7 +1710,7 @@ void BaseMaterial3D::_validate_property(PropertyInfo &property) const {
 	_validate_high_end("heightmap", property);
 
 	if (property.name.begins_with("particles_anim_") && billboard_mode != BILLBOARD_PARTICLES) {
-		property.usage = 0;
+		property.usage = PROPERTY_USAGE_NONE;
 	}
 
 	if (property.name == "billboard_keep_scale" && billboard_mode == BILLBOARD_DISABLED) {
@@ -1740,33 +1740,33 @@ void BaseMaterial3D::_validate_property(PropertyInfo &property) const {
 
 	// alpha scissor slider isn't needed when alpha antialiasing is enabled
 	if (property.name == "alpha_scissor_threshold" && transparency != TRANSPARENCY_ALPHA_SCISSOR) {
-		property.usage = 0;
+		property.usage = PROPERTY_USAGE_NONE;
 	}
 
 	// alpha hash scale slider is only needed if transparency is alpha hash
 	if (property.name == "alpha_hash_scale" && transparency != TRANSPARENCY_ALPHA_HASH) {
-		property.usage = 0;
+		property.usage = PROPERTY_USAGE_NONE;
 	}
 
 	if (property.name == "alpha_antialiasing_mode" && !can_select_aa) {
-		property.usage = 0;
+		property.usage = PROPERTY_USAGE_NONE;
 	}
 
 	// we can't choose an antialiasing mode if alpha isn't possible
 	if (property.name == "alpha_antialiasing_edge" && !alpha_aa_enabled) {
-		property.usage = 0;
+		property.usage = PROPERTY_USAGE_NONE;
 	}
 
 	if (property.name == "blend_mode" && alpha_aa_enabled) {
-		property.usage = 0;
+		property.usage = PROPERTY_USAGE_NONE;
 	}
 
 	if ((property.name == "heightmap_min_layers" || property.name == "heightmap_max_layers") && !deep_parallax) {
-		property.usage = 0;
+		property.usage = PROPERTY_USAGE_NONE;
 	}
 
 	if (flags[FLAG_SUBSURFACE_MODE_SKIN] && (property.name == "subsurf_scatter_transmittance_color" || property.name == "subsurf_scatter_transmittance_texture" || property.name == "subsurf_scatter_transmittance_curve")) {
-		property.usage = 0;
+		property.usage = PROPERTY_USAGE_NONE;
 	}
 
 	if (orm) {
@@ -1775,12 +1775,12 @@ void BaseMaterial3D::_validate_property(PropertyInfo &property) const {
 			property.hint_string = "Unshaded,Per-Pixel";
 		}
 		if (property.name.begins_with("roughness") || property.name.begins_with("metallic") || property.name.begins_with("ao_texture")) {
-			property.usage = 0;
+			property.usage = PROPERTY_USAGE_NONE;
 		}
 
 	} else {
 		if (property.name == "orm_texture") {
-			property.usage = 0;
+			property.usage = PROPERTY_USAGE_NONE;
 		}
 	}
 
@@ -1788,47 +1788,47 @@ void BaseMaterial3D::_validate_property(PropertyInfo &property) const {
 		if (shading_mode != SHADING_MODE_PER_VERTEX) {
 			//these may still work per vertex
 			if (property.name.begins_with("ao")) {
-				property.usage = 0;
+				property.usage = PROPERTY_USAGE_NONE;
 			}
 			if (property.name.begins_with("emission")) {
-				property.usage = 0;
+				property.usage = PROPERTY_USAGE_NONE;
 			}
 
 			if (property.name.begins_with("metallic")) {
-				property.usage = 0;
+				property.usage = PROPERTY_USAGE_NONE;
 			}
 			if (property.name.begins_with("rim")) {
-				property.usage = 0;
+				property.usage = PROPERTY_USAGE_NONE;
 			}
 
 			if (property.name.begins_with("roughness")) {
-				property.usage = 0;
+				property.usage = PROPERTY_USAGE_NONE;
 			}
 
 			if (property.name.begins_with("subsurf_scatter")) {
-				property.usage = 0;
+				property.usage = PROPERTY_USAGE_NONE;
 			}
 		}
 
 		//these definitely only need per pixel
 		if (property.name.begins_with("anisotropy")) {
-			property.usage = 0;
+			property.usage = PROPERTY_USAGE_NONE;
 		}
 
 		if (property.name.begins_with("clearcoat")) {
-			property.usage = 0;
+			property.usage = PROPERTY_USAGE_NONE;
 		}
 
 		if (property.name.begins_with("normal")) {
-			property.usage = 0;
+			property.usage = PROPERTY_USAGE_NONE;
 		}
 
 		if (property.name.begins_with("backlight")) {
-			property.usage = 0;
+			property.usage = PROPERTY_USAGE_NONE;
 		}
 
 		if (property.name.begins_with("transmittance")) {
-			property.usage = 0;
+			property.usage = PROPERTY_USAGE_NONE;
 		}
 	}
 }

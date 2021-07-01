@@ -385,7 +385,7 @@ void GPUParticles3D::_validate_property(PropertyInfo &property) const {
 	if (property.name.begins_with("draw_pass_")) {
 		int index = property.name.get_slicec('_', 2).to_int() - 1;
 		if (index >= draw_passes.size()) {
-			property.usage = 0;
+			property.usage = PROPERTY_USAGE_NONE;
 			return;
 		}
 	}

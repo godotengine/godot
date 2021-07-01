@@ -1367,13 +1367,13 @@ LightmapGI::GenerateProbes LightmapGI::get_generate_probes() const {
 
 void LightmapGI::_validate_property(PropertyInfo &property) const {
 	if (property.name == "environment_custom_sky" && environment_mode != ENVIRONMENT_MODE_CUSTOM_SKY) {
-		property.usage = 0;
+		property.usage = PROPERTY_USAGE_NONE;
 	}
 	if (property.name == "environment_custom_color" && environment_mode != ENVIRONMENT_MODE_CUSTOM_COLOR) {
-		property.usage = 0;
+		property.usage = PROPERTY_USAGE_NONE;
 	}
 	if (property.name == "environment_custom_energy" && environment_mode != ENVIRONMENT_MODE_CUSTOM_COLOR && environment_mode != ENVIRONMENT_MODE_CUSTOM_SKY) {
-		property.usage = 0;
+		property.usage = PROPERTY_USAGE_NONE;
 	}
 }
 

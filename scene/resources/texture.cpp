@@ -1873,7 +1873,7 @@ void AnimatedTexture::_validate_property(PropertyInfo &property) const {
 	if (prop.begins_with("frame_")) {
 		int frame = prop.get_slicec('/', 0).get_slicec('_', 1).to_int();
 		if (frame >= frame_count) {
-			property.usage = 0;
+			property.usage = PROPERTY_USAGE_NONE;
 		}
 	}
 }

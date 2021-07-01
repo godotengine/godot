@@ -239,7 +239,7 @@ bool CanvasItemMaterial::get_particles_anim_loop() const {
 
 void CanvasItemMaterial::_validate_property(PropertyInfo &property) const {
 	if (property.name.begins_with("particles_anim_") && !particles_animation) {
-		property.usage = 0;
+		property.usage = PROPERTY_USAGE_NONE;
 	}
 }
 

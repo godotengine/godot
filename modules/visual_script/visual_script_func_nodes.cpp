@@ -513,19 +513,19 @@ void VisualScriptFunctionCall::_validate_property(PropertyInfo &property) const 
 
 	if (property.name == "base_script") {
 		if (call_mode != CALL_MODE_INSTANCE) {
-			property.usage = 0;
+			property.usage = PROPERTY_USAGE_NONE;
 		}
 	}
 
 	if (property.name == "basic_type") {
 		if (call_mode != CALL_MODE_BASIC_TYPE) {
-			property.usage = 0;
+			property.usage = PROPERTY_USAGE_NONE;
 		}
 	}
 
 	if (property.name == "singleton") {
 		if (call_mode != CALL_MODE_SINGLETON) {
-			property.usage = 0;
+			property.usage = PROPERTY_USAGE_NONE;
 		} else {
 			List<Engine::Singleton> names;
 			Engine::get_singleton()->get_singletons(&names);
@@ -543,7 +543,7 @@ void VisualScriptFunctionCall::_validate_property(PropertyInfo &property) const 
 
 	if (property.name == "node_path") {
 		if (call_mode != CALL_MODE_NODE_PATH) {
-			property.usage = 0;
+			property.usage = PROPERTY_USAGE_NONE;
 		} else {
 			Node *bnode = _get_base_node();
 			if (bnode) {
@@ -614,7 +614,7 @@ void VisualScriptFunctionCall::_validate_property(PropertyInfo &property) const 
 		}
 
 		if (mc == 0) {
-			property.usage = 0; //do not show
+			property.usage = PROPERTY_USAGE_NONE; //do not show
 		} else {
 			property.hint_string = "0," + itos(mc) + ",1";
 		}
@@ -622,7 +622,7 @@ void VisualScriptFunctionCall::_validate_property(PropertyInfo &property) const 
 
 	if (property.name == "rpc_call_mode") {
 		if (call_mode == CALL_MODE_BASIC_TYPE) {
-			property.usage = 0;
+			property.usage = PROPERTY_USAGE_NONE;
 		}
 	}
 }
@@ -1278,19 +1278,19 @@ void VisualScriptPropertySet::_validate_property(PropertyInfo &property) const {
 
 	if (property.name == "base_script") {
 		if (call_mode != CALL_MODE_INSTANCE) {
-			property.usage = 0;
+			property.usage = PROPERTY_USAGE_NONE;
 		}
 	}
 
 	if (property.name == "basic_type") {
 		if (call_mode != CALL_MODE_BASIC_TYPE) {
-			property.usage = 0;
+			property.usage = PROPERTY_USAGE_NONE;
 		}
 	}
 
 	if (property.name == "node_path") {
 		if (call_mode != CALL_MODE_NODE_PATH) {
-			property.usage = 0;
+			property.usage = PROPERTY_USAGE_NONE;
 		} else {
 			Node *bnode = _get_base_node();
 			if (bnode) {
@@ -1352,7 +1352,7 @@ void VisualScriptPropertySet::_validate_property(PropertyInfo &property) const {
 		property.hint_string = options;
 		property.type = Variant::STRING;
 		if (options == "") {
-			property.usage = 0; //hide if type has no usable index
+			property.usage = PROPERTY_USAGE_NONE; //hide if type has no usable index
 		}
 	}
 }
@@ -1956,19 +1956,19 @@ void VisualScriptPropertyGet::_validate_property(PropertyInfo &property) const {
 
 	if (property.name == "base_script") {
 		if (call_mode != CALL_MODE_INSTANCE) {
-			property.usage = 0;
+			property.usage = PROPERTY_USAGE_NONE;
 		}
 	}
 
 	if (property.name == "basic_type") {
 		if (call_mode != CALL_MODE_BASIC_TYPE) {
-			property.usage = 0;
+			property.usage = PROPERTY_USAGE_NONE;
 		}
 	}
 
 	if (property.name == "node_path") {
 		if (call_mode != CALL_MODE_NODE_PATH) {
-			property.usage = 0;
+			property.usage = PROPERTY_USAGE_NONE;
 		} else {
 			Node *bnode = _get_base_node();
 			if (bnode) {
@@ -2029,7 +2029,7 @@ void VisualScriptPropertyGet::_validate_property(PropertyInfo &property) const {
 		property.hint_string = options;
 		property.type = Variant::STRING;
 		if (options == "") {
-			property.usage = 0; //hide if type has no usable index
+			property.usage = PROPERTY_USAGE_NONE; //hide if type has no usable index
 		}
 	}
 }

@@ -276,7 +276,7 @@ void AudioEffectChorus::_validate_property(PropertyInfo &property) const {
 	if (property.name.begins_with("voice/")) {
 		int voice_idx = property.name.get_slice("/", 1).to_int();
 		if (voice_idx > voice_count) {
-			property.usage = 0;
+			property.usage = PROPERTY_USAGE_NONE;
 		}
 	}
 }

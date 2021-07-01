@@ -385,7 +385,7 @@ void AnimationNode::_set_filters(const Array &p_filters) {
 
 void AnimationNode::_validate_property(PropertyInfo &property) const {
 	if (!has_filter() && (property.name == "filter_enabled" || property.name == "filters")) {
-		property.usage = 0;
+		property.usage = PROPERTY_USAGE_NONE;
 	}
 }
 
