@@ -973,10 +973,43 @@ Ref<KinematicCollision> KinematicBody::_move(const Vector3 &p_motion, bool p_inf
 	return Ref<KinematicCollision>();
 }
 
-bool KinematicBody::move_and_collide(const Vector3 &p_motion, bool p_infinite_inertia, Collision &r_collision, bool p_exclude_raycast_shapes, bool p_test_only) {
+bool KinematicBody::move_and_collide(const Vector3 &p_motion, bool p_infinite_inertia, Collision &r_collision, bool p_exclude_raycast_shapes, bool p_test_only, bool p_cancel_sliding) {
 	Transform gt = get_global_transform();
 	PhysicsServer::MotionResult result;
 	bool colliding = PhysicsServer::get_singleton()->body_test_motion(get_rid(), gt, p_motion, p_infinite_inertia, &result, p_exclude_raycast_shapes);
+
+	// Restore direction of motion to be along original motion,
+	// in order to avoid sliding due to recovery,
+	// but only if collision depth is low enough to avoid tunneling.
+	real_t motion_length = p_motion.length();
+	if (motion_length > CMP_EPSILON) {
+		real_t precision = CMP_EPSILON;
+
+		if (colliding && p_cancel_sliding) {
+			// Can't just use margin as a threshold because collision depth is calculated on unsafe motion,
+			// so even in normal resting cases the depth can be a bit more than the margin.
+			precision += motion_length * (result.collision_unsafe_fraction - result.collision_safe_fraction);
+
+			if (result.collision_depth > (real_t)margin + precision) {
+				p_cancel_sliding = false;
+			}
+		}
+
+		if (p_cancel_sliding) {
+			// Check depth of recovery.
+			Vector3 motion_normal = p_motion / motion_length;
+			real_t dot = result.motion.dot(motion_normal);
+			Vector3 recovery = result.motion - motion_normal * dot;
+			real_t recovery_length = recovery.length();
+			// Fixes cases where canceling slide causes the motion to go too deep into the ground,
+			// Becauses we're only taking rest information into account and not general recovery.
+			if (recovery_length < (real_t)margin + precision) {
+				// Apply adjustment to motion.
+				result.motion = motion_normal * dot;
+				result.remainder = p_motion - result.motion;
+			}
+		}
+	}
 
 	if (colliding) {
 		r_collision.collider_metadata = result.collider_metadata;
@@ -1030,14 +1063,16 @@ Vector3 KinematicBody::move_and_slide(const Vector3 &p_linear_velocity, const Ve
 	floor_normal = Vector3();
 	floor_velocity = Vector3();
 
-	while (p_max_slides) {
+	// No sliding on first attempt to keep motion stable when possible.
+	bool sliding_enabled = false;
+	for (int iteration = 0; iteration < p_max_slides; ++iteration) {
 		Collision collision;
 		bool found_collision = false;
 
 		for (int i = 0; i < 2; ++i) {
 			bool collided;
 			if (i == 0) { //collide
-				collided = move_and_collide(motion, p_infinite_inertia, collision);
+				collided = move_and_collide(motion, p_infinite_inertia, collision, true, false, !sliding_enabled);
 				if (!collided) {
 					motion = Vector3(); //clear because no collision happened and motion completed
 				}
@@ -1053,7 +1088,6 @@ Vector3 KinematicBody::move_and_slide(const Vector3 &p_linear_velocity, const Ve
 				found_collision = true;
 
 				colliders.push_back(collision);
-				motion = collision.remainder;
 
 				if (up_direction == Vector3()) {
 					//all is a wall
@@ -1067,7 +1101,7 @@ Vector3 KinematicBody::move_and_slide(const Vector3 &p_linear_velocity, const Ve
 						floor_velocity = collision.collider_vel;
 
 						if (p_stop_on_slope) {
-							if ((body_velocity_normal + up_direction).length() < 0.01 && collision.travel.length() < 1) {
+							if ((body_velocity_normal + up_direction).length() < 0.01) {
 								Transform gt = get_global_transform();
 								gt.origin -= collision.travel.slide(up_direction);
 								set_global_transform(gt);
@@ -1081,22 +1115,26 @@ Vector3 KinematicBody::move_and_slide(const Vector3 &p_linear_velocity, const Ve
 					}
 				}
 
-				motion = motion.slide(collision.normal);
-				body_velocity = body_velocity.slide(collision.normal);
+				if (sliding_enabled || !on_floor) {
+					motion = collision.remainder.slide(collision.normal);
+					body_velocity = body_velocity.slide(collision.normal);
 
-				for (int j = 0; j < 3; j++) {
-					if (locked_axis & (1 << j)) {
-						body_velocity[j] = 0;
+					for (int j = 0; j < 3; j++) {
+						if (locked_axis & (1 << j)) {
+							body_velocity[j] = 0;
+						}
 					}
+				} else {
+					motion = collision.remainder;
 				}
 			}
+
+			sliding_enabled = true;
 		}
 
 		if (!found_collision || motion == Vector3()) {
 			break;
 		}
-
-		--p_max_slides;
 	}
 
 	return body_velocity;

@@ -1008,6 +1008,9 @@ bool SpaceSW::test_body_motion(BodySW *p_body, const Transform &p_from, const Ve
 				r_result->collision_local_shape = rcd.best_local_shape;
 				r_result->collision_normal = rcd.best_normal;
 				r_result->collision_point = rcd.best_contact;
+				r_result->collision_depth = rcd.best_len;
+				r_result->collision_safe_fraction = safe;
+				r_result->collision_unsafe_fraction = unsafe;
 				//r_result->collider_metadata = rcd.best_object->get_shape_metadata(rcd.best_shape);
 
 				const BodySW *body = static_cast<const BodySW *>(rcd.best_object);

@@ -311,7 +311,7 @@ protected:
 	static void _bind_methods();
 
 public:
-	bool move_and_collide(const Vector2 &p_motion, bool p_infinite_inertia, Collision &r_collision, bool p_exclude_raycast_shapes = true, bool p_test_only = false, const Set<RID> &p_exclude = Set<RID>());
+	bool move_and_collide(const Vector2 &p_motion, bool p_infinite_inertia, Collision &r_collision, bool p_exclude_raycast_shapes = true, bool p_test_only = false, bool p_cancel_sliding = true, const Set<RID> &p_exclude = Set<RID>());
 
 	bool test_move(const Transform2D &p_from, const Vector2 &p_motion, bool p_infinite_inertia = true);
 
