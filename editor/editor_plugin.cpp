@@ -30,6 +30,7 @@
 
 #include "editor_plugin.h"
 
+#include "editor/editor_command_palette.h"
 #include "editor/editor_export.h"
 #include "editor/editor_node.h"
 #include "editor/editor_paths.h"

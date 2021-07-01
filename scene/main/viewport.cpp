@@ -3089,7 +3089,7 @@ void Viewport::unhandled_input(const Ref<InputEvent> &p_event, bool p_local_coor
 	get_tree()->_call_input_pause(unhandled_input_group, "_unhandled_input", ev, this);
 
 	// Unhandled key Input - used for performance reasons - This is called a lot less then _unhandled_input since it ignores MouseMotion, etc
-	if (!is_input_handled() && Object::cast_to<InputEventKey>(*ev) != nullptr) {
+	if (!is_input_handled() && (Object::cast_to<InputEventKey>(*ev) != nullptr || Object::cast_to<InputEventShortcut>(*ev) != nullptr)) {
 		get_tree()->_call_input_pause(unhandled_key_input_group, "_unhandled_key_input", ev, this);
 	}
 

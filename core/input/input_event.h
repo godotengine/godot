@@ -42,6 +42,8 @@
  * The events are pretty obvious.
  */
 
+class Shortcut;
+
 /**
  * Input Modifier Status
  * for keyboard/mouse events.
@@ -536,6 +538,20 @@ public:
 	virtual String to_string() override;
 
 	InputEventMIDI() {}
+};
+
+class InputEventShortcut : public InputEvent {
+	GDCLASS(InputEventShortcut, InputEvent);
+
+	Ref<Shortcut> shortcut;
+
+public:
+	void set_shortcut(Ref<Shortcut> p_shortcut);
+	Ref<Shortcut> get_shortcut();
+	virtual bool is_pressed() const override;
+
+	virtual String as_text() const override;
+	virtual String to_string() override;
 };
 
 #endif // INPUT_EVENT_H

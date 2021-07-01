@@ -32,6 +32,7 @@
 
 #include "core/input/input_map.h"
 #include "core/os/keyboard.h"
+#include "scene/gui/shortcut.h"
 
 const int InputEvent::DEVICE_ID_TOUCH_MOUSE = -1;
 const int InputEvent::DEVICE_ID_INTERNAL = -2;
@@ -1493,4 +1494,28 @@ void InputEventMIDI::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "pressure"), "set_pressure", "get_pressure");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "controller_number"), "set_controller_number", "get_controller_number");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "controller_value"), "set_controller_value", "get_controller_value");
+}
+
+///////////////////////////////////
+
+void InputEventShortcut::set_shortcut(Ref<Shortcut> p_shortcut) {
+	ERR_FAIL_COND(Object::cast_to<InputEventShortcut>(*p_shortcut) != nullptr);
+	shortcut = p_shortcut;
+	emit_changed();
+}
+
+Ref<Shortcut> InputEventShortcut::get_shortcut() {
+	return shortcut;
+}
+
+bool InputEventShortcut::is_pressed() const {
+	return true;
+}
+
+String InputEventShortcut::as_text() const {
+	return vformat(RTR("Input Event with Shortcut=%s"), shortcut->get_as_text());
+}
+
+String InputEventShortcut::to_string() {
+	return vformat("InputEventShortcut: shortcut=%s", shortcut->get_as_text());
 }

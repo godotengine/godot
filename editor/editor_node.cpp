@@ -75,6 +75,7 @@
 #include "editor/dependency_editor.h"
 #include "editor/editor_about.h"
 #include "editor/editor_audio_buses.h"
+#include "editor/editor_command_palette.h"
 #include "editor/editor_export.h"
 #include "editor/editor_feature_profile.h"
 #include "editor/editor_file_system.h"
@@ -433,6 +434,8 @@ void EditorNode::_unhandled_input(const Ref<InputEvent> &p_event) {
 			_editor_select_next();
 		} else if (ED_IS_SHORTCUT("editor/editor_prev", p_event)) {
 			_editor_select_prev();
+		} else if (ED_IS_SHORTCUT("editor/command_palette", p_event)) {
+			_open_command_palette();
 		}
 
 		if (old_editor != editor_plugin_screen) {
@@ -566,6 +569,8 @@ void EditorNode::_notification(int p_what) {
 			get_tree()->get_root()->set_snap_2d_vertices_to_pixel(false);
 			get_tree()->set_auto_accept_quit(false);
 			get_tree()->get_root()->connect("files_dropped", callable_mp(this, &EditorNode::_dropped_files));
+
+			command_palette->register_shortcuts_as_command();
 
 			/* DO NOT LOAD SCENES HERE, WAIT FOR FILE SCANNING AND REIMPORT TO COMPLETE */
 		} break;
@@ -1042,6 +1047,10 @@ void EditorNode::_editor_select_next() {
 	} while (!main_editor_buttons[editor]->is_visible());
 
 	_editor_select(editor);
+}
+
+void EditorNode::_open_command_palette() {
+	command_palette->open_popup();
 }
 
 void EditorNode::_editor_select_prev() {
@@ -3693,6 +3702,17 @@ void EditorNode::_quick_run() {
 	_run(false, quick_run->get_selected());
 }
 
+void EditorNode::_execute_command() {
+	String selected_command = command_palette->get_selected_command();
+	if (selected_command != "") {
+		command_palette->execute_command(selected_command);
+		command_palette->set_selected_commmad("");
+	} else {
+		print_error("\ngot nothing to execute\n");
+	}
+	// todo : execute the action.
+}
+
 void EditorNode::notify_all_debug_sessions_exited() {
 	_menu_option_confirm(RUN_STOP, false);
 	stop_button->set_pressed(false);
@@ -3770,6 +3790,7 @@ void EditorNode::register_editor_types() {
 	ClassDB::register_class<EditorSceneImporterMesh>();
 	ClassDB::register_class<EditorSceneImporterMeshNode3D>();
 
+	ClassDB::register_virtual_class<EditorCommandPalette>();
 	ClassDB::register_virtual_class<FileSystemDock>();
 
 	// FIXME: Is this stuff obsolete, or should it be ported to new APIs?
@@ -5654,6 +5675,8 @@ EditorNode::EditorNode() {
 
 	Input *id = Input::get_singleton();
 
+	// editor_actions.instance();
+
 	if (id) {
 		bool found_touchscreen = false;
 		for (int i = 0; i < DisplayServer::get_singleton()->get_screen_count(); i++) {
@@ -6187,21 +6210,26 @@ EditorNode::EditorNode() {
 	ED_SHORTCUT("editor/next_tab", TTR("Next tab"), KEY_MASK_CMD + KEY_TAB);
 	ED_SHORTCUT("editor/prev_tab", TTR("Previous tab"), KEY_MASK_CMD + KEY_MASK_SHIFT + KEY_TAB);
 	ED_SHORTCUT("editor/filter_files", TTR("Filter Files..."), KEY_MASK_CMD + KEY_MASK_ALT + KEY_P);
+
+	command_palette = EditorCommandPalette::get_singleton();
+	gui_base->add_child(command_palette);
+	command_palette->connect("execute_command", callable_mp(this, &EditorNode::_execute_command));
+
 	PopupMenu *p;
 
 	file_menu->set_tooltip(TTR("Operations with scene files."));
 
 	p = file_menu->get_popup();
 
-	p->add_shortcut(ED_SHORTCUT("editor/new_scene", TTR("New Scene"), KEY_MASK_CMD + KEY_N), FILE_NEW_SCENE);
-	p->add_shortcut(ED_SHORTCUT("editor/new_inherited_scene", TTR("New Inherited Scene..."), KEY_MASK_CMD + KEY_MASK_SHIFT + KEY_N), FILE_NEW_INHERITED_SCENE);
-	p->add_shortcut(ED_SHORTCUT("editor/open_scene", TTR("Open Scene..."), KEY_MASK_CMD + KEY_O), FILE_OPEN_SCENE);
-	p->add_shortcut(ED_SHORTCUT("editor/reopen_closed_scene", TTR("Reopen Closed Scene"), KEY_MASK_CMD + KEY_MASK_SHIFT + KEY_T), FILE_OPEN_PREV);
+	p->add_shortcut(command_palette->create_shortcut_and_command("editor/new_scene", TTR("New Scene"), KEY_MASK_CMD + KEY_N), FILE_NEW_SCENE);
+	p->add_shortcut(command_palette->create_shortcut_and_command("editor/new_inherited_scene", TTR("New Inherited Scene..."), KEY_MASK_CMD + KEY_MASK_SHIFT + KEY_N), FILE_NEW_INHERITED_SCENE);
+	p->add_shortcut(command_palette->create_shortcut_and_command("editor/open_scene", TTR("Open Scene..."), KEY_MASK_CMD + KEY_O), FILE_OPEN_SCENE);
+	p->add_shortcut(command_palette->create_shortcut_and_command("editor/reopen_closed_scene", TTR("Reopen Closed Scene"), KEY_MASK_CMD + KEY_MASK_SHIFT + KEY_T), FILE_OPEN_PREV);
 	p->add_submenu_item(TTR("Open Recent"), "RecentScenes", FILE_OPEN_RECENT);
 
 	p->add_separator();
-	p->add_shortcut(ED_SHORTCUT("editor/save_scene", TTR("Save Scene"), KEY_MASK_CMD + KEY_S), FILE_SAVE_SCENE);
-	p->add_shortcut(ED_SHORTCUT("editor/save_scene_as", TTR("Save Scene As..."), KEY_MASK_CMD + KEY_MASK_SHIFT + KEY_S), FILE_SAVE_AS_SCENE);
+	p->add_shortcut(command_palette->create_shortcut_and_command("editor/save_scene", TTR("Save Scene"), KEY_MASK_CMD + KEY_S), FILE_SAVE_SCENE);
+	p->add_shortcut(command_palette->create_shortcut_and_command("editor/save_scene_as", TTR("Save Scene As..."), KEY_MASK_CMD + KEY_MASK_SHIFT + KEY_S), FILE_SAVE_AS_SCENE);
 	p->add_shortcut(ED_SHORTCUT("editor/save_all_scenes", TTR("Save All Scenes"), KEY_MASK_CMD + KEY_MASK_SHIFT + KEY_MASK_ALT + KEY_S), FILE_SAVE_ALL_SCENES);
 
 	p->add_separator();
@@ -6973,12 +7001,14 @@ EditorNode::EditorNode() {
 	ED_SHORTCUT("editor/editor_3d", TTR("Open 3D Editor"), KEY_MASK_ALT | KEY_2);
 	ED_SHORTCUT("editor/editor_script", TTR("Open Script Editor"), KEY_MASK_ALT | KEY_3);
 	ED_SHORTCUT("editor/editor_assetlib", TTR("Open Asset Library"), KEY_MASK_ALT | KEY_4);
+	ED_SHORTCUT("editor/command_palette", TTR("Open Command Palette"), KEY_MASK_CMD | KEY_MASK_SHIFT | KEY_P);
 #else
 	// Use the Ctrl modifier so F2 can be used to rename nodes in the scene tree dock.
 	ED_SHORTCUT("editor/editor_2d", TTR("Open 2D Editor"), KEY_MASK_CTRL | KEY_F1);
 	ED_SHORTCUT("editor/editor_3d", TTR("Open 3D Editor"), KEY_MASK_CTRL | KEY_F2);
 	ED_SHORTCUT("editor/editor_script", TTR("Open Script Editor"), KEY_MASK_CTRL | KEY_F3);
 	ED_SHORTCUT("editor/editor_assetlib", TTR("Open Asset Library"), KEY_MASK_CTRL | KEY_F4);
+	ED_SHORTCUT("editor/command_palette", TTR("Open Command Palette"), KEY_MASK_CTRL | KEY_MASK_SHIFT | KEY_P);
 #endif
 	ED_SHORTCUT("editor/editor_next", TTR("Open the next Editor"));
 	ED_SHORTCUT("editor/editor_prev", TTR("Open the previous Editor"));

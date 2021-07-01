@@ -45,6 +45,7 @@
 class EditorNode;
 class Node3D;
 class Camera3D;
+class EditorCommandPalette;
 class EditorSelection;
 class EditorExport;
 class EditorSettings;
@@ -86,6 +87,8 @@ public:
 	Node *get_edited_scene_root();
 	Array get_open_scenes() const;
 	ScriptEditor *get_script_editor();
+
+	Ref<EditorCommandPalette> get_editor_palette();
 
 	void select_file(const String &p_file);
 	String get_selected_path() const;

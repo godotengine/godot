@@ -32,6 +32,7 @@
 #define EDITOR_NODE_H
 
 #include "core/templates/safe_refcount.h"
+#include "editor/editor_command_palette.h"
 #include "editor/editor_data.h"
 #include "editor/editor_export.h"
 #include "editor/editor_folding.h"
@@ -55,6 +56,7 @@ class Control;
 class DependencyEditor;
 class DependencyErrorDialog;
 class EditorAbout;
+class EditorCommandPalette;
 class EditorExport;
 class EditorFeatureProfileManager;
 class EditorFileServer;
@@ -339,6 +341,7 @@ private:
 	CenterContainer *tabs_center;
 	EditorQuickOpen *quick_open;
 	EditorQuickOpen *quick_run;
+	EditorCommandPalette *command_palette;
 
 	HBoxContainer *main_editor_button_vb;
 	Vector<Button *> main_editor_buttons;
@@ -443,6 +446,8 @@ private:
 	List<String> previous_scenes;
 	bool opening_prev;
 
+	EditorCommandPalette *editor_command_palette;
+
 	void _dialog_action(String p_file);
 
 	void _edit_current();
@@ -500,6 +505,8 @@ private:
 
 	void _quick_opened();
 	void _quick_run();
+	void _execute_command();
+	void _open_command_palette();
 
 	void _run(bool p_current = false, const String &p_custom = "");
 	void _run_native(const Ref<EditorExportPreset> &p_preset);
