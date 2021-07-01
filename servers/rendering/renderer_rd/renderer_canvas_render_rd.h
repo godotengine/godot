@@ -457,8 +457,6 @@ public:
 
 	void canvas_debug_viewport_shadows(Light *p_lights_with_shadow) {}
 
-	void draw_window_margins(int *p_margins, RID *p_margin_textures) {}
-
 	virtual void set_shadow_texture_size(int p_size);
 
 	void set_time(double p_time);

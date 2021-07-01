@@ -68,9 +68,8 @@ public:
 		Rect2 viewport_to_screen_rect;
 		bool viewport_render_direct_to_screen;
 
-		bool hide_scenario;
-		bool hide_canvas;
-		bool disable_environment;
+		bool disable_2d = false;
+		bool disable_environment = false;
 		bool disable_3d = false;
 		bool measure_render_time;
 
@@ -138,7 +137,7 @@ public:
 			update_mode = RS::VIEWPORT_UPDATE_WHEN_VISIBLE;
 			clear_mode = RS::VIEWPORT_CLEAR_ALWAYS;
 			transparent_bg = false;
-			disable_environment = false;
+
 			viewport_to_screen = DisplayServer::INVALID_WINDOW_ID;
 			shadow_atlas_size = 0;
 			measure_render_time = false;
@@ -218,8 +217,7 @@ public:
 	RID viewport_get_texture(RID p_viewport) const;
 	RID viewport_get_occluder_debug_texture(RID p_viewport) const;
 
-	void viewport_set_hide_scenario(RID p_viewport, bool p_hide);
-	void viewport_set_hide_canvas(RID p_viewport, bool p_hide);
+	void viewport_set_disable_2d(RID p_viewport, bool p_disable);
 	void viewport_set_disable_environment(RID p_viewport, bool p_disable);
 	void viewport_set_disable_3d(RID p_viewport, bool p_disable);
 

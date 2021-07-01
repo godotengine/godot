@@ -143,15 +143,6 @@ float VoxelGIData::get_propagation() const {
 	return propagation;
 }
 
-void VoxelGIData::set_anisotropy_strength(float p_anisotropy_strength) {
-	RS::get_singleton()->voxel_gi_set_anisotropy_strength(probe, p_anisotropy_strength);
-	anisotropy_strength = p_anisotropy_strength;
-}
-
-float VoxelGIData::get_anisotropy_strength() const {
-	return anisotropy_strength;
-}
-
 void VoxelGIData::set_energy(float p_energy) {
 	RS::get_singleton()->voxel_gi_set_energy(probe, p_energy);
 	energy = p_energy;
@@ -159,24 +150,6 @@ void VoxelGIData::set_energy(float p_energy) {
 
 float VoxelGIData::get_energy() const {
 	return energy;
-}
-
-void VoxelGIData::set_ao(float p_ao) {
-	RS::get_singleton()->voxel_gi_set_ao(probe, p_ao);
-	ao = p_ao;
-}
-
-float VoxelGIData::get_ao() const {
-	return ao;
-}
-
-void VoxelGIData::set_ao_size(float p_ao_size) {
-	RS::get_singleton()->voxel_gi_set_ao_size(probe, p_ao_size);
-	ao_size = p_ao_size;
-}
-
-float VoxelGIData::get_ao_size() const {
-	return ao_size;
 }
 
 void VoxelGIData::set_bias(float p_bias) {
@@ -219,15 +192,6 @@ RID VoxelGIData::get_rid() const {
 	return probe;
 }
 
-void VoxelGIData::_validate_property(PropertyInfo &property) const {
-	if (property.name == "anisotropy_strength") {
-		bool anisotropy_enabled = ProjectSettings::get_singleton()->get("rendering/global_illumination/voxel_gi/anisotropic");
-		if (!anisotropy_enabled) {
-			property.usage = PROPERTY_USAGE_NOEDITOR;
-		}
-	}
-}
-
 void VoxelGIData::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("allocate", "to_cell_xform", "aabb", "octree_size", "octree_cells", "data_cells", "distance_field", "level_counts"), &VoxelGIData::allocate);
 
@@ -253,15 +217,6 @@ void VoxelGIData::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_propagation", "propagation"), &VoxelGIData::set_propagation);
 	ClassDB::bind_method(D_METHOD("get_propagation"), &VoxelGIData::get_propagation);
 
-	ClassDB::bind_method(D_METHOD("set_anisotropy_strength", "strength"), &VoxelGIData::set_anisotropy_strength);
-	ClassDB::bind_method(D_METHOD("get_anisotropy_strength"), &VoxelGIData::get_anisotropy_strength);
-
-	ClassDB::bind_method(D_METHOD("set_ao", "ao"), &VoxelGIData::set_ao);
-	ClassDB::bind_method(D_METHOD("get_ao"), &VoxelGIData::get_ao);
-
-	ClassDB::bind_method(D_METHOD("set_ao_size", "strength"), &VoxelGIData::set_ao_size);
-	ClassDB::bind_method(D_METHOD("get_ao_size"), &VoxelGIData::get_ao_size);
-
 	ClassDB::bind_method(D_METHOD("set_interior", "interior"), &VoxelGIData::set_interior);
 	ClassDB::bind_method(D_METHOD("is_interior"), &VoxelGIData::is_interior);
 
@@ -278,9 +233,6 @@ void VoxelGIData::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "bias", PROPERTY_HINT_RANGE, "0,8,0.01"), "set_bias", "get_bias");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "normal_bias", PROPERTY_HINT_RANGE, "0,8,0.01"), "set_normal_bias", "get_normal_bias");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "propagation", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_propagation", "get_propagation");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "anisotropy_strength", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_anisotropy_strength", "get_anisotropy_strength");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "ao", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_ao", "get_ao");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "ao_size", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_ao_size", "get_ao_size");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_two_bounces"), "set_use_two_bounces", "is_using_two_bounces");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "interior"), "set_interior", "is_interior");
 }

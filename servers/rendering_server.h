@@ -103,7 +103,6 @@ public:
 	virtual RID texture_3d_create(Image::Format, int p_width, int p_height, int p_depth, bool p_mipmaps, const Vector<Ref<Image>> &p_data) = 0; //all slices, then all the mipmaps, must be coherent
 	virtual RID texture_proxy_create(RID p_base) = 0;
 
-	virtual void texture_2d_update_immediate(RID p_texture, const Ref<Image> &p_image, int p_layer = 0) = 0; //mostly used for video and streaming
 	virtual void texture_2d_update(RID p_texture, const Ref<Image> &p_image, int p_layer = 0) = 0;
 	virtual void texture_3d_update(RID p_texture, const Vector<Ref<Image>> &p_data) = 0;
 	virtual void texture_proxy_update(RID p_texture, RID p_proxy_to) = 0;
@@ -119,10 +118,6 @@ public:
 
 	virtual void texture_replace(RID p_texture, RID p_by_texture) = 0;
 	virtual void texture_set_size_override(RID p_texture, int p_width, int p_height) = 0;
-// FIXME: Disabled during Vulkan refactoring, should be ported.
-#if 0
-	virtual void texture_bind(RID p_texture, uint32_t p_texture_no) = 0;
-#endif
 
 	virtual void texture_set_path(RID p_texture, const String &p_path) = 0;
 	virtual String texture_get_path(RID p_texture) const = 0;
@@ -173,7 +168,6 @@ public:
 	virtual void shader_set_code(RID p_shader, const String &p_code) = 0;
 	virtual String shader_get_code(RID p_shader) const = 0;
 	virtual void shader_get_param_list(RID p_shader, List<PropertyInfo> *p_param_list) const = 0;
-	Array _shader_get_param_list_bind(RID p_shader) const;
 	virtual Variant shader_get_param_default(RID p_shader, const StringName &p_param) const = 0;
 
 	virtual void shader_set_default_texture_param(RID p_shader, const StringName &p_name, RID p_texture) = 0;
@@ -214,9 +208,9 @@ public:
 
 	enum ArrayType {
 		ARRAY_VERTEX = 0, // RG32F or RGB32F (depending on 2D bit)
-		ARRAY_NORMAL = 1, // A2B10G10R10
+		ARRAY_NORMAL = 1, // A2B10G10R10, A is ignored
 		ARRAY_TANGENT = 2, // A2B10G10R10, A flips sign of binormal
-		ARRAY_COLOR = 3, // RGBA16F
+		ARRAY_COLOR = 3, // RGBA8
 		ARRAY_TEX_UV = 4, // RG32F
 		ARRAY_TEX_UV2 = 5, // RG32F
 		ARRAY_CUSTOM0 = 6, // depends on ArrayCustomFormat
@@ -482,6 +476,19 @@ public:
 
 	virtual void light_directional_set_shadow_depth_range_mode(RID p_light, LightDirectionalShadowDepthRangeMode p_range_mode) = 0;
 
+	virtual void directional_shadow_atlas_set_size(int p_size, bool p_16_bits = false) = 0;
+
+	enum ShadowQuality {
+		SHADOW_QUALITY_HARD,
+		SHADOW_QUALITY_SOFT_LOW,
+		SHADOW_QUALITY_SOFT_MEDIUM,
+		SHADOW_QUALITY_SOFT_HIGH,
+		SHADOW_QUALITY_SOFT_ULTRA,
+		SHADOW_QUALITY_MAX
+	};
+
+	virtual void shadows_quality_set(ShadowQuality p_quality) = 0;
+	virtual void directional_shadow_quality_set(ShadowQuality p_quality) = 0;
 	/* PROBE API */
 
 	virtual RID reflection_probe_create() = 0;
@@ -549,34 +556,12 @@ public:
 	virtual Transform3D voxel_gi_get_to_cell_xform(RID p_voxel_gi) const = 0;
 
 	virtual void voxel_gi_set_dynamic_range(RID p_voxel_gi, float p_range) = 0;
-	virtual float voxel_gi_get_dynamic_range(RID p_voxel_gi) const = 0;
-
 	virtual void voxel_gi_set_propagation(RID p_voxel_gi, float p_range) = 0;
-	virtual float voxel_gi_get_propagation(RID p_voxel_gi) const = 0;
-
 	virtual void voxel_gi_set_energy(RID p_voxel_gi, float p_energy) = 0;
-	virtual float voxel_gi_get_energy(RID p_voxel_gi) const = 0;
-
-	virtual void voxel_gi_set_ao(RID p_voxel_gi, float p_ao) = 0;
-	virtual float voxel_gi_get_ao(RID p_voxel_gi) const = 0;
-
-	virtual void voxel_gi_set_ao_size(RID p_voxel_gi, float p_strength) = 0;
-	virtual float voxel_gi_get_ao_size(RID p_voxel_gi) const = 0;
-
 	virtual void voxel_gi_set_bias(RID p_voxel_gi, float p_bias) = 0;
-	virtual float voxel_gi_get_bias(RID p_voxel_gi) const = 0;
-
 	virtual void voxel_gi_set_normal_bias(RID p_voxel_gi, float p_range) = 0;
-	virtual float voxel_gi_get_normal_bias(RID p_voxel_gi) const = 0;
-
 	virtual void voxel_gi_set_interior(RID p_voxel_gi, bool p_enable) = 0;
-	virtual bool voxel_gi_is_interior(RID p_voxel_gi) const = 0;
-
 	virtual void voxel_gi_set_use_two_bounces(RID p_voxel_gi, bool p_enable) = 0;
-	virtual bool voxel_gi_is_using_two_bounces(RID p_voxel_gi) const = 0;
-
-	virtual void voxel_gi_set_anisotropy_strength(RID p_voxel_gi, float p_strength) = 0;
-	virtual float voxel_gi_get_anisotropy_strength(RID p_voxel_gi) const = 0;
 
 	enum VoxelGIQuality {
 		VOXEL_GI_QUALITY_LOW,
@@ -731,7 +716,7 @@ public:
 	virtual void camera_set_camera_effects(RID p_camera, RID p_camera_effects) = 0;
 	virtual void camera_set_use_vertical_aspect(RID p_camera, bool p_enable) = 0;
 
-	/* VIEWPORT TARGET API */
+	/* VIEWPORT API */
 
 	enum CanvasItemTextureFilter {
 		CANVAS_ITEM_TEXTURE_FILTER_DEFAULT, //uses canvas item setting for draw command, uses global setting for canvas item
@@ -782,10 +767,9 @@ public:
 
 	virtual RID viewport_get_texture(RID p_viewport) const = 0;
 
-	virtual void viewport_set_hide_scenario(RID p_viewport, bool p_hide) = 0;
-	virtual void viewport_set_hide_canvas(RID p_viewport, bool p_hide) = 0;
 	virtual void viewport_set_disable_environment(RID p_viewport, bool p_disable) = 0;
 	virtual void viewport_set_disable_3d(RID p_viewport, bool p_disable) = 0;
+	virtual void viewport_set_disable_2d(RID p_viewport, bool p_disable) = 0;
 
 	virtual void viewport_attach_camera(RID p_viewport, RID p_camera) = 0;
 	virtual void viewport_set_scenario(RID p_viewport, RID p_scenario) = 0;
@@ -901,8 +885,6 @@ public:
 	virtual float viewport_get_measured_render_time_cpu(RID p_viewport) const = 0;
 	virtual float viewport_get_measured_render_time_gpu(RID p_viewport) const = 0;
 
-	virtual void directional_shadow_atlas_set_size(int p_size, bool p_16_bits = false) = 0;
-
 	/* SKY API */
 
 	enum SkyMode {
@@ -953,10 +935,6 @@ public:
 	virtual void environment_set_bg_energy(RID p_env, float p_energy) = 0;
 	virtual void environment_set_canvas_max_layer(RID p_env, int p_max_layer) = 0;
 	virtual void environment_set_ambient_light(RID p_env, const Color &p_color, EnvironmentAmbientSource p_ambient = ENV_AMBIENT_SOURCE_BG, float p_energy = 1.0, float p_sky_contribution = 0.0, EnvironmentReflectionSource p_reflection_source = ENV_REFLECTION_SOURCE_BG, const Color &p_ao_color = Color()) = 0;
-// FIXME: Disabled during Vulkan refactoring, should be ported.
-#if 0
-	virtual void environment_set_camera_feed_id(RID p_env, int p_camera_feed_id) = 0;
-#endif
 
 	enum EnvironmentGlowBlendMode {
 		ENV_GLOW_BLEND_MODE_ADDITIVE,
@@ -1098,30 +1076,10 @@ public:
 	virtual void camera_effects_set_dof_blur(RID p_camera_effects, bool p_far_enable, float p_far_distance, float p_far_transition, bool p_near_enable, float p_near_distance, float p_near_transition, float p_amount) = 0;
 	virtual void camera_effects_set_custom_exposure(RID p_camera_effects, bool p_enable, float p_exposure) = 0;
 
-	enum ShadowQuality {
-		SHADOW_QUALITY_HARD,
-		SHADOW_QUALITY_SOFT_LOW,
-		SHADOW_QUALITY_SOFT_MEDIUM,
-		SHADOW_QUALITY_SOFT_HIGH,
-		SHADOW_QUALITY_SOFT_ULTRA,
-		SHADOW_QUALITY_MAX
-	};
-
-	virtual void shadows_quality_set(ShadowQuality p_quality) = 0;
-	virtual void directional_shadow_quality_set(ShadowQuality p_quality) = 0;
-
 	/* SCENARIO API */
 
 	virtual RID scenario_create() = 0;
 
-	enum ScenarioDebugMode {
-		SCENARIO_DEBUG_DISABLED,
-		SCENARIO_DEBUG_WIREFRAME,
-		SCENARIO_DEBUG_OVERDRAW,
-		SCENARIO_DEBUG_SHADELESS,
-	};
-
-	virtual void scenario_set_debug(RID p_scenario, ScenarioDebugMode p_debug_mode) = 0;
 	virtual void scenario_set_environment(RID p_scenario, RID p_environment) = 0;
 	virtual void scenario_set_fallback_environment(RID p_scenario, RID p_environment) = 0;
 	virtual void scenario_set_camera_effects(RID p_scenario, RID p_camera_effects) = 0;
@@ -1162,7 +1120,6 @@ public:
 	virtual void instance_set_custom_aabb(RID p_instance, AABB aabb) = 0;
 
 	virtual void instance_attach_skeleton(RID p_instance, RID p_skeleton) = 0;
-	virtual void instance_set_exterior(RID p_instance, bool p_enabled) = 0;
 
 	virtual void instance_set_extra_visibility_margin(RID p_instance, real_t p_margin) = 0;
 	virtual void instance_set_visibility_parent(RID p_instance, RID p_parent_instance) = 0;
@@ -1194,7 +1151,6 @@ public:
 	virtual void instance_geometry_set_flag(RID p_instance, InstanceFlags p_flags, bool p_enabled) = 0;
 	virtual void instance_geometry_set_cast_shadows_setting(RID p_instance, ShadowCastingSetting p_shadow_casting_setting) = 0;
 	virtual void instance_geometry_set_material_override(RID p_instance, RID p_material) = 0;
-
 	virtual void instance_geometry_set_visibility_range(RID p_instance, float p_min, float p_max, float p_min_margin, float p_max_margin) = 0;
 	virtual void instance_geometry_set_lightmap(RID p_instance, RID p_lightmap, const Rect2 &p_lightmap_uv_scale, int p_lightmap_slice) = 0;
 	virtual void instance_geometry_set_lod_bias(RID p_instance, float p_lod_bias) = 0;
@@ -1224,6 +1180,7 @@ public:
 
 	virtual void canvas_set_disable_scale(bool p_disable) = 0;
 
+	/* CANVAS TEXTURE */
 	virtual RID canvas_texture_create() = 0;
 
 	enum CanvasTextureChannel {
@@ -1237,6 +1194,8 @@ public:
 	//takes effect only for new draw commands
 	virtual void canvas_texture_set_texture_filter(RID p_canvas_texture, CanvasItemTextureFilter p_filter) = 0;
 	virtual void canvas_texture_set_texture_repeat(RID p_canvas_texture, CanvasItemTextureRepeat p_repeat) = 0;
+
+	/* CANVAS ITEM */
 
 	virtual RID canvas_item_create() = 0;
 	virtual void canvas_item_set_parent(RID p_item, RID p_parent) = 0;
@@ -1281,6 +1240,7 @@ public:
 	virtual void canvas_item_add_set_transform(RID p_item, const Transform2D &p_transform) = 0;
 	virtual void canvas_item_add_clip_ignore(RID p_item, bool p_ignore) = 0;
 	virtual void canvas_item_add_animation_slice(RID p_item, double p_animation_length, double p_slice_begin, double p_slice_end, double p_offset) = 0;
+
 	virtual void canvas_item_set_sort_children_by_y(RID p_item, bool p_enable) = 0;
 	virtual void canvas_item_set_z_index(RID p_item, int p_z) = 0;
 	virtual void canvas_item_set_z_as_relative_to_parent(RID p_item, bool p_enable) = 0;
@@ -1305,6 +1265,7 @@ public:
 
 	virtual void canvas_item_set_canvas_group_mode(RID p_item, CanvasGroupMode p_mode, float p_clear_margin = 5.0, bool p_fit_empty = false, float p_fit_margin = 0.0, bool p_blur_mipmaps = false) = 0;
 
+	/* CANVAS LIGHT */
 	virtual RID canvas_light_create() = 0;
 
 	enum CanvasLightMode {
@@ -1351,6 +1312,8 @@ public:
 	virtual void canvas_light_set_shadow_color(RID p_light, const Color &p_color) = 0;
 	virtual void canvas_light_set_shadow_smooth(RID p_light, float p_smooth) = 0;
 
+	/* CANVAS LIGHT OCCLUDER */
+
 	virtual RID canvas_light_occluder_create() = 0;
 	virtual void canvas_light_occluder_attach_to_canvas(RID p_occluder, RID p_canvas) = 0;
 	virtual void canvas_light_occluder_set_enabled(RID p_occluder, bool p_enabled) = 0;
@@ -1358,6 +1321,8 @@ public:
 	virtual void canvas_light_occluder_set_as_sdf_collision(RID p_occluder, bool p_enable) = 0;
 	virtual void canvas_light_occluder_set_transform(RID p_occluder, const Transform2D &p_xform) = 0;
 	virtual void canvas_light_occluder_set_light_mask(RID p_occluder, int p_mask) = 0;
+
+	/* CANVAS LIGHT OCCLUDER POLYGON */
 
 	virtual RID canvas_occluder_polygon_create() = 0;
 	virtual void canvas_occluder_polygon_set_shape(RID p_occluder_polygon, const Vector<Vector2> &p_shape, bool p_closed) = 0;
@@ -1420,11 +1385,6 @@ public:
 	virtual void global_variables_clear() = 0;
 
 	static ShaderLanguage::DataType global_variable_type_get_shader_datatype(GlobalVariableType p_type);
-
-	/* BLACK BARS */
-
-	virtual void black_bars_set_margins(int p_left, int p_top, int p_right, int p_bottom) = 0;
-	virtual void black_bars_set_images(RID p_left, RID p_top, RID p_right, RID p_bottom) = 0;
 
 	/* FREE */
 
@@ -1514,6 +1474,20 @@ public:
 
 	RenderingServer();
 	virtual ~RenderingServer();
+
+private:
+	//binder helpers
+	RID _texture_2d_layered_create(const TypedArray<Image> &p_layers, TextureLayeredType p_layered_type);
+	RID _texture_3d_create(Image::Format p_format, int p_width, int p_height, int p_depth, bool p_mipmaps, const TypedArray<Image> &p_data);
+	void _texture_3d_update(RID p_texture, const TypedArray<Image> &p_data);
+	TypedArray<Image> _texture_3d_get(RID p_texture) const;
+	TypedArray<Dictionary> _shader_get_param_list(RID p_shader) const;
+	RID _mesh_create_from_surfaces(const TypedArray<Dictionary> &p_surfaces, int p_blend_shape_count);
+	void _mesh_add_surface(RID p_mesh, const Dictionary &p_surface);
+	Dictionary _mesh_get_surface(RID p_mesh, int p_idx);
+	Array _instance_geometry_get_shader_parameter_list(RID p_instance) const;
+	TypedArray<Image> _bake_render_uv2(RID p_base, const TypedArray<RID> &p_material_overrides, const Size2i &p_image_size);
+	void _particles_set_trail_bind_poses(RID p_particles, const TypedArray<Transform3D> &p_bind_poses);
 };
 
 // make variant understand the enums
@@ -1522,6 +1496,7 @@ VARIANT_ENUM_CAST(RenderingServer::CubeMapLayer);
 VARIANT_ENUM_CAST(RenderingServer::ShaderMode);
 VARIANT_ENUM_CAST(RenderingServer::ArrayType);
 VARIANT_ENUM_CAST(RenderingServer::ArrayFormat);
+VARIANT_ENUM_CAST(RenderingServer::ArrayCustomFormat);
 VARIANT_ENUM_CAST(RenderingServer::PrimitiveType);
 VARIANT_ENUM_CAST(RenderingServer::BlendShapeMode);
 VARIANT_ENUM_CAST(RenderingServer::MultimeshTransformFormat);
@@ -1533,8 +1508,14 @@ VARIANT_ENUM_CAST(RenderingServer::LightDirectionalShadowMode);
 VARIANT_ENUM_CAST(RenderingServer::LightDirectionalShadowDepthRangeMode);
 VARIANT_ENUM_CAST(RenderingServer::ReflectionProbeUpdateMode);
 VARIANT_ENUM_CAST(RenderingServer::ReflectionProbeAmbientMode);
+VARIANT_ENUM_CAST(RenderingServer::VoxelGIQuality);
 VARIANT_ENUM_CAST(RenderingServer::DecalTexture);
+VARIANT_ENUM_CAST(RenderingServer::ParticlesMode);
+VARIANT_ENUM_CAST(RenderingServer::ParticlesTransformAlign);
 VARIANT_ENUM_CAST(RenderingServer::ParticlesDrawOrder);
+VARIANT_ENUM_CAST(RenderingServer::ParticlesEmitFlags);
+VARIANT_ENUM_CAST(RenderingServer::ParticlesCollisionType);
+VARIANT_ENUM_CAST(RenderingServer::ParticlesCollisionHeightfieldResolution);
 VARIANT_ENUM_CAST(RenderingServer::ViewportUpdateMode);
 VARIANT_ENUM_CAST(RenderingServer::ViewportClearMode);
 VARIANT_ENUM_CAST(RenderingServer::ViewportMSAA);
@@ -1542,6 +1523,8 @@ VARIANT_ENUM_CAST(RenderingServer::ViewportScreenSpaceAA);
 VARIANT_ENUM_CAST(RenderingServer::ViewportRenderInfo);
 VARIANT_ENUM_CAST(RenderingServer::ViewportDebugDraw);
 VARIANT_ENUM_CAST(RenderingServer::ViewportOcclusionCullingBuildQuality);
+VARIANT_ENUM_CAST(RenderingServer::ViewportSDFOversize);
+VARIANT_ENUM_CAST(RenderingServer::ViewportSDFScale);
 VARIANT_ENUM_CAST(RenderingServer::SkyMode);
 VARIANT_ENUM_CAST(RenderingServer::EnvironmentBG);
 VARIANT_ENUM_CAST(RenderingServer::EnvironmentAmbientSource);
@@ -1550,11 +1533,15 @@ VARIANT_ENUM_CAST(RenderingServer::EnvironmentGlowBlendMode);
 VARIANT_ENUM_CAST(RenderingServer::EnvironmentToneMapper);
 VARIANT_ENUM_CAST(RenderingServer::EnvironmentSSRRoughnessQuality);
 VARIANT_ENUM_CAST(RenderingServer::EnvironmentSSAOQuality);
+VARIANT_ENUM_CAST(RenderingServer::EnvironmentSDFGICascades);
+VARIANT_ENUM_CAST(RenderingServer::EnvironmentSDFGIFramesToConverge);
+VARIANT_ENUM_CAST(RenderingServer::EnvironmentSDFGIRayCount);
+VARIANT_ENUM_CAST(RenderingServer::EnvironmentSDFGIFramesToUpdateLight);
+VARIANT_ENUM_CAST(RenderingServer::EnvironmentSDFGIYScale);
 VARIANT_ENUM_CAST(RenderingServer::SubSurfaceScatteringQuality);
 VARIANT_ENUM_CAST(RenderingServer::DOFBlurQuality);
 VARIANT_ENUM_CAST(RenderingServer::DOFBokehShape);
 VARIANT_ENUM_CAST(RenderingServer::ShadowQuality);
-VARIANT_ENUM_CAST(RenderingServer::ScenarioDebugMode);
 VARIANT_ENUM_CAST(RenderingServer::InstanceType);
 VARIANT_ENUM_CAST(RenderingServer::InstanceFlags);
 VARIANT_ENUM_CAST(RenderingServer::ShadowCastingSetting);
@@ -1569,6 +1556,8 @@ VARIANT_ENUM_CAST(RenderingServer::CanvasOccluderPolygonCullMode);
 VARIANT_ENUM_CAST(RenderingServer::GlobalVariableType);
 VARIANT_ENUM_CAST(RenderingServer::RenderInfo);
 VARIANT_ENUM_CAST(RenderingServer::Features);
+VARIANT_ENUM_CAST(RenderingServer::CanvasTextureChannel);
+VARIANT_ENUM_CAST(RenderingServer::BakeChannels);
 
 // Alias to make it easier to use.
 #define RS RenderingServer

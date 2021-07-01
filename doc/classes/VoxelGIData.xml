@@ -66,12 +66,6 @@
 		</method>
 	</methods>
 	<members>
-		<member name="anisotropy_strength" type="float" setter="set_anisotropy_strength" getter="get_anisotropy_strength" default="0.5">
-		</member>
-		<member name="ao" type="float" setter="set_ao" getter="get_ao" default="0.0">
-		</member>
-		<member name="ao_size" type="float" setter="set_ao_size" getter="get_ao_size" default="0.5">
-		</member>
 		<member name="bias" type="float" setter="set_bias" getter="get_bias" default="1.5">
 		</member>
 		<member name="dynamic_range" type="float" setter="set_dynamic_range" getter="get_dynamic_range" default="4.0">

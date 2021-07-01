@@ -185,7 +185,7 @@ void VideoStreamPlaybackGDNative::update_texture() {
 
 	Ref<Image> img = memnew(Image(texture_size.width, texture_size.height, 0, Image::FORMAT_RGBA8, *pba));
 
-	texture->update(img, true);
+	texture->update(img);
 }
 
 // ctor and dtor

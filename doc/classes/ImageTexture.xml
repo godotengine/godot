@@ -61,10 +61,8 @@
 			</return>
 			<argument index="0" name="image" type="Image">
 			</argument>
-			<argument index="1" name="immediate" type="bool" default="false">
-			</argument>
 			<description>
-				Replaces the texture's data with a new [Image]. If [code]immediate[/code] is [code]true[/code], it will take effect immediately after the call.
+				Replaces the texture's data with a new [Image].
 				[b]Note:[/b] The texture has to be initialized first with the [method create_from_image] method before it can be updated. The new image dimensions, format, and mipmaps configuration should match the existing texture's image configuration, otherwise it has to be re-created with the [method create_from_image] method.
 				Use this method over [method create_from_image] if you need to update the texture frequently, which is faster than allocating additional memory for a new texture each time.
 			</description>

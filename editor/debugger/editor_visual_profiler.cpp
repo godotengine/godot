@@ -309,7 +309,7 @@ void EditorVisualProfiler::_update_plot() {
 		graph_texture->create_from_image(img);
 	}
 
-	graph_texture->update(img, true);
+	graph_texture->update(img);
 
 	graph->set_texture(graph_texture);
 	graph->update();
