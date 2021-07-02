@@ -136,7 +136,7 @@ public abstract class GodotPlugin {
 		nativeRegisterSingleton(pluginName, pluginObject);
 
 		Set<Method> filteredMethods = new HashSet<>();
-		Class clazz = pluginObject.getClass();
+		Class<?> clazz = pluginObject.getClass();
 
 		Method[] methods = clazz.getDeclaredMethods();
 		for (Method method : methods) {
@@ -157,8 +157,8 @@ public abstract class GodotPlugin {
 		for (Method method : filteredMethods) {
 			List<String> ptr = new ArrayList<>();
 
-			Class[] paramTypes = method.getParameterTypes();
-			for (Class c : paramTypes) {
+			Class<?>[] paramTypes = method.getParameterTypes();
+			for (Class<?> c : paramTypes) {
 				ptr.add(c.getName());
 			}
 
