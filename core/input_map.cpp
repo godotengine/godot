@@ -46,6 +46,7 @@ void InputMap::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("erase_action", "action"), &InputMap::erase_action);
 
 	ClassDB::bind_method(D_METHOD("action_set_deadzone", "action", "deadzone"), &InputMap::action_set_deadzone);
+	ClassDB::bind_method(D_METHOD("action_get_deadzone", "action"), &InputMap::action_get_deadzone);
 	ClassDB::bind_method(D_METHOD("action_add_event", "action", "event"), &InputMap::action_add_event);
 	ClassDB::bind_method(D_METHOD("action_has_event", "action", "event"), &InputMap::action_has_event);
 	ClassDB::bind_method(D_METHOD("action_erase_event", "action", "event"), &InputMap::action_erase_event);
@@ -154,6 +155,12 @@ List<Ref<InputEvent> >::Element *InputMap::_find_event(Action &p_action, const R
 bool InputMap::has_action(const StringName &p_action) const {
 
 	return input_map.has(p_action);
+}
+
+float InputMap::action_get_deadzone(const StringName &p_action) {
+	ERR_FAIL_COND_V_MSG(!input_map.has(p_action), 0.0f, _suggest_actions(p_action));
+
+	return input_map[p_action].deadzone;
 }
 
 void InputMap::action_set_deadzone(const StringName &p_action, float p_deadzone) {
