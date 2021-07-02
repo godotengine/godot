@@ -92,8 +92,6 @@ public:
 	PhysicsDirectBodyState2D();
 };
 
-class PhysicsShapeQueryResult2D;
-
 //used for script
 class PhysicsShapeQueryParameters2D : public RefCounted {
 	GDCLASS(PhysicsShapeQueryParameters2D, RefCounted);
@@ -201,26 +199,6 @@ public:
 	virtual bool rest_info(RID p_shape, const Transform2D &p_shape_xform, const Vector2 &p_motion, real_t p_margin, ShapeRestInfo *r_info, const Set<RID> &p_exclude = Set<RID>(), uint32_t p_collision_layer = 0xFFFFFFFF, bool p_collide_with_bodies = true, bool p_collide_with_areas = false) = 0;
 
 	PhysicsDirectSpaceState2D();
-};
-
-class PhysicsShapeQueryResult2D : public RefCounted {
-	GDCLASS(PhysicsShapeQueryResult2D, RefCounted);
-
-	Vector<PhysicsDirectSpaceState2D::ShapeResult> result;
-
-	friend class PhysicsDirectSpaceState2D;
-
-protected:
-	static void _bind_methods();
-
-public:
-	int get_result_count() const;
-	RID get_result_rid(int p_idx) const;
-	ObjectID get_result_object_id(int p_idx) const;
-	Object *get_result_object(int p_idx) const;
-	int get_result_object_shape(int p_idx) const;
-
-	PhysicsShapeQueryResult2D();
 };
 
 class PhysicsTestMotionResult2D;
