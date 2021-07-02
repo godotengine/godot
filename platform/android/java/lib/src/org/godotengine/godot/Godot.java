@@ -175,7 +175,7 @@ public class Godot extends Fragment implements SensorEventListener, IDownloaderC
 	public static GodotNetUtils netUtils;
 
 	public interface ResultCallback {
-		public void callback(int requestCode, int resultCode, Intent data);
+		void callback(int requestCode, int resultCode, Intent data);
 	}
 	public ResultCallback result_callback;
 
