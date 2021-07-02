@@ -570,7 +570,7 @@ public:
 	FUNC1(viewport_set_occlusion_culling_build_quality, ViewportOcclusionCullingBuildQuality)
 	FUNC2(viewport_set_lod_threshold, RID, float)
 
-	FUNC2R(int, viewport_get_render_info, RID, ViewportRenderInfo)
+	FUNC3R(int, viewport_get_render_info, RID, ViewportRenderInfoType, ViewportRenderInfo)
 	FUNC2(viewport_set_debug_draw, RID, ViewportDebugDraw)
 
 	FUNC2(viewport_set_measure_render_time, RID, bool)
@@ -876,7 +876,7 @@ public:
 
 	/* STATUS INFORMATION */
 
-	virtual uint64_t get_render_info(RenderInfo p_info) override;
+	virtual uint64_t get_rendering_info(RenderingInfo p_info) override;
 	virtual String get_video_adapter_name() const override;
 	virtual String get_video_adapter_vendor() const override;
 

@@ -2136,7 +2136,7 @@ void RenderingServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("viewport_set_occlusion_rays_per_thread", "rays_per_thread"), &RenderingServer::viewport_set_occlusion_rays_per_thread);
 	ClassDB::bind_method(D_METHOD("viewport_set_occlusion_culling_build_quality", "quality"), &RenderingServer::viewport_set_occlusion_culling_build_quality);
 
-	ClassDB::bind_method(D_METHOD("viewport_get_render_info", "viewport", "info"), &RenderingServer::viewport_get_render_info);
+	ClassDB::bind_method(D_METHOD("viewport_get_render_info", "viewport", "type", "info"), &RenderingServer::viewport_get_render_info);
 	ClassDB::bind_method(D_METHOD("viewport_set_debug_draw", "viewport", "draw"), &RenderingServer::viewport_set_debug_draw);
 
 	ClassDB::bind_method(D_METHOD("viewport_set_measure_render_time", "viewport", "enable"), &RenderingServer::viewport_set_measure_render_time);
@@ -2181,12 +2181,13 @@ void RenderingServer::_bind_methods() {
 	BIND_ENUM_CONSTANT(VIEWPORT_OCCLUSION_BUILD_QUALITY_HIGH);
 
 	BIND_ENUM_CONSTANT(VIEWPORT_RENDER_INFO_OBJECTS_IN_FRAME);
-	BIND_ENUM_CONSTANT(VIEWPORT_RENDER_INFO_VERTICES_IN_FRAME);
-	BIND_ENUM_CONSTANT(VIEWPORT_RENDER_INFO_MATERIAL_CHANGES_IN_FRAME);
-	BIND_ENUM_CONSTANT(VIEWPORT_RENDER_INFO_SHADER_CHANGES_IN_FRAME);
-	BIND_ENUM_CONSTANT(VIEWPORT_RENDER_INFO_SURFACE_CHANGES_IN_FRAME);
+	BIND_ENUM_CONSTANT(VIEWPORT_RENDER_INFO_PRIMITIVES_IN_FRAME);
 	BIND_ENUM_CONSTANT(VIEWPORT_RENDER_INFO_DRAW_CALLS_IN_FRAME);
 	BIND_ENUM_CONSTANT(VIEWPORT_RENDER_INFO_MAX);
+
+	BIND_ENUM_CONSTANT(VIEWPORT_RENDER_INFO_TYPE_VISIBLE);
+	BIND_ENUM_CONSTANT(VIEWPORT_RENDER_INFO_TYPE_SHADOW);
+	BIND_ENUM_CONSTANT(VIEWPORT_RENDER_INFO_TYPE_MAX);
 
 	BIND_ENUM_CONSTANT(VIEWPORT_DEBUG_DRAW_DISABLED);
 	BIND_ENUM_CONSTANT(VIEWPORT_DEBUG_DRAW_UNSHADED);
@@ -2626,7 +2627,7 @@ void RenderingServer::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("request_frame_drawn_callback", "where", "method", "userdata"), &RenderingServer::request_frame_drawn_callback);
 	ClassDB::bind_method(D_METHOD("has_changed"), &RenderingServer::has_changed);
-	ClassDB::bind_method(D_METHOD("get_render_info", "info"), &RenderingServer::get_render_info);
+	ClassDB::bind_method(D_METHOD("get_rendering_info", "info"), &RenderingServer::get_rendering_info);
 	ClassDB::bind_method(D_METHOD("get_video_adapter_name"), &RenderingServer::get_video_adapter_name);
 	ClassDB::bind_method(D_METHOD("get_video_adapter_vendor"), &RenderingServer::get_video_adapter_vendor);
 
@@ -2650,16 +2651,12 @@ void RenderingServer::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "render_loop_enabled"), "set_render_loop_enabled", "is_render_loop_enabled");
 
-	BIND_ENUM_CONSTANT(INFO_OBJECTS_IN_FRAME);
-	BIND_ENUM_CONSTANT(INFO_VERTICES_IN_FRAME);
-	BIND_ENUM_CONSTANT(INFO_MATERIAL_CHANGES_IN_FRAME);
-	BIND_ENUM_CONSTANT(INFO_SHADER_CHANGES_IN_FRAME);
-	BIND_ENUM_CONSTANT(INFO_SURFACE_CHANGES_IN_FRAME);
-	BIND_ENUM_CONSTANT(INFO_DRAW_CALLS_IN_FRAME);
-	BIND_ENUM_CONSTANT(INFO_USAGE_VIDEO_MEM_TOTAL);
-	BIND_ENUM_CONSTANT(INFO_VIDEO_MEM_USED);
-	BIND_ENUM_CONSTANT(INFO_TEXTURE_MEM_USED);
-	BIND_ENUM_CONSTANT(INFO_VERTEX_MEM_USED);
+	BIND_ENUM_CONSTANT(RENDERING_INFO_TOTAL_OBJECTS_IN_FRAME);
+	BIND_ENUM_CONSTANT(RENDERING_INFO_TOTAL_PRIMITIVES_IN_FRAME);
+	BIND_ENUM_CONSTANT(RENDERING_INFO_TOTAL_DRAW_CALLS_IN_FRAME);
+	BIND_ENUM_CONSTANT(RENDERING_INFO_TEXTURE_MEM_USED);
+	BIND_ENUM_CONSTANT(RENDERING_INFO_BUFFER_MEM_USED);
+	BIND_ENUM_CONSTANT(RENDERING_INFO_VIDEO_MEM_USED);
 
 	BIND_ENUM_CONSTANT(FEATURE_SHADERS);
 	BIND_ENUM_CONSTANT(FEATURE_MULTITHREADED);

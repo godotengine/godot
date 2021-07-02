@@ -416,6 +416,8 @@ void RenderingDevice::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_device_name"), &RenderingDevice::get_device_name);
 	ClassDB::bind_method(D_METHOD("get_device_pipeline_cache_uuid"), &RenderingDevice::get_device_pipeline_cache_uuid);
 
+	ClassDB::bind_method(D_METHOD("get_memory_usage"), &RenderingDevice::get_memory_usage);
+
 	BIND_CONSTANT(BARRIER_MASK_RASTER);
 	BIND_CONSTANT(BARRIER_MASK_COMPUTE);
 	BIND_CONSTANT(BARRIER_MASK_TRANSFER);
@@ -886,6 +888,10 @@ void RenderingDevice::_bind_methods() {
 	BIND_ENUM_CONSTANT(LIMIT_MAX_COMPUTE_WORKGROUP_SIZE_X);
 	BIND_ENUM_CONSTANT(LIMIT_MAX_COMPUTE_WORKGROUP_SIZE_Y);
 	BIND_ENUM_CONSTANT(LIMIT_MAX_COMPUTE_WORKGROUP_SIZE_Z);
+
+	BIND_ENUM_CONSTANT(MEMORY_TEXTURES);
+	BIND_ENUM_CONSTANT(MEMORY_BUFFERS);
+	BIND_ENUM_CONSTANT(MEMORY_TOTAL);
 
 	BIND_CONSTANT(INVALID_ID);
 	BIND_CONSTANT(INVALID_FORMAT_ID);

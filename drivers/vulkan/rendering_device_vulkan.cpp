@@ -1398,12 +1398,15 @@ Error RenderingDeviceVulkan::_buffer_allocate(Buffer *p_buffer, uint32_t p_size,
 	p_buffer->buffer_info.range = p_size;
 	p_buffer->usage = p_usage;
 
+	buffer_memory += p_size;
+
 	return OK;
 }
 
 Error RenderingDeviceVulkan::_buffer_free(Buffer *p_buffer) {
 	ERR_FAIL_COND_V(p_buffer->size == 0, ERR_INVALID_PARAMETER);
 
+	buffer_memory -= p_buffer->size;
 	vmaDestroyBuffer(allocator, p_buffer->buffer, p_buffer->allocation);
 	p_buffer->buffer = VK_NULL_HANDLE;
 	p_buffer->allocation = nullptr;
@@ -1896,7 +1899,7 @@ RID RenderingDeviceVulkan::texture_create(const TextureFormat &p_format, const T
 
 	VkResult err = vmaCreateImage(allocator, &image_create_info, &allocInfo, &texture.image, &texture.allocation, &texture.allocation_info);
 	ERR_FAIL_COND_V_MSG(err, RID(), "vmaCreateImage failed with error " + itos(err) + ".");
-
+	image_memory += texture.allocation_info.size;
 	texture.type = p_format.texture_type;
 	texture.format = p_format.format;
 	texture.width = image_create_info.extent.width;
@@ -8121,6 +8124,7 @@ void RenderingDeviceVulkan::_free_pending_resources(int p_frame) {
 		vkDestroyImageView(device, texture->view, nullptr);
 		if (texture->owner.is_null()) {
 			//actually owns the image and the allocation too
+			image_memory -= texture->allocation_info.size;
 			vmaDestroyImage(allocator, texture->image, texture->allocation);
 		}
 		frames[p_frame].textures_to_dispose_of.pop_front();
@@ -8144,10 +8148,16 @@ uint32_t RenderingDeviceVulkan::get_frame_delay() const {
 	return frame_count;
 }
 
-uint64_t RenderingDeviceVulkan::get_memory_usage() const {
-	VmaStats stats;
-	vmaCalculateStats(allocator, &stats);
-	return stats.total.usedBytes;
+uint64_t RenderingDeviceVulkan::get_memory_usage(MemoryType p_type) const {
+	if (p_type == MEMORY_BUFFERS) {
+		return buffer_memory;
+	} else if (p_type == MEMORY_TEXTURES) {
+		return image_memory;
+	} else {
+		VmaStats stats;
+		vmaCalculateStats(allocator, &stats);
+		return stats.total.usedBytes;
+	}
 }
 
 void RenderingDeviceVulkan::_flush(bool p_current_frame) {

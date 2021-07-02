@@ -36,10 +36,9 @@
 #include "core/templates/self_list.h"
 #include "servers/rendering/renderer_canvas_render.h"
 #include "servers/rendering/renderer_scene.h"
-#include "servers/rendering/renderer_scene_render.h"
 #include "servers/rendering/renderer_storage.h"
 #include "servers/rendering_server.h"
-
+class RendererSceneRender;
 struct BlitToScreen {
 	RID render_target;
 	Rect2i rect;
