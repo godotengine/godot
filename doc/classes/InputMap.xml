@@ -72,6 +72,15 @@
 				Sets a deadzone value for the action.
 			</description>
 		</method>
+		<method name="action_get_deadzone">
+			<return type="float">
+			</return>
+			<argument index="0" name="action" type="StringName">
+			</argument>
+			<description>
+				Returns a deadzone value for the action.
+			</description>
+		</method>
 		<method name="add_action">
 			<return type="void">
 			</return>
