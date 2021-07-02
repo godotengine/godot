@@ -321,8 +321,8 @@ public class GodotIO {
 		am = p_activity.getAssets();
 		activity = p_activity;
 		//streams = new HashMap<Integer, AssetData>();
-		streams = new SparseArray<AssetData>();
-		dirs = new SparseArray<AssetDir>();
+		streams = new SparseArray<>();
+		dirs = new SparseArray<>();
 	}
 
 	/////////////////////////
