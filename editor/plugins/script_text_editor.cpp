@@ -1504,6 +1504,7 @@ void ScriptTextEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data
 	}
 
 	if (d.has("type") && (String(d["type"]) == "files" || String(d["type"]) == "files_and_dirs")) {
+		const String quote_style = EDITOR_DEF("text_editor/completion/use_single_quotes", false) ? "'" : "\"";
 		Array files = d["files"];
 
 		String text_to_drop;
@@ -1514,9 +1515,9 @@ void ScriptTextEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data
 			}
 
 			if (preload) {
-				text_to_drop += "preload(\"" + String(files[i]).c_escape() + "\")";
+				text_to_drop += "preload(" + String(files[i]).c_escape().quote(quote_style) + ")";
 			} else {
-				text_to_drop += "\"" + String(files[i]).c_escape() + "\"";
+				text_to_drop += String(files[i]).c_escape().quote(quote_style);
 			}
 		}
 
