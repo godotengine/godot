@@ -590,157 +590,320 @@ Transform3D Mesh::get_builtin_bind_pose(int p_index) const {
 Mesh::Mesh() {
 }
 
-#if 0
-static Vector<uint8_t> _fix_array_compatibility(const Vector<uint8_t> &p_src, uint32_t p_format, uint32_t p_elements) {
-	enum ArrayType {
-		OLD_ARRAY_VERTEX = 0,
-		OLD_ARRAY_NORMAL = 1,
-		OLD_ARRAY_TANGENT = 2,
-		OLD_ARRAY_COLOR = 3,
-		OLD_ARRAY_TEX_UV = 4,
-		OLD_ARRAY_TEX_UV2 = 5,
-		OLD_ARRAY_BONES = 6,
-		OLD_ARRAY_WEIGHTS = 7,
-		OLD_ARRAY_INDEX = 8,
-		OLD_ARRAY_MAX = 9
-	};
+enum OldArrayType {
+	OLD_ARRAY_VERTEX,
+	OLD_ARRAY_NORMAL,
+	OLD_ARRAY_TANGENT,
+	OLD_ARRAY_COLOR,
+	OLD_ARRAY_TEX_UV,
+	OLD_ARRAY_TEX_UV2,
+	OLD_ARRAY_BONES,
+	OLD_ARRAY_WEIGHTS,
+	OLD_ARRAY_INDEX,
+	OLD_ARRAY_MAX,
+};
 
-	enum ArrayFormat {
-		/* OLD_ARRAY FORMAT FLAGS */
-		OLD_ARRAY_FORMAT_VERTEX = 1 << OLD_ARRAY_VERTEX, // mandatory
-		OLD_ARRAY_FORMAT_NORMAL = 1 << OLD_ARRAY_NORMAL,
-		OLD_ARRAY_FORMAT_TANGENT = 1 << OLD_ARRAY_TANGENT,
-		OLD_ARRAY_FORMAT_COLOR = 1 << OLD_ARRAY_COLOR,
-		OLD_ARRAY_FORMAT_TEX_UV = 1 << OLD_ARRAY_TEX_UV,
-		OLD_ARRAY_FORMAT_TEX_UV2 = 1 << OLD_ARRAY_TEX_UV2,
-		OLD_ARRAY_FORMAT_BONES = 1 << OLD_ARRAY_BONES,
-		OLD_ARRAY_FORMAT_WEIGHTS = 1 << OLD_ARRAY_WEIGHTS,
-		OLD_ARRAY_FORMAT_INDEX = 1 << OLD_ARRAY_INDEX,
+enum OldArrayFormat {
+	/* OLD_ARRAY FORMAT FLAGS */
+	OLD_ARRAY_FORMAT_VERTEX = 1 << OLD_ARRAY_VERTEX, // mandatory
+	OLD_ARRAY_FORMAT_NORMAL = 1 << OLD_ARRAY_NORMAL,
+	OLD_ARRAY_FORMAT_TANGENT = 1 << OLD_ARRAY_TANGENT,
+	OLD_ARRAY_FORMAT_COLOR = 1 << OLD_ARRAY_COLOR,
+	OLD_ARRAY_FORMAT_TEX_UV = 1 << OLD_ARRAY_TEX_UV,
+	OLD_ARRAY_FORMAT_TEX_UV2 = 1 << OLD_ARRAY_TEX_UV2,
+	OLD_ARRAY_FORMAT_BONES = 1 << OLD_ARRAY_BONES,
+	OLD_ARRAY_FORMAT_WEIGHTS = 1 << OLD_ARRAY_WEIGHTS,
+	OLD_ARRAY_FORMAT_INDEX = 1 << OLD_ARRAY_INDEX,
 
-		OLD_ARRAY_COMPRESS_BASE = (OLD_ARRAY_INDEX + 1),
-		OLD_ARRAY_COMPRESS_NORMAL = 1 << (OLD_ARRAY_NORMAL + OLD_ARRAY_COMPRESS_BASE),
-		OLD_ARRAY_COMPRESS_TANGENT = 1 << (OLD_ARRAY_TANGENT + OLD_ARRAY_COMPRESS_BASE),
-		OLD_ARRAY_COMPRESS_COLOR = 1 << (OLD_ARRAY_COLOR + OLD_ARRAY_COMPRESS_BASE),
-		OLD_ARRAY_COMPRESS_TEX_UV = 1 << (OLD_ARRAY_TEX_UV + OLD_ARRAY_COMPRESS_BASE),
-		OLD_ARRAY_COMPRESS_TEX_UV2 = 1 << (OLD_ARRAY_TEX_UV2 + OLD_ARRAY_COMPRESS_BASE),
-		OLD_ARRAY_COMPRESS_INDEX = 1 << (OLD_ARRAY_INDEX + OLD_ARRAY_COMPRESS_BASE),
-		OLD_ARRAY_COMPRESS_DEFAULT = OLD_ARRAY_COMPRESS_NORMAL | OLD_ARRAY_COMPRESS_TANGENT | OLD_ARRAY_COMPRESS_COLOR | OLD_ARRAY_COMPRESS_TEX_UV | OLD_ARRAY_COMPRESS_TEX_UV2,
+	OLD_ARRAY_COMPRESS_BASE = (OLD_ARRAY_INDEX + 1),
+	OLD_ARRAY_COMPRESS_VERTEX = 1 << (OLD_ARRAY_VERTEX + OLD_ARRAY_COMPRESS_BASE), // mandatory
+	OLD_ARRAY_COMPRESS_NORMAL = 1 << (OLD_ARRAY_NORMAL + OLD_ARRAY_COMPRESS_BASE),
+	OLD_ARRAY_COMPRESS_TANGENT = 1 << (OLD_ARRAY_TANGENT + OLD_ARRAY_COMPRESS_BASE),
+	OLD_ARRAY_COMPRESS_COLOR = 1 << (OLD_ARRAY_COLOR + OLD_ARRAY_COMPRESS_BASE),
+	OLD_ARRAY_COMPRESS_TEX_UV = 1 << (OLD_ARRAY_TEX_UV + OLD_ARRAY_COMPRESS_BASE),
+	OLD_ARRAY_COMPRESS_TEX_UV2 = 1 << (OLD_ARRAY_TEX_UV2 + OLD_ARRAY_COMPRESS_BASE),
+	OLD_ARRAY_COMPRESS_BONES = 1 << (OLD_ARRAY_BONES + OLD_ARRAY_COMPRESS_BASE),
+	OLD_ARRAY_COMPRESS_WEIGHTS = 1 << (OLD_ARRAY_WEIGHTS + OLD_ARRAY_COMPRESS_BASE),
+	OLD_ARRAY_COMPRESS_INDEX = 1 << (OLD_ARRAY_INDEX + OLD_ARRAY_COMPRESS_BASE),
 
-		OLD_ARRAY_FLAG_USE_2D_VERTICES = OLD_ARRAY_COMPRESS_INDEX << 1,
-		OLD_ARRAY_FLAG_USE_DYNAMIC_UPDATE = OLD_ARRAY_COMPRESS_INDEX << 3,
-	};
+	OLD_ARRAY_FLAG_USE_2D_VERTICES = OLD_ARRAY_COMPRESS_INDEX << 1,
+	OLD_ARRAY_FLAG_USE_16_BIT_BONES = OLD_ARRAY_COMPRESS_INDEX << 2,
+	OLD_ARRAY_FLAG_USE_DYNAMIC_UPDATE = OLD_ARRAY_COMPRESS_INDEX << 3,
 
-	bool vertex_16bit = p_format & ((1 << (OLD_ARRAY_VERTEX + OLD_ARRAY_COMPRESS_BASE)));
-	bool has_bones = (p_format & OLD_ARRAY_FORMAT_BONES);
-	bool bone_8 = has_bones && !(p_format & (OLD_ARRAY_COMPRESS_INDEX << 2));
-	bool weight_32 = has_bones && !(p_format & (OLD_ARRAY_COMPRESS_TEX_UV2 << 2));
+};
 
-	print_line("convert vertex16: " + itos(vertex_16bit) + " convert bone 8 " + itos(bone_8) + " convert weight 32 " + itos(weight_32));
+static Array _convert_old_array(const Array &p_old) {
+	Array new_array;
+	new_array.resize(Mesh::ARRAY_MAX);
+	new_array[Mesh::ARRAY_VERTEX] = p_old[OLD_ARRAY_VERTEX];
+	new_array[Mesh::ARRAY_NORMAL] = p_old[OLD_ARRAY_NORMAL];
+	new_array[Mesh::ARRAY_TANGENT] = p_old[OLD_ARRAY_TANGENT];
+	new_array[Mesh::ARRAY_COLOR] = p_old[OLD_ARRAY_COLOR];
+	new_array[Mesh::ARRAY_TEX_UV] = p_old[OLD_ARRAY_TEX_UV];
+	new_array[Mesh::ARRAY_TEX_UV2] = p_old[OLD_ARRAY_TEX_UV2];
+	new_array[Mesh::ARRAY_BONES] = p_old[OLD_ARRAY_BONES];
+	new_array[Mesh::ARRAY_WEIGHTS] = p_old[OLD_ARRAY_WEIGHTS];
+	new_array[Mesh::ARRAY_INDEX] = p_old[OLD_ARRAY_INDEX];
+	return new_array;
+}
 
-	if (!vertex_16bit && !bone_8 && !weight_32) {
-		return p_src;
-	}
+static Mesh::PrimitiveType _old_primitives[7] = {
+	Mesh::PRIMITIVE_POINTS,
+	Mesh::PRIMITIVE_LINES,
+	Mesh::PRIMITIVE_LINE_STRIP,
+	Mesh::PRIMITIVE_LINES,
+	Mesh::PRIMITIVE_TRIANGLES,
+	Mesh::PRIMITIVE_TRIANGLE_STRIP,
+	Mesh::PRIMITIVE_TRIANGLE_STRIP
+};
 
-	bool vertex_2d = (p_format & (OLD_ARRAY_COMPRESS_INDEX << 1));
+void _fix_array_compatibility(const Vector<uint8_t> &p_src, uint32_t p_old_format, uint32_t p_new_format, uint32_t p_elements, Vector<uint8_t> &vertex_data, Vector<uint8_t> &attribute_data, Vector<uint8_t> &skin_data) {
+	uint32_t dst_vertex_stride;
+	uint32_t dst_attribute_stride;
+	uint32_t dst_skin_stride;
+	uint32_t dst_offsets[Mesh::ARRAY_MAX];
+	RenderingServer::get_singleton()->mesh_surface_make_offsets_from_format(p_new_format & (~RS::ARRAY_FORMAT_INDEX), p_elements, 0, dst_offsets, dst_vertex_stride, dst_attribute_stride, dst_skin_stride);
 
-	uint32_t src_stride = p_src.size() / p_elements;
-	uint32_t dst_stride = src_stride + (vertex_16bit ? 4 : 0) + (bone_8 ? 4 : 0) - (weight_32 ? 8 : 0);
+	vertex_data.resize(dst_vertex_stride * p_elements);
+	attribute_data.resize(dst_attribute_stride * p_elements);
+	skin_data.resize(dst_skin_stride * p_elements);
 
-	Vector<uint8_t> ret = p_src;
+	uint8_t *dst_vertex_ptr = vertex_data.ptrw();
+	uint8_t *dst_attribute_ptr = attribute_data.ptrw();
+	uint8_t *dst_skin_ptr = skin_data.ptrw();
 
-	ret.resize(dst_stride * p_elements);
-	{
-		uint8_t *w = ret.ptrw();
-		const uint8_t *r = p_src.ptr();
+	const uint8_t *src_vertex_ptr = p_src.ptr();
+	uint32_t src_vertex_stride = p_src.size() / p_elements;
 
-		for (uint32_t i = 0; i < p_elements; i++) {
-			uint32_t remaining = src_stride;
-			const uint8_t *src = (const uint8_t *)(r + src_stride * i);
-			uint8_t *dst = (uint8_t *)(w + dst_stride * i);
-
-			if (!vertex_2d) { //3D
-				if (vertex_16bit) {
-					float *dstw = (float *)dst;
-					const uint16_t *srcr = (const uint16_t *)src;
-					dstw[0] = Math::half_to_float(srcr[0]);
-					dstw[1] = Math::half_to_float(srcr[1]);
-					dstw[2] = Math::half_to_float(srcr[2]);
-					remaining -= 8;
-					src += 8;
-				} else {
-					src += 12;
-					remaining -= 12;
-				}
-				dst += 12;
-			} else {
-				if (vertex_16bit) {
-					float *dstw = (float *)dst;
-					const uint16_t *srcr = (const uint16_t *)src;
-					dstw[0] = Math::half_to_float(srcr[0]);
-					dstw[1] = Math::half_to_float(srcr[1]);
-					remaining -= 4;
-					src += 4;
-				} else {
-					src += 8;
-					remaining -= 8;
-				}
-				dst += 8;
-			}
-
-			if (has_bones) {
-				remaining -= bone_8 ? 4 : 8;
-				remaining -= weight_32 ? 16 : 8;
-			}
-
-			for (uint32_t j = 0; j < remaining; j++) {
-				dst[j] = src[j];
-			}
-
-			if (has_bones) {
-				dst += remaining;
-				src += remaining;
-
-				if (bone_8) {
-					const uint8_t *src_bones = (const uint8_t *)src;
-					uint16_t *dst_bones = (uint16_t *)dst;
-
-					dst_bones[0] = src_bones[0];
-					dst_bones[1] = src_bones[1];
-					dst_bones[2] = src_bones[2];
-					dst_bones[3] = src_bones[3];
-
-					src += 4;
-				} else {
-					for (uint32_t j = 0; j < 8; j++) {
-						dst[j] = src[j];
+	uint32_t src_offset = 0;
+	for (uint32_t j = 0; j < OLD_ARRAY_INDEX; j++) {
+		if (!(p_old_format & (1 << j))) {
+			continue;
+		}
+		switch (j) {
+			case OLD_ARRAY_VERTEX: {
+				if (p_old_format & OLD_ARRAY_FLAG_USE_2D_VERTICES) {
+					if (p_old_format & OLD_ARRAY_COMPRESS_VERTEX) {
+						for (uint32_t i = 0; i < p_elements; i++) {
+							const uint16_t *src = (const uint16_t *)&src_vertex_ptr[i * src_vertex_stride];
+							float *dst = (float *)&dst_vertex_ptr[i * dst_vertex_stride];
+							dst[0] = Math::half_to_float(src[0]);
+							dst[1] = Math::half_to_float(src[1]);
+						}
+						src_offset += sizeof(uint16_t) * 2;
+					} else {
+						for (uint32_t i = 0; i < p_elements; i++) {
+							const float *src = (const float *)&src_vertex_ptr[i * src_vertex_stride];
+							float *dst = (float *)&dst_vertex_ptr[i * dst_vertex_stride];
+							dst[0] = src[0];
+							dst[1] = src[1];
+						}
+						src_offset += sizeof(float) * 2;
 					}
-
-					src += 8;
-				}
-
-				dst += 8;
-
-				if (weight_32) {
-					const float *src_weights = (const float *)src;
-					uint16_t *dst_weights = (uint16_t *)dst;
-
-					dst_weights[0] = CLAMP(src_weights[0] * 65535, 0, 65535); //16bits unorm
-					dst_weights[1] = CLAMP(src_weights[1] * 65535, 0, 65535);
-					dst_weights[2] = CLAMP(src_weights[2] * 65535, 0, 65535);
-					dst_weights[3] = CLAMP(src_weights[3] * 65535, 0, 65535);
-
 				} else {
-					for (uint32_t j = 0; j < 8; j++) {
-						dst[j] = src[j];
+					if (p_old_format & OLD_ARRAY_COMPRESS_VERTEX) {
+						for (uint32_t i = 0; i < p_elements; i++) {
+							const uint16_t *src = (const uint16_t *)&src_vertex_ptr[i * src_vertex_stride];
+							float *dst = (float *)&dst_vertex_ptr[i * dst_vertex_stride];
+							dst[0] = Math::half_to_float(src[0]);
+							dst[1] = Math::half_to_float(src[1]);
+							dst[2] = Math::half_to_float(src[2]);
+						}
+						src_offset += sizeof(uint16_t) * 4; //+pad
+					} else {
+						for (uint32_t i = 0; i < p_elements; i++) {
+							const float *src = (const float *)&src_vertex_ptr[i * src_vertex_stride];
+							float *dst = (float *)&dst_vertex_ptr[i * dst_vertex_stride];
+							dst[0] = src[0];
+							dst[1] = src[1];
+							dst[2] = src[2];
+						}
+						src_offset += sizeof(float) * 3;
 					}
 				}
+			} break;
+			case OLD_ARRAY_NORMAL: {
+				if (p_old_format & OLD_ARRAY_COMPRESS_NORMAL) {
+					const float multiplier = 1.f / 127.f * 1023.0f;
+
+					for (uint32_t i = 0; i < p_elements; i++) {
+						const int8_t *src = (const int8_t *)&src_vertex_ptr[i * src_vertex_stride + src_offset];
+						uint32_t *dst = (uint32_t *)&dst_vertex_ptr[i * dst_vertex_stride + dst_offsets[Mesh::ARRAY_NORMAL]];
+
+						*dst = 0;
+						*dst |= CLAMP(int(src[0] * multiplier), 0, 1023);
+						*dst |= CLAMP(int(src[1] * multiplier), 0, 1023) << 10;
+						*dst |= CLAMP(int(src[2] * multiplier), 0, 1023) << 20;
+					}
+					src_offset += sizeof(uint32_t);
+				} else {
+					for (uint32_t i = 0; i < p_elements; i++) {
+						const float *src = (const float *)&src_vertex_ptr[i * src_vertex_stride + src_offset];
+						uint32_t *dst = (uint32_t *)&dst_vertex_ptr[i * dst_vertex_stride + dst_offsets[Mesh::ARRAY_NORMAL]];
+
+						*dst = 0;
+						*dst |= CLAMP(int(src[0] * 1023.0), 0, 1023);
+						*dst |= CLAMP(int(src[1] * 1023.0), 0, 1023) << 10;
+						*dst |= CLAMP(int(src[2] * 1023.0), 0, 1023) << 20;
+					}
+					src_offset += sizeof(float) * 3;
+				}
+
+			} break;
+			case OLD_ARRAY_TANGENT: {
+				if (p_old_format & OLD_ARRAY_COMPRESS_TANGENT) {
+					const float multiplier = 1.f / 127.f * 1023.0f;
+
+					for (uint32_t i = 0; i < p_elements; i++) {
+						const int8_t *src = (const int8_t *)&src_vertex_ptr[i * src_vertex_stride + src_offset];
+						uint32_t *dst = (uint32_t *)&dst_vertex_ptr[i * dst_vertex_stride + dst_offsets[Mesh::ARRAY_TANGENT]];
+
+						*dst = 0;
+						*dst |= CLAMP(int(src[0] * multiplier), 0, 1023);
+						*dst |= CLAMP(int(src[1] * multiplier), 0, 1023) << 10;
+						*dst |= CLAMP(int(src[2] * multiplier), 0, 1023) << 20;
+						if (src[3] > 0) {
+							*dst |= 3 << 30;
+						}
+					}
+					src_offset += sizeof(uint32_t);
+				} else {
+					for (uint32_t i = 0; i < p_elements; i++) {
+						const float *src = (const float *)&src_vertex_ptr[i * src_vertex_stride + src_offset];
+						uint32_t *dst = (uint32_t *)&dst_vertex_ptr[i * dst_vertex_stride + dst_offsets[Mesh::ARRAY_TANGENT]];
+
+						*dst = 0;
+						*dst |= CLAMP(int(src[0] * 1023.0), 0, 1023);
+						*dst |= CLAMP(int(src[1] * 1023.0), 0, 1023) << 10;
+						*dst |= CLAMP(int(src[2] * 1023.0), 0, 1023) << 20;
+						if (src[3] > 0) {
+							*dst |= 3 << 30;
+						}
+					}
+					src_offset += sizeof(float) * 4;
+				}
+
+			} break;
+			case OLD_ARRAY_COLOR: {
+				if (p_old_format & OLD_ARRAY_COMPRESS_COLOR) {
+					for (uint32_t i = 0; i < p_elements; i++) {
+						const uint32_t *src = (const uint32_t *)&src_vertex_ptr[i * src_vertex_stride + src_offset];
+						uint32_t *dst = (uint32_t *)&dst_attribute_ptr[i * dst_attribute_stride + dst_offsets[Mesh::ARRAY_COLOR]];
+
+						*dst = *src;
+					}
+					src_offset += sizeof(uint32_t);
+				} else {
+					for (uint32_t i = 0; i < p_elements; i++) {
+						const float *src = (const float *)&src_vertex_ptr[i * src_vertex_stride + src_offset];
+						uint8_t *dst = (uint8_t *)&dst_attribute_ptr[i * dst_attribute_stride + dst_offsets[Mesh::ARRAY_COLOR]];
+
+						dst[0] = uint8_t(CLAMP(src[0] * 255.0, 0.0, 255.0));
+						dst[1] = uint8_t(CLAMP(src[1] * 255.0, 0.0, 255.0));
+						dst[2] = uint8_t(CLAMP(src[2] * 255.0, 0.0, 255.0));
+						dst[3] = uint8_t(CLAMP(src[3] * 255.0, 0.0, 255.0));
+					}
+					src_offset += sizeof(float) * 4;
+				}
+			} break;
+			case OLD_ARRAY_TEX_UV: {
+				if (p_old_format & OLD_ARRAY_COMPRESS_TEX_UV) {
+					for (uint32_t i = 0; i < p_elements; i++) {
+						const uint16_t *src = (const uint16_t *)&src_vertex_ptr[i * src_vertex_stride + src_offset];
+						float *dst = (float *)&dst_attribute_ptr[i * dst_attribute_stride + dst_offsets[Mesh::ARRAY_TEX_UV]];
+
+						dst[0] = Math::half_to_float(src[0]);
+						dst[1] = Math::half_to_float(src[1]);
+					}
+					src_offset += sizeof(uint16_t) * 2;
+				} else {
+					for (uint32_t i = 0; i < p_elements; i++) {
+						const float *src = (const float *)&src_vertex_ptr[i * src_vertex_stride + src_offset];
+						float *dst = (float *)&dst_attribute_ptr[i * dst_attribute_stride + dst_offsets[Mesh::ARRAY_TEX_UV]];
+
+						dst[0] = src[0];
+						dst[1] = src[1];
+					}
+					src_offset += sizeof(float) * 2;
+				}
+
+			} break;
+			case OLD_ARRAY_TEX_UV2: {
+				if (p_old_format & OLD_ARRAY_COMPRESS_TEX_UV2) {
+					for (uint32_t i = 0; i < p_elements; i++) {
+						const uint16_t *src = (const uint16_t *)&src_vertex_ptr[i * src_vertex_stride + src_offset];
+						float *dst = (float *)&dst_attribute_ptr[i * dst_attribute_stride + dst_offsets[Mesh::ARRAY_TEX_UV2]];
+
+						dst[0] = Math::half_to_float(src[0]);
+						dst[1] = Math::half_to_float(src[1]);
+					}
+					src_offset += sizeof(uint16_t) * 2;
+				} else {
+					for (uint32_t i = 0; i < p_elements; i++) {
+						const float *src = (const float *)&src_vertex_ptr[i * src_vertex_stride + src_offset];
+						float *dst = (float *)&dst_attribute_ptr[i * dst_attribute_stride + dst_offsets[Mesh::ARRAY_TEX_UV2]];
+
+						dst[0] = src[0];
+						dst[1] = src[1];
+					}
+					src_offset += sizeof(float) * 2;
+				}
+			} break;
+			case OLD_ARRAY_BONES: {
+				if (p_old_format & OLD_ARRAY_FLAG_USE_16_BIT_BONES) {
+					for (uint32_t i = 0; i < p_elements; i++) {
+						const uint16_t *src = (const uint16_t *)&src_vertex_ptr[i * src_vertex_stride + src_offset];
+						uint16_t *dst = (uint16_t *)&dst_skin_ptr[i * dst_skin_stride + dst_offsets[Mesh::ARRAY_BONES]];
+
+						dst[0] = src[0];
+						dst[1] = src[1];
+						dst[2] = src[2];
+						dst[3] = src[3];
+					}
+					src_offset += sizeof(uint16_t) * 4;
+				} else {
+					for (uint32_t i = 0; i < p_elements; i++) {
+						const uint8_t *src = (const uint8_t *)&src_vertex_ptr[i * src_vertex_stride + src_offset];
+						uint16_t *dst = (uint16_t *)&dst_skin_ptr[i * dst_skin_stride + dst_offsets[Mesh::ARRAY_BONES]];
+
+						dst[0] = src[0];
+						dst[1] = src[1];
+						dst[2] = src[2];
+						dst[3] = src[3];
+					}
+					src_offset += sizeof(uint8_t) * 4;
+				}
+			} break;
+			case OLD_ARRAY_WEIGHTS: {
+				if (p_old_format & OLD_ARRAY_COMPRESS_WEIGHTS) {
+					for (uint32_t i = 0; i < p_elements; i++) {
+						const uint16_t *src = (const uint16_t *)&src_vertex_ptr[i * src_vertex_stride + src_offset];
+						uint16_t *dst = (uint16_t *)&dst_skin_ptr[i * dst_skin_stride + dst_offsets[Mesh::ARRAY_WEIGHTS]];
+
+						dst[0] = src[0];
+						dst[1] = src[1];
+						dst[2] = src[2];
+						dst[3] = src[3];
+					}
+					src_offset += sizeof(uint16_t) * 4;
+				} else {
+					for (uint32_t i = 0; i < p_elements; i++) {
+						const float *src = (const float *)&src_vertex_ptr[i * src_vertex_stride + src_offset];
+						uint16_t *dst = (uint16_t *)&dst_skin_ptr[i * dst_skin_stride + dst_offsets[Mesh::ARRAY_WEIGHTS]];
+
+						dst[0] = uint16_t(CLAMP(src[0] * 65535.0, 0, 65535.0));
+						dst[1] = uint16_t(CLAMP(src[1] * 65535.0, 0, 65535.0));
+						dst[2] = uint16_t(CLAMP(src[2] * 65535.0, 0, 65535.0));
+						dst[3] = uint16_t(CLAMP(src[3] * 65535.0, 0, 65535.0));
+					}
+					src_offset += sizeof(float) * 4;
+				}
+			} break;
+			default: {
 			}
 		}
 	}
-
-	return ret;
 }
-#endif
 
 bool ArrayMesh::_set(const StringName &p_name, const Variant &p_value) {
 	String sname = p_name;
@@ -779,10 +942,13 @@ bool ArrayMesh::_set(const StringName &p_name, const Variant &p_value) {
 		if (d.has("arrays")) {
 			//oldest format (2.x)
 			ERR_FAIL_COND_V(!d.has("morph_arrays"), false);
-			add_surface_from_arrays(PrimitiveType(int(d["primitive"])), d["arrays"], d["morph_arrays"]);
+			Array morph_arrays = d["morph_arrays"];
+			for (int i = 0; i < morph_arrays.size(); i++) {
+				morph_arrays[i] = _convert_old_array(morph_arrays[i]);
+			}
+			add_surface_from_arrays(_old_primitives[int(d["primitive"])], _convert_old_array(d["arrays"]), morph_arrays);
 
 		} else if (d.has("array_data")) {
-#if 0
 			//print_line("array data (old style");
 			//older format (3.x)
 			Vector<uint8_t> array_data = d["array_data"];
@@ -792,48 +958,76 @@ bool ArrayMesh::_set(const StringName &p_name, const Variant &p_value) {
 			}
 
 			ERR_FAIL_COND_V(!d.has("format"), false);
-			uint32_t format = d["format"];
+			uint32_t old_format = d["format"];
 
 			uint32_t primitive = d["primitive"];
 
-			uint32_t primitive_remap[7] = {
-				PRIMITIVE_POINTS,
-				PRIMITIVE_LINES,
-				PRIMITIVE_LINE_STRIP,
-				PRIMITIVE_LINES,
-				PRIMITIVE_TRIANGLES,
-				PRIMITIVE_TRIANGLE_STRIP,
-				PRIMITIVE_TRIANGLE_STRIP
-			};
-
-			primitive = primitive_remap[primitive]; //compatibility
+			primitive = _old_primitives[primitive]; //compatibility
 
 			ERR_FAIL_COND_V(!d.has("vertex_count"), false);
 			int vertex_count = d["vertex_count"];
 
-			array_data = _fix_array_compatibility(array_data, format, vertex_count);
+			uint32_t new_format = ARRAY_FORMAT_VERTEX;
+
+			if (old_format & OLD_ARRAY_FORMAT_NORMAL) {
+				new_format |= ARRAY_FORMAT_NORMAL;
+			}
+			if (old_format & OLD_ARRAY_FORMAT_TANGENT) {
+				new_format |= ARRAY_FORMAT_TANGENT;
+			}
+			if (old_format & OLD_ARRAY_FORMAT_COLOR) {
+				new_format |= ARRAY_FORMAT_COLOR;
+			}
+			if (old_format & OLD_ARRAY_FORMAT_TEX_UV) {
+				new_format |= ARRAY_FORMAT_TEX_UV;
+			}
+			if (old_format & OLD_ARRAY_FORMAT_TEX_UV2) {
+				new_format |= ARRAY_FORMAT_TEX_UV2;
+			}
+			if (old_format & OLD_ARRAY_FORMAT_BONES) {
+				new_format |= ARRAY_FORMAT_BONES;
+			}
+			if (old_format & OLD_ARRAY_FORMAT_WEIGHTS) {
+				new_format |= ARRAY_FORMAT_WEIGHTS;
+			}
+			if (old_format & OLD_ARRAY_FORMAT_INDEX) {
+				new_format |= ARRAY_FORMAT_INDEX;
+			}
+			if (old_format & OLD_ARRAY_FLAG_USE_2D_VERTICES) {
+				new_format |= OLD_ARRAY_FLAG_USE_2D_VERTICES;
+			}
+
+			Vector<uint8_t> vertex_array;
+			Vector<uint8_t> attribute_array;
+			Vector<uint8_t> skin_array;
+
+			_fix_array_compatibility(array_data, old_format, new_format, vertex_count, vertex_array, attribute_array, skin_array);
 
 			int index_count = 0;
 			if (d.has("index_count")) {
 				index_count = d["index_count"];
 			}
 
-			Vector<Vector<uint8_t>> blend_shapes;
+			Vector<uint8_t> blend_shapes;
 
 			if (d.has("blend_shape_data")) {
 				Array blend_shape_data = d["blend_shape_data"];
 				for (int i = 0; i < blend_shape_data.size(); i++) {
-					Vector<uint8_t> shape = blend_shape_data[i];
-					shape = _fix_array_compatibility(shape, format, vertex_count);
+					Vector<uint8_t> blend_vertex_array;
+					Vector<uint8_t> blend_attribute_array;
+					Vector<uint8_t> blend_skin_array;
 
-					blend_shapes.push_back(shape);
+					Vector<uint8_t> shape = blend_shape_data[i];
+					_fix_array_compatibility(shape, old_format, new_format, vertex_count, blend_vertex_array, blend_attribute_array, blend_skin_array);
+
+					blend_shapes.append_array(blend_vertex_array);
 				}
 			}
 
 			//clear unused flags
-			print_line("format pre: " + itos(format));
-			format &= ~uint32_t((1 << (ARRAY_VERTEX + ARRAY_COMPRESS_BASE)) | (ARRAY_COMPRESS_INDEX << 2) | (ARRAY_COMPRESS_TEX_UV2 << 2));
-			print_line("format post: " + itos(format));
+			print_line("format pre: " + itos(old_format));
+
+			print_line("format post: " + itos(new_format));
 
 			ERR_FAIL_COND_V(!d.has("aabb"), false);
 			AABB aabb = d["aabb"];
@@ -848,8 +1042,8 @@ bool ArrayMesh::_set(const StringName &p_name, const Variant &p_value) {
 				}
 			}
 
-			add_surface(format, PrimitiveType(primitive), array_data, vertex_count, array_index_data, index_count, aabb, blend_shapes, bone_aabb);
-#endif
+			add_surface(new_format, PrimitiveType(primitive), vertex_array, attribute_array, skin_array, vertex_count, array_index_data, index_count, aabb, blend_shapes, bone_aabb);
+
 		} else {
 			ERR_FAIL_V(false);
 		}
