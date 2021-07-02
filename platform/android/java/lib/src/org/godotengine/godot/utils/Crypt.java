@@ -39,7 +39,7 @@ public class Crypt {
 			// Create MD5 Hash
 			MessageDigest digest = java.security.MessageDigest.getInstance("MD5");
 			digest.update(input.getBytes());
-			byte messageDigest[] = digest.digest();
+			byte[] messageDigest = digest.digest();
 
 			// Create Hex String
 			StringBuffer hexString = new StringBuffer();
