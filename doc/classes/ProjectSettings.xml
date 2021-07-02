@@ -793,6 +793,9 @@
 		<member name="internationalization/pseudolocalization/replace_with_accents" type="bool" setter="" getter="" default="true">
 			Replace all characters with their accented variants during pseudolocalization.
 		</member>
+		<member name="internationalization/pseudolocalization/skip_placeholders" type="bool" setter="" getter="" default="true">
+			Skip placeholders for string formatting like %s, %f, etc during pseudolocalization. Useful to identify strings which need additional control chars to display correctly.
+		</member>
 		<member name="internationalization/pseudolocalization/suffix" type="String" setter="" getter="" default="&quot;]&quot;">
 			Suffix that will be appended to the pseudolocalized string.
 		</member>
