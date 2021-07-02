@@ -6031,20 +6031,6 @@ RS::LightDirectionalShadowMode RendererStorageRD::light_directional_get_shadow_m
 	return light->directional_shadow_mode;
 }
 
-void RendererStorageRD::light_directional_set_shadow_depth_range_mode(RID p_light, RS::LightDirectionalShadowDepthRangeMode p_range_mode) {
-	Light *light = light_owner.getornull(p_light);
-	ERR_FAIL_COND(!light);
-
-	light->directional_range_mode = p_range_mode;
-}
-
-RS::LightDirectionalShadowDepthRangeMode RendererStorageRD::light_directional_get_shadow_depth_range_mode(RID p_light) const {
-	const Light *light = light_owner.getornull(p_light);
-	ERR_FAIL_COND_V(!light, RS::LIGHT_DIRECTIONAL_SHADOW_DEPTH_RANGE_STABLE);
-
-	return light->directional_range_mode;
-}
-
 uint32_t RendererStorageRD::light_get_max_sdfgi_cascade(RID p_light) {
 	const Light *light = light_owner.getornull(p_light);
 	ERR_FAIL_COND_V(!light, 0);

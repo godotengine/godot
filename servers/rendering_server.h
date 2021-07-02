@@ -469,13 +469,6 @@ public:
 	virtual void light_directional_set_blend_splits(RID p_light, bool p_enable) = 0;
 	virtual void light_directional_set_sky_only(RID p_light, bool p_sky_only) = 0;
 
-	enum LightDirectionalShadowDepthRangeMode {
-		LIGHT_DIRECTIONAL_SHADOW_DEPTH_RANGE_STABLE,
-		LIGHT_DIRECTIONAL_SHADOW_DEPTH_RANGE_OPTIMIZED,
-	};
-
-	virtual void light_directional_set_shadow_depth_range_mode(RID p_light, LightDirectionalShadowDepthRangeMode p_range_mode) = 0;
-
 	virtual void directional_shadow_atlas_set_size(int p_size, bool p_16_bits = false) = 0;
 
 	enum ShadowQuality {
@@ -1505,7 +1498,6 @@ VARIANT_ENUM_CAST(RenderingServer::LightParam);
 VARIANT_ENUM_CAST(RenderingServer::LightBakeMode);
 VARIANT_ENUM_CAST(RenderingServer::LightOmniShadowMode);
 VARIANT_ENUM_CAST(RenderingServer::LightDirectionalShadowMode);
-VARIANT_ENUM_CAST(RenderingServer::LightDirectionalShadowDepthRangeMode);
 VARIANT_ENUM_CAST(RenderingServer::ReflectionProbeUpdateMode);
 VARIANT_ENUM_CAST(RenderingServer::ReflectionProbeAmbientMode);
 VARIANT_ENUM_CAST(RenderingServer::VoxelGIQuality);
