@@ -4,7 +4,7 @@
 		Parameters to be sent to a 3D shape physics query.
 	</brief_description>
 	<description>
-		This class contains the shape and other parameters for 3D intersection/collision queries. See also [PhysicsShapeQueryResult3D].
+		This class contains the shape and other parameters for 3D intersection/collision queries.
 	</description>
 	<tutorials>
 	</tutorials>
