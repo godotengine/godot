@@ -28,14 +28,14 @@ public interface InputManagerCompat {
 	 * @param id The device id
 	 * @return The input device or null if not found
 	 */
-	public InputDevice getInputDevice(int id);
+	InputDevice getInputDevice(int id);
 
 	/**
 	 * Gets the ids of all input devices in the system.
 	 *
 	 * @return The input device ids.
 	 */
-	public int[] getInputDeviceIds();
+	int[] getInputDeviceIds();
 
 	/**
 	 * Registers an input device listener to receive notifications about when
@@ -46,7 +46,7 @@ public interface InputManagerCompat {
 	 *            null if the listener should be invoked on the calling thread's
 	 *            looper.
 	 */
-	public void registerInputDeviceListener(InputManagerCompat.InputDeviceListener listener,
+	void registerInputDeviceListener(InputManagerCompat.InputDeviceListener listener,
 			Handler handler);
 
 	/**
@@ -54,7 +54,7 @@ public interface InputManagerCompat {
 	 *
 	 * @param listener The listener to unregister.
 	 */
-	public void unregisterInputDeviceListener(InputManagerCompat.InputDeviceListener listener);
+	void unregisterInputDeviceListener(InputManagerCompat.InputDeviceListener listener);
 
 	/*
 	 * The following three calls are to simulate V16 behavior on pre-Jellybean
@@ -69,7 +69,7 @@ public interface InputManagerCompat {
 	 *
 	 * @param event the motion event from the app
 	 */
-	public void onGenericMotionEvent(MotionEvent event);
+	void onGenericMotionEvent(MotionEvent event);
 
 	/**
 	 * Tell the V9 input manager that it should stop polling for disconnected
@@ -77,7 +77,7 @@ public interface InputManagerCompat {
 	 * might want to call it whenever your game is not active (or whenever you
 	 * don't care about being notified of new input devices)
 	 */
-	public void onPause();
+	void onPause();
 
 	/**
 	 * Tell the V9 input manager that it should start polling for disconnected
@@ -85,9 +85,9 @@ public interface InputManagerCompat {
 	 * might want to call it less often (only when the gameplay is actually
 	 * active)
 	 */
-	public void onResume();
+	void onResume();
 
-	public interface InputDeviceListener {
+	interface InputDeviceListener {
 		/**
 		 * Called whenever the input manager detects that a device has been
 		 * added. This will only be called in the V9 version when a motion event
@@ -119,7 +119,7 @@ public interface InputManagerCompat {
 	/**
 	 * Use this to construct a compatible InputManager.
 	 */
-	public static class Factory {
+	class Factory {
 		/**
 		 * Constructs and returns a compatible InputManger
 		 *

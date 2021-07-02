@@ -264,7 +264,7 @@ public class Godot extends Fragment implements SensorEventListener, IDownloaderC
 	static int singleton_count = 0;
 
 	public interface ResultCallback {
-		public void callback(int requestCode, int resultCode, Intent data);
+		void callback(int requestCode, int resultCode, Intent data);
 	}
 	public ResultCallback result_callback;
 
