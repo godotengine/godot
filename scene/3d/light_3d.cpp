@@ -375,15 +375,6 @@ DirectionalLight3D::ShadowMode DirectionalLight3D::get_shadow_mode() const {
 	return shadow_mode;
 }
 
-void DirectionalLight3D::set_shadow_depth_range(ShadowDepthRange p_range) {
-	shadow_depth_range = p_range;
-	RS::get_singleton()->light_directional_set_shadow_depth_range_mode(light, RS::LightDirectionalShadowDepthRangeMode(p_range));
-}
-
-DirectionalLight3D::ShadowDepthRange DirectionalLight3D::get_shadow_depth_range() const {
-	return shadow_depth_range;
-}
-
 void DirectionalLight3D::set_blend_splits(bool p_enable) {
 	blend_splits = p_enable;
 	RS::get_singleton()->light_directional_set_blend_splits(light, p_enable);
@@ -406,9 +397,6 @@ void DirectionalLight3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_shadow_mode", "mode"), &DirectionalLight3D::set_shadow_mode);
 	ClassDB::bind_method(D_METHOD("get_shadow_mode"), &DirectionalLight3D::get_shadow_mode);
 
-	ClassDB::bind_method(D_METHOD("set_shadow_depth_range", "mode"), &DirectionalLight3D::set_shadow_depth_range);
-	ClassDB::bind_method(D_METHOD("get_shadow_depth_range"), &DirectionalLight3D::get_shadow_depth_range);
-
 	ClassDB::bind_method(D_METHOD("set_blend_splits", "enabled"), &DirectionalLight3D::set_blend_splits);
 	ClassDB::bind_method(D_METHOD("is_blend_splits_enabled"), &DirectionalLight3D::is_blend_splits_enabled);
 
@@ -422,7 +410,6 @@ void DirectionalLight3D::_bind_methods() {
 	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "directional_shadow_split_3", PROPERTY_HINT_RANGE, "0,1,0.001"), "set_param", "get_param", PARAM_SHADOW_SPLIT_3_OFFSET);
 	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "directional_shadow_fade_start", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_param", "get_param", PARAM_SHADOW_FADE_START);
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "directional_shadow_blend_splits"), "set_blend_splits", "is_blend_splits_enabled");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "directional_shadow_depth_range", PROPERTY_HINT_ENUM, "Stable,Optimized"), "set_shadow_depth_range", "get_shadow_depth_range");
 	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "directional_shadow_max_distance", PROPERTY_HINT_RANGE, "0,8192,0.1,or_greater,exp"), "set_param", "get_param", PARAM_SHADOW_MAX_DISTANCE);
 	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "directional_shadow_pancake_size", PROPERTY_HINT_RANGE, "0,1024,0.1,or_greater,exp"), "set_param", "get_param", PARAM_SHADOW_PANCAKE_SIZE);
 
@@ -431,9 +418,6 @@ void DirectionalLight3D::_bind_methods() {
 	BIND_ENUM_CONSTANT(SHADOW_ORTHOGONAL);
 	BIND_ENUM_CONSTANT(SHADOW_PARALLEL_2_SPLITS);
 	BIND_ENUM_CONSTANT(SHADOW_PARALLEL_4_SPLITS);
-
-	BIND_ENUM_CONSTANT(SHADOW_DEPTH_RANGE_STABLE);
-	BIND_ENUM_CONSTANT(SHADOW_DEPTH_RANGE_OPTIMIZED);
 }
 
 DirectionalLight3D::DirectionalLight3D() :
@@ -444,7 +428,6 @@ DirectionalLight3D::DirectionalLight3D() :
 	// Leave normal bias untouched as it doesn't benefit DirectionalLight3D as much as OmniLight3D.
 	set_param(PARAM_SHADOW_BIAS, 0.05);
 	set_shadow_mode(SHADOW_PARALLEL_4_SPLITS);
-	set_shadow_depth_range(SHADOW_DEPTH_RANGE_STABLE);
 	blend_splits = false;
 }
 

@@ -1002,7 +1002,6 @@ private:
 		uint32_t cull_mask = 0xFFFFFFFF;
 		RS::LightOmniShadowMode omni_shadow_mode = RS::LIGHT_OMNI_SHADOW_DUAL_PARABOLOID;
 		RS::LightDirectionalShadowMode directional_shadow_mode = RS::LIGHT_DIRECTIONAL_SHADOW_ORTHOGONAL;
-		RS::LightDirectionalShadowDepthRangeMode directional_range_mode = RS::LIGHT_DIRECTIONAL_SHADOW_DEPTH_RANGE_STABLE;
 		bool directional_blend_splits = false;
 		bool directional_sky_only = false;
 		uint64_t version = 0;
@@ -1813,8 +1812,6 @@ public:
 	bool light_directional_get_blend_splits(RID p_light) const;
 	void light_directional_set_sky_only(RID p_light, bool p_sky_only);
 	bool light_directional_is_sky_only(RID p_light) const;
-	void light_directional_set_shadow_depth_range_mode(RID p_light, RS::LightDirectionalShadowDepthRangeMode p_range_mode);
-	RS::LightDirectionalShadowDepthRangeMode light_directional_get_shadow_depth_range_mode(RID p_light) const;
 
 	RS::LightDirectionalShadowMode light_directional_get_shadow_mode(RID p_light);
 	RS::LightOmniShadowMode light_omni_get_shadow_mode(RID p_light);
