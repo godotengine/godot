@@ -2121,17 +2121,6 @@
 				If [code]true[/code], this directional light will blend between shadow map splits resulting in a smoother transition between them. Equivalent to [member DirectionalLight3D.directional_shadow_blend_splits].
 			</description>
 		</method>
-		<method name="light_directional_set_shadow_depth_range_mode">
-			<return type="void">
-			</return>
-			<argument index="0" name="light" type="RID">
-			</argument>
-			<argument index="1" name="range_mode" type="int" enum="RenderingServer.LightDirectionalShadowDepthRangeMode">
-			</argument>
-			<description>
-				Sets the shadow depth range mode for this directional light. Equivalent to [member DirectionalLight3D.directional_shadow_depth_range]. See [enum LightDirectionalShadowDepthRangeMode] for options.
-			</description>
-		</method>
 		<method name="light_directional_set_shadow_mode">
 			<return type="void">
 			</return>
@@ -4962,12 +4951,6 @@
 		</constant>
 		<constant name="LIGHT_DIRECTIONAL_SHADOW_PARALLEL_4_SPLITS" value="2" enum="LightDirectionalShadowMode">
 			Use 4 splits for shadow projection when using directional light.
-		</constant>
-		<constant name="LIGHT_DIRECTIONAL_SHADOW_DEPTH_RANGE_STABLE" value="0" enum="LightDirectionalShadowDepthRangeMode">
-			Keeps shadows stable as camera moves but has lower effective resolution.
-		</constant>
-		<constant name="LIGHT_DIRECTIONAL_SHADOW_DEPTH_RANGE_OPTIMIZED" value="1" enum="LightDirectionalShadowDepthRangeMode">
-			Optimize use of shadow maps, increasing the effective resolution. But may result in shadows moving or flickering slightly.
 		</constant>
 		<constant name="SHADOW_QUALITY_HARD" value="0" enum="ShadowQuality">
 		</constant>

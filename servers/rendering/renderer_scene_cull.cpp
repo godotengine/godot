@@ -1877,8 +1877,6 @@ void RendererSceneCull::_light_instance_setup_directional_shadow(int p_shadow_in
 	max_distance = MAX(max_distance, p_cam_projection.get_z_near() + 0.001);
 	real_t min_distance = MIN(p_cam_projection.get_z_near(), max_distance);
 
-	RS::LightDirectionalShadowDepthRangeMode depth_range_mode = RSG::storage->light_directional_get_shadow_depth_range_mode(p_instance->base);
-
 	real_t pancake_size = RSG::storage->light_get_param(p_instance->base, RS::LIGHT_PARAM_SHADOW_PANCAKE_SIZE);
 
 	real_t range = max_distance - min_distance;
@@ -2038,22 +2036,13 @@ void RendererSceneCull::_light_instance_setup_directional_shadow(int p_shadow_in
 				}
 			}
 
-			x_max_cam = x_vec.dot(center) + radius + soft_shadow_expand;
-			x_min_cam = x_vec.dot(center) - radius - soft_shadow_expand;
-			y_max_cam = y_vec.dot(center) + radius + soft_shadow_expand;
-			y_min_cam = y_vec.dot(center) - radius - soft_shadow_expand;
-
-			if (depth_range_mode == RS::LIGHT_DIRECTIONAL_SHADOW_DEPTH_RANGE_STABLE) {
-				//this trick here is what stabilizes the shadow (make potential jaggies to not move)
-				//at the cost of some wasted resolution. Still the quality increase is very well worth it
-
-				real_t unit = radius * 2.0 / texture_size;
-
-				x_max_cam = Math::snapped(x_max_cam, unit);
-				x_min_cam = Math::snapped(x_min_cam, unit);
-				y_max_cam = Math::snapped(y_max_cam, unit);
-				y_min_cam = Math::snapped(y_min_cam, unit);
-			}
+			// This trick here is what stabilizes the shadow (make potential jaggies to not move)
+			// at the cost of some wasted resolution. Still, the quality increase is very well worth it.
+			const real_t unit = radius * 2.0 / texture_size;
+			x_max_cam = Math::snapped(x_vec.dot(center) + radius + soft_shadow_expand, unit);
+			x_min_cam = Math::snapped(x_vec.dot(center) - radius - soft_shadow_expand, unit);
+			y_max_cam = Math::snapped(y_vec.dot(center) + radius + soft_shadow_expand, unit);
+			y_min_cam = Math::snapped(y_vec.dot(center) - radius - soft_shadow_expand, unit);
 		}
 
 		//now that we know all ranges, we can proceed to make the light frustum planes, for culling octree
