@@ -106,7 +106,7 @@ void VisibleOnScreenNotifier2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_rect"), &VisibleOnScreenNotifier2D::get_rect);
 	ClassDB::bind_method(D_METHOD("is_on_screen"), &VisibleOnScreenNotifier2D::is_on_screen);
 
-	ADD_PROPERTY(PropertyInfo(Variant::RECT2, "rect"), "set_rect", "get_rect");
+	ADD_PROPERTY(PropertyInfo(Variant::RECT2, "rect", PROPERTY_HINT_NONE, "2d_distance"), "set_rect", "get_rect");
 
 	ADD_SIGNAL(MethodInfo("screen_entered"));
 	ADD_SIGNAL(MethodInfo("screen_exited"));

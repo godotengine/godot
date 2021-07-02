@@ -90,7 +90,7 @@ void BoxShape3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_size", "size"), &BoxShape3D::set_size);
 	ClassDB::bind_method(D_METHOD("get_size"), &BoxShape3D::get_size);
 
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "size"), "set_size", "get_size");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "size", PROPERTY_HINT_NONE, "3d_distance"), "set_size", "get_size");
 }
 
 BoxShape3D::BoxShape3D() :

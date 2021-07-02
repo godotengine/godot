@@ -115,6 +115,12 @@ public:
 		NOTIFICATION_EDITOR_SETTINGS_CHANGED = 10000
 	};
 
+	// The user's preference for ratio units in the editor.
+	enum RatioUnit {
+		RATIO_UNIT_RATIO,
+		RATIO_UNIT_PERCENT,
+	};
+
 	// The user's preference for rotation units in the editor.
 	enum RotationUnit {
 		ROTATION_UNIT_DEGREES,

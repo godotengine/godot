@@ -416,6 +416,8 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	// Inspector
 	_initial_set("interface/inspector/max_array_dictionary_items_per_page", 20);
 	hints["interface/inspector/max_array_dictionary_items_per_page"] = PropertyInfo(Variant::INT, "interface/inspector/max_array_dictionary_items_per_page", PROPERTY_HINT_RANGE, "10,100,1", PROPERTY_USAGE_DEFAULT);
+	_initial_set("interface/inspector/ratio_unit", RATIO_UNIT_RATIO);
+	hints["interface/inspector/ratio_unit"] = PropertyInfo(Variant::INT, "interface/inspector/ratio_unit", PROPERTY_HINT_ENUM, "Ratio,Percent");
 	_initial_set("interface/inspector/rotation_unit", ROTATION_UNIT_DEGREES);
 	hints["interface/inspector/rotation_unit"] = PropertyInfo(Variant::INT, "interface/inspector/rotation_unit", PROPERTY_HINT_ENUM, "Degrees,Radians,Turns");
 
@@ -619,11 +621,11 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	// Camera3D node as the 3D viewport doesn't span the whole screen.
 	// This means it's technically viewed from a further distance, which warrants a narrower FOV.
 	_initial_set("editors/3d/default_fov", 70.0);
-	hints["editors/3d/default_fov"] = PropertyInfo(Variant::FLOAT, "editors/3d/default_fov", PROPERTY_HINT_RANGE, "1,179,0.1");
+	hints["editors/3d/default_fov"] = PropertyInfo(Variant::FLOAT, "editors/3d/default_fov", PROPERTY_HINT_RANGE, "1,179,0.1,degrees");
 	_initial_set("editors/3d/default_z_near", 0.05);
-	hints["editors/3d/default_z_near"] = PropertyInfo(Variant::FLOAT, "editors/3d/default_z_near", PROPERTY_HINT_RANGE, "0.01,10,0.01,or_greater");
+	hints["editors/3d/default_z_near"] = PropertyInfo(Variant::FLOAT, "editors/3d/default_z_near", PROPERTY_HINT_RANGE, "0.01,10,0.01,or_greater,3d_distance");
 	_initial_set("editors/3d/default_z_far", 4000.0);
-	hints["editors/3d/default_z_far"] = PropertyInfo(Variant::FLOAT, "editors/3d/default_z_far", PROPERTY_HINT_RANGE, "0.1,4000,0.1,or_greater");
+	hints["editors/3d/default_z_far"] = PropertyInfo(Variant::FLOAT, "editors/3d/default_z_far", PROPERTY_HINT_RANGE, "0.1,4000,0.1,or_greater,3d_distance");
 
 	// 3D: Navigation
 	_initial_set("editors/3d/navigation/navigation_scheme", 0);
@@ -665,7 +667,7 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	_initial_set("editors/3d/freelook/freelook_inertia", 0.1);
 	hints["editors/3d/freelook/freelook_inertia"] = PropertyInfo(Variant::FLOAT, "editors/3d/freelook/freelook_inertia", PROPERTY_HINT_RANGE, "0.0, 1, 0.01");
 	_initial_set("editors/3d/freelook/freelook_base_speed", 5.0);
-	hints["editors/3d/freelook/freelook_base_speed"] = PropertyInfo(Variant::FLOAT, "editors/3d/freelook/freelook_base_speed", PROPERTY_HINT_RANGE, "0.0, 10, 0.01");
+	hints["editors/3d/freelook/freelook_base_speed"] = PropertyInfo(Variant::FLOAT, "editors/3d/freelook/freelook_base_speed", PROPERTY_HINT_RANGE, "0.0, 10, 0.01,speed");
 	_initial_set("editors/3d/freelook/freelook_activation_modifier", 0);
 	hints["editors/3d/freelook/freelook_activation_modifier"] = PropertyInfo(Variant::INT, "editors/3d/freelook/freelook_activation_modifier", PROPERTY_HINT_ENUM, "None,Shift,Alt,Meta,Ctrl");
 	_initial_set("editors/3d/freelook/freelook_speed_zoom_link", false);
@@ -1214,16 +1216,47 @@ String EditorSettings::get_preferred_unit_suffix(const PropertyUnitType p_hint) 
 		} else if (unit == ROTATION_UNIT_TURNS) {
 			return "turns";
 		}
+	} else if (p_hint == PROPERTY_UNIT_TYPE_ANGULAR_VELOCITY) {
+		RotationUnit unit = (RotationUnit)(int)get_setting("interface/inspector/rotation_unit");
+		if (unit == ROTATION_UNIT_DEGREES) {
+			return "deg/s";
+		} else if (unit == ROTATION_UNIT_RADIANS) {
+			return "rad/s";
+		} else if (unit == ROTATION_UNIT_TURNS) {
+			return "turns/s";
+		}
 	} else if (p_hint == PROPERTY_UNIT_TYPE_2D_DISTANCE) {
 		return "px";
+	} else if (p_hint == PROPERTY_UNIT_TYPE_2D_VELOCITY) {
+		return "px/s";
+	} else if (p_hint == PROPERTY_UNIT_TYPE_2D_ACCELERATION) {
+		return U"px/s\u00B2";
+	} else if (p_hint == PROPERTY_UNIT_TYPE_2D_FORCE) {
+		return U"kg\u22C5px/s\u00B2";
 	} else if (p_hint == PROPERTY_UNIT_TYPE_3D_DISTANCE) {
 		return "m";
+	} else if (p_hint == PROPERTY_UNIT_TYPE_3D_VELOCITY) {
+		return "m/s";
+	} else if (p_hint == PROPERTY_UNIT_TYPE_3D_ACCELERATION) {
+		return U"m/s\u00B2";
+	} else if (p_hint == PROPERTY_UNIT_TYPE_3D_FORCE) {
+		return U"kg\u22C5m/s\u00B2 (N)";
+	} else if (p_hint == PROPERTY_UNIT_TYPE_MASS) {
+		return "kg";
+	} else if (p_hint == PROPERTY_UNIT_TYPE_TIME) {
+		return "s";
+	} else if (p_hint == PROPERTY_UNIT_TYPE_RATIO) {
+		if (RATIO_UNIT_PERCENT == (RatioUnit)(int)get_setting("interface/inspector/ratio_unit")) {
+			return "%";
+		}
+	} else if (p_hint == PROPERTY_UNIT_TYPE_VOLUME) {
+		return "dB";
 	}
 	return String();
 }
 
 double EditorSettings::get_preferred_unit_scale(const PropertyUnitType p_hint) const {
-	if (p_hint == PROPERTY_UNIT_TYPE_ANGLE_RADIANS) {
+	if (p_hint == PROPERTY_UNIT_TYPE_ANGLE_RADIANS || p_hint == PROPERTY_UNIT_TYPE_ANGULAR_VELOCITY) {
 		RotationUnit unit = (RotationUnit)(int)get_setting("interface/inspector/rotation_unit");
 		if (unit == ROTATION_UNIT_DEGREES) {
 			return Math_TAU / 360.0;
@@ -1240,6 +1273,10 @@ double EditorSettings::get_preferred_unit_scale(const PropertyUnitType p_hint) c
 			return 360.0 / Math_TAU;
 		} else if (unit == ROTATION_UNIT_TURNS) {
 			return 360.0;
+		}
+	} else if (p_hint == PROPERTY_UNIT_TYPE_RATIO) {
+		if (RATIO_UNIT_PERCENT == (RatioUnit)(int)get_setting("interface/inspector/ratio_unit")) {
+			return 0.01;
 		}
 	}
 	return 1.0;

@@ -2801,12 +2801,34 @@ static EditorPropertyRangeHint _parse_range_hint(PropertyHint p_hint, const Stri
 		String slice = p_hint_text.get_slice(",", i).strip_edges();
 		if (slice == "2d_distance") {
 			hint.unit_type = PROPERTY_UNIT_TYPE_2D_DISTANCE;
+		} else if (slice == "2d_velocity") {
+			hint.unit_type = PROPERTY_UNIT_TYPE_2D_VELOCITY;
+		} else if (slice == "2d_acceleration") {
+			hint.unit_type = PROPERTY_UNIT_TYPE_2D_ACCELERATION;
+		} else if (slice == "2d_force") {
+			hint.unit_type = PROPERTY_UNIT_TYPE_2D_FORCE;
 		} else if (slice == "3d_distance") {
 			hint.unit_type = PROPERTY_UNIT_TYPE_3D_DISTANCE;
+		} else if (slice == "3d_velocity") {
+			hint.unit_type = PROPERTY_UNIT_TYPE_3D_VELOCITY;
+		} else if (slice == "3d_acceleration") {
+			hint.unit_type = PROPERTY_UNIT_TYPE_3D_ACCELERATION;
+		} else if (slice == "3d_force") {
+			hint.unit_type = PROPERTY_UNIT_TYPE_3D_FORCE;
 		} else if (slice == "radians") {
 			hint.unit_type = PROPERTY_UNIT_TYPE_ANGLE_RADIANS;
 		} else if (slice == "degrees") {
 			hint.unit_type = PROPERTY_UNIT_TYPE_ANGLE_DEGREES;
+		} else if (slice == "angular_velocity") {
+			hint.unit_type = PROPERTY_UNIT_TYPE_ANGULAR_VELOCITY;
+		} else if (slice == "mass") {
+			hint.unit_type = PROPERTY_UNIT_TYPE_MASS;
+		} else if (slice == "time") {
+			hint.unit_type = PROPERTY_UNIT_TYPE_TIME;
+		} else if (slice == "ratio") {
+			hint.unit_type = PROPERTY_UNIT_TYPE_RATIO;
+		} else if (slice == "volume") {
+			hint.unit_type = PROPERTY_UNIT_TYPE_VOLUME;
 		} else if (slice == "or_greater") {
 			hint.greater = true;
 		} else if (slice == "or_lesser") {

@@ -154,7 +154,7 @@ void AspectRatioContainer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_alignment_vertical", "alignment_vertical"), &AspectRatioContainer::set_alignment_vertical);
 	ClassDB::bind_method(D_METHOD("get_alignment_vertical"), &AspectRatioContainer::get_alignment_vertical);
 
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "ratio"), "set_ratio", "get_ratio");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "ratio", PROPERTY_HINT_NONE, "ratio"), "set_ratio", "get_ratio");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "stretch_mode", PROPERTY_HINT_ENUM, "Width Controls Height,Height Controls Width,Fit,Cover"), "set_stretch_mode", "get_stretch_mode");
 
 	ADD_GROUP("Alignment", "alignment_");

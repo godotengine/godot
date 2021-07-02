@@ -67,7 +67,7 @@ void GPUParticlesCollisionSphere::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_radius", "radius"), &GPUParticlesCollisionSphere::set_radius);
 	ClassDB::bind_method(D_METHOD("get_radius"), &GPUParticlesCollisionSphere::get_radius);
 
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "radius", PROPERTY_HINT_RANGE, "0.01,1024,0.01,or_greater"), "set_radius", "get_radius");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "radius", PROPERTY_HINT_RANGE, "0.01,1024,0.01,or_greater,3d_distance"), "set_radius", "get_radius");
 }
 
 void GPUParticlesCollisionSphere::set_radius(float p_radius) {
@@ -97,7 +97,7 @@ void GPUParticlesCollisionBox::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_extents", "extents"), &GPUParticlesCollisionBox::set_extents);
 	ClassDB::bind_method(D_METHOD("get_extents"), &GPUParticlesCollisionBox::get_extents);
 
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "extents", PROPERTY_HINT_RANGE, "0.01,1024,0.01,or_greater"), "set_extents", "get_extents");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "extents", PROPERTY_HINT_RANGE, "0.01,1024,0.01,or_greater,3d_distance"), "set_extents", "get_extents");
 }
 
 void GPUParticlesCollisionBox::set_extents(const Vector3 &p_extents) {
@@ -520,8 +520,8 @@ void GPUParticlesCollisionSDF::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_thickness", "thickness"), &GPUParticlesCollisionSDF::set_thickness);
 	ClassDB::bind_method(D_METHOD("get_thickness"), &GPUParticlesCollisionSDF::get_thickness);
 
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "extents", PROPERTY_HINT_RANGE, "0.01,1024,0.01,or_greater"), "set_extents", "get_extents");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "resolution", PROPERTY_HINT_ENUM, "16,32,64,128,256,512"), "set_resolution", "get_resolution");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "extents", PROPERTY_HINT_RANGE, "0.01,1024,0.01,or_greater,3d_distance"), "set_extents", "get_extents");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "resolution", PROPERTY_HINT_ENUM, "16,32,64,128,256,512,suffix:px"), "set_resolution", "get_resolution");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "thickness", PROPERTY_HINT_RANGE, "0.0,2.0,0.01"), "set_thickness", "get_thickness");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture3D"), "set_texture", "get_texture");
 
@@ -650,12 +650,12 @@ void GPUParticlesCollisionHeightField::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_follow_camera_push_ratio", "ratio"), &GPUParticlesCollisionHeightField::set_follow_camera_push_ratio);
 	ClassDB::bind_method(D_METHOD("get_follow_camera_push_ratio"), &GPUParticlesCollisionHeightField::get_follow_camera_push_ratio);
 
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "extents", PROPERTY_HINT_RANGE, "0.01,1024,0.01,or_greater"), "set_extents", "get_extents");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "resolution", PROPERTY_HINT_ENUM, "256,512,1024,2048,4096,8192"), "set_resolution", "get_resolution");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "extents", PROPERTY_HINT_RANGE, "0.01,1024,0.01,or_greater,3d_distance"), "set_extents", "get_extents");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "resolution", PROPERTY_HINT_ENUM, "256,512,1024,2048,4096,8192,suffix:px"), "set_resolution", "get_resolution");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "update_mode", PROPERTY_HINT_ENUM, "WhenMoved,Always"), "set_update_mode", "get_update_mode");
 	ADD_GROUP("Follow Camera", "follow_camera_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "follow_camera_enabled"), "set_follow_camera_mode", "is_follow_camera_mode_enabled");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "follow_camera_push_ratio", PROPERTY_HINT_RANGE, "0.01,1,0.01"), "set_follow_camera_push_ratio", "get_follow_camera_push_ratio");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "follow_camera_push_ratio", PROPERTY_HINT_RANGE, "0.01,1,0.01,ratio"), "set_follow_camera_push_ratio", "get_follow_camera_push_ratio");
 
 	BIND_ENUM_CONSTANT(RESOLUTION_256);
 	BIND_ENUM_CONSTANT(RESOLUTION_512);
@@ -802,7 +802,7 @@ void GPUParticlesAttractorSphere::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_radius", "radius"), &GPUParticlesAttractorSphere::set_radius);
 	ClassDB::bind_method(D_METHOD("get_radius"), &GPUParticlesAttractorSphere::get_radius);
 
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "radius", PROPERTY_HINT_RANGE, "0.01,1024,0.01,or_greater"), "set_radius", "get_radius");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "radius", PROPERTY_HINT_RANGE, "0.01,1024,0.01,or_greater,3d_distance"), "set_radius", "get_radius");
 }
 
 void GPUParticlesAttractorSphere::set_radius(float p_radius) {
@@ -832,7 +832,7 @@ void GPUParticlesAttractorBox::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_extents", "extents"), &GPUParticlesAttractorBox::set_extents);
 	ClassDB::bind_method(D_METHOD("get_extents"), &GPUParticlesAttractorBox::get_extents);
 
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "extents", PROPERTY_HINT_RANGE, "0.01,1024,0.01,or_greater"), "set_extents", "get_extents");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "extents", PROPERTY_HINT_RANGE, "0.01,1024,0.01,or_greater,3d_distance"), "set_extents", "get_extents");
 }
 
 void GPUParticlesAttractorBox::set_extents(const Vector3 &p_extents) {
@@ -865,7 +865,7 @@ void GPUParticlesAttractorVectorField::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_texture", "texture"), &GPUParticlesAttractorVectorField::set_texture);
 	ClassDB::bind_method(D_METHOD("get_texture"), &GPUParticlesAttractorVectorField::get_texture);
 
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "extents", PROPERTY_HINT_RANGE, "0.01,1024,0.01,or_greater"), "set_extents", "get_extents");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "extents", PROPERTY_HINT_RANGE, "0.01,1024,0.01,or_greater,3d_distance"), "set_extents", "get_extents");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture3D"), "set_texture", "get_texture");
 }
 
