@@ -105,7 +105,7 @@ public:
 			scale = 1.0;
 			energy = 1.0;
 			item_shadow_mask = 1;
-			mode = RS::CANVAS_LIGHT_MODE_POINT;
+			mode = RS::CANVAS_LIGHT_MODE_SPRITE;
 			blend_mode = RS::CANVAS_LIGHT_BLEND_MODE_ADD;
 			//			texture_cache = nullptr;
 			next_ptr = nullptr;

@@ -318,31 +318,31 @@ Light2D::~Light2D() {
 
 #ifdef TOOLS_ENABLED
 
-Dictionary PointLight2D::_edit_get_state() const {
+Dictionary SpriteLight2D::_edit_get_state() const {
 	Dictionary state = Node2D::_edit_get_state();
 	state["offset"] = get_texture_offset();
 	return state;
 }
 
-void PointLight2D::_edit_set_state(const Dictionary &p_state) {
+void SpriteLight2D::_edit_set_state(const Dictionary &p_state) {
 	Node2D::_edit_set_state(p_state);
 	set_texture_offset(p_state["offset"]);
 }
 
-void PointLight2D::_edit_set_pivot(const Point2 &p_pivot) {
+void SpriteLight2D::_edit_set_pivot(const Point2 &p_pivot) {
 	set_position(get_transform().xform(p_pivot));
 	set_texture_offset(get_texture_offset() - p_pivot);
 }
 
-Point2 PointLight2D::_edit_get_pivot() const {
+Point2 SpriteLight2D::_edit_get_pivot() const {
 	return Vector2();
 }
 
-bool PointLight2D::_edit_use_pivot() const {
+bool SpriteLight2D::_edit_use_pivot() const {
 	return true;
 }
 
-Rect2 PointLight2D::_edit_get_rect() const {
+Rect2 SpriteLight2D::_edit_get_rect() const {
 	if (texture.is_null()) {
 		return Rect2();
 	}
@@ -351,12 +351,12 @@ Rect2 PointLight2D::_edit_get_rect() const {
 	return Rect2(texture_offset - s / 2.0, s);
 }
 
-bool PointLight2D::_edit_use_rect() const {
+bool SpriteLight2D::_edit_use_rect() const {
 	return !texture.is_null();
 }
 #endif
 
-Rect2 PointLight2D::get_anchorable_rect() const {
+Rect2 SpriteLight2D::get_anchorable_rect() const {
 	if (texture.is_null()) {
 		return Rect2();
 	}
@@ -365,7 +365,7 @@ Rect2 PointLight2D::get_anchorable_rect() const {
 	return Rect2(texture_offset - s / 2.0, s);
 }
 
-void PointLight2D::set_texture(const Ref<Texture2D> &p_texture) {
+void SpriteLight2D::set_texture(const Ref<Texture2D> &p_texture) {
 	texture = p_texture;
 	if (texture.is_valid()) {
 		RS::get_singleton()->canvas_light_set_texture(_get_light(), texture->get_rid());
@@ -376,21 +376,21 @@ void PointLight2D::set_texture(const Ref<Texture2D> &p_texture) {
 	update_configuration_warnings();
 }
 
-Ref<Texture2D> PointLight2D::get_texture() const {
+Ref<Texture2D> SpriteLight2D::get_texture() const {
 	return texture;
 }
 
-void PointLight2D::set_texture_offset(const Vector2 &p_offset) {
+void SpriteLight2D::set_texture_offset(const Vector2 &p_offset) {
 	texture_offset = p_offset;
 	RS::get_singleton()->canvas_light_set_texture_offset(_get_light(), texture_offset);
 	item_rect_changed();
 }
 
-Vector2 PointLight2D::get_texture_offset() const {
+Vector2 SpriteLight2D::get_texture_offset() const {
 	return texture_offset;
 }
 
-TypedArray<String> PointLight2D::get_configuration_warnings() const {
+TypedArray<String> SpriteLight2D::get_configuration_warnings() const {
 	TypedArray<String> warnings = Node::get_configuration_warnings();
 
 	if (!texture.is_valid()) {
@@ -400,7 +400,7 @@ TypedArray<String> PointLight2D::get_configuration_warnings() const {
 	return warnings;
 }
 
-void PointLight2D::set_texture_scale(real_t p_scale) {
+void SpriteLight2D::set_texture_scale(real_t p_scale) {
 	_scale = p_scale;
 	// Avoid having 0 scale values, can lead to errors in physics and rendering.
 	if (_scale == 0) {
@@ -410,19 +410,19 @@ void PointLight2D::set_texture_scale(real_t p_scale) {
 	item_rect_changed();
 }
 
-real_t PointLight2D::get_texture_scale() const {
+real_t SpriteLight2D::get_texture_scale() const {
 	return _scale;
 }
 
-void PointLight2D::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("set_texture", "texture"), &PointLight2D::set_texture);
-	ClassDB::bind_method(D_METHOD("get_texture"), &PointLight2D::get_texture);
+void SpriteLight2D::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("set_texture", "texture"), &SpriteLight2D::set_texture);
+	ClassDB::bind_method(D_METHOD("get_texture"), &SpriteLight2D::get_texture);
 
-	ClassDB::bind_method(D_METHOD("set_texture_offset", "texture_offset"), &PointLight2D::set_texture_offset);
-	ClassDB::bind_method(D_METHOD("get_texture_offset"), &PointLight2D::get_texture_offset);
+	ClassDB::bind_method(D_METHOD("set_texture_offset", "texture_offset"), &SpriteLight2D::set_texture_offset);
+	ClassDB::bind_method(D_METHOD("get_texture_offset"), &SpriteLight2D::get_texture_offset);
 
-	ClassDB::bind_method(D_METHOD("set_texture_scale", "texture_scale"), &PointLight2D::set_texture_scale);
-	ClassDB::bind_method(D_METHOD("get_texture_scale"), &PointLight2D::get_texture_scale);
+	ClassDB::bind_method(D_METHOD("set_texture_scale", "texture_scale"), &SpriteLight2D::set_texture_scale);
+	ClassDB::bind_method(D_METHOD("get_texture_scale"), &SpriteLight2D::get_texture_scale);
 
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_texture", "get_texture");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "offset"), "set_texture_offset", "get_texture_offset");
@@ -430,8 +430,8 @@ void PointLight2D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "height", PROPERTY_HINT_RANGE, "0,1024,1,or_greater"), "set_height", "get_height");
 }
 
-PointLight2D::PointLight2D() {
-	RS::get_singleton()->canvas_light_set_mode(_get_light(), RS::CANVAS_LIGHT_MODE_POINT);
+SpriteLight2D::SpriteLight2D() {
+	RS::get_singleton()->canvas_light_set_mode(_get_light(), RS::CANVAS_LIGHT_MODE_SPRITE);
 }
 
 //////////

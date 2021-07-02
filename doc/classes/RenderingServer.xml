@@ -928,7 +928,7 @@
 			<argument index="1" name="texture" type="RID">
 			</argument>
 			<description>
-				Sets the texture to be used by a [PointLight2D]. Equivalent to [member PointLight2D.texture].
+				Sets the texture to be used by a [SpriteLight2D]. Equivalent to [member SpriteLight2D.texture].
 			</description>
 		</method>
 		<method name="canvas_light_set_texture_offset">
@@ -939,7 +939,7 @@
 			<argument index="1" name="offset" type="Vector2">
 			</argument>
 			<description>
-				Sets the offset of a [PointLight2D]'s texture. Equivalent to [member PointLight2D.offset].
+				Sets the offset of a [SpriteLight2D]'s texture. Equivalent to [member SpriteLight2D.offset].
 			</description>
 		</method>
 		<method name="canvas_light_set_texture_scale">
@@ -950,7 +950,7 @@
 			<argument index="1" name="scale" type="float">
 			</argument>
 			<description>
-				Sets the scale factor of a [PointLight2D]'s texture. Equivalent to [member PointLight2D.texture_scale].
+				Sets the scale factor of a [SpriteLight2D]'s texture. Equivalent to [member SpriteLight2D.texture_scale].
 			</description>
 		</method>
 		<method name="canvas_light_set_transform">
@@ -5520,7 +5520,7 @@
 		</constant>
 		<constant name="CANVAS_GROUP_MODE_TRANSPARENT" value="2" enum="CanvasGroupMode">
 		</constant>
-		<constant name="CANVAS_LIGHT_MODE_POINT" value="0" enum="CanvasLightMode">
+		<constant name="CANVAS_LIGHT_MODE_SPRITE" value="0" enum="CanvasLightMode">
 		</constant>
 		<constant name="CANVAS_LIGHT_MODE_DIRECTIONAL" value="1" enum="CanvasLightMode">
 		</constant>

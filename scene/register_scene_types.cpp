@@ -667,7 +667,7 @@ void register_scene_types() {
 	GDREGISTER_CLASS(Skeleton2D);
 	GDREGISTER_CLASS(Bone2D);
 	GDREGISTER_VIRTUAL_CLASS(Light2D);
-	GDREGISTER_CLASS(PointLight2D);
+	GDREGISTER_CLASS(SpriteLight2D);
 	GDREGISTER_CLASS(DirectionalLight2D);
 	GDREGISTER_CLASS(LightOccluder2D);
 	GDREGISTER_CLASS(OccluderPolygon2D);
@@ -991,7 +991,7 @@ void register_scene_types() {
 	ClassDB::add_compatibility_class("VisualShaderNodeScalarSwitch", "VisualShaderNodeSwitch");
 	ClassDB::add_compatibility_class("World", "World3D");
 	ClassDB::add_compatibility_class("StreamTexture", "StreamTexture2D");
-	ClassDB::add_compatibility_class("Light2D", "PointLight2D");
+	ClassDB::add_compatibility_class("Light2D", "SpriteLight2D");
 	ClassDB::add_compatibility_class("VisibilityNotifier2D", "VisibleOnScreenNotifier2D");
 	ClassDB::add_compatibility_class("VisibilityNotifier3D", "VisibleOnScreenNotifier3D");
 
