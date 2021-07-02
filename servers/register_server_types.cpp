@@ -175,14 +175,12 @@ void register_server_types() {
 
 	ClassDB::register_virtual_class<Physics2DDirectBodyState>();
 	ClassDB::register_virtual_class<Physics2DDirectSpaceState>();
-	ClassDB::register_virtual_class<Physics2DShapeQueryResult>();
 	ClassDB::register_class<Physics2DTestMotionResult>();
 	ClassDB::register_class<Physics2DShapeQueryParameters>();
 
 	ClassDB::register_class<PhysicsShapeQueryParameters>();
 	ClassDB::register_virtual_class<PhysicsDirectBodyState>();
 	ClassDB::register_virtual_class<PhysicsDirectSpaceState>();
-	ClassDB::register_virtual_class<PhysicsShapeQueryResult>();
 	ClassDB::register_class<PhysicsTestMotionResult>();
 
 	ScriptDebuggerRemote::resource_usage_func = _debugger_get_resource_usage;
