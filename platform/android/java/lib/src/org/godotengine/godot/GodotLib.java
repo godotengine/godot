@@ -34,7 +34,6 @@ import android.app.Activity;
 import android.hardware.SensorEvent;
 import android.view.Surface;
 
-import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
 
 /**

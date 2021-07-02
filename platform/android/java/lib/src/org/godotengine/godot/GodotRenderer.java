@@ -34,7 +34,6 @@ import org.godotengine.godot.plugin.GodotPlugin;
 import org.godotengine.godot.plugin.GodotPluginRegistry;
 import org.godotengine.godot.utils.GLUtils;
 
-import android.content.Context;
 import android.opengl.GLSurfaceView;
 
 import javax.microedition.khronos.egl.EGLConfig;

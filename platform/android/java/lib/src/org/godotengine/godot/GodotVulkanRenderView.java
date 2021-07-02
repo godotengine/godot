@@ -39,7 +39,6 @@ import android.annotation.SuppressLint;
 import android.content.Context;
 import android.os.Build;
 import android.view.GestureDetector;
-import android.view.InputDevice;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.PointerIcon;
