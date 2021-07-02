@@ -2206,10 +2206,10 @@ bool RendererSceneCull::_light_instance_update_shadow(Instance *p_instance, cons
 	switch (RSG::storage->light_get_type(p_instance->base)) {
 		case RS::LIGHT_DIRECTIONAL: {
 		} break;
-		case RS::LIGHT_OMNI: {
-			RS::LightOmniShadowMode shadow_mode = RSG::storage->light_omni_get_shadow_mode(p_instance->base);
+		case RS::LIGHT_POINT: {
+			RS::LightPointShadowMode shadow_mode = RSG::storage->light_point_get_shadow_mode(p_instance->base);
 
-			if (shadow_mode == RS::LIGHT_OMNI_SHADOW_DUAL_PARABOLOID || !scene_render->light_instances_can_render_shadow_cube()) {
+			if (shadow_mode == RS::LIGHT_POINT_SHADOW_DUAL_PARABOLOID || !scene_render->light_instances_can_render_shadow_cube()) {
 				if (max_shadows_used + 2 > MAX_UPDATE_SHADOWS) {
 					return true;
 				}
@@ -3030,7 +3030,7 @@ void RendererSceneCull::_render_scene(const RendererSceneRender::CameraData *p_c
 				Vector2 vp_half_extents = p_camera_data->main_projection.get_viewport_half_extents();
 
 				switch (RSG::storage->light_get_type(ins->base)) {
-					case RS::LIGHT_OMNI: {
+					case RS::LIGHT_POINT: {
 						float radius = RSG::storage->light_get_param(ins->base, RS::LIGHT_PARAM_RANGE);
 
 						//get two points parallel to near plane

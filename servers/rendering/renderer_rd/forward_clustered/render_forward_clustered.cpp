@@ -1943,7 +1943,7 @@ void RenderForwardClustered::_update_render_base_uniform_set() {
 			RD::Uniform u;
 			u.binding = 3;
 			u.uniform_type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
-			u.ids.push_back(get_omni_light_buffer());
+			u.ids.push_back(get_point_light_buffer());
 			uniforms.push_back(u);
 		}
 		{

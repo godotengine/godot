@@ -2142,15 +2142,15 @@
 				If [code]true[/code], this light will not be used for anything except sky shaders. Use this for lights that impact your sky shader that you may want to hide from affecting the rest of the scene. For example, you may want to enable this when the sun in your sky shader falls below the horizon.
 			</description>
 		</method>
-		<method name="light_omni_set_shadow_mode">
+		<method name="light_point_set_shadow_mode">
 			<return type="void">
 			</return>
 			<argument index="0" name="light" type="RID">
 			</argument>
-			<argument index="1" name="mode" type="int" enum="RenderingServer.LightOmniShadowMode">
+			<argument index="1" name="mode" type="int" enum="RenderingServer.LightPointShadowMode">
 			</argument>
 			<description>
-				Sets whether to use a dual paraboloid or a cubemap for the shadow map. Dual paraboloid is faster but may suffer from artifacts. Equivalent to [member OmniLight3D.omni_shadow_mode].
+				Sets whether to use a dual paraboloid or a cubemap for the shadow map. Dual paraboloid is faster but may suffer from artifacts. Equivalent to [member PointLight3D.point_shadow_mode].
 			</description>
 		</method>
 		<method name="light_set_bake_mode">
@@ -2915,15 +2915,6 @@
 			<description>
 			</description>
 		</method>
-		<method name="omni_light_create">
-			<return type="RID">
-			</return>
-			<description>
-				Creates a new omni light and adds it to the RenderingServer. It can be accessed with the RID that is returned. This RID can be used in most [code]light_*[/code] RenderingServer functions.
-				Once finished with your RID, you will want to free the RID using the RenderingServer's [method free_rid] static method.
-				To place in a scene, attach this omni light to an instance using [method instance_set_base] using the returned RID.
-			</description>
-		</method>
 		<method name="particles_collision_create">
 			<return type="RID">
 			</return>
@@ -3359,6 +3350,15 @@
 			</argument>
 			<description>
 				If [code]true[/code], particles use local coordinates. If [code]false[/code] they use global coordinates. Equivalent to [member GPUParticles3D.local_coords].
+			</description>
+		</method>
+		<method name="point_light_create">
+			<return type="RID">
+			</return>
+			<description>
+				Creates a new point light and adds it to the RenderingServer. It can be accessed with the RID that is returned. This RID can be used in most [code]light_*[/code] RenderingServer functions.
+				Once finished with your RID, you will want to free the RID using the RenderingServer's [method free_rid] static method.
+				To place in a scene, attach this point light to an instance using [method instance_set_base] using the returned RID.
 			</description>
 		</method>
 		<method name="reflection_probe_create">
@@ -4368,7 +4368,7 @@
 			<argument index="2" name="use_16_bits" type="bool" default="false">
 			</argument>
 			<description>
-				Sets the size of the shadow atlas's images (used for omni and spot lights). The value will be rounded up to the nearest power of 2.
+				Sets the size of the shadow atlas's images (used for [PointLight3D]s and [SpotLight3D]s). The value will be rounded up to the nearest power of 2.
 			</description>
 		</method>
 		<method name="viewport_set_size">
@@ -4868,8 +4868,8 @@
 		<constant name="LIGHT_DIRECTIONAL" value="0" enum="LightType">
 			Is a directional (sun) light.
 		</constant>
-		<constant name="LIGHT_OMNI" value="1" enum="LightType">
-			Is an omni light.
+		<constant name="LIGHT_POINT" value="1" enum="LightType">
+			Is a point light.
 		</constant>
 		<constant name="LIGHT_SPOT" value="2" enum="LightType">
 			Is a spot light.
@@ -4886,7 +4886,7 @@
 			The light's range.
 		</constant>
 		<constant name="LIGHT_PARAM_SIZE" value="4" enum="LightParam">
-			The size of the light when using spot light or omni light. The angular size of the light when using directional light.
+			The size of the light when using [PointLight3D]s or [SpotLight3D]s. The angular size of the light when using directional light.
 		</constant>
 		<constant name="LIGHT_PARAM_ATTENUATION" value="5" enum="LightParam">
 			The light's attenuation.
@@ -4937,20 +4937,20 @@
 		</constant>
 		<constant name="LIGHT_BAKE_STATIC" value="2" enum="LightBakeMode">
 		</constant>
-		<constant name="LIGHT_OMNI_SHADOW_DUAL_PARABOLOID" value="0" enum="LightOmniShadowMode">
-			Use a dual paraboloid shadow map for omni lights.
+		<constant name="LIGHT_POINT_SHADOW_DUAL_PARABOLOID" value="0" enum="LightPointShadowMode">
+			Use a dual paraboloid shadow map for [PointLight3D]s.
 		</constant>
-		<constant name="LIGHT_OMNI_SHADOW_CUBE" value="1" enum="LightOmniShadowMode">
-			Use a cubemap shadow map for omni lights. Slower but better quality than dual paraboloid.
+		<constant name="LIGHT_POINT_SHADOW_CUBE" value="1" enum="LightPointShadowMode">
+			Use a cubemap shadow map for [PointLight3D]s. Slower but better quality than dual paraboloid.
 		</constant>
 		<constant name="LIGHT_DIRECTIONAL_SHADOW_ORTHOGONAL" value="0" enum="LightDirectionalShadowMode">
-			Use orthogonal shadow projection for directional light.
+			Use orthogonal shadow projection for [DirectionalLight3D].
 		</constant>
 		<constant name="LIGHT_DIRECTIONAL_SHADOW_PARALLEL_2_SPLITS" value="1" enum="LightDirectionalShadowMode">
-			Use 2 splits for shadow projection when using directional light.
+			Use 2 splits for shadow projection when using [DirectionalLight3D].
 		</constant>
 		<constant name="LIGHT_DIRECTIONAL_SHADOW_PARALLEL_4_SPLITS" value="2" enum="LightDirectionalShadowMode">
-			Use 4 splits for shadow projection when using directional light.
+			Use 4 splits for shadow projection when using [DirectionalLight3D].
 		</constant>
 		<constant name="SHADOW_QUALITY_HARD" value="0" enum="ShadowQuality">
 		</constant>
@@ -5168,7 +5168,7 @@
 			Objects are displayed with only the emission color from [VoxelGI]s.
 		</constant>
 		<constant name="VIEWPORT_DEBUG_DRAW_SHADOW_ATLAS" value="9" enum="ViewportDebugDraw">
-			Draws the shadow atlas that stores shadows from [OmniLight3D]s and [SpotLight3D]s in the upper left quadrant of the [Viewport].
+			Draws the shadow atlas that stores shadows from [PointLight3D]s and [SpotLight3D]s in the upper left quadrant of the [Viewport].
 		</constant>
 		<constant name="VIEWPORT_DEBUG_DRAW_DIRECTIONAL_SHADOW_ATLAS" value="10" enum="ViewportDebugDraw">
 			Draws the shadow atlas that stores shadows from [DirectionalLight3D]s in the upper left quadrant of the [Viewport].
@@ -5191,7 +5191,7 @@
 		</constant>
 		<constant name="VIEWPORT_DEBUG_DRAW_DISABLE_LOD" value="18" enum="ViewportDebugDraw">
 		</constant>
-		<constant name="VIEWPORT_DEBUG_DRAW_CLUSTER_OMNI_LIGHTS" value="19" enum="ViewportDebugDraw">
+		<constant name="VIEWPORT_DEBUG_DRAW_CLUSTER_POINT_LIGHTS" value="19" enum="ViewportDebugDraw">
 		</constant>
 		<constant name="VIEWPORT_DEBUG_DRAW_CLUSTER_SPOT_LIGHTS" value="20" enum="ViewportDebugDraw">
 		</constant>

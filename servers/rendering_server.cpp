@@ -1834,7 +1834,7 @@ void RenderingServer::_bind_methods() {
 	/* Light API */
 
 	ClassDB::bind_method(D_METHOD("directional_light_create"), &RenderingServer::directional_light_create);
-	ClassDB::bind_method(D_METHOD("omni_light_create"), &RenderingServer::omni_light_create);
+	ClassDB::bind_method(D_METHOD("point_light_create"), &RenderingServer::point_light_create);
 	ClassDB::bind_method(D_METHOD("spot_light_create"), &RenderingServer::spot_light_create);
 
 	ClassDB::bind_method(D_METHOD("light_set_color", "light", "color"), &RenderingServer::light_set_color);
@@ -1848,14 +1848,14 @@ void RenderingServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("light_set_bake_mode", "light", "bake_mode"), &RenderingServer::light_set_bake_mode);
 	ClassDB::bind_method(D_METHOD("light_set_max_sdfgi_cascade", "light", "cascade"), &RenderingServer::light_set_max_sdfgi_cascade);
 
-	ClassDB::bind_method(D_METHOD("light_omni_set_shadow_mode", "light", "mode"), &RenderingServer::light_omni_set_shadow_mode);
+	ClassDB::bind_method(D_METHOD("light_point_set_shadow_mode", "light", "mode"), &RenderingServer::light_point_set_shadow_mode);
 
 	ClassDB::bind_method(D_METHOD("light_directional_set_shadow_mode", "light", "mode"), &RenderingServer::light_directional_set_shadow_mode);
 	ClassDB::bind_method(D_METHOD("light_directional_set_blend_splits", "light", "enable"), &RenderingServer::light_directional_set_blend_splits);
 	ClassDB::bind_method(D_METHOD("light_directional_set_sky_only", "light", "enable"), &RenderingServer::light_directional_set_sky_only);
 
 	BIND_ENUM_CONSTANT(LIGHT_DIRECTIONAL);
-	BIND_ENUM_CONSTANT(LIGHT_OMNI);
+	BIND_ENUM_CONSTANT(LIGHT_POINT);
 	BIND_ENUM_CONSTANT(LIGHT_SPOT);
 
 	BIND_ENUM_CONSTANT(LIGHT_PARAM_ENERGY);
@@ -1883,8 +1883,8 @@ void RenderingServer::_bind_methods() {
 	BIND_ENUM_CONSTANT(LIGHT_BAKE_DYNAMIC);
 	BIND_ENUM_CONSTANT(LIGHT_BAKE_STATIC);
 
-	BIND_ENUM_CONSTANT(LIGHT_OMNI_SHADOW_DUAL_PARABOLOID);
-	BIND_ENUM_CONSTANT(LIGHT_OMNI_SHADOW_CUBE);
+	BIND_ENUM_CONSTANT(LIGHT_POINT_SHADOW_DUAL_PARABOLOID);
+	BIND_ENUM_CONSTANT(LIGHT_POINT_SHADOW_CUBE);
 
 	BIND_ENUM_CONSTANT(LIGHT_DIRECTIONAL_SHADOW_ORTHOGONAL);
 	BIND_ENUM_CONSTANT(LIGHT_DIRECTIONAL_SHADOW_PARALLEL_2_SPLITS);
@@ -2208,7 +2208,7 @@ void RenderingServer::_bind_methods() {
 	BIND_ENUM_CONSTANT(VIEWPORT_DEBUG_DRAW_SDFGI_PROBES);
 	BIND_ENUM_CONSTANT(VIEWPORT_DEBUG_DRAW_GI_BUFFER);
 	BIND_ENUM_CONSTANT(VIEWPORT_DEBUG_DRAW_DISABLE_LOD);
-	BIND_ENUM_CONSTANT(VIEWPORT_DEBUG_DRAW_CLUSTER_OMNI_LIGHTS);
+	BIND_ENUM_CONSTANT(VIEWPORT_DEBUG_DRAW_CLUSTER_POINT_LIGHTS);
 	BIND_ENUM_CONSTANT(VIEWPORT_DEBUG_DRAW_CLUSTER_SPOT_LIGHTS);
 	BIND_ENUM_CONSTANT(VIEWPORT_DEBUG_DRAW_CLUSTER_DECALS);
 	BIND_ENUM_CONSTANT(VIEWPORT_DEBUG_DRAW_CLUSTER_REFLECTION_PROBES);

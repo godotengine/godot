@@ -258,7 +258,7 @@
 			The subdivision amount of the fourth quadrant on the shadow atlas.
 		</member>
 		<member name="shadow_atlas_size" type="int" setter="set_shadow_atlas_size" getter="get_shadow_atlas_size" default="2048">
-			The shadow atlas' resolution (used for omni and spot lights). The value will be rounded up to the nearest power of 2.
+			The shadow atlas' resolution (used for [PointLight3D]s and [SpotLight3D]s). The value will be rounded up to the nearest power of 2.
 			[b]Note:[/b] If this is set to 0, shadows won't be visible.
 		</member>
 		<member name="snap_2d_transforms_to_pixel" type="bool" setter="set_snap_2d_transforms_to_pixel" getter="is_snap_2d_transforms_to_pixel_enabled" default="false">
@@ -392,7 +392,7 @@
 			Objects are displayed with only the emission color from [VoxelGI]s.
 		</constant>
 		<constant name="DEBUG_DRAW_SHADOW_ATLAS" value="9" enum="DebugDraw">
-			Draws the shadow atlas that stores shadows from [OmniLight3D]s and [SpotLight3D]s in the upper left quadrant of the [Viewport].
+			Draws the shadow atlas that stores shadows from [PointLight3D]s and [SpotLight3D]s in the upper left quadrant of the [Viewport].
 		</constant>
 		<constant name="DEBUG_DRAW_DIRECTIONAL_SHADOW_ATLAS" value="10" enum="DebugDraw">
 			Draws the shadow atlas that stores shadows from [DirectionalLight3D]s in the upper left quadrant of the [Viewport].
@@ -416,7 +416,7 @@
 		</constant>
 		<constant name="DEBUG_DRAW_DISABLE_LOD" value="18" enum="DebugDraw">
 		</constant>
-		<constant name="DEBUG_DRAW_CLUSTER_OMNI_LIGHTS" value="19" enum="DebugDraw">
+		<constant name="DEBUG_DRAW_CLUSTER_POINT_LIGHTS" value="19" enum="DebugDraw">
 		</constant>
 		<constant name="DEBUG_DRAW_CLUSTER_SPOT_LIGHTS" value="20" enum="DebugDraw">
 		</constant>

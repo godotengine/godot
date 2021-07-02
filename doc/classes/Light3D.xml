@@ -49,7 +49,7 @@
 			The light will affect objects in the selected layers.
 		</member>
 		<member name="light_energy" type="float" setter="set_param" getter="get_param" default="1.0">
-			The light's strength multiplier (this is not a physical unit). For [OmniLight3D] and [SpotLight3D], changing this value will only change the light color's intensity, not the light's radius.
+			The light's strength multiplier (this is not a physical unit). For [PointLight3D]s and [SpotLight3D]s, changing this value will only change the light color's intensity, not the light's radius.
 		</member>
 		<member name="light_indirect_energy" type="float" setter="set_param" getter="get_param" default="1.0">
 			Secondary multiplier used with indirect light (light bounces). Used with [VoxelGI].
@@ -61,7 +61,7 @@
 			[Texture2D] projected by light. [member shadow_enabled] must be on for the projector to work. Light projectors make the light appear as if it is shining through a colored but transparent object, almost like light shining through stained-glass.
 		</member>
 		<member name="light_size" type="float" setter="set_param" getter="get_param" default="0.0">
-			The size of the light in Godot units. Only available for [OmniLight3D]s and [SpotLight3D]s. Increasing this value will make the light fade out slower and shadows appear blurrier. This can be used to simulate area lights to an extent.
+			The size of the light in Godot units. Only available for [PointLight3D]s and [SpotLight3D]s. Increasing this value will make the light fade out slower and shadows appear blurrier. This can be used to simulate area lights to an extent.
 		</member>
 		<member name="light_specular" type="float" setter="set_param" getter="get_param" default="0.5">
 			The intensity of the specular blob in objects affected by the light. At [code]0[/code], the light becomes a pure diffuse light. When not baking emission, this can be used to avoid unrealistic reflections when placing lights above an emissive surface.
@@ -100,13 +100,13 @@
 			Constant for accessing [member light_specular].
 		</constant>
 		<constant name="PARAM_RANGE" value="3" enum="Param">
-			Constant for accessing [member OmniLight3D.omni_range] or [member SpotLight3D.spot_range].
+			Constant for accessing [member PointLight3D.point_range] or [member SpotLight3D.spot_range].
 		</constant>
 		<constant name="PARAM_SIZE" value="4" enum="Param">
 			Constant for accessing [member light_size].
 		</constant>
 		<constant name="PARAM_ATTENUATION" value="5" enum="Param">
-			Constant for accessing [member OmniLight3D.omni_attenuation] or [member SpotLight3D.spot_attenuation].
+			Constant for accessing [member PointLight3D.point_attenuation] or [member SpotLight3D.spot_attenuation].
 		</constant>
 		<constant name="PARAM_SPOT_ANGLE" value="6" enum="Param">
 			Constant for accessing [member SpotLight3D.spot_angle].

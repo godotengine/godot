@@ -343,7 +343,7 @@ public:
 	/* Light API */
 
 	FUNCRIDSPLIT(directional_light)
-	FUNCRIDSPLIT(omni_light)
+	FUNCRIDSPLIT(point_light)
 	FUNCRIDSPLIT(spot_light)
 
 	FUNC2(light_set_color, RID, const Color &)
@@ -357,7 +357,7 @@ public:
 	FUNC2(light_set_bake_mode, RID, LightBakeMode)
 	FUNC2(light_set_max_sdfgi_cascade, RID, uint32_t)
 
-	FUNC2(light_omni_set_shadow_mode, RID, LightOmniShadowMode)
+	FUNC2(light_point_set_shadow_mode, RID, LightPointShadowMode)
 
 	FUNC2(light_directional_set_shadow_mode, RID, LightDirectionalShadowMode)
 	FUNC2(light_directional_set_blend_splits, RID, bool)

@@ -172,11 +172,11 @@ public:
 
 VARIANT_ENUM_CAST(DirectionalLight3D::ShadowMode)
 
-class OmniLight3D : public Light3D {
-	GDCLASS(OmniLight3D, Light3D);
+class PointLight3D : public Light3D {
+	GDCLASS(PointLight3D, Light3D);
 
 public:
-	// omni light
+	// point light
 	enum ShadowMode {
 		SHADOW_DUAL_PARABOLOID,
 		SHADOW_CUBE,
@@ -194,10 +194,10 @@ public:
 
 	TypedArray<String> get_configuration_warnings() const override;
 
-	OmniLight3D();
+	PointLight3D();
 };
 
-VARIANT_ENUM_CAST(OmniLight3D::ShadowMode)
+VARIANT_ENUM_CAST(PointLight3D::ShadowMode)
 
 class SpotLight3D : public Light3D {
 	GDCLASS(SpotLight3D, Light3D);

@@ -402,7 +402,7 @@ public:
 
 	enum LightType {
 		LIGHT_DIRECTIONAL,
-		LIGHT_OMNI,
+		LIGHT_POINT,
 		LIGHT_SPOT
 	};
 
@@ -430,7 +430,7 @@ public:
 	};
 
 	virtual RID directional_light_create() = 0;
-	virtual RID omni_light_create() = 0;
+	virtual RID point_light_create() = 0;
 	virtual RID spot_light_create() = 0;
 
 	virtual void light_set_color(RID p_light, const Color &p_color) = 0;
@@ -451,13 +451,13 @@ public:
 	virtual void light_set_bake_mode(RID p_light, LightBakeMode p_bake_mode) = 0;
 	virtual void light_set_max_sdfgi_cascade(RID p_light, uint32_t p_cascade) = 0;
 
-	// omni light
-	enum LightOmniShadowMode {
-		LIGHT_OMNI_SHADOW_DUAL_PARABOLOID,
-		LIGHT_OMNI_SHADOW_CUBE,
+	// point light
+	enum LightPointShadowMode {
+		LIGHT_POINT_SHADOW_DUAL_PARABOLOID,
+		LIGHT_POINT_SHADOW_CUBE,
 	};
 
-	virtual void light_omni_set_shadow_mode(RID p_light, LightOmniShadowMode p_mode) = 0;
+	virtual void light_point_set_shadow_mode(RID p_light, LightPointShadowMode p_mode) = 0;
 
 	// directional light
 	enum LightDirectionalShadowMode {
@@ -869,7 +869,7 @@ public:
 		VIEWPORT_DEBUG_DRAW_SDFGI_PROBES,
 		VIEWPORT_DEBUG_DRAW_GI_BUFFER,
 		VIEWPORT_DEBUG_DRAW_DISABLE_LOD,
-		VIEWPORT_DEBUG_DRAW_CLUSTER_OMNI_LIGHTS,
+		VIEWPORT_DEBUG_DRAW_CLUSTER_POINT_LIGHTS,
 		VIEWPORT_DEBUG_DRAW_CLUSTER_SPOT_LIGHTS,
 		VIEWPORT_DEBUG_DRAW_CLUSTER_DECALS,
 		VIEWPORT_DEBUG_DRAW_CLUSTER_REFLECTION_PROBES,
@@ -1497,7 +1497,7 @@ VARIANT_ENUM_CAST(RenderingServer::MultimeshTransformFormat);
 VARIANT_ENUM_CAST(RenderingServer::LightType);
 VARIANT_ENUM_CAST(RenderingServer::LightParam);
 VARIANT_ENUM_CAST(RenderingServer::LightBakeMode);
-VARIANT_ENUM_CAST(RenderingServer::LightOmniShadowMode);
+VARIANT_ENUM_CAST(RenderingServer::LightPointShadowMode);
 VARIANT_ENUM_CAST(RenderingServer::LightDirectionalShadowMode);
 VARIANT_ENUM_CAST(RenderingServer::ReflectionProbeUpdateMode);
 VARIANT_ENUM_CAST(RenderingServer::ReflectionProbeAmbientMode);

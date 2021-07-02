@@ -5862,11 +5862,11 @@ void RendererStorageRD::directional_light_initialize(RID p_light) {
 	_light_initialize(p_light, RS::LIGHT_DIRECTIONAL);
 }
 
-RID RendererStorageRD::omni_light_allocate() {
+RID RendererStorageRD::point_light_allocate() {
 	return light_owner.allocate_rid();
 }
-void RendererStorageRD::omni_light_initialize(RID p_light) {
-	_light_initialize(p_light, RS::LIGHT_OMNI);
+void RendererStorageRD::point_light_initialize(RID p_light) {
+	_light_initialize(p_light, RS::LIGHT_POINT);
 }
 
 RID RendererStorageRD::spot_light_allocate() {
@@ -5942,14 +5942,14 @@ void RendererStorageRD::light_set_projector(RID p_light, RID p_texture) {
 	}
 
 	if (light->type != RS::LIGHT_DIRECTIONAL && light->projector.is_valid()) {
-		texture_remove_from_decal_atlas(light->projector, light->type == RS::LIGHT_OMNI);
+		texture_remove_from_decal_atlas(light->projector, light->type == RS::LIGHT_POINT);
 	}
 
 	light->projector = p_texture;
 
 	if (light->type != RS::LIGHT_DIRECTIONAL) {
 		if (light->projector.is_valid()) {
-			texture_add_to_decal_atlas(light->projector, light->type == RS::LIGHT_OMNI);
+			texture_add_to_decal_atlas(light->projector, light->type == RS::LIGHT_POINT);
 		}
 		light->dependency.changed_notify(DEPENDENCY_CHANGED_LIGHT_SOFT_SHADOW_AND_PROJECTOR);
 	}
@@ -6002,21 +6002,21 @@ void RendererStorageRD::light_set_max_sdfgi_cascade(RID p_light, uint32_t p_casc
 	light->dependency.changed_notify(DEPENDENCY_CHANGED_LIGHT);
 }
 
-void RendererStorageRD::light_omni_set_shadow_mode(RID p_light, RS::LightOmniShadowMode p_mode) {
+void RendererStorageRD::light_point_set_shadow_mode(RID p_light, RS::LightPointShadowMode p_mode) {
 	Light *light = light_owner.getornull(p_light);
 	ERR_FAIL_COND(!light);
 
-	light->omni_shadow_mode = p_mode;
+	light->point_shadow_mode = p_mode;
 
 	light->version++;
 	light->dependency.changed_notify(DEPENDENCY_CHANGED_LIGHT);
 }
 
-RS::LightOmniShadowMode RendererStorageRD::light_omni_get_shadow_mode(RID p_light) {
+RS::LightPointShadowMode RendererStorageRD::light_point_get_shadow_mode(RID p_light) {
 	const Light *light = light_owner.getornull(p_light);
-	ERR_FAIL_COND_V(!light, RS::LIGHT_OMNI_SHADOW_CUBE);
+	ERR_FAIL_COND_V(!light, RS::LIGHT_POINT_SHADOW_CUBE);
 
-	return light->omni_shadow_mode;
+	return light->point_shadow_mode;
 }
 
 void RendererStorageRD::light_directional_set_shadow_mode(RID p_light, RS::LightDirectionalShadowMode p_mode) {
@@ -6096,7 +6096,7 @@ AABB RendererStorageRD::light_get_aabb(RID p_light) const {
 			float size = Math::tan(Math::deg2rad(light->param[RS::LIGHT_PARAM_SPOT_ANGLE])) * len;
 			return AABB(Vector3(-size, -size, -len), Vector3(size * 2, size * 2, len));
 		};
-		case RS::LIGHT_OMNI: {
+		case RS::LIGHT_POINT: {
 			float r = light->param[RS::LIGHT_PARAM_RANGE];
 			return AABB(-Vector3(r, r, r), Vector3(r, r, r) * 2);
 		};

@@ -62,7 +62,7 @@ void Light3D::set_shadow(bool p_enable) {
 	shadow = p_enable;
 	RS::get_singleton()->light_set_shadow(light, p_enable);
 
-	if (type == RenderingServer::LIGHT_SPOT || type == RenderingServer::LIGHT_OMNI) {
+	if (type == RenderingServer::LIGHT_SPOT || type == RenderingServer::LIGHT_POINT) {
 		update_configuration_warnings();
 	}
 
@@ -124,7 +124,7 @@ AABB Light3D::get_aabb() const {
 	if (type == RenderingServer::LIGHT_DIRECTIONAL) {
 		return AABB(Vector3(-1, -1, -1), Vector3(2, 2, 2));
 
-	} else if (type == RenderingServer::LIGHT_OMNI) {
+	} else if (type == RenderingServer::LIGHT_POINT) {
 		return AABB(Vector3(-1, -1, -1) * param[PARAM_RANGE], Vector3(2, 2, 2) * param[PARAM_RANGE]);
 
 	} else if (type == RenderingServer::LIGHT_SPOT) {
@@ -312,8 +312,8 @@ Light3D::Light3D(RenderingServer::LightType p_type) {
 		case RS::LIGHT_DIRECTIONAL:
 			light = RenderingServer::get_singleton()->directional_light_create();
 			break;
-		case RS::LIGHT_OMNI:
-			light = RenderingServer::get_singleton()->omni_light_create();
+		case RS::LIGHT_POINT:
+			light = RenderingServer::get_singleton()->point_light_create();
 			break;
 		case RS::LIGHT_SPOT:
 			light = RenderingServer::get_singleton()->spot_light_create();
@@ -353,7 +353,7 @@ Light3D::Light3D(RenderingServer::LightType p_type) {
 }
 
 Light3D::Light3D() {
-	ERR_PRINT("Light3D should not be instantiated directly; use the DirectionalLight3D, OmniLight3D or SpotLight3D subtypes instead.");
+	ERR_PRINT("Light3D should not be instantiated directly; use the DirectionalLight3D, PointLight3D or SpotLight3D subtypes instead.");
 }
 
 Light3D::~Light3D() {
@@ -425,22 +425,22 @@ DirectionalLight3D::DirectionalLight3D() :
 	set_param(PARAM_SHADOW_MAX_DISTANCE, 100);
 	set_param(PARAM_SHADOW_FADE_START, 0.8);
 	// Increase the default shadow bias to better suit most scenes.
-	// Leave normal bias untouched as it doesn't benefit DirectionalLight3D as much as OmniLight3D.
+	// Leave normal bias untouched as it doesn't benefit DirectionalLight3D as much as PointLight3D.
 	set_param(PARAM_SHADOW_BIAS, 0.05);
 	set_shadow_mode(SHADOW_PARALLEL_4_SPLITS);
 	blend_splits = false;
 }
 
-void OmniLight3D::set_shadow_mode(ShadowMode p_mode) {
+void PointLight3D::set_shadow_mode(ShadowMode p_mode) {
 	shadow_mode = p_mode;
-	RS::get_singleton()->light_omni_set_shadow_mode(light, RS::LightOmniShadowMode(p_mode));
+	RS::get_singleton()->light_point_set_shadow_mode(light, RS::LightPointShadowMode(p_mode));
 }
 
-OmniLight3D::ShadowMode OmniLight3D::get_shadow_mode() const {
+PointLight3D::ShadowMode PointLight3D::get_shadow_mode() const {
 	return shadow_mode;
 }
 
-TypedArray<String> OmniLight3D::get_configuration_warnings() const {
+TypedArray<String> PointLight3D::get_configuration_warnings() const {
 	TypedArray<String> warnings = Node::get_configuration_warnings();
 
 	if (!has_shadow() && get_projector().is_valid()) {
@@ -450,21 +450,21 @@ TypedArray<String> OmniLight3D::get_configuration_warnings() const {
 	return warnings;
 }
 
-void OmniLight3D::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("set_shadow_mode", "mode"), &OmniLight3D::set_shadow_mode);
-	ClassDB::bind_method(D_METHOD("get_shadow_mode"), &OmniLight3D::get_shadow_mode);
+void PointLight3D::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("set_shadow_mode", "mode"), &PointLight3D::set_shadow_mode);
+	ClassDB::bind_method(D_METHOD("get_shadow_mode"), &PointLight3D::get_shadow_mode);
 
-	ADD_GROUP("Omni", "omni_");
-	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "omni_range", PROPERTY_HINT_RANGE, "0,4096,0.1,or_greater,exp"), "set_param", "get_param", PARAM_RANGE);
-	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "omni_attenuation", PROPERTY_HINT_EXP_EASING, "attenuation"), "set_param", "get_param", PARAM_ATTENUATION);
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "omni_shadow_mode", PROPERTY_HINT_ENUM, "Dual Paraboloid,Cube"), "set_shadow_mode", "get_shadow_mode");
+	ADD_GROUP("Point", "point_");
+	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "point_range", PROPERTY_HINT_RANGE, "0,4096,0.1,or_greater,exp"), "set_param", "get_param", PARAM_RANGE);
+	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "point_attenuation", PROPERTY_HINT_EXP_EASING, "attenuation"), "set_param", "get_param", PARAM_ATTENUATION);
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "point_shadow_mode", PROPERTY_HINT_ENUM, "Dual Paraboloid,Cube"), "set_shadow_mode", "get_shadow_mode");
 
 	BIND_ENUM_CONSTANT(SHADOW_DUAL_PARABOLOID);
 	BIND_ENUM_CONSTANT(SHADOW_CUBE);
 }
 
-OmniLight3D::OmniLight3D() :
-		Light3D(RenderingServer::LIGHT_OMNI) {
+PointLight3D::PointLight3D() :
+		Light3D(RenderingServer::LIGHT_POINT) {
 	set_shadow_mode(SHADOW_CUBE);
 	// Increase the default shadow biases to better suit most scenes.
 	set_param(PARAM_SHADOW_BIAS, 0.1);

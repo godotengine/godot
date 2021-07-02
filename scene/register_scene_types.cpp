@@ -464,7 +464,7 @@ void register_scene_types() {
 	GDREGISTER_CLASS(AnimatedSprite3D);
 	GDREGISTER_VIRTUAL_CLASS(Light3D);
 	GDREGISTER_CLASS(DirectionalLight3D);
-	GDREGISTER_CLASS(OmniLight3D);
+	GDREGISTER_CLASS(PointLight3D);
 	GDREGISTER_CLASS(SpotLight3D);
 	GDREGISTER_CLASS(ReflectionProbe);
 	GDREGISTER_CLASS(Decal);
@@ -925,7 +925,7 @@ void register_scene_types() {
 	ClassDB::add_compatibility_class("NavigationRegion", "NavigationRegion3D");
 	ClassDB::add_compatibility_class("Navigation2DServer", "NavigationServer2D");
 	ClassDB::add_compatibility_class("NavigationServer", "NavigationServer3D");
-	ClassDB::add_compatibility_class("OmniLight", "OmniLight3D");
+	ClassDB::add_compatibility_class("OmniLight", "PointLight3D");
 	ClassDB::add_compatibility_class("PanoramaSky", "Sky");
 	ClassDB::add_compatibility_class("Particles", "GPUParticles3D");
 	ClassDB::add_compatibility_class("Particles2D", "GPUParticles2D");

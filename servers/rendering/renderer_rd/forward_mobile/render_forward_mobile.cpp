@@ -900,7 +900,7 @@ void RenderForwardMobile::_update_render_base_uniform_set() {
 			RD::Uniform u;
 			u.binding = 3;
 			u.uniform_type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
-			u.ids.push_back(get_omni_light_buffer());
+			u.ids.push_back(get_point_light_buffer());
 			uniforms.push_back(u);
 		}
 		{
@@ -1441,8 +1441,8 @@ void RenderForwardMobile::_render_list_with_threads(RenderListParameters *p_para
 void RenderForwardMobile::_fill_push_constant_instance_indices(GeometryInstanceForwardMobile::PushConstant *p_push_constant, const GeometryInstanceForwardMobile *p_instance) {
 	// first zero out our indices
 
-	p_push_constant->omni_lights[0] = 0xFFFF;
-	p_push_constant->omni_lights[1] = 0xFFFF;
+	p_push_constant->point_lights[0] = 0xFFFF;
+	p_push_constant->point_lights[1] = 0xFFFF;
 
 	p_push_constant->spot_lights[0] = 0xFFFF;
 	p_push_constant->spot_lights[1] = 0xFFFF;
@@ -1457,9 +1457,9 @@ void RenderForwardMobile::_fill_push_constant_instance_indices(GeometryInstanceF
 		uint32_t ofs = i < 4 ? 0 : 1;
 		uint32_t shift = (i & 0x3) << 3;
 		uint32_t mask = ~(0xFF << shift);
-		if (i < p_instance->omni_light_count) {
-			p_push_constant->omni_lights[ofs] &= mask;
-			p_push_constant->omni_lights[ofs] |= uint32_t(forward_id_allocators[FORWARD_ID_TYPE_OMNI_LIGHT].map[p_instance->omni_lights[i]]) << shift;
+		if (i < p_instance->point_light_count) {
+			p_push_constant->point_lights[ofs] &= mask;
+			p_push_constant->point_lights[ofs] |= uint32_t(forward_id_allocators[FORWARD_ID_TYPE_POINT_LIGHT].map[p_instance->point_lights[i]]) << shift;
 		}
 		if (i < p_instance->spot_light_count) {
 			p_push_constant->spot_lights[ofs] &= mask;
@@ -1837,16 +1837,16 @@ void RenderForwardMobile::geometry_instance_pair_light_instances(GeometryInstanc
 	GeometryInstanceForwardMobile *ginstance = static_cast<GeometryInstanceForwardMobile *>(p_geometry_instance);
 	ERR_FAIL_COND(!ginstance);
 
-	ginstance->omni_light_count = 0;
+	ginstance->point_light_count = 0;
 	ginstance->spot_light_count = 0;
 
 	for (uint32_t i = 0; i < p_light_instance_count; i++) {
 		RS::LightType type = light_instance_get_type(p_light_instances[i]);
 		switch (type) {
-			case RS::LIGHT_OMNI: {
-				if (ginstance->omni_light_count < (uint32_t)MAX_RDL_CULL) {
-					ginstance->omni_lights[ginstance->omni_light_count] = light_instance_get_forward_id(p_light_instances[i]);
-					ginstance->omni_light_count++;
+			case RS::LIGHT_POINT: {
+				if (ginstance->point_light_count < (uint32_t)MAX_RDL_CULL) {
+					ginstance->point_lights[ginstance->point_light_count] = light_instance_get_forward_id(p_light_instances[i]);
+					ginstance->point_light_count++;
 				}
 			} break;
 			case RS::LIGHT_SPOT: {

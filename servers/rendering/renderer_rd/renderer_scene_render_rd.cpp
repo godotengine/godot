@@ -1236,7 +1236,7 @@ RID RendererSceneRenderRD::light_instance_create(RID p_light) {
 	light_instance->light = p_light;
 	light_instance->light_type = storage->light_get_type(p_light);
 	if (light_instance->light_type != RS::LIGHT_DIRECTIONAL) {
-		light_instance->forward_id = _allocate_forward_id(light_instance->light_type == RS::LIGHT_OMNI ? FORWARD_ID_TYPE_OMNI_LIGHT : FORWARD_ID_TYPE_SPOT_LIGHT);
+		light_instance->forward_id = _allocate_forward_id(light_instance->light_type == RS::LIGHT_POINT ? FORWARD_ID_TYPE_POINT_LIGHT : FORWARD_ID_TYPE_SPOT_LIGHT);
 	}
 
 	return li;
@@ -2403,7 +2403,7 @@ void RendererSceneRenderRD::_setup_lights(const PagedArray<RID> &p_lights, const
 
 	Plane camera_plane(p_camera_transform.origin, -p_camera_transform.basis.get_axis(Vector3::AXIS_Z).normalized());
 
-	cluster.omni_light_count = 0;
+	cluster.point_light_count = 0;
 	cluster.spot_light_count = 0;
 
 	r_directional_light_soft_shadows = false;
@@ -2602,14 +2602,14 @@ void RendererSceneRenderRD::_setup_lights(const PagedArray<RID> &p_lights, const
 
 				r_directional_light_count++;
 			} break;
-			case RS::LIGHT_OMNI: {
-				if (cluster.omni_light_count >= cluster.max_lights) {
+			case RS::LIGHT_POINT: {
+				if (cluster.point_light_count >= cluster.max_lights) {
 					continue;
 				}
 
-				cluster.omni_light_sort[cluster.omni_light_count].instance = li;
-				cluster.omni_light_sort[cluster.omni_light_count].depth = camera_plane.distance_to(li->transform.origin);
-				cluster.omni_light_count++;
+				cluster.point_light_sort[cluster.point_light_count].instance = li;
+				cluster.point_light_sort[cluster.point_light_count].depth = camera_plane.distance_to(li->transform.origin);
+				cluster.point_light_count++;
 			} break;
 			case RS::LIGHT_SPOT: {
 				if (cluster.spot_light_count >= cluster.max_lights) {
@@ -2625,9 +2625,9 @@ void RendererSceneRenderRD::_setup_lights(const PagedArray<RID> &p_lights, const
 		li->last_pass = RSG::rasterizer->get_frame_number();
 	}
 
-	if (cluster.omni_light_count) {
+	if (cluster.point_light_count) {
 		SortArray<Cluster::InstanceSort<LightInstance>> sorter;
-		sorter.sort(cluster.omni_light_sort, cluster.omni_light_count);
+		sorter.sort(cluster.point_light_sort, cluster.point_light_count);
 	}
 
 	if (cluster.spot_light_count) {
@@ -2643,15 +2643,15 @@ void RendererSceneRenderRD::_setup_lights(const PagedArray<RID> &p_lights, const
 
 	bool using_forward_ids = _uses_forward_ids();
 
-	for (uint32_t i = 0; i < (cluster.omni_light_count + cluster.spot_light_count); i++) {
-		uint32_t index = (i < cluster.omni_light_count) ? i : i - (cluster.omni_light_count);
-		Cluster::LightData &light_data = (i < cluster.omni_light_count) ? cluster.omni_lights[index] : cluster.spot_lights[index];
-		RS::LightType type = (i < cluster.omni_light_count) ? RS::LIGHT_OMNI : RS::LIGHT_SPOT;
-		LightInstance *li = (i < cluster.omni_light_count) ? cluster.omni_light_sort[index].instance : cluster.spot_light_sort[index].instance;
+	for (uint32_t i = 0; i < (cluster.point_light_count + cluster.spot_light_count); i++) {
+		uint32_t index = (i < cluster.point_light_count) ? i : i - (cluster.point_light_count);
+		Cluster::LightData &light_data = (i < cluster.point_light_count) ? cluster.point_lights[index] : cluster.spot_lights[index];
+		RS::LightType type = (i < cluster.point_light_count) ? RS::LIGHT_POINT : RS::LIGHT_SPOT;
+		LightInstance *li = (i < cluster.point_light_count) ? cluster.point_light_sort[index].instance : cluster.spot_light_sort[index].instance;
 		RID base = li->light;
 
 		if (using_forward_ids) {
-			_map_forward_id(type == RS::LIGHT_OMNI ? FORWARD_ID_TYPE_OMNI_LIGHT : FORWARD_ID_TYPE_SPOT_LIGHT, li->forward_id, index);
+			_map_forward_id(type == RS::LIGHT_POINT ? FORWARD_ID_TYPE_POINT_LIGHT : FORWARD_ID_TYPE_SPOT_LIGHT, li->forward_id, index);
 		}
 
 		Transform3D light_transform = li->transform;
@@ -2734,7 +2734,7 @@ void RendererSceneRenderRD::_setup_lights(const PagedArray<RID> &p_lights, const
 
 				light_data.shadow_normal_bias = storage->light_get_param(base, RS::LIGHT_PARAM_SHADOW_NORMAL_BIAS) * shadow_texel_size;
 
-			} else { //omni
+			} else { //point
 				light_data.shadow_bias = storage->light_get_param(base, RS::LIGHT_PARAM_SHADOW_BIAS) * radius / 10.0;
 				float shadow_texel_size = light_instance_get_shadow_texel_size(li->self, p_shadow_atlas);
 				light_data.shadow_normal_bias = storage->light_get_param(base, RS::LIGHT_PARAM_SHADOW_NORMAL_BIAS) * shadow_texel_size * 2.0; // applied in -1 .. 1 space
@@ -2752,7 +2752,7 @@ void RendererSceneRenderRD::_setup_lights(const PagedArray<RID> &p_lights, const
 			light_data.soft_shadow_scale = storage->light_get_param(base, RS::LIGHT_PARAM_SHADOW_BLUR);
 			light_data.shadow_volumetric_fog_fade = 1.0 / storage->light_get_shadow_volumetric_fog_fade(base);
 
-			if (type == RS::LIGHT_OMNI) {
+			if (type == RS::LIGHT_POINT) {
 				light_data.atlas_rect[3] *= 0.5; //one paraboloid on top of another
 				Transform3D proj = (inverse_transform * light_transform).inverse();
 
@@ -2789,15 +2789,15 @@ void RendererSceneRenderRD::_setup_lights(const PagedArray<RID> &p_lights, const
 		li->cull_mask = storage->light_get_cull_mask(base);
 
 		if (current_cluster_builder != nullptr) {
-			current_cluster_builder->add_light(type == RS::LIGHT_SPOT ? ClusterBuilderRD::LIGHT_TYPE_SPOT : ClusterBuilderRD::LIGHT_TYPE_OMNI, light_transform, radius, spot_angle);
+			current_cluster_builder->add_light(type == RS::LIGHT_SPOT ? ClusterBuilderRD::LIGHT_TYPE_SPOT : ClusterBuilderRD::LIGHT_TYPE_POINT, light_transform, radius, spot_angle);
 		}
 
 		r_positional_light_count++;
 	}
 
 	//update without barriers
-	if (cluster.omni_light_count) {
-		RD::get_singleton()->buffer_update(cluster.omni_light_buffer, 0, sizeof(Cluster::LightData) * cluster.omni_light_count, cluster.omni_lights, RD::BARRIER_MASK_RASTER | RD::BARRIER_MASK_COMPUTE);
+	if (cluster.point_light_count) {
+		RD::get_singleton()->buffer_update(cluster.point_light_buffer, 0, sizeof(Cluster::LightData) * cluster.point_light_count, cluster.point_lights, RD::BARRIER_MASK_RASTER | RD::BARRIER_MASK_COMPUTE);
 	}
 
 	if (cluster.spot_light_count) {
@@ -3103,7 +3103,7 @@ void RendererSceneRenderRD::_update_volumetric_fog(RID p_render_buffers, RID p_e
 			RD::Uniform u;
 			u.uniform_type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
 			u.binding = 3;
-			u.ids.push_back(get_omni_light_buffer());
+			u.ids.push_back(get_point_light_buffer());
 			uniforms.push_back(u);
 		}
 		{
@@ -3453,7 +3453,7 @@ void RendererSceneRenderRD::_pre_opaque_render(RenderDataRD *p_render_data, bool
 
 			if (storage->light_get_type(li->light) == RS::LIGHT_DIRECTIONAL) {
 				render_state.directional_shadows.push_back(i);
-			} else if (storage->light_get_type(li->light) == RS::LIGHT_OMNI && storage->light_omni_get_shadow_mode(li->light) == RS::LIGHT_OMNI_SHADOW_CUBE) {
+			} else if (storage->light_get_type(li->light) == RS::LIGHT_POINT && storage->light_point_get_shadow_mode(li->light) == RS::LIGHT_POINT_SHADOW_CUBE) {
 				render_state.cube_shadows.push_back(i);
 			} else {
 				render_state.shadows.push_back(i);
@@ -3698,11 +3698,11 @@ void RendererSceneRenderRD::render_scene(RID p_render_buffers, const CameraData 
 	_render_scene(&render_data, clear_color);
 
 	if (p_render_buffers.is_valid()) {
-		if (debug_draw == RS::VIEWPORT_DEBUG_DRAW_CLUSTER_OMNI_LIGHTS || debug_draw == RS::VIEWPORT_DEBUG_DRAW_CLUSTER_SPOT_LIGHTS || debug_draw == RS::VIEWPORT_DEBUG_DRAW_CLUSTER_DECALS || debug_draw == RS::VIEWPORT_DEBUG_DRAW_CLUSTER_REFLECTION_PROBES) {
+		if (debug_draw == RS::VIEWPORT_DEBUG_DRAW_CLUSTER_POINT_LIGHTS || debug_draw == RS::VIEWPORT_DEBUG_DRAW_CLUSTER_SPOT_LIGHTS || debug_draw == RS::VIEWPORT_DEBUG_DRAW_CLUSTER_DECALS || debug_draw == RS::VIEWPORT_DEBUG_DRAW_CLUSTER_REFLECTION_PROBES) {
 			ClusterBuilderRD::ElementType elem_type = ClusterBuilderRD::ELEMENT_TYPE_MAX;
 			switch (debug_draw) {
-				case RS::VIEWPORT_DEBUG_DRAW_CLUSTER_OMNI_LIGHTS:
-					elem_type = ClusterBuilderRD::ELEMENT_TYPE_OMNI_LIGHT;
+				case RS::VIEWPORT_DEBUG_DRAW_CLUSTER_POINT_LIGHTS:
+					elem_type = ClusterBuilderRD::ELEMENT_TYPE_POINT_LIGHT;
 					break;
 				case RS::VIEWPORT_DEBUG_DRAW_CLUSTER_SPOT_LIGHTS:
 					elem_type = ClusterBuilderRD::ELEMENT_TYPE_SPOT_LIGHT;
@@ -3833,8 +3833,8 @@ void RendererSceneRenderRD::_render_shadow_pass(RID p_light, RID p_shadow_atlas,
 
 		zfar = storage->light_get_param(light_instance->light, RS::LIGHT_PARAM_RANGE);
 
-		if (storage->light_get_type(light_instance->light) == RS::LIGHT_OMNI) {
-			if (storage->light_omni_get_shadow_mode(light_instance->light) == RS::LIGHT_OMNI_SHADOW_CUBE) {
+		if (storage->light_get_type(light_instance->light) == RS::LIGHT_POINT) {
+			if (storage->light_point_get_shadow_mode(light_instance->light) == RS::LIGHT_POINT_SHADOW_CUBE) {
 				ShadowCubemap *cubemap = _get_shadow_cubemap(shadow_size / 2);
 
 				render_fb = cubemap->side_fb[p_pass];
@@ -3996,7 +3996,7 @@ bool RendererSceneRenderRD::free(RID p_rid) {
 		}
 
 		if (light_instance->light_type != RS::LIGHT_DIRECTIONAL) {
-			_free_forward_id(light_instance->light_type == RS::LIGHT_OMNI ? FORWARD_ID_TYPE_OMNI_LIGHT : FORWARD_ID_TYPE_SPOT_LIGHT, light_instance->forward_id);
+			_free_forward_id(light_instance->light_type == RS::LIGHT_POINT ? FORWARD_ID_TYPE_POINT_LIGHT : FORWARD_ID_TYPE_SPOT_LIGHT, light_instance->forward_id);
 		}
 		light_instance_owner.free(p_rid);
 
@@ -4151,8 +4151,8 @@ RendererSceneRenderRD *RendererSceneRenderRD::singleton = nullptr;
 RID RendererSceneRenderRD::get_reflection_probe_buffer() {
 	return cluster.reflection_buffer;
 }
-RID RendererSceneRenderRD::get_omni_light_buffer() {
-	return cluster.omni_light_buffer;
+RID RendererSceneRenderRD::get_point_light_buffer() {
+	return cluster.point_light_buffer;
 }
 
 RID RendererSceneRenderRD::get_spot_light_buffer() {
@@ -4227,9 +4227,9 @@ RendererSceneRenderRD::RendererSceneRenderRD(RendererStorageRD *p_storage) {
 		cluster.max_lights = max_cluster_elements;
 
 		uint32_t light_buffer_size = cluster.max_lights * sizeof(Cluster::LightData);
-		cluster.omni_lights = memnew_arr(Cluster::LightData, cluster.max_lights);
-		cluster.omni_light_buffer = RD::get_singleton()->storage_buffer_create(light_buffer_size);
-		cluster.omni_light_sort = memnew_arr(Cluster::InstanceSort<LightInstance>, cluster.max_lights);
+		cluster.point_lights = memnew_arr(Cluster::LightData, cluster.max_lights);
+		cluster.point_light_buffer = RD::get_singleton()->storage_buffer_create(light_buffer_size);
+		cluster.point_light_sort = memnew_arr(Cluster::InstanceSort<LightInstance>, cluster.max_lights);
 		cluster.spot_lights = memnew_arr(Cluster::LightData, cluster.max_lights);
 		cluster.spot_light_buffer = RD::get_singleton()->storage_buffer_create(light_buffer_size);
 		cluster.spot_light_sort = memnew_arr(Cluster::InstanceSort<LightInstance>, cluster.max_lights);
@@ -4323,14 +4323,14 @@ RendererSceneRenderRD::~RendererSceneRenderRD() {
 
 	{
 		RD::get_singleton()->free(cluster.directional_light_buffer);
-		RD::get_singleton()->free(cluster.omni_light_buffer);
+		RD::get_singleton()->free(cluster.point_light_buffer);
 		RD::get_singleton()->free(cluster.spot_light_buffer);
 		RD::get_singleton()->free(cluster.reflection_buffer);
 		RD::get_singleton()->free(cluster.decal_buffer);
 		memdelete_arr(cluster.directional_lights);
-		memdelete_arr(cluster.omni_lights);
+		memdelete_arr(cluster.point_lights);
 		memdelete_arr(cluster.spot_lights);
-		memdelete_arr(cluster.omni_light_sort);
+		memdelete_arr(cluster.point_light_sort);
 		memdelete_arr(cluster.spot_light_sort);
 		memdelete_arr(cluster.reflections);
 		memdelete_arr(cluster.reflection_sort);

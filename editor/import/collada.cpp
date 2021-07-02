@@ -789,7 +789,7 @@ void Collada::_parse_light(XMLParser &parser) {
 			} else if (name == "directional") {
 				light.mode = LightData::MODE_DIRECTIONAL;
 			} else if (name == "point") {
-				light.mode = LightData::MODE_OMNI;
+				light.mode = LightData::MODE_POINT;
 			} else if (name == "spot") {
 				light.mode = LightData::MODE_SPOT;
 			} else if (name == "color") {

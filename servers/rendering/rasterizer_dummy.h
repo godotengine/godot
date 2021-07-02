@@ -384,8 +384,8 @@ public:
 
 	RID directional_light_allocate() override { return RID(); }
 	void directional_light_initialize(RID p_rid) override {}
-	RID omni_light_allocate() override { return RID(); }
-	void omni_light_initialize(RID p_rid) override {}
+	RID point_light_allocate() override { return RID(); }
+	void point_light_initialize(RID p_rid) override {}
 	RID spot_light_allocate() override { return RID(); }
 	void spot_light_initialize(RID p_rid) override {}
 	RID reflection_probe_allocate() override { return RID(); }
@@ -402,7 +402,7 @@ public:
 	void light_set_bake_mode(RID p_light, RS::LightBakeMode p_bake_mode) override {}
 	void light_set_max_sdfgi_cascade(RID p_light, uint32_t p_cascade) override {}
 
-	void light_omni_set_shadow_mode(RID p_light, RS::LightOmniShadowMode p_mode) override {}
+	void light_point_set_shadow_mode(RID p_light, RS::LightPointShadowMode p_mode) override {}
 
 	void light_directional_set_shadow_mode(RID p_light, RS::LightDirectionalShadowMode p_mode) override {}
 	void light_directional_set_blend_splits(RID p_light, bool p_enable) override {}
@@ -411,12 +411,12 @@ public:
 	bool light_directional_is_sky_only(RID p_light) const override { return false; }
 
 	RS::LightDirectionalShadowMode light_directional_get_shadow_mode(RID p_light) override { return RS::LIGHT_DIRECTIONAL_SHADOW_ORTHOGONAL; }
-	RS::LightOmniShadowMode light_omni_get_shadow_mode(RID p_light) override { return RS::LIGHT_OMNI_SHADOW_DUAL_PARABOLOID; }
+	RS::LightPointShadowMode light_point_get_shadow_mode(RID p_light) override { return RS::LIGHT_POINT_SHADOW_DUAL_PARABOLOID; }
 
 	bool light_has_shadow(RID p_light) const override { return false; }
 	bool light_has_projector(RID p_light) const override { return false; }
 
-	RS::LightType light_get_type(RID p_light) const override { return RS::LIGHT_OMNI; }
+	RS::LightType light_get_type(RID p_light) const override { return RS::LIGHT_POINT; }
 	AABB light_get_aabb(RID p_light) const override { return AABB(); }
 	float light_get_param(RID p_light, RS::LightParam p_param) override { return 0.0; }
 	Color light_get_color(RID p_light) override { return Color(); }

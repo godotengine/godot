@@ -308,8 +308,8 @@ public:
 	virtual RID directional_light_allocate() = 0;
 	virtual void directional_light_initialize(RID p_rid) = 0;
 
-	virtual RID omni_light_allocate() = 0;
-	virtual void omni_light_initialize(RID p_rid) = 0;
+	virtual RID point_light_allocate() = 0;
+	virtual void point_light_initialize(RID p_rid) = 0;
 
 	virtual RID spot_light_allocate() = 0;
 	virtual void spot_light_initialize(RID p_rid) = 0;
@@ -325,7 +325,7 @@ public:
 	virtual void light_set_bake_mode(RID p_light, RS::LightBakeMode p_bake_mode) = 0;
 	virtual void light_set_max_sdfgi_cascade(RID p_light, uint32_t p_cascade) = 0;
 
-	virtual void light_omni_set_shadow_mode(RID p_light, RS::LightOmniShadowMode p_mode) = 0;
+	virtual void light_point_set_shadow_mode(RID p_light, RS::LightPointShadowMode p_mode) = 0;
 
 	virtual void light_directional_set_shadow_mode(RID p_light, RS::LightDirectionalShadowMode p_mode) = 0;
 	virtual void light_directional_set_blend_splits(RID p_light, bool p_enable) = 0;
@@ -334,7 +334,7 @@ public:
 	virtual bool light_directional_is_sky_only(RID p_light) const = 0;
 
 	virtual RS::LightDirectionalShadowMode light_directional_get_shadow_mode(RID p_light) = 0;
-	virtual RS::LightOmniShadowMode light_omni_get_shadow_mode(RID p_light) = 0;
+	virtual RS::LightPointShadowMode light_point_get_shadow_mode(RID p_light) = 0;
 
 	virtual bool light_has_shadow(RID p_light) const = 0;
 

@@ -1558,13 +1558,13 @@
 			Subdivision quadrant size for shadow mapping. See shadow mapping documentation.
 		</member>
 		<member name="rendering/shadows/shadow_atlas/size" type="int" setter="" getter="" default="4096">
-			Size for shadow atlas (used for OmniLights and SpotLights). See documentation.
+			Size for shadow atlas (used for [PointLight3D]s and [SpotLight3D]s). See documentation.
 		</member>
 		<member name="rendering/shadows/shadow_atlas/size.mobile" type="int" setter="" getter="" default="2048">
 			Lower-end override for [member rendering/shadows/shadow_atlas/size] on mobile devices, due to performance concerns or driver support.
 		</member>
 		<member name="rendering/shadows/shadows/soft_shadow_quality" type="int" setter="" getter="" default="2">
-			Quality setting for shadows cast by [OmniLight3D]s and [SpotLight3D]s. Higher quality settings use more samples when reading from shadow maps and are thus slower. Low quality settings may result in shadows looking grainy.
+			Quality setting for shadows cast by [PointLight3D]s and [SpotLight3D]s. Higher quality settings use more samples when reading from shadow maps and are thus slower. Low quality settings may result in shadows looking grainy.
 		</member>
 		<member name="rendering/shadows/shadows/soft_shadow_quality.mobile" type="int" setter="" getter="" default="0">
 			Lower-end override for [member rendering/shadows/shadows/soft_shadow_quality] on mobile devices, due to performance concerns or driver support.

@@ -1011,7 +1011,7 @@ private:
 		RS::LightBakeMode bake_mode = RS::LIGHT_BAKE_DYNAMIC;
 		uint32_t max_sdfgi_cascade = 2;
 		uint32_t cull_mask = 0xFFFFFFFF;
-		RS::LightOmniShadowMode omni_shadow_mode = RS::LIGHT_OMNI_SHADOW_DUAL_PARABOLOID;
+		RS::LightPointShadowMode point_shadow_mode = RS::LIGHT_POINT_SHADOW_DUAL_PARABOLOID;
 		RS::LightDirectionalShadowMode directional_shadow_mode = RS::LIGHT_DIRECTIONAL_SHADOW_ORTHOGONAL;
 		bool directional_blend_splits = false;
 		bool directional_sky_only = false;
@@ -1810,8 +1810,8 @@ public:
 	RID directional_light_allocate();
 	void directional_light_initialize(RID p_light);
 
-	RID omni_light_allocate();
-	void omni_light_initialize(RID p_light);
+	RID point_light_allocate();
+	void point_light_initialize(RID p_light);
 
 	RID spot_light_allocate();
 	void spot_light_initialize(RID p_light);
@@ -1827,7 +1827,7 @@ public:
 	void light_set_bake_mode(RID p_light, RS::LightBakeMode p_bake_mode);
 	void light_set_max_sdfgi_cascade(RID p_light, uint32_t p_cascade);
 
-	void light_omni_set_shadow_mode(RID p_light, RS::LightOmniShadowMode p_mode);
+	void light_point_set_shadow_mode(RID p_light, RS::LightPointShadowMode p_mode);
 
 	void light_directional_set_shadow_mode(RID p_light, RS::LightDirectionalShadowMode p_mode);
 	void light_directional_set_blend_splits(RID p_light, bool p_enable);
@@ -1836,7 +1836,7 @@ public:
 	bool light_directional_is_sky_only(RID p_light) const;
 
 	RS::LightDirectionalShadowMode light_directional_get_shadow_mode(RID p_light);
-	RS::LightOmniShadowMode light_omni_get_shadow_mode(RID p_light);
+	RS::LightPointShadowMode light_point_get_shadow_mode(RID p_light);
 
 	_FORCE_INLINE_ RS::LightType light_get_type(RID p_light) const {
 		const Light *light = light_owner.getornull(p_light);
