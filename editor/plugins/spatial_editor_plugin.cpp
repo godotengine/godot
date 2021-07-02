@@ -1927,6 +1927,13 @@ void SpatialEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 			return;
 		}
 
+		if (EditorSettings::get_singleton()->get("editors/3d/navigation/emulate_numpad")) {
+			const uint32_t code = k->get_scancode();
+			if (code >= KEY_0 && code <= KEY_9) {
+				k->set_scancode(code - KEY_0 + KEY_KP_0);
+			}
+		}
+
 		if (ED_IS_SHORTCUT("spatial_editor/snap", p_event)) {
 			if (_edit.mode != TRANSFORM_NONE) {
 				_edit.snap = !_edit.snap;
