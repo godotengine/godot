@@ -116,6 +116,13 @@
 				Returns a boolean suggesting whether the override option of Pseudolocalization is enabled.
 			</description>
 		</method>
+		<method name="is_pseudolocalization_skip_placeholders_enabled" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+				Returns a boolean suggesting whether the skip_placeholders option of Pseudolocalization is enabled.
+			</description>
+		</method>
 		<method name="pseudolocalize" qualifiers="const">
 			<return type="StringName">
 			</return>
@@ -204,6 +211,15 @@
 			</argument>
 			<description>
 				Sets the [code]prefix[/code] to be used in Pseudolocalization.
+			</description>
+		</method>
+		<method name="set_pseudolocalization_skip_placeholders_enabled">
+			<return type="void">
+			</return>
+			<argument index="0" name="enabled" type="bool">
+			</argument>
+			<description>
+				Sets the boolean option to skip string formatting placeholders during Pseudolocalization.
 			</description>
 		</method>
 		<method name="set_pseudolocalization_suffix">

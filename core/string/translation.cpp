@@ -1228,6 +1228,7 @@ void TranslationServer::setup() {
 	expansion_ratio = GLOBAL_GET("internationalization/pseudolocalization/expansion_ratio");
 	pseudolocalization_prefix = GLOBAL_GET("internationalization/pseudolocalization/prefix");
 	pseudolocalization_suffix = GLOBAL_GET("internationalization/pseudolocalization/suffix");
+	pseudolocalization_skip_placeholders_enabled = GLOBAL_GET("internationalization/pseudolocalization/skip_placeholders");
 #ifdef TOOLS_ENABLED
 	{
 		String options = "";
@@ -1381,6 +1382,19 @@ void TranslationServer::set_pseudolocalization_override_enabled(bool enabled) {
 	ResourceLoader::reload_translation_remaps();
 }
 
+bool TranslationServer::is_pseudolocalization_skip_placeholders_enabled() const {
+	return pseudolocalization_skip_placeholders_enabled;
+}
+
+void TranslationServer::set_pseudolocalization_skip_placeholders_enabled(bool enabled) {
+	pseudolocalization_skip_placeholders_enabled = enabled;
+
+	if (OS::get_singleton()->get_main_loop()) {
+		OS::get_singleton()->get_main_loop()->notification(MainLoop::NOTIFICATION_TRANSLATION_CHANGED);
+	}
+	ResourceLoader::reload_translation_remaps();
+}
+
 float TranslationServer::get_pseudolocalization_expansion_ratio() const {
 	return expansion_ratio;
 }
@@ -1445,7 +1459,7 @@ StringName TranslationServer::pseudolocalize(const StringName &p_message) const 
 String TranslationServer::get_override_string(String &message) const {
 	String res = "";
 	for (int i = 0; i < message.size(); i++) {
-		if (message[i] == '%' && i < message.size() - 1 &&
+		if (pseudolocalization_skip_placeholders_enabled && message[i] == '%' && i < message.size() - 1 &&
 				(message[i + 1] == 's' || message[i + 1] == 'c' || message[i + 1] == 'd' ||
 						message[i + 1] == 'o' || message[i + 1] == 'x' || message[i + 1] == 'X' || message[i + 1] == 'f')) {
 			res += message[i];
@@ -1460,7 +1474,7 @@ String TranslationServer::get_override_string(String &message) const {
 String TranslationServer::double_vowels(String &message) const {
 	String res = "";
 	for (int i = 0; i < message.size(); i++) {
-		if (message[i] == '%' && i < message.size() - 1 &&
+		if (pseudolocalization_skip_placeholders_enabled && message[i] == '%' && i < message.size() - 1 &&
 				(message[i + 1] == 's' || message[i + 1] == 'c' || message[i + 1] == 'd' ||
 						message[i + 1] == 'o' || message[i + 1] == 'x' || message[i + 1] == 'X' || message[i + 1] == 'f')) {
 			res += message[i];
@@ -1480,7 +1494,7 @@ String TranslationServer::double_vowels(String &message) const {
 String TranslationServer::replace_with_accented_string(String &message) const {
 	String res = "";
 	for (int i = 0; i < message.size(); i++) {
-		if (message[i] == '%' && i < message.size() - 1 &&
+		if (pseudolocalization_skip_placeholders_enabled && message[i] == '%' && i < message.size() - 1 &&
 				(message[i + 1] == 's' || message[i + 1] == 'c' || message[i + 1] == 'd' ||
 						message[i + 1] == 'o' || message[i + 1] == 'x' || message[i + 1] == 'X' || message[i + 1] == 'f')) {
 			res += message[i];
@@ -1509,7 +1523,7 @@ String TranslationServer::wrap_with_fakebidi_characters(String &message) const {
 			res += fakebidisuffix;
 			res += message[i];
 			res += fakebidiprefix;
-		} else if (message[i] == '%' && i < message.size() - 1 &&
+		} else if (pseudolocalization_skip_placeholders_enabled && message[i] == '%' && i < message.size() - 1 &&
 				   (message[i + 1] == 's' || message[i + 1] == 'c' || message[i + 1] == 'd' ||
 						   message[i + 1] == 'o' || message[i + 1] == 'x' || message[i + 1] == 'X' || message[i + 1] == 'f')) {
 			res += fakebidisuffix;
@@ -1680,6 +1694,8 @@ void TranslationServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_pseudolocalization_fake_bidi_enabled", "enabled"), &TranslationServer::set_pseudolocalization_fake_bidi_enabled);
 	ClassDB::bind_method(D_METHOD("is_pseudolocalization_override_enabled"), &TranslationServer::is_pseudolocalization_override_enabled);
 	ClassDB::bind_method(D_METHOD("set_pseudolocalization_override_enabled", "enabled"), &TranslationServer::set_pseudolocalization_override_enabled);
+	ClassDB::bind_method(D_METHOD("is_pseudolocalization_skip_placeholders_enabled"), &TranslationServer::is_pseudolocalization_skip_placeholders_enabled);
+	ClassDB::bind_method(D_METHOD("set_pseudolocalization_skip_placeholders_enabled", "enabled"), &TranslationServer::set_pseudolocalization_skip_placeholders_enabled);
 	ClassDB::bind_method(D_METHOD("get_pseudolocalization_prefix"), &TranslationServer::get_pseudolocalization_prefix);
 	ClassDB::bind_method(D_METHOD("set_pseudolocalization_prefix", "prefix"), &TranslationServer::set_pseudolocalization_prefix);
 	ClassDB::bind_method(D_METHOD("get_pseudolocalization_suffix"), &TranslationServer::get_pseudolocalization_suffix);

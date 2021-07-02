@@ -1144,6 +1144,7 @@ ProjectSettings::ProjectSettings() {
 	GLOBAL_DEF("internationalization/pseudolocalization/prefix", "[");
 	GLOBAL_DEF("internationalization/pseudolocalization/suffix", "]");
 	GLOBAL_DEF("internationalization/pseudolocalization/fake_bidi", false);
+	GLOBAL_DEF("internationalization/pseudolocalization/skip_placeholders", true);
 	GLOBAL_DEF("internationalization/pseudolocalization/override", false);
 }
 
