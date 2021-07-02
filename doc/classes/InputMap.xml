@@ -41,6 +41,15 @@
 				Removes all events from an action.
 			</description>
 		</method>
+		<method name="action_get_deadzone">
+			<return type="float">
+			</return>
+			<argument index="0" name="action" type="StringName">
+			</argument>
+			<description>
+				Returns a deadzone value for the action.
+			</description>
+		</method>
 		<method name="action_get_events">
 			<return type="Array">
 			</return>
