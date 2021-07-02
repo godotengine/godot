@@ -532,7 +532,7 @@ public class Godot extends Fragment implements SensorEventListener, IDownloaderC
 		String main_pack_md5 = null;
 		String main_pack_key = null;
 
-		List<String> new_args = new LinkedList<String>();
+		List<String> new_args = new LinkedList<>();
 
 		for (int i = 0; i < command_line.length; i++) {
 			boolean has_extra = i < command_line.length - 1;
