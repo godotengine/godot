@@ -778,7 +778,7 @@
 			<return type="float">
 			</return>
 			<description>
-				Returns a random floating point value on the interval [code][0, 1][/code].
+				Returns a random floating point value between [code]0.0[/code] and [code]1.0[/code] (inclusive).
 				[codeblock]
 				randf() # Returns e.g. 0.375671
 				[/codeblock]
@@ -792,7 +792,7 @@
 			<argument index="1" name="to" type="float">
 			</argument>
 			<description>
-				Random range, any floating point value between [code]from[/code] and [code]to[/code].
+				Returns a random floating point value on the interval between [code]from[/code] and [code]to[/code] (inclusive).
 				[codeblock]
 				prints(randf_range(-10, 10), randf_range(-10, 10)) # Prints e.g. -3.844535 7.45315
 				[/codeblock]
@@ -819,7 +819,7 @@
 			<argument index="1" name="to" type="int">
 			</argument>
 			<description>
-				Random range, any 32-bit integer value between [code]from[/code] and [code]to[/code] (inclusive). If [code]to[/code] is lesser than [code]from[/code] they are swapped.
+				Returns a random signed 32-bit integer between [code]from[/code] and [code]to[/code] (inclusive). If [code]to[/code] is lesser than [code]from[/code], they are swapped.
 				[codeblock]
 				print(randi_range(0, 1)) # Prints 0 or 1
 				print(randi_range(-10, 1000)) # Prints any number from -10 to 1000
