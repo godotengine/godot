@@ -189,6 +189,8 @@ void RenderingServerDefault::_draw(bool p_swap_buffers, double frame_step) {
 			print_frame_profile_frame_count = 0;
 		}
 	}
+
+	RSG::storage->update_memory_info();
 }
 
 float RenderingServerDefault::get_frame_setup_time_cpu() const {
@@ -239,8 +241,15 @@ void RenderingServerDefault::finish() {
 
 /* STATUS INFORMATION */
 
-uint64_t RenderingServerDefault::get_render_info(RenderInfo p_info) {
-	return RSG::storage->get_render_info(p_info);
+uint64_t RenderingServerDefault::get_rendering_info(RenderingInfo p_info) {
+	if (p_info == RENDERING_INFO_TOTAL_OBJECTS_IN_FRAME) {
+		return RSG::viewport->get_total_objects_drawn();
+	} else if (p_info == RENDERING_INFO_TOTAL_PRIMITIVES_IN_FRAME) {
+		return RSG::viewport->get_total_vertices_drawn();
+	} else if (p_info == RENDERING_INFO_TOTAL_DRAW_CALLS_IN_FRAME) {
+		return RSG::viewport->get_total_draw_calls_used();
+	}
+	return RSG::storage->get_rendering_info(p_info);
 }
 
 String RenderingServerDefault::get_video_adapter_name() const {

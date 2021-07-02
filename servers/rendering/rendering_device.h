@@ -1128,7 +1128,13 @@ public:
 	virtual void submit() = 0;
 	virtual void sync() = 0;
 
-	virtual uint64_t get_memory_usage() const = 0;
+	enum MemoryType {
+		MEMORY_TEXTURES,
+		MEMORY_BUFFERS,
+		MEMORY_TOTAL
+	};
+
+	virtual uint64_t get_memory_usage(MemoryType p_type) const = 0;
 
 	virtual RenderingDevice *create_local_device() = 0;
 
@@ -1200,6 +1206,7 @@ VARIANT_ENUM_CAST(RenderingDevice::PipelineDynamicStateFlags)
 VARIANT_ENUM_CAST(RenderingDevice::InitialAction)
 VARIANT_ENUM_CAST(RenderingDevice::FinalAction)
 VARIANT_ENUM_CAST(RenderingDevice::Limit)
+VARIANT_ENUM_CAST(RenderingDevice::MemoryType)
 
 typedef RenderingDevice RD;
 

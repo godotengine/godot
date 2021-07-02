@@ -1005,6 +1005,9 @@ class RenderingDeviceVulkan : public RenderingDevice {
 
 	VulkanContext *context = nullptr;
 
+	uint64_t image_memory = 0;
+	uint64_t buffer_memory = 0;
+
 	void _free_internal(RID p_id);
 	void _flush(bool p_current_frame);
 
@@ -1191,7 +1194,7 @@ public:
 
 	virtual RenderingDevice *create_local_device();
 
-	virtual uint64_t get_memory_usage() const;
+	virtual uint64_t get_memory_usage(MemoryType p_type) const;
 
 	virtual void set_resource_name(RID p_id, const String p_name);
 

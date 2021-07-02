@@ -335,6 +335,11 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 	bool using_ssr = false;
 	bool using_sss = false;
 
+	if (p_render_data->render_info) {
+		p_render_data->render_info->info[RS::VIEWPORT_RENDER_INFO_TYPE_VISIBLE][RS::VIEWPORT_RENDER_INFO_DRAW_CALLS_IN_FRAME] = p_render_data->instances->size();
+		p_render_data->render_info->info[RS::VIEWPORT_RENDER_INFO_TYPE_VISIBLE][RS::VIEWPORT_RENDER_INFO_OBJECTS_IN_FRAME] = p_render_data->instances->size();
+	}
+
 	if (render_buffer) {
 		// setup rendering to render buffer
 		screen_size.x = render_buffer->width;
@@ -555,11 +560,15 @@ void RenderForwardMobile::_render_shadow_begin() {
 	render_list[RENDER_LIST_SECONDARY].clear();
 }
 
-void RenderForwardMobile::_render_shadow_append(RID p_framebuffer, const PagedArray<GeometryInstance *> &p_instances, const CameraMatrix &p_projection, const Transform3D &p_transform, float p_zfar, float p_bias, float p_normal_bias, bool p_use_dp, bool p_use_dp_flip, bool p_use_pancake, const Plane &p_camera_plane, float p_lod_distance_multiplier, float p_screen_lod_threshold, const Rect2i &p_rect, bool p_flip_y, bool p_clear_region, bool p_begin, bool p_end) {
+void RenderForwardMobile::_render_shadow_append(RID p_framebuffer, const PagedArray<GeometryInstance *> &p_instances, const CameraMatrix &p_projection, const Transform3D &p_transform, float p_zfar, float p_bias, float p_normal_bias, bool p_use_dp, bool p_use_dp_flip, bool p_use_pancake, const Plane &p_camera_plane, float p_lod_distance_multiplier, float p_screen_lod_threshold, const Rect2i &p_rect, bool p_flip_y, bool p_clear_region, bool p_begin, bool p_end, RendererScene::RenderInfo *p_render_info) {
 	uint32_t shadow_pass_index = scene_state.shadow_passes.size();
 
 	SceneState::ShadowPass shadow_pass;
 
+	if (p_render_info) {
+		p_render_info->info[RS::VIEWPORT_RENDER_INFO_TYPE_SHADOW][RS::VIEWPORT_RENDER_INFO_DRAW_CALLS_IN_FRAME] = p_instances.size();
+		p_render_info->info[RS::VIEWPORT_RENDER_INFO_TYPE_SHADOW][RS::VIEWPORT_RENDER_INFO_OBJECTS_IN_FRAME] = p_instances.size();
+	}
 	RenderDataRD render_data;
 	render_data.cam_projection = p_projection;
 	render_data.cam_transform = p_transform;
@@ -567,6 +576,7 @@ void RenderForwardMobile::_render_shadow_append(RID p_framebuffer, const PagedAr
 	render_data.z_near = 0.0;
 	render_data.z_far = p_zfar;
 	render_data.instances = &p_instances;
+	render_data.render_info = p_render_info;
 	render_data.lod_camera_plane = p_camera_plane;
 	render_data.lod_distance_multiplier = p_lod_distance_multiplier;
 
@@ -927,6 +937,12 @@ RID RenderForwardMobile::_render_buffers_get_normal_texture(RID p_render_buffers
 	return RID();
 }
 
+_FORCE_INLINE_ static uint32_t _indices_to_primitives(RS::PrimitiveType p_primitive, uint32_t p_indices) {
+	static const uint32_t divisor[RS::PRIMITIVE_MAX] = { 1, 2, 1, 3, 1 };
+	static const uint32_t subtractor[RS::PRIMITIVE_MAX] = { 0, 0, 1, 0, 1 };
+	return (p_indices - subtractor[p_primitive]) / divisor[p_primitive];
+}
+
 void RenderForwardMobile::_fill_render_list(RenderListType p_render_list, const RenderDataRD *p_render_data, PassMode p_pass_mode, bool p_append) {
 	if (p_render_list == RENDER_LIST_OPAQUE) {
 		scene_state.used_sss = false;
@@ -1036,9 +1052,28 @@ void RenderForwardMobile::_fill_render_list(RenderListType p_render_list, const 
 					distance = -distance_max;
 				}
 
-				surf->lod_index = storage->mesh_surface_get_lod(surf->surface, inst->lod_model_scale * inst->lod_bias, distance * p_render_data->lod_distance_multiplier, p_render_data->screen_lod_threshold);
+				uint32_t indices;
+				surf->lod_index = storage->mesh_surface_get_lod(surf->surface, inst->lod_model_scale * inst->lod_bias, distance * p_render_data->lod_distance_multiplier, p_render_data->screen_lod_threshold, &indices);
+				if (p_render_data->render_info) {
+					indices = _indices_to_primitives(surf->primitive, indices);
+					if (p_render_list == RENDER_LIST_OPAQUE) { //opaque
+						p_render_data->render_info->info[RS::VIEWPORT_RENDER_INFO_TYPE_VISIBLE][RS::VIEWPORT_RENDER_INFO_PRIMITIVES_IN_FRAME] += indices;
+					} else if (p_render_list == RENDER_LIST_SECONDARY) { //shadow
+						p_render_data->render_info->info[RS::VIEWPORT_RENDER_INFO_TYPE_SHADOW][RS::VIEWPORT_RENDER_INFO_PRIMITIVES_IN_FRAME] += indices;
+					}
+				}
 			} else {
 				surf->lod_index = 0;
+				if (p_render_data->render_info) {
+					uint32_t to_draw = storage->mesh_surface_get_vertices_drawn_count(surf->surface);
+					to_draw = _indices_to_primitives(surf->primitive, to_draw);
+					to_draw *= inst->instance_count;
+					if (p_render_list == RENDER_LIST_OPAQUE) { //opaque
+						p_render_data->render_info->info[RS::VIEWPORT_RENDER_INFO_TYPE_VISIBLE][RS::VIEWPORT_RENDER_INFO_PRIMITIVES_IN_FRAME] += storage->mesh_surface_get_vertices_drawn_count(surf->surface);
+					} else if (p_render_list == RENDER_LIST_SECONDARY) { //shadow
+						p_render_data->render_info->info[RS::VIEWPORT_RENDER_INFO_TYPE_SHADOW][RS::VIEWPORT_RENDER_INFO_PRIMITIVES_IN_FRAME] += storage->mesh_surface_get_vertices_drawn_count(surf->surface);
+					}
+				}
 			}
 
 			// ADD Element

@@ -2548,6 +2548,7 @@ void RendererStorageRD::mesh_add_surface(RID p_mesh, const RS::SurfaceData &p_su
 				s->lods[i].index_buffer = RD::get_singleton()->index_buffer_create(indices, is_index_16 ? RD::INDEX_BUFFER_FORMAT_UINT16 : RD::INDEX_BUFFER_FORMAT_UINT32, p_surface.lods[i].index_data);
 				s->lods[i].index_array = RD::get_singleton()->index_array_create(s->lods[i].index_buffer, 0, indices);
 				s->lods[i].edge_length = p_surface.lods[i].edge_length;
+				s->lods[i].index_count = indices;
 			}
 		}
 	}
@@ -8803,6 +8804,29 @@ uint64_t RendererStorageRD::get_captured_timestamp_cpu_time(uint32_t p_index) co
 
 String RendererStorageRD::get_captured_timestamp_name(uint32_t p_index) const {
 	return RD::get_singleton()->get_captured_timestamp_name(p_index);
+}
+
+void RendererStorageRD::update_memory_info() {
+	texture_mem_cache = RenderingDevice::get_singleton()->get_memory_usage(RenderingDevice::MEMORY_TEXTURES);
+	buffer_mem_cache = RenderingDevice::get_singleton()->get_memory_usage(RenderingDevice::MEMORY_BUFFERS);
+	total_mem_cache = RenderingDevice::get_singleton()->get_memory_usage(RenderingDevice::MEMORY_TOTAL);
+}
+uint64_t RendererStorageRD::get_rendering_info(RS::RenderingInfo p_info) {
+	if (p_info == RS::RENDERING_INFO_TEXTURE_MEM_USED) {
+		return texture_mem_cache;
+	} else if (p_info == RS::RENDERING_INFO_BUFFER_MEM_USED) {
+		return buffer_mem_cache;
+	} else if (p_info == RS::RENDERING_INFO_VIDEO_MEM_USED) {
+		return total_mem_cache;
+	}
+	return 0;
+}
+
+String RendererStorageRD::get_video_adapter_name() const {
+	return RenderingDevice::get_singleton()->get_device_name();
+}
+String RendererStorageRD::get_video_adapter_vendor() const {
+	return RenderingDevice::get_singleton()->get_device_vendor_name();
 }
 
 RendererStorageRD *RendererStorageRD::base_singleton = nullptr;

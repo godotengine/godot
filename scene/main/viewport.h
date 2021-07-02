@@ -115,12 +115,15 @@ public:
 
 	enum RenderInfo {
 		RENDER_INFO_OBJECTS_IN_FRAME,
-		RENDER_INFO_VERTICES_IN_FRAME,
-		RENDER_INFO_MATERIAL_CHANGES_IN_FRAME,
-		RENDER_INFO_SHADER_CHANGES_IN_FRAME,
-		RENDER_INFO_SURFACE_CHANGES_IN_FRAME,
+		RENDER_INFO_PRIMITIVES_IN_FRAME,
 		RENDER_INFO_DRAW_CALLS_IN_FRAME,
 		RENDER_INFO_MAX
+	};
+
+	enum RenderInfoType {
+		RENDER_INFO_TYPE_VISIBLE,
+		RENDER_INFO_TYPE_SHADOW,
+		RENDER_INFO_TYPE_MAX
 	};
 
 	enum DebugDraw {
@@ -596,7 +599,7 @@ public:
 	void set_debug_draw(DebugDraw p_debug_draw);
 	DebugDraw get_debug_draw() const;
 
-	int get_render_info(RenderInfo p_info);
+	int get_render_info(RenderInfoType p_type, RenderInfo p_info);
 
 	void set_snap_controls_to_pixels(bool p_enable);
 	bool is_snap_controls_to_pixels_enabled() const;
@@ -699,6 +702,7 @@ VARIANT_ENUM_CAST(Viewport::SDFScale);
 VARIANT_ENUM_CAST(Viewport::SDFOversize);
 VARIANT_ENUM_CAST(SubViewport::ClearMode);
 VARIANT_ENUM_CAST(Viewport::RenderInfo);
+VARIANT_ENUM_CAST(Viewport::RenderInfoType);
 VARIANT_ENUM_CAST(Viewport::DefaultCanvasItemTextureFilter);
 VARIANT_ENUM_CAST(Viewport::DefaultCanvasItemTextureRepeat);
 

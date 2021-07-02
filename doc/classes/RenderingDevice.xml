@@ -515,6 +515,14 @@
 			<description>
 			</description>
 		</method>
+		<method name="get_memory_usage" qualifiers="const">
+			<return type="int">
+			</return>
+			<argument index="0" name="arg0" type="int" enum="RenderingDevice.MemoryType">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="index_array_create">
 			<return type="RID">
 			</return>
@@ -1770,6 +1778,12 @@
 		<constant name="LIMIT_MAX_COMPUTE_WORKGROUP_SIZE_Y" value="33" enum="Limit">
 		</constant>
 		<constant name="LIMIT_MAX_COMPUTE_WORKGROUP_SIZE_Z" value="34" enum="Limit">
+		</constant>
+		<constant name="MEMORY_TEXTURES" value="0" enum="MemoryType">
+		</constant>
+		<constant name="MEMORY_BUFFERS" value="1" enum="MemoryType">
+		</constant>
+		<constant name="MEMORY_TOTAL" value="2" enum="MemoryType">
 		</constant>
 		<constant name="INVALID_ID" value="-1">
 		</constant>
