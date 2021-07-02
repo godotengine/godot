@@ -1393,6 +1393,8 @@ void Window::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("is_embedded"), &Window::is_embedded);
 
+	ClassDB::bind_method(D_METHOD("get_contents_minimum_size"), &Window::get_contents_minimum_size);
+
 	ClassDB::bind_method(D_METHOD("set_content_scale_size", "size"), &Window::set_content_scale_size);
 	ClassDB::bind_method(D_METHOD("get_content_scale_size"), &Window::get_content_scale_size);
 

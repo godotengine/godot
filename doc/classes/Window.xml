@@ -19,6 +19,13 @@
 			<description>
 			</description>
 		</method>
+		<method name="get_contents_minimum_size" qualifiers="const">
+			<return type="Vector2">
+			</return>
+			<description>
+				Returns the combined minimum size from the child [Control] nodes of the window.
+			</description>
+		</method>
 		<method name="get_flag" qualifiers="const">
 			<return type="bool">
 			</return>
