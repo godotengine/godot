@@ -780,7 +780,7 @@ public class Godot extends Fragment implements SensorEventListener, IDownloaderC
 		int displayRotation = display.getRotation();
 
 		float[] adjustedValues = new float[3];
-		final int axisSwap[][] = {
+		final int[][] axisSwap = {
 			{ 1, -1, 0, 1 }, // ROTATION_0
 			{ -1, -1, 1, 0 }, // ROTATION_90
 			{ -1, 1, 0, 1 }, // ROTATION_180

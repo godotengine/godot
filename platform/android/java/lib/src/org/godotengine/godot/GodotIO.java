@@ -386,7 +386,7 @@ public class GodotIO {
 		Point size = new Point();
 		display.getRealSize(size);
 
-		int result[] = { 0, 0, size.x, size.y };
+		int[] result = { 0, 0, size.x, size.y };
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
 			WindowInsets insets = activity.getWindow().getDecorView().getRootWindowInsets();
 			DisplayCutout cutout = insets.getDisplayCutout();
