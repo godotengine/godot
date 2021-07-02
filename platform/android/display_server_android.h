@@ -92,7 +92,7 @@ private:
 		1003, //CURSOR_HELP
 	};
 	const int CURSOR_TYPE_NULL = 0;
-	MouseMode mouse_mode;
+	MouseMode mouse_mode = MouseMode::MOUSE_MODE_VISIBLE;
 
 	bool keep_screen_on;
 
