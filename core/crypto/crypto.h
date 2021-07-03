@@ -82,6 +82,7 @@ public:
 	virtual PackedByteArray finish() = 0;
 
 	HMACContext() {}
+	virtual ~HMACContext() {}
 };
 
 class Crypto : public RefCounted {
