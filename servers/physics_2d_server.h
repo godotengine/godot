@@ -491,20 +491,14 @@ public:
 		Vector2 collision_point;
 		Vector2 collision_normal;
 		Vector2 collider_velocity;
-		int collision_local_shape;
-		ObjectID collider_id;
+		int collision_local_shape = 0;
+		ObjectID collider_id = 0;
 		RID collider;
-		int collider_shape;
+		int collider_shape = 0;
 		Variant collider_metadata;
-
-		MotionResult() {
-			collision_local_shape = 0;
-			collider_shape = 0;
-			collider_id = 0;
-		}
 	};
 
-	virtual bool body_test_motion(RID p_body, const Transform2D &p_from, const Vector2 &p_motion, bool p_infinite_inertia, float p_margin = 0.001, MotionResult *r_result = nullptr, bool p_exclude_raycast_shapes = true) = 0;
+	virtual bool body_test_motion(RID p_body, const Transform2D &p_from, const Vector2 &p_motion, bool p_infinite_inertia, float p_margin = 0.08, MotionResult *r_result = nullptr, bool p_exclude_raycast_shapes = true) = 0;
 
 	struct SeparationResult {
 		float collision_depth;
@@ -518,7 +512,7 @@ public:
 		Variant collider_metadata;
 	};
 
-	virtual int body_test_ray_separation(RID p_body, const Transform2D &p_transform, bool p_infinite_inertia, Vector2 &r_recover_motion, SeparationResult *r_results, int p_result_max, float p_margin = 0.001) = 0;
+	virtual int body_test_ray_separation(RID p_body, const Transform2D &p_transform, bool p_infinite_inertia, Vector2 &r_recover_motion, SeparationResult *r_results, int p_result_max, float p_margin = 0.08) = 0;
 
 	/* JOINT API */
 
@@ -602,7 +596,7 @@ class Physics2DTestMotionResult : public Reference {
 	GDCLASS(Physics2DTestMotionResult, Reference);
 
 	Physics2DServer::MotionResult result;
-	bool colliding;
+	bool colliding = false;
 	friend class Physics2DServer;
 
 protected:
@@ -622,8 +616,6 @@ public:
 	RID get_collider_rid() const;
 	Object *get_collider() const;
 	int get_collider_shape() const;
-
-	Physics2DTestMotionResult();
 };
 
 typedef Physics2DServer *(*CreatePhysics2DServerCallback)();

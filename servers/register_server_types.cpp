@@ -183,6 +183,7 @@ void register_server_types() {
 	ClassDB::register_virtual_class<PhysicsDirectBodyState>();
 	ClassDB::register_virtual_class<PhysicsDirectSpaceState>();
 	ClassDB::register_virtual_class<PhysicsShapeQueryResult>();
+	ClassDB::register_class<PhysicsTestMotionResult>();
 
 	ScriptDebuggerRemote::resource_usage_func = _debugger_get_resource_usage;
 

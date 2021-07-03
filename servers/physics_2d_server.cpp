@@ -438,6 +438,7 @@ void Physics2DShapeQueryResult::_bind_methods() {
 Vector2 Physics2DTestMotionResult::get_motion() const {
 	return result.motion;
 }
+
 Vector2 Physics2DTestMotionResult::get_motion_remainder() const {
 	return result.remainder;
 }
@@ -445,15 +446,19 @@ Vector2 Physics2DTestMotionResult::get_motion_remainder() const {
 Vector2 Physics2DTestMotionResult::get_collision_point() const {
 	return result.collision_point;
 }
+
 Vector2 Physics2DTestMotionResult::get_collision_normal() const {
 	return result.collision_normal;
 }
+
 Vector2 Physics2DTestMotionResult::get_collider_velocity() const {
 	return result.collider_velocity;
 }
+
 ObjectID Physics2DTestMotionResult::get_collider_id() const {
 	return result.collider_id;
 }
+
 RID Physics2DTestMotionResult::get_collider_rid() const {
 	return result.collider;
 }
@@ -486,12 +491,6 @@ void Physics2DTestMotionResult::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::_RID, "collider_rid"), "", "get_collider_rid");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "collider"), "", "get_collider");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "collider_shape"), "", "get_collider_shape");
-}
-
-Physics2DTestMotionResult::Physics2DTestMotionResult() {
-	colliding = false;
-	result.collider_id = 0;
-	result.collider_shape = 0;
 }
 
 ///////////////////////////////////////
