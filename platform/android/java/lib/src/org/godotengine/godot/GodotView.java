@@ -184,13 +184,10 @@ public class GodotView extends GLSurfaceView {
 	public void onResume() {
 		super.onResume();
 
-		queueEvent(new Runnable() {
-			@Override
-			public void run() {
-				// Resume the renderer
-				godotRenderer.onActivityResumed();
-				GodotLib.focusin();
-			}
+		queueEvent(() -> {
+			// Resume the renderer
+			godotRenderer.onActivityResumed();
+			GodotLib.focusin();
 		});
 	}
 
@@ -198,13 +195,10 @@ public class GodotView extends GLSurfaceView {
 	public void onPause() {
 		super.onPause();
 
-		queueEvent(new Runnable() {
-			@Override
-			public void run() {
-				GodotLib.focusout();
-				// Pause the renderer
-				godotRenderer.onActivityPaused();
-			}
+		queueEvent(() -> {
+			GodotLib.focusout();
+			// Pause the renderer
+			godotRenderer.onActivityPaused();
 		});
 	}
 }
