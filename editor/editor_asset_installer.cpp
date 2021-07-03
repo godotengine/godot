@@ -34,6 +34,7 @@
 #include "core/io/file_access.h"
 #include "core/io/zip_io.h"
 #include "editor_node.h"
+#include "editor_scale.h"
 #include "progress_dialog.h"
 
 void EditorAssetInstaller::_update_subitems(TreeItem *p_item, bool p_check, bool p_first) {
@@ -156,6 +157,8 @@ void EditorAssetInstaller::open(const String &p_path, int p_depth) {
 	root->set_editable(0, true);
 	Map<String, TreeItem *> dir_map;
 
+	bool has_file_conflicts = false;
+
 	for (Set<String>::Element *E = files_sorted.front(); E; E = E->next()) {
 		String path = E->get();
 		int depth = p_depth;
@@ -182,13 +185,19 @@ void EditorAssetInstaller::open(const String &p_path, int p_depth) {
 			isdir = true;
 		}
 
-		int pp = path.rfind("/");
+		const String res_path = "res://" + path;
+		if (_is_file_excluded(res_path)) {
+			print_verbose(vformat("Asset installer: Not showing the following file because it has a component starting with a period or is part of the excluded files list.\n  %s", path));
+			// Don't show in the list files to install in case of conflicts.
+			continue;
+		}
+		const int pp = path.rfind("/");
 
 		TreeItem *parent;
 		if (pp == -1) {
 			parent = root;
 		} else {
-			String ppath = path.substr(0, pp);
+			const String ppath = path.substr(0, pp);
 			ERR_CONTINUE(!dir_map.has(ppath));
 			parent = dir_map[ppath];
 		}
@@ -203,8 +212,8 @@ void EditorAssetInstaller::open(const String &p_path, int p_depth) {
 			ti->set_icon(0, tree->get_theme_icon("folder", "FileDialog"));
 			ti->set_metadata(0, String());
 		} else {
-			String file = path.get_file();
-			String extension = file.get_extension().to_lower();
+			const String file = path.get_file();
+			const String extension = file.get_extension().to_lower();
 			if (extension_guess.has(extension)) {
 				ti->set_icon(0, extension_guess[extension]);
 			} else {
@@ -212,8 +221,9 @@ void EditorAssetInstaller::open(const String &p_path, int p_depth) {
 			}
 			ti->set_text(0, file);
 
-			String res_path = "res://" + path;
 			if (FileAccess::exists(res_path)) {
+				// At least one file has a conflict. Display the dialog instead of installing all files immediately.
+				has_file_conflicts = true;
 				ti->set_custom_color(0, tree->get_theme_color("error_color", "Editor"));
 				ti->set_tooltip(0, vformat(TTR("%s (Already Exists)"), res_path));
 				ti->set_checked(0, false);
@@ -226,8 +236,28 @@ void EditorAssetInstaller::open(const String &p_path, int p_depth) {
 
 		status_map[E->get()] = ti;
 	}
-	popup_centered_ratio();
+	if (has_file_conflicts) {
+		// Prompt the user for conflicting files between the project's current files
+		// and what the asset wants to install.
+		popup_centered_ratio();
+	} else {
+		// No file conflicts. Install automatically sinde it's safe to do.
+		ok_pressed();
+	}
 	updating = false;
+}
+
+bool EditorAssetInstaller::_is_file_excluded(const String &p_path) {
+	if (p_path.find("/.") != -1 && p_path.find("/.gdignore") == -1) {
+		// Do not exclude `.gdignore` as it's used by Godot.
+		return true;
+	}
+
+	if (excluded_paths.has(p_path)) {
+		return true;
+	}
+
+	return false;
 }
 
 void EditorAssetInstaller::ok_pressed() {
@@ -256,7 +286,14 @@ void EditorAssetInstaller::ok_pressed() {
 		String name = fname;
 
 		if (status_map.has(name) && status_map[name]->is_checked(0)) {
-			String path = status_map[name]->get_metadata(0);
+			const String path = status_map[name]->get_metadata(0);
+			if (_is_file_excluded(path)) {
+				print_verbose(vformat("Asset installer: Not installing the following file because it has a component starting with a period or is part of the excluded files list.\n  %s", path));
+				idx++;
+				ret = unzGoToNextFile(pkg);
+				continue;
+			}
+
 			if (path == String()) { // a dir
 
 				String dirpath;
@@ -330,8 +367,32 @@ EditorAssetInstaller::EditorAssetInstaller() {
 	add_child(vb);
 
 	tree = memnew(Tree);
-	vb->add_margin_child(TTR("Package Contents:"), tree, true);
+	// The dialog is only displayed if there's at least one conflicting file.
+	vb->add_margin_child(TTR("This asset contains files that conflict with the project. Select the asset's contents to install:"), tree, true);
 	tree->connect("item_edited", callable_mp(this, &EditorAssetInstaller::_item_edited));
+
+	// Exclude top-level files that should never be installed since they can be
+	// confusing once installed into an existing project. This matches absolute paths only.
+	// Files/folders whose name start with a period are automatically ignored,
+	// except for `.gdignore` since Godot uses that file.
+	excluded_paths.push_back("res://project.godot"); // Breaks existing project if overriden.
+	excluded_paths.push_back("res://default_bus_layout.tres"); // Can break existing project if overriden.
+	excluded_paths.push_back("res://README.md");
+	excluded_paths.push_back("res://README.txt");
+	excluded_paths.push_back("res://README");
+	excluded_paths.push_back("res://LICENSE.md");
+	excluded_paths.push_back("res://LICENSE.txt");
+	excluded_paths.push_back("res://LICENSE");
+	excluded_paths.push_back("res://CONTRIBUTING.md");
+	excluded_paths.push_back("res://CONTRIBUTING.txt");
+	excluded_paths.push_back("res://CONTRIBUTING");
+	excluded_paths.push_back("res://CHANGELOG.md");
+	excluded_paths.push_back("res://CHANGELOG.txt");
+	excluded_paths.push_back("res://CHANGELOG");
+	excluded_paths.push_back("res://icon.png");
+	excluded_paths.push_back("res://icon.png.import");
+	excluded_paths.push_back("res://icon.svg");
+	excluded_paths.push_back("res://icon.svg.import");
 
 	error = memnew(AcceptDialog);
 	add_child(error);

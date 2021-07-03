@@ -40,10 +40,12 @@ class EditorAssetInstaller : public ConfirmationDialog {
 	String package_path;
 	AcceptDialog *error;
 	Map<String, TreeItem *> status_map;
+	Vector<String> excluded_paths;
 	bool updating;
 	void _update_subitems(TreeItem *p_item, bool p_check, bool p_first = false);
 	void _uncheck_parent(TreeItem *p_item);
 	void _item_edited();
+	bool _is_file_excluded(const String &p_path);
 	virtual void ok_pressed() override;
 
 protected:
