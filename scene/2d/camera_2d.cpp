@@ -245,9 +245,13 @@ void Camera2D::_notification(int p_what) {
 			canvas = get_canvas();
 
 			_setup_viewport();
-
 			_update_process_mode();
-			_update_scroll();
+
+			// if a camera enters the tree that is set to current,
+			// it should take over as the current camera, and mark
+			// all other cameras as non current
+			_set_current(current);
+
 			first = true;
 
 		} break;
