@@ -886,31 +886,6 @@ public class Godot extends Fragment implements SensorEventListener, IDownloaderC
 		}
 	}
 
-	public boolean onKeyMultiple(final int inKeyCode, int repeatCount, KeyEvent event) {
-		String s = event.getCharacters();
-		if (s == null || s.length() == 0)
-			return false;
-
-		final char[] cc = s.toCharArray();
-		int cnt = 0;
-		for (int i = cc.length; --i >= 0; cnt += cc[i] != 0 ? 1 : 0)
-			;
-		if (cnt == 0)
-			return false;
-		// This method will be called on the rendering thread:
-		mRenderView.queueOnRenderThread(() -> {
-			for (int i = 0, n = cc.length; i < n; i++) {
-				int keyCode;
-				if ((keyCode = cc[i]) != 0) {
-					// Simulate key down and up...
-					GodotLib.key(0, 0, keyCode, true);
-					GodotLib.key(0, 0, keyCode, false);
-				}
-			}
-		});
-		return true;
-	}
-
 	public boolean requestPermission(String p_name) {
 		return PermissionsUtil.requestPermission(p_name, getActivity());
 	}
