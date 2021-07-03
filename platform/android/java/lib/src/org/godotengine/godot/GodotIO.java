@@ -71,7 +71,7 @@ public class GodotIO {
 
 	public int last_file_id = 1;
 
-	class AssetData {
+	static class AssetData {
 		public boolean eof = false;
 		public String path;
 		public InputStream is;
@@ -230,7 +230,7 @@ public class GodotIO {
 	/// DIRECTORIES
 	/////////////////////////
 
-	class AssetDir {
+	static class AssetDir {
 		public String[] files;
 		public int current;
 		public String path;
