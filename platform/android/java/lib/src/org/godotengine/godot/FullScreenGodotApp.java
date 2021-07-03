@@ -96,14 +96,6 @@ public abstract class FullScreenGodotApp extends FragmentActivity implements God
 		}
 	}
 
-	@Override
-	public boolean onKeyMultiple(final int inKeyCode, int repeatCount, KeyEvent event) {
-		if (godotFragment != null && godotFragment.onKeyMultiple(inKeyCode, repeatCount, event)) {
-			return true;
-		}
-		return super.onKeyMultiple(inKeyCode, repeatCount, event);
-	}
-
 	/**
 	 * Used to initialize the Godot fragment instance in {@link FullScreenGodotApp#onCreate(Bundle)}.
 	 */
