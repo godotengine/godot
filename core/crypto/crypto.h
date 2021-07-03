@@ -83,6 +83,7 @@ public:
 	virtual PoolByteArray finish() = 0;
 
 	HMACContext() {}
+	virtual ~HMACContext() {}
 };
 
 class Crypto : public Reference {

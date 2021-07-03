@@ -255,6 +255,13 @@ PoolByteArray HMACContextMbedTLS::finish() {
 	return out;
 }
 
+HMACContextMbedTLS::~HMACContextMbedTLS() {
+	if (ctx != nullptr) {
+		mbedtls_md_free((mbedtls_md_context_t *)ctx);
+		memfree((mbedtls_md_context_t *)ctx);
+	}
+}
+
 Crypto *CryptoMbedTLS::create() {
 	return memnew(CryptoMbedTLS);
 }
