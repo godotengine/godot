@@ -132,14 +132,54 @@ void EditorAssetInstaller::open(const String &p_path, int p_depth) {
 
 	Map<String, Ref<Texture2D>> extension_guess;
 	{
-		extension_guess["png"] = tree->get_theme_icon("ImageTexture", "EditorIcons");
+		extension_guess["bmp"] = tree->get_theme_icon("ImageTexture", "EditorIcons");
+		extension_guess["dds"] = tree->get_theme_icon("ImageTexture", "EditorIcons");
+		extension_guess["exr"] = tree->get_theme_icon("ImageTexture", "EditorIcons");
+		extension_guess["hdr"] = tree->get_theme_icon("ImageTexture", "EditorIcons");
 		extension_guess["jpg"] = tree->get_theme_icon("ImageTexture", "EditorIcons");
-		extension_guess["atlastex"] = tree->get_theme_icon("AtlasTexture", "EditorIcons");
+		extension_guess["jpeg"] = tree->get_theme_icon("ImageTexture", "EditorIcons");
+		extension_guess["png"] = tree->get_theme_icon("ImageTexture", "EditorIcons");
+		extension_guess["svg"] = tree->get_theme_icon("ImageTexture", "EditorIcons");
+		extension_guess["svgz"] = tree->get_theme_icon("ImageTexture", "EditorIcons");
+		extension_guess["tga"] = tree->get_theme_icon("ImageTexture", "EditorIcons");
+		extension_guess["webp"] = tree->get_theme_icon("ImageTexture", "EditorIcons");
+
+		extension_guess["wav"] = tree->get_theme_icon("AudioStreamSample", "EditorIcons");
+		extension_guess["ogg"] = tree->get_theme_icon("AudioStreamOGGVorbis", "EditorIcons");
+		extension_guess["mp3"] = tree->get_theme_icon("AudioStreamMP3", "EditorIcons");
+
 		extension_guess["scn"] = tree->get_theme_icon("PackedScene", "EditorIcons");
 		extension_guess["tscn"] = tree->get_theme_icon("PackedScene", "EditorIcons");
+		extension_guess["escn"] = tree->get_theme_icon("PackedScene", "EditorIcons");
+		extension_guess["dae"] = tree->get_theme_icon("PackedScene", "EditorIcons");
+		extension_guess["gltf"] = tree->get_theme_icon("PackedScene", "EditorIcons");
+		extension_guess["glb"] = tree->get_theme_icon("PackedScene", "EditorIcons");
+
 		extension_guess["gdshader"] = tree->get_theme_icon("Shader", "EditorIcons");
 		extension_guess["gd"] = tree->get_theme_icon("GDScript", "EditorIcons");
+		if (Engine::get_singleton()->has_singleton("GodotSharp")) {
+			extension_guess["cs"] = tree->get_theme_icon("CSharpScript", "EditorIcons");
+		} else {
+			// Mark C# support as unavailable.
+			extension_guess["cs"] = tree->get_theme_icon("ImportFail", "EditorIcons");
+		}
 		extension_guess["vs"] = tree->get_theme_icon("VisualScript", "EditorIcons");
+
+		extension_guess["res"] = tree->get_theme_icon("Resource", "EditorIcons");
+		extension_guess["tres"] = tree->get_theme_icon("Resource", "EditorIcons");
+		extension_guess["atlastex"] = tree->get_theme_icon("AtlasTexture", "EditorIcons");
+		// By default, OBJ files are imported as Mesh resources rather than PackedScenes.
+		extension_guess["obj"] = tree->get_theme_icon("Mesh", "EditorIcons");
+
+		extension_guess["txt"] = tree->get_theme_icon("TextFile", "EditorIcons");
+		extension_guess["md"] = tree->get_theme_icon("TextFile", "EditorIcons");
+		extension_guess["rst"] = tree->get_theme_icon("TextFile", "EditorIcons");
+		extension_guess["json"] = tree->get_theme_icon("TextFile", "EditorIcons");
+		extension_guess["yml"] = tree->get_theme_icon("TextFile", "EditorIcons");
+		extension_guess["yaml"] = tree->get_theme_icon("TextFile", "EditorIcons");
+		extension_guess["toml"] = tree->get_theme_icon("TextFile", "EditorIcons");
+		extension_guess["cfg"] = tree->get_theme_icon("TextFile", "EditorIcons");
+		extension_guess["ini"] = tree->get_theme_icon("TextFile", "EditorIcons");
 	}
 
 	Ref<Texture2D> generic_extension = tree->get_theme_icon("Object", "EditorIcons");
