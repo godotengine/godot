@@ -634,13 +634,13 @@ String OS_Windows::get_config_path() const {
 	// The XDG Base Directory specification technically only applies on Linux/*BSD, but it doesn't hurt to support it on Windows as well.
 	if (has_environment("XDG_CONFIG_HOME")) {
 		if (get_environment("XDG_CONFIG_HOME").is_absolute_path()) {
-			return get_environment("XDG_CONFIG_HOME");
+			return get_environment("XDG_CONFIG_HOME").replace("\\", "/");
 		} else {
 			WARN_PRINT_ONCE("`XDG_CONFIG_HOME` is a relative path. Ignoring its value and falling back to `%APPDATA%` or `.` per the XDG Base Directory specification.");
 		}
 	}
 	if (has_environment("APPDATA")) {
-		return get_environment("APPDATA");
+		return get_environment("APPDATA").replace("\\", "/");
 	}
 	return ".";
 }
@@ -649,7 +649,7 @@ String OS_Windows::get_data_path() const {
 	// The XDG Base Directory specification technically only applies on Linux/*BSD, but it doesn't hurt to support it on Windows as well.
 	if (has_environment("XDG_DATA_HOME")) {
 		if (get_environment("XDG_DATA_HOME").is_absolute_path()) {
-			return get_environment("XDG_DATA_HOME");
+			return get_environment("XDG_DATA_HOME").replace("\\", "/");
 		} else {
 			WARN_PRINT_ONCE("`XDG_DATA_HOME` is a relative path. Ignoring its value and falling back to `get_config_path()` per the XDG Base Directory specification.");
 		}
@@ -661,13 +661,13 @@ String OS_Windows::get_cache_path() const {
 	// The XDG Base Directory specification technically only applies on Linux/*BSD, but it doesn't hurt to support it on Windows as well.
 	if (has_environment("XDG_CACHE_HOME")) {
 		if (get_environment("XDG_CACHE_HOME").is_absolute_path()) {
-			return get_environment("XDG_CACHE_HOME");
+			return get_environment("XDG_CACHE_HOME").replace("\\", "/");
 		} else {
 			WARN_PRINT_ONCE("`XDG_CACHE_HOME` is a relative path. Ignoring its value and falling back to `%TEMP%` or `get_config_path()` per the XDG Base Directory specification.");
 		}
 	}
 	if (has_environment("TEMP")) {
-		return get_environment("TEMP");
+		return get_environment("TEMP").replace("\\", "/");
 	}
 	return get_config_path();
 }
@@ -710,7 +710,7 @@ String OS_Windows::get_system_dir(SystemDir p_dir) const {
 	PWSTR szPath;
 	HRESULT res = SHGetKnownFolderPath(id, 0, nullptr, &szPath);
 	ERR_FAIL_COND_V(res != S_OK, String());
-	String path = String::utf16((const char16_t *)szPath);
+	String path = String::utf16((const char16_t *)szPath).replace("\\", "/");
 	CoTaskMemFree(szPath);
 	return path;
 }
