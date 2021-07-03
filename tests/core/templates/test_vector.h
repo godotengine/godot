@@ -129,7 +129,7 @@ TEST_CASE("[Vector] Fill large array and modify it") {
 	CHECK(vector[200] == 0);
 	CHECK(vector[499'999] == 0x60d07);
 	CHECK(vector[999'999] == 0x60d07);
-	vector.remove(200);
+	vector.remove_at(200);
 	CHECK(vector[200] == 0x60d07);
 
 	vector.clear();
@@ -145,7 +145,7 @@ TEST_CASE("[Vector] Copy creation") {
 	vector.push_back(4);
 
 	Vector<int> vector_other = Vector<int>(vector);
-	vector_other.remove(0);
+	vector_other.remove_at(0);
 	CHECK(vector_other[0] == 1);
 	CHECK(vector_other[1] == 2);
 	CHECK(vector_other[2] == 3);
@@ -168,7 +168,7 @@ TEST_CASE("[Vector] Duplicate") {
 	vector.push_back(4);
 
 	Vector<int> vector_other = vector.duplicate();
-	vector_other.remove(0);
+	vector_other.remove_at(0);
 	CHECK(vector_other[0] == 1);
 	CHECK(vector_other[1] == 2);
 	CHECK(vector_other[2] == 3);
@@ -302,7 +302,7 @@ TEST_CASE("[Vector] Find, has") {
 	CHECK(!vector.has(5));
 }
 
-TEST_CASE("[Vector] Remove") {
+TEST_CASE("[Vector] Remove at") {
 	Vector<int> vector;
 	vector.push_back(0);
 	vector.push_back(1);
@@ -310,30 +310,30 @@ TEST_CASE("[Vector] Remove") {
 	vector.push_back(3);
 	vector.push_back(4);
 
-	vector.remove(0);
+	vector.remove_at(0);
 
 	CHECK(vector[0] == 1);
 	CHECK(vector[1] == 2);
 	CHECK(vector[2] == 3);
 	CHECK(vector[3] == 4);
 
-	vector.remove(2);
+	vector.remove_at(2);
 
 	CHECK(vector[0] == 1);
 	CHECK(vector[1] == 2);
 	CHECK(vector[2] == 4);
 
-	vector.remove(1);
+	vector.remove_at(1);
 
 	CHECK(vector[0] == 1);
 	CHECK(vector[1] == 4);
 
-	vector.remove(0);
+	vector.remove_at(0);
 
 	CHECK(vector[0] == 4);
 }
 
-TEST_CASE("[Vector] Remove and find") {
+TEST_CASE("[Vector] Remove at and find") {
 	Vector<int> vector;
 	vector.push_back(0);
 	vector.push_back(1);
@@ -343,7 +343,7 @@ TEST_CASE("[Vector] Remove and find") {
 
 	CHECK(vector.size() == 5);
 
-	vector.remove(0);
+	vector.remove_at(0);
 
 	CHECK(vector.size() == 4);
 
@@ -353,7 +353,7 @@ TEST_CASE("[Vector] Remove and find") {
 	CHECK(vector.find(3) != -1);
 	CHECK(vector.find(4) != -1);
 
-	vector.remove(vector.find(3));
+	vector.remove_at(vector.find(3));
 
 	CHECK(vector.size() == 3);
 
@@ -362,7 +362,7 @@ TEST_CASE("[Vector] Remove and find") {
 	CHECK(vector.find(2) != -1);
 	CHECK(vector.find(4) != -1);
 
-	vector.remove(vector.find(2));
+	vector.remove_at(vector.find(2));
 
 	CHECK(vector.size() == 2);
 
@@ -370,14 +370,14 @@ TEST_CASE("[Vector] Remove and find") {
 	CHECK(vector.find(1) != -1);
 	CHECK(vector.find(4) != -1);
 
-	vector.remove(vector.find(4));
+	vector.remove_at(vector.find(4));
 
 	CHECK(vector.size() == 1);
 
 	CHECK(vector.find(4) == -1);
 	CHECK(vector.find(1) != -1);
 
-	vector.remove(0);
+	vector.remove_at(0);
 
 	CHECK(vector.is_empty());
 	CHECK(vector.size() == 0);
@@ -412,9 +412,9 @@ TEST_CASE("[Vector] Size, resize, reserve") {
 
 	CHECK(vector.size() == 5);
 
-	vector.remove(0);
-	vector.remove(0);
-	vector.remove(0);
+	vector.remove_at(0);
+	vector.remove_at(0);
+	vector.remove_at(0);
 
 	CHECK(vector.size() == 2);
 

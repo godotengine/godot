@@ -273,7 +273,7 @@ void RigidCollisionObjectBullet::remove_shape_full(ShapeBullet *p_shape) {
 	for (int i = shapes.size() - 1; 0 <= i; --i) {
 		if (p_shape == shapes[i].shape) {
 			internal_shape_destroy(i);
-			shapes.remove(i);
+			shapes.remove_at(i);
 		}
 	}
 	reload_shapes();
@@ -282,7 +282,7 @@ void RigidCollisionObjectBullet::remove_shape_full(ShapeBullet *p_shape) {
 void RigidCollisionObjectBullet::remove_shape_full(int p_index) {
 	ERR_FAIL_INDEX(p_index, get_shape_count());
 	internal_shape_destroy(p_index);
-	shapes.remove(p_index);
+	shapes.remove_at(p_index);
 	reload_shapes();
 }
 

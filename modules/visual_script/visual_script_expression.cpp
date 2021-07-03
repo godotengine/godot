@@ -1190,7 +1190,7 @@ VisualScriptExpression::ENode *VisualScriptExpression::_parse_expression() {
 				op->nodes[1] = nullptr;
 				expression.write[i].is_op = false;
 				expression.write[i].node = op;
-				expression.remove(i + 1);
+				expression.remove_at(i + 1);
 			}
 
 		} else {
@@ -1222,8 +1222,8 @@ VisualScriptExpression::ENode *VisualScriptExpression::_parse_expression() {
 
 			//replace all 3 nodes by this operator and make it an expression
 			expression.write[next_op - 1].node = op;
-			expression.remove(next_op);
-			expression.remove(next_op);
+			expression.remove_at(next_op);
+			expression.remove_at(next_op);
 		}
 	}
 

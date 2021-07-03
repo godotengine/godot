@@ -165,7 +165,7 @@ void Bone2D::_notification(int p_what) {
 		if (skeleton) {
 			for (int i = 0; i < skeleton->bones.size(); i++) {
 				if (skeleton->bones[i].bone == this) {
-					skeleton->bones.remove(i);
+					skeleton->bones.remove_at(i);
 					break;
 				}
 			}

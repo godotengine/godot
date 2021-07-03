@@ -633,7 +633,7 @@ void Skeleton3D::remove_bone_child(int p_bone, int p_child) {
 
 	int child_idx = bones[p_bone].child_bones.find(p_child);
 	if (child_idx >= 0) {
-		bones.write[p_bone].child_bones.remove(child_idx);
+		bones.write[p_bone].child_bones.remove_at(child_idx);
 	} else {
 		WARN_PRINT("Cannot remove child bone: Child bone not found.");
 	}

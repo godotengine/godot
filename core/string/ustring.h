@@ -209,7 +209,7 @@ public:
 	_FORCE_INLINE_ char32_t *ptrw() { return _cowdata.ptrw(); }
 	_FORCE_INLINE_ const char32_t *ptr() const { return _cowdata.ptr(); }
 
-	void remove(int p_index) { _cowdata.remove(p_index); }
+	void remove_at(int p_index) { _cowdata.remove_at(p_index); }
 
 	_FORCE_INLINE_ void clear() { resize(0); }
 

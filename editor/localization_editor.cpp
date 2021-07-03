@@ -98,7 +98,7 @@ void LocalizationEditor::_translation_delete(Object *p_item, int p_column, int p
 
 	ERR_FAIL_INDEX(idx, translations.size());
 
-	translations.remove(idx);
+	translations.remove_at(idx);
 
 	undo_redo->create_action(TTR("Remove Translation"));
 	undo_redo->add_do_property(ProjectSettings::get_singleton(), "internationalization/locale/translations", translations);
@@ -276,7 +276,7 @@ void LocalizationEditor::_translation_res_option_delete(Object *p_item, int p_co
 	ERR_FAIL_COND(!remaps.has(key));
 	PackedStringArray r = remaps[key];
 	ERR_FAIL_INDEX(idx, r.size());
-	r.remove(idx);
+	r.remove_at(idx);
 	remaps[key] = r;
 
 	undo_redo->create_action(TTR("Remove Resource Remap Option"));
@@ -321,7 +321,7 @@ void LocalizationEditor::_translation_filter_option_changed() {
 		}
 	} else {
 		if (l_idx != -1) {
-			f_locales.remove(l_idx);
+			f_locales.remove_at(l_idx);
 		}
 	}
 
@@ -397,7 +397,7 @@ void LocalizationEditor::_pot_delete(Object *p_item, int p_column, int p_button)
 
 	ERR_FAIL_INDEX(idx, pot_translations.size());
 
-	pot_translations.remove(idx);
+	pot_translations.remove_at(idx);
 
 	undo_redo->create_action(TTR("Remove file from POT generation"));
 	undo_redo->add_do_property(ProjectSettings::get_singleton(), "internationalization/locale/translations_pot_files", pot_translations);

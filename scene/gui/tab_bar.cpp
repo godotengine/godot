@@ -790,7 +790,7 @@ void TabBar::clear_tabs() {
 
 void TabBar::remove_tab(int p_idx) {
 	ERR_FAIL_INDEX(p_idx, tabs.size());
-	tabs.remove(p_idx);
+	tabs.remove_at(p_idx);
 	if (current >= p_idx) {
 		current--;
 	}
@@ -961,7 +961,7 @@ void TabBar::move_tab(int from, int to) {
 	ERR_FAIL_INDEX(to, tabs.size());
 
 	Tab tab_from = tabs[from];
-	tabs.remove(from);
+	tabs.remove_at(from);
 	tabs.insert(to, tab_from);
 
 	_update_cache();

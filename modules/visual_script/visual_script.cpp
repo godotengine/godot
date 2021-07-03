@@ -661,7 +661,7 @@ void VisualScript::custom_signal_remove_argument(const StringName &p_func, int p
 	ERR_FAIL_COND(instances.size());
 	ERR_FAIL_COND(!custom_signals.has(p_func));
 	ERR_FAIL_INDEX(p_argidx, custom_signals[p_func].size());
-	custom_signals[p_func].remove(p_argidx);
+	custom_signals[p_func].remove_at(p_argidx);
 }
 
 int VisualScript::custom_signal_get_argument_count(const StringName &p_func) const {

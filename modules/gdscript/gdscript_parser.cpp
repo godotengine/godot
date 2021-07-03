@@ -3414,7 +3414,7 @@ bool GDScriptParser::validate_annotation_arguments(AnnotationNode *p_annotation)
 					p_annotation->resolved_arguments.push_back(r);
 					if (error.error != Callable::CallError::CALL_OK) {
 						push_error(vformat(R"(Expected %s as argument %d of annotation "%s").)", Variant::get_type_name(parameter.type), i + 1, p_annotation->name));
-						p_annotation->resolved_arguments.remove(p_annotation->resolved_arguments.size() - 1);
+						p_annotation->resolved_arguments.remove_at(p_annotation->resolved_arguments.size() - 1);
 						return false;
 					}
 					break;
@@ -3438,7 +3438,7 @@ bool GDScriptParser::validate_annotation_arguments(AnnotationNode *p_annotation)
 				p_annotation->resolved_arguments.push_back(r);
 				if (error.error != Callable::CallError::CALL_OK) {
 					push_error(vformat(R"(Expected %s as argument %d of annotation "%s").)", Variant::get_type_name(parameter.type), i + 1, p_annotation->name));
-					p_annotation->resolved_arguments.remove(p_annotation->resolved_arguments.size() - 1);
+					p_annotation->resolved_arguments.remove_at(p_annotation->resolved_arguments.size() - 1);
 					return false;
 				}
 				break;

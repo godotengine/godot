@@ -1326,7 +1326,7 @@ void TextServerFallback::font_remove_texture(RID p_font_rid, const Vector2i &p_s
 	ERR_FAIL_COND(!_ensure_cache_for_size(fd, size));
 	ERR_FAIL_INDEX(p_texture_index, fd->cache[size]->textures.size());
 
-	fd->cache[size]->textures.remove(p_texture_index);
+	fd->cache[size]->textures.remove_at(p_texture_index);
 }
 
 void TextServerFallback::font_set_texture_image(RID p_font_rid, const Vector2i &p_size, int p_texture_index, const Ref<Image> &p_image) {

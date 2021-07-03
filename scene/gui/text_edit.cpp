@@ -300,11 +300,11 @@ void TextEdit::Text::insert(int p_at, const String &p_text, const Array &p_bidi_
 	invalidate_cache(p_at);
 }
 
-void TextEdit::Text::remove(int p_at) {
-	int height = text[p_at].height;
-	int width = text[p_at].width;
+void TextEdit::Text::remove_at(int p_index) {
+	int height = text[p_index].height;
+	int width = text[p_index].width;
 
-	text.remove(p_at);
+	text.remove_at(p_index);
 
 	// If this is the tallest line, we need to get the next tallest.
 	if (height == line_height) {
@@ -330,7 +330,7 @@ void TextEdit::Text::add_gutter(int p_at) {
 
 void TextEdit::Text::remove_gutter(int p_gutter) {
 	for (int i = 0; i < text.size(); i++) {
-		text.write[i].gutters.remove(p_gutter);
+		text.write[i].gutters.remove_at(p_gutter);
 	}
 	gutter_count--;
 }
@@ -4347,7 +4347,7 @@ void TextEdit::add_gutter(int p_at) {
 void TextEdit::remove_gutter(int p_gutter) {
 	ERR_FAIL_INDEX(p_gutter, gutters.size());
 
-	gutters.remove(p_gutter);
+	gutters.remove_at(p_gutter);
 
 	for (int i = 0; i < text.size() + 1; i++) {
 		text.remove_gutter(p_gutter);
@@ -6249,7 +6249,7 @@ void TextEdit::_base_remove_text(int p_from_line, int p_from_column, int p_to_li
 	String post_text = text[p_to_line].substr(p_to_column, text[p_to_line].length());
 
 	for (int i = p_from_line; i < p_to_line; i++) {
-		text.remove(p_from_line + 1);
+		text.remove_at(p_from_line + 1);
 	}
 	text.set(p_from_line, pre_text + post_text, structured_text_parser(st_parser, st_args, pre_text + post_text));
 

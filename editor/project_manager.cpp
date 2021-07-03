@@ -1543,7 +1543,7 @@ void ProjectList::remove_project(int p_index, bool p_update_settings) {
 	}
 
 	memdelete(item.control);
-	_projects.remove(p_index);
+	_projects.remove_at(p_index);
 
 	if (p_update_settings) {
 		EditorSettings::get_singleton()->erase("projects/" + item.project_key);
@@ -1733,7 +1733,7 @@ void ProjectList::erase_selected_projects(bool p_delete_project_contents) {
 			}
 
 			memdelete(item.control);
-			_projects.remove(i);
+			_projects.remove_at(i);
 			--i;
 		}
 	}

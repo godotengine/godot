@@ -576,7 +576,7 @@ void CreateDialog::drop_data_fw(const Point2 &p_point, const Variant &p_data, Co
 		drop_idx--;
 	}
 
-	favorite_list.remove(from_idx);
+	favorite_list.remove_at(from_idx);
 
 	if (ds < 0) {
 		favorite_list.insert(drop_idx, type);

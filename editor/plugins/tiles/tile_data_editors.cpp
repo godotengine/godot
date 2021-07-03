@@ -516,7 +516,7 @@ void GenericTilePolygonEditor::_base_control_gui_input(Ref<InputEvent> p_event) 
 					_grab_polygon_point(mb->get_position(), xform, closest_polygon, closest_point);
 					if (closest_polygon >= 0) {
 						PackedVector2Array old_polygon = polygons[closest_polygon];
-						polygons[closest_polygon].remove(closest_point);
+						polygons[closest_polygon].remove_at(closest_point);
 						undo_redo->create_action(TTR("Edit Polygons"));
 						if (polygons[closest_polygon].size() < 3) {
 							remove_polygon(closest_polygon);
@@ -563,7 +563,7 @@ void GenericTilePolygonEditor::_base_control_gui_input(Ref<InputEvent> p_event) 
 					_grab_polygon_point(mb->get_position(), xform, closest_polygon, closest_point);
 					if (closest_polygon >= 0) {
 						PackedVector2Array old_polygon = polygons[closest_polygon];
-						polygons[closest_polygon].remove(closest_point);
+						polygons[closest_polygon].remove_at(closest_point);
 						undo_redo->create_action(TTR("Edit Polygons"));
 						if (polygons[closest_polygon].size() < 3) {
 							remove_polygon(closest_polygon);
@@ -676,7 +676,7 @@ int GenericTilePolygonEditor::add_polygon(Vector<Point2> p_polygon, int p_index)
 
 void GenericTilePolygonEditor::remove_polygon(int p_index) {
 	ERR_FAIL_INDEX(p_index, (int)polygons.size());
-	polygons.remove(p_index);
+	polygons.remove_at(p_index);
 
 	if (polygons.size() == 0) {
 		button_create->set_pressed(true);

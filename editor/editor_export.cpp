@@ -1534,7 +1534,7 @@ Ref<EditorExportPreset> EditorExport::get_export_preset(int p_idx) {
 }
 
 void EditorExport::remove_export_preset(int p_idx) {
-	export_presets.remove(p_idx);
+	export_presets.remove_at(p_idx);
 	save_presets();
 }
 

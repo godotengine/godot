@@ -831,7 +831,7 @@ void EditorNode::_remove_plugin_from_enabled(const String &p_name) {
 	PackedStringArray enabled_plugins = ps->get("editor_plugins/enabled");
 	for (int i = 0; i < enabled_plugins.size(); ++i) {
 		if (enabled_plugins.get(i) == p_name) {
-			enabled_plugins.remove(i);
+			enabled_plugins.remove_at(i);
 			break;
 		}
 	}
@@ -3199,7 +3199,7 @@ void EditorNode::remove_editor_plugin(EditorPlugin *p_editor, bool p_config_chan
 				}
 
 				memdelete(singleton->main_editor_buttons[i]);
-				singleton->main_editor_buttons.remove(i);
+				singleton->main_editor_buttons.remove_at(i);
 
 				break;
 			}
@@ -3758,7 +3758,7 @@ void EditorNode::_open_recent_scene(int p_idx) {
 		ERR_FAIL_INDEX(p_idx, rc.size());
 
 		if (load_scene(rc[p_idx]) != OK) {
-			rc.remove(p_idx);
+			rc.remove_at(p_idx);
 			EditorSettings::get_singleton()->set_project_metadata("recent_files", "scenes", rc);
 			_update_recent_scenes();
 		}
@@ -5177,7 +5177,7 @@ void EditorNode::remove_bottom_panel_item(Control *p_item) {
 			bottom_panel_vb->remove_child(bottom_panel_items[i].control);
 			bottom_panel_hb_editors->remove_child(bottom_panel_items[i].button);
 			memdelete(bottom_panel_items[i].button);
-			bottom_panel_items.remove(i);
+			bottom_panel_items.remove_at(i);
 			break;
 		}
 	}

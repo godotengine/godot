@@ -143,7 +143,7 @@ void AudioStreamPlayer::play(float p_from_pos) {
 	set_process_internal(true);
 	while (stream_playbacks.size() > max_polyphony) {
 		AudioServer::get_singleton()->stop_playback_stream(stream_playbacks[0]);
-		stream_playbacks.remove(0);
+		stream_playbacks.remove_at(0);
 	}
 }
 

@@ -577,7 +577,7 @@ bool EditorFileSystem::_update_scan_actions() {
 				ERR_CONTINUE(idx == -1);
 				_delete_internal_files(ia.dir->files[idx]->file);
 				memdelete(ia.dir->files[idx]);
-				ia.dir->files.remove(idx);
+				ia.dir->files.remove_at(idx);
 
 				fs_changed = true;
 
@@ -1536,7 +1536,7 @@ void EditorFileSystem::update_file(const String &p_file) {
 				}
 			}
 			memdelete(fs->files[cpos]);
-			fs->files.remove(cpos);
+			fs->files.remove_at(cpos);
 		}
 
 		call_deferred(SNAME("emit_signal"), "filesystem_changed"); //update later

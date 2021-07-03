@@ -576,7 +576,7 @@ void TileMap::move_layer(int p_layer, int p_to_pos) {
 
 	TileMapLayer tl = layers[p_layer];
 	layers.insert(p_to_pos, tl);
-	layers.remove(p_to_pos < p_layer ? p_layer + 1 : p_layer);
+	layers.remove_at(p_to_pos < p_layer ? p_layer + 1 : p_layer);
 	_recreate_internals();
 	notify_property_list_changed();
 
@@ -595,7 +595,7 @@ void TileMap::remove_layer(int p_layer) {
 	// Clear before removing the layer.
 	_clear_internals();
 
-	layers.remove(p_layer);
+	layers.remove_at(p_layer);
 	_recreate_internals();
 	notify_property_list_changed();
 

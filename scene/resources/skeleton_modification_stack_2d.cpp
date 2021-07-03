@@ -172,7 +172,7 @@ void SkeletonModificationStack2D::add_modification(Ref<SkeletonModification2D> p
 
 void SkeletonModificationStack2D::delete_modification(int p_mod_idx) {
 	ERR_FAIL_INDEX(p_mod_idx, modifications.size());
-	modifications.remove(p_mod_idx);
+	modifications.remove_at(p_mod_idx);
 
 #ifdef TOOLS_ENABLED
 	set_editor_gizmos_dirty(true);

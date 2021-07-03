@@ -257,7 +257,7 @@ void UPNP::set_device(int index, Ref<UPNPDevice> device) {
 void UPNP::remove_device(int index) {
 	ERR_FAIL_INDEX(index, devices.size());
 
-	devices.remove(index);
+	devices.remove_at(index);
 }
 
 void UPNP::clear_devices() {

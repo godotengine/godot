@@ -442,7 +442,7 @@ void SoftBodyBullet::unpin_node(int p_node_index) {
 	}
 	const int id = search_node_pinned(p_node_index);
 	if (-1 != id) {
-		pinned_nodes.remove(id);
+		pinned_nodes.remove_at(id);
 	}
 }
 

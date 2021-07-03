@@ -264,7 +264,7 @@ void JoypadOSX::_device_removed(IOReturn p_res, IOHIDDeviceRef p_device) {
 
 	input->joy_connection_changed(device_list[device].id, false, "");
 	device_list.write[device].free();
-	device_list.remove(device);
+	device_list.remove_at(device);
 }
 
 static String _hex_str(uint8_t p_byte) {

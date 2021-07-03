@@ -293,12 +293,12 @@ void NodePath::simplify() {
 			break;
 		}
 		if (data->path[i].operator String() == ".") {
-			data->path.remove(i);
+			data->path.remove_at(i);
 			i--;
 		} else if (i > 0 && data->path[i].operator String() == ".." && data->path[i - 1].operator String() != "." && data->path[i - 1].operator String() != "..") {
 			//remove both
-			data->path.remove(i - 1);
-			data->path.remove(i - 1);
+			data->path.remove_at(i - 1);
+			data->path.remove_at(i - 1);
 			i -= 2;
 			if (data->path.size() == 0) {
 				data->path.push_back(".");
