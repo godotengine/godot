@@ -356,7 +356,7 @@ protected:
 			}
 		};
 
-		void sort_by_reverse_depth_and_priority(bool p_alpha) { //used for alpha
+		void sort_by_reverse_depth_and_priority() { //used for alpha
 
 			SortArray<GeometryInstanceSurfaceDataCache *, SortByReverseDepthAndPriority> sorter;
 			sorter.sort(elements.ptr(), elements.size());
