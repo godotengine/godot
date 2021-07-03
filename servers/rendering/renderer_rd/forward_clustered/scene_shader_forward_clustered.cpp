@@ -781,7 +781,8 @@ void SceneShaderForwardClustered::init(RendererStorageRD *p_storage, const Strin
 	{
 		overdraw_material_shader = storage->shader_allocate();
 		storage->shader_initialize(overdraw_material_shader);
-		storage->shader_set_code(overdraw_material_shader, "shader_type spatial;\nrender_mode blend_add,unshaded;\n void fragment() { ALBEDO=vec3(0.4,0.8,0.8); ALPHA=0.2; }");
+		// Use relatively low opacity so that more "layers" of overlapping objects can be distinguished.
+		storage->shader_set_code(overdraw_material_shader, "shader_type spatial;\nrender_mode blend_add,unshaded;\n void fragment() { ALBEDO=vec3(0.4,0.8,0.8); ALPHA=0.1; }");
 		overdraw_material = storage->material_allocate();
 		storage->material_initialize(overdraw_material);
 		storage->material_set_shader(overdraw_material, overdraw_material_shader);
