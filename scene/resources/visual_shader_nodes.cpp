@@ -38,7 +38,7 @@ VisualShaderNodeConstant::VisualShaderNodeConstant() {
 ////////////// Scalar(Float)
 
 String VisualShaderNodeFloatConstant::get_caption() const {
-	return "ScalarFloat";
+	return "FloatConstant";
 }
 
 int VisualShaderNodeFloatConstant::get_input_port_count() const {
@@ -97,7 +97,7 @@ VisualShaderNodeFloatConstant::VisualShaderNodeFloatConstant() {
 ////////////// Scalar(Int)
 
 String VisualShaderNodeIntConstant::get_caption() const {
-	return "ScalarInt";
+	return "IntConstant";
 }
 
 int VisualShaderNodeIntConstant::get_input_port_count() const {
@@ -156,7 +156,7 @@ VisualShaderNodeIntConstant::VisualShaderNodeIntConstant() {
 ////////////// Boolean
 
 String VisualShaderNodeBooleanConstant::get_caption() const {
-	return "Boolean";
+	return "BooleanConstant";
 }
 
 int VisualShaderNodeBooleanConstant::get_input_port_count() const {
@@ -215,7 +215,7 @@ VisualShaderNodeBooleanConstant::VisualShaderNodeBooleanConstant() {
 ////////////// Color
 
 String VisualShaderNodeColorConstant::get_caption() const {
-	return "Color";
+	return "ColorConstant";
 }
 
 int VisualShaderNodeColorConstant::get_input_port_count() const {
@@ -285,7 +285,7 @@ VisualShaderNodeColorConstant::VisualShaderNodeColorConstant() {
 ////////////// Vector
 
 String VisualShaderNodeVec3Constant::get_caption() const {
-	return "Vector";
+	return "VectorConstant";
 }
 
 int VisualShaderNodeVec3Constant::get_input_port_count() const {
@@ -344,7 +344,7 @@ VisualShaderNodeVec3Constant::VisualShaderNodeVec3Constant() {
 ////////////// Transform3D
 
 String VisualShaderNodeTransformConstant::get_caption() const {
-	return "Transform3D";
+	return "TransformConstant";
 }
 
 int VisualShaderNodeTransformConstant::get_input_port_count() const {

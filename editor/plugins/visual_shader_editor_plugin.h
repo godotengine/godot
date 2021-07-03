@@ -163,6 +163,7 @@ class VisualShaderEditor : public VBoxContainer {
 
 	ConfirmationDialog *members_dialog;
 	PopupMenu *popup_menu;
+	PopupMenu *constants_submenu = nullptr;
 	MenuButton *tools;
 
 	PopupPanel *comment_title_change_popup = nullptr;
@@ -213,6 +214,7 @@ class VisualShaderEditor : public VBoxContainer {
 		DELETE,
 		DUPLICATE,
 		SEPARATOR2, // ignore
+		FLOAT_CONSTANTS,
 		CONVERT_CONSTANTS_TO_UNIFORMS,
 		CONVERT_UNIFORMS_TO_CONSTANTS,
 		SEPARATOR3, // ignore
@@ -345,6 +347,7 @@ class VisualShaderEditor : public VBoxContainer {
 	Set<int> selected_constants;
 	Set<int> selected_uniforms;
 	int selected_comment = -1;
+	int selected_float_constant = -1;
 
 	void _convert_constants_to_uniforms(bool p_vice_versa);
 	void _replace_node(VisualShader::Type p_type_id, int p_node_id, const StringName &p_from, const StringName &p_to);
@@ -394,7 +397,7 @@ class VisualShaderEditor : public VBoxContainer {
 	void _input_select_item(Ref<VisualShaderNodeInput> input, String name);
 	void _uniform_select_item(Ref<VisualShaderNodeUniformRef> p_uniform, String p_name);
 
-	void _float_constant_selected(int p_index, int p_node);
+	void _float_constant_selected(int p_which);
 
 	VisualShader::Type get_current_shader_type() const;
 

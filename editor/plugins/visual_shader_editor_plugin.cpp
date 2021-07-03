@@ -472,23 +472,6 @@ void VisualShaderGraphPlugin::add_node(VisualShader::Type p_type, int p_id) {
 		custom_editor = hbox;
 	}
 
-	Ref<VisualShaderNodeFloatConstant> float_const = vsnode;
-	if (float_const.is_valid()) {
-		HBoxContainer *hbox = memnew(HBoxContainer);
-
-		hbox->add_child(custom_editor);
-		OptionButton *btn = memnew(OptionButton);
-		hbox->add_child(btn);
-		register_constant_option_btn(p_id, btn);
-		btn->add_item("");
-		for (int i = 0; i < MAX_FLOAT_CONST_DEFS; i++) {
-			btn->add_item(float_constant_defs[i].name);
-		}
-		btn->select(get_constant_index(float_const->get_constant()));
-		btn->connect("item_selected", callable_mp(VisualShaderEditor::get_singleton(), &VisualShaderEditor::_float_constant_selected), varray(p_id));
-		custom_editor = hbox;
-	}
-
 	if (custom_editor && !vsnode->is_use_prop_slots() && vsnode->get_output_port_count() > 0 && vsnode->get_output_port_name(0) == "" && (vsnode->get_input_port_count() == 0 || vsnode->get_input_port_name(0) == "")) {
 		//will be embedded in first port
 	} else if (custom_editor) {
@@ -2824,6 +2807,7 @@ void VisualShaderEditor::_graph_gui_input(const Ref<InputEvent> &p_event) {
 		selected_constants.clear();
 		selected_uniforms.clear();
 		selected_comment = -1;
+		selected_float_constant = -1;
 
 		List<int> to_change;
 		for (int i = 0; i < graph->get_child_count(); i++) {
@@ -2843,6 +2827,10 @@ void VisualShaderEditor::_graph_gui_input(const Ref<InputEvent> &p_event) {
 					if (constant_node != nullptr) {
 						selected_constants.insert(id);
 					}
+					VisualShaderNodeFloatConstant *float_constant_node = Object::cast_to<VisualShaderNodeFloatConstant>(node.ptr());
+					if (float_constant_node != nullptr) {
+						selected_float_constant = id;
+					}
 					VisualShaderNodeUniform *uniform_node = Object::cast_to<VisualShaderNodeUniform>(node.ptr());
 					if (uniform_node != nullptr && uniform_node->is_convertible_to_constant()) {
 						selected_uniforms.insert(id);
@@ -2853,6 +2841,7 @@ void VisualShaderEditor::_graph_gui_input(const Ref<InputEvent> &p_event) {
 
 		if (to_change.size() > 1) {
 			selected_comment = -1;
+			selected_float_constant = -1;
 		}
 
 		if (to_change.is_empty() && copy_nodes_buffer.is_empty()) {
@@ -2864,6 +2853,10 @@ void VisualShaderEditor::_graph_gui_input(const Ref<InputEvent> &p_event) {
 			popup_menu->set_item_disabled(NodeMenuOptions::DUPLICATE, to_change.is_empty());
 
 			int temp = popup_menu->get_item_index(NodeMenuOptions::SEPARATOR2);
+			if (temp != -1) {
+				popup_menu->remove_item(temp);
+			}
+			temp = popup_menu->get_item_index(NodeMenuOptions::FLOAT_CONSTANTS);
 			if (temp != -1) {
 				popup_menu->remove_item(temp);
 			}
@@ -2888,14 +2881,23 @@ void VisualShaderEditor::_graph_gui_input(const Ref<InputEvent> &p_event) {
 				popup_menu->remove_item(temp);
 			}
 
-			if (selected_comment != -1) {
-				popup_menu->add_separator("", NodeMenuOptions::SEPARATOR2);
-				popup_menu->add_item(TTR("Set Comment Title"), NodeMenuOptions::SET_COMMENT_TITLE);
-				popup_menu->add_item(TTR("Set Comment Description"), NodeMenuOptions::SET_COMMENT_DESCRIPTION);
-			}
-
 			if (selected_constants.size() > 0 || selected_uniforms.size() > 0) {
-				popup_menu->add_separator("", NodeMenuOptions::SEPARATOR3);
+				popup_menu->add_separator("", NodeMenuOptions::SEPARATOR2);
+
+				if (selected_float_constant != -1) {
+					popup_menu->add_submenu_item(TTR("Float Constants"), "FloatConstants", int(NodeMenuOptions::FLOAT_CONSTANTS));
+
+					if (!constants_submenu) {
+						constants_submenu = memnew(PopupMenu);
+						constants_submenu->set_name("FloatConstants");
+
+						for (int i = 0; i < MAX_FLOAT_CONST_DEFS; i++) {
+							constants_submenu->add_item(float_constant_defs[i].name, i);
+						}
+						popup_menu->add_child(constants_submenu);
+						constants_submenu->connect("index_pressed", callable_mp(this, &VisualShaderEditor::_float_constant_selected));
+					}
+				}
 
 				if (selected_constants.size() > 0) {
 					popup_menu->add_item(TTR("Convert Constant(s) to Uniform(s)"), NodeMenuOptions::CONVERT_CONSTANTS_TO_UNIFORMS);
@@ -2904,6 +2906,12 @@ void VisualShaderEditor::_graph_gui_input(const Ref<InputEvent> &p_event) {
 				if (selected_uniforms.size() > 0) {
 					popup_menu->add_item(TTR("Convert Uniform(s) to Constant(s)"), NodeMenuOptions::CONVERT_UNIFORMS_TO_CONSTANTS);
 				}
+			}
+
+			if (selected_comment != -1) {
+				popup_menu->add_separator("", NodeMenuOptions::SEPARATOR3);
+				popup_menu->add_item(TTR("Set Comment Title"), NodeMenuOptions::SET_COMMENT_TITLE);
+				popup_menu->add_item(TTR("Set Comment Description"), NodeMenuOptions::SET_COMMENT_DESCRIPTION);
 			}
 
 			menu_point = graph->get_local_mouse_position();
@@ -3375,27 +3383,22 @@ void VisualShaderEditor::_uniform_select_item(Ref<VisualShaderNodeUniformRef> p_
 	undo_redo->commit_action();
 }
 
-void VisualShaderEditor::_float_constant_selected(int p_index, int p_node) {
-	if (p_index == 0) {
-		graph_plugin->update_node_size(p_node);
-		return;
-	}
-
-	--p_index;
-
-	ERR_FAIL_INDEX(p_index, MAX_FLOAT_CONST_DEFS);
+void VisualShaderEditor::_float_constant_selected(int p_which) {
+	ERR_FAIL_INDEX(p_which, MAX_FLOAT_CONST_DEFS);
 
 	VisualShader::Type type = get_current_shader_type();
-	Ref<VisualShaderNodeFloatConstant> node = visual_shader->get_node(type, p_node);
-	if (!node.is_valid()) {
-		return;
+	Ref<VisualShaderNodeFloatConstant> node = visual_shader->get_node(type, selected_float_constant);
+	ERR_FAIL_COND(!node.is_valid());
+
+	if (Math::is_equal_approx(node->get_constant(), float_constant_defs[p_which].value)) {
+		return; // same
 	}
 
-	undo_redo->create_action(TTR("Set constant"));
-	undo_redo->add_do_method(node.ptr(), "set_constant", float_constant_defs[p_index].value);
+	undo_redo->create_action(vformat(TTR("Set Constant: %s"), float_constant_defs[p_which].name));
+	undo_redo->add_do_method(node.ptr(), "set_constant", float_constant_defs[p_which].value);
 	undo_redo->add_undo_method(node.ptr(), "set_constant", node->get_constant());
-	undo_redo->add_do_method(graph_plugin.ptr(), "update_constant", type, p_node);
-	undo_redo->add_undo_method(graph_plugin.ptr(), "update_constant", type, p_node);
+	undo_redo->add_do_method(graph_plugin.ptr(), "update_constant", type, selected_float_constant);
+	undo_redo->add_undo_method(graph_plugin.ptr(), "update_constant", type, selected_float_constant);
 	undo_redo->commit_action();
 }
 
