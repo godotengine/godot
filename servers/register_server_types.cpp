@@ -220,6 +220,7 @@ void register_server_types() {
 	ClassDB::register_virtual_class<PhysicsDirectBodyState3D>();
 	ClassDB::register_virtual_class<PhysicsDirectSpaceState3D>();
 	ClassDB::register_virtual_class<PhysicsShapeQueryResult3D>();
+	ClassDB::register_class<PhysicsTestMotionResult3D>();
 
 	// Physics 2D
 	GLOBAL_DEF(PhysicsServer2DManager::setting_property_name, "DEFAULT");

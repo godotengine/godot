@@ -225,10 +225,14 @@ public:
 	virtual ~RenderingServerHandler() {}
 };
 
+class PhysicsTestMotionResult3D;
+
 class PhysicsServer3D : public Object {
 	GDCLASS(PhysicsServer3D, Object);
 
 	static PhysicsServer3D *singleton;
+
+	virtual bool _body_test_motion(RID p_body, const Transform3D &p_from, const Vector3 &p_motion, bool p_infinite_inertia, real_t p_margin = 0.001, const Ref<PhysicsTestMotionResult3D> &p_result = Ref<PhysicsTestMotionResult3D>());
 
 protected:
 	static void _bind_methods();
@@ -768,6 +772,33 @@ public:
 
 	PhysicsServer3D();
 	~PhysicsServer3D();
+};
+
+class PhysicsTestMotionResult3D : public RefCounted {
+	GDCLASS(PhysicsTestMotionResult3D, RefCounted);
+
+	PhysicsServer3D::MotionResult result;
+	friend class PhysicsServer3D;
+
+protected:
+	static void _bind_methods();
+
+public:
+	PhysicsServer3D::MotionResult *get_result_ptr() const { return const_cast<PhysicsServer3D::MotionResult *>(&result); }
+
+	Vector3 get_motion() const;
+	Vector3 get_motion_remainder() const;
+
+	Vector3 get_collision_point() const;
+	Vector3 get_collision_normal() const;
+	Vector3 get_collider_velocity() const;
+	ObjectID get_collider_id() const;
+	RID get_collider_rid() const;
+	Object *get_collider() const;
+	int get_collider_shape() const;
+	real_t get_collision_depth() const;
+	real_t get_collision_safe_fraction() const;
+	real_t get_collision_unsafe_fraction() const;
 };
 
 typedef PhysicsServer3D *(*CreatePhysicsServer3DCallback)();
