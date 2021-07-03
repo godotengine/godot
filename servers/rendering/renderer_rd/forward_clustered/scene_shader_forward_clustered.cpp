@@ -546,11 +546,9 @@ SceneShaderForwardClustered::~SceneShaderForwardClustered() {
 	RD::get_singleton()->free(default_vec4_xform_buffer);
 	RD::get_singleton()->free(shadow_sampler);
 
-	storage->free(wireframe_material_shader);
 	storage->free(overdraw_material_shader);
 	storage->free(default_shader);
 
-	storage->free(wireframe_material);
 	storage->free(overdraw_material);
 	storage->free(default_material);
 }
@@ -775,6 +773,9 @@ void SceneShaderForwardClustered::init(RendererStorageRD *p_storage, const Strin
 		MaterialData *md = (MaterialData *)storage->material_get_data(default_material, RendererStorageRD::SHADER_TYPE_3D);
 		default_shader_rd = shader.version_get_shader(md->shader_data->version, SHADER_VERSION_COLOR_PASS);
 		default_shader_sdfgi_rd = shader.version_get_shader(md->shader_data->version, SHADER_VERSION_DEPTH_PASS_WITH_SDF);
+
+		default_material_shader_ptr = md->shader_data;
+		default_material_uniform_set = md->uniform_set;
 	}
 
 	{
@@ -785,12 +786,9 @@ void SceneShaderForwardClustered::init(RendererStorageRD *p_storage, const Strin
 		storage->material_initialize(overdraw_material);
 		storage->material_set_shader(overdraw_material, overdraw_material_shader);
 
-		wireframe_material_shader = storage->shader_allocate();
-		storage->shader_initialize(wireframe_material_shader);
-		storage->shader_set_code(wireframe_material_shader, "shader_type spatial;\nrender_mode wireframe,unshaded;\n void fragment() { ALBEDO=vec3(0.0,0.0,0.0); }");
-		wireframe_material = storage->material_allocate();
-		storage->material_initialize(wireframe_material);
-		storage->material_set_shader(wireframe_material, wireframe_material_shader);
+		MaterialData *md = (MaterialData *)storage->material_get_data(overdraw_material, RendererStorageRD::SHADER_TYPE_3D);
+		overdraw_material_shader_ptr = md->shader_data;
+		overdraw_material_uniform_set = md->uniform_set;
 	}
 
 	{

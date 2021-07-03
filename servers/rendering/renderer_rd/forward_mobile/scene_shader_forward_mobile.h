@@ -189,14 +189,18 @@ public:
 	RID default_material;
 	RID overdraw_material_shader;
 	RID overdraw_material;
-	RID wireframe_material_shader;
-	RID wireframe_material;
 	RID default_shader_rd;
 
 	RID default_vec4_xform_buffer;
 	RID default_vec4_xform_uniform_set;
 
 	RID shadow_sampler;
+
+	RID default_material_uniform_set;
+	ShaderData *default_material_shader_ptr = nullptr;
+
+	RID overdraw_material_uniform_set;
+	ShaderData *overdraw_material_shader_ptr = nullptr;
 
 	SceneShaderForwardMobile();
 	~SceneShaderForwardMobile();

@@ -1078,14 +1078,16 @@ void RenderForwardMobile::_fill_render_list(RenderListType p_render_list, const 
 
 			// ADD Element
 			if (p_pass_mode == PASS_MODE_COLOR) {
-				if (surf->flags & (GeometryInstanceSurfaceDataCache::FLAG_PASS_DEPTH | GeometryInstanceSurfaceDataCache::FLAG_PASS_OPAQUE)) {
+#ifdef DEBUG_ENABLED
+				bool force_alpha = unlikely(get_debug_draw_mode() == RS::VIEWPORT_DEBUG_DRAW_OVERDRAW);
+#else
+				bool force_alpha = false;
+#endif
+				if (!force_alpha && (surf->flags & (GeometryInstanceSurfaceDataCache::FLAG_PASS_DEPTH | GeometryInstanceSurfaceDataCache::FLAG_PASS_OPAQUE))) {
 					rl->add_element(surf);
 				}
-				if (surf->flags & GeometryInstanceSurfaceDataCache::FLAG_PASS_ALPHA) {
+				if (force_alpha || (surf->flags & GeometryInstanceSurfaceDataCache::FLAG_PASS_ALPHA)) {
 					render_list[RENDER_LIST_ALPHA].add_element(surf);
-					// if (uses_gi) {
-					//	surf->sort.uses_forward_gi = 1;
-					// }
 				}
 
 				if (uses_lightmap) {
@@ -1451,8 +1453,20 @@ void RenderForwardMobile::_render_list_template(RenderingDevice::DrawListID p_dr
 			mesh_surface = surf->surface_shadow;
 
 		} else {
-			material_uniform_set = surf->material_uniform_set;
-			shader = surf->shader;
+#ifdef DEBUG_ENABLED
+			if (unlikely(get_debug_draw_mode() == RS::VIEWPORT_DEBUG_DRAW_LIGHTING)) {
+				material_uniform_set = scene_shader.default_material_uniform_set;
+				shader = scene_shader.default_material_shader_ptr;
+			} else if (unlikely(get_debug_draw_mode() == RS::VIEWPORT_DEBUG_DRAW_OVERDRAW)) {
+				material_uniform_set = scene_shader.overdraw_material_uniform_set;
+				shader = scene_shader.overdraw_material_shader_ptr;
+			} else {
+#endif
+				material_uniform_set = surf->material_uniform_set;
+				shader = surf->shader;
+#ifdef DEBUG_ENABLED
+			}
+#endif
 			mesh_surface = surf->surface;
 		}
 
