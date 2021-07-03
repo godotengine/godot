@@ -68,9 +68,21 @@ Error HTTPClientTCP::connect_to_host(const String &p_host, int p_port, bool p_ss
 
 	connection = tcp_connection;
 
-	if (conn_host.is_valid_ip_address()) {
+	if (ssl && https_proxy_port != -1) {
+		proxy_client.instantiate(); // Needs proxy negotiation
+		server_host = https_proxy_host;
+		server_port = https_proxy_port;
+	} else if (!ssl && http_proxy_port != -1) {
+		server_host = http_proxy_host;
+		server_port = http_proxy_port;
+	} else {
+		server_host = conn_host;
+		server_port = conn_port;
+	}
+
+	if (server_host.is_valid_ip_address()) {
 		// Host contains valid IP
-		Error err = tcp_connection->connect_to_host(IPAddress(conn_host), p_port);
+		Error err = tcp_connection->connect_to_host(IPAddress(server_host), server_port);
 		if (err) {
 			status = STATUS_CANT_CONNECT;
 			return err;
@@ -79,7 +91,7 @@ Error HTTPClientTCP::connect_to_host(const String &p_host, int p_port, bool p_ss
 		status = STATUS_CONNECTING;
 	} else {
 		// Host contains hostname and needs to be resolved to IP
-		resolving = IP::get_singleton()->resolve_hostname_queue_item(conn_host);
+		resolving = IP::get_singleton()->resolve_hostname_queue_item(server_host);
 		status = STATUS_RESOLVING;
 	}
 
@@ -132,7 +144,12 @@ Error HTTPClientTCP::request(Method p_method, const String &p_url, const Vector<
 	ERR_FAIL_COND_V(status != STATUS_CONNECTED, ERR_INVALID_PARAMETER);
 	ERR_FAIL_COND_V(connection.is_null(), ERR_INVALID_DATA);
 
-	String request = String(_methods[p_method]) + " " + p_url + " HTTP/1.1\r\n";
+	String uri = p_url;
+	if (!ssl && http_proxy_port != -1) {
+		uri = vformat("http://%s:%d%s", conn_host, conn_port, p_url);
+	}
+
+	String request = String(_methods[p_method]) + " " + uri + " HTTP/1.1\r\n";
 	bool add_host = true;
 	bool add_clen = p_body_size > 0;
 	bool add_uagent = true;
@@ -227,6 +244,7 @@ void HTTPClientTCP::close() {
 	}
 
 	connection.unref();
+	proxy_client.unref();
 	status = STATUS_DISCONNECTED;
 	head_request = false;
 	if (resolving != IP::RESOLVER_INVALID_ID) {
@@ -257,7 +275,7 @@ Error HTTPClientTCP::poll() {
 
 				case IP::RESOLVER_STATUS_DONE: {
 					IPAddress host = IP::get_singleton()->get_resolve_item_address(resolving);
-					Error err = tcp_connection->connect_to_host(host, conn_port);
+					Error err = tcp_connection->connect_to_host(host, server_port);
 					IP::get_singleton()->erase_resolve_item(resolving);
 					resolving = IP::RESOLVER_INVALID_ID;
 					if (err) {
@@ -284,7 +302,48 @@ Error HTTPClientTCP::poll() {
 					return OK;
 				} break;
 				case StreamPeerTCP::STATUS_CONNECTED: {
-					if (ssl) {
+					if (ssl && proxy_client.is_valid()) {
+						Error err = proxy_client->poll();
+						if (err == ERR_UNCONFIGURED) {
+							proxy_client->set_connection(tcp_connection);
+							const Vector<String> headers;
+							err = proxy_client->request(METHOD_CONNECT, vformat("%s:%d", conn_host, conn_port), headers, nullptr, 0);
+							if (err != OK) {
+								status = STATUS_CANT_CONNECT;
+								return err;
+							}
+						} else if (err != OK) {
+							status = STATUS_CANT_CONNECT;
+							return err;
+						}
+						switch (proxy_client->get_status()) {
+							case STATUS_REQUESTING: {
+								return OK;
+							} break;
+							case STATUS_BODY: {
+								proxy_client->read_response_body_chunk();
+								return OK;
+							} break;
+							case STATUS_CONNECTED: {
+								if (proxy_client->get_response_code() != RESPONSE_OK) {
+									status = STATUS_CANT_CONNECT;
+									return ERR_CANT_CONNECT;
+								}
+								proxy_client.unref();
+								return OK;
+							}
+							case STATUS_DISCONNECTED:
+							case STATUS_RESOLVING:
+							case STATUS_CONNECTING: {
+								status = STATUS_CANT_CONNECT;
+								ERR_FAIL_V(ERR_BUG);
+							} break;
+							default: {
+								status = STATUS_CANT_CONNECT;
+								return ERR_CANT_CONNECT;
+							} break;
+						}
+					} else if (ssl) {
 						Ref<StreamPeerSSL> ssl;
 						if (!handshaking) {
 							// Connect the StreamPeerSSL and start handshaking
@@ -655,6 +714,26 @@ void HTTPClientTCP::set_read_chunk_size(int p_size) {
 
 int HTTPClientTCP::get_read_chunk_size() const {
 	return read_chunk_size;
+}
+
+void HTTPClientTCP::set_http_proxy(const String &p_host, int p_port) {
+	if (p_host.is_empty() || p_port == -1) {
+		http_proxy_host = "";
+		http_proxy_port = -1;
+	} else {
+		http_proxy_host = p_host;
+		http_proxy_port = p_port;
+	}
+}
+
+void HTTPClientTCP::set_https_proxy(const String &p_host, int p_port) {
+	if (p_host.is_empty() || p_port == -1) {
+		https_proxy_host = "";
+		https_proxy_port = -1;
+	} else {
+		https_proxy_host = p_host;
+		https_proxy_port = p_port;
+	}
 }
 
 HTTPClientTCP::HTTPClientTCP() {
