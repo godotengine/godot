@@ -73,7 +73,6 @@ private:
 		Map<int, Port> output_ports;
 		VBoxContainer *preview_box = nullptr;
 		LineEdit *uniform_name = nullptr;
-		OptionButton *const_op = nullptr;
 		CodeEdit *expression_edit = nullptr;
 		CurveEditor *curve_editors[3] = { nullptr, nullptr, nullptr };
 	};
@@ -95,7 +94,6 @@ public:
 	void register_output_port(int p_id, int p_port, TextureButton *p_button);
 	void register_uniform_name(int p_id, LineEdit *p_uniform_name);
 	void register_default_input_button(int p_node_id, int p_port_id, Button *p_button);
-	void register_constant_option_btn(int p_node_id, OptionButton *p_button);
 	void register_expression_edit(int p_node_id, CodeEdit *p_expression_edit);
 	void register_curve_editor(int p_node_id, int p_index, CurveEditor *p_curve_editor);
 	void clear_links();
@@ -118,7 +116,6 @@ public:
 	void set_uniform_name(VisualShader::Type p_type, int p_node_id, const String &p_name);
 	void update_curve(int p_node_id);
 	void update_curve_xyz(int p_node_id);
-	void update_constant(VisualShader::Type p_type, int p_node_id);
 	void set_expression(VisualShader::Type p_type, int p_node_id, const String &p_expression);
 	int get_constant_index(float p_constant) const;
 	void update_node_size(int p_node_id);
@@ -164,6 +161,7 @@ class VisualShaderEditor : public VBoxContainer {
 
 	ConfirmationDialog *members_dialog;
 	PopupMenu *popup_menu;
+	PopupMenu *constants_submenu = nullptr;
 	MenuButton *tools;
 
 	PopupPanel *comment_title_change_popup = nullptr;
@@ -214,6 +212,7 @@ class VisualShaderEditor : public VBoxContainer {
 		DELETE,
 		DUPLICATE,
 		SEPARATOR2, // ignore
+		FLOAT_CONSTANTS,
 		CONVERT_CONSTANTS_TO_UNIFORMS,
 		CONVERT_UNIFORMS_TO_CONSTANTS,
 		SEPARATOR3, // ignore
@@ -347,6 +346,7 @@ class VisualShaderEditor : public VBoxContainer {
 	Set<int> selected_constants;
 	Set<int> selected_uniforms;
 	int selected_comment = -1;
+	int selected_float_constant = -1;
 
 	void _convert_constants_to_uniforms(bool p_vice_versa);
 	void _replace_node(VisualShader::Type p_type_id, int p_node_id, const StringName &p_from, const StringName &p_to);
@@ -396,7 +396,7 @@ class VisualShaderEditor : public VBoxContainer {
 	void _input_select_item(Ref<VisualShaderNodeInput> input, String name);
 	void _uniform_select_item(Ref<VisualShaderNodeUniformRef> p_uniform, String p_name);
 
-	void _float_constant_selected(int p_index, int p_node);
+	void _float_constant_selected(int p_which);
 
 	VisualShader::Type get_current_shader_type() const;
 
