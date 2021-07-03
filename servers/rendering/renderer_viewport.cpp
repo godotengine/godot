@@ -95,7 +95,7 @@ void RendererViewport::_draw_3d(Viewport *p_viewport) {
 	}
 
 	float screen_lod_threshold = p_viewport->lod_threshold / float(p_viewport->size.width);
-	RSG::scene->render_camera(p_viewport->render_buffers, p_viewport->camera, p_viewport->scenario, p_viewport->self, p_viewport->size, screen_lod_threshold, p_viewport->shadow_atlas, xr_interface);
+	RSG::scene->render_camera(p_viewport->render_buffers, p_viewport->camera, p_viewport->scenario, p_viewport->self, p_viewport->size, screen_lod_threshold, p_viewport->shadow_atlas, xr_interface, &p_viewport->render_info);
 
 	RENDER_TIMESTAMP("<End Rendering 3D Scene");
 }
@@ -111,6 +111,12 @@ void RendererViewport::_draw_viewport(Viewport *p_viewport, uint32_t p_view_coun
 
 	bool scenario_draw_canvas_bg = false; //draw canvas, or some layer of it, as BG for 3D instead of in front
 	int scenario_canvas_max_layer = 0;
+
+	for (int i = 0; i < RS::VIEWPORT_RENDER_INFO_TYPE_MAX; i++) {
+		for (int j = 0; j < RS::VIEWPORT_RENDER_INFO_MAX; j++) {
+			p_viewport->render_info.info[i][j] = 0;
+		}
+	}
 
 	Color bgcolor = RSG::storage->get_default_clear_color();
 
@@ -522,6 +528,10 @@ void RendererViewport::draw_viewports() {
 		}
 	}
 
+	int vertices_drawn = 0;
+	int objects_drawn = 0;
+	int draw_calls_used = 0;
+
 	for (int i = 0; i < active_viewports.size(); i++) {
 		Viewport *vp = active_viewports[i];
 
@@ -544,19 +554,11 @@ void RendererViewport::draw_viewports() {
 
 			// render...
 			RSG::scene->set_debug_draw_mode(vp->debug_draw);
-			RSG::storage->render_info_begin_capture();
 
 			// and draw viewport
 			_draw_viewport(vp, view_count);
 
 			// measure
-			RSG::storage->render_info_end_capture();
-			vp->render_info[RS::VIEWPORT_RENDER_INFO_OBJECTS_IN_FRAME] = RSG::storage->get_captured_render_info(RS::INFO_OBJECTS_IN_FRAME);
-			vp->render_info[RS::VIEWPORT_RENDER_INFO_VERTICES_IN_FRAME] = RSG::storage->get_captured_render_info(RS::INFO_VERTICES_IN_FRAME);
-			vp->render_info[RS::VIEWPORT_RENDER_INFO_MATERIAL_CHANGES_IN_FRAME] = RSG::storage->get_captured_render_info(RS::INFO_MATERIAL_CHANGES_IN_FRAME);
-			vp->render_info[RS::VIEWPORT_RENDER_INFO_SHADER_CHANGES_IN_FRAME] = RSG::storage->get_captured_render_info(RS::INFO_SHADER_CHANGES_IN_FRAME);
-			vp->render_info[RS::VIEWPORT_RENDER_INFO_SURFACE_CHANGES_IN_FRAME] = RSG::storage->get_captured_render_info(RS::INFO_SURFACE_CHANGES_IN_FRAME);
-			vp->render_info[RS::VIEWPORT_RENDER_INFO_DRAW_CALLS_IN_FRAME] = RSG::storage->get_captured_render_info(RS::INFO_DRAW_CALLS_IN_FRAME);
 
 			// commit our eyes
 			Vector<BlitToScreen> blits = xr_interface->commit_views(vp->render_target, vp->viewport_to_screen_rect);
@@ -576,18 +578,9 @@ void RendererViewport::draw_viewports() {
 			RSG::storage->render_target_set_external_texture(vp->render_target, 0);
 
 			RSG::scene->set_debug_draw_mode(vp->debug_draw);
-			RSG::storage->render_info_begin_capture();
 
 			// render standard mono camera
 			_draw_viewport(vp, 1);
-
-			RSG::storage->render_info_end_capture();
-			vp->render_info[RS::VIEWPORT_RENDER_INFO_OBJECTS_IN_FRAME] = RSG::storage->get_captured_render_info(RS::INFO_OBJECTS_IN_FRAME);
-			vp->render_info[RS::VIEWPORT_RENDER_INFO_VERTICES_IN_FRAME] = RSG::storage->get_captured_render_info(RS::INFO_VERTICES_IN_FRAME);
-			vp->render_info[RS::VIEWPORT_RENDER_INFO_MATERIAL_CHANGES_IN_FRAME] = RSG::storage->get_captured_render_info(RS::INFO_MATERIAL_CHANGES_IN_FRAME);
-			vp->render_info[RS::VIEWPORT_RENDER_INFO_SHADER_CHANGES_IN_FRAME] = RSG::storage->get_captured_render_info(RS::INFO_SHADER_CHANGES_IN_FRAME);
-			vp->render_info[RS::VIEWPORT_RENDER_INFO_SURFACE_CHANGES_IN_FRAME] = RSG::storage->get_captured_render_info(RS::INFO_SURFACE_CHANGES_IN_FRAME);
-			vp->render_info[RS::VIEWPORT_RENDER_INFO_DRAW_CALLS_IN_FRAME] = RSG::storage->get_captured_render_info(RS::INFO_DRAW_CALLS_IN_FRAME);
 
 			if (vp->viewport_to_screen != DisplayServer::INVALID_WINDOW_ID && (!vp->viewport_render_direct_to_screen || !RSG::rasterizer->is_low_end())) {
 				//copy to screen if set as such
@@ -613,8 +606,16 @@ void RendererViewport::draw_viewports() {
 		}
 
 		RENDER_TIMESTAMP("<Rendering Viewport " + itos(i));
+
+		objects_drawn += vp->render_info.info[RS::VIEWPORT_RENDER_INFO_TYPE_VISIBLE][RS::VIEWPORT_RENDER_INFO_OBJECTS_IN_FRAME] + vp->render_info.info[RS::VIEWPORT_RENDER_INFO_TYPE_SHADOW][RS::VIEWPORT_RENDER_INFO_OBJECTS_IN_FRAME];
+		vertices_drawn += vp->render_info.info[RS::VIEWPORT_RENDER_INFO_TYPE_VISIBLE][RS::VIEWPORT_RENDER_INFO_PRIMITIVES_IN_FRAME] + vp->render_info.info[RS::VIEWPORT_RENDER_INFO_TYPE_SHADOW][RS::VIEWPORT_RENDER_INFO_PRIMITIVES_IN_FRAME];
+		draw_calls_used += vp->render_info.info[RS::VIEWPORT_RENDER_INFO_TYPE_VISIBLE][RS::VIEWPORT_RENDER_INFO_DRAW_CALLS_IN_FRAME] + vp->render_info.info[RS::VIEWPORT_RENDER_INFO_TYPE_SHADOW][RS::VIEWPORT_RENDER_INFO_DRAW_CALLS_IN_FRAME];
 	}
 	RSG::scene->set_debug_draw_mode(RS::VIEWPORT_DEBUG_DRAW_DISABLED);
+
+	total_objects_drawn = objects_drawn;
+	total_vertices_drawn = vertices_drawn;
+	total_draw_calls_used = draw_calls_used;
 
 	RENDER_TIMESTAMP("<Render Viewports");
 	//this needs to be called to make screen swapping more efficient
@@ -987,7 +988,7 @@ void RendererViewport::viewport_set_lod_threshold(RID p_viewport, float p_pixels
 	viewport->lod_threshold = p_pixels;
 }
 
-int RendererViewport::viewport_get_render_info(RID p_viewport, RS::ViewportRenderInfo p_info) {
+int RendererViewport::viewport_get_render_info(RID p_viewport, RS::ViewportRenderInfoType p_type, RS::ViewportRenderInfo p_info) {
 	ERR_FAIL_INDEX_V(p_info, RS::VIEWPORT_RENDER_INFO_MAX, -1);
 
 	Viewport *viewport = viewport_owner.getornull(p_viewport);
@@ -995,7 +996,7 @@ int RendererViewport::viewport_get_render_info(RID p_viewport, RS::ViewportRende
 		return 0; //there should be a lock here..
 	}
 
-	return viewport->render_info[p_info];
+	return viewport->render_info.info[p_type][p_info];
 }
 
 void RendererViewport::viewport_set_debug_draw(RID p_viewport, RS::ViewportDebugDraw p_draw) {
@@ -1118,6 +1119,16 @@ void RendererViewport::set_default_clear_color(const Color &p_color) {
 //workaround for setting this on thread
 void RendererViewport::call_set_use_vsync(bool p_enable) {
 	DisplayServer::get_singleton()->_set_use_vsync(p_enable);
+}
+
+int RendererViewport::get_total_objects_drawn() const {
+	return total_objects_drawn;
+}
+int RendererViewport::get_total_vertices_drawn() const {
+	return total_vertices_drawn;
+}
+int RendererViewport::get_total_draw_calls_used() const {
+	return total_draw_calls_used;
 }
 
 RendererViewport::RendererViewport() {

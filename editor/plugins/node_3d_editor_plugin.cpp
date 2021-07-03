@@ -2505,24 +2505,20 @@ void Node3DEditorViewport::_notification(int p_what) {
 
 		if (show_info) {
 			String text;
-			text += "X: " + rtos(current_camera->get_position().x).pad_decimals(1) + "\n";
-			text += "Y: " + rtos(current_camera->get_position().y).pad_decimals(1) + "\n";
-			text += "Z: " + rtos(current_camera->get_position().z).pad_decimals(1) + "\n";
-			text += TTR("Pitch") + ": " + itos(Math::round(Math::rad2deg(current_camera->get_rotation().x))) + "\n";
-			text += TTR("Yaw") + ": " + itos(Math::round(Math::rad2deg(current_camera->get_rotation().y))) + "\n\n";
+			text += vformat(TTR("X: %s\n"), rtos(current_camera->get_position().x).pad_decimals(1));
+			text += vformat(TTR("Y: %s\n"), rtos(current_camera->get_position().y).pad_decimals(1));
+			text += vformat(TTR("Z: %s\n"), rtos(current_camera->get_position().z).pad_decimals(1));
+			text += "\n";
+			text += vformat(
+					TTR("Size: %dx%d (%.1fMP)\n"),
+					viewport->get_size().x,
+					viewport->get_size().y,
+					viewport->get_size().x * viewport->get_size().y * 0.000001);
 
-			text += TTR("Size") +
-					vformat(
-							": %dx%d (%.1fMP)\n",
-							viewport->get_size().x,
-							viewport->get_size().y,
-							viewport->get_size().x * viewport->get_size().y * 0.000'001);
-			text += TTR("Objects Drawn") + ": " + itos(viewport->get_render_info(Viewport::RENDER_INFO_OBJECTS_IN_FRAME)) + "\n";
-			text += TTR("Material Changes") + ": " + itos(viewport->get_render_info(Viewport::RENDER_INFO_MATERIAL_CHANGES_IN_FRAME)) + "\n";
-			text += TTR("Shader Changes") + ": " + itos(viewport->get_render_info(Viewport::RENDER_INFO_SHADER_CHANGES_IN_FRAME)) + "\n";
-			text += TTR("Surface Changes") + ": " + itos(viewport->get_render_info(Viewport::RENDER_INFO_SURFACE_CHANGES_IN_FRAME)) + "\n";
-			text += TTR("Draw Calls") + ": " + itos(viewport->get_render_info(Viewport::RENDER_INFO_DRAW_CALLS_IN_FRAME)) + "\n";
-			text += TTR("Vertices") + ": " + itos(viewport->get_render_info(Viewport::RENDER_INFO_VERTICES_IN_FRAME));
+			text += "\n";
+			text += vformat(TTR("Objects: %d\n"), viewport->get_render_info(Viewport::RENDER_INFO_TYPE_VISIBLE, Viewport::RENDER_INFO_OBJECTS_IN_FRAME));
+			text += vformat(TTR("Primitives: %d\n"), viewport->get_render_info(Viewport::RENDER_INFO_TYPE_VISIBLE, Viewport::RENDER_INFO_PRIMITIVES_IN_FRAME));
+			text += vformat(TTR("Draw Calls: %d"), viewport->get_render_info(Viewport::RENDER_INFO_TYPE_VISIBLE, Viewport::RENDER_INFO_DRAW_CALLS_IN_FRAME));
 
 			info_label->set_text(text);
 		}

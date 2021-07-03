@@ -3268,8 +3268,8 @@ Viewport::DebugDraw Viewport::get_debug_draw() const {
 	return debug_draw;
 }
 
-int Viewport::get_render_info(RenderInfo p_info) {
-	return RS::get_singleton()->viewport_get_render_info(viewport, RS::ViewportRenderInfo(p_info));
+int Viewport::get_render_info(RenderInfoType p_type, RenderInfo p_info) {
+	return RS::get_singleton()->viewport_get_render_info(viewport, RS::ViewportRenderInfoType(p_type), RS::ViewportRenderInfo(p_info));
 }
 
 void Viewport::set_snap_controls_to_pixels(bool p_enable) {
@@ -3499,7 +3499,7 @@ void Viewport::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_debug_draw", "debug_draw"), &Viewport::set_debug_draw);
 	ClassDB::bind_method(D_METHOD("get_debug_draw"), &Viewport::get_debug_draw);
 
-	ClassDB::bind_method(D_METHOD("get_render_info", "info"), &Viewport::get_render_info);
+	ClassDB::bind_method(D_METHOD("get_render_info", "type", "info"), &Viewport::get_render_info);
 
 	ClassDB::bind_method(D_METHOD("set_use_xr", "use"), &Viewport::set_use_xr);
 	ClassDB::bind_method(D_METHOD("is_using_xr"), &Viewport::is_using_xr);
@@ -3650,12 +3650,13 @@ void Viewport::_bind_methods() {
 	BIND_ENUM_CONSTANT(SCREEN_SPACE_AA_MAX);
 
 	BIND_ENUM_CONSTANT(RENDER_INFO_OBJECTS_IN_FRAME);
-	BIND_ENUM_CONSTANT(RENDER_INFO_VERTICES_IN_FRAME);
-	BIND_ENUM_CONSTANT(RENDER_INFO_MATERIAL_CHANGES_IN_FRAME);
-	BIND_ENUM_CONSTANT(RENDER_INFO_SHADER_CHANGES_IN_FRAME);
-	BIND_ENUM_CONSTANT(RENDER_INFO_SURFACE_CHANGES_IN_FRAME);
+	BIND_ENUM_CONSTANT(RENDER_INFO_PRIMITIVES_IN_FRAME);
 	BIND_ENUM_CONSTANT(RENDER_INFO_DRAW_CALLS_IN_FRAME);
 	BIND_ENUM_CONSTANT(RENDER_INFO_MAX);
+
+	BIND_ENUM_CONSTANT(RENDER_INFO_TYPE_VISIBLE);
+	BIND_ENUM_CONSTANT(RENDER_INFO_TYPE_SHADOW);
+	BIND_ENUM_CONSTANT(RENDER_INFO_TYPE_MAX);
 
 	BIND_ENUM_CONSTANT(DEBUG_DRAW_DISABLED);
 	BIND_ENUM_CONSTANT(DEBUG_DRAW_UNSHADED);

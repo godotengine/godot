@@ -835,15 +835,18 @@ public:
 
 	enum ViewportRenderInfo {
 		VIEWPORT_RENDER_INFO_OBJECTS_IN_FRAME,
-		VIEWPORT_RENDER_INFO_VERTICES_IN_FRAME,
-		VIEWPORT_RENDER_INFO_MATERIAL_CHANGES_IN_FRAME,
-		VIEWPORT_RENDER_INFO_SHADER_CHANGES_IN_FRAME,
-		VIEWPORT_RENDER_INFO_SURFACE_CHANGES_IN_FRAME,
+		VIEWPORT_RENDER_INFO_PRIMITIVES_IN_FRAME,
 		VIEWPORT_RENDER_INFO_DRAW_CALLS_IN_FRAME,
 		VIEWPORT_RENDER_INFO_MAX,
 	};
 
-	virtual int viewport_get_render_info(RID p_viewport, ViewportRenderInfo p_info) = 0;
+	enum ViewportRenderInfoType {
+		VIEWPORT_RENDER_INFO_TYPE_VISIBLE,
+		VIEWPORT_RENDER_INFO_TYPE_SHADOW,
+		VIEWPORT_RENDER_INFO_TYPE_MAX
+	};
+
+	virtual int viewport_get_render_info(RID p_viewport, ViewportRenderInfoType p_type, ViewportRenderInfo p_info) = 0;
 
 	enum ViewportDebugDraw {
 		VIEWPORT_DEBUG_DRAW_DISABLED,
@@ -1395,20 +1398,17 @@ public:
 
 	/* STATUS INFORMATION */
 
-	enum RenderInfo {
-		INFO_OBJECTS_IN_FRAME,
-		INFO_VERTICES_IN_FRAME,
-		INFO_MATERIAL_CHANGES_IN_FRAME,
-		INFO_SHADER_CHANGES_IN_FRAME,
-		INFO_SURFACE_CHANGES_IN_FRAME,
-		INFO_DRAW_CALLS_IN_FRAME,
-		INFO_USAGE_VIDEO_MEM_TOTAL,
-		INFO_VIDEO_MEM_USED,
-		INFO_TEXTURE_MEM_USED,
-		INFO_VERTEX_MEM_USED,
+	enum RenderingInfo {
+		RENDERING_INFO_TOTAL_OBJECTS_IN_FRAME,
+		RENDERING_INFO_TOTAL_PRIMITIVES_IN_FRAME,
+		RENDERING_INFO_TOTAL_DRAW_CALLS_IN_FRAME,
+		RENDERING_INFO_TEXTURE_MEM_USED,
+		RENDERING_INFO_BUFFER_MEM_USED,
+		RENDERING_INFO_VIDEO_MEM_USED,
+		RENDERING_INFO_MAX
 	};
 
-	virtual uint64_t get_render_info(RenderInfo p_info) = 0;
+	virtual uint64_t get_rendering_info(RenderingInfo p_info) = 0;
 	virtual String get_video_adapter_name() const = 0;
 	virtual String get_video_adapter_vendor() const = 0;
 
@@ -1513,6 +1513,7 @@ VARIANT_ENUM_CAST(RenderingServer::ViewportClearMode);
 VARIANT_ENUM_CAST(RenderingServer::ViewportMSAA);
 VARIANT_ENUM_CAST(RenderingServer::ViewportScreenSpaceAA);
 VARIANT_ENUM_CAST(RenderingServer::ViewportRenderInfo);
+VARIANT_ENUM_CAST(RenderingServer::ViewportRenderInfoType);
 VARIANT_ENUM_CAST(RenderingServer::ViewportDebugDraw);
 VARIANT_ENUM_CAST(RenderingServer::ViewportOcclusionCullingBuildQuality);
 VARIANT_ENUM_CAST(RenderingServer::ViewportSDFOversize);
@@ -1546,7 +1547,7 @@ VARIANT_ENUM_CAST(RenderingServer::CanvasLightBlendMode);
 VARIANT_ENUM_CAST(RenderingServer::CanvasLightShadowFilter);
 VARIANT_ENUM_CAST(RenderingServer::CanvasOccluderPolygonCullMode);
 VARIANT_ENUM_CAST(RenderingServer::GlobalVariableType);
-VARIANT_ENUM_CAST(RenderingServer::RenderInfo);
+VARIANT_ENUM_CAST(RenderingServer::RenderingInfo);
 VARIANT_ENUM_CAST(RenderingServer::Features);
 VARIANT_ENUM_CAST(RenderingServer::CanvasTextureChannel);
 VARIANT_ENUM_CAST(RenderingServer::BakeChannels);
