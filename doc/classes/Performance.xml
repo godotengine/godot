@@ -217,7 +217,7 @@
 			Number of islands in the 3D physics engine.
 		</constant>
 		<constant name="AUDIO_OUTPUT_LATENCY" value="26" enum="Monitor">
-			Output latency of the [AudioServer].
+			Output latency of the [AudioServer]. Equivalent to calling [gdscript]AudioServer.get_output_latency()[/gdscript], it is not recommended to call this every frame.
 		</constant>
 		<constant name="MONITOR_MAX" value="27" enum="Monitor">
 			Represents the size of the [enum Monitor] enum.
