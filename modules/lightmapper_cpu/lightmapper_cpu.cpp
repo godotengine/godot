@@ -1277,9 +1277,18 @@ LightmapperCPU::BakeError LightmapperCPU::bake(BakeQuality p_quality, bool p_use
 		}
 	}
 
+	bool has_baked_mesh = false;
 	for (unsigned int i = 0; i < mesh_instances.size(); i++) {
+		if (mesh_instances[i].generate_lightmap) {
+			has_baked_mesh = true;
+		}
 		raycaster->add_mesh(mesh_instances[i].data.points, mesh_instances[i].data.normal, mesh_instances[i].data.uv2, i);
 	}
+
+	if (!has_baked_mesh) {
+		return BAKE_ERROR_NO_MESHES;
+	}
+
 	raycaster->commit();
 
 	scene_lightmaps.resize(mesh_instances.size());
@@ -1470,7 +1479,6 @@ LightmapperCPU::BakeError LightmapperCPU::bake(BakeQuality p_quality, bool p_use
 	}
 
 	{
-		int j = 0;
 		for (unsigned int i = 0; i < mesh_instances.size(); i++) {
 			if (!mesh_instances[i].generate_lightmap) {
 				continue;
@@ -1479,9 +1487,8 @@ LightmapperCPU::BakeError LightmapperCPU::bake(BakeQuality p_quality, bool p_use
 			if (p_generate_atlas) {
 				_blit_lightmap(lightmaps_data[i], mesh_instances[i].size, bake_textures[mesh_instances[i].slice], mesh_instances[i].offset.x, mesh_instances[i].offset.y, true);
 			} else {
-				_blit_lightmap(lightmaps_data[i], mesh_instances[i].size, bake_textures[j], 0, 0, false);
+				_blit_lightmap(lightmaps_data[i], mesh_instances[i].size, bake_textures[i], 0, 0, false);
 			}
-			j++;
 		}
 	}
 
