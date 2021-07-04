@@ -100,7 +100,7 @@ void MeshInstance3D::_get_property_list(List<PropertyInfo> *p_list) const {
 
 	if (mesh.is_valid()) {
 		for (int i = 0; i < mesh->get_surface_count(); i++) {
-			p_list->push_back(PropertyInfo(Variant::OBJECT, "surface_material_override/" + itos(i), PROPERTY_HINT_RESOURCE_TYPE, "ShaderMaterial,StandardMaterial3D", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_DEFERRED_SET_RESOURCE));
+			p_list->push_back(PropertyInfo(Variant::OBJECT, "surface_material_override/" + itos(i), PROPERTY_HINT_RESOURCE_TYPE, "BaseMaterial3D,ShaderMaterial", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_DEFERRED_SET_RESOURCE));
 		}
 	}
 }
