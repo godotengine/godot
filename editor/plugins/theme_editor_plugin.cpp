@@ -930,11 +930,14 @@ ThemeItemImportTree::ThemeItemImportTree() {
 	import_items_tree->set_column_title(IMPORT_ITEM, TTR("Import"));
 	import_items_tree->set_column_title(IMPORT_ITEM_DATA, TTR("With Data"));
 	import_items_tree->set_column_expand(0, true);
+	import_items_tree->set_column_clip_content(0, true);
 	import_items_tree->set_column_expand(IMPORT_ITEM, false);
 	import_items_tree->set_column_expand(IMPORT_ITEM_DATA, false);
 	import_items_tree->set_column_custom_minimum_width(0, 160 * EDSCALE);
 	import_items_tree->set_column_custom_minimum_width(IMPORT_ITEM, 80 * EDSCALE);
 	import_items_tree->set_column_custom_minimum_width(IMPORT_ITEM_DATA, 80 * EDSCALE);
+	import_items_tree->set_column_clip_content(1, true);
+	import_items_tree->set_column_clip_content(2, true);
 
 	ScrollContainer *import_bulk_sc = memnew(ScrollContainer);
 	import_bulk_sc->set_custom_minimum_size(Size2(260.0, 0.0) * EDSCALE);
