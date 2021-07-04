@@ -3957,7 +3957,7 @@ VisualShaderEditor::VisualShaderEditor() {
 
 	error_label = memnew(Label);
 	error_panel->add_child(error_label);
-	error_label->set_autowrap(true);
+	error_label->set_autowrap_mode(Label::AUTOWRAP_WORD_SMART);
 
 	///////////////////////////////////////
 	// POPUP MENU
@@ -4043,7 +4043,7 @@ VisualShaderEditor::VisualShaderEditor() {
 	add_child(members_dialog);
 
 	alert = memnew(AcceptDialog);
-	alert->get_label()->set_autowrap(true);
+	alert->get_label()->set_autowrap_mode(Label::AUTOWRAP_WORD);
 	alert->get_label()->set_align(Label::ALIGN_CENTER);
 	alert->get_label()->set_valign(Label::VALIGN_CENTER);
 	alert->get_label()->set_custom_minimum_size(Size2(400, 60) * EDSCALE);

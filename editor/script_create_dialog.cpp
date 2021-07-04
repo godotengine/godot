@@ -764,7 +764,7 @@ ScriptCreateDialog::ScriptCreateDialog() {
 	builtin_warning_label->set_text(
 			TTR("Note: Built-in scripts have some limitations and can't be edited using an external editor."));
 	vb->add_child(builtin_warning_label);
-	builtin_warning_label->set_autowrap(true);
+	builtin_warning_label->set_autowrap_mode(Label::AUTOWRAP_WORD_SMART);
 	builtin_warning_label->hide();
 
 	script_name_warning_label = memnew(Label);
@@ -772,7 +772,7 @@ ScriptCreateDialog::ScriptCreateDialog() {
 			TTR("Warning: Having the script name be the same as a built-in type is usually not desired."));
 	vb->add_child(script_name_warning_label);
 	script_name_warning_label->add_theme_color_override("font_color", Color(1, 0.85, 0.4));
-	script_name_warning_label->set_autowrap(true);
+	script_name_warning_label->set_autowrap_mode(Label::AUTOWRAP_WORD_SMART);
 	script_name_warning_label->hide();
 
 	status_panel = memnew(PanelContainer);
@@ -884,7 +884,7 @@ ScriptCreateDialog::ScriptCreateDialog() {
 	add_child(file_browse);
 	get_ok_button()->set_text(TTR("Create"));
 	alert = memnew(AcceptDialog);
-	alert->get_label()->set_autowrap(true);
+	alert->get_label()->set_autowrap_mode(Label::AUTOWRAP_WORD_SMART);
 	alert->get_label()->set_align(Label::ALIGN_CENTER);
 	alert->get_label()->set_valign(Label::VALIGN_CENTER);
 	alert->get_label()->set_custom_minimum_size(Size2(325, 60) * EDSCALE);
