@@ -96,6 +96,14 @@
 				Returns the column index at [code]position[/code], or -1 if no item is there.
 			</description>
 		</method>
+		<method name="get_column_expand_ratio" qualifiers="const">
+			<return type="int">
+			</return>
+			<argument index="0" name="column" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="get_column_title" qualifiers="const">
 			<return type="String">
 			</return>
@@ -264,10 +272,36 @@
 				To tell whether a column of an item is selected, use [method TreeItem.is_selected].
 			</description>
 		</method>
+		<method name="is_column_clipping_content" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="column" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="is_column_expanding" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="column" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="scroll_to_item">
 			<return type="void">
 			</return>
 			<argument index="0" name="item" type="Object">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_column_clip_content">
+			<return type="void">
+			</return>
+			<argument index="0" name="column" type="int">
+			</argument>
+			<argument index="1" name="enable" type="bool">
 			</argument>
 			<description>
 			</description>
@@ -292,6 +326,16 @@
 			</argument>
 			<description>
 				If [code]true[/code], the column will have the "Expand" flag of [Control]. Columns that have the "Expand" flag will use their "min_width" in a similar fashion to [member Control.size_flags_stretch_ratio].
+			</description>
+		</method>
+		<method name="set_column_expand_ratio">
+			<return type="void">
+			</return>
+			<argument index="0" name="column" type="int">
+			</argument>
+			<argument index="1" name="ratio" type="int">
+			</argument>
+			<description>
 			</description>
 		</method>
 		<method name="set_column_title">
