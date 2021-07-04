@@ -1030,13 +1030,14 @@ bool KinematicBody2D::separate_raycast_shapes(bool p_infinite_inertia, Collision
 	}
 }
 
-bool KinematicBody2D::move_and_collide(const Vector2 &p_motion, bool p_infinite_inertia, Collision &r_collision, bool p_exclude_raycast_shapes, bool p_test_only) {
+bool KinematicBody2D::move_and_collide(const Vector2 &p_motion, bool p_infinite_inertia, Collision &r_collision, bool p_exclude_raycast_shapes, bool p_test_only, const Set<RID> &p_exclude) {
 	if (sync_to_physics) {
 		ERR_PRINT("Functions move_and_slide and move_and_collide do not work together with 'sync to physics' option. Please read the documentation.");
 	}
 	Transform2D gt = get_global_transform();
 	Physics2DServer::MotionResult result;
-	bool colliding = Physics2DServer::get_singleton()->body_test_motion(get_rid(), gt, p_motion, p_infinite_inertia, margin, &result, p_exclude_raycast_shapes);
+
+	bool colliding = Physics2DServer::get_singleton()->body_test_motion(get_rid(), gt, p_motion, p_infinite_inertia, margin, &result, p_exclude_raycast_shapes, p_exclude);
 
 	if (colliding) {
 		r_collision.collider_metadata = result.collider_metadata;
@@ -1067,8 +1068,12 @@ Vector2 KinematicBody2D::move_and_slide(const Vector2 &p_linear_velocity, const 
 	Vector2 body_velocity_normal = body_velocity.normalized();
 	Vector2 up_direction = p_up_direction.normalized();
 
+	// Hack in order to work with calling from _process as well as from _physics_process; calling from thread is risky
+	float delta = Engine::get_singleton()->is_in_physics_frame() ? get_physics_process_delta_time() : get_process_delta_time();
+
 	Vector2 current_floor_velocity = floor_velocity;
-	if (on_floor && on_floor_body.is_valid()) {
+
+	if ((on_floor || on_wall) && on_floor_body.is_valid()) {
 		//this approach makes sure there is less delay between the actual body velocity and the one we saved
 		Physics2DDirectBodyState *bs = Physics2DServer::get_singleton()->body_get_direct_state(on_floor_body);
 		if (bs) {
@@ -1076,16 +1081,25 @@ Vector2 KinematicBody2D::move_and_slide(const Vector2 &p_linear_velocity, const 
 		}
 	}
 
-	// Hack in order to work with calling from _process as well as from _physics_process; calling from thread is risky
-	Vector2 motion = (current_floor_velocity + body_velocity) * (Engine::get_singleton()->is_in_physics_frame() ? get_physics_process_delta_time() : get_process_delta_time());
-
+	colliders.clear();
 	on_floor = false;
-	on_floor_body = RID();
 	on_ceiling = false;
 	on_wall = false;
-	colliders.clear();
 	floor_normal = Vector2();
 	floor_velocity = Vector2();
+
+	if (current_floor_velocity != Vector2()) {
+		Collision floor_collision;
+		Set<RID> exclude;
+		exclude.insert(on_floor_body);
+		if (move_and_collide(current_floor_velocity * delta, p_infinite_inertia, floor_collision, true, false, exclude)) {
+			colliders.push_back(floor_collision);
+			_set_collision_direction(floor_collision, up_direction, p_floor_max_angle);
+		}
+	}
+
+	on_floor_body = RID();
+	Vector2 motion = body_velocity * delta;
 
 	while (p_max_slides) {
 		Collision collision;
@@ -1112,29 +1126,14 @@ Vector2 KinematicBody2D::move_and_slide(const Vector2 &p_linear_velocity, const 
 				colliders.push_back(collision);
 				motion = collision.remainder;
 
-				if (up_direction == Vector2()) {
-					//all is a wall
-					on_wall = true;
-				} else {
-					if (Math::acos(collision.normal.dot(up_direction)) <= p_floor_max_angle + FLOOR_ANGLE_THRESHOLD) { //floor
+				_set_collision_direction(collision, up_direction, p_floor_max_angle);
 
-						on_floor = true;
-						floor_normal = collision.normal;
-						on_floor_body = collision.collider_rid;
-						floor_velocity = collision.collider_vel;
-
-						if (p_stop_on_slope) {
-							if ((body_velocity_normal + up_direction).length() < 0.01 && collision.travel.length() < 1) {
-								Transform2D gt = get_global_transform();
-								gt.elements[2] -= collision.travel.slide(up_direction);
-								set_global_transform(gt);
-								return Vector2();
-							}
-						}
-					} else if (Math::acos(collision.normal.dot(-up_direction)) <= p_floor_max_angle + FLOOR_ANGLE_THRESHOLD) { //ceiling
-						on_ceiling = true;
-					} else {
-						on_wall = true;
+				if (on_floor && p_stop_on_slope) {
+					if ((body_velocity_normal + up_direction).length() < 0.01 && collision.travel.length() < 1) {
+						Transform2D gt = get_global_transform();
+						gt.elements[2] -= collision.travel.slide(up_direction);
+						set_global_transform(gt);
+						return Vector2();
 					}
 				}
 
@@ -1148,6 +1147,11 @@ Vector2 KinematicBody2D::move_and_slide(const Vector2 &p_linear_velocity, const 
 		}
 
 		--p_max_slides;
+	}
+
+	if (!on_floor && !on_wall) {
+		// Add last platform velocity when just left a moving platform.
+		return body_velocity + current_floor_velocity;
 	}
 
 	return body_velocity;
@@ -1191,6 +1195,29 @@ Vector2 KinematicBody2D::move_and_slide_with_snap(const Vector2 &p_linear_veloci
 	}
 
 	return ret;
+}
+
+void KinematicBody2D::_set_collision_direction(const Collision &p_collision, const Vector2 &p_up_direction, float p_floor_max_angle) {
+	on_floor = false;
+	on_ceiling = false;
+	on_wall = false;
+	if (p_up_direction == Vector2()) {
+		//all is a wall
+		on_wall = true;
+	} else {
+		if (Math::acos(p_collision.normal.dot(p_up_direction)) <= p_floor_max_angle + FLOOR_ANGLE_THRESHOLD) { //floor
+			on_floor = true;
+			floor_normal = p_collision.normal;
+			on_floor_body = p_collision.collider_rid;
+			floor_velocity = p_collision.collider_vel;
+		} else if (Math::acos(p_collision.normal.dot(-p_up_direction)) <= p_floor_max_angle + FLOOR_ANGLE_THRESHOLD) { //ceiling
+			on_ceiling = true;
+		} else {
+			on_wall = true;
+			on_floor_body = p_collision.collider_rid;
+			floor_velocity = p_collision.collider_vel;
+		}
+	}
 }
 
 bool KinematicBody2D::is_on_floor() const {
