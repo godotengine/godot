@@ -143,6 +143,7 @@ typedef struct {
 	bool (*shaped_text_shape)(void *, godot_rid *);
 	bool (*shaped_text_update_breaks)(void *, godot_rid *);
 	bool (*shaped_text_update_justification_ops)(void *, godot_rid *);
+	void (*shaped_text_overrun_trim_to_width)(void *, godot_rid *, float, uint8_t);
 	bool (*shaped_text_is_ready)(void *, godot_rid *);
 	godot_packed_glyph_array (*shaped_text_get_glyphs)(void *, godot_rid *);
 	godot_vector2i (*shaped_text_get_range)(void *, godot_rid *);

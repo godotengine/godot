@@ -36,20 +36,20 @@
 
 #include "servers/text_server.h"
 
-void Label::set_autowrap(bool p_autowrap) {
-	if (autowrap != p_autowrap) {
-		autowrap = p_autowrap;
+void Label::set_autowrap_mode(Label::AutowrapMode p_mode) {
+	if (autowrap_mode != p_mode) {
+		autowrap_mode = p_mode;
 		lines_dirty = true;
 	}
 	update();
 
-	if (clip) {
+	if (clip || overrun_behavior != OVERRUN_NO_TRIMMING) {
 		minimum_size_changed();
 	}
 }
 
-bool Label::has_autowrap() const {
-	return autowrap;
+Label::AutowrapMode Label::get_autowrap_mode() const {
+	return autowrap_mode;
 }
 
 void Label::set_uppercase(bool p_uppercase) {
@@ -94,16 +94,68 @@ void Label::_shape() {
 		dirty = false;
 		lines_dirty = true;
 	}
+
+	uint8_t overrun_flags = TextServer::OVERRUN_NO_TRIMMING;
 	if (lines_dirty) {
 		for (int i = 0; i < lines_rid.size(); i++) {
 			TS->free(lines_rid[i]);
 		}
 		lines_rid.clear();
 
-		Vector<Vector2i> lines = TS->shaped_text_get_line_breaks(text_rid, width, 0, (autowrap) ? (TextServer::BREAK_MANDATORY | TextServer::BREAK_WORD_BOUND) : TextServer::BREAK_MANDATORY);
+		uint8_t autowrap_flags = TextServer::BREAK_MANDATORY;
+		switch (autowrap_mode) {
+			case AUTOWRAP_WORD_SMART:
+				autowrap_flags = TextServer::BREAK_WORD_BOUND_ADAPTIVE | TextServer::BREAK_MANDATORY;
+				break;
+			case AUTOWRAP_WORD:
+				autowrap_flags = TextServer::BREAK_WORD_BOUND | TextServer::BREAK_MANDATORY;
+				break;
+			case AUTOWRAP_ARBITRARY:
+				autowrap_flags = TextServer::BREAK_GRAPHEME_BOUND | TextServer::BREAK_MANDATORY;
+				break;
+			case AUTOWRAP_OFF:
+				break;
+		}
+		Vector<Vector2i> lines = TS->shaped_text_get_line_breaks(text_rid, width, 0, autowrap_flags);
+
 		for (int i = 0; i < lines.size(); i++) {
 			RID line = TS->shaped_text_substr(text_rid, lines[i].x, lines[i].y - lines[i].x);
+
+			switch (overrun_behavior) {
+				case OVERRUN_TRIM_WORD_ELLIPSIS:
+					overrun_flags |= TextServer::OVERRUN_TRIM;
+					overrun_flags |= TextServer::OVERRUN_TRIM_WORD_ONLY;
+					overrun_flags |= TextServer::OVERRUN_ADD_ELLIPSIS;
+					break;
+				case OVERRUN_TRIM_ELLIPSIS:
+					overrun_flags |= TextServer::OVERRUN_TRIM;
+					overrun_flags |= TextServer::OVERRUN_ADD_ELLIPSIS;
+					break;
+				case OVERRUN_TRIM_WORD:
+					overrun_flags |= TextServer::OVERRUN_TRIM;
+					overrun_flags |= TextServer::OVERRUN_TRIM_WORD_ONLY;
+					break;
+				case OVERRUN_TRIM_CHAR:
+					overrun_flags |= TextServer::OVERRUN_TRIM;
+					break;
+				case OVERRUN_NO_TRIMMING:
+					break;
+			}
+
+			if (autowrap_mode == AUTOWRAP_OFF && align != ALIGN_FILL && overrun_behavior != OVERRUN_NO_TRIMMING) {
+				TS->shaped_text_overrun_trim_to_width(line, width, overrun_flags);
+			}
+
 			lines_rid.push_back(line);
+		}
+
+		if (autowrap_mode != AUTOWRAP_OFF && overrun_behavior != OVERRUN_NO_TRIMMING) {
+			int visible_lines = get_visible_line_count();
+
+			if (visible_lines < lines_rid.size() && visible_lines > 0) {
+				overrun_flags |= TextServer::OVERRUN_ENFORCE_ELLIPSIS;
+				TS->shaped_text_overrun_trim_to_width(lines_rid[visible_lines - 1], width, overrun_flags);
+			}
 		}
 	}
 
@@ -111,7 +163,7 @@ void Label::_shape() {
 		minsize = Size2(1, get_line_height());
 		return;
 	}
-	if (!autowrap) {
+	if (autowrap_mode == AUTOWRAP_OFF) {
 		minsize.width = 0.0f;
 		for (int i = 0; i < lines_rid.size(); i++) {
 			if (minsize.width < TS->shaped_text_get_size(lines_rid[i]).x) {
@@ -120,10 +172,21 @@ void Label::_shape() {
 		}
 	}
 
-	if (lines_dirty) { // Fill after min_size calculation.
+	if (lines_dirty) {
+		// Fill after min_size calculation.
 		if (align == ALIGN_FILL) {
 			for (int i = 0; i < lines_rid.size(); i++) {
-				TS->shaped_text_fit_to_width(lines_rid.write[i], width);
+				if (overrun_behavior != OVERRUN_NO_TRIMMING && autowrap_mode == AUTOWRAP_OFF) {
+					float line_unaltered_width = TS->shaped_text_get_width(lines_rid[i]);
+					TS->shaped_text_fit_to_width(lines_rid[i], width);
+					float new_line_width = TS->shaped_text_get_width(lines_rid[i]);
+					// Begin trimming when there is no space between words available anymore.
+					if (new_line_width < line_unaltered_width) {
+						TS->shaped_text_overrun_trim_to_width(lines_rid[i], width, overrun_flags);
+					}
+				} else {
+					TS->shaped_text_fit_to_width(lines_rid[i], width);
+				}
 			}
 		}
 		lines_dirty = false;
@@ -131,7 +194,7 @@ void Label::_shape() {
 
 	_update_visible();
 
-	if (!autowrap || !clip) {
+	if (autowrap_mode == AUTOWRAP_OFF || !clip || overrun_behavior == OVERRUN_NO_TRIMMING) {
 		minimum_size_changed();
 	}
 }
@@ -370,13 +433,12 @@ Size2 Label::get_minimum_size() const {
 	min_size.height = MAX(min_size.height, font->get_height(get_theme_font_size("font_size")) + font->get_spacing(Font::SPACING_TOP) + font->get_spacing(Font::SPACING_BOTTOM));
 
 	Size2 min_style = get_theme_stylebox("normal")->get_minimum_size();
-	if (autowrap) {
-		return Size2(1, clip ? 1 : min_size.height) + min_style;
+	if (autowrap_mode != AUTOWRAP_OFF) {
+		return Size2(1, (clip || overrun_behavior != OVERRUN_NO_TRIMMING) ? 1 : min_size.height) + min_style;
 	} else {
-		if (clip) {
+		if (clip || overrun_behavior != OVERRUN_NO_TRIMMING) {
 			min_size.width = 1;
 		}
-
 		return min_size + min_style;
 	}
 }
@@ -536,6 +598,21 @@ bool Label::is_clipping_text() const {
 	return clip;
 }
 
+void Label::set_text_overrun_behavior(Label::OverrunBehavior p_behavior) {
+	if (overrun_behavior != p_behavior) {
+		overrun_behavior = p_behavior;
+		lines_dirty = true;
+	}
+	update();
+	if (clip || overrun_behavior != OVERRUN_NO_TRIMMING) {
+		minimum_size_changed();
+	}
+}
+
+Label::OverrunBehavior Label::get_text_overrun_behavior() const {
+	return overrun_behavior;
+}
+
 String Label::get_text() const {
 	return text;
 }
@@ -663,10 +740,12 @@ void Label::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("clear_opentype_features"), &Label::clear_opentype_features);
 	ClassDB::bind_method(D_METHOD("set_language", "language"), &Label::set_language);
 	ClassDB::bind_method(D_METHOD("get_language"), &Label::get_language);
-	ClassDB::bind_method(D_METHOD("set_autowrap", "enable"), &Label::set_autowrap);
-	ClassDB::bind_method(D_METHOD("has_autowrap"), &Label::has_autowrap);
+	ClassDB::bind_method(D_METHOD("set_autowrap_mode", "autowrap_mode"), &Label::set_autowrap_mode);
+	ClassDB::bind_method(D_METHOD("get_autowrap_mode"), &Label::get_autowrap_mode);
 	ClassDB::bind_method(D_METHOD("set_clip_text", "enable"), &Label::set_clip_text);
 	ClassDB::bind_method(D_METHOD("is_clipping_text"), &Label::is_clipping_text);
+	ClassDB::bind_method(D_METHOD("set_text_overrun_behavior", "overrun_behavior"), &Label::set_text_overrun_behavior);
+	ClassDB::bind_method(D_METHOD("get_text_overrun_behavior"), &Label::get_text_overrun_behavior);
 	ClassDB::bind_method(D_METHOD("set_uppercase", "enable"), &Label::set_uppercase);
 	ClassDB::bind_method(D_METHOD("is_uppercase"), &Label::is_uppercase);
 	ClassDB::bind_method(D_METHOD("get_line_height", "line"), &Label::get_line_height, DEFVAL(-1));
@@ -696,13 +775,25 @@ void Label::_bind_methods() {
 	BIND_ENUM_CONSTANT(VALIGN_BOTTOM);
 	BIND_ENUM_CONSTANT(VALIGN_FILL);
 
+	BIND_ENUM_CONSTANT(AUTOWRAP_OFF);
+	BIND_ENUM_CONSTANT(AUTOWRAP_ARBITRARY);
+	BIND_ENUM_CONSTANT(AUTOWRAP_WORD);
+	BIND_ENUM_CONSTANT(AUTOWRAP_WORD_SMART);
+
+	BIND_ENUM_CONSTANT(OVERRUN_NO_TRIMMING);
+	BIND_ENUM_CONSTANT(OVERRUN_TRIM_CHAR);
+	BIND_ENUM_CONSTANT(OVERRUN_TRIM_WORD);
+	BIND_ENUM_CONSTANT(OVERRUN_TRIM_ELLIPSIS);
+	BIND_ENUM_CONSTANT(OVERRUN_TRIM_WORD_ELLIPSIS);
+
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "text", PROPERTY_HINT_MULTILINE_TEXT, "", PROPERTY_USAGE_DEFAULT_INTL), "set_text", "get_text");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "text_direction", PROPERTY_HINT_ENUM, "Auto,Left-to-Right,Right-to-Left,Inherited"), "set_text_direction", "get_text_direction");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "language"), "set_language", "get_language");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "align", PROPERTY_HINT_ENUM, "Left,Center,Right,Fill"), "set_align", "get_align");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "valign", PROPERTY_HINT_ENUM, "Top,Center,Bottom,Fill"), "set_valign", "get_valign");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "autowrap"), "set_autowrap", "has_autowrap");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "autowrap_mode", PROPERTY_HINT_ENUM, "Off,Arbitrary,Word,Word (Smart)"), "set_autowrap_mode", "get_autowrap_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "clip_text"), "set_clip_text", "is_clipping_text");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "text_overrun_behavior", PROPERTY_HINT_ENUM, "Trim nothing,Trim characters,Trim words,Ellipsis,Word ellipsis"), "set_text_overrun_behavior", "get_text_overrun_behavior");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "uppercase"), "set_uppercase", "is_uppercase");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "visible_characters", PROPERTY_HINT_RANGE, "-1,128000,1", PROPERTY_USAGE_EDITOR), "set_visible_characters", "get_visible_characters");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "percent_visible", PROPERTY_HINT_RANGE, "0,1,0.001"), "set_percent_visible", "get_percent_visible");

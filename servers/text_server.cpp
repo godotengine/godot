@@ -331,6 +331,9 @@ void TextServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("shaped_text_get_line_breaks_adv", "shaped", "width", "start", "once", "break_flags"), &TextServer::_shaped_text_get_line_breaks_adv, DEFVAL(0), DEFVAL(true), DEFVAL(BREAK_MANDATORY | BREAK_WORD_BOUND));
 	ClassDB::bind_method(D_METHOD("shaped_text_get_line_breaks", "shaped", "width", "start", "break_flags"), &TextServer::_shaped_text_get_line_breaks, DEFVAL(0), DEFVAL(BREAK_MANDATORY | BREAK_WORD_BOUND));
 	ClassDB::bind_method(D_METHOD("shaped_text_get_word_breaks", "shaped"), &TextServer::_shaped_text_get_word_breaks);
+
+	ClassDB::bind_method(D_METHOD("shaped_text_overrun_trim_to_width", "shaped", "width", "overrun_trim_flags"), &TextServer::shaped_text_overrun_trim_to_width, DEFVAL(0), DEFVAL(OVERRUN_NO_TRIMMING));
+
 	ClassDB::bind_method(D_METHOD("shaped_text_get_objects", "shaped"), &TextServer::shaped_text_get_objects);
 	ClassDB::bind_method(D_METHOD("shaped_text_get_object_rect", "shaped", "key"), &TextServer::shaped_text_get_object_rect);
 
@@ -380,6 +383,13 @@ void TextServer::_bind_methods() {
 	BIND_ENUM_CONSTANT(BREAK_MANDATORY);
 	BIND_ENUM_CONSTANT(BREAK_WORD_BOUND);
 	BIND_ENUM_CONSTANT(BREAK_GRAPHEME_BOUND);
+
+	/* TextOverrunFlag */
+	BIND_ENUM_CONSTANT(OVERRUN_NO_TRIMMING);
+	BIND_ENUM_CONSTANT(OVERRUN_TRIM);
+	BIND_ENUM_CONSTANT(OVERRUN_TRIM_WORD_ONLY);
+	BIND_ENUM_CONSTANT(OVERRUN_ADD_ELLIPSIS);
+	BIND_ENUM_CONSTANT(OVERRUN_ENFORCE_ELLIPSIS);
 
 	/* GraphemeFlag */
 	BIND_ENUM_CONSTANT(GRAPHEME_IS_RTL);
@@ -646,7 +656,7 @@ Vector<Vector2i> TextServer::shaped_text_get_line_breaks(RID p_shaped, float p_w
 	float width = 0.f;
 	int line_start = MAX(p_start, range.x);
 	int last_safe_break = -1;
-
+	int word_count = 0;
 	int l_size = logical.size();
 	const Glyph *l_gl = logical.ptr();
 
@@ -655,12 +665,15 @@ Vector<Vector2i> TextServer::shaped_text_get_line_breaks(RID p_shaped, float p_w
 			continue;
 		}
 		if (l_gl[i].count > 0) {
-			if ((p_width > 0) && (width + l_gl[i].advance > p_width) && (last_safe_break >= 0)) {
+			//Ignore trailing spaces.
+			bool is_space = (l_gl[i].flags & GRAPHEME_IS_SPACE) == GRAPHEME_IS_SPACE;
+			if ((p_width > 0) && (width + (is_space ? 0 : l_gl[i].advance) > p_width) && (last_safe_break >= 0)) {
 				lines.push_back(Vector2i(line_start, l_gl[last_safe_break].end));
 				line_start = l_gl[last_safe_break].end;
 				i = last_safe_break;
 				last_safe_break = -1;
 				width = 0;
+				word_count = 0;
 				continue;
 			}
 			if ((p_break_flags & BREAK_MANDATORY) == BREAK_MANDATORY) {
@@ -675,7 +688,11 @@ Vector<Vector2i> TextServer::shaped_text_get_line_breaks(RID p_shaped, float p_w
 			if ((p_break_flags & BREAK_WORD_BOUND) == BREAK_WORD_BOUND) {
 				if ((l_gl[i].flags & GRAPHEME_IS_BREAK_SOFT) == GRAPHEME_IS_BREAK_SOFT) {
 					last_safe_break = i;
+					word_count++;
 				}
+			}
+			if (((p_break_flags & BREAK_WORD_BOUND_ADAPTIVE) == BREAK_WORD_BOUND_ADAPTIVE) && word_count == 0) {
+				last_safe_break = i;
 			}
 			if ((p_break_flags & BREAK_GRAPHEME_BOUND) == BREAK_GRAPHEME_BOUND) {
 				last_safe_break = i;
