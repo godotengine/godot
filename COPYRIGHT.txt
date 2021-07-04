@@ -307,11 +307,6 @@ Comment: Fast Filtering of Reflection Probes
 Copyright: 2016, Activision Publishing, Inc.
 License: Expat
 
-Files: ./thirdparty/misc/easing_equations.cpp
-Comment: Robert Penner's Easing Functions
-Copyright: 2001, Robert Penner
-License: BSD-3-clause
-
 Files: ./thirdparty/misc/fastlz.c
  ./thirdparty/misc/fastlz.h
 Comment: FastLZ
