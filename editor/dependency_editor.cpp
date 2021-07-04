@@ -226,7 +226,11 @@ DependencyEditor::DependencyEditor() {
 	tree->set_columns(2);
 	tree->set_column_titles_visible(true);
 	tree->set_column_title(0, TTR("Resource"));
+	tree->set_column_clip_content(0, true);
+	tree->set_column_expand_ratio(0, 2);
 	tree->set_column_title(1, TTR("Path"));
+	tree->set_column_clip_content(1, true);
+	tree->set_column_expand_ratio(1, 1);
 	tree->set_hide_root(true);
 	tree->connect("button_pressed", callable_mp(this, &DependencyEditor::_load_pressed));
 
@@ -769,9 +773,11 @@ OrphanResourcesDialog::OrphanResourcesDialog() {
 	files = memnew(Tree);
 	files->set_columns(2);
 	files->set_column_titles_visible(true);
-	files->set_column_custom_minimum_width(1, 100);
+	files->set_column_custom_minimum_width(1, 100 * EDSCALE);
 	files->set_column_expand(0, true);
+	files->set_column_clip_content(0, true);
 	files->set_column_expand(1, false);
+	files->set_column_clip_content(1, true);
 	files->set_column_title(0, TTR("Resource"));
 	files->set_column_title(1, TTR("Owns"));
 	files->set_hide_root(true);

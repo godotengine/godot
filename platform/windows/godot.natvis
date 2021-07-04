@@ -1,34 +1,79 @@
 <?xml version="1.0" encoding="utf-8"?>
 <AutoVisualizer xmlns="http://schemas.microsoft.com/vstudio/debugger/natvis/2010">
-	<Type Name="Vector&lt;*&gt;">
+
+	<!-- Engine -->
+
+	<Type Name="Vector3">
+		<DisplayString>{{{coord[0]},{coord[1]},{coord[2]}}}</DisplayString>
 		<Expand>
-			<Item Name="[size]">_cowdata._ptr ? (((const unsigned int *)(_cowdata._ptr))[-1]) : 0</Item>
-			<ArrayItems>
-				<Size>_cowdata._ptr ? (((const unsigned int *)(_cowdata._ptr))[-1]) : 0</Size>
-				<ValuePointer>_cowdata._ptr</ValuePointer>
-			</ArrayItems>
+			<Item Name="x">coord[0]</Item>
+			<Item Name="y">coord[1]</Item>
+			<Item Name="z">coord[2]</Item>
 		</Expand>
 	</Type>
 
-	<Type Name="LocalVector&lt;*&gt;">
+	<Type Name="Vector2">
+		<AlternativeType Name="Point2"/>
+		<AlternativeType Name="Size2"/>
+		<DisplayString>{{{coord[0]},{coord[1]}}}</DisplayString>
 		<Expand>
-			<Item Name="[size]">count</Item>
-			<ArrayItems>
-				<Size>count</Size>
-				<ValuePointer>data</ValuePointer>
-			</ArrayItems>
+			<Item Name="x">coord[0]</Item>
+			<Item Name="y">coord[1]</Item>
 		</Expand>
 	</Type>
 
-	<Type Name="List&lt;*&gt;">
+	<Type Name="Vector2i">
+		<AlternativeType Name="Point2i"/>
+		<AlternativeType Name="Size2i"/>
+		<DisplayString>{{{x},{y}}}</DisplayString>
 		<Expand>
-			<Item Name="[size]">_data ? (_data->size_cache) : 0</Item>
-			<LinkedListItems>
-				<Size>_data ? (_data->size_cache) : 0</Size>
-				<HeadPointer>_data->first</HeadPointer>
-				<NextPointer>next_ptr</NextPointer>
-				<ValueNode>value</ValueNode>
-			</LinkedListItems>
+			<Item Name="x">x</Item>
+			<Item Name="y">y</Item>
+		</Expand>
+	</Type>
+
+	<Type Name="Quaternion">
+		<DisplayString>{{{components[0]},{components[1]},{components[2]},{components[3]}}}</DisplayString>
+		<Expand>
+			<Item Name="x">components[0]</Item>
+			<Item Name="y">components[1]</Item>
+			<Item Name="z">components[2]</Item>
+			<Item Name="w">components[3]</Item>
+		</Expand>
+	</Type>
+
+	<Type Name="Color">
+		<DisplayString>{{{components[0]},{components[1]},{components[2]},{components[3]}}}</DisplayString>
+		<Expand>
+			<Item Name="red">components[0]</Item>
+			<Item Name="green">components[1]</Item>
+			<Item Name="blue">components[2]</Item>
+			<Item Name="alpha">components[3]</Item>
+		</Expand>
+	</Type>
+
+	<Type Name="AABB">
+		<DisplayString>{{{position},{size}}}</DisplayString>
+		<Expand>
+			<Item Name="position">position</Item>
+			<Item Name="size">size</Item>
+		</Expand>
+	</Type>
+
+	<Type Name="Transform2D">
+		<DisplayString>{{{elements[0]},{elements[1]},{elements[2]}}}</DisplayString>
+		<Expand>
+			<Item Name="element0">elements[0]</Item>
+			<Item Name="element1">elements[1]</Item>
+			<Item Name="element2">elements[2]</Item>
+		</Expand>
+	</Type>
+
+	<Type Name="Transform3D">
+		<DisplayString>{{{basis},{origin}}}</DisplayString>
+		<Expand>
+			<Item Name="basis">basis</Item>
+			<Item Name="origin">origin</Item>
 		</Expand>
 	</Type>
 
@@ -97,6 +142,56 @@
 		</Expand>
 	</Type>
 
+	<Type Name="Ref&lt;*&gt;">
+		<DisplayString>{{{reference}}}</DisplayString>
+		<Expand>
+			<Item Name="reference">reference</Item>
+		</Expand>
+	</Type>
+
+	<Type Name="Array">
+		<DisplayString>{{size = {_p ? (((const unsigned int *)(_p -&gt;array._cowdata._ptr))[-1]) : 0}}}</DisplayString>
+		<Expand>
+			<Item Name="[size]">_p ? (((const unsigned int *)(_p -&gt;array._cowdata._ptr))[-1]) : 0</Item>
+			<ArrayItems>
+				<Size>_p ? (((const unsigned int *)(_p -&gt;array._cowdata._ptr))[-1]) : 0</Size>
+				<ValuePointer>_p -&gt;array._cowdata._ptr</ValuePointer>
+			</ArrayItems>
+		</Expand>
+	</Type>
+
+	<Type Name="Basis">
+		<DisplayString>{{{elements[0]},{elements[1]},{elements[2]}}}</DisplayString>
+		<Expand>
+			<Item Name="x">elements[0]</Item>
+			<Item Name="y">elements[1]</Item>
+			<Item Name="z">elements[2]</Item>
+		</Expand>
+	</Type>
+
+	<Type Name="CameraMatrix">
+		<DisplayString>{{{matrix[0][0]},{matrix[0][1]},{matrix[0][2]},{matrix[0][3]},{matrix[1][0]},{matrix[1][1]},{matrix[1][2]},{matrix[1][3]},
+		{matrix[2][0]},{matrix[2][1]},{matrix[2][2]},{matrix[2][3]},{matrix[3][0]},{matrix[3][1]},{matrix[3][2]},{matrix[3][3]}}}</DisplayString>
+		<Expand>
+			<Item Name="[0][0]">matrix[0][0]</Item>
+			<Item Name="[0][1]">matrix[0][1]</Item>
+			<Item Name="[0][2]">matrix[0][2]</Item>
+			<Item Name="[0][3]">matrix[0][3]</Item>
+			<Item Name="[1][0]">matrix[1][0]</Item>
+			<Item Name="[1][1]">matrix[1][1]</Item>
+			<Item Name="[1][2]">matrix[1][2]</Item>
+			<Item Name="[1][3]">matrix[1][3]</Item>
+			<Item Name="[2][0]">matrix[2][0]</Item>
+			<Item Name="[2][1]">matrix[2][1]</Item>
+			<Item Name="[2][2]">matrix[2][2]</Item>
+			<Item Name="[2][3]">matrix[2][3]</Item>
+			<Item Name="[3][0]">matrix[3][0]</Item>
+			<Item Name="[3][1]">matrix[3][1]</Item>
+			<Item Name="[3][2]">matrix[3][2]</Item>
+			<Item Name="[3][3]">matrix[3][3]</Item>
+		</Expand>
+	</Type>
+
 	<Type Name="String">
 		<DisplayString Condition="_cowdata._ptr == 0">[empty]</DisplayString>
 		<DisplayString Condition="_cowdata._ptr != 0">{_cowdata._ptr,s32}</DisplayString>
@@ -111,40 +206,40 @@
 		<StringView Condition="_data &amp;&amp; !_data->cname">_data->name,s32</StringView>
 	</Type>
 
-	<Type Name="Vector2">
-		<DisplayString>{{{x},{y}}}</DisplayString>
+	<!-- Getting readable string from NodePath is too complex even for natvis loops -->
+	<Type Name="NodePath">
+		<DisplayString>Can't visualize NodePath</DisplayString>
+		<StringView>Can't visualize NodePath</StringView>
+	</Type>
+
+	<Type Name="Rect2">
+		<DisplayString>{{{position},{size}}}</DisplayString>
 		<Expand>
-			<Item Name="x">x</Item>
-			<Item Name="y">y</Item>
+			<Item Name="position">position</Item>
+			<Item Name="size">size</Item>
 		</Expand>
 	</Type>
 
-	<Type Name="Vector3">
-		<DisplayString>{{{x},{y},{z}}}</DisplayString>
+	<Type Name="Rect2i">
+		<DisplayString>{{{position},{size}}}</DisplayString>
 		<Expand>
-			<Item Name="x">x</Item>
-			<Item Name="y">y</Item>
-			<Item Name="z">z</Item>
+			<Item Name="position">position</Item>
+			<Item Name="size">size</Item>
 		</Expand>
 	</Type>
 
-	<Type Name="Quaternion">
-		<DisplayString>Quaternion {{{x},{y},{z},{w}}}</DisplayString>
+	<Type Name="Plane">
+		<DisplayString>{{{normal},{d}}}</DisplayString>
 		<Expand>
-			<Item Name="x">x</Item>
-			<Item Name="y">y</Item>
-			<Item Name="z">z</Item>
-			<Item Name="w">w</Item>
+			<Item Name="normal">normal</Item>
+			<Item Name="d">d</Item>
 		</Expand>
 	</Type>
 
-	<Type Name="Color">
-		<DisplayString>Color {{{r},{g},{b},{a}}}</DisplayString>
+	<Type Name="RID">
+		<DisplayString>{{{_id}}}</DisplayString>
 		<Expand>
-			<Item Name="red">r</Item>
-			<Item Name="green">g</Item>
-			<Item Name="blue">b</Item>
-			<Item Name="alpha">a</Item>
+			<Item Name="id">_id</Item>
 		</Expand>
 	</Type>
 
@@ -153,6 +248,345 @@
 			<Item Name="Object">(Object*)this</Item>
 			<Item Name="class_name">(StringName*)(((char*)this) + sizeof(Object))</Item>
 			<Item Name="data">(Node::Data*)(((char*)this) + sizeof(Object) + sizeof(StringName))</Item>
+		</Expand>
+	</Type>
+
+	<Type Name="Pair&lt;*,*&gt;">
+		<DisplayString>{{key = {first} value = {second}}}</DisplayString>
+		<Expand>
+			<Item Name="first">first</Item>
+			<Item Name="second">second</Item>
+		</Expand>
+	</Type>
+
+	<Type Name="Dictionary">
+		<DisplayString>{{size = {_p-&gt;variant_map.list._data ? _p-&gt;variant_map.list._data-&gt;size_cache : 0}}}</DisplayString>
+		<Expand>
+			<LinkedListItems>
+			  <Size>_p-&gt;variant_map.list._data ? _p-&gt;variant_map.list._data-&gt;size_cache : 0</Size>
+			  <HeadPointer>_p-&gt;variant_map.list._data-&gt;first</HeadPointer>
+			  <NextPointer>next_ptr</NextPointer>
+			  <ValueNode>value</ValueNode>
+			</LinkedListItems>
+		</Expand>
+	</Type>
+
+	<Type Name="PoolVector&lt;*&gt;">
+		<DisplayString>{{size = {alloc ? alloc-&gt;size / sizeof($T1) : 0}}}</DisplayString>
+		<Expand>
+			<ArrayItems>
+				<Size>alloc ? alloc-&gt;size / sizeof($T1) : 0</Size>
+				<ValuePointer>($T1*)alloc-&gt;mem</ValuePointer>
+			</ArrayItems>
+		</Expand>
+	</Type>
+
+	<Type Name="Vector&lt;*&gt;">
+		<Expand>
+			<Item Name="[size]">_cowdata._ptr ? (((const unsigned int *)(_cowdata._ptr))[-1]) : 0</Item>
+			<ArrayItems>
+				<Size>_cowdata._ptr ? (((const unsigned int *)(_cowdata._ptr))[-1]) : 0</Size>
+				<ValuePointer>_cowdata._ptr</ValuePointer>
+			</ArrayItems>
+		</Expand>
+	</Type>
+
+	<Type Name="LocalVector&lt;*&gt;">
+		<Expand>
+			<Item Name="[size]">count</Item>
+			<ArrayItems>
+				<Size>count</Size>
+				<ValuePointer>data</ValuePointer>
+			</ArrayItems>
+		</Expand>
+	</Type>
+
+	<Type Name="List&lt;*&gt;">
+		<Expand>
+			<Item Name="[size]">_data ? (_data->size_cache) : 0</Item>
+			<LinkedListItems>
+				<Size>_data ? (_data->size_cache) : 0</Size>
+				<HeadPointer>_data->first</HeadPointer>
+				<NextPointer>next_ptr</NextPointer>
+				<ValueNode>value</ValueNode>
+			</LinkedListItems>
+		</Expand>
+	</Type>
+
+	<!-- GDNative -->
+
+	<Type Name="godot::Vector3">
+		<DisplayString>{{{coord[0]},{coord[1]},{coord[2]}}}</DisplayString>
+		<Expand>
+			<Item Name="x">coord[0]</Item>
+			<Item Name="y">coord[1]</Item>
+			<Item Name="z">coord[2]</Item>
+		</Expand>
+	</Type>
+
+	<Type Name="godot::Vector2">
+		<AlternativeType Name="godot::Point2"/>
+		<AlternativeType Name="godot::Size2"/>
+		<DisplayString>{{{x},{y}}}</DisplayString>
+		<Expand>
+			<Item Name="x">x</Item>
+			<Item Name="y">y</Item>
+		</Expand>
+	</Type>
+
+	<Type Name="godot::Quat">
+		<DisplayString>{{{x},{y},{z},{w}}}</DisplayString>
+		<Expand>
+			<Item Name="x">x</Item>
+			<Item Name="y">y</Item>
+			<Item Name="z">z</Item>
+			<Item Name="w">w</Item>
+		</Expand>
+	</Type>
+
+	<Type Name="godot::Color">
+		<DisplayString>{{{components[0]},{components[1]},{components[2]},{components[3]}}}</DisplayString>
+		<Expand>
+			<Item Name="red">components[0]</Item>
+			<Item Name="green">components[1]</Item>
+			<Item Name="blue">components[2]</Item>
+			<Item Name="alpha">components[3]</Item>
+		</Expand>
+	</Type>
+
+	<Type Name="godot::AABB">
+		<DisplayString>{{{position},{size}}}</DisplayString>
+		<Expand>
+			<Item Name="position">position</Item>
+			<Item Name="size">size</Item>
+		</Expand>
+	</Type>
+
+	<Type Name="godot::Transform2D">
+		<DisplayString>{{{elements[0]},{elements[1]},{elements[2]}}}</DisplayString>
+		<Expand>
+			<Item Name="element0">elements[0]</Item>
+			<Item Name="element1">elements[1]</Item>
+			<Item Name="element2">elements[2]</Item>
+		</Expand>
+	</Type>
+
+	<Type Name="godot::Basis">
+		<DisplayString>{{{elements[0]},{elements[1]},{elements[2]}}}</DisplayString>
+		<Expand>
+			<Item Name="x">elements[0]</Item>
+			<Item Name="y">elements[1]</Item>
+			<Item Name="z">elements[2]</Item>
+		</Expand>
+	</Type>
+
+	<Type Name="godot::Transform">
+		<DisplayString>{{{basis},{origin}}}</DisplayString>
+		<Expand>
+			<Item Name="basis">basis</Item>
+			<Item Name="origin">origin</Item>
+		</Expand>
+	</Type>
+
+	<Type Name="godot::String">
+		<DisplayString Condition="((String*)&amp;_godot_string)-&gt;_cowdata._ptr == 0">[empty]</DisplayString>
+		<DisplayString Condition="((String*)&amp;_godot_string)-&gt;_cowdata._ptr != 0">{((String*)&amp;_godot_string)-&gt;_cowdata._ptr,s32}</DisplayString>
+		<StringView Condition="((String*)&amp;_godot_string)-&gt;_cowdata._ptr != 0">((String*)&amp;_godot_string)-&gt;_cowdata._ptr,s32</StringView>
+	</Type>
+
+	<Type Name="godot::Rect2">
+		<DisplayString>{{{position},{size}}}</DisplayString>
+		<Expand>
+			<Item Name="position">position</Item>
+			<Item Name="size">size</Item>
+		</Expand>
+	</Type>
+
+	<Type Name="godot::Plane">
+		<DisplayString>{{{normal},{d}}}</DisplayString>
+		<Expand>
+			<Item Name="normal">normal</Item>
+			<Item Name="d">d</Item>
+		</Expand>
+	</Type>
+
+	<!-- Getting readable string from NodePath is too complex even for natvis loops -->
+	<Type Name="godot::NodePath">
+		<DisplayString>Can't visualize NodePath</DisplayString>
+		<StringView>Can't visualize NodePath</StringView>
+	</Type>
+
+	<Type Name="godot::RID">
+		<DisplayString>{{{((RID*)&amp;_godot_rid)-&gt;_id}}}</DisplayString>
+	</Type>
+
+	<Type Name="godot::PoolByteArray">
+		<DisplayString>{{size = {((PoolVector&lt;unsigned char&gt;*)&amp;_godot_array)-&gt;alloc ? ((PoolVector&lt;unsigned char&gt;*)&amp;_godot_array)-&gt;alloc-&gt;size / sizeof(unsigned char) : 0}}}</DisplayString>
+		<Expand>
+			<ArrayItems>
+				<Size>((PoolVector&lt;unsigned char&gt;*)&amp;_godot_array)-&gt;alloc ? ((PoolVector&lt;unsigned char&gt;*)&amp;_godot_array)-&gt;alloc-&gt;size / sizeof(unsigned char) : 0</Size>
+				<ValuePointer>(unsigned char*)(((PoolVector&lt;unsigned char&gt;*)&amp;_godot_array)-&gt;alloc-&gt;mem)</ValuePointer>
+			</ArrayItems>
+		</Expand>
+	</Type>
+
+	<Type Name="godot::PoolIntArray">
+		<DisplayString>{{size = {((PoolVector&lt;int&gt;*)&amp;_godot_array)-&gt;alloc ? ((PoolVector&lt;int&gt;*)&amp;_godot_array)-&gt;alloc-&gt;size / sizeof(int) : 0}}}</DisplayString>
+		<Expand>
+			<ArrayItems>
+				<Size>((PoolVector&lt;int&gt;*)&amp;_godot_array)-&gt;alloc ? ((PoolVector&lt;int&gt;*)&amp;_godot_array)-&gt;alloc-&gt;size / sizeof(int) : 0</Size>
+				<ValuePointer>(int*)(((PoolVector&lt;int&gt;*)&amp;_godot_array)-&gt;alloc-&gt;mem)</ValuePointer>
+			</ArrayItems>
+		</Expand>
+	</Type>
+
+	<Type Name="godot::PoolRealArray">
+		<DisplayString>{{size = {((PoolVector&lt;float&gt;*)&amp;_godot_array)-&gt;alloc ? ((PoolVector&lt;float&gt;*)&amp;_godot_array)-&gt;alloc-&gt;size / sizeof(float) : 0}}}</DisplayString>
+		<Expand>
+			<ArrayItems>
+				<Size>((PoolVector&lt;float&gt;*)&amp;_godot_array)-&gt;alloc ? ((PoolVector&lt;float&gt;*)&amp;_godot_array)-&gt;alloc-&gt;size / sizeof(float) : 0</Size>
+				<ValuePointer>(float*)(((PoolVector&lt;float&gt;*)&amp;_godot_array)-&gt;alloc-&gt;mem)</ValuePointer>
+			</ArrayItems>
+		</Expand>
+	</Type>
+
+	<Type Name="godot::PoolStringArray">
+		<DisplayString>{{size = {((PoolVector&lt;String&gt;*)&amp;_godot_array)-&gt;alloc ? ((PoolVector&lt;String&gt;*)&amp;_godot_array)-&gt;alloc-&gt;size / sizeof(String) : 0}}}</DisplayString>
+		<Expand>
+			<ArrayItems>
+				<Size>((PoolVector&lt;String&gt;*)&amp;_godot_array)-&gt;alloc ? ((PoolVector&lt;String&gt;*)&amp;_godot_array)-&gt;alloc-&gt;size / sizeof(String) : 0</Size>
+				<ValuePointer>(String*)(((PoolVector&lt;String&gt;*)&amp;_godot_array)-&gt;alloc-&gt;mem)</ValuePointer>
+			</ArrayItems>
+		</Expand>
+	</Type>
+
+	<Type Name="godot::PoolVector2Array">
+		<DisplayString>{{size = {((PoolVector&lt;Vector2&gt;*)&amp;_godot_array)-&gt;alloc ? ((PoolVector&lt;Vector2&gt;*)&amp;_godot_array)-&gt;alloc-&gt;size / sizeof(Vector2) : 0}}}</DisplayString>
+		<Expand>
+			<ArrayItems>
+				<Size>((PoolVector&lt;Vector2&gt;*)&amp;_godot_array)-&gt;alloc ? ((PoolVector&lt;Vector2&gt;*)&amp;_godot_array)-&gt;alloc-&gt;size / sizeof(Vector2) : 0</Size>
+				<ValuePointer>(Vector2*)(((PoolVector&lt;Vector2&gt;*)&amp;_godot_array)-&gt;alloc-&gt;mem)</ValuePointer>
+			</ArrayItems>
+		</Expand>
+	</Type>
+
+	<Type Name="godot::PoolVector3Array">
+		<DisplayString>{{size = {((PoolVector&lt;Vector3&gt;*)&amp;_godot_array)-&gt;alloc ? ((PoolVector&lt;Vector3&gt;*)&amp;_godot_array)-&gt;alloc-&gt;size / sizeof(Vector3) : 0}}}</DisplayString>
+		<Expand>
+			<ArrayItems>
+				<Size>((PoolVector&lt;Vector3&gt;*)&amp;_godot_array)-&gt;alloc ? ((PoolVector&lt;Vector3&gt;*)&amp;_godot_array)-&gt;alloc-&gt;size / sizeof(Vector3) : 0</Size>
+				<ValuePointer>(Vector3*)(((PoolVector&lt;Vector3&gt;*)&amp;_godot_array)-&gt;alloc-&gt;mem)</ValuePointer>
+			</ArrayItems>
+		</Expand>
+	</Type>
+
+	<Type Name="godot::PoolColorArray">
+		<DisplayString>{{size = {((PoolVector&lt;Color&gt;*)&amp;_godot_array)-&gt;alloc ? ((PoolVector&lt;Color&gt;*)&amp;_godot_array)-&gt;alloc-&gt;size / sizeof(Color) : 0}}}</DisplayString>
+		<Expand>
+			<ArrayItems>
+				<Size>((PoolVector&lt;Color&gt;*)&amp;_godot_array)-&gt;alloc ? ((PoolVector&lt;Color&gt;*)&amp;_godot_array)-&gt;alloc-&gt;size / sizeof(Color) : 0</Size>
+				<ValuePointer>(Color*)(((PoolVector&lt;Color&gt;*)&amp;_godot_array)-&gt;alloc-&gt;mem)</ValuePointer>
+			</ArrayItems>
+		</Expand>
+	</Type>
+
+	<Type Name="godot::Variant">
+		<DisplayString Condition="((Variant*)&amp;_godot_variant)-&gt;type == Variant::NIL">NIL</DisplayString>
+		<DisplayString Condition="((Variant*)&amp;_godot_variant)-&gt;type == Variant::BOOL">Bool {{{((Variant*)&amp;_godot_variant)-&gt;_data._bool}}}</DisplayString>
+		<DisplayString Condition="((Variant*)&amp;_godot_variant)-&gt;type == Variant::INT">Int {{{((Variant*)&amp;_godot_variant)-&gt;_data._int}}}</DisplayString>
+		<DisplayString Condition="((Variant*)&amp;_godot_variant)-&gt;type == Variant::FLOAT">Float {{{((Variant*)&amp;_godot_variant)-&gt;_data._float}}}</DisplayString>
+		<DisplayString Condition="((Variant*)&amp;_godot_variant)-&gt;type == Variant::TRANSFORM2D">Transform2D {{{*(((Variant*)&amp;_godot_variant)-&gt;_data._transform2d)}}}</DisplayString>
+		<DisplayString Condition="((Variant*)&amp;_godot_variant)-&gt;type == Variant::AABB">AABB {{{*(((Variant*)&amp;_godot_variant)-&gt;_data._aabb)}}}</DisplayString>
+		<DisplayString Condition="((Variant*)&amp;_godot_variant)-&gt;type == Variant::BASIS">Basis {{{*(((Variant*)&amp;_godot_variant)-&gt;_data._basis)}}}</DisplayString>
+		<DisplayString Condition="((Variant*)&amp;_godot_variant)-&gt;type == Variant::TRANSFORM3D">Transform3D {{{*(((Variant*)&amp;_godot_variant)-&gt;_data._transform)}}}</DisplayString>
+		<DisplayString Condition="((Variant*)&amp;_godot_variant)-&gt;type == Variant::STRING">String {{{*(String*)(((Variant*)&amp;_godot_variant)-&gt;_data._mem)}}}</DisplayString>
+		<DisplayString Condition="((Variant*)&amp;_godot_variant)-&gt;type == Variant::VECTOR2">Vector2 {{{*(Vector2*)(((Variant*)&amp;_godot_variant)-&gt;_data._mem)}}}</DisplayString>
+		<DisplayString Condition="((Variant*)&amp;_godot_variant)-&gt;type == Variant::RECT2">Rect2 {{{*(Rect2*)(((Variant*)&amp;_godot_variant)-&gt;_data._mem)}}}</DisplayString>
+		<DisplayString Condition="((Variant*)&amp;_godot_variant)-&gt;type == Variant::VECTOR3">Vector3 {{{*(Vector3*)(((Variant*)&amp;_godot_variant)-&gt;_data._mem)}}}</DisplayString>
+		<DisplayString Condition="((Variant*)&amp;_godot_variant)-&gt;type == Variant::PLANE">Plane {{{*(Plane*)(((Variant*)&amp;_godot_variant)-&gt;_data._mem)}}}</DisplayString>
+		<DisplayString Condition="((Variant*)&amp;_godot_variant)-&gt;type == Variant::QUATERNION">Quat {{{*(Quaternion*)(((Variant*)&amp;_godot_variant)-&gt;_data._mem)}}}</DisplayString>
+		<DisplayString Condition="((Variant*)&amp;_godot_variant)-&gt;type == Variant::COLOR">Color {{{*(Color*)(((Variant*)&amp;_godot_variant)-&gt;_data._mem)}}}</DisplayString>
+		<DisplayString Condition="((Variant*)&amp;_godot_variant)-&gt;type == Variant::NODE_PATH">NodePath {{{*(NodePath*)(((Variant*)&amp;_godot_variant)-&gt;_data._mem)}}}</DisplayString>
+		<DisplayString Condition="((Variant*)&amp;_godot_variant)-&gt;type == Variant::RID">RID {{{*(::RID*)(((Variant*)&amp;_godot_variant)-&gt;_data._mem)}}}</DisplayString>
+		<DisplayString Condition="((Variant*)&amp;_godot_variant)-&gt;type == Variant::OBJECT">Object {{{*(Object*)(((Variant*)&amp;_godot_variant)-&gt;_data._mem)}}}</DisplayString>
+		<DisplayString Condition="((Variant*)&amp;_godot_variant)-&gt;type == Variant::DICTIONARY">Dictionary {{{*(Dictionary*)(((Variant*)&amp;_godot_variant)-&gt;_data._mem)}}}</DisplayString>
+		<DisplayString Condition="((Variant*)&amp;_godot_variant)-&gt;type == Variant::ARRAY">Array {{{*(Array*)(((Variant*)&amp;_godot_variant)-&gt;_data._mem)}}}</DisplayString>
+		<DisplayString Condition="((Variant*)&amp;_godot_variant)-&gt;type == Variant::PACKED_BYTE_ARRAY">PackedByteArray {{{*(Vector&lt;unsigned char&gt;*)(((Variant*)&amp;_godot_variant)-&gt;_data._mem)}}}</DisplayString>
+		<DisplayString Condition="((Variant*)&amp;_godot_variant)-&gt;type == Variant::PACKED_INT32_ARRAY">PackedInt32Array {{{*(Vector&lt;int&gt;*)(((Variant*)&amp;_godot_variant)-&gt;_data._mem)}}}</DisplayString>
+		<DisplayString Condition="((Variant*)&amp;_godot_variant)-&gt;type == Variant::PACKED_INT64_ARRAY">PackedInt64Array {{{*(Vector&lt;long long&gt;*)(((Variant*)&amp;_godot_variant)-&gt;_data._mem)}}}</DisplayString>
+		<DisplayString Condition="((Variant*)&amp;_godot_variant)-&gt;type == Variant::PACKED_FLOAT32_ARRAY">PackedFloat32Array {{{*(Vector&lt;float&gt;*)(((Variant*)&amp;_godot_variant)-&gt;_data._mem)}}}</DisplayString>
+		<DisplayString Condition="((Variant*)&amp;_godot_variant)-&gt;type == Variant::PACKED_FLOAT64_ARRAY">PackedFloat64Array {{{*(Vector&lt;double&gt;*)(((Variant*)&amp;_godot_variant)-&gt;_data._mem)}}}</DisplayString>
+		<DisplayString Condition="((Variant*)&amp;_godot_variant)-&gt;type == Variant::PACKED_STRING_ARRAY">PackedStringArray {{{*(Vector&lt;String&gt;*)(((Variant*)&amp;_godot_variant)-&gt;_data._mem)}}}</DisplayString>
+		<DisplayString Condition="((Variant*)&amp;_godot_variant)-&gt;type == Variant::PACKED_VECTOR2_ARRAY">PackedVector2Array {{{*(Vector&lt;Vector2&gt;*)(((Variant*)&amp;_godot_variant)-&gt;_data._mem)}}}</DisplayString>
+		<DisplayString Condition="((Variant*)&amp;_godot_variant)-&gt;type == Variant::PACKED_VECTOR3_ARRAY">PackedVector3Array {{{*(Vector&lt;Vector3&gt;*)(((Variant*)&amp;_godot_variant)-&gt;_data._mem)}}}</DisplayString>
+		<DisplayString Condition="((Variant*)&amp;_godot_variant)-&gt;type == Variant::PACKED_COLOR_ARRAY">PackedColorArray {{{*(Vector&lt;Color&gt;*)(((Variant*)&amp;_godot_variant)-&gt;_data._mem)}}}</DisplayString>
+
+		<Expand>
+			<Item Name="value" Condition="((Variant*)&amp;_godot_variant)-&gt;type == Variant::BOOL">((Variant*)&amp;_godot_variant)-&gt;_data._bool</Item>
+			<Item Name="value" Condition="((Variant*)&amp;_godot_variant)-&gt;type == Variant::INT">((Variant*)&amp;_godot_variant)-&gt;_data._int</Item>
+			<Item Name="value" Condition="((Variant*)&amp;_godot_variant)-&gt;type == Variant::FLOAT">((Variant*)&amp;_godot_variant)-&gt;_data._float</Item>
+			<Item Name="value" Condition="((Variant*)&amp;_godot_variant)-&gt;type == Variant::TRANSFORM2D">*(((Variant*)&amp;_godot_variant)-&gt;_data._transform2d)</Item>
+			<Item Name="value" Condition="((Variant*)&amp;_godot_variant)-&gt;type == Variant::AABB">*(((Variant*)&amp;_godot_variant)-&gt;_data._aabb)</Item>
+			<Item Name="value" Condition="((Variant*)&amp;_godot_variant)-&gt;type == Variant::BASIS">*(((Variant*)&amp;_godot_variant)-&gt;_data._basis)</Item>
+			<Item Name="value" Condition="((Variant*)&amp;_godot_variant)-&gt;type == Variant::TRANSFORM3D">*(((Variant*)&amp;_godot_variant)-&gt;_data._transform)</Item>
+			<Item Name="value" Condition="((Variant*)&amp;_godot_variant)-&gt;type == Variant::STRING">*(String*)(((Variant*)&amp;_godot_variant)-&gt;_data._mem)</Item>
+			<Item Name="value" Condition="((Variant*)&amp;_godot_variant)-&gt;type == Variant::VECTOR2">*(Vector2*)(((Variant*)&amp;_godot_variant)-&gt;_data._mem)</Item>
+			<Item Name="value" Condition="((Variant*)&amp;_godot_variant)-&gt;type == Variant::RECT2">*(Rect2*)(((Variant*)&amp;_godot_variant)-&gt;_data._mem)</Item>
+			<Item Name="value" Condition="((Variant*)&amp;_godot_variant)-&gt;type == Variant::VECTOR3">*(Vector3*)(((Variant*)&amp;_godot_variant)-&gt;_data._mem)</Item>
+			<Item Name="value" Condition="((Variant*)&amp;_godot_variant)-&gt;type == Variant::PLANE">*(Plane*)(((Variant*)&amp;_godot_variant)-&gt;_data._mem)</Item>
+			<Item Name="value" Condition="((Variant*)&amp;_godot_variant)-&gt;type == Variant::QUATERNION">*(Quaternion*)(((Variant*)&amp;_godot_variant)-&gt;_data._mem)</Item>
+			<Item Name="value" Condition="((Variant*)&amp;_godot_variant)-&gt;type == Variant::COLOR">*(Color*)(((Variant*)&amp;_godot_variant)-&gt;_data._mem)</Item>
+			<Item Name="value" Condition="((Variant*)&amp;_godot_variant)-&gt;type == Variant::NODE_PATH">*(NodePath*)(((Variant*)&amp;_godot_variant)-&gt;_data._mem)</Item>
+			<Item Name="value" Condition="((Variant*)&amp;_godot_variant)-&gt;type == Variant::RID">*(::RID*)(((Variant*)&amp;_godot_variant)-&gt;_data._mem)</Item>
+			<Item Name="value" Condition="((Variant*)&amp;_godot_variant)-&gt;type == Variant::OBJECT">*(Object*)(((Variant*)&amp;_godot_variant)-&gt;_data._mem)</Item>
+			<Item Name="value" Condition="((Variant*)&amp;_godot_variant)-&gt;type == Variant::DICTIONARY">*(Dictionary*)(((Variant*)&amp;_godot_variant)-&gt;_data._mem)</Item>
+			<Item Name="value" Condition="((Variant*)&amp;_godot_variant)-&gt;type == Variant::ARRAY">*(Array*)(((Variant*)&amp;_godot_variant)-&gt;_data._mem)}}}</Item>
+			<Item Name="value" Condition="((Variant*)&amp;_godot_variant)-&gt;type == Variant::PACKED_BYTE_ARRAY">*(Vector&lt;unsigned char&gt;*)(((Variant*)&amp;_godot_variant)-&gt;_data._mem)</Item>
+			<Item Name="value" Condition="((Variant*)&amp;_godot_variant)-&gt;type == Variant::PACKED_INT32_ARRAY">*(Vector&lt;int&gt;*)(((Variant*)&amp;_godot_variant)-&gt;_data._mem)</Item>
+			<Item Name="value" Condition="((Variant*)&amp;_godot_variant)-&gt;type == Variant::PACKED_INT64_ARRAY">*(Vector&lt;long long&gt;*)(((Variant*)&amp;_godot_variant)-&gt;_data._mem)</Item>
+			<Item Name="value" Condition="((Variant*)&amp;_godot_variant)-&gt;type == Variant::PACKED_FLOAT32_ARRAY">*(Vector&lt;float&gt;*)(((Variant*)&amp;_godot_variant)-&gt;_data._mem)</Item>
+			<Item Name="value" Condition="((Variant*)&amp;_godot_variant)-&gt;type == Variant::PACKED_FLOAT64_ARRAY">*(Vector&lt;double&gt;*)(((Variant*)&amp;_godot_variant)-&gt;_data._mem)</Item>
+			<Item Name="value" Condition="((Variant*)&amp;_godot_variant)-&gt;type == Variant::PACKED_STRING_ARRAY">*(Vector&lt;String&gt;*)(((Variant*)&amp;_godot_variant)-&gt;_data._mem)</Item>
+			<Item Name="value" Condition="((Variant*)&amp;_godot_variant)-&gt;type == Variant::PACKED_VECTOR2_ARRAY">*(Vector&lt;Vector2&gt;*)(((Variant*)&amp;_godot_variant)-&gt;_data._mem)</Item>
+			<Item Name="value" Condition="((Variant*)&amp;_godot_variant)-&gt;type == Variant::PACKED_VECTOR3_ARRAY">*(Vector&lt;Vector3&gt;*)(((Variant*)&amp;_godot_variant)-&gt;_data._mem)</Item>
+			<Item Name="value" Condition="((Variant*)&amp;_godot_variant)-&gt;type == Variant::PACKED_COLOR_ARRAY">*(Vector&lt;Color&gt;*)(((Variant*)&amp;_godot_variant)-&gt;_data._mem)</Item>
+		</Expand>
+	</Type>
+
+	<Type Name="godot::Ref&lt;*&gt;">
+		<DisplayString>{{{reference}}}</DisplayString>
+		<Expand>
+			<Item Name="reference">reference</Item>
+		</Expand>
+	</Type>
+
+	<Type Name="godot::_Wrapped">
+		<DisplayString>{{{_owner},{_type_tag}}}</DisplayString>
+		<Expand>
+			<Item Name="owner">_owner</Item>
+			<Item Name="type_tag">_type_tag</Item>
+		</Expand>
+	</Type>
+
+	<Type Name="godot::Dictionary">
+		<DisplayString>{{size = {((Dictionary*)&amp;_godot_dictionary)-&gt;_p-&gt;variant_map.list._data ? ((Dictionary*)&amp;_godot_dictionary)-&gt;_p-&gt;variant_map.list._data-&gt;size_cache : 0}}}</DisplayString>
+		<Expand>
+			<LinkedListItems>
+			  <Size>((Dictionary*)&amp;_godot_dictionary)-&gt;_p-&gt;variant_map.list._data ? ((Dictionary*)&amp;_godot_dictionary)-&gt;_p-&gt;variant_map.list._data-&gt;size_cache : 0</Size>
+			  <HeadPointer>((Dictionary*)&amp;_godot_dictionary)-&gt;_p-&gt;variant_map.list._data-&gt;first</HeadPointer>
+			  <NextPointer>next_ptr</NextPointer>
+			  <ValueNode>value</ValueNode>
+			</LinkedListItems>
+		</Expand>
+	</Type>
+
+	<Type Name="godot::Array">
+		<DisplayString>{{size = {(Array*)&amp;_godot_array)-&gt;_p ? (((const unsigned int *)(((Array*)&amp;_godot_array)-&gt;_p-&gt;array._cowdata._ptr))[-1]) : 0}}}</DisplayString>
+		<Expand>
+			<ArrayItems>
+				<Size>((Array*)&amp;_godot_array)-&gt;_p ? (((const unsigned int *)(((Array*)&amp;_godot_array)-&gt;_p-&gt;array._cowdata._ptr))[-1]) : 0</Size>
+				<ValuePointer>((Array*)&amp;_godot_array)-&gt;_p-&gt;array._cowdata._ptr</ValuePointer>
+			</ArrayItems>
 		</Expand>
 	</Type>
 </AutoVisualizer>

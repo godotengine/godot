@@ -1644,8 +1644,10 @@ ScriptEditorDebugger::ScriptEditorDebugger(EditorNode *p_editor) {
 
 		error_tree->set_column_expand(0, false);
 		error_tree->set_column_custom_minimum_width(0, 140);
+		error_tree->set_column_clip_content(0, true);
 
 		error_tree->set_column_expand(1, true);
+		error_tree->set_column_clip_content(1, true);
 
 		error_tree->set_select_mode(Tree::SELECT_ROW);
 		error_tree->set_hide_root(true);
