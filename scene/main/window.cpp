@@ -1170,23 +1170,24 @@ Ref<Theme> Window::get_theme() const {
 	return theme;
 }
 
-void Window::set_theme_custom_type(const StringName &p_theme_type) {
-	theme_custom_type = p_theme_type;
+void Window::set_theme_type_variation(const StringName &p_theme_type) {
+	theme_type_variation = p_theme_type;
 	Control::_propagate_theme_changed(this, theme_owner, theme_owner_window);
 }
 
-StringName Window::get_theme_custom_type() const {
-	return theme_custom_type;
+StringName Window::get_theme_type_variation() const {
+	return theme_type_variation;
 }
 
 void Window::_get_theme_type_dependencies(const StringName &p_theme_type, List<StringName> *p_list) const {
-	if (p_theme_type == StringName() || p_theme_type == get_class_name() || p_theme_type == theme_custom_type) {
-		if (theme_custom_type != StringName()) {
-			p_list->push_back(theme_custom_type);
+	if (p_theme_type == StringName() || p_theme_type == get_class_name() || p_theme_type == theme_type_variation) {
+		if (Theme::get_project_default().is_valid() && Theme::get_project_default()->get_type_variation_base(theme_type_variation) != StringName()) {
+			Theme::get_project_default()->get_type_dependencies(get_class_name(), theme_type_variation, p_list);
+		} else {
+			Theme::get_default()->get_type_dependencies(get_class_name(), theme_type_variation, p_list);
 		}
-		Theme::get_type_dependencies(get_class_name(), p_list);
 	} else {
-		Theme::get_type_dependencies(p_theme_type, p_list);
+		Theme::get_default()->get_type_dependencies(p_theme_type, StringName(), p_list);
 	}
 }
 
@@ -1340,6 +1341,34 @@ bool Window::is_layout_rtl() const {
 	}
 }
 
+void Window::_validate_property(PropertyInfo &property) const {
+	if (property.name == "theme_type_variation") {
+		List<StringName> names;
+
+		// Only the default theme and the project theme are used for the list of options.
+		// This is an imposed limitation to simplify the logic needed to leverage those options.
+		Theme::get_default()->get_type_variation_list(get_class_name(), &names);
+		if (Theme::get_project_default().is_valid()) {
+			Theme::get_project_default()->get_type_variation_list(get_class_name(), &names);
+		}
+		names.sort_custom<StringName::AlphCompare>();
+
+		Vector<StringName> unique_names;
+		String hint_string;
+		for (List<StringName>::Element *E = names.front(); E; E = E->next()) {
+			// Skip duplicate values.
+			if (unique_names.has(E->get())) {
+				continue;
+			}
+
+			hint_string += String(E->get()) + ",";
+			unique_names.append(E->get());
+		}
+
+		property.hint_string = hint_string;
+	}
+}
+
 void Window::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_title", "title"), &Window::set_title);
 	ClassDB::bind_method(D_METHOD("get_title"), &Window::get_title);
@@ -1417,8 +1446,8 @@ void Window::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_theme", "theme"), &Window::set_theme);
 	ClassDB::bind_method(D_METHOD("get_theme"), &Window::get_theme);
 
-	ClassDB::bind_method(D_METHOD("set_theme_custom_type", "theme_type"), &Window::set_theme_custom_type);
-	ClassDB::bind_method(D_METHOD("get_theme_custom_type"), &Window::get_theme_custom_type);
+	ClassDB::bind_method(D_METHOD("set_theme_type_variation", "theme_type"), &Window::set_theme_type_variation);
+	ClassDB::bind_method(D_METHOD("get_theme_type_variation"), &Window::get_theme_type_variation);
 
 	ClassDB::bind_method(D_METHOD("get_theme_icon", "name", "theme_type"), &Window::get_theme_icon, DEFVAL(""));
 	ClassDB::bind_method(D_METHOD("get_theme_stylebox", "name", "theme_type"), &Window::get_theme_stylebox, DEFVAL(""));
@@ -1468,7 +1497,7 @@ void Window::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "content_scale_aspect", PROPERTY_HINT_ENUM, "Ignore,Keep,Keep Width,Keep Height,Expand"), "set_content_scale_aspect", "get_content_scale_aspect");
 	ADD_GROUP("Theme", "theme_");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "theme", PROPERTY_HINT_RESOURCE_TYPE, "Theme"), "set_theme", "get_theme");
-	ADD_PROPERTY(PropertyInfo(Variant::STRING, "theme_custom_type"), "set_theme_custom_type", "get_theme_custom_type");
+	ADD_PROPERTY(PropertyInfo(Variant::STRING, "theme_type_variation", PROPERTY_HINT_ENUM_SUGGESTION), "set_theme_type_variation", "get_theme_type_variation");
 
 	ADD_SIGNAL(MethodInfo("window_input", PropertyInfo(Variant::OBJECT, "event", PROPERTY_HINT_RESOURCE_TYPE, "InputEvent")));
 	ADD_SIGNAL(MethodInfo("files_dropped", PropertyInfo(Variant::PACKED_STRING_ARRAY, "files")));
