@@ -569,7 +569,7 @@ void ParticlesMaterial::_update_shader() {
 	code += "			vec4(1.250, -1.050, -0.203, 0.0),\n";
 	code += "			vec4(0.000, 0.000, 0.000, 0.0)) * hue_rot_s;\n";
 	if (color_ramp.is_valid()) {
-		code += "	COLOR = hue_rot_mat * textureLod(color_ramp, vec2(tv, 0.0), 0.0);\n";
+		code += "	COLOR = hue_rot_mat * textureLod(color_ramp, vec2(tv, 0.0), 0.0) * color_value;\n";
 	} else {
 		code += "	COLOR = hue_rot_mat * color_value;\n";
 	}
@@ -1040,10 +1040,6 @@ RID ParticlesMaterial::get_shader_rid() const {
 }
 
 void ParticlesMaterial::_validate_property(PropertyInfo &property) const {
-	if (property.name == "color" && color_ramp.is_valid()) {
-		property.usage = PROPERTY_USAGE_NONE;
-	}
-
 	if (property.name == "emission_sphere_radius" && emission_shape != EMISSION_SHAPE_SPHERE) {
 		property.usage = PROPERTY_USAGE_NONE;
 	}
