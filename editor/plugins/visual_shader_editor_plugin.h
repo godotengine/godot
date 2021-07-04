@@ -75,7 +75,7 @@ private:
 		LineEdit *uniform_name = nullptr;
 		OptionButton *const_op = nullptr;
 		CodeEdit *expression_edit = nullptr;
-		CurveEditor *curve_editor = nullptr;
+		CurveEditor *curve_editors[3] = { nullptr, nullptr, nullptr };
 	};
 
 	Ref<VisualShader> visual_shader;
@@ -97,7 +97,7 @@ public:
 	void register_default_input_button(int p_node_id, int p_port_id, Button *p_button);
 	void register_constant_option_btn(int p_node_id, OptionButton *p_button);
 	void register_expression_edit(int p_node_id, CodeEdit *p_expression_edit);
-	void register_curve_editor(int p_node_id, CurveEditor *p_curve_editor);
+	void register_curve_editor(int p_node_id, int p_index, CurveEditor *p_curve_editor);
 	void clear_links();
 	void set_shader_type(VisualShader::Type p_type);
 	bool is_preview_visible(int p_id) const;
@@ -117,6 +117,7 @@ public:
 	void update_uniform_refs();
 	void set_uniform_name(VisualShader::Type p_type, int p_node_id, const String &p_name);
 	void update_curve(int p_node_id);
+	void update_curve3(int p_node_id);
 	void update_constant(VisualShader::Type p_type, int p_node_id);
 	void set_expression(VisualShader::Type p_type, int p_node_id, const String &p_expression);
 	int get_constant_index(float p_constant) const;
@@ -289,6 +290,7 @@ class VisualShaderEditor : public VBoxContainer {
 	int texture3d_node_option_idx;
 	int custom_node_option_idx;
 	int curve_node_option_idx;
+	int curve3_node_option_idx;
 	List<String> keyword_list;
 
 	List<VisualShaderNodeUniformRef> uniform_refs;
