@@ -130,7 +130,7 @@ private:
 	Ref<Theme> theme;
 	Control *theme_owner = nullptr;
 	Window *theme_owner_window = nullptr;
-	StringName theme_custom_type;
+	StringName theme_type_variation;
 
 	Viewport *embedder = nullptr;
 
@@ -151,6 +151,7 @@ protected:
 	virtual Size2 _get_contents_minimum_size() const;
 	static void _bind_methods();
 	void _notification(int p_what);
+	virtual void _validate_property(PropertyInfo &property) const override;
 
 	virtual void add_child_notify(Node *p_child) override;
 	virtual void remove_child_notify(Node *p_child) override;
@@ -242,8 +243,8 @@ public:
 	void set_theme(const Ref<Theme> &p_theme);
 	Ref<Theme> get_theme() const;
 
-	void set_theme_custom_type(const StringName &p_theme_type);
-	StringName get_theme_custom_type() const;
+	void set_theme_type_variation(const StringName &p_theme_type);
+	StringName get_theme_type_variation() const;
 	_FORCE_INLINE_ void _get_theme_type_dependencies(const StringName &p_theme_type, List<StringName> *p_list) const;
 
 	Size2 get_contents_minimum_size() const;

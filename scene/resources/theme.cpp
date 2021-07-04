@@ -263,6 +263,21 @@ Vector<String> Theme::_get_theme_item_type_list(DataType p_data_type) const {
 	return Vector<String>();
 }
 
+Vector<String> Theme::_get_type_variation_list(const StringName &p_theme_type) const {
+	Vector<String> ilret;
+	List<StringName> il;
+
+	get_type_variation_list(p_theme_type, &il);
+	ilret.resize(il.size());
+
+	int i = 0;
+	String *w = ilret.ptrw();
+	for (List<StringName>::Element *E = il.front(); E; E = E->next(), i++) {
+		w[i] = E->get();
+	}
+	return ilret;
+}
+
 Vector<String> Theme::_get_type_list() const {
 	Vector<String> ilret;
 	List<StringName> il;
@@ -292,10 +307,14 @@ bool Theme::_set(const StringName &p_name, const Variant &p_value) {
 			set_stylebox(name, theme_type, p_value);
 		} else if (type == "fonts") {
 			set_font(name, theme_type, p_value);
+		} else if (type == "font_sizes") {
+			set_font_size(name, theme_type, p_value);
 		} else if (type == "colors") {
 			set_color(name, theme_type, p_value);
 		} else if (type == "constants") {
 			set_constant(name, theme_type, p_value);
+		} else if (type == "base_type") {
+			set_type_variation(theme_type, p_value);
 		} else {
 			return false;
 		}
@@ -332,10 +351,14 @@ bool Theme::_get(const StringName &p_name, Variant &r_ret) const {
 			} else {
 				r_ret = get_font(name, theme_type);
 			}
+		} else if (type == "font_sizes") {
+			r_ret = get_font_size(name, theme_type);
 		} else if (type == "colors") {
 			r_ret = get_color(name, theme_type);
 		} else if (type == "constants") {
 			r_ret = get_constant(name, theme_type);
+		} else if (type == "base_type") {
+			r_ret = get_type_variation_base(theme_type);
 		} else {
 			return false;
 		}
@@ -351,6 +374,14 @@ void Theme::_get_property_list(List<PropertyInfo> *p_list) const {
 
 	const StringName *key = nullptr;
 
+	// Type variations.
+	while ((key = variation_map.next(key))) {
+		list.push_back(PropertyInfo(Variant::STRING_NAME, String() + *key + "/base_type"));
+	}
+
+	key = nullptr;
+
+	// Icons.
 	while ((key = icon_map.next(key))) {
 		const StringName *key2 = nullptr;
 
@@ -361,6 +392,7 @@ void Theme::_get_property_list(List<PropertyInfo> *p_list) const {
 
 	key = nullptr;
 
+	// Styles.
 	while ((key = style_map.next(key))) {
 		const StringName *key2 = nullptr;
 
@@ -371,6 +403,7 @@ void Theme::_get_property_list(List<PropertyInfo> *p_list) const {
 
 	key = nullptr;
 
+	// Fonts.
 	while ((key = font_map.next(key))) {
 		const StringName *key2 = nullptr;
 
@@ -381,6 +414,18 @@ void Theme::_get_property_list(List<PropertyInfo> *p_list) const {
 
 	key = nullptr;
 
+	// Font sizes.
+	while ((key = font_size_map.next(key))) {
+		const StringName *key2 = nullptr;
+
+		while ((key2 = font_size_map[*key].next(key2))) {
+			list.push_back(PropertyInfo(Variant::INT, String() + *key + "/font_sizes/" + *key2));
+		}
+	}
+
+	key = nullptr;
+
+	// Colors.
 	while ((key = color_map.next(key))) {
 		const StringName *key2 = nullptr;
 
@@ -391,6 +436,7 @@ void Theme::_get_property_list(List<PropertyInfo> *p_list) const {
 
 	key = nullptr;
 
+	// Constants.
 	while ((key = constant_map.next(key))) {
 		const StringName *key2 = nullptr;
 
@@ -399,6 +445,7 @@ void Theme::_get_property_list(List<PropertyInfo> *p_list) const {
 		}
 	}
 
+	// Sort and store properties.
 	list.sort();
 	for (List<PropertyInfo>::Element *E = list.front(); E; E = E->next()) {
 		p_list->push_back(E->get());
@@ -1183,6 +1230,63 @@ void Theme::get_theme_item_type_list(DataType p_data_type, List<StringName> *p_l
 	}
 }
 
+void Theme::set_type_variation(const StringName &p_theme_type, const StringName &p_base_type) {
+	ERR_FAIL_COND_MSG(p_theme_type == StringName(), "An empty theme type cannot be marked as a variation of another type.");
+	ERR_FAIL_COND_MSG(ClassDB::class_exists(p_theme_type), "A type associated with a built-in class cannot be marked as a variation of another type.");
+	ERR_FAIL_COND_MSG(p_base_type == StringName(), "An empty theme type cannot be the base type of a variation. Use clear_type_variation() instead if you want to unmark '" + String(p_theme_type) + "' as a variation.");
+
+	if (variation_map.has(p_theme_type)) {
+		StringName old_base = variation_map[p_theme_type];
+		variation_base_map[old_base].erase(p_theme_type);
+	}
+
+	variation_map[p_theme_type] = p_base_type;
+	variation_base_map[p_base_type].push_back(p_theme_type);
+
+	_emit_theme_changed();
+}
+
+bool Theme::is_type_variation(const StringName &p_theme_type, const StringName &p_base_type) const {
+	return (variation_map.has(p_theme_type) && variation_map[p_theme_type] == p_base_type);
+}
+
+void Theme::clear_type_variation(const StringName &p_theme_type) {
+	ERR_FAIL_COND_MSG(!variation_map.has(p_theme_type), "Cannot clear the type variation '" + String(p_theme_type) + "' because it does not exist.");
+
+	StringName base_type = variation_map[p_theme_type];
+	variation_base_map[base_type].erase(p_theme_type);
+	variation_map.erase(p_theme_type);
+
+	_emit_theme_changed();
+}
+
+StringName Theme::get_type_variation_base(const StringName &p_theme_type) const {
+	if (!variation_map.has(p_theme_type)) {
+		return StringName();
+	}
+
+	return variation_map[p_theme_type];
+}
+
+void Theme::get_type_variation_list(const StringName &p_base_type, List<StringName> *p_list) const {
+	ERR_FAIL_NULL(p_list);
+
+	if (!variation_base_map.has(p_base_type)) {
+		return;
+	}
+
+	for (const List<StringName>::Element *E = variation_base_map[p_base_type].front(); E; E = E->next()) {
+		// Prevent infinite loops if variants were set to be cross-dependent (that's still invalid usage, but handling for stability sake).
+		if (p_list->find(E->get())) {
+			continue;
+		}
+
+		p_list->push_back(E->get());
+		// Continue looking for sub-variations.
+		get_type_variation_list(E->get(), p_list);
+	}
+}
+
 void Theme::_freeze_change_propagation() {
 	no_change_propagation = true;
 }
@@ -1236,8 +1340,12 @@ void Theme::clear() {
 	icon_map.clear();
 	style_map.clear();
 	font_map.clear();
+	font_size_map.clear();
 	color_map.clear();
 	constant_map.clear();
+
+	variation_map.clear();
+	variation_base_map.clear();
 
 	_emit_theme_changed();
 }
@@ -1291,6 +1399,9 @@ void Theme::copy_theme(const Ref<Theme> &p_other) {
 	color_map = p_other->color_map;
 	constant_map = p_other->constant_map;
 
+	variation_map = p_other->variation_map;
+	variation_base_map = p_other->variation_base_map;
+
 	_unfreeze_and_propagate_changes();
 }
 
@@ -1300,30 +1411,42 @@ void Theme::get_type_list(List<StringName> *p_list) const {
 	Set<StringName> types;
 	const StringName *key = nullptr;
 
+	// Icons.
 	while ((key = icon_map.next(key))) {
 		types.insert(*key);
 	}
 
 	key = nullptr;
 
+	// StyleBoxes.
 	while ((key = style_map.next(key))) {
 		types.insert(*key);
 	}
 
 	key = nullptr;
 
+	// Fonts.
 	while ((key = font_map.next(key))) {
 		types.insert(*key);
 	}
 
 	key = nullptr;
 
+	// Font sizes.
+	while ((key = font_size_map.next(key))) {
+		types.insert(*key);
+	}
+
+	key = nullptr;
+
+	// Colors.
 	while ((key = color_map.next(key))) {
 		types.insert(*key);
 	}
 
 	key = nullptr;
 
+	// Constants.
 	while ((key = constant_map.next(key))) {
 		types.insert(*key);
 	}
@@ -1333,10 +1456,25 @@ void Theme::get_type_list(List<StringName> *p_list) const {
 	}
 }
 
-void Theme::get_type_dependencies(const StringName &p_theme_type, List<StringName> *p_list) {
+void Theme::get_type_dependencies(const StringName &p_base_type, const StringName &p_type_variation, List<StringName> *p_list) {
 	ERR_FAIL_NULL(p_list);
 
-	StringName class_name = p_theme_type;
+	// Build the dependency chain for type variations.
+	if (p_type_variation != StringName()) {
+		StringName variation_name = p_type_variation;
+		while (variation_name != StringName()) {
+			p_list->push_back(variation_name);
+			variation_name = get_type_variation_base(variation_name);
+
+			// If we have reached the base type dependency, it's safe to stop (assuming no funny business was done to the Theme).
+			if (variation_name == p_base_type) {
+				break;
+			}
+		}
+	}
+
+	// Continue building the chain using native class hierarchy.
+	StringName class_name = p_base_type;
 	while (class_name != StringName()) {
 		p_list->push_back(class_name);
 		class_name = ClassDB::get_parent_class_nocheck(class_name);
@@ -1346,6 +1484,7 @@ void Theme::get_type_dependencies(const StringName &p_theme_type, List<StringNam
 void Theme::reset_state() {
 	clear();
 }
+
 void Theme::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_icon", "name", "theme_type", "texture"), &Theme::set_icon);
 	ClassDB::bind_method(D_METHOD("get_icon", "name", "theme_type"), &Theme::get_icon);
@@ -1410,6 +1549,12 @@ void Theme::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("clear_theme_item", "data_type", "name", "theme_type"), &Theme::clear_theme_item);
 	ClassDB::bind_method(D_METHOD("get_theme_item_list", "data_type", "theme_type"), &Theme::_get_theme_item_list);
 	ClassDB::bind_method(D_METHOD("get_theme_item_type_list", "data_type"), &Theme::_get_theme_item_type_list);
+
+	ClassDB::bind_method(D_METHOD("set_type_variation", "theme_type", "base_type"), &Theme::set_type_variation);
+	ClassDB::bind_method(D_METHOD("is_type_variation", "theme_type", "base_type"), &Theme::is_type_variation);
+	ClassDB::bind_method(D_METHOD("clear_type_variation", "theme_type"), &Theme::clear_type_variation);
+	ClassDB::bind_method(D_METHOD("get_type_variation_base", "theme_type"), &Theme::get_type_variation_base);
+	ClassDB::bind_method(D_METHOD("get_type_variation_list", "base_type"), &Theme::_get_type_variation_list);
 
 	ClassDB::bind_method(D_METHOD("get_type_list"), &Theme::_get_type_list);
 

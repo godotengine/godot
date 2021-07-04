@@ -97,6 +97,15 @@
 				Clears the theme item of [code]data_type[/code] at [code]name[/code] if the theme has [code]theme_type[/code].
 			</description>
 		</method>
+		<method name="clear_type_variation">
+			<return type="void">
+			</return>
+			<argument index="0" name="theme_type" type="StringName">
+			</argument>
+			<description>
+				Unmarks [code]theme_type[/code] as being a variation of any other type.
+			</description>
+		</method>
 		<method name="copy_default_theme">
 			<return type="void">
 			</return>
@@ -319,6 +328,24 @@
 				Returns all the theme types as a [PackedStringArray] filled with unique type names, for use in other [code]get_*[/code] functions of this theme.
 			</description>
 		</method>
+		<method name="get_type_variation_base" qualifiers="const">
+			<return type="StringName">
+			</return>
+			<argument index="0" name="theme_type" type="StringName">
+			</argument>
+			<description>
+				Returns the base theme type if [code]theme_type[/code] is a valid variation type. Returns an empty string otherwise.
+			</description>
+		</method>
+		<method name="get_type_variation_list" qualifiers="const">
+			<return type="PackedStringArray">
+			</return>
+			<argument index="0" name="base_type" type="StringName">
+			</argument>
+			<description>
+				Returns a list of all variation for the given [code]base_type[/code].
+			</description>
+		</method>
 		<method name="has_color" qualifiers="const">
 			<return type="bool">
 			</return>
@@ -403,6 +430,17 @@
 			<description>
 				Returns [code]true[/code] if a theme item of [code]data_type[/code] with [code]name[/code] is in [code]theme_type[/code].
 				Returns [code]false[/code] if the theme does not have [code]theme_type[/code].
+			</description>
+		</method>
+		<method name="is_type_variation" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="theme_type" type="StringName">
+			</argument>
+			<argument index="1" name="base_type" type="StringName">
+			</argument>
+			<description>
+				Returns [code]true[/code] if [code]theme_type[/code] is marked as a variation of [code]base_type[/code] in this theme.
 			</description>
 		</method>
 		<method name="rename_color">
@@ -597,6 +635,20 @@
 				Sets the theme item of [code]data_type[/code] to [code]value[/code] at [code]name[/code] in [code]theme_type[/code].
 				Does nothing if the [code]value[/code] type does not match [code]data_type[/code].
 				Creates [code]theme_type[/code] if the theme does not have it.
+			</description>
+		</method>
+		<method name="set_type_variation">
+			<return type="void">
+			</return>
+			<argument index="0" name="theme_type" type="StringName">
+			</argument>
+			<argument index="1" name="base_type" type="StringName">
+			</argument>
+			<description>
+				Marks [code]theme_type[/code] as being a variation of [code]base_type[/code].
+				This adds [code]theme_type[/code] as a suggested option for [member Control.theme_type_variation] on a [Control] that is of the [code]base_type[/code] class.
+				Variations can also be nested, i.e. [code]base_type[/code] can be another variation. If a chain of variations ends with a [code]base_type[/code] matching a class of a [Control], the whole chain is going to be suggested as options.
+				Note: Suggestions only show up if this [Theme] is set as the project default theme. See [member ProjectSettings.gui/theme/custom].
 			</description>
 		</method>
 	</methods>

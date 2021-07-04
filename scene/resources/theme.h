@@ -69,6 +69,8 @@ private:
 	HashMap<StringName, HashMap<StringName, int>> font_size_map;
 	HashMap<StringName, HashMap<StringName, Color>> color_map;
 	HashMap<StringName, HashMap<StringName, int>> constant_map;
+	HashMap<StringName, StringName> variation_map;
+	HashMap<StringName, List<StringName>> variation_base_map;
 
 	Vector<String> _get_icon_list(const String &p_theme_type) const;
 	Vector<String> _get_icon_type_list() const;
@@ -85,6 +87,8 @@ private:
 
 	Vector<String> _get_theme_item_list(DataType p_data_type, const String &p_theme_type) const;
 	Vector<String> _get_theme_item_type_list(DataType p_data_type) const;
+
+	Vector<String> _get_type_variation_list(const StringName &p_theme_type) const;
 	Vector<String> _get_type_list() const;
 
 protected:
@@ -197,8 +201,14 @@ public:
 	void add_theme_item_type(DataType p_data_type, const StringName &p_theme_type);
 	void get_theme_item_type_list(DataType p_data_type, List<StringName> *p_list) const;
 
+	void set_type_variation(const StringName &p_theme_type, const StringName &p_base_type);
+	bool is_type_variation(const StringName &p_theme_type, const StringName &p_base_type) const;
+	void clear_type_variation(const StringName &p_theme_type);
+	StringName get_type_variation_base(const StringName &p_theme_type) const;
+	void get_type_variation_list(const StringName &p_base_type, List<StringName> *p_list) const;
+
 	void get_type_list(List<StringName> *p_list) const;
-	static void get_type_dependencies(const StringName &p_theme_type, List<StringName> *p_list);
+	void get_type_dependencies(const StringName &p_base_type, const StringName &p_type_variant, List<StringName> *p_list);
 
 	void copy_default_theme();
 	void copy_theme(const Ref<Theme> &p_other);

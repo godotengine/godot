@@ -1004,6 +1004,9 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	// LineEdit
 
 	Ref<StyleBoxFlat> style_line_edit = style_widget->duplicate();
+	// The original style_widget style has an extra 1 pixel offset that makes LineEdits not align with Buttons,
+	// so this compensates for that.
+	style_line_edit->set_default_margin(SIDE_TOP, style_line_edit->get_default_margin(SIDE_TOP) - 1 * EDSCALE);
 	// Add a bottom line to make LineEdits more visible, especially in sectioned inspectors
 	// such as the Project Settings.
 	style_line_edit->set_border_width(SIDE_BOTTOM, Math::round(2 * EDSCALE));
