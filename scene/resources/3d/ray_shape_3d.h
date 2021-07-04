@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  convex_polygon_shape_3d.h                                            */
+/*  ray_shape_3d.h                                                       */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,28 +28,29 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef CONVEX_POLYGON_SHAPE_H
-#define CONVEX_POLYGON_SHAPE_H
+#ifndef RAY_SHAPE_H
+#define RAY_SHAPE_H
+#include "scene/resources/3d/shape_3d.h"
 
-#include "scene/resources/shape_3d.h"
-
-class ConvexPolygonShape3D : public Shape3D {
-	GDCLASS(ConvexPolygonShape3D, Shape3D);
-	Vector<Vector3> points;
+class RayShape3D : public Shape3D {
+	GDCLASS(RayShape3D, Shape3D);
+	float length = 1.0;
+	bool slips_on_slope = false;
 
 protected:
 	static void _bind_methods();
-
 	virtual void _update_shape() override;
 
 public:
-	void set_points(const Vector<Vector3> &p_points);
-	Vector<Vector3> get_points() const;
+	void set_length(float p_length);
+	float get_length() const;
+
+	void set_slips_on_slope(bool p_active);
+	bool get_slips_on_slope() const;
 
 	virtual Vector<Vector3> get_debug_mesh_lines() const override;
 	virtual real_t get_enclosing_radius() const override;
 
-	ConvexPolygonShape3D();
+	RayShape3D();
 };
-
-#endif // CONVEX_POLYGON_SHAPE_H
+#endif // RAY_SHAPE_H

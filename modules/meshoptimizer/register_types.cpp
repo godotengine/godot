@@ -29,7 +29,7 @@
 /*************************************************************************/
 
 #include "register_types.h"
-#include "scene/resources/surface_tool.h"
+#include "scene/resources/3d/surface_tool.h"
 #include "thirdparty/meshoptimizer/meshoptimizer.h"
 
 void register_meshoptimizer_types() {

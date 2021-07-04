@@ -33,10 +33,10 @@
 
 #include "core/io/resource_importer.h"
 #include "scene/3d/node_3d.h"
+#include "scene/resources/3d/shape_3d.h"
+#include "scene/resources/3d/skin.h"
 #include "scene/resources/animation.h"
 #include "scene/resources/mesh.h"
-#include "scene/resources/shape_3d.h"
-#include "scene/resources/skin.h"
 
 class Material;
 class AnimationPlayer;

@@ -38,8 +38,8 @@
 #include "scene/3d/visual_instance_3d.h"
 #include "scene/3d/world_environment.h"
 #include "scene/gui/panel_container.h"
+#include "scene/resources/3d/sky_material.h"
 #include "scene/resources/environment.h"
-#include "scene/resources/sky_material.h"
 
 class Camera3D;
 class Node3DEditor;

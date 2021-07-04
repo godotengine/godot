@@ -33,7 +33,7 @@
 
 #include "editor/import/scene_importer_mesh.h"
 #include "scene/3d/node_3d.h"
-#include "scene/resources/skin.h"
+#include "scene/resources/3d/skin.h"
 
 class EditorSceneImporterMesh;
 

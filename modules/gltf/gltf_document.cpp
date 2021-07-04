@@ -72,7 +72,7 @@
 #include "scene/3d/skeleton_3d.h"
 #include "scene/animation/animation_player.h"
 #include "scene/main/node.h"
-#include "scene/resources/surface_tool.h"
+#include "scene/resources/3d/surface_tool.h"
 #include <limits>
 
 Error GLTFDocument::serialize(Ref<GLTFState> state, Node *p_root, const String &p_path) {

@@ -44,8 +44,8 @@
 #include "scene/animation/animation_player.h"
 #include "scene/gui/check_box.h"
 #include "scene/main/node.h"
+#include "scene/resources/3d/surface_tool.h"
 #include "scene/resources/packed_scene.h"
-#include "scene/resources/surface_tool.h"
 
 #include "gltf_document.h"
 #include "gltf_state.h"

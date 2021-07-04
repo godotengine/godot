@@ -51,8 +51,8 @@
 #include "scene/3d/visual_instance_3d.h"
 #include "scene/gui/center_container.h"
 #include "scene/gui/subviewport_container.h"
+#include "scene/resources/3d/surface_tool.h"
 #include "scene/resources/packed_scene.h"
-#include "scene/resources/surface_tool.h"
 
 #define DISTANCE_DEFAULT 4
 

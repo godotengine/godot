@@ -31,7 +31,7 @@
 #include "scene_importer_mesh.h"
 
 #include "core/math/math_defs.h"
-#include "scene/resources/surface_tool.h"
+#include "scene/resources/3d/surface_tool.h"
 
 void EditorSceneImporterMesh::add_blend_shape(const String &p_name) {
 	ERR_FAIL_COND(surfaces.size() > 0);

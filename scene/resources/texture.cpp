@@ -33,8 +33,8 @@
 #include "core/core_string_names.h"
 #include "core/io/image_loader.h"
 #include "core/os/os.h"
-#include "mesh.h"
 #include "scene/resources/bit_map.h"
+#include "scene/resources/mesh.h"
 #include "servers/camera/camera_feed.h"
 
 Size2 Texture2D::get_size() const {

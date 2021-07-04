@@ -46,8 +46,8 @@
 #include "scene/3d/node_3d.h"
 #include "scene/3d/skeleton_3d.h"
 #include "scene/animation/animation_player.h"
+#include "scene/resources/3d/surface_tool.h"
 #include "scene/resources/animation.h"
-#include "scene/resources/surface_tool.h"
 
 #include "modules/fbx/fbx_parser/FBXDocument.h"
 #include "modules/fbx/fbx_parser/FBXImportSettings.h"

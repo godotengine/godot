@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  concave_polygon_shape_3d.h                                           */
+/*  cylinder_shape_3d.h                                                  */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,53 +28,30 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef CONCAVE_POLYGON_SHAPE_3D_H
-#define CONCAVE_POLYGON_SHAPE_3D_H
+#ifndef CYLINDER_SHAPE_3D_H
+#define CYLINDER_SHAPE_3D_H
 
-#include "scene/resources/shape_3d.h"
+#include "scene/resources/3d/shape_3d.h"
 
-class ConcavePolygonShape3D : public Shape3D {
-	GDCLASS(ConcavePolygonShape3D, Shape3D);
-
-	Vector<Vector3> faces;
-	bool backface_collision = false;
-
-	struct DrawEdge {
-		Vector3 a;
-		Vector3 b;
-		bool operator<(const DrawEdge &p_edge) const {
-			if (a == p_edge.a) {
-				return b < p_edge.b;
-			} else {
-				return a < p_edge.a;
-			}
-		}
-
-		DrawEdge(const Vector3 &p_a = Vector3(), const Vector3 &p_b = Vector3()) {
-			a = p_a;
-			b = p_b;
-			if (a < b) {
-				SWAP(a, b);
-			}
-		}
-	};
+class CylinderShape3D : public Shape3D {
+	GDCLASS(CylinderShape3D, Shape3D);
+	float radius = 1.0;
+	float height = 2.0;
 
 protected:
 	static void _bind_methods();
-
 	virtual void _update_shape() override;
 
 public:
-	void set_faces(const Vector<Vector3> &p_faces);
-	Vector<Vector3> get_faces() const;
-
-	void set_backface_collision_enabled(bool p_enabled);
-	bool is_backface_collision_enabled() const;
+	void set_radius(float p_radius);
+	float get_radius() const;
+	void set_height(float p_height);
+	float get_height() const;
 
 	virtual Vector<Vector3> get_debug_mesh_lines() const override;
 	virtual real_t get_enclosing_radius() const override;
 
-	ConcavePolygonShape3D();
+	CylinderShape3D();
 };
 
-#endif // CONCAVE_POLYGON_SHAPE_H
+#endif // CYLINDER_SHAPE_H

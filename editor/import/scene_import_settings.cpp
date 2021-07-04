@@ -32,7 +32,7 @@
 #include "editor/editor_node.h"
 #include "editor/editor_scale.h"
 #include "editor/import/scene_importer_mesh_node_3d.h"
-#include "scene/resources/surface_tool.h"
+#include "scene/resources/3d/surface_tool.h"
 
 class SceneImportSettingsData : public Object {
 	GDCLASS(SceneImportSettingsData, Object)

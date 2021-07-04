@@ -41,9 +41,9 @@
 #include "scene/3d/path_3d.h"
 #include "scene/3d/skeleton_3d.h"
 #include "scene/animation/animation_player.h"
+#include "scene/resources/3d/surface_tool.h"
 #include "scene/resources/animation.h"
 #include "scene/resources/packed_scene.h"
-#include "scene/resources/surface_tool.h"
 
 struct ColladaImport {
 	Collada collada;

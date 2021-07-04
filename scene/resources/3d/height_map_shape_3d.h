@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  world_margin_shape_3d.h                                              */
+/*  height_map_shape_3d.h                                                */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,29 +28,36 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef WORLD_MARGIN_SHAPE_3D_H
-#define WORLD_MARGIN_SHAPE_3D_H
+#ifndef HEIGHT_MAP_SHAPE_H
+#define HEIGHT_MAP_SHAPE_H
 
-#include "scene/resources/shape_3d.h"
+#include "scene/resources/3d/shape_3d.h"
 
-class WorldMarginShape3D : public Shape3D {
-	GDCLASS(WorldMarginShape3D, Shape3D);
-	Plane plane;
+class HeightMapShape3D : public Shape3D {
+	GDCLASS(HeightMapShape3D, Shape3D);
+
+	int map_width = 2;
+	int map_depth = 2;
+	PackedFloat32Array map_data;
+	real_t min_height = 0.0;
+	real_t max_height = 0.0;
 
 protected:
 	static void _bind_methods();
 	virtual void _update_shape() override;
 
 public:
-	void set_plane(Plane p_plane);
-	Plane get_plane() const;
+	void set_map_width(int p_new);
+	int get_map_width() const;
+	void set_map_depth(int p_new);
+	int get_map_depth() const;
+	void set_map_data(PackedFloat32Array p_new);
+	PackedFloat32Array get_map_data() const;
 
 	virtual Vector<Vector3> get_debug_mesh_lines() const override;
-	virtual real_t get_enclosing_radius() const override {
-		// Should be infinite?
-		return 0;
-	}
+	virtual real_t get_enclosing_radius() const override;
 
-	WorldMarginShape3D();
+	HeightMapShape3D();
 };
-#endif // WORLD_MARGIN_SHAPE_H
+
+#endif /* !HEIGHT_MAP_SHAPE_H */

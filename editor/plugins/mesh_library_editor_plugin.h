@@ -32,7 +32,7 @@
 #define MESH_LIBRARY_EDITOR_PLUGIN_H
 
 #include "editor/editor_node.h"
-#include "scene/resources/mesh_library.h"
+#include "scene/resources/3d/mesh_library.h"
 
 class MeshLibraryEditor : public Control {
 	GDCLASS(MeshLibraryEditor, Control);
