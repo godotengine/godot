@@ -3759,9 +3759,7 @@ void RendererSceneRenderRD::render_scene(RID p_render_buffers, const CameraData 
 			rb->sdfgi->update_light();
 		}
 
-		if (p_voxel_gi_instances.size()) {
-			gi.setup_voxel_gi_instances(render_data.render_buffers, render_data.cam_transform, *render_data.voxel_gi_instances, render_state.voxel_gi_count, this);
-		}
+		gi.setup_voxel_gi_instances(render_data.render_buffers, render_data.cam_transform, *render_data.voxel_gi_instances, render_state.voxel_gi_count, this);
 	}
 
 	render_state.depth_prepass_used = false;
