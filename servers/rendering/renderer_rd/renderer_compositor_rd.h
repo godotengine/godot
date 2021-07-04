@@ -50,6 +50,7 @@ protected:
 		BLIT_MODE_NORMAL,
 		BLIT_MODE_USE_LAYER,
 		BLIT_MODE_LENS,
+		BLIT_MODE_NORMAL_ALPHA,
 		BLIT_MODE_MAX
 	};
 
@@ -88,7 +89,7 @@ public:
 	RendererCanvasRender *get_canvas() { return canvas; }
 	RendererSceneRender *get_scene() { return scene; }
 
-	void set_boot_image(const Ref<Image> &p_image, const Color &p_color, bool p_scale, bool p_use_filter) {}
+	void set_boot_image(const Ref<Image> &p_image, const Color &p_color, bool p_scale, bool p_use_filter);
 
 	void initialize();
 	void begin_frame(double frame_step);
