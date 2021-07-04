@@ -36,10 +36,12 @@
 #include "core/templates/pair.h"
 #include "scene/2d/camera_2d.h"
 #include "scene/2d/collision_object_2d.h"
+#ifndef _3D_DISABLED
 #include "scene/3d/camera_3d.h"
 #include "scene/3d/collision_object_3d.h"
 #include "scene/3d/listener_3d.h"
 #include "scene/3d/world_environment.h"
+#endif // _3D_DISABLED
 #include "scene/gui/control.h"
 #include "scene/gui/label.h"
 #include "scene/gui/popup.h"
@@ -377,14 +379,17 @@ void Viewport::_notification(int p_what) {
 			current_canvas = find_world_2d()->get_canvas();
 			RenderingServer::get_singleton()->viewport_attach_canvas(viewport, current_canvas);
 			_update_listener_2d();
+#ifndef _3D_DISABLED
 			RenderingServer::get_singleton()->viewport_set_scenario(viewport, find_world_3d()->get_scenario());
 			_update_listener_3d();
+#endif // _3D_DISABLED
 
 			add_to_group("_viewports");
 			if (get_tree()->is_debugging_collisions_hint()) {
 				PhysicsServer2D::get_singleton()->space_set_debug_contacts(find_world_2d()->get_space(), get_tree()->get_collision_debug_contact_count());
 				contact_2d_debug = RenderingServer::get_singleton()->canvas_item_create();
 				RenderingServer::get_singleton()->canvas_item_set_parent(contact_2d_debug, find_world_2d()->get_canvas());
+#ifndef _3D_DISABLED
 				PhysicsServer3D::get_singleton()->space_set_debug_contacts(find_world_3d()->get_space(), get_tree()->get_collision_debug_contact_count());
 				contact_3d_debug_multimesh = RenderingServer::get_singleton()->multimesh_create();
 				RenderingServer::get_singleton()->multimesh_allocate_data(contact_3d_debug_multimesh, get_tree()->get_collision_debug_contact_count(), RS::MULTIMESH_TRANSFORM_3D, true);
@@ -394,10 +399,12 @@ void Viewport::_notification(int p_what) {
 				RenderingServer::get_singleton()->instance_set_base(contact_3d_debug_instance, contact_3d_debug_multimesh);
 				RenderingServer::get_singleton()->instance_set_scenario(contact_3d_debug_instance, find_world_3d()->get_scenario());
 				//RenderingServer::get_singleton()->instance_geometry_set_flag(contact_3d_debug_instance, RS::INSTANCE_FLAG_VISIBLE_IN_ALL_ROOMS, true);
+#endif // _3D_DISABLED
 			}
 
 		} break;
 		case NOTIFICATION_READY: {
+#ifndef _3D_DISABLED
 			if (listener_3d_set.size() && !listener_3d) {
 				Listener3D *first = nullptr;
 				for (Set<Listener3D *>::Element *E = listener_3d_set.front(); E; E = E->next()) {
@@ -424,7 +431,7 @@ void Viewport::_notification(int p_what) {
 					first->make_current();
 				}
 			}
-
+#endif // _3D_DISABLED
 		} break;
 		case NOTIFICATION_EXIT_TREE: {
 			_gui_cancel_tooltip();
@@ -462,6 +469,7 @@ void Viewport::_notification(int p_what) {
 					RenderingServer::get_singleton()->canvas_item_add_rect(contact_2d_debug, Rect2(points[i] - Vector2(2, 2), Vector2(5, 5)), ccol);
 				}
 			}
+#ifndef _3D_DISABLED
 			if (get_tree()->is_debugging_collisions_hint() && contact_3d_debug_multimesh.is_valid()) {
 				Vector<Vector3> points = PhysicsServer3D::get_singleton()->space_get_contacts(find_world_3d()->get_space());
 				int point_count = PhysicsServer3D::get_singleton()->space_get_contact_count(find_world_3d()->get_space());
@@ -474,6 +482,7 @@ void Viewport::_notification(int p_what) {
 					RS::get_singleton()->multimesh_instance_set_transform(contact_3d_debug_multimesh, i, point_transform);
 				}
 			}
+#endif // _3D_DISABLED
 		} break;
 		case NOTIFICATION_WM_MOUSE_EXIT: {
 			_drop_physics_mouseover();
@@ -506,10 +515,6 @@ void Viewport::_process_picking() {
 
 	_drop_physics_mouseover(true);
 
-	Vector2 last_pos(1e20, 1e20);
-	CollisionObject3D *last_object = nullptr;
-	ObjectID last_id;
-	PhysicsDirectSpaceState3D::RayResult result;
 	PhysicsDirectSpaceState2D *ss2d = PhysicsServer2D::get_singleton()->space_get_direct_state(find_world_2d()->get_space());
 
 	if (physics_has_last_mousepos) {
@@ -669,6 +674,11 @@ void Viewport::_process_picking() {
 			}
 		}
 
+#ifndef _3D_DISABLED
+		Vector2 last_pos(1e20, 1e20);
+		CollisionObject3D *last_object = nullptr;
+		ObjectID last_id;
+		PhysicsDirectSpaceState3D::RayResult result;
 		bool captured = false;
 
 		if (physics_object_capture.is_valid()) {
@@ -741,6 +751,7 @@ void Viewport::_process_picking() {
 				last_pos = pos;
 			}
 		}
+#endif // _3D_DISABLED
 	}
 }
 
@@ -2204,6 +2215,7 @@ void Viewport::_drop_physics_mouseover(bool p_paused_only) {
 
 	_cleanup_mouseover_colliders(true, p_paused_only);
 
+#ifndef _3D_DISABLED
 	if (physics_object_over.is_valid()) {
 		CollisionObject3D *co = Object::cast_to<CollisionObject3D>(ObjectDB::get_instance(physics_object_over));
 		if (co) {
@@ -2214,6 +2226,7 @@ void Viewport::_drop_physics_mouseover(bool p_paused_only) {
 			}
 		}
 	}
+#endif // _3D_DISABLED
 }
 
 void Viewport::_cleanup_mouseover_colliders(bool p_clean_all_frames, bool p_paused_only, uint64_t p_frame_reference) {
@@ -3063,6 +3076,7 @@ Viewport::SDFScale Viewport::get_sdf_scale() const {
 	return sdf_scale;
 }
 
+#ifndef _3D_DISABLED
 Listener3D *Viewport::get_listener_3d() const {
 	return listener_3d;
 }
@@ -3460,6 +3474,7 @@ void Viewport::set_use_xr(bool p_use_xr) {
 bool Viewport::is_using_xr() {
 	return use_xr;
 }
+#endif // _3D_DISABLED
 
 void Viewport::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_world_2d", "world_2d"), &Viewport::set_world_2d);
@@ -3565,6 +3580,7 @@ void Viewport::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("_process_picking"), &Viewport::_process_picking);
 
+#ifndef _3D_DISABLED
 	ClassDB::bind_method(D_METHOD("set_world_3d", "world_3d"), &Viewport::set_world_3d);
 	ClassDB::bind_method(D_METHOD("get_world_3d"), &Viewport::get_world_3d);
 	ClassDB::bind_method(D_METHOD("find_world_3d"), &Viewport::find_world_3d);
@@ -3587,6 +3603,7 @@ void Viewport::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "audio_listener_enable_3d"), "set_as_audio_listener_3d", "is_audio_listener_3d");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "own_world_3d"), "set_use_own_world_3d", "is_using_own_world_3d");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "world_3d", PROPERTY_HINT_RESOURCE_TYPE, "World3D"), "set_world_3d", "get_world_3d");
+#endif // _3D_DISABLED
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "world_2d", PROPERTY_HINT_RESOURCE_TYPE, "World2D", PROPERTY_USAGE_NONE), "set_world_2d", "get_world_2d");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "transparent_bg"), "set_transparent_background", "has_transparent_background");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "handle_input_locally"), "set_handle_input_locally", "is_handling_input_locally");

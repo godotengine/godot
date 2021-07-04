@@ -499,7 +499,7 @@ bool SceneTree::process(double p_time) {
 	_call_idle_callbacks();
 
 #ifdef TOOLS_ENABLED
-
+#ifndef _3D_DISABLED
 	if (Engine::get_singleton()->is_editor_hint()) {
 		//simple hack to reload fallback environment if it changed from editor
 		String env_path = ProjectSettings::get_singleton()->get(SNAME("rendering/environment/defaults/default_environment"));
@@ -522,8 +522,8 @@ bool SceneTree::process(double p_time) {
 			get_root()->get_world_3d()->set_fallback_environment(fallback);
 		}
 	}
-
-#endif
+#endif // _3D_DISABLED
+#endif // TOOLS_ENABLED
 
 	return _quit;
 }
@@ -1333,15 +1333,16 @@ SceneTree::SceneTree() {
 
 	root = memnew(Window);
 	root->set_name("root");
+#ifndef _3D_DISABLED
 	if (!root->get_world_3d().is_valid()) {
 		root->set_world_3d(Ref<World3D>(memnew(World3D)));
 	}
+	root->set_as_audio_listener_3d(true);
+#endif // _3D_DISABLED
 
 	// Initialize network state.
 	set_multiplayer(Ref<MultiplayerAPI>(memnew(MultiplayerAPI)));
 
-	//root->set_world_2d( Ref<World2D>( memnew( World2D )));
-	root->set_as_audio_listener_3d(true);
 	root->set_as_audio_listener_2d(true);
 	current_scene = nullptr;
 
@@ -1397,6 +1398,7 @@ SceneTree::SceneTree() {
 	ProjectSettings::get_singleton()->set_custom_property_info("rendering/2d/sdf/oversize", PropertyInfo(Variant::INT, "rendering/2d/sdf/oversize", PROPERTY_HINT_ENUM, "100%,120%,150%,200%"));
 	ProjectSettings::get_singleton()->set_custom_property_info("rendering/2d/sdf/scale", PropertyInfo(Variant::INT, "rendering/2d/sdf/scale", PROPERTY_HINT_ENUM, "100%,50%,25%"));
 
+#ifndef _3D_DISABLED
 	{ // Load default fallback environment.
 		// Get possible extensions.
 		List<String> exts;
@@ -1428,6 +1430,7 @@ SceneTree::SceneTree() {
 			}
 		}
 	}
+#endif // _3D_DISABLED
 
 	root->set_physics_object_picking(GLOBAL_DEF("physics/common/enable_object_picking", true));
 
