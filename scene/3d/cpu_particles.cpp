@@ -450,10 +450,6 @@ Vector3 CPUParticles::get_gravity() const {
 }
 
 void CPUParticles::_validate_property(PropertyInfo &property) const {
-	if (property.name == "color" && color_ramp.is_valid()) {
-		property.usage = 0;
-	}
-
 	if (property.name == "emission_sphere_radius" && emission_shape != EMISSION_SHAPE_SPHERE) {
 		property.usage = 0;
 	}
