@@ -85,14 +85,14 @@ void Camera3D::_update_camera() {
 	// here goes listener stuff
 	/*
 	if (viewport_ptr && is_inside_scene() && is_current())
-		get_viewport()->_camera_transform_changed_notify();
+		get_viewport()->_camera_3d_transform_changed_notify();
 	*/
 
 	if (get_tree()->is_node_being_edited(this) || !is_current()) {
 		return;
 	}
 
-	get_viewport()->_camera_transform_changed_notify();
+	get_viewport()->_camera_3d_transform_changed_notify();
 }
 
 void Camera3D::_notification(int p_what) {
@@ -104,9 +104,9 @@ void Camera3D::_notification(int p_what) {
 			viewport = get_viewport();
 			ERR_FAIL_COND(!viewport);
 
-			bool first_camera = viewport->_camera_add(this);
+			bool first_camera = viewport->_camera_3d_add(this);
 			if (current || first_camera) {
-				viewport->_camera_set(this);
+				viewport->_camera_3d_set(this);
 			}
 
 		} break;
@@ -128,7 +128,7 @@ void Camera3D::_notification(int p_what) {
 			}
 
 			if (viewport) {
-				viewport->_camera_remove(this);
+				viewport->_camera_3d_remove(this);
 				viewport = nullptr;
 			}
 
@@ -220,7 +220,7 @@ void Camera3D::make_current() {
 		return;
 	}
 
-	get_viewport()->_camera_set(this);
+	get_viewport()->_camera_3d_set(this);
 
 	//get_scene()->call_group(SceneMainLoop::GROUP_CALL_REALTIME,camera_group,"_camera_make_current",this);
 }
@@ -231,11 +231,11 @@ void Camera3D::clear_current(bool p_enable_next) {
 		return;
 	}
 
-	if (get_viewport()->get_camera() == this) {
-		get_viewport()->_camera_set(nullptr);
+	if (get_viewport()->get_camera_3d() == this) {
+		get_viewport()->_camera_3d_set(nullptr);
 
 		if (p_enable_next) {
-			get_viewport()->_camera_make_next_current(this);
+			get_viewport()->_camera_3d_make_next_current(this);
 		}
 	}
 }
@@ -250,7 +250,7 @@ void Camera3D::set_current(bool p_current) {
 
 bool Camera3D::is_current() const {
 	if (is_inside_tree() && !get_tree()->is_node_being_edited(this)) {
-		return get_viewport()->get_camera() == this;
+		return get_viewport()->get_camera_3d() == this;
 	} else {
 		return current;
 	}
