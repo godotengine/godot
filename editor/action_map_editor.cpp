@@ -1123,6 +1123,7 @@ ActionMapEditor::ActionMapEditor() {
 	action_tree->set_hide_root(true);
 	action_tree->set_column_titles_visible(true);
 	action_tree->set_column_title(0, TTR("Action"));
+	action_tree->set_column_clip_content(0, true);
 	action_tree->set_column_title(1, TTR("Deadzone"));
 	action_tree->set_column_expand(1, false);
 	action_tree->set_column_custom_minimum_width(1, 80 * EDSCALE);
