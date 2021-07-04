@@ -148,10 +148,10 @@
 			Animation speed randomness ratio.
 		</member>
 		<member name="color" type="Color" setter="set_color" getter="get_color" default="Color(1, 1, 1, 1)">
-			Unused for 3D particles.
+			Each particle's initial color. To have particle display color in a [BaseMaterial3D] make sure to set [member BaseMaterial3D.vertex_color_use_as_albedo] to [code]true[/code].
 		</member>
 		<member name="color_ramp" type="Gradient" setter="set_color_ramp" getter="get_color_ramp">
-			Unused for 3D particles.
+			Each particle's color will vary along this [GradientTexture] over its lifetime (multiplied with [member color]).
 		</member>
 		<member name="damping" type="float" setter="set_param" getter="get_param" default="0.0">
 			The rate at which particles lose velocity.
