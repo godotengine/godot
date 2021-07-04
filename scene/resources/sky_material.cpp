@@ -30,6 +30,8 @@
 
 #include "sky_material.h"
 
+#include "core/version.h"
+
 void ProceduralSkyMaterial::set_sky_top_color(const Color &p_sky_top) {
 	sky_top_color = p_sky_top;
 	RS::get_singleton()->material_set_param(_get_material(), "sky_top_color", sky_top_color.to_linear());
@@ -181,7 +183,10 @@ void ProceduralSkyMaterial::_bind_methods() {
 }
 
 ProceduralSkyMaterial::ProceduralSkyMaterial() {
-	String code = "shader_type sky;\n\n";
+	// Add a comment to describe the shader origin (useful when converting to ShaderMaterial).
+	String code = "// NOTE: Shader automatically converted from " VERSION_NAME " " VERSION_FULL_CONFIG "'s ProceduralSkyMaterial.\n\n";
+
+	code += "shader_type sky;\n\n";
 
 	code += "uniform vec4 sky_top_color : hint_color = vec4(0.35, 0.46, 0.71, 1.0);\n";
 	code += "uniform vec4 sky_horizon_color : hint_color = vec4(0.55, 0.69, 0.81, 1.0);\n";
@@ -297,7 +302,10 @@ void PanoramaSkyMaterial::_bind_methods() {
 }
 
 PanoramaSkyMaterial::PanoramaSkyMaterial() {
-	String code = "shader_type sky;\n\n";
+	// Add a comment to describe the shader origin (useful when converting to ShaderMaterial).
+	String code = "// NOTE: Shader automatically converted from " VERSION_NAME " " VERSION_FULL_CONFIG "'s PanoramaSkyMaterial.\n\n";
+
+	code += "shader_type sky;\n\n";
 
 	code += "uniform sampler2D source_panorama : filter_linear;\n";
 	code += "void sky() {\n";
@@ -482,7 +490,10 @@ void PhysicalSkyMaterial::_bind_methods() {
 }
 
 PhysicalSkyMaterial::PhysicalSkyMaterial() {
-	String code = "shader_type sky;\n\n";
+	// Add a comment to describe the shader origin (useful when converting to ShaderMaterial).
+	String code = "// NOTE: Shader automatically converted from " VERSION_NAME " " VERSION_FULL_CONFIG "'s PhysicalSkyMaterial.\n\n";
+
+	code += "shader_type sky;\n\n";
 
 	code += "uniform float rayleigh : hint_range(0, 64) = 2.0;\n";
 	code += "uniform vec4 rayleigh_color : hint_color = vec4(0.056, 0.14, 0.3, 1.0);\n";
