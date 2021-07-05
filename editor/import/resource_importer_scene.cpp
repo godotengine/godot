@@ -631,8 +631,9 @@ Node *ResourceImporterScene::_post_fix_node(Node *p_node, Node *p_root, Map<Ref<
 								RigidBody3D *rigid_body = memnew(RigidBody3D);
 								rigid_body->set_name(p_node->get_name());
 								p_node->replace_by(rigid_body);
-								rigid_body->set_transform(mi->get_transform());
+								p_node->queue_delete();
 								p_node = rigid_body;
+								rigid_body->set_transform(mi->get_transform());
 								mi->set_transform(Transform3D());
 								rigid_body->add_child(mi);
 								mi->set_owner(rigid_body->get_owner());
@@ -643,7 +644,7 @@ Node *ResourceImporterScene::_post_fix_node(Node *p_node, Node *p_root, Map<Ref<
 								col->set_transform(mi->get_transform());
 								col->set_name(p_node->get_name());
 								p_node->replace_by(col);
-								memdelete(p_node);
+								p_node->queue_delete();
 								p_node = col;
 								base = col;
 							} break;
@@ -652,7 +653,7 @@ Node *ResourceImporterScene::_post_fix_node(Node *p_node, Node *p_root, Map<Ref<
 								area->set_transform(mi->get_transform());
 								area->set_name(p_node->get_name());
 								p_node->replace_by(area);
-								memdelete(p_node);
+								p_node->queue_delete();
 								p_node = area;
 								base = area;
 
