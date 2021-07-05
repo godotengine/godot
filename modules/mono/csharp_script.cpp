@@ -54,6 +54,7 @@
 
 #include "editor/editor_internal_calls.h"
 #include "godotsharp_dirs.h"
+#include "modules/regex/regex.h"
 #include "mono_gd/gd_mono_cache.h"
 #include "mono_gd/gd_mono_class.h"
 #include "mono_gd/gd_mono_marshal.h"
@@ -61,7 +62,6 @@
 #include "signal_awaiter_utils.h"
 #include "utils/macros.h"
 #include "utils/string_utils.h"
-#include "modules/regex/regex.h"
 
 #define CACHED_STRING_NAME(m_var) (CSharpLanguage::get_singleton()->get_string_names().m_var)
 
