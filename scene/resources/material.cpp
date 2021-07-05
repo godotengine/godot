@@ -392,9 +392,10 @@ void BaseMaterial3D::_update_shader() {
 	dirty_materials->remove(&element);
 
 	MaterialKey mk = _compute_key();
-	if (mk == current_key) {
+	if (mk == current_key && !textures_changed) { //material dont changed and textures dont updated
 		return; //no update required in the end
 	}
+	textures_changed = false;
 
 	if (shader_map.has(current_key)) {
 		shader_map[current_key].users--;
@@ -1650,6 +1651,7 @@ void BaseMaterial3D::set_texture(TextureParam p_param, const Ref<Texture2D> &p_t
 		RS::get_singleton()->material_set_param(_get_material(), shader_names->albedo_texture_size,
 				Vector2i(p_texture->get_width(), p_texture->get_height()));
 	}
+	textures_changed = true;
 	notify_property_list_changed();
 	_queue_shader_change();
 }
