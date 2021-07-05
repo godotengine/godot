@@ -94,8 +94,6 @@ public:
 	PhysicsDirectBodyState();
 };
 
-class PhysicsShapeQueryResult;
-
 class PhysicsShapeQueryParameters : public Reference {
 	GDCLASS(PhysicsShapeQueryParameters, Reference);
 	friend class PhysicsDirectSpaceState;
@@ -192,26 +190,6 @@ public:
 	virtual Vector3 get_closest_point_to_object_volume(RID p_object, const Vector3 p_point) const = 0;
 
 	PhysicsDirectSpaceState();
-};
-
-class PhysicsShapeQueryResult : public Reference {
-	GDCLASS(PhysicsShapeQueryResult, Reference);
-
-	Vector<PhysicsDirectSpaceState::ShapeResult> result;
-
-	friend class PhysicsDirectSpaceState;
-
-protected:
-	static void _bind_methods();
-
-public:
-	int get_result_count() const;
-	RID get_result_rid(int p_idx) const;
-	ObjectID get_result_object_id(int p_idx) const;
-	Object *get_result_object(int p_idx) const;
-	int get_result_object_shape(int p_idx) const;
-
-	PhysicsShapeQueryResult();
 };
 
 class PhysicsTestMotionResult;
