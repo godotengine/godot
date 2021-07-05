@@ -248,7 +248,6 @@ private:
 	void _text_changed();
 
 protected:
-	void gui_input(const Ref<InputEvent> &p_gui_input) override;
 	void _notification(int p_what);
 
 	static void _bind_methods();
@@ -265,6 +264,7 @@ protected:
 
 public:
 	/* General overrides */
+	virtual void gui_input(const Ref<InputEvent> &p_gui_input) override;
 	virtual CursorShape get_cursor_shape(const Point2 &p_pos = Point2i()) const override;
 
 	/* Indent management */
