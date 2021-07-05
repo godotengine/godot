@@ -5261,6 +5261,7 @@ RID RasterizerStorageGLES3::light_create(VS::LightType p_type) {
 
 	light->param[VS::LIGHT_PARAM_ENERGY] = 1.0;
 	light->param[VS::LIGHT_PARAM_INDIRECT_ENERGY] = 1.0;
+	light->param[VS::LIGHT_PARAM_SIZE] = 0.0;
 	light->param[VS::LIGHT_PARAM_SPECULAR] = 0.5;
 	light->param[VS::LIGHT_PARAM_RANGE] = 1.0;
 	light->param[VS::LIGHT_PARAM_SPOT_ANGLE] = 45;
