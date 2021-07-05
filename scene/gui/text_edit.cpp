@@ -746,8 +746,6 @@ void TextEdit::_notification(int p_what) {
 
 			int cursor_wrap_index = get_cursor_wrap_index();
 
-			//FontDrawer drawer(cache.font, Color(1, 1, 1));
-
 			int first_visible_line = get_first_visible_line() - 1;
 			int draw_amount = visible_rows + (smooth_scroll_enabled ? 1 : 0);
 			draw_amount += times_line_wraps(first_visible_line + 1);
@@ -2823,7 +2821,6 @@ void TextEdit::_base_remove_text(int p_from_line, int p_from_column, int p_to_li
 	}
 	text.set(p_from_line, pre_text + post_text, structured_text_parser(st_parser, st_args, pre_text + post_text));
 
-	//text.set_line_wrap_amount(p_from_line, -1);
 	text.invalidate_cache(p_from_line);
 
 	if (!text_changed_dirty && !setting_text) {
@@ -2940,19 +2937,6 @@ void TextEdit::_remove_text(int p_from_line, int p_from_column, int p_to_line, i
 	op.prev_version = get_version();
 	_push_current_op();
 	current_op = op;
-}
-
-int TextEdit::get_char_count() {
-	int totalsize = 0;
-
-	for (int i = 0; i < text.size(); i++) {
-		if (i > 0) {
-			totalsize++; // Include \n.
-		}
-		totalsize += text[i].length();
-	}
-
-	return totalsize; // Omit last \n.
 }
 
 Size2 TextEdit::get_minimum_size() const {
@@ -5370,11 +5354,6 @@ void TextEdit::_bind_methods() {
 	BIND_ENUM_CONSTANT(SELECTION_MODE_POINTER);
 	BIND_ENUM_CONSTANT(SELECTION_MODE_WORD);
 	BIND_ENUM_CONSTANT(SELECTION_MODE_LINE);
-
-	/*
-	ClassDB::bind_method(D_METHOD("delete_char"),&TextEdit::delete_char);
-	ClassDB::bind_method(D_METHOD("delete_line"),&TextEdit::delete_line);
-*/
 
 	ClassDB::bind_method(D_METHOD("get_draw_control_chars"), &TextEdit::get_draw_control_chars);
 	ClassDB::bind_method(D_METHOD("set_draw_control_chars", "enable"), &TextEdit::set_draw_control_chars);

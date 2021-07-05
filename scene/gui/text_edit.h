@@ -342,7 +342,6 @@ private:
 	void _update_wrap_at(bool p_force = false);
 	Vector<String> get_wrap_rows_text(int p_line) const;
 	int get_cursor_wrap_index() const;
-	int get_char_count();
 
 	double get_scroll_pos_for_line(int p_line, int p_wrap_index = 0) const;
 	void set_line_as_first_visible(int p_line, int p_wrap_index = 0);
@@ -379,7 +378,6 @@ private:
 	void _scroll_lines_up();
 	void _scroll_lines_down();
 
-	//void mouse_motion(const Point& p_pos, const Point& p_rel, int p_button_mask);
 	Size2 get_minimum_size() const override;
 	int _get_control_height() const;
 
@@ -573,9 +571,6 @@ public:
 	void _get_mouse_pos(const Point2i &p_mouse, int &r_row, int &r_col) const;
 	void _get_minimap_mouse_row(const Point2i &p_mouse, int &r_row) const;
 	bool is_dragging_cursor() const;
-
-	//void delete_char();
-	//void delete_line();
 
 	void begin_complex_operation();
 	void end_complex_operation();
