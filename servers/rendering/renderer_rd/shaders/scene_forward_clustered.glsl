@@ -547,9 +547,8 @@ void main() {
 	vec3 view = -normalize(vertex_interp);
 	vec3 albedo = vec3(1.0);
 	vec3 backlight = vec3(0.0);
-	vec4 transmittance_color = vec4(0.0);
+	vec4 transmittance_color = vec4(0.0, 0.0, 0.0, 1.0);
 	float transmittance_depth = 0.0;
-	float transmittance_curve = 1.0;
 	float transmittance_boost = 0.0;
 	float metallic = 0.0;
 	float specular = 0.5;
@@ -634,11 +633,7 @@ void main() {
 	}
 
 #ifdef LIGHT_TRANSMITTANCE_USED
-#ifdef SSS_MODE_SKIN
-	transmittance_color.a = sss_strength;
-#else
 	transmittance_color.a *= sss_strength;
-#endif
 #endif
 
 #ifndef USE_SHADOW_TO_OPACITY
@@ -1423,57 +1418,18 @@ void main() {
 					BIAS_FUNC(v, 0)
 
 					pssm_coord = (directional_lights.data[i].shadow_matrix1 * v);
-#ifdef LIGHT_TRANSMITTANCE_USED
-					{
-						vec4 trans_vertex = vec4(vertex - normalize(normal_interp) * directional_lights.data[i].shadow_transmittance_bias.x, 1.0);
-						vec4 trans_coord = directional_lights.data[i].shadow_matrix1 * trans_vertex;
-						trans_coord /= trans_coord.w;
-
-						float shadow_z = textureLod(sampler2D(directional_shadow_atlas, material_samplers[SAMPLER_LINEAR_CLAMP]), trans_coord.xy, 0.0).r;
-						shadow_z *= directional_lights.data[i].shadow_transmittance_z_scale.x;
-						float z = trans_coord.z * directional_lights.data[i].shadow_transmittance_z_scale.x;
-
-						transmittance_z = z - shadow_z;
-					}
-#endif
 				} else if (depth_z < directional_lights.data[i].shadow_split_offsets.y) {
 					vec4 v = vec4(vertex, 1.0);
 
 					BIAS_FUNC(v, 1)
 
 					pssm_coord = (directional_lights.data[i].shadow_matrix2 * v);
-#ifdef LIGHT_TRANSMITTANCE_USED
-					{
-						vec4 trans_vertex = vec4(vertex - normalize(normal_interp) * directional_lights.data[i].shadow_transmittance_bias.y, 1.0);
-						vec4 trans_coord = directional_lights.data[i].shadow_matrix2 * trans_vertex;
-						trans_coord /= trans_coord.w;
-
-						float shadow_z = textureLod(sampler2D(directional_shadow_atlas, material_samplers[SAMPLER_LINEAR_CLAMP]), trans_coord.xy, 0.0).r;
-						shadow_z *= directional_lights.data[i].shadow_transmittance_z_scale.y;
-						float z = trans_coord.z * directional_lights.data[i].shadow_transmittance_z_scale.y;
-
-						transmittance_z = z - shadow_z;
-					}
-#endif
 				} else if (depth_z < directional_lights.data[i].shadow_split_offsets.z) {
 					vec4 v = vec4(vertex, 1.0);
 
 					BIAS_FUNC(v, 2)
 
 					pssm_coord = (directional_lights.data[i].shadow_matrix3 * v);
-#ifdef LIGHT_TRANSMITTANCE_USED
-					{
-						vec4 trans_vertex = vec4(vertex - normalize(normal_interp) * directional_lights.data[i].shadow_transmittance_bias.z, 1.0);
-						vec4 trans_coord = directional_lights.data[i].shadow_matrix3 * trans_vertex;
-						trans_coord /= trans_coord.w;
-
-						float shadow_z = textureLod(sampler2D(directional_shadow_atlas, material_samplers[SAMPLER_LINEAR_CLAMP]), trans_coord.xy, 0.0).r;
-						shadow_z *= directional_lights.data[i].shadow_transmittance_z_scale.z;
-						float z = trans_coord.z * directional_lights.data[i].shadow_transmittance_z_scale.z;
-
-						transmittance_z = z - shadow_z;
-					}
-#endif
 
 				} else {
 					vec4 v = vec4(vertex, 1.0);
@@ -1481,19 +1437,6 @@ void main() {
 					BIAS_FUNC(v, 3)
 
 					pssm_coord = (directional_lights.data[i].shadow_matrix4 * v);
-#ifdef LIGHT_TRANSMITTANCE_USED
-					{
-						vec4 trans_vertex = vec4(vertex - normalize(normal_interp) * directional_lights.data[i].shadow_transmittance_bias.w, 1.0);
-						vec4 trans_coord = directional_lights.data[i].shadow_matrix4 * trans_vertex;
-						trans_coord /= trans_coord.w;
-
-						float shadow_z = textureLod(sampler2D(directional_shadow_atlas, material_samplers[SAMPLER_LINEAR_CLAMP]), trans_coord.xy, 0.0).r;
-						shadow_z *= directional_lights.data[i].shadow_transmittance_z_scale.w;
-						float z = trans_coord.z * directional_lights.data[i].shadow_transmittance_z_scale.w;
-
-						transmittance_z = z - shadow_z;
-					}
-#endif
 				}
 
 				pssm_coord /= pssm_coord.w;
@@ -1562,8 +1505,8 @@ void main() {
 					trans_coord /= trans_coord.w;
 
 					float shadow_z = textureLod(sampler2D(directional_shadow_atlas, material_samplers[SAMPLER_LINEAR_CLAMP]), trans_coord.xy, 0.0).r;
-					shadow_z *= directional_lights.data[i].shadow_transmittance_z_scale.x;
-					float z = trans_coord.z * directional_lights.data[i].shadow_transmittance_z_scale.x;
+					shadow_z *= directional_lights.data[i].shadow_z_range.x;
+					float z = trans_coord.z * directional_lights.data[i].shadow_z_range.x;
 
 					transmittance_z = z - shadow_z;
 				} else if (depth_z < directional_lights.data[i].shadow_split_offsets.y) {
@@ -1572,8 +1515,8 @@ void main() {
 					trans_coord /= trans_coord.w;
 
 					float shadow_z = textureLod(sampler2D(directional_shadow_atlas, material_samplers[SAMPLER_LINEAR_CLAMP]), trans_coord.xy, 0.0).r;
-					shadow_z *= directional_lights.data[i].shadow_transmittance_z_scale.y;
-					float z = trans_coord.z * directional_lights.data[i].shadow_transmittance_z_scale.y;
+					shadow_z *= directional_lights.data[i].shadow_z_range.y;
+					float z = trans_coord.z * directional_lights.data[i].shadow_z_range.y;
 
 					transmittance_z = z - shadow_z;
 				} else if (depth_z < directional_lights.data[i].shadow_split_offsets.z) {
@@ -1582,8 +1525,8 @@ void main() {
 					trans_coord /= trans_coord.w;
 
 					float shadow_z = textureLod(sampler2D(directional_shadow_atlas, material_samplers[SAMPLER_LINEAR_CLAMP]), trans_coord.xy, 0.0).r;
-					shadow_z *= directional_lights.data[i].shadow_transmittance_z_scale.z;
-					float z = trans_coord.z * directional_lights.data[i].shadow_transmittance_z_scale.z;
+					shadow_z *= directional_lights.data[i].shadow_z_range.z;
+					float z = trans_coord.z * directional_lights.data[i].shadow_z_range.z;
 
 					transmittance_z = z - shadow_z;
 
@@ -1593,221 +1536,219 @@ void main() {
 					trans_coord /= trans_coord.w;
 
 					float shadow_z = textureLod(sampler2D(directional_shadow_atlas, material_samplers[SAMPLER_LINEAR_CLAMP]), trans_coord.xy, 0.0).r;
-					shadow_z *= directional_lights.data[i].shadow_transmittance_z_scale.w;
-					float z = trans_coord.z * directional_lights.data[i].shadow_transmittance_z_scale.w;
+					shadow_z *= directional_lights.data[i].shadow_z_range.w;
+					float z = trans_coord.z * directional_lights.data[i].shadow_z_range.w;
 
 					transmittance_z = z - shadow_z;
 				}
+			}
 #endif
 
-				float shadow = 1.0;
+			float shadow = 1.0;
 
-				if (i < 4) {
-					shadow = float(shadow0 >> (i * 8) & 0xFF) / 255.0;
-				} else {
-					shadow = float(shadow1 >> ((i - 4) * 8) & 0xFF) / 255.0;
+			if (i < 4) {
+				shadow = float(shadow0 >> (i * 8) & 0xFF) / 255.0;
+			} else {
+				shadow = float(shadow1 >> ((i - 4) * 8) & 0xFF) / 255.0;
+			}
+
+			blur_shadow(shadow);
+
+			light_compute(normal, directional_lights.data[i].direction, normalize(view), directional_lights.data[i].color * directional_lights.data[i].energy, shadow, f0, orms, 1.0,
+#ifdef LIGHT_BACKLIGHT_USED
+					backlight,
+#endif
+#ifdef LIGHT_TRANSMITTANCE_USED
+					transmittance_color,
+					transmittance_depth,
+					transmittance_boost,
+					transmittance_z,
+#endif
+#ifdef LIGHT_RIM_USED
+					rim, rim_tint, albedo,
+#endif
+#ifdef LIGHT_CLEARCOAT_USED
+					clearcoat, clearcoat_gloss,
+#endif
+#ifdef LIGHT_ANISOTROPY_USED
+					binormal, tangent, anisotropy,
+#endif
+#ifdef USE_SOFT_SHADOW
+					directional_lights.data[i].size,
+#endif
+#ifdef USE_SHADOW_TO_OPACITY
+					alpha,
+#endif
+					diffuse_light,
+					specular_light);
+		}
+	}
+
+	{ //omni lights
+
+		uint cluster_omni_offset = cluster_offset;
+
+		uint item_min;
+		uint item_max;
+		uint item_from;
+		uint item_to;
+
+		cluster_get_item_range(cluster_omni_offset + scene_data.max_cluster_element_count_div_32 + cluster_z, item_min, item_max, item_from, item_to);
+
+#ifdef USE_SUBGROUPS
+		item_from = subgroupBroadcastFirst(subgroupMin(item_from));
+		item_to = subgroupBroadcastFirst(subgroupMax(item_to));
+#endif
+
+		for (uint i = item_from; i < item_to; i++) {
+			uint mask = cluster_buffer.data[cluster_omni_offset + i];
+			mask &= cluster_get_range_clip_mask(i, item_min, item_max);
+#ifdef USE_SUBGROUPS
+			uint merged_mask = subgroupBroadcastFirst(subgroupOr(mask));
+#else
+			uint merged_mask = mask;
+#endif
+
+			while (merged_mask != 0) {
+				uint bit = findMSB(merged_mask);
+				merged_mask &= ~(1 << bit);
+#ifdef USE_SUBGROUPS
+				if (((1 << bit) & mask) == 0) { //do not process if not originally here
+					continue;
+				}
+#endif
+				uint light_index = 32 * i + bit;
+
+				if (!bool(omni_lights.data[light_index].mask & instances.data[instance_index].layer_mask)) {
+					continue; //not masked
 				}
 
-				blur_shadow(shadow);
+				if (omni_lights.data[light_index].bake_mode == LIGHT_BAKE_STATIC && bool(instances.data[instance_index].flags & INSTANCE_FLAGS_USE_LIGHTMAP)) {
+					continue; // Statically baked light and object uses lightmap, skip
+				}
 
-				light_compute(normal, directional_lights.data[i].direction, normalize(view), directional_lights.data[i].color * directional_lights.data[i].energy, shadow, f0, orms, 1.0,
+				float shadow = light_process_omni_shadow(light_index, vertex, view);
+
+				shadow = blur_shadow(shadow);
+
+				light_process_omni(light_index, vertex, view, normal, vertex_ddx, vertex_ddy, f0, orms, shadow,
 #ifdef LIGHT_BACKLIGHT_USED
 						backlight,
 #endif
 #ifdef LIGHT_TRANSMITTANCE_USED
 						transmittance_color,
 						transmittance_depth,
-						transmittance_curve,
 						transmittance_boost,
-						transmittance_z,
 #endif
 #ifdef LIGHT_RIM_USED
-						rim, rim_tint, albedo,
+						rim,
+						rim_tint,
+						albedo,
 #endif
 #ifdef LIGHT_CLEARCOAT_USED
 						clearcoat, clearcoat_gloss,
 #endif
 #ifdef LIGHT_ANISOTROPY_USED
-						binormal, tangent, anisotropy,
-#endif
-#ifdef USE_SOFT_SHADOW
-						directional_lights.data[i].size,
+						tangent, binormal, anisotropy,
 #endif
 #ifdef USE_SHADOW_TO_OPACITY
 						alpha,
 #endif
-						diffuse_light,
-						specular_light);
+						diffuse_light, specular_light);
 			}
 		}
+	}
 
-		{ //omni lights
+	{ //spot lights
 
-			uint cluster_omni_offset = cluster_offset;
+		uint cluster_spot_offset = cluster_offset + scene_data.cluster_type_size;
 
-			uint item_min;
-			uint item_max;
-			uint item_from;
-			uint item_to;
+		uint item_min;
+		uint item_max;
+		uint item_from;
+		uint item_to;
 
-			cluster_get_item_range(cluster_omni_offset + scene_data.max_cluster_element_count_div_32 + cluster_z, item_min, item_max, item_from, item_to);
+		cluster_get_item_range(cluster_spot_offset + scene_data.max_cluster_element_count_div_32 + cluster_z, item_min, item_max, item_from, item_to);
 
 #ifdef USE_SUBGROUPS
-			item_from = subgroupBroadcastFirst(subgroupMin(item_from));
-			item_to = subgroupBroadcastFirst(subgroupMax(item_to));
+		item_from = subgroupBroadcastFirst(subgroupMin(item_from));
+		item_to = subgroupBroadcastFirst(subgroupMax(item_to));
 #endif
 
-			for (uint i = item_from; i < item_to; i++) {
-				uint mask = cluster_buffer.data[cluster_omni_offset + i];
-				mask &= cluster_get_range_clip_mask(i, item_min, item_max);
+		for (uint i = item_from; i < item_to; i++) {
+			uint mask = cluster_buffer.data[cluster_spot_offset + i];
+			mask &= cluster_get_range_clip_mask(i, item_min, item_max);
 #ifdef USE_SUBGROUPS
-				uint merged_mask = subgroupBroadcastFirst(subgroupOr(mask));
+			uint merged_mask = subgroupBroadcastFirst(subgroupOr(mask));
 #else
 			uint merged_mask = mask;
 #endif
 
-				while (merged_mask != 0) {
-					uint bit = findMSB(merged_mask);
-					merged_mask &= ~(1 << bit);
+			while (merged_mask != 0) {
+				uint bit = findMSB(merged_mask);
+				merged_mask &= ~(1 << bit);
 #ifdef USE_SUBGROUPS
-					if (((1 << bit) & mask) == 0) { //do not process if not originally here
-						continue;
-					}
+				if (((1 << bit) & mask) == 0) { //do not process if not originally here
+					continue;
+				}
 #endif
-					uint light_index = 32 * i + bit;
 
-					if (!bool(omni_lights.data[light_index].mask & instances.data[instance_index].layer_mask)) {
-						continue; //not masked
-					}
+				uint light_index = 32 * i + bit;
 
-					if (omni_lights.data[light_index].bake_mode == LIGHT_BAKE_STATIC && bool(instances.data[instance_index].flags & INSTANCE_FLAGS_USE_LIGHTMAP)) {
-						continue; // Statically baked light and object uses lightmap, skip
-					}
+				if (!bool(spot_lights.data[light_index].mask & instances.data[instance_index].layer_mask)) {
+					continue; //not masked
+				}
 
-					float shadow = light_process_omni_shadow(light_index, vertex, view);
+				if (spot_lights.data[light_index].bake_mode == LIGHT_BAKE_STATIC && bool(instances.data[instance_index].flags & INSTANCE_FLAGS_USE_LIGHTMAP)) {
+					continue; // Statically baked light and object uses lightmap, skip
+				}
 
-					shadow = blur_shadow(shadow);
+				float shadow = light_process_spot_shadow(light_index, vertex, view);
 
-					light_process_omni(light_index, vertex, view, normal, vertex_ddx, vertex_ddy, f0, orms, shadow,
+				shadow = blur_shadow(shadow);
+
+				light_process_spot(light_index, vertex, view, normal, vertex_ddx, vertex_ddy, f0, orms, shadow,
 #ifdef LIGHT_BACKLIGHT_USED
-							backlight,
+						backlight,
 #endif
 #ifdef LIGHT_TRANSMITTANCE_USED
-							transmittance_color,
-							transmittance_depth,
-							transmittance_curve,
-							transmittance_boost,
+						transmittance_color,
+						transmittance_depth,
+						transmittance_boost,
 #endif
 #ifdef LIGHT_RIM_USED
-							rim,
-							rim_tint,
-							albedo,
+						rim,
+						rim_tint,
+						albedo,
 #endif
 #ifdef LIGHT_CLEARCOAT_USED
-							clearcoat, clearcoat_gloss,
+						clearcoat, clearcoat_gloss,
 #endif
 #ifdef LIGHT_ANISOTROPY_USED
-							tangent, binormal, anisotropy,
+						tangent, binormal, anisotropy,
 #endif
 #ifdef USE_SHADOW_TO_OPACITY
-							alpha,
+						alpha,
 #endif
-							diffuse_light, specular_light);
-				}
+						diffuse_light, specular_light);
 			}
 		}
-
-		{ //spot lights
-
-			uint cluster_spot_offset = cluster_offset + scene_data.cluster_type_size;
-
-			uint item_min;
-			uint item_max;
-			uint item_from;
-			uint item_to;
-
-			cluster_get_item_range(cluster_spot_offset + scene_data.max_cluster_element_count_div_32 + cluster_z, item_min, item_max, item_from, item_to);
-
-#ifdef USE_SUBGROUPS
-			item_from = subgroupBroadcastFirst(subgroupMin(item_from));
-			item_to = subgroupBroadcastFirst(subgroupMax(item_to));
-#endif
-
-			for (uint i = item_from; i < item_to; i++) {
-				uint mask = cluster_buffer.data[cluster_spot_offset + i];
-				mask &= cluster_get_range_clip_mask(i, item_min, item_max);
-#ifdef USE_SUBGROUPS
-				uint merged_mask = subgroupBroadcastFirst(subgroupOr(mask));
-#else
-			uint merged_mask = mask;
-#endif
-
-				while (merged_mask != 0) {
-					uint bit = findMSB(merged_mask);
-					merged_mask &= ~(1 << bit);
-#ifdef USE_SUBGROUPS
-					if (((1 << bit) & mask) == 0) { //do not process if not originally here
-						continue;
-					}
-#endif
-
-					uint light_index = 32 * i + bit;
-
-					if (!bool(spot_lights.data[light_index].mask & instances.data[instance_index].layer_mask)) {
-						continue; //not masked
-					}
-
-					if (spot_lights.data[light_index].bake_mode == LIGHT_BAKE_STATIC && bool(instances.data[instance_index].flags & INSTANCE_FLAGS_USE_LIGHTMAP)) {
-						continue; // Statically baked light and object uses lightmap, skip
-					}
-
-					float shadow = light_process_spot_shadow(light_index, vertex, view);
-
-					shadow = blur_shadow(shadow);
-
-					light_process_spot(light_index, vertex, view, normal, vertex_ddx, vertex_ddy, f0, orms, shadow,
-#ifdef LIGHT_BACKLIGHT_USED
-							backlight,
-#endif
-#ifdef LIGHT_TRANSMITTANCE_USED
-							transmittance_color,
-							transmittance_depth,
-							transmittance_curve,
-							transmittance_boost,
-#endif
-#ifdef LIGHT_RIM_USED
-							rim,
-							rim_tint,
-							albedo,
-#endif
-#ifdef LIGHT_CLEARCOAT_USED
-							clearcoat, clearcoat_gloss,
-#endif
-#ifdef LIGHT_ANISOTROPY_USED
-							tangent, binormal, anisotropy,
-#endif
-#ifdef USE_SHADOW_TO_OPACITY
-							alpha,
-#endif
-							diffuse_light, specular_light);
-				}
-			}
-		}
+	}
 
 #ifdef USE_SHADOW_TO_OPACITY
-		alpha = min(alpha, clamp(length(ambient_light), 0.0, 1.0));
+	alpha = min(alpha, clamp(length(ambient_light), 0.0, 1.0));
 
 #if defined(ALPHA_SCISSOR_USED)
-		if (alpha < alpha_scissor) {
-			discard;
-		}
+	if (alpha < alpha_scissor) {
+		discard;
+	}
 #endif // ALPHA_SCISSOR_USED
 
 #ifdef USE_OPAQUE_PREPASS
 
-		if (alpha < opaque_prepass_threshold) {
-			discard;
-		}
+	if (alpha < opaque_prepass_threshold) {
+		discard;
+	}
 
 #endif // USE_OPAQUE_PREPASS
 
@@ -1819,126 +1760,126 @@ void main() {
 
 #ifdef MODE_RENDER_SDF
 
-		{
-			vec3 local_pos = (scene_data.sdf_to_bounds * vec4(vertex, 1.0)).xyz;
-			ivec3 grid_pos = scene_data.sdf_offset + ivec3(local_pos * vec3(scene_data.sdf_size));
+	{
+		vec3 local_pos = (scene_data.sdf_to_bounds * vec4(vertex, 1.0)).xyz;
+		ivec3 grid_pos = scene_data.sdf_offset + ivec3(local_pos * vec3(scene_data.sdf_size));
 
-			uint albedo16 = 0x1; //solid flag
-			albedo16 |= clamp(uint(albedo.r * 31.0), 0, 31) << 11;
-			albedo16 |= clamp(uint(albedo.g * 31.0), 0, 31) << 6;
-			albedo16 |= clamp(uint(albedo.b * 31.0), 0, 31) << 1;
+		uint albedo16 = 0x1; //solid flag
+		albedo16 |= clamp(uint(albedo.r * 31.0), 0, 31) << 11;
+		albedo16 |= clamp(uint(albedo.g * 31.0), 0, 31) << 6;
+		albedo16 |= clamp(uint(albedo.b * 31.0), 0, 31) << 1;
 
-			imageStore(albedo_volume_grid, grid_pos, uvec4(albedo16));
+		imageStore(albedo_volume_grid, grid_pos, uvec4(albedo16));
 
-			uint facing_bits = 0;
-			const vec3 aniso_dir[6] = vec3[](
-					vec3(1, 0, 0),
-					vec3(0, 1, 0),
-					vec3(0, 0, 1),
-					vec3(-1, 0, 0),
-					vec3(0, -1, 0),
-					vec3(0, 0, -1));
+		uint facing_bits = 0;
+		const vec3 aniso_dir[6] = vec3[](
+				vec3(1, 0, 0),
+				vec3(0, 1, 0),
+				vec3(0, 0, 1),
+				vec3(-1, 0, 0),
+				vec3(0, -1, 0),
+				vec3(0, 0, -1));
 
-			vec3 cam_normal = mat3(scene_data.camera_matrix) * normalize(normal_interp);
+		vec3 cam_normal = mat3(scene_data.camera_matrix) * normalize(normal_interp);
 
-			float closest_dist = -1e20;
+		float closest_dist = -1e20;
 
-			for (uint i = 0; i < 6; i++) {
-				float d = dot(cam_normal, aniso_dir[i]);
-				if (d > closest_dist) {
-					closest_dist = d;
-					facing_bits = (1 << i);
-				}
-			}
-
-			imageAtomicOr(geom_facing_grid, grid_pos, facing_bits); //store facing bits
-
-			if (length(emission) > 0.001) {
-				float lumas[6];
-				vec3 light_total = vec3(0);
-
-				for (int i = 0; i < 6; i++) {
-					float strength = max(0.0, dot(cam_normal, aniso_dir[i]));
-					vec3 light = emission * strength;
-					light_total += light;
-					lumas[i] = max(light.r, max(light.g, light.b));
-				}
-
-				float luma_total = max(light_total.r, max(light_total.g, light_total.b));
-
-				uint light_aniso = 0;
-
-				for (int i = 0; i < 6; i++) {
-					light_aniso |= min(31, uint((lumas[i] / luma_total) * 31.0)) << (i * 5);
-				}
-
-				//compress to RGBE9995 to save space
-
-				const float pow2to9 = 512.0f;
-				const float B = 15.0f;
-				const float N = 9.0f;
-				const float LN2 = 0.6931471805599453094172321215;
-
-				float cRed = clamp(light_total.r, 0.0, 65408.0);
-				float cGreen = clamp(light_total.g, 0.0, 65408.0);
-				float cBlue = clamp(light_total.b, 0.0, 65408.0);
-
-				float cMax = max(cRed, max(cGreen, cBlue));
-
-				float expp = max(-B - 1.0f, floor(log(cMax) / LN2)) + 1.0f + B;
-
-				float sMax = floor((cMax / pow(2.0f, expp - B - N)) + 0.5f);
-
-				float exps = expp + 1.0f;
-
-				if (0.0 <= sMax && sMax < pow2to9) {
-					exps = expp;
-				}
-
-				float sRed = floor((cRed / pow(2.0f, exps - B - N)) + 0.5f);
-				float sGreen = floor((cGreen / pow(2.0f, exps - B - N)) + 0.5f);
-				float sBlue = floor((cBlue / pow(2.0f, exps - B - N)) + 0.5f);
-				//store as 8985 to have 2 extra neighbour bits
-				uint light_rgbe = ((uint(sRed) & 0x1FF) >> 1) | ((uint(sGreen) & 0x1FF) << 8) | (((uint(sBlue) & 0x1FF) >> 1) << 17) | ((uint(exps) & 0x1F) << 25);
-
-				imageStore(emission_grid, grid_pos, uvec4(light_rgbe));
-				imageStore(emission_aniso_grid, grid_pos, uvec4(light_aniso));
+		for (uint i = 0; i < 6; i++) {
+			float d = dot(cam_normal, aniso_dir[i]);
+			if (d > closest_dist) {
+				closest_dist = d;
+				facing_bits = (1 << i);
 			}
 		}
+
+		imageAtomicOr(geom_facing_grid, grid_pos, facing_bits); //store facing bits
+
+		if (length(emission) > 0.001) {
+			float lumas[6];
+			vec3 light_total = vec3(0);
+
+			for (int i = 0; i < 6; i++) {
+				float strength = max(0.0, dot(cam_normal, aniso_dir[i]));
+				vec3 light = emission * strength;
+				light_total += light;
+				lumas[i] = max(light.r, max(light.g, light.b));
+			}
+
+			float luma_total = max(light_total.r, max(light_total.g, light_total.b));
+
+			uint light_aniso = 0;
+
+			for (int i = 0; i < 6; i++) {
+				light_aniso |= min(31, uint((lumas[i] / luma_total) * 31.0)) << (i * 5);
+			}
+
+			//compress to RGBE9995 to save space
+
+			const float pow2to9 = 512.0f;
+			const float B = 15.0f;
+			const float N = 9.0f;
+			const float LN2 = 0.6931471805599453094172321215;
+
+			float cRed = clamp(light_total.r, 0.0, 65408.0);
+			float cGreen = clamp(light_total.g, 0.0, 65408.0);
+			float cBlue = clamp(light_total.b, 0.0, 65408.0);
+
+			float cMax = max(cRed, max(cGreen, cBlue));
+
+			float expp = max(-B - 1.0f, floor(log(cMax) / LN2)) + 1.0f + B;
+
+			float sMax = floor((cMax / pow(2.0f, expp - B - N)) + 0.5f);
+
+			float exps = expp + 1.0f;
+
+			if (0.0 <= sMax && sMax < pow2to9) {
+				exps = expp;
+			}
+
+			float sRed = floor((cRed / pow(2.0f, exps - B - N)) + 0.5f);
+			float sGreen = floor((cGreen / pow(2.0f, exps - B - N)) + 0.5f);
+			float sBlue = floor((cBlue / pow(2.0f, exps - B - N)) + 0.5f);
+			//store as 8985 to have 2 extra neighbour bits
+			uint light_rgbe = ((uint(sRed) & 0x1FF) >> 1) | ((uint(sGreen) & 0x1FF) << 8) | (((uint(sBlue) & 0x1FF) >> 1) << 17) | ((uint(exps) & 0x1F) << 25);
+
+			imageStore(emission_grid, grid_pos, uvec4(light_rgbe));
+			imageStore(emission_aniso_grid, grid_pos, uvec4(light_aniso));
+		}
+	}
 
 #endif
 
 #ifdef MODE_RENDER_MATERIAL
 
-		albedo_output_buffer.rgb = albedo;
-		albedo_output_buffer.a = alpha;
+	albedo_output_buffer.rgb = albedo;
+	albedo_output_buffer.a = alpha;
 
-		normal_output_buffer.rgb = normal * 0.5 + 0.5;
-		normal_output_buffer.a = 0.0;
-		depth_output_buffer.r = -vertex.z;
+	normal_output_buffer.rgb = normal * 0.5 + 0.5;
+	normal_output_buffer.a = 0.0;
+	depth_output_buffer.r = -vertex.z;
 
-		orm_output_buffer.r = ao;
-		orm_output_buffer.g = roughness;
-		orm_output_buffer.b = metallic;
-		orm_output_buffer.a = sss_strength;
+	orm_output_buffer.r = ao;
+	orm_output_buffer.g = roughness;
+	orm_output_buffer.b = metallic;
+	orm_output_buffer.a = sss_strength;
 
-		emission_output_buffer.rgb = emission;
-		emission_output_buffer.a = 0.0;
+	emission_output_buffer.rgb = emission;
+	emission_output_buffer.a = 0.0;
 #endif
 
 #ifdef MODE_RENDER_NORMAL_ROUGHNESS
-		normal_roughness_output_buffer = vec4(normal * 0.5 + 0.5, roughness);
+	normal_roughness_output_buffer = vec4(normal * 0.5 + 0.5, roughness);
 
 #ifdef MODE_RENDER_VOXEL_GI
-		if (bool(instances.data[instance_index].flags & INSTANCE_FLAGS_USE_VOXEL_GI)) { // process voxel_gi_instances
-			uint index1 = instances.data[instance_index].gi_offset & 0xFFFF;
-			uint index2 = instances.data[instance_index].gi_offset >> 16;
-			voxel_gi_buffer.x = index1 & 0xFF;
-			voxel_gi_buffer.y = index2 & 0xFF;
-		} else {
-			voxel_gi_buffer.x = 0xFF;
-			voxel_gi_buffer.y = 0xFF;
-		}
+	if (bool(instances.data[instance_index].flags & INSTANCE_FLAGS_USE_VOXEL_GI)) { // process voxel_gi_instances
+		uint index1 = instances.data[instance_index].gi_offset & 0xFFFF;
+		uint index2 = instances.data[instance_index].gi_offset >> 16;
+		voxel_gi_buffer.x = index1 & 0xFF;
+		voxel_gi_buffer.y = index2 & 0xFF;
+	} else {
+		voxel_gi_buffer.x = 0xFF;
+		voxel_gi_buffer.y = 0xFF;
+	}
 #endif
 
 #endif //MODE_RENDER_NORMAL_ROUGHNESS
@@ -1996,4 +1937,4 @@ void main() {
 #endif //MODE_MULTIPLE_RENDER_TARGETS
 
 #endif //MODE_RENDER_DEPTH
-	}
+}

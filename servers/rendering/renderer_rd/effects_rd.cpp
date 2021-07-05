@@ -1377,6 +1377,24 @@ void EffectsRD::resolve_gi(RID p_source_depth, RID p_source_normal_roughness, RI
 	RD::get_singleton()->compute_list_end(p_barrier);
 }
 
+void EffectsRD::resolve_depth(RID p_source_depth, RID p_dest_depth, Vector2i p_screen_size, int p_samples, uint32_t p_barrier) {
+	ResolvePushConstant push_constant;
+	push_constant.screen_size[0] = p_screen_size.x;
+	push_constant.screen_size[1] = p_screen_size.y;
+	push_constant.samples = p_samples;
+
+	RD::ComputeListID compute_list = RD::get_singleton()->compute_list_begin();
+	RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, resolve.pipelines[RESOLVE_MODE_DEPTH]);
+	RD::get_singleton()->compute_list_bind_uniform_set(compute_list, _get_compute_uniform_set_from_texture(p_source_depth), 0);
+	RD::get_singleton()->compute_list_bind_uniform_set(compute_list, _get_uniform_set_from_image(p_dest_depth), 1);
+
+	RD::get_singleton()->compute_list_set_push_constant(compute_list, &push_constant, sizeof(ResolvePushConstant));
+
+	RD::get_singleton()->compute_list_dispatch_threads(compute_list, p_screen_size.x, p_screen_size.y, 1);
+
+	RD::get_singleton()->compute_list_end(p_barrier);
+}
+
 void EffectsRD::sort_buffer(RID p_uniform_set, int p_size) {
 	Sort::PushConstant push_constant;
 	push_constant.total_elements = p_size;
@@ -1879,6 +1897,7 @@ EffectsRD::EffectsRD() {
 		Vector<String> resolve_modes;
 		resolve_modes.push_back("\n#define MODE_RESOLVE_GI\n");
 		resolve_modes.push_back("\n#define MODE_RESOLVE_GI\n#define VOXEL_GI_RESOLVE\n");
+		resolve_modes.push_back("\n#define MODE_RESOLVE_DEPTH\n");
 
 		resolve.shader.initialize(resolve_modes);
 

@@ -345,7 +345,6 @@ void BaseMaterial3D::init_shaders() {
 	shader_names->refraction_texture_channel = "refraction_texture_channel";
 
 	shader_names->transmittance_color = "transmittance_color";
-	shader_names->transmittance_curve = "transmittance_curve";
 	shader_names->transmittance_depth = "transmittance_depth";
 	shader_names->transmittance_boost = "transmittance_boost";
 
@@ -692,7 +691,6 @@ void BaseMaterial3D::_update_shader() {
 		code += "uniform vec4 transmittance_color : hint_color;\n";
 		code += "uniform float transmittance_depth;\n";
 		code += "uniform sampler2D texture_subsurface_transmittance : hint_white," + texfilter_str + ";\n";
-		code += "uniform float transmittance_curve;\n";
 		code += "uniform float transmittance_boost;\n";
 	}
 
@@ -1194,7 +1192,6 @@ void BaseMaterial3D::_update_shader() {
 		code += "\tSSS_TRANSMITTANCE_COLOR=transmittance_color*trans_color_tex;\n";
 
 		code += "\tSSS_TRANSMITTANCE_DEPTH=transmittance_depth;\n";
-		code += "\tSSS_TRANSMITTANCE_CURVE=transmittance_curve;\n";
 		code += "\tSSS_TRANSMITTANCE_BOOST=transmittance_boost;\n";
 	}
 
@@ -1436,15 +1433,6 @@ void BaseMaterial3D::set_transmittance_depth(float p_depth) {
 
 float BaseMaterial3D::get_transmittance_depth() const {
 	return transmittance_depth;
-}
-
-void BaseMaterial3D::set_transmittance_curve(float p_curve) {
-	transmittance_curve = p_curve;
-	RS::get_singleton()->material_set_param(_get_material(), shader_names->transmittance_curve, p_curve);
-}
-
-float BaseMaterial3D::get_transmittance_curve() const {
-	return transmittance_curve;
 }
 
 void BaseMaterial3D::set_transmittance_boost(float p_boost) {
@@ -1765,7 +1753,7 @@ void BaseMaterial3D::_validate_property(PropertyInfo &property) const {
 		property.usage = PROPERTY_USAGE_NONE;
 	}
 
-	if (flags[FLAG_SUBSURFACE_MODE_SKIN] && (property.name == "subsurf_scatter_transmittance_color" || property.name == "subsurf_scatter_transmittance_texture" || property.name == "subsurf_scatter_transmittance_curve")) {
+	if (flags[FLAG_SUBSURFACE_MODE_SKIN] && (property.name == "subsurf_scatter_transmittance_color" || property.name == "subsurf_scatter_transmittance_texture")) {
 		property.usage = PROPERTY_USAGE_NONE;
 	}
 
@@ -2269,9 +2257,6 @@ void BaseMaterial3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_transmittance_depth", "depth"), &BaseMaterial3D::set_transmittance_depth);
 	ClassDB::bind_method(D_METHOD("get_transmittance_depth"), &BaseMaterial3D::get_transmittance_depth);
 
-	ClassDB::bind_method(D_METHOD("set_transmittance_curve", "curve"), &BaseMaterial3D::set_transmittance_curve);
-	ClassDB::bind_method(D_METHOD("get_transmittance_curve"), &BaseMaterial3D::get_transmittance_curve);
-
 	ClassDB::bind_method(D_METHOD("set_transmittance_boost", "boost"), &BaseMaterial3D::set_transmittance_boost);
 	ClassDB::bind_method(D_METHOD("get_transmittance_boost"), &BaseMaterial3D::get_transmittance_boost);
 
@@ -2506,7 +2491,6 @@ void BaseMaterial3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "subsurf_scatter_transmittance_color"), "set_transmittance_color", "get_transmittance_color");
 	ADD_PROPERTYI(PropertyInfo(Variant::OBJECT, "subsurf_scatter_transmittance_texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_texture", "get_texture", TEXTURE_SUBSURFACE_TRANSMITTANCE);
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "subsurf_scatter_transmittance_depth", PROPERTY_HINT_RANGE, "0.001,8,0.001,or_greater"), "set_transmittance_depth", "get_transmittance_depth");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "subsurf_scatter_transmittance_curve", PROPERTY_HINT_EXP_EASING, "0.01,16,0.01"), "set_transmittance_curve", "get_transmittance_curve");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "subsurf_scatter_transmittance_boost", PROPERTY_HINT_RANGE, "0.00,1.0,0.01"), "set_transmittance_boost", "get_transmittance_boost");
 
 	ADD_GROUP("Back Lighting", "backlight_");
@@ -2723,7 +2707,6 @@ BaseMaterial3D::BaseMaterial3D(bool p_orm) :
 	set_backlight(Color(0, 0, 0));
 	set_transmittance_color(Color(1, 1, 1, 1));
 	set_transmittance_depth(0.1);
-	set_transmittance_curve(1.0);
 	set_transmittance_boost(0.0);
 	set_refraction(0.05);
 	set_point_size(1);
