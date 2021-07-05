@@ -367,8 +367,10 @@ ResourcePreloaderEditor::ResourcePreloaderEditor() {
 	tree = memnew(Tree);
 	tree->connect("button_pressed", callable_mp(this, &ResourcePreloaderEditor::_cell_button_pressed));
 	tree->set_columns(2);
-	tree->set_column_custom_minimum_width(0, 2);
-	tree->set_column_custom_minimum_width(1, 3);
+	tree->set_column_expand_ratio(0, 2);
+	tree->set_column_clip_content(0, true);
+	tree->set_column_expand_ratio(1, 3);
+	tree->set_column_clip_content(1, true);
 	tree->set_column_expand(0, true);
 	tree->set_column_expand(1, true);
 	tree->set_v_size_flags(SIZE_EXPAND_FILL);

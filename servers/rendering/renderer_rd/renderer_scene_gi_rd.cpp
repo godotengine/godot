@@ -3029,8 +3029,6 @@ void RendererSceneGIRD::setup_voxel_gi_instances(RID p_render_buffers, const Tra
 
 	RID voxel_gi_buffer = p_scene_render->render_buffers_get_voxel_gi_buffer(p_render_buffers);
 
-	RD::get_singleton()->draw_command_begin_label("VoxelGIs Setup");
-
 	VoxelGIData voxel_gi_data[MAX_VOXEL_GI_INSTANCES];
 
 	bool voxel_gi_instances_changed = false;
@@ -3110,10 +3108,12 @@ void RendererSceneGIRD::setup_voxel_gi_instances(RID p_render_buffers, const Tra
 	}
 
 	if (p_voxel_gi_instances.size() > 0) {
-		RD::get_singleton()->buffer_update(voxel_gi_buffer, 0, sizeof(VoxelGIData) * MIN((uint64_t)MAX_VOXEL_GI_INSTANCES, p_voxel_gi_instances.size()), voxel_gi_data, RD::BARRIER_MASK_COMPUTE);
-	}
+		RD::get_singleton()->draw_command_begin_label("VoxelGIs Setup");
 
-	RD::get_singleton()->draw_command_end_label();
+		RD::get_singleton()->buffer_update(voxel_gi_buffer, 0, sizeof(VoxelGIData) * MIN((uint64_t)MAX_VOXEL_GI_INSTANCES, p_voxel_gi_instances.size()), voxel_gi_data, RD::BARRIER_MASK_COMPUTE);
+
+		RD::get_singleton()->draw_command_end_label();
+	}
 }
 
 void RendererSceneGIRD::process_gi(RID p_render_buffers, RID p_normal_roughness_buffer, RID p_voxel_gi_buffer, RID p_environment, const CameraMatrix &p_projection, const Transform3D &p_transform, const PagedArray<RID> &p_voxel_gi_instances, RendererSceneRenderRD *p_scene_render) {
@@ -3346,6 +3346,7 @@ void RendererSceneGIRD::process_gi(RID p_render_buffers, RID p_normal_roughness_
 	} else {
 		mode = (use_sdfgi && use_voxel_gi_instances) ? MODE_COMBINED : (use_sdfgi ? MODE_SDFGI : MODE_VOXEL_GI);
 	}
+
 	RD::ComputeListID compute_list = RD::get_singleton()->compute_list_begin(true);
 	RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, pipelines[mode]);
 	RD::get_singleton()->compute_list_bind_uniform_set(compute_list, rb->gi.uniform_set, 0);

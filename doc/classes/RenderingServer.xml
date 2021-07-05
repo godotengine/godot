@@ -1666,13 +1666,12 @@
 			<description>
 			</description>
 		</method>
-		<method name="get_render_info">
+		<method name="get_rendering_info">
 			<return type="int">
 			</return>
-			<argument index="0" name="info" type="int" enum="RenderingServer.RenderInfo">
+			<argument index="0" name="info" type="int" enum="RenderingServer.RenderingInfo">
 			</argument>
 			<description>
-				Returns a certain information, see [enum RenderInfo] for options.
 			</description>
 		</method>
 		<method name="get_test_cube">
@@ -4101,10 +4100,11 @@
 			</return>
 			<argument index="0" name="viewport" type="RID">
 			</argument>
-			<argument index="1" name="info" type="int" enum="RenderingServer.ViewportRenderInfo">
+			<argument index="1" name="type" type="int" enum="RenderingServer.ViewportRenderInfoType">
+			</argument>
+			<argument index="2" name="info" type="int" enum="RenderingServer.ViewportRenderInfo">
 			</argument>
 			<description>
-				Returns a viewport's render information. For options, see the [enum ViewportRenderInfo] constants.
 			</description>
 		</method>
 		<method name="viewport_get_texture" qualifiers="const">
@@ -5124,23 +5124,20 @@
 		<constant name="VIEWPORT_RENDER_INFO_OBJECTS_IN_FRAME" value="0" enum="ViewportRenderInfo">
 			Number of objects drawn in a single frame.
 		</constant>
-		<constant name="VIEWPORT_RENDER_INFO_VERTICES_IN_FRAME" value="1" enum="ViewportRenderInfo">
+		<constant name="VIEWPORT_RENDER_INFO_PRIMITIVES_IN_FRAME" value="1" enum="ViewportRenderInfo">
 			Number of vertices drawn in a single frame.
 		</constant>
-		<constant name="VIEWPORT_RENDER_INFO_MATERIAL_CHANGES_IN_FRAME" value="2" enum="ViewportRenderInfo">
-			Number of material changes during this frame.
-		</constant>
-		<constant name="VIEWPORT_RENDER_INFO_SHADER_CHANGES_IN_FRAME" value="3" enum="ViewportRenderInfo">
-			Number of shader changes during this frame.
-		</constant>
-		<constant name="VIEWPORT_RENDER_INFO_SURFACE_CHANGES_IN_FRAME" value="4" enum="ViewportRenderInfo">
-			Number of surface changes during this frame.
-		</constant>
-		<constant name="VIEWPORT_RENDER_INFO_DRAW_CALLS_IN_FRAME" value="5" enum="ViewportRenderInfo">
+		<constant name="VIEWPORT_RENDER_INFO_DRAW_CALLS_IN_FRAME" value="2" enum="ViewportRenderInfo">
 			Number of draw calls during this frame.
 		</constant>
-		<constant name="VIEWPORT_RENDER_INFO_MAX" value="6" enum="ViewportRenderInfo">
+		<constant name="VIEWPORT_RENDER_INFO_MAX" value="3" enum="ViewportRenderInfo">
 			Represents the size of the [enum ViewportRenderInfo] enum.
+		</constant>
+		<constant name="VIEWPORT_RENDER_INFO_TYPE_VISIBLE" value="0" enum="ViewportRenderInfoType">
+		</constant>
+		<constant name="VIEWPORT_RENDER_INFO_TYPE_SHADOW" value="1" enum="ViewportRenderInfoType">
+		</constant>
+		<constant name="VIEWPORT_RENDER_INFO_TYPE_MAX" value="2" enum="ViewportRenderInfoType">
 		</constant>
 		<constant name="VIEWPORT_DEBUG_DRAW_DISABLED" value="0" enum="ViewportDebugDraw">
 			Debug draw is disabled. Default setting.
@@ -5615,35 +5612,17 @@
 		</constant>
 		<constant name="GLOBAL_VAR_TYPE_MAX" value="28" enum="GlobalVariableType">
 		</constant>
-		<constant name="INFO_OBJECTS_IN_FRAME" value="0" enum="RenderInfo">
-			The amount of objects in the frame.
+		<constant name="RENDERING_INFO_TOTAL_OBJECTS_IN_FRAME" value="0" enum="RenderingInfo">
 		</constant>
-		<constant name="INFO_VERTICES_IN_FRAME" value="1" enum="RenderInfo">
-			The amount of vertices in the frame.
+		<constant name="RENDERING_INFO_TOTAL_PRIMITIVES_IN_FRAME" value="1" enum="RenderingInfo">
 		</constant>
-		<constant name="INFO_MATERIAL_CHANGES_IN_FRAME" value="2" enum="RenderInfo">
-			The amount of modified materials in the frame.
+		<constant name="RENDERING_INFO_TOTAL_DRAW_CALLS_IN_FRAME" value="2" enum="RenderingInfo">
 		</constant>
-		<constant name="INFO_SHADER_CHANGES_IN_FRAME" value="3" enum="RenderInfo">
-			The amount of shader rebinds in the frame.
+		<constant name="RENDERING_INFO_TEXTURE_MEM_USED" value="3" enum="RenderingInfo">
 		</constant>
-		<constant name="INFO_SURFACE_CHANGES_IN_FRAME" value="4" enum="RenderInfo">
-			The amount of surface changes in the frame.
+		<constant name="RENDERING_INFO_BUFFER_MEM_USED" value="4" enum="RenderingInfo">
 		</constant>
-		<constant name="INFO_DRAW_CALLS_IN_FRAME" value="5" enum="RenderInfo">
-			The amount of draw calls in frame.
-		</constant>
-		<constant name="INFO_USAGE_VIDEO_MEM_TOTAL" value="6" enum="RenderInfo">
-			Unimplemented in the GLES2 rendering backend, always returns 0.
-		</constant>
-		<constant name="INFO_VIDEO_MEM_USED" value="7" enum="RenderInfo">
-			The amount of video memory used, i.e. texture and vertex memory combined.
-		</constant>
-		<constant name="INFO_TEXTURE_MEM_USED" value="8" enum="RenderInfo">
-			The amount of texture memory used.
-		</constant>
-		<constant name="INFO_VERTEX_MEM_USED" value="9" enum="RenderInfo">
-			The amount of vertex memory used.
+		<constant name="RENDERING_INFO_VIDEO_MEM_USED" value="5" enum="RenderingInfo">
 		</constant>
 		<constant name="FEATURE_SHADERS" value="0" enum="Features">
 			Hardware supports shaders. This enum is currently unused in Godot 3.x.

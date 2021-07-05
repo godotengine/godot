@@ -882,19 +882,17 @@ EditorAutoloadSettings::EditorAutoloadSettings() {
 
 	tree->set_column_title(0, TTR("Name"));
 	tree->set_column_expand(0, true);
-	tree->set_column_custom_minimum_width(0, 100 * EDSCALE);
+	tree->set_column_expand_ratio(0, 1);
 
 	tree->set_column_title(1, TTR("Path"));
 	tree->set_column_expand(1, true);
-	tree->set_column_custom_minimum_width(1, 100 * EDSCALE);
+	tree->set_column_clip_content(1, true);
+	tree->set_column_expand_ratio(1, 2);
 
 	tree->set_column_title(2, TTR("Global Variable"));
 	tree->set_column_expand(2, false);
-	// Reserve enough space for translations of "Global Variable" which may be longer.
-	tree->set_column_custom_minimum_width(2, 150 * EDSCALE);
 
 	tree->set_column_expand(3, false);
-	tree->set_column_custom_minimum_width(3, 120 * EDSCALE);
 
 	tree->connect("cell_selected", callable_mp(this, &EditorAutoloadSettings::_autoload_selected));
 	tree->connect("item_edited", callable_mp(this, &EditorAutoloadSettings::_autoload_edited));
