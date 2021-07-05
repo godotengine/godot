@@ -3503,8 +3503,8 @@ int CSharpScript::get_member_line(const StringName &p_member) const {
 	RegEx pattern("\\w+\\s{0,}" + p_member + "\\s{0,}\\([^()]*\\)\\s{0,}\\{{1,}");
 	Ref<RegExMatch> ref = pattern.search(get_source_code());
 	if (ref != NULL) {
-		RegExMatch *matche = ref.ptr();
-		String tmp_str = matche->get_string(0).split("\n")[0];
+		RegExMatch *match = ref.ptr();
+		String tmp_str = match->get_string(0).split("\n")[0];
 
 		Vector<String> source_code_line = get_source_code().split("\n");
 		for (int i = 0; i < source_code_line.size(); i = i + 1) {
