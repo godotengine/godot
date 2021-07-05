@@ -543,7 +543,6 @@ void main() {
 	vec3 backlight = vec3(0.0);
 	vec4 transmittance_color = vec4(0.0);
 	float transmittance_depth = 0.0;
-	float transmittance_curve = 1.0;
 	float transmittance_boost = 0.0;
 	float metallic = 0.0;
 	float specular = 0.5;
@@ -1293,7 +1292,6 @@ void main() {
 #ifdef LIGHT_TRANSMITTANCE_USED
 					transmittance_color,
 					transmittance_depth,
-					transmittance_curve,
 					transmittance_boost,
 					transmittance_z,
 #endif
@@ -1344,7 +1342,6 @@ void main() {
 #ifdef LIGHT_TRANSMITTANCE_USED
 					transmittance_color,
 					transmittance_depth,
-					transmittance_curve,
 					transmittance_boost,
 #endif
 */
@@ -1393,7 +1390,6 @@ void main() {
 #ifdef LIGHT_TRANSMITTANCE_USED
 					transmittance_color,
 					transmittance_depth,
-					transmittance_curve,
 					transmittance_boost,
 #endif
 */
