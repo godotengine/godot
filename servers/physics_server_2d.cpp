@@ -418,37 +418,6 @@ void PhysicsDirectSpaceState2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_rest_info", "shape"), &PhysicsDirectSpaceState2D::_get_rest_info);
 }
 
-int PhysicsShapeQueryResult2D::get_result_count() const {
-	return result.size();
-}
-
-RID PhysicsShapeQueryResult2D::get_result_rid(int p_idx) const {
-	return result[p_idx].rid;
-}
-
-ObjectID PhysicsShapeQueryResult2D::get_result_object_id(int p_idx) const {
-	return result[p_idx].collider_id;
-}
-
-Object *PhysicsShapeQueryResult2D::get_result_object(int p_idx) const {
-	return result[p_idx].collider;
-}
-
-int PhysicsShapeQueryResult2D::get_result_object_shape(int p_idx) const {
-	return result[p_idx].shape;
-}
-
-PhysicsShapeQueryResult2D::PhysicsShapeQueryResult2D() {
-}
-
-void PhysicsShapeQueryResult2D::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("get_result_count"), &PhysicsShapeQueryResult2D::get_result_count);
-	ClassDB::bind_method(D_METHOD("get_result_rid", "idx"), &PhysicsShapeQueryResult2D::get_result_rid);
-	ClassDB::bind_method(D_METHOD("get_result_object_id", "idx"), &PhysicsShapeQueryResult2D::get_result_object_id);
-	ClassDB::bind_method(D_METHOD("get_result_object", "idx"), &PhysicsShapeQueryResult2D::get_result_object);
-	ClassDB::bind_method(D_METHOD("get_result_object_shape", "idx"), &PhysicsShapeQueryResult2D::get_result_object_shape);
-}
-
 ///////////////////////////////
 
 Vector2 PhysicsTestMotionResult2D::get_motion() const {

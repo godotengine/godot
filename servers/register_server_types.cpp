@@ -212,14 +212,12 @@ void register_server_types() {
 
 	ClassDB::register_virtual_class<PhysicsDirectBodyState2D>();
 	ClassDB::register_virtual_class<PhysicsDirectSpaceState2D>();
-	ClassDB::register_virtual_class<PhysicsShapeQueryResult2D>();
 	ClassDB::register_class<PhysicsTestMotionResult2D>();
 	ClassDB::register_class<PhysicsShapeQueryParameters2D>();
 
 	ClassDB::register_class<PhysicsShapeQueryParameters3D>();
 	ClassDB::register_virtual_class<PhysicsDirectBodyState3D>();
 	ClassDB::register_virtual_class<PhysicsDirectSpaceState3D>();
-	ClassDB::register_virtual_class<PhysicsShapeQueryResult3D>();
 	ClassDB::register_class<PhysicsTestMotionResult3D>();
 
 	// Physics 2D
