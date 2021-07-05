@@ -236,6 +236,7 @@ def write_modules(modules):
     preregister_cpp = ""
     register_cpp = ""
     unregister_cpp = ""
+    call_lifecycle_callback_cpp = ""
 
     for name, path in modules.items():
         try:
@@ -252,6 +253,11 @@ def write_modules(modules):
                 unregister_cpp += "#ifdef MODULE_" + name.upper() + "_ENABLED\n"
                 unregister_cpp += "\tunregister_" + name + "_types();\n"
                 unregister_cpp += "#endif\n"
+                call_lifecycle_callback_cpp += "#ifdef MODULE_" + name.upper() + "_ENABLED\n"
+                call_lifecycle_callback_cpp += "#ifdef MODULE_" + name.upper() + "_HAS_LIFECYCLE_CALLBACK\n"
+                call_lifecycle_callback_cpp += "\t" + name + "_lifecycle_callback(p_phase);\n"
+                call_lifecycle_callback_cpp += "#endif\n"
+                call_lifecycle_callback_cpp += "#endif\n"
         except OSError:
             pass
 
@@ -274,11 +280,16 @@ void register_module_types() {
 void unregister_module_types() {
 %s
 }
+
+void call_modules_lifecycle_callback(int p_phase) {
+%s
+}
 """ % (
         includes_cpp,
         preregister_cpp,
         register_cpp,
         unregister_cpp,
+        call_lifecycle_callback_cpp,
     )
 
     # NOTE: It is safe to generate this file here, since this is still executed serially

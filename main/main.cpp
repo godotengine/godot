@@ -532,6 +532,7 @@ int Main::test_entrypoint(int argc, char *argv[], bool &tests_need_run) {
  */
 
 Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_phase) {
+	call_modules_lifecycle_callback(LIFECYCLE_PHASE_SETUP_BEGIN);
 	OS::get_singleton()->initialize();
 
 	engine = memnew(Engine);
@@ -1464,6 +1465,7 @@ error:
 }
 
 Error Main::setup2(Thread::ID p_main_tid_override) {
+	call_modules_lifecycle_callback(LIFECYCLE_PHASE_POST_SETUP_BEGIN);
 	preregister_module_types();
 	preregister_server_types();
 
@@ -1843,6 +1845,7 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 	print_verbose("EDITOR API HASH: " + uitos(ClassDB::get_api_hash(ClassDB::API_EDITOR)));
 	MAIN_PRINT("Main: Done");
 
+	call_modules_lifecycle_callback(LIFECYCLE_PHASE_SETUP_DONE);
 	return OK;
 }
 
@@ -1851,6 +1854,7 @@ static MainTimerSync main_timer_sync;
 
 bool Main::start() {
 	ERR_FAIL_COND_V(!_start_success, false);
+	call_modules_lifecycle_callback(LIFECYCLE_PHASE_START_BEGIN);
 
 	bool hasicon = false;
 	String positional_arg;
@@ -2434,6 +2438,7 @@ bool Main::start() {
 
 	OS::get_singleton()->set_main_loop(main_loop);
 
+	call_modules_lifecycle_callback(LIFECYCLE_PHASE_START_DONE);
 	return true;
 }
 
@@ -2632,6 +2637,7 @@ void Main::force_redraw() {
  * The order matters as some of those steps are linked with each other.
  */
 void Main::cleanup(bool p_force) {
+	call_modules_lifecycle_callback(LIFECYCLE_PHASE_CLEANUP_BEGIN);
 	if (!p_force) {
 		ERR_FAIL_COND(!_start_success);
 	}
@@ -2742,4 +2748,5 @@ void Main::cleanup(bool p_force) {
 	unregister_core_types();
 
 	OS::get_singleton()->finalize_core();
+	call_modules_lifecycle_callback(LIFECYCLE_PHASE_CLEANUP_DONE);
 }

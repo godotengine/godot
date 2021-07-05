@@ -35,6 +35,16 @@
 #include "core/os/thread.h"
 #include "core/typedefs.h"
 
+enum LifecyclePhase {
+	LIFECYCLE_PHASE_SETUP_BEGIN,
+	LIFECYCLE_PHASE_POST_SETUP_BEGIN,
+	LIFECYCLE_PHASE_SETUP_DONE,
+	LIFECYCLE_PHASE_START_BEGIN,
+	LIFECYCLE_PHASE_START_DONE,
+	LIFECYCLE_PHASE_CLEANUP_BEGIN,
+	LIFECYCLE_PHASE_CLEANUP_DONE
+};
+
 class Main {
 	static void print_help(const char *p_binary);
 	static uint64_t last_ticks;
