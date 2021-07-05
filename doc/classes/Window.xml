@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="Window" inherits="Viewport" version="4.0">
 	<brief_description>
+		Base class for all windows.
 	</brief_description>
 	<description>
+		A node that creates a window.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -11,6 +13,7 @@
 			<return type="bool">
 			</return>
 			<description>
+				Returns whether the window is being drawn to the screen.
 			</description>
 		</method>
 		<method name="child_controls_changed">
@@ -32,6 +35,7 @@
 			<argument index="0" name="flag" type="int" enum="Window.Flags">
 			</argument>
 			<description>
+				Returns [code]true[/code] if the flag is set.
 			</description>
 		</method>
 		<method name="get_layout_direction" qualifiers="const">
@@ -45,6 +49,7 @@
 			<return type="Vector2i">
 			</return>
 			<description>
+				Returns the window's size including its border.
 			</description>
 		</method>
 		<method name="get_theme_color" qualifiers="const">
@@ -113,12 +118,14 @@
 			<return type="void">
 			</return>
 			<description>
+				Causes the window to grab focus, allowing it to receive user input.
 			</description>
 		</method>
 		<method name="has_focus" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
+				Returns [code]true[/code] if the window is focused.
 			</description>
 		</method>
 		<method name="has_theme_color" qualifiers="const">
@@ -195,6 +202,7 @@
 			<return type="bool">
 			</return>
 			<description>
+				Returns [code]true[/code] if the window is currently embedded in another window.
 			</description>
 		</method>
 		<method name="is_layout_rtl" qualifiers="const">
@@ -278,6 +286,7 @@
 			<argument index="1" name="enabled" type="bool">
 			</argument>
 			<description>
+				Sets a specified window flag.
 			</description>
 		</method>
 		<method name="set_ime_active">
@@ -322,8 +331,10 @@
 	</methods>
 	<members>
 		<member name="always_on_top" type="bool" setter="set_flag" getter="get_flag" default="false">
+			If [code]true[/code], the window will be on top of all other windows.
 		</member>
 		<member name="borderless" type="bool" setter="set_flag" getter="get_flag" default="false">
+			If [code]true[/code], the window will have no borders.
 		</member>
 		<member name="content_scale_aspect" type="int" setter="set_content_scale_aspect" getter="get_content_scale_aspect" enum="Window.ContentScaleAspect" default="0">
 		</member>
@@ -332,6 +343,7 @@
 		<member name="content_scale_size" type="Vector2i" setter="set_content_scale_size" getter="get_content_scale_size" default="Vector2i(0, 0)">
 		</member>
 		<member name="current_screen" type="int" setter="set_current_screen" getter="get_current_screen" default="0">
+			The screen the window is currently on.
 		</member>
 		<member name="exclusive" type="bool" setter="set_exclusive" getter="is_exclusive" default="false">
 		</member>
@@ -340,16 +352,21 @@
 		<member name="min_size" type="Vector2i" setter="set_min_size" getter="get_min_size" default="Vector2i(0, 0)">
 		</member>
 		<member name="mode" type="int" setter="set_mode" getter="get_mode" enum="Window.Mode" default="0">
+			Set's the window's current mode.
+			[b]Note:[/b] Fullscreen mode is not exclusive fullscreen on Windows and Linux.
 		</member>
 		<member name="position" type="Vector2i" setter="set_position" getter="get_position" default="Vector2i(0, 0)">
+			The window's position in pixels.
 		</member>
 		<member name="size" type="Vector2i" setter="set_size" getter="get_size" default="Vector2i(100, 100)">
+			The window's size in pixels.
 		</member>
 		<member name="theme" type="Theme" setter="set_theme" getter="get_theme">
 		</member>
 		<member name="theme_custom_type" type="StringName" setter="set_theme_custom_type" getter="get_theme_custom_type" default="&amp;&quot;&quot;">
 		</member>
 		<member name="title" type="String" setter="set_title" getter="get_title" default="&quot;&quot;">
+			The window's title.
 		</member>
 		<member name="transient" type="bool" setter="set_transient" getter="is_transient" default="false">
 		</member>
@@ -358,8 +375,10 @@
 		<member name="unfocusable" type="bool" setter="set_flag" getter="get_flag" default="false">
 		</member>
 		<member name="unresizable" type="bool" setter="set_flag" getter="get_flag" default="false">
+			If [code]true[/code], the window can't be resized.
 		</member>
 		<member name="visible" type="bool" setter="set_visible" getter="is_visible" default="true">
+			If [code]true[/code], the window is visible.
 		</member>
 		<member name="wrap_controls" type="bool" setter="set_wrap_controls" getter="is_wrapping_controls" default="false">
 		</member>
@@ -414,20 +433,26 @@
 		<constant name="NOTIFICATION_VISIBILITY_CHANGED" value="30">
 		</constant>
 		<constant name="MODE_WINDOWED" value="0" enum="Mode">
+			Windowed mode.
 		</constant>
 		<constant name="MODE_MINIMIZED" value="1" enum="Mode">
+			Minimized window mode.
 		</constant>
 		<constant name="MODE_MAXIMIZED" value="2" enum="Mode">
+			Maximized window mode.
 		</constant>
 		<constant name="MODE_FULLSCREEN" value="3" enum="Mode">
 			Fullscreen window mode. Note that this is not [i]exclusive[/i] fullscreen. On Windows and Linux, a borderless window is used to emulate fullscreen. On macOS, a new desktop is used to display the running project.
 			Regardless of the platform, enabling fullscreen will change the window size to match the monitor's size. Therefore, make sure your project supports [url=https://docs.godotengine.org/en/latest/tutorials/rendering/multiple_resolutions.html]multiple resolutions[/url] when enabling fullscreen mode.
 		</constant>
 		<constant name="FLAG_RESIZE_DISABLED" value="0" enum="Flags">
+			The window's ability to be resized.
 		</constant>
 		<constant name="FLAG_BORDERLESS" value="1" enum="Flags">
+			Borderless window.
 		</constant>
 		<constant name="FLAG_ALWAYS_ON_TOP" value="2" enum="Flags">
+			Flag for making the window always on top of all other windows.
 		</constant>
 		<constant name="FLAG_TRANSPARENT" value="3" enum="Flags">
 		</constant>
