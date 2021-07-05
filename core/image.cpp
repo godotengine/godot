@@ -2224,6 +2224,39 @@ Ref<Image> Image::get_rect(const Rect2 &p_area) const {
 	return img;
 }
 
+void Image::_get_clipped_src_and_dest_rects(const Ref<Image> &p_src, const Rect2i &p_src_rect, const Point2i &p_dest, Rect2i &r_clipped_src_rect, Rect2i &r_clipped_dest_rect) const {
+	r_clipped_dest_rect.position = p_dest;
+	r_clipped_src_rect = p_src_rect;
+
+	if (r_clipped_src_rect.position.x < 0) {
+		r_clipped_dest_rect.position.x -= r_clipped_src_rect.position.x;
+		r_clipped_src_rect.size.x += r_clipped_src_rect.position.x;
+		r_clipped_src_rect.position.x = 0;
+	}
+	if (r_clipped_src_rect.position.y < 0) {
+		r_clipped_dest_rect.position.y -= r_clipped_src_rect.position.y;
+		r_clipped_src_rect.size.y += r_clipped_src_rect.position.y;
+		r_clipped_src_rect.position.y = 0;
+	}
+
+	if (r_clipped_dest_rect.position.x < 0) {
+		r_clipped_src_rect.position.x -= r_clipped_dest_rect.position.x;
+		r_clipped_src_rect.size.x += r_clipped_dest_rect.position.x;
+		r_clipped_dest_rect.position.x = 0;
+	}
+	if (r_clipped_dest_rect.position.y < 0) {
+		r_clipped_src_rect.position.y -= r_clipped_dest_rect.position.y;
+		r_clipped_src_rect.size.y += r_clipped_dest_rect.position.y;
+		r_clipped_dest_rect.position.y = 0;
+	}
+
+	r_clipped_src_rect.size.x = MAX(0, MIN(r_clipped_src_rect.size.x, MIN(p_src->width - r_clipped_src_rect.position.x, width - r_clipped_dest_rect.position.x)));
+	r_clipped_src_rect.size.y = MAX(0, MIN(r_clipped_src_rect.size.y, MIN(p_src->height - r_clipped_src_rect.position.y, height - r_clipped_dest_rect.position.y)));
+
+	r_clipped_dest_rect.size.x = r_clipped_src_rect.size.x;
+	r_clipped_dest_rect.size.y = r_clipped_src_rect.size.y;
+}
+
 void Image::blit_rect(const Ref<Image> &p_src, const Rect2 &p_src_rect, const Point2 &p_dest) {
 	ERR_FAIL_COND_MSG(p_src.is_null(), "It's not a reference to a valid Image object.");
 	int dsize = data.size();
@@ -2233,21 +2266,12 @@ void Image::blit_rect(const Ref<Image> &p_src, const Rect2 &p_src_rect, const Po
 	ERR_FAIL_COND(format != p_src->format);
 	ERR_FAIL_COND_MSG(!_can_modify(format), "Cannot blit_rect in compressed or custom image formats.");
 
-	Rect2i clipped_src_rect = Rect2i(0, 0, p_src->width, p_src->height).clip(p_src_rect);
-
-	if (p_dest.x < 0) {
-		clipped_src_rect.position.x = ABS(p_dest.x);
-	}
-	if (p_dest.y < 0) {
-		clipped_src_rect.position.y = ABS(p_dest.y);
-	}
-
-	if (clipped_src_rect.size.x <= 0 || clipped_src_rect.size.y <= 0) {
+	Rect2i src_rect;
+	Rect2i dest_rect;
+	_get_clipped_src_and_dest_rects(p_src, p_src_rect, p_dest, src_rect, dest_rect);
+	if (src_rect.has_no_area() || dest_rect.has_no_area()) {
 		return;
 	}
-
-	Point2 src_underscan = Point2(MIN(0, p_src_rect.position.x), MIN(0, p_src_rect.position.y));
-	Rect2i dest_rect = Rect2i(0, 0, width, height).clip(Rect2i(p_dest - src_underscan, clipped_src_rect.size));
 
 	PoolVector<uint8_t>::Write wp = data.write();
 	uint8_t *dst_data_ptr = wp.ptr();
@@ -2259,8 +2283,8 @@ void Image::blit_rect(const Ref<Image> &p_src, const Rect2 &p_src_rect, const Po
 
 	for (int i = 0; i < dest_rect.size.y; i++) {
 		for (int j = 0; j < dest_rect.size.x; j++) {
-			int src_x = clipped_src_rect.position.x + j;
-			int src_y = clipped_src_rect.position.y + i;
+			int src_x = src_rect.position.x + j;
+			int src_y = src_rect.position.y + i;
 
 			int dst_x = dest_rect.position.x + j;
 			int dst_y = dest_rect.position.y + i;
@@ -2288,21 +2312,12 @@ void Image::blit_rect_mask(const Ref<Image> &p_src, const Ref<Image> &p_mask, co
 	ERR_FAIL_COND_MSG(p_src->height != p_mask->height, "Source image height is different from mask height.");
 	ERR_FAIL_COND(format != p_src->format);
 
-	Rect2i clipped_src_rect = Rect2i(0, 0, p_src->width, p_src->height).clip(p_src_rect);
-
-	if (p_dest.x < 0) {
-		clipped_src_rect.position.x = ABS(p_dest.x);
-	}
-	if (p_dest.y < 0) {
-		clipped_src_rect.position.y = ABS(p_dest.y);
-	}
-
-	if (clipped_src_rect.size.x <= 0 || clipped_src_rect.size.y <= 0) {
+	Rect2i src_rect;
+	Rect2i dest_rect;
+	_get_clipped_src_and_dest_rects(p_src, p_src_rect, p_dest, src_rect, dest_rect);
+	if (src_rect.has_no_area() || dest_rect.has_no_area()) {
 		return;
 	}
-
-	Point2 src_underscan = Point2(MIN(0, p_src_rect.position.x), MIN(0, p_src_rect.position.y));
-	Rect2i dest_rect = Rect2i(0, 0, width, height).clip(Rect2i(p_dest - src_underscan, clipped_src_rect.size));
 
 	PoolVector<uint8_t>::Write wp = data.write();
 	uint8_t *dst_data_ptr = wp.ptr();
@@ -2317,8 +2332,8 @@ void Image::blit_rect_mask(const Ref<Image> &p_src, const Ref<Image> &p_mask, co
 
 	for (int i = 0; i < dest_rect.size.y; i++) {
 		for (int j = 0; j < dest_rect.size.x; j++) {
-			int src_x = clipped_src_rect.position.x + j;
-			int src_y = clipped_src_rect.position.y + i;
+			int src_x = src_rect.position.x + j;
+			int src_y = src_rect.position.y + i;
 
 			if (msk->get_pixel(src_x, src_y).a != 0) {
 				int dst_x = dest_rect.position.x + j;
@@ -2345,21 +2360,12 @@ void Image::blend_rect(const Ref<Image> &p_src, const Rect2 &p_src_rect, const P
 	ERR_FAIL_COND(srcdsize == 0);
 	ERR_FAIL_COND(format != p_src->format);
 
-	Rect2i clipped_src_rect = Rect2i(0, 0, p_src->width, p_src->height).clip(p_src_rect);
-
-	if (p_dest.x < 0) {
-		clipped_src_rect.position.x = ABS(p_dest.x);
-	}
-	if (p_dest.y < 0) {
-		clipped_src_rect.position.y = ABS(p_dest.y);
-	}
-
-	if (clipped_src_rect.size.x <= 0 || clipped_src_rect.size.y <= 0) {
+	Rect2i src_rect;
+	Rect2i dest_rect;
+	_get_clipped_src_and_dest_rects(p_src, p_src_rect, p_dest, src_rect, dest_rect);
+	if (src_rect.has_no_area() || dest_rect.has_no_area()) {
 		return;
 	}
-
-	Point2 src_underscan = Point2(MIN(0, p_src_rect.position.x), MIN(0, p_src_rect.position.y));
-	Rect2i dest_rect = Rect2i(0, 0, width, height).clip(Rect2i(p_dest - src_underscan, clipped_src_rect.size));
 
 	lock();
 	Ref<Image> img = p_src;
@@ -2367,8 +2373,8 @@ void Image::blend_rect(const Ref<Image> &p_src, const Rect2 &p_src_rect, const P
 
 	for (int i = 0; i < dest_rect.size.y; i++) {
 		for (int j = 0; j < dest_rect.size.x; j++) {
-			int src_x = clipped_src_rect.position.x + j;
-			int src_y = clipped_src_rect.position.y + i;
+			int src_x = src_rect.position.x + j;
+			int src_y = src_rect.position.y + i;
 
 			int dst_x = dest_rect.position.x + j;
 			int dst_y = dest_rect.position.y + i;
@@ -2399,21 +2405,12 @@ void Image::blend_rect_mask(const Ref<Image> &p_src, const Ref<Image> &p_mask, c
 	ERR_FAIL_COND_MSG(p_src->height != p_mask->height, "Source image height is different from mask height.");
 	ERR_FAIL_COND(format != p_src->format);
 
-	Rect2i clipped_src_rect = Rect2i(0, 0, p_src->width, p_src->height).clip(p_src_rect);
-
-	if (p_dest.x < 0) {
-		clipped_src_rect.position.x = ABS(p_dest.x);
-	}
-	if (p_dest.y < 0) {
-		clipped_src_rect.position.y = ABS(p_dest.y);
-	}
-
-	if (clipped_src_rect.size.x <= 0 || clipped_src_rect.size.y <= 0) {
+	Rect2i src_rect;
+	Rect2i dest_rect;
+	_get_clipped_src_and_dest_rects(p_src, p_src_rect, p_dest, src_rect, dest_rect);
+	if (src_rect.has_no_area() || dest_rect.has_no_area()) {
 		return;
 	}
-
-	Point2 src_underscan = Point2(MIN(0, p_src_rect.position.x), MIN(0, p_src_rect.position.y));
-	Rect2i dest_rect = Rect2i(0, 0, width, height).clip(Rect2i(p_dest - src_underscan, clipped_src_rect.size));
 
 	lock();
 	Ref<Image> img = p_src;
@@ -2423,8 +2420,8 @@ void Image::blend_rect_mask(const Ref<Image> &p_src, const Ref<Image> &p_mask, c
 
 	for (int i = 0; i < dest_rect.size.y; i++) {
 		for (int j = 0; j < dest_rect.size.x; j++) {
-			int src_x = clipped_src_rect.position.x + j;
-			int src_y = clipped_src_rect.position.y + i;
+			int src_x = src_rect.position.x + j;
+			int src_y = src_rect.position.y + i;
 
 			// If the mask's pixel is transparent then we skip it
 			//Color c = msk->get_pixel(src_x, src_y);
