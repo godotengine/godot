@@ -3500,7 +3500,7 @@ void CSharpScript::get_script_property_list(List<PropertyInfo> *p_list) const {
 
 int CSharpScript::get_member_line(const StringName &p_member) const {
 	int p_line = -1;
-	RegEx pattern("\\w+\\s{0,}" + p_member + "\\([^()\\r]*\\)\\s{0,}\\{{1,}");
+	RegEx pattern("\\w+\\s{0,}" + p_member + "\\s{0,}\\([^()]*\\)\\s{0,}\\{{1,}");
 	Ref<RegExMatch> ref = pattern.search(get_source_code());
 	if (ref != NULL) {
 		RegExMatch *matche = ref.ptr();
