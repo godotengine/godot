@@ -3499,14 +3499,20 @@ void CSharpScript::get_script_property_list(List<PropertyInfo> *p_list) const {
 }
 
 int CSharpScript::get_member_line(const StringName &p_member) const {
-	Vector<String> source_code_line = get_source_code().split("\n");
 	int p_line = -1;
-	RegEx pattern("\\w+\\s{0,}" + p_member + "\\([^()\\r]*\\)\\s{0,}\\{{0,}");
-	for (int i = 0; i < source_code_line.size(); i = i + 1) {
-		Ref<RegExMatch> matche = pattern.search(source_code_line[i]);
-		if (matche != NULL) {
-			p_line = i;
-			break;
+	RegEx pattern("\\w+\\s{0,}" + p_member + "\\([^()\\r]*\\)\\s{0,}\\{{1,}");
+	Ref<RegExMatch> ref = pattern.search(get_source_code());
+	if (ref != NULL) {
+		RegExMatch *matche = ref.ptr();
+		String tmp_str = matche->get_string(0).split("\n")[0];
+
+		Vector<String> source_code_line = get_source_code().split("\n");
+		for (int i = 0; i < source_code_line.size(); i = i + 1) {
+			int tmp_col = source_code_line[i].find(tmp_str);
+			if (tmp_col > 0) {
+				p_line = i;
+				break;
+			}
 		}
 	}
 	return p_line;
