@@ -101,12 +101,6 @@ def configure(env, env_mono):
 
     mono_lib_names = ["mono-2.0-sgen", "monosgen-2.0"]
 
-    is_travis = os.environ.get("TRAVIS") == "true"
-
-    if is_travis:
-        # Travis CI may have a Mono version lower than 5.12
-        env_mono.Append(CPPDEFINES=["NO_PENDING_EXCEPTIONS"])
-
     if is_android and not env["android_arch"] in android_arch_dirs:
         raise RuntimeError("This module does not support the specified 'android_arch': " + env["android_arch"])
 
