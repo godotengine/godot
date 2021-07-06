@@ -322,37 +322,37 @@
 		</constant>
 		<constant name="TILE_OFFSET_AXIS_VERTICAL" value="1" enum="TileOffsetAxis">
 		</constant>
-		<constant name="TileSet::CELL_NEIGHBOR_RIGHT_SIDE" value="0" enum="CellNeighbor">
+		<constant name="CELL_NEIGHBOR_RIGHT_SIDE" value="0" enum="CellNeighbor">
 		</constant>
-		<constant name="TileSet::CELL_NEIGHBOR_RIGHT_CORNER" value="1" enum="CellNeighbor">
+		<constant name="CELL_NEIGHBOR_RIGHT_CORNER" value="1" enum="CellNeighbor">
 		</constant>
-		<constant name="TileSet::CELL_NEIGHBOR_BOTTOM_RIGHT_SIDE" value="2" enum="CellNeighbor">
+		<constant name="CELL_NEIGHBOR_BOTTOM_RIGHT_SIDE" value="2" enum="CellNeighbor">
 		</constant>
-		<constant name="TileSet::CELL_NEIGHBOR_BOTTOM_RIGHT_CORNER" value="3" enum="CellNeighbor">
+		<constant name="CELL_NEIGHBOR_BOTTOM_RIGHT_CORNER" value="3" enum="CellNeighbor">
 		</constant>
-		<constant name="TileSet::CELL_NEIGHBOR_BOTTOM_SIDE" value="4" enum="CellNeighbor">
+		<constant name="CELL_NEIGHBOR_BOTTOM_SIDE" value="4" enum="CellNeighbor">
 		</constant>
-		<constant name="TileSet::CELL_NEIGHBOR_BOTTOM_CORNER" value="5" enum="CellNeighbor">
+		<constant name="CELL_NEIGHBOR_BOTTOM_CORNER" value="5" enum="CellNeighbor">
 		</constant>
-		<constant name="TileSet::CELL_NEIGHBOR_BOTTOM_LEFT_SIDE" value="6" enum="CellNeighbor">
+		<constant name="CELL_NEIGHBOR_BOTTOM_LEFT_SIDE" value="6" enum="CellNeighbor">
 		</constant>
-		<constant name="TileSet::CELL_NEIGHBOR_BOTTOM_LEFT_CORNER" value="7" enum="CellNeighbor">
+		<constant name="CELL_NEIGHBOR_BOTTOM_LEFT_CORNER" value="7" enum="CellNeighbor">
 		</constant>
-		<constant name="TileSet::CELL_NEIGHBOR_LEFT_SIDE" value="8" enum="CellNeighbor">
+		<constant name="CELL_NEIGHBOR_LEFT_SIDE" value="8" enum="CellNeighbor">
 		</constant>
-		<constant name="TileSet::CELL_NEIGHBOR_LEFT_CORNER" value="9" enum="CellNeighbor">
+		<constant name="CELL_NEIGHBOR_LEFT_CORNER" value="9" enum="CellNeighbor">
 		</constant>
-		<constant name="TileSet::CELL_NEIGHBOR_TOP_LEFT_SIDE" value="10" enum="CellNeighbor">
+		<constant name="CELL_NEIGHBOR_TOP_LEFT_SIDE" value="10" enum="CellNeighbor">
 		</constant>
-		<constant name="TileSet::CELL_NEIGHBOR_TOP_LEFT_CORNER" value="11" enum="CellNeighbor">
+		<constant name="CELL_NEIGHBOR_TOP_LEFT_CORNER" value="11" enum="CellNeighbor">
 		</constant>
-		<constant name="TileSet::CELL_NEIGHBOR_TOP_SIDE" value="12" enum="CellNeighbor">
+		<constant name="CELL_NEIGHBOR_TOP_SIDE" value="12" enum="CellNeighbor">
 		</constant>
-		<constant name="TileSet::CELL_NEIGHBOR_TOP_CORNER" value="13" enum="CellNeighbor">
+		<constant name="CELL_NEIGHBOR_TOP_CORNER" value="13" enum="CellNeighbor">
 		</constant>
-		<constant name="TileSet::CELL_NEIGHBOR_TOP_RIGHT_SIDE" value="14" enum="CellNeighbor">
+		<constant name="CELL_NEIGHBOR_TOP_RIGHT_SIDE" value="14" enum="CellNeighbor">
 		</constant>
-		<constant name="TileSet::CELL_NEIGHBOR_TOP_RIGHT_CORNER" value="15" enum="CellNeighbor">
+		<constant name="CELL_NEIGHBOR_TOP_RIGHT_CORNER" value="15" enum="CellNeighbor">
 		</constant>
 		<constant name="TERRAIN_MODE_MATCH_CORNERS_AND_SIDES" value="0" enum="TerrainMode">
 		</constant>
