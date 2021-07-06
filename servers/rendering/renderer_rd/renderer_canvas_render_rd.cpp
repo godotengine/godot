@@ -2201,93 +2201,15 @@ RendererStorageRD::ShaderData *RendererCanvasRenderRD::_create_shader_func() {
 	return shader_data;
 }
 
-void RendererCanvasRenderRD::MaterialData::update_parameters(const Map<StringName, Variant> &p_parameters, bool p_uniform_dirty, bool p_textures_dirty) {
+bool RendererCanvasRenderRD::MaterialData::update_parameters(const Map<StringName, Variant> &p_parameters, bool p_uniform_dirty, bool p_textures_dirty) {
 	RendererCanvasRenderRD *canvas_singleton = (RendererCanvasRenderRD *)RendererCanvasRender::singleton;
 
-	if ((uint32_t)ubo_data.size() != shader_data->ubo_size) {
-		p_uniform_dirty = true;
-		if (uniform_buffer.is_valid()) {
-			RD::get_singleton()->free(uniform_buffer);
-			uniform_buffer = RID();
-		}
-
-		ubo_data.resize(shader_data->ubo_size);
-		if (ubo_data.size()) {
-			uniform_buffer = RD::get_singleton()->uniform_buffer_create(ubo_data.size());
-			memset(ubo_data.ptrw(), 0, ubo_data.size()); //clear
-		}
-
-		//clear previous uniform set
-		if (uniform_set.is_valid() && RD::get_singleton()->uniform_set_is_valid(uniform_set)) {
-			RD::get_singleton()->free(uniform_set);
-			uniform_set = RID();
-		}
-	}
-
-	//check whether buffer changed
-	if (p_uniform_dirty && ubo_data.size()) {
-		update_uniform_buffer(shader_data->uniforms, shader_data->ubo_offsets.ptr(), p_parameters, ubo_data.ptrw(), ubo_data.size(), false);
-		RD::get_singleton()->buffer_update(uniform_buffer, 0, ubo_data.size(), ubo_data.ptrw());
-	}
-
-	uint32_t tex_uniform_count = shader_data->texture_uniforms.size();
-
-	if ((uint32_t)texture_cache.size() != tex_uniform_count) {
-		texture_cache.resize(tex_uniform_count);
-		p_textures_dirty = true;
-
-		//clear previous uniform set
-		if (uniform_set.is_valid() && RD::get_singleton()->uniform_set_is_valid(uniform_set)) {
-			RD::get_singleton()->free(uniform_set);
-			uniform_set = RID();
-		}
-	}
-
-	if (p_textures_dirty && tex_uniform_count) {
-		update_textures(p_parameters, shader_data->default_texture_params, shader_data->texture_uniforms, texture_cache.ptrw(), false);
-	}
-
-	if (shader_data->ubo_size == 0) {
-		// This material does not require an uniform set, so don't create it.
-		return;
-	}
-
-	if (!p_textures_dirty && uniform_set.is_valid() && RD::get_singleton()->uniform_set_is_valid(uniform_set)) {
-		//no reason to update uniform set, only UBO (or nothing) was needed to update
-		return;
-	}
-
-	Vector<RD::Uniform> uniforms;
-
-	{
-		if (shader_data->ubo_size) {
-			RD::Uniform u;
-			u.uniform_type = RD::UNIFORM_TYPE_UNIFORM_BUFFER;
-			u.binding = 0;
-			u.ids.push_back(uniform_buffer);
-			uniforms.push_back(u);
-		}
-
-		const RID *textures = texture_cache.ptrw();
-		for (uint32_t i = 0; i < tex_uniform_count; i++) {
-			RD::Uniform u;
-			u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
-			u.binding = 1 + i;
-			u.ids.push_back(textures[i]);
-			uniforms.push_back(u);
-		}
-	}
-
-	uniform_set = RD::get_singleton()->uniform_set_create(uniforms, canvas_singleton->shader.canvas_shader.version_get_shader(shader_data->version, 0), MATERIAL_UNIFORM_SET);
+	return update_parameters_uniform_set(p_parameters, p_uniform_dirty, p_textures_dirty, shader_data->uniforms, shader_data->ubo_offsets.ptr(), shader_data->texture_uniforms, shader_data->default_texture_params, shader_data->ubo_size, uniform_set, canvas_singleton->shader.canvas_shader.version_get_shader(shader_data->version, 0), MATERIAL_UNIFORM_SET);
 }
 
 RendererCanvasRenderRD::MaterialData::~MaterialData() {
 	if (uniform_set.is_valid() && RD::get_singleton()->uniform_set_is_valid(uniform_set)) {
 		RD::get_singleton()->free(uniform_set);
-	}
-
-	if (uniform_buffer.is_valid()) {
-		RD::get_singleton()->free(uniform_buffer);
 	}
 }
 
