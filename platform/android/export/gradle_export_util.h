@@ -264,11 +264,11 @@ String _get_application_tag(const Ref<EditorExportPreset> &p_preset, bool p_has_
 	String manifest_application_text = vformat(
 			"    <application android:label=\"@string/godot_project_name_string\"\n"
 			"        android:allowBackup=\"%s\"\n"
-			"        android:icon=\"@mipmap/icon\"\n"
 			"        android:isGame=\"%s\"\n"
 			"        android:requestLegacyExternalStorage=\"%s\"\n"
 			"        tools:replace=\"android:allowBackup,android:isGame,android:requestLegacyExternalStorage\"\n"
-			"        tools:ignore=\"GoogleAppIndexingWarning\">\n\n"
+			"        tools:ignore=\"GoogleAppIndexingWarning\"\n"
+			"        android:icon=\"@mipmap/icon\" >\n\n"
 			"        <meta-data tools:node=\"remove\" android:name=\"xr_mode_metadata_name\" />\n",
 			bool_to_string(p_preset->get("user_data_backup/allow")),
 			bool_to_string(p_preset->get("package/classify_as_game")),
