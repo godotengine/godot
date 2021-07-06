@@ -409,6 +409,7 @@
 			<return type="void">
 			</return>
 			<description>
+				Minimizes the bottom panel.
 			</description>
 		</method>
 		<method name="make_bottom_panel_item_visible">
@@ -417,6 +418,7 @@
 			<argument index="0" name="item" type="Control">
 			</argument>
 			<description>
+				Makes a specific item in the bottom panel visible.
 			</description>
 		</method>
 		<method name="make_visible" qualifiers="virtual">
