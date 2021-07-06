@@ -1047,19 +1047,14 @@ public class Godot extends Fragment implements SensorEventListener, IDownloaderC
 			;
 		if (cnt == 0)
 			return false;
-		mView.queueEvent(new Runnable() {
-			// This method will be called on the rendering thread:
-			public void run() {
-				for (int i = 0, n = cc.length; i < n; i++) {
-					int keyCode;
-					if ((keyCode = cc[i]) != 0) {
-						// Simulate key down and up...
-						GodotLib.key(0, 0, keyCode, true);
-						GodotLib.key(0, 0, keyCode, false);
-					}
-				}
+		for (int i = 0, n = cc.length; i < n; i++) {
+			int keyCode;
+			if ((keyCode = cc[i]) != 0) {
+				// Simulate key down and up...
+				GodotLib.key(0, 0, keyCode, true);
+				GodotLib.key(0, 0, keyCode, false);
 			}
-		});
+		}
 		return true;
 	}
 

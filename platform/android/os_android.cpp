@@ -181,6 +181,7 @@ Error OS_Android::initialize(const VideoMode &p_desired, int p_video_driver, int
 	AudioDriverManager::initialize(p_audio_driver);
 
 	input = memnew(InputDefault);
+	input->set_use_input_buffering(true); // Needed because events will come directly from the UI thread
 	input->set_fallback_mapping(godot_java->get_input_fallback_mapping());
 
 	//power_manager = memnew(PowerAndroid);
@@ -246,11 +247,15 @@ bool OS_Android::is_mouse_grab_enabled() const {
 }
 
 Point2 OS_Android::get_mouse_position() const {
-	return hover_prev_pos;
+	// We're tracking the mouse position in hover_prev_pos, which is set on the Android UI thread.
+	// Since this getter must give the right value on the render thread, to avoid having to sync every time it's called,
+	// we can just return the mouse position as tracked by InputDefault, which runs on the Android render thread.
+	return InputDefault::get_singleton()->get_mouse_position();
 }
 
 int OS_Android::get_mouse_button_state() const {
-	return buttons_state;
+	// See the comment at get_mouse_position(); the same holds here for buttons_state.
+	return InputDefault::get_singleton()->get_mouse_button_mask();
 }
 
 void OS_Android::set_window_title(const String &p_title) {
@@ -327,6 +332,7 @@ void OS_Android::main_loop_focusin() {
 	audio_driver_android.set_pause(false);
 }
 
+// Called on the UI thread
 void OS_Android::process_joy_event(OS_Android::JoypadEvent p_event) {
 	switch (p_event.type) {
 		case JOY_EVENT_BUTTON:
@@ -357,6 +363,7 @@ void OS_Android::process_event(Ref<InputEvent> p_event) {
 	input->parse_input_event(p_event);
 }
 
+// Called on the UI thread
 void OS_Android::process_key_event(int p_keycode, int p_scancode, int p_unicode_char, bool p_pressed) {
 	Ref<InputEventKey> ev;
 	ev.instance();
@@ -402,6 +409,7 @@ void OS_Android::process_key_event(int p_keycode, int p_scancode, int p_unicode_
 	input->parse_input_event(ev);
 }
 
+// Called on the UI thread
 void OS_Android::process_touch(int p_event, int p_pointer, const Vector<TouchPos> &p_points) {
 	switch (p_event) {
 		case AMOTION_EVENT_ACTION_DOWN: { //gesture begin
@@ -512,6 +520,7 @@ void OS_Android::process_touch(int p_event, int p_pointer, const Vector<TouchPos
 	}
 }
 
+// Called on the UI thread
 void OS_Android::process_hover(int p_type, Point2 p_pos) {
 	// https://developer.android.com/reference/android/view/MotionEvent.html#ACTION_HOVER_ENTER
 	switch (p_type) {
@@ -530,6 +539,7 @@ void OS_Android::process_hover(int p_type, Point2 p_pos) {
 	}
 }
 
+// Called on the UI thread
 void OS_Android::process_mouse_event(int event_action, int event_android_buttons_mask, Point2 event_pos, float event_vertical_factor, float event_horizontal_factor) {
 	int event_buttons_mask = _android_button_mask_to_godot_button_mask(event_android_buttons_mask);
 	switch (event_action) {
@@ -596,6 +606,7 @@ void OS_Android::_wheel_button_click(int event_buttons_mask, const Ref<InputEven
 	input->parse_input_event(evdd);
 }
 
+// Called on the UI thread
 void OS_Android::process_double_tap(int event_android_button_mask, Point2 p_pos) {
 	int event_button_mask = _android_button_mask_to_godot_button_mask(event_android_button_mask);
 	Ref<InputEventMouseButton> ev;
@@ -610,6 +621,7 @@ void OS_Android::process_double_tap(int event_android_button_mask, Point2 p_pos)
 	input->parse_input_event(ev);
 }
 
+// Called on the UI thread
 void OS_Android::process_scroll(Point2 p_pos) {
 	Ref<InputEventPanGesture> ev;
 	ev.instance();
