@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  concave_polygon_shape_2d.h                                           */
+/*  ray_shape_2d.h                                                       */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,28 +28,34 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef CONCAVE_POLYGON_SHAPE_2D_H
-#define CONCAVE_POLYGON_SHAPE_2D_H
+#ifndef RAY_SHAPE_2D_H
+#define RAY_SHAPE_2D_H
 
-#include "scene/resources/shape_2d.h"
+#include "scene/resources/2d/shape_2d.h"
 
-class ConcavePolygonShape2D : public Shape2D {
-	GDCLASS(ConcavePolygonShape2D, Shape2D);
+class RayShape2D : public Shape2D {
+	GDCLASS(RayShape2D, Shape2D);
+
+	real_t length = 20.0;
+	bool slips_on_slope = false;
+
+	void _update_shape();
 
 protected:
 	static void _bind_methods();
 
 public:
-	virtual bool _edit_is_selected_on_click(const Point2 &p_point, double p_tolerance) const override;
+	void set_length(real_t p_length);
+	real_t get_length() const;
 
-	void set_segments(const Vector<Vector2> &p_segments);
-	Vector<Vector2> get_segments() const;
+	void set_slips_on_slope(bool p_active);
+	bool get_slips_on_slope() const;
 
 	virtual void draw(const RID &p_to_rid, const Color &p_color) override;
 	virtual Rect2 get_rect() const override;
 	virtual real_t get_enclosing_radius() const override;
 
-	ConcavePolygonShape2D();
+	RayShape2D();
 };
 
-#endif
+#endif // RAY_SHAPE_2D_H

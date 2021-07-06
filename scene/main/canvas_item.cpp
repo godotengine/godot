@@ -32,7 +32,9 @@
 
 #include "core/input/input.h"
 #include "core/object/message_queue.h"
+#ifndef _2D_DISABLED
 #include "scene/2d/canvas_group.h"
+#endif // _2D_DISABLED
 #include "scene/main/canvas_layer.h"
 #include "scene/main/viewport.h"
 #include "scene/main/window.h"
@@ -1401,10 +1403,12 @@ void CanvasItem::set_clip_children(bool p_enabled) {
 	}
 	clip_children = p_enabled;
 
+#ifndef _2D_DISABLED
 	if (Object::cast_to<CanvasGroup>(this) != nullptr) {
 		//avoid accidental bugs, make this not work on CanvasGroup
 		return;
 	}
+#endif // _2D_DISABLED
 	RS::get_singleton()->canvas_item_set_canvas_group_mode(get_canvas_item(), clip_children ? RS::CANVAS_GROUP_MODE_OPAQUE : RS::CANVAS_GROUP_MODE_DISABLED);
 }
 bool CanvasItem::is_clipping_children() const {

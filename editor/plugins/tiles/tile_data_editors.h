@@ -39,7 +39,7 @@
 #include "scene/gui/box_container.h"
 #include "scene/gui/control.h"
 #include "scene/gui/label.h"
-#include "scene/resources/tile_set.h"
+#include "scene/resources/2d/tile_set.h"
 
 class TileDataEditor : public VBoxContainer {
 	GDCLASS(TileDataEditor, VBoxContainer);

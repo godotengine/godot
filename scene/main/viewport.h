@@ -39,7 +39,9 @@
 #include "servers/rendering_server.h"
 
 class Camera3D;
+#ifndef _2D_DISABLED
 class Camera2D;
+#endif // _2D_DISABLED
 class Listener3D;
 class Control;
 class CanvasItem;
@@ -276,7 +278,9 @@ private:
 	bool handle_input_locally = true;
 	bool local_input_handled = false;
 
+#ifndef _2D_DISABLED
 	Map<ObjectID, uint64_t> physics_2d_mouseover;
+#endif // _2D_DISABLED
 
 	Ref<World2D> world_2d;
 	Ref<World3D> world_3d;

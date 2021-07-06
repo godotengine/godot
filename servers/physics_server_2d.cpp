@@ -28,6 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
+#ifndef _2D_DISABLED
+
 #include "physics_server_2d.h"
 
 #include "core/config/project_settings.h"
@@ -807,3 +809,5 @@ PhysicsServer2D *PhysicsServer2DManager::new_server(const String &p_name) {
 		return physics_2d_servers[id].create_callback();
 	}
 }
+
+#endif // _2D_DISABLED

@@ -63,7 +63,9 @@
 #ifdef MODULE_GRIDMAP_ENABLED
 #include "modules/gridmap/grid_map.h"
 #endif // MODULE_GRIDMAP_ENABLED
+#ifndef _2D_DISABLED
 #include "scene/2d/node_2d.h"
+#endif // _2D_DISABLED
 #include "scene/3d/bone_attachment_3d.h"
 #include "scene/3d/camera_3d.h"
 #include "scene/3d/mesh_instance_3d.h"
@@ -5196,10 +5198,12 @@ void GLTFDocument::_convert_animation_player_to_gltf(AnimationPlayer *animation_
 void GLTFDocument::_check_visibility(Node *p_node, bool &retflag) {
 	retflag = true;
 	Node3D *spatial = Object::cast_to<Node3D>(p_node);
+#ifndef _2D_DISABLED
 	Node2D *node_2d = Object::cast_to<Node2D>(p_node);
 	if (node_2d && !node_2d->is_visible()) {
 		return;
 	}
+#endif // _2D_DISABLED
 	if (spatial && !spatial->is_visible()) {
 		return;
 	}

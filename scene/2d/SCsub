@@ -2,4 +2,7 @@
 
 Import("env")
 
-env.add_source_files(env.scene_sources, "*.cpp")
+if env["disable_2d"]:
+    env.add_source_files(env.scene_sources, "visibility_notifier_2d.cpp")
+else:
+    env.add_source_files(env.scene_sources, "*.cpp")

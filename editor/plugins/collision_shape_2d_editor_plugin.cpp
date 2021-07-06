@@ -31,14 +31,14 @@
 #include "collision_shape_2d_editor_plugin.h"
 
 #include "canvas_item_editor_plugin.h"
-#include "scene/resources/capsule_shape_2d.h"
-#include "scene/resources/circle_shape_2d.h"
-#include "scene/resources/concave_polygon_shape_2d.h"
-#include "scene/resources/convex_polygon_shape_2d.h"
-#include "scene/resources/line_shape_2d.h"
-#include "scene/resources/ray_shape_2d.h"
-#include "scene/resources/rectangle_shape_2d.h"
-#include "scene/resources/segment_shape_2d.h"
+#include "scene/resources/2d/capsule_shape_2d.h"
+#include "scene/resources/2d/circle_shape_2d.h"
+#include "scene/resources/2d/concave_polygon_shape_2d.h"
+#include "scene/resources/2d/convex_polygon_shape_2d.h"
+#include "scene/resources/2d/line_shape_2d.h"
+#include "scene/resources/2d/ray_shape_2d.h"
+#include "scene/resources/2d/rectangle_shape_2d.h"
+#include "scene/resources/2d/segment_shape_2d.h"
 
 void CollisionShape2DEditor::_node_removed(Node *p_node) {
 	if (p_node == node) {

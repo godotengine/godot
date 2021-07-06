@@ -57,13 +57,15 @@
 #include "camera_server.h"
 #include "core/extension/native_extension_manager.h"
 #include "display_server.h"
+#ifndef _2D_DISABLED
 #include "navigation_server_2d.h"
-#include "navigation_server_3d.h"
 #include "physics_2d/physics_server_2d_sw.h"
 #include "physics_2d/physics_server_2d_wrap_mt.h"
+#include "physics_server_2d.h"
+#endif // _2D_DISABLED
+#include "navigation_server_3d.h"
 #include "physics_3d/physics_server_3d_sw.h"
 #include "physics_3d/physics_server_3d_wrap_mt.h"
-#include "physics_server_2d.h"
 #include "physics_server_3d.h"
 #include "rendering/renderer_compositor.h"
 #include "rendering/rendering_device.h"
@@ -85,6 +87,7 @@ PhysicsServer3D *_createGodotPhysics3DCallback() {
 	return memnew(PhysicsServer3DWrapMT(physics_server, using_threads));
 }
 
+#ifndef _2D_DISABLED
 PhysicsServer2D *_createGodotPhysics2DCallback() {
 	bool using_threads = GLOBAL_GET("physics/2d/run_on_thread");
 
@@ -92,6 +95,7 @@ PhysicsServer2D *_createGodotPhysics2DCallback() {
 
 	return memnew(PhysicsServer2DWrapMT(physics_server, using_threads));
 }
+#endif // _2D_DISABLED
 
 static bool has_server_feature_callback(const String &p_feature) {
 	if (RenderingServer::get_singleton()) {
@@ -128,9 +132,11 @@ void register_server_types() {
 	ClassDB::register_virtual_class<TextServer>();
 	TextServer::initialize_hex_code_box_fonts();
 
+#ifndef _2D_DISABLED
 	ClassDB::register_virtual_class<PhysicsServer2D>();
-	ClassDB::register_virtual_class<PhysicsServer3D>();
 	ClassDB::register_virtual_class<NavigationServer2D>();
+#endif // _2D_DISABLED
+	ClassDB::register_virtual_class<PhysicsServer3D>();
 	ClassDB::register_virtual_class<NavigationServer3D>();
 	ClassDB::register_class<XRServer>();
 	ClassDB::register_class<CameraServer>();
@@ -210,22 +216,26 @@ void register_server_types() {
 
 	ClassDB::register_class<CameraFeed>();
 
+#ifndef _2D_DISABLED
 	ClassDB::register_virtual_class<PhysicsDirectBodyState2D>();
 	ClassDB::register_virtual_class<PhysicsDirectSpaceState2D>();
 	ClassDB::register_class<PhysicsTestMotionResult2D>();
 	ClassDB::register_class<PhysicsShapeQueryParameters2D>();
+#endif // _2D_DISABLED
 
 	ClassDB::register_class<PhysicsShapeQueryParameters3D>();
 	ClassDB::register_virtual_class<PhysicsDirectBodyState3D>();
 	ClassDB::register_virtual_class<PhysicsDirectSpaceState3D>();
 	ClassDB::register_class<PhysicsTestMotionResult3D>();
 
+#ifndef _2D_DISABLED
 	// Physics 2D
 	GLOBAL_DEF(PhysicsServer2DManager::setting_property_name, "DEFAULT");
 	ProjectSettings::get_singleton()->set_custom_property_info(PhysicsServer2DManager::setting_property_name, PropertyInfo(Variant::STRING, PhysicsServer2DManager::setting_property_name, PROPERTY_HINT_ENUM, "DEFAULT"));
 
 	PhysicsServer2DManager::register_server("GodotPhysics2D", &_createGodotPhysics2DCallback);
 	PhysicsServer2DManager::set_default_server("GodotPhysics2D");
+#endif // _2D_DISABLED
 
 	// Physics 3D
 	GLOBAL_DEF(PhysicsServer3DManager::setting_property_name, "DEFAULT");
@@ -248,9 +258,11 @@ void register_server_singletons() {
 	Engine::get_singleton()->add_singleton(Engine::Singleton("DisplayServer", DisplayServer::get_singleton(), "DisplayServer"));
 	Engine::get_singleton()->add_singleton(Engine::Singleton("RenderingServer", RenderingServer::get_singleton(), "RenderingServer"));
 	Engine::get_singleton()->add_singleton(Engine::Singleton("AudioServer", AudioServer::get_singleton(), "AudioServer"));
+#ifndef _2D_DISABLED
 	Engine::get_singleton()->add_singleton(Engine::Singleton("PhysicsServer2D", PhysicsServer2D::get_singleton(), "PhysicsServer2D"));
-	Engine::get_singleton()->add_singleton(Engine::Singleton("PhysicsServer3D", PhysicsServer3D::get_singleton(), "PhysicsServer3D"));
 	Engine::get_singleton()->add_singleton(Engine::Singleton("NavigationServer2D", NavigationServer2D::get_singleton_mut(), "NavigationServer2D"));
+#endif // _2D_DISABLED
+	Engine::get_singleton()->add_singleton(Engine::Singleton("PhysicsServer3D", PhysicsServer3D::get_singleton(), "PhysicsServer3D"));
 	Engine::get_singleton()->add_singleton(Engine::Singleton("NavigationServer3D", NavigationServer3D::get_singleton_mut(), "NavigationServer3D"));
 	Engine::get_singleton()->add_singleton(Engine::Singleton("TextServerManager", TextServerManager::get_singleton(), "TextServerManager"));
 	Engine::get_singleton()->add_singleton(Engine::Singleton("XRServer", XRServer::get_singleton(), "XRServer"));

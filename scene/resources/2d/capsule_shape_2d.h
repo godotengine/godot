@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  skeleton_modification_2d_physicalbones.h                             */
+/*  capsule_shape_2d.h                                                   */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,55 +28,37 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef SKELETONMODIFICATION2DPHYSICALBONES_H
-#define SKELETONMODIFICATION2DPHYSICALBONES_H
+#ifndef CAPSULE_SHAPE_2D_H
+#define CAPSULE_SHAPE_2D_H
 
-#include "scene/2d/skeleton_2d.h"
-#include "scene/resources/skeleton_modification_2d.h"
+#include "scene/resources/2d/shape_2d.h"
 
-///////////////////////////////////////
-// SkeletonModification2DJIGGLE
-///////////////////////////////////////
+class CapsuleShape2D : public Shape2D {
+	GDCLASS(CapsuleShape2D, Shape2D);
 
-class SkeletonModification2DPhysicalBones : public SkeletonModification2D {
-	GDCLASS(SkeletonModification2DPhysicalBones, SkeletonModification2D);
+	real_t height = 20.0;
+	real_t radius = 10.0;
 
-private:
-	struct PhysicalBone_Data2D {
-		NodePath physical_bone_node;
-		ObjectID physical_bone_node_cache;
-	};
-	Vector<PhysicalBone_Data2D> physical_bone_chain;
-
-	void _physical_bone_update_cache(int p_joint_idx);
-
-	bool _simulation_state_dirty = false;
-	TypedArray<StringName> _simulation_state_dirty_names;
-	bool _simulation_state_dirty_process;
-	void _update_simulation_state();
+	void _update_shape();
+	Vector<Vector2> _get_points() const;
 
 protected:
 	static void _bind_methods();
-	bool _get(const StringName &p_path, Variant &r_ret) const;
-	bool _set(const StringName &p_path, const Variant &p_value);
-	void _get_property_list(List<PropertyInfo> *p_list) const;
 
 public:
-	void _execute(float p_delta) override;
-	void _setup_modification(SkeletonModificationStack2D *p_stack) override;
+	virtual bool _edit_is_selected_on_click(const Point2 &p_point, double p_tolerance) const override;
 
-	int get_physical_bone_chain_length();
-	void set_physical_bone_chain_length(int p_new_length);
+	void set_height(real_t p_height);
+	real_t get_height() const;
 
-	void set_physical_bone_node(int p_joint_idx, const NodePath &p_path);
-	NodePath get_physical_bone_node(int p_joint_idx) const;
+	void set_radius(real_t p_radius);
+	real_t get_radius() const;
 
-	void fetch_physical_bones();
-	void start_simulation(const TypedArray<StringName> &p_bones);
-	void stop_simulation(const TypedArray<StringName> &p_bones);
+	virtual void draw(const RID &p_to_rid, const Color &p_color) override;
+	virtual Rect2 get_rect() const override;
+	virtual real_t get_enclosing_radius() const override;
 
-	SkeletonModification2DPhysicalBones();
-	~SkeletonModification2DPhysicalBones();
+	CapsuleShape2D();
 };
 
-#endif // SKELETONMODIFICATION2DPHYSICALBONES_H
+#endif // CAPSULE_SHAPE_2D_H

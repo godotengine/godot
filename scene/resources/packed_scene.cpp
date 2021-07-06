@@ -34,7 +34,9 @@
 #include "core/config/project_settings.h"
 #include "core/core_string_names.h"
 #include "core/io/resource_loader.h"
+#ifndef _2D_DISABLED
 #include "scene/2d/node_2d.h"
+#endif // _2D_DISABLED
 #include "scene/3d/node_3d.h"
 #include "scene/gui/control.h"
 #include "scene/main/instance_placeholder.h"
@@ -166,8 +168,10 @@ Node *SceneState::instantiate(GenEditState p_edit_state) const {
 						obj = memnew(Node3D);
 					} else if (Object::cast_to<Control>(ret_nodes[n.parent])) {
 						obj = memnew(Control);
+#ifndef _2D_DISABLED
 					} else if (Object::cast_to<Node2D>(ret_nodes[n.parent])) {
 						obj = memnew(Node2D);
+#endif // _2D_DISABLED
 					}
 				}
 

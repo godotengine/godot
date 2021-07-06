@@ -67,9 +67,11 @@
 #include "servers/audio_server.h"
 #include "servers/camera_server.h"
 #include "servers/display_server.h"
+#ifndef _2D_DISABLED
 #include "servers/navigation_server_2d.h"
-#include "servers/navigation_server_3d.h"
 #include "servers/physics_server_2d.h"
+#endif // _2D_DISABLED
+#include "servers/navigation_server_3d.h"
 #include "servers/physics_server_3d.h"
 #include "servers/register_server_types.h"
 #include "servers/rendering/rendering_server_default.h"
@@ -117,10 +119,12 @@ static RenderingServer *rendering_server = nullptr;
 static CameraServer *camera_server = nullptr;
 static XRServer *xr_server = nullptr;
 static TextServerManager *tsman = nullptr;
-static PhysicsServer3D *physics_server = nullptr;
+#ifndef _2D_DISABLED
 static PhysicsServer2D *physics_2d_server = nullptr;
-static NavigationServer3D *navigation_server = nullptr;
 static NavigationServer2D *navigation_2d_server = nullptr;
+#endif // _2D_DISABLED
+static PhysicsServer3D *physics_server = nullptr;
+static NavigationServer3D *navigation_server = nullptr;
 // We error out if setup2() doesn't turn this true
 static bool _start_success = false;
 
@@ -218,6 +222,7 @@ void initialize_physics() {
 	ERR_FAIL_COND(!physics_server);
 	physics_server->init();
 
+#ifndef _2D_DISABLED
 	/// 2D Physics server
 	physics_2d_server = PhysicsServer2DManager::new_server(
 			ProjectSettings::get_singleton()->get(PhysicsServer2DManager::setting_property_name));
@@ -227,14 +232,17 @@ void initialize_physics() {
 	}
 	ERR_FAIL_COND(!physics_2d_server);
 	physics_2d_server->init();
+#endif // _2D_DISABLED
 }
 
 void finalize_physics() {
 	physics_server->finish();
 	memdelete(physics_server);
 
+#ifndef _2D_DISABLED
 	physics_2d_server->finish();
 	memdelete(physics_2d_server);
+#endif // _2D_DISABLED
 }
 
 void finalize_display() {
@@ -248,15 +256,19 @@ void initialize_navigation_server() {
 	ERR_FAIL_COND(navigation_server != nullptr);
 
 	navigation_server = NavigationServer3DManager::new_default_server();
+#ifndef _2D_DISABLED
 	navigation_2d_server = memnew(NavigationServer2D);
+#endif // _2D_DISABLED
 }
 
 void finalize_navigation_server() {
 	memdelete(navigation_server);
 	navigation_server = nullptr;
 
+#ifndef _2D_DISABLED
 	memdelete(navigation_2d_server);
 	navigation_2d_server = nullptr;
+#endif // _2D_DISABLED
 }
 
 //#define DEBUG_INIT
@@ -2509,8 +2521,10 @@ bool Main::iteration() {
 		PhysicsServer3D::get_singleton()->sync();
 		PhysicsServer3D::get_singleton()->flush_queries();
 
+#ifndef _2D_DISABLED
 		PhysicsServer2D::get_singleton()->sync();
 		PhysicsServer2D::get_singleton()->flush_queries();
+#endif // _2D_DISABLED
 
 		if (OS::get_singleton()->get_main_loop()->physics_process(physics_step * time_scale)) {
 			exit = true;
@@ -2524,8 +2538,10 @@ bool Main::iteration() {
 		PhysicsServer3D::get_singleton()->end_sync();
 		PhysicsServer3D::get_singleton()->step(physics_step * time_scale);
 
+#ifndef _2D_DISABLED
 		PhysicsServer2D::get_singleton()->end_sync();
 		PhysicsServer2D::get_singleton()->step(physics_step * time_scale);
+#endif // _2D_DISABLED
 
 		message_queue->flush();
 
