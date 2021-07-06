@@ -1281,9 +1281,9 @@ void main() {
 						float range_begin = directional_lights.data[i].shadow_range_begin.y;
 						float test_radius = (range_pos - range_begin) * directional_lights.data[i].softshadow_angle;
 						vec2 tex_scale = directional_lights.data[i].uv_scale2 * test_radius;
-						shadow = sample_directional_soft_shadow(directional_shadow_atlas, pssm_coord.xyz, tex_scale * directional_lights.data[i].soft_shadow_scale);
+						shadow = sample_directional_soft_shadow(directional_shadow_atlas, pssm_coord.xyz, tex_scale * directional_lights.data[i].soft_shadow_scale * 0.5);
 					} else {
-						shadow = sample_directional_pcf_shadow(directional_shadow_atlas, scene_data.directional_shadow_pixel_size * directional_lights.data[i].soft_shadow_scale, pssm_coord);
+						shadow = sample_directional_pcf_shadow(directional_shadow_atlas, scene_data.directional_shadow_pixel_size * directional_lights.data[i].soft_shadow_scale * 0.5, pssm_coord);
 					}
 
 					shadow_color = directional_lights.data[i].shadow_color2.rgb;
@@ -1300,9 +1300,9 @@ void main() {
 						float range_begin = directional_lights.data[i].shadow_range_begin.z;
 						float test_radius = (range_pos - range_begin) * directional_lights.data[i].softshadow_angle;
 						vec2 tex_scale = directional_lights.data[i].uv_scale3 * test_radius;
-						shadow = sample_directional_soft_shadow(directional_shadow_atlas, pssm_coord.xyz, tex_scale * directional_lights.data[i].soft_shadow_scale);
+						shadow = sample_directional_soft_shadow(directional_shadow_atlas, pssm_coord.xyz, tex_scale * directional_lights.data[i].soft_shadow_scale * 0.2);
 					} else {
-						shadow = sample_directional_pcf_shadow(directional_shadow_atlas, scene_data.directional_shadow_pixel_size * directional_lights.data[i].soft_shadow_scale, pssm_coord);
+						shadow = sample_directional_pcf_shadow(directional_shadow_atlas, scene_data.directional_shadow_pixel_size * directional_lights.data[i].soft_shadow_scale * 0.2, pssm_coord);
 					}
 
 					shadow_color = directional_lights.data[i].shadow_color3.rgb;
@@ -1320,9 +1320,9 @@ void main() {
 						float range_begin = directional_lights.data[i].shadow_range_begin.w;
 						float test_radius = (range_pos - range_begin) * directional_lights.data[i].softshadow_angle;
 						vec2 tex_scale = directional_lights.data[i].uv_scale4 * test_radius;
-						shadow = sample_directional_soft_shadow(directional_shadow_atlas, pssm_coord.xyz, tex_scale * directional_lights.data[i].soft_shadow_scale);
+						shadow = sample_directional_soft_shadow(directional_shadow_atlas, pssm_coord.xyz, tex_scale * directional_lights.data[i].soft_shadow_scale * 0.1);
 					} else {
-						shadow = sample_directional_pcf_shadow(directional_shadow_atlas, scene_data.directional_shadow_pixel_size * directional_lights.data[i].soft_shadow_scale, pssm_coord);
+						shadow = sample_directional_pcf_shadow(directional_shadow_atlas, scene_data.directional_shadow_pixel_size * directional_lights.data[i].soft_shadow_scale * 0.1, pssm_coord);
 					}
 
 					shadow_color = directional_lights.data[i].shadow_color4.rgb;
@@ -1344,9 +1344,9 @@ void main() {
 							float range_begin = directional_lights.data[i].shadow_range_begin.y;
 							float test_radius = (range_pos - range_begin) * directional_lights.data[i].softshadow_angle;
 							vec2 tex_scale = directional_lights.data[i].uv_scale2 * test_radius;
-							shadow2 = sample_directional_soft_shadow(directional_shadow_atlas, pssm_coord.xyz, tex_scale * directional_lights.data[i].soft_shadow_scale);
+							shadow2 = sample_directional_soft_shadow(directional_shadow_atlas, pssm_coord.xyz, tex_scale * directional_lights.data[i].soft_shadow_scale * 0.5);
 						} else {
-							shadow2 = sample_directional_pcf_shadow(directional_shadow_atlas, scene_data.directional_shadow_pixel_size * directional_lights.data[i].soft_shadow_scale, pssm_coord);
+							shadow2 = sample_directional_pcf_shadow(directional_shadow_atlas, scene_data.directional_shadow_pixel_size * directional_lights.data[i].soft_shadow_scale * 0.5, pssm_coord);
 						}
 
 						pssm_blend = smoothstep(0.0, directional_lights.data[i].shadow_split_offsets.x, depth_z);
@@ -1362,9 +1362,9 @@ void main() {
 							float range_begin = directional_lights.data[i].shadow_range_begin.z;
 							float test_radius = (range_pos - range_begin) * directional_lights.data[i].softshadow_angle;
 							vec2 tex_scale = directional_lights.data[i].uv_scale3 * test_radius;
-							shadow2 = sample_directional_soft_shadow(directional_shadow_atlas, pssm_coord.xyz, tex_scale * directional_lights.data[i].soft_shadow_scale);
+							shadow2 = sample_directional_soft_shadow(directional_shadow_atlas, pssm_coord.xyz, tex_scale * directional_lights.data[i].soft_shadow_scale * 0.2);
 						} else {
-							shadow2 = sample_directional_pcf_shadow(directional_shadow_atlas, scene_data.directional_shadow_pixel_size * directional_lights.data[i].soft_shadow_scale, pssm_coord);
+							shadow2 = sample_directional_pcf_shadow(directional_shadow_atlas, scene_data.directional_shadow_pixel_size * directional_lights.data[i].soft_shadow_scale * 0.2, pssm_coord);
 						}
 
 						pssm_blend = smoothstep(directional_lights.data[i].shadow_split_offsets.x, directional_lights.data[i].shadow_split_offsets.y, depth_z);
@@ -1380,9 +1380,9 @@ void main() {
 							float range_begin = directional_lights.data[i].shadow_range_begin.w;
 							float test_radius = (range_pos - range_begin) * directional_lights.data[i].softshadow_angle;
 							vec2 tex_scale = directional_lights.data[i].uv_scale4 * test_radius;
-							shadow2 = sample_directional_soft_shadow(directional_shadow_atlas, pssm_coord.xyz, tex_scale * directional_lights.data[i].soft_shadow_scale);
+							shadow2 = sample_directional_soft_shadow(directional_shadow_atlas, pssm_coord.xyz, tex_scale * directional_lights.data[i].soft_shadow_scale * 0.1);
 						} else {
-							shadow2 = sample_directional_pcf_shadow(directional_shadow_atlas, scene_data.directional_shadow_pixel_size * directional_lights.data[i].soft_shadow_scale, pssm_coord);
+							shadow2 = sample_directional_pcf_shadow(directional_shadow_atlas, scene_data.directional_shadow_pixel_size * directional_lights.data[i].soft_shadow_scale * 0.1, pssm_coord);
 						}
 
 						pssm_blend = smoothstep(directional_lights.data[i].shadow_split_offsets.y, directional_lights.data[i].shadow_split_offsets.z, depth_z);
@@ -1423,6 +1423,7 @@ void main() {
 					BIAS_FUNC(v, 0)
 
 					pssm_coord = (directional_lights.data[i].shadow_matrix1 * v);
+					shadow = sample_directional_pcf_shadow(directional_shadow_atlas, scene_data.directional_shadow_pixel_size * directional_lights.data[i].soft_shadow_scale, pssm_coord);
 #ifdef LIGHT_TRANSMITTANCE_USED
 					{
 						vec4 trans_vertex = vec4(vertex - normalize(normal_interp) * directional_lights.data[i].shadow_transmittance_bias.x, 1.0);
@@ -1442,6 +1443,7 @@ void main() {
 					BIAS_FUNC(v, 1)
 
 					pssm_coord = (directional_lights.data[i].shadow_matrix2 * v);
+					shadow = sample_directional_pcf_shadow(directional_shadow_atlas, scene_data.directional_shadow_pixel_size * directional_lights.data[i].soft_shadow_scale * 0.5, pssm_coord);
 #ifdef LIGHT_TRANSMITTANCE_USED
 					{
 						vec4 trans_vertex = vec4(vertex - normalize(normal_interp) * directional_lights.data[i].shadow_transmittance_bias.y, 1.0);
@@ -1461,6 +1463,7 @@ void main() {
 					BIAS_FUNC(v, 2)
 
 					pssm_coord = (directional_lights.data[i].shadow_matrix3 * v);
+					shadow = sample_directional_pcf_shadow(directional_shadow_atlas, scene_data.directional_shadow_pixel_size * directional_lights.data[i].soft_shadow_scale * 0.2, pssm_coord);
 #ifdef LIGHT_TRANSMITTANCE_USED
 					{
 						vec4 trans_vertex = vec4(vertex - normalize(normal_interp) * directional_lights.data[i].shadow_transmittance_bias.z, 1.0);
@@ -1481,6 +1484,7 @@ void main() {
 					BIAS_FUNC(v, 3)
 
 					pssm_coord = (directional_lights.data[i].shadow_matrix4 * v);
+					shadow = sample_directional_pcf_shadow(directional_shadow_atlas, scene_data.directional_shadow_pixel_size * directional_lights.data[i].soft_shadow_scale * 0.1, pssm_coord);
 #ifdef LIGHT_TRANSMITTANCE_USED
 					{
 						vec4 trans_vertex = vec4(vertex - normalize(normal_interp) * directional_lights.data[i].shadow_transmittance_bias.w, 1.0);
@@ -1498,33 +1502,34 @@ void main() {
 
 				pssm_coord /= pssm_coord.w;
 
-				shadow = sample_directional_pcf_shadow(directional_shadow_atlas, scene_data.directional_shadow_pixel_size * directional_lights.data[i].soft_shadow_scale, pssm_coord);
-
 				if (directional_lights.data[i].blend_splits) {
 					float pssm_blend;
+					float shadow2;
 
 					if (depth_z < directional_lights.data[i].shadow_split_offsets.x) {
 						vec4 v = vec4(vertex, 1.0);
 						BIAS_FUNC(v, 1)
 						pssm_coord = (directional_lights.data[i].shadow_matrix2 * v);
 						pssm_blend = smoothstep(0.0, directional_lights.data[i].shadow_split_offsets.x, depth_z);
+						shadow2 = sample_directional_pcf_shadow(directional_shadow_atlas, scene_data.directional_shadow_pixel_size * directional_lights.data[i].soft_shadow_scale * 0.5, pssm_coord);
 					} else if (depth_z < directional_lights.data[i].shadow_split_offsets.y) {
 						vec4 v = vec4(vertex, 1.0);
 						BIAS_FUNC(v, 2)
 						pssm_coord = (directional_lights.data[i].shadow_matrix3 * v);
 						pssm_blend = smoothstep(directional_lights.data[i].shadow_split_offsets.x, directional_lights.data[i].shadow_split_offsets.y, depth_z);
+						shadow2 = sample_directional_pcf_shadow(directional_shadow_atlas, scene_data.directional_shadow_pixel_size * directional_lights.data[i].soft_shadow_scale * 0.2, pssm_coord);
 					} else if (depth_z < directional_lights.data[i].shadow_split_offsets.z) {
 						vec4 v = vec4(vertex, 1.0);
 						BIAS_FUNC(v, 3)
 						pssm_coord = (directional_lights.data[i].shadow_matrix4 * v);
 						pssm_blend = smoothstep(directional_lights.data[i].shadow_split_offsets.y, directional_lights.data[i].shadow_split_offsets.z, depth_z);
+						shadow2 = sample_directional_pcf_shadow(directional_shadow_atlas, scene_data.directional_shadow_pixel_size * directional_lights.data[i].soft_shadow_scale * 0.1, pssm_coord);
 					} else {
 						pssm_blend = 0.0; //if no blend, same coord will be used (divide by z will result in same value, and already cached)
+						shadow2 = sample_directional_pcf_shadow(directional_shadow_atlas, scene_data.directional_shadow_pixel_size * directional_lights.data[i].soft_shadow_scale, pssm_coord);
 					}
 
 					pssm_coord /= pssm_coord.w;
-
-					float shadow2 = sample_directional_pcf_shadow(directional_shadow_atlas, scene_data.directional_shadow_pixel_size * directional_lights.data[i].soft_shadow_scale, pssm_coord);
 					shadow = mix(shadow, shadow2, pssm_blend);
 				}
 
