@@ -65,7 +65,7 @@ private:
 	private:
 		Ref<TileSet> tile_set;
 		TileSetAtlasSource *tile_set_atlas_source = nullptr;
-		int source_id = -1;
+		int source_id = TileSet::INVALID_SOURCE;
 
 	protected:
 		bool _set(const StringName &p_name, const Variant &p_value);
@@ -108,7 +108,7 @@ private:
 
 	Ref<TileSet> tile_set;
 	TileSetAtlasSource *tile_set_atlas_source = nullptr;
-	int tile_set_atlas_source_id = -1;
+	int tile_set_atlas_source_id = TileSet::INVALID_SOURCE;
 
 	UndoRedo *undo_redo = EditorNode::get_undo_redo();
 

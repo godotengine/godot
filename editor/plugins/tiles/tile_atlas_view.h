@@ -47,7 +47,7 @@ class TileAtlasView : public Control {
 private:
 	TileSet *tile_set;
 	TileSetAtlasSource *tile_set_atlas_source;
-	int source_id = -1;
+	int source_id = TileSet::INVALID_SOURCE;
 
 	enum DragType {
 		DRAG_TYPE_NONE,

@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  tile_set_editor.h                                                    */
+/*  tile_proxies_manager_dialog.h                                        */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,64 +28,63 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef TILE_SET_EDITOR_H
-#define TILE_SET_EDITOR_H
+#ifndef TILE_PROXIES_MANAGER_DIALOG_H
+#define TILE_PROXIES_MANAGER_DIALOG_H
 
-#include "atlas_merging_dialog.h"
-#include "scene/gui/box_container.h"
+#include "editor/editor_node.h"
+#include "editor/editor_properties.h"
+
+#include "scene/gui/dialogs.h"
+#include "scene/gui/item_list.h"
 #include "scene/resources/tile_set.h"
-#include "tile_proxies_manager_dialog.h"
-#include "tile_set_atlas_source_editor.h"
-#include "tile_set_scenes_collection_source_editor.h"
 
-class TileSetEditor : public VBoxContainer {
-	GDCLASS(TileSetEditor, VBoxContainer);
-
-	static TileSetEditor *singleton;
+class TileProxiesManagerDialog : public ConfirmationDialog {
+	GDCLASS(TileProxiesManagerDialog, ConfirmationDialog);
 
 private:
+	int commited_actions_count = 0;
 	Ref<TileSet> tile_set;
-	bool tile_set_changed_needs_update = false;
 
-	Label *no_source_selected_label;
-	TileSetAtlasSourceEditor *tile_set_atlas_source_editor;
-	TileSetScenesCollectionSourceEditor *tile_set_scenes_collection_source_editor;
+	UndoRedo *undo_redo = EditorNode::get_singleton()->get_undo_redo();
 
-	UndoRedo *undo_redo = EditorNode::get_undo_redo();
+	TileMapCell from;
+	TileMapCell to;
 
-	void _update_sources_list(int force_selected_id = -1);
+	// GUI
+	ItemList *source_level_list;
+	ItemList *coords_level_list;
+	ItemList *alternative_level_list;
 
-	// Sources management.
-	Button *sources_delete_button;
-	MenuButton *sources_add_button;
-	MenuButton *sources_advanced_menu_button;
-	ItemList *sources_list;
-	Ref<Texture2D> missing_texture_texture;
-	void _source_selected(int p_source_index);
-	void _source_delete_pressed();
-	void _source_add_id_pressed(int p_id_pressed);
-	void _sources_advanced_menu_id_pressed(int p_id_pressed);
+	EditorPropertyInteger *source_from_property_editor;
+	EditorPropertyVector2i *coords_from_property_editor;
+	EditorPropertyInteger *alternative_from_property_editor;
+	EditorPropertyInteger *source_to_property_editor;
+	EditorPropertyVector2i *coords_to_property_editor;
+	EditorPropertyInteger *alternative_to_property_editor;
 
-	AtlasMergingDialog *atlas_merging_dialog;
-	TileProxiesManagerDialog *tile_proxies_manager_dialog;
+	PopupMenu *popup_menu;
+	void _right_clicked(int p_item, Vector2 p_local_mouse_pos, Object *p_item_list);
+	void _menu_id_pressed(int p_id);
+	void _delete_selected_bindings();
+	void _update_lists();
+	void _update_enabled_property_editors();
+	void _property_changed(const String &p_path, const Variant &p_value, const String &p_name, bool p_changing);
+	void _add_button_pressed();
 
-	void _tile_set_changed();
-
-	void _undo_redo_inspector_callback(Object *p_undo_redo, Object *p_edited, String p_property, Variant p_new_value);
+	void _clear_invalid_button_pressed();
+	void _clear_all_button_pressed();
 
 protected:
-	void _notification(int p_what);
+	bool _set(const StringName &p_name, const Variant &p_value);
+	bool _get(const StringName &p_name, Variant &r_ret) const;
+	void _unhandled_key_input(Ref<InputEvent> p_event);
+	virtual void cancel_pressed() override;
 	static void _bind_methods();
 
 public:
-	_FORCE_INLINE_ static TileSetEditor *get_singleton() { return singleton; }
+	void update_tile_set(Ref<TileSet> p_tile_set);
 
-	void edit(Ref<TileSet> p_tile_set);
-	void drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from);
-	bool can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) const;
-
-	TileSetEditor();
-	~TileSetEditor();
+	TileProxiesManagerDialog();
 };
 
-#endif // TILE_SET_EDITOR_PLUGIN_H
+#endif // TILE_PROXIES_MANAGER_DIALOG_H

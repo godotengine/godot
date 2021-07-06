@@ -118,11 +118,11 @@ void TilesEditor::_update_editors() {
 	CanvasItemEditor::get_singleton()->update_viewport();
 }
 
-void TilesEditor::set_atlas_sources_lists_current(int p_current) {
+void TilesEditor::set_sources_lists_current(int p_current) {
 	atlas_sources_lists_current = p_current;
 }
 
-void TilesEditor::synchronize_atlas_sources_list(Object *p_current) {
+void TilesEditor::synchronize_sources_list(Object *p_current) {
 	ItemList *item_list = Object::cast_to<ItemList>(p_current);
 	ERR_FAIL_COND(!item_list);
 

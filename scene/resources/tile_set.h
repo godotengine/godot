@@ -120,6 +120,8 @@ public:
 #endif // DISABLE_DEPRECATED
 
 public:
+	static const int INVALID_SOURCE; // -1;
+
 	enum CellNeighbor {
 		CELL_NEIGHBOR_RIGHT_SIDE = 0,
 		CELL_NEIGHBOR_RIGHT_CORNER,
@@ -169,7 +171,6 @@ public:
 		TILE_OFFSET_AXIS_VERTICAL,
 	};
 
-public:
 	struct PackedSceneSource {
 		Ref<PackedScene> scene;
 		Vector2 offset;
@@ -249,6 +250,11 @@ private:
 
 	void _compute_next_source_id();
 	void _source_changed();
+
+	// Tile proxies
+	Map<int, int> source_level_proxies;
+	Map<Array, Array> coords_level_proxies;
+	Map<Array, Array> alternative_level_proxies;
 
 	// Helpers
 	Vector<Point2> _get_square_corner_or_side_terrain_bit_polygon(Vector2i p_size, TileSet::CellNeighbor p_bit);
@@ -344,6 +350,31 @@ public:
 	String get_custom_data_name(int p_layer_id) const;
 	void set_custom_data_type(int p_layer_id, Variant::Type p_value);
 	Variant::Type get_custom_data_type(int p_layer_id) const;
+
+	// Tiles proxies.
+	void set_source_level_tile_proxy(int p_source_from, int p_source_to);
+	int get_source_level_tile_proxy(int p_source_from);
+	bool has_source_level_tile_proxy(int p_source_from);
+	void remove_source_level_tile_proxy(int p_source_from);
+
+	void set_coords_level_tile_proxy(int p_source_from, Vector2i p_coords_from, int p_source_to, Vector2i p_coords_to);
+	Array get_coords_level_tile_proxy(int p_source_from, Vector2i p_coords_from);
+	bool has_coords_level_tile_proxy(int p_source_from, Vector2i p_coords_from);
+	void remove_coords_level_tile_proxy(int p_source_from, Vector2i p_coords_from);
+
+	void set_alternative_level_tile_proxy(int p_source_from, Vector2i p_coords_from, int p_alternative_from, int p_source_to, Vector2i p_coords_to, int p_alternative_to);
+	Array get_alternative_level_tile_proxy(int p_source_from, Vector2i p_coords_from, int p_alternative_from);
+	bool has_alternative_level_tile_proxy(int p_source_from, Vector2i p_coords_from, int p_alternative_from);
+	void remove_alternative_level_tile_proxy(int p_source_from, Vector2i p_coords_from, int p_alternative_from);
+
+	Array get_source_level_tile_proxies() const;
+	Array get_coords_level_tile_proxies() const;
+	Array get_alternative_level_tile_proxies() const;
+
+	Array map_tile_proxy(int p_source_from, Vector2i p_coords_from, int p_alternative_from) const;
+
+	void cleanup_invalid_tile_proxies();
+	void clear_tile_proxies();
 
 	// Helpers
 	Vector<Vector2> get_tile_shape_polygon();

@@ -58,7 +58,7 @@ void TileMapPattern::remove_cell(const Vector2i &p_coords, bool p_update_size) {
 }
 
 int TileMapPattern::get_cell_source_id(const Vector2i &p_coords) const {
-	ERR_FAIL_COND_V(!pattern.has(p_coords), -1);
+	ERR_FAIL_COND_V(!pattern.has(p_coords), TileSet::INVALID_SOURCE);
 
 	return pattern[p_coords].source_id;
 }
@@ -113,7 +113,7 @@ void TileMapPattern::clear() {
 };
 
 void TileMapPattern::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("set_cell", "coords", "source_id", "atlas_coords", "alternative_tile"), &TileMapPattern::set_cell, DEFVAL(-1), DEFVAL(TileSetSource::INVALID_ATLAS_COORDS), DEFVAL(TileSetSource::INVALID_TILE_ALTERNATIVE));
+	ClassDB::bind_method(D_METHOD("set_cell", "coords", "source_id", "atlas_coords", "alternative_tile"), &TileMapPattern::set_cell, DEFVAL(TileSet::INVALID_SOURCE), DEFVAL(TileSetSource::INVALID_ATLAS_COORDS), DEFVAL(TileSetSource::INVALID_TILE_ALTERNATIVE));
 	ClassDB::bind_method(D_METHOD("has_cell", "coords"), &TileMapPattern::has_cell);
 	ClassDB::bind_method(D_METHOD("remove_cell", "coords"), &TileMapPattern::remove_cell);
 	ClassDB::bind_method(D_METHOD("get_cell_source_id", "coords"), &TileMapPattern::get_cell_source_id);
@@ -513,15 +513,15 @@ void TileMap::set_cell(const Vector2i &p_coords, int p_source_id, const Vector2i
 	Vector2i atlas_coords = p_atlas_coords;
 	int alternative_tile = p_alternative_tile;
 
-	if ((source_id == -1 || atlas_coords == TileSetSource::INVALID_ATLAS_COORDS || alternative_tile == TileSetSource::INVALID_TILE_ALTERNATIVE) &&
-			(source_id != -1 || atlas_coords != TileSetSource::INVALID_ATLAS_COORDS || alternative_tile != TileSetSource::INVALID_TILE_ALTERNATIVE)) {
+	if ((source_id == TileSet::INVALID_SOURCE || atlas_coords == TileSetSource::INVALID_ATLAS_COORDS || alternative_tile == TileSetSource::INVALID_TILE_ALTERNATIVE) &&
+			(source_id != TileSet::INVALID_SOURCE || atlas_coords != TileSetSource::INVALID_ATLAS_COORDS || alternative_tile != TileSetSource::INVALID_TILE_ALTERNATIVE)) {
 		WARN_PRINT("Setting a cell a cell as empty requires both source_id, atlas_coord and alternative_tile to be set to their respective \"invalid\" values. Values were thus changes accordingly.");
-		source_id = -1;
+		source_id = TileSet::INVALID_SOURCE;
 		atlas_coords = TileSetSource::INVALID_ATLAS_COORDS;
 		alternative_tile = TileSetSource::INVALID_TILE_ALTERNATIVE;
 	}
 
-	if (!E && source_id == -1) {
+	if (!E && source_id == TileSet::INVALID_SOURCE) {
 		return; // Nothing to do, the tile is already empty.
 	}
 
@@ -530,7 +530,7 @@ void TileMap::set_cell(const Vector2i &p_coords, int p_source_id, const Vector2i
 
 	Map<Vector2i, TileMapQuadrant>::Element *Q = quadrant_map.find(qk);
 
-	if (source_id == -1) {
+	if (source_id == TileSet::INVALID_SOURCE) {
 		// Erase existing cell in the tile map.
 		tile_map.erase(pk);
 
@@ -579,18 +579,23 @@ void TileMap::set_cell(const Vector2i &p_coords, int p_source_id, const Vector2i
 	}
 }
 
-int TileMap::get_cell_source_id(const Vector2i &p_coords) const {
+int TileMap::get_cell_source_id(const Vector2i &p_coords, bool p_use_proxies) const {
 	// Get a cell source id from position
 	const Map<Vector2i, TileMapCell>::Element *E = tile_map.find(p_coords);
 
 	if (!E) {
-		return -1;
+		return TileSet::INVALID_SOURCE;
+	}
+
+	if (p_use_proxies && tile_set.is_valid()) {
+		Array proxyed = tile_set->map_tile_proxy(E->get().source_id, E->get().get_atlas_coords(), E->get().alternative_tile);
+		return proxyed[0];
 	}
 
 	return E->get().source_id;
 }
 
-Vector2i TileMap::get_cell_atlas_coords(const Vector2i &p_coords) const {
+Vector2i TileMap::get_cell_atlas_coords(const Vector2i &p_coords, bool p_use_proxies) const {
 	// Get a cell source id from position
 	const Map<Vector2i, TileMapCell>::Element *E = tile_map.find(p_coords);
 
@@ -598,15 +603,25 @@ Vector2i TileMap::get_cell_atlas_coords(const Vector2i &p_coords) const {
 		return TileSetSource::INVALID_ATLAS_COORDS;
 	}
 
+	if (p_use_proxies && tile_set.is_valid()) {
+		Array proxyed = tile_set->map_tile_proxy(E->get().source_id, E->get().get_atlas_coords(), E->get().alternative_tile);
+		return proxyed[1];
+	}
+
 	return E->get().get_atlas_coords();
 }
 
-int TileMap::get_cell_alternative_tile(const Vector2i &p_coords) const {
+int TileMap::get_cell_alternative_tile(const Vector2i &p_coords, bool p_use_proxies) const {
 	// Get a cell source id from position
 	const Map<Vector2i, TileMapCell>::Element *E = tile_map.find(p_coords);
 
 	if (!E) {
 		return TileSetSource::INVALID_TILE_ALTERNATIVE;
+	}
+
+	if (p_use_proxies && tile_set.is_valid()) {
+		Array proxyed = tile_set->map_tile_proxy(E->get().source_id, E->get().get_atlas_coords(), E->get().alternative_tile);
+		return proxyed[2];
 	}
 
 	return E->get().alternative_tile;
@@ -697,11 +712,18 @@ void TileMap::set_pattern(Vector2i p_position, const TileMapPattern *p_pattern) 
 	}
 }
 
-TileMapCell TileMap::get_cell(const Vector2i &p_coords) const {
+TileMapCell TileMap::get_cell(const Vector2i &p_coords, bool p_use_proxies) const {
 	if (!tile_map.has(p_coords)) {
 		return TileMapCell();
 	} else {
-		return tile_map.find(p_coords)->get();
+		TileMapCell c = tile_map.find(p_coords)->get();
+		if (p_use_proxies && tile_set.is_valid()) {
+			Array proxyed = tile_set->map_tile_proxy(c.source_id, c.get_atlas_coords(), c.alternative_tile);
+			c.source_id = proxyed[0];
+			c.set_atlas_coords(proxyed[1]);
+			c.alternative_tile = proxyed[2];
+		}
+		return c;
 	}
 }
 
@@ -720,7 +742,7 @@ void TileMap::fix_invalid_tiles() {
 		}
 	}
 	for (Set<Vector2i>::Element *E = coords.front(); E; E = E->next()) {
-		set_cell(E->get(), -1, TileSetSource::INVALID_ATLAS_COORDS, TileSetSource::INVALID_TILE_ALTERNATIVE);
+		set_cell(E->get(), TileSet::INVALID_SOURCE, TileSetSource::INVALID_ATLAS_COORDS, TileSetSource::INVALID_TILE_ALTERNATIVE);
 	}
 }
 
@@ -799,6 +821,7 @@ void TileMap::_set_tile_data(const Vector<int> &p_data) {
 			SWAP(local[9], local[10]);
 		}
 #endif
+		// Extracts position in TileMap.
 		int16_t x = decode_uint16(&local[0]);
 		int16_t y = decode_uint16(&local[2]);
 
@@ -810,11 +833,16 @@ void TileMap::_set_tile_data(const Vector<int> &p_data) {
 			set_cell(Vector2i(x, y), source_id, Vector2i(atlas_coords_x, atlas_coords_y), alternative_tile);
 		} else {
 #ifndef DISABLE_DEPRECATED
+			// Previous decated format.
+
 			uint32_t v = decode_uint32(&local[4]);
+			// Extract the transform flags that used to be in the tilemap.
 			bool flip_h = v & (1 << 29);
 			bool flip_v = v & (1 << 30);
 			bool transpose = v & (1 << 31);
 			v &= (1 << 29) - 1;
+
+			// Extract autotile/atlas coords.
 			int16_t coord_x = 0;
 			int16_t coord_y = 0;
 			if (format == FORMAT_2) {
@@ -1728,10 +1756,10 @@ void TileMap::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_navigation_visibility_mode", "show_navigation"), &TileMap::set_navigation_visibility_mode);
 	ClassDB::bind_method(D_METHOD("get_navigation_visibility_mode"), &TileMap::get_navigation_visibility_mode);
 
-	ClassDB::bind_method(D_METHOD("set_cell", "coords", "source_id", "atlas_coords", "alternative_tile"), &TileMap::set_cell, DEFVAL(-1), DEFVAL(TileSetSource::INVALID_ATLAS_COORDS), DEFVAL(TileSetSource::INVALID_TILE_ALTERNATIVE));
-	ClassDB::bind_method(D_METHOD("get_cell_source_id", "coords"), &TileMap::get_cell_source_id);
-	ClassDB::bind_method(D_METHOD("get_cell_atlas_coords", "coords"), &TileMap::get_cell_atlas_coords);
-	ClassDB::bind_method(D_METHOD("get_cell_alternative_tile", "coords"), &TileMap::get_cell_alternative_tile);
+	ClassDB::bind_method(D_METHOD("set_cell", "coords", "source_id", "atlas_coords", "alternative_tile"), &TileMap::set_cell, DEFVAL(TileSet::INVALID_SOURCE), DEFVAL(TileSetSource::INVALID_ATLAS_COORDS), DEFVAL(TileSetSource::INVALID_TILE_ALTERNATIVE));
+	ClassDB::bind_method(D_METHOD("get_cell_source_id", "coords", "use_proxies"), &TileMap::get_cell_source_id);
+	ClassDB::bind_method(D_METHOD("get_cell_atlas_coords", "coords", "use_proxies"), &TileMap::get_cell_atlas_coords);
+	ClassDB::bind_method(D_METHOD("get_cell_alternative_tile", "coords", "use_proxies"), &TileMap::get_cell_alternative_tile);
 
 	ClassDB::bind_method(D_METHOD("fix_invalid_tiles"), &TileMap::fix_invalid_tiles);
 	ClassDB::bind_method(D_METHOD("get_surrounding_tiles", "coords"), &TileMap::get_surrounding_tiles);
