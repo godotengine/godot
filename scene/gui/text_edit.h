@@ -258,7 +258,6 @@ private:
 	uint32_t version = 0;
 	uint32_t saved_version = 0;
 
-	int max_chars = 0;
 	bool readonly = true; // Initialise to opposite first, so we get past the early-out in set_readonly.
 
 	Timer *caret_blink_timer;
@@ -677,9 +676,6 @@ public:
 
 	void set_readonly(bool p_readonly);
 	bool is_readonly() const;
-
-	void set_max_chars(int p_max_chars);
-	int get_max_chars() const;
 
 	void set_wrap_enabled(bool p_wrap_enabled);
 	bool is_wrap_enabled() const;
