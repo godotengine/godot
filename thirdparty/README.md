@@ -282,6 +282,21 @@ File extracted from upstream release tarball:
   for light bundling with core.
 
 
+## metalangle
+
+- Upstream: https://github.com/kakashidinho/metalangle
+- Version: gles3-0.0.6 (f3ab2c261fb9dcfa98a7294fe54bae814b817632, 2021)
+- License: BSD-3-Clause
+
+Process to regenerate the build files:
+
+- Clone MetalANGLE to some directory, that we'll refer to as `<metalangle_repo_dir>`.
+- Run `<metalangle_repo_dir>/ios/xcode/fetchDependencies.sh`.
+- Build the `angle_commit_id` target found in the Xcode project, to have `ios/xcode/gen/id/commit.h` generated (or see how it looks and update it manually yourself).
+- Run `pip install pbxproj`, if you still haven't it installed.
+- Run `thirdparty/modules/metalangle/update_metalangle.py <metalangle_repo_dir>`.
+
+
 ## miniupnpc
 
 - Upstream: https://github.com/miniupnp/miniupnp

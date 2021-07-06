@@ -1,0 +1,26 @@
+#!/usr/bin/env python
+
+Import("env")
+Import("env_modules")
+
+from iphone_generated import *
+from osx_generated import *
+
+env_metalangle = env_modules.Clone()
+env_metalangle.add_source_files(env.modules_sources, "*.cpp")
+
+env_thirdparty = env_metalangle.Clone()
+
+# This is not sucessfully taken from the project, so not every file in spirv-cross
+# has it defined, so let's just define it here for every file.
+env_thirdparty.Append(CPPDEFINES=["SPIRV_CROSS_EXCEPTIONS_TO_ASSERTIONS"])
+
+if env["bits"] == "64":
+    env_thirdparty.Append(CPPDEFINES=["ANGLE_IS_64_BIT_CPU"])
+
+if env["platform"] == "iphone":
+    thirdparty_obj = setup_iphone(env_thirdparty)
+elif env["platform"] == "osx":
+    thirdparty_obj = setup_osx(env_thirdparty)
+
+env.modules_sources += thirdparty_obj
