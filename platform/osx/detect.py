@@ -174,7 +174,9 @@ def configure(env):
             "-framework",
             "Carbon",
             "-framework",
-            "Metal",
+            "OpenGL",
+            "-framework",
+            "AGL",
             "-framework",
             "AudioUnit",
             "-framework",
@@ -195,5 +197,3 @@ def configure(env):
         ]
     )
     env.Append(LIBS=["pthread"])
-
-    env.Append(CPPDEFINES=["HAVE_METALANGLE"])
