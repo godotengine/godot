@@ -63,7 +63,12 @@ bool ShaderGlobalsOverride::_set(const StringName &p_name, const Variant &p_valu
 		if (o) {
 			o->override = p_value;
 			if (active) {
-				RS::get_singleton()->global_variable_set_override(*r, p_value);
+				if (o->override.get_type() == Variant::OBJECT) {
+					RID tex_rid = p_value;
+					RS::get_singleton()->global_variable_set_override(*r, tex_rid);
+				} else {
+					RS::get_singleton()->global_variable_set_override(*r, p_value);
+				}
 			}
 			o->in_use = p_value.get_type() != Variant::NIL;
 			return true;
@@ -228,7 +233,12 @@ void ShaderGlobalsOverride::_activate() {
 		while ((K = overrides.next(K))) {
 			Override *o = overrides.getptr(*K);
 			if (o->in_use && o->override.get_type() != Variant::NIL) {
-				RS::get_singleton()->global_variable_set_override(*K, o->override);
+				if (o->override.get_type() == Variant::OBJECT) {
+					RID tex_rid = o->override;
+					RS::get_singleton()->global_variable_set_override(*K, tex_rid);
+				} else {
+					RS::get_singleton()->global_variable_set_override(*K, o->override);
+				}
 			}
 		}
 
