@@ -261,6 +261,7 @@ public:
 	void _focus_node();
 
 	void import_subscene();
+	void add_root_node(Node *p_node);
 	void set_edited_scene(Node *p_scene);
 	void instantiate(const String &p_file);
 	void instantiate_scenes(const Vector<String> &p_files, Node *p_parent = nullptr);
