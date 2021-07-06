@@ -1315,6 +1315,8 @@ void RendererSceneCull::instance_geometry_set_shader_parameter(RID p_instance, c
 	Instance *instance = instance_owner.getornull(p_instance);
 	ERR_FAIL_COND(!instance);
 
+	ERR_FAIL_COND(p_value.get_type() == Variant::OBJECT);
+
 	Map<StringName, Instance::InstanceShaderParameter>::Element *E = instance->instance_shader_parameters.find(p_parameter);
 
 	if (!E) {

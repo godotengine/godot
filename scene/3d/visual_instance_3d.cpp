@@ -293,7 +293,12 @@ void GeometryInstance3D::set_shader_instance_uniform(const StringName &p_uniform
 		instance_uniforms.erase(p_value);
 	} else {
 		instance_uniforms[p_uniform] = p_value;
-		RS::get_singleton()->instance_geometry_set_shader_parameter(get_instance(), p_uniform, p_value);
+		if (p_value.get_type() == Variant::OBJECT) {
+			RID tex_id = p_value;
+			RS::get_singleton()->instance_geometry_set_shader_parameter(get_instance(), p_uniform, tex_id);
+		} else {
+			RS::get_singleton()->instance_geometry_set_shader_parameter(get_instance(), p_uniform, p_value);
+		}
 	}
 }
 

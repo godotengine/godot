@@ -1601,6 +1601,7 @@ void RendererStorageRD::material_set_param(RID p_material, const StringName &p_p
 	if (p_value.get_type() == Variant::NIL) {
 		material->params.erase(p_param);
 	} else {
+		ERR_FAIL_COND(p_value.get_type() == Variant::OBJECT); //object not allowed
 		material->params[p_param] = p_value;
 	}
 
@@ -8322,6 +8323,9 @@ void RendererStorageRD::global_variable_set_override(const StringName &p_name, c
 	if (!global_variables.variables.has(p_name)) {
 		return; //variable may not exist
 	}
+
+	ERR_FAIL_COND(p_value.get_type() == Variant::OBJECT);
+
 	GlobalVariables::Variable &gv = global_variables.variables[p_name];
 
 	gv.override = p_value;
