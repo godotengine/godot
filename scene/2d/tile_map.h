@@ -35,7 +35,7 @@
 #include "core/templates/vset.h"
 #include "scene/2d/node_2d.h"
 #include "scene/gui/control.h"
-#include "scene/resources/tile_set.h"
+#include "scene/resources/2d/tile_set.h"
 
 class TileSetAtlasSource;
 

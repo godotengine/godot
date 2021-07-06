@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  skeleton_modification_stack_2d.h                                     */
+/*  capsule_shape_3d.h                                                   */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,72 +28,31 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef SKELETONMODIFICATIONSTACK2D_H
-#define SKELETONMODIFICATIONSTACK2D_H
+#ifndef CAPSULE_SHAPE_H
+#define CAPSULE_SHAPE_H
 
-#include "scene/2d/skeleton_2d.h"
-#include "scene/resources/skeleton_modification_2d.h"
+#include "scene/resources/3d/shape_3d.h"
 
-///////////////////////////////////////
-// SkeletonModificationStack2D
-///////////////////////////////////////
-
-class Skeleton2D;
-class SkeletonModification2D;
-class Bone2D;
-
-class SkeletonModificationStack2D : public Resource {
-	GDCLASS(SkeletonModificationStack2D, Resource);
-	friend class Skeleton2D;
-	friend class SkeletonModification2D;
+class CapsuleShape3D : public Shape3D {
+	GDCLASS(CapsuleShape3D, Shape3D);
+	float radius = 1.0;
+	float height = 1.0;
 
 protected:
 	static void _bind_methods();
-	void _get_property_list(List<PropertyInfo> *p_list) const;
-	bool _set(const StringName &p_path, const Variant &p_value);
-	bool _get(const StringName &p_path, Variant &r_ret) const;
+
+	virtual void _update_shape() override;
 
 public:
-	Skeleton2D *skeleton = nullptr;
-	bool is_setup = false;
-	bool enabled = false;
-	float strength = 1.0;
+	void set_radius(float p_radius);
+	float get_radius() const;
+	void set_height(float p_height);
+	float get_height() const;
 
-	enum EXECUTION_MODE {
-		execution_mode_process,
-		execution_mode_physics_process
-	};
+	virtual Vector<Vector3> get_debug_mesh_lines() const override;
+	virtual real_t get_enclosing_radius() const override;
 
-	Vector<Ref<SkeletonModification2D>> modifications = Vector<Ref<SkeletonModification2D>>();
-
-	void setup();
-	void execute(float p_delta, int p_execution_mode);
-
-	bool editor_gizmo_dirty = false;
-	void draw_editor_gizmos();
-	void set_editor_gizmos_dirty(bool p_dirty);
-
-	void enable_all_modifications(bool p_enable);
-	Ref<SkeletonModification2D> get_modification(int p_mod_idx) const;
-	void add_modification(Ref<SkeletonModification2D> p_mod);
-	void delete_modification(int p_mod_idx);
-	void set_modification(int p_mod_idx, Ref<SkeletonModification2D> p_mod);
-
-	void set_modification_count(int p_count);
-	int get_modification_count() const;
-
-	void set_skeleton(Skeleton2D *p_skeleton);
-	Skeleton2D *get_skeleton() const;
-
-	bool get_is_setup() const;
-
-	void set_enabled(bool p_enabled);
-	bool get_enabled() const;
-
-	void set_strength(float p_strength);
-	float get_strength() const;
-
-	SkeletonModificationStack2D();
+	CapsuleShape3D();
 };
 
-#endif // SKELETONMODIFICATION2D_H
+#endif // CAPSULE_SHAPE_H

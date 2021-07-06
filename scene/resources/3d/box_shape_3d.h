@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  capsule_shape_2d.h                                                   */
+/*  box_shape_3d.h                                                       */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,37 +28,32 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef CAPSULE_SHAPE_2D_H
-#define CAPSULE_SHAPE_2D_H
+#ifndef BOX_SHAPE_H
+#define BOX_SHAPE_H
 
-#include "scene/resources/shape_2d.h"
+#include "scene/resources/3d/shape_3d.h"
 
-class CapsuleShape2D : public Shape2D {
-	GDCLASS(CapsuleShape2D, Shape2D);
-
-	real_t height = 20.0;
-	real_t radius = 10.0;
-
-	void _update_shape();
-	Vector<Vector2> _get_points() const;
+class BoxShape3D : public Shape3D {
+	GDCLASS(BoxShape3D, Shape3D);
+	Vector3 size;
 
 protected:
 	static void _bind_methods();
+#ifndef DISABLE_DEPRECATED
+	bool _set(const StringName &p_name, const Variant &p_value);
+	bool _get(const StringName &p_name, Variant &r_property) const;
+#endif // DISABLE_DEPRECATED
+
+	virtual void _update_shape() override;
 
 public:
-	virtual bool _edit_is_selected_on_click(const Point2 &p_point, double p_tolerance) const override;
+	void set_size(const Vector3 &p_size);
+	Vector3 get_size() const;
 
-	void set_height(real_t p_height);
-	real_t get_height() const;
-
-	void set_radius(real_t p_radius);
-	real_t get_radius() const;
-
-	virtual void draw(const RID &p_to_rid, const Color &p_color) override;
-	virtual Rect2 get_rect() const override;
+	virtual Vector<Vector3> get_debug_mesh_lines() const override;
 	virtual real_t get_enclosing_radius() const override;
 
-	CapsuleShape2D();
+	BoxShape3D();
 };
 
-#endif // CAPSULE_SHAPE_2D_H
+#endif // BOX_SHAPE_H

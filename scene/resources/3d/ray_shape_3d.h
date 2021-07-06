@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  skeleton_modification_2d_physicalbones.h                             */
+/*  ray_shape_3d.h                                                       */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,55 +28,29 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef SKELETONMODIFICATION2DPHYSICALBONES_H
-#define SKELETONMODIFICATION2DPHYSICALBONES_H
+#ifndef RAY_SHAPE_H
+#define RAY_SHAPE_H
+#include "scene/resources/3d/shape_3d.h"
 
-#include "scene/2d/skeleton_2d.h"
-#include "scene/resources/skeleton_modification_2d.h"
-
-///////////////////////////////////////
-// SkeletonModification2DJIGGLE
-///////////////////////////////////////
-
-class SkeletonModification2DPhysicalBones : public SkeletonModification2D {
-	GDCLASS(SkeletonModification2DPhysicalBones, SkeletonModification2D);
-
-private:
-	struct PhysicalBone_Data2D {
-		NodePath physical_bone_node;
-		ObjectID physical_bone_node_cache;
-	};
-	Vector<PhysicalBone_Data2D> physical_bone_chain;
-
-	void _physical_bone_update_cache(int p_joint_idx);
-
-	bool _simulation_state_dirty = false;
-	TypedArray<StringName> _simulation_state_dirty_names;
-	bool _simulation_state_dirty_process;
-	void _update_simulation_state();
+class RayShape3D : public Shape3D {
+	GDCLASS(RayShape3D, Shape3D);
+	float length = 1.0;
+	bool slips_on_slope = false;
 
 protected:
 	static void _bind_methods();
-	bool _get(const StringName &p_path, Variant &r_ret) const;
-	bool _set(const StringName &p_path, const Variant &p_value);
-	void _get_property_list(List<PropertyInfo> *p_list) const;
+	virtual void _update_shape() override;
 
 public:
-	void _execute(float p_delta) override;
-	void _setup_modification(SkeletonModificationStack2D *p_stack) override;
+	void set_length(float p_length);
+	float get_length() const;
 
-	int get_physical_bone_chain_length();
-	void set_physical_bone_chain_length(int p_new_length);
+	void set_slips_on_slope(bool p_active);
+	bool get_slips_on_slope() const;
 
-	void set_physical_bone_node(int p_joint_idx, const NodePath &p_path);
-	NodePath get_physical_bone_node(int p_joint_idx) const;
+	virtual Vector<Vector3> get_debug_mesh_lines() const override;
+	virtual real_t get_enclosing_radius() const override;
 
-	void fetch_physical_bones();
-	void start_simulation(const TypedArray<StringName> &p_bones);
-	void stop_simulation(const TypedArray<StringName> &p_bones);
-
-	SkeletonModification2DPhysicalBones();
-	~SkeletonModification2DPhysicalBones();
+	RayShape3D();
 };
-
-#endif // SKELETONMODIFICATION2DPHYSICALBONES_H
+#endif // RAY_SHAPE_H

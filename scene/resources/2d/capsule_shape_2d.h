@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  cylinder_shape_3d.h                                                  */
+/*  capsule_shape_2d.h                                                   */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,30 +28,37 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef CYLINDER_SHAPE_3D_H
-#define CYLINDER_SHAPE_3D_H
+#ifndef CAPSULE_SHAPE_2D_H
+#define CAPSULE_SHAPE_2D_H
 
-#include "scene/resources/shape_3d.h"
+#include "scene/resources/2d/shape_2d.h"
 
-class CylinderShape3D : public Shape3D {
-	GDCLASS(CylinderShape3D, Shape3D);
-	float radius = 1.0;
-	float height = 2.0;
+class CapsuleShape2D : public Shape2D {
+	GDCLASS(CapsuleShape2D, Shape2D);
+
+	real_t height = 20.0;
+	real_t radius = 10.0;
+
+	void _update_shape();
+	Vector<Vector2> _get_points() const;
 
 protected:
 	static void _bind_methods();
-	virtual void _update_shape() override;
 
 public:
-	void set_radius(float p_radius);
-	float get_radius() const;
-	void set_height(float p_height);
-	float get_height() const;
+	virtual bool _edit_is_selected_on_click(const Point2 &p_point, double p_tolerance) const override;
 
-	virtual Vector<Vector3> get_debug_mesh_lines() const override;
+	void set_height(real_t p_height);
+	real_t get_height() const;
+
+	void set_radius(real_t p_radius);
+	real_t get_radius() const;
+
+	virtual void draw(const RID &p_to_rid, const Color &p_color) override;
+	virtual Rect2 get_rect() const override;
 	virtual real_t get_enclosing_radius() const override;
 
-	CylinderShape3D();
+	CapsuleShape2D();
 };
 
-#endif // CYLINDER_SHAPE_H
+#endif // CAPSULE_SHAPE_2D_H

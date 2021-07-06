@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  capsule_shape_3d.h                                                   */
+/*  convex_polygon_shape_2d.h                                            */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,31 +28,32 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef CAPSULE_SHAPE_H
-#define CAPSULE_SHAPE_H
+#ifndef CONVEX_POLYGON_SHAPE_2D_H
+#define CONVEX_POLYGON_SHAPE_2D_H
 
-#include "scene/resources/shape_3d.h"
+#include "scene/resources/2d/shape_2d.h"
 
-class CapsuleShape3D : public Shape3D {
-	GDCLASS(CapsuleShape3D, Shape3D);
-	float radius = 1.0;
-	float height = 1.0;
+class ConvexPolygonShape2D : public Shape2D {
+	GDCLASS(ConvexPolygonShape2D, Shape2D);
+
+	Vector<Vector2> points;
+	void _update_shape();
 
 protected:
 	static void _bind_methods();
 
-	virtual void _update_shape() override;
-
 public:
-	void set_radius(float p_radius);
-	float get_radius() const;
-	void set_height(float p_height);
-	float get_height() const;
+	virtual bool _edit_is_selected_on_click(const Point2 &p_point, double p_tolerance) const override;
 
-	virtual Vector<Vector3> get_debug_mesh_lines() const override;
+	void set_point_cloud(const Vector<Vector2> &p_points);
+	void set_points(const Vector<Vector2> &p_points);
+	Vector<Vector2> get_points() const;
+
+	virtual void draw(const RID &p_to_rid, const Color &p_color) override;
+	virtual Rect2 get_rect() const override;
 	virtual real_t get_enclosing_radius() const override;
 
-	CapsuleShape3D();
+	ConvexPolygonShape2D();
 };
 
-#endif // CAPSULE_SHAPE_H
+#endif // CONVEX_POLYGON_SHAPE_2D_H

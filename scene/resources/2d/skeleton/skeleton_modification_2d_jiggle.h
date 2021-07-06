@@ -32,7 +32,7 @@
 #define SKELETONMODIFICATION2DJIGGLE_H
 
 #include "scene/2d/skeleton_2d.h"
-#include "scene/resources/skeleton_modification_2d.h"
+#include "scene/resources/2d/skeleton/skeleton_modification_2d.h"
 
 ///////////////////////////////////////
 // SkeletonModification2DJIGGLE

@@ -37,7 +37,7 @@
 #include "editor/import/resource_importer_scene.h"
 #include "editor/import/scene_importer_mesh_node_3d.h"
 #include "scene/3d/mesh_instance_3d.h"
-#include "scene/resources/surface_tool.h"
+#include "scene/resources/3d/surface_tool.h"
 
 #include "fbx_bone.h"
 #include "fbx_parser/FBXMeshGeometry.h"

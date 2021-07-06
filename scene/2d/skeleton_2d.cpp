@@ -30,7 +30,7 @@
 
 #include "skeleton_2d.h"
 
-#include "scene/resources/skeleton_modification_2d.h"
+#include "scene/resources/2d/skeleton/skeleton_modification_2d.h"
 
 #ifdef TOOLS_ENABLED
 #include "editor/editor_settings.h"

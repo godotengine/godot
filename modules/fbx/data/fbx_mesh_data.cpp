@@ -31,8 +31,8 @@
 #include "fbx_mesh_data.h"
 
 #include "core/templates/local_vector.h"
+#include "scene/resources/3d/surface_tool.h"
 #include "scene/resources/mesh.h"
-#include "scene/resources/surface_tool.h"
 
 #include "thirdparty/misc/polypartition.h"
 

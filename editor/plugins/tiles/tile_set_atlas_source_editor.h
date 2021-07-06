@@ -36,7 +36,7 @@
 
 #include "editor/editor_node.h"
 #include "scene/gui/split_container.h"
-#include "scene/resources/tile_set.h"
+#include "scene/resources/2d/tile_set.h"
 
 class TileSet;
 

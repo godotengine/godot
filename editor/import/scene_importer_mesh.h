@@ -32,8 +32,8 @@
 #define EDITOR_SCENE_IMPORTER_MESH_H
 
 #include "core/io/resource.h"
-#include "scene/resources/concave_polygon_shape_3d.h"
-#include "scene/resources/convex_polygon_shape_3d.h"
+#include "scene/resources/3d/concave_polygon_shape_3d.h"
+#include "scene/resources/3d/convex_polygon_shape_3d.h"
 #include "scene/resources/mesh.h"
 #include "scene/resources/navigation_mesh.h"
 // The following classes are used by importers instead of ArrayMesh and MeshInstance3D

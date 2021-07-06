@@ -33,8 +33,8 @@
 
 #include "scene/3d/skeleton_3d.h"
 #include "scene/3d/visual_instance_3d.h"
+#include "scene/resources/3d/skin.h"
 #include "scene/resources/mesh.h"
-#include "scene/resources/skin.h"
 
 class MeshInstance3D : public GeometryInstance3D {
 	GDCLASS(MeshInstance3D, GeometryInstance3D);

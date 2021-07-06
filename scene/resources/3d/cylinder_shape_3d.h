@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  skeleton_modification_2d_stackholder.h                               */
+/*  cylinder_shape_3d.h                                                  */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,37 +28,30 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef SKELETONMODIFICATION2DSTACKHOLDER_H
-#define SKELETONMODIFICATION2DSTACKHOLDER_H
+#ifndef CYLINDER_SHAPE_3D_H
+#define CYLINDER_SHAPE_3D_H
 
-#include "scene/2d/skeleton_2d.h"
-#include "scene/resources/skeleton_modification_2d.h"
+#include "scene/resources/3d/shape_3d.h"
 
-///////////////////////////////////////
-// SkeletonModification2DJIGGLE
-///////////////////////////////////////
-
-class SkeletonModification2DStackHolder : public SkeletonModification2D {
-	GDCLASS(SkeletonModification2DStackHolder, SkeletonModification2D);
+class CylinderShape3D : public Shape3D {
+	GDCLASS(CylinderShape3D, Shape3D);
+	float radius = 1.0;
+	float height = 2.0;
 
 protected:
 	static void _bind_methods();
-	bool _get(const StringName &p_path, Variant &r_ret) const;
-	bool _set(const StringName &p_path, const Variant &p_value);
-	void _get_property_list(List<PropertyInfo> *p_list) const;
+	virtual void _update_shape() override;
 
 public:
-	Ref<SkeletonModificationStack2D> held_modification_stack;
+	void set_radius(float p_radius);
+	float get_radius() const;
+	void set_height(float p_height);
+	float get_height() const;
 
-	void _execute(float p_delta) override;
-	void _setup_modification(SkeletonModificationStack2D *p_stack) override;
-	void _draw_editor_gizmo() override;
+	virtual Vector<Vector3> get_debug_mesh_lines() const override;
+	virtual real_t get_enclosing_radius() const override;
 
-	void set_held_modification_stack(Ref<SkeletonModificationStack2D> p_held_stack);
-	Ref<SkeletonModificationStack2D> get_held_modification_stack() const;
-
-	SkeletonModification2DStackHolder();
-	~SkeletonModification2DStackHolder();
+	CylinderShape3D();
 };
 
-#endif // SKELETONMODIFICATION2DSTACKHOLDER_H
+#endif // CYLINDER_SHAPE_H

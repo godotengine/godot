@@ -36,8 +36,8 @@
 #include "editor/import/scene_importer_mesh_node_3d.h"
 #include "scene/3d/mesh_instance_3d.h"
 #include "scene/3d/node_3d.h"
+#include "scene/resources/3d/surface_tool.h"
 #include "scene/resources/mesh.h"
-#include "scene/resources/surface_tool.h"
 
 uint32_t EditorOBJImporter::get_import_flags() const {
 	return IMPORT_SCENE;

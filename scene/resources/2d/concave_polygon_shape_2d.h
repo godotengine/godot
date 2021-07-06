@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  convex_polygon_shape_3d.h                                            */
+/*  concave_polygon_shape_2d.h                                           */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,28 +28,28 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef CONVEX_POLYGON_SHAPE_H
-#define CONVEX_POLYGON_SHAPE_H
+#ifndef CONCAVE_POLYGON_SHAPE_2D_H
+#define CONCAVE_POLYGON_SHAPE_2D_H
 
-#include "scene/resources/shape_3d.h"
+#include "scene/resources/2d/shape_2d.h"
 
-class ConvexPolygonShape3D : public Shape3D {
-	GDCLASS(ConvexPolygonShape3D, Shape3D);
-	Vector<Vector3> points;
+class ConcavePolygonShape2D : public Shape2D {
+	GDCLASS(ConcavePolygonShape2D, Shape2D);
 
 protected:
 	static void _bind_methods();
 
-	virtual void _update_shape() override;
-
 public:
-	void set_points(const Vector<Vector3> &p_points);
-	Vector<Vector3> get_points() const;
+	virtual bool _edit_is_selected_on_click(const Point2 &p_point, double p_tolerance) const override;
 
-	virtual Vector<Vector3> get_debug_mesh_lines() const override;
+	void set_segments(const Vector<Vector2> &p_segments);
+	Vector<Vector2> get_segments() const;
+
+	virtual void draw(const RID &p_to_rid, const Color &p_color) override;
+	virtual Rect2 get_rect() const override;
 	virtual real_t get_enclosing_radius() const override;
 
-	ConvexPolygonShape3D();
+	ConcavePolygonShape2D();
 };
 
-#endif // CONVEX_POLYGON_SHAPE_H
+#endif

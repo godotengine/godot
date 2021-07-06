@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  skeleton_modification_2d_ccdik.h                                     */
+/*  skeleton_modification_2d_lookat.h                                    */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,47 +28,37 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef SKELETONMODIFICATION2DCCDIK_H
-#define SKELETONMODIFICATION2DCCDIK_H
+#ifndef SKELETONMODIFICATION2DLOOKAT_H
+#define SKELETONMODIFICATION2DLOOKAT_H
 
 #include "scene/2d/skeleton_2d.h"
-#include "scene/resources/skeleton_modification_2d.h"
+#include "scene/resources/2d/skeleton/skeleton_modification_2d.h"
 
 ///////////////////////////////////////
-// SkeletonModification2DCCDIK
+// SkeletonModification2DLookAt
 ///////////////////////////////////////
 
-class SkeletonModification2DCCDIK : public SkeletonModification2D {
-	GDCLASS(SkeletonModification2DCCDIK, SkeletonModification2D);
+class SkeletonModification2DLookAt : public SkeletonModification2D {
+	GDCLASS(SkeletonModification2DLookAt, SkeletonModification2D);
 
 private:
-	struct CCDIK_Joint_Data2D {
-		int bone_idx = -1;
-		NodePath bone2d_node;
-		ObjectID bone2d_node_cache;
-		bool rotate_from_joint = false;
-
-		bool enable_constraint = false;
-		float constraint_angle_min = 0;
-		float constraint_angle_max = (2.0 * Math_PI);
-		bool constraint_angle_invert = false;
-		bool constraint_in_localspace = true;
-
-		bool editor_draw_gizmo = true;
-	};
-
-	Vector<CCDIK_Joint_Data2D> ccdik_data_chain;
+	int bone_idx = -1;
+	NodePath bone2d_node;
+	ObjectID bone2d_node_cache;
 
 	NodePath target_node;
 	ObjectID target_node_cache;
+	Node2D *target_node_reference = nullptr;
+
+	float additional_rotation = 0;
+	bool enable_constraint = false;
+	float constraint_angle_min = 0;
+	float constraint_angle_max = (2.0 * Math_PI);
+	bool constraint_angle_invert = false;
+	bool constraint_in_localspace = true;
+
+	void update_bone2d_cache();
 	void update_target_cache();
-
-	NodePath tip_node;
-	ObjectID tip_node_cache;
-	void update_tip_cache();
-
-	void ccdik_joint_update_bone2d_cache(int p_joint_idx);
-	void _execute_ccdik_joint(int p_joint_idx, Node2D *p_target, Node2D *p_tip);
 
 protected:
 	static void _bind_methods();
@@ -81,36 +71,30 @@ public:
 	void _setup_modification(SkeletonModificationStack2D *p_stack) override;
 	void _draw_editor_gizmo() override;
 
+	void set_bone2d_node(const NodePath &p_target_node);
+	NodePath get_bone2d_node() const;
+	void set_bone_index(int p_idx);
+	int get_bone_index() const;
+
 	void set_target_node(const NodePath &p_target_node);
 	NodePath get_target_node() const;
-	void set_tip_node(const NodePath &p_tip_node);
-	NodePath get_tip_node() const;
 
-	int get_ccdik_data_chain_length();
-	void set_ccdik_data_chain_length(int p_new_length);
+	void set_additional_rotation(float p_rotation);
+	float get_additional_rotation() const;
 
-	void set_ccdik_joint_bone2d_node(int p_joint_idx, const NodePath &p_target_node);
-	NodePath get_ccdik_joint_bone2d_node(int p_joint_idx) const;
-	void set_ccdik_joint_bone_index(int p_joint_idx, int p_bone_idx);
-	int get_ccdik_joint_bone_index(int p_joint_idx) const;
+	void set_enable_constraint(bool p_constraint);
+	bool get_enable_constraint() const;
+	void set_constraint_angle_min(float p_angle_min);
+	float get_constraint_angle_min() const;
+	void set_constraint_angle_max(float p_angle_max);
+	float get_constraint_angle_max() const;
+	void set_constraint_angle_invert(bool p_invert);
+	bool get_constraint_angle_invert() const;
+	void set_constraint_in_localspace(bool p_constraint_in_localspace);
+	bool get_constraint_in_localspace() const;
 
-	void set_ccdik_joint_rotate_from_joint(int p_joint_idx, bool p_rotate_from_joint);
-	bool get_ccdik_joint_rotate_from_joint(int p_joint_idx) const;
-	void set_ccdik_joint_enable_constraint(int p_joint_idx, bool p_constraint);
-	bool get_ccdik_joint_enable_constraint(int p_joint_idx) const;
-	void set_ccdik_joint_constraint_angle_min(int p_joint_idx, float p_angle_min);
-	float get_ccdik_joint_constraint_angle_min(int p_joint_idx) const;
-	void set_ccdik_joint_constraint_angle_max(int p_joint_idx, float p_angle_max);
-	float get_ccdik_joint_constraint_angle_max(int p_joint_idx) const;
-	void set_ccdik_joint_constraint_angle_invert(int p_joint_idx, bool p_invert);
-	bool get_ccdik_joint_constraint_angle_invert(int p_joint_idx) const;
-	void set_ccdik_joint_constraint_in_localspace(int p_joint_idx, bool p_constraint_in_localspace);
-	bool get_ccdik_joint_constraint_in_localspace(int p_joint_idx) const;
-	void set_ccdik_joint_editor_draw_gizmo(int p_joint_idx, bool p_draw_gizmo);
-	bool get_ccdik_joint_editor_draw_gizmo(int p_joint_idx) const;
-
-	SkeletonModification2DCCDIK();
-	~SkeletonModification2DCCDIK();
+	SkeletonModification2DLookAt();
+	~SkeletonModification2DLookAt();
 };
 
-#endif // SKELETONMODIFICATION2DCCDIK_H
+#endif // SKELETONMODIFICATION2DLOOKAT_H

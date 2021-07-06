@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  height_map_shape_3d.h                                                */
+/*  skeleton_modification_stack_2d.h                                     */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,36 +28,72 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef HEIGHT_MAP_SHAPE_H
-#define HEIGHT_MAP_SHAPE_H
+#ifndef SKELETONMODIFICATIONSTACK2D_H
+#define SKELETONMODIFICATIONSTACK2D_H
 
-#include "scene/resources/shape_3d.h"
+#include "scene/2d/skeleton_2d.h"
+#include "scene/resources/2d/skeleton/skeleton_modification_2d.h"
 
-class HeightMapShape3D : public Shape3D {
-	GDCLASS(HeightMapShape3D, Shape3D);
+///////////////////////////////////////
+// SkeletonModificationStack2D
+///////////////////////////////////////
 
-	int map_width = 2;
-	int map_depth = 2;
-	PackedFloat32Array map_data;
-	real_t min_height = 0.0;
-	real_t max_height = 0.0;
+class Skeleton2D;
+class SkeletonModification2D;
+class Bone2D;
+
+class SkeletonModificationStack2D : public Resource {
+	GDCLASS(SkeletonModificationStack2D, Resource);
+	friend class Skeleton2D;
+	friend class SkeletonModification2D;
 
 protected:
 	static void _bind_methods();
-	virtual void _update_shape() override;
+	void _get_property_list(List<PropertyInfo> *p_list) const;
+	bool _set(const StringName &p_path, const Variant &p_value);
+	bool _get(const StringName &p_path, Variant &r_ret) const;
 
 public:
-	void set_map_width(int p_new);
-	int get_map_width() const;
-	void set_map_depth(int p_new);
-	int get_map_depth() const;
-	void set_map_data(PackedFloat32Array p_new);
-	PackedFloat32Array get_map_data() const;
+	Skeleton2D *skeleton = nullptr;
+	bool is_setup = false;
+	bool enabled = false;
+	float strength = 1.0;
 
-	virtual Vector<Vector3> get_debug_mesh_lines() const override;
-	virtual real_t get_enclosing_radius() const override;
+	enum EXECUTION_MODE {
+		execution_mode_process,
+		execution_mode_physics_process
+	};
 
-	HeightMapShape3D();
+	Vector<Ref<SkeletonModification2D>> modifications = Vector<Ref<SkeletonModification2D>>();
+
+	void setup();
+	void execute(float p_delta, int p_execution_mode);
+
+	bool editor_gizmo_dirty = false;
+	void draw_editor_gizmos();
+	void set_editor_gizmos_dirty(bool p_dirty);
+
+	void enable_all_modifications(bool p_enable);
+	Ref<SkeletonModification2D> get_modification(int p_mod_idx) const;
+	void add_modification(Ref<SkeletonModification2D> p_mod);
+	void delete_modification(int p_mod_idx);
+	void set_modification(int p_mod_idx, Ref<SkeletonModification2D> p_mod);
+
+	void set_modification_count(int p_count);
+	int get_modification_count() const;
+
+	void set_skeleton(Skeleton2D *p_skeleton);
+	Skeleton2D *get_skeleton() const;
+
+	bool get_is_setup() const;
+
+	void set_enabled(bool p_enabled);
+	bool get_enabled() const;
+
+	void set_strength(float p_strength);
+	float get_strength() const;
+
+	SkeletonModificationStack2D();
 };
 
-#endif /* !HEIGHT_MAP_SHAPE_H */
+#endif // SKELETONMODIFICATION2D_H
