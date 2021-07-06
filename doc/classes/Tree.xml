@@ -294,6 +294,7 @@
 			<argument index="0" name="item" type="Object">
 			</argument>
 			<description>
+				Causes the [Tree] to jump to the specified item.
 			</description>
 		</method>
 		<method name="set_column_clip_content">
