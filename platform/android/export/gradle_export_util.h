@@ -269,6 +269,7 @@ String _get_application_tag(const Ref<EditorExportPreset> &p_preset, bool p_has_
 			"        android:requestLegacyExternalStorage=\"%s\"\n"
 			"        tools:replace=\"android:allowBackup,android:isGame,android:requestLegacyExternalStorage\"\n"
 			"        tools:ignore=\"GoogleAppIndexingWarning\">\n\n",
+			"        <meta-data tools:node=\"remove\" android:name=\"xr_mode_metadata_name\" />\n",
 			bool_to_string(p_preset->get("user_data_backup/allow")),
 			bool_to_string(p_preset->get("package/classify_as_game")),
 			bool_to_string(p_has_storage_permission));
