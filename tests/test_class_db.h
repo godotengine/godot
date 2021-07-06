@@ -754,6 +754,9 @@ void add_exposed_classes(Context &r_context) {
 			const List<StringName> &enum_constants = enum_map.get(*k);
 			for (const List<StringName>::Element *E = enum_constants.front(); E; E = E->next()) {
 				const StringName &constant_name = E->get();
+				TEST_FAIL_COND(String(constant_name).find("::") != -1,
+						"Enum constant contains '::', check bindings to remove the scope: '",
+						String(class_name), ".", String(enum_.name), ".", String(constant_name), "'.");
 				int *value = class_info->constant_map.getptr(constant_name);
 				TEST_FAIL_COND(!value, "Missing enum constant value: '",
 						String(class_name), ".", String(enum_.name), ".", String(constant_name), "'.");
@@ -773,8 +776,11 @@ void add_exposed_classes(Context &r_context) {
 
 		for (const List<String>::Element *E = constants.front(); E; E = E->next()) {
 			const String &constant_name = E->get();
+			TEST_FAIL_COND(constant_name.find("::") != -1,
+					"Constant contains '::', check bindings to remove the scope: '",
+					String(class_name), ".", constant_name, "'.");
 			int *value = class_info->constant_map.getptr(StringName(E->get()));
-			TEST_FAIL_COND(!value, "Missing enum constant value: '", String(class_name), ".", String(constant_name), "'.");
+			TEST_FAIL_COND(!value, "Missing constant value: '", String(class_name), ".", String(constant_name), "'.");
 
 			ConstantData constant;
 			constant.name = constant_name;
