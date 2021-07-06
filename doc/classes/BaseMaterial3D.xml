@@ -347,8 +347,6 @@
 		</member>
 		<member name="subsurf_scatter_transmittance_color" type="Color" setter="set_transmittance_color" getter="get_transmittance_color" default="Color(1, 1, 1, 1)">
 		</member>
-		<member name="subsurf_scatter_transmittance_curve" type="float" setter="set_transmittance_curve" getter="get_transmittance_curve" default="1.0">
-		</member>
 		<member name="subsurf_scatter_transmittance_depth" type="float" setter="set_transmittance_depth" getter="get_transmittance_depth" default="0.1">
 		</member>
 		<member name="subsurf_scatter_transmittance_enabled" type="bool" setter="set_feature" getter="get_feature" default="false">

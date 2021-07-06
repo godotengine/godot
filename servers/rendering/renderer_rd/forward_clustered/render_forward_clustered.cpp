@@ -1150,6 +1150,7 @@ void RenderForwardClustered::_render_scene(RenderDataRD *p_render_data, const Co
 		render_buffer = (RenderBufferDataForwardClustered *)render_buffers_get_data(p_render_data->render_buffers);
 	}
 	RendererSceneEnvironmentRD *env = get_environment(p_render_data->environment);
+	static const int texture_multisamples[RS::VIEWPORT_MSAA_MAX] = { 1, 2, 4, 8, 16 };
 
 	//first of all, make a new render pass
 	//fill up ubo
@@ -1390,10 +1391,9 @@ void RenderForwardClustered::_render_scene(RenderDataRD *p_render_data, const Co
 				if (needs_pre_resolve) {
 					RD::get_singleton()->barrier(RD::BARRIER_MASK_RASTER, RD::BARRIER_MASK_COMPUTE);
 				}
-				static int texture_samples[RS::VIEWPORT_MSAA_MAX] = { 1, 2, 4, 8, 16 };
-				storage->get_effects()->resolve_gi(render_buffer->depth_msaa, render_buffer->normal_roughness_buffer_msaa, using_voxelgi ? render_buffer->voxelgi_buffer_msaa : RID(), render_buffer->depth, render_buffer->normal_roughness_buffer, using_voxelgi ? render_buffer->voxelgi_buffer : RID(), Vector2i(render_buffer->width, render_buffer->height), texture_samples[render_buffer->msaa]);
+				storage->get_effects()->resolve_gi(render_buffer->depth_msaa, render_buffer->normal_roughness_buffer_msaa, using_voxelgi ? render_buffer->voxelgi_buffer_msaa : RID(), render_buffer->depth, render_buffer->normal_roughness_buffer, using_voxelgi ? render_buffer->voxelgi_buffer : RID(), Vector2i(render_buffer->width, render_buffer->height), texture_multisamples[render_buffer->msaa]);
 			} else if (finish_depth) {
-				RD::get_singleton()->texture_resolve_multisample(render_buffer->depth_msaa, render_buffer->depth);
+				storage->get_effects()->resolve_depth(render_buffer->depth_msaa, render_buffer->depth, Vector2i(render_buffer->width, render_buffer->height), texture_multisamples[render_buffer->msaa]);
 			}
 			RD::get_singleton()->draw_command_end_label();
 		}
@@ -1497,7 +1497,7 @@ void RenderForwardClustered::_render_scene(RenderDataRD *p_render_data, const Co
 	}
 
 	if (render_buffer && !can_continue_depth && render_buffer->msaa != RS::VIEWPORT_MSAA_DISABLED) {
-		RD::get_singleton()->texture_resolve_multisample(render_buffer->depth_msaa, render_buffer->depth);
+		storage->get_effects()->resolve_depth(render_buffer->depth_msaa, render_buffer->depth, Vector2i(render_buffer->width, render_buffer->height), texture_multisamples[render_buffer->msaa]);
 	}
 
 	if (using_separate_specular) {

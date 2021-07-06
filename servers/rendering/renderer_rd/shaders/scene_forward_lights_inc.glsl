@@ -80,7 +80,6 @@ void light_compute(vec3 N, vec3 L, vec3 V, vec3 light_color, float attenuation, 
 #ifdef LIGHT_TRANSMITTANCE_USED
 		vec4 transmittance_color,
 		float transmittance_depth,
-		float transmittance_curve,
 		float transmittance_boost,
 		float transmittance_z,
 #endif
@@ -189,9 +188,8 @@ void light_compute(vec3 N, vec3 L, vec3 V, vec3 light_color, float attenuation, 
 
 #ifdef LIGHT_TRANSMITTANCE_USED
 
-#ifdef SSS_MODE_SKIN
-
 		{
+#ifdef SSS_MODE_SKIN
 			float scale = 8.25 / transmittance_depth;
 			float d = scale * abs(transmittance_z);
 			float dd = -d * d;
@@ -203,19 +201,15 @@ void light_compute(vec3 N, vec3 L, vec3 V, vec3 light_color, float attenuation, 
 						   vec3(0.078, 0.0, 0.0) * exp(dd / 7.41);
 
 			diffuse_light += profile * transmittance_color.a * light_color * clamp(transmittance_boost - NdotL, 0.0, 1.0) * (1.0 / M_PI);
-		}
 #else
 
-		if (transmittance_depth > 0.0) {
-			float fade = clamp(abs(transmittance_z / transmittance_depth), 0.0, 1.0);
-
-			fade = pow(max(0.0, 1.0 - fade), transmittance_curve);
-			fade *= clamp(transmittance_boost - NdotL, 0.0, 1.0);
-
-			diffuse_light += transmittance_color.rgb * light_color * (1.0 / M_PI) * transmittance_color.a * fade;
+			float scale = 8.25 / transmittance_depth;
+			float d = scale * abs(transmittance_z);
+			float dd = -d * d;
+			diffuse_light += exp(dd) * transmittance_color.rgb * transmittance_color.a * light_color * clamp(transmittance_boost - NdotL, 0.0, 1.0) * (1.0 / M_PI);
+#endif
 		}
-
-#endif //SSS_MODE_SKIN
+#else
 
 #endif //LIGHT_TRANSMITTANCE_USED
 	}
@@ -577,7 +571,6 @@ void light_process_omni(uint idx, vec3 vertex, vec3 eye_vec, vec3 normal, vec3 v
 #ifdef LIGHT_TRANSMITTANCE_USED
 		vec4 transmittance_color,
 		float transmittance_depth,
-		float transmittance_curve,
 		float transmittance_boost,
 #endif
 #ifdef LIGHT_RIM_USED
@@ -617,20 +610,22 @@ void light_process_omni(uint idx, vec3 vertex, vec3 eye_vec, vec3 normal, vec3 v
 		//redo shadowmapping, but shrink the model a bit to avoid arctifacts
 		vec4 splane = (omni_lights.data[idx].shadow_matrix * vec4(vertex - normalize(normal_interp) * omni_lights.data[idx].transmittance_bias, 1.0));
 
-		shadow_len = length(splane.xyz);
-		splane = normalize(splane.xyz);
+		float shadow_len = length(splane.xyz);
+		splane.xyz = normalize(splane.xyz);
 
 		if (splane.z >= 0.0) {
 			splane.z += 1.0;
-
+			clamp_rect.y += clamp_rect.w;
 		} else {
 			splane.z = 1.0 - splane.z;
 		}
 
 		splane.xy /= splane.z;
+
 		splane.xy = splane.xy * 0.5 + 0.5;
 		splane.z = shadow_len * omni_lights.data[idx].inv_radius;
 		splane.xy = clamp_rect.xy + splane.xy * clamp_rect.zw;
+		//		splane.xy = clamp(splane.xy,clamp_rect.xy + scene_data.shadow_atlas_pixel_size,clamp_rect.xy + clamp_rect.zw - scene_data.shadow_atlas_pixel_size );
 		splane.w = 1.0; //needed? i think it should be 1 already
 
 		float shadow_z = textureLod(sampler2D(shadow_atlas, material_samplers[SAMPLER_LINEAR_CLAMP]), splane.xy, 0.0).r;
@@ -704,7 +699,6 @@ void light_process_omni(uint idx, vec3 vertex, vec3 eye_vec, vec3 normal, vec3 v
 #ifdef LIGHT_TRANSMITTANCE_USED
 			transmittance_color,
 			transmittance_depth,
-			transmittance_curve,
 			transmittance_boost,
 			transmittance_z,
 #endif
@@ -829,7 +823,6 @@ void light_process_spot(uint idx, vec3 vertex, vec3 eye_vec, vec3 normal, vec3 v
 #ifdef LIGHT_TRANSMITTANCE_USED
 		vec4 transmittance_color,
 		float transmittance_depth,
-		float transmittance_curve,
 		float transmittance_boost,
 #endif
 #ifdef LIGHT_RIM_USED
@@ -876,13 +869,17 @@ void light_process_spot(uint idx, vec3 vertex, vec3 eye_vec, vec3 normal, vec3 v
 	float transmittance_z = transmittance_depth;
 	transmittance_color.a *= light_attenuation;
 	{
-		splane = (spot_lights.data[idx].shadow_matrix * vec4(vertex - normalize(normal_interp) * spot_lights.data[idx].transmittance_bias, 1.0));
+		vec4 splane = (spot_lights.data[idx].shadow_matrix * vec4(vertex - normalize(normal_interp) * spot_lights.data[idx].transmittance_bias, 1.0));
 		splane /= splane.w;
 		splane.xy = splane.xy * spot_lights.data[idx].atlas_rect.zw + spot_lights.data[idx].atlas_rect.xy;
 
 		float shadow_z = textureLod(sampler2D(shadow_atlas, material_samplers[SAMPLER_LINEAR_CLAMP]), splane.xy, 0.0).r;
-		//reconstruct depth
-		shadow_z /= spot_lights.data[idx].inv_radius;
+
+		shadow_z = shadow_z * 2.0 - 1.0;
+		float z_far = 1.0 / spot_lights.data[idx].inv_radius;
+		float z_near = 0.01;
+		shadow_z = 2.0 * z_near * z_far / (z_far + z_near - shadow_z * (z_far - z_near));
+
 		//distance to light plane
 		float z = dot(spot_dir, -light_rel_vec);
 		transmittance_z = z - shadow_z;
@@ -898,7 +895,6 @@ void light_process_spot(uint idx, vec3 vertex, vec3 eye_vec, vec3 normal, vec3 v
 #ifdef LIGHT_TRANSMITTANCE_USED
 			transmittance_color,
 			transmittance_depth,
-			transmittance_curve,
 			transmittance_boost,
 			transmittance_z,
 #endif

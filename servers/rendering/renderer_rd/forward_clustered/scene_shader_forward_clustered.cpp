@@ -320,8 +320,6 @@ void SceneShaderForwardClustered::ShaderData::set_code(const String &p_code) {
 					} else {
 						//specular write
 						blend_state = blend_state_opaque_specular;
-						depth_stencil.enable_depth_test = false;
-						depth_stencil.enable_depth_write = false;
 					}
 				}
 
@@ -631,7 +629,6 @@ void SceneShaderForwardClustered::init(RendererStorageRD *p_storage, const Strin
 		actions.renames["SSS_STRENGTH"] = "sss_strength";
 		actions.renames["SSS_TRANSMITTANCE_COLOR"] = "transmittance_color";
 		actions.renames["SSS_TRANSMITTANCE_DEPTH"] = "transmittance_depth";
-		actions.renames["SSS_TRANSMITTANCE_CURVE"] = "transmittance_curve";
 		actions.renames["SSS_TRANSMITTANCE_BOOST"] = "transmittance_boost";
 		actions.renames["BACKLIGHT"] = "backlight";
 		actions.renames["AO"] = "ao";

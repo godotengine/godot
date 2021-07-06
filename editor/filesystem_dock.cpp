@@ -815,7 +815,8 @@ void FileSystemDock::_update_file_list(bool p_keep_selection) {
 
 		if (searched_string.length() > 0) {
 			// Display the search results.
-			_search(EditorFileSystem::get_singleton()->get_filesystem(), &file_list, 128);
+			// Limit the number of results displayed to avoid an infinite loop.
+			_search(EditorFileSystem::get_singleton()->get_filesystem(), &file_list, 10000);
 		} else {
 			if (display_mode == DISPLAY_MODE_TREE_ONLY || always_show_folders) {
 				// Display folders in the list.
