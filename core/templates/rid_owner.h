@@ -193,7 +193,7 @@ public:
 			if (THREAD_SAFE) {
 				spin_lock.unlock();
 			}
-			if (validator_chunks[idx_chunk][idx_element] & 0x80000000) {
+			if ((validator_chunks[idx_chunk][idx_element] & 0x80000000) && validator_chunks[idx_chunk][idx_element] != 0xFFFFFFFF) {
 				ERR_FAIL_V_MSG(nullptr, "Attempting to use an uninitialized RID");
 			}
 			return nullptr;

@@ -201,14 +201,11 @@ class RendererCanvasRenderRD : public RendererCanvasRender {
 	struct MaterialData : public RendererStorageRD::MaterialData {
 		uint64_t last_frame;
 		ShaderData *shader_data;
-		RID uniform_buffer;
 		RID uniform_set;
-		Vector<RID> texture_cache;
-		Vector<uint8_t> ubo_data;
 
 		virtual void set_render_priority(int p_priority) {}
 		virtual void set_next_pass(RID p_pass) {}
-		virtual void update_parameters(const Map<StringName, Variant> &p_parameters, bool p_uniform_dirty, bool p_textures_dirty);
+		virtual bool update_parameters(const Map<StringName, Variant> &p_parameters, bool p_uniform_dirty, bool p_textures_dirty);
 		virtual ~MaterialData();
 	};
 
