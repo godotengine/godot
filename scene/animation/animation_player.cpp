@@ -557,6 +557,7 @@ void AnimationPlayer::_animation_process_animation(AnimationData *p_anim, float 
 					}
 #endif
 
+					static_assert(VARIANT_ARG_MAX == 8, "This code needs to be updated if VARIANT_ARG_MAX != 8");
 					if (can_call) {
 						if (method_call_mode == ANIMATION_METHOD_CALL_DEFERRED) {
 							MessageQueue::get_singleton()->push_call(
@@ -566,7 +567,10 @@ void AnimationPlayer::_animation_process_animation(AnimationData *p_anim, float 
 									s >= 2 ? params[1] : Variant(),
 									s >= 3 ? params[2] : Variant(),
 									s >= 4 ? params[3] : Variant(),
-									s >= 5 ? params[4] : Variant());
+									s >= 5 ? params[4] : Variant(),
+									s >= 6 ? params[5] : Variant(),
+									s >= 7 ? params[6] : Variant(),
+									s >= 8 ? params[7] : Variant());
 						} else {
 							nc->node->call(
 									method,
@@ -574,7 +578,10 @@ void AnimationPlayer::_animation_process_animation(AnimationData *p_anim, float 
 									s >= 2 ? params[1] : Variant(),
 									s >= 3 ? params[2] : Variant(),
 									s >= 4 ? params[3] : Variant(),
-									s >= 5 ? params[4] : Variant());
+									s >= 5 ? params[4] : Variant(),
+									s >= 6 ? params[5] : Variant(),
+									s >= 7 ? params[6] : Variant(),
+									s >= 8 ? params[7] : Variant());
 						}
 					}
 				}
