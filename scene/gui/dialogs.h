@@ -136,6 +136,7 @@ public:
 	Button *get_ok() { return ok; }
 	Button *add_button(const String &p_text, bool p_right = false, const String &p_action = "");
 	Button *add_cancel(const String &p_cancel = "");
+	void remove_button(Control *p_button);
 
 	void set_hide_on_ok(bool p_hide);
 	bool get_hide_on_ok() const;
