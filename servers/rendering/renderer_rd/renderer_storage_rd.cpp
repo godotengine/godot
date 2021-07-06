@@ -6179,6 +6179,14 @@ void RendererStorageRD::reflection_probe_set_cull_mask(RID p_probe, uint32_t p_l
 	reflection_probe->dependency.changed_notify(DEPENDENCY_CHANGED_REFLECTION_PROBE);
 }
 
+void RendererStorageRD::reflection_probe_set_reflection_mask(RID p_probe, uint32_t p_layers) {
+	ReflectionProbe *reflection_probe = reflection_probe_owner.getornull(p_probe);
+	ERR_FAIL_COND(!reflection_probe);
+
+	reflection_probe->reflection_mask = p_layers;
+	reflection_probe->dependency.changed_notify(DEPENDENCY_CHANGED_REFLECTION_PROBE);
+}
+
 void RendererStorageRD::reflection_probe_set_resolution(RID p_probe, int p_resolution) {
 	ReflectionProbe *reflection_probe = reflection_probe_owner.getornull(p_probe);
 	ERR_FAIL_COND(!reflection_probe);
@@ -6219,6 +6227,13 @@ uint32_t RendererStorageRD::reflection_probe_get_cull_mask(RID p_probe) const {
 	ERR_FAIL_COND_V(!reflection_probe, 0);
 
 	return reflection_probe->cull_mask;
+}
+
+uint32_t RendererStorageRD::reflection_probe_get_reflection_mask(RID p_probe) const {
+	const ReflectionProbe *reflection_probe = reflection_probe_owner.getornull(p_probe);
+	ERR_FAIL_COND_V(!reflection_probe, 0);
+
+	return reflection_probe->reflection_mask;
 }
 
 Vector3 RendererStorageRD::reflection_probe_get_extents(RID p_probe) const {

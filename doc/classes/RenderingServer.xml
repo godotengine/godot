@@ -3419,7 +3419,7 @@
 			<argument index="1" name="layers" type="int">
 			</argument>
 			<description>
-				Sets the render cull mask for this reflection probe. Only instances with a matching cull mask will be rendered by this probe. Equivalent to [member ReflectionProbe.cull_mask].
+				Sets the render cull mask for this reflection probe. Only instances with a matching cull mask will have reflections applied from this probe. Equivalent to [member ReflectionProbe.cull_mask].
 			</description>
 		</method>
 		<method name="reflection_probe_set_enable_box_projection">
@@ -3496,6 +3496,17 @@
 			</argument>
 			<description>
 				Sets the origin offset to be used when this reflection probe is in box project mode. Equivalent to [member ReflectionProbe.origin_offset].
+			</description>
+		</method>
+		<method name="reflection_probe_set_reflection_mask">
+			<return type="void">
+			</return>
+			<argument index="0" name="probe" type="RID">
+			</argument>
+			<argument index="1" name="layers" type="int">
+			</argument>
+			<description>
+				Sets the render reflection mask for this reflection probe. Only instances with a matching reflection mask will be rendered by this probe. Equivalent to [member ReflectionProbe.reflection_mask].
 			</description>
 		</method>
 		<method name="reflection_probe_set_resolution">

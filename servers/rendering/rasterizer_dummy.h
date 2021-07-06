@@ -436,11 +436,13 @@ public:
 	void reflection_probe_set_enable_box_projection(RID p_probe, bool p_enable) override {}
 	void reflection_probe_set_enable_shadows(RID p_probe, bool p_enable) override {}
 	void reflection_probe_set_cull_mask(RID p_probe, uint32_t p_layers) override {}
+	void reflection_probe_set_reflection_mask(RID p_probe, uint32_t p_layers) override {}
 	void reflection_probe_set_resolution(RID p_probe, int p_resolution) override {}
 
 	AABB reflection_probe_get_aabb(RID p_probe) const override { return AABB(); }
 	RS::ReflectionProbeUpdateMode reflection_probe_get_update_mode(RID p_probe) const override { return RenderingServer::REFLECTION_PROBE_UPDATE_ONCE; }
 	uint32_t reflection_probe_get_cull_mask(RID p_probe) const override { return 0; }
+	uint32_t reflection_probe_get_reflection_mask(RID p_probe) const override { return 0; }
 	Vector3 reflection_probe_get_extents(RID p_probe) const override { return Vector3(); }
 	Vector3 reflection_probe_get_origin_offset(RID p_probe) const override { return Vector3(); }
 	float reflection_probe_get_origin_max_distance(RID p_probe) const override { return 0.0; }
