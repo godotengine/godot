@@ -6218,8 +6218,13 @@ void Node3DEditor::_sun_environ_settings_pressed() {
 	sun_environ_popup->popup();
 }
 
-void Node3DEditor::_add_sun_to_scene() {
+void Node3DEditor::_add_sun_to_scene(bool p_already_added_environment) {
 	sun_environ_popup->hide();
+
+	if (!p_already_added_environment && world_env_count == 0 && Input::get_singleton()->is_key_pressed(KEY_SHIFT)) {
+		// Prevent infinite feedback loop between the sun and environment methods.
+		_add_environment_to_scene(true);
+	}
 
 	Node *base = get_tree()->get_edited_scene_root();
 	if (!base) {
@@ -6236,8 +6241,14 @@ void Node3DEditor::_add_sun_to_scene() {
 	undo_redo->add_do_reference(new_sun);
 	undo_redo->commit_action();
 }
-void Node3DEditor::_add_environment_to_scene() {
+
+void Node3DEditor::_add_environment_to_scene(bool p_already_added_sun) {
 	sun_environ_popup->hide();
+
+	if (!p_already_added_sun && directional_light_count == 0 && Input::get_singleton()->is_key_pressed(KEY_SHIFT)) {
+		// Prevent infinite feedback loop between the sun and environment methods.
+		_add_sun_to_scene(true);
+	}
 
 	Node *base = get_tree()->get_edited_scene_root();
 	if (!base) {
@@ -7178,7 +7189,8 @@ Node3DEditor::Node3DEditor(EditorNode *p_editor) {
 
 		sun_add_to_scene = memnew(Button);
 		sun_add_to_scene->set_text(TTR("Add Sun to Scene"));
-		sun_add_to_scene->connect("pressed", callable_mp(this, &Node3DEditor::_add_sun_to_scene));
+		sun_add_to_scene->set_tooltip(TTR("Adds a DirectionalLight3D node matching the preview sun settings to the current scene.\nHold Shift while clicking to also add the preview environment to the current scene."));
+		sun_add_to_scene->connect("pressed", callable_mp(this, &Node3DEditor::_add_sun_to_scene), varray(false));
 		sun_vb->add_spacer();
 		sun_vb->add_child(sun_add_to_scene);
 
@@ -7242,7 +7254,8 @@ Node3DEditor::Node3DEditor(EditorNode *p_editor) {
 
 		environ_add_to_scene = memnew(Button);
 		environ_add_to_scene->set_text(TTR("Add Environment to Scene"));
-		environ_add_to_scene->connect("pressed", callable_mp(this, &Node3DEditor::_add_environment_to_scene));
+		environ_add_to_scene->set_tooltip(TTR("Adds a WorldEnvironment node matching the preview environment settings to the current scene.\nHold Shift while clicking to also add the preview sun to the current scene."));
+		environ_add_to_scene->connect("pressed", callable_mp(this, &Node3DEditor::_add_environment_to_scene), varray(false));
 		environ_vb->add_spacer();
 		environ_vb->add_child(environ_add_to_scene);
 

@@ -805,8 +805,8 @@ private:
 	void _preview_settings_changed();
 	void _sun_environ_settings_pressed();
 
-	void _add_sun_to_scene();
-	void _add_environment_to_scene();
+	void _add_sun_to_scene(bool p_already_added_environment = false);
+	void _add_environment_to_scene(bool p_already_added_sun = false);
 
 protected:
 	void _notification(int p_what);
