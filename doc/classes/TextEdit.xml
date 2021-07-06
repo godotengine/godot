@@ -14,6 +14,7 @@
 			<return type="void">
 			</return>
 			<description>
+				A virtual method that is called whenever backspace is triggered.
 			</description>
 		</method>
 		<method name="add_gutter">
@@ -28,6 +29,7 @@
 			<return type="void">
 			</return>
 			<description>
+				Causes the [TextEdit] to perform a backspace.
 			</description>
 		</method>
 		<method name="center_viewport_to_cursor">
@@ -172,6 +174,7 @@
 			<argument index="0" name="line" type="int">
 			</argument>
 			<description>
+				Returns the indent level of a specific line.
 			</description>
 		</method>
 		<method name="get_line" qualifiers="const">
@@ -312,6 +315,7 @@
 			<return type="int">
 			</return>
 			<description>
+				Returns the [TextEdit]'s' tab size.
 			</description>
 		</method>
 		<method name="get_visible_line_count" qualifiers="const">
@@ -667,6 +671,7 @@
 			<argument index="0" name="size" type="int">
 			</argument>
 			<description>
+				Sets the tab size for the [TextEdit] to use.
 			</description>
 		</method>
 		<method name="undo">
