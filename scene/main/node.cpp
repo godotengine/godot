@@ -2493,7 +2493,9 @@ String Node::get_configuration_warnings_as_string() const {
 		if (i > 0) {
 			all_warnings += "\n\n";
 		}
-		all_warnings += String(warnings[i]);
+		// Format as a bullet point list to make multiple warnings easier to distinguish
+		// from each other.
+		all_warnings += String::utf8("•  ") + String(warnings[i]);
 	}
 	return all_warnings;
 }
