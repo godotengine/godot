@@ -1430,8 +1430,6 @@
 		</member>
 		<member name="rendering/global_illumination/sdfgi/probe_ray_count" type="int" setter="" getter="" default="1">
 		</member>
-		<member name="rendering/global_illumination/voxel_gi/anisotropic" type="bool" setter="" getter="" default="false">
-		</member>
 		<member name="rendering/global_illumination/voxel_gi/quality" type="int" setter="" getter="" default="1">
 		</member>
 		<member name="rendering/lightmapping/bake_performance/max_rays_per_pass" type="int" setter="" getter="" default="32">

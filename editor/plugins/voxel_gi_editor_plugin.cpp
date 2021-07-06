@@ -69,10 +69,7 @@ void VoxelGIEditorPlugin::_notification(int p_what) {
 
 		const Vector3i size = voxel_gi->get_estimated_cell_size();
 		String text = vformat(String::utf8("%d × %d × %d"), size.x, size.y, size.z);
-		int data_size = 4;
-		if (GLOBAL_GET("rendering/quality/voxel_gi/anisotropic")) {
-			data_size += 4;
-		}
+		const int data_size = 4;
 		const double size_mb = size.x * size.y * size.z * data_size / (1024.0 * 1024.0);
 		text += " - " + vformat(TTR("VRAM Size: %s MB"), String::num(size_mb, 2));
 
