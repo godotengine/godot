@@ -999,9 +999,9 @@ void BaseMaterial3D::_update_shader() {
 		code += "\tSPECULAR = specular;\n";
 	} else {
 		if (flags[FLAG_UV1_USE_TRIPLANAR]) {
-			code += "\tfloat orm_tex = triplanar_texture(texture_orm,uv1_power_normal,uv1_triplanar_pos);\n";
+			code += "\tvec4 orm_tex = triplanar_texture(texture_orm,uv1_power_normal,uv1_triplanar_pos);\n";
 		} else {
-			code += "\tfloat orm_tex = texture(texture_orm,base_uv);\n";
+			code += "\tvec4 orm_tex = texture(texture_orm,base_uv);\n";
 		}
 
 		code += "\tROUGHNESS = orm_tex.g;\n";
