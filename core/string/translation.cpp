@@ -1504,7 +1504,7 @@ String TranslationServer::replace_with_accented_string(String &message) const {
 			i++;
 			continue;
 		}
-		const wchar_t *accented = get_accented_version(message[i]);
+		const char32_t *accented = get_accented_version(message[i]);
 		if (accented) {
 			res += accented;
 		} else {
@@ -1516,8 +1516,8 @@ String TranslationServer::replace_with_accented_string(String &message) const {
 
 String TranslationServer::wrap_with_fakebidi_characters(String &message) const {
 	String res = "";
-	wchar_t fakebidiprefix = L'\u202e';
-	wchar_t fakebidisuffix = L'\u202c';
+	char32_t fakebidiprefix = L'\u202e';
+	char32_t fakebidisuffix = L'\u202c';
 	res += fakebidiprefix;
 	//the fake bidi unicode gets popped at every newline so pushing it back at every newline.
 	for (int i = 0; i < message.size(); i++) {
@@ -1557,112 +1557,112 @@ String TranslationServer::add_padding(String &message, int length) const {
 	return res;
 }
 
-const wchar_t *TranslationServer::get_accented_version(char c) const {
+const char32_t *TranslationServer::get_accented_version(char32_t c) const {
 	switch (c) {
 		case 'A':
-			return L"Å";
+			return U"Å";
 		case 'B':
-			return L"ß";
+			return U"ß";
 		case 'C':
-			return L"Ç";
+			return U"Ç";
 		case 'D':
-			return L"Ð";
+			return U"Ð";
 		case 'E':
-			return L"É";
+			return U"É";
 		case 'F':
-			return L"F́";
+			return U"F́";
 		case 'G':
-			return L"Ĝ";
+			return U"Ĝ";
 		case 'H':
-			return L"Ĥ";
+			return U"Ĥ";
 		case 'I':
-			return L"Ĩ";
+			return U"Ĩ";
 		case 'J':
-			return L"Ĵ";
+			return U"Ĵ";
 		case 'K':
-			return L"ĸ";
+			return U"ĸ";
 		case 'L':
-			return L"Ł";
+			return U"Ł";
 		case 'M':
-			return L"Ḿ";
+			return U"Ḿ";
 		case 'N':
-			return L"й";
+			return U"й";
 		case 'O':
-			return L"Ö";
+			return U"Ö";
 		case 'P':
-			return L"Ṕ";
+			return U"Ṕ";
 		case 'Q':
-			return L"Q́";
+			return U"Q́";
 		case 'R':
-			return L"Ř";
+			return U"Ř";
 		case 'S':
-			return L"Ŝ";
+			return U"Ŝ";
 		case 'T':
-			return L"Ŧ";
+			return U"Ŧ";
 		case 'U':
-			return L"Ũ";
+			return U"Ũ";
 		case 'V':
-			return L"Ṽ";
+			return U"Ṽ";
 		case 'W':
-			return L"Ŵ";
+			return U"Ŵ";
 		case 'X':
-			return L"X́";
+			return U"X́";
 		case 'Y':
-			return L"Ÿ";
+			return U"Ÿ";
 		case 'Z':
-			return L"Ž";
+			return U"Ž";
 		case 'a':
-			return L"á";
+			return U"á";
 		case 'b':
-			return L"ḅ";
+			return U"ḅ";
 		case 'c':
-			return L"ć";
+			return U"ć";
 		case 'd':
-			return L"d́";
+			return U"d́";
 		case 'e':
-			return L"é";
+			return U"é";
 		case 'f':
-			return L"f́";
+			return U"f́";
 		case 'g':
-			return L"ǵ";
+			return U"ǵ";
 		case 'h':
-			return L"h̀";
+			return U"h̀";
 		case 'i':
-			return L"í";
+			return U"í";
 		case 'j':
-			return L"ǰ";
+			return U"ǰ";
 		case 'k':
-			return L"ḱ";
+			return U"ḱ";
 		case 'l':
-			return L"ł";
+			return U"ł";
 		case 'm':
-			return L"m̀";
+			return U"m̀";
 		case 'n':
-			return L"ή";
+			return U"ή";
 		case 'o':
-			return L"ô";
+			return U"ô";
 		case 'p':
-			return L"ṕ";
+			return U"ṕ";
 		case 'q':
-			return L"q́";
+			return U"q́";
 		case 'r':
-			return L"ŕ";
+			return U"ŕ";
 		case 's':
-			return L"š";
+			return U"š";
 		case 't':
-			return L"ŧ";
+			return U"ŧ";
 		case 'u':
-			return L"ü";
+			return U"ü";
 		case 'v':
-			return L"ṽ";
+			return U"ṽ";
 		case 'w':
-			return L"ŵ";
+			return U"ŵ";
 		case 'x':
-			return L"x́";
+			return U"x́";
 		case 'y':
-			return L"ý";
+			return U"ý";
 		case 'z':
-			return L"ź";
+			return U"ź";
 	}
 	return NULL;
 }
