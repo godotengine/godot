@@ -1219,16 +1219,18 @@ void TranslationServer::setup() {
 	} else {
 		set_locale(OS::get_singleton()->get_locale());
 	}
+
 	fallback = GLOBAL_DEF("internationalization/locale/fallback", "en");
-	pseudolocalization_enabled = GLOBAL_GET("internationalization/pseudolocalization/use_pseudolocalization");
-	pseudolocalization_accents_enabled = GLOBAL_GET("internationalization/pseudolocalization/replace_with_accents");
-	pseudolocalization_double_vowels_enabled = GLOBAL_GET("internationalization/pseudolocalization/double_vowels");
-	pseudolocalization_fake_bidi_enabled = GLOBAL_GET("internationalization/pseudolocalization/fake_bidi");
-	pseudolocalization_override_enabled = GLOBAL_GET("internationalization/pseudolocalization/override");
-	expansion_ratio = GLOBAL_GET("internationalization/pseudolocalization/expansion_ratio");
-	pseudolocalization_prefix = GLOBAL_GET("internationalization/pseudolocalization/prefix");
-	pseudolocalization_suffix = GLOBAL_GET("internationalization/pseudolocalization/suffix");
-	pseudolocalization_skip_placeholders_enabled = GLOBAL_GET("internationalization/pseudolocalization/skip_placeholders");
+	pseudolocalization_enabled = GLOBAL_DEF("internationalization/pseudolocalization/use_pseudolocalization", false);
+	pseudolocalization_accents_enabled = GLOBAL_DEF("internationalization/pseudolocalization/replace_with_accents", true);
+	pseudolocalization_double_vowels_enabled = GLOBAL_DEF("internationalization/pseudolocalization/double_vowels", false);
+	pseudolocalization_fake_bidi_enabled = GLOBAL_DEF("internationalization/pseudolocalization/fake_bidi", false);
+	pseudolocalization_override_enabled = GLOBAL_DEF("internationalization/pseudolocalization/override", false);
+	expansion_ratio = GLOBAL_DEF("internationalization/pseudolocalization/expansion_ratio", 0.0);
+	pseudolocalization_prefix = GLOBAL_DEF("internationalization/pseudolocalization/prefix", "[");
+	pseudolocalization_suffix = GLOBAL_DEF("internationalization/pseudolocalization/suffix", "]");
+	pseudolocalization_skip_placeholders_enabled = GLOBAL_DEF("internationalization/pseudolocalization/skip_placeholders", true);
+
 #ifdef TOOLS_ENABLED
 	{
 		String options = "";
