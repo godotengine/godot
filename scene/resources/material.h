@@ -389,7 +389,6 @@ private:
 		StringName heightmap_scale;
 		StringName subsurface_scattering_strength;
 		StringName transmittance_color;
-		StringName transmittance_curve;
 		StringName transmittance_depth;
 		StringName transmittance_boost;
 		StringName backlight;
@@ -458,7 +457,6 @@ private:
 	float transmittance_amount;
 	Color transmittance_color;
 	float transmittance_depth;
-	float transmittance_curve;
 	float transmittance_boost;
 
 	Color backlight;
@@ -601,9 +599,6 @@ public:
 
 	void set_transmittance_depth(float p_depth);
 	float get_transmittance_depth() const;
-
-	void set_transmittance_curve(float p_curve);
-	float get_transmittance_curve() const;
 
 	void set_transmittance_boost(float p_boost);
 	float get_transmittance_boost() const;

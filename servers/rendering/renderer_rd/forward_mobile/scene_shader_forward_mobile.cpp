@@ -621,7 +621,6 @@ void SceneShaderForwardMobile::init(RendererStorageRD *p_storage, const String p
 		actions.renames["SSS_STRENGTH"] = "sss_strength";
 		actions.renames["SSS_TRANSMITTANCE_COLOR"] = "transmittance_color";
 		actions.renames["SSS_TRANSMITTANCE_DEPTH"] = "transmittance_depth";
-		actions.renames["SSS_TRANSMITTANCE_CURVE"] = "transmittance_curve";
 		actions.renames["SSS_TRANSMITTANCE_BOOST"] = "transmittance_boost";
 		actions.renames["BACKLIGHT"] = "backlight";
 		actions.renames["AO"] = "ao";

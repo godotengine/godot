@@ -581,6 +581,7 @@ class EffectsRD {
 	enum ResolveMode {
 		RESOLVE_MODE_GI,
 		RESOLVE_MODE_GI_VOXEL_GI,
+		RESOLVE_MODE_DEPTH,
 		RESOLVE_MODE_MAX
 	};
 
@@ -746,6 +747,7 @@ public:
 	void sub_surface_scattering(RID p_diffuse, RID p_diffuse2, RID p_depth, const CameraMatrix &p_camera, const Size2i &p_screen_size, float p_scale, float p_depth_scale, RS::SubSurfaceScatteringQuality p_quality);
 
 	void resolve_gi(RID p_source_depth, RID p_source_normal_roughness, RID p_source_voxel_gi, RID p_dest_depth, RID p_dest_normal_roughness, RID p_dest_voxel_gi, Vector2i p_screen_size, int p_samples, uint32_t p_barrier = RD::BARRIER_MASK_ALL);
+	void resolve_depth(RID p_source_depth, RID p_dest_depth, Vector2i p_screen_size, int p_samples, uint32_t p_barrier = RD::BARRIER_MASK_ALL);
 
 	void sort_buffer(RID p_uniform_set, int p_size);
 
