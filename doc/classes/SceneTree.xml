@@ -306,7 +306,7 @@
 		</member>
 		<member name="paused" type="bool" setter="set_pause" getter="is_paused" default="false">
 			If [code]true[/code], the [SceneTree] is paused. Doing so will have the following behavior:
-			- 2D and 3D physics will be stopped.
+			- 2D and 3D physics will be stopped. This includes signals and collision detection.
 			- [method Node._process], [method Node._physics_process] and [method Node._input] will not be called anymore in nodes.
 		</member>
 		<member name="refuse_new_network_connections" type="bool" setter="set_refuse_new_network_connections" getter="is_refusing_new_network_connections" default="false">
