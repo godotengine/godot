@@ -2511,15 +2511,15 @@ void Node3DEditorViewport::_notification(int p_what) {
 		}
 
 		if (show_info) {
+			const String viewport_size = vformat(String::utf8("%d × %d"), viewport->get_size().x, viewport->get_size().y);
 			String text;
 			text += vformat(TTR("X: %s\n"), rtos(current_camera->get_position().x).pad_decimals(1));
 			text += vformat(TTR("Y: %s\n"), rtos(current_camera->get_position().y).pad_decimals(1));
 			text += vformat(TTR("Z: %s\n"), rtos(current_camera->get_position().z).pad_decimals(1));
 			text += "\n";
 			text += vformat(
-					TTR("Size: %dx%d (%.1fMP)\n"),
-					viewport->get_size().x,
-					viewport->get_size().y,
+					TTR("Size: %s (%.1fMP)\n"),
+					viewport_size,
 					viewport->get_size().x * viewport->get_size().y * 0.000001);
 
 			text += "\n";
