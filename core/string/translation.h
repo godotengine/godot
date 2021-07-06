@@ -120,7 +120,7 @@ public:
 	String replace_with_accented_string(String &message) const;
 	String wrap_with_fakebidi_characters(String &message) const;
 	String add_padding(String &message, int length) const;
-	const wchar_t *get_accented_version(char c) const;
+	const char32_t *get_accented_version(char32_t c) const;
 
 	bool is_pseudolocalization_enabled() const;
 	void set_pseudolocalization_enabled(bool enabled);
