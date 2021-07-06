@@ -1470,19 +1470,23 @@ int LineEdit::get_scroll_offset() const {
 }
 
 void LineEdit::insert_text_at_caret(String p_text) {
-	if ((max_length <= 0) || (text.length() + p_text.length() <= max_length)) {
-		String pre = text.substr(0, caret_column);
-		String post = text.substr(caret_column, text.length() - caret_column);
-		text = pre + p_text + post;
-		_shape();
-		TextServer::Direction dir = TS->shaped_text_get_dominant_direciton_in_range(text_rid, caret_column, caret_column + p_text.length());
-		if (dir != TextServer::DIRECTION_AUTO) {
-			input_direction = (TextDirection)dir;
+	if (max_length > 0) {
+		// Truncate text to append to fit in max_length, if needed.
+		int available_chars = max_length - text.length();
+		if (p_text.length() > available_chars) {
+			emit_signal("text_change_rejected", p_text.substr(available_chars));
+			p_text = p_text.substr(0, available_chars);
 		}
-		set_caret_column(caret_column + p_text.length());
-	} else {
-		emit_signal("text_change_rejected");
 	}
+	String pre = text.substr(0, caret_column);
+	String post = text.substr(caret_column, text.length() - caret_column);
+	text = pre + p_text + post;
+	_shape();
+	TextServer::Direction dir = TS->shaped_text_get_dominant_direciton_in_range(text_rid, caret_column, caret_column + p_text.length());
+	if (dir != TextServer::DIRECTION_AUTO) {
+		input_direction = (TextDirection)dir;
+	}
+	set_caret_column(caret_column + p_text.length());
 }
 
 void LineEdit::clear_internal() {
@@ -2158,7 +2162,7 @@ void LineEdit::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_right_icon"), &LineEdit::get_right_icon);
 
 	ADD_SIGNAL(MethodInfo("text_changed", PropertyInfo(Variant::STRING, "new_text")));
-	ADD_SIGNAL(MethodInfo("text_change_rejected"));
+	ADD_SIGNAL(MethodInfo("text_change_rejected", PropertyInfo(Variant::STRING, "rejected_substring")));
 	ADD_SIGNAL(MethodInfo("text_submitted", PropertyInfo(Variant::STRING, "new_text")));
 
 	BIND_ENUM_CONSTANT(ALIGN_LEFT);
@@ -2198,7 +2202,7 @@ void LineEdit::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "text"), "set_text", "get_text");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "align", PROPERTY_HINT_ENUM, "Left,Center,Right,Fill"), "set_align", "get_align");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "max_length"), "set_max_length", "get_max_length");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "max_length", PROPERTY_HINT_RANGE, "0,1000,1,or_greater"), "set_max_length", "get_max_length");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "editable"), "set_editable", "is_editable");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "secret"), "set_secret", "is_secret");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "secret_character"), "set_secret_character", "get_secret_character");
@@ -2221,7 +2225,7 @@ void LineEdit::_bind_methods() {
 	ADD_GROUP("Caret", "caret_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "caret_blink"), "set_caret_blink_enabled", "is_caret_blink_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "caret_blink_speed", PROPERTY_HINT_RANGE, "0.1,10,0.01"), "set_caret_blink_speed", "get_caret_blink_speed");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "caret_column"), "set_caret_column", "get_caret_column");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "caret_column", PROPERTY_HINT_RANGE, "0,1000,1,or_greater"), "set_caret_column", "get_caret_column");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "caret_force_displayed"), "set_caret_force_displayed", "is_caret_force_displayed");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "caret_mid_grapheme"), "set_caret_mid_grapheme_enabled", "is_caret_mid_grapheme_enabled");
 }
