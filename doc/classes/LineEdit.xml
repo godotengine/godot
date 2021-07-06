@@ -196,6 +196,28 @@
 		</member>
 		<member name="max_length" type="int" setter="set_max_length" getter="get_max_length" default="0">
 			Maximum amount of characters that can be entered inside the [LineEdit]. If [code]0[/code], there is no limit.
+			When a limit is defined, characters that would exceed [member max_length] are truncated. This happens both for existing [member text] contents when setting the max length, or for new text inserted in the [LineEdit], including pasting. If any input text is truncated, the [signal text_change_rejected] signal is emitted with the truncated substring as parameter.
+			[b]Example:[/b]
+			[codeblocks]
+			[gdscript]
+			text = "Hello world"
+			max_length = 5
+			# `text` becomes "Hello".
+			max_length = 10
+			text += " goodbye"
+			# `text` becomes "Hello good".
+			# `text_change_rejected` is emitted with "bye" as parameter.
+			[/gdscript]
+			[csharp]
+			Text = "Hello world";
+			MaxLength = 5;
+			// `Text` becomes "Hello".
+			MaxLength = 10;
+			Text += " goodbye";
+			// `Text` becomes "Hello good".
+			// `text_change_rejected` is emitted with "bye" as parameter.
+			[/csharp]
+			[/codeblocks]
 		</member>
 		<member name="mouse_default_cursor_shape" type="int" setter="set_default_cursor_shape" getter="get_default_cursor_shape" override="true" enum="Control.CursorShape" default="1" />
 		<member name="placeholder_alpha" type="float" setter="set_placeholder_alpha" getter="get_placeholder_alpha" default="0.6">
@@ -238,8 +260,10 @@
 	</members>
 	<signals>
 		<signal name="text_change_rejected">
+			<argument index="0" name="rejected_substring" type="String">
+			</argument>
 			<description>
-				Emitted when trying to append text that would overflow the [member max_length].
+				Emitted when appending text that overflows the [member max_length]. The appended text is truncated to fit [member max_length], and the part that couldn't fit is passed as the [code]rejected_substring[/code] argument.
 			</description>
 		</signal>
 		<signal name="text_changed">
