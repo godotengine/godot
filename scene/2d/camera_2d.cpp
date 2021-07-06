@@ -196,20 +196,23 @@ Transform2D Camera2D::get_camera_transform() {
 	}
 
 	Rect2 screen_rect(-screen_offset + ret_camera_pos, screen_size * zoom);
-	if (screen_rect.position.x < limit[MARGIN_LEFT]) {
-		screen_rect.position.x = limit[MARGIN_LEFT];
-	}
 
-	if (screen_rect.position.x + screen_rect.size.x > limit[MARGIN_RIGHT]) {
-		screen_rect.position.x = limit[MARGIN_RIGHT] - screen_rect.size.x;
-	}
+	if (!limit_smoothing_enabled) {
+		if (screen_rect.position.x < limit[MARGIN_LEFT]) {
+			screen_rect.position.x = limit[MARGIN_LEFT];
+		}
 
-	if (screen_rect.position.y + screen_rect.size.y > limit[MARGIN_BOTTOM]) {
-		screen_rect.position.y = limit[MARGIN_BOTTOM] - screen_rect.size.y;
-	}
+		if (screen_rect.position.x + screen_rect.size.x > limit[MARGIN_RIGHT]) {
+			screen_rect.position.x = limit[MARGIN_RIGHT] - screen_rect.size.x;
+		}
 
-	if (screen_rect.position.y < limit[MARGIN_TOP]) {
-		screen_rect.position.y = limit[MARGIN_TOP];
+		if (screen_rect.position.y + screen_rect.size.y > limit[MARGIN_BOTTOM]) {
+			screen_rect.position.y = limit[MARGIN_BOTTOM] - screen_rect.size.y;
+		}
+
+		if (screen_rect.position.y < limit[MARGIN_TOP]) {
+			screen_rect.position.y = limit[MARGIN_TOP];
+		}
 	}
 
 	if (offset != Vector2()) {

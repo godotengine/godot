@@ -119,6 +119,7 @@ public:
 	virtual PoolByteArray finish();
 
 	HMACContextMbedTLS() {}
+	~HMACContextMbedTLS();
 };
 
 class CryptoMbedTLS : public Crypto {

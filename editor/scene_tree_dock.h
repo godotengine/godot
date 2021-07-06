@@ -248,6 +248,9 @@ class SceneTreeDock : public VBoxContainer {
 	bool profile_allow_editing;
 	bool profile_allow_script_editing;
 
+	static bool _update_node_path(const NodePath &p_root_path, NodePath &r_node_path, List<Pair<NodePath, NodePath>> *p_renames);
+	static bool _check_node_path_recursive(const NodePath &p_root_path, Variant &r_variant, List<Pair<NodePath, NodePath>> *p_renames);
+
 protected:
 	void _notification(int p_what);
 	static void _bind_methods();

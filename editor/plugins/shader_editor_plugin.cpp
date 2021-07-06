@@ -295,8 +295,8 @@ void ShaderEditor::_menu_option(int p_option) {
 		case EDIT_DELETE_LINE: {
 			shader_editor->delete_lines();
 		} break;
-		case EDIT_CLONE_DOWN: {
-			shader_editor->clone_lines_down();
+		case EDIT_DUPLICATE_SELECTION: {
+			shader_editor->duplicate_selection();
 		} break;
 		case EDIT_TOGGLE_COMMENT: {
 			if (shader.is_null()) {
@@ -627,7 +627,7 @@ ShaderEditor::ShaderEditor(EditorNode *p_node) {
 	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/indent_right"), EDIT_INDENT_RIGHT);
 	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/delete_line"), EDIT_DELETE_LINE);
 	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/toggle_comment"), EDIT_TOGGLE_COMMENT);
-	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/clone_down"), EDIT_CLONE_DOWN);
+	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/duplicate_selection"), EDIT_DUPLICATE_SELECTION);
 	edit_menu->get_popup()->add_separator();
 	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/complete_symbol"), EDIT_COMPLETE);
 	edit_menu->get_popup()->connect("id_pressed", this, "_menu_option");

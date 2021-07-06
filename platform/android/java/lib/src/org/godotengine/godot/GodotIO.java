@@ -74,7 +74,7 @@ public class GodotIO {
 
 	public int last_file_id = 1;
 
-	class AssetData {
+	static class AssetData {
 		public boolean eof = false;
 		public String path;
 		public InputStream is;
@@ -233,7 +233,7 @@ public class GodotIO {
 	/// DIRECTORIES
 	/////////////////////////
 
-	class AssetDir {
+	static class AssetDir {
 		public String[] files;
 		public int current;
 		public String path;
@@ -324,8 +324,8 @@ public class GodotIO {
 		am = p_activity.getAssets();
 		activity = p_activity;
 		//streams = new HashMap<Integer, AssetData>();
-		streams = new SparseArray<AssetData>();
-		dirs = new SparseArray<AssetDir>();
+		streams = new SparseArray<>();
+		dirs = new SparseArray<>();
 	}
 
 	/////////////////////////
@@ -387,7 +387,7 @@ public class GodotIO {
 		Point size = new Point();
 		display.getRealSize(size);
 
-		int result[] = { 0, 0, size.x, size.y };
+		int[] result = { 0, 0, size.x, size.y };
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
 			WindowInsets insets = activity.getWindow().getDecorView().getRootWindowInsets();
 			DisplayCutout cutout = insets.getDisplayCutout();
@@ -409,12 +409,12 @@ public class GodotIO {
 
 		//InputMethodManager inputMgr = (InputMethodManager)activity.getSystemService(Context.INPUT_METHOD_SERVICE);
 		//inputMgr.toggleSoftInput(InputMethodManager.SHOW_FORCED, 0);
-	};
+	}
 
 	public void hideKeyboard() {
 		if (edit != null)
 			edit.hideKeyboard();
-	};
+	}
 
 	public void setScreenOrientation(int p_orientation) {
 		switch (p_orientation) {

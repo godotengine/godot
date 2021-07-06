@@ -1119,8 +1119,8 @@ void ScriptTextEditor::_edit_option(int p_op) {
 		case EDIT_DELETE_LINE: {
 			code_editor->delete_lines();
 		} break;
-		case EDIT_CLONE_DOWN: {
-			code_editor->clone_lines_down();
+		case EDIT_DUPLICATE_SELECTION: {
+			code_editor->duplicate_selection();
 		} break;
 		case EDIT_TOGGLE_FOLD_LINE: {
 			tx->toggle_fold_line(tx->cursor_get_line());
@@ -1504,6 +1504,7 @@ void ScriptTextEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data
 	}
 
 	if (d.has("type") && (String(d["type"]) == "files" || String(d["type"]) == "files_and_dirs")) {
+		const String quote_style = EDITOR_DEF("text_editor/completion/use_single_quotes", false) ? "'" : "\"";
 		Array files = d["files"];
 
 		String text_to_drop;
@@ -1514,9 +1515,9 @@ void ScriptTextEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data
 			}
 
 			if (preload) {
-				text_to_drop += "preload(\"" + String(files[i]).c_escape() + "\")";
+				text_to_drop += "preload(" + String(files[i]).c_escape().quote(quote_style) + ")";
 			} else {
-				text_to_drop += "\"" + String(files[i]).c_escape() + "\"";
+				text_to_drop += String(files[i]).c_escape().quote(quote_style);
 			}
 		}
 
@@ -1802,7 +1803,7 @@ void ScriptTextEditor::_enable_code_editor() {
 	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/fold_all_lines"), EDIT_FOLD_ALL_LINES);
 	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/unfold_all_lines"), EDIT_UNFOLD_ALL_LINES);
 	edit_menu->get_popup()->add_separator();
-	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/clone_down"), EDIT_CLONE_DOWN);
+	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/duplicate_selection"), EDIT_DUPLICATE_SELECTION);
 	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/complete_symbol"), EDIT_COMPLETE);
 	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/evaluate_selection"), EDIT_EVALUATE);
 	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/trim_trailing_whitespace"), EDIT_TRIM_TRAILING_WHITESAPCE);
@@ -1969,10 +1970,10 @@ void ScriptTextEditor::register_editor() {
 	ED_SHORTCUT("script_text_editor/fold_all_lines", TTR("Fold All Lines"), 0);
 	ED_SHORTCUT("script_text_editor/unfold_all_lines", TTR("Unfold All Lines"), 0);
 #ifdef OSX_ENABLED
-	ED_SHORTCUT("script_text_editor/clone_down", TTR("Clone Down"), KEY_MASK_SHIFT | KEY_MASK_CMD | KEY_C);
+	ED_SHORTCUT("script_text_editor/duplicate_selection", TTR("Duplicate Selection"), KEY_MASK_SHIFT | KEY_MASK_CMD | KEY_C);
 	ED_SHORTCUT("script_text_editor/complete_symbol", TTR("Complete Symbol"), KEY_MASK_CTRL | KEY_SPACE);
 #else
-	ED_SHORTCUT("script_text_editor/clone_down", TTR("Clone Down"), KEY_MASK_CMD | KEY_D);
+	ED_SHORTCUT("script_text_editor/duplicate_selection", TTR("Duplicate Selection"), KEY_MASK_CMD | KEY_D);
 	ED_SHORTCUT("script_text_editor/complete_symbol", TTR("Complete Symbol"), KEY_MASK_CMD | KEY_SPACE);
 #endif
 	ED_SHORTCUT("script_text_editor/evaluate_selection", TTR("Evaluate Selection"), KEY_MASK_CMD | KEY_MASK_SHIFT | KEY_E);

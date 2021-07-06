@@ -712,8 +712,8 @@ void CodeTextEditor::_input(const Ref<InputEvent> &event) {
 		accept_event();
 		return;
 	}
-	if (ED_IS_SHORTCUT("script_text_editor/clone_down", key_event)) {
-		clone_lines_down();
+	if (ED_IS_SHORTCUT("script_text_editor/duplicate_selection", key_event)) {
+		duplicate_selection();
 		accept_event();
 		return;
 	}
@@ -1249,7 +1249,7 @@ void CodeTextEditor::delete_lines() {
 	text_editor->end_complex_operation();
 }
 
-void CodeTextEditor::clone_lines_down() {
+void CodeTextEditor::duplicate_selection() {
 	const int cursor_column = text_editor->cursor_get_column();
 	int from_line = text_editor->cursor_get_line();
 	int to_line = text_editor->cursor_get_line();

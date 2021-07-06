@@ -1927,6 +1927,13 @@ void SpatialEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 			return;
 		}
 
+		if (EditorSettings::get_singleton()->get("editors/3d/navigation/emulate_numpad")) {
+			const uint32_t code = k->get_scancode();
+			if (code >= KEY_0 && code <= KEY_9) {
+				k->set_scancode(code - KEY_0 + KEY_KP_0);
+			}
+		}
+
 		if (ED_IS_SHORTCUT("spatial_editor/snap", p_event)) {
 			if (_edit.mode != TRANSFORM_NONE) {
 				_edit.snap = !_edit.snap;
@@ -3076,14 +3083,12 @@ void SpatialEditorViewport::_toggle_camera_preview(bool p_activate) {
 		if (!preview) {
 			preview_camera->hide();
 		}
-		view_menu->set_disabled(false);
 		surface->update();
 
 	} else {
 		previewing = preview;
 		previewing->connect("tree_exiting", this, "_preview_exited_scene");
 		VS::get_singleton()->viewport_attach_camera(viewport->get_viewport_rid(), preview->get_camera()); //replace
-		view_menu->set_disabled(true);
 		surface->update();
 	}
 }
@@ -3316,7 +3321,6 @@ void SpatialEditorViewport::set_state(const Dictionary &p_state) {
 			previewing = Object::cast_to<Camera>(pv);
 			previewing->connect("tree_exiting", this, "_preview_exited_scene");
 			VS::get_singleton()->viewport_attach_camera(viewport->get_viewport_rid(), previewing->get_camera()); //replace
-			view_menu->set_disabled(true);
 			surface->update();
 			preview_camera->set_pressed(true);
 			preview_camera->show();
