@@ -3889,6 +3889,21 @@ String EditorNode::_to_absolute_plugin_path(const String &p_plugin_name) {
 	return "res://addons/" + p_plugin_name + "/plugin.cfg";
 }
 
+void EditorNode::_pick_main_scene_custom_action(const String &p_custom_action_name) {
+	if (p_custom_action_name == "select_current") {
+		Node *scene = editor_data.get_edited_scene_root();
+
+		if (!scene) {
+			show_accept(TTR("There is no defined scene to run."), TTR("OK"));
+			return;
+		}
+
+		pick_main_scene->hide();
+		current_option = SETTINGS_PICK_MAIN_SCENE;
+		_dialog_action(scene->get_filename());
+	}
+}
+
 Ref<Texture> EditorNode::get_object_icon(const Object *p_object, const String &p_fallback) const {
 	ERR_FAIL_COND_V(!p_object || !gui_base, nullptr);
 
@@ -4605,6 +4620,14 @@ bool EditorNode::ensure_main_scene(bool p_from_native) {
 		current_option = -1;
 		pick_main_scene->set_text(TTR("No main scene has ever been defined, select one?\nYou can change it later in \"Project Settings\" under the 'application' category."));
 		pick_main_scene->popup_centered_minsize();
+
+		if (editor_data.get_edited_scene_root()) {
+			select_current_scene_button->set_disabled(false);
+			select_current_scene_button->grab_focus();
+		} else {
+			select_current_scene_button->set_disabled(true);
+		}
+
 		return false;
 	}
 
@@ -5537,6 +5560,7 @@ void EditorNode::_bind_methods() {
 	ClassDB::bind_method("_update_scene_tabs", &EditorNode::_update_scene_tabs);
 	ClassDB::bind_method("_discard_changes", &EditorNode::_discard_changes);
 	ClassDB::bind_method("_update_recent_scenes", &EditorNode::_update_recent_scenes);
+	ClassDB::bind_method("_pick_main_scene_custom_action", &EditorNode::_pick_main_scene_custom_action);
 
 	ClassDB::bind_method("_clear_undo_history", &EditorNode::_clear_undo_history);
 	ClassDB::bind_method("_dropped_files", &EditorNode::_dropped_files);
@@ -6903,6 +6927,8 @@ EditorNode::EditorNode() {
 	gui_base->add_child(pick_main_scene);
 	pick_main_scene->get_ok()->set_text(TTR("Select"));
 	pick_main_scene->connect("confirmed", this, "_menu_option", varray(SETTINGS_PICK_MAIN_SCENE));
+	select_current_scene_button = pick_main_scene->add_button(TTR("Select Current"), true, "select_current");
+	pick_main_scene->connect("custom_action", this, "_pick_main_scene_custom_action");
 
 	for (int i = 0; i < _init_callbacks.size(); i++) {
 		_init_callbacks[i]();

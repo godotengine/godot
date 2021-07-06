@@ -308,6 +308,7 @@ private:
 	ConfirmationDialog *save_confirmation;
 	ConfirmationDialog *import_confirmation;
 	ConfirmationDialog *pick_main_scene;
+	Button *select_current_scene_button;
 	AcceptDialog *accept;
 	EditorAbout *about;
 	AcceptDialog *warning;
@@ -660,6 +661,8 @@ private:
 	Ref<ImageTexture> _load_custom_class_icon(const String &p_path) const;
 
 	static String _to_absolute_plugin_path(const String &p_path);
+
+	void _pick_main_scene_custom_action(const String &p_custom_action_name);
 
 protected:
 	void _notification(int p_what);
