@@ -21,6 +21,7 @@
 			<description>
 				Adds a button with label [code]text[/code] and a custom [code]action[/code] to the dialog and returns the created button. [code]action[/code] will be passed to the [signal custom_action] signal when pressed.
 				If [code]true[/code], [code]right[/code] will place the button to the right of any sibling buttons.
+				You can use [method remove_button] method to remove a button created with this method from the dialog.
 			</description>
 		</method>
 		<method name="add_cancel_button">
@@ -30,6 +31,7 @@
 			</argument>
 			<description>
 				Adds a button with label [code]name[/code] and a cancel action to the dialog and returns the created button.
+				You can use [method remove_button] method to remove a button created with this method from the dialog.
 			</description>
 		</method>
 		<method name="get_label">
@@ -53,6 +55,15 @@
 			</argument>
 			<description>
 				Registers a [LineEdit] in the dialog. When the enter key is pressed, the dialog will be accepted.
+			</description>
+		</method>
+		<method name="remove_button">
+			<return type="void">
+			</return>
+			<argument index="0" name="button" type="Control">
+			</argument>
+			<description>
+				Removes the [code]button[/code] from the dialog. Does NOT free the [code]button[/code]. The [code]button[/code] must be a [Button] added with [method add_button] or [method add_cancel_button] method. After removal, pressing the [code]button[/code] will no longer emit this dialog's [signal custom_action] or [signal cancelled] signals.
 			</description>
 		</method>
 	</methods>
