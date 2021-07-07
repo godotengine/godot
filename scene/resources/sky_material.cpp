@@ -270,7 +270,8 @@ ProceduralSkyMaterial::~ProceduralSkyMaterial() {
 
 void PanoramaSkyMaterial::set_panorama(const Ref<Texture2D> &p_panorama) {
 	panorama = p_panorama;
-	RS::get_singleton()->material_set_param(_get_material(), "source_panorama", panorama);
+	RID tex_rid = p_panorama.is_valid() ? p_panorama->get_rid() : RID();
+	RS::get_singleton()->material_set_param(_get_material(), "source_panorama", tex_rid);
 }
 
 Ref<Texture2D> PanoramaSkyMaterial::get_panorama() const {
@@ -411,7 +412,8 @@ float PhysicalSkyMaterial::get_dither_strength() const {
 
 void PhysicalSkyMaterial::set_night_sky(const Ref<Texture2D> &p_night_sky) {
 	night_sky = p_night_sky;
-	RS::get_singleton()->material_set_param(_get_material(), "night_sky", night_sky);
+	RID tex_rid = p_night_sky.is_valid() ? p_night_sky->get_rid() : RID();
+	RS::get_singleton()->material_set_param(_get_material(), "night_sky", tex_rid);
 }
 
 Ref<Texture2D> PhysicalSkyMaterial::get_night_sky() const {

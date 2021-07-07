@@ -130,7 +130,7 @@ bool ShaderMaterial::_set(const StringName &p_name, const Variant &p_value) {
 			}
 		}
 		if (pr) {
-			RenderingServer::get_singleton()->material_set_param(_get_material(), pr, p_value);
+			set_shader_param(pr, p_value);
 			return true;
 		}
 	}
@@ -152,7 +152,12 @@ bool ShaderMaterial::_get(const StringName &p_name, Variant &r_ret) const {
 		}
 
 		if (pr) {
-			r_ret = RenderingServer::get_singleton()->material_get_param(_get_material(), pr);
+			const Map<StringName, Variant>::Element *E = param_cache.find(pr);
+			if (E) {
+				r_ret = E->get();
+			} else {
+				r_ret = Variant();
+			}
 			return true;
 		}
 	}
@@ -219,11 +224,31 @@ Ref<Shader> ShaderMaterial::get_shader() const {
 }
 
 void ShaderMaterial::set_shader_param(const StringName &p_param, const Variant &p_value) {
-	RS::get_singleton()->material_set_param(_get_material(), p_param, p_value);
+	if (p_value.get_type() == Variant::NIL) {
+		param_cache.erase(p_param);
+		RS::get_singleton()->material_set_param(_get_material(), p_param, Variant());
+	} else {
+		param_cache[p_param] = p_value;
+		if (p_value.get_type() == Variant::OBJECT) {
+			RID tex_rid = p_value;
+			if (tex_rid == RID()) {
+				param_cache.erase(p_param);
+				RS::get_singleton()->material_set_param(_get_material(), p_param, Variant());
+			} else {
+				RS::get_singleton()->material_set_param(_get_material(), p_param, tex_rid);
+			}
+		} else {
+			RS::get_singleton()->material_set_param(_get_material(), p_param, p_value);
+		}
+	}
 }
 
 Variant ShaderMaterial::get_shader_param(const StringName &p_param) const {
-	return RS::get_singleton()->material_get_param(_get_material(), p_param);
+	if (param_cache.has(p_param)) {
+		return param_cache[p_param];
+	} else {
+		return Variant();
+	}
 }
 
 void ShaderMaterial::_shader_changed() {
