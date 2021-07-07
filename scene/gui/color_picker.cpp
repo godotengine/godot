@@ -40,6 +40,8 @@
 #endif
 #include "scene/main/viewport.h"
 
+List<Color> ColorPicker::preset_cache;
+
 void ColorPicker::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
@@ -57,11 +59,17 @@ void ColorPicker::_notification(int p_what) {
 
 #ifdef TOOLS_ENABLED
 			if (Engine::get_singleton()->is_editor_hint()) {
-				PoolColorArray saved_presets = EditorSettings::get_singleton()->get_project_metadata("color_picker", "presets", PoolColorArray());
-
-				for (int i = 0; i < saved_presets.size(); i++) {
-					add_preset(saved_presets[i]);
+				if (preset_cache.empty()) {
+					PoolColorArray saved_presets = EditorSettings::get_singleton()->get_project_metadata("color_picker", "presets", PoolColorArray());
+					for (int i = 0; i < saved_presets.size(); i++) {
+						preset_cache.push_back(saved_presets[i]);
+					}
 				}
+
+				for (int i = 0; i < preset_cache.size(); i++) {
+					presets.push_back(preset_cache[i]);
+				}
+				preset->update();
 			}
 #endif
 		} break;
@@ -287,6 +295,7 @@ void ColorPicker::add_preset(const Color &p_color) {
 		presets.move_to_back(presets.find(p_color));
 	} else {
 		presets.push_back(p_color);
+		preset_cache.push_back(p_color);
 	}
 	preset->update();
 
@@ -301,6 +310,7 @@ void ColorPicker::add_preset(const Color &p_color) {
 void ColorPicker::erase_preset(const Color &p_color) {
 	if (presets.find(p_color)) {
 		presets.erase(presets.find(p_color));
+		preset_cache.erase(preset_cache.find(p_color));
 		preset->update();
 
 #ifdef TOOLS_ENABLED

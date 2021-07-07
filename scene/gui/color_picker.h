@@ -47,6 +47,7 @@ class ColorPicker : public BoxContainer {
 	GDCLASS(ColorPicker, BoxContainer);
 
 private:
+	static List<Color> preset_cache;
 	Control *screen;
 	Control *uv_edit;
 	Control *w_edit;
