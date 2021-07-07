@@ -7400,6 +7400,14 @@ void EditorPluginList::make_visible(bool p_visible) {
 	}
 }
 
+void EditorNode::install_android_template() {
+	if (export_template_manager->can_install_android_template()) {
+		export_template_manager->install_android_template();
+	} else {
+		WARN_PRINT("No template file installed");
+	}
+}
+
 void EditorPluginList::edit(Object *p_object) {
 	for (int i = 0; i < plugins_list.size(); i++) {
 		plugins_list[i]->edit(p_object);

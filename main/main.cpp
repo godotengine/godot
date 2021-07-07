@@ -386,6 +386,7 @@ void Main::print_help(const char *p_binary) {
 	OS::get_singleton()->print("  --no-docbase                                 Disallow dumping the base types (used with --doctool).\n");
 	OS::get_singleton()->print("  --build-solutions                            Build the scripting solutions (e.g. for C# projects). Implies --editor and requires a valid project to edit.\n");
 	OS::get_singleton()->print("  --dump-extension-api                         Generate JSON dump of the Godot API for GDExtension bindings named 'extension_api.json' in the current folder.\n");
+	OS::get_singleton()->print("  --install-android-template                   Installs Android template. Implies --editor and requires a valid project to edit.\n");
 #ifdef TESTS_ENABLED
 	OS::get_singleton()->print("  --test [--help]                              Run unit tests. Use --test --help for more information.\n");
 #endif
@@ -1038,6 +1039,11 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 			main_args.push_back(I->get());
 		} else if (I->get() == "--validate-conversion-3to4") {
 			// Actually handling is done in start().
+			cmdline_tool = true;
+			main_args.push_back(I->get());
+		} else if (I->get() == "--install-android-template") { // Installs Android Template
+			// Actually handling is done in start().
+			editor = true;
 			cmdline_tool = true;
 			main_args.push_back(I->get());
 		} else if (I->get() == "--doctool") {
@@ -2141,6 +2147,7 @@ bool Main::start() {
 	String doc_tool_path;
 	bool doc_base = true;
 	String _export_preset;
+	bool _install_android_template = false;
 	bool export_debug = false;
 	bool export_pack_only = false;
 	bool converting_project = false;
@@ -2210,6 +2217,9 @@ bool Main::start() {
 				editor = true;
 				_export_preset = args[i + 1];
 				export_pack_only = true;
+			} else if (args[i] == "--install-android-template") {
+				editor = true;
+				_install_android_template = true;
 #endif
 			} else {
 				// The parameter does not match anything known, don't skip the next argument
@@ -2521,6 +2531,11 @@ bool Main::start() {
 
 			if (!_export_preset.is_empty()) {
 				editor_node->export_preset(_export_preset, positional_arg, export_debug, export_pack_only);
+				game_path = ""; // Do not load anything.
+			}
+
+			if (_install_android_template) {
+				editor_node->install_android_template();
 				game_path = ""; // Do not load anything.
 			}
 		}
