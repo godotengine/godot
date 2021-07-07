@@ -436,9 +436,7 @@ bool SceneShaderForwardMobile::MaterialData::update_parameters(const Map<StringN
 }
 
 SceneShaderForwardMobile::MaterialData::~MaterialData() {
-	if (uniform_set.is_valid() && RD::get_singleton()->uniform_set_is_valid(uniform_set)) {
-		RD::get_singleton()->free(uniform_set);
-	}
+	free_parameters_uniform_set(uniform_set);
 }
 
 RendererStorageRD::MaterialData *SceneShaderForwardMobile::_create_material_func(ShaderData *p_shader) {

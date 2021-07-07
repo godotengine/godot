@@ -5505,6 +5505,13 @@ bool RenderingDeviceVulkan::uniform_set_is_valid(RID p_uniform_set) {
 	return uniform_set_owner.owns(p_uniform_set);
 }
 
+void RenderingDeviceVulkan::uniform_set_set_invalidation_callback(RID p_uniform_set, UniformSetInvalidatedCallback p_callback, void *p_userdata) {
+	UniformSet *us = uniform_set_owner.getornull(p_uniform_set);
+	ERR_FAIL_COND(!us);
+	us->invalidated_callback = p_callback;
+	us->invalidated_callback_userdata = p_userdata;
+}
+
 Error RenderingDeviceVulkan::buffer_update(RID p_buffer, uint32_t p_offset, uint32_t p_size, const void *p_data, uint32_t p_post_barrier) {
 	_THREAD_SAFE_METHOD_
 
@@ -7844,6 +7851,10 @@ void RenderingDeviceVulkan::_free_internal(RID p_id) {
 	} else if (uniform_set_owner.owns(p_id)) {
 		UniformSet *uniform_set = uniform_set_owner.getornull(p_id);
 		frames[frame].uniform_sets_to_dispose_of.push_back(*uniform_set);
+		if (uniform_set->invalidated_callback != nullptr) {
+			uniform_set->invalidated_callback(p_id, uniform_set->invalidated_callback_userdata);
+		}
+
 		uniform_set_owner.free(p_id);
 	} else if (render_pipeline_owner.owns(p_id)) {
 		RenderPipeline *pipeline = render_pipeline_owner.getornull(p_id);

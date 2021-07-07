@@ -239,9 +239,7 @@ bool RendererSceneSkyRD::SkyMaterialData::update_parameters(const Map<StringName
 }
 
 RendererSceneSkyRD::SkyMaterialData::~SkyMaterialData() {
-	if (uniform_set.is_valid() && RD::get_singleton()->uniform_set_is_valid(uniform_set)) {
-		RD::get_singleton()->free(uniform_set);
-	}
+	free_parameters_uniform_set(uniform_set);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
