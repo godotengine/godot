@@ -183,7 +183,7 @@ Variant JavaScriptObjectImpl::_js2variant(int p_type, godot_js_wrapper_ex *p_val
 		case Variant::FLOAT:
 			return p_val->r;
 		case Variant::STRING: {
-			String out((const char *)p_val->p);
+			String out = String::utf8((const char *)p_val->p);
 			free(p_val->p);
 			return out;
 		}
