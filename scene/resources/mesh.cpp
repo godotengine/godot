@@ -30,6 +30,7 @@
 
 #include "mesh.h"
 
+#include "core/math/convex_hull.h"
 #include "core/templates/pair.h"
 #include "scene/resources/concave_polygon_shape_3d.h"
 #include "scene/resources/convex_polygon_shape_3d.h"
@@ -221,9 +222,17 @@ Vector<Face3> Mesh::get_faces() const {
 */
 }
 
-Ref<Shape3D> Mesh::create_convex_shape() const {
-	Vector<Vector3> vertices;
+Ref<Shape3D> Mesh::create_convex_shape(bool p_clean, bool p_simplify) const {
+	if (p_simplify) {
+		Vector<Ref<Shape3D>> decomposed = convex_decompose(1);
+		if (decomposed.size() == 1) {
+			return decomposed[0];
+		} else {
+			ERR_PRINT("Convex shape simplification failed, falling back to simpler process.");
+		}
+	}
 
+	Vector<Vector3> vertices;
 	for (int i = 0; i < get_surface_count(); i++) {
 		Array a = surface_get_arrays(i);
 		ERR_FAIL_COND_V(a.is_empty(), Ref<ConvexPolygonShape3D>());
@@ -232,6 +241,18 @@ Ref<Shape3D> Mesh::create_convex_shape() const {
 	}
 
 	Ref<ConvexPolygonShape3D> shape = memnew(ConvexPolygonShape3D);
+
+	if (p_clean) {
+		Geometry3D::MeshData md;
+		Error err = ConvexHullComputer::convex_hull(vertices, md);
+		if (err == OK) {
+			shape->set_points(md.vertices);
+			return shape;
+		} else {
+			ERR_PRINT("Convex shape cleaning failed, falling back to simpler process.");
+		}
+	}
+
 	shape->set_points(vertices);
 	return shape;
 }
@@ -543,12 +564,12 @@ void Mesh::clear_cache() const {
 	debug_lines.clear();
 }
 
-Vector<Ref<Shape3D>> Mesh::convex_decompose() const {
+Vector<Ref<Shape3D>> Mesh::convex_decompose(int p_max_convex_hulls) const {
 	ERR_FAIL_COND_V(!convex_composition_function, Vector<Ref<Shape3D>>());
 
 	const Vector<Face3> faces = get_faces();
 
-	Vector<Vector<Face3>> decomposed = convex_composition_function(faces);
+	Vector<Vector<Face3>> decomposed = convex_composition_function(faces, p_max_convex_hulls);
 
 	Vector<Ref<Shape3D>> ret;
 
@@ -1852,7 +1873,7 @@ void ArrayMesh::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("surface_set_name", "surf_idx", "name"), &ArrayMesh::surface_set_name);
 	ClassDB::bind_method(D_METHOD("surface_get_name", "surf_idx"), &ArrayMesh::surface_get_name);
 	ClassDB::bind_method(D_METHOD("create_trimesh_shape"), &ArrayMesh::create_trimesh_shape);
-	ClassDB::bind_method(D_METHOD("create_convex_shape"), &ArrayMesh::create_convex_shape);
+	ClassDB::bind_method(D_METHOD("create_convex_shape", "clean", "simplify"), &ArrayMesh::create_convex_shape, DEFVAL(true), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("create_outline", "margin"), &ArrayMesh::create_outline);
 	ClassDB::bind_method(D_METHOD("regen_normal_maps"), &ArrayMesh::regen_normal_maps);
 	ClassDB::set_method_flags(get_class_static(), _scs_create("regen_normal_maps"), METHOD_FLAGS_DEFAULT | METHOD_FLAG_EDITOR);

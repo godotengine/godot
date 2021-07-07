@@ -16,8 +16,14 @@
 		<method name="create_convex_shape" qualifiers="const">
 			<return type="Shape3D">
 			</return>
+			<argument index="0" name="clean" type="bool" default="true">
+			</argument>
+			<argument index="1" name="simplify" type="bool" default="false">
+			</argument>
 			<description>
 				Calculate a [ConvexPolygonShape3D] from the mesh.
+				If [code]clean[/code] is [code]true[/code] (default), duplicate and interior vertices are removed automatically. You can set it to [code]false[/code] to make the process faster if not needed.
+				If [code]simplify[/code] is [code]true[/code], the geometry can be further simplified to reduce the amount of vertices. Disabled by default.
 			</description>
 		</method>
 		<method name="create_outline" qualifiers="const">
