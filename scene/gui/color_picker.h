@@ -58,6 +58,7 @@ public:
 private:
 	static Ref<Shader> wheel_shader;
 	static Ref<Shader> circle_shader;
+	static List<Color> preset_cache;
 
 	Control *screen = nullptr;
 	Control *uv_edit = memnew(Control);
