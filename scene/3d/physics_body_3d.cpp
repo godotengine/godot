@@ -146,7 +146,7 @@ bool PhysicsBody3D::move_and_collide(const Vector3 &p_motion, bool p_infinite_in
 			Vector3 recovery = r_result.motion - motion_normal * dot;
 			real_t recovery_length = recovery.length();
 			// Fixes cases where canceling slide causes the motion to go too deep into the ground,
-			// Becauses we're only taking rest information into account and not general recovery.
+			// Because we're only taking rest information into account and not general recovery.
 			if (recovery_length < (real_t)p_margin + precision) {
 				// Apply adjustment to motion.
 				r_result.motion = motion_normal * dot;

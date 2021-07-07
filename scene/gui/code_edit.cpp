@@ -2128,7 +2128,7 @@ int CodeEdit::_is_in_delimiter(int p_line, int p_column, DelimiterType p_type) c
 	int region = (p_line <= 0 || delimiter_cache[p_line - 1].size() < 1) ? -1 : delimiter_cache[p_line - 1].back()->value();
 	bool in_region = region != -1 && delimiters[region].type == p_type;
 	for (Map<int, int>::Element *E = delimiter_cache[p_line].front(); E; E = E->next()) {
-		/* If column is specified, loop untill the key is larger then the column. */
+		/* If column is specified, loop until the key is larger then the column. */
 		if (p_column != -1) {
 			if (E->key() > p_column) {
 				break;
@@ -2138,7 +2138,7 @@ int CodeEdit::_is_in_delimiter(int p_line, int p_column, DelimiterType p_type) c
 			continue;
 		}
 
-		/* If no column, calulate if the entire line is a region       */
+		/* If no column, calculate if the entire line is a region       */
 		/* excluding whitespace.                                       */
 		const String line = get_line(p_line);
 		if (!in_region) {

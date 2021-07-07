@@ -73,7 +73,7 @@
 			</argument>
 			<description>
 				Sets the local pose transform, [code]pose[/code], for the bone at [code]bone_idx[/code].
-				[code]amount[/code] is the interpolation strengh that will be used when applying the pose, and [code]persistent[/code] determines if the applied pose will remain.
+				[code]amount[/code] is the interpolation strength that will be used when applying the pose, and [code]persistent[/code] determines if the applied pose will remain.
 				[b]Note:[/b] The pose transform needs to be a local transform relative to the [Bone2D] node at [code]bone_idx[/code]!
 			</description>
 		</method>

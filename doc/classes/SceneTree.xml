@@ -146,7 +146,7 @@
 			<return type="Array">
 			</return>
 			<description>
-				Returns an array of currently exising [Tween]s in the [SceneTree] (both running and paused).
+				Returns an array of currently existing [Tween]s in the [SceneTree] (both running and paused).
 			</description>
 		</method>
 		<method name="get_rpc_sender_id" qualifiers="const">

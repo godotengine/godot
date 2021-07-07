@@ -94,8 +94,8 @@ Dictionary NativeExtensionAPIDump::generate_extension_api() {
 			{ Variant::NODE_PATH, ptrsize_32, ptrsize_64, ptrsize_32, ptrsize_64 },
 			{ Variant::RID, sizeof(uint64_t), sizeof(uint64_t), sizeof(uint64_t), sizeof(uint64_t) },
 			{ Variant::OBJECT, ptrsize_32, ptrsize_64, ptrsize_32, ptrsize_64 },
-			{ Variant::CALLABLE, sizeof(Callable), sizeof(Callable), sizeof(Callable), sizeof(Callable) }, //harcoded align
-			{ Variant::SIGNAL, sizeof(Signal), sizeof(Signal), sizeof(Signal), sizeof(Signal) }, //harcoded align
+			{ Variant::CALLABLE, sizeof(Callable), sizeof(Callable), sizeof(Callable), sizeof(Callable) }, //hardcoded align
+			{ Variant::SIGNAL, sizeof(Signal), sizeof(Signal), sizeof(Signal), sizeof(Signal) }, //hardcoded align
 			{ Variant::DICTIONARY, ptrsize_32, ptrsize_64, ptrsize_32, ptrsize_64 },
 			{ Variant::ARRAY, ptrsize_32, ptrsize_64, ptrsize_32, ptrsize_64 },
 			{ Variant::PACKED_BYTE_ARRAY, ptrsize_32, ptrsize_64, ptrsize_32, ptrsize_64 },
@@ -180,7 +180,7 @@ Dictionary NativeExtensionAPIDump::generate_extension_api() {
 			{ Variant::QUATERNION, "w", 3 * sizeof(float), 3 * sizeof(float), 3 * sizeof(double), 3 * sizeof(double) },
 			{ Variant::AABB, "position", 0, 0, 0, 0 },
 			{ Variant::AABB, "size", vec3_elems * sizeof(float), vec3_elems * sizeof(float), vec3_elems * sizeof(double), vec3_elems * sizeof(double) },
-			//rememer that basis vectors are flipped!
+			//remember that basis vectors are flipped!
 			{ Variant::BASIS, "x", 0, 0, 0, 0 },
 			{ Variant::BASIS, "y", vec3_elems * sizeof(float), vec3_elems * sizeof(float), vec3_elems * sizeof(double), vec3_elems * sizeof(double) },
 			{ Variant::BASIS, "z", vec3_elems * 2 * sizeof(float), vec3_elems * 2 * sizeof(float), vec3_elems * 2 * sizeof(double), vec3_elems * 2 * sizeof(double) },
