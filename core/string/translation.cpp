@@ -1516,8 +1516,8 @@ String TranslationServer::replace_with_accented_string(String &message) const {
 
 String TranslationServer::wrap_with_fakebidi_characters(String &message) const {
 	String res = "";
-	char32_t fakebidiprefix = L'\u202e';
-	char32_t fakebidisuffix = L'\u202c';
+	char32_t fakebidiprefix = U'\u202e';
+	char32_t fakebidisuffix = U'\u202c';
 	res += fakebidiprefix;
 	//the fake bidi unicode gets popped at every newline so pushing it back at every newline.
 	for (int i = 0; i < message.size(); i++) {
