@@ -2463,6 +2463,7 @@ void SpatialEditorViewport::_notification(int p_what) {
 		}
 
 		if (show_info) {
+			const String viewport_size = vformat(String::utf8("%d × %d"), viewport->get_size().x, viewport->get_size().y);
 			String text;
 			text += "X: " + rtos(current_camera->get_translation().x).pad_decimals(1) + "\n";
 			text += "Y: " + rtos(current_camera->get_translation().y).pad_decimals(1) + "\n";
@@ -2472,9 +2473,8 @@ void SpatialEditorViewport::_notification(int p_what) {
 
 			text += TTR("Size") +
 					vformat(
-							": %dx%d (%.1fMP)\n",
-							viewport->get_size().x,
-							viewport->get_size().y,
+							": %s (%.1fMP)\n",
+							viewport_size,
 							viewport->get_size().x * viewport->get_size().y * 0.000'001);
 			text += TTR("Objects Drawn") + ": " + itos(viewport->get_render_info(Viewport::RENDER_INFO_OBJECTS_IN_FRAME)) + "\n";
 			text += TTR("Material Changes") + ": " + itos(viewport->get_render_info(Viewport::RENDER_INFO_MATERIAL_CHANGES_IN_FRAME)) + "\n";
