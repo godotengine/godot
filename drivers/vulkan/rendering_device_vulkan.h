@@ -156,6 +156,7 @@ class RenderingDeviceVulkan : public RenderingDevice {
 	uint32_t texture_upload_region_size_px = 0;
 
 	Vector<uint8_t> _texture_get_data_from_image(Texture *tex, VkImage p_image, VmaAllocation p_allocation, uint32_t p_layer, bool p_2d = false);
+	Error _texture_update(RID p_texture, uint32_t p_layer, const Vector<uint8_t> &p_data, uint32_t p_post_barrier, bool p_use_setup_queue);
 
 	/*****************/
 	/**** SAMPLER ****/
