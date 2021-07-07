@@ -563,14 +563,14 @@ void BulletPhysicsServer::body_clear_shapes(RID p_body) {
 }
 
 void BulletPhysicsServer::body_attach_object_instance_id(RID p_body, uint32_t p_id) {
-	CollisionObjectBullet *body = get_collisin_object(p_body);
+	CollisionObjectBullet *body = get_collision_object(p_body);
 	ERR_FAIL_COND(!body);
 
 	body->set_instance_id(p_id);
 }
 
 uint32_t BulletPhysicsServer::body_get_object_instance_id(RID p_body) const {
-	CollisionObjectBullet *body = get_collisin_object(p_body);
+	CollisionObjectBullet *body = get_collision_object(p_body);
 	ERR_FAIL_COND_V(!body, 0);
 
 	return body->get_instance_id();
@@ -1550,7 +1550,7 @@ int BulletPhysicsServer::get_process_info(ProcessInfo p_info) {
 	return 0;
 }
 
-CollisionObjectBullet *BulletPhysicsServer::get_collisin_object(RID p_object) const {
+CollisionObjectBullet *BulletPhysicsServer::get_collision_object(RID p_object) const {
 	if (rigid_body_owner.owns(p_object)) {
 		return rigid_body_owner.getornull(p_object);
 	}
@@ -1563,7 +1563,7 @@ CollisionObjectBullet *BulletPhysicsServer::get_collisin_object(RID p_object) co
 	return nullptr;
 }
 
-RigidCollisionObjectBullet *BulletPhysicsServer::get_rigid_collisin_object(RID p_object) const {
+RigidCollisionObjectBullet *BulletPhysicsServer::get_rigid_collision_object(RID p_object) const {
 	if (rigid_body_owner.owns(p_object)) {
 		return rigid_body_owner.getornull(p_object);
 	}
