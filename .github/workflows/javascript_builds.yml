@@ -4,9 +4,9 @@ on: [push, pull_request]
 # Global Settings
 env:
   GODOT_BASE_BRANCH: master
-  SCONSFLAGS: platform=javascript verbose=yes warnings=extra werror=yes debug_symbols=no --jobs=2
+  SCONSFLAGS: platform=javascript verbose=yes warnings=extra debug_symbols=no module_webxr_enabled=no --jobs=2
   SCONS_CACHE_LIMIT: 4096
-  EM_VERSION: 1.39.20
+  EM_VERSION: 2.0.25
   EM_CACHE_FOLDER: 'emsdk-cache'
 
 jobs:
@@ -62,7 +62,7 @@ jobs:
           scons --version
 
       - name: Set up Emscripten latest
-        uses: mymindstorm/setup-emsdk@v6
+        uses: mymindstorm/setup-emsdk@v10
         with:
           version: ${{env.EM_VERSION}}
           actions-cache-folder: ${{env.EM_CACHE_FOLDER}}
