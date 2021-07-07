@@ -1024,7 +1024,7 @@
 			<argument index="0" name="iterations" type="int">
 			</argument>
 			<description>
-				Sets the amount of iterations for calculating velocities of colliding bodies. The greater the amount, the more accurate the collisions, but with a performance loss.
+				Sets the amount of iterations for calculating velocities of colliding bodies. The greater the amount of iterations, the more accurate the collisions will be. However, a greater amount of iterations requires more CPU power, which can decrease performance. The default value is [code]8[/code].
 			</description>
 		</method>
 		<method name="shape_get_data" qualifiers="const">
