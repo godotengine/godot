@@ -2275,12 +2275,12 @@ Error ConvexHullComputer::convex_hull(const Vector<Vector3> &p_points, Geometry3
 		do {
 			face.indices.push_back(e->get_target_vertex());
 
-			e = e->get_next_edge_of_face();
+			e = e->get_next_edge_of_vertex();
 		} while (e != e_start);
 
-		// compute normal
+		// Compute normal.
 		if (face.indices.size() >= 3) {
-			face.plane = Plane(r_mesh.vertices[face.indices[0]], r_mesh.vertices[face.indices[2]], r_mesh.vertices[face.indices[1]]);
+			face.plane = Plane(r_mesh.vertices[face.indices[0]], r_mesh.vertices[face.indices[1]], r_mesh.vertices[face.indices[2]]);
 		} else {
 			WARN_PRINT("Too few vertices per face.");
 		}
