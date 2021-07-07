@@ -1012,6 +1012,32 @@ void CanvasItemEditor::_selection_menu_hide() {
 	selection_menu->set_size(Vector2(0, 0));
 }
 
+void CanvasItemEditor::_add_node_pressed(int p_result) {
+	if (p_result == AddNodeOption::ADD_NODE) {
+		editor->get_scene_tree_dock()->open_add_child_dialog();
+	} else if (p_result == AddNodeOption::ADD_INSTANCE) {
+		editor->get_scene_tree_dock()->open_instance_child_dialog();
+	}
+}
+
+void CanvasItemEditor::_node_created(Node *p_node) {
+	if (node_create_position == Point2()) {
+		return;
+	}
+
+	CanvasItem *c = Object::cast_to<CanvasItem>(p_node);
+	if (c) {
+		Transform2D xform = c->get_global_transform_with_canvas().affine_inverse() * c->get_transform();
+		c->_edit_set_position(xform.xform(node_create_position));
+	}
+
+	call_deferred("_reset_create_position"); // Defer the call in case more than one node is added.
+}
+
+void CanvasItemEditor::_reset_create_position() {
+	node_create_position = Point2();
+}
+
 bool CanvasItemEditor::_gui_input_rulers_and_guides(const Ref<InputEvent> &p_event) {
 	Ref<InputEventMouseButton> b = p_event;
 	Ref<InputEventMouseMotion> m = p_event;
@@ -2395,6 +2421,14 @@ bool CanvasItemEditor::_gui_input_select(const Ref<InputEvent> &p_event) {
 				selection_menu->popup();
 				return true;
 			}
+		}
+
+		if (b.is_valid() && b->is_pressed() && b->get_button_index() == BUTTON_RIGHT && b->get_control()) {
+			add_node_menu->set_position(get_global_transform().xform(get_local_mouse_position()));
+			add_node_menu->set_size(Vector2(1, 1));
+			add_node_menu->popup();
+			node_create_position = transform.affine_inverse().xform((get_local_mouse_position()));
+			return true;
 		}
 
 		if (b.is_valid() && b->get_button_index() == BUTTON_LEFT && b->is_pressed() && tool == TOOL_SELECT) {
@@ -5257,6 +5291,9 @@ void CanvasItemEditor::_bind_methods() {
 	ClassDB::bind_method("_tree_changed", &CanvasItemEditor::_tree_changed);
 	ClassDB::bind_method("_selection_changed", &CanvasItemEditor::_selection_changed);
 	ClassDB::bind_method("_popup_warning_depop", &CanvasItemEditor::_popup_warning_depop);
+	ClassDB::bind_method("_add_node_pressed", &CanvasItemEditor::_add_node_pressed);
+	ClassDB::bind_method("_node_created", &CanvasItemEditor::_node_created);
+	ClassDB::bind_method("_reset_create_position", &CanvasItemEditor::_reset_create_position);
 	ClassDB::bind_method(D_METHOD("_selection_result_pressed"), &CanvasItemEditor::_selection_result_pressed);
 	ClassDB::bind_method(D_METHOD("_selection_menu_hide"), &CanvasItemEditor::_selection_menu_hide);
 	ClassDB::bind_method(D_METHOD("get_state"), &CanvasItemEditor::get_state);
@@ -5573,6 +5610,9 @@ CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 	editor_selection->add_editor_plugin(this);
 	editor_selection->connect("selection_changed", this, "update");
 	editor_selection->connect("selection_changed", this, "_selection_changed");
+
+	editor->get_scene_tree_dock()->connect("node_created", this, "_node_created");
+	editor->get_scene_tree_dock()->connect("add_node_used", this, "_reset_create_position");
 
 	editor->call_deferred("connect", "play_pressed", this, "_update_override_camera_button", make_binds(true));
 	editor->call_deferred("connect", "stop_pressed", this, "_update_override_camera_button", make_binds(false));
@@ -5949,6 +5989,12 @@ CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 	selection_menu->set_custom_minimum_size(Vector2(100, 0));
 	selection_menu->connect("id_pressed", this, "_selection_result_pressed");
 	selection_menu->connect("popup_hide", this, "_selection_menu_hide");
+
+	add_node_menu = memnew(PopupMenu);
+	add_child(add_node_menu);
+	add_node_menu->add_icon_item(editor->get_scene_tree_dock()->get_icon("Add", "EditorIcons"), TTR("Add Node Here"));
+	add_node_menu->add_icon_item(editor->get_scene_tree_dock()->get_icon("Instance", "EditorIcons"), TTR("Instance Scene Here"));
+	add_node_menu->connect("id_pressed", this, "_add_node_pressed");
 
 	multiply_grid_step_shortcut = ED_SHORTCUT("canvas_item_editor/multiply_grid_step", TTR("Multiply grid step by 2"), KEY_KP_MULTIPLY);
 	divide_grid_step_shortcut = ED_SHORTCUT("canvas_item_editor/divide_grid_step", TTR("Divide grid step by 2"), KEY_KP_DIVIDE);
