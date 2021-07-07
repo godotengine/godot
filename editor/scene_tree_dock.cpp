@@ -359,7 +359,7 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 				break;
 			}
 
-			if (reset_create_dialog) {
+			if (reset_create_dialog && !p_confirm_override) {
 				create_dialog->set_base_type("Node");
 				reset_create_dialog = false;
 			}
