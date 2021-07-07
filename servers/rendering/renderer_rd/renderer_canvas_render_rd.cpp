@@ -620,7 +620,7 @@ void RendererCanvasRenderRD::_render_item(RD::DrawListID p_draw_list, RID p_rend
 				RD::get_singleton()->draw_list_bind_index_array(p_draw_list, shader.quad_index_array);
 				RD::get_singleton()->draw_list_draw(p_draw_list, true);
 
-				//restore if overrided
+				// Restore if overridden.
 				push_constant.color_texture_pixel_size[0] = texpixel_size.x;
 				push_constant.color_texture_pixel_size[1] = texpixel_size.y;
 

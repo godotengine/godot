@@ -289,7 +289,7 @@ void register_core_singletons() {
 }
 
 void register_core_extensions() {
-	//harcoded for now
+	// Hardcoded for now.
 	if (ProjectSettings::get_singleton()->has_setting("native_extensions/paths")) {
 		Vector<String> paths = ProjectSettings::get_singleton()->get("native_extensions/paths");
 		for (int i = 0; i < paths.size(); i++) {
