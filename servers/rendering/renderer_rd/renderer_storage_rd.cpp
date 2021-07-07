@@ -1602,8 +1602,6 @@ void RendererStorageRD::material_set_param(RID p_material, const StringName &p_p
 	} else {
 		_material_queue_update(material, true, true);
 	}
-
-	print_line("set parameter: " + String(p_param));
 }
 
 Variant RendererStorageRD::material_get_param(RID p_material, const StringName &p_param) const {
