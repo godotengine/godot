@@ -21,7 +21,7 @@ dispatch_data;
 
 struct ProcessVoxel {
 	uint position; // xyz 7 bit packed, extra 11 bits for neighbors.
-	uint albedo; // rgb bits 0-15 albedo, bits 16-21 are normal bits (set if geometry exists toward that side), extra 11 bits for neibhbors.
+	uint albedo; // rgb bits 0-15 albedo, bits 16-21 are normal bits (set if geometry exists toward that side), extra 11 bits for neighbors.
 	uint light; // rgbe8985 encoded total saved light, extra 2 bits for neighbors.
 	uint light_aniso; // 55555 light anisotropy, extra 2 bits for neighbors.
 	//total neighbours: 26
