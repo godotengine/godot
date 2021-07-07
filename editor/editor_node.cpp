@@ -926,7 +926,7 @@ void EditorNode::_sources_changed(bool p_exist) {
 		waiting_for_first_scan = false;
 
 		// Reload the global shader variables, but this time
-		// loading texures, as they are now properly imported.
+		// loading textures, as they are now properly imported.
 		RenderingServer::get_singleton()->global_variables_load_settings(true);
 
 		// Start preview thread now that it's safe.

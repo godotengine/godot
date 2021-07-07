@@ -79,7 +79,7 @@ Error EMWSClient::connect_to_host(String p_host, String p_path, uint16_t p_port,
 	String str = "ws://";
 
 	if (p_custom_headers.size()) {
-		WARN_PRINT_ONCE("Custom headers are not supported in in HTML5 platform.");
+		WARN_PRINT_ONCE("Custom headers are not supported in HTML5 platform.");
 	}
 	if (p_ssl) {
 		str = "wss://";

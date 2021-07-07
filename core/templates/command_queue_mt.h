@@ -321,7 +321,7 @@ class CommandQueueMT {
 	DECL_CMD(0)
 	SPACE_SEP_LIST(DECL_CMD, 15)
 
-	/* comands that return */
+	// Commands that return.
 	DECL_CMD_RET(0)
 	SPACE_SEP_LIST(DECL_CMD_RET, 15)
 

@@ -2167,7 +2167,7 @@ void DisplayServerX11::_handle_key_event(WindowID p_window, XKeyEvent *p_event, 
 	// still works in half the cases. (won't handle deadkeys)
 	// For more complex input methods (deadkeys and more advanced)
 	// you have to use XmbLookupString (??).
-	// So.. then you have to chosse which of both results
+	// So then you have to choose which of both results
 	// you want to keep.
 	// This is a real bizarreness and cpu waster.
 

@@ -1594,7 +1594,7 @@ void Control::set_rect(const Rect2 &p_rect) {
 void Control::_set_size(const Size2 &p_size) {
 #ifdef DEBUG_ENABLED
 	if (data.size_warning && (data.anchor[SIDE_LEFT] != data.anchor[SIDE_RIGHT] || data.anchor[SIDE_TOP] != data.anchor[SIDE_BOTTOM])) {
-		WARN_PRINT("Nodes with non-equal opposite anchors will have their size overriden after _ready(). \nIf you want to set size, change the anchors or consider using set_deferred().");
+		WARN_PRINT("Nodes with non-equal opposite anchors will have their size overridden after _ready(). \nIf you want to set size, change the anchors or consider using set_deferred().");
 	}
 #endif
 	set_size(p_size);

@@ -1399,7 +1399,7 @@ String ResourceFormatLoaderText::get_resource_type(const String &p_path) const {
 		return String();
 	}
 
-	//for anyhting else must test..
+	// ...for anything else must test...
 
 	FileAccess *f = FileAccess::open(p_path, FileAccess::READ);
 	if (!f) {
