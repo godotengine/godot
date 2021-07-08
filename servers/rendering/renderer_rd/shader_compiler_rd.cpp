@@ -571,7 +571,7 @@ String ShaderCompilerRD::_dump_node_code(const SL::Node *p_node, int p_level, Ge
 					max_texture_uniforms++;
 				} else {
 					if (E->get().scope == SL::ShaderNode::Uniform::SCOPE_INSTANCE) {
-						continue; //instances are indexed directly, don't need index uniforms
+						continue; // Instances are indexed directly, don't need index uniforms.
 					}
 
 					max_uniforms++;
