@@ -1114,30 +1114,11 @@ void BaseMaterial3D::_update_shader() {
 					code += "\t\tfloat fade_distance=-VERTEX.z;\n";
 				}
 
+				// Use interleaved gradient noise, which is fast but still looks good.
+				code += "\t\tconst vec3 magic = vec3(0.06711056f, 0.00583715f, 52.9829189f);";
 				code += "\t\tfloat fade=clamp(smoothstep(distance_fade_min,distance_fade_max,fade_distance),0.0,1.0);\n";
-				code += "\t\tint x = int(FRAGCOORD.x) % 4;\n";
-				code += "\t\tint y = int(FRAGCOORD.y) % 4;\n";
-				code += "\t\tint index = x + y * 4;\n";
-				code += "\t\tfloat limit = 0.0;\n\n";
-				code += "\t\tif (x < 8) {\n";
-				code += "\t\t\tif (index == 0) limit = 0.0625;\n";
-				code += "\t\t\tif (index == 1) limit = 0.5625;\n";
-				code += "\t\t\tif (index == 2) limit = 0.1875;\n";
-				code += "\t\t\tif (index == 3) limit = 0.6875;\n";
-				code += "\t\t\tif (index == 4) limit = 0.8125;\n";
-				code += "\t\t\tif (index == 5) limit = 0.3125;\n";
-				code += "\t\t\tif (index == 6) limit = 0.9375;\n";
-				code += "\t\t\tif (index == 7) limit = 0.4375;\n";
-				code += "\t\t\tif (index == 8) limit = 0.25;\n";
-				code += "\t\t\tif (index == 9) limit = 0.75;\n";
-				code += "\t\t\tif (index == 10) limit = 0.125;\n";
-				code += "\t\t\tif (index == 11) limit = 0.625;\n";
-				code += "\t\t\tif (index == 12) limit = 1.0;\n";
-				code += "\t\t\tif (index == 13) limit = 0.5;\n";
-				code += "\t\t\tif (index == 14) limit = 0.875;\n";
-				code += "\t\t\tif (index == 15) limit = 0.375;\n";
-				code += "\t\t}\n\n";
-				code += "\tif (fade < limit)\n";
+				// Use a hard cap to prevent a few stray pixels from remaining when past the fade-out distance.
+				code += "\tif (fade < 0.001 || fade < fract(magic.z * fract(dot(FRAGCOORD.xy, magic.xy))))\n";
 				code += "\t\tdiscard;\n";
 				code += "\t}\n\n";
 			}
