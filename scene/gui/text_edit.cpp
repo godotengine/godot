@@ -1503,40 +1503,6 @@ void TextEdit::_notification(int p_what) {
 	}
 }
 
-void TextEdit::backspace() {
-	ScriptInstance *si = get_script_instance();
-	if (si && si->has_method("_backspace")) {
-		si->call("_backspace");
-		return;
-	}
-
-	if (readonly) {
-		return;
-	}
-
-	if (cursor.column == 0 && cursor.line == 0) {
-		return;
-	}
-
-	if (is_selection_active()) {
-		delete_selection();
-		return;
-	}
-
-	int prev_line = cursor.column ? cursor.line : cursor.line - 1;
-	int prev_column = cursor.column ? (cursor.column - 1) : (text[cursor.line - 1].length());
-
-	merge_gutters(cursor.line, prev_line);
-
-	if (is_line_hidden(cursor.line)) {
-		set_line_as_hidden(prev_line, true);
-	}
-	_remove_text(prev_line, prev_column, cursor.line, cursor.column);
-
-	cursor_set_line(prev_line, false, true);
-	cursor_set_column(prev_column);
-}
-
 void TextEdit::_swap_current_input_direction() {
 	if (input_direction == TEXT_DIRECTION_LTR) {
 		input_direction = TEXT_DIRECTION_RTL;
@@ -1952,37 +1918,6 @@ void TextEdit::_move_cursor_document_end(bool p_select) {
 
 	if (p_select) {
 		_post_shift_selection();
-	}
-}
-
-void TextEdit::handle_unicode_input(uint32_t p_unicode) {
-	ScriptInstance *si = get_script_instance();
-	if (si && si->has_method("_handle_unicode_input")) {
-		si->call("_handle_unicode_input", p_unicode);
-		return;
-	}
-
-	bool had_selection = selection.active;
-	if (had_selection) {
-		begin_complex_operation();
-		delete_selection();
-	}
-
-	// Remove the old character if in insert mode and no selection.
-	if (insert_mode && !had_selection) {
-		begin_complex_operation();
-
-		// Make sure we don't try and remove empty space.
-		if (cursor.column < get_line(cursor.line).length()) {
-			_remove_text(cursor.line, cursor.column, cursor.line, cursor.column + 1);
-		}
-	}
-
-	const char32_t chr[2] = { (char32_t)p_unicode, 0 };
-	insert_text_at_cursor(chr);
-
-	if ((insert_mode && !had_selection) || (had_selection)) {
-		end_complex_operation();
 	}
 }
 
@@ -3785,6 +3720,54 @@ void TextEdit::_update_caches() {
 	}
 }
 
+/* Text manipulation */
+
+// Overridable actions
+void TextEdit::handle_unicode_input(const uint32_t p_unicode) {
+	ScriptInstance *si = get_script_instance();
+	if (si && si->has_method("_handle_unicode_input")) {
+		si->call("_handle_unicode_input", p_unicode);
+		return;
+	}
+	_handle_unicode_input(p_unicode);
+}
+
+void TextEdit::backspace() {
+	ScriptInstance *si = get_script_instance();
+	if (si && si->has_method("_backspace")) {
+		si->call("_backspace");
+		return;
+	}
+	_backspace();
+}
+
+void TextEdit::cut() {
+	ScriptInstance *si = get_script_instance();
+	if (si && si->has_method("_cut")) {
+		si->call("_cut");
+		return;
+	}
+	_cut();
+}
+
+void TextEdit::copy() {
+	ScriptInstance *si = get_script_instance();
+	if (si && si->has_method("_copy")) {
+		si->call("_copy");
+		return;
+	}
+	_copy();
+}
+
+void TextEdit::paste() {
+	ScriptInstance *si = get_script_instance();
+	if (si && si->has_method("_paste")) {
+		si->call("_paste");
+		return;
+	}
+	_paste();
+}
+
 /* Syntax Highlighting. */
 Ref<SyntaxHighlighter> TextEdit::get_syntax_highlighter() {
 	return syntax_highlighter;
@@ -4026,84 +4009,6 @@ void TextEdit::set_line_background_color(int p_line, const Color &p_color) {
 Color TextEdit::get_line_background_color(int p_line) {
 	ERR_FAIL_INDEX_V(p_line, text.size(), Color());
 	return text.get_line_background_color(p_line);
-}
-
-void TextEdit::cut() {
-	if (readonly) {
-		return;
-	}
-
-	if (!selection.active) {
-		String clipboard = text[cursor.line];
-		DisplayServer::get_singleton()->clipboard_set(clipboard);
-		cursor_set_line(cursor.line);
-		cursor_set_column(0);
-
-		if (cursor.line == 0 && get_line_count() > 1) {
-			_remove_text(cursor.line, 0, cursor.line + 1, 0);
-		} else {
-			_remove_text(cursor.line, 0, cursor.line, text[cursor.line].length());
-			backspace();
-			cursor_set_line(cursor.line + 1);
-		}
-
-		update();
-		cut_copy_line = clipboard;
-
-	} else {
-		String clipboard = _base_get_text(selection.from_line, selection.from_column, selection.to_line, selection.to_column);
-		DisplayServer::get_singleton()->clipboard_set(clipboard);
-
-		_remove_text(selection.from_line, selection.from_column, selection.to_line, selection.to_column);
-		cursor_set_line(selection.from_line, false); // Set afterwards else it causes the view to be offset.
-		cursor_set_column(selection.from_column);
-
-		selection.active = false;
-		selection.selecting_mode = SelectionMode::SELECTION_MODE_NONE;
-		update();
-		cut_copy_line = "";
-	}
-}
-
-void TextEdit::copy() {
-	if (!selection.active) {
-		if (text[cursor.line].length() != 0) {
-			String clipboard = _base_get_text(cursor.line, 0, cursor.line, text[cursor.line].length());
-			DisplayServer::get_singleton()->clipboard_set(clipboard);
-			cut_copy_line = clipboard;
-		}
-	} else {
-		String clipboard = _base_get_text(selection.from_line, selection.from_column, selection.to_line, selection.to_column);
-		DisplayServer::get_singleton()->clipboard_set(clipboard);
-		cut_copy_line = "";
-	}
-}
-
-void TextEdit::paste() {
-	if (readonly) {
-		return;
-	}
-
-	String clipboard = DisplayServer::get_singleton()->clipboard_get();
-
-	begin_complex_operation();
-	if (selection.active) {
-		selection.active = false;
-		selection.selecting_mode = SelectionMode::SELECTION_MODE_NONE;
-		_remove_text(selection.from_line, selection.from_column, selection.to_line, selection.to_column);
-		cursor_set_line(selection.from_line, false);
-		cursor_set_column(selection.from_column);
-
-	} else if (!cut_copy_line.is_empty() && cut_copy_line == clipboard) {
-		cursor_set_column(0);
-		String ins = "\n";
-		clipboard += ins;
-	}
-
-	insert_text_at_cursor(clipboard);
-	end_complex_operation();
-
-	update();
 }
 
 void TextEdit::select_all() {
@@ -5425,13 +5330,6 @@ void TextEdit::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_selecting_enabled"), &TextEdit::is_selecting_enabled);
 
 	ClassDB::bind_method(D_METHOD("delete_selection"), &TextEdit::delete_selection);
-	ClassDB::bind_method(D_METHOD("backspace"), &TextEdit::backspace);
-	BIND_VMETHOD(MethodInfo("_backspace"));
-	BIND_VMETHOD(MethodInfo("_handle_unicode_input", PropertyInfo(Variant::INT, "unicode")))
-
-	ClassDB::bind_method(D_METHOD("cut"), &TextEdit::cut);
-	ClassDB::bind_method(D_METHOD("copy"), &TextEdit::copy);
-	ClassDB::bind_method(D_METHOD("paste"), &TextEdit::paste);
 
 	ClassDB::bind_method(D_METHOD("select", "from_line", "from_column", "to_line", "to_column"), &TextEdit::select);
 	ClassDB::bind_method(D_METHOD("select_all"), &TextEdit::select_all);
@@ -5462,6 +5360,23 @@ void TextEdit::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_override_selected_font_color", "override"), &TextEdit::set_override_selected_font_color);
 	ClassDB::bind_method(D_METHOD("is_overriding_selected_font_color"), &TextEdit::is_overriding_selected_font_color);
 
+	/* Text manipulation */
+
+	// Overridable actions
+	ClassDB::bind_method(D_METHOD("backspace"), &TextEdit::backspace);
+
+	ClassDB::bind_method(D_METHOD("cut"), &TextEdit::cut);
+	ClassDB::bind_method(D_METHOD("copy"), &TextEdit::copy);
+	ClassDB::bind_method(D_METHOD("paste"), &TextEdit::paste);
+
+	BIND_VMETHOD(MethodInfo("_handle_unicode_input", PropertyInfo(Variant::INT, "unicode")))
+	BIND_VMETHOD(MethodInfo("_backspace"));
+
+	BIND_VMETHOD(MethodInfo("_cut"));
+	BIND_VMETHOD(MethodInfo("_copy"));
+	BIND_VMETHOD(MethodInfo("_paste"));
+
+	/* Syntax Highlighting. */
 	ClassDB::bind_method(D_METHOD("set_syntax_highlighter", "syntax_highlighter"), &TextEdit::set_syntax_highlighter);
 	ClassDB::bind_method(D_METHOD("get_syntax_highlighter"), &TextEdit::get_syntax_highlighter);
 
@@ -5677,6 +5592,136 @@ void TextEdit::_ensure_menu() {
 	menu_dir->set_item_checked(menu_dir->get_item_index(MENU_DIR_AUTO), text_direction == TEXT_DIRECTION_AUTO);
 	menu_dir->set_item_checked(menu_dir->get_item_index(MENU_DIR_LTR), text_direction == TEXT_DIRECTION_LTR);
 	menu_dir->set_item_checked(menu_dir->get_item_index(MENU_DIR_RTL), text_direction == TEXT_DIRECTION_RTL);
+}
+
+/* Text manipulation */
+
+// Overridable actions
+void TextEdit::_handle_unicode_input(const uint32_t p_unicode) {
+	if (readonly) {
+		return;
+	}
+
+	bool had_selection = is_selection_active();
+	if (had_selection) {
+		begin_complex_operation();
+		delete_selection();
+	}
+
+	/* Remove the old character if in insert mode and no selection. */
+	if (insert_mode && !had_selection) {
+		begin_complex_operation();
+
+		/* Make sure we don't try and remove empty space. */
+		int cl = cursor_get_line();
+		int cc = cursor_get_column();
+		if (cc < get_line(cl).length()) {
+			_remove_text(cl, cc, cl, cc + 1);
+		}
+	}
+
+	const char32_t chr[2] = { (char32_t)p_unicode, 0 };
+	insert_text_at_cursor(chr);
+
+	if ((insert_mode && !had_selection) || (had_selection)) {
+		end_complex_operation();
+	}
+}
+
+void TextEdit::_backspace() {
+	if (readonly) {
+		return;
+	}
+
+	int cc = cursor_get_column();
+	int cl = cursor_get_line();
+
+	if (cc == 0 && cl == 0) {
+		return;
+	}
+
+	if (is_selection_active()) {
+		delete_selection();
+		return;
+	}
+
+	int prev_line = cc ? cl : cl - 1;
+	int prev_column = cc ? (cc - 1) : (text[cl - 1].length());
+
+	merge_gutters(cl, prev_line);
+
+	if (is_line_hidden(cl)) {
+		set_line_as_hidden(prev_line, true);
+	}
+	_remove_text(prev_line, prev_column, cl, cc);
+
+	cursor_set_line(prev_line, false, true);
+	cursor_set_column(prev_column);
+}
+
+void TextEdit::_cut() {
+	if (readonly) {
+		return;
+	}
+
+	if (is_selection_active()) {
+		DisplayServer::get_singleton()->clipboard_set(get_selection_text());
+		delete_selection();
+		cut_copy_line = "";
+		return;
+	}
+
+	int cl = cursor_get_line();
+
+	String clipboard = text[cl];
+	DisplayServer::get_singleton()->clipboard_set(clipboard);
+	cursor_set_line(cl);
+	cursor_set_column(0);
+
+	if (cl == 0 && get_line_count() > 1) {
+		_remove_text(cl, 0, cl + 1, 0);
+	} else {
+		_remove_text(cl, 0, cl, text[cl].length());
+		backspace();
+		cursor_set_line(cursor_get_line() + 1);
+	}
+
+	cut_copy_line = clipboard;
+}
+
+void TextEdit::_copy() {
+	if (is_selection_active()) {
+		DisplayServer::get_singleton()->clipboard_set(get_selection_text());
+		cut_copy_line = "";
+		return;
+	}
+
+	int cl = cursor_get_line();
+	if (text[cl].length() != 0) {
+		String clipboard = _base_get_text(cl, 0, cl, text[cl].length());
+		DisplayServer::get_singleton()->clipboard_set(clipboard);
+		cut_copy_line = clipboard;
+	}
+}
+
+void TextEdit::_paste() {
+	if (readonly) {
+		return;
+	}
+
+	String clipboard = DisplayServer::get_singleton()->clipboard_get();
+
+	begin_complex_operation();
+	if (is_selection_active()) {
+		delete_selection();
+	} else if (!cut_copy_line.is_empty() && cut_copy_line == clipboard) {
+		cursor_set_column(0);
+		String ins = "\n";
+		clipboard += ins;
+	}
+
+	insert_text_at_cursor(clipboard);
+	end_complex_operation();
 }
 
 TextEdit::TextEdit() {

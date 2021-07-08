@@ -13,13 +13,35 @@
 		<method name="_backspace" qualifiers="virtual">
 			<return type="void" />
 			<description>
-				A virtual method that is called whenever backspace is triggered.
+				Overide this method to define what happens when the user presses the backspace key.
+			</description>
+		</method>
+		<method name="_copy" qualifiers="virtual">
+			<return type="void">
+			</return>
+			<description>
+				Overide this method to define what happens when the user performs a copy.
+			</description>
+		</method>
+		<method name="_cut" qualifiers="virtual">
+			<return type="void">
+			</return>
+			<description>
+				Overide this method to define what happens when the user perfroms a cut.
 			</description>
 		</method>
 		<method name="_handle_unicode_input" qualifiers="virtual">
 			<return type="void" />
 			<argument index="0" name="unicode" type="int" />
 			<description>
+				Overide this method to define what happens when the types in the provided key [code]unicode[/code].
+			</description>
+		</method>
+		<method name="_paste" qualifiers="virtual">
+			<return type="void">
+			</return>
+			<description>
+				Overide this method to define what happens when the user perfroms a paste.
 			</description>
 		</method>
 		<method name="add_gutter">
@@ -31,7 +53,7 @@
 		<method name="backspace">
 			<return type="void" />
 			<description>
-				Causes the [TextEdit] to perform a backspace.
+				Called when the user presses the backspace key. Can be overriden with [method _backspace].
 			</description>
 		</method>
 		<method name="center_viewport_to_cursor">
@@ -55,7 +77,7 @@
 		<method name="copy">
 			<return type="void" />
 			<description>
-				Copy's the current text selection.
+				Copy's the current text selection. Can be overriden with [method _copy].
 			</description>
 		</method>
 		<method name="cursor_get_column" qualifiers="const">
@@ -94,7 +116,7 @@
 		<method name="cut">
 			<return type="void" />
 			<description>
-				Cut's the current selection.
+				Cut's the current selection. Can be overriden with [method _cut].
 			</description>
 		</method>
 		<method name="delete_selection">
@@ -351,7 +373,7 @@
 		<method name="paste">
 			<return type="void" />
 			<description>
-				Paste the current selection.
+				Paste the current selection. Can be overriden with [method _paste].
 			</description>
 		</method>
 		<method name="redo">

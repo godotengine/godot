@@ -173,6 +173,9 @@ private:
 		const Color get_line_background_color(int p_line) const { return text[p_line].background_color; }
 	};
 
+	/* Text manipulation */
+	String cut_copy_line = "";
+
 	struct Cursor {
 		Point2 draw_pos;
 		bool visible = false;
@@ -290,7 +293,6 @@ private:
 	bool scroll_past_end_of_file_enabled = false;
 	bool highlight_current_line = false;
 
-	String cut_copy_line;
 	bool insert_mode = false;
 	bool select_identifiers_enabled = false;
 
@@ -473,7 +475,27 @@ protected:
 
 	void _set_symbol_lookup_word(const String &p_symbol);
 
+	/* Text manipulation */
+
+	// Overridable actions
+	virtual void _handle_unicode_input(const uint32_t p_unicode);
+	virtual void _backspace();
+
+	virtual void _cut();
+	virtual void _copy();
+	virtual void _paste();
+
 public:
+	/* Text manipulation */
+
+	// Overridable actions
+	void handle_unicode_input(const uint32_t p_unicode);
+	void backspace();
+
+	void cut();
+	void copy();
+	void paste();
+
 	/* Syntax Highlighting. */
 	Ref<SyntaxHighlighter> get_syntax_highlighter();
 	void set_syntax_highlighter(Ref<SyntaxHighlighter> p_syntax_highlighter);
@@ -667,11 +689,6 @@ public:
 
 	void delete_selection();
 
-	virtual void handle_unicode_input(uint32_t p_unicode);
-	virtual void backspace();
-	void cut();
-	void copy();
-	void paste();
 	void select_all();
 	void select_word_under_caret();
 	void select(int p_from_line, int p_from_column, int p_to_line, int p_to_column);

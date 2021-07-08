@@ -544,18 +544,21 @@ Control::CursorShape CodeEdit::get_cursor_shape(const Point2 &p_pos) const {
 	return TextEdit::get_cursor_shape(p_pos);
 }
 
-void CodeEdit::handle_unicode_input(uint32_t p_unicode) {
+/* Text manipulation */
+
+// Overridable actions
+void CodeEdit::_handle_unicode_input(const uint32_t p_unicode) {
 	bool had_selection = is_selection_active();
 	if (had_selection) {
 		begin_complex_operation();
 		delete_selection();
 	}
 
-	// Remove the old character if in insert mode and no selection.
+	/* Remove the old character if in insert mode and no selection. */
 	if (is_insert_mode() && !had_selection) {
 		begin_complex_operation();
 
-		// Make sure we don't try and remove empty space.
+		/* Make sure we don't try and remove empty space. */
 		if (cursor_get_column() < get_line(cursor_get_line()).length()) {
 			_remove_text(cursor_get_line(), cursor_get_column(), cursor_get_line(), cursor_get_column() + 1);
 		}
@@ -594,6 +597,63 @@ void CodeEdit::handle_unicode_input(uint32_t p_unicode) {
 	if ((is_insert_mode() && !had_selection) || (had_selection)) {
 		end_complex_operation();
 	}
+}
+
+void CodeEdit::_backspace() {
+	if (is_readonly()) {
+		return;
+	}
+
+	int cc = cursor_get_column();
+	int cl = cursor_get_line();
+
+	if (cc == 0 && cl == 0) {
+		return;
+	}
+
+	if (is_selection_active()) {
+		delete_selection();
+		return;
+	}
+
+	if (cl > 0 && is_line_hidden(cl - 1)) {
+		unfold_line(cursor_get_line() - 1);
+	}
+
+	int prev_line = cc ? cl : cl - 1;
+	int prev_column = cc ? (cc - 1) : (get_line(cl - 1).length());
+
+	merge_gutters(cl, prev_line);
+
+	if (auto_brace_completion_enabled && cc > 0) {
+		int idx = _get_auto_brace_pair_open_at_pos(cl, cc);
+		if (idx != -1) {
+			prev_column = cc - auto_brace_completion_pairs[idx].open_key.length();
+
+			if (_get_auto_brace_pair_close_at_pos(cl, cc) == idx) {
+				_remove_text(prev_line, prev_column, cl, cc + auto_brace_completion_pairs[idx].close_key.length());
+			} else {
+				_remove_text(prev_line, prev_column, cl, cc);
+			}
+			cursor_set_line(prev_line, false, true);
+			cursor_set_column(prev_column);
+			return;
+		}
+	}
+
+	/* For space indentation we need to do a simple unindent if there are no chars to the left, acting in the */
+	/* same way as tabs.                                                                                      */
+	if (indent_using_spaces && cc != 0) {
+		if (get_first_non_whitespace_column(cl) > cc) {
+			prev_column = cc - _calculate_spaces_till_next_left_indent(cc);
+			prev_line = cl;
+		}
+	}
+
+	_remove_text(prev_line, prev_column, cl, cc);
+
+	cursor_set_line(prev_line, false, true);
+	cursor_set_column(prev_column);
 }
 
 /* Indent management */
@@ -953,63 +1013,6 @@ void CodeEdit::_new_line(bool p_split_current_line, bool p_above) {
 	}
 
 	end_complex_operation();
-}
-
-void CodeEdit::backspace() {
-	if (is_readonly()) {
-		return;
-	}
-
-	int cc = cursor_get_column();
-	int cl = cursor_get_line();
-
-	if (cc == 0 && cl == 0) {
-		return;
-	}
-
-	if (is_selection_active()) {
-		delete_selection();
-		return;
-	}
-
-	if (cl > 0 && is_line_hidden(cl - 1)) {
-		unfold_line(cursor_get_line() - 1);
-	}
-
-	int prev_line = cc ? cl : cl - 1;
-	int prev_column = cc ? (cc - 1) : (get_line(cl - 1).length());
-
-	merge_gutters(cl, prev_line);
-
-	if (auto_brace_completion_enabled && cc > 0) {
-		int idx = _get_auto_brace_pair_open_at_pos(cl, cc);
-		if (idx != -1) {
-			prev_column = cc - auto_brace_completion_pairs[idx].open_key.length();
-
-			if (_get_auto_brace_pair_close_at_pos(cl, cc) == idx) {
-				_remove_text(prev_line, prev_column, cl, cc + auto_brace_completion_pairs[idx].close_key.length());
-			} else {
-				_remove_text(prev_line, prev_column, cl, cc);
-			}
-			cursor_set_line(prev_line, false, true);
-			cursor_set_column(prev_column);
-			return;
-		}
-	}
-
-	/* For space indentation we need to do a simple unindent if there are no chars to the left, acting in the */
-	/* same way as tabs.                                                                                      */
-	if (indent_using_spaces && cc != 0) {
-		if (get_first_non_whitespace_column(cl) > cc) {
-			prev_column = cc - _calculate_spaces_till_next_left_indent(cc);
-			prev_line = cl;
-		}
-	}
-
-	_remove_text(prev_line, prev_column, cl, cc);
-
-	cursor_set_line(prev_line, false, true);
-	cursor_set_column(prev_column);
 }
 
 /* Auto brace completion */
