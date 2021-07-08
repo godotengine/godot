@@ -144,7 +144,7 @@ begin
 	end;
 end;
 
-// Split a string into an array using passed delimiter
+// Split a string into an array using passed delimiter.
 procedure MPExplode(var Dest: TArrayOfString; Text: String; Separator: String);
 var
 	i: Integer;
