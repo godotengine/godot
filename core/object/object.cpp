@@ -1769,42 +1769,41 @@ uint32_t Object::get_edited_version() const {
 }
 #endif
 
-void *Object::get_script_instance_binding(int p_script_language_index) {
-#ifdef DEBUG_ENABLED
-	ERR_FAIL_INDEX_V(p_script_language_index, MAX_SCRIPT_INSTANCE_BINDINGS, nullptr);
-#endif
-
-	//it's up to the script language to make this thread safe, if the function is called twice due to threads being out of sync
-	//just return the same pointer.
-	//if you want to put a big lock in the entire function and keep allocated pointers in a map or something, feel free to do it
-	//as it should not really affect performance much (won't be called too often), as in far most cases the condition below will be false afterwards
-
-	if (!_script_instance_bindings[p_script_language_index]) {
-		void *script_data = ScriptServer::get_language(p_script_language_index)->alloc_instance_binding_data(this);
-		if (script_data) {
-			instance_binding_count.increment();
-			_script_instance_bindings[p_script_language_index] = script_data;
+void *Object::get_instance_binding(void *p_token, const GDNativeInstanceBindingCallbacks *p_callbacks) {
+	void *binding = nullptr;
+	_instance_binding_mutex.lock();
+	for (uint32_t i = 0; i < _instance_binding_count; i++) {
+		if (_instance_bindings[i].token == p_token) {
+			binding = _instance_bindings[i].binding;
+			break;
 		}
 	}
+	if (unlikely(!binding)) {
+		uint32_t current_size = next_power_of_2(_instance_binding_count);
+		uint32_t new_size = next_power_of_2(_instance_binding_count + 1);
 
-	return _script_instance_bindings[p_script_language_index];
-}
+		if (current_size == 0 || new_size > current_size) {
+			_instance_bindings = (InstanceBinding *)memrealloc(_instance_bindings, new_size * sizeof(InstanceBinding));
+		}
 
-bool Object::has_script_instance_binding(int p_script_language_index) {
-	return _script_instance_bindings[p_script_language_index] != nullptr;
-}
+		_instance_bindings[_instance_binding_count].free_callback = p_callbacks->free_callback;
+		_instance_bindings[_instance_binding_count].reference_callback = p_callbacks->reference_callback;
+		_instance_bindings[_instance_binding_count].token = p_token;
 
-void Object::set_script_instance_binding(int p_script_language_index, void *p_data) {
-#ifdef DEBUG_ENABLED
-	CRASH_COND(_script_instance_bindings[p_script_language_index] != nullptr);
-#endif
-	_script_instance_bindings[p_script_language_index] = p_data;
+		binding = p_callbacks->create_callback(p_token, this);
+		_instance_bindings[_instance_binding_count].binding = binding;
+
+		_instance_binding_count++;
+	}
+
+	_instance_binding_mutex.unlock();
+
+	return binding;
 }
 
 void Object::_construct_object(bool p_reference) {
 	type_is_reference = p_reference;
 	_instance_id = ObjectDB::add_instance(this);
-	memset(_script_instance_bindings, 0, sizeof(void *) * MAX_SCRIPT_INSTANCE_BINDINGS);
 
 	ClassDB::instance_get_native_extension_data(&_extension, &_extension_instance);
 
@@ -1864,12 +1863,13 @@ Object::~Object() {
 	_instance_id = ObjectID();
 	_predelete_ok = 2;
 
-	if (!ScriptServer::are_languages_finished()) {
-		for (int i = 0; i < MAX_SCRIPT_INSTANCE_BINDINGS; i++) {
-			if (_script_instance_bindings[i]) {
-				ScriptServer::get_language(i)->free_instance_binding_data(_script_instance_bindings[i]);
+	if (_instance_bindings != nullptr) {
+		for (uint32_t i = 0; i < _instance_binding_count; i++) {
+			if (_instance_bindings[i].free_callback) {
+				_instance_bindings[i].free_callback(_instance_bindings[i].token, _instance_bindings[i].binding, this);
 			}
 		}
+		memfree(_instance_bindings);
 	}
 }
 
@@ -1887,7 +1887,6 @@ void ObjectDB::debug_objects(DebugFunc p_func) {
 	for (uint32_t i = 0, count = slot_count; i < slot_max && count != 0; i++) {
 		if (object_slots[i].validator) {
 			p_func(object_slots[i].object);
-
 			count--;
 		}
 	}

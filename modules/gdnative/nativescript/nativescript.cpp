@@ -1258,6 +1258,8 @@ void NativeScriptLanguage::unregister_binding_functions(int p_idx) {
 }
 
 void *NativeScriptLanguage::get_instance_binding_data(int p_idx, Object *p_object) {
+	return nullptr;
+#if 0
 	ERR_FAIL_INDEX_V(p_idx, binding_functions.size(), nullptr);
 
 	ERR_FAIL_COND_V_MSG(!binding_functions[p_idx].first, nullptr, "Tried to get binding data for a nativescript binding that does not exist.");
@@ -1287,9 +1289,12 @@ void *NativeScriptLanguage::get_instance_binding_data(int p_idx, Object *p_objec
 	}
 
 	return (*binding_data)[p_idx];
+#endif
 }
 
 void *NativeScriptLanguage::alloc_instance_binding_data(Object *p_object) {
+	return nullptr;
+#if 0
 	Vector<void *> *binding_data = new Vector<void *>;
 
 	binding_data->resize(binding_functions.size());
@@ -1301,9 +1306,11 @@ void *NativeScriptLanguage::alloc_instance_binding_data(Object *p_object) {
 	binding_instances.insert(binding_data);
 
 	return (void *)binding_data;
+#endif
 }
 
 void NativeScriptLanguage::free_instance_binding_data(void *p_data) {
+#if 0
 	if (!p_data) {
 		return;
 	}
@@ -1323,9 +1330,11 @@ void NativeScriptLanguage::free_instance_binding_data(void *p_data) {
 	binding_instances.erase(&binding_data);
 
 	delete &binding_data;
+#endif
 }
 
 void NativeScriptLanguage::refcount_incremented_instance_binding(Object *p_object) {
+#if 0
 	void *data = p_object->get_script_instance_binding(lang_idx);
 
 	if (!data) {
@@ -1347,9 +1356,11 @@ void NativeScriptLanguage::refcount_incremented_instance_binding(Object *p_objec
 			binding_functions[i].second.refcount_incremented_instance_binding(binding_data[i], p_object);
 		}
 	}
+#endif
 }
 
 bool NativeScriptLanguage::refcount_decremented_instance_binding(Object *p_object) {
+#if 0
 	void *data = p_object->get_script_instance_binding(lang_idx);
 
 	if (!data) {
@@ -1375,6 +1386,8 @@ bool NativeScriptLanguage::refcount_decremented_instance_binding(Object *p_objec
 	}
 
 	return can_die;
+#endif
+	return false;
 }
 
 void NativeScriptLanguage::set_global_type_tag(int p_idx, StringName p_class_name, const void *p_type_tag) {

@@ -171,6 +171,16 @@ typedef void (*GDNativePtrUtilityFunction)(GDNativeTypePtr r_return, const GDNat
 
 typedef GDNativeObjectPtr (*GDNativeClassConstructor)();
 
+typedef void *(*GDNativeInstanceBindingCreateCallback)(void *p_token, void *p_instance);
+typedef void (*GDNativeInstanceBindingFreeCallback)(void *p_token, void *p_instance, void *p_binding);
+typedef GDNativeBool (*GDNativeInstanceBindingReferenceCallback)(void *p_token, void *p_instance, GDNativeBool p_reference);
+
+struct GDNativeInstanceBindingCallbacks {
+	GDNativeInstanceBindingCreateCallback create_callback;
+	GDNativeInstanceBindingFreeCallback free_callback;
+	GDNativeInstanceBindingReferenceCallback reference_callback;
+};
+
 /* EXTENSION CLASSES */
 
 typedef void *GDExtensionClassInstancePtr;
@@ -373,6 +383,7 @@ typedef struct {
 	void (*object_method_bind_ptrcall)(GDNativeMethodBindPtr p_method_bind, GDNativeObjectPtr p_instance, const GDNativeTypePtr *p_args, GDNativeTypePtr r_ret);
 	void (*object_destroy)(GDNativeObjectPtr p_o);
 	GDNativeObjectPtr (*global_get_singleton)(const char *p_name);
+	void *(*object_get_instance_binding)(GDNativeObjectPtr p_o, void *p_token, GDNativeInstanceBindingCallbacks *p_callbacks);
 
 	GDNativeObjectPtr (*object_cast_to)(const GDNativeObjectPtr p_object, void *p_class_tag);
 	GDNativeObjectPtr (*object_get_instance_from_id)(GDObjectInstanceID p_instance_id);

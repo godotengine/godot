@@ -54,6 +54,7 @@
 namespace GDMonoUtils {
 
 MonoObject *unmanaged_get_managed(Object *unmanaged) {
+#if 0
 	if (!unmanaged) {
 		return nullptr;
 	}
@@ -120,6 +121,8 @@ MonoObject *unmanaged_get_managed(Object *unmanaged) {
 	}
 
 	return mono_object;
+#endif
+	return nullptr;
 }
 
 void set_main_thread(MonoThread *p_thread) {

@@ -480,10 +480,6 @@ public:
 	};
 
 private:
-	enum {
-		MAX_SCRIPT_INSTANCE_BINDINGS = 8
-	};
-
 #ifdef DEBUG_ENABLED
 	friend struct _ObjectDebugLock;
 #endif
@@ -542,12 +538,35 @@ private:
 
 	friend class RefCounted;
 	bool type_is_reference = false;
-	SafeNumeric<uint32_t> instance_binding_count;
-	void *_script_instance_bindings[MAX_SCRIPT_INSTANCE_BINDINGS];
+
+	std::mutex _instance_binding_mutex;
+	struct InstanceBinding {
+		void *binding;
+		void *token;
+		GDNativeInstanceBindingFreeCallback free_callback = nullptr;
+		GDNativeInstanceBindingReferenceCallback reference_callback = nullptr;
+	};
+	InstanceBinding *_instance_bindings = nullptr;
+	uint32_t _instance_binding_count = 0;
 
 	Object(bool p_reference);
 
 protected:
+	_FORCE_INLINE_ bool _instance_binding_reference(bool p_reference) {
+		bool can_die = true;
+		if (_instance_bindings) {
+			_instance_binding_mutex.lock();
+			for (uint32_t i = 0; i < _instance_binding_count; i++) {
+				if (_instance_bindings[i].reference_callback) {
+					if (!_instance_bindings[i].reference_callback(_instance_bindings[i].token, _instance_bindings[i].binding, p_reference)) {
+						can_die = false;
+					}
+				}
+			}
+			_instance_binding_mutex.unlock();
+		}
+		return can_die;
+	}
 	friend class NativeExtensionMethodBind;
 	_ALWAYS_INLINE_ const ObjectNativeExtension *_get_extension() const { return _extension; }
 	_ALWAYS_INLINE_ GDExtensionClassInstancePtr _get_extension_instance() const { return _extension_instance; }
@@ -785,9 +804,7 @@ public:
 #endif
 
 	//used by script languages to store binding data
-	void *get_script_instance_binding(int p_script_language_index);
-	bool has_script_instance_binding(int p_script_language_index);
-	void set_script_instance_binding(int p_script_language_index, void *p_data);
+	void *get_instance_binding(void *p_token, const GDNativeInstanceBindingCallbacks *p_callbacks);
 
 	void clear_internal_resource_paths();
 
