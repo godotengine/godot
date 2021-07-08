@@ -322,7 +322,7 @@ public:
 		m_angularLimits[2].m_hiLimit = angularUpper.z;
 	}
 
-	//! Retrieves the angular limit information
+	//! Retrieves the angular limit information.
 	G6DOFRotationalLimitMotor3DSW *getRotationalLimitMotor(int index) {
 		return &m_angularLimits[index];
 	}
