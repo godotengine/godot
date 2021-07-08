@@ -2377,6 +2377,13 @@ void RendererStorageRD::MaterialData::update_textures(const Map<StringName, Vari
 	}
 }
 
+void RendererStorageRD::MaterialData::free_parameters_uniform_set(RID p_uniform_set) {
+	if (p_uniform_set.is_valid() && RD::get_singleton()->uniform_set_is_valid(p_uniform_set)) {
+		RD::get_singleton()->uniform_set_set_invalidation_callback(p_uniform_set, nullptr, nullptr);
+		RD::get_singleton()->free(p_uniform_set);
+	}
+}
+
 bool RendererStorageRD::MaterialData::update_parameters_uniform_set(const Map<StringName, Variant> &p_parameters, bool p_uniform_dirty, bool p_textures_dirty, const Map<StringName, ShaderLanguage::ShaderNode::Uniform> &p_uniforms, const uint32_t *p_uniform_offsets, const Vector<ShaderCompilerRD::GeneratedCode::Texture> &p_texture_uniforms, const Map<StringName, RID> &p_default_texture_params, uint32_t p_ubo_size, RID &uniform_set, RID p_shader, uint32_t p_shader_uniform_set, uint32_t p_barrier) {
 	if ((uint32_t)ubo_data.size() != p_ubo_size) {
 		p_uniform_dirty = true;
@@ -2393,6 +2400,7 @@ bool RendererStorageRD::MaterialData::update_parameters_uniform_set(const Map<St
 
 		//clear previous uniform set
 		if (uniform_set.is_valid() && RD::get_singleton()->uniform_set_is_valid(uniform_set)) {
+			RD::get_singleton()->uniform_set_set_invalidation_callback(uniform_set, nullptr, nullptr);
 			RD::get_singleton()->free(uniform_set);
 			uniform_set = RID();
 		}
@@ -2412,6 +2420,7 @@ bool RendererStorageRD::MaterialData::update_parameters_uniform_set(const Map<St
 
 		//clear previous uniform set
 		if (uniform_set.is_valid() && RD::get_singleton()->uniform_set_is_valid(uniform_set)) {
+			RD::get_singleton()->uniform_set_set_invalidation_callback(uniform_set, nullptr, nullptr);
 			RD::get_singleton()->free(uniform_set);
 			uniform_set = RID();
 		}
@@ -2454,7 +2463,17 @@ bool RendererStorageRD::MaterialData::update_parameters_uniform_set(const Map<St
 
 	uniform_set = RD::get_singleton()->uniform_set_create(uniforms, p_shader, p_shader_uniform_set);
 
+	RD::get_singleton()->uniform_set_set_invalidation_callback(uniform_set, _material_uniform_set_erased, &self);
+
 	return true;
+}
+
+void RendererStorageRD::_material_uniform_set_erased(const RID &p_set, void *p_material) {
+	RID rid = *(RID *)p_material;
+	Material *material = base_singleton->material_owner.getornull(rid);
+	if (material) {
+		material->dependency.changed_notify(DEPENDENCY_CHANGED_MATERIAL);
+	}
 }
 
 void RendererStorageRD::material_force_update_textures(RID p_material, ShaderType p_shader_type) {
@@ -5367,9 +5386,7 @@ bool RendererStorageRD::ParticlesMaterialData::update_parameters(const Map<Strin
 }
 
 RendererStorageRD::ParticlesMaterialData::~ParticlesMaterialData() {
-	if (uniform_set.is_valid() && RD::get_singleton()->uniform_set_is_valid(uniform_set)) {
-		RD::get_singleton()->free(uniform_set);
-	}
+	free_parameters_uniform_set(uniform_set);
 }
 
 RendererStorageRD::MaterialData *RendererStorageRD::_create_particles_material_func(ParticlesShaderData *p_shader) {

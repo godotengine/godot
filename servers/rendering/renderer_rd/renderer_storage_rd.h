@@ -160,6 +160,7 @@ public:
 
 		//to be used internally by update_parameters, in the most common configuration of material parameters
 		bool update_parameters_uniform_set(const Map<StringName, Variant> &p_parameters, bool p_uniform_dirty, bool p_textures_dirty, const Map<StringName, ShaderLanguage::ShaderNode::Uniform> &p_uniforms, const uint32_t *p_uniform_offsets, const Vector<ShaderCompilerRD::GeneratedCode::Texture> &p_texture_uniforms, const Map<StringName, RID> &p_default_texture_params, uint32_t p_ubo_size, RID &uniform_set, RID p_shader, uint32_t p_shader_uniform_set, uint32_t p_barrier = RD::BARRIER_MASK_ALL);
+		void free_parameters_uniform_set(RID p_uniform_set);
 
 	private:
 		friend class RendererStorageRD;
@@ -175,6 +176,7 @@ public:
 		Vector<RID> texture_cache;
 	};
 	typedef MaterialData *(*MaterialDataRequestFunction)(ShaderData *);
+	static void _material_uniform_set_erased(const RID &p_set, void *p_material);
 
 	enum DefaultRDTexture {
 		DEFAULT_RD_TEXTURE_WHITE,
