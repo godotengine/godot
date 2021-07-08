@@ -260,6 +260,7 @@
 			<return type="int">
 			</return>
 			<description>
+				Returns the index of the currently focused item. Returns [code]-1[/code] if no item is focused.
 			</description>
 		</method>
 		<method name="get_item_accelerator" qualifiers="const">
