@@ -629,11 +629,11 @@ Node *ResourceImporterScene::_post_fix_node(Node *p_node, Node *p_root, Map<Ref<
 							} break;
 							case MESH_PHYSICS_RIGID_BODY_AND_MESH: {
 								RigidBody3D *rigid_body = memnew(RigidBody3D);
+								rigid_body->set_transform(mi->get_transform());
 								rigid_body->set_name(p_node->get_name());
 								p_node->replace_by(rigid_body);
 								p_node->queue_delete();
 								p_node = rigid_body;
-								rigid_body->set_transform(mi->get_transform());
 								mi->set_transform(Transform3D());
 								rigid_body->add_child(mi);
 								mi->set_owner(rigid_body->get_owner());
