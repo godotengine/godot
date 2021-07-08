@@ -183,7 +183,7 @@ void main() {
 	ivec3 write_pos = read_pos + params.scroll;
 
 	if (any(lessThan(write_pos, ivec3(0))) || any(greaterThanEqual(write_pos, ivec3(params.grid_size)))) {
-		return; //fits outside the 3D texture, don't do anything
+		return; // Fits outside the 3D texture, don't do anything.
 	}
 
 	uint albedo = ((src_process_voxels.data[index].albedo & 0x7FFF) << 1) | 1; //add solid bit
