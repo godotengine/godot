@@ -96,7 +96,8 @@ GLuint RasterizerStorageGLES2::system_fbo = 0;
 
 #ifdef IPHONE_ENABLED
 
-#include <OpenGLES/ES2/glext.h>
+#define GL_GLEXT_PROTOTYPES 1
+#include "thirdparty/metalangle/include/GLES2/gl2ext.h"
 //void *glRenderbufferStorageMultisampleAPPLE;
 //void *glResolveMultisampleFramebufferAPPLE;
 #define glRenderbufferStorageMultisample glRenderbufferStorageMultisampleAPPLE

@@ -45,7 +45,8 @@
 
 #ifndef GLES_OVER_GL
 #ifdef IPHONE_ENABLED
-#include <OpenGLES/ES2/glext.h>
+#define GL_GLEXT_PROTOTYPES 1
+#include "thirdparty/metalangle/include/GLES2/gl2ext.h"
 //void *glResolveMultisampleFramebufferAPPLE;
 
 #define GL_READ_FRAMEBUFFER 0x8CA8

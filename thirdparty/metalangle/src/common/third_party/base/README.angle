@@ -1,0 +1,27 @@
+Name: Chromium base:: helper Classes
+Short Name: base::numerics, base::MRUCachem, base::SHA1
+Version:
+URL: https://chromium.googlesource.com/chromium/src/base/+/master
+SOURCE CODE: Copy the Chromium folder manually into this folder and run git cl format.
+Date: 24/05/2017
+Revision: 28b5bbb227d331c01e6ff9b2f8729732135aadc7 (Chromium)
+Security Critical: no
+License: Chromium
+License File: LICENSE in Chromium/src
+
+Description:
+base::numerics is a library for doing some simple safe math and conversions.
+base::MRUCache is a few collections of most-recently-used caching structures.
+base::SHA1 is a secure hashing algorithm.
+
+To update the checkout, simply overwrite the folder with Chromium's latest, apply
+the appropriate namespace, and make sure the paths are correct (anglebase/ instead of
+base/), and update the header guards and macros.
+
+Modifications:
+
+- the file scope is now anglebase/ from base/ to prevent include conflicts.
+- anglebase/logging.h defines (D)CHECK to be ASSERT to be compatible with ANGLE.
+- the headers use namespace angle::base instead of base:: to avoid ODR
+  violations when ANGLE code is mixed with Chromium code.
+- header guards and macros are changed from BASE to ANGLEBASE to prevent conflicts.
