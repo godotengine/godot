@@ -327,7 +327,7 @@ public:
 		return &m_angularLimits[index];
 	}
 
-	//! Retrieves the limit information
+	//! Retrieves the limit information.
 	G6DOFTranslationalLimitMotor3DSW *getTranslationalLimitMotor() {
 		return &m_linearLimits;
 	}
