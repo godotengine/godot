@@ -350,6 +350,9 @@ def main():  # type: () -> None
 
     pattern = re.compile(args.filter)
 
+    # Create the output folder recursively if it doesn't already exist.
+    os.makedirs(args.output, exist_ok=True)
+
     for class_name, class_def in state.classes.items():
         if args.filter and not pattern.search(class_def.filepath):
             continue
@@ -358,6 +361,8 @@ def main():  # type: () -> None
 
     if not state.errored:
         print("No errors found.")
+        if not args.dry_run:
+            print("Wrote reStructuredText files for each class to: %s" % args.output)
     else:
         print("Errors were found in the class reference XML. Please check the messages above.")
         exit(1)
