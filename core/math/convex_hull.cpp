@@ -65,6 +65,7 @@ subject to the following restrictions:
 #include "core/templates/paged_allocator.h"
 
 #include <string.h>
+#include <algorithm>
 
 //#define DEBUG_CONVEX_HULL
 //#define SHOW_ITERATIONS
@@ -2278,9 +2279,15 @@ Error ConvexHullComputer::convex_hull(const Vector<Vector3> &p_points, Geometry3
 			e = e->get_next_edge_of_face();
 		} while (e != e_start);
 
+		// reverse indices: Godot wants clockwise, but this is counter-clockwise
+		if (face.indices.size() > 2) {
+			int *indices = face.indices.ptrw();
+			std::reverse(&indices[1], &indices[face.indices.size()]); // reverse all but the first index.
+		}
+
 		// compute normal
 		if (face.indices.size() >= 3) {
-			face.plane = Plane(r_mesh.vertices[face.indices[0]], r_mesh.vertices[face.indices[2]], r_mesh.vertices[face.indices[1]]);
+			face.plane = Plane(r_mesh.vertices[face.indices[0]], r_mesh.vertices[face.indices[1]], r_mesh.vertices[face.indices[2]]);
 		} else {
 			WARN_PRINT("Too few vertices per face.");
 		}
