@@ -395,7 +395,7 @@ void CodeEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 	}
 
 	if (k->is_action("ui_text_dedent", true)) {
-		do_unindent();
+		unindent_lines();
 		accept_event();
 		return;
 	}
@@ -586,44 +586,6 @@ void CodeEdit::indent_lines() {
 	cursor_set_column(cursor_get_column() + selection_offset, false);
 
 	end_complex_operation();
-}
-
-void CodeEdit::do_unindent() {
-	if (is_readonly()) {
-		return;
-	}
-
-	int cc = cursor_get_column();
-
-	if (is_selection_active() || cc <= 0) {
-		unindent_lines();
-		return;
-	}
-
-	int cl = cursor_get_line();
-	const String &line = get_line(cl);
-
-	if (line[cc - 1] == '\t') {
-		_remove_text(cl, cc - 1, cl, cc);
-		cursor_set_column(MAX(0, cc - 1));
-		return;
-	}
-
-	if (line[cc - 1] != ' ') {
-		return;
-	}
-
-	int spaces_to_remove = _calculate_spaces_till_next_left_indent(cc);
-	if (spaces_to_remove > 0) {
-		for (int i = 1; i <= spaces_to_remove; i++) {
-			if (line[cc - i] != ' ') {
-				spaces_to_remove = i - 1;
-				break;
-			}
-		}
-		_remove_text(cl, cc - spaces_to_remove, cl, cc);
-		cursor_set_column(MAX(0, cc - spaces_to_remove));
-	}
 }
 
 void CodeEdit::unindent_lines() {
@@ -1757,7 +1719,7 @@ void CodeEdit::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_auto_indent_prefixes"), &CodeEdit::get_auto_indent_prefixes);
 
 	ClassDB::bind_method(D_METHOD("do_indent"), &CodeEdit::do_indent);
-	ClassDB::bind_method(D_METHOD("do_unindent"), &CodeEdit::do_unindent);
+	ClassDB::bind_method(D_METHOD("do_unindent"), &CodeEdit::unindent_lines);
 
 	ClassDB::bind_method(D_METHOD("indent_lines"), &CodeEdit::indent_lines);
 	ClassDB::bind_method(D_METHOD("unindent_lines"), &CodeEdit::unindent_lines);
