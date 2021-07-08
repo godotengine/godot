@@ -3221,6 +3221,7 @@ ThemeEditor::ThemeEditor() {
 
 	theme_name = memnew(Label);
 	theme_name->set_text(TTR("Theme") + ": ");
+	theme_name->set_theme_type_variation("HeaderSmall");
 	top_menu->add_child(theme_name);
 
 	top_menu->add_spacer(false);

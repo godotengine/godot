@@ -812,6 +812,7 @@ ExportTemplateManager::ExportTemplateManager() {
 	main_vb->add_child(current_hb);
 
 	Label *current_label = memnew(Label);
+	current_label->set_theme_type_variation("HeaderSmall");
 	current_label->set_text(TTR("Current Version:"));
 	current_hb->add_child(current_label);
 
@@ -821,6 +822,8 @@ ExportTemplateManager::ExportTemplateManager() {
 	// Current version statuses.
 	// Status: Current version is missing.
 	current_missing_label = memnew(Label);
+	current_missing_label->set_theme_type_variation("HeaderSmall");
+
 	current_missing_label->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	current_missing_label->set_align(Label::ALIGN_RIGHT);
 	current_missing_label->set_text(TTR("Export templates are missing. Download them or install from a file."));
@@ -828,6 +831,7 @@ ExportTemplateManager::ExportTemplateManager() {
 
 	// Status: Current version is installed.
 	current_installed_label = memnew(Label);
+	current_installed_label->set_theme_type_variation("HeaderSmall");
 	current_installed_label->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	current_installed_label->set_align(Label::ALIGN_RIGHT);
 	current_installed_label->set_text(TTR("Export templates are installed and ready to be used."));
@@ -947,6 +951,7 @@ ExportTemplateManager::ExportTemplateManager() {
 	HBoxContainer *installed_versions_hb = memnew(HBoxContainer);
 	main_vb->add_child(installed_versions_hb);
 	Label *installed_label = memnew(Label);
+	installed_label->set_theme_type_variation("HeaderSmall");
 	installed_label->set_text(TTR("Other Installed Versions:"));
 	installed_versions_hb->add_child(installed_label);
 
