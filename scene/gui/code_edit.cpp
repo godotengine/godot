@@ -559,39 +559,39 @@ void CodeEdit::_handle_unicode_input(const uint32_t p_unicode) {
 		begin_complex_operation();
 
 		/* Make sure we don't try and remove empty space. */
-		if (cursor_get_column() < get_line(cursor_get_line()).length()) {
-			_remove_text(cursor_get_line(), cursor_get_column(), cursor_get_line(), cursor_get_column() + 1);
+		if (get_caret_column() < get_line(get_caret_line()).length()) {
+			_remove_text(get_caret_line(), get_caret_column(), get_caret_line(), get_caret_column() + 1);
 		}
 	}
 
 	const char32_t chr[2] = { (char32_t)p_unicode, 0 };
 
 	if (auto_brace_completion_enabled) {
-		int cl = cursor_get_line();
-		int cc = cursor_get_column();
+		int cl = get_caret_line();
+		int cc = get_caret_column();
 		int caret_move_offset = 1;
 
 		int post_brace_pair = cc < get_line(cl).length() ? _get_auto_brace_pair_close_at_pos(cl, cc) : -1;
 
 		if (has_string_delimiter(chr) && cc > 0 && _is_char(get_line(cl)[cc - 1]) && post_brace_pair == -1) {
-			insert_text_at_cursor(chr);
+			insert_text_at_caret(chr);
 		} else if (cc < get_line(cl).length() && _is_char(get_line(cl)[cc])) {
-			insert_text_at_cursor(chr);
+			insert_text_at_caret(chr);
 		} else if (post_brace_pair != -1 && auto_brace_completion_pairs[post_brace_pair].close_key[0] == chr[0]) {
 			caret_move_offset = auto_brace_completion_pairs[post_brace_pair].close_key.length();
 		} else if (is_in_comment(cl, cc) != -1 || (is_in_string(cl, cc) != -1 && has_string_delimiter(chr))) {
-			insert_text_at_cursor(chr);
+			insert_text_at_caret(chr);
 		} else {
-			insert_text_at_cursor(chr);
+			insert_text_at_caret(chr);
 
 			int pre_brace_pair = _get_auto_brace_pair_open_at_pos(cl, cc + 1);
 			if (pre_brace_pair != -1) {
-				insert_text_at_cursor(auto_brace_completion_pairs[pre_brace_pair].close_key);
+				insert_text_at_caret(auto_brace_completion_pairs[pre_brace_pair].close_key);
 			}
 		}
-		cursor_set_column(cc + caret_move_offset);
+		set_caret_column(cc + caret_move_offset);
 	} else {
-		insert_text_at_cursor(chr);
+		insert_text_at_caret(chr);
 	}
 
 	if ((is_insert_mode() && !had_selection) || (had_selection)) {
@@ -604,8 +604,8 @@ void CodeEdit::_backspace() {
 		return;
 	}
 
-	int cc = cursor_get_column();
-	int cl = cursor_get_line();
+	int cc = get_caret_column();
+	int cl = get_caret_line();
 
 	if (cc == 0 && cl == 0) {
 		return;
@@ -617,7 +617,7 @@ void CodeEdit::_backspace() {
 	}
 
 	if (cl > 0 && is_line_hidden(cl - 1)) {
-		unfold_line(cursor_get_line() - 1);
+		unfold_line(get_caret_line() - 1);
 	}
 
 	int prev_line = cc ? cl : cl - 1;
@@ -635,8 +635,8 @@ void CodeEdit::_backspace() {
 			} else {
 				_remove_text(prev_line, prev_column, cl, cc);
 			}
-			cursor_set_line(prev_line, false, true);
-			cursor_set_column(prev_column);
+			set_caret_line(prev_line, false, true);
+			set_caret_column(prev_column);
 			return;
 		}
 	}
@@ -652,8 +652,8 @@ void CodeEdit::_backspace() {
 
 	_remove_text(prev_line, prev_column, cl, cc);
 
-	cursor_set_line(prev_line, false, true);
-	cursor_set_column(prev_column);
+	set_caret_line(prev_line, false, true);
+	set_caret_column(prev_column);
 }
 
 /* Indent management */
@@ -724,13 +724,13 @@ void CodeEdit::do_indent() {
 	}
 
 	if (!indent_using_spaces) {
-		insert_text_at_cursor("\t");
+		insert_text_at_caret("\t");
 		return;
 	}
 
-	int spaces_to_add = _calculate_spaces_till_next_right_indent(cursor_get_column());
+	int spaces_to_add = _calculate_spaces_till_next_right_indent(get_caret_column());
 	if (spaces_to_add > 0) {
-		insert_text_at_cursor(String(" ").repeat(spaces_to_add));
+		insert_text_at_caret(String(" ").repeat(spaces_to_add));
 	}
 }
 
@@ -745,7 +745,7 @@ void CodeEdit::indent_lines() {
 	/* Default is 1 for tab indentation.                                                   */
 	int selection_offset = 1;
 
-	int start_line = cursor_get_line();
+	int start_line = get_caret_line();
 	int end_line = start_line;
 	if (is_selection_active()) {
 		start_line = get_selection_from_line();
@@ -780,7 +780,7 @@ void CodeEdit::indent_lines() {
 	if (is_selection_active()) {
 		select(start_line, get_selection_from_column() + selection_offset, get_selection_to_line(), get_selection_to_column() + selection_offset);
 	}
-	cursor_set_column(cursor_get_column() + selection_offset, false);
+	set_caret_column(get_caret_column() + selection_offset, false);
 
 	end_complex_operation();
 }
@@ -790,19 +790,19 @@ void CodeEdit::do_unindent() {
 		return;
 	}
 
-	int cc = cursor_get_column();
+	int cc = get_caret_column();
 
 	if (is_selection_active() || cc <= 0) {
 		unindent_lines();
 		return;
 	}
 
-	int cl = cursor_get_line();
+	int cl = get_caret_line();
 	const String &line = get_line(cl);
 
 	if (line[cc - 1] == '\t') {
 		_remove_text(cl, cc - 1, cl, cc);
-		cursor_set_column(MAX(0, cc - 1));
+		set_caret_column(MAX(0, cc - 1));
 		return;
 	}
 
@@ -819,7 +819,7 @@ void CodeEdit::do_unindent() {
 			}
 		}
 		_remove_text(cl, cc - spaces_to_remove, cl, cc);
-		cursor_set_column(MAX(0, cc - spaces_to_remove));
+		set_caret_column(MAX(0, cc - spaces_to_remove));
 	}
 }
 
@@ -835,9 +835,9 @@ void CodeEdit::unindent_lines() {
 	/* therefore we just remember initial values and at the end of the operation offset them by number of removed characters.   */
 	int removed_characters = 0;
 	int initial_selection_end_column = 0;
-	int initial_cursor_column = cursor_get_column();
+	int initial_cursor_column = get_caret_column();
 
-	int start_line = cursor_get_line();
+	int start_line = get_caret_line();
 	int end_line = start_line;
 	if (is_selection_active()) {
 		start_line = get_selection_from_line();
@@ -893,7 +893,7 @@ void CodeEdit::unindent_lines() {
 			select(get_selection_from_line(), get_selection_from_column(), get_selection_to_line(), initial_selection_end_column - removed_characters);
 		}
 	}
-	cursor_set_column(initial_cursor_column - removed_characters, false);
+	set_caret_column(initial_cursor_column - removed_characters, false);
 
 	end_complex_operation();
 }
@@ -915,8 +915,8 @@ void CodeEdit::_new_line(bool p_split_current_line, bool p_above) {
 		return;
 	}
 
-	const int cc = cursor_get_column();
-	const int cl = cursor_get_line();
+	const int cc = get_caret_column();
+	const int cl = get_caret_line();
 	const String line = get_line(cl);
 
 	String ins = "\n";
@@ -992,24 +992,24 @@ void CodeEdit::_new_line(bool p_split_current_line, bool p_above) {
 	if (!p_split_current_line) {
 		if (p_above) {
 			if (cl > 0) {
-				cursor_set_line(cl - 1, false);
-				cursor_set_column(get_line(cursor_get_line()).length());
+				set_caret_line(cl - 1, false);
+				set_caret_column(get_line(get_caret_line()).length());
 			} else {
-				cursor_set_column(0);
+				set_caret_column(0);
 				first_line = true;
 			}
 		} else {
-			cursor_set_column(line.length());
+			set_caret_column(line.length());
 		}
 	}
 
-	insert_text_at_cursor(ins);
+	insert_text_at_caret(ins);
 
 	if (first_line) {
-		cursor_set_line(0);
+		set_caret_line(0);
 	} else if (brace_indent) {
-		cursor_set_line(cursor_get_line() - 1, false);
-		cursor_set_column(get_line(cursor_get_line()).length());
+		set_caret_line(get_caret_line() - 1, false);
+		set_caret_column(get_line(get_caret_line()).length());
 	}
 
 	end_complex_operation();
@@ -1434,9 +1434,9 @@ void CodeEdit::fold_line(int p_line) {
 	}
 
 	/* Reset caret. */
-	if (is_line_hidden(cursor_get_line())) {
-		cursor_set_line(p_line, false, false);
-		cursor_set_column(get_line(p_line).length(), false);
+	if (is_line_hidden(get_caret_line())) {
+		set_caret_line(p_line, false, false);
+		set_caret_column(get_line(p_line).length(), false);
 	}
 	update();
 }
@@ -1710,11 +1710,11 @@ String CodeEdit::get_text_for_code_completion() const {
 	for (int i = 0; i < text_size; i++) {
 		String line = get_line(i);
 
-		if (i == cursor_get_line()) {
-			completion_text += line.substr(0, cursor_get_column());
+		if (i == get_caret_line()) {
+			completion_text += line.substr(0, get_caret_column());
 			/* Not unicode, represents the caret. */
 			completion_text += String::chr(0xFFFF);
-			completion_text += line.substr(cursor_get_column(), line.size());
+			completion_text += line.substr(get_caret_column(), line.size());
 		} else {
 			completion_text += line;
 		}
@@ -1761,10 +1761,10 @@ void CodeEdit::request_code_completion(bool p_force) {
 		return;
 	}
 
-	String line = get_line(cursor_get_line());
-	int ofs = CLAMP(cursor_get_column(), 0, line.length());
+	String line = get_line(get_caret_line());
+	int ofs = CLAMP(get_caret_column(), 0, line.length());
 
-	if (ofs > 0 && (is_in_string(cursor_get_line(), ofs) != -1 || _is_char(line[ofs - 1]) || code_completion_prefixes.has(String::chr(line[ofs - 1])))) {
+	if (ofs > 0 && (is_in_string(get_caret_line(), ofs) != -1 || _is_char(line[ofs - 1]) || code_completion_prefixes.has(String::chr(line[ofs - 1])))) {
 		emit_signal(SNAME("request_code_completion"));
 	} else if (ofs > 1 && line[ofs - 1] == ' ' && code_completion_prefixes.has(String::chr(line[ofs - 2]))) {
 		emit_signal(SNAME("request_code_completion"));
@@ -1850,7 +1850,7 @@ void CodeEdit::confirm_code_completion(bool p_replace) {
 	}
 	begin_complex_operation();
 
-	int caret_line = cursor_get_line();
+	int caret_line = get_caret_line();
 
 	const String &insert_text = code_completion_options[code_completion_current_selected].insert_text;
 	const String &display_text = code_completion_options[code_completion_current_selected].display;
@@ -1858,7 +1858,7 @@ void CodeEdit::confirm_code_completion(bool p_replace) {
 	if (p_replace) {
 		/* Find end of current section */
 		const String line = get_line(caret_line);
-		int caret_col = cursor_get_column();
+		int caret_col = get_caret_column();
 		int caret_remove_line = caret_line;
 
 		bool merge_text = true;
@@ -1881,13 +1881,13 @@ void CodeEdit::confirm_code_completion(bool p_replace) {
 		}
 
 		/* Replace. */
-		_remove_text(caret_line, cursor_get_column() - code_completion_base.length(), caret_remove_line, caret_col);
-		cursor_set_column(cursor_get_column() - code_completion_base.length(), false);
-		insert_text_at_cursor(insert_text);
+		_remove_text(caret_line, get_caret_column() - code_completion_base.length(), caret_remove_line, caret_col);
+		set_caret_column(get_caret_column() - code_completion_base.length(), false);
+		insert_text_at_caret(insert_text);
 	} else {
 		/* Get first non-matching char. */
 		const String line = get_line(caret_line);
-		int caret_col = cursor_get_column();
+		int caret_col = get_caret_column();
 		int matching_chars = code_completion_base.length();
 		for (; matching_chars <= insert_text.length(); matching_chars++) {
 			if (caret_col >= line.length() || line[caret_col] != insert_text[matching_chars]) {
@@ -1897,41 +1897,41 @@ void CodeEdit::confirm_code_completion(bool p_replace) {
 		}
 
 		/* Remove base completion text. */
-		_remove_text(caret_line, cursor_get_column() - code_completion_base.length(), caret_line, cursor_get_column());
-		cursor_set_column(cursor_get_column() - code_completion_base.length(), false);
+		_remove_text(caret_line, get_caret_column() - code_completion_base.length(), caret_line, get_caret_column());
+		set_caret_column(get_caret_column() - code_completion_base.length(), false);
 
 		/* Merge with text. */
-		insert_text_at_cursor(insert_text.substr(0, code_completion_base.length()));
-		cursor_set_column(caret_col, false);
-		insert_text_at_cursor(insert_text.substr(matching_chars));
+		insert_text_at_caret(insert_text.substr(0, code_completion_base.length()));
+		set_caret_column(caret_col, false);
+		insert_text_at_caret(insert_text.substr(matching_chars));
 	}
 
 	/* Handle merging of symbols eg strings, brackets. */
 	const String line = get_line(caret_line);
-	char32_t next_char = line[cursor_get_column()];
+	char32_t next_char = line[get_caret_column()];
 	char32_t last_completion_char = insert_text[insert_text.length() - 1];
 	char32_t last_completion_char_display = display_text[display_text.length() - 1];
 
-	int pre_brace_pair = cursor_get_column() > 0 ? _get_auto_brace_pair_open_at_pos(caret_line, cursor_get_column()) : -1;
-	int post_brace_pair = cursor_get_column() < get_line(caret_line).length() ? _get_auto_brace_pair_close_at_pos(caret_line, cursor_get_column()) : -1;
+	int pre_brace_pair = get_caret_column() > 0 ? _get_auto_brace_pair_open_at_pos(caret_line, get_caret_column()) : -1;
+	int post_brace_pair = get_caret_column() < get_line(caret_line).length() ? _get_auto_brace_pair_close_at_pos(caret_line, get_caret_column()) : -1;
 
 	if (post_brace_pair != -1 && (last_completion_char == next_char || last_completion_char_display == next_char)) {
-		_remove_text(caret_line, cursor_get_column(), caret_line, cursor_get_column() + 1);
+		_remove_text(caret_line, get_caret_column(), caret_line, get_caret_column() + 1);
 	}
 
 	if (pre_brace_pair != -1 && pre_brace_pair != post_brace_pair && (last_completion_char == next_char || last_completion_char_display == next_char)) {
-		_remove_text(caret_line, cursor_get_column(), caret_line, cursor_get_column() + 1);
+		_remove_text(caret_line, get_caret_column(), caret_line, get_caret_column() + 1);
 	} else if (auto_brace_completion_enabled && pre_brace_pair != -1 && post_brace_pair == -1) {
-		insert_text_at_cursor(auto_brace_completion_pairs[pre_brace_pair].close_key);
-		cursor_set_column(cursor_get_column() - auto_brace_completion_pairs[pre_brace_pair].close_key.length());
+		insert_text_at_caret(auto_brace_completion_pairs[pre_brace_pair].close_key);
+		set_caret_column(get_caret_column() - auto_brace_completion_pairs[pre_brace_pair].close_key.length());
 	}
 
-	if (pre_brace_pair == -1 && post_brace_pair == -1 && cursor_get_column() > 0 && cursor_get_column() < get_line(caret_line).length()) {
-		pre_brace_pair = _get_auto_brace_pair_open_at_pos(caret_line, cursor_get_column() + 1);
-		if (pre_brace_pair == _get_auto_brace_pair_close_at_pos(caret_line, cursor_get_column() - 1)) {
-			_remove_text(caret_line, cursor_get_column() - 2, caret_line, cursor_get_column());
-			if (_get_auto_brace_pair_close_at_pos(caret_line, cursor_get_column() - 1) != pre_brace_pair) {
-				cursor_set_column(cursor_get_column() - 1);
+	if (pre_brace_pair == -1 && post_brace_pair == -1 && get_caret_column() > 0 && get_caret_column() < get_line(caret_line).length()) {
+		pre_brace_pair = _get_auto_brace_pair_open_at_pos(caret_line, get_caret_column() + 1);
+		if (pre_brace_pair == _get_auto_brace_pair_close_at_pos(caret_line, get_caret_column() - 1)) {
+			_remove_text(caret_line, get_caret_column() - 2, caret_line, get_caret_column());
+			if (_get_auto_brace_pair_close_at_pos(caret_line, get_caret_column() - 1) != pre_brace_pair) {
+				set_caret_column(get_caret_column() - 1);
 			}
 		}
 	}
@@ -2292,8 +2292,8 @@ void CodeEdit::_gutter_clicked(int p_line, int p_gutter) {
 	if (p_gutter == line_number_gutter) {
 		set_selection_mode(TextEdit::SelectionMode::SELECTION_MODE_LINE, p_line, 0);
 		select(p_line, 0, p_line + 1, 0);
-		cursor_set_line(p_line + 1);
-		cursor_set_column(0);
+		set_caret_line(p_line + 1);
+		set_caret_column(0);
 		return;
 	}
 
@@ -2688,8 +2688,8 @@ void CodeEdit::_filter_code_completion_candidates() {
 		return;
 	}
 
-	const int caret_line = cursor_get_line();
-	const int caret_column = cursor_get_column();
+	const int caret_line = get_caret_line();
+	const int caret_column = get_caret_column();
 	const String line = get_line(caret_line);
 
 	if (caret_column > 0 && line[caret_column - 1] == '(' && !code_completion_forced) {

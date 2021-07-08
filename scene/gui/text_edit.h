@@ -42,12 +42,19 @@ class TextEdit : public Control {
 	GDCLASS(TextEdit, Control);
 
 public:
+	/* Caret. */
+	enum CaretType {
+		CARET_TYPE_LINE,
+		CARET_TYPE_BLOCK
+	};
+
 	enum GutterType {
 		GUTTER_TYPE_STRING,
 		GUTTER_TYPE_ICON,
 		GUTTER_TYPE_CUSTOM
 	};
 
+	/* Selection */
 	enum SelectionMode {
 		SELECTION_MODE_NONE,
 		SELECTION_MODE_SHIFT,
@@ -176,16 +183,39 @@ private:
 	/* Text manipulation */
 	String cut_copy_line = "";
 
-	struct Cursor {
+	/* Caret */
+	struct Caret {
 		Point2 draw_pos;
 		bool visible = false;
 		int last_fit_x = 0;
 		int line = 0;
-		int column = 0; ///< cursor
+		int column = 0;
 		int x_ofs = 0;
 		int line_ofs = 0;
 		int wrap_ofs = 0;
-	} cursor;
+	} caret;
+
+	bool setting_caret_line = false;
+	bool caret_pos_dirty = false;
+
+	Color caret_color = Color(1, 1, 1);
+	Color caret_background_color = Color(0, 0, 0);
+
+	CaretType caret_type = CaretType::CARET_TYPE_LINE;
+
+	bool draw_caret = true;
+
+	bool caret_blink_enabled = false;
+	Timer *caret_blink_timer;
+
+	bool move_caret_on_right_click = true;
+
+	bool caret_mid_grapheme_enabled = false;
+
+	void _emit_caret_changed();
+
+	void _reset_caret_blink_timer();
+	void _toggle_draw_caret();
 
 	struct Selection {
 		SelectionMode selecting_mode = SelectionMode::SELECTION_MODE_NONE;
@@ -263,24 +293,16 @@ private:
 
 	bool readonly = true; // Initialise to opposite first, so we get past the early-out in set_readonly.
 
-	Timer *caret_blink_timer;
-	bool caret_blink_enabled = false;
-	bool draw_caret = true;
 	bool window_has_focus = true;
-	bool block_caret = false;
-	bool right_click_moves_caret = true;
-	bool mid_grapheme_caret_enabled = false;
 
 	bool wrap_enabled = false;
 	int wrap_at = 0;
 	int wrap_right_offset = 10;
 
 	bool first_draw = true;
-	bool setting_row = false;
 	bool draw_tabs = false;
 	bool draw_spaces = false;
 	bool override_selected_font_color = false;
-	bool cursor_changed_dirty = false;
 	bool text_changed_dirty = false;
 	bool undo_enabled = true;
 	bool hiding_enabled = false;
@@ -340,10 +362,9 @@ private:
 
 	int _get_minimap_visible_rows() const;
 
-	void update_cursor_wrap_offset();
+	void _update_caret_wrap_offset();
 	void _update_wrap_at(bool p_force = false);
 	Vector<String> get_wrap_rows_text(int p_line) const;
-	int get_cursor_wrap_index() const;
 
 	double get_scroll_pos_for_line(int p_line, int p_wrap_index = 0) const;
 	void set_line_as_first_visible(int p_line, int p_wrap_index = 0);
@@ -358,7 +379,6 @@ private:
 	int get_char_pos_for_line(int p_px, int p_line, int p_wrap_index = 0) const;
 	int get_column_x_offset_for_line(int p_char, int p_line) const;
 
-	void adjust_viewport_to_cursor();
 	double get_scroll_line_diff() const;
 	void _scroll_moved(double);
 	void _update_scrollbars();
@@ -385,11 +405,7 @@ private:
 
 	int _get_menu_action_accelerator(const String &p_action);
 
-	void _reset_caret_blink_timer();
-	void _toggle_draw_caret();
-
 	void _update_caches();
-	void _cursor_changed_emit();
 	void _text_changed_emit();
 
 	void _push_current_op();
@@ -415,18 +431,18 @@ private:
 	// Methods used in shortcuts
 	void _swap_current_input_direction();
 	void _new_line(bool p_split_current = true, bool p_above = false);
-	void _move_cursor_left(bool p_select, bool p_move_by_word = false);
-	void _move_cursor_right(bool p_select, bool p_move_by_word = false);
-	void _move_cursor_up(bool p_select);
-	void _move_cursor_down(bool p_select);
-	void _move_cursor_to_line_start(bool p_select);
-	void _move_cursor_to_line_end(bool p_select);
-	void _move_cursor_page_up(bool p_select);
-	void _move_cursor_page_down(bool p_select);
+	void _move_caret_left(bool p_select, bool p_move_by_word = false);
+	void _move_caret_right(bool p_select, bool p_move_by_word = false);
+	void _move_caret_up(bool p_select);
+	void _move_caret_down(bool p_select);
+	void _move_caret_to_line_start(bool p_select);
+	void _move_caret_to_line_end(bool p_select);
+	void _move_caret_page_up(bool p_select);
+	void _move_caret_page_down(bool p_select);
 	void _do_backspace(bool p_word = false, bool p_all_to_left = false);
 	void _delete(bool p_word = false, bool p_all_to_right = false);
-	void _move_cursor_document_start(bool p_select);
-	void _move_cursor_document_end(bool p_select);
+	void _move_caret_document_start(bool p_select);
+	void _move_caret_document_end(bool p_select);
 
 protected:
 	bool highlight_matching_braces_enabled = false;
@@ -442,8 +458,6 @@ protected:
 		int font_size = 16;
 		int outline_size = 0;
 		Color outline_color;
-		Color caret_color;
-		Color caret_background_color;
 		Color font_color;
 		Color font_selected_color;
 		Color font_readonly_color;
@@ -495,6 +509,33 @@ public:
 	void cut();
 	void copy();
 	void paste();
+
+	/* Caret */
+	void set_caret_type(CaretType p_type);
+	CaretType get_caret_type() const;
+
+	void set_caret_blink_enabled(const bool p_enabled);
+	bool is_caret_blink_enabled() const;
+
+	void set_caret_blink_speed(const float p_speed);
+	float get_caret_blink_speed() const;
+
+	void set_move_caret_on_right_click_enabled(const bool p_enable);
+	bool is_move_caret_on_right_click_enabled() const;
+
+	void set_caret_mid_grapheme_enabled(const bool p_enabled);
+	bool is_caret_mid_grapheme_enabled() const;
+
+	bool is_caret_visible() const;
+	Point2 get_caret_draw_pos() const;
+
+	void set_caret_line(int p_line, bool p_adjust_viewport = true, bool p_can_be_hidden = true, int p_wrap_index = 0);
+	int get_caret_line() const;
+
+	void set_caret_column(int p_col, bool p_adjust_viewport = true);
+	int get_caret_column() const;
+
+	int get_caret_wrap_index() const;
 
 	/* Syntax Highlighting. */
 	Ref<SyntaxHighlighter> get_syntax_highlighter();
@@ -619,7 +660,7 @@ public:
 	Array get_structured_text_bidi_override_options() const;
 
 	void set_text(String p_text);
-	void insert_text_at_cursor(const String &p_text);
+	void insert_text_at_caret(const String &p_text);
 	void insert_at(const String &p_text, int at);
 	int get_line_count() const;
 	int get_line_width(int p_line, int p_wrap_offset = -1) const;
@@ -646,31 +687,8 @@ public:
 		update();
 	}
 
-	void center_viewport_to_cursor();
-
-	void set_mid_grapheme_caret_enabled(const bool p_enabled);
-	bool get_mid_grapheme_caret_enabled() const;
-
-	void cursor_set_column(int p_col, bool p_adjust_viewport = true);
-	void cursor_set_line(int p_row, bool p_adjust_viewport = true, bool p_can_be_hidden = true, int p_wrap_index = 0);
-
-	Point2 get_caret_draw_pos() const;
-	bool is_caret_visible() const;
-	int cursor_get_column() const;
-	int cursor_get_line() const;
-	Vector2i _get_cursor_pixel_pos(bool p_adjust_viewport = true);
-
-	bool cursor_get_blink_enabled() const;
-	void cursor_set_blink_enabled(const bool p_enabled);
-
-	float cursor_get_blink_speed() const;
-	void cursor_set_blink_speed(const float p_speed);
-
-	void cursor_set_block_mode(const bool p_enable);
-	bool cursor_is_block_mode() const;
-
-	void set_right_click_moves_caret(bool p_enable);
-	bool is_right_click_moving_caret() const;
+	void adjust_viewport_to_caret();
+	void center_viewport_to_caret();
 
 	SelectionMode get_selection_mode() const;
 	void set_selection_mode(SelectionMode p_mode, int p_line = -1, int p_column = -1);
@@ -708,7 +726,7 @@ public:
 	int get_selection_to_column() const;
 	String get_selection_text() const;
 
-	String get_word_under_cursor() const;
+	String get_word_under_caret() const;
 	String get_word_at_pos(const Vector2 &p_pos) const;
 
 	bool search(const String &p_key, uint32_t p_search_flags, int p_from_line, int p_from_column, int &r_line, int &r_column) const;
@@ -781,8 +799,10 @@ public:
 	~TextEdit();
 };
 
-VARIANT_ENUM_CAST(TextEdit::GutterType);
+
+VARIANT_ENUM_CAST(TextEdit::CaretType);
 VARIANT_ENUM_CAST(TextEdit::SelectionMode);
+VARIANT_ENUM_CAST(TextEdit::GutterType);
 VARIANT_ENUM_CAST(TextEdit::MenuItems);
 VARIANT_ENUM_CAST(TextEdit::SearchFlags);
 

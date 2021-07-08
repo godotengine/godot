@@ -248,7 +248,7 @@ void ScriptTextEditor::_warning_clicked(Variant p_line) {
 
 void ScriptTextEditor::_error_clicked(Variant p_line) {
 	if (p_line.get_type() == Variant::INT) {
-		code_editor->get_text_editor()->cursor_set_line(p_line.operator int64_t());
+		code_editor->get_text_editor()->set_caret_line(p_line.operator int64_t());
 	}
 }
 
@@ -256,14 +256,14 @@ void ScriptTextEditor::reload_text() {
 	ERR_FAIL_COND(script.is_null());
 
 	CodeEdit *te = code_editor->get_text_editor();
-	int column = te->cursor_get_column();
-	int row = te->cursor_get_line();
+	int column = te->get_caret_column();
+	int row = te->get_caret_line();
 	int h = te->get_h_scroll();
 	int v = te->get_v_scroll();
 
 	te->set_text(script->get_source_code());
-	te->cursor_set_line(row);
-	te->cursor_set_column(column);
+	te->set_caret_line(row);
+	te->set_caret_column(column);
 	te->set_h_scroll(h);
 	te->set_v_scroll(v);
 
@@ -281,12 +281,12 @@ void ScriptTextEditor::add_callback(const String &p_function, PackedStringArray 
 		pos = code_editor->get_text_editor()->get_line_count() + 2;
 		String func = script->get_language()->make_function("", p_function, p_args);
 		//code=code+func;
-		code_editor->get_text_editor()->cursor_set_line(pos + 1);
-		code_editor->get_text_editor()->cursor_set_column(1000000); //none shall be that big
-		code_editor->get_text_editor()->insert_text_at_cursor("\n\n" + func);
+		code_editor->get_text_editor()->set_caret_line(pos + 1);
+		code_editor->get_text_editor()->set_caret_column(1000000); //none shall be that big
+		code_editor->get_text_editor()->insert_text_at_caret("\n\n" + func);
 	}
-	code_editor->get_text_editor()->cursor_set_line(pos);
-	code_editor->get_text_editor()->cursor_set_column(1);
+	code_editor->get_text_editor()->set_caret_line(pos);
+	code_editor->get_text_editor()->set_caret_column(1);
 }
 
 bool ScriptTextEditor::show_members_overview() {
@@ -726,7 +726,7 @@ void ScriptTextEditor::_breakpoint_item_pressed(int p_idx) {
 		_edit_option(breakpoints_menu->get_item_id(p_idx));
 	} else {
 		code_editor->goto_line(breakpoints_menu->get_item_metadata(p_idx));
-		code_editor->get_text_editor()->call_deferred(SNAME("center_viewport_to_cursor")); //Need to be deferred, because goto uses call_deferred().
+		code_editor->get_text_editor()->call_deferred(SNAME("center_viewport_to_caret")); //Need to be deferred, because goto uses call_deferred().
 	}
 }
 
@@ -1054,7 +1054,7 @@ void ScriptTextEditor::_edit_option(int p_op) {
 			code_editor->duplicate_selection();
 		} break;
 		case EDIT_TOGGLE_FOLD_LINE: {
-			tx->toggle_foldable_line(tx->cursor_get_line());
+			tx->toggle_foldable_line(tx->get_caret_line());
 			tx->update();
 		} break;
 		case EDIT_FOLD_ALL_LINES: {
@@ -1142,7 +1142,7 @@ void ScriptTextEditor::_edit_option(int p_op) {
 			}
 
 			code_editor->get_text_editor()->begin_complex_operation(); //prevents creating a two-step undo
-			code_editor->get_text_editor()->insert_text_at_cursor(String("\n").join(results));
+			code_editor->get_text_editor()->insert_text_at_caret(String("\n").join(results));
 			code_editor->get_text_editor()->end_complex_operation();
 		} break;
 		case SEARCH_FIND: {
@@ -1189,7 +1189,7 @@ void ScriptTextEditor::_edit_option(int p_op) {
 			code_editor->remove_all_bookmarks();
 		} break;
 		case DEBUG_TOGGLE_BREAKPOINT: {
-			int line = tx->cursor_get_line();
+			int line = tx->get_caret_line();
 			bool dobreak = !tx->is_line_breakpointed(line);
 			tx->set_line_as_breakpoint(line, dobreak);
 			EditorDebuggerNode::get_singleton()->set_breakpoint(script->get_path(), line + 1, dobreak);
@@ -1210,20 +1210,20 @@ void ScriptTextEditor::_edit_option(int p_op) {
 				return;
 			}
 
-			int line = tx->cursor_get_line();
+			int line = tx->get_caret_line();
 
 			// wrap around
 			if (line >= (int)bpoints[bpoints.size() - 1]) {
 				tx->unfold_line(bpoints[0]);
-				tx->cursor_set_line(bpoints[0]);
-				tx->center_viewport_to_cursor();
+				tx->set_caret_line(bpoints[0]);
+				tx->center_viewport_to_caret();
 			} else {
 				for (int i = 0; i < bpoints.size(); i++) {
 					int bline = bpoints[i];
 					if (bline > line) {
 						tx->unfold_line(bline);
-						tx->cursor_set_line(bline);
-						tx->center_viewport_to_cursor();
+						tx->set_caret_line(bline);
+						tx->center_viewport_to_caret();
 						return;
 					}
 				}
@@ -1236,19 +1236,19 @@ void ScriptTextEditor::_edit_option(int p_op) {
 				return;
 			}
 
-			int line = tx->cursor_get_line();
+			int line = tx->get_caret_line();
 			// wrap around
 			if (line <= (int)bpoints[0]) {
 				tx->unfold_line(bpoints[bpoints.size() - 1]);
-				tx->cursor_set_line(bpoints[bpoints.size() - 1]);
-				tx->center_viewport_to_cursor();
+				tx->set_caret_line(bpoints[bpoints.size() - 1]);
+				tx->center_viewport_to_caret();
 			} else {
 				for (int i = bpoints.size(); i >= 0; i--) {
 					int bline = bpoints[i];
 					if (bline < line) {
 						tx->unfold_line(bline);
-						tx->cursor_set_line(bline);
-						tx->center_viewport_to_cursor();
+						tx->set_caret_line(bline);
+						tx->center_viewport_to_caret();
 						return;
 					}
 				}
@@ -1258,19 +1258,19 @@ void ScriptTextEditor::_edit_option(int p_op) {
 		case HELP_CONTEXTUAL: {
 			String text = tx->get_selection_text();
 			if (text == "") {
-				text = tx->get_word_under_cursor();
+				text = tx->get_word_under_caret();
 			}
 			if (text != "") {
 				emit_signal(SNAME("request_help"), text);
 			}
 		} break;
 		case LOOKUP_SYMBOL: {
-			String text = tx->get_word_under_cursor();
+			String text = tx->get_word_under_caret();
 			if (text == "") {
 				text = tx->get_selection_text();
 			}
 			if (text != "") {
-				_lookup_symbol(text, tx->cursor_get_line(), tx->cursor_get_column());
+				_lookup_symbol(text, tx->get_caret_line(), tx->get_caret_column());
 			}
 		} break;
 	}
@@ -1436,9 +1436,9 @@ void ScriptTextEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data
 			return;
 		}
 
-		te->cursor_set_line(row);
-		te->cursor_set_column(col);
-		te->insert_text_at_cursor(res->get_path());
+		te->set_caret_line(row);
+		te->set_caret_column(col);
+		te->insert_text_at_caret(res->get_path());
 	}
 
 	if (d.has("type") && (String(d["type"]) == "files" || String(d["type"]) == "files_and_dirs")) {
@@ -1459,9 +1459,9 @@ void ScriptTextEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data
 			}
 		}
 
-		te->cursor_set_line(row);
-		te->cursor_set_column(col);
-		te->insert_text_at_cursor(text_to_drop);
+		te->set_caret_line(row);
+		te->set_caret_column(col);
+		te->insert_text_at_caret(text_to_drop);
 	}
 
 	if (d.has("type") && String(d["type"]) == "nodes") {
@@ -1489,9 +1489,9 @@ void ScriptTextEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data
 			text_to_drop += "\"" + path.c_escape() + "\"";
 		}
 
-		te->cursor_set_line(row);
-		te->cursor_set_column(col);
-		te->insert_text_at_cursor(text_to_drop);
+		te->set_caret_line(row);
+		te->set_caret_column(col);
+		te->insert_text_at_caret(text_to_drop);
 	}
 }
 
@@ -1505,8 +1505,9 @@ void ScriptTextEditor::_text_edit_gui_input(const Ref<InputEvent> &ev) {
 	if (mb.is_valid() && mb->get_button_index() == MOUSE_BUTTON_RIGHT && mb->is_pressed()) {
 		local_pos = mb->get_global_position() - tx->get_global_position();
 		create_menu = true;
-	} else if (k.is_valid() && k->get_keycode() == KEY_MENU) {
-		local_pos = tx->_get_cursor_pixel_pos();
+	} else if (k.is_valid() && k->is_action("ui_menu", true)) {
+		tx->adjust_viewport_to_caret();
+		local_pos = tx->get_caret_draw_pos();
 		create_menu = true;
 	}
 
@@ -1514,8 +1515,8 @@ void ScriptTextEditor::_text_edit_gui_input(const Ref<InputEvent> &ev) {
 		int col, row;
 		tx->_get_mouse_pos(local_pos, row, col);
 
-		tx->set_right_click_moves_caret(EditorSettings::get_singleton()->get("text_editor/cursor/right_click_moves_caret"));
-		if (tx->is_right_click_moving_caret()) {
+		tx->set_move_caret_on_right_click_enabled(EditorSettings::get_singleton()->get("text_editor/cursor/right_click_moves_caret"));
+		if (tx->is_move_caret_on_right_click_enabled()) {
 			if (tx->is_selection_active()) {
 				int from_line = tx->get_selection_from_line();
 				int to_line = tx->get_selection_to_line();
@@ -1528,14 +1529,14 @@ void ScriptTextEditor::_text_edit_gui_input(const Ref<InputEvent> &ev) {
 				}
 			}
 			if (!tx->is_selection_active()) {
-				tx->cursor_set_line(row, true, false);
-				tx->cursor_set_column(col);
+				tx->set_caret_line(row, false, false);
+				tx->set_caret_column(col);
 			}
 		}
 
 		String word_at_pos = tx->get_word_at_pos(local_pos);
 		if (word_at_pos == "") {
-			word_at_pos = tx->get_word_under_cursor();
+			word_at_pos = tx->get_word_under_caret();
 		}
 		if (word_at_pos == "") {
 			word_at_pos = tx->get_selection_text();

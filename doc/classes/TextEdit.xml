@@ -56,8 +56,9 @@
 				Called when the user presses the backspace key. Can be overriden with [method _backspace].
 			</description>
 		</method>
-		<method name="center_viewport_to_cursor">
-			<return type="void" />
+		<method name="center_viewport_to_caret">
+			<return type="void">
+			</return>
 			<description>
 				Centers the viewport on the line the editing cursor is at. This also resets the [member scroll_horizontal] value to [code]0[/code].
 			</description>
@@ -80,60 +81,52 @@
 				Copy's the current text selection. Can be overriden with [method _copy].
 			</description>
 		</method>
-		<method name="cursor_get_column" qualifiers="const">
-			<return type="int" />
-			<description>
-				Returns the column the editing cursor is at.
-			</description>
-		</method>
-		<method name="cursor_get_line" qualifiers="const">
-			<return type="int" />
-			<description>
-				Returns the line the editing cursor is at.
-			</description>
-		</method>
-		<method name="cursor_set_column">
-			<return type="void" />
-			<argument index="0" name="column" type="int" />
-			<argument index="1" name="adjust_viewport" type="bool" default="true" />
-			<description>
-				Moves the cursor at the specified [code]column[/code] index.
-				If [code]adjust_viewport[/code] is set to [code]true[/code], the viewport will center at the cursor position after the move occurs.
-			</description>
-		</method>
-		<method name="cursor_set_line">
-			<return type="void" />
-			<argument index="0" name="line" type="int" />
-			<argument index="1" name="adjust_viewport" type="bool" default="true" />
-			<argument index="2" name="can_be_hidden" type="bool" default="true" />
-			<argument index="3" name="wrap_index" type="int" default="0" />
-			<description>
-				Moves the cursor at the specified [code]line[/code] index.
-				If [code]adjust_viewport[/code] is set to [code]true[/code], the viewport will center at the cursor position after the move occurs.
-				If [code]can_be_hidden[/code] is set to [code]true[/code], the specified [code]line[/code] can be hidden.
-			</description>
-		</method>
 		<method name="cut">
-			<return type="void" />
+			<return type="void">
+			</return>
 			<description>
 				Cut's the current selection. Can be overriden with [method _cut].
 			</description>
 		</method>
 		<method name="delete_selection">
-			<return type="void" />
+			<return type="void">
+			</return>
 			<description>
 			</description>
 		</method>
 		<method name="deselect">
-			<return type="void" />
+			<return type="void">
+			</return>
 			<description>
 				Deselects the current selection.
 			</description>
 		</method>
-		<method name="get_caret_draw_pos" qualifiers="const">
-			<return type="Vector2" />
+		<method name="get_caret_column" qualifiers="const">
+			<return type="int">
+			</return>
 			<description>
-				Gets the caret pixel draw position.
+				Returns the column the editing caret is at.
+			</description>
+		</method>
+		<method name="get_caret_draw_pos" qualifiers="const">
+			<return type="Vector2">
+			</return>
+			<description>
+				Gets the caret pixel draw poistion.
+			</description>
+		</method>
+		<method name="get_caret_line" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+				Returns the line the editing caret is on.
+			</description>
+		</method>
+		<method name="get_caret_wrap_index" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+				Returns the wrap index the editing caret is on.
 			</description>
 		</method>
 		<method name="get_first_non_whitespace_column" qualifiers="const">
@@ -295,17 +288,20 @@
 				Returns the number of visible lines, including wrapped text.
 			</description>
 		</method>
-		<method name="get_word_under_cursor" qualifiers="const">
-			<return type="String" />
+		<method name="get_word_under_caret" qualifiers="const">
+			<return type="String">
+			</return>
 			<description>
-				Returns a [String] text with the word under the caret (text cursor) location.
+				Returns a [String] text with the word under the caret location.
 			</description>
 		</method>
-		<method name="insert_text_at_cursor">
-			<return type="void" />
-			<argument index="0" name="text" type="String" />
+		<method name="insert_text_at_caret">
+			<return type="void">
+			</return>
+			<argument index="0" name="text" type="String">
+			</argument>
 			<description>
-				Insert the specified text at the cursor position.
+				Insert the specified text at the caret position.
 			</description>
 		</method>
 		<method name="is_caret_visible" qualifiers="const">
@@ -433,6 +429,35 @@
 			<description>
 				Select all the text.
 				If [member selecting_enabled] is [code]false[/code], no selection will occur.
+			</description>
+		</method>
+		<method name="set_caret_column">
+			<return type="void">
+			</return>
+			<argument index="0" name="column" type="int">
+			</argument>
+			<argument index="1" name="adjust_viewport" type="bool" default="true">
+			</argument>
+			<description>
+				Moves the caret to the specified [code]column[/code] index.
+				If [code]adjust_viewport[/code] is set to [code]true[/code], the viewport will center at the caret position after the move occurs.
+			</description>
+		</method>
+		<method name="set_caret_line">
+			<return type="void">
+			</return>
+			<argument index="0" name="line" type="int">
+			</argument>
+			<argument index="1" name="adjust_viewport" type="bool" default="true">
+			</argument>
+			<argument index="2" name="can_be_hidden" type="bool" default="true">
+			</argument>
+			<argument index="3" name="wrap_index" type="int" default="0">
+			</argument>
+			<description>
+				Moves the caret to the specified [code]line[/code] index.
+				If [code]adjust_viewport[/code] is set to [code]true[/code], the viewport will center at the caret position after the move occurs.
+				If [code]can_be_hidden[/code] is set to [code]true[/code], the specified [code]line[/code] can be hidden.
 			</description>
 		</method>
 		<method name="set_gutter_clickable">
@@ -572,23 +597,22 @@
 		</method>
 	</methods>
 	<members>
-		<member name="caret_blink" type="bool" setter="cursor_set_blink_enabled" getter="cursor_get_blink_enabled" default="false">
-			If [code]true[/code], the caret (visual cursor) blinks.
+		<member name="caret_blink" type="bool" setter="set_caret_blink_enabled" getter="is_caret_blink_enabled" default="false">
+			Sets if the caret should blink.
 		</member>
-		<member name="caret_blink_speed" type="float" setter="cursor_set_blink_speed" getter="cursor_get_blink_speed" default="0.65">
+		<member name="caret_blink_speed" type="float" setter="set_caret_blink_speed" getter="get_caret_blink_speed" default="0.65">
 			Duration (in seconds) of a caret's blinking cycle.
 		</member>
-		<member name="caret_block_mode" type="bool" setter="cursor_set_block_mode" getter="cursor_is_block_mode" default="false">
-			If [code]true[/code], the caret displays as a rectangle.
-			If [code]false[/code], the caret displays as a bar.
-		</member>
-		<member name="caret_mid_grapheme" type="bool" setter="set_mid_grapheme_caret_enabled" getter="get_mid_grapheme_caret_enabled" default="false">
+		<member name="caret_mid_grapheme" type="bool" setter="set_caret_mid_grapheme_enabled" getter="is_caret_mid_grapheme_enabled" default="false">
 			Allow moving caret, selecting and removing the individual composite character components.
 			Note: [kbd]Backspace[/kbd] is always removing individual composite character components.
 		</member>
-		<member name="caret_moving_by_right_click" type="bool" setter="set_right_click_moves_caret" getter="is_right_click_moving_caret" default="true">
-			If [code]true[/code], a right-click moves the cursor at the mouse position before displaying the context menu.
+		<member name="caret_move_on_right_click" type="bool" setter="set_move_caret_on_right_click_enabled" getter="is_move_caret_on_right_click_enabled" default="true">
+			If [code]true[/code], a right-click moves the caret at the mouse position before displaying the context menu.
 			If [code]false[/code], the context menu disregards mouse location.
+		</member>
+		<member name="caret_type" type="int" setter="set_caret_type" getter="get_caret_type" enum="TextEdit.CaretType" default="0">
+			Set the type of caret to draw.
 		</member>
 		<member name="context_menu_enabled" type="bool" setter="set_context_menu_enabled" getter="is_context_menu_enabled" default="true">
 			If [code]true[/code], a right-click displays the context menu.
@@ -667,9 +691,9 @@
 		</member>
 	</members>
 	<signals>
-		<signal name="cursor_changed">
+		<signal name="caret_changed">
 			<description>
-				Emitted when the cursor changes.
+				Emitted when the caret changes position.
 			</description>
 		</signal>
 		<signal name="gutter_added">
@@ -707,6 +731,12 @@
 		</constant>
 		<constant name="SEARCH_BACKWARDS" value="4" enum="SearchFlags">
 			Search from end to beginning.
+		</constant>
+		<constant name="CARET_TYPE_LINE" value="0" enum="CaretType">
+			Vertical line caret.
+		</constant>
+		<constant name="CARET_TYPE_BLOCK" value="1" enum="CaretType">
+			Block caret.
 		</constant>
 		<constant name="SELECTION_MODE_NONE" value="0" enum="SelectionMode">
 		</constant>
