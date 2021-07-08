@@ -1210,7 +1210,9 @@ void SceneTreeDock::_notification(int p_what) {
 			HBoxContainer *top_row = memnew(HBoxContainer);
 			top_row->set_name("NodeShortcutsTopRow");
 			top_row->set_h_size_flags(SIZE_EXPAND_FILL);
-			top_row->add_child(memnew(Label(TTR("Create Root Node:"))));
+			Label *l = memnew(Label(TTR("Create Root Node:")));
+			l->set_theme_type_variation("HeaderSmall");
+			top_row->add_child(l);
 			top_row->add_spacer();
 
 			Button *node_shortcuts_toggle = memnew(Button);

@@ -1510,7 +1510,9 @@ EditorFileDialog::EditorFileDialog() {
 	dir_next->connect("pressed", callable_mp(this, &EditorFileDialog::_go_forward));
 	dir_up->connect("pressed", callable_mp(this, &EditorFileDialog::_go_up));
 
-	pathhb->add_child(memnew(Label(TTR("Path:"))));
+	Label *l = memnew(Label(TTR("Path:")));
+	l->set_theme_type_variation("HeaderSmall");
+	pathhb->add_child(l);
 
 	drives_container = memnew(HBoxContainer);
 	pathhb->add_child(drives_container);
@@ -1591,7 +1593,11 @@ EditorFileDialog::EditorFileDialog() {
 	fav_vb->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	HBoxContainer *fav_hb = memnew(HBoxContainer);
 	fav_vb->add_child(fav_hb);
-	fav_hb->add_child(memnew(Label(TTR("Favorites:"))));
+
+	l = memnew(Label(TTR("Favorites:")));
+	l->set_theme_type_variation("HeaderSmall");
+	fav_hb->add_child(l);
+
 	fav_hb->add_spacer();
 	fav_up = memnew(Button);
 	fav_up->set_flat(true);
@@ -1626,7 +1632,10 @@ EditorFileDialog::EditorFileDialog() {
 
 	VBoxContainer *list_vb = memnew(VBoxContainer);
 	list_vb->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-	list_vb->add_child(memnew(Label(TTR("Directories & Files:"))));
+
+	l = memnew(Label(TTR("Directories & Files:")));
+	l->set_theme_type_variation("HeaderSmall");
+	list_vb->add_child(l);
 	preview_hb->add_child(list_vb);
 
 	// Item (files and folders) list with context menu.
@@ -1653,7 +1662,11 @@ EditorFileDialog::EditorFileDialog() {
 	preview_vb->hide();
 
 	file_box = memnew(HBoxContainer);
-	file_box->add_child(memnew(Label(TTR("File:"))));
+
+	l = memnew(Label(TTR("File:")));
+	l->set_theme_type_variation("HeaderSmall");
+	file_box->add_child(l);
+
 	file = memnew(LineEdit);
 	file->set_structured_text_bidi_override(Control::STRUCTURED_TEXT_FILE);
 	file->set_stretch_ratio(4);

@@ -631,6 +631,7 @@ InputEventConfigurationDialog::InputEventConfigurationDialog() {
 	additional_options_container->hide();
 
 	Label *opts_label = memnew(Label);
+	opts_label->set_theme_type_variation("HeaderSmall");
 	opts_label->set_text("Additional Options");
 	additional_options_container->add_child(opts_label);
 
@@ -639,6 +640,7 @@ InputEventConfigurationDialog::InputEventConfigurationDialog() {
 	device_container->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 
 	Label *device_label = memnew(Label);
+	device_label->set_theme_type_variation("HeaderSmall");
 	device_label->set_text("Device:");
 	device_container->add_child(device_label);
 
@@ -858,6 +860,7 @@ Variant ActionMapEditor::get_drag_data_fw(const Point2 &p_point, Control *p_from
 
 	String name = selected->get_text(0);
 	Label *label = memnew(Label(name));
+	label->set_theme_type_variation("HeaderSmall");
 	label->set_modulate(Color(1, 1, 1, 1.0f));
 	action_tree->set_drag_preview(label);
 

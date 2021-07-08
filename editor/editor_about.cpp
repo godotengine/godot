@@ -92,6 +92,7 @@ ScrollContainer *EditorAbout::_populate_list(const String &p_name, const List<St
 		const char *const *names_ptr = p_src[i];
 		if (*names_ptr) {
 			Label *lbl = memnew(Label);
+			lbl->set_theme_type_variation("HeaderSmall");
 			lbl->set_text(p_sections[i]);
 			vbc->add_child(lbl);
 
