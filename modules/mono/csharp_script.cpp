@@ -1510,6 +1510,7 @@ void CSharpLanguage::free_instance_binding_data(void *p_data) {
 }
 
 void CSharpLanguage::refcount_incremented_instance_binding(Object *p_object) {
+#if 0
 	RefCounted *rc_owner = Object::cast_to<RefCounted>(p_object);
 
 #ifdef DEBUG_ENABLED
@@ -1544,9 +1545,11 @@ void CSharpLanguage::refcount_incremented_instance_binding(Object *p_object) {
 		gchandle.release();
 		gchandle = strong_gchandle;
 	}
+#endif
 }
 
 bool CSharpLanguage::refcount_decremented_instance_binding(Object *p_object) {
+#if 0
 	RefCounted *rc_owner = Object::cast_to<RefCounted>(p_object);
 
 #ifdef DEBUG_ENABLED
@@ -1586,6 +1589,8 @@ bool CSharpLanguage::refcount_decremented_instance_binding(Object *p_object) {
 	}
 
 	return refcount == 0;
+#endif
+	return false;
 }
 
 CSharpInstance *CSharpInstance::create_for_managed_type(Object *p_owner, CSharpScript *p_script, const MonoGCHandleData &p_gchandle) {
@@ -2264,8 +2269,10 @@ CSharpInstance::~CSharpInstance() {
 		// Otherwise, the unsafe reference debug checks will incorrectly detect a bug.
 		bool die = _unreference_owner_unsafe();
 		CRASH_COND(die); // `owner_keep_alive` holds a reference, so it can't die
-
+#if 0
 		void *data = owner->get_script_instance_binding(CSharpLanguage::get_singleton()->get_language_index());
+
+
 		CRASH_COND(data == nullptr);
 
 		CSharpScriptBinding &script_binding = ((Map<Object *, CSharpScriptBinding>::Element *)data)->get();
@@ -2283,6 +2290,7 @@ CSharpInstance::~CSharpInstance() {
 #ifdef DEBUG_ENABLED
 		// The "instance binding" holds a reference so the refcount should be at least 2 before `scope_keep_owner_alive` goes out of scope
 		CRASH_COND(rc_owner->reference_get_count() <= 1);
+#endif
 #endif
 	}
 
@@ -3101,7 +3109,7 @@ CSharpInstance *CSharpScript::_create_instance(const Variant **p_args, int p_arg
 		// Hold it alive. Important if we have to dispose a script instance binding before creating the CSharpInstance.
 		ref = Ref<RefCounted>(static_cast<RefCounted *>(p_owner));
 	}
-
+#if 0
 	// If the object had a script instance binding, dispose it before adding the CSharpInstance
 	if (p_owner->has_script_instance_binding(CSharpLanguage::get_singleton()->get_language_index())) {
 		void *data = p_owner->get_script_instance_binding(CSharpLanguage::get_singleton()->get_language_index());
@@ -3123,7 +3131,7 @@ CSharpInstance *CSharpScript::_create_instance(const Variant **p_args, int p_arg
 			script_binding.inited = false;
 		}
 	}
-
+#endif
 	CSharpInstance *instance = memnew(CSharpInstance(Ref<CSharpScript>(this)));
 	instance->base_ref_counted = p_is_ref_counted;
 	instance->owner = p_owner;

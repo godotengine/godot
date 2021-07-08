@@ -65,13 +65,8 @@ bool RefCounted::reference() {
 		if (_get_extension() && _get_extension()->reference) {
 			_get_extension()->reference(_get_extension_instance());
 		}
-		if (instance_binding_count.get() > 0 && !ScriptServer::are_languages_finished()) {
-			for (int i = 0; i < MAX_SCRIPT_INSTANCE_BINDINGS; i++) {
-				if (_script_instance_bindings[i]) {
-					ScriptServer::get_language(i)->refcount_incremented_instance_binding(this);
-				}
-			}
-		}
+
+		_instance_binding_reference(true);
 	}
 
 	return success;
@@ -89,14 +84,8 @@ bool RefCounted::unreference() {
 		if (_get_extension() && _get_extension()->unreference) {
 			_get_extension()->unreference(_get_extension_instance());
 		}
-		if (instance_binding_count.get() > 0 && !ScriptServer::are_languages_finished()) {
-			for (int i = 0; i < MAX_SCRIPT_INSTANCE_BINDINGS; i++) {
-				if (_script_instance_bindings[i]) {
-					bool script_ret = ScriptServer::get_language(i)->refcount_decremented_instance_binding(this);
-					die = die && script_ret;
-				}
-			}
-		}
+
+		die = die && _instance_binding_reference(false);
 	}
 
 	return die;

@@ -64,7 +64,7 @@ void godot_icall_Object_Disposed(MonoObject *p_obj, Object *p_ptr) {
 			return;
 		}
 	}
-
+#if 0
 	void *data = p_ptr->get_script_instance_binding(CSharpLanguage::get_singleton()->get_language_index());
 
 	if (data) {
@@ -76,6 +76,7 @@ void godot_icall_Object_Disposed(MonoObject *p_obj, Object *p_ptr) {
 			}
 		}
 	}
+#endif
 }
 
 void godot_icall_RefCounted_Disposed(MonoObject *p_obj, Object *p_ptr, MonoBoolean p_is_finalizer) {
@@ -84,7 +85,7 @@ void godot_icall_RefCounted_Disposed(MonoObject *p_obj, Object *p_ptr, MonoBoole
 	// This is only called with RefCounted derived classes
 	CRASH_COND(!Object::cast_to<RefCounted>(p_ptr));
 #endif
-
+#if 0
 	RefCounted *rc = static_cast<RefCounted *>(p_ptr);
 
 	if (rc->get_script_instance()) {
@@ -124,6 +125,7 @@ void godot_icall_RefCounted_Disposed(MonoObject *p_obj, Object *p_ptr, MonoBoole
 			}
 		}
 	}
+#endif
 }
 
 void godot_icall_Object_ConnectEventSignals(Object *p_ptr) {

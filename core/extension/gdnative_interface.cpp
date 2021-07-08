@@ -520,6 +520,11 @@ static GDNativeObjectPtr gdnative_global_get_singleton(const char *p_name) {
 	return (GDNativeObjectPtr)Engine::get_singleton()->get_singleton_object(String(p_name));
 }
 
+static void *gdnative_object_get_instance_binding(GDNativeObjectPtr p_instance, void *p_token, GDNativeInstanceBindingCallbacks *p_callbacks) {
+	Object *o = (Object *)p_instance;
+	return o->get_instance_binding(p_token, p_callbacks);
+}
+
 static GDNativeObjectPtr gdnative_object_get_instance_from_id(GDObjectInstanceID p_instance_id) {
 	return (GDNativeObjectPtr)ObjectDB::get_instance(ObjectID(p_instance_id));
 }
@@ -665,6 +670,7 @@ void gdnative_setup_interface(GDNativeInterface *p_interface) {
 	gdni.object_method_bind_ptrcall = gdnative_object_method_bind_ptrcall;
 	gdni.object_destroy = gdnative_object_destroy;
 	gdni.global_get_singleton = gdnative_global_get_singleton;
+	gdni.object_get_instance_binding = gdnative_object_get_instance_binding;
 
 	gdni.object_cast_to = gdnative_object_cast_to;
 	gdni.object_get_instance_from_id = gdnative_object_get_instance_from_id;

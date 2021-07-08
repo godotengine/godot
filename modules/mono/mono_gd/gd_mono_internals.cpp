@@ -45,7 +45,7 @@
 namespace GDMonoInternals {
 void tie_managed_to_unmanaged(MonoObject *managed, Object *unmanaged) {
 	// This method should not fail
-
+#if 0
 	CRASH_COND(!unmanaged);
 
 	// All mono objects created from the managed world (e.g.: 'new Player()')
@@ -108,6 +108,7 @@ void tie_managed_to_unmanaged(MonoObject *managed, Object *unmanaged) {
 	CSharpInstance *csharp_instance = CSharpInstance::create_for_managed_type(unmanaged, script.ptr(), gchandle);
 
 	unmanaged->set_script_and_instance(script, csharp_instance);
+#endif
 }
 
 void unhandled_exception(MonoException *p_exc) {
