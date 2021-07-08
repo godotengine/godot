@@ -72,6 +72,7 @@ private:
 	Ref<TCP_Server> server;
 	int latest_client_id = 0;
 	int next_client_id = 0;
+	int next_server_id = 0;
 
 	Ref<GDScriptTextDocument> text_document;
 	Ref<GDScriptWorkspace> workspace;
@@ -101,6 +102,7 @@ public:
 	void stop();
 
 	void notify_client(const String &p_method, const Variant &p_params = Variant(), int p_client_id = -1);
+	void request_client(const String &p_method, const Variant &p_params = Variant(), int p_client_id = -1);
 
 	bool is_smart_resolve_enabled() const;
 	bool is_goto_native_symbols_enabled() const;

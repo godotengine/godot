@@ -62,6 +62,8 @@ protected:
 
 	void list_script_files(const String &p_root_dir, List<String> &r_files);
 
+	void apply_new_signal(Object *obj, String function, PoolStringArray args);
+
 public:
 	String root;
 	String root_uri;
