@@ -801,6 +801,30 @@ OS_Windows::OS_Windows(HINSTANCE _hInstance) {
 
 	DisplayServerWindows::register_windows_driver();
 
+	// Enable ANSI escape code support on Windows 10.
+	// This lets the engine and projects use ANSI escape codes to color text just like on macOS and Linux.
+	HANDLE stdoutHandle;
+	DWORD outModeInit;
+	DWORD outMode = 0;
+
+	stdoutHandle = GetStdHandle(STD_OUTPUT_HANDLE);
+
+	if (stdoutHandle == INVALID_HANDLE_VALUE) {
+		exit(GetLastError());
+	}
+
+	if (!GetConsoleMode(stdoutHandle, &outMode)) {
+		exit(GetLastError());
+	}
+
+	outModeInit = outMode;
+
+	outMode |= ENABLE_VIRTUAL_TERMINAL_PROCESSING;
+
+	if (!SetConsoleMode(stdoutHandle, outMode)) {
+		exit(GetLastError());
+	}
+
 	Vector<Logger *> loggers;
 	loggers.push_back(memnew(WindowsTerminalLogger));
 	_set_logger(memnew(CompositeLogger(loggers)));

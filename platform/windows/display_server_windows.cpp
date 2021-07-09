@@ -3349,6 +3349,7 @@ Vector<String> DisplayServerWindows::get_rendering_drivers_func() {
 
 DisplayServer *DisplayServerWindows::create_func(const String &p_rendering_driver, WindowMode p_mode, uint32_t p_flags, const Vector2i &p_resolution, Error &r_error) {
 	DisplayServer *ds = memnew(DisplayServerWindows(p_rendering_driver, p_mode, p_flags, p_resolution, r_error));
+	print_line("\x1b[0;92mGREEN TEXT\x1b[0m");
 	if (r_error != OK) {
 		ds->alert("Your video card driver does not support any of the supported Vulkan versions.\n"
 				  "Please update your drivers or if you have a very old or integrated GPU upgrade it.",
