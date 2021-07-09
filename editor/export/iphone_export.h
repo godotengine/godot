@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  export.h                                                             */
+/*  iphone_export.h                                                      */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,9 +28,9 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef OSX_EXPORT_H
-#define OSX_EXPORT_H
+#ifndef IPHONE_EXPORT_H
+#define IPHONE_EXPORT_H
 
-void register_osx_exporter();
+void register_iphone_exporter();
 
-#endif // OSX_EXPORT_H
+#endif // IPHONE_EXPORT_H

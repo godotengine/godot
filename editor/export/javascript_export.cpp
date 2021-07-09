@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  export.cpp                                                           */
+/*  javascript_export.cpp                                                */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,6 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
+#include "javascript_export.h"
+
 #include "core/io/image_loader.h"
 #include "core/io/json.h"
 #include "core/io/stream_peer_ssl.h"
@@ -35,9 +37,9 @@
 #include "core/io/zip_io.h"
 #include "editor/editor_export.h"
 #include "editor/editor_node.h"
+#include "editor/export/javascript_logo.gen.h"
+#include "editor/export/javascript_run_icon.gen.h"
 #include "main/splash.gen.h"
-#include "platform/javascript/logo.gen.h"
-#include "platform/javascript/run_icon.gen.h"
 
 class EditorHTTPServer : public Reference {
 private:

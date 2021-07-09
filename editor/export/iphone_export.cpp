@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  export.cpp                                                           */
+/*  iphone_export.cpp                                                    */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,7 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "export.h"
+#include "iphone_export.h"
+
 #include "core/io/image_loader.h"
 #include "core/io/marshalls.h"
 #include "core/io/resource_saver.h"
@@ -41,9 +42,9 @@
 #include "editor/editor_export.h"
 #include "editor/editor_node.h"
 #include "editor/editor_settings.h"
+#include "editor/export/iphone_logo.gen.h"
+#include "editor/export/iphone_plugin_config.h"
 #include "main/splash.gen.h"
-#include "platform/iphone/logo.gen.h"
-#include "platform/iphone/plugin/godot_plugin_config.h"
 #include "string.h"
 
 #include <sys/stat.h>
