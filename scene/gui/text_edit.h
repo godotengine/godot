@@ -188,6 +188,8 @@ private:
 	};
 
 	/* Text manipulation */
+	bool overtype_mode = false;
+
 	String cut_copy_line = "";
 
 	/* Caret. */
@@ -347,8 +349,6 @@ private:
 	bool highlight_all_occurrences = false;
 	bool scroll_past_end_of_file_enabled = false;
 	bool highlight_current_line = false;
-
-	bool insert_mode = false;
 
 	bool smooth_scroll_enabled = false;
 	bool scrolling = false;
@@ -525,6 +525,8 @@ protected:
 
 public:
 	/* Text manipulation */
+	void set_overtype_mode_enabled(const bool p_enabled);
+	bool is_overtype_mode_enabled() const;
 
 	// Overridable actions
 	void handle_unicode_input(const uint32_t p_unicode);
@@ -778,9 +780,6 @@ public:
 	bool is_drawing_tabs() const;
 	void set_draw_spaces(bool p_draw);
 	bool is_drawing_spaces() const;
-
-	void set_insert_mode(bool p_enabled);
-	bool is_insert_mode() const;
 
 	double get_v_scroll() const;
 	void set_v_scroll(double p_scroll);

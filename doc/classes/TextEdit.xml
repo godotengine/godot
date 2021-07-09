@@ -391,6 +391,13 @@
 				Returns if the given line is wrapped.
 			</description>
 		</method>
+		<method name="is_overtype_mode_enabled" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+				Gets if the user is in overtype mode.
+			</description>
+		</method>
 		<method name="menu_option">
 			<return type="void" />
 			<argument index="0" name="option" type="int" />
@@ -618,6 +625,15 @@
 			<argument index="1" name="value" type="int" />
 			<description>
 				Sets OpenType feature [code]tag[/code]. More info: [url=https://docs.microsoft.com/en-us/typography/opentype/spec/featuretags]OpenType feature tags[/url].
+			</description>
+		</method>
+		<method name="set_overtype_mode_enabled">
+			<return type="void">
+			</return>
+			<argument index="0" name="enabled" type="bool">
+			</argument>
+			<description>
+				If [code]True[/code] set the user into overtype mode. When the user types it will override existing text.
 			</description>
 		</method>
 		<method name="set_selection_mode">

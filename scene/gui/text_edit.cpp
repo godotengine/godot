@@ -1222,12 +1222,12 @@ void TextEdit::_notification(int p_what) {
 							if (caret.draw_pos.x >= xmargin_beg && caret.draw_pos.x < xmargin_end) {
 								caret.visible = true;
 								if (draw_caret) {
-									if (caret_type == CaretType::CARET_TYPE_BLOCK || insert_mode) {
+									if (caret_type == CaretType::CARET_TYPE_BLOCK || overtype_mode) {
 										//Block or underline caret, draw trailing carets at full height.
 										int h = cache.font->get_height(cache.font_size);
 
 										if (t_caret != Rect2()) {
-											if (insert_mode) {
+											if (overtype_mode) {
 												t_caret.position.y = TS->shaped_text_get_descent(rid);
 												t_caret.size.y = caret_width;
 											} else {
@@ -1238,7 +1238,7 @@ void TextEdit::_notification(int p_what) {
 
 											draw_rect(t_caret, caret_color, false);
 										} else { // End of the line.
-											if (insert_mode) {
+											if (overtype_mode) {
 												l_caret.position.y = TS->shaped_text_get_descent(rid);
 												l_caret.size.y = caret_width;
 											} else {
@@ -2287,7 +2287,7 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 			return;
 		}
 		if (k->is_action("ui_text_toggle_insert_mode", true)) {
-			set_insert_mode(!insert_mode);
+			set_overtype_mode_enabled(!overtype_mode);
 			accept_event();
 			return;
 		}
@@ -3254,6 +3254,14 @@ void TextEdit::_update_caches() {
 }
 
 /* Text manipulation */
+void TextEdit::set_overtype_mode_enabled(const bool p_enabled) {
+	overtype_mode = p_enabled;
+	update();
+}
+
+bool TextEdit::is_overtype_mode_enabled() const {
+	return overtype_mode;
+}
 
 // Overridable actions
 void TextEdit::handle_unicode_input(const uint32_t p_unicode) {
@@ -4516,15 +4524,6 @@ bool TextEdit::is_drawing_spaces() const {
 	return draw_spaces;
 }
 
-void TextEdit::set_insert_mode(bool p_enabled) {
-	insert_mode = p_enabled;
-	update();
-}
-
-bool TextEdit::is_insert_mode() const {
-	return insert_mode;
-}
-
 bool TextEdit::is_insert_text_operation() {
 	return (current_op.type == TextOperation::TYPE_INSERT);
 }
@@ -5068,6 +5067,8 @@ void TextEdit::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_overriding_selected_font_color"), &TextEdit::is_overriding_selected_font_color);
 
 	/* Text manipulation */
+	ClassDB::bind_method(D_METHOD("set_overtype_mode_enabled", "enabled"), &TextEdit::set_overtype_mode_enabled);
+	ClassDB::bind_method(D_METHOD("is_overtype_mode_enabled"), &TextEdit::is_overtype_mode_enabled);
 
 	// Overridable actions
 	ClassDB::bind_method(D_METHOD("backspace"), &TextEdit::backspace);
@@ -5441,7 +5442,7 @@ void TextEdit::_handle_unicode_input(const uint32_t p_unicode) {
 	}
 
 	/* Remove the old character if in insert mode and no selection. */
-	if (insert_mode && !had_selection) {
+	if (overtype_mode && !had_selection) {
 		begin_complex_operation();
 
 		/* Make sure we don't try and remove empty space. */
@@ -5455,7 +5456,7 @@ void TextEdit::_handle_unicode_input(const uint32_t p_unicode) {
 	const char32_t chr[2] = { (char32_t)p_unicode, 0 };
 	insert_text_at_caret(chr);
 
-	if ((insert_mode && !had_selection) || (had_selection)) {
+	if ((overtype_mode && !had_selection) || (had_selection)) {
 		end_complex_operation();
 	}
 }

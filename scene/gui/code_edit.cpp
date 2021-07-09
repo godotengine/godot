@@ -555,7 +555,7 @@ void CodeEdit::_handle_unicode_input(const uint32_t p_unicode) {
 	}
 
 	/* Remove the old character if in insert mode and no selection. */
-	if (is_insert_mode() && !had_selection) {
+	if (is_overtype_mode_enabled() && !had_selection) {
 		begin_complex_operation();
 
 		/* Make sure we don't try and remove empty space. */
@@ -594,7 +594,7 @@ void CodeEdit::_handle_unicode_input(const uint32_t p_unicode) {
 		insert_text_at_caret(chr);
 	}
 
-	if ((is_insert_mode() && !had_selection) || (had_selection)) {
+	if ((is_overtype_mode_enabled() && !had_selection) || (had_selection)) {
 		end_complex_operation();
 	}
 }
