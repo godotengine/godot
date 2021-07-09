@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  export.h                                                             */
+/*  register_exporters.h                                                 */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,9 +28,9 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef LINUXBSD_EXPORT_H
-#define LINUXBSD_EXPORT_H
+#ifndef REGISTER_EXPORTERS_H
+#define REGISTER_EXPORTERS_H
 
-void register_linuxbsd_exporter();
+void register_exporters();
 
-#endif // LINUXBSD_EXPORT_H
+#endif // REGISTER_EXPORTERS_H

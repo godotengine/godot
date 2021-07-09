@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  export.h                                                             */
+/*  windows_export.h                                                     */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,4 +28,9 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-void register_javascript_exporter();
+#ifndef WINDOWS_EXPORT_H
+#define WINDOWS_EXPORT_H
+
+void register_windows_exporter();
+
+#endif // WINDOWS_EXPORT_H

@@ -94,6 +94,7 @@
 #include "editor/editor_spin_slider.h"
 #include "editor/editor_themes.h"
 #include "editor/editor_translation_parser.h"
+#include "editor/export/register_exporters.h"
 #include "editor/export_template_manager.h"
 #include "editor/filesystem_dock.h"
 #include "editor/import/editor_import_collada.h"
@@ -182,7 +183,6 @@
 #include "editor/project_export.h"
 #include "editor/project_settings_editor.h"
 #include "editor/quick_open.h"
-#include "editor/register_exporters.h"
 #include "editor/settings_config_dialog.h"
 
 #include <stdio.h>

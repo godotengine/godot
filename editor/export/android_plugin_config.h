@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  godot_plugin_config.h                                                */
+/*  android_plugin_config.h                                              */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef GODOT_PLUGIN_CONFIG_H
-#define GODOT_PLUGIN_CONFIG_H
+#ifndef ANDROID_PLUGIN_CONFIG_H
+#define ANDROID_PLUGIN_CONFIG_H
 
 #include "core/error/error_list.h"
 #include "core/io/config_file.h"
@@ -266,4 +266,4 @@ static inline String get_plugins_names(Vector<PluginConfigAndroid> plugins_confi
 	return plugins_names;
 }
 
-#endif // GODOT_PLUGIN_CONFIG_H
+#endif // ANDROID_PLUGIN_CONFIG_H

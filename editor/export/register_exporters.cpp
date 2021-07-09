@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  export.h                                                             */
+/*  register_exporters.cpp                                               */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,9 +28,22 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef UWP_EXPORT_H
-#define UWP_EXPORT_H
+#include "register_exporters.h"
 
-void register_uwp_exporter();
+#include "android_export.h"
+#include "iphone_export.h"
+#include "javascript_export.h"
+#include "linuxbsd_export.h"
+#include "osx_export.h"
+#include "uwp_export.h"
+#include "windows_export.h"
 
-#endif // UWP_EXPORT_H
+void register_exporters() {
+	register_android_exporter();
+	register_iphone_exporter();
+	register_javascript_exporter();
+	register_linuxbsd_exporter();
+	register_osx_exporter();
+	register_uwp_exporter();
+	register_windows_exporter();
+}

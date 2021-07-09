@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  export.cpp                                                           */
+/*  android_export.cpp                                                   */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,7 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "export.h"
+#include "android_export.h"
 
 #include "core/config/project_settings.h"
 #include "core/io/dir_access.h"
@@ -45,11 +45,11 @@
 #include "editor/editor_log.h"
 #include "editor/editor_node.h"
 #include "editor/editor_settings.h"
+#include "editor/export/android_logo.gen.h"
+#include "editor/export/android_plugin_config.h"
+#include "editor/export/android_run_icon.gen.h"
+#include "editor/export/gradle_export_util.h"
 #include "main/splash.gen.h"
-#include "platform/android/export/gradle_export_util.h"
-#include "platform/android/logo.gen.h"
-#include "platform/android/plugin/godot_plugin_config.h"
-#include "platform/android/run_icon.gen.h"
 
 #include <string.h>
 
