@@ -297,7 +297,7 @@ void CodeEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 				if (is_line_folded(line)) {
 					int wrap_index = get_line_wrap_index_at_column(line, col);
 					if (wrap_index == get_line_wrap_count(line)) {
-						int eol_icon_width = cache.folded_eol_icon->get_width();
+						int eol_icon_width = folded_eol_icon->get_width();
 						int left_margin = get_total_gutter_width() + eol_icon_width + get_line_width(line, wrap_index) - get_h_scroll();
 						if (mpos.x > left_margin && mpos.x <= left_margin + eol_icon_width + 3) {
 							unfold_line(line);
@@ -533,7 +533,7 @@ Control::CursorShape CodeEdit::get_cursor_shape(const Point2 &p_pos) const {
 	if (is_line_folded(line)) {
 		int wrap_index = get_line_wrap_index_at_column(line, col);
 		if (wrap_index == get_line_wrap_count(line)) {
-			int eol_icon_width = cache.folded_eol_icon->get_width();
+			int eol_icon_width = folded_eol_icon->get_width();
 			int left_margin = get_total_gutter_width() + eol_icon_width + get_line_width(line, wrap_index) - get_h_scroll();
 			if (p_pos.x > left_margin && p_pos.x <= left_margin + eol_icon_width + 3) {
 				return CURSOR_POINTING_HAND;
@@ -616,7 +616,7 @@ void CodeEdit::_backspace() {
 		return;
 	}
 
-	if (cl > 0 && is_line_hidden(cl - 1)) {
+	if (cl > 0 && _is_line_hidden(cl - 1)) {
 		unfold_line(get_caret_line() - 1);
 	}
 
@@ -1322,7 +1322,7 @@ void CodeEdit::_fold_gutter_draw_callback(int p_line, int p_gutter, Rect2 p_regi
 /* Line Folding */
 void CodeEdit::set_line_folding_enabled(bool p_enabled) {
 	line_folding_enabled = p_enabled;
-	set_hiding_enabled(p_enabled);
+	_set_hiding_enabled(p_enabled);
 }
 
 bool CodeEdit::is_line_folding_enabled() const {
@@ -1339,7 +1339,7 @@ bool CodeEdit::can_fold_line(int p_line) const {
 		return false;
 	}
 
-	if (is_line_hidden(p_line) || is_line_folded(p_line)) {
+	if (_is_line_hidden(p_line) || is_line_folded(p_line)) {
 		return false;
 	}
 
@@ -1419,22 +1419,22 @@ void CodeEdit::fold_line(int p_line) {
 	}
 
 	for (int i = p_line + 1; i <= end_line; i++) {
-		set_line_as_hidden(i, true);
+		_set_line_as_hidden(i, true);
 	}
 
 	/* Fix selection. */
 	if (has_selection()) {
-		if (is_line_hidden(get_selection_from_line()) && is_line_hidden(get_selection_to_line())) {
+		if (_is_line_hidden(get_selection_from_line()) && _is_line_hidden(get_selection_to_line())) {
 			deselect();
-		} else if (is_line_hidden(get_selection_from_line())) {
+		} else if (_is_line_hidden(get_selection_from_line())) {
 			select(p_line, 9999, get_selection_to_line(), get_selection_to_column());
-		} else if (is_line_hidden(get_selection_to_line())) {
+		} else if (_is_line_hidden(get_selection_to_line())) {
 			select(get_selection_from_line(), get_selection_from_column(), p_line, 9999);
 		}
 	}
 
 	/* Reset caret. */
-	if (is_line_hidden(get_caret_line())) {
+	if (_is_line_hidden(get_caret_line())) {
 		set_caret_line(p_line, false, false);
 		set_caret_column(get_line(p_line).length(), false);
 	}
@@ -1443,7 +1443,7 @@ void CodeEdit::fold_line(int p_line) {
 
 void CodeEdit::unfold_line(int p_line) {
 	ERR_FAIL_INDEX(p_line, get_line_count());
-	if (!is_line_folded(p_line) && !is_line_hidden(p_line)) {
+	if (!is_line_folded(p_line) && !_is_line_hidden(p_line)) {
 		return;
 	}
 
@@ -1456,10 +1456,10 @@ void CodeEdit::unfold_line(int p_line) {
 	fold_start = is_line_folded(fold_start) ? fold_start : p_line;
 
 	for (int i = fold_start + 1; i < get_line_count(); i++) {
-		if (!is_line_hidden(i)) {
+		if (!_is_line_hidden(i)) {
 			break;
 		}
-		set_line_as_hidden(i, false);
+		_set_line_as_hidden(i, false);
 	}
 	update();
 }
@@ -1472,7 +1472,7 @@ void CodeEdit::fold_all_lines() {
 }
 
 void CodeEdit::unfold_all_lines() {
-	unhide_all_lines();
+	_unhide_all_lines();
 }
 
 void CodeEdit::toggle_foldable_line(int p_line) {
@@ -1486,7 +1486,7 @@ void CodeEdit::toggle_foldable_line(int p_line) {
 
 bool CodeEdit::is_line_folded(int p_line) const {
 	ERR_FAIL_INDEX_V(p_line, get_line_count(), false);
-	return p_line + 1 < get_line_count() && !is_line_hidden(p_line) && is_line_hidden(p_line + 1);
+	return p_line + 1 < get_line_count() && !_is_line_hidden(p_line) && _is_line_hidden(p_line + 1);
 }
 
 TypedArray<int> CodeEdit::get_folded_lines() const {

@@ -339,7 +339,6 @@ private:
 	bool draw_spaces = false;
 	bool text_changed_dirty = false;
 	bool undo_enabled = true;
-	bool hiding_enabled = false;
 	bool draw_minimap = false;
 	int minimap_width = 80;
 	Point2 minimap_char_size = Point2(1, 2);
@@ -360,8 +359,6 @@ private:
 	double minimap_scroll_click_pos = 0.0;
 	float target_v_scroll = 0.0;
 	float v_scroll_speed = 80.0;
-
-	String lookup_symbol_word;
 
 	Timer *idle_detect;
 	HScrollBar *h_scroll;
@@ -464,7 +461,6 @@ protected:
 	struct Cache {
 		Ref<Texture2D> tab_icon;
 		Ref<Texture2D> space_icon;
-		Ref<Texture2D> folded_eol_icon;
 		Ref<StyleBox> style_normal;
 		Ref<StyleBox> style_focus;
 		Ref<StyleBox> style_readonly;
@@ -474,7 +470,6 @@ protected:
 		Color outline_color;
 		Color font_color;
 		Color font_readonly_color;
-		Color code_folding_color;
 		Color current_line_color;
 		Color brace_mismatch_color;
 		Color word_highlighted_color;
@@ -499,6 +494,23 @@ protected:
 	bool _get(const StringName &p_name, Variant &r_ret) const;
 	void _get_property_list(List<PropertyInfo> *p_list) const;
 
+	/* Internal API for CodeEdit, pending public API. */
+	// Line hiding.
+	Color code_folding_color = Color(1, 1, 1);
+	Ref<Texture2D> folded_eol_icon;
+
+	bool hiding_enabled = false;
+
+	void _set_hiding_enabled(bool p_enabled);
+	bool _is_hiding_enabled() const;
+
+	void _set_line_as_hidden(int p_line, bool p_hidden);
+	bool _is_line_hidden(int p_line) const;
+
+	void _unhide_all_lines();
+
+	// Symbol lookup.
+	String lookup_symbol_word;
 	void _set_symbol_lookup_word(const String &p_symbol);
 
 	/* Text manipulation */
@@ -716,9 +728,6 @@ public:
 	int get_line_count() const;
 	int get_line_width(int p_line, int p_wrap_offset = -1) const;
 
-	void set_line_as_hidden(int p_line, bool p_hidden);
-	bool is_line_hidden(int p_line) const;
-	void unhide_all_lines();
 	int num_lines_from(int p_line_from, int visible_amount) const;
 	int num_lines_from_rows(int p_line_from, int p_wrap_index_from, int visible_amount, int &wrap_index) const;
 	int get_last_unhidden_line() const;
@@ -799,9 +808,6 @@ public:
 
 	void set_minimap_width(int p_minimap_width);
 	int get_minimap_width() const;
-
-	void set_hiding_enabled(bool p_enabled);
-	bool is_hiding_enabled() const;
 
 	void set_tooltip_request_func(Object *p_obj, const StringName &p_function, const Variant &p_udata);
 

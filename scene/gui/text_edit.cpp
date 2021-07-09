@@ -671,7 +671,7 @@ void TextEdit::_notification(int p_what) {
 						break;
 					}
 
-					while (is_line_hidden(minimap_line)) {
+					while (_is_line_hidden(minimap_line)) {
 						minimap_line++;
 						if (minimap_line < 0 || minimap_line >= (int)text.size()) {
 							break;
@@ -815,7 +815,7 @@ void TextEdit::_notification(int p_what) {
 					continue;
 				}
 
-				while (is_line_hidden(line)) {
+				while (_is_line_hidden(line)) {
 					line++;
 					if (line < 0 || line >= (int)text.size()) {
 						break;
@@ -1175,13 +1175,13 @@ void TextEdit::_notification(int p_what) {
 					}
 
 					// is_line_folded
-					if (line_wrap_index == line_wrap_amount && line < text.size() - 1 && is_line_hidden(line + 1)) {
-						int xofs = char_ofs + char_margin + ofs_x + (cache.folded_eol_icon->get_width() / 2);
+					if (line_wrap_index == line_wrap_amount && line < text.size() - 1 && _is_line_hidden(line + 1)) {
+						int xofs = char_ofs + char_margin + ofs_x + (folded_eol_icon->get_width() / 2);
 						if (xofs >= xmargin_beg && xofs < xmargin_end) {
-							int yofs = (text_height - cache.folded_eol_icon->get_height()) / 2 - ldata->get_line_ascent(line_wrap_index);
-							Color eol_color = cache.code_folding_color;
+							int yofs = (text_height - folded_eol_icon->get_height()) / 2 - ldata->get_line_ascent(line_wrap_index);
+							Color eol_color = code_folding_color;
 							eol_color.a = 1;
-							cache.folded_eol_icon->draw(ci, Point2(xofs, ofs_y + yofs), eol_color);
+							folded_eol_icon->draw(ci, Point2(xofs, ofs_y + yofs), eol_color);
 						}
 					}
 
@@ -1802,7 +1802,7 @@ void TextEdit::_get_mouse_pos(const Point2i &p_mouse, int &r_row, int &r_col) co
 	int row = first_vis_line + Math::floor(rows);
 	int wrap_index = 0;
 
-	if (get_line_wrapping_mode() != LineWrappingMode::LINE_WRAPPING_NONE || is_hiding_enabled()) {
+	if (get_line_wrapping_mode() != LineWrappingMode::LINE_WRAPPING_NONE || _is_hiding_enabled()) {
 		int f_ofs = num_lines_from_rows(first_vis_line, caret.wrap_ofs, rows + (1 * SGN(rows)), wrap_index) - 1;
 		if (rows < 0) {
 			row = first_vis_line - f_ofs;
@@ -1880,7 +1880,7 @@ void TextEdit::_get_minimap_mouse_row(const Point2i &p_mouse, int &r_row) const 
 	int row = minimap_line + Math::floor(rows);
 	int wrap_index = 0;
 
-	if (get_line_wrapping_mode() != LineWrappingMode::LINE_WRAPPING_NONE || is_hiding_enabled()) {
+	if (get_line_wrapping_mode() != LineWrappingMode::LINE_WRAPPING_NONE || _is_hiding_enabled()) {
 		int f_ofs = num_lines_from_rows(minimap_line, caret.wrap_ofs, rows + (1 * SGN(rows)), wrap_index) - 1;
 		if (rows < 0) {
 			row = minimap_line - f_ofs;
@@ -2748,7 +2748,7 @@ int TextEdit::_get_minimap_visible_rows() const {
 int TextEdit::get_total_visible_rows() const {
 	// Returns the total amount of rows we need in the editor.
 	// This skips hidden lines and counts each wrapping of a line.
-	if (!is_hiding_enabled() && get_line_wrapping_mode() == LineWrappingMode::LINE_WRAPPING_NONE) {
+	if (!_is_hiding_enabled() && get_line_wrapping_mode() == LineWrappingMode::LINE_WRAPPING_NONE) {
 		return text.size();
 	}
 
@@ -2895,7 +2895,7 @@ void TextEdit::_scroll_moved(double p_to_val) {
 		int sc = 0;
 		int n_line;
 		for (n_line = 0; n_line < text.size(); n_line++) {
-			if (!is_line_hidden(n_line)) {
+			if (!_is_line_hidden(n_line)) {
 				sc++;
 				sc += get_line_wrap_count(n_line);
 				if (sc > v_scroll_i) {
@@ -3200,6 +3200,10 @@ bool TextEdit::is_readonly() const {
 }
 
 void TextEdit::_update_caches() {
+	/* Internal API for CodeEdit. */
+	code_folding_color = get_theme_color(SNAME("code_folding_color"), SNAME("CodeEdit"));
+	folded_eol_icon = get_theme_icon(SNAME("folded_eol_icon"), SNAME("CodeEdit"));
+
 	/* Caret */
 	caret_color = get_theme_color(SNAME("caret_color"));
 	caret_background_color = get_theme_color(SNAME("caret_background_color"));
@@ -3218,7 +3222,6 @@ void TextEdit::_update_caches() {
 	cache.font_color = get_theme_color(SNAME("font_color"));
 	cache.font_readonly_color = get_theme_color(SNAME("font_readonly_color"));
 	cache.current_line_color = get_theme_color(SNAME("current_line_color"));
-	cache.code_folding_color = get_theme_color(SNAME("code_folding_color"), SNAME("CodeEdit"));
 	cache.brace_mismatch_color = get_theme_color(SNAME("brace_mismatch_color"), SNAME("CodeEdit"));
 	cache.word_highlighted_color = get_theme_color(SNAME("word_highlighted_color"));
 	cache.search_result_color = get_theme_color(SNAME("search_result_color"));
@@ -3231,7 +3234,6 @@ void TextEdit::_update_caches() {
 #endif
 	cache.tab_icon = get_theme_icon(SNAME("tab"));
 	cache.space_icon = get_theme_icon(SNAME("space"));
-	cache.folded_eol_icon = get_theme_icon(SNAME("folded_eol_icon"), SNAME("CodeEdit"));
 
 	TextServer::Direction dir;
 	if (text_direction == Control::TEXT_DIRECTION_INHERITED) {
@@ -3374,13 +3376,13 @@ void TextEdit::set_caret_line(int p_line, bool p_adjust_viewport, bool p_can_be_
 	}
 
 	if (!p_can_be_hidden) {
-		if (is_line_hidden(CLAMP(p_line, 0, text.size() - 1))) {
+		if (_is_line_hidden(CLAMP(p_line, 0, text.size() - 1))) {
 			int move_down = num_lines_from(p_line, 1) - 1;
-			if (p_line + move_down <= text.size() - 1 && !is_line_hidden(p_line + move_down)) {
+			if (p_line + move_down <= text.size() - 1 && !_is_line_hidden(p_line + move_down)) {
 				p_line += move_down;
 			} else {
 				int move_up = num_lines_from(p_line, -1) - 1;
-				if (p_line - move_up > 0 && !is_line_hidden(p_line - move_up)) {
+				if (p_line - move_up > 0 && !_is_line_hidden(p_line - move_up)) {
 					p_line -= move_up;
 				} else {
 					WARN_PRINT(("Caret set to hidden line " + itos(p_line) + " and there are no nonhidden lines."));
@@ -4182,32 +4184,11 @@ void TextEdit::_text_changed_emit() {
 	text_changed_dirty = false;
 }
 
-void TextEdit::set_line_as_hidden(int p_line, bool p_hidden) {
-	ERR_FAIL_INDEX(p_line, text.size());
-	if (is_hiding_enabled() || !p_hidden) {
-		text.set_hidden(p_line, p_hidden);
-	}
-	update();
-}
-
-bool TextEdit::is_line_hidden(int p_line) const {
-	ERR_FAIL_INDEX_V(p_line, text.size(), false);
-	return text.is_hidden(p_line);
-}
-
-void TextEdit::unhide_all_lines() {
-	for (int i = 0; i < text.size(); i++) {
-		text.set_hidden(i, false);
-	}
-	_update_scrollbars();
-	update();
-}
-
 int TextEdit::num_lines_from(int p_line_from, int visible_amount) const {
 	// Returns the number of lines (hidden and unhidden) from p_line_from to (p_line_from + visible_amount of unhidden lines).
 	ERR_FAIL_INDEX_V(p_line_from, text.size(), ABS(visible_amount));
 
-	if (!is_hiding_enabled()) {
+	if (!_is_hiding_enabled()) {
 		return ABS(visible_amount);
 	}
 
@@ -4216,7 +4197,7 @@ int TextEdit::num_lines_from(int p_line_from, int visible_amount) const {
 	if (visible_amount >= 0) {
 		for (int i = p_line_from; i < text.size(); i++) {
 			num_total++;
-			if (!is_line_hidden(i)) {
+			if (!_is_line_hidden(i)) {
 				num_visible++;
 			}
 			if (num_visible >= visible_amount) {
@@ -4227,7 +4208,7 @@ int TextEdit::num_lines_from(int p_line_from, int visible_amount) const {
 		visible_amount = ABS(visible_amount);
 		for (int i = p_line_from; i >= 0; i--) {
 			num_total++;
-			if (!is_line_hidden(i)) {
+			if (!_is_line_hidden(i)) {
 				num_visible++;
 			}
 			if (num_visible >= visible_amount) {
@@ -4244,7 +4225,7 @@ int TextEdit::num_lines_from_rows(int p_line_from, int p_wrap_index_from, int vi
 	wrap_index = 0;
 	ERR_FAIL_INDEX_V(p_line_from, text.size(), ABS(visible_amount));
 
-	if (!is_hiding_enabled() && get_line_wrapping_mode() == LineWrappingMode::LINE_WRAPPING_NONE) {
+	if (!_is_hiding_enabled() && get_line_wrapping_mode() == LineWrappingMode::LINE_WRAPPING_NONE) {
 		return ABS(visible_amount);
 	}
 
@@ -4258,7 +4239,7 @@ int TextEdit::num_lines_from_rows(int p_line_from, int p_wrap_index_from, int vi
 		num_visible -= p_wrap_index_from;
 		for (i = p_line_from; i < text.size(); i++) {
 			num_total++;
-			if (!is_line_hidden(i)) {
+			if (!_is_line_hidden(i)) {
 				num_visible++;
 				num_visible += get_line_wrap_count(i);
 			}
@@ -4273,7 +4254,7 @@ int TextEdit::num_lines_from_rows(int p_line_from, int p_wrap_index_from, int vi
 		num_visible -= get_line_wrap_count(p_line_from) - p_wrap_index_from;
 		for (i = p_line_from; i >= 0; i--) {
 			num_total++;
-			if (!is_line_hidden(i)) {
+			if (!_is_line_hidden(i)) {
 				num_visible++;
 				num_visible += get_line_wrap_count(i);
 			}
@@ -4289,13 +4270,13 @@ int TextEdit::num_lines_from_rows(int p_line_from, int p_wrap_index_from, int vi
 
 int TextEdit::get_last_unhidden_line() const {
 	// Returns the last line in the text that is not hidden.
-	if (!is_hiding_enabled()) {
+	if (!_is_hiding_enabled()) {
 		return text.size() - 1;
 	}
 
 	int last_line;
 	for (last_line = text.size() - 1; last_line > 0; last_line--) {
-		if (!is_line_hidden(last_line)) {
+		if (!_is_line_hidden(last_line)) {
 			break;
 		}
 	}
@@ -4561,7 +4542,7 @@ void TextEdit::tag_saved_version() {
 }
 
 double TextEdit::get_scroll_pos_for_line(int p_line, int p_wrap_index) const {
-	if (get_line_wrapping_mode() == LineWrappingMode::LINE_WRAPPING_NONE && !is_hiding_enabled()) {
+	if (get_line_wrapping_mode() == LineWrappingMode::LINE_WRAPPING_NONE && !_is_hiding_enabled()) {
 		return p_line;
 	}
 
@@ -4791,18 +4772,6 @@ int TextEdit::get_minimap_width() const {
 	return minimap_width;
 }
 
-void TextEdit::set_hiding_enabled(bool p_enabled) {
-	if (!p_enabled) {
-		unhide_all_lines();
-	}
-	hiding_enabled = p_enabled;
-	update();
-}
-
-bool TextEdit::is_hiding_enabled() const {
-	return hiding_enabled;
-}
-
 void TextEdit::set_highlight_current_line(bool p_enabled) {
 	highlight_current_line = p_enabled;
 	update();
@@ -4941,11 +4910,6 @@ void TextEdit::menu_option(int p_option) {
 			}
 		}
 	}
-}
-
-void TextEdit::_set_symbol_lookup_word(const String &p_symbol) {
-	lookup_symbol_word = p_symbol;
-	update();
 }
 
 void TextEdit::set_context_menu_enabled(bool p_enable) {
@@ -5421,6 +5385,47 @@ void TextEdit::_ensure_menu() {
 	menu_dir->set_item_checked(menu_dir->get_item_index(MENU_DIR_RTL), text_direction == TEXT_DIRECTION_RTL);
 }
 
+/* Internal API for CodeEdit. */
+// Line hiding.
+void TextEdit::_set_hiding_enabled(bool p_enabled) {
+	if (!p_enabled) {
+		_unhide_all_lines();
+	}
+	hiding_enabled = p_enabled;
+	update();
+}
+
+bool TextEdit::_is_hiding_enabled() const {
+	return hiding_enabled;
+}
+
+bool TextEdit::_is_line_hidden(int p_line) const {
+	ERR_FAIL_INDEX_V(p_line, text.size(), false);
+	return text.is_hidden(p_line);
+}
+
+void TextEdit::_unhide_all_lines() {
+	for (int i = 0; i < text.size(); i++) {
+		text.set_hidden(i, false);
+	}
+	_update_scrollbars();
+	update();
+}
+
+void TextEdit::_set_line_as_hidden(int p_line, bool p_hidden) {
+	ERR_FAIL_INDEX(p_line, text.size());
+	if (_is_hiding_enabled() || !p_hidden) {
+		text.set_hidden(p_line, p_hidden);
+	}
+	update();
+}
+
+// Symbol lookup.
+void TextEdit::_set_symbol_lookup_word(const String &p_symbol) {
+	lookup_symbol_word = p_symbol;
+	update();
+}
+
 /* Text manipulation */
 
 // Overridable actions
@@ -5477,8 +5482,8 @@ void TextEdit::_backspace() {
 
 	merge_gutters(cl, prev_line);
 
-	if (is_line_hidden(cl)) {
-		set_line_as_hidden(prev_line, true);
+	if (_is_line_hidden(cl)) {
+		_set_line_as_hidden(prev_line, true);
 	}
 	_remove_text(prev_line, prev_column, cl, cc);
 
