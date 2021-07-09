@@ -44,6 +44,38 @@ void FileDialog::popup_file_dialog() {
 	popup_centered_clamped(Size2i(700, 500), 0.8f);
 }
 
+void FileDialog::popup(const Rect2i &p_rect) {
+	if (access == ACCESS_FILESYSTEM && DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_NATIVE_DIALOG) && (use_native_dialog || OS::get_singleton()->is_sandboxed())) {
+		DisplayServer::get_singleton()->file_dialog_show(get_title(), dir->get_text(), file->get_text().get_file(), show_hidden_files, DisplayServer::FileDialogMode(mode), filters, callable_mp(this, &FileDialog::_native_dialog_cb));
+	} else {
+		ConfirmationDialog::popup(p_rect);
+	}
+}
+
+void FileDialog::_native_dialog_cb(bool p_ok, const Vector<String> &p_files) {
+	if (p_ok) {
+		if (p_files.size() > 0) {
+			String f = p_files[0];
+			if (mode == FILE_MODE_OPEN_FILES) {
+				emit_signal("files_selected", p_files);
+			} else {
+				if (mode == FILE_MODE_SAVE_FILE) {
+					emit_signal("file_selected", f);
+				} else if ((mode == FILE_MODE_OPEN_ANY || mode == FILE_MODE_OPEN_FILE) && dir_access->file_exists(f)) {
+					emit_signal("file_selected", f);
+				} else if (mode == FILE_MODE_OPEN_ANY || mode == FILE_MODE_OPEN_DIR) {
+					emit_signal("dir_selected", f);
+				}
+			}
+			file->set_text(f);
+			dir->set_text(f.get_base_dir());
+		}
+	} else {
+		file->set_text("");
+		emit_signal("cancelled");
+	}
+}
+
 VBoxContainer *FileDialog::get_vbox() {
 	return vbox;
 }
@@ -878,6 +910,8 @@ void FileDialog::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_access"), &FileDialog::get_access);
 	ClassDB::bind_method(D_METHOD("set_show_hidden_files", "show"), &FileDialog::set_show_hidden_files);
 	ClassDB::bind_method(D_METHOD("is_showing_hidden_files"), &FileDialog::is_showing_hidden_files);
+	ClassDB::bind_method(D_METHOD("set_use_native_dialog", "native"), &FileDialog::set_use_native_dialog);
+	ClassDB::bind_method(D_METHOD("get_use_native_dialog"), &FileDialog::get_use_native_dialog);
 	ClassDB::bind_method(D_METHOD("_update_file_name"), &FileDialog::update_file_name);
 	ClassDB::bind_method(D_METHOD("_update_dir"), &FileDialog::update_dir);
 	ClassDB::bind_method(D_METHOD("_update_file_list"), &FileDialog::update_file_list);
@@ -890,6 +924,7 @@ void FileDialog::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "access", PROPERTY_HINT_ENUM, "Resources,User data,File system"), "set_access", "get_access");
 	ADD_PROPERTY(PropertyInfo(Variant::PACKED_STRING_ARRAY, "filters"), "set_filters", "get_filters");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "show_hidden_files"), "set_show_hidden_files", "is_showing_hidden_files");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_native_dialog"), "set_use_native_dialog", "get_use_native_dialog");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "current_dir"), "set_current_dir", "get_current_dir");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "current_file"), "set_current_file", "get_current_file");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "current_path"), "set_current_path", "get_current_path");
@@ -920,6 +955,14 @@ bool FileDialog::is_showing_hidden_files() const {
 
 void FileDialog::set_default_show_hidden_files(bool p_show) {
 	default_show_hidden_files = p_show;
+}
+
+void FileDialog::set_use_native_dialog(bool p_native) {
+	use_native_dialog = p_native;
+}
+
+bool FileDialog::get_use_native_dialog() const {
+	return use_native_dialog;
 }
 
 FileDialog::FileDialog() {

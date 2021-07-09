@@ -119,6 +119,36 @@ String OS_OSX::get_unique_id() const {
 	return serial_number;
 }
 
+bool OS_OSX::is_sandboxed() const {
+	return has_environment("APP_SANDBOX_CONTAINER_ID");
+}
+
+Vector<String> OS_OSX::get_granted_permissions() const {
+	Vector<String> ret;
+
+	if (is_sandboxed()) {
+		NSArray *bookmarks = [[NSUserDefaults standardUserDefaults] arrayForKey:@"sec_bookmarks"];
+		for (id bookmark in bookmarks) {
+			NSError *error = nil;
+			BOOL isStale = NO;
+			NSURL *url = [NSURL URLByResolvingBookmarkData:bookmark options:NSURLBookmarkResolutionWithSecurityScope relativeToURL:nil bookmarkDataIsStale:&isStale error:&error];
+			if (!error && !isStale) {
+				String url_string;
+				url_string.parse_utf8([[url path] UTF8String]);
+				ret.push_back(url_string);
+			}
+		}
+	}
+
+	return ret;
+}
+
+void OS_OSX::revoke_granted_permissions() {
+	if (is_sandboxed()) {
+		[[NSUserDefaults standardUserDefaults] setObject:nil forKey:@"sec_bookmarks"];
+	}
+}
+
 void OS_OSX::initialize_core() {
 	OS_Unix::initialize_core();
 
@@ -139,6 +169,18 @@ void OS_OSX::initialize() {
 }
 
 void OS_OSX::finalize() {
+	if (is_sandboxed()) {
+		NSArray *bookmarks = [[NSUserDefaults standardUserDefaults] arrayForKey:@"sec_bookmarks"];
+		for (id bookmark in bookmarks) {
+			NSError *error = nil;
+			BOOL isStale = NO;
+			NSURL *url = [NSURL URLByResolvingBookmarkData:bookmark options:NSURLBookmarkResolutionWithSecurityScope relativeToURL:nil bookmarkDataIsStale:&isStale error:&error];
+			if (!error && !isStale) {
+				[url stopAccessingSecurityScopedResource];
+			}
+		}
+	}
+
 #ifdef COREMIDI_ENABLED
 	midi_driver.close();
 #endif
@@ -360,6 +402,23 @@ Error OS_OSX::move_to_trash(const String &p_path) {
 }
 
 OS_OSX::OS_OSX() {
+	if (is_sandboxed()) {
+		// Load security-scoped bookmarks, request access, remove stale or invalid bookmarks.
+		NSArray *bookmarks = [[NSUserDefaults standardUserDefaults] arrayForKey:@"sec_bookmarks"];
+		NSMutableArray *new_bookmarks = [[NSMutableArray alloc] init];
+		for (id bookmark in bookmarks) {
+			NSError *error = nil;
+			BOOL isStale = NO;
+			NSURL *url = [NSURL URLByResolvingBookmarkData:bookmark options:NSURLBookmarkResolutionWithSecurityScope relativeToURL:nil bookmarkDataIsStale:&isStale error:&error];
+			if (!error && !isStale) {
+				if ([url startAccessingSecurityScopedResource]) {
+					[new_bookmarks addObject:bookmark];
+				}
+			}
+		}
+		[[NSUserDefaults standardUserDefaults] setObject:new_bookmarks forKey:@"sec_bookmarks"];
+	}
+
 	main_loop = nullptr;
 	force_quit = false;
 

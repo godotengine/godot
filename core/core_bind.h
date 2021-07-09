@@ -238,10 +238,12 @@ public:
 	Thread::ID get_thread_caller_id() const;
 
 	bool has_feature(const String &p_feature) const;
+	bool is_sandboxed() const;
 
 	bool request_permission(const String &p_name);
 	bool request_permissions();
 	Vector<String> get_granted_permissions() const;
+	void revoke_granted_permissions();
 
 	static _OS *get_singleton() { return singleton; }
 

@@ -291,6 +291,10 @@ bool _OS::has_feature(const String &p_feature) const {
 	return OS::get_singleton()->has_feature(p_feature);
 }
 
+bool _OS::is_sandboxed() const {
+	return OS::get_singleton()->is_sandboxed();
+}
+
 uint64_t _OS::get_static_memory_usage() const {
 	return OS::get_singleton()->get_static_memory_usage();
 }
@@ -476,6 +480,10 @@ Vector<String> _OS::get_granted_permissions() const {
 	return OS::get_singleton()->get_granted_permissions();
 }
 
+void _OS::revoke_granted_permissions() {
+	OS::get_singleton()->revoke_granted_permissions();
+}
+
 String _OS::get_unique_id() const {
 	return OS::get_singleton()->get_unique_id();
 }
@@ -550,10 +558,12 @@ void _OS::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_thread_caller_id"), &_OS::get_thread_caller_id);
 
 	ClassDB::bind_method(D_METHOD("has_feature", "tag_name"), &_OS::has_feature);
+	ClassDB::bind_method(D_METHOD("is_sandboxed"), &_OS::is_sandboxed);
 
 	ClassDB::bind_method(D_METHOD("request_permission", "name"), &_OS::request_permission);
 	ClassDB::bind_method(D_METHOD("request_permissions"), &_OS::request_permissions);
 	ClassDB::bind_method(D_METHOD("get_granted_permissions"), &_OS::get_granted_permissions);
+	ClassDB::bind_method(D_METHOD("revoke_granted_permissions"), &_OS::revoke_granted_permissions);
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "low_processor_usage_mode"), "set_low_processor_usage_mode", "is_in_low_processor_usage_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "low_processor_usage_mode_sleep_usec"), "set_low_processor_usage_mode_sleep_usec", "get_low_processor_usage_mode_sleep_usec");
