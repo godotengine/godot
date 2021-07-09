@@ -12,9 +12,6 @@ namespace Godot
         /// </summary>
         public Exception Exception { get; private set; }
 
-        internal UnhandledExceptionArgs(Exception exception)
-        {
-            Exception = exception;
-        }
+        internal UnhandledExceptionArgs(Exception exception) => Exception = exception;
     }
 }

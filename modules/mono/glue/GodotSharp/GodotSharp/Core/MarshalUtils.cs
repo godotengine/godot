@@ -5,9 +5,9 @@ using System.Collections.Generic;
 namespace Godot
 {
     using Array = Godot.Collections.Array;
-    using Dictionary = Godot.Collections.Dictionary;
+    using Dictionary = Collections.Dictionary;
 
-    static class MarshalUtils
+    internal static class MarshalUtils
     {
         /// <summary>
         /// Returns <see langword="true"/> if the generic type definition of <paramref name="type"/>
@@ -16,8 +16,8 @@ namespace Godot
         /// <exception cref="System.InvalidOperationException">
         /// <paramref name="type"/> is not a generic type. That is, IsGenericType returns false.
         /// </exception>
-        static bool TypeIsGenericArray(Type type) =>
-            type.GetGenericTypeDefinition() == typeof(Godot.Collections.Array<>);
+        private static bool TypeIsGenericArray(Type type) =>
+            type.GetGenericTypeDefinition() == typeof(Collections.Array<>);
 
         /// <summary>
         /// Returns <see langword="true"/> if the generic type definition of <paramref name="type"/>
@@ -26,41 +26,38 @@ namespace Godot
         /// <exception cref="System.InvalidOperationException">
         /// <paramref name="type"/> is not a generic type. That is, IsGenericType returns false.
         /// </exception>
-        static bool TypeIsGenericDictionary(Type type) =>
+        private static bool TypeIsGenericDictionary(Type type) =>
             type.GetGenericTypeDefinition() == typeof(Godot.Collections.Dictionary<,>);
 
-        static bool TypeIsSystemGenericList(Type type) =>
-            type.GetGenericTypeDefinition() == typeof(System.Collections.Generic.List<>);
+        private static bool TypeIsSystemGenericList(Type type) =>
+            type.GetGenericTypeDefinition() == typeof(List<>);
 
-        static bool TypeIsSystemGenericDictionary(Type type) =>
-            type.GetGenericTypeDefinition() == typeof(System.Collections.Generic.Dictionary<,>);
+        private static bool TypeIsSystemGenericDictionary(Type type) =>
+            type.GetGenericTypeDefinition() == typeof(Dictionary<,>);
 
-        static bool TypeIsGenericIEnumerable(Type type) => type.GetGenericTypeDefinition() == typeof(IEnumerable<>);
+        private static bool TypeIsGenericIEnumerable(Type type) =>
+            type.GetGenericTypeDefinition() == typeof(IEnumerable<>);
 
-        static bool TypeIsGenericICollection(Type type) => type.GetGenericTypeDefinition() == typeof(ICollection<>);
+        private static bool TypeIsGenericICollection(Type type) =>
+            type.GetGenericTypeDefinition() == typeof(ICollection<>);
 
-        static bool TypeIsGenericIDictionary(Type type) => type.GetGenericTypeDefinition() == typeof(IDictionary<,>);
+        private static bool TypeIsGenericIDictionary(Type type) =>
+            type.GetGenericTypeDefinition() == typeof(IDictionary<,>);
 
-        static void ArrayGetElementType(Type arrayType, out Type elementType)
-        {
+        private static void ArrayGetElementType(Type arrayType, out Type elementType) =>
             elementType = arrayType.GetGenericArguments()[0];
-        }
 
-        static void DictionaryGetKeyValueTypes(Type dictionaryType, out Type keyType, out Type valueType)
+        private static void DictionaryGetKeyValueTypes(Type dictionaryType, out Type keyType, out Type valueType)
         {
             var genericArgs = dictionaryType.GetGenericArguments();
             keyType = genericArgs[0];
             valueType = genericArgs[1];
         }
 
-        static Type MakeGenericArrayType(Type elemType)
-        {
-            return typeof(Godot.Collections.Array<>).MakeGenericType(elemType);
-        }
+        private static Type MakeGenericArrayType(Type elemType) =>
+            typeof(Collections.Array<>).MakeGenericType(elemType);
 
-        static Type MakeGenericDictionaryType(Type keyType, Type valueType)
-        {
-            return typeof(Godot.Collections.Dictionary<,>).MakeGenericType(keyType, valueType);
-        }
+        private static Type MakeGenericDictionaryType(Type keyType, Type valueType) =>
+            typeof(Godot.Collections.Dictionary<,>).MakeGenericType(keyType, valueType);
     }
 }

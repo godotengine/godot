@@ -10,7 +10,8 @@ namespace GodotTools.ProjectEditor
 {
     public static class ProjectExtensions
     {
-        public static ProjectItemElement FindItemOrNull(this ProjectRootElement root, string itemType, string include, bool noCondition = false)
+        public static ProjectItemElement FindItemOrNull(this ProjectRootElement root, string itemType, string include,
+            bool noCondition = false)
         {
             string normalizedInclude = include.NormalizePath();
 
@@ -34,7 +35,8 @@ namespace GodotTools.ProjectEditor
             return null;
         }
 
-        public static ProjectItemElement FindItemOrNullAbs(this ProjectRootElement root, string itemType, string include, bool noCondition = false)
+        public static ProjectItemElement FindItemOrNullAbs(this ProjectRootElement root, string itemType,
+            string include, bool noCondition = false)
         {
             string normalizedInclude = Path.GetFullPath(include).NormalizePath();
 
@@ -58,7 +60,8 @@ namespace GodotTools.ProjectEditor
             return null;
         }
 
-        public static IEnumerable<ProjectItemElement> FindAllItemsInFolder(this ProjectRootElement root, string itemType, string folder)
+        public static IEnumerable<ProjectItemElement> FindAllItemsInFolder(this ProjectRootElement root,
+            string itemType, string folder)
         {
             string absFolderNormalizedWithSep = Path.GetFullPath(folder).NormalizePath() + Path.DirectorySeparatorChar;
 

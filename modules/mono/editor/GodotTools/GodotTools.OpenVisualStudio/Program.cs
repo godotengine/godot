@@ -221,11 +221,10 @@ namespace GodotTools.OpenVisualStudio
             //
             // IOleMessageFilter functions
             // Handle incoming thread requests
-            int IOleMessageFilter.HandleInComingCall(int dwCallType, IntPtr hTaskCaller, int dwTickCount, IntPtr lpInterfaceInfo)
-            {
+            int IOleMessageFilter.HandleInComingCall(int dwCallType, IntPtr hTaskCaller, int dwTickCount,
+                IntPtr lpInterfaceInfo) =>
                 // Return the flag SERVERCALL_ISHANDLED
-                return 0;
-            }
+                0;
 
             // Thread call was rejected, so try again.
             int IOleMessageFilter.RetryRejectedCall(IntPtr hTaskCallee, int dwTickCount, int dwRejectType)
@@ -241,15 +240,14 @@ namespace GodotTools.OpenVisualStudio
                 return -1;
             }
 
-            int IOleMessageFilter.MessagePending(IntPtr hTaskCallee, int dwTickCount, int dwPendingType)
-            {
+            int IOleMessageFilter.MessagePending(IntPtr hTaskCallee, int dwTickCount, int dwPendingType) =>
                 // Return the flag PENDINGMSG_WAITDEFPROCESS
-                return 2;
-            }
+                2;
 
             // Implement the IOleMessageFilter interface
             [DllImport("ole32.dll")]
-            private static extern int CoRegisterMessageFilter(IOleMessageFilter newFilter, out IOleMessageFilter oldFilter);
+            private static extern int CoRegisterMessageFilter(IOleMessageFilter newFilter,
+                out IOleMessageFilter oldFilter);
         }
 
         [ComImport(), Guid("00000016-0000-0000-C000-000000000046"), InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]

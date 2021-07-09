@@ -37,14 +37,10 @@ namespace GodotTools.Internals
             GC.SuppressFinalize(this);
         }
 
-        public void Step(string state, int step = -1, bool forceRefresh = true)
-        {
+        public void Step(string state, int step = -1, bool forceRefresh = true) =>
             internal_Step(Task, state, step, forceRefresh);
-        }
 
-        public bool TryStep(string state, int step = -1, bool forceRefresh = true)
-        {
-            return internal_Step(Task, state, step, forceRefresh);
-        }
+        public bool TryStep(string state, int step = -1, bool forceRefresh = true) =>
+            internal_Step(Task, state, step, forceRefresh);
     }
 }

@@ -5,15 +5,9 @@ namespace Godot
 {
     internal class GodotTraceListener : TraceListener
     {
-        public override void Write(string message)
-        {
-            GD.PrintRaw(message);
-        }
+        public override void Write(string message) => GD.PrintRaw(message);
 
-        public override void WriteLine(string message)
-        {
-            GD.Print(message);
-        }
+        public override void WriteLine(string message) => GD.Print(message);
 
         public override void Fail(string message, string detailMessage)
         {
@@ -25,7 +19,7 @@ namespace Godot
 
             try
             {
-                var stackTrace = new StackTrace(true).ToString();
+                string stackTrace = new StackTrace(true).ToString();
                 GD.PrintErr(stackTrace);
             }
             catch

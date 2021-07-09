@@ -44,7 +44,8 @@ namespace GodotTools.Build
             }
         }
 
-        private static Process LaunchBuild(BuildInfo buildInfo, Action<string> stdOutHandler, Action<string> stdErrHandler)
+        private static Process LaunchBuild(BuildInfo buildInfo, Action<string> stdOutHandler,
+            Action<string> stdErrHandler)
         {
             (string msbuildPath, BuildTool buildTool) = MsBuildFinder.FindMsBuild();
 
@@ -77,7 +78,7 @@ namespace GodotTools.Build
             // Needed when running from Developer Command Prompt for VS
             RemovePlatformVariable(startInfo.EnvironmentVariables);
 
-            var process = new Process {StartInfo = startInfo};
+            var process = new Process { StartInfo = startInfo };
 
             if (stdOutHandler != null)
                 process.OutputDataReceived += (s, e) => stdOutHandler.Invoke(e.Data);
@@ -102,7 +103,8 @@ namespace GodotTools.Build
             }
         }
 
-        public static async Task<int> BuildAsync(BuildInfo buildInfo, Action<string> stdOutHandler, Action<string> stdErrHandler)
+        public static async Task<int> BuildAsync(BuildInfo buildInfo, Action<string> stdOutHandler,
+            Action<string> stdErrHandler)
         {
             using (var process = LaunchBuild(buildInfo, stdOutHandler, stdErrHandler))
             {

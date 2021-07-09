@@ -1,9 +1,9 @@
 using System;
-
 #if REAL_T_IS_DOUBLE
 using real_t = System.Double;
 #else
 using real_t = System.Single;
+
 #endif
 
 namespace Godot
@@ -15,12 +15,12 @@ namespace Godot
         /// <summary>
         /// The natural number `e`.
         /// </summary>
-        public const real_t E = (real_t) 2.7182818284590452353602874714M; // 2.7182817f and 2.718281828459045
+        public const real_t E = (real_t)2.7182818284590452353602874714M; // 2.7182817f and 2.718281828459045
 
         /// <summary>
         /// The square root of 2.
         /// </summary>
-        public const real_t Sqrt2 = (real_t) 1.4142135623730950488016887242M; // 1.4142136f and 1.414213562373095
+        public const real_t Sqrt2 = (real_t)1.4142135623730950488016887242M; // 1.4142136f and 1.414213562373095
 
         /// <summary>
         /// A very small number used for float comparison with error tolerance.
@@ -37,20 +37,14 @@ namespace Godot
         /// </summary>
         /// <param name="s">The input value.</param>
         /// <returns>The amount of digits.</returns>
-        public static int DecimalCount(real_t s)
-        {
-            return DecimalCount((decimal)s);
-        }
+        public static int DecimalCount(real_t s) => DecimalCount((decimal)s);
 
         /// <summary>
         /// Returns the amount of digits after the decimal place.
         /// </summary>
         /// <param name="s">The input <see cref="System.Decimal"/> value.</param>
         /// <returns>The amount of digits.</returns>
-        public static int DecimalCount(decimal s)
-        {
-            return BitConverter.GetBytes(decimal.GetBits(s)[3])[2];
-        }
+        public static int DecimalCount(decimal s) => BitConverter.GetBytes(decimal.GetBits(s)[3])[2];
 
         /// <summary>
         /// Rounds `s` upward (towards positive infinity).
@@ -59,10 +53,7 @@ namespace Godot
         /// </summary>
         /// <param name="s">The number to ceil.</param>
         /// <returns>The smallest whole number that is not less than `s`.</returns>
-        public static int CeilToInt(real_t s)
-        {
-            return (int)Math.Ceiling(s);
-        }
+        public static int CeilToInt(real_t s) => (int)Math.Ceiling(s);
 
         /// <summary>
         /// Rounds `s` downward (towards negative infinity).
@@ -71,20 +62,14 @@ namespace Godot
         /// </summary>
         /// <param name="s">The number to floor.</param>
         /// <returns>The largest whole number that is not more than `s`.</returns>
-        public static int FloorToInt(real_t s)
-        {
-            return (int)Math.Floor(s);
-        }
+        public static int FloorToInt(real_t s) => (int)Math.Floor(s);
 
         /// <summary>
         ///
         /// </summary>
         /// <param name="s"></param>
         /// <returns></returns>
-        public static int RoundToInt(real_t s)
-        {
-            return (int)Math.Round(s);
-        }
+        public static int RoundToInt(real_t s) => (int)Math.Round(s);
 
         /// <summary>
         /// Returns true if `a` and `b` are approximately equal to each other.
@@ -102,6 +87,7 @@ namespace Godot
             {
                 return true;
             }
+
             // Then check for approximate equality.
             return Abs(a - b) < tolerance;
         }

@@ -25,7 +25,8 @@ namespace Godot
             Trace.Listeners.Add(new GodotTraceListener());
         }
 
-        public static void GetStackFrameInfo(StackFrame frame, out string fileName, out int fileLineNumber, out string methodDecl)
+        public static void GetStackFrameInfo(StackFrame frame, out string fileName, out int fileLineNumber,
+            out string methodDecl)
         {
             fileName = frame.GetFileName();
             fileLineNumber = frame.GetFileLineNumber();

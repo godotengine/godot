@@ -5,56 +5,40 @@ namespace Godot
 {
     public class SignalAwaiter : IAwaiter<object[]>, IAwaitable<object[]>
     {
-        private bool completed;
-        private object[] result;
-        private Action action;
+        private bool _completed;
+        private object[] _result;
+        private Action _action;
 
-        public SignalAwaiter(Object source, string signal, Object target)
-        {
+        public SignalAwaiter(Object source, string signal, Object target) =>
             godot_icall_SignalAwaiter_connect(Object.GetPtr(source), signal, Object.GetPtr(target), this);
-        }
 
         [MethodImpl(MethodImplOptions.InternalCall)]
-        internal extern static Error godot_icall_SignalAwaiter_connect(IntPtr source, string signal, IntPtr target, SignalAwaiter awaiter);
+        internal static extern Error godot_icall_SignalAwaiter_connect(IntPtr source, string signal, IntPtr target,
+            SignalAwaiter awaiter);
 
-        public bool IsCompleted
-        {
-            get
-            {
-                return completed;
-            }
-        }
+        public bool IsCompleted => _completed;
 
-        public void OnCompleted(Action action)
-        {
-            this.action = action;
-        }
+        public void OnCompleted(Action action) => _action = action;
 
-        public object[] GetResult()
-        {
-            return result;
-        }
+        public object[] GetResult() => _result;
 
-        public IAwaiter<object[]> GetAwaiter()
-        {
-            return this;
-        }
+        public IAwaiter<object[]> GetAwaiter() => this;
 
         internal void SignalCallback(object[] args)
         {
-            completed = true;
-            result = args;
+            _completed = true;
+            _result = args;
 
-            if (action != null)
+            if (_action != null)
             {
-                action();
+                _action();
             }
         }
 
         internal void FailureCallback()
         {
-            action = null;
-            completed = true;
+            _action = null;
+            _completed = true;
         }
     }
 }

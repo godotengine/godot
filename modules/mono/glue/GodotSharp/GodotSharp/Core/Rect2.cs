@@ -4,6 +4,7 @@ using System.Runtime.InteropServices;
 using real_t = System.Double;
 #else
 using real_t = System.Single;
+
 #endif
 
 namespace Godot
@@ -25,8 +26,8 @@ namespace Godot
         /// <value>Directly uses a private field.</value>
         public Vector2 Position
         {
-            get { return _position; }
-            set { _position = value; }
+            get => _position;
+            set => _position = value;
         }
 
         /// <summary>
@@ -36,8 +37,8 @@ namespace Godot
         /// <value>Directly uses a private field.</value>
         public Vector2 Size
         {
-            get { return _size; }
-            set { _size = value; }
+            get => _size;
+            set => _size = value;
         }
 
         /// <summary>
@@ -47,18 +48,15 @@ namespace Godot
         /// <value>Getting is equivalent to `value = Position + Size`, setting is equivalent to `Size = value - Position`.</value>
         public Vector2 End
         {
-            get { return _position + _size; }
-            set { _size = value - _position; }
+            get => _position + _size;
+            set => _size = value - _position;
         }
 
         /// <summary>
         /// The area of this rect.
         /// </summary>
         /// <value>Equivalent to <see cref="GetArea()"/>.</value>
-        public real_t Area
-        {
-            get { return GetArea(); }
-        }
+        public real_t Area => GetArea();
 
         /// <summary>
         /// Returns a Rect2 with equivalent position and size, modified so that
@@ -68,7 +66,7 @@ namespace Godot
         public Rect2 Abs()
         {
             Vector2 end = End;
-            Vector2 topLeft = new Vector2(Mathf.Min(_position.x, end.x), Mathf.Min(_position.y, end.y));
+            var topLeft = new Vector2(Mathf.Min(_position.x, end.x), Mathf.Min(_position.y, end.y));
             return new Rect2(topLeft, _size.Abs());
         }
 
@@ -79,7 +77,7 @@ namespace Godot
         /// <returns>The clipped rect.</returns>
         public Rect2 Clip(Rect2 b)
         {
-            var newRect = b;
+            Rect2 newRect = b;
 
             if (!Intersects(newRect))
             {
@@ -103,12 +101,10 @@ namespace Godot
         /// </summary>
         /// <param name="b">The other rect that may be enclosed.</param>
         /// <returns>A bool for whether or not this rect encloses `b`.</returns>
-        public bool Encloses(Rect2 b)
-        {
-            return b._position.x >= _position.x && b._position.y >= _position.y &&
-               b._position.x + b._size.x < _position.x + _size.x &&
-               b._position.y + b._size.y < _position.y + _size.y;
-        }
+        public bool Encloses(Rect2 b) =>
+            b._position.x >= _position.x && b._position.y >= _position.y &&
+            b._position.x + b._size.x < _position.x + _size.x &&
+            b._position.y + b._size.y < _position.y + _size.y;
 
         /// <summary>
         /// Returns this Rect2 expanded to include a given point.
@@ -117,7 +113,7 @@ namespace Godot
         /// <returns>The expanded rect.</returns>
         public Rect2 Expand(Vector2 to)
         {
-            var expanded = this;
+            Rect2 expanded = this;
 
             Vector2 begin = expanded._position;
             Vector2 end = expanded._position + expanded._size;
@@ -126,6 +122,7 @@ namespace Godot
             {
                 begin.x = to.x;
             }
+
             if (to.y < begin.y)
             {
                 begin.y = to.y;
@@ -135,6 +132,7 @@ namespace Godot
             {
                 end.x = to.x;
             }
+
             if (to.y > end.y)
             {
                 end.y = to.y;
@@ -150,10 +148,7 @@ namespace Godot
         /// Returns the area of the Rect2.
         /// </summary>
         /// <returns>The area.</returns>
-        public real_t GetArea()
-        {
-            return _size.x * _size.y;
-        }
+        public real_t GetArea() => _size.x * _size.y;
 
         /// <summary>
         /// Returns a copy of the Rect2 grown a given amount of units towards all the sides.
@@ -162,7 +157,7 @@ namespace Godot
         /// <returns>The grown rect.</returns>
         public Rect2 Grow(real_t by)
         {
-            var g = this;
+            Rect2 g = this;
 
             g._position.x -= by;
             g._position.y -= by;
@@ -182,7 +177,7 @@ namespace Godot
         /// <returns>The grown rect.</returns>
         public Rect2 GrowIndividual(real_t left, real_t top, real_t right, real_t bottom)
         {
-            var g = this;
+            Rect2 g = this;
 
             g._position.x -= left;
             g._position.y -= top;
@@ -200,12 +195,12 @@ namespace Godot
         /// <returns>The grown rect.</returns>
         public Rect2 GrowMargin(Margin margin, real_t by)
         {
-            var g = this;
+            Rect2 g = this;
 
             g = g.GrowIndividual(Margin.Left == margin ? by : 0,
-                    Margin.Top == margin ? by : 0,
-                    Margin.Right == margin ? by : 0,
-                    Margin.Bottom == margin ? by : 0);
+                Margin.Top == margin ? by : 0,
+                Margin.Right == margin ? by : 0,
+                Margin.Bottom == margin ? by : 0);
 
             return g;
         }
@@ -214,10 +209,7 @@ namespace Godot
         /// Returns true if the Rect2 is flat or empty, or false otherwise.
         /// </summary>
         /// <returns>A bool for whether or not the rect has area.</returns>
-        public bool HasNoArea()
-        {
-            return _size.x <= 0 || _size.y <= 0;
-        }
+        public bool HasNoArea() => _size.x <= 0 || _size.y <= 0;
 
         /// <summary>
         /// Returns true if the Rect2 contains a point, or false otherwise.
@@ -257,14 +249,17 @@ namespace Godot
                 {
                     return false;
                 }
+
                 if (_position.x + _size.x < b._position.x)
                 {
                     return false;
                 }
+
                 if (_position.y > b._position.y + b._size.y)
                 {
                     return false;
                 }
+
                 if (_position.y + _size.y < b._position.y)
                 {
                     return false;
@@ -276,14 +271,17 @@ namespace Godot
                 {
                     return false;
                 }
+
                 if (_position.x + _size.x <= b._position.x)
                 {
                     return false;
                 }
+
                 if (_position.y >= b._position.y + b._size.y)
                 {
                     return false;
                 }
+
                 if (_position.y + _size.y <= b._position.y)
                 {
                     return false;
@@ -361,15 +359,9 @@ namespace Godot
             _size = new Vector2(width, height);
         }
 
-        public static bool operator ==(Rect2 left, Rect2 right)
-        {
-            return left.Equals(right);
-        }
+        public static bool operator ==(Rect2 left, Rect2 right) => left.Equals(right);
 
-        public static bool operator !=(Rect2 left, Rect2 right)
-        {
-            return !left.Equals(right);
-        }
+        public static bool operator !=(Rect2 left, Rect2 right) => !left.Equals(right);
 
         public override bool Equals(object obj)
         {
@@ -381,10 +373,7 @@ namespace Godot
             return false;
         }
 
-        public bool Equals(Rect2 other)
-        {
-            return _position.Equals(other._position) && _size.Equals(other._size);
-        }
+        public bool Equals(Rect2 other) => _position.Equals(other._position) && _size.Equals(other._size);
 
         /// <summary>
         /// Returns true if this rect and `other` are approximately equal, by running
@@ -392,32 +381,23 @@ namespace Godot
         /// </summary>
         /// <param name="other">The other rect to compare.</param>
         /// <returns>Whether or not the rects are approximately equal.</returns>
-        public bool IsEqualApprox(Rect2 other)
-        {
-            return _position.IsEqualApprox(other._position) && _size.IsEqualApprox(other.Size);
-        }
+        public bool IsEqualApprox(Rect2 other) =>
+            _position.IsEqualApprox(other._position) && _size.IsEqualApprox(other.Size);
 
-        public override int GetHashCode()
-        {
-            return _position.GetHashCode() ^ _size.GetHashCode();
-        }
+        public override int GetHashCode() => _position.GetHashCode() ^ _size.GetHashCode();
 
-        public override string ToString()
-        {
-            return String.Format("({0}, {1})", new object[]
+        public override string ToString() =>
+            string.Format("({0}, {1})", new object[]
             {
                 _position.ToString(),
                 _size.ToString()
             });
-        }
 
-        public string ToString(string format)
-        {
-            return String.Format("({0}, {1})", new object[]
+        public string ToString(string format) =>
+            string.Format("({0}, {1})", new object[]
             {
                 _position.ToString(format),
                 _size.ToString(format)
             });
-        }
     }
 }

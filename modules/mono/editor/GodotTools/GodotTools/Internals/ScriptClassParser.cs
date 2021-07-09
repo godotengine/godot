@@ -34,7 +34,7 @@ namespace GodotTools.Internals
         public static Error ParseFile(string filePath, out IEnumerable<ClassDecl> classes, out string errorStr)
         {
             var classesArray = new Array<Dictionary>();
-            var error = internal_ParseFile(filePath, classesArray, out errorStr);
+            Error error = internal_ParseFile(filePath, classesArray, out errorStr);
             if (error != Error.Ok)
             {
                 classes = null;

@@ -11,9 +11,9 @@ namespace GodotTools.Build
     {
         public BuildOutputView BuildOutputView { get; private set; }
 
-        private Button errorsBtn;
-        private Button warningsBtn;
-        private Button viewLogBtn;
+        private Button _errorsBtn;
+        private Button _warningsBtn;
+        private Button _viewLogBtn;
 
         private void WarningsToggled(bool pressed)
         {
@@ -56,7 +56,7 @@ namespace GodotTools.Build
 
             BuildManager.GenerateEditorScriptMetadata();
 
-            if (!BuildManager.BuildProjectBlocking("Debug", targets: new[] {"Rebuild"}))
+            if (!BuildManager.BuildProjectBlocking("Debug", targets: new[] { "Rebuild" }))
                 return; // Build failed
 
             // Notify running game for hot-reload
@@ -75,7 +75,7 @@ namespace GodotTools.Build
             if (!File.Exists(GodotSharpDirs.ProjectSlnPath))
                 return; // No solution to build
 
-            BuildManager.BuildProjectBlocking("Debug", targets: new[] {"Clean"});
+            BuildManager.BuildProjectBlocking("Debug", targets: new[] { "Clean" });
         }
 
         private void ViewLogToggled(bool pressed) => BuildOutputView.LogVisible = pressed;
@@ -112,10 +112,10 @@ namespace GodotTools.Build
             RectMinSize = new Vector2(0, 228) * EditorScale;
             SizeFlagsVertical = (int)SizeFlags.ExpandFill;
 
-            var toolBarHBox = new HBoxContainer {SizeFlagsHorizontal = (int)SizeFlags.ExpandFill};
+            var toolBarHBox = new HBoxContainer { SizeFlagsHorizontal = (int)SizeFlags.ExpandFill };
             AddChild(toolBarHBox);
 
-            var buildMenuBtn = new MenuButton {Text = "Build", Icon = GetIcon("Play", "EditorIcons")};
+            var buildMenuBtn = new MenuButton { Text = "Build", Icon = GetIcon("Play", "EditorIcons") };
             toolBarHBox.AddChild(buildMenuBtn);
 
             var buildMenu = buildMenuBtn.GetPopup();
@@ -124,7 +124,7 @@ namespace GodotTools.Build
             buildMenu.AddItem("Clean Solution".TTR(), (int)BuildMenuOptions.CleanSolution);
             buildMenu.Connect("id_pressed", this, nameof(BuildMenuOptionPressed));
 
-            errorsBtn = new Button
+            _errorsBtn = new Button
             {
                 HintTooltip = "Show Errors".TTR(),
                 Icon = GetIcon("StatusError", "EditorIcons"),
@@ -133,10 +133,10 @@ namespace GodotTools.Build
                 Pressed = true,
                 FocusMode = FocusModeEnum.None
             };
-            errorsBtn.Connect("toggled", this, nameof(ErrorsToggled));
-            toolBarHBox.AddChild(errorsBtn);
+            _errorsBtn.Connect("toggled", this, nameof(ErrorsToggled));
+            toolBarHBox.AddChild(_errorsBtn);
 
-            warningsBtn = new Button
+            _warningsBtn = new Button
             {
                 HintTooltip = "Show Warnings".TTR(),
                 Icon = GetIcon("NodeWarning", "EditorIcons"),
@@ -145,18 +145,18 @@ namespace GodotTools.Build
                 Pressed = true,
                 FocusMode = FocusModeEnum.None
             };
-            warningsBtn.Connect("toggled", this, nameof(WarningsToggled));
-            toolBarHBox.AddChild(warningsBtn);
+            _warningsBtn.Connect("toggled", this, nameof(WarningsToggled));
+            toolBarHBox.AddChild(_warningsBtn);
 
-            viewLogBtn = new Button
+            _viewLogBtn = new Button
             {
                 Text = "Show Output".TTR(),
                 ToggleMode = true,
                 Pressed = true,
                 FocusMode = FocusModeEnum.None
             };
-            viewLogBtn.Connect("toggled", this, nameof(ViewLogToggled));
-            toolBarHBox.AddChild(viewLogBtn);
+            _viewLogBtn.Connect("toggled", this, nameof(ViewLogToggled));
+            toolBarHBox.AddChild(_viewLogBtn);
 
             BuildOutputView = new BuildOutputView();
             AddChild(BuildOutputView);
