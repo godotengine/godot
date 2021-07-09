@@ -1080,7 +1080,7 @@ void ScriptTextEditor::_edit_option(int p_op) {
 
 			tx->begin_complex_operation();
 			int begin, end;
-			if (tx->is_selection_active()) {
+			if (tx->has_selection()) {
 				begin = tx->get_selection_from_line();
 				end = tx->get_selection_to_line();
 				// ignore if the cursor is not past the first column
@@ -1122,7 +1122,7 @@ void ScriptTextEditor::_edit_option(int p_op) {
 		} break;
 		case EDIT_EVALUATE: {
 			Expression expression;
-			Vector<String> lines = code_editor->get_text_editor()->get_selection_text().split("\n");
+			Vector<String> lines = code_editor->get_text_editor()->get_selected_text().split("\n");
 			PackedStringArray results;
 
 			for (int i = 0; i < lines.size(); i++) {
@@ -1158,14 +1158,14 @@ void ScriptTextEditor::_edit_option(int p_op) {
 			code_editor->get_find_replace_bar()->popup_replace();
 		} break;
 		case SEARCH_IN_FILES: {
-			String selected_text = code_editor->get_text_editor()->get_selection_text();
+			String selected_text = code_editor->get_text_editor()->get_selected_text();
 
 			// Yep, because it doesn't make sense to instance this dialog for every single script open...
 			// So this will be delegated to the ScriptEditor.
 			emit_signal(SNAME("search_in_files_requested"), selected_text);
 		} break;
 		case REPLACE_IN_FILES: {
-			String selected_text = code_editor->get_text_editor()->get_selection_text();
+			String selected_text = code_editor->get_text_editor()->get_selected_text();
 
 			emit_signal(SNAME("replace_in_files_requested"), selected_text);
 		} break;
@@ -1256,7 +1256,7 @@ void ScriptTextEditor::_edit_option(int p_op) {
 
 		} break;
 		case HELP_CONTEXTUAL: {
-			String text = tx->get_selection_text();
+			String text = tx->get_selected_text();
 			if (text == "") {
 				text = tx->get_word_under_caret();
 			}
@@ -1267,7 +1267,7 @@ void ScriptTextEditor::_edit_option(int p_op) {
 		case LOOKUP_SYMBOL: {
 			String text = tx->get_word_under_caret();
 			if (text == "") {
-				text = tx->get_selection_text();
+				text = tx->get_selected_text();
 			}
 			if (text != "") {
 				_lookup_symbol(text, tx->get_caret_line(), tx->get_caret_column());
@@ -1517,7 +1517,7 @@ void ScriptTextEditor::_text_edit_gui_input(const Ref<InputEvent> &ev) {
 
 		tx->set_move_caret_on_right_click_enabled(EditorSettings::get_singleton()->get("text_editor/cursor/right_click_moves_caret"));
 		if (tx->is_move_caret_on_right_click_enabled()) {
-			if (tx->is_selection_active()) {
+			if (tx->has_selection()) {
 				int from_line = tx->get_selection_from_line();
 				int to_line = tx->get_selection_to_line();
 				int from_column = tx->get_selection_from_column();
@@ -1528,7 +1528,7 @@ void ScriptTextEditor::_text_edit_gui_input(const Ref<InputEvent> &ev) {
 					tx->deselect();
 				}
 			}
-			if (!tx->is_selection_active()) {
+			if (!tx->has_selection()) {
 				tx->set_caret_line(row, false, false);
 				tx->set_caret_column(col);
 			}
@@ -1539,7 +1539,7 @@ void ScriptTextEditor::_text_edit_gui_input(const Ref<InputEvent> &ev) {
 			word_at_pos = tx->get_word_under_caret();
 		}
 		if (word_at_pos == "") {
-			word_at_pos = tx->get_selection_text();
+			word_at_pos = tx->get_selected_text();
 		}
 
 		bool has_color = (word_at_pos == "Color");
@@ -1591,7 +1591,7 @@ void ScriptTextEditor::_text_edit_gui_input(const Ref<InputEvent> &ev) {
 				has_color = false;
 			}
 		}
-		_make_context_menu(tx->is_selection_active(), has_color, foldable, open_docs, goto_definition, local_pos);
+		_make_context_menu(tx->has_selection(), has_color, foldable, open_docs, goto_definition, local_pos);
 	}
 }
 

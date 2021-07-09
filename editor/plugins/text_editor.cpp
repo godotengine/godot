@@ -374,14 +374,14 @@ void TextEditor::_edit_option(int p_op) {
 			code_editor->get_find_replace_bar()->popup_replace();
 		} break;
 		case SEARCH_IN_FILES: {
-			String selected_text = code_editor->get_text_editor()->get_selection_text();
+			String selected_text = code_editor->get_text_editor()->get_selected_text();
 
 			// Yep, because it doesn't make sense to instance this dialog for every single script open...
 			// So this will be delegated to the ScriptEditor.
 			emit_signal(SNAME("search_in_files_requested"), selected_text);
 		} break;
 		case REPLACE_IN_FILES: {
-			String selected_text = code_editor->get_text_editor()->get_selection_text();
+			String selected_text = code_editor->get_text_editor()->get_selected_text();
 
 			emit_signal(SNAME("replace_in_files_requested"), selected_text);
 		} break;
@@ -436,7 +436,7 @@ void TextEditor::_text_edit_gui_input(const Ref<InputEvent> &ev) {
 			bool is_folded = tx->is_line_folded(row);
 
 			if (tx->is_move_caret_on_right_click_enabled()) {
-				if (tx->is_selection_active()) {
+				if (tx->has_selection()) {
 					int from_line = tx->get_selection_from_line();
 					int to_line = tx->get_selection_to_line();
 					int from_column = tx->get_selection_from_column();
@@ -447,14 +447,14 @@ void TextEditor::_text_edit_gui_input(const Ref<InputEvent> &ev) {
 						tx->deselect();
 					}
 				}
-				if (!tx->is_selection_active()) {
+				if (!tx->has_selection()) {
 					tx->set_caret_line(row, true, false);
 					tx->set_caret_column(col);
 				}
 			}
 
 			if (!mb->is_pressed()) {
-				_make_context_menu(tx->is_selection_active(), can_fold, is_folded, get_local_mouse_position());
+				_make_context_menu(tx->has_selection(), can_fold, is_folded, get_local_mouse_position());
 			}
 		}
 	}
@@ -464,7 +464,7 @@ void TextEditor::_text_edit_gui_input(const Ref<InputEvent> &ev) {
 		CodeEdit *tx = code_editor->get_text_editor();
 		int line = tx->get_caret_line();
 		tx->adjust_viewport_to_caret();
-		_make_context_menu(tx->is_selection_active(), tx->can_fold_line(line), tx->is_line_folded(line), (get_global_transform().inverse() * tx->get_global_transform()).xform(tx->get_caret_draw_pos()));
+		_make_context_menu(tx->has_selection(), tx->can_fold_line(line), tx->is_line_folded(line), (get_global_transform().inverse() * tx->get_global_transform()).xform(tx->get_caret_draw_pos()));
 		context_menu->grab_focus();
 	}
 }

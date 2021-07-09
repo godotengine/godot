@@ -244,6 +244,26 @@ private:
 		bool shiftclick_left = false;
 	} selection;
 
+	bool selecting_enabled = true;
+
+	Color font_selected_color = Color(1, 1, 1);
+	Color selection_color = Color(1, 1, 1);
+	bool override_selected_font_color = false;
+
+	bool dragging_selection = false;
+
+	Timer *click_select_held;
+	uint64_t last_dblclk = 0;
+	Vector2 last_dblclk_pos;
+	void _click_selection_held();
+
+	void _update_selection_mode_pointer();
+	void _update_selection_mode_word();
+	void _update_selection_mode_line();
+
+	void _pre_shift_selection();
+	void _post_shift_selection();
+
 	/* line wrapping. */
 	LineWrappingMode line_wrapping_mode = LineWrappingMode::LINE_WRAPPING_NONE;
 
@@ -317,7 +337,6 @@ private:
 	bool first_draw = true;
 	bool draw_tabs = false;
 	bool draw_spaces = false;
-	bool override_selected_font_color = false;
 	bool text_changed_dirty = false;
 	bool undo_enabled = true;
 	bool hiding_enabled = false;
@@ -331,11 +350,9 @@ private:
 	bool highlight_current_line = false;
 
 	bool insert_mode = false;
-	bool select_identifiers_enabled = false;
 
 	bool smooth_scroll_enabled = false;
 	bool scrolling = false;
-	bool dragging_selection = false;
 	bool dragging_minimap = false;
 	bool can_drag_minimap = false;
 	bool minimap_clicked = false;
@@ -346,11 +363,7 @@ private:
 
 	String lookup_symbol_word;
 
-	uint64_t last_dblclk = 0;
-	Vector2 last_dblclk_pos;
-
 	Timer *idle_detect;
-	Timer *click_select_held;
 	HScrollBar *h_scroll;
 	VScrollBar *v_scroll;
 	bool updating_scrolls = false;
@@ -365,8 +378,6 @@ private:
 	uint32_t search_flags = 0;
 	int search_result_line = 0;
 	int search_result_col = 0;
-
-	bool selecting_enabled = true;
 
 	bool context_menu_enabled = true;
 	bool shortcut_keys_enabled = true;
@@ -394,19 +405,11 @@ private:
 	void _scroll_moved(double);
 	void _update_scrollbars();
 	void _v_scroll_input();
-	void _click_selection_held();
-
-	void _update_selection_mode_pointer();
-	void _update_selection_mode_word();
-	void _update_selection_mode_line();
 
 	void _update_minimap_click();
 	void _update_minimap_drag();
 	void _scroll_up(real_t p_delta);
 	void _scroll_down(real_t p_delta);
-
-	void _pre_shift_selection();
-	void _post_shift_selection();
 
 	void _scroll_lines_up();
 	void _scroll_lines_down();
@@ -470,9 +473,7 @@ protected:
 		int outline_size = 0;
 		Color outline_color;
 		Color font_color;
-		Color font_selected_color;
 		Color font_readonly_color;
-		Color selection_color;
 		Color code_folding_color;
 		Color current_line_color;
 		Color brace_mismatch_color;
@@ -547,6 +548,35 @@ public:
 	int get_caret_column() const;
 
 	int get_caret_wrap_index() const;
+
+	/* Selection. */
+	void set_selecting_enabled(const bool p_enabled);
+	bool is_selecting_enabled() const;
+
+	void set_override_selected_font_color(bool p_override_selected_font_color);
+	bool is_overriding_selected_font_color() const;
+
+	void set_selection_mode(SelectionMode p_mode, int p_line = -1, int p_column = -1);
+	SelectionMode get_selection_mode() const;
+
+	void select_all();
+	void select_word_under_caret();
+	void select(int p_from_line, int p_from_column, int p_to_line, int p_to_column);
+
+	bool has_selection() const;
+
+	String get_selected_text() const;
+
+	int get_selection_line() const;
+	int get_selection_column() const;
+
+	int get_selection_from_line() const;
+	int get_selection_from_column() const;
+	int get_selection_to_line() const;
+	int get_selection_to_column() const;
+
+	void deselect();
+	void delete_selection();
 
 	/* line wrapping. */
 	void set_line_wrapping_mode(LineWrappingMode p_wrapping_mode);
@@ -710,22 +740,11 @@ public:
 	void adjust_viewport_to_caret();
 	void center_viewport_to_caret();
 
-	SelectionMode get_selection_mode() const;
-	void set_selection_mode(SelectionMode p_mode, int p_line = -1, int p_column = -1);
-	int get_selection_line() const;
-	int get_selection_column() const;
-
 	void set_readonly(bool p_readonly);
 	bool is_readonly() const;
 
 	void clear();
 
-	void delete_selection();
-
-	void select_all();
-	void select_word_under_caret();
-	void select(int p_from_line, int p_from_column, int p_to_line, int p_to_column);
-	void deselect();
 	void swap_lines(int line1, int line2);
 
 	void set_search_text(const String &p_search_text);
@@ -734,12 +753,6 @@ public:
 
 	void set_highlight_all_occurrences(const bool p_enabled);
 	bool is_highlight_all_occurrences_enabled() const;
-	bool is_selection_active() const;
-	int get_selection_from_line() const;
-	int get_selection_from_column() const;
-	int get_selection_to_line() const;
-	int get_selection_to_column() const;
-	String get_selection_text() const;
 
 	String get_word_under_caret() const;
 	String get_word_at_pos(const Vector2 &p_pos) const;
@@ -756,8 +769,6 @@ public:
 	bool is_drawing_tabs() const;
 	void set_draw_spaces(bool p_draw);
 	bool is_drawing_spaces() const;
-	void set_override_selected_font_color(bool p_override_selected_font_color);
-	bool is_overriding_selected_font_color() const;
 
 	void set_insert_mode(bool p_enabled);
 	bool is_insert_mode() const;
@@ -796,9 +807,6 @@ public:
 
 	void set_context_menu_enabled(bool p_enable);
 	bool is_context_menu_enabled();
-
-	void set_selecting_enabled(bool p_enabled);
-	bool is_selecting_enabled() const;
 
 	void set_shortcut_keys_enabled(bool p_enabled);
 	bool is_shortcut_keys_enabled() const;

@@ -179,7 +179,7 @@ bool FindReplaceBar::_search(uint32_t p_flags, int p_from_line, int p_from_col) 
 }
 
 void FindReplaceBar::_replace() {
-	bool selection_enabled = text_editor->is_selection_active();
+	bool selection_enabled = text_editor->has_selection();
 	Point2i selection_begin, selection_end;
 	if (selection_enabled) {
 		selection_begin = Point2i(text_editor->get_selection_from_line(), text_editor->get_selection_from_column());
@@ -229,7 +229,7 @@ void FindReplaceBar::_replace_all() {
 	Point2i orig_cursor(text_editor->get_caret_line(), text_editor->get_caret_column());
 	Point2i prev_match = Point2(-1, -1);
 
-	bool selection_enabled = text_editor->is_selection_active();
+	bool selection_enabled = text_editor->has_selection();
 	Point2i selection_begin, selection_end;
 	if (selection_enabled) {
 		selection_begin = Point2i(text_editor->get_selection_from_line(), text_editor->get_selection_from_column());
@@ -316,7 +316,7 @@ void FindReplaceBar::_get_search_from(int &r_line, int &r_col) {
 	r_line = text_editor->get_caret_line();
 	r_col = text_editor->get_caret_column();
 
-	if (text_editor->is_selection_active() && is_selection_only()) {
+	if (text_editor->has_selection() && is_selection_only()) {
 		return;
 	}
 
@@ -409,7 +409,7 @@ bool FindReplaceBar::search_prev() {
 
 	int line, col;
 	_get_search_from(line, col);
-	if (text_editor->is_selection_active()) {
+	if (text_editor->has_selection()) {
 		col--; // Skip currently selected word.
 	}
 
@@ -487,8 +487,8 @@ void FindReplaceBar::_show_search(bool p_focus_replace, bool p_show_only) {
 		search_text->call_deferred(SNAME("grab_focus"));
 	}
 
-	if (text_editor->is_selection_active() && !selection_only->is_pressed()) {
-		search_text->set_text(text_editor->get_selection_text());
+	if (text_editor->has_selection() && !selection_only->is_pressed()) {
+		search_text->set_text(text_editor->get_selected_text());
 	}
 
 	if (!get_search_text().is_empty()) {
@@ -521,9 +521,9 @@ void FindReplaceBar::popup_replace() {
 		hbc_option_replace->show();
 	}
 
-	selection_only->set_pressed((text_editor->is_selection_active() && text_editor->get_selection_from_line() < text_editor->get_selection_to_line()));
+	selection_only->set_pressed((text_editor->has_selection() && text_editor->get_selection_from_line() < text_editor->get_selection_to_line()));
 
-	_show_search(is_visible() || text_editor->is_selection_active());
+	_show_search(is_visible() || text_editor->has_selection());
 }
 
 void FindReplaceBar::_search_options_changed(bool p_pressed) {
@@ -554,7 +554,7 @@ void FindReplaceBar::_search_text_submitted(const String &p_text) {
 }
 
 void FindReplaceBar::_replace_text_submitted(const String &p_text) {
-	if (selection_only->is_pressed() && text_editor->is_selection_active()) {
+	if (selection_only->is_pressed() && text_editor->has_selection()) {
 		_replace_all();
 		_hide_bar();
 	} else if (Input::get_singleton()->is_key_pressed(KEY_SHIFT)) {
@@ -1125,7 +1125,7 @@ void CodeTextEditor::convert_indent_to_tabs() {
 }
 
 void CodeTextEditor::convert_case(CaseStyle p_case) {
-	if (!text_editor->is_selection_active()) {
+	if (!text_editor->has_selection()) {
 		return;
 	}
 
@@ -1171,7 +1171,7 @@ void CodeTextEditor::convert_case(CaseStyle p_case) {
 
 void CodeTextEditor::move_lines_up() {
 	text_editor->begin_complex_operation();
-	if (text_editor->is_selection_active()) {
+	if (text_editor->has_selection()) {
 		int from_line = text_editor->get_selection_from_line();
 		int from_col = text_editor->get_selection_from_column();
 		int to_line = text_editor->get_selection_to_line();
@@ -1217,7 +1217,7 @@ void CodeTextEditor::move_lines_up() {
 
 void CodeTextEditor::move_lines_down() {
 	text_editor->begin_complex_operation();
-	if (text_editor->is_selection_active()) {
+	if (text_editor->has_selection()) {
 		int from_line = text_editor->get_selection_from_line();
 		int from_col = text_editor->get_selection_from_column();
 		int to_line = text_editor->get_selection_to_line();
@@ -1276,7 +1276,7 @@ void CodeTextEditor::_delete_line(int p_line) {
 
 void CodeTextEditor::delete_lines() {
 	text_editor->begin_complex_operation();
-	if (text_editor->is_selection_active()) {
+	if (text_editor->has_selection()) {
 		int to_line = text_editor->get_selection_to_line();
 		int from_line = text_editor->get_selection_from_line();
 		int count = Math::abs(to_line - from_line) + 1;
@@ -1304,7 +1304,7 @@ void CodeTextEditor::duplicate_selection() {
 	bool selection_active = false;
 
 	text_editor->set_caret_column(text_editor->get_line(from_line).length());
-	if (text_editor->is_selection_active()) {
+	if (text_editor->has_selection()) {
 		from_column = text_editor->get_selection_from_column();
 		to_column = text_editor->get_selection_to_column();
 
@@ -1312,7 +1312,7 @@ void CodeTextEditor::duplicate_selection() {
 		to_line = text_editor->get_selection_to_line();
 		cursor_new_line = to_line + text_editor->get_caret_line() - from_line;
 		cursor_new_column = to_column == cursor_column ? 2 * to_column - from_column : to_column;
-		new_text = text_editor->get_selection_text();
+		new_text = text_editor->get_selected_text();
 		selection_active = true;
 
 		text_editor->set_caret_line(to_line);
@@ -1338,7 +1338,7 @@ void CodeTextEditor::duplicate_selection() {
 
 void CodeTextEditor::toggle_inline_comment(const String &delimiter) {
 	text_editor->begin_complex_operation();
-	if (text_editor->is_selection_active()) {
+	if (text_editor->has_selection()) {
 		int begin = text_editor->get_selection_from_line();
 		int end = text_editor->get_selection_to_line();
 
@@ -1447,8 +1447,8 @@ Variant CodeTextEditor::get_edit_state() {
 	state["column"] = text_editor->get_caret_column();
 	state["row"] = text_editor->get_caret_line();
 
-	state["selection"] = get_text_editor()->is_selection_active();
-	if (get_text_editor()->is_selection_active()) {
+	state["selection"] = get_text_editor()->has_selection();
+	if (get_text_editor()->has_selection()) {
 		state["selection_from_line"] = text_editor->get_selection_from_line();
 		state["selection_from_column"] = text_editor->get_selection_from_column();
 		state["selection_to_line"] = text_editor->get_selection_to_line();

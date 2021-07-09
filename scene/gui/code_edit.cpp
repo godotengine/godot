@@ -548,7 +548,7 @@ Control::CursorShape CodeEdit::get_cursor_shape(const Point2 &p_pos) const {
 
 // Overridable actions
 void CodeEdit::_handle_unicode_input(const uint32_t p_unicode) {
-	bool had_selection = is_selection_active();
+	bool had_selection = has_selection();
 	if (had_selection) {
 		begin_complex_operation();
 		delete_selection();
@@ -611,7 +611,7 @@ void CodeEdit::_backspace() {
 		return;
 	}
 
-	if (is_selection_active()) {
+	if (has_selection()) {
 		delete_selection();
 		return;
 	}
@@ -718,7 +718,7 @@ void CodeEdit::do_indent() {
 		return;
 	}
 
-	if (is_selection_active()) {
+	if (has_selection()) {
 		indent_lines();
 		return;
 	}
@@ -747,7 +747,7 @@ void CodeEdit::indent_lines() {
 
 	int start_line = get_caret_line();
 	int end_line = start_line;
-	if (is_selection_active()) {
+	if (has_selection()) {
 		start_line = get_selection_from_line();
 		end_line = get_selection_to_line();
 
@@ -760,7 +760,7 @@ void CodeEdit::indent_lines() {
 
 	for (int i = start_line; i <= end_line; i++) {
 		const String line_text = get_line(i);
-		if (line_text.size() == 0 && is_selection_active()) {
+		if (line_text.size() == 0 && has_selection()) {
 			continue;
 		}
 
@@ -777,7 +777,7 @@ void CodeEdit::indent_lines() {
 	}
 
 	/* Fix selection and caret being off after shifting selection right.*/
-	if (is_selection_active()) {
+	if (has_selection()) {
 		select(start_line, get_selection_from_column() + selection_offset, get_selection_to_line(), get_selection_to_column() + selection_offset);
 	}
 	set_caret_column(get_caret_column() + selection_offset, false);
@@ -792,7 +792,7 @@ void CodeEdit::do_unindent() {
 
 	int cc = get_caret_column();
 
-	if (is_selection_active() || cc <= 0) {
+	if (has_selection() || cc <= 0) {
 		unindent_lines();
 		return;
 	}
@@ -839,7 +839,7 @@ void CodeEdit::unindent_lines() {
 
 	int start_line = get_caret_line();
 	int end_line = start_line;
-	if (is_selection_active()) {
+	if (has_selection()) {
 		start_line = get_selection_from_line();
 		end_line = get_selection_to_line();
 
@@ -882,7 +882,7 @@ void CodeEdit::unindent_lines() {
 		}
 	}
 
-	if (is_selection_active()) {
+	if (has_selection()) {
 		/* Fix selection being off by one on the first line. */
 		if (first_line_edited) {
 			select(get_selection_from_line(), get_selection_from_column() - removed_characters, get_selection_to_line(), initial_selection_end_column);
@@ -1423,7 +1423,7 @@ void CodeEdit::fold_line(int p_line) {
 	}
 
 	/* Fix selection. */
-	if (is_selection_active()) {
+	if (has_selection()) {
 		if (is_line_hidden(get_selection_from_line()) && is_line_hidden(get_selection_to_line())) {
 			deselect();
 		} else if (is_line_hidden(get_selection_from_line())) {

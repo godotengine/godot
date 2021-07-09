@@ -324,6 +324,13 @@
 				Returns a [String] text with the word under the caret location.
 			</description>
 		</method>
+		<method name="has_selection" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+				Returns [code]true[/code] if the user is has a selection.
+			</description>
+		</method>
 		<method name="insert_text_at_caret">
 			<return type="void">
 			</return>
@@ -382,12 +389,6 @@
 			</argument>
 			<description>
 				Returns if the given line is wrapped.
-			</description>
-		</method>
-		<method name="is_selection_active" qualifiers="const">
-			<return type="bool" />
-			<description>
-				Returns [code]true[/code] if the selection is active.
 			</description>
 		</method>
 		<method name="menu_option">
@@ -467,6 +468,13 @@
 			<description>
 				Select all the text.
 				If [member selecting_enabled] is [code]false[/code], no selection will occur.
+			</description>
+		</method>
+		<method name="select_word_under_caret">
+			<return type="void">
+			</return>
+			<description>
+				Selects the word under the caret.
 			</description>
 		</method>
 		<method name="set_caret_column">

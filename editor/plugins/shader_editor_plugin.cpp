@@ -556,7 +556,7 @@ void ShaderEditor::_text_edit_gui_input(const Ref<InputEvent> &ev) {
 			tx->set_move_caret_on_right_click_enabled(EditorSettings::get_singleton()->get("text_editor/cursor/right_click_moves_caret"));
 
 			if (tx->is_move_caret_on_right_click_enabled()) {
-				if (tx->is_selection_active()) {
+				if (tx->has_selection()) {
 					int from_line = tx->get_selection_from_line();
 					int to_line = tx->get_selection_to_line();
 					int from_column = tx->get_selection_from_column();
@@ -567,12 +567,12 @@ void ShaderEditor::_text_edit_gui_input(const Ref<InputEvent> &ev) {
 						tx->deselect();
 					}
 				}
-				if (!tx->is_selection_active()) {
+				if (!tx->has_selection()) {
 					tx->set_caret_line(row, true, false);
 					tx->set_caret_column(col);
 				}
 			}
-			_make_context_menu(tx->is_selection_active(), get_local_mouse_position());
+			_make_context_menu(tx->has_selection(), get_local_mouse_position());
 		}
 	}
 
@@ -580,7 +580,7 @@ void ShaderEditor::_text_edit_gui_input(const Ref<InputEvent> &ev) {
 	if (k.is_valid() && k->is_pressed() && k->is_action("ui_menu", true)) {
 		CodeEdit *tx = shader_editor->get_text_editor();
 		tx->adjust_viewport_to_caret();
-		_make_context_menu(tx->is_selection_active(), (get_global_transform().inverse() * tx->get_global_transform()).xform(tx->get_caret_draw_pos()));
+		_make_context_menu(tx->has_selection(), (get_global_transform().inverse() * tx->get_global_transform()).xform(tx->get_caret_draw_pos()));
 		context_menu->grab_focus();
 	}
 }
