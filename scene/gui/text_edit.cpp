@@ -251,124 +251,12 @@ void TextEdit::Text::move_gutters(int p_from_line, int p_to_line) {
 
 ////////////////////////////////////////////////////////////////////////////////
 
-void TextEdit::_update_scrollbars() {
-	Size2 size = get_size();
-	Size2 hmin = h_scroll->get_combined_minimum_size();
-	Size2 vmin = v_scroll->get_combined_minimum_size();
-
-	v_scroll->set_begin(Point2(size.width - vmin.width, cache.style_normal->get_margin(SIDE_TOP)));
-	v_scroll->set_end(Point2(size.width, size.height - cache.style_normal->get_margin(SIDE_TOP) - cache.style_normal->get_margin(SIDE_BOTTOM)));
-
-	h_scroll->set_begin(Point2(0, size.height - hmin.height));
-	h_scroll->set_end(Point2(size.width - vmin.width, size.height));
-
-	int visible_rows = get_visible_rows();
-	int total_rows = get_total_visible_rows();
-	if (scroll_past_end_of_file_enabled) {
-		total_rows += visible_rows - 1;
-	}
-
-	int visible_width = size.width - cache.style_normal->get_minimum_size().width;
-	int total_width = text.get_max_width(true) + vmin.x + gutters_width + gutter_padding;
-
-	if (draw_minimap) {
-		total_width += cache.minimap_width;
-	}
-
-	updating_scrolls = true;
-
-	if (total_rows > visible_rows) {
-		v_scroll->show();
-		v_scroll->set_max(total_rows + get_visible_rows_offset());
-		v_scroll->set_page(visible_rows + get_visible_rows_offset());
-		if (smooth_scroll_enabled) {
-			v_scroll->set_step(0.25);
-		} else {
-			v_scroll->set_step(1);
-		}
-		set_v_scroll(get_v_scroll());
-
-	} else {
-		caret.line_ofs = 0;
-		caret.wrap_ofs = 0;
-		v_scroll->set_value(0);
-		v_scroll->hide();
-	}
-
-	if (total_width > visible_width && get_line_wrapping_mode() == LineWrappingMode::LINE_WRAPPING_NONE) {
-		h_scroll->show();
-		h_scroll->set_max(total_width);
-		h_scroll->set_page(visible_width);
-		if (caret.x_ofs > (total_width - visible_width)) {
-			caret.x_ofs = (total_width - visible_width);
-		}
-		if (fabs(h_scroll->get_value() - (double)caret.x_ofs) >= 1) {
-			h_scroll->set_value(caret.x_ofs);
-		}
-
-	} else {
-		caret.x_ofs = 0;
-		h_scroll->set_value(0);
-		h_scroll->hide();
-	}
-
-	updating_scrolls = false;
-}
-
 Point2 TextEdit::_get_local_mouse_pos() const {
 	Point2 mp = get_local_mouse_position();
 	if (is_layout_rtl()) {
 		mp.x = get_size().width - mp.x;
 	}
 	return mp;
-}
-
-void TextEdit::_update_minimap_click() {
-	Point2 mp = _get_local_mouse_pos();
-
-	int xmargin_end = get_size().width - cache.style_normal->get_margin(SIDE_RIGHT);
-	if (!dragging_minimap && (mp.x < xmargin_end - minimap_width || mp.y > xmargin_end)) {
-		minimap_clicked = false;
-		return;
-	}
-	minimap_clicked = true;
-	dragging_minimap = true;
-
-	int row;
-	_get_minimap_mouse_row(Point2i(mp.x, mp.y), row);
-
-	if (row >= get_first_visible_line() && (row < get_last_full_visible_line() || row >= (text.size() - 1))) {
-		minimap_scroll_ratio = v_scroll->get_as_ratio();
-		minimap_scroll_click_pos = mp.y;
-		can_drag_minimap = true;
-		return;
-	}
-
-	int wi;
-	int first_line = row - num_lines_from_rows(row, 0, -get_visible_rows() / 2, wi) + 1;
-	double delta = get_scroll_pos_for_line(first_line, wi) - get_v_scroll();
-	if (delta < 0) {
-		_scroll_up(-delta);
-	} else {
-		_scroll_down(delta);
-	}
-}
-
-void TextEdit::_update_minimap_drag() {
-	if (!can_drag_minimap) {
-		return;
-	}
-
-	int control_height = _get_control_height();
-	int scroll_height = v_scroll->get_max() * (minimap_char_size.y + minimap_line_spacing);
-	if (control_height > scroll_height) {
-		control_height = scroll_height;
-	}
-
-	Point2 mp = _get_local_mouse_pos();
-
-	double diff = (mp.y - minimap_scroll_click_pos) / control_height;
-	v_scroll->set_as_ratio(minimap_scroll_ratio + diff);
 }
 
 void TextEdit::_notification(int p_what) {
@@ -450,18 +338,16 @@ void TextEdit::_notification(int p_what) {
 				draw_caret = false;
 			}
 
-			cache.minimap_width = 0;
-			if (draw_minimap) {
-				cache.minimap_width = minimap_width;
-			}
-
 			_update_scrollbars();
 
 			RID ci = get_canvas_item();
 			RenderingServer::get_singleton()->canvas_item_set_clip(get_canvas_item(), true);
 			int xmargin_beg = cache.style_normal->get_margin(SIDE_LEFT) + gutters_width + gutter_padding;
 
-			int xmargin_end = size.width - cache.style_normal->get_margin(SIDE_RIGHT) - cache.minimap_width;
+			int xmargin_end = size.width - cache.style_normal->get_margin(SIDE_RIGHT);
+			if (draw_minimap) {
+				xmargin_end -= minimap_width;
+			}
 			// Let's do it easy for now.
 			cache.style_normal->draw(ci, Rect2(Point2(), size));
 			if (!editable) {
@@ -472,7 +358,7 @@ void TextEdit::_notification(int p_what) {
 				cache.style_focus->draw(ci, Rect2(Point2(), size));
 			}
 
-			int visible_rows = get_visible_rows() + 1;
+			int visible_rows = get_visible_line_count() + 1;
 
 			Color color = !editable ? cache.font_readonly_color : cache.font_color;
 
@@ -638,7 +524,7 @@ void TextEdit::_notification(int p_what) {
 
 			// minimap
 			if (draw_minimap) {
-				int minimap_visible_lines = _get_minimap_visible_rows();
+				int minimap_visible_lines = get_minimap_visible_lines();
 				int minimap_line_height = (minimap_char_size.y + minimap_line_spacing);
 				int minimap_tab_size = minimap_char_size.x * text.get_tab_size();
 
@@ -660,9 +546,9 @@ void TextEdit::_notification(int p_what) {
 				// draw the minimap
 				Color viewport_color = (cache.background_color.get_v() < 0.5) ? Color(1, 1, 1, 0.1) : Color(0, 0, 0, 0.1);
 				if (rtl) {
-					RenderingServer::get_singleton()->canvas_item_add_rect(ci, Rect2(size.width - (xmargin_end + 2) - cache.minimap_width, viewport_offset_y, cache.minimap_width, viewport_height), viewport_color);
+					RenderingServer::get_singleton()->canvas_item_add_rect(ci, Rect2(size.width - (xmargin_end + 2) - minimap_width, viewport_offset_y, minimap_width, viewport_height), viewport_color);
 				} else {
-					RenderingServer::get_singleton()->canvas_item_add_rect(ci, Rect2((xmargin_end + 2), viewport_offset_y, cache.minimap_width, viewport_height), viewport_color);
+					RenderingServer::get_singleton()->canvas_item_add_rect(ci, Rect2((xmargin_end + 2), viewport_offset_y, minimap_width, viewport_height), viewport_color);
 				}
 				for (int i = 0; i < minimap_draw_amount; i++) {
 					minimap_line++;
@@ -716,15 +602,15 @@ void TextEdit::_notification(int p_what) {
 
 						if (minimap_line == caret.line && caret_wrap_index == line_wrap_index && highlight_current_line) {
 							if (rtl) {
-								RenderingServer::get_singleton()->canvas_item_add_rect(ci, Rect2(size.width - (xmargin_end + 2) - cache.minimap_width, i * 3, cache.minimap_width, 2), cache.current_line_color);
+								RenderingServer::get_singleton()->canvas_item_add_rect(ci, Rect2(size.width - (xmargin_end + 2) - minimap_width, i * 3, minimap_width, 2), cache.current_line_color);
 							} else {
-								RenderingServer::get_singleton()->canvas_item_add_rect(ci, Rect2((xmargin_end + 2), i * 3, cache.minimap_width, 2), cache.current_line_color);
+								RenderingServer::get_singleton()->canvas_item_add_rect(ci, Rect2((xmargin_end + 2), i * 3, minimap_width, 2), cache.current_line_color);
 							}
 						} else if (line_background_color != Color(0, 0, 0, 0)) {
 							if (rtl) {
-								RenderingServer::get_singleton()->canvas_item_add_rect(ci, Rect2(size.width - (xmargin_end + 2) - cache.minimap_width, i * 3, cache.minimap_width, 2), line_background_color);
+								RenderingServer::get_singleton()->canvas_item_add_rect(ci, Rect2(size.width - (xmargin_end + 2) - minimap_width, i * 3, minimap_width, 2), line_background_color);
 							} else {
-								RenderingServer::get_singleton()->canvas_item_add_rect(ci, Rect2((xmargin_end + 2), i * 3, cache.minimap_width, 2), line_background_color);
+								RenderingServer::get_singleton()->canvas_item_add_rect(ci, Rect2((xmargin_end + 2), i * 3, minimap_width, 2), line_background_color);
 							}
 						}
 
@@ -745,7 +631,7 @@ void TextEdit::_notification(int p_what) {
 							}
 
 							int xpos = indent_px + ((xmargin_end + minimap_char_size.x) + (minimap_char_size.x * j)) + tabs;
-							bool out_of_bounds = (xpos >= xmargin_end + cache.minimap_width);
+							bool out_of_bounds = (xpos >= xmargin_end + minimap_width);
 
 							bool is_whitespace = _is_whitespace(str[j]);
 							if (!is_whitespace) {
@@ -859,7 +745,7 @@ void TextEdit::_notification(int p_what) {
 
 					ofs_y += i * row_height + cache.line_spacing / 2;
 					ofs_y -= caret.wrap_ofs * row_height;
-					ofs_y -= get_v_scroll_offset() * row_height;
+					ofs_y -= _get_v_scroll_offset() * row_height;
 
 					bool clipped = false;
 					if (ofs_y + row_height < top_limit_y) {
@@ -1651,7 +1537,7 @@ void TextEdit::_move_caret_page_up(bool p_select) {
 	}
 
 	int wi;
-	int n_line = caret.line - num_lines_from_rows(caret.line, get_caret_wrap_index(), -get_visible_rows(), wi) + 1;
+	int n_line = caret.line - num_lines_from_rows(caret.line, get_caret_wrap_index(), -get_visible_line_count(), wi) + 1;
 	set_caret_line(n_line, true, false, wi);
 
 	if (p_select) {
@@ -1667,7 +1553,7 @@ void TextEdit::_move_caret_page_down(bool p_select) {
 	}
 
 	int wi;
-	int n_line = caret.line + num_lines_from_rows(caret.line, get_caret_wrap_index(), get_visible_rows(), wi) - 1;
+	int n_line = caret.line + num_lines_from_rows(caret.line, get_caret_wrap_index(), get_visible_line_count(), wi) - 1;
 	set_caret_line(n_line, true, false, wi);
 
 	if (p_select) {
@@ -1797,7 +1683,7 @@ void TextEdit::_get_mouse_pos(const Point2i &p_mouse, int &r_row, int &r_col) co
 	float rows = p_mouse.y;
 	rows -= cache.style_normal->get_margin(SIDE_TOP);
 	rows /= get_row_height();
-	rows += get_v_scroll_offset();
+	rows += _get_v_scroll_offset();
 	int first_vis_line = get_first_visible_line();
 	int row = first_vis_line + Math::floor(rows);
 	int wrap_index = 0;
@@ -1851,11 +1737,11 @@ void TextEdit::_get_minimap_mouse_row(const Point2i &p_mouse, int &r_row) const 
 	float rows = p_mouse.y;
 	rows -= cache.style_normal->get_margin(SIDE_TOP);
 	rows /= (minimap_char_size.y + minimap_line_spacing);
-	rows += get_v_scroll_offset();
+	rows += _get_v_scroll_offset();
 
 	// calculate visible lines
-	int minimap_visible_lines = _get_minimap_visible_rows();
-	int visible_rows = get_visible_rows() + 1;
+	int minimap_visible_lines = get_minimap_visible_lines();
+	int visible_rows = get_visible_line_count() + 1;
 	int first_visible_line = get_first_visible_line() - 1;
 	int draw_amount = visible_rows + (smooth_scroll_enabled ? 1 : 0);
 	draw_amount += get_line_wrap_count(first_visible_line + 1);
@@ -1864,7 +1750,7 @@ void TextEdit::_get_minimap_mouse_row(const Point2i &p_mouse, int &r_row) const 
 	// calculate viewport size and y offset
 	int viewport_height = (draw_amount - 1) * minimap_line_height;
 	int control_height = _get_control_height() - viewport_height;
-	int viewport_offset_y = round(get_scroll_pos_for_line(first_visible_line) * control_height) / ((v_scroll->get_max() <= minimap_visible_lines) ? (minimap_visible_lines - draw_amount) : (v_scroll->get_max() - draw_amount));
+	int viewport_offset_y = round(get_scroll_pos_for_line(first_visible_line + 1) * control_height) / ((v_scroll->get_max() <= minimap_visible_lines) ? (minimap_visible_lines - draw_amount) : (v_scroll->get_max() - draw_amount));
 
 	// calculate the first line.
 	int num_lines_before = round((viewport_offset_y) / minimap_line_height);
@@ -2383,101 +2269,6 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 	}
 }
 
-void TextEdit::_scroll_up(real_t p_delta) {
-	if (scrolling && smooth_scroll_enabled && SGN(target_v_scroll - v_scroll->get_value()) != SGN(-p_delta)) {
-		scrolling = false;
-		minimap_clicked = false;
-	}
-
-	if (scrolling) {
-		target_v_scroll = (target_v_scroll - p_delta);
-	} else {
-		target_v_scroll = (get_v_scroll() - p_delta);
-	}
-
-	if (smooth_scroll_enabled) {
-		if (target_v_scroll <= 0) {
-			target_v_scroll = 0;
-		}
-		if (Math::abs(target_v_scroll - v_scroll->get_value()) < 1.0) {
-			v_scroll->set_value(target_v_scroll);
-		} else {
-			scrolling = true;
-			set_physics_process_internal(true);
-		}
-	} else {
-		set_v_scroll(target_v_scroll);
-	}
-}
-
-void TextEdit::_scroll_down(real_t p_delta) {
-	if (scrolling && smooth_scroll_enabled && SGN(target_v_scroll - v_scroll->get_value()) != SGN(p_delta)) {
-		scrolling = false;
-		minimap_clicked = false;
-	}
-
-	if (scrolling) {
-		target_v_scroll = (target_v_scroll + p_delta);
-	} else {
-		target_v_scroll = (get_v_scroll() + p_delta);
-	}
-
-	if (smooth_scroll_enabled) {
-		int max_v_scroll = round(v_scroll->get_max() - v_scroll->get_page());
-		if (target_v_scroll > max_v_scroll) {
-			target_v_scroll = max_v_scroll;
-		}
-		if (Math::abs(target_v_scroll - v_scroll->get_value()) < 1.0) {
-			v_scroll->set_value(target_v_scroll);
-		} else {
-			scrolling = true;
-			set_physics_process_internal(true);
-		}
-	} else {
-		set_v_scroll(target_v_scroll);
-	}
-}
-
-void TextEdit::_scroll_lines_up() {
-	scrolling = false;
-	minimap_clicked = false;
-
-	// Adjust the vertical scroll.
-	set_v_scroll(get_v_scroll() - 1);
-
-	// Adjust the caret to viewport.
-	if (!selection.active) {
-		int cur_line = caret.line;
-		int cur_wrap = get_caret_wrap_index();
-		int last_vis_line = get_last_full_visible_line();
-		int last_vis_wrap = get_last_full_visible_line_wrap_index();
-
-		if (cur_line > last_vis_line || (cur_line == last_vis_line && cur_wrap > last_vis_wrap)) {
-			set_caret_line(last_vis_line, false, false, last_vis_wrap);
-		}
-	}
-}
-
-void TextEdit::_scroll_lines_down() {
-	scrolling = false;
-	minimap_clicked = false;
-
-	// Adjust the vertical scroll.
-	set_v_scroll(get_v_scroll() + 1);
-
-	// Adjust the caret to viewport.
-	if (!selection.active) {
-		int cur_line = caret.line;
-		int cur_wrap = get_caret_wrap_index();
-		int first_vis_line = get_first_visible_line();
-		int first_vis_wrap = caret.wrap_ofs;
-
-		if (cur_line < first_vis_line || (cur_line == first_vis_line && cur_wrap < first_vis_wrap)) {
-			set_caret_line(first_vis_line, false, false, first_vis_wrap);
-		}
-	}
-}
-
 /**** TEXT EDIT CORE API ****/
 
 void TextEdit::_base_insert_text(int p_line, int p_char, const String &p_text, int &r_end_line, int &r_end_column) {
@@ -2735,183 +2526,6 @@ int TextEdit::_get_menu_action_accelerator(const String &p_action) {
 	} else {
 		return event->get_keycode_with_modifiers();
 	}
-}
-
-int TextEdit::get_visible_rows() const {
-	return _get_control_height() / get_row_height();
-}
-
-int TextEdit::_get_minimap_visible_rows() const {
-	return _get_control_height() / (minimap_char_size.y + minimap_line_spacing);
-}
-
-int TextEdit::get_total_visible_rows() const {
-	// Returns the total amount of rows we need in the editor.
-	// This skips hidden lines and counts each wrapping of a line.
-	if (!_is_hiding_enabled() && get_line_wrapping_mode() == LineWrappingMode::LINE_WRAPPING_NONE) {
-		return text.size();
-	}
-
-	int total_rows = 0;
-	for (int i = 0; i < text.size(); i++) {
-		if (!text.is_hidden(i)) {
-			total_rows++;
-			total_rows += get_line_wrap_count(i);
-		}
-	}
-	return total_rows;
-}
-
-void TextEdit::adjust_viewport_to_caret() {
-	// Make sure Caret is visible on the screen.
-	scrolling = false;
-	minimap_clicked = false;
-
-	int cur_line = caret.line;
-	int cur_wrap = get_caret_wrap_index();
-
-	int first_vis_line = get_first_visible_line();
-	int first_vis_wrap = caret.wrap_ofs;
-	int last_vis_line = get_last_full_visible_line();
-	int last_vis_wrap = get_last_full_visible_line_wrap_index();
-
-	if (cur_line < first_vis_line || (cur_line == first_vis_line && cur_wrap < first_vis_wrap)) {
-		// Caret is above screen.
-		set_line_as_first_visible(cur_line, cur_wrap);
-	} else if (cur_line > last_vis_line || (cur_line == last_vis_line && cur_wrap > last_vis_wrap)) {
-		// Caret is below screen.
-		set_line_as_last_visible(cur_line, cur_wrap);
-	}
-
-	int visible_width = get_size().width - cache.style_normal->get_minimum_size().width - gutters_width - gutter_padding - cache.minimap_width;
-	if (v_scroll->is_visible_in_tree()) {
-		visible_width -= v_scroll->get_combined_minimum_size().width;
-	}
-	visible_width -= 20; // Give it a little more space.
-
-	if (get_line_wrapping_mode() == LineWrappingMode::LINE_WRAPPING_NONE) {
-		// Adjust x offset.
-		Vector2i caret_pos;
-
-		// Get position of the start of caret.
-		if (ime_text.length() != 0 && ime_selection.x != 0) {
-			caret_pos.x = get_column_x_offset_for_line(caret.column + ime_selection.x, caret.line);
-		} else {
-			caret_pos.x = get_column_x_offset_for_line(caret.column, caret.line);
-		}
-
-		// Get position of the end of caret.
-		if (ime_text.length() != 0) {
-			if (ime_selection.y != 0) {
-				caret_pos.y = get_column_x_offset_for_line(caret.column + ime_selection.x + ime_selection.y, caret.line);
-			} else {
-				caret_pos.y = get_column_x_offset_for_line(caret.column + ime_text.size(), caret.line);
-			}
-		} else {
-			caret_pos.y = caret_pos.x;
-		}
-
-		if (MAX(caret_pos.x, caret_pos.y) > (caret.x_ofs + visible_width)) {
-			caret.x_ofs = MAX(caret_pos.x, caret_pos.y) - visible_width + 1;
-		}
-
-		if (MIN(caret_pos.x, caret_pos.y) < caret.x_ofs) {
-			caret.x_ofs = MIN(caret_pos.x, caret_pos.y);
-		}
-	} else {
-		caret.x_ofs = 0;
-	}
-	h_scroll->set_value(caret.x_ofs);
-
-	update();
-}
-
-void TextEdit::center_viewport_to_caret() {
-	// Move viewport so the caret is in the center of the screen.
-	scrolling = false;
-	minimap_clicked = false;
-
-	set_line_as_center_visible(caret.line, get_caret_wrap_index());
-	int visible_width = get_size().width - cache.style_normal->get_minimum_size().width - gutters_width - gutter_padding - cache.minimap_width;
-	if (v_scroll->is_visible_in_tree()) {
-		visible_width -= v_scroll->get_combined_minimum_size().width;
-	}
-	visible_width -= 20; // Give it a little more space.
-
-	if (get_line_wrapping_mode() != LineWrappingMode::LINE_WRAPPING_NONE) {
-		// Center x offset.
-
-		Vector2i caret_pos;
-
-		// Get position of the start of caret.
-		if (ime_text.length() != 0 && ime_selection.x != 0) {
-			caret_pos.x = get_column_x_offset_for_line(caret.column + ime_selection.x, caret.line);
-		} else {
-			caret_pos.x = get_column_x_offset_for_line(caret.column, caret.line);
-		}
-
-		// Get position of the end of caret.
-		if (ime_text.length() != 0) {
-			if (ime_selection.y != 0) {
-				caret_pos.y = get_column_x_offset_for_line(caret.column + ime_selection.x + ime_selection.y, caret.line);
-			} else {
-				caret_pos.y = get_column_x_offset_for_line(caret.column + ime_text.size(), caret.line);
-			}
-		} else {
-			caret_pos.y = caret_pos.x;
-		}
-
-		if (MAX(caret_pos.x, caret_pos.y) > (caret.x_ofs + visible_width)) {
-			caret.x_ofs = MAX(caret_pos.x, caret_pos.y) - visible_width + 1;
-		}
-
-		if (MIN(caret_pos.x, caret_pos.y) < caret.x_ofs) {
-			caret.x_ofs = MIN(caret_pos.x, caret_pos.y);
-		}
-	} else {
-		caret.x_ofs = 0;
-	}
-	h_scroll->set_value(caret.x_ofs);
-
-	update();
-}
-
-void TextEdit::_v_scroll_input() {
-	scrolling = false;
-	minimap_clicked = false;
-}
-
-void TextEdit::_scroll_moved(double p_to_val) {
-	if (updating_scrolls) {
-		return;
-	}
-
-	if (h_scroll->is_visible_in_tree()) {
-		caret.x_ofs = h_scroll->get_value();
-	}
-	if (v_scroll->is_visible_in_tree()) {
-		// Set line ofs and wrap ofs.
-		int v_scroll_i = floor(get_v_scroll());
-		int sc = 0;
-		int n_line;
-		for (n_line = 0; n_line < text.size(); n_line++) {
-			if (!_is_line_hidden(n_line)) {
-				sc++;
-				sc += get_line_wrap_count(n_line);
-				if (sc > v_scroll_i) {
-					break;
-				}
-			}
-		}
-		n_line = MIN(n_line, text.size() - 1);
-		int line_wrap_amount = get_line_wrap_count(n_line);
-		int wi = line_wrap_amount - (sc - v_scroll_i - 1);
-		wi = CLAMP(wi, 0, line_wrap_amount);
-
-		caret.line_ofs = n_line;
-		caret.wrap_ofs = wi;
-	}
-	update();
 }
 
 int TextEdit::get_row_height() const {
@@ -3705,6 +3319,8 @@ int TextEdit::get_line_wrap_count(int p_line) const {
 
 int TextEdit::get_line_wrap_index_at_column(int p_line, int p_column) const {
 	ERR_FAIL_INDEX_V(p_line, text.size(), 0);
+	ERR_FAIL_COND_V(p_column < 0, 0);
+	ERR_FAIL_COND_V(p_column > text[p_line].length(), 0);
 
 	if (!is_line_wrapped(p_line)) {
 		return 0;
@@ -3741,6 +3357,300 @@ Vector<String> TextEdit::get_line_wrapped_text(int p_line) const {
 	}
 
 	return lines;
+}
+
+/* Viewport */
+// Scrolling.
+void TextEdit::set_smooth_scroll_enabled(const bool p_enable) {
+	v_scroll->set_smooth_scroll_enabled(p_enable);
+	smooth_scroll_enabled = p_enable;
+}
+
+bool TextEdit::is_smooth_scroll_enabled() const {
+	return smooth_scroll_enabled;
+}
+
+void TextEdit::set_scroll_past_end_of_file_enabled(const bool p_enabled) {
+	scroll_past_end_of_file_enabled = p_enabled;
+	update();
+}
+
+bool TextEdit::is_scroll_past_end_of_file_enabled() const {
+	return scroll_past_end_of_file_enabled;
+}
+
+void TextEdit::set_v_scroll(double p_scroll) {
+	v_scroll->set_value(p_scroll);
+	int max_v_scroll = v_scroll->get_max() - v_scroll->get_page();
+	if (p_scroll >= max_v_scroll - 1.0) {
+		_scroll_moved(v_scroll->get_value());
+	}
+}
+
+double TextEdit::get_v_scroll() const {
+	return v_scroll->get_value();
+}
+
+void TextEdit::set_h_scroll(int p_scroll) {
+	if (p_scroll < 0) {
+		p_scroll = 0;
+	}
+	h_scroll->set_value(p_scroll);
+}
+
+int TextEdit::get_h_scroll() const {
+	return h_scroll->get_value();
+}
+
+void TextEdit::set_v_scroll_speed(float p_speed) {
+	v_scroll_speed = p_speed;
+}
+
+float TextEdit::get_v_scroll_speed() const {
+	return v_scroll_speed;
+}
+
+double TextEdit::get_scroll_pos_for_line(int p_line, int p_wrap_index) const {
+	ERR_FAIL_INDEX_V(p_line, text.size(), 0);
+	ERR_FAIL_COND_V(p_wrap_index < 0, 0);
+	ERR_FAIL_COND_V(p_wrap_index > get_line_wrap_count(p_line), 0);
+
+	if (get_line_wrapping_mode() == LineWrappingMode::LINE_WRAPPING_NONE && !_is_hiding_enabled()) {
+		return p_line;
+	}
+
+	// Count the number of visible lines up to this line.
+	double new_line_scroll_pos = 0.0;
+	int to = CLAMP(p_line, 0, text.size() - 1);
+	for (int i = 0; i < to; i++) {
+		if (!text.is_hidden(i)) {
+			new_line_scroll_pos++;
+			new_line_scroll_pos += get_line_wrap_count(i);
+		}
+	}
+	new_line_scroll_pos += p_wrap_index;
+	return new_line_scroll_pos;
+}
+
+// Visible lines.
+void TextEdit::set_line_as_first_visible(int p_line, int p_wrap_index) {
+	ERR_FAIL_INDEX(p_line, text.size());
+	ERR_FAIL_COND(p_wrap_index < 0);
+	ERR_FAIL_COND(p_wrap_index > get_line_wrap_count(p_line));
+	set_v_scroll(get_scroll_pos_for_line(p_line, p_wrap_index));
+}
+
+int TextEdit::get_first_visible_line() const {
+	return CLAMP(caret.line_ofs, 0, text.size() - 1);
+}
+
+void TextEdit::set_line_as_center_visible(int p_line, int p_wrap_index) {
+	ERR_FAIL_INDEX(p_line, text.size());
+	ERR_FAIL_COND(p_wrap_index < 0);
+	ERR_FAIL_COND(p_wrap_index > get_line_wrap_count(p_line));
+
+	int visible_rows = get_visible_line_count();
+	int wi;
+	int first_line = p_line - num_lines_from_rows(p_line, p_wrap_index, -visible_rows / 2, wi) + 1;
+
+	set_v_scroll(get_scroll_pos_for_line(first_line, wi));
+}
+
+void TextEdit::set_line_as_last_visible(int p_line, int p_wrap_index) {
+	ERR_FAIL_INDEX(p_line, text.size());
+	ERR_FAIL_COND(p_wrap_index < 0);
+	ERR_FAIL_COND(p_wrap_index > get_line_wrap_count(p_line));
+
+	int wi;
+	int first_line = p_line - num_lines_from_rows(p_line, p_wrap_index, -get_visible_line_count() - 1, wi) + 1;
+
+	set_v_scroll(get_scroll_pos_for_line(first_line, wi) + _get_visible_lines_offset());
+}
+
+int TextEdit::get_last_full_visible_line() const {
+	int first_vis_line = get_first_visible_line();
+	int last_vis_line = 0;
+	int wi;
+	last_vis_line = first_vis_line + num_lines_from_rows(first_vis_line, caret.wrap_ofs, get_visible_line_count(), wi) - 1;
+	last_vis_line = CLAMP(last_vis_line, 0, text.size() - 1);
+	return last_vis_line;
+}
+
+int TextEdit::get_last_full_visible_line_wrap_index() const {
+	int first_vis_line = get_first_visible_line();
+	int wi;
+	num_lines_from_rows(first_vis_line, caret.wrap_ofs, get_visible_line_count(), wi);
+	return wi;
+}
+
+int TextEdit::get_visible_line_count() const {
+	return _get_control_height() / get_row_height();
+}
+
+int TextEdit::get_total_visible_line_count() const {
+	/* Returns the total number of (lines + wraped - hidden). */
+	if (!_is_hiding_enabled() && get_line_wrapping_mode() == LineWrappingMode::LINE_WRAPPING_NONE) {
+		return text.size();
+	}
+
+	int total_rows = 0;
+	for (int i = 0; i < text.size(); i++) {
+		if (!text.is_hidden(i)) {
+			total_rows++;
+			total_rows += get_line_wrap_count(i);
+		}
+	}
+	return total_rows;
+}
+
+// Auto adjust
+void TextEdit::adjust_viewport_to_caret() {
+	// Make sure Caret is visible on the screen.
+	scrolling = false;
+	minimap_clicked = false;
+
+	int cur_line = caret.line;
+	int cur_wrap = get_caret_wrap_index();
+
+	int first_vis_line = get_first_visible_line();
+	int first_vis_wrap = caret.wrap_ofs;
+	int last_vis_line = get_last_full_visible_line();
+	int last_vis_wrap = get_last_full_visible_line_wrap_index();
+
+	if (cur_line < first_vis_line || (cur_line == first_vis_line && cur_wrap < first_vis_wrap)) {
+		// Caret is above screen.
+		set_line_as_first_visible(cur_line, cur_wrap);
+	} else if (cur_line > last_vis_line || (cur_line == last_vis_line && cur_wrap > last_vis_wrap)) {
+		// Caret is below screen.
+		set_line_as_last_visible(cur_line, cur_wrap);
+	}
+
+	int visible_width = get_size().width - cache.style_normal->get_minimum_size().width - gutters_width - gutter_padding;
+	if (draw_minimap) {
+		visible_width -= minimap_width;
+	}
+	if (v_scroll->is_visible_in_tree()) {
+		visible_width -= v_scroll->get_combined_minimum_size().width;
+	}
+	visible_width -= 20; // Give it a little more space.
+
+	if (get_line_wrapping_mode() == LineWrappingMode::LINE_WRAPPING_NONE) {
+		// Adjust x offset.
+		Vector2i caret_pos;
+
+		// Get position of the start of caret.
+		if (ime_text.length() != 0 && ime_selection.x != 0) {
+			caret_pos.x = get_column_x_offset_for_line(caret.column + ime_selection.x, caret.line);
+		} else {
+			caret_pos.x = get_column_x_offset_for_line(caret.column, caret.line);
+		}
+
+		// Get position of the end of caret.
+		if (ime_text.length() != 0) {
+			if (ime_selection.y != 0) {
+				caret_pos.y = get_column_x_offset_for_line(caret.column + ime_selection.x + ime_selection.y, caret.line);
+			} else {
+				caret_pos.y = get_column_x_offset_for_line(caret.column + ime_text.size(), caret.line);
+			}
+		} else {
+			caret_pos.y = caret_pos.x;
+		}
+
+		if (MAX(caret_pos.x, caret_pos.y) > (caret.x_ofs + visible_width)) {
+			caret.x_ofs = MAX(caret_pos.x, caret_pos.y) - visible_width + 1;
+		}
+
+		if (MIN(caret_pos.x, caret_pos.y) < caret.x_ofs) {
+			caret.x_ofs = MIN(caret_pos.x, caret_pos.y);
+		}
+	} else {
+		caret.x_ofs = 0;
+	}
+	h_scroll->set_value(caret.x_ofs);
+
+	update();
+}
+
+void TextEdit::center_viewport_to_caret() {
+	// Move viewport so the caret is in the center of the screen.
+	scrolling = false;
+	minimap_clicked = false;
+
+	set_line_as_center_visible(caret.line, get_caret_wrap_index());
+	int visible_width = get_size().width - cache.style_normal->get_minimum_size().width - gutters_width - gutter_padding;
+	if (draw_minimap) {
+		visible_width -= minimap_width;
+	}
+	if (v_scroll->is_visible_in_tree()) {
+		visible_width -= v_scroll->get_combined_minimum_size().width;
+	}
+	visible_width -= 20; // Give it a little more space.
+
+	if (get_line_wrapping_mode() != LineWrappingMode::LINE_WRAPPING_NONE) {
+		// Center x offset.
+
+		Vector2i caret_pos;
+
+		// Get position of the start of caret.
+		if (ime_text.length() != 0 && ime_selection.x != 0) {
+			caret_pos.x = get_column_x_offset_for_line(caret.column + ime_selection.x, caret.line);
+		} else {
+			caret_pos.x = get_column_x_offset_for_line(caret.column, caret.line);
+		}
+
+		// Get position of the end of caret.
+		if (ime_text.length() != 0) {
+			if (ime_selection.y != 0) {
+				caret_pos.y = get_column_x_offset_for_line(caret.column + ime_selection.x + ime_selection.y, caret.line);
+			} else {
+				caret_pos.y = get_column_x_offset_for_line(caret.column + ime_text.size(), caret.line);
+			}
+		} else {
+			caret_pos.y = caret_pos.x;
+		}
+
+		if (MAX(caret_pos.x, caret_pos.y) > (caret.x_ofs + visible_width)) {
+			caret.x_ofs = MAX(caret_pos.x, caret_pos.y) - visible_width + 1;
+		}
+
+		if (MIN(caret_pos.x, caret_pos.y) < caret.x_ofs) {
+			caret.x_ofs = MIN(caret_pos.x, caret_pos.y);
+		}
+	} else {
+		caret.x_ofs = 0;
+	}
+	h_scroll->set_value(caret.x_ofs);
+
+	update();
+}
+
+/* Minimap */
+void TextEdit::set_draw_minimap(bool p_draw) {
+	if (draw_minimap != p_draw) {
+		draw_minimap = p_draw;
+		_update_wrap_at_column();
+	}
+	update();
+}
+
+bool TextEdit::is_drawing_minimap() const {
+	return draw_minimap;
+}
+
+void TextEdit::set_minimap_width(int p_minimap_width) {
+	if (minimap_width != p_minimap_width) {
+		minimap_width = p_minimap_width;
+		_update_wrap_at_column();
+	}
+	update();
+}
+
+int TextEdit::get_minimap_width() const {
+	return minimap_width;
+}
+
+int TextEdit::get_minimap_visible_lines() const {
+	return _get_control_height() / (minimap_char_size.y + minimap_line_spacing);
 }
 
 /* Syntax Highlighting. */
@@ -3780,7 +3690,7 @@ void TextEdit::add_gutter(int p_at) {
 	for (int i = 0; i < text.size() + 1; i++) {
 		text.add_gutter(p_at);
 	}
-	emit_signal(SNAME("gutter_added"));
+	emit_signal("gutter_added");
 	update();
 }
 
@@ -3792,7 +3702,7 @@ void TextEdit::remove_gutter(int p_gutter) {
 	for (int i = 0; i < text.size() + 1; i++) {
 		text.remove_gutter(p_gutter);
 	}
-	emit_signal(SNAME("gutter_removed"));
+	emit_signal("gutter_removed");
 	update();
 }
 
@@ -4541,116 +4451,6 @@ void TextEdit::tag_saved_version() {
 	saved_version = get_version();
 }
 
-double TextEdit::get_scroll_pos_for_line(int p_line, int p_wrap_index) const {
-	if (get_line_wrapping_mode() == LineWrappingMode::LINE_WRAPPING_NONE && !_is_hiding_enabled()) {
-		return p_line;
-	}
-
-	// Count the number of visible lines up to this line.
-	double new_line_scroll_pos = 0.0;
-	int to = CLAMP(p_line, 0, text.size() - 1);
-	for (int i = 0; i < to; i++) {
-		if (!text.is_hidden(i)) {
-			new_line_scroll_pos++;
-			new_line_scroll_pos += get_line_wrap_count(i);
-		}
-	}
-	new_line_scroll_pos += p_wrap_index;
-	return new_line_scroll_pos;
-}
-
-void TextEdit::set_line_as_first_visible(int p_line, int p_wrap_index) {
-	set_v_scroll(get_scroll_pos_for_line(p_line, p_wrap_index));
-}
-
-void TextEdit::set_line_as_center_visible(int p_line, int p_wrap_index) {
-	int visible_rows = get_visible_rows();
-	int wi;
-	int first_line = p_line - num_lines_from_rows(p_line, p_wrap_index, -visible_rows / 2, wi) + 1;
-
-	set_v_scroll(get_scroll_pos_for_line(first_line, wi));
-}
-
-void TextEdit::set_line_as_last_visible(int p_line, int p_wrap_index) {
-	int wi;
-	int first_line = p_line - num_lines_from_rows(p_line, p_wrap_index, -get_visible_rows() - 1, wi) + 1;
-
-	set_v_scroll(get_scroll_pos_for_line(first_line, wi) + get_visible_rows_offset());
-}
-
-int TextEdit::get_first_visible_line() const {
-	return CLAMP(caret.line_ofs, 0, text.size() - 1);
-}
-
-int TextEdit::get_last_full_visible_line() const {
-	int first_vis_line = get_first_visible_line();
-	int last_vis_line = 0;
-	int wi;
-	last_vis_line = first_vis_line + num_lines_from_rows(first_vis_line, caret.wrap_ofs, get_visible_rows(), wi) - 1;
-	last_vis_line = CLAMP(last_vis_line, 0, text.size() - 1);
-	return last_vis_line;
-}
-
-int TextEdit::get_last_full_visible_line_wrap_index() const {
-	int first_vis_line = get_first_visible_line();
-	int wi;
-	num_lines_from_rows(first_vis_line, caret.wrap_ofs, get_visible_rows(), wi);
-	return wi;
-}
-
-double TextEdit::get_visible_rows_offset() const {
-	double total = _get_control_height();
-	total /= (double)get_row_height();
-	total = total - floor(total);
-	total = -CLAMP(total, 0.001, 1) + 1;
-	return total;
-}
-
-double TextEdit::get_v_scroll_offset() const {
-	double val = get_v_scroll() - floor(get_v_scroll());
-	return CLAMP(val, 0, 1);
-}
-
-double TextEdit::get_v_scroll() const {
-	return v_scroll->get_value();
-}
-
-void TextEdit::set_v_scroll(double p_scroll) {
-	v_scroll->set_value(p_scroll);
-	int max_v_scroll = v_scroll->get_max() - v_scroll->get_page();
-	if (p_scroll >= max_v_scroll - 1.0) {
-		_scroll_moved(v_scroll->get_value());
-	}
-}
-
-int TextEdit::get_h_scroll() const {
-	return h_scroll->get_value();
-}
-
-void TextEdit::set_h_scroll(int p_scroll) {
-	if (p_scroll < 0) {
-		p_scroll = 0;
-	}
-	h_scroll->set_value(p_scroll);
-}
-
-void TextEdit::set_smooth_scroll_enabled(bool p_enable) {
-	v_scroll->set_smooth_scroll_enabled(p_enable);
-	smooth_scroll_enabled = p_enable;
-}
-
-bool TextEdit::is_smooth_scroll_enabled() const {
-	return smooth_scroll_enabled;
-}
-
-void TextEdit::set_v_scroll_speed(float p_speed) {
-	v_scroll_speed = p_speed;
-}
-
-float TextEdit::get_v_scroll_speed() const {
-	return v_scroll_speed;
-}
-
 String TextEdit::get_word_at_pos(const Vector2 &p_pos) const {
 	int row, col;
 	_get_mouse_pos(p_pos, row, col);
@@ -4746,30 +4546,6 @@ void TextEdit::insert_at(const String &p_text, int at) {
 			++selection.to_line;
 		}
 	}
-}
-
-void TextEdit::set_draw_minimap(bool p_draw) {
-	if (draw_minimap != p_draw) {
-		draw_minimap = p_draw;
-		_update_wrap_at_column();
-	}
-	update();
-}
-
-bool TextEdit::is_drawing_minimap() const {
-	return draw_minimap;
-}
-
-void TextEdit::set_minimap_width(int p_minimap_width) {
-	if (minimap_width != p_minimap_width) {
-		minimap_width = p_minimap_width;
-		_update_wrap_at_column();
-	}
-	update();
-}
-
-int TextEdit::get_minimap_width() const {
-	return minimap_width;
 }
 
 void TextEdit::set_highlight_current_line(bool p_enabled) {
@@ -5023,15 +4799,12 @@ void TextEdit::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_line_count"), &TextEdit::get_line_count);
 	ClassDB::bind_method(D_METHOD("get_text"), &TextEdit::get_text);
 	ClassDB::bind_method(D_METHOD("get_line", "line"), &TextEdit::get_line);
-	ClassDB::bind_method(D_METHOD("get_visible_line_count"), &TextEdit::get_total_visible_rows);
 	ClassDB::bind_method(D_METHOD("set_line", "line", "new_text"), &TextEdit::set_line);
 
 	ClassDB::bind_method(D_METHOD("set_structured_text_bidi_override", "parser"), &TextEdit::set_structured_text_bidi_override);
 	ClassDB::bind_method(D_METHOD("get_structured_text_bidi_override"), &TextEdit::get_structured_text_bidi_override);
 	ClassDB::bind_method(D_METHOD("set_structured_text_bidi_override_options", "args"), &TextEdit::set_structured_text_bidi_override_options);
 	ClassDB::bind_method(D_METHOD("get_structured_text_bidi_override_options"), &TextEdit::get_structured_text_bidi_override_options);
-
-	ClassDB::bind_method(D_METHOD("center_viewport_to_caret"), &TextEdit::center_viewport_to_caret);
 
 	ClassDB::bind_method(D_METHOD("set_context_menu_enabled", "enable"), &TextEdit::set_context_menu_enabled);
 	ClassDB::bind_method(D_METHOD("is_context_menu_enabled"), &TextEdit::is_context_menu_enabled);
@@ -5163,6 +4936,51 @@ void TextEdit::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_line_wrapped_text", "line"), &TextEdit::get_line_wrapped_text);
 
+	/* Viewport. */
+	// Scolling.
+	ClassDB::bind_method(D_METHOD("set_smooth_scroll_enable", "enable"), &TextEdit::set_smooth_scroll_enabled);
+	ClassDB::bind_method(D_METHOD("is_smooth_scroll_enabled"), &TextEdit::is_smooth_scroll_enabled);
+
+	ClassDB::bind_method(D_METHOD("set_v_scroll", "value"), &TextEdit::set_v_scroll);
+	ClassDB::bind_method(D_METHOD("get_v_scroll"), &TextEdit::get_v_scroll);
+
+	ClassDB::bind_method(D_METHOD("set_h_scroll", "value"), &TextEdit::set_h_scroll);
+	ClassDB::bind_method(D_METHOD("get_h_scroll"), &TextEdit::get_h_scroll);
+
+	ClassDB::bind_method(D_METHOD("set_scroll_past_end_of_file_enabled", "enable"), &TextEdit::set_scroll_past_end_of_file_enabled);
+	ClassDB::bind_method(D_METHOD("is_scroll_past_end_of_file_enabled"), &TextEdit::is_scroll_past_end_of_file_enabled);
+
+	ClassDB::bind_method(D_METHOD("set_v_scroll_speed", "speed"), &TextEdit::set_v_scroll_speed);
+	ClassDB::bind_method(D_METHOD("get_v_scroll_speed"), &TextEdit::get_v_scroll_speed);
+
+	ClassDB::bind_method(D_METHOD("get_scroll_pos_for_line", "line", "wrap_index"), &TextEdit::get_scroll_pos_for_line, DEFVAL(0));
+
+	// Visible lines.
+	ClassDB::bind_method(D_METHOD("set_line_as_first_visible", "line", "wrap_index"), &TextEdit::set_line_as_first_visible, DEFVAL(0));
+	ClassDB::bind_method(D_METHOD("get_first_visible_line"), &TextEdit::get_first_visible_line);
+
+	ClassDB::bind_method(D_METHOD("set_line_as_center_visible", "line", "wrap_index"), &TextEdit::set_line_as_center_visible, DEFVAL(0));
+
+	ClassDB::bind_method(D_METHOD("set_line_as_last_visible", "line", "wrap_index"), &TextEdit::set_line_as_last_visible, DEFVAL(0));
+	ClassDB::bind_method(D_METHOD("get_last_full_visible_line"), &TextEdit::get_last_full_visible_line);
+	ClassDB::bind_method(D_METHOD("get_last_full_visible_line_wrap_index"), &TextEdit::get_last_full_visible_line_wrap_index);
+
+	ClassDB::bind_method(D_METHOD("get_visible_line_count"), &TextEdit::get_visible_line_count);
+	ClassDB::bind_method(D_METHOD("get_total_visible_line_count"), &TextEdit::get_total_visible_line_count);
+
+	// Auto adjust
+	ClassDB::bind_method(D_METHOD("adjust_viewport_to_caret"), &TextEdit::adjust_viewport_to_caret);
+	ClassDB::bind_method(D_METHOD("center_viewport_to_caret"), &TextEdit::center_viewport_to_caret);
+
+	// Minimap
+	ClassDB::bind_method(D_METHOD("draw_minimap", "draw"), &TextEdit::set_draw_minimap);
+	ClassDB::bind_method(D_METHOD("is_drawing_minimap"), &TextEdit::is_drawing_minimap);
+
+	ClassDB::bind_method(D_METHOD("set_minimap_width", "width"), &TextEdit::set_minimap_width);
+	ClassDB::bind_method(D_METHOD("get_minimap_width"), &TextEdit::get_minimap_width);
+
+	ClassDB::bind_method(D_METHOD("get_minimap_visible_lines"), &TextEdit::get_minimap_visible_lines);
+
 	/* Syntax Highlighting. */
 	ClassDB::bind_method(D_METHOD("set_syntax_highlighter", "syntax_highlighter"), &TextEdit::set_syntax_highlighter);
 	ClassDB::bind_method(D_METHOD("get_syntax_highlighter"), &TextEdit::get_syntax_highlighter);
@@ -5210,23 +5028,9 @@ void TextEdit::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_highlight_current_line", "enabled"), &TextEdit::set_highlight_current_line);
 	ClassDB::bind_method(D_METHOD("is_highlight_current_line_enabled"), &TextEdit::is_highlight_current_line_enabled);
 
-	ClassDB::bind_method(D_METHOD("set_smooth_scroll_enable", "enable"), &TextEdit::set_smooth_scroll_enabled);
-	ClassDB::bind_method(D_METHOD("is_smooth_scroll_enabled"), &TextEdit::is_smooth_scroll_enabled);
-	ClassDB::bind_method(D_METHOD("set_v_scroll_speed", "speed"), &TextEdit::set_v_scroll_speed);
-	ClassDB::bind_method(D_METHOD("get_v_scroll_speed"), &TextEdit::get_v_scroll_speed);
-	ClassDB::bind_method(D_METHOD("set_v_scroll", "value"), &TextEdit::set_v_scroll);
-	ClassDB::bind_method(D_METHOD("get_v_scroll"), &TextEdit::get_v_scroll);
-	ClassDB::bind_method(D_METHOD("set_h_scroll", "value"), &TextEdit::set_h_scroll);
-	ClassDB::bind_method(D_METHOD("get_h_scroll"), &TextEdit::get_h_scroll);
-
 	ClassDB::bind_method(D_METHOD("menu_option", "option"), &TextEdit::menu_option);
 	ClassDB::bind_method(D_METHOD("get_menu"), &TextEdit::get_menu);
 	ClassDB::bind_method(D_METHOD("is_menu_visible"), &TextEdit::is_menu_visible);
-
-	ClassDB::bind_method(D_METHOD("draw_minimap", "draw"), &TextEdit::set_draw_minimap);
-	ClassDB::bind_method(D_METHOD("is_drawing_minimap"), &TextEdit::is_drawing_minimap);
-	ClassDB::bind_method(D_METHOD("set_minimap_width", "width"), &TextEdit::set_minimap_width);
-	ClassDB::bind_method(D_METHOD("get_minimap_width"), &TextEdit::get_minimap_width);
 
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "text", PROPERTY_HINT_MULTILINE_TEXT), "set_text", "get_text");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "text_direction", PROPERTY_HINT_ENUM, "Auto,Left-to-Right,Right-to-Left,Inherited"), "set_text_direction", "get_text_direction");
@@ -5243,6 +5047,7 @@ void TextEdit::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "virtual_keyboard_enabled"), "set_virtual_keyboard_enabled", "is_virtual_keyboard_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "selecting_enabled"), "set_selecting_enabled", "is_selecting_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "smooth_scrolling"), "set_smooth_scroll_enable", "is_smooth_scroll_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "scroll_past_end_of_file"), "set_scroll_past_end_of_file_enabled", "is_scroll_past_end_of_file_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "v_scroll_speed"), "set_v_scroll_speed", "get_v_scroll_speed");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "wrap_mode", PROPERTY_HINT_ENUM, "None,Boundary"), "set_line_wrapping_mode", "get_line_wrapping_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "scroll_vertical"), "set_v_scroll", "get_v_scroll");
@@ -5747,6 +5552,266 @@ void TextEdit::_update_caret_wrap_offset() {
 		caret.wrap_ofs = 0;
 	}
 	set_line_as_first_visible(caret.line_ofs, caret.wrap_ofs);
+}
+
+/* Viewport. */
+void TextEdit::_update_scrollbars() {
+	Size2 size = get_size();
+	Size2 hmin = h_scroll->get_combined_minimum_size();
+	Size2 vmin = v_scroll->get_combined_minimum_size();
+
+	v_scroll->set_begin(Point2(size.width - vmin.width, cache.style_normal->get_margin(SIDE_TOP)));
+	v_scroll->set_end(Point2(size.width, size.height - cache.style_normal->get_margin(SIDE_TOP) - cache.style_normal->get_margin(SIDE_BOTTOM)));
+
+	h_scroll->set_begin(Point2(0, size.height - hmin.height));
+	h_scroll->set_end(Point2(size.width - vmin.width, size.height));
+
+	int visible_rows = get_visible_line_count();
+	int total_rows = get_total_visible_line_count();
+	if (scroll_past_end_of_file_enabled) {
+		total_rows += visible_rows - 1;
+	}
+
+	int visible_width = size.width - cache.style_normal->get_minimum_size().width;
+	int total_width = text.get_max_width(true) + vmin.x + gutters_width + gutter_padding;
+
+	if (draw_minimap) {
+		total_width += minimap_width;
+	}
+
+	updating_scrolls = true;
+
+	if (total_rows > visible_rows) {
+		v_scroll->show();
+		v_scroll->set_max(total_rows + _get_visible_lines_offset());
+		v_scroll->set_page(visible_rows + _get_visible_lines_offset());
+		if (smooth_scroll_enabled) {
+			v_scroll->set_step(0.25);
+		} else {
+			v_scroll->set_step(1);
+		}
+		set_v_scroll(get_v_scroll());
+
+	} else {
+		caret.line_ofs = 0;
+		caret.wrap_ofs = 0;
+		v_scroll->set_value(0);
+		v_scroll->hide();
+	}
+
+	if (total_width > visible_width && get_line_wrapping_mode() == LineWrappingMode::LINE_WRAPPING_NONE) {
+		h_scroll->show();
+		h_scroll->set_max(total_width);
+		h_scroll->set_page(visible_width);
+		if (caret.x_ofs > (total_width - visible_width)) {
+			caret.x_ofs = (total_width - visible_width);
+		}
+		if (fabs(h_scroll->get_value() - (double)caret.x_ofs) >= 1) {
+			h_scroll->set_value(caret.x_ofs);
+		}
+
+	} else {
+		caret.x_ofs = 0;
+		h_scroll->set_value(0);
+		h_scroll->hide();
+	}
+
+	updating_scrolls = false;
+}
+
+void TextEdit::_v_scroll_input() {
+	scrolling = false;
+	minimap_clicked = false;
+}
+
+void TextEdit::_scroll_moved(double p_to_val) {
+	if (updating_scrolls) {
+		return;
+	}
+
+	if (h_scroll->is_visible_in_tree()) {
+		caret.x_ofs = h_scroll->get_value();
+	}
+	if (v_scroll->is_visible_in_tree()) {
+		// Set line ofs and wrap ofs.
+		int v_scroll_i = floor(get_v_scroll());
+		int sc = 0;
+		int n_line;
+		for (n_line = 0; n_line < text.size(); n_line++) {
+			if (!_is_line_hidden(n_line)) {
+				sc++;
+				sc += get_line_wrap_count(n_line);
+				if (sc > v_scroll_i) {
+					break;
+				}
+			}
+		}
+		n_line = MIN(n_line, text.size() - 1);
+		int line_wrap_amount = get_line_wrap_count(n_line);
+		int wi = line_wrap_amount - (sc - v_scroll_i - 1);
+		wi = CLAMP(wi, 0, line_wrap_amount);
+
+		caret.line_ofs = n_line;
+		caret.wrap_ofs = wi;
+	}
+	update();
+}
+
+double TextEdit::_get_visible_lines_offset() const {
+	double total = _get_control_height();
+	total /= (double)get_row_height();
+	total = total - floor(total);
+	total = -CLAMP(total, 0.001, 1) + 1;
+	return total;
+}
+
+double TextEdit::_get_v_scroll_offset() const {
+	double val = get_v_scroll() - floor(get_v_scroll());
+	return CLAMP(val, 0, 1);
+}
+
+void TextEdit::_scroll_up(real_t p_delta) {
+	if (scrolling && smooth_scroll_enabled && SGN(target_v_scroll - v_scroll->get_value()) != SGN(-p_delta)) {
+		scrolling = false;
+		minimap_clicked = false;
+	}
+
+	if (scrolling) {
+		target_v_scroll = (target_v_scroll - p_delta);
+	} else {
+		target_v_scroll = (get_v_scroll() - p_delta);
+	}
+
+	if (smooth_scroll_enabled) {
+		if (target_v_scroll <= 0) {
+			target_v_scroll = 0;
+		}
+		if (Math::abs(target_v_scroll - v_scroll->get_value()) < 1.0) {
+			v_scroll->set_value(target_v_scroll);
+		} else {
+			scrolling = true;
+			set_physics_process_internal(true);
+		}
+	} else {
+		set_v_scroll(target_v_scroll);
+	}
+}
+
+void TextEdit::_scroll_down(real_t p_delta) {
+	if (scrolling && smooth_scroll_enabled && SGN(target_v_scroll - v_scroll->get_value()) != SGN(p_delta)) {
+		scrolling = false;
+		minimap_clicked = false;
+	}
+
+	if (scrolling) {
+		target_v_scroll = (target_v_scroll + p_delta);
+	} else {
+		target_v_scroll = (get_v_scroll() + p_delta);
+	}
+
+	if (smooth_scroll_enabled) {
+		int max_v_scroll = round(v_scroll->get_max() - v_scroll->get_page());
+		if (target_v_scroll > max_v_scroll) {
+			target_v_scroll = max_v_scroll;
+		}
+		if (Math::abs(target_v_scroll - v_scroll->get_value()) < 1.0) {
+			v_scroll->set_value(target_v_scroll);
+		} else {
+			scrolling = true;
+			set_physics_process_internal(true);
+		}
+	} else {
+		set_v_scroll(target_v_scroll);
+	}
+}
+
+void TextEdit::_scroll_lines_up() {
+	scrolling = false;
+	minimap_clicked = false;
+
+	// Adjust the vertical scroll.
+	set_v_scroll(get_v_scroll() - 1);
+
+	// Adjust the caret to viewport.
+	if (!selection.active) {
+		int cur_line = caret.line;
+		int cur_wrap = get_caret_wrap_index();
+		int last_vis_line = get_last_full_visible_line();
+		int last_vis_wrap = get_last_full_visible_line_wrap_index();
+
+		if (cur_line > last_vis_line || (cur_line == last_vis_line && cur_wrap > last_vis_wrap)) {
+			set_caret_line(last_vis_line, false, false, last_vis_wrap);
+		}
+	}
+}
+
+void TextEdit::_scroll_lines_down() {
+	scrolling = false;
+	minimap_clicked = false;
+
+	// Adjust the vertical scroll.
+	set_v_scroll(get_v_scroll() + 1);
+
+	// Adjust the caret to viewport.
+	if (!selection.active) {
+		int cur_line = caret.line;
+		int cur_wrap = get_caret_wrap_index();
+		int first_vis_line = get_first_visible_line();
+		int first_vis_wrap = caret.wrap_ofs;
+
+		if (cur_line < first_vis_line || (cur_line == first_vis_line && cur_wrap < first_vis_wrap)) {
+			set_caret_line(first_vis_line, false, false, first_vis_wrap);
+		}
+	}
+}
+
+// Minimap
+void TextEdit::_update_minimap_click() {
+	Point2 mp = _get_local_mouse_pos();
+
+	int xmargin_end = get_size().width - cache.style_normal->get_margin(SIDE_RIGHT);
+	if (!dragging_minimap && (mp.x < xmargin_end - minimap_width || mp.y > xmargin_end)) {
+		minimap_clicked = false;
+		return;
+	}
+	minimap_clicked = true;
+	dragging_minimap = true;
+
+	int row;
+	_get_minimap_mouse_row(Point2i(mp.x, mp.y), row);
+
+	if (row >= get_first_visible_line() && (row < get_last_full_visible_line() || row >= (text.size() - 1))) {
+		minimap_scroll_ratio = v_scroll->get_as_ratio();
+		minimap_scroll_click_pos = mp.y;
+		can_drag_minimap = true;
+		return;
+	}
+
+	int wi;
+	int first_line = row - num_lines_from_rows(row, 0, -get_visible_line_count() / 2, wi) + 1;
+	double delta = get_scroll_pos_for_line(first_line, wi) - get_v_scroll();
+	if (delta < 0) {
+		_scroll_up(-delta);
+	} else {
+		_scroll_down(delta);
+	}
+}
+
+void TextEdit::_update_minimap_drag() {
+	if (!can_drag_minimap) {
+		return;
+	}
+
+	int control_height = _get_control_height();
+	int scroll_height = v_scroll->get_max() * (minimap_char_size.y + minimap_line_spacing);
+	if (control_height > scroll_height) {
+		control_height = scroll_height;
+	}
+
+	Point2 mp = _get_local_mouse_pos();
+
+	double diff = (mp.y - minimap_scroll_click_pos) / control_height;
+	v_scroll->set_as_ratio(minimap_scroll_ratio + diff);
 }
 
 TextEdit::TextEdit() {

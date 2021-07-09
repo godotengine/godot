@@ -280,6 +280,53 @@ private:
 
 	void _update_caret_wrap_offset();
 
+	/* Viewport. */
+	HScrollBar *h_scroll;
+	VScrollBar *v_scroll;
+
+	bool scroll_past_end_of_file_enabled = false;
+
+	// Smooth scrolling.
+	bool smooth_scroll_enabled = false;
+	float target_v_scroll = 0.0;
+	float v_scroll_speed = 80.0;
+
+	// Scrolling.
+	bool scrolling = false;
+	bool updating_scrolls = false;
+
+	void _update_scrollbars();
+
+	void _v_scroll_input();
+	void _scroll_moved(double p_to_val);
+
+	double _get_visible_lines_offset() const;
+	double _get_v_scroll_offset() const;
+
+	void _scroll_up(real_t p_delta);
+	void _scroll_down(real_t p_delta);
+
+	void _scroll_lines_up();
+	void _scroll_lines_down();
+
+	// Minimap
+	bool draw_minimap = false;
+
+	int minimap_width = 80;
+	Point2 minimap_char_size = Point2(1, 2);
+	int minimap_line_spacing = 1;
+
+	// minimap scroll
+	bool minimap_clicked = false;
+	bool dragging_minimap = false;
+	bool can_drag_minimap = false;
+
+	double minimap_scroll_ratio = 0.0;
+	double minimap_scroll_click_pos = 0.0;
+
+	void _update_minimap_click();
+	void _update_minimap_drag();
+
 	/* Syntax highlighting. */
 	Map<int, Dictionary> syntax_highlighting_cache;
 
@@ -343,29 +390,11 @@ private:
 	bool draw_spaces = false;
 	bool text_changed_dirty = false;
 	bool undo_enabled = true;
-	bool draw_minimap = false;
-	int minimap_width = 80;
-	Point2 minimap_char_size = Point2(1, 2);
-	int minimap_line_spacing = 1;
 
 	bool highlight_all_occurrences = false;
-	bool scroll_past_end_of_file_enabled = false;
 	bool highlight_current_line = false;
 
-	bool smooth_scroll_enabled = false;
-	bool scrolling = false;
-	bool dragging_minimap = false;
-	bool can_drag_minimap = false;
-	bool minimap_clicked = false;
-	double minimap_scroll_ratio = 0.0;
-	double minimap_scroll_click_pos = 0.0;
-	float target_v_scroll = 0.0;
-	float v_scroll_speed = 80.0;
-
 	Timer *idle_detect;
-	HScrollBar *h_scroll;
-	VScrollBar *v_scroll;
-	bool updating_scrolls = false;
 
 	Object *tooltip_obj = nullptr;
 	StringName tooltip_func;
@@ -382,36 +411,8 @@ private:
 	bool shortcut_keys_enabled = true;
 	bool virtual_keyboard_enabled = true;
 
-	int get_visible_rows() const;
-	int get_total_visible_rows() const;
-
-	int _get_minimap_visible_rows() const;
-
-	double get_scroll_pos_for_line(int p_line, int p_wrap_index = 0) const;
-	void set_line_as_first_visible(int p_line, int p_wrap_index = 0);
-	void set_line_as_center_visible(int p_line, int p_wrap_index = 0);
-	void set_line_as_last_visible(int p_line, int p_wrap_index = 0);
-	int get_first_visible_line() const;
-	int get_last_full_visible_line() const;
-	int get_last_full_visible_line_wrap_index() const;
-	double get_visible_rows_offset() const;
-	double get_v_scroll_offset() const;
-
 	int get_char_pos_for_line(int p_px, int p_line, int p_wrap_index = 0) const;
 	int get_column_x_offset_for_line(int p_char, int p_line) const;
-
-	double get_scroll_line_diff() const;
-	void _scroll_moved(double);
-	void _update_scrollbars();
-	void _v_scroll_input();
-
-	void _update_minimap_click();
-	void _update_minimap_drag();
-	void _scroll_up(real_t p_delta);
-	void _scroll_down(real_t p_delta);
-
-	void _scroll_lines_up();
-	void _scroll_lines_down();
 
 	Size2 get_minimum_size() const override;
 	int _get_control_height() const;
@@ -480,7 +481,6 @@ protected:
 		Color background_color;
 
 		int line_spacing = 1;
-		int minimap_width = 0;
 	} cache;
 
 	virtual String get_tooltip(const Point2 &p_pos) const override;
@@ -607,6 +607,51 @@ public:
 	int get_line_wrap_index_at_column(int p_line, int p_column) const;
 
 	Vector<String> get_line_wrapped_text(int p_line) const;
+
+	/* Viewport. */
+	//Scrolling.
+	void set_smooth_scroll_enabled(const bool p_enable);
+	bool is_smooth_scroll_enabled() const;
+
+	void set_scroll_past_end_of_file_enabled(const bool p_enabled);
+	bool is_scroll_past_end_of_file_enabled() const;
+
+	void set_v_scroll(double p_scroll);
+	double get_v_scroll() const;
+
+	void set_h_scroll(int p_scroll);
+	int get_h_scroll() const;
+
+	void set_v_scroll_speed(float p_speed);
+	float get_v_scroll_speed() const;
+
+	double get_scroll_pos_for_line(int p_line, int p_wrap_index = 0) const;
+
+	// Visible lines.
+	void set_line_as_first_visible(int p_line, int p_wrap_index = 0);
+	int get_first_visible_line() const;
+
+	void set_line_as_center_visible(int p_line, int p_wrap_index = 0);
+
+	void set_line_as_last_visible(int p_line, int p_wrap_index = 0);
+	int get_last_full_visible_line() const;
+	int get_last_full_visible_line_wrap_index() const;
+
+	int get_visible_line_count() const;
+	int get_total_visible_line_count() const;
+
+	// Auto Adjust
+	void adjust_viewport_to_caret();
+	void center_viewport_to_caret();
+
+	// Minimap
+	void set_draw_minimap(bool p_draw);
+	bool is_drawing_minimap() const;
+
+	void set_minimap_width(int p_minimap_width);
+	int get_minimap_width() const;
+
+	int get_minimap_visible_lines() const;
 
 	/* Syntax Highlighting. */
 	Ref<SyntaxHighlighter> get_syntax_highlighter();
@@ -749,14 +794,6 @@ public:
 	int get_indent_level(int p_line) const;
 	int get_first_non_whitespace_column(int p_line) const;
 
-	inline void set_scroll_pass_end_of_file(bool p_enabled) {
-		scroll_past_end_of_file_enabled = p_enabled;
-		update();
-	}
-
-	void adjust_viewport_to_caret();
-	void center_viewport_to_caret();
-
 	void clear();
 
 	void swap_lines(int line1, int line2);
@@ -784,18 +821,6 @@ public:
 	void set_draw_spaces(bool p_draw);
 	bool is_drawing_spaces() const;
 
-	double get_v_scroll() const;
-	void set_v_scroll(double p_scroll);
-
-	int get_h_scroll() const;
-	void set_h_scroll(int p_scroll);
-
-	void set_smooth_scroll_enabled(bool p_enable);
-	bool is_smooth_scroll_enabled() const;
-
-	void set_v_scroll_speed(float p_speed);
-	float get_v_scroll_speed() const;
-
 	uint32_t get_version() const;
 	uint32_t get_saved_version() const;
 	void tag_saved_version();
@@ -804,12 +829,6 @@ public:
 
 	void set_highlight_current_line(bool p_enabled);
 	bool is_highlight_current_line_enabled() const;
-
-	void set_draw_minimap(bool p_draw);
-	bool is_drawing_minimap() const;
-
-	void set_minimap_width(int p_minimap_width);
-	int get_minimap_width() const;
 
 	void set_tooltip_request_func(Object *p_obj, const StringName &p_function, const Variant &p_udata);
 
