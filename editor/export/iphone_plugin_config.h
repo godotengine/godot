@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  godot_plugin_config.h                                                */
+/*  iphone_plugin_config.h                                               */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef GODOT_PLUGIN_CONFIG_H
-#define GODOT_PLUGIN_CONFIG_H
+#ifndef IPHONE_PLUGIN_CONFIG_H
+#define IPHONE_PLUGIN_CONFIG_H
 
 #include "core/error_list.h"
 #include "core/io/config_file.h"
@@ -379,4 +379,4 @@ static inline PluginConfigIOS load_plugin_config(Ref<ConfigFile> config_file, co
 	return plugin_config;
 }
 
-#endif // GODOT_PLUGIN_CONFIG_H
+#endif // IPHONE_PLUGIN_CONFIG_H

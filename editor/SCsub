@@ -28,20 +28,6 @@ def _make_doc_data_class_path(to_path):
 
 
 if env["tools"]:
-    # Register exporters
-    reg_exporters_inc = '#include "register_exporters.h"\n'
-    reg_exporters = "void register_exporters() {\n"
-    for e in env.platform_exporters:
-        env.add_source_files(env.editor_sources, "#platform/" + e + "/export/export.cpp")
-        reg_exporters += "\tregister_" + e + "_exporter();\n"
-        reg_exporters_inc += '#include "platform/' + e + '/export/export.h"\n'
-    reg_exporters += "}\n"
-
-    # NOTE: It is safe to generate this file here, since this is still executed serially
-    with open_utf8("register_exporters.gen.cpp", "w") as f:
-        f.write(reg_exporters_inc)
-        f.write(reg_exporters)
-
     # Core API documentation.
     docs = []
     docs += Glob("#doc/classes/*.xml")
@@ -82,6 +68,7 @@ if env["tools"]:
 
     SConscript("collada/SCsub")
     SConscript("doc/SCsub")
+    SConscript("export/SCsub")
     SConscript("fileserver/SCsub")
     SConscript("icons/SCsub")
     SConscript("import/SCsub")

@@ -22,7 +22,6 @@ platform_flags = {}  # flags for each platform
 
 active_platforms = []
 active_platform_ids = []
-platform_exporters = []
 platform_apis = []
 
 for x in sorted(glob.glob("platform/*")):
@@ -33,8 +32,6 @@ for x in sorted(glob.glob("platform/*")):
     sys.path.insert(0, tmppath)
     import detect
 
-    if os.path.exists(x + "/export/export.cpp"):
-        platform_exporters.append(x[9:])
     if os.path.exists(x + "/api/api.cpp"):
         platform_apis.append(x[9:])
     if detect.is_active():
@@ -49,7 +46,7 @@ for x in sorted(glob.glob("platform/*")):
     sys.path.remove(tmppath)
     sys.modules.pop("detect")
 
-methods.save_active_platforms(active_platforms, active_platform_ids)
+methods.generate_platform_export_icons()
 
 custom_tools = ["default"]
 
@@ -285,7 +282,6 @@ Help(opts.GenerateHelpText(env_base))
 env_base.Prepend(CPPPATH=["#"])
 
 # configure ENV for platform
-env_base.platform_exporters = platform_exporters
 env_base.platform_apis = platform_apis
 
 if env_base["use_precise_math_checks"]:

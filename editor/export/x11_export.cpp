@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  export.cpp                                                           */
+/*  x11_export.cpp                                                       */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,11 +28,11 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "export.h"
+#include "x11_export.h"
 
 #include "core/os/file_access.h"
 #include "editor/editor_export.h"
-#include "platform/x11/logo.gen.h"
+#include "editor/export/x11_logo.gen.h"
 #include "scene/resources/texture.h"
 
 static Error fixup_embedded_pck(const String &p_path, int64_t p_embedded_start, int64_t p_embedded_size);
