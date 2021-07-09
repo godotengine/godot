@@ -703,6 +703,9 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	_initial_set("editors/animation/onion_layers_future_color", Color(0, 1, 0));
 
 	// Visual editors
+	_initial_set("editors/visual_editors/connection_lines_antialiased", true);
+	_initial_set("editors/visual_editors/connection_lines_thickness", 2.0);
+	hints["editors/visual_editors/connection_lines_thickness"] = PropertyInfo(Variant::FLOAT, "editors/visual_editors/connection_lines_thickness", PROPERTY_HINT_RANGE, "1.0,5.0,0.01", PROPERTY_USAGE_DEFAULT);
 	_initial_set("editors/visual_editors/minimap_opacity", 0.85);
 	hints["editors/visual_editors/minimap_opacity"] = PropertyInfo(Variant::FLOAT, "editors/visual_editors/minimap_opacity", PROPERTY_HINT_RANGE, "0.0,1.0,0.01", PROPERTY_USAGE_DEFAULT);
 

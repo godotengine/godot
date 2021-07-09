@@ -969,6 +969,10 @@ void VisualScriptEditor::_update_graph(int p_only_id) {
 
 	_update_graph_connections();
 
+	bool graph_lines_antialiased = EditorSettings::get_singleton()->get("editors/visual_editors/connection_lines_antialiased");
+	graph->set_connection_lines_antialiased(graph_lines_antialiased);
+	float graph_lines_thickness = EditorSettings::get_singleton()->get("editors/visual_editors/connection_lines_thickness");
+	graph->set_connection_lines_thickness(graph_lines_thickness);
 	float graph_minimap_opacity = EditorSettings::get_singleton()->get("editors/visual_editors/minimap_opacity");
 	graph->set_minimap_opacity(graph_minimap_opacity);
 
@@ -4271,6 +4275,10 @@ VisualScriptEditor::VisualScriptEditor() {
 	graph->connect("duplicate_nodes_request", callable_mp(this, &VisualScriptEditor::_on_nodes_duplicate));
 	graph->connect("gui_input", callable_mp(this, &VisualScriptEditor::_graph_gui_input));
 	graph->set_drag_forwarding(this);
+	bool graph_lines_antialiased = EditorSettings::get_singleton()->get("editors/visual_editors/connection_lines_antialiased");
+	graph->set_connection_lines_antialiased(graph_lines_antialiased);
+	float graph_lines_thickness = EditorSettings::get_singleton()->get("editors/visual_editors/connection_lines_thickness");
+	graph->set_connection_lines_thickness(graph_lines_thickness);
 	float graph_minimap_opacity = EditorSettings::get_singleton()->get("editors/visual_editors/minimap_opacity");
 	graph->set_minimap_opacity(graph_minimap_opacity);
 	graph->hide();

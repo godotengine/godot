@@ -1416,6 +1416,10 @@ void VisualShaderEditor::_update_graph() {
 		graph->connect_node(itos(from), from_idx, itos(to), to_idx);
 	}
 
+	bool graph_lines_antialiased = EditorSettings::get_singleton()->get("editors/visual_editors/connection_lines_antialiased");
+	graph->set_connection_lines_antialiased(graph_lines_antialiased);
+	float graph_lines_thickness = EditorSettings::get_singleton()->get("editors/visual_editors/connection_lines_thickness");
+	graph->set_connection_lines_thickness(graph_lines_thickness);
 	float graph_minimap_opacity = EditorSettings::get_singleton()->get("editors/visual_editors/minimap_opacity");
 	graph->set_minimap_opacity(graph_minimap_opacity);
 }
@@ -3738,6 +3742,10 @@ VisualShaderEditor::VisualShaderEditor() {
 	graph->set_h_size_flags(SIZE_EXPAND_FILL);
 	add_child(graph);
 	graph->set_drag_forwarding(this);
+	bool graph_lines_antialiased = EditorSettings::get_singleton()->get("editors/visual_editors/connection_lines_antialiased");
+	graph->set_connection_lines_antialiased(graph_lines_antialiased);
+	float graph_lines_thickness = EditorSettings::get_singleton()->get("editors/visual_editors/connection_lines_thickness");
+	graph->set_connection_lines_thickness(graph_lines_thickness);
 	float graph_minimap_opacity = EditorSettings::get_singleton()->get("editors/visual_editors/minimap_opacity");
 	graph->set_minimap_opacity(graph_minimap_opacity);
 	graph->add_valid_right_disconnect_type(VisualShaderNode::PORT_TYPE_SCALAR);

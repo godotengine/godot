@@ -254,6 +254,10 @@ void AnimationNodeBlendTreeEditor::_update_graph() {
 		graph->connect_node(from, 0, to, to_idx);
 	}
 
+	bool graph_lines_antialiased = EditorSettings::get_singleton()->get("editors/visual_editors/connection_lines_antialiased");
+	graph->set_connection_lines_antialiased(graph_lines_antialiased);
+	float graph_lines_thickness = EditorSettings::get_singleton()->get("editors/visual_editors/connection_lines_thickness");
+	graph->set_connection_lines_thickness(graph_lines_thickness);
 	float graph_minimap_opacity = EditorSettings::get_singleton()->get("editors/visual_editors/minimap_opacity");
 	graph->set_minimap_opacity(graph_minimap_opacity);
 }
@@ -889,6 +893,10 @@ AnimationNodeBlendTreeEditor::AnimationNodeBlendTreeEditor() {
 	graph->connect("scroll_offset_changed", callable_mp(this, &AnimationNodeBlendTreeEditor::_scroll_changed));
 	graph->connect("delete_nodes_request", callable_mp(this, &AnimationNodeBlendTreeEditor::_delete_nodes_request));
 	graph->connect("popup_request", callable_mp(this, &AnimationNodeBlendTreeEditor::_popup_request));
+	bool graph_lines_antialiased = EditorSettings::get_singleton()->get("editors/visual_editors/connection_lines_antialiased");
+	graph->set_connection_lines_antialiased(graph_lines_antialiased);
+	float graph_lines_thickness = EditorSettings::get_singleton()->get("editors/visual_editors/connection_lines_thickness");
+	graph->set_connection_lines_thickness(graph_lines_thickness);
 	float graph_minimap_opacity = EditorSettings::get_singleton()->get("editors/visual_editors/minimap_opacity");
 	graph->set_minimap_opacity(graph_minimap_opacity);
 
