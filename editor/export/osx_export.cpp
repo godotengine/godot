@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  export.cpp                                                           */
+/*  osx_export.cpp                                                       */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,7 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "export.h"
+#include "osx_export.h"
 
 #include "core/config/project_settings.h"
 #include "core/io/dir_access.h"
@@ -41,7 +41,7 @@
 #include "editor/editor_export.h"
 #include "editor/editor_node.h"
 #include "editor/editor_settings.h"
-#include "platform/osx/logo.gen.h"
+#include "editor/export/osx_logo.gen.h"
 
 #include <sys/stat.h>
 

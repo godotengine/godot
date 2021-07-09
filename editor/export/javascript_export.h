@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  export.h                                                             */
+/*  javascript_export.h                                                  */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,9 +28,9 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef IPHONE_EXPORT_H
-#define IPHONE_EXPORT_H
+#ifndef JAVASCRIPT_EXPORT_H
+#define JAVASCRIPT_EXPORT_H
 
-void register_iphone_exporter();
+void register_javascript_exporter();
 
-#endif // IPHONE_EXPORT_H
+#endif // JAVASCRIPT_EXPORT_H

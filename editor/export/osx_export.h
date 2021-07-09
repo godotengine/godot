@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  export.h                                                             */
+/*  osx_export.h                                                         */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,9 +28,9 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef ANDROID_EXPORT_H
-#define ANDROID_EXPORT_H
+#ifndef OSX_EXPORT_H
+#define OSX_EXPORT_H
 
-void register_android_exporter();
+void register_osx_exporter();
 
-#endif // ANDROID_EXPORT_H
+#endif // OSX_EXPORT_H

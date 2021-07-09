@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  register_exporters.h                                                 */
+/*  android_export.h                                                     */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,9 +28,9 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef REGISTER_EXPORTERS_H
-#define REGISTER_EXPORTERS_H
+#ifndef ANDROID_EXPORT_H
+#define ANDROID_EXPORT_H
 
-void register_exporters();
+void register_android_exporter();
 
-#endif
+#endif // ANDROID_EXPORT_H

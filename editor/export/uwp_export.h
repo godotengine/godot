@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  export.h                                                             */
+/*  uwp_export.h                                                         */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,4 +28,9 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-void register_windows_exporter();
+#ifndef UWP_EXPORT_H
+#define UWP_EXPORT_H
+
+void register_uwp_exporter();
+
+#endif // UWP_EXPORT_H

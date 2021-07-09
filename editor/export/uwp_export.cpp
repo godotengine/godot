@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  export.cpp                                                           */
+/*  uwp_export.cpp                                                       */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,7 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "export.h"
+#include "uwp_export.h"
 
 #include "core/config/project_settings.h"
 #include "core/core_bind.h"
@@ -41,7 +41,7 @@
 #include "core/version.h"
 #include "editor/editor_export.h"
 #include "editor/editor_node.h"
-#include "platform/uwp/logo.gen.h"
+#include "editor/export/uwp_logo.gen.h"
 
 #include "thirdparty/minizip/unzip.h"
 #include "thirdparty/minizip/zip.h"
