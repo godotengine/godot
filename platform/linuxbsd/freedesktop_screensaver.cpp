@@ -55,7 +55,8 @@ void FreeDesktopScreenSaver::inhibit() {
 	}
 
 	String app_name_string = ProjectSettings::get_singleton()->get("application/config/name");
-	const char *app_name = app_name_string.is_empty() ? "Godot Engine" : app_name_string.utf8().get_data();
+	CharString app_name_utf8 = app_name_string.utf8();
+	const char *app_name = app_name_string.is_empty() ? "Godot Engine" : app_name_utf8.get_data();
 
 	const char *reason = "Running Godot Engine project";
 
