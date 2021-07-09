@@ -946,7 +946,7 @@ void PhysicsServer2DSW::body_set_pickable(RID p_body, bool p_pickable) {
 	body->set_pickable(p_pickable);
 }
 
-bool PhysicsServer2DSW::body_test_motion(RID p_body, const Transform2D &p_from, const Vector2 &p_motion, bool p_infinite_inertia, real_t p_margin, MotionResult *r_result, bool p_exclude_raycast_shapes) {
+bool PhysicsServer2DSW::body_test_motion(RID p_body, const Transform2D &p_from, const Vector2 &p_motion, bool p_infinite_inertia, real_t p_margin, MotionResult *r_result, bool p_exclude_raycast_shapes, const Set<RID> &p_exclude) {
 	Body2DSW *body = body_owner.getornull(p_body);
 	ERR_FAIL_COND_V(!body, false);
 	ERR_FAIL_COND_V(!body->get_space(), false);
@@ -954,7 +954,7 @@ bool PhysicsServer2DSW::body_test_motion(RID p_body, const Transform2D &p_from, 
 
 	_update_shapes();
 
-	return body->get_space()->test_body_motion(body, p_from, p_motion, p_infinite_inertia, p_margin, r_result, p_exclude_raycast_shapes);
+	return body->get_space()->test_body_motion(body, p_from, p_motion, p_infinite_inertia, p_margin, r_result, p_exclude_raycast_shapes, p_exclude);
 }
 
 int PhysicsServer2DSW::body_test_ray_separation(RID p_body, const Transform2D &p_transform, bool p_infinite_inertia, Vector2 &r_recover_motion, SeparationResult *r_results, int p_result_max, real_t p_margin) {

@@ -820,6 +820,10 @@
 			</argument>
 			<argument index="5" name="result" type="PhysicsTestMotionResult2D" default="null">
 			</argument>
+			<argument index="6" name="exclude_raycast_shapes" type="bool" default="true">
+			</argument>
+			<argument index="7" name="exclude" type="Array" default="[]">
+			</argument>
 			<description>
 				Returns [code]true[/code] if a collision would result from moving in the given direction from a given point in space. Margin increases the size of the shapes involved in the collision detection. [PhysicsTestMotionResult2D] can be passed to return additional information in.
 			</description>
