@@ -163,9 +163,13 @@ void EditorExportPlatformOSX::get_export_options(List<ExportOption> *r_options) 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "codesign/replace_existing_signature"), true));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "codesign/entitlements/custom_file", PROPERTY_HINT_GLOBAL_FILE, "*.plist"), ""));
 
-	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "codesign/entitlements/allow_jit_code_execution"), false));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "codesign/entitlements/allow_unsigned_executable_memory"), false));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "codesign/entitlements/allow_dyld_environment_variables"), false));
+	if (!Engine::get_singleton()->has_singleton("GodotSharp")) {
+		// These entitlements are required to run managed code, and are always enabled in Mono builds.
+		r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "codesign/entitlements/allow_jit_code_execution"), false));
+		r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "codesign/entitlements/allow_unsigned_executable_memory"), false));
+		r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "codesign/entitlements/allow_dyld_environment_variables"), false));
+	}
+
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "codesign/entitlements/disable_library_validation"), false));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "codesign/entitlements/audio_input"), false));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "codesign/entitlements/camera"), false));
@@ -786,18 +790,29 @@ Error EditorExportPlatformOSX::export_project(const Ref<EditorExportPreset> &p_p
 				ent_f->store_line("<!DOCTYPE plist PUBLIC \"-//Apple//DTD PLIST 1.0//EN\" \"http://www.apple.com/DTDs/PropertyList-1.0.dtd\">");
 				ent_f->store_line("<plist version=\"1.0\">");
 				ent_f->store_line("<dict>");
-				if ((bool)p_preset->get("codesign/entitlements/allow_jit_code_execution")) {
+				if (Engine::get_singleton()->has_singleton("GodotSharp")) {
+					// These entitlements are required to run managed code, and are always enabled in Mono builds.
 					ent_f->store_line("<key>com.apple.security.cs.allow-jit</key>");
 					ent_f->store_line("<true/>");
-				}
-				if ((bool)p_preset->get("codesign/entitlements/allow_unsigned_executable_memory")) {
 					ent_f->store_line("<key>com.apple.security.cs.allow-unsigned-executable-memory</key>");
 					ent_f->store_line("<true/>");
-				}
-				if ((bool)p_preset->get("codesign/entitlements/allow_dyld_environment_variables")) {
 					ent_f->store_line("<key>com.apple.security.cs.allow-dyld-environment-variables</key>");
 					ent_f->store_line("<true/>");
+				} else {
+					if ((bool)p_preset->get("codesign/entitlements/allow_jit_code_execution")) {
+						ent_f->store_line("<key>com.apple.security.cs.allow-jit</key>");
+						ent_f->store_line("<true/>");
+					}
+					if ((bool)p_preset->get("codesign/entitlements/allow_unsigned_executable_memory")) {
+						ent_f->store_line("<key>com.apple.security.cs.allow-unsigned-executable-memory</key>");
+						ent_f->store_line("<true/>");
+					}
+					if ((bool)p_preset->get("codesign/entitlements/allow_dyld_environment_variables")) {
+						ent_f->store_line("<key>com.apple.security.cs.allow-dyld-environment-variables</key>");
+						ent_f->store_line("<true/>");
+					}
 				}
+
 				if ((bool)p_preset->get("codesign/entitlements/disable_library_validation")) {
 					ent_f->store_line("<key>com.apple.security.cs.disable-library-validation</key>");
 					ent_f->store_line("<true/>");
