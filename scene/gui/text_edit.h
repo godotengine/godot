@@ -188,6 +188,10 @@ private:
 	};
 
 	/* Text manipulation */
+	// User control.
+	/* Initialise to opposite first, so we get past the early-out in set_editable. */
+	bool editable = false;
+
 	bool overtype_mode = false;
 
 	String cut_copy_line = "";
@@ -331,8 +335,6 @@ private:
 
 	uint32_t version = 0;
 	uint32_t saved_version = 0;
-
-	bool readonly = true; // Initialise to opposite first, so we get past the early-out in set_readonly.
 
 	bool window_has_focus = true;
 
@@ -525,6 +527,10 @@ protected:
 
 public:
 	/* Text manipulation */
+	// User control
+	void set_editable(const bool p_editable);
+	bool is_editable() const;
+
 	void set_overtype_mode_enabled(const bool p_enabled);
 	bool is_overtype_mode_enabled() const;
 
@@ -750,9 +756,6 @@ public:
 
 	void adjust_viewport_to_caret();
 	void center_viewport_to_caret();
-
-	void set_readonly(bool p_readonly);
-	bool is_readonly() const;
 
 	void clear();
 

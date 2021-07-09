@@ -464,7 +464,7 @@ void TextEdit::_notification(int p_what) {
 			int xmargin_end = size.width - cache.style_normal->get_margin(SIDE_RIGHT) - cache.minimap_width;
 			// Let's do it easy for now.
 			cache.style_normal->draw(ci, Rect2(Point2(), size));
-			if (readonly) {
+			if (!editable) {
 				cache.style_readonly->draw(ci, Rect2(Point2(), size));
 				draw_caret = false;
 			}
@@ -474,7 +474,7 @@ void TextEdit::_notification(int p_what) {
 
 			int visible_rows = get_visible_rows() + 1;
 
-			Color color = readonly ? cache.font_readonly_color : cache.font_color;
+			Color color = !editable ? cache.font_readonly_color : cache.font_color;
 
 			if (cache.background_color.a > 0.01) {
 				RenderingServer::get_singleton()->canvas_item_add_rect(ci, Rect2(Point2i(), get_size()), cache.background_color);
@@ -687,7 +687,7 @@ void TextEdit::_notification(int p_what) {
 					Color line_background_color = text.get_line_background_color(minimap_line);
 					line_background_color.a *= 0.6;
 					Color current_color = cache.font_color;
-					if (readonly) {
+					if (!editable) {
 						current_color = cache.font_readonly_color;
 					}
 
@@ -734,7 +734,7 @@ void TextEdit::_notification(int p_what) {
 						for (int j = 0; j < str.length(); j++) {
 							if (color_map.has(last_wrap_column + j)) {
 								current_color = color_map[last_wrap_column + j].get("color");
-								if (readonly) {
+								if (!editable) {
 									current_color.a = cache.font_readonly_color.a;
 								}
 							}
@@ -796,7 +796,7 @@ void TextEdit::_notification(int p_what) {
 
 			int top_limit_y = 0;
 			int bottom_limit_y = get_size().height;
-			if (readonly) {
+			if (!editable) {
 				top_limit_y += cache.style_readonly->get_margin(SIDE_TOP);
 				bottom_limit_y -= cache.style_readonly->get_margin(SIDE_BOTTOM);
 			} else {
@@ -829,7 +829,7 @@ void TextEdit::_notification(int p_what) {
 				Dictionary color_map = _get_line_syntax_highlighting(line);
 
 				// Ensure we at least use the font color.
-				Color current_color = readonly ? cache.font_readonly_color : cache.font_color;
+				Color current_color = !editable ? cache.font_readonly_color : cache.font_color;
 
 				const Ref<TextParagraph> ldata = text.get_line_data(line);
 
@@ -849,7 +849,7 @@ void TextEdit::_notification(int p_what) {
 
 					int ofs_x = 0;
 					int ofs_y = 0;
-					if (readonly) {
+					if (!editable) {
 						ofs_x = cache.style_readonly->get_offset().x / 2;
 						ofs_x -= cache.style_normal->get_offset().x / 2;
 						ofs_y = cache.style_readonly->get_offset().y / 2;
@@ -1113,7 +1113,7 @@ void TextEdit::_notification(int p_what) {
 					for (int j = 0; j < gl_size; j++) {
 						if (color_map.has(glyphs[j].start)) {
 							current_color = color_map[glyphs[j].start].get("color");
-							if (readonly && current_color.a > cache.font_readonly_color.a) {
+							if (!editable && current_color.a > cache.font_readonly_color.a) {
 								current_color.a = cache.font_readonly_color.a;
 							}
 						}
@@ -1399,7 +1399,7 @@ void TextEdit::_swap_current_input_direction() {
 }
 
 void TextEdit::_new_line(bool p_split_current_line, bool p_above) {
-	if (readonly) {
+	if (!editable) {
 		return;
 	}
 
@@ -1676,7 +1676,7 @@ void TextEdit::_move_caret_page_down(bool p_select) {
 }
 
 void TextEdit::_do_backspace(bool p_word, bool p_all_to_left) {
-	if (readonly) {
+	if (!editable) {
 		return;
 	}
 
@@ -1713,7 +1713,7 @@ void TextEdit::_do_backspace(bool p_word, bool p_all_to_left) {
 }
 
 void TextEdit::_delete(bool p_word, bool p_all_to_right) {
-	if (readonly) {
+	if (!editable) {
 		return;
 	}
 
@@ -2375,7 +2375,7 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 		}
 
 		// Handle Unicode (if no modifiers active).
-		if (allow_unicode_handling && !readonly && k->get_unicode() >= 32) {
+		if (allow_unicode_handling && editable && k->get_unicode() >= 32) {
 			handle_unicode_input(k->get_unicode());
 			accept_event();
 			return;
@@ -3185,20 +3185,6 @@ void TextEdit::clear() {
 	setting_text = false;
 };
 
-void TextEdit::set_readonly(bool p_readonly) {
-	if (readonly == p_readonly) {
-		return;
-	}
-
-	readonly = p_readonly;
-
-	update();
-}
-
-bool TextEdit::is_readonly() const {
-	return readonly;
-}
-
 void TextEdit::_update_caches() {
 	/* Internal API for CodeEdit. */
 	code_folding_color = get_theme_color(SNAME("code_folding_color"), SNAME("CodeEdit"));
@@ -3254,6 +3240,21 @@ void TextEdit::_update_caches() {
 }
 
 /* Text manipulation */
+// User control
+void TextEdit::set_editable(const bool p_editable) {
+	if (editable == p_editable) {
+		return;
+	}
+
+	editable = p_editable;
+
+	update();
+}
+
+bool TextEdit::is_editable() const {
+	return editable;
+}
+
 void TextEdit::set_overtype_mode_enabled(const bool p_enabled) {
 	overtype_mode = p_enabled;
 	update();
@@ -4361,7 +4362,7 @@ void TextEdit::_clear_redo() {
 }
 
 void TextEdit::undo() {
-	if (readonly) {
+	if (!editable) {
 		return;
 	}
 
@@ -4414,7 +4415,7 @@ void TextEdit::undo() {
 }
 
 void TextEdit::redo() {
-	if (readonly) {
+	if (!editable) {
 		return;
 	}
 	_push_current_op();
@@ -4787,20 +4788,16 @@ bool TextEdit::is_text_field() const {
 void TextEdit::menu_option(int p_option) {
 	switch (p_option) {
 		case MENU_CUT: {
-			if (!readonly) {
-				cut();
-			}
+			cut();
 		} break;
 		case MENU_COPY: {
 			copy();
 		} break;
 		case MENU_PASTE: {
-			if (!readonly) {
-				paste();
-			}
+			paste();
 		} break;
 		case MENU_CLEAR: {
-			if (!readonly) {
+			if (editable) {
 				clear();
 			}
 		} break;
@@ -4829,82 +4826,82 @@ void TextEdit::menu_option(int p_option) {
 			set_draw_control_chars(!get_draw_control_chars());
 		} break;
 		case MENU_INSERT_LRM: {
-			if (!readonly) {
+			if (editable) {
 				insert_text_at_caret(String::chr(0x200E));
 			}
 		} break;
 		case MENU_INSERT_RLM: {
-			if (!readonly) {
+			if (editable) {
 				insert_text_at_caret(String::chr(0x200F));
 			}
 		} break;
 		case MENU_INSERT_LRE: {
-			if (!readonly) {
+			if (editable) {
 				insert_text_at_caret(String::chr(0x202A));
 			}
 		} break;
 		case MENU_INSERT_RLE: {
-			if (!readonly) {
+			if (editable) {
 				insert_text_at_caret(String::chr(0x202B));
 			}
 		} break;
 		case MENU_INSERT_LRO: {
-			if (!readonly) {
+			if (editable) {
 				insert_text_at_caret(String::chr(0x202D));
 			}
 		} break;
 		case MENU_INSERT_RLO: {
-			if (!readonly) {
+			if (editable) {
 				insert_text_at_caret(String::chr(0x202E));
 			}
 		} break;
 		case MENU_INSERT_PDF: {
-			if (!readonly) {
+			if (editable) {
 				insert_text_at_caret(String::chr(0x202C));
 			}
 		} break;
 		case MENU_INSERT_ALM: {
-			if (!readonly) {
+			if (editable) {
 				insert_text_at_caret(String::chr(0x061C));
 			}
 		} break;
 		case MENU_INSERT_LRI: {
-			if (!readonly) {
+			if (editable) {
 				insert_text_at_caret(String::chr(0x2066));
 			}
 		} break;
 		case MENU_INSERT_RLI: {
-			if (!readonly) {
+			if (editable) {
 				insert_text_at_caret(String::chr(0x2067));
 			}
 		} break;
 		case MENU_INSERT_FSI: {
-			if (!readonly) {
+			if (editable) {
 				insert_text_at_caret(String::chr(0x2068));
 			}
 		} break;
 		case MENU_INSERT_PDI: {
-			if (!readonly) {
+			if (editable) {
 				insert_text_at_caret(String::chr(0x2069));
 			}
 		} break;
 		case MENU_INSERT_ZWJ: {
-			if (!readonly) {
+			if (editable) {
 				insert_text_at_caret(String::chr(0x200D));
 			}
 		} break;
 		case MENU_INSERT_ZWNJ: {
-			if (!readonly) {
+			if (editable) {
 				insert_text_at_caret(String::chr(0x200C));
 			}
 		} break;
 		case MENU_INSERT_WJ: {
-			if (!readonly) {
+			if (editable) {
 				insert_text_at_caret(String::chr(0x2060));
 			}
 		} break;
 		case MENU_INSERT_SHY: {
-			if (!readonly) {
+			if (editable) {
 				insert_text_at_caret(String::chr(0x00AD));
 			}
 		}
@@ -5036,9 +5033,6 @@ void TextEdit::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("center_viewport_to_caret"), &TextEdit::center_viewport_to_caret);
 
-	ClassDB::bind_method(D_METHOD("set_readonly", "enable"), &TextEdit::set_readonly);
-	ClassDB::bind_method(D_METHOD("is_readonly"), &TextEdit::is_readonly);
-
 	ClassDB::bind_method(D_METHOD("set_context_menu_enabled", "enable"), &TextEdit::set_context_menu_enabled);
 	ClassDB::bind_method(D_METHOD("is_context_menu_enabled"), &TextEdit::is_context_menu_enabled);
 	ClassDB::bind_method(D_METHOD("set_shortcut_keys_enabled", "enable"), &TextEdit::set_shortcut_keys_enabled);
@@ -5067,6 +5061,10 @@ void TextEdit::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_overriding_selected_font_color"), &TextEdit::is_overriding_selected_font_color);
 
 	/* Text manipulation */
+	// User control
+	ClassDB::bind_method(D_METHOD("set_editable", "enable"), &TextEdit::set_editable);
+	ClassDB::bind_method(D_METHOD("is_editable"), &TextEdit::is_editable);
+
 	ClassDB::bind_method(D_METHOD("set_overtype_mode_enabled", "enabled"), &TextEdit::set_overtype_mode_enabled);
 	ClassDB::bind_method(D_METHOD("is_overtype_mode_enabled"), &TextEdit::is_overtype_mode_enabled);
 
@@ -5234,7 +5232,7 @@ void TextEdit::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "text_direction", PROPERTY_HINT_ENUM, "Auto,Left-to-Right,Right-to-Left,Inherited"), "set_text_direction", "get_text_direction");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "language"), "set_language", "get_language");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "draw_control_chars"), "set_draw_control_chars", "get_draw_control_chars");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "readonly"), "set_readonly", "is_readonly");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "editable"), "set_editable", "is_editable");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "highlight_current_line"), "set_highlight_current_line", "is_highlight_current_line_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "draw_tabs"), "set_draw_tabs", "is_drawing_tabs");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "draw_spaces"), "set_draw_spaces", "is_drawing_spaces");
@@ -5355,18 +5353,18 @@ void TextEdit::_ensure_menu() {
 
 	// Reorganize context menu.
 	menu->clear();
-	if (!readonly) {
+	if (editable) {
 		menu->add_item(RTR("Cut"), MENU_CUT, is_shortcut_keys_enabled() ? _get_menu_action_accelerator("ui_cut") : 0);
 	}
 	menu->add_item(RTR("Copy"), MENU_COPY, is_shortcut_keys_enabled() ? _get_menu_action_accelerator("ui_copy") : 0);
-	if (!readonly) {
+	if (editable) {
 		menu->add_item(RTR("Paste"), MENU_PASTE, is_shortcut_keys_enabled() ? _get_menu_action_accelerator("ui_paste") : 0);
 	}
 	menu->add_separator();
 	if (is_selecting_enabled()) {
 		menu->add_item(RTR("Select All"), MENU_SELECT_ALL, is_shortcut_keys_enabled() ? _get_menu_action_accelerator("ui_text_select_all") : 0);
 	}
-	if (!readonly) {
+	if (editable) {
 		menu->add_item(RTR("Clear"), MENU_CLEAR);
 		menu->add_separator();
 		menu->add_item(RTR("Undo"), MENU_UNDO, is_shortcut_keys_enabled() ? _get_menu_action_accelerator("ui_undo") : 0);
@@ -5377,7 +5375,7 @@ void TextEdit::_ensure_menu() {
 	menu->add_separator();
 	menu->add_check_item(RTR("Display control characters"), MENU_DISPLAY_UCC);
 	menu->set_item_checked(menu->get_item_index(MENU_DISPLAY_UCC), draw_control_chars);
-	if (!readonly) {
+	if (editable) {
 		menu->add_submenu_item(RTR("Insert control character"), "CTLMenu");
 	}
 	menu_dir->set_item_checked(menu_dir->get_item_index(MENU_DIR_INHERITED), text_direction == TEXT_DIRECTION_INHERITED);
@@ -5431,7 +5429,7 @@ void TextEdit::_set_symbol_lookup_word(const String &p_symbol) {
 
 // Overridable actions
 void TextEdit::_handle_unicode_input(const uint32_t p_unicode) {
-	if (readonly) {
+	if (!editable) {
 		return;
 	}
 
@@ -5462,7 +5460,7 @@ void TextEdit::_handle_unicode_input(const uint32_t p_unicode) {
 }
 
 void TextEdit::_backspace() {
-	if (readonly) {
+	if (!editable) {
 		return;
 	}
 
@@ -5493,7 +5491,7 @@ void TextEdit::_backspace() {
 }
 
 void TextEdit::_cut() {
-	if (readonly) {
+	if (!editable) {
 		return;
 	}
 
@@ -5538,7 +5536,7 @@ void TextEdit::_copy() {
 }
 
 void TextEdit::_paste() {
-	if (readonly) {
+	if (!editable) {
 		return;
 	}
 
@@ -5792,7 +5790,7 @@ TextEdit::TextEdit() {
 
 	undo_stack_max_size = GLOBAL_GET("gui/common/text_edit_undo_stack_max_size");
 
-	set_readonly(false);
+	set_editable(true);
 }
 
 TextEdit::~TextEdit() {
