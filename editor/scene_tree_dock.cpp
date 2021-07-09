@@ -1367,30 +1367,25 @@ void SceneTreeDock::_set_owners(Node *p_owner, const Array &p_nodes) {
 	}
 }
 
-void SceneTreeDock::_fill_path_renames(Vector<StringName> base_path, Vector<StringName> new_base_path, Node *p_node, List<Pair<NodePath, NodePath>> *p_renames) {
+void SceneTreeDock::_fill_path_renames(Vector<StringName> base_path, Vector<StringName> new_base_path, Node *p_node, Map<Node *, NodePath> *p_renames) {
 	base_path.push_back(p_node->get_name());
 	if (new_base_path.size()) {
 		new_base_path.push_back(p_node->get_name());
 	}
 
-	NodePath from(base_path, true);
-	NodePath to;
+	NodePath new_path;
 	if (new_base_path.size()) {
-		to = NodePath(new_base_path, true);
+		new_path = NodePath(new_base_path, true);
 	}
 
-	Pair<NodePath, NodePath> npp;
-	npp.first = from;
-	npp.second = to;
-
-	p_renames->push_back(npp);
+	p_renames->insert(p_node, new_path);
 
 	for (int i = 0; i < p_node->get_child_count(); i++) {
 		_fill_path_renames(base_path, new_base_path, p_node->get_child(i), p_renames);
 	}
 }
 
-void SceneTreeDock::fill_path_renames(Node *p_node, Node *p_new_parent, List<Pair<NodePath, NodePath>> *p_renames) {
+void SceneTreeDock::fill_path_renames(Node *p_node, Node *p_new_parent, Map<Node *, NodePath> *p_renames) {
 	Vector<StringName> base_path;
 	Node *n = p_node->get_parent();
 	while (n) {
@@ -1413,50 +1408,41 @@ void SceneTreeDock::fill_path_renames(Node *p_node, Node *p_new_parent, List<Pai
 	_fill_path_renames(base_path, new_base_path, p_node, p_renames);
 }
 
-bool SceneTreeDock::_update_node_path(const NodePath &p_root_path, NodePath &r_node_path, List<Pair<NodePath, NodePath>> *p_renames) {
-	NodePath root_path_new = p_root_path;
-	for (List<Pair<NodePath, NodePath>>::Element *F = p_renames->front(); F; F = F->next()) {
-		if (p_root_path == F->get().first) {
-			root_path_new = F->get().second;
-			break;
-		}
+bool SceneTreeDock::_update_node_path(Node *p_root_node, NodePath &r_node_path, Map<Node *, NodePath> *p_renames) const {
+	Node *target_node = p_root_node->get_node_or_null(r_node_path);
+	ERR_FAIL_NULL_V_MSG(target_node, false, "Found invalid node path '" + String(r_node_path) + "' on node '" + String(scene_root->get_path_to(p_root_node)) + "'");
+
+	// Try to find the target node in modified node paths.
+	Map<Node *, NodePath>::Element *found_node_path = p_renames->find(target_node);
+	if (found_node_path) {
+		Map<Node *, NodePath>::Element *found_root_path = p_renames->find(p_root_node);
+		NodePath root_path_new = found_root_path ? found_root_path->get() : p_root_node->get_path();
+		r_node_path = root_path_new.rel_path_to(found_node_path->get());
+
+		return true;
 	}
 
-	// Goes through all paths to check if it's matching.
-	for (List<Pair<NodePath, NodePath>>::Element *F = p_renames->front(); F; F = F->next()) {
-		NodePath rel_path_old = p_root_path.rel_path_to(F->get().first);
-
-		// If old path detected, then it needs to be replaced with the new one.
-		if (r_node_path == rel_path_old) {
-			NodePath rel_path_new = F->get().second;
-
-			// If not empty, get new relative path.
-			if (!rel_path_new.is_empty()) {
-				rel_path_new = root_path_new.rel_path_to(rel_path_new);
-			}
-
-			r_node_path = rel_path_new;
-			return true;
+	// Update the path if the base node has changed and has not been deleted.
+	Map<Node *, NodePath>::Element *found_root_path = p_renames->find(p_root_node);
+	if (found_root_path) {
+		NodePath root_path_new = found_root_path->get();
+		if (!root_path_new.is_empty()) {
+			NodePath old_abs_path = NodePath(String(p_root_node->get_path()).plus_file(r_node_path));
+			old_abs_path.simplify();
+			r_node_path = root_path_new.rel_path_to(old_abs_path);
 		}
 
-		// Update the node itself if it has a valid node path and has not been deleted.
-		if (p_root_path == F->get().first && r_node_path != NodePath() && F->get().second != NodePath()) {
-			NodePath abs_path = NodePath(String(root_path_new).plus_file(r_node_path)).simplified();
-			NodePath rel_path_new = F->get().second.rel_path_to(abs_path);
-
-			r_node_path = rel_path_new;
-			return true;
-		}
+		return true;
 	}
 
 	return false;
 }
 
-bool SceneTreeDock::_check_node_path_recursive(const NodePath &p_root_path, Variant &r_variant, List<Pair<NodePath, NodePath>> *p_renames) {
+bool SceneTreeDock::_check_node_path_recursive(Node *p_root_node, Variant &r_variant, Map<Node *, NodePath> *p_renames) const {
 	switch (r_variant.get_type()) {
 		case Variant::NODE_PATH: {
 			NodePath node_path = r_variant;
-			if (_update_node_path(p_root_path, node_path, p_renames)) {
+			if (!node_path.is_empty() && _update_node_path(p_root_node, node_path, p_renames)) {
 				r_variant = node_path;
 				return true;
 			}
@@ -1467,7 +1453,7 @@ bool SceneTreeDock::_check_node_path_recursive(const NodePath &p_root_path, Vari
 			bool updated = false;
 			for (int i = 0; i < a.size(); i++) {
 				Variant value = a[i];
-				if (_check_node_path_recursive(p_root_path, value, p_renames)) {
+				if (_check_node_path_recursive(p_root_node, value, p_renames)) {
 					if (!updated) {
 						a = a.duplicate(); // Need to duplicate for undo-redo to work.
 						updated = true;
@@ -1486,7 +1472,7 @@ bool SceneTreeDock::_check_node_path_recursive(const NodePath &p_root_path, Vari
 			bool updated = false;
 			for (int i = 0; i < d.size(); i++) {
 				Variant value = d.get_value_at_index(i);
-				if (_check_node_path_recursive(p_root_path, value, p_renames)) {
+				if (_check_node_path_recursive(p_root_node, value, p_renames)) {
 					if (!updated) {
 						d = d.duplicate(); // Need to duplicate for undo-redo to work.
 						updated = true;
@@ -1507,7 +1493,7 @@ bool SceneTreeDock::_check_node_path_recursive(const NodePath &p_root_path, Vari
 	return false;
 }
 
-void SceneTreeDock::perform_node_renames(Node *p_base, List<Pair<NodePath, NodePath>> *p_renames, Map<Ref<Animation>, Set<int>> *r_rem_anims) {
+void SceneTreeDock::perform_node_renames(Node *p_base, Map<Node *, NodePath> *p_renames, Map<Ref<Animation>, Set<int>> *r_rem_anims) {
 	Map<Ref<Animation>, Set<int>> rem_anims;
 	if (!r_rem_anims) {
 		r_rem_anims = &rem_anims;
@@ -1521,10 +1507,15 @@ void SceneTreeDock::perform_node_renames(Node *p_base, List<Pair<NodePath, NodeP
 		return;
 	}
 
+	// No renaming if base node is deleted.
+	Map<Node *, NodePath>::Element *found_base_path = p_renames->find(p_base);
+	if (found_base_path && found_base_path->get().is_empty()) {
+		return;
+	}
+
 	// Renaming node paths used in node properties.
 	List<PropertyInfo> properties;
 	p_base->get_property_list(&properties);
-	NodePath base_root_path = p_base->get_path();
 
 	for (List<PropertyInfo>::Element *E = properties.front(); E; E = E->next()) {
 		if (!(E->get().usage & (PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_EDITOR))) {
@@ -1533,7 +1524,7 @@ void SceneTreeDock::perform_node_renames(Node *p_base, List<Pair<NodePath, NodeP
 		String propertyname = E->get().name;
 		Variant old_variant = p_base->get(propertyname);
 		Variant updated_variant = old_variant;
-		if (_check_node_path_recursive(base_root_path, updated_variant, p_renames)) {
+		if (_check_node_path_recursive(p_base, updated_variant, p_renames)) {
 			editor_data->get_undo_redo().add_do_property(p_base, propertyname, updated_variant);
 			editor_data->get_undo_redo().add_undo_property(p_base, propertyname, old_variant);
 			p_base->set(propertyname, updated_variant);
@@ -1549,19 +1540,9 @@ void SceneTreeDock::perform_node_renames(Node *p_base, List<Pair<NodePath, NodeP
 		Node *root = ap->get_node(ap->get_root());
 
 		if (root) {
-			NodePath root_path = root->get_path();
-			NodePath new_root_path = root_path;
-
-			for (List<Pair<NodePath, NodePath>>::Element *E = p_renames->front(); E; E = E->next()) {
-				if (E->get().first == root_path) {
-					new_root_path = E->get().second;
-					break;
-				}
-			}
-
-			if (new_root_path != NodePath()) {
-				//will not be erased
-
+			Map<Node *, NodePath>::Element *found_root_path = p_renames->find(root);
+			NodePath new_root_path = found_root_path ? found_root_path->get() : root->get_path();
+			if (!new_root_path.is_empty()) { // No renaming if root node is deleted.
 				for (List<StringName>::Element *E = anims.front(); E; E = E->next()) {
 					Ref<Animation> anim = ap->get_animation(E->get());
 					if (!r_rem_anims->has(anim)) {
@@ -1585,47 +1566,44 @@ void SceneTreeDock::perform_node_renames(Node *p_base, List<Pair<NodePath, NodeP
 							continue;
 						}
 
-						NodePath old_np = n->get_path();
-
 						if (!ran.has(i)) {
 							continue; //channel was removed
 						}
 
-						for (List<Pair<NodePath, NodePath>>::Element *F = p_renames->front(); F; F = F->next()) {
-							if (F->get().first == old_np) {
-								if (F->get().second == NodePath()) {
-									//will be erased
+						Map<Node *, NodePath>::Element *found_path = p_renames->find(n);
+						if (found_path) {
+							if (found_path->get() == NodePath()) {
+								//will be erased
 
-									int idx = 0;
-									Set<int>::Element *EI = ran.front();
-									ERR_FAIL_COND(!EI); //bug
-									while (EI->get() != i) {
-										idx++;
-										EI = EI->next();
-										ERR_FAIL_COND(!EI); //another bug
-									}
-
-									editor_data->get_undo_redo().add_do_method(anim.ptr(), "remove_track", idx);
-									editor_data->get_undo_redo().add_undo_method(anim.ptr(), "add_track", anim->track_get_type(i), idx);
-									editor_data->get_undo_redo().add_undo_method(anim.ptr(), "track_set_path", idx, track_np);
-									editor_data->get_undo_redo().add_undo_method(anim.ptr(), "track_set_interpolation_type", idx, anim->track_get_interpolation_type(i));
-									for (int j = 0; j < anim->track_get_key_count(i); j++) {
-										editor_data->get_undo_redo().add_undo_method(anim.ptr(), "track_insert_key", idx, anim->track_get_key_time(i, j), anim->track_get_key_value(i, j), anim->track_get_key_transition(i, j));
-									}
-
-									ran.erase(i); //byebye channel
-
-								} else {
-									//will be renamed
-									NodePath rel_path = new_root_path.rel_path_to(F->get().second);
-
-									NodePath new_path = NodePath(rel_path.get_names(), track_np.get_subnames(), false);
-									if (new_path == track_np) {
-										continue; //bleh
-									}
-									editor_data->get_undo_redo().add_do_method(anim.ptr(), "track_set_path", i, new_path);
-									editor_data->get_undo_redo().add_undo_method(anim.ptr(), "track_set_path", i, track_np);
+								int idx = 0;
+								Set<int>::Element *EI = ran.front();
+								ERR_FAIL_COND(!EI); //bug
+								while (EI->get() != i) {
+									idx++;
+									EI = EI->next();
+									ERR_FAIL_COND(!EI); //another bug
 								}
+
+								editor_data->get_undo_redo().add_do_method(anim.ptr(), "remove_track", idx);
+								editor_data->get_undo_redo().add_undo_method(anim.ptr(), "add_track", anim->track_get_type(i), idx);
+								editor_data->get_undo_redo().add_undo_method(anim.ptr(), "track_set_path", idx, track_np);
+								editor_data->get_undo_redo().add_undo_method(anim.ptr(), "track_set_interpolation_type", idx, anim->track_get_interpolation_type(i));
+								for (int j = 0; j < anim->track_get_key_count(i); j++) {
+									editor_data->get_undo_redo().add_undo_method(anim.ptr(), "track_insert_key", idx, anim->track_get_key_time(i, j), anim->track_get_key_value(i, j), anim->track_get_key_transition(i, j));
+								}
+
+								ran.erase(i); //byebye channel
+
+							} else {
+								//will be renamed
+								NodePath rel_path = new_root_path.rel_path_to(found_path->get());
+
+								NodePath new_path = NodePath(rel_path.get_names(), track_np.get_subnames(), false);
+								if (new_path == track_np) {
+									continue; //bleh
+								}
+								editor_data->get_undo_redo().add_do_method(anim.ptr(), "track_set_path", i, new_path);
+								editor_data->get_undo_redo().add_undo_method(anim.ptr(), "track_set_path", i, track_np);
 							}
 						}
 					}
@@ -1640,7 +1618,7 @@ void SceneTreeDock::perform_node_renames(Node *p_base, List<Pair<NodePath, NodeP
 }
 
 void SceneTreeDock::_node_prerenamed(Node *p_node, const String &p_new_name) {
-	List<Pair<NodePath, NodePath>> path_renames;
+	Map<Node *, NodePath> path_renames;
 
 	Vector<StringName> base_path;
 	Node *n = p_node->get_parent();
@@ -1655,10 +1633,8 @@ void SceneTreeDock::_node_prerenamed(Node *p_node, const String &p_new_name) {
 
 	new_base_path.push_back(p_new_name);
 
-	Pair<NodePath, NodePath> npp;
-	npp.first = NodePath(base_path, true);
-	npp.second = NodePath(new_base_path, true);
-	path_renames.push_back(npp);
+	NodePath new_path(new_base_path, true);
+	path_renames[p_node] = new_path;
 
 	for (int i = 0; i < p_node->get_child_count(); i++) {
 		_fill_path_renames(base_path, new_base_path, p_node->get_child(i), &path_renames);
@@ -1763,7 +1739,7 @@ void SceneTreeDock::_do_reparent(Node *p_new_parent, int p_position_in_parent, V
 
 	editor_data->get_undo_redo().create_action(TTR("Reparent Node"));
 
-	List<Pair<NodePath, NodePath>> path_renames;
+	Map<Node *, NodePath> path_renames;
 	Vector<StringName> former_names;
 
 	int inc = 0;
@@ -1800,21 +1776,24 @@ void SceneTreeDock::_do_reparent(Node *p_new_parent, int p_position_in_parent, V
 		// Name was modified, fix the path renames.
 		if (old_name.casecmp_to(new_name) != 0) {
 			// Fix the to name to have the new name.
-			NodePath old_new_name = path_renames[ni].second;
-			NodePath new_path;
+			Map<Node *, NodePath>::Element *found_path = path_renames.find(node);
+			if (found_path) {
+				NodePath old_new_name = found_path->get();
 
-			Vector<StringName> unfixed_new_names = old_new_name.get_names();
-			Vector<StringName> fixed_new_names;
+				Vector<StringName> unfixed_new_names = old_new_name.get_names();
+				Vector<StringName> fixed_new_names;
 
-			// Get last name and replace with fixed new name.
-			for (int a = 0; a < (unfixed_new_names.size() - 1); a++) {
-				fixed_new_names.push_back(unfixed_new_names[a]);
+				// Get last name and replace with fixed new name.
+				for (int a = 0; a < (unfixed_new_names.size() - 1); a++) {
+					fixed_new_names.push_back(unfixed_new_names[a]);
+				}
+				fixed_new_names.push_back(new_name);
+
+				NodePath fixed_node_path = NodePath(fixed_new_names, true);
+				path_renames[node] = fixed_node_path;
+			} else {
+				ERR_PRINT("Internal error. Can't find renamed path for node '" + node->get_path() + "'");
 			}
-			fixed_new_names.push_back(new_name);
-
-			NodePath fixed_node_path = NodePath(fixed_new_names, true);
-
-			path_renames[ni].second = fixed_node_path;
 		}
 
 		editor_data->get_undo_redo().add_do_method(ed, "live_debug_reparent_node", edited_scene->get_path_to(node), edited_scene->get_path_to(new_parent), new_name, p_position_in_parent + inc);
@@ -2025,7 +2004,7 @@ void SceneTreeDock::_delete_confirm(bool p_cut) {
 
 	} else {
 		remove_list.sort_custom<Node::Comparator>(); //sort nodes to keep positions
-		List<Pair<NodePath, NodePath>> path_renames;
+		Map<Node *, NodePath> path_renames;
 
 		//delete from animation
 		for (List<Node *>::Element *E = remove_list.front(); E; E = E->next()) {
