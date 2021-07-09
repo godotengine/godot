@@ -48,12 +48,6 @@ public:
 		CARET_TYPE_BLOCK
 	};
 
-	enum GutterType {
-		GUTTER_TYPE_STRING,
-		GUTTER_TYPE_ICON,
-		GUTTER_TYPE_CUSTOM
-	};
-
 	/* Selection */
 	enum SelectionMode {
 		SELECTION_MODE_NONE,
@@ -61,6 +55,19 @@ public:
 		SELECTION_MODE_POINTER,
 		SELECTION_MODE_WORD,
 		SELECTION_MODE_LINE
+	};
+
+	/* Line Wrapping.*/
+	enum LineWrappingMode {
+		LINE_WRAPPING_NONE,
+		LINE_WRAPPING_BOUNDARY
+	};
+
+	/* Gutters. */
+	enum GutterType {
+		GUTTER_TYPE_STRING,
+		GUTTER_TYPE_ICON,
+		GUTTER_TYPE_CUSTOM
 	};
 
 private:
@@ -183,7 +190,7 @@ private:
 	/* Text manipulation */
 	String cut_copy_line = "";
 
-	/* Caret */
+	/* Caret. */
 	struct Caret {
 		Point2 draw_pos;
 		bool visible = false;
@@ -217,6 +224,7 @@ private:
 	void _reset_caret_blink_timer();
 	void _toggle_draw_caret();
 
+	/* Selection. */
 	struct Selection {
 		SelectionMode selecting_mode = SelectionMode::SELECTION_MODE_NONE;
 		int selecting_line = 0;
@@ -236,6 +244,17 @@ private:
 		bool shiftclick_left = false;
 	} selection;
 
+	/* line wrapping. */
+	LineWrappingMode line_wrapping_mode = LineWrappingMode::LINE_WRAPPING_NONE;
+
+	int wrap_at_column = 0;
+	int wrap_right_offset = 10;
+
+	void _update_wrap_at_column(bool p_force = false);
+
+	void _update_caret_wrap_offset();
+
+	/* Syntax highlighting. */
 	Map<int, Dictionary> syntax_highlighting_cache;
 
 	struct TextOperation {
@@ -294,10 +313,6 @@ private:
 	bool readonly = true; // Initialise to opposite first, so we get past the early-out in set_readonly.
 
 	bool window_has_focus = true;
-
-	bool wrap_enabled = false;
-	int wrap_at = 0;
-	int wrap_right_offset = 10;
 
 	bool first_draw = true;
 	bool draw_tabs = false;
@@ -361,10 +376,6 @@ private:
 	int get_total_visible_rows() const;
 
 	int _get_minimap_visible_rows() const;
-
-	void _update_caret_wrap_offset();
-	void _update_wrap_at(bool p_force = false);
-	Vector<String> get_wrap_rows_text(int p_line) const;
 
 	double get_scroll_pos_for_line(int p_line, int p_wrap_index = 0) const;
 	void set_line_as_first_visible(int p_line, int p_wrap_index = 0);
@@ -537,6 +548,16 @@ public:
 
 	int get_caret_wrap_index() const;
 
+	/* line wrapping. */
+	void set_line_wrapping_mode(LineWrappingMode p_wrapping_mode);
+	LineWrappingMode get_line_wrapping_mode() const;
+
+	bool is_line_wrapped(int p_line) const;
+	int get_line_wrap_count(int p_line) const;
+	int get_line_wrap_index_at_column(int p_line, int p_column) const;
+
+	Vector<String> get_line_wrapped_text(int p_line) const;
+
 	/* Syntax Highlighting. */
 	Ref<SyntaxHighlighter> get_syntax_highlighter();
 	void set_syntax_highlighter(Ref<SyntaxHighlighter> p_syntax_highlighter);
@@ -664,7 +685,6 @@ public:
 	void insert_at(const String &p_text, int at);
 	int get_line_count() const;
 	int get_line_width(int p_line, int p_wrap_offset = -1) const;
-	int get_line_wrap_index_at_col(int p_line, int p_column) const;
 
 	void set_line_as_hidden(int p_line, bool p_hidden);
 	bool is_line_hidden(int p_line) const;
@@ -697,11 +717,6 @@ public:
 
 	void set_readonly(bool p_readonly);
 	bool is_readonly() const;
-
-	void set_wrap_enabled(bool p_wrap_enabled);
-	bool is_wrap_enabled() const;
-	bool line_wraps(int line) const;
-	int times_line_wraps(int line) const;
 
 	void clear();
 
@@ -799,8 +814,8 @@ public:
 	~TextEdit();
 };
 
-
 VARIANT_ENUM_CAST(TextEdit::CaretType);
+VARIANT_ENUM_CAST(TextEdit::LineWrappingMode);
 VARIANT_ENUM_CAST(TextEdit::SelectionMode);
 VARIANT_ENUM_CAST(TextEdit::GutterType);
 VARIANT_ENUM_CAST(TextEdit::MenuItems);

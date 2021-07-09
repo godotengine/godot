@@ -295,8 +295,8 @@ void CodeEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 
 			if (mb->get_button_index() == MOUSE_BUTTON_LEFT) {
 				if (is_line_folded(line)) {
-					int wrap_index = get_line_wrap_index_at_col(line, col);
-					if (wrap_index == times_line_wraps(line)) {
+					int wrap_index = get_line_wrap_index_at_column(line, col);
+					if (wrap_index == get_line_wrap_count(line)) {
 						int eol_icon_width = cache.folded_eol_icon->get_width();
 						int left_margin = get_total_gutter_width() + eol_icon_width + get_line_width(line, wrap_index) - get_h_scroll();
 						if (mpos.x > left_margin && mpos.x <= left_margin + eol_icon_width + 3) {
@@ -531,8 +531,8 @@ Control::CursorShape CodeEdit::get_cursor_shape(const Point2 &p_pos) const {
 	_get_mouse_pos(p_pos, line, col);
 
 	if (is_line_folded(line)) {
-		int wrap_index = get_line_wrap_index_at_col(line, col);
-		if (wrap_index == times_line_wraps(line)) {
+		int wrap_index = get_line_wrap_index_at_column(line, col);
+		if (wrap_index == get_line_wrap_count(line)) {
 			int eol_icon_width = cache.folded_eol_icon->get_width();
 			int left_margin = get_total_gutter_width() + eol_icon_width + get_line_width(line, wrap_index) - get_h_scroll();
 			if (p_pos.x > left_margin && p_pos.x <= left_margin + eol_icon_width + 3) {

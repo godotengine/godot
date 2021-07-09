@@ -295,7 +295,7 @@ void TextEdit::_update_scrollbars() {
 		v_scroll->hide();
 	}
 
-	if (total_width > visible_width && !is_wrap_enabled()) {
+	if (total_width > visible_width && get_line_wrapping_mode() == LineWrappingMode::LINE_WRAPPING_NONE) {
 		h_scroll->show();
 		h_scroll->set_max(total_width);
 		h_scroll->set_page(visible_width);
@@ -495,11 +495,11 @@ void TextEdit::_notification(int p_what) {
 			if (text_changed_dirty) {
 				MessageQueue::get_singleton()->push_call(this, "_text_changed_emit");
 			}
-			_update_wrap_at(true);
+			_update_wrap_at_column(true);
 		} break;
 		case NOTIFICATION_RESIZED: {
 			_update_scrollbars();
-			_update_wrap_at();
+			_update_wrap_at_column();
 		} break;
 		case NOTIFICATION_VISIBILITY_CHANGED: {
 			if (is_visible()) {
@@ -511,7 +511,7 @@ void TextEdit::_notification(int p_what) {
 		case NOTIFICATION_TRANSLATION_CHANGED:
 		case NOTIFICATION_THEME_CHANGED: {
 			_update_caches();
-			_update_wrap_at(true);
+			_update_wrap_at_column(true);
 		} break;
 		case NOTIFICATION_WM_WINDOW_FOCUS_IN: {
 			window_has_focus = true;
@@ -748,7 +748,7 @@ void TextEdit::_notification(int p_what) {
 
 			int first_visible_line = get_first_visible_line() - 1;
 			int draw_amount = visible_rows + (smooth_scroll_enabled ? 1 : 0);
-			draw_amount += times_line_wraps(first_visible_line + 1);
+			draw_amount += get_line_wrap_count(first_visible_line + 1);
 
 			// minimap
 			if (draw_minimap) {
@@ -769,7 +769,7 @@ void TextEdit::_notification(int p_what) {
 					minimap_line -= num_lines_from_rows(first_visible_line, 0, -num_lines_before, wi);
 					minimap_line -= (minimap_line > 0 && smooth_scroll_enabled ? 1 : 0);
 				}
-				int minimap_draw_amount = minimap_visible_lines + times_line_wraps(minimap_line + 1);
+				int minimap_draw_amount = minimap_visible_lines + get_line_wrap_count(minimap_line + 1);
 
 				// draw the minimap
 				Color viewport_color = (cache.background_color.get_v() < 0.5) ? Color(1, 1, 1, 0.1) : Color(0, 0, 0, 0.1);
@@ -805,8 +805,8 @@ void TextEdit::_notification(int p_what) {
 						current_color = cache.font_readonly_color;
 					}
 
-					Vector<String> wrap_rows = get_wrap_rows_text(minimap_line);
-					int line_wrap_amount = times_line_wraps(minimap_line);
+					Vector<String> wrap_rows = get_line_wrapped_text(minimap_line);
+					int line_wrap_amount = get_line_wrap_count(minimap_line);
 					int last_wrap_column = 0;
 
 					for (int line_wrap_index = 0; line_wrap_index < line_wrap_amount + 1; line_wrap_index++) {
@@ -819,7 +819,7 @@ void TextEdit::_notification(int p_what) {
 
 						const String &str = wrap_rows[line_wrap_index];
 						int indent_px = line_wrap_index != 0 ? get_indent_level(minimap_line) : 0;
-						if (indent_px >= wrap_at) {
+						if (indent_px >= wrap_at_column) {
 							indent_px = 0;
 						}
 						indent_px = minimap_char_size.x * indent_px;
@@ -947,8 +947,8 @@ void TextEdit::_notification(int p_what) {
 
 				const Ref<TextParagraph> ldata = text.get_line_data(line);
 
-				Vector<String> wrap_rows = get_wrap_rows_text(line);
-				int line_wrap_amount = times_line_wraps(line);
+				Vector<String> wrap_rows = get_line_wrapped_text(line);
+				int line_wrap_amount = get_line_wrap_count(line);
 
 				for (int line_wrap_index = 0; line_wrap_index <= line_wrap_amount; line_wrap_index++) {
 					if (line_wrap_index != 0) {
@@ -1659,8 +1659,8 @@ void TextEdit::_move_caret_up(bool p_select) {
 		set_caret_column(0);
 	} else {
 		int new_line = caret.line - num_lines_from(caret.line - 1, -1);
-		if (line_wraps(new_line)) {
-			set_caret_line(new_line, true, false, times_line_wraps(new_line));
+		if (is_line_wrapped(new_line)) {
+			set_caret_line(new_line, true, false, get_line_wrap_count(new_line));
 		} else {
 			set_caret_line(new_line, true, false);
 		}
@@ -1679,7 +1679,7 @@ void TextEdit::_move_caret_down(bool p_select) {
 	}
 
 	int cur_wrap_index = get_caret_wrap_index();
-	if (cur_wrap_index < times_line_wraps(caret.line)) {
+	if (cur_wrap_index < get_line_wrap_count(caret.line)) {
 		set_caret_line(caret.line, true, false, cur_wrap_index + 1);
 	} else if (caret.line == get_last_unhidden_line()) {
 		set_caret_column(text[caret.line].length());
@@ -1701,7 +1701,7 @@ void TextEdit::_move_caret_to_line_start(bool p_select) {
 	}
 
 	// Move caret column to start of wrapped row and then to start of text.
-	Vector<String> rows = get_wrap_rows_text(caret.line);
+	Vector<String> rows = get_line_wrapped_text(caret.line);
 	int wi = get_caret_wrap_index();
 	int row_start_col = 0;
 	for (int i = 0; i < wi; i++) {
@@ -1740,7 +1740,7 @@ void TextEdit::_move_caret_to_line_end(bool p_select) {
 	}
 
 	// Move caret column to end of wrapped row and then to end of text.
-	Vector<String> rows = get_wrap_rows_text(caret.line);
+	Vector<String> rows = get_line_wrapped_text(caret.line);
 	int wi = get_caret_wrap_index();
 	int row_end_col = -1;
 	for (int i = 0; i < wi + 1; i++) {
@@ -1929,7 +1929,7 @@ void TextEdit::_get_mouse_pos(const Point2i &p_mouse, int &r_row, int &r_col) co
 	int row = first_vis_line + Math::floor(rows);
 	int wrap_index = 0;
 
-	if (is_wrap_enabled() || is_hiding_enabled()) {
+	if (get_line_wrapping_mode() != LineWrappingMode::LINE_WRAPPING_NONE || is_hiding_enabled()) {
 		int f_ofs = num_lines_from_rows(first_vis_line, caret.wrap_ofs, rows + (1 * SGN(rows)), wrap_index) - 1;
 		if (rows < 0) {
 			row = first_vis_line - f_ofs;
@@ -1951,9 +1951,9 @@ void TextEdit::_get_mouse_pos(const Point2i &p_mouse, int &r_row, int &r_col) co
 		int colx = p_mouse.x - (cache.style_normal->get_margin(SIDE_LEFT) + gutters_width + gutter_padding);
 		colx += caret.x_ofs;
 		col = get_char_pos_for_line(colx, row, wrap_index);
-		if (is_wrap_enabled() && wrap_index < times_line_wraps(row)) {
+		if (get_line_wrapping_mode() != LineWrappingMode::LINE_WRAPPING_NONE && wrap_index < get_line_wrap_count(row)) {
 			// Move back one if we are at the end of the row.
-			Vector<String> rows2 = get_wrap_rows_text(row);
+			Vector<String> rows2 = get_line_wrapped_text(row);
 			int row_end_col = 0;
 			for (int i = 0; i < wrap_index + 1; i++) {
 				row_end_col += rows2[i].length();
@@ -1985,7 +1985,7 @@ void TextEdit::_get_minimap_mouse_row(const Point2i &p_mouse, int &r_row) const 
 	int visible_rows = get_visible_rows() + 1;
 	int first_visible_line = get_first_visible_line() - 1;
 	int draw_amount = visible_rows + (smooth_scroll_enabled ? 1 : 0);
-	draw_amount += times_line_wraps(first_visible_line + 1);
+	draw_amount += get_line_wrap_count(first_visible_line + 1);
 	int minimap_line_height = (minimap_char_size.y + minimap_line_spacing);
 
 	// calculate viewport size and y offset
@@ -2007,7 +2007,7 @@ void TextEdit::_get_minimap_mouse_row(const Point2i &p_mouse, int &r_row) const 
 	int row = minimap_line + Math::floor(rows);
 	int wrap_index = 0;
 
-	if (is_wrap_enabled() || is_hiding_enabled()) {
+	if (get_line_wrapping_mode() != LineWrappingMode::LINE_WRAPPING_NONE || is_hiding_enabled()) {
 		int f_ofs = num_lines_from_rows(minimap_line, caret.wrap_ofs, rows + (1 * SGN(rows)), wrap_index) - 1;
 		if (rows < 0) {
 			row = minimap_line - f_ofs;
@@ -2894,7 +2894,7 @@ int TextEdit::_get_minimap_visible_rows() const {
 int TextEdit::get_total_visible_rows() const {
 	// Returns the total amount of rows we need in the editor.
 	// This skips hidden lines and counts each wrapping of a line.
-	if (!is_hiding_enabled() && !is_wrap_enabled()) {
+	if (!is_hiding_enabled() && get_line_wrapping_mode() == LineWrappingMode::LINE_WRAPPING_NONE) {
 		return text.size();
 	}
 
@@ -2902,33 +2902,10 @@ int TextEdit::get_total_visible_rows() const {
 	for (int i = 0; i < text.size(); i++) {
 		if (!text.is_hidden(i)) {
 			total_rows++;
-			total_rows += times_line_wraps(i);
+			total_rows += get_line_wrap_count(i);
 		}
 	}
 	return total_rows;
-}
-
-void TextEdit::_update_wrap_at(bool p_force) {
-	int new_wrap_at = get_size().width - cache.style_normal->get_minimum_size().width - gutters_width - gutter_padding;
-	if (draw_minimap) {
-		new_wrap_at -= minimap_width;
-	}
-	if (v_scroll->is_visible_in_tree()) {
-		new_wrap_at -= v_scroll->get_combined_minimum_size().width;
-	}
-	new_wrap_at -= wrap_right_offset; // Give it a little more space.
-
-	if ((wrap_at != new_wrap_at) || p_force) {
-		wrap_at = new_wrap_at;
-		if (wrap_enabled) {
-			text.set_width(wrap_at);
-		} else {
-			text.set_width(-1);
-		}
-		text.invalidate_all_lines();
-	}
-
-	_update_caret_wrap_offset();
 }
 
 void TextEdit::adjust_viewport_to_caret() {
@@ -2958,7 +2935,7 @@ void TextEdit::adjust_viewport_to_caret() {
 	}
 	visible_width -= 20; // Give it a little more space.
 
-	if (!is_wrap_enabled()) {
+	if (get_line_wrapping_mode() == LineWrappingMode::LINE_WRAPPING_NONE) {
 		// Adjust x offset.
 		Vector2i caret_pos;
 
@@ -3007,7 +2984,7 @@ void TextEdit::center_viewport_to_caret() {
 	}
 	visible_width -= 20; // Give it a little more space.
 
-	if (is_wrap_enabled()) {
+	if (get_line_wrapping_mode() != LineWrappingMode::LINE_WRAPPING_NONE) {
 		// Center x offset.
 
 		Vector2i caret_pos;
@@ -3043,74 +3020,6 @@ void TextEdit::center_viewport_to_caret() {
 	h_scroll->set_value(caret.x_ofs);
 
 	update();
-}
-
-void TextEdit::_update_caret_wrap_offset() {
-	int first_vis_line = get_first_visible_line();
-	if (line_wraps(first_vis_line)) {
-		caret.wrap_ofs = MIN(caret.wrap_ofs, times_line_wraps(first_vis_line));
-	} else {
-		caret.wrap_ofs = 0;
-	}
-	set_line_as_first_visible(caret.line_ofs, caret.wrap_ofs);
-}
-
-bool TextEdit::line_wraps(int line) const {
-	ERR_FAIL_INDEX_V(line, text.size(), 0);
-	if (!is_wrap_enabled()) {
-		return false;
-	}
-	return text.get_line_wrap_amount(line) > 0;
-}
-
-int TextEdit::times_line_wraps(int line) const {
-	ERR_FAIL_INDEX_V(line, text.size(), 0);
-
-	if (!line_wraps(line)) {
-		return 0;
-	}
-
-	return text.get_line_wrap_amount(line);
-}
-
-Vector<String> TextEdit::get_wrap_rows_text(int p_line) const {
-	ERR_FAIL_INDEX_V(p_line, text.size(), Vector<String>());
-
-	Vector<String> lines;
-	if (!line_wraps(p_line)) {
-		lines.push_back(text[p_line]);
-		return lines;
-	}
-
-	const String &line_text = text[p_line];
-	Vector<Vector2i> line_ranges = text.get_line_wrap_ranges(p_line);
-	for (int i = 0; i < line_ranges.size(); i++) {
-		lines.push_back(line_text.substr(line_ranges[i].x, line_ranges[i].y - line_ranges[i].x));
-	}
-
-	return lines;
-}
-
-int TextEdit::get_line_wrap_index_at_col(int p_line, int p_column) const {
-	ERR_FAIL_INDEX_V(p_line, text.size(), 0);
-
-	if (!line_wraps(p_line)) {
-		return 0;
-	}
-
-	// Loop through wraps in the line text until we get to the column.
-	int wrap_index = 0;
-	int col = 0;
-	Vector<String> rows = get_wrap_rows_text(p_line);
-	for (int i = 0; i < rows.size(); i++) {
-		wrap_index = i;
-		String s = rows[wrap_index];
-		col += s.length();
-		if (col > p_column) {
-			break;
-		}
-	}
-	return wrap_index;
 }
 
 TextEdit::SelectionMode TextEdit::get_selection_mode() const {
@@ -3158,14 +3067,14 @@ void TextEdit::_scroll_moved(double p_to_val) {
 		for (n_line = 0; n_line < text.size(); n_line++) {
 			if (!is_line_hidden(n_line)) {
 				sc++;
-				sc += times_line_wraps(n_line);
+				sc += get_line_wrap_count(n_line);
 				if (sc > v_scroll_i) {
 					break;
 				}
 			}
 		}
 		n_line = MIN(n_line, text.size() - 1);
-		int line_wrap_amount = times_line_wraps(n_line);
+		int line_wrap_amount = get_line_wrap_count(n_line);
 		int wi = line_wrap_amount - (sc - v_scroll_i - 1);
 		wi = CLAMP(wi, 0, line_wrap_amount);
 
@@ -3460,17 +3369,6 @@ bool TextEdit::is_readonly() const {
 	return readonly;
 }
 
-void TextEdit::set_wrap_enabled(bool p_wrap_enabled) {
-	if (wrap_enabled != p_wrap_enabled) {
-		wrap_enabled = p_wrap_enabled;
-		_update_wrap_at(true);
-	}
-}
-
-bool TextEdit::is_wrap_enabled() const {
-	return wrap_enabled;
-}
-
 void TextEdit::_update_caches() {
 	/* Caret */
 	caret_color = get_theme_color(SNAME("caret_color"));
@@ -3661,8 +3559,8 @@ void TextEdit::set_caret_line(int p_line, bool p_adjust_viewport, bool p_can_be_
 	caret.line = p_line;
 
 	int n_col = get_char_pos_for_line(caret.last_fit_x, p_line, p_wrap_index);
-	if (n_col != 0 && is_wrap_enabled() && p_wrap_index < times_line_wraps(p_line)) {
-		Vector<String> rows = get_wrap_rows_text(p_line);
+	if (n_col != 0 && get_line_wrapping_mode() != LineWrappingMode::LINE_WRAPPING_NONE && p_wrap_index < get_line_wrap_count(p_line)) {
+		Vector<String> rows = get_line_wrapped_text(p_line);
 		int row_end_col = 0;
 		for (int i = 0; i < p_wrap_index + 1; i++) {
 			row_end_col += rows[i].length();
@@ -3720,7 +3618,77 @@ int TextEdit::get_caret_column() const {
 }
 
 int TextEdit::get_caret_wrap_index() const {
-	return get_line_wrap_index_at_col(caret.line, caret.column);
+	return get_line_wrap_index_at_column(caret.line, caret.column);
+}
+
+/* line wrapping. */
+void TextEdit::set_line_wrapping_mode(LineWrappingMode p_wrapping_mode) {
+	if (line_wrapping_mode != p_wrapping_mode) {
+		line_wrapping_mode = p_wrapping_mode;
+		_update_wrap_at_column(true);
+	}
+}
+
+TextEdit::LineWrappingMode TextEdit::get_line_wrapping_mode() const {
+	return line_wrapping_mode;
+}
+
+bool TextEdit::is_line_wrapped(int p_line) const {
+	ERR_FAIL_INDEX_V(p_line, text.size(), 0);
+	if (get_line_wrapping_mode() == LineWrappingMode::LINE_WRAPPING_NONE) {
+		return false;
+	}
+	return text.get_line_wrap_amount(p_line) > 0;
+}
+
+int TextEdit::get_line_wrap_count(int p_line) const {
+	ERR_FAIL_INDEX_V(p_line, text.size(), 0);
+
+	if (!is_line_wrapped(p_line)) {
+		return 0;
+	}
+
+	return text.get_line_wrap_amount(p_line);
+}
+
+int TextEdit::get_line_wrap_index_at_column(int p_line, int p_column) const {
+	ERR_FAIL_INDEX_V(p_line, text.size(), 0);
+
+	if (!is_line_wrapped(p_line)) {
+		return 0;
+	}
+
+	/* Loop through wraps in the line text until we get to the column. */
+	int wrap_index = 0;
+	int col = 0;
+	Vector<String> lines = get_line_wrapped_text(p_line);
+	for (int i = 0; i < lines.size(); i++) {
+		wrap_index = i;
+		String s = lines[wrap_index];
+		col += s.length();
+		if (col > p_column) {
+			break;
+		}
+	}
+	return wrap_index;
+}
+
+Vector<String> TextEdit::get_line_wrapped_text(int p_line) const {
+	ERR_FAIL_INDEX_V(p_line, text.size(), Vector<String>());
+
+	Vector<String> lines;
+	if (!is_line_wrapped(p_line)) {
+		lines.push_back(text[p_line]);
+		return lines;
+	}
+
+	const String &line_text = text[p_line];
+	Vector<Vector2i> line_ranges = text.get_line_wrap_ranges(p_line);
+	for (int i = 0; i < line_ranges.size(); i++) {
+		lines.push_back(line_text.substr(line_ranges[i].x, line_ranges[i].y - line_ranges[i].x));
+	}
+
+	return lines;
 }
 
 /* Syntax Highlighting. */
@@ -4384,7 +4352,7 @@ int TextEdit::num_lines_from_rows(int p_line_from, int p_wrap_index_from, int vi
 	wrap_index = 0;
 	ERR_FAIL_INDEX_V(p_line_from, text.size(), ABS(visible_amount));
 
-	if (!is_hiding_enabled() && !is_wrap_enabled()) {
+	if (!is_hiding_enabled() && get_line_wrapping_mode() == LineWrappingMode::LINE_WRAPPING_NONE) {
 		return ABS(visible_amount);
 	}
 
@@ -4400,22 +4368,22 @@ int TextEdit::num_lines_from_rows(int p_line_from, int p_wrap_index_from, int vi
 			num_total++;
 			if (!is_line_hidden(i)) {
 				num_visible++;
-				num_visible += times_line_wraps(i);
+				num_visible += get_line_wrap_count(i);
 			}
 			if (num_visible >= visible_amount) {
 				break;
 			}
 		}
-		wrap_index = times_line_wraps(MIN(i, text.size() - 1)) - MAX(0, num_visible - visible_amount);
+		wrap_index = get_line_wrap_count(MIN(i, text.size() - 1)) - MAX(0, num_visible - visible_amount);
 	} else {
 		visible_amount = ABS(visible_amount);
 		int i;
-		num_visible -= times_line_wraps(p_line_from) - p_wrap_index_from;
+		num_visible -= get_line_wrap_count(p_line_from) - p_wrap_index_from;
 		for (i = p_line_from; i >= 0; i--) {
 			num_total++;
 			if (!is_line_hidden(i)) {
 				num_visible++;
-				num_visible += times_line_wraps(i);
+				num_visible += get_line_wrap_count(i);
 			}
 			if (num_visible >= visible_amount) {
 				break;
@@ -4709,7 +4677,7 @@ void TextEdit::tag_saved_version() {
 }
 
 double TextEdit::get_scroll_pos_for_line(int p_line, int p_wrap_index) const {
-	if (!is_wrap_enabled() && !is_hiding_enabled()) {
+	if (get_line_wrapping_mode() == LineWrappingMode::LINE_WRAPPING_NONE && !is_hiding_enabled()) {
 		return p_line;
 	}
 
@@ -4719,7 +4687,7 @@ double TextEdit::get_scroll_pos_for_line(int p_line, int p_wrap_index) const {
 	for (int i = 0; i < to; i++) {
 		if (!text.is_hidden(i)) {
 			new_line_scroll_pos++;
-			new_line_scroll_pos += times_line_wraps(i);
+			new_line_scroll_pos += get_line_wrap_count(i);
 		}
 	}
 	new_line_scroll_pos += p_wrap_index;
@@ -4918,7 +4886,7 @@ void TextEdit::insert_at(const String &p_text, int at) {
 void TextEdit::set_draw_minimap(bool p_draw) {
 	if (draw_minimap != p_draw) {
 		draw_minimap = p_draw;
-		_update_wrap_at();
+		_update_wrap_at_column();
 	}
 	update();
 }
@@ -4930,7 +4898,7 @@ bool TextEdit::is_drawing_minimap() const {
 void TextEdit::set_minimap_width(int p_minimap_width) {
 	if (minimap_width != p_minimap_width) {
 		minimap_width = p_minimap_width;
-		_update_wrap_at();
+		_update_wrap_at_column();
 	}
 	update();
 }
@@ -5197,7 +5165,6 @@ void TextEdit::_get_property_list(List<PropertyInfo> *p_list) const {
 void TextEdit::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_gui_input"), &TextEdit::_gui_input);
 	ClassDB::bind_method(D_METHOD("_text_changed_emit"), &TextEdit::_text_changed_emit);
-	ClassDB::bind_method(D_METHOD("_update_wrap_at", "force"), &TextEdit::_update_wrap_at, DEFVAL(false));
 
 	BIND_ENUM_CONSTANT(SEARCH_MATCH_CASE);
 	BIND_ENUM_CONSTANT(SEARCH_WHOLE_WORDS);
@@ -5248,8 +5215,6 @@ void TextEdit::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_readonly", "enable"), &TextEdit::set_readonly);
 	ClassDB::bind_method(D_METHOD("is_readonly"), &TextEdit::is_readonly);
 
-	ClassDB::bind_method(D_METHOD("set_wrap_enabled", "enable"), &TextEdit::set_wrap_enabled);
-	ClassDB::bind_method(D_METHOD("is_wrap_enabled"), &TextEdit::is_wrap_enabled);
 	ClassDB::bind_method(D_METHOD("set_context_menu_enabled", "enable"), &TextEdit::set_context_menu_enabled);
 	ClassDB::bind_method(D_METHOD("is_context_menu_enabled"), &TextEdit::is_context_menu_enabled);
 	ClassDB::bind_method(D_METHOD("set_shortcut_keys_enabled", "enable"), &TextEdit::set_shortcut_keys_enabled);
@@ -5339,6 +5304,22 @@ void TextEdit::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_caret_wrap_index"), &TextEdit::get_caret_wrap_index);
 
+	/* line wrapping. */
+	BIND_ENUM_CONSTANT(LINE_WRAPPING_NONE);
+	BIND_ENUM_CONSTANT(LINE_WRAPPING_BOUNDARY);
+
+	// internal.
+	ClassDB::bind_method(D_METHOD("_update_wrap_at_column", "force"), &TextEdit::_update_wrap_at_column, DEFVAL(false));
+
+	ClassDB::bind_method(D_METHOD("set_line_wrapping_mode", "mode"), &TextEdit::set_line_wrapping_mode);
+	ClassDB::bind_method(D_METHOD("get_line_wrapping_mode"), &TextEdit::get_line_wrapping_mode);
+
+	ClassDB::bind_method(D_METHOD("is_line_wrapped", "line"), &TextEdit::is_line_wrapped);
+	ClassDB::bind_method(D_METHOD("get_line_wrap_count", "line"), &TextEdit::get_line_wrap_count);
+	ClassDB::bind_method(D_METHOD("get_line_wrap_index_at_column", "line", "column"), &TextEdit::get_line_wrap_index_at_column);
+
+	ClassDB::bind_method(D_METHOD("get_line_wrapped_text", "line"), &TextEdit::get_line_wrapped_text);
+
 	/* Syntax Highlighting. */
 	ClassDB::bind_method(D_METHOD("set_syntax_highlighter", "syntax_highlighter"), &TextEdit::set_syntax_highlighter);
 	ClassDB::bind_method(D_METHOD("get_syntax_highlighter"), &TextEdit::get_syntax_highlighter);
@@ -5420,7 +5401,7 @@ void TextEdit::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "selecting_enabled"), "set_selecting_enabled", "is_selecting_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "smooth_scrolling"), "set_smooth_scroll_enable", "is_smooth_scroll_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "v_scroll_speed"), "set_v_scroll_speed", "get_v_scroll_speed");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "wrap_enabled"), "set_wrap_enabled", "is_wrap_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "wrap_mode", PROPERTY_HINT_ENUM, "None,Boundary"), "set_line_wrapping_mode", "get_line_wrapping_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "scroll_vertical"), "set_v_scroll", "get_v_scroll");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "scroll_horizontal"), "set_h_scroll", "get_h_scroll");
 
@@ -5714,6 +5695,41 @@ void TextEdit::_toggle_draw_caret() {
 	if (is_visible_in_tree() && has_focus() && window_has_focus) {
 		update();
 	}
+}
+
+/* Line Wrapping */
+void TextEdit::_update_wrap_at_column(bool p_force) {
+	int new_wrap_at = get_size().width - cache.style_normal->get_minimum_size().width - gutters_width - gutter_padding;
+	if (draw_minimap) {
+		new_wrap_at -= minimap_width;
+	}
+	if (v_scroll->is_visible_in_tree()) {
+		new_wrap_at -= v_scroll->get_combined_minimum_size().width;
+	}
+	/* Give it a little more space. */
+	new_wrap_at -= wrap_right_offset;
+
+	if ((wrap_at_column != new_wrap_at) || p_force) {
+		wrap_at_column = new_wrap_at;
+		if (line_wrapping_mode) {
+			text.set_width(wrap_at_column);
+		} else {
+			text.set_width(-1);
+		}
+		text.invalidate_all_lines();
+	}
+
+	_update_caret_wrap_offset();
+}
+
+void TextEdit::_update_caret_wrap_offset() {
+	int first_vis_line = get_first_visible_line();
+	if (is_line_wrapped(first_vis_line)) {
+		caret.wrap_ofs = MIN(caret.wrap_ofs, get_line_wrap_count(first_vis_line));
+	} else {
+		caret.wrap_ofs = 0;
+	}
+	set_line_as_first_visible(caret.line_ofs, caret.wrap_ofs);
 }
 
 TextEdit::TextEdit() {

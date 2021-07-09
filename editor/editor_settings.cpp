@@ -525,7 +525,9 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	_initial_set("text_editor/appearance/show_bookmark_gutter", true);
 	_initial_set("text_editor/appearance/show_info_gutter", true);
 	_initial_set("text_editor/appearance/code_folding", true);
-	_initial_set("text_editor/appearance/word_wrap", false);
+	_initial_set("text_editor/appearance/word_wrap", 0);
+	hints["text_editor/appearance/word_wrap"] = PropertyInfo(Variant::INT, "text_editor/appearance/word_wrap", PROPERTY_HINT_ENUM, "None,Boundary");
+
 	_initial_set("text_editor/appearance/show_line_length_guidelines", true);
 	_initial_set("text_editor/appearance/line_length_guideline_soft_column", 80);
 	hints["text_editor/appearance/line_length_guideline_soft_column"] = PropertyInfo(Variant::INT, "text_editor/appearance/line_length_guideline_soft_column", PROPERTY_HINT_RANGE, "20, 160, 1");

@@ -213,6 +213,35 @@
 			<description>
 			</description>
 		</method>
+		<method name="get_line_wrap_count" qualifiers="const">
+			<return type="int">
+			</return>
+			<argument index="0" name="line" type="int">
+			</argument>
+			<description>
+				Returns the number of the time given line is wrapped.
+			</description>
+		</method>
+		<method name="get_line_wrap_index_at_column" qualifiers="const">
+			<return type="int">
+			</return>
+			<argument index="0" name="line" type="int">
+			</argument>
+			<argument index="1" name="column" type="int">
+			</argument>
+			<description>
+				Returns the wrap index of the given line column.
+			</description>
+		</method>
+		<method name="get_line_wrapped_text" qualifiers="const">
+			<return type="PackedStringArray">
+			</return>
+			<argument index="0" name="line" type="int">
+			</argument>
+			<description>
+				Returns an array of [String] repersenting each wrapped index.
+			</description>
+		</method>
 		<method name="get_menu" qualifiers="const">
 			<return type="PopupMenu" />
 			<description>
@@ -344,6 +373,15 @@
 			<return type="bool" />
 			<description>
 				Returns whether the menu is visible. Use this instead of [code]get_menu().visible[/code] to improve performance (so the creation of the menu is avoided).
+			</description>
+		</method>
+		<method name="is_line_wrapped" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="line" type="int">
+			</argument>
+			<description>
+				Returns if the given line is wrapped.
 			</description>
 		</method>
 		<method name="is_selection_active" qualifiers="const">
@@ -686,8 +724,8 @@
 		<member name="virtual_keyboard_enabled" type="bool" setter="set_virtual_keyboard_enabled" getter="is_virtual_keyboard_enabled" default="true">
 			If [code]true[/code], the native virtual keyboard is shown when focused on platforms that support it.
 		</member>
-		<member name="wrap_enabled" type="bool" setter="set_wrap_enabled" getter="is_wrap_enabled" default="false">
-			If [code]true[/code], enables text wrapping when it goes beyond the edge of what is visible.
+		<member name="wrap_mode" type="int" setter="set_line_wrapping_mode" getter="get_line_wrapping_mode" enum="TextEdit.LineWrappingMode" default="0">
+			Sets the line wrapping mode to use.
 		</member>
 	</members>
 	<signals>
@@ -747,6 +785,12 @@
 		<constant name="SELECTION_MODE_WORD" value="3" enum="SelectionMode">
 		</constant>
 		<constant name="SELECTION_MODE_LINE" value="4" enum="SelectionMode">
+		</constant>
+		<constant name="LINE_WRAPPING_NONE" value="0" enum="LineWrappingMode">
+			Line wrapping is disabled.
+		</constant>
+		<constant name="LINE_WRAPPING_BOUNDARY" value="1" enum="LineWrappingMode">
+			Line wrapping occurs at the control boundary, beyond what would normally be visible.
 		</constant>
 		<constant name="GUTTER_TYPE_STRING" value="0" enum="GutterType">
 		</constant>
