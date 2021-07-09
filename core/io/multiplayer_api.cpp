@@ -85,7 +85,7 @@ const MultiplayerAPI::RPCConfig _get_rpc_config_by_id(Node *p_node, uint16_t p_i
 	if (id & (1 << 15)) {
 		id = id & ~(1 << 15);
 		config = p_node->get_node_rpc_methods();
-	} else {
+	} else if (p_node->get_script_instance()) {
 		config = p_node->get_script_instance()->get_rpc_methods();
 	}
 	if (id < config.size()) {
