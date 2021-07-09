@@ -2249,14 +2249,22 @@ real_t ConvexHullComputer::compute(const Vector3 *p_coords, int32_t p_count, rea
 }
 
 Error ConvexHullComputer::convex_hull(const Vector<Vector3> &p_points, Geometry::MeshData &r_mesh) {
+	return convex_hull(p_points.ptr(), p_points.size(), r_mesh);
+}
+
+Error ConvexHullComputer::convex_hull(const PoolVector<Vector3> &p_points, Geometry::MeshData &r_mesh) {
+	return convex_hull(p_points.read().ptr(), p_points.size(), r_mesh);
+}
+
+Error ConvexHullComputer::convex_hull(const Vector3 *p_points, int32_t p_point_count, Geometry::MeshData &r_mesh) {
 	r_mesh = Geometry::MeshData(); // clear
 
-	if (p_points.size() == 0) {
+	if (p_point_count == 0) {
 		return FAILED; // matches QuickHull
 	}
 
 	ConvexHullComputer ch;
-	ch.compute(p_points.ptr(), p_points.size(), -1.0, -1.0);
+	ch.compute(p_points, p_point_count, -1.0, -1.0);
 
 	r_mesh.vertices = ch.vertices;
 
