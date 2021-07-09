@@ -207,6 +207,7 @@ void register_server_types() {
 	ClassDB::register_class<RDShaderSource>();
 	ClassDB::register_class<RDShaderBytecode>();
 	ClassDB::register_class<RDShaderFile>();
+	ClassDB::register_class<RDPipelineSpecializationConstant>();
 
 	ClassDB::register_class<CameraFeed>();
 
