@@ -114,6 +114,7 @@ class DisplayServerX11 : public DisplayServer {
 
 	struct WindowData {
 		Window x11_window;
+		WindowID parent = INVALID_WINDOW_ID;
 		::XIC xic;
 
 		Size2i min_size;
@@ -135,6 +136,7 @@ class DisplayServerX11 : public DisplayServer {
 
 		bool menu_type = false;
 		bool no_focus = false;
+		bool is_child = false;
 
 		//better to guess on the fly, given WM can change it
 		//WindowMode mode;
@@ -152,7 +154,8 @@ class DisplayServerX11 : public DisplayServer {
 	Map<WindowID, WindowData> windows;
 
 	WindowID window_id_counter = MAIN_WINDOW_ID;
-	WindowID _create_window(WindowMode p_mode, uint32_t p_flags, const Rect2i &p_rect);
+	void _constrain_child_window_size(const WindowData &p_window, Rect2i *r_rect);
+	WindowID _create_window(WindowMode p_mode, uint32_t p_flags, const Rect2i &p_rect, const WindowID p_parent_window_id);
 
 	String internal_clipboard;
 	Window xdnd_source_window;
@@ -307,7 +310,7 @@ public:
 
 	virtual Vector<DisplayServer::WindowID> get_window_list() const;
 
-	virtual WindowID create_sub_window(WindowMode p_mode, uint32_t p_flags, const Rect2i &p_rect = Rect2i());
+	virtual WindowID create_sub_window(WindowMode p_mode, uint32_t p_flags, const Rect2i &p_rect = Rect2i(), const WindowID p_parent = MAIN_WINDOW_ID);
 	virtual void show_window(WindowID p_id);
 	virtual void delete_sub_window(WindowID p_id);
 

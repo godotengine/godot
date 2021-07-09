@@ -39,6 +39,21 @@ void Popup::_input_from_window(const Ref<InputEvent> &p_event) {
 	if (key.is_valid() && key->is_pressed() && key->get_keycode() == KEY_ESCAPE) {
 		_close_pressed();
 	}
+
+	if (is_embedded()) {
+		return;
+	}
+
+	Ref<InputEventMouseButton> button = p_event;
+	if (button.is_valid() && (button->get_button_index() == MOUSE_BUTTON_LEFT || button->get_button_index() == MOUSE_BUTTON_RIGHT) && !button->is_pressed() && button->get_window_id() != get_window_id()) {
+		// Disable clicks under a time threshold to avoid selection right when opening the popup.
+		uint64_t now = OS::get_singleton()->get_ticks_msec();
+		uint64_t diff = now - popup_time_msec;
+		if (diff < 250) {
+			return;
+		}
+		_close_pressed();
+	}
 }
 
 void Popup::_initialize_visible_parents() {
@@ -118,6 +133,11 @@ void Popup::set_close_on_parent_focus(bool p_close) {
 
 bool Popup::get_close_on_parent_focus() {
 	return close_on_parent_focus;
+}
+
+void Popup::popup(const Rect2i &p_bounds) {
+	popup_time_msec = OS::get_singleton()->get_ticks_msec();
+	Window::popup(p_bounds);
 }
 
 void Popup::_bind_methods() {

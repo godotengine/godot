@@ -48,6 +48,8 @@
 			</argument>
 			<argument index="2" name="rect" type="Rect2i" default="Rect2i(0, 0, 0, 0)">
 			</argument>
+			<argument index="3" name="parent_window" type="int" default="0">
+			</argument>
 			<description>
 			</description>
 		</method>

@@ -31,6 +31,7 @@
 #include "popup_menu.h"
 
 #include "core/input/input.h"
+#include "core/input/input_event.h"
 #include "core/os/keyboard.h"
 #include "core/os/os.h"
 #include "core/string/print_string.h"
@@ -192,6 +193,7 @@ void PopupMenu::_activate_submenu(int p_over) {
 	Popup *submenu_popup = Object::cast_to<Popup>(n);
 	ERR_FAIL_COND_MSG(!submenu_popup, "Item subnode is not a Popup: " + items[p_over].submenu + ".");
 	if (submenu_popup->is_visible()) {
+		print_line("visible");
 		return; //already visible!
 	}
 
@@ -353,11 +355,23 @@ void PopupMenu::_gui_input(const Ref<InputEvent> &p_event) {
 	Ref<InputEventMouseButton> b = p_event;
 
 	if (b.is_valid()) {
-		if (!item_clickable_area.has_point(b->get_position())) {
-			return;
+		Vector2 mouse_position = b->get_position();
+		if (!is_embedded() && b->get_window_id() != get_window_id()) {
+			mouse_position -= get_position() - DisplayServer::get_singleton()->window_get_position(b->get_window_id());
 		}
 
 		int button_idx = b->get_button_index();
+		if (!control->get_rect().has_point(mouse_position)) {
+			if ((button_idx == MOUSE_BUTTON_LEFT || button_idx == MOUSE_BUTTON_RIGHT) && b->is_pressed() && OS::get_singleton()->get_ticks_msec() - popup_time_msec >= 250) {
+				hide();
+				return;
+			}
+		}
+
+		if (!item_clickable_area.has_point(mouse_position)) {
+			return;
+		}
+
 		if (b->is_pressed() || (!b->is_pressed() && during_grabbed_click)) {
 			// Allow activating item by releasing the LMB or any that was down when the popup appeared.
 			// However, if button was not held when opening menu, do not allow release to activate item.
@@ -369,11 +383,11 @@ void PopupMenu::_gui_input(const Ref<InputEvent> &p_event) {
 				// Disable clicks under a time threshold to avoid selection right when opening the popup.
 				uint64_t now = OS::get_singleton()->get_ticks_msec();
 				uint64_t diff = now - popup_time_msec;
-				if (diff < 100) {
+				if (diff < 250) {
 					return;
 				}
 
-				int over = _get_mouse_over(b->get_position());
+				int over = _get_mouse_over(mouse_position);
 				if (over < 0) {
 					if (!was_during_grabbed_click) {
 						hide();
@@ -397,18 +411,22 @@ void PopupMenu::_gui_input(const Ref<InputEvent> &p_event) {
 	Ref<InputEventMouseMotion> m = p_event;
 
 	if (m.is_valid()) {
-		if (!item_clickable_area.has_point(m->get_position())) {
+		Vector2 mouse_position = m->get_position();
+		if (!is_embedded() && m->get_window_id() != get_window_id()) {
+			mouse_position -= get_position() - DisplayServer::get_singleton()->window_get_position(m->get_window_id());
+		}
+		if (!item_clickable_area.has_point(mouse_position)) {
 			return;
 		}
 
 		for (List<Rect2>::Element *E = autohide_areas.front(); E; E = E->next()) {
-			if (!Rect2(Point2(), get_size()).has_point(m->get_position()) && E->get().has_point(m->get_position())) {
+			if (!Rect2(Point2(), get_size()).has_point(mouse_position) && E->get().has_point(mouse_position)) {
 				_close_pressed();
 				return;
 			}
 		}
 
-		int over = _get_mouse_over(m->get_position());
+		int over = _get_mouse_over(mouse_position);
 		int id = (over < 0 || items[over].separator || items[over].disabled) ? -1 : (items[over].id >= 0 ? items[over].id : over);
 
 		if (id < 0) {
@@ -674,9 +692,11 @@ void PopupMenu::_close_pressed() {
 	// Only apply minimum lifetime to submenus.
 	PopupMenu *parent_pum = Object::cast_to<PopupMenu>(get_parent());
 	if (!parent_pum) {
+		print_line("NO PARENT!");
 		Popup::_close_pressed();
 		return;
 	}
+	print_line("PARENT!");
 
 	// If the timer has expired, close. If timer is still running, do nothing.
 	if (close_allowed) {
@@ -797,6 +817,10 @@ void PopupMenu::_notification(int p_what) {
 				margin_container->add_theme_constant_override("margin_left", panel_style->get_margin(Side::SIDE_LEFT));
 				margin_container->add_theme_constant_override("margin_right", panel_style->get_margin(Side::SIDE_RIGHT));
 			}
+		} break;
+		case NOTIFICATION_WM_WINDOW_FOCUS_OUT: {
+			print_line(".kxsjybfsl,dhbfskdj,fbvxsy,dkhfbsxdhfbdsk,jhfbsjhsjbsdjdndfx,jdhfds");
+			//hide();
 		} break;
 	}
 }
@@ -1678,12 +1702,6 @@ void PopupMenu::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("id_pressed", PropertyInfo(Variant::INT, "id")));
 	ADD_SIGNAL(MethodInfo("id_focused", PropertyInfo(Variant::INT, "id")));
 	ADD_SIGNAL(MethodInfo("index_pressed", PropertyInfo(Variant::INT, "index")));
-}
-
-void PopupMenu::popup(const Rect2 &p_bounds) {
-	moved = Vector2();
-	popup_time_msec = OS::get_singleton()->get_ticks_msec();
-	Popup::popup(p_bounds);
 }
 
 PopupMenu::PopupMenu() {

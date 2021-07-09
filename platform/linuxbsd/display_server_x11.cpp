@@ -85,7 +85,7 @@
 #define VALUATOR_TILTX 3
 #define VALUATOR_TILTY 4
 
-//#define DISPLAY_SERVER_X11_DEBUG_LOGS_ENABLED
+#define DISPLAY_SERVER_X11_DEBUG_LOGS_ENABLED
 #ifdef DISPLAY_SERVER_X11_DEBUG_LOGS_ENABLED
 #define DEBUG_LOG_X11(...) printf(__VA_ARGS__)
 #else
@@ -855,10 +855,10 @@ Vector<DisplayServer::WindowID> DisplayServerX11::get_window_list() const {
 	return ret;
 }
 
-DisplayServer::WindowID DisplayServerX11::create_sub_window(WindowMode p_mode, uint32_t p_flags, const Rect2i &p_rect) {
+DisplayServer::WindowID DisplayServerX11::create_sub_window(WindowMode p_mode, uint32_t p_flags, const Rect2i &p_rect, const WindowID p_parent) {
 	_THREAD_SAFE_METHOD_
 
-	WindowID id = _create_window(p_mode, p_flags, p_rect);
+	WindowID id = _create_window(p_mode, p_flags, p_rect, p_parent);
 	for (int i = 0; i < WINDOW_FLAG_MAX; i++) {
 		if (p_flags & (1 << i)) {
 			window_set_flag(WindowFlags(i), true, id);
@@ -885,6 +885,29 @@ void DisplayServerX11::delete_sub_window(WindowID p_id) {
 	WindowData &wd = windows[p_id];
 
 	DEBUG_LOG_X11("delete_sub_window: %lu (%u) \n", wd.x11_window, p_id);
+
+	Vector<WindowID> ids;
+	for (Map<WindowID, WindowData>::Element *W = windows.front(); W; W = W->next()) {
+		if (W->value().parent == p_id) {
+			ids.push_back(W->key());
+		}
+	}
+
+	for (int i = 0; i < ids.size(); ++i) {
+		// Let's be nice to windows and let them execute the kill
+		_send_window_event(windows[ids[i]], WINDOW_EVENT_CLOSE_REQUEST);
+		// Fun ended here. The window should close itself, but it may do it deferred, so we have to ensure it is not deleted, until it requests so (and prevent a crash)
+		if (windows.has(ids[i])) {
+			// We add the child window to the parent of the deleted window, so it will survive the deletion (but really should close itself) and don't cause crashes
+			WindowData &sw = windows[ids[i]];
+			Window child;
+			Window parent = wd.is_child ? windows[wd.parent].x11_window : windows[MAIN_WINDOW_ID].x11_window;
+			XTranslateCoordinates(x11_display, wd.x11_window, parent, sw.position.x, sw.position.y, &sw.position.x, &sw.position.y, &child);
+			XReparentWindow(x11_display, sw.x11_window, parent, sw.position.x, sw.position.y);
+			sw.parent = wd.parent;
+			sw.is_child = wd.is_child;
+		}
+	}
 
 	while (wd.transient_children.size()) {
 		window_set_transient(wd.transient_children.front()->get(), INVALID_WINDOW_ID);
@@ -1120,6 +1143,15 @@ void DisplayServerX11::window_set_transient(WindowID p_window, WindowID p_parent
 	} else {
 		ERR_FAIL_COND(!windows.has(p_parent));
 		ERR_FAIL_COND_MSG(prev_parent != INVALID_WINDOW_ID, "Window already has a transient parent");
+
+		// transient windows can't be parent's of transient windows (we will have bugs!)
+		while (p_parent != INVALID_WINDOW_ID && windows.has(p_parent)) {
+			WindowData &parent = windows[p_parent];
+			if (parent.transient_parent == INVALID_WINDOW_ID || !parent.is_child) {
+				break;
+			}
+			p_parent = parent.transient_parent;
+		}
 		WindowData &wd_parent = windows[p_parent];
 
 		wd_window.transient_parent = p_parent;
@@ -1184,8 +1216,20 @@ void DisplayServerX11::window_set_position(const Point2i &p_position, WindowID p
 	ERR_FAIL_COND(!windows.has(p_window));
 	WindowData &wd = windows[p_window];
 
+	Point2i position = p_position;
 	int x = 0;
 	int y = 0;
+
+	bool update_position = false;
+	Rect2i rect = Rect2i(position, wd.size);
+
+	// Ensure constrained children
+	if (wd.is_child && windows.has(wd.transient_parent)) {
+		_constrain_child_window_size(windows[wd.transient_parent], &rect);
+		position = rect.position;
+		//update_position = rect.size != wd.size;
+	}
+
 	if (!window_get_flag(WINDOW_FLAG_BORDERLESS, p_window)) {
 		//exclude window decorations
 		XSync(x11_display, False);
@@ -1206,8 +1250,12 @@ void DisplayServerX11::window_set_position(const Point2i &p_position, WindowID p
 			}
 		}
 	}
-	XMoveWindow(x11_display, wd.x11_window, p_position.x - x, p_position.y - y);
+	XMoveWindow(x11_display, wd.x11_window, position.x - x, position.y - y);
 	_update_real_mouse_position(wd);
+
+	if (update_position) {
+		//window_set_size(rect.size, p_window);
+	}
 }
 
 void DisplayServerX11::window_set_max_size(const Size2i p_size, WindowID p_window) {
@@ -1280,6 +1328,15 @@ void DisplayServerX11::window_set_size(const Size2i p_size, WindowID p_window) {
 	XGetWindowAttributes(x11_display, wd.x11_window, &xwa);
 	int old_w = xwa.width;
 	int old_h = xwa.height;
+	bool update_position = false;
+	Rect2i rect = Rect2i(wd.position, size);
+
+	// Ensure constrained children
+	if (wd.is_child && windows.has(wd.transient_parent)) {
+		_constrain_child_window_size(windows[wd.transient_parent], &rect);
+		size = rect.size;
+		update_position = rect.position != wd.position;
+	}
 
 	// Update our videomode width and height
 	wd.size = size;
@@ -1299,6 +1356,10 @@ void DisplayServerX11::window_set_size(const Size2i p_size, WindowID p_window) {
 		}
 
 		usleep(10000);
+	}
+
+	if (update_position) {
+		//window_set_position(rect.position, p_window);
 	}
 }
 
@@ -1725,6 +1786,9 @@ void DisplayServerX11::window_set_flag(WindowFlags p_flag, bool p_enabled, Windo
 		case WINDOW_FLAG_TRANSPARENT: {
 			//todo reimplement
 		} break;
+		case WINDOW_FLAG_NO_FOCUS: {
+			wd.no_focus = p_enabled;
+		} break;
 		default: {
 		}
 	}
@@ -1766,6 +1830,9 @@ bool DisplayServerX11::window_get_flag(WindowFlags p_flag, WindowID p_window) co
 		case WINDOW_FLAG_TRANSPARENT: {
 			//todo reimplement
 		} break;
+		case WINDOW_FLAG_NO_FOCUS: {
+			return wd.no_focus;
+		} break;
 		default: {
 		}
 	}
@@ -1804,6 +1871,9 @@ void DisplayServerX11::window_move_to_foreground(WindowID p_window) {
 
 	ERR_FAIL_COND(!windows.has(p_window));
 	WindowData &wd = windows[p_window];
+	if (wd.no_focus) {
+		return;
+	}
 
 	XEvent xev;
 	Atom net_active_window = XInternAtom(x11_display, "_NET_ACTIVE_WINDOW", False);
@@ -2596,7 +2666,7 @@ void DisplayServerX11::_window_changed(XEvent *event) {
 	Rect2i new_rect;
 
 	WindowData &wd = windows[window_id];
-	if (wd.x11_window != event->xany.window) { // Check if the correct window, in case it was not main window or anything else
+	if (wd.x11_window != event->xany.window || event->xconfigure.override_redirect) { // Check if the correct window, in case it was not main window or anything else
 		return;
 	}
 
@@ -2604,7 +2674,7 @@ void DisplayServerX11::_window_changed(XEvent *event) {
 		//the position in xconfigure is not useful here, obtain it manually
 		int x, y;
 		Window child;
-		XTranslateCoordinates(x11_display, wd.x11_window, DefaultRootWindow(x11_display), 0, 0, &x, &y, &child);
+		XTranslateCoordinates(x11_display, wd.x11_window, wd.is_child ? windows[wd.parent].x11_window : DefaultRootWindow(x11_display), 0, 0, &x, &y, &child);
 		new_rect.position.x = x;
 		new_rect.position.y = y;
 
@@ -2653,13 +2723,17 @@ void DisplayServerX11::_dispatch_input_event(const Ref<InputEvent> &p_event) {
 
 	Ref<InputEventFromWindow> event_from_window = p_event;
 	if (event_from_window.is_valid() && event_from_window->get_window_id() != INVALID_WINDOW_ID) {
-		//send to a window
-		ERR_FAIL_COND(!windows.has(event_from_window->get_window_id()));
-		Callable callable = windows[event_from_window->get_window_id()].input_event_callback;
-		if (callable.is_null()) {
-			return;
+		{
+			//send to a window
+			ERR_FAIL_COND(!windows.has(event_from_window->get_window_id()));
+			Callable callable = windows[event_from_window->get_window_id()].input_event_callback;
+			if (callable.is_null()) {
+				return;
+			}
+			callable.call((const Variant **)&evp, 1, ret, ce);
 		}
-		callable.call((const Variant **)&evp, 1, ret, ce);
+		// send to all windows, that request to always get input and have no focus
+		// seems to be not needed with X11 and their input handling
 	} else {
 		//send to all windows
 		for (Map<WindowID, WindowData>::Element *E = windows.front(); E; E = E->next()) {
@@ -3029,7 +3103,10 @@ void DisplayServerX11::process_events() {
 
 			case FocusIn: {
 				DEBUG_LOG_X11("[%u] FocusIn window=%lu (%u), mode='%u' \n", frame, event.xfocus.window, window_id, event.xfocus.mode);
-
+				DEBUG_LOG_X11("\tNotifyAncestor=%d, NotifyVirtual=%d, NotifyInferior=%d,\n\tNotifyNonlinear=%d, NotifyNonlinearVirtual=%d, NotifyPointer=%d,\n\tNotifyPointerRoot=%d, NotifyDetailNone=%d\n",
+						event.xfocus.detail == NotifyAncestor, event.xfocus.detail == NotifyVirtual, event.xfocus.detail == NotifyInferior,
+						event.xfocus.detail == NotifyNonlinear, event.xfocus.detail == NotifyNonlinearVirtual, event.xfocus.detail == NotifyPointer,
+						event.xfocus.detail == NotifyPointerRoot, event.xfocus.detail == NotifyDetailNone);
 				WindowData &wd = windows[window_id];
 
 				wd.focused = true;
@@ -3080,7 +3157,10 @@ void DisplayServerX11::process_events() {
 
 			case FocusOut: {
 				DEBUG_LOG_X11("[%u] FocusOut window=%lu (%u), mode='%u' \n", frame, event.xfocus.window, window_id, event.xfocus.mode);
-
+				DEBUG_LOG_X11("\tNotifyAncestor=%d, NotifyVirtual=%d, NotifyInferior=%d,\n\tNotifyNonlinear=%d, NotifyNonlinearVirtual=%d, NotifyPointer=%d,\n\tNotifyPointerRoot=%d, NotifyDetailNone=%d\n",
+						event.xfocus.detail == NotifyAncestor, event.xfocus.detail == NotifyVirtual, event.xfocus.detail == NotifyInferior,
+						event.xfocus.detail == NotifyNonlinear, event.xfocus.detail == NotifyNonlinearVirtual, event.xfocus.detail == NotifyPointer,
+						event.xfocus.detail == NotifyPointerRoot, event.xfocus.detail == NotifyDetailNone);
 				WindowData &wd = windows[window_id];
 
 				wd.focused = false;
@@ -3664,8 +3744,106 @@ DisplayServer *DisplayServerX11::create_func(const String &p_rendering_driver, W
 	return ds;
 }
 
-DisplayServerX11::WindowID DisplayServerX11::_create_window(WindowMode p_mode, uint32_t p_flags, const Rect2i &p_rect) {
+void DisplayServerX11::_constrain_child_window_size(const WindowData &p_parent, Rect2i *r_rect) {
+	Window child, root, parent_of_parent, *children = nullptr;
+	Window parent_window = p_parent.x11_window;
+	unsigned int num_children;
+	if (!XQueryTree(x11_display, parent_window, &root, &parent_of_parent, &children, &num_children)) {
+		ERR_PRINT("Can't get window tree.");
+		return;
+	}
+	if (children) {
+		XFree((char *)children);
+	}
+	print_line(vformat("Old rect: %s", *r_rect));
+	print_line(vformat("pop == root: %s, pop=%s, root=%s", parent_of_parent == root, parent_of_parent, root));
+	XTranslateCoordinates(x11_display, root, parent_window, r_rect->position.x, r_rect->position.y, &r_rect->position.x, &r_rect->position.y, &child);
+	//XTranslateCoordinates(x11_display, root, parent_window, r_rect->size.x, r_rect->size.y, &r_rect->size.x, &r_rect->size.y, &child);
+
+	XWindowAttributes xwa;
+	XSync(x11_display, False);
+	XGetWindowAttributes(x11_display, parent_window, &xwa);
+
+	Rect2i parent_rect = Rect2i(xwa.x, xwa.y, xwa.width, xwa.height);
+	print_line(vformat("P rect: %s", parent_rect));
+	//Rect2i parent_rect2 = p_parent
+	print_line(vformat("Parent of Parent: %s", p_parent.parent));
+	print_line(vformat("Translated start rect: %s", *r_rect));
+	// First, try to move the window.
+	if (r_rect->position.y < 0) {
+		r_rect->position.y = 0;
+		//r_rect->size.y -= parent_rect.position.y - r_rect->position.y;
+		print_line(vformat("Move down (y): %s", *r_rect));
+	} else if (r_rect->position.y + r_rect->size.y > parent_rect.size.y) {
+		r_rect->position.y -= r_rect->position.y + r_rect->size.y - parent_rect.size.y;
+		//r_rect->size.y = parent_rect.size.y;
+		print_line(vformat("Move up (y): %s", *r_rect));
+	}
+
+	if (r_rect->position.x < 0) {
+		r_rect->position.x = 0;
+		//r_rect->size.x -= parent_rect.position.x - r_rect->position.x;
+		print_line(vformat("Move right (x): %s", *r_rect));
+	} else if (r_rect->position.x + r_rect->size.x > parent_rect.size.x) {
+		r_rect->position.x -= r_rect->position.x + r_rect->size.x - parent_rect.size.x;
+		//r_rect->size.x = parent_rect.size.x;
+		print_line(vformat("Move left (x): %s", *r_rect));
+	}
+
+	// Now clip the window
+	if (r_rect->position.y < 0) {
+		r_rect->position.y = 0;
+		print_line(vformat("Shrink top (y): %s", *r_rect));
+	}
+	if (r_rect->position.y + r_rect->size.y > parent_rect.size.y) {
+		r_rect->size.y = parent_rect.size.y;
+		print_line(vformat("Shrink bottom (y): %s", *r_rect));
+	}
+	if (r_rect->position.x < 0) {
+		r_rect->position.x = 0;
+		print_line(vformat("Shrink left (x): %s", *r_rect));
+	}
+	if (r_rect->position.x + r_rect->size.x > parent_rect.size.x) {
+		r_rect->size.x = parent_rect.size.x;
+		print_line(vformat("Shrink right (x): %s", *r_rect));
+	}
+	r_rect->size.y -= 100;
+	print_line(vformat("New rect: %s", *r_rect));
+}
+
+DisplayServerX11::WindowID DisplayServerX11::_create_window(WindowMode p_mode, uint32_t p_flags, const Rect2i &p_rect, const WindowID p_parent_window_id) {
 	//Create window
+	WindowID id = window_id_counter++;
+	WindowData &wd = windows[id];
+
+	Window parent_window = 0;
+	WindowID non_transient_parent = p_parent_window_id;
+	Rect2i rect = p_rect;
+
+	while (non_transient_parent != INVALID_WINDOW_ID && windows.has(non_transient_parent)) {
+		WindowData &parent = windows[non_transient_parent];
+		if (parent.transient_parent == INVALID_WINDOW_ID || !parent.is_child) {
+			parent_window = parent.x11_window;
+			wd.parent = non_transient_parent;
+			break;
+		}
+		non_transient_parent = parent.transient_parent;
+	}
+
+	if (parent_window && (p_flags & WINDOW_FLAG_BORDERLESS_BIT) && non_transient_parent != INVALID_WINDOW_ID) {
+		// We have child windows here, so we need to ensure they use local coordinates
+		wd.is_child = (p_flags & WINDOW_FLAG_BORDERLESS_BIT);
+		if (wd.is_child) {
+			//WindowData &parent = windows[p_parent_window_id];
+			//wd.parent = p_parent_window_id; //parent != transient_parent!
+			wd.menu_type = true;
+			_constrain_child_window_size(windows[non_transient_parent], &rect);
+		}
+	} else {
+		parent_window = DefaultRootWindow(x11_display);
+		//wd.parent = INVALID_WINDOW_ID;
+		//wd.is_child = false;
+	}
 
 	long visualMask = VisualScreenMask;
 	int numberOfVisuals;
@@ -3673,7 +3851,7 @@ DisplayServerX11::WindowID DisplayServerX11::_create_window(WindowMode p_mode, u
 	vInfoTemplate.screen = DefaultScreen(x11_display);
 	XVisualInfo *visualInfo = XGetVisualInfo(x11_display, visualMask, &vInfoTemplate, &numberOfVisuals);
 
-	Colormap colormap = XCreateColormap(x11_display, RootWindow(x11_display, vInfoTemplate.screen), visualInfo->visual, AllocNone);
+	Colormap colormap = XCreateColormap(x11_display, parent_window, visualInfo->visual, AllocNone);
 
 	XSetWindowAttributes windowAttributes = {};
 	windowAttributes.colormap = colormap;
@@ -3682,13 +3860,6 @@ DisplayServerX11::WindowID DisplayServerX11::_create_window(WindowMode p_mode, u
 	windowAttributes.event_mask = KeyPressMask | KeyReleaseMask | StructureNotifyMask | ExposureMask;
 
 	unsigned long valuemask = CWBorderPixel | CWColormap | CWEventMask;
-
-	WindowID id = window_id_counter++;
-	WindowData &wd = windows[id];
-
-	if ((id != MAIN_WINDOW_ID) && (p_flags & WINDOW_FLAG_BORDERLESS_BIT)) {
-		wd.menu_type = true;
-	}
 
 	if (p_flags & WINDOW_FLAG_NO_FOCUS_BIT) {
 		wd.menu_type = true;
@@ -3707,7 +3878,7 @@ DisplayServerX11::WindowID DisplayServerX11::_create_window(WindowMode p_mode, u
 	}
 
 	{
-		wd.x11_window = XCreateWindow(x11_display, RootWindow(x11_display, visualInfo->screen), p_rect.position.x, p_rect.position.y, p_rect.size.width > 0 ? p_rect.size.width : 1, p_rect.size.height > 0 ? p_rect.size.height : 1, 0, visualInfo->depth, InputOutput, visualInfo->visual, valuemask, &windowAttributes);
+		wd.x11_window = XCreateWindow(x11_display, parent_window, rect.position.x, rect.position.y, rect.size.width > 0 ? rect.size.width : 1, rect.size.height > 0 ? rect.size.height : 1, 0, visualInfo->depth, InputOutput, visualInfo->visual, valuemask, &windowAttributes);
 
 		// Enable receiving notification when the window is initialized (MapNotify)
 		// so the focus can be set at the right time.
@@ -3828,7 +3999,7 @@ DisplayServerX11::WindowID DisplayServerX11::_create_window(WindowMode p_mode, u
 
 #if defined(VULKAN_ENABLED)
 		if (context_vulkan) {
-			Error err = context_vulkan->window_create(id, wd.x11_window, x11_display, p_rect.size.width, p_rect.size.height);
+			Error err = context_vulkan->window_create(id, wd.x11_window, x11_display, rect.size.width, rect.size.height);
 			ERR_FAIL_COND_V_MSG(err != OK, INVALID_WINDOW_ID, "Can't create a Vulkan window");
 		}
 #endif
@@ -4101,7 +4272,7 @@ DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, WindowMode 
 	Point2i window_position(
 			(screen_get_size(0).width - p_resolution.width) / 2,
 			(screen_get_size(0).height - p_resolution.height) / 2);
-	WindowID main_window = _create_window(p_mode, p_flags, Rect2i(window_position, p_resolution));
+	WindowID main_window = _create_window(p_mode, p_flags, Rect2i(window_position, p_resolution), INVALID_WINDOW_ID);
 	if (main_window == INVALID_WINDOW_ID) {
 		r_error = ERR_CANT_CREATE;
 		return;

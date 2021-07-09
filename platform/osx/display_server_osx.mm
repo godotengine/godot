@@ -2388,10 +2388,10 @@ Vector<DisplayServer::WindowID> DisplayServerOSX::get_window_list() const {
 	return ret;
 }
 
-DisplayServer::WindowID DisplayServerOSX::create_sub_window(WindowMode p_mode, uint32_t p_flags, const Rect2i &p_rect) {
+DisplayServer::WindowID DisplayServerOSX::create_sub_window(WindowMode p_mode, uint32_t p_flags, const Rect2i &p_rect, WindowID p_parent) {
 	_THREAD_SAFE_METHOD_
 
-	WindowID id = _create_window(p_mode, p_rect);
+	WindowID id = _create_window(p_mode, p_flags, p_rect, p_parent);
 	for (int i = 0; i < WINDOW_FLAG_MAX; i++) {
 		if (p_flags & (1 << i)) {
 			window_set_flag(WindowFlags(i), true, id);
@@ -3604,7 +3604,7 @@ DisplayServer *DisplayServerOSX::create_func(const String &p_rendering_driver, W
 	return ds;
 }
 
-DisplayServerOSX::WindowID DisplayServerOSX::_create_window(WindowMode p_mode, const Rect2i &p_rect) {
+DisplayServerOSX::WindowID DisplayServerOSX::_create_window(WindowMode p_mode, uint32_t p_flags, const Rect2i &p_rect, WindowID p_parent) {
 	WindowID id;
 	const float scale = screen_get_max_scale();
 	{
@@ -3627,6 +3627,13 @@ DisplayServerOSX::WindowID DisplayServerOSX::_create_window(WindowMode p_mode, c
 							backing:NSBackingStoreBuffered
 							  defer:NO];
 		ERR_FAIL_COND_V_MSG(wd.window_object == nil, INVALID_WINDOW_ID, "Can't create a window");
+
+		if (window_id_counter != MAIN_WINDOW_ID && (p_flags & WINDOW_FLAG_BORDERLESS)) {
+			// We want to create child windows whenever possible.
+			// Here are likely different flags needed and we have to fix positioning, I guess.
+			[windows[MAIN_WINDOW_ID].window_object addChildWindow:wd.window_object ordered:NSWindowAbove];
+			wd.input_without_focus = true;
+		}
 
 		wd.window_view = [[GodotContentView alloc] init];
 		ERR_FAIL_COND_V_MSG(wd.window_view == nil, INVALID_WINDOW_ID, "Can't create a window view");
@@ -3707,14 +3714,29 @@ void DisplayServerOSX::_dispatch_input_event(const Ref<InputEvent> &p_event) {
 
 		Ref<InputEventFromWindow> event_from_window = p_event;
 		if (event_from_window.is_valid() && event_from_window->get_window_id() != INVALID_WINDOW_ID) {
-			//send to a window
 			if (windows.has(event_from_window->get_window_id())) {
-				Callable callable = windows[event_from_window->get_window_id()].input_event_callback;
-				if (callable.is_null()) {
-					return;
+				{
+					//send to a window
+					Callable callable = windows[event_from_window->get_window_id()].input_event_callback;
+					if (callable.is_null()) {
+						return;
+					}
+					callable.call((const Variant **)&evp, 1, ret, ce);
 				}
-				callable.call((const Variant **)&evp, 1, ret, ce);
+
+				//send to all windows, that request to always get input and have no focus
+				for (Map<WindowID, WindowData>::Element *E = windows.front(); E; E = E->next()) {
+					if (E->key() == event_from_window->get_window_id() || E->key() == MAIN_WINDOW_ID || (!E->get().input_without_focus && E->get().no_focus)) {
+						continue;
+					}
+					Callable callable = E->get().input_event_callback;
+					if (callable.is_null()) {
+						continue;
+					}
+					callable.call((const Variant **)&evp, 1, ret, ce);
+				}
 			}
+
 		} else {
 			//send to all windows
 			for (Map<WindowID, WindowData>::Element *E = windows.front(); E; E = E->next()) {
@@ -3886,7 +3908,7 @@ DisplayServerOSX::DisplayServerOSX(const String &p_rendering_driver, WindowMode 
 	Point2i window_position(
 			screen_get_position(0).x + (screen_get_size(0).width - p_resolution.width) / 2,
 			screen_get_position(0).y + (screen_get_size(0).height - p_resolution.height) / 2);
-	WindowID main_window = _create_window(p_mode, Rect2i(window_position, p_resolution));
+	WindowID main_window = _create_window(p_mode, p_flags, Rect2i(window_position, p_resolution), INVALID_WINDOW_ID);
 	ERR_FAIL_COND(main_window == INVALID_WINDOW_ID);
 	for (int i = 0; i < WINDOW_FLAG_MAX; i++) {
 		if (p_flags & (1 << i)) {

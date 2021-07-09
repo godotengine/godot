@@ -80,9 +80,9 @@ public:
 		DEFAULT_WINDOW_SIZE = 100,
 	};
 
-private:
 	DisplayServer::WindowID window_id = DisplayServer::INVALID_WINDOW_ID;
 
+private:
 	String title;
 	mutable int current_screen = 0;
 	mutable Vector2i position;
