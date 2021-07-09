@@ -42,7 +42,6 @@ class DisplayServer : public Object {
 	GDCLASS(DisplayServer, Object)
 
 	static DisplayServer *singleton;
-	bool vsync_enabled = true;
 	static bool hidpi_allowed;
 
 public:
@@ -57,7 +56,14 @@ public:
 		WINDOW_MODE_FULLSCREEN
 	};
 
-	typedef DisplayServer *(*CreateFunction)(const String &, WindowMode, uint32_t, const Size2i &, Error &r_error);
+	enum VSyncMode {
+		VSYNC_DISABLED,
+		VSYNC_ENABLED,
+		VSYNC_ADAPTIVE,
+		VSYNC_MAILBOX
+	};
+
+	typedef DisplayServer *(*CreateFunction)(const String &, WindowMode, VSyncMode, uint32_t, const Size2i &, Error &r_error);
 	typedef Vector<String> (*GetRenderingDriversFunction)();
 
 private:
@@ -84,7 +90,6 @@ protected:
 	static int server_create_count;
 
 	friend class RendererViewport;
-	virtual void _set_use_vsync(bool p_enable);
 
 public:
 	enum Feature {
@@ -221,7 +226,7 @@ public:
 		WINDOW_FLAG_NO_FOCUS_BIT = (1 << WINDOW_FLAG_NO_FOCUS)
 	};
 
-	virtual WindowID create_sub_window(WindowMode p_mode, uint32_t p_flags, const Rect2i &p_rect = Rect2i());
+	virtual WindowID create_sub_window(WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Rect2i &p_rect = Rect2i());
 	virtual void show_window(WindowID p_id);
 	virtual void delete_sub_window(WindowID p_id);
 
@@ -271,6 +276,9 @@ public:
 
 	virtual void window_set_mode(WindowMode p_mode, WindowID p_window = MAIN_WINDOW_ID) = 0;
 	virtual WindowMode window_get_mode(WindowID p_window = MAIN_WINDOW_ID) const = 0;
+
+	virtual void window_set_vsync_mode(VSyncMode p_vsync_mode, WindowID p_window = MAIN_WINDOW_ID);
+	virtual VSyncMode window_get_vsync_mode(WindowID p_window) const;
 
 	virtual bool window_is_maximize_allowed(WindowID p_window = MAIN_WINDOW_ID) const = 0;
 
@@ -352,18 +360,6 @@ public:
 	virtual void set_native_icon(const String &p_filename);
 	virtual void set_icon(const Ref<Image> &p_icon);
 
-	typedef void (*SwitchVSyncCallbackInThread)(bool);
-
-	static SwitchVSyncCallbackInThread switch_vsync_function;
-
-	void vsync_set_enabled(bool p_enable);
-	bool vsync_is_enabled() const;
-
-	virtual void vsync_set_use_via_compositor(bool p_enable);
-	virtual bool vsync_is_using_via_compositor() const;
-
-	//real, actual overridable function to switch vsync, which needs to be called from graphics thread if needed
-
 	enum Context {
 		CONTEXT_EDITOR,
 		CONTEXT_PROJECTMAN,
@@ -376,7 +372,7 @@ public:
 	static int get_create_function_count();
 	static const char *get_create_function_name(int p_index);
 	static Vector<String> get_create_function_rendering_drivers(int p_index);
-	static DisplayServer *create(int p_index, const String &p_rendering_driver, WindowMode p_mode, uint32_t p_flags, const Vector2i &p_resolution, Error &r_error);
+	static DisplayServer *create(int p_index, const String &p_rendering_driver, WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i &p_resolution, Error &r_error);
 
 	DisplayServer();
 	~DisplayServer();
@@ -389,5 +385,6 @@ VARIANT_ENUM_CAST(DisplayServer::ScreenOrientation)
 VARIANT_ENUM_CAST(DisplayServer::WindowMode)
 VARIANT_ENUM_CAST(DisplayServer::WindowFlags)
 VARIANT_ENUM_CAST(DisplayServer::CursorShape)
+VARIANT_ENUM_CAST(DisplayServer::VSyncMode)
 
 #endif // DISPLAY_SERVER_H

@@ -36,7 +36,7 @@ const char *VulkanContextAndroid::_get_platform_surface_extension() const {
 	return VK_KHR_ANDROID_SURFACE_EXTENSION_NAME;
 }
 
-int VulkanContextAndroid::window_create(ANativeWindow *p_window, int p_width, int p_height) {
+int VulkanContextAndroid::window_create(ANativeWindow *p_window, DisplayServer::VSyncMode p_vsync_mode, int p_width, int p_height) {
 	VkAndroidSurfaceCreateInfoKHR createInfo;
 	createInfo.sType = VK_STRUCTURE_TYPE_ANDROID_SURFACE_CREATE_INFO_KHR;
 	createInfo.pNext = nullptr;
@@ -49,7 +49,7 @@ int VulkanContextAndroid::window_create(ANativeWindow *p_window, int p_width, in
 		ERR_FAIL_V_MSG(-1, "vkCreateAndroidSurfaceKHR failed with error " + itos(err));
 	}
 
-	return _window_create(DisplayServer::MAIN_WINDOW_ID, surface, p_width, p_height);
+	return _window_create(DisplayServer::MAIN_WINDOW_ID, p_vsync_mode, surface, p_width, p_height);
 }
 
 bool VulkanContextAndroid::_use_validation_layers() {

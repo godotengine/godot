@@ -1454,7 +1454,7 @@ public:
 
 	virtual void set_debug_generate_wireframes(bool p_generate) = 0;
 
-	virtual void call_set_use_vsync(bool p_enable) = 0;
+	virtual void call_set_vsync_mode(DisplayServer::VSyncMode p_mode, DisplayServer::WindowID p_window) = 0;
 
 	virtual bool is_low_end() const = 0;
 

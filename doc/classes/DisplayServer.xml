@@ -44,9 +44,11 @@
 			</return>
 			<argument index="0" name="mode" type="int" enum="DisplayServer.WindowMode">
 			</argument>
-			<argument index="1" name="flags" type="int">
+			<argument index="1" name="vsync_mode" type="int" enum="DisplayServer.VSyncMode">
 			</argument>
-			<argument index="2" name="rect" type="Rect2i" default="Rect2i(0, 0, 0, 0)">
+			<argument index="2" name="flags" type="int">
+			</argument>
+			<argument index="3" name="rect" type="Rect2i" default="Rect2i(0, 0, 0, 0)">
 			</argument>
 			<description>
 			</description>
@@ -671,34 +673,6 @@
 				[b]Note:[/b] This method is implemented on Android, iOS and UWP.
 			</description>
 		</method>
-		<method name="vsync_is_enabled" qualifiers="const">
-			<return type="bool">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="vsync_is_using_via_compositor" qualifiers="const">
-			<return type="bool">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="vsync_set_enabled">
-			<return type="void">
-			</return>
-			<argument index="0" name="enabled" type="bool">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="vsync_set_use_via_compositor">
-			<return type="void">
-			</return>
-			<argument index="0" name="enabled" type="bool">
-			</argument>
-			<description>
-			</description>
-		</method>
 		<method name="window_attach_instance_id">
 			<return type="void">
 			</return>
@@ -789,6 +763,15 @@
 			<argument index="0" name="window_id" type="int" default="0">
 			</argument>
 			<description>
+			</description>
+		</method>
+		<method name="window_get_vsync_mode" qualifiers="const">
+			<return type="int" enum="DisplayServer.VSyncMode">
+			</return>
+			<argument index="0" name="window_id" type="int" default="0">
+			</argument>
+			<description>
+				Returns the VSync mode of the given window.
 			</description>
 		</method>
 		<method name="window_move_to_foreground">
@@ -995,6 +978,19 @@
 			<description>
 			</description>
 		</method>
+		<method name="window_set_vsync_mode">
+			<return type="void">
+			</return>
+			<argument index="0" name="vsync_mode" type="int" enum="DisplayServer.VSyncMode">
+			</argument>
+			<argument index="1" name="window_id" type="int" default="0">
+			</argument>
+			<description>
+				Sets the VSync mode of the given window.
+				See [enum DisplayServer.VSyncMode] for possible values and how they affect the behavior of your application.
+				Depending on the platform and used renderer, the engine will fall back to [constant VSYNC_ENABLED], if the desired mode is not supported.
+			</description>
+		</method>
 		<method name="window_set_window_event_callback">
 			<return type="void">
 			</return>
@@ -1150,6 +1146,19 @@
 		<constant name="WINDOW_EVENT_GO_BACK_REQUEST" value="5" enum="WindowEvent">
 		</constant>
 		<constant name="WINDOW_EVENT_DPI_CHANGE" value="6" enum="WindowEvent">
+		</constant>
+		<constant name="VSYNC_DISABLED" value="0" enum="VSyncMode">
+			No vertical synchronization, which means the engine will display frames as fast as possible (tearing may be visible).
+		</constant>
+		<constant name="VSYNC_ENABLED" value="1" enum="VSyncMode">
+			Default vertical synchronization mode, the image is displayed only on vertical blanking intervals (no tearing is visible).
+		</constant>
+		<constant name="VSYNC_ADAPTIVE" value="2" enum="VSyncMode">
+			Behaves like [constant VSYNC_DISABLED] when the framerate drops below the screen's refresh rate to reduce stuttering (tearing may be visible), otherwise vertical synchronization is enabled to avoid tearing.
+		</constant>
+		<constant name="VSYNC_MAILBOX" value="3" enum="VSyncMode">
+			Displays the most recent image in the queue on vertical blanking intervals, while rendering to the other images (no tearing is visible).
+			Although not guaranteed, the images can be rendered as fast as possible, which may reduce input lag.
 		</constant>
 	</constants>
 </class>
