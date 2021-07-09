@@ -448,6 +448,7 @@ struct _VariantCall {
 	VCALL_LOCALMEM1R(Vector3, posmodv);
 	VCALL_LOCALMEM1R(Vector3, project);
 	VCALL_LOCALMEM1R(Vector3, angle_to);
+	VCALL_LOCALMEM2R(Vector3, signed_angle_to);
 	VCALL_LOCALMEM1R(Vector3, direction_to);
 	VCALL_LOCALMEM1R(Vector3, slide);
 	VCALL_LOCALMEM1R(Vector3, bounce);
@@ -1768,6 +1769,7 @@ void register_variant_methods() {
 	ADDFUNC0R(VECTOR3, INT, Vector3, min_axis, varray());
 	ADDFUNC0R(VECTOR3, INT, Vector3, max_axis, varray());
 	ADDFUNC1R(VECTOR3, REAL, Vector3, angle_to, VECTOR3, "to", varray());
+	ADDFUNC2R(VECTOR3, REAL, Vector3, signed_angle_to, VECTOR3, "to", VECTOR3, "axis", varray());
 	ADDFUNC1R(VECTOR3, VECTOR3, Vector3, direction_to, VECTOR3, "b", varray());
 	ADDFUNC1R(VECTOR3, REAL, Vector3, distance_to, VECTOR3, "b", varray());
 	ADDFUNC1R(VECTOR3, REAL, Vector3, distance_squared_to, VECTOR3, "b", varray());
