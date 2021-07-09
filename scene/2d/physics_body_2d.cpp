@@ -76,12 +76,12 @@ Ref<KinematicCollision2D> PhysicsBody2D::_move(const Vector2 &p_motion, bool p_i
 	return Ref<KinematicCollision2D>();
 }
 
-bool PhysicsBody2D::move_and_collide(const Vector2 &p_motion, bool p_infinite_inertia, PhysicsServer2D::MotionResult &r_result, real_t p_margin, bool p_exclude_raycast_shapes, bool p_test_only, bool p_cancel_sliding) {
+bool PhysicsBody2D::move_and_collide(const Vector2 &p_motion, bool p_infinite_inertia, PhysicsServer2D::MotionResult &r_result, real_t p_margin, bool p_exclude_raycast_shapes, bool p_test_only, bool p_cancel_sliding, const Set<RID> &p_exclude) {
 	if (is_only_update_transform_changes_enabled()) {
 		ERR_PRINT("Move functions do not work together with 'sync to physics' option. Please read the documentation.");
 	}
 	Transform2D gt = get_global_transform();
-	bool colliding = PhysicsServer2D::get_singleton()->body_test_motion(get_rid(), gt, p_motion, p_infinite_inertia, p_margin, &r_result, p_exclude_raycast_shapes);
+	bool colliding = PhysicsServer2D::get_singleton()->body_test_motion(get_rid(), gt, p_motion, p_infinite_inertia, p_margin, &r_result, p_exclude_raycast_shapes, p_exclude);
 
 	// Restore direction of motion to be along original motion,
 	// in order to avoid sliding due to recovery,
@@ -960,11 +960,14 @@ void RigidBody2D::_reload_physics_characteristics() {
 
 void CharacterBody2D::move_and_slide() {
 	Vector2 body_velocity_normal = linear_velocity.normalized();
-
 	bool was_on_floor = on_floor;
 
+	// Hack in order to work with calling from _process as well as from _physics_process; calling from thread is risky
+	float delta = Engine::get_singleton()->is_in_physics_frame() ? get_physics_process_delta_time() : get_process_delta_time();
+
 	Vector2 current_floor_velocity = floor_velocity;
-	if (on_floor && on_floor_body.is_valid()) {
+
+	if ((on_floor || on_wall) && on_floor_body.is_valid()) {
 		//this approach makes sure there is less delay between the actual body velocity and the one we saved
 		PhysicsDirectBodyState2D *bs = PhysicsServer2D::get_singleton()->body_get_direct_state(on_floor_body);
 		if (bs) {
@@ -972,20 +975,30 @@ void CharacterBody2D::move_and_slide() {
 		}
 	}
 
-	// Hack in order to work with calling from _process as well as from _physics_process; calling from thread is risky
-	Vector2 motion = (current_floor_velocity + linear_velocity) * (Engine::get_singleton()->is_in_physics_frame() ? get_physics_process_delta_time() : get_process_delta_time());
-
+	motion_results.clear();
 	on_floor = false;
-	on_floor_body = RID();
 	on_ceiling = false;
 	on_wall = false;
-	motion_results.clear();
 	floor_normal = Vector2();
 	floor_velocity = Vector2();
+
+	if (current_floor_velocity != Vector2()) {
+		PhysicsServer2D::MotionResult floor_result;
+		Set<RID> exclude;
+		exclude.insert(on_floor_body);
+		if (move_and_collide(current_floor_velocity * delta, infinite_inertia, floor_result, true, false, false, false, exclude)) {
+			motion_results.push_back(floor_result);
+			_set_collision_direction(floor_result);
+		}
+	}
+
+	on_floor_body = RID();
+	Vector2 motion = linear_velocity * delta;
 
 	// No sliding on first attempt to keep floor motion stable when possible,
 	// when stop on slope is enabled.
 	bool sliding_enabled = !stop_on_slope;
+
 	for (int iteration = 0; iteration < max_slides; ++iteration) {
 		PhysicsServer2D::MotionResult result;
 		bool found_collision = false;
@@ -1009,35 +1022,19 @@ void CharacterBody2D::move_and_slide() {
 				found_collision = true;
 
 				motion_results.push_back(result);
+				_set_collision_direction(result);
 
-				if (up_direction == Vector2()) {
-					//all is a wall
-					on_wall = true;
-				} else {
-					if (Math::acos(result.collision_normal.dot(up_direction)) <= floor_max_angle + FLOOR_ANGLE_THRESHOLD) { //floor
-
-						on_floor = true;
-						floor_normal = result.collision_normal;
-						on_floor_body = result.collider;
-						floor_velocity = result.collider_velocity;
-
-						if (stop_on_slope) {
-							if ((body_velocity_normal + up_direction).length() < 0.01) {
-								Transform2D gt = get_global_transform();
-								if (result.motion.length() > margin) {
-									gt.elements[2] -= result.motion.slide(up_direction);
-								} else {
-									gt.elements[2] -= result.motion;
-								}
-								set_global_transform(gt);
-								linear_velocity = Vector2();
-								return;
-							}
+				if (on_floor && stop_on_slope) {
+					if ((body_velocity_normal + up_direction).length() < 0.01) {
+						Transform2D gt = get_global_transform();
+						if (result.motion.length() > margin) {
+							gt.elements[2] -= result.motion.slide(up_direction);
+						} else {
+							gt.elements[2] -= result.motion;
 						}
-					} else if (Math::acos(result.collision_normal.dot(-up_direction)) <= floor_max_angle + FLOOR_ANGLE_THRESHOLD) { //ceiling
-						on_ceiling = true;
-					} else {
-						on_wall = true;
+						set_global_transform(gt);
+						linear_velocity = Vector2();
+						return;
 					}
 				}
 
@@ -1055,6 +1052,11 @@ void CharacterBody2D::move_and_slide() {
 		if (!found_collision || motion == Vector2()) {
 			break;
 		}
+	}
+
+	if (!on_floor && !on_wall) {
+		// Add last platform velocity when just left a moving platform.
+		linear_velocity += current_floor_velocity;
 	}
 
 	if (!was_on_floor || snap == Vector2()) {
@@ -1089,6 +1091,29 @@ void CharacterBody2D::move_and_slide() {
 		if (apply) {
 			gt.elements[2] += result.motion;
 			set_global_transform(gt);
+		}
+	}
+}
+
+void CharacterBody2D::_set_collision_direction(const PhysicsServer2D::MotionResult &p_result) {
+	on_floor = false;
+	on_ceiling = false;
+	on_wall = false;
+	if (up_direction == Vector2()) {
+		//all is a wall
+		on_wall = true;
+	} else {
+		if (Math::acos(p_result.collision_normal.dot(up_direction)) <= floor_max_angle + FLOOR_ANGLE_THRESHOLD) { //floor
+			on_floor = true;
+			floor_normal = p_result.collision_normal;
+			on_floor_body = p_result.collider;
+			floor_velocity = p_result.collider_velocity;
+		} else if (Math::acos(p_result.collision_normal.dot(-up_direction)) <= floor_max_angle + FLOOR_ANGLE_THRESHOLD) { //ceiling
+			on_ceiling = true;
+		} else {
+			on_wall = true;
+			on_floor_body = p_result.collider;
+			floor_velocity = p_result.collider_velocity;
 		}
 	}
 }
