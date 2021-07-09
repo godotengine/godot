@@ -48,6 +48,7 @@ class RDPipelineMultisampleState;
 class RDPipelineDepthStencilState;
 class RDPipelineColorBlendState;
 class RDFramebufferPass;
+class RDPipelineSpecializationConstant;
 
 class RenderingDevice : public Object {
 	GDCLASS(RenderingDevice, Object)
@@ -722,6 +723,32 @@ public:
 	virtual Error buffer_clear(RID p_buffer, uint32_t p_offset, uint32_t p_size, uint32_t p_post_barrier = BARRIER_MASK_ALL) = 0;
 	virtual Vector<uint8_t> buffer_get_data(RID p_buffer) = 0; //this causes stall, only use to retrieve large buffers for saving
 
+	/******************************************/
+	/**** PIPELINE SPECIALIZATION CONSTANT ****/
+	/******************************************/
+
+	enum PipelineSpecializationConstantType {
+		PIPELINE_SPECIALIZATION_CONSTANT_TYPE_BOOL,
+		PIPELINE_SPECIALIZATION_CONSTANT_TYPE_INT,
+		PIPELINE_SPECIALIZATION_CONSTANT_TYPE_FLOAT,
+	};
+
+	struct PipelineSpecializationConstant {
+		PipelineSpecializationConstantType type;
+		uint32_t constant_id;
+		union {
+			uint32_t int_value;
+			float float_value;
+			bool bool_value;
+		};
+
+		PipelineSpecializationConstant() {
+			type = PIPELINE_SPECIALIZATION_CONSTANT_TYPE_BOOL;
+			constant_id = 0;
+			int_value = 0;
+		}
+	};
+
 	/*************************/
 	/**** RENDER PIPELINE ****/
 	/*************************/
@@ -978,13 +1005,13 @@ public:
 	};
 
 	virtual bool render_pipeline_is_valid(RID p_pipeline) = 0;
-	virtual RID render_pipeline_create(RID p_shader, FramebufferFormatID p_framebuffer_format, VertexFormatID p_vertex_format, RenderPrimitive p_render_primitive, const PipelineRasterizationState &p_rasterization_state, const PipelineMultisampleState &p_multisample_state, const PipelineDepthStencilState &p_depth_stencil_state, const PipelineColorBlendState &p_blend_state, int p_dynamic_state_flags = 0, uint32_t p_for_render_pass = 0) = 0;
+	virtual RID render_pipeline_create(RID p_shader, FramebufferFormatID p_framebuffer_format, VertexFormatID p_vertex_format, RenderPrimitive p_render_primitive, const PipelineRasterizationState &p_rasterization_state, const PipelineMultisampleState &p_multisample_state, const PipelineDepthStencilState &p_depth_stencil_state, const PipelineColorBlendState &p_blend_state, int p_dynamic_state_flags = 0, uint32_t p_for_render_pass = 0, const Vector<PipelineSpecializationConstant> &p_specialization_constants = Vector<PipelineSpecializationConstant>()) = 0;
 
 	/**************************/
 	/**** COMPUTE PIPELINE ****/
 	/**************************/
 
-	virtual RID compute_pipeline_create(RID p_shader) = 0;
+	virtual RID compute_pipeline_create(RID p_shader, const Vector<PipelineSpecializationConstant> &p_specialization_constants = Vector<PipelineSpecializationConstant>()) = 0;
 	virtual bool compute_pipeline_is_valid(RID p_pipeline) = 0;
 
 	/****************/
@@ -1173,7 +1200,8 @@ protected:
 
 	Error _buffer_update(RID p_buffer, uint32_t p_offset, uint32_t p_size, const Vector<uint8_t> &p_data, uint32_t p_post_barrier = BARRIER_MASK_ALL);
 
-	RID _render_pipeline_create(RID p_shader, FramebufferFormatID p_framebuffer_format, VertexFormatID p_vertex_format, RenderPrimitive p_render_primitive, const Ref<RDPipelineRasterizationState> &p_rasterization_state, const Ref<RDPipelineMultisampleState> &p_multisample_state, const Ref<RDPipelineDepthStencilState> &p_depth_stencil_state, const Ref<RDPipelineColorBlendState> &p_blend_state, int p_dynamic_state_flags = 0, uint32_t p_for_render_pass = 0);
+	RID _render_pipeline_create(RID p_shader, FramebufferFormatID p_framebuffer_format, VertexFormatID p_vertex_format, RenderPrimitive p_render_primitive, const Ref<RDPipelineRasterizationState> &p_rasterization_state, const Ref<RDPipelineMultisampleState> &p_multisample_state, const Ref<RDPipelineDepthStencilState> &p_depth_stencil_state, const Ref<RDPipelineColorBlendState> &p_blend_state, int p_dynamic_state_flags, uint32_t p_for_render_pass, const TypedArray<RDPipelineSpecializationConstant> &p_specialization_constants);
+	RID _compute_pipeline_create(RID p_shader, const TypedArray<RDPipelineSpecializationConstant> &p_specialization_constants);
 
 	Vector<int64_t> _draw_list_begin_split(RID p_framebuffer, uint32_t p_splits, InitialAction p_initial_color_action, FinalAction p_final_color_action, InitialAction p_initial_depth_action, FinalAction p_final_depth_action, const Vector<Color> &p_clear_color_values = Vector<Color>(), float p_clear_depth = 1.0, uint32_t p_clear_stencil = 0, const Rect2 &p_region = Rect2(), const TypedArray<RID> &p_storage_textures = TypedArray<RID>());
 	void _draw_list_set_push_constant(DrawListID p_list, const Vector<uint8_t> &p_data, uint32_t p_data_size);
@@ -1205,6 +1233,7 @@ VARIANT_ENUM_CAST(RenderingDevice::LogicOperation)
 VARIANT_ENUM_CAST(RenderingDevice::BlendFactor)
 VARIANT_ENUM_CAST(RenderingDevice::BlendOperation)
 VARIANT_ENUM_CAST(RenderingDevice::PipelineDynamicStateFlags)
+VARIANT_ENUM_CAST(RenderingDevice::PipelineSpecializationConstantType)
 VARIANT_ENUM_CAST(RenderingDevice::InitialAction)
 VARIANT_ENUM_CAST(RenderingDevice::FinalAction)
 VARIANT_ENUM_CAST(RenderingDevice::Limit)

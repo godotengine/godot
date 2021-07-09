@@ -452,6 +452,41 @@ protected:
 		ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "_ids", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_INTERNAL), "_set_ids", "get_ids");
 	}
 };
+
+class RDPipelineSpecializationConstant : public RefCounted {
+	GDCLASS(RDPipelineSpecializationConstant, RefCounted)
+	friend class RenderingDevice;
+
+	Variant value = false;
+	uint32_t constant_id;
+
+public:
+	void set_value(const Variant &p_value) {
+		ERR_FAIL_COND(p_value.get_type() != Variant::BOOL && p_value.get_type() != Variant::INT && p_value.get_type() != Variant::FLOAT);
+		value = p_value;
+	}
+	Variant get_value() const { return value; }
+
+	void set_constant_id(uint32_t p_id) {
+		constant_id = p_id;
+	}
+	uint32_t get_constant_id() const {
+		return constant_id;
+	}
+
+protected:
+	static void _bind_methods() {
+		ClassDB::bind_method(D_METHOD("set_value", "value"), &RDPipelineSpecializationConstant::set_value);
+		ClassDB::bind_method(D_METHOD("get_value"), &RDPipelineSpecializationConstant::get_value);
+
+		ClassDB::bind_method(D_METHOD("set_constant_id", "constant_id"), &RDPipelineSpecializationConstant::set_constant_id);
+		ClassDB::bind_method(D_METHOD("get_constant_id"), &RDPipelineSpecializationConstant::get_constant_id);
+
+		ADD_PROPERTY(PropertyInfo(Variant::NIL, "value", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NIL_IS_VARIANT), "set_value", "get_value");
+		ADD_PROPERTY(PropertyInfo(Variant::INT, "constant_id", PROPERTY_HINT_RANGE, "0,65535,0"), "set_constant_id", "get_constant_id");
+	}
+};
+
 class RDPipelineRasterizationState : public RefCounted {
 	GDCLASS(RDPipelineRasterizationState, RefCounted)
 	friend class RenderingDevice;

@@ -140,6 +140,8 @@
 			</return>
 			<argument index="0" name="shader" type="RID">
 			</argument>
+			<argument index="1" name="specialization_constants" type="RDPipelineSpecializationConstant[]" default="[]">
+			</argument>
 			<description>
 			</description>
 		</method>
@@ -579,6 +581,8 @@
 			<argument index="8" name="dynamic_state_flags" type="int" default="0">
 			</argument>
 			<argument index="9" name="for_render_pass" type="int" default="0">
+			</argument>
+			<argument index="10" name="specialization_constants" type="RDPipelineSpecializationConstant[]" default="[]">
 			</argument>
 			<description>
 			</description>
@@ -1708,6 +1712,12 @@
 		<constant name="SHADER_LANGUAGE_GLSL" value="0" enum="ShaderLanguage">
 		</constant>
 		<constant name="SHADER_LANGUAGE_HLSL" value="1" enum="ShaderLanguage">
+		</constant>
+		<constant name="PIPELINE_SPECIALIZATION_CONSTANT_TYPE_BOOL" value="0" enum="PipelineSpecializationConstantType">
+		</constant>
+		<constant name="PIPELINE_SPECIALIZATION_CONSTANT_TYPE_INT" value="1" enum="PipelineSpecializationConstantType">
+		</constant>
+		<constant name="PIPELINE_SPECIALIZATION_CONSTANT_TYPE_FLOAT" value="2" enum="PipelineSpecializationConstantType">
 		</constant>
 		<constant name="LIMIT_MAX_BOUND_UNIFORM_SETS" value="0" enum="Limit">
 		</constant>
