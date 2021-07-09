@@ -2871,6 +2871,7 @@ void RendererSceneRenderRD::_setup_lights(const PagedArray<RID> &p_lights, const
 				light_data.color[2] = linear_col.b;
 
 				light_data.specular = light_storage->light_get_param(base, RS::LIGHT_PARAM_SPECULAR);
+				light_data.volumetric_fog_energy = light_storage->light_get_param(base, RS::LIGHT_PARAM_VOLUMETRIC_FOG_ENERGY);
 				light_data.mask = light_storage->light_get_cull_mask(base);
 
 				float size = light_storage->light_get_param(base, RS::LIGHT_PARAM_SIZE);
@@ -2952,7 +2953,6 @@ void RendererSceneRenderRD::_setup_lights(const PagedArray<RID> &p_lights, const
 					float fade_start = light_storage->light_get_param(base, RS::LIGHT_PARAM_SHADOW_FADE_START);
 					light_data.fade_from = -light_data.shadow_split_offsets[3] * MIN(fade_start, 0.999); //using 1.0 would break smoothstep
 					light_data.fade_to = -light_data.shadow_split_offsets[3];
-					light_data.shadow_volumetric_fog_fade = 1.0 / light_storage->light_get_shadow_volumetric_fog_fade(base);
 
 					light_data.soft_shadow_scale = light_storage->light_get_param(base, RS::LIGHT_PARAM_SHADOW_BLUR);
 					light_data.softshadow_angle = angular_diameter;
@@ -3082,6 +3082,7 @@ void RendererSceneRenderRD::_setup_lights(const PagedArray<RID> &p_lights, const
 		light_data.color[1] = linear_col.g * energy;
 		light_data.color[2] = linear_col.b * energy;
 		light_data.specular_amount = light_storage->light_get_param(base, RS::LIGHT_PARAM_SPECULAR) * 2.0;
+		light_data.volumetric_fog_energy = light_storage->light_get_param(base, RS::LIGHT_PARAM_VOLUMETRIC_FOG_ENERGY);
 		light_data.bake_mode = light_storage->light_get_bake_mode(base);
 
 		float radius = MAX(0.001, light_storage->light_get_param(base, RS::LIGHT_PARAM_RANGE));
@@ -3176,7 +3177,6 @@ void RendererSceneRenderRD::_setup_lights(const PagedArray<RID> &p_lights, const
 			light_data.atlas_rect[3] = rect.size.height;
 
 			light_data.soft_shadow_scale = light_storage->light_get_param(base, RS::LIGHT_PARAM_SHADOW_BLUR);
-			light_data.shadow_volumetric_fog_fade = 1.0 / light_storage->light_get_shadow_volumetric_fog_fade(base);
 
 			if (type == RS::LIGHT_OMNI) {
 				Transform3D proj = (inverse_transform * light_transform).inverse();

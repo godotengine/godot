@@ -270,6 +270,9 @@ const vec3 halton_map[TEMPORAL_FRAMES] = vec3[](
 		vec3(0.9375, 0.25925926, 0.12),
 		vec3(0.03125, 0.59259259, 0.32));
 
+// Higher values will make light in volumetric fog fade out sooner when it's occluded by shadow.
+const float INV_FOG_FADE = 10.0;
+
 void main() {
 	vec3 fog_cell_size = 1.0 / vec3(params.fog_volume_size);
 
@@ -375,46 +378,48 @@ void main() {
 
 	if (total_density > 0.001) {
 		for (uint i = 0; i < params.directional_light_count; i++) {
-			vec3 shadow_attenuation = vec3(1.0);
+			if (directional_lights.data[i].volumetric_fog_energy > 0.001) {
+				vec3 shadow_attenuation = vec3(1.0);
 
-			if (directional_lights.data[i].shadow_opacity > 0.001) {
-				float depth_z = -view_pos.z;
+				if (directional_lights.data[i].shadow_opacity > 0.001) {
+					float depth_z = -view_pos.z;
 
-				vec4 pssm_coord;
-				vec3 light_dir = directional_lights.data[i].direction;
-				vec4 v = vec4(view_pos, 1.0);
-				float z_range;
+					vec4 pssm_coord;
+					vec3 light_dir = directional_lights.data[i].direction;
+					vec4 v = vec4(view_pos, 1.0);
+					float z_range;
 
-				if (depth_z < directional_lights.data[i].shadow_split_offsets.x) {
-					pssm_coord = (directional_lights.data[i].shadow_matrix1 * v);
-					pssm_coord /= pssm_coord.w;
-					z_range = directional_lights.data[i].shadow_z_range.x;
+					if (depth_z < directional_lights.data[i].shadow_split_offsets.x) {
+						pssm_coord = (directional_lights.data[i].shadow_matrix1 * v);
+						pssm_coord /= pssm_coord.w;
+						z_range = directional_lights.data[i].shadow_z_range.x;
 
-				} else if (depth_z < directional_lights.data[i].shadow_split_offsets.y) {
-					pssm_coord = (directional_lights.data[i].shadow_matrix2 * v);
-					pssm_coord /= pssm_coord.w;
-					z_range = directional_lights.data[i].shadow_z_range.y;
+					} else if (depth_z < directional_lights.data[i].shadow_split_offsets.y) {
+						pssm_coord = (directional_lights.data[i].shadow_matrix2 * v);
+						pssm_coord /= pssm_coord.w;
+						z_range = directional_lights.data[i].shadow_z_range.y;
 
-				} else if (depth_z < directional_lights.data[i].shadow_split_offsets.z) {
-					pssm_coord = (directional_lights.data[i].shadow_matrix3 * v);
-					pssm_coord /= pssm_coord.w;
-					z_range = directional_lights.data[i].shadow_z_range.z;
+					} else if (depth_z < directional_lights.data[i].shadow_split_offsets.z) {
+						pssm_coord = (directional_lights.data[i].shadow_matrix3 * v);
+						pssm_coord /= pssm_coord.w;
+						z_range = directional_lights.data[i].shadow_z_range.z;
 
-				} else {
-					pssm_coord = (directional_lights.data[i].shadow_matrix4 * v);
-					pssm_coord /= pssm_coord.w;
-					z_range = directional_lights.data[i].shadow_z_range.w;
+					} else {
+						pssm_coord = (directional_lights.data[i].shadow_matrix4 * v);
+						pssm_coord /= pssm_coord.w;
+						z_range = directional_lights.data[i].shadow_z_range.w;
+					}
+
+					float depth = texture(sampler2D(directional_shadow_atlas, linear_sampler), pssm_coord.xy).r;
+					float shadow = exp(min(0.0, (depth - pssm_coord.z)) * z_range * INV_FOG_FADE);
+
+					shadow = mix(shadow, 1.0, smoothstep(directional_lights.data[i].fade_from, directional_lights.data[i].fade_to, view_pos.z)); //done with negative values for performance
+
+					shadow_attenuation = mix(vec3(1.0 - directional_lights.data[i].shadow_opacity), vec3(1.0), shadow);
 				}
 
-				float depth = texture(sampler2D(directional_shadow_atlas, linear_sampler), pssm_coord.xy).r;
-				float shadow = exp(min(0.0, (depth - pssm_coord.z)) * z_range * directional_lights.data[i].shadow_volumetric_fog_fade);
-
-				shadow = mix(shadow, 1.0, smoothstep(directional_lights.data[i].fade_from, directional_lights.data[i].fade_to, view_pos.z)); //done with negative values for performance
-
-				shadow_attenuation = mix(vec3(0.0), vec3(1.0), shadow);
+				total_light += shadow_attenuation * directional_lights.data[i].color * directional_lights.data[i].energy * henyey_greenstein(dot(normalize(view_pos), normalize(directional_lights.data[i].direction)), params.phase_g) * directional_lights.data[i].volumetric_fog_energy;
 			}
-
-			total_light += shadow_attenuation * directional_lights.data[i].color * directional_lights.data[i].energy * henyey_greenstein(dot(normalize(view_pos), normalize(directional_lights.data[i].direction)), params.phase_g);
 		}
 
 		// Compute light from sky
@@ -481,7 +486,7 @@ void main() {
 					float d = distance(omni_lights.data[light_index].position, view_pos);
 					float shadow_attenuation = 1.0;
 
-					if (d * omni_lights.data[light_index].inv_radius < 1.0) {
+					if (omni_lights.data[light_index].volumetric_fog_energy > 0.001 && d * omni_lights.data[light_index].inv_radius < 1.0) {
 						float attenuation = get_omni_attenuation(d, omni_lights.data[light_index].inv_radius, omni_lights.data[light_index].attenuation);
 
 						vec3 light = omni_lights.data[light_index].color;
@@ -509,9 +514,9 @@ void main() {
 
 							float depth = texture(sampler2D(shadow_atlas, linear_sampler), pos.xy).r;
 
-							shadow_attenuation = exp(min(0.0, (depth - pos.z)) / omni_lights.data[light_index].inv_radius * omni_lights.data[light_index].shadow_volumetric_fog_fade);
+							shadow_attenuation = mix(1.0 - omni_lights.data[light_index].shadow_opacity, 1.0, exp(min(0.0, (depth - pos.z)) / omni_lights.data[light_index].inv_radius * INV_FOG_FADE));
 						}
-						total_light += light * attenuation * shadow_attenuation * henyey_greenstein(dot(normalize(light_pos - view_pos), normalize(view_pos)), params.phase_g);
+						total_light += light * attenuation * shadow_attenuation * henyey_greenstein(dot(normalize(light_pos - view_pos), normalize(view_pos)), params.phase_g) * omni_lights.data[light_index].volumetric_fog_energy;
 					}
 				}
 			}
@@ -562,7 +567,7 @@ void main() {
 					float d = length(light_rel_vec);
 					float shadow_attenuation = 1.0;
 
-					if (d * spot_lights.data[light_index].inv_radius < 1.0) {
+					if (spot_lights.data[light_index].volumetric_fog_energy > 0.001 && d * spot_lights.data[light_index].inv_radius < 1.0) {
 						float attenuation = get_omni_attenuation(d, spot_lights.data[light_index].inv_radius, spot_lights.data[light_index].attenuation);
 
 						vec3 spot_dir = spot_lights.data[light_index].direction;
@@ -595,9 +600,9 @@ void main() {
 
 							float depth = texture(sampler2D(shadow_atlas, linear_sampler), pos.xy).r;
 
-							shadow_attenuation = exp(min(0.0, (depth - pos.z)) / spot_lights.data[light_index].inv_radius * spot_lights.data[light_index].shadow_volumetric_fog_fade);
+							shadow_attenuation = mix(1.0 - spot_lights.data[light_index].shadow_opacity, 1.0, exp(min(0.0, (depth - pos.z)) / spot_lights.data[light_index].inv_radius * INV_FOG_FADE));
 						}
-						total_light += light * attenuation * shadow_attenuation * henyey_greenstein(dot(normalize(light_rel_vec), normalize(view_pos)), params.phase_g);
+						total_light += light * attenuation * shadow_attenuation * henyey_greenstein(dot(normalize(light_rel_vec), normalize(view_pos)), params.phase_g) * spot_lights.data[light_index].volumetric_fog_energy;
 					}
 				}
 			}
