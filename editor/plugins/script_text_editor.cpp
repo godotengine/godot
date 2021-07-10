@@ -375,7 +375,7 @@ void ScriptTextEditor::ensure_focus() {
 String ScriptTextEditor::get_name() {
 	String name;
 
-	if (script->get_path().find("local://") == -1 && script->get_path().find("::") == -1) {
+	if (!script->is_built_in()) {
 		name = script->get_path().get_file();
 		if (is_unsaved()) {
 			if (script->get_path().is_empty()) {
@@ -658,7 +658,7 @@ void ScriptEditor::_update_modified_scripts_for_external_editor(Ref<Script> p_fo
 			continue;
 		}
 
-		if (script->get_path() == "" || script->get_path().find("local://") != -1 || script->get_path().find("::") != -1) {
+		if (script->is_built_in()) {
 			continue; //internal script, who cares, though weird
 		}
 

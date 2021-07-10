@@ -1492,7 +1492,7 @@ String ResourceFormatSaverTextInstance::_write_resource(const RES &res) {
 	} else {
 		if (internal_resources.has(res)) {
 			return "SubResource( \"" + internal_resources[res] + "\" )";
-		} else if (res->get_path().length() && res->get_path().find("::") == -1) {
+		} else if (!res->is_built_in()) {
 			if (res->get_path() == local_path) { //circular reference attempt
 				return "null";
 			}
@@ -1515,7 +1515,7 @@ void ResourceFormatSaverTextInstance::_find_resources(const Variant &p_variant, 
 				return;
 			}
 
-			if (!p_main && (!bundle_resources) && res->get_path().length() && res->get_path().find("::") == -1) {
+			if (!p_main && (!bundle_resources) && !res->is_built_in()) {
 				if (res->get_path() == local_path) {
 					ERR_PRINT("Circular reference to resource being saved found: '" + local_path + "' will be null next time it's loaded.");
 					return;
@@ -1728,7 +1728,7 @@ Error ResourceFormatSaverTextInstance::save(const String &p_path, const RES &p_r
 
 	for (List<RES>::Element *E = saved_resources.front(); E; E = E->next()) {
 		RES res = E->get();
-		if (E->next() && (res->get_path() == "" || res->get_path().find("::") != -1)) {
+		if (E->next() && res->is_built_in()) {
 			if (res->get_scene_unique_id() != "") {
 				if (used_unique_ids.has(res->get_scene_unique_id())) {
 					res->set_scene_unique_id(""); // Repeated.

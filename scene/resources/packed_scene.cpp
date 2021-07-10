@@ -1651,7 +1651,7 @@ Node *PackedScene::instantiate(GenEditState p_edit_state) const {
 		s->set_scene_instance_state(state);
 	}
 
-	if (get_path() != "" && get_path().find("::") == -1) {
+	if (!is_built_in()) {
 		s->set_scene_file_path(get_path());
 	}
 

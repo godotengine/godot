@@ -2582,7 +2582,7 @@ void VisualScriptEditor::reload_text() {
 String VisualScriptEditor::get_name() {
 	String name;
 
-	if (script->get_path().find("local://") == -1 && script->get_path().find("::") == -1) {
+	if (!script->is_built_in()) {
 		name = script->get_path().get_file();
 		if (is_unsaved()) {
 			if (script->get_path().is_empty()) {
