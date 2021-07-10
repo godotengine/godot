@@ -908,7 +908,6 @@ void register_scene_types() {
 	ClassDB::add_compatibility_class("Generic6DOFJoint", "Generic6DOFJoint3D");
 	ClassDB::add_compatibility_class("HeightMapShape", "HeightMapShape3D");
 	ClassDB::add_compatibility_class("HingeJoint", "HingeJoint3D");
-	ClassDB::add_compatibility_class("ImmediateGeometry", "ImmediateGeometry3D");
 	ClassDB::add_compatibility_class("Joint", "Joint3D");
 	ClassDB::add_compatibility_class("KinematicBody", "CharacterBody3D");
 	ClassDB::add_compatibility_class("KinematicBody2D", "CharacterBody2D");
