@@ -40,13 +40,15 @@
 class VisualScriptInstance;
 class VisualScriptNodeInstance;
 class VisualScript;
+class VisualScriptModule;
 
 class VisualScriptNode : public Resource {
 	GDCLASS(VisualScriptNode, Resource);
 
 	friend class VisualScript;
+	friend class VisualScriptModule;
 
-	Ref<VisualScript> script_used;
+	Ref<Resource> container;
 
 	Array default_input_values;
 	bool breakpoint = false;
@@ -54,14 +56,14 @@ class VisualScriptNode : public Resource {
 	void _set_default_input_values(Array p_values);
 	Array _get_default_input_values() const;
 
+protected:
 	void validate_input_default_values();
 
-protected:
 	void ports_changed_notify();
 	static void _bind_methods();
 
 public:
-	Ref<VisualScript> get_visual_script() const;
+	Ref<Resource> get_container() const;
 
 	virtual int get_output_sequence_port_count() const = 0;
 	virtual bool has_input_sequence_port() const = 0;
@@ -240,6 +242,8 @@ private:
 
 	bool is_tool_script;
 
+	HashMap<StringName, Ref<VisualScriptModule>> modules; // modules in the visualscript
+
 #ifdef TOOLS_ENABLED
 	Set<PlaceHolderScriptInstance *> placeholders;
 	// void _update_placeholder(PlaceHolderScriptInstance *p_placeholder);
@@ -262,6 +266,13 @@ public:
 
 	void set_scroll(const Vector2 &p_scroll);
 	Vector2 get_scroll() const;
+
+	void add_module(const StringName &p_name, Ref<VisualScriptModule> p_mod);
+	void remove_module(const StringName &p_name);
+	Ref<VisualScriptModule> get_module(const StringName &p_name) const;
+	void get_module_list(List<StringName> *r_module_names) const;
+	bool has_module(const StringName &p_name) const;
+	String validate_module_name(const StringName &p_name) const;
 
 	void add_function(const StringName &p_name, int p_func_node_id);
 	bool has_function(const StringName &p_name) const;
@@ -613,6 +624,76 @@ public:
 
 	VisualScriptLanguage();
 	~VisualScriptLanguage();
+};
+class VisualScriptModule : public Resource {
+	GDCLASS(VisualScriptModule, Resource);
+	OBJ_SAVE_TYPE(VisualScriptModule);
+	RES_BASE_EXTENSION("vsmodule");
+
+	friend class VisualScriptInstance;
+
+private:
+	String module_name;
+	struct NodeData {
+		Point2 pos;
+		Ref<VisualScriptNode> node;
+	};
+	HashMap<int, NodeData> nodes;
+
+	int _input;
+	int _output;
+
+	Set<VisualScript::DataConnection> data_connections;
+	Set<VisualScript::SequenceConnection> sequence_connections;
+
+	Vector2 scroll;
+
+	StringName base_type;
+
+protected:
+	static void _bind_methods();
+
+private:
+	void _set_data(const Dictionary &p_data);
+	Dictionary _get_data() const;
+
+public:
+	String get_module_name() { return module_name; }
+	void set_module_name(String name) { module_name = name; }
+
+	void add_node(int p_id, const Ref<VisualScriptNode> &p_node, const Point2 &p_pos = Point2());
+	void remove_node(int p_id);
+	bool has_node(int p_id) const;
+	Ref<VisualScriptNode> get_node(int p_id) const;
+	Vector2 get_node_position(int p_id) const;
+	void set_node_position(int p_id, const Point2 &p_pos);
+	void get_node_list(List<int> *r_nodes) const;
+	int get_available_id() const;
+
+	void set_scroll(Vector2 p_scroll);
+	Vector2 get_scroll() const;
+
+	void sequence_connect(int p_from_node, int p_from_output, int p_to_node);
+	void sequence_disconnect(int p_from_node, int p_from_output, int p_to_node);
+	bool has_sequence_connection(int p_from_node, int p_from_output, int p_to_node) const;
+	void get_sequence_connection_list(List<VisualScript::SequenceConnection> *r_connection) const;
+
+	bool is_input_value_port_connected(int p_node, int p_port) const;
+	void data_connect(int p_from_node, int p_from_port, int p_to_node, int p_to_port);
+	void data_disconnect(int p_from_node, int p_from_port, int p_to_node, int p_to_port);
+	bool has_data_connection(int p_from_node, int p_from_port, int p_to_node, int p_to_port) const;
+	void get_data_connection_list(List<VisualScript::DataConnection> *r_connection) const;
+
+	void _node_ports_changed(int p_id);
+	Set<int> get_output_sequence_ports_connected(int from_node);
+
+	StringName get_instance_base_type() const;
+	void set_instance_base_type(const StringName &p_type);
+
+	bool get_input_value_port_connection_source(int p_node, int p_port, int *r_node, int *r_port) const;
+
+	VisualScriptModule();
+	~VisualScriptModule();
 };
 
 // Aid for registering.

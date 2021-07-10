@@ -68,6 +68,7 @@ protected:
 	virtual void cancel_pressed() {}
 	virtual void custom_action(const String &) {}
 
+	void _focus_exit_cancel();
 	// Not private since used by derived classes signal.
 	void _text_submitted(const String &p_text);
 	void _ok_pressed();
