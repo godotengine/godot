@@ -298,8 +298,8 @@ void EditorFileServer::_thread_start(void *s) {
 
 void EditorFileServer::start() {
 	stop();
-	port = EDITOR_DEF("filesystem/file_server/port", 6010);
-	password = EDITOR_DEF("filesystem/file_server/password", "");
+	port = EDITOR_DEFAULT("filesystem/file_server/port", 6010);
+	password = EDITOR_DEFAULT("filesystem/file_server/password", "");
 	cmd = CMD_ACTIVATE;
 }
 
@@ -318,8 +318,8 @@ EditorFileServer::EditorFileServer() {
 	cmd = CMD_NONE;
 	thread.start(_thread_start, this);
 
-	EDITOR_DEF("filesystem/file_server/port", 6010);
-	EDITOR_DEF("filesystem/file_server/password", "");
+	EDITOR_DEFAULT("filesystem/file_server/port", 6010);
+	EDITOR_DEFAULT("filesystem/file_server/password", "");
 }
 
 EditorFileServer::~EditorFileServer() {

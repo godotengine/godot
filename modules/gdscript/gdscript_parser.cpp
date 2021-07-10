@@ -232,7 +232,7 @@ void GDScriptParser::push_warning(const Node *p_source, GDScriptWarning::Code p_
 	if (is_ignoring_warnings) {
 		return;
 	}
-	if (GLOBAL_GET("debug/gdscript/warnings/exclude_addons").booleanize() && script_path.begins_with("res://addons/")) {
+	if (PROJECT_GET("debug/gdscript/warnings/exclude_addons").booleanize() && script_path.begins_with("res://addons/")) {
 		return;
 	}
 
@@ -240,7 +240,7 @@ void GDScriptParser::push_warning(const Node *p_source, GDScriptWarning::Code p_
 	if (ignored_warnings.has(warn_name)) {
 		return;
 	}
-	if (!GLOBAL_GET("debug/gdscript/warnings/" + warn_name)) {
+	if (!PROJECT_GET("debug/gdscript/warnings/" + warn_name)) {
 		return;
 	}
 

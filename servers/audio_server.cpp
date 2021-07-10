@@ -188,10 +188,10 @@ int AudioDriverManager::get_driver_count() {
 }
 
 void AudioDriverManager::initialize(int p_driver) {
-	GLOBAL_DEF_RST("audio/driver/enable_input", false);
-	GLOBAL_DEF_RST("audio/driver/mix_rate", DEFAULT_MIX_RATE);
-	GLOBAL_DEF_RST("audio/driver/output_latency", DEFAULT_OUTPUT_LATENCY);
-	GLOBAL_DEF_RST("audio/driver/output_latency.web", 50); // Safer default output_latency for web.
+	PROJECT_DEFAULT_RESTART("audio/driver/enable_input", false);
+	PROJECT_DEFAULT_RESTART("audio/driver/mix_rate", DEFAULT_MIX_RATE);
+	PROJECT_DEFAULT_RESTART("audio/driver/output_latency", DEFAULT_OUTPUT_LATENCY);
+	PROJECT_DEFAULT_RESTART("audio/driver/output_latency.web", 50); // Safer default output_latency for web.
 
 	int failed_driver = -1;
 
@@ -940,8 +940,8 @@ void AudioServer::init_channels_and_buffers() {
 }
 
 void AudioServer::init() {
-	channel_disable_threshold_db = GLOBAL_DEF_RST("audio/buses/channel_disable_threshold_db", -60.0);
-	channel_disable_frames = float(GLOBAL_DEF_RST("audio/buses/channel_disable_time", 2.0)) * get_mix_rate();
+	channel_disable_threshold_db = PROJECT_DEFAULT_RESTART("audio/buses/channel_disable_threshold_db", -60.0);
+	channel_disable_frames = float(PROJECT_DEFAULT_RESTART("audio/buses/channel_disable_time", 2.0)) * get_mix_rate();
 	ProjectSettings::get_singleton()->set_custom_property_info("audio/buses/channel_disable_time", PropertyInfo(Variant::FLOAT, "audio/buses/channel_disable_time", PROPERTY_HINT_RANGE, "0,5,0.01,or_greater"));
 	buffer_size = 1024; //hardcoded for now
 
@@ -959,7 +959,7 @@ void AudioServer::init() {
 	set_edited(false); //avoid editors from thinking this was edited
 #endif
 
-	GLOBAL_DEF_RST("audio/video/video_delay_compensation_ms", 0);
+	PROJECT_DEFAULT_RESTART("audio/video/video_delay_compensation_ms", 0);
 }
 
 void AudioServer::update() {

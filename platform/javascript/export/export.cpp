@@ -293,7 +293,7 @@ class EditorExportPlatformJavaScript : public EditorExportPlatform {
 	Ref<Image> _get_project_icon() const {
 		Ref<Image> icon;
 		icon.instantiate();
-		const String icon_path = String(GLOBAL_GET("application/config/icon")).strip_edges();
+		const String icon_path = String(PROJECT_GET("application/config/icon")).strip_edges();
 		if (icon_path.is_empty() || ImageLoader::load_image(icon_path, icon) != OK) {
 			return EditorNode::get_singleton()->get_editor_theme()->get_icon("DefaultProjectIcon", "EditorIcons")->get_image();
 		}
@@ -303,7 +303,7 @@ class EditorExportPlatformJavaScript : public EditorExportPlatform {
 	Ref<Image> _get_project_splash() const {
 		Ref<Image> splash;
 		splash.instantiate();
-		const String splash_path = String(GLOBAL_GET("application/boot_splash/image")).strip_edges();
+		const String splash_path = String(PROJECT_GET("application/boot_splash/image")).strip_edges();
 		if (splash_path.is_empty() || ImageLoader::load_image(splash_path, splash) != OK) {
 			return Ref<Image>(memnew(Image(boot_splash_png)));
 		}
@@ -995,11 +995,11 @@ EditorExportPlatformJavaScript::~EditorExportPlatformJavaScript() {
 }
 
 void register_javascript_exporter() {
-	EDITOR_DEF("export/web/http_host", "localhost");
-	EDITOR_DEF("export/web/http_port", 8060);
-	EDITOR_DEF("export/web/use_ssl", false);
-	EDITOR_DEF("export/web/ssl_key", "");
-	EDITOR_DEF("export/web/ssl_certificate", "");
+	EDITOR_DEFAULT("export/web/http_host", "localhost");
+	EDITOR_DEFAULT("export/web/http_port", 8060);
+	EDITOR_DEFAULT("export/web/use_ssl", false);
+	EDITOR_DEFAULT("export/web/ssl_key", "");
+	EDITOR_DEFAULT("export/web/ssl_certificate", "");
 	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::INT, "export/web/http_port", PROPERTY_HINT_RANGE, "1,65535,1"));
 	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::STRING, "export/web/ssl_key", PROPERTY_HINT_GLOBAL_FILE, "*.key"));
 	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::STRING, "export/web/ssl_certificate", PROPERTY_HINT_GLOBAL_FILE, "*.crt,*.pem"));

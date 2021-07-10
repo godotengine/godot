@@ -8344,10 +8344,10 @@ void RenderingDeviceVulkan::initialize(VulkanContext *p_context, bool p_local_de
 		}
 	}
 
-	staging_buffer_block_size = GLOBAL_DEF("rendering/vulkan/staging_buffer/block_size_kb", 256);
+	staging_buffer_block_size = PROJECT_DEFAULT("rendering/vulkan/staging_buffer/block_size_kb", 256);
 	staging_buffer_block_size = MAX(4, staging_buffer_block_size);
 	staging_buffer_block_size *= 1024; //kb -> bytes
-	staging_buffer_max_size = GLOBAL_DEF("rendering/vulkan/staging_buffer/max_size_mb", 128);
+	staging_buffer_max_size = PROJECT_DEFAULT("rendering/vulkan/staging_buffer/max_size_mb", 128);
 	staging_buffer_max_size = MAX(1, staging_buffer_max_size);
 	staging_buffer_max_size *= 1024 * 1024;
 
@@ -8355,7 +8355,7 @@ void RenderingDeviceVulkan::initialize(VulkanContext *p_context, bool p_local_de
 		//validate enough blocks
 		staging_buffer_max_size = staging_buffer_block_size * 4;
 	}
-	texture_upload_region_size_px = GLOBAL_DEF("rendering/vulkan/staging_buffer/texture_upload_region_size_px", 64);
+	texture_upload_region_size_px = PROJECT_DEFAULT("rendering/vulkan/staging_buffer/texture_upload_region_size_px", 64);
 	texture_upload_region_size_px = nearest_power_of_2_templated(texture_upload_region_size_px);
 
 	frames_drawn = frame_count; //start from frame count, so everything else is immediately old
@@ -8370,7 +8370,7 @@ void RenderingDeviceVulkan::initialize(VulkanContext *p_context, bool p_local_de
 		ERR_CONTINUE(err != OK);
 	}
 
-	max_descriptors_per_pool = GLOBAL_DEF("rendering/vulkan/descriptor_pools/max_descriptors_per_pool", 64);
+	max_descriptors_per_pool = PROJECT_DEFAULT("rendering/vulkan/descriptor_pools/max_descriptors_per_pool", 64);
 
 	//check to make sure DescriptorPoolKey is good
 	static_assert(sizeof(uint64_t) * 3 >= UNIFORM_TYPE_MAX * sizeof(uint16_t));

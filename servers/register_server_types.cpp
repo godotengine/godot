@@ -78,7 +78,7 @@
 ShaderTypes *shader_types = nullptr;
 
 PhysicsServer3D *_createGodotPhysics3DCallback() {
-	bool using_threads = GLOBAL_GET("physics/3d/run_on_thread");
+	bool using_threads = PROJECT_GET("physics/3d/run_on_thread");
 
 	PhysicsServer3D *physics_server = memnew(PhysicsServer3DSW(using_threads));
 
@@ -86,7 +86,7 @@ PhysicsServer3D *_createGodotPhysics3DCallback() {
 }
 
 PhysicsServer2D *_createGodotPhysics2DCallback() {
-	bool using_threads = GLOBAL_GET("physics/2d/run_on_thread");
+	bool using_threads = PROJECT_GET("physics/2d/run_on_thread");
 
 	PhysicsServer2D *physics_server = memnew(PhysicsServer2DSW(using_threads));
 
@@ -106,7 +106,7 @@ static bool has_server_feature_callback(const String &p_feature) {
 void preregister_server_types() {
 	shader_types = memnew(ShaderTypes);
 
-	GLOBAL_DEF("internationalization/rendering/text_driver", "");
+	PROJECT_DEFAULT("internationalization/rendering/text_driver", "");
 	String text_driver_options;
 	for (int i = 0; i < TextServerManager::get_interface_count(); i++) {
 		if (i > 0) {
@@ -221,14 +221,14 @@ void register_server_types() {
 	ClassDB::register_class<PhysicsTestMotionResult3D>();
 
 	// Physics 2D
-	GLOBAL_DEF(PhysicsServer2DManager::setting_property_name, "DEFAULT");
+	PROJECT_DEFAULT(PhysicsServer2DManager::setting_property_name, "DEFAULT");
 	ProjectSettings::get_singleton()->set_custom_property_info(PhysicsServer2DManager::setting_property_name, PropertyInfo(Variant::STRING, PhysicsServer2DManager::setting_property_name, PROPERTY_HINT_ENUM, "DEFAULT"));
 
 	PhysicsServer2DManager::register_server("GodotPhysics2D", &_createGodotPhysics2DCallback);
 	PhysicsServer2DManager::set_default_server("GodotPhysics2D");
 
 	// Physics 3D
-	GLOBAL_DEF(PhysicsServer3DManager::setting_property_name, "DEFAULT");
+	PROJECT_DEFAULT(PhysicsServer3DManager::setting_property_name, "DEFAULT");
 	ProjectSettings::get_singleton()->set_custom_property_info(PhysicsServer3DManager::setting_property_name, PropertyInfo(Variant::STRING, PhysicsServer3DManager::setting_property_name, PROPERTY_HINT_ENUM, "DEFAULT"));
 
 	PhysicsServer3DManager::register_server("GodotPhysics3D", &_createGodotPhysics3DCallback);

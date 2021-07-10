@@ -2184,7 +2184,7 @@ RenderForwardMobile::RenderForwardMobile(RendererStorageRD *p_storage) :
 	scene_shader.init(p_storage, defines);
 
 	// !BAS! maybe we need a mobile version of this setting?
-	render_list_thread_threshold = GLOBAL_GET("rendering/limits/forward_renderer/threaded_render_minimum_instances");
+	render_list_thread_threshold = PROJECT_GET("rendering/limits/forward_renderer/threaded_render_minimum_instances");
 }
 
 RenderForwardMobile::~RenderForwardMobile() {

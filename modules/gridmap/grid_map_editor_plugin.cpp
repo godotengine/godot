@@ -823,7 +823,7 @@ void GridMapEditor::_icon_size_changed(float p_value) {
 void GridMapEditor::update_palette() {
 	int selected = mesh_library_palette->get_current();
 
-	float min_size = EDITOR_DEF("editors/grid_map/preview_size", 64);
+	float min_size = EDITOR_DEFAULT("editors/grid_map/preview_size", 64);
 	min_size *= EDSCALE;
 
 	mesh_library_palette->clear();
@@ -1145,7 +1145,7 @@ GridMapEditor::GridMapEditor(EditorNode *p_editor) {
 	editor = p_editor;
 	undo_redo = p_editor->get_undo_redo();
 
-	int mw = EDITOR_DEF("editors/grid_map/palette_min_width", 230);
+	int mw = EDITOR_DEFAULT("editors/grid_map/palette_min_width", 230);
 	Control *ec = memnew(Control);
 	ec->set_custom_minimum_size(Size2(mw, 0) * EDSCALE);
 	add_child(ec);
@@ -1219,7 +1219,7 @@ GridMapEditor::GridMapEditor(EditorNode *p_editor) {
 	settings_pick_distance->set_max(10000.0f);
 	settings_pick_distance->set_min(500.0f);
 	settings_pick_distance->set_step(1.0f);
-	settings_pick_distance->set_value(EDITOR_DEF("editors/grid_map/pick_distance", 5000.0));
+	settings_pick_distance->set_value(EDITOR_DEFAULT("editors/grid_map/pick_distance", 5000.0));
 	settings_vbc->add_margin_child(TTR("Pick Distance:"), settings_pick_distance);
 
 	options->get_popup()->connect("id_pressed", callable_mp(this, &GridMapEditor::_menu_option));
@@ -1260,7 +1260,7 @@ GridMapEditor::GridMapEditor(EditorNode *p_editor) {
 	size_slider->connect("value_changed", callable_mp(this, &GridMapEditor::_icon_size_changed));
 	add_child(size_slider);
 
-	EDITOR_DEF("editors/grid_map/preview_size", 64);
+	EDITOR_DEFAULT("editors/grid_map/preview_size", 64);
 
 	mesh_library_palette = memnew(ItemList);
 	add_child(mesh_library_palette);
@@ -1476,7 +1476,7 @@ void GridMapEditorPlugin::make_visible(bool p_visible) {
 GridMapEditorPlugin::GridMapEditorPlugin(EditorNode *p_node) {
 	editor = p_node;
 
-	EDITOR_DEF("editors/grid_map/editor_side", 1);
+	EDITOR_DEFAULT("editors/grid_map/editor_side", 1);
 	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::INT, "editors/grid_map/editor_side", PROPERTY_HINT_ENUM, "Left,Right"));
 
 	grid_map_editor = memnew(GridMapEditor(editor));

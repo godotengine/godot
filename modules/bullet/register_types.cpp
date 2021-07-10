@@ -49,7 +49,7 @@ void register_bullet_types() {
 	PhysicsServer3DManager::register_server("Bullet", &_createBulletPhysicsCallback);
 	PhysicsServer3DManager::set_default_server("Bullet", 1);
 
-	GLOBAL_DEF("physics/3d/active_soft_world", true);
+	PROJECT_DEFAULT("physics/3d/active_soft_world", true);
 	ProjectSettings::get_singleton()->set_custom_property_info("physics/3d/active_soft_world", PropertyInfo(Variant::BOOL, "physics/3d/active_soft_world"));
 #endif
 }

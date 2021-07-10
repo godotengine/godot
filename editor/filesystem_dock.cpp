@@ -1307,7 +1307,7 @@ void FileSystemDock::_update_project_settings_after_move(const Map<String, Strin
 	const Map<StringName, PropertyInfo> prop_info = ProjectSettings::get_singleton()->get_custom_property_info();
 	for (const Map<StringName, PropertyInfo>::Element *E = prop_info.front(); E; E = E->next()) {
 		if (E->get().hint == PROPERTY_HINT_FILE) {
-			String old_path = GLOBAL_GET(E->key());
+			String old_path = PROJECT_GET(E->key());
 			if (p_renames.has(old_path)) {
 				ProjectSettings::get_singleton()->set_setting(E->key(), p_renames[old_path]);
 			}
@@ -1321,7 +1321,7 @@ void FileSystemDock::_update_project_settings_after_move(const Map<String, Strin
 		if (E->get().name.begins_with("autoload/")) {
 			// If the autoload resource paths has a leading "*", it indicates that it is a Singleton,
 			// so we have to handle both cases when updating.
-			String autoload = GLOBAL_GET(E->get().name);
+			String autoload = PROJECT_GET(E->get().name);
 			String autoload_singleton = autoload.substr(1, autoload.length());
 			if (p_renames.has(autoload)) {
 				ProjectSettings::get_singleton()->set_setting(E->get().name, p_renames[autoload]);

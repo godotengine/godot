@@ -557,7 +557,7 @@ void RaycastOcclusionCull::_init_embree() {
 
 RaycastOcclusionCull::RaycastOcclusionCull() {
 	raycast_singleton = this;
-	int default_quality = GLOBAL_GET("rendering/occlusion_culling/bvh_build_quality");
+	int default_quality = PROJECT_GET("rendering/occlusion_culling/bvh_build_quality");
 	build_quality = RS::ViewportOcclusionCullingBuildQuality(default_quality);
 }
 

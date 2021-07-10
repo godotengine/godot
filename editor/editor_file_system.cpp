@@ -1965,7 +1965,7 @@ void EditorFileSystem::reimport_files(const Vector<String> &p_files) {
 
 	reimport_files.sort();
 
-	bool use_threads = GLOBAL_GET("editor/import/use_multiple_threads");
+	bool use_threads = PROJECT_GET("editor/import/use_multiple_threads");
 
 	int from = 0;
 	for (int i = 0; i < reimport_files.size(); i++) {
@@ -2144,8 +2144,8 @@ void EditorFileSystem::_update_extensions() {
 
 EditorFileSystem::EditorFileSystem() {
 	ResourceLoader::import = _resource_import;
-	reimport_on_missing_imported_files = GLOBAL_DEF("editor/import/reimport_missing_imported_files", true);
-	GLOBAL_DEF("editor/import/use_multiple_threads", true);
+	reimport_on_missing_imported_files = PROJECT_DEFAULT("editor/import/reimport_missing_imported_files", true);
+	PROJECT_DEFAULT("editor/import/use_multiple_threads", true);
 	singleton = this;
 	filesystem = memnew(EditorFileSystemDirectory); //like, empty
 	filesystem->parent = nullptr;

@@ -59,7 +59,7 @@ void ThemeEditorPreview::_propagate_redraw(Control *p_at) {
 
 void ThemeEditorPreview::_refresh_interval() {
 	// In case the project settings have changed.
-	preview_bg->set_color(GLOBAL_GET("rendering/environment/defaults/default_clear_color"));
+	preview_bg->set_color(PROJECT_GET("rendering/environment/defaults/default_clear_color"));
 
 	_propagate_redraw(preview_bg);
 	_propagate_redraw(preview_content);
@@ -201,7 +201,7 @@ ThemeEditorPreview::ThemeEditorPreview() {
 
 	preview_bg = memnew(ColorRect);
 	preview_bg->set_anchors_and_offsets_preset(PRESET_WIDE);
-	preview_bg->set_color(GLOBAL_GET("rendering/environment/defaults/default_clear_color"));
+	preview_bg->set_color(PROJECT_GET("rendering/environment/defaults/default_clear_color"));
 	preview_root->add_child(preview_bg);
 
 	preview_content = memnew(MarginContainer);

@@ -71,7 +71,7 @@ void EditorSceneImporterFBX::_register_project_setting_import(const String gener
 		List<String> *r_extensions,
 		const bool p_enabled) const {
 	const String use_generic = "use_" + generic;
-	_GLOBAL_DEF(import_setting_string + use_generic, p_enabled, true);
+	_PROJECT_DEFAULT(import_setting_string + use_generic, p_enabled, true);
 	if (ProjectSettings::get_singleton()->get(import_setting_string + use_generic)) {
 		for (int32_t i = 0; i < exts.size(); i++) {
 			r_extensions->push_back(exts[i]);

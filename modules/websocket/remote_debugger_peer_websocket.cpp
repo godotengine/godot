@@ -116,7 +116,7 @@ RemoteDebuggerPeerWebSocket::RemoteDebuggerPeerWebSocket(Ref<WebSocketPeer> p_pe
 #else
 	ws_client = Ref<WebSocketClient>(memnew(WSLClient));
 #endif
-	max_queued_messages = (int)GLOBAL_GET("network/limits/debugger/max_queued_messages");
+	max_queued_messages = (int)PROJECT_GET("network/limits/debugger/max_queued_messages");
 	ws_client->set_buffers(8192, max_queued_messages, 8192, max_queued_messages);
 	ws_peer = p_peer;
 }

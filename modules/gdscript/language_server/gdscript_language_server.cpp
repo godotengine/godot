@@ -36,10 +36,10 @@
 #include "editor/editor_node.h"
 
 GDScriptLanguageServer::GDScriptLanguageServer() {
-	_EDITOR_DEF("network/language_server/remote_port", port);
-	_EDITOR_DEF("network/language_server/enable_smart_resolve", true);
-	_EDITOR_DEF("network/language_server/show_native_symbols_in_editor", false);
-	_EDITOR_DEF("network/language_server/use_thread", use_thread);
+	_EDITOR_DEFAULT("network/language_server/remote_port", port);
+	_EDITOR_DEFAULT("network/language_server/enable_smart_resolve", true);
+	_EDITOR_DEFAULT("network/language_server/show_native_symbols_in_editor", false);
+	_EDITOR_DEFAULT("network/language_server/use_thread", use_thread);
 }
 
 void GDScriptLanguageServer::_notification(int p_what) {

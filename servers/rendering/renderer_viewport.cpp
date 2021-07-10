@@ -478,7 +478,7 @@ void RendererViewport::draw_viewports() {
 	}
 
 	if (Engine::get_singleton()->is_editor_hint()) {
-		set_default_clear_color(GLOBAL_GET("rendering/environment/defaults/default_clear_color"));
+		set_default_clear_color(PROJECT_GET("rendering/environment/defaults/default_clear_color"));
 	}
 
 	//sort viewports
@@ -1132,5 +1132,5 @@ int RendererViewport::get_total_draw_calls_used() const {
 }
 
 RendererViewport::RendererViewport() {
-	occlusion_rays_per_thread = GLOBAL_GET("rendering/occlusion_culling/occlusion_rays_per_thread");
+	occlusion_rays_per_thread = PROJECT_GET("rendering/occlusion_culling/occlusion_rays_per_thread");
 }

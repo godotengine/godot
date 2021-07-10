@@ -445,14 +445,14 @@ bool Control::is_layout_rtl() const {
 		} else if (parent_window) {
 			return parent_window->is_layout_rtl();
 		} else {
-			if (GLOBAL_GET("internationalization/rendering/force_right_to_left_layout_direction")) {
+			if (PROJECT_GET("internationalization/rendering/force_right_to_left_layout_direction")) {
 				return true;
 			}
 			String locale = TranslationServer::get_singleton()->get_tool_locale();
 			return TS->is_locale_right_to_left(locale);
 		}
 	} else if (data.layout_dir == LAYOUT_DIRECTION_LOCALE) {
-		if (GLOBAL_GET("internationalization/rendering/force_right_to_left_layout_direction")) {
+		if (PROJECT_GET("internationalization/rendering/force_right_to_left_layout_direction")) {
 			return true;
 		}
 		String locale = TranslationServer::get_singleton()->get_tool_locale();
@@ -2529,7 +2529,7 @@ bool Control::is_visibility_clip_disabled() const {
 
 void Control::get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const {
 #ifdef TOOLS_ENABLED
-	const String quote_style = EDITOR_DEF("text_editor/completion/use_single_quotes", 0) ? "'" : "\"";
+	const String quote_style = EDITOR_DEFAULT("text_editor/completion/use_single_quotes", 0) ? "'" : "\"";
 #else
 	const String quote_style = "\"";
 #endif

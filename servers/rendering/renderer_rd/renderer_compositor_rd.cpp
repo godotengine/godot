@@ -89,7 +89,7 @@ void RendererCompositorRD::begin_frame(double frame_step) {
 	delta = frame_step;
 	time += frame_step;
 
-	double time_roll_over = GLOBAL_GET("rendering/limits/time/time_rollover_secs");
+	double time_roll_over = PROJECT_GET("rendering/limits/time/time_rollover_secs");
 	time = Math::fmod(time, time_roll_over);
 
 	canvas->set_time(time);
@@ -249,15 +249,15 @@ RendererCompositorRD::RendererCompositorRD() {
 			} else {
 				shader_cache_dir = shader_cache_dir.plus_file("shader_cache");
 
-				bool shader_cache_enabled = GLOBAL_GET("rendering/shader_compiler/shader_cache/enabled");
+				bool shader_cache_enabled = PROJECT_GET("rendering/shader_compiler/shader_cache/enabled");
 				if (!Engine::get_singleton()->is_editor_hint() && !shader_cache_enabled) {
 					shader_cache_dir = String(); //disable only if not editor
 				}
 
 				if (shader_cache_dir != String()) {
-					bool compress = GLOBAL_GET("rendering/shader_compiler/shader_cache/compress");
-					bool use_zstd = GLOBAL_GET("rendering/shader_compiler/shader_cache/use_zstd_compression");
-					bool strip_debug = GLOBAL_GET("rendering/shader_compiler/shader_cache/strip_debug");
+					bool compress = PROJECT_GET("rendering/shader_compiler/shader_cache/compress");
+					bool use_zstd = PROJECT_GET("rendering/shader_compiler/shader_cache/use_zstd_compression");
+					bool strip_debug = PROJECT_GET("rendering/shader_compiler/shader_cache/strip_debug");
 
 					ShaderRD::set_shader_cache_dir(shader_cache_dir);
 					ShaderRD::set_shader_cache_save_compressed(compress);
@@ -274,7 +274,7 @@ RendererCompositorRD::RendererCompositorRD() {
 	storage = memnew(RendererStorageRD);
 	canvas = memnew(RendererCanvasRenderRD(storage));
 
-	uint32_t back_end = GLOBAL_GET("rendering/vulkan/rendering/back_end");
+	uint32_t back_end = PROJECT_GET("rendering/vulkan/rendering/back_end");
 	uint32_t textures_per_stage = RD::get_singleton()->limit_get(RD::LIMIT_MAX_TEXTURES_PER_SHADER_STAGE);
 
 	if (back_end == 1 || textures_per_stage < 48) {

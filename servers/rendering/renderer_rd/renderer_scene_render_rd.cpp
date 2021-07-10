@@ -507,8 +507,8 @@ Ref<Image> RendererSceneRenderRD::environment_bake_panorama(RID p_env, bool p_ba
 
 RID RendererSceneRenderRD::reflection_atlas_create() {
 	ReflectionAtlas ra;
-	ra.count = GLOBAL_GET("rendering/reflections/reflection_atlas/reflection_count");
-	ra.size = GLOBAL_GET("rendering/reflections/reflection_atlas/reflection_size");
+	ra.count = PROJECT_GET("rendering/reflections/reflection_atlas/reflection_count");
+	ra.size = PROJECT_GET("rendering/reflections/reflection_atlas/reflection_size");
 
 	if (is_clustered_enabled()) {
 		ra.cluster_builder = memnew(ClusterBuilderRD);
@@ -4255,7 +4255,7 @@ bool RendererSceneRenderRD::is_volumetric_supported() const {
 }
 
 uint32_t RendererSceneRenderRD::get_max_elements() const {
-	return GLOBAL_GET("rendering/limits/cluster_builder/max_clustered_elements");
+	return PROJECT_GET("rendering/limits/cluster_builder/max_clustered_elements");
 }
 
 RendererSceneRenderRD::RendererSceneRenderRD(RendererStorageRD *p_storage) {
@@ -4264,8 +4264,8 @@ RendererSceneRenderRD::RendererSceneRenderRD(RendererStorageRD *p_storage) {
 	storage = p_storage;
 	singleton = this;
 
-	directional_shadow.size = GLOBAL_GET("rendering/shadows/directional_shadow/size");
-	directional_shadow.use_16_bits = GLOBAL_GET("rendering/shadows/directional_shadow/16_bits");
+	directional_shadow.size = PROJECT_GET("rendering/shadows/directional_shadow/size");
+	directional_shadow.use_16_bits = PROJECT_GET("rendering/shadows/directional_shadow/16_bits");
 
 	/* SKY SHADER */
 
@@ -4335,27 +4335,27 @@ RendererSceneRenderRD::RendererSceneRenderRD(RendererStorageRD *p_storage) {
 		shadow_sampler = RD::get_singleton()->sampler_create(sampler);
 	}
 
-	camera_effects_set_dof_blur_bokeh_shape(RS::DOFBokehShape(int(GLOBAL_GET("rendering/camera/depth_of_field/depth_of_field_bokeh_shape"))));
-	camera_effects_set_dof_blur_quality(RS::DOFBlurQuality(int(GLOBAL_GET("rendering/camera/depth_of_field/depth_of_field_bokeh_quality"))), GLOBAL_GET("rendering/camera/depth_of_field/depth_of_field_use_jitter"));
-	environment_set_ssao_quality(RS::EnvironmentSSAOQuality(int(GLOBAL_GET("rendering/environment/ssao/quality"))), GLOBAL_GET("rendering/environment/ssao/half_size"), GLOBAL_GET("rendering/environment/ssao/adaptive_target"), GLOBAL_GET("rendering/environment/ssao/blur_passes"), GLOBAL_GET("rendering/environment/ssao/fadeout_from"), GLOBAL_GET("rendering/environment/ssao/fadeout_to"));
-	screen_space_roughness_limiter = GLOBAL_GET("rendering/anti_aliasing/screen_space_roughness_limiter/enabled");
-	screen_space_roughness_limiter_amount = GLOBAL_GET("rendering/anti_aliasing/screen_space_roughness_limiter/amount");
-	screen_space_roughness_limiter_limit = GLOBAL_GET("rendering/anti_aliasing/screen_space_roughness_limiter/limit");
-	glow_bicubic_upscale = int(GLOBAL_GET("rendering/environment/glow/upscale_mode")) > 0;
-	glow_high_quality = GLOBAL_GET("rendering/environment/glow/use_high_quality");
-	ssr_roughness_quality = RS::EnvironmentSSRRoughnessQuality(int(GLOBAL_GET("rendering/environment/screen_space_reflection/roughness_quality")));
-	sss_quality = RS::SubSurfaceScatteringQuality(int(GLOBAL_GET("rendering/environment/subsurface_scattering/subsurface_scattering_quality")));
-	sss_scale = GLOBAL_GET("rendering/environment/subsurface_scattering/subsurface_scattering_scale");
-	sss_depth_scale = GLOBAL_GET("rendering/environment/subsurface_scattering/subsurface_scattering_depth_scale");
+	camera_effects_set_dof_blur_bokeh_shape(RS::DOFBokehShape(int(PROJECT_GET("rendering/camera/depth_of_field/depth_of_field_bokeh_shape"))));
+	camera_effects_set_dof_blur_quality(RS::DOFBlurQuality(int(PROJECT_GET("rendering/camera/depth_of_field/depth_of_field_bokeh_quality"))), PROJECT_GET("rendering/camera/depth_of_field/depth_of_field_use_jitter"));
+	environment_set_ssao_quality(RS::EnvironmentSSAOQuality(int(PROJECT_GET("rendering/environment/ssao/quality"))), PROJECT_GET("rendering/environment/ssao/half_size"), PROJECT_GET("rendering/environment/ssao/adaptive_target"), PROJECT_GET("rendering/environment/ssao/blur_passes"), PROJECT_GET("rendering/environment/ssao/fadeout_from"), PROJECT_GET("rendering/environment/ssao/fadeout_to"));
+	screen_space_roughness_limiter = PROJECT_GET("rendering/anti_aliasing/screen_space_roughness_limiter/enabled");
+	screen_space_roughness_limiter_amount = PROJECT_GET("rendering/anti_aliasing/screen_space_roughness_limiter/amount");
+	screen_space_roughness_limiter_limit = PROJECT_GET("rendering/anti_aliasing/screen_space_roughness_limiter/limit");
+	glow_bicubic_upscale = int(PROJECT_GET("rendering/environment/glow/upscale_mode")) > 0;
+	glow_high_quality = PROJECT_GET("rendering/environment/glow/use_high_quality");
+	ssr_roughness_quality = RS::EnvironmentSSRRoughnessQuality(int(PROJECT_GET("rendering/environment/screen_space_reflection/roughness_quality")));
+	sss_quality = RS::SubSurfaceScatteringQuality(int(PROJECT_GET("rendering/environment/subsurface_scattering/subsurface_scattering_quality")));
+	sss_scale = PROJECT_GET("rendering/environment/subsurface_scattering/subsurface_scattering_scale");
+	sss_depth_scale = PROJECT_GET("rendering/environment/subsurface_scattering/subsurface_scattering_depth_scale");
 	directional_penumbra_shadow_kernel = memnew_arr(float, 128);
 	directional_soft_shadow_kernel = memnew_arr(float, 128);
 	penumbra_shadow_kernel = memnew_arr(float, 128);
 	soft_shadow_kernel = memnew_arr(float, 128);
-	shadows_quality_set(RS::ShadowQuality(int(GLOBAL_GET("rendering/shadows/shadows/soft_shadow_quality"))));
-	directional_shadow_quality_set(RS::ShadowQuality(int(GLOBAL_GET("rendering/shadows/directional_shadow/soft_shadow_quality"))));
+	shadows_quality_set(RS::ShadowQuality(int(PROJECT_GET("rendering/shadows/shadows/soft_shadow_quality"))));
+	directional_shadow_quality_set(RS::ShadowQuality(int(PROJECT_GET("rendering/shadows/directional_shadow/soft_shadow_quality"))));
 
-	environment_set_volumetric_fog_volume_size(GLOBAL_GET("rendering/environment/volumetric_fog/volume_size"), GLOBAL_GET("rendering/environment/volumetric_fog/volume_depth"));
-	environment_set_volumetric_fog_filter_active(GLOBAL_GET("rendering/environment/volumetric_fog/use_filter"));
+	environment_set_volumetric_fog_volume_size(PROJECT_GET("rendering/environment/volumetric_fog/volume_size"), PROJECT_GET("rendering/environment/volumetric_fog/volume_depth"));
+	environment_set_volumetric_fog_filter_active(PROJECT_GET("rendering/environment/volumetric_fog/use_filter"));
 
 	cull_argument.set_page_pool(&cull_argument_pool);
 }

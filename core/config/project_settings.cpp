@@ -510,19 +510,19 @@ Error ProjectSettings::_setup(const String &p_path, const String &p_main_pack, b
 Error ProjectSettings::setup(const String &p_path, const String &p_main_pack, bool p_upwards) {
 	Error err = _setup(p_path, p_main_pack, p_upwards);
 	if (err == OK) {
-		String custom_settings = GLOBAL_DEF("application/config/project_settings_override", "");
+		String custom_settings = PROJECT_DEFAULT("application/config/project_settings_override", "");
 		if (custom_settings != "") {
 			_load_settings_text(custom_settings);
 		}
 	}
-	// Using GLOBAL_GET on every block for compressing can be slow, so assigning here.
-	Compression::zstd_long_distance_matching = GLOBAL_GET("compression/formats/zstd/long_distance_matching");
-	Compression::zstd_level = GLOBAL_GET("compression/formats/zstd/compression_level");
-	Compression::zstd_window_log_size = GLOBAL_GET("compression/formats/zstd/window_log_size");
+	// Using PROJECT_GET on every block for compressing can be slow, so assigning here.
+	Compression::zstd_long_distance_matching = PROJECT_GET("compression/formats/zstd/long_distance_matching");
+	Compression::zstd_level = PROJECT_GET("compression/formats/zstd/compression_level");
+	Compression::zstd_window_log_size = PROJECT_GET("compression/formats/zstd/window_log_size");
 
-	Compression::zlib_level = GLOBAL_GET("compression/formats/zlib/compression_level");
+	Compression::zlib_level = PROJECT_GET("compression/formats/zlib/compression_level");
 
-	Compression::gzip_level = GLOBAL_GET("compression/formats/gzip/compression_level");
+	Compression::gzip_level = PROJECT_GET("compression/formats/gzip/compression_level");
 
 	return err;
 }
@@ -913,7 +913,7 @@ Error ProjectSettings::save_custom(const String &p_path, const CustomMap &p_cust
 	}
 }
 
-Variant _GLOBAL_DEF(const String &p_var, const Variant &p_default, bool p_restart_if_changed, bool p_ignore_value_in_docs, bool p_basic) {
+Variant _PROJECT_DEFAULT(const String &p_var, const Variant &p_default, bool p_restart_if_changed, bool p_ignore_value_in_docs, bool p_basic) {
 	Variant ret;
 	if (!ProjectSettings::get_singleton()->has_setting(p_var)) {
 		ProjectSettings::get_singleton()->set(p_var, p_default);
@@ -1070,7 +1070,7 @@ void ProjectSettings::_add_builtin_input_map() {
 			action["events"] = events;
 
 			String action_name = "input/" + E.key();
-			GLOBAL_DEF(action_name, action);
+			PROJECT_DEFAULT(action_name, action);
 			input_presets.push_back(action_name);
 		}
 	}
@@ -1082,17 +1082,17 @@ ProjectSettings::ProjectSettings() {
 
 	singleton = this;
 
-	GLOBAL_DEF_BASIC("application/config/name", "");
-	GLOBAL_DEF_BASIC("application/config/description", "");
+	PROJECT_DEFAULT_BASIC("application/config/name", "");
+	PROJECT_DEFAULT_BASIC("application/config/description", "");
 	custom_prop_info["application/config/description"] = PropertyInfo(Variant::STRING, "application/config/description", PROPERTY_HINT_MULTILINE_TEXT);
-	GLOBAL_DEF_BASIC("application/run/main_scene", "");
+	PROJECT_DEFAULT_BASIC("application/run/main_scene", "");
 	custom_prop_info["application/run/main_scene"] = PropertyInfo(Variant::STRING, "application/run/main_scene", PROPERTY_HINT_FILE, "*.tscn,*.scn,*.res");
-	GLOBAL_DEF("application/run/disable_stdout", false);
-	GLOBAL_DEF("application/run/disable_stderr", false);
-	GLOBAL_DEF("application/config/use_custom_user_dir", false);
-	GLOBAL_DEF("application/config/custom_user_dir_name", "");
-	GLOBAL_DEF("application/config/project_settings_override", "");
-	GLOBAL_DEF_BASIC("audio/buses/default_bus_layout", "res://default_bus_layout.tres");
+	PROJECT_DEFAULT("application/run/disable_stdout", false);
+	PROJECT_DEFAULT("application/run/disable_stderr", false);
+	PROJECT_DEFAULT("application/config/use_custom_user_dir", false);
+	PROJECT_DEFAULT("application/config/custom_user_dir_name", "");
+	PROJECT_DEFAULT("application/config/project_settings_override", "");
+	PROJECT_DEFAULT_BASIC("audio/buses/default_bus_layout", "res://default_bus_layout.tres");
 	custom_prop_info["audio/buses/default_bus_layout"] = PropertyInfo(Variant::STRING, "audio/buses/default_bus_layout", PROPERTY_HINT_FILE, "*.tres");
 
 	PackedStringArray extensions = PackedStringArray();
@@ -1102,12 +1102,12 @@ ProjectSettings::ProjectSettings() {
 	}
 	extensions.push_back("gdshader");
 
-	GLOBAL_DEF("editor/run/main_run_args", "");
+	PROJECT_DEFAULT("editor/run/main_run_args", "");
 
-	GLOBAL_DEF("editor/script/search_in_file_extensions", extensions);
+	PROJECT_DEFAULT("editor/script/search_in_file_extensions", extensions);
 	custom_prop_info["editor/script/search_in_file_extensions"] = PropertyInfo(Variant::PACKED_STRING_ARRAY, "editor/script/search_in_file_extensions");
 
-	GLOBAL_DEF("editor/script/templates_search_path", "res://script_templates");
+	PROJECT_DEFAULT("editor/script/templates_search_path", "res://script_templates");
 	custom_prop_info["editor/script/templates_search_path"] = PropertyInfo(Variant::STRING, "editor/script/templates_search_path", PROPERTY_HINT_DIR);
 
 	_add_builtin_input_map();
@@ -1116,23 +1116,23 @@ ProjectSettings::ProjectSettings() {
 	custom_prop_info["display/window/handheld/orientation"] = PropertyInfo(Variant::INT, "display/window/handheld/orientation", PROPERTY_HINT_ENUM, "Landscape,Portrait,Reverse Landscape,Reverse Portrait,Sensor Landscape,Sensor Portrait,Sensor");
 	custom_prop_info["display/window/vsync/vsync_mode"] = PropertyInfo(Variant::STRING, "display/window/vsync/vsync_mode", PROPERTY_HINT_ENUM, "Disabled,Enabled,Adaptive,Mailbox");
 	custom_prop_info["rendering/driver/threads/thread_model"] = PropertyInfo(Variant::INT, "rendering/driver/threads/thread_model", PROPERTY_HINT_ENUM, "Single-Unsafe,Single-Safe,Multi-Threaded");
-	GLOBAL_DEF("physics/2d/run_on_thread", false);
-	GLOBAL_DEF("physics/3d/run_on_thread", false);
+	PROJECT_DEFAULT("physics/2d/run_on_thread", false);
+	PROJECT_DEFAULT("physics/3d/run_on_thread", false);
 
-	GLOBAL_DEF("debug/settings/profiler/max_functions", 16384);
+	PROJECT_DEFAULT("debug/settings/profiler/max_functions", 16384);
 	custom_prop_info["debug/settings/profiler/max_functions"] = PropertyInfo(Variant::INT, "debug/settings/profiler/max_functions", PROPERTY_HINT_RANGE, "128,65535,1");
 
-	GLOBAL_DEF("compression/formats/zstd/long_distance_matching", Compression::zstd_long_distance_matching);
+	PROJECT_DEFAULT("compression/formats/zstd/long_distance_matching", Compression::zstd_long_distance_matching);
 	custom_prop_info["compression/formats/zstd/long_distance_matching"] = PropertyInfo(Variant::BOOL, "compression/formats/zstd/long_distance_matching");
-	GLOBAL_DEF("compression/formats/zstd/compression_level", Compression::zstd_level);
+	PROJECT_DEFAULT("compression/formats/zstd/compression_level", Compression::zstd_level);
 	custom_prop_info["compression/formats/zstd/compression_level"] = PropertyInfo(Variant::INT, "compression/formats/zstd/compression_level", PROPERTY_HINT_RANGE, "1,22,1");
-	GLOBAL_DEF("compression/formats/zstd/window_log_size", Compression::zstd_window_log_size);
+	PROJECT_DEFAULT("compression/formats/zstd/window_log_size", Compression::zstd_window_log_size);
 	custom_prop_info["compression/formats/zstd/window_log_size"] = PropertyInfo(Variant::INT, "compression/formats/zstd/window_log_size", PROPERTY_HINT_RANGE, "10,30,1");
 
-	GLOBAL_DEF("compression/formats/zlib/compression_level", Compression::zlib_level);
+	PROJECT_DEFAULT("compression/formats/zlib/compression_level", Compression::zlib_level);
 	custom_prop_info["compression/formats/zlib/compression_level"] = PropertyInfo(Variant::INT, "compression/formats/zlib/compression_level", PROPERTY_HINT_RANGE, "-1,9,1");
 
-	GLOBAL_DEF("compression/formats/gzip/compression_level", Compression::gzip_level);
+	PROJECT_DEFAULT("compression/formats/gzip/compression_level", Compression::gzip_level);
 	custom_prop_info["compression/formats/gzip/compression_level"] = PropertyInfo(Variant::INT, "compression/formats/gzip/compression_level", PROPERTY_HINT_RANGE, "-1,9,1");
 }
 

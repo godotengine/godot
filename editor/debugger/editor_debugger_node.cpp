@@ -68,7 +68,7 @@ EditorDebuggerNode::EditorDebuggerNode() {
 	empty.instantiate();
 	tabs->add_theme_style_override("panel", empty);
 
-	auto_switch_remote_scene_tree = EDITOR_DEF("debugger/auto_switch_to_remote_scene_tree", false);
+	auto_switch_remote_scene_tree = EDITOR_DEFAULT("debugger/auto_switch_to_remote_scene_tree", false);
 	_add_debugger();
 
 	// Remote scene tree
@@ -78,8 +78,8 @@ EditorDebuggerNode::EditorDebuggerNode() {
 	EditorNode::get_singleton()->get_scene_tree_dock()->add_remote_tree_editor(remote_scene_tree);
 	EditorNode::get_singleton()->get_scene_tree_dock()->connect("remote_tree_selected", callable_mp(this, &EditorDebuggerNode::request_remote_tree));
 
-	remote_scene_tree_timeout = EDITOR_DEF("debugger/remote_scene_tree_refresh_interval", 1.0);
-	inspect_edited_object_timeout = EDITOR_DEF("debugger/remote_inspect_refresh_interval", 0.2);
+	remote_scene_tree_timeout = EDITOR_DEFAULT("debugger/remote_scene_tree_refresh_interval", 1.0);
+	inspect_edited_object_timeout = EDITOR_DEFAULT("debugger/remote_inspect_refresh_interval", 0.2);
 
 	EditorNode *editor = EditorNode::get_singleton();
 	editor->get_undo_redo()->set_method_notify_callback(_method_changeds, this);

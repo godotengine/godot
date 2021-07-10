@@ -190,15 +190,23 @@ public:
 	~EditorSettings();
 };
 
+// Returns the value of the editor setting `m_var`, or `m_value` if the setting is not defined yet.
+// Consider casting this macro's return value to a specific type to improve safety and avoid crashes.
+#define EDITOR_DEFAULT(m_var, m_value) _EDITOR_DEFAULT(m_var, Variant(m_value))
+
+// Returns the value of the editor setting `m_var`, or `m_value` if the setting is not defined yet.
+// Also requests a restart of the editor when changed using the Editor Settings dialog.
+// Consider casting this macro's return value to a specific type to improve safety and avoid crashes.
+#define EDITOR_DEFAULT_RESTART(m_var, m_value) _EDITOR_DEFAULT(m_var, Variant(m_value), true)
 //not a macro any longer
+Variant _EDITOR_DEFAULT(const String &p_setting, const Variant &p_default, bool p_restart_if_changed = false);
 
-#define EDITOR_DEF(m_var, m_val) _EDITOR_DEF(m_var, Variant(m_val))
-#define EDITOR_DEF_RST(m_var, m_val) _EDITOR_DEF(m_var, Variant(m_val), true)
-Variant _EDITOR_DEF(const String &p_setting, const Variant &p_default, bool p_restart_if_changed = false);
-
+// Returns the value of the editor setting `m_var`, or Variant `null` if the setting doesn't exist.
+// Consider casting this macro's return value to a specific type to improve safety and avoid crashes.
 #define EDITOR_GET(m_var) _EDITOR_GET(m_var)
 Variant _EDITOR_GET(const String &p_setting);
 
+// Returns `true` if the InputEvent `p_ev` matches the editor shortcut with String path `p_name`, `false` otherwise.
 #define ED_IS_SHORTCUT(p_name, p_ev) (EditorSettings::get_singleton()->is_shortcut(p_name, p_ev))
 Ref<Shortcut> ED_SHORTCUT(const String &p_path, const String &p_name, uint32_t p_keycode = 0);
 Ref<Shortcut> ED_GET_SHORTCUT(const String &p_path);

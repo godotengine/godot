@@ -1662,7 +1662,7 @@ void EditorHelp::_bind_methods() {
 EditorHelp::EditorHelp() {
 	set_custom_minimum_size(Size2(150 * EDSCALE, 0));
 
-	EDITOR_DEF("text_editor/help/sort_functions_alphabetically", true);
+	EDITOR_DEFAULT("text_editor/help/sort_functions_alphabetically", true);
 
 	class_desc = memnew(RichTextLabel);
 	add_child(class_desc);

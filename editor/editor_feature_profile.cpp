@@ -990,7 +990,7 @@ EditorFeatureProfileManager::EditorFeatureProfileManager() {
 	export_profile->set_access(EditorFileDialog::ACCESS_FILESYSTEM);
 
 	set_title(TTR("Manage Editor Feature Profiles"));
-	EDITOR_DEF("_default_feature_profile", "");
+	EDITOR_DEFAULT("_default_feature_profile", "");
 
 	update_timer = memnew(Timer);
 	update_timer->set_wait_time(1); //wait a second before updating editor

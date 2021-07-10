@@ -243,12 +243,12 @@ void register_core_types() {
 
 void register_core_settings() {
 	// Since in register core types, globals may not be present.
-	GLOBAL_DEF("network/limits/tcp/connect_timeout_seconds", (30));
+	PROJECT_DEFAULT("network/limits/tcp/connect_timeout_seconds", (30));
 	ProjectSettings::get_singleton()->set_custom_property_info("network/limits/tcp/connect_timeout_seconds", PropertyInfo(Variant::INT, "network/limits/tcp/connect_timeout_seconds", PROPERTY_HINT_RANGE, "1,1800,1"));
-	GLOBAL_DEF_RST("network/limits/packet_peer_stream/max_buffer_po2", (16));
+	PROJECT_DEFAULT_RESTART("network/limits/packet_peer_stream/max_buffer_po2", (16));
 	ProjectSettings::get_singleton()->set_custom_property_info("network/limits/packet_peer_stream/max_buffer_po2", PropertyInfo(Variant::INT, "network/limits/packet_peer_stream/max_buffer_po2", PROPERTY_HINT_RANGE, "0,64,1,or_greater"));
 
-	GLOBAL_DEF("network/ssl/certificate_bundle_override", "");
+	PROJECT_DEFAULT("network/ssl/certificate_bundle_override", "");
 	ProjectSettings::get_singleton()->set_custom_property_info("network/ssl/certificate_bundle_override", PropertyInfo(Variant::STRING, "network/ssl/certificate_bundle_override", PROPERTY_HINT_FILE, "*.crt"));
 }
 

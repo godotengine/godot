@@ -428,7 +428,7 @@ void ScriptTextEditor::_validate_script() {
 	warnings_panel->clear();
 
 	// Add missing connections.
-	if (GLOBAL_GET("debug/gdscript/warnings/enable").booleanize()) {
+	if (PROJECT_GET("debug/gdscript/warnings/enable").booleanize()) {
 		Node *base = get_tree()->get_edited_scene_root();
 		if (base && missing_connections.size() > 0) {
 			warnings_panel->push_table(1);
@@ -505,7 +505,7 @@ void ScriptTextEditor::_validate_script() {
 	}
 	errors_panel->pop(); // Table
 
-	bool highlight_safe = EDITOR_DEF("text_editor/highlighting/highlight_type_safe_lines", true);
+	bool highlight_safe = EDITOR_DEFAULT("text_editor/highlighting/highlight_type_safe_lines", true);
 	bool last_is_safe = false;
 	for (int i = 0; i < te->get_line_count(); i++) {
 		if (errors.is_empty()) {
@@ -1444,7 +1444,7 @@ void ScriptTextEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data
 	}
 
 	if (d.has("type") && (String(d["type"]) == "files" || String(d["type"]) == "files_and_dirs")) {
-		const String quote_style = EDITOR_DEF("text_editor/completion/use_single_quotes", false) ? "'" : "\"";
+		const String quote_style = EDITOR_DEFAULT("text_editor/completion/use_single_quotes", false) ? "'" : "\"";
 		Array files = d["files"];
 
 		String text_to_drop;

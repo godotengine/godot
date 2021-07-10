@@ -613,7 +613,7 @@ void ScrollContainer::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "scroll_vertical_visible"), "set_v_scroll_visible", "is_v_scroll_visible");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "scroll_deadzone"), "set_deadzone", "get_deadzone");
 
-	GLOBAL_DEF("gui/common/default_scroll_deadzone", 0);
+	PROJECT_DEFAULT("gui/common/default_scroll_deadzone", 0);
 };
 
 ScrollContainer::ScrollContainer() {
@@ -627,7 +627,7 @@ ScrollContainer::ScrollContainer() {
 	add_child(v_scroll);
 	v_scroll->connect("value_changed", callable_mp(this, &ScrollContainer::_scroll_moved));
 
-	deadzone = GLOBAL_GET("gui/common/default_scroll_deadzone");
+	deadzone = PROJECT_GET("gui/common/default_scroll_deadzone");
 
 	set_clip_contents(true);
 };

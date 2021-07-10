@@ -409,7 +409,7 @@ DisplayServerAndroid::DisplayServerAndroid(const String &p_rendering_driver, Dis
 	// TODO: rendering_driver is broken, change when different drivers are supported again
 	rendering_driver = "vulkan";
 
-	keep_screen_on = GLOBAL_GET("display/window/energy_saving/keep_screen_on");
+	keep_screen_on = PROJECT_GET("display/window/energy_saving/keep_screen_on");
 
 #if defined(OPENGL_ENABLED)
 	if (rendering_driver == "opengl") {

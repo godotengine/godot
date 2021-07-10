@@ -1048,7 +1048,7 @@ void Light3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 
 //// player gizmo
 AudioStreamPlayer3DGizmoPlugin::AudioStreamPlayer3DGizmoPlugin() {
-	Color gizmo_color = EDITOR_DEF("editors/3d_gizmos/gizmo_colors/stream_player_3d", Color(0.4, 0.8, 1));
+	Color gizmo_color = EDITOR_DEFAULT("editors/3d_gizmos/gizmo_colors/stream_player_3d", Color(0.4, 0.8, 1));
 
 	create_icon_material("stream_player_3d_icon", Node3DEditor::get_singleton()->get_theme_icon("Gizmo3DSamplePlayer", "EditorIcons"));
 	create_material("stream_player_3d_material_primary", gizmo_color);
@@ -1185,7 +1185,7 @@ void AudioStreamPlayer3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 //////
 
 Camera3DGizmoPlugin::Camera3DGizmoPlugin() {
-	Color gizmo_color = EDITOR_DEF("editors/3d_gizmos/gizmo_colors/camera", Color(0.8, 0.4, 0.8));
+	Color gizmo_color = EDITOR_DEFAULT("editors/3d_gizmos/gizmo_colors/camera", Color(0.8, 0.4, 0.8));
 
 	create_material("camera_material", gizmo_color);
 	create_handle_material("handles");
@@ -1464,7 +1464,7 @@ void MeshInstance3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 /////
 
 OccluderInstance3DGizmoPlugin::OccluderInstance3DGizmoPlugin() {
-	create_material("line_material", EDITOR_DEF("editors/3d_gizmos/gizmo_colors/occluder", Color(0.8, 0.5, 1)));
+	create_material("line_material", EDITOR_DEFAULT("editors/3d_gizmos/gizmo_colors/occluder", Color(0.8, 0.5, 1)));
 }
 
 bool OccluderInstance3DGizmoPlugin::has_gizmo(Node3D *p_spatial) {
@@ -1613,7 +1613,7 @@ void Position3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 /////
 
 Skeleton3DGizmoPlugin::Skeleton3DGizmoPlugin() {
-	Color gizmo_color = EDITOR_DEF("editors/3d_gizmos/gizmo_colors/skeleton", Color(1, 0.8, 0.4));
+	Color gizmo_color = EDITOR_DEFAULT("editors/3d_gizmos/gizmo_colors/skeleton", Color(1, 0.8, 0.4));
 	create_material("skeleton_material", gizmo_color);
 }
 
@@ -1767,7 +1767,7 @@ void Skeleton3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 ////
 
 PhysicalBone3DGizmoPlugin::PhysicalBone3DGizmoPlugin() {
-	create_material("joint_material", EDITOR_DEF("editors/3d_gizmos/gizmo_colors/joint", Color(0.5, 0.8, 1)));
+	create_material("joint_material", EDITOR_DEFAULT("editors/3d_gizmos/gizmo_colors/joint", Color(0.5, 0.8, 1)));
 }
 
 bool PhysicalBone3DGizmoPlugin::has_gizmo(Node3D *p_spatial) {
@@ -1900,7 +1900,7 @@ void PhysicalBone3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 /////
 
 RayCast3DGizmoPlugin::RayCast3DGizmoPlugin() {
-	const Color gizmo_color = EDITOR_DEF("editors/3d_gizmos/gizmo_colors/shape", Color(0.5, 0.7, 1));
+	const Color gizmo_color = EDITOR_DEFAULT("editors/3d_gizmos/gizmo_colors/shape", Color(0.5, 0.7, 1));
 	create_material("shape_material", gizmo_color);
 	const float gizmo_value = gizmo_color.get_v();
 	const Color gizmo_color_disabled = Color(gizmo_value, gizmo_value, gizmo_value, 0.65);
@@ -1954,7 +1954,7 @@ void SpringArm3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 }
 
 SpringArm3DGizmoPlugin::SpringArm3DGizmoPlugin() {
-	Color gizmo_color = EDITOR_DEF("editors/3d_gizmos/gizmo_colors/shape", Color(0.5, 0.7, 1));
+	Color gizmo_color = EDITOR_DEFAULT("editors/3d_gizmos/gizmo_colors/shape", Color(0.5, 0.7, 1));
 	create_material("shape_material", gizmo_color);
 }
 
@@ -1973,7 +1973,7 @@ int SpringArm3DGizmoPlugin::get_priority() const {
 /////
 
 VehicleWheel3DGizmoPlugin::VehicleWheel3DGizmoPlugin() {
-	Color gizmo_color = EDITOR_DEF("editors/3d_gizmos/gizmo_colors/shape", Color(0.5, 0.7, 1));
+	Color gizmo_color = EDITOR_DEFAULT("editors/3d_gizmos/gizmo_colors/shape", Color(0.5, 0.7, 1));
 	create_material("shape_material", gizmo_color);
 }
 
@@ -2044,7 +2044,7 @@ void VehicleWheel3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 ///////////
 
 SoftBody3DGizmoPlugin::SoftBody3DGizmoPlugin() {
-	Color gizmo_color = EDITOR_DEF("editors/3d_gizmos/gizmo_colors/shape", Color(0.5, 0.7, 1));
+	Color gizmo_color = EDITOR_DEFAULT("editors/3d_gizmos/gizmo_colors/shape", Color(0.5, 0.7, 1));
 	create_material("shape_material", gizmo_color);
 	create_handle_material("handles");
 }
@@ -2124,7 +2124,7 @@ bool SoftBody3DGizmoPlugin::is_handle_highlighted(const EditorNode3DGizmo *p_giz
 ///////////
 
 VisibleOnScreenNotifier3DGizmoPlugin::VisibleOnScreenNotifier3DGizmoPlugin() {
-	Color gizmo_color = EDITOR_DEF("editors/3d_gizmos/gizmo_colors/visibility_notifier", Color(0.8, 0.5, 0.7));
+	Color gizmo_color = EDITOR_DEFAULT("editors/3d_gizmos/gizmo_colors/visibility_notifier", Color(0.8, 0.5, 0.7));
 	create_material("visibility_notifier_material", gizmo_color);
 	gizmo_color.a = 0.1;
 	create_material("visibility_notifier_solid_material", gizmo_color);
@@ -2311,7 +2311,7 @@ void CPUParticles3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 ////
 
 GPUParticles3DGizmoPlugin::GPUParticles3DGizmoPlugin() {
-	Color gizmo_color = EDITOR_DEF("editors/3d_gizmos/gizmo_colors/particles", Color(0.8, 0.7, 0.4));
+	Color gizmo_color = EDITOR_DEFAULT("editors/3d_gizmos/gizmo_colors/particles", Color(0.8, 0.7, 0.4));
 	create_material("particles_material", gizmo_color);
 	gizmo_color.a = 0.1;
 	create_material("particles_solid_material", gizmo_color);
@@ -2478,7 +2478,7 @@ void GPUParticles3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 ////
 
 GPUParticlesCollision3DGizmoPlugin::GPUParticlesCollision3DGizmoPlugin() {
-	Color gizmo_color = EDITOR_DEF("editors/3d_gizmos/gizmo_colors/particle_collision", Color(0.5, 0.7, 1));
+	Color gizmo_color = EDITOR_DEFAULT("editors/3d_gizmos/gizmo_colors/particle_collision", Color(0.5, 0.7, 1));
 	create_material("shape_material", gizmo_color);
 	gizmo_color.a = 0.15;
 	create_material("shape_material_internal", gizmo_color);
@@ -2736,7 +2736,7 @@ void GPUParticlesCollision3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 ////
 
 ReflectionProbeGizmoPlugin::ReflectionProbeGizmoPlugin() {
-	Color gizmo_color = EDITOR_DEF("editors/3d_gizmos/gizmo_colors/reflection_probe", Color(0.6, 1, 0.5));
+	Color gizmo_color = EDITOR_DEFAULT("editors/3d_gizmos/gizmo_colors/reflection_probe", Color(0.6, 1, 0.5));
 
 	create_material("reflection_probe_material", gizmo_color);
 
@@ -2928,7 +2928,7 @@ void ReflectionProbeGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 ////
 
 DecalGizmoPlugin::DecalGizmoPlugin() {
-	Color gizmo_color = EDITOR_DEF("editors/3d_gizmos/gizmo_colors/decal", Color(0.6, 0.5, 1.0));
+	Color gizmo_color = EDITOR_DEFAULT("editors/3d_gizmos/gizmo_colors/decal", Color(0.6, 0.5, 1.0));
 
 	create_material("decal_material", gizmo_color);
 
@@ -3061,7 +3061,7 @@ void DecalGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 
 ///////////////////////////////
 VoxelGIGizmoPlugin::VoxelGIGizmoPlugin() {
-	Color gizmo_color = EDITOR_DEF("editors/3d_gizmos/gizmo_colors/voxel_gi", Color(0.5, 1, 0.6));
+	Color gizmo_color = EDITOR_DEFAULT("editors/3d_gizmos/gizmo_colors/voxel_gi", Color(0.5, 1, 0.6));
 
 	create_material("voxel_gi_material", gizmo_color);
 
@@ -3241,7 +3241,7 @@ void VoxelGIGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 ////
 
 LightmapGIGizmoPlugin::LightmapGIGizmoPlugin() {
-	Color gizmo_color = EDITOR_DEF("editors/3d_gizmos/gizmo_colors/lightmap_lines", Color(0.5, 0.6, 1));
+	Color gizmo_color = EDITOR_DEFAULT("editors/3d_gizmos/gizmo_colors/lightmap_lines", Color(0.5, 0.6, 1));
 
 	gizmo_color.a = 0.1;
 	create_material("lightmap_lines", gizmo_color);
@@ -3433,7 +3433,7 @@ void LightmapGIGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 /////////
 
 LightmapProbeGizmoPlugin::LightmapProbeGizmoPlugin() {
-	Color gizmo_color = EDITOR_DEF("editors/3d_gizmos/gizmo_colors/lightprobe_lines", Color(0.5, 0.6, 1));
+	Color gizmo_color = EDITOR_DEFAULT("editors/3d_gizmos/gizmo_colors/lightprobe_lines", Color(0.5, 0.6, 1));
 
 	gizmo_color.a = 0.3;
 	create_material("lightprobe_lines", gizmo_color);
@@ -3529,7 +3529,7 @@ void LightmapProbeGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 ////
 
 CollisionObject3DGizmoPlugin::CollisionObject3DGizmoPlugin() {
-	const Color gizmo_color = EDITOR_DEF("editors/3d_gizmos/gizmo_colors/shape", Color(0.5, 0.7, 1));
+	const Color gizmo_color = EDITOR_DEFAULT("editors/3d_gizmos/gizmo_colors/shape", Color(0.5, 0.7, 1));
 	create_material("shape_material", gizmo_color);
 	const float gizmo_value = gizmo_color.get_v();
 	const Color gizmo_color_disabled = Color(gizmo_value, gizmo_value, gizmo_value, 0.65);
@@ -3580,7 +3580,7 @@ void CollisionObject3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 ////
 
 CollisionShape3DGizmoPlugin::CollisionShape3DGizmoPlugin() {
-	const Color gizmo_color = EDITOR_DEF("editors/3d_gizmos/gizmo_colors/shape", Color(0.5, 0.7, 1));
+	const Color gizmo_color = EDITOR_DEFAULT("editors/3d_gizmos/gizmo_colors/shape", Color(0.5, 0.7, 1));
 	create_material("shape_material", gizmo_color);
 	const float gizmo_value = gizmo_color.get_v();
 	const Color gizmo_color_disabled = Color(gizmo_value, gizmo_value, gizmo_value, 0.65);
@@ -4181,7 +4181,7 @@ void CollisionShape3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 /////
 
 CollisionPolygon3DGizmoPlugin::CollisionPolygon3DGizmoPlugin() {
-	const Color gizmo_color = EDITOR_DEF("editors/3d_gizmos/gizmo_colors/shape", Color(0.5, 0.7, 1));
+	const Color gizmo_color = EDITOR_DEFAULT("editors/3d_gizmos/gizmo_colors/shape", Color(0.5, 0.7, 1));
 	create_material("shape_material", gizmo_color);
 	const float gizmo_value = gizmo_color.get_v();
 	const Color gizmo_color_disabled = Color(gizmo_value, gizmo_value, gizmo_value, 0.65);
@@ -4229,10 +4229,10 @@ void CollisionPolygon3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 ////
 
 NavigationRegion3DGizmoPlugin::NavigationRegion3DGizmoPlugin() {
-	create_material("navigation_edge_material", EDITOR_DEF("editors/3d_gizmos/gizmo_colors/navigation_edge", Color(0.5, 1, 1)));
-	create_material("navigation_edge_material_disabled", EDITOR_DEF("editors/3d_gizmos/gizmo_colors/navigation_edge_disabled", Color(0.7, 0.7, 0.7)));
-	create_material("navigation_solid_material", EDITOR_DEF("editors/3d_gizmos/gizmo_colors/navigation_solid", Color(0.5, 1, 1, 0.4)));
-	create_material("navigation_solid_material_disabled", EDITOR_DEF("editors/3d_gizmos/gizmo_colors/navigation_solid_disabled", Color(0.7, 0.7, 0.7, 0.4)));
+	create_material("navigation_edge_material", EDITOR_DEFAULT("editors/3d_gizmos/gizmo_colors/navigation_edge", Color(0.5, 1, 1)));
+	create_material("navigation_edge_material_disabled", EDITOR_DEFAULT("editors/3d_gizmos/gizmo_colors/navigation_edge_disabled", Color(0.7, 0.7, 0.7)));
+	create_material("navigation_solid_material", EDITOR_DEFAULT("editors/3d_gizmos/gizmo_colors/navigation_solid", Color(0.5, 1, 1, 0.4)));
+	create_material("navigation_solid_material_disabled", EDITOR_DEFAULT("editors/3d_gizmos/gizmo_colors/navigation_solid_disabled", Color(0.7, 0.7, 0.7, 0.4)));
 }
 
 bool NavigationRegion3DGizmoPlugin::has_gizmo(Node3D *p_spatial) {
@@ -4580,9 +4580,9 @@ void JointGizmosDrawer::draw_cone(const Transform3D &p_offset, const Basis &p_ba
 ////
 
 Joint3DGizmoPlugin::Joint3DGizmoPlugin() {
-	create_material("joint_material", EDITOR_DEF("editors/3d_gizmos/gizmo_colors/joint", Color(0.5, 0.8, 1)));
-	create_material("joint_body_a_material", EDITOR_DEF("editors/3d_gizmos/gizmo_colors/joint_body_a", Color(0.6, 0.8, 1)));
-	create_material("joint_body_b_material", EDITOR_DEF("editors/3d_gizmos/gizmo_colors/joint_body_b", Color(0.6, 0.9, 1)));
+	create_material("joint_material", EDITOR_DEFAULT("editors/3d_gizmos/gizmo_colors/joint", Color(0.5, 0.8, 1)));
+	create_material("joint_body_a_material", EDITOR_DEFAULT("editors/3d_gizmos/gizmo_colors/joint_body_a", Color(0.6, 0.8, 1)));
+	create_material("joint_body_b_material", EDITOR_DEFAULT("editors/3d_gizmos/gizmo_colors/joint_body_b", Color(0.6, 0.9, 1)));
 
 	update_timer = memnew(Timer);
 	update_timer->set_name("JointGizmoUpdateTimer");

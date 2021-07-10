@@ -3873,8 +3873,8 @@ RendererSceneCull::RendererSceneCull() {
 		scene_cull_result_threads[i].init(&rid_cull_page_pool, &geometry_instance_cull_page_pool, &instance_cull_page_pool);
 	}
 
-	indexer_update_iterations = GLOBAL_GET("rendering/limits/spatial_indexer/update_iterations_per_frame");
-	thread_cull_threshold = GLOBAL_GET("rendering/limits/spatial_indexer/threaded_cull_minimum_instances");
+	indexer_update_iterations = PROJECT_GET("rendering/limits/spatial_indexer/update_iterations_per_frame");
+	thread_cull_threshold = PROJECT_GET("rendering/limits/spatial_indexer/threaded_cull_minimum_instances");
 	thread_cull_threshold = MAX(thread_cull_threshold, (uint32_t)RendererThreadPool::singleton->thread_work_pool.get_thread_count()); //make sure there is at least one thread per CPU
 
 	dummy_occlusion_culling = memnew(RendererSceneOcclusionCull);

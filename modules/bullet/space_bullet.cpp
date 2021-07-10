@@ -342,7 +342,7 @@ Vector3 BulletPhysicsDirectSpaceState::get_closest_point_to_object_volume(RID p_
 }
 
 SpaceBullet::SpaceBullet() {
-	create_empty_world(GLOBAL_DEF("physics/3d/active_soft_world", true));
+	create_empty_world(PROJECT_DEFAULT("physics/3d/active_soft_world", true));
 	direct_access = memnew(BulletPhysicsDirectSpaceState(this));
 }
 

@@ -1287,9 +1287,9 @@ Space3DSW::Space3DSW() {
 	test_motion_min_contact_depth = 0.00001;
 
 	constraint_bias = 0.01;
-	body_linear_velocity_sleep_threshold = GLOBAL_DEF("physics/3d/sleep_threshold_linear", 0.1);
-	body_angular_velocity_sleep_threshold = GLOBAL_DEF("physics/3d/sleep_threshold_angular", Math::deg2rad(8.0));
-	body_time_to_sleep = GLOBAL_DEF("physics/3d/time_before_sleep", 0.5);
+	body_linear_velocity_sleep_threshold = PROJECT_DEFAULT("physics/3d/sleep_threshold_linear", 0.1);
+	body_angular_velocity_sleep_threshold = PROJECT_DEFAULT("physics/3d/sleep_threshold_angular", Math::deg2rad(8.0));
+	body_time_to_sleep = PROJECT_DEFAULT("physics/3d/time_before_sleep", 0.5);
 	ProjectSettings::get_singleton()->set_custom_property_info("physics/3d/time_before_sleep", PropertyInfo(Variant::FLOAT, "physics/3d/time_before_sleep", PROPERTY_HINT_RANGE, "0,5,0.01,or_greater"));
 	body_angular_velocity_damp_ratio = 10;
 

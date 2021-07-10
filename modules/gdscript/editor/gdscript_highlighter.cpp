@@ -568,9 +568,9 @@ void GDScriptSyntaxHighlighter::_update_cache() {
 		annotation_color = Color(0.8, 0.5, 0.25);
 	}
 
-	EDITOR_DEF("text_editor/highlighting/gdscript/function_definition_color", function_definition_color);
-	EDITOR_DEF("text_editor/highlighting/gdscript/node_path_color", node_path_color);
-	EDITOR_DEF("text_editor/highlighting/gdscript/annotation_color", annotation_color);
+	EDITOR_DEFAULT("text_editor/highlighting/gdscript/function_definition_color", function_definition_color);
+	EDITOR_DEFAULT("text_editor/highlighting/gdscript/node_path_color", node_path_color);
+	EDITOR_DEFAULT("text_editor/highlighting/gdscript/annotation_color", annotation_color);
 	if (text_edit_color_theme == "Default" || godot_2_theme) {
 		EditorSettings::get_singleton()->set_initial_value(
 				"text_editor/highlighting/gdscript/function_definition_color",

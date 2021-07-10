@@ -2947,7 +2947,7 @@ RenderForwardClustered::RenderForwardClustered(RendererStorageRD *p_storage) :
 		scene_shader.init(p_storage, defines);
 	}
 
-	render_list_thread_threshold = GLOBAL_GET("rendering/limits/forward_renderer/threaded_render_minimum_instances");
+	render_list_thread_threshold = PROJECT_GET("rendering/limits/forward_renderer/threaded_render_minimum_instances");
 }
 
 RenderForwardClustered::~RenderForwardClustered() {

@@ -641,7 +641,7 @@ int Path3DGizmoPlugin::get_priority() const {
 }
 
 Path3DGizmoPlugin::Path3DGizmoPlugin() {
-	Color path_color = EDITOR_DEF("editors/3d_gizmos/gizmo_colors/path", Color(0.5, 0.5, 1.0, 0.8));
+	Color path_color = EDITOR_DEFAULT("editors/3d_gizmos/gizmo_colors/path", Color(0.5, 0.5, 1.0, 0.8));
 	create_material("path_material", path_color);
 	create_material("path_thin_material", Color(0.5, 0.5, 0.5));
 	create_handle_material("handles", false, Node3DEditor::get_singleton()->get_theme_icon("EditorPathSmoothHandle", "EditorIcons"));
