@@ -2831,8 +2831,8 @@ RenderingServer::RenderingServer() {
 	ProjectSettings::get_singleton()->set_custom_property_info("rendering/textures/default_filters/anisotropic_filtering_level", PropertyInfo(Variant::INT, "rendering/textures/default_filters/anisotropic_filtering_level", PROPERTY_HINT_ENUM, "Disabled (Fastest),2x (Faster),4x (Fast),8x (Average),16x (Slow)"));
 
 	GLOBAL_DEF("rendering/camera/depth_of_field/depth_of_field_bokeh_shape", 1);
-	ProjectSettings::get_singleton()->set_custom_property_info("rendering/camera/depth_of_field/depth_of_field_bokeh_shape", PropertyInfo(Variant::INT, "rendering/camera/depth_of_field/depth_of_field_bokeh_shape", PROPERTY_HINT_ENUM, "Box (Fast),Hexagon (Average),Circle (Slow)"));
-	GLOBAL_DEF("rendering/camera/depth_of_field/depth_of_field_bokeh_quality", 2);
+	ProjectSettings::get_singleton()->set_custom_property_info("rendering/camera/depth_of_field/depth_of_field_bokeh_shape", PropertyInfo(Variant::INT, "rendering/camera/depth_of_field/depth_of_field_bokeh_shape", PROPERTY_HINT_ENUM, "Box (Fast),Hexagon (Average),Circle (Slowest)"));
+	GLOBAL_DEF("rendering/camera/depth_of_field/depth_of_field_bokeh_quality", 1);
 	ProjectSettings::get_singleton()->set_custom_property_info("rendering/camera/depth_of_field/depth_of_field_bokeh_quality", PropertyInfo(Variant::INT, "rendering/camera/depth_of_field/depth_of_field_bokeh_quality", PROPERTY_HINT_ENUM, "Very Low (Fastest),Low (Fast),Medium (Average),High (Slow)"));
 	GLOBAL_DEF("rendering/camera/depth_of_field/depth_of_field_use_jitter", false);
 
