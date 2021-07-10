@@ -104,6 +104,8 @@ public:
 	Array filter(const Callable &p_callable) const;
 	Array map(const Callable &p_callable) const;
 	Variant reduce(const Callable &p_callable, const Variant &p_accum) const;
+	bool some(const Callable &p_callable) const;
+	bool every(const Callable &p_callable) const;
 
 	bool operator<(const Array &p_array) const;
 	bool operator<=(const Array &p_array) const;
