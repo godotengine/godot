@@ -877,8 +877,10 @@ void VisualScript::get_script_method_list(List<MethodInfo> *p_list) const {
 	for (List<StringName>::Element *E = funcs.front(); E; E = E->next()) {
 		MethodInfo mi;
 		mi.name = E->get();
-		if (functions[E->get()].func_id >= 0) {
-			Ref<VisualScriptFunction> func = nodes[functions[E->get()].func_id].node;
+		int func_id = functions[E->get()].func_id;
+
+		if (func_id >= 0 && !nodes.is_empty()) {
+			Ref<VisualScriptFunction> func = nodes[func_id].node;
 			if (func.is_valid()) {
 				for (int i = 0; i < func->get_argument_count(); i++) {
 					PropertyInfo arg;
