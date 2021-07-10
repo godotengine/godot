@@ -158,7 +158,8 @@
 			<argument index="3" name="body" type="String" default="&quot;&quot;">
 			</argument>
 			<description>
-				Sends a request to the connected host. The URL parameter is just the part after the host, so for [code]http://somehost.com/index.php[/code], it is [code]index.php[/code].
+				Sends a request to the connected host.
+				The URL parameter is usually just the part after the host, so for [code]http://somehost.com/index.php[/code], it is [code]/index.php[/code]. When sending requests to an HTTP proxy server, it should be an absolute URL. For [constant HTTPClient.METHOD_OPTIONS] requests, [code]*[/code] is also allowed. For [constant HTTPClient.METHOD_CONNECT] requests, it should be the authority component ([code]host:port[/code]).
 				Headers are HTTP request headers. For available HTTP methods, see [enum Method].
 				To create a POST request with query strings to push to the server, do:
 				[codeblocks]
@@ -166,7 +167,7 @@
 				var fields = {"username" : "user", "password" : "pass"}
 				var query_string = http_client.query_string_from_dict(fields)
 				var headers = ["Content-Type: application/x-www-form-urlencoded", "Content-Length: " + str(query_string.length())]
-				var result = http_client.request(http_client.METHOD_POST, "index.php", headers, query_string)
+				var result = http_client.request(http_client.METHOD_POST, "/index.php", headers, query_string)
 				[/gdscript]
 				[csharp]
 				var fields = new Godot.Collections.Dictionary { { "username", "user" }, { "password", "pass" } };
@@ -190,7 +191,8 @@
 			<argument index="3" name="body" type="PackedByteArray">
 			</argument>
 			<description>
-				Sends a raw request to the connected host. The URL parameter is just the part after the host, so for [code]http://somehost.com/index.php[/code], it is [code]index.php[/code].
+				Sends a raw request to the connected host.
+				The URL parameter is usually just the part after the host, so for [code]http://somehost.com/index.php[/code], it is [code]/index.php[/code]. When sending requests to an HTTP proxy server, it should be an absolute URL. For [constant HTTPClient.METHOD_OPTIONS] requests, [code]*[/code] is also allowed. For [constant HTTPClient.METHOD_CONNECT] requests, it should be the authority component ([code]host:port[/code]).
 				Headers are HTTP request headers. For available HTTP methods, see [enum Method].
 				Sends the body data raw, as a byte array and does not encode it in any way.
 			</description>
