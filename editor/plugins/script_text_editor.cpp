@@ -241,7 +241,7 @@ void ScriptTextEditor::_warning_clicked(Variant p_line) {
 		goto_line_centered(p_line.operator int64_t());
 	} else if (p_line.get_type() == Variant::DICTIONARY) {
 		Dictionary meta = p_line.operator Dictionary();
-		code_editor->get_text_editor()->insert_at("# warning-ignore:" + meta["code"].operator String(), meta["line"].operator int64_t() - 1);
+		code_editor->get_text_editor()->insert_line_at(meta["line"].operator int64_t() - 1, "# warning-ignore:" + meta["code"].operator String());
 		_validate_script();
 	}
 }
@@ -884,7 +884,7 @@ void ScriptTextEditor::update_toggle_scripts_button() {
 
 void ScriptTextEditor::_update_connected_methods() {
 	CodeEdit *text_edit = code_editor->get_text_editor();
-	text_edit->set_gutter_width(connection_gutter, text_edit->get_row_height());
+	text_edit->set_gutter_width(connection_gutter, text_edit->get_line_height());
 	for (int i = 0; i < text_edit->get_line_count(); i++) {
 		if (text_edit->get_line_gutter_metadata(i, connection_gutter) == "") {
 			continue;
@@ -1325,7 +1325,7 @@ void ScriptTextEditor::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_THEME_CHANGED:
 		case NOTIFICATION_ENTER_TREE: {
-			code_editor->get_text_editor()->set_gutter_width(connection_gutter, code_editor->get_text_editor()->get_row_height());
+			code_editor->get_text_editor()->set_gutter_width(connection_gutter, code_editor->get_text_editor()->get_line_height());
 		} break;
 		default:
 			break;
@@ -1422,8 +1422,10 @@ void ScriptTextEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data
 	Dictionary d = p_data;
 
 	CodeEdit *te = code_editor->get_text_editor();
-	int row, col;
-	te->_get_mouse_pos(p_point, row, col);
+
+	Point2i pos = te->get_line_column_at_pos(p_point);
+	int row = pos.y;
+	int col = pos.x;
 
 	if (d.has("type") && String(d["type"]) == "resource") {
 		Ref<Resource> res = d["resource"];
@@ -1512,8 +1514,9 @@ void ScriptTextEditor::_text_edit_gui_input(const Ref<InputEvent> &ev) {
 	}
 
 	if (create_menu) {
-		int col, row;
-		tx->_get_mouse_pos(local_pos, row, col);
+		Point2i pos = tx->get_line_column_at_pos(local_pos);
+		int row = pos.y;
+		int col = pos.x;
 
 		tx->set_move_caret_on_right_click_enabled(EditorSettings::get_singleton()->get("text_editor/cursor/right_click_moves_caret"));
 		if (tx->is_move_caret_on_right_click_enabled()) {

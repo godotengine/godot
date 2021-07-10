@@ -233,6 +233,14 @@ private:
 	String symbol_lookup_new_word = "";
 	String symbol_lookup_word = "";
 
+	/* Visual */
+	Ref<StyleBox> style_normal;
+
+	Ref<Font> font;
+	int font_size = 16;
+
+	int line_spacing = 1;
+
 protected:
 	void _gui_input(const Ref<InputEvent> &p_gui_input) override;
 	void _notification(int p_what);

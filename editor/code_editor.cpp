@@ -142,26 +142,23 @@ void FindReplaceBar::_unhandled_input(const Ref<InputEvent> &p_event) {
 }
 
 bool FindReplaceBar::_search(uint32_t p_flags, int p_from_line, int p_from_col) {
-	int line, col;
 	String text = get_search_text();
+	Point2i pos = text_editor->search(text, p_flags, p_from_line, p_from_col);
 
-	bool found = text_editor->search(text, p_flags, p_from_line, p_from_col, line, col);
-
-	if (found) {
+	if (pos.x != -1) {
 		if (!preserve_cursor && !is_selection_only()) {
-			text_editor->unfold_line(line);
-			text_editor->set_caret_line(line, false);
-			text_editor->set_caret_column(col + text.length(), false);
+			text_editor->unfold_line(pos.y);
+			text_editor->set_caret_line(pos.y, false);
+			text_editor->set_caret_column(pos.x + text.length(), false);
 			text_editor->center_viewport_to_caret();
-			text_editor->select(line, col, line, col + text.length());
+			text_editor->select(pos.y, pos.x, pos.y, pos.x + text.length());
 		}
 
 		text_editor->set_search_text(text);
 		text_editor->set_search_flags(p_flags);
-		text_editor->set_current_search_result(line, col);
 
-		result_line = line;
-		result_col = col;
+		result_line = pos.y;
+		result_col = pos.x;
 
 		_update_results_count();
 	} else {
@@ -170,12 +167,11 @@ bool FindReplaceBar::_search(uint32_t p_flags, int p_from_line, int p_from_col) 
 		result_col = -1;
 		text_editor->set_search_text("");
 		text_editor->set_search_flags(p_flags);
-		text_editor->set_current_search_result(line, col);
 	}
 
 	_update_matches_label();
 
-	return found;
+	return pos.x != -1;
 }
 
 void FindReplaceBar::_replace() {
