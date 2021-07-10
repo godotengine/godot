@@ -1627,7 +1627,7 @@ int Node::get_persistent_group_count() const {
 
 void Node::_print_tree_pretty(const String &prefix, const bool last) {
 	String new_prefix = last ? String::utf8(" ┖╴") : String::utf8(" ┠╴");
-	print_line(prefix + new_prefix + String(get_name()));
+	print_line(vformat("%s%s%s: %s", prefix, new_prefix, get_name(), get_class()));
 	for (int i = 0; i < data.children.size(); i++) {
 		new_prefix = last ? String::utf8("   ") : String::utf8(" ┃ ");
 		data.children[i]->_print_tree_pretty(prefix + new_prefix, i == data.children.size() - 1);
@@ -1643,7 +1643,7 @@ void Node::print_tree() {
 }
 
 void Node::_print_tree(const Node *p_node) {
-	print_line(String(p_node->get_path_to(this)));
+	print_line(vformat("%s: %s", p_node->get_path_to(this), get_class()));
 	for (int i = 0; i < data.children.size(); i++) {
 		data.children[i]->_print_tree(p_node);
 	}
