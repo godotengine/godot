@@ -144,6 +144,7 @@
 			<return type="bool">
 			</return>
 			<description>
+				Returns [code]true[/code] if the viewport is currently embedding windows.
 			</description>
 		</method>
 		<method name="is_input_handled" qualifiers="const">
