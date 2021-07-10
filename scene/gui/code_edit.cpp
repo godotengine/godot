@@ -564,7 +564,7 @@ void CodeEdit::_handle_unicode_input(const uint32_t p_unicode) {
 		delete_selection();
 	}
 
-	/* Remove the old character if in insert mode and no selection. */
+	// Remove the old character if in overtype mode and no selection.
 	if (is_overtype_mode_enabled() && !had_selection) {
 		begin_complex_operation();
 
@@ -651,8 +651,8 @@ void CodeEdit::_backspace() {
 		}
 	}
 
-	/* For space indentation we need to do a simple unindent if there are no chars to the left, acting in the */
-	/* same way as tabs.                                                                                      */
+	// For space indentation we need to do a simple unindent if there are no chars to the left, acting in the
+	// same way as tabs.
 	if (indent_using_spaces && cc != 0) {
 		if (get_first_non_whitespace_column(cl) > cc) {
 			prev_column = cc - _calculate_spaces_till_next_left_indent(cc);
