@@ -1428,7 +1428,7 @@ void VisualScriptEditor::_member_button(Object *p_item, int p_column, int p_butt
 				undo_redo->add_do_method(script.ptr(), "add_function", name, fn_id);
 				undo_redo->add_do_method(script.ptr(), "add_node", fn_id, func_node, pos);
 				undo_redo->add_undo_method(script.ptr(), "remove_function", name);
-				undo_redo->add_do_method(script.ptr(), "remove_node", fn_id);
+				undo_redo->add_undo_method(script.ptr(), "remove_node", fn_id);
 				undo_redo->add_do_method(this, "_update_members");
 				undo_redo->add_undo_method(this, "_update_members");
 				undo_redo->add_do_method(this, "_update_graph");
