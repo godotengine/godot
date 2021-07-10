@@ -123,6 +123,48 @@
 		</constructor>
 	</constructors>
 	<methods>
+		<method name="all" qualifiers="const">
+			<return type="bool" />
+			<argument index="0" name="method" type="Callable" />
+			<description>
+				Calls the provided [Callable] on each element in the array and returns [code]true[/code] if the [Callable] returns [code]true[/code] for [i]all[/i] elements in the array. If the [Callable] returns [code]false[/code] for one array element or more, this method returns [code]false[/code].
+				The callable's method should take one [Variant] parameter (the current array element) and return a boolean value.
+				[codeblock]
+				func _ready():
+				    print([6, 10, 6].all(greater_than_5))  # Prints True (3 elements evaluate to `true`).
+				    print([4, 10, 4].all(greater_than_5))  # Prints False (1 elements evaluate to `true`).
+				    print([4, 4, 4].all(greater_than_5))  # Prints False (0 elements evaluate to `true`).
+
+				    print([6, 10, 6].all(func(number): return number &gt; 5))  # Prints True. Same as the first line above, but using lambda function.
+
+				func greater_than_5(number):
+				    return number &gt; 5
+				[/codeblock]
+				See also [method any], [method filter], [method map] and [method reduce].
+				[b]Note:[/b] Unlike relying on the size of an array returned by [method filter], this method will return as early as possible to improve performance (especially with large arrays).
+			</description>
+		</method>
+		<method name="any" qualifiers="const">
+			<return type="bool" />
+			<argument index="0" name="method" type="Callable" />
+			<description>
+				Calls the provided [Callable] on each element in the array and returns [code]true[/code] if the [Callable] returns [code]true[/code] for [i]one or more[/i] elements in the array. If the [Callable] returns [code]false[/code] for all elements in the array, this method returns [code]false[/code].
+				The callable's method should take one [Variant] parameter (the current array element) and return a boolean value.
+				[codeblock]
+				func _ready():
+				    print([6, 10, 6].any(greater_than_5))  # Prints True (3 elements evaluate to `true`).
+				    print([4, 10, 4].any(greater_than_5))  # Prints True (1 elements evaluate to `true`).
+				    print([4, 4, 4].any(greater_than_5))  # Prints False (0 elements evaluate to `true`).
+
+				    print([6, 10, 6].any(func(number): return number &gt; 5))  # Prints True. Same as the first line above, but using lambda function.
+
+				func greater_than_5(number):
+				    return number &gt; 5
+				[/codeblock]
+				See also [method all], [method filter], [method map] and [method reduce].
+				[b]Note:[/b] Unlike relying on the size of an array returned by [method filter], this method will return as early as possible to improve performance (especially with large arrays).
+			</description>
+		</method>
 		<method name="append">
 			<return type="void" />
 			<argument index="0" name="value" type="Variant" />
@@ -232,6 +274,7 @@
 				func remove_1(number):
 				    return number != 1
 				[/codeblock]
+				See also [method any], [method all], [method map] and [method reduce].
 			</description>
 		</method>
 		<method name="find" qualifiers="const">
@@ -333,6 +376,7 @@
 				func negate(number):
 				    return -number
 				[/codeblock]
+				See also [method filter], [method reduce], [method any] and [method all].
 			</description>
 		</method>
 		<method name="max" qualifiers="const">
@@ -398,6 +442,7 @@
 				func sum(accum, number):
 				    return accum + number
 				[/codeblock]
+				See also [method map], [method filter], [method any] and [method all].
 			</description>
 		</method>
 		<method name="remove_at">
