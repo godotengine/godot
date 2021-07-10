@@ -1659,7 +1659,7 @@ void ResourceFormatSaverBinaryInstance::_find_resources(const Variant &p_variant
 				return;
 			}
 
-			if (!p_main && (!bundle_resources) && res->get_path().length() && res->get_path().find("::") == -1) {
+			if (!p_main && (!bundle_resources) && !res->is_built_in()) {
 				if (res->get_path() == path) {
 					ERR_PRINT("Circular reference to resource being saved found: '" + local_path + "' will be null next time it's loaded.");
 					return;
@@ -1890,7 +1890,7 @@ Error ResourceFormatSaverBinaryInstance::save(const String &p_path, const RES &p
 
 	for (List<RES>::Element *E = saved_resources.front(); E; E = E->next()) {
 		RES r = E->get();
-		if (r->get_path() == "" || r->get_path().find("::") != -1) {
+		if (r->is_built_in()) {
 			if (r->get_subindex() != 0) {
 				if (used_indices.has(r->get_subindex())) {
 					r->set_subindex(0); //repeated
@@ -1903,7 +1903,7 @@ Error ResourceFormatSaverBinaryInstance::save(const String &p_path, const RES &p
 
 	for (List<RES>::Element *E = saved_resources.front(); E; E = E->next()) {
 		RES r = E->get();
-		if (r->get_path() == "" || r->get_path().find("::") != -1) {
+		if (r->is_built_in()) {
 			if (r->get_subindex() == 0) {
 				int new_subindex = 1;
 				if (used_indices.size()) {

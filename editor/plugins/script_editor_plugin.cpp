@@ -233,12 +233,6 @@ void ScriptEditorBase::_bind_methods() {
 	BIND_VMETHOD(MethodInfo("_add_syntax_highlighter", PropertyInfo(Variant::OBJECT, "highlighter")));
 }
 
-static bool _is_built_in_script(Script *p_script) {
-	String path = p_script->get_path();
-
-	return path.find("::") != -1;
-}
-
 class EditorScriptCodeCompletionCache : public ScriptCodeCompletionCache {
 	struct Cache {
 		uint64_t time_loaded = 0;
@@ -704,7 +698,7 @@ void ScriptEditor::_close_tab(int p_idx, bool p_save, bool p_history_back) {
 		if (p_save && script.is_valid()) {
 			// Do not try to save internal scripts, but prompt to save in-memory
 			// scripts which are not saved to disk yet (have empty path).
-			if (script->get_path().find("local://") == -1 && script->get_path().find("::") == -1) {
+			if (script->is_built_in()) {
 				save_current_script();
 			}
 		}
@@ -849,7 +843,7 @@ void ScriptEditor::_resave_scripts(const String &p_str) {
 
 		RES script = se->get_edited_resource();
 
-		if (script->get_path() == "" || script->get_path().find("local://") != -1 || script->get_path().find("::") != -1) {
+		if (script->is_built_in()) {
 			continue; //internal script, who cares
 		}
 
@@ -890,7 +884,7 @@ void ScriptEditor::_reload_scripts() {
 
 		RES edited_res = se->get_edited_resource();
 
-		if (edited_res->get_path() == "" || edited_res->get_path().find("local://") != -1 || edited_res->get_path().find("::") != -1) {
+		if (edited_res->is_built_in()) {
 			continue; //internal script, who cares
 		}
 
@@ -934,7 +928,7 @@ void ScriptEditor::_res_saved_callback(const Ref<Resource> &p_res) {
 
 		RES script = se->get_edited_resource();
 
-		if (script->get_path() == "" || script->get_path().find("local://") != -1 || script->get_path().find("::") != -1) {
+		if (script->is_built_in()) {
 			continue; //internal script, who cares
 		}
 
@@ -973,7 +967,7 @@ bool ScriptEditor::_test_script_times_on_disk(RES p_for_script) {
 				continue;
 			}
 
-			if (edited_res->get_path() == "" || edited_res->get_path().find("local://") != -1 || edited_res->get_path().find("::") != -1) {
+			if (edited_res->is_built_in()) {
 				continue; //internal script, who cares
 			}
 
@@ -2369,7 +2363,7 @@ void ScriptEditor::save_all_scripts() {
 			se->apply_code();
 		}
 
-		if (edited_res->get_path() != "" && edited_res->get_path().find("local://") == -1 && edited_res->get_path().find("::") == -1) {
+		if (!edited_res->is_built_in()) {
 			Ref<TextFile> text_file = edited_res;
 			Ref<Script> script = edited_res;
 
@@ -2454,7 +2448,7 @@ void ScriptEditor::_add_callback(Object *p_obj, const String &p_function, const 
 		script_list->select(script_list->find_metadata(i));
 
 		// Save the current script so the changes can be picked up by an external editor.
-		if (!_is_built_in_script(script.ptr())) { // But only if it's not built-in script.
+		if (!script.ptr()->is_built_in()) { // But only if it's not built-in script.
 			save_current_script();
 		}
 
@@ -3625,7 +3619,7 @@ void ScriptEditorPlugin::edit(Object *p_object) {
 		Script *p_script = Object::cast_to<Script>(p_object);
 		String res_path = p_script->get_path().get_slice("::", 0);
 
-		if (_is_built_in_script(p_script)) {
+		if (p_script->is_built_in()) {
 			if (ResourceLoader::get_resource_type(res_path) == "PackedScene") {
 				if (!EditorNode::get_singleton()->is_scene_open(res_path)) {
 					EditorNode::get_singleton()->load_scene(res_path);
