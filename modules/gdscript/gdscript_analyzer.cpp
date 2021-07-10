@@ -1770,6 +1770,33 @@ void GDScriptAnalyzer::reduce_binary_op(GDScriptParser::BinaryOpNode *p_binary_o
 		return;
 	}
 
+	if (p_binary_op->left_operand->reduced_value.get_type() == p_binary_op->right_operand->reduced_value.get_type()) {
+		if (p_binary_op->variant_op < Variant::OP_MAX) {
+			bool valid = false;
+			Variant::evaluate(p_binary_op->variant_op,
+							  p_binary_op->left_operand->reduced_value,
+							  p_binary_op->right_operand->reduced_value,
+							  p_binary_op->reduced_value, valid);
+			if (!valid) {
+				if (p_binary_op->reduced_value.get_type() == Variant::STRING) {
+					push_error(vformat(R"(%s in operator %s.)", p_binary_op->reduced_value,
+									   Variant::get_operator_name(p_binary_op->variant_op)),
+							   p_binary_op);
+				} else {
+					push_error(vformat(R"(Invalid operands to operator %s, %s and %s.)",
+									   Variant::get_operator_name(p_binary_op->variant_op),
+									   Variant::get_type_name(p_binary_op->left_operand->reduced_value.get_type()),
+									   Variant::get_type_name(p_binary_op->right_operand->reduced_value.get_type())),
+							p_binary_op);
+				}
+			}
+		}
+
+		p_binary_op->set_datatype(type_from_variant(p_binary_op->reduced_value, p_binary_op));
+
+		return;
+	}
+
 	GDScriptParser::DataType result;
 
 	if (left_type.is_variant() || right_type.is_variant()) {
@@ -2508,6 +2535,7 @@ void GDScriptAnalyzer::reduce_identifier(GDScriptParser::IdentifierNode *p_ident
 			[[fallthrough]];
 		case GDScriptParser::IdentifierNode::LOCAL_VARIABLE:
 			p_identifier->set_datatype(p_identifier->variable_source->get_datatype());
+			p_identifier->reduced_value = p_identifier->constant_source->initializer->reduced_value;
 			found_source = true;
 			break;
 		case GDScriptParser::IdentifierNode::LOCAL_ITERATOR:
