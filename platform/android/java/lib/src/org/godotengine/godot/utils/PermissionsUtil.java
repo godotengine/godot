@@ -32,10 +32,14 @@ package org.godotengine.godot.utils;
 
 import android.Manifest;
 import android.app.Activity;
+import android.content.Intent;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.PermissionInfo;
+import android.net.Uri;
 import android.os.Build;
+import android.os.Environment;
+import android.provider.Settings;
 import android.util.Log;
 
 import androidx.core.content.ContextCompat;
@@ -53,7 +57,8 @@ public final class PermissionsUtil {
 	static final int REQUEST_RECORD_AUDIO_PERMISSION = 1;
 	static final int REQUEST_CAMERA_PERMISSION = 2;
 	static final int REQUEST_VIBRATE_PERMISSION = 3;
-	static final int REQUEST_ALL_PERMISSION_REQ_CODE = 1001;
+	public static final int REQUEST_ALL_PERMISSION_REQ_CODE = 1001;
+	public static final int REQUEST_MANAGE_EXTERNAL_STORAGE_REQ_CODE = 2002;
 
 	private PermissionsUtil() {
 	}
@@ -108,13 +113,26 @@ public final class PermissionsUtil {
 		if (manifestPermissions.length == 0)
 			return true;
 
-		List<String> dangerousPermissions = new ArrayList<>();
+		List<String> requestedPermissions = new ArrayList<>();
 		for (String manifestPermission : manifestPermissions) {
 			try {
-				PermissionInfo permissionInfo = getPermissionInfo(activity, manifestPermission);
-				int protectionLevel = Build.VERSION.SDK_INT >= Build.VERSION_CODES.P ? permissionInfo.getProtection() : permissionInfo.protectionLevel;
-				if (protectionLevel == PermissionInfo.PROTECTION_DANGEROUS && ContextCompat.checkSelfPermission(activity, manifestPermission) != PackageManager.PERMISSION_GRANTED) {
-					dangerousPermissions.add(manifestPermission);
+				if (manifestPermission.equals(Manifest.permission.MANAGE_EXTERNAL_STORAGE)) {
+					if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R && !Environment.isExternalStorageManager()) {
+						try {
+							Intent intent = new Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION);
+							intent.setData(Uri.parse(String.format("package:%s", activity.getPackageName())));
+							activity.startActivityForResult(intent, REQUEST_MANAGE_EXTERNAL_STORAGE_REQ_CODE);
+						} catch (Exception ignored) {
+							Intent intent = new Intent(Settings.ACTION_MANAGE_ALL_FILES_ACCESS_PERMISSION);
+							activity.startActivityForResult(intent, REQUEST_MANAGE_EXTERNAL_STORAGE_REQ_CODE);
+						}
+					}
+				} else {
+					PermissionInfo permissionInfo = getPermissionInfo(activity, manifestPermission);
+					int protectionLevel = Build.VERSION.SDK_INT >= Build.VERSION_CODES.P ? permissionInfo.getProtection() : permissionInfo.protectionLevel;
+					if (protectionLevel == PermissionInfo.PROTECTION_DANGEROUS && ContextCompat.checkSelfPermission(activity, manifestPermission) != PackageManager.PERMISSION_GRANTED) {
+						requestedPermissions.add(manifestPermission);
+					}
 				}
 			} catch (PackageManager.NameNotFoundException e) {
 				// Skip this permission and continue.
@@ -122,13 +140,12 @@ public final class PermissionsUtil {
 			}
 		}
 
-		if (dangerousPermissions.isEmpty()) {
+		if (requestedPermissions.isEmpty()) {
 			// If list is empty, all of dangerous permissions were granted.
 			return true;
 		}
 
-		String[] requestedPermissions = dangerousPermissions.toArray(new String[0]);
-		activity.requestPermissions(requestedPermissions, REQUEST_ALL_PERMISSION_REQ_CODE);
+		activity.requestPermissions(requestedPermissions.toArray(new String[0]), REQUEST_ALL_PERMISSION_REQ_CODE);
 		return false;
 	}
 
@@ -148,13 +165,19 @@ public final class PermissionsUtil {
 		if (manifestPermissions.length == 0)
 			return manifestPermissions;
 
-		List<String> dangerousPermissions = new ArrayList<>();
+		List<String> grantedPermissions = new ArrayList<>();
 		for (String manifestPermission : manifestPermissions) {
 			try {
-				PermissionInfo permissionInfo = getPermissionInfo(activity, manifestPermission);
-				int protectionLevel = Build.VERSION.SDK_INT >= Build.VERSION_CODES.P ? permissionInfo.getProtection() : permissionInfo.protectionLevel;
-				if (protectionLevel == PermissionInfo.PROTECTION_DANGEROUS && ContextCompat.checkSelfPermission(activity, manifestPermission) == PackageManager.PERMISSION_GRANTED) {
-					dangerousPermissions.add(manifestPermission);
+				if (manifestPermission.equals(Manifest.permission.MANAGE_EXTERNAL_STORAGE)) {
+					if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R && Environment.isExternalStorageManager()) {
+						grantedPermissions.add(manifestPermission);
+					}
+				} else {
+					PermissionInfo permissionInfo = getPermissionInfo(activity, manifestPermission);
+					int protectionLevel = Build.VERSION.SDK_INT >= Build.VERSION_CODES.P ? permissionInfo.getProtection() : permissionInfo.protectionLevel;
+					if (protectionLevel == PermissionInfo.PROTECTION_DANGEROUS && ContextCompat.checkSelfPermission(activity, manifestPermission) == PackageManager.PERMISSION_GRANTED) {
+						grantedPermissions.add(manifestPermission);
+					}
 				}
 			} catch (PackageManager.NameNotFoundException e) {
 				// Skip this permission and continue.
@@ -162,7 +185,7 @@ public final class PermissionsUtil {
 			}
 		}
 
-		return dangerousPermissions.toArray(new String[0]);
+		return grantedPermissions.toArray(new String[0]);
 	}
 
 	/**
@@ -177,7 +200,7 @@ public final class PermissionsUtil {
 				if (permission.equals(p))
 					return true;
 			}
-		} catch (PackageManager.NameNotFoundException e) {
+		} catch (PackageManager.NameNotFoundException ignored) {
 		}
 
 		return false;

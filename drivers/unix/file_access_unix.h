@@ -49,8 +49,6 @@ class FileAccessUnix : public FileAccess {
 	String path;
 	String path_src;
 
-	static FileAccess *create_libc();
-
 public:
 	static CloseNotificationFunc close_notification_func;
 
