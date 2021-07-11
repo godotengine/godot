@@ -156,12 +156,16 @@ int test_main(int argc, char *argv[]) {
 struct GodotTestCaseListener : public doctest::IReporter {
 	GodotTestCaseListener(const doctest::ContextOptions &p_in) {}
 
+	SignalWatcher *signal_watcher = nullptr;
+
 	PhysicsServer3D *physics_3d_server = nullptr;
 	PhysicsServer2D *physics_2d_server = nullptr;
 	NavigationServer3D *navigation_3d_server = nullptr;
 	NavigationServer2D *navigation_2d_server = nullptr;
 
 	void test_case_start(const doctest::TestCaseData &p_in) override {
+		SignalWatcher::get_singleton()->_clear_signals();
+
 		String name = String(p_in.m_name);
 
 		if (name.find("[SceneTree]") != -1) {
@@ -266,13 +270,26 @@ struct GodotTestCaseListener : public doctest::IReporter {
 		}
 	}
 
+	void test_run_start() override {
+		signal_watcher = memnew(SignalWatcher);
+	}
+
+	void test_run_end(const doctest::TestRunStats &) override {
+		memdelete(signal_watcher);
+	}
+
+	void test_case_reenter(const doctest::TestCaseData &) override {
+		SignalWatcher::get_singleton()->_clear_signals();
+	}
+
+	void subcase_start(const doctest::SubcaseSignature &) override {
+		SignalWatcher::get_singleton()->_clear_signals();
+	}
+
 	void report_query(const doctest::QueryData &) override {}
-	void test_run_start() override {}
-	void test_run_end(const doctest::TestRunStats &) override {}
-	void test_case_reenter(const doctest::TestCaseData &) override {}
 	void test_case_exception(const doctest::TestCaseException &) override {}
-	void subcase_start(const doctest::SubcaseSignature &) override {}
 	void subcase_end() override {}
+
 	void log_assert(const doctest::AssertData &in) override {}
 	void log_message(const doctest::MessageData &) override {}
 	void test_case_skipped(const doctest::TestCaseData &) override {}
