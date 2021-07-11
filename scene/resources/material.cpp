@@ -924,7 +924,9 @@ void BaseMaterial3D::_update_shader() {
 			code += "		float layer_depth = 1.0 / num_layers;\n";
 			code += "		float current_layer_depth = 0.0;\n";
 			code += "		vec2 P = view_dir.xy * heightmap_scale;\n";
-			code += "		vec2 delta = P / num_layers;\n";
+			// Improve the depth impression when viewed at oblique angles by dividing with `dot(VIEW, NORMAL)`.
+			// This may require more samples than usual to avoid artifacts, but generally looks better in most real world use cases.
+			code += "		vec2 delta = P / num_layers / dot(VIEW, NORMAL);\n";
 			code += "		vec2 ofs = base_uv;\n";
 			if (flags[FLAG_INVERT_HEIGHTMAP]) {
 				code += "		float depth = texture(texture_heightmap, ofs).r;\n";
