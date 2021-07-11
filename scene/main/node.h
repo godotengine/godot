@@ -314,6 +314,8 @@ public:
 	bool is_editable_instance(const Node *p_node) const;
 	Node *get_deepest_editable_node(Node *start_node) const;
 
+	virtual String to_string();
+
 	/* NOTIFICATIONS */
 
 	void propagate_notification(int p_notification);
