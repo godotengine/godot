@@ -45,7 +45,7 @@ void register_stb_vorbis_types() {
 		ResourceFormatImporter::get_singleton()->add_importer(ogg_import);
 	}
 #endif
-	ClassDB::register_class<AudioStreamOGGVorbis>();
+	GDREGISTER_CLASS(AudioStreamOGGVorbis);
 }
 
 void unregister_stb_vorbis_types() {
