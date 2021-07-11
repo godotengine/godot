@@ -129,4 +129,17 @@ int register_test_command(String p_command, TestFunc p_function);
 			register_test_command(m_command, m_function);               \
 	DOCTEST_GLOBAL_NO_WARNINGS_END()
 
+// Utility macro to send an action event to a given object
+// Requires Message Queue and InputMap to be setup.
+
+#define SEND_GUI_ACTION(m_object, m_action)                                                           \
+	{                                                                                                 \
+		const List<Ref<InputEvent>> *events = InputMap::get_singleton()->action_get_events(m_action); \
+		const List<Ref<InputEvent>>::Element *first_event = events->front();                          \
+		Ref<InputEventKey> event = first_event->get();                                                \
+		event->set_pressed(true);                                                                     \
+		m_object->gui_input(event);                                                                   \
+		MessageQueue::get_singleton()->flush();                                                       \
+	}
+
 #endif // TEST_MACROS_H
