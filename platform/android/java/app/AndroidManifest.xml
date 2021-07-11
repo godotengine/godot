@@ -22,6 +22,7 @@
         android:icon="@mipmap/icon"
         android:isGame="true"
         android:hasFragileUserData="false"
+        android:requestLegacyExternalStorage="false"
         tools:ignore="GoogleAppIndexingWarning" >
 
         <!-- Records the version of the Godot editor used for building -->
