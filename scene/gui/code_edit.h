@@ -221,8 +221,6 @@ private:
 
 	void _filter_code_completion_candidates();
 
-	void _lines_edited_from(int p_from_line, int p_to_line);
-
 	/* Line length guidelines */
 	TypedArray<int> line_length_guideline_columns;
 	Color line_length_guideline_color;
@@ -240,6 +238,14 @@ private:
 	int font_size = 16;
 
 	int line_spacing = 1;
+
+	/* Callbacks */
+	int lines_edited_from = -1;
+	int lines_edited_to = -1;
+
+	void _lines_edited_from(int p_from_line, int p_to_line);
+	void _text_set();
+	void _text_changed();
 
 protected:
 	void _gui_input(const Ref<InputEvent> &p_gui_input) override;
