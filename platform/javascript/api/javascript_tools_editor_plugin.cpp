@@ -55,6 +55,26 @@ void JavaScriptToolsEditorPlugin::initialize() {
 JavaScriptToolsEditorPlugin::JavaScriptToolsEditorPlugin(EditorNode *p_editor) {
 	Variant v;
 	add_tool_menu_item("Download Project Source", this, "_download_zip", v);
+	Node *menu_container = p_editor->get_gui_base()->get_child(1)->get_child(0)->get_child(0);
+	MenuButton *project_menu = Object::cast_to<MenuButton>(menu_container->get_child(1));
+	PopupMenu *p = project_menu->get_popup();
+	p->set_item_disabled(2, true); // VCS.
+	p->set_item_disabled(4, true); // Export.
+	p->set_item_disabled(5, true); // Android build templates.
+	p->set_item_disabled(6, true); // Open project data folder.
+	MenuButton *debug_menu = Object::cast_to<MenuButton>(menu_container->get_child(2));
+	p = debug_menu->get_popup();
+	p->set_item_disabled(0, true); // Remote Debug,
+	p->set_item_disabled(1, true); // Remote FS,
+	p->set_item_disabled(6, true); // Sync scenes,
+	p->set_item_disabled(7, true); // Sync scripts,
+	MenuButton *editor_menu = Object::cast_to<MenuButton>(menu_container->get_child(3));
+	p = editor_menu->get_popup();
+	p->set_item_disabled(4, true); // Screenshot.
+	p->set_item_disabled(5, true); // Fullscreen.
+	p->set_item_disabled(7, true); // Open editor data folder.
+	p->set_item_disabled(8, true); // Open editor settings folder.
+	p->set_item_disabled(11, true); // Manage export templates.
 }
 
 void JavaScriptToolsEditorPlugin::_download_zip(Variant p_v) {
