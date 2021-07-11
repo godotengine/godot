@@ -45,7 +45,7 @@ void register_minimp3_types() {
 		ResourceFormatImporter::get_singleton()->add_importer(mp3_import);
 	}
 #endif
-	ClassDB::register_class<AudioStreamMP3>();
+	GDREGISTER_CLASS(AudioStreamMP3);
 }
 
 void unregister_minimp3_types() {

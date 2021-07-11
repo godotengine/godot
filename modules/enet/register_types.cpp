@@ -41,7 +41,7 @@ void register_enet_types() {
 		enet_ok = true;
 	}
 
-	ClassDB::register_class<ENetMultiplayerPeer>();
+	GDREGISTER_CLASS(ENetMultiplayerPeer);
 }
 
 void unregister_enet_types() {

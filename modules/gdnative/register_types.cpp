@@ -259,8 +259,8 @@ void register_gdnative_types() {
 	EditorNode::add_init_callback(editor_init_callback);
 #endif
 
-	ClassDB::register_class<GDNativeLibrary>();
-	ClassDB::register_class<GDNative>();
+	GDREGISTER_CLASS(GDNativeLibrary);
+	GDREGISTER_CLASS(GDNative);
 
 	resource_loader_gdnlib.instantiate();
 	ResourceLoader::add_resource_format_loader(resource_loader_gdnlib);

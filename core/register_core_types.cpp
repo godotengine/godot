@@ -131,50 +131,50 @@ void register_core_types() {
 	resource_format_image.instantiate();
 	ResourceLoader::add_resource_format_loader(resource_format_image);
 
-	ClassDB::register_class<Object>();
+	GDREGISTER_CLASS(Object);
 
-	ClassDB::register_virtual_class<Script>();
+	GDREGISTER_VIRTUAL_CLASS(Script);
 
-	ClassDB::register_class<RefCounted>();
-	ClassDB::register_class<WeakRef>();
-	ClassDB::register_class<Resource>();
-	ClassDB::register_class<Image>();
+	GDREGISTER_CLASS(RefCounted);
+	GDREGISTER_CLASS(WeakRef);
+	GDREGISTER_CLASS(Resource);
+	GDREGISTER_CLASS(Image);
 
-	ClassDB::register_virtual_class<InputEvent>();
-	ClassDB::register_virtual_class<InputEventWithModifiers>();
-	ClassDB::register_virtual_class<InputEventFromWindow>();
-	ClassDB::register_class<InputEventKey>();
-	ClassDB::register_virtual_class<InputEventMouse>();
-	ClassDB::register_class<InputEventMouseButton>();
-	ClassDB::register_class<InputEventMouseMotion>();
-	ClassDB::register_class<InputEventJoypadButton>();
-	ClassDB::register_class<InputEventJoypadMotion>();
-	ClassDB::register_class<InputEventScreenDrag>();
-	ClassDB::register_class<InputEventScreenTouch>();
-	ClassDB::register_class<InputEventAction>();
-	ClassDB::register_virtual_class<InputEventGesture>();
-	ClassDB::register_class<InputEventMagnifyGesture>();
-	ClassDB::register_class<InputEventPanGesture>();
-	ClassDB::register_class<InputEventMIDI>();
+	GDREGISTER_VIRTUAL_CLASS(InputEvent);
+	GDREGISTER_VIRTUAL_CLASS(InputEventWithModifiers);
+	GDREGISTER_VIRTUAL_CLASS(InputEventFromWindow);
+	GDREGISTER_CLASS(InputEventKey);
+	GDREGISTER_VIRTUAL_CLASS(InputEventMouse);
+	GDREGISTER_CLASS(InputEventMouseButton);
+	GDREGISTER_CLASS(InputEventMouseMotion);
+	GDREGISTER_CLASS(InputEventJoypadButton);
+	GDREGISTER_CLASS(InputEventJoypadMotion);
+	GDREGISTER_CLASS(InputEventScreenDrag);
+	GDREGISTER_CLASS(InputEventScreenTouch);
+	GDREGISTER_CLASS(InputEventAction);
+	GDREGISTER_VIRTUAL_CLASS(InputEventGesture);
+	GDREGISTER_CLASS(InputEventMagnifyGesture);
+	GDREGISTER_CLASS(InputEventPanGesture);
+	GDREGISTER_CLASS(InputEventMIDI);
 
 	// Network
-	ClassDB::register_virtual_class<IP>();
+	GDREGISTER_VIRTUAL_CLASS(IP);
 
-	ClassDB::register_virtual_class<StreamPeer>();
-	ClassDB::register_class<StreamPeerBuffer>();
-	ClassDB::register_class<StreamPeerTCP>();
-	ClassDB::register_class<TCPServer>();
+	GDREGISTER_VIRTUAL_CLASS(StreamPeer);
+	GDREGISTER_CLASS(StreamPeerBuffer);
+	GDREGISTER_CLASS(StreamPeerTCP);
+	GDREGISTER_CLASS(TCPServer);
 
-	ClassDB::register_virtual_class<PacketPeer>();
-	ClassDB::register_class<PacketPeerStream>();
-	ClassDB::register_class<PacketPeerUDP>();
-	ClassDB::register_class<UDPServer>();
+	GDREGISTER_VIRTUAL_CLASS(PacketPeer);
+	GDREGISTER_CLASS(PacketPeerStream);
+	GDREGISTER_CLASS(PacketPeerUDP);
+	GDREGISTER_CLASS(UDPServer);
 
 	ClassDB::register_custom_instance_class<HTTPClient>();
 
 	// Crypto
-	ClassDB::register_class<HashingContext>();
-	ClassDB::register_class<AESContext>();
+	GDREGISTER_CLASS(HashingContext);
+	GDREGISTER_CLASS(AESContext);
 	ClassDB::register_custom_instance_class<X509Certificate>();
 	ClassDB::register_custom_instance_class<CryptoKey>();
 	ClassDB::register_custom_instance_class<HMACContext>();
@@ -188,42 +188,42 @@ void register_core_types() {
 	resource_format_loader_crypto.instantiate();
 	ResourceLoader::add_resource_format_loader(resource_format_loader_crypto);
 
-	ClassDB::register_virtual_class<MultiplayerPeer>();
-	ClassDB::register_class<MultiplayerAPI>();
-	ClassDB::register_class<MainLoop>();
-	ClassDB::register_class<Translation>();
-	ClassDB::register_class<OptimizedTranslation>();
-	ClassDB::register_class<UndoRedo>();
-	ClassDB::register_class<TriangleMesh>();
+	GDREGISTER_VIRTUAL_CLASS(MultiplayerPeer);
+	GDREGISTER_CLASS(MultiplayerAPI);
+	GDREGISTER_CLASS(MainLoop);
+	GDREGISTER_CLASS(Translation);
+	GDREGISTER_CLASS(OptimizedTranslation);
+	GDREGISTER_CLASS(UndoRedo);
+	GDREGISTER_CLASS(TriangleMesh);
 
-	ClassDB::register_class<ResourceFormatLoader>();
-	ClassDB::register_class<ResourceFormatSaver>();
+	GDREGISTER_CLASS(ResourceFormatLoader);
+	GDREGISTER_CLASS(ResourceFormatSaver);
 
-	ClassDB::register_class<_File>();
-	ClassDB::register_class<_Directory>();
-	ClassDB::register_class<_Thread>();
-	ClassDB::register_class<_Mutex>();
-	ClassDB::register_class<_Semaphore>();
+	GDREGISTER_CLASS(_File);
+	GDREGISTER_CLASS(_Directory);
+	GDREGISTER_CLASS(_Thread);
+	GDREGISTER_CLASS(_Mutex);
+	GDREGISTER_CLASS(_Semaphore);
 
-	ClassDB::register_class<XMLParser>();
-	ClassDB::register_class<JSON>();
+	GDREGISTER_CLASS(XMLParser);
+	GDREGISTER_CLASS(JSON);
 
-	ClassDB::register_class<ConfigFile>();
+	GDREGISTER_CLASS(ConfigFile);
 
-	ClassDB::register_class<PCKPacker>();
+	GDREGISTER_CLASS(PCKPacker);
 
-	ClassDB::register_class<PackedDataContainer>();
-	ClassDB::register_virtual_class<PackedDataContainerRef>();
-	ClassDB::register_class<AStar>();
-	ClassDB::register_class<AStar2D>();
-	ClassDB::register_class<EncodedObjectAsID>();
-	ClassDB::register_class<RandomNumberGenerator>();
+	GDREGISTER_CLASS(PackedDataContainer);
+	GDREGISTER_VIRTUAL_CLASS(PackedDataContainerRef);
+	GDREGISTER_CLASS(AStar);
+	GDREGISTER_CLASS(AStar2D);
+	GDREGISTER_CLASS(EncodedObjectAsID);
+	GDREGISTER_CLASS(RandomNumberGenerator);
 
-	ClassDB::register_virtual_class<ResourceImporter>();
+	GDREGISTER_VIRTUAL_CLASS(ResourceImporter);
 
-	ClassDB::register_class<NativeExtension>();
+	GDREGISTER_CLASS(NativeExtension);
 
-	ClassDB::register_virtual_class<NativeExtensionManager>();
+	GDREGISTER_VIRTUAL_CLASS(NativeExtensionManager);
 
 	native_extension_manager = memnew(NativeExtensionManager);
 
@@ -253,22 +253,22 @@ void register_core_settings() {
 }
 
 void register_core_singletons() {
-	ClassDB::register_class<ProjectSettings>();
-	ClassDB::register_virtual_class<IP>();
-	ClassDB::register_class<_Geometry2D>();
-	ClassDB::register_class<_Geometry3D>();
-	ClassDB::register_class<_ResourceLoader>();
-	ClassDB::register_class<_ResourceSaver>();
-	ClassDB::register_class<_OS>();
-	ClassDB::register_class<_Engine>();
-	ClassDB::register_class<_ClassDB>();
-	ClassDB::register_class<_Marshalls>();
-	ClassDB::register_class<TranslationServer>();
-	ClassDB::register_virtual_class<Input>();
-	ClassDB::register_class<InputMap>();
-	ClassDB::register_class<Expression>();
-	ClassDB::register_class<_EngineDebugger>();
-	ClassDB::register_class<Time>();
+	GDREGISTER_CLASS(ProjectSettings);
+	GDREGISTER_VIRTUAL_CLASS(IP);
+	GDREGISTER_CLASS(_Geometry2D);
+	GDREGISTER_CLASS(_Geometry3D);
+	GDREGISTER_CLASS(_ResourceLoader);
+	GDREGISTER_CLASS(_ResourceSaver);
+	GDREGISTER_CLASS(_OS);
+	GDREGISTER_CLASS(_Engine);
+	GDREGISTER_CLASS(_ClassDB);
+	GDREGISTER_CLASS(_Marshalls);
+	GDREGISTER_CLASS(TranslationServer);
+	GDREGISTER_VIRTUAL_CLASS(Input);
+	GDREGISTER_CLASS(InputMap);
+	GDREGISTER_CLASS(Expression);
+	GDREGISTER_CLASS(_EngineDebugger);
+	GDREGISTER_CLASS(Time);
 
 	Engine::get_singleton()->add_singleton(Engine::Singleton("ProjectSettings", ProjectSettings::get_singleton()));
 	Engine::get_singleton()->add_singleton(Engine::Singleton("IP", IP::get_singleton(), "IP"));

@@ -292,108 +292,108 @@ void register_scene_types() {
 
 	OS::get_singleton()->yield(); //may take time to init
 
-	ClassDB::register_class<Object>();
+	GDREGISTER_CLASS(Object);
 
-	ClassDB::register_class<Node>();
-	ClassDB::register_virtual_class<InstancePlaceholder>();
+	GDREGISTER_CLASS(Node);
+	GDREGISTER_VIRTUAL_CLASS(InstancePlaceholder);
 
-	ClassDB::register_virtual_class<Viewport>();
-	ClassDB::register_class<SubViewport>();
-	ClassDB::register_class<ViewportTexture>();
-	ClassDB::register_class<HTTPRequest>();
-	ClassDB::register_class<Timer>();
-	ClassDB::register_class<CanvasLayer>();
-	ClassDB::register_class<CanvasModulate>();
-	ClassDB::register_class<ResourcePreloader>();
-	ClassDB::register_class<Window>();
+	GDREGISTER_VIRTUAL_CLASS(Viewport);
+	GDREGISTER_CLASS(SubViewport);
+	GDREGISTER_CLASS(ViewportTexture);
+	GDREGISTER_CLASS(HTTPRequest);
+	GDREGISTER_CLASS(Timer);
+	GDREGISTER_CLASS(CanvasLayer);
+	GDREGISTER_CLASS(CanvasModulate);
+	GDREGISTER_CLASS(ResourcePreloader);
+	GDREGISTER_CLASS(Window);
 
 	/* REGISTER GUI */
 
-	ClassDB::register_class<ButtonGroup>();
-	ClassDB::register_virtual_class<BaseButton>();
+	GDREGISTER_CLASS(ButtonGroup);
+	GDREGISTER_VIRTUAL_CLASS(BaseButton);
 
 	OS::get_singleton()->yield(); //may take time to init
 
-	ClassDB::register_class<Shortcut>();
-	ClassDB::register_class<Control>();
-	ClassDB::register_class<Button>();
-	ClassDB::register_class<Label>();
-	ClassDB::register_virtual_class<ScrollBar>();
-	ClassDB::register_class<HScrollBar>();
-	ClassDB::register_class<VScrollBar>();
-	ClassDB::register_class<ProgressBar>();
-	ClassDB::register_virtual_class<Slider>();
-	ClassDB::register_class<HSlider>();
-	ClassDB::register_class<VSlider>();
-	ClassDB::register_class<Popup>();
-	ClassDB::register_class<PopupPanel>();
-	ClassDB::register_class<MenuButton>();
-	ClassDB::register_class<CheckBox>();
-	ClassDB::register_class<CheckButton>();
-	ClassDB::register_class<LinkButton>();
-	ClassDB::register_class<Panel>();
-	ClassDB::register_virtual_class<Range>();
+	GDREGISTER_CLASS(Shortcut);
+	GDREGISTER_CLASS(Control);
+	GDREGISTER_CLASS(Button);
+	GDREGISTER_CLASS(Label);
+	GDREGISTER_VIRTUAL_CLASS(ScrollBar);
+	GDREGISTER_CLASS(HScrollBar);
+	GDREGISTER_CLASS(VScrollBar);
+	GDREGISTER_CLASS(ProgressBar);
+	GDREGISTER_VIRTUAL_CLASS(Slider);
+	GDREGISTER_CLASS(HSlider);
+	GDREGISTER_CLASS(VSlider);
+	GDREGISTER_CLASS(Popup);
+	GDREGISTER_CLASS(PopupPanel);
+	GDREGISTER_CLASS(MenuButton);
+	GDREGISTER_CLASS(CheckBox);
+	GDREGISTER_CLASS(CheckButton);
+	GDREGISTER_CLASS(LinkButton);
+	GDREGISTER_CLASS(Panel);
+	GDREGISTER_VIRTUAL_CLASS(Range);
 
 	OS::get_singleton()->yield(); //may take time to init
 
-	ClassDB::register_class<TextureRect>();
-	ClassDB::register_class<ColorRect>();
-	ClassDB::register_class<NinePatchRect>();
-	ClassDB::register_class<ReferenceRect>();
-	ClassDB::register_class<AspectRatioContainer>();
-	ClassDB::register_class<TabContainer>();
-	ClassDB::register_class<Tabs>();
-	ClassDB::register_virtual_class<Separator>();
-	ClassDB::register_class<HSeparator>();
-	ClassDB::register_class<VSeparator>();
-	ClassDB::register_class<TextureButton>();
-	ClassDB::register_class<Container>();
-	ClassDB::register_virtual_class<BoxContainer>();
-	ClassDB::register_class<HBoxContainer>();
-	ClassDB::register_class<VBoxContainer>();
-	ClassDB::register_class<GridContainer>();
-	ClassDB::register_class<CenterContainer>();
-	ClassDB::register_class<ScrollContainer>();
-	ClassDB::register_class<PanelContainer>();
+	GDREGISTER_CLASS(TextureRect);
+	GDREGISTER_CLASS(ColorRect);
+	GDREGISTER_CLASS(NinePatchRect);
+	GDREGISTER_CLASS(ReferenceRect);
+	GDREGISTER_CLASS(AspectRatioContainer);
+	GDREGISTER_CLASS(TabContainer);
+	GDREGISTER_CLASS(Tabs);
+	GDREGISTER_VIRTUAL_CLASS(Separator);
+	GDREGISTER_CLASS(HSeparator);
+	GDREGISTER_CLASS(VSeparator);
+	GDREGISTER_CLASS(TextureButton);
+	GDREGISTER_CLASS(Container);
+	GDREGISTER_VIRTUAL_CLASS(BoxContainer);
+	GDREGISTER_CLASS(HBoxContainer);
+	GDREGISTER_CLASS(VBoxContainer);
+	GDREGISTER_CLASS(GridContainer);
+	GDREGISTER_CLASS(CenterContainer);
+	GDREGISTER_CLASS(ScrollContainer);
+	GDREGISTER_CLASS(PanelContainer);
 
 	OS::get_singleton()->yield(); //may take time to init
 
-	ClassDB::register_class<TextureProgressBar>();
-	ClassDB::register_class<ItemList>();
+	GDREGISTER_CLASS(TextureProgressBar);
+	GDREGISTER_CLASS(ItemList);
 
-	ClassDB::register_class<LineEdit>();
-	ClassDB::register_class<VideoPlayer>();
+	GDREGISTER_CLASS(LineEdit);
+	GDREGISTER_CLASS(VideoPlayer);
 
 #ifndef ADVANCED_GUI_DISABLED
-	ClassDB::register_class<FileDialog>();
+	GDREGISTER_CLASS(FileDialog);
 
-	ClassDB::register_class<PopupMenu>();
-	ClassDB::register_class<Tree>();
+	GDREGISTER_CLASS(PopupMenu);
+	GDREGISTER_CLASS(Tree);
 
-	ClassDB::register_class<TextEdit>();
-	ClassDB::register_class<CodeEdit>();
-	ClassDB::register_class<SyntaxHighlighter>();
-	ClassDB::register_class<CodeHighlighter>();
+	GDREGISTER_CLASS(TextEdit);
+	GDREGISTER_CLASS(CodeEdit);
+	GDREGISTER_CLASS(SyntaxHighlighter);
+	GDREGISTER_CLASS(CodeHighlighter);
 
-	ClassDB::register_virtual_class<TreeItem>();
-	ClassDB::register_class<OptionButton>();
-	ClassDB::register_class<SpinBox>();
-	ClassDB::register_class<ColorPicker>();
-	ClassDB::register_class<ColorPickerButton>();
-	ClassDB::register_class<RichTextLabel>();
-	ClassDB::register_class<RichTextEffect>();
-	ClassDB::register_class<CharFXTransform>();
+	GDREGISTER_VIRTUAL_CLASS(TreeItem);
+	GDREGISTER_CLASS(OptionButton);
+	GDREGISTER_CLASS(SpinBox);
+	GDREGISTER_CLASS(ColorPicker);
+	GDREGISTER_CLASS(ColorPickerButton);
+	GDREGISTER_CLASS(RichTextLabel);
+	GDREGISTER_CLASS(RichTextEffect);
+	GDREGISTER_CLASS(CharFXTransform);
 
-	ClassDB::register_class<AcceptDialog>();
-	ClassDB::register_class<ConfirmationDialog>();
+	GDREGISTER_CLASS(AcceptDialog);
+	GDREGISTER_CLASS(ConfirmationDialog);
 
-	ClassDB::register_class<MarginContainer>();
-	ClassDB::register_class<SubViewportContainer>();
-	ClassDB::register_virtual_class<SplitContainer>();
-	ClassDB::register_class<HSplitContainer>();
-	ClassDB::register_class<VSplitContainer>();
-	ClassDB::register_class<GraphNode>();
-	ClassDB::register_class<GraphEdit>();
+	GDREGISTER_CLASS(MarginContainer);
+	GDREGISTER_CLASS(SubViewportContainer);
+	GDREGISTER_VIRTUAL_CLASS(SplitContainer);
+	GDREGISTER_CLASS(HSplitContainer);
+	GDREGISTER_CLASS(VSplitContainer);
+	GDREGISTER_CLASS(GraphNode);
+	GDREGISTER_CLASS(GraphEdit);
 
 	OS::get_singleton()->yield(); //may take time to init
 
@@ -406,451 +406,451 @@ void register_scene_types() {
 
 	/* REGISTER ANIMATION */
 
-	ClassDB::register_class<AnimationPlayer>();
-	ClassDB::register_class<Tween>();
-	ClassDB::register_virtual_class<Tweener>();
-	ClassDB::register_class<PropertyTweener>();
-	ClassDB::register_class<IntervalTweener>();
-	ClassDB::register_class<CallbackTweener>();
-	ClassDB::register_class<MethodTweener>();
+	GDREGISTER_CLASS(AnimationPlayer);
+	GDREGISTER_CLASS(Tween);
+	GDREGISTER_VIRTUAL_CLASS(Tweener);
+	GDREGISTER_CLASS(PropertyTweener);
+	GDREGISTER_CLASS(IntervalTweener);
+	GDREGISTER_CLASS(CallbackTweener);
+	GDREGISTER_CLASS(MethodTweener);
 
-	ClassDB::register_class<AnimationTree>();
-	ClassDB::register_class<AnimationNode>();
-	ClassDB::register_class<AnimationRootNode>();
-	ClassDB::register_class<AnimationNodeBlendTree>();
-	ClassDB::register_class<AnimationNodeBlendSpace1D>();
-	ClassDB::register_class<AnimationNodeBlendSpace2D>();
-	ClassDB::register_class<AnimationNodeStateMachine>();
-	ClassDB::register_class<AnimationNodeStateMachinePlayback>();
+	GDREGISTER_CLASS(AnimationTree);
+	GDREGISTER_CLASS(AnimationNode);
+	GDREGISTER_CLASS(AnimationRootNode);
+	GDREGISTER_CLASS(AnimationNodeBlendTree);
+	GDREGISTER_CLASS(AnimationNodeBlendSpace1D);
+	GDREGISTER_CLASS(AnimationNodeBlendSpace2D);
+	GDREGISTER_CLASS(AnimationNodeStateMachine);
+	GDREGISTER_CLASS(AnimationNodeStateMachinePlayback);
 
-	ClassDB::register_class<AnimationNodeStateMachineTransition>();
-	ClassDB::register_class<AnimationNodeOutput>();
-	ClassDB::register_class<AnimationNodeOneShot>();
-	ClassDB::register_class<AnimationNodeAnimation>();
-	ClassDB::register_class<AnimationNodeAdd2>();
-	ClassDB::register_class<AnimationNodeAdd3>();
-	ClassDB::register_class<AnimationNodeBlend2>();
-	ClassDB::register_class<AnimationNodeBlend3>();
-	ClassDB::register_class<AnimationNodeTimeScale>();
-	ClassDB::register_class<AnimationNodeTimeSeek>();
-	ClassDB::register_class<AnimationNodeTransition>();
+	GDREGISTER_CLASS(AnimationNodeStateMachineTransition);
+	GDREGISTER_CLASS(AnimationNodeOutput);
+	GDREGISTER_CLASS(AnimationNodeOneShot);
+	GDREGISTER_CLASS(AnimationNodeAnimation);
+	GDREGISTER_CLASS(AnimationNodeAdd2);
+	GDREGISTER_CLASS(AnimationNodeAdd3);
+	GDREGISTER_CLASS(AnimationNodeBlend2);
+	GDREGISTER_CLASS(AnimationNodeBlend3);
+	GDREGISTER_CLASS(AnimationNodeTimeScale);
+	GDREGISTER_CLASS(AnimationNodeTimeSeek);
+	GDREGISTER_CLASS(AnimationNodeTransition);
 
-	ClassDB::register_class<ShaderGlobalsOverride>(); //can be used in any shader
+	GDREGISTER_CLASS(ShaderGlobalsOverride); //can be used in any shader
 
 	OS::get_singleton()->yield(); //may take time to init
 
 	/* REGISTER 3D */
 
 #ifndef _3D_DISABLED
-	ClassDB::register_class<Node3D>();
-	ClassDB::register_virtual_class<Node3DGizmo>();
-	ClassDB::register_class<Skin>();
-	ClassDB::register_virtual_class<SkinReference>();
-	ClassDB::register_class<Skeleton3D>();
-	ClassDB::register_virtual_class<VisualInstance3D>();
-	ClassDB::register_virtual_class<GeometryInstance3D>();
-	ClassDB::register_class<Camera3D>();
-	ClassDB::register_class<ClippedCamera3D>();
-	ClassDB::register_class<Listener3D>();
-	ClassDB::register_class<XRCamera3D>();
-	ClassDB::register_class<XRController3D>();
-	ClassDB::register_class<XRAnchor3D>();
-	ClassDB::register_class<XROrigin3D>();
-	ClassDB::register_class<MeshInstance3D>();
-	ClassDB::register_class<OccluderInstance3D>();
-	ClassDB::register_class<Occluder3D>();
-	ClassDB::register_virtual_class<SpriteBase3D>();
-	ClassDB::register_class<Sprite3D>();
-	ClassDB::register_class<AnimatedSprite3D>();
-	ClassDB::register_virtual_class<Light3D>();
-	ClassDB::register_class<DirectionalLight3D>();
-	ClassDB::register_class<OmniLight3D>();
-	ClassDB::register_class<SpotLight3D>();
-	ClassDB::register_class<ReflectionProbe>();
-	ClassDB::register_class<Decal>();
-	ClassDB::register_class<VoxelGI>();
-	ClassDB::register_class<VoxelGIData>();
-	ClassDB::register_class<LightmapGI>();
-	ClassDB::register_class<LightmapGIData>();
-	ClassDB::register_class<LightmapProbe>();
-	ClassDB::register_virtual_class<Lightmapper>();
-	ClassDB::register_class<GPUParticles3D>();
-	ClassDB::register_virtual_class<GPUParticlesCollision3D>();
-	ClassDB::register_class<GPUParticlesCollisionBox>();
-	ClassDB::register_class<GPUParticlesCollisionSphere>();
-	ClassDB::register_class<GPUParticlesCollisionSDF>();
-	ClassDB::register_class<GPUParticlesCollisionHeightField>();
-	ClassDB::register_virtual_class<GPUParticlesAttractor3D>();
-	ClassDB::register_class<GPUParticlesAttractorBox>();
-	ClassDB::register_class<GPUParticlesAttractorSphere>();
-	ClassDB::register_class<GPUParticlesAttractorVectorField>();
-	ClassDB::register_class<CPUParticles3D>();
-	ClassDB::register_class<Position3D>();
+	GDREGISTER_CLASS(Node3D);
+	GDREGISTER_VIRTUAL_CLASS(Node3DGizmo);
+	GDREGISTER_CLASS(Skin);
+	GDREGISTER_VIRTUAL_CLASS(SkinReference);
+	GDREGISTER_CLASS(Skeleton3D);
+	GDREGISTER_VIRTUAL_CLASS(VisualInstance3D);
+	GDREGISTER_VIRTUAL_CLASS(GeometryInstance3D);
+	GDREGISTER_CLASS(Camera3D);
+	GDREGISTER_CLASS(ClippedCamera3D);
+	GDREGISTER_CLASS(Listener3D);
+	GDREGISTER_CLASS(XRCamera3D);
+	GDREGISTER_CLASS(XRController3D);
+	GDREGISTER_CLASS(XRAnchor3D);
+	GDREGISTER_CLASS(XROrigin3D);
+	GDREGISTER_CLASS(MeshInstance3D);
+	GDREGISTER_CLASS(OccluderInstance3D);
+	GDREGISTER_CLASS(Occluder3D);
+	GDREGISTER_VIRTUAL_CLASS(SpriteBase3D);
+	GDREGISTER_CLASS(Sprite3D);
+	GDREGISTER_CLASS(AnimatedSprite3D);
+	GDREGISTER_VIRTUAL_CLASS(Light3D);
+	GDREGISTER_CLASS(DirectionalLight3D);
+	GDREGISTER_CLASS(OmniLight3D);
+	GDREGISTER_CLASS(SpotLight3D);
+	GDREGISTER_CLASS(ReflectionProbe);
+	GDREGISTER_CLASS(Decal);
+	GDREGISTER_CLASS(VoxelGI);
+	GDREGISTER_CLASS(VoxelGIData);
+	GDREGISTER_CLASS(LightmapGI);
+	GDREGISTER_CLASS(LightmapGIData);
+	GDREGISTER_CLASS(LightmapProbe);
+	GDREGISTER_VIRTUAL_CLASS(Lightmapper);
+	GDREGISTER_CLASS(GPUParticles3D);
+	GDREGISTER_VIRTUAL_CLASS(GPUParticlesCollision3D);
+	GDREGISTER_CLASS(GPUParticlesCollisionBox);
+	GDREGISTER_CLASS(GPUParticlesCollisionSphere);
+	GDREGISTER_CLASS(GPUParticlesCollisionSDF);
+	GDREGISTER_CLASS(GPUParticlesCollisionHeightField);
+	GDREGISTER_VIRTUAL_CLASS(GPUParticlesAttractor3D);
+	GDREGISTER_CLASS(GPUParticlesAttractorBox);
+	GDREGISTER_CLASS(GPUParticlesAttractorSphere);
+	GDREGISTER_CLASS(GPUParticlesAttractorVectorField);
+	GDREGISTER_CLASS(CPUParticles3D);
+	GDREGISTER_CLASS(Position3D);
 
-	ClassDB::register_class<RootMotionView>();
+	GDREGISTER_CLASS(RootMotionView);
 	ClassDB::set_class_enabled("RootMotionView", false); //disabled by default, enabled by editor
 
 	OS::get_singleton()->yield(); //may take time to init
 
-	ClassDB::register_virtual_class<CollisionObject3D>();
-	ClassDB::register_virtual_class<PhysicsBody3D>();
-	ClassDB::register_class<StaticBody3D>();
-	ClassDB::register_class<RigidBody3D>();
-	ClassDB::register_class<KinematicCollision3D>();
-	ClassDB::register_class<CharacterBody3D>();
-	ClassDB::register_class<SpringArm3D>();
+	GDREGISTER_VIRTUAL_CLASS(CollisionObject3D);
+	GDREGISTER_VIRTUAL_CLASS(PhysicsBody3D);
+	GDREGISTER_CLASS(StaticBody3D);
+	GDREGISTER_CLASS(RigidBody3D);
+	GDREGISTER_CLASS(KinematicCollision3D);
+	GDREGISTER_CLASS(CharacterBody3D);
+	GDREGISTER_CLASS(SpringArm3D);
 
-	ClassDB::register_class<PhysicalBone3D>();
-	ClassDB::register_class<SoftBody3D>();
+	GDREGISTER_CLASS(PhysicalBone3D);
+	GDREGISTER_CLASS(SoftBody3D);
 
-	ClassDB::register_class<SkeletonIK3D>();
-	ClassDB::register_class<BoneAttachment3D>();
+	GDREGISTER_CLASS(SkeletonIK3D);
+	GDREGISTER_CLASS(BoneAttachment3D);
 
-	ClassDB::register_class<VehicleBody3D>();
-	ClassDB::register_class<VehicleWheel3D>();
-	ClassDB::register_class<Area3D>();
-	ClassDB::register_class<ProximityGroup3D>();
-	ClassDB::register_class<CollisionShape3D>();
-	ClassDB::register_class<CollisionPolygon3D>();
-	ClassDB::register_class<RayCast3D>();
-	ClassDB::register_class<MultiMeshInstance3D>();
+	GDREGISTER_CLASS(VehicleBody3D);
+	GDREGISTER_CLASS(VehicleWheel3D);
+	GDREGISTER_CLASS(Area3D);
+	GDREGISTER_CLASS(ProximityGroup3D);
+	GDREGISTER_CLASS(CollisionShape3D);
+	GDREGISTER_CLASS(CollisionPolygon3D);
+	GDREGISTER_CLASS(RayCast3D);
+	GDREGISTER_CLASS(MultiMeshInstance3D);
 
-	ClassDB::register_class<Curve3D>();
-	ClassDB::register_class<Path3D>();
-	ClassDB::register_class<PathFollow3D>();
-	ClassDB::register_class<VisibleOnScreenNotifier3D>();
-	ClassDB::register_class<VisibleOnScreenEnabler3D>();
-	ClassDB::register_class<WorldEnvironment>();
-	ClassDB::register_class<RemoteTransform3D>();
+	GDREGISTER_CLASS(Curve3D);
+	GDREGISTER_CLASS(Path3D);
+	GDREGISTER_CLASS(PathFollow3D);
+	GDREGISTER_CLASS(VisibleOnScreenNotifier3D);
+	GDREGISTER_CLASS(VisibleOnScreenEnabler3D);
+	GDREGISTER_CLASS(WorldEnvironment);
+	GDREGISTER_CLASS(RemoteTransform3D);
 
-	ClassDB::register_virtual_class<Joint3D>();
-	ClassDB::register_class<PinJoint3D>();
-	ClassDB::register_class<HingeJoint3D>();
-	ClassDB::register_class<SliderJoint3D>();
-	ClassDB::register_class<ConeTwistJoint3D>();
-	ClassDB::register_class<Generic6DOFJoint3D>();
+	GDREGISTER_VIRTUAL_CLASS(Joint3D);
+	GDREGISTER_CLASS(PinJoint3D);
+	GDREGISTER_CLASS(HingeJoint3D);
+	GDREGISTER_CLASS(SliderJoint3D);
+	GDREGISTER_CLASS(ConeTwistJoint3D);
+	GDREGISTER_CLASS(Generic6DOFJoint3D);
 
-	ClassDB::register_class<NavigationRegion3D>();
-	ClassDB::register_class<NavigationAgent3D>();
-	ClassDB::register_class<NavigationObstacle3D>();
+	GDREGISTER_CLASS(NavigationRegion3D);
+	GDREGISTER_CLASS(NavigationAgent3D);
+	GDREGISTER_CLASS(NavigationObstacle3D);
 
 	OS::get_singleton()->yield(); //may take time to init
 #endif
 
 	/* REGISTER SHADER */
 
-	ClassDB::register_class<Shader>();
-	ClassDB::register_class<VisualShader>();
-	ClassDB::register_virtual_class<VisualShaderNode>();
-	ClassDB::register_class<VisualShaderNodeCustom>();
-	ClassDB::register_class<VisualShaderNodeInput>();
-	ClassDB::register_virtual_class<VisualShaderNodeOutput>();
-	ClassDB::register_virtual_class<VisualShaderNodeResizableBase>();
-	ClassDB::register_virtual_class<VisualShaderNodeGroupBase>();
-	ClassDB::register_virtual_class<VisualShaderNodeConstant>();
-	ClassDB::register_class<VisualShaderNodeComment>();
-	ClassDB::register_class<VisualShaderNodeFloatConstant>();
-	ClassDB::register_class<VisualShaderNodeIntConstant>();
-	ClassDB::register_class<VisualShaderNodeBooleanConstant>();
-	ClassDB::register_class<VisualShaderNodeColorConstant>();
-	ClassDB::register_class<VisualShaderNodeVec3Constant>();
-	ClassDB::register_class<VisualShaderNodeTransformConstant>();
-	ClassDB::register_class<VisualShaderNodeFloatOp>();
-	ClassDB::register_class<VisualShaderNodeIntOp>();
-	ClassDB::register_class<VisualShaderNodeVectorOp>();
-	ClassDB::register_class<VisualShaderNodeColorOp>();
-	ClassDB::register_class<VisualShaderNodeTransformMult>();
-	ClassDB::register_class<VisualShaderNodeTransformVecMult>();
-	ClassDB::register_class<VisualShaderNodeFloatFunc>();
-	ClassDB::register_class<VisualShaderNodeIntFunc>();
-	ClassDB::register_class<VisualShaderNodeVectorFunc>();
-	ClassDB::register_class<VisualShaderNodeColorFunc>();
-	ClassDB::register_class<VisualShaderNodeTransformFunc>();
-	ClassDB::register_class<VisualShaderNodeUVFunc>();
-	ClassDB::register_class<VisualShaderNodeDotProduct>();
-	ClassDB::register_class<VisualShaderNodeVectorLen>();
-	ClassDB::register_class<VisualShaderNodeDeterminant>();
-	ClassDB::register_class<VisualShaderNodeScalarDerivativeFunc>();
-	ClassDB::register_class<VisualShaderNodeVectorDerivativeFunc>();
-	ClassDB::register_class<VisualShaderNodeClamp>();
-	ClassDB::register_class<VisualShaderNodeFaceForward>();
-	ClassDB::register_class<VisualShaderNodeOuterProduct>();
-	ClassDB::register_class<VisualShaderNodeSmoothStep>();
-	ClassDB::register_class<VisualShaderNodeStep>();
-	ClassDB::register_class<VisualShaderNodeVectorDistance>();
-	ClassDB::register_class<VisualShaderNodeVectorRefract>();
-	ClassDB::register_class<VisualShaderNodeMix>();
-	ClassDB::register_class<VisualShaderNodeVectorCompose>();
-	ClassDB::register_class<VisualShaderNodeTransformCompose>();
-	ClassDB::register_class<VisualShaderNodeVectorDecompose>();
-	ClassDB::register_class<VisualShaderNodeTransformDecompose>();
-	ClassDB::register_class<VisualShaderNodeTexture>();
-	ClassDB::register_class<VisualShaderNodeCurveTexture>();
-	ClassDB::register_class<VisualShaderNodeCurve3Texture>();
-	ClassDB::register_virtual_class<VisualShaderNodeSample3D>();
-	ClassDB::register_class<VisualShaderNodeTexture2DArray>();
-	ClassDB::register_class<VisualShaderNodeTexture3D>();
-	ClassDB::register_class<VisualShaderNodeCubemap>();
-	ClassDB::register_virtual_class<VisualShaderNodeUniform>();
-	ClassDB::register_class<VisualShaderNodeUniformRef>();
-	ClassDB::register_class<VisualShaderNodeFloatUniform>();
-	ClassDB::register_class<VisualShaderNodeIntUniform>();
-	ClassDB::register_class<VisualShaderNodeBooleanUniform>();
-	ClassDB::register_class<VisualShaderNodeColorUniform>();
-	ClassDB::register_class<VisualShaderNodeVec3Uniform>();
-	ClassDB::register_class<VisualShaderNodeTransformUniform>();
-	ClassDB::register_class<VisualShaderNodeTextureUniform>();
-	ClassDB::register_class<VisualShaderNodeTextureUniformTriplanar>();
-	ClassDB::register_class<VisualShaderNodeTexture2DArrayUniform>();
-	ClassDB::register_class<VisualShaderNodeTexture3DUniform>();
-	ClassDB::register_class<VisualShaderNodeCubemapUniform>();
-	ClassDB::register_class<VisualShaderNodeIf>();
-	ClassDB::register_class<VisualShaderNodeSwitch>();
-	ClassDB::register_class<VisualShaderNodeFresnel>();
-	ClassDB::register_class<VisualShaderNodeExpression>();
-	ClassDB::register_class<VisualShaderNodeGlobalExpression>();
-	ClassDB::register_class<VisualShaderNodeIs>();
-	ClassDB::register_class<VisualShaderNodeCompare>();
-	ClassDB::register_class<VisualShaderNodeMultiplyAdd>();
-	ClassDB::register_class<VisualShaderNodeBillboard>();
+	GDREGISTER_CLASS(Shader);
+	GDREGISTER_CLASS(VisualShader);
+	GDREGISTER_VIRTUAL_CLASS(VisualShaderNode);
+	GDREGISTER_CLASS(VisualShaderNodeCustom);
+	GDREGISTER_CLASS(VisualShaderNodeInput);
+	GDREGISTER_VIRTUAL_CLASS(VisualShaderNodeOutput);
+	GDREGISTER_VIRTUAL_CLASS(VisualShaderNodeResizableBase);
+	GDREGISTER_VIRTUAL_CLASS(VisualShaderNodeGroupBase);
+	GDREGISTER_VIRTUAL_CLASS(VisualShaderNodeConstant);
+	GDREGISTER_CLASS(VisualShaderNodeComment);
+	GDREGISTER_CLASS(VisualShaderNodeFloatConstant);
+	GDREGISTER_CLASS(VisualShaderNodeIntConstant);
+	GDREGISTER_CLASS(VisualShaderNodeBooleanConstant);
+	GDREGISTER_CLASS(VisualShaderNodeColorConstant);
+	GDREGISTER_CLASS(VisualShaderNodeVec3Constant);
+	GDREGISTER_CLASS(VisualShaderNodeTransformConstant);
+	GDREGISTER_CLASS(VisualShaderNodeFloatOp);
+	GDREGISTER_CLASS(VisualShaderNodeIntOp);
+	GDREGISTER_CLASS(VisualShaderNodeVectorOp);
+	GDREGISTER_CLASS(VisualShaderNodeColorOp);
+	GDREGISTER_CLASS(VisualShaderNodeTransformMult);
+	GDREGISTER_CLASS(VisualShaderNodeTransformVecMult);
+	GDREGISTER_CLASS(VisualShaderNodeFloatFunc);
+	GDREGISTER_CLASS(VisualShaderNodeIntFunc);
+	GDREGISTER_CLASS(VisualShaderNodeVectorFunc);
+	GDREGISTER_CLASS(VisualShaderNodeColorFunc);
+	GDREGISTER_CLASS(VisualShaderNodeTransformFunc);
+	GDREGISTER_CLASS(VisualShaderNodeUVFunc);
+	GDREGISTER_CLASS(VisualShaderNodeDotProduct);
+	GDREGISTER_CLASS(VisualShaderNodeVectorLen);
+	GDREGISTER_CLASS(VisualShaderNodeDeterminant);
+	GDREGISTER_CLASS(VisualShaderNodeScalarDerivativeFunc);
+	GDREGISTER_CLASS(VisualShaderNodeVectorDerivativeFunc);
+	GDREGISTER_CLASS(VisualShaderNodeClamp);
+	GDREGISTER_CLASS(VisualShaderNodeFaceForward);
+	GDREGISTER_CLASS(VisualShaderNodeOuterProduct);
+	GDREGISTER_CLASS(VisualShaderNodeSmoothStep);
+	GDREGISTER_CLASS(VisualShaderNodeStep);
+	GDREGISTER_CLASS(VisualShaderNodeVectorDistance);
+	GDREGISTER_CLASS(VisualShaderNodeVectorRefract);
+	GDREGISTER_CLASS(VisualShaderNodeMix);
+	GDREGISTER_CLASS(VisualShaderNodeVectorCompose);
+	GDREGISTER_CLASS(VisualShaderNodeTransformCompose);
+	GDREGISTER_CLASS(VisualShaderNodeVectorDecompose);
+	GDREGISTER_CLASS(VisualShaderNodeTransformDecompose);
+	GDREGISTER_CLASS(VisualShaderNodeTexture);
+	GDREGISTER_CLASS(VisualShaderNodeCurveTexture);
+	GDREGISTER_CLASS(VisualShaderNodeCurve3Texture);
+	GDREGISTER_VIRTUAL_CLASS(VisualShaderNodeSample3D);
+	GDREGISTER_CLASS(VisualShaderNodeTexture2DArray);
+	GDREGISTER_CLASS(VisualShaderNodeTexture3D);
+	GDREGISTER_CLASS(VisualShaderNodeCubemap);
+	GDREGISTER_VIRTUAL_CLASS(VisualShaderNodeUniform);
+	GDREGISTER_CLASS(VisualShaderNodeUniformRef);
+	GDREGISTER_CLASS(VisualShaderNodeFloatUniform);
+	GDREGISTER_CLASS(VisualShaderNodeIntUniform);
+	GDREGISTER_CLASS(VisualShaderNodeBooleanUniform);
+	GDREGISTER_CLASS(VisualShaderNodeColorUniform);
+	GDREGISTER_CLASS(VisualShaderNodeVec3Uniform);
+	GDREGISTER_CLASS(VisualShaderNodeTransformUniform);
+	GDREGISTER_CLASS(VisualShaderNodeTextureUniform);
+	GDREGISTER_CLASS(VisualShaderNodeTextureUniformTriplanar);
+	GDREGISTER_CLASS(VisualShaderNodeTexture2DArrayUniform);
+	GDREGISTER_CLASS(VisualShaderNodeTexture3DUniform);
+	GDREGISTER_CLASS(VisualShaderNodeCubemapUniform);
+	GDREGISTER_CLASS(VisualShaderNodeIf);
+	GDREGISTER_CLASS(VisualShaderNodeSwitch);
+	GDREGISTER_CLASS(VisualShaderNodeFresnel);
+	GDREGISTER_CLASS(VisualShaderNodeExpression);
+	GDREGISTER_CLASS(VisualShaderNodeGlobalExpression);
+	GDREGISTER_CLASS(VisualShaderNodeIs);
+	GDREGISTER_CLASS(VisualShaderNodeCompare);
+	GDREGISTER_CLASS(VisualShaderNodeMultiplyAdd);
+	GDREGISTER_CLASS(VisualShaderNodeBillboard);
 
-	ClassDB::register_class<VisualShaderNodeSDFToScreenUV>();
-	ClassDB::register_class<VisualShaderNodeScreenUVToSDF>();
-	ClassDB::register_class<VisualShaderNodeTextureSDF>();
-	ClassDB::register_class<VisualShaderNodeTextureSDFNormal>();
-	ClassDB::register_class<VisualShaderNodeSDFRaymarch>();
+	GDREGISTER_CLASS(VisualShaderNodeSDFToScreenUV);
+	GDREGISTER_CLASS(VisualShaderNodeScreenUVToSDF);
+	GDREGISTER_CLASS(VisualShaderNodeTextureSDF);
+	GDREGISTER_CLASS(VisualShaderNodeTextureSDFNormal);
+	GDREGISTER_CLASS(VisualShaderNodeSDFRaymarch);
 
-	ClassDB::register_class<VisualShaderNodeParticleOutput>();
-	ClassDB::register_virtual_class<VisualShaderNodeParticleEmitter>();
-	ClassDB::register_class<VisualShaderNodeParticleSphereEmitter>();
-	ClassDB::register_class<VisualShaderNodeParticleBoxEmitter>();
-	ClassDB::register_class<VisualShaderNodeParticleRingEmitter>();
-	ClassDB::register_class<VisualShaderNodeParticleMultiplyByAxisAngle>();
-	ClassDB::register_class<VisualShaderNodeParticleConeVelocity>();
-	ClassDB::register_class<VisualShaderNodeParticleRandomness>();
-	ClassDB::register_class<VisualShaderNodeParticleAccelerator>();
-	ClassDB::register_class<VisualShaderNodeParticleEmit>();
+	GDREGISTER_CLASS(VisualShaderNodeParticleOutput);
+	GDREGISTER_VIRTUAL_CLASS(VisualShaderNodeParticleEmitter);
+	GDREGISTER_CLASS(VisualShaderNodeParticleSphereEmitter);
+	GDREGISTER_CLASS(VisualShaderNodeParticleBoxEmitter);
+	GDREGISTER_CLASS(VisualShaderNodeParticleRingEmitter);
+	GDREGISTER_CLASS(VisualShaderNodeParticleMultiplyByAxisAngle);
+	GDREGISTER_CLASS(VisualShaderNodeParticleConeVelocity);
+	GDREGISTER_CLASS(VisualShaderNodeParticleRandomness);
+	GDREGISTER_CLASS(VisualShaderNodeParticleAccelerator);
+	GDREGISTER_CLASS(VisualShaderNodeParticleEmit);
 
-	ClassDB::register_class<ShaderMaterial>();
-	ClassDB::register_virtual_class<CanvasItem>();
-	ClassDB::register_class<CanvasTexture>();
-	ClassDB::register_class<CanvasItemMaterial>();
+	GDREGISTER_CLASS(ShaderMaterial);
+	GDREGISTER_VIRTUAL_CLASS(CanvasItem);
+	GDREGISTER_CLASS(CanvasTexture);
+	GDREGISTER_CLASS(CanvasItemMaterial);
 	SceneTree::add_idle_callback(CanvasItemMaterial::flush_changes);
 	CanvasItemMaterial::init_shaders();
 
 	/* REGISTER 2D */
 
-	ClassDB::register_class<Node2D>();
-	ClassDB::register_class<CanvasGroup>();
-	ClassDB::register_class<CPUParticles2D>();
-	ClassDB::register_class<GPUParticles2D>();
-	ClassDB::register_class<Sprite2D>();
-	ClassDB::register_class<SpriteFrames>();
-	ClassDB::register_class<AnimatedSprite2D>();
-	ClassDB::register_class<Position2D>();
-	ClassDB::register_class<Line2D>();
-	ClassDB::register_class<MeshInstance2D>();
-	ClassDB::register_class<MultiMeshInstance2D>();
-	ClassDB::register_virtual_class<CollisionObject2D>();
-	ClassDB::register_virtual_class<PhysicsBody2D>();
-	ClassDB::register_class<StaticBody2D>();
-	ClassDB::register_class<RigidBody2D>();
-	ClassDB::register_class<CharacterBody2D>();
-	ClassDB::register_class<KinematicCollision2D>();
-	ClassDB::register_class<Area2D>();
-	ClassDB::register_class<CollisionShape2D>();
-	ClassDB::register_class<CollisionPolygon2D>();
-	ClassDB::register_class<RayCast2D>();
-	ClassDB::register_class<VisibleOnScreenNotifier2D>();
-	ClassDB::register_class<VisibleOnScreenEnabler2D>();
-	ClassDB::register_class<Polygon2D>();
-	ClassDB::register_class<Skeleton2D>();
-	ClassDB::register_class<Bone2D>();
-	ClassDB::register_virtual_class<Light2D>();
-	ClassDB::register_class<PointLight2D>();
-	ClassDB::register_class<DirectionalLight2D>();
-	ClassDB::register_class<LightOccluder2D>();
-	ClassDB::register_class<OccluderPolygon2D>();
-	ClassDB::register_class<BackBufferCopy>();
+	GDREGISTER_CLASS(Node2D);
+	GDREGISTER_CLASS(CanvasGroup);
+	GDREGISTER_CLASS(CPUParticles2D);
+	GDREGISTER_CLASS(GPUParticles2D);
+	GDREGISTER_CLASS(Sprite2D);
+	GDREGISTER_CLASS(SpriteFrames);
+	GDREGISTER_CLASS(AnimatedSprite2D);
+	GDREGISTER_CLASS(Position2D);
+	GDREGISTER_CLASS(Line2D);
+	GDREGISTER_CLASS(MeshInstance2D);
+	GDREGISTER_CLASS(MultiMeshInstance2D);
+	GDREGISTER_VIRTUAL_CLASS(CollisionObject2D);
+	GDREGISTER_VIRTUAL_CLASS(PhysicsBody2D);
+	GDREGISTER_CLASS(StaticBody2D);
+	GDREGISTER_CLASS(RigidBody2D);
+	GDREGISTER_CLASS(CharacterBody2D);
+	GDREGISTER_CLASS(KinematicCollision2D);
+	GDREGISTER_CLASS(Area2D);
+	GDREGISTER_CLASS(CollisionShape2D);
+	GDREGISTER_CLASS(CollisionPolygon2D);
+	GDREGISTER_CLASS(RayCast2D);
+	GDREGISTER_CLASS(VisibleOnScreenNotifier2D);
+	GDREGISTER_CLASS(VisibleOnScreenEnabler2D);
+	GDREGISTER_CLASS(Polygon2D);
+	GDREGISTER_CLASS(Skeleton2D);
+	GDREGISTER_CLASS(Bone2D);
+	GDREGISTER_VIRTUAL_CLASS(Light2D);
+	GDREGISTER_CLASS(PointLight2D);
+	GDREGISTER_CLASS(DirectionalLight2D);
+	GDREGISTER_CLASS(LightOccluder2D);
+	GDREGISTER_CLASS(OccluderPolygon2D);
+	GDREGISTER_CLASS(BackBufferCopy);
 
 	OS::get_singleton()->yield(); //may take time to init
 
-	ClassDB::register_class<Camera2D>();
-	ClassDB::register_virtual_class<Joint2D>();
-	ClassDB::register_class<PinJoint2D>();
-	ClassDB::register_class<GrooveJoint2D>();
-	ClassDB::register_class<DampedSpringJoint2D>();
-	ClassDB::register_class<TileSet>();
-	ClassDB::register_virtual_class<TileSetSource>();
-	ClassDB::register_class<TileSetAtlasSource>();
-	ClassDB::register_class<TileSetScenesCollectionSource>();
-	ClassDB::register_class<TileData>();
-	ClassDB::register_class<TileMap>();
-	ClassDB::register_class<ParallaxBackground>();
-	ClassDB::register_class<ParallaxLayer>();
-	ClassDB::register_class<TouchScreenButton>();
-	ClassDB::register_class<RemoteTransform2D>();
+	GDREGISTER_CLASS(Camera2D);
+	GDREGISTER_VIRTUAL_CLASS(Joint2D);
+	GDREGISTER_CLASS(PinJoint2D);
+	GDREGISTER_CLASS(GrooveJoint2D);
+	GDREGISTER_CLASS(DampedSpringJoint2D);
+	GDREGISTER_CLASS(TileSet);
+	GDREGISTER_VIRTUAL_CLASS(TileSetSource);
+	GDREGISTER_CLASS(TileSetAtlasSource);
+	GDREGISTER_CLASS(TileSetScenesCollectionSource);
+	GDREGISTER_CLASS(TileData);
+	GDREGISTER_CLASS(TileMap);
+	GDREGISTER_CLASS(ParallaxBackground);
+	GDREGISTER_CLASS(ParallaxLayer);
+	GDREGISTER_CLASS(TouchScreenButton);
+	GDREGISTER_CLASS(RemoteTransform2D);
 
-	ClassDB::register_class<SkeletonModificationStack2D>();
-	ClassDB::register_class<SkeletonModification2D>();
-	ClassDB::register_class<SkeletonModification2DLookAt>();
-	ClassDB::register_class<SkeletonModification2DCCDIK>();
-	ClassDB::register_class<SkeletonModification2DFABRIK>();
-	ClassDB::register_class<SkeletonModification2DJiggle>();
-	ClassDB::register_class<SkeletonModification2DTwoBoneIK>();
-	ClassDB::register_class<SkeletonModification2DStackHolder>();
+	GDREGISTER_CLASS(SkeletonModificationStack2D);
+	GDREGISTER_CLASS(SkeletonModification2D);
+	GDREGISTER_CLASS(SkeletonModification2DLookAt);
+	GDREGISTER_CLASS(SkeletonModification2DCCDIK);
+	GDREGISTER_CLASS(SkeletonModification2DFABRIK);
+	GDREGISTER_CLASS(SkeletonModification2DJiggle);
+	GDREGISTER_CLASS(SkeletonModification2DTwoBoneIK);
+	GDREGISTER_CLASS(SkeletonModification2DStackHolder);
 
-	ClassDB::register_class<PhysicalBone2D>();
-	ClassDB::register_class<SkeletonModification2DPhysicalBones>();
+	GDREGISTER_CLASS(PhysicalBone2D);
+	GDREGISTER_CLASS(SkeletonModification2DPhysicalBones);
 
 	OS::get_singleton()->yield(); //may take time to init
 
 	/* REGISTER RESOURCES */
 
-	ClassDB::register_virtual_class<Shader>();
-	ClassDB::register_class<ParticlesMaterial>();
+	GDREGISTER_VIRTUAL_CLASS(Shader);
+	GDREGISTER_CLASS(ParticlesMaterial);
 	SceneTree::add_idle_callback(ParticlesMaterial::flush_changes);
 	ParticlesMaterial::init_shaders();
 
-	ClassDB::register_class<ProceduralSkyMaterial>();
-	ClassDB::register_class<PanoramaSkyMaterial>();
-	ClassDB::register_class<PhysicalSkyMaterial>();
+	GDREGISTER_CLASS(ProceduralSkyMaterial);
+	GDREGISTER_CLASS(PanoramaSkyMaterial);
+	GDREGISTER_CLASS(PhysicalSkyMaterial);
 
-	ClassDB::register_virtual_class<Mesh>();
-	ClassDB::register_class<ArrayMesh>();
-	ClassDB::register_class<ImmediateMesh>();
-	ClassDB::register_class<MultiMesh>();
-	ClassDB::register_class<SurfaceTool>();
-	ClassDB::register_class<MeshDataTool>();
+	GDREGISTER_VIRTUAL_CLASS(Mesh);
+	GDREGISTER_CLASS(ArrayMesh);
+	GDREGISTER_CLASS(ImmediateMesh);
+	GDREGISTER_CLASS(MultiMesh);
+	GDREGISTER_CLASS(SurfaceTool);
+	GDREGISTER_CLASS(MeshDataTool);
 
 #ifndef _3D_DISABLED
-	ClassDB::register_virtual_class<PrimitiveMesh>();
-	ClassDB::register_class<BoxMesh>();
-	ClassDB::register_class<CapsuleMesh>();
-	ClassDB::register_class<CylinderMesh>();
-	ClassDB::register_class<PlaneMesh>();
-	ClassDB::register_class<PrismMesh>();
-	ClassDB::register_class<QuadMesh>();
-	ClassDB::register_class<SphereMesh>();
-	ClassDB::register_class<TubeTrailMesh>();
-	ClassDB::register_class<RibbonTrailMesh>();
-	ClassDB::register_class<PointMesh>();
-	ClassDB::register_virtual_class<Material>();
-	ClassDB::register_virtual_class<BaseMaterial3D>();
-	ClassDB::register_class<StandardMaterial3D>();
-	ClassDB::register_class<ORMMaterial3D>();
+	GDREGISTER_VIRTUAL_CLASS(PrimitiveMesh);
+	GDREGISTER_CLASS(BoxMesh);
+	GDREGISTER_CLASS(CapsuleMesh);
+	GDREGISTER_CLASS(CylinderMesh);
+	GDREGISTER_CLASS(PlaneMesh);
+	GDREGISTER_CLASS(PrismMesh);
+	GDREGISTER_CLASS(QuadMesh);
+	GDREGISTER_CLASS(SphereMesh);
+	GDREGISTER_CLASS(TubeTrailMesh);
+	GDREGISTER_CLASS(RibbonTrailMesh);
+	GDREGISTER_CLASS(PointMesh);
+	GDREGISTER_VIRTUAL_CLASS(Material);
+	GDREGISTER_VIRTUAL_CLASS(BaseMaterial3D);
+	GDREGISTER_CLASS(StandardMaterial3D);
+	GDREGISTER_CLASS(ORMMaterial3D);
 	SceneTree::add_idle_callback(BaseMaterial3D::flush_changes);
 	BaseMaterial3D::init_shaders();
 
-	ClassDB::register_class<MeshLibrary>();
+	GDREGISTER_CLASS(MeshLibrary);
 
 	OS::get_singleton()->yield(); //may take time to init
 
-	ClassDB::register_virtual_class<Shape3D>();
-	ClassDB::register_class<RayShape3D>();
-	ClassDB::register_class<SphereShape3D>();
-	ClassDB::register_class<BoxShape3D>();
-	ClassDB::register_class<CapsuleShape3D>();
-	ClassDB::register_class<CylinderShape3D>();
-	ClassDB::register_class<HeightMapShape3D>();
-	ClassDB::register_class<WorldMarginShape3D>();
-	ClassDB::register_class<ConvexPolygonShape3D>();
-	ClassDB::register_class<ConcavePolygonShape3D>();
+	GDREGISTER_VIRTUAL_CLASS(Shape3D);
+	GDREGISTER_CLASS(RayShape3D);
+	GDREGISTER_CLASS(SphereShape3D);
+	GDREGISTER_CLASS(BoxShape3D);
+	GDREGISTER_CLASS(CapsuleShape3D);
+	GDREGISTER_CLASS(CylinderShape3D);
+	GDREGISTER_CLASS(HeightMapShape3D);
+	GDREGISTER_CLASS(WorldMarginShape3D);
+	GDREGISTER_CLASS(ConvexPolygonShape3D);
+	GDREGISTER_CLASS(ConcavePolygonShape3D);
 
 	OS::get_singleton()->yield(); //may take time to init
 
-	ClassDB::register_class<VelocityTracker3D>();
+	GDREGISTER_CLASS(VelocityTracker3D);
 #endif
 
-	ClassDB::register_class<PhysicsMaterial>();
-	ClassDB::register_class<World3D>();
-	ClassDB::register_class<Environment>();
-	ClassDB::register_class<CameraEffects>();
-	ClassDB::register_class<World2D>();
-	ClassDB::register_virtual_class<Texture>();
-	ClassDB::register_virtual_class<Texture2D>();
-	ClassDB::register_class<Sky>();
-	ClassDB::register_class<StreamTexture2D>();
-	ClassDB::register_class<ImageTexture>();
-	ClassDB::register_class<AtlasTexture>();
-	ClassDB::register_class<MeshTexture>();
-	ClassDB::register_class<CurveTexture>();
-	ClassDB::register_class<Curve3Texture>();
-	ClassDB::register_class<GradientTexture>();
-	ClassDB::register_class<ProxyTexture>();
-	ClassDB::register_class<AnimatedTexture>();
-	ClassDB::register_class<CameraTexture>();
-	ClassDB::register_virtual_class<TextureLayered>();
-	ClassDB::register_virtual_class<ImageTextureLayered>();
-	ClassDB::register_virtual_class<Texture3D>();
-	ClassDB::register_class<ImageTexture3D>();
-	ClassDB::register_class<StreamTexture3D>();
-	ClassDB::register_class<Cubemap>();
-	ClassDB::register_class<CubemapArray>();
-	ClassDB::register_class<Texture2DArray>();
-	ClassDB::register_virtual_class<StreamTextureLayered>();
-	ClassDB::register_class<StreamCubemap>();
-	ClassDB::register_class<StreamCubemapArray>();
-	ClassDB::register_class<StreamTexture2DArray>();
+	GDREGISTER_CLASS(PhysicsMaterial);
+	GDREGISTER_CLASS(World3D);
+	GDREGISTER_CLASS(Environment);
+	GDREGISTER_CLASS(CameraEffects);
+	GDREGISTER_CLASS(World2D);
+	GDREGISTER_VIRTUAL_CLASS(Texture);
+	GDREGISTER_VIRTUAL_CLASS(Texture2D);
+	GDREGISTER_CLASS(Sky);
+	GDREGISTER_CLASS(StreamTexture2D);
+	GDREGISTER_CLASS(ImageTexture);
+	GDREGISTER_CLASS(AtlasTexture);
+	GDREGISTER_CLASS(MeshTexture);
+	GDREGISTER_CLASS(CurveTexture);
+	GDREGISTER_CLASS(Curve3Texture);
+	GDREGISTER_CLASS(GradientTexture);
+	GDREGISTER_CLASS(ProxyTexture);
+	GDREGISTER_CLASS(AnimatedTexture);
+	GDREGISTER_CLASS(CameraTexture);
+	GDREGISTER_VIRTUAL_CLASS(TextureLayered);
+	GDREGISTER_VIRTUAL_CLASS(ImageTextureLayered);
+	GDREGISTER_VIRTUAL_CLASS(Texture3D);
+	GDREGISTER_CLASS(ImageTexture3D);
+	GDREGISTER_CLASS(StreamTexture3D);
+	GDREGISTER_CLASS(Cubemap);
+	GDREGISTER_CLASS(CubemapArray);
+	GDREGISTER_CLASS(Texture2DArray);
+	GDREGISTER_VIRTUAL_CLASS(StreamTextureLayered);
+	GDREGISTER_CLASS(StreamCubemap);
+	GDREGISTER_CLASS(StreamCubemapArray);
+	GDREGISTER_CLASS(StreamTexture2DArray);
 
-	ClassDB::register_class<Animation>();
-	ClassDB::register_class<FontData>();
-	ClassDB::register_class<Font>();
-	ClassDB::register_class<Curve>();
+	GDREGISTER_CLASS(Animation);
+	GDREGISTER_CLASS(FontData);
+	GDREGISTER_CLASS(Font);
+	GDREGISTER_CLASS(Curve);
 
-	ClassDB::register_class<TextFile>();
-	ClassDB::register_class<TextLine>();
-	ClassDB::register_class<TextParagraph>();
+	GDREGISTER_CLASS(TextFile);
+	GDREGISTER_CLASS(TextLine);
+	GDREGISTER_CLASS(TextParagraph);
 
-	ClassDB::register_virtual_class<StyleBox>();
-	ClassDB::register_class<StyleBoxEmpty>();
-	ClassDB::register_class<StyleBoxTexture>();
-	ClassDB::register_class<StyleBoxFlat>();
-	ClassDB::register_class<StyleBoxLine>();
-	ClassDB::register_class<Theme>();
+	GDREGISTER_VIRTUAL_CLASS(StyleBox);
+	GDREGISTER_CLASS(StyleBoxEmpty);
+	GDREGISTER_CLASS(StyleBoxTexture);
+	GDREGISTER_CLASS(StyleBoxFlat);
+	GDREGISTER_CLASS(StyleBoxLine);
+	GDREGISTER_CLASS(Theme);
 
-	ClassDB::register_class<PolygonPathFinder>();
-	ClassDB::register_class<BitMap>();
-	ClassDB::register_class<Gradient>();
+	GDREGISTER_CLASS(PolygonPathFinder);
+	GDREGISTER_CLASS(BitMap);
+	GDREGISTER_CLASS(Gradient);
 
 	OS::get_singleton()->yield(); //may take time to init
 
-	ClassDB::register_class<AudioStreamPlayer>();
-	ClassDB::register_class<AudioStreamPlayer2D>();
+	GDREGISTER_CLASS(AudioStreamPlayer);
+	GDREGISTER_CLASS(AudioStreamPlayer2D);
 #ifndef _3D_DISABLED
-	ClassDB::register_class<AudioStreamPlayer3D>();
+	GDREGISTER_CLASS(AudioStreamPlayer3D);
 #endif
-	ClassDB::register_virtual_class<VideoStream>();
-	ClassDB::register_class<AudioStreamSample>();
+	GDREGISTER_VIRTUAL_CLASS(VideoStream);
+	GDREGISTER_CLASS(AudioStreamSample);
 
 	OS::get_singleton()->yield(); //may take time to init
 
-	ClassDB::register_virtual_class<Shape2D>();
-	ClassDB::register_class<LineShape2D>();
-	ClassDB::register_class<SegmentShape2D>();
-	ClassDB::register_class<RayShape2D>();
-	ClassDB::register_class<CircleShape2D>();
-	ClassDB::register_class<RectangleShape2D>();
-	ClassDB::register_class<CapsuleShape2D>();
-	ClassDB::register_class<ConvexPolygonShape2D>();
-	ClassDB::register_class<ConcavePolygonShape2D>();
-	ClassDB::register_class<Curve2D>();
-	ClassDB::register_class<Path2D>();
-	ClassDB::register_class<PathFollow2D>();
+	GDREGISTER_VIRTUAL_CLASS(Shape2D);
+	GDREGISTER_CLASS(LineShape2D);
+	GDREGISTER_CLASS(SegmentShape2D);
+	GDREGISTER_CLASS(RayShape2D);
+	GDREGISTER_CLASS(CircleShape2D);
+	GDREGISTER_CLASS(RectangleShape2D);
+	GDREGISTER_CLASS(CapsuleShape2D);
+	GDREGISTER_CLASS(ConvexPolygonShape2D);
+	GDREGISTER_CLASS(ConcavePolygonShape2D);
+	GDREGISTER_CLASS(Curve2D);
+	GDREGISTER_CLASS(Path2D);
+	GDREGISTER_CLASS(PathFollow2D);
 
-	ClassDB::register_class<NavigationMesh>();
-	ClassDB::register_class<NavigationPolygon>();
-	ClassDB::register_class<NavigationRegion2D>();
-	ClassDB::register_class<NavigationAgent2D>();
-	ClassDB::register_class<NavigationObstacle2D>();
+	GDREGISTER_CLASS(NavigationMesh);
+	GDREGISTER_CLASS(NavigationPolygon);
+	GDREGISTER_CLASS(NavigationRegion2D);
+	GDREGISTER_CLASS(NavigationAgent2D);
+	GDREGISTER_CLASS(NavigationObstacle2D);
 
 	OS::get_singleton()->yield(); //may take time to init
 
-	ClassDB::register_virtual_class<SceneState>();
-	ClassDB::register_class<PackedScene>();
+	GDREGISTER_VIRTUAL_CLASS(SceneState);
+	GDREGISTER_CLASS(PackedScene);
 
-	ClassDB::register_class<SceneTree>();
-	ClassDB::register_virtual_class<SceneTreeTimer>(); //sorry, you can't create it
+	GDREGISTER_CLASS(SceneTree);
+	GDREGISTER_VIRTUAL_CLASS(SceneTreeTimer); //sorry, you can't create it
 
 #ifndef DISABLE_DEPRECATED
 	// Dropped in 4.0, near approximation.
