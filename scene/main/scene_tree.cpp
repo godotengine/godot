@@ -1393,14 +1393,14 @@ SceneTree::SceneTree() {
 	if (singleton == nullptr) {
 		singleton = this;
 	}
-	debug_collisions_color = GLOBAL_DEF("debug/shapes/collision/shape_color", Color(0.0, 0.6, 0.7, 0.42));
-	debug_collision_contact_color = GLOBAL_DEF("debug/shapes/collision/contact_color", Color(1.0, 0.2, 0.1, 0.8));
-	debug_navigation_color = GLOBAL_DEF("debug/shapes/navigation/geometry_color", Color(0.1, 1.0, 0.7, 0.4));
-	debug_navigation_disabled_color = GLOBAL_DEF("debug/shapes/navigation/disabled_geometry_color", Color(1.0, 0.7, 0.1, 0.4));
-	collision_debug_contacts = GLOBAL_DEF("debug/shapes/collision/max_contacts_displayed", 10000);
+	debug_collisions_color = PROJECT_DEFAULT("debug/shapes/collision/shape_color", Color(0.0, 0.6, 0.7, 0.42));
+	debug_collision_contact_color = PROJECT_DEFAULT("debug/shapes/collision/contact_color", Color(1.0, 0.2, 0.1, 0.8));
+	debug_navigation_color = PROJECT_DEFAULT("debug/shapes/navigation/geometry_color", Color(0.1, 1.0, 0.7, 0.4));
+	debug_navigation_disabled_color = PROJECT_DEFAULT("debug/shapes/navigation/disabled_geometry_color", Color(1.0, 0.7, 0.1, 0.4));
+	collision_debug_contacts = PROJECT_DEFAULT("debug/shapes/collision/max_contacts_displayed", 10000);
 	ProjectSettings::get_singleton()->set_custom_property_info("debug/shapes/collision/max_contacts_displayed", PropertyInfo(Variant::INT, "debug/shapes/collision/max_contacts_displayed", PROPERTY_HINT_RANGE, "0,20000,1")); // No negative
 
-	GLOBAL_DEF("debug/shapes/collision/draw_2d_outlines", true);
+	PROJECT_DEFAULT("debug/shapes/collision/draw_2d_outlines", true);
 
 	Math::randomize();
 
@@ -1420,38 +1420,38 @@ SceneTree::SceneTree() {
 	root->set_as_audio_listener_2d(true);
 	current_scene = nullptr;
 
-	const int msaa_mode = GLOBAL_DEF("rendering/anti_aliasing/quality/msaa", 0);
+	const int msaa_mode = PROJECT_DEFAULT("rendering/anti_aliasing/quality/msaa", 0);
 	ProjectSettings::get_singleton()->set_custom_property_info("rendering/anti_aliasing/quality/msaa", PropertyInfo(Variant::INT, "rendering/anti_aliasing/quality/msaa", PROPERTY_HINT_ENUM, "Disabled (Fastest),2x (Fast),4x (Average),8x (Slow),16x (Slower)"));
 	root->set_msaa(Viewport::MSAA(msaa_mode));
 
-	const int ssaa_mode = GLOBAL_DEF("rendering/anti_aliasing/quality/screen_space_aa", 0);
+	const int ssaa_mode = PROJECT_DEFAULT("rendering/anti_aliasing/quality/screen_space_aa", 0);
 	ProjectSettings::get_singleton()->set_custom_property_info("rendering/anti_aliasing/quality/screen_space_aa", PropertyInfo(Variant::INT, "rendering/anti_aliasing/quality/screen_space_aa", PROPERTY_HINT_ENUM, "Disabled (Fastest),FXAA (Fast)"));
 	root->set_screen_space_aa(Viewport::ScreenSpaceAA(ssaa_mode));
 
-	const bool use_debanding = GLOBAL_DEF("rendering/anti_aliasing/quality/use_debanding", false);
+	const bool use_debanding = PROJECT_DEFAULT("rendering/anti_aliasing/quality/use_debanding", false);
 	root->set_use_debanding(use_debanding);
 
-	const bool use_occlusion_culling = GLOBAL_DEF("rendering/occlusion_culling/use_occlusion_culling", false);
+	const bool use_occlusion_culling = PROJECT_DEFAULT("rendering/occlusion_culling/use_occlusion_culling", false);
 	root->set_use_occlusion_culling(use_occlusion_culling);
 
-	float lod_threshold = GLOBAL_DEF("rendering/mesh_lod/lod_change/threshold_pixels", 1.0);
+	float lod_threshold = PROJECT_DEFAULT("rendering/mesh_lod/lod_change/threshold_pixels", 1.0);
 	ProjectSettings::get_singleton()->set_custom_property_info("rendering/mesh_lod/lod_change/threshold_pixels", PropertyInfo(Variant::FLOAT, "rendering/mesh_lod/lod_change/threshold_pixels", PROPERTY_HINT_RANGE, "0,1024,0.1"));
 	root->set_lod_threshold(lod_threshold);
 
-	bool snap_2d_transforms = GLOBAL_DEF("rendering/2d/snap/snap_2d_transforms_to_pixel", false);
+	bool snap_2d_transforms = PROJECT_DEFAULT("rendering/2d/snap/snap_2d_transforms_to_pixel", false);
 	root->set_snap_2d_transforms_to_pixel(snap_2d_transforms);
 
-	bool snap_2d_vertices = GLOBAL_DEF("rendering/2d/snap/snap_2d_vertices_to_pixel", false);
+	bool snap_2d_vertices = PROJECT_DEFAULT("rendering/2d/snap/snap_2d_vertices_to_pixel", false);
 	root->set_snap_2d_vertices_to_pixel(snap_2d_vertices);
 
-	int shadowmap_size = GLOBAL_DEF("rendering/shadows/shadow_atlas/size", 4096);
+	int shadowmap_size = PROJECT_DEFAULT("rendering/shadows/shadow_atlas/size", 4096);
 	ProjectSettings::get_singleton()->set_custom_property_info("rendering/shadows/shadow_atlas/size", PropertyInfo(Variant::INT, "rendering/shadows/shadow_atlas/size", PROPERTY_HINT_RANGE, "256,16384"));
-	GLOBAL_DEF("rendering/shadows/shadow_atlas/size.mobile", 2048);
-	bool shadowmap_16_bits = GLOBAL_DEF("rendering/shadows/shadow_atlas/16_bits", true);
-	int atlas_q0 = GLOBAL_DEF("rendering/shadows/shadow_atlas/quadrant_0_subdiv", 2);
-	int atlas_q1 = GLOBAL_DEF("rendering/shadows/shadow_atlas/quadrant_1_subdiv", 2);
-	int atlas_q2 = GLOBAL_DEF("rendering/shadows/shadow_atlas/quadrant_2_subdiv", 3);
-	int atlas_q3 = GLOBAL_DEF("rendering/shadows/shadow_atlas/quadrant_3_subdiv", 4);
+	PROJECT_DEFAULT("rendering/shadows/shadow_atlas/size.mobile", 2048);
+	bool shadowmap_16_bits = PROJECT_DEFAULT("rendering/shadows/shadow_atlas/16_bits", true);
+	int atlas_q0 = PROJECT_DEFAULT("rendering/shadows/shadow_atlas/quadrant_0_subdiv", 2);
+	int atlas_q1 = PROJECT_DEFAULT("rendering/shadows/shadow_atlas/quadrant_1_subdiv", 2);
+	int atlas_q2 = PROJECT_DEFAULT("rendering/shadows/shadow_atlas/quadrant_2_subdiv", 3);
+	int atlas_q3 = PROJECT_DEFAULT("rendering/shadows/shadow_atlas/quadrant_3_subdiv", 4);
 	ProjectSettings::get_singleton()->set_custom_property_info("rendering/shadows/shadow_atlas/quadrant_0_subdiv", PropertyInfo(Variant::INT, "rendering/shadows/shadow_atlas/quadrant_0_subdiv", PROPERTY_HINT_ENUM, "Disabled,1 Shadow,4 Shadows,16 Shadows,64 Shadows,256 Shadows,1024 Shadows"));
 	ProjectSettings::get_singleton()->set_custom_property_info("rendering/shadows/shadow_atlas/quadrant_1_subdiv", PropertyInfo(Variant::INT, "rendering/shadows/shadow_atlas/quadrant_1_subdiv", PROPERTY_HINT_ENUM, "Disabled,1 Shadow,4 Shadows,16 Shadows,64 Shadows,256 Shadows,1024 Shadows"));
 	ProjectSettings::get_singleton()->set_custom_property_info("rendering/shadows/shadow_atlas/quadrant_2_subdiv", PropertyInfo(Variant::INT, "rendering/shadows/shadow_atlas/quadrant_2_subdiv", PROPERTY_HINT_ENUM, "Disabled,1 Shadow,4 Shadows,16 Shadows,64 Shadows,256 Shadows,1024 Shadows"));
@@ -1464,9 +1464,9 @@ SceneTree::SceneTree() {
 	root->set_shadow_atlas_quadrant_subdiv(2, Viewport::ShadowAtlasQuadrantSubdiv(atlas_q2));
 	root->set_shadow_atlas_quadrant_subdiv(3, Viewport::ShadowAtlasQuadrantSubdiv(atlas_q3));
 
-	Viewport::SDFOversize sdf_oversize = Viewport::SDFOversize(int(GLOBAL_DEF("rendering/2d/sdf/oversize", 1)));
+	Viewport::SDFOversize sdf_oversize = Viewport::SDFOversize(int(PROJECT_DEFAULT("rendering/2d/sdf/oversize", 1)));
 	root->set_sdf_oversize(sdf_oversize);
-	Viewport::SDFScale sdf_scale = Viewport::SDFScale(int(GLOBAL_DEF("rendering/2d/sdf/scale", 1)));
+	Viewport::SDFScale sdf_scale = Viewport::SDFScale(int(PROJECT_DEFAULT("rendering/2d/sdf/scale", 1)));
 	root->set_sdf_scale(sdf_scale);
 
 	ProjectSettings::get_singleton()->set_custom_property_info("rendering/2d/sdf/oversize", PropertyInfo(Variant::INT, "rendering/2d/sdf/oversize", PROPERTY_HINT_ENUM, "100%,120%,150%,200%"));
@@ -1484,7 +1484,7 @@ SceneTree::SceneTree() {
 			ext_hint += "*." + E->get();
 		}
 		// Get path.
-		String env_path = GLOBAL_DEF("rendering/environment/defaults/default_environment", "");
+		String env_path = PROJECT_DEFAULT("rendering/environment/defaults/default_environment", "");
 		// Setup property.
 		ProjectSettings::get_singleton()->set_custom_property_info("rendering/environment/defaults/default_environment", PropertyInfo(Variant::STRING, "rendering/viewport/default_environment", PROPERTY_HINT_FILE, ext_hint));
 		env_path = env_path.strip_edges();
@@ -1504,7 +1504,7 @@ SceneTree::SceneTree() {
 		}
 	}
 
-	root->set_physics_object_picking(GLOBAL_DEF("physics/common/enable_object_picking", true));
+	root->set_physics_object_picking(PROJECT_DEFAULT("physics/common/enable_object_picking", true));
 
 	root->connect("close_requested", callable_mp(this, &SceneTree::_main_window_close));
 	root->connect("go_back_requested", callable_mp(this, &SceneTree::_main_window_go_back));

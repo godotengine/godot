@@ -268,7 +268,7 @@ Dictionary GDScriptTextDocument::resolve(const Dictionary &p_params) {
 		}
 	} else if (item.kind == lsp::CompletionItemKind::Event) {
 		if (params.context.triggerKind == lsp::CompletionTriggerKind::TriggerCharacter && (params.context.triggerCharacter == "(")) {
-			const String quote_style = EDITOR_DEF("text_editor/completion/use_single_quotes", false) ? "'" : "\"";
+			const String quote_style = EDITOR_DEFAULT("text_editor/completion/use_single_quotes", false) ? "'" : "\"";
 			item.insertText = quote_style + item.label + quote_style;
 		}
 	}

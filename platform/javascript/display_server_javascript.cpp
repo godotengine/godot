@@ -733,7 +733,7 @@ DisplayServerJavaScript::DisplayServerJavaScript(const String &p_rendering_drive
 #if 0
 	EmscriptenWebGLContextAttributes attributes;
 	emscripten_webgl_init_context_attributes(&attributes);
-	attributes.alpha = GLOBAL_GET("display/window/per_pixel_transparency/allowed");
+	attributes.alpha = PROJECT_GET("display/window/per_pixel_transparency/allowed");
 	attributes.antialias = false;
 	ERR_FAIL_INDEX_V(p_video_driver, VIDEO_DRIVER_MAX, ERR_INVALID_PARAMETER);
 

@@ -60,7 +60,7 @@ void StreamPeerTCP::accept_socket(Ref<NetSocket> p_sock, IPAddress p_host, uint1
 	_sock = p_sock;
 	_sock->set_blocking_enabled(false);
 
-	timeout = OS::get_singleton()->get_ticks_msec() + (((uint64_t)GLOBAL_GET("network/limits/tcp/connect_timeout_seconds")) * 1000);
+	timeout = OS::get_singleton()->get_ticks_msec() + (((uint64_t)PROJECT_GET("network/limits/tcp/connect_timeout_seconds")) * 1000);
 	status = STATUS_CONNECTING;
 
 	peer_host = p_host;
@@ -99,7 +99,7 @@ Error StreamPeerTCP::connect_to_host(const IPAddress &p_host, int p_port) {
 		_sock->set_blocking_enabled(false);
 	}
 
-	timeout = OS::get_singleton()->get_ticks_msec() + (((uint64_t)GLOBAL_GET("network/limits/tcp/connect_timeout_seconds")) * 1000);
+	timeout = OS::get_singleton()->get_ticks_msec() + (((uint64_t)PROJECT_GET("network/limits/tcp/connect_timeout_seconds")) * 1000);
 	Error err = _sock->connect_to_host(p_host, p_port);
 
 	if (err == OK) {

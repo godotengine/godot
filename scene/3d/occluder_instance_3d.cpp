@@ -320,7 +320,7 @@ OccluderInstance3D::BakeError OccluderInstance3D::bake(Node *p_from_node, String
 TypedArray<String> OccluderInstance3D::get_configuration_warnings() const {
 	TypedArray<String> warnings = Node::get_configuration_warnings();
 
-	if (!bool(GLOBAL_GET("rendering/occlusion_culling/use_occlusion_culling"))) {
+	if (!bool(PROJECT_GET("rendering/occlusion_culling/use_occlusion_culling"))) {
 		warnings.push_back(TTR("Occlusion culling is disabled in the Project Settings, which means occlusion culling won't be performed in the root viewport.\nTo resolve this, open the Project Settings and enable Rendering > Occlusion Culling > Use Occlusion Culling."));
 	}
 

@@ -636,7 +636,7 @@ void SceneShaderForwardClustered::init(RendererStorageRD *p_storage, const Strin
 		actions.render_mode_defines["cull_disabled"] = "#define DO_SIDE_CHECK\n";
 		actions.render_mode_defines["particle_trails"] = "#define USE_PARTICLE_TRAILS\n";
 
-		bool force_lambert = GLOBAL_GET("rendering/shading/overrides/force_lambert_over_burley");
+		bool force_lambert = PROJECT_GET("rendering/shading/overrides/force_lambert_over_burley");
 
 		if (!force_lambert) {
 			actions.render_mode_defines["diffuse_burley"] = "#define DIFFUSE_BURLEY\n";
@@ -647,7 +647,7 @@ void SceneShaderForwardClustered::init(RendererStorageRD *p_storage, const Strin
 
 		actions.render_mode_defines["sss_mode_skin"] = "#define SSS_MODE_SKIN\n";
 
-		bool force_blinn = GLOBAL_GET("rendering/shading/overrides/force_blinn_over_ggx");
+		bool force_blinn = PROJECT_GET("rendering/shading/overrides/force_blinn_over_ggx");
 
 		if (!force_blinn) {
 			actions.render_mode_defines["specular_schlick_ggx"] = "#define SPECULAR_SCHLICK_GGX\n";

@@ -2448,7 +2448,7 @@ NodePath Node::get_import_path() const {
 
 static void _add_nodes_to_options(const Node *p_base, const Node *p_node, List<String> *r_options) {
 #ifdef TOOLS_ENABLED
-	const String quote_style = EDITOR_DEF("text_editor/completion/use_single_quotes", 0) ? "'" : "\"";
+	const String quote_style = EDITOR_DEFAULT("text_editor/completion/use_single_quotes", 0) ? "'" : "\"";
 #else
 	const String quote_style = "\"";
 #endif
@@ -2528,9 +2528,9 @@ void Node::request_ready() {
 }
 
 void Node::_bind_methods() {
-	GLOBAL_DEF("editor/node_naming/name_num_separator", 0);
+	PROJECT_DEFAULT("editor/node_naming/name_num_separator", 0);
 	ProjectSettings::get_singleton()->set_custom_property_info("editor/node_naming/name_num_separator", PropertyInfo(Variant::INT, "editor/node_naming/name_num_separator", PROPERTY_HINT_ENUM, "None,Space,Underscore,Dash"));
-	GLOBAL_DEF("editor/node_naming/name_casing", NAME_CASING_PASCAL_CASE);
+	PROJECT_DEFAULT("editor/node_naming/name_casing", NAME_CASING_PASCAL_CASE);
 	ProjectSettings::get_singleton()->set_custom_property_info("editor/node_naming/name_casing", PropertyInfo(Variant::INT, "editor/node_naming/name_casing", PROPERTY_HINT_ENUM, "PascalCase,camelCase,snake_case"));
 
 	ClassDB::bind_method(D_METHOD("add_sibling", "sibling", "legible_unique_name"), &Node::add_sibling, DEFVAL(false));

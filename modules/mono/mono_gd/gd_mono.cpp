@@ -110,8 +110,8 @@ void gd_mono_setup_runtime_main_args() {
 }
 
 void gd_mono_profiler_init() {
-	String profiler_args = GLOBAL_DEF("mono/profiler/args", "log:calls,alloc,sample,output=output.mlpd");
-	bool profiler_enabled = GLOBAL_DEF("mono/profiler/enabled", false);
+	String profiler_args = PROJECT_DEFAULT("mono/profiler/args", "log:calls,alloc,sample,output=output.mlpd");
+	bool profiler_enabled = PROJECT_DEFAULT("mono/profiler/enabled", false);
 	if (profiler_enabled) {
 		mono_profiler_load(profiler_args.utf8());
 		return;
@@ -137,9 +137,9 @@ void gd_mono_debug_init() {
 	}
 
 #ifdef TOOLS_ENABLED
-	int da_port = GLOBAL_DEF("mono/debugger_agent/port", 23685);
-	bool da_suspend = GLOBAL_DEF("mono/debugger_agent/wait_for_debugger", false);
-	int da_timeout = GLOBAL_DEF("mono/debugger_agent/wait_timeout", 3000);
+	int da_port = PROJECT_DEFAULT("mono/debugger_agent/port", 23685);
+	bool da_suspend = PROJECT_DEFAULT("mono/debugger_agent/wait_for_debugger", false);
+	int da_timeout = PROJECT_DEFAULT("mono/debugger_agent/wait_timeout", 3000);
 
 	if (Engine::get_singleton()->is_editor_hint() ||
 			ProjectSettings::get_singleton()->get_resource_path().is_empty() ||
@@ -506,7 +506,7 @@ void GDMono::_init_godot_api_hashes() {
 void GDMono::_init_exception_policy() {
 	PropertyInfo exc_policy_prop = PropertyInfo(Variant::INT, "mono/unhandled_exception_policy", PROPERTY_HINT_ENUM,
 			vformat("Terminate Application:%s,Log Error:%s", (int)POLICY_TERMINATE_APP, (int)POLICY_LOG_ERROR));
-	unhandled_exception_policy = (UnhandledExceptionPolicy)(int)GLOBAL_DEF(exc_policy_prop.name, (int)POLICY_TERMINATE_APP);
+	unhandled_exception_policy = (UnhandledExceptionPolicy)(int)PROJECT_DEFAULT(exc_policy_prop.name, (int)POLICY_TERMINATE_APP);
 	ProjectSettings::get_singleton()->set_custom_property_info(exc_policy_prop.name, exc_policy_prop);
 
 	if (Engine::get_singleton()->is_editor_hint()) {

@@ -2164,7 +2164,7 @@ GDScriptLanguage::GDScriptLanguage() {
 	script_frame_time = 0;
 
 	_debug_call_stack_pos = 0;
-	int dmcs = GLOBAL_DEF("debug/settings/gdscript/max_call_stack", 1024);
+	int dmcs = PROJECT_DEFAULT("debug/settings/gdscript/max_call_stack", 1024);
 	ProjectSettings::get_singleton()->set_custom_property_info("debug/settings/gdscript/max_call_stack", PropertyInfo(Variant::INT, "debug/settings/gdscript/max_call_stack", PROPERTY_HINT_RANGE, "1024,4096,1,or_greater")); //minimum is 1024
 
 	if (EngineDebugger::is_active()) {
@@ -2179,14 +2179,14 @@ GDScriptLanguage::GDScriptLanguage() {
 	}
 
 #ifdef DEBUG_ENABLED
-	GLOBAL_DEF("debug/gdscript/warnings/enable", true);
-	GLOBAL_DEF("debug/gdscript/warnings/treat_warnings_as_errors", false);
-	GLOBAL_DEF("debug/gdscript/warnings/exclude_addons", true);
-	GLOBAL_DEF("debug/gdscript/completion/autocomplete_setters_and_getters", false);
+	PROJECT_DEFAULT("debug/gdscript/warnings/enable", true);
+	PROJECT_DEFAULT("debug/gdscript/warnings/treat_warnings_as_errors", false);
+	PROJECT_DEFAULT("debug/gdscript/warnings/exclude_addons", true);
+	PROJECT_DEFAULT("debug/gdscript/completion/autocomplete_setters_and_getters", false);
 	for (int i = 0; i < (int)GDScriptWarning::WARNING_MAX; i++) {
 		String warning = GDScriptWarning::get_name_from_code((GDScriptWarning::Code)i).to_lower();
 		bool default_enabled = !warning.begins_with("unsafe_");
-		GLOBAL_DEF("debug/gdscript/warnings/" + warning, default_enabled);
+		PROJECT_DEFAULT("debug/gdscript/warnings/" + warning, default_enabled);
 	}
 #endif // DEBUG_ENABLED
 }

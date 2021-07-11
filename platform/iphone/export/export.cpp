@@ -535,7 +535,7 @@ void EditorExportPlatformIOS::_fix_config_file(const Ref<EditorExportPreset> &p_
 		} else if (lines[i].find("$interface_orientations") != -1) {
 			String orientations;
 			const DisplayServer::ScreenOrientation screen_orientation =
-					DisplayServer::ScreenOrientation(int(GLOBAL_GET("display/window/handheld/orientation")));
+					DisplayServer::ScreenOrientation(int(PROJECT_GET("display/window/handheld/orientation")));
 
 			switch (screen_orientation) {
 				case DisplayServer::SCREEN_LANDSCAPE:

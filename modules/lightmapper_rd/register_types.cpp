@@ -41,18 +41,18 @@ static Lightmapper *create_lightmapper_rd() {
 #endif
 
 void register_lightmapper_rd_types() {
-	GLOBAL_DEF("rendering/lightmapping/bake_quality/low_quality_ray_count", 16);
-	GLOBAL_DEF("rendering/lightmapping/bake_quality/medium_quality_ray_count", 64);
-	GLOBAL_DEF("rendering/lightmapping/bake_quality/high_quality_ray_count", 256);
-	GLOBAL_DEF("rendering/lightmapping/bake_quality/ultra_quality_ray_count", 1024);
-	GLOBAL_DEF("rendering/lightmapping/bake_performance/max_rays_per_pass", 32);
-	GLOBAL_DEF("rendering/lightmapping/bake_performance/region_size", 512);
+	PROJECT_DEFAULT("rendering/lightmapping/bake_quality/low_quality_ray_count", 16);
+	PROJECT_DEFAULT("rendering/lightmapping/bake_quality/medium_quality_ray_count", 64);
+	PROJECT_DEFAULT("rendering/lightmapping/bake_quality/high_quality_ray_count", 256);
+	PROJECT_DEFAULT("rendering/lightmapping/bake_quality/ultra_quality_ray_count", 1024);
+	PROJECT_DEFAULT("rendering/lightmapping/bake_performance/max_rays_per_pass", 32);
+	PROJECT_DEFAULT("rendering/lightmapping/bake_performance/region_size", 512);
 
-	GLOBAL_DEF("rendering/lightmapping/bake_quality/low_quality_probe_ray_count", 64);
-	GLOBAL_DEF("rendering/lightmapping/bake_quality/medium_quality_probe_ray_count", 256);
-	GLOBAL_DEF("rendering/lightmapping/bake_quality/high_quality_probe_ray_count", 512);
-	GLOBAL_DEF("rendering/lightmapping/bake_quality/ultra_quality_probe_ray_count", 2048);
-	GLOBAL_DEF("rendering/lightmapping/bake_performance/max_rays_per_probe_pass", 64);
+	PROJECT_DEFAULT("rendering/lightmapping/bake_quality/low_quality_probe_ray_count", 64);
+	PROJECT_DEFAULT("rendering/lightmapping/bake_quality/medium_quality_probe_ray_count", 256);
+	PROJECT_DEFAULT("rendering/lightmapping/bake_quality/high_quality_probe_ray_count", 512);
+	PROJECT_DEFAULT("rendering/lightmapping/bake_quality/ultra_quality_probe_ray_count", 2048);
+	PROJECT_DEFAULT("rendering/lightmapping/bake_performance/max_rays_per_probe_pass", 64);
 #ifndef _3D_DISABLED
 	ClassDB::register_class<LightmapperRD>();
 	Lightmapper::create_gpu = create_lightmapper_rd;

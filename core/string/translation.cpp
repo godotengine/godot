@@ -1204,14 +1204,14 @@ bool TranslationServer::_load_translations(const String &p_from) {
 }
 
 void TranslationServer::setup() {
-	String test = GLOBAL_DEF("internationalization/locale/test", "");
+	String test = PROJECT_DEFAULT("internationalization/locale/test", "");
 	test = test.strip_edges();
 	if (test != "") {
 		set_locale(test);
 	} else {
 		set_locale(OS::get_singleton()->get_locale());
 	}
-	fallback = GLOBAL_DEF("internationalization/locale/fallback", "en");
+	fallback = PROJECT_DEFAULT("internationalization/locale/fallback", "en");
 #ifdef TOOLS_ENABLED
 	{
 		String options = "";

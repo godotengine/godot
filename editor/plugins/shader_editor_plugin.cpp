@@ -435,13 +435,13 @@ void ShaderEditor::_project_settings_changed() {
 void ShaderEditor::_update_warnings(bool p_validate) {
 	bool changed = false;
 
-	bool warnings_enabled = GLOBAL_GET("debug/shader_language/warnings/enable").booleanize();
+	bool warnings_enabled = PROJECT_GET("debug/shader_language/warnings/enable").booleanize();
 	if (warnings_enabled != saved_warnings_enabled) {
 		saved_warnings_enabled = warnings_enabled;
 		changed = true;
 	}
 
-	bool treat_warning_as_errors = GLOBAL_GET("debug/shader_language/warnings/treat_warnings_as_errors").booleanize();
+	bool treat_warning_as_errors = PROJECT_GET("debug/shader_language/warnings/treat_warnings_as_errors").booleanize();
 	if (treat_warning_as_errors != saved_treat_warning_as_errors) {
 		saved_treat_warning_as_errors = treat_warning_as_errors;
 		changed = true;
@@ -451,7 +451,7 @@ void ShaderEditor::_update_warnings(bool p_validate) {
 
 	for (int i = 0; i < ShaderWarning::WARNING_MAX; i++) {
 		ShaderWarning::Code code = (ShaderWarning::Code)i;
-		bool value = GLOBAL_GET("debug/shader_language/warnings/" + ShaderWarning::get_name_from_code(code).to_lower());
+		bool value = PROJECT_GET("debug/shader_language/warnings/" + ShaderWarning::get_name_from_code(code).to_lower());
 
 		if (saved_warnings[code] != value) {
 			saved_warnings[code] = value;
@@ -479,7 +479,7 @@ void ShaderEditor::_check_for_external_edit() {
 		return;
 	}
 
-	bool use_autoreload = bool(EDITOR_DEF("text_editor/files/auto_reload_scripts_on_external_change", false));
+	bool use_autoreload = bool(EDITOR_DEFAULT("text_editor/files/auto_reload_scripts_on_external_change", false));
 	if (shader->get_last_modified_time() != FileAccess::get_modified_time(shader->get_path())) {
 		if (use_autoreload) {
 			_reload_shader_from_disk();
@@ -640,10 +640,10 @@ void ShaderEditor::_make_context_menu(bool p_selection, Vector2 p_position) {
 }
 
 ShaderEditor::ShaderEditor(EditorNode *p_node) {
-	GLOBAL_DEF("debug/shader_language/warnings/enable", true);
-	GLOBAL_DEF("debug/shader_language/warnings/treat_warnings_as_errors", false);
+	PROJECT_DEFAULT("debug/shader_language/warnings/enable", true);
+	PROJECT_DEFAULT("debug/shader_language/warnings/treat_warnings_as_errors", false);
 	for (int i = 0; i < (int)ShaderWarning::WARNING_MAX; i++) {
-		GLOBAL_DEF("debug/shader_language/warnings/" + ShaderWarning::get_name_from_code((ShaderWarning::Code)i).to_lower(), true);
+		PROJECT_DEFAULT("debug/shader_language/warnings/" + ShaderWarning::get_name_from_code((ShaderWarning::Code)i).to_lower(), true);
 	}
 	_update_warnings(false);
 

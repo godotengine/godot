@@ -963,7 +963,7 @@ bool ScriptEditor::_test_script_times_on_disk(RES p_for_script) {
 
 	bool need_ask = false;
 	bool need_reload = false;
-	bool use_autoreload = bool(EDITOR_DEF("text_editor/files/auto_reload_scripts_on_external_change", false));
+	bool use_autoreload = bool(EDITOR_DEFAULT("text_editor/files/auto_reload_scripts_on_external_change", false));
 
 	for (int i = 0; i < tab_container->get_child_count(); i++) {
 		ScriptEditorBase *se = Object::cast_to<ScriptEditorBase>(tab_container->get_child(i));
@@ -2500,7 +2500,7 @@ void ScriptEditor::_editor_settings_changed() {
 	_update_script_colors();
 	_update_script_names();
 
-	ScriptServer::set_reload_scripts_on_save(EDITOR_DEF("text_editor/files/auto_reload_and_parse_scripts_on_save", true));
+	ScriptServer::set_reload_scripts_on_save(EDITOR_DEFAULT("text_editor/files/auto_reload_and_parse_scripts_on_save", true));
 }
 
 void ScriptEditor::_filesystem_changed() {
@@ -2829,7 +2829,7 @@ void ScriptEditor::_make_script_list_context_menu() {
 }
 
 void ScriptEditor::set_window_layout(Ref<ConfigFile> p_layout) {
-	if (!bool(EDITOR_DEF("text_editor/files/restore_scripts_on_load", true))) {
+	if (!bool(EDITOR_DEFAULT("text_editor/files/restore_scripts_on_load", true))) {
 		return;
 	}
 
@@ -3705,20 +3705,20 @@ ScriptEditorPlugin::ScriptEditorPlugin(EditorNode *p_node) {
 
 	script_editor->hide();
 
-	EDITOR_DEF("text_editor/files/auto_reload_scripts_on_external_change", true);
-	ScriptServer::set_reload_scripts_on_save(EDITOR_DEF("text_editor/files/auto_reload_and_parse_scripts_on_save", true));
-	EDITOR_DEF("text_editor/files/open_dominant_script_on_scene_change", true);
-	EDITOR_DEF("text_editor/external/use_external_editor", false);
-	EDITOR_DEF("text_editor/external/exec_path", "");
-	EDITOR_DEF("text_editor/script_list/script_temperature_enabled", true);
-	EDITOR_DEF("text_editor/script_list/script_temperature_history_size", 15);
-	EDITOR_DEF("text_editor/script_list/group_help_pages", true);
+	EDITOR_DEFAULT("text_editor/files/auto_reload_scripts_on_external_change", true);
+	ScriptServer::set_reload_scripts_on_save(EDITOR_DEFAULT("text_editor/files/auto_reload_and_parse_scripts_on_save", true));
+	EDITOR_DEFAULT("text_editor/files/open_dominant_script_on_scene_change", true);
+	EDITOR_DEFAULT("text_editor/external/use_external_editor", false);
+	EDITOR_DEFAULT("text_editor/external/exec_path", "");
+	EDITOR_DEFAULT("text_editor/script_list/script_temperature_enabled", true);
+	EDITOR_DEFAULT("text_editor/script_list/script_temperature_history_size", 15);
+	EDITOR_DEFAULT("text_editor/script_list/group_help_pages", true);
 	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::INT, "text_editor/script_list/sort_scripts_by", PROPERTY_HINT_ENUM, "Name,Path,None"));
-	EDITOR_DEF("text_editor/script_list/sort_scripts_by", 0);
+	EDITOR_DEFAULT("text_editor/script_list/sort_scripts_by", 0);
 	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::INT, "text_editor/script_list/list_script_names_as", PROPERTY_HINT_ENUM, "Name,Parent Directory And Name,Full Path"));
-	EDITOR_DEF("text_editor/script_list/list_script_names_as", 0);
+	EDITOR_DEFAULT("text_editor/script_list/list_script_names_as", 0);
 	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::STRING, "text_editor/external/exec_path", PROPERTY_HINT_GLOBAL_FILE));
-	EDITOR_DEF("text_editor/external/exec_flags", "{file}");
+	EDITOR_DEFAULT("text_editor/external/exec_flags", "{file}");
 	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::STRING, "text_editor/external/exec_flags", PROPERTY_HINT_PLACEHOLDER_TEXT, "Call flags with placeholders: {project}, {file}, {col}, {line}."));
 
 	ED_SHORTCUT("script_editor/reopen_closed_script", TTR("Reopen Closed Script"), KEY_MASK_CMD | KEY_MASK_SHIFT | KEY_T);

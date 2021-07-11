@@ -1436,12 +1436,12 @@ public:
 
 void register_uwp_exporter() {
 #ifdef WINDOWS_ENABLED
-	EDITOR_DEF("export/uwp/signtool", "");
+	EDITOR_DEFAULT("export/uwp/signtool", "");
 	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::STRING, "export/uwp/signtool", PROPERTY_HINT_GLOBAL_FILE, "*.exe"));
-	EDITOR_DEF("export/uwp/debug_certificate", "");
+	EDITOR_DEFAULT("export/uwp/debug_certificate", "");
 	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::STRING, "export/uwp/debug_certificate", PROPERTY_HINT_GLOBAL_FILE, "*.pfx"));
-	EDITOR_DEF("export/uwp/debug_password", "");
-	EDITOR_DEF("export/uwp/debug_algorithm", 2); // SHA256 is the default
+	EDITOR_DEFAULT("export/uwp/debug_password", "");
+	EDITOR_DEFAULT("export/uwp/debug_algorithm", 2); // SHA256 is the default
 	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::INT, "export/uwp/debug_algorithm", PROPERTY_HINT_ENUM, "MD5,SHA1,SHA256"));
 #endif // WINDOWS_ENABLED
 

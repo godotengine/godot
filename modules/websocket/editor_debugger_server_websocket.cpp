@@ -77,7 +77,7 @@ Ref<RemoteDebuggerPeer> EditorDebuggerServerWebSocket::take_connection() {
 
 EditorDebuggerServerWebSocket::EditorDebuggerServerWebSocket() {
 	server = Ref<WebSocketServer>(WebSocketServer::create());
-	int max_pkts = (int)GLOBAL_GET("network/limits/debugger/max_queued_messages");
+	int max_pkts = (int)PROJECT_GET("network/limits/debugger/max_queued_messages");
 	server->set_buffers(8192, max_pkts, 8192, max_pkts);
 	server->connect("client_connected", callable_mp(this, &EditorDebuggerServerWebSocket::_peer_connected));
 	server->connect("client_disconnected", callable_mp(this, &EditorDebuggerServerWebSocket::_peer_disconnected));

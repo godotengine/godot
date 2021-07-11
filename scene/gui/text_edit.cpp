@@ -5915,9 +5915,9 @@ void TextEdit::_bind_methods() {
 	BIND_ENUM_CONSTANT(MENU_INSERT_SHY);
 	BIND_ENUM_CONSTANT(MENU_MAX);
 
-	GLOBAL_DEF("gui/timers/text_edit_idle_detect_sec", 3);
+	PROJECT_DEFAULT("gui/timers/text_edit_idle_detect_sec", 3);
 	ProjectSettings::get_singleton()->set_custom_property_info("gui/timers/text_edit_idle_detect_sec", PropertyInfo(Variant::FLOAT, "gui/timers/text_edit_idle_detect_sec", PROPERTY_HINT_RANGE, "0,10,0.01,or_greater")); // No negative numbers.
-	GLOBAL_DEF("gui/common/text_edit_undo_stack_max_size", 1024);
+	PROJECT_DEFAULT("gui/common/text_edit_undo_stack_max_size", 1024);
 	ProjectSettings::get_singleton()->set_custom_property_info("gui/common/text_edit_undo_stack_max_size", PropertyInfo(Variant::INT, "gui/common/text_edit_undo_stack_max_size", PROPERTY_HINT_RANGE, "0,10000,1,or_greater")); // No negative numbers.
 }
 
@@ -5950,7 +5950,7 @@ TextEdit::TextEdit() {
 	idle_detect = memnew(Timer);
 	add_child(idle_detect);
 	idle_detect->set_one_shot(true);
-	idle_detect->set_wait_time(GLOBAL_GET("gui/timers/text_edit_idle_detect_sec"));
+	idle_detect->set_wait_time(PROJECT_GET("gui/timers/text_edit_idle_detect_sec"));
 	idle_detect->connect("timeout", callable_mp(this, &TextEdit::_push_current_op));
 
 	click_select_held = memnew(Timer);
@@ -5958,7 +5958,7 @@ TextEdit::TextEdit() {
 	click_select_held->set_wait_time(0.05);
 	click_select_held->connect("timeout", callable_mp(this, &TextEdit::_click_selection_held));
 
-	undo_stack_max_size = GLOBAL_GET("gui/common/text_edit_undo_stack_max_size");
+	undo_stack_max_size = PROJECT_GET("gui/common/text_edit_undo_stack_max_size");
 
 	menu = memnew(PopupMenu);
 	add_child(menu);

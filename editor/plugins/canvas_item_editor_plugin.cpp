@@ -3682,7 +3682,7 @@ void CanvasItemEditor::set_current_tool(Tool p_tool) {
 
 void CanvasItemEditor::_notification(int p_what) {
 	if (p_what == NOTIFICATION_PHYSICS_PROCESS) {
-		EditorNode::get_singleton()->get_scene_root()->set_snap_controls_to_pixels(GLOBAL_GET("gui/common/snap_controls_to_pixels"));
+		EditorNode::get_singleton()->get_scene_root()->set_snap_controls_to_pixels(PROJECT_GET("gui/common/snap_controls_to_pixels"));
 
 		bool has_container_parents = false;
 		int nb_control = 0;

@@ -241,5 +241,5 @@ RemoteDebuggerPeer *RemoteDebuggerPeerTCP::create(const String &p_uri) {
 }
 
 RemoteDebuggerPeer::RemoteDebuggerPeer() {
-	max_queued_messages = (int)GLOBAL_GET("network/limits/debugger/max_queued_messages");
+	max_queued_messages = (int)PROJECT_GET("network/limits/debugger/max_queued_messages");
 }

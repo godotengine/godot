@@ -653,13 +653,13 @@ EditorProfiler::EditorProfiler() {
 	h_split->add_child(graph);
 	graph->set_h_size_flags(SIZE_EXPAND_FILL);
 
-	int metric_size = CLAMP(int(EDITOR_DEF("debugger/profiler_frame_history_size", 600)), 60, 1024);
+	int metric_size = CLAMP(int(EDITOR_DEFAULT("debugger/profiler_frame_history_size", 600)), 60, 1024);
 	frame_metrics.resize(metric_size);
 	total_metrics = 0;
 	last_metric = -1;
 	hover_metric = -1;
 
-	EDITOR_DEF("debugger/profiler_frame_max_functions", 64);
+	EDITOR_DEFAULT("debugger/profiler_frame_max_functions", 64);
 
 	frame_delay = memnew(Timer);
 	frame_delay->set_wait_time(0.1);

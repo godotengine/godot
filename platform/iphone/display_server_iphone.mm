@@ -121,7 +121,7 @@ DisplayServerIPhone::DisplayServerIPhone(const String &p_rendering_driver, Windo
 	}
 #endif
 
-	bool keep_screen_on = bool(GLOBAL_DEF("display/window/energy_saving/keep_screen_on", true));
+	bool keep_screen_on = bool(PROJECT_DEFAULT("display/window/energy_saving/keep_screen_on", true));
 	screen_set_keep_on(keep_screen_on);
 
 	Input::get_singleton()->set_event_dispatch_function(_dispatch_input_events);
@@ -222,7 +222,7 @@ void DisplayServerIPhone::_window_callback(const Callable &p_callable, const Var
 // MARK: Touches
 
 void DisplayServerIPhone::touch_press(int p_idx, int p_x, int p_y, bool p_pressed, bool p_double_click) {
-	if (!GLOBAL_DEF("debug/disable_touch", false)) {
+	if (!PROJECT_DEFAULT("debug/disable_touch", false)) {
 		Ref<InputEventScreenTouch> ev;
 		ev.instantiate();
 
@@ -234,7 +234,7 @@ void DisplayServerIPhone::touch_press(int p_idx, int p_x, int p_y, bool p_presse
 };
 
 void DisplayServerIPhone::touch_drag(int p_idx, int p_prev_x, int p_prev_y, int p_x, int p_y) {
-	if (!GLOBAL_DEF("debug/disable_touch", false)) {
+	if (!PROJECT_DEFAULT("debug/disable_touch", false)) {
 		Ref<InputEventScreenDrag> ev;
 		ev.instantiate();
 		ev->set_index(p_idx);

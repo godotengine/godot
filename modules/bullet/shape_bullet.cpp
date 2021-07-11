@@ -426,7 +426,7 @@ void ConcavePolygonShapeBullet::setup(Vector<Vector3> p_faces) {
 
 		meshShape = bulletnew(btBvhTriangleMeshShape(shapeInterface, useQuantizedAabbCompression));
 
-		if (GLOBAL_DEF("physics/3d/smooth_trimesh_collision", false)) {
+		if (PROJECT_DEFAULT("physics/3d/smooth_trimesh_collision", false)) {
 			btTriangleInfoMap *triangleInfoMap = new btTriangleInfoMap();
 			btGenerateInternalEdgeInfo(meshShape, triangleInfoMap);
 		}

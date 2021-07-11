@@ -179,16 +179,54 @@ public:
 };
 
 //not a macro any longer
-Variant _GLOBAL_DEF(const String &p_var, const Variant &p_default, bool p_restart_if_changed = false, bool p_ignore_value_in_docs = false, bool p_basic = false);
-#define GLOBAL_DEF(m_var, m_value) _GLOBAL_DEF(m_var, m_value)
-#define GLOBAL_DEF_RST(m_var, m_value) _GLOBAL_DEF(m_var, m_value, true)
-#define GLOBAL_DEF_NOVAL(m_var, m_value) _GLOBAL_DEF(m_var, m_value, false, true)
-#define GLOBAL_DEF_RST_NOVAL(m_var, m_value) _GLOBAL_DEF(m_var, m_value, true, true)
-#define GLOBAL_GET(m_var) ProjectSettings::get_singleton()->get(m_var)
+Variant _PROJECT_DEFAULT(const String &p_var, const Variant &p_default, bool p_restart_if_changed = false, bool p_ignore_value_in_docs = false, bool p_basic = false);
 
-#define GLOBAL_DEF_BASIC(m_var, m_value) _GLOBAL_DEF(m_var, m_value, false, false, true)
-#define GLOBAL_DEF_RST_BASIC(m_var, m_value) _GLOBAL_DEF(m_var, m_value, true, false, true)
-#define GLOBAL_DEF_NOVAL_BASIC(m_var, m_value) _GLOBAL_DEF(m_var, m_value, false, true, true)
-#define GLOBAL_DEF_RST_NOVAL_BASIC(m_var, m_value) _GLOBAL_DEF(m_var, m_value, true, true, true)
+// Returns the value of the project setting `m_var`, or `m_value` if the setting is not defined yet.
+// Consider casting this macro's return value to a specific type to improve safety and avoid crashes.
+#define PROJECT_DEFAULT(m_var, m_value) _PROJECT_DEFAULT(m_var, m_value)
+
+// Returns the value of the project setting `m_var`, or `m_value` if the setting is not defined yet.
+// Also requests a restart of the editor when changed using the Project Settings dialog.
+// Consider casting this macro's return value to a specific type to improve safety and avoid crashes.
+#define PROJECT_DEFAULT_RESTART(m_var, m_value) _PROJECT_DEFAULT(m_var, m_value, true)
+
+// Returns the value of the project setting `m_var`, or `m_value` if the setting is not defined yet.
+// Does not define a value for the class reference XML generation.
+// Consider casting this macro's return value to a specific type to improve safety and avoid crashes.
+#define PROJECT_DEFAULT_NO_VAL(m_var, m_value) _PROJECT_DEFAULT(m_var, m_value, false, true)
+
+// Returns the value of the project setting `m_var`, or `m_value` if the setting is not defined yet.
+// Also requests a restart of the editor when changed using the Project Settings dialog.
+// Does not define a value for the class reference XML generation.
+// Consider casting this macro's return value to a specific type to improve safety and avoid crashes.
+#define PROJECT_DEF_RESTART_NO_VAL(m_var, m_value) _PROJECT_DEFAULT(m_var, m_value, true, true)
+
+// Returns the value of the project setting `m_var`, or Variant `null` if the setting doesn't exist.
+// Consider casting this macro's return value to a specific type to improve safety and avoid crashes.
+#define PROJECT_GET(m_var) ProjectSettings::get_singleton()->get(m_var)
+
+// Returns the value of the project setting `m_var`, or `m_value` if the setting is not defined yet.
+// Marks the setting as "basic" to make it appear by default in the Project Settings dialog.
+// Consider casting this macro's return value to a specific type to improve safety and avoid crashes.
+#define PROJECT_DEFAULT_BASIC(m_var, m_value) _PROJECT_DEFAULT(m_var, m_value, false, false, true)
+
+// Returns the value of the project setting `m_var`, or `m_value` if the setting is not defined yet.
+// Also requests a restart of the editor when changed using the Project Settings dialog.
+// Marks the setting as "basic" to make it appear by default in the Project Settings dialog.
+// Consider casting this macro's return value to a specific type to improve safety and avoid crashes.
+#define PROJECT_DEFAULT_RESTART_BASIC(m_var, m_value) _PROJECT_DEFAULT(m_var, m_value, true, false, true)
+
+// Returns the value of the project setting `m_var`, or `m_value` if the setting is not defined yet.
+// Does not define a value for the class reference XML generation.
+// Marks the setting as "basic" to make it appear by default in the Project Settings dialog.
+// Consider casting this macro's return value to a specific type to improve safety and avoid crashes.
+#define PROJECT_DEFAULT_NO_VAL_BASIC(m_var, m_value) _PROJECT_DEFAULT(m_var, m_value, false, true, true)
+
+// Returns the value of the project setting `m_var`, or `m_value` if the setting is not defined yet.
+// Also requests a restart of the editor when changed using the Project Settings dialog.
+// Does not define a value for the class reference XML generation.
+// Marks the setting as "basic" to make it appear by default in the Project Settings dialog.
+// Consider casting this macro's return value to a specific type to improve safety and avoid crashes.
+#define PROJECT_DEFAULT_RESTART_NO_VAL_BASIC(m_var, m_value) _PROJECT_DEFAULT(m_var, m_value, true, true, true)
 
 #endif // PROJECT_SETTINGS_H

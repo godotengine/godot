@@ -1540,7 +1540,7 @@ void SceneTreeDock::perform_node_renames(Node *p_base, List<Pair<NodePath, NodeP
 		}
 	}
 
-	bool autorename_animation_tracks = bool(EDITOR_DEF("editors/animation/autorename_animation_tracks", true));
+	bool autorename_animation_tracks = bool(EDITOR_DEFAULT("editors/animation/autorename_animation_tracks", true));
 
 	if (autorename_animation_tracks && Object::cast_to<AnimationPlayer>(p_base)) {
 		AnimationPlayer *ap = Object::cast_to<AnimationPlayer>(p_base);
@@ -3285,9 +3285,9 @@ SceneTreeDock::SceneTreeDock(EditorNode *p_editor, Node *p_scene_root, EditorSel
 	profile_allow_editing = true;
 	profile_allow_script_editing = true;
 
-	EDITOR_DEF("interface/editors/show_scene_tree_root_selection", true);
-	EDITOR_DEF("interface/editors/derive_script_globals_by_name", true);
-	EDITOR_DEF("_use_favorites_root_selection", false);
+	EDITOR_DEFAULT("interface/editors/show_scene_tree_root_selection", true);
+	EDITOR_DEFAULT("interface/editors/derive_script_globals_by_name", true);
+	EDITOR_DEFAULT("_use_favorites_root_selection", false);
 
 	Resource::_update_configuration_warning = _update_configuration_warning;
 }

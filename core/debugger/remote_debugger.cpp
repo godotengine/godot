@@ -265,7 +265,7 @@ struct RemoteDebugger::ScriptsProfiler {
 	}
 
 	ScriptsProfiler() {
-		info.resize(GLOBAL_GET("debug/settings/profiler/max_functions"));
+		info.resize(PROJECT_GET("debug/settings/profiler/max_functions"));
 		ptrs.resize(info.size());
 	}
 };
@@ -921,9 +921,9 @@ Error RemoteDebugger::_profiler_capture(const String &p_cmd, const Array &p_data
 
 RemoteDebugger::RemoteDebugger(Ref<RemoteDebuggerPeer> p_peer) {
 	peer = p_peer;
-	max_chars_per_second = GLOBAL_GET("network/limits/debugger/max_chars_per_second");
-	max_errors_per_second = GLOBAL_GET("network/limits/debugger/max_errors_per_second");
-	max_warnings_per_second = GLOBAL_GET("network/limits/debugger/max_warnings_per_second");
+	max_chars_per_second = PROJECT_GET("network/limits/debugger/max_chars_per_second");
+	max_errors_per_second = PROJECT_GET("network/limits/debugger/max_errors_per_second");
+	max_warnings_per_second = PROJECT_GET("network/limits/debugger/max_warnings_per_second");
 
 	// Network Profiler
 	network_profiler = memnew(NetworkProfiler);

@@ -2252,7 +2252,7 @@ void Node3DEditorViewport::scale_freelook_speed(real_t scale) {
 
 Point2i Node3DEditorViewport::_get_warped_mouse_motion(const Ref<InputEventMouseMotion> &p_ev_mouse_motion) const {
 	Point2i relative;
-	if (bool(EDITOR_DEF("editors/3d/navigation/warped_mouse_panning", false))) {
+	if (bool(EDITOR_DEFAULT("editors/3d/navigation/warped_mouse_panning", false))) {
 		relative = Input::get_singleton()->warp_mouse_motion(p_ev_mouse_motion, surface->get_global_rect());
 	} else {
 		relative = p_ev_mouse_motion->get_relative();
@@ -2376,12 +2376,12 @@ void Node3DEditorViewport::_project_settings_changed() {
 
 	const int msaa_mode = ProjectSettings::get_singleton()->get("rendering/anti_aliasing/quality/msaa");
 	viewport->set_msaa(Viewport::MSAA(msaa_mode));
-	const int ssaa_mode = GLOBAL_GET("rendering/anti_aliasing/quality/screen_space_aa");
+	const int ssaa_mode = PROJECT_GET("rendering/anti_aliasing/quality/screen_space_aa");
 	viewport->set_screen_space_aa(Viewport::ScreenSpaceAA(ssaa_mode));
-	const bool use_debanding = GLOBAL_GET("rendering/anti_aliasing/quality/use_debanding");
+	const bool use_debanding = PROJECT_GET("rendering/anti_aliasing/quality/use_debanding");
 	viewport->set_use_debanding(use_debanding);
 
-	const bool use_occlusion_culling = GLOBAL_GET("rendering/occlusion_culling/use_occlusion_culling");
+	const bool use_occlusion_culling = PROJECT_GET("rendering/occlusion_culling/use_occlusion_culling");
 	viewport->set_use_occlusion_culling(use_occlusion_culling);
 }
 
@@ -7088,11 +7088,11 @@ Node3DEditor::Node3DEditor(EditorNode *p_editor) {
 	set_process_unhandled_key_input(true);
 	add_to_group("_spatial_editor_group");
 
-	EDITOR_DEF("editors/3d/manipulator_gizmo_size", 80);
+	EDITOR_DEFAULT("editors/3d/manipulator_gizmo_size", 80);
 	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::INT, "editors/3d/manipulator_gizmo_size", PROPERTY_HINT_RANGE, "16,160,1"));
-	EDITOR_DEF("editors/3d/manipulator_gizmo_opacity", 0.9);
+	EDITOR_DEFAULT("editors/3d/manipulator_gizmo_opacity", 0.9);
 	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::FLOAT, "editors/3d/manipulator_gizmo_opacity", PROPERTY_HINT_RANGE, "0,1,0.01"));
-	EDITOR_DEF("editors/3d/navigation/show_viewport_rotation_gizmo", true);
+	EDITOR_DEFAULT("editors/3d/navigation/show_viewport_rotation_gizmo", true);
 
 	over_gizmo_handle = -1;
 	{
@@ -7393,7 +7393,7 @@ Node3DEditorPlugin::~Node3DEditorPlugin() {
 }
 
 void EditorNode3DGizmoPlugin::create_material(const String &p_name, const Color &p_color, bool p_billboard, bool p_on_top, bool p_use_vertex_color) {
-	Color instantiated_color = EDITOR_DEF("editors/3d_gizmos/gizmo_colors/instantiated", Color(0.7, 0.7, 0.7, 0.6));
+	Color instantiated_color = EDITOR_DEFAULT("editors/3d_gizmos/gizmo_colors/instantiated", Color(0.7, 0.7, 0.7, 0.6));
 
 	Vector<Ref<StandardMaterial3D>> mats;
 
@@ -7435,7 +7435,7 @@ void EditorNode3DGizmoPlugin::create_material(const String &p_name, const Color 
 }
 
 void EditorNode3DGizmoPlugin::create_icon_material(const String &p_name, const Ref<Texture2D> &p_texture, bool p_on_top, const Color &p_albedo) {
-	Color instantiated_color = EDITOR_DEF("editors/3d_gizmos/gizmo_colors/instantiated", Color(0.7, 0.7, 0.7, 0.6));
+	Color instantiated_color = EDITOR_DEFAULT("editors/3d_gizmos/gizmo_colors/instantiated", Color(0.7, 0.7, 0.7, 0.6));
 
 	Vector<Ref<StandardMaterial3D>> icons;
 

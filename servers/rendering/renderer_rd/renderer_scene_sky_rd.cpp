@@ -649,9 +649,9 @@ RendererStorageRD::MaterialData *RendererSceneSkyRD::_create_sky_material_funcs(
 };
 
 RendererSceneSkyRD::RendererSceneSkyRD() {
-	roughness_layers = GLOBAL_GET("rendering/reflections/sky_reflections/roughness_layers");
-	sky_ggx_samples_quality = GLOBAL_GET("rendering/reflections/sky_reflections/ggx_samples");
-	sky_use_cubemap_array = GLOBAL_GET("rendering/reflections/sky_reflections/texture_array_reflections");
+	roughness_layers = PROJECT_GET("rendering/reflections/sky_reflections/roughness_layers");
+	sky_ggx_samples_quality = PROJECT_GET("rendering/reflections/sky_reflections/ggx_samples");
+	sky_use_cubemap_array = PROJECT_GET("rendering/reflections/sky_reflections/texture_array_reflections");
 }
 
 void RendererSceneSkyRD::init(RendererStorageRD *p_storage) {

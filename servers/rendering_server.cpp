@@ -2720,149 +2720,149 @@ RenderingServer::RenderingServer() {
 	thread_pool = memnew(RendererThreadPool);
 	singleton = this;
 
-	GLOBAL_DEF_RST("rendering/textures/vram_compression/import_bptc", false);
-	GLOBAL_DEF_RST("rendering/textures/vram_compression/import_s3tc", true);
-	GLOBAL_DEF_RST("rendering/textures/vram_compression/import_etc", false);
-	GLOBAL_DEF_RST("rendering/textures/vram_compression/import_etc2", true);
-	GLOBAL_DEF_RST("rendering/textures/vram_compression/import_pvrtc", false);
+	PROJECT_DEFAULT_RESTART("rendering/textures/vram_compression/import_bptc", false);
+	PROJECT_DEFAULT_RESTART("rendering/textures/vram_compression/import_s3tc", true);
+	PROJECT_DEFAULT_RESTART("rendering/textures/vram_compression/import_etc", false);
+	PROJECT_DEFAULT_RESTART("rendering/textures/vram_compression/import_etc2", true);
+	PROJECT_DEFAULT_RESTART("rendering/textures/vram_compression/import_pvrtc", false);
 
-	GLOBAL_DEF("rendering/textures/lossless_compression/force_png", false);
-	GLOBAL_DEF("rendering/textures/lossless_compression/webp_compression_level", 2);
+	PROJECT_DEFAULT("rendering/textures/lossless_compression/force_png", false);
+	PROJECT_DEFAULT("rendering/textures/lossless_compression/webp_compression_level", 2);
 	ProjectSettings::get_singleton()->set_custom_property_info("rendering/textures/lossless_compression/webp_compression_level", PropertyInfo(Variant::INT, "rendering/textures/lossless_compression/webp_compression_level", PROPERTY_HINT_RANGE, "0,9,1"));
 
-	GLOBAL_DEF("rendering/limits/time/time_rollover_secs", 3600);
+	PROJECT_DEFAULT("rendering/limits/time/time_rollover_secs", 3600);
 	ProjectSettings::get_singleton()->set_custom_property_info("rendering/limits/time/time_rollover_secs", PropertyInfo(Variant::FLOAT, "rendering/limits/time/time_rollover_secs", PROPERTY_HINT_RANGE, "0,10000,1,or_greater"));
 
-	GLOBAL_DEF("rendering/shadows/directional_shadow/size", 4096);
-	GLOBAL_DEF("rendering/shadows/directional_shadow/size.mobile", 2048);
+	PROJECT_DEFAULT("rendering/shadows/directional_shadow/size", 4096);
+	PROJECT_DEFAULT("rendering/shadows/directional_shadow/size.mobile", 2048);
 	ProjectSettings::get_singleton()->set_custom_property_info("rendering/shadows/directional_shadow/size", PropertyInfo(Variant::INT, "rendering/shadows/directional_shadow/size", PROPERTY_HINT_RANGE, "256,16384"));
-	GLOBAL_DEF("rendering/shadows/directional_shadow/soft_shadow_quality", 2);
-	GLOBAL_DEF("rendering/shadows/directional_shadow/soft_shadow_quality.mobile", 0);
+	PROJECT_DEFAULT("rendering/shadows/directional_shadow/soft_shadow_quality", 2);
+	PROJECT_DEFAULT("rendering/shadows/directional_shadow/soft_shadow_quality.mobile", 0);
 	ProjectSettings::get_singleton()->set_custom_property_info("rendering/shadows/directional_shadow/soft_shadow_quality", PropertyInfo(Variant::INT, "rendering/shadows/directional_shadow/soft_shadow_quality", PROPERTY_HINT_ENUM, "Hard (Fastest),Soft Low (Fast),Soft Medium (Average),Soft High (Slow),Soft Ultra (Slowest)"));
-	GLOBAL_DEF("rendering/shadows/directional_shadow/16_bits", true);
+	PROJECT_DEFAULT("rendering/shadows/directional_shadow/16_bits", true);
 
-	GLOBAL_DEF("rendering/shadows/shadows/soft_shadow_quality", 2);
-	GLOBAL_DEF("rendering/shadows/shadows/soft_shadow_quality.mobile", 0);
+	PROJECT_DEFAULT("rendering/shadows/shadows/soft_shadow_quality", 2);
+	PROJECT_DEFAULT("rendering/shadows/shadows/soft_shadow_quality.mobile", 0);
 	ProjectSettings::get_singleton()->set_custom_property_info("rendering/shadows/shadows/soft_shadow_quality", PropertyInfo(Variant::INT, "rendering/shadows/shadows/soft_shadow_quality", PROPERTY_HINT_ENUM, "Hard (Fastest),Soft Low (Fast),Soft Medium (Average),Soft High (Slow),Soft Ultra (Slowest)"));
 
-	GLOBAL_DEF("rendering/2d/shadow_atlas/size", 2048);
+	PROJECT_DEFAULT("rendering/2d/shadow_atlas/size", 2048);
 
-	GLOBAL_DEF_RST("rendering/vulkan/rendering/back_end", 0);
-	GLOBAL_DEF_RST("rendering/vulkan/rendering/back_end.mobile", 1);
+	PROJECT_DEFAULT_RESTART("rendering/vulkan/rendering/back_end", 0);
+	PROJECT_DEFAULT_RESTART("rendering/vulkan/rendering/back_end.mobile", 1);
 	ProjectSettings::get_singleton()->set_custom_property_info("rendering/vulkan/rendering/back_end",
 			PropertyInfo(Variant::INT,
 					"rendering/vulkan/rendering/back_end",
 					PROPERTY_HINT_ENUM, "ForwardClustered,ForwardMobile"));
 
-	GLOBAL_DEF("rendering/shader_compiler/shader_cache/enabled", true);
-	GLOBAL_DEF("rendering/shader_compiler/shader_cache/compress", true);
-	GLOBAL_DEF("rendering/shader_compiler/shader_cache/use_zstd_compression", true);
-	GLOBAL_DEF("rendering/shader_compiler/shader_cache/strip_debug", false);
-	GLOBAL_DEF("rendering/shader_compiler/shader_cache/strip_debug.release", true);
+	PROJECT_DEFAULT("rendering/shader_compiler/shader_cache/enabled", true);
+	PROJECT_DEFAULT("rendering/shader_compiler/shader_cache/compress", true);
+	PROJECT_DEFAULT("rendering/shader_compiler/shader_cache/use_zstd_compression", true);
+	PROJECT_DEFAULT("rendering/shader_compiler/shader_cache/strip_debug", false);
+	PROJECT_DEFAULT("rendering/shader_compiler/shader_cache/strip_debug.release", true);
 
-	GLOBAL_DEF("rendering/reflections/sky_reflections/roughness_layers", 8);
-	GLOBAL_DEF("rendering/reflections/sky_reflections/texture_array_reflections", true);
-	GLOBAL_DEF("rendering/reflections/sky_reflections/texture_array_reflections.mobile", false);
-	GLOBAL_DEF("rendering/reflections/sky_reflections/ggx_samples", 1024);
-	GLOBAL_DEF("rendering/reflections/sky_reflections/ggx_samples.mobile", 128);
-	GLOBAL_DEF("rendering/reflections/sky_reflections/fast_filter_high_quality", false);
-	GLOBAL_DEF("rendering/reflections/reflection_atlas/reflection_size", 256);
-	GLOBAL_DEF("rendering/reflections/reflection_atlas/reflection_size.mobile", 128);
-	GLOBAL_DEF("rendering/reflections/reflection_atlas/reflection_count", 64);
+	PROJECT_DEFAULT("rendering/reflections/sky_reflections/roughness_layers", 8);
+	PROJECT_DEFAULT("rendering/reflections/sky_reflections/texture_array_reflections", true);
+	PROJECT_DEFAULT("rendering/reflections/sky_reflections/texture_array_reflections.mobile", false);
+	PROJECT_DEFAULT("rendering/reflections/sky_reflections/ggx_samples", 1024);
+	PROJECT_DEFAULT("rendering/reflections/sky_reflections/ggx_samples.mobile", 128);
+	PROJECT_DEFAULT("rendering/reflections/sky_reflections/fast_filter_high_quality", false);
+	PROJECT_DEFAULT("rendering/reflections/reflection_atlas/reflection_size", 256);
+	PROJECT_DEFAULT("rendering/reflections/reflection_atlas/reflection_size.mobile", 128);
+	PROJECT_DEFAULT("rendering/reflections/reflection_atlas/reflection_count", 64);
 
-	GLOBAL_DEF("rendering/global_illumination/gi/use_half_resolution", false);
+	PROJECT_DEFAULT("rendering/global_illumination/gi/use_half_resolution", false);
 
-	GLOBAL_DEF("rendering/global_illumination/voxel_gi/quality", 1);
+	PROJECT_DEFAULT("rendering/global_illumination/voxel_gi/quality", 1);
 	ProjectSettings::get_singleton()->set_custom_property_info("rendering/global_illumination/voxel_gi/quality", PropertyInfo(Variant::INT, "rendering/global_illumination/voxel_gi/quality", PROPERTY_HINT_ENUM, "Low (4 Cones - Fast),High (6 Cones - Slow)"));
 
-	GLOBAL_DEF("rendering/shading/overrides/force_vertex_shading", false);
-	GLOBAL_DEF("rendering/shading/overrides/force_vertex_shading.mobile", true);
-	GLOBAL_DEF("rendering/shading/overrides/force_lambert_over_burley", false);
-	GLOBAL_DEF("rendering/shading/overrides/force_lambert_over_burley.mobile", true);
-	GLOBAL_DEF("rendering/shading/overrides/force_blinn_over_ggx", false);
-	GLOBAL_DEF("rendering/shading/overrides/force_blinn_over_ggx.mobile", true);
+	PROJECT_DEFAULT("rendering/shading/overrides/force_vertex_shading", false);
+	PROJECT_DEFAULT("rendering/shading/overrides/force_vertex_shading.mobile", true);
+	PROJECT_DEFAULT("rendering/shading/overrides/force_lambert_over_burley", false);
+	PROJECT_DEFAULT("rendering/shading/overrides/force_lambert_over_burley.mobile", true);
+	PROJECT_DEFAULT("rendering/shading/overrides/force_blinn_over_ggx", false);
+	PROJECT_DEFAULT("rendering/shading/overrides/force_blinn_over_ggx.mobile", true);
 
-	GLOBAL_DEF("rendering/driver/depth_prepass/enable", true);
-	GLOBAL_DEF("rendering/driver/depth_prepass/disable_for_vendors", "PowerVR,Mali,Adreno,Apple");
+	PROJECT_DEFAULT("rendering/driver/depth_prepass/enable", true);
+	PROJECT_DEFAULT("rendering/driver/depth_prepass/disable_for_vendors", "PowerVR,Mali,Adreno,Apple");
 
-	GLOBAL_DEF("rendering/textures/default_filters/use_nearest_mipmap_filter", false);
-	GLOBAL_DEF("rendering/textures/default_filters/anisotropic_filtering_level", 2);
+	PROJECT_DEFAULT("rendering/textures/default_filters/use_nearest_mipmap_filter", false);
+	PROJECT_DEFAULT("rendering/textures/default_filters/anisotropic_filtering_level", 2);
 	ProjectSettings::get_singleton()->set_custom_property_info("rendering/textures/default_filters/anisotropic_filtering_level", PropertyInfo(Variant::INT, "rendering/textures/default_filters/anisotropic_filtering_level", PROPERTY_HINT_ENUM, "Disabled (Fastest),2x (Faster),4x (Fast),8x (Average),16x (Slow)"));
 
-	GLOBAL_DEF("rendering/camera/depth_of_field/depth_of_field_bokeh_shape", 1);
+	PROJECT_DEFAULT("rendering/camera/depth_of_field/depth_of_field_bokeh_shape", 1);
 	ProjectSettings::get_singleton()->set_custom_property_info("rendering/camera/depth_of_field/depth_of_field_bokeh_shape", PropertyInfo(Variant::INT, "rendering/camera/depth_of_field/depth_of_field_bokeh_shape", PROPERTY_HINT_ENUM, "Box (Fast),Hexagon (Average),Circle (Slow)"));
-	GLOBAL_DEF("rendering/camera/depth_of_field/depth_of_field_bokeh_quality", 2);
+	PROJECT_DEFAULT("rendering/camera/depth_of_field/depth_of_field_bokeh_quality", 2);
 	ProjectSettings::get_singleton()->set_custom_property_info("rendering/camera/depth_of_field/depth_of_field_bokeh_quality", PropertyInfo(Variant::INT, "rendering/camera/depth_of_field/depth_of_field_bokeh_quality", PROPERTY_HINT_ENUM, "Very Low (Fastest),Low (Fast),Medium (Average),High (Slow)"));
-	GLOBAL_DEF("rendering/camera/depth_of_field/depth_of_field_use_jitter", false);
+	PROJECT_DEFAULT("rendering/camera/depth_of_field/depth_of_field_use_jitter", false);
 
-	GLOBAL_DEF("rendering/environment/ssao/quality", 2);
+	PROJECT_DEFAULT("rendering/environment/ssao/quality", 2);
 	ProjectSettings::get_singleton()->set_custom_property_info("rendering/environment/ssao/quality", PropertyInfo(Variant::INT, "rendering/environment/ssao/quality", PROPERTY_HINT_ENUM, "Very Low (Fast),Low (Fast),Medium (Average),High (Slow),Ultra (Custom)"));
-	GLOBAL_DEF("rendering/environment/ssao/half_size", false);
-	GLOBAL_DEF("rendering/environment/ssao/half_size.mobile", true);
-	GLOBAL_DEF("rendering/environment/ssao/adaptive_target", 0.5);
+	PROJECT_DEFAULT("rendering/environment/ssao/half_size", false);
+	PROJECT_DEFAULT("rendering/environment/ssao/half_size.mobile", true);
+	PROJECT_DEFAULT("rendering/environment/ssao/adaptive_target", 0.5);
 	ProjectSettings::get_singleton()->set_custom_property_info("rendering/environment/ssao/adaptive_target", PropertyInfo(Variant::FLOAT, "rendering/environment/ssao/adaptive_target", PROPERTY_HINT_RANGE, "0.0,1.0,0.01"));
-	GLOBAL_DEF("rendering/environment/ssao/blur_passes", 2);
+	PROJECT_DEFAULT("rendering/environment/ssao/blur_passes", 2);
 	ProjectSettings::get_singleton()->set_custom_property_info("rendering/environment/ssao/blur_passes", PropertyInfo(Variant::INT, "rendering/environment/ssao/blur_passes", PROPERTY_HINT_RANGE, "0,6"));
-	GLOBAL_DEF("rendering/environment/ssao/fadeout_from", 50.0);
+	PROJECT_DEFAULT("rendering/environment/ssao/fadeout_from", 50.0);
 	ProjectSettings::get_singleton()->set_custom_property_info("rendering/environment/ssao/fadeout_from", PropertyInfo(Variant::FLOAT, "rendering/environment/ssao/fadeout_from", PROPERTY_HINT_RANGE, "0.0,512,0.1,or_greater"));
-	GLOBAL_DEF("rendering/environment/ssao/fadeout_to", 300.0);
+	PROJECT_DEFAULT("rendering/environment/ssao/fadeout_to", 300.0);
 	ProjectSettings::get_singleton()->set_custom_property_info("rendering/environment/ssao/fadeout_to", PropertyInfo(Variant::FLOAT, "rendering/environment/ssao/fadeout_to", PROPERTY_HINT_RANGE, "64,65536,0.1,or_greater"));
 
-	GLOBAL_DEF("rendering/anti_aliasing/screen_space_roughness_limiter/enabled", true);
-	GLOBAL_DEF("rendering/anti_aliasing/screen_space_roughness_limiter/amount", 0.25);
-	GLOBAL_DEF("rendering/anti_aliasing/screen_space_roughness_limiter/limit", 0.18);
+	PROJECT_DEFAULT("rendering/anti_aliasing/screen_space_roughness_limiter/enabled", true);
+	PROJECT_DEFAULT("rendering/anti_aliasing/screen_space_roughness_limiter/amount", 0.25);
+	PROJECT_DEFAULT("rendering/anti_aliasing/screen_space_roughness_limiter/limit", 0.18);
 	ProjectSettings::get_singleton()->set_custom_property_info("rendering/anti_aliasing/screen_space_roughness_limiter/amount", PropertyInfo(Variant::FLOAT, "rendering/anti_aliasing/screen_space_roughness_limiter/amount", PROPERTY_HINT_RANGE, "0.01,4.0,0.01"));
 	ProjectSettings::get_singleton()->set_custom_property_info("rendering/anti_aliasing/screen_space_roughness_limiter/limit", PropertyInfo(Variant::FLOAT, "rendering/anti_aliasing/screen_space_roughness_limiter/limit", PROPERTY_HINT_RANGE, "0.01,1.0,0.01"));
 
-	GLOBAL_DEF_RST("rendering/occlusion_culling/occlusion_rays_per_thread", 512);
-	GLOBAL_DEF_RST("rendering/occlusion_culling/bvh_build_quality", 2);
+	PROJECT_DEFAULT_RESTART("rendering/occlusion_culling/occlusion_rays_per_thread", 512);
+	PROJECT_DEFAULT_RESTART("rendering/occlusion_culling/bvh_build_quality", 2);
 	ProjectSettings::get_singleton()->set_custom_property_info("rendering/occlusion_culling/bvh_build_quality", PropertyInfo(Variant::INT, "rendering/occlusion_culling/bvh_build_quality", PROPERTY_HINT_ENUM, "Low,Medium,High"));
 
-	GLOBAL_DEF("rendering/environment/glow/upscale_mode", 1);
+	PROJECT_DEFAULT("rendering/environment/glow/upscale_mode", 1);
 	ProjectSettings::get_singleton()->set_custom_property_info("rendering/environment/glow/upscale_mode", PropertyInfo(Variant::INT, "rendering/environment/glow/upscale_mode", PROPERTY_HINT_ENUM, "Linear (Fast),Bicubic (Slow)"));
-	GLOBAL_DEF("rendering/environment/glow/upscale_mode.mobile", 0);
-	GLOBAL_DEF("rendering/environment/glow/use_high_quality", false);
+	PROJECT_DEFAULT("rendering/environment/glow/upscale_mode.mobile", 0);
+	PROJECT_DEFAULT("rendering/environment/glow/use_high_quality", false);
 
-	GLOBAL_DEF("rendering/environment/screen_space_reflection/roughness_quality", 1);
+	PROJECT_DEFAULT("rendering/environment/screen_space_reflection/roughness_quality", 1);
 	ProjectSettings::get_singleton()->set_custom_property_info("rendering/environment/screen_space_reflection/roughness_quality", PropertyInfo(Variant::INT, "rendering/environment/screen_space_reflection/roughness_quality", PROPERTY_HINT_ENUM, "Disabled (Fastest),Low (Fast),Medium (Average),High (Slow)"));
 
-	GLOBAL_DEF("rendering/environment/subsurface_scattering/subsurface_scattering_quality", 1);
+	PROJECT_DEFAULT("rendering/environment/subsurface_scattering/subsurface_scattering_quality", 1);
 	ProjectSettings::get_singleton()->set_custom_property_info("rendering/environment/subsurface_scattering/subsurface_scattering_quality", PropertyInfo(Variant::INT, "rendering/environment/subsurface_scattering/subsurface_scattering_quality", PROPERTY_HINT_ENUM, "Disabled (Fastest),Low (Fast),Medium (Average),High (Slow)"));
-	GLOBAL_DEF("rendering/environment/subsurface_scattering/subsurface_scattering_scale", 0.05);
+	PROJECT_DEFAULT("rendering/environment/subsurface_scattering/subsurface_scattering_scale", 0.05);
 	ProjectSettings::get_singleton()->set_custom_property_info("rendering/environment/subsurface_scattering/subsurface_scattering_scale", PropertyInfo(Variant::FLOAT, "rendering/environment/subsurface_scattering/subsurface_scattering_scale", PROPERTY_HINT_RANGE, "0.001,1,0.001"));
-	GLOBAL_DEF("rendering/environment/subsurface_scattering/subsurface_scattering_depth_scale", 0.01);
+	PROJECT_DEFAULT("rendering/environment/subsurface_scattering/subsurface_scattering_depth_scale", 0.01);
 	ProjectSettings::get_singleton()->set_custom_property_info("rendering/environment/subsurface_scattering/subsurface_scattering_depth_scale", PropertyInfo(Variant::FLOAT, "rendering/environment/subsurface_scattering/subsurface_scattering_depth_scale", PROPERTY_HINT_RANGE, "0.001,1,0.001"));
 
-	GLOBAL_DEF("rendering/limits/global_shader_variables/buffer_size", 65536);
+	PROJECT_DEFAULT("rendering/limits/global_shader_variables/buffer_size", 65536);
 
-	GLOBAL_DEF("rendering/lightmapping/probe_capture/update_speed", 15);
+	PROJECT_DEFAULT("rendering/lightmapping/probe_capture/update_speed", 15);
 	ProjectSettings::get_singleton()->set_custom_property_info("rendering/lightmapping/probe_capture/update_speed", PropertyInfo(Variant::FLOAT, "rendering/lightmapping/probe_capture/update_speed", PROPERTY_HINT_RANGE, "0.001,256,0.001"));
 
-	GLOBAL_DEF("rendering/global_illumination/sdfgi/probe_ray_count", 1);
+	PROJECT_DEFAULT("rendering/global_illumination/sdfgi/probe_ray_count", 1);
 	ProjectSettings::get_singleton()->set_custom_property_info("rendering/global_illumination/sdfgi/probe_ray_count", PropertyInfo(Variant::INT, "rendering/global_illumination/sdfgi/probe_ray_count", PROPERTY_HINT_ENUM, "8 (Fastest),16,32,64,96,128 (Slowest)"));
-	GLOBAL_DEF("rendering/global_illumination/sdfgi/frames_to_converge", 4);
+	PROJECT_DEFAULT("rendering/global_illumination/sdfgi/frames_to_converge", 4);
 	ProjectSettings::get_singleton()->set_custom_property_info("rendering/global_illumination/sdfgi/frames_to_converge", PropertyInfo(Variant::INT, "rendering/global_illumination/sdfgi/frames_to_converge", PROPERTY_HINT_ENUM, "5 (Less Latency but Lower Quality),10,15,20,25,30 (More Latency but Higher Quality)"));
-	GLOBAL_DEF("rendering/global_illumination/sdfgi/frames_to_update_lights", 2);
+	PROJECT_DEFAULT("rendering/global_illumination/sdfgi/frames_to_update_lights", 2);
 	ProjectSettings::get_singleton()->set_custom_property_info("rendering/global_illumination/sdfgi/frames_to_update_lights", PropertyInfo(Variant::INT, "rendering/global_illumination/sdfgi/frames_to_update_lights", PROPERTY_HINT_ENUM, "1 (Slower),2,4,8,16 (Faster)"));
 
-	GLOBAL_DEF("rendering/environment/volumetric_fog/volume_size", 64);
+	PROJECT_DEFAULT("rendering/environment/volumetric_fog/volume_size", 64);
 	ProjectSettings::get_singleton()->set_custom_property_info("rendering/environment/volumetric_fog/volume_size", PropertyInfo(Variant::INT, "rendering/environment/volumetric_fog/volume_size", PROPERTY_HINT_RANGE, "16,512,1"));
-	GLOBAL_DEF("rendering/environment/volumetric_fog/volume_depth", 128);
+	PROJECT_DEFAULT("rendering/environment/volumetric_fog/volume_depth", 128);
 	ProjectSettings::get_singleton()->set_custom_property_info("rendering/environment/volumetric_fog/volume_depth", PropertyInfo(Variant::INT, "rendering/environment/volumetric_fog/volume_depth", PROPERTY_HINT_RANGE, "16,512,1"));
-	GLOBAL_DEF("rendering/environment/volumetric_fog/use_filter", 1);
+	PROJECT_DEFAULT("rendering/environment/volumetric_fog/use_filter", 1);
 	ProjectSettings::get_singleton()->set_custom_property_info("rendering/environment/volumetric_fog/use_filter", PropertyInfo(Variant::INT, "rendering/environment/volumetric_fog/use_filter", PROPERTY_HINT_ENUM, "No (Faster),Yes (Higher Quality)"));
 
-	GLOBAL_DEF("rendering/limits/spatial_indexer/update_iterations_per_frame", 10);
+	PROJECT_DEFAULT("rendering/limits/spatial_indexer/update_iterations_per_frame", 10);
 	ProjectSettings::get_singleton()->set_custom_property_info("rendering/limits/spatial_indexer/update_iterations_per_frame", PropertyInfo(Variant::INT, "rendering/limits/spatial_indexer/update_iterations_per_frame", PROPERTY_HINT_RANGE, "0,1024,1"));
-	GLOBAL_DEF("rendering/limits/spatial_indexer/threaded_cull_minimum_instances", 1000);
+	PROJECT_DEFAULT("rendering/limits/spatial_indexer/threaded_cull_minimum_instances", 1000);
 	ProjectSettings::get_singleton()->set_custom_property_info("rendering/limits/spatial_indexer/threaded_cull_minimum_instances", PropertyInfo(Variant::INT, "rendering/limits/spatial_indexer/threaded_cull_minimum_instances", PROPERTY_HINT_RANGE, "32,65536,1"));
-	GLOBAL_DEF("rendering/limits/forward_renderer/threaded_render_minimum_instances", 500);
+	PROJECT_DEFAULT("rendering/limits/forward_renderer/threaded_render_minimum_instances", 500);
 	ProjectSettings::get_singleton()->set_custom_property_info("rendering/limits/forward_renderer/threaded_render_minimum_instances", PropertyInfo(Variant::INT, "rendering/limits/forward_renderer/threaded_render_minimum_instances", PROPERTY_HINT_RANGE, "32,65536,1"));
 
-	GLOBAL_DEF("rendering/limits/cluster_builder/max_clustered_elements", 512);
+	PROJECT_DEFAULT("rendering/limits/cluster_builder/max_clustered_elements", 512);
 	ProjectSettings::get_singleton()->set_custom_property_info("rendering/limits/cluster_builder/max_clustered_elements", PropertyInfo(Variant::FLOAT, "rendering/limits/cluster_builder/max_clustered_elements", PROPERTY_HINT_RANGE, "32,8192,1"));
 
-	GLOBAL_DEF_RST("rendering/xr/enabled", false);
+	PROJECT_DEFAULT_RESTART("rendering/xr/enabled", false);
 }
 
 RenderingServer::~RenderingServer() {

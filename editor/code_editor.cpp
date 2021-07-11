@@ -1541,7 +1541,7 @@ void CodeTextEditor::_update_text_editor_theme() {
 	text_editor->add_theme_color_override("code_folding_color", EDITOR_GET("text_editor/highlighting/code_folding_color"));
 	text_editor->add_theme_color_override("search_result_color", EDITOR_GET("text_editor/highlighting/search_result_color"));
 	text_editor->add_theme_color_override("search_result_border_color", EDITOR_GET("text_editor/highlighting/search_result_border_color"));
-	text_editor->add_theme_constant_override("line_spacing", EDITOR_DEF("text_editor/theme/line_spacing", 6));
+	text_editor->add_theme_constant_override("line_spacing", EDITOR_DEFAULT("text_editor/theme/line_spacing", 6));
 	emit_signal("load_theme_settings");
 	_load_theme_settings();
 }

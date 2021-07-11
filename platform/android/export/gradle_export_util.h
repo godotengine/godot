@@ -236,7 +236,7 @@ String _get_instrumentation_tag(const Ref<EditorExportPreset> &p_preset) {
 
 String _get_activity_tag(const Ref<EditorExportPreset> &p_preset) {
 	bool uses_xr = (int)(p_preset->get("xr_features/xr_mode")) == 1;
-	String orientation = _get_android_orientation_label(DisplayServer::ScreenOrientation(int(GLOBAL_GET("display/window/handheld/orientation"))));
+	String orientation = _get_android_orientation_label(DisplayServer::ScreenOrientation(int(PROJECT_GET("display/window/handheld/orientation"))));
 	String manifest_activity_text = vformat(
 			"        <activity android:name=\"com.godot.game.GodotApp\" "
 			"tools:replace=\"android:screenOrientation\" "

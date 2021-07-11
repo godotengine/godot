@@ -1128,7 +1128,7 @@ void EditorSettings::set_initial_value(const StringName &p_setting, const Varian
 	}
 }
 
-Variant _EDITOR_DEF(const String &p_setting, const Variant &p_default, bool p_restart_if_changed) {
+Variant _EDITOR_DEFAULT(const String &p_setting, const Variant &p_default, bool p_restart_if_changed) {
 	Variant ret = p_default;
 	if (EditorSettings::get_singleton()->has_setting(p_setting)) {
 		ret = EditorSettings::get_singleton()->get(p_setting);

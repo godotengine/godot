@@ -530,7 +530,7 @@ EditorAssetLibraryItemDownload::EditorAssetLibraryItemDownload() {
 	download = memnew(HTTPRequest);
 	add_child(download);
 	download->connect("request_completed", callable_mp(this, &EditorAssetLibraryItemDownload::_http_download_completed));
-	download->set_use_threads(EDITOR_DEF("asset_library/use_threads", true));
+	download->set_use_threads(EDITOR_DEFAULT("asset_library/use_threads", true));
 
 	download_error = memnew(AcceptDialog);
 	add_child(download_error);
@@ -601,7 +601,7 @@ void EditorAssetLibrary::_update_repository_options() {
 	Dictionary default_urls;
 	default_urls["godotengine.org"] = "https://godotengine.org/asset-library/api";
 	default_urls["localhost"] = "http://127.0.0.1/asset-library/api";
-	Dictionary available_urls = _EDITOR_DEF("asset_library/available_urls", default_urls, true);
+	Dictionary available_urls = _EDITOR_DEFAULT("asset_library/available_urls", default_urls, true);
 	repository->clear();
 	Array keys = available_urls.keys();
 	for (int i = 0; i < available_urls.size(); i++) {
@@ -866,7 +866,7 @@ void EditorAssetLibrary::_request_image(ObjectID p_for, String p_image_url, Imag
 	iq.image_index = p_image_index;
 	iq.image_type = p_type;
 	iq.request = memnew(HTTPRequest);
-	iq.request->set_use_threads(EDITOR_DEF("asset_library/use_threads", true));
+	iq.request->set_use_threads(EDITOR_DEFAULT("asset_library/use_threads", true));
 
 	iq.target = p_for;
 	iq.queue_id = ++last_queue_id;
@@ -1475,7 +1475,7 @@ EditorAssetLibrary::EditorAssetLibrary(bool p_templates_only) {
 
 	request = memnew(HTTPRequest);
 	add_child(request);
-	request->set_use_threads(EDITOR_DEF("asset_library/use_threads", true));
+	request->set_use_threads(EDITOR_DEFAULT("asset_library/use_threads", true));
 	request->connect("request_completed", callable_mp(this, &EditorAssetLibrary::_http_request_completed));
 
 	last_queue_id = 0;

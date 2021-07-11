@@ -65,7 +65,7 @@ const CGFloat kGLGestureMovementDistance = 0.5;
 	self.delaysTouchesBegan = YES;
 	self.delaysTouchesEnded = YES;
 
-	self.delayTimeInterval = GLOBAL_GET("input_devices/pointing/ios/touch_delay");
+	self.delayTimeInterval = PROJECT_GET("input_devices/pointing/ios/touch_delay");
 
 	return self;
 }

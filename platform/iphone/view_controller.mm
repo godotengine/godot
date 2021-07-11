@@ -210,7 +210,7 @@
 }
 
 - (BOOL)prefersHomeIndicatorAutoHidden {
-	if (GLOBAL_GET("display/window/ios/hide_home_indicator")) {
+	if (PROJECT_GET("display/window/ios/hide_home_indicator")) {
 		return YES;
 	} else {
 		return NO;

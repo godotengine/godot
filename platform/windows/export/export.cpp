@@ -340,16 +340,16 @@ Error EditorExportPlatformWindows::_code_sign(const Ref<EditorExportPreset> &p_p
 }
 
 void register_windows_exporter() {
-	EDITOR_DEF("export/windows/rcedit", "");
+	EDITOR_DEFAULT("export/windows/rcedit", "");
 	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::STRING, "export/windows/rcedit", PROPERTY_HINT_GLOBAL_FILE, "*.exe"));
 #ifdef WINDOWS_ENABLED
-	EDITOR_DEF("export/windows/signtool", "");
+	EDITOR_DEFAULT("export/windows/signtool", "");
 	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::STRING, "export/windows/signtool", PROPERTY_HINT_GLOBAL_FILE, "*.exe"));
 #else
-	EDITOR_DEF("export/windows/osslsigncode", "");
+	EDITOR_DEFAULT("export/windows/osslsigncode", "");
 	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::STRING, "export/windows/osslsigncode", PROPERTY_HINT_GLOBAL_FILE));
 	// On non-Windows we need WINE to run rcedit
-	EDITOR_DEF("export/windows/wine", "");
+	EDITOR_DEFAULT("export/windows/wine", "");
 	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::STRING, "export/windows/wine", PROPERTY_HINT_GLOBAL_FILE));
 #endif
 

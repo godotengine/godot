@@ -443,70 +443,70 @@ void EditorNode::_unhandled_input(const Ref<InputEvent> &p_event) {
 }
 
 void EditorNode::_update_from_settings() {
-	int current_filter = GLOBAL_GET("rendering/textures/canvas_textures/default_texture_filter");
+	int current_filter = PROJECT_GET("rendering/textures/canvas_textures/default_texture_filter");
 	if (current_filter != scene_root->get_default_canvas_item_texture_filter()) {
 		Viewport::DefaultCanvasItemTextureFilter tf = (Viewport::DefaultCanvasItemTextureFilter)current_filter;
 		scene_root->set_default_canvas_item_texture_filter(tf);
 	}
-	int current_repeat = GLOBAL_GET("rendering/textures/canvas_textures/default_texture_repeat");
+	int current_repeat = PROJECT_GET("rendering/textures/canvas_textures/default_texture_repeat");
 	if (current_repeat != scene_root->get_default_canvas_item_texture_repeat()) {
 		Viewport::DefaultCanvasItemTextureRepeat tr = (Viewport::DefaultCanvasItemTextureRepeat)current_repeat;
 		scene_root->set_default_canvas_item_texture_repeat(tr);
 	}
 
-	RS::DOFBokehShape dof_shape = RS::DOFBokehShape(int(GLOBAL_GET("rendering/camera/depth_of_field/depth_of_field_bokeh_shape")));
+	RS::DOFBokehShape dof_shape = RS::DOFBokehShape(int(PROJECT_GET("rendering/camera/depth_of_field/depth_of_field_bokeh_shape")));
 	RS::get_singleton()->camera_effects_set_dof_blur_bokeh_shape(dof_shape);
-	RS::DOFBlurQuality dof_quality = RS::DOFBlurQuality(int(GLOBAL_GET("rendering/camera/depth_of_field/depth_of_field_bokeh_quality")));
-	bool dof_jitter = GLOBAL_GET("rendering/camera/depth_of_field/depth_of_field_use_jitter");
+	RS::DOFBlurQuality dof_quality = RS::DOFBlurQuality(int(PROJECT_GET("rendering/camera/depth_of_field/depth_of_field_bokeh_quality")));
+	bool dof_jitter = PROJECT_GET("rendering/camera/depth_of_field/depth_of_field_use_jitter");
 	RS::get_singleton()->camera_effects_set_dof_blur_quality(dof_quality, dof_jitter);
-	RS::get_singleton()->environment_set_ssao_quality(RS::EnvironmentSSAOQuality(int(GLOBAL_GET("rendering/environment/ssao/quality"))), GLOBAL_GET("rendering/environment/ssao/half_size"), GLOBAL_GET("rendering/environment/ssao/adaptive_target"), GLOBAL_GET("rendering/environment/ssao/blur_passes"), GLOBAL_GET("rendering/environment/ssao/fadeout_from"), GLOBAL_GET("rendering/environment/ssao/fadeout_to"));
-	RS::get_singleton()->screen_space_roughness_limiter_set_active(GLOBAL_GET("rendering/anti_aliasing/screen_space_roughness_limiter/enabled"), GLOBAL_GET("rendering/anti_aliasing/screen_space_roughness_limiter/amount"), GLOBAL_GET("rendering/anti_aliasing/screen_space_roughness_limiter/limit"));
-	bool glow_bicubic = int(GLOBAL_GET("rendering/environment/glow/upscale_mode")) > 0;
+	RS::get_singleton()->environment_set_ssao_quality(RS::EnvironmentSSAOQuality(int(PROJECT_GET("rendering/environment/ssao/quality"))), PROJECT_GET("rendering/environment/ssao/half_size"), PROJECT_GET("rendering/environment/ssao/adaptive_target"), PROJECT_GET("rendering/environment/ssao/blur_passes"), PROJECT_GET("rendering/environment/ssao/fadeout_from"), PROJECT_GET("rendering/environment/ssao/fadeout_to"));
+	RS::get_singleton()->screen_space_roughness_limiter_set_active(PROJECT_GET("rendering/anti_aliasing/screen_space_roughness_limiter/enabled"), PROJECT_GET("rendering/anti_aliasing/screen_space_roughness_limiter/amount"), PROJECT_GET("rendering/anti_aliasing/screen_space_roughness_limiter/limit"));
+	bool glow_bicubic = int(PROJECT_GET("rendering/environment/glow/upscale_mode")) > 0;
 	RS::get_singleton()->environment_glow_set_use_bicubic_upscale(glow_bicubic);
-	bool glow_high_quality = GLOBAL_GET("rendering/environment/glow/use_high_quality");
+	bool glow_high_quality = PROJECT_GET("rendering/environment/glow/use_high_quality");
 	RS::get_singleton()->environment_glow_set_use_high_quality(glow_high_quality);
-	RS::EnvironmentSSRRoughnessQuality ssr_roughness_quality = RS::EnvironmentSSRRoughnessQuality(int(GLOBAL_GET("rendering/environment/screen_space_reflection/roughness_quality")));
+	RS::EnvironmentSSRRoughnessQuality ssr_roughness_quality = RS::EnvironmentSSRRoughnessQuality(int(PROJECT_GET("rendering/environment/screen_space_reflection/roughness_quality")));
 	RS::get_singleton()->environment_set_ssr_roughness_quality(ssr_roughness_quality);
-	RS::SubSurfaceScatteringQuality sss_quality = RS::SubSurfaceScatteringQuality(int(GLOBAL_GET("rendering/environment/subsurface_scattering/subsurface_scattering_quality")));
+	RS::SubSurfaceScatteringQuality sss_quality = RS::SubSurfaceScatteringQuality(int(PROJECT_GET("rendering/environment/subsurface_scattering/subsurface_scattering_quality")));
 	RS::get_singleton()->sub_surface_scattering_set_quality(sss_quality);
-	float sss_scale = GLOBAL_GET("rendering/environment/subsurface_scattering/subsurface_scattering_scale");
-	float sss_depth_scale = GLOBAL_GET("rendering/environment/subsurface_scattering/subsurface_scattering_depth_scale");
+	float sss_scale = PROJECT_GET("rendering/environment/subsurface_scattering/subsurface_scattering_scale");
+	float sss_depth_scale = PROJECT_GET("rendering/environment/subsurface_scattering/subsurface_scattering_depth_scale");
 	RS::get_singleton()->sub_surface_scattering_set_scale(sss_scale, sss_depth_scale);
 
-	uint32_t directional_shadow_size = GLOBAL_GET("rendering/shadows/directional_shadow/size");
-	uint32_t directional_shadow_16_bits = GLOBAL_GET("rendering/shadows/directional_shadow/16_bits");
+	uint32_t directional_shadow_size = PROJECT_GET("rendering/shadows/directional_shadow/size");
+	uint32_t directional_shadow_16_bits = PROJECT_GET("rendering/shadows/directional_shadow/16_bits");
 	RS::get_singleton()->directional_shadow_atlas_set_size(directional_shadow_size, directional_shadow_16_bits);
 
-	RS::ShadowQuality shadows_quality = RS::ShadowQuality(int(GLOBAL_GET("rendering/shadows/shadows/soft_shadow_quality")));
+	RS::ShadowQuality shadows_quality = RS::ShadowQuality(int(PROJECT_GET("rendering/shadows/shadows/soft_shadow_quality")));
 	RS::get_singleton()->shadows_quality_set(shadows_quality);
-	RS::ShadowQuality directional_shadow_quality = RS::ShadowQuality(int(GLOBAL_GET("rendering/shadows/directional_shadow/soft_shadow_quality")));
+	RS::ShadowQuality directional_shadow_quality = RS::ShadowQuality(int(PROJECT_GET("rendering/shadows/directional_shadow/soft_shadow_quality")));
 	RS::get_singleton()->directional_shadow_quality_set(directional_shadow_quality);
-	float probe_update_speed = GLOBAL_GET("rendering/lightmapping/probe_capture/update_speed");
+	float probe_update_speed = PROJECT_GET("rendering/lightmapping/probe_capture/update_speed");
 	RS::get_singleton()->lightmap_set_probe_capture_update_speed(probe_update_speed);
-	RS::EnvironmentSDFGIFramesToConverge frames_to_converge = RS::EnvironmentSDFGIFramesToConverge(int(GLOBAL_GET("rendering/global_illumination/sdfgi/frames_to_converge")));
+	RS::EnvironmentSDFGIFramesToConverge frames_to_converge = RS::EnvironmentSDFGIFramesToConverge(int(PROJECT_GET("rendering/global_illumination/sdfgi/frames_to_converge")));
 	RS::get_singleton()->environment_set_sdfgi_frames_to_converge(frames_to_converge);
-	RS::EnvironmentSDFGIRayCount ray_count = RS::EnvironmentSDFGIRayCount(int(GLOBAL_GET("rendering/global_illumination/sdfgi/probe_ray_count")));
+	RS::EnvironmentSDFGIRayCount ray_count = RS::EnvironmentSDFGIRayCount(int(PROJECT_GET("rendering/global_illumination/sdfgi/probe_ray_count")));
 	RS::get_singleton()->environment_set_sdfgi_ray_count(ray_count);
-	RS::VoxelGIQuality voxel_gi_quality = RS::VoxelGIQuality(int(GLOBAL_GET("rendering/global_illumination/voxel_gi/quality")));
+	RS::VoxelGIQuality voxel_gi_quality = RS::VoxelGIQuality(int(PROJECT_GET("rendering/global_illumination/voxel_gi/quality")));
 	RS::get_singleton()->voxel_gi_set_quality(voxel_gi_quality);
-	RS::get_singleton()->environment_set_volumetric_fog_volume_size(GLOBAL_GET("rendering/environment/volumetric_fog/volume_size"), GLOBAL_GET("rendering/environment/volumetric_fog/volume_depth"));
-	RS::get_singleton()->environment_set_volumetric_fog_filter_active(bool(GLOBAL_GET("rendering/environment/volumetric_fog/use_filter")));
-	RS::get_singleton()->canvas_set_shadow_texture_size(GLOBAL_GET("rendering/2d/shadow_atlas/size"));
+	RS::get_singleton()->environment_set_volumetric_fog_volume_size(PROJECT_GET("rendering/environment/volumetric_fog/volume_size"), PROJECT_GET("rendering/environment/volumetric_fog/volume_depth"));
+	RS::get_singleton()->environment_set_volumetric_fog_filter_active(bool(PROJECT_GET("rendering/environment/volumetric_fog/use_filter")));
+	RS::get_singleton()->canvas_set_shadow_texture_size(PROJECT_GET("rendering/2d/shadow_atlas/size"));
 
-	bool use_half_res_gi = GLOBAL_DEF("rendering/global_illumination/gi/use_half_resolution", false);
+	bool use_half_res_gi = PROJECT_DEFAULT("rendering/global_illumination/gi/use_half_resolution", false);
 	RS::get_singleton()->gi_set_use_half_resolution(use_half_res_gi);
 
-	bool snap_2d_transforms = GLOBAL_GET("rendering/2d/snap/snap_2d_transforms_to_pixel");
+	bool snap_2d_transforms = PROJECT_GET("rendering/2d/snap/snap_2d_transforms_to_pixel");
 	scene_root->set_snap_2d_transforms_to_pixel(snap_2d_transforms);
-	bool snap_2d_vertices = GLOBAL_GET("rendering/2d/snap/snap_2d_vertices_to_pixel");
+	bool snap_2d_vertices = PROJECT_GET("rendering/2d/snap/snap_2d_vertices_to_pixel");
 	scene_root->set_snap_2d_vertices_to_pixel(snap_2d_vertices);
 
-	Viewport::SDFOversize sdf_oversize = Viewport::SDFOversize(int(GLOBAL_GET("rendering/2d/sdf/oversize")));
+	Viewport::SDFOversize sdf_oversize = Viewport::SDFOversize(int(PROJECT_GET("rendering/2d/sdf/oversize")));
 	scene_root->set_sdf_oversize(sdf_oversize);
-	Viewport::SDFScale sdf_scale = Viewport::SDFScale(int(GLOBAL_GET("rendering/2d/sdf/scale")));
+	Viewport::SDFScale sdf_scale = Viewport::SDFScale(int(PROJECT_GET("rendering/2d/sdf/scale")));
 	scene_root->set_sdf_scale(sdf_scale);
 
-	float lod_threshold = GLOBAL_GET("rendering/mesh_lod/lod_change/threshold_pixels");
+	float lod_threshold = PROJECT_GET("rendering/mesh_lod/lod_change/threshold_pixels");
 	scene_root->set_lod_threshold(lod_threshold);
 }
 
@@ -4678,7 +4678,7 @@ bool EditorNode::has_scenes_in_session() {
 
 bool EditorNode::ensure_main_scene(bool p_from_native) {
 	pick_main_scene->set_meta("from_native", p_from_native); //whether from play button or native run
-	String main_scene = GLOBAL_DEF("application/run/main_scene", "");
+	String main_scene = PROJECT_DEFAULT("application/run/main_scene", "");
 
 	if (main_scene == "") {
 		current_option = -1;
@@ -4740,7 +4740,7 @@ bool EditorNode::is_run_playing() const {
 String EditorNode::get_run_playing_scene() const {
 	String run_filename = editor_run.get_running_scene();
 	if (run_filename == "" && is_run_playing()) {
-		run_filename = GLOBAL_DEF("application/run/main_scene", ""); // Must be the main scene then.
+		run_filename = PROJECT_DEFAULT("application/run/main_scene", ""); // Must be the main scene then.
 	}
 
 	return run_filename;
@@ -5865,33 +5865,33 @@ EditorNode::EditorNode() {
 	ClassDB::set_class_enabled("RootMotionView", true);
 
 	//defs here, use EDITOR_GET in logic
-	EDITOR_DEF_RST("interface/scene_tabs/always_show_close_button", false);
-	EDITOR_DEF_RST("interface/scene_tabs/resize_if_many_tabs", true);
-	EDITOR_DEF_RST("interface/scene_tabs/minimum_width", 50);
-	EDITOR_DEF("run/output/always_clear_output_on_play", true);
-	EDITOR_DEF("run/output/always_open_output_on_play", true);
-	EDITOR_DEF("run/output/always_close_output_on_stop", true);
-	EDITOR_DEF("run/auto_save/save_before_running", true);
-	EDITOR_DEF("interface/editor/save_on_focus_loss", false);
-	EDITOR_DEF_RST("interface/editor/save_each_scene_on_quit", true);
-	EDITOR_DEF("interface/editor/show_update_spinner", false);
-	EDITOR_DEF("interface/editor/update_continuously", false);
-	EDITOR_DEF_RST("interface/scene_tabs/restore_scenes_on_load", false);
-	EDITOR_DEF_RST("interface/scene_tabs/show_thumbnail_on_hover", true);
-	EDITOR_DEF_RST("interface/inspector/capitalize_properties", true);
-	EDITOR_DEF_RST("interface/inspector/default_float_step", 0.001);
+	EDITOR_DEFAULT_RESTART("interface/scene_tabs/always_show_close_button", false);
+	EDITOR_DEFAULT_RESTART("interface/scene_tabs/resize_if_many_tabs", true);
+	EDITOR_DEFAULT_RESTART("interface/scene_tabs/minimum_width", 50);
+	EDITOR_DEFAULT("run/output/always_clear_output_on_play", true);
+	EDITOR_DEFAULT("run/output/always_open_output_on_play", true);
+	EDITOR_DEFAULT("run/output/always_close_output_on_stop", true);
+	EDITOR_DEFAULT("run/auto_save/save_before_running", true);
+	EDITOR_DEFAULT("interface/editor/save_on_focus_loss", false);
+	EDITOR_DEFAULT_RESTART("interface/editor/save_each_scene_on_quit", true);
+	EDITOR_DEFAULT("interface/editor/show_update_spinner", false);
+	EDITOR_DEFAULT("interface/editor/update_continuously", false);
+	EDITOR_DEFAULT_RESTART("interface/scene_tabs/restore_scenes_on_load", false);
+	EDITOR_DEFAULT_RESTART("interface/scene_tabs/show_thumbnail_on_hover", true);
+	EDITOR_DEFAULT_RESTART("interface/inspector/capitalize_properties", true);
+	EDITOR_DEFAULT_RESTART("interface/inspector/default_float_step", 0.001);
 	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::FLOAT, "interface/inspector/default_float_step", PROPERTY_HINT_RANGE, "0,1,0"));
-	EDITOR_DEF_RST("interface/inspector/disable_folding", false);
-	EDITOR_DEF_RST("interface/inspector/auto_unfold_foreign_scenes", true);
-	EDITOR_DEF("interface/inspector/horizontal_vector2_editing", false);
-	EDITOR_DEF("interface/inspector/horizontal_vector_types_editing", true);
-	EDITOR_DEF("interface/inspector/open_resources_in_current_inspector", true);
-	EDITOR_DEF("interface/inspector/resources_to_open_in_new_inspector", "Script,MeshLibrary");
-	EDITOR_DEF("interface/inspector/default_color_picker_mode", 0);
+	EDITOR_DEFAULT_RESTART("interface/inspector/disable_folding", false);
+	EDITOR_DEFAULT_RESTART("interface/inspector/auto_unfold_foreign_scenes", true);
+	EDITOR_DEFAULT("interface/inspector/horizontal_vector2_editing", false);
+	EDITOR_DEFAULT("interface/inspector/horizontal_vector_types_editing", true);
+	EDITOR_DEFAULT("interface/inspector/open_resources_in_current_inspector", true);
+	EDITOR_DEFAULT("interface/inspector/resources_to_open_in_new_inspector", "Script,MeshLibrary");
+	EDITOR_DEFAULT("interface/inspector/default_color_picker_mode", 0);
 	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::INT, "interface/inspector/default_color_picker_mode", PROPERTY_HINT_ENUM, "RGB,HSV,RAW", PROPERTY_USAGE_DEFAULT));
-	EDITOR_DEF("interface/inspector/default_color_picker_shape", (int32_t)ColorPicker::SHAPE_VHS_CIRCLE);
+	EDITOR_DEFAULT("interface/inspector/default_color_picker_shape", (int32_t)ColorPicker::SHAPE_VHS_CIRCLE);
 	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::INT, "interface/inspector/default_color_picker_shape", PROPERTY_HINT_ENUM, "HSV Rectangle,HSV Rectangle Wheel,VHS Circle", PROPERTY_USAGE_DEFAULT));
-	EDITOR_DEF("run/auto_save/save_before_running", true);
+	EDITOR_DEFAULT("run/auto_save/save_before_running", true);
 
 	theme_base = memnew(Control);
 	add_child(theme_base);
@@ -6089,8 +6089,8 @@ EditorNode::EditorNode() {
 	scene_tabs->set_select_with_rmb(true);
 	scene_tabs->add_tab("unsaved");
 	scene_tabs->set_tab_align(Tabs::ALIGN_LEFT);
-	scene_tabs->set_tab_close_display_policy((bool(EDITOR_DEF("interface/scene_tabs/always_show_close_button", false)) ? Tabs::CLOSE_BUTTON_SHOW_ALWAYS : Tabs::CLOSE_BUTTON_SHOW_ACTIVE_ONLY));
-	scene_tabs->set_min_width(int(EDITOR_DEF("interface/scene_tabs/minimum_width", 50)) * EDSCALE);
+	scene_tabs->set_tab_close_display_policy((bool(EDITOR_DEFAULT("interface/scene_tabs/always_show_close_button", false)) ? Tabs::CLOSE_BUTTON_SHOW_ALWAYS : Tabs::CLOSE_BUTTON_SHOW_ACTIVE_ONLY));
+	scene_tabs->set_min_width(int(EDITOR_DEFAULT("interface/scene_tabs/minimum_width", 50)) * EDSCALE);
 	scene_tabs->set_drag_to_rearrange_enabled(true);
 	scene_tabs->connect("tab_changed", callable_mp(this, &EditorNode::_scene_tab_changed));
 	scene_tabs->connect("right_button_pressed", callable_mp(this, &EditorNode::_scene_tab_script_edited));

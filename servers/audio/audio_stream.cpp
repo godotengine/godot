@@ -184,7 +184,7 @@ void AudioStreamPlaybackMicrophone::start(float p_from_pos) {
 		return;
 	}
 
-	if (!GLOBAL_GET("audio/driver/enable_input")) {
+	if (!PROJECT_GET("audio/driver/enable_input")) {
 		WARN_PRINT("Need to enable Project settings > Audio > Enable Audio Input option to use capturing.");
 		return;
 	}
