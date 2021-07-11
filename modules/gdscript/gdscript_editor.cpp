@@ -3237,7 +3237,7 @@ static Error _lookup_symbol_from_base(const GDScriptParser::DataType &p_base, co
 		return OK;
 	}
 
-	if ("PI" == p_symbol || "TAU" == p_symbol || "INF" == p_symbol || "NAN" == p_symbol  || "EULER" == p_symbol || "LN2" == p_symbol || "LN10" == p_symbol || "LOG2E" == p_symbol || "LOG10E" == p_symbol || "SQRT12" == p_symbol || "SQRT2" == p_symbol) {
+	if ("PI" == p_symbol || "TAU" == p_symbol || "INF" == p_symbol || "NAN" == p_symbol || "EULER" == p_symbol || "LN2" == p_symbol || "LN10" == p_symbol || "LOG2E" == p_symbol || "LOG10E" == p_symbol || "SQRT12" == p_symbol || "SQRT2" == p_symbol) {
 		r_result.type = ScriptLanguage::LOOKUP_RESULT_CLASS_CONSTANT;
 		r_result.class_name = "@GDScript";
 		r_result.class_member = p_symbol;
