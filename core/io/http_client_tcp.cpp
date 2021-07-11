@@ -590,6 +590,7 @@ PackedByteArray HTTPClientTCP::read_response_body_chunk() {
 				}
 			}
 			if (err != OK) {
+				ret.resize(_offset);
 				break;
 			}
 		}
