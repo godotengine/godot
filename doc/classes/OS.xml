@@ -379,9 +379,11 @@
 		<method name="get_system_dir" qualifiers="const">
 			<return type="String" />
 			<argument index="0" name="dir" type="int" enum="OS.SystemDir" />
+			<argument index="1" name="shared_storage" type="bool" default="true" />
 			<description>
 				Returns the actual path to commonly used folders across different platforms. Available locations are specified in [enum SystemDir].
 				[b]Note:[/b] This method is implemented on Android, Linux, macOS and Windows.
+				[b]Note:[/b] Shared storage is implemented on Android and allows to differentiate between app specific and shared directories. Shared directories have additional restrictions on Android.
 			</description>
 		</method>
 		<method name="get_system_time_msecs" qualifiers="const">

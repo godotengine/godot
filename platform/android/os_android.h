@@ -188,6 +188,8 @@ public:
 
 	virtual Error shell_open(String p_uri);
 	virtual String get_user_data_dir() const;
+	virtual String get_data_path() const;
+	virtual String get_cache_path() const;
 	virtual String get_resource_dir() const;
 	virtual String get_locale() const;
 	virtual void set_clipboard(const String &p_text);
@@ -197,7 +199,7 @@ public:
 
 	virtual String get_unique_id() const;
 
-	virtual String get_system_dir(SystemDir p_dir) const;
+	virtual String get_system_dir(SystemDir p_dir, bool p_shared_storage = true) const;
 
 	void process_accelerometer(const Vector3 &p_accelerometer);
 	void process_gravity(const Vector3 &p_gravity);

@@ -852,7 +852,12 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 		Vector<String> perms;
 		_get_permissions(p_preset, p_give_internet, perms);
 		for (int i = 0; i < perms.size(); i++) {
-			manifest_text += vformat("    <uses-permission android:name=\"%s\" />\n", perms.get(i));
+			String permission = perms.get(i);
+			if (permission == "android.permission.WRITE_EXTERNAL_STORAGE" || permission == "android.permission.READ_EXTERNAL_STORAGE") {
+				manifest_text += vformat("    <uses-permission android:name=\"%s\" android:maxSdkVersion=\"29\" />\n", permission);
+			} else {
+				manifest_text += vformat("    <uses-permission android:name=\"%s\" />\n", permission);
+			}
 		}
 
 		manifest_text += _get_xr_features_tag(p_preset);
@@ -1009,7 +1014,6 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 						}
 
 						if (tname == "application" && attrname == "requestLegacyExternalStorage") {
-
 							encode_uint32(has_storage_permission ? 0xFFFFFFFF : 0, &p_manifest.write[iofs + 16]);
 						}
 
