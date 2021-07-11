@@ -586,6 +586,7 @@ void register_scene_types() {
 	ClassDB::register_class<VisualShaderNodeTransformDecompose>();
 	ClassDB::register_class<VisualShaderNodeTexture>();
 	ClassDB::register_class<VisualShaderNodeCurveTexture>();
+	ClassDB::register_class<VisualShaderNodeCurve3Texture>();
 	ClassDB::register_virtual_class<VisualShaderNodeSample3D>();
 	ClassDB::register_class<VisualShaderNodeTexture2DArray>();
 	ClassDB::register_class<VisualShaderNodeTexture3D>();
