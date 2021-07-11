@@ -292,6 +292,28 @@ typedef struct SpvReflectTypeDescription {
   struct SpvReflectTypeDescription* members;
 } SpvReflectTypeDescription;
 
+// -- GODOT begin --
+/*! @struct SpvReflectSpecializationConstant
+
+*/
+
+typedef enum SpvReflectSpecializationConstantType {
+  SPV_REFLECT_SPECIALIZATION_CONSTANT_BOOL = 0,
+  SPV_REFLECT_SPECIALIZATION_CONSTANT_INT = 1,
+  SPV_REFLECT_SPECIALIZATION_CONSTANT_FLOAT = 2,
+} SpvReflectSpecializationConstantType;
+
+typedef struct SpvReflectSpecializationConstant {
+  const char* name;
+  uint32_t spirv_id;
+  uint32_t constant_id;
+  SpvReflectSpecializationConstantType constant_type;
+  union {
+    float float_value;
+    uint32_t int_bool_value;
+  } default_value;
+} SpvReflectSpecializationConstant;
+// -- GODOT end --
 
 /*! @struct SpvReflectInterfaceVariable
 
@@ -439,6 +461,10 @@ typedef struct SpvReflectShaderModule {
   SpvReflectInterfaceVariable*      interface_variables;
   uint32_t                          push_constant_block_count;
   SpvReflectBlockVariable*          push_constant_blocks;
+  // -- GODOT begin --
+  uint32_t                          specialization_constant_count;
+  SpvReflectSpecializationConstant* specialization_constants;
+  // -- GODOT end --
 
   struct Internal {
     size_t                          spirv_size;
@@ -693,6 +719,33 @@ SpvReflectResult spvReflectEnumerateInputVariables(
   uint32_t*                     p_count,
   SpvReflectInterfaceVariable** pp_variables
 );
+
+// -- GOODT begin --
+/*! @fn spvReflectEnumerateSpecializationConstants
+ @brief  If the module contains multiple entry points, this will only get
+         the specialization constants for the first one.
+ @param  p_module      Pointer to an instance of SpvReflectShaderModule.
+ @param  p_count       If pp_constants is NULL, the module's specialization constant
+                       count will be stored here.
+                       If pp_variables is not NULL, *p_count must contain
+                       the module's specialization constant count.
+ @param  pp_variables  If NULL, the module's specialization constant count will be
+                       written to *p_count.
+                       If non-NULL, pp_constants must point to an array with
+                       *p_count entries, where pointers to the module's
+                       specialization constants will be written. The caller must not
+                       free the specialization constants written to this array.
+ @return               If successful, returns SPV_REFLECT_RESULT_SUCCESS.
+                       Otherwise, the error code indicates the cause of the
+                       failure.
+
+*/
+SpvReflectResult spvReflectEnumerateSpecializationConstants(
+  const SpvReflectShaderModule*      p_module,
+  uint32_t*                          p_count,
+  SpvReflectSpecializationConstant** pp_constants
+);
+// -- GODOT end --
 
 /*! @fn spvReflectEnumerateEntryPointInputVariables
  @brief  Enumerate the input variables for a given entry point.
