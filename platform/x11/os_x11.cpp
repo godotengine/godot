@@ -3250,7 +3250,7 @@ String OS_X11::get_cache_path() const {
 	return get_config_path();
 }
 
-String OS_X11::get_system_dir(SystemDir p_dir) const {
+String OS_X11::get_system_dir(SystemDir p_dir, bool p_shared_storage) const {
 	String xdgparam;
 
 	switch (p_dir) {
