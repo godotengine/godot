@@ -2164,7 +2164,12 @@ const char *VisualScriptMathConstant::const_name[MATH_CONSTANT_MAX] = {
 	"PI/2",
 	"TAU",
 	"E",
-	"Sqrt2",
+	"Natural logarithm of 2",
+	"Natural logarithm of 10",
+	"Logarithm of 2E",
+	"Logarithm of 10E",
+	"Square root of 1/2",
+	"Square root of 2",
 	"INF",
 	"NAN"
 };
@@ -2177,7 +2182,14 @@ double VisualScriptMathConstant::const_value[MATH_CONSTANT_MAX] = {
 	2.71828182845904523536,
 	Math::sqrt(2.0),
 	INFINITY,
-	NAN
+	NAN,
+	Math_E,
+	Math_LN2,
+	Math_LN10,
+	Math_LOG2E,
+	Math_LOG10E,
+	Math_SQRT12,
+	Math_SQRT2
 };
 
 int VisualScriptMathConstant::get_output_sequence_port_count() const {
@@ -2257,6 +2269,11 @@ void VisualScriptMathConstant::_bind_methods() {
 	BIND_ENUM_CONSTANT(MATH_CONSTANT_HALF_PI);
 	BIND_ENUM_CONSTANT(MATH_CONSTANT_TAU);
 	BIND_ENUM_CONSTANT(MATH_CONSTANT_E);
+	BIND_ENUM_CONSTANT(MATH_CONSTANT_LN2);
+	BIND_ENUM_CONSTANT(MATH_CONSTANT_LN10);
+	BIND_ENUM_CONSTANT(MATH_CONSTANT_LOG2E);
+	BIND_ENUM_CONSTANT(MATH_CONSTANT_LOG10E);
+	BIND_ENUM_CONSTANT(MATH_CONSTANT_SQRT12);
 	BIND_ENUM_CONSTANT(MATH_CONSTANT_SQRT2);
 	BIND_ENUM_CONSTANT(MATH_CONSTANT_INF);
 	BIND_ENUM_CONSTANT(MATH_CONSTANT_NAN);

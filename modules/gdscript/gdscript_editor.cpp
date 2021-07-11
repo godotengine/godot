@@ -443,6 +443,41 @@ void GDScriptLanguage::get_public_constants(List<Pair<String, Variant>> *p_const
 	nan.first = "NAN";
 	nan.second = NAN;
 	p_constants->push_back(nan);
+
+	Pair<String, Variant> e;
+	e.first = "EULER";
+	e.second = Math_E;
+	p_constants->push_back(e);
+
+	Pair<String, Variant> ln2;
+	ln2.first = "LN2";
+	ln2.second = Math_LN2;
+	p_constants->push_back(ln2);
+
+	Pair<String, Variant> ln10;
+	ln10.first = "LN10";
+	ln10.second = Math_LN10;
+	p_constants->push_back(ln10);
+
+	Pair<String, Variant> log2e;
+	log2e.first = "LOG2E";
+	log2e.second = Math_LOG2E;
+	p_constants->push_back(log2e);
+
+	Pair<String, Variant> log10e;
+	log10e.first = "LOG10E";
+	log10e.second = Math_LOG10E;
+	p_constants->push_back(log10e);
+
+	Pair<String, Variant> sqrt12;
+	sqrt12.first = "SQRT12";
+	sqrt12.second = Math_SQRT12;
+	p_constants->push_back(sqrt12);
+
+	Pair<String, Variant> sqrt2;
+	sqrt2.first = "SQRT2";
+	sqrt2.second = Math_SQRT2;
+	p_constants->push_back(sqrt2);
 }
 
 void GDScriptLanguage::get_public_annotations(List<MethodInfo> *p_annotations) const {
@@ -1195,7 +1230,7 @@ static void _find_identifiers(const GDScriptParser::CompletionContext &p_context
 	_find_built_in_variants(r_result);
 
 	static const char *_keywords[] = {
-		"false", "PI", "TAU", "INF", "NAN", "self", "true", "breakpoint", "tool", "super",
+		"false", "PI", "TAU", "INF", "NAN", "EULER", "LN2", "LN10", "LOG2E", "LOG10E", "SQRT12", "SQRT2", "self", "true", "breakpoint", "tool", "super",
 		"break", "continue", "pass", "return",
 		nullptr
 	};
@@ -3202,7 +3237,7 @@ static Error _lookup_symbol_from_base(const GDScriptParser::DataType &p_base, co
 		return OK;
 	}
 
-	if ("PI" == p_symbol || "TAU" == p_symbol || "INF" == p_symbol || "NAN" == p_symbol) {
+	if ("PI" == p_symbol || "TAU" == p_symbol || "INF" == p_symbol || "NAN" == p_symbol  || "EULER" == p_symbol || "LN2" == p_symbol || "LN10" == p_symbol || "LOG2E" == p_symbol || "LOG10E" == p_symbol || "SQRT12" == p_symbol || "SQRT2" == p_symbol) {
 		r_result.type = ScriptLanguage::LOOKUP_RESULT_CLASS_CONSTANT;
 		r_result.class_name = "@GDScript";
 		r_result.class_member = p_symbol;

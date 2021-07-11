@@ -249,6 +249,27 @@
 		<constant name="TAU" value="6.28318530717959">
 			The circle constant, the circumference of the unit circle in radians. This is equivalent to [code]PI * 2[/code], or 360 degrees in rotations.
 		</constant>
+		<constant name="EULER" value="2.718282">
+			The natural logarithm base.
+		</constant>
+		<constant name="LN2" value="0.693147">
+			Natural logarithm of two.
+		</constant>
+		<constant name="LN10" value="2.302585">
+			Natural logarithm of ten.
+		</constant>
+		<constant name="LOG2E" value="1.442695">
+			Logarithm of base two of value e.
+		</constant>
+		<constant name="LOG10E" value="0.434294">
+			Logarithm of base ten of value e.
+		</constant>
+		<constant name="SQRT12" value="0.707107">
+			Square root of one half.
+		</constant>
+		<constant name="SQRT2" value="1.414214">
+			Square root of two.
+		</constant>
 		<constant name="INF" value="inf">
 			Positive floating-point infinity. This is the result of floating-point division when the divisor is [code]0.0[/code]. For negative infinity, use [code]-INF[/code]. Dividing by [code]-0.0[/code] will result in negative infinity if the numerator is positive, so dividing by [code]0.0[/code] is not the same as dividing by [code]-0.0[/code] (despite [code]0.0 == -0.0[/code] returning [code]true[/code]).
 			[b]Note:[/b] Numeric infinity is only a concept with floating-point numbers, and has no equivalent for integers. Dividing an integer number by [code]0[/code] will not result in [constant INF] and will result in a run-time error instead.
