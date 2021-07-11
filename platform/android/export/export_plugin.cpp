@@ -123,6 +123,7 @@ static const char *android_perms[] = {
 	"MANAGE_ACCOUNTS",
 	"MANAGE_APP_TOKENS",
 	"MANAGE_DOCUMENTS",
+	"MANAGE_EXTERNAL_STORAGE",
 	"MASTER_CLEAR",
 	"MEDIA_CONTENT_CONTROL",
 	"MODIFY_AUDIO_SETTINGS",
@@ -245,7 +246,7 @@ static const char *APK_ASSETS_DIRECTORY = "res://android/build/assets";
 static const char *AAB_ASSETS_DIRECTORY = "res://android/build/assetPacks/installTime/src/main/assets";
 
 static const int DEFAULT_MIN_SDK_VERSION = 19; // Should match the value in 'platform/android/java/app/config.gradle#minSdk'
-static const int DEFAULT_TARGET_SDK_VERSION = 31; // Should match the value in 'platform/android/java/app/config.gradle#targetSdk'
+static const int DEFAULT_TARGET_SDK_VERSION = 32; // Should match the value in 'platform/android/java/app/config.gradle#targetSdk'
 
 void EditorExportPlatformAndroid::_check_for_changes_poll_thread(void *ud) {
 	EditorExportPlatformAndroid *ea = static_cast<EditorExportPlatformAndroid *>(ud);
@@ -276,6 +277,7 @@ void EditorExportPlatformAndroid::_check_for_changes_poll_thread(void *ud) {
 			}
 		}
 
+#ifndef ANDROID_ENABLED
 		// Check for devices updates
 		String adb = get_adb_path();
 		if (FileAccess::exists(adb)) {
@@ -387,6 +389,7 @@ void EditorExportPlatformAndroid::_check_for_changes_poll_thread(void *ud) {
 				ea->devices_changed.set();
 			}
 		}
+#endif
 
 		uint64_t sleep = 200;
 		uint64_t wait = 3000000;
@@ -399,6 +402,7 @@ void EditorExportPlatformAndroid::_check_for_changes_poll_thread(void *ud) {
 		}
 	}
 
+#ifndef ANDROID_ENABLED
 	if (EditorSettings::get_singleton()->get("export/android/shutdown_adb_on_exit")) {
 		String adb = get_adb_path();
 		if (!FileAccess::exists(adb)) {
@@ -409,6 +413,7 @@ void EditorExportPlatformAndroid::_check_for_changes_poll_thread(void *ud) {
 		args.push_back("kill-server");
 		OS::get_singleton()->execute(adb, args);
 	}
+#endif
 }
 
 String EditorExportPlatformAndroid::get_project_name(const String &p_name) const {
@@ -747,8 +752,12 @@ Error EditorExportPlatformAndroid::copy_gradle_so(void *p_userdata, const Shared
 	return OK;
 }
 
-bool EditorExportPlatformAndroid::_has_storage_permission(const Vector<String> &p_permissions) {
+bool EditorExportPlatformAndroid::_has_read_write_storage_permission(const Vector<String> &p_permissions) {
 	return p_permissions.find("android.permission.READ_EXTERNAL_STORAGE") != -1 || p_permissions.find("android.permission.WRITE_EXTERNAL_STORAGE") != -1;
+}
+
+bool EditorExportPlatformAndroid::_has_manage_external_storage_permission(const Vector<String> &p_permissions) {
+	return p_permissions.find("android.permission.MANAGE_EXTERNAL_STORAGE") != -1;
 }
 
 void EditorExportPlatformAndroid::_get_permissions(const Ref<EditorExportPreset> &p_preset, bool p_give_internet, Vector<String> &r_permissions) {
@@ -798,7 +807,7 @@ void EditorExportPlatformAndroid::_write_tmp_manifest(const Ref<EditorExportPres
 	_get_permissions(p_preset, p_give_internet, perms);
 	for (int i = 0; i < perms.size(); i++) {
 		String permission = perms.get(i);
-		if (permission == "android.permission.WRITE_EXTERNAL_STORAGE" || permission == "android.permission.READ_EXTERNAL_STORAGE") {
+		if (permission == "android.permission.WRITE_EXTERNAL_STORAGE" || (permission == "android.permission.READ_EXTERNAL_STORAGE" && _has_manage_external_storage_permission(perms))) {
 			manifest_text += vformat("    <uses-permission android:name=\"%s\" android:maxSdkVersion=\"29\" />\n", permission);
 		} else {
 			manifest_text += vformat("    <uses-permission android:name=\"%s\" />\n", permission);
@@ -806,7 +815,7 @@ void EditorExportPlatformAndroid::_write_tmp_manifest(const Ref<EditorExportPres
 	}
 
 	manifest_text += _get_xr_features_tag(p_preset);
-	manifest_text += _get_application_tag(p_preset, _has_storage_permission(perms));
+	manifest_text += _get_application_tag(p_preset, _has_read_write_storage_permission(perms));
 	manifest_text += "</manifest>\n";
 	String manifest_path = vformat("res://android/build/src/%s/AndroidManifest.xml", (p_debug ? "debug" : "release"));
 
@@ -864,7 +873,7 @@ void EditorExportPlatformAndroid::_fix_manifest(const Ref<EditorExportPreset> &p
 	Vector<String> perms;
 	// Write permissions into the perms variable.
 	_get_permissions(p_preset, p_give_internet, perms);
-	bool has_storage_permission = _has_storage_permission(perms);
+	bool has_read_write_storage_permission = _has_read_write_storage_permission(perms);
 
 	while (ofs < (uint32_t)p_manifest.size()) {
 		uint32_t chunk = decode_uint32(&p_manifest[ofs]);
@@ -948,7 +957,7 @@ void EditorExportPlatformAndroid::_fix_manifest(const Ref<EditorExportPreset> &p
 					}
 
 					if (tname == "application" && attrname == "requestLegacyExternalStorage") {
-						encode_uint32(has_storage_permission ? 0xFFFFFFFF : 0, &p_manifest.write[iofs + 16]);
+						encode_uint32(has_read_write_storage_permission ? 0xFFFFFFFF : 0, &p_manifest.write[iofs + 16]);
 					}
 
 					if (tname == "application" && attrname == "allowBackup") {

@@ -36,7 +36,6 @@ import android.app.Activity;
 import android.content.ActivityNotFoundException;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
-import android.content.res.AssetManager;
 import android.graphics.Point;
 import android.graphics.Rect;
 import android.net.Uri;
@@ -46,12 +45,10 @@ import android.provider.Settings;
 import android.text.TextUtils;
 import android.util.DisplayMetrics;
 import android.util.Log;
-import android.util.SparseArray;
 import android.view.Display;
 import android.view.DisplayCutout;
 import android.view.WindowInsets;
 
-import java.io.IOException;
 import java.util.List;
 import java.util.Locale;
 
@@ -60,7 +57,6 @@ import java.util.Locale;
 public class GodotIO {
 	private static final String TAG = GodotIO.class.getSimpleName();
 
-	private final AssetManager am;
 	private final Activity activity;
 	private final String uniqueId;
 	GodotEditText edit;
@@ -73,100 +69,8 @@ public class GodotIO {
 	final int SCREEN_SENSOR_PORTRAIT = 5;
 	final int SCREEN_SENSOR = 6;
 
-	/////////////////////////
-	/// DIRECTORIES
-	/////////////////////////
-
-	static class AssetDir {
-		public String[] files;
-		public int current;
-		public String path;
-	}
-
-	private int last_dir_id = 1;
-
-	private final SparseArray<AssetDir> dirs;
-
-	public int dir_open(String path) {
-		AssetDir ad = new AssetDir();
-		ad.current = 0;
-		ad.path = path;
-
-		try {
-			ad.files = am.list(path);
-			// no way to find path is directory or file exactly.
-			// but if ad.files.length==0, then it's an empty directory or file.
-			if (ad.files.length == 0) {
-				return -1;
-			}
-		} catch (IOException e) {
-			System.out.printf("Exception on dir_open: %s\n", e);
-			return -1;
-		}
-
-		++last_dir_id;
-		dirs.put(last_dir_id, ad);
-
-		return last_dir_id;
-	}
-
-	public boolean dir_is_dir(int id) {
-		if (dirs.get(id) == null) {
-			System.out.printf("dir_next: invalid dir id: %d\n", id);
-			return false;
-		}
-		AssetDir ad = dirs.get(id);
-		//System.out.printf("go next: %d,%d\n",ad.current,ad.files.length);
-		int idx = ad.current;
-		if (idx > 0)
-			idx--;
-
-		if (idx >= ad.files.length)
-			return false;
-		String fname = ad.files[idx];
-
-		try {
-			if (ad.path.equals(""))
-				am.open(fname);
-			else
-				am.open(ad.path + "/" + fname);
-			return false;
-		} catch (Exception e) {
-			return true;
-		}
-	}
-
-	public String dir_next(int id) {
-		if (dirs.get(id) == null) {
-			System.out.printf("dir_next: invalid dir id: %d\n", id);
-			return "";
-		}
-
-		AssetDir ad = dirs.get(id);
-		//System.out.printf("go next: %d,%d\n",ad.current,ad.files.length);
-
-		if (ad.current >= ad.files.length) {
-			ad.current++;
-			return "";
-		}
-		String r = ad.files[ad.current];
-		ad.current++;
-		return r;
-	}
-
-	public void dir_close(int id) {
-		if (dirs.get(id) == null) {
-			System.out.printf("dir_close: invalid dir id: %d\n", id);
-			return;
-		}
-
-		dirs.remove(id);
-	}
-
 	GodotIO(Activity p_activity) {
-		am = p_activity.getAssets();
 		activity = p_activity;
-		dirs = new SparseArray<>();
 		String androidId = Settings.Secure.getString(activity.getContentResolver(),
 				Settings.Secure.ANDROID_ID);
 		if (androidId == null) {

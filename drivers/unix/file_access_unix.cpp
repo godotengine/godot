@@ -333,10 +333,6 @@ Error FileAccessUnix::_set_unix_permissions(const String &p_file, uint32_t p_per
 	return FAILED;
 }
 
-Ref<FileAccess> FileAccessUnix::create_libc() {
-	return memnew(FileAccessUnix);
-}
-
 CloseNotificationFunc FileAccessUnix::close_notification_func = nullptr;
 
 FileAccessUnix::~FileAccessUnix() {

@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  file_access_unix.h                                                   */
+/*  FileAccessFlags.kt                                                   */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,63 +28,60 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef FILE_ACCESS_UNIX_H
-#define FILE_ACCESS_UNIX_H
+package org.godotengine.godot.io.file
 
-#include "core/io/file_access.h"
-#include "core/os/memory.h"
+/**
+ * Android representation of Godot native access flags.
+ */
+internal enum class FileAccessFlags(val nativeValue: Int) {
+    /**
+     * Opens the file for read operations.
+     * The cursor is positioned at the beginning of the file.
+     */
+    READ(1),
 
-#include <stdio.h>
+    /**
+     * Opens the file for write operations.
+     * The file is created if it does not exist, and truncated if it does.
+     */
+    WRITE(2),
 
-#if defined(UNIX_ENABLED) || defined(LIBC_FILEIO_ENABLED)
+    /**
+     * Opens the file for read and write operations.
+     * Does not truncate the file. The cursor is positioned at the beginning of the file.
+     */
+    READ_WRITE(3),
 
-typedef void (*CloseNotificationFunc)(const String &p_file, int p_flags);
+    /**
+     * Opens the file for read and write operations.
+     * The file is created if it does not exist, and truncated if it does.
+     * The cursor is positioned at the beginning of the file.
+     */
+    WRITE_READ(7);
 
-class FileAccessUnix : public FileAccess {
-	FILE *f = nullptr;
-	int flags = 0;
-	void check_errors() const;
-	mutable Error last_error = OK;
-	String save_path;
-	String path;
-	String path_src;
+    fun getMode(): String {
+        return when (this) {
+            READ -> "r"
+            WRITE -> "w"
+            READ_WRITE, WRITE_READ -> "rw"
+        }
+    }
 
-	void _close();
+    fun shouldTruncate(): Boolean {
+        return when (this) {
+            READ, READ_WRITE -> false
+            WRITE, WRITE_READ -> true
+        }
+    }
 
-public:
-	static CloseNotificationFunc close_notification_func;
-
-	virtual Error _open(const String &p_path, int p_mode_flags); ///< open a file
-	virtual bool is_open() const; ///< true when file is open
-
-	virtual String get_path() const; /// returns the path for the current open file
-	virtual String get_path_absolute() const; /// returns the absolute path for the current open file
-
-	virtual void seek(uint64_t p_position); ///< seek to a given position
-	virtual void seek_end(int64_t p_position = 0); ///< seek from the end of file
-	virtual uint64_t get_position() const; ///< get position in the file
-	virtual uint64_t get_length() const; ///< get size of the file
-
-	virtual bool eof_reached() const; ///< reading passed EOF
-
-	virtual uint8_t get_8() const; ///< get a byte
-	virtual uint64_t get_buffer(uint8_t *p_dst, uint64_t p_length) const;
-
-	virtual Error get_error() const; ///< get last error
-
-	virtual void flush();
-	virtual void store_8(uint8_t p_dest); ///< store a byte
-	virtual void store_buffer(const uint8_t *p_src, uint64_t p_length); ///< store an array of bytes
-
-	virtual bool file_exists(const String &p_path); ///< return true if a file exists
-
-	virtual uint64_t _get_modified_time(const String &p_file);
-	virtual uint32_t _get_unix_permissions(const String &p_file);
-	virtual Error _set_unix_permissions(const String &p_file, uint32_t p_permissions);
-
-	FileAccessUnix() {}
-	virtual ~FileAccessUnix();
-};
-
-#endif
-#endif
+    companion object {
+        fun fromNativeModeFlags(modeFlag: Int): FileAccessFlags? {
+            for (flag in values()) {
+                if (flag.nativeValue == modeFlag) {
+                    return flag
+                }
+            }
+            return null
+        }
+    }
+}
