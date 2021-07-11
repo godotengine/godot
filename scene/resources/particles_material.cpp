@@ -90,6 +90,10 @@ void ParticlesMaterial::init_shaders() {
 	shader_names->emission_texture_points = "emission_texture_points";
 	shader_names->emission_texture_normal = "emission_texture_normal";
 	shader_names->emission_texture_color = "emission_texture_color";
+	shader_names->emission_ring_axis = "emission_ring_axis";
+	shader_names->emission_ring_height = "emission_ring_height";
+	shader_names->emission_ring_radius = "emission_ring_radius";
+	shader_names->emission_ring_inner_radius = "emission_ring_inner_radius";
 
 	shader_names->gravity = "gravity";
 
@@ -193,6 +197,12 @@ void ParticlesMaterial::_update_shader() {
 			if (emission_color_texture.is_valid()) {
 				code += "uniform sampler2D emission_texture_color : hint_white;\n";
 			}
+		} break;
+		case EMISSION_SHAPE_RING: {
+			code += "uniform vec3 " + shader_names->emission_ring_axis + ";\n";
+			code += "uniform float " + shader_names->emission_ring_height + ";\n";
+			code += "uniform float " + shader_names->emission_ring_radius + ";\n";
+			code += "uniform float " + shader_names->emission_ring_inner_radius + ";\n";
 		} break;
 		case EMISSION_SHAPE_MAX: { // Max value for validity check.
 			break;
@@ -395,6 +405,28 @@ void ParticlesMaterial::_update_shader() {
 					code += "		if (RESTART_VELOCITY) VELOCITY = mat3(tangent, bitangent, normal) * VELOCITY;\n";
 				}
 			}
+		} break;
+		case EMISSION_SHAPE_RING: {
+			code += "		float ring_spawn_angle = rand_from_seed(alt_seed) * 2.0 * pi;\n";
+			code += "		float ring_random_radius = rand_from_seed(alt_seed) * (emission_ring_radius - emission_ring_inner_radius) + emission_ring_inner_radius;\n";
+			code += "		vec3 axis = normalize(emission_ring_axis);\n";
+			code += "		vec3 ortho_axis = vec3(0.0);\n";
+			code += "		if (axis == vec3(1.0, 0.0, 0.0)) {\n";
+			code += "			ortho_axis = cross(axis, vec3(0.0, 1.0, 0.0));\n";
+			code += "		} else {\n";
+			code += " 			ortho_axis = cross(axis, vec3(1.0, 0.0, 0.0));\n";
+			code += "		}\n";
+			code += "		ortho_axis = normalize(ortho_axis);\n";
+			code += "		float s = sin(ring_spawn_angle);\n";
+			code += "		float c = cos(ring_spawn_angle);\n";
+			code += "		float oc = 1.0 - c;\n";
+			code += "		ortho_axis = mat3(\n";
+			code += "			vec3(c + axis.x * axis.x * oc, axis.x * axis.y * oc - axis.z * s, axis.x * axis.z *oc + axis.y * s),\n";
+			code += "			vec3(axis.x * axis.y * oc + s * axis.z, c + axis.y * axis.y * oc, axis.y * axis.z * oc - axis.x * s),\n";
+			code += "			vec3(axis.z * axis.x * oc - axis.y * s, axis.z * axis.y * oc + axis.x * s, c + axis.z * axis.z * oc)\n";
+			code += "			) * ortho_axis;\n";
+			code += "		ortho_axis = normalize(ortho_axis);\n";
+			code += "		TRANSFORM[3].xyz = ortho_axis * ring_random_radius + (rand_from_seed(alt_seed) * emission_ring_height - emission_ring_height / 2.0) * axis;\n";
 		} break;
 		case EMISSION_SHAPE_MAX: { // Max value for validity check.
 			break;
@@ -990,6 +1022,26 @@ void ParticlesMaterial::set_emission_point_count(int p_count) {
 	RenderingServer::get_singleton()->material_set_param(_get_material(), shader_names->emission_texture_point_count, p_count);
 }
 
+void ParticlesMaterial::set_emission_ring_axis(Vector3 p_axis) {
+	emission_ring_axis = p_axis;
+	RenderingServer::get_singleton()->material_set_param(_get_material(), shader_names->emission_ring_axis, p_axis);
+}
+
+void ParticlesMaterial::set_emission_ring_height(float p_height) {
+	emission_ring_height = p_height;
+	RenderingServer::get_singleton()->material_set_param(_get_material(), shader_names->emission_ring_height, p_height);
+}
+
+void ParticlesMaterial::set_emission_ring_radius(float p_radius) {
+	emission_ring_radius = p_radius;
+	RenderingServer::get_singleton()->material_set_param(_get_material(), shader_names->emission_ring_radius, p_radius);
+}
+
+void ParticlesMaterial::set_emission_ring_inner_radius(float p_radius) {
+	emission_ring_inner_radius = p_radius;
+	RenderingServer::get_singleton()->material_set_param(_get_material(), shader_names->emission_ring_inner_radius, p_radius);
+}
+
 ParticlesMaterial::EmissionShape ParticlesMaterial::get_emission_shape() const {
 	return emission_shape;
 }
@@ -1016,6 +1068,22 @@ Ref<Texture2D> ParticlesMaterial::get_emission_color_texture() const {
 
 int ParticlesMaterial::get_emission_point_count() const {
 	return emission_point_count;
+}
+
+Vector3 ParticlesMaterial::get_emission_ring_axis() const {
+	return emission_ring_axis;
+}
+
+float ParticlesMaterial::get_emission_ring_height() const {
+	return emission_ring_height;
+}
+
+float ParticlesMaterial::get_emission_ring_radius() const {
+	return emission_ring_radius;
+}
+
+float ParticlesMaterial::get_emission_ring_inner_radius() const {
+	return emission_ring_inner_radius;
 }
 
 void ParticlesMaterial::set_gravity(const Vector3 &p_gravity) {
@@ -1058,7 +1126,7 @@ void ParticlesMaterial::_validate_property(PropertyInfo &property) const {
 		property.usage = PROPERTY_USAGE_NONE;
 	}
 
-	if ((property.name == "emission_point_texture" || property.name == "emission_color_texture") && (emission_shape < EMISSION_SHAPE_POINTS)) {
+	if ((property.name == "emission_point_texture" || property.name == "emission_color_texture") && (emission_shape != EMISSION_SHAPE_POINTS && emission_shape != EMISSION_SHAPE_DIRECTED_POINTS)) {
 		property.usage = PROPERTY_USAGE_NONE;
 	}
 
@@ -1067,6 +1135,10 @@ void ParticlesMaterial::_validate_property(PropertyInfo &property) const {
 	}
 
 	if (property.name == "emission_point_count" && (emission_shape != EMISSION_SHAPE_POINTS && emission_shape != EMISSION_SHAPE_DIRECTED_POINTS)) {
+		property.usage = PROPERTY_USAGE_NONE;
+	}
+
+	if (property.name.begins_with("emission_ring_") && emission_shape != EMISSION_SHAPE_RING) {
 		property.usage = PROPERTY_USAGE_NONE;
 	}
 
@@ -1216,6 +1288,18 @@ void ParticlesMaterial::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_emission_point_count", "point_count"), &ParticlesMaterial::set_emission_point_count);
 	ClassDB::bind_method(D_METHOD("get_emission_point_count"), &ParticlesMaterial::get_emission_point_count);
 
+	ClassDB::bind_method(D_METHOD("set_emission_ring_axis", "axis"), &ParticlesMaterial::set_emission_ring_axis);
+	ClassDB::bind_method(D_METHOD("get_emission_ring_axis"), &ParticlesMaterial::get_emission_ring_axis);
+
+	ClassDB::bind_method(D_METHOD("set_emission_ring_height", "height"), &ParticlesMaterial::set_emission_ring_height);
+	ClassDB::bind_method(D_METHOD("get_emission_ring_height"), &ParticlesMaterial::get_emission_ring_height);
+
+	ClassDB::bind_method(D_METHOD("set_emission_ring_radius", "radius"), &ParticlesMaterial::set_emission_ring_radius);
+	ClassDB::bind_method(D_METHOD("get_emission_ring_radius"), &ParticlesMaterial::get_emission_ring_radius);
+
+	ClassDB::bind_method(D_METHOD("set_emission_ring_inner_radius", "inner_radius"), &ParticlesMaterial::set_emission_ring_inner_radius);
+	ClassDB::bind_method(D_METHOD("get_emission_ring_inner_radius"), &ParticlesMaterial::get_emission_ring_inner_radius);
+
 	ClassDB::bind_method(D_METHOD("get_gravity"), &ParticlesMaterial::get_gravity);
 	ClassDB::bind_method(D_METHOD("set_gravity", "accel_vec"), &ParticlesMaterial::set_gravity);
 
@@ -1253,13 +1337,17 @@ void ParticlesMaterial::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "lifetime_randomness", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_lifetime_randomness", "get_lifetime_randomness");
 
 	ADD_GROUP("Emission Shape", "emission_");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "emission_shape", PROPERTY_HINT_ENUM, "Point,Sphere,Box,Points,Directed Points"), "set_emission_shape", "get_emission_shape");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "emission_shape", PROPERTY_HINT_ENUM, "Point,Sphere,Box,Points,Directed Points,Ring"), "set_emission_shape", "get_emission_shape");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "emission_sphere_radius", PROPERTY_HINT_RANGE, "0.01,128,0.01,or_greater"), "set_emission_sphere_radius", "get_emission_sphere_radius");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "emission_box_extents"), "set_emission_box_extents", "get_emission_box_extents");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "emission_point_texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_emission_point_texture", "get_emission_point_texture");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "emission_normal_texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_emission_normal_texture", "get_emission_normal_texture");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "emission_color_texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_emission_color_texture", "get_emission_color_texture");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "emission_point_count", PROPERTY_HINT_RANGE, "0,1000000,1"), "set_emission_point_count", "get_emission_point_count");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "emission_ring_axis"), "set_emission_ring_axis", "get_emission_ring_axis");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "emission_ring_height"), "set_emission_ring_height", "get_emission_ring_height");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "emission_ring_radius"), "set_emission_ring_radius", "get_emission_ring_radius");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "emission_ring_inner_radius"), "set_emission_ring_inner_radius", "get_emission_ring_inner_radius");
 	ADD_GROUP("ParticleFlags", "particle_flag_");
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "particle_flag_align_y"), "set_particle_flag", "get_particle_flag", PARTICLE_FLAG_ALIGN_Y_TO_VELOCITY);
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "particle_flag_rotate_y"), "set_particle_flag", "get_particle_flag", PARTICLE_FLAG_ROTATE_Y);
@@ -1359,6 +1447,7 @@ void ParticlesMaterial::_bind_methods() {
 	BIND_ENUM_CONSTANT(EMISSION_SHAPE_BOX);
 	BIND_ENUM_CONSTANT(EMISSION_SHAPE_POINTS);
 	BIND_ENUM_CONSTANT(EMISSION_SHAPE_DIRECTED_POINTS);
+	BIND_ENUM_CONSTANT(EMISSION_SHAPE_RING);
 	BIND_ENUM_CONSTANT(EMISSION_SHAPE_MAX);
 
 	BIND_ENUM_CONSTANT(SUB_EMITTER_DISABLED);
@@ -1388,6 +1477,10 @@ ParticlesMaterial::ParticlesMaterial() :
 	set_emission_shape(EMISSION_SHAPE_POINT);
 	set_emission_sphere_radius(1);
 	set_emission_box_extents(Vector3(1, 1, 1));
+	set_emission_ring_axis(Vector3(0, 0, 1.0));
+	set_emission_ring_height(1);
+	set_emission_ring_radius(1);
+	set_emission_ring_inner_radius(0);
 	set_gravity(Vector3(0, -9.8, 0));
 	set_lifetime_randomness(0);
 
