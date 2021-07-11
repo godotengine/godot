@@ -237,7 +237,10 @@ int Compression::decompress_dynamic(PoolVector<uint8_t> *p_dst, int p_max_dst_si
 				case Z_DATA_ERROR:
 				case Z_MEM_ERROR:
 				case Z_STREAM_ERROR:
-					WARN_PRINT(strm.msg);
+				case Z_BUF_ERROR:
+					if (strm.msg) {
+						WARN_PRINT(strm.msg);
+					}
 					(void)inflateEnd(&strm);
 					p_dst->resize(0);
 					return ret;
