@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  dir_access_unix.h                                                    */
+/*  FileAccessFlags.kt                                                   */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,65 +28,60 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef DIR_ACCESS_UNIX_H
-#define DIR_ACCESS_UNIX_H
+package org.godotengine.godot.io.file
 
-#if defined(UNIX_ENABLED) || defined(LIBC_FILEIO_ENABLED)
+/**
+ * Android representation of Godot native access flags.
+ */
+internal enum class FileAccessFlags(val nativeValue: Int) {
+    /**
+     * Opens the file for read operations.
+     * The cursor is positioned at the beginning of the file.
+     */
+    READ(1),
 
-#include "core/os/dir_access.h"
+    /**
+     * Opens the file for write operations.
+     * The file is created if it does not exist, and truncated if it does.
+     */
+    WRITE(2),
 
-#include <dirent.h>
-#include <sys/stat.h>
-#include <sys/types.h>
-#include <unistd.h>
+    /**
+     * Opens the file for read and write operations.
+     * Does not truncate the file. The cursor is positioned at the beginning of the file.
+     */
+    READ_WRITE(3),
 
-class DirAccessUnix : public DirAccess {
-	DIR *dir_stream;
+    /**
+     * Opens the file for read and write operations.
+     * The file is created if it does not exist, and truncated if it does.
+     * The cursor is positioned at the beginning of the file.
+     */
+    WRITE_READ(7);
 
-	bool _cisdir;
-	bool _cishidden;
+    fun getMode(): String {
+        return when (this) {
+            READ -> "r"
+            WRITE -> "w"
+            READ_WRITE, WRITE_READ -> "rw"
+        }
+    }
 
-protected:
-	String current_dir;
-	virtual String fix_unicode_name(const char *p_name) const { return String::utf8(p_name); }
-	virtual bool is_hidden(const String &p_name);
+    fun shouldTruncate(): Boolean {
+        return when (this) {
+            READ, READ_WRITE -> false
+            WRITE, WRITE_READ -> true
+        }
+    }
 
-public:
-	virtual Error list_dir_begin(); ///< This starts dir listing
-	virtual String get_next();
-	virtual bool current_is_dir() const;
-	virtual bool current_is_hidden() const;
-
-	virtual void list_dir_end(); ///<
-
-	virtual int get_drive_count();
-	virtual String get_drive(int p_drive);
-	virtual int get_current_drive();
-	virtual bool drives_are_shortcuts();
-
-	virtual Error change_dir(String p_dir); ///< can be relative or absolute, return false on success
-	virtual String get_current_dir(); ///< return current dir location
-	virtual Error make_dir(String p_dir);
-
-	virtual bool file_exists(String p_file);
-	virtual bool dir_exists(String p_dir);
-
-	virtual uint64_t get_modified_time(String p_file);
-
-	virtual Error rename(String p_path, String p_new_path);
-	virtual Error remove(String p_path);
-
-	virtual bool is_link(String p_file);
-	virtual String read_link(String p_file);
-	virtual Error create_link(String p_source, String p_target);
-
-	virtual uint64_t get_space_left();
-
-	virtual String get_filesystem_type() const;
-
-	DirAccessUnix();
-	~DirAccessUnix();
-};
-
-#endif //UNIX ENABLED
-#endif
+    companion object {
+        fun fromNativeModeFlags(modeFlag: Int): FileAccessFlags? {
+            for (flag in values()) {
+                if (flag.nativeValue == modeFlag) {
+                    return flag
+                }
+            }
+            return null
+        }
+    }
+}
