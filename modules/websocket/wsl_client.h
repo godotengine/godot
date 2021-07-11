@@ -63,6 +63,8 @@ private:
 
 	String _key;
 	String _host;
+	int _port;
+	Array ip_candidates;
 	Vector<String> _protocols;
 	bool _use_ssl = false;
 

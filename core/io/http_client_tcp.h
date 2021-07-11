@@ -37,6 +37,7 @@ class HTTPClientTCP : public HTTPClient {
 private:
 	Status status = STATUS_DISCONNECTED;
 	IP::ResolverID resolving = IP::RESOLVER_INVALID_ID;
+	Array ip_candidates;
 	int conn_port = -1;
 	String conn_host;
 	bool ssl = false;
