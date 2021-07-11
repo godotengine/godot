@@ -42,6 +42,7 @@
 #include "scene/resources/packed_scene.h"
 
 void GDScriptWorkspace::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("apply_new_signal"), &GDScriptWorkspace::apply_new_signal);
 	ClassDB::bind_method(D_METHOD("didDeleteFiles"), &GDScriptWorkspace::did_delete_files);
 	ClassDB::bind_method(D_METHOD("symbol"), &GDScriptWorkspace::symbol);
 	ClassDB::bind_method(D_METHOD("parse_script", "path", "content"), &GDScriptWorkspace::parse_script);
@@ -50,6 +51,54 @@ void GDScriptWorkspace::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_file_uri", "path"), &GDScriptWorkspace::get_file_uri);
 	ClassDB::bind_method(D_METHOD("publish_diagnostics", "path"), &GDScriptWorkspace::publish_diagnostics);
 	ClassDB::bind_method(D_METHOD("generate_script_api", "path"), &GDScriptWorkspace::generate_script_api);
+}
+
+void GDScriptWorkspace::apply_new_signal(Object *obj, String function, PackedStringArray args) {
+	String function_signature = "func " + function;
+	Ref<Script> script = obj->get_script();
+
+	String source = script->get_source_code();
+
+	if (source.find(function_signature) != -1) {
+		return;
+	}
+
+	int first_class = source.find("\nclass ");
+	int start_line = 0;
+	if (first_class != -1) {
+		start_line = source.substr(0, first_class).split("\n").size();
+	} else {
+		start_line = source.split("\n").size();
+	}
+
+	String function_body = "\n\n" + function_signature + "(";
+	for (int i = 0; i < args.size(); ++i) {
+		function_body += args[i];
+		if (i < args.size() - 1) {
+			function_body += ", ";
+		}
+	}
+	function_body += ")";
+	if (EditorSettings::get_singleton()->get_setting("text_editor/completion/add_type_hints")) {
+		function_body += " -> void";
+	}
+	function_body += ":\n\tpass # Replace with function body.\n";
+
+	lsp::TextEdit text_edit;
+
+	if (first_class != -1) {
+		function_body += "\n\n";
+	}
+	text_edit.range.end.line = text_edit.range.start.line = start_line;
+
+	text_edit.newText = function_body;
+
+	String uri = get_file_uri(script->get_path());
+
+	lsp::ApplyWorkspaceEditParams params;
+	params.edit.add_edit(uri, text_edit);
+
+	GDScriptLanguageProtocol::get_singleton()->request_client("workspace/applyEdit", params.to_json());
 }
 
 void GDScriptWorkspace::did_delete_files(const Dictionary &p_params) {
@@ -324,6 +373,9 @@ Error GDScriptWorkspace::initialize() {
 			S->get()->get_member_completions();
 		}
 	}
+
+	EditorNode *editor_node = EditorNode::get_singleton();
+	editor_node->connect("script_add_function_request", callable_mp(this, &GDScriptWorkspace::apply_new_signal));
 
 	return OK;
 }
