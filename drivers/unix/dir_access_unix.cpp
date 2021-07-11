@@ -49,10 +49,6 @@
 #include <mntent.h>
 #endif
 
-DirAccess *DirAccessUnix::create_fs() {
-	return memnew(DirAccessUnix);
-}
-
 Error DirAccessUnix::list_dir_begin() {
 	list_dir_end(); //close any previous dir opening!
 
