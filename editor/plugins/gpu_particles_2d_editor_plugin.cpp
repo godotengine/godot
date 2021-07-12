@@ -60,7 +60,7 @@ void GPUParticles2DEditorPlugin::_file_selected(const String &p_file) {
 void GPUParticles2DEditorPlugin::_menu_callback(int p_idx) {
 	switch (p_idx) {
 		case MENU_GENERATE_VISIBILITY_RECT: {
-			float gen_time = particles->get_lifetime();
+			double gen_time = particles->get_lifetime();
 			if (gen_time < 1.0) {
 				generate_seconds->set_value(1.0);
 			} else {
@@ -100,7 +100,7 @@ void GPUParticles2DEditorPlugin::_menu_callback(int p_idx) {
 }
 
 void GPUParticles2DEditorPlugin::_generate_visibility_rect() {
-	float time = generate_seconds->get_value();
+	double time = generate_seconds->get_value();
 
 	float running = 0.0;
 

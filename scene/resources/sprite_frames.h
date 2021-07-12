@@ -37,7 +37,7 @@ class SpriteFrames : public Resource {
 	GDCLASS(SpriteFrames, Resource);
 
 	struct Anim {
-		float speed = 5.0;
+		double speed = 5.0;
 		bool loop = true;
 		Vector<Ref<Texture2D>> frames;
 	};
@@ -64,8 +64,8 @@ public:
 	void get_animation_list(List<StringName> *r_animations) const;
 	Vector<String> get_animation_names() const;
 
-	void set_animation_speed(const StringName &p_anim, float p_fps);
-	float get_animation_speed(const StringName &p_anim) const;
+	void set_animation_speed(const StringName &p_anim, double p_fps);
+	double get_animation_speed(const StringName &p_anim) const;
 
 	void set_animation_loop(const StringName &p_anim, bool p_loop);
 	bool get_animation_loop(const StringName &p_anim) const;

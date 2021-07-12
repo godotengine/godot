@@ -46,14 +46,14 @@ int Engine::get_iterations_per_second() const {
 	return ips;
 }
 
-void Engine::set_physics_jitter_fix(float p_threshold) {
+void Engine::set_physics_jitter_fix(double p_threshold) {
 	if (p_threshold < 0) {
 		p_threshold = 0;
 	}
 	physics_jitter_fix = p_threshold;
 }
 
-float Engine::get_physics_jitter_fix() const {
+double Engine::get_physics_jitter_fix() const {
 	return physics_jitter_fix;
 }
 
@@ -77,11 +77,11 @@ uint32_t Engine::get_frame_delay() const {
 	return _frame_delay;
 }
 
-void Engine::set_time_scale(float p_scale) {
+void Engine::set_time_scale(double p_scale) {
 	_time_scale = p_scale;
 }
 
-float Engine::get_time_scale() const {
+double Engine::get_time_scale() const {
 	return _time_scale;
 }
 

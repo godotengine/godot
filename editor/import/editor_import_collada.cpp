@@ -1414,7 +1414,7 @@ void ColladaImport::create_animation(int p_clip, bool p_make_tracks_in_all_bones
 	//animation->set_loop(true);
 	//create animation tracks
 
-	Vector<float> base_snapshots;
+	Vector<real_t> base_snapshots;
 
 	float f = 0;
 	float snapshot_interval = 1.0 / bake_fps; //should be customizable somewhere...
@@ -1466,7 +1466,7 @@ void ColladaImport::create_animation(int p_clip, bool p_make_tracks_in_all_bones
 		animation->track_set_path(track, path);
 		animation->track_set_imported(track, true); //helps merging later
 
-		Vector<float> snapshots = base_snapshots;
+		Vector<real_t> snapshots = base_snapshots;
 
 		if (nm.anim_tracks.size() == 1) {
 			//use snapshot keys from anim track instead, because this was most likely exported baked

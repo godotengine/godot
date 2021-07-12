@@ -107,9 +107,9 @@ Error MeshDataTool::create_from_surface(const Ref<ArrayMesh> &p_mesh, int p_surf
 		bo = arrays[Mesh::ARRAY_BONES].operator Vector<int>().ptr();
 	}
 
-	const real_t *we = nullptr;
+	const float *we = nullptr;
 	if (arrays[Mesh::ARRAY_WEIGHTS].get_type() != Variant::NIL) {
-		we = arrays[Mesh::ARRAY_WEIGHTS].operator Vector<real_t>().ptr();
+		we = arrays[Mesh::ARRAY_WEIGHTS].operator Vector<float>().ptr();
 	}
 
 	vertices.resize(vcount);

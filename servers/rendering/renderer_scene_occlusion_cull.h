@@ -60,7 +60,7 @@ public:
 
 		void update_mips();
 
-		_FORCE_INLINE_ bool is_occluded(const float p_bounds[6], const Vector3 &p_cam_position, const Transform3D &p_cam_inv_transform, const CameraMatrix &p_cam_projection, float p_near) const {
+		_FORCE_INLINE_ bool is_occluded(const real_t p_bounds[6], const Vector3 &p_cam_position, const Transform3D &p_cam_inv_transform, const CameraMatrix &p_cam_projection, real_t p_near) const {
 			if (is_empty()) {
 				return false;
 			}

@@ -366,7 +366,7 @@ void Skeleton3D::clear_bones_global_pose_override() {
 	_make_dirty();
 }
 
-void Skeleton3D::set_bone_global_pose_override(int p_bone, const Transform3D &p_pose, float p_amount, bool p_persistent) {
+void Skeleton3D::set_bone_global_pose_override(int p_bone, const Transform3D &p_pose, real_t p_amount, bool p_persistent) {
 	ERR_FAIL_INDEX(p_bone, bones.size());
 	bones.write[p_bone].global_pose_override_amount = p_amount;
 	bones.write[p_bone].global_pose_override = p_pose;

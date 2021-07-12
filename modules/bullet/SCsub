@@ -12,6 +12,8 @@ thirdparty_obj = []
 if env["builtin_bullet"]:
     # Build only version 2 for now (as of 2.89)
     # Sync file list with relevant upstream CMakeLists.txt for each folder.
+    if env["float"] == "64":
+        env.Append(CPPDEFINES=["BT_USE_DOUBLE_PRECISION=1"])
     thirdparty_dir = "#thirdparty/bullet/"
 
     bullet2_src = [

@@ -83,14 +83,14 @@ private:
 		Vector<Vector3> vertices;
 		Vector<Vector3> normals;
 		Vector<Vector2> uvs;
-		Vector<float> tans;
+		Vector<real_t> tans;
 		Ref<Material> material;
 		int last_added = 0;
 
 		Vector3 *verticesw = nullptr;
 		Vector3 *normalsw = nullptr;
 		Vector2 *uvsw = nullptr;
-		float *tansw = nullptr;
+		real_t *tansw = nullptr;
 	};
 
 	//mikktspace callbacks

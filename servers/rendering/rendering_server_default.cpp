@@ -134,8 +134,8 @@ void RenderingServerDefault::_draw(bool p_swap_buffers, double frame_step) {
 			}
 
 			if (RSG::storage->capturing_timestamps) {
-				new_profile.write[i].gpu_msec = float((time_gpu - base_gpu) / 1000) / 1000.0;
-				new_profile.write[i].cpu_msec = float(time_cpu - base_cpu) / 1000.0;
+				new_profile.write[i].gpu_msec = double((time_gpu - base_gpu) / 1000) / 1000.0;
+				new_profile.write[i].cpu_msec = double(time_cpu - base_cpu) / 1000.0;
 				new_profile.write[i].name = RSG::storage->get_captured_timestamp_name(i);
 			}
 		}
@@ -149,7 +149,7 @@ void RenderingServerDefault::_draw(bool p_swap_buffers, double frame_step) {
 		if (print_frame_profile_ticks_from == 0) {
 			print_frame_profile_ticks_from = OS::get_singleton()->get_ticks_usec();
 		}
-		float total_time = 0.0;
+		double total_time = 0.0;
 
 		for (int i = 0; i < frame_profile.size() - 1; i++) {
 			String name = frame_profile[i].name;
@@ -157,7 +157,7 @@ void RenderingServerDefault::_draw(bool p_swap_buffers, double frame_step) {
 				continue;
 			}
 
-			float time = frame_profile[i + 1].gpu_msec - frame_profile[i].gpu_msec;
+			double time = frame_profile[i + 1].gpu_msec - frame_profile[i].gpu_msec;
 
 			if (name[0] != '<' && name[0] != '>') {
 				if (print_gpu_profile_task_time.has(name)) {
@@ -179,7 +179,7 @@ void RenderingServerDefault::_draw(bool p_swap_buffers, double frame_step) {
 
 			float print_threshold = 0.01;
 			for (OrderedHashMap<String, float>::Element E = print_gpu_profile_task_time.front(); E; E = E.next()) {
-				float time = E.value() / float(print_frame_profile_frame_count);
+				double time = E.value() / double(print_frame_profile_frame_count);
 				if (time > print_threshold) {
 					print_line("\t-" + E.key() + ": " + rtos(time) + "ms");
 				}
@@ -193,7 +193,7 @@ void RenderingServerDefault::_draw(bool p_swap_buffers, double frame_step) {
 	RSG::storage->update_memory_info();
 }
 
-float RenderingServerDefault::get_frame_setup_time_cpu() const {
+double RenderingServerDefault::get_frame_setup_time_cpu() const {
 	return frame_setup_time;
 }
 

@@ -705,7 +705,7 @@ bool Node::is_enabled() const {
 	return _is_enabled();
 }
 
-float Node::get_physics_process_delta_time() const {
+double Node::get_physics_process_delta_time() const {
 	if (data.tree) {
 		return data.tree->get_physics_process_time();
 	} else {
@@ -713,7 +713,7 @@ float Node::get_physics_process_delta_time() const {
 	}
 }
 
-float Node::get_process_delta_time() const {
+double Node::get_process_delta_time() const {
 	if (data.tree) {
 		return data.tree->get_process_time();
 	} else {

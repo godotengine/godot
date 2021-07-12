@@ -122,14 +122,14 @@ Vector<String> SpriteFrames::get_animation_names() const {
 	return names;
 }
 
-void SpriteFrames::set_animation_speed(const StringName &p_anim, float p_fps) {
+void SpriteFrames::set_animation_speed(const StringName &p_anim, double p_fps) {
 	ERR_FAIL_COND_MSG(p_fps < 0, "Animation speed cannot be negative (" + itos(p_fps) + ").");
 	Map<StringName, Anim>::Element *E = animations.find(p_anim);
 	ERR_FAIL_COND_MSG(!E, "Animation '" + String(p_anim) + "' doesn't exist.");
 	E->get().speed = p_fps;
 }
 
-float SpriteFrames::get_animation_speed(const StringName &p_anim) const {
+double SpriteFrames::get_animation_speed(const StringName &p_anim) const {
 	const Map<StringName, Anim>::Element *E = animations.find(p_anim);
 	ERR_FAIL_COND_V_MSG(!E, 0, "Animation '" + String(p_anim) + "' doesn't exist.");
 	return E->get().speed;

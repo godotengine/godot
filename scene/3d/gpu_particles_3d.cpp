@@ -59,7 +59,7 @@ void GPUParticles3D::set_amount(int p_amount) {
 	RS::get_singleton()->particles_set_amount(particles, amount);
 }
 
-void GPUParticles3D::set_lifetime(float p_lifetime) {
+void GPUParticles3D::set_lifetime(double p_lifetime) {
 	ERR_FAIL_COND_MSG(p_lifetime <= 0, "Particles lifetime must be greater than 0.");
 	lifetime = p_lifetime;
 	RS::get_singleton()->particles_set_lifetime(particles, lifetime);
@@ -81,7 +81,7 @@ void GPUParticles3D::set_one_shot(bool p_one_shot) {
 	}
 }
 
-void GPUParticles3D::set_pre_process_time(float p_time) {
+void GPUParticles3D::set_pre_process_time(double p_time) {
 	pre_process_time = p_time;
 	RS::get_singleton()->particles_set_pre_process_time(particles, pre_process_time);
 }
@@ -118,7 +118,7 @@ void GPUParticles3D::set_process_material(const Ref<Material> &p_material) {
 	update_configuration_warnings();
 }
 
-void GPUParticles3D::set_speed_scale(float p_scale) {
+void GPUParticles3D::set_speed_scale(double p_scale) {
 	speed_scale = p_scale;
 	RS::get_singleton()->particles_set_speed_scale(particles, p_scale);
 }
@@ -136,7 +136,7 @@ int GPUParticles3D::get_amount() const {
 	return amount;
 }
 
-float GPUParticles3D::get_lifetime() const {
+double GPUParticles3D::get_lifetime() const {
 	return lifetime;
 }
 
@@ -144,7 +144,7 @@ bool GPUParticles3D::get_one_shot() const {
 	return one_shot;
 }
 
-float GPUParticles3D::get_pre_process_time() const {
+double GPUParticles3D::get_pre_process_time() const {
 	return pre_process_time;
 }
 
@@ -168,7 +168,7 @@ Ref<Material> GPUParticles3D::get_process_material() const {
 	return process_material;
 }
 
-float GPUParticles3D::get_speed_scale() const {
+double GPUParticles3D::get_speed_scale() const {
 	return speed_scale;
 }
 

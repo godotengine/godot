@@ -117,7 +117,7 @@ void EngineDebugger::line_poll() {
 	poll_every++;
 }
 
-void EngineDebugger::iteration(uint64_t p_frame_ticks, uint64_t p_process_ticks, uint64_t p_physics_ticks, float p_physics_frame_time) {
+void EngineDebugger::iteration(uint64_t p_frame_ticks, uint64_t p_process_ticks, uint64_t p_physics_ticks, double p_physics_frame_time) {
 	frame_time = USEC_TO_SEC(p_frame_ticks);
 	process_time = USEC_TO_SEC(p_process_ticks);
 	physics_time = USEC_TO_SEC(p_physics_ticks);

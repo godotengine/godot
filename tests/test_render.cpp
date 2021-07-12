@@ -199,7 +199,7 @@ public:
 		ofs = 0;
 		quit = false;
 	}
-	virtual bool iteration(float p_time) {
+	virtual bool iteration(double p_time) {
 		RenderingServer *vs = RenderingServer::get_singleton();
 		//Transform3D t;
 		//t.rotate(Vector3(0, 1, 0), ofs);
@@ -223,7 +223,7 @@ public:
 		return quit;
 	}
 
-	virtual bool idle(float p_time) {
+	virtual bool idle(double p_time) {
 		return quit;
 	}
 

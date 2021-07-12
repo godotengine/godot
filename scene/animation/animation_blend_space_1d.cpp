@@ -219,7 +219,7 @@ void AnimationNodeBlendSpace1D::_add_blend_point(int p_index, const Ref<Animatio
 	}
 }
 
-float AnimationNodeBlendSpace1D::process(float p_time, bool p_seek) {
+double AnimationNodeBlendSpace1D::process(double p_time, bool p_seek) {
 	if (blend_points_used == 0) {
 		return 0.0;
 	}
@@ -229,7 +229,7 @@ float AnimationNodeBlendSpace1D::process(float p_time, bool p_seek) {
 		return blend_node(blend_points[0].name, blend_points[0].node, p_time, p_seek, 1.0, FILTER_IGNORE, false);
 	}
 
-	float blend_pos = get_parameter(blend_position);
+	double blend_pos = get_parameter(blend_position);
 
 	float weights[MAX_BLEND_POINTS] = {};
 

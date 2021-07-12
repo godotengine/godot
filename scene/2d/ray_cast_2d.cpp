@@ -212,17 +212,17 @@ void RayCast2D::_update_raycast_state() {
 void RayCast2D::_draw_debug_shape() {
 	Color draw_col = collided ? Color(1.0, 0.01, 0) : get_tree()->get_debug_collisions_color();
 	if (!enabled) {
-		float g = draw_col.get_v();
+		const float g = draw_col.get_v();
 		draw_col.r = g;
 		draw_col.g = g;
 		draw_col.b = g;
 	}
 
 	// Draw an arrow indicating where the RayCast is pointing to
-	const float max_arrow_size = 6;
-	const float line_width = 1.4;
+	const real_t max_arrow_size = 6;
+	const real_t line_width = 1.4;
 	bool no_line = target_position.length() < line_width;
-	float arrow_size = CLAMP(target_position.length() * 2 / 3, line_width, max_arrow_size);
+	real_t arrow_size = CLAMP(target_position.length() * 2 / 3, line_width, max_arrow_size);
 
 	if (no_line) {
 		arrow_size = target_position.length();

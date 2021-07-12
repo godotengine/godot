@@ -83,14 +83,14 @@ struct DebuggerMarshalls {
 		StringName name;
 		int sig_id = -1;
 		int call_count = 0;
-		float self_time = 0;
-		float total_time = 0;
+		double self_time = 0;
+		double total_time = 0;
 	};
 
 	// Servers profiler
 	struct ServerFunctionInfo {
 		StringName name;
-		float time = 0;
+		double time = 0;
 	};
 
 	struct ServerInfo {
@@ -100,11 +100,11 @@ struct DebuggerMarshalls {
 
 	struct ServersProfilerFrame {
 		int frame_number = 0;
-		float frame_time = 0;
-		float idle_time = 0;
-		float physics_time = 0;
-		float physics_frame_time = 0;
-		float script_time = 0;
+		double frame_time = 0;
+		double idle_time = 0;
+		double physics_time = 0;
+		double physics_frame_time = 0;
+		double script_time = 0;
 		List<ServerInfo> servers;
 		Vector<ScriptFunctionInfo> script_functions;
 

@@ -260,7 +260,7 @@ private:
 	};
 
 	struct ItemFX : public Item {
-		float elapsed_time = 0.f;
+		double elapsed_time = 0.f;
 	};
 
 	struct ItemShake : public ItemFX {
@@ -440,7 +440,7 @@ private:
 	void _fetch_item_fx_stack(Item *p_item, Vector<ItemFX *> &r_stack);
 
 	void _update_scroll();
-	void _update_fx(ItemFrame *p_frame, float p_delta_time);
+	void _update_fx(ItemFrame *p_frame, double p_delta_time);
 	void _scroll_changed(double);
 
 	void _gui_input(Ref<InputEvent> p_event);

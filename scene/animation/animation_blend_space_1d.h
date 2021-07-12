@@ -93,7 +93,7 @@ public:
 	void set_value_label(const String &p_label);
 	String get_value_label() const;
 
-	float process(float p_time, bool p_seek) override;
+	double process(double p_time, bool p_seek) override;
 	String get_caption() const override;
 
 	Ref<AnimationNode> get_child_by_name(const StringName &p_name) override;

@@ -66,11 +66,11 @@ void SceneTreeTimer::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("timeout"));
 }
 
-void SceneTreeTimer::set_time_left(float p_time) {
+void SceneTreeTimer::set_time_left(double p_time) {
 	time_left = p_time;
 }
 
-float SceneTreeTimer::get_time_left() const {
+double SceneTreeTimer::get_time_left() const {
 	return time_left;
 }
 
@@ -396,7 +396,7 @@ void SceneTree::initialize() {
 	MainLoop::initialize();
 }
 
-bool SceneTree::physics_process(float p_time) {
+bool SceneTree::physics_process(double p_time) {
 	root_lock++;
 
 	current_frame++;
@@ -425,7 +425,7 @@ bool SceneTree::physics_process(float p_time) {
 	return _quit;
 }
 
-bool SceneTree::process(float p_time) {
+bool SceneTree::process(double p_time) {
 	root_lock++;
 
 	MainLoop::process(p_time);
@@ -466,7 +466,7 @@ bool SceneTree::process(float p_time) {
 			E = N;
 			continue;
 		}
-		float time_left = E->get()->get_time_left();
+		double time_left = E->get()->get_time_left();
 		time_left -= p_time;
 		E->get()->set_time_left(time_left);
 
@@ -1112,7 +1112,7 @@ void SceneTree::add_current_scene(Node *p_current) {
 	root->add_child(p_current);
 }
 
-Ref<SceneTreeTimer> SceneTree::create_timer(float p_delay_sec, bool p_process_always) {
+Ref<SceneTreeTimer> SceneTree::create_timer(double p_delay_sec, bool p_process_always) {
 	Ref<SceneTreeTimer> stt;
 	stt.instantiate();
 	stt->set_process_always(p_process_always);

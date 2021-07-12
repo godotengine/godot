@@ -366,8 +366,8 @@ private:
 		bool drag_attempted = false;
 		Variant drag_data;
 		ObjectID drag_preview_id;
-		float tooltip_timer = -1.0;
-		float tooltip_delay = 0.0;
+		double tooltip_timer = -1.0;
+		double tooltip_delay = 0.0;
 		Transform2D focus_inv_xform;
 		bool roots_order_dirty = false;
 		List<Control *> roots;
