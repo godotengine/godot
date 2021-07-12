@@ -37,7 +37,7 @@ void NetworkedMultiplayerENet::set_transfer_mode(TransferMode p_mode) {
 	transfer_mode = p_mode;
 }
 
-NetworkedMultiplayerPeer::TransferMode NetworkedMultiplayerENet::get_transfer_mode() const {
+MultiplayerPeer::TransferMode NetworkedMultiplayerENet::get_transfer_mode() const {
 	return transfer_mode;
 }
 
@@ -604,7 +604,7 @@ void NetworkedMultiplayerENet::_pop_current_packet() {
 	}
 }
 
-NetworkedMultiplayerPeer::ConnectionStatus NetworkedMultiplayerENet::get_connection_status() const {
+MultiplayerPeer::ConnectionStatus NetworkedMultiplayerENet::get_connection_status() const {
 	return connection_status;
 }
 

@@ -4,7 +4,7 @@
 		High-level multiplayer API.
 	</brief_description>
 	<description>
-		This class implements most of the logic behind the high-level multiplayer API. See also [NetworkedMultiplayerPeer].
+		This class implements most of the logic behind the high-level multiplayer API. See also [MultiplayerPeer].
 		By default, [SceneTree] has a reference to this class that is used to provide multiplayer capabilities (i.e. RPC/RSET) across the whole scene.
 		It is possible to override the MultiplayerAPI instance used by specific Nodes by setting the [member Node.custom_multiplayer] property, effectively allowing to run both client and server in the same scene.
 		[b]Note:[/b] The high-level multiplayer API protocol is an implementation detail and isn't meant to be used by non-Godot servers. It may change without notice.
@@ -70,10 +70,10 @@
 			</argument>
 			<argument index="1" name="id" type="int" default="0">
 			</argument>
-			<argument index="2" name="mode" type="int" enum="NetworkedMultiplayerPeer.TransferMode" default="2">
+			<argument index="2" name="mode" type="int" enum="MultiplayerPeer.TransferMode" default="2">
 			</argument>
 			<description>
-				Sends the given raw [code]bytes[/code] to a specific peer identified by [code]id[/code] (see [method NetworkedMultiplayerPeer.set_target_peer]). Default ID is [code]0[/code], i.e. broadcast to all peers.
+				Sends the given raw [code]bytes[/code] to a specific peer identified by [code]id[/code] (see [method MultiplayerPeer.set_target_peer]). Default ID is [code]0[/code], i.e. broadcast to all peers.
 			</description>
 		</method>
 	</methods>
@@ -82,7 +82,7 @@
 			If [code]true[/code], the MultiplayerAPI will allow encoding and decoding of object during RPCs/RSETs.
 			[b]Warning:[/b] Deserialized objects can contain code which gets executed. Do not use this option if the serialized object comes from untrusted sources to avoid potential security threats such as remote code execution.
 		</member>
-		<member name="network_peer" type="NetworkedMultiplayerPeer" setter="set_network_peer" getter="get_network_peer">
+		<member name="network_peer" type="MultiplayerPeer" setter="set_network_peer" getter="get_network_peer">
 			The peer object to handle the RPC system (effectively enabling networking when set). Depending on the peer itself, the MultiplayerAPI will become a network server (check with [method is_network_server]) and will set root node's network mode to master, or it will become a regular peer with root node set to puppet. All child nodes are set to inherit the network mode by default. Handling of networking-related events (connection, disconnection, new clients) is done by connecting to MultiplayerAPI's signals.
 		</member>
 		<member name="refuse_new_network_connections" type="bool" setter="set_refuse_new_network_connections" getter="is_refusing_new_network_connections" default="false">

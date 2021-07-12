@@ -1170,7 +1170,7 @@ void GDScript::_init_rpc_methods_properties() {
 				nd.name = E->key();
 				nd.rpc_mode = E->get()->get_rpc_mode();
 				// TODO
-				nd.transfer_mode = NetworkedMultiplayerPeer::TRANSFER_MODE_RELIABLE;
+				nd.transfer_mode = MultiplayerPeer::TRANSFER_MODE_RELIABLE;
 				nd.channel = 0;
 				if (-1 == rpc_functions.find(nd)) {
 					rpc_functions.push_back(nd);
