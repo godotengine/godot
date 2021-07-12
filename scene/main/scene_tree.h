@@ -159,13 +159,6 @@ private:
 	Ref<MultiplayerAPI> multiplayer;
 	bool multiplayer_poll = true;
 
-	void _network_peer_connected(int p_id);
-	void _network_peer_disconnected(int p_id);
-
-	void _connected_to_server();
-	void _connection_failed();
-	void _server_disconnected();
-
 	static SceneTree *singleton;
 	friend class Node;
 
@@ -337,16 +330,6 @@ public:
 	void set_multiplayer_poll_enabled(bool p_enabled);
 	bool is_multiplayer_poll_enabled() const;
 	void set_multiplayer(Ref<MultiplayerAPI> p_multiplayer);
-	void set_network_peer(const Ref<NetworkedMultiplayerPeer> &p_network_peer);
-	Ref<NetworkedMultiplayerPeer> get_network_peer() const;
-	bool is_network_server() const;
-	bool has_network_peer() const;
-	int get_network_unique_id() const;
-	Vector<int> get_network_connected_peers() const;
-	int get_rpc_sender_id() const;
-
-	void set_refuse_new_network_connections(bool p_refuse);
-	bool is_refusing_new_network_connections() const;
 
 	static void add_idle_callback(IdleCallback p_callback);
 
