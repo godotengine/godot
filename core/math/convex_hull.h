@@ -111,6 +111,8 @@ public:
 	real_t compute(const Vector3 *p_coords, int32_t p_count, real_t p_shrink, real_t p_shrink_clamp);
 
 	static Error convex_hull(const Vector<Vector3> &p_points, Geometry::MeshData &r_mesh);
+	static Error convex_hull(const PoolVector<Vector3> &p_points, Geometry::MeshData &r_mesh);
+	static Error convex_hull(const Vector3 *p_points, int32_t p_point_count, Geometry::MeshData &r_mesh);
 };
 
 #endif // CONVEX_HULL_H

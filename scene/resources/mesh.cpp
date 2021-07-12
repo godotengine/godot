@@ -32,6 +32,7 @@
 
 #include "core/crypto/crypto_core.h"
 #include "core/local_vector.h"
+#include "core/math/convex_hull.h"
 #include "core/pair.h"
 #include "scene/resources/concave_polygon_shape.h"
 #include "scene/resources/convex_polygon_shape.h"
@@ -229,9 +230,17 @@ PoolVector<Face3> Mesh::get_faces() const {
 */
 }
 
-Ref<Shape> Mesh::create_convex_shape() const {
-	PoolVector<Vector3> vertices;
+Ref<Shape> Mesh::create_convex_shape(bool p_clean, bool p_simplify) const {
+	if (p_simplify) {
+		Vector<Ref<Shape>> decomposed = convex_decompose(1);
+		if (decomposed.size() == 1) {
+			return decomposed[0];
+		} else {
+			ERR_PRINT("Convex shape simplification failed, falling back to simpler process.");
+		}
+	}
 
+	PoolVector<Vector3> vertices;
 	for (int i = 0; i < get_surface_count(); i++) {
 		Array a = surface_get_arrays(i);
 		ERR_FAIL_COND_V(a.empty(), Ref<ConvexPolygonShape>());
@@ -240,6 +249,24 @@ Ref<Shape> Mesh::create_convex_shape() const {
 	}
 
 	Ref<ConvexPolygonShape> shape = memnew(ConvexPolygonShape);
+
+	if (p_clean) {
+		Geometry::MeshData md;
+		Error err = ConvexHullComputer::convex_hull(vertices, md);
+		if (err == OK) {
+			int vertex_count = md.vertices.size();
+			vertices.resize(vertex_count);
+			{
+				PoolVector<Vector3>::Write w = vertices.write();
+				for (int idx = 0; idx < vertex_count; ++idx) {
+					w[idx] = md.vertices[idx];
+				}
+			}
+		} else {
+			ERR_PRINT("Convex shape cleaning failed, falling back to simpler process.");
+		}
+	}
+
 	shape->set_points(vertices);
 	return shape;
 }
@@ -539,7 +566,7 @@ void Mesh::clear_cache() const {
 	debug_lines.clear();
 }
 
-Vector<Ref<Shape>> Mesh::convex_decompose() const {
+Vector<Ref<Shape>> Mesh::convex_decompose(int p_max_convex_hulls) const {
 	ERR_FAIL_COND_V(!convex_composition_function, Vector<Ref<Shape>>());
 
 	PoolVector<Face3> faces = get_faces();
@@ -550,7 +577,7 @@ Vector<Ref<Shape>> Mesh::convex_decompose() const {
 		f3.write[i] = f[i];
 	}
 
-	Vector<Vector<Face3>> decomposed = convex_composition_function(f3);
+	Vector<Vector<Face3>> decomposed = convex_composition_function(f3, p_max_convex_hulls);
 
 	Vector<Ref<Shape>> ret;
 
@@ -1428,7 +1455,7 @@ void ArrayMesh::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("surface_set_name", "surf_idx", "name"), &ArrayMesh::surface_set_name);
 	ClassDB::bind_method(D_METHOD("surface_get_name", "surf_idx"), &ArrayMesh::surface_get_name);
 	ClassDB::bind_method(D_METHOD("create_trimesh_shape"), &ArrayMesh::create_trimesh_shape);
-	ClassDB::bind_method(D_METHOD("create_convex_shape"), &ArrayMesh::create_convex_shape);
+	ClassDB::bind_method(D_METHOD("create_convex_shape", "clean", "simplify"), &ArrayMesh::create_convex_shape, DEFVAL(true), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("create_outline", "margin"), &ArrayMesh::create_outline);
 	ClassDB::bind_method(D_METHOD("regen_normalmaps"), &ArrayMesh::regen_normalmaps);
 	ClassDB::set_method_flags(get_class_static(), _scs_create("regen_normalmaps"), METHOD_FLAGS_DEFAULT | METHOD_FLAG_EDITOR);
