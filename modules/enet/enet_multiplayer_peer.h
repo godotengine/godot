@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  networked_multiplayer_enet.h                                         */
+/*  enet_multiplayer_peer.h                                              */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -37,8 +37,8 @@
 
 #include <enet/enet.h>
 
-class NetworkedMultiplayerENet : public MultiplayerPeer {
-	GDCLASS(NetworkedMultiplayerENet, MultiplayerPeer);
+class ENetMultiplayerPeer : public MultiplayerPeer {
+	GDCLASS(ENetMultiplayerPeer, MultiplayerPeer);
 
 public:
 	enum CompressionMode {
@@ -168,8 +168,8 @@ public:
 	void set_server_relay_enabled(bool p_enabled);
 	bool is_server_relay_enabled() const;
 
-	NetworkedMultiplayerENet();
-	~NetworkedMultiplayerENet();
+	ENetMultiplayerPeer();
+	~ENetMultiplayerPeer();
 
 	void set_bind_ip(const IPAddress &p_ip);
 	void set_dtls_enabled(bool p_enabled);
@@ -180,6 +180,6 @@ public:
 	void set_dtls_certificate(Ref<X509Certificate> p_cert);
 };
 
-VARIANT_ENUM_CAST(NetworkedMultiplayerENet::CompressionMode);
+VARIANT_ENUM_CAST(ENetMultiplayerPeer::CompressionMode);
 
 #endif // NETWORKED_MULTIPLAYER_ENET_H

@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  networked_multiplayer_enet.cpp                                       */
+/*  enet_multiplayer_peer.cpp                                            */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,45 +28,45 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "networked_multiplayer_enet.h"
+#include "enet_multiplayer_peer.h"
 #include "core/io/ip.h"
 #include "core/io/marshalls.h"
 #include "core/os/os.h"
 
-void NetworkedMultiplayerENet::set_transfer_mode(TransferMode p_mode) {
+void ENetMultiplayerPeer::set_transfer_mode(TransferMode p_mode) {
 	transfer_mode = p_mode;
 }
 
-MultiplayerPeer::TransferMode NetworkedMultiplayerENet::get_transfer_mode() const {
+MultiplayerPeer::TransferMode ENetMultiplayerPeer::get_transfer_mode() const {
 	return transfer_mode;
 }
 
-void NetworkedMultiplayerENet::set_target_peer(int p_peer) {
+void ENetMultiplayerPeer::set_target_peer(int p_peer) {
 	target_peer = p_peer;
 }
 
-int NetworkedMultiplayerENet::get_packet_peer() const {
+int ENetMultiplayerPeer::get_packet_peer() const {
 	ERR_FAIL_COND_V_MSG(!active, 1, "The multiplayer instance isn't currently active.");
 	ERR_FAIL_COND_V(incoming_packets.size() == 0, 1);
 
 	return incoming_packets.front()->get().from;
 }
 
-int NetworkedMultiplayerENet::get_packet_channel() const {
+int ENetMultiplayerPeer::get_packet_channel() const {
 	ERR_FAIL_COND_V_MSG(!active, -1, "The multiplayer instance isn't currently active.");
 	ERR_FAIL_COND_V(incoming_packets.size() == 0, -1);
 
 	return incoming_packets.front()->get().channel;
 }
 
-int NetworkedMultiplayerENet::get_last_packet_channel() const {
+int ENetMultiplayerPeer::get_last_packet_channel() const {
 	ERR_FAIL_COND_V_MSG(!active, -1, "The multiplayer instance isn't currently active.");
 	ERR_FAIL_COND_V(!current_packet.packet, -1);
 
 	return current_packet.channel;
 }
 
-Error NetworkedMultiplayerENet::create_server(int p_port, int p_max_clients, int p_in_bandwidth, int p_out_bandwidth) {
+Error ENetMultiplayerPeer::create_server(int p_port, int p_max_clients, int p_in_bandwidth, int p_out_bandwidth) {
 	ERR_FAIL_COND_V_MSG(active, ERR_ALREADY_IN_USE, "The multiplayer instance is already active.");
 	ERR_FAIL_COND_V_MSG(p_port < 0 || p_port > 65535, ERR_INVALID_PARAMETER, "The local port number must be between 0 and 65535 (inclusive).");
 	ERR_FAIL_COND_V_MSG(p_max_clients < 1 || p_max_clients > 4095, ERR_INVALID_PARAMETER, "The number of clients must be set between 1 and 4095 (inclusive).");
@@ -115,7 +115,7 @@ Error NetworkedMultiplayerENet::create_server(int p_port, int p_max_clients, int
 	connection_status = CONNECTION_CONNECTED;
 	return OK;
 }
-Error NetworkedMultiplayerENet::create_client(const String &p_address, int p_port, int p_in_bandwidth, int p_out_bandwidth, int p_local_port) {
+Error ENetMultiplayerPeer::create_client(const String &p_address, int p_port, int p_in_bandwidth, int p_out_bandwidth, int p_local_port) {
 	ERR_FAIL_COND_V_MSG(active, ERR_ALREADY_IN_USE, "The multiplayer instance is already active.");
 	ERR_FAIL_COND_V_MSG(p_port < 1 || p_port > 65535, ERR_INVALID_PARAMETER, "The remote port number must be between 1 and 65535 (inclusive).");
 	ERR_FAIL_COND_V_MSG(p_local_port < 0 || p_local_port > 65535, ERR_INVALID_PARAMETER, "The local port number must be between 0 and 65535 (inclusive).");
@@ -199,7 +199,7 @@ Error NetworkedMultiplayerENet::create_client(const String &p_address, int p_por
 	return OK;
 }
 
-void NetworkedMultiplayerENet::poll() {
+void ENetMultiplayerPeer::poll() {
 	ERR_FAIL_COND_MSG(!active, "The multiplayer instance isn't currently active.");
 
 	_pop_current_packet();
@@ -426,13 +426,13 @@ void NetworkedMultiplayerENet::poll() {
 	}
 }
 
-bool NetworkedMultiplayerENet::is_server() const {
+bool ENetMultiplayerPeer::is_server() const {
 	ERR_FAIL_COND_V_MSG(!active, false, "The multiplayer instance isn't currently active.");
 
 	return server;
 }
 
-void NetworkedMultiplayerENet::close_connection(uint32_t wait_usec) {
+void ENetMultiplayerPeer::close_connection(uint32_t wait_usec) {
 	ERR_FAIL_COND_MSG(!active, "The multiplayer instance isn't currently active.");
 
 	_pop_current_packet();
@@ -463,7 +463,7 @@ void NetworkedMultiplayerENet::close_connection(uint32_t wait_usec) {
 	connection_status = CONNECTION_DISCONNECTED;
 }
 
-void NetworkedMultiplayerENet::disconnect_peer(int p_peer, bool now) {
+void ENetMultiplayerPeer::disconnect_peer(int p_peer, bool now) {
 	ERR_FAIL_COND_MSG(!active, "The multiplayer instance isn't currently active.");
 	ERR_FAIL_COND_MSG(!is_server(), "Can't disconnect a peer when not acting as a server.");
 	ERR_FAIL_COND_MSG(!peer_map.has(p_peer), vformat("Peer ID %d not found in the list of peers.", p_peer));
@@ -498,11 +498,11 @@ void NetworkedMultiplayerENet::disconnect_peer(int p_peer, bool now) {
 	}
 }
 
-int NetworkedMultiplayerENet::get_available_packet_count() const {
+int ENetMultiplayerPeer::get_available_packet_count() const {
 	return incoming_packets.size();
 }
 
-Error NetworkedMultiplayerENet::get_packet(const uint8_t **r_buffer, int &r_buffer_size) {
+Error ENetMultiplayerPeer::get_packet(const uint8_t **r_buffer, int &r_buffer_size) {
 	ERR_FAIL_COND_V_MSG(incoming_packets.size() == 0, ERR_UNAVAILABLE, "No incoming packets available.");
 
 	_pop_current_packet();
@@ -516,7 +516,7 @@ Error NetworkedMultiplayerENet::get_packet(const uint8_t **r_buffer, int &r_buff
 	return OK;
 }
 
-Error NetworkedMultiplayerENet::put_packet(const uint8_t *p_buffer, int p_buffer_size) {
+Error ENetMultiplayerPeer::put_packet(const uint8_t *p_buffer, int p_buffer_size) {
 	ERR_FAIL_COND_V_MSG(!active, ERR_UNCONFIGURED, "The multiplayer instance isn't currently active.");
 	ERR_FAIL_COND_V_MSG(connection_status != CONNECTION_CONNECTED, ERR_UNCONFIGURED, "The multiplayer instance isn't currently connected to any server or client.");
 
@@ -591,11 +591,11 @@ Error NetworkedMultiplayerENet::put_packet(const uint8_t *p_buffer, int p_buffer
 	return OK;
 }
 
-int NetworkedMultiplayerENet::get_max_packet_size() const {
+int ENetMultiplayerPeer::get_max_packet_size() const {
 	return 1 << 24; // Anything is good
 }
 
-void NetworkedMultiplayerENet::_pop_current_packet() {
+void ENetMultiplayerPeer::_pop_current_packet() {
 	if (current_packet.packet) {
 		enet_packet_destroy(current_packet.packet);
 		current_packet.packet = nullptr;
@@ -604,11 +604,11 @@ void NetworkedMultiplayerENet::_pop_current_packet() {
 	}
 }
 
-MultiplayerPeer::ConnectionStatus NetworkedMultiplayerENet::get_connection_status() const {
+MultiplayerPeer::ConnectionStatus ENetMultiplayerPeer::get_connection_status() const {
 	return connection_status;
 }
 
-uint32_t NetworkedMultiplayerENet::_gen_unique_id() const {
+uint32_t ENetMultiplayerPeer::_gen_unique_id() const {
 	uint32_t hash = 0;
 
 	while (hash == 0 || hash == 1) {
@@ -629,12 +629,12 @@ uint32_t NetworkedMultiplayerENet::_gen_unique_id() const {
 	return hash;
 }
 
-int NetworkedMultiplayerENet::get_unique_id() const {
+int ENetMultiplayerPeer::get_unique_id() const {
 	ERR_FAIL_COND_V_MSG(!active, 0, "The multiplayer instance isn't currently active.");
 	return unique_id;
 }
 
-void NetworkedMultiplayerENet::set_refuse_new_connections(bool p_enable) {
+void ENetMultiplayerPeer::set_refuse_new_connections(bool p_enable) {
 	refuse_connections = p_enable;
 #ifdef GODOT_ENET
 	if (active) {
@@ -643,20 +643,20 @@ void NetworkedMultiplayerENet::set_refuse_new_connections(bool p_enable) {
 #endif
 }
 
-bool NetworkedMultiplayerENet::is_refusing_new_connections() const {
+bool ENetMultiplayerPeer::is_refusing_new_connections() const {
 	return refuse_connections;
 }
 
-void NetworkedMultiplayerENet::set_compression_mode(CompressionMode p_mode) {
+void ENetMultiplayerPeer::set_compression_mode(CompressionMode p_mode) {
 	compression_mode = p_mode;
 }
 
-NetworkedMultiplayerENet::CompressionMode NetworkedMultiplayerENet::get_compression_mode() const {
+ENetMultiplayerPeer::CompressionMode ENetMultiplayerPeer::get_compression_mode() const {
 	return compression_mode;
 }
 
-size_t NetworkedMultiplayerENet::enet_compress(void *context, const ENetBuffer *inBuffers, size_t inBufferCount, size_t inLimit, enet_uint8 *outData, size_t outLimit) {
-	NetworkedMultiplayerENet *enet = (NetworkedMultiplayerENet *)(context);
+size_t ENetMultiplayerPeer::enet_compress(void *context, const ENetBuffer *inBuffers, size_t inBufferCount, size_t inLimit, enet_uint8 *outData, size_t outLimit) {
+	ENetMultiplayerPeer *enet = (ENetMultiplayerPeer *)(context);
 
 	if (size_t(enet->src_compressor_mem.size()) < inLimit) {
 		enet->src_compressor_mem.resize(inLimit);
@@ -709,8 +709,8 @@ size_t NetworkedMultiplayerENet::enet_compress(void *context, const ENetBuffer *
 	return ret;
 }
 
-size_t NetworkedMultiplayerENet::enet_decompress(void *context, const enet_uint8 *inData, size_t inLimit, enet_uint8 *outData, size_t outLimit) {
-	NetworkedMultiplayerENet *enet = (NetworkedMultiplayerENet *)(context);
+size_t ENetMultiplayerPeer::enet_decompress(void *context, const enet_uint8 *inData, size_t inLimit, enet_uint8 *outData, size_t outLimit) {
+	ENetMultiplayerPeer *enet = (ENetMultiplayerPeer *)(context);
 	int ret = -1;
 	switch (enet->compression_mode) {
 		case COMPRESS_FASTLZ: {
@@ -732,7 +732,7 @@ size_t NetworkedMultiplayerENet::enet_decompress(void *context, const enet_uint8
 	}
 }
 
-void NetworkedMultiplayerENet::_setup_compressor() {
+void ENetMultiplayerPeer::_setup_compressor() {
 	switch (compression_mode) {
 		case COMPRESS_NONE: {
 			enet_host_compress(host, nullptr);
@@ -748,11 +748,11 @@ void NetworkedMultiplayerENet::_setup_compressor() {
 	}
 }
 
-void NetworkedMultiplayerENet::enet_compressor_destroy(void *context) {
+void ENetMultiplayerPeer::enet_compressor_destroy(void *context) {
 	// Nothing to do
 }
 
-IPAddress NetworkedMultiplayerENet::get_peer_address(int p_peer_id) const {
+IPAddress ENetMultiplayerPeer::get_peer_address(int p_peer_id) const {
 	ERR_FAIL_COND_V_MSG(!peer_map.has(p_peer_id), IPAddress(), vformat("Peer ID %d not found in the list of peers.", p_peer_id));
 	ERR_FAIL_COND_V_MSG(!is_server() && p_peer_id != 1, IPAddress(), "Can't get the address of peers other than the server (ID -1) when acting as a client.");
 	ERR_FAIL_COND_V_MSG(peer_map[p_peer_id] == nullptr, IPAddress(), vformat("Peer ID %d found in the list of peers, but is null.", p_peer_id));
@@ -767,7 +767,7 @@ IPAddress NetworkedMultiplayerENet::get_peer_address(int p_peer_id) const {
 	return out;
 }
 
-int NetworkedMultiplayerENet::get_peer_port(int p_peer_id) const {
+int ENetMultiplayerPeer::get_peer_port(int p_peer_id) const {
 	ERR_FAIL_COND_V_MSG(!peer_map.has(p_peer_id), 0, vformat("Peer ID %d not found in the list of peers.", p_peer_id));
 	ERR_FAIL_COND_V_MSG(!is_server() && p_peer_id != 1, 0, "Can't get the address of peers other than the server (ID -1) when acting as a client.");
 	ERR_FAIL_COND_V_MSG(peer_map[p_peer_id] == nullptr, 0, vformat("Peer ID %d found in the list of peers, but is null.", p_peer_id));
@@ -778,12 +778,12 @@ int NetworkedMultiplayerENet::get_peer_port(int p_peer_id) const {
 #endif
 }
 
-int NetworkedMultiplayerENet::get_local_port() const {
+int ENetMultiplayerPeer::get_local_port() const {
 	ERR_FAIL_COND_V_MSG(!active || !host, 0, "The multiplayer instance isn't currently active.");
 	return host->address.port;
 }
 
-void NetworkedMultiplayerENet::set_peer_timeout(int p_peer_id, int p_timeout_limit, int p_timeout_min, int p_timeout_max) {
+void ENetMultiplayerPeer::set_peer_timeout(int p_peer_id, int p_timeout_limit, int p_timeout_min, int p_timeout_max) {
 	ERR_FAIL_COND_MSG(!peer_map.has(p_peer_id), vformat("Peer ID %d not found in the list of peers.", p_peer_id));
 	ERR_FAIL_COND_MSG(!is_server() && p_peer_id != 1, "Can't change the timeout of peers other then the server when acting as a client.");
 	ERR_FAIL_COND_MSG(peer_map[p_peer_id] == nullptr, vformat("Peer ID %d found in the list of peers, but is null.", p_peer_id));
@@ -791,73 +791,73 @@ void NetworkedMultiplayerENet::set_peer_timeout(int p_peer_id, int p_timeout_lim
 	enet_peer_timeout(peer_map[p_peer_id], p_timeout_limit, p_timeout_min, p_timeout_max);
 }
 
-void NetworkedMultiplayerENet::set_transfer_channel(int p_channel) {
+void ENetMultiplayerPeer::set_transfer_channel(int p_channel) {
 	ERR_FAIL_COND_MSG(p_channel < -1 || p_channel >= channel_count, vformat("The transfer channel must be set between 0 and %d, inclusive (got %d).", channel_count - 1, p_channel));
 	ERR_FAIL_COND_MSG(p_channel == SYSCH_CONFIG, vformat("The channel %d is reserved.", SYSCH_CONFIG));
 	transfer_channel = p_channel;
 }
 
-int NetworkedMultiplayerENet::get_transfer_channel() const {
+int ENetMultiplayerPeer::get_transfer_channel() const {
 	return transfer_channel;
 }
 
-void NetworkedMultiplayerENet::set_channel_count(int p_channel) {
+void ENetMultiplayerPeer::set_channel_count(int p_channel) {
 	ERR_FAIL_COND_MSG(active, "The channel count can't be set while the multiplayer instance is active.");
 	ERR_FAIL_COND_MSG(p_channel < SYSCH_MAX, vformat("The channel count must be greater than or equal to %d to account for reserved channels (got %d).", SYSCH_MAX, p_channel));
 	channel_count = p_channel;
 }
 
-int NetworkedMultiplayerENet::get_channel_count() const {
+int ENetMultiplayerPeer::get_channel_count() const {
 	return channel_count;
 }
 
-void NetworkedMultiplayerENet::set_always_ordered(bool p_ordered) {
+void ENetMultiplayerPeer::set_always_ordered(bool p_ordered) {
 	always_ordered = p_ordered;
 }
 
-bool NetworkedMultiplayerENet::is_always_ordered() const {
+bool ENetMultiplayerPeer::is_always_ordered() const {
 	return always_ordered;
 }
 
-void NetworkedMultiplayerENet::set_server_relay_enabled(bool p_enabled) {
+void ENetMultiplayerPeer::set_server_relay_enabled(bool p_enabled) {
 	ERR_FAIL_COND_MSG(active, "Server relaying can't be toggled while the multiplayer instance is active.");
 
 	server_relay = p_enabled;
 }
 
-bool NetworkedMultiplayerENet::is_server_relay_enabled() const {
+bool ENetMultiplayerPeer::is_server_relay_enabled() const {
 	return server_relay;
 }
 
-void NetworkedMultiplayerENet::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("create_server", "port", "max_clients", "in_bandwidth", "out_bandwidth"), &NetworkedMultiplayerENet::create_server, DEFVAL(32), DEFVAL(0), DEFVAL(0));
-	ClassDB::bind_method(D_METHOD("create_client", "address", "port", "in_bandwidth", "out_bandwidth", "local_port"), &NetworkedMultiplayerENet::create_client, DEFVAL(0), DEFVAL(0), DEFVAL(0));
-	ClassDB::bind_method(D_METHOD("close_connection", "wait_usec"), &NetworkedMultiplayerENet::close_connection, DEFVAL(100));
-	ClassDB::bind_method(D_METHOD("disconnect_peer", "id", "now"), &NetworkedMultiplayerENet::disconnect_peer, DEFVAL(false));
-	ClassDB::bind_method(D_METHOD("set_compression_mode", "mode"), &NetworkedMultiplayerENet::set_compression_mode);
-	ClassDB::bind_method(D_METHOD("get_compression_mode"), &NetworkedMultiplayerENet::get_compression_mode);
-	ClassDB::bind_method(D_METHOD("set_bind_ip", "ip"), &NetworkedMultiplayerENet::set_bind_ip);
-	ClassDB::bind_method(D_METHOD("set_dtls_enabled", "enabled"), &NetworkedMultiplayerENet::set_dtls_enabled);
-	ClassDB::bind_method(D_METHOD("is_dtls_enabled"), &NetworkedMultiplayerENet::is_dtls_enabled);
-	ClassDB::bind_method(D_METHOD("set_dtls_key", "key"), &NetworkedMultiplayerENet::set_dtls_key);
-	ClassDB::bind_method(D_METHOD("set_dtls_certificate", "certificate"), &NetworkedMultiplayerENet::set_dtls_certificate);
-	ClassDB::bind_method(D_METHOD("set_dtls_verify_enabled", "enabled"), &NetworkedMultiplayerENet::set_dtls_verify_enabled);
-	ClassDB::bind_method(D_METHOD("is_dtls_verify_enabled"), &NetworkedMultiplayerENet::is_dtls_verify_enabled);
-	ClassDB::bind_method(D_METHOD("get_peer_address", "id"), &NetworkedMultiplayerENet::get_peer_address);
-	ClassDB::bind_method(D_METHOD("get_peer_port", "id"), &NetworkedMultiplayerENet::get_peer_port);
-	ClassDB::bind_method(D_METHOD("get_local_port"), &NetworkedMultiplayerENet::get_local_port);
-	ClassDB::bind_method(D_METHOD("set_peer_timeout", "id", "timeout_limit", "timeout_min", "timeout_max"), &NetworkedMultiplayerENet::set_peer_timeout);
+void ENetMultiplayerPeer::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("create_server", "port", "max_clients", "in_bandwidth", "out_bandwidth"), &ENetMultiplayerPeer::create_server, DEFVAL(32), DEFVAL(0), DEFVAL(0));
+	ClassDB::bind_method(D_METHOD("create_client", "address", "port", "in_bandwidth", "out_bandwidth", "local_port"), &ENetMultiplayerPeer::create_client, DEFVAL(0), DEFVAL(0), DEFVAL(0));
+	ClassDB::bind_method(D_METHOD("close_connection", "wait_usec"), &ENetMultiplayerPeer::close_connection, DEFVAL(100));
+	ClassDB::bind_method(D_METHOD("disconnect_peer", "id", "now"), &ENetMultiplayerPeer::disconnect_peer, DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("set_compression_mode", "mode"), &ENetMultiplayerPeer::set_compression_mode);
+	ClassDB::bind_method(D_METHOD("get_compression_mode"), &ENetMultiplayerPeer::get_compression_mode);
+	ClassDB::bind_method(D_METHOD("set_bind_ip", "ip"), &ENetMultiplayerPeer::set_bind_ip);
+	ClassDB::bind_method(D_METHOD("set_dtls_enabled", "enabled"), &ENetMultiplayerPeer::set_dtls_enabled);
+	ClassDB::bind_method(D_METHOD("is_dtls_enabled"), &ENetMultiplayerPeer::is_dtls_enabled);
+	ClassDB::bind_method(D_METHOD("set_dtls_key", "key"), &ENetMultiplayerPeer::set_dtls_key);
+	ClassDB::bind_method(D_METHOD("set_dtls_certificate", "certificate"), &ENetMultiplayerPeer::set_dtls_certificate);
+	ClassDB::bind_method(D_METHOD("set_dtls_verify_enabled", "enabled"), &ENetMultiplayerPeer::set_dtls_verify_enabled);
+	ClassDB::bind_method(D_METHOD("is_dtls_verify_enabled"), &ENetMultiplayerPeer::is_dtls_verify_enabled);
+	ClassDB::bind_method(D_METHOD("get_peer_address", "id"), &ENetMultiplayerPeer::get_peer_address);
+	ClassDB::bind_method(D_METHOD("get_peer_port", "id"), &ENetMultiplayerPeer::get_peer_port);
+	ClassDB::bind_method(D_METHOD("get_local_port"), &ENetMultiplayerPeer::get_local_port);
+	ClassDB::bind_method(D_METHOD("set_peer_timeout", "id", "timeout_limit", "timeout_min", "timeout_max"), &ENetMultiplayerPeer::set_peer_timeout);
 
-	ClassDB::bind_method(D_METHOD("get_packet_channel"), &NetworkedMultiplayerENet::get_packet_channel);
-	ClassDB::bind_method(D_METHOD("get_last_packet_channel"), &NetworkedMultiplayerENet::get_last_packet_channel);
-	ClassDB::bind_method(D_METHOD("set_transfer_channel", "channel"), &NetworkedMultiplayerENet::set_transfer_channel);
-	ClassDB::bind_method(D_METHOD("get_transfer_channel"), &NetworkedMultiplayerENet::get_transfer_channel);
-	ClassDB::bind_method(D_METHOD("set_channel_count", "channels"), &NetworkedMultiplayerENet::set_channel_count);
-	ClassDB::bind_method(D_METHOD("get_channel_count"), &NetworkedMultiplayerENet::get_channel_count);
-	ClassDB::bind_method(D_METHOD("set_always_ordered", "ordered"), &NetworkedMultiplayerENet::set_always_ordered);
-	ClassDB::bind_method(D_METHOD("is_always_ordered"), &NetworkedMultiplayerENet::is_always_ordered);
-	ClassDB::bind_method(D_METHOD("set_server_relay_enabled", "enabled"), &NetworkedMultiplayerENet::set_server_relay_enabled);
-	ClassDB::bind_method(D_METHOD("is_server_relay_enabled"), &NetworkedMultiplayerENet::is_server_relay_enabled);
+	ClassDB::bind_method(D_METHOD("get_packet_channel"), &ENetMultiplayerPeer::get_packet_channel);
+	ClassDB::bind_method(D_METHOD("get_last_packet_channel"), &ENetMultiplayerPeer::get_last_packet_channel);
+	ClassDB::bind_method(D_METHOD("set_transfer_channel", "channel"), &ENetMultiplayerPeer::set_transfer_channel);
+	ClassDB::bind_method(D_METHOD("get_transfer_channel"), &ENetMultiplayerPeer::get_transfer_channel);
+	ClassDB::bind_method(D_METHOD("set_channel_count", "channels"), &ENetMultiplayerPeer::set_channel_count);
+	ClassDB::bind_method(D_METHOD("get_channel_count"), &ENetMultiplayerPeer::get_channel_count);
+	ClassDB::bind_method(D_METHOD("set_always_ordered", "ordered"), &ENetMultiplayerPeer::set_always_ordered);
+	ClassDB::bind_method(D_METHOD("is_always_ordered"), &ENetMultiplayerPeer::is_always_ordered);
+	ClassDB::bind_method(D_METHOD("set_server_relay_enabled", "enabled"), &ENetMultiplayerPeer::set_server_relay_enabled);
+	ClassDB::bind_method(D_METHOD("is_server_relay_enabled"), &ENetMultiplayerPeer::is_server_relay_enabled);
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "compression_mode", PROPERTY_HINT_ENUM, "None,Range Coder,FastLZ,ZLib,ZStd"), "set_compression_mode", "get_compression_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "transfer_channel"), "set_transfer_channel", "get_transfer_channel");
@@ -874,7 +874,7 @@ void NetworkedMultiplayerENet::_bind_methods() {
 	BIND_ENUM_CONSTANT(COMPRESS_ZSTD);
 }
 
-NetworkedMultiplayerENet::NetworkedMultiplayerENet() {
+ENetMultiplayerPeer::ENetMultiplayerPeer() {
 	enet_compressor.context = this;
 	enet_compressor.compress = enet_compress;
 	enet_compressor.decompress = enet_decompress;
@@ -883,7 +883,7 @@ NetworkedMultiplayerENet::NetworkedMultiplayerENet() {
 	bind_ip = IPAddress("*");
 }
 
-NetworkedMultiplayerENet::~NetworkedMultiplayerENet() {
+ENetMultiplayerPeer::~ENetMultiplayerPeer() {
 	if (active) {
 		close_connection();
 	}
@@ -891,36 +891,36 @@ NetworkedMultiplayerENet::~NetworkedMultiplayerENet() {
 
 // Sets IP for ENet to bind when using create_server or create_client
 // if no IP is set, then ENet bind to ENET_HOST_ANY
-void NetworkedMultiplayerENet::set_bind_ip(const IPAddress &p_ip) {
+void ENetMultiplayerPeer::set_bind_ip(const IPAddress &p_ip) {
 	ERR_FAIL_COND_MSG(!p_ip.is_valid() && !p_ip.is_wildcard(), vformat("Invalid bind IP address: %s", String(p_ip)));
 
 	bind_ip = p_ip;
 }
 
-void NetworkedMultiplayerENet::set_dtls_enabled(bool p_enabled) {
+void ENetMultiplayerPeer::set_dtls_enabled(bool p_enabled) {
 	ERR_FAIL_COND(active);
 	dtls_enabled = p_enabled;
 }
 
-bool NetworkedMultiplayerENet::is_dtls_enabled() const {
+bool ENetMultiplayerPeer::is_dtls_enabled() const {
 	return dtls_enabled;
 }
 
-void NetworkedMultiplayerENet::set_dtls_verify_enabled(bool p_enabled) {
+void ENetMultiplayerPeer::set_dtls_verify_enabled(bool p_enabled) {
 	ERR_FAIL_COND(active);
 	dtls_verify = p_enabled;
 }
 
-bool NetworkedMultiplayerENet::is_dtls_verify_enabled() const {
+bool ENetMultiplayerPeer::is_dtls_verify_enabled() const {
 	return dtls_verify;
 }
 
-void NetworkedMultiplayerENet::set_dtls_key(Ref<CryptoKey> p_key) {
+void ENetMultiplayerPeer::set_dtls_key(Ref<CryptoKey> p_key) {
 	ERR_FAIL_COND(active);
 	dtls_key = p_key;
 }
 
-void NetworkedMultiplayerENet::set_dtls_certificate(Ref<X509Certificate> p_cert) {
+void ENetMultiplayerPeer::set_dtls_certificate(Ref<X509Certificate> p_cert) {
 	ERR_FAIL_COND(active);
 	dtls_cert = p_cert;
 }
