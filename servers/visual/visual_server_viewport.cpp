@@ -131,6 +131,10 @@ void VisualServerViewport::_draw_viewport(Viewport *p_viewport, ARVRInterface::E
 				if (cl->enabled && cl->texture.is_valid()) {
 					//not super efficient..
 					Size2 tsize = VSG::storage->texture_size_with_proxy(cl->texture);
+					// Skip using lights with texture of 0 size
+					if (!tsize.x || !tsize.y) {
+						continue;
+					}
 					tsize *= cl->scale;
 
 					Vector2 offset = tsize / 2.0;
