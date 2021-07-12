@@ -6232,6 +6232,9 @@ void Node3DEditor::_add_sun_to_scene() {
 
 	undo_redo->create_action("Add Preview Sun to Scene");
 	undo_redo->add_do_method(base, "add_child", new_sun);
+	// Move to the beginning of the scene tree since more "global" nodes
+	// generally look better when placed at the top.
+	undo_redo->add_do_method(base, "move_child", new_sun, 0);
 	undo_redo->add_do_method(new_sun, "set_owner", base);
 	undo_redo->add_undo_method(base, "remove_child", new_sun);
 	undo_redo->add_do_reference(new_sun);
@@ -6253,6 +6256,9 @@ void Node3DEditor::_add_environment_to_scene() {
 
 	undo_redo->create_action("Add Preview Environment to Scene");
 	undo_redo->add_do_method(base, "add_child", new_env);
+	// Move to the beginning of the scene tree since more "global" nodes
+	// generally look better when placed at the top.
+	undo_redo->add_do_method(base, "move_child", new_env, 0);
 	undo_redo->add_do_method(new_env, "set_owner", base);
 	undo_redo->add_undo_method(base, "remove_child", new_env);
 	undo_redo->add_do_reference(new_env);
