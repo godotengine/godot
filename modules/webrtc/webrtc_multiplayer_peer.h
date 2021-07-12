@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  webrtc_multiplayer.h                                                 */
+/*  webrtc_multiplayer_peer.h                                            */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -34,8 +34,8 @@
 #include "core/io/multiplayer_peer.h"
 #include "webrtc_peer_connection.h"
 
-class WebRTCMultiplayer : public MultiplayerPeer {
-	GDCLASS(WebRTCMultiplayer, MultiplayerPeer);
+class WebRTCMultiplayerPeer : public MultiplayerPeer {
+	GDCLASS(WebRTCMultiplayerPeer, MultiplayerPeer);
 
 protected:
 	static void _bind_methods();
@@ -77,8 +77,8 @@ private:
 	void _find_next_peer();
 
 public:
-	WebRTCMultiplayer();
-	~WebRTCMultiplayer();
+	WebRTCMultiplayerPeer();
+	~WebRTCMultiplayerPeer();
 
 	Error initialize(int p_self_id, bool p_server_compat = false);
 	Error add_peer(Ref<WebRTCPeerConnection> p_peer, int p_peer_id, int p_unreliable_lifetime = 1);

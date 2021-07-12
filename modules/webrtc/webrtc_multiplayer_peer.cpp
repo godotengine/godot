@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  webrtc_multiplayer.cpp                                               */
+/*  webrtc_multiplayer_peer.cpp                                          */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,43 +28,43 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "webrtc_multiplayer.h"
+#include "webrtc_multiplayer_peer.h"
 
 #include "core/io/marshalls.h"
 #include "core/os/os.h"
 
-void WebRTCMultiplayer::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("initialize", "peer_id", "server_compatibility"), &WebRTCMultiplayer::initialize, DEFVAL(false));
-	ClassDB::bind_method(D_METHOD("add_peer", "peer", "peer_id", "unreliable_lifetime"), &WebRTCMultiplayer::add_peer, DEFVAL(1));
-	ClassDB::bind_method(D_METHOD("remove_peer", "peer_id"), &WebRTCMultiplayer::remove_peer);
-	ClassDB::bind_method(D_METHOD("has_peer", "peer_id"), &WebRTCMultiplayer::has_peer);
-	ClassDB::bind_method(D_METHOD("get_peer", "peer_id"), &WebRTCMultiplayer::get_peer);
-	ClassDB::bind_method(D_METHOD("get_peers"), &WebRTCMultiplayer::get_peers);
-	ClassDB::bind_method(D_METHOD("close"), &WebRTCMultiplayer::close);
+void WebRTCMultiplayerPeer::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("initialize", "peer_id", "server_compatibility"), &WebRTCMultiplayerPeer::initialize, DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("add_peer", "peer", "peer_id", "unreliable_lifetime"), &WebRTCMultiplayerPeer::add_peer, DEFVAL(1));
+	ClassDB::bind_method(D_METHOD("remove_peer", "peer_id"), &WebRTCMultiplayerPeer::remove_peer);
+	ClassDB::bind_method(D_METHOD("has_peer", "peer_id"), &WebRTCMultiplayerPeer::has_peer);
+	ClassDB::bind_method(D_METHOD("get_peer", "peer_id"), &WebRTCMultiplayerPeer::get_peer);
+	ClassDB::bind_method(D_METHOD("get_peers"), &WebRTCMultiplayerPeer::get_peers);
+	ClassDB::bind_method(D_METHOD("close"), &WebRTCMultiplayerPeer::close);
 }
 
-void WebRTCMultiplayer::set_transfer_mode(TransferMode p_mode) {
+void WebRTCMultiplayerPeer::set_transfer_mode(TransferMode p_mode) {
 	transfer_mode = p_mode;
 }
 
-MultiplayerPeer::TransferMode WebRTCMultiplayer::get_transfer_mode() const {
+MultiplayerPeer::TransferMode WebRTCMultiplayerPeer::get_transfer_mode() const {
 	return transfer_mode;
 }
 
-void WebRTCMultiplayer::set_target_peer(int p_peer_id) {
+void WebRTCMultiplayerPeer::set_target_peer(int p_peer_id) {
 	target_peer = p_peer_id;
 }
 
 /* Returns the ID of the MultiplayerPeer who sent the most recent packet: */
-int WebRTCMultiplayer::get_packet_peer() const {
+int WebRTCMultiplayerPeer::get_packet_peer() const {
 	return next_packet_peer;
 }
 
-bool WebRTCMultiplayer::is_server() const {
+bool WebRTCMultiplayerPeer::is_server() const {
 	return unique_id == TARGET_PEER_SERVER;
 }
 
-void WebRTCMultiplayer::poll() {
+void WebRTCMultiplayerPeer::poll() {
 	if (peer_map.size() == 0) {
 		return;
 	}
@@ -147,7 +147,7 @@ void WebRTCMultiplayer::poll() {
 	}
 }
 
-void WebRTCMultiplayer::_find_next_peer() {
+void WebRTCMultiplayerPeer::_find_next_peer() {
 	Map<int, Ref<ConnectedPeer>>::Element *E = peer_map.find(next_packet_peer);
 	if (E) {
 		E = E->next();
@@ -180,19 +180,19 @@ void WebRTCMultiplayer::_find_next_peer() {
 	next_packet_peer = 0;
 }
 
-void WebRTCMultiplayer::set_refuse_new_connections(bool p_enable) {
+void WebRTCMultiplayerPeer::set_refuse_new_connections(bool p_enable) {
 	refuse_connections = p_enable;
 }
 
-bool WebRTCMultiplayer::is_refusing_new_connections() const {
+bool WebRTCMultiplayerPeer::is_refusing_new_connections() const {
 	return refuse_connections;
 }
 
-MultiplayerPeer::ConnectionStatus WebRTCMultiplayer::get_connection_status() const {
+MultiplayerPeer::ConnectionStatus WebRTCMultiplayerPeer::get_connection_status() const {
 	return connection_status;
 }
 
-Error WebRTCMultiplayer::initialize(int p_self_id, bool p_server_compat) {
+Error WebRTCMultiplayerPeer::initialize(int p_self_id, bool p_server_compat) {
 	ERR_FAIL_COND_V(p_self_id < 0 || p_self_id > ~(1 << 31), ERR_INVALID_PARAMETER);
 	unique_id = p_self_id;
 	server_compat = p_server_compat;
@@ -206,12 +206,12 @@ Error WebRTCMultiplayer::initialize(int p_self_id, bool p_server_compat) {
 	return OK;
 }
 
-int WebRTCMultiplayer::get_unique_id() const {
+int WebRTCMultiplayerPeer::get_unique_id() const {
 	ERR_FAIL_COND_V(connection_status == CONNECTION_DISCONNECTED, 1);
 	return unique_id;
 }
 
-void WebRTCMultiplayer::_peer_to_dict(Ref<ConnectedPeer> p_connected_peer, Dictionary &r_dict) {
+void WebRTCMultiplayerPeer::_peer_to_dict(Ref<ConnectedPeer> p_connected_peer, Dictionary &r_dict) {
 	Array channels;
 	for (List<Ref<WebRTCDataChannel>>::Element *F = p_connected_peer->channels.front(); F; F = F->next()) {
 		channels.push_back(F->get());
@@ -221,18 +221,18 @@ void WebRTCMultiplayer::_peer_to_dict(Ref<ConnectedPeer> p_connected_peer, Dicti
 	r_dict["channels"] = channels;
 }
 
-bool WebRTCMultiplayer::has_peer(int p_peer_id) {
+bool WebRTCMultiplayerPeer::has_peer(int p_peer_id) {
 	return peer_map.has(p_peer_id);
 }
 
-Dictionary WebRTCMultiplayer::get_peer(int p_peer_id) {
+Dictionary WebRTCMultiplayerPeer::get_peer(int p_peer_id) {
 	ERR_FAIL_COND_V(!peer_map.has(p_peer_id), Dictionary());
 	Dictionary out;
 	_peer_to_dict(peer_map[p_peer_id], out);
 	return out;
 }
 
-Dictionary WebRTCMultiplayer::get_peers() {
+Dictionary WebRTCMultiplayerPeer::get_peers() {
 	Dictionary out;
 	for (Map<int, Ref<ConnectedPeer>>::Element *E = peer_map.front(); E; E = E->next()) {
 		Dictionary d;
@@ -242,7 +242,7 @@ Dictionary WebRTCMultiplayer::get_peers() {
 	return out;
 }
 
-Error WebRTCMultiplayer::add_peer(Ref<WebRTCPeerConnection> p_peer, int p_peer_id, int p_unreliable_lifetime) {
+Error WebRTCMultiplayerPeer::add_peer(Ref<WebRTCPeerConnection> p_peer, int p_peer_id, int p_unreliable_lifetime) {
 	ERR_FAIL_COND_V(p_peer_id < 0 || p_peer_id > ~(1 << 31), ERR_INVALID_PARAMETER);
 	ERR_FAIL_COND_V(p_unreliable_lifetime < 0, ERR_INVALID_PARAMETER);
 	ERR_FAIL_COND_V(refuse_connections, ERR_UNAUTHORIZED);
@@ -277,7 +277,7 @@ Error WebRTCMultiplayer::add_peer(Ref<WebRTCPeerConnection> p_peer, int p_peer_i
 	return OK;
 }
 
-void WebRTCMultiplayer::remove_peer(int p_peer_id) {
+void WebRTCMultiplayerPeer::remove_peer(int p_peer_id) {
 	ERR_FAIL_COND(!peer_map.has(p_peer_id));
 	Ref<ConnectedPeer> peer = peer_map[p_peer_id];
 	peer_map.erase(p_peer_id);
@@ -291,7 +291,7 @@ void WebRTCMultiplayer::remove_peer(int p_peer_id) {
 	}
 }
 
-Error WebRTCMultiplayer::get_packet(const uint8_t **r_buffer, int &r_buffer_size) {
+Error WebRTCMultiplayerPeer::get_packet(const uint8_t **r_buffer, int &r_buffer_size) {
 	// Peer not available
 	if (next_packet_peer == 0 || !peer_map.has(next_packet_peer)) {
 		_find_next_peer();
@@ -309,7 +309,7 @@ Error WebRTCMultiplayer::get_packet(const uint8_t **r_buffer, int &r_buffer_size
 	ERR_FAIL_V(ERR_BUG);
 }
 
-Error WebRTCMultiplayer::put_packet(const uint8_t *p_buffer, int p_buffer_size) {
+Error WebRTCMultiplayerPeer::put_packet(const uint8_t *p_buffer, int p_buffer_size) {
 	ERR_FAIL_COND_V(connection_status == CONNECTION_DISCONNECTED, ERR_UNCONFIGURED);
 
 	int ch = CH_RELIABLE;
@@ -351,7 +351,7 @@ Error WebRTCMultiplayer::put_packet(const uint8_t *p_buffer, int p_buffer_size) 
 	return OK;
 }
 
-int WebRTCMultiplayer::get_available_packet_count() const {
+int WebRTCMultiplayerPeer::get_available_packet_count() const {
 	if (next_packet_peer == 0) {
 		return 0; // To be sure next call to get_packet works if size > 0 .
 	}
@@ -364,11 +364,11 @@ int WebRTCMultiplayer::get_available_packet_count() const {
 	return size;
 }
 
-int WebRTCMultiplayer::get_max_packet_size() const {
+int WebRTCMultiplayerPeer::get_max_packet_size() const {
 	return 1200;
 }
 
-void WebRTCMultiplayer::close() {
+void WebRTCMultiplayerPeer::close() {
 	peer_map.clear();
 	unique_id = 0;
 	next_packet_peer = 0;
@@ -376,7 +376,7 @@ void WebRTCMultiplayer::close() {
 	connection_status = CONNECTION_DISCONNECTED;
 }
 
-WebRTCMultiplayer::WebRTCMultiplayer() {
+WebRTCMultiplayerPeer::WebRTCMultiplayerPeer() {
 	unique_id = 0;
 	next_packet_peer = 0;
 	target_peer = 0;
@@ -387,6 +387,6 @@ WebRTCMultiplayer::WebRTCMultiplayer() {
 	server_compat = false;
 }
 
-WebRTCMultiplayer::~WebRTCMultiplayer() {
+WebRTCMultiplayerPeer::~WebRTCMultiplayerPeer() {
 	close();
 }
