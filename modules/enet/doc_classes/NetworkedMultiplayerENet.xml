@@ -4,7 +4,7 @@
 		PacketPeer implementation using the [url=http://enet.bespin.org/index.html]ENet[/url] library.
 	</brief_description>
 	<description>
-		A PacketPeer implementation that should be passed to [member SceneTree.network_peer] after being initialized as either a client or server. Events can then be handled by connecting to [SceneTree] signals.
+		A PacketPeer implementation that should be passed to [member MultiplayerAPI.network_peer] after being initialized as either a client or server. Events can then be handled by connecting to [SceneTree] signals.
 		ENet's purpose is to provide a relatively thin, simple and robust network communication layer on top of UDP (User Datagram Protocol).
 		[b]Note:[/b] ENet only uses UDP, not TCP. When forwarding the server port to make your server accessible on the public Internet, you only need to forward the server port in UDP. You can use the [UPNP] class to try to forward the server port automatically when starting the server.
 	</description>

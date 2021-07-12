@@ -112,20 +112,6 @@
 				Returns the current frame number, i.e. the total frame count since the application started.
 			</description>
 		</method>
-		<method name="get_network_connected_peers" qualifiers="const">
-			<return type="PackedInt32Array">
-			</return>
-			<description>
-				Returns the peer IDs of all connected peers of this [SceneTree]'s [member network_peer].
-			</description>
-		</method>
-		<method name="get_network_unique_id" qualifiers="const">
-			<return type="int">
-			</return>
-			<description>
-				Returns the unique peer ID of this [SceneTree]'s [member network_peer].
-			</description>
-		</method>
 		<method name="get_node_count" qualifiers="const">
 			<return type="int">
 			</return>
@@ -149,13 +135,6 @@
 				Returns an array of currently exising [Tween]s in the [SceneTree] (both running and paused).
 			</description>
 		</method>
-		<method name="get_rpc_sender_id" qualifiers="const">
-			<return type="int">
-			</return>
-			<description>
-				Returns the sender's peer ID for the most recently received RPC call.
-			</description>
-		</method>
 		<method name="has_group" qualifiers="const">
 			<return type="bool">
 			</return>
@@ -163,20 +142,6 @@
 			</argument>
 			<description>
 				Returns [code]true[/code] if the given group exists.
-			</description>
-		</method>
-		<method name="has_network_peer" qualifiers="const">
-			<return type="bool">
-			</return>
-			<description>
-				Returns [code]true[/code] if there is a [member network_peer] set.
-			</description>
-		</method>
-		<method name="is_network_server" qualifiers="const">
-			<return type="bool">
-			</return>
-			<description>
-				Returns [code]true[/code] if this [SceneTree]'s [member network_peer] is in server mode (listening for connections).
 			</description>
 		</method>
 		<method name="notify_group">
@@ -301,32 +266,16 @@
 			If [code]true[/code] (default value), enables automatic polling of the [MultiplayerAPI] for this SceneTree during [signal process_frame].
 			If [code]false[/code], you need to manually call [method MultiplayerAPI.poll] to process network packets and deliver RPCs/RSETs. This allows running RPCs/RSETs in a different loop (e.g. physics, thread, specific time step) and for manual [Mutex] protection when accessing the [MultiplayerAPI] from threads.
 		</member>
-		<member name="network_peer" type="NetworkedMultiplayerPeer" setter="set_network_peer" getter="get_network_peer">
-			The peer object to handle the RPC system (effectively enabling networking when set). Depending on the peer itself, the [SceneTree] will become a network server (check with [method is_network_server]) and will set the root node's network mode to master, or it will become a regular peer with the root node set to puppet. All child nodes are set to inherit the network mode by default. Handling of networking-related events (connection, disconnection, new clients) is done by connecting to [SceneTree]'s signals.
-		</member>
 		<member name="paused" type="bool" setter="set_pause" getter="is_paused" default="false">
 			If [code]true[/code], the [SceneTree] is paused. Doing so will have the following behavior:
 			- 2D and 3D physics will be stopped.
 			- [method Node._process], [method Node._physics_process] and [method Node._input] will not be called anymore in nodes.
-		</member>
-		<member name="refuse_new_network_connections" type="bool" setter="set_refuse_new_network_connections" getter="is_refusing_new_network_connections" default="false">
-			If [code]true[/code], the [SceneTree]'s [member network_peer] refuses new incoming connections.
 		</member>
 		<member name="root" type="Window" setter="" getter="get_root">
 			The [SceneTree]'s root [Window].
 		</member>
 	</members>
 	<signals>
-		<signal name="connected_to_server">
-			<description>
-				Emitted whenever this [SceneTree]'s [member network_peer] successfully connected to a server. Only emitted on clients.
-			</description>
-		</signal>
-		<signal name="connection_failed">
-			<description>
-				Emitted whenever this [SceneTree]'s [member network_peer] fails to establish a connection to a server. Only emitted on clients.
-			</description>
-		</signal>
 		<signal name="files_dropped">
 			<argument index="0" name="files" type="PackedStringArray">
 			</argument>
@@ -334,20 +283,6 @@
 			</argument>
 			<description>
 				Emitted when files are dragged from the OS file manager and dropped in the game window. The arguments are a list of file paths and the identifier of the screen where the drag originated.
-			</description>
-		</signal>
-		<signal name="network_peer_connected">
-			<argument index="0" name="id" type="int">
-			</argument>
-			<description>
-				Emitted whenever this [SceneTree]'s [member network_peer] connects with a new peer. ID is the peer ID of the new peer. Clients get notified when other clients connect to the same server. Upon connecting to a server, a client also receives this signal for the server (with ID being 1).
-			</description>
-		</signal>
-		<signal name="network_peer_disconnected">
-			<argument index="0" name="id" type="int">
-			</argument>
-			<description>
-				Emitted whenever this [SceneTree]'s [member network_peer] disconnects from a peer. Clients get notified when other clients disconnect from the same server.
 			</description>
 		</signal>
 		<signal name="node_added">
@@ -386,11 +321,6 @@
 		<signal name="process_frame">
 			<description>
 				Emitted immediately before [method Node._process] is called on every node in the [SceneTree].
-			</description>
-		</signal>
-		<signal name="server_disconnected">
-			<description>
-				Emitted whenever this [SceneTree]'s [member network_peer] disconnected from server. Only emitted on clients.
 			</description>
 		</signal>
 		<signal name="tree_changed">
