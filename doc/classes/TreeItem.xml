@@ -267,6 +267,61 @@
 				Returns the next TreeItem in the tree or a null object if there is none.
 			</description>
 		</method>
+		<method name="get_next_affected_by_check">
+			<return type="TreeItem">
+			</return>
+			<description>
+				Returns the next TreeItem affected by [method set_checked] or a null object if this is the last item affected. Use this method in conjunction with [signal Tree.item_edited] to iterate over all items affected by [method set_checked].
+				[codeblocks]
+				[gdscript]
+				func _ready():
+				    $Tree.set_column_to_propagate_checkmarks(0, true) # Set column to propagate checkmarks to children and parents.
+				    $Tree.item_edited.connect(on_Tree_item_edited)
+
+				func on_Tree_item_edited():
+				        var item = get_edited()
+				        while(item):
+				            var path = item.get_metadata(0)
+				            if (!path.ends_with("/")): # Check if item represents a directory or a file.
+				                var added = item.is_checked(0)
+				                if (added):
+				                    add_export_file(path)
+				                else:
+				                    remove_export_file(path)
+				        item = item.get_next_affected_by_check()
+				[/gdscript]
+				[csharp]
+				public override void _Ready()
+				{
+				    GetNode&lt;Tree&gt;("Tree").SetColumnToPropagateCheckmarks(0, true); // Set column to propagate checkmarks to children and parents.
+				    GetNode&lt;Tree&gt;("Tree").ItemEdited += OnTreeItemEdited;
+				}
+
+				public void OnTreeItemEdited()
+				{
+				    var item = GetEdited();
+				    while(item != null)
+				    {
+				        var path = (string) item.GetMetadata(0);
+				            if (!path.EndsWith("/")) // Check if item represents a directory or a file.
+				            {
+				                var added = item.IsChecked(0);
+				                if (added)
+				                {
+				                    AddExportFile(path);
+				                }
+				                else
+				                {
+				                    RemoveExportFile(path);
+				                }
+				            }
+				        item = item.GetNextAffectedByCheck();
+				    }
+				}
+				[/csharp]
+				[/codeblocks]
+			</description>
+		</method>
 		<method name="get_next_visible">
 			<return type="TreeItem">
 			</return>
@@ -435,6 +490,15 @@
 				Returns [code]true[/code] if column [code]column[/code] is editable.
 			</description>
 		</method>
+		<method name="is_indeterminate" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="column" type="int">
+			</argument>
+			<description>
+				Returns [code]true[/code] if the given column is indeterminate.
+			</description>
+		</method>
 		<method name="is_selectable" qualifiers="const">
 			<return type="bool">
 			</return>
@@ -537,6 +601,7 @@
 			</argument>
 			<description>
 				If [code]true[/code], the column [code]column[/code] is checked.
+				[b]Note:[/b] If the column is set to propagate checks, then children and parents are automatically checked or unchecked, in addition to this item. To iterate over items affected by this method, use [method get_next_affected_by_check].
 			</description>
 		</method>
 		<method name="set_custom_as_button">
