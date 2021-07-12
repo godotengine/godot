@@ -467,21 +467,30 @@ void Node3DEditorViewport::_select_clicked(bool p_append, bool p_single, bool p_
 }
 
 void Node3DEditorViewport::_select(Node *p_node, bool p_append, bool p_single) {
-	if (!p_append) {
-		editor_selection->clear();
-	}
-
-	if (editor_selection->is_selected(p_node)) {
-		//erase
-		editor_selection->remove_node(p_node);
-	} else {
+	// Add or remove a single node from the selection
+	if (p_append && p_single) {
+		if (editor_selection->is_selected(p_node)) {
+			// Already in the selection, remove it from the selected nodes
+			editor_selection->remove_node(p_node);
+		} else {
+			// Add the item to the selection
+			editor_selection->add_node(p_node);
+		}
+	} else if (p_append && !p_single) {
+		// Add the item to the selection
 		editor_selection->add_node(p_node);
-	}
-
-	if (p_single) {
+	} else {
+		// No append; single select
+		editor_selection->clear();
+		editor_selection->add_node(p_node);
+		// Reselect
 		if (Engine::get_singleton()->is_editor_hint()) {
 			editor->call("edit_node", p_node);
 		}
+	}
+
+	if (editor_selection->get_selected_node_list().size() == 1) {
+		editor->push_item(editor_selection->get_selected_node_list()[0]);
 	}
 }
 
