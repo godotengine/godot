@@ -48,6 +48,7 @@ public:
 		DEPENDENCY_CHANGED_SKELETON_DATA,
 		DEPENDENCY_CHANGED_SKELETON_BONES,
 		DEPENDENCY_CHANGED_LIGHT,
+		DEPENDENCY_CHANGED_LIGHT_SOFT_SHADOW_AND_PROJECTOR,
 		DEPENDENCY_CHANGED_REFLECTION_PROBE,
 	};
 
@@ -336,6 +337,8 @@ public:
 	virtual RS::LightOmniShadowMode light_omni_get_shadow_mode(RID p_light) = 0;
 
 	virtual bool light_has_shadow(RID p_light) const = 0;
+
+	virtual bool light_has_projector(RID p_light) const = 0;
 
 	virtual RS::LightType light_get_type(RID p_light) const = 0;
 	virtual AABB light_get_aabb(RID p_light) const = 0;
