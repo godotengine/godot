@@ -95,6 +95,9 @@ public:
 
 		Tree *tree = memnew(Tree);
 		tree->set_columns(2);
+		tree->set_column_to_propagate_checkmarks(0, true);
+		tree->set_column_title(0, "Propagates checkmarks");
+		tree->set_column_title(1, "Does not propagate checkmarks");
 
 		tree->set_position(Point2(230, 210));
 		tree->set_size(Point2(150, 250));
@@ -109,6 +112,18 @@ public:
 		item->set_cell_mode(1, TreeItem::CELL_MODE_CHECK);
 		item->set_editable(1, true);
 		item->set_text(1, "check2");
+		TreeItem *sub_item = tree->create_item(item);
+		sub_item->set_cell_mode(0, TreeItem::CELL_MODE_CHECK);
+		sub_item->set_editable(0, true);
+		sub_item->set_text(0, "sub check");
+		sub_item->set_cell_mode(1, TreeItem::CELL_MODE_CHECK);
+		sub_item->set_editable(1, true);
+		sub_item = tree->create_item(item);
+		sub_item->set_cell_mode(0, TreeItem::CELL_MODE_CHECK);
+		sub_item->set_editable(0, true);
+		sub_item->set_text(0, "sub check2");
+		sub_item->set_cell_mode(1, TreeItem::CELL_MODE_CHECK);
+		sub_item->set_editable(1, true);
 		item = tree->create_item(tree->get_root());
 		item->set_cell_mode(0, TreeItem::CELL_MODE_RANGE);
 		item->set_editable(0, true);
