@@ -56,6 +56,8 @@ public:
 		WINDOW_MODE_FULLSCREEN
 	};
 
+	// Keep the VSyncMode enum values in sync with the `display/window/vsync/vsync_mode`
+	// project setting hint.
 	enum VSyncMode {
 		VSYNC_DISABLED,
 		VSYNC_ENABLED,
