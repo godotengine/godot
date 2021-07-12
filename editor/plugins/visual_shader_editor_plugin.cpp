@@ -2274,6 +2274,8 @@ void VisualShaderEditor::_setup_node(VisualShaderNode *p_node, int p_op_idx) {
 void VisualShaderEditor::_add_node(int p_idx, int p_op_idx, String p_resource_path, int p_node_idx) {
 	ERR_FAIL_INDEX(p_idx, add_options.size());
 
+	VisualShader::Type type = get_current_shader_type();
+
 	Ref<VisualShaderNode> vsnode;
 
 	bool is_custom = add_options[p_idx].is_custom;
@@ -2300,6 +2302,29 @@ void VisualShaderEditor::_add_node(int p_idx, int p_op_idx, String p_resource_pa
 			}
 		}
 
+		VisualShaderNodeUniformRef *uniform_ref = Object::cast_to<VisualShaderNodeUniformRef>(vsn);
+
+		if (uniform_ref && to_node != -1 && to_slot != -1) {
+			VisualShaderNode::PortType input_port_type = visual_shader->get_node(type, to_node)->get_input_port_type(to_slot);
+			bool success = false;
+
+			for (int i = 0; i < uniform_ref->get_uniforms_count(); i++) {
+				if (uniform_ref->get_port_type_by_index(i) == input_port_type) {
+					uniform_ref->set_uniform_name(uniform_ref->get_uniform_name_by_index(i));
+					success = true;
+					break;
+				}
+			}
+			if (!success) {
+				for (int i = 0; i < uniform_ref->get_uniforms_count(); i++) {
+					if (visual_shader->is_port_types_compatible(uniform_ref->get_port_type_by_index(i), input_port_type)) {
+						uniform_ref->set_uniform_name(uniform_ref->get_uniform_name_by_index(i));
+						break;
+					}
+				}
+			}
+		}
+
 		vsnode = Ref<VisualShaderNode>(vsn);
 	} else {
 		ERR_FAIL_COND(add_options[p_idx].script.is_null());
@@ -2319,8 +2344,6 @@ void VisualShaderEditor::_add_node(int p_idx, int p_op_idx, String p_resource_pa
 		position /= EDSCALE;
 	}
 	saved_node_pos_dirty = false;
-
-	VisualShader::Type type = get_current_shader_type();
 
 	int id_to_use = visual_shader->get_valid_node_id(type);
 
