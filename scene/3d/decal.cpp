@@ -45,6 +45,7 @@ void Decal::set_texture(DecalTexture p_type, const Ref<Texture2D> &p_texture) {
 	textures[p_type] = p_texture;
 	RID texture_rid = p_texture.is_valid() ? p_texture->get_rid() : RID();
 	RS::get_singleton()->decal_set_texture(decal, RS::DecalTexture(p_type), texture_rid);
+	update_configuration_warnings();
 }
 
 Ref<Texture2D> Decal::get_texture(DecalTexture p_type) const {
@@ -137,6 +138,7 @@ float Decal::get_distance_fade_length() const {
 void Decal::set_cull_mask(uint32_t p_layers) {
 	cull_mask = p_layers;
 	RS::get_singleton()->decal_set_cull_mask(decal, cull_mask);
+	update_configuration_warnings();
 }
 
 uint32_t Decal::get_cull_mask() const {
@@ -158,6 +160,27 @@ void Decal::_validate_property(PropertyInfo &property) const {
 	if (!distance_fade_enabled && (property.name == "distance_fade_begin" || property.name == "distance_fade_length")) {
 		property.usage = PROPERTY_USAGE_NOEDITOR;
 	}
+}
+
+TypedArray<String> Decal::get_configuration_warnings() const {
+	TypedArray<String> warnings = Node::get_configuration_warnings();
+
+	if (textures[TEXTURE_ALBEDO].is_null() && textures[TEXTURE_NORMAL].is_null() && textures[TEXTURE_ORM].is_null() && textures[TEXTURE_EMISSION].is_null()) {
+		warnings.push_back(TTR("The decal has no textures loaded into any of its texture properties, and will therefore not be visible."));
+	}
+
+	if ((textures[TEXTURE_NORMAL].is_valid() || textures[TEXTURE_ORM].is_valid()) && textures[TEXTURE_ALBEDO].is_null()) {
+		warnings.push_back(TTR("The decal has a Normal and/or ORM texture, but no Albedo texture is set.\nAn Albedo texture with an alpha channel is required to blend the normal/ORM maps onto the underlying surface.\nIf you don't want the Albedo texture to be visible, set Albedo Mix to 0."));
+	}
+
+	if (cull_mask == 0) {
+		// NOTE: This warning will not be emitted if none of the 20 checkboxes
+		// exposed in the editor are checked. This is because there are
+		// currently 12 unexposed layers in the editor inspector.
+		warnings.push_back(TTR("The decal's Cull Mask has no bits enabled, which means the decal will not paint objects on any layer.\nTo resolve this, enable at least one bit in the Cull Mask property."));
+	}
+
+	return warnings;
 }
 
 void Decal::_bind_methods() {
@@ -207,7 +230,9 @@ void Decal::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "emission_energy", PROPERTY_HINT_RANGE, "0,128,0.01"), "set_emission_energy", "get_emission_energy");
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "modulate"), "set_modulate", "get_modulate");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "albedo_mix", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_albedo_mix", "get_albedo_mix");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "normal_fade", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_normal_fade", "get_normal_fade");
+	// A Normal Fade of 1.0 causes the decal to be invisible even if fully perpendicular to a surface.
+	// Due to this, limit Normal Fade to 0.999.
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "normal_fade", PROPERTY_HINT_RANGE, "0,0.999,0.001"), "set_normal_fade", "get_normal_fade");
 	ADD_GROUP("Vertical Fade", "");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "upper_fade", PROPERTY_HINT_EXP_EASING, "attenuation"), "set_upper_fade", "get_upper_fade");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "lower_fade", PROPERTY_HINT_EXP_EASING, "attenuation"), "set_lower_fade", "get_lower_fade");
