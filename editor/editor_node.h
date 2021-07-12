@@ -318,6 +318,7 @@ private:
 	EditorSettingsDialog *settings_config_dialog;
 	ProjectSettingsEditor *project_settings;
 	bool settings_changed = true; //make it update settings on first frame
+	void _update_vsync_mode();
 	void _update_from_settings();
 
 	PopupMenu *vcs_actions_menu;
