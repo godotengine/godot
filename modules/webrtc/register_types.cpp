@@ -41,7 +41,7 @@
 #include "webrtc_data_channel_gdnative.h"
 #include "webrtc_peer_connection_gdnative.h"
 #endif
-#include "webrtc_multiplayer.h"
+#include "webrtc_multiplayer_peer.h"
 
 void register_webrtc_types() {
 #define _SET_HINT(NAME, _VAL_, _MAX_) \
@@ -62,7 +62,7 @@ void register_webrtc_types() {
 	ClassDB::register_class<WebRTCDataChannelGDNative>();
 #endif
 	ClassDB::register_virtual_class<WebRTCDataChannel>();
-	ClassDB::register_class<WebRTCMultiplayer>();
+	ClassDB::register_class<WebRTCMultiplayerPeer>();
 }
 
 void unregister_webrtc_types() {}

@@ -123,13 +123,13 @@ Error WebSocketMultiplayerPeer::put_packet(const uint8_t *p_buffer, int p_buffer
 }
 
 //
-// NetworkedMultiplayerPeer
+// MultiplayerPeer
 //
 void WebSocketMultiplayerPeer::set_transfer_mode(TransferMode p_mode) {
 	// Websocket uses TCP, reliable
 }
 
-NetworkedMultiplayerPeer::TransferMode WebSocketMultiplayerPeer::get_transfer_mode() const {
+MultiplayerPeer::TransferMode WebSocketMultiplayerPeer::get_transfer_mode() const {
 	// Websocket uses TCP, reliable
 	return TRANSFER_MODE_RELIABLE;
 }
