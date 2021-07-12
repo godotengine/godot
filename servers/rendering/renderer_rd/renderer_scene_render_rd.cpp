@@ -709,6 +709,10 @@ bool RendererSceneRenderRD::reflection_probe_instance_begin_render(RID p_instanc
 		}
 	}
 
+	if (rpi->atlas_index != -1) { // should we fail if this is still -1 ?
+		atlas->reflections.write[rpi->atlas_index].owner = p_instance;
+	}
+
 	rpi->atlas = p_reflection_atlas;
 	rpi->rendering = true;
 	rpi->dirty = false;
