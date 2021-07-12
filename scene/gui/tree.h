@@ -82,6 +82,9 @@ private:
 		int icon_max_w = 0;
 		bool expr = false;
 		bool checked = false;
+		bool indeterminate = false;
+		int checked_children = 0;
+		int indeterminate_children = 0;
 		bool editable = false;
 		bool selected = false;
 		bool selectable = true;
@@ -123,6 +126,7 @@ private:
 	};
 
 	Vector<Cell> cells;
+	int number_of_children = 0;
 
 	bool collapsed = false; // won't show children
 	bool disable_folding = false;
@@ -131,6 +135,7 @@ private:
 	TreeItem *parent = nullptr; // parent item
 	TreeItem *prev = nullptr; // previous in list
 	TreeItem *next = nullptr; // next in list
+	TreeItem *next_checked; // next item affected by set_check
 	TreeItem *first_child = nullptr;
 
 	Vector<TreeItem *> children_cache;
@@ -171,6 +176,14 @@ private:
 			if (parent->first_child == this) {
 				parent->first_child = next;
 			}
+			parent->number_of_children -= 1;
+			for (int i = 0; i < cells.size(); i++) {
+				if (cells[i].checked)
+					parent->cells.write[i].checked_children -= 1;
+				if (cells[i].indeterminate)
+					parent->cells.write[i].indeterminate_children -= 1;
+				_refresh_parent_checks(i, this);
+			}
 		}
 	}
 
@@ -202,6 +215,11 @@ protected:
 
 	Variant _call_recursive_bind(const Variant **p_args, int p_argcount, Callable::CallError &r_error);
 
+	/* check mode helpers */
+	void _cell_set_checked_and_update_parents_records(int p_column, bool p_checked, bool p_indeterminate);
+	TreeItem *_refresh_children_checks(int p_column, bool p_checked);
+	void _refresh_parent_checks(int p_column, TreeItem *p_prev);
+
 public:
 	/* cell mode */
 	void set_cell_mode(int p_column, TreeCellMode p_mode);
@@ -210,6 +228,8 @@ public:
 	/* check mode */
 	void set_checked(int p_column, bool p_checked);
 	bool is_checked(int p_column) const;
+	bool is_indeterminate(int p_column) const;
+	TreeItem *get_next_affected_by_check();
 
 	void set_text(int p_column, String p_text);
 	String get_text(int p_column) const;
@@ -414,6 +434,7 @@ private:
 		int expand_ratio = 1;
 		bool expand = true;
 		bool clip_content = false;
+		bool propagate_checks = false;
 		String title;
 		Ref<TextLine> text_buf;
 		Dictionary opentype_features;
@@ -493,6 +514,7 @@ private:
 
 		Ref<Texture2D> checked;
 		Ref<Texture2D> unchecked;
+		Ref<Texture2D> indeterminate;
 		Ref<Texture2D> arrow_collapsed;
 		Ref<Texture2D> arrow;
 		Ref<Texture2D> select_arrow;
@@ -641,6 +663,7 @@ public:
 	void set_column_expand(int p_column, bool p_expand);
 	void set_column_expand_ratio(int p_column, int p_ratio);
 	void set_column_clip_content(int p_column, bool p_fit);
+	void set_column_to_propagate_checkmarks(int p_column, bool p_propagate_check);
 	int get_column_minimum_width(int p_column) const;
 	int get_column_width(int p_column) const;
 	int get_column_expand_ratio(int p_column) const;

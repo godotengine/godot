@@ -164,15 +164,82 @@ TreeItem::TreeCellMode TreeItem::get_cell_mode(int p_column) const {
 }
 
 /* check mode */
+void TreeItem::_cell_set_checked_and_update_parents_records(int p_column, bool p_checked, bool p_indeterminate) {
+	// Update parent's record of checked/indeterminate children count if appropriate.
+	if (parent) {
+		if (p_checked != cells[p_column].checked)
+			parent->cells.write[p_column].checked_children += (p_checked) ? 1 : -1;
+		if (p_indeterminate != cells[p_column].indeterminate)
+			parent->cells.write[p_column].indeterminate_children += (p_indeterminate) ? 1 : -1;
+	}
+	// Set values
+	cells.write[p_column].checked = p_checked;
+	cells.write[p_column].indeterminate = p_indeterminate;
+}
+
 void TreeItem::set_checked(int p_column, bool p_checked) {
 	ERR_FAIL_INDEX(p_column, cells.size());
-	cells.write[p_column].checked = p_checked;
+	if (tree->columns[p_column].propagate_checks) {
+		cells.write[p_column].checked_children = (p_checked) ? number_of_children : 0;
+		cells.write[p_column].indeterminate_children = 0;
+		_cell_set_checked_and_update_parents_records(p_column, p_checked, false);
+		_refresh_parent_checks(p_column, _refresh_children_checks(p_column, p_checked));
+	} else {
+		cells.write[p_column].checked = p_checked;
+	}
 	_changed_notify(p_column);
+}
+
+TreeItem *TreeItem::_refresh_children_checks(int p_column, bool p_checked) {
+	// Iteratively and recursively (un)check all children, and grand children. Return last tree item affected.
+	TreeItem *item = first_child;
+	TreeItem *prev_item = this;
+	while (item) {
+		prev_item->next_checked = item;
+		item->cells.write[p_column].checked = p_checked;
+		item->cells.write[p_column].indeterminate = false;
+		item->cells.write[p_column].checked_children = (p_checked) ? item->number_of_children : 0;
+		item->cells.write[p_column].indeterminate_children = 0;
+		if (item->first_child)
+			prev_item = item->_refresh_children_checks(p_column, p_checked);
+		else
+			prev_item = item;
+		item = item->get_next();
+	}
+	return prev_item;
+}
+
+void TreeItem::_refresh_parent_checks(int p_column, TreeItem *p_prev) {
+	// Iteratively (un)check parents, and grand parents if at least one child is checked.
+	TreeItem *item = get_parent();
+	while (item) {
+		int checked_children = item->cells[p_column].checked_children;
+		int indeterminate_children = item->cells[p_column].indeterminate_children;
+		// Checked if all children are checked.
+		// Indeterminate if some children are checked or indeterminate.
+		bool ch = checked_children == item->number_of_children;
+		bool ind = (!ch && checked_children > 0) || indeterminate_children > 0;
+		item->_cell_set_checked_and_update_parents_records(p_column, ch, ind);
+
+		p_prev->next_checked = item;
+		p_prev = item;
+		item = item->parent;
+	}
+	p_prev->next_checked = nullptr;
 }
 
 bool TreeItem::is_checked(int p_column) const {
 	ERR_FAIL_INDEX_V(p_column, cells.size(), false);
 	return cells[p_column].checked;
+}
+
+bool TreeItem::is_indeterminate(int p_column) const {
+	ERR_FAIL_INDEX_V(p_column, cells.size(), false);
+	return cells[p_column].indeterminate;
+}
+
+TreeItem *TreeItem::get_next_affected_by_check() {
+	return next_checked;
 }
 
 void TreeItem::set_text(int p_column, String p_text) {
@@ -1043,6 +1110,8 @@ void TreeItem::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_checked", "column", "checked"), &TreeItem::set_checked);
 	ClassDB::bind_method(D_METHOD("is_checked", "column"), &TreeItem::is_checked);
+	ClassDB::bind_method(D_METHOD("is_indeterminate", "column"), &TreeItem::is_indeterminate);
+	ClassDB::bind_method(D_METHOD("get_next_affected_by_check"), &TreeItem::get_next_affected_by_check);
 
 	ClassDB::bind_method(D_METHOD("set_text", "column", "text"), &TreeItem::set_text);
 	ClassDB::bind_method(D_METHOD("get_text", "column"), &TreeItem::get_text);
@@ -1228,6 +1297,7 @@ void Tree::update_cache() {
 
 	cache.checked = get_theme_icon(SNAME("checked"));
 	cache.unchecked = get_theme_icon(SNAME("unchecked"));
+	cache.indeterminate = get_theme_icon(SNAME("indeterminate"));
 	if (is_layout_rtl()) {
 		cache.arrow_collapsed = get_theme_icon(SNAME("arrow_collapsed_mirrored"));
 	} else {
@@ -1721,13 +1791,18 @@ int Tree::draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 
 				case TreeItem::CELL_MODE_CHECK: {
 					Ref<Texture2D> checked = cache.checked;
 					Ref<Texture2D> unchecked = cache.unchecked;
+					Ref<Texture2D> indeterminate = cache.indeterminate;
 					Point2i check_ofs = item_rect.position;
 					check_ofs.y += Math::floor((real_t)(item_rect.size.y - checked->get_height()) / 2);
 
-					if (p_item->cells[i].checked) {
-						checked->draw(ci, check_ofs);
+					if (p_item->cells[i].indeterminate && columns[i].propagate_checks) {
+						indeterminate->draw(ci, check_ofs);
 					} else {
-						unchecked->draw(ci, check_ofs);
+						if (p_item->cells[i].checked) {
+							checked->draw(ci, check_ofs);
+						} else {
+							unchecked->draw(ci, check_ofs);
+						}
 					}
 
 					int check_w = checked->get_width() + cache.hseparation;
@@ -3650,6 +3725,7 @@ TreeItem *Tree::create_item(TreeItem *p_parent, int p_idx) {
 	if (p_parent) {
 		ERR_FAIL_COND_V_MSG(p_parent->tree != this, nullptr, "A different tree owns the given parent");
 		ti = p_parent->create_child(p_idx);
+		p_parent->number_of_children += 1;
 	} else {
 		if (!root) {
 			// No root exists, make the given item the new root.
@@ -3828,6 +3904,19 @@ void Tree::set_column_clip_content(int p_column, bool p_fit) {
 	ERR_FAIL_INDEX(p_column, columns.size());
 
 	columns.write[p_column].clip_content = p_fit;
+	update();
+}
+
+void Tree::set_column_to_propagate_checkmarks(int p_column, bool p_propagate_check) {
+	ERR_FAIL_INDEX(p_column, columns.size());
+	if (columns.write[p_column].propagate_checks == p_propagate_check)
+		return;
+
+	columns.write[p_column].propagate_checks = p_propagate_check;
+	if (p_propagate_check && root) {
+		// Setup tree for check propagation by clearing checks.
+		root->set_checked(p_column, false);
+	}
 	update();
 }
 
@@ -4637,6 +4726,7 @@ void Tree::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_column_expand", "column", "expand"), &Tree::set_column_expand);
 	ClassDB::bind_method(D_METHOD("set_column_expand_ratio", "column", "ratio"), &Tree::set_column_expand_ratio);
 	ClassDB::bind_method(D_METHOD("set_column_clip_content", "column", "enable"), &Tree::set_column_clip_content);
+	ClassDB::bind_method(D_METHOD("set_column_to_propagate_checkmarks", "column", "enable"), &Tree::set_column_to_propagate_checkmarks);
 	ClassDB::bind_method(D_METHOD("is_column_expanding", "column"), &Tree::is_column_expanding);
 	ClassDB::bind_method(D_METHOD("is_column_clipping_content", "column"), &Tree::is_column_clipping_content);
 	ClassDB::bind_method(D_METHOD("get_column_expand_ratio", "column"), &Tree::get_column_expand_ratio);
