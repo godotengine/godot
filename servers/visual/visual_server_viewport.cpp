@@ -411,7 +411,7 @@ void VisualServerViewport::viewport_set_active(RID p_viewport, bool p_active) {
 	ERR_FAIL_COND(!viewport);
 
 	if (p_active) {
-		ERR_FAIL_COND(active_viewports.find(viewport) != -1); //already active
+		ERR_FAIL_COND_MSG(active_viewports.find(viewport) != -1, "Can't make active a Viewport that is already active.");
 		active_viewports.push_back(viewport);
 	} else {
 		active_viewports.erase(viewport);
