@@ -370,6 +370,13 @@ void main() {
 
 #VERSION_DEFINES
 
+/* Specialization Constants */
+
+//unused but there for compatibility
+layout(constant_id = 0) const bool sc_use_forward_gi = false;
+layout(constant_id = 1) const bool sc_use_light_projector = false;
+layout(constant_id = 2) const bool sc_use_light_soft_shadows = false;
+
 /* Include our forward mobile UBOs definitions etc. */
 #include "scene_forward_mobile_inc.glsl"
 
