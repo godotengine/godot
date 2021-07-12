@@ -31,11 +31,11 @@
 #ifndef WEBRTC_MULTIPLAYER_H
 #define WEBRTC_MULTIPLAYER_H
 
-#include "core/io/networked_multiplayer_peer.h"
+#include "core/io/multiplayer_peer.h"
 #include "webrtc_peer_connection.h"
 
-class WebRTCMultiplayer : public NetworkedMultiplayerPeer {
-	GDCLASS(WebRTCMultiplayer, NetworkedMultiplayerPeer);
+class WebRTCMultiplayer : public MultiplayerPeer {
+	GDCLASS(WebRTCMultiplayer, MultiplayerPeer);
 
 protected:
 	static void _bind_methods();
@@ -94,7 +94,7 @@ public:
 	int get_available_packet_count() const override;
 	int get_max_packet_size() const override;
 
-	// NetworkedMultiplayerPeer
+	// MultiplayerPeer
 	void set_transfer_mode(TransferMode p_mode) override;
 	TransferMode get_transfer_mode() const override;
 	void set_target_peer(int p_peer_id) override;

@@ -33,12 +33,12 @@
 
 #include "core/crypto/crypto.h"
 #include "core/io/compression.h"
-#include "core/io/networked_multiplayer_peer.h"
+#include "core/io/multiplayer_peer.h"
 
 #include <enet/enet.h>
 
-class NetworkedMultiplayerENet : public NetworkedMultiplayerPeer {
-	GDCLASS(NetworkedMultiplayerENet, NetworkedMultiplayerPeer);
+class NetworkedMultiplayerENet : public MultiplayerPeer {
+	GDCLASS(NetworkedMultiplayerENet, MultiplayerPeer);
 
 public:
 	enum CompressionMode {

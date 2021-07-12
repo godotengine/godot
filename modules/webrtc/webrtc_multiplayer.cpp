@@ -47,7 +47,7 @@ void WebRTCMultiplayer::set_transfer_mode(TransferMode p_mode) {
 	transfer_mode = p_mode;
 }
 
-NetworkedMultiplayerPeer::TransferMode WebRTCMultiplayer::get_transfer_mode() const {
+MultiplayerPeer::TransferMode WebRTCMultiplayer::get_transfer_mode() const {
 	return transfer_mode;
 }
 
@@ -55,7 +55,7 @@ void WebRTCMultiplayer::set_target_peer(int p_peer_id) {
 	target_peer = p_peer_id;
 }
 
-/* Returns the ID of the NetworkedMultiplayerPeer who sent the most recent packet: */
+/* Returns the ID of the MultiplayerPeer who sent the most recent packet: */
 int WebRTCMultiplayer::get_packet_peer() const {
 	return next_packet_peer;
 }
@@ -188,7 +188,7 @@ bool WebRTCMultiplayer::is_refusing_new_connections() const {
 	return refuse_connections;
 }
 
-NetworkedMultiplayerPeer::ConnectionStatus WebRTCMultiplayer::get_connection_status() const {
+MultiplayerPeer::ConnectionStatus WebRTCMultiplayer::get_connection_status() const {
 	return connection_status;
 }
 

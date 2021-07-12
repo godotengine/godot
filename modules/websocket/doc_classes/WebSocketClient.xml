@@ -6,7 +6,7 @@
 	<description>
 		This class implements a WebSocket client compatible with any RFC 6455-compliant WebSocket server.
 		This client can be optionally used as a network peer for the [MultiplayerAPI].
-		After starting the client ([method connect_to_url]), you will need to [method NetworkedMultiplayerPeer.poll] it at regular intervals (e.g. inside [method Node._process]).
+		After starting the client ([method connect_to_url]), you will need to [method MultiplayerPeer.poll] it at regular intervals (e.g. inside [method Node._process]).
 		You will receive appropriate signals when connecting, disconnecting, or when new data is available.
 	</description>
 	<tutorials>

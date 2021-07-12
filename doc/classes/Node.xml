@@ -670,12 +670,12 @@
 			</argument>
 			<argument index="1" name="rpc_mode" type="int" enum="MultiplayerAPI.RPCMode">
 			</argument>
-			<argument index="2" name="transfer_mode" type="int" enum="NetworkedMultiplayerPeer.TransferMode" default="2">
+			<argument index="2" name="transfer_mode" type="int" enum="MultiplayerPeer.TransferMode" default="2">
 			</argument>
 			<argument index="3" name="channel" type="int" default="0">
 			</argument>
 			<description>
-				Changes the RPC mode for the given [code]method[/code] to the given [code]rpc_mode[/code], optionally specifying the [code]transfer_mode[/code] and [code]channel[/code] (on supported peers). See [enum MultiplayerAPI.RPCMode] and [enum NetworkedMultiplayerPeer.TransferMode]. An alternative is annotating methods and properties with the corresponding keywords ([code]remote[/code], [code]master[/code], [code]puppet[/code], [code]remotesync[/code], [code]mastersync[/code], [code]puppetsync[/code]). By default, methods are not exposed to networking (and RPCs).
+				Changes the RPC mode for the given [code]method[/code] to the given [code]rpc_mode[/code], optionally specifying the [code]transfer_mode[/code] and [code]channel[/code] (on supported peers). See [enum MultiplayerAPI.RPCMode] and [enum MultiplayerPeer.TransferMode]. An alternative is annotating methods and properties with the corresponding keywords ([code]remote[/code], [code]master[/code], [code]puppet[/code], [code]remotesync[/code], [code]mastersync[/code], [code]puppetsync[/code]). By default, methods are not exposed to networking (and RPCs).
 			</description>
 		</method>
 		<method name="rpc_id" qualifiers="vararg">
@@ -686,7 +686,7 @@
 			<argument index="1" name="method" type="StringName">
 			</argument>
 			<description>
-				Sends a [method rpc] to a specific peer identified by [code]peer_id[/code] (see [method NetworkedMultiplayerPeer.set_target_peer]). Returns an empty [Variant].
+				Sends a [method rpc] to a specific peer identified by [code]peer_id[/code] (see [method MultiplayerPeer.set_target_peer]). Returns an empty [Variant].
 			</description>
 		</method>
 		<method name="set_display_folded">

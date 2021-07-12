@@ -430,7 +430,7 @@ public:
 	int get_network_master() const;
 	bool is_network_master() const;
 
-	uint16_t rpc_config(const StringName &p_method, MultiplayerAPI::RPCMode p_rpc_mode, NetworkedMultiplayerPeer::TransferMode p_transfer_mode, int p_channel = 0); // config a local method for RPC
+	uint16_t rpc_config(const StringName &p_method, MultiplayerAPI::RPCMode p_rpc_mode, MultiplayerPeer::TransferMode p_transfer_mode, int p_channel = 0); // config a local method for RPC
 	Vector<MultiplayerAPI::RPCConfig> get_node_rpc_methods() const;
 
 	void rpc(const StringName &p_method, VARIANT_ARG_LIST); // RPC, honors RPCMode, TransferMode, channel

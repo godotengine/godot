@@ -288,7 +288,7 @@ Ref<WebSocketPeer> WSLClient::get_peer(int p_peer_id) const {
 	return _peer;
 }
 
-NetworkedMultiplayerPeer::ConnectionStatus WSLClient::get_connection_status() const {
+MultiplayerPeer::ConnectionStatus WSLClient::get_connection_status() const {
 	if (_peer->is_connected_to_host()) {
 		return CONNECTION_CONNECTED;
 	}

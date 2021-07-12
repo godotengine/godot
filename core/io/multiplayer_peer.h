@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  networked_multiplayer_peer.h                                         */
+/*  multiplayer_peer.h                                                   */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -33,8 +33,8 @@
 
 #include "core/io/packet_peer.h"
 
-class NetworkedMultiplayerPeer : public PacketPeer {
-	GDCLASS(NetworkedMultiplayerPeer, PacketPeer);
+class MultiplayerPeer : public PacketPeer {
+	GDCLASS(MultiplayerPeer, PacketPeer);
 
 protected:
 	static void _bind_methods();
@@ -73,10 +73,10 @@ public:
 
 	virtual ConnectionStatus get_connection_status() const = 0;
 
-	NetworkedMultiplayerPeer() {}
+	MultiplayerPeer() {}
 };
 
-VARIANT_ENUM_CAST(NetworkedMultiplayerPeer::TransferMode)
-VARIANT_ENUM_CAST(NetworkedMultiplayerPeer::ConnectionStatus)
+VARIANT_ENUM_CAST(MultiplayerPeer::TransferMode)
+VARIANT_ENUM_CAST(MultiplayerPeer::ConnectionStatus)
 
 #endif // NETWORKED_MULTIPLAYER_PEER_H

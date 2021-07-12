@@ -48,7 +48,7 @@
 #include "core/io/json.h"
 #include "core/io/marshalls.h"
 #include "core/io/multiplayer_api.h"
-#include "core/io/networked_multiplayer_peer.h"
+#include "core/io/multiplayer_peer.h"
 #include "core/io/packed_data_container.h"
 #include "core/io/packet_peer.h"
 #include "core/io/packet_peer_dtls.h"
@@ -188,7 +188,7 @@ void register_core_types() {
 	resource_format_loader_crypto.instantiate();
 	ResourceLoader::add_resource_format_loader(resource_format_loader_crypto);
 
-	ClassDB::register_virtual_class<NetworkedMultiplayerPeer>();
+	ClassDB::register_virtual_class<MultiplayerPeer>();
 	ClassDB::register_class<MultiplayerAPI>();
 	ClassDB::register_class<MainLoop>();
 	ClassDB::register_class<Translation>();
