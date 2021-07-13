@@ -235,22 +235,25 @@
 			<argument index="1" name="color" type="Color">
 			</argument>
 			<description>
-				Overrides the [Color] with given [code]name[/code] in the [member theme] resource the control uses.
+				Creates a local override for a theme [Color] with the specified [code]name[/code]. Local overrides always take precedence when fetching theme items for the control. An override can be removed with [method remove_theme_color_override].
+				See also [method get_theme_color].
 				[b]Example of overriding a label's color and resetting it later:[/b]
 				[codeblocks]
 				[gdscript]
-				# Override the child node "MyLabel"'s font color to orange.
+				# Given the child Label node "MyLabel", override its font color with a custom value.
 				$MyLabel.add_theme_color_override("font_color", Color(1, 0.5, 0))
-				# Reset the color by creating a new node to get the default value:
-				var default_label_color = Label.new().get_theme_color("font_color")
-				$MyLabel.add_theme_color_override("font_color", default_label_color)
+				# Reset the font color of the child label.
+				$MyLabel.remove_theme_color_override("font_color")
+				# Alternatively it can be overridden with the default value from the Label type.
+				$MyLabel.add_theme_color_override("font_color", get_theme_color("font_color", "Label"))
 				[/gdscript]
 				[csharp]
-				// Override the child node "MyLabel"'s font color to orange.
-				GetNode&lt;Label&gt;("MyLabel").AddThemeColorOverride("font_color", new Color(1, 0.5f, 0));
-				// Reset the color by creating a new node to get the default value:
-				var defaultLabelColor = new Label().GetThemeColor("font_color");
-				GetNode&lt;Label&gt;("MyLabel").AddThemeColorOverride("font_color", defaultLabelColor);
+				// Given the child Label node "MyLabel", override its font color with a custom value.
+				GetNode&lt;Label&gt;("MyLabel").AddThemeColorOverride("font_color", new Color(1, 0.5f, 0))
+				// Reset the font color of the child label.
+				GetNode&lt;Label&gt;("MyLabel").RemoveThemeColorOverride("font_color")
+				// Alternatively it can be overridden with the default value from the Label type.
+				GetNode&lt;Label&gt;("MyLabel").AddThemeColorOverride("font_color", GetThemeColor("font_color", "Label"))
 				[/csharp]
 				[/codeblocks]
 			</description>
@@ -263,7 +266,8 @@
 			<argument index="1" name="constant" type="int">
 			</argument>
 			<description>
-				Overrides an integer constant with given [code]name[/code] in the [member theme] resource the control uses.
+				Creates a local override for a theme constant with the specified [code]name[/code]. Local overrides always take precedence when fetching theme items for the control. An override can be removed with [method remove_theme_constant_override].
+				See also [method get_theme_constant].
 			</description>
 		</method>
 		<method name="add_theme_font_override">
@@ -274,7 +278,8 @@
 			<argument index="1" name="font" type="Font">
 			</argument>
 			<description>
-				Overrides the font with given [code]name[/code] in the [member theme] resource the control uses.
+				Creates a local override for a theme [Font] with the specified [code]name[/code]. Local overrides always take precedence when fetching theme items for the control. An override can be removed with [method remove_theme_font_override].
+				See also [method get_theme_font].
 			</description>
 		</method>
 		<method name="add_theme_font_size_override">
@@ -285,7 +290,8 @@
 			<argument index="1" name="font_size" type="int">
 			</argument>
 			<description>
-				Overrides the font size with given [code]name[/code] in the [member theme] resource the control uses.
+				Creates a local override for a theme font size with the specified [code]name[/code]. Local overrides always take precedence when fetching theme items for the control. An override can be removed with [method remove_theme_font_size_override].
+				See also [method get_theme_font_size].
 			</description>
 		</method>
 		<method name="add_theme_icon_override">
@@ -296,7 +302,8 @@
 			<argument index="1" name="texture" type="Texture2D">
 			</argument>
 			<description>
-				Overrides the icon with given [code]name[/code] in the [member theme] resource the control uses.
+				Creates a local override for a theme icon with the specified [code]name[/code]. Local overrides always take precedence when fetching theme items for the control. An override can be removed with [method remove_theme_icon_override].
+				See also [method get_theme_icon].
 			</description>
 		</method>
 		<method name="add_theme_stylebox_override">
@@ -307,7 +314,8 @@
 			<argument index="1" name="stylebox" type="StyleBox">
 			</argument>
 			<description>
-				Overrides the [StyleBox] with given [code]name[/code] in the [member theme] resource the control uses.
+				Creates a local override for a theme [StyleBox] with the specified [code]name[/code]. Local overrides always take precedence when fetching theme items for the control. An override can be removed with [method remove_theme_stylebox_override].
+				See also [method get_theme_stylebox].
 				[b]Example of modifying a property in a StyleBox by duplicating it:[/b]
 				[codeblocks]
 				[gdscript]
@@ -318,8 +326,8 @@
 				new_stylebox_normal.border_width_top = 3
 				new_stylebox_normal.border_color = Color(0, 1, 0.5)
 				$MyButton.add_theme_stylebox_override("normal", new_stylebox_normal)
-				# Remove the stylebox override:
-				$MyButton.add_theme_stylebox_override("normal", null)
+				# Remove the stylebox override.
+				$MyButton.remove_theme_stylebox_override("normal")
 				[/gdscript]
 				[csharp]
 				// The snippet below assumes the child node MyButton has a StyleBoxFlat assigned.
@@ -329,8 +337,8 @@
 				newStyleboxNormal.BorderWidthTop = 3;
 				newStyleboxNormal.BorderColor = new Color(0, 1, 0.5f);
 				GetNode&lt;Button&gt;("MyButton").AddThemeStyleboxOverride("normal", newStyleboxNormal);
-				// Remove the stylebox override:
-				GetNode&lt;Button&gt;("MyButton").AddThemeStyleboxOverride("normal", null);
+				// Remove the stylebox override.
+				GetNode&lt;Button&gt;("MyButton").RemoveThemeStyleboxOverride("normal");
 				[/csharp]
 				[/codeblocks]
 			</description>
@@ -468,16 +476,23 @@
 			<argument index="1" name="theme_type" type="StringName" default="&quot;&quot;">
 			</argument>
 			<description>
-				Returns a color from assigned [Theme] with given [code]name[/code] and associated with [Control] of given [code]theme_type[/code].
+				Returns a [Color] from the first matching [Theme] in the tree if that [Theme] has a color item with the specified [code]name[/code] and [code]theme_type[/code]. If [code]theme_type[/code] is omitted the class name of the current control is used as the type, or [member theme_type_variation] if it is defined. If the type is a class name its parent classes are also checked, in order of inheritance. If the type is a variation its base types are checked, in order of dependency, then the control's class name and its parent classes are checked.
+				For the current control its local overrides are considered first (see [method add_theme_color_override]), then its assigned [member theme]. After the current control, each parent control and its assigned [member theme] are considered; controls without a [member theme] assigned are skipped. If no matching [Theme] is found in the tree, a custom project [Theme] (see [member ProjectSettings.gui/theme/custom]) and the default [Theme] are used.
 				[codeblocks]
 				[gdscript]
 				func _ready():
-				    modulate = get_theme_color("font_color", "Button") #get the color defined for button fonts
+				    # Get the font color defined for the current Control's class, if it exists.
+				    modulate = get_theme_color("font_color")
+				    # Get the font color defined for the Button class.
+				    modulate = get_theme_color("font_color", "Button")
 				[/gdscript]
 				[csharp]
 				public override void _Ready()
 				{
-				    Modulate = GetThemeColor("font_color", "Button"); //get the color defined for button fonts
+				    // Get the font color defined for the current Control's class, if it exists.
+				    Modulate = GetThemeColor("font_color");
+				    // Get the font color defined for the Button class.
+				    Modulate = GetThemeColor("font_color", "Button");
 				}
 				[/csharp]
 				[/codeblocks]
@@ -491,7 +506,8 @@
 			<argument index="1" name="theme_type" type="StringName" default="&quot;&quot;">
 			</argument>
 			<description>
-				Returns a constant from assigned [Theme] with given [code]name[/code] and associated with [Control] of given [code]theme_type[/code].
+				Returns a constant from the first matching [Theme] in the tree if that [Theme] has a constant item with the specified [code]name[/code] and [code]theme_type[/code].
+				See [method get_theme_color] for details.
 			</description>
 		</method>
 		<method name="get_theme_font" qualifiers="const">
@@ -502,7 +518,8 @@
 			<argument index="1" name="theme_type" type="StringName" default="&quot;&quot;">
 			</argument>
 			<description>
-				Returns a font from assigned [Theme] with given [code]name[/code] and associated with [Control] of given [code]theme_type[/code].
+				Returns a [Font] from the first matching [Theme] in the tree if that [Theme] has a font item with the specified [code]name[/code] and [code]theme_type[/code].
+				See [method get_theme_color] for details.
 			</description>
 		</method>
 		<method name="get_theme_font_size" qualifiers="const">
@@ -513,7 +530,8 @@
 			<argument index="1" name="theme_type" type="StringName" default="&quot;&quot;">
 			</argument>
 			<description>
-				Returns a font size from assigned [Theme] with given [code]name[/code] and associated with [Control] of given [code]theme_type[/code].
+				Returns a font size from the first matching [Theme] in the tree if that [Theme] has a font size item with the specified [code]name[/code] and [code]theme_type[/code].
+				See [method get_theme_color] for details.
 			</description>
 		</method>
 		<method name="get_theme_icon" qualifiers="const">
@@ -524,7 +542,8 @@
 			<argument index="1" name="theme_type" type="StringName" default="&quot;&quot;">
 			</argument>
 			<description>
-				Returns an icon from assigned [Theme] with given [code]name[/code] and associated with [Control] of given [code]theme_type[/code].
+				Returns an icon from the first matching [Theme] in the tree if that [Theme] has an icon item with the specified [code]name[/code] and [code]theme_type[/code].
+				See [method get_theme_color] for details.
 			</description>
 		</method>
 		<method name="get_theme_stylebox" qualifiers="const">
@@ -535,7 +554,8 @@
 			<argument index="1" name="theme_type" type="StringName" default="&quot;&quot;">
 			</argument>
 			<description>
-				Returns a [StyleBox] from assigned [Theme] with given [code]name[/code] and associated with [Control] of given [code]theme_type[/code].
+				Returns a [StyleBox] from the first matching [Theme] in the tree if that [Theme] has a stylebox item with the specified [code]name[/code] and [code]theme_type[/code].
+				See [method get_theme_color] for details.
 			</description>
 		</method>
 		<method name="get_tooltip" qualifiers="const">
@@ -588,7 +608,8 @@
 			<argument index="1" name="theme_type" type="StringName" default="&quot;&quot;">
 			</argument>
 			<description>
-				Returns [code]true[/code] if [Color] with given [code]name[/code] and associated with [Control] of given [code]theme_type[/code] exists in assigned [Theme].
+				Returns [code]true[/code] if there is a matching [Theme] in the tree that has a color item with the specified [code]name[/code] and [code]theme_type[/code].
+				See [method get_theme_color] for details.
 			</description>
 		</method>
 		<method name="has_theme_color_override" qualifiers="const">
@@ -597,7 +618,8 @@
 			<argument index="0" name="name" type="StringName">
 			</argument>
 			<description>
-				Returns [code]true[/code] if [Color] with given [code]name[/code] has a valid override in this [Control] node.
+				Returns [code]true[/code] if there is a local override for a theme [Color] with the specified [code]name[/code] in this [Control] node.
+				See [method add_theme_color_override].
 			</description>
 		</method>
 		<method name="has_theme_constant" qualifiers="const">
@@ -608,7 +630,8 @@
 			<argument index="1" name="theme_type" type="StringName" default="&quot;&quot;">
 			</argument>
 			<description>
-				Returns [code]true[/code] if constant with given [code]name[/code] and associated with [Control] of given [code]theme_type[/code] exists in assigned [Theme].
+				Returns [code]true[/code] if there is a matching [Theme] in the tree that has a constant item with the specified [code]name[/code] and [code]theme_type[/code].
+				See [method get_theme_color] for details.
 			</description>
 		</method>
 		<method name="has_theme_constant_override" qualifiers="const">
@@ -617,7 +640,8 @@
 			<argument index="0" name="name" type="StringName">
 			</argument>
 			<description>
-				Returns [code]true[/code] if constant with given [code]name[/code] has a valid override in this [Control] node.
+				Returns [code]true[/code] if there is a local override for a theme constant with the specified [code]name[/code] in this [Control] node.
+				See [method add_theme_constant_override].
 			</description>
 		</method>
 		<method name="has_theme_font" qualifiers="const">
@@ -628,7 +652,8 @@
 			<argument index="1" name="theme_type" type="StringName" default="&quot;&quot;">
 			</argument>
 			<description>
-				Returns [code]true[/code] if font with given [code]name[/code] and associated with [Control] of given [code]theme_type[/code] exists in assigned [Theme].
+				Returns [code]true[/code] if there is a matching [Theme] in the tree that has a font item with the specified [code]name[/code] and [code]theme_type[/code].
+				See [method get_theme_color] for details.
 			</description>
 		</method>
 		<method name="has_theme_font_override" qualifiers="const">
@@ -637,7 +662,8 @@
 			<argument index="0" name="name" type="StringName">
 			</argument>
 			<description>
-				Returns [code]true[/code] if font with given [code]name[/code] has a valid override in this [Control] node.
+				Returns [code]true[/code] if there is a local override for a theme [Font] with the specified [code]name[/code] in this [Control] node.
+				See [method add_theme_font_override].
 			</description>
 		</method>
 		<method name="has_theme_font_size" qualifiers="const">
@@ -648,7 +674,8 @@
 			<argument index="1" name="theme_type" type="StringName" default="&quot;&quot;">
 			</argument>
 			<description>
-				Returns [code]true[/code] if font size with given [code]name[/code] and associated with [Control] of given [code]theme_type[/code] exists in assigned [Theme].
+				Returns [code]true[/code] if there is a matching [Theme] in the tree that has a font size item with the specified [code]name[/code] and [code]theme_type[/code].
+				See [method get_theme_color] for details.
 			</description>
 		</method>
 		<method name="has_theme_font_size_override" qualifiers="const">
@@ -657,7 +684,8 @@
 			<argument index="0" name="name" type="StringName">
 			</argument>
 			<description>
-				Returns [code]true[/code] if font size with given [code]name[/code] has a valid override in this [Control] node.
+				Returns [code]true[/code] if there is a local override for a theme font size with the specified [code]name[/code] in this [Control] node.
+				See [method add_theme_font_size_override].
 			</description>
 		</method>
 		<method name="has_theme_icon" qualifiers="const">
@@ -668,7 +696,8 @@
 			<argument index="1" name="theme_type" type="StringName" default="&quot;&quot;">
 			</argument>
 			<description>
-				Returns [code]true[/code] if icon with given [code]name[/code] and associated with [Control] of given [code]theme_type[/code] exists in assigned [Theme].
+				Returns [code]true[/code] if there is a matching [Theme] in the tree that has an icon item with the specified [code]name[/code] and [code]theme_type[/code].
+				See [method get_theme_color] for details.
 			</description>
 		</method>
 		<method name="has_theme_icon_override" qualifiers="const">
@@ -677,7 +706,8 @@
 			<argument index="0" name="name" type="StringName">
 			</argument>
 			<description>
-				Returns [code]true[/code] if icon with given [code]name[/code] has a valid override in this [Control] node.
+				Returns [code]true[/code] if there is a local override for a theme icon with the specified [code]name[/code] in this [Control] node.
+				See [method add_theme_icon_override].
 			</description>
 		</method>
 		<method name="has_theme_stylebox" qualifiers="const">
@@ -688,7 +718,8 @@
 			<argument index="1" name="theme_type" type="StringName" default="&quot;&quot;">
 			</argument>
 			<description>
-				Returns [code]true[/code] if [StyleBox] with given [code]name[/code] and associated with [Control] of given [code]theme_type[/code] exists in assigned [Theme].
+				Returns [code]true[/code] if there is a matching [Theme] in the tree that has a stylebox item with the specified [code]name[/code] and [code]theme_type[/code].
+				See [method get_theme_color] for details.
 			</description>
 		</method>
 		<method name="has_theme_stylebox_override" qualifiers="const">
@@ -697,7 +728,8 @@
 			<argument index="0" name="name" type="StringName">
 			</argument>
 			<description>
-				Returns [code]true[/code] if [StyleBox] with given [code]name[/code] has a valid override in this [Control] node.
+				Returns [code]true[/code] if there is a local override for a theme [StyleBox] with the specified [code]name[/code] in this [Control] node.
+				See [method add_theme_stylebox_override].
 			</description>
 		</method>
 		<method name="is_layout_rtl" qualifiers="const">
@@ -727,7 +759,7 @@
 			<argument index="0" name="name" type="StringName">
 			</argument>
 			<description>
-				Removes a theme override for a [Color] with the given [code]name[/code].
+				Removes a local override for a theme [Color] with the specified [code]name[/code] previously added by [method add_theme_color_override] or via the Inspector dock.
 			</description>
 		</method>
 		<method name="remove_theme_constant_override">
@@ -736,7 +768,7 @@
 			<argument index="0" name="name" type="StringName">
 			</argument>
 			<description>
-				Removes a theme override for a constant with the given [code]name[/code].
+				Removes a local override for a theme constant with the specified [code]name[/code] previously added by [method add_theme_constant_override] or via the Inspector dock.
 			</description>
 		</method>
 		<method name="remove_theme_font_override">
@@ -745,7 +777,7 @@
 			<argument index="0" name="name" type="StringName">
 			</argument>
 			<description>
-				Removes a theme override for a [Font] with the given [code]name[/code].
+				Removes a local override for a theme [Font] with the specified [code]name[/code] previously added by [method add_theme_font_override] or via the Inspector dock.
 			</description>
 		</method>
 		<method name="remove_theme_font_size_override">
@@ -754,7 +786,7 @@
 			<argument index="0" name="name" type="StringName">
 			</argument>
 			<description>
-				Removes a theme override for a font size with the given [code]name[/code].
+				Removes a local override for a theme font size with the specified [code]name[/code] previously added by [method add_theme_font_size_override] or via the Inspector dock.
 			</description>
 		</method>
 		<method name="remove_theme_icon_override">
@@ -763,7 +795,7 @@
 			<argument index="0" name="name" type="StringName">
 			</argument>
 			<description>
-				Removes a theme override for an icon with the given [code]name[/code].
+				Removes a local override for a theme icon with the specified [code]name[/code] previously added by [method add_theme_icon_override] or via the Inspector dock.
 			</description>
 		</method>
 		<method name="remove_theme_stylebox_override">
@@ -772,7 +804,7 @@
 			<argument index="0" name="name" type="StringName">
 			</argument>
 			<description>
-				Removes a theme override for a [StyleBox] with the given [code]name[/code].
+				Removes a local override for a theme [StyleBox] with the specified [code]name[/code] previously added by [method add_theme_stylebox_override] or via the Inspector dock.
 			</description>
 		</method>
 		<method name="set_anchor">
