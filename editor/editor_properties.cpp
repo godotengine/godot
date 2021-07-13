@@ -180,44 +180,150 @@ EditorPropertyMultilineText::EditorPropertyMultilineText() {
 
 ///////////////////// TEXT ENUM /////////////////////////
 
-void EditorPropertyTextEnum::_option_selected(int p_which) {
+void EditorPropertyTextEnum::_emit_changed_value(String p_string) {
 	if (string_name) {
-		emit_changed(get_edited_property(), StringName(options->get_item_text(p_which)));
+		emit_changed(get_edited_property(), StringName(p_string));
 	} else {
-		emit_changed(get_edited_property(), options->get_item_text(p_which));
+		emit_changed(get_edited_property(), p_string);
 	}
+}
+
+void EditorPropertyTextEnum::_option_selected(int p_which) {
+	_emit_changed_value(option_button->get_item_text(p_which));
+}
+
+void EditorPropertyTextEnum::_edit_custom_value() {
+	default_layout->hide();
+	edit_custom_layout->show();
+	custom_value_edit->grab_focus();
+}
+
+void EditorPropertyTextEnum::_custom_value_submitted(String p_value) {
+	edit_custom_layout->hide();
+	default_layout->show();
+
+	_emit_changed_value(p_value.strip_edges());
+}
+
+void EditorPropertyTextEnum::_custom_value_accepted() {
+	String new_value = custom_value_edit->get_text().strip_edges();
+	_custom_value_submitted(new_value);
+}
+
+void EditorPropertyTextEnum::_custom_value_cancelled() {
+	custom_value_edit->set_text(get_edited_object()->get(get_edited_property()));
+
+	edit_custom_layout->hide();
+	default_layout->show();
 }
 
 void EditorPropertyTextEnum::update_property() {
-	String which = get_edited_object()->get(get_edited_property());
-	for (int i = 0; i < options->get_item_count(); i++) {
-		String t = options->get_item_text(i);
-		if (t == which) {
-			options->select(i);
-			return;
+	String current_value = get_edited_object()->get(get_edited_property());
+	int default_option = options.find(current_value);
+
+	// The list can change in the loose mode.
+	if (loose_mode) {
+		custom_value_edit->set_text(current_value);
+		option_button->clear();
+
+		// Manually entered value.
+		if (default_option < 0 && !current_value.is_empty()) {
+			option_button->add_item(current_value, options.size() + 1001);
+			option_button->select(0);
+
+			option_button->add_separator();
 		}
+
+		// Add an explicit empty value for clearing the property.
+		option_button->add_item("", options.size() + 1000);
+
+		for (int i = 0; i < options.size(); i++) {
+			option_button->add_item(options[i], i);
+			if (options[i] == current_value) {
+				option_button->select(option_button->get_item_count() - 1);
+			}
+		}
+	} else {
+		option_button->select(default_option);
 	}
 }
 
-void EditorPropertyTextEnum::setup(const Vector<String> &p_options, bool p_string_name) {
-	for (int i = 0; i < p_options.size(); i++) {
-		options->add_item(p_options[i], i);
-	}
+void EditorPropertyTextEnum::setup(const Vector<String> &p_options, bool p_string_name, bool p_loose_mode) {
 	string_name = p_string_name;
+	loose_mode = p_loose_mode;
+
+	options.clear();
+
+	if (loose_mode) {
+		// Add an explicit empty value for clearing the property in the loose mode.
+		option_button->add_item("", options.size() + 1000);
+	}
+
+	for (int i = 0; i < p_options.size(); i++) {
+		options.append(p_options[i]);
+		option_button->add_item(p_options[i], i);
+	}
+
+	if (loose_mode) {
+		edit_button->show();
+	}
 }
 
 void EditorPropertyTextEnum::_bind_methods() {
 }
 
-EditorPropertyTextEnum::EditorPropertyTextEnum() {
-	options = memnew(OptionButton);
-	options->set_clip_text(true);
-	options->set_flat(true);
-	string_name = false;
+void EditorPropertyTextEnum::_notification(int p_what) {
+	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE:
+		case NOTIFICATION_THEME_CHANGED:
+			edit_button->set_icon(get_theme_icon("Edit", "EditorIcons"));
+			accept_button->set_icon(get_theme_icon("ImportCheck", "EditorIcons"));
+			cancel_button->set_icon(get_theme_icon("ImportFail", "EditorIcons"));
+			break;
+	}
+}
 
-	add_child(options);
-	add_focusable(options);
-	options->connect("item_selected", callable_mp(this, &EditorPropertyTextEnum::_option_selected));
+EditorPropertyTextEnum::EditorPropertyTextEnum() {
+	default_layout = memnew(HBoxContainer);
+	add_child(default_layout);
+
+	edit_custom_layout = memnew(HBoxContainer);
+	edit_custom_layout->hide();
+	add_child(edit_custom_layout);
+
+	option_button = memnew(OptionButton);
+	option_button->set_h_size_flags(SIZE_EXPAND_FILL);
+	option_button->set_clip_text(true);
+	option_button->set_flat(true);
+	default_layout->add_child(option_button);
+	option_button->connect("item_selected", callable_mp(this, &EditorPropertyTextEnum::_option_selected));
+
+	edit_button = memnew(Button);
+	edit_button->set_flat(true);
+	edit_button->hide();
+	default_layout->add_child(edit_button);
+	edit_button->connect("pressed", callable_mp(this, &EditorPropertyTextEnum::_edit_custom_value));
+
+	custom_value_edit = memnew(LineEdit);
+	custom_value_edit->set_h_size_flags(SIZE_EXPAND_FILL);
+	edit_custom_layout->add_child(custom_value_edit);
+	custom_value_edit->connect("text_submitted", callable_mp(this, &EditorPropertyTextEnum::_custom_value_submitted));
+
+	accept_button = memnew(Button);
+	accept_button->set_flat(true);
+	edit_custom_layout->add_child(accept_button);
+	accept_button->connect("pressed", callable_mp(this, &EditorPropertyTextEnum::_custom_value_accepted));
+
+	cancel_button = memnew(Button);
+	cancel_button->set_flat(true);
+	edit_custom_layout->add_child(cancel_button);
+	cancel_button->connect("pressed", callable_mp(this, &EditorPropertyTextEnum::_custom_value_cancelled));
+
+	add_focusable(option_button);
+	add_focusable(edit_button);
+	add_focusable(custom_value_edit);
+	add_focusable(accept_button);
+	add_focusable(cancel_button);
 }
 
 ///////////////////// PATH /////////////////////////
@@ -2902,10 +3008,10 @@ EditorProperty *EditorInspectorDefaultPlugin::get_editor_for_property(Object *p_
 			}
 		} break;
 		case Variant::STRING: {
-			if (p_hint == PROPERTY_HINT_ENUM) {
+			if (p_hint == PROPERTY_HINT_ENUM || p_hint == PROPERTY_HINT_ENUM_SUGGESTION) {
 				EditorPropertyTextEnum *editor = memnew(EditorPropertyTextEnum);
-				Vector<String> options = p_hint_text.split(",");
-				editor->setup(options);
+				Vector<String> options = p_hint_text.split(",", false);
+				editor->setup(options, false, (p_hint == PROPERTY_HINT_ENUM_SUGGESTION));
 				return editor;
 			} else if (p_hint == PROPERTY_HINT_MULTILINE_TEXT) {
 				EditorPropertyMultilineText *editor = memnew(EditorPropertyMultilineText);
@@ -3063,10 +3169,10 @@ EditorProperty *EditorInspectorDefaultPlugin::get_editor_for_property(Object *p_
 			return editor;
 		} break;
 		case Variant::STRING_NAME: {
-			if (p_hint == PROPERTY_HINT_ENUM) {
+			if (p_hint == PROPERTY_HINT_ENUM || p_hint == PROPERTY_HINT_ENUM_SUGGESTION) {
 				EditorPropertyTextEnum *editor = memnew(EditorPropertyTextEnum);
-				Vector<String> options = p_hint_text.split(",");
-				editor->setup(options, true);
+				Vector<String> options = p_hint_text.split(",", false);
+				editor->setup(options, true, (p_hint == PROPERTY_HINT_ENUM_SUGGESTION));
 				return editor;
 			} else {
 				EditorPropertyText *editor = memnew(EditorPropertyText);
