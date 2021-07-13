@@ -667,7 +667,7 @@ void register_scene_types() {
 	ClassDB::register_class<Skeleton2D>();
 	ClassDB::register_class<Bone2D>();
 	ClassDB::register_virtual_class<Light2D>();
-	ClassDB::register_class<PointLight2D>();
+	ClassDB::register_class<SpriteLight2D>();
 	ClassDB::register_class<DirectionalLight2D>();
 	ClassDB::register_class<LightOccluder2D>();
 	ClassDB::register_class<OccluderPolygon2D>();
@@ -991,7 +991,7 @@ void register_scene_types() {
 	ClassDB::add_compatibility_class("VisualShaderNodeScalarSwitch", "VisualShaderNodeSwitch");
 	ClassDB::add_compatibility_class("World", "World3D");
 	ClassDB::add_compatibility_class("StreamTexture", "StreamTexture2D");
-	ClassDB::add_compatibility_class("Light2D", "PointLight2D");
+	ClassDB::add_compatibility_class("Light2D", "SpriteLight2D");
 	ClassDB::add_compatibility_class("VisibilityNotifier2D", "VisibleOnScreenNotifier2D");
 	ClassDB::add_compatibility_class("VisibilityNotifier3D", "VisibleOnScreenNotifier3D");
 

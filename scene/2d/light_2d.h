@@ -135,8 +135,8 @@ public:
 VARIANT_ENUM_CAST(Light2D::ShadowFilter);
 VARIANT_ENUM_CAST(Light2D::BlendMode);
 
-class PointLight2D : public Light2D {
-	GDCLASS(PointLight2D, Light2D);
+class SpriteLight2D : public Light2D {
+	GDCLASS(SpriteLight2D, Light2D);
 
 private:
 	real_t _scale = 1.0;
@@ -171,7 +171,7 @@ public:
 
 	TypedArray<String> get_configuration_warnings() const override;
 
-	PointLight2D();
+	SpriteLight2D();
 };
 
 class DirectionalLight2D : public Light2D {

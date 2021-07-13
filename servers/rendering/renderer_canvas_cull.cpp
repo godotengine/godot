@@ -1201,7 +1201,7 @@ void RendererCanvasCull::canvas_light_attach_to_canvas(RID p_light, RID p_canvas
 
 	if (clight->canvas.is_valid()) {
 		Canvas *canvas = canvas_owner.getornull(clight->canvas);
-		if (clight->mode == RS::CANVAS_LIGHT_MODE_POINT) {
+		if (clight->mode == RS::CANVAS_LIGHT_MODE_SPRITE) {
 			canvas->lights.erase(clight);
 		} else {
 			canvas->directional_lights.erase(clight);
@@ -1216,7 +1216,7 @@ void RendererCanvasCull::canvas_light_attach_to_canvas(RID p_light, RID p_canvas
 
 	if (clight->canvas.is_valid()) {
 		Canvas *canvas = canvas_owner.getornull(clight->canvas);
-		if (clight->mode == RS::CANVAS_LIGHT_MODE_POINT) {
+		if (clight->mode == RS::CANVAS_LIGHT_MODE_SPRITE) {
 			canvas->lights.insert(clight);
 		} else {
 			canvas->directional_lights.insert(clight);

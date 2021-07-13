@@ -1265,7 +1265,7 @@ public:
 	virtual RID canvas_light_create() = 0;
 
 	enum CanvasLightMode {
-		CANVAS_LIGHT_MODE_POINT,
+		CANVAS_LIGHT_MODE_SPRITE,
 		CANVAS_LIGHT_MODE_DIRECTIONAL,
 	};
 

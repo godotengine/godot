@@ -2546,7 +2546,7 @@ void RenderingServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("canvas_light_set_shadow_color", "light", "color"), &RenderingServer::canvas_light_set_shadow_color);
 	ClassDB::bind_method(D_METHOD("canvas_light_set_shadow_smooth", "light", "smooth"), &RenderingServer::canvas_light_set_shadow_smooth);
 
-	BIND_ENUM_CONSTANT(CANVAS_LIGHT_MODE_POINT);
+	BIND_ENUM_CONSTANT(CANVAS_LIGHT_MODE_SPRITE);
 	BIND_ENUM_CONSTANT(CANVAS_LIGHT_MODE_DIRECTIONAL);
 
 	BIND_ENUM_CONSTANT(CANVAS_LIGHT_BLEND_MODE_ADD);
