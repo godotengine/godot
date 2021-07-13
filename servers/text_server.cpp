@@ -712,7 +712,7 @@ Vector<Vector2i> TextServer::shaped_text_get_line_breaks(RID p_shaped, float p_w
 	return lines;
 }
 
-Vector<Vector2i> TextServer::shaped_text_get_word_breaks(RID p_shaped) const {
+Vector<Vector2i> TextServer::shaped_text_get_word_breaks(RID p_shaped, int p_grapheme_flags) const {
 	Vector<Vector2i> words;
 
 	const_cast<TextServer *>(this)->shaped_text_update_justification_ops(p_shaped);
@@ -726,7 +726,7 @@ Vector<Vector2i> TextServer::shaped_text_get_word_breaks(RID p_shaped) const {
 
 	for (int i = 0; i < l_size; i++) {
 		if (l_gl[i].count > 0) {
-			if (((l_gl[i].flags & GRAPHEME_IS_SPACE) == GRAPHEME_IS_SPACE) || ((l_gl[i].flags & GRAPHEME_IS_PUNCTUATION) == GRAPHEME_IS_PUNCTUATION)) {
+			if ((l_gl[i].flags & p_grapheme_flags) != 0) {
 				words.push_back(Vector2i(word_start, l_gl[i].start));
 				word_start = l_gl[i].end;
 			}

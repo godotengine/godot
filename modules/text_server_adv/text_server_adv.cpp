@@ -129,6 +129,10 @@ _FORCE_INLINE_ bool is_linebreak(char32_t p_char) {
 	return (p_char >= 0x000a && p_char <= 0x000d) || (p_char == 0x0085) || (p_char == 0x2028) || (p_char == 0x2029);
 }
 
+_FORCE_INLINE_ bool is_underscore(char32_t p_char) {
+	return (p_char == 0x005F);
+}
+
 /*************************************************************************/
 
 String TextServerAdvanced::interface_name = "ICU / HarfBuzz / Graphite";
@@ -1883,7 +1887,10 @@ bool TextServerAdvanced::shaped_text_update_breaks(RID p_shaped) {
 			if (is_whitespace(c)) {
 				sd_glyphs[i].flags |= GRAPHEME_IS_SPACE;
 			}
-			if (u_ispunct(c)) {
+			if (is_underscore(c)) {
+				sd_glyphs[i].flags |= GRAPHEME_IS_UNDERSCORE;
+			}
+			if (u_ispunct(c) && c != 0x005F) {
 				sd_glyphs[i].flags |= GRAPHEME_IS_PUNCTUATION;
 			}
 			if (breaks.has(sd->glyphs[i].start)) {
