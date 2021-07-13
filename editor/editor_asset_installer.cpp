@@ -36,45 +36,6 @@
 #include "editor_node.h"
 #include "progress_dialog.h"
 
-void EditorAssetInstaller::_update_subitems(TreeItem *p_item, bool p_check, bool p_first) {
-	if (p_check) {
-		if (p_item->get_custom_color(0) == Color()) {
-			p_item->set_checked(0, true);
-		}
-	} else {
-		p_item->set_checked(0, false);
-	}
-
-	if (p_item->get_first_child()) {
-		_update_subitems(p_item->get_first_child(), p_check);
-	}
-
-	if (!p_first && p_item->get_next()) {
-		_update_subitems(p_item->get_next(), p_check);
-	}
-}
-
-void EditorAssetInstaller::_uncheck_parent(TreeItem *p_item) {
-	if (!p_item) {
-		return;
-	}
-
-	bool any_checked = false;
-	TreeItem *item = p_item->get_first_child();
-	while (item) {
-		if (item->is_checked(0)) {
-			any_checked = true;
-			break;
-		}
-		item = item->get_next();
-	}
-
-	if (!any_checked) {
-		p_item->set_checked(0, false);
-		_uncheck_parent(p_item->get_parent());
-	}
-}
-
 void EditorAssetInstaller::_item_edited() {
 	if (updating) {
 		return;
@@ -85,20 +46,17 @@ void EditorAssetInstaller::_item_edited() {
 		return;
 	}
 
-	String path = item->get_metadata(0);
-
 	updating = true;
-	if (path == String() || item == tree->get_root()) { //a dir or root
-		_update_subitems(item, item->is_checked(0), true);
-	}
-
-	if (item->is_checked(0)) {
-		while (item) {
-			item->set_checked(0, true);
-			item = item->get_parent();
+	bool checked = item->is_checked(0);
+	while (item) {
+		// Invalid items are colored red. Uncheck them when appropriate.
+		if (checked && item->get_custom_color(0) != Color()) {
+			TreeItem *next_affected = item->get_next_affected_by_check();
+			item->set_checked(0, false);
+			item = next_affected;
+			continue;
 		}
-	} else {
-		_uncheck_parent(item->get_parent());
+		item = item->get_next_affected_by_check();
 	}
 	updating = false;
 }
@@ -305,7 +263,7 @@ void EditorAssetInstaller::ok_pressed() {
 
 		String name = fname;
 
-		if (status_map.has(name) && status_map[name]->is_checked(0)) {
+		if (status_map.has(name) && (status_map[name]->is_checked(0) || status_map[name]->is_indeterminate(0))) {
 			String path = status_map[name]->get_metadata(0);
 			if (path == String()) { // a dir
 
@@ -392,6 +350,8 @@ EditorAssetInstaller::EditorAssetInstaller() {
 
 	tree = memnew(Tree);
 	tree->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	tree->set_column_to_propagate_checkmarks(0, true);
+	vb->add_margin_child(TTR("Package Contents:"), tree, true);
 	tree->connect("item_edited", callable_mp(this, &EditorAssetInstaller::_item_edited));
 	vb->add_child(tree);
 

@@ -472,74 +472,41 @@ void ThemeItemImportTree::_tree_item_edited() {
 		if (edited_column == IMPORT_ITEM_DATA) {
 			edited_item->set_checked(IMPORT_ITEM, true);
 		}
-
-		_select_all_subitems(edited_item, (edited_column == IMPORT_ITEM_DATA));
 	} else {
 		if (edited_column == IMPORT_ITEM) {
 			edited_item->set_checked(IMPORT_ITEM_DATA, false);
 		}
-
-		_deselect_all_subitems(edited_item, (edited_column == IMPORT_ITEM));
 	}
-
-	_update_parent_items(edited_item);
-	_store_selected_item(edited_item);
+	while (edited_item) {
+		_store_selected_item(edited_item);
+		edited_item = edited_item->get_next_affected_by_check();
+	}
 
 	updating_tree = false;
 }
 
 void ThemeItemImportTree::_select_all_subitems(TreeItem *p_root_item, bool p_select_with_data) {
-	TreeItem *child_item = p_root_item->get_first_child();
-	while (child_item) {
-		child_item->set_checked(IMPORT_ITEM, true);
-		if (p_select_with_data) {
-			child_item->set_checked(IMPORT_ITEM_DATA, true);
-		}
-		_store_selected_item(child_item);
-
-		_select_all_subitems(child_item, p_select_with_data);
-		child_item = child_item->get_next();
+	p_root_item->set_checked(IMPORT_ITEM, true);
+	if (p_select_with_data) {
+		p_root_item->set_checked(IMPORT_ITEM_DATA, true);
+	}
+	while (p_root_item) {
+		if (!p_root_item->get_first_child())
+			_store_selected_item(p_root_item);
+		p_root_item = p_root_item->get_next_affected_by_check();
 	}
 }
 
 void ThemeItemImportTree::_deselect_all_subitems(TreeItem *p_root_item, bool p_deselect_completely) {
-	TreeItem *child_item = p_root_item->get_first_child();
-	while (child_item) {
-		child_item->set_checked(IMPORT_ITEM_DATA, false);
-		if (p_deselect_completely) {
-			child_item->set_checked(IMPORT_ITEM, false);
-		}
-		_store_selected_item(child_item);
-
-		_deselect_all_subitems(child_item, p_deselect_completely);
-		child_item = child_item->get_next();
+	p_root_item->set_checked(IMPORT_ITEM_DATA, false);
+	if (p_deselect_completely) {
+		p_root_item->set_checked(IMPORT_ITEM, false);
 	}
-}
-
-void ThemeItemImportTree::_update_parent_items(TreeItem *p_root_item) {
-	TreeItem *parent_item = p_root_item->get_parent();
-	if (!parent_item) {
-		return;
+	while (p_root_item) {
+		if (!p_root_item->get_first_child())
+			_store_selected_item(p_root_item);
+		p_root_item = p_root_item->get_next_affected_by_check();
 	}
-
-	bool any_checked = false;
-	bool any_checked_with_data = false;
-
-	TreeItem *child_item = parent_item->get_first_child();
-	while (child_item) {
-		if (child_item->is_checked(IMPORT_ITEM)) {
-			any_checked = true;
-		}
-		if (child_item->is_checked(IMPORT_ITEM_DATA)) {
-			any_checked_with_data = true;
-		}
-
-		child_item = child_item->get_next();
-	}
-
-	parent_item->set_checked(IMPORT_ITEM, any_checked);
-	parent_item->set_checked(IMPORT_ITEM_DATA, any_checked && any_checked_with_data);
-	_update_parent_items(parent_item);
 }
 
 void ThemeItemImportTree::_select_all_items_pressed() {
@@ -628,9 +595,7 @@ void ThemeItemImportTree::_select_all_data_type_pressed(int p_data_type) {
 			continue;
 		}
 
-		child_item->set_checked(IMPORT_ITEM, true);
-		_update_parent_items(child_item);
-		_store_selected_item(child_item);
+		_select_all_subitems(child_item, false);
 	}
 
 	updating_tree = false;
@@ -683,10 +648,7 @@ void ThemeItemImportTree::_select_full_data_type_pressed(int p_data_type) {
 			continue;
 		}
 
-		child_item->set_checked(IMPORT_ITEM, true);
-		child_item->set_checked(IMPORT_ITEM_DATA, true);
-		_update_parent_items(child_item);
-		_store_selected_item(child_item);
+		_select_all_subitems(child_item, true);
 	}
 
 	updating_tree = false;
@@ -738,11 +700,7 @@ void ThemeItemImportTree::_deselect_all_data_type_pressed(int p_data_type) {
 		if (!child_item) {
 			continue;
 		}
-
-		child_item->set_checked(IMPORT_ITEM, false);
-		child_item->set_checked(IMPORT_ITEM_DATA, false);
-		_update_parent_items(child_item);
-		_store_selected_item(child_item);
+		_deselect_all_subitems(child_item, true);
 	}
 
 	updating_tree = false;
@@ -936,8 +894,10 @@ ThemeItemImportTree::ThemeItemImportTree() {
 	import_items_tree->set_column_custom_minimum_width(0, 160 * EDSCALE);
 	import_items_tree->set_column_custom_minimum_width(IMPORT_ITEM, 80 * EDSCALE);
 	import_items_tree->set_column_custom_minimum_width(IMPORT_ITEM_DATA, 80 * EDSCALE);
-	import_items_tree->set_column_clip_content(1, true);
-	import_items_tree->set_column_clip_content(2, true);
+	import_items_tree->set_column_clip_content(IMPORT_ITEM, true);
+	import_items_tree->set_column_clip_content(IMPORT_ITEM_DATA, true);
+	import_items_tree->set_column_to_propagate_checkmarks(IMPORT_ITEM, true);
+	import_items_tree->set_column_to_propagate_checkmarks(IMPORT_ITEM_DATA, true);
 
 	ScrollContainer *import_bulk_sc = memnew(ScrollContainer);
 	import_bulk_sc->set_custom_minimum_size(Size2(260.0, 0.0) * EDSCALE);

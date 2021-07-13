@@ -150,7 +150,6 @@ class ThemeItemImportTree : public VBoxContainer {
 	void _tree_item_edited();
 	void _select_all_subitems(TreeItem *p_root_item, bool p_select_with_data);
 	void _deselect_all_subitems(TreeItem *p_root_item, bool p_deselect_completely);
-	void _update_parent_items(TreeItem *p_root_item);
 
 	void _select_all_items_pressed();
 	void _select_full_items_pressed();

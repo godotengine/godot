@@ -736,12 +736,10 @@ bool ProjectExportDialog::_fill_tree(EditorFileSystemDirectory *p_dir, TreeItem 
 	p_item->set_metadata(0, p_dir->get_path());
 
 	bool used = false;
-	bool checked = true;
 	for (int i = 0; i < p_dir->get_subdir_count(); i++) {
 		TreeItem *subdir = include_files->create_item(p_item);
 		if (_fill_tree(p_dir->get_subdir(i), subdir, current, p_only_scenes)) {
 			used = true;
-			checked = checked && subdir->is_checked(0);
 		} else {
 			memdelete(subdir);
 		}
@@ -763,12 +761,10 @@ bool ProjectExportDialog::_fill_tree(EditorFileSystemDirectory *p_dir, TreeItem 
 		file->set_editable(0, true);
 		file->set_checked(0, current->has_export_file(path));
 		file->set_metadata(0, path);
-		checked = checked && file->is_checked(0);
 
 		used = true;
 	}
 
-	p_item->set_checked(0, checked);
 	return used;
 }
 
@@ -786,55 +782,18 @@ void ProjectExportDialog::_tree_changed() {
 	if (!item) {
 		return;
 	}
-
-	String path = item->get_metadata(0);
-	bool added = item->is_checked(0);
-
-	if (path.ends_with("/")) {
-		_check_dir_recursive(item, added);
-	} else {
-		if (added) {
-			current->add_export_file(path);
-		} else {
-			current->remove_export_file(path);
-		}
-	}
-	_refresh_parent_checks(item); // Makes parent folder checked if all files/folders are checked.
-}
-
-void ProjectExportDialog::_check_dir_recursive(TreeItem *p_dir, bool p_checked) {
-	for (TreeItem *child = p_dir->get_first_child(); child; child = child->get_next()) {
-		String path = child->get_metadata(0);
-
-		child->set_checked(0, p_checked);
-		if (path.ends_with("/")) {
-			_check_dir_recursive(child, p_checked);
-		} else {
-			if (p_checked) {
-				get_current_preset()->add_export_file(path);
+	while (item) {
+		String path = item->get_metadata(0);
+		if (!path.ends_with("/")) {
+			bool added = item->is_checked(0);
+			if (added) {
+				current->add_export_file(path);
 			} else {
-				get_current_preset()->remove_export_file(path);
+				current->remove_export_file(path);
 			}
 		}
+		item = item->get_next_affected_by_check();
 	}
-}
-
-void ProjectExportDialog::_refresh_parent_checks(TreeItem *p_item) {
-	TreeItem *parent = p_item->get_parent();
-	if (!parent) {
-		return;
-	}
-
-	bool checked = true;
-	for (TreeItem *child = parent->get_first_child(); child; child = child->get_next()) {
-		checked = checked && child->is_checked(0);
-		if (!checked) {
-			break;
-		}
-	}
-	parent->set_checked(0, checked);
-
-	_refresh_parent_checks(parent);
 }
 
 void ProjectExportDialog::_export_pck_zip() {
@@ -1107,6 +1066,7 @@ ProjectExportDialog::ProjectExportDialog() {
 	include_files = memnew(Tree);
 	include_margin->add_child(include_files);
 	include_files->connect("item_edited", callable_mp(this, &ProjectExportDialog::_tree_changed));
+	include_files->set_column_to_propagate_checkmarks(0, true);
 
 	include_filters = memnew(LineEdit);
 	resources_vb->add_margin_child(
