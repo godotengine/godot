@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="NodeDock" inherits="VBoxContainer" version="4.0">
+	<brief_description>
+        The Node dock.
+	</brief_description>
+	<description>
+        The Node dock shows some [Node] specific properties through tabs. A plugin can add new tabs or get the built-in ones.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="add_control">
+			<return type="Button">
+			</return>
+			<argument index="0" name="control" type="Control">
+			</argument>
+			<argument index="1" name="title" type="String">
+			</argument>
+			<description>
+				Adds a control (together with Signals and Groups). Returns a reference to the button added. It's up to you to update your control when the selected node changed (use the [signal node_changed] signal for that). When your plugin is deactivated, make sure to remove your custom control with [method remove_control] and free it with [method Node.queue_free].
+			</description>
+		</method>
+		<method name="remove_control">
+			<return type="void">
+			</return>
+			<argument index="0" name="control" type="Control">
+			</argument>
+			<description>
+				Removes the control and frees the button. You have to manually [method Node.queue_free] the control.
+			</description>
+		</method>
+		<method name="show_control">
+			<return type="void">
+			</return>
+			<argument index="0" name="control" type="Control">
+			</argument>
+			<description>
+				Shows the given tab and replace the current tab.
+			</description>
+		</method>
+	</methods>
+	<signals>
+		<signal name="node_changed">
+			<argument index="0" name="node" type="Node">
+			</argument>
+			<description>
+				Emitted when the showed node changes.
+			</description>
+		</signal>
+	</signals>
+	<constants>
+	</constants>
+</class>

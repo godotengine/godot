@@ -114,7 +114,7 @@ class GroupsEditor : public VBoxContainer {
 
 	UndoRedo *undo_redo;
 
-	void update_tree();
+	void _update_tree();
 	void _add_group(const String &p_group = "");
 	void _remove_group(Object *p_item, int p_column, int p_id);
 	void _close();
@@ -127,6 +127,8 @@ protected:
 public:
 	void set_undo_redo(UndoRedo *p_undoredo) { undo_redo = p_undoredo; }
 	void set_current(Node *p_node);
+
+	Tree *get_groups_tree();
 
 	GroupsEditor();
 	~GroupsEditor();

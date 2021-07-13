@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="ConnectionsDock" inherits="VBoxContainer" version="4.0">
+	<brief_description>
+		The connection control in the Node dock.
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="get_connection_tree">
+			<return type="Tree">
+			</return>
+			<description>
+				Returns the [code]tree[/code] where signal connections are listed.
+			</description>
+		</method>
+	</methods>
+	<constants>
+	</constants>
+</class>

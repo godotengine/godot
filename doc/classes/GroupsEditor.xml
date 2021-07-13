@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="GroupsEditor" inherits="VBoxContainer" version="4.0">
+	<brief_description>
+		The group control in the [code]Node[/code] dock.
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="get_groups_tree">
+			<return type="Tree">
+			</return>
+			<description>
+				Returns the [code]tree[/code] where groups are listed.
+			</description>
+		</method>
+	</methods>
+	<constants>
+	</constants>
+</class>

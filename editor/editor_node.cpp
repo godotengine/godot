@@ -3771,6 +3771,9 @@ void EditorNode::register_editor_types() {
 	ClassDB::register_class<EditorSceneImporterMeshNode3D>();
 
 	ClassDB::register_virtual_class<FileSystemDock>();
+	ClassDB::register_virtual_class<NodeDock>();
+	ClassDB::register_virtual_class<ConnectionsDock>();
+	ClassDB::register_virtual_class<GroupsEditor>();
 
 	// FIXME: Is this stuff obsolete, or should it be ported to new APIs?
 	ClassDB::register_class<EditorScenePostImport>();
