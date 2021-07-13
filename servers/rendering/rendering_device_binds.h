@@ -458,7 +458,7 @@ class RDPipelineSpecializationConstant : public RefCounted {
 	friend class RenderingDevice;
 
 	Variant value = false;
-	uint32_t constant_id;
+	uint32_t constant_id = 0;
 
 public:
 	void set_value(const Variant &p_value) {
