@@ -51,12 +51,13 @@
 # Kareem Abduljaleel <karemjaleel34@gmail.com>, 2021.
 # ILG - Game <moegypt277@gmail.com>, 2021.
 # Hatim Jamal <hatimjamal8@gmail.com>, 2021.
+# HASSAN GAMER - حسن جيمر <gamerhassan55@gmail.com>, 2021.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2021-05-07 02:12+0000\n"
-"Last-Translator: ILG - Game <moegypt277@gmail.com>\n"
+"PO-Revision-Date: 2021-07-09 14:32+0000\n"
+"Last-Translator: HASSAN GAMER - حسن جيمر <gamerhassan55@gmail.com>\n"
 "Language-Team: Arabic <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ar/>\n"
 "Language: ar\n"
@@ -65,7 +66,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=6; plural=n==0 ? 0 : n==1 ? 1 : n==2 ? 2 : n%100>=3 "
 "&& n%100<=10 ? 3 : n%100>=11 ? 4 : 5;\n"
-"X-Generator: Weblate 4.7-dev\n"
+"X-Generator: Weblate 4.8-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -88,7 +89,7 @@ msgstr "مدخلات خاطئة %i (لم يتم تمريره) في التعبي�
 
 #: core/math/expression.cpp
 msgid "self can't be used because instance is null (not passed)"
-msgstr "لا يمكن إستخدامه نفسه لأن الحالة فارغة (لم يُمرر)"
+msgstr "لا يمكن استخدام self لأن النموذج فارغ (لم يتم ادخاله)"
 
 #: core/math/expression.cpp
 msgid "Invalid operands to operator %s, %s and %s."
@@ -455,10 +456,6 @@ msgid "Animation tracks can only point to AnimationPlayer nodes."
 msgstr "مسارات الحركة يمكنها فقط أن تشير إلى عُقد مشغّل الحركة."
 
 #: editor/animation_track_editor.cpp
-msgid "An animation player can't animate itself, only other players."
-msgstr "مشغل الحركة لا يمكنه أن يحرك نفسه, فقط الاعبين الأخرين."
-
-#: editor/animation_track_editor.cpp
 msgid "Not possible to add a new track without a root"
 msgstr "لا يمكن إضافة مقطع جديد بدون جذر"
 
@@ -503,8 +500,9 @@ msgid "Anim Move Keys"
 msgstr "مفتاح حركة التحريك"
 
 #: editor/animation_track_editor.cpp
-msgid "Clipboard is empty"
-msgstr "الحافظة (Clipboard) فارغة"
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Clipboard is empty!"
+msgstr "الحافظة فارغة!"
 
 #: editor/animation_track_editor.cpp
 msgid "Paste Tracks"
@@ -1156,7 +1154,7 @@ msgstr "شكراً من مجتمع غودوت!"
 
 #: editor/editor_about.cpp editor/editor_node.cpp editor/project_manager.cpp
 msgid "Click to copy."
-msgstr ""
+msgstr "انقر للنسخ"
 
 #: editor/editor_about.cpp
 msgid "Godot Engine contributors"
@@ -2531,7 +2529,7 @@ msgid "Save changes to the following scene(s) before quitting?"
 msgstr "هل تريد حفظ التغييرات للمشاهد التالية قبل الخروج؟"
 
 #: editor/editor_node.cpp
-msgid "Save changes the following scene(s) before opening Project Manager?"
+msgid "Save changes to the following scene(s) before opening Project Manager?"
 msgstr ""
 "هل تود حفظ التغييرات التي اجريت على المشاهد الحالية قبل فتح نافذة ادارة "
 "المشروع؟"
@@ -11996,10 +11994,6 @@ msgid "Can't copy the function node."
 msgstr "لا يمكن نسخ الوظيفة البرمجية للعُقدة."
 
 #: modules/visual_script/visual_script_editor.cpp
-msgid "Clipboard is empty!"
-msgstr "الحافظة فارغة!"
-
-#: modules/visual_script/visual_script_editor.cpp
 msgid "Paste VisualScript Nodes"
 msgstr "لصق عُقد البرمجة البصرية VisualScript"
 
@@ -13197,6 +13191,12 @@ msgstr "يمكن تعيين المتغيرات فقط في الذروة ."
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "لا يمكن تعديل الثوابت."
+
+#~ msgid "An animation player can't animate itself, only other players."
+#~ msgstr "مشغل الحركة لا يمكنه أن يحرك نفسه, فقط الاعبين الأخرين."
+
+#~ msgid "Clipboard is empty"
+#~ msgstr "الحافظة (Clipboard) فارغة"
 
 #~ msgid "No"
 #~ msgstr "لا"

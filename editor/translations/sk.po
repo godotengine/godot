@@ -11,12 +11,13 @@
 # Richard Urban <redasuio1@gmail.com>, 2020.
 # Anonymous <noreply@weblate.org>, 2020.
 # Mario-projects-dev <m.vitek.mv@gmail.com>, 2021.
+# Eliška Fichnová <eliska@fichna.sk>, 2021.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2021-04-11 22:02+0000\n"
-"Last-Translator: Mario-projects-dev <m.vitek.mv@gmail.com>\n"
+"PO-Revision-Date: 2021-07-07 15:34+0000\n"
+"Last-Translator: Eliška Fichnová <eliska@fichna.sk>\n"
 "Language-Team: Slovak <https://hosted.weblate.org/projects/godot-engine/"
 "godot/sk/>\n"
 "Language: sk\n"
@@ -24,7 +25,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=(n==1) ? 0 : (n>=2 && n<=4) ? 1 : 2;\n"
-"X-Generator: Weblate 4.6-dev\n"
+"X-Generator: Weblate 4.8-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -414,10 +415,6 @@ msgid "Animation tracks can only point to AnimationPlayer nodes."
 msgstr "Track-y Animácií môžu ukazovať iba na node-y AnimationPlayer."
 
 #: editor/animation_track_editor.cpp
-msgid "An animation player can't animate itself, only other players."
-msgstr "Animation player sa nemôže naanimovať sám, iba ostatné player-y."
-
-#: editor/animation_track_editor.cpp
 msgid "Not possible to add a new track without a root"
 msgstr "Není možné pridať nový track bez root-u"
 
@@ -462,8 +459,9 @@ msgid "Anim Move Keys"
 msgstr "Pohybové kľúče Animácie"
 
 #: editor/animation_track_editor.cpp
-msgid "Clipboard is empty"
-msgstr "Schránka je prázdna"
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Clipboard is empty!"
+msgstr ""
 
 #: editor/animation_track_editor.cpp
 msgid "Paste Tracks"
@@ -1116,7 +1114,7 @@ msgstr "Vďaka z Godot komunity!"
 
 #: editor/editor_about.cpp editor/editor_node.cpp editor/project_manager.cpp
 msgid "Click to copy."
-msgstr ""
+msgstr "Klikni na skopírovanie."
 
 #: editor/editor_about.cpp
 msgid "Godot Engine contributors"
@@ -1610,13 +1608,12 @@ msgstr ""
 "Etc' v Nastaveniach Projektu."
 
 #: editor/editor_export.cpp
-#, fuzzy
 msgid ""
 "Target platform requires 'ETC2' or 'PVRTC' texture compression for GLES3. "
 "Enable 'Import Etc 2' or 'Import Pvrtc' in Project Settings."
 msgstr ""
-"Target platforma potrebuje 'ETC2' kompresor textúr pre GLES3. Povoliť'Import "
-"Etc 2' v Nastaveniach Projektu."
+"Cieľová platforma potrebuje 'ETC2' alebo 'PVRTC' kompresor textúr pre GLES3. "
+"Povoľte 'Import Etc 2' alebo 'Import Pvrtc' v Nastaveniach Projektu."
 
 #: editor/editor_export.cpp
 #, fuzzy
@@ -2309,6 +2306,8 @@ msgid ""
 "An error occurred while trying to save the editor layout.\n"
 "Make sure the editor's user data path is writable."
 msgstr ""
+"Nastala chyba pri pokuse o uloženie rozloženia editoru.\n"
+"Uistite sa, že cesta uživateľských dát editoru je zapisovateľná."
 
 #: editor/editor_node.cpp
 msgid ""
@@ -2316,15 +2315,17 @@ msgid ""
 "To restore the Default layout to its base settings, use the Delete Layout "
 "option and delete the Default layout."
 msgstr ""
+"Prednastavené rozloženie editoru prepísané.\n"
+"Na obnovenie Prednastaveného rozloženia na základné nastavenia, použite "
+"možnosť Vymazať Rozloženie a vymažte Prednastavené rozloženie."
 
 #: editor/editor_node.cpp
 msgid "Layout name not found!"
 msgstr "Meno Layout-u sa nenašlo!"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Restored the Default layout to its base settings."
-msgstr "Obnovené predvolené rozloženie na základné nastavenia."
+msgstr "Predvolené rozloženie bolo obnovené na základné nastavenia."
 
 #: editor/editor_node.cpp
 msgid ""
@@ -2381,7 +2382,7 @@ msgstr "Nieje definovaná žiadna scéna na spustenie."
 
 #: editor/editor_node.cpp
 msgid "Save scene before running..."
-msgstr ""
+msgstr "Uložiť scénu pred spustením..."
 
 #: editor/editor_node.cpp
 msgid "Could not start subprocess!"
@@ -2496,7 +2497,7 @@ msgid "Save changes to the following scene(s) before quitting?"
 msgstr "Uložiť zmeny do nasledujúcich scén pred ukončením?"
 
 #: editor/editor_node.cpp
-msgid "Save changes the following scene(s) before opening Project Manager?"
+msgid "Save changes to the following scene(s) before opening Project Manager?"
 msgstr "Uložiť zmeny nasledujúcich scén pred otvorením Manažéra Projektov?"
 
 #: editor/editor_node.cpp
@@ -2525,24 +2526,22 @@ msgstr ""
 "Addon plugin nie je možné povoliť pri: '% s' analýze konfigurácie zlyhalo."
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Unable to find script field for addon plugin at: '%s'."
-msgstr ""
-"Nepodarilo sa nájsť script field pre addon plugin v: 'res://addons/%s'."
+msgstr "Nepodarilo sa nájsť pole skriptu pre addon plugin v: '%s'."
 
 #: editor/editor_node.cpp
 msgid "Unable to load addon script from path: '%s'."
 msgstr "Nepodarilo sa načítať addon script z cesty: '%s'."
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid ""
 "Unable to load addon script from path: '%s'. This might be due to a code "
 "error in that script.\n"
 "Disabling the addon at '%s' to prevent further errors."
 msgstr ""
-"Nepodarilo sa nájsť addon script z cesty: '%s' Vyzerá to tak že by mohol byť "
-"problém v kóde, prosím skontrolujte syntax."
+"Nebolo možné načítať addon skript z cesty: '%s'. Toto môže byť spôsobené "
+"chybou kódu v skripte.\n"
+"Deaktivujem addon z '%s', aby sa predišlo ďalším chybám."
 
 #: editor/editor_node.cpp
 msgid ""
@@ -2985,7 +2984,7 @@ msgstr "O nás"
 
 #: editor/editor_node.cpp
 msgid "Support Godot Development"
-msgstr ""
+msgstr "Podporte vývoj Godot"
 
 #: editor/editor_node.cpp
 msgid "Play the project."
@@ -3127,21 +3126,22 @@ msgid "Open & Run a Script"
 msgstr "Otvoriť a vykonať skript"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid ""
 "The following files are newer on disk.\n"
 "What action should be taken?"
-msgstr "Nasledovné súbory sa nepodarilo extrahovať z balíka:"
+msgstr ""
+"Nasledujúce súbory majú novšiu verziu na disku.\n"
+"Aká akcia sa má vykonať?"
 
 #: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
 #: editor/plugins/shader_editor_plugin.cpp
 msgid "Reload"
-msgstr ""
+msgstr "Znovu načítať"
 
 #: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
 #: editor/plugins/shader_editor_plugin.cpp
 msgid "Resave"
-msgstr ""
+msgstr "Znovu uložiť"
 
 #: editor/editor_node.cpp
 msgid "New Inherited"
@@ -3670,6 +3670,8 @@ msgstr ""
 msgid ""
 "Importing has been disabled for this file, so it can't be opened for editing."
 msgstr ""
+"Importovanie bolo zablokované pre tento súbor, čiže nemôže byť otvorený pre "
+"úpravy."
 
 #: editor/filesystem_dock.cpp
 msgid "Cannot move/rename resources root."
@@ -3716,6 +3718,12 @@ msgid ""
 "\n"
 "Do you wish to overwrite them?"
 msgstr ""
+"Nasledujúce súbory alebo zložky sú v konflikte s položkami v cieľovom "
+"umiestnení '%s':\n"
+"\n"
+"%s\n"
+"\n"
+"Prajete si ich prepísať?"
 
 #: editor/filesystem_dock.cpp
 msgid "Renaming file:"
@@ -3796,9 +3804,8 @@ msgid "Duplicate..."
 msgstr "Duplikovať..."
 
 #: editor/filesystem_dock.cpp
-#, fuzzy
 msgid "Move to Trash"
-msgstr "Presunúť AutoLoad-y"
+msgstr "Presunúť do odpadkov"
 
 #: editor/filesystem_dock.cpp editor/plugins/animation_player_editor_plugin.cpp
 msgid "Rename..."
@@ -3909,19 +3916,16 @@ msgid "Searching..."
 msgstr "Vyhľadávam..."
 
 #: editor/find_in_files.cpp
-#, fuzzy
 msgid "%d match in %d file."
-msgstr "%d zhody."
+msgstr "%d zhoda v %d súbore."
 
 #: editor/find_in_files.cpp
-#, fuzzy
 msgid "%d matches in %d file."
-msgstr "%d zhody."
+msgstr "%d zhôd v % súbore."
 
 #: editor/find_in_files.cpp
-#, fuzzy
 msgid "%d matches in %d files."
-msgstr "%d zhody."
+msgstr "%d zhôd v %d súboroch."
 
 #: editor/groups_editor.cpp
 msgid "Add to Group"
@@ -4058,23 +4062,20 @@ msgid "Saving..."
 msgstr "Ukladám..."
 
 #: editor/import_defaults_editor.cpp
-#, fuzzy
 msgid "Select Importer"
-msgstr "Vybrať Režim"
+msgstr "Vybrať Importér"
 
 #: editor/import_defaults_editor.cpp
-#, fuzzy
 msgid "Importer:"
-msgstr "Import"
+msgstr "Importér:"
 
 #: editor/import_defaults_editor.cpp
-#, fuzzy
 msgid "Reset to Defaults"
-msgstr "Načítať predvolené"
+msgstr "Obnoviť na východzie"
 
 #: editor/import_dock.cpp
 msgid "Keep File (No Import)"
-msgstr ""
+msgstr "Ponechať súbor (bez importu)"
 
 #: editor/import_dock.cpp
 msgid "%d Files"
@@ -5040,9 +5041,8 @@ msgid "Got:"
 msgstr "Má:"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-#, fuzzy
 msgid "Failed SHA-256 hash check"
-msgstr "Zlyhalo sha256 hash check"
+msgstr "Zlyhalo overenie SHA-256 hashu"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Asset Download Error:"
@@ -11938,10 +11938,6 @@ msgid "Can't copy the function node."
 msgstr ""
 
 #: modules/visual_script/visual_script_editor.cpp
-msgid "Clipboard is empty!"
-msgstr ""
-
-#: modules/visual_script/visual_script_editor.cpp
 #, fuzzy
 msgid "Paste VisualScript Nodes"
 msgstr "Vložiť"
@@ -13000,6 +12996,12 @@ msgstr ""
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr ""
+
+#~ msgid "An animation player can't animate itself, only other players."
+#~ msgstr "Animation player sa nemôže naanimovať sám, iba ostatné player-y."
+
+#~ msgid "Clipboard is empty"
+#~ msgstr "Schránka je prázdna"
 
 #~ msgid "No"
 #~ msgstr "Nie"

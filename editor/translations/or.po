@@ -400,10 +400,6 @@ msgid "Animation tracks can only point to AnimationPlayer nodes."
 msgstr ""
 
 #: editor/animation_track_editor.cpp
-msgid "An animation player can't animate itself, only other players."
-msgstr ""
-
-#: editor/animation_track_editor.cpp
 msgid "Not possible to add a new track without a root"
 msgstr ""
 
@@ -448,7 +444,8 @@ msgid "Anim Move Keys"
 msgstr ""
 
 #: editor/animation_track_editor.cpp
-msgid "Clipboard is empty"
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Clipboard is empty!"
 msgstr ""
 
 #: editor/animation_track_editor.cpp
@@ -2407,7 +2404,7 @@ msgid "Save changes to the following scene(s) before quitting?"
 msgstr ""
 
 #: editor/editor_node.cpp
-msgid "Save changes the following scene(s) before opening Project Manager?"
+msgid "Save changes to the following scene(s) before opening Project Manager?"
 msgstr ""
 
 #: editor/editor_node.cpp
@@ -11476,10 +11473,6 @@ msgstr ""
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Can't copy the function node."
-msgstr ""
-
-#: modules/visual_script/visual_script_editor.cpp
-msgid "Clipboard is empty!"
 msgstr ""
 
 #: modules/visual_script/visual_script_editor.cpp

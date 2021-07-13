@@ -435,10 +435,6 @@ msgid "Animation tracks can only point to AnimationPlayer nodes."
 msgstr ""
 
 #: editor/animation_track_editor.cpp
-msgid "An animation player can't animate itself, only other players."
-msgstr ""
-
-#: editor/animation_track_editor.cpp
 msgid "Not possible to add a new track without a root"
 msgstr "沒有ROOT以新增新動畫軌跡"
 
@@ -486,8 +482,9 @@ msgid "Anim Move Keys"
 msgstr "移動動畫幀"
 
 #: editor/animation_track_editor.cpp
+#: modules/visual_script/visual_script_editor.cpp
 #, fuzzy
-msgid "Clipboard is empty"
+msgid "Clipboard is empty!"
 msgstr "路徑為空"
 
 #: editor/animation_track_editor.cpp
@@ -2575,7 +2572,7 @@ msgstr "離開前要先儲存以下 scene 的任何更改嗎？"
 
 #: editor/editor_node.cpp
 #, fuzzy
-msgid "Save changes the following scene(s) before opening Project Manager?"
+msgid "Save changes to the following scene(s) before opening Project Manager?"
 msgstr "開啟 Project Manager 前要先儲存以下 scene 的任何更改嗎？"
 
 #: editor/editor_node.cpp
@@ -12291,11 +12288,6 @@ msgstr ""
 
 #: modules/visual_script/visual_script_editor.cpp
 #, fuzzy
-msgid "Clipboard is empty!"
-msgstr "路徑為空"
-
-#: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Paste VisualScript Nodes"
 msgstr "貼上"
 
@@ -13351,6 +13343,10 @@ msgstr ""
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr ""
+
+#, fuzzy
+#~ msgid "Clipboard is empty"
+#~ msgstr "路徑為空"
 
 #~ msgid "No"
 #~ msgstr "否"

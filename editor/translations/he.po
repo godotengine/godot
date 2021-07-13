@@ -426,10 +426,6 @@ msgid "Animation tracks can only point to AnimationPlayer nodes."
 msgstr "רצועות הנפשה יכולות להצביע רק על איברי AnimationPlayer."
 
 #: editor/animation_track_editor.cpp
-msgid "An animation player can't animate itself, only other players."
-msgstr "נגן הנפשה אינו יכול להנפיש את עצמו, רק שחקנים אחרים."
-
-#: editor/animation_track_editor.cpp
 msgid "Not possible to add a new track without a root"
 msgstr "אי אפשר להוסיף רצועה חדשה בלי שורש"
 
@@ -478,8 +474,9 @@ msgid "Anim Move Keys"
 msgstr "מפתחות הזזת אנימצייה"
 
 #: editor/animation_track_editor.cpp
-msgid "Clipboard is empty"
-msgstr "לוח העתקה ריק"
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Clipboard is empty!"
+msgstr "לוח העתקה ריק!"
 
 #: editor/animation_track_editor.cpp
 msgid "Paste Tracks"
@@ -2508,7 +2505,7 @@ msgid "Save changes to the following scene(s) before quitting?"
 msgstr "לשמור את השינויים לסצנות הבאות לפני היציאה?"
 
 #: editor/editor_node.cpp
-msgid "Save changes the following scene(s) before opening Project Manager?"
+msgid "Save changes to the following scene(s) before opening Project Manager?"
 msgstr "לשמור את הסצנות הבאות לפני פתיחת מנהל המיזמים?"
 
 #: editor/editor_node.cpp
@@ -12023,10 +12020,6 @@ msgid "Can't copy the function node."
 msgstr "לא ניתן להעתיק את פונקצית המפרק."
 
 #: modules/visual_script/visual_script_editor.cpp
-msgid "Clipboard is empty!"
-msgstr "לוח העתקה ריק!"
-
-#: modules/visual_script/visual_script_editor.cpp
 msgid "Paste VisualScript Nodes"
 msgstr "הדבקת מפרקי VisualScript"
 
@@ -13164,6 +13157,12 @@ msgstr "ניתן להקצות שינויים רק בפונקצית vertex."
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "אי אפשר לשנות קבועים."
+
+#~ msgid "An animation player can't animate itself, only other players."
+#~ msgstr "נגן הנפשה אינו יכול להנפיש את עצמו, רק שחקנים אחרים."
+
+#~ msgid "Clipboard is empty"
+#~ msgstr "לוח העתקה ריק"
 
 #~ msgid "No"
 #~ msgstr "לא"
