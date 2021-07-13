@@ -51,13 +51,29 @@ public:
 		VALIGN_FILL
 	};
 
+	enum AutowrapMode {
+		AUTOWRAP_OFF,
+		AUTOWRAP_ARBITRARY,
+		AUTOWRAP_WORD,
+		AUTOWRAP_WORD_SMART
+	};
+
+	enum OverrunBehavior {
+		OVERRUN_NO_TRIMMING,
+		OVERRUN_TRIM_CHAR,
+		OVERRUN_TRIM_WORD,
+		OVERRUN_TRIM_ELLIPSIS,
+		OVERRUN_TRIM_WORD_ELLIPSIS,
+	};
+
 private:
 	Align align = ALIGN_LEFT;
 	VAlign valign = VALIGN_TOP;
 	String text;
 	String xl_text;
-	bool autowrap = false;
+	AutowrapMode autowrap_mode = AUTOWRAP_OFF;
 	bool clip = false;
+	OverrunBehavior overrun_behavior = OVERRUN_NO_TRIMMING;
 	Size2 minsize;
 	bool uppercase = false;
 
@@ -118,8 +134,8 @@ public:
 	void set_structured_text_bidi_override_options(Array p_args);
 	Array get_structured_text_bidi_override_options() const;
 
-	void set_autowrap(bool p_autowrap);
-	bool has_autowrap() const;
+	void set_autowrap_mode(AutowrapMode p_mode);
+	AutowrapMode get_autowrap_mode() const;
 
 	void set_uppercase(bool p_uppercase);
 	bool is_uppercase() const;
@@ -130,6 +146,9 @@ public:
 
 	void set_clip_text(bool p_clip);
 	bool is_clipping_text() const;
+
+	void set_text_overrun_behavior(OverrunBehavior p_behavior);
+	OverrunBehavior get_text_overrun_behavior() const;
 
 	void set_percent_visible(float p_percent);
 	float get_percent_visible() const;
@@ -150,5 +169,7 @@ public:
 
 VARIANT_ENUM_CAST(Label::Align);
 VARIANT_ENUM_CAST(Label::VAlign);
+VARIANT_ENUM_CAST(Label::AutowrapMode);
+VARIANT_ENUM_CAST(Label::OverrunBehavior);
 
 #endif

@@ -1141,6 +1141,161 @@ bool TextServerFallback::shaped_text_update_justification_ops(RID p_shaped) {
 	return true;
 }
 
+void TextServerFallback::shaped_text_overrun_trim_to_width(RID p_shaped_line, float p_width, uint8_t p_clip_flags) {
+	_THREAD_SAFE_METHOD_
+	ShapedTextData *sd = shaped_owner.getornull(p_shaped_line);
+	ERR_FAIL_COND_MSG(!sd, "ShapedTextDataAdvanced invalid.");
+	if (!sd->valid) {
+		shaped_text_shape(p_shaped_line);
+	}
+
+	bool add_ellipsis = (p_clip_flags & OVERRUN_ADD_ELLIPSIS) == OVERRUN_ADD_ELLIPSIS;
+	bool cut_per_word = (p_clip_flags & OVERRUN_TRIM_WORD_ONLY) == OVERRUN_TRIM_WORD_ONLY;
+	bool enforce_ellipsis = (p_clip_flags & OVERRUN_ENFORCE_ELLIPSIS) == OVERRUN_ENFORCE_ELLIPSIS;
+
+	Glyph *sd_glyphs = sd->glyphs.ptrw();
+
+	if ((p_clip_flags & OVERRUN_TRIM) == OVERRUN_NO_TRIMMING || sd_glyphs == nullptr || p_width <= 0 || !(sd->width > p_width || enforce_ellipsis)) {
+		return;
+	}
+
+	int sd_size = sd->glyphs.size();
+	RID last_gl_font_rid = sd_glyphs[sd_size - 1].font_rid;
+	int last_gl_font_size = sd_glyphs[sd_size - 1].font_size;
+	uint32_t dot_gl_idx = font_get_glyph_index(last_gl_font_rid, '.');
+	Vector2 dot_adv = font_get_glyph_advance(last_gl_font_rid, dot_gl_idx, last_gl_font_size);
+	uint32_t whitespace_gl_idx = font_get_glyph_index(last_gl_font_rid, ' ');
+	Vector2 whitespace_adv = font_get_glyph_advance(last_gl_font_rid, whitespace_gl_idx, last_gl_font_size);
+
+	int ellipsis_advance = 0;
+	if (add_ellipsis) {
+		ellipsis_advance = 3 * dot_adv.x + font_get_spacing_glyph(last_gl_font_rid) + (cut_per_word ? whitespace_adv.x : 0);
+	}
+
+	int ell_min_characters = 6;
+	float width = sd->width;
+
+	bool is_rtl = sd->direction == DIRECTION_RTL || (sd->direction == DIRECTION_AUTO && sd->para_direction == DIRECTION_RTL);
+
+	int trim_pos = (is_rtl) ? sd_size : 0;
+	int ellipsis_pos = (enforce_ellipsis) ? 0 : -1;
+
+	int last_valid_cut = 0;
+	bool found = false;
+
+	int glyphs_from = (is_rtl) ? 0 : sd_size - 1;
+	int glyphs_to = (is_rtl) ? sd_size - 1 : -1;
+	int glyphs_delta = (is_rtl) ? +1 : -1;
+
+	for (int i = glyphs_from; i != glyphs_to; i += glyphs_delta) {
+		if (!is_rtl) {
+			width -= sd_glyphs[i].advance;
+		}
+		if (sd_glyphs[i].count > 0) {
+			bool above_min_char_treshold = ((is_rtl) ? sd_size - 1 - i : i) >= ell_min_characters;
+
+			if (width + (((above_min_char_treshold && add_ellipsis) || enforce_ellipsis) ? ellipsis_advance : 0) <= p_width) {
+				if (cut_per_word && above_min_char_treshold) {
+					if ((sd_glyphs[i].flags & GRAPHEME_IS_BREAK_SOFT) == GRAPHEME_IS_BREAK_SOFT) {
+						last_valid_cut = i;
+						found = true;
+					}
+				} else {
+					last_valid_cut = i;
+					found = true;
+				}
+				if (found) {
+					trim_pos = last_valid_cut;
+
+					if (above_min_char_treshold && width - ellipsis_advance <= p_width) {
+						ellipsis_pos = trim_pos;
+					}
+					break;
+				}
+			}
+		}
+		if (is_rtl) {
+			width -= sd_glyphs[i].advance;
+		}
+	}
+
+	if ((trim_pos >= 0 && sd->width > p_width) || enforce_ellipsis) {
+		int added_glyphs = 0;
+		if (add_ellipsis && (ellipsis_pos > 0 || enforce_ellipsis)) {
+			// Insert an additional space when cutting word bound for aesthetics.
+			if (cut_per_word && (ellipsis_pos > 0)) {
+				TextServer::Glyph gl;
+				gl.start = sd_glyphs[ellipsis_pos].start;
+				gl.end = sd_glyphs[ellipsis_pos].end;
+				gl.count = 1;
+				gl.advance = whitespace_adv.x;
+				gl.index = whitespace_gl_idx;
+				gl.font_rid = last_gl_font_rid;
+				gl.font_size = last_gl_font_size;
+				gl.flags = GRAPHEME_IS_SPACE | GRAPHEME_IS_BREAK_SOFT | GRAPHEME_IS_VIRTUAL | (is_rtl ? GRAPHEME_IS_RTL : 0);
+
+				// Optimized glyph insertion by replacing a glyph whenever possible.
+				int glyph_idx = trim_pos + ((is_rtl) ? -added_glyphs : added_glyphs);
+				if (is_rtl) {
+					if (glyph_idx < 0) {
+						sd->glyphs.insert(0, gl);
+					} else {
+						sd->glyphs.set(glyph_idx, gl);
+					}
+				} else {
+					if (glyph_idx > (sd_size - 1)) {
+						sd->glyphs.append(gl);
+					} else {
+						sd->glyphs.set(glyph_idx, gl);
+					}
+				}
+				added_glyphs++;
+			}
+			// Add ellipsis dots.
+			for (int d = 0; d < 3; d++) {
+				TextServer::Glyph gl;
+				gl.start = sd_glyphs[ellipsis_pos].start;
+				gl.end = sd_glyphs[ellipsis_pos].end;
+				gl.count = 1;
+				gl.advance = dot_adv.x;
+				gl.index = dot_gl_idx;
+				gl.font_rid = last_gl_font_rid;
+				gl.font_size = last_gl_font_size;
+				gl.flags = GRAPHEME_IS_PUNCTUATION | GRAPHEME_IS_VIRTUAL | (is_rtl ? GRAPHEME_IS_RTL : 0);
+
+				// Optimized glyph insertion by replacing a glyph whenever possible.
+				int glyph_idx = trim_pos + ((is_rtl) ? -added_glyphs : added_glyphs);
+				if (is_rtl) {
+					if (glyph_idx < 0) {
+						sd->glyphs.insert(0, gl);
+					} else {
+						sd->glyphs.set(glyph_idx, gl);
+					}
+				} else {
+					if (glyph_idx > (sd_size - 1)) {
+						sd->glyphs.append(gl);
+					} else {
+						sd->glyphs.set(glyph_idx, gl);
+					}
+				}
+				added_glyphs++;
+			}
+		}
+
+		// Cut the remaining glyphs off.
+		if (!is_rtl) {
+			sd->glyphs.resize(trim_pos + added_glyphs);
+		} else {
+			for (int ridx = 0; ridx <= trim_pos - added_glyphs; ridx++) {
+				sd->glyphs.remove(0);
+			}
+		}
+
+		// Update to correct width.
+		sd->width = width + ((ellipsis_pos != -1) ? ellipsis_advance : 0);
+	}
+}
+
 bool TextServerFallback::shaped_text_shape(RID p_shaped) {
 	_THREAD_SAFE_METHOD_
 	ShapedTextData *sd = shaped_owner.getornull(p_shaped);
