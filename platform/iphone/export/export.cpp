@@ -368,6 +368,8 @@ void EditorExportPlatformIOS::get_export_options(List<ExportOption> *r_options) 
 		r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "plugins/" + found_plugins[i].name), false));
 	}
 
+	Set<String> plist_keys;
+
 	for (int i = 0; i < found_plugins.size(); i++) {
 		// Editable plugin plist values
 		PluginConfigIOS plugin = found_plugins[i];
@@ -379,7 +381,10 @@ void EditorExportPlatformIOS::get_export_options(List<ExportOption> *r_options) 
 			switch (item.type) {
 				case PluginConfigIOS::PlistItemType::STRING_INPUT: {
 					String preset_name = "plugins_plist/" + key;
-					r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, preset_name), item.value));
+					if (!plist_keys.has(preset_name)) {
+						r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, preset_name), item.value));
+						plist_keys.insert(preset_name);
+					}
 				} break;
 				default:
 					continue;
