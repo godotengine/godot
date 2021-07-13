@@ -977,7 +977,7 @@ bool CustomPropertyEditor::edit(Object *p_owner, const String &p_name, Variant::
 						icon = get_icon(what, "Resource");
 					}
 
-					menu->add_icon_item(icon, vformat(TTR("Convert To %s"), what), CONVERT_BASE_ID + i);
+					menu->add_icon_item(icon, vformat(TTR("Convert to %s"), what), CONVERT_BASE_ID + i);
 				}
 			}
 
