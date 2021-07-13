@@ -20,12 +20,13 @@
 # Ahmad Maftoun <CarCedo.Pro@gmail.com>, 2020.
 # ItzMiad44909858f5774b6d <maidggg@gmail.com>, 2020.
 # YASAN <yasandev@gmail.com>, 2021.
+# duniyal ras <duniyalr@gmail.com>, 2021.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2021-03-16 10:40+0000\n"
-"Last-Translator: YASAN <yasandev@gmail.com>\n"
+"PO-Revision-Date: 2021-07-13 06:13+0000\n"
+"Last-Translator: duniyal ras <duniyalr@gmail.com>\n"
 "Language-Team: Persian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/fa/>\n"
 "Language: fa\n"
@@ -33,7 +34,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 4.5.2-dev\n"
+"X-Generator: Weblate 4.7.2-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -425,10 +426,6 @@ msgid "Animation tracks can only point to AnimationPlayer nodes."
 msgstr "آهنگ های انیمیشن فقط می توانند به گره های انیمش پلیر اشاره کنند."
 
 #: editor/animation_track_editor.cpp
-msgid "An animation player can't animate itself, only other players."
-msgstr "یک مجری انیمیشن نمی تواند خود را محرک کند، فقط سایر مجریان."
-
-#: editor/animation_track_editor.cpp
 msgid "Not possible to add a new track without a root"
 msgstr "بدون ریشه اضافه کردن مسیر امکان پذیر نیست"
 
@@ -473,8 +470,9 @@ msgid "Anim Move Keys"
 msgstr "کلیدها را در انیمیشن جابجا کن"
 
 #: editor/animation_track_editor.cpp
-msgid "Clipboard is empty"
-msgstr "حافظه پنهان خالی است"
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Clipboard is empty!"
+msgstr "حافظه پنهان خالی است!"
 
 #: editor/animation_track_editor.cpp
 msgid "Paste Tracks"
@@ -1047,7 +1045,6 @@ msgid ""
 msgstr "آیا پرونده‌های انتخاب شده از طرح حذف شوند؟ (غیر قابل بازیابی)"
 
 #: editor/dependency_editor.cpp
-#, fuzzy
 msgid ""
 "The files being removed are required by other resources in order for them to "
 "work.\n"
@@ -1056,7 +1053,8 @@ msgid ""
 msgstr ""
 "پرونده‌هایی که می‌خواهید حذف شوند برای منابع دیگر مورد نیاز هستند تا کار "
 "کنند.\n"
-"آیا در هر صورت حذف شوند؟(بدون برگشت)"
+"آیا در هر صورت حذف شوند؟(بدون برگشت)\n"
+"شما میتوانید فایل های حذف شده را در سطل زباله سیستم عامل خود بیابید ."
 
 #: editor/dependency_editor.cpp
 msgid "Cannot remove:"
@@ -1128,7 +1126,7 @@ msgstr "با تشکر از سوی جامعه‌ی Godot!"
 
 #: editor/editor_about.cpp editor/editor_node.cpp editor/project_manager.cpp
 msgid "Click to copy."
-msgstr ""
+msgstr "برای کپی کردن کلیک کنید."
 
 #: editor/editor_about.cpp
 msgid "Godot Engine contributors"
@@ -1351,9 +1349,8 @@ msgid "Add Audio Bus"
 msgstr "افزودن کانل صوتی"
 
 #: editor/editor_audio_buses.cpp
-#, fuzzy
 msgid "Master bus can't be deleted!"
-msgstr "استاد اتوبوس قابل حذف نیست!"
+msgstr "گذرگاه اصلی قابل حذف نیست!"
 
 #: editor/editor_audio_buses.cpp
 msgid "Delete Audio Bus"
@@ -1470,9 +1467,8 @@ msgid "Rename Autoload"
 msgstr "بارگذاری خودکار را تغییر نام بده"
 
 #: editor/editor_autoload_settings.cpp
-#, fuzzy
 msgid "Toggle AutoLoad Globals"
-msgstr "تغییر حالت اتماتیک لود عمومی"
+msgstr "تغییر متغیر های عمومی مربوط به لود خودکار"
 
 #: editor/editor_autoload_settings.cpp
 msgid "Move Autoload"
@@ -2459,7 +2455,7 @@ msgid "Save changes to the following scene(s) before quitting?"
 msgstr ""
 
 #: editor/editor_node.cpp
-msgid "Save changes the following scene(s) before opening Project Manager?"
+msgid "Save changes to the following scene(s) before opening Project Manager?"
 msgstr ""
 
 #: editor/editor_node.cpp
@@ -12111,10 +12107,6 @@ msgid "Can't copy the function node."
 msgstr ""
 
 #: modules/visual_script/visual_script_editor.cpp
-msgid "Clipboard is empty!"
-msgstr "حافظه پنهان خالی است!"
-
-#: modules/visual_script/visual_script_editor.cpp
 #, fuzzy
 msgid "Paste VisualScript Nodes"
 msgstr "مسیر به سمت گره:"
@@ -13241,6 +13233,12 @@ msgstr ""
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "ثوابت قابل تغییر نیستند."
+
+#~ msgid "An animation player can't animate itself, only other players."
+#~ msgstr "یک مجری انیمیشن نمی تواند خود را محرک کند، فقط سایر مجریان."
+
+#~ msgid "Clipboard is empty"
+#~ msgstr "حافظه پنهان خالی است"
 
 #~ msgid "No"
 #~ msgstr "نه"

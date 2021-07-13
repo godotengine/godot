@@ -80,12 +80,13 @@
 # TechnoPorg <jonah.janzen@gmail.com>, 2021.
 # ASTRALE <jules.cercy@etu.univ-lyon1.fr>, 2021.
 # Julien Vanelian <julienvanelian@hotmail.com>, 2021.
+# Clément Topy <topy72.mine@gmail.com>, 2021.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2021-06-20 13:35+0000\n"
-"Last-Translator: Nathan <bonnemainsnathan@gmail.com>\n"
+"PO-Revision-Date: 2021-07-01 14:33+0000\n"
+"Last-Translator: Clément Topy <topy72.mine@gmail.com>\n"
 "Language-Team: French <https://hosted.weblate.org/projects/godot-engine/"
 "godot/fr/>\n"
 "Language: fr\n"
@@ -93,7 +94,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 4.7\n"
+"X-Generator: Weblate 4.8-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -487,12 +488,6 @@ msgstr ""
 "Les pistes d’animation ne peuvent pointer que sur des nœuds AnimationPlayer."
 
 #: editor/animation_track_editor.cpp
-msgid "An animation player can't animate itself, only other players."
-msgstr ""
-"Un lecteur d’animation ne peut s’animer lui-même, seulement les autres "
-"lecteurs."
-
-#: editor/animation_track_editor.cpp
 msgid "Not possible to add a new track without a root"
 msgstr "Impossible d’ajouter une nouvelle piste sans racine"
 
@@ -539,8 +534,9 @@ msgid "Anim Move Keys"
 msgstr "Déplacer les clés d’animation"
 
 #: editor/animation_track_editor.cpp
-msgid "Clipboard is empty"
-msgstr "Le presse-papiers est vide"
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Clipboard is empty!"
+msgstr "Le presse-papiers est vide !"
 
 #: editor/animation_track_editor.cpp
 msgid "Paste Tracks"
@@ -1403,7 +1399,7 @@ msgstr "Contourner"
 
 #: editor/editor_audio_buses.cpp
 msgid "Bus options"
-msgstr "Options de tranport"
+msgstr "Options de bus"
 
 #: editor/editor_audio_buses.cpp editor/filesystem_dock.cpp
 #: editor/plugins/animation_player_editor_plugin.cpp editor/scene_tree_dock.cpp
@@ -2596,7 +2592,7 @@ msgstr ""
 "quitter ?"
 
 #: editor/editor_node.cpp
-msgid "Save changes the following scene(s) before opening Project Manager?"
+msgid "Save changes to the following scene(s) before opening Project Manager?"
 msgstr ""
 "Enregistrer les modifications sur la (les) scène(s) suivante(s) avant "
 "d'ouvrir le gestionnaire de projet ?"
@@ -3260,7 +3256,7 @@ msgstr "Ré-enregistrer"
 
 #: editor/editor_node.cpp
 msgid "New Inherited"
-msgstr "Nouveau hérité"
+msgstr "Nouvelle scène héritée"
 
 #: editor/editor_node.cpp
 msgid "Load Errors"
@@ -12145,10 +12141,6 @@ msgid "Can't copy the function node."
 msgstr "Impossible de copier le nœud de fonction."
 
 #: modules/visual_script/visual_script_editor.cpp
-msgid "Clipboard is empty!"
-msgstr "Le presse-papiers est vide !"
-
-#: modules/visual_script/visual_script_editor.cpp
 msgid "Paste VisualScript Nodes"
 msgstr "Coller les nœuds VisualScript"
 
@@ -13390,6 +13382,14 @@ msgstr "Les variations ne peuvent être affectées que dans la fonction vertex."
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "Les constantes ne peuvent être modifiées."
+
+#~ msgid "An animation player can't animate itself, only other players."
+#~ msgstr ""
+#~ "Un lecteur d’animation ne peut s’animer lui-même, seulement les autres "
+#~ "lecteurs."
+
+#~ msgid "Clipboard is empty"
+#~ msgstr "Le presse-papiers est vide"
 
 #~ msgid ""
 #~ "InterpolatedCamera has been deprecated and will be removed in Godot 4.0."
