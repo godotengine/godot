@@ -129,7 +129,7 @@ public:
 class ClusterBuilderRD {
 public:
 	enum LightType {
-		LIGHT_TYPE_OMNI,
+		LIGHT_TYPE_POINT,
 		LIGHT_TYPE_SPOT
 	};
 
@@ -139,7 +139,7 @@ public:
 	};
 
 	enum ElementType {
-		ELEMENT_TYPE_OMNI_LIGHT,
+		ELEMENT_TYPE_POINT_LIGHT,
 		ELEMENT_TYPE_SPOT_LIGHT,
 		ELEMENT_TYPE_DECAL,
 		ELEMENT_TYPE_REFLECTION_PROBE,
@@ -223,7 +223,7 @@ public:
 	void begin(const Transform3D &p_view_transform, const CameraMatrix &p_cam_projection, bool p_flip_y);
 
 	_FORCE_INLINE_ void add_light(LightType p_type, const Transform3D &p_transform, float p_radius, float p_spot_aperture) {
-		if (p_type == LIGHT_TYPE_OMNI && cluster_count_by_type[ELEMENT_TYPE_OMNI_LIGHT] == max_elements_by_type) {
+		if (p_type == LIGHT_TYPE_POINT && cluster_count_by_type[ELEMENT_TYPE_POINT_LIGHT] == max_elements_by_type) {
 			return; //max number elements reached
 		}
 		if (p_type == LIGHT_TYPE_SPOT && cluster_count_by_type[ELEMENT_TYPE_SPOT_LIGHT] == max_elements_by_type) {
@@ -241,10 +241,10 @@ public:
 
 		radius *= p_radius;
 
-		if (p_type == LIGHT_TYPE_OMNI) {
+		if (p_type == LIGHT_TYPE_POINT) {
 			radius *= shared->sphere_overfit; // overfit icosphere
 
-			//omni
+			//point
 			float depth = -xform.origin.z;
 			if (orthogonal) {
 				e.touches_near = (depth - radius) < z_near;
@@ -258,12 +258,12 @@ public:
 			e.scale[0] = radius;
 			e.scale[1] = radius;
 			e.scale[2] = radius;
-			e.type = ELEMENT_TYPE_OMNI_LIGHT;
-			e.original_index = cluster_count_by_type[ELEMENT_TYPE_OMNI_LIGHT];
+			e.type = ELEMENT_TYPE_POINT_LIGHT;
+			e.original_index = cluster_count_by_type[ELEMENT_TYPE_POINT_LIGHT];
 
 			RendererStorageRD::store_transform_transposed_3x4(xform, e.transform_inv);
 
-			cluster_count_by_type[ELEMENT_TYPE_OMNI_LIGHT]++;
+			cluster_count_by_type[ELEMENT_TYPE_POINT_LIGHT]++;
 
 		} else {
 			//spot
@@ -307,7 +307,7 @@ public:
 			e.scale[2] = radius;
 
 			e.type = ELEMENT_TYPE_SPOT_LIGHT;
-			e.original_index = cluster_count_by_type[ELEMENT_TYPE_SPOT_LIGHT]; //use omni since they share index
+			e.original_index = cluster_count_by_type[ELEMENT_TYPE_SPOT_LIGHT]; //use point since they share index
 
 			RendererStorageRD::store_transform_transposed_3x4(xform, e.transform_inv);
 

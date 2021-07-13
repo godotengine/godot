@@ -464,7 +464,7 @@ void register_scene_types() {
 	ClassDB::register_class<AnimatedSprite3D>();
 	ClassDB::register_virtual_class<Light3D>();
 	ClassDB::register_class<DirectionalLight3D>();
-	ClassDB::register_class<OmniLight3D>();
+	ClassDB::register_class<PointLight3D>();
 	ClassDB::register_class<SpotLight3D>();
 	ClassDB::register_class<ReflectionProbe>();
 	ClassDB::register_class<Decal>();
@@ -925,7 +925,7 @@ void register_scene_types() {
 	ClassDB::add_compatibility_class("NavigationRegion", "NavigationRegion3D");
 	ClassDB::add_compatibility_class("Navigation2DServer", "NavigationServer2D");
 	ClassDB::add_compatibility_class("NavigationServer", "NavigationServer3D");
-	ClassDB::add_compatibility_class("OmniLight", "OmniLight3D");
+	ClassDB::add_compatibility_class("OmniLight", "PointLight3D");
 	ClassDB::add_compatibility_class("PanoramaSky", "Sky");
 	ClassDB::add_compatibility_class("Particles", "GPUParticles3D");
 	ClassDB::add_compatibility_class("Particles2D", "GPUParticles2D");

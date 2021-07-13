@@ -65,9 +65,9 @@ void LightmapperRD::add_directional_light(bool p_static, const Vector3 &p_direct
 	lights.push_back(l);
 }
 
-void LightmapperRD::add_omni_light(bool p_static, const Vector3 &p_position, const Color &p_color, float p_energy, float p_range, float p_attenuation, float p_size) {
+void LightmapperRD::add_point_light(bool p_static, const Vector3 &p_position, const Color &p_color, float p_energy, float p_range, float p_attenuation, float p_size) {
 	Light l;
-	l.type = LIGHT_TYPE_OMNI;
+	l.type = LIGHT_TYPE_POINT;
 	l.position[0] = p_position.x;
 	l.position[1] = p_position.y;
 	l.position[2] = p_position.z;

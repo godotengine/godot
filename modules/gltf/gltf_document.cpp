@@ -4961,9 +4961,9 @@ Node3D *GLTFDocument::_generate_light(Ref<GLTFState> state, Node *scene_parent, 
 	// We want to have double intensity give double brightness, so we need half the attenuation.
 	const float attenuation = range / intensity;
 	if (l->type == "point") {
-		OmniLight3D *light = memnew(OmniLight3D);
-		light->set_param(OmniLight3D::PARAM_ATTENUATION, attenuation);
-		light->set_param(OmniLight3D::PARAM_RANGE, range);
+		PointLight3D *light = memnew(PointLight3D);
+		light->set_param(PointLight3D::PARAM_ATTENUATION, attenuation);
+		light->set_param(PointLight3D::PARAM_RANGE, range);
 		light->set_color(l->color);
 		return light;
 	}
@@ -5034,11 +5034,11 @@ GLTFLightIndex GLTFDocument::_convert_light(Ref<GLTFState> state, Light3D *p_lig
 		DirectionalLight3D *light = cast_to<DirectionalLight3D>(p_light);
 		l->intensity = light->get_param(DirectionalLight3D::PARAM_ENERGY);
 		l->range = FLT_MAX; // Range for directional lights is infinite in Godot.
-	} else if (cast_to<OmniLight3D>(p_light)) {
+	} else if (cast_to<PointLight3D>(p_light)) {
 		l->type = "point";
-		OmniLight3D *light = cast_to<OmniLight3D>(p_light);
-		l->range = light->get_param(OmniLight3D::PARAM_RANGE);
-		float attenuation = p_light->get_param(OmniLight3D::PARAM_ATTENUATION);
+		PointLight3D *light = cast_to<PointLight3D>(p_light);
+		l->range = light->get_param(PointLight3D::PARAM_RANGE);
+		float attenuation = p_light->get_param(PointLight3D::PARAM_ATTENUATION);
 		l->intensity = l->range / attenuation;
 	} else if (cast_to<SpotLight3D>(p_light)) {
 		l->type = "spot";

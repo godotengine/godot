@@ -854,7 +854,7 @@ void RenderForwardMobile::_update_render_base_uniform_set() {
 			RD::Uniform u;
 			u.binding = 3;
 			u.uniform_type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
-			u.ids.push_back(get_omni_light_buffer());
+			u.ids.push_back(get_point_light_buffer());
 			uniforms.push_back(u);
 		}
 		{
@@ -1441,7 +1441,7 @@ void RenderForwardMobile::_render_list_template(RenderingDevice::DrawListID p_dr
 			push_constant.lightmap_uv_scale[3] = inst->lightmap_uv_scale.size.y;
 		};
 
-		_fill_instance_indices(inst->omni_lights, inst->omni_light_count, push_constant.omni_lights, inst->spot_lights, inst->spot_light_count, push_constant.spot_lights, inst->reflection_probes, inst->reflection_probe_count, push_constant.reflection_probes, inst->decals, inst->decals_count, push_constant.decals, push_constant.layer_mask);
+		_fill_instance_indices(inst->point_lights, inst->point_light_count, push_constant.point_lights, inst->spot_lights, inst->spot_light_count, push_constant.spot_lights, inst->reflection_probes, inst->reflection_probe_count, push_constant.reflection_probes, inst->decals, inst->decals_count, push_constant.decals, push_constant.layer_mask);
 
 		RID material_uniform_set;
 		SceneShaderForwardMobile::ShaderData *shader;
@@ -1753,16 +1753,16 @@ void RenderForwardMobile::geometry_instance_pair_light_instances(GeometryInstanc
 	GeometryInstanceForwardMobile *ginstance = static_cast<GeometryInstanceForwardMobile *>(p_geometry_instance);
 	ERR_FAIL_COND(!ginstance);
 
-	ginstance->omni_light_count = 0;
+	ginstance->point_light_count = 0;
 	ginstance->spot_light_count = 0;
 
 	for (uint32_t i = 0; i < p_light_instance_count; i++) {
 		RS::LightType type = light_instance_get_type(p_light_instances[i]);
 		switch (type) {
-			case RS::LIGHT_OMNI: {
-				if (ginstance->omni_light_count < (uint32_t)MAX_RDL_CULL) {
-					ginstance->omni_lights[ginstance->omni_light_count] = p_light_instances[i];
-					ginstance->omni_light_count++;
+			case RS::LIGHT_POINT: {
+				if (ginstance->point_light_count < (uint32_t)MAX_RDL_CULL) {
+					ginstance->point_lights[ginstance->point_light_count] = p_light_instances[i];
+					ginstance->point_light_count++;
 				}
 			} break;
 			case RS::LIGHT_SPOT: {

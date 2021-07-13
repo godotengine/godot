@@ -442,7 +442,7 @@ void ClusterBuilderRD::bake_cluster() {
 			for (uint32_t i = 0; i < render_element_count;) {
 				push_constant.base_index = i;
 				switch (render_elements[i].type) {
-					case ELEMENT_TYPE_OMNI_LIGHT: {
+					case ELEMENT_TYPE_POINT_LIGHT: {
 						RD::get_singleton()->draw_list_bind_vertex_array(draw_list, shared->sphere_vertex_array);
 						RD::get_singleton()->draw_list_bind_index_array(draw_list, shared->sphere_index_array);
 					} break;

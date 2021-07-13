@@ -783,7 +783,7 @@ Light3DGizmoPlugin::Light3DGizmoPlugin() {
 	create_material("lines_billboard", Color(1, 1, 1), true, false, true);
 
 	create_icon_material("light_directional_icon", Node3DEditor::get_singleton()->get_theme_icon("GizmoDirectionalLight", "EditorIcons"));
-	create_icon_material("light_omni_icon", Node3DEditor::get_singleton()->get_theme_icon("GizmoLight", "EditorIcons"));
+	create_icon_material("light_point_icon", Node3DEditor::get_singleton()->get_theme_icon("GizmoLight", "EditorIcons"));
 	create_icon_material("light_spot_icon", Node3DEditor::get_singleton()->get_theme_icon("GizmoSpotLight", "EditorIcons"));
 
 	create_handle_material("handles");
@@ -873,7 +873,7 @@ void Light3DGizmoPlugin::set_handle(EditorNode3DGizmo *p_gizmo, int p_idx, Camer
 			}
 
 			light->set_param(Light3D::PARAM_RANGE, d);
-		} else if (Object::cast_to<OmniLight3D>(light)) {
+		} else if (Object::cast_to<PointLight3D>(light)) {
 			Plane cp = Plane(gt.origin, p_camera->get_transform().basis.get_axis(2));
 
 			Vector3 inters;
@@ -959,13 +959,13 @@ void Light3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 		p_gizmo->add_unscaled_billboard(icon, 0.05, color);
 	}
 
-	if (Object::cast_to<OmniLight3D>(light)) {
+	if (Object::cast_to<PointLight3D>(light)) {
 		// Use both a billboard circle and 3 non-billboard circles for a better sphere-like representation
 		const Ref<Material> lines_material = get_material("lines_secondary", p_gizmo);
 		const Ref<Material> lines_billboard_material = get_material("lines_billboard", p_gizmo);
-		const Ref<Material> icon = get_material("light_omni_icon", p_gizmo);
+		const Ref<Material> icon = get_material("light_point_icon", p_gizmo);
 
-		OmniLight3D *on = Object::cast_to<OmniLight3D>(light);
+		PointLight3D *on = Object::cast_to<PointLight3D>(light);
 		const float r = on->get_param(Light3D::PARAM_RANGE);
 		Vector<Vector3> points;
 		Vector<Vector3> points_billboard;

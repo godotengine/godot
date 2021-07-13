@@ -516,7 +516,7 @@ private:
 			uint32_t box_project;
 			uint32_t ambient_mode;
 			uint32_t pad;
-			float local_matrix[16]; // up to here for spot and omni, rest is for directional
+			float local_matrix[16]; // up to here for spot and point, rest is for directional
 		};
 
 		struct LightData {
@@ -533,7 +533,7 @@ private:
 			float specular_amount;
 			uint32_t shadow_enabled;
 
-			float atlas_rect[4]; // in omni, used for atlas uv, in spot, used for projector uv
+			float atlas_rect[4]; // in point, used for atlas uv, in spot, used for projector uv
 			float shadow_matrix[16];
 			float shadow_bias;
 			float shadow_normal_bias;
@@ -619,15 +619,15 @@ private:
 		RID decal_buffer;
 		uint32_t decal_count;
 
-		LightData *omni_lights;
+		LightData *point_lights;
 		LightData *spot_lights;
 
-		InstanceSort<LightInstance> *omni_light_sort;
+		InstanceSort<LightInstance> *point_light_sort;
 		InstanceSort<LightInstance> *spot_light_sort;
 		uint32_t max_lights;
-		RID omni_light_buffer;
+		RID point_light_buffer;
 		RID spot_light_buffer;
-		uint32_t omni_light_count = 0;
+		uint32_t point_light_count = 0;
 		uint32_t spot_light_count = 0;
 
 		DirectionalLightData *directional_lights;
@@ -1117,7 +1117,7 @@ public:
 		return li->transform;
 	}
 
-	void _fill_instance_indices(const RID *p_omni_light_instances, uint32_t p_omni_light_instance_count, uint32_t *p_omni_light_indices, const RID *p_spot_light_instances, uint32_t p_spot_light_instance_count, uint32_t *p_spot_light_indices, const RID *p_reflection_probe_instances, uint32_t p_reflection_probe_instance_count, uint32_t *p_reflection_probe_indices, const RID *p_decal_instances, uint32_t p_decal_instance_count, uint32_t *p_decal_instance_indices, uint32_t p_layer_mask, uint32_t p_max_dst_words = 2);
+	void _fill_instance_indices(const RID *p_point_light_instances, uint32_t p_point_light_instance_count, uint32_t *p_point_light_indices, const RID *p_spot_light_instances, uint32_t p_spot_light_instance_count, uint32_t *p_spot_light_indices, const RID *p_reflection_probe_instances, uint32_t p_reflection_probe_instance_count, uint32_t *p_reflection_probe_indices, const RID *p_decal_instances, uint32_t p_decal_instance_count, uint32_t *p_decal_instance_indices, uint32_t p_layer_mask, uint32_t p_max_dst_words = 2);
 
 	/* gi light probes */
 
@@ -1215,7 +1215,7 @@ public:
 	virtual void set_time(double p_time, double p_step) override;
 
 	RID get_reflection_probe_buffer();
-	RID get_omni_light_buffer();
+	RID get_point_light_buffer();
 	RID get_spot_light_buffer();
 	RID get_directional_light_buffer();
 	RID get_decal_buffer();

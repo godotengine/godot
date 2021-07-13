@@ -106,7 +106,7 @@ public:
 		enum Mode {
 			MODE_AMBIENT,
 			MODE_DIRECTIONAL,
-			MODE_OMNI,
+			MODE_POINT,
 			MODE_SPOT
 		};
 

@@ -482,7 +482,7 @@ protected:
 			uint32_t layer_mask = 1;
 			float lightmap_uv_scale[4]; // doubles as uv_offset when needed
 			uint32_t reflection_probes[2]; // packed reflection probes
-			uint32_t omni_lights[2]; // packed omni lights
+			uint32_t point_lights[2]; // packed point lights
 			uint32_t spot_lights[2]; // packed spot lights
 			uint32_t decals[2]; // packed spot lights
 		};
@@ -515,8 +515,8 @@ protected:
 		// culled light info
 		uint32_t reflection_probe_count;
 		RID reflection_probes[MAX_RDL_CULL];
-		uint32_t omni_light_count;
-		RID omni_lights[MAX_RDL_CULL];
+		uint32_t point_light_count;
+		RID point_lights[MAX_RDL_CULL];
 		uint32_t spot_light_count;
 		RID spot_lights[MAX_RDL_CULL];
 		uint32_t decals_count;

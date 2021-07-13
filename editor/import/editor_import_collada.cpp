@@ -222,8 +222,8 @@ Error ColladaImport::_create_scene(Collada::Node *p_node, Node3D *p_parent) {
 				} else {
 					Light3D *l;
 
-					if (ld.mode == Collada::LightData::MODE_OMNI) {
-						l = memnew(OmniLight3D);
+					if (ld.mode == Collada::LightData::MODE_POINT) {
+						l = memnew(PointLight3D);
 					} else {
 						l = memnew(SpotLight3D);
 						//l->set_parameter(Light::PARAM_SPOT_ANGLE,ld.spot_angle);

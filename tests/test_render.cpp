@@ -169,7 +169,7 @@ public:
 		vs->camera_set_perspective(camera, 60, 0.1, 1000);
 
 		/*
-		RID lightaux = vs->light_create( RenderingServer::LIGHT_OMNI );
+		RID lightaux = vs->light_create( RenderingServer::LIGHT_POINT );
 		vs->light_set_var( lightaux, RenderingServer::LIGHT_VAR_RADIUS, 80 );
 		vs->light_set_var( lightaux, RenderingServer::LIGHT_VAR_ATTENUATION, 1 );
 		vs->light_set_var( lightaux, RenderingServer::LIGHT_VAR_ENERGY, 1.5 );
@@ -188,7 +188,7 @@ public:
 
 		vs->instance_set_transform(light, lla);
 
-		lightaux = vs->omni_light_create();
+		lightaux = vs->point_light_create();
 		//vs->light_set_color( lightaux, RenderingServer::LIGHT_COLOR_AMBIENT, Color(0.0,0.0,1.0) );
 		vs->light_set_color(lightaux, Color(1.0, 1.0, 0.0));
 		vs->light_set_param(lightaux, RenderingServer::LIGHT_PARAM_RANGE, 4);
