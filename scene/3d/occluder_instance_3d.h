@@ -72,6 +72,7 @@ class OccluderInstance3D : public VisualInstance3D {
 private:
 	Ref<Occluder3D> occluder;
 	uint32_t bake_mask = 0xFFFFFFFF;
+	float simplify = 0.02;
 
 	void _occluder_changed();
 
@@ -101,6 +102,9 @@ public:
 
 	void set_bake_mask_value(int p_layer_number, bool p_enable);
 	bool get_bake_mask_value(int p_layer_number) const;
+
+	void set_bake_simplify(float p_threshold);
+	float get_bake_simplify() const;
 
 	BakeError bake(Node *p_from_node, String p_occluder_path = "");
 

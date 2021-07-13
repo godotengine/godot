@@ -31,6 +31,7 @@
 #include "occluder_instance_3d.h"
 #include "core/core_string_names.h"
 #include "scene/3d/mesh_instance_3d.h"
+#include "scene/resources/surface_tool.h"
 
 RID Occluder3D::get_rid() const {
 	if (!occluder.is_valid()) {
@@ -213,6 +214,15 @@ bool OccluderInstance3D::get_bake_mask_value(int p_layer_number) const {
 	return bake_mask & (1 << (p_layer_number - 1));
 }
 
+void OccluderInstance3D::set_bake_simplify(float p_threshold) {
+	simplify = p_threshold;
+	update_configuration_warnings();
+}
+
+float OccluderInstance3D::get_bake_simplify() const {
+	return simplify;
+}
+
 bool OccluderInstance3D::_bake_material_check(Ref<Material> p_material) {
 	StandardMaterial3D *standard_mat = Object::cast_to<StandardMaterial3D>(p_material.ptr());
 	if (standard_mat && standard_mat->get_transparency() != StandardMaterial3D::TRANSPARENCY_DISABLED) {
@@ -240,7 +250,7 @@ void OccluderInstance3D::_bake_node(Node *p_node, PackedVector3Array &r_vertices
 		}
 
 		if (valid) {
-			Transform3D global_to_local = get_global_transform().affine_inverse() * mi->get_global_transform();
+			const Transform3D global_to_local = get_global_transform().affine_inverse() * mi->get_global_transform();
 
 			for (int i = 0; i < mesh->get_surface_count(); i++) {
 				if (mesh->surface_get_primitive_type(i) != Mesh::PRIMITIVE_TRIANGLES) {
@@ -257,20 +267,37 @@ void OccluderInstance3D::_bake_node(Node *p_node, PackedVector3Array &r_vertices
 					}
 				}
 
-				Array arrays = mesh->surface_get_arrays(i);
+				const Array arrays = mesh->surface_get_arrays(i);
 
-				int vertex_offset = r_vertices.size();
-				PackedVector3Array vertices = arrays[Mesh::ARRAY_VERTEX];
+				const int vertex_offset = r_vertices.size();
+				const PackedVector3Array vertices = arrays[Mesh::ARRAY_VERTEX];
+
+				const int index_offset = r_indices.size();
+				PackedInt32Array indices = arrays[Mesh::ARRAY_INDEX];
+
+				if (!Math::is_zero_approx(simplify) && SurfaceTool::simplify_func) {
+					// meshoptimizer is available; use it to simplify the occluder geometry.
+					// This can speed up occluder rendering significantly.
+					Ref<SurfaceTool> st = memnew(SurfaceTool);
+					st->begin(Mesh::PRIMITIVE_TRIANGLES);
+
+					for (int j = 0; j < vertices.size(); j++) {
+						st->add_vertex(vertices[j]);
+					}
+					for (int j = 0; j < indices.size(); j++) {
+						st->add_index(indices[j]);
+					}
+
+					indices = st->generate_lod(simplify);
+				}
+
 				r_vertices.resize(r_vertices.size() + vertices.size());
+				r_indices.resize(r_indices.size() + indices.size());
 
 				Vector3 *vtx_ptr = r_vertices.ptrw();
 				for (int j = 0; j < vertices.size(); j++) {
 					vtx_ptr[vertex_offset + j] = global_to_local.xform(vertices[j]);
 				}
-
-				int index_offset = r_indices.size();
-				PackedInt32Array indices = arrays[Mesh::ARRAY_INDEX];
-				r_indices.resize(r_indices.size() + indices.size());
 
 				int *idx_ptr = r_indices.ptrw();
 				for (int j = 0; j < indices.size(); j++) {
@@ -352,12 +379,16 @@ void OccluderInstance3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_bake_mask_value", "layer_number", "value"), &OccluderInstance3D::set_bake_mask_value);
 	ClassDB::bind_method(D_METHOD("get_bake_mask_value", "layer_number"), &OccluderInstance3D::get_bake_mask_value);
 
+	ClassDB::bind_method(D_METHOD("set_bake_simplify", "threshold"), &OccluderInstance3D::set_bake_simplify);
+	ClassDB::bind_method(D_METHOD("get_bake_simplify"), &OccluderInstance3D::get_bake_simplify);
+
 	ClassDB::bind_method(D_METHOD("set_occluder", "occluder"), &OccluderInstance3D::set_occluder);
 	ClassDB::bind_method(D_METHOD("get_occluder"), &OccluderInstance3D::get_occluder);
 
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "occluder", PROPERTY_HINT_RESOURCE_TYPE, "Occluder3D"), "set_occluder", "get_occluder");
 	ADD_GROUP("Bake", "bake_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "bake_mask", PROPERTY_HINT_LAYERS_3D_RENDER), "set_bake_mask", "get_bake_mask");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "bake_simplify", PROPERTY_HINT_RANGE, "0.0,0.1,0.0001"), "set_bake_simplify", "get_bake_simplify");
 }
 
 OccluderInstance3D::OccluderInstance3D() {
