@@ -38,6 +38,7 @@
 #include "core/io/marshalls.h"
 #include "core/object/script_language.h"
 #include "core/version.h"
+#include "editor/editor_export.h"
 #include "scene/resources/theme.h"
 
 // Used for a hack preserving Mono properties on non-Mono builds.
@@ -260,6 +261,11 @@ void DocTools::generate(bool p_basic_types) {
 			//special case for project settings, so settings can be documented
 			ProjectSettings::get_singleton()->get_property_list(&properties);
 			own_properties = properties;
+		} else if (name == "EditorExportPlatformPC") {
+			EditorExportPlatformPC *editor_export_platform = memnew(EditorExportPlatformPC);
+			Ref<EditorExportPreset> export_preset = editor_export_platform->create_preset();
+			export_preset->get_property_list(&properties);
+			own_properties = properties;
 		} else {
 			ClassDB::get_property_list(name, &properties);
 			ClassDB::get_property_list(name, &own_properties, true);
@@ -285,6 +291,13 @@ void DocTools::generate(bool p_basic_types) {
 
 			bool default_value_valid = false;
 			Variant default_value;
+
+			if (name == "EditorExportPlatformPC") {
+				if (E->get().name == "script") {
+					// Prevent spurious property from being added to the generated XML.
+					continue;
+				}
+			}
 
 			if (name == "ProjectSettings") {
 				// Special case for project settings, so that settings are not taken from the current project's settings
