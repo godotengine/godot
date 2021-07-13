@@ -261,6 +261,14 @@ void GDScript::_get_script_method_list(List<MethodInfo> *r_list, bool p_include_
 				PropertyInfo arginfo = func->get_argument_type(i);
 #ifdef TOOLS_ENABLED
 				arginfo.name = func->get_argument_name(i);
+
+				if (i < E.value->get_default_argument_count()) {
+					const Vector<Variant> &values = E.value->get_default_arg_values();
+
+					if (i < values.size()) {
+						mi.default_arguments.push_back(values[i]);
+					}
+				}
 #endif
 				mi.arguments.push_back(arginfo);
 			}
@@ -1482,8 +1490,21 @@ void GDScriptInstance::get_method_list(List<MethodInfo> *p_list) const {
 			mi.name = E.key;
 			mi.flags |= METHOD_FLAG_FROM_SCRIPT;
 			for (int i = 0; i < E.value->get_argument_count(); i++) {
-				mi.arguments.push_back(PropertyInfo(Variant::NIL, "arg" + itos(i)));
+				PropertyInfo arginfo = E.value->get_argument_type(i);
+#ifdef TOOLS_ENABLED
+				arginfo.name = E.value->get_argument_name(i);
+
+				if (i < E.value->get_default_argument_count()) {
+					const Vector<Variant> &values = E.value->get_default_arg_values();
+
+					if (i < values.size()) {
+						mi.default_arguments.push_back(values[i]);
+					}
+				}
+#endif
+				mi.arguments.push_back(arginfo);
 			}
+			mi.return_val = E.value->get_return_type();
 			p_list->push_back(mi);
 		}
 		sptr = sptr->_base;
