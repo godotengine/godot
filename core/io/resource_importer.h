@@ -123,6 +123,14 @@ public:
 	virtual int get_preset_count() const { return 0; }
 	virtual String get_preset_name(int p_idx) const { return String(); }
 
+	/** Used to fill the class reference documentation XML for importers. */
+	void get_property_list(List<PropertyInfo> *r_properties) {
+		List<ImportOption> options;
+		get_import_options(&options);
+		for (int i = 0; i < options.size(); i++) {
+			r_properties->push_back(options[i].option);
+		}
+	};
 	virtual void get_import_options(List<ImportOption> *r_options, int p_preset = 0) const = 0;
 	virtual bool get_option_visibility(const String &p_option, const Map<StringName, Variant> &p_options) const = 0;
 	virtual String get_option_group_file() const { return String(); }
