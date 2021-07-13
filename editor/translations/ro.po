@@ -420,12 +420,6 @@ msgid "Animation tracks can only point to AnimationPlayer nodes."
 msgstr "Pistele de animație pot direcționa numai nodurilor AnimațieJucător."
 
 #: editor/animation_track_editor.cpp
-msgid "An animation player can't animate itself, only other players."
-msgstr ""
-"Un player de animatie nu se poate anima insusi, doar alti playeri de "
-"animatie."
-
-#: editor/animation_track_editor.cpp
 msgid "Not possible to add a new track without a root"
 msgstr "Nu este posibil să fie adăugată o nouă pistă fără a avea o rădăcină"
 
@@ -470,8 +464,9 @@ msgid "Anim Move Keys"
 msgstr "Anim Mutați Cheie"
 
 #: editor/animation_track_editor.cpp
-msgid "Clipboard is empty"
-msgstr "Clip-board de resurse gol"
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Clipboard is empty!"
+msgstr ""
 
 #: editor/animation_track_editor.cpp
 msgid "Paste Tracks"
@@ -2520,7 +2515,7 @@ msgstr ""
 "Salvezi modificările făcute în urmatoarea(le) scenă(e) înainte să închizi?"
 
 #: editor/editor_node.cpp
-msgid "Save changes the following scene(s) before opening Project Manager?"
+msgid "Save changes to the following scene(s) before opening Project Manager?"
 msgstr ""
 "Salvezi modificările făcute în urmatoarea(le) scenă(e) înainte să deschizi "
 "Managerul de Proiect?"
@@ -12046,10 +12041,6 @@ msgid "Can't copy the function node."
 msgstr ""
 
 #: modules/visual_script/visual_script_editor.cpp
-msgid "Clipboard is empty!"
-msgstr ""
-
-#: modules/visual_script/visual_script_editor.cpp
 msgid "Paste VisualScript Nodes"
 msgstr ""
 
@@ -13087,6 +13078,14 @@ msgstr ""
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr ""
+
+#~ msgid "An animation player can't animate itself, only other players."
+#~ msgstr ""
+#~ "Un player de animatie nu se poate anima insusi, doar alti playeri de "
+#~ "animatie."
+
+#~ msgid "Clipboard is empty"
+#~ msgstr "Clip-board de resurse gol"
 
 #~ msgid "No"
 #~ msgstr "Nu"

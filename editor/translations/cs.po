@@ -431,10 +431,6 @@ msgid "Animation tracks can only point to AnimationPlayer nodes."
 msgstr "Stopa animace může odkazovat pouze na uzly AnimationPlayer."
 
 #: editor/animation_track_editor.cpp
-msgid "An animation player can't animate itself, only other players."
-msgstr "Přehrávač animace nemůže animovat sám sebe, pouze ostatní přehrávače."
-
-#: editor/animation_track_editor.cpp
 msgid "Not possible to add a new track without a root"
 msgstr "Není možné přidat novou stopu bez kořenového uzlu"
 
@@ -479,8 +475,9 @@ msgid "Anim Move Keys"
 msgstr "Animace: přesunout klíče"
 
 #: editor/animation_track_editor.cpp
-msgid "Clipboard is empty"
-msgstr "Schránka je prázdná"
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Clipboard is empty!"
+msgstr "Schránka je prázdná!"
 
 #: editor/animation_track_editor.cpp
 msgid "Paste Tracks"
@@ -2515,7 +2512,7 @@ msgid "Save changes to the following scene(s) before quitting?"
 msgstr "Uložit změny následujících scén před ukončením?"
 
 #: editor/editor_node.cpp
-msgid "Save changes the following scene(s) before opening Project Manager?"
+msgid "Save changes to the following scene(s) before opening Project Manager?"
 msgstr "Uložit změny následujících scén před otevřením Správce projektu?"
 
 #: editor/editor_node.cpp
@@ -11945,10 +11942,6 @@ msgid "Can't copy the function node."
 msgstr "Nelze zkopírovat uzel funkce."
 
 #: modules/visual_script/visual_script_editor.cpp
-msgid "Clipboard is empty!"
-msgstr "Schránka je prázdná!"
-
-#: modules/visual_script/visual_script_editor.cpp
 msgid "Paste VisualScript Nodes"
 msgstr "Vložit VisualScript uzly"
 
@@ -13118,6 +13111,13 @@ msgstr "Odlišnosti mohou být přiřazeny pouze ve vertex funkci."
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "Konstanty není možné upravovat."
+
+#~ msgid "An animation player can't animate itself, only other players."
+#~ msgstr ""
+#~ "Přehrávač animace nemůže animovat sám sebe, pouze ostatní přehrávače."
+
+#~ msgid "Clipboard is empty"
+#~ msgstr "Schránka je prázdná"
 
 #~ msgid ""
 #~ "InterpolatedCamera has been deprecated and will be removed in Godot 4.0."

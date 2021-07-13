@@ -13,18 +13,19 @@
 # Jakub Fabijan <animatorzPolski@gmail.com>, 2021.
 # mourning20s <mourning20s@protonmail.com>, 2021.
 # Manuel González <mgoopazo@gmail.com>, 2021.
+# Wang Tseryui <2251439097@qq.com>, 2021.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
-"PO-Revision-Date: 2021-06-02 09:04+0000\n"
-"Last-Translator: mourning20s <mourning20s@protonmail.com>\n"
+"PO-Revision-Date: 2021-07-13 06:13+0000\n"
+"Last-Translator: Wang Tseryui <2251439097@qq.com>\n"
 "Language-Team: Esperanto <https://hosted.weblate.org/projects/godot-engine/"
 "godot/eo/>\n"
 "Language: eo\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8-bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.7-dev\n"
+"X-Generator: Weblate 4.7.2-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -394,9 +395,8 @@ msgid "Rearrange Tracks"
 msgstr "Rearanĝi trakojn"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Transform tracks only apply to Spatial-based nodes."
-msgstr "Transformaj trakoj nur aplikas al Spatial-ajn nodojn."
+msgstr "Transformaj trakoj validas nur aplikas al Spatial-bazitaj nodoj."
 
 #: editor/animation_track_editor.cpp
 msgid ""
@@ -413,10 +413,6 @@ msgstr ""
 #: editor/animation_track_editor.cpp
 msgid "Animation tracks can only point to AnimationPlayer nodes."
 msgstr "Animaciaj trakoj nur eblas indiki al AnimationPlayer-aj nodoj."
-
-#: editor/animation_track_editor.cpp
-msgid "An animation player can't animate itself, only other players."
-msgstr "Animado legilo ne volas animi si mem, nur aliajn ludantojn."
 
 #: editor/animation_track_editor.cpp
 msgid "Not possible to add a new track without a root"
@@ -463,8 +459,9 @@ msgid "Anim Move Keys"
 msgstr "Animado Movi Ŝlosilojn"
 
 #: editor/animation_track_editor.cpp
-msgid "Clipboard is empty"
-msgstr "Tondujo estas malplena"
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Clipboard is empty!"
+msgstr ""
 
 #: editor/animation_track_editor.cpp
 msgid "Paste Tracks"
@@ -1121,7 +1118,7 @@ msgstr "Dankon de la komunumo de Godot!"
 
 #: editor/editor_about.cpp editor/editor_node.cpp editor/project_manager.cpp
 msgid "Click to copy."
-msgstr ""
+msgstr "Alklaku por kopii."
 
 #: editor/editor_about.cpp
 msgid "Godot Engine contributors"
@@ -2510,7 +2507,7 @@ msgid "Save changes to the following scene(s) before quitting?"
 msgstr "Konservi ŝanĝojn al la jena(j) sceno(j) antaŭ foriri?"
 
 #: editor/editor_node.cpp
-msgid "Save changes the following scene(s) before opening Project Manager?"
+msgid "Save changes to the following scene(s) before opening Project Manager?"
 msgstr ""
 "Konservi ŝanĝojn al la jena(j) sceno(j) antaŭ malfermi projektan mastrumilon?"
 
@@ -11803,10 +11800,6 @@ msgid "Can't copy the function node."
 msgstr ""
 
 #: modules/visual_script/visual_script_editor.cpp
-msgid "Clipboard is empty!"
-msgstr ""
-
-#: modules/visual_script/visual_script_editor.cpp
 msgid "Paste VisualScript Nodes"
 msgstr ""
 
@@ -12836,6 +12829,12 @@ msgstr ""
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "Konstantoj ne povas esti modifitaj."
+
+#~ msgid "An animation player can't animate itself, only other players."
+#~ msgstr "Animado legilo ne volas animi si mem, nur aliajn ludantojn."
+
+#~ msgid "Clipboard is empty"
+#~ msgstr "Tondujo estas malplena"
 
 #~ msgid "No"
 #~ msgstr "Ne"
