@@ -628,8 +628,8 @@ public:
 
 VARIANT_ENUM_CAST(CurveTexture::TextureMode)
 
-class Curve3Texture : public Texture2D {
-	GDCLASS(Curve3Texture, Texture2D);
+class CurveXYZTexture : public Texture2D {
+	GDCLASS(CurveXYZTexture, Texture2D);
 	RES_BASE_EXTENSION("curvetex")
 
 private:
@@ -665,8 +665,8 @@ public:
 	virtual int get_height() const override { return 1; }
 	virtual bool has_alpha() const override { return false; }
 
-	Curve3Texture();
-	~Curve3Texture();
+	CurveXYZTexture();
+	~CurveXYZTexture();
 };
 
 class GradientTexture : public Texture2D {
