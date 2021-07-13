@@ -6181,7 +6181,7 @@ void Node3DEditor::snap_selected_nodes_to_floor() {
 		}
 
 		if (snapped_to_floor) {
-			undo_redo->create_action(TTR("Snap Nodes To Floor"));
+			undo_redo->create_action(TTR("Snap Nodes to Floor"));
 
 			// Perform snapping if at least one node can be snapped
 			for (int i = 0; i < keys.size(); i++) {
