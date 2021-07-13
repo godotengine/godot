@@ -33,7 +33,7 @@
 #include "mobile_vr_interface.h"
 
 void register_mobile_vr_types() {
-	ClassDB::register_class<MobileVRInterface>();
+	GDREGISTER_CLASS(MobileVRInterface);
 
 	if (XRServer::get_singleton()) {
 		Ref<MobileVRInterface> mobile_vr;

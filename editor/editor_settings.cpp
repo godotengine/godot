@@ -884,7 +884,7 @@ void EditorSettings::create() {
 		return;
 	}
 
-	ClassDB::register_class<EditorSettings>(); // Otherwise it can't be unserialized.
+	GDREGISTER_CLASS(EditorSettings); // Otherwise it can't be unserialized.
 
 	String config_file_path;
 	Ref<ConfigFile> extra_config = memnew(ConfigFile);

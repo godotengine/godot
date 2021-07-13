@@ -206,7 +206,7 @@ TEST_CASE("[Object] Script instance property getter") {
 }
 
 TEST_CASE("[Object] Built-in property setter") {
-	ClassDB::register_class<_TestDerivedObject>();
+	GDREGISTER_CLASS(_TestDerivedObject);
 	_TestDerivedObject derived_object;
 
 	bool valid = false;
@@ -218,7 +218,7 @@ TEST_CASE("[Object] Built-in property setter") {
 }
 
 TEST_CASE("[Object] Built-in property getter") {
-	ClassDB::register_class<_TestDerivedObject>();
+	GDREGISTER_CLASS(_TestDerivedObject);
 	_TestDerivedObject derived_object;
 	derived_object.set_property(100);
 

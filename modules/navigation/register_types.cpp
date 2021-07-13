@@ -56,7 +56,7 @@ void register_navigation_types() {
 
 #ifndef _3D_DISABLED
 	_nav_mesh_generator = memnew(NavigationMeshGenerator);
-	ClassDB::register_class<NavigationMeshGenerator>();
+	GDREGISTER_CLASS(NavigationMeshGenerator);
 	Engine::get_singleton()->add_singleton(Engine::Singleton("NavigationMeshGenerator", NavigationMeshGenerator::get_singleton()));
 #endif
 
