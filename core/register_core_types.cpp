@@ -30,6 +30,7 @@
 
 #include "register_core_types.h"
 
+#include "core/command_line_parser.h"
 #include "core/config/engine.h"
 #include "core/config/project_settings.h"
 #include "core/core_bind.h"
@@ -207,6 +208,10 @@ void register_core_types() {
 
 	ClassDB::register_class<XMLParser>();
 	ClassDB::register_class<JSON>();
+
+	ClassDB::register_class<CommandLineOption>();
+	ClassDB::register_class<CommandLineHelpFormat>();
+	ClassDB::register_class<CommandLineParser>();
 
 	ClassDB::register_class<ConfigFile>();
 
