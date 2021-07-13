@@ -414,12 +414,6 @@ msgstr ""
 "Roudennoù Fiñvskeudenn a c'hell poentañ nemetken da skoulmoù AnimationPlayer."
 
 #: editor/animation_track_editor.cpp
-msgid "An animation player can't animate itself, only other players."
-msgstr ""
-"Ul lennerezh fiñvskeudenn ne c'hell ket em lakaat da fiñval, nemet "
-"lennerezhioù all."
-
-#: editor/animation_track_editor.cpp
 msgid "Not possible to add a new track without a root"
 msgstr "Dibosupl ouzhpenn ur roudenn nevez hep ur gwrizienn"
 
@@ -464,8 +458,9 @@ msgid "Anim Move Keys"
 msgstr "Fiñval Alc'hwezioù Fiñvskeudenn"
 
 #: editor/animation_track_editor.cpp
-msgid "Clipboard is empty"
-msgstr "Goullo ar gwask-paper"
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Clipboard is empty!"
+msgstr ""
 
 #: editor/animation_track_editor.cpp
 msgid "Paste Tracks"
@@ -2425,7 +2420,7 @@ msgid "Save changes to the following scene(s) before quitting?"
 msgstr ""
 
 #: editor/editor_node.cpp
-msgid "Save changes the following scene(s) before opening Project Manager?"
+msgid "Save changes to the following scene(s) before opening Project Manager?"
 msgstr ""
 
 #: editor/editor_node.cpp
@@ -11497,10 +11492,6 @@ msgid "Can't copy the function node."
 msgstr ""
 
 #: modules/visual_script/visual_script_editor.cpp
-msgid "Clipboard is empty!"
-msgstr ""
-
-#: modules/visual_script/visual_script_editor.cpp
 msgid "Paste VisualScript Nodes"
 msgstr ""
 
@@ -12521,3 +12512,11 @@ msgstr ""
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr ""
+
+#~ msgid "An animation player can't animate itself, only other players."
+#~ msgstr ""
+#~ "Ul lennerezh fiñvskeudenn ne c'hell ket em lakaat da fiñval, nemet "
+#~ "lennerezhioù all."
+
+#~ msgid "Clipboard is empty"
+#~ msgstr "Goullo ar gwask-paper"

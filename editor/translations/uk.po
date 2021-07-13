@@ -424,12 +424,6 @@ msgid "Animation tracks can only point to AnimationPlayer nodes."
 msgstr "Доріжки анімації можуть вказувати лише на взули AnimationPlayer."
 
 #: editor/animation_track_editor.cpp
-msgid "An animation player can't animate itself, only other players."
-msgstr ""
-"Відтворювач анімації не може відтворювати сам себе, лише інші відтворювачі "
-"анімації."
-
-#: editor/animation_track_editor.cpp
 msgid "Not possible to add a new track without a root"
 msgstr "Не можна додавати нові доріжки без кореневого запису"
 
@@ -476,8 +470,9 @@ msgid "Anim Move Keys"
 msgstr "Перемістити ключі анімації"
 
 #: editor/animation_track_editor.cpp
-msgid "Clipboard is empty"
-msgstr "Буфер обміну порожній"
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Clipboard is empty!"
+msgstr "Буфер обміну порожній!"
 
 #: editor/animation_track_editor.cpp
 msgid "Paste Tracks"
@@ -2521,7 +2516,7 @@ msgid "Save changes to the following scene(s) before quitting?"
 msgstr "Зберегти зміни в наступній(их) сцені(ах) перед тим, як вийти?"
 
 #: editor/editor_node.cpp
-msgid "Save changes the following scene(s) before opening Project Manager?"
+msgid "Save changes to the following scene(s) before opening Project Manager?"
 msgstr ""
 "Зберегти зміни в наступній(их) сцені(ах) перед відкриттям менеджера проєктів?"
 
@@ -12025,10 +12020,6 @@ msgid "Can't copy the function node."
 msgstr "Неможливо скопіювати вузол функції."
 
 #: modules/visual_script/visual_script_editor.cpp
-msgid "Clipboard is empty!"
-msgstr "Буфер обміну порожній!"
-
-#: modules/visual_script/visual_script_editor.cpp
 msgid "Paste VisualScript Nodes"
 msgstr "Вставити вузли (Візуального скриптингу) VisualScript"
 
@@ -13247,6 +13238,14 @@ msgstr "Змінні величини можна пов'язувати лише 
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "Сталі не можна змінювати."
+
+#~ msgid "An animation player can't animate itself, only other players."
+#~ msgstr ""
+#~ "Відтворювач анімації не може відтворювати сам себе, лише інші "
+#~ "відтворювачі анімації."
+
+#~ msgid "Clipboard is empty"
+#~ msgstr "Буфер обміну порожній"
 
 #~ msgid ""
 #~ "Godot editor was built without ray tracing support; lightmaps can't be "

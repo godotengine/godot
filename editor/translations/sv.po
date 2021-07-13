@@ -22,12 +22,13 @@
 # Shaggy <anton_christoffersson@hotmail.com>, 2020.
 # Marcus Toftedahl <marcus.toftedahl@his.se>, 2020.
 # Alex25820 <Alexander_sjogren@hotmail.se>, 2021.
+# Leon <joel.lundborg@gmail.com>, 2021.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2021-05-03 21:29+0000\n"
-"Last-Translator: Alex25820 <Alexander_sjogren@hotmail.se>\n"
+"PO-Revision-Date: 2021-07-13 06:13+0000\n"
+"Last-Translator: Leon <joel.lundborg@gmail.com>\n"
 "Language-Team: Swedish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/sv/>\n"
 "Language: sv\n"
@@ -35,7 +36,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.7-dev\n"
+"X-Generator: Weblate 4.7.2-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -426,11 +427,6 @@ msgid "Animation tracks can only point to AnimationPlayer nodes."
 msgstr "Animationsspår kan bara peka på AnimationsSpelar noder."
 
 #: editor/animation_track_editor.cpp
-msgid "An animation player can't animate itself, only other players."
-msgstr ""
-"En animationsspelare kan inte animera sig själv, utan bara andra spelare."
-
-#: editor/animation_track_editor.cpp
 msgid "Not possible to add a new track without a root"
 msgstr "Det är inte möjligt att lägga till ett nytt spår utan en rot-nod"
 
@@ -475,8 +471,9 @@ msgid "Anim Move Keys"
 msgstr "Anim Flytta Nycklar"
 
 #: editor/animation_track_editor.cpp
-msgid "Clipboard is empty"
-msgstr "Urklipp är tomt"
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Clipboard is empty!"
+msgstr ""
 
 #: editor/animation_track_editor.cpp
 msgid "Paste Tracks"
@@ -1134,7 +1131,7 @@ msgstr "Tack från Godot-gemenskapen!"
 
 #: editor/editor_about.cpp editor/editor_node.cpp editor/project_manager.cpp
 msgid "Click to copy."
-msgstr ""
+msgstr "Klicka för att kopiera."
 
 #: editor/editor_about.cpp
 msgid "Godot Engine contributors"
@@ -1667,14 +1664,12 @@ msgid "On 32-bit exports the embedded PCK cannot be bigger than 4 GiB."
 msgstr "Den inbäddade PCK får inte vara större än 4 GiB på 32 bitars exporter."
 
 #: editor/editor_feature_profile.cpp
-#, fuzzy
 msgid "3D Editor"
-msgstr "Öppna Skript-Redigerare"
+msgstr "Öppna 3D-redigeraren"
 
 #: editor/editor_feature_profile.cpp
-#, fuzzy
 msgid "Script Editor"
-msgstr "Öppna Skript-Redigerare"
+msgstr "Öppna Skript-Redigeraren"
 
 #: editor/editor_feature_profile.cpp
 msgid "Asset Library"
@@ -1699,18 +1694,16 @@ msgid "Import Dock"
 msgstr "Importera"
 
 #: editor/editor_feature_profile.cpp
-#, fuzzy
 msgid "Erase profile '%s'? (no undo)"
-msgstr "Ersätt Alla"
+msgstr "Rensa profil ‘%s’? (Du kan inte ångra den här åtgärden )"
 
 #: editor/editor_feature_profile.cpp
 msgid "Profile must be a valid filename and must not contain '.'"
 msgstr "Profilen måste ha ett giltigt filnamn och får inte innehålla '.'"
 
 #: editor/editor_feature_profile.cpp
-#, fuzzy
 msgid "Profile with this name already exists."
-msgstr "En fil eller mapp med detta namn finns redan."
+msgstr "En profil med detta namn finns redan."
 
 #: editor/editor_feature_profile.cpp
 msgid "(Editor Disabled, Properties Disabled)"
@@ -1768,9 +1761,8 @@ msgid "Unset"
 msgstr ""
 
 #: editor/editor_feature_profile.cpp
-#, fuzzy
 msgid "Current Profile:"
-msgstr "Nuvarande Version:"
+msgstr "Nuvarande Profil:"
 
 #: editor/editor_feature_profile.cpp
 msgid "Make Current"
@@ -1792,9 +1784,8 @@ msgid "Export"
 msgstr "Exportera"
 
 #: editor/editor_feature_profile.cpp
-#, fuzzy
 msgid "Available Profiles:"
-msgstr "Tillgängliga Noder:"
+msgstr "Tillgängliga Profiler:"
 
 #: editor/editor_feature_profile.cpp
 #, fuzzy
@@ -2561,7 +2552,7 @@ msgid "Save changes to the following scene(s) before quitting?"
 msgstr "Spara ändringar av följande scen(er) innan du avslutar?"
 
 #: editor/editor_node.cpp
-msgid "Save changes the following scene(s) before opening Project Manager?"
+msgid "Save changes to the following scene(s) before opening Project Manager?"
 msgstr ""
 "Spara ändringar av följande scen(er) innan du öppnar Projekthanteraren?"
 
@@ -12074,10 +12065,6 @@ msgid "Can't copy the function node."
 msgstr ""
 
 #: modules/visual_script/visual_script_editor.cpp
-msgid "Clipboard is empty!"
-msgstr ""
-
-#: modules/visual_script/visual_script_editor.cpp
 msgid "Paste VisualScript Nodes"
 msgstr ""
 
@@ -13141,6 +13128,13 @@ msgstr ""
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr ""
+
+#~ msgid "An animation player can't animate itself, only other players."
+#~ msgstr ""
+#~ "En animationsspelare kan inte animera sig själv, utan bara andra spelare."
+
+#~ msgid "Clipboard is empty"
+#~ msgstr "Urklipp är tomt"
 
 #~ msgid "No"
 #~ msgstr "Nej"

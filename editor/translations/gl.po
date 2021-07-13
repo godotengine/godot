@@ -408,12 +408,6 @@ msgid "Animation tracks can only point to AnimationPlayer nodes."
 msgstr "As pistas de animación só poden apuntar a nodos AnimationPlayer."
 
 #: editor/animation_track_editor.cpp
-msgid "An animation player can't animate itself, only other players."
-msgstr ""
-"Un reproductor de animacións non pode animarse a si mesmo, só a outros "
-"reproductores."
-
-#: editor/animation_track_editor.cpp
 msgid "Not possible to add a new track without a root"
 msgstr "Non é posible engadir unha nova pista sen unha raíz"
 
@@ -459,8 +453,9 @@ msgid "Anim Move Keys"
 msgstr "Mover Claves de Animación"
 
 #: editor/animation_track_editor.cpp
-msgid "Clipboard is empty"
-msgstr "O portapapeis está baleiro"
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Clipboard is empty!"
+msgstr "O portapapeis está baleiro!"
 
 #: editor/animation_track_editor.cpp
 msgid "Paste Tracks"
@@ -2502,7 +2497,7 @@ msgid "Save changes to the following scene(s) before quitting?"
 msgstr "Gardar os cambios nas seguintes escenas antes de saír?"
 
 #: editor/editor_node.cpp
-msgid "Save changes the following scene(s) before opening Project Manager?"
+msgid "Save changes to the following scene(s) before opening Project Manager?"
 msgstr ""
 "Gardar os cambios nas seguintes escenas antes de abrir o Administrador de "
 "Proxectos?"
@@ -11796,10 +11791,6 @@ msgid "Can't copy the function node."
 msgstr "Non se pode copiar o nodo función."
 
 #: modules/visual_script/visual_script_editor.cpp
-msgid "Clipboard is empty!"
-msgstr "O portapapeis está baleiro!"
-
-#: modules/visual_script/visual_script_editor.cpp
 msgid "Paste VisualScript Nodes"
 msgstr "Pegar Nodos VisualScript"
 
@@ -12896,3 +12887,11 @@ msgstr ""
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr ""
+
+#~ msgid "An animation player can't animate itself, only other players."
+#~ msgstr ""
+#~ "Un reproductor de animacións non pode animarse a si mesmo, só a outros "
+#~ "reproductores."
+
+#~ msgid "Clipboard is empty"
+#~ msgstr "O portapapeis está baleiro"
