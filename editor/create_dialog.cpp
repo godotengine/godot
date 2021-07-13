@@ -153,8 +153,9 @@ bool CreateDialog::_should_hide_type(const String &p_type) const {
 
 		String script_path = ScriptServer::get_global_class_path(p_type);
 		if (script_path.begins_with("res://addons/")) {
-			if (!EditorNode::get_singleton()->is_addon_plugin_enabled(script_path.get_slicec('/', 3))) {
-				return true; // Plugin is not enabled.
+			String cfg_path = script_path.plus_file("plugin.cfg");
+			if (FileAccess::exists(cfg_path) && !EditorNode::get_singleton()->is_addon_plugin_enabled(script_path.get_slicec('/', 3))) {
+				return true; // Plugin is not enabled. Addons are only "plugins" if they have a plugin.cfg.
 			}
 		}
 	}
@@ -228,7 +229,11 @@ void CreateDialog::_configure_search_option_item(TreeItem *r_item, const String 
 		r_item->set_text(0, p_type);
 	} else if (script_type) {
 		r_item->set_metadata(0, p_type);
-		r_item->set_text(0, p_type + " (" + ScriptServer::get_global_class_path(p_type).get_file() + ")");
+		String text = p_type;
+		if (!EDITOR_GET("interface/editors/create_dialog_hide_script_class_filepath")) {
+			text += " (" + ScriptServer::get_global_class_path(p_type).get_file() + ")";
+		}
+		r_item->set_text(0, text);
 	} else {
 		r_item->set_metadata(0, custom_type_parents[p_type]);
 		r_item->set_text(0, p_type);

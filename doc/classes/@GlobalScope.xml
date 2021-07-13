@@ -1259,6 +1259,9 @@
 		<member name="ResourceSaver" type="ResourceSaver" setter="" getter="">
 			The [ResourceSaver] singleton.
 		</member>
+		<member name="ScriptServer" type="ScriptServer" setter="" getter="">
+			The [ScriptServer] singleton.
+		</member>
 		<member name="TextServerManager" type="TextServerManager" setter="" getter="">
 			The [TextServerManager] singleton.
 		</member>

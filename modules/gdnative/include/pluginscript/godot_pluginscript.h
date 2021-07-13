@@ -130,6 +130,7 @@ typedef struct {
 	godot_bool has_named_classes;
 	godot_bool supports_builtin_mode;
 	godot_bool can_inherit_from_file;
+	godot_bool has_delayed_script_class_metadata;
 
 	godot_string (*get_template_source_code)(godot_pluginscript_language_data *p_data, const godot_string *p_class_name, const godot_string *p_base_class_name);
 	godot_bool (*validate)(godot_pluginscript_language_data *p_data, const godot_string *p_script, const godot_string *p_path, godot_packed_string_array *r_functions, godot_array *r_errors); // errors = Array of Dictionary with "line", "column", "message" keys
