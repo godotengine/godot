@@ -283,22 +283,38 @@ bool PhysicsDirectSpaceState2DSW::cast_motion(const RID &p_shape, const Transfor
 			continue;
 		}
 
-		//just do kinematic solving
-		real_t low = 0;
-		real_t hi = 1;
 		Vector2 mnormal = p_motion.normalized();
 
+		//just do kinematic solving
+		real_t low = 0.0;
+		real_t hi = 1.0;
+		real_t fraction_coeff = 0.5;
 		for (int j = 0; j < 8; j++) { //steps should be customizable..
-
-			real_t ofs = (low + hi) * 0.5;
+			real_t fraction = low + (hi - low) * fraction_coeff;
 
 			Vector2 sep = mnormal; //important optimization for this to work fast enough
-			bool collided = CollisionSolver2DSW::solve(shape, p_xform, p_motion * ofs, col_obj->get_shape(shape_idx), col_obj_xform, Vector2(), nullptr, nullptr, &sep, p_margin);
+			bool collided = CollisionSolver2DSW::solve(shape, p_xform, p_motion * fraction, col_obj->get_shape(shape_idx), col_obj_xform, Vector2(), nullptr, nullptr, &sep, p_margin);
 
 			if (collided) {
-				hi = ofs;
+				hi = fraction;
+				if ((j == 0) || (low > 0.0)) { // Did it not collide before?
+					// When alternating or first iteration, use dichotomy.
+					fraction_coeff = 0.5;
+				} else {
+					// When colliding again, converge faster towards low fraction
+					// for more accurate results with long motions that collide near the start.
+					fraction_coeff = 0.25;
+				}
 			} else {
-				low = ofs;
+				low = fraction;
+				if ((j == 0) || (hi < 1.0)) { // Did it collide before?
+					// When alternating or first iteration, use dichotomy.
+					fraction_coeff = 0.5;
+				} else {
+					// When not colliding again, converge faster towards high fraction
+					// for more accurate results with long motions that collide near the end.
+					fraction_coeff = 0.75;
+				}
 			}
 		}
 
@@ -957,20 +973,35 @@ bool Space2DSW::test_body_motion(Body2DSW *p_body, const Transform2D &p_from, co
 				}
 
 				//just do kinematic solving
-				real_t low = 0;
-				real_t hi = 1;
-
+				real_t low = 0.0;
+				real_t hi = 1.0;
+				real_t fraction_coeff = 0.5;
 				for (int k = 0; k < 8; k++) { //steps should be customizable..
-
-					real_t ofs = (low + hi) * 0.5;
+					real_t fraction = low + (hi - low) * fraction_coeff;
 
 					Vector2 sep = motion_normal; //important optimization for this to work fast enough
-					bool collided = CollisionSolver2DSW::solve(body_shape, body_shape_xform, p_motion * ofs, against_shape, col_obj_shape_xform, Vector2(), nullptr, nullptr, &sep, 0);
+					bool collided = CollisionSolver2DSW::solve(body_shape, body_shape_xform, p_motion * fraction, against_shape, col_obj_shape_xform, Vector2(), nullptr, nullptr, &sep, 0);
 
 					if (collided) {
-						hi = ofs;
+						hi = fraction;
+						if ((k == 0) || (low > 0.0)) { // Did it not collide before?
+							// When alternating or first iteration, use dichotomy.
+							fraction_coeff = 0.5;
+						} else {
+							// When colliding again, converge faster towards low fraction
+							// for more accurate results with long motions that collide near the start.
+							fraction_coeff = 0.25;
+						}
 					} else {
-						low = ofs;
+						low = fraction;
+						if ((k == 0) || (hi < 1.0)) { // Did it collide before?
+							// When alternating or first iteration, use dichotomy.
+							fraction_coeff = 0.5;
+						} else {
+							// When not colliding again, converge faster towards high fraction
+							// for more accurate results with long motions that collide near the end.
+							fraction_coeff = 0.75;
+						}
 					}
 				}
 
