@@ -46,10 +46,11 @@ class ImportDock : public VBoxContainer {
 	GDCLASS(ImportDock, VBoxContainer);
 
 	Label *imported;
-	OptionButton *import_as;
+	OptionButton *importer_select;
 	MenuButton *preset;
 	EditorInspector *import_opts;
 
+	Vector<String> current_paths;
 	List<PropertyInfo> properties;
 	Map<StringName, Variant> property_values;
 
@@ -72,6 +73,8 @@ class ImportDock : public VBoxContainer {
 	void _reimport_and_restart();
 	void _reimport();
 
+	void _set_single_edit_path(const String &p_path);
+
 	void _advanced_options();
 	enum {
 		ITEM_SET_AS_DEFAULT = 100,
@@ -84,9 +87,14 @@ protected:
 	void _notification(int p_what);
 
 public:
-	void set_edit_path(const String &p_path);
-	void set_edit_multiple_paths(const Vector<String> &p_paths);
 	void initialize_import_options() const;
+
+	EditorInspector *get_editor_inspector() const;
+	OptionButton *get_importer_select() const;
+
+	void set_edited_paths(const Vector<String> &p_paths);
+	Vector<String> get_edited_paths() const;
+
 	void clear();
 
 	ImportDock();

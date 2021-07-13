@@ -89,7 +89,7 @@ public:
 	}
 };
 
-void ImportDock::set_edit_path(const String &p_path) {
+void ImportDock::_set_single_edit_path(const String &p_path) {
 	Ref<ConfigFile> config;
 	config.instantiate();
 	Error err = config->load(p_path + ".import");
@@ -117,25 +117,25 @@ void ImportDock::set_edit_path(const String &p_path) {
 
 	importer_names.sort_custom<PairSort<String, String>>();
 
-	import_as->clear();
+	importer_select->clear();
 
 	for (List<Pair<String, String>>::Element *E = importer_names.front(); E; E = E->next()) {
-		import_as->add_item(E->get().first);
-		import_as->set_item_metadata(import_as->get_item_count() - 1, E->get().second);
+		importer_select->add_item(E->get().first);
+		importer_select->set_item_metadata(importer_select->get_item_count() - 1, E->get().second);
 		if (E->get().second == importer_name) {
-			import_as->select(import_as->get_item_count() - 1);
+			importer_select->select(importer_select->get_item_count() - 1);
 		}
 	}
 
-	import_as->add_separator();
-	import_as->add_item(TTR("Keep File (No Import)"));
-	import_as->set_item_metadata(import_as->get_item_count() - 1, "keep");
+	importer_select->add_separator();
+	importer_select->add_item(TTR("Keep File (No Import)"));
+	importer_select->set_item_metadata(importer_select->get_item_count() - 1, "keep");
 	if (importer_name == "keep") {
-		import_as->select(import_as->get_item_count() - 1);
+		importer_select->select(importer_select->get_item_count() - 1);
 	}
 
 	import->set_disabled(false);
-	import_as->set_disabled(false);
+	importer_select->set_disabled(false);
 	preset->set_disabled(false);
 
 	imported->set_text(p_path.get_file());
@@ -174,8 +174,18 @@ void ImportDock::_update_options(const Ref<ConfigFile> &p_config) {
 	}
 }
 
-void ImportDock::set_edit_multiple_paths(const Vector<String> &p_paths) {
+void ImportDock::set_edited_paths(const Vector<String> &p_paths) {
+	current_paths = p_paths;
+	if (p_paths.size() == 1) {
+		_set_single_edit_path(p_paths[0]);
+		return;
+	}
+
 	clear();
+
+	if (p_paths.is_empty()) {
+		return;
+	}
 
 	// Use the value that is repeated the most.
 	Map<String, Dictionary> value_frequency;
@@ -260,13 +270,13 @@ void ImportDock::set_edit_multiple_paths(const Vector<String> &p_paths) {
 
 	importer_names.sort_custom<PairSort<String, String>>();
 
-	import_as->clear();
+	importer_select->clear();
 
 	for (List<Pair<String, String>>::Element *E = importer_names.front(); E; E = E->next()) {
-		import_as->add_item(E->get().first);
-		import_as->set_item_metadata(import_as->get_item_count() - 1, E->get().second);
+		importer_select->add_item(E->get().first);
+		importer_select->set_item_metadata(importer_select->get_item_count() - 1, E->get().second);
 		if (E->get().second == params->importer->get_importer_name()) {
-			import_as->select(import_as->get_item_count() - 1);
+			importer_select->select(importer_select->get_item_count() - 1);
 		}
 	}
 
@@ -274,7 +284,7 @@ void ImportDock::set_edit_multiple_paths(const Vector<String> &p_paths) {
 
 	params->paths = p_paths;
 	import->set_disabled(false);
-	import_as->set_disabled(false);
+	importer_select->set_disabled(false);
 	preset->set_disabled(false);
 
 	imported->set_text(vformat(TTR("%d Files"), p_paths.size()));
@@ -286,6 +296,11 @@ void ImportDock::set_edit_multiple_paths(const Vector<String> &p_paths) {
 		advanced->hide();
 		advanced_spacer->hide();
 	}
+	emit_signal("edited_paths_changed");
+}
+
+Vector<String> ImportDock::get_edited_paths() const {
+	return current_paths;
 }
 
 void ImportDock::_update_preset_menu() {
@@ -316,7 +331,7 @@ void ImportDock::_update_preset_menu() {
 }
 
 void ImportDock::_importer_selected(int i_idx) {
-	String name = import_as->get_selected_metadata();
+	String name = importer_select->get_selected_metadata();
 	if (name == "keep") {
 		params->importer.unref();
 		_update_options(Ref<ConfigFile>());
@@ -398,9 +413,10 @@ void ImportDock::_preset_selected(int p_idx) {
 void ImportDock::clear() {
 	imported->set_text("");
 	import->set_disabled(true);
-	import_as->clear();
-	import_as->set_disabled(true);
+	importer_select->clear();
+	importer_select->set_disabled(true);
 	preset->set_disabled(true);
+	current_paths.clear();
 	params->values.clear();
 	params->properties.clear();
 	params->update();
@@ -552,12 +568,30 @@ void ImportDock::_property_toggled(const StringName &p_prop, bool p_checked) {
 
 void ImportDock::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_reimport"), &ImportDock::_reimport);
+
+	ClassDB::bind_method(D_METHOD("get_editor_inspector"), &ImportDock::get_editor_inspector);
+	ClassDB::bind_method(D_METHOD("get_importer_select"), &ImportDock::get_importer_select);
+
+	ClassDB::bind_method(D_METHOD("set_edited_paths", "paths"), &ImportDock::set_edited_paths);
+	ClassDB::bind_method(D_METHOD("get_edited_paths"), &ImportDock::get_edited_paths);
+
+	ADD_PROPERTY(PropertyInfo(Variant::PACKED_STRING_ARRAY, "edited_paths"), "set_edited_paths", "get_edited_paths");
+
+	ADD_SIGNAL(MethodInfo("edited_paths_changed"));
 }
 
 void ImportDock::initialize_import_options() const {
 	ERR_FAIL_COND(!import_opts || !params);
 
 	import_opts->edit(params);
+}
+
+EditorInspector *ImportDock::get_editor_inspector() const {
+	return import_opts;
+}
+
+OptionButton *ImportDock::get_importer_select() const {
+	return importer_select;
 }
 
 ImportDock::ImportDock() {
@@ -568,11 +602,11 @@ ImportDock::ImportDock() {
 	add_child(imported);
 	HBoxContainer *hb = memnew(HBoxContainer);
 	add_margin_child(TTR("Import As:"), hb);
-	import_as = memnew(OptionButton);
-	import_as->set_disabled(true);
-	import_as->connect("item_selected", callable_mp(this, &ImportDock::_importer_selected));
-	hb->add_child(import_as);
-	import_as->set_h_size_flags(SIZE_EXPAND_FILL);
+	importer_select = memnew(OptionButton);
+	importer_select->set_disabled(true);
+	importer_select->connect("item_selected", callable_mp(this, &ImportDock::_importer_selected));
+	hb->add_child(importer_select);
+	importer_select->set_h_size_flags(SIZE_EXPAND_FILL);
 	preset = memnew(MenuButton);
 	preset->set_text(TTR("Preset"));
 	preset->set_disabled(true);

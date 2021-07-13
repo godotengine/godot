@@ -2066,7 +2066,10 @@ void EditorNode::_edit_current() {
 		scene_tree_dock->set_selected(nullptr);
 		node_dock->set_node(nullptr);
 		inspector_dock->update(nullptr);
-		EditorNode::get_singleton()->get_import_dock()->set_edit_path(current_res->get_path());
+
+		Vector<String> edit_paths;
+		edit_paths.push_back(current_res->get_path());
+		EditorNode::get_singleton()->get_import_dock()->set_edited_paths(edit_paths);
 
 		int subr_idx = current_res->get_path().find("::");
 		if (subr_idx != -1) {
@@ -3771,6 +3774,7 @@ void EditorNode::register_editor_types() {
 	ClassDB::register_class<EditorSceneImporterMeshNode3D>();
 
 	ClassDB::register_virtual_class<FileSystemDock>();
+	ClassDB::register_virtual_class<ImportDock>();
 
 	// FIXME: Is this stuff obsolete, or should it be ported to new APIs?
 	ClassDB::register_class<EditorScenePostImport>();

@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="ImportDock" inherits="VBoxContainer" version="4.0">
+	<brief_description>
+		The Import dock.
+	</brief_description>
+	<description>
+		The Import dock shows import settings for one or more files through an [EditorInspector].
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="get_editor_inspector" qualifiers="const">
+			<return type="EditorInspector">
+			</return>
+			<description>
+				Returns the [EditorInspector] where import settings are listed.
+			</description>
+		</method>
+		<method name="get_importer_select" qualifiers="const">
+			<return type="OptionButton">
+			</return>
+			<description>
+				Returns the [OptionButton] where importers are listed.
+				You can use it to get the available importers for the current [member edited_paths].
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="edited_paths" type="PackedStringArray" setter="set_edited_paths" getter="get_edited_paths">
+			The paths currently edited by the dock.
+		</member>
+	</members>
+	<signals>
+		<signal name="edited_paths_changed">
+			<description>
+				Emitted when the edited paths changes.
+			</description>
+		</signal>
+	</signals>
+	<constants>
+	</constants>
+</class>
