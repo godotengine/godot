@@ -1801,6 +1801,9 @@ void RenderForwardMobile::geometry_instance_pair_voxel_gi_instances(GeometryInst
 	// We do not have this here!
 }
 
+void RenderForwardMobile::geometry_instance_set_softshadow_projector_pairing(GeometryInstance *p_geometry_instance, bool p_softshadow, bool p_projector) {
+}
+
 void RenderForwardMobile::_geometry_instance_mark_dirty(GeometryInstance *p_geometry_instance) {
 	GeometryInstanceForwardMobile *ginstance = static_cast<GeometryInstanceForwardMobile *>(p_geometry_instance);
 	if (ginstance->dirty_list_element.in_list()) {

@@ -2377,7 +2377,7 @@ void RendererSceneRenderRD::_setup_reflections(const PagedArray<RID> &p_reflecti
 	}
 }
 
-void RendererSceneRenderRD::_setup_lights(const PagedArray<RID> &p_lights, const Transform3D &p_camera_transform, RID p_shadow_atlas, bool p_using_shadows, uint32_t &r_directional_light_count, uint32_t &r_positional_light_count) {
+void RendererSceneRenderRD::_setup_lights(const PagedArray<RID> &p_lights, const Transform3D &p_camera_transform, RID p_shadow_atlas, bool p_using_shadows, uint32_t &r_directional_light_count, uint32_t &r_positional_light_count, bool &r_directional_light_soft_shadows) {
 	Transform3D inverse_transform = p_camera_transform.affine_inverse();
 
 	r_directional_light_count = 0;
@@ -2388,6 +2388,8 @@ void RendererSceneRenderRD::_setup_lights(const PagedArray<RID> &p_lights, const
 
 	cluster.omni_light_count = 0;
 	cluster.spot_light_count = 0;
+
+	r_directional_light_soft_shadows = false;
 
 	for (int i = 0; i < (int)p_lights.size(); i++) {
 		LightInstance *li = light_instance_owner.getornull(p_lights[i]);
@@ -2427,6 +2429,9 @@ void RendererSceneRenderRD::_setup_lights(const PagedArray<RID> &p_lights, const
 						// technically this will keep expanding until reaching the sun, but all we care
 						// is expand until we reach the radius of the near plane (there can't be more occluders than that)
 						angular_diameter = Math::tan(Math::deg2rad(angular_diameter));
+						if (storage->light_has_shadow(base)) {
+							r_directional_light_soft_shadows = true;
+						}
 					} else {
 						angular_diameter = 0.0;
 					}
@@ -3621,7 +3626,7 @@ void RendererSceneRenderRD::_pre_opaque_render(RenderDataRD *p_render_data, bool
 
 	uint32_t directional_light_count = 0;
 	uint32_t positional_light_count = 0;
-	_setup_lights(*p_render_data->lights, p_render_data->cam_transform, p_render_data->shadow_atlas, using_shadows, directional_light_count, positional_light_count);
+	_setup_lights(*p_render_data->lights, p_render_data->cam_transform, p_render_data->shadow_atlas, using_shadows, directional_light_count, positional_light_count, p_render_data->directional_light_soft_shadows);
 	_setup_decals(*p_render_data->decals, p_render_data->cam_transform.affine_inverse());
 
 	p_render_data->directional_light_count = directional_light_count;

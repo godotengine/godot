@@ -4598,8 +4598,6 @@ RID RenderingDeviceVulkan::shader_create(const Vector<ShaderStageData> &p_stages
 						}
 						sconst.stage_flags = 1 << p_stages[i].shader_stage;
 
-						print_line("spec constant " + itos(i) + ": " + String(spec_constants[j]->name) + " type " + itos(spec_constants[j]->constant_type) + " id " + itos(spec_constants[j]->constant_id));
-
 						for (int k = 0; k < specialization_constants.size(); k++) {
 							if (specialization_constants[k].constant.constant_id == sconst.constant.constant_id) {
 								ERR_FAIL_COND_V_MSG(specialization_constants[k].constant.type != sconst.constant.type, RID(), "More than one specialization constant used for id (" + itos(sconst.constant.constant_id) + "), but their types differ.");
@@ -6047,7 +6045,7 @@ RID RenderingDeviceVulkan::render_pipeline_create(RID p_shader, FramebufferForma
 				const PipelineSpecializationConstant &psc = p_specialization_constants[j];
 				if (psc.constant_id == sc.constant.constant_id) {
 					ERR_FAIL_COND_V_MSG(psc.type != sc.constant.type, RID(), "Specialization constant provided for id (" + itos(sc.constant.constant_id) + ") is of the wrong type.");
-					data_ptr[i] = sc.constant.int_value;
+					data_ptr[i] = psc.int_value;
 					break;
 				}
 			}
@@ -6070,14 +6068,14 @@ RID RenderingDeviceVulkan::render_pipeline_create(RID p_shader, FramebufferForma
 			}
 		}
 
-		for (int k = 0; k < pipeline_stages.size(); k++) {
-			if (specialization_map_entries[k].size()) {
-				specialization_info.write[k].dataSize = specialization_constant_data.size() * sizeof(uint32_t);
-				specialization_info.write[k].pData = data_ptr;
-				specialization_info.write[k].mapEntryCount = specialization_map_entries[k].size();
-				specialization_info.write[k].pMapEntries = specialization_map_entries[k].ptr();
+		for (int i = 0; i < pipeline_stages.size(); i++) {
+			if (specialization_map_entries[i].size()) {
+				specialization_info.write[i].dataSize = specialization_constant_data.size() * sizeof(uint32_t);
+				specialization_info.write[i].pData = data_ptr;
+				specialization_info.write[i].mapEntryCount = specialization_map_entries[i].size();
+				specialization_info.write[i].pMapEntries = specialization_map_entries[i].ptr();
 
-				pipeline_stages.write[k].pSpecializationInfo = specialization_info.ptr();
+				pipeline_stages.write[i].pSpecializationInfo = specialization_info.ptr() + i;
 			}
 		}
 	}
