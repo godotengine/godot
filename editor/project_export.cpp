@@ -1013,8 +1013,11 @@ ProjectExportDialog::ProjectExportDialog() {
 	preset_vb->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	hbox->add_child(preset_vb);
 
+	Label *l = memnew(Label(TTR("Presets")));
+	l->set_theme_type_variation("HeaderSmall");
+
 	HBoxContainer *preset_hb = memnew(HBoxContainer);
-	preset_hb->add_child(memnew(Label(TTR("Presets"))));
+	preset_hb->add_child(l);
 	preset_hb->add_spacer();
 	preset_vb->add_child(preset_hb);
 
