@@ -361,7 +361,7 @@ List<ClassAPI> generate_c_api_classes() {
 							arg_type = Variant::get_type_name(arg_info.type);
 						}
 					} else {
-						arg_type = get_type_name(arg_info);
+						arg_type = Variant::get_type_name(arg_info.type);
 					}
 
 					method_api.argument_names.push_back(arg_name);
