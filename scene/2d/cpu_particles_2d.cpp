@@ -1141,13 +1141,13 @@ void CPUParticles2D::convert_from_particles(Node *p_particles) {
 	set_lifetime_randomness(material->get_lifetime_randomness());
 
 #define CONVERT_PARAM(m_param)                                                            \
-	set_param(m_param, material->get_param(ParticlesMaterial::m_param));                  \
+	set_param(m_param, material->get_param_min(ParticlesMaterial::m_param));              \
 	{                                                                                     \
 		Ref<CurveTexture> ctex = material->get_param_texture(ParticlesMaterial::m_param); \
 		if (ctex.is_valid())                                                              \
 			set_param_curve(m_param, ctex->get_curve());                                  \
 	}                                                                                     \
-	set_param_randomness(m_param, material->get_param_randomness(ParticlesMaterial::m_param));
+	set_param_randomness(m_param, material->get_param_max(ParticlesMaterial::m_param));
 
 	CONVERT_PARAM(PARAM_INITIAL_LINEAR_VELOCITY);
 	CONVERT_PARAM(PARAM_ANGULAR_VELOCITY);
