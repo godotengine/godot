@@ -522,11 +522,6 @@ msgid "Animation tracks can only point to AnimationPlayer nodes."
 msgstr "Faixas de animação só podem apontar para nós AnimationPlayer."
 
 #: editor/animation_track_editor.cpp
-msgid "An animation player can't animate itself, only other players."
-msgstr ""
-"Um tocador de animação não pode animar a si mesmo, apenas outros tocadores."
-
-#: editor/animation_track_editor.cpp
 msgid "Not possible to add a new track without a root"
 msgstr "Não é possível adicionar uma nova trilha sem uma raiz"
 
@@ -572,8 +567,9 @@ msgid "Anim Move Keys"
 msgstr "Mover Chaves da Anim"
 
 #: editor/animation_track_editor.cpp
-msgid "Clipboard is empty"
-msgstr "Área de transferência vazia"
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Clipboard is empty!"
+msgstr "Área de transferência vazia!"
 
 #: editor/animation_track_editor.cpp
 msgid "Paste Tracks"
@@ -2613,7 +2609,7 @@ msgid "Save changes to the following scene(s) before quitting?"
 msgstr "Salvar alterações na(s) seguinte(s) cena(s) antes de sair?"
 
 #: editor/editor_node.cpp
-msgid "Save changes the following scene(s) before opening Project Manager?"
+msgid "Save changes to the following scene(s) before opening Project Manager?"
 msgstr ""
 "Salvar alterações na(s) seguinte(s) cena(s) antes de abrir o Gerenciador de "
 "Projetos?"
@@ -12107,10 +12103,6 @@ msgid "Can't copy the function node."
 msgstr "Não é possível copiar o nó de função."
 
 #: modules/visual_script/visual_script_editor.cpp
-msgid "Clipboard is empty!"
-msgstr "Área de transferência vazia!"
-
-#: modules/visual_script/visual_script_editor.cpp
 msgid "Paste VisualScript Nodes"
 msgstr "Colar Nodes VisualScript"
 
@@ -13314,6 +13306,14 @@ msgstr "Variáveis só podem ser atribuídas na função de vértice."
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "Constantes não podem serem modificadas."
+
+#~ msgid "An animation player can't animate itself, only other players."
+#~ msgstr ""
+#~ "Um tocador de animação não pode animar a si mesmo, apenas outros "
+#~ "tocadores."
+
+#~ msgid "Clipboard is empty"
+#~ msgstr "Área de transferência vazia"
 
 #~ msgid ""
 #~ "InterpolatedCamera has been deprecated and will be removed in Godot 4.0."

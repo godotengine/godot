@@ -4418,7 +4418,7 @@ void AnimationTrackEditor::_new_track_node_selected(NodePath p_path) {
 			}
 
 			if (node == AnimationPlayerEditor::singleton->get_player()) {
-				EditorNode::get_singleton()->show_warning(TTR("An animation player can't animate itself, only other players."));
+				EditorNode::get_singleton()->show_warning(TTR("AnimationPlayer can't animate itself, only other players."));
 				return;
 			}
 
@@ -5242,7 +5242,7 @@ void AnimationTrackEditor::_edit_menu_pressed(int p_option) {
 		} break;
 		case EDIT_PASTE_TRACKS: {
 			if (track_clipboard.size() == 0) {
-				EditorNode::get_singleton()->show_warning(TTR("Clipboard is empty"));
+				EditorNode::get_singleton()->show_warning(TTR("Clipboard is empty!"));
 				break;
 			}
 

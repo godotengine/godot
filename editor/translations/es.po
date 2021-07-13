@@ -67,12 +67,13 @@
 # Ib Quezada <ib@ibquezada.com>, 2021.
 # hiking <joaquinfc@protonmail.com>, 2021.
 # pabloggomez <pgg2733@gmail.com>, 2021.
+# Erick Figueroa <querecuto@hotmail.com>, 2021.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2021-06-23 21:56+0000\n"
-"Last-Translator: pabloggomez <pgg2733@gmail.com>\n"
+"PO-Revision-Date: 2021-07-05 21:41+0000\n"
+"Last-Translator: Erick Figueroa <querecuto@hotmail.com>\n"
 "Language-Team: Spanish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/es/>\n"
 "Language: es\n"
@@ -80,7 +81,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.7.1-dev\n"
+"X-Generator: Weblate 4.8-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -106,8 +107,7 @@ msgstr "Entrada inválida %i (no aprobada) en la expresión"
 
 #: core/math/expression.cpp
 msgid "self can't be used because instance is null (not passed)"
-msgstr ""
-"No se puede utilizar «self» porque la instancia es nula (no transmitida)"
+msgstr "\"self\" no puede ser usado porque la instancia es nula (detenido)"
 
 #: core/math/expression.cpp
 msgid "Invalid operands to operator %s, %s and %s."
@@ -167,7 +167,7 @@ msgstr "Balanceado"
 
 #: editor/animation_bezier_editor.cpp
 msgid "Mirror"
-msgstr "Mirror"
+msgstr "Reflejar"
 
 #: editor/animation_bezier_editor.cpp editor/editor_profiler.cpp
 msgid "Time:"
@@ -475,12 +475,6 @@ msgid "Animation tracks can only point to AnimationPlayer nodes."
 msgstr "Las pistas de Animación solo pueden apuntar a nodos AnimationPlayer."
 
 #: editor/animation_track_editor.cpp
-msgid "An animation player can't animate itself, only other players."
-msgstr ""
-"Un reproductor de animación no puede animarse a sí mismo, solo a otros "
-"reproductores."
-
-#: editor/animation_track_editor.cpp
 msgid "Not possible to add a new track without a root"
 msgstr "No es posible agregar una nueva pista sin una raíz"
 
@@ -528,8 +522,9 @@ msgid "Anim Move Keys"
 msgstr "Mover Claves de Animación"
 
 #: editor/animation_track_editor.cpp
-msgid "Clipboard is empty"
-msgstr "El portapapeles está vacío"
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Clipboard is empty!"
+msgstr "¡El portapapeles está vacío!"
 
 #: editor/animation_track_editor.cpp
 msgid "Paste Tracks"
@@ -872,7 +867,7 @@ msgstr "Eliminar"
 
 #: editor/connections_dialog.cpp
 msgid "Add Extra Call Argument:"
-msgstr "Añadir argumento extra de llamada:"
+msgstr "Añadir argumento de llamada extra:"
 
 #: editor/connections_dialog.cpp
 msgid "Extra Call Arguments:"
@@ -1387,7 +1382,7 @@ msgstr "Silenciar"
 
 #: editor/editor_audio_buses.cpp
 msgid "Bypass"
-msgstr "Bypass"
+msgstr "Omitir"
 
 #: editor/editor_audio_buses.cpp
 msgid "Bus options"
@@ -2089,7 +2084,7 @@ msgstr "Propiedades de Temas"
 
 #: editor/editor_help.cpp
 msgid "Enumerations"
-msgstr "Enumerados"
+msgstr "Enumeraciones"
 
 #: editor/editor_help.cpp
 msgid "Constants"
@@ -2581,7 +2576,7 @@ msgid "Save changes to the following scene(s) before quitting?"
 msgstr "¿Guardar los cambios en las siguientes escenas antes de salir?"
 
 #: editor/editor_node.cpp
-msgid "Save changes the following scene(s) before opening Project Manager?"
+msgid "Save changes to the following scene(s) before opening Project Manager?"
 msgstr ""
 "¿Guardar los cambios en las siguientes escenas antes de abrir el "
 "Administrador de Proyectos?"
@@ -4203,7 +4198,7 @@ msgstr "Importar como:"
 
 #: editor/import_dock.cpp
 msgid "Preset"
-msgstr "Preset"
+msgstr "Preajuste"
 
 #: editor/import_dock.cpp
 msgid "Reimport"
@@ -4933,7 +4928,7 @@ msgstr "Eliminar el nodo o transición seleccionado/a."
 msgid "Toggle autoplay this animation on start, restart or seek to zero."
 msgstr ""
 "Alternar reproducción automática de esta animación al comenzar, reiniciar o "
-"hacer puesta a cero."
+"poner a cero."
 
 #: editor/plugins/animation_state_machine_editor.cpp
 msgid "Set the end animation. This is useful for sub-transitions."
@@ -5334,7 +5329,7 @@ msgstr ""
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
 msgid "Bake Lightmaps"
-msgstr "Bake Lightmaps"
+msgstr "Calcular Lightmaps"
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
 msgid "Select lightmap bake file:"
@@ -6024,15 +6019,15 @@ msgstr "Flat 1"
 
 #: editor/plugins/curve_editor_plugin.cpp editor/property_editor.cpp
 msgid "Ease In"
-msgstr "Ease In"
+msgstr "Entrada Suave"
 
 #: editor/plugins/curve_editor_plugin.cpp editor/property_editor.cpp
 msgid "Ease Out"
-msgstr "Ease Out"
+msgstr "Salida Suave"
 
 #: editor/plugins/curve_editor_plugin.cpp
 msgid "Smoothstep"
-msgstr "Smoothstep"
+msgstr "Suavizado"
 
 #: editor/plugins/curve_editor_plugin.cpp
 msgid "Modify Curve Point"
@@ -6084,7 +6079,7 @@ msgstr "Clic derecho para añadir punto"
 
 #: editor/plugins/gi_probe_editor_plugin.cpp
 msgid "Bake GI Probe"
-msgstr "Bake GI Probe"
+msgstr "Calcular GI Probe"
 
 #: editor/plugins/gradient_editor_plugin.cpp
 msgid "Gradient Edited"
@@ -7115,7 +7110,7 @@ msgstr "Salir de Aquí"
 
 #: editor/plugins/script_editor_plugin.cpp editor/script_editor_debugger.cpp
 msgid "Break"
-msgstr "Break"
+msgstr "Detener"
 
 #: editor/plugins/script_editor_plugin.cpp editor/project_manager.cpp
 #: editor/script_editor_debugger.cpp
@@ -7246,7 +7241,7 @@ msgstr "Marcadores"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Breakpoints"
-msgstr "Breakpoints"
+msgstr "Puntos de interrupción"
 
 #: editor/plugins/script_text_editor.cpp
 #: editor/plugins/shader_editor_plugin.cpp editor/plugins/text_editor.cpp
@@ -8037,7 +8032,7 @@ msgstr "Velocidad:"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Loop"
-msgstr "Loop"
+msgstr "Bucle"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Animation Frames:"
@@ -10549,7 +10544,7 @@ msgstr "Idiomas:"
 
 #: editor/project_settings_editor.cpp
 msgid "AutoLoad"
-msgstr "AutoLoad"
+msgstr "AutoCarga"
 
 #: editor/project_settings_editor.cpp
 msgid "Plugins"
@@ -10561,7 +10556,7 @@ msgstr "Valores de Importación por Defecto"
 
 #: editor/property_editor.cpp
 msgid "Preset..."
-msgstr "Preset..."
+msgstr "Preajuste..."
 
 #: editor/property_editor.cpp
 msgid "Zero"
@@ -10569,11 +10564,11 @@ msgstr "Cero"
 
 #: editor/property_editor.cpp
 msgid "Easing In-Out"
-msgstr "Easing In-Out"
+msgstr "Entrada-Salida Suave"
 
 #: editor/property_editor.cpp
 msgid "Easing Out-In"
-msgstr "Easing Out-In"
+msgstr "Salida-Entrada Suave"
 
 #: editor/property_editor.cpp
 msgid "File..."
@@ -11338,7 +11333,7 @@ msgstr "Fuente C++:"
 
 #: editor/script_editor_debugger.cpp
 msgid "Stack Trace"
-msgstr "Stack Trace"
+msgstr "Rastreo de Pila"
 
 #: editor/script_editor_debugger.cpp
 msgid "Errors"
@@ -11374,7 +11369,7 @@ msgstr "Fotogramas Apilados"
 
 #: editor/script_editor_debugger.cpp
 msgid "Profiler"
-msgstr "Profiler"
+msgstr "Perfilador"
 
 #: editor/script_editor_debugger.cpp
 msgid "Network Profiler"
@@ -11470,7 +11465,7 @@ msgstr "Atajos"
 
 #: editor/settings_config_dialog.cpp
 msgid "Binding"
-msgstr "Binding"
+msgstr "Vinculación"
 
 #: editor/spatial_editor_gizmos.cpp
 msgid "Change Light Radius"
@@ -11807,7 +11802,7 @@ msgstr "Fin del reporte de la pila de excepciones"
 
 #: modules/recast/navigation_mesh_editor_plugin.cpp
 msgid "Bake NavMesh"
-msgstr "Bake NavMesh"
+msgstr "Calcular NavMesh"
 
 #: modules/recast/navigation_mesh_editor_plugin.cpp
 msgid "Clear the navigation mesh."
@@ -12107,10 +12102,6 @@ msgstr "Redimensionar Comentario"
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Can't copy the function node."
 msgstr "No se puede copiar el nodo de función."
-
-#: modules/visual_script/visual_script_editor.cpp
-msgid "Clipboard is empty!"
-msgstr "¡El portapapeles está vacío!"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Paste VisualScript Nodes"
@@ -13340,6 +13331,14 @@ msgstr "Solo se pueden asignar variaciones en funciones de vértice."
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "Las constantes no pueden modificarse."
+
+#~ msgid "An animation player can't animate itself, only other players."
+#~ msgstr ""
+#~ "Un reproductor de animación no puede animarse a sí mismo, solo a otros "
+#~ "reproductores."
+
+#~ msgid "Clipboard is empty"
+#~ msgstr "El portapapeles está vacío"
 
 #~ msgid ""
 #~ "InterpolatedCamera has been deprecated and will be removed in Godot 4.0."

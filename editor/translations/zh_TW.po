@@ -25,12 +25,13 @@
 # BinotaLIU <binota@protonmail.ch>, 2020.
 # BinotaLIU <me@binota.org>, 2020, 2021.
 # MintSoda <lionlxh@qq.com>, 2020.
+# meowmeowmeowcat <meowmeowcat1211@gmail.com>, 2021.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2021-05-24 21:36+0000\n"
-"Last-Translator: Kisaragi Hiu <mail@kisaragi-hiu.com>\n"
+"PO-Revision-Date: 2021-07-13 06:13+0000\n"
+"Last-Translator: meowmeowmeowcat <meowmeowcat1211@gmail.com>\n"
 "Language-Team: Chinese (Traditional) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/zh_Hant/>\n"
 "Language: zh_TW\n"
@@ -38,7 +39,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 4.7-dev\n"
+"X-Generator: Weblate 4.7.2-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -428,10 +429,6 @@ msgid "Animation tracks can only point to AnimationPlayer nodes."
 msgstr "動畫軌僅可指向 AnimationPlayer 節點。"
 
 #: editor/animation_track_editor.cpp
-msgid "An animation player can't animate itself, only other players."
-msgstr "動畫 Player 無法播放自己，僅可播放其他 Player。"
-
-#: editor/animation_track_editor.cpp
 msgid "Not possible to add a new track without a root"
 msgstr "沒有根節點時無法新增軌道"
 
@@ -476,8 +473,9 @@ msgid "Anim Move Keys"
 msgstr "移動動畫關鍵畫格"
 
 #: editor/animation_track_editor.cpp
-msgid "Clipboard is empty"
-msgstr "剪貼板為空"
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Clipboard is empty!"
+msgstr "剪貼簿為空！"
 
 #: editor/animation_track_editor.cpp
 msgid "Paste Tracks"
@@ -1125,7 +1123,7 @@ msgstr "Godot 社群感謝你！"
 
 #: editor/editor_about.cpp editor/editor_node.cpp editor/project_manager.cpp
 msgid "Click to copy."
-msgstr ""
+msgstr "按一下以複製。"
 
 #: editor/editor_about.cpp
 msgid "Godot Engine contributors"
@@ -2483,7 +2481,7 @@ msgid "Save changes to the following scene(s) before quitting?"
 msgstr "退出前要先保存下列場景嗎？"
 
 #: editor/editor_node.cpp
-msgid "Save changes the following scene(s) before opening Project Manager?"
+msgid "Save changes to the following scene(s) before opening Project Manager?"
 msgstr "開啟專案管理員前要先保存以下場景嗎？"
 
 #: editor/editor_node.cpp
@@ -11778,10 +11776,6 @@ msgid "Can't copy the function node."
 msgstr "無法複製函式節點。"
 
 #: modules/visual_script/visual_script_editor.cpp
-msgid "Clipboard is empty!"
-msgstr "剪貼簿為空！"
-
-#: modules/visual_script/visual_script_editor.cpp
 msgid "Paste VisualScript Nodes"
 msgstr "貼上視覺腳本 (VisualScript) 節點"
 
@@ -12896,6 +12890,12 @@ msgstr "Varying 變數只可在頂點函式中指派。"
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "不可修改常數。"
+
+#~ msgid "An animation player can't animate itself, only other players."
+#~ msgstr "動畫 Player 無法播放自己，僅可播放其他 Player。"
+
+#~ msgid "Clipboard is empty"
+#~ msgstr "剪貼板為空"
 
 #~ msgid ""
 #~ "InterpolatedCamera has been deprecated and will be removed in Godot 4.0."

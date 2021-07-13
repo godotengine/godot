@@ -336,7 +336,6 @@ private:
 	uint32_t version;
 	uint32_t saved_version;
 
-	int max_chars;
 	bool readonly;
 	bool syntax_coloring;
 	bool indent_using_spaces;
@@ -669,9 +668,6 @@ public:
 
 	void set_readonly(bool p_readonly);
 	bool is_readonly() const;
-
-	void set_max_chars(int p_max_chars);
-	int get_max_chars() const;
 
 	void set_wrap_enabled(bool p_wrap_enabled);
 	bool is_wrap_enabled() const;

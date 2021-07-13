@@ -134,8 +134,9 @@ int Compression::decompress(uint8_t *p_dst, int p_dst_max_size, const uint8_t *p
 
 			if (p_dst_max_size < 16) {
 				uint8_t dst[16];
-				ret_size = fastlz_decompress(p_src, p_src_size, dst, 16);
+				fastlz_decompress(p_src, p_src_size, dst, 16);
 				memcpy(p_dst, dst, p_dst_max_size);
+				ret_size = p_dst_max_size;
 			} else {
 				ret_size = fastlz_decompress(p_src, p_src_size, p_dst, p_dst_max_size);
 			}
@@ -237,7 +238,10 @@ int Compression::decompress_dynamic(PoolVector<uint8_t> *p_dst, int p_max_dst_si
 				case Z_DATA_ERROR:
 				case Z_MEM_ERROR:
 				case Z_STREAM_ERROR:
-					WARN_PRINT(strm.msg);
+				case Z_BUF_ERROR:
+					if (strm.msg) {
+						WARN_PRINT(strm.msg);
+					}
 					(void)inflateEnd(&strm);
 					p_dst->resize(0);
 					return ret;

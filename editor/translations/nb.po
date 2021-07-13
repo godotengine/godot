@@ -422,11 +422,6 @@ msgid "Animation tracks can only point to AnimationPlayer nodes."
 msgstr "Animasjonsspor kan kun peke på AnimationPlayer-noder."
 
 #: editor/animation_track_editor.cpp
-msgid "An animation player can't animate itself, only other players."
-msgstr ""
-"En animansjonsavspiller kan ikke animere seg selv, kun andre avspillere."
-
-#: editor/animation_track_editor.cpp
 msgid "Not possible to add a new track without a root"
 msgstr "Ikke mulig å legge til et nytt spor uten en rot"
 
@@ -471,8 +466,9 @@ msgid "Anim Move Keys"
 msgstr "Anim Flytt Nøkler"
 
 #: editor/animation_track_editor.cpp
-msgid "Clipboard is empty"
-msgstr "Utklippstavlen er tom"
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Clipboard is empty!"
+msgstr "Utklippsbordet er tomt!"
 
 #: editor/animation_track_editor.cpp
 msgid "Paste Tracks"
@@ -2600,7 +2596,7 @@ msgid "Save changes to the following scene(s) before quitting?"
 msgstr "Lagre endring til følgende scene(r) før avslutting?"
 
 #: editor/editor_node.cpp
-msgid "Save changes the following scene(s) before opening Project Manager?"
+msgid "Save changes to the following scene(s) before opening Project Manager?"
 msgstr "Lagre endringer til følgende scene(r) før åpning av Prosjekt-Manager?"
 
 #: editor/editor_node.cpp
@@ -12364,10 +12360,6 @@ msgid "Can't copy the function node."
 msgstr "Kan ikke kopiere funksjonsnoden."
 
 #: modules/visual_script/visual_script_editor.cpp
-msgid "Clipboard is empty!"
-msgstr "Utklippsbordet er tomt!"
-
-#: modules/visual_script/visual_script_editor.cpp
 #, fuzzy
 msgid "Paste VisualScript Nodes"
 msgstr "Lim inn Noder"
@@ -13419,6 +13411,13 @@ msgstr ""
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "Konstanter kan ikke endres."
+
+#~ msgid "An animation player can't animate itself, only other players."
+#~ msgstr ""
+#~ "En animansjonsavspiller kan ikke animere seg selv, kun andre avspillere."
+
+#~ msgid "Clipboard is empty"
+#~ msgstr "Utklippstavlen er tom"
 
 #~ msgid "No"
 #~ msgstr "Nei"
