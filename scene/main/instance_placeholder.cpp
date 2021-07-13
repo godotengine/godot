@@ -132,6 +132,8 @@ void InstancePlaceholder::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_stored_values", "with_order"), &InstancePlaceholder::get_stored_values, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("create_instance", "replace", "custom_scene"), &InstancePlaceholder::create_instance, DEFVAL(false), DEFVAL(Variant()));
 	ClassDB::bind_method(D_METHOD("get_instance_path"), &InstancePlaceholder::get_instance_path);
+	ClassDB::bind_method(D_METHOD("set_instance_path"), &InstancePlaceholder::set_instance_path);
+	ADD_PROPERTY(PropertyInfo(Variant::STRING, "instance_path"), "set_instance_path", "get_instance_path");
 }
 
 InstancePlaceholder::InstancePlaceholder() {

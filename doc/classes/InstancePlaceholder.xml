@@ -18,14 +18,7 @@
 			<argument index="1" name="custom_scene" type="PackedScene" default="null">
 			</argument>
 			<description>
-				Not thread-safe. Use [method Object.call_deferred] if calling from a thread.
-			</description>
-		</method>
-		<method name="get_instance_path" qualifiers="const">
-			<return type="String">
-			</return>
-			<description>
-				Gets the path to the [PackedScene] resource file that is loaded by default when calling [method create_instance]. Not thread-safe. Use [method Object.call_deferred] if calling from a thread.
+				Returns an instance of the scene handed as an argument, or the scene at [member instance_path] if no argument is given. As for all resources, the scene is loaded only if it's not loaded already. By manually loading the scene beforehand, delays caused by this function can be avoided. If [code]replace[/code] is [code]true[/code], replaces this placeholder by the created instance.
 			</description>
 		</method>
 		<method name="get_stored_values">
@@ -34,9 +27,15 @@
 			<argument index="0" name="with_order" type="bool" default="false">
 			</argument>
 			<description>
+				Returns the changed properties and their values as key/value pairs. If [code]with_order[/code] is true, the dictionary will have an array with the property names in the order of modification under the key [code].order[/code].
 			</description>
 		</method>
 	</methods>
+	<members>
+		<member name="instance_path" type="String" setter="set_instance_path" getter="get_instance_path">
+			The path to the [PackedScene] resource file that is loaded by default when calling [method create_instance]. Not thread-safe. Use [method Object.call_deferred] if calling from a thread.
+		</member>
+	</members>
 	<constants>
 	</constants>
 </class>
