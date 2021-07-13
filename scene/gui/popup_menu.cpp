@@ -722,7 +722,7 @@ void PopupMenu::_notification(int p_what) {
 		case Control::NOTIFICATION_LAYOUT_DIRECTION_CHANGED:
 		case NOTIFICATION_TRANSLATION_CHANGED: {
 			for (int i = 0; i < items.size(); i++) {
-				items.write[i].xl_text = tr(items[i].text);
+				items.write[i].xl_text = atr(items[i].text);
 				items.write[i].dirty = true;
 				_shape_item(i);
 			}
@@ -807,7 +807,7 @@ void PopupMenu::_notification(int p_what) {
 
 #define ITEM_SETUP_WITH_ACCEL(p_label, p_id, p_accel) \
 	item.text = p_label;                              \
-	item.xl_text = tr(p_label);                       \
+	item.xl_text = atr(p_label);                      \
 	item.id = p_id == -1 ? items.size() : p_id;       \
 	item.accel = p_accel;
 
@@ -887,7 +887,7 @@ void PopupMenu::add_multistate_item(const String &p_label, int p_max_states, int
 	ERR_FAIL_COND_MSG(p_shortcut.is_null(), "Cannot add item with invalid Shortcut."); \
 	_ref_shortcut(p_shortcut);                                                         \
 	item.text = p_shortcut->get_name();                                                \
-	item.xl_text = tr(item.text);                                                      \
+	item.xl_text = atr(item.text);                                                     \
 	item.id = p_id == -1 ? items.size() : p_id;                                        \
 	item.shortcut = p_shortcut;                                                        \
 	item.shortcut_is_global = p_global;
@@ -956,7 +956,7 @@ void PopupMenu::add_icon_radio_check_shortcut(const Ref<Texture2D> &p_icon, cons
 void PopupMenu::add_submenu_item(const String &p_label, const String &p_submenu, int p_id) {
 	Item item;
 	item.text = p_label;
-	item.xl_text = tr(p_label);
+	item.xl_text = atr(p_label);
 	item.id = p_id == -1 ? items.size() : p_id;
 	item.submenu = p_submenu;
 	items.push_back(item);
@@ -973,7 +973,7 @@ void PopupMenu::add_submenu_item(const String &p_label, const String &p_submenu,
 void PopupMenu::set_item_text(int p_idx, const String &p_text) {
 	ERR_FAIL_INDEX(p_idx, items.size());
 	items.write[p_idx].text = p_text;
-	items.write[p_idx].xl_text = tr(p_text);
+	items.write[p_idx].xl_text = atr(p_text);
 	_shape_item(p_idx);
 
 	control->update();
@@ -1402,7 +1402,7 @@ void PopupMenu::add_separator(const String &p_text, int p_id) {
 	sep.id = p_id;
 	if (p_text != String()) {
 		sep.text = p_text;
-		sep.xl_text = tr(p_text);
+		sep.xl_text = atr(p_text);
 	}
 	items.push_back(sep);
 	control->update();
