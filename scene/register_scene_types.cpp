@@ -586,7 +586,7 @@ void register_scene_types() {
 	GDREGISTER_CLASS(VisualShaderNodeTransformDecompose);
 	GDREGISTER_CLASS(VisualShaderNodeTexture);
 	GDREGISTER_CLASS(VisualShaderNodeCurveTexture);
-	GDREGISTER_CLASS(VisualShaderNodeCurve3Texture);
+	GDREGISTER_CLASS(VisualShaderNodeCurveXYZTexture);
 	GDREGISTER_VIRTUAL_CLASS(VisualShaderNodeSample3D);
 	GDREGISTER_CLASS(VisualShaderNodeTexture2DArray);
 	GDREGISTER_CLASS(VisualShaderNodeTexture3D);
@@ -775,7 +775,7 @@ void register_scene_types() {
 	GDREGISTER_CLASS(AtlasTexture);
 	GDREGISTER_CLASS(MeshTexture);
 	GDREGISTER_CLASS(CurveTexture);
-	GDREGISTER_CLASS(Curve3Texture);
+	GDREGISTER_CLASS(CurveXYZTexture);
 	GDREGISTER_CLASS(GradientTexture);
 	GDREGISTER_CLASS(ProxyTexture);
 	GDREGISTER_CLASS(AnimatedTexture);

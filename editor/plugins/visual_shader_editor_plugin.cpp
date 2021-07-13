@@ -110,7 +110,7 @@ void VisualShaderGraphPlugin::_bind_methods() {
 	ClassDB::bind_method("set_uniform_name", &VisualShaderGraphPlugin::set_uniform_name);
 	ClassDB::bind_method("set_expression", &VisualShaderGraphPlugin::set_expression);
 	ClassDB::bind_method("update_curve", &VisualShaderGraphPlugin::update_curve);
-	ClassDB::bind_method("update_curve3", &VisualShaderGraphPlugin::update_curve3);
+	ClassDB::bind_method("update_curve_xyz", &VisualShaderGraphPlugin::update_curve_xyz);
 	ClassDB::bind_method("update_constant", &VisualShaderGraphPlugin::update_constant);
 }
 
@@ -219,12 +219,12 @@ void VisualShaderGraphPlugin::update_curve(int p_node_id) {
 	}
 }
 
-void VisualShaderGraphPlugin::update_curve3(int p_node_id) {
+void VisualShaderGraphPlugin::update_curve_xyz(int p_node_id) {
 	if (links.has(p_node_id) && links[p_node_id].curve_editors[0] && links[p_node_id].curve_editors[1] && links[p_node_id].curve_editors[2]) {
-		if (((VisualShaderNodeCurve3Texture *)links[p_node_id].visual_node)->get_texture().is_valid()) {
-			links[p_node_id].curve_editors[0]->set_curve(((VisualShaderNodeCurve3Texture *)links[p_node_id].visual_node)->get_texture()->get_curve_x());
-			links[p_node_id].curve_editors[1]->set_curve(((VisualShaderNodeCurve3Texture *)links[p_node_id].visual_node)->get_texture()->get_curve_y());
-			links[p_node_id].curve_editors[2]->set_curve(((VisualShaderNodeCurve3Texture *)links[p_node_id].visual_node)->get_texture()->get_curve_z());
+		if (((VisualShaderNodeCurveXYZTexture *)links[p_node_id].visual_node)->get_texture().is_valid()) {
+			links[p_node_id].curve_editors[0]->set_curve(((VisualShaderNodeCurveXYZTexture *)links[p_node_id].visual_node)->get_texture()->get_curve_x());
+			links[p_node_id].curve_editors[1]->set_curve(((VisualShaderNodeCurveXYZTexture *)links[p_node_id].visual_node)->get_texture()->get_curve_y());
+			links[p_node_id].curve_editors[2]->set_curve(((VisualShaderNodeCurveXYZTexture *)links[p_node_id].visual_node)->get_texture()->get_curve_z());
 		}
 	}
 }
@@ -483,10 +483,10 @@ void VisualShaderGraphPlugin::add_node(VisualShader::Type p_type, int p_id) {
 		custom_editor = hbox;
 	}
 
-	Ref<VisualShaderNodeCurve3Texture> curve3 = vsnode;
-	if (curve3.is_valid()) {
-		if (curve3->get_texture().is_valid() && !curve3->get_texture()->is_connected("changed", callable_mp(VisualShaderEditor::get_singleton()->get_graph_plugin(), &VisualShaderGraphPlugin::update_curve3))) {
-			curve3->get_texture()->connect("changed", callable_mp(VisualShaderEditor::get_singleton()->get_graph_plugin(), &VisualShaderGraphPlugin::update_curve3), varray(p_id));
+	Ref<VisualShaderNodeCurveXYZTexture> curve_xyz = vsnode;
+	if (curve_xyz.is_valid()) {
+		if (curve_xyz->get_texture().is_valid() && !curve_xyz->get_texture()->is_connected("changed", callable_mp(VisualShaderEditor::get_singleton()->get_graph_plugin(), &VisualShaderGraphPlugin::update_curve_xyz))) {
+			curve_xyz->get_texture()->connect("changed", callable_mp(VisualShaderEditor::get_singleton()->get_graph_plugin(), &VisualShaderGraphPlugin::update_curve_xyz), varray(p_id));
 		}
 
 		HBoxContainer *hbox = memnew(HBoxContainer);
@@ -518,7 +518,7 @@ void VisualShaderGraphPlugin::add_node(VisualShader::Type p_type, int p_id) {
 		port_offset++;
 		node->add_child(custom_editor);
 
-		bool is_curve = curve.is_valid() || curve3.is_valid();
+		bool is_curve = curve.is_valid() || curve_xyz.is_valid();
 
 		if (is_curve) {
 			VisualShaderEditor::get_singleton()->graph->add_child(node);
@@ -551,14 +551,14 @@ void VisualShaderGraphPlugin::add_node(VisualShader::Type p_type, int p_id) {
 			}
 		}
 
-		if (curve3.is_valid()) {
+		if (curve_xyz.is_valid()) {
 			CurveEditor *curve_editor_x = memnew(CurveEditor);
 			node->add_child(curve_editor_x);
 			register_curve_editor(p_id, 0, curve_editor_x);
 			curve_editor_x->set_custom_minimum_size(Size2(300, 0));
 			curve_editor_x->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-			if (curve3->get_texture().is_valid()) {
-				curve_editor_x->set_curve(curve3->get_texture()->get_curve_x());
+			if (curve_xyz->get_texture().is_valid()) {
+				curve_editor_x->set_curve(curve_xyz->get_texture()->get_curve_x());
 			}
 
 			CurveEditor *curve_editor_y = memnew(CurveEditor);
@@ -566,8 +566,8 @@ void VisualShaderGraphPlugin::add_node(VisualShader::Type p_type, int p_id) {
 			register_curve_editor(p_id, 1, curve_editor_y);
 			curve_editor_y->set_custom_minimum_size(Size2(300, 0));
 			curve_editor_y->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-			if (curve3->get_texture().is_valid()) {
-				curve_editor_y->set_curve(curve3->get_texture()->get_curve_y());
+			if (curve_xyz->get_texture().is_valid()) {
+				curve_editor_y->set_curve(curve_xyz->get_texture()->get_curve_y());
 			}
 
 			CurveEditor *curve_editor_z = memnew(CurveEditor);
@@ -575,8 +575,8 @@ void VisualShaderGraphPlugin::add_node(VisualShader::Type p_type, int p_id) {
 			register_curve_editor(p_id, 2, curve_editor_z);
 			curve_editor_z->set_custom_minimum_size(Size2(300, 0));
 			curve_editor_z->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-			if (curve3->get_texture().is_valid()) {
-				curve_editor_z->set_curve(curve3->get_texture()->get_curve_z());
+			if (curve_xyz->get_texture().is_valid()) {
+				curve_editor_z->set_curve(curve_xyz->get_texture()->get_curve_z());
 			}
 		}
 
@@ -2473,9 +2473,9 @@ void VisualShaderEditor::_add_node(int p_idx, int p_op_idx, String p_resource_pa
 		graph_plugin->call_deferred("update_curve", id_to_use);
 	}
 
-	VisualShaderNodeCurve3Texture *curve3 = Object::cast_to<VisualShaderNodeCurve3Texture>(vsnode.ptr());
-	if (curve3) {
-		graph_plugin->call_deferred("update_curve3", id_to_use);
+	VisualShaderNodeCurveXYZTexture *curve_xyz = Object::cast_to<VisualShaderNodeCurveXYZTexture>(vsnode.ptr());
+	if (curve_xyz) {
+		graph_plugin->call_deferred("update_curve_xyz", id_to_use);
 	}
 
 	if (p_resource_path.is_empty()) {
@@ -2486,7 +2486,7 @@ void VisualShaderEditor::_add_node(int p_idx, int p_op_idx, String p_resource_pa
 		VisualShaderNodeTexture *texture2d = Object::cast_to<VisualShaderNodeTexture>(vsnode.ptr());
 		VisualShaderNodeTexture3D *texture3d = Object::cast_to<VisualShaderNodeTexture3D>(vsnode.ptr());
 
-		if (texture2d || texture3d || curve || curve3) {
+		if (texture2d || texture3d || curve || curve_xyz) {
 			undo_redo->add_do_method(vsnode.ptr(), "set_texture", ResourceLoader::load(p_resource_path));
 			return;
 		}
@@ -3681,10 +3681,10 @@ void VisualShaderEditor::drop_data_fw(const Point2 &p_point, const Variant &p_da
 						saved_node_pos = p_point + Vector2(0, i * 250 * EDSCALE);
 						saved_node_pos_dirty = true;
 						_add_node(curve_node_option_idx, -1, arr[i], i);
-					} else if (type == "Curve3Texture") {
+					} else if (type == "CurveXYZTexture") {
 						saved_node_pos = p_point + Vector2(0, i * 250 * EDSCALE);
 						saved_node_pos_dirty = true;
-						_add_node(curve3_node_option_idx, -1, arr[i], i);
+						_add_node(curve_xyz_node_option_idx, -1, arr[i], i);
 					} else if (ClassDB::get_parent_class(type) == "Texture2D") {
 						saved_node_pos = p_point + Vector2(0, i * 250 * EDSCALE);
 						saved_node_pos_dirty = true;
@@ -4406,8 +4406,8 @@ VisualShaderEditor::VisualShaderEditor() {
 	add_options.push_back(AddOption("CubeMap", "Textures", "Functions", "VisualShaderNodeCubemap", TTR("Perform the cubic texture lookup."), -1, -1));
 	curve_node_option_idx = add_options.size();
 	add_options.push_back(AddOption("CurveTexture", "Textures", "Functions", "VisualShaderNodeCurveTexture", TTR("Perform the curve texture lookup."), -1, -1));
-	curve3_node_option_idx = add_options.size();
-	add_options.push_back(AddOption("CurveTexture3", "Textures", "Functions", "VisualShaderNodeCurve3Texture", TTR("Perform the ternary curve texture lookup."), -1, -1));
+	curve_xyz_node_option_idx = add_options.size();
+	add_options.push_back(AddOption("CurveXYZTexture", "Textures", "Functions", "VisualShaderNodeCurveXYZTexture", TTR("Perform the three components curve texture lookup."), -1, -1));
 	texture2d_node_option_idx = add_options.size();
 	add_options.push_back(AddOption("Texture2D", "Textures", "Functions", "VisualShaderNodeTexture", TTR("Perform the 2D texture lookup."), -1, -1));
 	texture2d_array_node_option_idx = add_options.size();
