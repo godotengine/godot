@@ -117,7 +117,7 @@ public:
 	void update_uniform_refs();
 	void set_uniform_name(VisualShader::Type p_type, int p_node_id, const String &p_name);
 	void update_curve(int p_node_id);
-	void update_curve3(int p_node_id);
+	void update_curve_xyz(int p_node_id);
 	void update_constant(VisualShader::Type p_type, int p_node_id);
 	void set_expression(VisualShader::Type p_type, int p_node_id, const String &p_expression);
 	int get_constant_index(float p_constant) const;
@@ -290,7 +290,7 @@ class VisualShaderEditor : public VBoxContainer {
 	int texture3d_node_option_idx;
 	int custom_node_option_idx;
 	int curve_node_option_idx;
-	int curve3_node_option_idx;
+	int curve_xyz_node_option_idx;
 	List<String> keyword_list;
 
 	List<VisualShaderNodeUniformRef> uniform_refs;
