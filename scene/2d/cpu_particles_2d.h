@@ -150,8 +150,8 @@ private:
 	Vector2 direction = Vector2(1, 0);
 	real_t spread = 45.0;
 
-	real_t parameters[PARAM_MAX];
-	real_t randomness[PARAM_MAX];
+	real_t parameters_min[PARAM_MAX];
+	real_t parameters_max[PARAM_MAX];
 
 	Ref<Curve> curve_parameters[PARAM_MAX];
 	Color color;
@@ -166,6 +166,10 @@ private:
 	Vector<Vector2> emission_normals;
 	Vector<Color> emission_colors;
 	int emission_point_count = 0;
+
+	Ref<Curve> scale_curve_x;
+	Ref<Curve> scale_curve_y;
+	bool split_scale = false;
 
 	Vector2 gravity = Vector2(0, 980);
 
@@ -236,11 +240,11 @@ public:
 	void set_spread(real_t p_spread);
 	real_t get_spread() const;
 
-	void set_param(Parameter p_param, real_t p_value);
-	real_t get_param(Parameter p_param) const;
+	void set_param_min(Parameter p_param, real_t p_value);
+	real_t get_param_min(Parameter p_param) const;
 
-	void set_param_randomness(Parameter p_param, real_t p_value);
-	real_t get_param_randomness(Parameter p_param) const;
+	void set_param_max(Parameter p_param, real_t p_value);
+	real_t get_param_max(Parameter p_param) const;
 
 	void set_param_curve(Parameter p_param, const Ref<Curve> &p_curve);
 	Ref<Curve> get_param_curve(Parameter p_param) const;
@@ -261,6 +265,9 @@ public:
 	void set_emission_normals(const Vector<Vector2> &p_normals);
 	void set_emission_colors(const Vector<Color> &p_colors);
 	void set_emission_point_count(int p_count);
+	void set_scale_curve_x(Ref<Curve> p_scale_curve);
+	void set_scale_curve_y(Ref<Curve> p_scale_curve);
+	void set_split_scale(bool p_split_scale);
 
 	EmissionShape get_emission_shape() const;
 	real_t get_emission_sphere_radius() const;
@@ -269,6 +276,9 @@ public:
 	Vector<Vector2> get_emission_normals() const;
 	Vector<Color> get_emission_colors() const;
 	int get_emission_point_count() const;
+	Ref<Curve> get_scale_curve_x() const;
+	Ref<Curve> get_scale_curve_y() const;
+	bool get_split_scale();
 
 	void set_gravity(const Vector2 &p_gravity);
 	Vector2 get_gravity() const;
