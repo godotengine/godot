@@ -80,6 +80,9 @@ public:
 	void set_preserve_control(bool p_enabled);
 	bool get_preserve_control() const;
 
+	void set_custom_punctuation(const String &p_punct);
+	String get_custom_punctuation() const;
+
 	void set_bidi_override(const Vector<Vector2i> &p_override);
 
 	bool set_dropcap(const String &p_text, const Ref<Font> &p_fonts, int p_size, const Rect2 &p_dropcap_margins = Rect2(), const Dictionary &p_opentype_features = Dictionary(), const String &p_language = "");

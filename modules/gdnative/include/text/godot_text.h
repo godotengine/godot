@@ -126,6 +126,8 @@ typedef struct {
 	void (*shaped_text_clear)(void *, godot_rid *);
 	void (*shaped_text_set_direction)(void *, godot_rid *, godot_int);
 	godot_int (*shaped_text_get_direction)(void *, godot_rid *);
+	void (*shaped_text_set_custom_punctuation)(void *, godot_rid *, const godot_string *);
+	godot_string (*shaped_text_get_custom_punctuation)(void *, godot_rid *);
 	void (*shaped_text_set_bidi_override)(void *, godot_rid *, const godot_packed_vector2i_array *);
 	void (*shaped_text_set_orientation)(void *, godot_rid *, godot_int);
 	godot_int (*shaped_text_get_orientation)(void *, godot_rid *);

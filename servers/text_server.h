@@ -153,6 +153,7 @@ public:
 		int end = 0; // Substring end offset in the parent string.
 
 		String text;
+		String custom_punct;
 		TextServer::Direction direction = DIRECTION_LTR; // Desired text direction.
 		TextServer::Orientation orientation = ORIENTATION_HORIZONTAL;
 
@@ -325,6 +326,9 @@ public:
 	virtual bool shaped_text_add_string(RID p_shaped, const String &p_text, const Vector<RID> &p_fonts, int p_size, const Dictionary &p_opentype_features = Dictionary(), const String &p_language = "") = 0;
 	virtual bool shaped_text_add_object(RID p_shaped, Variant p_key, const Size2 &p_size, VAlign p_inline_align = VALIGN_CENTER, int p_length = 1) = 0;
 	virtual bool shaped_text_resize_object(RID p_shaped, Variant p_key, const Size2 &p_size, VAlign p_inline_align = VALIGN_CENTER) = 0;
+
+	virtual void shaped_text_set_custom_punctuation(RID p_shaped, const String &p_punct) = 0;
+	virtual String shaped_text_get_custom_punctuation(RID p_shaped) const = 0;
 
 	virtual RID shaped_text_substr(RID p_shaped, int p_start, int p_length) const = 0; // Copy shaped substring (e.g. line break) without reshaping, but correctly reordered, preservers range.
 	virtual RID shaped_text_get_parent(RID p_shaped) const = 0;

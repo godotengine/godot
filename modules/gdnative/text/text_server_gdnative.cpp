@@ -409,6 +409,19 @@ TextServer::Direction TextServerGDNative::shaped_text_get_direction(RID p_shaped
 	return (TextServer::Direction)interface->shaped_text_get_direction(data, (godot_rid *)&p_shaped);
 }
 
+void TextServerGDNative::shaped_text_set_custom_punctuation(RID p_shaped, const String &p_punct) {
+	ERR_FAIL_COND(interface == nullptr);
+	interface->shaped_text_set_custom_punctuation(data, (godot_rid *)&p_shaped, (const godot_string *)&p_punct);
+}
+
+String TextServerGDNative::shaped_text_get_custom_punctuation(RID p_shaped) const {
+	ERR_FAIL_COND_V(interface == nullptr, String());
+	godot_string result = interface->shaped_text_get_custom_punctuation(data, (godot_rid *)&p_shaped);
+	String ret = *(String *)&result;
+	godot_string_destroy(&result);
+	return ret;
+}
+
 void TextServerGDNative::shaped_text_set_orientation(RID p_shaped, TextServer::Orientation p_orientation) {
 	ERR_FAIL_COND(interface == nullptr);
 	interface->shaped_text_set_orientation(data, (godot_rid *)&p_shaped, (godot_int)p_orientation);

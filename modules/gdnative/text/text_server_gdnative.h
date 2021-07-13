@@ -142,6 +142,9 @@ public:
 	virtual void shaped_text_set_direction(RID p_shaped, Direction p_direction = DIRECTION_AUTO) override;
 	virtual Direction shaped_text_get_direction(RID p_shaped) const override;
 
+	virtual void shaped_text_set_custom_punctuation(RID p_shaped, const String &p_punct) override;
+	virtual String shaped_text_get_custom_punctuation(RID p_shaped) const override;
+
 	virtual void shaped_text_set_bidi_override(RID p_shaped, const Vector<Vector2i> &p_override) override;
 
 	virtual void shaped_text_set_orientation(RID p_shaped, Orientation p_orientation = ORIENTATION_HORIZONTAL) override;
