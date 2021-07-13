@@ -1119,7 +1119,7 @@ ConnectionsDock::ConnectionsDock(EditorNode *p_editor) {
 	add_child(slot_menu);
 	slot_menu->connect("id_pressed", this, "_handle_slot_menu_option");
 	slot_menu->add_item(TTR("Edit..."), EDIT);
-	slot_menu->add_item(TTR("Go To Method"), GO_TO_SCRIPT);
+	slot_menu->add_item(TTR("Go to Method"), GO_TO_SCRIPT);
 	slot_menu->add_item(TTR("Disconnect"), DISCONNECT);
 
 	connect_dialog->connect("connected", this, "_make_or_edit_connection");
