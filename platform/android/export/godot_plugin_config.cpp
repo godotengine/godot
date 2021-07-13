@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  godot_plugin_config.h                                                */
+/*  godot_plugin_config.cpp                                              */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,78 +28,23 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef GODOT_PLUGIN_CONFIG_H
-#define GODOT_PLUGIN_CONFIG_H
-
-#include "core/error/error_list.h"
-#include "core/io/config_file.h"
-#include "core/string/ustring.h"
-
-/*
- The `config` section and fields are required and defined as follow:
-- **name**: name of the plugin.
-- **binary_type**: can be either `local` or `remote`. The type affects the **binary** field.
-- **binary**:
-  - if **binary_type** is `local`, then this should be the filename of the plugin `aar` file in the `res://android/plugins` directory (e.g: `MyPlugin.aar`).
-  - if **binary_type** is `remote`, then this should be a declaration for a remote gradle binary (e.g: "org.godot.example:my-plugin:0.0.0").
-
-The `dependencies` section and fields are optional and defined as follow:
-- **local**: contains a list of local `.aar` binary files the plugin depends on. The local binary dependencies must also be located in the `res://android/plugins` directory.
-- **remote**: contains a list of remote binary gradle dependencies for the plugin.
-- **custom_maven_repos**: contains a list of urls specifying custom maven repos required for the plugin's dependencies.
-
- See https://github.com/godotengine/godot/issues/38157#issuecomment-618773871
- */
-struct PluginConfigAndroid {
-	inline static const char *PLUGIN_CONFIG_EXT = ".gdap";
-
-	inline static const char *CONFIG_SECTION = "config";
-	inline static const char *CONFIG_NAME_KEY = "name";
-	inline static const char *CONFIG_BINARY_TYPE_KEY = "binary_type";
-	inline static const char *CONFIG_BINARY_KEY = "binary";
-
-	inline static const char *DEPENDENCIES_SECTION = "dependencies";
-	inline static const char *DEPENDENCIES_LOCAL_KEY = "local";
-	inline static const char *DEPENDENCIES_REMOTE_KEY = "remote";
-	inline static const char *DEPENDENCIES_CUSTOM_MAVEN_REPOS_KEY = "custom_maven_repos";
-
-	inline static const char *BINARY_TYPE_LOCAL = "local";
-	inline static const char *BINARY_TYPE_REMOTE = "remote";
-
-	inline static const char *PLUGIN_VALUE_SEPARATOR = "|";
-
-	// Set to true when the config file is properly loaded.
-	bool valid_config = false;
-	// Unix timestamp of last change to this plugin.
-	uint64_t last_updated = 0;
-
-	// Required config section
-	String name;
-	String binary_type;
-	String binary;
-
-	// Optional dependencies section
-	Vector<String> local_dependencies;
-	Vector<String> remote_dependencies;
-	Vector<String> custom_maven_repos;
-};
-
+#include "godot_plugin_config.h"
 /*
  * Set of prebuilt plugins.
  * Currently unused, this is just for future reference:
  */
 // static const PluginConfigAndroid MY_PREBUILT_PLUGIN = {
-//	/*.valid_config =*/true,
-//	/*.last_updated =*/0,
-//	/*.name =*/"GodotPayment",
-//	/*.binary_type =*/"local",
-//	/*.binary =*/"res://android/build/libs/plugins/GodotPayment.release.aar",
-//	/*.local_dependencies =*/{},
-// 	/*.remote_dependencies =*/String("com.android.billingclient:billing:2.2.1").split("|"),
-// 	/*.custom_maven_repos =*/{}
+//    /*.valid_config =*/true,
+//    /*.last_updated =*/0,
+//    /*.name =*/"GodotPayment",
+//    /*.binary_type =*/"local",
+//    /*.binary =*/"res://android/build/libs/plugins/GodotPayment.release.aar",
+//    /*.local_dependencies =*/{},
+//     /*.remote_dependencies =*/String("com.android.billingclient:billing:2.2.1").split("|"),
+//     /*.custom_maven_repos =*/{}
 // };
 
-static inline String resolve_local_dependency_path(String plugin_config_dir, String dependency_path) {
+String PluginConfigAndroid::resolve_local_dependency_path(String plugin_config_dir, String dependency_path) {
 	String absolute_path;
 	if (!dependency_path.is_empty()) {
 		if (dependency_path.is_absolute_path()) {
@@ -112,7 +57,7 @@ static inline String resolve_local_dependency_path(String plugin_config_dir, Str
 	return absolute_path;
 }
 
-static inline PluginConfigAndroid resolve_prebuilt_plugin(PluginConfigAndroid prebuilt_plugin, String plugin_config_dir) {
+PluginConfigAndroid PluginConfigAndroid::resolve_prebuilt_plugin(PluginConfigAndroid prebuilt_plugin, String plugin_config_dir) {
 	PluginConfigAndroid resolved = prebuilt_plugin;
 	resolved.binary = resolved.binary_type == PluginConfigAndroid::BINARY_TYPE_LOCAL ? resolve_local_dependency_path(plugin_config_dir, prebuilt_plugin.binary) : prebuilt_plugin.binary;
 	if (!prebuilt_plugin.local_dependencies.is_empty()) {
@@ -124,13 +69,13 @@ static inline PluginConfigAndroid resolve_prebuilt_plugin(PluginConfigAndroid pr
 	return resolved;
 }
 
-static inline Vector<PluginConfigAndroid> get_prebuilt_plugins(String plugins_base_dir) {
+Vector<PluginConfigAndroid> PluginConfigAndroid::get_prebuilt_plugins(String plugins_base_dir) {
 	Vector<PluginConfigAndroid> prebuilt_plugins;
 	// prebuilt_plugins.push_back(resolve_prebuilt_plugin(MY_PREBUILT_PLUGIN, plugins_base_dir));
 	return prebuilt_plugins;
 }
 
-static inline bool is_plugin_config_valid(PluginConfigAndroid plugin_config) {
+bool PluginConfigAndroid::is_plugin_config_valid(PluginConfigAndroid plugin_config) {
 	bool valid_name = !plugin_config.name.is_empty();
 	bool valid_binary_type = plugin_config.binary_type == PluginConfigAndroid::BINARY_TYPE_LOCAL ||
 							 plugin_config.binary_type == PluginConfigAndroid::BINARY_TYPE_REMOTE;
@@ -155,7 +100,7 @@ static inline bool is_plugin_config_valid(PluginConfigAndroid plugin_config) {
 	return valid_name && valid_binary && valid_binary_type && valid_local_dependencies;
 }
 
-static inline uint64_t get_plugin_modification_time(const PluginConfigAndroid &plugin_config, const String &config_path) {
+uint64_t PluginConfigAndroid::get_plugin_modification_time(const PluginConfigAndroid &plugin_config, const String &config_path) {
 	uint64_t last_updated = FileAccess::get_modified_time(config_path);
 	last_updated = MAX(last_updated, FileAccess::get_modified_time(plugin_config.binary));
 
@@ -167,7 +112,7 @@ static inline uint64_t get_plugin_modification_time(const PluginConfigAndroid &p
 	return last_updated;
 }
 
-static inline PluginConfigAndroid load_plugin_config(Ref<ConfigFile> config_file, const String &path) {
+PluginConfigAndroid PluginConfigAndroid::load_plugin_config(Ref<ConfigFile> config_file, const String &path) {
 	PluginConfigAndroid plugin_config = {};
 
 	if (config_file.is_valid()) {
@@ -201,7 +146,7 @@ static inline PluginConfigAndroid load_plugin_config(Ref<ConfigFile> config_file
 	return plugin_config;
 }
 
-static inline String get_plugins_binaries(String binary_type, Vector<PluginConfigAndroid> plugins_configs) {
+String PluginConfigAndroid::get_plugins_binaries(String binary_type, Vector<PluginConfigAndroid> plugins_configs) {
 	String plugins_binaries;
 	if (!plugins_configs.is_empty()) {
 		Vector<String> binaries;
@@ -230,7 +175,7 @@ static inline String get_plugins_binaries(String binary_type, Vector<PluginConfi
 	return plugins_binaries;
 }
 
-static inline String get_plugins_custom_maven_repos(Vector<PluginConfigAndroid> plugins_configs) {
+String PluginConfigAndroid::get_plugins_custom_maven_repos(Vector<PluginConfigAndroid> plugins_configs) {
 	String custom_maven_repos;
 	if (!plugins_configs.is_empty()) {
 		Vector<String> repos_urls;
@@ -248,7 +193,7 @@ static inline String get_plugins_custom_maven_repos(Vector<PluginConfigAndroid> 
 	return custom_maven_repos;
 }
 
-static inline String get_plugins_names(Vector<PluginConfigAndroid> plugins_configs) {
+String PluginConfigAndroid::get_plugins_names(Vector<PluginConfigAndroid> plugins_configs) {
 	String plugins_names;
 	if (!plugins_configs.is_empty()) {
 		Vector<String> names;
@@ -265,5 +210,3 @@ static inline String get_plugins_names(Vector<PluginConfigAndroid> plugins_confi
 
 	return plugins_names;
 }
-
-#endif // GODOT_PLUGIN_CONFIG_H
