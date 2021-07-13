@@ -2713,7 +2713,7 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 						}
 
 						save_confirmation->get_ok_button()->set_text(TTR("Save & Quit"));
-						save_confirmation->set_text((p_option == FILE_QUIT ? TTR("Save changes to the following scene(s) before quitting?") : TTR("Save changes the following scene(s) before opening Project Manager?")) + unsaved_scenes);
+						save_confirmation->set_text((p_option == FILE_QUIT ? TTR("Save changes to the following scene(s) before quitting?") : TTR("Save changes to the following scene(s) before opening Project Manager?")) + unsaved_scenes);
 						save_confirmation->popup_centered();
 					}
 				}
