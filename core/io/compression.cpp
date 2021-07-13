@@ -141,8 +141,9 @@ int Compression::decompress(uint8_t *p_dst, int p_dst_max_size, const uint8_t *p
 
 			if (p_dst_max_size < 16) {
 				uint8_t dst[16];
-				ret_size = fastlz_decompress(p_src, p_src_size, dst, 16);
+				fastlz_decompress(p_src, p_src_size, dst, 16);
 				copymem(p_dst, dst, p_dst_max_size);
+				ret_size = p_dst_max_size;
 			} else {
 				ret_size = fastlz_decompress(p_src, p_src_size, p_dst, p_dst_max_size);
 			}
