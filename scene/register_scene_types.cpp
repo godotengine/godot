@@ -195,6 +195,7 @@
 #include "scene/main/shader_globals_override.h"
 
 #ifndef _3D_DISABLED
+#include "scene/2d/listener_2d.h"
 #include "scene/3d/area_3d.h"
 #include "scene/3d/audio_stream_player_3d.h"
 #include "scene/3d/bone_attachment_3d.h"
@@ -451,6 +452,7 @@ void register_scene_types() {
 	ClassDB::register_virtual_class<GeometryInstance3D>();
 	ClassDB::register_class<Camera3D>();
 	ClassDB::register_class<ClippedCamera3D>();
+	ClassDB::register_class<Listener2D>();
 	ClassDB::register_class<Listener3D>();
 	ClassDB::register_class<XRCamera3D>();
 	ClassDB::register_class<XRController3D>();

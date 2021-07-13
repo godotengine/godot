@@ -846,15 +846,6 @@ void SceneTree::_notify_group_pause(const StringName &p_group, int p_notificatio
 	}
 }
 
-/*
-void SceneMainLoop::_update_listener_2d() {
-	if (listener_2d.is_valid()) {
-		SpatialSound2DServer::get_singleton()->listener_set_space( listener_2d, world_2d->get_sound_space() );
-	}
-}
-
-*/
-
 void SceneTree::_call_input_pause(const StringName &p_group, const StringName &p_method, const Ref<InputEvent> &p_input, Viewport *p_viewport) {
 	Map<StringName, Group>::Element *E = group_map.find(p_group);
 	if (!E) {
@@ -1329,7 +1320,7 @@ SceneTree::SceneTree() {
 	set_multiplayer(Ref<MultiplayerAPI>(memnew(MultiplayerAPI)));
 
 	//root->set_world_2d( Ref<World2D>( memnew( World2D )));
-	root->set_as_audio_listener(true);
+	root->set_as_audio_listener_3d(true);
 	root->set_as_audio_listener_2d(true);
 	current_scene = nullptr;
 
