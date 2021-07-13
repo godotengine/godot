@@ -5025,7 +5025,7 @@ String VisualShaderNodeTextureUniformTriplanar::generate_global_per_node(Shader:
 	code += "\n";
 	code += "	uniform vec3 triplanar_scale = vec3(1.0, 1.0, 1.0);\n";
 	code += "	uniform vec3 triplanar_offset;\n";
-	code += "	uniform float triplanar_sharpness = 0.5;\n";
+	code += "	uniform float triplanar_sharpness = 4.0;\n";
 	code += "\n";
 	code += "	varying vec3 triplanar_power_normal;\n";
 	code += "	varying vec3 triplanar_pos;\n";

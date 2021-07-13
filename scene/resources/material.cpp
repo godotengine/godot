@@ -2737,10 +2737,10 @@ BaseMaterial3D::BaseMaterial3D(bool p_orm) :
 	set_point_size(1);
 	set_uv1_offset(Vector3(0, 0, 0));
 	set_uv1_scale(Vector3(1, 1, 1));
-	set_uv1_triplanar_blend_sharpness(1);
+	set_uv1_triplanar_blend_sharpness(4.0);
 	set_uv2_offset(Vector3(0, 0, 0));
 	set_uv2_scale(Vector3(1, 1, 1));
-	set_uv2_triplanar_blend_sharpness(1);
+	set_uv2_triplanar_blend_sharpness(4.0);
 	set_billboard_mode(BILLBOARD_DISABLED);
 	set_particles_anim_h_frames(1);
 	set_particles_anim_v_frames(1);

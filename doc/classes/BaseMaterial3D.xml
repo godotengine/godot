@@ -354,31 +354,33 @@
 			[b]Note:[/b] this is only effective for objects whose geometry is point-based rather than triangle-based. See also [member point_size].
 		</member>
 		<member name="uv1_offset" type="Vector3" setter="set_uv1_offset" getter="get_uv1_offset" default="Vector3(0, 0, 0)">
-			How much to offset the [code]UV[/code] coordinates. This amount will be added to [code]UV[/code] in the vertex function. This can be used to offset a texture.
+			How much to offset the [code]UV[/code] coordinates. This amount will be added to [code]UV[/code] in the vertex function. This can be used to offset a texture. When using [member uv1_triplanar], the mirrorring that can be seen on some sides of the material can be made less noticeable by offsetting each axis with a different offset.
 		</member>
 		<member name="uv1_scale" type="Vector3" setter="set_uv1_scale" getter="get_uv1_scale" default="Vector3(1, 1, 1)">
 			How much to scale the [code]UV[/code] coordinates. This is multiplied by [code]UV[/code] in the vertex function.
 		</member>
 		<member name="uv1_triplanar" type="bool" setter="set_flag" getter="get_flag" default="false">
-			If [code]true[/code], instead of using [code]UV[/code] textures will use a triplanar texture lookup to determine how to apply textures. Triplanar uses the orientation of the object's surface to blend between texture coordinates. It reads from the source texture 3 times, once for each axis and then blends between the results based on how closely the pixel aligns with each axis. This is often used for natural features to get a realistic blend of materials. Because triplanar texturing requires many more texture reads per-pixel it is much slower than normal UV texturing. Additionally, because it is blending the texture between the three axes, it is unsuitable when you are trying to achieve crisp texturing.
+			If [code]true[/code], instead of using [code]UV[/code] textures will use a triplanar texture lookup to determine how to apply textures. Triplanar uses the orientation of the object's surface to blend between texture coordinates. It reads from the source texture 3 times, once for each axis and then blends between the results based on how closely the pixel aligns with each axis. This is often used for natural features and terrain to get a realistic blend of materials. Because triplanar texturing requires many more texture reads per-pixel, it is much slower than normal UV texturing. Additionally, because it is blending the texture between the three axes, it is unsuitable when you are trying to achieve crisp texturing.
 		</member>
-		<member name="uv1_triplanar_sharpness" type="float" setter="set_uv1_triplanar_blend_sharpness" getter="get_uv1_triplanar_blend_sharpness" default="1.0">
-			A lower number blends the texture more softly while a higher number blends the texture more sharply.
+		<member name="uv1_triplanar_sharpness" type="float" setter="set_uv1_triplanar_blend_sharpness" getter="get_uv1_triplanar_blend_sharpness" default="4.0">
+			When [member uv1_triplanar] is [code]true[/code], controls the triplanar blending sharpness. A lower number blends the texture more softly, while a higher number blends the texture more sharply. Higher sharpness values generally look better, since sharper texture transitions result in a more realistic-looking texture that appears less flat.
+			[b]Note:[/b] Very high values (typically above [code]100.0[/code]) may cause black artifacts to appear on the texture.
 		</member>
 		<member name="uv1_world_triplanar" type="bool" setter="set_flag" getter="get_flag" default="false">
 			If [code]true[/code], triplanar mapping for [code]UV[/code] is calculated in world space rather than object local space. See also [member uv1_triplanar].
 		</member>
 		<member name="uv2_offset" type="Vector3" setter="set_uv2_offset" getter="get_uv2_offset" default="Vector3(0, 0, 0)">
-			How much to offset the [code]UV2[/code] coordinates. This amount will be added to [code]UV2[/code] in the vertex function. This can be used to offset a texture.
+			How much to offset the [code]UV2[/code] coordinates. This amount will be added to [code]UV2[/code] in the vertex function. This can be used to offset a texture. When using [member uv2_triplanar], the mirrorring that can be seen on some sides of the material can be made less noticeable by offsetting each axis with a different offset.
 		</member>
 		<member name="uv2_scale" type="Vector3" setter="set_uv2_scale" getter="get_uv2_scale" default="Vector3(1, 1, 1)">
 			How much to scale the [code]UV2[/code] coordinates. This is multiplied by [code]UV2[/code] in the vertex function.
 		</member>
 		<member name="uv2_triplanar" type="bool" setter="set_flag" getter="get_flag" default="false">
-			If [code]true[/code], instead of using [code]UV2[/code] textures will use a triplanar texture lookup to determine how to apply textures. Triplanar uses the orientation of the object's surface to blend between texture coordinates. It reads from the source texture 3 times, once for each axis and then blends between the results based on how closely the pixel aligns with each axis. This is often used for natural features to get a realistic blend of materials. Because triplanar texturing requires many more texture reads per-pixel it is much slower than normal UV texturing. Additionally, because it is blending the texture between the three axes, it is unsuitable when you are trying to achieve crisp texturing.
+			If [code]true[/code], instead of using [code]UV2[/code] textures will use a triplanar texture lookup to determine how to apply textures. Triplanar uses the orientation of the object's surface to blend between texture coordinates. It reads from the source texture 3 times, once for each axis and then blends between the results based on how closely the pixel aligns with each axis. This is often used for natural features and terrain to get a realistic blend of materials. Because triplanar texturing requires many more texture reads per-pixel, it is much slower than normal UV texturing. Additionally, because it is blending the texture between the three axes, it is unsuitable when you are trying to achieve crisp texturing.
 		</member>
-		<member name="uv2_triplanar_sharpness" type="float" setter="set_uv2_triplanar_blend_sharpness" getter="get_uv2_triplanar_blend_sharpness" default="1.0">
-			A lower number blends the texture more softly while a higher number blends the texture more sharply.
+		<member name="uv2_triplanar_sharpness" type="float" setter="set_uv2_triplanar_blend_sharpness" getter="get_uv2_triplanar_blend_sharpness" default="4.0">
+			When [member uv2_triplanar] is [code]true[/code], controls the triplanar blending sharpness. A lower number blends the texture more softly, while a higher number blends the texture more sharply. Higher sharpness values generally look better, since sharper texture transitions result in a more realistic-looking texture that appears less flat.
+			[b]Note:[/b] Very high values (typically above [code]100.0[/code]) may cause black artifacts to appear on the texture.
 		</member>
 		<member name="uv2_world_triplanar" type="bool" setter="set_flag" getter="get_flag" default="false">
 			If [code]true[/code], triplanar mapping for [code]UV2[/code] is calculated in world space rather than object local space. See also [member uv2_triplanar].
