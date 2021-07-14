@@ -4,19 +4,19 @@ Import("env")
 
 import os
 
+import modules_builders
+
 env_modules = env.Clone()
 
 Export("env_modules")
 
-env.modules_sources = []
+env.Depends("modules_enabled.gen.h", Value(env.module_list))
+env.CommandNoCache("modules_enabled.gen.h", Value(env.module_list), modules_builders.generate_modules_enabled)
 
+env.modules_sources = []
 env_modules.add_source_files(env.modules_sources, "register_module_types.gen.cpp")
 
 for name, path in env.module_list.items():
-    if name in env.disabled_modules:
-        continue
-
-    env_modules.Append(CPPDEFINES=["MODULE_" + name.upper() + "_ENABLED"])
     if not os.path.isabs(path):
         SConscript(name + "/SCsub")  # Built-in.
     else:

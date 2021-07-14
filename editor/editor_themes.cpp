@@ -36,7 +36,8 @@
 #include "editor_scale.h"
 #include "editor_settings.h"
 
-#ifdef SVG_ENABLED
+#include "modules/modules_enabled.gen.h"
+#ifdef MODULE_SVG_ENABLED
 #include "modules/svg/image_loader_svg.h"
 #endif
 
@@ -104,7 +105,7 @@ static Ref<Texture> flip_icon(Ref<Texture> p_texture, bool p_flip_y = false, boo
 	return texture;
 }
 
-#ifdef SVG_ENABLED
+#ifdef MODULE_SVG_ENABLED
 static Ref<ImageTexture> editor_generate_icon(int p_index, bool p_convert_color, float p_scale = EDSCALE, bool p_force_filter = false) {
 	Ref<ImageTexture> icon = memnew(ImageTexture);
 	Ref<Image> img = memnew(Image);
@@ -133,7 +134,7 @@ static Ref<ImageTexture> editor_generate_icon(int p_index, bool p_convert_color,
 #endif
 
 void editor_register_and_generate_icons(Ref<Theme> p_theme, bool p_dark_theme = true, int p_thumb_size = 32, bool p_only_thumbs = false) {
-#ifdef SVG_ENABLED
+#ifdef MODULE_SVG_ENABLED
 	// The default icon theme is designed to be used for a dark theme.
 	// This dictionary stores color codes to convert to other colors
 	// for better readability on a light theme.
@@ -1383,7 +1384,7 @@ Ref<Theme> create_custom_theme(const Ref<Theme> p_theme) {
 }
 
 Ref<ImageTexture> create_unscaled_default_project_icon() {
-#ifdef SVG_ENABLED
+#ifdef MODULE_SVG_ENABLED
 	for (int i = 0; i < editor_icons_count; i++) {
 		// ESCALE should never affect size of the icon
 		if (strcmp(editor_icons_names[i], "DefaultProjectIcon") == 0) {
