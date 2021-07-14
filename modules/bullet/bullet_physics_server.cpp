@@ -1546,6 +1546,10 @@ void BulletPhysicsServer::finish() {
 	BulletPhysicsDirectBodyState::destroySingleton();
 }
 
+void BulletPhysicsServer::set_collision_iterations(int p_iterations) {
+	WARN_PRINT("Changing the number of 3D physics collision iterations is only supported when using GodotPhysics, not Bullet.");
+}
+
 int BulletPhysicsServer::get_process_info(ProcessInfo p_info) {
 	return 0;
 }

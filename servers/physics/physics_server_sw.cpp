@@ -1274,6 +1274,10 @@ void PhysicsServerSW::set_active(bool p_active) {
 	active = p_active;
 };
 
+void PhysicsServerSW::set_collision_iterations(int p_iterations) {
+	iterations = p_iterations;
+};
+
 void PhysicsServerSW::init() {
 	last_step = 0.001;
 	iterations = 8; // 8?
