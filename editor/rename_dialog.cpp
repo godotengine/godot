@@ -35,11 +35,17 @@
 #include "editor_scale.h"
 #include "editor_settings.h"
 #include "editor_themes.h"
-#include "modules/regex/regex.h"
 #include "plugins/script_editor_plugin.h"
 #include "scene/gui/control.h"
 #include "scene/gui/label.h"
 #include "scene/gui/tab_container.h"
+
+#include "modules/modules_enabled.gen.h"
+#ifdef MODULE_REGEX_ENABLED
+#include "modules/regex/regex.h"
+#else
+#error "Can't build editor rename dialog without RegEx module."
+#endif
 
 RenameDialog::RenameDialog(SceneTreeEditor *p_scene_tree_editor, UndoRedo *p_undo_redo) {
 	scene_tree_editor = p_scene_tree_editor;

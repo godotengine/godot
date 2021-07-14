@@ -31,7 +31,6 @@
 #include "editor_node.h"
 
 #include "core/config/project_settings.h"
-#include "core/core_bind.h"
 #include "core/extension/native_extension_manager.h"
 #include "core/input/input.h"
 #include "core/io/config_file.h"

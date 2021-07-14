@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef GDSCRIPT_PROTOCAL_SERVER_H
-#define GDSCRIPT_PROTOCAL_SERVER_H
+#ifndef GDSCRIPT_LANGUAGE_PROTOCOL_H
+#define GDSCRIPT_LANGUAGE_PROTOCOL_H
 
 #include "core/io/stream_peer.h"
 #include "core/io/stream_peer_tcp.h"
@@ -37,7 +37,13 @@
 #include "gdscript_text_document.h"
 #include "gdscript_workspace.h"
 #include "lsp.hpp"
+
+#include "modules/modules_enabled.gen.h"
+#ifdef MODULE_JSONRPC_ENABLED
 #include "modules/jsonrpc/jsonrpc.h"
+#else
+#error "Can't build GDScript LSP without JSONRPC module."
+#endif
 
 #define LSP_MAX_BUFFER_SIZE 4194304
 #define LSP_MAX_CLIENTS 8
@@ -108,4 +114,4 @@ public:
 	GDScriptLanguageProtocol();
 };
 
-#endif
+#endif // GDSCRIPT_LANGUAGE_PROTOCOL_H
