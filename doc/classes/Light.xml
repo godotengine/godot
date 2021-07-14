@@ -54,6 +54,9 @@
 		<member name="light_negative" type="bool" setter="set_negative" getter="is_negative" default="false">
 			If [code]true[/code], the light's effect is reversed, darkening areas and casting bright shadows.
 		</member>
+		<member name="light_size" type="float" setter="set_param" getter="get_param" default="0.0">
+			The size of the light in Godot units. Only considered in baked lightmaps and only if [member light_bake_mode] is set to [constant BAKE_ALL]. Increasing this value will make the shadows appear blurrier. This can be used to simulate area lights to an extent.
+		</member>
 		<member name="light_specular" type="float" setter="set_param" getter="get_param" default="0.5">
 			The intensity of the specular blob in objects affected by the light. At [code]0[/code], the light becomes a pure diffuse light. When not baking emission, this can be used to avoid unrealistic reflections when placing lights above an emissive surface.
 		</member>
@@ -80,46 +83,49 @@
 		<constant name="PARAM_INDIRECT_ENERGY" value="1" enum="Param">
 			Constant for accessing [member light_indirect_energy].
 		</constant>
-		<constant name="PARAM_SPECULAR" value="2" enum="Param">
+		<constant name="PARAM_SIZE" value="2" enum="Param">
+			Constant for accessing [member light_size].
+		</constant>
+		<constant name="PARAM_SPECULAR" value="3" enum="Param">
 			Constant for accessing [member light_specular].
 		</constant>
-		<constant name="PARAM_RANGE" value="3" enum="Param">
+		<constant name="PARAM_RANGE" value="4" enum="Param">
 			Constant for accessing [member OmniLight.omni_range] or [member SpotLight.spot_range].
 		</constant>
-		<constant name="PARAM_ATTENUATION" value="4" enum="Param">
+		<constant name="PARAM_ATTENUATION" value="5" enum="Param">
 			Constant for accessing [member OmniLight.omni_attenuation] or [member SpotLight.spot_attenuation].
 		</constant>
-		<constant name="PARAM_SPOT_ANGLE" value="5" enum="Param">
+		<constant name="PARAM_SPOT_ANGLE" value="6" enum="Param">
 			Constant for accessing [member SpotLight.spot_angle].
 		</constant>
-		<constant name="PARAM_SPOT_ATTENUATION" value="6" enum="Param">
+		<constant name="PARAM_SPOT_ATTENUATION" value="7" enum="Param">
 			Constant for accessing [member SpotLight.spot_angle_attenuation].
 		</constant>
-		<constant name="PARAM_CONTACT_SHADOW_SIZE" value="7" enum="Param">
+		<constant name="PARAM_CONTACT_SHADOW_SIZE" value="8" enum="Param">
 			Constant for accessing [member shadow_contact].
 		</constant>
-		<constant name="PARAM_SHADOW_MAX_DISTANCE" value="8" enum="Param">
+		<constant name="PARAM_SHADOW_MAX_DISTANCE" value="9" enum="Param">
 			Constant for accessing [member DirectionalLight.directional_shadow_max_distance].
 		</constant>
-		<constant name="PARAM_SHADOW_SPLIT_1_OFFSET" value="9" enum="Param">
+		<constant name="PARAM_SHADOW_SPLIT_1_OFFSET" value="10" enum="Param">
 			Constant for accessing [member DirectionalLight.directional_shadow_split_1].
 		</constant>
-		<constant name="PARAM_SHADOW_SPLIT_2_OFFSET" value="10" enum="Param">
+		<constant name="PARAM_SHADOW_SPLIT_2_OFFSET" value="11" enum="Param">
 			Constant for accessing [member DirectionalLight.directional_shadow_split_2].
 		</constant>
-		<constant name="PARAM_SHADOW_SPLIT_3_OFFSET" value="11" enum="Param">
+		<constant name="PARAM_SHADOW_SPLIT_3_OFFSET" value="12" enum="Param">
 			Constant for accessing [member DirectionalLight.directional_shadow_split_3].
 		</constant>
-		<constant name="PARAM_SHADOW_NORMAL_BIAS" value="12" enum="Param">
+		<constant name="PARAM_SHADOW_NORMAL_BIAS" value="13" enum="Param">
 			Constant for accessing [member DirectionalLight.directional_shadow_normal_bias].
 		</constant>
-		<constant name="PARAM_SHADOW_BIAS" value="13" enum="Param">
+		<constant name="PARAM_SHADOW_BIAS" value="14" enum="Param">
 			Constant for accessing [member shadow_bias].
 		</constant>
-		<constant name="PARAM_SHADOW_BIAS_SPLIT_SCALE" value="14" enum="Param">
+		<constant name="PARAM_SHADOW_BIAS_SPLIT_SCALE" value="15" enum="Param">
 			Constant for accessing [member DirectionalLight.directional_shadow_bias_split_scale].
 		</constant>
-		<constant name="PARAM_MAX" value="15" enum="Param">
+		<constant name="PARAM_MAX" value="16" enum="Param">
 			Represents the size of the [enum Param] enum.
 		</constant>
 		<constant name="BAKE_DISABLED" value="0" enum="BakeMode">

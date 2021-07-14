@@ -62,6 +62,7 @@ class LightmapperCPU : public Lightmapper {
 		float attenuation;
 		float spot_angle;
 		float spot_attenuation;
+		float size;
 		bool bake_direct;
 	};
 
@@ -165,9 +166,9 @@ public:
 	virtual void add_albedo_texture(Ref<Texture> p_texture);
 	virtual void add_emission_texture(Ref<Texture> p_texture);
 	virtual void add_mesh(const MeshData &p_mesh, Vector2i p_size);
-	virtual void add_directional_light(bool p_bake_direct, const Vector3 &p_direction, const Color &p_color, float p_energy, float p_indirect_multiplier);
-	virtual void add_omni_light(bool p_bake_direct, const Vector3 &p_position, const Color &p_color, float p_energy, float p_indirect_multiplier, float p_range, float p_attenuation);
-	virtual void add_spot_light(bool p_bake_direct, const Vector3 &p_position, const Vector3 p_direction, const Color &p_color, float p_energy, float p_indirect_multiplier, float p_range, float p_attenuation, float p_spot_angle, float p_spot_attenuation);
+	virtual void add_directional_light(bool p_bake_direct, const Vector3 &p_direction, const Color &p_color, float p_energy, float p_indirect_multiplier, float p_size);
+	virtual void add_omni_light(bool p_bake_direct, const Vector3 &p_position, const Color &p_color, float p_energy, float p_indirect_multiplier, float p_range, float p_attenuation, float p_size);
+	virtual void add_spot_light(bool p_bake_direct, const Vector3 &p_position, const Vector3 p_direction, const Color &p_color, float p_energy, float p_indirect_multiplier, float p_range, float p_attenuation, float p_spot_angle, float p_spot_attenuation, float p_size);
 	virtual BakeError bake(BakeQuality p_quality, bool p_use_denoiser, int p_bounces, float p_bias, bool p_generate_atlas, int p_max_texture_size, const Ref<Image> &p_environment_panorama, const Basis &p_environment_transform, BakeStepFunc p_step_function = nullptr, void *p_bake_userdata = nullptr, BakeStepFunc p_substep_function = nullptr);
 
 	int get_bake_texture_count() const;

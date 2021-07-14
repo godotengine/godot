@@ -746,13 +746,13 @@ BakedLightmap::BakeError BakedLightmap::bake(Node *p_from_node, String p_data_sa
 
 		if (Object::cast_to<DirectionalLight>(light)) {
 			DirectionalLight *l = Object::cast_to<DirectionalLight>(light);
-			lightmapper->add_directional_light(light->get_bake_mode() == Light::BAKE_ALL, -xf.basis.get_axis(Vector3::AXIS_Z).normalized(), l->get_color(), l->get_param(Light::PARAM_ENERGY), l->get_param(Light::PARAM_INDIRECT_ENERGY));
+			lightmapper->add_directional_light(light->get_bake_mode() == Light::BAKE_ALL, -xf.basis.get_axis(Vector3::AXIS_Z).normalized(), l->get_color(), l->get_param(Light::PARAM_ENERGY), l->get_param(Light::PARAM_INDIRECT_ENERGY), l->get_param(Light::PARAM_SIZE));
 		} else if (Object::cast_to<OmniLight>(light)) {
 			OmniLight *l = Object::cast_to<OmniLight>(light);
-			lightmapper->add_omni_light(light->get_bake_mode() == Light::BAKE_ALL, xf.origin, l->get_color(), l->get_param(Light::PARAM_ENERGY), l->get_param(Light::PARAM_INDIRECT_ENERGY), l->get_param(Light::PARAM_RANGE), l->get_param(Light::PARAM_ATTENUATION));
+			lightmapper->add_omni_light(light->get_bake_mode() == Light::BAKE_ALL, xf.origin, l->get_color(), l->get_param(Light::PARAM_ENERGY), l->get_param(Light::PARAM_INDIRECT_ENERGY), l->get_param(Light::PARAM_RANGE), l->get_param(Light::PARAM_ATTENUATION), l->get_param(Light::PARAM_SIZE));
 		} else if (Object::cast_to<SpotLight>(light)) {
 			SpotLight *l = Object::cast_to<SpotLight>(light);
-			lightmapper->add_spot_light(light->get_bake_mode() == Light::BAKE_ALL, xf.origin, -xf.basis.get_axis(Vector3::AXIS_Z).normalized(), l->get_color(), l->get_param(Light::PARAM_ENERGY), l->get_param(Light::PARAM_INDIRECT_ENERGY), l->get_param(Light::PARAM_RANGE), l->get_param(Light::PARAM_ATTENUATION), l->get_param(Light::PARAM_SPOT_ANGLE), l->get_param(Light::PARAM_SPOT_ATTENUATION));
+			lightmapper->add_spot_light(light->get_bake_mode() == Light::BAKE_ALL, xf.origin, -xf.basis.get_axis(Vector3::AXIS_Z).normalized(), l->get_color(), l->get_param(Light::PARAM_ENERGY), l->get_param(Light::PARAM_INDIRECT_ENERGY), l->get_param(Light::PARAM_RANGE), l->get_param(Light::PARAM_ATTENUATION), l->get_param(Light::PARAM_SPOT_ANGLE), l->get_param(Light::PARAM_SPOT_ATTENUATION), l->get_param(Light::PARAM_SIZE));
 		}
 	}
 
