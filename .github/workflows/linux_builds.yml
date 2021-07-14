@@ -85,7 +85,7 @@ jobs:
           echo "Running --doctool to see if this changes the public API without updating the documentation."
           echo -e "If a diff is shown, it means that your code/doc changes are incomplete and you should update the class reference with --doctool.\n\n"
           VK_ICD_FILENAMES=$(pwd)/vk_swiftshader_icd.json DRI_PRIME=0 xvfb-run bin/godot.linuxbsd.opt.tools.64 --doctool . 2>&1 > /dev/null || true
-          git diff --color --exit-code
+          git diff --color --exit-code && ! git ls-files --others --exclude-standard | sed -e 's/^/New doc file missing in PR: /' | grep 'xml$'
 
       - uses: actions/upload-artifact@v2
         with:
