@@ -425,7 +425,7 @@ Error OS_LinuxBSD::move_to_trash(const String &p_path) {
 	// Generates the .trashinfo file
 	OS::Date date = OS::get_singleton()->get_date(false);
 	OS::Time time = OS::get_singleton()->get_time(false);
-	String timestamp = vformat("%04d-%02d-%02dT%02d:%02d:", date.year, date.month, date.day, time.hour, time.minute);
+	String timestamp = vformat("%04d-%02d-%02dT%02d:%02d:", date.year, (int)date.month, date.day, time.hour, time.minute);
 	timestamp = vformat("%s%02d", timestamp, time.second); // vformat only supports up to 6 arguments.
 	String trash_info = "[Trash Info]\nPath=" + p_path.uri_encode() + "\nDeletionDate=" + timestamp + "\n";
 	{
