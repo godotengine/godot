@@ -1406,7 +1406,7 @@ void VisualServerScene::_update_instance_lightmap_captures(Instance *p_instance)
 	p_instance->lightmap_capture_data.write[0].a = interior ? 0.0f : 1.0f;
 }
 
-bool VisualServerScene::_light_instance_update_shadow(Instance *p_instance, const Transform p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_orthogonal, RID p_shadow_atlas, Scenario *p_scenario) {
+bool VisualServerScene::_light_instance_update_shadow(Instance *p_instance, const Transform p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_orthogonal, bool p_cam_vaspect, RID p_shadow_atlas, Scenario *p_scenario) {
 	InstanceLightData *light = static_cast<InstanceLightData *>(p_instance->base_data);
 
 	Transform light_transform = p_instance->transform;
@@ -1416,13 +1416,13 @@ bool VisualServerScene::_light_instance_update_shadow(Instance *p_instance, cons
 
 	switch (VSG::storage->light_get_type(p_instance->base)) {
 		case VS::LIGHT_DIRECTIONAL: {
-			float max_distance = p_cam_projection.get_z_far();
-			float shadow_max = VSG::storage->light_get_param(p_instance->base, VS::LIGHT_PARAM_SHADOW_MAX_DISTANCE);
+			real_t max_distance = p_cam_projection.get_z_far();
+			real_t shadow_max = VSG::storage->light_get_param(p_instance->base, VS::LIGHT_PARAM_SHADOW_MAX_DISTANCE);
 			if (shadow_max > 0 && !p_cam_orthogonal) { //its impractical (and leads to unwanted behaviors) to set max distance in orthogonal camera
 				max_distance = MIN(shadow_max, max_distance);
 			}
 			max_distance = MAX(max_distance, p_cam_projection.get_z_near() + 0.001);
-			float min_distance = MIN(p_cam_projection.get_z_near(), max_distance);
+			real_t min_distance = MIN(p_cam_projection.get_z_near(), max_distance);
 
 			VS::LightDirectionalShadowDepthRangeMode depth_range_mode = VSG::storage->light_directional_get_shadow_depth_range_mode(p_instance->base);
 
@@ -1434,8 +1434,8 @@ bool VisualServerScene::_light_instance_update_shadow(Instance *p_instance, cons
 				//check distance max and min
 
 				bool found_items = false;
-				float z_max = -1e20;
-				float z_min = 1e20;
+				real_t z_max = -1e20;
+				real_t z_min = 1e20;
 
 				for (int i = 0; i < cull_count; i++) {
 					Instance *instance = instance_shadow_cull_result[i];
@@ -1447,7 +1447,7 @@ bool VisualServerScene::_light_instance_update_shadow(Instance *p_instance, cons
 						animated_material_found = true;
 					}
 
-					float max, min;
+					real_t max, min;
 					instance->transformed_aabb.project_range_in_plane(base, min, max);
 
 					if (max > z_max) {
@@ -1467,7 +1467,7 @@ bool VisualServerScene::_light_instance_update_shadow(Instance *p_instance, cons
 				}
 			}
 
-			float range = max_distance - min_distance;
+			real_t range = max_distance - min_distance;
 
 			int splits = 0;
 			switch (VSG::storage->light_directional_get_shadow_mode(p_instance->base)) {
@@ -1482,7 +1482,7 @@ bool VisualServerScene::_light_instance_update_shadow(Instance *p_instance, cons
 					break;
 			}
 
-			float distances[5];
+			real_t distances[5];
 
 			distances[0] = min_distance;
 			for (int i = 0; i < splits; i++) {
@@ -1491,25 +1491,25 @@ bool VisualServerScene::_light_instance_update_shadow(Instance *p_instance, cons
 
 			distances[splits] = max_distance;
 
-			float texture_size = VSG::scene_render->get_directional_light_shadow_size(light->instance);
+			real_t texture_size = VSG::scene_render->get_directional_light_shadow_size(light->instance);
 
 			bool overlap = VSG::storage->light_directional_get_blend_splits(p_instance->base);
 
-			float first_radius = 0.0;
+			real_t first_radius = 0.0;
 
 			for (int i = 0; i < splits; i++) {
 				// setup a camera matrix for that range!
 				CameraMatrix camera_matrix;
 
-				float aspect = p_cam_projection.get_aspect();
+				real_t aspect = p_cam_projection.get_aspect();
 
 				if (p_cam_orthogonal) {
 					Vector2 vp_he = p_cam_projection.get_viewport_half_extents();
 
 					camera_matrix.set_orthogonal(vp_he.y * 2.0, aspect, distances[(i == 0 || !overlap) ? i : i - 1], distances[i + 1], false);
 				} else {
-					float fov = p_cam_projection.get_fov();
-					camera_matrix.set_perspective(fov, aspect, distances[(i == 0 || !overlap) ? i : i - 1], distances[i + 1], false);
+					real_t fov = p_cam_projection.get_fov(); //this is actually yfov, because set aspect tries to keep it
+					camera_matrix.set_perspective(fov, aspect, distances[(i == 0 || !overlap) ? i : i - 1], distances[i + 1], true);
 				}
 
 				//obtain the frustum endpoints
@@ -1527,25 +1527,23 @@ bool VisualServerScene::_light_instance_update_shadow(Instance *p_instance, cons
 				Vector3 z_vec = transform.basis.get_axis(Vector3::AXIS_Z).normalized();
 				//z_vec points agsint the camera, like in default opengl
 
-				float x_min = 0.f, x_max = 0.f;
-				float y_min = 0.f, y_max = 0.f;
-				float z_min = 0.f, z_max = 0.f;
+				real_t x_min = 0.f, x_max = 0.f;
+				real_t y_min = 0.f, y_max = 0.f;
+				real_t z_min = 0.f, z_max = 0.f;
 
 				// FIXME: z_max_cam is defined, computed, but not used below when setting up
 				// ortho_camera. Commented out for now to fix warnings but should be investigated.
-				float x_min_cam = 0.f, x_max_cam = 0.f;
-				float y_min_cam = 0.f, y_max_cam = 0.f;
-				float z_min_cam = 0.f;
-				//float z_max_cam = 0.f;
-
-				float bias_scale = 1.0;
+				real_t x_min_cam = 0.f, x_max_cam = 0.f;
+				real_t y_min_cam = 0.f, y_max_cam = 0.f;
+				real_t z_min_cam = 0.f;
+				//real_t z_max_cam = 0.f;
 
 				//used for culling
 
 				for (int j = 0; j < 8; j++) {
-					float d_x = x_vec.dot(endpoints[j]);
-					float d_y = y_vec.dot(endpoints[j]);
-					float d_z = z_vec.dot(endpoints[j]);
+					real_t d_x = x_vec.dot(endpoints[j]);
+					real_t d_y = y_vec.dot(endpoints[j]);
+					real_t d_z = z_vec.dot(endpoints[j]);
 
 					if (j == 0 || d_x < x_min) {
 						x_min = d_x;
@@ -1568,11 +1566,11 @@ bool VisualServerScene::_light_instance_update_shadow(Instance *p_instance, cons
 						z_max = d_z;
 					}
 				}
+				real_t radius = 0;
+				Vector3 center;
 
 				{
 					//camera viewport stuff
-
-					Vector3 center;
 
 					for (int j = 0; j < 8; j++) {
 						center += endpoints[j];
@@ -1581,10 +1579,8 @@ bool VisualServerScene::_light_instance_update_shadow(Instance *p_instance, cons
 
 					//center=x_vec*(x_max-x_min)*0.5 + y_vec*(y_max-y_min)*0.5 + z_vec*(z_max-z_min)*0.5;
 
-					float radius = 0;
-
 					for (int j = 0; j < 8; j++) {
-						float d = center.distance_to(endpoints[j]);
+						real_t d = center.distance_to(endpoints[j]);
 						if (d > radius) {
 							radius = d;
 						}
@@ -1594,22 +1590,19 @@ bool VisualServerScene::_light_instance_update_shadow(Instance *p_instance, cons
 
 					if (i == 0) {
 						first_radius = radius;
-					} else {
-						bias_scale = radius / first_radius;
 					}
 
 					x_max_cam = x_vec.dot(center) + radius;
 					x_min_cam = x_vec.dot(center) - radius;
 					y_max_cam = y_vec.dot(center) + radius;
 					y_min_cam = y_vec.dot(center) - radius;
-					//z_max_cam = z_vec.dot(center) + radius;
 					z_min_cam = z_vec.dot(center) - radius;
 
 					if (depth_range_mode == VS::LIGHT_DIRECTIONAL_SHADOW_DEPTH_RANGE_STABLE) {
 						//this trick here is what stabilizes the shadow (make potential jaggies to not move)
 						//at the cost of some wasted resolution. Still the quality increase is very well worth it
 
-						float unit = radius * 2.0 / texture_size;
+						real_t unit = radius * 2.0 / texture_size;
 
 						x_max_cam = Math::stepify(x_max_cam, unit);
 						x_min_cam = Math::stepify(x_min_cam, unit);
@@ -1639,8 +1632,9 @@ bool VisualServerScene::_light_instance_update_shadow(Instance *p_instance, cons
 
 				Plane near_plane(light_transform.origin, -light_transform.basis.get_axis(2));
 
+				real_t cull_max = 0;
 				for (int j = 0; j < cull_count; j++) {
-					float min, max;
+					real_t min, max;
 					Instance *instance = instance_shadow_cull_result[j];
 					if (!instance->visible || !((1 << instance->base_type) & VS::INSTANCE_GEOMETRY_MASK) || !static_cast<InstanceGeometryData *>(instance->base_data)->can_cast_shadows) {
 						cull_count--;
@@ -1652,9 +1646,76 @@ bool VisualServerScene::_light_instance_update_shadow(Instance *p_instance, cons
 					instance->transformed_aabb.project_range_in_plane(Plane(z_vec, 0), min, max);
 					instance->depth = near_plane.distance_to(instance->transform.origin);
 					instance->depth_layer = 0;
-					if (max > z_max) {
-						z_max = max;
+					if (j == 0 || max > cull_max) {
+						cull_max = max;
 					}
+				}
+
+				if (cull_max > z_max) {
+					z_max = cull_max;
+				}
+
+				if (aspect != 1.0) {
+					// if the aspect is different, then the radius will become larger.
+					// if this happens, then bias needs to be adjusted too, as depth will increase
+					// to do this, compare the depth of one that would have resulted from a square frustum
+
+					CameraMatrix camera_matrix_square;
+					if (p_cam_orthogonal) {
+						Vector2 vp_he = camera_matrix.get_viewport_half_extents();
+						if (p_cam_vaspect) {
+							camera_matrix_square.set_orthogonal(vp_he.x * 2.0, 1.0, distances[(i == 0 || !overlap) ? i : i - 1], distances[i + 1], true);
+						} else {
+							camera_matrix_square.set_orthogonal(vp_he.y * 2.0, 1.0, distances[(i == 0 || !overlap) ? i : i - 1], distances[i + 1], false);
+						}
+					} else {
+						Vector2 vp_he = camera_matrix.get_viewport_half_extents();
+						if (p_cam_vaspect) {
+							camera_matrix_square.set_frustum(vp_he.x * 2.0, 1.0, Vector2(), distances[(i == 0 || !overlap) ? i : i - 1], distances[i + 1], true);
+						} else {
+							camera_matrix_square.set_frustum(vp_he.y * 2.0, 1.0, Vector2(), distances[(i == 0 || !overlap) ? i : i - 1], distances[i + 1], false);
+						}
+
+						if (i == 0) {
+							//print_line("prev he: " + vp_he + " new he: " + camera_matrix_square.get_viewport_half_extents());
+						}
+					}
+
+					Vector3 endpoints_square[8]; // frustum plane endpoints
+					res = camera_matrix_square.get_endpoints(p_cam_transform, endpoints_square);
+					ERR_CONTINUE(!res);
+					Vector3 center_square;
+					real_t z_max_square = 0;
+
+					for (int j = 0; j < 8; j++) {
+						center_square += endpoints_square[j];
+
+						real_t d_z = z_vec.dot(endpoints_square[j]);
+
+						if (j == 0 || d_z > z_max_square)
+							z_max_square = d_z;
+					}
+
+					if (cull_max > z_max_square) {
+						z_max_square = cull_max;
+					}
+
+					center_square /= 8.0;
+
+					real_t radius_square = 0;
+
+					for (int j = 0; j < 8; j++) {
+						real_t d = center_square.distance_to(endpoints_square[j]);
+						if (d > radius_square)
+							radius_square = d;
+					}
+
+					radius_square *= texture_size / (texture_size - 2.0); //add a texel by each side
+
+					real_t z_min_cam_square = z_vec.dot(center_square) - radius_square;
+
+					// this is not entirely perfect, because the cull-adjusted z-max may be different
+					// but at least it's warranted that it results in a greater bias, so no acne should be present either way.
 				}
 
 				{
@@ -1668,7 +1729,14 @@ bool VisualServerScene::_light_instance_update_shadow(Instance *p_instance, cons
 					ortho_transform.basis = transform.basis;
 					ortho_transform.origin = x_vec * (x_min_cam + half_x) + y_vec * (y_min_cam + half_y) + z_vec * z_max;
 
-					VSG::scene_render->light_instance_set_shadow_transform(light->instance, ortho_camera, ortho_transform, 0, distances[i + 1], i, bias_scale);
+					VSG::scene_render->light_instance_set_shadow_transform(
+							light->instance,
+							ortho_camera,
+							ortho_transform,
+							z_max - z_min_cam,
+							distances[i + 1],
+							i,
+							radius * 2.0 / texture_size);
 				}
 
 				VSG::scene_render->render_shadow(light->instance, p_shadow_atlas, i, (RasterizerScene::InstanceBase **)instance_shadow_cull_result, cull_count);
@@ -1682,9 +1750,9 @@ bool VisualServerScene::_light_instance_update_shadow(Instance *p_instance, cons
 				for (int i = 0; i < 2; i++) {
 					//using this one ensures that raster deferred will have it
 
-					float radius = VSG::storage->light_get_param(p_instance->base, VS::LIGHT_PARAM_RANGE);
+					real_t radius = VSG::storage->light_get_param(p_instance->base, VS::LIGHT_PARAM_RANGE);
 
-					float z = i == 0 ? -1 : 1;
+					real_t z = i == 0 ? -1 : 1;
 					Vector<Plane> planes;
 					planes.resize(6);
 					planes.write[0] = light_transform.xform(Plane(Vector3(0, 0, z), radius));
@@ -1713,12 +1781,12 @@ bool VisualServerScene::_light_instance_update_shadow(Instance *p_instance, cons
 						}
 					}
 
-					VSG::scene_render->light_instance_set_shadow_transform(light->instance, CameraMatrix(), light_transform, radius, 0, i);
+					VSG::scene_render->light_instance_set_shadow_transform(light->instance, CameraMatrix(), light_transform, radius, 0, i, 0);
 					VSG::scene_render->render_shadow(light->instance, p_shadow_atlas, i, (RasterizerScene::InstanceBase **)instance_shadow_cull_result, cull_count);
 				}
 			} else { //shadow cube
 
-				float radius = VSG::storage->light_get_param(p_instance->base, VS::LIGHT_PARAM_RANGE);
+				real_t radius = VSG::storage->light_get_param(p_instance->base, VS::LIGHT_PARAM_RANGE);
 				CameraMatrix cm;
 				cm.set_perspective(90, 1, 0.01, radius);
 
@@ -1764,18 +1832,18 @@ bool VisualServerScene::_light_instance_update_shadow(Instance *p_instance, cons
 						}
 					}
 
-					VSG::scene_render->light_instance_set_shadow_transform(light->instance, cm, xform, radius, 0, i);
+					VSG::scene_render->light_instance_set_shadow_transform(light->instance, cm, xform, radius, 0, i, 0);
 					VSG::scene_render->render_shadow(light->instance, p_shadow_atlas, i, (RasterizerScene::InstanceBase **)instance_shadow_cull_result, cull_count);
 				}
 
 				//restore the regular DP matrix
-				VSG::scene_render->light_instance_set_shadow_transform(light->instance, CameraMatrix(), light_transform, radius, 0, 0);
+				VSG::scene_render->light_instance_set_shadow_transform(light->instance, CameraMatrix(), light_transform, radius, 0, 0, 0);
 			}
 
 		} break;
 		case VS::LIGHT_SPOT: {
-			float radius = VSG::storage->light_get_param(p_instance->base, VS::LIGHT_PARAM_RANGE);
-			float angle = VSG::storage->light_get_param(p_instance->base, VS::LIGHT_PARAM_SPOT_ANGLE);
+			real_t radius = VSG::storage->light_get_param(p_instance->base, VS::LIGHT_PARAM_RANGE);
+			real_t angle = VSG::storage->light_get_param(p_instance->base, VS::LIGHT_PARAM_SPOT_ANGLE);
 
 			CameraMatrix cm;
 			cm.set_perspective(angle * 2.0, 1.0, 0.01, radius);
@@ -1799,7 +1867,7 @@ bool VisualServerScene::_light_instance_update_shadow(Instance *p_instance, cons
 				}
 			}
 
-			VSG::scene_render->light_instance_set_shadow_transform(light->instance, cm, light_transform, radius, 0, 0);
+			VSG::scene_render->light_instance_set_shadow_transform(light->instance, cm, light_transform, radius, 0, 0, 0);
 			VSG::scene_render->render_shadow(light->instance, p_shadow_atlas, 0, (RasterizerScene::InstanceBase **)instance_shadow_cull_result, cull_count);
 
 		} break;
@@ -1851,7 +1919,7 @@ void VisualServerScene::render_camera(RID p_camera, RID p_scenario, Size2 p_view
 		} break;
 	}
 
-	_prepare_scene(camera->transform, camera_matrix, ortho, camera->env, camera->visible_layers, p_scenario, p_shadow_atlas, RID());
+	_prepare_scene(camera->transform, camera_matrix, ortho, camera->vaspect, camera->env, camera->visible_layers, p_scenario, p_shadow_atlas, RID());
 	_render_scene(camera->transform, camera_matrix, 0, ortho, camera->env, p_scenario, p_shadow_atlas, RID(), -1);
 #endif
 }
@@ -1930,17 +1998,17 @@ void VisualServerScene::render_camera(Ref<ARVRInterface> &p_interface, ARVRInter
 		mono_transform *= apply_z_shift;
 
 		// now prepare our scene with our adjusted transform projection matrix
-		_prepare_scene(mono_transform, combined_matrix, false, camera->env, camera->visible_layers, p_scenario, p_shadow_atlas, RID());
+		_prepare_scene(mono_transform, combined_matrix, false, false, camera->env, camera->visible_layers, p_scenario, p_shadow_atlas, RID());
 	} else if (p_eye == ARVRInterface::EYE_MONO) {
 		// For mono render, prepare as per usual
-		_prepare_scene(cam_transform, camera_matrix, false, camera->env, camera->visible_layers, p_scenario, p_shadow_atlas, RID());
+		_prepare_scene(cam_transform, camera_matrix, false, false, camera->env, camera->visible_layers, p_scenario, p_shadow_atlas, RID());
 	}
 
 	// And render our scene...
 	_render_scene(cam_transform, camera_matrix, p_eye, false, camera->env, p_scenario, p_shadow_atlas, RID(), -1);
 };
 
-void VisualServerScene::_prepare_scene(const Transform p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_orthogonal, RID p_force_environment, uint32_t p_visible_layers, RID p_scenario, RID p_shadow_atlas, RID p_reflection_probe) {
+void VisualServerScene::_prepare_scene(const Transform p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_orthogonal, bool p_cam_vaspect, RID p_force_environment, uint32_t p_visible_layers, RID p_scenario, RID p_shadow_atlas, RID p_reflection_probe) {
 	// Note, in stereo rendering:
 	// - p_cam_transform will be a transform in the middle of our two eyes
 	// - p_cam_projection is a wider frustrum that encompasses both eyes
@@ -2147,7 +2215,7 @@ void VisualServerScene::_prepare_scene(const Transform p_cam_transform, const Ca
 		VSG::scene_render->set_directional_shadow_count(directional_shadow_count);
 
 		for (int i = 0; i < directional_shadow_count; i++) {
-			_light_instance_update_shadow(lights_with_shadow[i], p_cam_transform, p_cam_projection, p_cam_orthogonal, p_shadow_atlas, scenario);
+			_light_instance_update_shadow(lights_with_shadow[i], p_cam_transform, p_cam_projection, p_cam_orthogonal, p_cam_vaspect, p_shadow_atlas, scenario);
 		}
 	}
 
@@ -2243,7 +2311,7 @@ void VisualServerScene::_prepare_scene(const Transform p_cam_transform, const Ca
 
 			if (redraw) {
 				//must redraw!
-				light->shadow_dirty = _light_instance_update_shadow(ins, p_cam_transform, p_cam_projection, p_cam_orthogonal, p_shadow_atlas, scenario);
+				light->shadow_dirty = _light_instance_update_shadow(ins, p_cam_transform, p_cam_projection, p_cam_orthogonal, p_cam_vaspect, p_shadow_atlas, scenario);
 			}
 		}
 	}
@@ -2339,7 +2407,7 @@ bool VisualServerScene::_render_reflection_probe_step(Instance *p_instance, int 
 			shadow_atlas = scenario->reflection_probe_shadow_atlas;
 		}
 
-		_prepare_scene(xform, cm, false, RID(), VSG::storage->reflection_probe_get_cull_mask(p_instance->base), p_instance->scenario->self, shadow_atlas, reflection_probe->instance);
+		_prepare_scene(xform, cm, false, false, RID(), VSG::storage->reflection_probe_get_cull_mask(p_instance->base), p_instance->scenario->self, shadow_atlas, reflection_probe->instance);
 		_render_scene(xform, cm, 0, false, RID(), p_instance->scenario->self, shadow_atlas, reflection_probe->instance, p_step);
 
 	} else {
