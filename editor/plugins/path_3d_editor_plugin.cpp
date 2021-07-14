@@ -294,7 +294,7 @@ Path3DGizmo::Path3DGizmo(Path3D *p_path) {
 	orig_out_length = 0;
 }
 
-bool Path3DEditorPlugin::forward_spatial_gui_input(Camera3D *p_camera, const Ref<InputEvent> &p_event) {
+bool Path3DEditorPlugin::forward_spatial_gui_input(int p_index, Camera3D *p_camera, const Ref<InputEvent> &p_event) {
 	if (!path) {
 		return false;
 	}

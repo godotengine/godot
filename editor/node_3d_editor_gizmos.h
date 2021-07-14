@@ -142,6 +142,11 @@ public:
 
 class Skeleton3DGizmoPlugin : public EditorNode3DGizmoPlugin {
 	GDCLASS(Skeleton3DGizmoPlugin, EditorNode3DGizmoPlugin);
+	Color skeleton_color = Color(1, 0.8, 0.4);
+	Color selected_bone_color = Color(1, 0, 0);
+	float bone_axis_length = 0.015;
+	Ref<ShaderMaterial> selected_mat;
+	Ref<Shader> selected_sh;
 
 public:
 	bool has_gizmo(Node3D *p_spatial) override;

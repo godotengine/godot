@@ -250,6 +250,41 @@ public:
 		FREELOOK_FULLY_AXIS_LOCKED,
 	};
 
+	enum TransformMode {
+		TRANSFORM_NONE,
+		TRANSFORM_ROTATE,
+		TRANSFORM_TRANSLATE,
+		TRANSFORM_SCALE
+	};
+
+	enum TransformPlane {
+		TRANSFORM_VIEW,
+		TRANSFORM_X_AXIS,
+		TRANSFORM_Y_AXIS,
+		TRANSFORM_Z_AXIS,
+		TRANSFORM_YZ,
+		TRANSFORM_XZ,
+		TRANSFORM_XY,
+	};
+
+	struct EditData {
+		TransformMode mode;
+		TransformPlane plane;
+		Transform3D original;
+		Vector3 click_ray;
+		Vector3 click_ray_pos;
+		Vector3 center;
+		Vector3 orig_gizmo_pos;
+		int edited_gizmo = 0;
+		Point2 mouse_pos;
+		Point2 original_mouse_pos;
+		bool snap = false;
+		Ref<EditorNode3DGizmo> gizmo;
+		int gizmo_handle = 0;
+		Variant gizmo_initial_value;
+		Vector3 gizmo_initial_pos;
+	} _edit;
+
 private:
 	float cpu_time_history[FRAME_TIME_HISTORY];
 	int cpu_time_history_index;
@@ -318,14 +353,11 @@ private:
 	void _select(Node *p_node, bool p_append, bool p_single);
 	ObjectID _select_ray(const Point2 &p_pos, bool p_append, bool &r_includes_current, int *r_gizmo_handle = nullptr, bool p_alt_select = false);
 	void _find_items_at_pos(const Point2 &p_pos, bool &r_includes_current, Vector<_RayResult> &results, bool p_alt_select = false);
-	Vector3 _get_ray_pos(const Vector2 &p_pos) const;
-	Vector3 _get_ray(const Vector2 &p_pos) const;
 	Point2 _point_to_screen(const Vector3 &p_point);
 	Transform3D _get_camera_transform() const;
 	int get_selected_count() const;
 
 	Vector3 _get_camera_position() const;
-	Vector3 _get_camera_normal() const;
 	Vector3 _get_screen_to_space(const Vector3 &p_vector3);
 
 	void _select_region();
@@ -359,40 +391,6 @@ private:
 		NAVIGATION_ORBIT,
 		NAVIGATION_LOOK
 	};
-	enum TransformMode {
-		TRANSFORM_NONE,
-		TRANSFORM_ROTATE,
-		TRANSFORM_TRANSLATE,
-		TRANSFORM_SCALE
-
-	};
-	enum TransformPlane {
-		TRANSFORM_VIEW,
-		TRANSFORM_X_AXIS,
-		TRANSFORM_Y_AXIS,
-		TRANSFORM_Z_AXIS,
-		TRANSFORM_YZ,
-		TRANSFORM_XZ,
-		TRANSFORM_XY,
-	};
-
-	struct EditData {
-		TransformMode mode;
-		TransformPlane plane;
-		Transform3D original;
-		Vector3 click_ray;
-		Vector3 click_ray_pos;
-		Vector3 center;
-		Vector3 orig_gizmo_pos;
-		int edited_gizmo = 0;
-		Point2 mouse_pos;
-		Point2 original_mouse_pos;
-		bool snap = false;
-		Ref<EditorNode3DGizmo> gizmo;
-		int gizmo_handle = 0;
-		Variant gizmo_initial_value;
-		Vector3 gizmo_initial_pos;
-	} _edit;
 
 	struct Cursor {
 		Vector3 pos;
@@ -493,8 +491,12 @@ public:
 			AABB *p_preview_bounds,
 			AcceptDialog *p_accept);
 
+	float get_gizmo_scale() { return gizmo_scale; };
 	SubViewport *get_viewport_node() { return viewport; }
 	Camera3D *get_camera() { return camera; } // return the default camera object.
+	Vector3 get_ray_pos(const Vector2 &p_pos) const;
+	Vector3 get_ray(const Vector2 &p_pos) const;
+	Vector3 get_camera_normal() const;
 
 	Node3DEditorViewport(Node3DEditor *p_spatial_editor, EditorNode *p_editor, int p_index);
 	~Node3DEditorViewport();
@@ -571,6 +573,7 @@ public:
 		TOOL_MODE_MOVE,
 		TOOL_MODE_ROTATE,
 		TOOL_MODE_SCALE,
+		TOOL_MODE_EXTERNAL,
 		TOOL_MODE_LIST_SELECT,
 		TOOL_LOCK_SELECTED,
 		TOOL_UNLOCK_SELECTED,
@@ -579,12 +582,19 @@ public:
 		TOOL_MAX
 	};
 
+	enum ExternalToolMode {
+		EX_TOOL_MODE_SELECT,
+		EX_TOOL_MODE_MOVE,
+		EX_TOOL_MODE_ROTATE,
+		EX_TOOL_MODE_SCALE,
+		EX_TOOL_MAX
+	};
+
 	enum ToolOptions {
 		TOOL_OPT_LOCAL_COORDS,
 		TOOL_OPT_USE_SNAP,
 		TOOL_OPT_OVERRIDE_CAMERA,
 		TOOL_OPT_MAX
-
 	};
 
 private:
@@ -599,6 +609,7 @@ private:
 	/////
 
 	ToolMode tool_mode;
+	ExternalToolMode external_tool_mode = EX_TOOL_MODE_SELECT;
 
 	RID origin;
 	RID origin_instance;
@@ -647,6 +658,7 @@ private:
 		MENU_TOOL_MOVE,
 		MENU_TOOL_ROTATE,
 		MENU_TOOL_SCALE,
+		MENU_TOOL_EXTERNAL,
 		MENU_TOOL_LIST_SELECT,
 		MENU_TOOL_LOCAL_COORDS,
 		MENU_TOOL_USE_SNAP,
@@ -750,6 +762,8 @@ private:
 
 	void _refresh_menu_icons();
 
+	Vector<Transform3D> externals;
+
 	// Preview Sun and Environment
 
 	uint32_t world_env_count = 0;
@@ -827,7 +841,11 @@ public:
 	Transform3D get_gizmo_transform() const { return gizmo.transform; }
 	bool is_gizmo_visible() const { return gizmo.visible; }
 
+	void set_tool_mode(ToolMode p_tool_mode);
 	ToolMode get_tool_mode() const { return tool_mode; }
+	bool is_tool_external() const { return tool_mode == TOOL_MODE_EXTERNAL; }
+	ExternalToolMode get_external_tool_mode() const { return external_tool_mode; }
+	void set_external_tool_mode(ExternalToolMode p_external_tool_mode) { external_tool_mode = p_external_tool_mode; }
 	bool are_local_coords_enabled() const { return tool_option_button[Node3DEditor::TOOL_OPT_LOCAL_COORDS]->is_pressed(); }
 	bool is_snap_enabled() const { return snap_enabled ^ snap_key_enabled; }
 	float get_translate_snap() const;
@@ -878,6 +896,11 @@ public:
 
 	void edit(Node3D *p_spatial);
 	void clear();
+
+	void append_to_externals(Transform3D p_transform) { externals.push_back(p_transform); }
+	void append_array_to_externals(Vector<Transform3D> p_transforms) { externals.append_array(p_transforms); }
+	void clear_externals() { externals.clear(); }
+	Vector<Transform3D> get_externals() const { return externals; }
 
 	Node3DEditor(EditorNode *p_editor);
 	~Node3DEditor();

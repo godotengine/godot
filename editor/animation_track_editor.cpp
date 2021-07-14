@@ -3533,6 +3533,31 @@ void AnimationTrackEditor::insert_transform_key(Node3D *p_node, const String &p_
 	_query_insert(id);
 }
 
+bool AnimationTrackEditor::has_transform_key(Node3D *p_node, const String &p_sub) {
+	if (!keying) {
+		return false;
+	}
+	if (!animation.is_valid()) {
+		return false;
+	}
+	if (!root) {
+		return false;
+	}
+
+	//let's build a node path
+	String path = root->get_path_to(p_node);
+	if (p_sub != "") {
+		path += ":" + p_sub;
+	}
+	int track_id = animation->find_track(path);
+	if (track_id >= 0) {
+		if (animation->track_get_type(track_id) == Animation::TYPE_TRANSFORM3D) {
+			return true;
+		}
+	}
+	return false;
+}
+
 void AnimationTrackEditor::_insert_animation_key(NodePath p_path, const Variant &p_value) {
 	String path = p_path;
 

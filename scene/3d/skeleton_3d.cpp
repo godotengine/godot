@@ -852,6 +852,16 @@ Transform3D Skeleton3D::world_transform_to_bone_transform(Transform3D p_world_tr
 	return get_global_transform().affine_inverse() * p_world_transform;
 }
 
+void Skeleton3D::set_selected_bone(int p_bone) {
+	selected_bone = p_bone;
+	update_gizmo();
+	return;
+}
+
+int Skeleton3D::get_selected_bone() const {
+	return selected_bone;
+}
+
 void Skeleton3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_bone_process_orders"), &Skeleton3D::get_bone_process_orders);
 	ClassDB::bind_method(D_METHOD("add_bone", "name"), &Skeleton3D::add_bone);

@@ -103,7 +103,7 @@ void CollisionPolygon3DEditor::_wip_close() {
 	undo_redo->commit_action();
 }
 
-bool CollisionPolygon3DEditor::forward_spatial_gui_input(Camera3D *p_camera, const Ref<InputEvent> &p_event) {
+bool CollisionPolygon3DEditor::forward_spatial_gui_input(int p_index, Camera3D *p_camera, const Ref<InputEvent> &p_event) {
 	if (!node) {
 		return false;
 	}

@@ -98,7 +98,7 @@ public:
 	Path3D *get_edited_path() { return path; }
 
 	static Path3DEditorPlugin *singleton;
-	virtual bool forward_spatial_gui_input(Camera3D *p_camera, const Ref<InputEvent> &p_event) override;
+	virtual bool forward_spatial_gui_input(int p_index, Camera3D *p_camera, const Ref<InputEvent> &p_event) override;
 
 	virtual String get_name() const override { return "Path3D"; }
 	bool has_main_screen() const override { return false; }

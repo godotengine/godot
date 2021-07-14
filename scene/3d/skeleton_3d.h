@@ -107,6 +107,8 @@ private:
 	void _make_dirty();
 	bool dirty = false;
 
+	int selected_bone = -1;
+
 	uint64_t version = 1;
 
 	void _update_process_order();
@@ -171,6 +173,9 @@ public:
 	Vector<int> get_bone_process_orders();
 
 	Ref<SkinReference> register_skin(const Ref<Skin> &p_skin);
+
+	void set_selected_bone(int p_bone);
+	int get_selected_bone() const;
 
 	// Helper functions
 	Transform3D bone_transform_to_world_transform(Transform3D p_transform);
