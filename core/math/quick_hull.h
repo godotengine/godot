@@ -84,9 +84,20 @@ private:
 		}
 	};
 
+	static int find_or_create_output_index(int p_old_index, Vector<int> &r_out_indices) {
+		for (int n = 0; n < r_out_indices.size(); n++) {
+			if (r_out_indices[n] == p_old_index) {
+				return n;
+			}
+		}
+		r_out_indices.push_back(p_old_index);
+		return r_out_indices.size() - 1;
+	}
+
 public:
 	static uint32_t debug_stop_after;
-	static Error build(const Vector<Vector3> &p_points, Geometry::MeshData &r_mesh);
+	static bool _flag_warnings;
+	static Error build(const Vector<Vector3> &p_points, Geometry::MeshData &r_mesh, real_t p_over_tolerance_epsilon = 3.0 * UNIT_EPSILON);
 };
 
 #endif // QUICK_HULL_H

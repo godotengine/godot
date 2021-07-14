@@ -69,6 +69,7 @@
 #include "servers/physics_2d_server.h"
 #include "servers/physics_server.h"
 #include "servers/register_server_types.h"
+#include "servers/visual_server_callbacks.h"
 
 #ifdef TOOLS_ENABLED
 #include "editor/doc/doc_data.h"
@@ -103,6 +104,8 @@ static CameraServer *camera_server = nullptr;
 static ARVRServer *arvr_server = nullptr;
 static PhysicsServer *physics_server = nullptr;
 static Physics2DServer *physics_2d_server = nullptr;
+static VisualServerCallbacks *visual_server_callbacks = nullptr;
+
 // We error out if setup2() doesn't turn this true
 static bool _start_success = false;
 
@@ -1452,6 +1455,10 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 	if (use_debug_profiler && script_debugger) {
 		script_debugger->profiling_start();
 	}
+
+	visual_server_callbacks = memnew(VisualServerCallbacks);
+	VisualServer::get_singleton()->callbacks_register(visual_server_callbacks);
+
 	_start_success = true;
 	locale = String();
 
@@ -2098,6 +2105,7 @@ bool Main::iteration() {
 	if (OS::get_singleton()->get_main_loop()->idle(step * time_scale)) {
 		exit = true;
 	}
+	visual_server_callbacks->flush();
 	message_queue->flush();
 
 	VisualServer::get_singleton()->sync(); //sync if still drawing from previous frames.
@@ -2289,6 +2297,10 @@ void Main::cleanup(bool p_force) {
 	// Now should be safe to delete MessageQueue (famous last words).
 	message_queue->flush();
 	memdelete(message_queue);
+
+	if (visual_server_callbacks) {
+		memdelete(visual_server_callbacks);
+	}
 
 	unregister_core_driver_types();
 	unregister_core_types();

@@ -481,6 +481,44 @@ public:
 
 	FUNC2(instance_set_extra_visibility_margin, RID, real_t)
 
+	// Portals
+	FUNC2(instance_set_portal_mode, RID, InstancePortalMode)
+
+	FUNCRID(ghost)
+	FUNC4(ghost_set_scenario, RID, RID, ObjectID, const AABB &)
+	FUNC2(ghost_update, RID, const AABB &)
+
+	FUNCRID(portal)
+	FUNC2(portal_set_scenario, RID, RID)
+	FUNC3(portal_set_geometry, RID, const Vector<Vector3> &, float)
+	FUNC4(portal_link, RID, RID, RID, bool)
+	FUNC2(portal_set_active, RID, bool)
+
+	// Roomgroups
+	FUNCRID(roomgroup)
+	FUNC2(roomgroup_prepare, RID, ObjectID)
+	FUNC2(roomgroup_set_scenario, RID, RID)
+	FUNC2(roomgroup_add_room, RID, RID)
+
+	// Rooms
+	FUNCRID(room)
+	FUNC2(room_set_scenario, RID, RID)
+	FUNC4(room_add_instance, RID, RID, const AABB &, const Vector<Vector3> &)
+	FUNC3(room_add_ghost, RID, ObjectID, const AABB &)
+	FUNC5(room_set_bound, RID, ObjectID, const Vector<Plane> &, const AABB &, const Vector<Vector3> &)
+	FUNC2(room_prepare, RID, int32_t)
+	FUNC1(rooms_and_portals_clear, RID)
+	FUNC1(rooms_unload, RID)
+	FUNC6(rooms_finalize, RID, bool, bool, bool, bool, String)
+	FUNC4(rooms_override_camera, RID, bool, const Vector3 &, const Vector<Plane> *)
+	FUNC2(rooms_set_active, RID, bool)
+	FUNC2(rooms_set_params, RID, int)
+	FUNC3(rooms_set_debug_feature, RID, RoomsDebugFeature, bool)
+	FUNC2(rooms_update_gameplay_monitor, RID, const Vector<Vector3> &)
+
+	// Callbacks
+	FUNC1(callbacks_register, VisualServerCallbacks *)
+
 	// don't use these in a game!
 	FUNC2RC(Vector<ObjectID>, instances_cull_aabb, const AABB &, RID)
 	FUNC3RC(Vector<ObjectID>, instances_cull_ray, const Vector3 &, const Vector3 &, RID)

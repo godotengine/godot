@@ -94,6 +94,14 @@ protected:
 	void _initialize_skinning(bool p_force_reset = false, bool p_call_attach_skeleton = true);
 	void _update_skinning();
 
+private:
+	// merging
+	void _merge_into_mesh_data(const MeshInstance &p_mi, int p_surface_id, PoolVector<Vector3> &r_verts, PoolVector<Vector3> &r_norms, PoolVector<real_t> &r_tangents, PoolVector<Color> &r_colors, PoolVector<Vector2> &r_uvs, PoolVector<Vector2> &r_uv2s, PoolVector<int> &r_inds);
+	bool _ensure_indices_valid(PoolVector<int> &r_indices, const PoolVector<Vector3> &p_verts);
+	bool _check_for_valid_indices(const PoolVector<int> &p_inds, const PoolVector<Vector3> &p_verts, LocalVector<int, int32_t> *r_inds);
+	bool _triangle_is_degenerate(const Vector3 &p_a, const Vector3 &p_b, const Vector3 &p_c, real_t p_epsilon);
+	void _merge_log(String p_string);
+
 protected:
 	bool _set(const StringName &p_name, const Variant &p_value);
 	bool _get(const StringName &p_name, Variant &r_ret) const;
@@ -132,6 +140,10 @@ public:
 	void create_convex_collision(bool p_clean = true, bool p_simplify = false);
 
 	void create_debug_tangents();
+
+	// merging
+	bool is_mergeable_with(const MeshInstance &p_other);
+	bool create_by_merging(Vector<MeshInstance *> p_list);
 
 	virtual AABB get_aabb() const;
 	virtual PoolVector<Face3> get_faces(uint32_t p_usage_flags) const;

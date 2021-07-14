@@ -129,6 +129,7 @@ struct Vector3 {
 	_FORCE_INLINE_ Vector3 reflect(const Vector3 &p_normal) const;
 
 	bool is_equal_approx(const Vector3 &p_v) const;
+	inline bool is_equal_approx(const Vector3 &p_v, real_t p_tolerance) const;
 
 	/* Operators */
 
@@ -449,6 +450,10 @@ Vector3 Vector3::reflect(const Vector3 &p_normal) const {
 	ERR_FAIL_COND_V_MSG(!p_normal.is_normalized(), Vector3(), "The normal Vector3 must be normalized.");
 #endif
 	return 2.0 * p_normal * this->dot(p_normal) - *this;
+}
+
+bool Vector3::is_equal_approx(const Vector3 &p_v, real_t p_tolerance) const {
+	return Math::is_equal_approx(x, p_v.x, p_tolerance) && Math::is_equal_approx(y, p_v.y, p_tolerance) && Math::is_equal_approx(z, p_v.z, p_tolerance);
 }
 
 #endif // VECTOR3_H

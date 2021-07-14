@@ -558,6 +558,44 @@ public:
 
 	BIND2(instance_set_extra_visibility_margin, RID, real_t)
 
+	// Portals
+	BIND2(instance_set_portal_mode, RID, InstancePortalMode)
+
+	BIND0R(RID, ghost_create)
+	BIND4(ghost_set_scenario, RID, RID, ObjectID, const AABB &)
+	BIND2(ghost_update, RID, const AABB &)
+
+	BIND0R(RID, portal_create)
+	BIND2(portal_set_scenario, RID, RID)
+	BIND3(portal_set_geometry, RID, const Vector<Vector3> &, float)
+	BIND4(portal_link, RID, RID, RID, bool)
+	BIND2(portal_set_active, RID, bool)
+
+	// Roomgroups
+	BIND0R(RID, roomgroup_create)
+	BIND2(roomgroup_prepare, RID, ObjectID)
+	BIND2(roomgroup_set_scenario, RID, RID)
+	BIND2(roomgroup_add_room, RID, RID)
+
+	// Rooms
+	BIND0R(RID, room_create)
+	BIND2(room_set_scenario, RID, RID)
+	BIND4(room_add_instance, RID, RID, const AABB &, const Vector<Vector3> &)
+	BIND3(room_add_ghost, RID, ObjectID, const AABB &)
+	BIND5(room_set_bound, RID, ObjectID, const Vector<Plane> &, const AABB &, const Vector<Vector3> &)
+	BIND2(room_prepare, RID, int32_t)
+	BIND1(rooms_and_portals_clear, RID)
+	BIND1(rooms_unload, RID)
+	BIND6(rooms_finalize, RID, bool, bool, bool, bool, String)
+	BIND4(rooms_override_camera, RID, bool, const Vector3 &, const Vector<Plane> *)
+	BIND2(rooms_set_active, RID, bool)
+	BIND2(rooms_set_params, RID, int)
+	BIND3(rooms_set_debug_feature, RID, RoomsDebugFeature, bool)
+	BIND2(rooms_update_gameplay_monitor, RID, const Vector<Vector3> &)
+
+	// Callbacks
+	BIND1(callbacks_register, VisualServerCallbacks *)
+
 	// don't use these in a game!
 	BIND2RC(Vector<ObjectID>, instances_cull_aabb, const AABB &, RID)
 	BIND3RC(Vector<ObjectID>, instances_cull_ray, const Vector3 &, const Vector3 &, RID)

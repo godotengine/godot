@@ -93,3 +93,74 @@ public:
 		_used_size--;
 	}
 };
+
+// a pooled list which automatically keeps a list of the active members
+template <class T, bool force_trivial = false>
+class TrackedPooledList {
+public:
+	int pool_size() const { return _pool.size(); }
+	int active_size() const { return _active_list.size(); }
+
+	uint32_t get_active_id(uint32_t p_index) const {
+		return _active_list[p_index];
+	}
+
+	const T &get_active(uint32_t p_index) const {
+		return _pool[get_active_id(p_index)];
+	}
+
+	T &get_active(uint32_t p_index) {
+		return _pool[get_active_id(p_index)];
+	}
+
+	const T &operator[](uint32_t p_index) const {
+		return _pool[p_index];
+	}
+	T &operator[](uint32_t p_index) {
+		return _pool[p_index];
+	}
+
+	T *request(uint32_t &r_id) {
+		T *item = _pool.request(r_id);
+
+		// add to the active list
+		uint32_t active_list_id = _active_list.size();
+		_active_list.push_back(r_id);
+
+		// expand the active map (this should be in sync with the pool list
+		if (_pool.size() > (int)_active_map.size()) {
+			_active_map.resize(_pool.size());
+		}
+
+		// store in the active map
+		_active_map[r_id] = active_list_id;
+
+		return item;
+	}
+
+	void free(const uint32_t &p_id) {
+		_pool.free(p_id);
+
+		// remove from the active list.
+		uint32_t list_id = _active_map[p_id];
+
+		// zero the _active map to detect bugs (only in debug?)
+		_active_map[p_id] = -1;
+
+		_active_list.remove_unordered(list_id);
+
+		// keep the replacement in sync with the correct list Id
+		if (list_id < (uint32_t)_active_list.size()) {
+			// which pool id has been replaced in the active list
+			uint32_t replacement_id = _active_list[list_id];
+
+			// keep that replacements map up to date with the new position
+			_active_map[replacement_id] = list_id;
+		}
+	}
+
+private:
+	PooledList<T, force_trivial> _pool;
+	LocalVector<uint32_t, uint32_t> _active_map;
+	LocalVector<uint32_t, uint32_t> _active_list;
+};
