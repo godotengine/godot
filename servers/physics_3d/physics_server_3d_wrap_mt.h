@@ -246,6 +246,7 @@ public:
 	FUNC2(body_set_omit_force_integration, RID, bool);
 	FUNC1RC(bool, body_is_omitting_force_integration, RID);
 
+	FUNC3(body_set_state_sync_callback, RID, void *, BodyStateCallback);
 	FUNC3(body_set_force_integration_callback, RID, const Callable &, const Variant &);
 
 	FUNC2(body_set_ray_pickable, RID, bool);

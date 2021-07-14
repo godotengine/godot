@@ -46,7 +46,6 @@ class PhysicsServer2DSW : public PhysicsServer2D {
 	bool active;
 	int iterations;
 	bool doing_sync;
-	real_t last_step;
 
 	int island_count;
 	int active_objects;
@@ -58,8 +57,6 @@ class PhysicsServer2DSW : public PhysicsServer2D {
 
 	Step2DSW *stepper;
 	Set<const Space2DSW *> active_spaces;
-
-	PhysicsDirectBodyState2DSW *direct_state;
 
 	mutable RID_PtrOwner<Shape2DSW, true> shape_owner;
 	mutable RID_PtrOwner<Space2DSW, true> space_owner;
@@ -242,7 +239,9 @@ public:
 	virtual void body_set_max_contacts_reported(RID p_body, int p_contacts) override;
 	virtual int body_get_max_contacts_reported(RID p_body) const override;
 
+	virtual void body_set_state_sync_callback(RID p_body, void *p_instance, BodyStateCallback p_callback) override;
 	virtual void body_set_force_integration_callback(RID p_body, const Callable &p_callable, const Variant &p_udata = Variant()) override;
+
 	virtual bool body_collide_shape(RID p_body, int p_body_shape, RID p_shape, const Transform2D &p_shape_xform, const Vector2 &p_motion, Vector2 *r_results, int p_result_max, int &r_result_count) override;
 
 	virtual void body_set_pickable(RID p_body, bool p_pickable) override;
