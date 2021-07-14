@@ -50,6 +50,19 @@ RoomGroup::~RoomGroup() {
 	}
 }
 
+String RoomGroup::get_configuration_warning() const {
+	String warning = Spatial::get_configuration_warning();
+
+	if (Room::detect_nodes_of_type<RoomManager>(this)) {
+		if (!warning.empty()) {
+			warning += "\n\n";
+		}
+		warning += TTR("The RoomManager should not be placed inside a RoomGroup.");
+	}
+
+	return warning;
+}
+
 void RoomGroup::clear() {
 	_roomgroup_ID = -1;
 }
