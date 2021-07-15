@@ -79,6 +79,8 @@ public:
 	void set_points(const PoolVector<Vector2> &p_points);
 	PoolVector<Vector2> get_points() const;
 
+	String get_configuration_warning() const;
+
 	Portal();
 	~Portal();
 

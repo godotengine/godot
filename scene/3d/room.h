@@ -74,9 +74,15 @@ public:
 	// editor only
 	PoolVector<Vector3> generate_points();
 
+	String get_configuration_warning() const;
+
 private:
 	void clear();
 	void _changed(bool p_regenerate_bounds = false);
+	template <class T>
+	static bool detect_nodes_of_type(const Node *p_node, bool p_ignore_first_node = true);
+	template <typename T>
+	static bool detect_nodes_using_lambda(const Node *p_node, T p_lambda, bool p_ignore_first_node = true);
 
 	// planes forming convex hull of room
 	LocalVector<Plane, int32_t> _planes;
@@ -127,5 +133,34 @@ protected:
 	static void _bind_methods();
 	void _notification(int p_what);
 };
+
+template <class T>
+bool Room::detect_nodes_of_type(const Node *p_node, bool p_ignore_first_node) {
+	if (Object::cast_to<T>(p_node) && (!p_ignore_first_node)) {
+		return true;
+	}
+
+	for (int n = 0; n < p_node->get_child_count(); n++) {
+		if (detect_nodes_of_type<T>(p_node->get_child(n), false)) {
+			return true;
+		}
+	}
+
+	return false;
+}
+
+template <typename T>
+bool Room::detect_nodes_using_lambda(const Node *p_node, T p_lambda, bool p_ignore_first_node) {
+	if (p_lambda(p_node) && !p_ignore_first_node) {
+		return true;
+	}
+
+	for (int n = 0; n < p_node->get_child_count(); n++) {
+		if (detect_nodes_using_lambda(p_node->get_child(n), p_lambda, false)) {
+			return true;
+		}
+	}
+	return false;
+}
 
 #endif

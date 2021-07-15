@@ -33,6 +33,7 @@
 #include "core/engine.h"
 #include "mesh_instance.h"
 #include "room.h"
+#include "room_group.h"
 #include "room_manager.h"
 #include "scene/main/viewport.h"
 #include "servers/visual_server.h"
@@ -67,6 +68,37 @@ Portal::~Portal() {
 	if (_portal_rid != RID()) {
 		VisualServer::get_singleton()->free(_portal_rid);
 	}
+}
+
+String Portal::get_configuration_warning() const {
+	String warning = Spatial::get_configuration_warning();
+
+	auto lambda = [](const Node *p_node) {
+		return static_cast<bool>((Object::cast_to<RoomManager>(p_node) || Object::cast_to<Room>(p_node) || Object::cast_to<RoomGroup>(p_node)));
+	};
+
+	if (Room::detect_nodes_using_lambda(this, lambda)) {
+		if (Room::detect_nodes_of_type<RoomManager>(this)) {
+			if (!warning.empty()) {
+				warning += "\n\n";
+			}
+			warning += TTR("The RoomManager should not be a child or grandchild of a Portal.");
+		}
+		if (Room::detect_nodes_of_type<Room>(this)) {
+			if (!warning.empty()) {
+				warning += "\n\n";
+			}
+			warning += TTR("A Room should not be a child or grandchild of a Portal.");
+		}
+		if (Room::detect_nodes_of_type<RoomGroup>(this)) {
+			if (!warning.empty()) {
+				warning += "\n\n";
+			}
+			warning += TTR("A RoomGroup should not be a child or grandchild of a Portal.");
+		}
+	}
+
+	return warning;
 }
 
 void Portal::set_points(const PoolVector<Vector2> &p_points) {

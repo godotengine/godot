@@ -53,10 +53,7 @@ public:
 		PVS_MODE_FULL,
 	};
 
-	void set_roomlist_path(const NodePath &p_path) {
-		_settings_path_roomlist = p_path;
-	}
-
+	void set_roomlist_path(const NodePath &p_path);
 	NodePath get_roomlist_path() const {
 		return _settings_path_roomlist;
 	}
@@ -95,7 +92,7 @@ public:
 	int get_overlap_warning_threshold() const { return (int)_overlap_warning_threshold; }
 
 	void set_portal_depth_limit(int p_limit);
-	int get_portal_depth_limit() const { return _portal_depth_limit; }
+	int get_portal_depth_limit() const { return _settings_portal_depth_limit; }
 
 	void set_flip_portal_meshes(bool p_flip);
 	bool get_flip_portal_meshes() const;
@@ -118,6 +115,8 @@ public:
 	void rooms_convert();
 	void rooms_clear();
 	void rooms_flip_portals();
+
+	String get_configuration_warning() const;
 
 	// for internal use in the editor..
 	// either we can clear the rooms and unload,
@@ -253,7 +252,7 @@ private:
 	real_t _default_portal_margin = 1.0;
 	real_t _overlap_warning_threshold = 1.0;
 	Room::SimplifyInfo _room_simplify_info;
-	int _portal_depth_limit = 16;
+	int _settings_portal_depth_limit = 16;
 
 	// debug override camera
 	ObjectID _godot_preview_camera_ID = -1;

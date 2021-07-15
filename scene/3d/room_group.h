@@ -55,6 +55,8 @@ public:
 	}
 	int get_roomgroup_priority() const { return _settings_priority; }
 
+	String get_configuration_warning() const;
+
 private:
 	void clear();
 	void _changed();

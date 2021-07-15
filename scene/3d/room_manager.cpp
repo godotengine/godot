@@ -75,6 +75,69 @@ RoomManager::~RoomManager() {
 	active_room_manager = nullptr;
 #endif
 }
+
+String RoomManager::get_configuration_warning() const {
+	String warning = Spatial::get_configuration_warning();
+
+	if (_settings_path_roomlist == NodePath()) {
+		if (!warning.empty()) {
+			warning += "\n\n";
+		}
+		warning += TTR("The RoomList has not been assigned.");
+	} else {
+		Spatial *roomlist = _resolve_path<Spatial>(_settings_path_roomlist);
+		if (!roomlist || (roomlist->get_class_name() != StringName("Spatial"))) {
+			if (!warning.empty()) {
+				warning += "\n\n";
+			}
+			warning += TTR("The RoomList should be a Spatial.");
+		}
+	}
+
+	if (_settings_portal_depth_limit == 0) {
+		if (!warning.empty()) {
+			warning += "\n\n";
+		}
+		warning += TTR("Portal Depth Limit is set to Zero.\nOnly the Room that the Camera is in will render.");
+	}
+
+	auto lambda = [](const Node *p_node) {
+		return static_cast<bool>((Object::cast_to<Room>(p_node) || Object::cast_to<RoomGroup>(p_node) || Object::cast_to<Portal>(p_node) || Object::cast_to<RoomManager>(p_node)));
+	};
+
+	if (Room::detect_nodes_using_lambda(this, lambda)) {
+		if (Room::detect_nodes_of_type<Room>(this)) {
+			if (!warning.empty()) {
+				warning += "\n\n";
+			}
+			warning += TTR("Rooms should not be children of the RoomManager.");
+		}
+
+		if (Room::detect_nodes_of_type<RoomGroup>(this)) {
+			if (!warning.empty()) {
+				warning += "\n\n";
+			}
+			warning += TTR("RoomGroups should not be children of the RoomManager.");
+		}
+
+		if (Room::detect_nodes_of_type<Portal>(this)) {
+			if (!warning.empty()) {
+				warning += "\n\n";
+			}
+			warning += TTR("Portals should not be children of the RoomManager.");
+		}
+
+		if (Room::detect_nodes_of_type<RoomManager>(this)) {
+			if (!warning.empty()) {
+				warning += "\n\n";
+			}
+			warning += TTR("There should only be one RoomManager in the SceneTree.");
+		}
+	}
+
+	return warning;
+}
+
 void RoomManager::_preview_camera_update() {
 	Ref<World> world = get_world();
 	RID scenario = world->get_scenario();
@@ -180,6 +243,9 @@ void RoomManager::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_pvs_mode", "pvs_mode"), &RoomManager::set_pvs_mode);
 	ClassDB::bind_method(D_METHOD("get_pvs_mode"), &RoomManager::get_pvs_mode);
 
+	ClassDB::bind_method(D_METHOD("set_roomlist_path", "p_path"), &RoomManager::set_roomlist_path);
+	ClassDB::bind_method(D_METHOD("get_roomlist_path"), &RoomManager::get_roomlist_path);
+
 	// These are commented out for now, but available in case we want to cache PVS to disk, the functionality exists
 	// ClassDB::bind_method(D_METHOD("set_pvs_filename", "pvs_filename"), &RoomManager::set_pvs_filename);
 	// ClassDB::bind_method(D_METHOD("get_pvs_filename"), &RoomManager::get_pvs_filename);
@@ -200,7 +266,7 @@ void RoomManager::_bind_methods() {
 
 	ADD_GROUP("Main", "");
 	LIMPL_PROPERTY(Variant::BOOL, active, rooms_set_active, rooms_get_active);
-	LIMPL_PROPERTY(Variant::NODE_PATH, roomlist, set_roomlist_path, get_roomlist_path);
+	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "roomlist", PROPERTY_HINT_NODE_PATH_VALID_TYPES, "Spatial"), "set_roomlist_path", "get_roomlist_path");
 
 	ADD_GROUP("PVS", "");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "pvs_mode", PROPERTY_HINT_ENUM, "Disabled,Partial,Full"), "set_pvs_mode", "get_pvs_mode");
@@ -232,6 +298,11 @@ void RoomManager::_bind_methods() {
 #undef LIMPL_PROPERTY_RANGE
 #undef LPORTAL_STRINGIFY
 #undef LPORTAL_TOSTRING
+}
+
+void RoomManager::set_roomlist_path(const NodePath &p_path) {
+	_settings_path_roomlist = p_path;
+	update_configuration_warning();
 }
 
 void RoomManager::set_preview_camera_path(const NodePath &p_path) {
@@ -281,7 +352,7 @@ bool RoomManager::get_flip_portal_meshes() const {
 }
 
 void RoomManager::set_portal_depth_limit(int p_limit) {
-	_portal_depth_limit = p_limit;
+	_settings_portal_depth_limit = p_limit;
 
 	if (is_inside_world() && get_world().is_valid()) {
 		VisualServer::get_singleton()->rooms_set_params(get_world()->get_scenario(), p_limit);

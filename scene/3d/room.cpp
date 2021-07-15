@@ -31,6 +31,7 @@
 #include "room.h"
 
 #include "portal.h"
+#include "room_group.h"
 #include "room_manager.h"
 #include "servers/visual_server.h"
 
@@ -178,6 +179,39 @@ PoolVector<Vector3> Room::generate_points() {
 
 #endif
 	return pts_returned;
+}
+
+String Room::get_configuration_warning() const {
+	String warning = Spatial::get_configuration_warning();
+
+	auto lambda = [](const Node *p_node) {
+		return static_cast<bool>((Object::cast_to<Room>(p_node) || Object::cast_to<RoomManager>(p_node) || Object::cast_to<RoomGroup>(p_node)));
+	};
+
+	if (detect_nodes_using_lambda(this, lambda)) {
+		if (detect_nodes_of_type<Room>(this)) {
+			if (!warning.empty()) {
+				warning += "\n\n";
+			}
+			warning += TTR("A Room cannot have another Room as a child or grandchild.");
+		}
+
+		if (detect_nodes_of_type<RoomManager>(this)) {
+			if (!warning.empty()) {
+				warning += "\n\n";
+			}
+			warning += TTR("The RoomManager should not be placed inside a Room.");
+		}
+
+		if (detect_nodes_of_type<RoomGroup>(this)) {
+			if (!warning.empty()) {
+				warning += "\n\n";
+			}
+			warning += TTR("A RoomGroup should not be placed inside a Room.");
+		}
+	}
+
+	return warning;
 }
 
 // extra editor links to the room manager to allow unloading
