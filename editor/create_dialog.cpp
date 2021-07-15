@@ -195,7 +195,8 @@ void CreateDialog::_update_search() {
 		select_type(_top_result(candidates, search_text));
 	} else {
 		favorite->set_disabled(true);
-		help_bit->set_text("");
+		help_bit->set_text(vformat(TTR("No results for \"%s\"."), search_text));
+		help_bit->get_rich_text()->set_self_modulate(Color(1, 1, 1, 0.5));
 		get_ok_button()->set_disabled(true);
 		search_options->deselect_all();
 	}
@@ -393,8 +394,15 @@ void CreateDialog::select_type(const String &p_type) {
 	to_select->select(0);
 	search_options->scroll_to_item(to_select);
 
-	if (EditorHelp::get_doc_data()->class_list.has(p_type)) {
-		help_bit->set_text(DTR(EditorHelp::get_doc_data()->class_list[p_type].brief_description));
+	if (EditorHelp::get_doc_data()->class_list.has(p_type) && !DTR(EditorHelp::get_doc_data()->class_list[p_type].brief_description).is_empty()) {
+		// Display both class name and description, since the help bit may be displayed
+		// far away from the location (especially if the dialog was resized to be taller).
+		help_bit->set_text(vformat("[b]%s[/b]: %s", p_type, DTR(EditorHelp::get_doc_data()->class_list[p_type].brief_description)));
+		help_bit->get_rich_text()->set_self_modulate(Color(1, 1, 1, 1));
+	} else {
+		// Use nested `vformat()` as translators shouldn't interfere with BBCode tags.
+		help_bit->set_text(vformat(TTR("No description available for %s."), vformat("[b]%s[/b]", p_type)));
+		help_bit->get_rich_text()->set_self_modulate(Color(1, 1, 1, 0.5));
 	}
 
 	favorite->set_disabled(false);
