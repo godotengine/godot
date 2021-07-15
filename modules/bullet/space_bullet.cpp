@@ -1133,7 +1133,7 @@ public:
 	virtual bool process(const btBroadphaseProxy *proxy) {
 		btCollisionObject *co = static_cast<btCollisionObject *>(proxy->m_clientObject);
 		if (co->getInternalType() <= btCollisionObject::CO_RIGID_BODY) {
-			if (self_collision_object != proxy->m_clientObject && (collision_layer & proxy->m_collisionFilterMask)) {
+			if (self_collision_object != proxy->m_clientObject && (proxy->collision_layer & m_collisionFilterMask)) {
 				if (co->getCollisionShape()->isCompound()) {
 					const btCompoundShape *cs = static_cast<btCompoundShape *>(co->getCollisionShape());
 

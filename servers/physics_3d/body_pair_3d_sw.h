@@ -83,8 +83,8 @@ class BodyPair3DSW : public BodyContact3DSW {
 	int shape_A = 0;
 	int shape_B = 0;
 
-	bool dynamic_A = false;
-	bool dynamic_B = false;
+	bool collide_A = false;
+	bool collide_B = false;
 
 	bool report_contacts_only = false;
 
@@ -115,7 +115,10 @@ class BodySoftBodyPair3DSW : public BodyContact3DSW {
 
 	int body_shape = 0;
 
-	bool body_dynamic = false;
+	bool body_collides = false;
+	bool soft_body_collides = false;
+
+	bool report_contacts_only = false;
 
 	LocalVector<Contact> contacts;
 

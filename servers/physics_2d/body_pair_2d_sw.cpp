@@ -226,16 +226,16 @@ real_t combine_friction(Body2DSW *A, Body2DSW *B) {
 }
 
 bool BodyPair2DSW::setup(real_t p_step) {
-	dynamic_A = (A->get_mode() > PhysicsServer2D::BODY_MODE_KINEMATIC);
-	dynamic_B = (B->get_mode() > PhysicsServer2D::BODY_MODE_KINEMATIC);
-
 	if (!A->interacts_with(B) || A->has_exception(B->get_self()) || B->has_exception(A->get_self())) {
 		collided = false;
 		return false;
 	}
 
+	collide_A = (A->get_mode() > PhysicsServer2D::BODY_MODE_KINEMATIC) && A->collides_with(B);
+	collide_B = (B->get_mode() > PhysicsServer2D::BODY_MODE_KINEMATIC) && B->collides_with(A);
+
 	report_contacts_only = false;
-	if (!dynamic_A && !dynamic_B) {
+	if (!collide_A && !collide_B) {
 		if ((A->get_max_contacts_reported() > 0) || (B->get_max_contacts_reported() > 0)) {
 			report_contacts_only = true;
 		} else {
@@ -275,13 +275,13 @@ bool BodyPair2DSW::setup(real_t p_step) {
 	if (!collided) {
 		//test ccd (currently just a raycast)
 
-		if (A->get_continuous_collision_detection_mode() == PhysicsServer2D::CCD_MODE_CAST_RAY && dynamic_A) {
+		if (A->get_continuous_collision_detection_mode() == PhysicsServer2D::CCD_MODE_CAST_RAY && collide_A) {
 			if (_test_ccd(p_step, A, shape_A, xform_A, B, shape_B, xform_B)) {
 				collided = true;
 			}
 		}
 
-		if (B->get_continuous_collision_detection_mode() == PhysicsServer2D::CCD_MODE_CAST_RAY && dynamic_B) {
+		if (B->get_continuous_collision_detection_mode() == PhysicsServer2D::CCD_MODE_CAST_RAY && collide_B) {
 			if (_test_ccd(p_step, B, shape_B, xform_B, A, shape_A, xform_A, true)) {
 				collided = true;
 			}
@@ -374,6 +374,12 @@ bool BodyPair2DSW::pre_solve(real_t p_step) {
 	const Transform2D &transform_A = A->get_transform();
 	const Transform2D &transform_B = B->get_transform();
 
+	real_t inv_inertia_A = collide_A ? A->get_inv_inertia() : 0.0;
+	real_t inv_inertia_B = collide_B ? B->get_inv_inertia() : 0.0;
+
+	real_t inv_mass_A = collide_A ? A->get_inv_mass() : 0.0;
+	real_t inv_mass_B = collide_B ? B->get_inv_mass() : 0.0;
+
 	for (int i = 0; i < contact_count; i++) {
 		Contact &c = contacts[i];
 		c.active = false;
@@ -384,7 +390,7 @@ bool BodyPair2DSW::pre_solve(real_t p_step) {
 		Vector2 axis = global_A - global_B;
 		real_t depth = axis.dot(c.normal);
 
-		if (depth <= 0 || !c.reused) {
+		if (depth <= 0.0 || !c.reused) {
 			continue;
 		}
 
@@ -416,15 +422,15 @@ bool BodyPair2DSW::pre_solve(real_t p_step) {
 		// Precompute normal mass, tangent mass, and bias.
 		real_t rnA = c.rA.dot(c.normal);
 		real_t rnB = c.rB.dot(c.normal);
-		real_t kNormal = A->get_inv_mass() + B->get_inv_mass();
-		kNormal += A->get_inv_inertia() * (c.rA.dot(c.rA) - rnA * rnA) + B->get_inv_inertia() * (c.rB.dot(c.rB) - rnB * rnB);
+		real_t kNormal = inv_mass_A + inv_mass_B;
+		kNormal += inv_inertia_A * (c.rA.dot(c.rA) - rnA * rnA) + inv_inertia_B * (c.rB.dot(c.rB) - rnB * rnB);
 		c.mass_normal = 1.0f / kNormal;
 
 		Vector2 tangent = c.normal.orthogonal();
 		real_t rtA = c.rA.dot(tangent);
 		real_t rtB = c.rB.dot(tangent);
-		real_t kTangent = A->get_inv_mass() + B->get_inv_mass();
-		kTangent += A->get_inv_inertia() * (c.rA.dot(c.rA) - rtA * rtA) + B->get_inv_inertia() * (c.rB.dot(c.rB) - rtB * rtB);
+		real_t kTangent = inv_mass_A + inv_mass_B;
+		kTangent += inv_inertia_A * (c.rA.dot(c.rA) - rtA * rtA) + inv_inertia_B * (c.rB.dot(c.rB) - rtB * rtB);
 		c.mass_tangent = 1.0f / kTangent;
 
 		c.bias = -bias * inv_dt * MIN(0.0f, -depth + max_penetration);
@@ -436,10 +442,10 @@ bool BodyPair2DSW::pre_solve(real_t p_step) {
 			// Apply normal + friction impulse
 			Vector2 P = c.acc_normal_impulse * c.normal + c.acc_tangent_impulse * tangent;
 
-			if (dynamic_A) {
+			if (collide_A) {
 				A->apply_impulse(-P, c.rA);
 			}
-			if (dynamic_B) {
+			if (collide_B) {
 				B->apply_impulse(P, c.rB);
 			}
 		}
@@ -493,10 +499,10 @@ void BodyPair2DSW::solve(real_t p_step) {
 
 		Vector2 jb = c.normal * (c.acc_bias_impulse - jbnOld);
 
-		if (dynamic_A) {
+		if (collide_A) {
 			A->apply_bias_impulse(-jb, c.rA);
 		}
-		if (dynamic_B) {
+		if (collide_B) {
 			B->apply_bias_impulse(jb, c.rB);
 		}
 
@@ -513,10 +519,10 @@ void BodyPair2DSW::solve(real_t p_step) {
 
 		Vector2 j = c.normal * (c.acc_normal_impulse - jnOld) + tangent * (c.acc_tangent_impulse - jtOld);
 
-		if (dynamic_A) {
+		if (collide_A) {
 			A->apply_impulse(-j, c.rA);
 		}
-		if (dynamic_B) {
+		if (collide_B) {
 			B->apply_impulse(j, c.rB);
 		}
 	}

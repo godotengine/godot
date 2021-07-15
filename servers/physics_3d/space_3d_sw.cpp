@@ -549,7 +549,7 @@ int Space3DSW::_cull_aabb_for_body(Body3DSW *p_body, const AABB &p_aabb) {
 			keep = false;
 		} else if (intersection_query_results[i]->get_type() == CollisionObject3DSW::TYPE_SOFT_BODY) {
 			keep = false;
-		} else if (!p_body->layer_in_mask(static_cast<Body3DSW *>(intersection_query_results[i]))) {
+		} else if (!p_body->collides_with(static_cast<Body3DSW *>(intersection_query_results[i]))) {
 			keep = false;
 		} else if (static_cast<Body3DSW *>(intersection_query_results[i])->has_exception(p_body->get_self()) || p_body->has_exception(intersection_query_results[i]->get_self())) {
 			keep = false;
