@@ -148,6 +148,23 @@ protected:
 		}
 	}
 
+	//used for mobile renderer mostly
+
+	typedef int32_t ForwardID;
+
+	enum ForwardIDType {
+		FORWARD_ID_TYPE_OMNI_LIGHT,
+		FORWARD_ID_TYPE_SPOT_LIGHT,
+		FORWARD_ID_TYPE_REFLECTION_PROBE,
+		FORWARD_ID_TYPE_DECAL,
+		FORWARD_ID_MAX,
+	};
+
+	virtual ForwardID _allocate_forward_id(ForwardIDType p_type) { return -1; }
+	virtual void _free_forward_id(ForwardIDType p_type, ForwardID p_id) {}
+	virtual void _map_forward_id(ForwardIDType p_type, ForwardID p_id, uint32_t p_index) {}
+	virtual bool _uses_forward_ids() const { return false; }
+
 private:
 	RS::ViewportDebugDraw debug_draw = RS::VIEWPORT_DEBUG_DRAW_DISABLED;
 	static RendererSceneRenderRD *singleton;
@@ -189,8 +206,9 @@ private:
 
 		uint32_t render_step = 0;
 		uint64_t last_pass = 0;
-		uint32_t render_index = 0;
 		uint32_t cull_mask = 0;
+
+		ForwardID forward_id = -1;
 
 		Transform3D transform;
 	};
@@ -202,8 +220,8 @@ private:
 	struct DecalInstance {
 		RID decal;
 		Transform3D transform;
-		uint32_t render_index;
 		uint32_t cull_mask;
+		ForwardID forward_id = -1;
 	};
 
 	mutable RID_Owner<DecalInstance> decal_instance_owner;
@@ -347,7 +365,6 @@ private:
 		uint64_t last_scene_pass = 0;
 		uint64_t last_scene_shadow_pass = 0;
 		uint64_t last_pass = 0;
-		uint32_t light_index = 0;
 		uint32_t cull_mask = 0;
 		uint32_t light_directional_index = 0;
 
@@ -358,6 +375,8 @@ private:
 		Rect2 directional_rect;
 
 		Set<RID> shadow_atlases; //shadow atlases where this light is registered
+
+		ForwardID forward_id = -1;
 
 		LightInstance() {}
 	};
@@ -1006,14 +1025,9 @@ public:
 		return li->last_pass;
 	}
 
-	_FORCE_INLINE_ void light_instance_set_index(RID p_light_instance, uint32_t p_index) {
+	_FORCE_INLINE_ ForwardID light_instance_get_forward_id(RID p_light_instance) {
 		LightInstance *li = light_instance_owner.getornull(p_light_instance);
-		li->light_index = p_index;
-	}
-
-	_FORCE_INLINE_ uint32_t light_instance_get_index(RID p_light_instance) {
-		LightInstance *li = light_instance_owner.getornull(p_light_instance);
-		return li->light_index;
+		return li->forward_id;
 	}
 
 	_FORCE_INLINE_ RS::LightType light_instance_get_type(RID p_light_instance) {
@@ -1050,17 +1064,11 @@ public:
 		return rpi->probe;
 	}
 
-	_FORCE_INLINE_ void reflection_probe_instance_set_render_index(RID p_instance, uint32_t p_render_index) {
-		ReflectionProbeInstance *rpi = reflection_probe_instance_owner.getornull(p_instance);
-		ERR_FAIL_COND(!rpi);
-		rpi->render_index = p_render_index;
-	}
-
-	_FORCE_INLINE_ uint32_t reflection_probe_instance_get_render_index(RID p_instance) {
+	_FORCE_INLINE_ ForwardID reflection_probe_instance_get_forward_id(RID p_instance) {
 		ReflectionProbeInstance *rpi = reflection_probe_instance_owner.getornull(p_instance);
 		ERR_FAIL_COND_V(!rpi, 0);
 
-		return rpi->render_index;
+		return rpi->forward_id;
 	}
 
 	_FORCE_INLINE_ void reflection_probe_instance_set_render_pass(RID p_instance, uint32_t p_render_pass) {
@@ -1098,6 +1106,11 @@ public:
 		return decal->decal;
 	}
 
+	_FORCE_INLINE_ ForwardID decal_instance_get_forward_id(RID p_decal) const {
+		DecalInstance *decal = decal_instance_owner.getornull(p_decal);
+		return decal->forward_id;
+	}
+
 	_FORCE_INLINE_ Transform3D decal_instance_get_transform(RID p_decal) const {
 		DecalInstance *decal = decal_instance_owner.getornull(p_decal);
 		return decal->transform;
@@ -1118,8 +1131,6 @@ public:
 		return li->transform;
 	}
 
-	void _fill_instance_indices(const RID *p_omni_light_instances, uint32_t p_omni_light_instance_count, uint32_t *p_omni_light_indices, const RID *p_spot_light_instances, uint32_t p_spot_light_instance_count, uint32_t *p_spot_light_indices, const RID *p_reflection_probe_instances, uint32_t p_reflection_probe_instance_count, uint32_t *p_reflection_probe_indices, const RID *p_decal_instances, uint32_t p_decal_instance_count, uint32_t *p_decal_instance_indices, uint32_t p_layer_mask, uint32_t p_max_dst_words = 2);
-
 	/* gi light probes */
 
 	virtual RID voxel_gi_instance_create(RID p_base) override;
@@ -1131,6 +1142,7 @@ public:
 	/* render buffers */
 
 	virtual RD::DataFormat _render_buffers_get_color_format();
+	virtual bool _render_buffers_can_be_storage();
 	virtual RID render_buffers_create() override;
 	virtual void render_buffers_configure(RID p_render_buffers, RID p_render_target, int p_width, int p_height, RS::ViewportMSAA p_msaa, RS::ViewportScreenSpaceAA p_screen_space_aa, bool p_use_debanding, uint32_t p_view_count) override;
 	virtual void gi_set_use_half_resolution(bool p_enable) override;

@@ -35,6 +35,34 @@
 
 using namespace RendererSceneRenderImplementation;
 
+RenderForwardMobile::ForwardID RenderForwardMobile::_allocate_forward_id(ForwardIDType p_type) {
+	int32_t index = -1;
+	for (uint32_t i = 0; i < forward_id_allocators[p_type].allocations.size(); i++) {
+		if (forward_id_allocators[p_type].allocations[i] == false) {
+			index = i;
+			break;
+		}
+	}
+
+	if (index == -1) {
+		index = forward_id_allocators[p_type].allocations.size();
+		forward_id_allocators[p_type].allocations.push_back(true);
+		forward_id_allocators[p_type].map.push_back(0xFF);
+	} else {
+		forward_id_allocators[p_type].allocations[index] = true;
+	}
+
+	return index;
+}
+void RenderForwardMobile::_free_forward_id(ForwardIDType p_type, ForwardID p_id) {
+	ERR_FAIL_INDEX(p_id, (ForwardID)forward_id_allocators[p_type].allocations.size());
+	forward_id_allocators[p_type].allocations[p_id] = false;
+}
+
+void RenderForwardMobile::_map_forward_id(ForwardIDType p_type, ForwardID p_id, uint32_t p_index) {
+	forward_id_allocators[p_type].map[p_id] = p_index;
+}
+
 /* Render buffer */
 
 void RenderForwardMobile::RenderBufferDataForwardMobile::clear() {
@@ -68,7 +96,7 @@ void RenderForwardMobile::RenderBufferDataForwardMobile::configure(RID p_color_b
 	RD::DataFormat color_format = RenderForwardMobile::singleton->_render_buffers_get_color_format();
 
 	if (p_msaa == RS::VIEWPORT_MSAA_DISABLED) {
-		if (color_format == RD::DATA_FORMAT_B10G11R11_UFLOAT_PACK32) {
+		if (color_format == RD::DATA_FORMAT_A2B10G10R10_UNORM_PACK32) {
 			// @TODO add a second color buffer for alpha as this format is RGB only
 		}
 
@@ -139,7 +167,14 @@ RD::DataFormat RenderForwardMobile::_render_buffers_get_color_format() {
 	// Using 32bit buffers enables AFBC on mobile devices which should have a definate performance improvement (MALI G710 and newer support this on 64bit RTs)
 	// NO ALPHA and unsigned float.
 	// @TODO No alpha is an issue, recommendation here is to add a second RT for alpha
-	return RD::DATA_FORMAT_B10G11R11_UFLOAT_PACK32;
+	return RD::DATA_FORMAT_A2B10G10R10_UNORM_PACK32;
+}
+
+bool RenderForwardMobile::_render_buffers_can_be_storage() {
+	// Using 32bit buffers enables AFBC on mobile devices which should have a definate performance improvement (MALI G710 and newer support this on 64bit RTs)
+	// NO ALPHA and unsigned float.
+	// @TODO No alpha is an issue, recommendation here is to add a second RT for alpha
+	return false;
 }
 
 RID RenderForwardMobile::_setup_render_pass_uniform_set(RenderListType p_render_list, const RenderDataRD *p_render_data, RID p_radiance_texture, bool p_use_directional_shadow_atlas, int p_index) {
@@ -1403,6 +1438,44 @@ void RenderForwardMobile::_render_list_with_threads(RenderListParameters *p_para
 	}
 }
 
+void RenderForwardMobile::_fill_push_constant_instance_indices(GeometryInstanceForwardMobile::PushConstant *p_push_constant, const GeometryInstanceForwardMobile *p_instance) {
+	// first zero out our indices
+
+	p_push_constant->omni_lights[0] = 0xFFFF;
+	p_push_constant->omni_lights[1] = 0xFFFF;
+
+	p_push_constant->spot_lights[0] = 0xFFFF;
+	p_push_constant->spot_lights[1] = 0xFFFF;
+
+	p_push_constant->decals[0] = 0xFFFF;
+	p_push_constant->decals[1] = 0xFFFF;
+
+	p_push_constant->reflection_probes[0] = 0xFFFF;
+	p_push_constant->reflection_probes[1] = 0xFFFF;
+
+	for (uint32_t i = 0; i < MAX_RDL_CULL; i++) {
+		uint32_t ofs = i < 4 ? 0 : 1;
+		uint32_t shift = (i & 0x3) << 3;
+		uint32_t mask = ~(0xFF << shift);
+		if (i < p_instance->omni_light_count) {
+			p_push_constant->omni_lights[ofs] &= mask;
+			p_push_constant->omni_lights[ofs] |= uint32_t(forward_id_allocators[FORWARD_ID_TYPE_OMNI_LIGHT].map[p_instance->omni_lights[i]]) << shift;
+		}
+		if (i < p_instance->spot_light_count) {
+			p_push_constant->spot_lights[ofs] &= mask;
+			p_push_constant->spot_lights[ofs] |= uint32_t(forward_id_allocators[FORWARD_ID_TYPE_SPOT_LIGHT].map[p_instance->spot_lights[i]]) << shift;
+		}
+		if (i < p_instance->decals_count) {
+			p_push_constant->decals[ofs] &= mask;
+			p_push_constant->decals[ofs] |= uint32_t(forward_id_allocators[FORWARD_ID_TYPE_DECAL].map[p_instance->decals[i]]) << shift;
+		}
+		if (i < p_instance->reflection_probe_count) {
+			p_push_constant->reflection_probes[ofs] &= mask;
+			p_push_constant->reflection_probes[ofs] |= uint32_t(forward_id_allocators[FORWARD_ID_TYPE_REFLECTION_PROBE].map[p_instance->reflection_probes[i]]) << shift;
+		}
+	}
+}
+
 template <RenderForwardMobile::PassMode p_pass_mode>
 void RenderForwardMobile::_render_list_template(RenderingDevice::DrawListID p_draw_list, RenderingDevice::FramebufferFormatID p_framebuffer_Format, RenderListParameters *p_params, uint32_t p_from_element, uint32_t p_to_element) {
 	RD::DrawListID draw_list = p_draw_list;
@@ -1452,8 +1525,6 @@ void RenderForwardMobile::_render_list_template(RenderingDevice::DrawListID p_dr
 			push_constant.lightmap_uv_scale[3] = inst->lightmap_uv_scale.size.y;
 		};
 
-		_fill_instance_indices(inst->omni_lights, inst->omni_light_count, push_constant.omni_lights, inst->spot_lights, inst->spot_light_count, push_constant.spot_lights, inst->reflection_probes, inst->reflection_probe_count, push_constant.reflection_probes, inst->decals, inst->decals_count, push_constant.decals, push_constant.layer_mask);
-
 		RID material_uniform_set;
 		SceneShaderForwardMobile::ShaderData *shader;
 		void *mesh_surface;
@@ -1464,6 +1535,8 @@ void RenderForwardMobile::_render_list_template(RenderingDevice::DrawListID p_dr
 			mesh_surface = surf->surface_shadow;
 
 		} else {
+			_fill_push_constant_instance_indices(&push_constant, inst);
+
 #ifdef DEBUG_ENABLED
 			if (unlikely(get_debug_draw_mode() == RS::VIEWPORT_DEBUG_DRAW_LIGHTING)) {
 				material_uniform_set = scene_shader.default_material_uniform_set;
@@ -1772,13 +1845,13 @@ void RenderForwardMobile::geometry_instance_pair_light_instances(GeometryInstanc
 		switch (type) {
 			case RS::LIGHT_OMNI: {
 				if (ginstance->omni_light_count < (uint32_t)MAX_RDL_CULL) {
-					ginstance->omni_lights[ginstance->omni_light_count] = p_light_instances[i];
+					ginstance->omni_lights[ginstance->omni_light_count] = light_instance_get_forward_id(p_light_instances[i]);
 					ginstance->omni_light_count++;
 				}
 			} break;
 			case RS::LIGHT_SPOT: {
 				if (ginstance->spot_light_count < (uint32_t)MAX_RDL_CULL) {
-					ginstance->spot_lights[ginstance->spot_light_count] = p_light_instances[i];
+					ginstance->spot_lights[ginstance->spot_light_count] = light_instance_get_forward_id(p_light_instances[i]);
 					ginstance->spot_light_count++;
 				}
 			} break;
@@ -1794,7 +1867,7 @@ void RenderForwardMobile::geometry_instance_pair_reflection_probe_instances(Geom
 
 	ginstance->reflection_probe_count = p_reflection_probe_instance_count < (uint32_t)MAX_RDL_CULL ? p_reflection_probe_instance_count : (uint32_t)MAX_RDL_CULL;
 	for (uint32_t i = 0; i < ginstance->reflection_probe_count; i++) {
-		ginstance->reflection_probes[i] = p_reflection_probe_instances[i];
+		ginstance->reflection_probes[i] = reflection_probe_instance_get_forward_id(p_reflection_probe_instances[i]);
 	}
 }
 
@@ -1804,7 +1877,7 @@ void RenderForwardMobile::geometry_instance_pair_decal_instances(GeometryInstanc
 
 	ginstance->decals_count = p_decal_instance_count < (uint32_t)MAX_RDL_CULL ? p_decal_instance_count : (uint32_t)MAX_RDL_CULL;
 	for (uint32_t i = 0; i < ginstance->decals_count; i++) {
-		ginstance->decals[i] = p_decal_instances[i];
+		ginstance->decals[i] = decal_instance_get_forward_id(p_decal_instances[i]);
 	}
 }
 

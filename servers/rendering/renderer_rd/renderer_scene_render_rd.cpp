@@ -567,6 +567,8 @@ int RendererSceneRenderRD::reflection_atlas_get_size(RID p_ref_atlas) const {
 RID RendererSceneRenderRD::reflection_probe_instance_create(RID p_probe) {
 	ReflectionProbeInstance rpi;
 	rpi.probe = p_probe;
+	rpi.forward_id = _allocate_forward_id(FORWARD_ID_TYPE_REFLECTION_PROBE);
+
 	return reflection_probe_instance_owner.make_rid(rpi);
 }
 
@@ -659,7 +661,7 @@ bool RendererSceneRenderRD::reflection_probe_instance_begin_render(RID p_instanc
 			tf.mipmaps = mipmaps;
 			tf.width = atlas->size;
 			tf.height = atlas->size;
-			tf.usage_bits = RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT | RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_STORAGE_BIT;
+			tf.usage_bits = RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT | RD::TEXTURE_USAGE_SAMPLING_BIT | (_render_buffers_can_be_storage() ? RD::TEXTURE_USAGE_STORAGE_BIT : 0);
 
 			atlas->reflection = RD::get_singleton()->texture_create(tf, RD::TextureView());
 		}
@@ -1233,6 +1235,9 @@ RID RendererSceneRenderRD::light_instance_create(RID p_light) {
 	light_instance->self = li;
 	light_instance->light = p_light;
 	light_instance->light_type = storage->light_get_type(p_light);
+	if (light_instance->light_type != RS::LIGHT_DIRECTIONAL) {
+		light_instance->forward_id = _allocate_forward_id(light_instance->light_type == RS::LIGHT_OMNI ? FORWARD_ID_TYPE_OMNI_LIGHT : FORWARD_ID_TYPE_SPOT_LIGHT);
+	}
 
 	return li;
 }
@@ -1306,6 +1311,7 @@ RendererSceneRenderRD::ShadowCubemap *RendererSceneRenderRD::_get_shadow_cubemap
 RID RendererSceneRenderRD::decal_instance_create(RID p_decal) {
 	DecalInstance di;
 	di.decal = p_decal;
+	di.forward_id = _allocate_forward_id(FORWARD_ID_TYPE_DECAL);
 	return decal_instance_owner.make_rid(di);
 }
 
@@ -2122,6 +2128,10 @@ RD::DataFormat RendererSceneRenderRD::_render_buffers_get_color_format() {
 	return RD::DATA_FORMAT_R16G16B16A16_SFLOAT;
 }
 
+bool RendererSceneRenderRD::_render_buffers_can_be_storage() {
+	return true;
+}
+
 void RendererSceneRenderRD::render_buffers_configure(RID p_render_buffers, RID p_render_target, int p_width, int p_height, RS::ViewportMSAA p_msaa, RenderingServer::ViewportScreenSpaceAA p_screen_space_aa, bool p_use_debanding, uint32_t p_view_count) {
 	ERR_FAIL_COND_MSG(p_view_count == 0, "Must have atleast 1 view");
 
@@ -2152,9 +2162,9 @@ void RendererSceneRenderRD::render_buffers_configure(RID p_render_buffers, RID p
 		tf.width = rb->width;
 		tf.height = rb->height;
 		tf.array_layers = rb->view_count; // create a layer for every view
-		tf.usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_STORAGE_BIT;
+		tf.usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | (_render_buffers_can_be_storage() ? RD::TEXTURE_USAGE_STORAGE_BIT : 0);
 		if (rb->msaa != RS::VIEWPORT_MSAA_DISABLED) {
-			tf.usage_bits |= RD::TEXTURE_USAGE_CAN_COPY_TO_BIT | RD::TEXTURE_USAGE_STORAGE_BIT;
+			tf.usage_bits |= RD::TEXTURE_USAGE_CAN_COPY_TO_BIT | (_render_buffers_can_be_storage() ? RD::TEXTURE_USAGE_STORAGE_BIT : 0);
 		} else {
 			tf.usage_bits |= RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT;
 		}
@@ -2328,10 +2338,13 @@ void RendererSceneRenderRD::_setup_reflections(const PagedArray<RID> &p_reflecti
 		sort_array.sort(cluster.reflection_sort, cluster.reflection_count);
 	}
 
+	bool using_forward_ids = _uses_forward_ids();
 	for (uint32_t i = 0; i < cluster.reflection_count; i++) {
 		ReflectionProbeInstance *rpi = cluster.reflection_sort[i].instance;
 
-		rpi->render_index = i;
+		if (using_forward_ids) {
+			_map_forward_id(FORWARD_ID_TYPE_REFLECTION_PROBE, rpi->forward_id, i);
+		}
 
 		RID base_probe = rpi->probe;
 
@@ -2628,12 +2641,18 @@ void RendererSceneRenderRD::_setup_lights(const PagedArray<RID> &p_lights, const
 		shadow_atlas = shadow_atlas_owner.getornull(p_shadow_atlas);
 	}
 
+	bool using_forward_ids = _uses_forward_ids();
+
 	for (uint32_t i = 0; i < (cluster.omni_light_count + cluster.spot_light_count); i++) {
 		uint32_t index = (i < cluster.omni_light_count) ? i : i - (cluster.omni_light_count);
 		Cluster::LightData &light_data = (i < cluster.omni_light_count) ? cluster.omni_lights[index] : cluster.spot_lights[index];
 		RS::LightType type = (i < cluster.omni_light_count) ? RS::LIGHT_OMNI : RS::LIGHT_SPOT;
 		LightInstance *li = (i < cluster.omni_light_count) ? cluster.omni_light_sort[index].instance : cluster.spot_light_sort[index].instance;
 		RID base = li->light;
+
+		if (using_forward_ids) {
+			_map_forward_id(type == RS::LIGHT_OMNI ? FORWARD_ID_TYPE_OMNI_LIGHT : FORWARD_ID_TYPE_SPOT_LIGHT, li->forward_id, index);
+		}
 
 		Transform3D light_transform = li->transform;
 
@@ -2767,7 +2786,6 @@ void RendererSceneRenderRD::_setup_lights(const PagedArray<RID> &p_lights, const
 			light_data.shadow_enabled = false;
 		}
 
-		li->light_index = index;
 		li->cull_mask = storage->light_get_cull_mask(base);
 
 		if (current_cluster_builder != nullptr) {
@@ -2836,11 +2854,15 @@ void RendererSceneRenderRD::_setup_decals(const PagedArray<RID> &p_decals, const
 		sort_array.sort(cluster.decal_sort, cluster.decal_count);
 	}
 
+	bool using_forward_ids = _uses_forward_ids();
 	for (uint32_t i = 0; i < cluster.decal_count; i++) {
 		DecalInstance *di = cluster.decal_sort[i].instance;
 		RID decal = di->decal;
 
-		di->render_index = i;
+		if (using_forward_ids) {
+			_map_forward_id(FORWARD_ID_TYPE_DECAL, di->forward_id, i);
+		}
+
 		di->cull_mask = storage->decal_get_cull_mask(decal);
 
 		Transform3D xform = di->transform;
@@ -2954,116 +2976,6 @@ void RendererSceneRenderRD::_setup_decals(const PagedArray<RID> &p_decals, const
 
 	if (cluster.decal_count > 0) {
 		RD::get_singleton()->buffer_update(cluster.decal_buffer, 0, sizeof(Cluster::DecalData) * cluster.decal_count, cluster.decals, RD::BARRIER_MASK_RASTER | RD::BARRIER_MASK_COMPUTE);
-	}
-}
-
-void RendererSceneRenderRD::_fill_instance_indices(const RID *p_omni_light_instances, uint32_t p_omni_light_instance_count, uint32_t *p_omni_light_indices, const RID *p_spot_light_instances, uint32_t p_spot_light_instance_count, uint32_t *p_spot_light_indices, const RID *p_reflection_probe_instances, uint32_t p_reflection_probe_instance_count, uint32_t *p_reflection_probe_indices, const RID *p_decal_instances, uint32_t p_decal_instance_count, uint32_t *p_decal_instance_indices, uint32_t p_layer_mask, uint32_t p_max_dst_words) {
-	// first zero out our indices
-	for (uint32_t i = 0; i < p_max_dst_words; i++) {
-		p_omni_light_indices[i] = 0;
-		p_spot_light_indices[i] = 0;
-		p_reflection_probe_indices[i] = 0;
-		p_decal_instance_indices[i] = 0;
-	}
-
-	{
-		// process omni lights
-		uint32_t dword = 0;
-		uint32_t shift = 0;
-
-		for (uint32_t i = 0; i < p_omni_light_instance_count && dword < p_max_dst_words; i++) {
-			LightInstance *li = light_instance_owner.getornull(p_omni_light_instances[i]);
-
-			if ((li->cull_mask & p_layer_mask) && (li->light_index < 255)) {
-				p_omni_light_indices[dword] += li->light_index << shift;
-				if (shift == 24) {
-					dword++;
-					shift = 0;
-				} else {
-					shift += 8;
-				}
-			}
-		}
-
-		if (dword < 2) {
-			// put in ending mark
-			p_omni_light_indices[dword] += 0xFF << shift;
-		}
-	}
-
-	{
-		// process spot lights
-		uint32_t dword = 0;
-		uint32_t shift = 0;
-
-		for (uint32_t i = 0; i < p_spot_light_instance_count && dword < p_max_dst_words; i++) {
-			LightInstance *li = light_instance_owner.getornull(p_spot_light_instances[i]);
-
-			if ((li->cull_mask & p_layer_mask) && (li->light_index < 255)) {
-				p_spot_light_indices[dword] += li->light_index << shift;
-				if (shift == 24) {
-					dword++;
-					shift = 0;
-				} else {
-					shift += 8;
-				}
-			}
-		}
-
-		if (dword < 2) {
-			// put in ending mark
-			p_spot_light_indices[dword] += 0xFF << shift;
-		}
-	}
-
-	{
-		// process reflection probes
-		uint32_t dword = 0;
-		uint32_t shift = 0;
-
-		for (uint32_t i = 0; i < p_reflection_probe_instance_count && dword < p_max_dst_words; i++) {
-			ReflectionProbeInstance *rpi = reflection_probe_instance_owner.getornull(p_reflection_probe_instances[i]);
-
-			if ((rpi->cull_mask & p_layer_mask) && (rpi->render_index < 255)) {
-				p_reflection_probe_indices[dword] += rpi->render_index << shift;
-				if (shift == 24) {
-					dword++;
-					shift = 0;
-				} else {
-					shift += 8;
-				}
-			}
-		}
-
-		if (dword < 2) {
-			// put in ending mark
-			p_reflection_probe_indices[dword] += 0xFF << shift;
-		}
-	}
-
-	{
-		// process decals
-		uint32_t dword = 0;
-		uint32_t shift = 0;
-
-		for (uint32_t i = 0; i < p_decal_instance_count && dword < p_max_dst_words; i++) {
-			DecalInstance *decal = decal_instance_owner.getornull(p_decal_instances[i]);
-
-			if ((decal->cull_mask & p_layer_mask) && (decal->render_index < 255)) {
-				p_decal_instance_indices[dword] += decal->render_index << shift;
-				if (shift == 24) {
-					dword++;
-					shift = 0;
-				} else {
-					shift += 8;
-				}
-			}
-		}
-
-		if (dword < 2) {
-			// put in ending mark
-			p_decal_instance_indices[dword] += 0xFF << shift;
-		}
 	}
 }
 
@@ -4042,11 +3954,13 @@ bool RendererSceneRenderRD::free(RID p_rid) {
 		}
 		reflection_atlas_owner.free(p_rid);
 	} else if (reflection_probe_instance_owner.owns(p_rid)) {
-		//not much to delete, just free it
-		//ReflectionProbeInstance *rpi = reflection_probe_instance_owner.getornull(p_rid);
+		ReflectionProbeInstance *rpi = reflection_probe_instance_owner.getornull(p_rid);
+		_free_forward_id(FORWARD_ID_TYPE_REFLECTION_PROBE, rpi->forward_id);
 		reflection_probe_release_atlas_index(p_rid);
 		reflection_probe_instance_owner.free(p_rid);
 	} else if (decal_instance_owner.owns(p_rid)) {
+		DecalInstance *di = decal_instance_owner.getornull(p_rid);
+		_free_forward_id(FORWARD_ID_TYPE_DECAL, di->forward_id);
 		decal_instance_owner.free(p_rid);
 	} else if (lightmap_instance_owner.owns(p_rid)) {
 		lightmap_instance_owner.free(p_rid);
@@ -4081,6 +3995,9 @@ bool RendererSceneRenderRD::free(RID p_rid) {
 			shadow_atlas->shadow_owners.erase(p_rid);
 		}
 
+		if (light_instance->light_type != RS::LIGHT_DIRECTIONAL) {
+			_free_forward_id(light_instance->light_type == RS::LIGHT_OMNI ? FORWARD_ID_TYPE_OMNI_LIGHT : FORWARD_ID_TYPE_SPOT_LIGHT, light_instance->forward_id);
+		}
 		light_instance_owner.free(p_rid);
 
 	} else if (shadow_atlas_owner.owns(p_rid)) {
