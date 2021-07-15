@@ -96,7 +96,6 @@ private:
 
 	Packet current_packet;
 
-	uint32_t _gen_unique_id() const;
 	void _pop_current_packet();
 
 	Vector<uint8_t> src_compressor_mem;

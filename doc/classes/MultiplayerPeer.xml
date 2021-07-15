@@ -12,6 +12,13 @@
 		<link title="WebRTC Signaling Demo">https://godotengine.org/asset-library/asset/537</link>
 	</tutorials>
 	<methods>
+		<method name="generate_unique_id" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+				Returns a randomly generated integer that can be used as a network unique ID.
+			</description>
+		</method>
 		<method name="get_connection_status" qualifiers="const">
 			<return type="int" enum="MultiplayerPeer.ConnectionStatus">
 			</return>

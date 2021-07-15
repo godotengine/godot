@@ -179,7 +179,7 @@ Error ENetMultiplayerPeer::create_client(const String &p_address, int p_port, in
 #endif
 	address.port = p_port;
 
-	unique_id = _gen_unique_id();
+	unique_id = generate_unique_id();
 
 	// Initiate connection, allocating enough channels
 	ENetPeer *peer = enet_host_connect(host, &address, channel_count, unique_id);
@@ -606,27 +606,6 @@ void ENetMultiplayerPeer::_pop_current_packet() {
 
 MultiplayerPeer::ConnectionStatus ENetMultiplayerPeer::get_connection_status() const {
 	return connection_status;
-}
-
-uint32_t ENetMultiplayerPeer::_gen_unique_id() const {
-	uint32_t hash = 0;
-
-	while (hash == 0 || hash == 1) {
-		hash = hash_djb2_one_32(
-				(uint32_t)OS::get_singleton()->get_ticks_usec());
-		hash = hash_djb2_one_32(
-				(uint32_t)OS::get_singleton()->get_unix_time(), hash);
-		hash = hash_djb2_one_32(
-				(uint32_t)OS::get_singleton()->get_user_data_dir().hash64(), hash);
-		hash = hash_djb2_one_32(
-				(uint32_t)((uint64_t)this), hash); // Rely on ASLR heap
-		hash = hash_djb2_one_32(
-				(uint32_t)((uint64_t)&hash), hash); // Rely on ASLR stack
-
-		hash = hash & 0x7FFFFFFF; // Make it compatible with unsigned, since negative ID is used for exclusion
-	}
-
-	return hash;
 }
 
 int ENetMultiplayerPeer::get_unique_id() const {

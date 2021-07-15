@@ -75,7 +75,6 @@ protected:
 	void _send_add(int32_t p_peer_id);
 	void _send_sys(Ref<WebSocketPeer> p_peer, uint8_t p_type, int32_t p_peer_id);
 	void _send_del(int32_t p_peer_id);
-	int _gen_unique_id() const;
 
 public:
 	/* MultiplayerPeer */
