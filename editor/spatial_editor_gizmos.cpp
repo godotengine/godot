@@ -4546,7 +4546,7 @@ void PortalGizmoPlugin::redraw(EditorSpatialGizmo *p_gizmo) {
 
 	if (portal) {
 		// warnings
-		if (portal->_warning_outside_room_aabb || portal->_warning_facing_wrong_way) {
+		if (portal->_warning_outside_room_aabb || portal->_warning_facing_wrong_way || portal->_warning_autolink_failed) {
 			Ref<Material> icon = get_material("portal_icon", p_gizmo);
 			p_gizmo->add_unscaled_billboard(icon, 0.05);
 		}

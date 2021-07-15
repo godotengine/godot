@@ -582,11 +582,17 @@ void RoomManager::rooms_convert() {
 	_second_pass_rooms(roomgroups, portals);
 
 	// third pass
+
 	// autolink portals that are not already manually linked
 	// and finalize the portals
 	_third_pass_portals(_roomlist, portals);
 
-	// finalize the room hulls
+	// Find the statics AGAIN and only this time add them to the PortalRenderer.
+	// We need to do this twice because the room points determine the room bound...
+	// but the bound is needed for autolinking,
+	// and the autolinking needs to be done BEFORE adding to the PortalRenderer so that
+	// the static objects will correctly sprawl. It is a chicken and egg situation.
+	// Also finalize the room hulls.
 	_third_pass_rooms(portals);
 
 	bool generate_pvs = false;
@@ -658,7 +664,9 @@ void RoomManager::_second_pass_room(Room *p_room, const LocalVector<RoomGroup *>
 			} else if (_name_starts_with(child, "Bound", true)) {
 				manual_bound_found = _convert_manual_bound(p_room, child, p_portals);
 			} else {
-				_find_statics_recursive(p_room, child, room_pts);
+				// don't add the instances to the portal renderer on the first pass of _find_statics,
+				// just find the geometry points in order to make sure the bound is correct.
+				_find_statics_recursive(p_room, child, room_pts, false);
 			}
 		}
 	}
@@ -686,6 +694,11 @@ void RoomManager::_second_pass_room(Room *p_room, const LocalVector<RoomGroup *>
 		for (int n = 0; n < p_room->_portals.size(); n++) {
 			int portal_id = p_room->_portals[n];
 			Portal *portal = p_portals[portal_id];
+
+			// only checking portals out from source room
+			if (portal->_linkedroom_ID[0] != p_room->_room_ID) {
+				continue;
+			}
 
 			// don't add portals to the world bound that are internal to this room!
 			if (portal->is_portal_internal(p_room->_room_ID)) {
@@ -781,6 +794,26 @@ void RoomManager::_third_pass_rooms(const LocalVector<Portal *> &p_portals) {
 
 	for (int n = 0; n < _rooms.size(); n++) {
 		Room *room = _rooms[n];
+
+		String room_short_name = _find_name_after(room, "ROOM");
+		convert_log("ROOM\t" + room_short_name);
+
+		// log output the portals associated with this room
+		for (int p = 0; p < room->_portals.size(); p++) {
+			const Portal &portal = *p_portals[room->_portals[p]];
+
+			String in_or_out = (portal._linkedroom_ID[0] == room->_room_ID) ? "POUT" : "PIN ";
+			convert_log("\t\t" + in_or_out + "\t" + portal.get_name());
+		}
+
+		// do a second pass finding the statics, where they are
+		// finally added to the rooms in the portal_renderer.
+		Vector<Vector3> room_pts;
+
+		// the true indicates we DO want to add to the portal renderer this second time
+		// we call _find_statics_recursive
+		_find_statics_recursive(room, room, room_pts, true);
+
 		if (!_convert_room_hull_final(room, p_portals)) {
 			found_errors = true;
 		}
@@ -900,7 +933,7 @@ void RoomManager::_third_pass_portals(Spatial *p_roomlist, LocalVector<Portal *>
 
 				if (!outside) {
 					// great, we found a linked room!
-					convert_log("\tauto linked portal from room " + source_room->get_name() + " to room " + room->get_name(), 1);
+					convert_log("\t\tAUTOLINK OK from " + source_room->get_name() + " to " + room->get_name(), 1);
 					portal->_linkedroom_ID[1] = r;
 
 					// add the portal to the portals list for the receiving room
@@ -919,8 +952,13 @@ void RoomManager::_third_pass_portals(Spatial *p_roomlist, LocalVector<Portal *>
 
 		// error condition
 		if (!autolink_found) {
-			WARN_PRINT("Portal autolink failed for Portal from " + source_room->get_name());
+			WARN_PRINT("Portal AUTOLINK failed for " + portal->get_name() + " from " + source_room->get_name());
 			_warning_portal_autolink_failed = true;
+
+#ifdef TOOLS_ENABLED
+			portal->_warning_autolink_failed = true;
+			portal->update_gizmo();
+#endif
 		}
 	} // for portal
 }
@@ -1040,8 +1078,6 @@ void RoomManager::_convert_room(Spatial *p_node, LocalVector<Portal *> &r_portal
 		}
 	}
 
-	convert_log("convert_room : " + string_full_name, 1);
-
 	// make sure the room is blank, especially if already created
 	room->clear();
 
@@ -1087,8 +1123,11 @@ void RoomManager::_check_portal_for_warnings(Portal *p_portal, const AABB &p_roo
 
 	// far outside the room?
 	const Vector3 &pos = p_portal->get_global_transform().origin;
-	if (p_portal->_warning_outside_room_aabb != (!bb.has_point(pos))) {
-		p_portal->_warning_outside_room_aabb = !p_portal->_warning_outside_room_aabb;
+
+	bool old_outside = p_portal->_warning_outside_room_aabb;
+	p_portal->_warning_outside_room_aabb = !bb.has_point(pos);
+
+	if (p_portal->_warning_outside_room_aabb != old_outside) {
 		changed = true;
 	}
 
@@ -1099,8 +1138,11 @@ void RoomManager::_check_portal_for_warnings(Portal *p_portal, const AABB &p_roo
 	// facing wrong way?
 	Vector3 offset = pos - bb.get_center();
 	real_t dot = offset.dot(p_portal->_plane.normal);
-	if (p_portal->_warning_facing_wrong_way != (dot < 0.0)) {
-		p_portal->_warning_facing_wrong_way = !p_portal->_warning_facing_wrong_way;
+
+	bool old_facing = p_portal->_warning_facing_wrong_way;
+	p_portal->_warning_facing_wrong_way = dot < 0.0;
+
+	if (p_portal->_warning_facing_wrong_way != old_facing) {
 		changed = true;
 	}
 
@@ -1108,13 +1150,22 @@ void RoomManager::_check_portal_for_warnings(Portal *p_portal, const AABB &p_roo
 		WARN_PRINT(String(p_portal->get_name()) + " possibly facing the wrong way.");
 	}
 
+	// handled later
+	p_portal->_warning_autolink_failed = false;
+
 	if (changed) {
 		p_portal->update_gizmo();
 	}
 #endif
 }
 
-void RoomManager::_find_statics_recursive(Room *p_room, Spatial *p_node, Vector<Vector3> &r_room_pts) {
+void RoomManager::_find_statics_recursive(Room *p_room, Spatial *p_node, Vector<Vector3> &r_room_pts, bool p_add_to_portal_renderer) {
+	// don't process portal MeshInstances that are being deleted
+	// (and replaced by proper Portal nodes)
+	if (p_node->is_queued_for_deletion()) {
+		return;
+	}
+
 	bool ignore = false;
 	VisualInstance *vi = Object::cast_to<VisualInstance>(p_node);
 
@@ -1131,21 +1182,36 @@ void RoomManager::_find_statics_recursive(Room *p_room, Spatial *p_node, Vector<
 	}
 
 	if (!ignore) {
-		// lights
-		Light *light = Object::cast_to<Light>(p_node);
-		if (light) {
-			convert_log("\tfound Light " + light->get_name());
+		// We'll have a done flag. This isn't strictly speaking necessary
+		// because the types should be mutually exclusive, but this would
+		// break if something changes the inheritance hierarchy of the nodes
+		// at a later date, so having a done flag makes it more robust.
+		bool done = false;
 
-			Vector<Vector3> dummy_pts;
-			VisualServer::get_singleton()->room_add_instance(p_room->_room_rid, light->get_instance(), light->get_transformed_aabb(), dummy_pts);
+		Light *light = Object::cast_to<Light>(p_node);
+
+		if (!done && light) {
+			done = true;
+
+			// lights (don't affect bound, so aren't added in first pass)
+			if (p_add_to_portal_renderer) {
+				Vector<Vector3> dummy_pts;
+				VisualServer::get_singleton()->room_add_instance(p_room->_room_rid, light->get_instance(), light->get_transformed_aabb(), dummy_pts);
+				convert_log("\t\t\tLIGT\t" + light->get_name());
+			}
 		}
 
 		GeometryInstance *gi = Object::cast_to<GeometryInstance>(p_node);
 
-		if (gi) {
+		if (!done && gi) {
+			done = true;
+
+			// MeshInstance is the most interesting type for portalling, so we handle this explicitly
 			MeshInstance *mi = Object::cast_to<MeshInstance>(p_node);
 			if (mi) {
-				convert_log("\tfound MeshInst " + mi->get_name());
+				if (p_add_to_portal_renderer) {
+					convert_log("\t\t\tMESH\t" + mi->get_name());
+				}
 
 				Vector<Vector3> object_pts;
 				AABB aabb;
@@ -1161,15 +1227,20 @@ void RoomManager::_find_statics_recursive(Room *p_room, Spatial *p_node, Vector<
 						r_room_pts.append_array(object_pts);
 					}
 
-					VisualServer::get_singleton()->room_add_instance(p_room->_room_rid, mi->get_instance(), mi->get_transformed_aabb(), object_pts);
+					if (p_add_to_portal_renderer) {
+						VisualServer::get_singleton()->room_add_instance(p_room->_room_rid, mi->get_instance(), mi->get_transformed_aabb(), object_pts);
+					}
 				} // if bound found points
 			} else {
-				// geometry instance but not a mesh instance .. just use AABB
-				convert_log("\tfound GeomInst " + gi->get_name());
-				//				Vector<Vector3> dummy_pts;
-				//			VisualServer::get_singleton()->room_add_instance(p_room->_room_rid, gi->get_instance(), gi->get_transformed_aabb(), dummy_pts);
+				// geometry instance but not a mesh instance ..
+				if (p_add_to_portal_renderer) {
+					convert_log("\t\t\tGEOM\t" + gi->get_name());
+				}
+
 				Vector<Vector3> object_pts;
 				AABB aabb;
+
+				// attempt to recognise this GeometryInstance and read back the geometry
 				if (_bound_findpoints_geom_instance(gi, object_pts, aabb)) {
 					// need to keep track of room bound
 					// NOTE the is_visible check MAY cause problems if conversion run on nodes that
@@ -1179,17 +1250,22 @@ void RoomManager::_find_statics_recursive(Room *p_room, Spatial *p_node, Vector<
 						r_room_pts.append_array(object_pts);
 					}
 
-					VisualServer::get_singleton()->room_add_instance(p_room->_room_rid, gi->get_instance(), gi->get_transformed_aabb(), object_pts);
+					if (p_add_to_portal_renderer) {
+						VisualServer::get_singleton()->room_add_instance(p_room->_room_rid, gi->get_instance(), gi->get_transformed_aabb(), object_pts);
+					}
 				} // if bound found points
 			}
 		} // if gi
 
 		VisibilityNotifier *vn = Object::cast_to<VisibilityNotifier>(p_node);
-		if (vn && ((vn->get_portal_mode() == CullInstance::PORTAL_MODE_DYNAMIC) || (vn->get_portal_mode() == CullInstance::PORTAL_MODE_STATIC))) {
-			convert_log("\tfound VisibilityNotifier " + vn->get_name());
+		if (!done && vn && ((vn->get_portal_mode() == CullInstance::PORTAL_MODE_DYNAMIC) || (vn->get_portal_mode() == CullInstance::PORTAL_MODE_STATIC))) {
+			done = true;
 
-			AABB world_aabb = vn->get_global_transform().xform(vn->get_aabb());
-			VisualServer::get_singleton()->room_add_ghost(p_room->_room_rid, vn->get_instance_id(), world_aabb);
+			if (p_add_to_portal_renderer) {
+				AABB world_aabb = vn->get_global_transform().xform(vn->get_aabb());
+				VisualServer::get_singleton()->room_add_ghost(p_room->_room_rid, vn->get_instance_id(), world_aabb);
+				convert_log("\t\t\tVIS \t" + vn->get_name());
+			}
 		}
 
 	} // if not ignore
@@ -1198,7 +1274,7 @@ void RoomManager::_find_statics_recursive(Room *p_room, Spatial *p_node, Vector<
 		Spatial *child = Object::cast_to<Spatial>(p_node->get_child(n));
 
 		if (child) {
-			_find_statics_recursive(p_room, child, r_room_pts);
+			_find_statics_recursive(p_room, child, r_room_pts, p_add_to_portal_renderer);
 		}
 	}
 }
@@ -1353,7 +1429,9 @@ bool RoomManager::_convert_room_hull_final(Room *p_room, const LocalVector<Porta
 	Geometry::MeshData md_simplified;
 	_build_simplified_bound(p_room, md_simplified, p_room->_planes, num_portals_added);
 
-	convert_log("\t\t\tcontained " + itos(num_planes_before_simplification) + " planes before simplification, " + itos(p_room->_planes.size()) + " planes after.");
+	if (num_planes_before_simplification != p_room->_planes.size()) {
+		convert_log("\t\t\tcontained " + itos(num_planes_before_simplification) + " planes before simplification, " + itos(p_room->_planes.size()) + " planes after.");
+	}
 
 	// make a copy of the mesh data for debugging
 	// note this could be avoided in release builds? NYI
@@ -1455,9 +1533,6 @@ bool RoomManager::_add_plane_if_unique(const Room *p_room, LocalVector<Plane, in
 }
 
 void RoomManager::_convert_portal(Room *p_room, Spatial *p_node, LocalVector<Portal *> &portals) {
-	String string_full_name = p_node->get_name();
-	convert_log("convert_portal : " + string_full_name);
-
 	Portal *portal = Object::cast_to<Portal>(p_node);
 
 	// if not a gportal already, convert the node type
