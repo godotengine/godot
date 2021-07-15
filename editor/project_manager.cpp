@@ -2306,6 +2306,20 @@ void ProjectManager::_on_filter_option_changed() {
 	_project_list->sort_projects();
 }
 
+void ProjectManager::_on_tab_changed(int p_tab) {
+	if (p_tab == 0) { // Projects
+		// Automatically grab focus when the user moves from the Templates tab
+		// back to the Projects tab.
+		LineEdit *search_box = project_filter->get_search_box();
+		if (search_box) {
+			search_box->grab_focus();
+		}
+	}
+
+	// The Templates tab's search field is focused on display in the asset
+	// library editor plugin code.
+}
+
 void ProjectManager::_bind_methods() {
 	ClassDB::bind_method("_open_selected_projects_ask", &ProjectManager::_open_selected_projects_ask);
 	ClassDB::bind_method("_open_selected_projects", &ProjectManager::_open_selected_projects);
@@ -2327,6 +2341,7 @@ void ProjectManager::_bind_methods() {
 	ClassDB::bind_method("_restart_confirm", &ProjectManager::_restart_confirm);
 	ClassDB::bind_method("_on_order_option_changed", &ProjectManager::_on_order_option_changed);
 	ClassDB::bind_method("_on_filter_option_changed", &ProjectManager::_on_filter_option_changed);
+	ClassDB::bind_method("_on_tab_changed", &ProjectManager::_on_tab_changed);
 	ClassDB::bind_method("_on_projects_updated", &ProjectManager::_on_projects_updated);
 	ClassDB::bind_method("_on_project_created", &ProjectManager::_on_project_created);
 	ClassDB::bind_method("_unhandled_input", &ProjectManager::_unhandled_input);
@@ -2425,6 +2440,7 @@ ProjectManager::ProjectManager() {
 	center_box->add_child(tabs);
 	tabs->set_anchors_and_margins_preset(Control::PRESET_WIDE);
 	tabs->set_tab_align(TabContainer::ALIGN_LEFT);
+	tabs->connect("tab_changed", this, "_on_tab_changed");
 
 	HBoxContainer *tree_hb = memnew(HBoxContainer);
 	projects_hb = tree_hb;
@@ -2776,14 +2792,17 @@ void ProjectListFilter::add_filter_option() {
 
 void ProjectListFilter::add_search_box() {
 	search_box = memnew(LineEdit);
-	search_box->set_placeholder(TTR("Search"));
-	search_box->set_tooltip(
-			TTR("The search box filters projects by name and last path component.\nTo filter projects by name and full path, the query must contain at least one `/` character."));
+	search_box->set_placeholder(TTR("Filter projects"));
+	search_box->set_tooltip(TTR("This field filters projects by name and last path component.\nTo filter projects by name and full path, the query must contain at least one `/` character."));
 	search_box->connect("text_changed", this, "_search_text_changed");
 	search_box->set_h_size_flags(SIZE_EXPAND_FILL);
 	add_child(search_box);
 
 	has_search_box = true;
+}
+
+LineEdit *ProjectListFilter::get_search_box() const {
+	return search_box;
 }
 
 void ProjectListFilter::set_filter_size(int h_size) {
