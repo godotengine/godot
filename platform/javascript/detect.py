@@ -38,7 +38,7 @@ def get_opts():
         BoolVariable("use_safe_heap", "Use Emscripten SAFE_HEAP sanitizer", False),
         # eval() can be a security concern, so it can be disabled.
         BoolVariable("javascript_eval", "Enable JavaScript eval interface", True),
-        BoolVariable("threads_enabled", "Enable WebAssembly Threads support (limited browser support)", False),
+        BoolVariable("threads_enabled", "Enable WebAssembly Threads support (limited browser support)", True),
         BoolVariable("gdnative_enabled", "Enable WebAssembly GDNative support (produces bigger binaries)", False),
         BoolVariable("use_closure_compiler", "Use closure compiler to minimize JavaScript code", False),
     ]

@@ -202,8 +202,8 @@ int WebXRInterfaceJS::get_capabilities() const {
 	return XRInterface::XR_STEREO | XRInterface::XR_MONO;
 };
 
-bool WebXRInterfaceJS::is_stereo() {
-	return godot_webxr_get_view_count() == 2;
+uint32_t WebXRInterfaceJS::get_view_count() {
+	return godot_webxr_get_view_count();
 };
 
 bool WebXRInterfaceJS::is_initialized() const {
@@ -425,7 +425,7 @@ void WebXRInterfaceJS::_update_tracker(int p_controller_id) {
 		int *buttons = godot_webxr_get_controller_buttons(p_controller_id);
 		if (buttons) {
 			for (int i = 0; i < buttons[0]; i++) {
-				input->joy_button(p_controller_id + 100, i, *((float *)buttons + (i + 1)));
+				input->joy_button(p_controller_id + 100, (JoyButton)i, *((float *)buttons + (i + 1)));
 			}
 			free(buttons);
 		}
@@ -436,7 +436,7 @@ void WebXRInterfaceJS::_update_tracker(int p_controller_id) {
 				Input::JoyAxisValue joy_axis;
 				joy_axis.min = -1;
 				joy_axis.value = *((float *)axes + (i + 1));
-				input->joy_axis(p_controller_id + 100, i, joy_axis);
+				input->joy_axis(p_controller_id + 100, (JoyAxis)i, joy_axis);
 			}
 			free(axes);
 		}
