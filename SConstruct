@@ -431,7 +431,7 @@ if selected_platform in platform_list:
             common_warnings += ["-Wno-misleading-indentation"]
             if version[0] >= 7:
                 common_warnings += ["-Wshadow-local"]
-        elif methods.using_clang(env):
+        elif methods.using_clang(env) or methods.using_emcc(env):
             # We often implement `operator<` for structs of pointers as a requirement
             # for putting them in `Set` or `Map`. We don't mind about unreliable ordering.
             common_warnings += ["-Wno-ordered-compare-function-pointers"]
