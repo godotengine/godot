@@ -124,6 +124,8 @@ public:
 	bool can_install_android_template();
 	Error install_android_template();
 
+	Error install_android_template_from_file(const String &p_file);
+
 	void popup_manager();
 
 	ExportTemplateManager();
