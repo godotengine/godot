@@ -35,9 +35,9 @@
 #include "drivers/unix/dir_access_unix.h"
 #include "drivers/unix/file_access_unix.h"
 #include "main/main.h"
-#include "modules/modules_enabled.gen.h"
 #include "platform/javascript/display_server_javascript.h"
 
+#include "modules/modules_enabled.gen.h"
 #ifdef MODULE_WEBSOCKET_ENABLED
 #include "modules/websocket/remote_debugger_peer_websocket.h"
 #endif

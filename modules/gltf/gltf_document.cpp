@@ -29,9 +29,7 @@
 /*************************************************************************/
 
 #include "gltf_document.h"
-#include "core/error/error_list.h"
-#include "core/error/error_macros.h"
-#include "core/variant/variant.h"
+
 #include "gltf_accessor.h"
 #include "gltf_animation.h"
 #include "gltf_camera.h"
@@ -44,35 +42,33 @@
 #include "gltf_state.h"
 #include "gltf_texture.h"
 
-#include <stdio.h>
-#include <stdlib.h>
-
-#include "core/core_bind.h"
 #include "core/crypto/crypto_core.h"
+#include "core/io/dir_access.h"
 #include "core/io/file_access.h"
 #include "core/io/json.h"
 #include "core/math/disjoint_set.h"
 #include "core/variant/typed_array.h"
+#include "core/variant/variant.h"
 #include "core/version.h"
 #include "core/version_hash.gen.h"
 #include "drivers/png/png_driver_common.h"
 #include "editor/import/resource_importer_scene.h"
+#include "scene/2d/node_2d.h"
+#include "scene/3d/camera_3d.h"
+#include "scene/3d/multimesh_instance_3d.h"
+#include "scene/animation/animation_player.h"
+#include "scene/resources/surface_tool.h"
+
+#include "modules/modules_enabled.gen.h"
 #ifdef MODULE_CSG_ENABLED
 #include "modules/csg/csg_shape.h"
 #endif // MODULE_CSG_ENABLED
 #ifdef MODULE_GRIDMAP_ENABLED
 #include "modules/gridmap/grid_map.h"
 #endif // MODULE_GRIDMAP_ENABLED
-#include "scene/2d/node_2d.h"
-#include "scene/3d/bone_attachment_3d.h"
-#include "scene/3d/camera_3d.h"
-#include "scene/3d/mesh_instance_3d.h"
-#include "scene/3d/multimesh_instance_3d.h"
-#include "scene/3d/node_3d.h"
-#include "scene/3d/skeleton_3d.h"
-#include "scene/animation/animation_player.h"
-#include "scene/main/node.h"
-#include "scene/resources/surface_tool.h"
+
+#include <stdio.h>
+#include <stdlib.h>
 #include <limits>
 
 Error GLTFDocument::serialize(Ref<GLTFState> state, Node *p_root, const String &p_path) {
@@ -2873,16 +2869,13 @@ Error GLTFDocument::_serialize_images(Ref<GLTFState> state, const String &p_path
 				name = itos(i);
 			}
 			name = _gen_unique_name(state, name);
-			name = name.pad_zeros(3);
-			Ref<_Directory> dir;
-			dir.instantiate();
+			name = name.pad_zeros(3) + ".png";
 			String texture_dir = "textures";
 			String new_texture_dir = p_path.get_base_dir() + "/" + texture_dir;
-			dir->open(p_path.get_base_dir());
-			if (!dir->dir_exists(new_texture_dir)) {
-				dir->make_dir(new_texture_dir);
+			DirAccessRef da = DirAccess::open(p_path.get_base_dir());
+			if (!da->dir_exists(new_texture_dir)) {
+				da->make_dir(new_texture_dir);
 			}
-			name = name + ".png";
 			image->save_png(new_texture_dir.plus_file(name));
 			d["uri"] = texture_dir.plus_file(name);
 		}

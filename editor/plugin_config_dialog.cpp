@@ -29,6 +29,7 @@
 /*************************************************************************/
 
 #include "plugin_config_dialog.h"
+
 #include "core/io/config_file.h"
 #include "core/io/dir_access.h"
 #include "editor/editor_node.h"

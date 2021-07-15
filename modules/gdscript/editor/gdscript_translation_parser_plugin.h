@@ -34,7 +34,6 @@
 #include "core/templates/set.h"
 #include "editor/editor_translation_parser.h"
 #include "modules/gdscript/gdscript_parser.h"
-#include "modules/regex/regex.h"
 
 class GDScriptEditorTranslationParserPlugin : public EditorTranslationParserPlugin {
 	GDCLASS(GDScriptEditorTranslationParserPlugin, EditorTranslationParserPlugin);
