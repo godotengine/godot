@@ -2527,6 +2527,10 @@ Variant::Variant(const IP_Address &p_address) {
 	memnew_placement(_data._mem, String(p_address));
 }
 
+Variant::Variant(std::initializer_list<Variant> l) {
+	*this = Array(l);
+}
+
 Variant::Variant(const Variant &p_variant) {
 	type = NIL;
 	reference(p_variant);

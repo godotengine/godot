@@ -233,6 +233,14 @@ public:
 			data[i] = p_from.data[i];
 		}
 	}
+	_FORCE_INLINE_ LocalVector(std::initializer_list<T> l) {
+		resize(l.size());
+		U i = 0;
+		for (const T &v : l) {
+			data[i] = v;
+			++i;
+		}
+	}
 	inline LocalVector &operator=(const LocalVector &p_from) {
 		resize(p_from.size());
 		for (U i = 0; i < p_from.count; i++) {
@@ -244,6 +252,13 @@ public:
 		resize(p_from.size());
 		for (U i = 0; i < count; i++) {
 			data[i] = p_from[i];
+		}
+		return *this;
+	}
+	inline LocalVector &operator=(std::initializer_list<T> l) {
+		resize(l.size());
+		for (U i = 0; i < l.size(); ++i) {
+			data[i] = std::move(l[i]);
 		}
 		return *this;
 	}
