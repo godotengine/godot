@@ -368,6 +368,8 @@ void EditorExportPlatformIOS::get_export_options(List<ExportOption> *r_options) 
 		r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "plugins/" + found_plugins[i].name), false));
 	}
 
+	Set<String> plist_keys;
+
 	for (int i = 0; i < found_plugins.size(); i++) {
 		// Editable plugin plist values
 		PluginConfigIOS plugin = found_plugins[i];
@@ -379,7 +381,10 @@ void EditorExportPlatformIOS::get_export_options(List<ExportOption> *r_options) 
 			switch (item.type) {
 				case PluginConfigIOS::PlistItemType::STRING_INPUT: {
 					String preset_name = "plugins_plist/" + key;
-					r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, preset_name), item.value));
+					if (!plist_keys.has(preset_name)) {
+						r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, preset_name), item.value));
+						plist_keys.insert(preset_name);
+					}
 				} break;
 				default:
 					continue;
@@ -413,7 +418,7 @@ void EditorExportPlatformIOS::get_export_options(List<ExportOption> *r_options) 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "optional_icons/spotlight_80x80", PROPERTY_HINT_FILE, "*.png"), "")); // Spotlight on devices with retina display
 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "storyboard/use_launch_screen_storyboard"), false));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "storyboard/image_scale_mode", PROPERTY_HINT_ENUM, "Same as Logo,Center,Scale To Fit,Scale To Fill,Scale"), 0));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "storyboard/image_scale_mode", PROPERTY_HINT_ENUM, "Same as Logo,Center,Scale to Fit,Scale to Fill,Scale"), 0));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "storyboard/custom_image@2x", PROPERTY_HINT_FILE, "*.png"), ""));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "storyboard/custom_image@3x", PROPERTY_HINT_FILE, "*.png"), ""));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "storyboard/use_custom_bg_color"), false));

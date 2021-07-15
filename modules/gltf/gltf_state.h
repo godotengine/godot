@@ -31,9 +31,6 @@
 #ifndef GLTF_STATE_H
 #define GLTF_STATE_H
 
-#include "core/io/resource.h"
-#include "core/templates/vector.h"
-#include "editor_scene_importer_gltf.h"
 #include "gltf_accessor.h"
 #include "gltf_animation.h"
 #include "gltf_buffer_view.h"
@@ -45,6 +42,9 @@
 #include "gltf_skeleton.h"
 #include "gltf_skin.h"
 #include "gltf_texture.h"
+
+#include "core/io/resource.h"
+#include "core/templates/vector.h"
 #include "scene/animation/animation_player.h"
 #include "scene/resources/texture.h"
 

@@ -457,11 +457,6 @@ msgstr "Анимационе траке могу само усмеравати �
 
 #: editor/animation_track_editor.cpp
 #, fuzzy
-msgid "An animation player can't animate itself, only other players."
-msgstr "Анимациони плејер не може анимирати самог себе, само друге плејере."
-
-#: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Not possible to add a new track without a root"
 msgstr "Није могуже додати нову траку без корена"
 
@@ -515,9 +510,9 @@ msgid "Anim Move Keys"
 msgstr "Помери кључеве"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
-msgid "Clipboard is empty"
-msgstr "Нема ресурса за копирање!"
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Clipboard is empty!"
+msgstr ""
 
 #: editor/animation_track_editor.cpp
 #, fuzzy
@@ -2727,7 +2722,7 @@ msgid "Save changes to the following scene(s) before quitting?"
 msgstr "Сачувај промене тренутне сцене/а пре излазка?"
 
 #: editor/editor_node.cpp
-msgid "Save changes the following scene(s) before opening Project Manager?"
+msgid "Save changes to the following scene(s) before opening Project Manager?"
 msgstr "Сачувај промене тренутне сцене/а пре отварање менаџера пројекта?"
 
 #: editor/editor_node.cpp
@@ -13503,10 +13498,6 @@ msgid "Can't copy the function node."
 msgstr ""
 
 #: modules/visual_script/visual_script_editor.cpp
-msgid "Clipboard is empty!"
-msgstr ""
-
-#: modules/visual_script/visual_script_editor.cpp
 msgid "Paste VisualScript Nodes"
 msgstr ""
 
@@ -14816,6 +14807,14 @@ msgstr "Варијације могу само бити одређене у фу
 #, fuzzy
 msgid "Constants cannot be modified."
 msgstr "Константе није могуће мењати."
+
+#, fuzzy
+#~ msgid "An animation player can't animate itself, only other players."
+#~ msgstr "Анимациони плејер не може анимирати самог себе, само друге плејере."
+
+#, fuzzy
+#~ msgid "Clipboard is empty"
+#~ msgstr "Нема ресурса за копирање!"
 
 #~ msgid "No"
 #~ msgstr "Не"

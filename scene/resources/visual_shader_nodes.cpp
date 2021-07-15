@@ -805,7 +805,7 @@ void VisualShaderNodeTexture::_bind_methods() {
 VisualShaderNodeTexture::VisualShaderNodeTexture() {
 }
 
-////////////// Curve
+////////////// CurveTexture
 
 String VisualShaderNodeCurveTexture::get_caption() const {
 	return "CurveTexture";
@@ -885,6 +885,90 @@ bool VisualShaderNodeCurveTexture::is_use_prop_slots() const {
 }
 
 VisualShaderNodeCurveTexture::VisualShaderNodeCurveTexture() {
+	simple_decl = true;
+	allow_v_resize = false;
+}
+
+////////////// CurveXYZTexture
+
+String VisualShaderNodeCurveXYZTexture::get_caption() const {
+	return "CurveXYZTexture";
+}
+
+int VisualShaderNodeCurveXYZTexture::get_input_port_count() const {
+	return 1;
+}
+
+VisualShaderNodeCurveXYZTexture::PortType VisualShaderNodeCurveXYZTexture::get_input_port_type(int p_port) const {
+	return PORT_TYPE_SCALAR;
+}
+
+String VisualShaderNodeCurveXYZTexture::get_input_port_name(int p_port) const {
+	return String();
+}
+
+int VisualShaderNodeCurveXYZTexture::get_output_port_count() const {
+	return 1;
+}
+
+VisualShaderNodeCurveXYZTexture::PortType VisualShaderNodeCurveXYZTexture::get_output_port_type(int p_port) const {
+	return PORT_TYPE_VECTOR;
+}
+
+String VisualShaderNodeCurveXYZTexture::get_output_port_name(int p_port) const {
+	return String();
+}
+
+void VisualShaderNodeCurveXYZTexture::set_texture(Ref<CurveXYZTexture> p_texture) {
+	texture = p_texture;
+	emit_changed();
+}
+
+Ref<CurveXYZTexture> VisualShaderNodeCurveXYZTexture::get_texture() const {
+	return texture;
+}
+
+Vector<StringName> VisualShaderNodeCurveXYZTexture::get_editable_properties() const {
+	Vector<StringName> props;
+	props.push_back("texture");
+	return props;
+}
+
+String VisualShaderNodeCurveXYZTexture::generate_global(Shader::Mode p_mode, VisualShader::Type p_type, int p_id) const {
+	return "uniform sampler2D " + make_unique_id(p_type, p_id, "curve3d") + ";\n";
+}
+
+String VisualShaderNodeCurveXYZTexture::generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview) const {
+	if (p_input_vars[0] == String()) {
+		return "\t" + p_output_vars[0] + " = vec3(0.0);\n";
+	}
+	String id = make_unique_id(p_type, p_id, "curve3d");
+	String code;
+	code += "\t" + p_output_vars[0] + " = texture(" + id + ", vec2(" + p_input_vars[0] + ")).rgb;\n";
+	return code;
+}
+
+Vector<VisualShader::DefaultTextureParam> VisualShaderNodeCurveXYZTexture::get_default_texture_parameters(VisualShader::Type p_type, int p_id) const {
+	VisualShader::DefaultTextureParam dtp;
+	dtp.name = make_unique_id(p_type, p_id, "curve3d");
+	dtp.param = texture;
+	Vector<VisualShader::DefaultTextureParam> ret;
+	ret.push_back(dtp);
+	return ret;
+}
+
+void VisualShaderNodeCurveXYZTexture::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("set_texture", "texture"), &VisualShaderNodeCurveXYZTexture::set_texture);
+	ClassDB::bind_method(D_METHOD("get_texture"), &VisualShaderNodeCurveXYZTexture::get_texture);
+
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "texture", PROPERTY_HINT_RESOURCE_TYPE, "CurveXYZTexture"), "set_texture", "get_texture");
+}
+
+bool VisualShaderNodeCurveXYZTexture::is_use_prop_slots() const {
+	return true;
+}
+
+VisualShaderNodeCurveXYZTexture::VisualShaderNodeCurveXYZTexture() {
 	simple_decl = true;
 	allow_v_resize = false;
 }

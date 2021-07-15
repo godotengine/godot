@@ -47,12 +47,12 @@
 #include "scene/resources/sphere_shape_3d.h"
 #include "scene/resources/world_margin_shape_3d.h"
 
-#include "modules/modules_enabled.gen.h"
 #ifdef TOOLS_ENABLED
 #include "editor/editor_node.h"
 #include "editor/editor_settings.h"
 #endif
 
+#include "modules/modules_enabled.gen.h"
 #ifdef MODULE_CSG_ENABLED
 #include "modules/csg/csg_shape.h"
 #endif

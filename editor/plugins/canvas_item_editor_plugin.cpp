@@ -1149,8 +1149,9 @@ bool CanvasItemEditor::_gui_input_zoom_or_pan(const Ref<InputEvent> &p_event, bo
 				view_offset.y += int(EditorSettings::get_singleton()->get("editors/2d/pan_speed")) / zoom * b->get_factor();
 				update_viewport();
 			} else {
-				zoom_widget->set_zoom_by_increments(-1);
-				if (b->get_factor() != 1.f) {
+				zoom_widget->set_zoom_by_increments(-1, Input::get_singleton()->is_key_pressed(KEY_ALT));
+				if (!Math::is_equal_approx(b->get_factor(), 1.0f)) {
+					// Handle high-precision (analog) scrolling.
 					zoom_widget->set_zoom(zoom * ((zoom_widget->get_zoom() / zoom - 1.f) * b->get_factor() + 1.f));
 				}
 				_zoom_on_position(zoom_widget->get_zoom(), b->get_position());
@@ -1164,8 +1165,9 @@ bool CanvasItemEditor::_gui_input_zoom_or_pan(const Ref<InputEvent> &p_event, bo
 				view_offset.y -= int(EditorSettings::get_singleton()->get("editors/2d/pan_speed")) / zoom * b->get_factor();
 				update_viewport();
 			} else {
-				zoom_widget->set_zoom_by_increments(1);
-				if (b->get_factor() != 1.f) {
+				zoom_widget->set_zoom_by_increments(1, Input::get_singleton()->is_key_pressed(KEY_ALT));
+				if (!Math::is_equal_approx(b->get_factor(), 1.0f)) {
+					// Handle high-precision (analog) scrolling.
 					zoom_widget->set_zoom(zoom * ((zoom_widget->get_zoom() / zoom - 1.f) * b->get_factor() + 1.f));
 				}
 				_zoom_on_position(zoom_widget->get_zoom(), b->get_position());
@@ -1194,6 +1196,20 @@ bool CanvasItemEditor::_gui_input_zoom_or_pan(const Ref<InputEvent> &p_event, bo
 
 	Ref<InputEventKey> k = p_event;
 	if (k.is_valid()) {
+		if (k->is_pressed()) {
+			if (ED_GET_SHORTCUT("canvas_item_editor/zoom_100_percent")->is_shortcut(p_event)) {
+				_update_zoom(1.0 * MAX(1, EDSCALE));
+			} else if (ED_GET_SHORTCUT("canvas_item_editor/zoom_200_percent")->is_shortcut(p_event)) {
+				_update_zoom(2.0 * MAX(1, EDSCALE));
+			} else if (ED_GET_SHORTCUT("canvas_item_editor/zoom_400_percent")->is_shortcut(p_event)) {
+				_update_zoom(4.0 * MAX(1, EDSCALE));
+			} else if (ED_GET_SHORTCUT("canvas_item_editor/zoom_800_percent")->is_shortcut(p_event)) {
+				_update_zoom(8.0 * MAX(1, EDSCALE));
+			} else if (ED_GET_SHORTCUT("canvas_item_editor/zoom_1600_percent")->is_shortcut(p_event)) {
+				_update_zoom(16.0 * MAX(1, EDSCALE));
+			}
+		}
+
 		bool is_pan_key = pan_view_shortcut.is_valid() && pan_view_shortcut->is_shortcut(p_event);
 
 		if (is_pan_key && (EditorSettings::get_singleton()->get("editors/2d/simple_panning") || drag_type != DRAG_NONE)) {
@@ -2189,7 +2205,7 @@ bool CanvasItemEditor::_gui_input_select(const Ref<InputEvent> &p_event) {
 			// Popup the selection menu list
 			Point2 click = transform.affine_inverse().xform(b->get_position());
 
-			_get_canvas_items_at_pos(click, selection_results, b->is_alt_pressed() && tool != TOOL_LIST_SELECT);
+			_get_canvas_items_at_pos(click, selection_results, b->is_alt_pressed() && tool == TOOL_SELECT);
 
 			if (selection_results.size() == 1) {
 				CanvasItem *item = selection_results[0].item;
@@ -5299,7 +5315,7 @@ CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 	select_button->set_pressed(true);
 	select_button->set_shortcut(ED_SHORTCUT("canvas_item_editor/select_mode", TTR("Select Mode"), KEY_Q));
 	select_button->set_shortcut_context(this);
-	select_button->set_tooltip(keycode_get_string(KEY_MASK_CMD) + TTR("Drag: Rotate") + "\n" + TTR("Alt+Drag: Move") + "\n" + TTR("Press 'v' to Change Pivot, 'Shift+v' to Drag Pivot (while moving).") + "\n" + TTR("Alt+RMB: Depth list selection"));
+	select_button->set_tooltip(keycode_get_string(KEY_MASK_CMD) + TTR("Drag: Rotate") + "\n" + TTR("Alt+Drag: Move") + "\n" + TTR("Press 'v' to Change Pivot, 'Shift+v' to Drag Pivot (while moving).") + "\n" + TTR("Alt+RMB: Show list of all nodes at position clicked, including locked."));
 
 	hb->add_child(memnew(VSeparator));
 
@@ -5337,7 +5353,7 @@ CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 	hb->add_child(list_select_button);
 	list_select_button->set_toggle_mode(true);
 	list_select_button->connect("pressed", callable_mp(this, &CanvasItemEditor::_button_tool_select), make_binds(TOOL_LIST_SELECT));
-	list_select_button->set_tooltip(TTR("Show a list of all objects at the position clicked\n(same as Alt+RMB in select mode)."));
+	list_select_button->set_tooltip(TTR("Show list of selectable nodes at position clicked."));
 
 	pivot_button = memnew(Button);
 	pivot_button->set_flat(true);
@@ -5422,7 +5438,7 @@ CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 	hb->add_child(lock_button);
 
 	lock_button->connect("pressed", callable_mp(this, &CanvasItemEditor::_popup_callback), varray(LOCK_SELECTED));
-	lock_button->set_tooltip(TTR("Lock the selected object in place (can't be moved)."));
+	lock_button->set_tooltip(TTR("Lock selected node, preventing selection and movement."));
 	// Define the shortcut globally (without a context) so that it works if the Scene tree dock is currently focused.
 	lock_button->set_shortcut(ED_SHORTCUT("editor/lock_selected_nodes", TTR("Lock Selected Node(s)"), KEY_MASK_CMD | KEY_L));
 
@@ -5430,7 +5446,7 @@ CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 	unlock_button->set_flat(true);
 	hb->add_child(unlock_button);
 	unlock_button->connect("pressed", callable_mp(this, &CanvasItemEditor::_popup_callback), varray(UNLOCK_SELECTED));
-	unlock_button->set_tooltip(TTR("Unlock the selected object (can be moved)."));
+	unlock_button->set_tooltip(TTR("Unlock selected node, allowing selection and movement."));
 	// Define the shortcut globally (without a context) so that it works if the Scene tree dock is currently focused.
 	unlock_button->set_shortcut(ED_SHORTCUT("editor/unlock_selected_nodes", TTR("Unlock Selected Node(s)"), KEY_MASK_CMD | KEY_MASK_SHIFT | KEY_L));
 
@@ -5609,6 +5625,16 @@ CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 
 	skeleton_menu->get_popup()->set_item_checked(skeleton_menu->get_popup()->get_item_index(SKELETON_SHOW_BONES), true);
 	singleton = this;
+
+	// To ensure that scripts can parse the list of shortcuts correctly, we have to define
+	// those shortcuts one by one.
+	// Resetting zoom to 100% is a duplicate shortcut of `canvas_item_editor/reset_zoom`,
+	// but it ensures both 1 and Ctrl + 0 can be used to reset zoom.
+	ED_SHORTCUT("canvas_item_editor/zoom_100_percent", TTR("Zoom to 100%"), KEY_1);
+	ED_SHORTCUT("canvas_item_editor/zoom_200_percent", TTR("Zoom to 200%"), KEY_2);
+	ED_SHORTCUT("canvas_item_editor/zoom_400_percent", TTR("Zoom to 400%"), KEY_3);
+	ED_SHORTCUT("canvas_item_editor/zoom_800_percent", TTR("Zoom to 800%"), KEY_4);
+	ED_SHORTCUT("canvas_item_editor/zoom_1600_percent", TTR("Zoom to 1600%"), KEY_5);
 
 	set_process_unhandled_key_input(true);
 

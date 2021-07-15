@@ -287,7 +287,7 @@ void SceneShaderForwardClustered::ShaderData::set_code(const String &p_code) {
 						multisample_state.enable_alpha_to_one = true;
 					}
 
-					if (k == SHADER_VERSION_COLOR_PASS || k == SHADER_VERSION_COLOR_PASS_WITH_FORWARD_GI || k == SHADER_VERSION_LIGHTMAP_COLOR_PASS) {
+					if (k == SHADER_VERSION_COLOR_PASS || k == SHADER_VERSION_LIGHTMAP_COLOR_PASS) {
 						blend_state = blend_state_blend;
 						if (depth_draw == DEPTH_DRAW_OPAQUE) {
 							depth_stencil.enable_depth_write = false; //alpha does not draw depth
@@ -305,7 +305,7 @@ void SceneShaderForwardClustered::ShaderData::set_code(const String &p_code) {
 						continue; // do not use this version (will error if using it is attempted)
 					}
 				} else {
-					if (k == SHADER_VERSION_COLOR_PASS || k == SHADER_VERSION_COLOR_PASS_WITH_FORWARD_GI || k == SHADER_VERSION_LIGHTMAP_COLOR_PASS) {
+					if (k == SHADER_VERSION_COLOR_PASS || k == SHADER_VERSION_LIGHTMAP_COLOR_PASS) {
 						blend_state = blend_state_opaque;
 					} else if (k == SHADER_VERSION_DEPTH_PASS || k == SHADER_VERSION_DEPTH_PASS_DP) {
 						//none, leave empty
@@ -483,7 +483,6 @@ void SceneShaderForwardClustered::init(RendererStorageRD *p_storage, const Strin
 		shader_versions.push_back("\n#define MODE_RENDER_DEPTH\n#define MODE_RENDER_MATERIAL\n"); // SHADER_VERSION_DEPTH_PASS_WITH_MATERIAL
 		shader_versions.push_back("\n#define MODE_RENDER_DEPTH\n#define MODE_RENDER_SDF\n"); // SHADER_VERSION_DEPTH_PASS_WITH_SDF
 		shader_versions.push_back(""); // SHADER_VERSION_COLOR_PASS
-		shader_versions.push_back("\n#define USE_FORWARD_GI\n"); // SHADER_VERSION_COLOR_PASS_WITH_FORWARD_GI
 		shader_versions.push_back("\n#define MODE_MULTIPLE_RENDER_TARGETS\n"); // SHADER_VERSION_COLOR_PASS_WITH_SEPARATE_SPECULAR
 		shader_versions.push_back("\n#define USE_LIGHTMAP\n"); // SHADER_VERSION_LIGHTMAP_COLOR_PASS
 		shader_versions.push_back("\n#define MODE_MULTIPLE_RENDER_TARGETS\n#define USE_LIGHTMAP\n"); // SHADER_VERSION_LIGHTMAP_COLOR_PASS_WITH_SEPARATE_SPECULAR

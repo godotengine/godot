@@ -153,14 +153,18 @@ void MeshInstance3DEditor::_menu_option(int p_option) {
 			ur->add_undo_method(node->get_parent(), "remove_child", cshape);
 			ur->commit_action();
 		} break;
-		case MENU_OPTION_CREATE_SINGLE_CONVEX_COLLISION_SHAPE: {
+
+		case MENU_OPTION_CREATE_SINGLE_CONVEX_COLLISION_SHAPE:
+		case MENU_OPTION_CREATE_SIMPLIFIED_CONVEX_COLLISION_SHAPE: {
 			if (node == get_tree()->get_edited_scene_root()) {
 				err_dialog->set_text(TTR("Can't create a single convex collision shape for the scene root."));
 				err_dialog->popup_centered();
 				return;
 			}
 
-			Ref<Shape3D> shape = mesh->create_convex_shape();
+			bool simplify = (p_option == MENU_OPTION_CREATE_SIMPLIFIED_CONVEX_COLLISION_SHAPE);
+
+			Ref<Shape3D> shape = mesh->create_convex_shape(true, simplify);
 
 			if (shape.is_null()) {
 				err_dialog->set_text(TTR("Couldn't create a single convex collision shape."));
@@ -169,7 +173,11 @@ void MeshInstance3DEditor::_menu_option(int p_option) {
 			}
 			UndoRedo *ur = EditorNode::get_singleton()->get_undo_redo();
 
-			ur->create_action(TTR("Create Single Convex Shape"));
+			if (simplify) {
+				ur->create_action(TTR("Create Simplified Convex Shape"));
+			} else {
+				ur->create_action(TTR("Create Single Convex Shape"));
+			}
 
 			CollisionShape3D *cshape = memnew(CollisionShape3D);
 			cshape->set_shape(shape);
@@ -186,6 +194,7 @@ void MeshInstance3DEditor::_menu_option(int p_option) {
 			ur->commit_action();
 
 		} break;
+
 		case MENU_OPTION_CREATE_MULTIPLE_CONVEX_COLLISION_SHAPES: {
 			if (node == get_tree()->get_edited_scene_root()) {
 				err_dialog->set_text(TTR("Can't create multiple convex collision shapes for the scene root."));
@@ -441,8 +450,10 @@ MeshInstance3DEditor::MeshInstance3DEditor() {
 	options->get_popup()->set_item_tooltip(options->get_popup()->get_item_count() - 1, TTR("Creates a polygon-based collision shape.\nThis is the most accurate (but slowest) option for collision detection."));
 	options->get_popup()->add_item(TTR("Create Single Convex Collision Sibling"), MENU_OPTION_CREATE_SINGLE_CONVEX_COLLISION_SHAPE);
 	options->get_popup()->set_item_tooltip(options->get_popup()->get_item_count() - 1, TTR("Creates a single convex collision shape.\nThis is the fastest (but least accurate) option for collision detection."));
+	options->get_popup()->add_item(TTR("Create Simplified Convex Collision Sibling"), MENU_OPTION_CREATE_SIMPLIFIED_CONVEX_COLLISION_SHAPE);
+	options->get_popup()->set_item_tooltip(options->get_popup()->get_item_count() - 1, TTR("Creates a simplified convex collision shape.\nThis is similar to single collision shape, but can result in a simpler geometry in some cases, at the cost of accuracy."));
 	options->get_popup()->add_item(TTR("Create Multiple Convex Collision Siblings"), MENU_OPTION_CREATE_MULTIPLE_CONVEX_COLLISION_SHAPES);
-	options->get_popup()->set_item_tooltip(options->get_popup()->get_item_count() - 1, TTR("Creates a polygon-based collision shape.\nThis is a performance middle-ground between the two above options."));
+	options->get_popup()->set_item_tooltip(options->get_popup()->get_item_count() - 1, TTR("Creates a polygon-based collision shape.\nThis is a performance middle-ground between a single convex collision and a polygon-based collision."));
 	options->get_popup()->add_separator();
 	options->get_popup()->add_item(TTR("Create Navigation Mesh"), MENU_OPTION_CREATE_NAVMESH);
 	options->get_popup()->add_separator();

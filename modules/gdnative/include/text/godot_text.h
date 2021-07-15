@@ -143,13 +143,14 @@ typedef struct {
 	bool (*shaped_text_shape)(void *, godot_rid *);
 	bool (*shaped_text_update_breaks)(void *, godot_rid *);
 	bool (*shaped_text_update_justification_ops)(void *, godot_rid *);
+	void (*shaped_text_overrun_trim_to_width)(void *, godot_rid *, float, uint8_t);
 	bool (*shaped_text_is_ready)(void *, godot_rid *);
 	godot_packed_glyph_array (*shaped_text_get_glyphs)(void *, godot_rid *);
 	godot_vector2i (*shaped_text_get_range)(void *, godot_rid *);
 	godot_packed_glyph_array (*shaped_text_sort_logical)(void *, godot_rid *);
 	godot_packed_vector2i_array (*shaped_text_get_line_breaks_adv)(void *, godot_rid *, godot_packed_float32_array *, int, bool, uint8_t);
 	godot_packed_vector2i_array (*shaped_text_get_line_breaks)(void *, godot_rid *, float, int, uint8_t);
-	godot_packed_vector2i_array (*shaped_text_get_word_breaks)(void *, godot_rid *);
+	godot_packed_vector2i_array (*shaped_text_get_word_breaks)(void *, godot_rid *, int);
 	godot_array (*shaped_text_get_objects)(void *, godot_rid *);
 	godot_rect2 (*shaped_text_get_object_rect)(void *, godot_rid *, const godot_variant *);
 	godot_vector2 (*shaped_text_get_size)(void *, godot_rid *);

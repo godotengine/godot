@@ -96,11 +96,12 @@
 # IindinAndEdresia <kapitan_pol@inbox.ru>, 2021.
 # Bualma Show <appleaidar6@gmail.com>, 2021.
 # enderlorde <madel.laboratories@gmail.com>, 2021.
+# Олег Довгер <oleg.a.dovger@gmail.com>, 2021.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2021-06-27 07:10+0000\n"
+"PO-Revision-Date: 2021-07-13 06:13+0000\n"
 "Last-Translator: Danil Alexeev <danil@alexeev.xyz>\n"
 "Language-Team: Russian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ru/>\n"
@@ -110,12 +111,13 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=n%10==1 && n%100!=11 ? 0 : n%10>=2 && n"
 "%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2;\n"
-"X-Generator: Weblate 4.7.1-dev\n"
+"X-Generator: Weblate 4.7.2-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
 msgid "Invalid type argument to convert(), use TYPE_* constants."
-msgstr "Неверный параметр типа для convert(), используйте константы TYPE_*."
+msgstr ""
+"Недопустимый аргумент type для convert(), используйте константы TYPE_*."
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 msgid "Expected a string of length 1 (a character)."
@@ -502,10 +504,6 @@ msgid "Animation tracks can only point to AnimationPlayer nodes."
 msgstr "Дорожки анимации могут указывать только на узлы типа AnimationPlayer."
 
 #: editor/animation_track_editor.cpp
-msgid "An animation player can't animate itself, only other players."
-msgstr "Проигрыватель анимации не может анимировать сам себя, только других."
-
-#: editor/animation_track_editor.cpp
 msgid "Not possible to add a new track without a root"
 msgstr "Нельзя добавить новую дорожку без корневого узла"
 
@@ -550,8 +548,9 @@ msgid "Anim Move Keys"
 msgstr "Переместить ключи"
 
 #: editor/animation_track_editor.cpp
-msgid "Clipboard is empty"
-msgstr "Буфер обмена пуст"
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Clipboard is empty!"
+msgstr "Буфер обмена пуст!"
 
 #: editor/animation_track_editor.cpp
 msgid "Paste Tracks"
@@ -2592,7 +2591,7 @@ msgid "Save changes to the following scene(s) before quitting?"
 msgstr "Сохранить изменения в следующей сцене(ы) перед выходом?"
 
 #: editor/editor_node.cpp
-msgid "Save changes the following scene(s) before opening Project Manager?"
+msgid "Save changes to the following scene(s) before opening Project Manager?"
 msgstr ""
 "Сохранить изменения в следующей сцене(ы) перед открытием менеджера проектов?"
 
@@ -12071,10 +12070,6 @@ msgid "Can't copy the function node."
 msgstr "Не удаётся копировать узел функции."
 
 #: modules/visual_script/visual_script_editor.cpp
-msgid "Clipboard is empty!"
-msgstr "Буфер обмена пуст!"
-
-#: modules/visual_script/visual_script_editor.cpp
 msgid "Paste VisualScript Nodes"
 msgstr "Вставить узлы VisualScript"
 
@@ -13266,6 +13261,13 @@ msgstr "Изменения могут быть назначены только �
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "Константы не могут быть изменены."
+
+#~ msgid "An animation player can't animate itself, only other players."
+#~ msgstr ""
+#~ "Проигрыватель анимации не может анимировать сам себя, только других."
+
+#~ msgid "Clipboard is empty"
+#~ msgstr "Буфер обмена пуст"
 
 #~ msgid ""
 #~ "InterpolatedCamera has been deprecated and will be removed in Godot 4.0."

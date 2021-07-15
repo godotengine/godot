@@ -463,10 +463,6 @@ Vector2 CPUParticles2D::get_gravity() const {
 }
 
 void CPUParticles2D::_validate_property(PropertyInfo &property) const {
-	if (property.name == "color" && color_ramp.is_valid()) {
-		property.usage = PROPERTY_USAGE_NONE;
-	}
-
 	if (property.name == "emission_sphere_radius" && emission_shape != EMISSION_SHAPE_SPHERE) {
 		property.usage = PROPERTY_USAGE_NONE;
 	}

@@ -176,8 +176,8 @@ public:
 			return *this;
 		}
 
-		_FORCE_INLINE_ bool operator==(const Iterator &b) const { return E == b.E; }
-		_FORCE_INLINE_ bool operator!=(const Iterator &b) const { return E != b.E; }
+		_FORCE_INLINE_ bool operator==(const ConstIterator &b) const { return E == b.E; }
+		_FORCE_INLINE_ bool operator!=(const ConstIterator &b) const { return E != b.E; }
 
 		_FORCE_INLINE_ ConstIterator(const Element *p_E) { E = p_E; }
 		_FORCE_INLINE_ ConstIterator() {}

@@ -156,8 +156,9 @@ class RenderForwardClustered : public RendererSceneRenderRD {
 		RD::FramebufferFormatID framebuffer_format = 0;
 		uint32_t element_offset = 0;
 		uint32_t barrier = RD::BARRIER_MASK_ALL;
+		bool use_directional_soft_shadow = false;
 
-		RenderListParameters(GeometryInstanceSurfaceDataCache **p_elements, RenderElementInfo *p_element_info, int p_element_count, bool p_reverse_cull, PassMode p_pass_mode, bool p_no_gi, RID p_render_pass_uniform_set, bool p_force_wireframe = false, const Vector2 &p_uv_offset = Vector2(), const Plane &p_lod_plane = Plane(), float p_lod_distance_multiplier = 0.0, float p_screen_lod_threshold = 0.0, uint32_t p_element_offset = 0, uint32_t p_barrier = RD::BARRIER_MASK_ALL) {
+		RenderListParameters(GeometryInstanceSurfaceDataCache **p_elements, RenderElementInfo *p_element_info, int p_element_count, bool p_reverse_cull, PassMode p_pass_mode, bool p_no_gi, bool p_use_directional_soft_shadows, RID p_render_pass_uniform_set, bool p_force_wireframe = false, const Vector2 &p_uv_offset = Vector2(), const Plane &p_lod_plane = Plane(), float p_lod_distance_multiplier = 0.0, float p_screen_lod_threshold = 0.0, uint32_t p_element_offset = 0, uint32_t p_barrier = RD::BARRIER_MASK_ALL) {
 			elements = p_elements;
 			element_info = p_element_info;
 			element_count = p_element_count;
@@ -172,6 +173,7 @@ class RenderForwardClustered : public RendererSceneRenderRD {
 			screen_lod_threshold = p_screen_lod_threshold;
 			element_offset = p_element_offset;
 			barrier = p_barrier;
+			use_directional_soft_shadow = p_use_directional_soft_shadows;
 		}
 	};
 
@@ -353,7 +355,10 @@ class RenderForwardClustered : public RendererSceneRenderRD {
 	void _setup_lightmaps(const PagedArray<RID> &p_lightmaps, const Transform3D &p_cam_transform);
 
 	struct RenderElementInfo {
-		uint32_t repeat : 22;
+		enum { MAX_REPEATS = (1 << 20) - 1 };
+		uint32_t repeat : 20;
+		uint32_t uses_projector : 1;
+		uint32_t uses_softshadow : 1;
 		uint32_t uses_lightmap : 1;
 		uint32_t uses_forward_gi : 1;
 		uint32_t lod_index : 8;
@@ -402,12 +407,14 @@ class RenderForwardClustered : public RendererSceneRenderRD {
 		union {
 			struct {
 				uint64_t lod_index : 8;
-				uint64_t surface_index : 10;
+				uint64_t surface_index : 8;
 				uint64_t geometry_id : 32;
-				uint64_t material_id_low : 14;
+				uint64_t material_id_low : 16;
 
-				uint64_t material_id_hi : 18;
+				uint64_t material_id_hi : 16;
 				uint64_t shader_id : 32;
+				uint64_t uses_softshadow : 1;
+				uint64_t uses_projector : 1;
 				uint64_t uses_forward_gi : 1;
 				uint64_t uses_lightmap : 1;
 				uint64_t depth_layer : 4;
@@ -455,6 +462,8 @@ class RenderForwardClustered : public RendererSceneRenderRD {
 		uint32_t trail_steps = 1;
 		RID mesh_instance;
 		bool can_sdfgi = false;
+		bool using_projectors = false;
+		bool using_softshadows = false;
 		//used during setup
 		uint32_t base_flags = 0;
 		Transform3D transform;
@@ -603,6 +612,8 @@ public:
 	virtual void geometry_instance_pair_reflection_probe_instances(GeometryInstance *p_geometry_instance, const RID *p_reflection_probe_instances, uint32_t p_reflection_probe_instance_count) override;
 	virtual void geometry_instance_pair_decal_instances(GeometryInstance *p_geometry_instance, const RID *p_decal_instances, uint32_t p_decal_instance_count) override;
 	virtual void geometry_instance_pair_voxel_gi_instances(GeometryInstance *p_geometry_instance, const RID *p_voxel_gi_instances, uint32_t p_voxel_gi_instance_count) override;
+
+	virtual void geometry_instance_set_softshadow_projector_pairing(GeometryInstance *p_geometry_instance, bool p_softshadow, bool p_projector) override;
 
 	virtual bool free(RID p_rid) override;
 

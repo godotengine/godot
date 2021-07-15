@@ -99,39 +99,44 @@ void TreeItem::_change_tree(Tree *p_tree) {
 		c = c->next;
 	}
 
-	if (tree && tree->root == this) {
-		tree->root = nullptr;
-	}
+	if (tree) {
+		if (tree->root == this) {
+			tree->root = nullptr;
+		}
 
-	if (tree && tree->popup_edited_item == this) {
-		tree->popup_edited_item = nullptr;
-		tree->pressing_for_editor = false;
-	}
+		if (tree->popup_edited_item == this) {
+			tree->popup_edited_item = nullptr;
+			tree->pressing_for_editor = false;
+		}
 
-	if (tree && tree->cache.hover_item == this) {
-		tree->cache.hover_item = nullptr;
-	}
+		if (tree->cache.hover_item == this) {
+			tree->cache.hover_item = nullptr;
+		}
 
-	if (tree && tree->selected_item == this) {
-		tree->selected_item = nullptr;
-	}
+		if (tree->selected_item == this) {
+			tree->selected_item = nullptr;
+		}
 
-	if (tree && tree->drop_mode_over == this) {
-		tree->drop_mode_over = nullptr;
-	}
+		if (tree->drop_mode_over == this) {
+			tree->drop_mode_over = nullptr;
+		}
 
-	if (tree && tree->single_select_defer == this) {
-		tree->single_select_defer = nullptr;
-	}
+		if (tree->single_select_defer == this) {
+			tree->single_select_defer = nullptr;
+		}
 
-	if (tree && tree->edited_item == this) {
-		tree->edited_item = nullptr;
-		tree->pressing_for_editor = false;
+		if (tree->edited_item == this) {
+			tree->edited_item = nullptr;
+			tree->pressing_for_editor = false;
+		}
+
+		tree->update();
 	}
 
 	tree = p_tree;
 
 	if (tree) {
+		tree->update();
 		cells.resize(tree->columns.size());
 	}
 }
@@ -451,6 +456,7 @@ TreeItem *TreeItem::create_child(int p_idx) {
 	TreeItem *ti = memnew(TreeItem(tree));
 	if (tree) {
 		ti->cells.resize(tree->columns.size());
+		tree->update();
 	}
 
 	TreeItem *l_prev = nullptr;
@@ -654,11 +660,7 @@ void TreeItem::move_before(TreeItem *p_item) {
 	next = p_item;
 	p_item->prev = this;
 
-	if (old_tree && old_tree != tree) {
-		old_tree->update();
-	}
-
-	if (tree) {
+	if (tree && old_tree == tree) {
 		tree->update();
 	}
 }
@@ -696,11 +698,7 @@ void TreeItem::move_after(TreeItem *p_item) {
 		parent->children_cache.append(this);
 	}
 
-	if (old_tree && old_tree != tree) {
-		old_tree->update();
-	}
-
-	if (tree) {
+	if (tree && old_tree == tree) {
 		tree->update();
 	}
 }

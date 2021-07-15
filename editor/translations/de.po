@@ -75,7 +75,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2021-06-28 22:34+0000\n"
+"PO-Revision-Date: 2021-07-13 06:13+0000\n"
 "Last-Translator: jmih03 <joerni@mail.de>\n"
 "Language-Team: German <https://hosted.weblate.org/projects/godot-engine/"
 "godot/de/>\n"
@@ -84,7 +84,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.7.1-dev\n"
+"X-Generator: Weblate 4.7.2-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -475,11 +475,6 @@ msgid "Animation tracks can only point to AnimationPlayer nodes."
 msgstr "Animationsspuren können nur auf AnimationPlayer-Nodes zeigen."
 
 #: editor/animation_track_editor.cpp
-msgid "An animation player can't animate itself, only other players."
-msgstr ""
-"Ein AnimationPlayer kann sich nicht selbst animieren, nur andere Objekte."
-
-#: editor/animation_track_editor.cpp
 msgid "Not possible to add a new track without a root"
 msgstr "Ohne eine Wurzel kann keine neue Spur hinzugefügt werden"
 
@@ -526,8 +521,9 @@ msgid "Anim Move Keys"
 msgstr "Schlüsselbilder bewegen"
 
 #: editor/animation_track_editor.cpp
-msgid "Clipboard is empty"
-msgstr "Zwischenablage ist leer"
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Clipboard is empty!"
+msgstr "Zwischenablage ist leer!"
 
 #: editor/animation_track_editor.cpp
 msgid "Paste Tracks"
@@ -2581,7 +2577,7 @@ msgid "Save changes to the following scene(s) before quitting?"
 msgstr "Änderungen in den folgenden Szenen vor dem Schließen speichern?"
 
 #: editor/editor_node.cpp
-msgid "Save changes the following scene(s) before opening Project Manager?"
+msgid "Save changes to the following scene(s) before opening Project Manager?"
 msgstr ""
 "Änderungen in den folgenden Szenen vor dem Öffnen der Projektverwaltung "
 "speichern?"
@@ -7418,9 +7414,8 @@ msgid "Play IK"
 msgstr "IK abspielen"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Orthogonal"
-msgstr "Orthogonal"
+msgstr "Senkrecht"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Perspective"
@@ -12111,10 +12106,6 @@ msgid "Can't copy the function node."
 msgstr "Das Function-Node kann nicht kopiert werden."
 
 #: modules/visual_script/visual_script_editor.cpp
-msgid "Clipboard is empty!"
-msgstr "Zwischenablage ist leer!"
-
-#: modules/visual_script/visual_script_editor.cpp
 msgid "Paste VisualScript Nodes"
 msgstr "VisualScript-Nodes einfügen"
 
@@ -13348,6 +13339,13 @@ msgstr "Varyings können nur in Vertex-Funktion zugewiesen werden."
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "Konstanten können nicht verändert werden."
+
+#~ msgid "An animation player can't animate itself, only other players."
+#~ msgstr ""
+#~ "Ein AnimationPlayer kann sich nicht selbst animieren, nur andere Objekte."
+
+#~ msgid "Clipboard is empty"
+#~ msgstr "Zwischenablage ist leer"
 
 #~ msgid ""
 #~ "Godot editor was built without ray tracing support; lightmaps can't be "

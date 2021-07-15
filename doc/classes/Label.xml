@@ -75,8 +75,8 @@
 		<member name="align" type="int" setter="set_align" getter="get_align" enum="Label.Align" default="0">
 			Controls the text's horizontal align. Supports left, center, right, and fill, or justify. Set it to one of the [enum Align] constants.
 		</member>
-		<member name="autowrap" type="bool" setter="set_autowrap" getter="has_autowrap" default="false">
-			If [code]true[/code], wraps the text inside the node's bounding rectangle. If you resize the node, it will change its height automatically to show all the text.
+		<member name="autowrap_mode" type="int" setter="set_autowrap_mode" getter="get_autowrap_mode" enum="Label.AutowrapMode" default="0">
+			If set to something other than [constant AUTOWRAP_OFF], the text gets wrapped inside the node's bounding rectangle. If you resize the node, it will change its height automatically to show all the text. To see how each mode behaves, see [enum AutowrapMode].
 		</member>
 		<member name="clip_text" type="bool" setter="set_clip_text" getter="is_clipping_text" default="false">
 			If [code]true[/code], the Label only shows the text that fits inside its bounding rectangle and will clip text horizontally.
@@ -106,6 +106,9 @@
 		</member>
 		<member name="text_direction" type="int" setter="set_text_direction" getter="get_text_direction" enum="Control.TextDirection" default="0">
 			Base text writing direction.
+		</member>
+		<member name="text_overrun_behavior" type="int" setter="set_text_overrun_behavior" getter="get_text_overrun_behavior" enum="Label.OverrunBehavior" default="0">
+			Sets the clipping behavior when the text exceeds the node's bounding rectangle. See [enum OverrunBehavior] for a description of all modes.
 		</member>
 		<member name="uppercase" type="bool" setter="set_uppercase" getter="is_uppercase" default="false">
 			If [code]true[/code], all the text displays as UPPERCASE.
@@ -141,6 +144,33 @@
 		</constant>
 		<constant name="VALIGN_FILL" value="3" enum="VAlign">
 			Align the whole text by spreading the rows.
+		</constant>
+		<constant name="AUTOWRAP_OFF" value="0" enum="AutowrapMode">
+			Autowrap is disabled.
+		</constant>
+		<constant name="AUTOWRAP_ARBITRARY" value="1" enum="AutowrapMode">
+			Wraps the text inside the node's bounding rectangle by allowing to break lines at arbitrary positions, which is useful when very limited space is available.
+		</constant>
+		<constant name="AUTOWRAP_WORD" value="2" enum="AutowrapMode">
+			Wraps the text inside the node's bounding rectangle by soft-breaking between words.
+		</constant>
+		<constant name="AUTOWRAP_WORD_SMART" value="3" enum="AutowrapMode">
+			Behaves similarly to [constant AUTOWRAP_WORD], but force-breaks a word if that single word does not fit in one line.
+		</constant>
+		<constant name="OVERRUN_NO_TRIMMING" value="0" enum="OverrunBehavior">
+			No text trimming is performed.
+		</constant>
+		<constant name="OVERRUN_TRIM_CHAR" value="1" enum="OverrunBehavior">
+			Trims the text per character.
+		</constant>
+		<constant name="OVERRUN_TRIM_WORD" value="2" enum="OverrunBehavior">
+			Trims the text per word.
+		</constant>
+		<constant name="OVERRUN_TRIM_ELLIPSIS" value="3" enum="OverrunBehavior">
+			Trims the text per character and adds an ellipsis to indicate that parts are hidden.
+		</constant>
+		<constant name="OVERRUN_TRIM_WORD_ELLIPSIS" value="4" enum="OverrunBehavior">
+			Trims the text per word and adds an ellipsis to indicate that parts are hidden.
 		</constant>
 	</constants>
 	<theme_items>

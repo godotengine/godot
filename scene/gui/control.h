@@ -202,7 +202,7 @@ private:
 		Ref<Theme> theme;
 		Control *theme_owner = nullptr;
 		Window *theme_owner_window = nullptr;
-		StringName theme_custom_type;
+		StringName theme_type_variation;
 
 		String tooltip;
 		CursorShape default_cursor = CURSOR_ARROW;
@@ -279,8 +279,8 @@ protected:
 	void _get_property_list(List<PropertyInfo> *p_list) const;
 
 	void _notification(int p_notification);
-
 	static void _bind_methods();
+	virtual void _validate_property(PropertyInfo &property) const override;
 
 	//bind helpers
 
@@ -402,8 +402,8 @@ public:
 	void set_theme(const Ref<Theme> &p_theme);
 	Ref<Theme> get_theme() const;
 
-	void set_theme_custom_type(const StringName &p_theme_type);
-	StringName get_theme_custom_type() const;
+	void set_theme_type_variation(const StringName &p_theme_type);
+	StringName get_theme_type_variation() const;
 
 	void set_h_size_flags(int p_flags);
 	int get_h_size_flags() const;

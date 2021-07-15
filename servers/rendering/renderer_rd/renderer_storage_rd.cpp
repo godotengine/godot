@@ -2531,6 +2531,8 @@ void RendererStorageRD::mesh_add_surface(RID p_mesh, const RS::SurfaceData &p_su
 	Mesh *mesh = mesh_owner.getornull(p_mesh);
 	ERR_FAIL_COND(!mesh);
 
+	ERR_FAIL_COND(mesh->surface_count == RS::MAX_MESH_SURFACES);
+
 #ifdef DEBUG_ENABLED
 	//do a validation, to catch errors first
 	{
@@ -5886,6 +5888,10 @@ void RendererStorageRD::light_set_param(RID p_light, RS::LightParam p_param, flo
 	ERR_FAIL_COND(!light);
 	ERR_FAIL_INDEX(p_param, RS::LIGHT_PARAM_MAX);
 
+	if (light->param[p_param] == p_value) {
+		return;
+	}
+
 	switch (p_param) {
 		case RS::LIGHT_PARAM_RANGE:
 		case RS::LIGHT_PARAM_SPOT_ANGLE:
@@ -5898,6 +5904,12 @@ void RendererStorageRD::light_set_param(RID p_light, RS::LightParam p_param, flo
 		case RS::LIGHT_PARAM_SHADOW_BIAS: {
 			light->version++;
 			light->dependency.changed_notify(DEPENDENCY_CHANGED_LIGHT);
+		} break;
+		case RS::LIGHT_PARAM_SIZE: {
+			if ((light->param[p_param] > CMP_EPSILON) != (p_value > CMP_EPSILON)) {
+				//changing from no size to size and the opposite
+				light->dependency.changed_notify(DEPENDENCY_CHANGED_LIGHT_SOFT_SHADOW_AND_PROJECTOR);
+			}
 		} break;
 		default: {
 		}
@@ -5935,8 +5947,11 @@ void RendererStorageRD::light_set_projector(RID p_light, RID p_texture) {
 
 	light->projector = p_texture;
 
-	if (light->type != RS::LIGHT_DIRECTIONAL && light->projector.is_valid()) {
-		texture_add_to_decal_atlas(light->projector, light->type == RS::LIGHT_OMNI);
+	if (light->type != RS::LIGHT_DIRECTIONAL) {
+		if (light->projector.is_valid()) {
+			texture_add_to_decal_atlas(light->projector, light->type == RS::LIGHT_OMNI);
+		}
+		light->dependency.changed_notify(DEPENDENCY_CHANGED_LIGHT_SOFT_SHADOW_AND_PROJECTOR);
 	}
 }
 

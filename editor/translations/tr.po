@@ -60,12 +60,13 @@
 # Jafar Tarverdiyev <cefertarverdiyevv@gmail.com>, 2021.
 # ali aydın <alimxaydin@gmail.com>, 2021.
 # Cannur Daşkıran <canndask@gmail.com>, 2021.
+# kahveciderin <kahveciderin@gmail.com>, 2021.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2021-05-29 13:49+0000\n"
-"Last-Translator: ali aydın <alimxaydin@gmail.com>\n"
+"PO-Revision-Date: 2021-07-13 06:13+0000\n"
+"Last-Translator: kahveciderin <kahveciderin@gmail.com>\n"
 "Language-Team: Turkish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/tr/>\n"
 "Language: tr\n"
@@ -73,7 +74,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.7-dev\n"
+"X-Generator: Weblate 4.7.2-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -464,12 +465,6 @@ msgid "Animation tracks can only point to AnimationPlayer nodes."
 msgstr "Animasyon izleri sadece AnimasyonOynatıcı düğümlerini işaret edebilir."
 
 #: editor/animation_track_editor.cpp
-msgid "An animation player can't animate itself, only other players."
-msgstr ""
-"Bir animasyon oynatıcı kendisini oynamataz, sadece diğer oynatıcılar "
-"yapaibilir."
-
-#: editor/animation_track_editor.cpp
 msgid "Not possible to add a new track without a root"
 msgstr "Bir kök olmadan yeni bir iz eklemek mümkün değildir"
 
@@ -514,8 +509,9 @@ msgid "Anim Move Keys"
 msgstr "Animasyon Anahtarları Taşı"
 
 #: editor/animation_track_editor.cpp
-msgid "Clipboard is empty"
-msgstr "Pano boş"
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Clipboard is empty!"
+msgstr "Pano boş!"
 
 #: editor/animation_track_editor.cpp
 msgid "Paste Tracks"
@@ -1173,7 +1169,7 @@ msgstr "Godot topluluğundan teşekkürler!"
 
 #: editor/editor_about.cpp editor/editor_node.cpp editor/project_manager.cpp
 msgid "Click to copy."
-msgstr ""
+msgstr "Kopyalamak için tıklayın."
 
 #: editor/editor_about.cpp
 msgid "Godot Engine contributors"
@@ -2554,7 +2550,7 @@ msgid "Save changes to the following scene(s) before quitting?"
 msgstr "Çıkmadan önce değişiklikler aşağıdaki sahne(ler)e kaydedilsin mi?"
 
 #: editor/editor_node.cpp
-msgid "Save changes the following scene(s) before opening Project Manager?"
+msgid "Save changes to the following scene(s) before opening Project Manager?"
 msgstr ""
 "Proje Yöneticisi açılmadan önce değişiklikler aşağıdaki sahneye(lere) "
 "kaydedilsin mi?"
@@ -12023,10 +12019,6 @@ msgid "Can't copy the function node."
 msgstr "Fonksiyon düğümü kopyalanamıyor."
 
 #: modules/visual_script/visual_script_editor.cpp
-msgid "Clipboard is empty!"
-msgstr "Pano boş!"
-
-#: modules/visual_script/visual_script_editor.cpp
 msgid "Paste VisualScript Nodes"
 msgstr "GörselBetik Düğümleri Yapıştır"
 
@@ -12238,6 +12230,8 @@ msgid ""
 "Either Debug Keystore, Debug User AND Debug Password settings must be "
 "configured OR none of them."
 msgstr ""
+"Hata Ayıklama Anahtar Deposu, Hata Ayıklama Kullanıcısı VE Hata Ayıklama "
+"Şifresi konfigüre edilmelidir VEYA hiçbiri konfigüre edilmemelidir."
 
 #: platform/android/export/export.cpp
 msgid "Debug keystore not configured in the Editor Settings nor in the preset."
@@ -12250,6 +12244,8 @@ msgid ""
 "Either Release Keystore, Release User AND Release Password settings must be "
 "configured OR none of them."
 msgstr ""
+"Yayınlama Anahtar Deposu, Yayınlama Kullanıcısı be Yayınlama Şifresi "
+"ayarları konfigüre edilmeli VEYA hiçbiri konfigüre edilmemelidir."
 
 #: platform/android/export/export.cpp
 msgid "Release keystore incorrectly configured in the export preset."
@@ -13214,6 +13210,14 @@ msgstr "varyings yalnızca vertex işlevinde atanabilir."
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "Sabit değerler değiştirilemez."
+
+#~ msgid "An animation player can't animate itself, only other players."
+#~ msgstr ""
+#~ "Bir animasyon oynatıcı kendisini oynamataz, sadece diğer oynatıcılar "
+#~ "yapaibilir."
+
+#~ msgid "Clipboard is empty"
+#~ msgstr "Pano boş"
 
 #~ msgid ""
 #~ "InterpolatedCamera has been deprecated and will be removed in Godot 4.0."

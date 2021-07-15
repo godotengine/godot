@@ -91,16 +91,35 @@ public:
 
 class EditorPropertyTextEnum : public EditorProperty {
 	GDCLASS(EditorPropertyTextEnum, EditorProperty);
-	OptionButton *options;
 
+	HBoxContainer *default_layout;
+	HBoxContainer *edit_custom_layout;
+
+	OptionButton *option_button;
+	Button *edit_button;
+
+	LineEdit *custom_value_edit;
+	Button *accept_button;
+	Button *cancel_button;
+
+	Vector<String> options;
+	bool string_name = false;
+	bool loose_mode = false;
+
+	void _emit_changed_value(String p_string);
 	void _option_selected(int p_which);
-	bool string_name;
+
+	void _edit_custom_value();
+	void _custom_value_submitted(String p_value);
+	void _custom_value_accepted();
+	void _custom_value_cancelled();
 
 protected:
 	static void _bind_methods();
+	void _notification(int p_what);
 
 public:
-	void setup(const Vector<String> &p_options, bool p_string_name = false);
+	void setup(const Vector<String> &p_options, bool p_string_name = false, bool p_loose_mode = false);
 	virtual void update_property() override;
 	EditorPropertyTextEnum();
 };

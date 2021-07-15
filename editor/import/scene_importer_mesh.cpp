@@ -506,7 +506,7 @@ Vector<Ref<Shape3D>> EditorSceneImporterMesh::convex_decompose() const {
 
 	const Vector<Face3> faces = get_faces();
 
-	Vector<Vector<Face3>> decomposed = Mesh::convex_composition_function(faces);
+	Vector<Vector<Face3>> decomposed = Mesh::convex_composition_function(faces, -1);
 
 	Vector<Ref<Shape3D>> ret;
 

@@ -31,6 +31,7 @@
 #ifdef WEBRTC_GDNATIVE_ENABLED
 
 #include "webrtc_data_channel_gdnative.h"
+
 #include "core/io/resource_loader.h"
 #include "modules/gdnative/nativescript/nativescript.h"
 

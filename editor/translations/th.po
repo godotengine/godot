@@ -427,10 +427,6 @@ msgid "Animation tracks can only point to AnimationPlayer nodes."
 msgstr "แทร็กอนิเมชั่นสามารถติดไว้บนโหนด AnimationPlayer เท่านั้น"
 
 #: editor/animation_track_editor.cpp
-msgid "An animation player can't animate itself, only other players."
-msgstr "แทร็กอนิเมชั่นไม่สามารถเล่นตัวมันเองได้ แต่สามารถเล่นตัวเล่นอื่นได้"
-
-#: editor/animation_track_editor.cpp
 msgid "Not possible to add a new track without a root"
 msgstr "ไม่สามารถที่จะเพิ่มแทร็กใหม่โดยที่ไม่มีรูท"
 
@@ -475,8 +471,9 @@ msgid "Anim Move Keys"
 msgstr "ย้ายคีย์แอนิเมชัน"
 
 #: editor/animation_track_editor.cpp
-msgid "Clipboard is empty"
-msgstr "คลิปบอร์ดว่างเปล่า"
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Clipboard is empty!"
+msgstr "คลิปบอร์ดว่างเปล่า!"
 
 #: editor/animation_track_editor.cpp
 msgid "Paste Tracks"
@@ -2483,7 +2480,7 @@ msgid "Save changes to the following scene(s) before quitting?"
 msgstr "บันทึกฉากต่อไปนี้ก่อนปิดโปรแกรมหรือไม่?"
 
 #: editor/editor_node.cpp
-msgid "Save changes the following scene(s) before opening Project Manager?"
+msgid "Save changes to the following scene(s) before opening Project Manager?"
 msgstr "บันทึกฉากต่อไปนี้ก่อนกลับสู่ตัวจัดการโปรเจกต์หรือไม่?"
 
 #: editor/editor_node.cpp
@@ -11801,10 +11798,6 @@ msgid "Can't copy the function node."
 msgstr "คัดลอกโหนดฟังก์ชันไม่ได้"
 
 #: modules/visual_script/visual_script_editor.cpp
-msgid "Clipboard is empty!"
-msgstr "คลิปบอร์ดว่างเปล่า!"
-
-#: modules/visual_script/visual_script_editor.cpp
 msgid "Paste VisualScript Nodes"
 msgstr "วางโหนด VisualScript"
 
@@ -12912,6 +12905,12 @@ msgstr "Varyings สามารถกำหนดในังก์ชันเ
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "ค่าคงที่ไม่สามารถแก้ไขได้"
+
+#~ msgid "An animation player can't animate itself, only other players."
+#~ msgstr "แทร็กอนิเมชั่นไม่สามารถเล่นตัวมันเองได้ แต่สามารถเล่นตัวเล่นอื่นได้"
+
+#~ msgid "Clipboard is empty"
+#~ msgstr "คลิปบอร์ดว่างเปล่า"
 
 #~ msgid ""
 #~ "InterpolatedCamera has been deprecated and will be removed in Godot 4.0."

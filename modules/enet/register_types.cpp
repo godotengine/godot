@@ -30,7 +30,7 @@
 
 #include "register_types.h"
 #include "core/error/error_macros.h"
-#include "networked_multiplayer_enet.h"
+#include "enet_multiplayer_peer.h"
 
 static bool enet_ok = false;
 
@@ -41,7 +41,7 @@ void register_enet_types() {
 		enet_ok = true;
 	}
 
-	ClassDB::register_class<NetworkedMultiplayerENet>();
+	GDREGISTER_CLASS(ENetMultiplayerPeer);
 }
 
 void unregister_enet_types() {

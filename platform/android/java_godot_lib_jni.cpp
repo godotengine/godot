@@ -157,7 +157,7 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_setup(JNIEnv *env, jc
 	}
 
 	java_class_wrapper = memnew(JavaClassWrapper(godot_java->get_activity()));
-	ClassDB::register_class<JNISingleton>();
+	GDREGISTER_CLASS(JNISingleton);
 }
 
 JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_resize(JNIEnv *env, jclass clazz, jobject p_surface, jint p_width, jint p_height) {

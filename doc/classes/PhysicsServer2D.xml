@@ -820,6 +820,10 @@
 			</argument>
 			<argument index="5" name="result" type="PhysicsTestMotionResult2D" default="null">
 			</argument>
+			<argument index="6" name="exclude_raycast_shapes" type="bool" default="true">
+			</argument>
+			<argument index="7" name="exclude" type="Array" default="[]">
+			</argument>
 			<description>
 				Returns [code]true[/code] if a collision would result from moving in the given direction from a given point in space. Margin increases the size of the shapes involved in the collision detection. [PhysicsTestMotionResult2D] can be passed to return additional information in.
 			</description>
@@ -1024,7 +1028,7 @@
 			<argument index="0" name="iterations" type="int">
 			</argument>
 			<description>
-				Sets the amount of iterations for calculating velocities of colliding bodies. The greater the amount, the more accurate the collisions, but with a performance loss.
+				Sets the amount of iterations for calculating velocities of colliding bodies. The greater the amount of iterations, the more accurate the collisions will be. However, a greater amount of iterations requires more CPU power, which can decrease performance. The default value is [code]8[/code].
 			</description>
 		</method>
 		<method name="shape_get_data" qualifiers="const">

@@ -123,7 +123,7 @@ void ThemeEditorPreview::_gui_input_picker_overlay(const Ref<InputEvent> &p_even
 
 	if (mb.is_valid() && mb->is_pressed() && mb->get_button_index() == MOUSE_BUTTON_LEFT) {
 		if (hovered_control) {
-			StringName theme_type = hovered_control->get_theme_custom_type();
+			StringName theme_type = hovered_control->get_theme_type_variation();
 			if (theme_type == StringName()) {
 				theme_type = hovered_control->get_class_name();
 			}

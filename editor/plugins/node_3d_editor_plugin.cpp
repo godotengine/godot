@@ -467,21 +467,30 @@ void Node3DEditorViewport::_select_clicked(bool p_append, bool p_single, bool p_
 }
 
 void Node3DEditorViewport::_select(Node *p_node, bool p_append, bool p_single) {
-	if (!p_append) {
-		editor_selection->clear();
-	}
-
-	if (editor_selection->is_selected(p_node)) {
-		//erase
-		editor_selection->remove_node(p_node);
-	} else {
+	// Add or remove a single node from the selection
+	if (p_append && p_single) {
+		if (editor_selection->is_selected(p_node)) {
+			// Already in the selection, remove it from the selected nodes
+			editor_selection->remove_node(p_node);
+		} else {
+			// Add the item to the selection
+			editor_selection->add_node(p_node);
+		}
+	} else if (p_append && !p_single) {
+		// Add the item to the selection
 		editor_selection->add_node(p_node);
-	}
-
-	if (p_single) {
+	} else {
+		// No append; single select
+		editor_selection->clear();
+		editor_selection->add_node(p_node);
+		// Reselect
 		if (Engine::get_singleton()->is_editor_hint()) {
 			editor->call("edit_node", p_node);
 		}
+	}
+
+	if (editor_selection->get_selected_node_list().size() == 1) {
+		editor->push_item(editor_selection->get_selected_node_list()[0]);
 	}
 }
 
@@ -562,7 +571,7 @@ ObjectID Node3DEditorViewport::_select_ray(const Point2 &p_pos, bool p_append, b
 	return closest;
 }
 
-void Node3DEditorViewport::_find_items_at_pos(const Point2 &p_pos, bool &r_includes_current, Vector<_RayResult> &results, bool p_alt_select) {
+void Node3DEditorViewport::_find_items_at_pos(const Point2 &p_pos, bool &r_includes_current, Vector<_RayResult> &results, bool p_alt_select, bool p_include_locked_nodes) {
 	Vector3 ray = _get_ray(p_pos);
 	Vector3 pos = _get_ray_pos(p_pos);
 
@@ -602,6 +611,10 @@ void Node3DEditorViewport::_find_items_at_pos(const Point2 &p_pos, bool &r_inclu
 		float dist = pos.distance_to(point);
 
 		if (dist < 0) {
+			continue;
+		}
+
+		if (!p_include_locked_nodes && _is_node_locked(spat)) {
 			continue;
 		}
 
@@ -1025,7 +1038,7 @@ bool Node3DEditorViewport ::_is_node_locked(const Node *p_node) {
 }
 
 void Node3DEditorViewport::_list_select(Ref<InputEventMouseButton> b) {
-	_find_items_at_pos(b->get_position(), clicked_includes_current, selection_results, b->is_shift_pressed());
+	_find_items_at_pos(b->get_position(), clicked_includes_current, selection_results, b->is_shift_pressed(), spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_SELECT);
 
 	Node *scene = editor->get_edited_scene();
 
@@ -1045,7 +1058,7 @@ void Node3DEditorViewport::_list_select(Ref<InputEventMouseButton> b) {
 		selection_results.clear();
 
 		if (clicked.is_valid()) {
-			_select_clicked(clicked_wants_append, true, spatial_editor->get_tool_mode() != Node3DEditor::TOOL_MODE_LIST_SELECT);
+			_select_clicked(clicked_wants_append, true, spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_SELECT);
 			clicked = ObjectID();
 		}
 
@@ -3297,7 +3310,7 @@ void Node3DEditorViewport::_selection_result_pressed(int p_result) {
 	clicked = selection_results[p_result].item->get_instance_id();
 
 	if (clicked.is_valid()) {
-		_select_clicked(clicked_wants_append, true, spatial_editor->get_tool_mode() != Node3DEditor::TOOL_MODE_LIST_SELECT);
+		_select_clicked(clicked_wants_append, true, spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_SELECT);
 		clicked = ObjectID();
 	}
 }
@@ -6172,7 +6185,7 @@ void Node3DEditor::snap_selected_nodes_to_floor() {
 		}
 
 		if (snapped_to_floor) {
-			undo_redo->create_action(TTR("Snap Nodes To Floor"));
+			undo_redo->create_action(TTR("Snap Nodes to Floor"));
 
 			// Perform snapping if at least one node can be snapped
 			for (int i = 0; i < keys.size(); i++) {
@@ -6218,8 +6231,13 @@ void Node3DEditor::_sun_environ_settings_pressed() {
 	sun_environ_popup->popup();
 }
 
-void Node3DEditor::_add_sun_to_scene() {
+void Node3DEditor::_add_sun_to_scene(bool p_already_added_environment) {
 	sun_environ_popup->hide();
+
+	if (!p_already_added_environment && world_env_count == 0 && Input::get_singleton()->is_key_pressed(KEY_SHIFT)) {
+		// Prevent infinite feedback loop between the sun and environment methods.
+		_add_environment_to_scene(true);
+	}
 
 	Node *base = get_tree()->get_edited_scene_root();
 	if (!base) {
@@ -6232,13 +6250,22 @@ void Node3DEditor::_add_sun_to_scene() {
 
 	undo_redo->create_action("Add Preview Sun to Scene");
 	undo_redo->add_do_method(base, "add_child", new_sun);
+	// Move to the beginning of the scene tree since more "global" nodes
+	// generally look better when placed at the top.
+	undo_redo->add_do_method(base, "move_child", new_sun, 0);
 	undo_redo->add_do_method(new_sun, "set_owner", base);
 	undo_redo->add_undo_method(base, "remove_child", new_sun);
 	undo_redo->add_do_reference(new_sun);
 	undo_redo->commit_action();
 }
-void Node3DEditor::_add_environment_to_scene() {
+
+void Node3DEditor::_add_environment_to_scene(bool p_already_added_sun) {
 	sun_environ_popup->hide();
+
+	if (!p_already_added_sun && directional_light_count == 0 && Input::get_singleton()->is_key_pressed(KEY_SHIFT)) {
+		// Prevent infinite feedback loop between the sun and environment methods.
+		_add_sun_to_scene(true);
+	}
 
 	Node *base = get_tree()->get_edited_scene_root();
 	if (!base) {
@@ -6253,6 +6280,9 @@ void Node3DEditor::_add_environment_to_scene() {
 
 	undo_redo->create_action("Add Preview Environment to Scene");
 	undo_redo->add_do_method(base, "add_child", new_env);
+	// Move to the beginning of the scene tree since more "global" nodes
+	// generally look better when placed at the top.
+	undo_redo->add_do_method(base, "move_child", new_env, 0);
 	undo_redo->add_do_method(new_env, "set_owner", base);
 	undo_redo->add_undo_method(base, "remove_child", new_env);
 	undo_redo->add_do_reference(new_env);
@@ -6733,7 +6763,7 @@ Node3DEditor::Node3DEditor(EditorNode *p_editor) {
 	tool_button[TOOL_MODE_SELECT]->connect("pressed", callable_mp(this, &Node3DEditor::_menu_item_pressed), button_binds);
 	tool_button[TOOL_MODE_SELECT]->set_shortcut(ED_SHORTCUT("spatial_editor/tool_select", TTR("Select Mode"), KEY_Q));
 	tool_button[TOOL_MODE_SELECT]->set_shortcut_context(this);
-	tool_button[TOOL_MODE_SELECT]->set_tooltip(keycode_get_string(KEY_MASK_CMD) + TTR("Drag: Rotate\nAlt+Drag: Move\nAlt+RMB: Depth list selection"));
+	tool_button[TOOL_MODE_SELECT]->set_tooltip(keycode_get_string(KEY_MASK_CMD) + TTR("Drag: Rotate\nAlt+Drag: Move\nAlt+RMB: Show list of all nodes at position clicked, including locked."));
 
 	hbc_menu->add_child(memnew(VSeparator));
 
@@ -6772,14 +6802,14 @@ Node3DEditor::Node3DEditor(EditorNode *p_editor) {
 	tool_button[TOOL_MODE_LIST_SELECT]->set_flat(true);
 	button_binds.write[0] = MENU_TOOL_LIST_SELECT;
 	tool_button[TOOL_MODE_LIST_SELECT]->connect("pressed", callable_mp(this, &Node3DEditor::_menu_item_pressed), button_binds);
-	tool_button[TOOL_MODE_LIST_SELECT]->set_tooltip(TTR("Show a list of all objects at the position clicked\n(same as Alt+RMB in select mode)."));
+	tool_button[TOOL_MODE_LIST_SELECT]->set_tooltip(TTR("Show list of selectable nodes at position clicked."));
 
 	tool_button[TOOL_LOCK_SELECTED] = memnew(Button);
 	hbc_menu->add_child(tool_button[TOOL_LOCK_SELECTED]);
 	tool_button[TOOL_LOCK_SELECTED]->set_flat(true);
 	button_binds.write[0] = MENU_LOCK_SELECTED;
 	tool_button[TOOL_LOCK_SELECTED]->connect("pressed", callable_mp(this, &Node3DEditor::_menu_item_pressed), button_binds);
-	tool_button[TOOL_LOCK_SELECTED]->set_tooltip(TTR("Lock the selected object in place (can't be moved)."));
+	tool_button[TOOL_LOCK_SELECTED]->set_tooltip(TTR("Lock selected node, preventing selection and movement."));
 	// Define the shortcut globally (without a context) so that it works if the Scene tree dock is currently focused.
 	tool_button[TOOL_LOCK_SELECTED]->set_shortcut(ED_SHORTCUT("editor/lock_selected_nodes", TTR("Lock Selected Node(s)"), KEY_MASK_CMD | KEY_L));
 
@@ -6788,7 +6818,7 @@ Node3DEditor::Node3DEditor(EditorNode *p_editor) {
 	tool_button[TOOL_UNLOCK_SELECTED]->set_flat(true);
 	button_binds.write[0] = MENU_UNLOCK_SELECTED;
 	tool_button[TOOL_UNLOCK_SELECTED]->connect("pressed", callable_mp(this, &Node3DEditor::_menu_item_pressed), button_binds);
-	tool_button[TOOL_UNLOCK_SELECTED]->set_tooltip(TTR("Unlock the selected object (can be moved)."));
+	tool_button[TOOL_UNLOCK_SELECTED]->set_tooltip(TTR("Unlock selected node, allowing selection and movement."));
 	// Define the shortcut globally (without a context) so that it works if the Scene tree dock is currently focused.
 	tool_button[TOOL_UNLOCK_SELECTED]->set_shortcut(ED_SHORTCUT("editor/unlock_selected_nodes", TTR("Unlock Selected Node(s)"), KEY_MASK_CMD | KEY_MASK_SHIFT | KEY_L));
 
@@ -7111,6 +7141,7 @@ Node3DEditor::Node3DEditor(EditorNode *p_editor) {
 		sun_vb->hide();
 
 		sun_title = memnew(Label);
+		sun_title->set_theme_type_variation("HeaderSmall");
 		sun_vb->add_child(sun_title);
 		sun_title->set_text(TTR("Preview Sun"));
 		sun_title->set_align(Label::ALIGN_CENTER);
@@ -7180,7 +7211,8 @@ Node3DEditor::Node3DEditor(EditorNode *p_editor) {
 
 		sun_add_to_scene = memnew(Button);
 		sun_add_to_scene->set_text(TTR("Add Sun to Scene"));
-		sun_add_to_scene->connect("pressed", callable_mp(this, &Node3DEditor::_add_sun_to_scene));
+		sun_add_to_scene->set_tooltip(TTR("Adds a DirectionalLight3D node matching the preview sun settings to the current scene.\nHold Shift while clicking to also add the preview environment to the current scene."));
+		sun_add_to_scene->connect("pressed", callable_mp(this, &Node3DEditor::_add_sun_to_scene), varray(false));
 		sun_vb->add_spacer();
 		sun_vb->add_child(sun_add_to_scene);
 
@@ -7201,6 +7233,8 @@ Node3DEditor::Node3DEditor(EditorNode *p_editor) {
 		environ_vb->hide();
 
 		environ_title = memnew(Label);
+		environ_title->set_theme_type_variation("HeaderSmall");
+
 		environ_vb->add_child(environ_title);
 		environ_title->set_text(TTR("Preview Environment"));
 		environ_title->set_align(Label::ALIGN_CENTER);
@@ -7244,7 +7278,8 @@ Node3DEditor::Node3DEditor(EditorNode *p_editor) {
 
 		environ_add_to_scene = memnew(Button);
 		environ_add_to_scene->set_text(TTR("Add Environment to Scene"));
-		environ_add_to_scene->connect("pressed", callable_mp(this, &Node3DEditor::_add_environment_to_scene));
+		environ_add_to_scene->set_tooltip(TTR("Adds a WorldEnvironment node matching the preview environment settings to the current scene.\nHold Shift while clicking to also add the preview sun to the current scene."));
+		environ_add_to_scene->connect("pressed", callable_mp(this, &Node3DEditor::_add_environment_to_scene), varray(false));
 		environ_vb->add_spacer();
 		environ_vb->add_child(environ_add_to_scene);
 

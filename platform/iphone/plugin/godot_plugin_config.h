@@ -252,6 +252,8 @@ static inline PluginConfigIOS load_plugin_config(Ref<ConfigFile> config_file, co
 		return plugin_config;
 	}
 
+	config_file->clear();
+
 	Error err = config_file->load(path);
 
 	if (err != OK) {

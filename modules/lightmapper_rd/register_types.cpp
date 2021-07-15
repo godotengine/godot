@@ -54,7 +54,7 @@ void register_lightmapper_rd_types() {
 	GLOBAL_DEF("rendering/lightmapping/bake_quality/ultra_quality_probe_ray_count", 2048);
 	GLOBAL_DEF("rendering/lightmapping/bake_performance/max_rays_per_probe_pass", 64);
 #ifndef _3D_DISABLED
-	ClassDB::register_class<LightmapperRD>();
+	GDREGISTER_CLASS(LightmapperRD);
 	Lightmapper::create_gpu = create_lightmapper_rd;
 #endif
 }

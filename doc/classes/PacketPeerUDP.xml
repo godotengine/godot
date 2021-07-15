@@ -148,7 +148,7 @@
 		var socket = new PacketPeerUDP();
 		// Server
 		socket.SetDestAddress("127.0.0.1", 789);
-		socket.PutPacket("Time To Stop".ToAscii());
+		socket.PutPacket("Time to stop".ToAscii());
 
 		// Client
 		while (socket.Wait() == OK)

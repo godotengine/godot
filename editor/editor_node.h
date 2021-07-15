@@ -181,6 +181,7 @@ private:
 		SETTINGS_EDITOR_CONFIG_FOLDER,
 		SETTINGS_MANAGE_EXPORT_TEMPLATES,
 		SETTINGS_MANAGE_FEATURE_PROFILES,
+		SETTINGS_INSTALL_ANDROID_BUILD_TEMPLATE,
 		SETTINGS_PICK_MAIN_SCENE,
 		SETTINGS_TOGGLE_CONSOLE,
 		SETTINGS_TOGGLE_FULLSCREEN,
@@ -327,6 +328,7 @@ private:
 	EditorFileDialog *file_templates;
 	EditorFileDialog *file_export_lib;
 	EditorFileDialog *file_script;
+	EditorFileDialog *file_android_build_source;
 	CheckBox *file_export_lib_merge;
 	String current_path;
 	MenuButton *update_spinner;
@@ -454,6 +456,8 @@ private:
 	void _menu_option(int p_option);
 	void _menu_confirm_current();
 	void _menu_option_confirm(int p_option, bool p_confirmed);
+
+	void _android_build_source_selected(const String &p_file);
 
 	void _request_screenshot();
 	void _screenshot(bool p_use_utc = false);

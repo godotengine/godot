@@ -32,7 +32,7 @@
 #include "scene/resources/mesh.h"
 #include "thirdparty/vhacd/public/VHACD.h"
 
-static Vector<Vector<Face3>> convex_decompose(const Vector<Face3> &p_faces) {
+static Vector<Vector<Face3>> convex_decompose(const Vector<Face3> &p_faces, int p_max_convex_hulls = -1) {
 	Vector<float> vertices;
 	vertices.resize(p_faces.size() * 9);
 	Vector<uint32_t> indices;
@@ -47,8 +47,12 @@ static Vector<Vector<Face3>> convex_decompose(const Vector<Face3> &p_faces) {
 		}
 	}
 
-	VHACD::IVHACD *decomposer = VHACD::CreateVHACD();
 	VHACD::IVHACD::Parameters params;
+	if (p_max_convex_hulls > 0) {
+		params.m_maxConvexHulls = p_max_convex_hulls;
+	}
+
+	VHACD::IVHACD *decomposer = VHACD::CreateVHACD();
 	decomposer->Compute(vertices.ptr(), vertices.size() / 3, indices.ptr(), indices.size() / 3, params);
 
 	int hull_count = decomposer->GetNConvexHulls();

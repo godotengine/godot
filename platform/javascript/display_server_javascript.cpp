@@ -229,7 +229,7 @@ EM_BOOL DisplayServerJavaScript::mouse_button_callback(int p_event_type, const E
 	}
 
 	Input *input = Input::get_singleton();
-	MouseButton mask = input->get_mouse_button_mask();
+	int mask = input->get_mouse_button_mask();
 	MouseButton button_flag = MouseButton(1 << (ev->get_button_index() - 1));
 	if (ev->is_pressed()) {
 		// Since the event is consumed, focus manually. The containing iframe,
@@ -605,17 +605,17 @@ void DisplayServerJavaScript::process_joypads() {
 				Input::JoyAxisValue joy_axis;
 				joy_axis.min = 0;
 				joy_axis.value = value;
-				int a = b == 6 ? JOY_AXIS_TRIGGER_LEFT : JOY_AXIS_TRIGGER_RIGHT;
+				JoyAxis a = b == 6 ? JOY_AXIS_TRIGGER_LEFT : JOY_AXIS_TRIGGER_RIGHT;
 				input->joy_axis(idx, a, joy_axis);
 			} else {
-				input->joy_button(idx, b, value);
+				input->joy_button(idx, (JoyButton)b, value);
 			}
 		}
 		for (int a = 0; a < s_axes_num; a++) {
 			Input::JoyAxisValue joy_axis;
 			joy_axis.min = -1;
 			joy_axis.value = s_axes[a];
-			input->joy_axis(idx, a, joy_axis);
+			input->joy_axis(idx, (JoyAxis)a, joy_axis);
 		}
 	}
 }
@@ -710,18 +710,18 @@ void DisplayServerJavaScript::_dispatch_input_event(const Ref<InputEvent> &p_eve
 	}
 }
 
-DisplayServer *DisplayServerJavaScript::create_func(const String &p_rendering_driver, DisplayServer::WindowMode p_mode, uint32_t p_flags, const Vector2i &p_resolution, Error &r_error) {
-	return memnew(DisplayServerJavaScript(p_rendering_driver, p_mode, p_flags, p_resolution, r_error));
+DisplayServer *DisplayServerJavaScript::create_func(const String &p_rendering_driver, WindowMode p_window_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Size2i &p_resolution, Error &r_error) {
+	return memnew(DisplayServerJavaScript(p_rendering_driver, p_window_mode, p_vsync_mode, p_flags, p_resolution, r_error));
 }
 
-DisplayServerJavaScript::DisplayServerJavaScript(const String &p_rendering_driver, WindowMode p_mode, uint32_t p_flags, const Vector2i &p_resolution, Error &r_error) {
+DisplayServerJavaScript::DisplayServerJavaScript(const String &p_rendering_driver, WindowMode p_window_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Size2i &p_resolution, Error &r_error) {
 	r_error = OK; // Always succeeds for now.
 
 	// Ensure the canvas ID.
 	godot_js_config_canvas_id_get(canvas_id, 256);
 
 	// Handle contextmenu, webglcontextlost
-	godot_js_display_setup_canvas(p_resolution.x, p_resolution.y, p_mode == WINDOW_MODE_FULLSCREEN, OS::get_singleton()->is_hidpi_allowed() ? 1 : 0);
+	godot_js_display_setup_canvas(p_resolution.x, p_resolution.y, p_window_mode == WINDOW_MODE_FULLSCREEN, OS::get_singleton()->is_hidpi_allowed() ? 1 : 0);
 
 	// Check if it's windows.
 	swap_cancel_ok = godot_js_display_is_swap_ok_cancel() == 1;

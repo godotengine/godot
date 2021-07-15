@@ -842,7 +842,7 @@ def rstize_text(text, state):  # type: (str, State) -> str
                 inside_code = True
             elif cmd == "gdscript":
                 tag_depth += 1
-                tag_text = "\n .. code-tab:: gdscript GDScript\n"
+                tag_text = "\n .. code-tab:: gdscript\n"
                 inside_code = True
             elif cmd == "csharp":
                 tag_depth += 1

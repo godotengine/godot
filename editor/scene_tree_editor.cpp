@@ -526,6 +526,10 @@ void SceneTreeEditor::_node_removed(Node *p_node) {
 }
 
 void SceneTreeEditor::_node_renamed(Node *p_node) {
+	if (!get_scene_node()->is_ancestor_of(p_node)) {
+		return;
+	}
+
 	emit_signal("node_renamed");
 
 	if (!tree_dirty) {
@@ -659,7 +663,14 @@ void SceneTreeEditor::_cell_multi_selected(Object *p_object, int p_cell, bool p_
 	} else {
 		editor_selection->remove_node(n);
 	}
-	emit_signal("node_changed");
+
+	// Selection changed to be single node, so emit "selected" (for single node) rather than "changed" (for multiple nodes)
+	if (editor_selection->get_selected_nodes().size() == 1) {
+		selected = editor_selection->get_selected_node_list()[0];
+		emit_signal("node_selected");
+	} else {
+		emit_signal("node_changed");
+	}
 }
 
 void SceneTreeEditor::_notification(int p_what) {
@@ -1165,6 +1176,7 @@ SceneTreeEditor::SceneTreeEditor(bool p_label, bool p_can_rename, bool p_can_ope
 
 	if (p_label) {
 		Label *label = memnew(Label);
+		label->set_theme_type_variation("HeaderSmall");
 		label->set_position(Point2(10, 0));
 		label->set_text(TTR("Scene Tree (Nodes):"));
 

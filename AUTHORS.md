@@ -28,6 +28,7 @@ name is available.
 (in alphabetical order, with over 10 commits excluding merges)
 
     Aaron Franke (aaronfranke)
+    Aaron Record (LightningAA)
     Alexander Holland (AlexHolly)
     Alexey Khoroshavin (allkhor)
     Alket Rexhepi (alketii)
@@ -182,6 +183,7 @@ name is available.
     Stijn Hinlopen (hinlopen)
     Swarnim Arun (minraws)
     Thakee Nathees (ThakeeNathees)
+    thebestnom
     Theo Hallenius (TheoXD)
     Thomas Herzog (karroffel)
     Timo Schwarzer (timoschwarzer)

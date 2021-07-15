@@ -56,7 +56,7 @@ public:
 
 	float get_zoom();
 	void set_zoom(float p_zoom);
-	void set_zoom_by_increments(int p_increment_count);
+	void set_zoom_by_increments(int p_increment_count, bool p_integer_only = false);
 };
 
 #endif // EDITOR_ZOOM_WIDGET_H

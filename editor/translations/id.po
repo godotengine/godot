@@ -31,12 +31,13 @@
 # Hanz <hanzhaxors@gmail.com>, 2021.
 # Reza Almanda <rezaalmanda27@gmail.com>, 2021.
 # Naufal Adriansyah <naufaladrn90@gmail.com>, 2021.
+# undisputedgoose <diablodvorak@gmail.com>, 2021.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2021-04-05 14:28+0000\n"
-"Last-Translator: Naufal Adriansyah <naufaladrn90@gmail.com>\n"
+"PO-Revision-Date: 2021-07-05 14:32+0000\n"
+"Last-Translator: undisputedgoose <diablodvorak@gmail.com>\n"
 "Language-Team: Indonesian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/id/>\n"
 "Language: id\n"
@@ -44,7 +45,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 4.6-dev\n"
+"X-Generator: Weblate 4.8-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -69,7 +70,7 @@ msgstr "Masukkan tidak sah %i (tidak diberikan) dalam ekspresi"
 
 #: core/math/expression.cpp
 msgid "self can't be used because instance is null (not passed)"
-msgstr "self tidak dapat digunakan karena instance adalah null"
+msgstr "self tidak dapat digunakan karena instansi adalah null"
 
 #: core/math/expression.cpp
 msgid "Invalid operands to operator %s, %s and %s."
@@ -77,7 +78,7 @@ msgstr "operan salah untuk operator %s, %s dan %s."
 
 #: core/math/expression.cpp
 msgid "Invalid index of type %s for base type %s"
-msgstr "Tipe indeks %s tidak valid untuk tipe dasar %s"
+msgstr "Index tidak valid dari tipe %s untuk tipe dasar %s"
 
 #: core/math/expression.cpp
 msgid "Invalid named index '%s' for base type %s"
@@ -149,7 +150,7 @@ msgstr "Duplikat Key Terpilih"
 
 #: editor/animation_bezier_editor.cpp
 msgid "Delete Selected Key(s)"
-msgstr "Hapus Key Terpilih"
+msgstr "Hapus Kunci Terpilih"
 
 #: editor/animation_bezier_editor.cpp
 msgid "Add Bezier Point"
@@ -161,7 +162,7 @@ msgstr "Pindah Titik-titik Bezier"
 
 #: editor/animation_bezier_editor.cpp editor/animation_track_editor.cpp
 msgid "Anim Duplicate Keys"
-msgstr "Tombol Duplikat Anim"
+msgstr "Kunci Duplikat Anim"
 
 #: editor/animation_bezier_editor.cpp editor/animation_track_editor.cpp
 msgid "Anim Delete Keys"
@@ -341,7 +342,7 @@ msgstr "Interpolasi perulangan warp"
 #: editor/animation_track_editor.cpp
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Insert Key"
-msgstr "Masukkan Key"
+msgstr "Masukkan Kunci"
 
 #: editor/animation_track_editor.cpp
 msgid "Duplicate Key(s)"
@@ -437,11 +438,6 @@ msgid "Animation tracks can only point to AnimationPlayer nodes."
 msgstr "Track animasi hanya bisa menunjuk ke node AnimationPlayer."
 
 #: editor/animation_track_editor.cpp
-msgid "An animation player can't animate itself, only other players."
-msgstr ""
-"Pemutar animasi tidak bisa menganimasikan diri sendiri, hanya pemutar lain."
-
-#: editor/animation_track_editor.cpp
 msgid "Not possible to add a new track without a root"
 msgstr "Tidak memungkinkan untuk menambah track baru tanpa akar"
 
@@ -487,8 +483,9 @@ msgid "Anim Move Keys"
 msgstr "Pindahkan Kunci Anim"
 
 #: editor/animation_track_editor.cpp
-msgid "Clipboard is empty"
-msgstr "Papan klip kosong"
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Clipboard is empty!"
+msgstr "Papan klip kosong!"
 
 #: editor/animation_track_editor.cpp
 msgid "Paste Tracks"
@@ -544,7 +541,7 @@ msgstr "Susun Track-track dengan node atau tampilkan sebagai daftar biasa."
 
 #: editor/animation_track_editor.cpp
 msgid "Snap:"
-msgstr "Pengancingan:"
+msgstr "Snap:"
 
 #: editor/animation_track_editor.cpp
 msgid "Animation step value."
@@ -676,7 +673,7 @@ msgstr "Pilih Trek untuk Disalin"
 #: editor/plugins/sprite_frames_editor_plugin.cpp editor/property_editor.cpp
 #: editor/scene_tree_dock.cpp scene/gui/line_edit.cpp scene/gui/text_edit.cpp
 msgid "Copy"
-msgstr "Kopy"
+msgstr "Salin"
 
 #: editor/animation_track_editor.cpp
 msgid "Select All/None"
@@ -769,7 +766,7 @@ msgstr "Perkecil Pandangan"
 
 #: editor/code_editor.cpp
 msgid "Reset Zoom"
-msgstr "Kebalikan Semula Pandangan"
+msgstr "Kembalikan Semula Pandangan"
 
 #: editor/code_editor.cpp
 msgid "Warnings"
@@ -1128,7 +1125,7 @@ msgstr "Memiliki"
 
 #: editor/dependency_editor.cpp
 msgid "Resources Without Explicit Ownership:"
-msgstr "Resource Tanpa Kepemilikan yang Jelas:"
+msgstr "Sumber Tanpa Kepemilikan yang Jelas:"
 
 #: editor/dictionary_property_edit.cpp
 msgid "Change Dictionary Key"
@@ -1144,7 +1141,7 @@ msgstr "Terimakasih dari komunitas Godot!"
 
 #: editor/editor_about.cpp editor/editor_node.cpp editor/project_manager.cpp
 msgid "Click to copy."
-msgstr ""
+msgstr "Klik untuk salin."
 
 #: editor/editor_about.cpp
 msgid "Godot Engine contributors"
@@ -1373,7 +1370,7 @@ msgstr "Master Bus tidak dapat dihapus!"
 
 #: editor/editor_audio_buses.cpp
 msgid "Delete Audio Bus"
-msgstr "Hapus Bus Audio"
+msgstr "Hapus Audio Bus"
 
 #: editor/editor_audio_buses.cpp
 msgid "Duplicate Audio Bus"
@@ -1507,7 +1504,7 @@ msgstr "Mengatur kembali Autoload-autoload"
 
 #: editor/editor_autoload_settings.cpp
 msgid "Can't add autoload:"
-msgstr "Tidak dapat menambahkan autoload:"
+msgstr "Tidak dapat menambahkan autoload"
 
 #: editor/editor_autoload_settings.cpp
 msgid "Add AutoLoad"
@@ -2526,7 +2523,7 @@ msgid "Save changes to the following scene(s) before quitting?"
 msgstr "Simpan perubahan skena saat ini sebelum keluar?"
 
 #: editor/editor_node.cpp
-msgid "Save changes the following scene(s) before opening Project Manager?"
+msgid "Save changes to the following scene(s) before opening Project Manager?"
 msgstr "Simpan perubahan skena saat ini sebelum membuka Manajer Proyek?"
 
 #: editor/editor_node.cpp
@@ -2565,7 +2562,6 @@ msgid "Unable to load addon script from path: '%s'."
 msgstr "Tidak bisa memuat script addon dari lokasi: '%s'."
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid ""
 "Unable to load addon script from path: '%s'. This might be due to a code "
 "error in that script.\n"
@@ -3016,7 +3012,7 @@ msgstr "Tentang"
 
 #: editor/editor_node.cpp
 msgid "Support Godot Development"
-msgstr ""
+msgstr "Dukung pengembangan Godot"
 
 #: editor/editor_node.cpp
 msgid "Play the project."
@@ -7534,31 +7530,31 @@ msgstr "Tidak tersedia ketika menggunakan perender GLES2."
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Freelook Left"
-msgstr "TampilanBebas Kiri"
+msgstr "Tampilan Bebas Kiri"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Freelook Right"
-msgstr "TampilanBebas Kanan"
+msgstr "Tampilan Bebas Kanan"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Freelook Forward"
-msgstr "TampilanBebas Maju"
+msgstr "Tampilan Bebas Maju"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Freelook Backwards"
-msgstr "TampilanBebas Mundur"
+msgstr "Tampilan Bebas Mundur"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Freelook Up"
-msgstr "TampilanBebas Atas"
+msgstr "Tampilan Bebas Atas"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Freelook Down"
-msgstr "TampilanBebas Bawah"
+msgstr "Tampilan Bebas Bawah"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Freelook Speed Modifier"
-msgstr "Pengubah Kecepatan TampilanBebas"
+msgstr "Pengubah Kecepatan Tampilan Bebas"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Freelook Slow Modifier"
@@ -7569,9 +7565,12 @@ msgid "View Rotation Locked"
 msgstr "Rotasi Tampilan Terkunci"
 
 #: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
 msgid ""
 "To zoom further, change the camera's clipping planes (View -> Settings...)"
 msgstr ""
+"Untuk memperbesar lebih jauh, ganti kamera clipping planes (Tinjau -> "
+"Setelan...)"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid ""
@@ -7657,11 +7656,11 @@ msgstr "Beralih Tampilan Ortogonal/Perspektif"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Insert Animation Key"
-msgstr "Sisipkan Kunci Animasi"
+msgstr "Masukkan Kunci Animasi"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Focus Origin"
-msgstr "Asal Fokus"
+msgstr "Fokus asal"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Focus Selection"
@@ -7669,7 +7668,7 @@ msgstr "Pemilihan Fokus"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Toggle Freelook"
-msgstr "Jungkitkan Mode Tampilan Bebas"
+msgstr "Aktifkan Mode Tampilan Bebas"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 #: editor/plugins/visual_shader_editor_plugin.cpp
@@ -7678,7 +7677,7 @@ msgstr "Transformasi"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Snap Object to Floor"
-msgstr "Kancingkan Objek ke Lantai"
+msgstr "Tempelkan Objek ke Lantai"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Transform Dialog..."
@@ -12008,10 +12007,6 @@ msgid "Can't copy the function node."
 msgstr "Tidak dapat menyalin node fungsi."
 
 #: modules/visual_script/visual_script_editor.cpp
-msgid "Clipboard is empty!"
-msgstr "Papan klip kosong!"
-
-#: modules/visual_script/visual_script_editor.cpp
 msgid "Paste VisualScript Nodes"
 msgstr "Rekatkan Node VisualScript"
 
@@ -13209,6 +13204,14 @@ msgstr "Variasi hanya bisa ditetapkan dalam fungsi vertex."
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "Konstanta tidak dapat dimodifikasi."
+
+#~ msgid "An animation player can't animate itself, only other players."
+#~ msgstr ""
+#~ "Pemutar animasi tidak bisa menganimasikan diri sendiri, hanya pemutar "
+#~ "lain."
+
+#~ msgid "Clipboard is empty"
+#~ msgstr "Papan klip kosong"
 
 #~ msgid "No"
 #~ msgstr "Tidak"

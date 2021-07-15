@@ -46,7 +46,7 @@ void register_fbx_types() {
 	ClassDB::APIType prev_api = ClassDB::get_current_api();
 	ClassDB::set_current_api(ClassDB::API_EDITOR);
 
-	ClassDB::register_class<EditorSceneImporterFBX>();
+	GDREGISTER_CLASS(EditorSceneImporterFBX);
 
 	ClassDB::set_current_api(prev_api);
 

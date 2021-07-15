@@ -107,7 +107,7 @@ void GDAPI godot_pluginscript_register_language(const godot_pluginscript_languag
 }
 
 void register_pluginscript_types() {
-	ClassDB::register_class<PluginScript>();
+	GDREGISTER_CLASS(PluginScript);
 }
 
 void unregister_pluginscript_types() {

@@ -630,6 +630,12 @@ bool ExportTemplateManager::can_install_android_template() {
 }
 
 Error ExportTemplateManager::install_android_template() {
+	const String &templates_path = EditorSettings::get_singleton()->get_templates_dir().plus_file(VERSION_FULL_CONFIG);
+	const String &source_zip = templates_path.plus_file("android_source.zip");
+	ERR_FAIL_COND_V(!FileAccess::exists(source_zip), ERR_CANT_OPEN);
+	return install_android_template_from_file(source_zip);
+}
+Error ExportTemplateManager::install_android_template_from_file(const String &p_file) {
 	// To support custom Android builds, we install the Java source code and buildsystem
 	// from android_source.zip to the project's res://android folder.
 
@@ -662,14 +668,10 @@ Error ExportTemplateManager::install_android_template() {
 
 	// Uncompress source template.
 
-	const String &templates_path = EditorSettings::get_singleton()->get_templates_dir().plus_file(VERSION_FULL_CONFIG);
-	const String &source_zip = templates_path.plus_file("android_source.zip");
-	ERR_FAIL_COND_V(!FileAccess::exists(source_zip), ERR_CANT_OPEN);
-
 	FileAccess *src_f = nullptr;
 	zlib_filefunc_def io = zipio_create_io_from_file(&src_f);
 
-	unzFile pkg = unzOpen2(source_zip.utf8().get_data(), &io);
+	unzFile pkg = unzOpen2(p_file.utf8().get_data(), &io);
 	ERR_FAIL_COND_V_MSG(!pkg, ERR_CANT_OPEN, "Android sources not in ZIP format.");
 
 	int ret = unzGoToFirstFile(pkg);
@@ -812,6 +814,7 @@ ExportTemplateManager::ExportTemplateManager() {
 	main_vb->add_child(current_hb);
 
 	Label *current_label = memnew(Label);
+	current_label->set_theme_type_variation("HeaderSmall");
 	current_label->set_text(TTR("Current Version:"));
 	current_hb->add_child(current_label);
 
@@ -821,6 +824,8 @@ ExportTemplateManager::ExportTemplateManager() {
 	// Current version statuses.
 	// Status: Current version is missing.
 	current_missing_label = memnew(Label);
+	current_missing_label->set_theme_type_variation("HeaderSmall");
+
 	current_missing_label->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	current_missing_label->set_align(Label::ALIGN_RIGHT);
 	current_missing_label->set_text(TTR("Export templates are missing. Download them or install from a file."));
@@ -828,6 +833,7 @@ ExportTemplateManager::ExportTemplateManager() {
 
 	// Status: Current version is installed.
 	current_installed_label = memnew(Label);
+	current_installed_label->set_theme_type_variation("HeaderSmall");
 	current_installed_label->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	current_installed_label->set_align(Label::ALIGN_RIGHT);
 	current_installed_label->set_text(TTR("Export templates are installed and ready to be used."));
@@ -947,6 +953,7 @@ ExportTemplateManager::ExportTemplateManager() {
 	HBoxContainer *installed_versions_hb = memnew(HBoxContainer);
 	main_vb->add_child(installed_versions_hb);
 	Label *installed_label = memnew(Label);
+	installed_label->set_theme_type_variation("HeaderSmall");
 	installed_label->set_text(TTR("Other Installed Versions:"));
 	installed_versions_hb->add_child(installed_label);
 

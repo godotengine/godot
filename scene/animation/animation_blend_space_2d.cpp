@@ -532,10 +532,10 @@ float AnimationNodeBlendSpace2D::process(float p_time, bool p_seek) {
 			float from = 0.0;
 			if (blend_mode == BLEND_MODE_DISCRETE_CARRY && closest != -1) {
 				//see how much animation remains
-				from = blend_node(blend_points[closest].name, blend_points[closest].node, p_time, true, 0.0, FILTER_IGNORE, false) - length_internal;
+				from = length_internal - blend_node(blend_points[closest].name, blend_points[closest].node, p_time, false, 0.0, FILTER_IGNORE, false);
 			}
 
-			mind = blend_node(blend_points[new_closest].name, blend_points[new_closest].node, from, true, 1.0, FILTER_IGNORE, false) + from;
+			mind = blend_node(blend_points[new_closest].name, blend_points[new_closest].node, from, true, 1.0, FILTER_IGNORE, false);
 			length_internal = from + mind;
 
 			closest = new_closest;

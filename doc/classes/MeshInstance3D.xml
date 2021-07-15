@@ -16,8 +16,14 @@
 		<method name="create_convex_collision">
 			<return type="void">
 			</return>
+			<argument index="0" name="clean" type="bool" default="true">
+			</argument>
+			<argument index="1" name="simplify" type="bool" default="false">
+			</argument>
 			<description>
 				This helper creates a [StaticBody3D] child node with a [ConvexPolygonShape3D] collision shape calculated from the mesh geometry. It's mainly used for testing.
+				If [code]clean[/code] is [code]true[/code] (default), duplicate and interior vertices are removed automatically. You can set it to [code]false[/code] to make the process faster if not needed.
+				If [code]simplify[/code] is [code]true[/code], the geometry can be further simplified to reduce the amount of vertices. Disabled by default.
 			</description>
 		</method>
 		<method name="create_debug_tangents">

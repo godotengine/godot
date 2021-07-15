@@ -654,7 +654,7 @@ bool RendererSceneRenderRD::reflection_probe_instance_begin_render(RID p_instanc
 			//reflection atlas was unused, create:
 			RD::TextureFormat tf;
 			tf.array_layers = 6 * atlas->count;
-			tf.format = RD::DATA_FORMAT_R16G16B16A16_SFLOAT;
+			tf.format = _render_buffers_get_color_format();
 			tf.texture_type = RD::TEXTURE_TYPE_CUBE_ARRAY;
 			tf.mipmaps = mipmaps;
 			tf.width = atlas->size;
@@ -707,6 +707,10 @@ bool RendererSceneRenderRD::reflection_probe_instance_begin_render(RID p_instanc
 				}
 			}
 		}
+	}
+
+	if (rpi->atlas_index != -1) { // should we fail if this is still -1 ?
+		atlas->reflections.write[rpi->atlas_index].owner = p_instance;
 	}
 
 	rpi->atlas = p_reflection_atlas;
@@ -2114,6 +2118,10 @@ float RendererSceneRenderRD::render_buffers_get_volumetric_fog_detail_spread(RID
 	return rb->volumetric_fog->spread;
 }
 
+RD::DataFormat RendererSceneRenderRD::_render_buffers_get_color_format() {
+	return RD::DATA_FORMAT_R16G16B16A16_SFLOAT;
+}
+
 void RendererSceneRenderRD::render_buffers_configure(RID p_render_buffers, RID p_render_target, int p_width, int p_height, RS::ViewportMSAA p_msaa, RenderingServer::ViewportScreenSpaceAA p_screen_space_aa, bool p_use_debanding, uint32_t p_view_count) {
 	ERR_FAIL_COND_MSG(p_view_count == 0, "Must have at least 1 view");
 
@@ -2140,7 +2148,7 @@ void RendererSceneRenderRD::render_buffers_configure(RID p_render_buffers, RID p
 		if (rb->view_count > 1) {
 			tf.texture_type = RD::TEXTURE_TYPE_2D_ARRAY;
 		}
-		tf.format = RD::DATA_FORMAT_R16G16B16A16_SFLOAT;
+		tf.format = _render_buffers_get_color_format();
 		tf.width = rb->width;
 		tf.height = rb->height;
 		tf.array_layers = rb->view_count; // create a layer for every view
@@ -2373,7 +2381,7 @@ void RendererSceneRenderRD::_setup_reflections(const PagedArray<RID> &p_reflecti
 	}
 }
 
-void RendererSceneRenderRD::_setup_lights(const PagedArray<RID> &p_lights, const Transform3D &p_camera_transform, RID p_shadow_atlas, bool p_using_shadows, uint32_t &r_directional_light_count, uint32_t &r_positional_light_count) {
+void RendererSceneRenderRD::_setup_lights(const PagedArray<RID> &p_lights, const Transform3D &p_camera_transform, RID p_shadow_atlas, bool p_using_shadows, uint32_t &r_directional_light_count, uint32_t &r_positional_light_count, bool &r_directional_light_soft_shadows) {
 	Transform3D inverse_transform = p_camera_transform.affine_inverse();
 
 	r_directional_light_count = 0;
@@ -2384,6 +2392,8 @@ void RendererSceneRenderRD::_setup_lights(const PagedArray<RID> &p_lights, const
 
 	cluster.omni_light_count = 0;
 	cluster.spot_light_count = 0;
+
+	r_directional_light_soft_shadows = false;
 
 	for (int i = 0; i < (int)p_lights.size(); i++) {
 		LightInstance *li = light_instance_owner.getornull(p_lights[i]);
@@ -2423,6 +2433,9 @@ void RendererSceneRenderRD::_setup_lights(const PagedArray<RID> &p_lights, const
 						// technically this will keep expanding until reaching the sun, but all we care
 						// is expand until we reach the radius of the near plane (there can't be more occluders than that)
 						angular_diameter = Math::tan(Math::deg2rad(angular_diameter));
+						if (storage->light_has_shadow(base)) {
+							r_directional_light_soft_shadows = true;
+						}
 					} else {
 						angular_diameter = 0.0;
 					}
@@ -3617,7 +3630,7 @@ void RendererSceneRenderRD::_pre_opaque_render(RenderDataRD *p_render_data, bool
 
 	uint32_t directional_light_count = 0;
 	uint32_t positional_light_count = 0;
-	_setup_lights(*p_render_data->lights, p_render_data->cam_transform, p_render_data->shadow_atlas, using_shadows, directional_light_count, positional_light_count);
+	_setup_lights(*p_render_data->lights, p_render_data->cam_transform, p_render_data->shadow_atlas, using_shadows, directional_light_count, positional_light_count, p_render_data->directional_light_soft_shadows);
 	_setup_decals(*p_render_data->decals, p_render_data->cam_transform.affine_inverse());
 
 	p_render_data->directional_light_count = directional_light_count;

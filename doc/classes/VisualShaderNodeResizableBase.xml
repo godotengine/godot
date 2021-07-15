@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="VisualShaderNodeResizableBase" inherits="VisualShaderNode" version="4.0">
 	<brief_description>
+		Base class for resizable nodes in a visual shader graph.
 	</brief_description>
 	<description>
+		Resizable nodes have a handle that allows the user to adjust their size as needed.
 	</description>
 	<tutorials>
 	</tutorials>

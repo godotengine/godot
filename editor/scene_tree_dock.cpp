@@ -1206,14 +1206,13 @@ void SceneTreeDock::_notification(int p_what) {
 			filter->set_right_icon(get_theme_icon("Search", "EditorIcons"));
 			filter->set_clear_button_enabled(true);
 
-			EditorNode::get_singleton()->get_editor_selection()->connect("selection_changed", callable_mp(this, &SceneTreeDock::_selection_changed));
-			scene_tree->get_scene_tree()->connect("item_collapsed", callable_mp(this, &SceneTreeDock::_node_collapsed));
-
 			// create_root_dialog
 			HBoxContainer *top_row = memnew(HBoxContainer);
 			top_row->set_name("NodeShortcutsTopRow");
 			top_row->set_h_size_flags(SIZE_EXPAND_FILL);
-			top_row->add_child(memnew(Label(TTR("Create Root Node:"))));
+			Label *l = memnew(Label(TTR("Create Root Node:")));
+			l->set_theme_type_variation("HeaderSmall");
+			top_row->add_child(l);
 			top_row->add_spacer();
 
 			Button *node_shortcuts_toggle = memnew(Button);
@@ -3216,6 +3215,9 @@ SceneTreeDock::SceneTreeDock(EditorNode *p_editor, Node *p_scene_root, EditorSel
 	scene_tree->connect("nodes_dragged", callable_mp(this, &SceneTreeDock::_nodes_drag_begin));
 
 	scene_tree->get_scene_tree()->connect("item_double_clicked", callable_mp(this, &SceneTreeDock::_focus_node));
+	scene_tree->get_scene_tree()->connect("item_collapsed", callable_mp(this, &SceneTreeDock::_node_collapsed));
+
+	editor_selection->connect("selection_changed", callable_mp(this, &SceneTreeDock::_selection_changed));
 
 	scene_tree->set_undo_redo(&editor_data->get_undo_redo());
 	scene_tree->set_editor_selection(editor_selection);

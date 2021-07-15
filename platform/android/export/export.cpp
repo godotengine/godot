@@ -2064,10 +2064,9 @@ public:
 				err += template_err;
 			}
 		} else {
-			r_missing_templates = !exists_export_template("android_source.zip", &err);
-
 			bool installed_android_build_template = FileAccess::exists("res://android/build/build.gradle");
 			if (!installed_android_build_template) {
+				r_missing_templates = !exists_export_template("android_source.zip", &err);
 				err += TTR("Android build template not installed in the project. Install it from the Project menu.") + "\n";
 			}
 

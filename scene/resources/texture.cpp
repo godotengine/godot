@@ -1545,19 +1545,19 @@ CurveTexture::~CurveTexture() {
 
 //////////////////
 
-void Curve3Texture::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("set_width", "width"), &Curve3Texture::set_width);
+void CurveXYZTexture::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("set_width", "width"), &CurveXYZTexture::set_width);
 
-	ClassDB::bind_method(D_METHOD("set_curve_x", "curve"), &Curve3Texture::set_curve_x);
-	ClassDB::bind_method(D_METHOD("get_curve_x"), &Curve3Texture::get_curve_x);
+	ClassDB::bind_method(D_METHOD("set_curve_x", "curve"), &CurveXYZTexture::set_curve_x);
+	ClassDB::bind_method(D_METHOD("get_curve_x"), &CurveXYZTexture::get_curve_x);
 
-	ClassDB::bind_method(D_METHOD("set_curve_y", "curve"), &Curve3Texture::set_curve_y);
-	ClassDB::bind_method(D_METHOD("get_curve_y"), &Curve3Texture::get_curve_y);
+	ClassDB::bind_method(D_METHOD("set_curve_y", "curve"), &CurveXYZTexture::set_curve_y);
+	ClassDB::bind_method(D_METHOD("get_curve_y"), &CurveXYZTexture::get_curve_y);
 
-	ClassDB::bind_method(D_METHOD("set_curve_z", "curve"), &Curve3Texture::set_curve_z);
-	ClassDB::bind_method(D_METHOD("get_curve_z"), &Curve3Texture::get_curve_z);
+	ClassDB::bind_method(D_METHOD("set_curve_z", "curve"), &CurveXYZTexture::set_curve_z);
+	ClassDB::bind_method(D_METHOD("get_curve_z"), &CurveXYZTexture::get_curve_z);
 
-	ClassDB::bind_method(D_METHOD("_update"), &Curve3Texture::_update);
+	ClassDB::bind_method(D_METHOD("_update"), &CurveXYZTexture::_update);
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "width", PROPERTY_HINT_RANGE, "1,4096"), "set_width", "get_width");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "curve_x", PROPERTY_HINT_RESOURCE_TYPE, "Curve"), "set_curve_x", "get_curve_x");
@@ -1565,7 +1565,7 @@ void Curve3Texture::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "curve_z", PROPERTY_HINT_RESOURCE_TYPE, "Curve"), "set_curve_z", "get_curve_z");
 }
 
-void Curve3Texture::set_width(int p_width) {
+void CurveXYZTexture::set_width(int p_width) {
 	ERR_FAIL_COND(p_width < 32 || p_width > 4096);
 
 	if (_width == p_width) {
@@ -1576,11 +1576,11 @@ void Curve3Texture::set_width(int p_width) {
 	_update();
 }
 
-int Curve3Texture::get_width() const {
+int CurveXYZTexture::get_width() const {
 	return _width;
 }
 
-void Curve3Texture::ensure_default_setup(float p_min, float p_max) {
+void CurveXYZTexture::ensure_default_setup(float p_min, float p_max) {
 	if (_curve_x.is_null()) {
 		Ref<Curve> curve = Ref<Curve>(memnew(Curve));
 		curve->add_point(Vector2(0, 1));
@@ -1609,46 +1609,46 @@ void Curve3Texture::ensure_default_setup(float p_min, float p_max) {
 	}
 }
 
-void Curve3Texture::set_curve_x(Ref<Curve> p_curve) {
+void CurveXYZTexture::set_curve_x(Ref<Curve> p_curve) {
 	if (_curve_x != p_curve) {
 		if (_curve_x.is_valid()) {
-			_curve_x->disconnect(CoreStringNames::get_singleton()->changed, callable_mp(this, &Curve3Texture::_update));
+			_curve_x->disconnect(CoreStringNames::get_singleton()->changed, callable_mp(this, &CurveXYZTexture::_update));
 		}
 		_curve_x = p_curve;
 		if (_curve_x.is_valid()) {
-			_curve_x->connect(CoreStringNames::get_singleton()->changed, callable_mp(this, &Curve3Texture::_update), varray(), CONNECT_REFERENCE_COUNTED);
+			_curve_x->connect(CoreStringNames::get_singleton()->changed, callable_mp(this, &CurveXYZTexture::_update), varray(), CONNECT_REFERENCE_COUNTED);
 		}
 		_update();
 	}
 }
 
-void Curve3Texture::set_curve_y(Ref<Curve> p_curve) {
+void CurveXYZTexture::set_curve_y(Ref<Curve> p_curve) {
 	if (_curve_y != p_curve) {
 		if (_curve_y.is_valid()) {
-			_curve_y->disconnect(CoreStringNames::get_singleton()->changed, callable_mp(this, &Curve3Texture::_update));
+			_curve_y->disconnect(CoreStringNames::get_singleton()->changed, callable_mp(this, &CurveXYZTexture::_update));
 		}
 		_curve_y = p_curve;
 		if (_curve_y.is_valid()) {
-			_curve_y->connect(CoreStringNames::get_singleton()->changed, callable_mp(this, &Curve3Texture::_update), varray(), CONNECT_REFERENCE_COUNTED);
+			_curve_y->connect(CoreStringNames::get_singleton()->changed, callable_mp(this, &CurveXYZTexture::_update), varray(), CONNECT_REFERENCE_COUNTED);
 		}
 		_update();
 	}
 }
 
-void Curve3Texture::set_curve_z(Ref<Curve> p_curve) {
+void CurveXYZTexture::set_curve_z(Ref<Curve> p_curve) {
 	if (_curve_z != p_curve) {
 		if (_curve_z.is_valid()) {
-			_curve_z->disconnect(CoreStringNames::get_singleton()->changed, callable_mp(this, &Curve3Texture::_update));
+			_curve_z->disconnect(CoreStringNames::get_singleton()->changed, callable_mp(this, &CurveXYZTexture::_update));
 		}
 		_curve_z = p_curve;
 		if (_curve_z.is_valid()) {
-			_curve_z->connect(CoreStringNames::get_singleton()->changed, callable_mp(this, &Curve3Texture::_update), varray(), CONNECT_REFERENCE_COUNTED);
+			_curve_z->connect(CoreStringNames::get_singleton()->changed, callable_mp(this, &CurveXYZTexture::_update), varray(), CONNECT_REFERENCE_COUNTED);
 		}
 		_update();
 	}
 }
 
-void Curve3Texture::_update() {
+void CurveXYZTexture::_update() {
 	Vector<uint8_t> data;
 	data.resize(_width * sizeof(float) * 3);
 
@@ -1714,28 +1714,28 @@ void Curve3Texture::_update() {
 	emit_changed();
 }
 
-Ref<Curve> Curve3Texture::get_curve_x() const {
+Ref<Curve> CurveXYZTexture::get_curve_x() const {
 	return _curve_x;
 }
 
-Ref<Curve> Curve3Texture::get_curve_y() const {
+Ref<Curve> CurveXYZTexture::get_curve_y() const {
 	return _curve_y;
 }
 
-Ref<Curve> Curve3Texture::get_curve_z() const {
+Ref<Curve> CurveXYZTexture::get_curve_z() const {
 	return _curve_z;
 }
 
-RID Curve3Texture::get_rid() const {
+RID CurveXYZTexture::get_rid() const {
 	if (!_texture.is_valid()) {
 		_texture = RS::get_singleton()->texture_2d_placeholder_create();
 	}
 	return _texture;
 }
 
-Curve3Texture::Curve3Texture() {}
+CurveXYZTexture::CurveXYZTexture() {}
 
-Curve3Texture::~Curve3Texture() {
+CurveXYZTexture::~CurveXYZTexture() {
 	if (_texture.is_valid()) {
 		RS::get_singleton()->free(_texture);
 	}

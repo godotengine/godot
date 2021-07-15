@@ -31,7 +31,6 @@
 #include "editor_node.h"
 
 #include "core/config/project_settings.h"
-#include "core/core_bind.h"
 #include "core/extension/native_extension_manager.h"
 #include "core/input/input.h"
 #include "core/io/config_file.h"
@@ -168,6 +167,7 @@
 #include "editor/plugins/sprite_2d_editor_plugin.h"
 #include "editor/plugins/sprite_frames_editor_plugin.h"
 #include "editor/plugins/style_box_editor_plugin.h"
+#include "editor/plugins/sub_viewport_preview_editor_plugin.h"
 #include "editor/plugins/text_editor.h"
 #include "editor/plugins/texture_3d_editor_plugin.h"
 #include "editor/plugins/texture_editor_plugin.h"
@@ -2329,6 +2329,9 @@ void EditorNode::_run_native(const Ref<EditorExportPreset> &p_preset) {
 	}
 }
 
+void EditorNode::_android_build_source_selected(const String &p_file) {
+	export_template_manager->install_android_template_from_file(p_file);
+}
 void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 	if (!p_confirmed) { //this may be a hack..
 		current_option = (MenuOptions)p_option;
@@ -2713,7 +2716,7 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 						}
 
 						save_confirmation->get_ok_button()->set_text(TTR("Save & Quit"));
-						save_confirmation->set_text((p_option == FILE_QUIT ? TTR("Save changes to the following scene(s) before quitting?") : TTR("Save changes the following scene(s) before opening Project Manager?")) + unsaved_scenes);
+						save_confirmation->set_text((p_option == FILE_QUIT ? TTR("Save changes to the following scene(s) before quitting?") : TTR("Save changes to the following scene(s) before opening Project Manager?")) + unsaved_scenes);
 						save_confirmation->popup_centered();
 					}
 				}
@@ -2752,6 +2755,10 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 		case SETTINGS_MANAGE_EXPORT_TEMPLATES: {
 			export_template_manager->popup_manager();
 
+		} break;
+		case SETTINGS_INSTALL_ANDROID_BUILD_TEMPLATE: {
+			custom_build_manage_templates->hide();
+			file_android_build_source->popup_centered_ratio();
 		} break;
 		case SETTINGS_MANAGE_FEATURE_PROFILES: {
 			feature_profile_manager->popup_centered_clamped(Size2(900, 800) * EDSCALE, 0.8);
@@ -3736,46 +3743,46 @@ void EditorNode::register_editor_types() {
 	ResourceLoader::set_timestamp_on_load(true);
 	ResourceSaver::set_timestamp_on_save(true);
 
-	ClassDB::register_class<EditorPaths>();
-	ClassDB::register_class<EditorPlugin>();
-	ClassDB::register_class<EditorTranslationParserPlugin>();
-	ClassDB::register_class<EditorImportPlugin>();
-	ClassDB::register_class<EditorScript>();
-	ClassDB::register_class<EditorSelection>();
-	ClassDB::register_class<EditorFileDialog>();
-	ClassDB::register_virtual_class<EditorSettings>();
-	ClassDB::register_class<EditorNode3DGizmo>();
-	ClassDB::register_class<EditorNode3DGizmoPlugin>();
-	ClassDB::register_virtual_class<EditorResourcePreview>();
-	ClassDB::register_class<EditorResourcePreviewGenerator>();
-	ClassDB::register_virtual_class<EditorFileSystem>();
-	ClassDB::register_class<EditorFileSystemDirectory>();
-	ClassDB::register_class<EditorVCSInterface>();
-	ClassDB::register_virtual_class<ScriptEditor>();
-	ClassDB::register_virtual_class<ScriptEditorBase>();
-	ClassDB::register_class<EditorSyntaxHighlighter>();
-	ClassDB::register_virtual_class<EditorInterface>();
-	ClassDB::register_class<EditorExportPlugin>();
-	ClassDB::register_class<EditorResourceConversionPlugin>();
-	ClassDB::register_class<EditorSceneImporter>();
-	ClassDB::register_class<EditorInspector>();
-	ClassDB::register_class<EditorInspectorPlugin>();
-	ClassDB::register_class<EditorProperty>();
-	ClassDB::register_class<AnimationTrackEditPlugin>();
-	ClassDB::register_class<ScriptCreateDialog>();
-	ClassDB::register_class<EditorFeatureProfile>();
-	ClassDB::register_class<EditorSpinSlider>();
-	ClassDB::register_class<EditorResourcePicker>();
-	ClassDB::register_class<EditorScriptPicker>();
-	ClassDB::register_class<EditorSceneImporterMesh>();
-	ClassDB::register_class<EditorSceneImporterMeshNode3D>();
+	GDREGISTER_CLASS(EditorPaths);
+	GDREGISTER_CLASS(EditorPlugin);
+	GDREGISTER_CLASS(EditorTranslationParserPlugin);
+	GDREGISTER_CLASS(EditorImportPlugin);
+	GDREGISTER_CLASS(EditorScript);
+	GDREGISTER_CLASS(EditorSelection);
+	GDREGISTER_CLASS(EditorFileDialog);
+	GDREGISTER_VIRTUAL_CLASS(EditorSettings);
+	GDREGISTER_CLASS(EditorNode3DGizmo);
+	GDREGISTER_CLASS(EditorNode3DGizmoPlugin);
+	GDREGISTER_VIRTUAL_CLASS(EditorResourcePreview);
+	GDREGISTER_CLASS(EditorResourcePreviewGenerator);
+	GDREGISTER_VIRTUAL_CLASS(EditorFileSystem);
+	GDREGISTER_CLASS(EditorFileSystemDirectory);
+	GDREGISTER_CLASS(EditorVCSInterface);
+	GDREGISTER_VIRTUAL_CLASS(ScriptEditor);
+	GDREGISTER_VIRTUAL_CLASS(ScriptEditorBase);
+	GDREGISTER_CLASS(EditorSyntaxHighlighter);
+	GDREGISTER_VIRTUAL_CLASS(EditorInterface);
+	GDREGISTER_CLASS(EditorExportPlugin);
+	GDREGISTER_CLASS(EditorResourceConversionPlugin);
+	GDREGISTER_CLASS(EditorSceneImporter);
+	GDREGISTER_CLASS(EditorInspector);
+	GDREGISTER_CLASS(EditorInspectorPlugin);
+	GDREGISTER_CLASS(EditorProperty);
+	GDREGISTER_CLASS(AnimationTrackEditPlugin);
+	GDREGISTER_CLASS(ScriptCreateDialog);
+	GDREGISTER_CLASS(EditorFeatureProfile);
+	GDREGISTER_CLASS(EditorSpinSlider);
+	GDREGISTER_CLASS(EditorResourcePicker);
+	GDREGISTER_CLASS(EditorScriptPicker);
+	GDREGISTER_CLASS(EditorSceneImporterMesh);
+	GDREGISTER_CLASS(EditorSceneImporterMeshNode3D);
 
-	ClassDB::register_virtual_class<FileSystemDock>();
+	GDREGISTER_VIRTUAL_CLASS(FileSystemDock);
 
 	// FIXME: Is this stuff obsolete, or should it be ported to new APIs?
-	ClassDB::register_class<EditorScenePostImport>();
+	GDREGISTER_CLASS(EditorScenePostImport);
 	//ClassDB::register_type<EditorImportExport>();
-	ClassDB::register_class<EditorDebuggerPlugin>();
+	GDREGISTER_CLASS(EditorDebuggerPlugin);
 
 	NativeExtensionManager::get_singleton()->initialize_extensions(NativeExtension::INITIALIZATION_LEVEL_EDITOR);
 }
@@ -6678,8 +6685,17 @@ EditorNode::EditorNode() {
 	custom_build_manage_templates = memnew(ConfirmationDialog);
 	custom_build_manage_templates->set_text(TTR("Android build template is missing, please install relevant templates."));
 	custom_build_manage_templates->get_ok_button()->set_text(TTR("Manage Templates"));
+	custom_build_manage_templates->add_button(TTR("Install from file"))->connect("pressed", callable_mp(this, &EditorNode::_menu_option), varray(SETTINGS_INSTALL_ANDROID_BUILD_TEMPLATE));
 	custom_build_manage_templates->connect("confirmed", callable_mp(this, &EditorNode::_menu_option), varray(SETTINGS_MANAGE_EXPORT_TEMPLATES));
 	gui_base->add_child(custom_build_manage_templates);
+
+	file_android_build_source = memnew(EditorFileDialog);
+	file_android_build_source->set_title(TTR("Select android sources file"));
+	file_android_build_source->set_access(EditorFileDialog::ACCESS_FILESYSTEM);
+	file_android_build_source->set_file_mode(EditorFileDialog::FILE_MODE_OPEN_FILE);
+	file_android_build_source->add_filter("*.zip");
+	file_android_build_source->connect("file_selected", callable_mp(this, &EditorNode::_android_build_source_selected));
+	gui_base->add_child(file_android_build_source);
 
 	install_android_build_template = memnew(ConfirmationDialog);
 	install_android_build_template->set_text(TTR("This will set up your project for custom Android builds by installing the source template to \"res://android/build\".\nYou can then apply modifications and build your own custom APK on export (adding modules, changing the AndroidManifest.xml, etc.).\nNote that in order to make custom builds instead of using pre-built APKs, the \"Use Custom Build\" option should be enabled in the Android export preset."));
@@ -6841,6 +6857,7 @@ EditorNode::EditorNode() {
 	add_editor_plugin(memnew(MaterialEditorPlugin(this)));
 	add_editor_plugin(memnew(GPUParticlesCollisionSDFEditorPlugin(this)));
 	add_editor_plugin(memnew(InputEventEditorPlugin(this)));
+	add_editor_plugin(memnew(SubViewportPreviewEditorPlugin(this)));
 
 	for (int i = 0; i < EditorPlugins::get_plugin_count(); i++) {
 		add_editor_plugin(EditorPlugins::create(i, this));

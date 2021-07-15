@@ -415,10 +415,6 @@ msgid "Animation tracks can only point to AnimationPlayer nodes."
 msgstr "অ্যানিমেশন ট্র্যাকগুলি কেবল অ্যানিমেশনপ্লেয়ার নোডগুলিতে নির্দেশ করতে পারে।"
 
 #: editor/animation_track_editor.cpp
-msgid "An animation player can't animate itself, only other players."
-msgstr "একটি অ্যানিমেশন প্লেয়ার নিজেই অ্যানিমেট করতে পারে না, কেবল অন্য প্লেয়ার।"
-
-#: editor/animation_track_editor.cpp
 msgid "Not possible to add a new track without a root"
 msgstr "মূল ছাড়া নতুন ট্র্যাক যুক্ত করা সম্ভব নয়"
 
@@ -463,8 +459,10 @@ msgid "Anim Move Keys"
 msgstr "অ্যানিমেশনে (Anim) চাবি/কী-সমুহ সরান"
 
 #: editor/animation_track_editor.cpp
-msgid "Clipboard is empty"
-msgstr "ক্লীপবোর্ড খালি"
+#: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
+msgid "Clipboard is empty!"
+msgstr "রিসোর্সের ক্লীপবোর্ড খালি!"
 
 #: editor/animation_track_editor.cpp
 msgid "Paste Tracks"
@@ -2609,7 +2607,7 @@ msgid "Save changes to the following scene(s) before quitting?"
 msgstr "বন্ধ করার পূর্বে পরিবর্তনসমূহ (সিন) সংরক্ষণ করবেন?"
 
 #: editor/editor_node.cpp
-msgid "Save changes the following scene(s) before opening Project Manager?"
+msgid "Save changes to the following scene(s) before opening Project Manager?"
 msgstr "প্রজেক্ট ম্যানেজার ওপেন করার পূর্বে পরিবর্তনসমূহ (সিন) সংরক্ষণ করবেন?"
 
 #: editor/editor_node.cpp
@@ -12737,11 +12735,6 @@ msgstr "'..' তে পরিচালনা করা সম্ভব নয়"
 
 #: modules/visual_script/visual_script_editor.cpp
 #, fuzzy
-msgid "Clipboard is empty!"
-msgstr "রিসোর্সের ক্লীপবোর্ড খালি!"
-
-#: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Paste VisualScript Nodes"
 msgstr "নোড-সমূহ প্রতিলেপন/পেস্ট করুন"
 
@@ -13862,6 +13855,12 @@ msgstr ""
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr ""
+
+#~ msgid "An animation player can't animate itself, only other players."
+#~ msgstr "একটি অ্যানিমেশন প্লেয়ার নিজেই অ্যানিমেট করতে পারে না, কেবল অন্য প্লেয়ার।"
+
+#~ msgid "Clipboard is empty"
+#~ msgstr "ক্লীপবোর্ড খালি"
 
 #, fuzzy
 #~ msgid "No"

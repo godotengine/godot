@@ -28,22 +28,14 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "core/crypto/crypto_core.h"
-#include "core/io/file_access.h"
-#include "core/math/disjoint_set.h"
-#include "core/math/math_defs.h"
-#include "core/os/os.h"
-#include "editor/import/resource_importer_scene.h"
-#include "modules/gltf/gltf_state.h"
-#include "modules/regex/regex.h"
-#include "scene/3d/bone_attachment_3d.h"
-#include "scene/3d/camera_3d.h"
-#include "scene/3d/mesh_instance_3d.h"
-#include "scene/animation/animation_player.h"
-#include "scene/resources/packed_scene.h"
-#include "scene/resources/surface_tool.h"
+#include "editor_scene_importer_gltf.h"
 
-#include "modules/gltf/editor_scene_importer_gltf.h"
+#include "gltf_document.h"
+#include "gltf_state.h"
+
+#include "scene/3d/node_3d.h"
+#include "scene/animation/animation_player.h"
+#include "scene/resources/animation.h"
 
 uint32_t EditorSceneImporterGLTF::get_import_flags() const {
 	return ImportFlags::IMPORT_SCENE | ImportFlags::IMPORT_ANIMATION;

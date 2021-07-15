@@ -34,9 +34,9 @@
 #include "stream_peer_gdnative.h"
 
 void register_net_types() {
-	ClassDB::register_class<MultiplayerPeerGDNative>();
-	ClassDB::register_class<PacketPeerGDNative>();
-	ClassDB::register_class<StreamPeerGDNative>();
+	GDREGISTER_CLASS(MultiplayerPeerGDNative);
+	GDREGISTER_CLASS(PacketPeerGDNative);
+	GDREGISTER_CLASS(StreamPeerGDNative);
 }
 
 void unregister_net_types() {

@@ -241,12 +241,12 @@ void MeshInstance3D::create_trimesh_collision() {
 	}
 }
 
-Node *MeshInstance3D::create_convex_collision_node() {
+Node *MeshInstance3D::create_convex_collision_node(bool p_clean, bool p_simplify) {
 	if (mesh.is_null()) {
 		return nullptr;
 	}
 
-	Ref<Shape3D> shape = mesh->create_convex_shape();
+	Ref<Shape3D> shape = mesh->create_convex_shape(p_clean, p_simplify);
 	if (shape.is_null()) {
 		return nullptr;
 	}
@@ -258,8 +258,8 @@ Node *MeshInstance3D::create_convex_collision_node() {
 	return static_body;
 }
 
-void MeshInstance3D::create_convex_collision() {
-	StaticBody3D *static_body = Object::cast_to<StaticBody3D>(create_convex_collision_node());
+void MeshInstance3D::create_convex_collision(bool p_clean, bool p_simplify) {
+	StaticBody3D *static_body = Object::cast_to<StaticBody3D>(create_convex_collision_node(p_clean, p_simplify));
 	ERR_FAIL_COND(!static_body);
 	static_body->set_name(String(get_name()) + "_col");
 
@@ -451,7 +451,7 @@ void MeshInstance3D::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("create_trimesh_collision"), &MeshInstance3D::create_trimesh_collision);
 	ClassDB::set_method_flags("MeshInstance3D", "create_trimesh_collision", METHOD_FLAGS_DEFAULT);
-	ClassDB::bind_method(D_METHOD("create_convex_collision"), &MeshInstance3D::create_convex_collision);
+	ClassDB::bind_method(D_METHOD("create_convex_collision", "clean", "simplify"), &MeshInstance3D::create_convex_collision, DEFVAL(true), DEFVAL(false));
 	ClassDB::set_method_flags("MeshInstance3D", "create_convex_collision", METHOD_FLAGS_DEFAULT);
 	ClassDB::bind_method(D_METHOD("create_multiple_convex_collisions"), &MeshInstance3D::create_multiple_convex_collisions);
 	ClassDB::set_method_flags("MeshInstance3D", "create_multiple_convex_collisions", METHOD_FLAGS_DEFAULT);

@@ -2708,6 +2708,28 @@ VisualShaderNodeUniformRef::UniformType VisualShaderNodeUniformRef::get_uniform_
 	return UniformType::UNIFORM_TYPE_FLOAT;
 }
 
+VisualShaderNodeUniformRef::PortType VisualShaderNodeUniformRef::get_port_type_by_index(int p_idx) const {
+	if (p_idx >= 0 && p_idx < uniforms.size()) {
+		switch (uniforms[p_idx].type) {
+			case UniformType::UNIFORM_TYPE_FLOAT:
+				return PORT_TYPE_SCALAR;
+			case UniformType::UNIFORM_TYPE_INT:
+				return PORT_TYPE_SCALAR_INT;
+			case UniformType::UNIFORM_TYPE_SAMPLER:
+				return PORT_TYPE_SAMPLER;
+			case UniformType::UNIFORM_TYPE_VECTOR:
+				return PORT_TYPE_VECTOR;
+			case UniformType::UNIFORM_TYPE_TRANSFORM:
+				return PORT_TYPE_TRANSFORM;
+			case UniformType::UNIFORM_TYPE_COLOR:
+				return PORT_TYPE_VECTOR;
+			default:
+				break;
+		}
+	}
+	return PORT_TYPE_SCALAR;
+}
+
 String VisualShaderNodeUniformRef::generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview) const {
 	switch (uniform_type) {
 		case UniformType::UNIFORM_TYPE_FLOAT:

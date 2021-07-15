@@ -1025,7 +1025,7 @@ void VisualScript::_set_data(const Dictionary &p_data) {
 					MultiplayerAPI::RPCConfig nd;
 					nd.name = E->get();
 					nd.rpc_mode = vsf->get_rpc_mode();
-					nd.transfer_mode = NetworkedMultiplayerPeer::TRANSFER_MODE_RELIABLE; // TODO
+					nd.transfer_mode = MultiplayerPeer::TRANSFER_MODE_RELIABLE; // TODO
 					if (rpc_functions.find(nd) == -1) {
 						rpc_functions.push_back(nd);
 					}

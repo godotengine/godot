@@ -740,6 +740,8 @@ void PhysicsServer3D::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_active", "active"), &PhysicsServer3D::set_active);
 
+	ClassDB::bind_method(D_METHOD("set_collision_iterations", "iterations"), &PhysicsServer3D::set_collision_iterations);
+
 	ClassDB::bind_method(D_METHOD("get_process_info", "process_info"), &PhysicsServer3D::get_process_info);
 
 	BIND_ENUM_CONSTANT(SHAPE_PLANE);

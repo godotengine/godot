@@ -267,6 +267,7 @@ public:
 			FLAG_VISIBILITY_DEPENDENCY_NEEDS_CHECK = (3 << 20), // 2 bits, overlaps with the other vis. dependency flags
 			FLAG_VISIBILITY_DEPENDENCY_HIDDEN_CLOSE_RANGE = (1 << 20),
 			FLAG_VISIBILITY_DEPENDENCY_HIDDEN = (1 << 21),
+			FLAG_GEOM_PROJECTOR_SOFTSHADOW_DIRTY = (1 << 22),
 		};
 
 		uint32_t flags = 0;
@@ -489,6 +490,14 @@ public:
 				case RendererStorage::DEPENDENCY_CHANGED_SKELETON_BONES: {
 					//ignored
 				} break;
+				case RendererStorage::DEPENDENCY_CHANGED_LIGHT_SOFT_SHADOW_AND_PROJECTOR: {
+					//requires repairing
+					if (instance->indexer_id.is_valid()) {
+						singleton->_unpair_instance(instance);
+						singleton->_instance_queue_update(instance, true, true);
+					}
+
+				} break;
 			}
 		}
 
@@ -567,6 +576,8 @@ public:
 		Set<Instance *> lights;
 		bool can_cast_shadows;
 		bool material_is_animated;
+		uint32_t projector_count = 0;
+		uint32_t softshadow_count = 0;
 
 		Set<Instance *> decals;
 		Set<Instance *> reflection_probes;
@@ -631,6 +642,8 @@ public:
 		List<Instance *>::Element *D; // directional light in scenario
 
 		bool shadow_dirty;
+		bool uses_projector = false;
+		bool uses_softshadow = false;
 
 		Set<Instance *> geometries;
 

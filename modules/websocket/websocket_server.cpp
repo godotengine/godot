@@ -121,7 +121,7 @@ void WebSocketServer::set_handshake_timeout(float p_timeout) {
 	handshake_timeout = p_timeout * 1000;
 }
 
-NetworkedMultiplayerPeer::ConnectionStatus WebSocketServer::get_connection_status() const {
+MultiplayerPeer::ConnectionStatus WebSocketServer::get_connection_status() const {
 	if (is_listening()) {
 		return CONNECTION_CONNECTED;
 	}

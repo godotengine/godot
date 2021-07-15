@@ -4450,7 +4450,7 @@ void AnimationTrackEditor::_new_track_node_selected(NodePath p_path) {
 			}
 
 			if (node == AnimationPlayerEditor::singleton->get_player()) {
-				EditorNode::get_singleton()->show_warning(TTR("An animation player can't animate itself, only other players."));
+				EditorNode::get_singleton()->show_warning(TTR("AnimationPlayer can't animate itself, only other players."));
 				return;
 			}
 
@@ -5334,7 +5334,7 @@ void AnimationTrackEditor::_edit_menu_pressed(int p_option) {
 		} break;
 		case EDIT_PASTE_TRACKS: {
 			if (track_clipboard.size() == 0) {
-				EditorNode::get_singleton()->show_warning(TTR("Clipboard is empty"));
+				EditorNode::get_singleton()->show_warning(TTR("Clipboard is empty!"));
 				break;
 			}
 
@@ -5784,7 +5784,7 @@ AnimationTrackEditor::AnimationTrackEditor() {
 	info_message->set_text(TTR("Select an AnimationPlayer node to create and edit animations."));
 	info_message->set_valign(Label::VALIGN_CENTER);
 	info_message->set_align(Label::ALIGN_CENTER);
-	info_message->set_autowrap(true);
+	info_message->set_autowrap_mode(Label::AUTOWRAP_WORD_SMART);
 	info_message->set_custom_minimum_size(Size2(100 * EDSCALE, 0));
 	info_message->set_anchors_and_offsets_preset(PRESET_WIDE, PRESET_MODE_KEEP_SIZE, 8 * EDSCALE);
 	main_panel->add_child(info_message);

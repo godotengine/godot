@@ -173,7 +173,6 @@ void RendererCompositorRD::set_boot_image(const Ref<Image> &p_image, const Color
 	}
 
 	Size2 window_size = DisplayServer::get_singleton()->window_get_size();
-	print_line("window size: " + window_size);
 
 	Rect2 imgrect(0, 0, p_image->get_width(), p_image->get_height());
 	Rect2 screenrect;
@@ -215,8 +214,6 @@ void RendererCompositorRD::set_boot_image(const Ref<Image> &p_image, const Color
 	blit.push_constant.k2 = 0;
 	blit.push_constant.upscale = 1.0;
 	blit.push_constant.aspect_ratio = 1.0;
-
-	print_line("rect: " + screenrect);
 
 	RD::get_singleton()->draw_list_set_push_constant(draw_list, &blit.push_constant, sizeof(BlitPushConstant));
 	RD::get_singleton()->draw_list_draw(draw_list, true);

@@ -517,6 +517,7 @@ public:
 	String get_uniform_name_by_index(int p_idx) const;
 	UniformType get_uniform_type_by_name(const String &p_name) const;
 	UniformType get_uniform_type_by_index(int p_idx) const;
+	PortType get_port_type_by_index(int p_idx) const;
 
 	virtual Vector<StringName> get_editable_properties() const override;
 

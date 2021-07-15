@@ -83,7 +83,7 @@ public:
 	virtual void uninitialize() override;
 
 	virtual Size2 get_render_targetsize() override;
-	virtual bool is_stereo() override;
+	virtual uint32_t get_view_count() override;
 	virtual Transform3D get_camera_transform() override;
 	virtual Transform3D get_transform_for_view(uint32_t p_view, const Transform3D &p_cam_transform) override;
 	virtual CameraMatrix get_projection_for_view(uint32_t p_view, real_t p_aspect, real_t p_z_near, real_t p_z_far) override;

@@ -424,11 +424,6 @@ msgid "Animation tracks can only point to AnimationPlayer nodes."
 msgstr "Các bản hoạt ảnh chỉ có thể trỏ tới các nút AnimationPlayer."
 
 #: editor/animation_track_editor.cpp
-msgid "An animation player can't animate itself, only other players."
-msgstr ""
-"Animation player không tự tạo hoạt ảnh được, phải thông qua các player khác."
-
-#: editor/animation_track_editor.cpp
 msgid "Not possible to add a new track without a root"
 msgstr "Không thể thêm track mới mà không có root"
 
@@ -473,8 +468,9 @@ msgid "Anim Move Keys"
 msgstr "Di chuyển các khoá hoạt cảnh"
 
 #: editor/animation_track_editor.cpp
-msgid "Clipboard is empty"
-msgstr "Clipboard rỗng"
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Clipboard is empty!"
+msgstr "Clipboard trống!"
 
 #: editor/animation_track_editor.cpp
 msgid "Paste Tracks"
@@ -2499,7 +2495,7 @@ msgid "Save changes to the following scene(s) before quitting?"
 msgstr "Lưu thay đổi trong các scene sau trước khi thoát?"
 
 #: editor/editor_node.cpp
-msgid "Save changes the following scene(s) before opening Project Manager?"
+msgid "Save changes to the following scene(s) before opening Project Manager?"
 msgstr "Lưu thay đổi trong các cảnh sau trước khi mở Quản lí Dự án?"
 
 #: editor/editor_node.cpp
@@ -11888,10 +11884,6 @@ msgid "Can't copy the function node."
 msgstr "Không thể sao chép nút chức năng."
 
 #: modules/visual_script/visual_script_editor.cpp
-msgid "Clipboard is empty!"
-msgstr "Clipboard trống!"
-
-#: modules/visual_script/visual_script_editor.cpp
 msgid "Paste VisualScript Nodes"
 msgstr "Dán các nút VisualScript"
 
@@ -13003,6 +12995,14 @@ msgstr ""
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "Không thể chỉnh sửa hằng số."
+
+#~ msgid "An animation player can't animate itself, only other players."
+#~ msgstr ""
+#~ "Animation player không tự tạo hoạt ảnh được, phải thông qua các player "
+#~ "khác."
+
+#~ msgid "Clipboard is empty"
+#~ msgstr "Clipboard rỗng"
 
 #~ msgid "No"
 #~ msgstr "Không"

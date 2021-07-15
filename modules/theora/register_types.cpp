@@ -38,7 +38,7 @@ void register_theora_types() {
 	resource_loader_theora.instantiate();
 	ResourceLoader::add_resource_format_loader(resource_loader_theora, true);
 
-	ClassDB::register_class<VideoStreamTheora>();
+	GDREGISTER_CLASS(VideoStreamTheora);
 }
 
 void unregister_theora_types() {

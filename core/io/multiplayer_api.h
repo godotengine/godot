@@ -31,7 +31,7 @@
 #ifndef MULTIPLAYER_API_H
 #define MULTIPLAYER_API_H
 
-#include "core/io/networked_multiplayer_peer.h"
+#include "core/io/multiplayer_peer.h"
 #include "core/object/ref_counted.h"
 
 class MultiplayerAPI : public RefCounted {
@@ -51,7 +51,7 @@ public:
 	struct RPCConfig {
 		StringName name;
 		RPCMode rpc_mode = RPC_MODE_DISABLED;
-		NetworkedMultiplayerPeer::TransferMode transfer_mode = NetworkedMultiplayerPeer::TRANSFER_MODE_RELIABLE;
+		MultiplayerPeer::TransferMode transfer_mode = MultiplayerPeer::TRANSFER_MODE_RELIABLE;
 		int channel = 0;
 
 		bool operator==(RPCConfig const &p_other) const {
@@ -83,7 +83,7 @@ private:
 		Map<int, NodeInfo> nodes;
 	};
 
-	Ref<NetworkedMultiplayerPeer> network_peer;
+	Ref<MultiplayerPeer> network_peer;
 	int rpc_sender_id = 0;
 	Set<int> connected_peers;
 	HashMap<NodePath, PathSentCache> path_send_cache;
@@ -132,9 +132,9 @@ public:
 	void clear();
 	void set_root_node(Node *p_node);
 	Node *get_root_node();
-	void set_network_peer(const Ref<NetworkedMultiplayerPeer> &p_peer);
-	Ref<NetworkedMultiplayerPeer> get_network_peer() const;
-	Error send_bytes(Vector<uint8_t> p_data, int p_to = NetworkedMultiplayerPeer::TARGET_PEER_BROADCAST, NetworkedMultiplayerPeer::TransferMode p_mode = NetworkedMultiplayerPeer::TRANSFER_MODE_RELIABLE);
+	void set_network_peer(const Ref<MultiplayerPeer> &p_peer);
+	Ref<MultiplayerPeer> get_network_peer() const;
+	Error send_bytes(Vector<uint8_t> p_data, int p_to = MultiplayerPeer::TARGET_PEER_BROADCAST, MultiplayerPeer::TransferMode p_mode = MultiplayerPeer::TRANSFER_MODE_RELIABLE);
 
 	// Called by Node.rpc
 	void rpcp(Node *p_node, int p_peer_id, bool p_unreliable, const StringName &p_method, const Variant **p_arg, int p_argcount);

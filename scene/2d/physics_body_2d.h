@@ -50,7 +50,7 @@ protected:
 	Ref<KinematicCollision2D> _move(const Vector2 &p_motion, bool p_infinite_inertia = true, bool p_exclude_raycast_shapes = true, bool p_test_only = false, real_t p_margin = 0.08);
 
 public:
-	bool move_and_collide(const Vector2 &p_motion, bool p_infinite_inertia, PhysicsServer2D::MotionResult &r_result, real_t p_margin, bool p_exclude_raycast_shapes = true, bool p_test_only = false, bool p_cancel_sliding = true);
+	bool move_and_collide(const Vector2 &p_motion, bool p_infinite_inertia, PhysicsServer2D::MotionResult &r_result, real_t p_margin, bool p_exclude_raycast_shapes = true, bool p_test_only = false, bool p_cancel_sliding = true, const Set<RID> &p_exclude = Set<RID>());
 	bool test_move(const Transform2D &p_from, const Vector2 &p_motion, bool p_infinite_inertia = true, bool p_exclude_raycast_shapes = true, const Ref<KinematicCollision2D> &r_collision = Ref<KinematicCollision2D>(), real_t p_margin = 0.08);
 
 	TypedArray<PhysicsBody2D> get_collision_exceptions();
@@ -308,6 +308,7 @@ private:
 
 	const Vector2 &get_up_direction() const;
 	void set_up_direction(const Vector2 &p_up_direction);
+	void _set_collision_direction(const PhysicsServer2D::MotionResult &p_result);
 
 protected:
 	void _notification(int p_what);

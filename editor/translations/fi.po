@@ -416,10 +416,6 @@ msgid "Animation tracks can only point to AnimationPlayer nodes."
 msgstr "Animaatioraidat voivat osoittaa vain AnimationPlayer solmuihin."
 
 #: editor/animation_track_editor.cpp
-msgid "An animation player can't animate itself, only other players."
-msgstr "Animaatiotoistin ei voi animoida itseään, ainoastaan muita toistimia."
-
-#: editor/animation_track_editor.cpp
 msgid "Not possible to add a new track without a root"
 msgstr "Uutta raitaa ei voida lisätä ilman juurta"
 
@@ -464,8 +460,9 @@ msgid "Anim Move Keys"
 msgstr "Animaatio: siirrä avaimia"
 
 #: editor/animation_track_editor.cpp
-msgid "Clipboard is empty"
-msgstr "Leikepöytä on tyhjä"
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Clipboard is empty!"
+msgstr "Leikepöytä on tyhjä!"
 
 #: editor/animation_track_editor.cpp
 msgid "Paste Tracks"
@@ -2505,7 +2502,7 @@ msgid "Save changes to the following scene(s) before quitting?"
 msgstr "Tallenetaanko muutokset seuraaviin skeneihin ennen sulkemista?"
 
 #: editor/editor_node.cpp
-msgid "Save changes the following scene(s) before opening Project Manager?"
+msgid "Save changes to the following scene(s) before opening Project Manager?"
 msgstr ""
 "Tallennetaanko muutokset seuraaviin skeneihin ennen Projektienhallinnan "
 "avaamista?"
@@ -11987,10 +11984,6 @@ msgid "Can't copy the function node."
 msgstr "Ei voida kopioida funktiosolmua."
 
 #: modules/visual_script/visual_script_editor.cpp
-msgid "Clipboard is empty!"
-msgstr "Leikepöytä on tyhjä!"
-
-#: modules/visual_script/visual_script_editor.cpp
 msgid "Paste VisualScript Nodes"
 msgstr "Liitä VisualScript solmut"
 
@@ -13186,6 +13179,13 @@ msgstr "Varying tyypin voi sijoittaa vain vertex-funktiossa."
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "Vakioita ei voi muokata."
+
+#~ msgid "An animation player can't animate itself, only other players."
+#~ msgstr ""
+#~ "Animaatiotoistin ei voi animoida itseään, ainoastaan muita toistimia."
+
+#~ msgid "Clipboard is empty"
+#~ msgstr "Leikepöytä on tyhjä"
 
 #~ msgid ""
 #~ "Godot editor was built without ray tracing support; lightmaps can't be "

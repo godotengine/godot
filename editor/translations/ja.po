@@ -439,12 +439,6 @@ msgstr ""
 "アニメーショントラックはアニメーションプレイヤーノードのみ指定できます。"
 
 #: editor/animation_track_editor.cpp
-msgid "An animation player can't animate itself, only other players."
-msgstr ""
-"アニメーションプレーヤーは他のプレーヤーだけにアニメーションを適用することは"
-"できません。"
-
-#: editor/animation_track_editor.cpp
 msgid "Not possible to add a new track without a root"
 msgstr "root が無ければ新規トラックは追加できません"
 
@@ -489,8 +483,9 @@ msgid "Anim Move Keys"
 msgstr "アニメーションキーの移動"
 
 #: editor/animation_track_editor.cpp
-msgid "Clipboard is empty"
-msgstr "クリップボードが空です"
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Clipboard is empty!"
+msgstr "クリップボードは空です!"
 
 #: editor/animation_track_editor.cpp
 msgid "Paste Tracks"
@@ -2530,7 +2525,7 @@ msgid "Save changes to the following scene(s) before quitting?"
 msgstr "終了する前に、以下のシーンへの変更を保存しますか？"
 
 #: editor/editor_node.cpp
-msgid "Save changes the following scene(s) before opening Project Manager?"
+msgid "Save changes to the following scene(s) before opening Project Manager?"
 msgstr ""
 "プロジェクトマネージャーを開く前に、以下のシーンへの変更を保存しますか？"
 
@@ -11994,10 +11989,6 @@ msgid "Can't copy the function node."
 msgstr "ファンクションノードをコピーできません。"
 
 #: modules/visual_script/visual_script_editor.cpp
-msgid "Clipboard is empty!"
-msgstr "クリップボードは空です!"
-
-#: modules/visual_script/visual_script_editor.cpp
 msgid "Paste VisualScript Nodes"
 msgstr "VisualScriptノードを貼り付け"
 
@@ -13181,6 +13172,14 @@ msgstr "Varying変数は頂点関数にのみ割り当てることができま�
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "定数は変更できません。"
+
+#~ msgid "An animation player can't animate itself, only other players."
+#~ msgstr ""
+#~ "アニメーションプレーヤーは他のプレーヤーだけにアニメーションを適用すること"
+#~ "はできません。"
+
+#~ msgid "Clipboard is empty"
+#~ msgstr "クリップボードが空です"
 
 #~ msgid ""
 #~ "InterpolatedCamera has been deprecated and will be removed in Godot 4.0."

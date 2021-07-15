@@ -507,7 +507,7 @@ bool Node::is_network_master() const {
 
 /***** RPC CONFIG ********/
 
-uint16_t Node::rpc_config(const StringName &p_method, MultiplayerAPI::RPCMode p_rpc_mode, NetworkedMultiplayerPeer::TransferMode p_transfer_mode, int p_channel) {
+uint16_t Node::rpc_config(const StringName &p_method, MultiplayerAPI::RPCMode p_rpc_mode, MultiplayerPeer::TransferMode p_transfer_mode, int p_channel) {
 	for (int i = 0; i < data.rpc_methods.size(); i++) {
 		if (data.rpc_methods[i].name == p_method) {
 			MultiplayerAPI::RPCConfig &nd = data.rpc_methods.write[i];
@@ -1822,6 +1822,18 @@ Node *Node::get_deepest_editable_node(Node *p_start_node) const {
 	return node;
 }
 
+String Node::to_string() {
+	if (get_script_instance()) {
+		bool valid;
+		String ret = get_script_instance()->to_string(&valid);
+		if (valid) {
+			return ret;
+		}
+	}
+
+	return (get_name() ? String(get_name()) + ":" : "") + Object::to_string();
+}
+
 void Node::set_scene_instance_state(const Ref<SceneState> &p_state) {
 	data.instance_state = p_state;
 }
@@ -2623,7 +2635,7 @@ void Node::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_multiplayer"), &Node::get_multiplayer);
 	ClassDB::bind_method(D_METHOD("get_custom_multiplayer"), &Node::get_custom_multiplayer);
 	ClassDB::bind_method(D_METHOD("set_custom_multiplayer", "api"), &Node::set_custom_multiplayer);
-	ClassDB::bind_method(D_METHOD("rpc_config", "method", "rpc_mode", "transfer_mode", "channel"), &Node::rpc_config, DEFVAL(NetworkedMultiplayerPeer::TRANSFER_MODE_RELIABLE), DEFVAL(0));
+	ClassDB::bind_method(D_METHOD("rpc_config", "method", "rpc_mode", "transfer_mode", "channel"), &Node::rpc_config, DEFVAL(MultiplayerPeer::TRANSFER_MODE_RELIABLE), DEFVAL(0));
 
 	ClassDB::bind_method(D_METHOD("set_editor_description", "editor_description"), &Node::set_editor_description);
 	ClassDB::bind_method(D_METHOD("get_editor_description"), &Node::get_editor_description);

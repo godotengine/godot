@@ -390,6 +390,15 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_constant("shadow_outline_size", "Label", 1 * scale);
 	theme->set_constant("line_spacing", "Label", 3 * scale);
 
+	theme->set_type_variation("HeaderSmall", "Label");
+	theme->set_font_size("font_size", "HeaderSmall", default_font_size + 4);
+
+	theme->set_type_variation("HeaderMedium", "Label");
+	theme->set_font_size("font_size", "HeaderMedium", default_font_size + 8);
+
+	theme->set_type_variation("HeaderLarge", "Label");
+	theme->set_font_size("font_size", "HeaderLarge", default_font_size + 12);
+
 	// LineEdit
 
 	theme->set_stylebox("normal", "LineEdit", make_stylebox(line_edit_png, 5, 5, 5, 5));
@@ -984,7 +993,7 @@ void make_default_theme(bool p_hidpi, Ref<Font> p_font) {
 	Ref<StyleBox> default_style;
 	Ref<Texture2D> default_icon;
 	Ref<Font> default_font;
-	int default_font_size = 16;
+
 	if (p_font.is_valid()) {
 		// Use the custom font defined in the Project Settings.
 		default_font = p_font;

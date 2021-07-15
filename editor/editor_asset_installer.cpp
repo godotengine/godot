@@ -112,7 +112,7 @@ void EditorAssetInstaller::open(const String &p_path, int p_depth) {
 
 	unzFile pkg = unzOpen2(p_path.utf8().get_data(), &io);
 	if (!pkg) {
-		error->set_text(TTR("Error opening package file, not in ZIP format."));
+		error->set_text(vformat(TTR("Error opening asset file for \"%s\" (not in ZIP format)."), asset_name));
 		return;
 	}
 
@@ -196,6 +196,8 @@ void EditorAssetInstaller::open(const String &p_path, int p_depth) {
 	root->set_editable(0, true);
 	Map<String, TreeItem *> dir_map;
 
+	int num_file_conflicts = 0;
+
 	for (Set<String>::Element *E = files_sorted.front(); E; E = E->next()) {
 		String path = E->get();
 		int depth = p_depth;
@@ -254,8 +256,9 @@ void EditorAssetInstaller::open(const String &p_path, int p_depth) {
 
 			String res_path = "res://" + path;
 			if (FileAccess::exists(res_path)) {
+				num_file_conflicts += 1;
 				ti->set_custom_color(0, tree->get_theme_color("error_color", "Editor"));
-				ti->set_tooltip(0, vformat(TTR("%s (Already Exists)"), res_path));
+				ti->set_tooltip(0, vformat(TTR("%s (already exists)"), res_path));
 				ti->set_checked(0, false);
 			} else {
 				ti->set_tooltip(0, res_path);
@@ -266,6 +269,13 @@ void EditorAssetInstaller::open(const String &p_path, int p_depth) {
 
 		status_map[E->get()] = ti;
 	}
+
+	if (num_file_conflicts >= 1) {
+		asset_contents->set_text(vformat(TTR("Contents of asset \"%s\" - %d file(s) conflict with your project:"), asset_name, num_file_conflicts));
+	} else {
+		asset_contents->set_text(vformat(TTR("Contents of asset \"%s\" - No files conflict with your project:"), asset_name));
+	}
+
 	popup_centered_ratio();
 	updating = false;
 }
@@ -276,7 +286,7 @@ void EditorAssetInstaller::ok_pressed() {
 
 	unzFile pkg = unzOpen2(package_path.utf8().get_data(), &io);
 	if (!pkg) {
-		error->set_text(TTR("Error opening package file, not in ZIP format."));
+		error->set_text(vformat(TTR("Error opening asset file for \"%s\" (not in ZIP format)."), asset_name));
 		return;
 	}
 
@@ -343,10 +353,10 @@ void EditorAssetInstaller::ok_pressed() {
 	unzClose(pkg);
 
 	if (failed_files.size()) {
-		String msg = TTR("The following files failed extraction from package:") + "\n\n";
+		String msg = vformat(TTR("The following files failed extraction from asset \"%s\":"), asset_name) + "\n\n";
 		for (int i = 0; i < failed_files.size(); i++) {
 			if (i > 15) {
-				msg += "\n" + vformat(TTR("And %s more files."), itos(failed_files.size() - i));
+				msg += "\n" + vformat(TTR("(and %s more files)"), itos(failed_files.size() - i));
 				break;
 			}
 			msg += failed_files[i];
@@ -356,10 +366,18 @@ void EditorAssetInstaller::ok_pressed() {
 		}
 	} else {
 		if (EditorNode::get_singleton() != nullptr) {
-			EditorNode::get_singleton()->show_warning(TTR("Package installed successfully!"), TTR("Success!"));
+			EditorNode::get_singleton()->show_warning(vformat(TTR("Asset \"%s\" installed successfully!"), asset_name), TTR("Success!"));
 		}
 	}
 	EditorFileSystem::get_singleton()->scan_changes();
+}
+
+void EditorAssetInstaller::set_asset_name(const String &p_asset_name) {
+	asset_name = p_asset_name;
+}
+
+String EditorAssetInstaller::get_asset_name() const {
+	return asset_name;
 }
 
 void EditorAssetInstaller::_bind_methods() {
@@ -369,14 +387,18 @@ EditorAssetInstaller::EditorAssetInstaller() {
 	VBoxContainer *vb = memnew(VBoxContainer);
 	add_child(vb);
 
+	asset_contents = memnew(Label);
+	vb->add_child(asset_contents);
+
 	tree = memnew(Tree);
-	vb->add_margin_child(TTR("Package Contents:"), tree, true);
+	tree->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	tree->connect("item_edited", callable_mp(this, &EditorAssetInstaller::_item_edited));
+	vb->add_child(tree);
 
 	error = memnew(AcceptDialog);
 	add_child(error);
 	get_ok_button()->set_text(TTR("Install"));
-	set_title(TTR("Package Installer"));
+	set_title(TTR("Asset Installer"));
 
 	updating = false;
 

@@ -39,7 +39,7 @@ void register_videodecoder_types() {
 	resource_loader_vsgdnative.instantiate();
 	ResourceLoader::add_resource_format_loader(resource_loader_vsgdnative, true);
 
-	ClassDB::register_class<VideoStreamGDNative>();
+	GDREGISTER_CLASS(VideoStreamGDNative);
 }
 
 void unregister_videodecoder_types() {

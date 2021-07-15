@@ -110,6 +110,7 @@ void VisualShaderGraphPlugin::_bind_methods() {
 	ClassDB::bind_method("set_uniform_name", &VisualShaderGraphPlugin::set_uniform_name);
 	ClassDB::bind_method("set_expression", &VisualShaderGraphPlugin::set_expression);
 	ClassDB::bind_method("update_curve", &VisualShaderGraphPlugin::update_curve);
+	ClassDB::bind_method("update_curve_xyz", &VisualShaderGraphPlugin::update_curve_xyz);
 	ClassDB::bind_method("update_constant", &VisualShaderGraphPlugin::update_constant);
 }
 
@@ -211,9 +212,19 @@ void VisualShaderGraphPlugin::set_uniform_name(VisualShader::Type p_type, int p_
 }
 
 void VisualShaderGraphPlugin::update_curve(int p_node_id) {
-	if (links.has(p_node_id) && links[p_node_id].curve_editor) {
+	if (links.has(p_node_id) && links[p_node_id].curve_editors[0]) {
 		if (((VisualShaderNodeCurveTexture *)links[p_node_id].visual_node)->get_texture().is_valid()) {
-			links[p_node_id].curve_editor->set_curve(((VisualShaderNodeCurveTexture *)links[p_node_id].visual_node)->get_texture()->get_curve());
+			links[p_node_id].curve_editors[0]->set_curve(((VisualShaderNodeCurveTexture *)links[p_node_id].visual_node)->get_texture()->get_curve());
+		}
+	}
+}
+
+void VisualShaderGraphPlugin::update_curve_xyz(int p_node_id) {
+	if (links.has(p_node_id) && links[p_node_id].curve_editors[0] && links[p_node_id].curve_editors[1] && links[p_node_id].curve_editors[2]) {
+		if (((VisualShaderNodeCurveXYZTexture *)links[p_node_id].visual_node)->get_texture().is_valid()) {
+			links[p_node_id].curve_editors[0]->set_curve(((VisualShaderNodeCurveXYZTexture *)links[p_node_id].visual_node)->get_texture()->get_curve_x());
+			links[p_node_id].curve_editors[1]->set_curve(((VisualShaderNodeCurveXYZTexture *)links[p_node_id].visual_node)->get_texture()->get_curve_y());
+			links[p_node_id].curve_editors[2]->set_curve(((VisualShaderNodeCurveXYZTexture *)links[p_node_id].visual_node)->get_texture()->get_curve_z());
 		}
 	}
 }
@@ -265,8 +276,8 @@ void VisualShaderGraphPlugin::register_expression_edit(int p_node_id, CodeEdit *
 	links[p_node_id].expression_edit = p_expression_edit;
 }
 
-void VisualShaderGraphPlugin::register_curve_editor(int p_node_id, CurveEditor *p_curve_editor) {
-	links[p_node_id].curve_editor = p_curve_editor;
+void VisualShaderGraphPlugin::register_curve_editor(int p_node_id, int p_index, CurveEditor *p_curve_editor) {
+	links[p_node_id].curve_editors[p_index] = p_curve_editor;
 }
 
 void VisualShaderGraphPlugin::update_uniform_refs() {
@@ -312,7 +323,7 @@ void VisualShaderGraphPlugin::make_dirty(bool p_enabled) {
 }
 
 void VisualShaderGraphPlugin::register_link(VisualShader::Type p_type, int p_id, VisualShaderNode *p_visual_node, GraphNode *p_graph_node) {
-	links.insert(p_id, { p_type, p_visual_node, p_graph_node, p_visual_node->get_output_port_for_preview() != -1, -1, Map<int, InputPort>(), Map<int, Port>(), nullptr, nullptr, nullptr, nullptr, nullptr });
+	links.insert(p_id, { p_type, p_visual_node, p_graph_node, p_visual_node->get_output_port_for_preview() != -1, -1, Map<int, InputPort>(), Map<int, Port>(), nullptr, nullptr, nullptr, nullptr, { nullptr, nullptr, nullptr } });
 }
 
 void VisualShaderGraphPlugin::register_output_port(int p_node_id, int p_port, TextureButton *p_button) {
@@ -472,6 +483,18 @@ void VisualShaderGraphPlugin::add_node(VisualShader::Type p_type, int p_id) {
 		custom_editor = hbox;
 	}
 
+	Ref<VisualShaderNodeCurveXYZTexture> curve_xyz = vsnode;
+	if (curve_xyz.is_valid()) {
+		if (curve_xyz->get_texture().is_valid() && !curve_xyz->get_texture()->is_connected("changed", callable_mp(VisualShaderEditor::get_singleton()->get_graph_plugin(), &VisualShaderGraphPlugin::update_curve_xyz))) {
+			curve_xyz->get_texture()->connect("changed", callable_mp(VisualShaderEditor::get_singleton()->get_graph_plugin(), &VisualShaderGraphPlugin::update_curve_xyz), varray(p_id));
+		}
+
+		HBoxContainer *hbox = memnew(HBoxContainer);
+		custom_editor->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+		hbox->add_child(custom_editor);
+		custom_editor = hbox;
+	}
+
 	Ref<VisualShaderNodeFloatConstant> float_const = vsnode;
 	if (float_const.is_valid()) {
 		HBoxContainer *hbox = memnew(HBoxContainer);
@@ -495,18 +518,11 @@ void VisualShaderGraphPlugin::add_node(VisualShader::Type p_type, int p_id) {
 		port_offset++;
 		node->add_child(custom_editor);
 
-		if (curve.is_valid()) {
+		bool is_curve = curve.is_valid() || curve_xyz.is_valid();
+
+		if (is_curve) {
 			VisualShaderEditor::get_singleton()->graph->add_child(node);
 			VisualShaderEditor::get_singleton()->_update_created_node(node);
-
-			CurveEditor *curve_editor = memnew(CurveEditor);
-			node->add_child(curve_editor);
-			register_curve_editor(p_id, curve_editor);
-			curve_editor->set_custom_minimum_size(Size2(300, 0));
-			curve_editor->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-			if (curve->get_texture().is_valid()) {
-				curve_editor->set_curve(curve->get_texture()->get_curve());
-			}
 
 			TextureButton *preview = memnew(TextureButton);
 			preview->set_toggle_mode(true);
@@ -519,12 +535,59 @@ void VisualShaderGraphPlugin::add_node(VisualShader::Type p_type, int p_id) {
 			preview->connect("pressed", callable_mp(VisualShaderEditor::get_singleton(), &VisualShaderEditor::_preview_select_port), varray(p_id, 0), CONNECT_DEFERRED);
 			custom_editor->add_child(preview);
 
+			if (vsnode->get_output_port_for_preview() >= 0) {
+				show_port_preview(p_type, p_id, vsnode->get_output_port_for_preview());
+			}
+		}
+
+		if (curve.is_valid()) {
+			CurveEditor *curve_editor = memnew(CurveEditor);
+			node->add_child(curve_editor);
+			register_curve_editor(p_id, 0, curve_editor);
+			curve_editor->set_custom_minimum_size(Size2(300, 0));
+			curve_editor->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+			if (curve->get_texture().is_valid()) {
+				curve_editor->set_curve(curve->get_texture()->get_curve());
+			}
+		}
+
+		if (curve_xyz.is_valid()) {
+			CurveEditor *curve_editor_x = memnew(CurveEditor);
+			node->add_child(curve_editor_x);
+			register_curve_editor(p_id, 0, curve_editor_x);
+			curve_editor_x->set_custom_minimum_size(Size2(300, 0));
+			curve_editor_x->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+			if (curve_xyz->get_texture().is_valid()) {
+				curve_editor_x->set_curve(curve_xyz->get_texture()->get_curve_x());
+			}
+
+			CurveEditor *curve_editor_y = memnew(CurveEditor);
+			node->add_child(curve_editor_y);
+			register_curve_editor(p_id, 1, curve_editor_y);
+			curve_editor_y->set_custom_minimum_size(Size2(300, 0));
+			curve_editor_y->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+			if (curve_xyz->get_texture().is_valid()) {
+				curve_editor_y->set_curve(curve_xyz->get_texture()->get_curve_y());
+			}
+
+			CurveEditor *curve_editor_z = memnew(CurveEditor);
+			node->add_child(curve_editor_z);
+			register_curve_editor(p_id, 2, curve_editor_z);
+			curve_editor_z->set_custom_minimum_size(Size2(300, 0));
+			curve_editor_z->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+			if (curve_xyz->get_texture().is_valid()) {
+				curve_editor_z->set_curve(curve_xyz->get_texture()->get_curve_z());
+			}
+		}
+
+		if (is_curve) {
 			VisualShaderNode::PortType port_left = vsnode->get_input_port_type(0);
 			VisualShaderNode::PortType port_right = vsnode->get_output_port_type(0);
 			node->set_slot(0, true, port_left, type_color[port_left], true, port_right, type_color[port_right]);
 
 			VisualShaderEditor::get_singleton()->call_deferred("_set_node_size", (int)p_type, p_id, size);
 		}
+
 		if (vsnode->is_use_prop_slots()) {
 			return;
 		}
@@ -2211,6 +2274,8 @@ void VisualShaderEditor::_setup_node(VisualShaderNode *p_node, int p_op_idx) {
 void VisualShaderEditor::_add_node(int p_idx, int p_op_idx, String p_resource_path, int p_node_idx) {
 	ERR_FAIL_INDEX(p_idx, add_options.size());
 
+	VisualShader::Type type = get_current_shader_type();
+
 	Ref<VisualShaderNode> vsnode;
 
 	bool is_custom = add_options[p_idx].is_custom;
@@ -2237,6 +2302,29 @@ void VisualShaderEditor::_add_node(int p_idx, int p_op_idx, String p_resource_pa
 			}
 		}
 
+		VisualShaderNodeUniformRef *uniform_ref = Object::cast_to<VisualShaderNodeUniformRef>(vsn);
+
+		if (uniform_ref && to_node != -1 && to_slot != -1) {
+			VisualShaderNode::PortType input_port_type = visual_shader->get_node(type, to_node)->get_input_port_type(to_slot);
+			bool success = false;
+
+			for (int i = 0; i < uniform_ref->get_uniforms_count(); i++) {
+				if (uniform_ref->get_port_type_by_index(i) == input_port_type) {
+					uniform_ref->set_uniform_name(uniform_ref->get_uniform_name_by_index(i));
+					success = true;
+					break;
+				}
+			}
+			if (!success) {
+				for (int i = 0; i < uniform_ref->get_uniforms_count(); i++) {
+					if (visual_shader->is_port_types_compatible(uniform_ref->get_port_type_by_index(i), input_port_type)) {
+						uniform_ref->set_uniform_name(uniform_ref->get_uniform_name_by_index(i));
+						break;
+					}
+				}
+			}
+		}
+
 		vsnode = Ref<VisualShaderNode>(vsn);
 	} else {
 		ERR_FAIL_COND(add_options[p_idx].script.is_null());
@@ -2256,8 +2344,6 @@ void VisualShaderEditor::_add_node(int p_idx, int p_op_idx, String p_resource_pa
 		position /= EDSCALE;
 	}
 	saved_node_pos_dirty = false;
-
-	VisualShader::Type type = get_current_shader_type();
 
 	int id_to_use = visual_shader->get_valid_node_id(type);
 
@@ -2387,6 +2473,11 @@ void VisualShaderEditor::_add_node(int p_idx, int p_op_idx, String p_resource_pa
 		graph_plugin->call_deferred("update_curve", id_to_use);
 	}
 
+	VisualShaderNodeCurveXYZTexture *curve_xyz = Object::cast_to<VisualShaderNodeCurveXYZTexture>(vsnode.ptr());
+	if (curve_xyz) {
+		graph_plugin->call_deferred("update_curve_xyz", id_to_use);
+	}
+
 	if (p_resource_path.is_empty()) {
 		undo_redo->commit_action();
 	} else {
@@ -2395,7 +2486,7 @@ void VisualShaderEditor::_add_node(int p_idx, int p_op_idx, String p_resource_pa
 		VisualShaderNodeTexture *texture2d = Object::cast_to<VisualShaderNodeTexture>(vsnode.ptr());
 		VisualShaderNodeTexture3D *texture3d = Object::cast_to<VisualShaderNodeTexture3D>(vsnode.ptr());
 
-		if (texture2d || texture3d || curve) {
+		if (texture2d || texture3d || curve || curve_xyz) {
 			undo_redo->add_do_method(vsnode.ptr(), "set_texture", ResourceLoader::load(p_resource_path));
 			return;
 		}
@@ -3590,6 +3681,10 @@ void VisualShaderEditor::drop_data_fw(const Point2 &p_point, const Variant &p_da
 						saved_node_pos = p_point + Vector2(0, i * 250 * EDSCALE);
 						saved_node_pos_dirty = true;
 						_add_node(curve_node_option_idx, -1, arr[i], i);
+					} else if (type == "CurveXYZTexture") {
+						saved_node_pos = p_point + Vector2(0, i * 250 * EDSCALE);
+						saved_node_pos_dirty = true;
+						_add_node(curve_xyz_node_option_idx, -1, arr[i], i);
 					} else if (ClassDB::get_parent_class(type) == "Texture2D") {
 						saved_node_pos = p_point + Vector2(0, i * 250 * EDSCALE);
 						saved_node_pos_dirty = true;
@@ -3862,7 +3957,7 @@ VisualShaderEditor::VisualShaderEditor() {
 
 	error_label = memnew(Label);
 	error_panel->add_child(error_label);
-	error_label->set_autowrap(true);
+	error_label->set_autowrap_mode(Label::AUTOWRAP_WORD_SMART);
 
 	///////////////////////////////////////
 	// POPUP MENU
@@ -3948,7 +4043,7 @@ VisualShaderEditor::VisualShaderEditor() {
 	add_child(members_dialog);
 
 	alert = memnew(AcceptDialog);
-	alert->get_label()->set_autowrap(true);
+	alert->get_label()->set_autowrap_mode(Label::AUTOWRAP_WORD);
 	alert->get_label()->set_align(Label::ALIGN_CENTER);
 	alert->get_label()->set_valign(Label::VALIGN_CENTER);
 	alert->get_label()->set_custom_minimum_size(Size2(400, 60) * EDSCALE);
@@ -4311,6 +4406,8 @@ VisualShaderEditor::VisualShaderEditor() {
 	add_options.push_back(AddOption("CubeMap", "Textures", "Functions", "VisualShaderNodeCubemap", TTR("Perform the cubic texture lookup."), -1, -1));
 	curve_node_option_idx = add_options.size();
 	add_options.push_back(AddOption("CurveTexture", "Textures", "Functions", "VisualShaderNodeCurveTexture", TTR("Perform the curve texture lookup."), -1, -1));
+	curve_xyz_node_option_idx = add_options.size();
+	add_options.push_back(AddOption("CurveXYZTexture", "Textures", "Functions", "VisualShaderNodeCurveXYZTexture", TTR("Perform the three components curve texture lookup."), -1, -1));
 	texture2d_node_option_idx = add_options.size();
 	add_options.push_back(AddOption("Texture2D", "Textures", "Functions", "VisualShaderNodeTexture", TTR("Perform the 2D texture lookup."), -1, -1));
 	texture2d_array_node_option_idx = add_options.size();

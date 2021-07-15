@@ -434,4 +434,15 @@ public:
 
 #endif
 
+#define GDREGISTER_CLASS(m_class)                    \
+	if (!GD_IS_DEFINED(ClassDB_Disable_##m_class)) { \
+		ClassDB::register_class<m_class>();          \
+	}
+#define GDREGISTER_VIRTUAL_CLASS(m_class)            \
+	if (!GD_IS_DEFINED(ClassDB_Disable_##m_class)) { \
+		ClassDB::register_virtual_class<m_class>();  \
+	}
+
+#include "core/disabled_classes.gen.h"
+
 #endif // CLASS_DB_H

@@ -421,12 +421,6 @@ msgid "Animation tracks can only point to AnimationPlayer nodes."
 msgstr "Les pistes d'Animació només poden apuntar a nodes AnimationPlayer."
 
 #: editor/animation_track_editor.cpp
-msgid "An animation player can't animate itself, only other players."
-msgstr ""
-"Un reproductor d'Animacions no pot animar-se a si mateix, només altres "
-"reproductors."
-
-#: editor/animation_track_editor.cpp
 msgid "Not possible to add a new track without a root"
 msgstr "No es pot afegir una nova pista sense cap arrel"
 
@@ -472,8 +466,9 @@ msgid "Anim Move Keys"
 msgstr "Mou les Claus"
 
 #: editor/animation_track_editor.cpp
-msgid "Clipboard is empty"
-msgstr "El porta-retalls és buit"
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Clipboard is empty!"
+msgstr "El porta-retalls és buit!"
 
 #: editor/animation_track_editor.cpp
 msgid "Paste Tracks"
@@ -2525,7 +2520,7 @@ msgid "Save changes to the following scene(s) before quitting?"
 msgstr "Voleu Desar els canvis en les escenes següents abans de Sortir?"
 
 #: editor/editor_node.cpp
-msgid "Save changes the following scene(s) before opening Project Manager?"
+msgid "Save changes to the following scene(s) before opening Project Manager?"
 msgstr ""
 "Desar els canvis a la(les) següent(s) escenes abans d'obrir el Gestor de "
 "Projectes?"
@@ -12354,10 +12349,6 @@ msgid "Can't copy the function node."
 msgstr "No es pot copiar el node de funció."
 
 #: modules/visual_script/visual_script_editor.cpp
-msgid "Clipboard is empty!"
-msgstr "El porta-retalls és buit!"
-
-#: modules/visual_script/visual_script_editor.cpp
 msgid "Paste VisualScript Nodes"
 msgstr "Enganxa els Nodes de VisualScript"
 
@@ -13566,6 +13557,14 @@ msgstr ""
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "Les constants no es poden modificar."
+
+#~ msgid "An animation player can't animate itself, only other players."
+#~ msgstr ""
+#~ "Un reproductor d'Animacions no pot animar-se a si mateix, només altres "
+#~ "reproductors."
+
+#~ msgid "Clipboard is empty"
+#~ msgstr "El porta-retalls és buit"
 
 #~ msgid "No"
 #~ msgstr "No"

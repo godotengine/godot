@@ -12,12 +12,13 @@
 # lawfulRobot <czavantias@gmail.com>, 2020, 2021.
 # Michalis <michalisntovas@yahoo.gr>, 2021.
 # leriaz <leriaz@live.com>, 2021.
+# Shadofer <shadowrlrs@gmail.com>, 2021.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2021-05-30 04:15+0000\n"
-"Last-Translator: lawfulRobot <czavantias@gmail.com>\n"
+"PO-Revision-Date: 2021-07-09 14:32+0000\n"
+"Last-Translator: Shadofer <shadowrlrs@gmail.com>\n"
 "Language-Team: Greek <https://hosted.weblate.org/projects/godot-engine/godot/"
 "el/>\n"
 "Language: el\n"
@@ -25,7 +26,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.7-dev\n"
+"X-Generator: Weblate 4.8-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -50,8 +51,8 @@ msgstr "Άκυρη είσοδος %i (δεν πέρασε) στην έκφρασ
 #: core/math/expression.cpp
 msgid "self can't be used because instance is null (not passed)"
 msgstr ""
-"Το self δεν μπορεί να χρησιμοποιηθεί επειδή το στιγμιότυπο είναι null (δεν "
-"πέρασε)"
+"το self δεν μπορεί  να χρησιμοποιηθεί επειδή το αντικείμενο είναι null (δέν "
+"έχει περαστεί)"
 
 #: core/math/expression.cpp
 msgid "Invalid operands to operator %s, %s and %s."
@@ -421,10 +422,6 @@ msgstr ""
 "Τα κομμάτια κίνησης μπορούν να δείχνουν μόνο σε κόμβους AnimationPlayer."
 
 #: editor/animation_track_editor.cpp
-msgid "An animation player can't animate itself, only other players."
-msgstr "Ένα AnimationPlayer δεν μπορεί να κινήσει τον εαυτό του."
-
-#: editor/animation_track_editor.cpp
 msgid "Not possible to add a new track without a root"
 msgstr "Αδύνατη η προσθήκη κομματιού χωρίς ρίζα"
 
@@ -469,8 +466,9 @@ msgid "Anim Move Keys"
 msgstr "Μετακίνηση Κλειδιών Κίνησης"
 
 #: editor/animation_track_editor.cpp
-msgid "Clipboard is empty"
-msgstr "Το πρόχειρο είναι άδειο"
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Clipboard is empty!"
+msgstr "Το πρόχειρο είναι άδειο!"
 
 #: editor/animation_track_editor.cpp
 msgid "Paste Tracks"
@@ -1131,7 +1129,7 @@ msgstr "Ευχαριστίες από την κοινότητα της Godot!"
 
 #: editor/editor_about.cpp editor/editor_node.cpp editor/project_manager.cpp
 msgid "Click to copy."
-msgstr ""
+msgstr "Πατήστε για αντιγραφή."
 
 #: editor/editor_about.cpp
 msgid "Godot Engine contributors"
@@ -1634,17 +1632,16 @@ msgstr ""
 "Ενεργοποιήστε το 'Εισαγωγή ETC2' ή 'Εισαγωγή PVRTC' στις Ρυθμίσεις Έργου."
 
 #: editor/editor_export.cpp
-#, fuzzy
 msgid ""
 "Target platform requires 'PVRTC' texture compression for the driver fallback "
 "to GLES2.\n"
 "Enable 'Import Pvrtc' in Project Settings, or disable 'Driver Fallback "
 "Enabled'."
 msgstr ""
-"Η πλατφόρμα προορισμού απαιτεί «ETC» συμπίεση υφών για εναλλαγή οδηγού στο "
+"Η πλατφόρμα προορισμού απαιτεί συμπίεση υφών 'PVRTC' για εναλλαγή οδηγού στο "
 "GLES2.\n"
-"Ενεργοποιήστε το «Import Etc» στις Ρυθμίσεις Έργου, ή απενεργοποιήστε το "
-"«Driver Fallback Enabled»."
+"Ενεργοποιήστε το 'Εισαγωγή PVRTC' στις Ρυθμίσεις Έργου, ή απενεργοποιήστε το "
+"'Ενεργοποίηση εναλλαγής οδηγού'."
 
 #: editor/editor_export.cpp platform/android/export/export.cpp
 #: platform/iphone/export/export.cpp platform/javascript/export/export.cpp
@@ -2523,7 +2520,7 @@ msgid "Save changes to the following scene(s) before quitting?"
 msgstr "Αποθήκευση αλλαγών στις ακόλουθες σκηνές πριν την έξοδο;"
 
 #: editor/editor_node.cpp
-msgid "Save changes the following scene(s) before opening Project Manager?"
+msgid "Save changes to the following scene(s) before opening Project Manager?"
 msgstr ""
 "Αποθήκευση αλλαγών στις ακόλουθες σκηνές πριν το άνοιγμα του Διαχειριστή "
 "Έργων;"
@@ -5101,9 +5098,8 @@ msgid "Got:"
 msgstr "Δοσμένο:"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-#, fuzzy
 msgid "Failed SHA-256 hash check"
-msgstr "Η δοκιμή κατακερματισμού sha256 απέτυχε"
+msgstr "Ο έλεγχος κατακερματισμού sha256 απέτυχε"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Asset Download Error:"
@@ -5259,26 +5255,31 @@ msgstr ""
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
 msgid "Failed determining lightmap size. Maximum lightmap size too small?"
 msgstr ""
+"Αποτυχία προσδιορισμού του μεγέθους lighτmap. Το μέγιστο μέγεθος lightmap "
+"ίσως είναι πολύ μικρό."
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
 msgid ""
 "Some mesh is invalid. Make sure the UV2 channel values are contained within "
 "the [0.0,1.0] square region."
 msgstr ""
+"Μέρος του πλέγματος δεν είναι έγκυρο. Σιγουρευτείτε πως οι τιμές του "
+"καναλιού UV2 περιλαμβάνονται στην τετραγωνική περιοχή [0.0,1.0]."
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
 msgid ""
 "Godot editor was built without ray tracing support, lightmaps can't be baked."
 msgstr ""
+"Ο Godot Editor φτιάχτηκε χωρίς υποστήριξη ray-tracing, τα lightmaps δέν "
+"μπορούν να δημιουργηθούν."
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
 msgid "Bake Lightmaps"
 msgstr "Προετοιμασία Lightmaps"
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
-#, fuzzy
 msgid "Select lightmap bake file:"
-msgstr "Επιλογή Αρχείου Προτύπων"
+msgstr "Επιλογή Αρχείου Προτύπων:"
 
 #: editor/plugins/camera_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -5347,26 +5348,23 @@ msgstr "Δημιουργία Οριζοντίων και Καθέτων Οδηγ
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Set CanvasItem \"%s\" Pivot Offset to (%d, %d)"
-msgstr ""
+msgstr "Θέσε τον άξονα περιστροφής του CanvasItem \"%s\" σε (%d, %d)"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Rotate %d CanvasItems"
-msgstr "Περιστροφή CanvasItem"
+msgstr "Περιστροφή %d CanvasItems"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Rotate CanvasItem \"%s\" to %d degrees"
-msgstr "Περιστροφή CanvasItem"
+msgstr "Περιστροφή του CanvasItem \"%s\" %d μοίρες"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Move CanvasItem \"%s\" Anchor"
-msgstr "Μετακίνηση CanvasItem"
+msgstr "Μετακίνηση άγκυρας του CanvasItem \"%s\""
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Scale Node2D \"%s\" to (%s, %s)"
-msgstr ""
+msgstr "Αλλαγή μεγέθους scaling Node2D \"%s\" σε (%s, %s)"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Resize Control \"%s\" to (%d, %d)"
@@ -12080,10 +12078,6 @@ msgid "Can't copy the function node."
 msgstr "Αδύνατη η αντιγραφή του κόμβου συνάρτησης."
 
 #: modules/visual_script/visual_script_editor.cpp
-msgid "Clipboard is empty!"
-msgstr "Το πρόχειρο είναι άδειο!"
-
-#: modules/visual_script/visual_script_editor.cpp
 msgid "Paste VisualScript Nodes"
 msgstr "Επικόλληση κόμβων VisualScript"
 
@@ -13293,6 +13287,12 @@ msgstr "Τα «varying» μπορούν να ανατεθούν μόνο στη�
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "Οι σταθερές δεν μπορούν να τροποποιηθούν."
+
+#~ msgid "An animation player can't animate itself, only other players."
+#~ msgstr "Ένα AnimationPlayer δεν μπορεί να κινήσει τον εαυτό του."
+
+#~ msgid "Clipboard is empty"
+#~ msgstr "Το πρόχειρο είναι άδειο"
 
 #~ msgid ""
 #~ "InterpolatedCamera has been deprecated and will be removed in Godot 4.0."

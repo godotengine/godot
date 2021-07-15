@@ -18,12 +18,13 @@
 # Manuela Silva <mmsrs@sky.com>, 2020.
 # Murilo Gama <murilovsky2030@gmail.com>, 2020.
 # Ricardo Subtil <ricasubtil@gmail.com>, 2020.
+# André Silva <andre.olivais@gmail.com>, 2021.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2021-05-18 14:51+0000\n"
-"Last-Translator: João Lopes <linux-man@hotmail.com>\n"
+"PO-Revision-Date: 2021-07-03 10:33+0000\n"
+"Last-Translator: André Silva <andre.olivais@gmail.com>\n"
 "Language-Team: Portuguese <https://hosted.weblate.org/projects/godot-engine/"
 "godot/pt/>\n"
 "Language: pt\n"
@@ -31,7 +32,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.7-dev\n"
+"X-Generator: Weblate 4.8-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -424,12 +425,6 @@ msgid "Animation tracks can only point to AnimationPlayer nodes."
 msgstr "Pistas de Animação só podem apontar a nós AnimationPlayer."
 
 #: editor/animation_track_editor.cpp
-msgid "An animation player can't animate itself, only other players."
-msgstr ""
-"Um reprodutor de animação não se pode animar a ele próprio, apenas a outros "
-"reprodutores."
-
-#: editor/animation_track_editor.cpp
 msgid "Not possible to add a new track without a root"
 msgstr "Não é possível adicionar nova pista sem uma raiz"
 
@@ -474,8 +469,9 @@ msgid "Anim Move Keys"
 msgstr "Anim Mover Chaves"
 
 #: editor/animation_track_editor.cpp
-msgid "Clipboard is empty"
-msgstr "Área de Transferência está vazia"
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Clipboard is empty!"
+msgstr "Área de Transferência está vazia!"
 
 #: editor/animation_track_editor.cpp
 msgid "Paste Tracks"
@@ -1132,7 +1128,7 @@ msgstr "Agradecimentos da Comunidade Godot!"
 
 #: editor/editor_about.cpp editor/editor_node.cpp editor/project_manager.cpp
 msgid "Click to copy."
-msgstr ""
+msgstr "Clique para copiar."
 
 #: editor/editor_about.cpp
 msgid "Godot Engine contributors"
@@ -2516,7 +2512,7 @@ msgid "Save changes to the following scene(s) before quitting?"
 msgstr "Guardar alterações da(s) seguinte(s) cena(s) antes de sair?"
 
 #: editor/editor_node.cpp
-msgid "Save changes the following scene(s) before opening Project Manager?"
+msgid "Save changes to the following scene(s) before opening Project Manager?"
 msgstr ""
 "Guardar alterações da(s) seguinte(s) cena(s) antes de abrir o Gestor de "
 "Projeto?"
@@ -11985,10 +11981,6 @@ msgid "Can't copy the function node."
 msgstr "Não consigo copiar o nó função."
 
 #: modules/visual_script/visual_script_editor.cpp
-msgid "Clipboard is empty!"
-msgstr "Área de Transferência está vazia!"
-
-#: modules/visual_script/visual_script_editor.cpp
 msgid "Paste VisualScript Nodes"
 msgstr "Colar Nós VisualScript"
 
@@ -13180,6 +13172,14 @@ msgstr "Variações só podem ser atribuídas na função vértice."
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "Constantes não podem ser modificadas."
+
+#~ msgid "An animation player can't animate itself, only other players."
+#~ msgstr ""
+#~ "Um reprodutor de animação não se pode animar a ele próprio, apenas a "
+#~ "outros reprodutores."
+
+#~ msgid "Clipboard is empty"
+#~ msgstr "Área de Transferência está vazia"
 
 #~ msgid ""
 #~ "InterpolatedCamera has been deprecated and will be removed in Godot 4.0."

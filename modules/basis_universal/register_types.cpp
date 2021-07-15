@@ -272,7 +272,7 @@ void register_basis_universal_types() {
 	Image::basis_universal_packer = basis_universal_packer;
 #endif
 	Image::basis_universal_unpacker = basis_universal_unpacker;
-	//ClassDB::register_class<TextureBasisU>();
+	//GDREGISTER_CLASS(TextureBasisU);
 }
 
 void unregister_basis_universal_types() {

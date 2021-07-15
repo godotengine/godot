@@ -1088,6 +1088,19 @@
 				Returns composite character end position closest to the [code]pos[/code].
 			</description>
 		</method>
+		<method name="shaped_text_overrun_trim_to_width">
+			<return type="void">
+			</return>
+			<argument index="0" name="shaped" type="RID">
+			</argument>
+			<argument index="1" name="width" type="float" default="0">
+			</argument>
+			<argument index="2" name="overrun_trim_flags" type="int" default="0">
+			</argument>
+			<description>
+				Trims text if it exceeds the given width.
+			</description>
+		</method>
 		<method name="shaped_text_prev_grapheme_pos">
 			<return type="int">
 			</return>
@@ -1259,6 +1272,21 @@
 		</constant>
 		<constant name="BREAK_GRAPHEME_BOUND" value="64" enum="LineBreakFlag">
 			Break the line between any unconnected graphemes.
+		</constant>
+		<constant name="OVERRUN_NO_TRIMMING" value="0" enum="TextOverrunFlag">
+			No trimming is performed.
+		</constant>
+		<constant name="OVERRUN_TRIM" value="1" enum="TextOverrunFlag">
+			Trims the text when it exceeds the given width.
+		</constant>
+		<constant name="OVERRUN_TRIM_WORD_ONLY" value="2" enum="TextOverrunFlag">
+			Trims the text per word instead of per grapheme.
+		</constant>
+		<constant name="OVERRUN_ADD_ELLIPSIS" value="4" enum="TextOverrunFlag">
+			Determines whether an ellipsis should be added at the end of the text.
+		</constant>
+		<constant name="OVERRUN_ENFORCE_ELLIPSIS" value="8" enum="TextOverrunFlag">
+			Determines whether the ellipsis at the end of the text is enforced and may not be hidden.
 		</constant>
 		<constant name="GRAPHEME_IS_RTL" value="2" enum="GraphemeFlag">
 			Grapheme is part of right-to-left or bottom-to-top run.

@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  networked_multiplayer_peer.cpp                                       */
+/*  multiplayer_peer.h                                                   */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,40 +28,55 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "networked_multiplayer_peer.h"
+#ifndef NETWORKED_MULTIPLAYER_PEER_H
+#define NETWORKED_MULTIPLAYER_PEER_H
 
-void NetworkedMultiplayerPeer::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("set_transfer_mode", "mode"), &NetworkedMultiplayerPeer::set_transfer_mode);
-	ClassDB::bind_method(D_METHOD("get_transfer_mode"), &NetworkedMultiplayerPeer::get_transfer_mode);
-	ClassDB::bind_method(D_METHOD("set_target_peer", "id"), &NetworkedMultiplayerPeer::set_target_peer);
+#include "core/io/packet_peer.h"
 
-	ClassDB::bind_method(D_METHOD("get_packet_peer"), &NetworkedMultiplayerPeer::get_packet_peer);
+class MultiplayerPeer : public PacketPeer {
+	GDCLASS(MultiplayerPeer, PacketPeer);
 
-	ClassDB::bind_method(D_METHOD("poll"), &NetworkedMultiplayerPeer::poll);
+protected:
+	static void _bind_methods();
 
-	ClassDB::bind_method(D_METHOD("get_connection_status"), &NetworkedMultiplayerPeer::get_connection_status);
-	ClassDB::bind_method(D_METHOD("get_unique_id"), &NetworkedMultiplayerPeer::get_unique_id);
+public:
+	enum {
+		TARGET_PEER_BROADCAST = 0,
+		TARGET_PEER_SERVER = 1
+	};
+	enum TransferMode {
+		TRANSFER_MODE_UNRELIABLE,
+		TRANSFER_MODE_UNRELIABLE_ORDERED,
+		TRANSFER_MODE_RELIABLE,
+	};
 
-	ClassDB::bind_method(D_METHOD("set_refuse_new_connections", "enable"), &NetworkedMultiplayerPeer::set_refuse_new_connections);
-	ClassDB::bind_method(D_METHOD("is_refusing_new_connections"), &NetworkedMultiplayerPeer::is_refusing_new_connections);
+	enum ConnectionStatus {
+		CONNECTION_DISCONNECTED,
+		CONNECTION_CONNECTING,
+		CONNECTION_CONNECTED,
+	};
 
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "refuse_new_connections"), "set_refuse_new_connections", "is_refusing_new_connections");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "transfer_mode", PROPERTY_HINT_ENUM, "Unreliable,Unreliable Ordered,Reliable"), "set_transfer_mode", "get_transfer_mode");
+	virtual void set_transfer_mode(TransferMode p_mode) = 0;
+	virtual TransferMode get_transfer_mode() const = 0;
+	virtual void set_target_peer(int p_peer_id) = 0;
 
-	BIND_ENUM_CONSTANT(TRANSFER_MODE_UNRELIABLE);
-	BIND_ENUM_CONSTANT(TRANSFER_MODE_UNRELIABLE_ORDERED);
-	BIND_ENUM_CONSTANT(TRANSFER_MODE_RELIABLE);
+	virtual int get_packet_peer() const = 0;
 
-	BIND_ENUM_CONSTANT(CONNECTION_DISCONNECTED);
-	BIND_ENUM_CONSTANT(CONNECTION_CONNECTING);
-	BIND_ENUM_CONSTANT(CONNECTION_CONNECTED);
+	virtual bool is_server() const = 0;
 
-	BIND_CONSTANT(TARGET_PEER_BROADCAST);
-	BIND_CONSTANT(TARGET_PEER_SERVER);
+	virtual void poll() = 0;
 
-	ADD_SIGNAL(MethodInfo("peer_connected", PropertyInfo(Variant::INT, "id")));
-	ADD_SIGNAL(MethodInfo("peer_disconnected", PropertyInfo(Variant::INT, "id")));
-	ADD_SIGNAL(MethodInfo("server_disconnected"));
-	ADD_SIGNAL(MethodInfo("connection_succeeded"));
-	ADD_SIGNAL(MethodInfo("connection_failed"));
-}
+	virtual int get_unique_id() const = 0;
+
+	virtual void set_refuse_new_connections(bool p_enable) = 0;
+	virtual bool is_refusing_new_connections() const = 0;
+
+	virtual ConnectionStatus get_connection_status() const = 0;
+
+	MultiplayerPeer() {}
+};
+
+VARIANT_ENUM_CAST(MultiplayerPeer::TransferMode)
+VARIANT_ENUM_CAST(MultiplayerPeer::ConnectionStatus)
+
+#endif // NETWORKED_MULTIPLAYER_PEER_H

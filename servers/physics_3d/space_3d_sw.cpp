@@ -255,6 +255,8 @@ bool PhysicsDirectSpaceState3DSW::cast_motion(const RID &p_shape, const Transfor
 
 	bool best_first = true;
 
+	Vector3 motion_normal = p_motion.normalized();
+
 	Vector3 closest_A, closest_B;
 
 	for (int i = 0; i < amount; i++) {
@@ -270,7 +272,7 @@ bool PhysicsDirectSpaceState3DSW::cast_motion(const RID &p_shape, const Transfor
 		int shape_idx = space->intersection_query_subindex_results[i];
 
 		Vector3 point_A, point_B;
-		Vector3 sep_axis = p_motion.normalized();
+		Vector3 sep_axis = motion_normal;
 
 		Transform3D col_obj_xform = col_obj->get_transform() * col_obj->get_shape_transform(shape_idx);
 		//test initial overlap, does it collide if going all the way?
@@ -279,35 +281,47 @@ bool PhysicsDirectSpaceState3DSW::cast_motion(const RID &p_shape, const Transfor
 		}
 
 		//test initial overlap, ignore objects it's inside of.
-		sep_axis = p_motion.normalized();
+		sep_axis = motion_normal;
 
 		if (!CollisionSolver3DSW::solve_distance(shape, p_xform, col_obj->get_shape(shape_idx), col_obj_xform, point_A, point_B, aabb, &sep_axis)) {
 			continue;
 		}
 
 		//just do kinematic solving
-		real_t low = 0;
-		real_t hi = 1;
-		Vector3 mnormal = p_motion.normalized();
-
+		real_t low = 0.0;
+		real_t hi = 1.0;
+		real_t fraction_coeff = 0.5;
 		for (int j = 0; j < 8; j++) { //steps should be customizable..
+			real_t fraction = low + (hi - low) * fraction_coeff;
 
-			real_t ofs = (low + hi) * 0.5;
-
-			Vector3 sep = mnormal; //important optimization for this to work fast enough
-
-			mshape.motion = xform_inv.basis.xform(p_motion * ofs);
+			mshape.motion = xform_inv.basis.xform(p_motion * fraction);
 
 			Vector3 lA, lB;
-
+			Vector3 sep = motion_normal; //important optimization for this to work fast enough
 			bool collided = !CollisionSolver3DSW::solve_distance(&mshape, p_xform, col_obj->get_shape(shape_idx), col_obj_xform, lA, lB, aabb, &sep);
 
 			if (collided) {
-				hi = ofs;
+				hi = fraction;
+				if ((j == 0) || (low > 0.0)) { // Did it not collide before?
+					// When alternating or first iteration, use dichotomy.
+					fraction_coeff = 0.5;
+				} else {
+					// When colliding again, converge faster towards low fraction
+					// for more accurate results with long motions that collide near the start.
+					fraction_coeff = 0.25;
+				}
 			} else {
 				point_A = lA;
 				point_B = lB;
-				low = ofs;
+				low = fraction;
+				if ((j == 0) || (hi < 1.0)) { // Did it collide before?
+					// When alternating or first iteration, use dichotomy.
+					fraction_coeff = 0.5;
+				} else {
+					// When not colliding again, converge faster towards high fraction
+					// for more accurate results with long motions that collide near the end.
+					fraction_coeff = 0.75;
+				}
 			}
 		}
 
@@ -902,27 +916,40 @@ bool Space3DSW::test_body_motion(Body3DSW *p_body, const Transform3D &p_from, co
 				}
 
 				//just do kinematic solving
-				real_t low = 0;
-				real_t hi = 1;
-
+				real_t low = 0.0;
+				real_t hi = 1.0;
+				real_t fraction_coeff = 0.5;
 				for (int k = 0; k < 8; k++) { //steps should be customizable..
+					real_t fraction = low + (hi - low) * fraction_coeff;
 
-					real_t ofs = (low + hi) * 0.5;
-
-					Vector3 sep = motion_normal; //important optimization for this to work fast enough
-
-					mshape.motion = body_shape_xform_inv.basis.xform(p_motion * ofs);
+					mshape.motion = body_shape_xform_inv.basis.xform(p_motion * fraction);
 
 					Vector3 lA, lB;
-
+					Vector3 sep = motion_normal; //important optimization for this to work fast enough
 					bool collided = !CollisionSolver3DSW::solve_distance(&mshape, body_shape_xform, col_obj->get_shape(shape_idx), col_obj_xform, lA, lB, motion_aabb, &sep);
 
 					if (collided) {
-						hi = ofs;
+						hi = fraction;
+						if ((k == 0) || (low > 0.0)) { // Did it not collide before?
+							// When alternating or first iteration, use dichotomy.
+							fraction_coeff = 0.5;
+						} else {
+							// When colliding again, converge faster towards low fraction
+							// for more accurate results with long motions that collide near the start.
+							fraction_coeff = 0.25;
+						}
 					} else {
 						point_A = lA;
 						point_B = lB;
-						low = ofs;
+						low = fraction;
+						if ((k == 0) || (hi < 1.0)) { // Did it collide before?
+							// When alternating or first iteration, use dichotomy.
+							fraction_coeff = 0.5;
+						} else {
+							// When not colliding again, converge faster towards high fraction
+							// for more accurate results with long motions that collide near the end.
+							fraction_coeff = 0.75;
+						}
 					}
 				}
 

@@ -369,6 +369,9 @@ void EditorAssetLibraryItemDownload::_http_download_completed(int p_status, int 
 	progress->set_modulate(Color(0, 0, 0, 0));
 
 	set_process(false);
+
+	// Automatically prompt for installation once the download is completed.
+	_install();
 }
 
 void EditorAssetLibraryItemDownload::configure(const String &p_title, int p_asset_id, const Ref<Texture2D> &p_preview, const String &p_download_url, const String &p_sha256_hash) {
@@ -456,6 +459,7 @@ void EditorAssetLibraryItemDownload::_install() {
 		return;
 	}
 
+	asset_installer->set_asset_name(title->get_text());
 	asset_installer->open(file, 1);
 }
 
@@ -1296,6 +1300,7 @@ void EditorAssetLibrary::_asset_file_selected(const String &p_file) {
 	}
 
 	asset_installer = memnew(EditorAssetInstaller);
+	asset_installer->set_asset_name(p_file.get_basename());
 	add_child(asset_installer);
 	asset_installer->open(p_file);
 }

@@ -975,7 +975,7 @@ bool CustomPropertyEditor::edit(Object *p_owner, const String &p_name, Variant::
 				}
 				for (int i = 0; i < conversions.size(); i++) {
 					String what = conversions[i]->converts_to();
-					menu->add_item(vformat(TTR("Convert To %s"), what), CONVERT_BASE_ID + i);
+					menu->add_item(vformat(TTR("Convert to %s"), what), CONVERT_BASE_ID + i);
 				}
 			}
 

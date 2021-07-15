@@ -549,7 +549,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 
 	translation_server = memnew(TranslationServer);
 	performance = memnew(Performance);
-	ClassDB::register_class<Performance>();
+	GDREGISTER_CLASS(Performance);
 	engine->add_singleton(Engine::Singleton("Performance", performance));
 
 	// Only flush stdout in debug builds by default, as spamming `print()` will
@@ -1335,20 +1335,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		window_orientation = DisplayServer::ScreenOrientation(int(GLOBAL_DEF_BASIC("display/window/handheld/orientation", DisplayServer::ScreenOrientation::SCREEN_LANDSCAPE)));
 	}
 	{
-		String vsync_mode = GLOBAL_DEF("display/window/vsync/vsync_mode", "Enabled");
-
-		if (vsync_mode == "Disabled") {
-			window_vsync_mode = DisplayServer::VSYNC_DISABLED;
-		} else if (vsync_mode == "Enabled") {
-			window_vsync_mode = DisplayServer::VSYNC_ENABLED;
-		} else if (vsync_mode == "Adaptive") {
-			window_vsync_mode = DisplayServer::VSYNC_ADAPTIVE;
-		} else if (vsync_mode == "Mailbox") {
-			window_vsync_mode = DisplayServer::VSYNC_MAILBOX;
-		} else {
-			WARN_PRINT("VSync mode unknown.");
-			window_vsync_mode = DisplayServer::VSYNC_ENABLED;
-		}
+		window_vsync_mode = DisplayServer::VSyncMode(int(GLOBAL_DEF("display/window/vsync/vsync_mode", DisplayServer::VSyncMode::VSYNC_ENABLED)));
 	}
 	Engine::get_singleton()->set_iterations_per_second(GLOBAL_DEF_BASIC("physics/common/physics_fps", 60));
 	ProjectSettings::get_singleton()->set_custom_property_info("physics/common/physics_fps",

@@ -616,6 +616,11 @@ Files extracted from upstream source:
 - `include` folder
 - `LICENSE`
 
+Some downstream changes have been made and are identified by
+`// -- GODOT begin --` and `// -- GODOT end --` comments.
+They can be reapplied using the patch included in the `patches`
+folder.
+
 
 ## squish
 

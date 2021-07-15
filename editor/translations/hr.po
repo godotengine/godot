@@ -405,10 +405,6 @@ msgid "Animation tracks can only point to AnimationPlayer nodes."
 msgstr ""
 
 #: editor/animation_track_editor.cpp
-msgid "An animation player can't animate itself, only other players."
-msgstr "Animator ne može animirati sebe, samo druge objekte."
-
-#: editor/animation_track_editor.cpp
 msgid "Not possible to add a new track without a root"
 msgstr "Nije moguće dodati novu stazu bez korijena"
 
@@ -453,8 +449,9 @@ msgid "Anim Move Keys"
 msgstr ""
 
 #: editor/animation_track_editor.cpp
-msgid "Clipboard is empty"
-msgstr "Međuspremnik je prazan"
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Clipboard is empty!"
+msgstr ""
 
 #: editor/animation_track_editor.cpp
 msgid "Paste Tracks"
@@ -2425,7 +2422,7 @@ msgid "Save changes to the following scene(s) before quitting?"
 msgstr ""
 
 #: editor/editor_node.cpp
-msgid "Save changes the following scene(s) before opening Project Manager?"
+msgid "Save changes to the following scene(s) before opening Project Manager?"
 msgstr ""
 
 #: editor/editor_node.cpp
@@ -11527,10 +11524,6 @@ msgid "Can't copy the function node."
 msgstr ""
 
 #: modules/visual_script/visual_script_editor.cpp
-msgid "Clipboard is empty!"
-msgstr ""
-
-#: modules/visual_script/visual_script_editor.cpp
 msgid "Paste VisualScript Nodes"
 msgstr ""
 
@@ -12552,6 +12545,12 @@ msgstr "Varijacije se mogu dodijeliti samo u vertex funkciji."
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "Konstante se ne mogu mijenjati."
+
+#~ msgid "An animation player can't animate itself, only other players."
+#~ msgstr "Animator ne može animirati sebe, samo druge objekte."
+
+#~ msgid "Clipboard is empty"
+#~ msgstr "Međuspremnik je prazan"
 
 #, fuzzy
 #~ msgid "Pack File"

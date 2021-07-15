@@ -231,6 +231,18 @@ def is_module(path):
     return True
 
 
+def write_disabled_classes(class_list):
+    f = open("core/disabled_classes.gen.h", "w")
+    f.write("/* THIS FILE IS GENERATED DO NOT EDIT */\n")
+    f.write("#ifndef DISABLED_CLASSES_GEN_H\n")
+    f.write("#define DISABLED_CLASSES_GEN_H\n\n")
+    for c in class_list:
+        cs = c.strip()
+        if cs != "":
+            f.write("#define ClassDB_Disable_" + cs + " 1\n")
+    f.write("\n#endif\n")
+
+
 def write_modules(modules):
     includes_cpp = ""
     preregister_cpp = ""

@@ -148,11 +148,11 @@ bool AcceptDialog::get_hide_on_ok() const {
 }
 
 void AcceptDialog::set_autowrap(bool p_autowrap) {
-	label->set_autowrap(p_autowrap);
+	label->set_autowrap_mode(p_autowrap ? Label::AUTOWRAP_WORD : Label::AUTOWRAP_OFF);
 }
 
 bool AcceptDialog::has_autowrap() {
-	return label->has_autowrap();
+	return label->get_autowrap_mode() != Label::AUTOWRAP_OFF;
 }
 
 void AcceptDialog::register_text_enter(Control *p_line_edit) {

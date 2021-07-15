@@ -29,6 +29,10 @@
 /*************************************************************************/
 
 #include "fbx_material.h"
+
+// FIXME: Shouldn't depend on core_bind.h! Use DirAccessRef like the rest of
+// the engine instead of _Directory.
+#include "core/core_bind.h"
 #include "scene/resources/material.h"
 #include "scene/resources/texture.h"
 #include "tools/validation_tools.h"

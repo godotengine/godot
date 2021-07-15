@@ -436,10 +436,6 @@ msgid "Animation tracks can only point to AnimationPlayer nodes."
 msgstr ""
 
 #: editor/animation_track_editor.cpp
-msgid "An animation player can't animate itself, only other players."
-msgstr ""
-
-#: editor/animation_track_editor.cpp
 msgid "Not possible to add a new track without a root"
 msgstr "შეუძლებელია დაამატო ახალი ჩანაწერი ფესვის გარეშე"
 
@@ -491,9 +487,9 @@ msgid "Anim Move Keys"
 msgstr "ანიმაციის გასაღებების გადაადგილება"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
-msgid "Clipboard is empty"
-msgstr "ბუფერი ცარიელია"
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Clipboard is empty!"
+msgstr ""
 
 #: editor/animation_track_editor.cpp
 msgid "Paste Tracks"
@@ -2529,7 +2525,7 @@ msgid "Save changes to the following scene(s) before quitting?"
 msgstr ""
 
 #: editor/editor_node.cpp
-msgid "Save changes the following scene(s) before opening Project Manager?"
+msgid "Save changes to the following scene(s) before opening Project Manager?"
 msgstr ""
 
 #: editor/editor_node.cpp
@@ -11863,10 +11859,6 @@ msgid "Can't copy the function node."
 msgstr ""
 
 #: modules/visual_script/visual_script_editor.cpp
-msgid "Clipboard is empty!"
-msgstr ""
-
-#: modules/visual_script/visual_script_editor.cpp
 msgid "Paste VisualScript Nodes"
 msgstr ""
 
@@ -12907,6 +12899,10 @@ msgstr ""
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr ""
+
+#, fuzzy
+#~ msgid "Clipboard is empty"
+#~ msgstr "ბუფერი ცარიელია"
 
 #, fuzzy
 #~ msgid "Add initial export..."

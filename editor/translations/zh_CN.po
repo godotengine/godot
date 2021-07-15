@@ -83,7 +83,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Chinese (Simplified) (Godot Engine)\n"
 "POT-Creation-Date: 2018-01-20 12:15+0200\n"
-"PO-Revision-Date: 2021-06-20 13:35+0000\n"
+"PO-Revision-Date: 2021-07-13 06:13+0000\n"
 "Last-Translator: Haoyu Qiu <timothyqiu32@gmail.com>\n"
 "Language-Team: Chinese (Simplified) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/zh_Hans/>\n"
@@ -92,7 +92,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 4.7\n"
+"X-Generator: Weblate 4.7.2-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -260,7 +260,7 @@ msgstr "修改动画长度"
 #: editor/animation_track_editor.cpp
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Change Animation Loop"
-msgstr "修改循环"
+msgstr "修改动画循环"
 
 #: editor/animation_track_editor.cpp
 msgid "Property Track"
@@ -288,11 +288,11 @@ msgstr "动画播放轨道"
 
 #: editor/animation_track_editor.cpp
 msgid "Animation length (frames)"
-msgstr "动画时长（帧）"
+msgstr "动画长度（帧）"
 
 #: editor/animation_track_editor.cpp
 msgid "Animation length (seconds)"
-msgstr "动画时长（秒）"
+msgstr "动画长度（秒）"
 
 #: editor/animation_track_editor.cpp
 msgid "Add Track"
@@ -317,15 +317,15 @@ msgstr "动画剪辑："
 
 #: editor/animation_track_editor.cpp
 msgid "Change Track Path"
-msgstr "改变轨道路径"
+msgstr "修改轨道路径"
 
 #: editor/animation_track_editor.cpp
 msgid "Toggle this track on/off."
-msgstr "切换当前轨道开关。"
+msgstr "切换该轨道的开关。"
 
 #: editor/animation_track_editor.cpp
 msgid "Update Mode (How this property is set)"
-msgstr "更新模式（属性设置方法）"
+msgstr "更新模式（设置属性的方式）"
 
 #: editor/animation_track_editor.cpp
 msgid "Interpolation Mode"
@@ -337,7 +337,7 @@ msgstr "无缝循环模式（使用循环开始插值循环结束）"
 
 #: editor/animation_track_editor.cpp
 msgid "Remove this track."
-msgstr "移除当前轨道。"
+msgstr "移除该轨道。"
 
 #: editor/animation_track_editor.cpp
 msgid "Time (s): "
@@ -378,11 +378,11 @@ msgstr "三次方"
 
 #: editor/animation_track_editor.cpp
 msgid "Clamp Loop Interp"
-msgstr "切断循环插值器"
+msgstr "切断循环插值"
 
 #: editor/animation_track_editor.cpp
 msgid "Wrap Loop Interp"
-msgstr "环绕间隔"
+msgstr "环绕循环插值"
 
 #: editor/animation_track_editor.cpp
 #: editor/plugins/canvas_item_editor_plugin.cpp
@@ -391,11 +391,11 @@ msgstr "插入关键帧"
 
 #: editor/animation_track_editor.cpp
 msgid "Duplicate Key(s)"
-msgstr "复制帧"
+msgstr "复制关键帧"
 
 #: editor/animation_track_editor.cpp
 msgid "Delete Key(s)"
-msgstr "删除帧"
+msgstr "删除关键帧"
 
 #: editor/animation_track_editor.cpp
 msgid "Change Animation Update Mode"
@@ -411,7 +411,7 @@ msgstr "更改动画循环模式"
 
 #: editor/animation_track_editor.cpp
 msgid "Remove Anim Track"
-msgstr "移除轨道"
+msgstr "移除动画轨道"
 
 #: editor/animation_track_editor.cpp
 msgid "Create NEW track for %s and insert key?"
@@ -447,11 +447,11 @@ msgstr "创建并插入动画"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Insert Track & Key"
-msgstr "插入轨道和关键帧"
+msgstr "插入动画轨道和关键帧"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Insert Key"
-msgstr "插入关键帧"
+msgstr "插入动画关键帧"
 
 #: editor/animation_track_editor.cpp
 msgid "Change Animation Step"
@@ -463,7 +463,7 @@ msgstr "重新排列轨道"
 
 #: editor/animation_track_editor.cpp
 msgid "Transform tracks only apply to Spatial-based nodes."
-msgstr "变换轨迹仅应用到基于 Spatial 节点。"
+msgstr "变换轨道仅应用于基于 Spatial 的节点。"
 
 #: editor/animation_track_editor.cpp
 msgid ""
@@ -472,18 +472,14 @@ msgid ""
 "-AudioStreamPlayer2D\n"
 "-AudioStreamPlayer3D"
 msgstr ""
-"音轨只能指向以下类型的节点：\n"
+"音频轨道只能指向以下类型的节点：\n"
 "-AudioStreamPlayer\n"
 "-AudioStreamPlayer2D\n"
 "-AudioStreamPlayer3D"
 
 #: editor/animation_track_editor.cpp
 msgid "Animation tracks can only point to AnimationPlayer nodes."
-msgstr "动画轨迹只能指向 AnimationPlayer 节点。"
-
-#: editor/animation_track_editor.cpp
-msgid "An animation player can't animate itself, only other players."
-msgstr "动画播放器不能动画化自己，只能动画化其他播放器。"
+msgstr "动画轨道只能指向 AnimationPlayer 节点。"
 
 #: editor/animation_track_editor.cpp
 msgid "Not possible to add a new track without a root"
@@ -530,8 +526,9 @@ msgid "Anim Move Keys"
 msgstr "移动动画关键帧"
 
 #: editor/animation_track_editor.cpp
-msgid "Clipboard is empty"
-msgstr "剪贴板是空的"
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Clipboard is empty!"
+msgstr "剪贴板是空的！"
 
 #: editor/animation_track_editor.cpp
 msgid "Paste Tracks"
@@ -2535,7 +2532,7 @@ msgid "Save changes to the following scene(s) before quitting?"
 msgstr "退出前要保存以下场景更改吗？"
 
 #: editor/editor_node.cpp
-msgid "Save changes the following scene(s) before opening Project Manager?"
+msgid "Save changes to the following scene(s) before opening Project Manager?"
 msgstr "打开项目管理器前要保存下列场景更改吗？"
 
 #: editor/editor_node.cpp
@@ -9783,10 +9780,10 @@ msgid ""
 "Incompatible with older hardware\n"
 "Not recommended for web games"
 msgstr ""
-"视觉质量更高\n"
+"视觉质量较高\n"
 "所有功能可用\n"
-"与旧硬件不兼容\n"
-"不推荐用于网络游戏"
+"不兼容较老的硬件\n"
+"不推荐用于网页游戏"
 
 #: editor/project_manager.cpp
 msgid "OpenGL ES 2.0"
@@ -9802,7 +9799,7 @@ msgstr ""
 "视觉质量较低\n"
 "某些功能不可用\n"
 "可用于大多数硬件\n"
-"推荐用于网络游戏"
+"推荐用于网页游戏"
 
 #: editor/project_manager.cpp
 msgid "Renderer can be changed later, but scenes may need to be adjusted."
@@ -9878,7 +9875,7 @@ msgid ""
 "the \"Application\" category."
 msgstr ""
 "无法运行项目：未定义主场景。 \n"
-"请编辑项目并在 “项目设置” 中 “Application” 类别下设置主场景。"
+"请编辑项目并在 “项目设置” 的 “Application” 类别下设置主场景。"
 
 #: editor/project_manager.cpp
 msgid ""
@@ -9943,7 +9940,7 @@ msgstr "项目"
 
 #: editor/project_manager.cpp
 msgid "Loading, please wait..."
-msgstr "正在加载，请稍候..."
+msgstr "正在加载，请稍候……"
 
 #: editor/project_manager.cpp
 msgid "Last Modified"
@@ -9971,7 +9968,7 @@ msgstr "模板"
 
 #: editor/project_manager.cpp
 msgid "Restart Now"
-msgstr "立即重新启动"
+msgstr "立即重启"
 
 #: editor/project_manager.cpp
 msgid "Can't run project"
@@ -9982,7 +9979,7 @@ msgid ""
 "You currently don't have any projects.\n"
 "Would you like to explore official example projects in the Asset Library?"
 msgstr ""
-"目前没有任何项目。 \n"
+"目前没有任何项目。\n"
 "是否查看素材库中的官方示例项目？"
 
 #: editor/project_manager.cpp
@@ -9996,11 +9993,11 @@ msgstr ""
 
 #: editor/project_settings_editor.cpp
 msgid "Key "
-msgstr "键 "
+msgstr "按键 "
 
 #: editor/project_settings_editor.cpp
 msgid "Joy Button"
-msgstr "手柄按钮"
+msgstr "手柄按键"
 
 #: editor/project_settings_editor.cpp
 msgid "Joy Axis"
@@ -10014,11 +10011,11 @@ msgstr "鼠标按键"
 msgid ""
 "Invalid action name. It cannot be empty nor contain '/', ':', '=', '\\' or "
 "'\"'"
-msgstr "无效的操作名称。操作名不能为空，也不能包含 “/”, “:”, “=”, “\\” 或 “\"”"
+msgstr "无效的动作名称。动作名不能为空，也不能包含 “/”, “:”, “=”, “\\” 或 “\"”"
 
 #: editor/project_settings_editor.cpp
 msgid "An action with the name '%s' already exists."
-msgstr "名为 “%s” 的操作已存在。"
+msgstr "名为“%s”的动作已存在。"
 
 #: editor/project_settings_editor.cpp
 msgid "Rename Input Action Event"
@@ -10042,11 +10039,11 @@ msgstr "设备"
 
 #: editor/project_settings_editor.cpp editor/settings_config_dialog.cpp
 msgid "Press a Key..."
-msgstr "按下一个键..."
+msgstr "请按键……"
 
 #: editor/project_settings_editor.cpp
 msgid "Mouse Button Index:"
-msgstr "鼠标按键:"
+msgstr "鼠标按键索引："
 
 #: editor/project_settings_editor.cpp
 msgid "Left Button"
@@ -10070,11 +10067,11 @@ msgstr "滚轮向下"
 
 #: editor/project_settings_editor.cpp
 msgid "Wheel Left Button"
-msgstr "滚轮左键"
+msgstr "滚轮向左"
 
 #: editor/project_settings_editor.cpp
 msgid "Wheel Right Button"
-msgstr "滚轮右键"
+msgstr "滚轮向右"
 
 #: editor/project_settings_editor.cpp
 msgid "X Button 1"
@@ -10086,7 +10083,7 @@ msgstr "X 按键 2"
 
 #: editor/project_settings_editor.cpp
 msgid "Joypad Axis Index:"
-msgstr "手柄摇杆序号："
+msgstr "手柄摇杆索引："
 
 #: editor/project_settings_editor.cpp
 msgid "Axis"
@@ -10094,15 +10091,15 @@ msgstr "轴"
 
 #: editor/project_settings_editor.cpp
 msgid "Joypad Button Index:"
-msgstr "手柄按钮:"
+msgstr "手柄按钮索引："
 
 #: editor/project_settings_editor.cpp
 msgid "Erase Input Action"
-msgstr "移除输入事件"
+msgstr "移除输入动作"
 
 #: editor/project_settings_editor.cpp
 msgid "Erase Input Action Event"
-msgstr "移除输入事件"
+msgstr "移除输入动作事件"
 
 #: editor/project_settings_editor.cpp
 msgid "Add Event"
@@ -10122,7 +10119,7 @@ msgstr "右键。"
 
 #: editor/project_settings_editor.cpp
 msgid "Middle Button."
-msgstr "中键（滚轮）。"
+msgstr "中键。"
 
 #: editor/project_settings_editor.cpp
 msgid "Wheel Up."
@@ -10138,15 +10135,15 @@ msgstr "添加全局属性"
 
 #: editor/project_settings_editor.cpp
 msgid "Select a setting item first!"
-msgstr "请先选择一个设置项目 ！"
+msgstr "请先选择一个设置项！"
 
 #: editor/project_settings_editor.cpp
 msgid "No property '%s' exists."
-msgstr "不存在属性 “%s”。"
+msgstr "不存在属性“%s”。"
 
 #: editor/project_settings_editor.cpp
 msgid "Setting '%s' is internal, and it can't be deleted."
-msgstr "“%s” 是内部设定，无法删除。"
+msgstr "“%s”是内部设定，无法删除。"
 
 #: editor/project_settings_editor.cpp
 msgid "Delete Item"
@@ -10157,7 +10154,7 @@ msgid ""
 "Invalid action name. It cannot be empty nor contain '/', ':', '=', '\\' or "
 "'\"'."
 msgstr ""
-"无效的操作名称。名称不能为空，也不能包含 “/”, “:”, “=”, “\\” 或者 “\"”。"
+"无效的动作名称。动作不能为空，也不能包含 “/”, “:”, “=”, “\\” 或者 “\"”。"
 
 #: editor/project_settings_editor.cpp
 msgid "Add Input Action"
@@ -10173,7 +10170,7 @@ msgstr "保存设置成功。"
 
 #: editor/project_settings_editor.cpp
 msgid "Moved Input Action Event"
-msgstr "输入动作事件"
+msgstr "移动输入动作事件"
 
 #: editor/project_settings_editor.cpp
 msgid "Override for Feature"
@@ -10209,11 +10206,11 @@ msgstr "移除资源重定向选项"
 
 #: editor/project_settings_editor.cpp
 msgid "Changed Locale Filter"
-msgstr "修改区域设置筛选模式"
+msgstr "修改区域设置筛选"
 
 #: editor/project_settings_editor.cpp
 msgid "Changed Locale Filter Mode"
-msgstr "更改了区域设置筛选模式"
+msgstr "修改区域设置筛选模式"
 
 #: editor/project_settings_editor.cpp
 msgid "Project Settings (project.godot)"
@@ -10237,7 +10234,7 @@ msgstr "键位映射"
 
 #: editor/project_settings_editor.cpp
 msgid "Action:"
-msgstr "动作:"
+msgstr "动作："
 
 #: editor/project_settings_editor.cpp
 msgid "Action"
@@ -10253,7 +10250,7 @@ msgstr "设备："
 
 #: editor/project_settings_editor.cpp
 msgid "Index:"
-msgstr "序号："
+msgstr "索引："
 
 #: editor/project_settings_editor.cpp
 msgid "Localization"
@@ -10277,7 +10274,7 @@ msgstr "资源："
 
 #: editor/project_settings_editor.cpp
 msgid "Remaps by Locale:"
-msgstr "依照区域重定向："
+msgstr "按区域重定向："
 
 #: editor/project_settings_editor.cpp
 msgid "Locale"
@@ -10329,7 +10326,7 @@ msgstr "缓入缓出"
 
 #: editor/property_editor.cpp
 msgid "Easing Out-In"
-msgstr "反缓入缓出"
+msgstr "缓出缓入"
 
 #: editor/property_editor.cpp
 msgid "File..."
@@ -11832,10 +11829,6 @@ msgid "Can't copy the function node."
 msgstr "无法复制函数节点。"
 
 #: modules/visual_script/visual_script_editor.cpp
-msgid "Clipboard is empty!"
-msgstr "剪贴板是空的！"
-
-#: modules/visual_script/visual_script_editor.cpp
 msgid "Paste VisualScript Nodes"
 msgstr "粘贴 VisualScript 节点"
 
@@ -12946,6 +12939,12 @@ msgstr "变量只能在顶点函数中指定。"
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "不允许修改常量。"
+
+#~ msgid "An animation player can't animate itself, only other players."
+#~ msgstr "动画播放器不能动画化自己，只能动画化其他播放器。"
+
+#~ msgid "Clipboard is empty"
+#~ msgstr "剪贴板是空的"
 
 #~ msgid ""
 #~ "Godot editor was built without ray tracing support; lightmaps can't be "

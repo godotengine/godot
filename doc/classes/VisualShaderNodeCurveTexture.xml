@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="VisualShaderNodeCurveTexture" inherits="VisualShaderNodeResizableBase" version="4.0">
 	<brief_description>
+		Performs a [CurveTexture] lookup within the visual shader graph.
 	</brief_description>
 	<description>
+		Comes with a built-in editor for texture's curves.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -10,6 +12,7 @@
 	</methods>
 	<members>
 		<member name="texture" type="CurveTexture" setter="set_texture" getter="get_texture">
+			The source texture.
 		</member>
 	</members>
 	<constants>

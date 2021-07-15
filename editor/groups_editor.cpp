@@ -424,6 +424,8 @@ GroupDialog::GroupDialog() {
 	vbc_left->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 
 	Label *group_title = memnew(Label);
+	group_title->set_theme_type_variation("HeaderSmall");
+
 	group_title->set_text(TTR("Groups"));
 	vbc_left->add_child(group_title);
 
@@ -458,6 +460,8 @@ GroupDialog::GroupDialog() {
 	vbc_add->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 
 	Label *out_of_group_title = memnew(Label);
+	out_of_group_title->set_theme_type_variation("HeaderSmall");
+
 	out_of_group_title->set_text(TTR("Nodes Not in Group"));
 	vbc_add->add_child(out_of_group_title);
 
@@ -506,6 +510,8 @@ GroupDialog::GroupDialog() {
 	vbc_remove->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 
 	Label *in_group_title = memnew(Label);
+	in_group_title->set_theme_type_variation("HeaderSmall");
+
 	in_group_title->set_text(TTR("Nodes in Group"));
 	vbc_remove->add_child(in_group_title);
 
@@ -528,10 +534,12 @@ GroupDialog::GroupDialog() {
 	remove_filter->connect("text_changed", callable_mp(this, &GroupDialog::_remove_filter_changed));
 
 	group_empty = memnew(Label());
+	group_empty->set_theme_type_variation("HeaderSmall");
+
 	group_empty->set_text(TTR("Empty groups will be automatically removed."));
 	group_empty->set_valign(Label::VALIGN_CENTER);
 	group_empty->set_align(Label::ALIGN_CENTER);
-	group_empty->set_autowrap(true);
+	group_empty->set_autowrap_mode(Label::AUTOWRAP_WORD_SMART);
 	group_empty->set_custom_minimum_size(Size2(100 * EDSCALE, 0));
 	nodes_to_remove->add_child(group_empty);
 	group_empty->set_anchors_and_offsets_preset(Control::PRESET_WIDE, Control::PRESET_MODE_KEEP_SIZE, 8 * EDSCALE);

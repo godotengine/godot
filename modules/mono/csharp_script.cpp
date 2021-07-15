@@ -3038,7 +3038,7 @@ void CSharpScript::update_script_class_info(Ref<CSharpScript> p_script) {
 						nd.name = methods[i]->get_name();
 						nd.rpc_mode = mode;
 						// TODO Transfer mode, channel
-						nd.transfer_mode = NetworkedMultiplayerPeer::TRANSFER_MODE_RELIABLE;
+						nd.transfer_mode = MultiplayerPeer::TRANSFER_MODE_RELIABLE;
 						nd.channel = 0;
 						if (-1 == p_script->rpc_functions.find(nd)) {
 							p_script->rpc_functions.push_back(nd);

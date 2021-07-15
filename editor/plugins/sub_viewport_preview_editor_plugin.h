@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  networked_multiplayer_peer.h                                         */
+/*  sub_viewport_preview_editor_plugin.h                                 */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,55 +28,29 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef NETWORKED_MULTIPLAYER_PEER_H
-#define NETWORKED_MULTIPLAYER_PEER_H
+#ifndef SUB_VIEWPORT_PREVIEW_EDITOR_PLUGIN_H
+#define SUB_VIEWPORT_PREVIEW_EDITOR_PLUGIN_H
 
-#include "core/io/packet_peer.h"
+#include "editor/editor_node.h"
+#include "editor/editor_plugin.h"
+#include "editor/plugins/texture_editor_plugin.h"
+#include "scene/main/viewport.h"
 
-class NetworkedMultiplayerPeer : public PacketPeer {
-	GDCLASS(NetworkedMultiplayerPeer, PacketPeer);
-
-protected:
-	static void _bind_methods();
+class EditorInspectorPluginSubViewportPreview : public EditorInspectorPluginTexture {
+	GDCLASS(EditorInspectorPluginSubViewportPreview, EditorInspectorPluginTexture);
 
 public:
-	enum {
-		TARGET_PEER_BROADCAST = 0,
-		TARGET_PEER_SERVER = 1
-	};
-	enum TransferMode {
-		TRANSFER_MODE_UNRELIABLE,
-		TRANSFER_MODE_UNRELIABLE_ORDERED,
-		TRANSFER_MODE_RELIABLE,
-	};
-
-	enum ConnectionStatus {
-		CONNECTION_DISCONNECTED,
-		CONNECTION_CONNECTING,
-		CONNECTION_CONNECTED,
-	};
-
-	virtual void set_transfer_mode(TransferMode p_mode) = 0;
-	virtual TransferMode get_transfer_mode() const = 0;
-	virtual void set_target_peer(int p_peer_id) = 0;
-
-	virtual int get_packet_peer() const = 0;
-
-	virtual bool is_server() const = 0;
-
-	virtual void poll() = 0;
-
-	virtual int get_unique_id() const = 0;
-
-	virtual void set_refuse_new_connections(bool p_enable) = 0;
-	virtual bool is_refusing_new_connections() const = 0;
-
-	virtual ConnectionStatus get_connection_status() const = 0;
-
-	NetworkedMultiplayerPeer() {}
+	virtual bool can_handle(Object *p_object) override;
+	virtual void parse_begin(Object *p_object) override;
 };
 
-VARIANT_ENUM_CAST(NetworkedMultiplayerPeer::TransferMode)
-VARIANT_ENUM_CAST(NetworkedMultiplayerPeer::ConnectionStatus)
+class SubViewportPreviewEditorPlugin : public EditorPlugin {
+	GDCLASS(SubViewportPreviewEditorPlugin, EditorPlugin);
 
-#endif // NETWORKED_MULTIPLAYER_PEER_H
+public:
+	virtual String get_name() const override { return "SubViewportPreview"; }
+
+	SubViewportPreviewEditorPlugin(EditorNode *p_node);
+};
+
+#endif // SUB_VIEWPORT_PREVIEW_EDITOR_PLUGIN_H

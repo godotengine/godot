@@ -31,11 +31,9 @@
 #ifndef GLTF_DOCUMENT_H
 #define GLTF_DOCUMENT_H
 
-#include "editor/import/resource_importer_scene.h"
-#include "editor/import/scene_importer_mesh_node_3d.h"
 #include "gltf_animation.h"
-#include "modules/modules_enabled.gen.h"
-#include "scene/2d/node_2d.h"
+
+#include "editor/import/scene_importer_mesh_node_3d.h"
 #include "scene/3d/bone_attachment_3d.h"
 #include "scene/3d/light_3d.h"
 #include "scene/3d/mesh_instance_3d.h"
@@ -44,6 +42,8 @@
 #include "scene/animation/animation_player.h"
 #include "scene/resources/material.h"
 #include "scene/resources/texture.h"
+
+#include "modules/modules_enabled.gen.h"
 
 class GLTFState;
 class GLTFSkin;

@@ -205,7 +205,7 @@ void EditorResourcePicker::_update_menu_items() {
 				icon = get_theme_icon(what, "Resource");
 			}
 
-			edit_menu->add_icon_item(icon, vformat(TTR("Convert To %s"), what), CONVERT_BASE_ID + i);
+			edit_menu->add_icon_item(icon, vformat(TTR("Convert to %s"), what), CONVERT_BASE_ID + i);
 		}
 	}
 }

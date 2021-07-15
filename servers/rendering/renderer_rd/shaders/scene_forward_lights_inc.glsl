@@ -73,7 +73,7 @@ vec3 F0(float metallic, float specular, vec3 albedo) {
 	return mix(vec3(dielectric), albedo, vec3(metallic));
 }
 
-void light_compute(vec3 N, vec3 L, vec3 V, vec3 light_color, float attenuation, vec3 f0, uint orms, float specular_amount,
+void light_compute(vec3 N, vec3 L, vec3 V, float A, vec3 light_color, float attenuation, vec3 f0, uint orms, float specular_amount,
 #ifdef LIGHT_BACKLIGHT_USED
 		vec3 backlight,
 #endif
@@ -92,9 +92,6 @@ void light_compute(vec3 N, vec3 L, vec3 V, vec3 light_color, float attenuation, 
 #ifdef LIGHT_ANISOTROPY_USED
 		vec3 B, vec3 T, float anisotropy,
 #endif
-#ifdef USE_SOFT_SHADOWS
-		float A,
-#endif
 #ifdef USE_SHADOW_TO_OPACITY
 		inout float alpha,
 #endif
@@ -111,11 +108,7 @@ void light_compute(vec3 N, vec3 L, vec3 V, vec3 light_color, float attenuation, 
 
 #else
 
-#ifdef USE_SOFT_SHADOWS
 	float NdotL = min(A + dot(N, L), 1.0);
-#else
-	float NdotL = dot(N, L);
-#endif
 	float cNdotL = max(NdotL, 0.0); // clamped NdotL
 	float NdotV = dot(N, V);
 	float cNdotV = max(NdotV, 0.0);
@@ -125,19 +118,11 @@ void light_compute(vec3 N, vec3 L, vec3 V, vec3 light_color, float attenuation, 
 #endif
 
 #if defined(SPECULAR_BLINN) || defined(SPECULAR_SCHLICK_GGX) || defined(LIGHT_CLEARCOAT_USED)
-#ifdef USE_SOFT_SHADOWS
 	float cNdotH = clamp(A + dot(N, H), 0.0, 1.0);
-#else
-	float cNdotH = clamp(dot(N, H), 0.0, 1.0);
-#endif
 #endif
 
 #if defined(DIFFUSE_BURLEY) || defined(SPECULAR_SCHLICK_GGX) || defined(LIGHT_CLEARCOAT_USED)
-#ifdef USE_SOFT_SHADOWS
 	float cLdotH = clamp(A + dot(L, H), 0.0, 1.0);
-#else
-	float cLdotH = clamp(dot(L, H), 0.0, 1.0);
-#endif
 #endif
 
 	float metallic = unpackUnorm4x8(orms).z;
@@ -232,11 +217,7 @@ void light_compute(vec3 N, vec3 L, vec3 V, vec3 light_color, float attenuation, 
 #elif defined(SPECULAR_PHONG)
 
 		vec3 R = normalize(-reflect(L, N));
-#ifdef USE_SOFT_SHADOWS
 		float cRdotV = clamp(A + dot(R, V), 0.0, 1.0);
-#else
-		float cRdotV = clamp(dot(R, V), 0.0, 1.0);
-#endif
 		float shininess = exp2(15.0 * (1.0 - roughness) + 1.0) * 0.25;
 		float phong = pow(cRdotV, shininess);
 		phong *= (shininess + 8.0) * (1.0 / (8.0 * M_PI));
@@ -442,8 +423,7 @@ float light_process_omni_shadow(uint idx, vec3 vertex, vec3 normal) {
 
 		float shadow;
 
-#ifdef USE_SOFT_SHADOWS
-		if (omni_lights.data[idx].soft_shadow_size > 0.0) {
+		if (sc_use_light_soft_shadows && omni_lights.data[idx].soft_shadow_size > 0.0) {
 			//soft shadow
 
 			//find blocker
@@ -533,7 +513,6 @@ float light_process_omni_shadow(uint idx, vec3 vertex, vec3 normal) {
 				shadow = 1.0;
 			}
 		} else {
-#endif
 			splane.xyz = normalize(splane.xyz);
 			vec4 clamp_rect = omni_lights.data[idx].atlas_rect;
 
@@ -553,9 +532,7 @@ float light_process_omni_shadow(uint idx, vec3 vertex, vec3 normal) {
 			splane.xy = clamp_rect.xy + splane.xy * clamp_rect.zw;
 			splane.w = 1.0; //needed? i think it should be 1 already
 			shadow = sample_pcf_shadow(shadow_atlas, omni_lights.data[idx].soft_shadow_scale * scene_data.shadow_atlas_pixel_size, splane);
-#ifdef USE_SOFT_SHADOWS
 		}
-#endif
 
 		return shadow;
 	}
@@ -592,14 +569,12 @@ void light_process_omni(uint idx, vec3 vertex, vec3 eye_vec, vec3 normal, vec3 v
 	float light_attenuation = omni_attenuation;
 	vec3 color = omni_lights.data[idx].color;
 
-#ifdef USE_SOFT_SHADOWS
 	float size_A = 0.0;
 
-	if (omni_lights.data[idx].size > 0.0) {
+	if (sc_use_light_soft_shadows && omni_lights.data[idx].size > 0.0) {
 		float t = omni_lights.data[idx].size / max(0.001, light_length);
 		size_A = max(0.0, 1.0 - 1 / sqrt(1 + t * t));
 	}
-#endif
 
 #ifdef LIGHT_TRANSMITTANCE_USED
 	float transmittance_z = transmittance_depth; //no transmittance by default
@@ -633,9 +608,7 @@ void light_process_omni(uint idx, vec3 vertex, vec3 eye_vec, vec3 normal, vec3 v
 	}
 #endif
 
-#if 0
-
-	if (omni_lights.data[idx].projector_rect != vec4(0.0)) {
+	if (sc_use_light_projector && omni_lights.data[idx].projector_rect != vec4(0.0)) {
 		vec3 local_v = (omni_lights.data[idx].shadow_matrix * vec4(vertex, 1.0)).xyz;
 		local_v = normalize(local_v);
 
@@ -686,13 +659,12 @@ void light_process_omni(uint idx, vec3 vertex, vec3 eye_vec, vec3 normal, vec3 v
 		}
 
 		vec4 proj = textureGrad(sampler2D(decal_atlas_srgb, material_samplers[SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP]), proj_uv + atlas_rect.xy, proj_uv_ddx, proj_uv_ddy);
-		no_shadow = mix(no_shadow, proj.rgb, proj.a);
+		color *= proj.rgb * proj.a;
 	}
-#endif
 
 	light_attenuation *= shadow;
 
-	light_compute(normal, normalize(light_rel_vec), eye_vec, color, light_attenuation, f0, orms, omni_lights.data[idx].specular_amount,
+	light_compute(normal, normalize(light_rel_vec), eye_vec, size_A, color, light_attenuation, f0, orms, omni_lights.data[idx].specular_amount,
 #ifdef LIGHT_BACKLIGHT_USED
 			backlight,
 #endif
@@ -710,9 +682,6 @@ void light_process_omni(uint idx, vec3 vertex, vec3 eye_vec, vec3 normal, vec3 v
 #endif
 #ifdef LIGHT_ANISOTROPY_USED
 			binormal, tangent, anisotropy,
-#endif
-#ifdef USE_SOFT_SHADOWS
-			size_A,
 #endif
 #ifdef USE_SHADOW_TO_OPACITY
 			alpha,
@@ -747,8 +716,7 @@ float light_process_spot_shadow(uint idx, vec3 vertex, vec3 normal) {
 		vec4 splane = (spot_lights.data[idx].shadow_matrix * v);
 		splane /= splane.w;
 
-#ifdef USE_SOFT_SHADOWS
-		if (spot_lights.data[idx].soft_shadow_size > 0.0) {
+		if (sc_use_light_soft_shadows && spot_lights.data[idx].soft_shadow_size > 0.0) {
 			//soft shadow
 
 			//find blocker
@@ -772,7 +740,7 @@ float light_process_spot_shadow(uint idx, vec3 vertex, vec3 normal) {
 				vec2 suv = shadow_uv + (disk_rotation * scene_data.penumbra_shadow_kernel[i].xy) * uv_size;
 				suv = clamp(suv, spot_lights.data[idx].atlas_rect.xy, clamp_max);
 				float d = textureLod(sampler2D(shadow_atlas, material_samplers[SAMPLER_LINEAR_CLAMP]), suv, 0.0).r;
-				if (d < z_norm) {
+				if (d < splane.z) {
 					blocker_average += d;
 					blocker_count += 1.0;
 				}
@@ -788,7 +756,7 @@ float light_process_spot_shadow(uint idx, vec3 vertex, vec3 normal) {
 				for (uint i = 0; i < scene_data.penumbra_shadow_samples; i++) {
 					vec2 suv = shadow_uv + (disk_rotation * scene_data.penumbra_shadow_kernel[i].xy) * uv_size;
 					suv = clamp(suv, spot_lights.data[idx].atlas_rect.xy, clamp_max);
-					shadow += textureProj(sampler2DShadow(shadow_atlas, shadow_sampler), vec4(suv, z_norm, 1.0));
+					shadow += textureProj(sampler2DShadow(shadow_atlas, shadow_sampler), vec4(suv, splane.z, 1.0));
 				}
 
 				shadow /= float(scene_data.penumbra_shadow_samples);
@@ -799,14 +767,11 @@ float light_process_spot_shadow(uint idx, vec3 vertex, vec3 normal) {
 			}
 
 		} else {
-#endif
 			//hard shadow
 			vec4 shadow_uv = vec4(splane.xy * spot_lights.data[idx].atlas_rect.zw + spot_lights.data[idx].atlas_rect.xy, splane.z, 1.0);
 
 			shadow = sample_pcf_shadow(shadow_atlas, spot_lights.data[idx].soft_shadow_scale * scene_data.shadow_atlas_pixel_size, shadow_uv);
-#ifdef USE_SOFT_SHADOWS
 		}
-#endif
 
 		return shadow;
 	}
@@ -814,6 +779,18 @@ float light_process_spot_shadow(uint idx, vec3 vertex, vec3 normal) {
 #endif //USE_NO_SHADOWS
 
 	return 1.0;
+}
+
+vec2 normal_to_panorama(vec3 n) {
+	n = normalize(n);
+	vec2 panorama_coords = vec2(atan(n.x, n.z), acos(-n.y));
+
+	if (panorama_coords.x < 0.0) {
+		panorama_coords.x += M_PI * 2.0;
+	}
+
+	panorama_coords /= vec2(M_PI * 2.0, M_PI);
+	return panorama_coords;
 }
 
 void light_process_spot(uint idx, vec3 vertex, vec3 eye_vec, vec3 normal, vec3 vertex_ddx, vec3 vertex_ddy, vec3 f0, uint orms, float shadow,
@@ -850,20 +827,12 @@ void light_process_spot(uint idx, vec3 vertex, vec3 eye_vec, vec3 normal, vec3 v
 	vec3 color = spot_lights.data[idx].color;
 	float specular_amount = spot_lights.data[idx].specular_amount;
 
-#ifdef USE_SOFT_SHADOWS
 	float size_A = 0.0;
 
-	if (spot_lights.data[idx].size > 0.0) {
+	if (sc_use_light_soft_shadows && spot_lights.data[idx].size > 0.0) {
 		float t = spot_lights.data[idx].size / max(0.001, light_length);
 		size_A = max(0.0, 1.0 - 1 / sqrt(1 + t * t));
 	}
-#endif
-
-	/*
-	if (spot_lights.data[idx].atlas_rect!=vec4(0.0)) {
-		//use projector texture
-	}
-	*/
 
 #ifdef LIGHT_TRANSMITTANCE_USED
 	float transmittance_z = transmittance_depth;
@@ -886,9 +855,27 @@ void light_process_spot(uint idx, vec3 vertex, vec3 eye_vec, vec3 normal, vec3 v
 	}
 #endif //LIGHT_TRANSMITTANCE_USED
 
+	if (sc_use_light_projector && spot_lights.data[idx].projector_rect != vec4(0.0)) {
+		vec4 splane = (spot_lights.data[idx].shadow_matrix * vec4(vertex, 1.0));
+		splane /= splane.w;
+
+		vec2 proj_uv = normal_to_panorama(splane.xyz) * spot_lights.data[idx].projector_rect.zw;
+
+		//ensure we have proper mipmaps
+		vec4 splane_ddx = (spot_lights.data[idx].shadow_matrix * vec4(vertex + vertex_ddx, 1.0));
+		splane_ddx /= splane_ddx.w;
+		vec2 proj_uv_ddx = normal_to_panorama(splane_ddx.xyz) * spot_lights.data[idx].projector_rect.zw - proj_uv;
+
+		vec4 splane_ddy = (spot_lights.data[idx].shadow_matrix * vec4(vertex + vertex_ddy, 1.0));
+		splane_ddy /= splane_ddy.w;
+		vec2 proj_uv_ddy = normal_to_panorama(splane_ddy.xyz) * spot_lights.data[idx].projector_rect.zw - proj_uv;
+
+		vec4 proj = textureGrad(sampler2D(decal_atlas_srgb, material_samplers[SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP]), proj_uv + spot_lights.data[idx].projector_rect.xy, proj_uv_ddx, proj_uv_ddy);
+		color *= proj.rgb * proj.a;
+	}
 	light_attenuation *= shadow;
 
-	light_compute(normal, normalize(light_rel_vec), eye_vec, color, light_attenuation, f0, orms, spot_lights.data[idx].specular_amount,
+	light_compute(normal, normalize(light_rel_vec), eye_vec, size_A, color, light_attenuation, f0, orms, spot_lights.data[idx].specular_amount,
 #ifdef LIGHT_BACKLIGHT_USED
 			backlight,
 #endif
@@ -906,9 +893,6 @@ void light_process_spot(uint idx, vec3 vertex, vec3 eye_vec, vec3 normal, vec3 v
 #endif
 #ifdef LIGHT_ANISOTROPY_USED
 			binormal, tangent, anisotropy,
-#endif
-#ifdef USE_SOFT_SHADOW
-			size_A,
 #endif
 #ifdef USE_SHADOW_TO_OPACITY
 			alpha,
