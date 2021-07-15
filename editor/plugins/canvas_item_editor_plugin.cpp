@@ -1325,7 +1325,17 @@ bool CanvasItemEditor::_gui_input_zoom_or_pan(const Ref<InputEvent> &p_event, bo
 	Ref<InputEventKey> k = p_event;
 	if (k.is_valid()) {
 		if (k->is_pressed()) {
-			if (ED_GET_SHORTCUT("canvas_item_editor/zoom_100_percent")->is_shortcut(p_event)) {
+			if (ED_GET_SHORTCUT("canvas_item_editor/zoom_3.125_percent")->is_shortcut(p_event)) {
+				_shortcut_zoom_set(1.0 / 32.0);
+			} else if (ED_GET_SHORTCUT("canvas_item_editor/zoom_6.25_percent")->is_shortcut(p_event)) {
+				_shortcut_zoom_set(1.0 / 16.0);
+			} else if (ED_GET_SHORTCUT("canvas_item_editor/zoom_12.5_percent")->is_shortcut(p_event)) {
+				_shortcut_zoom_set(1.0 / 8.0);
+			} else if (ED_GET_SHORTCUT("canvas_item_editor/zoom_25_percent")->is_shortcut(p_event)) {
+				_shortcut_zoom_set(1.0 / 4.0);
+			} else if (ED_GET_SHORTCUT("canvas_item_editor/zoom_50_percent")->is_shortcut(p_event)) {
+				_shortcut_zoom_set(1.0 / 2.0);
+			} else if (ED_GET_SHORTCUT("canvas_item_editor/zoom_100_percent")->is_shortcut(p_event)) {
 				_shortcut_zoom_set(1.0);
 			} else if (ED_GET_SHORTCUT("canvas_item_editor/zoom_200_percent")->is_shortcut(p_event)) {
 				_shortcut_zoom_set(2.0);
@@ -6073,11 +6083,16 @@ CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 	// those shortcuts one by one.
 	// Resetting zoom to 100% is a duplicate shortcut of `canvas_item_editor/reset_zoom`,
 	// but it ensures both 1 and Ctrl + 0 can be used to reset zoom.
-	ED_SHORTCUT("canvas_item_editor/zoom_100_percent", TTR("Zoom To 100%"), KEY_1);
-	ED_SHORTCUT("canvas_item_editor/zoom_200_percent", TTR("Zoom To 200%"), KEY_2);
-	ED_SHORTCUT("canvas_item_editor/zoom_400_percent", TTR("Zoom To 400%"), KEY_3);
-	ED_SHORTCUT("canvas_item_editor/zoom_800_percent", TTR("Zoom To 800%"), KEY_4);
-	ED_SHORTCUT("canvas_item_editor/zoom_1600_percent", TTR("Zoom To 1600%"), KEY_5);
+	ED_SHORTCUT("canvas_item_editor/zoom_3.125_percent", TTR("Zoom to 3.125%"), KEY_MASK_SHIFT | KEY_5);
+	ED_SHORTCUT("canvas_item_editor/zoom_6.25_percent", TTR("Zoom to 6.25%"), KEY_MASK_SHIFT | KEY_4);
+	ED_SHORTCUT("canvas_item_editor/zoom_12.5_percent", TTR("Zoom to 12.5%"), KEY_MASK_SHIFT | KEY_3);
+	ED_SHORTCUT("canvas_item_editor/zoom_25_percent", TTR("Zoom to 25%"), KEY_MASK_SHIFT | KEY_2);
+	ED_SHORTCUT("canvas_item_editor/zoom_50_percent", TTR("Zoom to 50%"), KEY_MASK_SHIFT | KEY_1);
+	ED_SHORTCUT("canvas_item_editor/zoom_100_percent", TTR("Zoom to 100%"), KEY_1);
+	ED_SHORTCUT("canvas_item_editor/zoom_200_percent", TTR("Zoom to 200%"), KEY_2);
+	ED_SHORTCUT("canvas_item_editor/zoom_400_percent", TTR("Zoom to 400%"), KEY_3);
+	ED_SHORTCUT("canvas_item_editor/zoom_800_percent", TTR("Zoom to 800%"), KEY_4);
+	ED_SHORTCUT("canvas_item_editor/zoom_1600_percent", TTR("Zoom to 1600%"), KEY_5);
 
 	set_process_unhandled_key_input(true);
 
