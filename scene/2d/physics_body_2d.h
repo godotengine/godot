@@ -304,13 +304,14 @@ private:
 
 	Transform2D last_valid_transform;
 	void _direct_state_changed(Object *p_state);
+	void _set_collision_direction(const Collision &p_collision, const Vector2 &p_up_direction, float p_floor_max_angle);
 
 protected:
 	void _notification(int p_what);
 	static void _bind_methods();
 
 public:
-	bool move_and_collide(const Vector2 &p_motion, bool p_infinite_inertia, Collision &r_collision, bool p_exclude_raycast_shapes = true, bool p_test_only = false);
+	bool move_and_collide(const Vector2 &p_motion, bool p_infinite_inertia, Collision &r_collision, bool p_exclude_raycast_shapes = true, bool p_test_only = false, const Set<RID> &p_exclude = Set<RID>());
 
 	bool test_move(const Transform2D &p_from, const Vector2 &p_motion, bool p_infinite_inertia = true);
 
