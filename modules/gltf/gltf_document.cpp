@@ -72,6 +72,7 @@
 #include "scene/3d/skeleton_3d.h"
 #include "scene/animation/animation_player.h"
 #include "scene/main/node.h"
+#include "scene/resources/animation.h"
 #include "scene/resources/surface_tool.h"
 #include <limits>
 
@@ -5617,7 +5618,7 @@ void GLTFDocument::_import_animation(Ref<GLTFState> state, AnimationPlayer *ap, 
 	animation->set_name(name);
 
 	if (anim->get_loop()) {
-		animation->set_loop(true);
+		animation->set_loop_mode(Animation::LoopMode::LOOP_LINEAR);
 	}
 
 	float length = 0.0;

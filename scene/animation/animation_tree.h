@@ -68,6 +68,7 @@ public:
 		const Vector<float> *track_blends = nullptr;
 		float blend = 0.0;
 		bool seeked = false;
+		int pingpong = 0;
 	};
 
 	struct State {
@@ -101,7 +102,7 @@ public:
 	float _blend_node(const StringName &p_subpath, const Vector<StringName> &p_connections, AnimationNode *p_new_parent, Ref<AnimationNode> p_node, float p_time, bool p_seek, float p_blend, FilterAction p_filter = FILTER_IGNORE, bool p_optimize = true, float *r_max = nullptr);
 
 protected:
-	void blend_animation(const StringName &p_animation, float p_time, float p_delta, bool p_seeked, float p_blend);
+	void blend_animation(const StringName &p_animation, float p_time, float p_delta, bool p_seeked, float p_blend, int p_pingpong = 0);
 	float blend_node(const StringName &p_sub_path, Ref<AnimationNode> p_node, float p_time, bool p_seek, float p_blend, FilterAction p_filter = FILTER_IGNORE, bool p_optimize = true);
 	float blend_input(int p_input, float p_time, bool p_seek, float p_blend, FilterAction p_filter = FILTER_IGNORE, bool p_optimize = true);
 	void make_invalid(const String &p_reason);

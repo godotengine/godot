@@ -291,6 +291,19 @@ public:
 		return is_zero_approx(range) ? min : value - (range * Math::floor((value - min) / range));
 	}
 
+	static _ALWAYS_INLINE_ float fract(float value) {
+		return value - floor(value);
+	}
+	static _ALWAYS_INLINE_ double fract(double value) {
+		return value - floor(value);
+	}
+	static _ALWAYS_INLINE_ float pingpong(float value, float length) {
+		return (length != 0.0f) ? abs(fract((value - length) / (length * 2.0f)) * length * 2.0f - length) : 0.0f;
+	}
+	static _ALWAYS_INLINE_ double pingpong(double value, double length) {
+		return (length != 0.0) ? abs(fract((value - length) / (length * 2.0)) * length * 2.0 - length) : 0.0;
+	}
+
 	// double only, as these functions are mainly used by the editor and not performance-critical,
 	static double ease(double p_x, double p_c);
 	static int step_decimals(double p_step);
