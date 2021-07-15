@@ -1822,6 +1822,18 @@ Node *Node::get_deepest_editable_node(Node *p_start_node) const {
 	return node;
 }
 
+String Node::to_string() {
+	if (get_script_instance()) {
+		bool valid;
+		String ret = get_script_instance()->to_string(&valid);
+		if (valid) {
+			return ret;
+		}
+	}
+
+	return (get_name() ? String(get_name()) + ":" : "") + Object::to_string();
+}
+
 void Node::set_scene_instance_state(const Ref<SceneState> &p_state) {
 	data.instance_state = p_state;
 }
