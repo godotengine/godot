@@ -75,7 +75,7 @@ private:
 	int total_subshapes = 0;
 
 	Map<uint32_t, ShapeData> shapes;
-	bool only_update_transform_changes = false; //this is used for sync physics in CharacterBody2D
+	bool only_update_transform_changes = false; // This is used for sync to physics.
 
 	void _apply_disabled();
 	void _apply_enabled();

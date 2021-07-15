@@ -110,9 +110,6 @@
 		<member name="max_slides" type="int" setter="set_max_slides" getter="get_max_slides" default="4">
 			Maximum number of times the body can change direction before it stops when calling [method move_and_slide].
 		</member>
-		<member name="motion/sync_to_physics" type="bool" setter="set_sync_to_physics" getter="is_sync_to_physics_enabled" default="false">
-			If [code]true[/code], the body's movement will be synchronized to the physics frame. This is useful when animating movement via [AnimationPlayer], for example on moving platforms. Do [b]not[/b] use together with [method move_and_slide] or [method PhysicsBody2D.move_and_collide] functions.
-		</member>
 		<member name="snap" type="Vector2" setter="set_snap" getter="get_snap" default="Vector2(0, 0)">
 			When set to a value different from [code]Vector2(0, 0)[/code], the body is kept attached to slopes when calling [method move_and_slide].
 			As long as the [code]snap[/code] vector is in contact with the ground, the body will remain attached to the surface. This means you must disable snap in order to jump, for example. You can do this by setting [code]snap[/code] to [code]Vector2(0, 0)[/code].
