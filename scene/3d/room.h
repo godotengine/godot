@@ -84,6 +84,9 @@ private:
 	template <typename T>
 	static bool detect_nodes_using_lambda(const Node *p_node, T p_lambda, bool p_ignore_first_node = true);
 
+	// note this is client side, and does not use the final planes stored in the PortalRenderer
+	bool contains_point(const Vector3 &p_pt) const;
+
 	// planes forming convex hull of room
 	LocalVector<Plane, int32_t> _planes;
 
