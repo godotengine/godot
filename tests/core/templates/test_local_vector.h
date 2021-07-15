@@ -37,6 +37,17 @@
 
 namespace TestLocalVector {
 
+TEST_CASE("[LocalVector] List Initialization.") {
+	LocalVector<int> vector{ 0, 1, 2, 3, 4 };
+
+	CHECK(vector.size() == 5);
+	CHECK(vector[0] == 0);
+	CHECK(vector[1] == 1);
+	CHECK(vector[2] == 2);
+	CHECK(vector[3] == 3);
+	CHECK(vector[4] == 4);
+}
+
 TEST_CASE("[LocalVector] Push Back.") {
 	LocalVector<int> vector;
 	vector.push_back(0);

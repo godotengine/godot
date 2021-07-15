@@ -33,6 +33,7 @@
 #include "core/config/engine.h"
 #include "core/config/project_settings.h"
 #include "core/string/ustring.h"
+#include "core/templates/local_vector.h"
 #include "core/version.h"
 #include "servers/rendering/rendering_device.h"
 
@@ -41,7 +42,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <vector>
 
 #define ARRAY_SIZE(a) (sizeof(a) / sizeof(a[0]))
 #define APP_SHORT_NAME "GodotEngine"
@@ -212,7 +212,7 @@ VkBool32 VulkanContext::_check_layers(uint32_t check_count, const char *const *c
 }
 
 Error VulkanContext::_get_preferred_validation_layers(uint32_t *count, const char *const **names) {
-	static const std::vector<std::vector<const char *>> instance_validation_layers_alt{
+	static const LocalVector<LocalVector<const char *>> instance_validation_layers_alt{
 		// Preferred set of validation layers
 		{ "VK_LAYER_KHRONOS_validation" },
 
@@ -249,10 +249,10 @@ Error VulkanContext::_get_preferred_validation_layers(uint32_t *count, const cha
 	}
 
 	for (uint32_t i = 0; i < instance_validation_layers_alt.size(); i++) {
-		if (_check_layers(instance_validation_layers_alt[i].size(), instance_validation_layers_alt[i].data(), instance_layer_count, instance_layers)) {
+		if (_check_layers(instance_validation_layers_alt[i].size(), instance_validation_layers_alt[i].ptr(), instance_layer_count, instance_layers)) {
 			*count = instance_validation_layers_alt[i].size();
 			if (names != nullptr) {
-				*names = instance_validation_layers_alt[i].data();
+				*names = instance_validation_layers_alt[i].ptr();
 			}
 			break;
 		}
