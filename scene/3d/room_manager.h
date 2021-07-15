@@ -157,7 +157,7 @@ private:
 
 	bool _convert_manual_bound(Room *p_room, Spatial *p_node, const LocalVector<Portal *> &p_portals);
 	void _check_portal_for_warnings(Portal *p_portal, const AABB &p_room_aabb_without_portals);
-	void _find_statics_recursive(Room *p_room, Spatial *p_node, Vector<Vector3> &r_room_pts);
+	void _find_statics_recursive(Room *p_room, Spatial *p_node, Vector<Vector3> &r_room_pts, bool p_add_to_portal_renderer);
 	bool _convert_room_hull_preliminary(Room *p_room, const Vector<Vector3> &p_room_pts, const LocalVector<Portal *> &p_portals);
 
 	bool _bound_findpoints_mesh_instance(MeshInstance *p_mi, Vector<Vector3> &r_room_pts, AABB &r_aabb);
@@ -201,7 +201,7 @@ private:
 	Error _build_convex_hull(const Vector<Vector3> &p_points, Geometry::MeshData &r_mesh, real_t p_epsilon = 3.0 * UNIT_EPSILON);
 
 	// output strings during conversion process
-	void convert_log(String p_string, int p_priority = 0) { debug_print_line(p_string, p_priority); }
+	void convert_log(String p_string, int p_priority = 0) { debug_print_line(p_string, 1); }
 
 	// only prints when user has set 'debug' in the room manager inspector
 	// also does not show in non editor builds

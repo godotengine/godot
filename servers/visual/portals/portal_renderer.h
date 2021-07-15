@@ -221,9 +221,9 @@ private:
 		return _rooms_lookup_bsp.find_room_within(*this, p_pos, p_previous_room_id);
 	}
 
-	void sprawl_static(int p_static_id, const VSStatic &p_static, int p_room_id);
-	void sprawl_static_geometry(int p_static_id, const VSStatic &p_static, int p_room_id, const Vector<Vector3> &p_object_pts);
-	void sprawl_static_ghost(int p_ghost_id, const AABB &p_aabb, int p_room_id);
+	bool sprawl_static(int p_static_id, const VSStatic &p_static, int p_room_id);
+	bool sprawl_static_geometry(int p_static_id, const VSStatic &p_static, int p_room_id, const Vector<Vector3> &p_object_pts);
+	bool sprawl_static_ghost(int p_ghost_id, const AABB &p_aabb, int p_room_id);
 
 	void _load_finalize_roaming();
 	void sprawl_roaming(uint32_t p_mover_pool_id, MovingBase &r_moving, int p_room_id, bool p_moving_or_ghost);

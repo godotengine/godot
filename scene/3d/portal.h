@@ -158,6 +158,7 @@ private:
 	// warnings
 	bool _warning_outside_room_aabb = false;
 	bool _warning_facing_wrong_way = false;
+	bool _warning_autolink_failed = false;
 #endif
 
 	// this is read from the gizmo

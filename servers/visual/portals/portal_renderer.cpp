@@ -315,7 +315,7 @@ void PortalRenderer::portal_link(PortalHandle p_portal, RoomHandle p_room_from, 
 		room_to._contains_internal_rooms = true;
 	}
 
-	_log("portal_link from room " + itos(room_from._room_ID) + " to room " + itos(room_to._room_ID));
+	// _log("portal_link from room " + itos(room_from._room_ID) + " to room " + itos(room_to._room_ID));
 
 	room_from._portal_ids.push_back(portal._portal_id);
 
@@ -510,7 +510,9 @@ OcclusionHandle PortalRenderer::room_add_ghost(RoomHandle p_room, ObjectID p_obj
 		// create a bitfield to indicate which rooms have been
 		// visited already, to prevent visiting rooms multiple times
 		_bitfield_rooms.blank();
-		sprawl_static_ghost(ghost_id, p_aabb, p_room);
+		if (sprawl_static_ghost(ghost_id, p_aabb, p_room)) {
+			_log("\t\tSPRAWLED");
+		}
 	}
 
 	return OCCLUSION_HANDLE_ROOM_BIT;
@@ -547,9 +549,13 @@ OcclusionHandle PortalRenderer::room_add_instance(RoomHandle p_room, RID p_insta
 		_bitfield_rooms.blank();
 
 		if (p_object_pts.size()) {
-			sprawl_static_geometry(static_id, st, st.source_room_id, p_object_pts);
+			if (sprawl_static_geometry(static_id, st, st.source_room_id, p_object_pts)) {
+				_log("\t\tSPRAWLED");
+			}
 		} else {
-			sprawl_static(static_id, st, st.source_room_id);
+			if (sprawl_static(static_id, st, st.source_room_id)) {
+				_log("\t\tSPRAWLED");
+			}
 		}
 	}
 
@@ -701,13 +707,15 @@ void PortalRenderer::rooms_finalize(bool p_generate_pvs, bool p_cull_using_pvs, 
 	print_line("Room conversion complete. " + itos(_room_pool_ids.size()) + " rooms, " + itos(_portal_pool_ids.size()) + " portals.");
 }
 
-void PortalRenderer::sprawl_static_geometry(int p_static_id, const VSStatic &p_static, int p_room_id, const Vector<Vector3> &p_object_pts) {
+bool PortalRenderer::sprawl_static_geometry(int p_static_id, const VSStatic &p_static, int p_room_id, const Vector<Vector3> &p_object_pts) {
 	// set, and if room already done, ignore
 	if (!_bitfield_rooms.check_and_set(p_room_id))
-		return;
+		return false;
 
 	VSRoom &room = get_room(p_room_id);
 	room._static_ids.push_back(p_static_id);
+
+	bool sprawled = false;
 
 	// go through portals
 	for (int p = 0; p < room._portal_ids.size(); p++) {
@@ -716,21 +724,25 @@ void PortalRenderer::sprawl_static_geometry(int p_static_id, const VSStatic &p_s
 		int room_to_id = portal.geometry_crosses_portal(p_room_id, p_static.aabb, p_object_pts);
 
 		if (room_to_id != -1) {
-			_log(String(Variant(p_static.aabb)) + " crosses portal");
-
+			// _log(String(Variant(p_static.aabb)) + " crosses portal");
 			sprawl_static_geometry(p_static_id, p_static, room_to_id, p_object_pts);
+			sprawled = true;
 		}
 	}
+
+	return sprawled;
 }
 
-void PortalRenderer::sprawl_static_ghost(int p_ghost_id, const AABB &p_aabb, int p_room_id) {
+bool PortalRenderer::sprawl_static_ghost(int p_ghost_id, const AABB &p_aabb, int p_room_id) {
 	// set, and if room already done, ignore
 	if (!_bitfield_rooms.check_and_set(p_room_id)) {
-		return;
+		return false;
 	}
 
 	VSRoom &room = get_room(p_room_id);
 	room._static_ghost_ids.push_back(p_ghost_id);
+
+	bool sprawled = false;
 
 	// go through portals
 	for (int p = 0; p < room._portal_ids.size(); p++) {
@@ -739,21 +751,25 @@ void PortalRenderer::sprawl_static_ghost(int p_ghost_id, const AABB &p_aabb, int
 		int room_to_id = portal.crosses_portal(p_room_id, p_aabb, true);
 
 		if (room_to_id != -1) {
-			_log(String(Variant(p_aabb)) + " crosses portal");
-
+			// _log(String(Variant(p_aabb)) + " crosses portal");
 			sprawl_static_ghost(p_ghost_id, p_aabb, room_to_id);
+			sprawled = true;
 		}
 	}
+
+	return sprawled;
 }
 
-void PortalRenderer::sprawl_static(int p_static_id, const VSStatic &p_static, int p_room_id) {
+bool PortalRenderer::sprawl_static(int p_static_id, const VSStatic &p_static, int p_room_id) {
 	// set, and if room already done, ignore
 	if (!_bitfield_rooms.check_and_set(p_room_id)) {
-		return;
+		return false;
 	}
 
 	VSRoom &room = get_room(p_room_id);
 	room._static_ids.push_back(p_static_id);
+
+	bool sprawled = false;
 
 	// go through portals
 	for (int p = 0; p < room._portal_ids.size(); p++) {
@@ -762,11 +778,13 @@ void PortalRenderer::sprawl_static(int p_static_id, const VSStatic &p_static, in
 		int room_to_id = portal.crosses_portal(p_room_id, p_static.aabb, true);
 
 		if (room_to_id != -1) {
-			_log(String(Variant(p_static.aabb)) + " crosses portal");
-
+			// _log(String(Variant(p_static.aabb)) + " crosses portal");
 			sprawl_static(p_static_id, p_static, room_to_id);
+			sprawled = true;
 		}
 	}
+
+	return sprawled;
 }
 
 void PortalRenderer::_load_finalize_roaming() {
