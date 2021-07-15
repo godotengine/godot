@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="MSDFLoader" inherits="Object" version="4.0">
+	<brief_description>
+		Generates MSF images from the vector shape.
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="clear_shape">
+			<return type="void">
+			</return>
+			<description>
+				Removes all contours.
+			</description>
+		</method>
+		<method name="conic_to">
+			<return type="void">
+			</return>
+			<argument index="0" name="ctrl" type="Vector2">
+			</argument>
+			<argument index="1" name="to" type="Vector2">
+			</argument>
+			<description>
+				Adds conic Bézier curve segment to the contour.
+			</description>
+		</method>
+		<method name="cubic_to">
+			<return type="void">
+			</return>
+			<argument index="0" name="ctrl1" type="Vector2">
+			</argument>
+			<argument index="1" name="ctrl2" type="Vector2">
+			</argument>
+			<argument index="2" name="to" type="Vector2">
+			</argument>
+			<description>
+				Adds cubic Bézier curve segment to the contour.
+			</description>
+		</method>
+		<method name="get_data">
+			<return type="Image">
+			</return>
+			<description>
+				Generates SDF image from the shape.
+			</description>
+		</method>
+		<method name="line_to">
+			<return type="void">
+			</return>
+			<argument index="0" name="to" type="Vector2">
+			</argument>
+			<description>
+				Adds line segment to the contour.
+			</description>
+		</method>
+		<method name="load_svg">
+			<return type="int" enum="Error">
+			</return>
+			<argument index="0" name="path" type="String">
+			</argument>
+			<argument index="1" name="scale" type="float" default="1.0">
+			</argument>
+			<description>
+				Loads contour from the SVG file.
+			</description>
+		</method>
+		<method name="move_to">
+			<return type="void">
+			</return>
+			<argument index="0" name="to" type="Vector2">
+			</argument>
+			<description>
+				Starts a new contour.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="px_range" type="float" setter="set_px_range" getter="get_px_range" default="4.0">
+			Width of the range around the shape between the minimum and maximum representable signed distance.
+		</member>
+		<member name="sdf_type" type="int" setter="set_sdf_type" getter="get_sdf_type" default="3">
+			Generated SDF image type.
+		</member>
+	</members>
+	<constants>
+		<constant name="SDF_TRUE" value="0" enum="SDFType">
+			Conventional monochrome (true) signed distance field.
+		</constant>
+		<constant name="SDF_PSEUDO" value="1" enum="SDFType">
+			Monochrome signed pseudo-distance field.
+		</constant>
+		<constant name="SDF_MULTICHANNEL" value="2" enum="SDFType">
+			Multi-channel (RGB) signed distance field.
+		</constant>
+		<constant name="SDF_COMBINED" value="3" enum="SDFType">
+			Combined multi-channel and true signed distance field in the alpha channel.
+		</constant>
+	</constants>
+</class>

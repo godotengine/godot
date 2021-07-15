@@ -56,24 +56,28 @@ private:
 protected:
 	static void _bind_methods();
 
-	bool _set(const StringName &p_name, const Variant &p_value);
-	bool _get(const StringName &p_name, Variant &r_ret) const;
-	void _get_property_list(List<PropertyInfo> *p_list) const;
-
 	virtual void reset_state() override;
 
 public:
 	virtual RID get_rid() const override;
 
 	void load_resource(const String &p_filename, int p_base_size = 16);
-	void load_memory(const uint8_t *p_data, size_t p_size, const String &p_type, int p_base_size = 16);
-	void _load_memory(const PackedByteArray &p_data, const String &p_type, int p_base_size = 16);
-
+	void load_memory(const uint8_t *p_data, size_t p_size, int p_base_size = 16);
+	void _load_memory(const PackedByteArray &p_data, int p_base_size = 16);
 	void new_bitmap(float p_height, float p_ascent, int p_base_size = 16);
 
-	void bitmap_add_texture(const Ref<Texture> &p_texture);
+	void bitmap_add_texture(const Ref<Texture2D> &p_texture);
 	void bitmap_add_char(char32_t p_char, int p_texture_idx, const Rect2 &p_rect, const Size2 &p_align, float p_advance);
 	void bitmap_add_kerning_pair(char32_t p_A, char32_t p_B, int p_kerning);
+
+	Error save_cache(const String &p_path, uint8_t p_flags, List<String> *r_gen_files) const;
+	Error _save_cache(const String &p_path, uint8_t p_flags) const;
+
+	void add_to_cache(const Map<int32_t, double> &p_var_id, int p_size, int p_outline_size);
+	void _add_to_cache(const String &p_var_id, int p_size, int p_outline_size);
+	void clear_cache();
+
+	void preload_range(uint32_t p_start, uint32_t p_end, bool p_glyphs);
 
 	void set_data_path(const String &p_path);
 	String get_data_path() const;
@@ -100,8 +104,17 @@ public:
 	void set_distance_field_hint(bool p_distance_field);
 	bool get_distance_field_hint() const;
 
+	void set_disable_distance_field_shader(bool p_disable);
+	bool get_disable_distance_field_shader() const;
+
 	void set_force_autohinter(bool p_enabeld);
 	bool get_force_autohinter() const;
+
+	void set_oversampling(double p_value);
+	double get_oversampling() const;
+
+	void set_msdf_px_range(double p_range);
+	double get_msdf_px_range() const;
 
 	void set_hinting(TextServer::Hinting p_hinting);
 	TextServer::Hinting get_hinting() const;
@@ -110,6 +123,7 @@ public:
 	String get_supported_chars() const;
 
 	Vector2 get_glyph_advance(uint32_t p_index, int p_size) const;
+	Vector2 get_glyph_size(uint32_t p_index, int p_size) const;
 	Vector2 get_glyph_kerning(uint32_t p_index_a, uint32_t p_index_b, int p_size) const;
 
 	bool has_outline() const;
@@ -134,7 +148,7 @@ public:
 
 	FontData();
 	FontData(const String &p_filename, int p_base_size);
-	FontData(const PackedByteArray &p_data, const String &p_type, int p_base_size);
+	FontData(const PackedByteArray &p_data, int p_base_size);
 
 	~FontData();
 };
