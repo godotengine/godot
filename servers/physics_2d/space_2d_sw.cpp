@@ -709,7 +709,7 @@ int Space2DSW::test_body_ray_separation(Body2DSW *p_body, const Transform2D &p_t
 	return rays_found;
 }
 
-bool Space2DSW::test_body_motion(Body2DSW *p_body, const Transform2D &p_from, const Vector2 &p_motion, bool p_infinite_inertia, real_t p_margin, PhysicsServer2D::MotionResult *r_result, bool p_exclude_raycast_shapes) {
+bool Space2DSW::test_body_motion(Body2DSW *p_body, const Transform2D &p_from, const Vector2 &p_motion, bool p_infinite_inertia, real_t p_margin, PhysicsServer2D::MotionResult *r_result, bool p_exclude_raycast_shapes, const Set<RID> &p_exclude) {
 	//give me back regular physics engine logic
 	//this is madness
 	//and most people using this function will think
@@ -801,6 +801,9 @@ bool Space2DSW::test_body_motion(Body2DSW *p_body, const Transform2D &p_from, co
 				Transform2D body_shape_xform = body_transform * p_body->get_shape_transform(j);
 				for (int i = 0; i < amount; i++) {
 					const CollisionObject2DSW *col_obj = intersection_query_results[i];
+					if (p_exclude.has(col_obj->get_self())) {
+						continue;
+					}
 					int shape_idx = intersection_query_subindex_results[i];
 
 					if (CollisionObject2DSW::TYPE_BODY == col_obj->get_type()) {
@@ -930,6 +933,9 @@ bool Space2DSW::test_body_motion(Body2DSW *p_body, const Transform2D &p_from, co
 
 			for (int i = 0; i < amount; i++) {
 				const CollisionObject2DSW *col_obj = intersection_query_results[i];
+				if (p_exclude.has(col_obj->get_self())) {
+					continue;
+				}
 				int col_shape_idx = intersection_query_subindex_results[i];
 				Shape2DSW *against_shape = col_obj->get_shape(col_shape_idx);
 
@@ -1086,6 +1092,9 @@ bool Space2DSW::test_body_motion(Body2DSW *p_body, const Transform2D &p_from, co
 
 			for (int i = 0; i < amount; i++) {
 				const CollisionObject2DSW *col_obj = intersection_query_results[i];
+				if (p_exclude.has(col_obj->get_self())) {
+					continue;
+				}
 				int shape_idx = intersection_query_subindex_results[i];
 
 				if (CollisionObject2DSW::TYPE_BODY == col_obj->get_type()) {
