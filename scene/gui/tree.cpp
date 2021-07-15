@@ -436,6 +436,10 @@ void TreeItem::remove_child(TreeItem *p_item) {
 		c = &(*c)->next;
 	}
 
+	if (tree) {
+		tree->update();
+	}
+
 	ERR_FAIL();
 }
 
@@ -844,7 +848,9 @@ TreeItem::~TreeItem() {
 	clear_children();
 
 	if (parent) {
-		parent->remove_child(this);
+		parent->remove_child(this); // Also updates the Tree.
+	} else if (tree) {
+		tree->update();
 	}
 
 	if (tree && tree->root == this) {
