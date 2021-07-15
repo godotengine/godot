@@ -236,7 +236,10 @@ private:
 		void *userdata;
 
 		bool operator<(const CallbackItem &p_item) const {
-			return (callback == p_item.callback ? userdata < p_item.userdata : callback < p_item.callback);
+			// Only implemented because it's a requirement to use in Set, but we don't
+			// actually care about the ordering being consistent.
+			// Casting to ints to silence -Wordered-compare-function-pointers warning.
+			return (callback == p_item.callback ? (uint64_t)userdata < (uint64_t)p_item.userdata : (uint64_t)callback < (uint64_t)p_item.callback);
 		}
 	};
 
