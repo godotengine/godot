@@ -77,6 +77,10 @@ void CollisionObject3D::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_TRANSFORM_CHANGED: {
+			if (only_update_transform_changes) {
+				return;
+			}
+
 			if (area) {
 				PhysicsServer3D::get_singleton()->area_set_transform(rid, get_global_transform());
 			} else {
@@ -282,6 +286,14 @@ void CollisionObject3D::set_body_mode(PhysicsServer3D::BodyMode p_mode) {
 	}
 
 	PhysicsServer3D::get_singleton()->body_set_mode(rid, p_mode);
+}
+
+void CollisionObject3D::set_only_update_transform_changes(bool p_enable) {
+	only_update_transform_changes = p_enable;
+}
+
+bool CollisionObject3D::is_only_update_transform_changes_enabled() const {
+	return only_update_transform_changes;
 }
 
 void CollisionObject3D::_update_pickable() {

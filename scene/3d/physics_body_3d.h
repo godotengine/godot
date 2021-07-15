@@ -82,12 +82,15 @@ class StaticBody3D : public PhysicsBody3D {
 	Ref<PhysicsMaterial> physics_material_override;
 
 	bool kinematic_motion = false;
+	bool sync_to_physics = false;
+
+	Transform3D last_valid_transform;
+
+	void _direct_state_changed(Object *p_state);
 
 protected:
 	void _notification(int p_what);
 	static void _bind_methods();
-
-	void _direct_state_changed(Object *p_state);
 
 public:
 	void set_physics_material_override(const Ref<PhysicsMaterial> &p_physics_material_override);
@@ -102,6 +105,8 @@ public:
 	virtual Vector3 get_linear_velocity() const override;
 	virtual Vector3 get_angular_velocity() const override;
 
+	virtual TypedArray<String> get_configuration_warnings() const override;
+
 	StaticBody3D();
 
 private:
@@ -111,6 +116,9 @@ private:
 
 	void set_kinematic_motion_enabled(bool p_enabled);
 	bool is_kinematic_motion_enabled() const;
+
+	void set_sync_to_physics(bool p_enable);
+	bool is_sync_to_physics_enabled() const;
 };
 
 class RigidBody3D : public PhysicsBody3D {
@@ -251,7 +259,7 @@ public:
 	void apply_impulse(const Vector3 &p_impulse, const Vector3 &p_position = Vector3());
 	void apply_torque_impulse(const Vector3 &p_impulse);
 
-	TypedArray<String> get_configuration_warnings() const override;
+	virtual TypedArray<String> get_configuration_warnings() const override;
 
 	RigidBody3D();
 	~RigidBody3D();
