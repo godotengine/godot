@@ -36,12 +36,16 @@
 #include "core/os/os.h"
 #include "editor/editor_node.h"
 #include "mesh_instance.h"
-#include "modules/csg/csg_shape.h"
 #include "portal.h"
 #include "room_group.h"
 #include "scene/3d/camera.h"
 #include "scene/3d/light.h"
 #include "visibility_notifier.h"
+
+#include "modules/modules_enabled.gen.h"
+#ifdef MODULE_CSG_ENABLED
+#include "modules/csg/csg_shape.h"
+#endif
 
 // #define GODOT_PORTALS_USE_BULLET_CONVEX_HULL
 
@@ -1412,6 +1416,7 @@ void RoomManager::_convert_portal(Room *p_room, Spatial *p_node, LocalVector<Por
 }
 
 bool RoomManager::_bound_findpoints_geom_instance(GeometryInstance *p_gi, Vector<Vector3> &r_room_pts, AABB &r_aabb) {
+#ifdef MODULE_CSG_ENABLED
 	// max opposite extents .. note AABB storing size is rubbish in this aspect
 	// it can fail once mesh min is larger than FLT_MAX / 2.
 	r_aabb.position = Vector3(FLT_MAX / 2, FLT_MAX / 2, FLT_MAX / 2);
@@ -1459,6 +1464,9 @@ bool RoomManager::_bound_findpoints_geom_instance(GeometryInstance *p_gi, Vector
 	} // if csg shape
 
 	return true;
+#else
+	return false;
+#endif
 }
 
 bool RoomManager::_bound_findpoints_mesh_instance(MeshInstance *p_mi, Vector<Vector3> &r_room_pts, AABB &r_aabb) {
