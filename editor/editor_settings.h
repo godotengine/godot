@@ -115,6 +115,19 @@ public:
 		NOTIFICATION_EDITOR_SETTINGS_CHANGED = 10000
 	};
 
+	// The user's preference for ratio units in the editor.
+	enum RatioUnit {
+		RATIO_UNIT_RATIO,
+		RATIO_UNIT_PERCENT,
+	};
+
+	// The user's preference for rotation units in the editor.
+	enum RotationUnit {
+		ROTATION_UNIT_DEGREES,
+		ROTATION_UNIT_RADIANS,
+		ROTATION_UNIT_TURNS,
+	};
+
 	static EditorSettings *get_singleton();
 
 	static void create();
@@ -153,6 +166,9 @@ public:
 	String get_script_templates_dir() const;
 	String get_project_script_templates_dir() const;
 	String get_feature_profiles_dir() const;
+
+	String get_preferred_unit_suffix(const PropertyUnitType p_hint) const;
+	double get_preferred_unit_scale(const PropertyUnitType p_hint) const;
 
 	void set_project_metadata(const String &p_section, const String &p_key, Variant p_data);
 	Variant get_project_metadata(const String &p_section, const String &p_key, Variant p_default) const;

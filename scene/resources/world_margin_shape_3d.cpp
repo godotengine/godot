@@ -79,7 +79,7 @@ void WorldMarginShape3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_plane", "plane"), &WorldMarginShape3D::set_plane);
 	ClassDB::bind_method(D_METHOD("get_plane"), &WorldMarginShape3D::get_plane);
 
-	ADD_PROPERTY(PropertyInfo(Variant::PLANE, "plane"), "set_plane", "get_plane");
+	ADD_PROPERTY(PropertyInfo(Variant::PLANE, "plane", PROPERTY_HINT_NONE, "3d_distance"), "set_plane", "get_plane");
 }
 
 WorldMarginShape3D::WorldMarginShape3D() :
