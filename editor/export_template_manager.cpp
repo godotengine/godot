@@ -630,6 +630,12 @@ bool ExportTemplateManager::can_install_android_template() {
 }
 
 Error ExportTemplateManager::install_android_template() {
+	const String &templates_path = EditorSettings::get_singleton()->get_templates_dir().plus_file(VERSION_FULL_CONFIG);
+	const String &source_zip = templates_path.plus_file("android_source.zip");
+	ERR_FAIL_COND_V(!FileAccess::exists(source_zip), ERR_CANT_OPEN);
+	return install_android_template_from_file(source_zip);
+}
+Error ExportTemplateManager::install_android_template_from_file(const String &p_file) {
 	// To support custom Android builds, we install the Java source code and buildsystem
 	// from android_source.zip to the project's res://android folder.
 
@@ -662,14 +668,10 @@ Error ExportTemplateManager::install_android_template() {
 
 	// Uncompress source template.
 
-	const String &templates_path = EditorSettings::get_singleton()->get_templates_dir().plus_file(VERSION_FULL_CONFIG);
-	const String &source_zip = templates_path.plus_file("android_source.zip");
-	ERR_FAIL_COND_V(!FileAccess::exists(source_zip), ERR_CANT_OPEN);
-
 	FileAccess *src_f = nullptr;
 	zlib_filefunc_def io = zipio_create_io_from_file(&src_f);
 
-	unzFile pkg = unzOpen2(source_zip.utf8().get_data(), &io);
+	unzFile pkg = unzOpen2(p_file.utf8().get_data(), &io);
 	ERR_FAIL_COND_V_MSG(!pkg, ERR_CANT_OPEN, "Android sources not in ZIP format.");
 
 	int ret = unzGoToFirstFile(pkg);
