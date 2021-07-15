@@ -37,10 +37,8 @@ TextureRect *TexturePreview::get_texture_display() {
 }
 
 TexturePreview::TexturePreview(Ref<Texture2D> p_texture, bool p_show_metadata) {
-	Ref<Theme> theme = EditorNode::get_singleton()->get_editor_theme();
-
 	TextureRect *checkerboard = memnew(TextureRect);
-	checkerboard->set_texture(theme->get_icon("Checkerboard", "EditorIcons"));
+	checkerboard->set_texture(get_theme_icon("Checkerboard", "EditorIcons"));
 	checkerboard->set_stretch_mode(TextureRect::STRETCH_TILE);
 	checkerboard->set_texture_repeat(CanvasItem::TEXTURE_REPEAT_ENABLED);
 	checkerboard->set_custom_minimum_size(Size2(0.0, 256.0) * EDSCALE);
@@ -70,10 +68,10 @@ TexturePreview::TexturePreview(Ref<Texture2D> p_texture, bool p_show_metadata) {
 		metadata_label->add_theme_font_size_override("font_size", 16 * EDSCALE);
 		metadata_label->add_theme_color_override("font_outline_color", Color::named("black"));
 		metadata_label->add_theme_constant_override("outline_size", 2 * EDSCALE);
-		Ref<Font> metadata_label_font = theme->get_font("expression", "EditorFonts");
+		Ref<Font> metadata_label_font = get_theme_font("expression", "EditorFonts");
 		metadata_label->add_theme_font_override("font", metadata_label_font);
 
-		// it's okay that these colors are static since the grid color is static too
+		// It's okay that these colors are static since the grid color is static too.
 		metadata_label->add_theme_color_override("font_color", Color::named("white"));
 		metadata_label->add_theme_color_override("font_color_shadow", Color::named("black"));
 
