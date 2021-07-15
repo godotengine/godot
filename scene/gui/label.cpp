@@ -118,25 +118,29 @@ void Label::_notification(int p_what) {
 			lines_visible = max_lines_visible;
 		}
 
+		float total_h = 0;
+		total_h += lines_visible * font_h;
+		total_h += style->get_margin(MARGIN_TOP) + style->get_margin(MARGIN_BOTTOM);
+
 		if (lines_visible > 0) {
 			switch (valign) {
 				case VALIGN_TOP: {
 					//nothing
 				} break;
 				case VALIGN_CENTER: {
-					vbegin = (size.y - (lines_visible * font_h - line_spacing)) / 2;
+					vbegin = (size.y - (total_h - line_spacing)) / 2;
 					vsep = 0;
 
 				} break;
 				case VALIGN_BOTTOM: {
-					vbegin = size.y - (lines_visible * font_h - line_spacing);
+					vbegin = size.y - (total_h - line_spacing);
 					vsep = 0;
 
 				} break;
 				case VALIGN_FILL: {
 					vbegin = 0;
 					if (lines_visible > 1) {
-						vsep = (size.y - (lines_visible * font_h - line_spacing)) / (lines_visible - 1);
+						vsep = (size.y - (total_h - line_spacing)) / (lines_visible - 1);
 					} else {
 						vsep = 0;
 					}
