@@ -407,18 +407,21 @@ if selected_platform in platform_list:
     else:  # Rest of the world
         version = methods.get_compiler_version(env) or [-1, -1]
 
-        shadow_local_warning = []
-        all_plus_warnings = ["-Wwrite-strings"]
+        common_warnings = []
 
         if methods.using_gcc(env):
-            env.Append(CCFLAGS=["-Wno-misleading-indentation"])
+            common_warnings += ["-Wno-misleading-indentation"]
             if version[0] >= 7:
-                shadow_local_warning = ["-Wshadow-local"]
+                common_warnings += ["-Wshadow-local"]
+        elif methods.using_clang(env):
+            # We often implement `operator<` for structs of pointers as a requirement
+            # for putting them in `Set` or `Map`. We don't mind about unreliable ordering.
+            common_warnings += ["-Wno-ordered-compare-function-pointers"]
 
         if env["warnings"] == "extra":
             # Note: enable -Wimplicit-fallthrough for Clang (already part of -Wextra for GCC)
             # once we switch to C++11 or later (necessary for our FALLTHROUGH macro).
-            env.Append(CCFLAGS=["-Wall", "-Wextra", "-Wno-unused-parameter"] + all_plus_warnings + shadow_local_warning)
+            env.Append(CCFLAGS=["-Wall", "-Wextra", "-Wwrite-strings", "-Wno-unused-parameter"] + common_warnings)
             env.Append(CXXFLAGS=["-Wctor-dtor-privacy", "-Wnon-virtual-dtor"])
             if methods.using_gcc(env):
                 env.Append(
@@ -434,9 +437,9 @@ if selected_platform in platform_list:
                 if version[0] >= 9:
                     env.Append(CCFLAGS=["-Wattribute-alias=2"])
         elif env["warnings"] == "all":
-            env.Append(CCFLAGS=["-Wall"] + shadow_local_warning)
+            env.Append(CCFLAGS=["-Wall"] + common_warnings)
         elif env["warnings"] == "moderate":
-            env.Append(CCFLAGS=["-Wall", "-Wno-unused"] + shadow_local_warning)
+            env.Append(CCFLAGS=["-Wall", "-Wno-unused"] + common_warnings)
         else:  # 'no'
             env.Append(CCFLAGS=["-w"])
         if env["werror"]:
