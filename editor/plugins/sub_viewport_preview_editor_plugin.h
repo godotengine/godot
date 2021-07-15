@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  texture_editor_plugin.h                                              */
+/*  sub_viewport_preview_editor_plugin.h                                 */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,39 +28,29 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef TEXTURE_EDITOR_PLUGIN_H
-#define TEXTURE_EDITOR_PLUGIN_H
+#ifndef SUB_VIEWPORT_PREVIEW_EDITOR_PLUGIN_H
+#define SUB_VIEWPORT_PREVIEW_EDITOR_PLUGIN_H
 
 #include "editor/editor_node.h"
 #include "editor/editor_plugin.h"
-#include "scene/resources/texture.h"
+#include "editor/plugins/texture_editor_plugin.h"
+#include "scene/main/viewport.h"
 
-class TexturePreview : public MarginContainer {
-	GDCLASS(TexturePreview, MarginContainer);
-
-private:
-	TextureRect *texture_display;
-
-public:
-	TextureRect *get_texture_display();
-	TexturePreview(Ref<Texture2D> p_texture, bool p_show_metadata);
-};
-
-class EditorInspectorPluginTexture : public EditorInspectorPlugin {
-	GDCLASS(EditorInspectorPluginTexture, EditorInspectorPlugin);
+class EditorInspectorPluginSubViewportPreview : public EditorInspectorPluginTexture {
+	GDCLASS(EditorInspectorPluginSubViewportPreview, EditorInspectorPluginTexture);
 
 public:
 	virtual bool can_handle(Object *p_object) override;
 	virtual void parse_begin(Object *p_object) override;
 };
 
-class TextureEditorPlugin : public EditorPlugin {
-	GDCLASS(TextureEditorPlugin, EditorPlugin);
+class SubViewportPreviewEditorPlugin : public EditorPlugin {
+	GDCLASS(SubViewportPreviewEditorPlugin, EditorPlugin);
 
 public:
-	virtual String get_name() const override { return "Texture2D"; }
+	virtual String get_name() const override { return "SubViewportPreview"; }
 
-	TextureEditorPlugin(EditorNode *p_node);
+	SubViewportPreviewEditorPlugin(EditorNode *p_node);
 };
 
-#endif // TEXTURE_EDITOR_PLUGIN_H
+#endif // SUB_VIEWPORT_PREVIEW_EDITOR_PLUGIN_H

@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  texture_editor_plugin.h                                              */
+/*  sub_viewport_preview_editor_plugin.cpp                               */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,39 +28,22 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef TEXTURE_EDITOR_PLUGIN_H
-#define TEXTURE_EDITOR_PLUGIN_H
+#include "sub_viewport_preview_editor_plugin.h"
 
-#include "editor/editor_node.h"
-#include "editor/editor_plugin.h"
-#include "scene/resources/texture.h"
+bool EditorInspectorPluginSubViewportPreview::can_handle(Object *p_object) {
+	return Object::cast_to<SubViewport>(p_object) != nullptr;
+}
 
-class TexturePreview : public MarginContainer {
-	GDCLASS(TexturePreview, MarginContainer);
+void EditorInspectorPluginSubViewportPreview::parse_begin(Object *p_object) {
+	SubViewport *sub_viewport = Object::cast_to<SubViewport>(p_object);
 
-private:
-	TextureRect *texture_display;
+	TexturePreview *sub_viewport_preview = memnew(TexturePreview(sub_viewport->get_texture(), false));
+	sub_viewport->connect("size_changed", callable_mp((CanvasItem *)sub_viewport_preview->get_texture_display(), &CanvasItem::update));
+	add_custom_control(sub_viewport_preview);
+}
 
-public:
-	TextureRect *get_texture_display();
-	TexturePreview(Ref<Texture2D> p_texture, bool p_show_metadata);
-};
-
-class EditorInspectorPluginTexture : public EditorInspectorPlugin {
-	GDCLASS(EditorInspectorPluginTexture, EditorInspectorPlugin);
-
-public:
-	virtual bool can_handle(Object *p_object) override;
-	virtual void parse_begin(Object *p_object) override;
-};
-
-class TextureEditorPlugin : public EditorPlugin {
-	GDCLASS(TextureEditorPlugin, EditorPlugin);
-
-public:
-	virtual String get_name() const override { return "Texture2D"; }
-
-	TextureEditorPlugin(EditorNode *p_node);
-};
-
-#endif // TEXTURE_EDITOR_PLUGIN_H
+SubViewportPreviewEditorPlugin::SubViewportPreviewEditorPlugin(EditorNode *p_node) {
+	Ref<EditorInspectorPluginSubViewportPreview> plugin;
+	plugin.instantiate();
+	add_inspector_plugin(plugin);
+}
