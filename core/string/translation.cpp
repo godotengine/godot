@@ -84,6 +84,7 @@ static const char *locale_list[] = {
 	"ast_ES", //  Asturian (Spain)
 	"ayc_PE", //  Southern Aymara (Peru)
 	"ay_PE", //  Aymara (Peru)
+	"az", //  Azerbaijani
 	"az_AZ", //  Azerbaijani (Azerbaijan)
 	"be", //  Belarusian
 	"be_BY", //  Belarusian (Belarus)
@@ -240,6 +241,7 @@ static const char *locale_list[] = {
 	"ka_GE", //  Georgian (Georgia)
 	"kk_KZ", //  Kazakh (Kazakhstan)
 	"kl_GL", //  Kalaallisut (Greenland)
+	"km", //  Central Khmer
 	"km_KH", //  Central Khmer (Cambodia)
 	"kn_IN", //  Kannada (India)
 	"kok_IN", //  Konkani (India)
@@ -390,6 +392,7 @@ static const char *locale_list[] = {
 	"tr_CY", //  Turkish (Cyprus)
 	"tr_TR", //  Turkish (Turkey)
 	"ts_ZA", //  Tsonga (South Africa)
+	"tt", //  Tatar
 	"tt_RU", //  Tatar (Russia)
 	"tzm", // Central Atlas Tamazight
 	"tzm_MA", // Central Atlas Tamazight (Marrocos)
@@ -458,6 +461,7 @@ static const char *locale_names[] = {
 	"Asturian (Spain)",
 	"Southern Aymara (Peru)",
 	"Aymara (Peru)",
+	"Azerbaijani",
 	"Azerbaijani (Azerbaijan)",
 	"Belarusian",
 	"Belarusian (Belarus)",
@@ -614,6 +618,7 @@ static const char *locale_names[] = {
 	"Georgian (Georgia)",
 	"Kazakh (Kazakhstan)",
 	"Kalaallisut (Greenland)",
+	"Central Khmer",
 	"Central Khmer (Cambodia)",
 	"Kannada (India)",
 	"Konkani (India)",
@@ -764,6 +769,7 @@ static const char *locale_names[] = {
 	"Turkish (Cyprus)",
 	"Turkish (Turkey)",
 	"Tsonga (South Africa)",
+	"Tatar",
 	"Tatar (Russia)",
 	"Central Atlas Tamazight",
 	"Central Atlas Tamazight (Marrocos)",
