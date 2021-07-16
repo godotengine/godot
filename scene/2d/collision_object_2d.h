@@ -92,6 +92,9 @@ protected:
 	void _mouse_enter();
 	void _mouse_exit();
 
+	void _mouse_shape_enter(int p_shape);
+	void _mouse_shape_exit(int p_shape);
+
 	void set_only_update_transform_changes(bool p_enable);
 	bool is_only_update_transform_changes_enabled() const;
 
