@@ -65,9 +65,9 @@ void WebSocketMultiplayerPeer::_clear() {
 		memfree(_current_packet.data);
 	}
 
-	for (List<Packet>::Element *E = _incoming_packets.front(); E; E = E->next()) {
-		memfree(E->get().data);
-		E->get().data = nullptr;
+	for (Packet &E : _incoming_packets) {
+		memfree(E.data);
+		E.data = nullptr;
 	}
 
 	_incoming_packets.clear();

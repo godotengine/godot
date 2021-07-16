@@ -320,13 +320,13 @@ void LocalDebugger::print_variables(const List<String> &names, const List<Varian
 	String value;
 	Vector<String> value_lines;
 	const List<Variant>::Element *V = values.front();
-	for (const List<String>::Element *E = names.front(); E; E = E->next()) {
+	for (const String &E : names) {
 		value = String(V->get());
 
 		if (variable_prefix.is_empty()) {
-			print_line(E->get() + ": " + String(V->get()));
+			print_line(E + ": " + String(V->get()));
 		} else {
-			print_line(E->get() + ":");
+			print_line(E + ":");
 			value_lines = value.split("\n");
 			for (int i = 0; i < value_lines.size(); ++i) {
 				print_line(variable_prefix + value_lines[i]);

@@ -411,8 +411,8 @@ String OS_Windows::_quote_command_line_argument(const String &p_text) const {
 Error OS_Windows::execute(const String &p_path, const List<String> &p_arguments, String *r_pipe, int *r_exitcode, bool read_stderr, Mutex *p_pipe_mutex) {
 	String path = p_path.replace("/", "\\");
 	String command = _quote_command_line_argument(path);
-	for (const List<String>::Element *E = p_arguments.front(); E; E = E->next()) {
-		command += " " + _quote_command_line_argument(E->get());
+	for (const String &E : p_arguments) {
+		command += " " + _quote_command_line_argument(E);
 	}
 
 	if (r_pipe) {
@@ -467,8 +467,8 @@ Error OS_Windows::execute(const String &p_path, const List<String> &p_arguments,
 Error OS_Windows::create_process(const String &p_path, const List<String> &p_arguments, ProcessID *r_child_id) {
 	String path = p_path.replace("/", "\\");
 	String command = _quote_command_line_argument(path);
-	for (const List<String>::Element *E = p_arguments.front(); E; E = E->next()) {
-		command += " " + _quote_command_line_argument(E->get());
+	for (const String &E : p_arguments) {
+		command += " " + _quote_command_line_argument(E);
 	}
 
 	ProcessInfo pi;

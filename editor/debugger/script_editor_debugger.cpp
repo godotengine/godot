@@ -347,13 +347,13 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 
 		uint64_t total = 0;
 
-		for (List<DebuggerMarshalls::ResourceInfo>::Element *E = usage.infos.front(); E; E = E->next()) {
+		for (DebuggerMarshalls::ResourceInfo &E : usage.infos) {
 			TreeItem *it = vmem_tree->create_item(root);
-			String type = E->get().type;
-			int bytes = E->get().vram;
-			it->set_text(0, E->get().path);
+			String type = E.type;
+			int bytes = E.vram;
+			it->set_text(0, E.path);
 			it->set_text(1, type);
-			it->set_text(2, E->get().format);
+			it->set_text(2, E.format);
 			it->set_text(3, String::humanize_size(bytes));
 			total += bytes;
 

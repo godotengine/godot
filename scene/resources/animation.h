@@ -228,8 +228,8 @@ private:
 		value_track_get_key_indices(p_track, p_time, p_delta, &idxs);
 		Vector<int> idxr;
 
-		for (List<int>::Element *E = idxs.front(); E; E = E->next()) {
-			idxr.push_back(E->get());
+		for (int &E : idxs) {
+			idxr.push_back(E);
 		}
 		return idxr;
 	}
@@ -238,8 +238,8 @@ private:
 		method_track_get_key_indices(p_track, p_time, p_delta, &idxs);
 		Vector<int> idxr;
 
-		for (List<int>::Element *E = idxs.front(); E; E = E->next()) {
-			idxr.push_back(E->get());
+		for (int &E : idxs) {
+			idxr.push_back(E);
 		}
 		return idxr;
 	}

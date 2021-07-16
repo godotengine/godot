@@ -4448,12 +4448,12 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 						String member_name = String(ident.ptr());
 						if (shader->structs.has(st)) {
 							StructNode *n = shader->structs[st].shader_struct;
-							for (List<MemberNode *>::Element *E = n->members.front(); E; E = E->next()) {
-								if (String(E->get()->name) == member_name) {
-									member_type = E->get()->datatype;
-									array_size = E->get()->array_size;
+							for (MemberNode *E : n->members) {
+								if (String(E->name) == member_name) {
+									member_type = E->datatype;
+									array_size = E->array_size;
 									if (member_type == TYPE_STRUCT) {
-										member_struct_name = E->get()->struct_name;
+										member_struct_name = E->struct_name;
 									}
 									ok = true;
 									break;

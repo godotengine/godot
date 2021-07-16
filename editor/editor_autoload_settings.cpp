@@ -46,12 +46,11 @@ void EditorAutoloadSettings::_notification(int p_what) {
 		ResourceLoader::get_recognized_extensions_for_type("Script", &afn);
 		ResourceLoader::get_recognized_extensions_for_type("PackedScene", &afn);
 
-		for (List<String>::Element *E = afn.front(); E; E = E->next()) {
-			file_dialog->add_filter("*." + E->get());
+		for (String &E : afn) {
+			file_dialog->add_filter("*." + E);
 		}
 
-		for (List<AutoLoadInfo>::Element *E = autoload_cache.front(); E; E = E->next()) {
-			AutoLoadInfo &info = E->get();
+		for (AutoLoadInfo &info : autoload_cache) {
 			if (info.node && info.in_editor) {
 				get_tree()->get_root()->call_deferred(SNAME("add_child"), info.node);
 			}
@@ -102,8 +101,8 @@ bool EditorAutoloadSettings::_autoload_name_is_valid(const String &p_name, Strin
 	for (int i = 0; i < ScriptServer::get_language_count(); i++) {
 		List<String> keywords;
 		ScriptServer::get_language(i)->get_reserved_words(&keywords);
-		for (List<String>::Element *E = keywords.front(); E; E = E->next()) {
-			if (E->get() == p_name) {
+		for (String &E : keywords) {
+			if (E == p_name) {
 				if (r_error) {
 					*r_error = TTR("Invalid name.") + "\n" + TTR("Keyword cannot be used as an autoload name.");
 				}
@@ -379,8 +378,7 @@ void EditorAutoloadSettings::update_autoload() {
 	Map<String, AutoLoadInfo> to_remove;
 	List<AutoLoadInfo *> to_add;
 
-	for (List<AutoLoadInfo>::Element *E = autoload_cache.front(); E; E = E->next()) {
-		AutoLoadInfo &info = E->get();
+	for (AutoLoadInfo &info : autoload_cache) {
 		to_remove.insert(info.name, info);
 	}
 
@@ -392,9 +390,7 @@ void EditorAutoloadSettings::update_autoload() {
 	List<PropertyInfo> props;
 	ProjectSettings::get_singleton()->get_property_list(&props);
 
-	for (List<PropertyInfo>::Element *E = props.front(); E; E = E->next()) {
-		const PropertyInfo &pi = E->get();
-
+	for (PropertyInfo &pi : props) {
 		if (!pi.name.begins_with("autoload/")) {
 			continue;
 		}
@@ -483,9 +479,7 @@ void EditorAutoloadSettings::update_autoload() {
 
 	// Load new/changed autoloads
 	List<Node *> nodes_to_add;
-	for (List<AutoLoadInfo *>::Element *E = to_add.front(); E; E = E->next()) {
-		AutoLoadInfo *info = E->get();
-
+	for (AutoLoadInfo *info : to_add) {
 		info->node = _create_autoload(info->path);
 
 		ERR_CONTINUE(!info->node);
@@ -518,8 +512,8 @@ void EditorAutoloadSettings::update_autoload() {
 		}
 	}
 
-	for (List<Node *>::Element *E = nodes_to_add.front(); E; E = E->next()) {
-		get_tree()->get_root()->add_child(E->get());
+	for (Node *E : nodes_to_add) {
+		get_tree()->get_root()->add_child(E);
 	}
 
 	updating_autoload = false;
@@ -649,8 +643,8 @@ void EditorAutoloadSettings::drop_data_fw(const Point2 &p_point, const Variant &
 
 	int i = 0;
 
-	for (List<AutoLoadInfo>::Element *F = autoload_cache.front(); F; F = F->next()) {
-		orders.write[i++] = F->get().order;
+	for (AutoLoadInfo &F : autoload_cache) {
+		orders.write[i++] = F.order;
 	}
 
 	orders.sort();
@@ -661,9 +655,9 @@ void EditorAutoloadSettings::drop_data_fw(const Point2 &p_point, const Variant &
 
 	i = 0;
 
-	for (List<AutoLoadInfo>::Element *F = autoload_cache.front(); F; F = F->next()) {
-		undo_redo->add_do_method(ProjectSettings::get_singleton(), "set_order", "autoload/" + F->get().name, orders[i++]);
-		undo_redo->add_undo_method(ProjectSettings::get_singleton(), "set_order", "autoload/" + F->get().name, F->get().order);
+	for (AutoLoadInfo &F : autoload_cache) {
+		undo_redo->add_do_method(ProjectSettings::get_singleton(), "set_order", "autoload/" + F.name, orders[i++]);
+		undo_redo->add_undo_method(ProjectSettings::get_singleton(), "set_order", "autoload/" + F.name, F.order);
 	}
 
 	orders.clear();
@@ -764,9 +758,7 @@ EditorAutoloadSettings::EditorAutoloadSettings() {
 	// Make first cache
 	List<PropertyInfo> props;
 	ProjectSettings::get_singleton()->get_property_list(&props);
-	for (List<PropertyInfo>::Element *E = props.front(); E; E = E->next()) {
-		const PropertyInfo &pi = E->get();
-
+	for (PropertyInfo &pi : props) {
 		if (!pi.name.begins_with("autoload/")) {
 			continue;
 		}
@@ -799,9 +791,7 @@ EditorAutoloadSettings::EditorAutoloadSettings() {
 		autoload_cache.push_back(info);
 	}
 
-	for (List<AutoLoadInfo>::Element *E = autoload_cache.front(); E; E = E->next()) {
-		AutoLoadInfo &info = E->get();
-
+	for (AutoLoadInfo &info : autoload_cache) {
 		info.node = _create_autoload(info.path);
 
 		if (info.node) {
@@ -904,8 +894,7 @@ EditorAutoloadSettings::EditorAutoloadSettings() {
 }
 
 EditorAutoloadSettings::~EditorAutoloadSettings() {
-	for (List<AutoLoadInfo>::Element *E = autoload_cache.front(); E; E = E->next()) {
-		AutoLoadInfo &info = E->get();
+	for (AutoLoadInfo &info : autoload_cache) {
 		if (info.node && !info.in_editor) {
 			memdelete(info.node);
 		}

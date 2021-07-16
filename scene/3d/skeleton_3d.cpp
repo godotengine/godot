@@ -264,8 +264,8 @@ void Skeleton3D::_notification(int p_what) {
 					b.global_pose_override_amount = 0.0;
 				}
 
-				for (List<ObjectID>::Element *E = b.nodes_bound.front(); E; E = E->next()) {
-					Object *obj = ObjectDB::get_instance(E->get());
+				for (ObjectID &E : b.nodes_bound) {
+					Object *obj = ObjectDB::get_instance(E);
 					ERR_CONTINUE(!obj);
 					Node3D *node_3d = Object::cast_to<Node3D>(obj);
 					ERR_CONTINUE(!node_3d);
@@ -524,8 +524,8 @@ void Skeleton3D::bind_child_node_to_bone(int p_bone, Node *p_node) {
 
 	ObjectID id = p_node->get_instance_id();
 
-	for (const List<ObjectID>::Element *E = bones[p_bone].nodes_bound.front(); E; E = E->next()) {
-		if (E->get() == id) {
+	for (const ObjectID &E : bones[p_bone].nodes_bound) {
+		if (E == id) {
 			return; // already here
 		}
 	}
@@ -544,8 +544,8 @@ void Skeleton3D::unbind_child_node_from_bone(int p_bone, Node *p_node) {
 void Skeleton3D::get_bound_child_nodes_to_bone(int p_bone, List<Node *> *p_bound) const {
 	ERR_FAIL_INDEX(p_bone, bones.size());
 
-	for (const List<ObjectID>::Element *E = bones[p_bone].nodes_bound.front(); E; E = E->next()) {
-		Object *obj = ObjectDB::get_instance(E->get());
+	for (const ObjectID &E : bones[p_bone].nodes_bound) {
+		Object *obj = ObjectDB::get_instance(E);
 		ERR_CONTINUE(!obj);
 		p_bound->push_back(Object::cast_to<Node>(obj));
 	}

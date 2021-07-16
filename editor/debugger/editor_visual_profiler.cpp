@@ -365,13 +365,13 @@ void EditorVisualProfiler::_update_frame(bool p_focus_selected) {
 		}
 		TreeItem *category = variables->create_item(parent);
 
-		for (List<TreeItem *>::Element *E = stack.front(); E; E = E->next()) {
-			float total_cpu = E->get()->get_metadata(1);
-			float total_gpu = E->get()->get_metadata(2);
+		for (TreeItem *E : stack) {
+			float total_cpu = E->get_metadata(1);
+			float total_gpu = E->get_metadata(2);
 			total_cpu += cpu_time;
 			total_gpu += gpu_time;
-			E->get()->set_metadata(1, cpu_time);
-			E->get()->set_metadata(2, gpu_time);
+			E->set_metadata(1, cpu_time);
+			E->set_metadata(2, gpu_time);
 		}
 
 		category->set_icon(0, track_icon);
@@ -392,11 +392,11 @@ void EditorVisualProfiler::_update_frame(bool p_focus_selected) {
 		}
 	}
 
-	for (List<TreeItem *>::Element *E = categories.front(); E; E = E->next()) {
-		float total_cpu = E->get()->get_metadata(1);
-		float total_gpu = E->get()->get_metadata(2);
-		E->get()->set_text(1, _get_time_as_text(total_cpu));
-		E->get()->set_text(2, _get_time_as_text(total_gpu));
+	for (TreeItem *E : categories) {
+		float total_cpu = E->get_metadata(1);
+		float total_gpu = E->get_metadata(2);
+		E->set_text(1, _get_time_as_text(total_cpu));
+		E->set_text(2, _get_time_as_text(total_gpu));
 	}
 
 	if (ensure_selected) {

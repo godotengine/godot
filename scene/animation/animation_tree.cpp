@@ -76,10 +76,10 @@ void AnimationNode::get_child_nodes(List<ChildNode> *r_child_nodes) {
 		Dictionary cn = get_script_instance()->call("_get_child_nodes");
 		List<Variant> keys;
 		cn.get_key_list(&keys);
-		for (List<Variant>::Element *E = keys.front(); E; E = E->next()) {
+		for (Variant &E : keys) {
 			ChildNode child;
-			child.name = E->get();
-			child.node = cn[E->get()];
+			child.name = E;
+			child.node = cn[E];
 			r_child_nodes->push_back(child);
 		}
 	}
@@ -536,8 +536,8 @@ bool AnimationTree::_update_caches(AnimationPlayer *player) {
 	List<StringName> sname;
 	player->get_animation_list(&sname);
 
-	for (List<StringName>::Element *E = sname.front(); E; E = E->next()) {
-		Ref<Animation> anim = player->get_animation(E->get());
+	for (StringName &E : sname) {
+		Ref<Animation> anim = player->get_animation(E);
 		for (int i = 0; i < anim->get_track_count(); i++) {
 			NodePath path = anim->track_get_path(i);
 			Animation::TrackType track_type = anim->track_get_type(i);
@@ -561,7 +561,7 @@ bool AnimationTree::_update_caches(AnimationPlayer *player) {
 				Node *child = parent->get_node_and_resource(path, resource, leftover_path);
 
 				if (!child) {
-					ERR_PRINT("AnimationTree: '" + String(E->get()) + "', couldn't resolve track:  '" + String(path) + "'");
+					ERR_PRINT("AnimationTree: '" + String(E) + "', couldn't resolve track:  '" + String(path) + "'");
 					continue;
 				}
 
@@ -590,7 +590,7 @@ bool AnimationTree::_update_caches(AnimationPlayer *player) {
 						Node3D *node_3d = Object::cast_to<Node3D>(child);
 
 						if (!node_3d) {
-							ERR_PRINT("AnimationTree: '" + String(E->get()) + "', transform track does not point to Node3D:  '" + String(path) + "'");
+							ERR_PRINT("AnimationTree: '" + String(E) + "', transform track does not point to Node3D:  '" + String(path) + "'");
 							continue;
 						}
 
@@ -816,9 +816,7 @@ void AnimationTree::_process_graph(float p_delta) {
 	{
 		bool can_call = is_inside_tree() && !Engine::get_singleton()->is_editor_hint();
 
-		for (List<AnimationNode::AnimationState>::Element *E = state.animation_states.front(); E; E = E->next()) {
-			const AnimationNode::AnimationState &as = E->get();
-
+		for (AnimationNode::AnimationState &as : state.animation_states) {
 			Ref<Animation> a = as.animation;
 			float time = as.time;
 			float delta = as.delta;
@@ -962,8 +960,8 @@ void AnimationTree::_process_graph(float p_delta) {
 							List<int> indices;
 							a->value_track_get_key_indices(i, time, delta, &indices);
 
-							for (List<int>::Element *F = indices.front(); F; F = F->next()) {
-								Variant value = a->track_get_key_value(i, F->get());
+							for (int &F : indices) {
+								Variant value = a->track_get_key_value(i, F);
 								t->object->set_indexed(t->subpath, value);
 							}
 						}
@@ -979,9 +977,9 @@ void AnimationTree::_process_graph(float p_delta) {
 
 						a->method_track_get_key_indices(i, time, delta, &indices);
 
-						for (List<int>::Element *F = indices.front(); F; F = F->next()) {
-							StringName method = a->method_track_get_name(i, F->get());
-							Vector<Variant> params = a->method_track_get_params(i, F->get());
+						for (int &F : indices) {
+							StringName method = a->method_track_get_name(i, F);
+							Vector<Variant> params = a->method_track_get_params(i, F);
 
 							int s = params.size();
 
@@ -1355,9 +1353,7 @@ void AnimationTree::_update_properties_for_node(const String &p_base_path, Ref<A
 
 	List<PropertyInfo> plist;
 	node->get_parameter_list(&plist);
-	for (List<PropertyInfo>::Element *E = plist.front(); E; E = E->next()) {
-		PropertyInfo pinfo = E->get();
-
+	for (PropertyInfo &pinfo : plist) {
 		StringName key = pinfo.name;
 
 		if (!property_map.has(p_base_path + key)) {
@@ -1373,8 +1369,8 @@ void AnimationTree::_update_properties_for_node(const String &p_base_path, Ref<A
 	List<AnimationNode::ChildNode> children;
 	node->get_child_nodes(&children);
 
-	for (List<AnimationNode::ChildNode>::Element *E = children.front(); E; E = E->next()) {
-		_update_properties_for_node(p_base_path + E->get().name + "/", E->get().node);
+	for (AnimationNode::ChildNode &E : children) {
+		_update_properties_for_node(p_base_path + E.name + "/", E.node);
 	}
 }
 
@@ -1428,17 +1424,17 @@ void AnimationTree::_get_property_list(List<PropertyInfo> *p_list) const {
 		const_cast<AnimationTree *>(this)->_update_properties();
 	}
 
-	for (const List<PropertyInfo>::Element *E = properties.front(); E; E = E->next()) {
-		p_list->push_back(E->get());
+	for (const PropertyInfo &E : properties) {
+		p_list->push_back(E);
 	}
 }
 
 void AnimationTree::rename_parameter(const String &p_base, const String &p_new_base) {
 	//rename values first
-	for (const List<PropertyInfo>::Element *E = properties.front(); E; E = E->next()) {
-		if (E->get().name.begins_with(p_base)) {
-			String new_name = E->get().name.replace_first(p_base, p_new_base);
-			property_map[new_name] = property_map[E->get().name];
+	for (const PropertyInfo &E : properties) {
+		if (E.name.begins_with(p_base)) {
+			String new_name = E.name.replace_first(p_base, p_new_base);
+			property_map[new_name] = property_map[E.name];
 		}
 	}
 

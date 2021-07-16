@@ -3421,11 +3421,8 @@ String String::format(const Variant &values, String placeholder) const {
 		List<Variant> keys;
 		d.get_key_list(&keys);
 
-		for (List<Variant>::Element *E = keys.front(); E; E = E->next()) {
-			String key = E->get();
-			String val = d[E->get()];
-
-			new_string = new_string.replace(placeholder.replace("_", key), val);
+		for (Variant &key : keys) {
+			new_string = new_string.replace(placeholder.replace("_", key), d[key]);
 		}
 	} else {
 		ERR_PRINT(String("Invalid type: use Array or Dictionary.").ascii().get_data());

@@ -53,15 +53,15 @@ Array RenderingServer::_texture_debug_usage_bind() {
 	List<TextureInfo> list;
 	texture_debug_usage(&list);
 	Array arr;
-	for (const List<TextureInfo>::Element *E = list.front(); E; E = E->next()) {
+	for (const TextureInfo &E : list) {
 		Dictionary dict;
-		dict["texture"] = E->get().texture;
-		dict["width"] = E->get().width;
-		dict["height"] = E->get().height;
-		dict["depth"] = E->get().depth;
-		dict["format"] = E->get().format;
-		dict["bytes"] = E->get().bytes;
-		dict["path"] = E->get().path;
+		dict["texture"] = E.texture;
+		dict["width"] = E.width;
+		dict["height"] = E.height;
+		dict["depth"] = E.depth;
+		dict["format"] = E.format;
+		dict["bytes"] = E.bytes;
+		dict["path"] = E.path;
 		arr.push_back(dict);
 	}
 	return arr;
@@ -972,10 +972,10 @@ Error RenderingServer::mesh_create_surface_data_from_arrays(SurfaceData *r_surfa
 	if (index_array_len) {
 		List<Variant> keys;
 		p_lods.get_key_list(&keys);
-		for (List<Variant>::Element *E = keys.front(); E; E = E->next()) {
-			float distance = E->get();
+		for (Variant &E : keys) {
+			float distance = E;
 			ERR_CONTINUE(distance <= 0.0);
-			Vector<int> indices = p_lods[E->get()];
+			Vector<int> indices = p_lods[E];
 			ERR_CONTINUE(indices.size() == 0);
 			uint32_t index_count = indices.size();
 			ERR_CONTINUE(index_count >= (uint32_t)index_array_len); //should be smaller..

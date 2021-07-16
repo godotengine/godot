@@ -628,8 +628,8 @@ bool VisualShader::is_node_connection(Type p_type, int p_from_node, int p_from_p
 	ERR_FAIL_INDEX_V(p_type, TYPE_MAX, false);
 	const Graph *g = &graph[p_type];
 
-	for (const List<Connection>::Element *E = g->connections.front(); E; E = E->next()) {
-		if (E->get().from_node == p_from_node && E->get().from_port == p_from_port && E->get().to_node == p_to_node && E->get().to_port == p_to_port) {
+	for (const Connection &E : g->connections) {
+		if (E.from_node == p_from_node && E.from_port == p_from_port && E.to_node == p_to_node && E.to_port == p_to_port) {
 			return true;
 		}
 	}
@@ -642,12 +642,12 @@ bool VisualShader::is_nodes_connected_relatively(const Graph *p_graph, int p_nod
 
 	const VisualShader::Node &node = p_graph->nodes[p_node];
 
-	for (const List<int>::Element *E = node.prev_connected_nodes.front(); E; E = E->next()) {
-		if (E->get() == p_target) {
+	for (const int &E : node.prev_connected_nodes) {
+		if (E == p_target) {
 			return true;
 		}
 
-		result = is_nodes_connected_relatively(p_graph, E->get(), p_target);
+		result = is_nodes_connected_relatively(p_graph, E, p_target);
 		if (result) {
 			break;
 		}
@@ -686,8 +686,8 @@ bool VisualShader::can_connect_nodes(Type p_type, int p_from_node, int p_from_po
 		return false;
 	}
 
-	for (const List<Connection>::Element *E = g->connections.front(); E; E = E->next()) {
-		if (E->get().from_node == p_from_node && E->get().from_port == p_from_port && E->get().to_node == p_to_node && E->get().to_port == p_to_port) {
+	for (const Connection &E : g->connections) {
+		if (E.from_node == p_from_node && E.from_port == p_from_port && E.to_node == p_to_node && E.to_port == p_to_port) {
 			return false;
 		}
 	}
@@ -739,8 +739,8 @@ Error VisualShader::connect_nodes(Type p_type, int p_from_node, int p_from_port,
 
 	ERR_FAIL_COND_V_MSG(!is_port_types_compatible(from_port_type, to_port_type), ERR_INVALID_PARAMETER, "Incompatible port types (scalar/vec/bool) with transform.");
 
-	for (List<Connection>::Element *E = g->connections.front(); E; E = E->next()) {
-		if (E->get().from_node == p_from_node && E->get().from_port == p_from_port && E->get().to_node == p_to_node && E->get().to_port == p_to_port) {
+	for (Connection &E : g->connections) {
+		if (E.from_node == p_from_node && E.from_port == p_from_port && E.to_node == p_to_node && E.to_port == p_to_port) {
 			ERR_FAIL_V(ERR_ALREADY_EXISTS);
 		}
 	}
@@ -763,7 +763,7 @@ void VisualShader::disconnect_nodes(Type p_type, int p_from_node, int p_from_por
 	ERR_FAIL_INDEX(p_type, TYPE_MAX);
 	Graph *g = &graph[p_type];
 
-	for (List<Connection>::Element *E = g->connections.front(); E; E = E->next()) {
+	for (const List<Connection>::Element *E = g->connections.front(); E; E = E->next()) {
 		if (E->get().from_node == p_from_node && E->get().from_port == p_from_port && E->get().to_node == p_to_node && E->get().to_port == p_to_port) {
 			g->connections.erase(E);
 			g->nodes[p_to_node].prev_connected_nodes.erase(p_from_node);
@@ -780,12 +780,12 @@ Array VisualShader::_get_node_connections(Type p_type) const {
 	const Graph *g = &graph[p_type];
 
 	Array ret;
-	for (const List<Connection>::Element *E = g->connections.front(); E; E = E->next()) {
+	for (const Connection &E : g->connections) {
 		Dictionary d;
-		d["from_node"] = E->get().from_node;
-		d["from_port"] = E->get().from_port;
-		d["to_node"] = E->get().to_node;
-		d["to_port"] = E->get().to_port;
+		d["from_node"] = E.from_node;
+		d["from_port"] = E.from_port;
+		d["to_node"] = E.to_node;
+		d["to_port"] = E.to_port;
 		ret.push_back(d);
 	}
 
@@ -796,8 +796,8 @@ void VisualShader::get_node_connections(Type p_type, List<Connection> *r_connect
 	ERR_FAIL_INDEX(p_type, TYPE_MAX);
 	const Graph *g = &graph[p_type];
 
-	for (const List<Connection>::Element *E = g->connections.front(); E; E = E->next()) {
-		r_connections->push_back(E->get());
+	for (const Connection &E : g->connections) {
+		r_connections->push_back(E);
 	}
 }
 
@@ -1190,11 +1190,11 @@ bool VisualShader::_get(const StringName &p_name, Variant &r_ret) const {
 		String index = name.get_slicec('/', 2);
 		if (index == "connections") {
 			Vector<int> conns;
-			for (const List<Connection>::Element *E = graph[type].connections.front(); E; E = E->next()) {
-				conns.push_back(E->get().from_node);
-				conns.push_back(E->get().from_port);
-				conns.push_back(E->get().to_node);
-				conns.push_back(E->get().to_port);
+			for (const Connection &E : graph[type].connections) {
+				conns.push_back(E.from_node);
+				conns.push_back(E.from_port);
+				conns.push_back(E.to_node);
+				conns.push_back(E.to_port);
 			}
 
 			r_ret = conns;
@@ -1791,8 +1791,8 @@ void VisualShader::_update_shader() const {
 		ERR_FAIL_COND(err != OK);
 
 		if (emitters.has(i)) {
-			for (List<int>::Element *E = emitters[i].front(); E; E = E->next()) {
-				err = _write_node(Type(i), global_code, global_code_per_node, global_code_per_func, func_code, default_tex_params, input_connections, output_connections, E->get(), processed, false, classes);
+			for (int &E : emitters[i]) {
+				err = _write_node(Type(i), global_code, global_code_per_node, global_code_per_func, func_code, default_tex_params, input_connections, output_connections, E, processed, false, classes);
 				ERR_FAIL_COND(err != OK);
 			}
 		}
@@ -2586,8 +2586,8 @@ void VisualShaderNodeUniformRef::clear_uniforms() {
 }
 
 bool VisualShaderNodeUniformRef::has_uniform(const String &p_name) {
-	for (List<VisualShaderNodeUniformRef::Uniform>::Element *E = uniforms.front(); E; E = E->next()) {
-		if (E->get().name == p_name) {
+	for (VisualShaderNodeUniformRef::Uniform &E : uniforms) {
+		if (E.name == p_name) {
 			return true;
 		}
 	}

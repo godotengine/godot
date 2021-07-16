@@ -238,8 +238,7 @@ bool GeometryInstance3D::_get(const StringName &p_name, Variant &r_ret) const {
 void GeometryInstance3D::_get_property_list(List<PropertyInfo> *p_list) const {
 	List<PropertyInfo> pinfo;
 	RS::get_singleton()->instance_geometry_get_shader_parameter_list(get_instance(), &pinfo);
-	for (List<PropertyInfo>::Element *E = pinfo.front(); E; E = E->next()) {
-		PropertyInfo pi = E->get();
+	for (PropertyInfo &pi : pinfo) {
 		bool has_def_value = false;
 		Variant def_value = RS::get_singleton()->instance_geometry_get_shader_parameter_default_value(get_instance(), pi.name);
 		if (def_value.get_type() != Variant::NIL) {

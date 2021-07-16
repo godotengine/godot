@@ -920,15 +920,15 @@ EditorAudioBus::EditorAudioBus(EditorAudioBuses *p_buses, bool p_is_master) {
 	List<StringName> effects;
 	ClassDB::get_inheriters_from_class("AudioEffect", &effects);
 	effects.sort_custom<StringName::AlphCompare>();
-	for (List<StringName>::Element *E = effects.front(); E; E = E->next()) {
-		if (!ClassDB::can_instantiate(E->get())) {
+	for (StringName &E : effects) {
+		if (!ClassDB::can_instantiate(E)) {
 			continue;
 		}
 
-		Ref<Texture2D> icon = EditorNode::get_singleton()->get_class_icon(E->get());
-		String name = E->get().operator String().replace("AudioEffect", "");
+		Ref<Texture2D> icon = EditorNode::get_singleton()->get_class_icon(E);
+		String name = E.operator String().replace("AudioEffect", "");
 		effect_options->add_item(name);
-		effect_options->set_item_metadata(effect_options->get_item_count() - 1, E->get());
+		effect_options->set_item_metadata(effect_options->get_item_count() - 1, E);
 		effect_options->set_item_icon(effect_options->get_item_count() - 1, icon);
 	}
 
@@ -1331,8 +1331,8 @@ EditorAudioBuses::EditorAudioBuses() {
 	file_dialog = memnew(EditorFileDialog);
 	List<String> ext;
 	ResourceLoader::get_recognized_extensions_for_type("AudioBusLayout", &ext);
-	for (List<String>::Element *E = ext.front(); E; E = E->next()) {
-		file_dialog->add_filter("*." + E->get() + "; Audio Bus Layout");
+	for (String &E : ext) {
+		file_dialog->add_filter("*." + E + "; Audio Bus Layout");
 	}
 	add_child(file_dialog);
 	file_dialog->connect("file_selected", callable_mp(this, &EditorAudioBuses::_file_dialog_callback));

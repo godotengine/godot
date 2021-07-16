@@ -50,9 +50,7 @@ void ConnectionInfoDialog::popup_connections(String p_method, Vector<Node *> p_n
 		List<Connection> all_connections;
 		p_nodes[i]->get_signals_connected_to_this(&all_connections);
 
-		for (List<Connection>::Element *E = all_connections.front(); E; E = E->next()) {
-			Connection connection = E->get();
-
+		for (Connection &connection : all_connections) {
 			if (connection.callable.get_method() != p_method) {
 				continue;
 			}
@@ -116,8 +114,8 @@ Vector<String> ScriptTextEditor::get_functions() {
 	if (script->get_language()->validate(text, script->get_path(), &fnc)) {
 		//if valid rewrite functions to latest
 		functions.clear();
-		for (List<String>::Element *E = fnc.front(); E; E = E->next()) {
-			functions.push_back(E->get());
+		for (String &E : fnc) {
+			functions.push_back(E);
 		}
 	}
 
@@ -203,8 +201,7 @@ void ScriptTextEditor::_set_theme_for_script() {
 	List<String> strings;
 	script->get_language()->get_string_delimiters(&strings);
 	text_edit->clear_string_delimiters();
-	for (List<String>::Element *E = strings.front(); E; E = E->next()) {
-		String string = E->get();
+	for (String &string : strings) {
 		String beg = string.get_slice(" ", 0);
 		String end = string.get_slice_count(" ") > 1 ? string.get_slice(" ", 1) : String();
 		text_edit->add_string_delimiter(beg, end, end == "");
@@ -213,8 +210,7 @@ void ScriptTextEditor::_set_theme_for_script() {
 	List<String> comments;
 	script->get_language()->get_comment_delimiters(&comments);
 	text_edit->clear_comment_delimiters();
-	for (List<String>::Element *E = comments.front(); E; E = E->next()) {
-		String comment = E->get();
+	for (String &comment : comments) {
 		String beg = comment.get_slice(" ", 0);
 		String end = comment.get_slice_count(" ") > 1 ? comment.get_slice(" ", 1) : String();
 		text_edit->add_comment_delimiter(beg, end, end == "");
@@ -417,8 +413,8 @@ void ScriptTextEditor::_validate_script() {
 		}
 
 		functions.clear();
-		for (List<String>::Element *E = fnc.front(); E; E = E->next()) {
-			functions.push_back(E->get());
+		for (String &E : fnc) {
+			functions.push_back(E);
 		}
 		script_is_valid = true;
 	}
@@ -432,9 +428,7 @@ void ScriptTextEditor::_validate_script() {
 		Node *base = get_tree()->get_edited_scene_root();
 		if (base && missing_connections.size() > 0) {
 			warnings_panel->push_table(1);
-			for (List<Connection>::Element *E = missing_connections.front(); E; E = E->next()) {
-				Connection connection = E->get();
-
+			for (Connection &connection : missing_connections) {
 				String base_path = base->get_name();
 				String source_path = base == connection.signal.get_object() ? base_path : base_path + "/" + base->get_path_to(Object::cast_to<Node>(connection.signal.get_object()));
 				String target_path = base == connection.callable.get_object() ? base_path : base_path + "/" + base->get_path_to(Object::cast_to<Node>(connection.callable.get_object()));
@@ -456,9 +450,7 @@ void ScriptTextEditor::_validate_script() {
 
 	// Add script warnings.
 	warnings_panel->push_table(3);
-	for (List<ScriptLanguage::Warning>::Element *E = warnings.front(); E; E = E->next()) {
-		ScriptLanguage::Warning w = E->get();
-
+	for (ScriptLanguage::Warning &w : warnings) {
 		Dictionary ignore_meta;
 		ignore_meta["line"] = w.start_line;
 		ignore_meta["code"] = w.string_code.to_lower();
@@ -488,9 +480,7 @@ void ScriptTextEditor::_validate_script() {
 
 	errors_panel->clear();
 	errors_panel->push_table(2);
-	for (List<ScriptLanguage::ScriptError>::Element *E = errors.front(); E; E = E->next()) {
-		ScriptLanguage::ScriptError err = E->get();
-
+	for (ScriptLanguage::ScriptError &err : errors) {
 		errors_panel->push_cell();
 		errors_panel->push_meta(err.line - 1);
 		errors_panel->push_color(warnings_panel->get_theme_color(SNAME("error_color"), SNAME("Editor")));
@@ -511,8 +501,8 @@ void ScriptTextEditor::_validate_script() {
 		if (errors.is_empty()) {
 			te->set_line_background_color(i, Color(0, 0, 0, 0));
 		} else {
-			for (List<ScriptLanguage::ScriptError>::Element *E = errors.front(); E; E = E->next()) {
-				bool error_line = i == E->get().line - 1;
+			for (ScriptLanguage::ScriptError &E : errors) {
+				bool error_line = i == E.line - 1;
 				te->set_line_background_color(i, error_line ? marked_line_color : Color(0, 0, 0, 0));
 				if (error_line) {
 					break;
@@ -910,8 +900,7 @@ void ScriptTextEditor::_update_connected_methods() {
 		List<Connection> connections;
 		nodes[i]->get_signals_connected_to_this(&connections);
 
-		for (List<Connection>::Element *E = connections.front(); E; E = E->next()) {
-			Connection connection = E->get();
+		for (Connection &connection : connections) {
 			if (!(connection.flags & CONNECT_PERSIST)) {
 				continue;
 			}
@@ -1286,8 +1275,7 @@ void ScriptTextEditor::_edit_option_toggle_inline_comment() {
 	List<String> comment_delimiters;
 	script->get_language()->get_comment_delimiters(&comment_delimiters);
 
-	for (List<String>::Element *E = comment_delimiters.front(); E; E = E->next()) {
-		String script_delimiter = E->get();
+	for (String &script_delimiter : comment_delimiters) {
 		if (script_delimiter.find(" ") == -1) {
 			delimiter = script_delimiter;
 			break;

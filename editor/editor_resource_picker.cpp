@@ -221,8 +221,8 @@ void EditorResourcePicker::_edit_menu_cbk(int p_which) {
 			}
 
 			Set<String> valid_extensions;
-			for (List<String>::Element *E = extensions.front(); E; E = E->next()) {
-				valid_extensions.insert(E->get());
+			for (String &E : extensions) {
+				valid_extensions.insert(E);
 			}
 
 			if (!file_dialog) {
@@ -260,9 +260,8 @@ void EditorResourcePicker::_edit_menu_cbk(int p_which) {
 			List<PropertyInfo> property_list;
 			edited_resource->get_property_list(&property_list);
 			List<Pair<String, Variant>> propvalues;
-			for (List<PropertyInfo>::Element *E = property_list.front(); E; E = E->next()) {
+			for (PropertyInfo &pi : property_list) {
 				Pair<String, Variant> p;
-				PropertyInfo &pi = E->get();
 				if (pi.usage & PROPERTY_USAGE_STORAGE) {
 					p.first = pi.name;
 					p.second = edited_resource->get(pi.name);
@@ -276,8 +275,7 @@ void EditorResourcePicker::_edit_menu_cbk(int p_which) {
 			Ref<Resource> unique_resource = Ref<Resource>(Object::cast_to<Resource>(inst));
 			ERR_FAIL_COND(unique_resource.is_null());
 
-			for (List<Pair<String, Variant>>::Element *E = propvalues.front(); E; E = E->next()) {
-				Pair<String, Variant> &p = E->get();
+			for (Pair<String, Variant> &p : propvalues) {
 				unique_resource->set(p.first, p.second);
 			}
 
@@ -467,13 +465,13 @@ void EditorResourcePicker::_get_allowed_types(bool p_with_convert, Set<String> *
 		List<StringName> inheriters;
 
 		ClassDB::get_inheriters_from_class(base, &inheriters);
-		for (List<StringName>::Element *E = inheriters.front(); E; E = E->next()) {
-			p_vector->insert(E->get());
+		for (StringName &E : inheriters) {
+			p_vector->insert(E);
 		}
 
-		for (List<StringName>::Element *E = global_classes.front(); E; E = E->next()) {
-			if (EditorNode::get_editor_data().script_class_is_parent(E->get(), base)) {
-				p_vector->insert(E->get());
+		for (StringName &E : global_classes) {
+			if (EditorNode::get_editor_data().script_class_is_parent(E, base)) {
+				p_vector->insert(E);
 			}
 		}
 

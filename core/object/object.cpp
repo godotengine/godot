@@ -969,8 +969,8 @@ Vector<StringName> Object::_get_meta_list_bind() const {
 
 	List<Variant> keys;
 	metadata.get_key_list(&keys);
-	for (List<Variant>::Element *E = keys.front(); E; E = E->next()) {
-		_metaret.push_back(E->get());
+	for (Variant &E : keys) {
+		_metaret.push_back(E);
 	}
 
 	return _metaret;
@@ -979,8 +979,8 @@ Vector<StringName> Object::_get_meta_list_bind() const {
 void Object::get_meta_list(List<StringName> *p_list) const {
 	List<Variant> keys;
 	metadata.get_key_list(&keys);
-	for (List<Variant>::Element *E = keys.front(); E; E = E->next()) {
-		p_list->push_back(E->get());
+	for (Variant &E : keys) {
+		p_list->push_back(E);
 	}
 }
 
@@ -1184,8 +1184,8 @@ Array Object::_get_signal_list() const {
 	get_signal_list(&signal_list);
 
 	Array ret;
-	for (List<MethodInfo>::Element *E = signal_list.front(); E; E = E->next()) {
-		ret.push_back(Dictionary(E->get()));
+	for (MethodInfo &E : signal_list) {
+		ret.push_back(Dictionary(E));
 	}
 
 	return ret;
@@ -1197,8 +1197,7 @@ Array Object::_get_signal_connection_list(const String &p_signal) const {
 
 	Array ret;
 
-	for (List<Connection>::Element *E = conns.front(); E; E = E->next()) {
-		Connection &c = E->get();
+	for (Connection &c : conns) {
 		if (c.signal.get_name() == p_signal) {
 			ret.push_back(c);
 		}
@@ -1297,8 +1296,8 @@ int Object::get_persistent_signal_connection_count() const {
 }
 
 void Object::get_signals_connected_to_this(List<Connection> *p_connections) const {
-	for (const List<Connection>::Element *E = connections.front(); E; E = E->next()) {
-		p_connections->push_back(E->get());
+	for (const Connection &E : connections) {
+		p_connections->push_back(E);
 	}
 }
 
@@ -1500,9 +1499,9 @@ void Object::_clear_internal_resource_paths(const Variant &p_var) {
 			List<Variant> keys;
 			d.get_key_list(&keys);
 
-			for (List<Variant>::Element *E = keys.front(); E; E = E->next()) {
-				_clear_internal_resource_paths(E->get());
-				_clear_internal_resource_paths(d[E->get()]);
+			for (Variant &E : keys) {
+				_clear_internal_resource_paths(E);
+				_clear_internal_resource_paths(d[E]);
 			}
 		} break;
 		default: {
@@ -1531,8 +1530,8 @@ void Object::clear_internal_resource_paths() {
 
 	get_property_list(&pinfo);
 
-	for (List<PropertyInfo>::Element *E = pinfo.front(); E; E = E->next()) {
-		_clear_internal_resource_paths(get(E->get().name));
+	for (PropertyInfo &E : pinfo) {
+		_clear_internal_resource_paths(get(E.name));
 	}
 }
 
@@ -1666,12 +1665,12 @@ void Object::get_translatable_strings(List<String> *p_strings) const {
 	List<PropertyInfo> plist;
 	get_property_list(&plist);
 
-	for (List<PropertyInfo>::Element *E = plist.front(); E; E = E->next()) {
-		if (!(E->get().usage & PROPERTY_USAGE_INTERNATIONALIZED)) {
+	for (PropertyInfo &E : plist) {
+		if (!(E.usage & PROPERTY_USAGE_INTERNATIONALIZED)) {
 			continue;
 		}
 
-		String text = get(E->get().name);
+		String text = get(E.name);
 
 		if (text == "") {
 			continue;

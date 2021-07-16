@@ -555,12 +555,12 @@ bool MultiplayerAPI::_send_confirm_path(Node *p_node, NodePath p_path, PathSentC
 
 		ofs += encode_cstring(path.get_data(), &packet.write[ofs]);
 
-		for (List<int>::Element *E = peers_to_add.front(); E; E = E->next()) {
-			network_peer->set_target_peer(E->get()); // To all of you.
+		for (int &E : peers_to_add) {
+			network_peer->set_target_peer(E); // To all of you.
 			network_peer->set_transfer_mode(MultiplayerPeer::TRANSFER_MODE_RELIABLE);
 			network_peer->put_packet(packet.ptr(), packet.size());
 
-			psc->confirmed_peers.insert(E->get(), false); // Insert into confirmed, but as false since it was not confirmed.
+			psc->confirmed_peers.insert(E, false); // Insert into confirmed, but as false since it was not confirmed.
 		}
 	}
 
@@ -917,8 +917,8 @@ void MultiplayerAPI::_del_peer(int p_id) {
 	// Some refactoring is needed to make this faster and do paths GC.
 	List<NodePath> keys;
 	path_send_cache.get_key_list(&keys);
-	for (List<NodePath>::Element *E = keys.front(); E; E = E->next()) {
-		PathSentCache *psc = path_send_cache.getptr(E->get());
+	for (NodePath &E : keys) {
+		PathSentCache *psc = path_send_cache.getptr(E);
 		psc->confirmed_peers.erase(p_id);
 	}
 	emit_signal(SNAME("network_peer_disconnected"), p_id);

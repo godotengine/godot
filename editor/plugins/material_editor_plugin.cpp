@@ -265,15 +265,15 @@ Ref<Resource> StandardMaterial3DConversionPlugin::convert(const Ref<Resource> &p
 	List<PropertyInfo> params;
 	RS::get_singleton()->shader_get_param_list(mat->get_shader_rid(), &params);
 
-	for (List<PropertyInfo>::Element *E = params.front(); E; E = E->next()) {
+	for (PropertyInfo &E : params) {
 		// Texture parameter has to be treated specially since StandardMaterial3D saved it
 		// as RID but ShaderMaterial needs Texture itself
-		Ref<Texture2D> texture = mat->get_texture_by_name(E->get().name);
+		Ref<Texture2D> texture = mat->get_texture_by_name(E.name);
 		if (texture.is_valid()) {
-			smat->set_shader_param(E->get().name, texture);
+			smat->set_shader_param(E.name, texture);
 		} else {
-			Variant value = RS::get_singleton()->material_get_param(mat->get_rid(), E->get().name);
-			smat->set_shader_param(E->get().name, value);
+			Variant value = RS::get_singleton()->material_get_param(mat->get_rid(), E.name);
+			smat->set_shader_param(E.name, value);
 		}
 	}
 
@@ -309,9 +309,9 @@ Ref<Resource> ParticlesMaterialConversionPlugin::convert(const Ref<Resource> &p_
 	List<PropertyInfo> params;
 	RS::get_singleton()->shader_get_param_list(mat->get_shader_rid(), &params);
 
-	for (List<PropertyInfo>::Element *E = params.front(); E; E = E->next()) {
-		Variant value = RS::get_singleton()->material_get_param(mat->get_rid(), E->get().name);
-		smat->set_shader_param(E->get().name, value);
+	for (PropertyInfo &E : params) {
+		Variant value = RS::get_singleton()->material_get_param(mat->get_rid(), E.name);
+		smat->set_shader_param(E.name, value);
 	}
 
 	smat->set_render_priority(mat->get_render_priority());
@@ -346,9 +346,9 @@ Ref<Resource> CanvasItemMaterialConversionPlugin::convert(const Ref<Resource> &p
 	List<PropertyInfo> params;
 	RS::get_singleton()->shader_get_param_list(mat->get_shader_rid(), &params);
 
-	for (List<PropertyInfo>::Element *E = params.front(); E; E = E->next()) {
-		Variant value = RS::get_singleton()->material_get_param(mat->get_rid(), E->get().name);
-		smat->set_shader_param(E->get().name, value);
+	for (PropertyInfo &E : params) {
+		Variant value = RS::get_singleton()->material_get_param(mat->get_rid(), E.name);
+		smat->set_shader_param(E.name, value);
 	}
 
 	smat->set_render_priority(mat->get_render_priority());
@@ -383,9 +383,9 @@ Ref<Resource> ProceduralSkyMaterialConversionPlugin::convert(const Ref<Resource>
 	List<PropertyInfo> params;
 	RS::get_singleton()->shader_get_param_list(mat->get_shader_rid(), &params);
 
-	for (List<PropertyInfo>::Element *E = params.front(); E; E = E->next()) {
-		Variant value = RS::get_singleton()->material_get_param(mat->get_rid(), E->get().name);
-		smat->set_shader_param(E->get().name, value);
+	for (PropertyInfo &E : params) {
+		Variant value = RS::get_singleton()->material_get_param(mat->get_rid(), E.name);
+		smat->set_shader_param(E.name, value);
 	}
 
 	smat->set_render_priority(mat->get_render_priority());
@@ -420,9 +420,9 @@ Ref<Resource> PanoramaSkyMaterialConversionPlugin::convert(const Ref<Resource> &
 	List<PropertyInfo> params;
 	RS::get_singleton()->shader_get_param_list(mat->get_shader_rid(), &params);
 
-	for (List<PropertyInfo>::Element *E = params.front(); E; E = E->next()) {
-		Variant value = RS::get_singleton()->material_get_param(mat->get_rid(), E->get().name);
-		smat->set_shader_param(E->get().name, value);
+	for (PropertyInfo &E : params) {
+		Variant value = RS::get_singleton()->material_get_param(mat->get_rid(), E.name);
+		smat->set_shader_param(E.name, value);
 	}
 
 	smat->set_render_priority(mat->get_render_priority());
@@ -457,9 +457,9 @@ Ref<Resource> PhysicalSkyMaterialConversionPlugin::convert(const Ref<Resource> &
 	List<PropertyInfo> params;
 	RS::get_singleton()->shader_get_param_list(mat->get_shader_rid(), &params);
 
-	for (List<PropertyInfo>::Element *E = params.front(); E; E = E->next()) {
-		Variant value = RS::get_singleton()->material_get_param(mat->get_rid(), E->get().name);
-		smat->set_shader_param(E->get().name, value);
+	for (PropertyInfo &E : params) {
+		Variant value = RS::get_singleton()->material_get_param(mat->get_rid(), E.name);
+		smat->set_shader_param(E.name, value);
 	}
 
 	smat->set_render_priority(mat->get_render_priority());

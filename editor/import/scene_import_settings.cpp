@@ -71,9 +71,9 @@ class SceneImportSettingsData : public Object {
 		return false;
 	}
 	void _get_property_list(List<PropertyInfo> *p_list) const {
-		for (const List<ResourceImporter::ImportOption>::Element *E = options.front(); E; E = E->next()) {
-			if (ResourceImporterScene::get_singleton()->get_internal_option_visibility(category, E->get().option.name, current)) {
-				p_list->push_back(E->get().option);
+		for (const ResourceImporter::ImportOption &E : options) {
+			if (ResourceImporterScene::get_singleton()->get_internal_option_visibility(category, E.option.name, current)) {
+				p_list->push_back(E.option);
 			}
 		}
 	}
@@ -305,8 +305,8 @@ void SceneImportSettings::_fill_scene(Node *p_node, TreeItem *p_parent_item) {
 	if (anim_node) {
 		List<StringName> animations;
 		anim_node->get_animation_list(&animations);
-		for (List<StringName>::Element *E = animations.front(); E; E = E->next()) {
-			_fill_animation(scene_tree, anim_node->get_animation(E->get()), E->get(), item);
+		for (StringName &E : animations) {
+			_fill_animation(scene_tree, anim_node->get_animation(E), E, item);
 		}
 	}
 
@@ -394,8 +394,8 @@ void SceneImportSettings::_load_default_subresource_settings(Map<StringName, Var
 			d = d[p_import_id];
 			List<ResourceImporterScene::ImportOption> options;
 			ResourceImporterScene::get_singleton()->get_internal_import_options(p_category, &options);
-			for (List<ResourceImporterScene::ImportOption>::Element *E = options.front(); E; E = E->next()) {
-				String key = E->get().option.name;
+			for (ResourceImporterScene::ImportOption &E : options) {
+				String key = E.option.name;
 				if (d.has(key)) {
 					settings[key] = d[key];
 				}
@@ -440,12 +440,12 @@ void SceneImportSettings::open_settings(const String &p_path) {
 		if (err == OK) {
 			List<String> keys;
 			config->get_section_keys("params", &keys);
-			for (List<String>::Element *E = keys.front(); E; E = E->next()) {
-				Variant value = config->get_value("params", E->get());
-				if (E->get() == "_subresources") {
+			for (String &E : keys) {
+				Variant value = config->get_value("params", E);
+				if (E == "_subresources") {
 					base_subresource_settings = value;
 				} else {
-					defaults[E->get()] = value;
+					defaults[E] = value;
 				}
 			}
 		}
@@ -605,13 +605,13 @@ void SceneImportSettings::_select(Tree *p_from, String p_type, String p_id) {
 	scene_import_settings_data->defaults.clear();
 	scene_import_settings_data->current.clear();
 
-	for (List<ResourceImporter::ImportOption>::Element *E = options.front(); E; E = E->next()) {
-		scene_import_settings_data->defaults[E->get().option.name] = E->get().default_value;
+	for (ResourceImporter::ImportOption &E : options) {
+		scene_import_settings_data->defaults[E.option.name] = E.default_value;
 		//needed for visibility toggling (fails if something is missing)
-		if (scene_import_settings_data->settings->has(E->get().option.name)) {
-			scene_import_settings_data->current[E->get().option.name] = (*scene_import_settings_data->settings)[E->get().option.name];
+		if (scene_import_settings_data->settings->has(E.option.name)) {
+			scene_import_settings_data->current[E.option.name] = (*scene_import_settings_data->settings)[E.option.name];
 		} else {
-			scene_import_settings_data->current[E->get().option.name] = E->get().default_value;
+			scene_import_settings_data->current[E.option.name] = E.default_value;
 		}
 	}
 	scene_import_settings_data->options = options;

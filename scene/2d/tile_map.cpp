@@ -1596,8 +1596,8 @@ void TileMap::set_light_mask(int p_light_mask) {
 	// Occlusion: set light mask.
 	CanvasItem::set_light_mask(p_light_mask);
 	for (Map<Vector2i, TileMapQuadrant>::Element *E = quadrant_map.front(); E; E = E->next()) {
-		for (List<RID>::Element *F = E->get().canvas_items.front(); F; F = F->next()) {
-			RenderingServer::get_singleton()->canvas_item_set_light_mask(F->get(), get_light_mask());
+		for (RID F : E->get().canvas_items) {
+			RenderingServer::get_singleton()->canvas_item_set_light_mask(F, get_light_mask());
 		}
 	}
 }
@@ -1609,8 +1609,8 @@ void TileMap::set_material(const Ref<Material> &p_material) {
 	// Update material for the whole tilemap.
 	for (Map<Vector2i, TileMapQuadrant>::Element *E = quadrant_map.front(); E; E = E->next()) {
 		TileMapQuadrant &q = E->get();
-		for (List<RID>::Element *F = q.canvas_items.front(); F; F = F->next()) {
-			RS::get_singleton()->canvas_item_set_use_parent_material(F->get(), get_use_parent_material() || get_material().is_valid());
+		for (RID F : q.canvas_items) {
+			RS::get_singleton()->canvas_item_set_use_parent_material(F, get_use_parent_material() || get_material().is_valid());
 		}
 	}
 }
@@ -1622,8 +1622,8 @@ void TileMap::set_use_parent_material(bool p_use_parent_material) {
 	// Update use_parent_material for the whole tilemap.
 	for (Map<Vector2i, TileMapQuadrant>::Element *E = quadrant_map.front(); E; E = E->next()) {
 		TileMapQuadrant &q = E->get();
-		for (List<RID>::Element *F = q.canvas_items.front(); F; F = F->next()) {
-			RS::get_singleton()->canvas_item_set_use_parent_material(F->get(), get_use_parent_material() || get_material().is_valid());
+		for (RID F : q.canvas_items) {
+			RS::get_singleton()->canvas_item_set_use_parent_material(F, get_use_parent_material() || get_material().is_valid());
 		}
 	}
 }
@@ -1633,8 +1633,8 @@ void TileMap::set_texture_filter(TextureFilter p_texture_filter) {
 	CanvasItem::set_texture_filter(p_texture_filter);
 	for (Map<Vector2i, TileMapQuadrant>::Element *F = quadrant_map.front(); F; F = F->next()) {
 		TileMapQuadrant &q = F->get();
-		for (List<RID>::Element *E = q.canvas_items.front(); E; E = E->next()) {
-			RenderingServer::get_singleton()->canvas_item_set_default_texture_filter(E->get(), RS::CanvasItemTextureFilter(p_texture_filter));
+		for (RID E : q.canvas_items) {
+			RenderingServer::get_singleton()->canvas_item_set_default_texture_filter(E, RS::CanvasItemTextureFilter(p_texture_filter));
 			_make_quadrant_dirty(F);
 		}
 	}
@@ -1645,8 +1645,8 @@ void TileMap::set_texture_repeat(CanvasItem::TextureRepeat p_texture_repeat) {
 	CanvasItem::set_texture_repeat(p_texture_repeat);
 	for (Map<Vector2i, TileMapQuadrant>::Element *F = quadrant_map.front(); F; F = F->next()) {
 		TileMapQuadrant &q = F->get();
-		for (List<RID>::Element *E = q.canvas_items.front(); E; E = E->next()) {
-			RenderingServer::get_singleton()->canvas_item_set_default_texture_repeat(E->get(), RS::CanvasItemTextureRepeat(p_texture_repeat));
+		for (RID E : q.canvas_items) {
+			RenderingServer::get_singleton()->canvas_item_set_default_texture_repeat(E, RS::CanvasItemTextureRepeat(p_texture_repeat));
 			_make_quadrant_dirty(F);
 		}
 	}

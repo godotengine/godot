@@ -329,9 +329,7 @@ Ref<Mesh> NavigationMesh::get_debug_mesh() {
 		Vector3 *tw = tmeshfaces.ptrw();
 		int tidx = 0;
 
-		for (List<Face3>::Element *E = faces.front(); E; E = E->next()) {
-			const Face3 &f = E->get();
-
+		for (Face3 &f : faces) {
 			for (int j = 0; j < 3; j++) {
 				tw[tidx++] = f.vertex[j];
 				_EdgeKey ek;
@@ -366,8 +364,8 @@ Ref<Mesh> NavigationMesh::get_debug_mesh() {
 	{
 		Vector3 *w = varr.ptrw();
 		int idx = 0;
-		for (List<Vector3>::Element *E = lines.front(); E; E = E->next()) {
-			w[idx++] = E->get();
+		for (Vector3 &E : lines) {
+			w[idx++] = E;
 		}
 	}
 

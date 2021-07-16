@@ -529,8 +529,8 @@ void CodeHighlighter::set_color_regions(const Dictionary &p_color_regions) {
 	List<Variant> keys;
 	p_color_regions.get_key_list(&keys);
 
-	for (List<Variant>::Element *E = keys.front(); E; E = E->next()) {
-		String key = E->get();
+	for (Variant &E : keys) {
+		String key = E;
 
 		String start_key = key.get_slice(" ", 0);
 		String end_key = key.get_slice_count(" ") > 1 ? key.get_slice(" ", 1) : String();

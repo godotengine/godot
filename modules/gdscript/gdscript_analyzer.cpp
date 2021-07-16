@@ -115,8 +115,8 @@ static GDScriptParser::DataType make_native_enum_type(const StringName &p_native
 	StringName real_native_name = GDScriptParser::get_real_class_name(p_native_class);
 	ClassDB::get_enum_constants(real_native_name, p_enum_name, &enum_values);
 
-	for (const List<StringName>::Element *E = enum_values.front(); E != nullptr; E = E->next()) {
-		type.enum_values[E->get()] = ClassDB::get_integer_constant(real_native_name, E->get());
+	for (const StringName &E : enum_values) {
+		type.enum_values[E] = ClassDB::get_integer_constant(real_native_name, E);
 	}
 
 	return type;
@@ -573,8 +573,8 @@ void GDScriptAnalyzer::resolve_class_interface(GDScriptParser::ClassNode *p_clas
 				member.variable->set_datatype(datatype);
 
 				// Apply annotations.
-				for (List<GDScriptParser::AnnotationNode *>::Element *E = member.variable->annotations.front(); E; E = E->next()) {
-					E->get()->apply(parser, member.variable);
+				for (GDScriptParser::AnnotationNode *&E : member.variable->annotations) {
+					E->apply(parser, member.variable);
 				}
 			} break;
 			case GDScriptParser::ClassNode::Member::CONSTANT: {
@@ -622,8 +622,8 @@ void GDScriptAnalyzer::resolve_class_interface(GDScriptParser::ClassNode *p_clas
 				member.constant->set_datatype(datatype);
 
 				// Apply annotations.
-				for (List<GDScriptParser::AnnotationNode *>::Element *E = member.constant->annotations.front(); E; E = E->next()) {
-					E->get()->apply(parser, member.constant);
+				for (GDScriptParser::AnnotationNode *&E : member.constant->annotations) {
+					E->apply(parser, member.constant);
 				}
 			} break;
 			case GDScriptParser::ClassNode::Member::SIGNAL: {
@@ -641,8 +641,8 @@ void GDScriptAnalyzer::resolve_class_interface(GDScriptParser::ClassNode *p_clas
 				member.signal->set_datatype(signal_type);
 
 				// Apply annotations.
-				for (List<GDScriptParser::AnnotationNode *>::Element *E = member.signal->annotations.front(); E; E = E->next()) {
-					E->get()->apply(parser, member.signal);
+				for (GDScriptParser::AnnotationNode *&E : member.signal->annotations) {
+					E->apply(parser, member.signal);
 				}
 			} break;
 			case GDScriptParser::ClassNode::Member::ENUM: {
@@ -688,8 +688,8 @@ void GDScriptAnalyzer::resolve_class_interface(GDScriptParser::ClassNode *p_clas
 				member.m_enum->set_datatype(enum_type);
 
 				// Apply annotations.
-				for (List<GDScriptParser::AnnotationNode *>::Element *E = member.m_enum->annotations.front(); E; E = E->next()) {
-					E->get()->apply(parser, member.m_enum);
+				for (GDScriptParser::AnnotationNode *&E : member.m_enum->annotations) {
+					E->apply(parser, member.m_enum);
 				}
 			} break;
 			case GDScriptParser::ClassNode::Member::FUNCTION:
@@ -761,8 +761,8 @@ void GDScriptAnalyzer::resolve_class_body(GDScriptParser::ClassNode *p_class) {
 		resolve_function_body(member.function);
 
 		// Apply annotations.
-		for (List<GDScriptParser::AnnotationNode *>::Element *E = member.function->annotations.front(); E; E = E->next()) {
-			E->get()->apply(parser, member.function);
+		for (GDScriptParser::AnnotationNode *&E : member.function->annotations) {
+			E->apply(parser, member.function);
 		}
 	}
 
@@ -1927,9 +1927,7 @@ void GDScriptAnalyzer::reduce_call(GDScriptParser::CallNode *p_call, bool is_awa
 				Variant::get_constructor_list(builtin_type, &constructors);
 				bool match = false;
 
-				for (const List<MethodInfo>::Element *E = constructors.front(); E != nullptr; E = E->next()) {
-					const MethodInfo &info = E->get();
-
+				for (const MethodInfo &info : constructors) {
 					if (p_call->arguments.size() < info.arguments.size() - info.default_arguments.size()) {
 						continue;
 					}
@@ -2326,8 +2324,7 @@ void GDScriptAnalyzer::reduce_identifier_from_base(GDScriptParser::IdentifierNod
 					Variant::construct(base.builtin_type, dummy, nullptr, 0, temp);
 					List<PropertyInfo> properties;
 					dummy.get_property_list(&properties);
-					for (const List<PropertyInfo>::Element *E = properties.front(); E != nullptr; E = E->next()) {
-						const PropertyInfo &prop = E->get();
+					for (const PropertyInfo &prop : properties) {
 						if (prop.name == name) {
 							p_identifier->set_datatype(type_from_property(prop));
 							return;
@@ -3125,8 +3122,8 @@ GDScriptParser::DataType GDScriptAnalyzer::type_from_variant(const Variant &p_va
 					GDScriptParser::ClassNode *found = ref->get_parser()->head;
 
 					// It should be okay to assume this exists, since we have a complete script already.
-					for (const List<StringName>::Element *E = class_chain.front(); E; E = E->next()) {
-						found = found->get_member(E->get()).m_class;
+					for (const StringName &E : class_chain) {
+						found = found->get_member(E).m_class;
 					}
 
 					result.class_type = found;
@@ -3222,9 +3219,9 @@ bool GDScriptAnalyzer::get_function_signature(GDScriptParser::Node *p_source, GD
 		List<MethodInfo> methods;
 		dummy.get_method_list(&methods);
 
-		for (const List<MethodInfo>::Element *E = methods.front(); E != nullptr; E = E->next()) {
-			if (E->get().name == p_function) {
-				return function_signature_from_info(E->get(), r_return_type, r_par_types, r_default_arg_count, r_static, r_vararg);
+		for (const MethodInfo &E : methods) {
+			if (E.name == p_function) {
+				return function_signature_from_info(E, r_return_type, r_par_types, r_default_arg_count, r_static, r_vararg);
 			}
 		}
 
@@ -3321,8 +3318,8 @@ bool GDScriptAnalyzer::function_signature_from_info(const MethodInfo &p_info, GD
 	r_default_arg_count = p_info.default_arguments.size();
 	r_vararg = (p_info.flags & METHOD_FLAG_VARARG) != 0;
 
-	for (const List<PropertyInfo>::Element *E = p_info.arguments.front(); E != nullptr; E = E->next()) {
-		r_par_types.push_back(type_from_property(E->get()));
+	for (const PropertyInfo &E : p_info.arguments) {
+		r_par_types.push_back(type_from_property(E));
 	}
 	return true;
 }
@@ -3330,8 +3327,8 @@ bool GDScriptAnalyzer::function_signature_from_info(const MethodInfo &p_info, GD
 bool GDScriptAnalyzer::validate_call_arg(const MethodInfo &p_method, const GDScriptParser::CallNode *p_call) {
 	List<GDScriptParser::DataType> arg_types;
 
-	for (const List<PropertyInfo>::Element *E = p_method.arguments.front(); E != nullptr; E = E->next()) {
-		arg_types.push_back(type_from_property(E->get()));
+	for (const PropertyInfo &E : p_method.arguments) {
+		arg_types.push_back(type_from_property(E));
 	}
 
 	return validate_call_arg(arg_types, p_method.default_arguments.size(), (p_method.flags & METHOD_FLAG_VARARG) != 0, p_call);
@@ -3658,11 +3655,11 @@ Error GDScriptAnalyzer::resolve_program() {
 
 	List<String> parser_keys;
 	depended_parsers.get_key_list(&parser_keys);
-	for (const List<String>::Element *E = parser_keys.front(); E != nullptr; E = E->next()) {
-		if (depended_parsers[E->get()].is_null()) {
+	for (const String &E : parser_keys) {
+		if (depended_parsers[E].is_null()) {
 			return ERR_PARSE_ERROR;
 		}
-		depended_parsers[E->get()]->raise_status(GDScriptParserRef::FULLY_SOLVED);
+		depended_parsers[E]->raise_status(GDScriptParserRef::FULLY_SOLVED);
 	}
 	return parser->errors.is_empty() ? OK : ERR_PARSE_ERROR;
 }

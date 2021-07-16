@@ -397,8 +397,8 @@ void PopupMenu::_gui_input(const Ref<InputEvent> &p_event) {
 	Ref<InputEventMouseMotion> m = p_event;
 
 	if (m.is_valid()) {
-		for (List<Rect2>::Element *E = autohide_areas.front(); E; E = E->next()) {
-			if (!Rect2(Point2(), get_size()).has_point(m->get_position()) && E->get().has_point(m->get_position())) {
+		for (Rect2 &E : autohide_areas) {
+			if (!Rect2(Point2(), get_size()).has_point(m->get_position()) && E.has_point(m->get_position())) {
 				_close_pressed();
 				return;
 			}
@@ -751,8 +751,8 @@ void PopupMenu::_notification(int p_what) {
 				Point2 mouse_pos = DisplayServer::get_singleton()->mouse_get_position();
 				mouse_pos -= get_position();
 
-				for (List<Rect2>::Element *E = autohide_areas.front(); E; E = E->next()) {
-					if (!Rect2(Point2(), get_size()).has_point(mouse_pos) && E->get().has_point(mouse_pos)) {
+				for (Rect2 &E : autohide_areas) {
+					if (!Rect2(Point2(), get_size()).has_point(mouse_pos) && E.has_point(mouse_pos)) {
 						_close_pressed();
 						return;
 					}

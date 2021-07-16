@@ -72,22 +72,22 @@ void AnimationNodeBlendSpace1DEditor::_blend_space_gui_input(const Ref<InputEven
 				List<StringName> names;
 				ap->get_animation_list(&names);
 
-				for (List<StringName>::Element *E = names.front(); E; E = E->next()) {
-					animations_menu->add_icon_item(get_theme_icon(SNAME("Animation"), SNAME("EditorIcons")), E->get());
-					animations_to_add.push_back(E->get());
+				for (StringName &E : names) {
+					animations_menu->add_icon_item(get_theme_icon(SNAME("Animation"), SNAME("EditorIcons")), E);
+					animations_to_add.push_back(E);
 				}
 			}
 		}
 
-		for (List<StringName>::Element *E = classes.front(); E; E = E->next()) {
-			String name = String(E->get()).replace_first("AnimationNode", "");
+		for (StringName &E : classes) {
+			String name = String(E).replace_first("AnimationNode", "");
 			if (name == "Animation") {
 				continue;
 			}
 
 			int idx = menu->get_item_count();
 			menu->add_item(vformat("Add %s", name), idx);
-			menu->set_item_metadata(idx, E->get());
+			menu->set_item_metadata(idx, E);
 		}
 
 		Ref<AnimationNode> clipb = EditorSettings::get_singleton()->get_resource_clipboard();
@@ -373,8 +373,8 @@ void AnimationNodeBlendSpace1DEditor::_add_menu_type(int p_index) {
 		open_file->clear_filters();
 		List<String> filters;
 		ResourceLoader::get_recognized_extensions_for_type("AnimationRootNode", &filters);
-		for (List<String>::Element *E = filters.front(); E; E = E->next()) {
-			open_file->add_filter("*." + E->get());
+		for (String &E : filters) {
+			open_file->add_filter("*." + E);
 		}
 		open_file->popup_file_dialog();
 		return;

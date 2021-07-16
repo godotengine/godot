@@ -359,9 +359,9 @@ uint64_t ClassDB::get_api_hash(APIType p_api) {
 	//must be alphabetically sorted for hash to compute
 	names.sort_custom<StringName::AlphCompare>();
 
-	for (List<StringName>::Element *E = names.front(); E; E = E->next()) {
-		ClassInfo *t = classes.getptr(E->get());
-		ERR_FAIL_COND_V_MSG(!t, 0, "Cannot get class '" + String(E->get()) + "'.");
+	for (StringName &E : names) {
+		ClassInfo *t = classes.getptr(E);
+		ERR_FAIL_COND_V_MSG(!t, 0, "Cannot get class '" + String(E) + "'.");
 		if (t->api != p_api || !t->exposed) {
 			continue;
 		}
@@ -388,8 +388,8 @@ uint64_t ClassDB::get_api_hash(APIType p_api) {
 
 			snames.sort_custom<StringName::AlphCompare>();
 
-			for (List<StringName>::Element *F = snames.front(); F; F = F->next()) {
-				MethodBind *mb = t->method_map[F->get()];
+			for (StringName &F : snames) {
+				MethodBind *mb = t->method_map[F];
 				hash = hash_djb2_one_64(mb->get_name().hash(), hash);
 				hash = hash_djb2_one_64(mb->get_argument_count(), hash);
 				hash = hash_djb2_one_64(mb->get_argument_type(-1), hash); //return
@@ -426,9 +426,9 @@ uint64_t ClassDB::get_api_hash(APIType p_api) {
 
 			snames.sort_custom<StringName::AlphCompare>();
 
-			for (List<StringName>::Element *F = snames.front(); F; F = F->next()) {
-				hash = hash_djb2_one_64(F->get().hash(), hash);
-				hash = hash_djb2_one_64(t->constant_map[F->get()], hash);
+			for (StringName &F : snames) {
+				hash = hash_djb2_one_64(F.hash(), hash);
+				hash = hash_djb2_one_64(t->constant_map[F], hash);
 			}
 		}
 
@@ -444,9 +444,9 @@ uint64_t ClassDB::get_api_hash(APIType p_api) {
 
 			snames.sort_custom<StringName::AlphCompare>();
 
-			for (List<StringName>::Element *F = snames.front(); F; F = F->next()) {
-				MethodInfo &mi = t->signal_map[F->get()];
-				hash = hash_djb2_one_64(F->get().hash(), hash);
+			for (StringName &F : snames) {
+				MethodInfo &mi = t->signal_map[F];
+				hash = hash_djb2_one_64(F.hash(), hash);
 				for (int i = 0; i < mi.arguments.size(); i++) {
 					hash = hash_djb2_one_64(mi.arguments[i].type, hash);
 				}
@@ -465,23 +465,23 @@ uint64_t ClassDB::get_api_hash(APIType p_api) {
 
 			snames.sort_custom<StringName::AlphCompare>();
 
-			for (List<StringName>::Element *F = snames.front(); F; F = F->next()) {
-				PropertySetGet *psg = t->property_setget.getptr(F->get());
+			for (StringName &F : snames) {
+				PropertySetGet *psg = t->property_setget.getptr(F);
 				ERR_FAIL_COND_V(!psg, 0);
 
-				hash = hash_djb2_one_64(F->get().hash(), hash);
+				hash = hash_djb2_one_64(F.hash(), hash);
 				hash = hash_djb2_one_64(psg->setter.hash(), hash);
 				hash = hash_djb2_one_64(psg->getter.hash(), hash);
 			}
 		}
 
 		//property list
-		for (List<PropertyInfo>::Element *F = t->property_list.front(); F; F = F->next()) {
-			hash = hash_djb2_one_64(F->get().name.hash(), hash);
-			hash = hash_djb2_one_64(F->get().type, hash);
-			hash = hash_djb2_one_64(F->get().hint, hash);
-			hash = hash_djb2_one_64(F->get().hint_string.hash(), hash);
-			hash = hash_djb2_one_64(F->get().usage, hash);
+		for (PropertyInfo &F : t->property_list) {
+			hash = hash_djb2_one_64(F.name.hash(), hash);
+			hash = hash_djb2_one_64(F.type, hash);
+			hash = hash_djb2_one_64(F.hint, hash);
+			hash = hash_djb2_one_64(F.hint_string.hash(), hash);
+			hash = hash_djb2_one_64(F.usage, hash);
 		}
 	}
 
@@ -619,16 +619,16 @@ void ClassDB::get_method_list(const StringName &p_class, List<MethodInfo> *p_met
 
 #ifdef DEBUG_METHODS_ENABLED
 
-		for (List<MethodInfo>::Element *E = type->virtual_methods.front(); E; E = E->next()) {
-			p_methods->push_back(E->get());
+		for (MethodInfo &E : type->virtual_methods) {
+			p_methods->push_back(E);
 		}
 
-		for (List<StringName>::Element *E = type->method_order.front(); E; E = E->next()) {
-			if (p_exclude_from_properties && type->methods_in_properties.has(E->get())) {
+		for (StringName &E : type->method_order) {
+			if (p_exclude_from_properties && type->methods_in_properties.has(E)) {
 				continue;
 			}
 
-			MethodBind *method = type->method_map.get(E->get());
+			MethodBind *method = type->method_map.get(E);
 			MethodInfo minfo = info_from_bind(method);
 
 			p_methods->push_back(minfo);
@@ -763,8 +763,8 @@ void ClassDB::get_integer_constant_list(const StringName &p_class, List<String> 
 
 	while (type) {
 #ifdef DEBUG_METHODS_ENABLED
-		for (List<StringName>::Element *E = type->constant_order.front(); E; E = E->next()) {
-			p_constants->push_back(E->get());
+		for (StringName &E : type->constant_order) {
+			p_constants->push_back(E);
 		}
 #else
 		const StringName *K = nullptr;
@@ -1073,13 +1073,12 @@ void ClassDB::get_property_list(const StringName &p_class, List<PropertyInfo> *p
 	ClassInfo *type = classes.getptr(p_class);
 	ClassInfo *check = type;
 	while (check) {
-		for (List<PropertyInfo>::Element *E = check->property_list.front(); E; E = E->next()) {
+		for (PropertyInfo pi : check->property_list) {
 			if (p_validator) {
-				PropertyInfo pi = E->get();
 				p_validator->_validate_property(pi);
 				p_list->push_back(pi);
 			} else {
-				p_list->push_back(E->get());
+				p_list->push_back(pi);
 			}
 		}
 
@@ -1429,8 +1428,8 @@ void ClassDB::get_virtual_methods(const StringName &p_class, List<MethodInfo> *p
 	ClassInfo *type = classes.getptr(p_class);
 	ClassInfo *check = type;
 	while (check) {
-		for (List<MethodInfo>::Element *E = check->virtual_methods.front(); E; E = E->next()) {
-			p_methods->push_back(E->get());
+		for (MethodInfo &E : check->virtual_methods) {
+			p_methods->push_back(E);
 		}
 
 		if (p_no_inheritance) {
@@ -1530,11 +1529,11 @@ Variant ClassDB::class_get_default_property_value(const StringName &p_class, con
 		if (c) {
 			List<PropertyInfo> plist;
 			c->get_property_list(&plist);
-			for (List<PropertyInfo>::Element *E = plist.front(); E; E = E->next()) {
-				if (E->get().usage & (PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_EDITOR)) {
-					if (!default_values[p_class].has(E->get().name)) {
-						Variant v = c->get(E->get().name);
-						default_values[p_class][E->get().name] = v;
+			for (PropertyInfo &E : plist) {
+				if (E.usage & (PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_EDITOR)) {
+					if (!default_values[p_class].has(E.name)) {
+						Variant v = c->get(E.name);
+						default_values[p_class][E.name] = v;
 					}
 				}
 			}

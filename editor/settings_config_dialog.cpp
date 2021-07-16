@@ -324,15 +324,15 @@ void EditorSettingsDialog::_update_shortcuts() {
 	List<String> slist;
 	EditorSettings::get_singleton()->get_shortcut_list(&slist);
 
-	for (List<String>::Element *E = slist.front(); E; E = E->next()) {
-		Ref<Shortcut> sc = EditorSettings::get_singleton()->get_shortcut(E->get());
+	for (String &E : slist) {
+		Ref<Shortcut> sc = EditorSettings::get_singleton()->get_shortcut(E);
 		if (!sc->has_meta("original")) {
 			continue;
 		}
 
 		Ref<InputEvent> original = sc->get_meta("original");
 
-		String section_name = E->get().get_slice("/", 0);
+		String section_name = E.get_slice("/", 0);
 
 		TreeItem *section;
 
@@ -372,8 +372,8 @@ void EditorSettingsDialog::_update_shortcuts() {
 
 			item->add_button(1, shortcuts->get_theme_icon(SNAME("Edit"), SNAME("EditorIcons")), 0);
 			item->add_button(1, shortcuts->get_theme_icon(SNAME("Close"), SNAME("EditorIcons")), 1);
-			item->set_tooltip(0, E->get());
-			item->set_metadata(0, E->get());
+			item->set_tooltip(0, E);
+			item->set_metadata(0, E);
 		}
 	}
 
@@ -403,10 +403,9 @@ void EditorSettingsDialog::_shortcut_button_pressed(Object *p_item, int p_column
 				List<Ref<InputEvent>> defaults = InputMap::get_singleton()->get_builtins()[current_action];
 
 				// Convert the list to an array, and only keep key events as this is for the editor.
-				for (List<Ref<InputEvent>>::Element *E = defaults.front(); E; E = E->next()) {
-					Ref<InputEventKey> k = E->get();
+				for (Ref<InputEvent> k : defaults) {
 					if (k.is_valid()) {
-						events.append(E->get());
+						events.append(k);
 					}
 				}
 

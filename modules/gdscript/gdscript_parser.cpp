@@ -136,8 +136,8 @@ void GDScriptParser::cleanup() {
 void GDScriptParser::get_annotation_list(List<MethodInfo> *r_annotations) const {
 	List<StringName> keys;
 	valid_annotations.get_key_list(&keys);
-	for (const List<StringName>::Element *E = keys.front(); E != nullptr; E = E->next()) {
-		r_annotations->push_back(valid_annotations[E->get()].info);
+	for (const StringName &E : keys) {
+		r_annotations->push_back(valid_annotations[E].info);
 	}
 }
 
@@ -248,7 +248,7 @@ void GDScriptParser::push_warning(const Node *p_source, GDScriptWarning::Code p_
 	warning.rightmost_column = p_source->rightmost_column;
 
 	List<GDScriptWarning>::Element *before = nullptr;
-	for (List<GDScriptWarning>::Element *E = warnings.front(); E != nullptr; E = E->next()) {
+	for (List<GDScriptWarning>::Element *E = warnings.front(); E; E = E->next()) {
 		if (E->get().start_line > warning.start_line) {
 			break;
 		}
@@ -1332,8 +1332,7 @@ GDScriptParser::AnnotationNode *GDScriptParser::parse_annotation(uint32_t p_vali
 }
 
 void GDScriptParser::clear_unused_annotations() {
-	for (const List<AnnotationNode *>::Element *E = annotation_stack.front(); E != nullptr; E = E->next()) {
-		AnnotationNode *annotation = E->get();
+	for (AnnotationNode *annotation : annotation_stack) {
 		push_error(vformat(R"(Annotation "%s" does not precedes a valid target, so it will have no effect.)", annotation->name), annotation);
 	}
 
@@ -1796,8 +1795,8 @@ GDScriptParser::MatchBranchNode *GDScriptParser::parse_match_branch() {
 		List<StringName> binds;
 		branch->patterns[0]->binds.get_key_list(&binds);
 
-		for (List<StringName>::Element *E = binds.front(); E != nullptr; E = E->next()) {
-			SuiteNode::Local local(branch->patterns[0]->binds[E->get()], current_function);
+		for (StringName &E : binds) {
+			SuiteNode::Local local(branch->patterns[0]->binds[E], current_function);
 			suite->add_local(local);
 		}
 	}
@@ -3993,8 +3992,8 @@ void GDScriptParser::TreePrinter::print_for(ForNode *p_for) {
 }
 
 void GDScriptParser::TreePrinter::print_function(FunctionNode *p_function, const String &p_context) {
-	for (const List<AnnotationNode *>::Element *E = p_function->annotations.front(); E != nullptr; E = E->next()) {
-		print_annotation(E->get());
+	for (AnnotationNode *E : p_function->annotations) {
+		print_annotation(E);
 	}
 	push_text(p_context);
 	push_text(" ");
@@ -4333,8 +4332,8 @@ void GDScriptParser::TreePrinter::print_unary_op(UnaryOpNode *p_unary_op) {
 }
 
 void GDScriptParser::TreePrinter::print_variable(VariableNode *p_variable) {
-	for (const List<AnnotationNode *>::Element *E = p_variable->annotations.front(); E != nullptr; E = E->next()) {
-		print_annotation(E->get());
+	for (AnnotationNode *E : p_variable->annotations) {
+		print_annotation(E);
 	}
 
 	push_text("Variable ");

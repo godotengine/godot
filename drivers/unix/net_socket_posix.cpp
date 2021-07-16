@@ -269,11 +269,11 @@ _FORCE_INLINE_ Error NetSocketPosix::_change_multicast_group(IPAddress p_ip, Str
 			break; // IPv6 uses index.
 		}
 
-		for (List<IPAddress>::Element *F = c.ip_addresses.front(); F; F = F->next()) {
-			if (!F->get().is_ipv4()) {
+		for (IPAddress &F : c.ip_addresses) {
+			if (!F.is_ipv4()) {
 				continue; // Wrong IP type
 			}
-			if_ip = F->get();
+			if_ip = F;
 			break;
 		}
 		break;

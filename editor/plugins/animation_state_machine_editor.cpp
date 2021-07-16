@@ -93,21 +93,21 @@ void AnimationNodeStateMachineEditor::_state_machine_gui_input(const Ref<InputEv
 			if (ap) {
 				List<StringName> names;
 				ap->get_animation_list(&names);
-				for (List<StringName>::Element *E = names.front(); E; E = E->next()) {
-					animations_menu->add_icon_item(get_theme_icon(SNAME("Animation"), SNAME("EditorIcons")), E->get());
-					animations_to_add.push_back(E->get());
+				for (StringName &E : names) {
+					animations_menu->add_icon_item(get_theme_icon(SNAME("Animation"), SNAME("EditorIcons")), E);
+					animations_to_add.push_back(E);
 				}
 			}
 		}
 
-		for (List<StringName>::Element *E = classes.front(); E; E = E->next()) {
-			String name = String(E->get()).replace_first("AnimationNode", "");
+		for (StringName &E : classes) {
+			String name = String(E).replace_first("AnimationNode", "");
 			if (name == "Animation") {
 				continue; // nope
 			}
 			int idx = menu->get_item_count();
 			menu->add_item(vformat("Add %s", name), idx);
-			menu->set_item_metadata(idx, E->get());
+			menu->set_item_metadata(idx, E);
 		}
 		Ref<AnimationNode> clipb = EditorSettings::get_singleton()->get_resource_clipboard();
 
@@ -318,24 +318,24 @@ void AnimationNodeStateMachineEditor::_state_machine_gui_input(const Ref<InputEv
 			float best_d_x = 1e20;
 			float best_d_y = 1e20;
 
-			for (List<StringName>::Element *E = nodes.front(); E; E = E->next()) {
-				if (E->get() == selected_node) {
+			for (StringName &E : nodes) {
+				if (E == selected_node) {
 					continue;
 				}
-				Vector2 npos = state_machine->get_node_position(E->get());
+				Vector2 npos = state_machine->get_node_position(E);
 
 				float d_x = ABS(npos.x - cpos.x);
 				if (d_x < MIN(5, best_d_x)) {
 					drag_ofs.x -= cpos.x - npos.x;
 					best_d_x = d_x;
-					snap_x = E->get();
+					snap_x = E;
 				}
 
 				float d_y = ABS(npos.y - cpos.y);
 				if (d_y < MIN(5, best_d_y)) {
 					drag_ofs.y -= cpos.y - npos.y;
 					best_d_y = d_y;
-					snap_y = E->get();
+					snap_y = E;
 				}
 			}
 		}
@@ -409,8 +409,8 @@ void AnimationNodeStateMachineEditor::_add_menu_type(int p_index) {
 		open_file->clear_filters();
 		List<String> filters;
 		ResourceLoader::get_recognized_extensions_for_type("AnimationRootNode", &filters);
-		for (List<String>::Element *E = filters.front(); E; E = E->next()) {
-			open_file->add_filter("*." + E->get());
+		for (String &E : filters) {
+			open_file->add_filter("*." + E);
 		}
 		open_file->popup_file_dialog();
 		return;
@@ -606,11 +606,11 @@ void AnimationNodeStateMachineEditor::_state_machine_draw() {
 	}
 
 	//pre pass nodes so we know the rectangles
-	for (List<StringName>::Element *E = nodes.front(); E; E = E->next()) {
-		Ref<AnimationNode> anode = state_machine->get_node(E->get());
-		String name = E->get();
+	for (StringName &E : nodes) {
+		Ref<AnimationNode> anode = state_machine->get_node(E);
+		String name = E;
 		bool needs_editor = EditorNode::get_singleton()->item_has_editor(anode.ptr());
-		Ref<StyleBox> sb = E->get() == selected_node ? style_selected : style;
+		Ref<StyleBox> sb = E == selected_node ? style_selected : style;
 
 		Size2 s = sb->get_minimum_size();
 		int strsize = font->get_string_size(name, font_size).width;
@@ -622,8 +622,8 @@ void AnimationNodeStateMachineEditor::_state_machine_draw() {
 		}
 
 		Vector2 offset;
-		offset += state_machine->get_node_position(E->get()) * EDSCALE;
-		if (selected_node == E->get() && dragging_selected) {
+		offset += state_machine->get_node_position(E) * EDSCALE;
+		if (selected_node == E && dragging_selected) {
 			offset += drag_ofs;
 		}
 		offset -= s / 2;
@@ -633,7 +633,7 @@ void AnimationNodeStateMachineEditor::_state_machine_draw() {
 
 		NodeRect nr;
 		nr.node = Rect2(offset, s);
-		nr.node_name = E->get();
+		nr.node_name = E;
 
 		scroll_range = scroll_range.merge(nr.node); //merge with range
 

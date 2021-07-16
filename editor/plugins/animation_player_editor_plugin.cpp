@@ -350,8 +350,8 @@ void AnimationPlayerEditor::_animation_load() {
 	List<String> extensions;
 
 	ResourceLoader::get_recognized_extensions_for_type("Animation", &extensions);
-	for (List<String>::Element *E = extensions.front(); E; E = E->next()) {
-		file->add_filter("*." + E->get() + " ; " + E->get().to_upper());
+	for (String &E : extensions) {
+		file->add_filter("*." + E + " ; " + E.to_upper());
 	}
 
 	file->popup_file_dialog();
@@ -584,8 +584,7 @@ void AnimationPlayerEditor::_animation_blend() {
 	blend_editor.next->clear();
 	blend_editor.next->add_item("", i);
 
-	for (List<StringName>::Element *E = anims.front(); E; E = E->next()) {
-		String to = E->get();
+	for (StringName &to : anims) {
 		TreeItem *blend = blend_editor.tree->create_item(root);
 		blend->set_editable(0, false);
 		blend->set_editable(1, true);
@@ -830,20 +829,20 @@ void AnimationPlayerEditor::_update_player() {
 	}
 
 	int active_idx = -1;
-	for (List<StringName>::Element *E = animlist.front(); E; E = E->next()) {
+	for (StringName &E : animlist) {
 		Ref<Texture2D> icon;
-		if (E->get() == player->get_autoplay()) {
-			if (E->get() == "RESET") {
+		if (E == player->get_autoplay()) {
+			if (E == "RESET") {
 				icon = autoplay_reset_icon;
 			} else {
 				icon = autoplay_icon;
 			}
-		} else if (E->get() == "RESET") {
+		} else if (E == "RESET") {
 			icon = reset_icon;
 		}
-		animation->add_icon_item(icon, E->get());
+		animation->add_icon_item(icon, E);
 
-		if (player->get_assigned_animation() == E->get()) {
+		if (player->get_assigned_animation() == E) {
 			active_idx = animation->get_item_count() - 1;
 		}
 	}
@@ -966,9 +965,9 @@ void AnimationPlayerEditor::_animation_duplicate() {
 	Ref<Animation> new_anim = memnew(Animation);
 	List<PropertyInfo> plist;
 	anim->get_property_list(&plist);
-	for (List<PropertyInfo>::Element *E = plist.front(); E; E = E->next()) {
-		if (E->get().usage & PROPERTY_USAGE_STORAGE) {
-			new_anim->set(E->get().name, anim->get(E->get().name));
+	for (PropertyInfo &E : plist) {
+		if (E.usage & PROPERTY_USAGE_STORAGE) {
+			new_anim->set(E.name, anim->get(E.name));
 		}
 	}
 	new_anim->set_path("");

@@ -1508,9 +1508,9 @@ String EditorInspector::get_selected_path() const {
 }
 
 void EditorInspector::_parse_added_editors(VBoxContainer *current_vbox, Ref<EditorInspectorPlugin> ped) {
-	for (List<EditorInspectorPlugin::AddedEditor>::Element *F = ped->added_editors.front(); F; F = F->next()) {
-		EditorProperty *ep = Object::cast_to<EditorProperty>(F->get().property_editor);
-		current_vbox->add_child(F->get().property_editor);
+	for (EditorInspectorPlugin::AddedEditor &F : ped->added_editors) {
+		EditorProperty *ep = Object::cast_to<EditorProperty>(F.property_editor);
+		current_vbox->add_child(F.property_editor);
 
 		if (ep) {
 			ep->object = object;
@@ -1524,19 +1524,19 @@ void EditorInspector::_parse_added_editors(VBoxContainer *current_vbox, Ref<Edit
 			ep->connect("resource_selected", callable_mp(this, &EditorInspector::_resource_selected), varray(), CONNECT_DEFERRED);
 			ep->connect("object_id_selected", callable_mp(this, &EditorInspector::_object_id_selected), varray(), CONNECT_DEFERRED);
 
-			if (F->get().properties.size()) {
-				if (F->get().properties.size() == 1) {
+			if (F.properties.size()) {
+				if (F.properties.size() == 1) {
 					//since it's one, associate:
-					ep->property = F->get().properties[0];
+					ep->property = F.properties[0];
 					ep->property_usage = 0;
 				}
 
-				if (F->get().label != String()) {
-					ep->set_label(F->get().label);
+				if (F.label != String()) {
+					ep->set_label(F.label);
 				}
 
-				for (int i = 0; i < F->get().properties.size(); i++) {
-					String prop = F->get().properties[i];
+				for (int i = 0; i < F.properties.size(); i++) {
+					String prop = F.properties[i];
 
 					if (!editor_property_map.has(prop)) {
 						editor_property_map[prop] = List<EditorProperty *>();
@@ -1648,8 +1648,7 @@ void EditorInspector::update_tree() {
 
 	Color sscolor = get_theme_color(SNAME("prop_subsection"), SNAME("Editor"));
 
-	for (List<Ref<EditorInspectorPlugin>>::Element *E = valid_plugins.front(); E; E = E->next()) {
-		Ref<EditorInspectorPlugin> ped = E->get();
+	for (Ref<EditorInspectorPlugin> ped : valid_plugins) {
 		ped->parse_begin(object);
 		_parse_added_editors(main_vbox, ped);
 	}
@@ -1746,8 +1745,7 @@ void EditorInspector::update_tree() {
 				category->set_tooltip(p.name + "::" + (class_descr_cache[type2] == "" ? "" : class_descr_cache[type2]));
 			}
 
-			for (List<Ref<EditorInspectorPlugin>>::Element *E = valid_plugins.front(); E; E = E->next()) {
-				Ref<EditorInspectorPlugin> ped = E->get();
+			for (Ref<EditorInspectorPlugin> ped : valid_plugins) {
 				ped->parse_category(object, p.name);
 				_parse_added_editors(main_vbox, ped);
 			}
@@ -1948,36 +1946,35 @@ void EditorInspector::update_tree() {
 			doc_hint = descr;
 		}
 
-		for (List<Ref<EditorInspectorPlugin>>::Element *E = valid_plugins.front(); E; E = E->next()) {
-			Ref<EditorInspectorPlugin> ped = E->get();
+		for (Ref<EditorInspectorPlugin> ped : valid_plugins) {
 			bool exclusive = ped->parse_property(object, p.type, p.name, p.hint, p.hint_string, p.usage, wide_editors);
 
 			List<EditorInspectorPlugin::AddedEditor> editors = ped->added_editors; //make a copy, since plugins may be used again in a sub-inspector
 			ped->added_editors.clear();
 
-			for (List<EditorInspectorPlugin::AddedEditor>::Element *F = editors.front(); F; F = F->next()) {
-				EditorProperty *ep = Object::cast_to<EditorProperty>(F->get().property_editor);
+			for (EditorInspectorPlugin::AddedEditor &F : editors) {
+				EditorProperty *ep = Object::cast_to<EditorProperty>(F.property_editor);
 
 				if (ep) {
 					//set all this before the control gets the ENTER_TREE notification
 					ep->object = object;
 
-					if (F->get().properties.size()) {
-						if (F->get().properties.size() == 1) {
+					if (F.properties.size()) {
+						if (F.properties.size() == 1) {
 							//since it's one, associate:
-							ep->property = F->get().properties[0];
+							ep->property = F.properties[0];
 							ep->property_usage = p.usage;
 							//and set label?
 						}
 
-						if (F->get().label != String()) {
-							ep->set_label(F->get().label);
+						if (F.label != String()) {
+							ep->set_label(F.label);
 						} else {
 							//use existin one
 							ep->set_label(name);
 						}
-						for (int i = 0; i < F->get().properties.size(); i++) {
-							String prop = F->get().properties[i];
+						for (int i = 0; i < F.properties.size(); i++) {
+							String prop = F.properties[i];
 
 							if (!editor_property_map.has(prop)) {
 								editor_property_map[prop] = List<EditorProperty *>();
@@ -1995,7 +1992,7 @@ void EditorInspector::update_tree() {
 					ep->set_deletable(deletable_properties);
 				}
 
-				current_vbox->add_child(F->get().property_editor);
+				current_vbox->add_child(F.property_editor);
 
 				if (ep) {
 					ep->connect("property_changed", callable_mp(this, &EditorInspector::_property_changed));
@@ -2031,8 +2028,7 @@ void EditorInspector::update_tree() {
 		}
 	}
 
-	for (List<Ref<EditorInspectorPlugin>>::Element *E = valid_plugins.front(); E; E = E->next()) {
-		Ref<EditorInspectorPlugin> ped = E->get();
+	for (Ref<EditorInspectorPlugin> ped : valid_plugins) {
 		ped->parse_end();
 		_parse_added_editors(main_vbox, ped);
 	}
@@ -2045,10 +2041,10 @@ void EditorInspector::update_property(const String &p_prop) {
 		return;
 	}
 
-	for (List<EditorProperty *>::Element *E = editor_property_map[p_prop].front(); E; E = E->next()) {
-		E->get()->update_property();
-		E->get()->update_reload_status();
-		E->get()->update_cache();
+	for (EditorProperty *E : editor_property_map[p_prop]) {
+		E->update_property();
+		E->update_reload_status();
+		E->update_cache();
 	}
 }
 
@@ -2157,24 +2153,24 @@ bool EditorInspector::is_using_folding() {
 }
 
 void EditorInspector::collapse_all_folding() {
-	for (List<EditorInspectorSection *>::Element *E = sections.front(); E; E = E->next()) {
-		E->get()->fold();
+	for (EditorInspectorSection *E : sections) {
+		E->fold();
 	}
 
 	for (Map<StringName, List<EditorProperty *>>::Element *F = editor_property_map.front(); F; F = F->next()) {
-		for (List<EditorProperty *>::Element *E = F->get().front(); E; E = E->next()) {
-			E->get()->collapse_all_folding();
+		for (EditorProperty *E : F->get()) {
+			E->collapse_all_folding();
 		}
 	}
 }
 
 void EditorInspector::expand_all_folding() {
-	for (List<EditorInspectorSection *>::Element *E = sections.front(); E; E = E->next()) {
-		E->get()->unfold();
+	for (EditorInspectorSection *E : sections) {
+		E->unfold();
 	}
 	for (Map<StringName, List<EditorProperty *>>::Element *F = editor_property_map.front(); F; F = F->next()) {
-		for (List<EditorProperty *>::Element *E = F->get().front(); E; E = E->next()) {
-			E->get()->expand_all_folding();
+		for (EditorProperty *E : F->get()) {
+			E->expand_all_folding();
 		}
 	}
 }
@@ -2239,9 +2235,9 @@ void EditorInspector::_edit_request_change(Object *p_object, const String &p_pro
 
 void EditorInspector::_edit_set(const String &p_name, const Variant &p_value, bool p_refresh_all, const String &p_changed_field) {
 	if (autoclear && editor_property_map.has(p_name)) {
-		for (List<EditorProperty *>::Element *E = editor_property_map[p_name].front(); E; E = E->next()) {
-			if (E->get()->is_checkable()) {
-				E->get()->set_checked(true);
+		for (EditorProperty *E : editor_property_map[p_name]) {
+			if (E->is_checkable()) {
+				E->set_checked(true);
 			}
 		}
 	}
@@ -2308,8 +2304,8 @@ void EditorInspector::_edit_set(const String &p_name, const Variant &p_value, bo
 	}
 
 	if (editor_property_map.has(p_name)) {
-		for (List<EditorProperty *>::Element *E = editor_property_map[p_name].front(); E; E = E->next()) {
-			E->get()->update_reload_status();
+		for (EditorProperty *E : editor_property_map[p_name]) {
+			E->update_reload_status();
 		}
 	}
 }
@@ -2395,10 +2391,10 @@ void EditorInspector::_property_checked(const String &p_path, bool p_checked) {
 			Variant to_create;
 			List<PropertyInfo> pinfo;
 			object->get_property_list(&pinfo);
-			for (List<PropertyInfo>::Element *E = pinfo.front(); E; E = E->next()) {
-				if (E->get().name == p_path) {
+			for (PropertyInfo &E : pinfo) {
+				if (E.name == p_path) {
 					Callable::CallError ce;
-					Variant::construct(E->get().type, to_create, nullptr, 0, ce);
+					Variant::construct(E.type, to_create, nullptr, 0, ce);
 					break;
 				}
 			}
@@ -2406,10 +2402,10 @@ void EditorInspector::_property_checked(const String &p_path, bool p_checked) {
 		}
 
 		if (editor_property_map.has(p_path)) {
-			for (List<EditorProperty *>::Element *E = editor_property_map[p_path].front(); E; E = E->next()) {
-				E->get()->update_property();
-				E->get()->update_reload_status();
-				E->get()->update_cache();
+			for (EditorProperty *E : editor_property_map[p_path]) {
+				E->update_property();
+				E->update_reload_status();
+				E->update_cache();
 			}
 		}
 
@@ -2426,9 +2422,9 @@ void EditorInspector::_property_selected(const String &p_path, int p_focusable) 
 		if (F->key() == property_selected) {
 			continue;
 		}
-		for (List<EditorProperty *>::Element *E = F->get().front(); E; E = E->next()) {
-			if (E->get()->is_selected()) {
-				E->get()->deselect();
+		for (EditorProperty *E : F->get()) {
+			if (E->is_selected()) {
+				E->deselect();
 			}
 		}
 	}
@@ -2485,11 +2481,11 @@ void EditorInspector::_notification(int p_what) {
 			refresh_countdown -= get_process_delta_time();
 			if (refresh_countdown <= 0) {
 				for (Map<StringName, List<EditorProperty *>>::Element *F = editor_property_map.front(); F; F = F->next()) {
-					for (List<EditorProperty *>::Element *E = F->get().front(); E; E = E->next()) {
-						if (!E->get()->is_cache_valid()) {
-							E->get()->update_property();
-							E->get()->update_reload_status();
-							E->get()->update_cache();
+					for (EditorProperty *E : F->get()) {
+						if (!E->is_cache_valid()) {
+							E->update_property();
+							E->update_reload_status();
+							E->update_cache();
 						}
 					}
 				}
@@ -2508,10 +2504,10 @@ void EditorInspector::_notification(int p_what) {
 			while (pending.size()) {
 				StringName prop = pending.front()->get();
 				if (editor_property_map.has(prop)) {
-					for (List<EditorProperty *>::Element *E = editor_property_map[prop].front(); E; E = E->next()) {
-						E->get()->update_property();
-						E->get()->update_reload_status();
-						E->get()->update_cache();
+					for (EditorProperty *E : editor_property_map[prop]) {
+						E->update_property();
+						E->update_reload_status();
+						E->update_cache();
 					}
 				}
 				pending.erase(pending.front());
@@ -2599,8 +2595,7 @@ void EditorInspector::_update_script_class_properties(const Object &p_object, Li
 	}
 
 	Set<StringName> added;
-	for (List<Ref<Script>>::Element *E = classes.front(); E; E = E->next()) {
-		Ref<Script> s = E->get();
+	for (Ref<Script> s : classes) {
 		String path = s->get_path();
 		String name = EditorNode::get_editor_data().script_class_get_name(path);
 		if (name.is_empty()) {

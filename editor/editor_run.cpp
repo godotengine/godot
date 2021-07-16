@@ -228,8 +228,8 @@ Error EditorRun::run(const String &p_scene, const String &p_custom_args, const L
 	}
 
 	printf("Running: %s", exec.utf8().get_data());
-	for (List<String>::Element *E = args.front(); E; E = E->next()) {
-		printf(" %s", E->get().utf8().get_data());
+	for (String &E : args) {
+		printf(" %s", E.utf8().get_data());
 	};
 	printf("\n");
 
@@ -250,8 +250,8 @@ Error EditorRun::run(const String &p_scene, const String &p_custom_args, const L
 }
 
 bool EditorRun::has_child_process(OS::ProcessID p_pid) const {
-	for (const List<OS::ProcessID>::Element *E = pids.front(); E; E = E->next()) {
-		if (E->get() == p_pid) {
+	for (const OS::ProcessID &E : pids) {
+		if (E == p_pid) {
 			return true;
 		}
 	}
@@ -267,8 +267,8 @@ void EditorRun::stop_child_process(OS::ProcessID p_pid) {
 
 void EditorRun::stop() {
 	if (status != STATUS_STOP && pids.size() > 0) {
-		for (List<OS::ProcessID>::Element *E = pids.front(); E; E = E->next()) {
-			OS::get_singleton()->kill(E->get());
+		for (OS::ProcessID &E : pids) {
+			OS::get_singleton()->kill(E);
 		}
 	}
 

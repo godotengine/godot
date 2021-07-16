@@ -39,8 +39,7 @@ void ExtendGDScriptParser::update_diagnostics() {
 	diagnostics.clear();
 
 	const List<ParserError> &errors = get_errors();
-	for (const List<ParserError>::Element *E = errors.front(); E != nullptr; E = E->next()) {
-		const ParserError &error = E->get();
+	for (const ParserError &error : errors) {
 		lsp::Diagnostic diagnostic;
 		diagnostic.severity = lsp::DiagnosticSeverity::Error;
 		diagnostic.message = error.message;
@@ -61,8 +60,7 @@ void ExtendGDScriptParser::update_diagnostics() {
 	}
 
 	const List<GDScriptWarning> &warnings = get_warnings();
-	for (const List<GDScriptWarning>::Element *E = warnings.front(); E; E = E->next()) {
-		const GDScriptWarning &warning = E->get();
+	for (const GDScriptWarning &warning : warnings) {
 		lsp::Diagnostic diagnostic;
 		diagnostic.severity = lsp::DiagnosticSeverity::Warning;
 		diagnostic.message = "(" + warning.get_name() + "): " + warning.get_message();
@@ -467,8 +465,8 @@ String ExtendGDScriptParser::parse_documentation(int p_line, bool p_docs_down) {
 	}
 
 	String doc;
-	for (List<String>::Element *E = doc_lines.front(); E; E = E->next()) {
-		doc += E->get() + "\n";
+	for (String &E : doc_lines) {
+		doc += E + "\n";
 	}
 	return doc;
 }

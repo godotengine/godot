@@ -797,8 +797,8 @@ void EditorNode::_resources_changed(const Vector<String> &p_resources) {
 	}
 
 	if (changed.size()) {
-		for (List<Ref<Resource>>::Element *E = changed.front(); E; E = E->next()) {
-			E->get()->reload_from_file();
+		for (Ref<Resource> E : changed) {
+			E->reload_from_file();
 		}
 	}
 }
@@ -914,8 +914,8 @@ void EditorNode::_resources_reimported(const Vector<String> &p_resources) {
 		}
 	}
 
-	for (List<String>::Element *E = scenes.front(); E; E = E->next()) {
-		reload_scene(E->get());
+	for (String &E : scenes) {
+		reload_scene(E);
 	}
 
 	scene_tabs->set_current_tab(current_tab);
@@ -1143,13 +1143,13 @@ void EditorNode::save_resource_as(const Ref<Resource> &p_resource, const String 
 	file->clear_filters();
 
 	List<String> preferred;
-	for (List<String>::Element *E = extensions.front(); E; E = E->next()) {
-		if (p_resource->is_class("Script") && (E->get() == "tres" || E->get() == "res")) {
+	for (String &E : extensions) {
+		if (p_resource->is_class("Script") && (E == "tres" || E == "res")) {
 			//this serves no purpose and confused people
 			continue;
 		}
-		file->add_filter("*." + E->get() + " ; " + E->get().to_upper());
-		preferred.push_back(E->get());
+		file->add_filter("*." + E + " ; " + E.to_upper());
+		preferred.push_back(E);
 	}
 	// Lowest priority extension
 	List<String>::Element *res_element = preferred.find("res");
@@ -1259,10 +1259,10 @@ void EditorNode::_get_scene_metadata(const String &p_file) {
 	cf->get_section_keys("editor_states", &esl);
 
 	Dictionary md;
-	for (List<String>::Element *E = esl.front(); E; E = E->next()) {
-		Variant st = cf->get_value("editor_states", E->get());
+	for (String &E : esl) {
+		Variant st = cf->get_value("editor_states", E);
 		if (st.get_type() != Variant::NIL) {
-			md[E->get()] = st;
+			md[E] = st;
 		}
 	}
 
@@ -1295,8 +1295,8 @@ void EditorNode::_set_scene_metadata(const String &p_file, int p_idx) {
 	List<Variant> keys;
 	md.get_key_list(&keys);
 
-	for (List<Variant>::Element *E = keys.front(); E; E = E->next()) {
-		cf->set_value("editor_states", E->get(), md[E->get()]);
+	for (Variant &E : keys) {
+		cf->set_value("editor_states", E, md[E]);
 	}
 
 	Error err = cf->save(path);
@@ -1334,14 +1334,14 @@ bool EditorNode::_find_and_save_edited_subresources(Object *obj, Map<RES, bool> 
 	bool ret_changed = false;
 	List<PropertyInfo> pi;
 	obj->get_property_list(&pi);
-	for (List<PropertyInfo>::Element *E = pi.front(); E; E = E->next()) {
-		if (!(E->get().usage & PROPERTY_USAGE_STORAGE)) {
+	for (PropertyInfo &E : pi) {
+		if (!(E.usage & PROPERTY_USAGE_STORAGE)) {
 			continue;
 		}
 
-		switch (E->get().type) {
+		switch (E.type) {
 			case Variant::OBJECT: {
-				RES res = obj->get(E->get().name);
+				RES res = obj->get(E.name);
 
 				if (_find_and_save_resource(res, processed, flags)) {
 					ret_changed = true;
@@ -1349,7 +1349,7 @@ bool EditorNode::_find_and_save_edited_subresources(Object *obj, Map<RES, bool> 
 
 			} break;
 			case Variant::ARRAY: {
-				Array varray = obj->get(E->get().name);
+				Array varray = obj->get(E.name);
 				int len = varray.size();
 				for (int i = 0; i < len; i++) {
 					const Variant &v = varray.get(i);
@@ -1361,11 +1361,11 @@ bool EditorNode::_find_and_save_edited_subresources(Object *obj, Map<RES, bool> 
 
 			} break;
 			case Variant::DICTIONARY: {
-				Dictionary d = obj->get(E->get().name);
+				Dictionary d = obj->get(E.name);
 				List<Variant> keys;
 				d.get_key_list(&keys);
-				for (List<Variant>::Element *F = keys.front(); F; F = F->next()) {
-					Variant v = d[F->get()];
+				for (Variant &F : keys) {
+					Variant v = d[F];
 					RES res = v;
 					if (_find_and_save_resource(res, processed, flags)) {
 						ret_changed = true;
@@ -1520,9 +1520,9 @@ static bool _find_edited_resources(const Ref<Resource> &p_resource, Set<Ref<Reso
 
 	p_resource->get_property_list(&plist);
 
-	for (List<PropertyInfo>::Element *E = plist.front(); E; E = E->next()) {
-		if (E->get().type == Variant::OBJECT && E->get().usage & PROPERTY_USAGE_STORAGE && !(E->get().usage & PROPERTY_USAGE_RESOURCE_NOT_PERSISTENT)) {
-			RES res = p_resource->get(E->get().name);
+	for (PropertyInfo &E : plist) {
+		if (E.type == Variant::OBJECT && E.usage & PROPERTY_USAGE_STORAGE && !(E.usage & PROPERTY_USAGE_RESOURCE_NOT_PERSISTENT)) {
+			RES res = p_resource->get(E.name);
 			if (res.is_null()) {
 				continue;
 			}
@@ -1551,8 +1551,7 @@ int EditorNode::_save_external_resources() {
 	int saved = 0;
 	List<Ref<Resource>> cached;
 	ResourceCache::get_cached_resources(&cached);
-	for (List<Ref<Resource>>::Element *E = cached.front(); E; E = E->next()) {
-		Ref<Resource> res = E->get();
+	for (Ref<Resource> res : cached) {
 		if (!res->get_path().is_resource_file()) {
 			continue;
 		}
@@ -1642,8 +1641,8 @@ void EditorNode::_save_scene(String p_file, int idx) {
 
 	editor_data.save_editor_external_data();
 
-	for (List<Ref<AnimatedValuesBackup>>::Element *E = anim_backups.front(); E; E = E->next()) {
-		E->get()->restore();
+	for (Ref<AnimatedValuesBackup> E : anim_backups) {
+		E->restore();
 	}
 
 	if (err == OK) {
@@ -1884,8 +1883,8 @@ void EditorNode::_dialog_action(String p_file) {
 			// erase
 			List<String> keys;
 			config->get_section_keys(p_file, &keys);
-			for (List<String>::Element *E = keys.front(); E; E = E->next()) {
-				config->set_value(p_file, E->get(), Variant());
+			for (String &E : keys) {
+				config->set_value(p_file, E, Variant());
 			}
 
 			config->save(EditorSettings::get_singleton()->get_editor_layouts_config());
@@ -2533,8 +2532,8 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 			Ref<MeshLibrary> ml(memnew(MeshLibrary));
 			ResourceSaver::get_recognized_extensions(ml, &extensions);
 			file_export_lib->clear_filters();
-			for (List<String>::Element *E = extensions.front(); E; E = E->next()) {
-				file_export_lib->add_filter("*." + E->get());
+			for (String &E : extensions) {
+				file_export_lib->add_filter("*." + E);
 			}
 
 			file_export_lib->popup_file_dialog();
@@ -4055,11 +4054,11 @@ void EditorNode::_build_icon_type_cache() {
 	List<StringName> tl;
 	StringName ei = "EditorIcons";
 	theme_base->get_theme()->get_icon_list(ei, &tl);
-	for (List<StringName>::Element *E = tl.front(); E; E = E->next()) {
-		if (!ClassDB::class_exists(E->get())) {
+	for (StringName &E : tl) {
+		if (!ClassDB::class_exists(E)) {
 			continue;
 		}
-		icon_type_cache[E->get()] = theme_base->get_theme()->get_icon(E->get(), ei);
+		icon_type_cache[E] = theme_base->get_theme()->get_icon(E, ei);
 	}
 }
 
@@ -4784,9 +4783,7 @@ void EditorNode::_update_layouts_menu() {
 	List<String> layouts;
 	config.ptr()->get_sections(&layouts);
 
-	for (List<String>::Element *E = layouts.front(); E; E = E->next()) {
-		String layout = E->get();
-
+	for (String &layout : layouts) {
 		if (layout == TTR("Default")) {
 			editor_layouts->remove_item(editor_layouts->get_item_index(SETTINGS_LAYOUT_DEFAULT));
 			overridden_default_layout = editor_layouts->get_item_count();
@@ -5343,9 +5340,9 @@ void EditorNode::reload_scene(const String &p_path) {
 	List<Ref<Resource>> cached;
 	ResourceCache::get_cached_resources(&cached);
 	List<Ref<Resource>> to_clear; //clear internal resources from previous scene from being used
-	for (List<Ref<Resource>>::Element *E = cached.front(); E; E = E->next()) {
-		if (E->get()->get_path().begins_with(p_path + "::")) { //subresources of existing scene
-			to_clear.push_back(E->get());
+	for (Ref<Resource> E : cached) {
+		if (E->get_path().begins_with(p_path + "::")) { //subresources of existing scene
+			to_clear.push_back(E);
 		}
 	}
 
@@ -6741,8 +6738,8 @@ EditorNode::EditorNode() {
 	file_script->set_file_mode(EditorFileDialog::FILE_MODE_OPEN_FILE);
 	List<String> sexts;
 	ResourceLoader::get_recognized_extensions_for_type("Script", &sexts);
-	for (List<String>::Element *E = sexts.front(); E; E = E->next()) {
-		file_script->add_filter("*." + E->get());
+	for (String &E : sexts) {
+		file_script->add_filter("*." + E);
 	}
 	gui_base->add_child(file_script);
 	file_script->connect("file_selected", callable_mp(this, &EditorNode::_dialog_action));

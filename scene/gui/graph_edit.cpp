@@ -217,8 +217,8 @@ Error GraphEdit::connect_node(const StringName &p_from, int p_from_port, const S
 }
 
 bool GraphEdit::is_node_connected(const StringName &p_from, int p_from_port, const StringName &p_to, int p_to_port) {
-	for (List<Connection>::Element *E = connections.front(); E; E = E->next()) {
-		if (E->get().from == p_from && E->get().from_port == p_from_port && E->get().to == p_to && E->get().to_port == p_to_port) {
+	for (Connection &E : connections) {
+		if (E.from == p_from && E.from_port == p_from_port && E.to == p_to && E.to_port == p_to_port) {
 			return true;
 		}
 	}
@@ -227,7 +227,7 @@ bool GraphEdit::is_node_connected(const StringName &p_from, int p_from_port, con
 }
 
 void GraphEdit::disconnect_node(const StringName &p_from, int p_from_port, const StringName &p_to, int p_to_port) {
-	for (List<Connection>::Element *E = connections.front(); E; E = E->next()) {
+	for (const List<Connection>::Element *E = connections.front(); E; E = E->next()) {
 		if (E->get().from == p_from && E->get().from_port == p_from_port && E->get().to == p_to && E->get().to_port == p_to_port) {
 			connections.erase(E);
 			top_layer->update();
@@ -561,20 +561,20 @@ void GraphEdit::_top_layer_input(const Ref<InputEvent> &p_ev) {
 				if (is_in_hot_zone(pos / zoom, click_pos)) {
 					if (valid_left_disconnect_types.has(gn->get_connection_output_type(j))) {
 						//check disconnect
-						for (List<Connection>::Element *E = connections.front(); E; E = E->next()) {
-							if (E->get().from == gn->get_name() && E->get().from_port == j) {
-								Node *to = get_node(String(E->get().to));
+						for (Connection &E : connections) {
+							if (E.from == gn->get_name() && E.from_port == j) {
+								Node *to = get_node(String(E.to));
 								if (Object::cast_to<GraphNode>(to)) {
-									connecting_from = E->get().to;
-									connecting_index = E->get().to_port;
+									connecting_from = E.to;
+									connecting_index = E.to_port;
 									connecting_out = false;
-									connecting_type = Object::cast_to<GraphNode>(to)->get_connection_input_type(E->get().to_port);
-									connecting_color = Object::cast_to<GraphNode>(to)->get_connection_input_color(E->get().to_port);
+									connecting_type = Object::cast_to<GraphNode>(to)->get_connection_input_type(E.to_port);
+									connecting_color = Object::cast_to<GraphNode>(to)->get_connection_input_color(E.to_port);
 									connecting_target = false;
 									connecting_to = pos;
 									just_disconnected = true;
 
-									emit_signal(SNAME("disconnection_request"), E->get().from, E->get().from_port, E->get().to, E->get().to_port);
+									emit_signal(SNAME("disconnection_request"), E.from, E.from_port, E.to, E.to_port);
 									to = get_node(String(connecting_from)); //maybe it was erased
 									if (Object::cast_to<GraphNode>(to)) {
 										connecting = true;
@@ -603,20 +603,20 @@ void GraphEdit::_top_layer_input(const Ref<InputEvent> &p_ev) {
 				if (is_in_hot_zone(pos / zoom, click_pos)) {
 					if (right_disconnects || valid_right_disconnect_types.has(gn->get_connection_input_type(j))) {
 						//check disconnect
-						for (List<Connection>::Element *E = connections.front(); E; E = E->next()) {
-							if (E->get().to == gn->get_name() && E->get().to_port == j) {
-								Node *fr = get_node(String(E->get().from));
+						for (Connection &E : connections) {
+							if (E.to == gn->get_name() && E.to_port == j) {
+								Node *fr = get_node(String(E.from));
 								if (Object::cast_to<GraphNode>(fr)) {
-									connecting_from = E->get().from;
-									connecting_index = E->get().from_port;
+									connecting_from = E.from;
+									connecting_index = E.from_port;
 									connecting_out = true;
-									connecting_type = Object::cast_to<GraphNode>(fr)->get_connection_output_type(E->get().from_port);
-									connecting_color = Object::cast_to<GraphNode>(fr)->get_connection_output_color(E->get().from_port);
+									connecting_type = Object::cast_to<GraphNode>(fr)->get_connection_output_type(E.from_port);
+									connecting_color = Object::cast_to<GraphNode>(fr)->get_connection_output_color(E.from_port);
 									connecting_target = false;
 									connecting_to = pos;
 									just_disconnected = true;
 
-									emit_signal(SNAME("disconnection_request"), E->get().from, E->get().from_port, E->get().to, E->get().to_port);
+									emit_signal(SNAME("disconnection_request"), E.from, E.from_port, E.to, E.to_port);
 									fr = get_node(String(connecting_from)); //maybe it was erased
 									if (Object::cast_to<GraphNode>(fr)) {
 										connecting = true;
@@ -1001,8 +1001,8 @@ void GraphEdit::_minimap_draw() {
 
 	// Draw node connections.
 	Color activity_color = get_theme_color(SNAME("activity"));
-	for (List<Connection>::Element *E = connections.front(); E; E = E->next()) {
-		NodePath fromnp(E->get().from);
+	for (Connection &E : connections) {
+		NodePath fromnp(E.from);
 
 		Node *from = get_node(fromnp);
 		if (!from) {
@@ -1013,7 +1013,7 @@ void GraphEdit::_minimap_draw() {
 			continue;
 		}
 
-		NodePath tonp(E->get().to);
+		NodePath tonp(E.to);
 		Node *to = get_node(tonp);
 		if (!to) {
 			continue;
@@ -1023,16 +1023,16 @@ void GraphEdit::_minimap_draw() {
 			continue;
 		}
 
-		Vector2 from_slot_position = gfrom->get_position_offset() * zoom + gfrom->get_connection_output_position(E->get().from_port);
+		Vector2 from_slot_position = gfrom->get_position_offset() * zoom + gfrom->get_connection_output_position(E.from_port);
 		Vector2 from_position = minimap->_convert_from_graph_position(from_slot_position - graph_offset) + minimap_offset;
-		Color from_color = gfrom->get_connection_output_color(E->get().from_port);
-		Vector2 to_slot_position = gto->get_position_offset() * zoom + gto->get_connection_input_position(E->get().to_port);
+		Color from_color = gfrom->get_connection_output_color(E.from_port);
+		Vector2 to_slot_position = gto->get_position_offset() * zoom + gto->get_connection_input_position(E.to_port);
 		Vector2 to_position = minimap->_convert_from_graph_position(to_slot_position - graph_offset) + minimap_offset;
-		Color to_color = gto->get_connection_input_color(E->get().to_port);
+		Color to_color = gto->get_connection_input_color(E.to_port);
 
-		if (E->get().activity > 0) {
-			from_color = from_color.lerp(activity_color, E->get().activity);
-			to_color = to_color.lerp(activity_color, E->get().activity);
+		if (E.activity > 0) {
+			from_color = from_color.lerp(activity_color, E.activity);
+			to_color = to_color.lerp(activity_color, E.activity);
 		}
 		_draw_cos_line(minimap, from_position, to_position, from_color, to_color, 1.0, 0.5);
 	}
@@ -1360,15 +1360,15 @@ void GraphEdit::_gui_input(const Ref<InputEvent> &p_ev) {
 }
 
 void GraphEdit::set_connection_activity(const StringName &p_from, int p_from_port, const StringName &p_to, int p_to_port, float p_activity) {
-	for (List<Connection>::Element *E = connections.front(); E; E = E->next()) {
-		if (E->get().from == p_from && E->get().from_port == p_from_port && E->get().to == p_to && E->get().to_port == p_to_port) {
-			if (Math::is_equal_approx(E->get().activity, p_activity)) {
+	for (Connection &E : connections) {
+		if (E.from == p_from && E.from_port == p_from_port && E.to == p_to && E.to_port == p_to_port) {
+			if (Math::is_equal_approx(E.activity, p_activity)) {
 				//update only if changed
 				top_layer->update();
 				minimap->update();
 				connections_layer->update();
 			}
-			E->get().activity = p_activity;
+			E.activity = p_activity;
 			return;
 		}
 	}
@@ -1500,12 +1500,12 @@ Array GraphEdit::_get_connection_list() const {
 	List<Connection> conns;
 	get_connection_list(&conns);
 	Array arr;
-	for (List<Connection>::Element *E = conns.front(); E; E = E->next()) {
+	for (Connection &E : conns) {
 		Dictionary d;
-		d["from"] = E->get().from;
-		d["from_port"] = E->get().from_port;
-		d["to"] = E->get().to;
-		d["to_port"] = E->get().to_port;
+		d["from"] = E.from;
+		d["from_port"] = E.from_port;
+		d["to"] = E.to;
+		d["to_port"] = E.to_port;
 		arr.push_back(d);
 	}
 	return arr;

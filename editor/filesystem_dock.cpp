@@ -135,9 +135,7 @@ bool FileSystemDock::_create_tree(TreeItem *p_parent, EditorFileSystemDirectory 
 		_sort_file_info_list(file_list);
 
 		// Build the tree.
-		for (List<FileInfo>::Element *E = file_list.front(); E; E = E->next()) {
-			FileInfo fi = E->get();
-
+		for (FileInfo &fi : file_list) {
 			TreeItem *file_item = tree->create_item(subdirectory_item);
 			file_item->set_text(0, fi.name);
 			file_item->set_structured_text_bidi_override(0, STRUCTURED_TEXT_FILE);
@@ -869,8 +867,8 @@ void FileSystemDock::_update_file_list(bool p_keep_selection) {
 	// Fills the ItemList control node from the FileInfos.
 	String main_scene = ProjectSettings::get_singleton()->get("application/run/main_scene");
 	String oi = "Object";
-	for (List<FileInfo>::Element *E = file_list.front(); E; E = E->next()) {
-		FileInfo *finfo = &(E->get());
+	for (FileInfo &E : file_list) {
+		FileInfo *finfo = &(E);
 		String fname = finfo->name;
 		String fpath = finfo->path;
 		String ftype = finfo->type;
@@ -966,8 +964,8 @@ void FileSystemDock::_select_file(const String &p_path, bool p_select_in_favorit
 				List<String> importer_exts;
 				ResourceImporterScene::get_singleton()->get_recognized_extensions(&importer_exts);
 				String extension = fpath.get_extension();
-				for (List<String>::Element *E = importer_exts.front(); E; E = E->next()) {
-					if (extension.nocasecmp_to(E->get()) == 0) {
+				for (String &E : importer_exts) {
+					if (extension.nocasecmp_to(E) == 0) {
 						is_imported = true;
 						break;
 					}
@@ -1239,9 +1237,7 @@ void FileSystemDock::_update_resource_paths_after_move(const Map<String, String>
 	List<Ref<Resource>> cached;
 	ResourceCache::get_cached_resources(&cached);
 
-	for (List<Ref<Resource>>::Element *E = cached.front(); E; E = E->next()) {
-		Ref<Resource> r = E->get();
-
+	for (Ref<Resource> r : cached) {
 		String base_path = r->get_path();
 		String extra_path;
 		int sep_pos = r->get_path().find("::");
@@ -1317,16 +1313,16 @@ void FileSystemDock::_update_project_settings_after_move(const Map<String, Strin
 	// Also search for the file in autoload, as they are stored differently from normal files.
 	List<PropertyInfo> property_list;
 	ProjectSettings::get_singleton()->get_property_list(&property_list);
-	for (const List<PropertyInfo>::Element *E = property_list.front(); E; E = E->next()) {
-		if (E->get().name.begins_with("autoload/")) {
+	for (const PropertyInfo &E : property_list) {
+		if (E.name.begins_with("autoload/")) {
 			// If the autoload resource paths has a leading "*", it indicates that it is a Singleton,
 			// so we have to handle both cases when updating.
-			String autoload = GLOBAL_GET(E->get().name);
+			String autoload = GLOBAL_GET(E.name);
 			String autoload_singleton = autoload.substr(1, autoload.length());
 			if (p_renames.has(autoload)) {
-				ProjectSettings::get_singleton()->set_setting(E->get().name, p_renames[autoload]);
+				ProjectSettings::get_singleton()->set_setting(E.name, p_renames[autoload]);
 			} else if (autoload.begins_with("*") && p_renames.has(autoload_singleton)) {
-				ProjectSettings::get_singleton()->set_setting(E->get().name, "*" + p_renames[autoload_singleton]);
+				ProjectSettings::get_singleton()->set_setting(E.name, "*" + p_renames[autoload_singleton]);
 			}
 		}
 	}
@@ -1417,8 +1413,8 @@ void FileSystemDock::_make_scene_confirm() {
 	ResourceSaver::get_recognized_extensions(sd, &extensions);
 
 	bool extension_correct = false;
-	for (List<String>::Element *E = extensions.front(); E; E = E->next()) {
-		if (E->get() == extension) {
+	for (String &E : extensions) {
+		if (E == extension) {
 			extension_correct = true;
 			break;
 		}

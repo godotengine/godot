@@ -1306,12 +1306,12 @@ void VisualScriptVariableGet::_validate_property(PropertyInfo &property) const {
 		vs->get_variable_list(&vars);
 
 		String vhint;
-		for (List<StringName>::Element *E = vars.front(); E; E = E->next()) {
+		for (StringName &E : vars) {
 			if (vhint != String()) {
 				vhint += ",";
 			}
 
-			vhint += E->get().operator String();
+			vhint += E.operator String();
 		}
 
 		property.hint = PROPERTY_HINT_ENUM;
@@ -1416,12 +1416,12 @@ void VisualScriptVariableSet::_validate_property(PropertyInfo &property) const {
 		vs->get_variable_list(&vars);
 
 		String vhint;
-		for (List<StringName>::Element *E = vars.front(); E; E = E->next()) {
+		for (StringName &E : vars) {
 			if (vhint != String()) {
 				vhint += ",";
 			}
 
-			vhint += E->get().operator String();
+			vhint += E.operator String();
 		}
 
 		property.hint = PROPERTY_HINT_ENUM;
@@ -1944,8 +1944,8 @@ void VisualScriptClassConstant::set_base_type(const StringName &p_which) {
 	ClassDB::get_integer_constant_list(base_type, &constants, true);
 	if (constants.size() > 0) {
 		bool found_name = false;
-		for (List<String>::Element *E = constants.front(); E; E = E->next()) {
-			if (E->get() == name) {
+		for (String &E : constants) {
+			if (E == name) {
 				found_name = true;
 				break;
 			}
@@ -1993,11 +1993,11 @@ void VisualScriptClassConstant::_validate_property(PropertyInfo &property) const
 		ClassDB::get_integer_constant_list(base_type, &constants, true);
 
 		property.hint_string = "";
-		for (List<String>::Element *E = constants.front(); E; E = E->next()) {
+		for (String &E : constants) {
 			if (property.hint_string != String()) {
 				property.hint_string += ",";
 			}
-			property.hint_string += E->get();
+			property.hint_string += E;
 		}
 	}
 }
@@ -2078,8 +2078,8 @@ void VisualScriptBasicTypeConstant::set_basic_type(Variant::Type p_which) {
 	Variant::get_constants_for_type(type, &constants);
 	if (constants.size() > 0) {
 		bool found_name = false;
-		for (List<StringName>::Element *E = constants.front(); E; E = E->next()) {
-			if (E->get() == name) {
+		for (StringName &E : constants) {
+			if (E == name) {
 				found_name = true;
 				break;
 			}
@@ -2131,11 +2131,11 @@ void VisualScriptBasicTypeConstant::_validate_property(PropertyInfo &property) c
 			return;
 		}
 		property.hint_string = "";
-		for (List<StringName>::Element *E = constants.front(); E; E = E->next()) {
+		for (StringName &E : constants) {
 			if (property.hint_string != String()) {
 				property.hint_string += ",";
 			}
-			property.hint_string += String(E->get());
+			property.hint_string += String(E);
 		}
 	}
 }
@@ -2358,15 +2358,15 @@ void VisualScriptEngineSingleton::_validate_property(PropertyInfo &property) con
 
 	Engine::get_singleton()->get_singletons(&singletons);
 
-	for (List<Engine::Singleton>::Element *E = singletons.front(); E; E = E->next()) {
-		if (E->get().name == "VS" || E->get().name == "PS" || E->get().name == "PS2D" || E->get().name == "AS" || E->get().name == "TS" || E->get().name == "SS" || E->get().name == "SS2D") {
+	for (Engine::Singleton &E : singletons) {
+		if (E.name == "VS" || E.name == "PS" || E.name == "PS2D" || E.name == "AS" || E.name == "TS" || E.name == "SS" || E.name == "SS2D") {
 			continue; //skip these, too simple named
 		}
 
 		if (cc != String()) {
 			cc += ",";
 		}
-		cc += E->get().name;
+		cc += E.name;
 	}
 
 	property.hint = PROPERTY_HINT_ENUM;
@@ -3749,9 +3749,7 @@ void VisualScriptInputAction::_validate_property(PropertyInfo &property) const {
 		ProjectSettings::get_singleton()->get_property_list(&pinfo);
 		Vector<String> al;
 
-		for (List<PropertyInfo>::Element *E = pinfo.front(); E; E = E->next()) {
-			const PropertyInfo &pi = E->get();
-
+		for (PropertyInfo &pi : pinfo) {
 			if (!pi.name.begins_with("input/")) {
 				continue;
 			}
@@ -3844,10 +3842,10 @@ void VisualScriptDeconstruct::_update_elements() {
 	List<PropertyInfo> pinfo;
 	v.get_property_list(&pinfo);
 
-	for (List<PropertyInfo>::Element *E = pinfo.front(); E; E = E->next()) {
+	for (PropertyInfo &E : pinfo) {
 		Element e;
-		e.name = E->get().name;
-		e.type = E->get().type;
+		e.name = E.name;
+		e.type = E.type;
 		elements.push_back(e);
 	}
 }
@@ -4025,24 +4023,24 @@ void register_visual_script_nodes() {
 		List<MethodInfo> constructors;
 		Variant::get_constructor_list(Variant::Type(i), &constructors);
 
-		for (List<MethodInfo>::Element *E = constructors.front(); E; E = E->next()) {
-			if (E->get().arguments.size() > 0) {
+		for (MethodInfo &E : constructors) {
+			if (E.arguments.size() > 0) {
 				String name = "functions/constructors/" + Variant::get_type_name(Variant::Type(i)) + "(";
-				for (int j = 0; j < E->get().arguments.size(); j++) {
+				for (int j = 0; j < E.arguments.size(); j++) {
 					if (j > 0) {
 						name += ", ";
 					}
-					if (E->get().arguments.size() == 1) {
-						name += Variant::get_type_name(E->get().arguments[j].type);
+					if (E.arguments.size() == 1) {
+						name += Variant::get_type_name(E.arguments[j].type);
 					} else {
-						name += E->get().arguments[j].name;
+						name += E.arguments[j].name;
 					}
 				}
 				name += ")";
 				VisualScriptLanguage::singleton->add_register_func(name, create_constructor_node);
 				Pair<Variant::Type, MethodInfo> pair;
 				pair.first = Variant::Type(i);
-				pair.second = E->get();
+				pair.second = E;
 				constructor_map[name] = pair;
 			}
 		}

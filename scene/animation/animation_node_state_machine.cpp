@@ -512,8 +512,8 @@ void AnimationNodeStateMachine::get_parameter_list(List<PropertyInfo> *r_list) c
 	}
 
 	advance_conditions.sort_custom<StringName::AlphCompare>();
-	for (List<StringName>::Element *E = advance_conditions.front(); E; E = E->next()) {
-		r_list->push_back(PropertyInfo(Variant::BOOL, E->get()));
+	for (StringName &E : advance_conditions) {
+		r_list->push_back(PropertyInfo(Variant::BOOL, E));
 	}
 }
 
@@ -679,8 +679,8 @@ void AnimationNodeStateMachine::get_node_list(List<StringName> *r_nodes) const {
 	}
 	nodes.sort_custom<StringName::AlphCompare>();
 
-	for (List<StringName>::Element *E = nodes.front(); E; E = E->next()) {
-		r_nodes->push_back(E->get());
+	for (StringName &E : nodes) {
+		r_nodes->push_back(E);
 	}
 }
 
@@ -902,8 +902,7 @@ void AnimationNodeStateMachine::_get_property_list(List<PropertyInfo> *p_list) c
 	}
 	names.sort_custom<StringName::AlphCompare>();
 
-	for (List<StringName>::Element *E = names.front(); E; E = E->next()) {
-		String name = E->get();
+	for (StringName &name : names) {
 		p_list->push_back(PropertyInfo(Variant::OBJECT, "states/" + name + "/node", PROPERTY_HINT_RESOURCE_TYPE, "AnimationNode", PROPERTY_USAGE_NOEDITOR));
 		p_list->push_back(PropertyInfo(Variant::VECTOR2, "states/" + name + "/position", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR));
 	}

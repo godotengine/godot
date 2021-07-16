@@ -100,8 +100,8 @@ Vector<String> SpriteFrames::_get_animation_list() const {
 	Vector<String> ret;
 	List<StringName> al;
 	get_animation_list(&al);
-	for (List<StringName>::Element *E = al.front(); E; E = E->next()) {
-		ret.push_back(E->get());
+	for (StringName &E : al) {
+		ret.push_back(E);
 	}
 
 	return ret;

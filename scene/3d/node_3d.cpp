@@ -103,11 +103,11 @@ void Node3D::_propagate_transform_changed(Node3D *p_origin) {
 
 	data.children_lock++;
 
-	for (List<Node3D *>::Element *E = data.children.front(); E; E = E->next()) {
-		if (E->get()->data.top_level_active) {
+	for (Node3D *&E : data.children) {
+		if (E->data.top_level_active) {
 			continue; //don't propagate to a top_level
 		}
-		E->get()->_propagate_transform_changed(p_origin);
+		E->_propagate_transform_changed(p_origin);
 	}
 #ifdef TOOLS_ENABLED
 	if ((!data.gizmos.is_empty() || data.notify_transform) && !data.ignore_notification && !xform_change.in_list()) {
@@ -527,8 +527,7 @@ void Node3D::_propagate_visibility_changed() {
 	}
 #endif
 
-	for (List<Node3D *>::Element *E = data.children.front(); E; E = E->next()) {
-		Node3D *c = E->get();
+	for (Node3D *c : data.children) {
 		if (!c || !c->data.visible) {
 			continue;
 		}
@@ -753,8 +752,7 @@ void Node3D::_update_visibility_parent(bool p_update_root) {
 		RS::get_singleton()->instance_set_visibility_parent(vi->get_instance(), data.visibility_parent);
 	}
 
-	for (List<Node3D *>::Element *E = data.children.front(); E; E = E->next()) {
-		Node3D *c = E->get();
+	for (Node3D *c : data.children) {
 		c->_update_visibility_parent(false);
 	}
 }

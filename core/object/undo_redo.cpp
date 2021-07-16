@@ -39,12 +39,12 @@ void UndoRedo::_discard_redo() {
 	}
 
 	for (int i = current_action + 1; i < actions.size(); i++) {
-		for (List<Operation>::Element *E = actions.write[i].do_ops.front(); E; E = E->next()) {
-			if (E->get().type == Operation::TYPE_REFERENCE) {
-				if (E->get().ref.is_valid()) {
-					E->get().ref.unref();
+		for (Operation &E : actions.write[i].do_ops) {
+			if (E.type == Operation::TYPE_REFERENCE) {
+				if (E.ref.is_valid()) {
+					E.ref.unref();
 				} else {
-					Object *obj = ObjectDB::get_instance(E->get().object);
+					Object *obj = ObjectDB::get_instance(E.object);
 					if (obj) {
 						memdelete(obj);
 					}
@@ -244,12 +244,12 @@ void UndoRedo::_pop_history_tail() {
 		return;
 	}
 
-	for (List<Operation>::Element *E = actions.write[0].undo_ops.front(); E; E = E->next()) {
-		if (E->get().type == Operation::TYPE_REFERENCE) {
-			if (E->get().ref.is_valid()) {
-				E->get().ref.unref();
+	for (Operation &E : actions.write[0].undo_ops) {
+		if (E.type == Operation::TYPE_REFERENCE) {
+			if (E.ref.is_valid()) {
+				E.ref.unref();
 			} else {
-				Object *obj = ObjectDB::get_instance(E->get().object);
+				Object *obj = ObjectDB::get_instance(E.object);
 				if (obj) {
 					memdelete(obj);
 				}
