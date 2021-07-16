@@ -1157,6 +1157,19 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 	}
 }
 
+void SceneTreeDock::_property_selected(int p_idx) {
+	ERR_FAIL_NULL(property_drop_node);
+	_perform_property_drop(property_drop_node, menu_properties->get_item_metadata(p_idx), ResourceLoader::load(resource_drop_path));
+	property_drop_node = nullptr;
+}
+
+void SceneTreeDock::_perform_property_drop(Node *p_node, String p_property, RES p_res) {
+	editor_data->get_undo_redo().create_action(vformat(TTR("Set %s"), p_property));
+	editor_data->get_undo_redo().add_do_property(p_node, p_property, p_res);
+	editor_data->get_undo_redo().add_undo_property(p_node, p_property, p_node->get(p_property));
+	editor_data->get_undo_redo().commit_action();
+}
+
 void SceneTreeDock::add_root_node(Node *p_node) {
 	editor_data->get_undo_redo().create_action(TTR("New Scene Root"));
 	editor_data->get_undo_redo().add_do_method(editor, "set_edited_scene", p_node);
@@ -2515,9 +2528,51 @@ void SceneTreeDock::_files_dropped(Vector<String> p_files, NodePath p_to, int p_
 	Node *node = get_node(p_to);
 	ERR_FAIL_COND(!node);
 
-	int to_pos = -1;
-	_normalize_drop(node, to_pos, p_type);
-	_perform_instantiate_scenes(p_files, node, to_pos);
+	if (scene_tree->get_scene_tree()->get_drop_mode_flags() & Tree::DROP_MODE_INBETWEEN) {
+		// Dropped PackedScene, instance it.
+		int to_pos = -1;
+		_normalize_drop(node, to_pos, p_type);
+		_perform_instantiate_scenes(p_files, node, to_pos);
+	} else {
+		String res_path = p_files[0];
+		StringName res_type = EditorFileSystem::get_singleton()->get_file_type(res_path);
+		List<String> valid_properties;
+
+		List<PropertyInfo> pinfo;
+		node->get_property_list(&pinfo);
+
+		for (PropertyInfo &p : pinfo) {
+			if (!(p.usage & PROPERTY_USAGE_EDITOR) || !(p.usage & PROPERTY_USAGE_STORAGE) || p.hint != PROPERTY_HINT_RESOURCE_TYPE) {
+				continue;
+			}
+			Vector<String> valid_types = p.hint_string.split(",");
+
+			for (String &prop_type : valid_types) {
+				if (res_type == prop_type || ClassDB::is_parent_class(res_type, prop_type) || EditorNode::get_editor_data().script_class_is_parent(res_type, prop_type)) {
+					valid_properties.push_back(p.name);
+					break;
+				}
+			}
+		}
+
+		if (valid_properties.size() > 1) {
+			property_drop_node = node;
+			resource_drop_path = res_path;
+
+			bool capitalize = bool(EDITOR_GET("interface/inspector/capitalize_properties"));
+			menu_properties->clear();
+			for (String &p : valid_properties) {
+				menu_properties->add_item(capitalize ? p.capitalize() : p);
+				menu_properties->set_item_metadata(menu_properties->get_item_count() - 1, p);
+			}
+
+			menu_properties->set_size(Size2(1, 1));
+			menu_properties->set_position(get_screen_position() + get_local_mouse_position());
+			menu_properties->popup();
+		} else if (!valid_properties.is_empty()) {
+			_perform_property_drop(node, valid_properties[0], ResourceLoader::load(res_path));
+		}
+	}
 }
 
 void SceneTreeDock::_script_dropped(String p_file, NodePath p_to) {
@@ -3275,6 +3330,10 @@ SceneTreeDock::SceneTreeDock(EditorNode *p_editor, Node *p_scene_root, EditorSel
 	menu->add_child(menu_subresources);
 	first_enter = true;
 	restore_script_editor_on_drag = false;
+
+	menu_properties = memnew(PopupMenu);
+	add_child(menu_properties);
+	menu_properties->connect("id_pressed", callable_mp(this, &SceneTreeDock::_property_selected));
 
 	clear_inherit_confirm = memnew(ConfirmationDialog);
 	clear_inherit_confirm->set_text(TTR("Clear Inheritance? (No Undo!)"));

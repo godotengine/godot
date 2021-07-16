@@ -1037,15 +1037,24 @@ bool SceneTreeEditor::can_drop_data_fw(const Point2 &p_point, const Variant &p_d
 			return true;
 		}
 
+		bool scene_drop = true;
 		for (int i = 0; i < files.size(); i++) {
 			String file = files[i];
 			String ftype = EditorFileSystem::get_singleton()->get_file_type(file);
 			if (ftype != "PackedScene") {
-				return false;
+				scene_drop = false;
+				break;
 			}
 		}
 
-		tree->set_drop_mode_flags(Tree::DROP_MODE_INBETWEEN | Tree::DROP_MODE_ON_ITEM); //so it works..
+		if (scene_drop) {
+			tree->set_drop_mode_flags(Tree::DROP_MODE_INBETWEEN | Tree::DROP_MODE_ON_ITEM);
+		} else {
+			if (files.size() > 1) {
+				return false;
+			}
+			tree->set_drop_mode_flags(Tree::DROP_MODE_ON_ITEM);
+		}
 
 		return true;
 	}
