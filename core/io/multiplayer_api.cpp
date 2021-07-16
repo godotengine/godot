@@ -1068,9 +1068,7 @@ int MultiplayerAPI::get_network_unique_id() const {
 }
 
 bool MultiplayerAPI::is_network_server() const {
-	// XXX Maybe fail silently? Maybe should actually return true to make development of both local and online multiplayer easier?
-	ERR_FAIL_COND_V_MSG(!network_peer.is_valid(), false, "No network peer is assigned. I can't be a server.");
-	return network_peer->is_server();
+	return network_peer.is_valid() && network_peer->is_server();
 }
 
 void MultiplayerAPI::set_refuse_new_network_connections(bool p_refuse) {
