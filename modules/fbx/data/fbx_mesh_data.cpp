@@ -525,7 +525,7 @@ void FBXMeshData::reorganize_vertices(
 				}
 
 				const Vector3 vert_poly_normal = *nrml_arr->getptr(*pid);
-				if ((this_vert_poly_normal - vert_poly_normal).length_squared() > CMP_EPSILON) {
+				if (!vert_poly_normal.is_equal_approx(this_vert_poly_normal)) {
 					// Yes this polygon need duplication.
 					need_duplication = true;
 					break;
@@ -586,7 +586,7 @@ void FBXMeshData::reorganize_vertices(
 								continue;
 							}
 							const Vector2 vert_poly_uv = *uvs->getptr(*pid);
-							if (((*this_vert_poly_uv) - vert_poly_uv).length_squared() > CMP_EPSILON) {
+							if (!vert_poly_uv.is_equal_approx(*this_vert_poly_uv)) {
 								// Yes this polygon need duplication.
 								need_duplication = true;
 								break;

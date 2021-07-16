@@ -481,7 +481,7 @@ void Path2DEditor::_mode_selected(int p_mode) {
 
 		Vector2 begin = node->get_curve()->get_point_position(0);
 		Vector2 end = node->get_curve()->get_point_position(node->get_curve()->get_point_count() - 1);
-		if (begin.distance_to(end) < CMP_EPSILON) {
+		if (begin.is_equal_approx(end)) {
 			return;
 		}
 

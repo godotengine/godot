@@ -734,7 +734,7 @@ void NavMap::dispatch_callbacks() {
 void NavMap::clip_path(const std::vector<gd::NavigationPoly> &p_navigation_polys, Vector<Vector3> &path, const gd::NavigationPoly *from_poly, const Vector3 &p_to_point, const gd::NavigationPoly *p_to_poly) const {
 	Vector3 from = path[path.size() - 1];
 
-	if (from.distance_to(p_to_point) < CMP_EPSILON) {
+	if (from.is_equal_approx(p_to_point)) {
 		return;
 	}
 	Plane cut_plane;
@@ -752,10 +752,10 @@ void NavMap::clip_path(const std::vector<gd::NavigationPoly> &p_navigation_polys
 		ERR_FAIL_COND(from_poly->back_navigation_poly_id == -1);
 		from_poly = &p_navigation_polys[from_poly->back_navigation_poly_id];
 
-		if (pathway_start.distance_to(pathway_end) > CMP_EPSILON) {
+		if (!pathway_start.is_equal_approx(pathway_end)) {
 			Vector3 inters;
 			if (cut_plane.intersects_segment(pathway_start, pathway_end, &inters)) {
-				if (inters.distance_to(p_to_point) > CMP_EPSILON && inters.distance_to(path[path.size() - 1]) > CMP_EPSILON) {
+				if (!inters.is_equal_approx(p_to_point) && !inters.is_equal_approx(path[path.size() - 1])) {
 					path.push_back(inters);
 				}
 			}

@@ -3338,7 +3338,7 @@ void Node3DEditorViewport::update_transform_gizmo_view() {
 
 	Transform3D camera_xform = camera->get_transform();
 
-	if (xform.origin.distance_squared_to(camera_xform.origin) < 0.01) {
+	if (xform.origin.is_equal_approx(camera_xform.origin)) {
 		for (int i = 0; i < 3; i++) {
 			RenderingServer::get_singleton()->instance_set_visible(move_gizmo_instance[i], false);
 			RenderingServer::get_singleton()->instance_set_visible(move_plane_gizmo_instance[i], false);
