@@ -77,7 +77,9 @@ public:
 	String get_configuration_warning() const;
 
 private:
+	// call during each conversion
 	void clear();
+
 	void _changed(bool p_regenerate_bounds = false);
 	template <class T>
 	static bool detect_nodes_of_type(const Node *p_node, bool p_ignore_first_node = true);

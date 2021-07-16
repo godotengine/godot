@@ -86,11 +86,12 @@ String RoomManager::get_configuration_warning() const {
 		warning += TTR("The RoomList has not been assigned.");
 	} else {
 		Spatial *roomlist = _resolve_path<Spatial>(_settings_path_roomlist);
-		if (!roomlist || (roomlist->get_class_name() != StringName("Spatial"))) {
+		if (!roomlist) {
+			// possibly also check (roomlist->get_class_name() != StringName("Spatial"))
 			if (!warning.empty()) {
 				warning += "\n\n";
 			}
-			warning += TTR("The RoomList should be a Spatial.");
+			warning += TTR("The RoomList node should be a Spatial (or derived from Spatial).");
 		}
 	}
 
@@ -101,38 +102,11 @@ String RoomManager::get_configuration_warning() const {
 		warning += TTR("Portal Depth Limit is set to Zero.\nOnly the Room that the Camera is in will render.");
 	}
 
-	auto lambda = [](const Node *p_node) {
-		return static_cast<bool>((Object::cast_to<Room>(p_node) || Object::cast_to<RoomGroup>(p_node) || Object::cast_to<Portal>(p_node) || Object::cast_to<RoomManager>(p_node)));
-	};
-
-	if (Room::detect_nodes_using_lambda(this, lambda)) {
-		if (Room::detect_nodes_of_type<Room>(this)) {
-			if (!warning.empty()) {
-				warning += "\n\n";
-			}
-			warning += TTR("Rooms should not be children of the RoomManager.");
+	if (Room::detect_nodes_of_type<RoomManager>(this)) {
+		if (!warning.empty()) {
+			warning += "\n\n";
 		}
-
-		if (Room::detect_nodes_of_type<RoomGroup>(this)) {
-			if (!warning.empty()) {
-				warning += "\n\n";
-			}
-			warning += TTR("RoomGroups should not be children of the RoomManager.");
-		}
-
-		if (Room::detect_nodes_of_type<Portal>(this)) {
-			if (!warning.empty()) {
-				warning += "\n\n";
-			}
-			warning += TTR("Portals should not be children of the RoomManager.");
-		}
-
-		if (Room::detect_nodes_of_type<RoomManager>(this)) {
-			if (!warning.empty()) {
-				warning += "\n\n";
-			}
-			warning += TTR("There should only be one RoomManager in the SceneTree.");
-		}
+		warning += TTR("There should only be one RoomManager in the SceneTree.");
 	}
 
 	return warning;
@@ -851,7 +825,7 @@ void RoomManager::_second_pass_portals(Spatial *p_roomlist, LocalVector<Portal *
 		int room_from_id = portal->_linkedroom_ID[0];
 		if (room_from_id != -1) {
 			Room *room_from = _rooms[room_from_id];
-			portal->resolve_links(room_from->_room_rid);
+			portal->resolve_links(_rooms, room_from->_room_rid);
 
 			// add the portal id to the room from and the room to.
 			// These are used so we can later add the portal geometry to the room bounds.
@@ -969,11 +943,7 @@ void RoomManager::_autolink_portals(Spatial *p_roomlist, LocalVector<Portal *> &
 // to prevent users creating mistakes for themselves, we limit what can be put into the room list branch.
 // returns invalid node, or NULL
 bool RoomManager::_check_roomlist_validity(Node *p_node) {
-	if (Room::detect_nodes_of_type<RoomManager>(p_node, false)) {
-		show_warning("RoomList should not be the RoomManager,\nor contain a RoomManager as child or grandchild.");
-		return false;
-	}
-
+	// restrictions lifted here, but we can add more if required
 	return true;
 }
 
@@ -1585,6 +1555,9 @@ void RoomManager::_convert_portal(Room *p_room, Spatial *p_node, LocalVector<Por
 			return;
 		}
 	}
+
+	// make sure to start with fresh internal data each time (for linked rooms etc)
+	portal->clear();
 
 	// mark so as only to convert once
 	portal->_conversion_tick = _conversion_tick;
