@@ -201,6 +201,8 @@
 			<return type="PackedByteArray">
 			</return>
 			<description>
+				Returns a copy of the data converted to a [PackedByteArray], where each element have been encoded as 4 bytes.
+				The size of the new array will be [code]float32_array.size() * 4[/code].
 			</description>
 		</method>
 	</methods>
