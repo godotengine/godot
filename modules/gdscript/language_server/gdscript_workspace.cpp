@@ -119,8 +119,7 @@ const lsp::DocumentSymbol *GDScriptWorkspace::get_script_symbol(const String &p_
 void GDScriptWorkspace::reload_all_workspace_scripts() {
 	List<String> paths;
 	list_script_files("res://", paths);
-	for (List<String>::Element *E = paths.front(); E; E = E->next()) {
-		const String &path = E->get();
+	for (String &path : paths) {
 		Error err;
 		String content = FileAccess::get_file_as_string(path, &err);
 		ERR_CONTINUE(err != OK);
@@ -559,8 +558,8 @@ const lsp::DocumentSymbol *GDScriptWorkspace::resolve_native_symbol(const lsp::N
 void GDScriptWorkspace::resolve_document_links(const String &p_uri, List<lsp::DocumentLink> &r_list) {
 	if (const ExtendGDScriptParser *parser = get_parse_successed_script(get_file_path(p_uri))) {
 		const List<lsp::DocumentLink> &links = parser->get_document_links();
-		for (const List<lsp::DocumentLink>::Element *E = links.front(); E; E = E->next()) {
-			r_list.push_back(E->get());
+		for (const lsp::DocumentLink &E : links) {
+			r_list.push_back(E);
 		}
 	}
 }
@@ -587,8 +586,7 @@ Error GDScriptWorkspace::resolve_signature(const lsp::TextDocumentPositionParams
 				GDScriptLanguageProtocol::get_singleton()->get_workspace()->resolve_related_symbols(text_pos, symbols);
 			}
 
-			for (List<const lsp::DocumentSymbol *>::Element *E = symbols.front(); E; E = E->next()) {
-				const lsp::DocumentSymbol *symbol = E->get();
+			for (const lsp::DocumentSymbol *symbol : symbols) {
 				if (symbol->kind == lsp::SymbolKind::Method || symbol->kind == lsp::SymbolKind::Function) {
 					lsp::SignatureInformation signature_info;
 					signature_info.label = symbol->detail;

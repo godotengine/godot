@@ -240,8 +240,7 @@ void GroupDialog::_group_renamed() {
 	List<Node *> nodes;
 	scene_tree->get_nodes_in_group(selected_group, &nodes);
 	bool removed_all = true;
-	for (List<Node *>::Element *E = nodes.front(); E; E = E->next()) {
-		Node *node = E->get();
+	for (Node *node : nodes) {
 		if (_can_edit(node, selected_group)) {
 			undo_redo->add_do_method(node, "remove_from_group", selected_group);
 			undo_redo->add_undo_method(node, "remove_from_group", name);
@@ -286,11 +285,11 @@ void GroupDialog::_load_groups(Node *p_current) {
 	List<Node::GroupInfo> gi;
 	p_current->get_groups(&gi);
 
-	for (List<Node::GroupInfo>::Element *E = gi.front(); E; E = E->next()) {
-		if (!E->get().persistent) {
+	for (Node::GroupInfo &E : gi) {
+		if (!E.persistent) {
 			continue;
 		}
-		_add_group(E->get().name);
+		_add_group(E.name);
 	}
 
 	for (int i = 0; i < p_current->get_child_count(); i++) {
@@ -311,10 +310,10 @@ void GroupDialog::_delete_group_pressed(Object *p_item, int p_column, int p_id) 
 	List<Node *> nodes;
 	scene_tree->get_nodes_in_group(name, &nodes);
 	bool removed_all = true;
-	for (List<Node *>::Element *E = nodes.front(); E; E = E->next()) {
-		if (_can_edit(E->get(), name)) {
-			undo_redo->add_do_method(E->get(), "remove_from_group", name);
-			undo_redo->add_undo_method(E->get(), "add_to_group", name, true);
+	for (Node *E : nodes) {
+		if (_can_edit(E, name)) {
+			undo_redo->add_do_method(E, "remove_from_group", name);
+			undo_redo->add_undo_method(E, "add_to_group", name, true);
 		} else {
 			removed_all = false;
 		}
@@ -628,8 +627,7 @@ void GroupsEditor::update_tree() {
 
 	TreeItem *root = tree->create_item();
 
-	for (List<GroupInfo>::Element *E = groups.front(); E; E = E->next()) {
-		Node::GroupInfo gi = E->get();
+	for (GroupInfo &gi : groups) {
 		if (!gi.persistent) {
 			continue;
 		}

@@ -144,8 +144,7 @@ void TextureRegionEditor::_region_draw() {
 			}
 		}
 	} else if (snap_mode == SNAP_AUTOSLICE) {
-		for (List<Rect2>::Element *E = autoslice_cache.front(); E; E = E->next()) {
-			Rect2 r = E->get();
+		for (Rect2 &r : autoslice_cache) {
 			Vector2 endpoints[4] = {
 				mtx.basis_xform(r.position),
 				mtx.basis_xform(r.position + Vector2(r.size.x, 0)),
@@ -328,9 +327,9 @@ void TextureRegionEditor::_region_input(const Ref<InputEvent> &p_input) {
 				}
 				if (edited_margin < 0 && snap_mode == SNAP_AUTOSLICE) {
 					Vector2 point = mtx.affine_inverse().xform(Vector2(mb->get_position().x, mb->get_position().y));
-					for (List<Rect2>::Element *E = autoslice_cache.front(); E; E = E->next()) {
-						if (E->get().has_point(point)) {
-							rect = E->get();
+					for (Rect2 &E : autoslice_cache) {
+						if (E.has_point(point)) {
+							rect = E;
 							if (Input::get_singleton()->is_key_pressed(KEY_CTRL) && !(Input::get_singleton()->is_key_pressed(KEY_SHIFT | KEY_ALT))) {
 								Rect2 r;
 								if (node_sprite) {
@@ -749,12 +748,12 @@ void TextureRegionEditor::_update_autoslice() {
 		for (int x = 0; x < texture->get_width(); x++) {
 			if (texture->is_pixel_opaque(x, y)) {
 				bool found = false;
-				for (List<Rect2>::Element *E = autoslice_cache.front(); E; E = E->next()) {
-					Rect2 grown = E->get().grow(1.5);
+				for (Rect2 &E : autoslice_cache) {
+					Rect2 grown = E.grow(1.5);
 					if (grown.has_point(Point2(x, y))) {
-						E->get().expand_to(Point2(x, y));
-						E->get().expand_to(Point2(x + 1, y + 1));
-						x = E->get().position.x + E->get().size.x - 1;
+						E.expand_to(Point2(x, y));
+						E.expand_to(Point2(x + 1, y + 1));
+						x = E.position.x + E.size.x - 1;
 						bool merged = true;
 						while (merged) {
 							merged = false;
@@ -764,12 +763,12 @@ void TextureRegionEditor::_update_autoslice() {
 									autoslice_cache.erase(F->prev());
 									queue_erase = false;
 								}
-								if (F == E) {
+								if (F->get() == E) {
 									continue;
 								}
-								if (E->get().grow(1).intersects(F->get())) {
-									E->get().expand_to(F->get().position);
-									E->get().expand_to(F->get().position + F->get().size);
+								if (E.grow(1).intersects(F->get())) {
+									E.expand_to(F->get().position);
+									E.expand_to(F->get().position + F->get().size);
 									if (F->prev()) {
 										F = F->prev();
 										autoslice_cache.erase(F->next());

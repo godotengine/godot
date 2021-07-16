@@ -852,11 +852,11 @@ void VisualScriptTypeCast::_bind_methods() {
 	}
 
 	String script_ext_hint;
-	for (List<String>::Element *E = script_extensions.front(); E; E = E->next()) {
+	for (String &E : script_extensions) {
 		if (script_ext_hint != String()) {
 			script_ext_hint += ",";
 		}
-		script_ext_hint += "*." + E->get();
+		script_ext_hint += "*." + E;
 	}
 
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "base_type", PROPERTY_HINT_TYPE_STRING, "Object"), "set_base_type", "get_base_type");

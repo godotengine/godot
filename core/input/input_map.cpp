@@ -65,11 +65,11 @@ String InputMap::_suggest_actions(const StringName &p_action) const {
 	float closest_similarity = 0.0;
 
 	// Find the most action with the most similar name.
-	for (List<StringName>::Element *E = actions.front(); E; E = E->next()) {
-		const float similarity = String(E->get()).similarity(p_action);
+	for (StringName &action : actions) {
+		const float similarity = String(action).similarity(p_action);
 
 		if (similarity > closest_similarity) {
-			closest_action = E->get();
+			closest_action = action;
 			closest_similarity = similarity;
 		}
 	}
@@ -105,8 +105,8 @@ Array InputMap::_get_actions() {
 		return ret;
 	}
 
-	for (const List<StringName>::Element *E = actions.front(); E; E = E->next()) {
-		ret.push_back(E->get());
+	for (const StringName &E : actions) {
+		ret.push_back(E);
 	}
 
 	return ret;
@@ -129,13 +129,11 @@ List<Ref<InputEvent>>::Element *InputMap::_find_event(Action &p_action, const Re
 	ERR_FAIL_COND_V(!p_event.is_valid(), nullptr);
 
 	for (List<Ref<InputEvent>>::Element *E = p_action.inputs.front(); E; E = E->next()) {
-		const Ref<InputEvent> e = E->get();
-
-		int device = e->get_device();
+		int device = E->get()->get_device();
 		if (device == ALL_DEVICES || device == p_event->get_device()) {
-			if (p_exact_match && e->is_match(p_event, true)) {
+			if (p_exact_match && E->get()->is_match(p_event, true)) {
 				return E;
-			} else if (!p_exact_match && e->action_match(p_event, p_pressed, p_strength, p_raw_strength, p_action.deadzone)) {
+			} else if (!p_exact_match && E->get()->action_match(p_event, p_pressed, p_strength, p_raw_strength, p_action.deadzone)) {
 				return E;
 			}
 		}
@@ -198,7 +196,7 @@ Array InputMap::_action_get_events(const StringName &p_action) {
 	const List<Ref<InputEvent>> *al = action_get_events(p_action);
 	if (al) {
 		for (const List<Ref<InputEvent>>::Element *E = al->front(); E; E = E->next()) {
-			ret.push_back(E->get());
+			ret.push_back(E);
 		}
 	}
 
@@ -263,9 +261,7 @@ void InputMap::load_from_project_settings() {
 	List<PropertyInfo> pinfo;
 	ProjectSettings::get_singleton()->get_property_list(&pinfo);
 
-	for (List<PropertyInfo>::Element *E = pinfo.front(); E; E = E->next()) {
-		const PropertyInfo &pi = E->get();
-
+	for (PropertyInfo &pi : pinfo) {
 		if (!pi.name.begins_with("input/")) {
 			continue;
 		}

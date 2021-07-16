@@ -351,8 +351,8 @@ RES NativeExtensionResourceLoader::load(const String &p_path, const String &p_or
 
 	String library_path;
 
-	for (List<String>::Element *E = libraries.front(); E; E = E->next()) {
-		Vector<String> tags = E->get().split(".");
+	for (String &E : libraries) {
+		Vector<String> tags = E.split(".");
 		bool all_tags_met = true;
 		for (int i = 0; i < tags.size(); i++) {
 			String tag = tags[i].strip_edges();
@@ -363,7 +363,7 @@ RES NativeExtensionResourceLoader::load(const String &p_path, const String &p_or
 		}
 
 		if (all_tags_met) {
-			library_path = config->get_value("libraries", E->get());
+			library_path = config->get_value("libraries", E);
 			break;
 		}
 	}

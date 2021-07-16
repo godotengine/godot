@@ -103,8 +103,8 @@ void EditorStandardSyntaxHighlighter::_update_cache() {
 	const Color type_color = EDITOR_GET("text_editor/highlighting/engine_type_color");
 	List<StringName> types;
 	ClassDB::get_class_list(&types);
-	for (List<StringName>::Element *E = types.front(); E; E = E->next()) {
-		String n = E->get();
+	for (StringName &E : types) {
+		String n = E;
 		if (n.begins_with("_")) {
 			n = n.substr(1, n.length());
 		}
@@ -115,8 +115,8 @@ void EditorStandardSyntaxHighlighter::_update_cache() {
 	const Color usertype_color = EDITOR_GET("text_editor/highlighting/user_type_color");
 	List<StringName> global_classes;
 	ScriptServer::get_global_class_list(&global_classes);
-	for (List<StringName>::Element *E = global_classes.front(); E; E = E->next()) {
-		highlighter->add_keyword_color(E->get(), usertype_color);
+	for (StringName &E : global_classes) {
+		highlighter->add_keyword_color(E, usertype_color);
 	}
 
 	/* Autoloads. */
@@ -134,8 +134,8 @@ void EditorStandardSyntaxHighlighter::_update_cache() {
 		const Color basetype_color = EDITOR_GET("text_editor/highlighting/base_type_color");
 		List<String> core_types;
 		script->get_language()->get_core_type_words(&core_types);
-		for (List<String>::Element *E = core_types.front(); E; E = E->next()) {
-			highlighter->add_keyword_color(E->get(), basetype_color);
+		for (String &E : core_types) {
+			highlighter->add_keyword_color(E, basetype_color);
 		}
 
 		/* Reserved words. */
@@ -143,11 +143,11 @@ void EditorStandardSyntaxHighlighter::_update_cache() {
 		const Color control_flow_keyword_color = EDITOR_GET("text_editor/highlighting/control_flow_keyword_color");
 		List<String> keywords;
 		script->get_language()->get_reserved_words(&keywords);
-		for (List<String>::Element *E = keywords.front(); E; E = E->next()) {
-			if (script->get_language()->is_control_flow_keyword(E->get())) {
-				highlighter->add_keyword_color(E->get(), control_flow_keyword_color);
+		for (String &E : keywords) {
+			if (script->get_language()->is_control_flow_keyword(E)) {
+				highlighter->add_keyword_color(E, control_flow_keyword_color);
 			} else {
-				highlighter->add_keyword_color(E->get(), keyword_color);
+				highlighter->add_keyword_color(E, keyword_color);
 			}
 		}
 
@@ -157,9 +157,9 @@ void EditorStandardSyntaxHighlighter::_update_cache() {
 		if (instance_base != StringName()) {
 			List<PropertyInfo> plist;
 			ClassDB::get_property_list(instance_base, &plist);
-			for (List<PropertyInfo>::Element *E = plist.front(); E; E = E->next()) {
-				String name = E->get().name;
-				if (E->get().usage & PROPERTY_USAGE_CATEGORY || E->get().usage & PROPERTY_USAGE_GROUP || E->get().usage & PROPERTY_USAGE_SUBGROUP) {
+			for (PropertyInfo &E : plist) {
+				String name = E.name;
+				if (E.usage & PROPERTY_USAGE_CATEGORY || E.usage & PROPERTY_USAGE_GROUP || E.usage & PROPERTY_USAGE_SUBGROUP) {
 					continue;
 				}
 				if (name.find("/") != -1) {
@@ -170,8 +170,8 @@ void EditorStandardSyntaxHighlighter::_update_cache() {
 
 			List<String> clist;
 			ClassDB::get_integer_constant_list(instance_base, &clist);
-			for (List<String>::Element *E = clist.front(); E; E = E->next()) {
-				highlighter->add_member_keyword_color(E->get(), member_variable_color);
+			for (String &E : clist) {
+				highlighter->add_member_keyword_color(E, member_variable_color);
 			}
 		}
 
@@ -179,8 +179,7 @@ void EditorStandardSyntaxHighlighter::_update_cache() {
 		const Color comment_color = EDITOR_GET("text_editor/highlighting/comment_color");
 		List<String> comments;
 		script->get_language()->get_comment_delimiters(&comments);
-		for (List<String>::Element *E = comments.front(); E; E = E->next()) {
-			String comment = E->get();
+		for (String &comment : comments) {
 			String beg = comment.get_slice(" ", 0);
 			String end = comment.get_slice_count(" ") > 1 ? comment.get_slice(" ", 1) : String();
 			highlighter->add_color_region(beg, end, comment_color, end == "");
@@ -190,8 +189,7 @@ void EditorStandardSyntaxHighlighter::_update_cache() {
 		const Color string_color = EDITOR_GET("text_editor/highlighting/string_color");
 		List<String> strings;
 		script->get_language()->get_string_delimiters(&strings);
-		for (List<String>::Element *E = strings.front(); E; E = E->next()) {
-			String string = E->get();
+		for (String &string : strings) {
 			String beg = string.get_slice(" ", 0);
 			String end = string.get_slice_count(" ") > 1 ? string.get_slice(" ", 1) : String();
 			highlighter->add_color_region(beg, end, string_color, end == "");

@@ -944,9 +944,7 @@ void ConnectionsDock::update_tree() {
 			node_signals2.sort();
 		}
 
-		for (List<MethodInfo>::Element *E = node_signals2.front(); E; E = E->next()) {
-			MethodInfo &mi = E->get();
-
+		for (MethodInfo &mi : node_signals2) {
 			StringName signal_name = mi.name;
 			String signaldesc = "(";
 			PackedStringArray argnames;
@@ -1025,8 +1023,8 @@ void ConnectionsDock::update_tree() {
 			List<Object::Connection> connections;
 			selectedNode->get_signal_connection_list(signal_name, &connections);
 
-			for (List<Object::Connection>::Element *F = connections.front(); F; F = F->next()) {
-				Connection cn = F->get();
+			for (Object::Connection &F : connections) {
+				Connection cn = F;
 				if (!(cn.flags & CONNECT_PERSIST)) {
 					continue;
 				}

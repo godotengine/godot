@@ -490,11 +490,11 @@ Ref<Texture2D> EditorScriptPreviewPlugin::generate(const RES &p_from, const Size
 	Set<String> control_flow_keywords;
 	Set<String> keywords;
 
-	for (List<String>::Element *E = kwors.front(); E; E = E->next()) {
-		if (scr->get_language()->is_control_flow_keyword(E->get())) {
-			control_flow_keywords.insert(E->get());
+	for (String &E : kwors) {
+		if (scr->get_language()->is_control_flow_keyword(E)) {
+			control_flow_keywords.insert(E);
 		} else {
-			keywords.insert(E->get());
+			keywords.insert(E);
 		}
 	}
 

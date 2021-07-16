@@ -759,8 +759,7 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 			List<String> keys;
 			p_extra_config->get_section_keys("presets", &keys);
 
-			for (List<String>::Element *E = keys.front(); E; E = E->next()) {
-				String key = E->get();
+			for (String &key : keys) {
 				Variant val = p_extra_config->get_value("presets", key);
 				set(key, val);
 			}
@@ -815,8 +814,7 @@ bool EditorSettings::_save_text_editor_theme(String p_file) {
 	props.get_key_list(&keys);
 	keys.sort();
 
-	for (const List<String>::Element *E = keys.front(); E; E = E->next()) {
-		const String &key = E->get();
+	for (const String &key : keys) {
 		if (key.begins_with("text_editor/highlighting/") && key.find("color") >= 0) {
 			cf->set_value(theme_section, key.replace("text_editor/highlighting/", ""), ((Color)props[key].variant).to_html());
 		}
@@ -1015,15 +1013,13 @@ void EditorSettings::setup_network() {
 	String selected = "127.0.0.1";
 
 	// Check that current remote_host is a valid interface address and populate hints.
-	for (List<IPAddress>::Element *E = local_ip.front(); E; E = E->next()) {
-		String ip = E->get();
-
+	for (IPAddress &ip : local_ip) {
 		// link-local IPv6 addresses don't work, skipping them
-		if (ip.begins_with("fe80:0:0:0:")) { // fe80::/64
+		if (String(ip).begins_with("fe80:0:0:0:")) { // fe80::/64
 			continue;
 		}
 		// Same goes for IPv4 link-local (APIPA) addresses.
-		if (ip.begins_with("169.254.")) { // 169.254.0.0/16
+		if (String(ip).begins_with("169.254.")) { // 169.254.0.0/16
 			continue;
 		}
 		// Select current IP (found)
@@ -1303,8 +1299,8 @@ void EditorSettings::list_text_editor_themes() {
 		memdelete(d);
 
 		custom_themes.sort();
-		for (List<String>::Element *E = custom_themes.front(); E; E = E->next()) {
-			themes += "," + E->get();
+		for (String &E : custom_themes) {
+			themes += "," + E;
 		}
 	}
 	add_property_hint(PropertyInfo(Variant::STRING, "text_editor/theme/color_theme", PROPERTY_HINT_ENUM, themes));
@@ -1332,8 +1328,7 @@ void EditorSettings::load_text_editor_theme() {
 	List<String> keys;
 	cf->get_section_keys("color_theme", &keys);
 
-	for (List<String>::Element *E = keys.front(); E; E = E->next()) {
-		String key = E->get();
+	for (String &key : keys) {
 		String val = cf->get_value("color_theme", key);
 
 		// don't load if it's not already there!
@@ -1585,8 +1580,8 @@ void EditorSettings::set_builtin_action_override(const String &p_name, const Arr
 			int event_idx = 0;
 
 			// Check equality of each event.
-			for (List<Ref<InputEvent>>::Element *E = builtin_events.front(); E; E = E->next()) {
-				if (!E->get()->is_match(p_events[event_idx])) {
+			for (Ref<InputEvent> E : builtin_events) {
+				if (!E->is_match(p_events[event_idx])) {
 					same_as_builtin = false;
 					break;
 				}
@@ -1615,8 +1610,8 @@ const Array EditorSettings::get_builtin_action_overrides(const String &p_name) c
 		Array event_array;
 
 		List<Ref<InputEvent>> events_list = AO->get();
-		for (List<Ref<InputEvent>>::Element *E = events_list.front(); E; E = E->next()) {
-			event_array.push_back(E->get());
+		for (Ref<InputEvent> E : events_list) {
+			event_array.push_back(E);
 		}
 		return event_array;
 	}

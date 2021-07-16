@@ -427,16 +427,16 @@ void RemoteDebugger::_send_resource_usage() {
 	List<RS::TextureInfo> tinfo;
 	RS::get_singleton()->texture_debug_usage(&tinfo);
 
-	for (List<RS::TextureInfo>::Element *E = tinfo.front(); E; E = E->next()) {
+	for (RS::TextureInfo &E : tinfo) {
 		DebuggerMarshalls::ResourceInfo info;
-		info.path = E->get().path;
-		info.vram = E->get().bytes;
-		info.id = E->get().texture;
+		info.path = E.path;
+		info.vram = E.bytes;
+		info.id = E.texture;
 		info.type = "Texture";
-		if (E->get().depth == 0) {
-			info.format = itos(E->get().width) + "x" + itos(E->get().height) + " " + Image::get_format_name(E->get().format);
+		if (E.depth == 0) {
+			info.format = itos(E.width) + "x" + itos(E.height) + " " + Image::get_format_name(E.format);
 		} else {
-			info.format = itos(E->get().width) + "x" + itos(E->get().height) + "x" + itos(E->get().depth) + " " + Image::get_format_name(E->get().format);
+			info.format = itos(E.width) + "x" + itos(E.height) + "x" + itos(E.depth) + " " + Image::get_format_name(E.format);
 		}
 		usage.infos.push_back(info);
 	}

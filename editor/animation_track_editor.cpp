@@ -598,12 +598,12 @@ public:
 					if (ap) {
 						List<StringName> anims;
 						ap->get_animation_list(&anims);
-						for (List<StringName>::Element *E = anims.front(); E; E = E->next()) {
+						for (StringName &E : anims) {
 							if (animations != String()) {
 								animations += ",";
 							}
 
-							animations += String(E->get());
+							animations += String(E);
 						}
 					}
 				}
@@ -702,8 +702,8 @@ public:
 
 		for (Map<int, List<float>>::Element *E = key_ofs_map.front(); E; E = E->next()) {
 			int key = 0;
-			for (List<float>::Element *F = E->value().front(); F; F = F->next()) {
-				float key_ofs = F->get();
+			for (float &F : E->value()) {
+				float key_ofs = F;
 				if (from != key_ofs) {
 					key++;
 					continue;
@@ -728,8 +728,8 @@ public:
 		bool change_notify_deserved = false;
 		for (Map<int, List<float>>::Element *E = key_ofs_map.front(); E; E = E->next()) {
 			int track = E->key();
-			for (List<float>::Element *F = E->value().front(); F; F = F->next()) {
-				float key_ofs = F->get();
+			for (float &F : E->value()) {
+				float key_ofs = F;
 				int key = animation->track_find_key(track, key_ofs, true);
 				ERR_FAIL_COND_V(key == -1, false);
 
@@ -986,8 +986,8 @@ public:
 	bool _get(const StringName &p_name, Variant &r_ret) const {
 		for (Map<int, List<float>>::Element *E = key_ofs_map.front(); E; E = E->next()) {
 			int track = E->key();
-			for (List<float>::Element *F = E->value().front(); F; F = F->next()) {
-				float key_ofs = F->get();
+			for (float &F : E->value()) {
+				float key_ofs = F;
 				int key = animation->track_find_key(track, key_ofs, true);
 				ERR_CONTINUE(key == -1);
 
@@ -1137,8 +1137,8 @@ public:
 					same_key_type = false;
 				}
 
-				for (List<float>::Element *F = E->value().front(); F; F = F->next()) {
-					int key = animation->track_find_key(track, F->get(), true);
+				for (float &F : E->value()) {
+					int key = animation->track_find_key(track, F, true);
 					ERR_FAIL_COND(key == -1);
 					if (first_key < 0) {
 						first_key = key;
@@ -3356,9 +3356,9 @@ void AnimationTrackEditor::_query_insert(const InsertData &p_id) {
 	}
 	insert_frame = Engine::get_singleton()->get_frames_drawn();
 
-	for (List<InsertData>::Element *E = insert_data.front(); E; E = E->next()) {
+	for (InsertData &E : insert_data) {
 		//prevent insertion of multiple tracks
-		if (E->get().path == p_id.path) {
+		if (E.path == p_id.path) {
 			return; //already inserted a track for this on this frame
 		}
 	}
@@ -3843,9 +3843,9 @@ PropertyInfo AnimationTrackEditor::_find_hint_for_track(int p_idx, NodePath &r_b
 	List<PropertyInfo> pinfo;
 	property_info_base.get_property_list(&pinfo);
 
-	for (List<PropertyInfo>::Element *E = pinfo.front(); E; E = E->next()) {
-		if (E->get().name == leftover_path[leftover_path.size() - 1]) {
-			return E->get();
+	for (PropertyInfo &E : pinfo) {
+		if (E.name == leftover_path[leftover_path.size() - 1]) {
+			return E;
 		}
 	}
 
@@ -4675,21 +4675,21 @@ void AnimationTrackEditor::_add_method_key(const String &p_method) {
 	List<MethodInfo> minfo;
 	base->get_method_list(&minfo);
 
-	for (List<MethodInfo>::Element *E = minfo.front(); E; E = E->next()) {
-		if (E->get().name == p_method) {
+	for (MethodInfo &E : minfo) {
+		if (E.name == p_method) {
 			Dictionary d;
 			d["method"] = p_method;
 			Array params;
-			int first_defarg = E->get().arguments.size() - E->get().default_arguments.size();
+			int first_defarg = E.arguments.size() - E.default_arguments.size();
 
-			for (int i = 0; i < E->get().arguments.size(); i++) {
+			for (int i = 0; i < E.arguments.size(); i++) {
 				if (i >= first_defarg) {
-					Variant arg = E->get().default_arguments[i - first_defarg];
+					Variant arg = E.default_arguments[i - first_defarg];
 					params.push_back(arg);
 				} else {
 					Callable::CallError ce;
 					Variant arg;
-					Variant::construct(E->get().arguments[i].type, arg, nullptr, 0, ce);
+					Variant::construct(E.arguments[i].type, arg, nullptr, 0, ce);
 					params.push_back(arg);
 				}
 			}
@@ -4936,8 +4936,7 @@ void AnimationTrackEditor::_move_selection_commit() {
 	}
 
 	// 6 - (undo) reinsert overlapped keys
-	for (List<_AnimMoveRestore>::Element *E = to_restore.front(); E; E = E->next()) {
-		_AnimMoveRestore &amr = E->get();
+	for (_AnimMoveRestore &amr : to_restore) {
 		undo_redo->add_undo_method(animation.ptr(), "track_insert_key", amr.track, amr.time, amr.key, amr.transition);
 	}
 
@@ -5151,9 +5150,9 @@ void AnimationTrackEditor::_anim_duplicate_keys(bool transpose) {
 		//reselect duplicated
 
 		Map<SelectedKey, KeyInfo> new_selection;
-		for (List<Pair<int, float>>::Element *E = new_selection_values.front(); E; E = E->next()) {
-			int track = E->get().first;
-			float time = E->get().second;
+		for (Pair<int, float> &E : new_selection_values) {
+			int track = E.first;
+			float time = E.second;
 
 			int existing_idx = animation->track_find_key(track, time, true);
 
@@ -5462,8 +5461,7 @@ void AnimationTrackEditor::_edit_menu_pressed(int p_option) {
 			}
 
 			// 6-(undo) reinsert overlapped keys
-			for (List<_AnimMoveRestore>::Element *E = to_restore.front(); E; E = E->next()) {
-				_AnimMoveRestore &amr = E->get();
+			for (_AnimMoveRestore &amr : to_restore) {
 				undo_redo->add_undo_method(animation.ptr(), "track_insert_key", amr.track, amr.time, amr.key, amr.transition);
 			}
 
@@ -5543,8 +5541,8 @@ void AnimationTrackEditor::_edit_menu_pressed(int p_option) {
 			if (cleanup_all->is_pressed()) {
 				List<StringName> names;
 				AnimationPlayerEditor::singleton->get_player()->get_animation_list(&names);
-				for (List<StringName>::Element *E = names.front(); E; E = E->next()) {
-					_cleanup_animation(AnimationPlayerEditor::singleton->get_player()->get_animation(E->get()));
+				for (StringName &E : names) {
+					_cleanup_animation(AnimationPlayerEditor::singleton->get_player()->get_animation(E));
 				}
 			} else {
 				_cleanup_animation(animation);

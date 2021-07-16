@@ -1238,16 +1238,16 @@ void ProjectList::load_projects() {
 
 	Set<String> favorites;
 	// Find favourites...
-	for (List<PropertyInfo>::Element *E = properties.front(); E; E = E->next()) {
-		String property_key = E->get().name;
+	for (PropertyInfo &E : properties) {
+		String property_key = E.name;
 		if (property_key.begins_with("favorite_projects/")) {
 			favorites.insert(property_key);
 		}
 	}
 
-	for (List<PropertyInfo>::Element *E = properties.front(); E; E = E->next()) {
+	for (PropertyInfo &E : properties) {
 		// This is actually something like "projects/C:::Documents::Godot::Projects::MyGame"
-		String property_key = E->get().name;
+		String property_key = E.name;
 		if (!property_key.begins_with("projects/")) {
 			continue;
 		}
@@ -1582,8 +1582,8 @@ int ProjectList::refresh_project(const String &dir_path) {
 		String favorite_property_key = "favorite_projects/" + project_key;
 
 		bool found = false;
-		for (List<PropertyInfo>::Element *E = properties.front(); E; E = E->next()) {
-			String prop = E->get().name;
+		for (PropertyInfo &E : properties) {
+			String prop = E.name;
 			if (!found && prop == property_key) {
 				found = true;
 			} else if (!is_favourite && prop == favorite_property_key) {
@@ -2188,9 +2188,9 @@ void ProjectManager::_scan_begin(const String &p_base) {
 	_scan_dir(p_base, &projects);
 	print_line("Found " + itos(projects.size()) + " projects.");
 
-	for (List<String>::Element *E = projects.front(); E; E = E->next()) {
-		String proj = get_project_key_from_path(E->get());
-		EditorSettings::get_singleton()->set("projects/" + proj, E->get());
+	for (String &E : projects) {
+		String proj = get_project_key_from_path(E);
+		EditorSettings::get_singleton()->set("projects/" + proj, E);
 	}
 	EditorSettings::get_singleton()->save();
 	_load_recent_projects();
@@ -2625,8 +2625,7 @@ ProjectManager::ProjectManager() {
 		Vector<String> editor_languages;
 		List<PropertyInfo> editor_settings_properties;
 		EditorSettings::get_singleton()->get_property_list(&editor_settings_properties);
-		for (List<PropertyInfo>::Element *E = editor_settings_properties.front(); E; E = E->next()) {
-			PropertyInfo &pi = E->get();
+		for (PropertyInfo &pi : editor_settings_properties) {
 			if (pi.name == "interface/editor/editor_language") {
 				editor_languages = pi.hint_string.split(",");
 				break;

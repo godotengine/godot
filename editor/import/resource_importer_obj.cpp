@@ -438,17 +438,16 @@ Node *EditorOBJImporter::import_scene(const String &p_path, uint32_t p_flags, in
 
 	Node3D *scene = memnew(Node3D);
 
-	for (List<Ref<Mesh>>::Element *E = meshes.front(); E; E = E->next()) {
+	for (Ref<Mesh> m : meshes) {
 		Ref<EditorSceneImporterMesh> mesh;
 		mesh.instantiate();
-		Ref<Mesh> m = E->get();
 		for (int i = 0; i < m->get_surface_count(); i++) {
 			mesh->add_surface(m->surface_get_primitive_type(i), m->surface_get_arrays(i), Array(), Dictionary(), m->surface_get_material(i));
 		}
 
 		EditorSceneImporterMeshNode3D *mi = memnew(EditorSceneImporterMeshNode3D);
 		mi->set_mesh(mesh);
-		mi->set_name(E->get()->get_name());
+		mi->set_name(m->get_name());
 		scene->add_child(mi);
 		mi->set_owner(scene);
 	}

@@ -143,8 +143,8 @@ void CustomPropertyEditor::_menu_option(int p_which) {
 					}
 
 					Set<String> valid_extensions;
-					for (List<String>::Element *E = extensions.front(); E; E = E->next()) {
-						valid_extensions.insert(E->get());
+					for (String &E : extensions) {
+						valid_extensions.insert(E);
 					}
 
 					file->clear_filters();
@@ -179,9 +179,8 @@ void CustomPropertyEditor::_menu_option(int p_which) {
 					res_orig->get_property_list(&property_list);
 					List<Pair<String, Variant>> propvalues;
 
-					for (List<PropertyInfo>::Element *E = property_list.front(); E; E = E->next()) {
+					for (PropertyInfo &pi : property_list) {
 						Pair<String, Variant> p;
-						PropertyInfo &pi = E->get();
 						if (pi.usage & PROPERTY_USAGE_STORAGE) {
 							p.first = pi.name;
 							p.second = res_orig->get(pi.name);
@@ -198,8 +197,7 @@ void CustomPropertyEditor::_menu_option(int p_which) {
 
 					ERR_FAIL_COND(res.is_null());
 
-					for (List<Pair<String, Variant>>::Element *E = propvalues.front(); E; E = E->next()) {
-						Pair<String, Variant> &p = E->get();
+					for (Pair<String, Variant> &p : propvalues) {
 						res->set(p.first, p.second);
 					}
 
@@ -1293,8 +1291,8 @@ void CustomPropertyEditor::_action_pressed(int p_which) {
 
 				ResourceLoader::get_recognized_extensions_for_type(type, &extensions);
 				file->clear_filters();
-				for (List<String>::Element *E = extensions.front(); E; E = E->next()) {
-					file->add_filter("*." + E->get() + " ; " + E->get().to_upper());
+				for (String &E : extensions) {
+					file->add_filter("*." + E + " ; " + E.to_upper());
 				}
 
 				file->popup_file_dialog();
@@ -1321,9 +1319,8 @@ void CustomPropertyEditor::_action_pressed(int p_which) {
 				res_orig->get_property_list(&property_list);
 				List<Pair<String, Variant>> propvalues;
 
-				for (List<PropertyInfo>::Element *E = property_list.front(); E; E = E->next()) {
+				for (PropertyInfo &pi : property_list) {
 					Pair<String, Variant> p;
-					PropertyInfo &pi = E->get();
 					if (pi.usage & PROPERTY_USAGE_STORAGE) {
 						p.first = pi.name;
 						p.second = res_orig->get(pi.name);
@@ -1336,8 +1333,7 @@ void CustomPropertyEditor::_action_pressed(int p_which) {
 
 				ERR_FAIL_COND(res.is_null());
 
-				for (List<Pair<String, Variant>>::Element *E = propvalues.front(); E; E = E->next()) {
-					Pair<String, Variant> &p = E->get();
+				for (Pair<String, Variant> &p : propvalues) {
 					res->set(p.first, p.second);
 				}
 

@@ -425,11 +425,11 @@ List<ClassAPI> generate_c_api_classes() {
 			List<EnumAPI> enums;
 			List<StringName> enum_names;
 			ClassDB::get_enum_list(class_name, &enum_names, true);
-			for (List<StringName>::Element *E = enum_names.front(); E; E = E->next()) {
+			for (StringName &E : enum_names) {
 				List<StringName> value_names;
 				EnumAPI enum_api;
-				enum_api.name = E->get();
-				ClassDB::get_enum_constants(class_name, E->get(), &value_names, true);
+				enum_api.name = E;
+				ClassDB::get_enum_constants(class_name, E, &value_names, true);
 				for (List<StringName>::Element *val_e = value_names.front(); val_e; val_e = val_e->next()) {
 					int int_val = ClassDB::get_integer_constant(class_name, val_e->get(), nullptr);
 					enum_api.values.push_back(Pair<int, String>(int_val, val_e->get()));
@@ -459,8 +459,8 @@ List<ClassAPI> generate_c_builtin_api_types() {
 
 		List<StringName> utility_functions;
 		Variant::get_utility_function_list(&utility_functions);
-		for (const List<StringName>::Element *E = utility_functions.front(); E; E = E->next()) {
-			const StringName &function_name = E->get();
+		for (const StringName &E : utility_functions) {
+			const StringName &function_name = E;
 
 			MethodAPI function_api;
 			function_api.method_name = function_name;
@@ -521,8 +521,8 @@ List<ClassAPI> generate_c_builtin_api_types() {
 
 		List<StringName> methods;
 		Variant::get_builtin_method_list(type, &methods);
-		for (const List<StringName>::Element *E = methods.front(); E; E = E->next()) {
-			const StringName &method_name = E->get();
+		for (const StringName &E : methods) {
+			const StringName &method_name = E;
 
 			MethodAPI method_api;
 
@@ -578,8 +578,8 @@ List<ClassAPI> generate_c_builtin_api_types() {
 
 		List<StringName> constants;
 		Variant::get_constants_for_type(type, &constants);
-		for (const List<StringName>::Element *E = constants.front(); E; E = E->next()) {
-			const StringName &constant_name = E->get();
+		for (const StringName &E : constants) {
+			const StringName &constant_name = E;
 			ConstantAPI constant_api;
 
 			constant_api.constant_name = constant_name;
@@ -593,8 +593,8 @@ List<ClassAPI> generate_c_builtin_api_types() {
 
 		List<StringName> members;
 		Variant::get_member_list(type, &members);
-		for (const List<StringName>::Element *E = members.front(); E; E = E->next()) {
-			const StringName &member_name = E->get();
+		for (const StringName &E : members) {
+			const StringName &member_name = E;
 
 			PropertyAPI member_api;
 			member_api.name = member_name;

@@ -56,8 +56,8 @@ bool EditorDebuggerRemoteObject::_get(const StringName &p_name, Variant &r_ret) 
 
 void EditorDebuggerRemoteObject::_get_property_list(List<PropertyInfo> *p_list) const {
 	p_list->clear(); //sorry, no want category
-	for (const List<PropertyInfo>::Element *E = prop_list.front(); E; E = E->next()) {
-		p_list->push_back(E->get());
+	for (const PropertyInfo &E : prop_list) {
+		p_list->push_back(E);
 	}
 }
 

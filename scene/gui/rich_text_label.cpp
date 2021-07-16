@@ -238,9 +238,9 @@ void RichTextLabel::_resize_line(ItemFrame *p_frame, int p_line, const Ref<Font>
 				}
 
 				int idx = 0;
-				for (List<Item *>::Element *E = table->subitems.front(); E; E = E->next()) {
-					ERR_CONTINUE(E->get()->type != ITEM_FRAME); // Children should all be frames.
-					ItemFrame *frame = static_cast<ItemFrame *>(E->get());
+				for (Item *E : table->subitems) {
+					ERR_CONTINUE(E->type != ITEM_FRAME); // Children should all be frames.
+					ItemFrame *frame = static_cast<ItemFrame *>(E);
 					for (int i = 0; i < frame->lines.size(); i++) {
 						_resize_line(frame, i, p_base_font, p_base_font_size, 1);
 					}
@@ -316,9 +316,9 @@ void RichTextLabel::_resize_line(ItemFrame *p_frame, int p_line, const Ref<Font>
 				Vector2 offset;
 				float row_height = 0.0;
 
-				for (List<Item *>::Element *E = table->subitems.front(); E; E = E->next()) {
-					ERR_CONTINUE(E->get()->type != ITEM_FRAME); // Children should all be frames.
-					ItemFrame *frame = static_cast<ItemFrame *>(E->get());
+				for (Item *E : table->subitems) {
+					ERR_CONTINUE(E->type != ITEM_FRAME); // Children should all be frames.
+					ItemFrame *frame = static_cast<ItemFrame *>(E);
 
 					int column = idx % col_count;
 
@@ -472,9 +472,9 @@ void RichTextLabel::_shape_line(ItemFrame *p_frame, int p_line, const Ref<Font> 
 				const int available_width = p_width - hseparation * (col_count - 1);
 
 				int idx = 0;
-				for (List<Item *>::Element *E = table->subitems.front(); E; E = E->next()) {
-					ERR_CONTINUE(E->get()->type != ITEM_FRAME); // Children should all be frames.
-					ItemFrame *frame = static_cast<ItemFrame *>(E->get());
+				for (Item *E : table->subitems) {
+					ERR_CONTINUE(E->type != ITEM_FRAME); // Children should all be frames.
+					ItemFrame *frame = static_cast<ItemFrame *>(E);
 
 					int column = idx % col_count;
 					for (int i = 0; i < frame->lines.size(); i++) {
@@ -556,7 +556,7 @@ void RichTextLabel::_shape_line(ItemFrame *p_frame, int p_line, const Ref<Font> 
 				Vector2 offset;
 				float row_height = 0.0;
 
-				for (List<Item *>::Element *E = table->subitems.front(); E; E = E->next()) {
+				for (const List<Item *>::Element *E = table->subitems.front(); E; E = E->next()) {
 					ERR_CONTINUE(E->get()->type != ITEM_FRAME); // Children should all be frames.
 					ItemFrame *frame = static_cast<ItemFrame *>(E->get());
 
@@ -783,8 +783,8 @@ int RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_o
 						int row_count = table->rows.size();
 
 						int idx = 0;
-						for (List<Item *>::Element *E = table->subitems.front(); E; E = E->next()) {
-							ItemFrame *frame = static_cast<ItemFrame *>(E->get());
+						for (Item *E : table->subitems) {
+							ItemFrame *frame = static_cast<ItemFrame *>(E);
 
 							int col = idx % col_count;
 							int row = idx / col_count;
@@ -1203,8 +1203,8 @@ float RichTextLabel::_find_click_in_line(ItemFrame *p_frame, int p_line, const V
 							int col_count = table->columns.size();
 							int row_count = table->rows.size();
 
-							for (List<Item *>::Element *E = table->subitems.front(); E; E = E->next()) {
-								ItemFrame *frame = static_cast<ItemFrame *>(E->get());
+							for (Item *E : table->subitems) {
+								ItemFrame *frame = static_cast<ItemFrame *>(E);
 
 								int col = idx % col_count;
 								int row = idx / col_count;
@@ -2080,8 +2080,8 @@ bool RichTextLabel::_find_layout_subitem(Item *from, Item *to) {
 			return true;
 		}
 
-		for (List<Item *>::Element *E = from->subitems.front(); E; E = E->next()) {
-			bool layout = _find_layout_subitem(E->get(), to);
+		for (Item *E : from->subitems) {
+			bool layout = _find_layout_subitem(E, to);
 
 			if (layout) {
 				return true;
@@ -3448,8 +3448,8 @@ Error RichTextLabel::append_bbcode(const String &p_bbcode) {
 	}
 
 	Vector<ItemFX *> fx_items;
-	for (List<Item *>::Element *E = main->subitems.front(); E; E = E->next()) {
-		Item *subitem = static_cast<Item *>(E->get());
+	for (Item *E : main->subitems) {
+		Item *subitem = static_cast<Item *>(E);
 		_fetch_item_fx_stack(subitem, fx_items);
 
 		if (fx_items.size()) {
@@ -3719,9 +3719,9 @@ String RichTextLabel::_get_line_text(ItemFrame *p_frame, int p_line, Selection p
 				ItemTable *table = static_cast<ItemTable *>(it);
 				int idx = 0;
 				int col_count = table->columns.size();
-				for (List<Item *>::Element *E = table->subitems.front(); E; E = E->next()) {
-					ERR_CONTINUE(E->get()->type != ITEM_FRAME); // Children should all be frames.
-					ItemFrame *frame = static_cast<ItemFrame *>(E->get());
+				for (Item *E : table->subitems) {
+					ERR_CONTINUE(E->type != ITEM_FRAME); // Children should all be frames.
+					ItemFrame *frame = static_cast<ItemFrame *>(E);
 					int column = idx % col_count;
 
 					for (int i = 0; i < frame->lines.size(); i++) {

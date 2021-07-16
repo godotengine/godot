@@ -388,9 +388,9 @@ protected:
 		versions.clear();
 		List<Variant> keys;
 		p_versions.get_key_list(&keys);
-		for (List<Variant>::Element *E = keys.front(); E; E = E->next()) {
-			StringName name = E->get();
-			Ref<RDShaderBytecode> bc = p_versions[E->get()];
+		for (Variant &E : keys) {
+			StringName name = E;
+			Ref<RDShaderBytecode> bc = p_versions[E];
 			ERR_CONTINUE(bc.is_null());
 			versions[name] = bc;
 		}

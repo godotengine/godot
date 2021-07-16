@@ -146,10 +146,10 @@ void ResourceFormatImporter::get_recognized_extensions(List<String> *p_extension
 	for (int i = 0; i < importers.size(); i++) {
 		List<String> local_exts;
 		importers[i]->get_recognized_extensions(&local_exts);
-		for (List<String>::Element *F = local_exts.front(); F; F = F->next()) {
-			if (!found.has(F->get())) {
-				p_extensions->push_back(F->get());
-				found.insert(F->get());
+		for (String &F : local_exts) {
+			if (!found.has(F)) {
+				p_extensions->push_back(F);
+				found.insert(F);
 			}
 		}
 	}
@@ -175,10 +175,10 @@ void ResourceFormatImporter::get_recognized_extensions_for_type(const String &p_
 
 		List<String> local_exts;
 		importers[i]->get_recognized_extensions(&local_exts);
-		for (List<String>::Element *F = local_exts.front(); F; F = F->next()) {
-			if (!found.has(F->get())) {
-				p_extensions->push_back(F->get());
-				found.insert(F->get());
+		for (String &F : local_exts) {
+			if (!found.has(F)) {
+				p_extensions->push_back(F);
+				found.insert(F);
 			}
 		}
 	}
@@ -372,8 +372,8 @@ void ResourceFormatImporter::get_importers_for_extension(const String &p_extensi
 	for (int i = 0; i < importers.size(); i++) {
 		List<String> local_exts;
 		importers[i]->get_recognized_extensions(&local_exts);
-		for (List<String>::Element *F = local_exts.front(); F; F = F->next()) {
-			if (p_extension.to_lower() == F->get()) {
+		for (String &F : local_exts) {
+			if (p_extension.to_lower() == F) {
 				r_importers->push_back(importers[i]);
 			}
 		}
@@ -393,8 +393,8 @@ Ref<ResourceImporter> ResourceFormatImporter::get_importer_by_extension(const St
 	for (int i = 0; i < importers.size(); i++) {
 		List<String> local_exts;
 		importers[i]->get_recognized_extensions(&local_exts);
-		for (List<String>::Element *F = local_exts.front(); F; F = F->next()) {
-			if (p_extension.to_lower() == F->get() && importers[i]->get_priority() > priority) {
+		for (String &F : local_exts) {
+			if (p_extension.to_lower() == F && importers[i]->get_priority() > priority) {
 				importer = importers[i];
 				priority = importers[i]->get_priority();
 			}

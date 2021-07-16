@@ -894,8 +894,8 @@ Error ColladaImport::_create_mesh_surfaces(bool p_optimize, Ref<EditorSceneImpor
 				surftool->add_vertex(vertex_array[k].vertex);
 			}
 
-			for (List<int>::Element *E = indices_list.front(); E; E = E->next()) {
-				surftool->add_index(E->get());
+			for (int &E : indices_list) {
+				surftool->add_index(E);
 			}
 
 			if (!normal_src) {

@@ -447,8 +447,8 @@ void Theme::_get_property_list(List<PropertyInfo> *p_list) const {
 
 	// Sort and store properties.
 	list.sort();
-	for (List<PropertyInfo>::Element *E = list.front(); E; E = E->next()) {
-		p_list->push_back(E->get());
+	for (PropertyInfo &E : list) {
+		p_list->push_back(E);
 	}
 }
 
@@ -1275,15 +1275,15 @@ void Theme::get_type_variation_list(const StringName &p_base_type, List<StringNa
 		return;
 	}
 
-	for (const List<StringName>::Element *E = variation_base_map[p_base_type].front(); E; E = E->next()) {
+	for (const StringName &E : variation_base_map[p_base_type]) {
 		// Prevent infinite loops if variants were set to be cross-dependent (that's still invalid usage, but handling for stability sake).
-		if (p_list->find(E->get())) {
+		if (p_list->find(E)) {
 			continue;
 		}
 
-		p_list->push_back(E->get());
+		p_list->push_back(E);
 		// Continue looking for sub-variations.
-		get_type_variation_list(E->get(), p_list);
+		get_type_variation_list(E, p_list);
 	}
 }
 

@@ -531,11 +531,11 @@ void VisualScriptFunctionCall::_validate_property(PropertyInfo &property) const 
 			Engine::get_singleton()->get_singletons(&names);
 			property.hint = PROPERTY_HINT_ENUM;
 			String sl;
-			for (List<Engine::Singleton>::Element *E = names.front(); E; E = E->next()) {
+			for (Engine::Singleton &E : names) {
 				if (sl != String()) {
 					sl += ",";
 				}
-				sl += E->get().name;
+				sl += E.name;
 			}
 			property.hint_string = sl;
 		}
@@ -676,11 +676,11 @@ void VisualScriptFunctionCall::_bind_methods() {
 	}
 
 	String script_ext_hint;
-	for (List<String>::Element *E = script_extensions.front(); E; E = E->next()) {
+	for (String &E : script_extensions) {
 		if (script_ext_hint != String()) {
 			script_ext_hint += ",";
 		}
-		script_ext_hint += "*." + E->get();
+		script_ext_hint += "*." + E;
 	}
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "call_mode", PROPERTY_HINT_ENUM, "Self,Node Path,Instance,Basic Type,Singleton"), "set_call_mode", "get_call_mode");
@@ -998,9 +998,9 @@ PropertyInfo VisualScriptPropertySet::get_input_value_port_info(int p_idx) const
 
 	List<PropertyInfo> props;
 	ClassDB::get_property_list(_get_base_type(), &props, false);
-	for (List<PropertyInfo>::Element *E = props.front(); E; E = E->next()) {
-		if (E->get().name == property) {
-			PropertyInfo pinfo = PropertyInfo(E->get().type, "value", PROPERTY_HINT_TYPE_STRING, E->get().hint_string);
+	for (PropertyInfo &E : props) {
+		if (E.name == property) {
+			PropertyInfo pinfo = PropertyInfo(E.type, "value", PROPERTY_HINT_TYPE_STRING, E.hint_string);
 			_adjust_input_index(pinfo);
 			return pinfo;
 		}
@@ -1125,9 +1125,9 @@ void VisualScriptPropertySet::_update_cache() {
 		List<PropertyInfo> pinfo;
 		v.get_property_list(&pinfo);
 
-		for (List<PropertyInfo>::Element *E = pinfo.front(); E; E = E->next()) {
-			if (E->get().name == property) {
-				type_cache = E->get();
+		for (PropertyInfo &E : pinfo) {
+			if (E.name == property) {
+				type_cache = E;
 			}
 		}
 
@@ -1176,9 +1176,9 @@ void VisualScriptPropertySet::_update_cache() {
 			script->get_script_property_list(&pinfo);
 		}
 
-		for (List<PropertyInfo>::Element *E = pinfo.front(); E; E = E->next()) {
-			if (E->get().name == property) {
-				type_cache = E->get();
+		for (PropertyInfo &E : pinfo) {
+			if (E.name == property) {
+				type_cache = E;
 				return;
 			}
 		}
@@ -1344,8 +1344,8 @@ void VisualScriptPropertySet::_validate_property(PropertyInfo &property) const {
 		List<PropertyInfo> plist;
 		v.get_property_list(&plist);
 		String options = "";
-		for (List<PropertyInfo>::Element *E = plist.front(); E; E = E->next()) {
-			options += "," + E->get().name;
+		for (PropertyInfo &E : plist) {
+			options += "," + E.name;
 		}
 
 		property.hint = PROPERTY_HINT_ENUM;
@@ -1400,11 +1400,11 @@ void VisualScriptPropertySet::_bind_methods() {
 	}
 
 	String script_ext_hint;
-	for (List<String>::Element *E = script_extensions.front(); E; E = E->next()) {
+	for (String &E : script_extensions) {
 		if (script_ext_hint != String()) {
 			script_ext_hint += ",";
 		}
-		script_ext_hint += "*." + E->get();
+		script_ext_hint += "*." + E;
 	}
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "set_mode", PROPERTY_HINT_ENUM, "Self,Node Path,Instance,Basic Type"), "set_call_mode", "get_call_mode");
@@ -1729,9 +1729,9 @@ PropertyInfo VisualScriptPropertyGet::get_input_value_port_info(int p_idx) const
 PropertyInfo VisualScriptPropertyGet::get_output_value_port_info(int p_idx) const {
 	List<PropertyInfo> props;
 	ClassDB::get_property_list(_get_base_type(), &props, false);
-	for (List<PropertyInfo>::Element *E = props.front(); E; E = E->next()) {
-		if (E->get().name == property) {
-			return PropertyInfo(E->get().type, "value." + String(index));
+	for (PropertyInfo &E : props) {
+		if (E.name == property) {
+			return PropertyInfo(E.type, "value." + String(index));
 		}
 	}
 
@@ -1795,9 +1795,9 @@ void VisualScriptPropertyGet::_update_cache() {
 		List<PropertyInfo> pinfo;
 		v.get_property_list(&pinfo);
 
-		for (List<PropertyInfo>::Element *E = pinfo.front(); E; E = E->next()) {
-			if (E->get().name == property) {
-				type_cache = E->get().type;
+		for (PropertyInfo &E : pinfo) {
+			if (E.name == property) {
+				type_cache = E.type;
 				return;
 			}
 		}
@@ -2021,8 +2021,8 @@ void VisualScriptPropertyGet::_validate_property(PropertyInfo &property) const {
 		List<PropertyInfo> plist;
 		v.get_property_list(&plist);
 		String options = "";
-		for (List<PropertyInfo>::Element *E = plist.front(); E; E = E->next()) {
-			options += "," + E->get().name;
+		for (PropertyInfo &E : plist) {
+			options += "," + E.name;
 		}
 
 		property.hint = PROPERTY_HINT_ENUM;
@@ -2074,11 +2074,11 @@ void VisualScriptPropertyGet::_bind_methods() {
 	}
 
 	String script_ext_hint;
-	for (List<String>::Element *E = script_extensions.front(); E; E = E->next()) {
+	for (String &E : script_extensions) {
 		if (script_ext_hint != String()) {
 			script_ext_hint += ",";
 		}
-		script_ext_hint += "." + E->get();
+		script_ext_hint += "." + E;
 	}
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "set_mode", PROPERTY_HINT_ENUM, "Self,Node Path,Instance,Basic Type"), "set_call_mode", "get_call_mode");
@@ -2283,11 +2283,11 @@ void VisualScriptEmitSignal::_validate_property(PropertyInfo &property) const {
 		}
 
 		String ml;
-		for (List<StringName>::Element *E = sigs.front(); E; E = E->next()) {
+		for (StringName &E : sigs) {
 			if (ml != String()) {
 				ml += ",";
 			}
-			ml += E->get();
+			ml += E;
 		}
 
 		property.hint_string = ml;
@@ -2378,8 +2378,8 @@ void register_visual_script_func_nodes() {
 		List<MethodInfo> ml;
 		vt.get_method_list(&ml);
 
-		for (List<MethodInfo>::Element *E = ml.front(); E; E = E->next()) {
-			VisualScriptLanguage::singleton->add_register_func("functions/by_type/" + type_name + "/" + E->get().name, create_basic_type_call_node);
+		for (MethodInfo &E : ml) {
+			VisualScriptLanguage::singleton->add_register_func("functions/by_type/" + type_name + "/" + E.name, create_basic_type_call_node);
 		}
 	}
 }

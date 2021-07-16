@@ -519,14 +519,14 @@ bool GridMap::_octant_update(const OctantKey &p_key) {
 			RS::get_singleton()->multimesh_set_mesh(mm, mesh_library->get_item_mesh(E->key())->get_rid());
 
 			int idx = 0;
-			for (List<Pair<Transform3D, IndexKey>>::Element *F = E->get().front(); F; F = F->next()) {
-				RS::get_singleton()->multimesh_instance_set_transform(mm, idx, F->get().first);
+			for (Pair<Transform3D, IndexKey> &F : E->get()) {
+				RS::get_singleton()->multimesh_instance_set_transform(mm, idx, F.first);
 #ifdef TOOLS_ENABLED
 
 				Octant::MultimeshInstance::Item it;
 				it.index = idx;
-				it.transform = F->get().first;
-				it.key = F->get().second;
+				it.transform = F.first;
+				it.key = F.second;
 				mmi.items.push_back(it);
 #endif
 

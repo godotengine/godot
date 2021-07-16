@@ -514,11 +514,11 @@ void NavigationMeshGenerator::bake(Ref<NavigationMesh> p_nav_mesh, Node *p_node)
 	}
 
 	Transform3D navmesh_xform = Object::cast_to<Node3D>(p_node)->get_transform().affine_inverse();
-	for (const List<Node *>::Element *E = parse_nodes.front(); E; E = E->next()) {
+	for (Node *E : parse_nodes) {
 		int geometry_type = p_nav_mesh->get_parsed_geometry_type();
 		uint32_t collision_mask = p_nav_mesh->get_collision_mask();
 		bool recurse_children = p_nav_mesh->get_source_geometry_mode() != NavigationMesh::SOURCE_GEOMETRY_GROUPS_EXPLICIT;
-		_parse_geometry(navmesh_xform, E->get(), vertices, indices, geometry_type, collision_mask, recurse_children);
+		_parse_geometry(navmesh_xform, E, vertices, indices, geometry_type, collision_mask, recurse_children);
 	}
 
 	if (vertices.size() > 0 && indices.size() > 0) {

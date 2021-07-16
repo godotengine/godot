@@ -959,8 +959,7 @@ void CanvasItem::_notify_transform(CanvasItem *p_node) {
 		}
 	}
 
-	for (List<CanvasItem *>::Element *E = p_node->children_items.front(); E; E = E->next()) {
-		CanvasItem *ci = E->get();
+	for (CanvasItem *ci : p_node->children_items) {
 		if (ci->top_level) {
 			continue;
 		}
@@ -1337,9 +1336,9 @@ void CanvasItem::_update_texture_filter_changed(bool p_propagate) {
 	update();
 
 	if (p_propagate) {
-		for (List<CanvasItem *>::Element *E = children_items.front(); E; E = E->next()) {
-			if (!E->get()->top_level && E->get()->texture_filter == TEXTURE_FILTER_PARENT_NODE) {
-				E->get()->_update_texture_filter_changed(true);
+		for (CanvasItem *E : children_items) {
+			if (!E->top_level && E->texture_filter == TEXTURE_FILTER_PARENT_NODE) {
+				E->_update_texture_filter_changed(true);
 			}
 		}
 	}
@@ -1377,9 +1376,9 @@ void CanvasItem::_update_texture_repeat_changed(bool p_propagate) {
 	RS::get_singleton()->canvas_item_set_default_texture_repeat(get_canvas_item(), texture_repeat_cache);
 	update();
 	if (p_propagate) {
-		for (List<CanvasItem *>::Element *E = children_items.front(); E; E = E->next()) {
-			if (!E->get()->top_level && E->get()->texture_repeat == TEXTURE_REPEAT_PARENT_NODE) {
-				E->get()->_update_texture_repeat_changed(true);
+		for (CanvasItem *E : children_items) {
+			if (!E->top_level && E->texture_repeat == TEXTURE_REPEAT_PARENT_NODE) {
+				E->_update_texture_repeat_changed(true);
 			}
 		}
 	}
