@@ -141,6 +141,7 @@ void EditorResourcePicker::_update_menu() {
 }
 
 void EditorResourcePicker::_update_menu_items() {
+	_ensure_resource_menu();
 	edit_menu->clear();
 
 	// Add options for creating specific subtypes of the base resource type.
@@ -360,6 +361,7 @@ void EditorResourcePicker::_edit_menu_cbk(int p_which) {
 }
 
 void EditorResourcePicker::set_create_options(Object *p_menu_node) {
+	_ensure_resource_menu();
 	// If a subclass implements this method, use it to replace all create items.
 	if (get_script_instance() && get_script_instance()->has_method("_set_create_options")) {
 		get_script_instance()->call("_set_create_options", p_menu_node);
@@ -783,6 +785,15 @@ bool EditorResourcePicker::is_editable() const {
 	return editable;
 }
 
+void EditorResourcePicker::_ensure_resource_menu() {
+	if (edit_menu) {
+		return;
+	}
+	edit_menu = memnew(PopupMenu);
+	add_child(edit_menu);
+	edit_menu->connect("id_pressed", callable_mp(this, &EditorResourcePicker::_edit_menu_cbk));
+	edit_menu->connect("popup_hide", callable_mp((BaseButton *)edit_button, &BaseButton::set_pressed), varray(false));
+}
 EditorResourcePicker::EditorResourcePicker() {
 	assign_button = memnew(Button);
 	assign_button->set_flat(true);
@@ -808,10 +819,6 @@ EditorResourcePicker::EditorResourcePicker() {
 	edit_button->connect("pressed", callable_mp(this, &EditorResourcePicker::_update_menu));
 	add_child(edit_button);
 	edit_button->connect("gui_input", callable_mp(this, &EditorResourcePicker::_button_input));
-	edit_menu = memnew(PopupMenu);
-	add_child(edit_menu);
-	edit_menu->connect("id_pressed", callable_mp(this, &EditorResourcePicker::_edit_menu_cbk));
-	edit_menu->connect("popup_hide", callable_mp((BaseButton *)edit_button, &BaseButton::set_pressed), varray(false));
 }
 
 void EditorScriptPicker::set_create_options(Object *p_menu_node) {

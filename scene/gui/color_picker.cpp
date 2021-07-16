@@ -1048,7 +1048,7 @@ void ColorPicker::_focus_exit() {
 }
 
 void ColorPicker::_html_focus_exit() {
-	if (c_text->get_menu()->is_visible()) {
+	if (c_text->is_menu_visible()) {
 		return;
 	}
 	_html_submitted(c_text->get_text());

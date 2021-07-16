@@ -410,9 +410,11 @@ private:
 
 	Dictionary _search_bind(const String &p_key, uint32_t p_search_flags, int p_from_line, int p_from_column) const;
 
-	PopupMenu *menu;
-	PopupMenu *menu_dir;
-	PopupMenu *menu_ctl;
+	PopupMenu *menu = nullptr;
+	PopupMenu *menu_dir = nullptr;
+	PopupMenu *menu_ctl = nullptr;
+
+	void _ensure_menu();
 
 	void _clear();
 
@@ -781,6 +783,7 @@ public:
 	void set_virtual_keyboard_enabled(bool p_enable);
 	bool is_virtual_keyboard_enabled() const;
 
+	bool is_menu_visible() const;
 	PopupMenu *get_menu() const;
 
 	String get_text_for_lookup_completion();

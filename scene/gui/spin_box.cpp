@@ -170,7 +170,7 @@ void SpinBox::_gui_input(const Ref<InputEvent> &p_event) {
 
 void SpinBox::_line_edit_focus_exit() {
 	// discontinue because the focus_exit was caused by right-click context menu
-	if (line_edit->get_menu()->is_visible()) {
+	if (line_edit->is_menu_visible()) {
 		return;
 	}
 

@@ -63,9 +63,9 @@ class EditorSpinSlider : public Range {
 	Vector2 grabbing_spinner_mouse_pos;
 	double pre_grab_value;
 
-	Popup *value_input_popup;
-	LineEdit *value_input;
-	bool value_input_just_closed;
+	Popup *value_input_popup = nullptr;
+	LineEdit *value_input = nullptr;
+	bool value_input_just_closed = false;
 
 	void _grabber_gui_input(const Ref<InputEvent> &p_event);
 	void _value_input_closed();
@@ -78,6 +78,9 @@ class EditorSpinSlider : public Range {
 	Color custom_label_color;
 
 	void _evaluate_input_text();
+
+	void _update_value_input_stylebox();
+	void _ensure_input_popup();
 
 protected:
 	void _notification(int p_what);
