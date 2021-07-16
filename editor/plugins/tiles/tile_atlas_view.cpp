@@ -575,6 +575,7 @@ TileAtlasView::TileAtlasView() {
 	button_center_view->connect("pressed", callable_mp(this, &TileAtlasView::_center_view));
 	button_center_view->set_flat(true);
 	button_center_view->set_disabled(true);
+	button_center_view->set_tooltip(TTR("Center View"));
 	add_child(button_center_view);
 
 	center_container = memnew(CenterContainer);
