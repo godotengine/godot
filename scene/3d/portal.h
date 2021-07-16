@@ -31,11 +31,13 @@
 #ifndef PORTAL_H
 #define PORTAL_H
 
+#include "core/local_vector.h"
 #include "core/rid.h"
 #include "spatial.h"
 
 class RoomManager;
 class MeshInstance;
+class Room;
 
 class Portal : public Spatial {
 	GDCLASS(Portal, Spatial);
@@ -44,6 +46,7 @@ class Portal : public Spatial {
 
 	friend class RoomManager;
 	friend class PortalGizmoPlugin;
+	friend class PortalEditorPlugin;
 
 public:
 	// ui interface .. will have no effect after room conversion
@@ -61,6 +64,7 @@ public:
 	}
 	bool is_two_way() const { return _settings_two_way; }
 
+	// call during each conversion
 	void clear();
 
 	// whether to use the room manager default
@@ -104,7 +108,7 @@ private:
 	Vector3 _vec2to3(const Vector2 &p_pt) const { return Vector3(p_pt.x, p_pt.y, 0.0); }
 	void _sort_verts_clockwise(bool portal_plane_convention, Vector<Vector3> &r_verts);
 	Plane _plane_from_points_newell(const Vector<Vector3> &p_pts);
-	void resolve_links(const RID &p_from_room_rid);
+	void resolve_links(const LocalVector<Room *, int32_t> &p_rooms, const RID &p_from_room_rid);
 	void _changed();
 
 	// nodepath to the room this outgoing portal leads to

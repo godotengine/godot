@@ -36,6 +36,7 @@
 #include "core/os/os.h"
 #include "editor/editor_node.h"
 #include "mesh_instance.h"
+#include "multimesh_instance.h"
 #include "portal.h"
 #include "room_group.h"
 #include "scene/3d/camera.h"
@@ -86,11 +87,12 @@ String RoomManager::get_configuration_warning() const {
 		warning += TTR("The RoomList has not been assigned.");
 	} else {
 		Spatial *roomlist = _resolve_path<Spatial>(_settings_path_roomlist);
-		if (!roomlist || (roomlist->get_class_name() != StringName("Spatial"))) {
+		if (!roomlist) {
+			// possibly also check (roomlist->get_class_name() != StringName("Spatial"))
 			if (!warning.empty()) {
 				warning += "\n\n";
 			}
-			warning += TTR("The RoomList should be a Spatial.");
+			warning += TTR("The RoomList node should be a Spatial (or derived from Spatial).");
 		}
 	}
 
@@ -101,38 +103,11 @@ String RoomManager::get_configuration_warning() const {
 		warning += TTR("Portal Depth Limit is set to Zero.\nOnly the Room that the Camera is in will render.");
 	}
 
-	auto lambda = [](const Node *p_node) {
-		return static_cast<bool>((Object::cast_to<Room>(p_node) || Object::cast_to<RoomGroup>(p_node) || Object::cast_to<Portal>(p_node) || Object::cast_to<RoomManager>(p_node)));
-	};
-
-	if (Room::detect_nodes_using_lambda(this, lambda)) {
-		if (Room::detect_nodes_of_type<Room>(this)) {
-			if (!warning.empty()) {
-				warning += "\n\n";
-			}
-			warning += TTR("Rooms should not be children of the RoomManager.");
+	if (Room::detect_nodes_of_type<RoomManager>(this)) {
+		if (!warning.empty()) {
+			warning += "\n\n";
 		}
-
-		if (Room::detect_nodes_of_type<RoomGroup>(this)) {
-			if (!warning.empty()) {
-				warning += "\n\n";
-			}
-			warning += TTR("RoomGroups should not be children of the RoomManager.");
-		}
-
-		if (Room::detect_nodes_of_type<Portal>(this)) {
-			if (!warning.empty()) {
-				warning += "\n\n";
-			}
-			warning += TTR("Portals should not be children of the RoomManager.");
-		}
-
-		if (Room::detect_nodes_of_type<RoomManager>(this)) {
-			if (!warning.empty()) {
-				warning += "\n\n";
-			}
-			warning += TTR("There should only be one RoomManager in the SceneTree.");
-		}
+		warning += TTR("There should only be one RoomManager in the SceneTree.");
 	}
 
 	return warning;
@@ -851,7 +826,7 @@ void RoomManager::_second_pass_portals(Spatial *p_roomlist, LocalVector<Portal *
 		int room_from_id = portal->_linkedroom_ID[0];
 		if (room_from_id != -1) {
 			Room *room_from = _rooms[room_from_id];
-			portal->resolve_links(room_from->_room_rid);
+			portal->resolve_links(_rooms, room_from->_room_rid);
 
 			// add the portal id to the room from and the room to.
 			// These are used so we can later add the portal geometry to the room bounds.
@@ -969,11 +944,7 @@ void RoomManager::_autolink_portals(Spatial *p_roomlist, LocalVector<Portal *> &
 // to prevent users creating mistakes for themselves, we limit what can be put into the room list branch.
 // returns invalid node, or NULL
 bool RoomManager::_check_roomlist_validity(Node *p_node) {
-	if (Room::detect_nodes_of_type<RoomManager>(p_node, false)) {
-		show_warning("RoomList should not be the RoomManager,\nor contain a RoomManager as child or grandchild.");
-		return false;
-	}
-
+	// restrictions lifted here, but we can add more if required
 	return true;
 }
 
@@ -1586,6 +1557,9 @@ void RoomManager::_convert_portal(Room *p_room, Spatial *p_node, LocalVector<Por
 		}
 	}
 
+	// make sure to start with fresh internal data each time (for linked rooms etc)
+	portal->clear();
+
 	// mark so as only to convert once
 	portal->_conversion_tick = _conversion_tick;
 
@@ -1600,12 +1574,12 @@ void RoomManager::_convert_portal(Room *p_room, Spatial *p_node, LocalVector<Por
 }
 
 bool RoomManager::_bound_findpoints_geom_instance(GeometryInstance *p_gi, Vector<Vector3> &r_room_pts, AABB &r_aabb) {
-#ifdef MODULE_CSG_ENABLED
 	// max opposite extents .. note AABB storing size is rubbish in this aspect
 	// it can fail once mesh min is larger than FLT_MAX / 2.
 	r_aabb.position = Vector3(FLT_MAX / 2, FLT_MAX / 2, FLT_MAX / 2);
 	r_aabb.size = Vector3(-FLT_MAX, -FLT_MAX, -FLT_MAX);
 
+#ifdef MODULE_CSG_ENABLED
 	CSGShape *shape = Object::cast_to<CSGShape>(p_gi);
 	if (shape) {
 		Array arr = shape->get_meshes();
@@ -1645,12 +1619,68 @@ bool RoomManager::_bound_findpoints_geom_instance(GeometryInstance *p_gi, Vector
 
 		} // for through the surfaces
 
+		return true;
 	} // if csg shape
-
-	return true;
-#else
-	return false;
 #endif
+
+	// multimesh
+	MultiMeshInstance *mmi = Object::cast_to<MultiMeshInstance>(p_gi);
+	if (mmi) {
+		Ref<MultiMesh> rmm = mmi->get_multimesh();
+		if (!rmm.is_valid()) {
+			return false;
+		}
+
+		// first get the mesh verts in local space
+		LocalVector<Vector3, int32_t> local_verts;
+		Ref<Mesh> rmesh = rmm->get_mesh();
+
+		if (rmesh->get_surface_count() == 0) {
+			String string;
+			string = "MultiMeshInstance '" + mmi->get_name() + "' has no surfaces, ignoring";
+			WARN_PRINT(string);
+			return false;
+		}
+
+		for (int surf = 0; surf < rmesh->get_surface_count(); surf++) {
+			Array arrays = rmesh->surface_get_arrays(surf);
+
+			if (!arrays.size()) {
+				WARN_PRINT_ONCE("MultiMesh mesh surface with no mesh, ignoring");
+				continue;
+			}
+
+			const PoolVector<Vector3> &vertices = arrays[VS::ARRAY_VERTEX];
+
+			int count = local_verts.size();
+			local_verts.resize(local_verts.size() + vertices.size());
+
+			for (int n = 0; n < vertices.size(); n++) {
+				local_verts[count++] = vertices[n];
+			}
+		}
+
+		if (!local_verts.size()) {
+			return false;
+		}
+
+		// now we have the local space verts, add a bunch for each instance, and find the AABB
+		for (int i = 0; i < rmm->get_instance_count(); i++) {
+			Transform trans = rmm->get_instance_transform(i);
+			trans = mmi->get_global_transform() * trans;
+
+			for (int n = 0; n < local_verts.size(); n++) {
+				Vector3 ptWorld = trans.xform(local_verts[n]);
+				r_room_pts.push_back(ptWorld);
+
+				// keep the bound up to date
+				r_aabb.expand_to(ptWorld);
+			}
+		}
+		return true;
+	}
+
+	return false;
 }
 
 bool RoomManager::_bound_findpoints_mesh_instance(MeshInstance *p_mi, Vector<Vector3> &r_room_pts, AABB &r_aabb) {
@@ -1681,7 +1711,7 @@ bool RoomManager::_bound_findpoints_mesh_instance(MeshInstance *p_mi, Vector<Vec
 
 		// possible to have a meshinstance with no geometry .. don't want to crash
 		if (!arrays.size()) {
-			WARN_PRINT_ONCE("PConverter::bound_findpoints MeshInstance surface with no mesh, ignoring");
+			WARN_PRINT_ONCE("MeshInstance surface with no mesh, ignoring");
 			continue;
 		}
 
