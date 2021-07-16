@@ -2324,7 +2324,7 @@ bool CanvasItemEditor::_gui_input_select(const Ref<InputEvent> &p_event) {
 		}
 		if (m.is_valid()) {
 			Point2 click = transform.affine_inverse().xform(m->get_position());
-			bool movement_threshold_passed = drag_start_origin.distance_to(click) > 10 * EDSCALE;
+			bool movement_threshold_passed = drag_start_origin.distance_to(click) > (8 * MAX(1, EDSCALE)) / zoom;
 			if (m.is_valid() && movement_threshold_passed) {
 				List<CanvasItem *> selection2 = _get_edited_canvas_items();
 
