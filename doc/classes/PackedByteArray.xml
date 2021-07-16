@@ -515,6 +515,42 @@
 				Returns the slice of the [PackedByteArray] between indices (inclusive) as a new [PackedByteArray]. Any negative index is considered to be from the end of the array.
 			</description>
 		</method>
+		<method name="to_int32_array" qualifiers="const">
+			<return type="PackedInt32Array">
+			</return>
+			<description>
+				Returns a copy stored as a [PackedInt32Array] where each block of 4 elements have been decoded to an int32.
+				Size of new array will be [code]oldArray.size()/4[/code].
+				If original data can't be converted to int32, the resulting data is undefined.
+			</description>
+		</method>
+		<method name="to_int64_array" qualifiers="const">
+			<return type="PackedInt64Array">
+			</return>
+			<description>
+				Returns a copy stored as a [PackedInt64Array] where each block of 8 elements have been decoded to an int64.
+				Size of new array will be [code]oldArray.size()/8[/code].
+				If original data can't be converted to int64, the resulting data is undefined.
+			</description>
+		</method>
+		<method name="to_float32_array" qualifiers="const">
+			<return type="PackedFloat32Array">
+			</return>
+			<description>
+				Returns a copy stored as a [PackedFloat32Array] where each block of 4 elements have been decoded to a float32.
+				Size of new array will be [code]oldArray.size()/4[/code].
+				If original data can't be converted to float32, the resulting data is undefined.
+			</description>
+		</method>
+		<method name="to_float64_array" qualifiers="const">
+			<return type="PackedFloat64Array">
+			</return>
+			<description>
+				Returns a copy stored as a [PackedFloat64Array] where each block of 8 elements have been decoded to a float64.
+				Size of new array will be [code]oldArray.size()/8[/code].
+				If original data can't be converted to float64, the resulting data is undefined.
+			</description>
+		</method>
 	</methods>
 	<constants>
 	</constants>
