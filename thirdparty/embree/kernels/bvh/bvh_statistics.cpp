@@ -1,4 +1,4 @@
-// Copyright 2009-2020 Intel Corporation
+// Copyright 2009-2021 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
 #include "bvh_statistics.h"
@@ -162,7 +162,7 @@ namespace embree
   template class BVHNStatistics<8>;
 #endif
 
-#if !defined(__AVX__) || (!defined(EMBREE_TARGET_SSE2) && !defined(EMBREE_TARGET_SSE42)) || defined(__aarch64__)
+#if !defined(__AVX__) || !defined(EMBREE_TARGET_SSE2) && !defined(EMBREE_TARGET_SSE42)
   template class BVHNStatistics<4>;
 #endif
 }

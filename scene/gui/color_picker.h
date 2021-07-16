@@ -47,6 +47,7 @@ class ColorPicker : public BoxContainer {
 	GDCLASS(ColorPicker, BoxContainer);
 
 private:
+	static List<Color> preset_cache;
 	Control *screen;
 	Control *uv_edit;
 	Control *w_edit;
@@ -90,6 +91,7 @@ private:
 	void _update_presets();
 	void _update_text_value();
 	void _text_type_toggled();
+	void _sample_input(const Ref<InputEvent> &p_event);
 	void _sample_draw();
 	void _hsv_draw(int p_which, Control *c);
 

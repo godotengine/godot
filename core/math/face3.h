@@ -65,6 +65,7 @@ public:
 
 	bool is_degenerate() const;
 	real_t get_area() const;
+	real_t get_twice_area_squared() const;
 
 	Vector3 get_median_point() const;
 	Vector3 get_closest_point_to(const Vector3 &p_point) const;
@@ -95,6 +96,12 @@ public:
 		vertex[2] = p_v3;
 	}
 };
+
+inline real_t Face3::get_twice_area_squared() const {
+	Vector3 edge1 = vertex[1] - vertex[0];
+	Vector3 edge2 = vertex[2] - vertex[0];
+	return edge1.cross(edge2).length_squared();
+}
 
 bool Face3::intersects_aabb2(const AABB &p_aabb) const {
 	Vector3 perp = (vertex[0] - vertex[2]).cross(vertex[0] - vertex[1]);

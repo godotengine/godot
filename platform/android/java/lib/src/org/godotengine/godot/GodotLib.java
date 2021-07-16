@@ -33,7 +33,6 @@ package org.godotengine.godot;
 import android.app.Activity;
 import android.hardware.SensorEvent;
 
-import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
 
 /**
@@ -171,11 +170,6 @@ public class GodotLib {
 	 * @see androidx.fragment.app.Fragment#onPause()
 	 */
 	public static native void focusout();
-
-	/**
-	 * Invoked when the audio thread is started.
-	 */
-	public static native void audio();
 
 	/**
 	 * Used to access Godot global properties.

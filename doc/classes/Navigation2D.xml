@@ -5,6 +5,7 @@
 	</brief_description>
 	<description>
 		Navigation2D provides navigation and pathfinding within a 2D area, specified as a collection of [NavigationPolygon] resources. By default, these are automatically collected from child [NavigationPolygonInstance] nodes, but they can also be added on the fly with [method navpoly_add].
+		[b]Note:[/b] The current navigation system has many known issues and will not always return optimal paths as expected. These issues will be fixed in Godot 4.0.
 	</description>
 	<tutorials>
 		<link title="2D Navigation Demo">https://godotengine.org/asset-library/asset/117</link>
@@ -39,6 +40,7 @@
 			</argument>
 			<description>
 				Returns the path between two given points. Points are in local coordinate space. If [code]optimize[/code] is [code]true[/code] (the default), the path is smoothed by merging path segments where possible.
+				[b]Note:[/b] This method has known issues and will often return non-optimal paths. These issues will be fixed in Godot 4.0.
 			</description>
 		</method>
 		<method name="navpoly_add">

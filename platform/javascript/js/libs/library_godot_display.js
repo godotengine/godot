@@ -683,7 +683,7 @@ const GodotDisplay = {
 		return GodotDisplayScreen.exitFullscreen();
 	},
 
-	godot_js_display_desired_size_set__sig: 'v',
+	godot_js_display_desired_size_set__sig: 'vii',
 	godot_js_display_desired_size_set: function (width, height) {
 		GodotDisplayScreen.desired_size = [width, height];
 		GodotDisplayScreen.updateSize();

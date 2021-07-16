@@ -175,10 +175,9 @@ void BaseButton::on_action_event(Ref<InputEvent> p_event) {
 				status.hovering = false;
 			}
 		}
-		// pressed state should be correct with button_up signal
-		emit_signal("button_up");
 		status.press_attempt = false;
 		status.pressing_inside = false;
+		emit_signal("button_up");
 	}
 
 	update();
@@ -228,6 +227,18 @@ void BaseButton::set_pressed(bool p_pressed) {
 		}
 	}
 	_toggled(status.pressed);
+
+	update();
+}
+
+void BaseButton::set_pressed_no_signal(bool p_pressed) {
+	if (!toggle_mode) {
+		return;
+	}
+	if (status.pressed == p_pressed) {
+		return;
+	}
+	status.pressed = p_pressed;
 
 	update();
 }
@@ -386,6 +397,7 @@ void BaseButton::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_unhandled_input"), &BaseButton::_unhandled_input);
 	ClassDB::bind_method(D_METHOD("set_pressed", "pressed"), &BaseButton::set_pressed);
 	ClassDB::bind_method(D_METHOD("is_pressed"), &BaseButton::is_pressed);
+	ClassDB::bind_method(D_METHOD("set_pressed_no_signal", "pressed"), &BaseButton::set_pressed_no_signal);
 	ClassDB::bind_method(D_METHOD("is_hovered"), &BaseButton::is_hovered);
 	ClassDB::bind_method(D_METHOD("set_toggle_mode", "enabled"), &BaseButton::set_toggle_mode);
 	ClassDB::bind_method(D_METHOD("is_toggle_mode"), &BaseButton::is_toggle_mode);

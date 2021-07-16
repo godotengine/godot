@@ -310,7 +310,7 @@ PlaceHolderScriptInstance *GDScript::placeholder_instance_create(Object *p_this)
 #ifdef TOOLS_ENABLED
 	PlaceHolderScriptInstance *si = memnew(PlaceHolderScriptInstance(GDScriptLanguage::get_singleton(), Ref<Script>(this), p_this));
 	placeholders.insert(si);
-	_update_exports();
+	_update_exports(nullptr, false, si);
 	return si;
 #else
 	return NULL;
@@ -357,7 +357,7 @@ void GDScript::_update_exports_values(Map<StringName, Variant> &values, List<Pro
 }
 #endif
 
-bool GDScript::_update_exports(bool *r_err, bool p_recursive_call) {
+bool GDScript::_update_exports(bool *r_err, bool p_recursive_call, PlaceHolderScriptInstance *p_instance_to_update) {
 #ifdef TOOLS_ENABLED
 
 	static Vector<GDScript *> base_caches;
@@ -480,15 +480,19 @@ bool GDScript::_update_exports(bool *r_err, bool p_recursive_call) {
 		}
 	}
 
-	if (placeholders.size()) { //hm :(
+	if ((changed || p_instance_to_update) && placeholders.size()) { //hm :(
 
 		// update placeholders if any
 		Map<StringName, Variant> values;
 		List<PropertyInfo> propnames;
 		_update_exports_values(values, propnames);
 
-		for (Set<PlaceHolderScriptInstance *>::Element *E = placeholders.front(); E; E = E->next()) {
-			E->get()->update(propnames, values);
+		if (changed) {
+			for (Set<PlaceHolderScriptInstance *>::Element *E = placeholders.front(); E; E = E->next()) {
+				E->get()->update(propnames, values);
+			}
+		} else {
+			p_instance_to_update->update(propnames, values);
 		}
 	}
 
@@ -771,10 +775,10 @@ Error GDScript::load_source_code(const String &p_path) {
 		ERR_FAIL_COND_V(err, err);
 	}
 
-	int len = f->get_len();
+	uint64_t len = f->get_len();
 	sourcef.resize(len + 1);
 	PoolVector<uint8_t>::Write w = sourcef.write();
-	int r = f->get_buffer(w.ptr(), len);
+	uint64_t r = f->get_buffer(w.ptr(), len);
 	f->close();
 	memdelete(f);
 	ERR_FAIL_COND_V(r != len, ERR_CANT_OPEN);
@@ -1756,6 +1760,19 @@ void GDScriptLanguage::get_reserved_words(List<String> *p_words) const {
 	for (int i = 0; i < GDScriptFunctions::FUNC_MAX; i++) {
 		p_words->push_back(GDScriptFunctions::get_func_name(GDScriptFunctions::Function(i)));
 	}
+}
+
+bool GDScriptLanguage::is_control_flow_keyword(String p_keyword) const {
+	return p_keyword == "break" ||
+		   p_keyword == "continue" ||
+		   p_keyword == "elif" ||
+		   p_keyword == "else" ||
+		   p_keyword == "if" ||
+		   p_keyword == "for" ||
+		   p_keyword == "match" ||
+		   p_keyword == "pass" ||
+		   p_keyword == "return" ||
+		   p_keyword == "while";
 }
 
 bool GDScriptLanguage::handles_global_class_type(const String &p_type) const {

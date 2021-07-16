@@ -157,9 +157,10 @@ public:
 			uint32_t view_index;
 
 			// make sure this struct is padded to be a multiple of 16 bytes for webgl
-			float pad[1];
+			float pad[3];
 
 		} ubo_data;
+		static_assert(sizeof(SceneDataUBO) % 16 == 0, "SceneDataUBO size must be a multiple of 16 bytes");
 
 		GLuint scene_ubo;
 

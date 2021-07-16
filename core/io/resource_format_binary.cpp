@@ -562,10 +562,10 @@ Error ResourceInteractiveLoaderBinary::parse_variant(Variant &r_v) {
 
 				Ref<Image> image;
 
-				if (encoding == IMAGE_ENCODING_LOSSY && Image::lossy_unpacker) {
-					image = Image::lossy_unpacker(data);
-				} else if (encoding == IMAGE_ENCODING_LOSSLESS && Image::lossless_unpacker) {
-					image = Image::lossless_unpacker(data);
+				if (encoding == IMAGE_ENCODING_LOSSY && Image::webp_unpacker) {
+					image = Image::webp_unpacker(data); // IMAGE_ENCODING_LOSSY always meant WebP
+				} else if (encoding == IMAGE_ENCODING_LOSSLESS && Image::png_unpacker) {
+					image = Image::png_unpacker(data); // IMAGE_ENCODING_LOSSLESS always meant png
 				}
 				_advance_padding(data.size());
 
@@ -1063,7 +1063,7 @@ Error ResourceFormatLoaderBinary::rename_dependencies(const String &p_path, cons
 		memdelete(da);
 		//use the old approach
 
-		WARN_PRINTS("This file is old, so it can't refactor dependencies, opening and resaving '" + p_path + "'.");
+		WARN_PRINT("This file is old, so it can't refactor dependencies, opening and resaving '" + p_path + "'.");
 
 		Error err;
 		f = FileAccess::open(p_path, FileAccess::READ, &err);
@@ -1106,8 +1106,8 @@ Error ResourceFormatLoaderBinary::rename_dependencies(const String &p_path, cons
 
 	save_ustring(fw, get_ustring(f)); //type
 
-	size_t md_ofs = f->get_position();
-	size_t importmd_ofs = f->get_64();
+	uint64_t md_ofs = f->get_position();
+	uint64_t importmd_ofs = f->get_64();
 	fw->store_64(0); //metadata offset
 
 	for (int i = 0; i < 14; i++) {
@@ -1549,7 +1549,7 @@ void ResourceFormatSaverBinaryInstance::_find_resources(const Variant &p_variant
 
 			if (!p_main && (!bundle_resources) && res->get_path().length() && res->get_path().find("::") == -1) {
 				if (res->get_path() == path) {
-					ERR_PRINTS("Circular reference to resource being saved found: '" + local_path + "' will be null next time it's loaded.");
+					ERR_PRINT("Circular reference to resource being saved found: '" + local_path + "' will be null next time it's loaded.");
 					return;
 				}
 				int idx = external_resources.size();

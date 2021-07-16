@@ -329,7 +329,7 @@ void ScriptEditorDebugger::_file_selected(const String &p_file) {
 			FileAccessRef file = FileAccess::open(p_file, FileAccess::WRITE, &err);
 
 			if (err != OK) {
-				ERR_PRINTS("Failed to open " + p_file);
+				ERR_PRINT("Failed to open " + p_file);
 				return;
 			}
 			Vector<String> line;
@@ -364,7 +364,7 @@ void ScriptEditorDebugger::_file_selected(const String &p_file) {
 			FileAccessRef file = FileAccess::open(p_file, FileAccess::WRITE, &err);
 
 			if (err != OK) {
-				ERR_PRINTS("Failed to open " + p_file);
+				ERR_PRINT("Failed to open " + p_file);
 				return;
 			}
 
@@ -814,7 +814,7 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 					msg_type = EditorLog::MSG_TYPE_ERROR;
 				} break;
 				default: {
-					WARN_PRINTS("Unhandled script debugger message type: " + itos(type));
+					WARN_PRINT("Unhandled script debugger message type: " + itos(type));
 					msg_type = EditorLog::MSG_TYPE_STD;
 				} break;
 			}

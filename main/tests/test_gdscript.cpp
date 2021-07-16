@@ -34,7 +34,8 @@
 #include "core/os/main_loop.h"
 #include "core/os/os.h"
 
-#ifdef GDSCRIPT_ENABLED
+#include "modules/modules_enabled.gen.h"
+#ifdef MODULE_GDSCRIPT_ENABLED
 
 #include "modules/gdscript/gdscript.h"
 #include "modules/gdscript/gdscript_compiler.h"
@@ -899,7 +900,7 @@ MainLoop *test(TestType p_type) {
 	ERR_FAIL_COND_V_MSG(!fa, nullptr, "Could not open file: " + test);
 
 	Vector<uint8_t> buf;
-	int flen = fa->get_len();
+	uint64_t flen = fa->get_len();
 	buf.resize(fa->get_len() + 1);
 	fa->get_buffer(buf.ptrw(), flen);
 	buf.write[flen] = 0;
@@ -1024,6 +1025,7 @@ MainLoop *test(TestType p_type) {
 namespace TestGDScript {
 
 MainLoop *test(TestType p_type) {
+	ERR_PRINT("The GDScript module is disabled, therefore GDScript tests cannot be used.");
 	return NULL;
 }
 } // namespace TestGDScript

@@ -374,6 +374,9 @@ void EditorAssetLibraryItemDownload::_http_download_completed(int p_status, int 
 	progress->set_modulate(Color(0, 0, 0, 0));
 
 	set_process(false);
+
+	// Automatically prompt for installation once the download is completed.
+	_install();
 }
 
 void EditorAssetLibraryItemDownload::configure(const String &p_title, int p_asset_id, const Ref<Texture> &p_preview, const String &p_download_url, const String &p_sha256_hash) {
@@ -460,6 +463,7 @@ void EditorAssetLibraryItemDownload::_install() {
 		return;
 	}
 
+	asset_installer->set_asset_name(title->get_text());
 	asset_installer->open(file, 1);
 }
 
@@ -565,8 +569,15 @@ void EditorAssetLibrary::_notification(int p_what) {
 			error_label->raise();
 		} break;
 		case NOTIFICATION_VISIBILITY_CHANGED: {
-			if (is_visible() && initial_loading) {
-				_repository_changed(0); // Update when shown for the first time.
+			if (is_visible()) {
+				// Focus the search box automatically when switching to the Templates tab (in the Project Manager)
+				// or switching to the AssetLib tab (in the editor).
+				// The Project Manager's project filter box is automatically focused in the project manager code.
+				filter->grab_focus();
+
+				if (initial_loading) {
+					_repository_changed(0); // Update when shown for the first time.
+				}
 			}
 		} break;
 		case NOTIFICATION_PROCESS: {
@@ -796,7 +807,7 @@ void EditorAssetLibrary::_image_request_completed(int p_status, int p_code, cons
 		_image_update(p_code == HTTPClient::RESPONSE_NOT_MODIFIED, true, p_data, p_queue_id);
 
 	} else {
-		WARN_PRINTS("Error getting image file from URL: " + image_queue[p_queue_id].image_url);
+		WARN_PRINT("Error getting image file from URL: " + image_queue[p_queue_id].image_url);
 		Object *obj = ObjectDB::get_instance(image_queue[p_queue_id].target);
 		if (obj) {
 			obj->call("set_image", image_queue[p_queue_id].image_type, image_queue[p_queue_id].image_index, get_icon("FileBrokenBigThumb", "EditorIcons"));
@@ -1276,6 +1287,7 @@ void EditorAssetLibrary::_asset_file_selected(const String &p_file) {
 	}
 
 	asset_installer = memnew(EditorAssetInstaller);
+	asset_installer->set_asset_name(p_file.get_basename());
 	add_child(asset_installer);
 	asset_installer->open(p_file);
 }
@@ -1333,6 +1345,11 @@ EditorAssetLibrary::EditorAssetLibrary(bool p_templates_only) {
 	library_main->add_constant_override("separation", 10 * EDSCALE);
 
 	filter = memnew(LineEdit);
+	if (templates_only) {
+		filter->set_placeholder(TTR("Search templates, projects, and demos"));
+	} else {
+		filter->set_placeholder(TTR("Search assets (excluding templates, projects, and demos)"));
+	}
 	search_hb->add_child(filter);
 	filter->set_h_size_flags(SIZE_EXPAND_FILL);
 	filter->connect("text_changed", this, "_search_text_changed");

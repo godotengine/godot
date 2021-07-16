@@ -30,9 +30,8 @@
 
 #include "image_loader_svg.h"
 
-#include "core/os/os.h"
-#include "core/print_string.h"
-#include "core/ustring.h"
+#include <nanosvg.h>
+#include <nanosvgrast.h>
 
 void SVGRasterizer::rasterize(NSVGimage *p_image, float p_tx, float p_ty, float p_scale, unsigned char *p_dst, int p_w, int p_h, int p_stride) {
 	nsvgRasterize(rasterizer, p_image, p_tx, p_ty, p_scale, p_dst, p_w, p_h, p_stride);
@@ -141,7 +140,7 @@ Error ImageLoaderSVG::create_image_from_string(Ref<Image> p_image, const char *p
 }
 
 Error ImageLoaderSVG::load_image(Ref<Image> p_image, FileAccess *f, bool p_force_linear, float p_scale) {
-	uint32_t size = f->get_len();
+	uint64_t size = f->get_len();
 	PoolVector<uint8_t> src_image;
 	src_image.resize(size + 1);
 	PoolVector<uint8_t>::Write src_w = src_image.write();

@@ -398,10 +398,12 @@ public:
 
 	virtual bool is_flushing_queries() const { return false; }
 
+	virtual void set_collision_iterations(int p_iterations);
+
 	virtual int get_process_info(ProcessInfo p_info);
 
-	CollisionObjectBullet *get_collisin_object(RID p_object) const;
-	RigidCollisionObjectBullet *get_rigid_collisin_object(RID p_object) const;
+	CollisionObjectBullet *get_collision_object(RID p_object) const;
+	RigidCollisionObjectBullet *get_rigid_collision_object(RID p_object) const;
 
 	/// Internal APIs
 public:

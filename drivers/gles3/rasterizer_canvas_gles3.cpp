@@ -30,6 +30,7 @@
 
 #include "rasterizer_canvas_gles3.h"
 
+#include "drivers/gles3/rasterizer_gles3.h"
 #include "drivers/gles_common/rasterizer_asserts.h"
 #include "servers/visual/visual_server_raster.h"
 
@@ -63,11 +64,6 @@ void RasterizerCanvasGLES3::canvas_render_items_end() {
 
 void RasterizerCanvasGLES3::canvas_render_items(Item *p_item_list, int p_z, const Color &p_modulate, Light *p_light, const Transform2D &p_base_transform) {
 	batch_canvas_render_items(p_item_list, p_z, p_modulate, p_light, p_base_transform);
-}
-
-void RasterizerCanvasGLES3::gl_checkerror() {
-	GLenum e = glGetError();
-	CRASH_COND(e != GL_NO_ERROR);
 }
 
 void RasterizerCanvasGLES3::gl_enable_scissor(int p_x, int p_y, int p_width, int p_height) const {
@@ -2127,8 +2123,6 @@ void RasterizerCanvasGLES3::_batch_render_generic(const Batch &p_batch, Rasteriz
 
 	glBindVertexArray(0);
 
-	//	gl_checkerror();
-
 	switch (tex.tile_mode) {
 		case BatchTex::TILE_NORMAL: {
 			// if the texture is imported as tiled, no need to revert GL state
@@ -2149,7 +2143,7 @@ void RasterizerCanvasGLES3::_batch_render_generic(const Batch &p_batch, Rasteriz
 }
 
 void RasterizerCanvasGLES3::initialize() {
-	gl_checkerror();
+	RasterizerGLES3::gl_check_errors();
 	RasterizerCanvasBaseGLES3::initialize();
 
 	batch_initialize();
@@ -2280,7 +2274,7 @@ void RasterizerCanvasGLES3::initialize() {
 		state.canvas_shader.add_custom_define("#define USE_NINEPATCH_SCALING\n");
 	}
 
-	gl_checkerror();
+	RasterizerGLES3::gl_check_errors();
 }
 
 RasterizerCanvasGLES3::RasterizerCanvasGLES3() {

@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="CullInstance" inherits="Spatial" version="3.4">
+	<brief_description>
+		Parent of all nodes that can be culled by the Portal system.
+	</brief_description>
+	<description>
+		Provides common functionality to nodes that can be culled by the [Portal] system.
+		[code]Static[/code] and [code]Dynamic[/code] objects are the most efficiently managed objects in the system, but there are some caveats. They are expected to be present initially when [Room]s are converted using the [RoomManager] [code]rooms_convert[/code] function, and their lifetime should be the same as the game level (i.e. present until you call [code]rooms_clear[/code] on the [RoomManager]. Although you shouldn't create / delete these objects during gameplay, you can manage their visibility with the standard [code]hide[/code] and [code]show[/code] commands.
+		[code]Roaming[/code] objects on the other hand, require extra processing to keep track of which [Room] they are within. This enables them to be culled effectively, wherever they are.
+		[code]Global[/code] objects are not culled by the portal system, and use view frustum culling only.
+		Objects that are not [code]Static[/code] or [code]Dynamic[/code] can be freely created and deleted during the lifetime of the game level.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+	</methods>
+	<members>
+		<member name="include_in_bound" type="bool" setter="set_include_in_bound" getter="get_include_in_bound" default="true">
+			When a manual bound has not been explicitly specified for a [Room], the convex hull bound will be estimated from the geometry of the objects within the room. This setting determines whether the geometry of an object is included in this estimate of the room bound.
+			[b]Note:[/b] This setting is only relevant when the object is set to [code]PORTAL_MODE_STATIC[/code] or [code]PORTAL_MODE_DYNAMIC[/code], and for [Portal]s.
+		</member>
+		<member name="portal_mode" type="int" setter="set_portal_mode" getter="get_portal_mode" enum="CullInstance.PortalMode" default="0">
+			When using [Room]s and [Portal]s, this specifies how the [CullInstance] is processed in the system.
+		</member>
+	</members>
+	<constants>
+		<constant name="PORTAL_MODE_STATIC" value="0" enum="PortalMode">
+			Use for instances within [Room]s that will [b]not move[/b] - e.g. walls, floors.
+			[b]Note:[/b] If you attempt to delete a [code]PORTAL_MODE_STATIC[/code] instance while the room graph is loaded (converted), it will unload the room graph and deactivate portal culling. This is because the [b]room graph[/b] data has been invalidated. You will need to reconvert the rooms using the [RoomManager] to activate the system again.
+		</constant>
+		<constant name="PORTAL_MODE_DYNAMIC" value="1" enum="PortalMode">
+			Use for instances within rooms that will move but [b]not change room[/b] - e.g. moving platforms.
+			[b]Note:[/b] If you attempt to delete a [code]PORTAL_MODE_DYNAMIC[/code] instance while the room graph is loaded (converted), it will unload the room graph and deactivate portal culling. This is because the [b]room graph[/b] data has been invalidated. You will need to reconvert the rooms using the [RoomManager] to activate the system again.
+		</constant>
+		<constant name="PORTAL_MODE_ROAMING" value="2" enum="PortalMode">
+			Use for instances that will move [b]between[/b] [Room]s - e.g. players.
+		</constant>
+		<constant name="PORTAL_MODE_GLOBAL" value="3" enum="PortalMode">
+			Use for instances that will be frustum culled only - e.g. first person weapon, debug.
+		</constant>
+		<constant name="PORTAL_MODE_IGNORE" value="4" enum="PortalMode">
+			Use for instances that will not be shown at all - e.g. [b]manual room bounds[/b] (specified by prefix [i]'Bound_'[/i]).
+		</constant>
+	</constants>
+</class>

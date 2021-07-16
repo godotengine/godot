@@ -2340,20 +2340,20 @@ void TileSetEditor::_set_edited_collision_shape(const Ref<Shape2D> &p_shape) {
 }
 
 void TileSetEditor::_set_snap_step(Vector2 p_val) {
-	snap_step.x = CLAMP(p_val.x, 1, 256);
-	snap_step.y = CLAMP(p_val.y, 1, 256);
+	snap_step.x = CLAMP(p_val.x, 1, 1024);
+	snap_step.y = CLAMP(p_val.y, 1, 1024);
 	workspace->update();
 }
 
 void TileSetEditor::_set_snap_off(Vector2 p_val) {
-	snap_offset.x = CLAMP(p_val.x, 0, 256 + WORKSPACE_MARGIN.x);
-	snap_offset.y = CLAMP(p_val.y, 0, 256 + WORKSPACE_MARGIN.y);
+	snap_offset.x = CLAMP(p_val.x, 0, 1024 + WORKSPACE_MARGIN.x);
+	snap_offset.y = CLAMP(p_val.y, 0, 1024 + WORKSPACE_MARGIN.y);
 	workspace->update();
 }
 
 void TileSetEditor::_set_snap_sep(Vector2 p_val) {
-	snap_separation.x = CLAMP(p_val.x, 0, 256);
-	snap_separation.y = CLAMP(p_val.y, 0, 256);
+	snap_separation.x = CLAMP(p_val.x, 0, 1024);
+	snap_separation.y = CLAMP(p_val.y, 0, 1024);
 	workspace->update();
 }
 
@@ -3548,12 +3548,12 @@ void TilesetEditorContext::_get_property_list(List<PropertyInfo> *p_list) const 
 		p_list->push_back(PropertyInfo(Variant::COLOR, "tile_modulate"));
 		p_list->push_back(PropertyInfo(Variant::INT, "tile_tile_mode", PROPERTY_HINT_ENUM, "SINGLE_TILE,AUTO_TILE,ATLAS_TILE"));
 		if (tileset->tile_get_tile_mode(id) == TileSet::AUTO_TILE) {
-			p_list->push_back(PropertyInfo(Variant::INT, "tile_autotile_bitmask_mode", PROPERTY_HINT_ENUM, "2X2,3X3 (minimal),3X3"));
+			p_list->push_back(PropertyInfo(Variant::INT, "tile_autotile_bitmask_mode", PROPERTY_HINT_ENUM, "2x2,3x3 (minimal),3x3"));
 			p_list->push_back(PropertyInfo(Variant::VECTOR2, "tile_subtile_size"));
-			p_list->push_back(PropertyInfo(Variant::INT, "tile_subtile_spacing", PROPERTY_HINT_RANGE, "0, 256, 1"));
+			p_list->push_back(PropertyInfo(Variant::INT, "tile_subtile_spacing", PROPERTY_HINT_RANGE, "0, 1024, 1"));
 		} else if (tileset->tile_get_tile_mode(id) == TileSet::ATLAS_TILE) {
 			p_list->push_back(PropertyInfo(Variant::VECTOR2, "tile_subtile_size"));
-			p_list->push_back(PropertyInfo(Variant::INT, "tile_subtile_spacing", PROPERTY_HINT_RANGE, "0, 256, 1"));
+			p_list->push_back(PropertyInfo(Variant::INT, "tile_subtile_spacing", PROPERTY_HINT_RANGE, "0, 1024, 1"));
 		}
 		p_list->push_back(PropertyInfo(Variant::VECTOR2, "tile_occluder_offset"));
 		p_list->push_back(PropertyInfo(Variant::VECTOR2, "tile_navigation_offset"));

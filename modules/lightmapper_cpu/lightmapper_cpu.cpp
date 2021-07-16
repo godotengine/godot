@@ -685,85 +685,6 @@ void LightmapperCPU::_plot_triangle(const Vector2 *p_vertices, const Vector3 *p_
 	}
 }
 
-void LightmapperCPU::_compute_direct_light(uint32_t p_idx, void *r_lightmap) {
-	LightmapTexel *lightmap = (LightmapTexel *)r_lightmap;
-	for (unsigned int i = 0; i < lights.size(); ++i) {
-		const Light &light = lights[i];
-		Vector3 normal = lightmap[p_idx].normal;
-		Vector3 position = lightmap[p_idx].pos;
-		Vector3 final_energy;
-		Color c = light.color;
-		Vector3 light_energy = Vector3(c.r, c.g, c.b) * light.energy;
-
-		if (light.type == LIGHT_TYPE_OMNI) {
-			Vector3 light_direction = (position - light.position).normalized();
-			if (normal.dot(light_direction) >= 0.0) {
-				continue;
-			}
-			float dist = position.distance_to(light.position);
-
-			if (dist <= light.range) {
-				LightmapRaycaster::Ray ray = LightmapRaycaster::Ray(position, -light_direction, parameters.bias, dist - parameters.bias);
-				if (raycaster->intersect(ray)) {
-					continue;
-				}
-				float att = powf(1.0 - dist / light.range, light.attenuation);
-				final_energy = light_energy * att * MAX(0, normal.dot(-light_direction));
-			}
-		}
-
-		if (light.type == LIGHT_TYPE_SPOT) {
-			Vector3 light_direction = (position - light.position).normalized();
-			if (normal.dot(light_direction) >= 0.0) {
-				continue;
-			}
-
-			float angle = Math::acos(light.direction.dot(light_direction));
-
-			if (angle > light.spot_angle) {
-				continue;
-			}
-
-			float dist = position.distance_to(light.position);
-			if (dist > light.range) {
-				continue;
-			}
-
-			LightmapRaycaster::Ray ray = LightmapRaycaster::Ray(position, -light_direction, parameters.bias, dist);
-			if (raycaster->intersect(ray)) {
-				continue;
-			}
-
-			float normalized_dist = dist * (1.0f / MAX(0.001f, light.range));
-			float norm_light_attenuation = Math::pow(MAX(1.0f - normalized_dist, 0.001f), light.attenuation);
-
-			float spot_cutoff = Math::cos(light.spot_angle);
-			float scos = MAX(light_direction.dot(light.direction), spot_cutoff);
-			float spot_rim = (1.0f - scos) / (1.0f - spot_cutoff);
-			norm_light_attenuation *= 1.0f - pow(MAX(spot_rim, 0.001f), light.spot_attenuation);
-			final_energy = light_energy * norm_light_attenuation * MAX(0, normal.dot(-light_direction));
-		}
-
-		if (light.type == LIGHT_TYPE_DIRECTIONAL) {
-			if (normal.dot(light.direction) >= 0.0) {
-				continue;
-			}
-
-			LightmapRaycaster::Ray ray = LightmapRaycaster::Ray(position + normal * parameters.bias, -light.direction, parameters.bias);
-			if (raycaster->intersect(ray)) {
-				continue;
-			}
-
-			final_energy = light_energy * MAX(0, normal.dot(-light.direction));
-		}
-
-		lightmap[p_idx].direct_light += final_energy * light.indirect_multiplier;
-		if (light.bake_direct) {
-			lightmap[p_idx].output_light += final_energy;
-		}
-	}
-}
-
 _ALWAYS_INLINE_ float uniform_rand() {
 	/* Algorithm "xor" from p. 4 of Marsaglia, "Xorshift RNGs" */
 	static thread_local uint32_t state = Math::rand();
@@ -772,6 +693,123 @@ _ALWAYS_INLINE_ float uniform_rand() {
 	state ^= state << 5;
 	/* implicit conversion from 'unsigned int' to 'float' changes value from 4294967295 to 4294967296 */
 	return float(state) / float(UINT32_MAX);
+}
+
+void LightmapperCPU::_compute_direct_light(uint32_t p_idx, void *r_lightmap) {
+	LightmapTexel *lightmap = (LightmapTexel *)r_lightmap;
+	for (unsigned int i = 0; i < lights.size(); ++i) {
+		const Light &light = lights[i];
+		Vector3 normal = lightmap[p_idx].normal;
+		Vector3 position = lightmap[p_idx].pos;
+		Color c = light.color;
+		Vector3 light_energy = Vector3(c.r, c.g, c.b) * light.energy;
+
+		Vector3 light_to_point = light.direction;
+		if (light.type == LIGHT_TYPE_OMNI || light.type == LIGHT_TYPE_SPOT) {
+			light_to_point = (position - light.position).normalized();
+		}
+
+		if (normal.dot(light_to_point) >= 0.0) {
+			continue;
+		}
+
+		float dist;
+		float attenuation;
+		float soft_shadowing_disk_size;
+
+		if (light.type == LIGHT_TYPE_OMNI || light.type == LIGHT_TYPE_SPOT) {
+			dist = position.distance_to(light.position);
+			if (dist > light.range) {
+				continue;
+			}
+			soft_shadowing_disk_size = light.size / dist;
+
+			if (light.type == LIGHT_TYPE_OMNI) {
+				attenuation = powf(1.0 - dist / light.range, light.attenuation);
+			} else /* (light.type == LIGHT_TYPE_SPOT) */ {
+				float angle = Math::acos(light.direction.dot(light_to_point));
+
+				if (angle > light.spot_angle) {
+					continue;
+				}
+
+				float normalized_dist = dist * (1.0f / MAX(0.001f, light.range));
+				float norm_light_attenuation = Math::pow(MAX(1.0f - normalized_dist, 0.001f), light.attenuation);
+
+				float spot_cutoff = Math::cos(light.spot_angle);
+				float scos = MAX(light_to_point.dot(light.direction), spot_cutoff);
+				float spot_rim = (1.0f - scos) / (1.0f - spot_cutoff);
+				attenuation = norm_light_attenuation * (1.0f - pow(MAX(spot_rim, 0.001f), light.spot_attenuation));
+			}
+		} else /*if (light.type == LIGHT_TYPE_DIRECTIONAL)*/ {
+			dist = INFINITY;
+			attenuation = 1.0f;
+			soft_shadowing_disk_size = light.size;
+		}
+
+		float penumbra = 0.0f;
+		if (light.size > 0.0) {
+			Vector3 light_to_point_tan;
+			Vector3 light_to_point_bitan;
+
+			if (light.type == LIGHT_TYPE_OMNI || light.type == LIGHT_TYPE_SPOT) {
+				light_to_point = (position - light.position).normalized();
+				Vector3 aux = light_to_point.y < 0.777 ? Vector3(0, 1, 0) : Vector3(1, 0, 0);
+				light_to_point_tan = light_to_point.cross(aux).normalized();
+				light_to_point_bitan = light_to_point.cross(light_to_point_tan).normalized();
+			} else /*if (light.type == LIGHT_TYPE_DIRECTIONAL)*/ {
+				Vector3 aux = light_to_point.y < 0.777 ? Vector3(0, 1, 0) : Vector3(1, 0, 0);
+				light_to_point_tan = light_to_point.cross(aux).normalized();
+				light_to_point_bitan = light_to_point.cross(light_to_point_tan).normalized();
+			}
+
+			const static int shadowing_rays_check_penumbra_denom = 2;
+			int shadowing_ray_count = parameters.samples;
+
+			int hits = 0;
+			Vector3 light_disk_to_point = light_to_point;
+			for (int j = 0; j < shadowing_ray_count; j++) {
+				// Optimization:
+				// Once already casted an important proportion of rays, if all are hits or misses,
+				// assume we're not in the penumbra so we can infer the rest would have the same result
+				if (j == shadowing_ray_count / shadowing_rays_check_penumbra_denom) {
+					if (hits == j) {
+						// Assume totally lit
+						hits = shadowing_ray_count;
+						break;
+					} else if (hits == 0) {
+						// Assume totally dark
+						hits = 0;
+						break;
+					}
+				}
+
+				float r = uniform_rand();
+				float a = uniform_rand() * Math_TAU;
+				Vector2 disk_sample = (r * Vector2(Math::cos(a), Math::sin(a))) * soft_shadowing_disk_size;
+				light_disk_to_point = (light_to_point + disk_sample.x * light_to_point_tan + disk_sample.y * light_to_point_bitan).normalized();
+
+				LightmapRaycaster::Ray ray = LightmapRaycaster::Ray(position, -light_disk_to_point, parameters.bias, dist);
+				if (raycaster->intersect(ray)) {
+					continue;
+				}
+
+				hits++;
+			}
+			penumbra = (float)hits / shadowing_ray_count;
+		} else {
+			LightmapRaycaster::Ray ray = LightmapRaycaster::Ray(position, -light_to_point, parameters.bias, dist);
+			if (!raycaster->intersect(ray)) {
+				penumbra = 1.0f;
+			}
+		}
+
+		Vector3 final_energy = attenuation * penumbra * light_energy * MAX(0, normal.dot(-light_to_point));
+		lightmap[p_idx].direct_light += final_energy * light.indirect_multiplier;
+		if (light.bake_direct) {
+			lightmap[p_idx].output_light += final_energy;
+		}
+	}
 }
 
 void LightmapperCPU::_compute_indirect_light(uint32_t p_idx, void *r_lightmap) {
@@ -974,7 +1012,7 @@ void LightmapperCPU::_post_process(uint32_t p_idx, void *r_output) {
 
 void LightmapperCPU::_compute_seams(const MeshInstance &p_mesh, LocalVector<UVSeam> &r_seams) {
 	float max_uv_distance = 1.0f / MAX(p_mesh.size.x, p_mesh.size.y);
-	max_uv_distance *= max_uv_distance; // We use distance_to_squared(), so wee need to square the max distance as well
+	max_uv_distance *= max_uv_distance; // We use distance_to_squared(), so we need to square the max distance as well
 	float max_pos_distance = 0.00025f;
 	float max_normal_distance = 0.05f;
 
@@ -1261,9 +1299,18 @@ LightmapperCPU::BakeError LightmapperCPU::bake(BakeQuality p_quality, bool p_use
 		}
 	}
 
+	bool has_baked_mesh = false;
 	for (unsigned int i = 0; i < mesh_instances.size(); i++) {
+		if (mesh_instances[i].generate_lightmap) {
+			has_baked_mesh = true;
+		}
 		raycaster->add_mesh(mesh_instances[i].data.points, mesh_instances[i].data.normal, mesh_instances[i].data.uv2, i);
 	}
+
+	if (!has_baked_mesh) {
+		return BAKE_ERROR_NO_MESHES;
+	}
+
 	raycaster->commit();
 
 	scene_lightmaps.resize(mesh_instances.size());
@@ -1454,7 +1501,6 @@ LightmapperCPU::BakeError LightmapperCPU::bake(BakeQuality p_quality, bool p_use
 	}
 
 	{
-		int j = 0;
 		for (unsigned int i = 0; i < mesh_instances.size(); i++) {
 			if (!mesh_instances[i].generate_lightmap) {
 				continue;
@@ -1463,9 +1509,8 @@ LightmapperCPU::BakeError LightmapperCPU::bake(BakeQuality p_quality, bool p_use
 			if (p_generate_atlas) {
 				_blit_lightmap(lightmaps_data[i], mesh_instances[i].size, bake_textures[mesh_instances[i].slice], mesh_instances[i].offset.x, mesh_instances[i].offset.y, true);
 			} else {
-				_blit_lightmap(lightmaps_data[i], mesh_instances[i].size, bake_textures[j], 0, 0, false);
+				_blit_lightmap(lightmaps_data[i], mesh_instances[i].size, bake_textures[i], 0, 0, false);
 			}
-			j++;
 		}
 	}
 
@@ -1583,7 +1628,7 @@ void LightmapperCPU::add_mesh(const MeshData &p_mesh, Vector2i p_size) {
 	mesh_instances.push_back(mi);
 }
 
-void LightmapperCPU::add_directional_light(bool p_bake_direct, const Vector3 &p_direction, const Color &p_color, float p_energy, float p_indirect_multiplier) {
+void LightmapperCPU::add_directional_light(bool p_bake_direct, const Vector3 &p_direction, const Color &p_color, float p_energy, float p_indirect_multiplier, float p_size) {
 	Light l;
 	l.type = LIGHT_TYPE_DIRECTIONAL;
 	l.direction = p_direction;
@@ -1591,10 +1636,11 @@ void LightmapperCPU::add_directional_light(bool p_bake_direct, const Vector3 &p_
 	l.energy = p_energy;
 	l.indirect_multiplier = p_indirect_multiplier;
 	l.bake_direct = p_bake_direct;
+	l.size = p_size;
 	lights.push_back(l);
 }
 
-void LightmapperCPU::add_omni_light(bool p_bake_direct, const Vector3 &p_position, const Color &p_color, float p_energy, float p_indirect_multiplier, float p_range, float p_attenuation) {
+void LightmapperCPU::add_omni_light(bool p_bake_direct, const Vector3 &p_position, const Color &p_color, float p_energy, float p_indirect_multiplier, float p_range, float p_attenuation, float p_size) {
 	Light l;
 	l.type = LIGHT_TYPE_OMNI;
 	l.position = p_position;
@@ -1604,10 +1650,11 @@ void LightmapperCPU::add_omni_light(bool p_bake_direct, const Vector3 &p_positio
 	l.energy = p_energy;
 	l.indirect_multiplier = p_indirect_multiplier;
 	l.bake_direct = p_bake_direct;
+	l.size = p_size;
 	lights.push_back(l);
 }
 
-void LightmapperCPU::add_spot_light(bool p_bake_direct, const Vector3 &p_position, const Vector3 p_direction, const Color &p_color, float p_energy, float p_indirect_multiplier, float p_range, float p_attenuation, float p_spot_angle, float p_spot_attenuation) {
+void LightmapperCPU::add_spot_light(bool p_bake_direct, const Vector3 &p_position, const Vector3 p_direction, const Color &p_color, float p_energy, float p_indirect_multiplier, float p_range, float p_attenuation, float p_spot_angle, float p_spot_attenuation, float p_size) {
 	Light l;
 	l.type = LIGHT_TYPE_SPOT;
 	l.position = p_position;
@@ -1620,6 +1667,7 @@ void LightmapperCPU::add_spot_light(bool p_bake_direct, const Vector3 &p_positio
 	l.energy = p_energy;
 	l.indirect_multiplier = p_indirect_multiplier;
 	l.bake_direct = p_bake_direct;
+	l.size = p_size;
 	lights.push_back(l);
 }
 

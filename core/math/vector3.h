@@ -121,6 +121,7 @@ struct Vector3 {
 	_FORCE_INLINE_ Vector3 project(const Vector3 &p_to) const;
 
 	_FORCE_INLINE_ real_t angle_to(const Vector3 &p_to) const;
+	_FORCE_INLINE_ real_t signed_angle_to(const Vector3 &p_to, const Vector3 &p_axis) const;
 	_FORCE_INLINE_ Vector3 direction_to(const Vector3 &p_to) const;
 
 	_FORCE_INLINE_ Vector3 slide(const Vector3 &p_normal) const;
@@ -128,6 +129,7 @@ struct Vector3 {
 	_FORCE_INLINE_ Vector3 reflect(const Vector3 &p_normal) const;
 
 	bool is_equal_approx(const Vector3 &p_v) const;
+	inline bool is_equal_approx(const Vector3 &p_v, real_t p_tolerance) const;
 
 	/* Operators */
 
@@ -231,6 +233,13 @@ Vector3 Vector3::project(const Vector3 &p_to) const {
 
 real_t Vector3::angle_to(const Vector3 &p_to) const {
 	return Math::atan2(cross(p_to).length(), dot(p_to));
+}
+
+real_t Vector3::signed_angle_to(const Vector3 &p_to, const Vector3 &p_axis) const {
+	Vector3 cross_to = cross(p_to);
+	real_t unsigned_angle = Math::atan2(cross_to.length(), dot(p_to));
+	real_t sign = cross_to.dot(p_axis);
+	return (sign < 0) ? -unsigned_angle : unsigned_angle;
 }
 
 Vector3 Vector3::direction_to(const Vector3 &p_to) const {
@@ -413,7 +422,7 @@ Vector3 Vector3::normalized() const {
 
 bool Vector3::is_normalized() const {
 	// use length_squared() instead of length() to avoid sqrt(), makes it more stringent.
-	return Math::is_equal_approx(length_squared(), 1.0, UNIT_EPSILON);
+	return Math::is_equal_approx(length_squared(), 1, (real_t)UNIT_EPSILON);
 }
 
 Vector3 Vector3::inverse() const {
@@ -441,6 +450,10 @@ Vector3 Vector3::reflect(const Vector3 &p_normal) const {
 	ERR_FAIL_COND_V_MSG(!p_normal.is_normalized(), Vector3(), "The normal Vector3 must be normalized.");
 #endif
 	return 2.0 * p_normal * this->dot(p_normal) - *this;
+}
+
+bool Vector3::is_equal_approx(const Vector3 &p_v, real_t p_tolerance) const {
+	return Math::is_equal_approx(x, p_v.x, p_tolerance) && Math::is_equal_approx(y, p_v.y, p_tolerance) && Math::is_equal_approx(z, p_v.z, p_tolerance);
 }
 
 #endif // VECTOR3_H

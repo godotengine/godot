@@ -1071,6 +1071,7 @@ public:
 	static PoolVector<Plane> build_box_planes(const Vector3 &p_extents);
 	static PoolVector<Plane> build_cylinder_planes(real_t p_radius, real_t p_height, int p_sides, Vector3::Axis p_axis = Vector3::AXIS_Z);
 	static PoolVector<Plane> build_capsule_planes(real_t p_radius, real_t p_height, int p_sides, int p_lats, Vector3::Axis p_axis = Vector3::AXIS_Z);
+	static void sort_polygon_winding(Vector<Vector2> &r_verts, bool p_clockwise = true);
 
 	static void make_atlas(const Vector<Size2i> &p_rects, Vector<Point2i> &r_result, Size2i &r_size);
 
@@ -1081,7 +1082,9 @@ public:
 	};
 	static Vector<PackRectsResult> partial_pack_rects(const Vector<Vector2i> &p_sizes, const Size2i &p_atlas_size);
 
-	static Vector<Vector3> compute_convex_mesh_points(const Plane *p_planes, int p_plane_count);
+	static Vector<Vector3> compute_convex_mesh_points(const Plane *p_planes, int p_plane_count, real_t p_epsilon = CMP_EPSILON);
+	static bool convex_hull_intersects_convex_hull(const Plane *p_planes_a, int p_plane_count_a, const Plane *p_planes_b, int p_plane_count_b);
+	static real_t calculate_convex_hull_volume(const Geometry::MeshData &p_md);
 
 private:
 	static Vector<Vector<Point2>> _polypaths_do_operation(PolyBooleanOperation p_op, const Vector<Point2> &p_polypath_a, const Vector<Point2> &p_polypath_b, bool is_a_open = false);

@@ -31,6 +31,7 @@
 #include "script_text_editor.h"
 
 #include "core/math/expression.h"
+#include "core/os/input.h"
 #include "core/os/keyboard.h"
 #include "editor/editor_node.h"
 #include "editor/editor_scale.h"
@@ -232,6 +233,7 @@ void ScriptTextEditor::_load_theme_settings() {
 	Color search_result_border_color = EDITOR_GET("text_editor/highlighting/search_result_border_color");
 	Color symbol_color = EDITOR_GET("text_editor/highlighting/symbol_color");
 	Color keyword_color = EDITOR_GET("text_editor/highlighting/keyword_color");
+	Color control_flow_keyword_color = EDITOR_GET("text_editor/highlighting/control_flow_keyword_color");
 	Color basetype_color = EDITOR_GET("text_editor/highlighting/base_type_color");
 	Color type_color = EDITOR_GET("text_editor/highlighting/engine_type_color");
 	Color usertype_color = EDITOR_GET("text_editor/highlighting/user_type_color");
@@ -271,6 +273,7 @@ void ScriptTextEditor::_load_theme_settings() {
 
 	colors_cache.symbol_color = symbol_color;
 	colors_cache.keyword_color = keyword_color;
+	colors_cache.control_flow_keyword_color = control_flow_keyword_color;
 	colors_cache.basetype_color = basetype_color;
 	colors_cache.type_color = type_color;
 	colors_cache.usertype_color = usertype_color;
@@ -294,7 +297,12 @@ void ScriptTextEditor::_set_theme_for_script() {
 	script->get_language()->get_reserved_words(&keywords);
 
 	for (List<String>::Element *E = keywords.front(); E; E = E->next()) {
-		text_edit->add_keyword_color(E->get(), colors_cache.keyword_color);
+		if (script->get_language()->is_control_flow_keyword(E->get())) {
+			// Use a different color for control flow keywords to make them easier to distinguish.
+			text_edit->add_keyword_color(E->get(), colors_cache.control_flow_keyword_color);
+		} else {
+			text_edit->add_keyword_color(E->get(), colors_cache.keyword_color);
+		}
 	}
 
 	//colorize core types
@@ -388,7 +396,7 @@ void ScriptTextEditor::_show_warnings_panel(bool p_show) {
 
 void ScriptTextEditor::_warning_clicked(Variant p_line) {
 	if (p_line.get_type() == Variant::INT) {
-		code_editor->get_text_edit()->cursor_set_line(p_line.operator int64_t());
+		goto_line_centered(p_line.operator int64_t());
 	} else if (p_line.get_type() == Variant::DICTIONARY) {
 		Dictionary meta = p_line.operator Dictionary();
 		code_editor->get_text_edit()->insert_at("# warning-ignore:" + meta["code"].operator String(), meta["line"].operator int64_t() - 1);
@@ -1111,8 +1119,8 @@ void ScriptTextEditor::_edit_option(int p_op) {
 		case EDIT_DELETE_LINE: {
 			code_editor->delete_lines();
 		} break;
-		case EDIT_CLONE_DOWN: {
-			code_editor->clone_lines_down();
+		case EDIT_DUPLICATE_SELECTION: {
+			code_editor->duplicate_selection();
 		} break;
 		case EDIT_TOGGLE_FOLD_LINE: {
 			tx->toggle_fold_line(tx->cursor_get_line());
@@ -1496,14 +1504,21 @@ void ScriptTextEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data
 	}
 
 	if (d.has("type") && (String(d["type"]) == "files" || String(d["type"]) == "files_and_dirs")) {
+		const String quote_style = EDITOR_DEF("text_editor/completion/use_single_quotes", false) ? "'" : "\"";
 		Array files = d["files"];
 
 		String text_to_drop;
+		bool preload = Input::get_singleton()->is_key_pressed(KEY_CONTROL);
 		for (int i = 0; i < files.size(); i++) {
 			if (i > 0) {
-				text_to_drop += ",";
+				text_to_drop += ", ";
 			}
-			text_to_drop += "\"" + String(files[i]).c_escape() + "\"";
+
+			if (preload) {
+				text_to_drop += "preload(" + String(files[i]).c_escape().quote(quote_style) + ")";
+			} else {
+				text_to_drop += String(files[i]).c_escape().quote(quote_style);
+			}
 		}
 
 		te->cursor_set_line(row);
@@ -1788,7 +1803,7 @@ void ScriptTextEditor::_enable_code_editor() {
 	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/fold_all_lines"), EDIT_FOLD_ALL_LINES);
 	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/unfold_all_lines"), EDIT_UNFOLD_ALL_LINES);
 	edit_menu->get_popup()->add_separator();
-	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/clone_down"), EDIT_CLONE_DOWN);
+	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/duplicate_selection"), EDIT_DUPLICATE_SELECTION);
 	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/complete_symbol"), EDIT_COMPLETE);
 	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/evaluate_selection"), EDIT_EVALUATE);
 	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/trim_trailing_whitespace"), EDIT_TRIM_TRAILING_WHITESAPCE);
@@ -1955,10 +1970,10 @@ void ScriptTextEditor::register_editor() {
 	ED_SHORTCUT("script_text_editor/fold_all_lines", TTR("Fold All Lines"), 0);
 	ED_SHORTCUT("script_text_editor/unfold_all_lines", TTR("Unfold All Lines"), 0);
 #ifdef OSX_ENABLED
-	ED_SHORTCUT("script_text_editor/clone_down", TTR("Clone Down"), KEY_MASK_SHIFT | KEY_MASK_CMD | KEY_C);
+	ED_SHORTCUT("script_text_editor/duplicate_selection", TTR("Duplicate Selection"), KEY_MASK_SHIFT | KEY_MASK_CMD | KEY_C);
 	ED_SHORTCUT("script_text_editor/complete_symbol", TTR("Complete Symbol"), KEY_MASK_CTRL | KEY_SPACE);
 #else
-	ED_SHORTCUT("script_text_editor/clone_down", TTR("Clone Down"), KEY_MASK_CMD | KEY_D);
+	ED_SHORTCUT("script_text_editor/duplicate_selection", TTR("Duplicate Selection"), KEY_MASK_CMD | KEY_D);
 	ED_SHORTCUT("script_text_editor/complete_symbol", TTR("Complete Symbol"), KEY_MASK_CMD | KEY_SPACE);
 #endif
 	ED_SHORTCUT("script_text_editor/evaluate_selection", TTR("Evaluate Selection"), KEY_MASK_CMD | KEY_MASK_SHIFT | KEY_E);

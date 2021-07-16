@@ -1175,7 +1175,127 @@ Vector<Vector<Point2>> Geometry::_polypath_offset(const Vector<Point2> &p_polypa
 	return polypaths;
 }
 
-Vector<Vector3> Geometry::compute_convex_mesh_points(const Plane *p_planes, int p_plane_count) {
+real_t Geometry::calculate_convex_hull_volume(const Geometry::MeshData &p_md) {
+	if (!p_md.vertices.size()) {
+		return 0.0;
+	}
+
+	// find center
+	Vector3 center;
+	for (int n = 0; n < p_md.vertices.size(); n++) {
+		center += p_md.vertices[n];
+	}
+	center /= p_md.vertices.size();
+
+	Face3 fa;
+
+	real_t volume = 0.0;
+
+	// volume of each cone is 1/3 * height * area of face
+	for (int f = 0; f < p_md.faces.size(); f++) {
+		const Geometry::MeshData::Face &face = p_md.faces[f];
+
+		real_t height = 0.0;
+		real_t face_area = 0.0;
+
+		for (int c = 0; c < face.indices.size() - 2; c++) {
+			fa.vertex[0] = p_md.vertices[face.indices[0]];
+			fa.vertex[1] = p_md.vertices[face.indices[c + 1]];
+			fa.vertex[2] = p_md.vertices[face.indices[c + 2]];
+
+			if (!c) {
+				// calculate height
+				Plane plane(fa.vertex[0], fa.vertex[1], fa.vertex[2]);
+				height = -plane.distance_to(center);
+			}
+
+			face_area += Math::sqrt(fa.get_twice_area_squared());
+		}
+		volume += face_area * height;
+	}
+
+	volume *= (1.0 / 3.0) * 0.5;
+	return volume;
+}
+
+// note this function is slow, because it builds meshes etc. Not ideal to use in realtime.
+// Planes must face OUTWARD from the center of the convex hull, by convention.
+bool Geometry::convex_hull_intersects_convex_hull(const Plane *p_planes_a, int p_plane_count_a, const Plane *p_planes_b, int p_plane_count_b) {
+	if (!p_plane_count_a || !p_plane_count_b) {
+		return false;
+	}
+
+	// OR alternative approach, we can call compute_convex_mesh_points()
+	// with both sets of planes, to get an intersection. Not sure which method is
+	// faster... this may be faster with more complex hulls.
+
+	// the usual silliness to get from one vector format to another...
+	PoolVector<Plane> planes_a;
+	PoolVector<Plane> planes_b;
+
+	{
+		planes_a.resize(p_plane_count_a);
+		PoolVector<Plane>::Write w = planes_a.write();
+		memcpy(w.ptr(), p_planes_a, p_plane_count_a * sizeof(Plane));
+	}
+	{
+		planes_b.resize(p_plane_count_b);
+		PoolVector<Plane>::Write w = planes_b.write();
+		memcpy(w.ptr(), p_planes_b, p_plane_count_b * sizeof(Plane));
+	}
+
+	Geometry::MeshData md_A = build_convex_mesh(planes_a);
+	Geometry::MeshData md_B = build_convex_mesh(planes_b);
+
+	// hull can't be built
+	if (!md_A.vertices.size() || !md_B.vertices.size()) {
+		return false;
+	}
+
+	// first check the points against the planes
+	for (int p = 0; p < p_plane_count_a; p++) {
+		const Plane &plane = p_planes_a[p];
+
+		for (int n = 0; n < md_B.vertices.size(); n++) {
+			if (!plane.is_point_over(md_B.vertices[n])) {
+				return true;
+			}
+		}
+	}
+
+	for (int p = 0; p < p_plane_count_b; p++) {
+		const Plane &plane = p_planes_b[p];
+
+		for (int n = 0; n < md_A.vertices.size(); n++) {
+			if (!plane.is_point_over(md_A.vertices[n])) {
+				return true;
+			}
+		}
+	}
+
+	// now check edges
+	for (int n = 0; n < md_A.edges.size(); n++) {
+		const Vector3 &pt_a = md_A.vertices[md_A.edges[n].a];
+		const Vector3 &pt_b = md_A.vertices[md_A.edges[n].b];
+
+		if (segment_intersects_convex(pt_a, pt_b, p_planes_b, p_plane_count_b, nullptr, nullptr)) {
+			return true;
+		}
+	}
+
+	for (int n = 0; n < md_B.edges.size(); n++) {
+		const Vector3 &pt_a = md_B.vertices[md_B.edges[n].a];
+		const Vector3 &pt_b = md_B.vertices[md_B.edges[n].b];
+
+		if (segment_intersects_convex(pt_a, pt_b, p_planes_a, p_plane_count_a, nullptr, nullptr)) {
+			return true;
+		}
+	}
+
+	return false;
+}
+
+Vector<Vector3> Geometry::compute_convex_mesh_points(const Plane *p_planes, int p_plane_count, real_t p_epsilon) {
 	Vector<Vector3> points;
 
 	// Iterate through every unique combination of any three planes.
@@ -1191,8 +1311,8 @@ Vector<Vector3> Geometry::compute_convex_mesh_points(const Plane *p_planes, int 
 					bool excluded = false;
 					for (int n = 0; n < p_plane_count; n++) {
 						if (n != i && n != j && n != k) {
-							real_t dp = p_planes[n].normal.dot(convex_shape_point);
-							if (dp - p_planes[n].d > CMP_EPSILON) {
+							real_t dist = p_planes[n].distance_to(convex_shape_point);
+							if (dist > p_epsilon) {
 								excluded = true;
 								break;
 							}
@@ -1241,4 +1361,66 @@ Vector<Geometry::PackRectsResult> Geometry::partial_pack_rects(const Vector<Vect
 	}
 
 	return ret;
+}
+
+// adapted from:
+// https://stackoverflow.com/questions/6989100/sort-points-in-clockwise-order
+void Geometry::sort_polygon_winding(Vector<Vector2> &r_verts, bool p_clockwise) {
+	// sort winding order of a (primarily convex) polygon.
+	// It can handle some concave polygons, but not
+	// where a vertex 'goes back on' a previous vertex ..
+	// i.e. it will change the shape in some concave cases.
+	struct ElementComparator {
+		Vector2 center;
+		bool operator()(const Vector2 &a, const Vector2 &b) const {
+			if (a.x - center.x >= 0 && b.x - center.x < 0) {
+				return true;
+			}
+			if (a.x - center.x < 0 && b.x - center.x >= 0) {
+				return false;
+			}
+			if (a.x - center.x == 0 && b.x - center.x == 0) {
+				if (a.y - center.y >= 0 || b.y - center.y >= 0) {
+					return a.y > b.y;
+				}
+				return b.y > a.y;
+			}
+
+			// compute the cross product of vectors (center -> a) x (center -> b)
+			real_t det = (a.x - center.x) * (b.y - center.y) - (b.x - center.x) * (a.y - center.y);
+			if (det < 0.0) {
+				return true;
+			}
+			if (det > 0.0) {
+				return false;
+			}
+
+			// points a and b are on the same line from the center
+			// check which point is closer to the center
+			real_t d1 = (a.x - center.x) * (a.x - center.x) + (a.y - center.y) * (a.y - center.y);
+			real_t d2 = (b.x - center.x) * (b.x - center.x) + (b.y - center.y) * (b.y - center.y);
+			return d1 > d2;
+		}
+	};
+
+	int npoints = r_verts.size();
+	if (!npoints) {
+		return;
+	}
+
+	// first calculate center
+	Vector2 center;
+	for (int n = 0; n < npoints; n++) {
+		center += r_verts[n];
+	}
+	center /= npoints;
+
+	SortArray<Vector2, ElementComparator> sorter;
+	sorter.compare.center = center;
+	sorter.sort(r_verts.ptrw(), r_verts.size());
+
+	// if not clockwise, reverse order
+	if (!p_clockwise) {
+		r_verts.invert();
+	}
 }

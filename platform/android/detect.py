@@ -248,7 +248,7 @@ def configure(env):
     env["RANLIB"] = tools_path + "/ranlib"
     env["AS"] = tools_path + "/as"
 
-    common_opts = ["-fno-integrated-as", "-gcc-toolchain", gcc_toolchain_path]
+    common_opts = ["-gcc-toolchain", gcc_toolchain_path]
 
     # Compile flags
 
@@ -277,6 +277,9 @@ def configure(env):
         CCFLAGS="-fpic -ffunction-sections -funwind-tables -fstack-protector-strong -fvisibility=hidden -fno-strict-aliasing".split()
     )
     env.Append(CPPDEFINES=["NO_STATVFS", "GLES_ENABLED"])
+
+    if get_platform(env["ndk_platform"]) >= 24:
+        env.Append(CPPDEFINES=[("_FILE_OFFSET_BITS", 64)])
 
     env["neon_enabled"] = False
     if env["android_arch"] == "x86":

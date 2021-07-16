@@ -33,6 +33,11 @@
 #include "core/math/basis.h"
 #include "core/print_string.h"
 
+real_t Quat::angle_to(const Quat &p_to) const {
+	real_t d = dot(p_to);
+	return Math::acos(CLAMP(d * d * 2 - 1, -1, 1));
+}
+
 // set_euler_xyz expects a vector containing the Euler angles in the format
 // (ax,ay,az), where ax is the angle of rotation around x axis,
 // and similar for other axes.
@@ -136,7 +141,7 @@ Quat Quat::normalized() const {
 }
 
 bool Quat::is_normalized() const {
-	return Math::is_equal_approx(length_squared(), 1.0, UNIT_EPSILON); //use less epsilon
+	return Math::is_equal_approx(length_squared(), 1, (real_t)UNIT_EPSILON); //use less epsilon
 }
 
 Quat Quat::inverse() const {

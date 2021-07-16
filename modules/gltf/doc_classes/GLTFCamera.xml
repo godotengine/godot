@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="GLTFCamera" inherits="Resource" version="3.4">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+	</methods>
+	<members>
+		<member name="fov_size" type="float" setter="set_fov_size" getter="get_fov_size" default="75.0">
+		</member>
+		<member name="perspective" type="bool" setter="set_perspective" getter="get_perspective" default="true">
+		</member>
+		<member name="zfar" type="float" setter="set_zfar" getter="get_zfar" default="4000.0">
+		</member>
+		<member name="znear" type="float" setter="set_znear" getter="get_znear" default="0.05">
+		</member>
+	</members>
+	<constants>
+	</constants>
+</class>

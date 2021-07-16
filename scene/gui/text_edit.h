@@ -225,6 +225,7 @@ private:
 		Color font_color_selected;
 		Color font_color_readonly;
 		Color keyword_color;
+		Color control_flow_keyword_color;
 		Color number_color;
 		Color function_color;
 		Color member_variable_color;
@@ -335,7 +336,6 @@ private:
 	uint32_t version;
 	uint32_t saved_version;
 
-	int max_chars;
 	bool readonly;
 	bool syntax_coloring;
 	bool indent_using_spaces;
@@ -363,8 +363,9 @@ private:
 	bool undo_enabled;
 	bool line_numbers;
 	bool line_numbers_zero_padded;
-	bool line_length_guideline;
-	int line_length_guideline_col;
+	bool line_length_guidelines;
+	int line_length_guideline_soft_col;
+	int line_length_guideline_hard_col;
 	bool draw_bookmark_gutter;
 	bool draw_breakpoint_gutter;
 	int breakpoint_gutter_width;
@@ -668,9 +669,6 @@ public:
 	void set_readonly(bool p_readonly);
 	bool is_readonly() const;
 
-	void set_max_chars(int p_max_chars);
-	int get_max_chars() const;
-
 	void set_wrap_enabled(bool p_wrap_enabled);
 	bool is_wrap_enabled() const;
 
@@ -761,8 +759,9 @@ public:
 
 	void set_line_numbers_zero_padded(bool p_zero_padded);
 
-	void set_show_line_length_guideline(bool p_show);
-	void set_line_length_guideline_column(int p_column);
+	void set_show_line_length_guidelines(bool p_show);
+	void set_line_length_guideline_soft_column(int p_column);
+	void set_line_length_guideline_hard_column(int p_column);
 
 	void set_bookmark_gutter_enabled(bool p_draw);
 	bool is_bookmark_gutter_enabled() const;

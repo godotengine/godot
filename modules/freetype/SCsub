@@ -112,8 +112,5 @@ module_obj = []
 env_freetype.add_source_files(module_obj, "*.cpp")
 env.modules_sources += module_obj
 
-# Used in scene/, needs to be in main env
-env.Append(CPPDEFINES=["FREETYPE_ENABLED"])
-
 # Needed to force rebuilding the module files when the thirdparty library is updated.
 env.Depends(module_obj, thirdparty_obj)

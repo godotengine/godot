@@ -1,4 +1,4 @@
-// Copyright 2009-2020 Intel Corporation
+// Copyright 2009-2021 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
 #pragma once
@@ -42,6 +42,6 @@ namespace embree
   }
 
   /*! default template instantiations */
-  typedef Col4<uint8_t      > Col4uc;
+  typedef Col4<unsigned char> Col4uc;
   typedef Col4<float        > Col4f;
 }

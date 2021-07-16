@@ -2038,6 +2038,8 @@ void VisualServer::_bind_methods() {
 	BIND_ENUM_CONSTANT(LIGHT_SPOT);
 
 	BIND_ENUM_CONSTANT(LIGHT_PARAM_ENERGY);
+	BIND_ENUM_CONSTANT(LIGHT_PARAM_INDIRECT_ENERGY);
+	BIND_ENUM_CONSTANT(LIGHT_PARAM_SIZE);
 	BIND_ENUM_CONSTANT(LIGHT_PARAM_SPECULAR);
 	BIND_ENUM_CONSTANT(LIGHT_PARAM_RANGE);
 	BIND_ENUM_CONSTANT(LIGHT_PARAM_ATTENUATION);
@@ -2265,6 +2267,11 @@ RID VisualServer::instance_create2(RID p_base, RID p_scenario) {
 	RID instance = instance_create();
 	instance_set_base(instance, p_base);
 	instance_set_scenario(instance, p_scenario);
+
+	// instance_create2 is used mainly by editor instances.
+	// These should not be culled by the portal system when it is active, so we set their mode to global,
+	// for frustum culling only.
+	instance_set_portal_mode(instance, VisualServer::INSTANCE_PORTAL_MODE_GLOBAL);
 	return instance;
 }
 
@@ -2285,6 +2292,10 @@ VisualServer::VisualServer() {
 	GLOBAL_DEF_RST("rendering/vram_compression/import_etc", false);
 	GLOBAL_DEF_RST("rendering/vram_compression/import_etc2", true);
 	GLOBAL_DEF_RST("rendering/vram_compression/import_pvrtc", false);
+
+	GLOBAL_DEF("rendering/lossless_compression/force_png", false);
+	GLOBAL_DEF("rendering/lossless_compression/webp_compression_level", 2);
+	ProjectSettings::get_singleton()->set_custom_property_info("rendering/lossless_compression/webp_compression_level", PropertyInfo(Variant::INT, "rendering/lossless_compression/webp_compression_level", PROPERTY_HINT_RANGE, "0,9,1"));
 
 	GLOBAL_DEF("rendering/limits/time/time_rollover_secs", 3600);
 	ProjectSettings::get_singleton()->set_custom_property_info("rendering/limits/time/time_rollover_secs", PropertyInfo(Variant::REAL, "rendering/limits/time/time_rollover_secs", PROPERTY_HINT_RANGE, "0,10000,1,or_greater"));

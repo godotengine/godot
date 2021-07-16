@@ -58,7 +58,7 @@ int VideoStreamPlaybackTheora::buffer_data() {
 
 #else
 
-	int bytes = file->get_buffer((uint8_t *)buffer, 4096);
+	uint64_t bytes = file->get_buffer((uint8_t *)buffer, 4096);
 	ogg_sync_wrote(&oy, bytes);
 	return (bytes);
 
@@ -176,7 +176,7 @@ void VideoStreamPlaybackTheora::set_file(const String &p_file) {
 	thread_eof = false;
 	//pre-fill buffer
 	int to_read = ring_buffer.space_left();
-	int read = file->get_buffer(read_buffer.ptr(), to_read);
+	uint64_t read = file->get_buffer(read_buffer.ptr(), to_read);
 	ring_buffer.write(read_buffer.ptr(), read);
 
 	thread.start(_streaming_thread, this);
@@ -302,7 +302,7 @@ void VideoStreamPlaybackTheora::set_file(const String &p_file) {
 		}
 	}
 
-	/* and now we have it all.  initialize decoders */
+	/* And now we have it all. Initialize decoders. */
 	if (theora_p) {
 		td = th_decode_alloc(&ti, ts);
 		px_fmt = ti.pixel_fmt;
@@ -482,10 +482,10 @@ void VideoStreamPlaybackTheora::update(float p_delta) {
 
 					//printf("frame time %f, play time %f, ready %i\n", (float)videobuf_time, get_time(), videobuf_ready);
 
-					/* is it already too old to be useful?  This is only actually
-					 useful cosmetically after a SIGSTOP.  Note that we have to
+					/* is it already too old to be useful? This is only actually
+					 useful cosmetically after a SIGSTOP. Note that we have to
 					 decode the frame even if we don't show it (for now) due to
-					 keyframing.  Soon enough libtheora will be able to deal
+					 keyframing. Soon enough libtheora will be able to deal
 					 with non-keyframe seeks.  */
 
 					if (videobuf_time >= get_time()) {
@@ -631,8 +631,8 @@ void VideoStreamPlaybackTheora::_streaming_thread(void *ud) {
 		//just fill back the buffer
 		if (!vs->thread_eof) {
 			int to_read = vs->ring_buffer.space_left();
-			if (to_read) {
-				int read = vs->file->get_buffer(vs->read_buffer.ptr(), to_read);
+			if (to_read > 0) {
+				uint64_t read = vs->file->get_buffer(vs->read_buffer.ptr(), to_read);
 				vs->ring_buffer.write(vs->read_buffer.ptr(), read);
 				vs->thread_eof = vs->file->eof_reached();
 			}

@@ -2355,6 +2355,9 @@ void RasterizerStorageGLES3::shader_get_param_list(RID p_shader, List<PropertyIn
 		ShaderLanguage::ShaderNode::Uniform &u = shader->uniforms[E->get()];
 		pi.name = E->get();
 		switch (u.type) {
+			case ShaderLanguage::TYPE_STRUCT:
+				pi.type = Variant::ARRAY;
+				break;
 			case ShaderLanguage::TYPE_VOID:
 				pi.type = Variant::NIL;
 				break;
@@ -5275,6 +5278,7 @@ RID RasterizerStorageGLES3::light_create(VS::LightType p_type) {
 
 	light->param[VS::LIGHT_PARAM_ENERGY] = 1.0;
 	light->param[VS::LIGHT_PARAM_INDIRECT_ENERGY] = 1.0;
+	light->param[VS::LIGHT_PARAM_SIZE] = 0.0;
 	light->param[VS::LIGHT_PARAM_SPECULAR] = 0.5;
 	light->param[VS::LIGHT_PARAM_RANGE] = 1.0;
 	light->param[VS::LIGHT_PARAM_SPOT_ANGLE] = 45;
@@ -6941,7 +6945,7 @@ void RasterizerStorageGLES3::_render_target_allocate(RenderTarget *rt) {
 		int max_samples = 0;
 		glGetIntegerv(GL_MAX_SAMPLES, &max_samples);
 		if (msaa > max_samples) {
-			WARN_PRINTS("MSAA must be <= GL_MAX_SAMPLES, falling-back to GL_MAX_SAMPLES = " + itos(max_samples));
+			WARN_PRINT("MSAA must be <= GL_MAX_SAMPLES, falling-back to GL_MAX_SAMPLES = " + itos(max_samples));
 			msaa = max_samples;
 		}
 

@@ -201,6 +201,7 @@ void ResourceImporterTexture::get_import_options(List<ImportOption> *r_options, 
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "process/premult_alpha"), false));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "process/HDR_as_SRGB"), false));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "process/invert_color"), false));
+	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "process/normal_map_invert_y"), false));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "stream"), false));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "size_limit", PROPERTY_HINT_RANGE, "0,4096,1"), 0));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "detect_3d"), p_preset == PRESET_DETECT));
@@ -209,6 +210,7 @@ void ResourceImporterTexture::get_import_options(List<ImportOption> *r_options, 
 
 void ResourceImporterTexture::_save_stex(const Ref<Image> &p_image, const String &p_to_path, int p_compress_mode, float p_lossy_quality, Image::CompressMode p_vram_compression, bool p_mipmaps, int p_texture_flags, bool p_streamable, bool p_detect_3d, bool p_detect_srgb, bool p_force_rgbe, bool p_detect_normal, bool p_force_normal, bool p_force_po2_for_compressed) {
 	FileAccess *f = FileAccess::open(p_to_path, FileAccess::WRITE);
+	ERR_FAIL_NULL(f);
 	f->store_8('G');
 	f->store_8('D');
 	f->store_8('S');
@@ -254,6 +256,8 @@ void ResourceImporterTexture::_save_stex(const Ref<Image> &p_image, const String
 
 	switch (p_compress_mode) {
 		case COMPRESS_LOSSLESS: {
+			bool lossless_force_png = ProjectSettings::get_singleton()->get("rendering/lossless_compression/force_png");
+			bool use_webp = !lossless_force_png && p_image->get_width() <= 16383 && p_image->get_height() <= 16383; // WebP has a size limit
 			Ref<Image> image = p_image->duplicate();
 			if (p_mipmaps) {
 				image->generate_mipmaps();
@@ -263,7 +267,11 @@ void ResourceImporterTexture::_save_stex(const Ref<Image> &p_image, const String
 
 			int mmc = image->get_mipmap_count() + 1;
 
-			format |= StreamTexture::FORMAT_BIT_LOSSLESS;
+			if (use_webp) {
+				format |= StreamTexture::FORMAT_BIT_WEBP;
+			} else {
+				format |= StreamTexture::FORMAT_BIT_PNG;
+			}
 			f->store_32(format);
 			f->store_32(mmc);
 
@@ -272,7 +280,12 @@ void ResourceImporterTexture::_save_stex(const Ref<Image> &p_image, const String
 					image->shrink_x2();
 				}
 
-				PoolVector<uint8_t> data = Image::lossless_packer(image);
+				PoolVector<uint8_t> data;
+				if (use_webp) {
+					data = Image::webp_lossless_packer(image);
+				} else {
+					data = Image::png_packer(image);
+				}
 				int data_len = data.size();
 				f->store_32(data_len);
 
@@ -291,7 +304,7 @@ void ResourceImporterTexture::_save_stex(const Ref<Image> &p_image, const String
 
 			int mmc = image->get_mipmap_count() + 1;
 
-			format |= StreamTexture::FORMAT_BIT_LOSSY;
+			format |= StreamTexture::FORMAT_BIT_WEBP;
 			f->store_32(format);
 			f->store_32(mmc);
 
@@ -300,7 +313,7 @@ void ResourceImporterTexture::_save_stex(const Ref<Image> &p_image, const String
 					image->shrink_x2();
 				}
 
-				PoolVector<uint8_t> data = Image::lossy_packer(image, p_lossy_quality);
+				PoolVector<uint8_t> data = Image::webp_lossy_packer(image, p_lossy_quality);
 				int data_len = data.size();
 				f->store_32(data_len);
 
@@ -373,6 +386,7 @@ Error ResourceImporterTexture::import(const String &p_source_file, const String 
 	bool fix_alpha_border = p_options["process/fix_alpha_border"];
 	bool premult_alpha = p_options["process/premult_alpha"];
 	bool invert_color = p_options["process/invert_color"];
+	bool normal_map_invert_y = p_options["process/normal_map_invert_y"];
 	bool stream = p_options["stream"];
 	int size_limit = p_options["size_limit"];
 	bool hdr_as_srgb = p_options["process/HDR_as_SRGB"];
@@ -393,6 +407,21 @@ Error ResourceImporterTexture::import(const String &p_source_file, const String 
 	int tex_flags = 0;
 	if (repeat > 0) {
 		tex_flags |= Texture::FLAG_REPEAT;
+
+		const bool min_gles3 = GLOBAL_GET("rendering/quality/driver/driver_name") == "GLES3" &&
+							   !GLOBAL_GET("rendering/quality/driver/fallback_to_gles2");
+		if (!min_gles3 && !image->is_size_po2()) {
+			// The project can be run using GLES2. GLES2 does not guarantee that
+			// repeating textures with a non-power-of-two size will be displayed
+			// without artifacts (due to upscaling to the nearest power of 2).
+			if (GLOBAL_GET("rendering/quality/driver/fallback_to_gles2")) {
+				WARN_PRINT(vformat("%s: Imported a repeating texture with a size of %dx%d, but the project is configured to allow falling back to GLES2.\nNon-power-of-2 repeating textures may not display correctly on some platforms such as HTML5. This is because GLES2 does not mandate support for non-power-of-2 repeating textures.",
+						p_source_file, image->get_width(), image->get_height()));
+			} else {
+				WARN_PRINT(vformat("%s: Imported a repeating texture with a size of %dx%d, but the project is configured to use GLES2.\nNon-power-of-2 repeating textures may not display correctly on some platforms such as HTML5. This is because GLES2 does not mandate support for non-power-of-2 repeating textures.",
+						p_source_file, image->get_width(), image->get_height()));
+			}
+		}
 	}
 	if (repeat == 2) {
 		tex_flags |= Texture::FLAG_MIRRORED_REPEAT;
@@ -445,6 +474,24 @@ Error ResourceImporterTexture::import(const String &p_source_file, const String 
 		for (int i = 0; i < width; i++) {
 			for (int j = 0; j < height; j++) {
 				image->set_pixel(i, j, image->get_pixel(i, j).inverted());
+			}
+		}
+		image->unlock();
+	}
+
+	if (normal_map_invert_y) {
+		// Inverting the green channel can be used to flip a normal map's direction.
+		// There's no standard when it comes to normal map Y direction, so this is
+		// sometimes needed when using a normal map exported from another program.
+		// See <http://wiki.polycount.com/wiki/Normal_Map_Technical_Details#Common_Swizzle_Coordinates>.
+		const int height = image->get_height();
+		const int width = image->get_width();
+
+		image->lock();
+		for (int i = 0; i < width; i++) {
+			for (int j = 0; j < height; j++) {
+				const Color color = image->get_pixel(i, j);
+				image->set_pixel(i, j, Color(color.r, 1 - color.g, color.b));
 			}
 		}
 		image->unlock();

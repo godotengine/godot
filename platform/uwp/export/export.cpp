@@ -1056,19 +1056,19 @@ public:
 		// Capabilities
 		const char **basic = uwp_capabilities;
 		while (*basic) {
-			r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "capabilities/" + String(*basic).camelcase_to_underscore(false)), false));
+			r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "capabilities/" + String(*basic)), false));
 			basic++;
 		}
 
 		const char **uap = uwp_uap_capabilities;
 		while (*uap) {
-			r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "capabilities/" + String(*uap).camelcase_to_underscore(false)), false));
+			r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "capabilities/" + String(*uap)), false));
 			uap++;
 		}
 
 		const char **device = uwp_device_capabilities;
 		while (*device) {
-			r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "capabilities/" + String(*device).camelcase_to_underscore(false)), false));
+			r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "capabilities/" + String(*device)), false));
 			device++;
 		}
 	}
@@ -1379,7 +1379,7 @@ public:
 		}
 
 		if (!FileAccess::exists(signtool_path)) {
-			ERR_PRINTS("Could not find signtool executable at " + signtool_path + ", aborting.");
+			ERR_PRINT("Could not find signtool executable at " + signtool_path + ", aborting.");
 			return ERR_FILE_NOT_FOUND;
 		}
 
@@ -1400,12 +1400,12 @@ public:
 		}
 
 		if (!FileAccess::exists(cert_path)) {
-			ERR_PRINTS("Could not find certificate file at " + cert_path + ", aborting.");
+			ERR_PRINT("Could not find certificate file at " + cert_path + ", aborting.");
 			return ERR_FILE_NOT_FOUND;
 		}
 
 		if (cert_alg < 0 || cert_alg > 2) {
-			ERR_PRINTS("Invalid certificate algorithm " + itos(cert_alg) + ", aborting.");
+			ERR_PRINT("Invalid certificate algorithm " + itos(cert_alg) + ", aborting.");
 			return ERR_INVALID_DATA;
 		}
 

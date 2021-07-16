@@ -1,4 +1,4 @@
-// Copyright 2009-2020 Intel Corporation
+// Copyright 2009-2021 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
 #include "scene.h"
@@ -6,7 +6,7 @@
 #include "../bvh/bvh4_factory.h"
 #include "../bvh/bvh8_factory.h"
 #include "../../common/algorithms/parallel_reduce.h"
-
+ 
 namespace embree
 {
   /* error raising rtcIntersect and rtcOccluded functions */
@@ -40,7 +40,7 @@ namespace embree
   {
     device->refDec();
   }
-
+  
   void Scene::printStatistics()
   {
     /* calculate maximum number of time segments */
@@ -56,12 +56,12 @@ namespace embree
       statistics[i].resize(max_time_steps);
 
     /* gather statistics */
-    for (size_t i=0; i<size(); i++)
+    for (size_t i=0; i<size(); i++) 
     {
       if (!get(i)) continue;
-      int ty = get(i)->getType();
+      int ty = get(i)->getType(); 
       assert(ty<Geometry::GTY_END);
-      int timesegments = get(i)->numTimeSegments();
+      int timesegments = get(i)->numTimeSegments(); 
       assert((unsigned int)timesegments < max_time_steps);
       statistics[ty][timesegments] += get(i)->size();
     }
@@ -76,7 +76,7 @@ namespace embree
     for (size_t t=0; t<max_time_steps; t++)
       std::cout << "----------";
     std::cout << std::endl;
-
+    
     for (size_t p=0; p<Geometry::GTY_END; p++)
     {
       if (std::string(Geometry::gtype_names[p]) == "") continue;
@@ -90,34 +90,34 @@ namespace embree
   void Scene::createTriangleAccel()
   {
 #if defined(EMBREE_GEOMETRY_TRIANGLE)
-    if (device->tri_accel == "default")
+    if (device->tri_accel == "default") 
     {
       if (quality_flags != RTC_BUILD_QUALITY_LOW)
       {
-        int mode =  2*(int)isCompactAccel() + 1*(int)isRobustAccel();
+        int mode =  2*(int)isCompactAccel() + 1*(int)isRobustAccel(); 
         switch (mode) {
-        case /*0b00*/ 0:
+        case /*0b00*/ 0: 
 #if defined (EMBREE_TARGET_SIMD8)
           if (device->canUseAVX())
 	  {
-            if (quality_flags == RTC_BUILD_QUALITY_HIGH)
+            if (quality_flags == RTC_BUILD_QUALITY_HIGH) 
               accels_add(device->bvh8_factory->BVH8Triangle4(this,BVHFactory::BuildVariant::HIGH_QUALITY,BVHFactory::IntersectVariant::FAST));
             else
               accels_add(device->bvh8_factory->BVH8Triangle4(this,BVHFactory::BuildVariant::STATIC,BVHFactory::IntersectVariant::FAST));
           }
-          else
+          else 
 #endif
-          {
-            if (quality_flags == RTC_BUILD_QUALITY_HIGH)
+          { 
+            if (quality_flags == RTC_BUILD_QUALITY_HIGH) 
               accels_add(device->bvh4_factory->BVH4Triangle4(this,BVHFactory::BuildVariant::HIGH_QUALITY,BVHFactory::IntersectVariant::FAST));
-            else
+            else 
               accels_add(device->bvh4_factory->BVH4Triangle4(this,BVHFactory::BuildVariant::STATIC,BVHFactory::IntersectVariant::FAST));
           }
           break;
 
-        case /*0b01*/ 1:
+        case /*0b01*/ 1: 
 #if defined (EMBREE_TARGET_SIMD8)
-          if (device->canUseAVX())
+          if (device->canUseAVX()) 
             accels_add(device->bvh8_factory->BVH8Triangle4v(this,BVHFactory::BuildVariant::STATIC,BVHFactory::IntersectVariant::ROBUST));
           else
 #endif
@@ -175,8 +175,8 @@ namespace embree
 #if defined(EMBREE_GEOMETRY_TRIANGLE)
     if (device->tri_accel_mb == "default")
     {
-      int mode =  2*(int)isCompactAccel() + 1*(int)isRobustAccel();
-
+      int mode =  2*(int)isCompactAccel() + 1*(int)isRobustAccel(); 
+      
 #if defined (EMBREE_TARGET_SIMD8)
       if (device->canUseAVX2()) // BVH8 reduces performance on AVX only-machines
       {
@@ -211,18 +211,18 @@ namespace embree
   void Scene::createQuadAccel()
   {
 #if defined(EMBREE_GEOMETRY_QUAD)
-    if (device->quad_accel == "default")
+    if (device->quad_accel == "default") 
     {
       if (quality_flags != RTC_BUILD_QUALITY_LOW)
       {
         /* static */
-        int mode =  2*(int)isCompactAccel() + 1*(int)isRobustAccel();
+        int mode =  2*(int)isCompactAccel() + 1*(int)isRobustAccel(); 
         switch (mode) {
         case /*0b00*/ 0:
 #if defined (EMBREE_TARGET_SIMD8)
           if (device->canUseAVX())
           {
-            if (quality_flags == RTC_BUILD_QUALITY_HIGH)
+            if (quality_flags == RTC_BUILD_QUALITY_HIGH) 
               accels_add(device->bvh8_factory->BVH8Quad4v(this,BVHFactory::BuildVariant::HIGH_QUALITY,BVHFactory::IntersectVariant::FAST));
             else
               accels_add(device->bvh8_factory->BVH8Quad4v(this,BVHFactory::BuildVariant::STATIC,BVHFactory::IntersectVariant::FAST));
@@ -230,7 +230,7 @@ namespace embree
           else
 #endif
           {
-            if (quality_flags == RTC_BUILD_QUALITY_HIGH)
+            if (quality_flags == RTC_BUILD_QUALITY_HIGH) 
               accels_add(device->bvh4_factory->BVH4Quad4v(this,BVHFactory::BuildVariant::HIGH_QUALITY,BVHFactory::IntersectVariant::FAST));
             else
               accels_add(device->bvh4_factory->BVH4Quad4v(this,BVHFactory::BuildVariant::STATIC,BVHFactory::IntersectVariant::FAST));
@@ -292,9 +292,9 @@ namespace embree
   void Scene::createQuadMBAccel()
   {
 #if defined(EMBREE_GEOMETRY_QUAD)
-    if (device->quad_accel_mb == "default")
+    if (device->quad_accel_mb == "default") 
     {
-      int mode =  2*(int)isCompactAccel() + 1*(int)isRobustAccel();
+      int mode =  2*(int)isCompactAccel() + 1*(int)isRobustAccel(); 
       switch (mode) {
       case /*0b00*/ 0:
 #if defined (EMBREE_TARGET_SIMD8)
@@ -416,7 +416,7 @@ namespace embree
   void Scene::createUserGeometryAccel()
   {
 #if defined(EMBREE_GEOMETRY_USER)
-    if (device->object_accel == "default")
+    if (device->object_accel == "default") 
     {
 #if defined (EMBREE_TARGET_SIMD8)
       if (device->canUseAVX() && !isCompactAccel())
@@ -554,7 +554,7 @@ namespace embree
   {
     BVHFactory::IntersectVariant ivariant = isRobustAccel() ? BVHFactory::IntersectVariant::ROBUST : BVHFactory::IntersectVariant::FAST;
 #if defined(EMBREE_GEOMETRY_GRID)
-    if (device->grid_accel == "default")
+    if (device->grid_accel == "default") 
     {
 #if defined (EMBREE_TARGET_SIMD8)
       if (device->canUseAVX() && !isCompactAccel())
@@ -579,7 +579,7 @@ namespace embree
   void Scene::createGridMBAccel()
   {
 #if defined(EMBREE_GEOMETRY_GRID)
-    if (device->grid_accel_mb == "default")
+    if (device->grid_accel_mb == "default") 
     {
       accels_add(device->bvh4_factory->BVH4GridMB(this,BVHFactory::BuildVariant::STATIC));
     }
@@ -588,17 +588,13 @@ namespace embree
 #endif
 
   }
-
+  
   void Scene::clear() {
   }
 
-  unsigned Scene::bind(unsigned geomID, Ref<Geometry> geometry)
+  unsigned Scene::bind(unsigned geomID, Ref<Geometry> geometry) 
   {
-#if defined(__aarch64__) && defined(BUILD_IOS)
-    std::scoped_lock lock(geometriesMutex);
-#else
     Lock<SpinLock> lock(geometriesMutex);
-#endif
     if (geomID == RTC_INVALID_GEOMETRY_ID) {
       geomID = id_pool.allocate();
       if (geomID == RTC_INVALID_GEOMETRY_ID)
@@ -624,19 +620,15 @@ namespace embree
 
   void Scene::detachGeometry(size_t geomID)
   {
-#if defined(__aarch64__) && defined(BUILD_IOS)
-    std::scoped_lock lock(geometriesMutex);
-#else
     Lock<SpinLock> lock(geometriesMutex);
-#endif
-
+    
     if (geomID >= geometries.size())
       throw_RTCError(RTC_ERROR_INVALID_OPERATION,"invalid geometry ID");
 
     Ref<Geometry>& geometry = geometries[geomID];
     if (geometry == null)
       throw_RTCError(RTC_ERROR_INVALID_OPERATION,"invalid geometry");
-
+    
     if (geometry->isEnabled()) {
       setModified ();
     }
@@ -658,21 +650,21 @@ namespace embree
     if (!isModified()) {
       return;
     }
-
+    
     /* print scene statistics */
     if (device->verbosity(2))
       printStatistics();
 
     progress_monitor_counter = 0;
-
+    
     /* gather scene stats and call preCommit function of each geometry */
-    this->world = parallel_reduce (size_t(0), geometries.size(), GeometryCounts (),
+    this->world = parallel_reduce (size_t(0), geometries.size(), GeometryCounts (), 
       [this](const range<size_t>& r)->GeometryCounts
       {
         GeometryCounts c;
-        for (auto i=r.begin(); i<r.end(); ++i)
+        for (auto i=r.begin(); i<r.end(); ++i) 
         {
-          if (geometries[i] && geometries[i]->isEnabled())
+          if (geometries[i] && geometries[i]->isEnabled()) 
           {
             geometries[i]->preCommit();
             geometries[i]->addElementsToCount (c);
@@ -683,19 +675,19 @@ namespace embree
       },
       std::plus<GeometryCounts>()
     );
-
+    
     /* select acceleration structures to build */
     unsigned int new_enabled_geometry_types = world.enabledGeometryTypesMask();
     if (flags_modified || new_enabled_geometry_types != enabled_geometry_types)
     {
       accels_init();
 
-      /* we need to make all geometries modified, otherwise two level builder will
+      /* we need to make all geometries modified, otherwise two level builder will 
         not rebuild currently not modified geometries */
       parallel_for(geometryModCounters_.size(), [&] ( const size_t i ) {
           geometryModCounters_[i] = 0;
         });
-
+      
       if (getNumPrimitives(TriangleMesh::geom_type,false)) createTriangleAccel();
       if (getNumPrimitives(TriangleMesh::geom_type,true)) createTriangleMBAccel();
       if (getNumPrimitives(QuadMesh::geom_type,false)) createQuadAccel();
@@ -712,14 +704,14 @@ namespace embree
       if (getNumPrimitives(Geometry::MTY_INSTANCE_CHEAP,true)) createInstanceMBAccel();
       if (getNumPrimitives(Geometry::MTY_INSTANCE_EXPENSIVE,false)) createInstanceExpensiveAccel();
       if (getNumPrimitives(Geometry::MTY_INSTANCE_EXPENSIVE,true)) createInstanceExpensiveMBAccel();
-
+      
       flags_modified = false;
       enabled_geometry_types = new_enabled_geometry_types;
     }
-
+    
     /* select fast code path if no filter function is present */
     accels_select(hasFilterFunction());
-
+  
     /* build all hierarchies of this scene */
     accels_build();
 
@@ -737,7 +729,7 @@ namespace embree
           geometryModCounters_[i] = geometries[i]->getModCounter();
         }
       });
-
+      
     updateInterface();
 
     if (device->verbosity(2)) {
@@ -746,7 +738,7 @@ namespace embree
       std::cout << "selected scene intersector" << std::endl;
       intersectors.print(2);
     }
-
+    
     setModified(false);
   }
 
@@ -771,16 +763,16 @@ namespace embree
   RTCSceneFlags Scene::getSceneFlags() const {
     return scene_flags;
   }
-
+                   
 #if defined(TASKING_INTERNAL)
 
-  void Scene::commit (bool join)
+  void Scene::commit (bool join) 
   {
     Lock<MutexSys> buildLock(buildMutex,false);
 
     /* allocates own taskscheduler for each build */
     Ref<TaskScheduler> scheduler = nullptr;
-    {
+    { 
       Lock<MutexSys> lock(schedulerMutex);
       scheduler = this->scheduler;
       if (scheduler == null) {
@@ -792,9 +784,9 @@ namespace embree
     /* worker threads join build */
     if (!buildLock.isLocked())
     {
-      if (!join)
+      if (!join) 
         throw_RTCError(RTC_ERROR_INVALID_OPERATION,"use rtcJoinCommitScene to join a build operation");
-
+      
       scheduler->join();
       return;
     }
@@ -816,9 +808,9 @@ namespace embree
 
 #endif
 
-#if defined(TASKING_TBB) || defined(TASKING_GCD)
+#if defined(TASKING_TBB)
 
-  void Scene::commit (bool join)
+  void Scene::commit (bool join) 
   {
 #if defined(TASKING_TBB) && (TBB_INTERFACE_VERSION_MAJOR < 8)
     if (join)
@@ -832,15 +824,12 @@ namespace embree
     if (!lock.isLocked())
     {
 #if !TASKING_TBB_USE_TASK_ISOLATION
-      if (!join)
+      if (!join) 
         throw_RTCError(RTC_ERROR_INVALID_OPERATION,"invoking rtcCommitScene from multiple threads is not supported with this TBB version");
 #endif
-
+      
       do {
 
-#if defined(TASKING_GCD)
-      // Do Nothing
-#else
 #if USE_TASK_ARENA
         if (join) {
           device->arena->execute([&]{ group.wait(); });
@@ -850,24 +839,21 @@ namespace embree
         {
           group.wait();
         }
-#endif
 
         pause_cpu();
         yield();
-
       } while (!buildMutex.try_lock());
-
+      
       buildMutex.unlock();
       return;
-    }
+    }   
 
     /* for best performance set FTZ and DAZ flags in the MXCSR control and status register */
     const unsigned int mxcsr = _mm_getcsr();
     _mm_setcsr(mxcsr | /* FTZ */ (1<<15) | /* DAZ */ (1<<6));
-
+    
     try {
-#if defined(TASKING_TBB)
-#if TBB_INTERFACE_VERSION_MAJOR < 8
+#if TBB_INTERFACE_VERSION_MAJOR < 8    
       tbb::task_group_context ctx( tbb::task_group_context::isolated, tbb::task_group_context::default_traits);
 #else
       tbb::task_group_context ctx( tbb::task_group_context::isolated, tbb::task_group_context::default_traits | tbb::task_group_context::fp_settings );
@@ -892,22 +878,15 @@ namespace embree
           });
         group.wait();
       }
-
+     
       /* reset MXCSR register again */
       _mm_setcsr(mxcsr);
-
-#elif defined(TASKING_GCD)
-
-      commit_task();
-
-#endif  // #if defined(TASKING_TBB)
-
-    }
+    } 
     catch (...)
     {
       /* reset MXCSR register again */
       _mm_setcsr(mxcsr);
-
+      
       accels_clear();
       updateInterface();
       throw;
@@ -917,7 +896,7 @@ namespace embree
 
 #if defined(TASKING_PPL)
 
-  void Scene::commit (bool join)
+  void Scene::commit (bool join) 
   {
 #if defined(TASKING_PPL)
     if (join)
@@ -935,7 +914,7 @@ namespace embree
     /* for best performance set FTZ and DAZ flags in the MXCSR control and status register */
     const unsigned int mxcsr = _mm_getcsr();
     _mm_setcsr(mxcsr | /* FTZ */ (1<<15) | /* DAZ */ (1<<6));
-
+    
     try {
 
       group.run([&]{
@@ -945,12 +924,12 @@ namespace embree
 
        /* reset MXCSR register again */
       _mm_setcsr(mxcsr);
-    }
+    } 
     catch (...)
     {
       /* reset MXCSR register again */
       _mm_setcsr(mxcsr);
-
+      
       accels_clear();
       updateInterface();
       throw;
@@ -958,7 +937,7 @@ namespace embree
   }
 #endif
 
-  void Scene::setProgressMonitorFunction(RTCProgressMonitorFunction func, void* ptr)
+  void Scene::setProgressMonitorFunction(RTCProgressMonitorFunction func, void* ptr) 
   {
     progress_monitor_function = func;
     progress_monitor_ptr      = ptr;

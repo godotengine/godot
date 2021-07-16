@@ -1,4 +1,4 @@
-// Copyright 2009-2020 Intel Corporation
+// Copyright 2009-2021 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
 #pragma once
@@ -9,7 +9,7 @@ namespace embree
 {
   /* Varying numeric types */
   template<int N>
-  struct vfloat
+  struct vfloat_impl
   {
     union { float f[N]; int i[N]; };
     __forceinline const float& operator [](size_t index) const { assert(index < N); return f[index]; }
@@ -17,7 +17,7 @@ namespace embree
   };
 
   template<int N>
-  struct vdouble
+  struct vdouble_impl
   {
     union { double f[N]; long long i[N]; };
     __forceinline const double& operator [](size_t index) const { assert(index < N); return f[index]; }
@@ -25,7 +25,7 @@ namespace embree
   };
 
   template<int N>
-  struct vint
+  struct vint_impl
   {
     int i[N];
     __forceinline const int& operator [](size_t index) const { assert(index < N); return i[index]; }
@@ -33,7 +33,7 @@ namespace embree
   };
 
   template<int N>
-  struct vuint
+  struct vuint_impl
   {
     unsigned int i[N];
     __forceinline const unsigned int& operator [](size_t index) const { assert(index < N); return i[index]; }
@@ -41,7 +41,7 @@ namespace embree
   };
 
   template<int N>
-  struct vllong
+  struct vllong_impl
   {
     long long i[N];
     __forceinline const long long& operator [](size_t index) const { assert(index < N); return i[index]; }
@@ -49,20 +49,13 @@ namespace embree
   };
 
   /* Varying bool types */
-  template<int N> struct vboolf { int       i[N]; }; // for float/int
-  template<int N> struct vboold { long long i[N]; }; // for double/long long
-
-  /* Aliases to default types */
-  template<int N> using vreal = vfloat<N>;
-  template<int N> using vbool = vboolf<N>;
-
+  template<int N> struct vboolf_impl { int       i[N]; }; // for float/int
+  template<int N> struct vboold_impl { long long i[N]; }; // for double/long long
+ 
   /* Varying size constants */
 #if defined(__AVX512VL__) // SKX
   const int VSIZEX = 8;  // default size
   const int VSIZEL = 16; // large size
-#elif defined(__AVX512F__) // KNL
-  const int VSIZEX = 16;
-  const int VSIZEL = 16;
 #elif defined(__AVX__)
   const int VSIZEX = 8;
   const int VSIZEL = 8;
@@ -71,20 +64,40 @@ namespace embree
   const int VSIZEL = 4;
 #endif
 
-  /* Extends varying size N to optimal or up to max(N, N2) */
-  template<int N, int N2 = VSIZEX>
-  struct vextend
-  {
-#if defined(__AVX512F__) && !defined(__AVX512VL__) // KNL
-    /* use 16-wide SIMD calculations on KNL even for 4 and 8 wide SIMD */
-    static const int size = (N2 == VSIZEX) ? VSIZEX : N;
-    #define SIMD_MODE(N) N, 16
-#else
-    /* calculate with same SIMD width otherwise */
-    static const int size = N;
-    #define SIMD_MODE(N) N, N
-#endif
+  template<int N>
+  struct vtypes {
+    using vbool = vboolf_impl<N>;
+    using vboolf = vboolf_impl<N>;
+    using vboold = vboold_impl<N>;
+    using vint = vint_impl<N>;
+    using vuint = vuint_impl<N>;
+    using vllong = vllong_impl<N>;
+    using vfloat = vfloat_impl<N>;
+    using vdouble = vdouble_impl<N>;
   };
+
+  template<>
+  struct vtypes<1> {
+    using vbool = bool;
+    using vboolf = bool;
+    using vboold = bool;
+    using vint = int;
+    using vuint = unsigned int;
+    using vllong = long long;
+    using vfloat = float;
+    using vdouble = double;
+  };
+
+  /* Aliases to default types */
+  template<int N> using vbool = typename vtypes<N>::vbool;
+  template<int N> using vboolf = typename vtypes<N>::vboolf;
+  template<int N> using vboold = typename vtypes<N>::vboold;
+  template<int N> using vint = typename vtypes<N>::vint;
+  template<int N> using vuint = typename vtypes<N>::vuint;
+  template<int N> using vllong = typename vtypes<N>::vllong;
+  template<int N> using vreal = typename vtypes<N>::vfloat;
+  template<int N> using vfloat = typename vtypes<N>::vfloat;
+  template<int N> using vdouble = typename vtypes<N>::vdouble;
 
   /* 4-wide shortcuts */
   typedef vfloat<4>  vfloat4;

@@ -1389,15 +1389,19 @@ int LineEdit::get_scroll_offset() const {
 }
 
 void LineEdit::append_at_cursor(String p_text) {
-	if ((max_length <= 0) || (text.length() + p_text.length() <= max_length)) {
-		String pre = text.substr(0, cursor_pos);
-		String post = text.substr(cursor_pos, text.length() - cursor_pos);
-		text = pre + p_text + post;
-		update_cached_width();
-		set_cursor_position(cursor_pos + p_text.length());
-	} else {
-		emit_signal("text_change_rejected");
+	if (max_length > 0) {
+		// Truncate text to append to fit in max_length, if needed.
+		int available_chars = max_length - text.length();
+		if (p_text.length() > available_chars) {
+			emit_signal("text_change_rejected", p_text.substr(available_chars));
+			p_text = p_text.substr(0, available_chars);
+		}
 	}
+	String pre = text.substr(0, cursor_pos);
+	String post = text.substr(cursor_pos, text.length() - cursor_pos);
+	text = pre + p_text + post;
+	update_cached_width();
+	set_cursor_position(cursor_pos + p_text.length());
 }
 
 void LineEdit::clear_internal() {
@@ -1845,7 +1849,7 @@ void LineEdit::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_right_icon"), &LineEdit::get_right_icon);
 
 	ADD_SIGNAL(MethodInfo("text_changed", PropertyInfo(Variant::STRING, "new_text")));
-	ADD_SIGNAL(MethodInfo("text_change_rejected"));
+	ADD_SIGNAL(MethodInfo("text_change_rejected", PropertyInfo(Variant::STRING, "rejected_substring")));
 	ADD_SIGNAL(MethodInfo("text_entered", PropertyInfo(Variant::STRING, "new_text")));
 
 	BIND_ENUM_CONSTANT(ALIGN_LEFT);
@@ -1864,7 +1868,7 @@ void LineEdit::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "text"), "set_text", "get_text");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "align", PROPERTY_HINT_ENUM, "Left,Center,Right,Fill"), "set_align", "get_align");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "max_length"), "set_max_length", "get_max_length");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "max_length", PROPERTY_HINT_RANGE, "0,1000,1,or_greater"), "set_max_length", "get_max_length");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "editable"), "set_editable", "is_editable");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "secret"), "set_secret", "is_secret");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "secret_character"), "set_secret_character", "get_secret_character");
@@ -1881,7 +1885,7 @@ void LineEdit::_bind_methods() {
 	ADD_GROUP("Caret", "caret_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "caret_blink"), "cursor_set_blink_enabled", "cursor_get_blink_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "caret_blink_speed", PROPERTY_HINT_RANGE, "0.1,10,0.01"), "cursor_set_blink_speed", "cursor_get_blink_speed");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "caret_position"), "set_cursor_position", "get_cursor_position");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "caret_position", PROPERTY_HINT_RANGE, "0,1000,1,or_greater"), "set_cursor_position", "get_cursor_position");
 }
 
 LineEdit::LineEdit() {

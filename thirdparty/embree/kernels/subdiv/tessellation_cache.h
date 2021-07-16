@@ -1,4 +1,4 @@
-// Copyright 2009-2020 Intel Corporation
+// Copyright 2009-2021 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
 #pragma once
@@ -63,7 +63,7 @@ namespace embree
    static const size_t NUM_CACHE_SEGMENTS              = 8;
    static const size_t NUM_PREALLOC_THREAD_WORK_STATES = 512;
    static const size_t COMMIT_INDEX_SHIFT              = 32+8;
-#if defined(__X86_64__) || defined(__aarch64__)
+#if defined(__64BIT__)
    static const size_t REF_TAG_MASK                    = 0xffffffffff;
 #else
    static const size_t REF_TAG_MASK                    = 0x7FFFFFFF;

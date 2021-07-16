@@ -22,11 +22,12 @@
 # Yongjin Jo <wnrhd114@gmail.com>, 2020.
 # Yungjoong Song <yungjoong.song@gmail.com>, 2020.
 # Henry LeRoux <henry.leroux@ocsbstudent.ca>, 2021.
+# Postive_ Cloud <postive12@gmail.com>, 2021.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2021-04-11 22:02+0000\n"
+"PO-Revision-Date: 2021-06-20 13:35+0000\n"
 "Last-Translator: Myeongjin Lee <aranet100@gmail.com>\n"
 "Language-Team: Korean <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ko/>\n"
@@ -35,7 +36,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 4.6-dev\n"
+"X-Generator: Weblate 4.7\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -59,7 +60,7 @@ msgstr "표현식의 입력 %i (전달되지 않음) 이(가) 올바르지 않�
 
 #: core/math/expression.cpp
 msgid "self can't be used because instance is null (not passed)"
-msgstr "인스턴스가 null (전달되지 않음) 이므로 self 를 사용할 수 없습니다"
+msgstr "인스턴스가 null(전달되지 않음)이므로 self 명령어는 사용할 수 없습니다"
 
 #: core/math/expression.cpp
 msgid "Invalid operands to operator %s, %s and %s."
@@ -428,12 +429,6 @@ msgid "Animation tracks can only point to AnimationPlayer nodes."
 msgstr "애니메이션 트랙은 오직 AnimationPlayer 노드만 가리킬 수 있습니다."
 
 #: editor/animation_track_editor.cpp
-msgid "An animation player can't animate itself, only other players."
-msgstr ""
-"애니메이션 플레이어는 자신이 아닌 다른 플레이어에만 애니메이션을 부여할 수 있"
-"습니다."
-
-#: editor/animation_track_editor.cpp
 msgid "Not possible to add a new track without a root"
 msgstr "루트 없이 새 트랙을 추가할 수 없음"
 
@@ -478,8 +473,9 @@ msgid "Anim Move Keys"
 msgstr "애니메이션 키 이동"
 
 #: editor/animation_track_editor.cpp
-msgid "Clipboard is empty"
-msgstr "클립보드가 비었음"
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Clipboard is empty!"
+msgstr "클립보드가 비었습니다!"
 
 #: editor/animation_track_editor.cpp
 msgid "Paste Tracks"
@@ -1130,6 +1126,10 @@ msgstr "딕셔너리 값 변경"
 #: editor/editor_about.cpp
 msgid "Thanks from the Godot community!"
 msgstr "Godot 커뮤니티에서 감사드립니다!"
+
+#: editor/editor_about.cpp editor/editor_node.cpp editor/project_manager.cpp
+msgid "Click to copy."
+msgstr "클릭하여 복사합니다."
 
 #: editor/editor_about.cpp
 msgid "Godot Engine contributors"
@@ -2505,7 +2505,7 @@ msgid "Save changes to the following scene(s) before quitting?"
 msgstr "끄기 전에 해당 씬의 변경 사항을 저장할까요?"
 
 #: editor/editor_node.cpp
-msgid "Save changes the following scene(s) before opening Project Manager?"
+msgid "Save changes to the following scene(s) before opening Project Manager?"
 msgstr "프로젝트 매니저를 열기 전에 해당 씬의 변경 사항을 저장할까요?"
 
 #: editor/editor_node.cpp
@@ -2545,11 +2545,13 @@ msgstr "다음 경로에서 애드온 스크립트를 불러올 수 없음: '%s'
 
 #: editor/editor_node.cpp
 msgid ""
-"Unable to load addon script from path: '%s' There seems to be an error in "
-"the code, please check the syntax."
+"Unable to load addon script from path: '%s'. This might be due to a code "
+"error in that script.\n"
+"Disabling the addon at '%s' to prevent further errors."
 msgstr ""
-"다음 경로에서 애드온 스크립트를 불러올 수 없음: '%s' 코드에 오류가 있는 것 같"
-"습니다. 문법을 확인해보세요."
+"다음 경로에서 애드온 스크립트를 불러올 수 없음: '%s' 해당 스크립트의 코드에 "
+"오류가 있는 것 같습니다.\n"
+"추가 오류를 방지하려면 '%s'에서 애드온을 비활성화하세요."
 
 #: editor/editor_node.cpp
 msgid ""
@@ -2794,7 +2796,7 @@ msgstr "내보내기..."
 
 #: editor/editor_node.cpp
 msgid "Install Android Build Template..."
-msgstr "안드로이드 빌드 템플릿 설치..."
+msgstr "Android 빌드 템플릿 설치..."
 
 #: editor/editor_node.cpp
 msgid "Open Project Data Folder"
@@ -2989,6 +2991,10 @@ msgid "About"
 msgstr "정보"
 
 #: editor/editor_node.cpp
+msgid "Support Godot Development"
+msgstr "Godot 개발 지원"
+
+#: editor/editor_node.cpp
 msgid "Play the project."
 msgstr "프로젝트를 실행합니다."
 
@@ -3071,7 +3077,7 @@ msgstr "저장하지 않음"
 
 #: editor/editor_node.cpp
 msgid "Android build template is missing, please install relevant templates."
-msgstr "안드로이드 빌드 템플릿이 없습니다, 관련 템플릿을 설치해주세요."
+msgstr "Android 빌드 템플릿이 없습니다, 관련 템플릿을 설치해주세요."
 
 #: editor/editor_node.cpp
 msgid "Manage Templates"
@@ -3087,12 +3093,12 @@ msgid ""
 "the \"Use Custom Build\" option should be enabled in the Android export "
 "preset."
 msgstr ""
-"\"res://android/build\"에 소스 템플릿을 설치해서, 프로젝트를 맞춤 안드로이드 "
-"빌드에 맞게 설정할 것입니다.\n"
+"\"res://android/build\"에 소스 템플릿을 설치해서, 프로젝트를 맞춤 Android 빌"
+"드에 맞게 설정할 것입니다.\n"
 "그런 다음 수정 사항을 적용하고 맞춤 APK를 만들어 내보낼 수 있습니다 (모듈 추"
 "가, AndroidManifest.xml 바꾸기 등).\n"
-"미리 빌드된 APK를 사용하는 대신 맞춤 빌드를 만들려면, 안드로이드 내보내기 프"
-"리셋에서 \"맞춤 빌드 사용\" 설정을 켜 놓아야 합니다."
+"미리 빌드된 APK를 사용하는 대신 맞춤 빌드를 만들려면, Android 내보내기 프리셋"
+"에서 \"맞춤 빌드 사용\" 설정을 켜 놓아야 합니다."
 
 #: editor/editor_node.cpp
 msgid ""
@@ -3101,7 +3107,7 @@ msgid ""
 "Remove the \"res://android/build\" directory manually before attempting this "
 "operation again."
 msgstr ""
-"안드로이드 빌드 템플릿이 이미 이 프로젝트에 설치했고, 덮어 쓸 수 없습니다.\n"
+"Android 빌드 템플릿이 이미 이 프로젝트에 설치했고, 덮어 쓸 수 없습니다.\n"
 "이 명령을 다시 실행 전에 \"res://android/build\" 디렉토리를 삭제하세요."
 
 #: editor/editor_node.cpp
@@ -3616,7 +3622,7 @@ msgstr "SSL 핸드셰이크 오류"
 
 #: editor/export_template_manager.cpp
 msgid "Uncompressing Android Build Sources"
-msgstr "안드로이드 빌드 소스 압축 푸는 중"
+msgstr "Android 빌드 소스 압축 푸는 중"
 
 #: editor/export_template_manager.cpp
 msgid "Current Version:"
@@ -5204,8 +5210,8 @@ msgstr ""
 msgid ""
 "Godot editor was built without ray tracing support, lightmaps can't be baked."
 msgstr ""
-"Godot 편집기가 레이 트레이싱 지원 없이 빌드되어 있어, 라이트맵이 구워질 수 없"
-"습니다."
+"Godot 편집기는 레이 트레이싱 지원 없이 빌드되었으며 라이트맵은 구울 수 없습니"
+"다."
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
 msgid "Bake Lightmaps"
@@ -7515,7 +7521,7 @@ msgstr "뷰 회전 잠김"
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid ""
 "To zoom further, change the camera's clipping planes (View -> Settings...)"
-msgstr ""
+msgstr "더욱 확대하려면, 카메라의 클립핑 평면을 변경하세요 (보기 -> 설정...)"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid ""
@@ -10057,7 +10063,7 @@ msgstr "마우스 버튼"
 
 #: editor/project_settings_editor.cpp
 msgid ""
-"Invalid action name. it cannot be empty nor contain '/', ':', '=', '\\' or "
+"Invalid action name. It cannot be empty nor contain '/', ':', '=', '\\' or "
 "'\"'"
 msgstr ""
 "잘못된 액션 이름. 공백이거나, '/' , ':', '=', '\\', '\"' 를 포함하면 안 됩니"
@@ -10863,6 +10869,9 @@ msgid ""
 "every time it updates.\n"
 "Switch back to the Local scene tree dock to improve performance."
 msgstr ""
+"선택되어 있다면, 원격 씬 트리 독은 그것이 업데이트될 때마다 프로젝트가 끊기"
+"는 원인이 됩니다.\n"
+"성능을 향상시키려면 로컬 씬 트리 독으로 다시 전환하세요."
 
 #: editor/scene_tree_dock.cpp
 msgid "Local"
@@ -11894,10 +11903,6 @@ msgid "Can't copy the function node."
 msgstr "함수 노드를 복사할 수 없습니다."
 
 #: modules/visual_script/visual_script_editor.cpp
-msgid "Clipboard is empty!"
-msgstr "클립보드가 비었습니다!"
-
-#: modules/visual_script/visual_script_editor.cpp
 msgid "Paste VisualScript Nodes"
 msgstr "비주얼 스크립트 노드 붙여넣기"
 
@@ -12075,8 +12080,7 @@ msgstr "패키지 세그먼트는 길이가 0이 아니어야 합니다."
 
 #: platform/android/export/export.cpp
 msgid "The character '%s' is not allowed in Android application package names."
-msgstr ""
-"문자 '%s'은(는) 안드로이드 애플리케이션 패키지 이름으로 쓸 수 없습니다."
+msgstr "문자 '%s'은(는) Android 애플리케이션 패키지 이름으로 쓸 수 없습니다."
 
 #: platform/android/export/export.cpp
 msgid "A digit cannot be the first character in a package segment."
@@ -12107,8 +12111,24 @@ msgstr ""
 "하세요."
 
 #: platform/android/export/export.cpp
+msgid ""
+"Either Debug Keystore, Debug User AND Debug Password settings must be "
+"configured OR none of them."
+msgstr ""
+"Debug Keystore, Debug User 및 Debug Password 설정을 구성하거나 그 중 어느 것"
+"도 없어야 합니다."
+
+#: platform/android/export/export.cpp
 msgid "Debug keystore not configured in the Editor Settings nor in the preset."
 msgstr "Debug keystore를 편집기 설정과 프리셋에 설정하지 않았습니다."
+
+#: platform/android/export/export.cpp
+msgid ""
+"Either Release Keystore, Release User AND Release Password settings must be "
+"configured OR none of them."
+msgstr ""
+"Release Keystore, Release User 및 Release Password 설정을 구성하거나 그 중 어"
+"느 것도 없어야 합니다."
 
 #: platform/android/export/export.cpp
 msgid "Release keystore incorrectly configured in the export preset."
@@ -13041,6 +13061,27 @@ msgstr "Varying은 꼭짓점 함수에만 지정할 수 있습니다."
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "상수는 수정할 수 없습니다."
+
+#~ msgid "An animation player can't animate itself, only other players."
+#~ msgstr ""
+#~ "애니메이션 플레이어는 자신이 아닌 다른 플레이어에만 애니메이션을 부여할 "
+#~ "수 있습니다."
+
+#~ msgid "Clipboard is empty"
+#~ msgstr "클립보드가 비었음"
+
+#~ msgid ""
+#~ "Godot editor was built without ray tracing support; lightmaps can't be "
+#~ "baked.\n"
+#~ "If you are using an Apple Silicon-based Mac, try forcing Rosetta "
+#~ "emulation on Godot.app in the application settings\n"
+#~ "then restart the editor."
+#~ msgstr ""
+#~ "Godot 편집기는 레이 트레이싱 지원 없이 빌드되었으며 라이트맵은 구울 수 없"
+#~ "습니다.\n"
+#~ "Apple Silicon 기반의 Mac을 사용 중인 경우, 애플리케이션 설정에서 Godot.app"
+#~ "의 Rosetta 에뮬레이션 강제로\n"
+#~ "시도하고 나서 편집기를 다시 시작하세요."
 
 #~ msgid ""
 #~ "InterpolatedCamera has been deprecated and will be removed in Godot 4.0."

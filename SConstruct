@@ -3,10 +3,12 @@
 EnsureSConsVersion(0, 98, 1)
 
 # System
+import atexit
 import glob
 import os
 import pickle
 import sys
+import time
 from collections import OrderedDict
 
 # Local
@@ -24,6 +26,8 @@ active_platforms = []
 active_platform_ids = []
 platform_exporters = []
 platform_apis = []
+
+time_at_start = time.time()
 
 for x in sorted(glob.glob("platform/*")):
     if not os.path.isdir(x) or not os.path.exists(x + "/detect.py"):
@@ -121,7 +125,6 @@ opts.Add(BoolVariable("use_lto", "Use link-time optimization", False))
 
 # Components
 opts.Add(BoolVariable("deprecated", "Enable deprecated features", True))
-opts.Add(BoolVariable("gdscript", "Enable GDScript support", True))
 opts.Add(BoolVariable("minizip", "Enable ZIP archive support using minizip", True))
 opts.Add(BoolVariable("xaudio2", "Enable the XAudio2 audio driver", False))
 opts.Add("custom_modules", "A list of comma-separated directory paths containing custom modules to build.", "")
@@ -571,8 +574,6 @@ if selected_platform in platform_list:
             sys.exit(255)
         else:
             env.Append(CPPDEFINES=["_3D_DISABLED"])
-    if env["gdscript"]:
-        env.Append(CPPDEFINES=["GDSCRIPT_ENABLED"])
     if env["disable_advanced_gui"]:
         if env["tools"]:
             print(
@@ -676,3 +677,12 @@ if "env" in locals():
     # TODO: replace this with `env.Dump(format="json")`
     # once we start requiring SCons 4.0 as min version.
     methods.dump(env)
+
+
+def print_elapsed_time():
+    elapsed_time_sec = round(time.time() - time_at_start, 3)
+    time_ms = round((elapsed_time_sec % 1) * 1000)
+    print(f"[Time elapsed: {time.strftime('%H:%M:%S', time.gmtime(elapsed_time_sec))}.{time_ms:03}]")
+
+
+atexit.register(print_elapsed_time)

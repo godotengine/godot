@@ -321,6 +321,24 @@ void _err_print_index_error(const char *p_function, const char *p_file, int p_li
 	}
 
 /**
+ * Should assert only if making a build with dev asserts.
+ * This should be a 'free' check for program flow and should not be needed in any releases,
+ *  only used in dev builds.
+ */
+// #define DEV_ASSERTS_ENABLED
+#ifdef DEV_ASSERTS_ENABLED
+#define DEV_ASSERT(m_cond)                                                                                                  \
+	{                                                                                                                       \
+		if (unlikely(!(m_cond))) {                                                                                          \
+			_err_print_error(FUNCTION_STR, __FILE__, __LINE__, "FATAL: DEV_ASSERT failed  \"" _STR(m_cond) "\" is false."); \
+			GENERATE_TRAP                                                                                                   \
+		}                                                                                                                   \
+	}
+#else
+#define DEV_ASSERT(m_cond)
+#endif
+
+/**
  * If `m_cond` evaluates to `true`, crashes the engine immediately with a generic error message.
  * Only use this if there's no sensible fallback (i.e. the error is unrecoverable).
  */
@@ -475,15 +493,6 @@ void _err_print_index_error(const char *p_function, const char *p_file, int p_li
 	}
 
 /**
- * Prints an error message without returning.
- * FIXME: Remove this macro and replace all uses with `ERR_PRINT` as it's identical.
- */
-#define ERR_PRINTS(m_string)                                          \
-	{                                                                 \
-		_err_print_error(FUNCTION_STR, __FILE__, __LINE__, m_string); \
-	}
-
-/**
  * Prints an error message without returning, but only do so once in the application lifecycle.
  * This can be used to avoid spamming the console with error messages.
  */
@@ -501,15 +510,6 @@ void _err_print_index_error(const char *p_function, const char *p_file, int p_li
  * use `WARN_DEPRECATED` or `WARN_DEPRECATED_MSG` instead.
  */
 #define WARN_PRINT(m_string)                                                               \
-	{                                                                                      \
-		_err_print_error(FUNCTION_STR, __FILE__, __LINE__, m_string, ERR_HANDLER_WARNING); \
-	}
-
-/**
- * Prints a warning message without returning.
- * FIXME: Remove this macro and replace all uses with `WARN_PRINT` as it's identical.
- */
-#define WARN_PRINTS(m_string)                                                              \
 	{                                                                                      \
 		_err_print_error(FUNCTION_STR, __FILE__, __LINE__, m_string, ERR_HANDLER_WARNING); \
 	}

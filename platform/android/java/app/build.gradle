@@ -9,7 +9,7 @@ buildscript {
 
     repositories {
         google()
-        jcenter()
+        mavenCentral()
 //CHUNK_BUILDSCRIPT_REPOSITORIES_BEGIN
 //CHUNK_BUILDSCRIPT_REPOSITORIES_END
     }
@@ -25,9 +25,8 @@ apply plugin: 'com.android.application'
 
 allprojects {
     repositories {
-        mavenCentral()
         google()
-        jcenter()
+        mavenCentral()
 //CHUNK_ALLPROJECTS_REPOSITORIES_BEGIN
 //CHUNK_ALLPROJECTS_REPOSITORIES_END
 
@@ -127,6 +126,15 @@ android {
     }
 
     signingConfigs {
+        debug {
+            if (hasCustomDebugKeystore()) {
+                storeFile new File(getDebugKeystoreFile())
+                storePassword getDebugKeystorePassword()
+                keyAlias getDebugKeyAlias()
+                keyPassword getDebugKeystorePassword()
+            }
+        }
+
         release {
             File keystoreFile = new File(getReleaseKeystoreFile())
             if (keystoreFile.isFile()) {

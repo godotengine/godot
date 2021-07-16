@@ -33,11 +33,11 @@
 
 #include "core/math/face3.h"
 #include "core/rid.h"
-#include "scene/3d/spatial.h"
+#include "scene/3d/cull_instance.h"
 #include "scene/resources/material.h"
 
-class VisualInstance : public Spatial {
-	GDCLASS(VisualInstance, Spatial);
+class VisualInstance : public CullInstance {
+	GDCLASS(VisualInstance, CullInstance);
 	OBJ_CATEGORY("3D Visual Nodes");
 
 	RID base;
@@ -48,6 +48,7 @@ class VisualInstance : public Spatial {
 
 protected:
 	void _update_visibility();
+	virtual void _refresh_portal_mode();
 
 	void _notification(int p_what);
 	static void _bind_methods();
@@ -57,7 +58,6 @@ public:
 		FACES_SOLID = 1, // solid geometry
 		FACES_ENCLOSING = 2,
 		FACES_DYNAMIC = 4 // dynamic object geometry
-
 	};
 
 	RID get_instance() const;

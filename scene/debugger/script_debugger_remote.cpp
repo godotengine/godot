@@ -88,7 +88,7 @@ Error ScriptDebuggerRemote::connect_to_host(const String &p_host, uint16_t p_por
 	};
 
 	if (tcp_client->get_status() != StreamPeerTCP::STATUS_CONNECTED) {
-		ERR_PRINTS("Remote Debugger: Unable to connect. Status: " + String::num(tcp_client->get_status()) + ".");
+		ERR_PRINT("Remote Debugger: Unable to connect. Status: " + String::num(tcp_client->get_status()) + ".");
 		return FAILED;
 	};
 
@@ -675,7 +675,7 @@ void ScriptDebuggerRemote::_send_object_id(ObjectID p_id) {
 			prop.push_back(pi.hint_string);
 			prop.push_back(pi.usage);
 
-			if (!res.is_null()) {
+			if (!res.is_null() && !res->get_path().empty()) {
 				var = res->get_path();
 			}
 

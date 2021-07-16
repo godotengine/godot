@@ -1,4 +1,4 @@
-// Copyright 2009-2020 Intel Corporation
+// Copyright 2009-2021 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
 #pragma once
@@ -164,6 +164,28 @@ namespace embree
     private:
       const Scene* scene;
     };
+
+
+    struct DummySplitter
+    {
+      __forceinline DummySplitter(const Scene* scene, const PrimRef& prim)
+      {
+      }
+    };
+    
+    struct DummySplitterFactory
+    {
+      __forceinline DummySplitterFactory(const Scene* scene)
+        : scene(scene) {}
+      
+      __forceinline DummySplitter operator() (const PrimRef& prim) const {
+        return DummySplitter(scene,prim);
+      }
+      
+    private:
+      const Scene* scene;
+    };
+    
   }
 }
 

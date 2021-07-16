@@ -322,6 +322,9 @@ static NSCursor *cursorFromSelector(SEL selector, SEL fallback = nil) {
 
 	if (!OS_OSX::singleton->resizable)
 		[OS_OSX::singleton->window_object setStyleMask:[OS_OSX::singleton->window_object styleMask] & ~NSWindowStyleMaskResizable];
+
+	if (OS_OSX::singleton->on_top)
+		[OS_OSX::singleton->window_object setLevel:NSFloatingWindowLevel];
 }
 
 - (void)windowDidChangeBackingProperties:(NSNotification *)notification {
@@ -1688,7 +1691,7 @@ Error OS_OSX::initialize(const VideoMode &p_desired, int p_video_driver, int p_a
 	}
 
 	on_top = p_desired.always_on_top;
-	if (p_desired.always_on_top) {
+	if (p_desired.always_on_top && !p_desired.fullscreen) {
 		[window_object setLevel:NSFloatingWindowLevel];
 	}
 
@@ -1823,42 +1826,39 @@ public:
 			case ERR_WARNING:
 				if (NSAppKitVersionNumber >= NSAppKitVersionNumber10_12) {
 					os_log_info(OS_LOG_DEFAULT,
-							"WARNING: %{public}s: %{public}s\nAt: %{public}s:%i.",
-							p_function, err_details, p_file, p_line);
+							"WARNING: %{public}s\nat: %{public}s (%{public}s:%i)",
+							err_details, p_function, p_file, p_line);
 				}
-				logf_error("\E[1;33mWARNING: %s: \E[0m\E[1m%s\n", p_function,
-						err_details);
-				logf_error("\E[0;33m   At: %s:%i.\E[0m\n", p_file, p_line);
+				logf_error("\E[1;33mWARNING:\E[0;93m %s\n", err_details);
+				logf_error("\E[0;90m     at: %s (%s:%i)\E[0m\n", p_function, p_file, p_line);
 				break;
 			case ERR_SCRIPT:
 				if (NSAppKitVersionNumber >= NSAppKitVersionNumber10_12) {
 					os_log_error(OS_LOG_DEFAULT,
-							"SCRIPT ERROR: %{public}s: %{public}s\nAt: %{public}s:%i.",
-							p_function, err_details, p_file, p_line);
+							"SCRIPT ERROR: %{public}s\nat: %{public}s (%{public}s:%i)",
+							err_details, p_function, p_file, p_line);
 				}
-				logf_error("\E[1;35mSCRIPT ERROR: %s: \E[0m\E[1m%s\n", p_function,
-						err_details);
-				logf_error("\E[0;35m   At: %s:%i.\E[0m\n", p_file, p_line);
+				logf_error("\E[1;35mSCRIPT ERROR:\E[0;95m %s\n", err_details);
+				logf_error("\E[0;90m          at: %s (%s:%i)\E[0m\n", p_function, p_file, p_line);
 				break;
 			case ERR_SHADER:
 				if (NSAppKitVersionNumber >= NSAppKitVersionNumber10_12) {
 					os_log_error(OS_LOG_DEFAULT,
-							"SHADER ERROR: %{public}s: %{public}s\nAt: %{public}s:%i.",
-							p_function, err_details, p_file, p_line);
+							"SHADER ERROR: %{public}s\nat: %{public}s (%{public}s:%i)",
+							err_details, p_function, p_file, p_line);
 				}
-				logf_error("\E[1;36mSHADER ERROR: %s: \E[0m\E[1m%s\n", p_function,
-						err_details);
-				logf_error("\E[0;36m   At: %s:%i.\E[0m\n", p_file, p_line);
+				logf_error("\E[1;36mSHADER ERROR:\E[0;96m %s\n", err_details);
+				logf_error("\E[0;90m          at: %s (%s:%i)\E[0m\n", p_function, p_file, p_line);
 				break;
 			case ERR_ERROR:
 			default:
 				if (NSAppKitVersionNumber >= NSAppKitVersionNumber10_12) {
 					os_log_error(OS_LOG_DEFAULT,
-							"ERROR: %{public}s: %{public}s\nAt: %{public}s:%i.",
-							p_function, err_details, p_file, p_line);
+							"ERROR: %{public}s\nat: %{public}s (%{public}s:%i)",
+							err_details, p_function, p_file, p_line);
 				}
-				logf_error("\E[1;31mERROR: %s: \E[0m\E[1m%s\n", p_function, err_details);
-				logf_error("\E[0;31m   At: %s:%i.\E[0m\n", p_file, p_line);
+				logf_error("\E[1;31mERROR:\E[0;91m %s\n", err_details);
+				logf_error("\E[0;90m   at: %s (%s:%i)\E[0m\n", p_function, p_file, p_line);
 				break;
 		}
 	}
@@ -2181,7 +2181,7 @@ void OS_OSX::set_native_icon(const String &p_filename) {
 	ERR_FAIL_COND(!f);
 
 	Vector<uint8_t> data;
-	uint32_t len = f->get_len();
+	uint64_t len = f->get_len();
 	data.resize(len);
 	f->get_buffer((uint8_t *)&data.write[0], len);
 	memdelete(f);
@@ -2238,31 +2238,45 @@ MainLoop *OS_OSX::get_main_loop() const {
 }
 
 String OS_OSX::get_config_path() const {
+	// The XDG Base Directory specification technically only applies on Linux/*BSD, but it doesn't hurt to support it on macOS as well.
 	if (has_environment("XDG_CONFIG_HOME")) {
-		return get_environment("XDG_CONFIG_HOME");
-	} else if (has_environment("HOME")) {
-		return get_environment("HOME").plus_file("Library/Application Support");
-	} else {
-		return ".";
+		if (get_environment("XDG_CONFIG_HOME").is_abs_path()) {
+			return get_environment("XDG_CONFIG_HOME");
+		} else {
+			WARN_PRINT_ONCE("`XDG_CONFIG_HOME` is a relative path. Ignoring its value and falling back to `$HOME/Library/Application Support` or `.` per the XDG Base Directory specification.");
+		}
 	}
+	if (has_environment("HOME")) {
+		return get_environment("HOME").plus_file("Library/Application Support");
+	}
+	return ".";
 }
 
 String OS_OSX::get_data_path() const {
+	// The XDG Base Directory specification technically only applies on Linux/*BSD, but it doesn't hurt to support it on macOS as well.
 	if (has_environment("XDG_DATA_HOME")) {
-		return get_environment("XDG_DATA_HOME");
-	} else {
-		return get_config_path();
+		if (get_environment("XDG_DATA_HOME").is_abs_path()) {
+			return get_environment("XDG_DATA_HOME");
+		} else {
+			WARN_PRINT_ONCE("`XDG_DATA_HOME` is a relative path. Ignoring its value and falling back to `get_config_path()` per the XDG Base Directory specification.");
+		}
 	}
+	return get_config_path();
 }
 
 String OS_OSX::get_cache_path() const {
+	// The XDG Base Directory specification technically only applies on Linux/*BSD, but it doesn't hurt to support it on macOS as well.
 	if (has_environment("XDG_CACHE_HOME")) {
-		return get_environment("XDG_CACHE_HOME");
-	} else if (has_environment("HOME")) {
-		return get_environment("HOME").plus_file("Library/Caches");
-	} else {
-		return get_config_path();
+		if (get_environment("XDG_CACHE_HOME").is_abs_path()) {
+			return get_environment("XDG_CACHE_HOME");
+		} else {
+			WARN_PRINT_ONCE("`XDG_CACHE_HOME` is a relative path. Ignoring its value and falling back to `$HOME/Libary/Caches` or `get_config_path()` per the XDG Base Directory specification.");
+		}
 	}
+	if (has_environment("HOME")) {
+		return get_environment("HOME").plus_file("Library/Caches");
+	}
+	return get_config_path();
 }
 
 String OS_OSX::get_bundle_resource_dir() const {
@@ -2539,7 +2553,7 @@ void OS_OSX::_update_window() {
 		[window_object setHidesOnDeactivate:YES];
 	} else {
 		// Reset these when our window is not a borderless window that covers up the screen
-		if (on_top) {
+		if (on_top & !zoomed) {
 			[window_object setLevel:NSFloatingWindowLevel];
 		} else {
 			[window_object setLevel:NSNormalWindowLevel];
@@ -2711,6 +2725,7 @@ void OS_OSX::set_window_fullscreen(bool p_enabled) {
 	}
 
 	if (zoomed != p_enabled) {
+		[window_object setLevel:NSNormalWindowLevel];
 		if (layered_window)
 			set_window_per_pixel_transparency_enabled(false);
 		if (!resizable)
@@ -2808,6 +2823,9 @@ void OS_OSX::set_window_always_on_top(bool p_enabled) {
 
 	on_top = p_enabled;
 
+	if (zoomed)
+		return;
+
 	if (is_window_always_on_top() == p_enabled)
 		return;
 
@@ -2818,7 +2836,11 @@ void OS_OSX::set_window_always_on_top(bool p_enabled) {
 }
 
 bool OS_OSX::is_window_always_on_top() const {
-	return [window_object level] == NSFloatingWindowLevel;
+	if (zoomed) {
+		return on_top;
+	} else {
+		return [window_object level] == NSFloatingWindowLevel;
+	}
 }
 
 bool OS_OSX::is_window_focused() const {
@@ -3231,7 +3253,7 @@ void OS_OSX::run() {
 				quit = true;
 			}
 		} @catch (NSException *exception) {
-			ERR_PRINTS("NSException: " + String([exception reason].UTF8String));
+			ERR_PRINT("NSException: " + String([exception reason].UTF8String));
 		}
 	};
 
@@ -3273,6 +3295,12 @@ void OS_OSX::set_mouse_mode(MouseMode p_mode) {
 	ignore_warp = true;
 	warp_events.clear();
 	mouse_mode = p_mode;
+
+	if (mouse_mode == MOUSE_MODE_VISIBLE || mouse_mode == MOUSE_MODE_CONFINED) {
+		CursorShape p_shape = cursor_shape;
+		cursor_shape = OS::CURSOR_MAX;
+		set_cursor_shape(p_shape);
+	}
 }
 
 OS::MouseMode OS_OSX::get_mouse_mode() const {
@@ -3301,7 +3329,7 @@ Error OS_OSX::move_to_trash(const String &p_path) {
 	NSError *err;
 
 	if (![fm trashItemAtURL:url resultingItemURL:nil error:&err]) {
-		ERR_PRINTS("trashItemAtURL error: " + String(err.localizedDescription.UTF8String));
+		ERR_PRINT("trashItemAtURL error: " + String(err.localizedDescription.UTF8String));
 		return FAILED;
 	}
 

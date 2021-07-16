@@ -70,8 +70,6 @@ private:
 	void gl_enable_scissor(int p_x, int p_y, int p_width, int p_height) const;
 	void gl_disable_scissor() const;
 
-	void gl_checkerror();
-
 public:
 	void initialize();
 	RasterizerCanvasGLES3();

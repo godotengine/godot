@@ -429,4 +429,30 @@ public:
 	JointSpatialGizmoPlugin();
 };
 
+class RoomGizmoPlugin : public EditorSpatialGizmoPlugin {
+	GDCLASS(RoomGizmoPlugin, EditorSpatialGizmoPlugin);
+
+protected:
+	virtual bool has_gizmo(Spatial *p_spatial);
+	String get_name() const;
+	int get_priority() const;
+	void redraw(EditorSpatialGizmo *p_gizmo);
+
+public:
+	RoomGizmoPlugin();
+};
+
+class PortalGizmoPlugin : public EditorSpatialGizmoPlugin {
+	GDCLASS(PortalGizmoPlugin, EditorSpatialGizmoPlugin);
+
+protected:
+	virtual bool has_gizmo(Spatial *p_spatial);
+	String get_name() const;
+	int get_priority() const;
+	void redraw(EditorSpatialGizmo *p_gizmo);
+
+public:
+	PortalGizmoPlugin();
+};
+
 #endif // SPATIAL_EDITOR_GIZMOS_H

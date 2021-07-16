@@ -1456,7 +1456,7 @@ void EditorHelp::_notification(int p_what) {
 			_update_doc();
 		} break;
 		case NOTIFICATION_THEME_CHANGED: {
-			if (is_visible_in_tree()) {
+			if (is_inside_tree()) {
 				_class_desc_resized();
 			}
 		} break;
@@ -1737,7 +1737,7 @@ void FindBar::_update_results_count() {
 	int from_pos = 0;
 
 	while (true) {
-		int pos = full_text.find(searched, from_pos);
+		int pos = full_text.findn(searched, from_pos);
 		if (pos == -1) {
 			break;
 		}

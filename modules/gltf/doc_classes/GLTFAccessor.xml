@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="GLTFAccessor" inherits="Resource" version="3.4">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+	</methods>
+	<members>
+		<member name="buffer_view" type="int" setter="set_buffer_view" getter="get_buffer_view" default="0">
+		</member>
+		<member name="byte_offset" type="int" setter="set_byte_offset" getter="get_byte_offset" default="0">
+		</member>
+		<member name="component_type" type="int" setter="set_component_type" getter="get_component_type" default="0">
+		</member>
+		<member name="count" type="int" setter="set_count" getter="get_count" default="0">
+		</member>
+		<member name="max" type="PoolRealArray" setter="set_max" getter="get_max" default="PoolRealArray(  )">
+		</member>
+		<member name="min" type="PoolRealArray" setter="set_min" getter="get_min" default="PoolRealArray(  )">
+		</member>
+		<member name="normalized" type="bool" setter="set_normalized" getter="get_normalized" default="false">
+		</member>
+		<member name="sparse_count" type="int" setter="set_sparse_count" getter="get_sparse_count" default="0">
+		</member>
+		<member name="sparse_indices_buffer_view" type="int" setter="set_sparse_indices_buffer_view" getter="get_sparse_indices_buffer_view" default="0">
+		</member>
+		<member name="sparse_indices_byte_offset" type="int" setter="set_sparse_indices_byte_offset" getter="get_sparse_indices_byte_offset" default="0">
+		</member>
+		<member name="sparse_indices_component_type" type="int" setter="set_sparse_indices_component_type" getter="get_sparse_indices_component_type" default="0">
+		</member>
+		<member name="sparse_values_buffer_view" type="int" setter="set_sparse_values_buffer_view" getter="get_sparse_values_buffer_view" default="0">
+		</member>
+		<member name="sparse_values_byte_offset" type="int" setter="set_sparse_values_byte_offset" getter="get_sparse_values_byte_offset" default="0">
+		</member>
+		<member name="type" type="int" setter="set_type" getter="get_type" default="0">
+		</member>
+	</members>
+	<constants>
+	</constants>
+</class>

@@ -789,7 +789,7 @@ String ResourceLoader::_path_remap(const String &p_path, bool *r_translation_rem
 				if (err == ERR_FILE_EOF) {
 					break;
 				} else if (err != OK) {
-					ERR_PRINTS("Parse error: " + p_path + ".remap:" + itos(lines) + " error: " + error_text + ".");
+					ERR_PRINT("Parse error: " + p_path + ".remap:" + itos(lines) + " error: " + error_text + ".");
 					break;
 				}
 
@@ -972,7 +972,7 @@ void ResourceLoader::finalize() {
 #ifndef NO_THREADS
 	const LoadingMapKey *K = nullptr;
 	while ((K = loading_map.next(K))) {
-		ERR_PRINTS("Exited while resource is being loaded: " + K->path);
+		ERR_PRINT("Exited while resource is being loaded: " + K->path);
 	}
 	loading_map.clear();
 #endif

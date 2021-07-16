@@ -6,12 +6,13 @@
 # Zion Nimchuk <zionnimchuk@gmail.com>, 2016-2017.
 # Allan Nordhøy <epost@anotheragency.no>, 2018.
 # David Fatheree <david.fathereewcchs@gmail.com>, 2020.
+# Nathan Franke <natfra@pm.me>, 2021.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-06-22 06:40+0000\n"
-"Last-Translator: David Fatheree <david.fathereewcchs@gmail.com>\n"
+"PO-Revision-Date: 2021-06-11 14:49+0000\n"
+"Last-Translator: Nathan Franke <natfra@pm.me>\n"
 "Language-Team: Pirate <https://hosted.weblate.org/projects/godot-engine/"
 "godot/pr/>\n"
 "Language: pr\n"
@@ -19,7 +20,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.2-dev\n"
+"X-Generator: Weblate 4.7-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -30,7 +31,7 @@ msgstr ""
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 msgid "Expected a string of length 1 (a character)."
-msgstr "Expected a strin' o' length 1 (a character)."
+msgstr "Expected a strin' o' length 1 (jus' a character)."
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/mono/glue/gd_glue.cpp
@@ -48,56 +49,55 @@ msgstr ""
 
 #: core/math/expression.cpp
 msgid "Invalid operands to operator %s, %s and %s."
-msgstr "Yer index property name '%s' in node %s be walkin' th' plank!"
+msgstr "Yer opera'r %s be usin' th' wrong grub, %s an' %s!"
 
 #: core/math/expression.cpp
 msgid "Invalid index of type %s for base type %s"
-msgstr "Yer index property name '%s' in node %s be walkin' th' plank!"
+msgstr "Yer index type %s o' node type %s be walkin' th' plank!"
 
 #: core/math/expression.cpp
 msgid "Invalid named index '%s' for base type %s"
 msgstr ""
 
 #: core/math/expression.cpp
-#, fuzzy
 msgid "Invalid arguments to construct '%s'"
-msgstr ": Evil argument of th' type: "
+msgstr "Evil argument o' th' type '%s'"
 
 #: core/math/expression.cpp
 msgid "On call to '%s':"
-msgstr ""
+msgstr "O' th' call t' '%s':"
 
 #: core/ustring.cpp
 msgid "B"
-msgstr ""
+msgstr "' Barnacles"
 
 #: core/ustring.cpp
 msgid "KiB"
-msgstr ""
+msgstr "' Kilo-Barnacles"
 
 #: core/ustring.cpp
 msgid "MiB"
-msgstr ""
+msgstr "' Mega-Barnacles"
 
 #: core/ustring.cpp
 msgid "GiB"
-msgstr ""
+msgstr "' Giga-Barnacles"
 
 #: core/ustring.cpp
 msgid "TiB"
-msgstr ""
+msgstr "' Tera-Barnacles"
 
 #: core/ustring.cpp
 msgid "PiB"
-msgstr ""
+msgstr "' Peta-Barnacles"
 
 #: core/ustring.cpp
 msgid "EiB"
-msgstr ""
+msgstr "' Exa-Barnacles"
 
 #: editor/animation_bezier_editor.cpp
 msgid "Free"
-msgstr ""
+msgstr "O'en"
 
 #: editor/animation_bezier_editor.cpp
 msgid "Balanced"
@@ -109,11 +109,11 @@ msgstr "See'in Double"
 
 #: editor/animation_bezier_editor.cpp editor/editor_profiler.cpp
 msgid "Time:"
-msgstr ""
+msgstr "Sundial:"
 
 #: editor/animation_bezier_editor.cpp
 msgid "Value:"
-msgstr ""
+msgstr "Grub:"
 
 #: editor/animation_bezier_editor.cpp
 msgid "Insert Key Here"
@@ -125,9 +125,8 @@ msgid "Duplicate Selected Key(s)"
 msgstr "Yar, Blow th' Selected Down!"
 
 #: editor/animation_bezier_editor.cpp
-#, fuzzy
 msgid "Delete Selected Key(s)"
-msgstr "Yar, Blow th' Selected Down!"
+msgstr "Yar, Plunder th' Selected!"
 
 #: editor/animation_bezier_editor.cpp
 #, fuzzy
@@ -428,10 +427,6 @@ msgid "Animation tracks can only point to AnimationPlayer nodes."
 msgstr ""
 
 #: editor/animation_track_editor.cpp
-msgid "An animation player can't animate itself, only other players."
-msgstr ""
-
-#: editor/animation_track_editor.cpp
 msgid "Not possible to add a new track without a root"
 msgstr ""
 
@@ -477,7 +472,8 @@ msgid "Anim Move Keys"
 msgstr ""
 
 #: editor/animation_track_editor.cpp
-msgid "Clipboard is empty"
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Clipboard is empty!"
 msgstr ""
 
 #: editor/animation_track_editor.cpp
@@ -1122,6 +1118,10 @@ msgstr ""
 
 #: editor/editor_about.cpp
 msgid "Thanks from the Godot community!"
+msgstr ""
+
+#: editor/editor_about.cpp editor/editor_node.cpp editor/project_manager.cpp
+msgid "Click to copy."
 msgstr ""
 
 #: editor/editor_about.cpp
@@ -2137,7 +2137,7 @@ msgstr ""
 
 #: editor/editor_log.cpp
 msgid "Output:"
-msgstr ""
+msgstr "Cap'n's Log:"
 
 #: editor/editor_log.cpp editor/plugins/tile_map_editor_plugin.cpp
 #, fuzzy
@@ -2156,7 +2156,7 @@ msgstr ""
 
 #: editor/editor_log.cpp
 msgid "Clear Output"
-msgstr ""
+msgstr "Clear Cap'n's Log"
 
 #: editor/editor_network_profiler.cpp editor/editor_node.cpp
 #: editor/editor_profiler.cpp
@@ -2484,7 +2484,7 @@ msgid "Save changes to the following scene(s) before quitting?"
 msgstr ""
 
 #: editor/editor_node.cpp
-msgid "Save changes the following scene(s) before opening Project Manager?"
+msgid "Save changes to the following scene(s) before opening Project Manager?"
 msgstr ""
 
 #: editor/editor_node.cpp
@@ -2519,8 +2519,9 @@ msgstr ""
 
 #: editor/editor_node.cpp
 msgid ""
-"Unable to load addon script from path: '%s' There seems to be an error in "
-"the code, please check the syntax."
+"Unable to load addon script from path: '%s'. This might be due to a code "
+"error in that script.\n"
+"Disabling the addon at '%s' to prevent further errors."
 msgstr ""
 
 #: editor/editor_node.cpp
@@ -2780,7 +2781,7 @@ msgstr ""
 #: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
 #: editor/project_export.cpp
 msgid "Debug"
-msgstr ""
+msgstr "Debuggin'"
 
 #: editor/editor_node.cpp
 msgid "Deploy with Remote Debug"
@@ -2936,6 +2937,10 @@ msgid "About"
 msgstr ""
 
 #: editor/editor_node.cpp
+msgid "Support Godot Development"
+msgstr ""
+
+#: editor/editor_node.cpp
 msgid "Play the project."
 msgstr ""
 
@@ -3011,7 +3016,7 @@ msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Output"
-msgstr ""
+msgstr "Cap'n's Log"
 
 #: editor/editor_node.cpp
 msgid "Don't Save"
@@ -10015,7 +10020,7 @@ msgstr ""
 
 #: editor/project_settings_editor.cpp
 msgid ""
-"Invalid action name. it cannot be empty nor contain '/', ':', '=', '\\' or "
+"Invalid action name. It cannot be empty nor contain '/', ':', '=', '\\' or "
 "'\"'"
 msgstr ""
 
@@ -11899,10 +11904,6 @@ msgid "Can't copy the function node."
 msgstr ""
 
 #: modules/visual_script/visual_script_editor.cpp
-msgid "Clipboard is empty!"
-msgstr ""
-
-#: modules/visual_script/visual_script_editor.cpp
 #, fuzzy
 msgid "Paste VisualScript Nodes"
 msgstr "Paste yer Node"
@@ -12119,7 +12120,19 @@ msgid ""
 msgstr ""
 
 #: platform/android/export/export.cpp
+msgid ""
+"Either Debug Keystore, Debug User AND Debug Password settings must be "
+"configured OR none of them."
+msgstr ""
+
+#: platform/android/export/export.cpp
 msgid "Debug keystore not configured in the Editor Settings nor in the preset."
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid ""
+"Either Release Keystore, Release User AND Release Password settings must be "
+"configured OR none of them."
 msgstr ""
 
 #: platform/android/export/export.cpp

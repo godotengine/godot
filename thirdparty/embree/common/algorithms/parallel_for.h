@@ -1,4 +1,4 @@
-// Copyright 2009-2020 Intel Corporation
+// Copyright 2009-2021 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
 #pragma once
@@ -7,12 +7,6 @@
 #include "../sys/array.h"
 #include "../math/math.h"
 #include "../math/range.h"
-
-#if defined(TASKING_GCD) && defined(BUILD_IOS)
-#include <dispatch/dispatch.h>
-#include <algorithm>
-#include <type_traits>
-#endif
 
 namespace embree
 {
@@ -29,28 +23,10 @@ namespace embree
       if (!TaskScheduler::wait())
         // -- GODOT start --
         // throw std::runtime_error("task cancelled");
-        abort(); 
+        abort();
         // -- GODOT end --
     }
-#elif defined(TASKING_GCD) && defined(BUILD_IOS)
-      
-    const size_t baselineNumBlocks = (TaskScheduler::threadCount() > 1)? TaskScheduler::threadCount() : 1;
-    const size_t length = N;
-    const size_t blockSize = (length + baselineNumBlocks-1) / baselineNumBlocks;
-    const size_t numBlocks = (length + blockSize-1) / blockSize;
-      
-    dispatch_apply(numBlocks, DISPATCH_APPLY_AUTO, ^(size_t currentBlock) {
-          
-        const size_t start = (currentBlock * blockSize);
-        const size_t blockLength = std::min(length - start, blockSize);
-        const size_t end = start + blockLength;
-          
-        for(size_t i=start; i < end; i++)
-        {
-            func(i);
-        }
-    });
-      
+    
 #elif defined(TASKING_TBB)
   #if TBB_INTERFACE_VERSION >= 12002
     tbb::task_group_context context;
@@ -60,7 +36,7 @@ namespace embree
     if (context.is_group_execution_cancelled())
       // -- GODOT start --
       // throw std::runtime_error("task cancelled");
-      abort(); 
+      abort();
       // -- GODOT end --
   #else
     tbb::parallel_for(Index(0),N,Index(1),[&](Index i) {
@@ -69,7 +45,7 @@ namespace embree
     if (tbb::task::self().is_cancelled())
       // -- GODOT start --
       // throw std::runtime_error("task cancelled");
-      abort(); 
+      abort();
       // -- GODOT end --
   #endif
 
@@ -92,27 +68,8 @@ namespace embree
     if (!TaskScheduler::wait())
       // -- GODOT start --
       // throw std::runtime_error("task cancelled");
-      abort(); 
+      abort();
       // -- GODOT end --
-
-#elif defined(TASKING_GCD) && defined(BUILD_IOS)
-      
-    const size_t baselineNumBlocks = (TaskScheduler::threadCount() > 1)? 4*TaskScheduler::threadCount() : 1;
-    const size_t length = last - first;
-    const size_t blockSizeByThreads = (length + baselineNumBlocks-1) / baselineNumBlocks;
-    size_t blockSize = std::max<size_t>(minStepSize,blockSizeByThreads);
-    blockSize += blockSize % 4;
-      
-    const size_t numBlocks = (length + blockSize-1) / blockSize;
-      
-    dispatch_apply(numBlocks, DISPATCH_APPLY_AUTO, ^(size_t currentBlock) {
-          
-        const size_t start = first + (currentBlock * blockSize);
-        const size_t end = std::min<size_t>(last, start + blockSize);
-          
-        func( embree::range<Index>(start,end) );
-    });
-      
 
 #elif defined(TASKING_TBB)
   #if TBB_INTERFACE_VERSION >= 12002
@@ -123,7 +80,7 @@ namespace embree
     if (context.is_group_execution_cancelled())
       // -- GODOT start --
       // throw std::runtime_error("task cancelled");
-      abort(); 
+      abort();
       // -- GODOT end --
   #else
     tbb::parallel_for(tbb::blocked_range<Index>(first,last,minStepSize),[&](const tbb::blocked_range<Index>& r) {
@@ -132,7 +89,7 @@ namespace embree
     if (tbb::task::self().is_cancelled())
       // -- GODOT start --
       // throw std::runtime_error("task cancelled");
-      abort(); 
+      abort();
       // -- GODOT end --
   #endif
 
@@ -167,7 +124,7 @@ namespace embree
       if (context.is_group_execution_cancelled())
         // -- GODOT start --
         // throw std::runtime_error("task cancelled");
-        abort(); 
+        abort();
         // -- GODOT end --
     #else
       tbb::parallel_for(Index(0),N,Index(1),[&](Index i) {
@@ -176,7 +133,7 @@ namespace embree
       if (tbb::task::self().is_cancelled())
         // -- GODOT start --
         // throw std::runtime_error("task cancelled");
-        abort(); 
+        abort();
         // -- GODOT end --
     #endif
   }
@@ -192,10 +149,10 @@ namespace embree
           func(i);
         },ap,context);
       if (context.is_group_execution_cancelled())
-       // -- GODOT start --
-       // throw std::runtime_error("task cancelled");
-       abort(); 
-       // -- GODOT end --
+        // -- GODOT start --
+        // throw std::runtime_error("task cancelled");
+        abort();
+        // -- GODOT end --
     #else
       tbb::parallel_for(Index(0),N,Index(1),[&](Index i) {
           func(i);
@@ -203,7 +160,7 @@ namespace embree
       if (tbb::task::self().is_cancelled())
         // -- GODOT start --
         // throw std::runtime_error("task cancelled");
-        abort(); 
+        abort();
         // -- GODOT end --
     #endif
   }

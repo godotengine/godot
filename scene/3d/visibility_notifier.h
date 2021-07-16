@@ -31,21 +31,26 @@
 #ifndef VISIBILITY_NOTIFIER_H
 #define VISIBILITY_NOTIFIER_H
 
-#include "scene/3d/spatial.h"
+#include "scene/3d/cull_instance.h"
 
 class World;
 class Camera;
-class VisibilityNotifier : public Spatial {
-	GDCLASS(VisibilityNotifier, Spatial);
+class VisibilityNotifier : public CullInstance {
+	GDCLASS(VisibilityNotifier, CullInstance);
 
 	Ref<World> world;
 	Set<Camera *> cameras;
 
 	AABB aabb;
 
+	// if using rooms and portals
+	RID _cull_instance_rid;
+	bool _in_gameplay;
+
 protected:
 	virtual void _screen_enter() {}
 	virtual void _screen_exit() {}
+	virtual void _refresh_portal_mode();
 
 	void _notification(int p_what);
 	static void _bind_methods();
@@ -60,6 +65,7 @@ public:
 	bool is_on_screen() const;
 
 	VisibilityNotifier();
+	~VisibilityNotifier();
 };
 
 class VisibilityEnabler : public VisibilityNotifier {

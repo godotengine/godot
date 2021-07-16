@@ -1,7 +1,15 @@
-// Copyright 2009-2020 Intel Corporation
+// Copyright 2009-2021 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
 #pragma once
+
+#define vboolf vboolf_impl
+#define vboold vboold_impl
+#define vint vint_impl
+#define vuint vuint_impl
+#define vllong vllong_impl
+#define vfloat vfloat_impl
+#define vdouble vdouble_impl
 
 namespace embree
 {
@@ -49,19 +57,13 @@ namespace embree
 #endif
     }
     
-    __forceinline vboold(__m128d a, __m128d b) : vl(a), vh(b) {}
-
     ////////////////////////////////////////////////////////////////////////////////
     /// Constants
     ////////////////////////////////////////////////////////////////////////////////
 
     __forceinline vboold(FalseTy) : v(_mm256_setzero_pd()) {}
-#if !defined(__aarch64__)
     __forceinline vboold(TrueTy)  : v(_mm256_cmp_pd(_mm256_setzero_pd(), _mm256_setzero_pd(), _CMP_EQ_OQ)) {}
-#else
-    __forceinline vboold(TrueTy)  : v(_mm256_cmpeq_pd(_mm256_setzero_pd(), _mm256_setzero_pd())) {}
-#endif
-      
+
     ////////////////////////////////////////////////////////////////////////////////
     /// Array Access
     ////////////////////////////////////////////////////////////////////////////////
@@ -105,10 +107,9 @@ namespace embree
   /// Movement/Shifting/Shuffling Functions
   ////////////////////////////////////////////////////////////////////////////////
 
-#if !defined(__aarch64__)
   __forceinline vboold4 unpacklo(const vboold4& a, const vboold4& b) { return _mm256_unpacklo_pd(a, b); }
   __forceinline vboold4 unpackhi(const vboold4& a, const vboold4& b) { return _mm256_unpackhi_pd(a, b); }
-#endif
+
 
 #if defined(__AVX2__)
   template<int i0, int i1, int i2, int i3>
@@ -158,3 +159,11 @@ namespace embree
                        << a[4] << ", " << a[5] << ", " << a[6] << ", " << a[7] << ">";
   }
 }
+
+#undef vboolf
+#undef vboold
+#undef vint
+#undef vuint
+#undef vllong
+#undef vfloat
+#undef vdouble

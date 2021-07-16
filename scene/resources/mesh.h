@@ -137,7 +137,7 @@ public:
 	void generate_debug_mesh_indices(Vector<Vector3> &r_points);
 
 	Ref<Shape> create_trimesh_shape() const;
-	Ref<Shape> create_convex_shape() const;
+	Ref<Shape> create_convex_shape(bool p_clean = true, bool p_simplify = false) const;
 
 	Ref<Mesh> create_outline(float p_margin) const;
 
@@ -147,11 +147,11 @@ public:
 	Size2 get_lightmap_size_hint() const;
 	void clear_cache() const;
 
-	typedef Vector<Vector<Face3>> (*ConvexDecompositionFunc)(const Vector<Face3> &);
+	typedef Vector<Vector<Face3>> (*ConvexDecompositionFunc)(const Vector<Face3> &p_faces, int p_max_convex_hulls);
 
 	static ConvexDecompositionFunc convex_composition_function;
 
-	Vector<Ref<Shape>> convex_decompose() const;
+	Vector<Ref<Shape>> convex_decompose(int p_max_convex_hulls = -1) const;
 
 	Mesh();
 };
@@ -205,6 +205,7 @@ public:
 
 	int get_surface_count() const;
 	void surface_remove(int p_idx);
+	void clear_surfaces();
 
 	void surface_set_custom_aabb(int p_idx, const AABB &p_aabb); //only recognized by driver
 

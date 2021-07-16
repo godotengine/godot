@@ -162,7 +162,6 @@ enum { NUM_TREES = 2,
 // Tree 1 - Pairable
 // This is more efficient because in physics we only need check non pairable against the pairable tree.
 uint32_t _root_node_id[NUM_TREES];
-int _current_tree = 0;
 
 // these values may need tweaking according to the project
 // the bound of the world, and the average velocities of the objects

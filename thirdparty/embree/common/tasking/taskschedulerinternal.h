@@ -1,4 +1,4 @@
-// Copyright 2009-2020 Intel Corporation
+// Copyright 2009-2021 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
 #pragma once
@@ -135,16 +135,15 @@ namespace embree
       __forceinline void push_right(Thread& thread, const size_t size, const Closure& closure)
       {
         if (right >= TASK_STACK_SIZE)
-          // -- GODOT start --
-          // throw std::runtime_error("task stack overflow");
-          abort();
-          // -- GODOT end --
+           // -- GODOT start --
+           // throw std::runtime_error("task stack overflow");
+           abort();
+           // -- GODOT end --
 
 	/* allocate new task on right side of stack */
         size_t oldStackPtr = stackPtr;
         TaskFunction* func = new (alloc(sizeof(ClosureTaskFunction<Closure>))) ClosureTaskFunction<Closure>(closure);
-        /* gcc 8 or later fails to compile without explicit .load() */
-        new (&(tasks[right.load()])) Task(func,thread.task,oldStackPtr,size);
+        new (&tasks[right]) Task(func,thread.task,oldStackPtr,size);
         right++;
 
 	/* also move left pointer */

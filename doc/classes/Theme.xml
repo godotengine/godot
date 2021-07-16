@@ -73,6 +73,19 @@
 				Clears [StyleBox] at [code]name[/code] if the theme has [code]node_type[/code].
 			</description>
 		</method>
+		<method name="clear_theme_item">
+			<return type="void">
+			</return>
+			<argument index="0" name="data_type" type="int" enum="Theme.DataType">
+			</argument>
+			<argument index="1" name="name" type="String">
+			</argument>
+			<argument index="2" name="node_type" type="String">
+			</argument>
+			<description>
+				Clears the theme item of [code]data_type[/code] at [code]name[/code] if the theme has [code]node_type[/code].
+			</description>
+		</method>
 		<method name="copy_default_theme">
 			<return type="void">
 			</return>
@@ -109,6 +122,13 @@
 				Returns all the [Color]s as a [PoolStringArray] filled with each [Color]'s name, for use in [method get_color], if the theme has [code]node_type[/code].
 			</description>
 		</method>
+		<method name="get_color_types" qualifiers="const">
+			<return type="PoolStringArray">
+			</return>
+			<description>
+				Returns all the [Color] types as a [PoolStringArray] filled with unique type names, for use in [method get_color] and/or [method get_color_list].
+			</description>
+		</method>
 		<method name="get_constant" qualifiers="const">
 			<return type="int">
 			</return>
@@ -127,6 +147,13 @@
 			</argument>
 			<description>
 				Returns all the constants as a [PoolStringArray] filled with each constant's name, for use in [method get_constant], if the theme has [code]node_type[/code].
+			</description>
+		</method>
+		<method name="get_constant_types" qualifiers="const">
+			<return type="PoolStringArray">
+			</return>
+			<description>
+				Returns all the constant types as a [PoolStringArray] filled with unique type names, for use in [method get_constant] and/or [method get_constant_list].
 			</description>
 		</method>
 		<method name="get_font" qualifiers="const">
@@ -149,6 +176,13 @@
 				Returns all the [Font]s as a [PoolStringArray] filled with each [Font]'s name, for use in [method get_font], if the theme has [code]node_type[/code].
 			</description>
 		</method>
+		<method name="get_font_types" qualifiers="const">
+			<return type="PoolStringArray">
+			</return>
+			<description>
+				Returns all the [Font] types as a [PoolStringArray] filled with unique type names, for use in [method get_font] and/or [method get_font_list].
+			</description>
+		</method>
 		<method name="get_icon" qualifiers="const">
 			<return type="Texture">
 			</return>
@@ -167,6 +201,13 @@
 			</argument>
 			<description>
 				Returns all the icons as a [PoolStringArray] filled with each [Texture]'s name, for use in [method get_icon], if the theme has [code]node_type[/code].
+			</description>
+		</method>
+		<method name="get_icon_types" qualifiers="const">
+			<return type="PoolStringArray">
+			</return>
+			<description>
+				Returns all the icon types as a [PoolStringArray] filled with unique type names, for use in [method get_icon] and/or [method get_icon_list].
 			</description>
 		</method>
 		<method name="get_stylebox" qualifiers="const">
@@ -195,7 +236,42 @@
 			<return type="PoolStringArray">
 			</return>
 			<description>
-				Returns all the [StyleBox] types as a [PoolStringArray] filled with each [StyleBox]'s type, for use in [method get_stylebox] and/or [method get_stylebox_list], if the theme has [code]node_type[/code].
+				Returns all the [StyleBox] types as a [PoolStringArray] filled with unique type names, for use in [method get_stylebox] and/or [method get_stylebox_list].
+			</description>
+		</method>
+		<method name="get_theme_item" qualifiers="const">
+			<return type="Variant">
+			</return>
+			<argument index="0" name="data_type" type="int" enum="Theme.DataType">
+			</argument>
+			<argument index="1" name="name" type="String">
+			</argument>
+			<argument index="2" name="node_type" type="String">
+			</argument>
+			<description>
+				Returns the theme item of [code]data_type[/code] at [code]name[/code] if the theme has [code]node_type[/code].
+				Valid [code]name[/code]s may be found using [method get_theme_item_list] or a data type specific method. Valid [code]node_type[/code]s may be found using [method get_theme_item_types] or a data type specific method.
+			</description>
+		</method>
+		<method name="get_theme_item_list" qualifiers="const">
+			<return type="PoolStringArray">
+			</return>
+			<argument index="0" name="data_type" type="int" enum="Theme.DataType">
+			</argument>
+			<argument index="1" name="node_type" type="String">
+			</argument>
+			<description>
+				Returns all the theme items of [code]data_type[/code] as a [PoolStringArray] filled with each theme items's name, for use in [method get_theme_item] or a data type specific method, if the theme has [code]node_type[/code].
+				Valid [code]node_type[/code]s may be found using [method get_theme_item_types] or a data type specific method.
+			</description>
+		</method>
+		<method name="get_theme_item_types" qualifiers="const">
+			<return type="PoolStringArray">
+			</return>
+			<argument index="0" name="data_type" type="int" enum="Theme.DataType">
+			</argument>
+			<description>
+				Returns all the theme items of [code]data_type[/code] types as a [PoolStringArray] filled with unique type names, for use in [method get_theme_item], [method get_theme_item_list] or data type specific methods.
 			</description>
 		</method>
 		<method name="get_type_list" qualifiers="const">
@@ -204,7 +280,8 @@
 			<argument index="0" name="node_type" type="String">
 			</argument>
 			<description>
-				Returns all the types in [code]node_type[/code] as a [PoolStringArray] for use in any of the [code]get_*[/code] functions, if the theme has [code]node_type[/code].
+				Returns all the theme types as a [PoolStringArray] filled with unique type names, for use in other [code]get_*[/code] functions of this theme.
+				[b]Note:[/b] [code]node_type[/code] has no effect and will be removed in future version.
 			</description>
 		</method>
 		<method name="has_color" qualifiers="const">
@@ -267,6 +344,100 @@
 				Returns [code]false[/code] if the theme does not have [code]node_type[/code].
 			</description>
 		</method>
+		<method name="has_theme_item" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="data_type" type="int" enum="Theme.DataType">
+			</argument>
+			<argument index="1" name="name" type="String">
+			</argument>
+			<argument index="2" name="node_type" type="String">
+			</argument>
+			<description>
+				Returns [code]true[/code] if a theme item of [code]data_type[/code] with [code]name[/code] is in [code]node_type[/code].
+				Returns [code]false[/code] if the theme does not have [code]node_type[/code].
+			</description>
+		</method>
+		<method name="rename_color">
+			<return type="void">
+			</return>
+			<argument index="0" name="old_name" type="String">
+			</argument>
+			<argument index="1" name="name" type="String">
+			</argument>
+			<argument index="2" name="node_type" type="String">
+			</argument>
+			<description>
+				Renames the [Color] at [code]old_name[/code] to [code]name[/code] if the theme has [code]node_type[/code]. If [code]name[/code] is already taken, this method fails.
+			</description>
+		</method>
+		<method name="rename_constant">
+			<return type="void">
+			</return>
+			<argument index="0" name="old_name" type="String">
+			</argument>
+			<argument index="1" name="name" type="String">
+			</argument>
+			<argument index="2" name="node_type" type="String">
+			</argument>
+			<description>
+				Renames the constant at [code]old_name[/code] to [code]name[/code] if the theme has [code]node_type[/code]. If [code]name[/code] is already taken, this method fails.
+			</description>
+		</method>
+		<method name="rename_font">
+			<return type="void">
+			</return>
+			<argument index="0" name="old_name" type="String">
+			</argument>
+			<argument index="1" name="name" type="String">
+			</argument>
+			<argument index="2" name="node_type" type="String">
+			</argument>
+			<description>
+				Renames the [Font] at [code]old_name[/code] to [code]name[/code] if the theme has [code]node_type[/code]. If [code]name[/code] is already taken, this method fails.
+			</description>
+		</method>
+		<method name="rename_icon">
+			<return type="void">
+			</return>
+			<argument index="0" name="old_name" type="String">
+			</argument>
+			<argument index="1" name="name" type="String">
+			</argument>
+			<argument index="2" name="node_type" type="String">
+			</argument>
+			<description>
+				Renames the icon at [code]old_name[/code] to [code]name[/code] if the theme has [code]node_type[/code]. If [code]name[/code] is already taken, this method fails.
+			</description>
+		</method>
+		<method name="rename_stylebox">
+			<return type="void">
+			</return>
+			<argument index="0" name="old_name" type="String">
+			</argument>
+			<argument index="1" name="name" type="String">
+			</argument>
+			<argument index="2" name="node_type" type="String">
+			</argument>
+			<description>
+				Renames [StyleBox] at [code]old_name[/code] to [code]name[/code] if the theme has [code]node_type[/code]. If [code]name[/code] is already taken, this method fails.
+			</description>
+		</method>
+		<method name="rename_theme_item">
+			<return type="void">
+			</return>
+			<argument index="0" name="data_type" type="int" enum="Theme.DataType">
+			</argument>
+			<argument index="1" name="old_name" type="String">
+			</argument>
+			<argument index="2" name="name" type="String">
+			</argument>
+			<argument index="3" name="node_type" type="String">
+			</argument>
+			<description>
+				Renames the theme item of [code]data_type[/code] at [code]old_name[/code] to [code]name[/code] if the theme has [code]node_type[/code]. If [code]name[/code] is already taken, this method fails.
+			</description>
+		</method>
 		<method name="set_color">
 			<return type="void">
 			</return>
@@ -278,7 +449,7 @@
 			</argument>
 			<description>
 				Sets the theme's [Color] to [code]color[/code] at [code]name[/code] in [code]node_type[/code].
-				Does nothing if the theme does not have [code]node_type[/code].
+				Creates [code]node_type[/code] if the theme does not have it.
 			</description>
 		</method>
 		<method name="set_constant">
@@ -292,7 +463,7 @@
 			</argument>
 			<description>
 				Sets the theme's constant to [code]constant[/code] at [code]name[/code] in [code]node_type[/code].
-				Does nothing if the theme does not have [code]node_type[/code].
+				Creates [code]node_type[/code] if the theme does not have it.
 			</description>
 		</method>
 		<method name="set_font">
@@ -306,7 +477,7 @@
 			</argument>
 			<description>
 				Sets the theme's [Font] to [code]font[/code] at [code]name[/code] in [code]node_type[/code].
-				Does nothing if the theme does not have [code]node_type[/code].
+				Creates [code]node_type[/code] if the theme does not have it.
 			</description>
 		</method>
 		<method name="set_icon">
@@ -320,7 +491,7 @@
 			</argument>
 			<description>
 				Sets the theme's icon [Texture] to [code]texture[/code] at [code]name[/code] in [code]node_type[/code].
-				Does nothing if the theme does not have [code]node_type[/code].
+				Creates [code]node_type[/code] if the theme does not have it.
 			</description>
 		</method>
 		<method name="set_stylebox">
@@ -334,7 +505,24 @@
 			</argument>
 			<description>
 				Sets theme's [StyleBox] to [code]stylebox[/code] at [code]name[/code] in [code]node_type[/code].
-				Does nothing if the theme does not have [code]node_type[/code].
+				Creates [code]node_type[/code] if the theme does not have it.
+			</description>
+		</method>
+		<method name="set_theme_item">
+			<return type="void">
+			</return>
+			<argument index="0" name="data_type" type="int" enum="Theme.DataType">
+			</argument>
+			<argument index="1" name="name" type="String">
+			</argument>
+			<argument index="2" name="node_type" type="String">
+			</argument>
+			<argument index="3" name="value" type="Variant">
+			</argument>
+			<description>
+				Sets the theme item of [code]data_type[/code] to [code]value[/code] at [code]name[/code] in [code]node_type[/code].
+				Does nothing if the [code]value[/code] type does not match [code]data_type[/code].
+				Creates [code]node_type[/code] if the theme does not have it.
 			</description>
 		</method>
 	</methods>
@@ -344,5 +532,23 @@
 		</member>
 	</members>
 	<constants>
+		<constant name="DATA_TYPE_COLOR" value="0" enum="DataType">
+			Theme's [Color] item type.
+		</constant>
+		<constant name="DATA_TYPE_CONSTANT" value="1" enum="DataType">
+			Theme's constant item type.
+		</constant>
+		<constant name="DATA_TYPE_FONT" value="2" enum="DataType">
+			Theme's [Font] item type.
+		</constant>
+		<constant name="DATA_TYPE_ICON" value="3" enum="DataType">
+			Theme's icon [Texture] item type.
+		</constant>
+		<constant name="DATA_TYPE_STYLEBOX" value="4" enum="DataType">
+			Theme's [StyleBox] item type.
+		</constant>
+		<constant name="DATA_TYPE_MAX" value="5" enum="DataType">
+			Maximum value for the DataType enum.
+		</constant>
 	</constants>
 </class>

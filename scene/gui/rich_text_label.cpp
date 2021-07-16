@@ -33,8 +33,13 @@
 #include "core/math/math_defs.h"
 #include "core/os/keyboard.h"
 #include "core/os/os.h"
-#include "modules/regex/regex.h"
 #include "scene/scene_string_names.h"
+
+#include "modules/modules_enabled.gen.h"
+#ifdef MODULE_REGEX_ENABLED
+#include "modules/regex/regex.h"
+#endif
+
 #ifdef TOOLS_ENABLED
 #include "editor/editor_scale.h"
 #endif
@@ -386,12 +391,14 @@ int RichTextLabel::_process_line(ItemFrame *p_frame, const Vector2 &p_ofs, int &
 					l.char_count += text->text.length();
 				}
 
+				bool just_breaked_in_middle = false;
 				rchar = 0;
 				FontDrawer drawer(font, Color(1, 1, 1));
 				while (*c) {
 					int end = 0;
 					int w = 0;
 					int fw = 0;
+					bool was_separatable = false;
 
 					lh = 0;
 
@@ -409,6 +416,25 @@ int RichTextLabel::_process_line(ItemFrame *p_frame, const Vector2 &p_ofs, int &
 						if (end > 0 && w + cw + begin > p_width) {
 							break; //don't allow lines longer than assigned width
 						}
+
+						// For info about the unicode range, see Label::regenerate_word_cache.
+						const CharType current = c[end];
+						const bool separatable = (current >= 0x2E08 && current <= 0x9FFF) || // CJK scripts and symbols.
+												 (current >= 0xAC00 && current <= 0xD7FF) || // Hangul Syllables and Hangul Jamo Extended-B.
+												 (current >= 0xF900 && current <= 0xFAFF) || // CJK Compatibility Ideographs.
+												 (current >= 0xFE30 && current <= 0xFE4F) || // CJK Compatibility Forms.
+												 (current >= 0xFF65 && current <= 0xFF9F) || // Halfwidth forms of katakana
+												 (current >= 0xFFA0 && current <= 0xFFDC) || // Halfwidth forms of compatibility jamo characters for Hangul
+												 (current >= 0x20000 && current <= 0x2FA1F) || // CJK Unified Ideographs Extension B ~ F and CJK Compatibility Ideographs Supplement.
+												 (current >= 0x30000 && current <= 0x3134F); // CJK Unified Ideographs Extension G.
+						const bool long_separatable = separatable && (wofs - backtrack + w + cw > p_width);
+						const bool separation_changed = end > 0 && was_separatable != separatable;
+						if (!just_breaked_in_middle && (long_separatable || separation_changed)) {
+							just_breaked_in_middle = true;
+							break;
+						}
+						was_separatable = separatable;
+						just_breaked_in_middle = false;
 
 						w += cw;
 						fw += cw;
@@ -959,16 +985,13 @@ void RichTextLabel::_notification(int p_what) {
 			update();
 
 		} break;
+		case NOTIFICATION_THEME_CHANGED:
 		case NOTIFICATION_ENTER_TREE: {
 			if (bbcode != "") {
 				set_bbcode(bbcode);
 			}
 
 			main->first_invalid_line = 0; //invalidate ALL
-			update();
-
-		} break;
-		case NOTIFICATION_THEME_CHANGED: {
 			update();
 
 		} break;
@@ -1022,10 +1045,11 @@ void RichTextLabel::_notification(int p_what) {
 			}
 		} break;
 		case NOTIFICATION_INTERNAL_PROCESS: {
-			float dt = get_process_delta_time();
-
-			_update_fx(main, dt);
-			update();
+			if (is_visible_in_tree()) {
+				float dt = get_process_delta_time();
+				_update_fx(main, dt);
+				update();
+			}
 		}
 	}
 }
@@ -2462,13 +2486,19 @@ bool RichTextLabel::search(const String &p_string, bool p_from_selection, bool p
 
 	if (p_from_selection && selection.active) {
 		it = selection.to;
-		charidx = selection.to_char + 1;
+		charidx = p_search_previous ? selection.from_char - 1 : selection.to_char + 1;
+	}
+
+	if (charidx == -1) {
+		// At beginning of line and searching backwards
+		it = _get_prev_item(it, true);
 	}
 
 	while (it) {
 		if (it->type == ITEM_TEXT) {
 			ItemText *t = static_cast<ItemText *>(it);
-			int sp = t->text.findn(p_string, charidx);
+			int sp = p_search_previous ? t->text.rfindn(p_string, charidx) : t->text.findn(p_string, charidx);
+
 			if (sp != -1) {
 				selection.from = it;
 				selection.from_char = sp;
@@ -2503,10 +2533,11 @@ bool RichTextLabel::search(const String &p_string, bool p_from_selection, bool p
 
 		if (p_search_previous) {
 			it = _get_prev_item(it, true);
+			charidx = -1;
 		} else {
 			it = _get_next_item(it, true);
+			charidx = 0;
 		}
-		charidx = 0;
 	}
 
 	return false;
@@ -2874,6 +2905,7 @@ Dictionary RichTextLabel::parse_expressions_for_values(Vector<String> p_expressi
 
 		Vector<String> values = parts[1].split(",", false);
 
+#ifdef MODULE_REGEX_ENABLED
 		RegEx color;
 		color.compile("^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$");
 		RegEx nodepath;
@@ -2907,6 +2939,7 @@ Dictionary RichTextLabel::parse_expressions_for_values(Vector<String> p_expressi
 				a.append(values[j]);
 			}
 		}
+#endif
 
 		if (values.size() > 1) {
 			d[key] = a;

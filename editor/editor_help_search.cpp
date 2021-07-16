@@ -296,7 +296,7 @@ bool EditorHelpSearch::Runner::_slice() {
 		case PHASE_MAX:
 			return true;
 		default:
-			WARN_PRINTS("Invalid or unhandled phase in EditorHelpSearch::Runner, aborting search.");
+			WARN_PRINT("Invalid or unhandled phase in EditorHelpSearch::Runner, aborting search.");
 			return true;
 	};
 

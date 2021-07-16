@@ -1,4 +1,4 @@
-// Copyright 2009-2020 Intel Corporation
+// Copyright 2009-2021 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
 #pragma once
@@ -6,6 +6,12 @@
 #include "default.h"
 #include "geometry.h"
 #include "buffer.h"
+
+#include "../subdiv/bezier_curve.h"
+#include "../subdiv/hermite_curve.h"
+#include "../subdiv/bspline_curve.h"
+#include "../subdiv/catmullrom_curve.h"
+#include "../subdiv/linear_bezier_patch.h"
 
 namespace embree
 {
@@ -336,6 +342,347 @@ namespace embree
     int tessellationRate;                   //!< tessellation rate for flat curve
     float maxRadiusScale = 1.0;             //!< maximal min-width scaling of curve radii
   };
+
+  namespace isa
+  {
+    
+  template<template<typename Ty> class Curve>
+  struct CurveGeometryInterface : public CurveGeometry
+  {
+    typedef Curve<Vec3ff> Curve3ff;
+    typedef Curve<Vec3fa> Curve3fa;
+    
+    CurveGeometryInterface (Device* device, Geometry::GType gtype)
+      : CurveGeometry(device,gtype) {}
+    
+    __forceinline const Curve3ff getCurveScaledRadius(size_t i, size_t itime = 0) const 
+    {
+      const unsigned int index = curve(i);
+      Vec3ff v0 = vertex(index+0,itime);
+      Vec3ff v1 = vertex(index+1,itime);
+      Vec3ff v2 = vertex(index+2,itime);
+      Vec3ff v3 = vertex(index+3,itime);
+      v0.w *= maxRadiusScale;
+      v1.w *= maxRadiusScale;
+      v2.w *= maxRadiusScale;
+      v3.w *= maxRadiusScale;
+      return Curve3ff (v0,v1,v2,v3);
+    }
+    
+    __forceinline const Curve3ff getCurveScaledRadius(const LinearSpace3fa& space, size_t i, size_t itime = 0) const 
+    {
+      const unsigned int index = curve(i);
+      const Vec3ff v0 = vertex(index+0,itime);
+      const Vec3ff v1 = vertex(index+1,itime);
+      const Vec3ff v2 = vertex(index+2,itime);
+      const Vec3ff v3 = vertex(index+3,itime);
+      const Vec3ff w0(xfmPoint(space,(Vec3fa)v0), maxRadiusScale*v0.w);
+      const Vec3ff w1(xfmPoint(space,(Vec3fa)v1), maxRadiusScale*v1.w);
+      const Vec3ff w2(xfmPoint(space,(Vec3fa)v2), maxRadiusScale*v2.w);
+      const Vec3ff w3(xfmPoint(space,(Vec3fa)v3), maxRadiusScale*v3.w);
+      return Curve3ff(w0,w1,w2,w3);
+    }
+    
+    __forceinline const Curve3ff getCurveScaledRadius(const Vec3fa& ofs, const float scale, const float r_scale0, const LinearSpace3fa& space, size_t i, size_t itime = 0) const 
+    {
+      const float r_scale = r_scale0*scale;
+      const unsigned int index = curve(i);
+      const Vec3ff v0 = vertex(index+0,itime);
+      const Vec3ff v1 = vertex(index+1,itime);
+      const Vec3ff v2 = vertex(index+2,itime);
+      const Vec3ff v3 = vertex(index+3,itime);
+      const Vec3ff w0(xfmPoint(space,((Vec3fa)v0-ofs)*Vec3fa(scale)), maxRadiusScale*v0.w*r_scale);
+      const Vec3ff w1(xfmPoint(space,((Vec3fa)v1-ofs)*Vec3fa(scale)), maxRadiusScale*v1.w*r_scale);
+      const Vec3ff w2(xfmPoint(space,((Vec3fa)v2-ofs)*Vec3fa(scale)), maxRadiusScale*v2.w*r_scale);
+      const Vec3ff w3(xfmPoint(space,((Vec3fa)v3-ofs)*Vec3fa(scale)), maxRadiusScale*v3.w*r_scale);
+      return Curve3ff(w0,w1,w2,w3);
+    }
+    
+    __forceinline const Curve3fa getNormalCurve(size_t i, size_t itime = 0) const 
+    {
+      const unsigned int index = curve(i);
+      const Vec3fa n0 = normal(index+0,itime);
+      const Vec3fa n1 = normal(index+1,itime);
+      const Vec3fa n2 = normal(index+2,itime);
+      const Vec3fa n3 = normal(index+3,itime);
+      return Curve3fa (n0,n1,n2,n3);
+    }
+    
+    __forceinline const TensorLinearCubicBezierSurface3fa getOrientedCurveScaledRadius(size_t i, size_t itime = 0) const 
+    {
+      const Curve3ff center = getCurveScaledRadius(i,itime);
+      const Curve3fa normal = getNormalCurve(i,itime);
+      const TensorLinearCubicBezierSurface3fa ocurve = TensorLinearCubicBezierSurface3fa::fromCenterAndNormalCurve(center,normal);
+      return ocurve;
+    }
+    
+    __forceinline const TensorLinearCubicBezierSurface3fa getOrientedCurveScaledRadius(const LinearSpace3fa& space, size_t i, size_t itime = 0) const {
+      return getOrientedCurveScaledRadius(i,itime).xfm(space);
+    }
+    
+    __forceinline const TensorLinearCubicBezierSurface3fa getOrientedCurveScaledRadius(const Vec3fa& ofs, const float scale, const LinearSpace3fa& space, size_t i, size_t itime = 0) const {
+      return getOrientedCurveScaledRadius(i,itime).xfm(space,ofs,scale);
+    }
+    
+    /*! check if the i'th primitive is valid at the itime'th time step */
+    __forceinline bool valid(Geometry::GType ctype, size_t i, const range<size_t>& itime_range) const
+    {
+      const unsigned int index = curve(i);
+      if (index+3 >= numVertices()) return false;
+      
+      for (size_t itime = itime_range.begin(); itime <= itime_range.end(); itime++)
+      {
+        const float r0 = radius(index+0,itime);
+        const float r1 = radius(index+1,itime);
+        const float r2 = radius(index+2,itime);
+        const float r3 = radius(index+3,itime);
+        if (!isvalid(r0) || !isvalid(r1) || !isvalid(r2) || !isvalid(r3))
+          return false;
+        
+        const Vec3fa v0 = vertex(index+0,itime);
+        const Vec3fa v1 = vertex(index+1,itime);
+        const Vec3fa v2 = vertex(index+2,itime);
+        const Vec3fa v3 = vertex(index+3,itime);
+        if (!isvalid(v0) || !isvalid(v1) || !isvalid(v2) || !isvalid(v3))
+          return false;
+        
+        if (ctype == Geometry::GTY_SUBTYPE_ORIENTED_CURVE)
+        {
+          const Vec3fa n0 = normal(index+0,itime);
+          const Vec3fa n1 = normal(index+1,itime);
+          if (!isvalid(n0) || !isvalid(n1))
+            return false;
+        }
+      }
+      
+      return true;
+    }
+
+    template<int N>
+    void interpolate_impl(const RTCInterpolateArguments* const args)
+    {
+      unsigned int primID = args->primID;
+      float u = args->u;
+      RTCBufferType bufferType = args->bufferType;
+      unsigned int bufferSlot = args->bufferSlot;
+      float* P = args->P;
+      float* dPdu = args->dPdu;
+      float* ddPdudu = args->ddPdudu;
+      unsigned int valueCount = args->valueCount;
+      
+      /* calculate base pointer and stride */
+      assert((bufferType == RTC_BUFFER_TYPE_VERTEX && bufferSlot < numTimeSteps) ||
+             (bufferType == RTC_BUFFER_TYPE_VERTEX_ATTRIBUTE && bufferSlot <= vertexAttribs.size()));
+      const char* src = nullptr; 
+      size_t stride = 0;
+      if (bufferType == RTC_BUFFER_TYPE_VERTEX_ATTRIBUTE) {
+        src    = vertexAttribs[bufferSlot].getPtr();
+        stride = vertexAttribs[bufferSlot].getStride();
+      } else {
+        src    = vertices[bufferSlot].getPtr();
+        stride = vertices[bufferSlot].getStride();
+      }
+      
+      for (unsigned int i=0; i<valueCount; i+=N)
+      {
+        size_t ofs = i*sizeof(float);
+        const size_t index = curves[primID];
+        const vbool<N> valid = vint<N>((int)i)+vint<N>(step) < vint<N>((int)valueCount);
+        const vfloat<N> p0 = mem<vfloat<N>>::loadu(valid,(float*)&src[(index+0)*stride+ofs]);
+        const vfloat<N> p1 = mem<vfloat<N>>::loadu(valid,(float*)&src[(index+1)*stride+ofs]);
+        const vfloat<N> p2 = mem<vfloat<N>>::loadu(valid,(float*)&src[(index+2)*stride+ofs]);
+        const vfloat<N> p3 = mem<vfloat<N>>::loadu(valid,(float*)&src[(index+3)*stride+ofs]);
+        
+        const Curve<vfloat<N>> curve(p0,p1,p2,p3);
+        if (P      ) mem<vfloat<N>>::storeu(valid,P+i,      curve.eval(u));
+        if (dPdu   ) mem<vfloat<N>>::storeu(valid,dPdu+i,   curve.eval_du(u));
+        if (ddPdudu) mem<vfloat<N>>::storeu(valid,ddPdudu+i,curve.eval_dudu(u));
+      }
+    }
+
+    void interpolate(const RTCInterpolateArguments* const args) {
+      interpolate_impl<4>(args);
+    }
+  };
+  
+  template<template<typename Ty> class Curve>
+  struct HermiteCurveGeometryInterface : public CurveGeometry
+  {
+    typedef Curve<Vec3ff> HermiteCurve3ff;
+    typedef Curve<Vec3fa> HermiteCurve3fa;
+    
+    HermiteCurveGeometryInterface (Device* device, Geometry::GType gtype)
+      : CurveGeometry(device,gtype) {}
+    
+    __forceinline const HermiteCurve3ff getCurveScaledRadius(size_t i, size_t itime = 0) const 
+    {
+      const unsigned int index = curve(i);
+      Vec3ff v0 = vertex(index+0,itime);
+      Vec3ff v1 = vertex(index+1,itime);
+      Vec3ff t0 = tangent(index+0,itime);
+      Vec3ff t1 = tangent(index+1,itime);
+      v0.w *= maxRadiusScale;
+      v1.w *= maxRadiusScale;
+      t0.w *= maxRadiusScale;
+      t1.w *= maxRadiusScale;
+      return HermiteCurve3ff (v0,t0,v1,t1);
+    }
+    
+    __forceinline const HermiteCurve3ff getCurveScaledRadius(const LinearSpace3fa& space, size_t i, size_t itime = 0) const 
+    {
+      const unsigned int index = curve(i);
+      const Vec3ff v0 = vertex(index+0,itime);
+      const Vec3ff v1 = vertex(index+1,itime);
+      const Vec3ff t0 = tangent(index+0,itime);
+      const Vec3ff t1 = tangent(index+1,itime);
+      const Vec3ff V0(xfmPoint(space,(Vec3fa)v0),maxRadiusScale*v0.w);
+      const Vec3ff V1(xfmPoint(space,(Vec3fa)v1),maxRadiusScale*v1.w);
+      const Vec3ff T0(xfmVector(space,(Vec3fa)t0),maxRadiusScale*t0.w);
+      const Vec3ff T1(xfmVector(space,(Vec3fa)t1),maxRadiusScale*t1.w);
+      return HermiteCurve3ff(V0,T0,V1,T1);
+    }
+    
+    __forceinline const HermiteCurve3ff getCurveScaledRadius(const Vec3fa& ofs, const float scale, const float r_scale0, const LinearSpace3fa& space, size_t i, size_t itime = 0) const 
+    {
+      const float r_scale = r_scale0*scale;
+      const unsigned int index = curve(i);
+      const Vec3ff v0 = vertex(index+0,itime);
+      const Vec3ff v1 = vertex(index+1,itime);
+      const Vec3ff t0 = tangent(index+0,itime);
+      const Vec3ff t1 = tangent(index+1,itime);
+      const Vec3ff V0(xfmPoint(space,(v0-ofs)*Vec3fa(scale)), maxRadiusScale*v0.w*r_scale);
+      const Vec3ff V1(xfmPoint(space,(v1-ofs)*Vec3fa(scale)), maxRadiusScale*v1.w*r_scale);
+      const Vec3ff T0(xfmVector(space,t0*Vec3fa(scale)), maxRadiusScale*t0.w*r_scale);
+      const Vec3ff T1(xfmVector(space,t1*Vec3fa(scale)), maxRadiusScale*t1.w*r_scale);
+      return HermiteCurve3ff(V0,T0,V1,T1);
+    }
+    
+    __forceinline const HermiteCurve3fa getNormalCurve(size_t i, size_t itime = 0) const 
+    {
+      const unsigned int index = curve(i);
+      const Vec3fa n0 = normal(index+0,itime);
+      const Vec3fa n1 = normal(index+1,itime);
+      const Vec3fa dn0 = dnormal(index+0,itime);
+      const Vec3fa dn1 = dnormal(index+1,itime);
+      return HermiteCurve3fa (n0,dn0,n1,dn1);
+    }
+    
+    __forceinline const TensorLinearCubicBezierSurface3fa getOrientedCurveScaledRadius(size_t i, size_t itime = 0) const 
+    {
+      const HermiteCurve3ff center = getCurveScaledRadius(i,itime);
+      const HermiteCurve3fa normal = getNormalCurve(i,itime);
+      const TensorLinearCubicBezierSurface3fa ocurve = TensorLinearCubicBezierSurface3fa::fromCenterAndNormalCurve(center,normal);
+      return ocurve;
+    }
+    
+    __forceinline const TensorLinearCubicBezierSurface3fa getOrientedCurveScaledRadius(const LinearSpace3fa& space, size_t i, size_t itime = 0) const {
+      return getOrientedCurveScaledRadius(i,itime).xfm(space);
+    }
+    
+    __forceinline const TensorLinearCubicBezierSurface3fa getOrientedCurveScaledRadius(const Vec3fa& ofs, const float scale, const LinearSpace3fa& space, size_t i, size_t itime = 0) const {
+      return getOrientedCurveScaledRadius(i,itime).xfm(space,ofs,scale);
+    }
+    
+    /*! check if the i'th primitive is valid at the itime'th time step */
+    __forceinline bool valid(Geometry::GType ctype, size_t i, const range<size_t>& itime_range) const
+    {
+      const unsigned int index = curve(i);
+      if (index+1 >= numVertices()) return false;
+      
+      for (size_t itime = itime_range.begin(); itime <= itime_range.end(); itime++)
+      {
+        const Vec3ff v0 = vertex(index+0,itime);
+        const Vec3ff v1 = vertex(index+1,itime);
+        if (!isvalid4(v0) || !isvalid4(v1))
+          return false;
+        
+        const Vec3ff t0 = tangent(index+0,itime);
+        const Vec3ff t1 = tangent(index+1,itime);
+        if (!isvalid4(t0) || !isvalid4(t1))
+          return false;
+        
+        if (ctype == Geometry::GTY_SUBTYPE_ORIENTED_CURVE)
+        {
+          const Vec3fa n0 = normal(index+0,itime);
+          const Vec3fa n1 = normal(index+1,itime);
+          if (!isvalid(n0) || !isvalid(n1))
+            return false;
+          
+          const Vec3fa dn0 = dnormal(index+0,itime);
+          const Vec3fa dn1 = dnormal(index+1,itime);
+          if (!isvalid(dn0) || !isvalid(dn1))
+            return false;
+        }
+      }
+      
+      return true;
+    }
+
+    template<int N>
+    void interpolate_impl(const RTCInterpolateArguments* const args)
+    {
+      unsigned int primID = args->primID;
+      float u = args->u;
+      RTCBufferType bufferType = args->bufferType;
+      unsigned int bufferSlot = args->bufferSlot;
+      float* P = args->P;
+      float* dPdu = args->dPdu;
+      float* ddPdudu = args->ddPdudu;
+      unsigned int valueCount = args->valueCount;
+      
+      /* we interpolate vertex attributes linearly for hermite basis */
+      if (bufferType == RTC_BUFFER_TYPE_VERTEX_ATTRIBUTE)
+      {
+        assert(bufferSlot <= vertexAttribs.size());
+        const char* vsrc = vertexAttribs[bufferSlot].getPtr();
+        const size_t vstride = vertexAttribs[bufferSlot].getStride();
+        
+        for (unsigned int i=0; i<valueCount; i+=N)
+        {
+          const size_t ofs = i*sizeof(float);
+          const size_t index = curves[primID];
+          const vbool<N> valid = vint<N>((int)i)+vint<N>(step) < vint<N>((int)valueCount);
+          const vfloat<N> p0 = mem<vfloat<N>>::loadu(valid,(float*)&vsrc[(index+0)*vstride+ofs]);
+          const vfloat<N> p1 = mem<vfloat<N>>::loadu(valid,(float*)&vsrc[(index+1)*vstride+ofs]);
+          
+          if (P      ) mem<vfloat<N>>::storeu(valid,P+i,      madd(1.0f-u,p0,u*p1));
+          if (dPdu   ) mem<vfloat<N>>::storeu(valid,dPdu+i,   p1-p0);
+          if (ddPdudu) mem<vfloat<N>>::storeu(valid,ddPdudu+i,vfloat<N>(zero));
+        }
+      }
+      
+      /* interpolation for vertex buffers */
+      else
+      {
+        assert(bufferSlot < numTimeSteps);
+        const char* vsrc = vertices[bufferSlot].getPtr();
+        const char* tsrc = tangents[bufferSlot].getPtr();
+        const size_t vstride = vertices[bufferSlot].getStride();
+        const size_t tstride = vertices[bufferSlot].getStride();
+        
+        for (unsigned int i=0; i<valueCount; i+=N)
+        {
+          const size_t ofs = i*sizeof(float);
+          const size_t index = curves[primID];
+          const vbool<N> valid = vint<N>((int)i)+vint<N>(step) < vint<N>((int)valueCount);
+          const vfloat<N> p0 = mem<vfloat<N>>::loadu(valid,(float*)&vsrc[(index+0)*vstride+ofs]);
+          const vfloat<N> p1 = mem<vfloat<N>>::loadu(valid,(float*)&vsrc[(index+1)*vstride+ofs]);
+          const vfloat<N> t0 = mem<vfloat<N>>::loadu(valid,(float*)&tsrc[(index+0)*tstride+ofs]);
+          const vfloat<N> t1 = mem<vfloat<N>>::loadu(valid,(float*)&tsrc[(index+1)*tstride+ofs]);
+          
+          const HermiteCurveT<vfloat<N>> curve(p0,t0,p1,t1);
+          if (P      ) mem<vfloat<N>>::storeu(valid,P+i,      curve.eval(u));
+          if (dPdu   ) mem<vfloat<N>>::storeu(valid,dPdu+i,   curve.eval_du(u));
+          if (ddPdudu) mem<vfloat<N>>::storeu(valid,ddPdudu+i,curve.eval_dudu(u));
+        }
+      }
+    }
+
+    void interpolate(const RTCInterpolateArguments* const args) {
+      interpolate_impl<4>(args);
+    }
+  };
+  }
   
   DECLARE_ISA_FUNCTION(CurveGeometry*, createCurves, Device* COMMA Geometry::GType);
 }

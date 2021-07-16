@@ -192,7 +192,7 @@ bool ProjectSettings::_get(const StringName &p_name, Variant &r_ret) const {
 		name = feature_overrides[name];
 	}
 	if (!props.has(name)) {
-		WARN_PRINTS("Property not found: " + String(name));
+		WARN_PRINT("Property not found: " + String(name));
 		return false;
 	}
 	r_ret = props[name].variant;
@@ -565,7 +565,7 @@ Error ProjectSettings::_load_settings_text(const String &p_path) {
 			last_save_time = FileAccess::get_modified_time(get_resource_path().plus_file("project.godot"));
 			return OK;
 		} else if (err != OK) {
-			ERR_PRINTS("Error parsing " + p_path + " at line " + itos(lines) + ": " + error_text + " File might be corrupted.");
+			ERR_PRINT("Error parsing " + p_path + " at line " + itos(lines) + ": " + error_text + " File might be corrupted.");
 			memdelete(f);
 			return err;
 		}
@@ -661,8 +661,7 @@ Error ProjectSettings::_save_settings_binary(const String &p_file, const Map<Str
 		file->store_32(count + 1);
 		//store how many properties are saved, add one for custom featuers, which must always go first
 		String key = CoreStringNames::get_singleton()->_custom_features;
-		file->store_32(key.length());
-		file->store_string(key);
+		file->store_pascal_string(key);
 
 		int len;
 		err = encode_variant(p_custom_features, nullptr, len, false);
@@ -699,8 +698,7 @@ Error ProjectSettings::_save_settings_binary(const String &p_file, const Map<Str
 				value = get(key);
 			}
 
-			file->store_32(key.length());
-			file->store_string(key);
+			file->store_pascal_string(key);
 
 			int len;
 			err = encode_variant(value, nullptr, len, true);

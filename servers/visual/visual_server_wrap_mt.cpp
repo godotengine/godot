@@ -140,6 +140,10 @@ void VisualServerWrapMT::finish() {
 	canvas_item_free_cached_ids();
 	canvas_light_occluder_free_cached_ids();
 	canvas_occluder_polygon_free_cached_ids();
+	room_free_cached_ids();
+	roomgroup_free_cached_ids();
+	portal_free_cached_ids();
+	ghost_free_cached_ids();
 }
 
 void VisualServerWrapMT::set_use_vsync_callback(bool p_enable) {

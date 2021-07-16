@@ -325,13 +325,14 @@ FileType DirAccessWindows::get_file_type(const String& p_file) const {
 	return (attr&FILE_ATTRIBUTE_DIRECTORY)?FILE_TYPE_
 }
 */
-size_t DirAccessWindows::get_space_left() {
+
+uint64_t DirAccessWindows::get_space_left() {
 	uint64_t bytes = 0;
 	if (!GetDiskFreeSpaceEx(NULL, (PULARGE_INTEGER)&bytes, NULL, NULL))
 		return 0;
 
 	//this is either 0 or a value in bytes.
-	return (size_t)bytes;
+	return bytes;
 }
 
 String DirAccessWindows::get_filesystem_type() const {

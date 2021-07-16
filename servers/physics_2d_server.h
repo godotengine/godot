@@ -92,8 +92,6 @@ public:
 	Physics2DDirectBodyState();
 };
 
-class Physics2DShapeQueryResult;
-
 //used for script
 class Physics2DShapeQueryParameters : public Reference {
 	GDCLASS(Physics2DShapeQueryParameters, Reference);
@@ -125,8 +123,8 @@ public:
 	void set_margin(float p_margin);
 	float get_margin() const;
 
-	void set_collision_mask(int p_collision_mask);
-	int get_collision_mask() const;
+	void set_collision_mask(uint32_t p_mask);
+	uint32_t get_collision_mask() const;
 
 	void set_collide_with_bodies(bool p_enable);
 	bool is_collide_with_bodies_enabled() const;
@@ -160,9 +158,9 @@ public:
 		Vector2 position;
 		Vector2 normal;
 		RID rid;
-		ObjectID collider_id;
-		Object *collider;
-		int shape;
+		ObjectID collider_id = 0;
+		Object *collider = nullptr;
+		int shape = 0;
 		Variant metadata;
 	};
 
@@ -170,9 +168,9 @@ public:
 
 	struct ShapeResult {
 		RID rid;
-		ObjectID collider_id;
-		Object *collider;
-		int shape;
+		ObjectID collider_id = 0;
+		Object *collider = nullptr;
+		int shape = 0;
 		Variant metadata;
 	};
 
@@ -189,8 +187,8 @@ public:
 		Vector2 point;
 		Vector2 normal;
 		RID rid;
-		ObjectID collider_id;
-		int shape;
+		ObjectID collider_id = 0;
+		int shape = 0;
 		Vector2 linear_velocity; //velocity at contact point
 		Variant metadata;
 	};
@@ -200,26 +198,6 @@ public:
 	Physics2DDirectSpaceState();
 };
 
-class Physics2DShapeQueryResult : public Reference {
-	GDCLASS(Physics2DShapeQueryResult, Reference);
-
-	Vector<Physics2DDirectSpaceState::ShapeResult> result;
-
-	friend class Physics2DDirectSpaceState;
-
-protected:
-	static void _bind_methods();
-
-public:
-	int get_result_count() const;
-	RID get_result_rid(int p_idx) const;
-	ObjectID get_result_object_id(int p_idx) const;
-	Object *get_result_object(int p_idx) const;
-	int get_result_object_shape(int p_idx) const;
-
-	Physics2DShapeQueryResult();
-};
-
 class Physics2DTestMotionResult;
 
 class Physics2DServer : public Object {
@@ -227,7 +205,7 @@ class Physics2DServer : public Object {
 
 	static Physics2DServer *singleton;
 
-	virtual bool _body_test_motion(RID p_body, const Transform2D &p_from, const Vector2 &p_motion, bool p_infinite_inertia, float p_margin = 0.08, const Ref<Physics2DTestMotionResult> &p_result = Ref<Physics2DTestMotionResult>());
+	virtual bool _body_test_motion(RID p_body, const Transform2D &p_from, const Vector2 &p_motion, bool p_infinite_inertia, float p_margin = 0.08, const Ref<Physics2DTestMotionResult> &p_result = Ref<Physics2DTestMotionResult>(), bool p_exclude_raycast_shapes = true, const Vector<RID> &p_exclude = Vector<RID>());
 
 protected:
 	static void _bind_methods();
@@ -491,20 +469,14 @@ public:
 		Vector2 collision_point;
 		Vector2 collision_normal;
 		Vector2 collider_velocity;
-		int collision_local_shape;
-		ObjectID collider_id;
+		int collision_local_shape = 0;
+		ObjectID collider_id = 0;
 		RID collider;
-		int collider_shape;
+		int collider_shape = 0;
 		Variant collider_metadata;
-
-		MotionResult() {
-			collision_local_shape = 0;
-			collider_shape = 0;
-			collider_id = 0;
-		}
 	};
 
-	virtual bool body_test_motion(RID p_body, const Transform2D &p_from, const Vector2 &p_motion, bool p_infinite_inertia, float p_margin = 0.001, MotionResult *r_result = nullptr, bool p_exclude_raycast_shapes = true) = 0;
+	virtual bool body_test_motion(RID p_body, const Transform2D &p_from, const Vector2 &p_motion, bool p_infinite_inertia, float p_margin = 0.08, MotionResult *r_result = nullptr, bool p_exclude_raycast_shapes = true, const Set<RID> &p_exclude = Set<RID>()) = 0;
 
 	struct SeparationResult {
 		float collision_depth;
@@ -518,7 +490,7 @@ public:
 		Variant collider_metadata;
 	};
 
-	virtual int body_test_ray_separation(RID p_body, const Transform2D &p_transform, bool p_infinite_inertia, Vector2 &r_recover_motion, SeparationResult *r_results, int p_result_max, float p_margin = 0.001) = 0;
+	virtual int body_test_ray_separation(RID p_body, const Transform2D &p_transform, bool p_infinite_inertia, Vector2 &r_recover_motion, SeparationResult *r_results, int p_result_max, float p_margin = 0.08) = 0;
 
 	/* JOINT API */
 
@@ -583,6 +555,8 @@ public:
 
 	virtual bool is_flushing_queries() const = 0;
 
+	virtual void set_collision_iterations(int p_iterations) = 0;
+
 	enum ProcessInfo {
 
 		INFO_ACTIVE_OBJECTS,
@@ -600,7 +574,7 @@ class Physics2DTestMotionResult : public Reference {
 	GDCLASS(Physics2DTestMotionResult, Reference);
 
 	Physics2DServer::MotionResult result;
-	bool colliding;
+	bool colliding = false;
 	friend class Physics2DServer;
 
 protected:
@@ -620,8 +594,6 @@ public:
 	RID get_collider_rid() const;
 	Object *get_collider() const;
 	int get_collider_shape() const;
-
-	Physics2DTestMotionResult();
 };
 
 typedef Physics2DServer *(*CreatePhysics2DServerCallback)();

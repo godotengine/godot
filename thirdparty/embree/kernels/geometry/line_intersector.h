@@ -1,4 +1,4 @@
-// Copyright 2009-2020 Intel Corporation
+// Copyright 2009-2021 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
 #pragma once
@@ -23,6 +23,10 @@ namespace embree
         __forceinline Vec2f uv (const size_t i) const { return Vec2f(vu[i],vv[i]); }
         __forceinline float t  (const size_t i) const { return vt[i]; }
         __forceinline Vec3fa Ng(const size_t i) const { return Vec3fa(vNg.x[i],vNg.y[i],vNg.z[i]); }
+
+        __forceinline Vec2vf<M> uv() const { return Vec2vf<M>(vu,vv); }
+        __forceinline vfloat<M> t () const { return vt; }
+        __forceinline Vec3vf<M> Ng() const { return vNg; }
         
       public:
         vfloat<M> vu;
@@ -36,7 +40,7 @@ namespace embree
       {
         typedef CurvePrecalculations1 Precalculations;
         
-        template<typename Epilog>
+        template<typename Ray, typename Epilog>
         static __forceinline bool intersect(const vbool<M>& valid_i,
                                             Ray& ray,
                                             IntersectContext* context,
@@ -51,8 +55,8 @@ namespace embree
           LinearSpace3<Vec3vf<M>> ray_space = pre.ray_space;
 
           const Vec3vf<M> ray_org ((Vec3fa)ray.org);
-          const Vec4vf<M> v0 = enlargeRadiusToMinWidth(context,geom,ray_org,v0i);
-          const Vec4vf<M> v1 = enlargeRadiusToMinWidth(context,geom,ray_org,v1i);
+          const Vec4vf<M> v0 = enlargeRadiusToMinWidth<M>(context,geom,ray_org,v0i);
+          const Vec4vf<M> v1 = enlargeRadiusToMinWidth<M>(context,geom,ray_org,v1i);
           
           Vec4vf<M> p0(xfmVector(ray_space,v0.xyz()-ray_org), v0.w);
           Vec4vf<M> p1(xfmVector(ray_space,v1.xyz()-ray_org), v1.w);
@@ -105,8 +109,8 @@ namespace embree
           const Vec3vf<M> ray_org(ray.org.x[k],ray.org.y[k],ray.org.z[k]);
           const Vec3vf<M> ray_dir(ray.dir.x[k],ray.dir.y[k],ray.dir.z[k]);
 
-          const Vec4vf<M> v0 = enlargeRadiusToMinWidth(context,geom,ray_org,v0i);
-          const Vec4vf<M> v1 = enlargeRadiusToMinWidth(context,geom,ray_org,v1i);
+          const Vec4vf<M> v0 = enlargeRadiusToMinWidth<M>(context,geom,ray_org,v0i);
+          const Vec4vf<M> v1 = enlargeRadiusToMinWidth<M>(context,geom,ray_org,v1i);
           
           Vec4vf<M> p0(xfmVector(ray_space,v0.xyz()-ray_org), v0.w);
           Vec4vf<M> p1(xfmVector(ray_space,v1.xyz()-ray_org), v1.w);

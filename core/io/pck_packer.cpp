@@ -138,7 +138,7 @@ Error PCKPacker::flush(bool p_verbose) {
 		FileAccess *src = FileAccess::open(files[i].src_path, FileAccess::READ);
 		uint64_t to_write = files[i].size;
 		while (to_write > 0) {
-			int read = src->get_buffer(buf, MIN(to_write, buf_max));
+			uint64_t read = src->get_buffer(buf, MIN(to_write, buf_max));
 			file->store_buffer(buf, read);
 			to_write -= read;
 		};

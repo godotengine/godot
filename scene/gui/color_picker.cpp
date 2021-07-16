@@ -40,6 +40,8 @@
 #endif
 #include "scene/main/viewport.h"
 
+List<Color> ColorPicker::preset_cache;
+
 void ColorPicker::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
@@ -57,11 +59,17 @@ void ColorPicker::_notification(int p_what) {
 
 #ifdef TOOLS_ENABLED
 			if (Engine::get_singleton()->is_editor_hint()) {
-				PoolColorArray saved_presets = EditorSettings::get_singleton()->get_project_metadata("color_picker", "presets", PoolColorArray());
-
-				for (int i = 0; i < saved_presets.size(); i++) {
-					add_preset(saved_presets[i]);
+				if (preset_cache.empty()) {
+					PoolColorArray saved_presets = EditorSettings::get_singleton()->get_project_metadata("color_picker", "presets", PoolColorArray());
+					for (int i = 0; i < saved_presets.size(); i++) {
+						preset_cache.push_back(saved_presets[i]);
+					}
 				}
+
+				for (int i = 0; i < preset_cache.size(); i++) {
+					presets.push_back(preset_cache[i]);
+				}
+				preset->update();
 			}
 #endif
 		} break;
@@ -287,6 +295,7 @@ void ColorPicker::add_preset(const Color &p_color) {
 		presets.move_to_back(presets.find(p_color));
 	} else {
 		presets.push_back(p_color);
+		preset_cache.push_back(p_color);
 	}
 	preset->update();
 
@@ -301,6 +310,7 @@ void ColorPicker::add_preset(const Color &p_color) {
 void ColorPicker::erase_preset(const Color &p_color) {
 	if (presets.find(p_color)) {
 		presets.erase(presets.find(p_color));
+		preset_cache.erase(preset_cache.find(p_color));
 		preset->update();
 
 #ifdef TOOLS_ENABLED
@@ -391,6 +401,21 @@ void ColorPicker::_update_text_value() {
 
 	text_type->set_visible(visible);
 	c_text->set_visible(visible);
+}
+
+void ColorPicker::_sample_input(const Ref<InputEvent> &p_event) {
+	const Ref<InputEventMouseButton> mb = p_event;
+	if (mb.is_valid() && mb->is_pressed() && mb->get_button_index() == BUTTON_LEFT) {
+		if (display_old_color) {
+			const Rect2 rect_old = Rect2(Point2(), Size2(uv_edit->get_size().width * 0.5, sample->get_size().height * 0.95));
+			if (rect_old.has_point(mb->get_position())) {
+				// Revert to the old color when left-clicking the old color sample.
+				set_pick_color(old_color);
+				//_update_color();
+				emit_signal("color_changed", color);
+			}
+		}
+	}
 }
 
 void ColorPicker::_sample_draw() {
@@ -736,6 +761,7 @@ void ColorPicker::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_text_type_toggled"), &ColorPicker::_text_type_toggled);
 	ClassDB::bind_method(D_METHOD("_add_preset_pressed"), &ColorPicker::_add_preset_pressed);
 	ClassDB::bind_method(D_METHOD("_screen_pick_pressed"), &ColorPicker::_screen_pick_pressed);
+	ClassDB::bind_method(D_METHOD("_sample_input"), &ColorPicker::_sample_input);
 	ClassDB::bind_method(D_METHOD("_sample_draw"), &ColorPicker::_sample_draw);
 	ClassDB::bind_method(D_METHOD("_update_presets"), &ColorPicker::_update_presets);
 	ClassDB::bind_method(D_METHOD("_hsv_draw"), &ColorPicker::_hsv_draw);
@@ -800,6 +826,7 @@ ColorPicker::ColorPicker() :
 	sample = memnew(TextureRect);
 	hb_smpl->add_child(sample);
 	sample->set_h_size_flags(SIZE_EXPAND_FILL);
+	sample->connect("gui_input", this, "_sample_input");
 	sample->connect("draw", this, "_sample_draw");
 
 	btn_pick = memnew(ToolButton);

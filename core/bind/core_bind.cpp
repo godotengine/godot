@@ -105,7 +105,7 @@ PoolStringArray _ResourceLoader::get_dependencies(const String &p_path) {
 
 #ifndef DISABLE_DEPRECATED
 bool _ResourceLoader::has(const String &p_path) {
-	WARN_PRINTS("ResourceLoader.has() is deprecated, please replace it with the equivalent has_cached() or the new exists().");
+	WARN_PRINT("ResourceLoader.has() is deprecated, please replace it with the equivalent has_cached() or the new exists().");
 	return has_cached(p_path);
 }
 #endif // DISABLE_DEPRECATED
@@ -760,7 +760,7 @@ int64_t _OS::get_unix_time_from_datetime(Dictionary datetime) const {
 	unsigned int hour = ((datetime.has(HOUR_KEY)) ? static_cast<unsigned int>(datetime[HOUR_KEY]) : 0);
 	unsigned int day = ((datetime.has(DAY_KEY)) ? static_cast<unsigned int>(datetime[DAY_KEY]) : 1);
 	unsigned int month = ((datetime.has(MONTH_KEY)) ? static_cast<unsigned int>(datetime[MONTH_KEY]) : 1);
-	unsigned int year = ((datetime.has(YEAR_KEY)) ? static_cast<unsigned int>(datetime[YEAR_KEY]) : 0);
+	unsigned int year = ((datetime.has(YEAR_KEY)) ? static_cast<unsigned int>(datetime[YEAR_KEY]) : 1970);
 
 	/// How many days come before each month (0-12)
 	static const unsigned short int DAYS_PAST_THIS_YEAR_TABLE[2][13] = {
@@ -771,15 +771,14 @@ int64_t _OS::get_unix_time_from_datetime(Dictionary datetime) const {
 	};
 
 	ERR_FAIL_COND_V_MSG(second > 59, 0, "Invalid second value of: " + itos(second) + ".");
-
 	ERR_FAIL_COND_V_MSG(minute > 59, 0, "Invalid minute value of: " + itos(minute) + ".");
-
 	ERR_FAIL_COND_V_MSG(hour > 23, 0, "Invalid hour value of: " + itos(hour) + ".");
-
+	ERR_FAIL_COND_V_MSG(year == 0, 0, "Years before 1 AD are not supported. Value passed: " + itos(year) + ".");
 	ERR_FAIL_COND_V_MSG(month > 12 || month == 0, 0, "Invalid month value of: " + itos(month) + ".");
-
 	// Do this check after month is tested as valid
-	ERR_FAIL_COND_V_MSG(day > MONTH_DAYS_TABLE[LEAPYEAR(year)][month - 1] || day == 0, 0, "Invalid day value of '" + itos(day) + "' which is larger than '" + itos(MONTH_DAYS_TABLE[LEAPYEAR(year)][month - 1]) + "' or 0.");
+	unsigned int days_in_month = MONTH_DAYS_TABLE[LEAPYEAR(year)][month - 1];
+	ERR_FAIL_COND_V_MSG(day == 0 || day > days_in_month, 0, "Invalid day value of: " + itos(day) + ". It should be comprised between 1 and " + itos(days_in_month) + " for month " + itos(month) + ".");
+
 	// Calculate all the seconds from months past in this year
 	uint64_t SECONDS_FROM_MONTHS_PAST_THIS_YEAR = DAYS_PAST_THIS_YEAR_TABLE[LEAPYEAR(year)][month - 1] * SECONDS_PER_DAY;
 
@@ -1046,6 +1045,10 @@ String _OS::get_user_data_dir() const {
 	return OS::get_singleton()->get_user_data_dir();
 };
 
+String _OS::get_external_data_dir() const {
+	return OS::get_singleton()->get_external_data_dir();
+}
+
 Error _OS::native_video_play(String p_path, float p_volume, String p_audio_track, String p_subtitle_track) {
 	return OS::get_singleton()->native_video_play(p_path, p_volume, p_audio_track, p_subtitle_track);
 };
@@ -1080,6 +1083,21 @@ void _OS::move_window_to_foreground() {
 
 int64_t _OS::get_native_handle(HandleType p_handle_type) {
 	return (int64_t)OS::get_singleton()->get_native_handle(p_handle_type);
+}
+
+String _OS::get_config_dir() const {
+	// Exposed as `get_config_dir()` instead of `get_config_path()` for consistency with other exposed OS methods.
+	return OS::get_singleton()->get_config_path();
+}
+
+String _OS::get_data_dir() const {
+	// Exposed as `get_data_dir()` instead of `get_data_path()` for consistency with other exposed OS methods.
+	return OS::get_singleton()->get_data_path();
+}
+
+String _OS::get_cache_dir() const {
+	// Exposed as `get_cache_dir()` instead of `get_cache_path()` for consistency with other exposed OS methods.
+	return OS::get_singleton()->get_cache_path();
 }
 
 bool _OS::is_debug_build() const {
@@ -1316,7 +1334,11 @@ void _OS::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_dynamic_memory_usage"), &_OS::get_dynamic_memory_usage);
 
 	ClassDB::bind_method(D_METHOD("get_user_data_dir"), &_OS::get_user_data_dir);
+	ClassDB::bind_method(D_METHOD("get_external_data_dir"), &_OS::get_external_data_dir);
 	ClassDB::bind_method(D_METHOD("get_system_dir", "dir"), &_OS::get_system_dir);
+	ClassDB::bind_method(D_METHOD("get_config_dir"), &_OS::get_config_dir);
+	ClassDB::bind_method(D_METHOD("get_data_dir"), &_OS::get_data_dir);
+	ClassDB::bind_method(D_METHOD("get_cache_dir"), &_OS::get_cache_dir);
 	ClassDB::bind_method(D_METHOD("get_unique_id"), &_OS::get_unique_id);
 
 	ClassDB::bind_method(D_METHOD("is_ok_left_and_cancel_right"), &_OS::is_ok_left_and_cancel_right);
@@ -1900,18 +1922,21 @@ String _File::get_path_absolute() const {
 
 void _File::seek(int64_t p_position) {
 	ERR_FAIL_COND_MSG(!f, "File must be opened before use.");
+	ERR_FAIL_COND_MSG(p_position < 0, "Seek position must be a positive integer.");
 	f->seek(p_position);
 }
+
 void _File::seek_end(int64_t p_position) {
 	ERR_FAIL_COND_MSG(!f, "File must be opened before use.");
 	f->seek_end(p_position);
 }
-int64_t _File::get_position() const {
+
+uint64_t _File::get_position() const {
 	ERR_FAIL_COND_V_MSG(!f, 0, "File must be opened before use.");
 	return f->get_position();
 }
 
-int64_t _File::get_len() const {
+uint64_t _File::get_len() const {
 	ERR_FAIL_COND_V_MSG(!f, 0, "File must be opened before use.");
 	return f->get_len();
 }
@@ -1951,7 +1976,7 @@ real_t _File::get_real() const {
 	return f->get_real();
 }
 
-PoolVector<uint8_t> _File::get_buffer(int p_length) const {
+PoolVector<uint8_t> _File::get_buffer(int64_t p_length) const {
 	PoolVector<uint8_t> data;
 	ERR_FAIL_COND_V_MSG(!f, data, "File must be opened before use.");
 
@@ -1964,7 +1989,7 @@ PoolVector<uint8_t> _File::get_buffer(int p_length) const {
 	ERR_FAIL_COND_V_MSG(err != OK, data, "Can't resize data to " + itos(p_length) + " elements.");
 
 	PoolVector<uint8_t>::Write w = data.write();
-	int len = f->get_buffer(&w[0], p_length);
+	int64_t len = f->get_buffer(&w[0], p_length);
 	ERR_FAIL_COND_V(len < 0, PoolVector<uint8_t>());
 
 	w.release();
@@ -1980,7 +2005,7 @@ String _File::get_as_text() const {
 	ERR_FAIL_COND_V_MSG(!f, String(), "File must be opened before use.");
 
 	String text;
-	size_t original_pos = f->get_position();
+	uint64_t original_pos = f->get_position();
 	f->seek(0);
 
 	String l = get_line();
@@ -2103,7 +2128,7 @@ void _File::store_csv_line(const Vector<String> &p_values, const String &p_delim
 void _File::store_buffer(const PoolVector<uint8_t> &p_buffer) {
 	ERR_FAIL_COND_MSG(!f, "File must be opened before use.");
 
-	int len = p_buffer.size();
+	uint64_t len = p_buffer.size();
 	if (len == 0) {
 		return;
 	}
@@ -2341,9 +2366,9 @@ bool _Directory::dir_exists(String p_dir) {
 	}
 }
 
-int _Directory::get_space_left() {
+uint64_t _Directory::get_space_left() {
 	ERR_FAIL_COND_V_MSG(!d, 0, "Directory must be opened before use.");
-	return d->get_space_left() / 1024 * 1024; //return value in megabytes, given binding is int
+	return d->get_space_left() / 1024 * 1024; // Truncate to closest MiB.
 }
 
 Error _Directory::copy(String p_from, String p_to) {
@@ -2552,10 +2577,11 @@ void _Thread::_start_func(void *ud) {
 	memdelete(tud);
 	Variant::CallError ce;
 	const Variant *arg[1] = { &t->userdata };
+	int argc = (int)(arg[0]->get_type() != Variant::NIL);
 
 	Thread::set_name(t->target_method);
 
-	t->ret = t->target_instance->call(t->target_method, arg, 1, ce);
+	t->ret = t->target_instance->call(t->target_method, arg, argc, ce);
 	if (ce.error != Variant::CallError::CALL_OK) {
 		String reason;
 		switch (ce.error) {
@@ -3046,7 +3072,7 @@ Ref<JSONParseResult> _JSON::parse(const String &p_json) {
 	result->error = JSON::parse(p_json, result->result, result->error_string, result->error_line);
 
 	if (result->error != OK) {
-		ERR_PRINTS(vformat("Error parsing JSON at line %s: %s", result->error_line, result->error_string));
+		ERR_PRINT(vformat("Error parsing JSON at line %s: %s", result->error_line, result->error_string));
 	}
 	return result;
 }

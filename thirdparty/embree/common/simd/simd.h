@@ -1,4 +1,4 @@
-// Copyright 2009-2020 Intel Corporation
+// Copyright 2009-2021 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
 #pragma once
@@ -6,7 +6,7 @@
 #include "../math/math.h"
 
 /* include SSE wrapper classes */
-#if defined(__SSE__) || defined(__ARM_NEON)
+#if defined(__SSE__)
 #  include "sse.h"
 #endif
 

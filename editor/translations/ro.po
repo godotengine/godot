@@ -420,12 +420,6 @@ msgid "Animation tracks can only point to AnimationPlayer nodes."
 msgstr "Pistele de animație pot direcționa numai nodurilor AnimațieJucător."
 
 #: editor/animation_track_editor.cpp
-msgid "An animation player can't animate itself, only other players."
-msgstr ""
-"Un player de animatie nu se poate anima insusi, doar alti playeri de "
-"animatie."
-
-#: editor/animation_track_editor.cpp
 msgid "Not possible to add a new track without a root"
 msgstr "Nu este posibil să fie adăugată o nouă pistă fără a avea o rădăcină"
 
@@ -470,8 +464,9 @@ msgid "Anim Move Keys"
 msgstr "Anim Mutați Cheie"
 
 #: editor/animation_track_editor.cpp
-msgid "Clipboard is empty"
-msgstr "Clip-board de resurse gol"
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Clipboard is empty!"
+msgstr ""
 
 #: editor/animation_track_editor.cpp
 msgid "Paste Tracks"
@@ -1126,6 +1121,10 @@ msgstr "Schimbaţi Valoarea Dicţionar"
 #: editor/editor_about.cpp
 msgid "Thanks from the Godot community!"
 msgstr "Mulțumesc din partea comunităţii Godot!"
+
+#: editor/editor_about.cpp editor/editor_node.cpp editor/project_manager.cpp
+msgid "Click to copy."
+msgstr ""
 
 #: editor/editor_about.cpp
 msgid "Godot Engine contributors"
@@ -2516,7 +2515,7 @@ msgstr ""
 "Salvezi modificările făcute în urmatoarea(le) scenă(e) înainte să închizi?"
 
 #: editor/editor_node.cpp
-msgid "Save changes the following scene(s) before opening Project Manager?"
+msgid "Save changes to the following scene(s) before opening Project Manager?"
 msgstr ""
 "Salvezi modificările făcute în urmatoarea(le) scenă(e) înainte să deschizi "
 "Managerul de Proiect?"
@@ -2557,9 +2556,11 @@ msgid "Unable to load addon script from path: '%s'."
 msgstr "Nu a putut fi încărcat scriptul add-on din calea: '%s'."
 
 #: editor/editor_node.cpp
+#, fuzzy
 msgid ""
-"Unable to load addon script from path: '%s' There seems to be an error in "
-"the code, please check the syntax."
+"Unable to load addon script from path: '%s'. This might be due to a code "
+"error in that script.\n"
+"Disabling the addon at '%s' to prevent further errors."
 msgstr ""
 "Imposibil de încărcat scriptul addon din cale: '%s' Se pare că există o "
 "eroare în cod, verificați sintaxa."
@@ -3007,6 +3008,10 @@ msgstr "Comunitate"
 #: editor/editor_node.cpp
 msgid "About"
 msgstr "Despre"
+
+#: editor/editor_node.cpp
+msgid "Support Godot Development"
+msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Play the project."
@@ -10175,7 +10180,7 @@ msgstr ""
 
 #: editor/project_settings_editor.cpp
 msgid ""
-"Invalid action name. it cannot be empty nor contain '/', ':', '=', '\\' or "
+"Invalid action name. It cannot be empty nor contain '/', ':', '=', '\\' or "
 "'\"'"
 msgstr ""
 
@@ -12036,10 +12041,6 @@ msgid "Can't copy the function node."
 msgstr ""
 
 #: modules/visual_script/visual_script_editor.cpp
-msgid "Clipboard is empty!"
-msgstr ""
-
-#: modules/visual_script/visual_script_editor.cpp
 msgid "Paste VisualScript Nodes"
 msgstr ""
 
@@ -12250,7 +12251,19 @@ msgid ""
 msgstr ""
 
 #: platform/android/export/export.cpp
+msgid ""
+"Either Debug Keystore, Debug User AND Debug Password settings must be "
+"configured OR none of them."
+msgstr ""
+
+#: platform/android/export/export.cpp
 msgid "Debug keystore not configured in the Editor Settings nor in the preset."
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid ""
+"Either Release Keystore, Release User AND Release Password settings must be "
+"configured OR none of them."
 msgstr ""
 
 #: platform/android/export/export.cpp
@@ -13065,6 +13078,14 @@ msgstr ""
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr ""
+
+#~ msgid "An animation player can't animate itself, only other players."
+#~ msgstr ""
+#~ "Un player de animatie nu se poate anima insusi, doar alti playeri de "
+#~ "animatie."
+
+#~ msgid "Clipboard is empty"
+#~ msgstr "Clip-board de resurse gol"
 
 #~ msgid "No"
 #~ msgstr "Nu"

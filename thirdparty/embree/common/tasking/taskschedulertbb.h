@@ -1,4 +1,4 @@
-// Copyright 2009-2020 Intel Corporation
+// Copyright 2009-2021 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
 #pragma once
@@ -12,7 +12,13 @@
 #include "../sys/ref.h"
 
 #if defined(__WIN32__)
+// -- GODOT start --
+#if !defined(NOMINMAX)
+// -- GODOT end --
 #  define NOMINMAX
+// -- GODOT start --
+#endif
+// -- GODOT end --
 #endif
 
 // We need to define these to avoid implicit linkage against

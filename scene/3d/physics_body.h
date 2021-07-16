@@ -149,11 +149,12 @@ protected:
 		}
 	};
 	struct RigidBody_RemoveAction {
+		RID rid;
 		ObjectID body_id;
 		ShapePair pair;
 	};
 	struct BodyState {
-		//int rc;
+		RID rid;
 		bool in_tree;
 		VSet<ShapePair> shapes;
 	};
@@ -167,7 +168,7 @@ protected:
 	void _body_enter_tree(ObjectID p_id);
 	void _body_exit_tree(ObjectID p_id);
 
-	void _body_inout(int p_status, ObjectID p_instance, int p_body_shape, int p_local_shape);
+	void _body_inout(int p_status, const RID &p_body, ObjectID p_instance, int p_body_shape, int p_local_shape);
 	virtual void _direct_state_changed(Object *p_state);
 
 	void _notification(int p_what);
@@ -287,6 +288,7 @@ private:
 	bool on_floor;
 	bool on_ceiling;
 	bool on_wall;
+	bool sync_to_physics = false;
 	Vector<Collision> colliders;
 	Vector<Ref<KinematicCollision>> slide_colliders;
 	Ref<KinematicCollision> motion_cache;
@@ -295,6 +297,9 @@ private:
 
 	Ref<KinematicCollision> _move(const Vector3 &p_motion, bool p_infinite_inertia = true, bool p_exclude_raycast_shapes = true, bool p_test_only = false);
 	Ref<KinematicCollision> _get_slide_collision(int p_bounce);
+
+	Transform last_valid_transform;
+	void _direct_state_changed(Object *p_state);
 
 protected:
 	void _notification(int p_what);
@@ -323,6 +328,9 @@ public:
 	int get_slide_count() const;
 	Collision get_slide_collision(int p_bounce) const;
 
+	void set_sync_to_physics(bool p_enable);
+	bool is_sync_to_physics_enabled() const;
+
 	KinematicBody();
 	~KinematicBody();
 };
@@ -345,6 +353,7 @@ public:
 	Object *get_local_shape() const;
 	Object *get_collider() const;
 	ObjectID get_collider_id() const;
+	RID get_collider_rid() const;
 	Object *get_collider_shape() const;
 	int get_collider_shape_index() const;
 	Vector3 get_collider_velocity() const;

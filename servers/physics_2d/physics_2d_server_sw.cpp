@@ -361,7 +361,7 @@ void Physics2DServerSW::area_set_shape_disabled(RID p_area, int p_shape, bool p_
 	ERR_FAIL_INDEX(p_shape, area->get_shape_count());
 	FLUSH_QUERY_CHECK(area);
 
-	area->set_shape_as_disabled(p_shape, p_disabled);
+	area->set_shape_disabled(p_shape, p_disabled);
 }
 
 int Physics2DServerSW::area_get_shape_count(RID p_area) const {
@@ -651,7 +651,7 @@ void Physics2DServerSW::body_set_shape_disabled(RID p_body, int p_shape_idx, boo
 	ERR_FAIL_INDEX(p_shape_idx, body->get_shape_count());
 	FLUSH_QUERY_CHECK(body);
 
-	body->set_shape_as_disabled(p_shape_idx, p_disabled);
+	body->set_shape_disabled(p_shape_idx, p_disabled);
 }
 void Physics2DServerSW::body_set_shape_as_one_way_collision(RID p_body, int p_shape_idx, bool p_enable, float p_margin) {
 	Body2DSW *body = body_owner.get(p_body);
@@ -933,7 +933,7 @@ void Physics2DServerSW::body_set_pickable(RID p_body, bool p_pickable) {
 	body->set_pickable(p_pickable);
 }
 
-bool Physics2DServerSW::body_test_motion(RID p_body, const Transform2D &p_from, const Vector2 &p_motion, bool p_infinite_inertia, real_t p_margin, MotionResult *r_result, bool p_exclude_raycast_shapes) {
+bool Physics2DServerSW::body_test_motion(RID p_body, const Transform2D &p_from, const Vector2 &p_motion, bool p_infinite_inertia, real_t p_margin, MotionResult *r_result, bool p_exclude_raycast_shapes, const Set<RID> &p_exclude) {
 	Body2DSW *body = body_owner.get(p_body);
 	ERR_FAIL_COND_V(!body, false);
 	ERR_FAIL_COND_V(!body->get_space(), false);
@@ -941,7 +941,7 @@ bool Physics2DServerSW::body_test_motion(RID p_body, const Transform2D &p_from, 
 
 	_update_shapes();
 
-	return body->get_space()->test_body_motion(body, p_from, p_motion, p_infinite_inertia, p_margin, r_result, p_exclude_raycast_shapes);
+	return body->get_space()->test_body_motion(body, p_from, p_motion, p_infinite_inertia, p_margin, r_result, p_exclude_raycast_shapes, p_exclude);
 }
 
 int Physics2DServerSW::body_test_ray_separation(RID p_body, const Transform2D &p_transform, bool p_infinite_inertia, Vector2 &r_recover_motion, SeparationResult *r_results, int p_result_max, float p_margin) {
@@ -1193,6 +1193,10 @@ void Physics2DServerSW::free(RID p_rid) {
 
 void Physics2DServerSW::set_active(bool p_active) {
 	active = p_active;
+};
+
+void Physics2DServerSW::set_collision_iterations(int p_iterations) {
+	iterations = p_iterations;
 };
 
 void Physics2DServerSW::init() {

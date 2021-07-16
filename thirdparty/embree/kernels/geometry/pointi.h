@@ -1,4 +1,4 @@
-// Copyright 2009-2020 Intel Corporation
+// Copyright 2009-2021 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
 #pragma once
@@ -59,11 +59,6 @@ namespace embree
     /* Returns a mask that tells which line segments are valid */
     __forceinline vbool<M> valid() const {
       return vint<M>(step) < vint<M>(numPrimitives);
-    }
-
-    /* Returns a mask that tells which line segments are valid */
-    template<int Mx> __forceinline vbool<Mx> valid() const {
-      return vint<Mx>(step) < vint<Mx>(numPrimitives);
     }
 
     /* Returns if the specified line segment is valid */

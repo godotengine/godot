@@ -1,4 +1,4 @@
-// Copyright 2009-2020 Intel Corporation
+// Copyright 2009-2021 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
 #pragma once
@@ -11,7 +11,7 @@ namespace embree
 {
   namespace isa
   {
-    template<int M, int Mx, bool filter>
+    template<int M, bool filter>
     struct SphereMiIntersector1
     {
       typedef PointMi<M> Primitive;
@@ -25,9 +25,9 @@ namespace embree
         STAT3(normal.trav_prims, 1, 1, 1);
         const Points* geom = context->scene->get<Points>(sphere.geomID());
         Vec4vf<M> v0; sphere.gather(v0, geom);
-        const vbool<Mx> valid = sphere.template valid<Mx>();
-        SphereIntersector1<Mx>::intersect(
-          valid, ray, context, geom, pre, v0, Intersect1EpilogM<M, Mx, filter>(ray, context, sphere.geomID(), sphere.primID()));
+        const vbool<M> valid = sphere.valid();
+        SphereIntersector1<M>::intersect(
+          valid, ray, context, geom, pre, v0, Intersect1EpilogM<M, filter>(ray, context, sphere.geomID(), sphere.primID()));
       }
 
       static __forceinline bool occluded(const Precalculations& pre,
@@ -38,9 +38,9 @@ namespace embree
         STAT3(shadow.trav_prims, 1, 1, 1);
         const Points* geom = context->scene->get<Points>(sphere.geomID());
         Vec4vf<M> v0; sphere.gather(v0, geom);
-        const vbool<Mx> valid = sphere.template valid<Mx>();
-        return SphereIntersector1<Mx>::intersect(
-          valid, ray, context, geom, pre, v0, Occluded1EpilogM<M, Mx, filter>(ray, context, sphere.geomID(), sphere.primID()));
+        const vbool<M> valid = sphere.valid();
+        return SphereIntersector1<M>::intersect(
+          valid, ray, context, geom, pre, v0, Occluded1EpilogM<M, filter>(ray, context, sphere.geomID(), sphere.primID()));
       }
       
       static __forceinline bool pointQuery(PointQuery* query,
@@ -51,7 +51,7 @@ namespace embree
       }
     };
 
-    template<int M, int Mx, bool filter>
+    template<int M, bool filter>
     struct SphereMiMBIntersector1
     {
       typedef PointMi<M> Primitive;
@@ -65,9 +65,9 @@ namespace embree
         STAT3(normal.trav_prims, 1, 1, 1);
         const Points* geom = context->scene->get<Points>(sphere.geomID());
         Vec4vf<M> v0; sphere.gather(v0, geom, ray.time());
-        const vbool<Mx> valid = sphere.template valid<Mx>();
-        SphereIntersector1<Mx>::intersect(
-          valid, ray, context, geom, pre, v0, Intersect1EpilogM<M, Mx, filter>(ray, context, sphere.geomID(), sphere.primID()));
+        const vbool<M> valid = sphere.valid();
+        SphereIntersector1<M>::intersect(
+          valid, ray, context, geom, pre, v0, Intersect1EpilogM<M, filter>(ray, context, sphere.geomID(), sphere.primID()));
       }
 
       static __forceinline bool occluded(const Precalculations& pre,
@@ -78,9 +78,9 @@ namespace embree
         STAT3(shadow.trav_prims, 1, 1, 1);
         const Points* geom = context->scene->get<Points>(sphere.geomID());
         Vec4vf<M> v0; sphere.gather(v0, geom, ray.time());
-        const vbool<Mx> valid = sphere.template valid<Mx>();
-        return SphereIntersector1<Mx>::intersect(
-          valid, ray, context, geom, pre, v0, Occluded1EpilogM<M, Mx, filter>(ray, context, sphere.geomID(), sphere.primID()));
+        const vbool<M> valid = sphere.valid();
+        return SphereIntersector1<M>::intersect(
+          valid, ray, context, geom, pre, v0, Occluded1EpilogM<M, filter>(ray, context, sphere.geomID(), sphere.primID()));
       }
 
       static __forceinline bool pointQuery(PointQuery* query,
@@ -91,7 +91,7 @@ namespace embree
       }
     };
 
-    template<int M, int Mx, int K, bool filter>
+    template<int M, int K, bool filter>
     struct SphereMiIntersectorK
     {
       typedef PointMi<M> Primitive;
@@ -103,10 +103,10 @@ namespace embree
         STAT3(normal.trav_prims, 1, 1, 1);
         const Points* geom = context->scene->get<Points>(sphere.geomID());
         Vec4vf<M> v0; sphere.gather(v0, geom);
-        const vbool<Mx> valid = sphere.template valid<Mx>();
-        SphereIntersectorK<Mx, K>::intersect(
+        const vbool<M> valid = sphere.valid();
+        SphereIntersectorK<M, K>::intersect(
           valid, ray, k, context, geom, pre, v0,
-          Intersect1KEpilogM<M, Mx, K, filter>(ray, k, context, sphere.geomID(), sphere.primID()));
+          Intersect1KEpilogM<M, K, filter>(ray, k, context, sphere.geomID(), sphere.primID()));
       }
 
       static __forceinline bool occluded(
@@ -115,14 +115,14 @@ namespace embree
         STAT3(shadow.trav_prims, 1, 1, 1);
         const Points* geom = context->scene->get<Points>(sphere.geomID());
         Vec4vf<M> v0; sphere.gather(v0, geom);
-        const vbool<Mx> valid = sphere.template valid<Mx>();
-        return SphereIntersectorK<Mx, K>::intersect(
+        const vbool<M> valid = sphere.valid();
+        return SphereIntersectorK<M, K>::intersect(
           valid, ray, k, context, geom, pre, v0,
-          Occluded1KEpilogM<M, Mx, K, filter>(ray, k, context, sphere.geomID(), sphere.primID()));
+          Occluded1KEpilogM<M, K, filter>(ray, k, context, sphere.geomID(), sphere.primID()));
       }
     };
 
-    template<int M, int Mx, int K, bool filter>
+    template<int M, int K, bool filter>
     struct SphereMiMBIntersectorK
     {
       typedef PointMi<M> Primitive;
@@ -134,10 +134,10 @@ namespace embree
         STAT3(normal.trav_prims, 1, 1, 1);
         const Points* geom = context->scene->get<Points>(sphere.geomID());
         Vec4vf<M> v0; sphere.gather(v0, geom, ray.time()[k]);
-        const vbool<Mx> valid = sphere.template valid<Mx>();
-        SphereIntersectorK<Mx, K>::intersect(
+        const vbool<M> valid = sphere.valid();
+        SphereIntersectorK<M, K>::intersect(
           valid, ray, k, context, geom, pre, v0,
-          Intersect1KEpilogM<M, Mx, K, filter>(ray, k, context, sphere.geomID(), sphere.primID()));
+          Intersect1KEpilogM<M, K, filter>(ray, k, context, sphere.geomID(), sphere.primID()));
       }
 
       static __forceinline bool occluded(
@@ -146,10 +146,10 @@ namespace embree
         STAT3(shadow.trav_prims, 1, 1, 1);
         const Points* geom = context->scene->get<Points>(sphere.geomID());
         Vec4vf<M> v0; sphere.gather(v0, geom, ray.time()[k]);
-        const vbool<Mx> valid = sphere.template valid<Mx>();
-        return SphereIntersectorK<Mx, K>::intersect(
+        const vbool<M> valid = sphere.valid();
+        return SphereIntersectorK<M, K>::intersect(
           valid, ray, k, context, geom, pre, v0,
-          Occluded1KEpilogM<M, Mx, K, filter>(ray, k, context, sphere.geomID(), sphere.primID()));
+          Occluded1KEpilogM<M, K, filter>(ray, k, context, sphere.geomID(), sphere.primID()));
       }
     };
   }  // namespace isa

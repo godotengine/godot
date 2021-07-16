@@ -1,4 +1,4 @@
-// Copyright 2009-2020 Intel Corporation
+// Copyright 2009-2021 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
 #include "state.h"
@@ -100,7 +100,6 @@ namespace embree
     instancing_open_max_depth = 32;
     instancing_open_max = 50000000;
 
-    ignore_config_files = false;
     float_exceptions = false;
     quality_flags = -1;
     scene_flags = -1;
@@ -115,8 +114,6 @@ namespace embree
 #else
     set_affinity = false;
 #endif
-    /* per default enable affinity on KNL */
-    if (hasISA(AVX512KNL)) set_affinity = true;
 
     start_threads = false;
     enable_selockmemoryprivilege = false;
@@ -147,20 +144,7 @@ namespace embree
   }
 
   bool State::checkISASupport() {
-#if defined(__ARM_NEON)
-    /*
-     * NEON CPU type is a mixture of NEON and SSE2
-     */
-
-    bool hasSSE2 = (getCPUFeatures() & enabled_cpu_features) & CPU_FEATURE_SSE2;
-
-    /* this will be true when explicitly initialize Device with `isa=neon` config */
-    bool hasNEON = (getCPUFeatures() & enabled_cpu_features) & CPU_FEATURE_NEON;
-
-    return hasSSE2 || hasNEON;
-#else
     return (getCPUFeatures() & enabled_cpu_features) == enabled_cpu_features;
-#endif
   }
   
   void State::verify()
@@ -173,9 +157,7 @@ namespace embree
      * functions */
 #if defined(DEBUG)
 #if defined(EMBREE_TARGET_SSE2)
-#if !defined(__ARM_NEON)
     assert(sse2::getISA() <= SSE2);
-#endif
 #endif
 #if defined(EMBREE_TARGET_SSE42)
     assert(sse42::getISA() <= SSE42);
@@ -186,11 +168,8 @@ namespace embree
 #if defined(EMBREE_TARGET_AVX2)
     assert(avx2::getISA() <= AVX2);
 #endif
-#if defined (EMBREE_TARGET_AVX512KNL)
-    assert(avx512knl::getISA() <= AVX512KNL);
-#endif
-#if defined (EMBREE_TARGET_AVX512SKX)
-    assert(avx512skx::getISA() <= AVX512SKX);
+#if defined (EMBREE_TARGET_AVX512)
+    assert(avx512::getISA() <= AVX512);
 #endif
 #endif
   }
@@ -241,8 +220,7 @@ namespace embree
     else if (isa == "avx") return AVX;
     else if (isa == "avxi") return AVXI;
     else if (isa == "avx2") return AVX2;
-    else if (isa == "avx512knl") return AVX512KNL;
-    else if (isa == "avx512skx") return AVX512SKX;
+    else if (isa == "avx512") return AVX512;
     else return SSE2;
   }
 
@@ -269,20 +247,20 @@ namespace embree
         start_threads = cin->get().Int();
       
       else if (tok == Token::Id("isa") && cin->trySymbol("=")) {
-        std::string isa = toLowerCase(cin->get().Identifier());
-        enabled_cpu_features = string_to_cpufeatures(isa);
+        std::string isa_str = toLowerCase(cin->get().Identifier());
+        enabled_cpu_features = string_to_cpufeatures(isa_str);
         enabled_builder_cpu_features = enabled_cpu_features;
       }
 
       else if (tok == Token::Id("max_isa") && cin->trySymbol("=")) {
-        std::string isa = toLowerCase(cin->get().Identifier());
-        enabled_cpu_features &= string_to_cpufeatures(isa);
+        std::string isa_str = toLowerCase(cin->get().Identifier());
+        enabled_cpu_features &= string_to_cpufeatures(isa_str);
         enabled_builder_cpu_features &= enabled_cpu_features;
       }
 
       else if (tok == Token::Id("max_builder_isa") && cin->trySymbol("=")) {
-        std::string isa = toLowerCase(cin->get().Identifier());
-        enabled_builder_cpu_features &= string_to_cpufeatures(isa);
+        std::string isa_str = toLowerCase(cin->get().Identifier());
+        enabled_builder_cpu_features &= string_to_cpufeatures(isa_str);
       }
 
       else if (tok == Token::Id("frequency_level") && cin->trySymbol("=")) {
@@ -299,8 +277,6 @@ namespace embree
         hugepages = cin->get().Int();
       }
 
-      else if (tok == Token::Id("ignore_config_files") && cin->trySymbol("="))
-        ignore_config_files = cin->get().Int();
       else if (tok == Token::Id("float_exceptions") && cin->trySymbol("=")) 
         float_exceptions = cin->get().Int();
 

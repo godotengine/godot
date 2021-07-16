@@ -55,6 +55,8 @@ void ShaderTextEditor::set_edited_shader(const Ref<Shader> &p_shader) {
 
 	get_text_edit()->set_text(p_shader->get_code());
 	get_text_edit()->clear_undo_history();
+	get_text_edit()->call_deferred("set_h_scroll", 0);
+	get_text_edit()->call_deferred("set_v_scroll", 0);
 
 	_validate_script();
 	_line_col_changed();
@@ -111,6 +113,7 @@ void ShaderTextEditor::_load_theme_settings() {
 	Color search_result_border_color = EDITOR_GET("text_editor/highlighting/search_result_border_color");
 	Color symbol_color = EDITOR_GET("text_editor/highlighting/symbol_color");
 	Color keyword_color = EDITOR_GET("text_editor/highlighting/keyword_color");
+	Color control_flow_keyword_color = EDITOR_GET("text_editor/highlighting/control_flow_keyword_color");
 	Color comment_color = EDITOR_GET("text_editor/highlighting/comment_color");
 
 	get_text_edit()->add_color_override("background_color", background_color);
@@ -145,7 +148,11 @@ void ShaderTextEditor::_load_theme_settings() {
 	ShaderLanguage::get_keyword_list(&keywords);
 
 	for (List<String>::Element *E = keywords.front(); E; E = E->next()) {
-		get_text_edit()->add_keyword_color(E->get(), keyword_color);
+		if (ShaderLanguage::is_control_flow_keyword(E->get())) {
+			get_text_edit()->add_keyword_color(E->get(), control_flow_keyword_color);
+		} else {
+			get_text_edit()->add_keyword_color(E->get(), keyword_color);
+		}
 	}
 
 	// Colorize built-ins like `COLOR` differently to make them easier
@@ -288,8 +295,8 @@ void ShaderEditor::_menu_option(int p_option) {
 		case EDIT_DELETE_LINE: {
 			shader_editor->delete_lines();
 		} break;
-		case EDIT_CLONE_DOWN: {
-			shader_editor->clone_lines_down();
+		case EDIT_DUPLICATE_SELECTION: {
+			shader_editor->duplicate_selection();
 		} break;
 		case EDIT_TOGGLE_COMMENT: {
 			if (shader.is_null()) {
@@ -368,8 +375,9 @@ void ShaderEditor::_editor_settings_changed() {
 	shader_editor->get_text_edit()->set_v_scroll_speed(EditorSettings::get_singleton()->get("text_editor/navigation/v_scroll_speed"));
 	shader_editor->get_text_edit()->set_draw_minimap(EditorSettings::get_singleton()->get("text_editor/navigation/show_minimap"));
 	shader_editor->get_text_edit()->set_minimap_width((int)EditorSettings::get_singleton()->get("text_editor/navigation/minimap_width") * EDSCALE);
-	shader_editor->get_text_edit()->set_show_line_length_guideline(EditorSettings::get_singleton()->get("text_editor/appearance/show_line_length_guideline"));
-	shader_editor->get_text_edit()->set_line_length_guideline_column(EditorSettings::get_singleton()->get("text_editor/appearance/line_length_guideline_column"));
+	shader_editor->get_text_edit()->set_show_line_length_guidelines(EditorSettings::get_singleton()->get("text_editor/appearance/show_line_length_guidelines"));
+	shader_editor->get_text_edit()->set_line_length_guideline_soft_column(EditorSettings::get_singleton()->get("text_editor/appearance/line_length_guideline_soft_column"));
+	shader_editor->get_text_edit()->set_line_length_guideline_hard_column(EditorSettings::get_singleton()->get("text_editor/appearance/line_length_guideline_hard_column"));
 	shader_editor->get_text_edit()->set_breakpoint_gutter_enabled(false);
 }
 
@@ -619,7 +627,7 @@ ShaderEditor::ShaderEditor(EditorNode *p_node) {
 	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/indent_right"), EDIT_INDENT_RIGHT);
 	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/delete_line"), EDIT_DELETE_LINE);
 	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/toggle_comment"), EDIT_TOGGLE_COMMENT);
-	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/clone_down"), EDIT_CLONE_DOWN);
+	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/duplicate_selection"), EDIT_DUPLICATE_SELECTION);
 	edit_menu->get_popup()->add_separator();
 	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/complete_symbol"), EDIT_COMPLETE);
 	edit_menu->get_popup()->connect("id_pressed", this, "_menu_option");

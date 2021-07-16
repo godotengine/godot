@@ -1,4 +1,4 @@
-// Copyright 2009-2020 Intel Corporation
+// Copyright 2009-2021 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
 #pragma once
@@ -40,15 +40,10 @@ namespace embree
         typedef BinInfoT<BINS,PrimRef,BBox3fa> Binner;
         typedef range<size_t> Set;
 
-#if defined(__AVX512ER__) // KNL
-        static const size_t PARALLEL_THRESHOLD = 4*768; 
-        static const size_t PARALLEL_FIND_BLOCK_SIZE = 768;
-        static const size_t PARALLEL_PARTITION_BLOCK_SIZE = 768;
-#else
         static const size_t PARALLEL_THRESHOLD = 3 * 1024;
         static const size_t PARALLEL_FIND_BLOCK_SIZE = 1024;
         static const size_t PARALLEL_PARTITION_BLOCK_SIZE = 128;
-#endif
+
         __forceinline HeuristicArrayBinningSAH ()
           : prims(nullptr) {}
 

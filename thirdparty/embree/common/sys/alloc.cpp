@@ -1,4 +1,4 @@
-// Copyright 2009-2020 Intel Corporation
+// Copyright 2009-2021 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
 #include "alloc.h"
@@ -23,7 +23,7 @@ namespace embree
     if (size != 0 && ptr == nullptr)
       // -- GODOT start --
       // throw std::bad_alloc();
-      abort(); 
+      abort();
       // -- GODOT end --
     
     return ptr;

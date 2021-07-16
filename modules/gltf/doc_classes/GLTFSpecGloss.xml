@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="GLTFSpecGloss" inherits="Resource" version="3.4">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+	</methods>
+	<members>
+		<member name="diffuse_factor" type="Color" setter="set_diffuse_factor" getter="get_diffuse_factor" default="Color( 1, 1, 1, 1 )">
+		</member>
+		<member name="diffuse_img" type="Image" setter="set_diffuse_img" getter="get_diffuse_img">
+		</member>
+		<member name="gloss_factor" type="float" setter="set_gloss_factor" getter="get_gloss_factor" default="1.0">
+		</member>
+		<member name="spec_gloss_img" type="Image" setter="set_spec_gloss_img" getter="get_spec_gloss_img">
+		</member>
+		<member name="specular_factor" type="Color" setter="set_specular_factor" getter="get_specular_factor" default="Color( 1, 1, 1, 1 )">
+		</member>
+	</members>
+	<constants>
+	</constants>
+</class>

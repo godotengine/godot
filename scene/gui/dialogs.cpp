@@ -529,6 +529,28 @@ Button *AcceptDialog::add_cancel(const String &p_cancel) {
 	return b;
 }
 
+void AcceptDialog::remove_button(Control *p_button) {
+	Button *button = Object::cast_to<Button>(p_button);
+	ERR_FAIL_NULL(button);
+	ERR_FAIL_COND_MSG(button->get_parent() != hbc, vformat("Cannot remove button %s as it does not belong to this dialog.", button->get_name()));
+	ERR_FAIL_COND_MSG(button == ok, "Cannot remove dialog's OK button.");
+
+	Node *right_spacer = hbc->get_child(button->get_index() + 1);
+	// Should always be valid but let's avoid crashing
+	if (right_spacer) {
+		hbc->remove_child(right_spacer);
+		memdelete(right_spacer);
+	}
+	hbc->remove_child(button);
+
+	if (button->is_connected("pressed", this, "_custom_action")) {
+		button->disconnect("pressed", this, "_custom_action");
+	}
+	if (button->is_connected("pressed", this, "_closed")) {
+		button->disconnect("pressed", this, "_closed");
+	}
+}
+
 void AcceptDialog::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_ok"), &AcceptDialog::_ok_pressed);
 	ClassDB::bind_method(D_METHOD("get_ok"), &AcceptDialog::get_ok);
@@ -537,6 +559,7 @@ void AcceptDialog::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_hide_on_ok"), &AcceptDialog::get_hide_on_ok);
 	ClassDB::bind_method(D_METHOD("add_button", "text", "right", "action"), &AcceptDialog::add_button, DEFVAL(false), DEFVAL(""));
 	ClassDB::bind_method(D_METHOD("add_cancel", "name"), &AcceptDialog::add_cancel);
+	ClassDB::bind_method(D_METHOD("remove_button", "button"), &AcceptDialog::remove_button);
 	ClassDB::bind_method(D_METHOD("_builtin_text_entered"), &AcceptDialog::_builtin_text_entered);
 	ClassDB::bind_method(D_METHOD("register_text_enter", "line_edit"), &AcceptDialog::register_text_enter);
 	ClassDB::bind_method(D_METHOD("_custom_action"), &AcceptDialog::_custom_action);

@@ -1,4 +1,4 @@
-// Copyright 2009-2020 Intel Corporation
+// Copyright 2009-2021 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
 #pragma once
@@ -28,6 +28,9 @@ namespace embree
 
   /*! waits until the given thread has terminated */
   void join(thread_t tid);
+
+  /*! destroy handle of a thread */
+  void destroyThread(thread_t tid);
 
   /*! type for handle to thread local storage */
   typedef struct opaque_tls_t* tls_t;

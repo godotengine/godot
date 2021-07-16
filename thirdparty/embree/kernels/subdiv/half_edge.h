@@ -1,4 +1,4 @@
-// Copyright 2009-2020 Intel Corporation
+// Copyright 2009-2021 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
 #pragma once
@@ -186,7 +186,7 @@ namespace embree
     {
       const HalfEdge* p = this;
       do {
-        if (p->vertexHasBorder()) return true;
+        if (p->vertexHasBorder() && (p->vertex_type != HalfEdge::NON_MANIFOLD_EDGE_VERTEX)) return true;
         p = p->next();
       } while (p != this);
       return false;

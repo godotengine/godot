@@ -180,7 +180,7 @@ Error String::parse_url(String &r_scheme, String &r_host, int &r_port, String &r
 		base = base.substr(pos + 1, base.length() - pos - 1);
 	} else {
 		// Anything else
-		if (base.get_slice_count(":") > 1) {
+		if (base.get_slice_count(":") > 2) {
 			return ERR_INVALID_PARAMETER;
 		}
 		pos = base.rfind(":");
@@ -2959,16 +2959,9 @@ String String::format(const Variant &values, String placeholder) const {
 				if (value_arr.size() == 2) {
 					Variant v_key = value_arr[0];
 					String key = v_key;
-					if (key.left(1) == "\"" && key.right(key.length() - 1) == "\"") {
-						key = key.substr(1, key.length() - 2);
-					}
 
 					Variant v_val = value_arr[1];
 					String val = v_val;
-
-					if (val.left(1) == "\"" && val.right(val.length() - 1) == "\"") {
-						val = val.substr(1, val.length() - 2);
-					}
 
 					new_string = new_string.replace(placeholder.replace("_", key), val);
 				} else {
@@ -2977,10 +2970,6 @@ String String::format(const Variant &values, String placeholder) const {
 			} else { //Array structure ["RobotGuy","Logis","rookie"]
 				Variant v_val = values_arr[i];
 				String val = v_val;
-
-				if (val.left(1) == "\"" && val.right(val.length() - 1) == "\"") {
-					val = val.substr(1, val.length() - 2);
-				}
 
 				if (placeholder.find("_") > -1) {
 					new_string = new_string.replace(placeholder.replace("_", i_as_str), val);
@@ -2997,14 +2986,6 @@ String String::format(const Variant &values, String placeholder) const {
 		for (List<Variant>::Element *E = keys.front(); E; E = E->next()) {
 			String key = E->get();
 			String val = d[E->get()];
-
-			if (key.left(1) == "\"" && key.right(key.length() - 1) == "\"") {
-				key = key.substr(1, key.length() - 2);
-			}
-
-			if (val.left(1) == "\"" && val.right(val.length() - 1) == "\"") {
-				val = val.substr(1, val.length() - 2);
-			}
 
 			new_string = new_string.replace(placeholder.replace("_", key), val);
 		}
@@ -3549,29 +3530,58 @@ static _FORCE_INLINE_ int _xml_unescape(const CharType *p_src, int p_src_len, Ch
 
 			if (p_src_len >= 4 && p_src[1] == '#') {
 				CharType c = 0;
-
-				for (int i = 2; i < p_src_len; i++) {
-					eat = i + 1;
-					CharType ct = p_src[i];
-					if (ct == ';') {
-						break;
-					} else if (ct >= '0' && ct <= '9') {
-						ct = ct - '0';
-					} else if (ct >= 'a' && ct <= 'f') {
-						ct = (ct - 'a') + 10;
-					} else if (ct >= 'A' && ct <= 'F') {
-						ct = (ct - 'A') + 10;
-					} else {
-						continue;
+				bool overflow = false;
+				if (p_src[2] == 'x') {
+					// Hex entity &#x<num>;
+					for (int i = 3; i < p_src_len; i++) {
+						eat = i + 1;
+						CharType ct = p_src[i];
+						if (ct == ';') {
+							break;
+						} else if (ct >= '0' && ct <= '9') {
+							ct = ct - '0';
+						} else if (ct >= 'a' && ct <= 'f') {
+							ct = (ct - 'a') + 10;
+						} else if (ct >= 'A' && ct <= 'F') {
+							ct = (ct - 'A') + 10;
+						} else {
+							break;
+						}
+						if (c > (WCHAR_MAX >> 4)) {
+							overflow = true;
+							break;
+						}
+						c <<= 4;
+						c |= ct;
 					}
-					c <<= 4;
-					c |= ct;
+				} else {
+					// Decimal entity &#<num>;
+					for (int i = 2; i < p_src_len; i++) {
+						eat = i + 1;
+						CharType ct = p_src[i];
+						if (ct == ';' || ct < '0' || ct > '9') {
+							break;
+						}
+					}
+					if (p_src[eat - 1] == ';') {
+						int64_t val = String::to_int(p_src + 2, eat - 3);
+						if (val > 0 && val <= WCHAR_MAX) {
+							c = (CharType)val;
+						} else {
+							overflow = true;
+						}
+					}
 				}
 
+				// Value must be non-zero, in the range of char32_t,
+				// actually end with ';'. If invalid, leave the entity as-is
+				if (c == '\0' || overflow || p_src[eat - 1] != ';') {
+					eat = 1;
+					c = *p_src;
+				}
 				if (p_dst) {
 					*p_dst = c;
 				}
-
 			} else if (p_src_len >= 4 && p_src[1] == 'g' && p_src[2] == 't' && p_src[3] == ';') {
 				if (p_dst) {
 					*p_dst = '>';

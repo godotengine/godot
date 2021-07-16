@@ -125,7 +125,7 @@ void RasterizerSceneGLES2::shadow_atlas_set_size(RID p_atlas, int p_size) {
 		glBindFramebuffer(GL_FRAMEBUFFER, shadow_atlas->fbo);
 
 		if (shadow_atlas->size > storage->config.max_viewport_dimensions[0] || shadow_atlas->size > storage->config.max_viewport_dimensions[1]) {
-			WARN_PRINTS("Cannot set shadow atlas size larger than maximum hardware supported size of (" + itos(storage->config.max_viewport_dimensions[0]) + ", " + itos(storage->config.max_viewport_dimensions[1]) + "). Setting size to maximum.");
+			WARN_PRINT("Cannot set shadow atlas size larger than maximum hardware supported size of (" + itos(storage->config.max_viewport_dimensions[0]) + ", " + itos(storage->config.max_viewport_dimensions[1]) + "). Setting size to maximum.");
 			shadow_atlas->size = MIN(shadow_atlas->size, storage->config.max_viewport_dimensions[0]);
 			shadow_atlas->size = MIN(shadow_atlas->size, storage->config.max_viewport_dimensions[1]);
 		}
@@ -4129,7 +4129,8 @@ void RasterizerSceneGLES2::initialize() {
 		//default material and shader
 
 		default_overdraw_shader = storage->shader_create();
-		storage->shader_set_code(default_overdraw_shader, "shader_type spatial;\nrender_mode blend_add,unshaded;\n void fragment() { ALBEDO=vec3(0.4,0.8,0.8); ALPHA=0.2; }");
+		// Use relatively low opacity so that more "layers" of overlapping objects can be distinguished.
+		storage->shader_set_code(default_overdraw_shader, "shader_type spatial;\nrender_mode blend_add,unshaded;\n void fragment() { ALBEDO=vec3(0.4,0.8,0.8); ALPHA=0.1; }");
 		default_overdraw_material = storage->material_create();
 		storage->material_set_shader(default_overdraw_material, default_overdraw_shader);
 	}
@@ -4196,7 +4197,7 @@ void RasterizerSceneGLES2::initialize() {
 		directional_shadow.size = next_power_of_2(GLOBAL_GET("rendering/quality/directional_shadow/size"));
 
 		if (directional_shadow.size > storage->config.max_viewport_dimensions[0] || directional_shadow.size > storage->config.max_viewport_dimensions[1]) {
-			WARN_PRINTS("Cannot set directional shadow size larger than maximum hardware supported size of (" + itos(storage->config.max_viewport_dimensions[0]) + ", " + itos(storage->config.max_viewport_dimensions[1]) + "). Setting size to maximum.");
+			WARN_PRINT("Cannot set directional shadow size larger than maximum hardware supported size of (" + itos(storage->config.max_viewport_dimensions[0]) + ", " + itos(storage->config.max_viewport_dimensions[1]) + "). Setting size to maximum.");
 			directional_shadow.size = MIN(directional_shadow.size, storage->config.max_viewport_dimensions[0]);
 			directional_shadow.size = MIN(directional_shadow.size, storage->config.max_viewport_dimensions[1]);
 		}

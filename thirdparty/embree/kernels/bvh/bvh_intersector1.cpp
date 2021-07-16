@@ -1,4 +1,4 @@
-// Copyright 2009-2020 Intel Corporation
+// Copyright 2009-2021 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
 #include "bvh_intersector1.h"
@@ -61,10 +61,10 @@ namespace embree
       assert(!(types & BVH_MB) || (ray.time() >= 0.0f && ray.time() <= 1.0f));
 
       /* load the ray into SIMD registers */
-      TravRay<N,Nx,robust> tray(ray.org, ray.dir, max(ray.tnear(), 0.0f), max(ray.tfar, 0.0f));
+      TravRay<N,robust> tray(ray.org, ray.dir, max(ray.tnear(), 0.0f), max(ray.tfar, 0.0f));
 
       /* initialize the node traverser */
-      BVHNNodeTraverser1Hit<N, Nx, types> nodeTraverser;
+      BVHNNodeTraverser1Hit<N, types> nodeTraverser;
 
       /* pop loop */
       while (true) pop:
@@ -75,22 +75,16 @@ namespace embree
         NodeRef cur = NodeRef(stackPtr->ptr);
 
         /* if popped node is too far, pop next one */
-#if defined(__AVX512ER__)
-        /* much faster on KNL */
-        if (unlikely(any(vfloat<Nx>(*(float*)&stackPtr->dist) > tray.tfar)))
-          continue;
-#else
         if (unlikely(*(float*)&stackPtr->dist > ray.tfar))
           continue;
-#endif
 
         /* downtraversal loop */
         while (true)
         {
           /* intersect node */
-          size_t mask; vfloat<Nx> tNear;
+          size_t mask; vfloat<N> tNear;
           STAT3(normal.trav_nodes,1,1,1);
-          bool nodeIntersected = BVHNNodeIntersector1<N, Nx, types, robust>::intersect(cur, tray, ray.time(), tNear, mask);
+          bool nodeIntersected = BVHNNodeIntersector1<N, types, robust>::intersect(cur, tray, ray.time(), tNear, mask);
           if (unlikely(!nodeIntersected)) { STAT3(normal.trav_nodes,-1,-1,-1); break; }
 
           /* if no child is hit, pop next node */
@@ -153,10 +147,10 @@ namespace embree
       assert(!(types & BVH_MB) || (ray.time() >= 0.0f && ray.time() <= 1.0f));
 
       /* load the ray into SIMD registers */
-      TravRay<N,Nx,robust> tray(ray.org, ray.dir, max(ray.tnear(), 0.0f), max(ray.tfar, 0.0f));
+      TravRay<N,robust> tray(ray.org, ray.dir, max(ray.tnear(), 0.0f), max(ray.tfar, 0.0f));
 
       /* initialize the node traverser */
-      BVHNNodeTraverser1Hit<N, Nx, types> nodeTraverser;
+      BVHNNodeTraverser1Hit<N, types> nodeTraverser;
 
       /* pop loop */
       while (true) pop:
@@ -170,9 +164,9 @@ namespace embree
         while (true)
         {
           /* intersect node */
-          size_t mask; vfloat<Nx> tNear;
+          size_t mask; vfloat<N> tNear;
           STAT3(shadow.trav_nodes,1,1,1);
-          bool nodeIntersected = BVHNNodeIntersector1<N, Nx, types, robust>::intersect(cur, tray, ray.time(), tNear, mask);
+          bool nodeIntersected = BVHNNodeIntersector1<N, types, robust>::intersect(cur, tray, ray.time(), tNear, mask);
           if (unlikely(!nodeIntersected)) { STAT3(shadow.trav_nodes,-1,-1,-1); break; }
 
           /* if no child is hit, pop next node */
@@ -213,9 +207,6 @@ namespace embree
 
       static const size_t stackSize = 1+(N-1)*BVH::maxDepth+3; // +3 due to 16-wide store
 
-      /* right now AVX512KNL SIMD extension only for standard node types */
-      static const size_t Nx = (types == BVH_AN1 || types == BVH_QN1) ? vextend<N>::size : N;
-
       static __forceinline bool pointQuery(const Accel::Intersectors* This, PointQuery* query, PointQueryContext* context)
       {
         const BVH* __restrict__ bvh = (const BVH*)This->ptr;
@@ -238,7 +229,7 @@ namespace embree
         TravPointQuery<N> tquery(query->p, context->query_radius);
 
         /* initialize the node traverser */
-        BVHNNodeTraverser1Hit<N, N, types> nodeTraverser;
+        BVHNNodeTraverser1Hit<N,types> nodeTraverser;
 
         bool changed = false;
         float cull_radius = context->query_type == POINT_QUERY_TYPE_SPHERE

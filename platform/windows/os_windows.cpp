@@ -2929,7 +2929,7 @@ void OS_Windows::set_native_icon(const String &p_filename) {
 	ERR_FAIL_COND_MSG(big_icon_index == -1, "No valid icons found!");
 
 	if (small_icon_index == -1) {
-		WARN_PRINTS("No small icon found, reusing " + itos(big_icon_width) + "x" + itos(big_icon_width) + " @" + itos(big_icon_cc) + " icon!");
+		WARN_PRINT("No small icon found, reusing " + itos(big_icon_width) + "x" + itos(big_icon_width) + " @" + itos(big_icon_cc) + " icon!");
 		small_icon_index = big_icon_index;
 		small_icon_cc = big_icon_cc;
 	}
@@ -3316,31 +3316,45 @@ MainLoop *OS_Windows::get_main_loop() const {
 }
 
 String OS_Windows::get_config_path() const {
-	if (has_environment("XDG_CONFIG_HOME")) { // unlikely, but after all why not?
-		return get_environment("XDG_CONFIG_HOME");
-	} else if (has_environment("APPDATA")) {
-		return get_environment("APPDATA");
-	} else {
-		return ".";
+	// The XDG Base Directory specification technically only applies on Linux/*BSD, but it doesn't hurt to support it on Windows as well.
+	if (has_environment("XDG_CONFIG_HOME")) {
+		if (get_environment("XDG_CONFIG_HOME").is_abs_path()) {
+			return get_environment("XDG_CONFIG_HOME").replace("\\", "/");
+		} else {
+			WARN_PRINT_ONCE("`XDG_CONFIG_HOME` is a relative path. Ignoring its value and falling back to `%APPDATA%` or `.` per the XDG Base Directory specification.");
+		}
 	}
+	if (has_environment("APPDATA")) {
+		return get_environment("APPDATA").replace("\\", "/");
+	}
+	return ".";
 }
 
 String OS_Windows::get_data_path() const {
+	// The XDG Base Directory specification technically only applies on Linux/*BSD, but it doesn't hurt to support it on Windows as well.
 	if (has_environment("XDG_DATA_HOME")) {
-		return get_environment("XDG_DATA_HOME");
-	} else {
-		return get_config_path();
+		if (get_environment("XDG_DATA_HOME").is_abs_path()) {
+			return get_environment("XDG_DATA_HOME").replace("\\", "/");
+		} else {
+			WARN_PRINT_ONCE("`XDG_DATA_HOME` is a relative path. Ignoring its value and falling back to `get_config_path()` per the XDG Base Directory specification.");
+		}
 	}
+	return get_config_path();
 }
 
 String OS_Windows::get_cache_path() const {
+	// The XDG Base Directory specification technically only applies on Linux/*BSD, but it doesn't hurt to support it on Windows as well.
 	if (has_environment("XDG_CACHE_HOME")) {
-		return get_environment("XDG_CACHE_HOME");
-	} else if (has_environment("TEMP")) {
-		return get_environment("TEMP");
-	} else {
-		return get_config_path();
+		if (get_environment("XDG_CACHE_HOME").is_abs_path()) {
+			return get_environment("XDG_CACHE_HOME").replace("\\", "/");
+		} else {
+			WARN_PRINT_ONCE("`XDG_CACHE_HOME` is a relative path. Ignoring its value and falling back to `%TEMP%` or `get_config_path()` per the XDG Base Directory specification.");
+		}
 	}
+	if (has_environment("TEMP")) {
+		return get_environment("TEMP").replace("\\", "/");
+	}
+	return get_config_path();
 }
 
 // Get properly capitalized engine name for system paths
@@ -3381,7 +3395,7 @@ String OS_Windows::get_system_dir(SystemDir p_dir) const {
 	PWSTR szPath;
 	HRESULT res = SHGetKnownFolderPath(id, 0, NULL, &szPath);
 	ERR_FAIL_COND_V(res != S_OK, String());
-	String path = String(szPath);
+	String path = String(szPath).replace("\\", "/");
 	CoTaskMemFree(szPath);
 	return path;
 }
@@ -3505,7 +3519,7 @@ Error OS_Windows::move_to_trash(const String &p_path) {
 	delete[] from;
 
 	if (ret) {
-		ERR_PRINTS("SHFileOperation error: " + itos(ret));
+		ERR_PRINT("SHFileOperation error: " + itos(ret));
 		return FAILED;
 	}
 

@@ -274,7 +274,7 @@ String BindingsGenerator::bbcode_to_xml(const String &p_bbcode, const TypeInterf
 			Vector<String> link_target_parts = link_target.split(".");
 
 			if (link_target_parts.size() <= 0 || link_target_parts.size() > 2) {
-				ERR_PRINTS("Invalid reference format: '" + tag + "'.");
+				ERR_PRINT("Invalid reference format: '" + tag + "'.");
 
 				xml_output.append("<c>");
 				xml_output.append(tag);
@@ -370,7 +370,7 @@ String BindingsGenerator::bbcode_to_xml(const String &p_bbcode, const TypeInterf
 					xml_output.append(target_enum_itype.proxy_name); // Includes nesting class if any
 					xml_output.append("\"/>");
 				} else {
-					ERR_PRINTS("Cannot resolve enum reference in documentation: '" + link_target + "'.");
+					ERR_PRINT("Cannot resolve enum reference in documentation: '" + link_target + "'.");
 
 					xml_output.append("<c>");
 					xml_output.append(link_target);
@@ -419,7 +419,7 @@ String BindingsGenerator::bbcode_to_xml(const String &p_bbcode, const TypeInterf
 							xml_output.append(target_iconst->proxy_name);
 							xml_output.append("\"/>");
 						} else {
-							ERR_PRINTS("Cannot resolve global constant reference in documentation: '" + link_target + "'.");
+							ERR_PRINT("Cannot resolve global constant reference in documentation: '" + link_target + "'.");
 
 							xml_output.append("<c>");
 							xml_output.append(link_target);
@@ -459,7 +459,7 @@ String BindingsGenerator::bbcode_to_xml(const String &p_bbcode, const TypeInterf
 							xml_output.append(target_iconst->proxy_name);
 							xml_output.append("\"/>");
 						} else {
-							ERR_PRINTS("Cannot resolve constant reference in documentation: '" + link_target + "'.");
+							ERR_PRINT("Cannot resolve constant reference in documentation: '" + link_target + "'.");
 
 							xml_output.append("<c>");
 							xml_output.append(link_target);
@@ -529,7 +529,7 @@ String BindingsGenerator::bbcode_to_xml(const String &p_bbcode, const TypeInterf
 					xml_output.append(target_itype->proxy_name);
 					xml_output.append("\"/>");
 				} else {
-					ERR_PRINTS("Cannot resolve type reference in documentation: '" + tag + "'.");
+					ERR_PRINT("Cannot resolve type reference in documentation: '" + tag + "'.");
 
 					xml_output.append("<c>");
 					xml_output.append(tag);
@@ -932,6 +932,10 @@ Error BindingsGenerator::generate_cs_core_project(const String &p_proj_dir) {
 	cs_icalls_content.append(MEMBER_BEGIN "internal static uint cs_glue_version = ");
 	cs_icalls_content.append(String::num_uint64(CS_GLUE_VERSION) + ";\n");
 
+	// We have issues with beforefieldinit and AOT, so we use explicitly declare
+	// the static constructor to prevent the class from being beforefieldinit.
+	cs_icalls_content.append(MEMBER_BEGIN "static NativeCalls()\n" INDENT2 OPEN_BLOCK CLOSE_BLOCK_L2);
+
 #define ADD_INTERNAL_CALL(m_icall)                                                               \
 	if (!m_icall.editor_only) {                                                                  \
 		cs_icalls_content.append(MEMBER_BEGIN "[MethodImpl(MethodImplOptions.InternalCall)]\n"); \
@@ -1031,15 +1035,18 @@ Error BindingsGenerator::generate_cs_editor_project(const String &p_proj_dir) {
 	cs_icalls_content.append(String::num_uint64(BINDINGS_GENERATOR_VERSION) + ";\n");
 	cs_icalls_content.append(INDENT2 "internal static uint cs_glue_version = ");
 	cs_icalls_content.append(String::num_uint64(CS_GLUE_VERSION) + ";\n");
-	cs_icalls_content.append("\n");
 
-#define ADD_INTERNAL_CALL(m_icall)                                                          \
-	if (m_icall.editor_only) {                                                              \
-		cs_icalls_content.append(INDENT2 "[MethodImpl(MethodImplOptions.InternalCall)]\n"); \
-		cs_icalls_content.append(INDENT2 "internal extern static ");                        \
-		cs_icalls_content.append(m_icall.im_type_out + " ");                                \
-		cs_icalls_content.append(m_icall.name + "(");                                       \
-		cs_icalls_content.append(m_icall.im_sig + ");\n");                                  \
+	// We have issues with beforefieldinit and AOT, so we use explicitly declare
+	// the static constructor to prevent the class from being beforefieldinit.
+	cs_icalls_content.append(MEMBER_BEGIN "static EditorNativeCalls()\n" INDENT2 OPEN_BLOCK CLOSE_BLOCK_L2);
+
+#define ADD_INTERNAL_CALL(m_icall)                                                               \
+	if (m_icall.editor_only) {                                                                   \
+		cs_icalls_content.append(MEMBER_BEGIN "[MethodImpl(MethodImplOptions.InternalCall)]\n"); \
+		cs_icalls_content.append(INDENT2 "internal extern static ");                             \
+		cs_icalls_content.append(m_icall.im_type_out + " ");                                     \
+		cs_icalls_content.append(m_icall.name + "(");                                            \
+		cs_icalls_content.append(m_icall.im_sig + ");\n");                                       \
 	}
 
 	for (const List<InternalCall>::Element *E = editor_custom_icalls.front(); E; E = E->next())
@@ -1195,7 +1202,7 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 			output.append(obj_types[itype.base_name].proxy_name);
 			output.append("\n");
 		} else {
-			ERR_PRINTS("Base type '" + itype.base_name.operator String() + "' does not exist, for class '" + itype.name + "'.");
+			ERR_PRINT("Base type '" + itype.base_name.operator String() + "' does not exist, for class '" + itype.name + "'.");
 			return ERR_INVALID_DATA;
 		}
 	}
@@ -1631,7 +1638,7 @@ Error BindingsGenerator::_generate_cs_method(const BindingsGenerator::TypeInterf
 
 		if (p_imethod.is_deprecated) {
 			if (p_imethod.deprecation_message.empty())
-				WARN_PRINTS("An empty deprecation message is discouraged. Method: '" + p_imethod.proxy_name + "'.");
+				WARN_PRINT("An empty deprecation message is discouraged. Method: '" + p_imethod.proxy_name + "'.");
 
 			p_output.append(MEMBER_BEGIN "[Obsolete(\"");
 			p_output.append(p_imethod.deprecation_message);
@@ -2113,7 +2120,7 @@ const BindingsGenerator::TypeInterface *BindingsGenerator::_get_type_or_placehol
 	if (found)
 		return found;
 
-	ERR_PRINTS(String() + "Type not found. Creating placeholder: '" + p_typeref.cname.operator String() + "'.");
+	ERR_PRINT(String() + "Type not found. Creating placeholder: '" + p_typeref.cname.operator String() + "'.");
 
 	const Map<StringName, TypeInterface>::Element *match = placeholder_types.find(p_typeref.cname);
 
@@ -2334,9 +2341,9 @@ bool BindingsGenerator::_populate_object_type_interfaces() {
 				// which could actually will return something different.
 				// Let's put this to notify us if that ever happens.
 				if (itype.cname != name_cache.type_Object || imethod.name != "free") {
-					WARN_PRINTS("Notification: New unexpected virtual non-overridable method found."
-								" We only expected Object.free, but found '" +
-								itype.name + "." + imethod.name + "'.");
+					WARN_PRINT("Notification: New unexpected virtual non-overridable method found."
+							   " We only expected Object.free, but found '" +
+							   itype.name + "." + imethod.name + "'.");
 				}
 			} else if (return_info.type == Variant::INT && return_info.usage & PROPERTY_USAGE_CLASS_IS_ENUM) {
 				imethod.return_type.cname = return_info.class_name;
@@ -2345,7 +2352,7 @@ bool BindingsGenerator::_populate_object_type_interfaces() {
 				imethod.return_type.cname = return_info.class_name;
 				if (!imethod.is_virtual && ClassDB::is_parent_class(return_info.class_name, name_cache.type_Reference) && return_info.hint != PROPERTY_HINT_RESOURCE_TYPE) {
 					/* clang-format off */
-					ERR_PRINTS("Return type is reference but hint is not '" _STR(PROPERTY_HINT_RESOURCE_TYPE) "'."
+					ERR_PRINT("Return type is reference but hint is not '" _STR(PROPERTY_HINT_RESOURCE_TYPE) "'."
 							" Are you returning a reference type by pointer? Method: '" + itype.name + "." + imethod.name + "'.");
 					/* clang-format on */
 					ERR_FAIL_V(false);
@@ -2557,28 +2564,37 @@ bool BindingsGenerator::_arg_default_value_from_variant(const Variant &p_val, Ar
 			}
 			break;
 		case Variant::REAL:
-#ifndef REAL_T_IS_DOUBLE
-			r_iarg.default_argument += "f";
-#endif
+			if (r_iarg.type.cname == "float") {
+				r_iarg.default_argument += "f";
+			}
 			break;
 		case Variant::STRING:
 		case Variant::NODE_PATH:
 			r_iarg.default_argument = "\"" + r_iarg.default_argument + "\"";
 			break;
-		case Variant::TRANSFORM:
-			if (p_val.operator Transform() == Transform())
-				r_iarg.default_argument.clear();
-			r_iarg.default_argument = "new %s(" + r_iarg.default_argument + ")";
+		case Variant::PLANE: {
+			Plane plane = p_val.operator Plane();
+			r_iarg.default_argument = "new Plane(new Vector3(" + plane.normal.operator String() + "), " + rtos(plane.d) + ")";
 			r_iarg.def_param_mode = ArgumentInterface::NULLABLE_VAL;
-			break;
-		case Variant::PLANE:
-		case Variant::AABB:
-		case Variant::COLOR:
-			r_iarg.default_argument = "new Color(1, 1, 1, 1)";
+		} break;
+		case Variant::AABB: {
+			AABB aabb = p_val.operator ::AABB();
+			r_iarg.default_argument = "new AABB(new Vector3(" + aabb.position.operator String() + "), new Vector3(" + aabb.size.operator String() + "))";
 			r_iarg.def_param_mode = ArgumentInterface::NULLABLE_VAL;
-			break;
+		} break;
+		case Variant::RECT2: {
+			Rect2 rect = p_val.operator Rect2();
+			r_iarg.default_argument = "new Rect2(new Vector2(" + rect.position.operator String() + "), new Vector2(" + rect.size.operator String() + "))";
+			r_iarg.def_param_mode = ArgumentInterface::NULLABLE_VAL;
+		} break;
+		case Variant::COLOR: {
+			if (r_iarg.default_argument == "1,1,1,1") {
+				r_iarg.default_argument = "1, 1, 1, 1";
+			}
+			r_iarg.default_argument = "new Color(" + r_iarg.default_argument + ")";
+			r_iarg.def_param_mode = ArgumentInterface::NULLABLE_VAL;
+		} break;
 		case Variant::VECTOR2:
-		case Variant::RECT2:
 		case Variant::VECTOR3:
 			r_iarg.default_argument = "new %s" + r_iarg.default_argument;
 			r_iarg.def_param_mode = ArgumentInterface::NULLABLE_VAL;
@@ -2613,14 +2629,46 @@ bool BindingsGenerator::_arg_default_value_from_variant(const Variant &p_val, Ar
 			r_iarg.default_argument = "new %s {}";
 			r_iarg.def_param_mode = ArgumentInterface::NULLABLE_REF;
 			break;
-		case Variant::TRANSFORM2D:
-		case Variant::BASIS:
-		case Variant::QUAT:
-			r_iarg.default_argument = Variant::get_type_name(p_val.get_type()) + ".Identity";
+		case Variant::TRANSFORM2D: {
+			Transform2D transform = p_val.operator Transform2D();
+			if (transform == Transform2D()) {
+				r_iarg.default_argument = "Transform2D.Identity";
+			} else {
+				r_iarg.default_argument = "new Transform2D(new Vector2" + transform.elements[0].operator String() + ", new Vector2" + transform.elements[1].operator String() + ", new Vector2" + transform.elements[2].operator String() + ")";
+			}
 			r_iarg.def_param_mode = ArgumentInterface::NULLABLE_VAL;
+		} break;
+		case Variant::TRANSFORM: {
+			Transform transform = p_val.operator Transform();
+			if (transform == Transform()) {
+				r_iarg.default_argument = "Transform.Identity";
+			} else {
+				Basis basis = transform.basis;
+				r_iarg.default_argument = "new Transform(new Vector3" + basis.get_column(0).operator String() + ", new Vector3" + basis.get_column(1).operator String() + ", new Vector3" + basis.get_column(2).operator String() + ", new Vector3" + transform.origin.operator String() + ")";
+			}
+			r_iarg.def_param_mode = ArgumentInterface::NULLABLE_VAL;
+		} break;
+		case Variant::BASIS: {
+			Basis basis = p_val.operator Basis();
+			if (basis == Basis()) {
+				r_iarg.default_argument = "Basis.Identity";
+			} else {
+				r_iarg.default_argument = "new Basis(new Vector3" + basis.get_column(0).operator String() + ", new Vector3" + basis.get_column(1).operator String() + ", new Vector3" + basis.get_column(2).operator String() + ")";
+			}
+			r_iarg.def_param_mode = ArgumentInterface::NULLABLE_VAL;
+		} break;
+		case Variant::QUAT: {
+			Quat quat = p_val.operator Quat();
+			if (quat == Quat()) {
+				r_iarg.default_argument = "Quat.Identity";
+			} else {
+				r_iarg.default_argument = "new Quat" + quat.operator String();
+			}
+			r_iarg.def_param_mode = ArgumentInterface::NULLABLE_VAL;
+		} break;
+		default:
+			CRASH_NOW_MSG("Unexpected Variant type: " + itos(p_val.get_type()));
 			break;
-		default: {
-		}
 	}
 
 	if (r_iarg.def_param_mode == ArgumentInterface::CONSTANT && r_iarg.type.cname == name_cache.type_Variant && r_iarg.default_argument != "null")
@@ -2967,7 +3015,7 @@ void BindingsGenerator::_populate_global_constants() {
 			// HARDCODED: The Error enum have the prefix 'ERR_' for everything except 'OK' and 'FAILED'.
 			if (ienum.cname == name_cache.enum_Error) {
 				if (prefix_length > 0) { // Just in case it ever changes
-					ERR_PRINTS("Prefix for enum '" _STR(Error) "' is not empty.");
+					ERR_PRINT("Prefix for enum '" _STR(Error) "' is not empty.");
 				}
 
 				prefix_length = 1; // 'ERR_'

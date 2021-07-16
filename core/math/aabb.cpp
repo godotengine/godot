@@ -43,6 +43,44 @@ bool AABB::operator!=(const AABB &p_rval) const {
 	return ((position != p_rval.position) || (size != p_rval.size));
 }
 
+bool AABB::create_from_points(const Vector<Vector3> &p_points) {
+	if (!p_points.size()) {
+		return false;
+	}
+
+	Vector3 begin = p_points[0];
+	Vector3 end = begin;
+
+	for (int n = 1; n < p_points.size(); n++) {
+		const Vector3 &pt = p_points[n];
+
+		if (pt.x < begin.x) {
+			begin.x = pt.x;
+		}
+		if (pt.y < begin.y) {
+			begin.y = pt.y;
+		}
+		if (pt.z < begin.z) {
+			begin.z = pt.z;
+		}
+
+		if (pt.x > end.x) {
+			end.x = pt.x;
+		}
+		if (pt.y > end.y) {
+			end.y = pt.y;
+		}
+		if (pt.z > end.z) {
+			end.z = pt.z;
+		}
+	}
+
+	position = begin;
+	size = end - begin;
+
+	return true;
+}
+
 void AABB::merge_with(const AABB &p_aabb) {
 	Vector3 beg_1, beg_2;
 	Vector3 end_1, end_2;

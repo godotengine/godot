@@ -60,7 +60,7 @@ static Error _parse_material_library(const String &p_path, Map<String, Ref<Spati
 			material_map[current_name] = current;
 		} else if (l.begins_with("Ka ")) {
 			//uv
-			WARN_PRINTS("OBJ: Ambient light for material '" + current_name + "' is ignored in PBR");
+			WARN_PRINT("OBJ: Ambient light for material '" + current_name + "' is ignored in PBR");
 
 		} else if (l.begins_with("Kd ")) {
 			//normal
@@ -116,7 +116,7 @@ static Error _parse_material_library(const String &p_path, Map<String, Ref<Spati
 
 		} else if (l.begins_with("map_Ka ")) {
 			//uv
-			WARN_PRINTS("OBJ: Ambient light texture for material '" + current_name + "' is ignored in PBR");
+			WARN_PRINT("OBJ: Ambient light texture for material '" + current_name + "' is ignored in PBR");
 
 		} else if (l.begins_with("map_Kd ")) {
 			//normal

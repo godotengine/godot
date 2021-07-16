@@ -328,10 +328,17 @@ void TileMap::update_dirty_quadrants() {
 	Color debug_collision_color;
 	Color debug_navigation_color;
 
-	bool debug_shapes = show_collision && (Engine::get_singleton()->is_editor_hint() || (st && st->is_debugging_collisions_hint()));
+	bool debug_shapes = false;
+	if (st) {
+		if (Engine::get_singleton()->is_editor_hint()) {
+			debug_shapes = show_collision;
+		} else {
+			debug_shapes = st->is_debugging_collisions_hint();
+		}
 
-	if (debug_shapes) {
-		debug_collision_color = st->get_debug_collisions_color();
+		if (debug_shapes) {
+			debug_collision_color = st->get_debug_collisions_color();
+		}
 	}
 
 	bool debug_navigation = st && st->is_debugging_navigation_hint();
@@ -1275,6 +1282,7 @@ void TileMap::set_collision_mask(uint32_t p_mask) {
 }
 
 void TileMap::set_collision_layer_bit(int p_bit, bool p_value) {
+	ERR_FAIL_INDEX_MSG(p_bit, 32, "Collision layer bit must be between 0 and 31 inclusive.");
 	uint32_t layer = get_collision_layer();
 	if (p_value) {
 		layer |= 1 << p_bit;
@@ -1285,6 +1293,7 @@ void TileMap::set_collision_layer_bit(int p_bit, bool p_value) {
 }
 
 void TileMap::set_collision_mask_bit(int p_bit, bool p_value) {
+	ERR_FAIL_INDEX_MSG(p_bit, 32, "Collision mask bit must be between 0 and 31 inclusive.");
 	uint32_t mask = get_collision_mask();
 	if (p_value) {
 		mask |= 1 << p_bit;
@@ -1365,10 +1374,12 @@ uint32_t TileMap::get_collision_mask() const {
 }
 
 bool TileMap::get_collision_layer_bit(int p_bit) const {
+	ERR_FAIL_INDEX_V_MSG(p_bit, 32, false, "Collision layer bit must be between 0 and 31 inclusive.");
 	return get_collision_layer() & (1 << p_bit);
 }
 
 bool TileMap::get_collision_mask_bit(int p_bit) const {
+	ERR_FAIL_INDEX_V_MSG(p_bit, 32, false, "Collision mask bit must be between 0 and 31 inclusive.");
 	return get_collision_mask() & (1 << p_bit);
 }
 

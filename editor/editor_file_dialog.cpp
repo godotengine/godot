@@ -275,6 +275,9 @@ void EditorFileDialog::_post_popup() {
 			if (res && name == "res://") {
 				name = "/";
 			} else {
+				if (name.ends_with("/")) {
+					name = name.substr(0, name.length() - 1);
+				}
 				name = name.get_file() + "/";
 			}
 			bool exists = dir_access->dir_exists(recentd[i]);
@@ -447,7 +450,7 @@ void EditorFileDialog::_action_pressed() {
 		}
 
 		if (dir_access->file_exists(f) && !disable_overwrite_warning) {
-			confirm_save->set_text(TTR("File Exists, Overwrite?"));
+			confirm_save->set_text(TTR("File exists, overwrite?"));
 			confirm_save->popup_centered(Size2(200, 80));
 		} else {
 			_save_to_recent();

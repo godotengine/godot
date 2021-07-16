@@ -1,4 +1,4 @@
-// Copyright 2009-2020 Intel Corporation
+// Copyright 2009-2021 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
 #pragma once
@@ -105,7 +105,7 @@ namespace embree
         const Precalculations& pre, const Vec4vf<M>& v0i, const Epilog& epilog)
       {
         const Vec3vf<M> ray_org(ray.org.x, ray.org.y, ray.org.z);
-        const Vec4vf<M> v0 = enlargeRadiusToMinWidth(context,geom,ray_org,v0i);
+        const Vec4vf<M> v0 = enlargeRadiusToMinWidth<M>(context,geom,ray_org,v0i);
         return intersect(valid_i,ray,pre,v0,epilog);
       }
     };
@@ -130,7 +130,7 @@ namespace embree
         const Vec3vf<M> ray_dir(ray.dir.x[k], ray.dir.y[k], ray.dir.z[k]);
         const vfloat<M> rd2 = rcp(dot(ray_dir, ray_dir));
 
-        const Vec4vf<M> v0 = enlargeRadiusToMinWidth(context,geom,ray_org,v0i);
+        const Vec4vf<M> v0 = enlargeRadiusToMinWidth<M>(context,geom,ray_org,v0i);
         const Vec3vf<M> center = v0.xyz();
         const vfloat<M> radius = v0.w;
 

@@ -90,6 +90,10 @@ void ParticlesMaterial::init_shaders() {
 	shader_names->emission_texture_points = "emission_texture_points";
 	shader_names->emission_texture_normal = "emission_texture_normal";
 	shader_names->emission_texture_color = "emission_texture_color";
+	shader_names->emission_ring_height = "ring_height";
+	shader_names->emission_ring_inner_radius = "ring_inner_radius";
+	shader_names->emission_ring_radius = "ring_radius";
+	shader_names->emission_ring_axis = "ring_axis";
 
 	shader_names->trail_divisor = "trail_divisor";
 	shader_names->trail_size_modifier = "trail_size_modifier";
@@ -186,6 +190,12 @@ void ParticlesMaterial::_update_shader() {
 			if (emission_color_texture.is_valid()) {
 				code += "uniform sampler2D emission_texture_color : hint_white;\n";
 			}
+		} break;
+		case EMISSION_SHAPE_RING: {
+			code += "uniform float ring_radius = 2.0;\n";
+			code += "uniform float ring_height = 1.0;\n";
+			code += "uniform float ring_inner_radius = 0.0;\n";
+			code += "uniform vec3 ring_axis = vec3(0.0, 0.0, 1.0);\n";
 		} break;
 		case EMISSION_SHAPE_MAX: { // Max value for validity check.
 			break;
@@ -331,14 +341,21 @@ void ParticlesMaterial::_update_shader() {
 		//initiate velocity spread in 3D
 		code += "		float angle1_rad = rand_from_seed_m1_p1(alt_seed) * spread_rad;\n";
 		code += "		float angle2_rad = rand_from_seed_m1_p1(alt_seed) * spread_rad * (1.0 - flatness);\n";
-		code += "		angle1_rad += direction.z != 0.0 ? atan(direction.x, direction.z) : sign(direction.x) * (pi / 2.0);\n";
-		code += "		angle2_rad += direction.z != 0.0 ? atan(direction.y, abs(direction.z)) : (direction.x != 0.0 ? atan(direction.y, abs(direction.x)) : sign(direction.y) * (pi / 2.0));\n";
 		code += "		vec3 direction_xz = vec3(sin(angle1_rad), 0.0, cos(angle1_rad));\n";
 		code += "		vec3 direction_yz = vec3(0.0, sin(angle2_rad), cos(angle2_rad));\n";
 		code += "		direction_yz.z = direction_yz.z / max(0.0001,sqrt(abs(direction_yz.z))); // better uniform distribution\n";
-		code += "		vec3 vec_direction = vec3(direction_xz.x * direction_yz.z, direction_yz.y, direction_xz.z * direction_yz.z);\n";
-		code += "		vec_direction = normalize(vec_direction);\n";
-		code += "		VELOCITY = vec_direction * initial_linear_velocity * mix(1.0, rand_from_seed(alt_seed), initial_linear_velocity_random);\n";
+		code += "		vec3 spread_direction = vec3(direction_xz.x * direction_yz.z, direction_yz.y, direction_xz.z * direction_yz.z);\n";
+		code += "		vec3 direction_nrm = normalize(direction);\n";
+		code += "		// rotate spread to direction\n";
+		code += "		vec3 binormal = cross(vec3(0.0, 1.0, 0.0), direction_nrm);\n";
+		code += "		if (length(binormal) < 0.0001) {\n";
+		code += "			// direction is parallel to Y. Choose Z as the binormal.\n";
+		code += "			binormal = vec3(0.0, 0.0, 1.0);\n";
+		code += "		}\n";
+		code += "		binormal = normalize(binormal);\n";
+		code += "		vec3 normal = cross(binormal, direction_nrm);\n";
+		code += "		spread_direction = binormal * spread_direction.x + normal * spread_direction.y + direction_nrm * spread_direction.z;\n";
+		code += "		VELOCITY = spread_direction * initial_linear_velocity * mix(1.0, rand_from_seed(alt_seed), initial_linear_velocity_random);\n";
 	}
 
 	code += "		float base_angle = (initial_angle + tex_angle) * mix(1.0, angle_rand, initial_angle_random);\n";
@@ -378,6 +395,28 @@ void ParticlesMaterial::_update_shader() {
 					code += "		VELOCITY = mat3(tangent, bitangent, normal) * VELOCITY;\n";
 				}
 			}
+		} break;
+		case EMISSION_SHAPE_RING: {
+			code += "		float ring_spawn_angle = rand_from_seed(alt_seed) * 2.0 * pi;\n";
+			code += "		float ring_random_radius = rand_from_seed(alt_seed) * (ring_radius - ring_inner_radius) + ring_inner_radius;\n";
+			code += "		vec3 axis = normalize(ring_axis);\n";
+			code += "		vec3 ortho_axis = vec3(0.0);\n";
+			code += "		if (axis == vec3(1.0, 0.0, 0.0)) {\n";
+			code += "			ortho_axis = cross(axis, vec3(0.0, 1.0, 0.0));\n";
+			code += "		} else {\n";
+			code += " 			ortho_axis = cross(axis, vec3(1.0, 0.0, 0.0));\n";
+			code += "		}\n";
+			code += "		ortho_axis = normalize(ortho_axis);\n";
+			code += "		float s = sin(ring_spawn_angle);\n";
+			code += "		float c = cos(ring_spawn_angle);\n";
+			code += "		float oc = 1.0 - c;\n";
+			code += "		ortho_axis = mat3(\n";
+			code += "			vec3(c + axis.x * axis.x * oc, axis.x * axis.y * oc - axis.z * s, axis.x * axis.z *oc + axis.y * s),\n";
+			code += "			vec3(axis.x * axis.y * oc + s * axis.z, c + axis.y * axis.y * oc, axis.y * axis.z * oc - axis.x * s),\n";
+			code += "			vec3(axis.z * axis.x * oc - axis.y * s, axis.z * axis.y * oc + axis.x * s, c + axis.z * axis.z * oc)\n";
+			code += "			) * ortho_axis;\n";
+			code += "		ortho_axis = normalize(ortho_axis);\n";
+			code += "		TRANSFORM[3].xyz = ortho_axis * ring_random_radius + (rand_from_seed(alt_seed) * ring_height - ring_height / 2.0) * axis;\n";
 		} break;
 		case EMISSION_SHAPE_MAX: { // Max value for validity check.
 			break;
@@ -536,7 +575,7 @@ void ParticlesMaterial::_update_shader() {
 	code += "			vec4(1.250, -1.050, -0.203, 0.0),\n";
 	code += "			vec4(0.000, 0.000, 0.000, 0.0)) * hue_rot_s;\n";
 	if (color_ramp.is_valid()) {
-		code += "	COLOR = hue_rot_mat * textureLod(color_ramp, vec2(tv, 0.0), 0.0);\n";
+		code += "	COLOR = hue_rot_mat * textureLod(color_ramp, vec2(tv, 0.0), 0.0) * color_value;\n";
 	} else {
 		code += "	COLOR = hue_rot_mat * color_value;\n";
 	}
@@ -932,6 +971,26 @@ void ParticlesMaterial::set_emission_point_count(int p_count) {
 	VisualServer::get_singleton()->material_set_param(_get_material(), shader_names->emission_texture_point_count, p_count);
 }
 
+void ParticlesMaterial::set_emission_ring_height(float p_height) {
+	emission_ring_height = p_height;
+	VisualServer::get_singleton()->material_set_param(_get_material(), shader_names->emission_ring_height, p_height);
+}
+
+void ParticlesMaterial::set_emission_ring_radius(float p_radius) {
+	emission_ring_radius = p_radius;
+	VisualServer::get_singleton()->material_set_param(_get_material(), shader_names->emission_ring_radius, p_radius);
+}
+
+void ParticlesMaterial::set_emission_ring_inner_radius(float p_offset) {
+	emission_ring_inner_radius = p_offset;
+	VisualServer::get_singleton()->material_set_param(_get_material(), shader_names->emission_ring_inner_radius, p_offset);
+}
+
+void ParticlesMaterial::set_emission_ring_axis(Vector3 p_axis) {
+	emission_ring_axis = p_axis;
+	VisualServer::get_singleton()->material_set_param(_get_material(), shader_names->emission_ring_axis, p_axis);
+}
+
 ParticlesMaterial::EmissionShape ParticlesMaterial::get_emission_shape() const {
 	return emission_shape;
 }
@@ -955,6 +1014,22 @@ Ref<Texture> ParticlesMaterial::get_emission_color_texture() const {
 
 int ParticlesMaterial::get_emission_point_count() const {
 	return emission_point_count;
+}
+
+float ParticlesMaterial::get_emission_ring_height() const {
+	return emission_ring_height;
+}
+
+float ParticlesMaterial::get_emission_ring_inner_radius() const {
+	return emission_ring_inner_radius;
+}
+
+float ParticlesMaterial::get_emission_ring_radius() const {
+	return emission_ring_radius;
+}
+
+Vector3 ParticlesMaterial::get_emission_ring_axis() const {
+	return emission_ring_axis;
 }
 
 void ParticlesMaterial::set_trail_divisor(int p_divisor) {
@@ -1020,10 +1095,6 @@ RID ParticlesMaterial::get_shader_rid() const {
 }
 
 void ParticlesMaterial::_validate_property(PropertyInfo &property) const {
-	if (property.name == "color" && color_ramp.is_valid()) {
-		property.usage = 0;
-	}
-
 	if (property.name == "emission_sphere_radius" && emission_shape != EMISSION_SHAPE_SPHERE) {
 		property.usage = 0;
 	}
@@ -1032,7 +1103,7 @@ void ParticlesMaterial::_validate_property(PropertyInfo &property) const {
 		property.usage = 0;
 	}
 
-	if ((property.name == "emission_point_texture" || property.name == "emission_color_texture") && (emission_shape < EMISSION_SHAPE_POINTS)) {
+	if ((property.name == "emission_point_texture" || property.name == "emission_color_texture") && (emission_shape != EMISSION_SHAPE_POINTS) && emission_shape != EMISSION_SHAPE_DIRECTED_POINTS) {
 		property.usage = 0;
 	}
 
@@ -1041,6 +1112,10 @@ void ParticlesMaterial::_validate_property(PropertyInfo &property) const {
 	}
 
 	if (property.name == "emission_point_count" && (emission_shape != EMISSION_SHAPE_POINTS && emission_shape != EMISSION_SHAPE_DIRECTED_POINTS)) {
+		property.usage = 0;
+	}
+
+	if ((property.name == "emission_ring_radius" || property.name == "emission_ring_height" || property.name == "emission_ring_inner_radius") && emission_shape != EMISSION_SHAPE_RING) {
 		property.usage = 0;
 	}
 
@@ -1102,6 +1177,18 @@ void ParticlesMaterial::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_emission_point_count", "point_count"), &ParticlesMaterial::set_emission_point_count);
 	ClassDB::bind_method(D_METHOD("get_emission_point_count"), &ParticlesMaterial::get_emission_point_count);
 
+	ClassDB::bind_method(D_METHOD("set_emission_ring_radius", "radius"), &ParticlesMaterial::set_emission_ring_radius);
+	ClassDB::bind_method(D_METHOD("get_emission_ring_radius"), &ParticlesMaterial::get_emission_ring_radius);
+
+	ClassDB::bind_method(D_METHOD("set_emission_ring_inner_radius", "offset"), &ParticlesMaterial::set_emission_ring_inner_radius);
+	ClassDB::bind_method(D_METHOD("get_emission_ring_inner_radius"), &ParticlesMaterial::get_emission_ring_inner_radius);
+
+	ClassDB::bind_method(D_METHOD("set_emission_ring_height", "height"), &ParticlesMaterial::set_emission_ring_height);
+	ClassDB::bind_method(D_METHOD("get_emission_ring_height"), &ParticlesMaterial::get_emission_ring_height);
+
+	ClassDB::bind_method(D_METHOD("set_emission_ring_axis", "axis"), &ParticlesMaterial::set_emission_ring_axis);
+	ClassDB::bind_method(D_METHOD("get_emission_ring_axis"), &ParticlesMaterial::get_emission_ring_axis);
+
 	ClassDB::bind_method(D_METHOD("set_trail_divisor", "divisor"), &ParticlesMaterial::set_trail_divisor);
 	ClassDB::bind_method(D_METHOD("get_trail_divisor"), &ParticlesMaterial::get_trail_divisor);
 
@@ -1124,13 +1211,18 @@ void ParticlesMaterial::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "trail_size_modifier", PROPERTY_HINT_RESOURCE_TYPE, "CurveTexture"), "set_trail_size_modifier", "get_trail_size_modifier");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "trail_color_modifier", PROPERTY_HINT_RESOURCE_TYPE, "GradientTexture"), "set_trail_color_modifier", "get_trail_color_modifier");
 	ADD_GROUP("Emission Shape", "emission_");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "emission_shape", PROPERTY_HINT_ENUM, "Point,Sphere,Box,Points,Directed Points"), "set_emission_shape", "get_emission_shape");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "emission_shape", PROPERTY_HINT_ENUM, "Point,Sphere,Box,Points,Directed Points,Ring"), "set_emission_shape", "get_emission_shape");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "emission_sphere_radius", PROPERTY_HINT_RANGE, "0.01,128,0.01,or_greater"), "set_emission_sphere_radius", "get_emission_sphere_radius");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "emission_box_extents"), "set_emission_box_extents", "get_emission_box_extents");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "emission_point_texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture"), "set_emission_point_texture", "get_emission_point_texture");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "emission_normal_texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture"), "set_emission_normal_texture", "get_emission_normal_texture");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "emission_color_texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture"), "set_emission_color_texture", "get_emission_color_texture");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "emission_point_count", PROPERTY_HINT_RANGE, "0,1000000,1"), "set_emission_point_count", "get_emission_point_count");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL, "emission_ring_radius", PROPERTY_HINT_RANGE, "0.01,1000,0.01,or_greater"), "set_emission_ring_radius", "get_emission_ring_radius");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL, "emission_ring_inner_radius", PROPERTY_HINT_RANGE, "0.0,1000,0.01,or_greater"), "set_emission_ring_inner_radius", "get_emission_ring_inner_radius");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL, "emission_ring_height", PROPERTY_HINT_RANGE, "0.0,100,0.01,or_greater"), "set_emission_ring_height", "get_emission_ring_height");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "emission_ring_axis"), "set_emission_ring_axis", "get_emission_ring_axis");
+
 	ADD_GROUP("Flags", "flag_");
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "flag_align_y"), "set_flag", "get_flag", FLAG_ALIGN_Y_TO_VELOCITY);
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "flag_rotate_y"), "set_flag", "get_flag", FLAG_ROTATE_Y);
@@ -1216,6 +1308,7 @@ void ParticlesMaterial::_bind_methods() {
 	BIND_ENUM_CONSTANT(EMISSION_SHAPE_BOX);
 	BIND_ENUM_CONSTANT(EMISSION_SHAPE_POINTS);
 	BIND_ENUM_CONSTANT(EMISSION_SHAPE_DIRECTED_POINTS);
+	BIND_ENUM_CONSTANT(EMISSION_SHAPE_RING);
 	BIND_ENUM_CONSTANT(EMISSION_SHAPE_MAX);
 }
 
@@ -1243,6 +1336,10 @@ ParticlesMaterial::ParticlesMaterial() :
 	set_gravity(Vector3(0, -9.8, 0));
 	set_lifetime_randomness(0);
 	emission_point_count = 1;
+	set_emission_ring_height(1.0);
+	set_emission_ring_inner_radius(0.0);
+	set_emission_ring_radius(2.0);
+	set_emission_ring_axis(Vector3(0.0, 0.0, 1.0));
 
 	for (int i = 0; i < PARAM_MAX; i++) {
 		set_param_randomness(Parameter(i), 0);

@@ -1,7 +1,15 @@
-// Copyright 2009-2020 Intel Corporation
+// Copyright 2009-2021 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
 #pragma once
+
+#define vboolf vboolf_impl
+#define vboold vboold_impl
+#define vint vint_impl
+#define vuint vuint_impl
+#define vllong vllong_impl
+#define vfloat vfloat_impl
+#define vdouble vdouble_impl
 
 namespace embree
 { 
@@ -181,20 +189,13 @@ namespace embree
   __forceinline vboold4 operator >=(const vdouble4& a, const vdouble4& b) { return _mm256_cmp_pd_mask(a, b, _MM_CMPINT_GE); }
   __forceinline vboold4 operator > (const vdouble4& a, const vdouble4& b) { return _mm256_cmp_pd_mask(a, b, _MM_CMPINT_GT); }
   __forceinline vboold4 operator <=(const vdouble4& a, const vdouble4& b) { return _mm256_cmp_pd_mask(a, b, _MM_CMPINT_LE); }
-#elif !defined(__aarch64__)
+#else
   __forceinline vboold4 operator ==(const vdouble4& a, const vdouble4& b) { return _mm256_cmp_pd(a, b, _CMP_EQ_OQ);  }
   __forceinline vboold4 operator !=(const vdouble4& a, const vdouble4& b) { return _mm256_cmp_pd(a, b, _CMP_NEQ_UQ); }
   __forceinline vboold4 operator < (const vdouble4& a, const vdouble4& b) { return _mm256_cmp_pd(a, b, _CMP_LT_OS);  }
   __forceinline vboold4 operator >=(const vdouble4& a, const vdouble4& b) { return _mm256_cmp_pd(a, b, _CMP_NLT_US); }
   __forceinline vboold4 operator > (const vdouble4& a, const vdouble4& b) { return _mm256_cmp_pd(a, b, _CMP_NLE_US); }
   __forceinline vboold4 operator <=(const vdouble4& a, const vdouble4& b) { return _mm256_cmp_pd(a, b, _CMP_LE_OS);  }
-#else
-  __forceinline vboold4 operator ==(const vdouble4& a, const vdouble4& b) { return _mm256_cmpeq_pd(a, b);  }
-  __forceinline vboold4 operator !=(const vdouble4& a, const vdouble4& b) { return _mm256_cmpneq_pd(a, b); }
-  __forceinline vboold4 operator < (const vdouble4& a, const vdouble4& b) { return _mm256_cmplt_pd(a, b);  }
-  __forceinline vboold4 operator >=(const vdouble4& a, const vdouble4& b) { return _mm256_cmpnlt_pd(a, b); }
-  __forceinline vboold4 operator > (const vdouble4& a, const vdouble4& b) { return _mm256_cmpnle_pd(a, b); }
-  __forceinline vboold4 operator <=(const vdouble4& a, const vdouble4& b) { return _mm256_cmple_pd(a, b);  }
 #endif
 
   __forceinline vboold4 operator ==(const vdouble4& a, double          b) { return a == vdouble4(b); }
@@ -243,18 +244,6 @@ namespace embree
     return _mm256_mask_blend_pd(m, f, t);
 #else
     return _mm256_blendv_pd(f, t, m);
-#endif
-  }
-
-  __forceinline void xchg(const vboold4& m, vdouble4& a, vdouble4& b) {
-    const vdouble4 c = a; a = select(m,b,a); b = select(m,c,b);
-  }
-
-  __forceinline vboold4 test(const vdouble4& a, const vdouble4& b) {
-#if defined(__AVX512VL__)
-    return _mm256_test_epi64_mask(_mm256_castpd_si256(a),_mm256_castpd_si256(b));
-#else
-    return _mm256_testz_si256(_mm256_castpd_si256(a),_mm256_castpd_si256(b));
 #endif
   }
 
@@ -322,3 +311,11 @@ namespace embree
     return cout;
   }
 }
+
+#undef vboolf
+#undef vboold
+#undef vint
+#undef vuint
+#undef vllong
+#undef vfloat
+#undef vdouble

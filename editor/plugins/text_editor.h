@@ -55,6 +55,7 @@ private:
 		Color font_color;
 		Color symbol_color;
 		Color keyword_color;
+		Color control_flow_keyword_color;
 		Color basetype_color;
 		Color type_color;
 		Color comment_color;
@@ -76,7 +77,7 @@ private:
 		EDIT_INDENT_RIGHT,
 		EDIT_INDENT_LEFT,
 		EDIT_DELETE_LINE,
-		EDIT_CLONE_DOWN,
+		EDIT_DUPLICATE_SELECTION,
 		EDIT_TO_UPPERCASE,
 		EDIT_TO_LOWERCASE,
 		EDIT_CAPITALIZE,

@@ -284,7 +284,7 @@ void EditorResourcePreview::_thread() {
 								if (!f) {
 									// Not returning as this would leave the thread hanging and would require
 									// some proper cleanup/disabling of resource preview generation.
-									ERR_PRINTS("Cannot create file '" + file + "'. Check user write permissions.");
+									ERR_PRINT("Cannot create file '" + file + "'. Check user write permissions.");
 								} else {
 									f->store_line(itos(thumbnail_size));
 									f->store_line(itos(has_small_texture));

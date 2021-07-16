@@ -1,4 +1,4 @@
-// Copyright 2009-2020 Intel Corporation
+// Copyright 2009-2021 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
 #pragma once
@@ -343,7 +343,7 @@ namespace embree
       const TriangleMesh* mesh = scene->get<TriangleMesh>(geomID(index));
 
       vfloat<K> ftime;
-      const vint<K> itime = mesh->timeSegment(time, ftime);
+      const vint<K> itime = mesh->timeSegment<K>(time, ftime);
 
       const size_t first = bsf(movemask(valid));
       if (likely(all(valid,itime[first] == itime)))
@@ -352,9 +352,9 @@ namespace embree
         p1 = getVertex<1>(index, scene, itime[first], ftime);
         p2 = getVertex<2>(index, scene, itime[first], ftime);
       } else {
-        p0 = getVertex<0>(valid, index, scene, itime, ftime);
-        p1 = getVertex<1>(valid, index, scene, itime, ftime);
-        p2 = getVertex<2>(valid, index, scene, itime, ftime);
+        p0 = getVertex<0,K>(valid, index, scene, itime, ftime);
+        p1 = getVertex<1,K>(valid, index, scene, itime, ftime);
+        p2 = getVertex<2,K>(valid, index, scene, itime, ftime);
       }
     }
 

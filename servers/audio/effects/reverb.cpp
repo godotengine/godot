@@ -287,7 +287,7 @@ void Reverb::update_parameters() {
 			c.feedback = (room_offset + room_scale);
 		}
 
-		float auxdmp = params.damp / 2.0 + 0.5; //only half the range (0.5 .. 1.0  is enough)
+		float auxdmp = params.damp / 2.0 + 0.5; //only half the range (0.5 .. 1.0 is enough)
 		auxdmp *= auxdmp;
 
 		c.damp = expf(-2.0 * Math_PI * auxdmp * 10000 / params.mix_rate); // 0 .. 10khz

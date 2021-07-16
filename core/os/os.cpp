@@ -176,7 +176,7 @@ int OS::get_process_id() const {
 };
 
 void OS::vibrate_handheld(int p_duration_ms) {
-	WARN_PRINTS("vibrate_handheld() only works with Android and iOS");
+	WARN_PRINT("vibrate_handheld() only works with Android and iOS");
 }
 
 bool OS::is_stdout_verbose() const {
@@ -334,6 +334,11 @@ String OS::get_user_data_dir() const {
 	return ".";
 };
 
+// Android OS path to app's external data storage
+String OS::get_external_data_dir() const {
+	return get_user_data_dir();
+};
+
 // Absolute path to res://
 String OS::get_resource_dir() const {
 	return ProjectSettings::get_singleton()->get_resource_path();
@@ -424,6 +429,27 @@ void OS::set_screen_orientation(ScreenOrientation p_orientation) {
 
 OS::ScreenOrientation OS::get_screen_orientation() const {
 	return (OS::ScreenOrientation)_orientation;
+}
+
+// Internal helper function that returns the screen orientation enum value from a string
+// (generally coming from the Project Settings).
+// This is required to keep compatibility with existing projects.
+OS::ScreenOrientation OS::get_screen_orientation_from_string(const String &p_orientation) const {
+	if (p_orientation == "portrait") {
+		return OS::SCREEN_PORTRAIT;
+	} else if (p_orientation == "reverse_landscape") {
+		return OS::SCREEN_REVERSE_LANDSCAPE;
+	} else if (p_orientation == "reverse_portrait") {
+		return OS::SCREEN_REVERSE_PORTRAIT;
+	} else if (p_orientation == "sensor_landscape") {
+		return OS::SCREEN_SENSOR_LANDSCAPE;
+	} else if (p_orientation == "sensor_portrait") {
+		return OS::SCREEN_SENSOR_PORTRAIT;
+	} else if (p_orientation == "sensor") {
+		return OS::SCREEN_SENSOR;
+	}
+
+	return OS::SCREEN_LANDSCAPE;
 }
 
 void OS::ensure_user_data_dir() {

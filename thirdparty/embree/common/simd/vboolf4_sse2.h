@@ -1,7 +1,15 @@
-// Copyright 2009-2020 Intel Corporation
+// Copyright 2009-2021 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
 #pragma once
+
+#define vboolf vboolf_impl
+#define vboold vboold_impl
+#define vint vint_impl
+#define vuint vuint_impl
+#define vllong vllong_impl
+#define vfloat vfloat_impl
+#define vdouble vdouble_impl
 
 namespace embree
 {
@@ -37,13 +45,9 @@ namespace embree
       : v(mm_lookupmask_ps[(size_t(b) << 3) | (size_t(a) << 2) | (size_t(b) << 1) | size_t(a)]) {}
     __forceinline vboolf(bool a, bool b, bool c, bool d)
       : v(mm_lookupmask_ps[(size_t(d) << 3) | (size_t(c) << 2) | (size_t(b) << 1) | size_t(a)]) {}
-#if defined(__aarch64__) && defined(BUILD_IOS)
-      __forceinline vboolf(int mask) { v = mm_lookupmask_ps[mask]; }
-      __forceinline vboolf(unsigned int mask) { v = mm_lookupmask_ps[mask]; }
-#else
     __forceinline vboolf(int mask) { assert(mask >= 0 && mask < 16); v = mm_lookupmask_ps[mask]; }
     __forceinline vboolf(unsigned int mask) { assert(mask < 16); v = mm_lookupmask_ps[mask]; }
-#endif
+
     /* return int32 mask */
     __forceinline __m128i mask32() const { 
       return _mm_castps_si128(v);
@@ -60,13 +64,8 @@ namespace embree
     /// Array Access
     ////////////////////////////////////////////////////////////////////////////////
 
-#if defined(__aarch64__) && defined(BUILD_IOS)
-      __forceinline bool operator [](size_t index) const { return (_mm_movemask_ps(v) >> index) & 1; }
-      __forceinline int& operator [](size_t index)       { return i[index]; }
-#else
     __forceinline bool operator [](size_t index) const { assert(index < 4); return (_mm_movemask_ps(v) >> index) & 1; }
     __forceinline int& operator [](size_t index)       { assert(index < 4); return i[index]; }
-#endif
   };
 
   ////////////////////////////////////////////////////////////////////////////////
@@ -101,7 +100,7 @@ namespace embree
   __forceinline vboolf4 operator ==(const vboolf4& a, const vboolf4& b) { return _mm_castsi128_ps(_mm_cmpeq_epi32(a, b)); }
   
   __forceinline vboolf4 select(const vboolf4& m, const vboolf4& t, const vboolf4& f) {
-#if (defined(__aarch64__) && defined(BUILD_IOS)) || defined(__SSE4_1__)
+#if defined(__SSE4_1__)
     return _mm_blendv_ps(f, t, m); 
 #else
     return _mm_or_ps(_mm_and_ps(m, t), _mm_andnot_ps(m, f)); 
@@ -115,17 +114,6 @@ namespace embree
   __forceinline vboolf4 unpacklo(const vboolf4& a, const vboolf4& b) { return _mm_unpacklo_ps(a, b); }
   __forceinline vboolf4 unpackhi(const vboolf4& a, const vboolf4& b) { return _mm_unpackhi_ps(a, b); }
 
-#if defined(__aarch64__)
-  template<int i0, int i1, int i2, int i3>
-  __forceinline vboolf4 shuffle(const vboolf4& v) {
-    return vreinterpretq_f32_u8(vqtbl1q_u8( vreinterpretq_u8_s32(v), _MN_SHUFFLE(i0, i1, i2, i3)));
-  }
-
-  template<int i0, int i1, int i2, int i3>
-  __forceinline vboolf4 shuffle(const vboolf4& a, const vboolf4& b) {
-    return vreinterpretq_f32_u8(vqtbl2q_u8( (uint8x16x2_t){(uint8x16_t)a.v, (uint8x16_t)b.v}, _MF_SHUFFLE(i0, i1, i2, i3)));
-  }
-#else
   template<int i0, int i1, int i2, int i3>
   __forceinline vboolf4 shuffle(const vboolf4& v) {
     return _mm_castsi128_ps(_mm_shuffle_epi32(v, _MM_SHUFFLE(i3, i2, i1, i0)));
@@ -135,8 +123,7 @@ namespace embree
   __forceinline vboolf4 shuffle(const vboolf4& a, const vboolf4& b) {
     return _mm_shuffle_ps(a, b, _MM_SHUFFLE(i3, i2, i1, i0));
   }
-#endif
-                                                                
+
   template<int i0>
   __forceinline vboolf4 shuffle(const vboolf4& v) {
     return shuffle<i0,i0,i0,i0>(v);
@@ -148,7 +135,7 @@ namespace embree
   template<> __forceinline vboolf4 shuffle<0, 1, 0, 1>(const vboolf4& v) { return _mm_castpd_ps(_mm_movedup_pd(v)); }
 #endif
 
-#if defined(__SSE4_1__) && !defined(__aarch64__)
+#if defined(__SSE4_1__)
   template<int dst, int src, int clr> __forceinline vboolf4 insert(const vboolf4& a, const vboolf4& b) { return _mm_insert_ps(a, b, (dst << 4) | (src << 6) | clr); }
   template<int dst, int src> __forceinline vboolf4 insert(const vboolf4& a, const vboolf4& b) { return insert<dst, src, 0>(a, b); }
   template<int dst> __forceinline vboolf4 insert(const vboolf4& a, const bool b) { return insert<dst, 0>(a, vboolf4(b)); }
@@ -170,14 +157,10 @@ namespace embree
   __forceinline bool none(const vboolf4& valid, const vboolf4& b) { return none(valid & b); }
   
   __forceinline size_t movemask(const vboolf4& a) { return _mm_movemask_ps(a); }
-#if defined(__aarch64__) && defined(BUILD_IOS)
-__forceinline size_t popcnt(const vboolf4& a) { return _mm_movemask_popcnt_ps(a); }
-#else
 #if defined(__SSE4_2__)
   __forceinline size_t popcnt(const vboolf4& a) { return popcnt((size_t)_mm_movemask_ps(a)); }
 #else
   __forceinline size_t popcnt(const vboolf4& a) { return bool(a[0])+bool(a[1])+bool(a[2])+bool(a[3]); }
-#endif
 #endif
 
   ////////////////////////////////////////////////////////////////////////////////
@@ -196,3 +179,11 @@ __forceinline size_t popcnt(const vboolf4& a) { return _mm_movemask_popcnt_ps(a)
     return cout << "<" << a[0] << ", " << a[1] << ", " << a[2] << ", " << a[3] << ">";
   }
 }
+
+#undef vboolf
+#undef vboold
+#undef vint
+#undef vuint
+#undef vllong
+#undef vfloat
+#undef vdouble

@@ -1,4 +1,4 @@
-// Copyright 2009-2020 Intel Corporation
+// Copyright 2009-2021 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
 #include "bvh_builder_twolevel.h"
@@ -129,10 +129,6 @@ namespace embree
         prims.resize(refs.size());
 #endif
         
-#if defined(TASKING_TBB) && defined(__AVX512ER__) && USE_TASK_ARENA // KNL
-        tbb::task_arena limited(min(32,(int)TaskScheduler::threadCount()));
-        limited.execute([&]
-#endif
         {
 #if ENABLE_DIRECT_SAH_MERGE_BUILDER
 
@@ -211,10 +207,6 @@ namespace embree
             bvh->set(root,LBBox3fa(pinfo.geomBounds),numPrimitives);
           }
         }
-#if defined(TASKING_TBB) && defined(__AVX512ER__) && USE_TASK_ARENA // KNL
-          );
-#endif
-
       }  
         
       bvh->alloc.cleanup();

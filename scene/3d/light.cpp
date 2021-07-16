@@ -141,6 +141,7 @@ PoolVector<Face3> Light::get_faces(uint32_t p_usage_flags) const {
 void Light::set_bake_mode(BakeMode p_mode) {
 	bake_mode = p_mode;
 	VS::get_singleton()->light_set_bake_mode(light, VS::LightBakeMode(bake_mode));
+	_change_notify();
 }
 
 Light::BakeMode Light::get_bake_mode() const {
@@ -196,6 +197,10 @@ void Light::_validate_property(PropertyInfo &property) const {
 	if (VisualServer::get_singleton()->is_low_end() && property.name == "shadow_contact") {
 		property.usage = PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL;
 	}
+
+	if (bake_mode != BAKE_ALL && property.name == "light_size") {
+		property.usage = PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL;
+	}
 }
 
 void Light::_bind_methods() {
@@ -230,6 +235,7 @@ void Light::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "light_color", PROPERTY_HINT_COLOR_NO_ALPHA), "set_color", "get_color");
 	ADD_PROPERTYI(PropertyInfo(Variant::REAL, "light_energy", PROPERTY_HINT_RANGE, "0,16,0.01,or_greater"), "set_param", "get_param", PARAM_ENERGY);
 	ADD_PROPERTYI(PropertyInfo(Variant::REAL, "light_indirect_energy", PROPERTY_HINT_RANGE, "0,16,0.01,or_greater"), "set_param", "get_param", PARAM_INDIRECT_ENERGY);
+	ADD_PROPERTYI(PropertyInfo(Variant::REAL, "light_size", PROPERTY_HINT_RANGE, "0,1,0.01,or_greater"), "set_param", "get_param", PARAM_SIZE);
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "light_negative"), "set_negative", "is_negative");
 	ADD_PROPERTYI(PropertyInfo(Variant::REAL, "light_specular", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_param", "get_param", PARAM_SPECULAR);
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "light_bake_mode", PROPERTY_HINT_ENUM, "Disable,Indirect,All"), "set_bake_mode", "get_bake_mode");
@@ -246,6 +252,7 @@ void Light::_bind_methods() {
 
 	BIND_ENUM_CONSTANT(PARAM_ENERGY);
 	BIND_ENUM_CONSTANT(PARAM_INDIRECT_ENERGY);
+	BIND_ENUM_CONSTANT(PARAM_SIZE);
 	BIND_ENUM_CONSTANT(PARAM_SPECULAR);
 	BIND_ENUM_CONSTANT(PARAM_RANGE);
 	BIND_ENUM_CONSTANT(PARAM_ATTENUATION);
@@ -295,6 +302,7 @@ Light::Light(VisualServer::LightType p_type) {
 
 	set_param(PARAM_ENERGY, 1);
 	set_param(PARAM_INDIRECT_ENERGY, 1);
+	set_param(PARAM_SIZE, 0);
 	set_param(PARAM_SPECULAR, 0.5);
 	set_param(PARAM_RANGE, 5);
 	set_param(PARAM_ATTENUATION, 1);

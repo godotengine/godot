@@ -1,7 +1,15 @@
-// Copyright 2009-2020 Intel Corporation
+// Copyright 2009-2021 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
 #pragma once
+
+#define vboolf vboolf_impl
+#define vboold vboold_impl
+#define vint vint_impl
+#define vuint vuint_impl
+#define vllong vllong_impl
+#define vfloat vfloat_impl
+#define vdouble vdouble_impl
 
 namespace embree
 {
@@ -69,24 +77,20 @@ namespace embree
     static __forceinline void store (void* ptr, const vuint8& f) { _mm256_store_ps((float*)ptr,_mm256_castsi256_ps(f)); }
     static __forceinline void storeu(void* ptr, const vuint8& f) { _mm256_storeu_ps((float*)ptr,_mm256_castsi256_ps(f)); }
     
-#if !defined(__aarch64__)
     static __forceinline void store (const vboolf8& mask, void* ptr, const vuint8& f) { _mm256_maskstore_ps((float*)ptr,(__m256i)mask,_mm256_castsi256_ps(f)); }
     static __forceinline void storeu(const vboolf8& mask, void* ptr, const vuint8& f) { _mm256_maskstore_ps((float*)ptr,(__m256i)mask,_mm256_castsi256_ps(f)); }
-#else
-    static __forceinline void store (const vboolf8& mask, void* ptr, const vuint8& f) { _mm256_maskstore_ps((float*)ptr,(__m256i)mask.v,_mm256_castsi256_ps(f)); }
-    static __forceinline void storeu(const vboolf8& mask, void* ptr, const vuint8& f) { _mm256_maskstore_ps((float*)ptr,(__m256i)mask.v,_mm256_castsi256_ps(f)); }
-#endif
+
     static __forceinline void store_nt(void* ptr, const vuint8& v) {
       _mm256_stream_ps((float*)ptr,_mm256_castsi256_ps(v));
     }
 
-    static __forceinline vuint8 load(const uint8_t* ptr) {
+    static __forceinline vuint8 load(const unsigned char* ptr) {
       vuint4 il = vuint4::load(ptr+0);
       vuint4 ih = vuint4::load(ptr+4);
       return vuint8(il,ih);
     }
 
-    static __forceinline vuint8 loadu(const uint8_t* ptr) {
+    static __forceinline vuint8 loadu(const unsigned char* ptr) {
       vuint4 il = vuint4::loadu(ptr+0);
       vuint4 ih = vuint4::loadu(ptr+4);
       return vuint8(il,ih);
@@ -104,7 +108,7 @@ namespace embree
       return vuint8(il,ih);
     }
 
-    static __forceinline void store(uint8_t* ptr, const vuint8& i) {
+    static __forceinline void store(unsigned char* ptr, const vuint8& i) {
       vuint4 il(i.vl);
       vuint4 ih(i.vh);
       vuint4::store(ptr + 0,il);
@@ -119,54 +123,54 @@ namespace embree
     template<int scale = 4>
     static __forceinline vuint8 gather(const unsigned int* ptr, const vint8& index) {
       return vuint8(
-          *(unsigned int*)(((int8_t*)ptr)+scale*index[0]),
-          *(unsigned int*)(((int8_t*)ptr)+scale*index[1]),
-          *(unsigned int*)(((int8_t*)ptr)+scale*index[2]),
-          *(unsigned int*)(((int8_t*)ptr)+scale*index[3]),
-          *(unsigned int*)(((int8_t*)ptr)+scale*index[4]),
-          *(unsigned int*)(((int8_t*)ptr)+scale*index[5]),
-          *(unsigned int*)(((int8_t*)ptr)+scale*index[6]),
-          *(unsigned int*)(((int8_t*)ptr)+scale*index[7]));
+          *(unsigned int*)(((char*)ptr)+scale*index[0]),
+          *(unsigned int*)(((char*)ptr)+scale*index[1]),
+          *(unsigned int*)(((char*)ptr)+scale*index[2]),
+          *(unsigned int*)(((char*)ptr)+scale*index[3]),
+          *(unsigned int*)(((char*)ptr)+scale*index[4]),
+          *(unsigned int*)(((char*)ptr)+scale*index[5]),
+          *(unsigned int*)(((char*)ptr)+scale*index[6]),
+          *(unsigned int*)(((char*)ptr)+scale*index[7]));
     }
 
     template<int scale = 4>
     static __forceinline vuint8 gather(const vboolf8& mask, const unsigned int* ptr, const vint8& index) {
       vuint8 r = zero;
-      if (likely(mask[0])) r[0] = *(unsigned int*)(((int8_t*)ptr)+scale*index[0]);
-      if (likely(mask[1])) r[1] = *(unsigned int*)(((int8_t*)ptr)+scale*index[1]);
-      if (likely(mask[2])) r[2] = *(unsigned int*)(((int8_t*)ptr)+scale*index[2]);
-      if (likely(mask[3])) r[3] = *(unsigned int*)(((int8_t*)ptr)+scale*index[3]);
-      if (likely(mask[4])) r[4] = *(unsigned int*)(((int8_t*)ptr)+scale*index[4]);
-      if (likely(mask[5])) r[5] = *(unsigned int*)(((int8_t*)ptr)+scale*index[5]);
-      if (likely(mask[6])) r[6] = *(unsigned int*)(((int8_t*)ptr)+scale*index[6]);
-      if (likely(mask[7])) r[7] = *(unsigned int*)(((int8_t*)ptr)+scale*index[7]);
+      if (likely(mask[0])) r[0] = *(unsigned int*)(((char*)ptr)+scale*index[0]);
+      if (likely(mask[1])) r[1] = *(unsigned int*)(((char*)ptr)+scale*index[1]);
+      if (likely(mask[2])) r[2] = *(unsigned int*)(((char*)ptr)+scale*index[2]);
+      if (likely(mask[3])) r[3] = *(unsigned int*)(((char*)ptr)+scale*index[3]);
+      if (likely(mask[4])) r[4] = *(unsigned int*)(((char*)ptr)+scale*index[4]);
+      if (likely(mask[5])) r[5] = *(unsigned int*)(((char*)ptr)+scale*index[5]);
+      if (likely(mask[6])) r[6] = *(unsigned int*)(((char*)ptr)+scale*index[6]);
+      if (likely(mask[7])) r[7] = *(unsigned int*)(((char*)ptr)+scale*index[7]);
       return r;
     }
 
     template<int scale = 4>
     static __forceinline void scatter(void* ptr, const vint8& ofs, const vuint8& v)
     {
-      *(unsigned int*)(((int8_t*)ptr)+scale*ofs[0]) = v[0];
-      *(unsigned int*)(((int8_t*)ptr)+scale*ofs[1]) = v[1];
-      *(unsigned int*)(((int8_t*)ptr)+scale*ofs[2]) = v[2];
-      *(unsigned int*)(((int8_t*)ptr)+scale*ofs[3]) = v[3];
-      *(unsigned int*)(((int8_t*)ptr)+scale*ofs[4]) = v[4];
-      *(unsigned int*)(((int8_t*)ptr)+scale*ofs[5]) = v[5];
-      *(unsigned int*)(((int8_t*)ptr)+scale*ofs[6]) = v[6];
-      *(unsigned int*)(((int8_t*)ptr)+scale*ofs[7]) = v[7];
+      *(unsigned int*)(((char*)ptr)+scale*ofs[0]) = v[0];
+      *(unsigned int*)(((char*)ptr)+scale*ofs[1]) = v[1];
+      *(unsigned int*)(((char*)ptr)+scale*ofs[2]) = v[2];
+      *(unsigned int*)(((char*)ptr)+scale*ofs[3]) = v[3];
+      *(unsigned int*)(((char*)ptr)+scale*ofs[4]) = v[4];
+      *(unsigned int*)(((char*)ptr)+scale*ofs[5]) = v[5];
+      *(unsigned int*)(((char*)ptr)+scale*ofs[6]) = v[6];
+      *(unsigned int*)(((char*)ptr)+scale*ofs[7]) = v[7];
     }
 
     template<int scale = 4>
     static __forceinline void scatter(const vboolf8& mask, void* ptr, const vint8& ofs, const vuint8& v)
     {
-      if (likely(mask[0])) *(unsigned int*)(((int8_t*)ptr)+scale*ofs[0]) = v[0];
-      if (likely(mask[1])) *(unsigned int*)(((int8_t*)ptr)+scale*ofs[1]) = v[1];
-      if (likely(mask[2])) *(unsigned int*)(((int8_t*)ptr)+scale*ofs[2]) = v[2];
-      if (likely(mask[3])) *(unsigned int*)(((int8_t*)ptr)+scale*ofs[3]) = v[3];
-      if (likely(mask[4])) *(unsigned int*)(((int8_t*)ptr)+scale*ofs[4]) = v[4];
-      if (likely(mask[5])) *(unsigned int*)(((int8_t*)ptr)+scale*ofs[5]) = v[5];
-      if (likely(mask[6])) *(unsigned int*)(((int8_t*)ptr)+scale*ofs[6]) = v[6];
-      if (likely(mask[7])) *(unsigned int*)(((int8_t*)ptr)+scale*ofs[7]) = v[7];
+      if (likely(mask[0])) *(unsigned int*)(((char*)ptr)+scale*ofs[0]) = v[0];
+      if (likely(mask[1])) *(unsigned int*)(((char*)ptr)+scale*ofs[1]) = v[1];
+      if (likely(mask[2])) *(unsigned int*)(((char*)ptr)+scale*ofs[2]) = v[2];
+      if (likely(mask[3])) *(unsigned int*)(((char*)ptr)+scale*ofs[3]) = v[3];
+      if (likely(mask[4])) *(unsigned int*)(((char*)ptr)+scale*ofs[4]) = v[4];
+      if (likely(mask[5])) *(unsigned int*)(((char*)ptr)+scale*ofs[5]) = v[5];
+      if (likely(mask[6])) *(unsigned int*)(((char*)ptr)+scale*ofs[6]) = v[6];
+      if (likely(mask[7])) *(unsigned int*)(((char*)ptr)+scale*ofs[7]) = v[7];
     }
 
 
@@ -294,10 +298,6 @@ namespace embree
     return _mm256_castps_si256(_mm256_blendv_ps(_mm256_castsi256_ps(f), _mm256_castsi256_ps(t), m)); 
   }
 
-  __forceinline vuint8 notand(const vboolf8& m, const vuint8& f) {
-    return _mm256_castps_si256(_mm256_andnot_ps(m, _mm256_castsi256_ps(f))); 
-  }
-
 
   ////////////////////////////////////////////////////////////////////////////////
   /// Movement/Shifting/Shuffling Functions
@@ -335,7 +335,6 @@ namespace embree
   template<> __forceinline vuint8 shuffle<1, 1, 3, 3>(const vuint8& v) { return _mm256_castps_si256(_mm256_movehdup_ps(_mm256_castsi256_ps(v))); }
   template<> __forceinline vuint8 shuffle<0, 1, 0, 1>(const vuint8& v) { return _mm256_castps_si256(_mm256_castpd_ps(_mm256_movedup_pd(_mm256_castps_pd(_mm256_castsi256_ps(v))))); }
 
-  __forceinline vuint8 broadcast(const unsigned int* ptr) { return _mm256_castps_si256(_mm256_broadcast_ss((const float*)ptr)); }
   template<int i> __forceinline vuint8 insert4(const vuint8& a, const vuint4& b) { return _mm256_insertf128_si256(a, b, i); }
   template<int i> __forceinline vuint4 extract4(const vuint8& a) { return _mm256_extractf128_si256(a, i); }
   template<> __forceinline vuint4 extract4<0>(const vuint8& a) { return _mm256_castsi256_si128(a); }
@@ -377,3 +376,11 @@ namespace embree
     return cout << "<" << a[0] << ", " << a[1] << ", " << a[2] << ", " << a[3] << ", " << a[4] << ", " << a[5] << ", " << a[6] << ", " << a[7] << ">";
   }
 }
+
+#undef vboolf
+#undef vboold
+#undef vint
+#undef vuint
+#undef vllong
+#undef vfloat
+#undef vdouble

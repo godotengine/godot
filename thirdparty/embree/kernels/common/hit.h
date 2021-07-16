@@ -1,4 +1,4 @@
-// Copyright 2009-2020 Intel Corporation
+// Copyright 2009-2021 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
 #pragma once
@@ -22,7 +22,7 @@ namespace embree
     {
       for (unsigned l = 0; l < RTC_MAX_INSTANCE_LEVEL_COUNT; ++l)
         instID[l] = RTC_INVALID_GEOMETRY_ID;
-      instance_id_stack::copy(context->instID, instID);
+      instance_id_stack::copy_UV<K>(context->instID, instID);
     }
 
     /* Returns the size of the hit */
@@ -48,7 +48,7 @@ namespace embree
     __forceinline HitK(const RTCIntersectContext* context, unsigned int geomID, unsigned int primID, float u, float v, const Vec3fa& Ng)
       : Ng(Ng.x,Ng.y,Ng.z), u(u), v(v), primID(primID), geomID(geomID)
     {
-      instance_id_stack::copy(context->instID, instID);
+      instance_id_stack::copy_UU(context->instID, instID);
     }
 
     /* Returns the size of the hit */
@@ -96,7 +96,7 @@ namespace embree
     ray.v    = hit.v;
     ray.primID = hit.primID;
     ray.geomID = hit.geomID;
-    instance_id_stack::copy(hit.instID, ray.instID);
+    instance_id_stack::copy_UU(hit.instID, ray.instID);
   }
 
   template<int K>
@@ -109,6 +109,6 @@ namespace embree
     vfloat<K>::storeu(mask,&ray.v, hit.v);
     vuint<K>::storeu(mask,&ray.primID, hit.primID);
     vuint<K>::storeu(mask,&ray.geomID, hit.geomID);
-    instance_id_stack::copy(hit.instID, ray.instID, mask);
+    instance_id_stack::copy_VV<K>(hit.instID, ray.instID, mask);
   }
 }

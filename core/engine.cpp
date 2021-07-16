@@ -83,6 +83,10 @@ float Engine::get_time_scale() const {
 	return _time_scale;
 }
 
+void Engine::set_portals_active(bool p_active) {
+	_portals_active = p_active;
+}
+
 Dictionary Engine::get_version_info() const {
 	Dictionary dict;
 	dict["major"] = VERSION_MAJOR;
@@ -224,6 +228,7 @@ Engine::Engine() {
 	_frame_ticks = 0;
 	_frame_step = 0;
 	editor_hint = false;
+	_portals_active = false;
 }
 
 Engine::Singleton::Singleton(const StringName &p_name, Object *p_ptr) :

@@ -951,7 +951,6 @@ void TextureRegionEditor::_edit_region() {
 	if (cache_map.has(texture->get_rid())) {
 		autoslice_cache = cache_map[texture->get_rid()];
 		autoslice_is_dirty = false;
-		return;
 	} else {
 		if (is_visible() && snap_mode == SNAP_AUTOSLICE) {
 			_update_autoslice();
@@ -1048,7 +1047,7 @@ TextureRegionEditor::TextureRegionEditor(EditorNode *p_editor) {
 	hb_grid->add_child(sb_step_y);
 
 	hb_grid->add_child(memnew(VSeparator));
-	hb_grid->add_child(memnew(Label(TTR("Sep.:"))));
+	hb_grid->add_child(memnew(Label(TTR("Separation:"))));
 
 	sb_sep_x = memnew(SpinBox);
 	sb_sep_x->set_min(0);

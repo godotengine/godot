@@ -181,7 +181,7 @@ void Skeleton::_update_process_order() {
 	for (int i = 0; i < len; i++) {
 		if (bonesptr[i].parent >= len) {
 			//validate this just in case
-			ERR_PRINTS("Bone " + itos(i) + " has invalid parent: " + itos(bonesptr[i].parent));
+			ERR_PRINT("Bone " + itos(i) + " has invalid parent: " + itos(bonesptr[i].parent));
 			bonesptr[i].parent = -1;
 		}
 		order[i] = i;
@@ -666,7 +666,7 @@ void Skeleton::_rebuild_physical_bones_cache() {
 	const int b_size = bones.size();
 	for (int i = 0; i < b_size; ++i) {
 		PhysicalBone *parent_pb = _get_physical_bone_parent(i);
-		if (parent_pb != bones[i].physical_bone) {
+		if (parent_pb != bones[i].cache_parent_physical_bone) {
 			bones.write[i].cache_parent_physical_bone = parent_pb;
 			if (bones[i].physical_bone) {
 				bones[i].physical_bone->_on_bone_parent_changed();

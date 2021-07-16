@@ -1,4 +1,4 @@
-// Copyright 2009-2020 Intel Corporation
+// Copyright 2009-2021 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
 #pragma once
@@ -137,10 +137,12 @@ namespace embree
                                              float u0, float u1, unsigned int depth, const Epilog& epilog)
     {
 #if defined(__AVX__)
+      enum { VSIZEX_ = 8 };
       typedef vbool8 vboolx; // maximally 8-wide to work around KNL issues
       typedef vint8 vintx; 
       typedef vfloat8 vfloatx;
 #else
+      enum { VSIZEX_ = 4 };
       typedef vbool4 vboolx;
       typedef vint4 vintx; 
       typedef vfloat4 vfloatx;
@@ -192,7 +194,7 @@ namespace embree
         /* subdivide curve */
         const float dscale = (u1-u0)*(1.0f/(3.0f*(vfloatx::size-1)));
         const vfloatx vu0 = lerp(u0,u1,vfloatx(step)*(1.0f/(vfloatx::size-1)));
-        Vec4vfx P0, dP0du; curve.veval(vu0,P0,dP0du); dP0du = dP0du * Vec4vfx(dscale);
+        Vec4vfx P0, dP0du; curve.template veval<VSIZEX_>(vu0,P0,dP0du); dP0du = dP0du * Vec4vfx(dscale);
         const Vec4vfx P3 = shift_right_1(P0);
         const Vec4vfx dP3du = shift_right_1(dP0du); 
         const Vec4vfx P1 = P0 + dP0du; 

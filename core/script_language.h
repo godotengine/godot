@@ -265,6 +265,7 @@ public:
 	};
 
 	virtual void get_reserved_words(List<String> *p_words) const = 0;
+	virtual bool is_control_flow_keyword(String p_string) const = 0;
 	virtual void get_comment_delimiters(List<String> *p_delimiters) const = 0;
 	virtual void get_string_delimiters(List<String> *p_delimiters) const = 0;
 	virtual Ref<Script> get_template(const String &p_class_name, const String &p_base_class_name) const = 0;

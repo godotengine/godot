@@ -1,4 +1,4 @@
-// Copyright 2009-2020 Intel Corporation
+// Copyright 2009-2021 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
 #pragma once
@@ -54,11 +54,6 @@
 #include <functional>
 #include <utility>
 #include <sstream>
-
-#if !defined(_DEBUG) && defined(BUILD_IOS)
-#undef assert
-#define assert(_EXPR)
-#endif
 
 namespace embree
 {

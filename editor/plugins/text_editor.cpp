@@ -101,6 +101,7 @@ void TextEditor::_load_theme_settings() {
 	Color search_result_border_color = EDITOR_GET("text_editor/highlighting/search_result_border_color");
 	Color symbol_color = EDITOR_GET("text_editor/highlighting/symbol_color");
 	Color keyword_color = EDITOR_GET("text_editor/highlighting/keyword_color");
+	Color control_flow_keyword_color = EDITOR_GET("text_editor/highlighting/control_flow_keyword_color");
 	Color basetype_color = EDITOR_GET("text_editor/highlighting/base_type_color");
 	Color type_color = EDITOR_GET("text_editor/highlighting/engine_type_color");
 	Color comment_color = EDITOR_GET("text_editor/highlighting/comment_color");
@@ -139,6 +140,7 @@ void TextEditor::_load_theme_settings() {
 	colors_cache.font_color = text_color;
 	colors_cache.symbol_color = symbol_color;
 	colors_cache.keyword_color = keyword_color;
+	colors_cache.control_flow_keyword_color = control_flow_keyword_color;
 	colors_cache.basetype_color = basetype_color;
 	colors_cache.type_color = type_color;
 	colors_cache.comment_color = comment_color;
@@ -396,8 +398,8 @@ void TextEditor::_edit_option(int p_op) {
 		case EDIT_DELETE_LINE: {
 			code_editor->delete_lines();
 		} break;
-		case EDIT_CLONE_DOWN: {
-			code_editor->clone_lines_down();
+		case EDIT_DUPLICATE_SELECTION: {
+			code_editor->duplicate_selection();
 		} break;
 		case EDIT_TOGGLE_FOLD_LINE: {
 			tx->toggle_fold_line(tx->cursor_get_line());
@@ -627,7 +629,7 @@ TextEditor::TextEditor() {
 	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/fold_all_lines"), EDIT_FOLD_ALL_LINES);
 	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/unfold_all_lines"), EDIT_UNFOLD_ALL_LINES);
 	edit_menu->get_popup()->add_separator();
-	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/clone_down"), EDIT_CLONE_DOWN);
+	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/duplicate_selection"), EDIT_DUPLICATE_SELECTION);
 	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/trim_trailing_whitespace"), EDIT_TRIM_TRAILING_WHITESAPCE);
 	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/convert_indent_to_spaces"), EDIT_CONVERT_INDENT_TO_SPACES);
 	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/convert_indent_to_tabs"), EDIT_CONVERT_INDENT_TO_TABS);

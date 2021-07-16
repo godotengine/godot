@@ -28,8 +28,11 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifdef FREETYPE_ENABLED
+#include "modules/modules_enabled.gen.h"
+#ifdef MODULE_FREETYPE_ENABLED
+
 #include "dynamic_font.h"
+
 #include "core/os/file_access.h"
 #include "core/os/os.h"
 
@@ -120,7 +123,7 @@ Error DynamicFontAtSize::_load() {
 			ERR_FAIL_V_MSG(ERR_CANT_OPEN, "Cannot open font file '" + font->font_path + "'.");
 		}
 
-		size_t len = f->get_len();
+		uint64_t len = f->get_len();
 		font->_fontdata = Vector<uint8_t>();
 		font->_fontdata.resize(len);
 		f->get_buffer(font->_fontdata.ptrw(), len);
@@ -236,6 +239,18 @@ const Pair<const DynamicFontAtSize::Character *, DynamicFontAtSize *> DynamicFon
 	return Pair<const Character *, DynamicFontAtSize *>(chr, const_cast<DynamicFontAtSize *>(this));
 }
 
+float DynamicFontAtSize::_get_kerning_advance(const DynamicFontAtSize *font, CharType p_char, CharType p_next) const {
+	float advance = 0.0;
+
+	if (p_next) {
+		FT_Vector delta;
+		FT_Get_Kerning(font->face, FT_Get_Char_Index(font->face, p_char), FT_Get_Char_Index(font->face, p_next), FT_KERNING_DEFAULT, &delta);
+		advance = (delta.x / 64.0) / oversampling;
+	}
+
+	return advance;
+}
+
 Size2 DynamicFontAtSize::get_char_size(CharType p_char, CharType p_next, const Vector<Ref<DynamicFontAtSize>> &p_fallbacks) const {
 	if (!valid) {
 		return Size2(1, 1);
@@ -244,6 +259,7 @@ Size2 DynamicFontAtSize::get_char_size(CharType p_char, CharType p_next, const V
 
 	Pair<const Character *, DynamicFontAtSize *> char_pair_with_font = _find_char_with_font(p_char, p_fallbacks);
 	const Character *ch = char_pair_with_font.first;
+	DynamicFontAtSize *font = char_pair_with_font.second;
 	ERR_FAIL_COND_V(!ch, Size2());
 
 	Size2 ret(0, get_height());
@@ -251,11 +267,16 @@ Size2 DynamicFontAtSize::get_char_size(CharType p_char, CharType p_next, const V
 	if (ch->found) {
 		ret.x = ch->advance;
 	}
+	ret.x += _get_kerning_advance(font, p_char, p_next);
 
 	return ret;
 }
 
 String DynamicFontAtSize::get_available_chars() const {
+	if (!valid) {
+		return "";
+	}
+
 	String chars;
 
 	FT_UInt gindex;
@@ -327,6 +348,8 @@ float DynamicFontAtSize::draw_char(RID p_canvas_item, const Point2 &p_pos, CharT
 
 		advance = ch->advance;
 	}
+
+	advance += _get_kerning_advance(font, p_char, p_next);
 
 	return advance;
 }
@@ -882,7 +905,7 @@ float DynamicFont::draw_char(RID p_canvas_item, const Point2 &p_pos, CharType p_
 
 	if (p_outline) {
 		if (outline_data_at_size.is_valid() && outline_cache_id.outline_size > 0) {
-			outline_data_at_size->draw_char(p_canvas_item, p_pos, p_char, p_next, p_modulate * outline_color, fallback_outline_data_at_size, false, true); // Draw glpyh outline.
+			outline_data_at_size->draw_char(p_canvas_item, p_pos, p_char, p_next, p_modulate * outline_color, fallback_outline_data_at_size, false, true); // Draw glyph outline.
 		}
 		return data_at_size->draw_char(p_canvas_item, p_pos, p_char, p_next, p_modulate, fallback_data_at_size, true, false) + spacing; // Return advance of the base glyph.
 	} else {

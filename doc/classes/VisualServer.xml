@@ -4534,46 +4534,52 @@
 		<constant name="LIGHT_PARAM_ENERGY" value="0" enum="LightParam">
 			The light's energy.
 		</constant>
-		<constant name="LIGHT_PARAM_SPECULAR" value="2" enum="LightParam">
+		<constant name="LIGHT_PARAM_INDIRECT_ENERGY" value="1" enum="LightParam">
+			Secondary multiplier used with indirect light (light bounces).
+		</constant>
+		<constant name="LIGHT_PARAM_SIZE" value="2" enum="LightParam">
+			The light's size, currently only used for soft shadows in baked lightmaps.
+		</constant>
+		<constant name="LIGHT_PARAM_SPECULAR" value="3" enum="LightParam">
 			The light's influence on specularity.
 		</constant>
-		<constant name="LIGHT_PARAM_RANGE" value="3" enum="LightParam">
+		<constant name="LIGHT_PARAM_RANGE" value="4" enum="LightParam">
 			The light's range.
 		</constant>
-		<constant name="LIGHT_PARAM_ATTENUATION" value="4" enum="LightParam">
+		<constant name="LIGHT_PARAM_ATTENUATION" value="5" enum="LightParam">
 			The light's attenuation.
 		</constant>
-		<constant name="LIGHT_PARAM_SPOT_ANGLE" value="5" enum="LightParam">
+		<constant name="LIGHT_PARAM_SPOT_ANGLE" value="6" enum="LightParam">
 			The spotlight's angle.
 		</constant>
-		<constant name="LIGHT_PARAM_SPOT_ATTENUATION" value="6" enum="LightParam">
+		<constant name="LIGHT_PARAM_SPOT_ATTENUATION" value="7" enum="LightParam">
 			The spotlight's attenuation.
 		</constant>
-		<constant name="LIGHT_PARAM_CONTACT_SHADOW_SIZE" value="7" enum="LightParam">
+		<constant name="LIGHT_PARAM_CONTACT_SHADOW_SIZE" value="8" enum="LightParam">
 			Scales the shadow color.
 		</constant>
-		<constant name="LIGHT_PARAM_SHADOW_MAX_DISTANCE" value="8" enum="LightParam">
+		<constant name="LIGHT_PARAM_SHADOW_MAX_DISTANCE" value="9" enum="LightParam">
 			Max distance that shadows will be rendered.
 		</constant>
-		<constant name="LIGHT_PARAM_SHADOW_SPLIT_1_OFFSET" value="9" enum="LightParam">
+		<constant name="LIGHT_PARAM_SHADOW_SPLIT_1_OFFSET" value="10" enum="LightParam">
 			Proportion of shadow atlas occupied by the first split.
 		</constant>
-		<constant name="LIGHT_PARAM_SHADOW_SPLIT_2_OFFSET" value="10" enum="LightParam">
+		<constant name="LIGHT_PARAM_SHADOW_SPLIT_2_OFFSET" value="11" enum="LightParam">
 			Proportion of shadow atlas occupied by the second split.
 		</constant>
-		<constant name="LIGHT_PARAM_SHADOW_SPLIT_3_OFFSET" value="11" enum="LightParam">
+		<constant name="LIGHT_PARAM_SHADOW_SPLIT_3_OFFSET" value="12" enum="LightParam">
 			Proportion of shadow atlas occupied by the third split. The fourth split occupies the rest.
 		</constant>
-		<constant name="LIGHT_PARAM_SHADOW_NORMAL_BIAS" value="12" enum="LightParam">
+		<constant name="LIGHT_PARAM_SHADOW_NORMAL_BIAS" value="13" enum="LightParam">
 			Normal bias used to offset shadow lookup by object normal. Can be used to fix self-shadowing artifacts.
 		</constant>
-		<constant name="LIGHT_PARAM_SHADOW_BIAS" value="13" enum="LightParam">
+		<constant name="LIGHT_PARAM_SHADOW_BIAS" value="14" enum="LightParam">
 			Bias the shadow lookup to fix self-shadowing artifacts.
 		</constant>
-		<constant name="LIGHT_PARAM_SHADOW_BIAS_SPLIT_SCALE" value="14" enum="LightParam">
+		<constant name="LIGHT_PARAM_SHADOW_BIAS_SPLIT_SCALE" value="15" enum="LightParam">
 			Increases bias on further splits to fix self-shadowing that only occurs far away from the camera.
 		</constant>
-		<constant name="LIGHT_PARAM_MAX" value="15" enum="LightParam">
+		<constant name="LIGHT_PARAM_MAX" value="16" enum="LightParam">
 			Represents the size of the [enum LightParam] enum.
 		</constant>
 		<constant name="LIGHT_BAKE_DISABLED" value="0" enum="LightBakeMode">

@@ -11,13 +11,17 @@
 # Adolfo Jayme Barrientos <fitojb@ubuntu.com>, 2020.
 # Xavier Gomez <hiulit@gmail.com>, 2020.
 # Aina <ainasoga@gmail.com>, 2020.
-# Alex Mancha <codingstain@gmail.com>, 2020.
+# Alex Mancha <codingstain@gmail.com>, 2020, 2021.
+# Carles Pastor Badosa <cpbadosa@gmail.com>, 2021.
+# Roberto Pérez <djleizar@gmail.com>, 2021.
+# Joel Garcia Cascalló <jocsencat@gmail.com>, 2021.
+# DFC <damiafluixacanals28@gmail.com>, 2021.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-06-15 01:48+0000\n"
-"Last-Translator: roger <616steam@gmail.com>\n"
+"PO-Revision-Date: 2021-06-29 12:48+0000\n"
+"Last-Translator: DFC <damiafluixacanals28@gmail.com>\n"
 "Language-Team: Catalan <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ca/>\n"
 "Language: ca\n"
@@ -25,7 +29,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.1-dev\n"
+"X-Generator: Weblate 4.7.1-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -417,12 +421,6 @@ msgid "Animation tracks can only point to AnimationPlayer nodes."
 msgstr "Les pistes d'Animació només poden apuntar a nodes AnimationPlayer."
 
 #: editor/animation_track_editor.cpp
-msgid "An animation player can't animate itself, only other players."
-msgstr ""
-"Un reproductor d'Animacions no pot animar-se a si mateix, només altres "
-"reproductors."
-
-#: editor/animation_track_editor.cpp
 msgid "Not possible to add a new track without a root"
 msgstr "No es pot afegir una nova pista sense cap arrel"
 
@@ -468,8 +466,9 @@ msgid "Anim Move Keys"
 msgstr "Mou les Claus"
 
 #: editor/animation_track_editor.cpp
-msgid "Clipboard is empty"
-msgstr "El porta-retalls és buit"
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Clipboard is empty!"
+msgstr "El porta-retalls és buit!"
 
 #: editor/animation_track_editor.cpp
 msgid "Paste Tracks"
@@ -766,17 +765,16 @@ msgid "Method in target node must be specified."
 msgstr "S'ha d'especificar el mètode al node de destinació."
 
 #: editor/connections_dialog.cpp
-#, fuzzy
 msgid "Method name must be a valid identifier."
-msgstr "El nom no és un identificador vàlid:"
+msgstr "El nom del mètode no és un identificador vàlid."
 
 #: editor/connections_dialog.cpp
 msgid ""
 "Target method not found. Specify a valid method or attach a script to the "
 "target node."
 msgstr ""
-"El mètode objectiu no s'ha trobat. Especifiqueu un mètode vàlid o adjunteu-"
-"li un script."
+"El mètode objectiu no s'ha trobat. Especifiqueu un mètode vàlid o adjunteu "
+"un script al node."
 
 #: editor/connections_dialog.cpp
 msgid "Connect to Node:"
@@ -813,7 +811,7 @@ msgstr "Treu"
 
 #: editor/connections_dialog.cpp
 msgid "Add Extra Call Argument:"
-msgstr "Arguments de Crida addicionals:"
+msgstr "Afegir arguments de crida addicionals:"
 
 #: editor/connections_dialog.cpp
 msgid "Extra Call Arguments:"
@@ -862,11 +860,11 @@ msgstr "No es pot connectar el senyal"
 #: editor/run_settings_dialog.cpp editor/settings_config_dialog.cpp
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Close"
-msgstr "Tanca"
+msgstr "Tancar"
 
 #: editor/connections_dialog.cpp
 msgid "Connect"
-msgstr "Connecta"
+msgstr "Connectar"
 
 #: editor/connections_dialog.cpp
 msgid "Signal:"
@@ -874,11 +872,11 @@ msgstr "Senyal:"
 
 #: editor/connections_dialog.cpp
 msgid "Connect '%s' to '%s'"
-msgstr "Connecta '%s' amb '%s'"
+msgstr "Connectar '%s' amb '%s'"
 
 #: editor/connections_dialog.cpp
 msgid "Disconnect '%s' from '%s'"
-msgstr "Desconnecta '%s' de '%s'"
+msgstr "Desconnectar '%s' de '%s'"
 
 #: editor/connections_dialog.cpp
 msgid "Disconnect all from signal: '%s'"
@@ -886,12 +884,12 @@ msgstr "Desconnecta-ho tot del senyal: '%s'"
 
 #: editor/connections_dialog.cpp
 msgid "Connect..."
-msgstr "Connecta..."
+msgstr "Connectar..."
 
 #: editor/connections_dialog.cpp
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "Disconnect"
-msgstr "Desconnecta"
+msgstr "Desconnectar"
 
 #: editor/connections_dialog.cpp
 msgid "Connect a Signal to a Method"
@@ -911,9 +909,8 @@ msgid "Signals"
 msgstr "Senyals"
 
 #: editor/connections_dialog.cpp
-#, fuzzy
 msgid "Filter signals"
-msgstr "Filtrat de Fitxers"
+msgstr "Filtrat de senyals"
 
 #: editor/connections_dialog.cpp
 msgid "Are you sure you want to remove all connections from this signal?"
@@ -1125,6 +1122,10 @@ msgstr "Modifica Valor del Diccionari"
 #: editor/editor_about.cpp
 msgid "Thanks from the Godot community!"
 msgstr "Gràcies de la part de la Comunitat del Godot!"
+
+#: editor/editor_about.cpp editor/editor_node.cpp editor/project_manager.cpp
+msgid "Click to copy."
+msgstr "Fes click per a copiar."
 
 #: editor/editor_about.cpp
 msgid "Godot Engine contributors"
@@ -1483,7 +1484,7 @@ msgstr "Treu Autocàrrega"
 
 #: editor/editor_autoload_settings.cpp editor/editor_plugin_settings.cpp
 msgid "Enable"
-msgstr "Activa"
+msgstr "Activar"
 
 #: editor/editor_autoload_settings.cpp
 msgid "Rearrange Autoloads"
@@ -1491,7 +1492,7 @@ msgstr "Reorganitza AutoCàrregues"
 
 #: editor/editor_autoload_settings.cpp
 msgid "Can't add autoload:"
-msgstr ""
+msgstr "No es pot afegir l'autocàrrega:"
 
 #: editor/editor_autoload_settings.cpp
 msgid "Add AutoLoad"
@@ -2326,6 +2327,8 @@ msgid ""
 "An error occurred while trying to save the editor layout.\n"
 "Make sure the editor's user data path is writable."
 msgstr ""
+"S'ha produit un error al desar el diseny de l'editor.\n"
+"Assegura't de que el directori de dades d'usuari de l'editor és editable."
 
 #: editor/editor_node.cpp
 msgid ""
@@ -2333,6 +2336,9 @@ msgid ""
 "To restore the Default layout to its base settings, use the Delete Layout "
 "option and delete the Default layout."
 msgstr ""
+"S'ha anulat el diseny per defecte de l'editor.\n"
+"Per a restaurar el Diseny per defecte a la seva configuració base, usa la "
+"opció d'Esborrar el Diseny i esborra el Diseny per defecte."
 
 #: editor/editor_node.cpp
 msgid "Layout name not found!"
@@ -2369,14 +2375,13 @@ msgstr ""
 "panell d'importació i torneu-lo a importar."
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid ""
 "This scene was imported, so changes to it won't be kept.\n"
 "Instancing it or inheriting will allow making changes to it.\n"
 "Please read the documentation relevant to importing scenes to better "
 "understand this workflow."
 msgstr ""
-"En ser una escena importada, no se'n conservaran els canvis. \n"
+"En ser una escena importada, no se'n conservaran els canvis.\n"
 "Instanciar o heretar l'escena permetria la seva modificació.\n"
 "Referiu-vos a la documentació rellevant sobre la importació d'escenes per a "
 "més informació."
@@ -2397,7 +2402,7 @@ msgstr "No s'ha definit cap escena per executar."
 
 #: editor/editor_node.cpp
 msgid "Save scene before running..."
-msgstr ""
+msgstr "Desar l'escena abans de executar-la..."
 
 #: editor/editor_node.cpp
 msgid "Could not start subprocess!"
@@ -2515,7 +2520,7 @@ msgid "Save changes to the following scene(s) before quitting?"
 msgstr "Voleu Desar els canvis en les escenes següents abans de Sortir?"
 
 #: editor/editor_node.cpp
-msgid "Save changes the following scene(s) before opening Project Manager?"
+msgid "Save changes to the following scene(s) before opening Project Manager?"
 msgstr ""
 "Desar els canvis a la(les) següent(s) escenes abans d'obrir el Gestor de "
 "Projectes?"
@@ -2558,9 +2563,11 @@ msgid "Unable to load addon script from path: '%s'."
 msgstr "Error carregant l'Script complement des del camí: '%s'."
 
 #: editor/editor_node.cpp
+#, fuzzy
 msgid ""
-"Unable to load addon script from path: '%s' There seems to be an error in "
-"the code, please check the syntax."
+"Unable to load addon script from path: '%s'. This might be due to a code "
+"error in that script.\n"
+"Disabling the addon at '%s' to prevent further errors."
 msgstr ""
 "No es pot carregar l'script d'addon des del camí: '%s' Sembla que hi ha un "
 "error en el codi, si us plau comproveu la sintaxi."
@@ -3015,6 +3022,10 @@ msgid "About"
 msgstr "Quant a"
 
 #: editor/editor_node.cpp
+msgid "Support Godot Development"
+msgstr "Contribueix a el Desenvolupament de Godot"
+
+#: editor/editor_node.cpp
 msgid "Play the project."
 msgstr "Reprodueix el projecte."
 
@@ -3159,13 +3170,12 @@ msgid "Open & Run a Script"
 msgstr "Obre i Executa un Script"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid ""
 "The following files are newer on disk.\n"
 "What action should be taken?"
 msgstr ""
-"El disc conté versions més recents dels fitxer següents. \n"
-"Quina acció voleu seguir?:"
+"El disc conté versions més recents dels fitxer següents.\n"
+"Quina acció voleu seguir?"
 
 #: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
 #: editor/plugins/shader_editor_plugin.cpp
@@ -3717,6 +3727,8 @@ msgstr "Estat: No s'ha pogut importar. Corregiu el fitxer i torneu a importar."
 msgid ""
 "Importing has been disabled for this file, so it can't be opened for editing."
 msgstr ""
+"La importació s'ha desactivat per a aquest fitxer, per tant aquest no pot "
+"ser obert per a editar."
 
 #: editor/filesystem_dock.cpp
 msgid "Cannot move/rename resources root."
@@ -3763,6 +3775,12 @@ msgid ""
 "\n"
 "Do you wish to overwrite them?"
 msgstr ""
+"Els fitxers o directoris següents entren en conflicte amb els elements de la "
+"ubicació de destí '%s':\n"
+"\n"
+"%s\n"
+"\n"
+"Vols reemplaçar-los?"
 
 #: editor/filesystem_dock.cpp
 msgid "Renaming file:"
@@ -4127,7 +4145,7 @@ msgstr "Carrega Valors predeterminats"
 
 #: editor/import_dock.cpp
 msgid "Keep File (No Import)"
-msgstr ""
+msgstr "Mantenir Fitxer (No Importar)"
 
 #: editor/import_dock.cpp
 msgid "%d Files"
@@ -4803,9 +4821,8 @@ msgid "Move Node"
 msgstr "Moure Node"
 
 #: editor/plugins/animation_state_machine_editor.cpp
-#, fuzzy
 msgid "Transition exists!"
-msgstr "Transició: "
+msgstr "La transició existeix!"
 
 #: editor/plugins/animation_state_machine_editor.cpp
 msgid "Add Transition"
@@ -7500,9 +7517,8 @@ msgid "Yaw"
 msgstr "Guinyada"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Size"
-msgstr "Mida: "
+msgstr "Mida:"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Objects Drawn"
@@ -10406,7 +10422,7 @@ msgstr "Botó del ratolí"
 
 #: editor/project_settings_editor.cpp
 msgid ""
-"Invalid action name. it cannot be empty nor contain '/', ':', '=', '\\' or "
+"Invalid action name. It cannot be empty nor contain '/', ':', '=', '\\' or "
 "'\"'"
 msgstr ""
 "Nom d'acció no vàlid. No pot estar buit ni contenir '/', ':', '=', '\\' o "
@@ -10780,9 +10796,8 @@ msgid "Batch Rename"
 msgstr "Reanomena"
 
 #: editor/rename_dialog.cpp
-#, fuzzy
 msgid "Replace:"
-msgstr "Reemplaça: "
+msgstr "Reemplaça:"
 
 #: editor/rename_dialog.cpp
 #, fuzzy
@@ -11543,7 +11558,7 @@ msgstr "Procés Fill Connectat"
 
 #: editor/script_editor_debugger.cpp
 msgid "Copy Error"
-msgstr "Error de Còpia"
+msgstr "Copia l'error"
 
 #: editor/script_editor_debugger.cpp
 #, fuzzy
@@ -12334,10 +12349,6 @@ msgid "Can't copy the function node."
 msgstr "No es pot copiar el node de funció."
 
 #: modules/visual_script/visual_script_editor.cpp
-msgid "Clipboard is empty!"
-msgstr "El porta-retalls és buit!"
-
-#: modules/visual_script/visual_script_editor.cpp
 msgid "Paste VisualScript Nodes"
 msgstr "Enganxa els Nodes de VisualScript"
 
@@ -12566,7 +12577,19 @@ msgstr ""
 "des del menú Editor."
 
 #: platform/android/export/export.cpp
+msgid ""
+"Either Debug Keystore, Debug User AND Debug Password settings must be "
+"configured OR none of them."
+msgstr ""
+
+#: platform/android/export/export.cpp
 msgid "Debug keystore not configured in the Editor Settings nor in the preset."
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid ""
+"Either Release Keystore, Release User AND Release Password settings must be "
+"configured OR none of them."
 msgstr ""
 
 #: platform/android/export/export.cpp
@@ -13258,15 +13281,15 @@ msgstr ""
 
 #: scene/3d/physics_joint.cpp
 msgid "Node A and Node B must be PhysicsBodies"
-msgstr ""
+msgstr "Node A i Node B han de ser PhysicsBodies"
 
 #: scene/3d/physics_joint.cpp
 msgid "Node A must be a PhysicsBody"
-msgstr ""
+msgstr "El node A ha de ser de tipus PhysicsBody"
 
 #: scene/3d/physics_joint.cpp
 msgid "Node B must be a PhysicsBody"
-msgstr ""
+msgstr "El node B ha de ser de tipus PhysicsBody"
 
 #: scene/3d/physics_joint.cpp
 msgid "Joint is not connected to any PhysicsBodies"
@@ -13274,7 +13297,7 @@ msgstr ""
 
 #: scene/3d/physics_joint.cpp
 msgid "Node A and Node B must be different PhysicsBodies"
-msgstr ""
+msgstr "El Node A i el Node B han de ser PhysicsBodies diferents"
 
 #: scene/3d/remote_transform.cpp
 #, fuzzy
@@ -13343,18 +13366,16 @@ msgid "On BlendTree node '%s', animation not found: '%s'"
 msgstr ""
 
 #: scene/animation/animation_blend_tree.cpp
-#, fuzzy
 msgid "Animation not found: '%s'"
-msgstr "Eines d'Animació"
+msgstr "Animació no trobada: '%s'"
 
 #: scene/animation/animation_tree.cpp
 msgid "In node '%s', invalid animation: '%s'."
 msgstr "En el node '%s', l'animació no és valida: '%s'."
 
 #: scene/animation/animation_tree.cpp
-#, fuzzy
 msgid "Invalid animation: '%s'."
-msgstr "ERROR: El Nom de l'Animació no és vàlid!"
+msgstr "Animació invàlida: '%s'."
 
 #: scene/animation/animation_tree.cpp
 #, fuzzy
@@ -13382,7 +13403,7 @@ msgstr "L'arbre d'animació no és vàlid."
 
 #: scene/animation/animation_tree_player.cpp
 msgid "This node has been deprecated. Use AnimationTree instead."
-msgstr ""
+msgstr "Aquest node està en desús. Fes servir AnimationTree."
 
 #: scene/gui/color_picker.cpp
 #, fuzzy
@@ -13443,9 +13464,8 @@ msgid "Must use a valid extension."
 msgstr "Cal utilitzar una extensió vàlida."
 
 #: scene/gui/graph_edit.cpp
-#, fuzzy
 msgid "Enable grid minimap."
-msgstr "Activar Ajustament"
+msgstr "Activar graella del minimapa"
 
 #: scene/gui/popup.cpp
 #, fuzzy
@@ -13537,6 +13557,14 @@ msgstr ""
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "Les constants no es poden modificar."
+
+#~ msgid "An animation player can't animate itself, only other players."
+#~ msgstr ""
+#~ "Un reproductor d'Animacions no pot animar-se a si mateix, només altres "
+#~ "reproductors."
+
+#~ msgid "Clipboard is empty"
+#~ msgstr "El porta-retalls és buit"
 
 #~ msgid "No"
 #~ msgstr "No"

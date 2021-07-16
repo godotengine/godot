@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="RoomGroup" inherits="Spatial" version="3.4">
+	<brief_description>
+		Groups [Room]s together to allow common functionality.
+	</brief_description>
+	<description>
+		Although [Room] behaviour can be specified individually, sometimes it is faster and more convenient to write functionality for a group of rooms.
+		[RoomGroup]s should be placed as children of the [b]room list[/b] (the parent [Node] of your [Room]s), and [Room]s should be placed in turn as children of a [RoomGroup] in order to assign them to the RoomGroup.
+		A [RoomGroup] can for example be used to specify [Room]s that are [b]outside[/b], and switch on or off a directional light, sky, or rain effect as the player enters / exits the area.
+		[RoomGroup]s receive [b]gameplay callbacks[/b] when the [code]gameplay_monitor[/code] is switched on, as [code]signal[/code]s or [code]notification[/code]s as they enter and exit the [b]gameplay area[/b] (see [RoomManager] for details).
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+	</methods>
+	<members>
+		<member name="roomgroup_priority" type="int" setter="set_roomgroup_priority" getter="get_roomgroup_priority" default="0">
+			This priority will be applied to [Room]s within the group. The [Room] priority allows the use of [b]internal rooms[/b], rooms [i]within[/i] another room or rooms.
+			When the [Camera] is within more than one room (regular and internal), the higher priority room will take precedence. So with for example, a house inside a terrain 'room', you would make the house higher priority, so that when the camera is within the house, the house is used as the source room, but outside the house, the terrain room would be used instead.
+		</member>
+	</members>
+	<constants>
+	</constants>
+</class>

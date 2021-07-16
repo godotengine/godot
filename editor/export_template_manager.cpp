@@ -136,6 +136,8 @@ void ExportTemplateManager::_update_template_list() {
 
 		installed_vb->add_child(hbc);
 	}
+
+	_fix_size();
 }
 
 void ExportTemplateManager::_download_template(const String &p_version) {
@@ -627,7 +629,7 @@ Error ExportTemplateManager::install_android_template() {
 				FileAccess::set_unix_permissions(to_write, (info.external_fa >> 16) & 0x01FF);
 #endif
 			} else {
-				ERR_PRINTS("Can't uncompress file: " + to_write);
+				ERR_PRINT("Can't uncompress file: " + to_write);
 			}
 		}
 

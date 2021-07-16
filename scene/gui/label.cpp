@@ -118,25 +118,29 @@ void Label::_notification(int p_what) {
 			lines_visible = max_lines_visible;
 		}
 
+		float total_h = 0;
+		total_h += lines_visible * font_h;
+		total_h += style->get_margin(MARGIN_TOP) + style->get_margin(MARGIN_BOTTOM);
+
 		if (lines_visible > 0) {
 			switch (valign) {
 				case VALIGN_TOP: {
 					//nothing
 				} break;
 				case VALIGN_CENTER: {
-					vbegin = (size.y - (lines_visible * font_h - line_spacing)) / 2;
+					vbegin = (size.y - (total_h - line_spacing)) / 2;
 					vsep = 0;
 
 				} break;
 				case VALIGN_BOTTOM: {
-					vbegin = size.y - (lines_visible * font_h - line_spacing);
+					vbegin = size.y - (total_h - line_spacing);
 					vsep = 0;
 
 				} break;
 				case VALIGN_FILL: {
 					vbegin = 0;
 					if (lines_visible > 1) {
-						vsep = (size.y - (lines_visible * font_h - line_spacing)) / (lines_visible - 1);
+						vsep = (size.y - (total_h - line_spacing)) / (lines_visible - 1);
 					} else {
 						vsep = 0;
 					}
@@ -393,11 +397,17 @@ void Label::regenerate_word_cache() {
 			current = String::char_uppercase(current);
 		}
 
-		// ranges taken from http://www.unicodemap.org/
+		// ranges taken from https://en.wikipedia.org/wiki/Plane_(Unicode)
 		// if your language is not well supported, consider helping improve
 		// the unicode support in Godot.
-		bool separatable = (current >= 0x2E08 && current <= 0xFAFF) || (current >= 0xFE30 && current <= 0xFE4F);
-		//current>=33 && (current < 65||current >90) && (current<97||current>122) && (current<48||current>57);
+		bool separatable = (current >= 0x2E08 && current <= 0x9FFF) || // CJK scripts and symbols.
+						   (current >= 0xAC00 && current <= 0xD7FF) || // Hangul Syllables and Hangul Jamo Extended-B.
+						   (current >= 0xF900 && current <= 0xFAFF) || // CJK Compatibility Ideographs.
+						   (current >= 0xFE30 && current <= 0xFE4F) || // CJK Compatibility Forms.
+						   (current >= 0xFF65 && current <= 0xFF9F) || // Halfwidth forms of katakana
+						   (current >= 0xFFA0 && current <= 0xFFDC) || // Halfwidth forms of compatibility jamo characters for Hangul
+						   (current >= 0x20000 && current <= 0x2FA1F) || // CJK Unified Ideographs Extension B ~ F and CJK Compatibility Ideographs Supplement.
+						   (current >= 0x30000 && current <= 0x3134F); // CJK Unified Ideographs Extension G.
 		bool insert_newline = false;
 		real_t char_width = 0;
 

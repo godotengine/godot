@@ -1,4 +1,4 @@
-// Copyright 2009-2020 Intel Corporation
+// Copyright 2009-2021 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
 #pragma once
@@ -24,9 +24,6 @@ namespace embree
       typedef typename BVH::AABBNodeMB4D AABBNodeMB4D;
 
       static const size_t stackSize = 1+(N-1)*BVH::maxDepth+3; // +3 due to 16-wide store
-
-      /* right now AVX512KNL SIMD extension only for standard node types */
-      static const size_t Nx = (types == BVH_AN1 || types == BVH_QN1) ? vextend<N>::size : N;
 
     public:
       static void intersect (const Accel::Intersectors* This, RayHit& ray, IntersectContext* context);

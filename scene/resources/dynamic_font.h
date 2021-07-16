@@ -31,7 +31,9 @@
 #ifndef DYNAMIC_FONT_H
 #define DYNAMIC_FONT_H
 
-#ifdef FREETYPE_ENABLED
+#include "modules/modules_enabled.gen.h"
+#ifdef MODULE_FREETYPE_ENABLED
+
 #include "core/io/resource_loader.h"
 #include "core/os/mutex.h"
 #include "core/os/thread_safe.h"
@@ -162,6 +164,7 @@ class DynamicFontAtSize : public Reference {
 
 	const Pair<const Character *, DynamicFontAtSize *> _find_char_with_font(CharType p_char, const Vector<Ref<DynamicFontAtSize>> &p_fallbacks) const;
 	Character _make_outline_char(CharType p_char);
+	float _get_kerning_advance(const DynamicFontAtSize *font, CharType p_char, CharType p_next) const;
 	TexturePosition _find_texture_pos_for_glyph(int p_color_size, Image::Format p_image_format, int p_width, int p_height);
 	Character _bitmap_to_character(FT_Bitmap bitmap, int yofs, int xofs, float advance);
 

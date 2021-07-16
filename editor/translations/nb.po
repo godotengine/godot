@@ -17,12 +17,13 @@
 # Petter Reinholdtsen <pere-weblate@hungry.com>, 2019, 2020.
 # Patrick Sletvold <patricksletvold@hotmail.com>, 2021.
 # Kristoffer <kskau93@gmail.com>, 2021.
+# Lili Zoey <sayaks1@gmail.com>, 2021.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2021-03-31 03:53+0000\n"
-"Last-Translator: Kristoffer <kskau93@gmail.com>\n"
+"PO-Revision-Date: 2021-05-29 13:49+0000\n"
+"Last-Translator: Lili Zoey <sayaks1@gmail.com>\n"
 "Language-Team: Norwegian Bokmål <https://hosted.weblate.org/projects/godot-"
 "engine/godot/nb_NO/>\n"
 "Language: nb\n"
@@ -30,7 +31,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.6-dev\n"
+"X-Generator: Weblate 4.7-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -188,9 +189,8 @@ msgid "Anim Multi Change Keyframe Value"
 msgstr "Anim Endre flere Nøkkelbildeverdier"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Anim Multi Change Call"
-msgstr "Anim Forandre Kall"
+msgstr "Anim Forandre flere Kall"
 
 #: editor/animation_track_editor.cpp
 msgid "Change Animation Length"
@@ -422,11 +422,6 @@ msgid "Animation tracks can only point to AnimationPlayer nodes."
 msgstr "Animasjonsspor kan kun peke på AnimationPlayer-noder."
 
 #: editor/animation_track_editor.cpp
-msgid "An animation player can't animate itself, only other players."
-msgstr ""
-"En animansjonsavspiller kan ikke animere seg selv, kun andre avspillere."
-
-#: editor/animation_track_editor.cpp
 msgid "Not possible to add a new track without a root"
 msgstr "Ikke mulig å legge til et nytt spor uten en rot"
 
@@ -471,8 +466,9 @@ msgid "Anim Move Keys"
 msgstr "Anim Flytt Nøkler"
 
 #: editor/animation_track_editor.cpp
-msgid "Clipboard is empty"
-msgstr "Utklippstavlen er tom"
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Clipboard is empty!"
+msgstr "Utklippsbordet er tomt!"
 
 #: editor/animation_track_editor.cpp
 msgid "Paste Tracks"
@@ -924,9 +920,8 @@ msgid "Signals"
 msgstr "Signaler"
 
 #: editor/connections_dialog.cpp
-#, fuzzy
 msgid "Filter signals"
-msgstr "Filtrer Filer..."
+msgstr "Filtrer Signaler"
 
 #: editor/connections_dialog.cpp
 msgid "Are you sure you want to remove all connections from this signal?"
@@ -939,9 +934,8 @@ msgid "Disconnect All"
 msgstr "Koble Fra"
 
 #: editor/connections_dialog.cpp
-#, fuzzy
 msgid "Edit..."
-msgstr "Rediger"
+msgstr "Rediger..."
 
 #: editor/connections_dialog.cpp
 #, fuzzy
@@ -1149,6 +1143,10 @@ msgstr "Endre listeverdi"
 #: editor/editor_about.cpp
 msgid "Thanks from the Godot community!"
 msgstr "Takk fra Godot-samfunnet!"
+
+#: editor/editor_about.cpp editor/editor_node.cpp editor/project_manager.cpp
+msgid "Click to copy."
+msgstr ""
 
 #: editor/editor_about.cpp
 msgid "Godot Engine contributors"
@@ -1496,7 +1494,7 @@ msgstr ""
 
 #: editor/editor_autoload_settings.cpp
 msgid "Keyword cannot be used as an autoload name."
-msgstr ""
+msgstr "Nøkkelord kan ikke brukes som autoloadnavn."
 
 #: editor/editor_autoload_settings.cpp
 msgid "Autoload '%s' already exists!"
@@ -2598,7 +2596,7 @@ msgid "Save changes to the following scene(s) before quitting?"
 msgstr "Lagre endring til følgende scene(r) før avslutting?"
 
 #: editor/editor_node.cpp
-msgid "Save changes the following scene(s) before opening Project Manager?"
+msgid "Save changes to the following scene(s) before opening Project Manager?"
 msgstr "Lagre endringer til følgende scene(r) før åpning av Prosjekt-Manager?"
 
 #: editor/editor_node.cpp
@@ -2640,8 +2638,9 @@ msgstr "Kan ikke laste addon-skript fra bane: '%s'."
 #: editor/editor_node.cpp
 #, fuzzy
 msgid ""
-"Unable to load addon script from path: '%s' There seems to be an error in "
-"the code, please check the syntax."
+"Unable to load addon script from path: '%s'. This might be due to a code "
+"error in that script.\n"
+"Disabling the addon at '%s' to prevent further errors."
 msgstr ""
 "Kunne ikke laste tillegsskript fra sti: '%s' Script er ikke i verktøymodus."
 
@@ -3100,6 +3099,10 @@ msgstr "Fellesskap"
 #: editor/editor_node.cpp
 msgid "About"
 msgstr "Om"
+
+#: editor/editor_node.cpp
+msgid "Support Godot Development"
+msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Play the project."
@@ -4128,7 +4131,7 @@ msgstr "Legg til i Gruppe"
 
 #: editor/groups_editor.cpp
 msgid "Empty groups will be automatically removed."
-msgstr ""
+msgstr "Tomme grupper vil automatisk bli fjernet."
 
 #: editor/groups_editor.cpp
 msgid "Group Editor"
@@ -4968,11 +4971,11 @@ msgstr "Legg til node"
 
 #: editor/plugins/animation_state_machine_editor.cpp
 msgid "End"
-msgstr ""
+msgstr "Slutt"
 
 #: editor/plugins/animation_state_machine_editor.cpp
 msgid "Immediate"
-msgstr ""
+msgstr "Umiddelbart"
 
 #: editor/plugins/animation_state_machine_editor.cpp
 msgid "Sync"
@@ -5330,11 +5333,11 @@ msgstr ""
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Name (A-Z)"
-msgstr ""
+msgstr "Navn (A-Z)"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Name (Z-A)"
-msgstr ""
+msgstr "Navn (Z-A)"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 #, fuzzy
@@ -8819,9 +8822,8 @@ msgid ""
 msgstr ""
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Delete selected Rect."
-msgstr "Slett valgte filer?"
+msgstr "Slett valgte Rect."
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid ""
@@ -10446,7 +10448,7 @@ msgstr "Museknapp"
 
 #: editor/project_settings_editor.cpp
 msgid ""
-"Invalid action name. it cannot be empty nor contain '/', ':', '=', '\\' or "
+"Invalid action name. It cannot be empty nor contain '/', ':', '=', '\\' or "
 "'\"'"
 msgstr ""
 
@@ -12358,10 +12360,6 @@ msgid "Can't copy the function node."
 msgstr "Kan ikke kopiere funksjonsnoden."
 
 #: modules/visual_script/visual_script_editor.cpp
-msgid "Clipboard is empty!"
-msgstr "Utklippsbordet er tomt!"
-
-#: modules/visual_script/visual_script_editor.cpp
 #, fuzzy
 msgid "Paste VisualScript Nodes"
 msgstr "Lim inn Noder"
@@ -12575,7 +12573,19 @@ msgid ""
 msgstr ""
 
 #: platform/android/export/export.cpp
+msgid ""
+"Either Debug Keystore, Debug User AND Debug Password settings must be "
+"configured OR none of them."
+msgstr ""
+
+#: platform/android/export/export.cpp
 msgid "Debug keystore not configured in the Editor Settings nor in the preset."
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid ""
+"Either Release Keystore, Release User AND Release Password settings must be "
+"configured OR none of them."
 msgstr ""
 
 #: platform/android/export/export.cpp
@@ -13401,6 +13411,13 @@ msgstr ""
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "Konstanter kan ikke endres."
+
+#~ msgid "An animation player can't animate itself, only other players."
+#~ msgstr ""
+#~ "En animansjonsavspiller kan ikke animere seg selv, kun andre avspillere."
+
+#~ msgid "Clipboard is empty"
+#~ msgstr "Utklippstavlen er tom"
 
 #~ msgid "No"
 #~ msgstr "Nei"

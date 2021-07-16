@@ -6,6 +6,9 @@
 #define mediump
 #define highp
 #else
+// Default to high precision variables for the vertex shader.
+// Note that the fragment shader however may default to mediump on mobile for performance,
+// and thus shared uniforms should use a specifier to be consistent in both shaders.
 precision highp float;
 precision highp int;
 #endif
@@ -97,7 +100,7 @@ uniform float light_bias;
 uniform float light_normal_bias;
 #endif
 
-uniform int view_index;
+uniform highp int view_index;
 
 //
 // varyings
@@ -703,6 +706,7 @@ VERTEX_SHADER_CODE
 #define mediump
 #define highp
 #else
+// On mobile devices we want to default to medium precision to increase performance in the fragment shader.
 #if defined(USE_HIGHP_PRECISION)
 precision highp float;
 precision highp int;
@@ -730,7 +734,7 @@ uniform highp mat4 projection_inverse_matrix;
 uniform highp mat4 world_transform;
 
 uniform highp float time;
-uniform int view_index;
+uniform highp int view_index;
 
 uniform highp vec2 viewport_size;
 

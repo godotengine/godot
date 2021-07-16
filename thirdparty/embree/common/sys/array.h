@@ -1,4 +1,4 @@
-// Copyright 2009-2020 Intel Corporation
+// Copyright 2009-2021 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
 #pragma once
@@ -139,7 +139,7 @@ namespace embree
     __forceinline       Ty& operator[](const unsigned i)       { assert(i<N); return data[i]; }
     __forceinline const Ty& operator[](const unsigned i) const { assert(i<N); return data[i]; }
 
-#if defined(__X86_64__) || defined(__aarch64__)
+#if defined(__64BIT__)
     __forceinline       Ty& operator[](const size_t i)       { assert(i<N); return data[i]; }
     __forceinline const Ty& operator[](const size_t i) const { assert(i<N); return data[i]; }
 #endif
@@ -196,7 +196,7 @@ namespace embree
     __forceinline       Ty& operator[](const int i)      { assert(i>=0 && i<max_total_elements); resize(i+1); return data[i]; }
     __forceinline       Ty& operator[](const unsigned i) { assert(i<max_total_elements); resize(i+1); return data[i]; }
 
-#if defined(__X86_64__) || defined(__aarch64__)
+#if defined(__64BIT__)
     __forceinline       Ty& operator[](const size_t i) { assert(i<max_total_elements); resize(i+1); return data[i]; }
 #endif
 

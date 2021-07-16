@@ -36,7 +36,8 @@
 #include "editor_scale.h"
 #include "editor_settings.h"
 
-#ifdef SVG_ENABLED
+#include "modules/modules_enabled.gen.h"
+#ifdef MODULE_SVG_ENABLED
 #include "modules/svg/image_loader_svg.h"
 #endif
 
@@ -104,7 +105,7 @@ static Ref<Texture> flip_icon(Ref<Texture> p_texture, bool p_flip_y = false, boo
 	return texture;
 }
 
-#ifdef SVG_ENABLED
+#ifdef MODULE_SVG_ENABLED
 static Ref<ImageTexture> editor_generate_icon(int p_index, bool p_convert_color, float p_scale = EDSCALE, bool p_force_filter = false) {
 	Ref<ImageTexture> icon = memnew(ImageTexture);
 	Ref<Image> img = memnew(Image);
@@ -133,7 +134,7 @@ static Ref<ImageTexture> editor_generate_icon(int p_index, bool p_convert_color,
 #endif
 
 void editor_register_and_generate_icons(Ref<Theme> p_theme, bool p_dark_theme = true, int p_thumb_size = 32, bool p_only_thumbs = false) {
-#ifdef SVG_ENABLED
+#ifdef MODULE_SVG_ENABLED
 	// The default icon theme is designed to be used for a dark theme.
 	// This dictionary stores color codes to convert to other colors
 	// for better readability on a light theme.
@@ -217,6 +218,8 @@ void editor_register_and_generate_icons(Ref<Theme> p_theme, bool p_dark_theme = 
 		exceptions.insert("ProceduralSky");
 		exceptions.insert("EditorControlAnchor");
 		exceptions.insert("DefaultProjectIcon");
+		exceptions.insert("GuiChecked");
+		exceptions.insert("GuiRadioChecked");
 		exceptions.insert("GuiCloseCustomizable");
 		exceptions.insert("GuiGraphNodePort");
 		exceptions.insert("GuiResizer");
@@ -902,7 +905,16 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	style_content_panel->set_default_margin(MARGIN_BOTTOM, margin_size_extra * EDSCALE);
 	style_content_panel->set_default_margin(MARGIN_LEFT, margin_size_extra * EDSCALE);
 
-	// this is the stylebox used in 3d and 2d viewports (no borders)
+	// These styleboxes can be used on tabs against the base color background (e.g. nested tabs).
+	Ref<StyleBoxFlat> style_tab_selected_odd = style_tab_selected->duplicate();
+	style_tab_selected_odd->set_bg_color(color_disabled_bg);
+	theme->set_stylebox("tab_selected_odd", "TabContainer", style_tab_selected_odd);
+
+	Ref<StyleBoxFlat> style_content_panel_odd = style_content_panel->duplicate();
+	style_content_panel_odd->set_bg_color(color_disabled_bg);
+	theme->set_stylebox("panel_odd", "TabContainer", style_content_panel_odd);
+
+	// This stylebox is used in 3d and 2d viewports (no borders).
 	Ref<StyleBoxFlat> style_content_panel_vp = style_content_panel->duplicate();
 	style_content_panel_vp->set_default_margin(MARGIN_LEFT, border_width * 2);
 	style_content_panel_vp->set_default_margin(MARGIN_TOP, default_margin_size * EDSCALE);
@@ -910,6 +922,14 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	style_content_panel_vp->set_default_margin(MARGIN_BOTTOM, border_width * 2);
 	theme->set_stylebox("panel", "TabContainer", style_content_panel);
 	theme->set_stylebox("Content", "EditorStyles", style_content_panel_vp);
+
+	// This stylebox is used by preview tabs in the Theme Editor.
+	Ref<StyleBoxFlat> style_theme_preview_tab = style_tab_selected_odd->duplicate();
+	style_theme_preview_tab->set_expand_margin_size(MARGIN_BOTTOM, 3 * EDSCALE);
+	theme->set_stylebox("ThemeEditorPreviewFG", "EditorStyles", style_theme_preview_tab);
+	Ref<StyleBoxFlat> style_theme_preview_bg_tab = style_tab_unselected->duplicate();
+	style_theme_preview_bg_tab->set_expand_margin_size(MARGIN_BOTTOM, 2 * EDSCALE);
+	theme->set_stylebox("ThemeEditorPreviewBG", "EditorStyles", style_theme_preview_bg_tab);
 
 	// Separators
 	theme->set_stylebox("separator", "HSeparator", make_line_stylebox(separator_color, border_width));
@@ -1245,6 +1265,15 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	style_info_3d_viewport->set_border_width_all(0);
 	theme->set_stylebox("Information3dViewport", "EditorStyles", style_info_3d_viewport);
 
+	// Theme editor.
+	theme->set_color("preview_picker_overlay_color", "ThemeEditor", Color(0.1, 0.1, 0.1, 0.25));
+	Color theme_preview_picker_bg_color = accent_color;
+	theme_preview_picker_bg_color.a = 0.2;
+	Ref<StyleBoxFlat> theme_preview_picker_sb = make_flat_stylebox(theme_preview_picker_bg_color, 0, 0, 0, 0);
+	theme_preview_picker_sb->set_border_color(accent_color);
+	theme_preview_picker_sb->set_border_width_all(1.0 * EDSCALE);
+	theme->set_stylebox("preview_picker_overlay", "ThemeEditor", theme_preview_picker_sb);
+
 	// adaptive script theme constants
 	// for comments and elements with lower relevance
 	const Color dim_color = Color(font_color.r, font_color.g, font_color.b, 0.5);
@@ -1259,6 +1288,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 
 	const Color symbol_color = Color(0.34, 0.57, 1.0).linear_interpolate(mono_color, dark_theme ? 0.5 : 0.3);
 	const Color keyword_color = Color(1.0, 0.44, 0.52);
+	const Color control_flow_keyword_color = dark_theme ? Color(1.0, 0.55, 0.8) : Color(0.8, 0.4, 0.6);
 	const Color basetype_color = dark_theme ? Color(0.26, 1.0, 0.76) : Color(0.0, 0.76, 0.38);
 	const Color type_color = basetype_color.linear_interpolate(mono_color, dark_theme ? 0.4 : 0.3);
 	const Color usertype_color = basetype_color.linear_interpolate(mono_color, dark_theme ? 0.7 : 0.5);
@@ -1298,6 +1328,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	if (text_editor_color_theme == "Adaptive") {
 		setting->set_initial_value("text_editor/highlighting/symbol_color", symbol_color, true);
 		setting->set_initial_value("text_editor/highlighting/keyword_color", keyword_color, true);
+		setting->set_initial_value("text_editor/highlighting/control_flow_keyword_color", control_flow_keyword_color, true);
 		setting->set_initial_value("text_editor/highlighting/base_type_color", basetype_color, true);
 		setting->set_initial_value("text_editor/highlighting/engine_type_color", type_color, true);
 		setting->set_initial_value("text_editor/highlighting/user_type_color", usertype_color, true);
@@ -1353,7 +1384,7 @@ Ref<Theme> create_custom_theme(const Ref<Theme> p_theme) {
 }
 
 Ref<ImageTexture> create_unscaled_default_project_icon() {
-#ifdef SVG_ENABLED
+#ifdef MODULE_SVG_ENABLED
 	for (int i = 0; i < editor_icons_count; i++) {
 		// ESCALE should never affect size of the icon
 		if (strcmp(editor_icons_names[i], "DefaultProjectIcon") == 0) {

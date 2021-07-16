@@ -732,7 +732,7 @@ void NativeScriptInstance::notification(int p_notification) {
 #ifdef DEBUG_ENABLED
 	if (p_notification == MainLoop::NOTIFICATION_CRASH) {
 		if (current_method_call != StringName("")) {
-			ERR_PRINTS("NativeScriptInstance detected crash on method: " + current_method_call);
+			ERR_PRINT("NativeScriptInstance detected crash on method: " + current_method_call);
 			current_method_call = "";
 		}
 	}
@@ -1071,6 +1071,9 @@ void NativeScriptLanguage::finish() {
 	_unload_stuff();
 }
 void NativeScriptLanguage::get_reserved_words(List<String> *p_words) const {
+}
+bool NativeScriptLanguage::is_control_flow_keyword(String p_keyword) const {
+	return false;
 }
 void NativeScriptLanguage::get_comment_delimiters(List<String> *p_delimiters) const {
 }

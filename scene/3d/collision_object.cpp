@@ -72,6 +72,10 @@ void CollisionObject::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_TRANSFORM_CHANGED: {
+			if (only_update_transform_changes) {
+				return;
+			}
+
 			if (area) {
 				PhysicsServer::get_singleton()->area_set_transform(rid, get_global_transform());
 			} else {
@@ -123,6 +127,7 @@ uint32_t CollisionObject::get_collision_mask() const {
 }
 
 void CollisionObject::set_collision_layer_bit(int p_bit, bool p_value) {
+	ERR_FAIL_INDEX_MSG(p_bit, 32, "Collision layer bit must be between 0 and 31 inclusive.");
 	uint32_t collision_layer = get_collision_layer();
 	if (p_value) {
 		collision_layer |= 1 << p_bit;
@@ -133,10 +138,12 @@ void CollisionObject::set_collision_layer_bit(int p_bit, bool p_value) {
 }
 
 bool CollisionObject::get_collision_layer_bit(int p_bit) const {
+	ERR_FAIL_INDEX_V_MSG(p_bit, 32, false, "Collision layer bit must be between 0 and 31 inclusive.");
 	return get_collision_layer() & (1 << p_bit);
 }
 
 void CollisionObject::set_collision_mask_bit(int p_bit, bool p_value) {
+	ERR_FAIL_INDEX_MSG(p_bit, 32, "Collision mask bit must be between 0 and 31 inclusive.");
 	uint32_t mask = get_collision_mask();
 	if (p_value) {
 		mask |= 1 << p_bit;
@@ -147,6 +154,7 @@ void CollisionObject::set_collision_mask_bit(int p_bit, bool p_value) {
 }
 
 bool CollisionObject::get_collision_mask_bit(int p_bit) const {
+	ERR_FAIL_INDEX_V_MSG(p_bit, 32, false, "Collision mask bit must be between 0 and 31 inclusive.");
 	return get_collision_mask() & (1 << p_bit);
 }
 
@@ -169,6 +177,10 @@ void CollisionObject::_mouse_exit() {
 		get_script_instance()->call(SceneStringNames::get_singleton()->_mouse_exit);
 	}
 	emit_signal(SceneStringNames::get_singleton()->mouse_exited);
+}
+
+void CollisionObject::set_only_update_transform_changes(bool p_enable) {
+	only_update_transform_changes = p_enable;
 }
 
 void CollisionObject::_update_pickable() {
@@ -212,6 +224,11 @@ void CollisionObject::_shape_changed(const Ref<Shape> &p_shape) {
 }
 
 void CollisionObject::_update_debug_shapes() {
+	if (!is_inside_tree()) {
+		debug_shapes_to_update.clear();
+		return;
+	}
+
 	for (Set<uint32_t>::Element *shapedata_idx = debug_shapes_to_update.front(); shapedata_idx; shapedata_idx = shapedata_idx->next()) {
 		if (shapes.has(shapedata_idx->get())) {
 			ShapeData &shapedata = shapes[shapedata_idx->get()];
@@ -319,9 +336,9 @@ void CollisionObject::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_update_debug_shapes"), &CollisionObject::_update_debug_shapes);
 	ClassDB::bind_method(D_METHOD("_shape_changed", "shape"), &CollisionObject::_shape_changed);
 
-	BIND_VMETHOD(MethodInfo("_input_event", PropertyInfo(Variant::OBJECT, "camera"), PropertyInfo(Variant::OBJECT, "event", PROPERTY_HINT_RESOURCE_TYPE, "InputEvent"), PropertyInfo(Variant::VECTOR3, "click_position"), PropertyInfo(Variant::VECTOR3, "click_normal"), PropertyInfo(Variant::INT, "shape_idx")));
+	BIND_VMETHOD(MethodInfo("_input_event", PropertyInfo(Variant::OBJECT, "camera"), PropertyInfo(Variant::OBJECT, "event", PROPERTY_HINT_RESOURCE_TYPE, "InputEvent"), PropertyInfo(Variant::VECTOR3, "position"), PropertyInfo(Variant::VECTOR3, "normal"), PropertyInfo(Variant::INT, "shape_idx")));
 
-	ADD_SIGNAL(MethodInfo("input_event", PropertyInfo(Variant::OBJECT, "camera", PROPERTY_HINT_RESOURCE_TYPE, "Node"), PropertyInfo(Variant::OBJECT, "event", PROPERTY_HINT_RESOURCE_TYPE, "InputEvent"), PropertyInfo(Variant::VECTOR3, "click_position"), PropertyInfo(Variant::VECTOR3, "click_normal"), PropertyInfo(Variant::INT, "shape_idx")));
+	ADD_SIGNAL(MethodInfo("input_event", PropertyInfo(Variant::OBJECT, "camera", PROPERTY_HINT_RESOURCE_TYPE, "Node"), PropertyInfo(Variant::OBJECT, "event", PROPERTY_HINT_RESOURCE_TYPE, "InputEvent"), PropertyInfo(Variant::VECTOR3, "position"), PropertyInfo(Variant::VECTOR3, "normal"), PropertyInfo(Variant::INT, "shape_idx")));
 	ADD_SIGNAL(MethodInfo("mouse_entered"));
 	ADD_SIGNAL(MethodInfo("mouse_exited"));
 

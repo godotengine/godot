@@ -1,4 +1,4 @@
-// Copyright 2009-2020 Intel Corporation
+// Copyright 2009-2021 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
 #pragma once
@@ -81,7 +81,11 @@ namespace embree
         __forceinline Vec2f uv (const size_t i) const { return Vec2f(vu[i],vv[i]); }
         __forceinline float t  (const size_t i) const { return vt[i]; }
         __forceinline Vec3fa Ng(const size_t i) const { return Vec3fa(vNg.x[i],vNg.y[i],vNg.z[i]); }
-	
+
+        __forceinline Vec2vf<M> uv() const { return Vec2vf<M>(vu,vv); }
+        __forceinline vfloat<M> t () const { return vt; }
+        __forceinline Vec3vf<M> Ng() const { return vNg; }
+       
       public:
         vfloat<M> vu;
         vfloat<M> vv;
@@ -646,14 +650,15 @@ namespace embree
       struct RoundLinearCurveIntersector1
       {
         typedef CurvePrecalculations1 Precalculations;
-        
+
+        template<typename Ray>
         struct ray_tfar {
           Ray& ray;
           __forceinline ray_tfar(Ray& ray) : ray(ray) {}
           __forceinline vfloat<M> operator() () const { return ray.tfar; };
         };
-
-        template<typename Epilog>
+	
+        template<typename Ray, typename Epilog>
         static __forceinline bool intersect(const vbool<M>& valid_i,
                                             Ray& ray,
                                             IntersectContext* context,
@@ -666,11 +671,11 @@ namespace embree
           const Vec3vf<M> ray_org(ray.org.x, ray.org.y, ray.org.z);
           const Vec3vf<M> ray_dir(ray.dir.x, ray.dir.y, ray.dir.z);
           const vfloat<M> ray_tnear(ray.tnear());
-          const Vec4vf<M> v0 = enlargeRadiusToMinWidth(context,geom,ray_org,v0i);
-          const Vec4vf<M> v1 = enlargeRadiusToMinWidth(context,geom,ray_org,v1i);
-          const Vec4vf<M> vL = enlargeRadiusToMinWidth(context,geom,ray_org,vLi);
-          const Vec4vf<M> vR = enlargeRadiusToMinWidth(context,geom,ray_org,vRi);
-          return  __roundline_internal::intersectConeSphere(valid_i,ray_org,ray_dir,ray_tnear,ray_tfar(ray),v0,v1,vL,vR,epilog);
+          const Vec4vf<M> v0 = enlargeRadiusToMinWidth<M>(context,geom,ray_org,v0i);
+          const Vec4vf<M> v1 = enlargeRadiusToMinWidth<M>(context,geom,ray_org,v1i);
+          const Vec4vf<M> vL = enlargeRadiusToMinWidth<M>(context,geom,ray_org,vLi);
+          const Vec4vf<M> vR = enlargeRadiusToMinWidth<M>(context,geom,ray_org,vRi);
+          return  __roundline_internal::intersectConeSphere<M>(valid_i,ray_org,ray_dir,ray_tnear,ray_tfar<Ray>(ray),v0,v1,vL,vR,epilog);
         }
       };
     
@@ -699,11 +704,11 @@ namespace embree
           const Vec3vf<M> ray_org(ray.org.x[k], ray.org.y[k], ray.org.z[k]);
           const Vec3vf<M> ray_dir(ray.dir.x[k], ray.dir.y[k], ray.dir.z[k]);
           const vfloat<M> ray_tnear = ray.tnear()[k];
-          const Vec4vf<M> v0 = enlargeRadiusToMinWidth(context,geom,ray_org,v0i);
-          const Vec4vf<M> v1 = enlargeRadiusToMinWidth(context,geom,ray_org,v1i);
-          const Vec4vf<M> vL = enlargeRadiusToMinWidth(context,geom,ray_org,vLi);
-          const Vec4vf<M> vR = enlargeRadiusToMinWidth(context,geom,ray_org,vRi);
-          return __roundline_internal::intersectConeSphere(valid_i,ray_org,ray_dir,ray_tnear,ray_tfar(ray,k),v0,v1,vL,vR,epilog);
+          const Vec4vf<M> v0 = enlargeRadiusToMinWidth<M>(context,geom,ray_org,v0i);
+          const Vec4vf<M> v1 = enlargeRadiusToMinWidth<M>(context,geom,ray_org,v1i);
+          const Vec4vf<M> vL = enlargeRadiusToMinWidth<M>(context,geom,ray_org,vLi);
+          const Vec4vf<M> vR = enlargeRadiusToMinWidth<M>(context,geom,ray_org,vRi);
+          return __roundline_internal::intersectConeSphere<M>(valid_i,ray_org,ray_dir,ray_tnear,ray_tfar(ray,k),v0,v1,vL,vR,epilog);
         }
       };
   }

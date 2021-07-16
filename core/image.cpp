@@ -1237,7 +1237,7 @@ void Image::resize(int p_width, int p_height, Interpolation p_interpolation) {
 
 void Image::crop_from_point(int p_x, int p_y, int p_width, int p_height) {
 	ERR_FAIL_COND_MSG(!_can_modify(format), "Cannot crop in compressed or custom image formats.");
-
+	ERR_FAIL_COND_MSG(write_lock.ptr(), "Cannot modify image when it is locked.");
 	ERR_FAIL_COND_MSG(p_x < 0, "Start x position cannot be smaller than 0.");
 	ERR_FAIL_COND_MSG(p_y < 0, "Start y position cannot be smaller than 0.");
 	ERR_FAIL_COND_MSG(p_width <= 0, "Width of image must be greater than 0.");
@@ -1476,6 +1476,8 @@ void Image::expand_x2_hq2x() {
 }
 
 void Image::shrink_x2() {
+	ERR_FAIL_COND(!_can_modify(format));
+	ERR_FAIL_COND_MSG(write_lock.ptr(), "Cannot modify image when it is locked.");
 	ERR_FAIL_COND(data.size() == 0);
 
 	if (mipmaps) {
@@ -1599,6 +1601,8 @@ void Image::normalize() {
 
 Error Image::generate_mipmaps(bool p_renormalize) {
 	ERR_FAIL_COND_V_MSG(!_can_modify(format), ERR_UNAVAILABLE, "Cannot generate mipmaps in compressed or custom image formats.");
+
+	ERR_FAIL_COND_V_MSG(write_lock.ptr(), ERR_UNAVAILABLE, "Cannot modify image when it is locked.");
 
 	ERR_FAIL_COND_V_MSG(format == FORMAT_RGBA4444 || format == FORMAT_RGBA5551, ERR_UNAVAILABLE, "Cannot generate mipmaps in custom image formats.");
 
@@ -1740,6 +1744,7 @@ void Image::create(int p_width, int p_height, bool p_use_mipmaps, Format p_forma
 	ERR_FAIL_COND_MSG(p_width > MAX_WIDTH, "Image width cannot be greater than " + itos(MAX_WIDTH) + ".");
 	ERR_FAIL_COND_MSG(p_height > MAX_HEIGHT, "Image height cannot be greater than " + itos(MAX_HEIGHT) + ".");
 	ERR_FAIL_COND_MSG(write_lock.ptr(), "Cannot create image when it is locked.");
+	ERR_FAIL_INDEX_MSG(p_format, FORMAT_MAX, "Image format out of range, please see Image's Format enum.");
 
 	int mm = 0;
 	int size = _get_dst_image_size(p_width, p_height, p_format, mm, p_use_mipmaps ? -1 : 0);
@@ -1760,6 +1765,7 @@ void Image::create(int p_width, int p_height, bool p_use_mipmaps, Format p_forma
 	ERR_FAIL_COND_MSG(p_height <= 0, "Image height must be greater than 0.");
 	ERR_FAIL_COND_MSG(p_width > MAX_WIDTH, "Image width cannot be greater than " + itos(MAX_WIDTH) + ".");
 	ERR_FAIL_COND_MSG(p_height > MAX_HEIGHT, "Image height cannot be greater than " + itos(MAX_HEIGHT) + ".");
+	ERR_FAIL_INDEX_MSG(p_format, FORMAT_MAX, "Image format out of range, please see Image's Format enum.");
 
 	int mm;
 	int size = _get_dst_image_size(p_width, p_height, p_format, mm, p_use_mipmaps ? -1 : 0);
@@ -2042,7 +2048,7 @@ Image::AlphaMode Image::detect_alpha() const {
 Error Image::load(const String &p_path) {
 #ifdef DEBUG_ENABLED
 	if (p_path.begins_with("res://") && ResourceLoader::exists(p_path)) {
-		WARN_PRINTS("Loaded resource as image file, this will not work on export: '" + p_path + "'. Instead, import the image file as an Image resource and load it normally as a resource.");
+		WARN_PRINT("Loaded resource as image file, this will not work on export: '" + p_path + "'. Instead, import the image file as an Image resource and load it normally as a resource.");
 	}
 #endif
 	return ImageLoader::load_image(p_path, this);
@@ -2113,6 +2119,8 @@ Error Image::decompress() {
 }
 
 Error Image::compress(CompressMode p_mode, CompressSource p_source, float p_lossy_quality) {
+	ERR_FAIL_INDEX_V_MSG(p_mode, COMPRESS_MAX, ERR_INVALID_PARAMETER, "Invalid compress mode.");
+	ERR_FAIL_INDEX_V_MSG(p_source, COMPRESS_SOURCE_MAX, ERR_INVALID_PARAMETER, "Invalid compress source.");
 	switch (p_mode) {
 		case COMPRESS_S3TC: {
 			ERR_FAIL_COND_V(!_image_compress_bc_func, ERR_UNAVAILABLE);
@@ -2137,6 +2145,9 @@ Error Image::compress(CompressMode p_mode, CompressSource p_source, float p_loss
 		case COMPRESS_BPTC: {
 			ERR_FAIL_COND_V(!_image_compress_bptc_func, ERR_UNAVAILABLE);
 			_image_compress_bptc_func(this, p_lossy_quality, p_source);
+		} break;
+		case COMPRESS_MAX: {
+			ERR_FAIL_V(ERR_INVALID_PARAMETER);
 		} break;
 	}
 
@@ -2487,10 +2498,11 @@ void (*Image::_image_decompress_bptc)(Image *) = nullptr;
 void (*Image::_image_decompress_etc1)(Image *) = nullptr;
 void (*Image::_image_decompress_etc2)(Image *) = nullptr;
 
-PoolVector<uint8_t> (*Image::lossy_packer)(const Ref<Image> &, float) = nullptr;
-Ref<Image> (*Image::lossy_unpacker)(const PoolVector<uint8_t> &) = nullptr;
-PoolVector<uint8_t> (*Image::lossless_packer)(const Ref<Image> &) = nullptr;
-Ref<Image> (*Image::lossless_unpacker)(const PoolVector<uint8_t> &) = nullptr;
+PoolVector<uint8_t> (*Image::webp_lossy_packer)(const Ref<Image> &, float) = nullptr;
+PoolVector<uint8_t> (*Image::webp_lossless_packer)(const Ref<Image> &) = nullptr;
+Ref<Image> (*Image::webp_unpacker)(const PoolVector<uint8_t> &) = nullptr;
+PoolVector<uint8_t> (*Image::png_packer)(const Ref<Image> &) = nullptr;
+Ref<Image> (*Image::png_unpacker)(const PoolVector<uint8_t> &) = nullptr;
 
 void Image::_set_data(const Dictionary &p_data) {
 	ERR_FAIL_COND(!p_data.has("width"));
@@ -3140,6 +3152,9 @@ void Image::premultiply_alpha() {
 }
 
 void Image::fix_alpha_edges() {
+	ERR_FAIL_COND(!_can_modify(format));
+	ERR_FAIL_COND_MSG(write_lock.ptr(), "Cannot modify image when it is locked.");
+
 	if (data.size() == 0) {
 		return;
 	}

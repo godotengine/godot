@@ -122,6 +122,7 @@ class ProjectManager : public Control {
 	void _version_button_pressed();
 	void _on_order_option_changed();
 	void _on_filter_option_changed();
+	void _on_tab_changed(int p_tab);
 
 protected:
 	void _notification(int p_what);
@@ -160,7 +161,12 @@ protected:
 public:
 	void _setup_filters(Vector<String> options);
 	void add_filter_option();
+
 	void add_search_box();
+	// May return `nullptr` if the search box wasn't created yet, so check for validity
+	// before using the returned value.
+	LineEdit *get_search_box() const;
+
 	void set_filter_size(int h_size);
 	String get_search_term();
 	FilterOption get_filter_option();

@@ -157,9 +157,9 @@ void CSharpLanguage::finish() {
 		Object *obj = ObjectDB::get_instance(id);
 
 		if (obj) {
-			ERR_PRINTS("Leaked unsafe reference to object: " + obj->to_string());
+			ERR_PRINT("Leaked unsafe reference to object: " + obj->to_string());
 		} else {
-			ERR_PRINTS("Leaked unsafe reference to deleted object: " + itos(id));
+			ERR_PRINT("Leaked unsafe reference to deleted object: " + itos(id));
 		}
 	}
 #endif
@@ -289,6 +289,26 @@ void CSharpLanguage::get_reserved_words(List<String> *p_words) const {
 	}
 }
 
+bool CSharpLanguage::is_control_flow_keyword(String p_keyword) const {
+	return p_keyword == "break" ||
+		   p_keyword == "case" ||
+		   p_keyword == "catch" ||
+		   p_keyword == "continue" ||
+		   p_keyword == "default" ||
+		   p_keyword == "do" ||
+		   p_keyword == "else" ||
+		   p_keyword == "finally" ||
+		   p_keyword == "for" ||
+		   p_keyword == "foreach" ||
+		   p_keyword == "goto" ||
+		   p_keyword == "if" ||
+		   p_keyword == "return" ||
+		   p_keyword == "switch" ||
+		   p_keyword == "throw" ||
+		   p_keyword == "try" ||
+		   p_keyword == "while";
+}
+
 void CSharpLanguage::get_comment_delimiters(List<String> *p_delimiters) const {
 	p_delimiters->push_back("//"); // single-line comment
 	p_delimiters->push_back("/* */"); // delimited comment
@@ -333,7 +353,7 @@ Ref<Script> CSharpLanguage::get_template(const String &p_class_name, const Strin
 							 "}\n";
 
 	// Replaces all spaces in p_class_name with underscores to prevent
-	// erronous C# Script templates from being generated when the object name
+	// invalid C# Script templates from being generated when the object name
 	// has spaces in it.
 	String class_name_no_spaces = p_class_name.replace(" ", "_");
 	String base_class_name = get_base_class_name(p_base_class_name, class_name_no_spaces);
@@ -1052,7 +1072,7 @@ void CSharpLanguage::_load_scripts_metadata() {
 		int err_line;
 		Error json_err = JSON::parse(old_json, old_dict_var, err_str, err_line);
 		if (json_err != OK) {
-			ERR_PRINTS("Failed to parse metadata file: '" + err_str + "' (" + String::num_int64(err_line) + ").");
+			ERR_PRINT("Failed to parse metadata file: '" + err_str + "' (" + String::num_int64(err_line) + ").");
 			return;
 		}
 
@@ -2194,7 +2214,7 @@ void CSharpScript::_update_member_info_no_exports() {
 }
 #endif
 
-bool CSharpScript::_update_exports() {
+bool CSharpScript::_update_exports(PlaceHolderScriptInstance *p_instance_to_update) {
 #ifdef TOOLS_ENABLED
 	bool is_editor = Engine::get_singleton()->is_editor_hint();
 	if (is_editor)
@@ -2352,7 +2372,7 @@ bool CSharpScript::_update_exports() {
 			if (tmp_native && !base_ref) {
 				Node *node = Object::cast_to<Node>(tmp_native);
 				if (node && node->is_inside_tree()) {
-					ERR_PRINTS("Temporary instance was added to the scene tree.");
+					ERR_PRINT("Temporary instance was added to the scene tree.");
 				} else {
 					memdelete(tmp_native);
 				}
@@ -2365,14 +2385,18 @@ bool CSharpScript::_update_exports() {
 	if (is_editor) {
 		placeholder_fallback_enabled = false;
 
-		if (placeholders.size()) {
+		if ((changed || p_instance_to_update) && placeholders.size()) {
 			// Update placeholders if any
 			Map<StringName, Variant> values;
 			List<PropertyInfo> propnames;
 			_update_exports_values(values, propnames);
 
-			for (Set<PlaceHolderScriptInstance *>::Element *E = placeholders.front(); E; E = E->next()) {
-				E->get()->update(propnames, values);
+			if (changed) {
+				for (Set<PlaceHolderScriptInstance *>::Element *E = placeholders.front(); E; E = E->next()) {
+					E->get()->update(propnames, values);
+				}
+			} else {
+				p_instance_to_update->update(propnames, values);
 			}
 		}
 	}
@@ -2433,7 +2457,7 @@ bool CSharpScript::_get_signal(GDMonoClass *p_class, GDMonoClass *p_delegate, Ve
 					arg.type = GDMonoMarshal::managed_to_variant_type(types[i]);
 
 					if (arg.type == Variant::NIL) {
-						ERR_PRINTS("Unknown type of signal parameter: '" + arg.name + "' in '" + p_class->get_full_name() + "'.");
+						ERR_PRINT("Unknown type of signal parameter: '" + arg.name + "' in '" + p_class->get_full_name() + "'.");
 						return false;
 					}
 
@@ -2462,7 +2486,7 @@ bool CSharpScript::_get_member_export(IMonoClassMember *p_member, bool p_inspect
 	if (p_member->is_static()) {
 #ifdef TOOLS_ENABLED
 		if (p_member->has_attribute(CACHED_CLASS(ExportAttribute)))
-			ERR_PRINTS("Cannot export member because it is static: '" + MEMBER_FULL_QUALIFIED_NAME(p_member) + "'.");
+			ERR_PRINT("Cannot export member because it is static: '" + MEMBER_FULL_QUALIFIED_NAME(p_member) + "'.");
 #endif
 		return false;
 	}
@@ -2517,7 +2541,7 @@ bool CSharpScript::_get_member_export(IMonoClassMember *p_member, bool p_inspect
 
 	if (variant_type == Variant::NIL) {
 #ifdef TOOLS_ENABLED
-		ERR_PRINTS("Unknown exported member type: '" + MEMBER_FULL_QUALIFIED_NAME(p_member) + "'.");
+		ERR_PRINT("Unknown exported member type: '" + MEMBER_FULL_QUALIFIED_NAME(p_member) + "'.");
 #endif
 		return false;
 	}
@@ -2969,7 +2993,7 @@ PlaceHolderScriptInstance *CSharpScript::placeholder_instance_create(Object *p_t
 #ifdef TOOLS_ENABLED
 	PlaceHolderScriptInstance *si = memnew(PlaceHolderScriptInstance(CSharpLanguage::get_singleton(), Ref<Script>(this), p_this));
 	placeholders.insert(si);
-	_update_exports();
+	_update_exports(si);
 	return si;
 #else
 	return NULL;
@@ -3310,7 +3334,7 @@ Error ResourceFormatSaverCSharpScript::save(const String &p_path, const RES &p_r
 					"Compile",
 					ProjectSettings::get_singleton()->globalize_path(p_path));
 		} else {
-			ERR_PRINTS("C# project could not be created; cannot add file: '" + p_path + "'.");
+			ERR_PRINT("C# project could not be created; cannot add file: '" + p_path + "'.");
 		}
 	}
 #endif

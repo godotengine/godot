@@ -124,6 +124,7 @@ public:
 		COMPRESS_SOURCE_SRGB,
 		COMPRESS_SOURCE_NORMAL,
 		COMPRESS_SOURCE_LAYERED,
+		COMPRESS_SOURCE_MAX,
 	};
 
 	//some functions provided by something else
@@ -147,10 +148,11 @@ public:
 	static void (*_image_decompress_etc1)(Image *);
 	static void (*_image_decompress_etc2)(Image *);
 
-	static PoolVector<uint8_t> (*lossy_packer)(const Ref<Image> &p_image, float p_quality);
-	static Ref<Image> (*lossy_unpacker)(const PoolVector<uint8_t> &p_buffer);
-	static PoolVector<uint8_t> (*lossless_packer)(const Ref<Image> &p_image);
-	static Ref<Image> (*lossless_unpacker)(const PoolVector<uint8_t> &p_buffer);
+	static PoolVector<uint8_t> (*webp_lossy_packer)(const Ref<Image> &p_image, float p_quality);
+	static PoolVector<uint8_t> (*webp_lossless_packer)(const Ref<Image> &p_image);
+	static Ref<Image> (*webp_unpacker)(const PoolVector<uint8_t> &p_buffer);
+	static PoolVector<uint8_t> (*png_packer)(const Ref<Image> &p_image);
+	static Ref<Image> (*png_unpacker)(const PoolVector<uint8_t> &p_buffer);
 
 	PoolVector<uint8_t>::Write write_lock;
 
@@ -303,7 +305,8 @@ public:
 		COMPRESS_PVRTC4,
 		COMPRESS_ETC,
 		COMPRESS_ETC2,
-		COMPRESS_BPTC
+		COMPRESS_BPTC,
+		COMPRESS_MAX,
 	};
 
 	Error compress(CompressMode p_mode = COMPRESS_S3TC, CompressSource p_source = COMPRESS_SOURCE_GENERIC, float p_lossy_quality = 0.7);

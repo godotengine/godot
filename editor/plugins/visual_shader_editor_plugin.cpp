@@ -856,6 +856,7 @@ void VisualShaderEditor::_update_graph() {
 			Color background_color = EDITOR_GET("text_editor/highlighting/background_color");
 			Color text_color = EDITOR_GET("text_editor/highlighting/text_color");
 			Color keyword_color = EDITOR_GET("text_editor/highlighting/keyword_color");
+			Color control_flow_keyword_color = EDITOR_GET("text_editor/highlighting/control_flow_keyword_color");
 			Color comment_color = EDITOR_GET("text_editor/highlighting/comment_color");
 			Color symbol_color = EDITOR_GET("text_editor/highlighting/symbol_color");
 
@@ -863,7 +864,11 @@ void VisualShaderEditor::_update_graph() {
 			expression_box->add_color_override("background_color", background_color);
 
 			for (List<String>::Element *E = keyword_list.front(); E; E = E->next()) {
-				expression_box->add_keyword_color(E->get(), keyword_color);
+				if (ShaderLanguage::is_control_flow_keyword(E->get())) {
+					expression_box->add_keyword_color(E->get(), control_flow_keyword_color);
+				} else {
+					expression_box->add_keyword_color(E->get(), keyword_color);
+				}
 			}
 
 			expression_box->add_font_override("font", get_font("expression", "EditorFonts"));
@@ -1705,13 +1710,18 @@ void VisualShaderEditor::_notification(int p_what) {
 			Color background_color = EDITOR_GET("text_editor/highlighting/background_color");
 			Color text_color = EDITOR_GET("text_editor/highlighting/text_color");
 			Color keyword_color = EDITOR_GET("text_editor/highlighting/keyword_color");
+			Color control_flow_keyword_color = EDITOR_GET("text_editor/highlighting/control_flow_keyword_color");
 			Color comment_color = EDITOR_GET("text_editor/highlighting/comment_color");
 			Color symbol_color = EDITOR_GET("text_editor/highlighting/symbol_color");
 
 			preview_text->add_color_override("background_color", background_color);
 
 			for (List<String>::Element *E = keyword_list.front(); E; E = E->next()) {
-				preview_text->add_keyword_color(E->get(), keyword_color);
+				if (ShaderLanguage::is_control_flow_keyword(E->get())) {
+					preview_text->add_keyword_color(E->get(), control_flow_keyword_color);
+				} else {
+					preview_text->add_keyword_color(E->get(), keyword_color);
+				}
 			}
 
 			preview_text->add_font_override("font", get_font("expression", "EditorFonts"));

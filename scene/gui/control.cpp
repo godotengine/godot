@@ -88,12 +88,16 @@ void Control::_edit_set_state(const Dictionary &p_state) {
 	data.margin[MARGIN_RIGHT] = margins[2];
 	data.margin[MARGIN_BOTTOM] = margins[3];
 	_size_changed();
+	_change_notify("anchor_left");
+	_change_notify("anchor_right");
+	_change_notify("anchor_top");
+	_change_notify("anchor_bottom");
 }
 
 void Control::_edit_set_position(const Point2 &p_position) {
 #ifdef TOOLS_ENABLED
 	ERR_FAIL_COND_MSG(!Engine::get_singleton()->is_editor_hint(), "This function can only be used from editor plugins.");
-	set_position(p_position, CanvasItemEditor::get_singleton()->is_anchors_mode_enabled());
+	set_position(p_position, CanvasItemEditor::get_singleton()->is_anchors_mode_enabled() && Object::cast_to<Control>(data.parent));
 #else
 	// Unlikely to happen. TODO: enclose all _edit_ functions into TOOLS_ENABLED
 	set_position(p_position);
@@ -965,6 +969,7 @@ Color Control::get_color(const StringName &p_name, const StringName &p_node_type
 	}
 
 	StringName type = p_node_type ? p_node_type : get_class_name();
+
 	// try with custom themes
 	Control *theme_owner = data.theme_owner;
 
@@ -1005,6 +1010,7 @@ int Control::get_constant(const StringName &p_name, const StringName &p_node_typ
 	}
 
 	StringName type = p_node_type ? p_node_type : get_class_name();
+
 	// try with custom themes
 	Control *theme_owner = data.theme_owner;
 
@@ -1098,7 +1104,7 @@ bool Control::has_icon(const StringName &p_name, const StringName &p_node_type) 
 	}
 
 	if (Theme::get_project_default().is_valid()) {
-		if (Theme::get_project_default()->has_color(p_name, type)) {
+		if (Theme::get_project_default()->has_icon(p_name, type)) {
 			return true;
 		}
 	}
@@ -2586,6 +2592,7 @@ void Control::set_scale(const Vector2 &p_scale) {
 	}
 	update();
 	_notify_transform();
+	_change_notify("rect_scale");
 }
 Vector2 Control::get_scale() const {
 	return data.scale;

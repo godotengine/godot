@@ -1,7 +1,15 @@
-// Copyright 2009-2020 Intel Corporation
+// Copyright 2009-2021 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
 #pragma once
+
+#define vboolf vboolf_impl
+#define vboold vboold_impl
+#define vint vint_impl
+#define vuint vuint_impl
+#define vllong vllong_impl
+#define vfloat vfloat_impl
+#define vdouble vdouble_impl
 
 namespace embree
 { 
@@ -90,10 +98,10 @@ namespace embree
 
     static __forceinline vint16 load (const void* addr) { return _mm512_load_si512((int*)addr); }
 
-    static __forceinline vint16 load(const uint8_t* ptr) { return _mm512_cvtepu8_epi32(_mm_load_si128((__m128i*)ptr)); }
+    static __forceinline vint16 load(const unsigned char* ptr) { return _mm512_cvtepu8_epi32(_mm_load_si128((__m128i*)ptr)); }
     static __forceinline vint16 load(const unsigned short* ptr) { return _mm512_cvtepu16_epi32(_mm256_load_si256((__m256i*)ptr)); }
 
-    static __forceinline vint16 loadu(const uint8_t* ptr) { return _mm512_cvtepu8_epi32(_mm_loadu_si128((__m128i*)ptr)); }
+    static __forceinline vint16 loadu(const unsigned char* ptr) { return _mm512_cvtepu8_epi32(_mm_loadu_si128((__m128i*)ptr)); }
     static __forceinline vint16 loadu(const unsigned short* ptr) { return _mm512_cvtepu16_epi32(_mm256_loadu_si256((__m256i*)ptr)); }
 
     static __forceinline vint16 loadu(const void* addr) { return _mm512_loadu_si512(addr); }
@@ -108,20 +116,6 @@ namespace embree
     static __forceinline void storeu(const vboolf16& mask, void* ptr,  const vint16& f) { _mm512_mask_storeu_epi32((int*)ptr,mask,f); }
 
     static __forceinline void store_nt(void* __restrict__ ptr, const vint16& a) { _mm512_stream_si512((__m512i*)ptr,a); }
-
-    /* pass by value to avoid compiler generating inefficient code */
-    static __forceinline void storeu_compact(const vboolf16 mask, void* addr, vint16 reg) {
-      _mm512_mask_compressstoreu_epi32(addr,mask,reg);
-    }
-
-    static __forceinline void storeu_compact_single(const vboolf16 mask, void* addr, vint16 reg) {
-      //_mm512_mask_compressstoreu_epi32(addr,mask,reg);
-      *(float*)addr = mm512_cvtss_f32(_mm512_mask_compress_ps(_mm512_castsi512_ps(reg),mask,_mm512_castsi512_ps(reg)));
-    }
-
-    static __forceinline vint16 compact64bit(const vboolf16& mask, vint16 &v) {
-      return _mm512_mask_compress_epi64(v,mask,v);
-    }
 
     static __forceinline vint16 compact(const vboolf16& mask, vint16 &v) {
       return _mm512_mask_compress_epi32(v,mask,v);
@@ -158,10 +152,6 @@ namespace embree
     template<int scale = 4>
     static __forceinline void scatter(const vboolf16& mask, int* ptr, const vint16& index, const vint16& v) {
       _mm512_mask_i32scatter_epi32((int*)ptr,mask,index,v,scale);
-    }
-
-    static __forceinline vint16 broadcast64bit(size_t v) {
-      return _mm512_set1_epi64(v);
     }
 
     ////////////////////////////////////////////////////////////////////////////////
@@ -313,18 +303,6 @@ namespace embree
     return _mm512_mask_or_epi32(f,m,t,t); 
   }
 
-  __forceinline void xchg(const vboolf16& m, vint16& a, vint16& b) {
-    const vint16 c = a; a = select(m,b,a); b = select(m,c,b);
-  }
-
-  __forceinline vboolf16 test(const vboolf16& m, const vint16& a, const vint16& b) {
-    return _mm512_mask_test_epi32_mask(m,a,b);
-  }
-
-  __forceinline vboolf16 test(const vint16& a, const vint16& b) {
-    return _mm512_test_epi32_mask(a,b);
-  }
-
   ////////////////////////////////////////////////////////////////////////////////
   // Movement/Shifting/Shuffling Functions
   ////////////////////////////////////////////////////////////////////////////////
@@ -362,10 +340,6 @@ namespace embree
   }
 
   template<int i> __forceinline vint16 insert4(const vint16& a, const vint4& b) { return _mm512_inserti32x4(a, b, i); }
-
-  __forceinline size_t extract64bit(const vint16& v) {
-    return _mm_cvtsi128_si64(_mm512_castsi512_si128(v));
-  }
 
   template<int N, int i>
   vint<N> extractN(const vint16& v);
@@ -488,3 +462,11 @@ namespace embree
     return cout;
   }
 }
+
+#undef vboolf
+#undef vboold
+#undef vint
+#undef vuint
+#undef vllong
+#undef vfloat
+#undef vdouble

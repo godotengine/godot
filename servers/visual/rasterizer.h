@@ -1043,7 +1043,6 @@ public:
 
 				if (found_xform) {
 					r = xf.xform(r);
-					found_xform = false;
 				}
 
 				if (first) {
@@ -1157,8 +1156,6 @@ public:
 	virtual void finalize() = 0;
 
 	virtual bool is_low_end() const = 0;
-
-	virtual const char *gl_check_for_error(bool p_print_error = true) = 0;
 
 	virtual ~Rasterizer() {}
 };

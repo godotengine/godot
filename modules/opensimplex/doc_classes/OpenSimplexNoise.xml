@@ -31,8 +31,10 @@
 			</argument>
 			<argument index="1" name="height" type="int">
 			</argument>
+			<argument index="2" name="noise_offset" type="Vector2" default="Vector2( 0, 0 )">
+			</argument>
 			<description>
-				Generate a noise image in [constant Image.FORMAT_L8] format with the requested [code]width[/code] and [code]height[/code], based on the current noise parameters.
+				Generate a noise image in [constant Image.FORMAT_L8] format with the requested [code]width[/code] and [code]height[/code], based on the current noise parameters. If [code]noise_offset[/code] is specified, then the offset value is used as the coordinates of the top-left corner of the generated noise.
 			</description>
 		</method>
 		<method name="get_noise_1d" qualifiers="const">

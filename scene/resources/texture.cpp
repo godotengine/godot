@@ -516,7 +516,7 @@ Error StreamTexture::_load_data(const String &p_path, int &tw, int &th, int &tw_
 		p_size_limit = 0;
 	}
 
-	if (df & FORMAT_BIT_LOSSLESS || df & FORMAT_BIT_LOSSY) {
+	if (df & FORMAT_BIT_PNG || df & FORMAT_BIT_WEBP) {
 		//look for a PNG or WEBP file inside
 
 		int sw = tw;
@@ -539,7 +539,7 @@ Error StreamTexture::_load_data(const String &p_path, int &tw, int &th, int &tw_
 
 		//mipmaps need to be read independently, they will be later combined
 		Vector<Ref<Image>> mipmap_images;
-		int total_size = 0;
+		uint64_t total_size = 0;
 
 		for (uint32_t i = 0; i < mipmaps; i++) {
 			if (i) {
@@ -554,10 +554,10 @@ Error StreamTexture::_load_data(const String &p_path, int &tw, int &th, int &tw_
 			}
 
 			Ref<Image> img;
-			if (df & FORMAT_BIT_LOSSLESS) {
-				img = Image::lossless_unpacker(pv);
+			if (df & FORMAT_BIT_PNG) {
+				img = Image::png_unpacker(pv);
 			} else {
-				img = Image::lossy_unpacker(pv);
+				img = Image::webp_unpacker(pv);
 			}
 
 			if (img.is_null() || img->empty()) {
@@ -624,7 +624,7 @@ Error StreamTexture::_load_data(const String &p_path, int &tw, int &th, int &tw_
 			int sh = th;
 
 			int mipmaps2 = Image::get_image_required_mipmaps(tw, th, format);
-			int total_size = Image::get_image_data_size(tw, th, format, true);
+			uint64_t total_size = Image::get_image_data_size(tw, th, format, true);
 			int idx = 0;
 
 			while (mipmaps2 > 1 && p_size_limit > 0 && (sw > p_size_limit || sh > p_size_limit)) {
@@ -648,12 +648,12 @@ Error StreamTexture::_load_data(const String &p_path, int &tw, int &th, int &tw_
 
 			{
 				PoolVector<uint8_t>::Write w = img_data.write();
-				int bytes = f->get_buffer(w.ptr(), total_size - ofs);
+				uint64_t bytes = f->get_buffer(w.ptr(), total_size - ofs);
 				//print_line("requested read: " + itos(total_size - ofs) + " but got: " + itos(bytes));
 
 				memdelete(f);
 
-				int expected = total_size - ofs;
+				uint64_t expected = total_size - ofs;
 				if (bytes < expected) {
 					//this is a compatibility workaround for older format, which saved less mipmaps2. It is still recommended the image is reimported.
 					memset(w.ptr() + bytes, 0, (expected - bytes));
@@ -1601,7 +1601,7 @@ void CurveTexture::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("_update"), &CurveTexture::_update);
 
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "width", PROPERTY_HINT_RANGE, "32,4096"), "set_width", "get_width");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "width", PROPERTY_HINT_RANGE, "1,4096"), "set_width", "get_width");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "curve", PROPERTY_HINT_RESOURCE_TYPE, "Curve"), "set_curve", "get_curve");
 }
 
@@ -1715,7 +1715,7 @@ void GradientTexture::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_update"), &GradientTexture::_update);
 
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "gradient", PROPERTY_HINT_RESOURCE_TYPE, "Gradient"), "set_gradient", "get_gradient");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "width", PROPERTY_HINT_RANGE, "1,2048,1,or_greater"), "set_width", "get_width");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "width", PROPERTY_HINT_RANGE, "1,4096"), "set_width", "get_width");
 }
 
 void GradientTexture::set_gradient(Ref<Gradient> p_gradient) {
@@ -2182,7 +2182,7 @@ Error TextureLayered::load(const String &p_path) {
 					f->get_buffer(w.ptr(), size);
 				}
 
-				Ref<Image> img = Image::lossless_unpacker(pv);
+				Ref<Image> img = Image::png_unpacker(pv);
 
 				if (img.is_null() || img->empty() || format != img->get_format()) {
 					f->close();
@@ -2225,14 +2225,14 @@ Error TextureLayered::load(const String &p_path) {
 		} else {
 			//look for regular format
 			bool mipmaps = (flags & Texture::FLAG_MIPMAPS);
-			int total_size = Image::get_image_data_size(tw, th, format, mipmaps);
+			uint64_t total_size = Image::get_image_data_size(tw, th, format, mipmaps);
 
 			PoolVector<uint8_t> img_data;
 			img_data.resize(total_size);
 
 			{
 				PoolVector<uint8_t>::Write w = img_data.write();
-				int bytes = f->get_buffer(w.ptr(), total_size);
+				uint64_t bytes = f->get_buffer(w.ptr(), total_size);
 				if (bytes != total_size) {
 					f->close();
 					memdelete(f);

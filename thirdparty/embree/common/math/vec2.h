@@ -1,4 +1,4 @@
-// Copyright 2009-2020 Intel Corporation
+// Copyright 2009-2021 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
 #pragma once
@@ -205,11 +205,11 @@ namespace embree
 
 #include "vec2fa.h"
 
-#if defined(__SSE__) || defined(__ARM_NEON)
+#if defined __SSE__
 #include "../simd/sse.h"
 #endif
 
-#if defined(__AVX__)
+#if defined __AVX__
 #include "../simd/avx.h"
 #endif
 
@@ -221,7 +221,7 @@ namespace embree
 {
   template<> __forceinline Vec2<float>::Vec2(const Vec2fa& a) : x(a.x), y(a.y) {}
 
-#if defined(__SSE__) || defined(__ARM_NEON)
+#if defined(__SSE__)
   template<> __forceinline Vec2<vfloat4>::Vec2(const Vec2fa& a) : x(a.x), y(a.y) {}
 #endif
 

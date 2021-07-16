@@ -129,7 +129,7 @@ class GDScript : public Script {
 
 #endif
 
-	bool _update_exports(bool *r_err = nullptr, bool p_recursive_call = false);
+	bool _update_exports(bool *r_err = nullptr, bool p_recursive_call = false, PlaceHolderScriptInstance *p_instance_to_update = nullptr);
 
 	void _save_orphaned_subclasses();
 
@@ -453,6 +453,7 @@ public:
 
 	/* EDITOR FUNCTIONS */
 	virtual void get_reserved_words(List<String> *p_words) const;
+	virtual bool is_control_flow_keyword(String p_keywords) const;
 	virtual void get_comment_delimiters(List<String> *p_delimiters) const;
 	virtual void get_string_delimiters(List<String> *p_delimiters) const;
 	virtual String _get_processed_template(const String &p_template, const String &p_base_class_name) const;

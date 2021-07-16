@@ -65,15 +65,13 @@ public:
 	};
 
 private:
-	char *data;
-	char *P;
-	uint64_t length;
-	void unescape(String &p_str);
-	Vector<String> special_characters;
+	char *data = nullptr;
+	char *P = nullptr;
+	uint64_t length = 0;
 	String node_name;
-	bool node_empty;
-	NodeType node_type;
-	uint64_t node_offset;
+	bool node_empty = false;
+	NodeType node_type = NODE_NONE;
+	uint64_t node_offset = 0;
 
 	struct Attribute {
 		String name;
@@ -82,7 +80,6 @@ private:
 
 	Vector<Attribute> attributes;
 
-	String _replace_special_characters(const String &origstr);
 	bool _set_text(char *start, char *end);
 	void _parse_closing_xml_element();
 	void _ignore_definition();

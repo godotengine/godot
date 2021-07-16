@@ -216,11 +216,6 @@ bool BodyPairSW::setup(real_t p_step) {
 		return false;
 	}
 
-	if (A->is_shape_set_as_disabled(shape_A) || B->is_shape_set_as_disabled(shape_B)) {
-		collided = false;
-		return false;
-	}
-
 	offset_B = B->get_transform().get_origin() - A->get_transform().get_origin();
 
 	validate_contacts();

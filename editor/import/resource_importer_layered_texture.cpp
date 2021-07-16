@@ -128,7 +128,9 @@ void ResourceImporterLayeredTexture::_save_tex(const Vector<Ref<Image>> &p_image
 						image->shrink_x2();
 					}
 
-					PoolVector<uint8_t> data = Image::lossless_packer(image);
+					// we have to use png here for backward compatibility.
+					// in 3.x, we don't store type information here
+					PoolVector<uint8_t> data = Image::png_packer(image);
 					int data_len = data.size();
 					f->store_32(data_len);
 

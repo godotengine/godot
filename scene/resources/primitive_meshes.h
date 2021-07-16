@@ -205,6 +205,7 @@ private:
 	Size2 size;
 	int subdivide_w;
 	int subdivide_d;
+	Vector3 center_offset;
 
 protected:
 	static void _bind_methods();
@@ -219,6 +220,9 @@ public:
 
 	void set_subdivide_depth(const int p_divisions);
 	int get_subdivide_depth() const;
+
+	void set_center_offset(const Vector3 p_offset);
+	Vector3 get_center_offset() const;
 
 	PlaneMesh();
 };
@@ -268,6 +272,7 @@ class QuadMesh : public PrimitiveMesh {
 
 private:
 	Size2 size;
+	Vector3 center_offset;
 
 protected:
 	static void _bind_methods();
@@ -278,6 +283,9 @@ public:
 
 	void set_size(const Size2 &p_size);
 	Size2 get_size() const;
+
+	void set_center_offset(const Vector3 p_offset);
+	Vector3 get_center_offset() const;
 };
 
 /**

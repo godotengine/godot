@@ -702,9 +702,9 @@ void SpatialMaterial::_update_shader() {
 		code += "\tTANGENT+= vec3(1.0,0.0,0.0) * abs(NORMAL.z);\n";
 		code += "\tTANGENT = normalize(TANGENT);\n";
 
-		code += "\tBINORMAL = vec3(0.0,-1.0,0.0) * abs(NORMAL.x);\n";
-		code += "\tBINORMAL+= vec3(0.0,0.0,1.0) * abs(NORMAL.y);\n";
-		code += "\tBINORMAL+= vec3(0.0,-1.0,0.0) * abs(NORMAL.z);\n";
+		code += "\tBINORMAL = vec3(0.0,1.0,0.0) * abs(NORMAL.x);\n";
+		code += "\tBINORMAL+= vec3(0.0,0.0,-1.0) * abs(NORMAL.y);\n";
+		code += "\tBINORMAL+= vec3(0.0,1.0,0.0) * abs(NORMAL.z);\n";
 		code += "\tBINORMAL = normalize(BINORMAL);\n";
 	}
 
@@ -758,12 +758,12 @@ void SpatialMaterial::_update_shader() {
 			code += "\t\tfloat current_layer_depth = 0.0;\n";
 			code += "\t\tvec2 P = view_dir.xy * depth_scale;\n";
 			code += "\t\tvec2 delta = P / num_layers;\n";
-			code += "\t\tvec2  ofs = base_uv;\n";
-			code += "\t\tfloat depth = textureLod(texture_depth, ofs,0.0).r;\n";
+			code += "\t\tvec2 ofs = base_uv;\n";
+			code += "\t\tfloat depth = textureLod(texture_depth, ofs, 0.0).r;\n";
 			code += "\t\tfloat current_depth = 0.0;\n";
 			code += "\t\twhile(current_depth < depth) {\n";
 			code += "\t\t\tofs -= delta;\n";
-			code += "\t\t\tdepth = textureLod(texture_depth, ofs,0.0).r;\n";
+			code += "\t\t\tdepth = textureLod(texture_depth, ofs, 0.0).r;\n";
 			code += "\t\t\tcurrent_depth += layer_depth;\n";
 			code += "\t\t}\n";
 			code += "\t\tvec2 prev_ofs = ofs + delta;\n";
@@ -861,7 +861,10 @@ void SpatialMaterial::_update_shader() {
 
 	if (features[FEATURE_REFRACTION]) {
 		if (features[FEATURE_NORMAL_MAPPING]) {
-			code += "\tvec3 ref_normal = normalize( mix(NORMAL,TANGENT * NORMALMAP.x + BINORMAL * NORMALMAP.y + NORMAL * NORMALMAP.z,NORMALMAP_DEPTH) );\n";
+			code += "\tvec3 unpacked_normal = NORMALMAP;\n";
+			code += "\tunpacked_normal.xy = unpacked_normal.xy * 2.0 - 1.0;\n";
+			code += "\tunpacked_normal.z = sqrt(max(0.0, 1.0 - dot(unpacked_normal.xy, unpacked_normal.xy)));\n";
+			code += "\tvec3 ref_normal = normalize( mix(NORMAL,TANGENT * unpacked_normal.x + BINORMAL * unpacked_normal.y + NORMAL * unpacked_normal.z,NORMALMAP_DEPTH) );\n";
 		} else {
 			code += "\tvec3 ref_normal = NORMAL;\n";
 		}

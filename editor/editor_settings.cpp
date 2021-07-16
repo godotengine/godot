@@ -142,7 +142,7 @@ bool EditorSettings::_get(const StringName &p_name, Variant &r_ret) const {
 
 	const VariantContainer *v = props.getptr(p_name);
 	if (!v) {
-		WARN_PRINTS("EditorSettings::_get - Property not found: " + String(p_name));
+		WARN_PRINT("EditorSettings::_get - Property not found: " + String(p_name));
 		return false;
 	}
 	r_ret = v->variant;
@@ -309,28 +309,7 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	// Editor
 	_initial_set("interface/editor/display_scale", 0);
 	// Display what the Auto display scale setting effectively corresponds to.
-	// The code below is adapted in `editor/editor_node.cpp` and `editor/project_manager.cpp`.
-	// Make sure to update those when modifying the code below.
-#ifdef OSX_ENABLED
-	float scale = OS::get_singleton()->get_screen_max_scale();
-#else
-	const int screen = OS::get_singleton()->get_current_screen();
-	float scale;
-	if (OS::get_singleton()->get_screen_dpi(screen) >= 192 && OS::get_singleton()->get_screen_size(screen).y >= 1400) {
-		// hiDPI display.
-		scale = 2.0;
-	} else if (OS::get_singleton()->get_screen_size(screen).y >= 1700) {
-		// Likely a hiDPI display, but we aren't certain due to the returned DPI.
-		// Use an intermediate scale to handle this situation.
-		scale = 1.5;
-	} else if (OS::get_singleton()->get_screen_size(screen).y <= 800) {
-		// Small loDPI display. Use a smaller display scale so that editor elements fit more easily.
-		// Icons won't look great, but this is better than having editor elements overflow from its window.
-		scale = 0.75;
-	} else {
-		scale = 1.0;
-	}
-#endif
+	float scale = get_auto_display_scale();
 	hints["interface/editor/display_scale"] = PropertyInfo(Variant::INT, "interface/editor/display_scale", PROPERTY_HINT_ENUM, vformat("Auto (%d%%),75%%,100%%,125%%,150%%,175%%,200%%,Custom", Math::round(scale * 100)), PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED);
 	_initial_set("interface/editor/custom_display_scale", 1.0f);
 	hints["interface/editor/custom_display_scale"] = PropertyInfo(Variant::REAL, "interface/editor/custom_display_scale", PROPERTY_HINT_RANGE, "0.5,3,0.01", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED);
@@ -354,8 +333,12 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	_initial_set("interface/editor/dim_editor_on_dialog_popup", true);
 	_initial_set("interface/editor/low_processor_mode_sleep_usec", 6900); // ~144 FPS
 	hints["interface/editor/low_processor_mode_sleep_usec"] = PropertyInfo(Variant::REAL, "interface/editor/low_processor_mode_sleep_usec", PROPERTY_HINT_RANGE, "1,100000,1", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED);
-	_initial_set("interface/editor/unfocused_low_processor_mode_sleep_usec", 50000); // 20 FPS
-	hints["interface/editor/unfocused_low_processor_mode_sleep_usec"] = PropertyInfo(Variant::REAL, "interface/editor/unfocused_low_processor_mode_sleep_usec", PROPERTY_HINT_RANGE, "1,100000,1", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED);
+	_initial_set("interface/editor/unfocused_low_processor_mode_sleep_usec", 100000); // 10 FPS
+	// Allow an unfocused FPS limit as low as 1 FPS for those who really need low power usage
+	// (but don't need to preview particles or shaders while the editor is unfocused).
+	// With very low FPS limits, the editor can take a small while to become usable after being focused again,
+	// so this should be used at the user's discretion.
+	hints["interface/editor/unfocused_low_processor_mode_sleep_usec"] = PropertyInfo(Variant::REAL, "interface/editor/unfocused_low_processor_mode_sleep_usec", PROPERTY_HINT_RANGE, "1,1000000,1", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED);
 	_initial_set("interface/editor/separate_distraction_mode", false);
 	_initial_set("interface/editor/automatically_open_screenshots", true);
 	_initial_set("interface/editor/hide_console_window", false);
@@ -470,9 +453,11 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	_initial_set("text_editor/appearance/show_info_gutter", true);
 	_initial_set("text_editor/appearance/code_folding", true);
 	_initial_set("text_editor/appearance/word_wrap", false);
-	_initial_set("text_editor/appearance/show_line_length_guideline", true);
-	_initial_set("text_editor/appearance/line_length_guideline_column", 80);
-	hints["text_editor/appearance/line_length_guideline_column"] = PropertyInfo(Variant::INT, "text_editor/appearance/line_length_guideline_column", PROPERTY_HINT_RANGE, "20, 160, 1");
+	_initial_set("text_editor/appearance/show_line_length_guidelines", true);
+	_initial_set("text_editor/appearance/line_length_guideline_soft_column", 80);
+	hints["text_editor/appearance/line_length_guideline_soft_column"] = PropertyInfo(Variant::INT, "text_editor/appearance/line_length_guideline_soft_column", PROPERTY_HINT_RANGE, "20, 160, 1");
+	_initial_set("text_editor/appearance/line_length_guideline_hard_column", 100);
+	hints["text_editor/appearance/line_length_guideline_hard_column"] = PropertyInfo(Variant::INT, "text_editor/appearance/line_length_guideline_hard_column", PROPERTY_HINT_RANGE, "20, 160, 1");
 
 	// Script list
 	_initial_set("text_editor/script_list/show_members_overview", true);
@@ -568,6 +553,7 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	_initial_set("editors/3d/navigation/zoom_style", 0);
 	hints["editors/3d/navigation/zoom_style"] = PropertyInfo(Variant::INT, "editors/3d/navigation/zoom_style", PROPERTY_HINT_ENUM, "Vertical, Horizontal");
 
+	_initial_set("editors/3d/navigation/emulate_numpad", false);
 	_initial_set("editors/3d/navigation/emulate_3_button_mouse", false);
 	_initial_set("editors/3d/navigation/orbit_modifier", 0);
 	hints["editors/3d/navigation/orbit_modifier"] = PropertyInfo(Variant::INT, "editors/3d/navigation/orbit_modifier", PROPERTY_HINT_ENUM, "None,Shift,Alt,Meta,Ctrl");
@@ -703,6 +689,7 @@ void EditorSettings::_load_default_text_editor_theme() {
 
 	_initial_set("text_editor/highlighting/symbol_color", Color(0.73, 0.87, 1.0));
 	_initial_set("text_editor/highlighting/keyword_color", Color(1.0, 1.0, 0.7));
+	_initial_set("text_editor/highlighting/control_flow_keyword_color", Color(1.0, 0.85, 0.7));
 	_initial_set("text_editor/highlighting/base_type_color", Color(0.64, 1.0, 0.83));
 	_initial_set("text_editor/highlighting/engine_type_color", Color(0.51, 0.83, 1.0));
 	_initial_set("text_editor/highlighting/user_type_color", Color(0.42, 0.67, 0.93));
@@ -832,13 +819,13 @@ void EditorSettings::create() {
 		self_contained = true;
 		Error err = extra_config->load(exe_path + "/._sc_");
 		if (err != OK) {
-			ERR_PRINTS("Can't load config from path '" + exe_path + "/._sc_'.");
+			ERR_PRINT("Can't load config from path '" + exe_path + "/._sc_'.");
 		}
 	} else if (d->file_exists(exe_path + "/_sc_")) {
 		self_contained = true;
 		Error err = extra_config->load(exe_path + "/_sc_");
 		if (err != OK) {
-			ERR_PRINTS("Can't load config from path '" + exe_path + "/_sc_'.");
+			ERR_PRINT("Can't load config from path '" + exe_path + "/_sc_'.");
 		}
 	}
 	memdelete(d);
@@ -1092,7 +1079,7 @@ void EditorSettings::save() {
 	Error err = ResourceSaver::save(singleton->config_file_path, singleton);
 
 	if (err != OK) {
-		ERR_PRINTS("Error saving editor settings to " + singleton->config_file_path);
+		ERR_PRINT("Error saving editor settings to " + singleton->config_file_path);
 	} else {
 		print_verbose("EditorSettings: Save OK!");
 	}
@@ -1477,6 +1464,29 @@ Vector<String> EditorSettings::get_script_templates(const String &p_extension, c
 
 String EditorSettings::get_editor_layouts_config() const {
 	return get_settings_dir().plus_file("editor_layouts.cfg");
+}
+
+float EditorSettings::get_auto_display_scale() const {
+#ifdef OSX_ENABLED
+	return OS::get_singleton()->get_screen_max_scale();
+#else
+	const int screen = OS::get_singleton()->get_current_screen();
+	// Use the smallest dimension to use a correct display scale on portait displays.
+	const int smallest_dimension = MIN(OS::get_singleton()->get_screen_size(screen).x, OS::get_singleton()->get_screen_size(screen).y);
+	if (OS::get_singleton()->get_screen_dpi(screen) >= 192 && smallest_dimension >= 1400) {
+		// hiDPI display.
+		return 2.0;
+	} else if (smallest_dimension >= 1700) {
+		// Likely a hiDPI display, but we aren't certain due to the returned DPI.
+		// Use an intermediate scale to handle this situation.
+		return 1.5;
+	} else if (smallest_dimension <= 800) {
+		// Small loDPI display. Use a smaller display scale so that editor elements fit more easily.
+		// Icons won't look great, but this is better than having editor elements overflow from its window.
+		return 0.75;
+	}
+	return 1.0;
+#endif
 }
 
 // Shortcuts

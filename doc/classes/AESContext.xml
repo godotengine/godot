@@ -51,7 +51,7 @@
 			<return type="PoolByteArray">
 			</return>
 			<description>
-				Get the current IV state for this context (IV gets updated when calling [method update]). You normally don't need this funciton.
+				Get the current IV state for this context (IV gets updated when calling [method update]). You normally don't need this function.
 				Note: This function only makes sense when the context is started with [constant MODE_CBC_ENCRYPT] or [constant MODE_CBC_DECRYPT].
 			</description>
 		</method>

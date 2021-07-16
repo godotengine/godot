@@ -277,7 +277,7 @@ String mono_to_utf8_string(MonoString *p_mono_string) {
 	char *utf8 = mono_string_to_utf8_checked(p_mono_string, &error);
 
 	if (!mono_error_ok(&error)) {
-		ERR_PRINTS(String() + "Failed to convert MonoString* to UTF-8: '" + mono_error_get_message(&error) + "'.");
+		ERR_PRINT(String() + "Failed to convert MonoString* to UTF-8: '" + mono_error_get_message(&error) + "'.");
 		mono_error_cleanup(&error);
 		return String();
 	}

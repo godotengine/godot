@@ -1,4 +1,4 @@
-// Copyright 2009-2020 Intel Corporation
+// Copyright 2009-2021 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
 #include "condition.h"
@@ -40,19 +40,23 @@ namespace embree
   struct ConditionImplementation
   {
     __forceinline ConditionImplementation () { 
-      pthread_cond_init(&cond,nullptr); 
+      if (pthread_cond_init(&cond,nullptr) != 0)
+        THROW_RUNTIME_ERROR("pthread_cond_init failed");
     }
     
     __forceinline ~ConditionImplementation() { 
-      pthread_cond_destroy(&cond);
-    } 
+      MAYBE_UNUSED bool ok = pthread_cond_destroy(&cond) == 0;
+      assert(ok);
+    }
     
     __forceinline void wait(MutexSys& mutex) { 
-      pthread_cond_wait(&cond, (pthread_mutex_t*)mutex.mutex); 
+      if (pthread_cond_wait(&cond, (pthread_mutex_t*)mutex.mutex) != 0)
+        THROW_RUNTIME_ERROR("pthread_cond_wait failed");
     }
     
     __forceinline void notify_all() { 
-      pthread_cond_broadcast(&cond); 
+      if (pthread_cond_broadcast(&cond) != 0)
+        THROW_RUNTIME_ERROR("pthread_cond_broadcast failed");
     }
     
   public:

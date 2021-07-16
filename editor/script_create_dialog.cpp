@@ -725,6 +725,7 @@ void ScriptCreateDialog::_update_dialog() {
 	}
 
 	get_ok()->set_disabled(!script_ok);
+	set_size(Vector2());
 	minimum_size_changed();
 }
 
@@ -758,6 +759,7 @@ ScriptCreateDialog::ScriptCreateDialog() {
 	/* Error Messages Field */
 
 	VBoxContainer *vb = memnew(VBoxContainer);
+	vb->set_custom_minimum_size(Size2(340, 30) * EDSCALE);
 
 	error_label = memnew(Label);
 	vb->add_child(error_label);
@@ -766,6 +768,7 @@ ScriptCreateDialog::ScriptCreateDialog() {
 	vb->add_child(path_error_label);
 
 	builtin_warning_label = memnew(Label);
+	builtin_warning_label->set_custom_minimum_size(Size2(340, 10) * EDSCALE);
 	builtin_warning_label->set_text(
 			TTR("Note: Built-in scripts have some limitations and can't be edited using an external editor."));
 	vb->add_child(builtin_warning_label);
@@ -773,6 +776,7 @@ ScriptCreateDialog::ScriptCreateDialog() {
 	builtin_warning_label->hide();
 
 	script_name_warning_label = memnew(Label);
+	script_name_warning_label->set_custom_minimum_size(Size2(340, 10) * EDSCALE);
 	script_name_warning_label->set_text(
 			TTR("Warning: Having the script name be the same as a built-in type is usually not desired."));
 	vb->add_child(script_name_warning_label);
@@ -781,6 +785,7 @@ ScriptCreateDialog::ScriptCreateDialog() {
 	script_name_warning_label->hide();
 
 	status_panel = memnew(PanelContainer);
+	status_panel->set_custom_minimum_size(Size2(350, 40) * EDSCALE);
 	status_panel->set_h_size_flags(Control::SIZE_FILL);
 	status_panel->add_child(vb);
 

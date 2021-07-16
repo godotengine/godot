@@ -38,7 +38,7 @@
 class IP_Unix : public IP {
 	GDCLASS(IP_Unix, IP);
 
-	virtual IP_Address _resolve_hostname(const String &p_hostname, IP::Type p_type);
+	virtual void _resolve_hostname(List<IP_Address> &r_addresses, const String &p_hostname, Type p_type = TYPE_ANY) const;
 
 	static IP *_create_unix();
 

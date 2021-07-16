@@ -1,0 +1,105 @@
+diff --git a/thirdparty/embree/common/sys/intrinsics.h b/thirdparty/embree/common/sys/intrinsics.h
+index 79729c87ab..ed8dd7d40a 100644
+--- a/thirdparty/embree/common/sys/intrinsics.h
++++ b/thirdparty/embree/common/sys/intrinsics.h
+@@ -34,8 +34,14 @@
+ #endif
+ 
+ #if defined(__WIN32__)
+-#  define NOMINMAX
+-#  include <windows.h>
++// -- GODOT start --
++#if !defined(NOMINMAX)
++// -- GODOT end --
++#define NOMINMAX
++// -- GODOT start --
++#endif
++#include "windows.h"
++// -- GODOT end --
+ #endif
+ 
+ /* normally defined in pmmintrin.h, but we always need this */
+diff --git a/thirdparty/embree/common/sys/platform.h b/thirdparty/embree/common/sys/platform.h
+index 3fc5e99b8d..697e07bb86 100644
+--- a/thirdparty/embree/common/sys/platform.h
++++ b/thirdparty/embree/common/sys/platform.h
+@@ -99,7 +99,9 @@
+ #define dll_import 
+ #endif
+ 
+-#ifdef __WIN32__
++// -- GODOT start --
++#if defined(__WIN32__) && !defined(__MINGW32__)
++// -- GODOT end --
+ #if !defined(__noinline)
+ #define __noinline             __declspec(noinline)
+ #endif
+@@ -149,6 +151,9 @@
+   #define DELETED  = delete
+ #endif
+ 
++// -- GODOT start --
++#if !defined(likely)
++// -- GODOT end --
+ #if defined(_MSC_VER) && !defined(__INTEL_COMPILER)
+ #define   likely(expr) (expr)
+ #define unlikely(expr) (expr)
+@@ -156,6 +161,9 @@
+ #define   likely(expr) __builtin_expect((bool)(expr),true )
+ #define unlikely(expr) __builtin_expect((bool)(expr),false)
+ #endif
++// -- GODOT start --
++#endif
++// -- GODOT end --
+ 
+ ////////////////////////////////////////////////////////////////////////////////
+ /// Error handling and debugging
+diff --git a/thirdparty/embree/common/sys/sysinfo.cpp b/thirdparty/embree/common/sys/sysinfo.cpp
+index ba97dc227b..f1a59e511e 100644
+--- a/thirdparty/embree/common/sys/sysinfo.cpp
++++ b/thirdparty/embree/common/sys/sysinfo.cpp
+@@ -248,7 +248,9 @@ namespace embree
+ #if defined(__X86_ASM__)
+   __noinline int64_t get_xcr0() 
+   {
+-#if defined (__WIN32__)
++// -- GODOT start --
++#if defined (__WIN32__) && !defined (__MINGW32__)
++// -- GODOT end --
+     int64_t xcr0 = 0; // int64_t is workaround for compiler bug under VS2013, Win32
+     xcr0 = _xgetbv(0);
+     return xcr0;
+diff --git a/thirdparty/embree/include/embree3/rtcore_common.h b/thirdparty/embree/include/embree3/rtcore_common.h
+index 9c14b28745..4857e1e05e 100644
+--- a/thirdparty/embree/include/embree3/rtcore_common.h
++++ b/thirdparty/embree/include/embree3/rtcore_common.h
+@@ -19,7 +19,9 @@ typedef int ssize_t;
+ #endif
+ #endif
+ 
+-#ifdef _WIN32
++// -- GODOT start --
++#if defined(_WIN32) && defined(_MSC_VER)
++// -- GODOT end --
+ #  define RTC_ALIGN(...) __declspec(align(__VA_ARGS__))
+ #else
+ #  define RTC_ALIGN(...) __attribute__((aligned(__VA_ARGS__)))
+diff --git a/thirdparty/embree/common/tasking/taskschedulertbb.h b/thirdparty/embree/common/tasking/taskschedulertbb.h
+index 3fd15816e9..35bd49849f 100644
+--- a/thirdparty/embree/common/tasking/taskschedulertbb.h
++++ b/thirdparty/embree/common/tasking/taskschedulertbb.h
+@@ -12,7 +12,13 @@
+ #include "../sys/ref.h"
+ 
+ #if defined(__WIN32__)
++// -- GODOT start --
++#if !defined(NOMINMAX)
++// -- GODOT end --
+ #  define NOMINMAX
++// -- GODOT start --
++#endif
++// -- GODOT end --
+ #endif
+ 
+ // We need to define these to avoid implicit linkage against
+ 

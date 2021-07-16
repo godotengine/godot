@@ -114,7 +114,7 @@ private:
 	float speed_scale;
 	mutable int pending_update;
 	int uid;
-
+	bool was_stopped = false;
 	List<InterpolateData> interpolates;
 
 	struct PendingCommand {

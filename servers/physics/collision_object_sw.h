@@ -119,15 +119,26 @@ public:
 	void set_shape(int p_index, ShapeSW *p_shape);
 	void set_shape_transform(int p_index, const Transform &p_transform);
 	_FORCE_INLINE_ int get_shape_count() const { return shapes.size(); }
-	_FORCE_INLINE_ bool is_shape_disabled(int p_index) const {
+	_FORCE_INLINE_ ShapeSW *get_shape(int p_index) const {
 		CRASH_BAD_INDEX(p_index, shapes.size());
-		return shapes[p_index].disabled;
+		return shapes[p_index].shape;
 	}
-	_FORCE_INLINE_ ShapeSW *get_shape(int p_index) const { return shapes[p_index].shape; }
-	_FORCE_INLINE_ const Transform &get_shape_transform(int p_index) const { return shapes[p_index].xform; }
-	_FORCE_INLINE_ const Transform &get_shape_inv_transform(int p_index) const { return shapes[p_index].xform_inv; }
-	_FORCE_INLINE_ const AABB &get_shape_aabb(int p_index) const { return shapes[p_index].aabb_cache; }
-	_FORCE_INLINE_ real_t get_shape_area(int p_index) const { return shapes[p_index].area_cache; }
+	_FORCE_INLINE_ const Transform &get_shape_transform(int p_index) const {
+		CRASH_BAD_INDEX(p_index, shapes.size());
+		return shapes[p_index].xform;
+	}
+	_FORCE_INLINE_ const Transform &get_shape_inv_transform(int p_index) const {
+		CRASH_BAD_INDEX(p_index, shapes.size());
+		return shapes[p_index].xform_inv;
+	}
+	_FORCE_INLINE_ const AABB &get_shape_aabb(int p_index) const {
+		CRASH_BAD_INDEX(p_index, shapes.size());
+		return shapes[p_index].aabb_cache;
+	}
+	_FORCE_INLINE_ real_t get_shape_area(int p_index) const {
+		CRASH_BAD_INDEX(p_index, shapes.size());
+		return shapes[p_index].area_cache;
+	}
 
 	_FORCE_INLINE_ Transform get_transform() const { return transform; }
 	_FORCE_INLINE_ Transform get_inv_transform() const { return inv_transform; }
@@ -136,9 +147,9 @@ public:
 	_FORCE_INLINE_ void set_ray_pickable(bool p_enable) { ray_pickable = p_enable; }
 	_FORCE_INLINE_ bool is_ray_pickable() const { return ray_pickable; }
 
-	void set_shape_as_disabled(int p_idx, bool p_enable);
-	_FORCE_INLINE_ bool is_shape_set_as_disabled(int p_idx) const {
-		CRASH_BAD_INDEX(p_idx, shapes.size());
+	void set_shape_disabled(int p_idx, bool p_disabled);
+	_FORCE_INLINE_ bool is_shape_disabled(int p_idx) const {
+		ERR_FAIL_INDEX_V(p_idx, shapes.size(), false);
 		return shapes[p_idx].disabled;
 	}
 

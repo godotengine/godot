@@ -48,7 +48,7 @@
 				Valid [code]options[/code] are:
 				[codeblock]
 				{
-				    "negotiated": true, # When set to true (default off), means the channel is negotiated out of band. "id" must be set too. data_channel_received will not be called.
+				    "negotiated": true, # When set to true (default off), means the channel is negotiated out of band. "id" must be set too. "data_channel_received" will not be called.
 				    "id": 1, # When "negotiated" is true this value must also be set to the same value on both peer.
 
 				    # Only one of maxRetransmits and maxPacketLifeTime can be specified, not both. They make the channel unreliable (but also better at real time).

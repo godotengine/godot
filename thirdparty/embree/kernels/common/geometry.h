@@ -1,4 +1,4 @@
-// Copyright 2009-2020 Intel Corporation
+// Copyright 2009-2021 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
 #pragma once
@@ -301,7 +301,7 @@ namespace embree
 
     template<int N>
       __forceinline vint<N> timeSegment(const vfloat<N>& time, vfloat<N>& ftime) const {
-      return getTimeSegment(time,vfloat<N>(time_range.lower),vfloat<N>(time_range.upper),vfloat<N>(fnumTimeSegments),ftime);
+      return getTimeSegment<N>(time,vfloat<N>(time_range.lower),vfloat<N>(time_range.upper),vfloat<N>(fnumTimeSegments),ftime);
     }
     
     /* calculate overlapping time segment range */
