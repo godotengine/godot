@@ -65,6 +65,7 @@ class CollisionObject : public Spatial {
 	int total_subshapes;
 
 	Map<uint32_t, ShapeData> shapes;
+	bool only_update_transform_changes = false; //this is used for sync physics in KinematicBody
 
 	bool capture_input_on_drag;
 	bool ray_pickable;
@@ -90,6 +91,8 @@ protected:
 	virtual void _input_event(Node *p_camera, const Ref<InputEvent> &p_input_event, const Vector3 &p_pos, const Vector3 &p_normal, int p_shape);
 	virtual void _mouse_enter();
 	virtual void _mouse_exit();
+
+	void set_only_update_transform_changes(bool p_enable);
 
 	void _on_transform_changed();
 
