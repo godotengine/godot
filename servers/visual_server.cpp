@@ -856,7 +856,7 @@ void VisualServer::mesh_add_surface_from_arrays(RID p_mesh, PrimitiveType p_prim
 	ERR_FAIL_INDEX(p_primitive, VS::PRIMITIVE_MAX);
 	ERR_FAIL_COND(p_arrays.size() != VS::ARRAY_MAX);
 
-	bool use_split_stream = GLOBAL_GET("rendering/quality/mesh_storage/split_stream");
+	bool use_split_stream = GLOBAL_GET("rendering/mesh_storage/split_stream");
 
 	uint32_t format = 0;
 
@@ -2324,8 +2324,7 @@ VisualServer::VisualServer() {
 	GLOBAL_DEF("rendering/quality/shading/force_blinn_over_ggx", false);
 	GLOBAL_DEF("rendering/quality/shading/force_blinn_over_ggx.mobile", true);
 
-	GLOBAL_DEF("rendering/quality/mesh_storage/split_stream", false);
-	GLOBAL_DEF("rendering/quality/mesh_storage/split_stream.mobile", true);
+	GLOBAL_DEF("rendering/mesh_storage/split_stream", false);
 
 	GLOBAL_DEF("rendering/quality/depth_prepass/enable", true);
 	GLOBAL_DEF("rendering/quality/depth_prepass/disable_for_vendors", "PowerVR,Mali,Adreno,Apple");

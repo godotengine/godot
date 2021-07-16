@@ -2237,7 +2237,7 @@ void RasterizerStorageGLES2::mesh_add_surface(RID p_mesh, uint32_t p_format, VS:
 	}
 
 	//bool has_morph = p_blend_shapes.size();
-	bool use_split_stream = GLOBAL_GET("rendering/quality/mesh_storage/split_stream");
+	bool use_split_stream = GLOBAL_GET("rendering/mesh_storage/split_stream");
 
 	Surface::Attrib attribs[VS::ARRAY_MAX];
 
