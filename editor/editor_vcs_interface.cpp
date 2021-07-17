@@ -118,6 +118,11 @@ void EditorVCSInterface::_set_up_credentials(String p_username, String p_passwor
 	_not_implemented_function(__FUNCTION__);
 }
 
+Array EditorVCSInterface::_get_line_diff(String p_file_path, String p_text) {
+	_not_implemented_function(__FUNCTION__);
+	return Array();
+}
+
 void EditorVCSInterface::_popup_error(String p_msg) {
 	EditorNode::get_singleton()->show_warning(p_msg, get_vcs_name() + TTR(": Error"));
 }
@@ -392,30 +397,30 @@ void EditorVCSInterface::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_pull"), &EditorVCSInterface::_pull);
 	ClassDB::bind_method(D_METHOD("_fetch"), &EditorVCSInterface::_fetch);
 	ClassDB::bind_method(D_METHOD("_set_up_credentials"), &EditorVCSInterface::_set_up_credentials);
-	// ClassDB::bind_method(D_METHOD("_get_line_diff"), &EditorVCSInterface::_get_line_diff);
+	ClassDB::bind_method(D_METHOD("_get_line_diff", "file_path", "text"), &EditorVCSInterface::_get_line_diff);
 
 	ClassDB::bind_method(D_METHOD("is_plugin_ready"), &EditorVCSInterface::is_plugin_ready);
 
-	// API methods that redirect calls to the proxy end points
-	ClassDB::bind_method(D_METHOD("initialize", "project_root_path"), &EditorVCSInterface::initialize);
-	ClassDB::bind_method(D_METHOD("is_vcs_initialized"), &EditorVCSInterface::is_vcs_initialized);
-	ClassDB::bind_method(D_METHOD("get_modified_files_data"), &EditorVCSInterface::get_modified_files_data);
-	ClassDB::bind_method(D_METHOD("stage_file", "file_path"), &EditorVCSInterface::stage_file);
-	ClassDB::bind_method(D_METHOD("unstage_file", "file_path"), &EditorVCSInterface::unstage_file);
-	ClassDB::bind_method(D_METHOD("discard_file", "file_path"), &EditorVCSInterface::discard_file);
-	ClassDB::bind_method(D_METHOD("commit", "msg"), &EditorVCSInterface::commit);
-	ClassDB::bind_method(D_METHOD("get_file_diff", "file_path", "area"), &EditorVCSInterface::get_file_diff);
-	ClassDB::bind_method(D_METHOD("shut_down"), &EditorVCSInterface::shut_down);
-	ClassDB::bind_method(D_METHOD("get_project_name"), &EditorVCSInterface::get_project_name);
-	ClassDB::bind_method(D_METHOD("get_vcs_name"), &EditorVCSInterface::get_vcs_name);
-	ClassDB::bind_method(D_METHOD("get_previous_commits"), &EditorVCSInterface::get_previous_commits);
-	ClassDB::bind_method(D_METHOD("get_branch_list"), &EditorVCSInterface::get_branch_list);
-	ClassDB::bind_method(D_METHOD("checkout_branch", "branch"), &EditorVCSInterface::checkout_branch);
-	ClassDB::bind_method(D_METHOD("push"), &EditorVCSInterface::push);
-	ClassDB::bind_method(D_METHOD("pull"), &EditorVCSInterface::pull);
-	ClassDB::bind_method(D_METHOD("fetch"), &EditorVCSInterface::fetch);
-	ClassDB::bind_method(D_METHOD("set_up_credentials"), &EditorVCSInterface::set_up_credentials);
-	ClassDB::bind_method(D_METHOD("get_line_diff"), &EditorVCSInterface::get_line_diff);
+	// // API methods that redirect calls to the proxy end points
+	// ClassDB::bind_method(D_METHOD("initialize", "project_root_path"), &EditorVCSInterface::initialize);
+	// ClassDB::bind_method(D_METHOD("is_vcs_initialized"), &EditorVCSInterface::is_vcs_initialized);
+	// ClassDB::bind_method(D_METHOD("get_modified_files_data"), &EditorVCSInterface::get_modified_files_data);
+	// ClassDB::bind_method(D_METHOD("stage_file", "file_path"), &EditorVCSInterface::stage_file);
+	// ClassDB::bind_method(D_METHOD("unstage_file", "file_path"), &EditorVCSInterface::unstage_file);
+	// ClassDB::bind_method(D_METHOD("discard_file", "file_path"), &EditorVCSInterface::discard_file);
+	// ClassDB::bind_method(D_METHOD("commit", "msg"), &EditorVCSInterface::commit);
+	// ClassDB::bind_method(D_METHOD("get_file_diff", "file_path", "area"), &EditorVCSInterface::get_file_diff);
+	// ClassDB::bind_method(D_METHOD("shut_down"), &EditorVCSInterface::shut_down);
+	// ClassDB::bind_method(D_METHOD("get_project_name"), &EditorVCSInterface::get_project_name);
+	// ClassDB::bind_method(D_METHOD("get_vcs_name"), &EditorVCSInterface::get_vcs_name);
+	// ClassDB::bind_method(D_METHOD("get_previous_commits"), &EditorVCSInterface::get_previous_commits);
+	// ClassDB::bind_method(D_METHOD("get_branch_list"), &EditorVCSInterface::get_branch_list);
+	// ClassDB::bind_method(D_METHOD("checkout_branch", "branch"), &EditorVCSInterface::checkout_branch);
+	// ClassDB::bind_method(D_METHOD("push"), &EditorVCSInterface::push);
+	// ClassDB::bind_method(D_METHOD("pull"), &EditorVCSInterface::pull);
+	// ClassDB::bind_method(D_METHOD("fetch"), &EditorVCSInterface::fetch);
+	// ClassDB::bind_method(D_METHOD("set_up_credentials"), &EditorVCSInterface::set_up_credentials);
+	// ClassDB::bind_method(D_METHOD("get_line_diff"), &EditorVCSInterface::get_line_diff);
 
 	ClassDB::bind_method(D_METHOD("_create_diff_line", "new_line_no", "old_line_no", "p_content", "p_status"), &EditorVCSInterface::_create_diff_line);
 	ClassDB::bind_method(D_METHOD("_create_diff_hunk", "old_start", "new_start", "old_lines", "new_lines"), &EditorVCSInterface::_create_diff_hunk);

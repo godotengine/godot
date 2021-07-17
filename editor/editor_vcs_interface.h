@@ -120,6 +120,7 @@ protected:
 	virtual void _fetch();
 	virtual bool _checkout_branch(String p_branch);
 	virtual void _set_up_credentials(String p_username, String p_password);
+	virtual Array _get_line_diff(String p_file_path, String p_text);
 
 	// Helper functions to create and convert Dictionary into data structures
 	Dictionary _create_diff_line(int new_line_no, int old_line_no, String p_content, String p_status);
