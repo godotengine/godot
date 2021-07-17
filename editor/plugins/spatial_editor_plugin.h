@@ -357,6 +357,7 @@ private:
 		Vector3 orig_gizmo_pos;
 		int edited_gizmo;
 		Point2 mouse_pos;
+		Point2 original_mouse_pos;
 		bool snap;
 		Ref<EditorSpatialGizmo> gizmo;
 		int gizmo_handle;

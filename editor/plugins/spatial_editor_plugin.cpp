@@ -1206,6 +1206,7 @@ void SpatialEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 					}
 
 					_edit.mouse_pos = b->get_position();
+					_edit.original_mouse_pos = b->get_position();
 					_edit.snap = spatial_editor->is_snap_enabled();
 					_edit.mode = TRANSFORM_NONE;
 
@@ -1412,7 +1413,8 @@ void SpatialEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 			} else if (nav_scheme == NAVIGATION_MODO && m->get_alt()) {
 				nav_mode = NAVIGATION_ORBIT;
 			} else {
-				if (clicked) {
+				const bool movement_threshold_passed = _edit.original_mouse_pos.distance_to(_edit.mouse_pos) > 8 * EDSCALE;
+				if (clicked && movement_threshold_passed) {
 					if (!clicked_includes_current) {
 						_select_clicked(clicked_wants_append, true);
 						// Processing was deferred.
