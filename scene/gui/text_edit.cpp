@@ -599,7 +599,7 @@ void TextEdit::_notification(int p_what) {
 
 			Size2 size = get_size();
 			bool rtl = is_layout_rtl();
-			if ((!has_focus() && !menu->has_focus()) || !window_has_focus) {
+			if ((!has_focus() && !(menu && menu->has_focus())) || !window_has_focus) {
 				draw_caret = false;
 			}
 
@@ -2470,6 +2470,7 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 					}
 				}
 
+				_ensure_menu();
 				menu->set_position(get_screen_transform().xform(mpos));
 				menu->set_size(Vector2(1, 1));
 				_generate_context_menu();
@@ -2709,6 +2710,7 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 		// MISC.
 		if (k->is_action("ui_menu", true)) {
 			if (context_menu_enabled) {
+				_ensure_menu();
 				menu->set_position(get_screen_transform().xform(_get_cursor_pixel_pos()));
 				menu->set_size(Vector2(1, 1));
 				_generate_context_menu();
@@ -3214,6 +3216,7 @@ int TextEdit::_get_menu_action_accelerator(const String &p_action) {
 
 void TextEdit::_generate_context_menu() {
 	// Reorganize context menu.
+	_ensure_menu();
 	menu->clear();
 	if (!readonly) {
 		menu->add_item(RTR("Cut"), MENU_CUT, is_shortcut_keys_enabled() ? _get_menu_action_accelerator("ui_cut") : 0);
@@ -3858,10 +3861,12 @@ void TextEdit::set_text_direction(Control::TextDirection p_text_direction) {
 		text.set_direction_and_language(dir, (language != "") ? language : TranslationServer::get_singleton()->get_tool_locale());
 		text.invalidate_all();
 
-		menu_dir->set_item_checked(menu_dir->get_item_index(MENU_DIR_INHERITED), text_direction == TEXT_DIRECTION_INHERITED);
-		menu_dir->set_item_checked(menu_dir->get_item_index(MENU_DIR_AUTO), text_direction == TEXT_DIRECTION_AUTO);
-		menu_dir->set_item_checked(menu_dir->get_item_index(MENU_DIR_LTR), text_direction == TEXT_DIRECTION_LTR);
-		menu_dir->set_item_checked(menu_dir->get_item_index(MENU_DIR_RTL), text_direction == TEXT_DIRECTION_RTL);
+		if (menu_dir) {
+			menu_dir->set_item_checked(menu_dir->get_item_index(MENU_DIR_INHERITED), text_direction == TEXT_DIRECTION_INHERITED);
+			menu_dir->set_item_checked(menu_dir->get_item_index(MENU_DIR_AUTO), text_direction == TEXT_DIRECTION_AUTO);
+			menu_dir->set_item_checked(menu_dir->get_item_index(MENU_DIR_LTR), text_direction == TEXT_DIRECTION_LTR);
+			menu_dir->set_item_checked(menu_dir->get_item_index(MENU_DIR_RTL), text_direction == TEXT_DIRECTION_RTL);
+		}
 		update();
 	}
 }
@@ -3917,7 +3922,9 @@ String TextEdit::get_language() const {
 void TextEdit::set_draw_control_chars(bool p_draw_control_chars) {
 	if (draw_control_chars != p_draw_control_chars) {
 		draw_control_chars = p_draw_control_chars;
-		menu->set_item_checked(menu->get_item_index(MENU_DISPLAY_UCC), draw_control_chars);
+		if (menu && menu->get_item_index(MENU_DISPLAY_UCC) >= 0) {
+			menu->set_item_checked(menu->get_item_index(MENU_DISPLAY_UCC), draw_control_chars);
+		}
 		text.set_draw_control_chars(draw_control_chars);
 		text.invalidate_all();
 		update();
@@ -5594,7 +5601,12 @@ bool TextEdit::is_virtual_keyboard_enabled() const {
 	return virtual_keyboard_enabled;
 }
 
+bool TextEdit::is_menu_visible() const {
+	return menu && menu->is_visible();
+}
+
 PopupMenu *TextEdit::get_menu() const {
+	const_cast<TextEdit *>(this)->_ensure_menu();
 	return menu;
 }
 
@@ -5833,6 +5845,7 @@ void TextEdit::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("menu_option", "option"), &TextEdit::menu_option);
 	ClassDB::bind_method(D_METHOD("get_menu"), &TextEdit::get_menu);
+	ClassDB::bind_method(D_METHOD("is_menu_visible"), &TextEdit::is_menu_visible);
 
 	ClassDB::bind_method(D_METHOD("draw_minimap", "draw"), &TextEdit::set_draw_minimap);
 	ClassDB::bind_method(D_METHOD("is_drawing_minimap"), &TextEdit::is_drawing_minimap);
@@ -5921,6 +5934,54 @@ void TextEdit::_bind_methods() {
 	ProjectSettings::get_singleton()->set_custom_property_info("gui/common/text_edit_undo_stack_max_size", PropertyInfo(Variant::INT, "gui/common/text_edit_undo_stack_max_size", PROPERTY_HINT_RANGE, "0,10000,1,or_greater")); // No negative numbers.
 }
 
+void TextEdit::_ensure_menu() {
+	if (menu) {
+		return;
+	}
+
+	menu = memnew(PopupMenu);
+	add_child(menu);
+
+	menu_dir = memnew(PopupMenu);
+	menu_dir->set_name("DirMenu");
+	menu_dir->add_radio_check_item(RTR("Same as layout direction"), MENU_DIR_INHERITED);
+	menu_dir->add_radio_check_item(RTR("Auto-detect direction"), MENU_DIR_AUTO);
+	menu_dir->add_radio_check_item(RTR("Left-to-right"), MENU_DIR_LTR);
+	menu_dir->add_radio_check_item(RTR("Right-to-left"), MENU_DIR_RTL);
+	menu->add_child(menu_dir);
+
+	menu_ctl = memnew(PopupMenu);
+	menu_ctl->set_name("CTLMenu");
+	menu_ctl->add_item(RTR("Left-to-right mark (LRM)"), MENU_INSERT_LRM);
+	menu_ctl->add_item(RTR("Right-to-left mark (RLM)"), MENU_INSERT_RLM);
+	menu_ctl->add_item(RTR("Start of left-to-right embedding (LRE)"), MENU_INSERT_LRE);
+	menu_ctl->add_item(RTR("Start of right-to-left embedding (RLE)"), MENU_INSERT_RLE);
+	menu_ctl->add_item(RTR("Start of left-to-right override (LRO)"), MENU_INSERT_LRO);
+	menu_ctl->add_item(RTR("Start of right-to-left override (RLO)"), MENU_INSERT_RLO);
+	menu_ctl->add_item(RTR("Pop direction formatting (PDF)"), MENU_INSERT_PDF);
+	menu_ctl->add_separator();
+	menu_ctl->add_item(RTR("Arabic letter mark (ALM)"), MENU_INSERT_ALM);
+	menu_ctl->add_item(RTR("Left-to-right isolate (LRI)"), MENU_INSERT_LRI);
+	menu_ctl->add_item(RTR("Right-to-left isolate (RLI)"), MENU_INSERT_RLI);
+	menu_ctl->add_item(RTR("First strong isolate (FSI)"), MENU_INSERT_FSI);
+	menu_ctl->add_item(RTR("Pop direction isolate (PDI)"), MENU_INSERT_PDI);
+	menu_ctl->add_separator();
+	menu_ctl->add_item(RTR("Zero width joiner (ZWJ)"), MENU_INSERT_ZWJ);
+	menu_ctl->add_item(RTR("Zero width non-joiner (ZWNJ)"), MENU_INSERT_ZWNJ);
+	menu_ctl->add_item(RTR("Word joiner (WJ)"), MENU_INSERT_WJ);
+	menu_ctl->add_item(RTR("Soft hyphen (SHY)"), MENU_INSERT_SHY);
+	menu->add_child(menu_ctl);
+
+	menu->connect("id_pressed", callable_mp(this, &TextEdit::menu_option));
+	menu_dir->connect("id_pressed", callable_mp(this, &TextEdit::menu_option));
+	menu_ctl->connect("id_pressed", callable_mp(this, &TextEdit::menu_option));
+
+	menu_dir->set_item_checked(menu_dir->get_item_index(MENU_DIR_INHERITED), text_direction == TEXT_DIRECTION_INHERITED);
+	menu_dir->set_item_checked(menu_dir->get_item_index(MENU_DIR_AUTO), text_direction == TEXT_DIRECTION_AUTO);
+	menu_dir->set_item_checked(menu_dir->get_item_index(MENU_DIR_LTR), text_direction == TEXT_DIRECTION_LTR);
+	menu_dir->set_item_checked(menu_dir->get_item_index(MENU_DIR_RTL), text_direction == TEXT_DIRECTION_RTL);
+}
+
 TextEdit::TextEdit() {
 	clear();
 	set_focus_mode(FOCUS_ALL);
@@ -5960,44 +6021,7 @@ TextEdit::TextEdit() {
 
 	undo_stack_max_size = GLOBAL_GET("gui/common/text_edit_undo_stack_max_size");
 
-	menu = memnew(PopupMenu);
-	add_child(menu);
-
-	menu_dir = memnew(PopupMenu);
-	menu_dir->set_name("DirMenu");
-	menu_dir->add_radio_check_item(RTR("Same as layout direction"), MENU_DIR_INHERITED);
-	menu_dir->add_radio_check_item(RTR("Auto-detect direction"), MENU_DIR_AUTO);
-	menu_dir->add_radio_check_item(RTR("Left-to-right"), MENU_DIR_LTR);
-	menu_dir->add_radio_check_item(RTR("Right-to-left"), MENU_DIR_RTL);
-	menu_dir->set_item_checked(menu_dir->get_item_index(MENU_DIR_INHERITED), true);
-	menu->add_child(menu_dir);
-
-	menu_ctl = memnew(PopupMenu);
-	menu_ctl->set_name("CTLMenu");
-	menu_ctl->add_item(RTR("Left-to-right mark (LRM)"), MENU_INSERT_LRM);
-	menu_ctl->add_item(RTR("Right-to-left mark (RLM)"), MENU_INSERT_RLM);
-	menu_ctl->add_item(RTR("Start of left-to-right embedding (LRE)"), MENU_INSERT_LRE);
-	menu_ctl->add_item(RTR("Start of right-to-left embedding (RLE)"), MENU_INSERT_RLE);
-	menu_ctl->add_item(RTR("Start of left-to-right override (LRO)"), MENU_INSERT_LRO);
-	menu_ctl->add_item(RTR("Start of right-to-left override (RLO)"), MENU_INSERT_RLO);
-	menu_ctl->add_item(RTR("Pop direction formatting (PDF)"), MENU_INSERT_PDF);
-	menu_ctl->add_separator();
-	menu_ctl->add_item(RTR("Arabic letter mark (ALM)"), MENU_INSERT_ALM);
-	menu_ctl->add_item(RTR("Left-to-right isolate (LRI)"), MENU_INSERT_LRI);
-	menu_ctl->add_item(RTR("Right-to-left isolate (RLI)"), MENU_INSERT_RLI);
-	menu_ctl->add_item(RTR("First strong isolate (FSI)"), MENU_INSERT_FSI);
-	menu_ctl->add_item(RTR("Pop direction isolate (PDI)"), MENU_INSERT_PDI);
-	menu_ctl->add_separator();
-	menu_ctl->add_item(RTR("Zero width joiner (ZWJ)"), MENU_INSERT_ZWJ);
-	menu_ctl->add_item(RTR("Zero width non-joiner (ZWNJ)"), MENU_INSERT_ZWNJ);
-	menu_ctl->add_item(RTR("Word joiner (WJ)"), MENU_INSERT_WJ);
-	menu_ctl->add_item(RTR("Soft hyphen (SHY)"), MENU_INSERT_SHY);
-	menu->add_child(menu_ctl);
-
 	set_readonly(false);
-	menu->connect("id_pressed", callable_mp(this, &TextEdit::menu_option));
-	menu_dir->connect("id_pressed", callable_mp(this, &TextEdit::menu_option));
-	menu_ctl->connect("id_pressed", callable_mp(this, &TextEdit::menu_option));
 }
 
 TextEdit::~TextEdit() {

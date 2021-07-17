@@ -227,6 +227,7 @@ void LineEdit::_gui_input(Ref<InputEvent> p_event) {
 			return;
 		}
 		if (b->is_pressed() && b->get_button_index() == MOUSE_BUTTON_RIGHT && context_menu_enabled) {
+			_ensure_menu();
 			menu->set_position(get_screen_transform().xform(get_local_mouse_position()));
 			menu->set_size(Vector2(1, 1));
 			_generate_context_menu();
@@ -348,6 +349,7 @@ void LineEdit::_gui_input(Ref<InputEvent> p_event) {
 
 		if (context_menu_enabled) {
 			if (k->is_action("ui_menu", true)) {
+				_ensure_menu();
 				Point2 pos = Point2(get_caret_pixel_pos().x, (get_size().y + get_theme_font("font")->get_height(get_theme_font_size("font_size"))) / 2);
 				menu->set_position(get_global_transform().xform(pos));
 				menu->set_size(Vector2(1, 1));
@@ -612,7 +614,7 @@ void LineEdit::_notification(int p_what) {
 			update();
 		} break;
 		case NOTIFICATION_DRAW: {
-			if ((!has_focus() && !menu->has_focus() && !caret_force_displayed) || !window_has_focus) {
+			if ((!has_focus() && !(menu && menu->has_focus()) && !caret_force_displayed) || !window_has_focus) {
 				draw_caret = false;
 			}
 
@@ -1252,10 +1254,12 @@ void LineEdit::set_text_direction(Control::TextDirection p_text_direction) {
 		}
 		_shape();
 
-		menu_dir->set_item_checked(menu_dir->get_item_index(MENU_DIR_INHERITED), text_direction == TEXT_DIRECTION_INHERITED);
-		menu_dir->set_item_checked(menu_dir->get_item_index(MENU_DIR_AUTO), text_direction == TEXT_DIRECTION_AUTO);
-		menu_dir->set_item_checked(menu_dir->get_item_index(MENU_DIR_LTR), text_direction == TEXT_DIRECTION_LTR);
-		menu_dir->set_item_checked(menu_dir->get_item_index(MENU_DIR_RTL), text_direction == TEXT_DIRECTION_RTL);
+		if (menu_dir) {
+			menu_dir->set_item_checked(menu_dir->get_item_index(MENU_DIR_INHERITED), text_direction == TEXT_DIRECTION_INHERITED);
+			menu_dir->set_item_checked(menu_dir->get_item_index(MENU_DIR_AUTO), text_direction == TEXT_DIRECTION_AUTO);
+			menu_dir->set_item_checked(menu_dir->get_item_index(MENU_DIR_LTR), text_direction == TEXT_DIRECTION_LTR);
+			menu_dir->set_item_checked(menu_dir->get_item_index(MENU_DIR_RTL), text_direction == TEXT_DIRECTION_RTL);
+		}
 		update();
 	}
 }
@@ -1302,7 +1306,9 @@ String LineEdit::get_language() const {
 void LineEdit::set_draw_control_chars(bool p_draw_control_chars) {
 	if (draw_control_chars != p_draw_control_chars) {
 		draw_control_chars = p_draw_control_chars;
-		menu->set_item_checked(menu->get_item_index(MENU_DISPLAY_UCC), draw_control_chars);
+		if (menu && menu->get_item_index(MENU_DISPLAY_UCC) >= 0) {
+			menu->set_item_checked(menu->get_item_index(MENU_DISPLAY_UCC), draw_control_chars);
+		}
 		_shape();
 		update();
 	}
@@ -1810,7 +1816,12 @@ bool LineEdit::is_context_menu_enabled() {
 	return context_menu_enabled;
 }
 
+bool LineEdit::is_menu_visible() const {
+	return menu && menu->is_visible();
+}
+
 PopupMenu *LineEdit::get_menu() const {
+	const_cast<LineEdit *>(this)->_ensure_menu();
 	return menu;
 }
 
@@ -2009,6 +2020,7 @@ int LineEdit::_get_menu_action_accelerator(const String &p_action) {
 
 void LineEdit::_generate_context_menu() {
 	// Reorganize context menu.
+	_ensure_menu();
 	menu->clear();
 	if (editable) {
 		menu->add_item(RTR("Cut"), MENU_CUT, is_shortcut_keys_enabled() ? _get_menu_action_accelerator("ui_cut") : 0);
@@ -2148,6 +2160,7 @@ void LineEdit::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_secret_character"), &LineEdit::get_secret_character);
 	ClassDB::bind_method(D_METHOD("menu_option", "option"), &LineEdit::menu_option);
 	ClassDB::bind_method(D_METHOD("get_menu"), &LineEdit::get_menu);
+	ClassDB::bind_method(D_METHOD("is_menu_visible"), &LineEdit::is_menu_visible);
 	ClassDB::bind_method(D_METHOD("set_context_menu_enabled", "enable"), &LineEdit::set_context_menu_enabled);
 	ClassDB::bind_method(D_METHOD("is_context_menu_enabled"), &LineEdit::is_context_menu_enabled);
 	ClassDB::bind_method(D_METHOD("set_virtual_keyboard_enabled", "enable"), &LineEdit::set_virtual_keyboard_enabled);
@@ -2230,23 +2243,14 @@ void LineEdit::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "caret_mid_grapheme"), "set_caret_mid_grapheme_enabled", "is_caret_mid_grapheme_enabled");
 }
 
-LineEdit::LineEdit() {
-	text_rid = TS->create_shaped_text();
-	_create_undo_state();
-
-	deselect();
-	set_focus_mode(FOCUS_ALL);
-	set_default_cursor_shape(CURSOR_IBEAM);
-	set_mouse_filter(MOUSE_FILTER_STOP);
-
-	caret_blink_timer = memnew(Timer);
-	add_child(caret_blink_timer);
-	caret_blink_timer->set_wait_time(0.65);
-	caret_blink_timer->connect("timeout", callable_mp(this, &LineEdit::_toggle_draw_caret));
-	set_caret_blink_enabled(false);
+void LineEdit::_ensure_menu() {
+	if (menu) {
+		return;
+	}
 
 	menu = memnew(PopupMenu);
 	add_child(menu);
+	menu->connect("id_pressed", callable_mp(this, &LineEdit::menu_option));
 
 	menu_dir = memnew(PopupMenu);
 	menu_dir->set_name("DirMenu");
@@ -2279,10 +2283,31 @@ LineEdit::LineEdit() {
 	menu_ctl->add_item(RTR("Soft hyphen (SHY)"), MENU_INSERT_SHY);
 	menu->add_child(menu_ctl);
 
-	set_editable(true); // Initialise to opposite first, so we get past the early-out in set_editable.
-	menu->connect("id_pressed", callable_mp(this, &LineEdit::menu_option));
 	menu_dir->connect("id_pressed", callable_mp(this, &LineEdit::menu_option));
 	menu_ctl->connect("id_pressed", callable_mp(this, &LineEdit::menu_option));
+
+	menu_dir->set_item_checked(menu_dir->get_item_index(MENU_DIR_INHERITED), text_direction == TEXT_DIRECTION_INHERITED);
+	menu_dir->set_item_checked(menu_dir->get_item_index(MENU_DIR_AUTO), text_direction == TEXT_DIRECTION_AUTO);
+	menu_dir->set_item_checked(menu_dir->get_item_index(MENU_DIR_LTR), text_direction == TEXT_DIRECTION_LTR);
+	menu_dir->set_item_checked(menu_dir->get_item_index(MENU_DIR_RTL), text_direction == TEXT_DIRECTION_RTL);
+}
+
+LineEdit::LineEdit() {
+	text_rid = TS->create_shaped_text();
+	_create_undo_state();
+
+	deselect();
+	set_focus_mode(FOCUS_ALL);
+	set_default_cursor_shape(CURSOR_IBEAM);
+	set_mouse_filter(MOUSE_FILTER_STOP);
+
+	caret_blink_timer = memnew(Timer);
+	add_child(caret_blink_timer);
+	caret_blink_timer->set_wait_time(0.65);
+	caret_blink_timer->connect("timeout", callable_mp(this, &LineEdit::_toggle_draw_caret));
+	set_caret_blink_enabled(false);
+
+	set_editable(true); // Initialise to opposite first, so we get past the early-out in set_editable.
 }
 
 LineEdit::~LineEdit() {

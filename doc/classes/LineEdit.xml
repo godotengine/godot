@@ -102,6 +102,13 @@
 				Inserts [code]text[/code] at the caret. If the resulting value is longer than [member max_length], nothing happens.
 			</description>
 		</method>
+		<method name="is_menu_visible" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+				Returns whether the menu is visible. Use this instead of [code]get_menu().visible[/code] to improve performance (so the creation of the menu is avoided).
+			</description>
+		</method>
 		<method name="menu_option">
 			<return type="void">
 			</return>

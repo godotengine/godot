@@ -198,6 +198,8 @@ private:
 	void _backspace(bool p_word = false, bool p_all_to_left = false);
 	void _delete(bool p_word = false, bool p_all_to_right = false);
 
+	void _ensure_menu();
+
 protected:
 	void _notification(int p_what);
 	static void _bind_methods();
@@ -222,6 +224,7 @@ public:
 	void set_context_menu_enabled(bool p_enable);
 	bool is_context_menu_enabled();
 	PopupMenu *get_menu() const;
+	bool is_menu_visible() const;
 
 	void select(int p_from = 0, int p_to = -1);
 	void select_all();
