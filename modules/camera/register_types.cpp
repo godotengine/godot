@@ -36,6 +36,9 @@
 #if defined(OSX_ENABLED)
 #include "camera_osx.h"
 #endif
+#if defined(X11_ENABLED)
+#include "camera_x11.h"
+#endif
 
 void register_camera_types() {
 #if defined(WINDOWS_ENABLED)
@@ -43,6 +46,9 @@ void register_camera_types() {
 #endif
 #if defined(OSX_ENABLED)
 	CameraServer::make_default<CameraOSX>();
+#endif
+#if defined(X11_ENABLED)
+	CameraServer::make_default<CameraX11>();
 #endif
 }
 
