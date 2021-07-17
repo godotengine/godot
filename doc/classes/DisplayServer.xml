@@ -522,6 +522,15 @@
 			<description>
 			</description>
 		</method>
+		<method name="screen_get_refresh_rate" qualifiers="const">
+			<return type="float">
+			</return>
+			<argument index="0" name="screen" type="int" default="-1">
+			</argument>
+			<description>
+				Return's the screen refresh rate.
+			</description>
+		</method>
 		<method name="screen_get_scale" qualifiers="const">
 			<return type="float">
 			</return>
