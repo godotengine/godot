@@ -755,7 +755,7 @@ struct _VariantCall {
 		const uint8_t *r = p_instance->ptr();
 		PackedInt32Array dest;
 		dest.resize(size / sizeof(int32_t));
-		std::memcpy(dest.ptrw(), r, size);
+		memcpy(dest.ptrw(), r, size);
 		return dest;
 	}
 
@@ -764,7 +764,7 @@ struct _VariantCall {
 		const uint8_t *r = p_instance->ptr();
 		PackedInt64Array dest;
 		dest.resize(size / sizeof(int64_t));
-		std::memcpy(dest.ptrw(), r, size);
+		memcpy(dest.ptrw(), r, size);
 		return dest;
 	}
 
@@ -773,7 +773,7 @@ struct _VariantCall {
 		const uint8_t *r = p_instance->ptr();
 		PackedFloat32Array dest;
 		dest.resize(size / sizeof(float));
-		std::memcpy(dest.ptrw(), r, size);
+		memcpy(dest.ptrw(), r, size);
 		return dest;
 	}
 
@@ -782,7 +782,7 @@ struct _VariantCall {
 		const uint8_t *r = p_instance->ptr();
 		PackedFloat64Array dest;
 		dest.resize(size / sizeof(double));
-		std::memcpy(dest.ptrw(), r, size);
+		memcpy(dest.ptrw(), r, size);
 		return dest;
 	}
 
