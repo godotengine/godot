@@ -75,17 +75,42 @@ public:
 	bool operator==(const Transform &p_transform) const;
 	bool operator!=(const Transform &p_transform) const;
 
-	_FORCE_INLINE_ Vector3 xform(const Vector3 &p_vector) const;
-	_FORCE_INLINE_ Vector3 xform_inv(const Vector3 &p_vector) const;
+	// Safe, but possibly slow versions of xforms.
+	// These work with non-uniform scale.
+	// There is a comment to give a rough idea of speed and when to use alternative approaches.
+	// If a function is slow, and you are xforming multiple items, it is far better to use the 'fast' approach.
+	// The fast approach is to precompute the affine_inverse, then xform by that, or for Planes, where there are
+	// 'fast' functions defined below, use those.
+	// N.B. You should use the fast function for multiple items even for Plane forward xform, because it requires
+	// an affine_inverse!!
+	_FORCE_INLINE_ Vector3 xform(const Vector3 &p_vector) const; // fast
+	_FORCE_INLINE_ Vector3 xform_inv(const Vector3 &p_vector) const; // slow
 
-	_FORCE_INLINE_ Plane xform(const Plane &p_plane) const;
-	_FORCE_INLINE_ Plane xform_inv(const Plane &p_plane) const;
+	_FORCE_INLINE_ Plane xform(const Plane &p_plane) const; // slow
+	_FORCE_INLINE_ Plane xform_inv(const Plane &p_plane) const; // slow
 
-	_FORCE_INLINE_ AABB xform(const AABB &p_aabb) const;
-	_FORCE_INLINE_ AABB xform_inv(const AABB &p_aabb) const;
+	_FORCE_INLINE_ AABB xform(const AABB &p_aabb) const; // fast
+	_FORCE_INLINE_ AABB xform_inv(const AABB &p_aabb) const; // fast-ish
 
-	_FORCE_INLINE_ PoolVector<Vector3> xform(const PoolVector<Vector3> &p_array) const;
-	_FORCE_INLINE_ PoolVector<Vector3> xform_inv(const PoolVector<Vector3> &p_array) const;
+	_FORCE_INLINE_ PoolVector<Vector3> xform(const PoolVector<Vector3> &p_array) const; // fast
+	_FORCE_INLINE_ PoolVector<Vector3> xform_inv(const PoolVector<Vector3> &p_array) const; // fast
+	//////////////////////////////////////
+	// Fast versions, these operate with precomputed helper values which greatly speeds up use
+	// with multiple items.
+	// Use the affine inverse for the precomputed values in most cases (this works with scaling).
+	// Note there are no fast versions for non-planes. In those cases simply precompute the affine_inverse,
+	// and xform by that.
+	_FORCE_INLINE_ Plane xform_fast(const Plane &p_plane, const Basis &p_basis_inverse_transpose) const;
+	_FORCE_INLINE_ Plane xform_inv_fast(const Plane &p_plane, const Transform &p_inverse, const Basis &p_basis_transpose) const;
+
+	// Uniform scale versions of functions.
+	// These are faster but will return incorrect results with non-uniform scales.
+	// They do not use affine_inverse. In the vast majority of cases you should not use these.
+	_FORCE_INLINE_ Vector3 xform_uinv(const Vector3 &p_vector) const;
+	_FORCE_INLINE_ AABB xform_uinv(const AABB &p_aabb) const;
+	_FORCE_INLINE_ Plane xform_u(const Plane &p_plane) const;
+	_FORCE_INLINE_ Plane xform_uinv(const Plane &p_plane) const;
+	//////////////////////////////////////
 
 	void operator*=(const Transform &p_transform);
 	Transform operator*(const Transform &p_transform) const;
@@ -118,7 +143,12 @@ _FORCE_INLINE_ Vector3 Transform::xform(const Vector3 &p_vector) const {
 			basis[1].dot(p_vector) + origin.y,
 			basis[2].dot(p_vector) + origin.z);
 }
+
 _FORCE_INLINE_ Vector3 Transform::xform_inv(const Vector3 &p_vector) const {
+	return affine_inverse().xform(p_vector);
+}
+
+_FORCE_INLINE_ Vector3 Transform::xform_uinv(const Vector3 &p_vector) const {
 	Vector3 v = p_vector - origin;
 
 	return Vector3(
@@ -127,7 +157,56 @@ _FORCE_INLINE_ Vector3 Transform::xform_inv(const Vector3 &p_vector) const {
 			(basis.elements[0][2] * v.x) + (basis.elements[1][2] * v.y) + (basis.elements[2][2] * v.z));
 }
 
+_FORCE_INLINE_ Plane Transform::xform_fast(const Plane &p_plane, const Basis &p_basis_inverse_transpose) const {
+	// transform a single point on the plane
+	Vector3 point = p_plane.normal * p_plane.d;
+	point = xform(point);
+
+	// use inverse transpose for correct normals with non-uniform scaling
+	Vector3 normal = p_basis_inverse_transpose.xform(p_plane.normal);
+	normal.normalize();
+
+	real_t d = normal.dot(point);
+	return Plane(normal, d);
+}
+
+_FORCE_INLINE_ Plane Transform::xform_inv_fast(const Plane &p_plane, const Transform &p_inverse, const Basis &p_basis_transpose) const {
+	// transform a single point on the plane
+	Vector3 point = p_plane.normal * p_plane.d;
+	point = p_inverse.xform(point);
+
+	// Note that instead of precalculating the transpose, an alternative
+	// would be to use the transpose for the basis transform (i.e. Basis.xform_uinv).
+	// However that would be less SIMD friendly (requiring a swizzle).
+	// So the cost is one extra precalced value in the calling code.
+	// This is probably worth it, as this could be used in bottleneck areas. And
+	// where it is not a bottleneck, the non-fast method is fine.
+
+	// use transpose for correct normals with non-uniform scaling
+	Vector3 normal = p_basis_transpose.xform(p_plane.normal);
+	normal.normalize();
+
+	real_t d = normal.dot(point);
+	return Plane(normal, d);
+}
+
+// Neither the plane regular xform or xform_inv are particularly efficient,
+// as they do a basis inverse. For xforming a large number
+// of planes it is better to pre-calculate the inverse transpose basis once
+// and reuse it for each plane, by using the 'fast' version of the functions.
 _FORCE_INLINE_ Plane Transform::xform(const Plane &p_plane) const {
+	Basis b = basis.inverse();
+	b.transpose();
+	return xform_fast(p_plane, b);
+}
+
+_FORCE_INLINE_ Plane Transform::xform_inv(const Plane &p_plane) const {
+	Transform inv = affine_inverse();
+	Basis basis_transpose = basis.transposed();
+	return xform_inv_fast(p_plane, inv, basis_transpose);
+}
+
+_FORCE_INLINE_ Plane Transform::xform_u(const Plane &p_plane) const {
 	Vector3 point = p_plane.normal * p_plane.d;
 	Vector3 point_dir = point + p_plane.normal;
 	point = xform(point);
@@ -139,11 +218,12 @@ _FORCE_INLINE_ Plane Transform::xform(const Plane &p_plane) const {
 
 	return Plane(normal, d);
 }
-_FORCE_INLINE_ Plane Transform::xform_inv(const Plane &p_plane) const {
+
+_FORCE_INLINE_ Plane Transform::xform_uinv(const Plane &p_plane) const {
 	Vector3 point = p_plane.normal * p_plane.d;
 	Vector3 point_dir = point + p_plane.normal;
-	point = xform_inv(point);
-	point_dir = xform_inv(point_dir);
+	point = xform_uinv(point);
+	point_dir = xform_uinv(point_dir);
 
 	Vector3 normal = point_dir - point;
 	normal.normalize();
@@ -178,6 +258,12 @@ _FORCE_INLINE_ AABB Transform::xform(const AABB &p_aabb) const {
 }
 
 _FORCE_INLINE_ AABB Transform::xform_inv(const AABB &p_aabb) const {
+	return affine_inverse().xform(p_aabb);
+}
+
+// This may only be marginally faster than the safe (regular) version,
+// as in the safe version, the cost of the inverse is amortized over 8 xforms.
+_FORCE_INLINE_ AABB Transform::xform_uinv(const AABB &p_aabb) const {
 	/* define vertices */
 	Vector3 vertices[8] = {
 		Vector3(p_aabb.position.x + p_aabb.size.x, p_aabb.position.y + p_aabb.size.y, p_aabb.position.z + p_aabb.size.z),
@@ -192,10 +278,10 @@ _FORCE_INLINE_ AABB Transform::xform_inv(const AABB &p_aabb) const {
 
 	AABB ret;
 
-	ret.position = xform_inv(vertices[0]);
+	ret.position = xform_uinv(vertices[0]);
 
 	for (int i = 1; i < 8; i++) {
-		ret.expand_to(xform_inv(vertices[i]));
+		ret.expand_to(xform_uinv(vertices[i]));
 	}
 
 	return ret;
@@ -215,16 +301,10 @@ PoolVector<Vector3> Transform::xform(const PoolVector<Vector3> &p_array) const {
 }
 
 PoolVector<Vector3> Transform::xform_inv(const PoolVector<Vector3> &p_array) const {
-	PoolVector<Vector3> array;
-	array.resize(p_array.size());
-
-	PoolVector<Vector3>::Read r = p_array.read();
-	PoolVector<Vector3>::Write w = array.write();
-
-	for (int i = 0; i < p_array.size(); ++i) {
-		w[i] = xform_inv(r[i]);
-	}
-	return array;
+	// Precomputing the inverse makes this ranged function
+	// super cheap (almost the same cost as xform) except when there
+	// are a small number of elements
+	return affine_inverse().xform(p_array);
 }
 
 #endif // TRANSFORM_H
