@@ -439,129 +439,129 @@ class DisplayServerWindows : public DisplayServer {
 public:
 	LRESULT WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
-	virtual bool has_feature(Feature p_feature) const;
-	virtual String get_name() const;
+	virtual bool has_feature(Feature p_feature) const override;
+	virtual String get_name() const override;
 
-	virtual void alert(const String &p_alert, const String &p_title = "ALERT!");
+	virtual void alert(const String &p_alert, const String &p_title = "ALERT!") override;
 
-	virtual void mouse_set_mode(MouseMode p_mode);
-	virtual MouseMode mouse_get_mode() const;
+	virtual void mouse_set_mode(MouseMode p_mode) override;
+	virtual MouseMode mouse_get_mode() const override;
 
-	virtual void mouse_warp_to_position(const Point2i &p_to);
-	virtual Point2i mouse_get_position() const;
-	virtual MouseButton mouse_get_button_state() const;
+	virtual void mouse_warp_to_position(const Point2i &p_to) override;
+	virtual Point2i mouse_get_position() const override;
+	virtual MouseButton mouse_get_button_state() const override;
 
-	virtual void clipboard_set(const String &p_text);
-	virtual String clipboard_get() const;
+	virtual void clipboard_set(const String &p_text) override;
+	virtual String clipboard_get() const override;
 
-	virtual int get_screen_count() const;
-	virtual Point2i screen_get_position(int p_screen = SCREEN_OF_MAIN_WINDOW) const;
-	virtual Size2i screen_get_size(int p_screen = SCREEN_OF_MAIN_WINDOW) const;
-	virtual Rect2i screen_get_usable_rect(int p_screen = SCREEN_OF_MAIN_WINDOW) const;
-	virtual int screen_get_dpi(int p_screen = SCREEN_OF_MAIN_WINDOW) const;
-	virtual bool screen_is_touchscreen(int p_screen = SCREEN_OF_MAIN_WINDOW) const;
+	virtual int get_screen_count() const override;
+	virtual Point2i screen_get_position(int p_screen = SCREEN_OF_MAIN_WINDOW) const override;
+	virtual Size2i screen_get_size(int p_screen = SCREEN_OF_MAIN_WINDOW) const override;
+	virtual Rect2i screen_get_usable_rect(int p_screen = SCREEN_OF_MAIN_WINDOW) const override;
+	virtual int screen_get_dpi(int p_screen = SCREEN_OF_MAIN_WINDOW) const override;
+	virtual bool screen_is_touchscreen(int p_screen = SCREEN_OF_MAIN_WINDOW) const override;
 
-	virtual void screen_set_orientation(ScreenOrientation p_orientation, int p_screen = SCREEN_OF_MAIN_WINDOW);
+	virtual void screen_set_orientation(ScreenOrientation p_orientation, int p_screen = SCREEN_OF_MAIN_WINDOW) override;
 	ScreenOrientation screen_get_orientation(int p_screen = SCREEN_OF_MAIN_WINDOW) const;
 
-	virtual void screen_set_keep_on(bool p_enable); //disable screensaver
-	virtual bool screen_is_kept_on() const;
+	virtual void screen_set_keep_on(bool p_enable) override; //disable screensaver
+	virtual bool screen_is_kept_on() const override;
 
-	virtual Vector<DisplayServer::WindowID> get_window_list() const;
+	virtual Vector<DisplayServer::WindowID> get_window_list() const override;
 
-	virtual WindowID create_sub_window(WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Rect2i &p_rect = Rect2i());
-	virtual void show_window(WindowID p_window);
-	virtual void delete_sub_window(WindowID p_window);
+	virtual WindowID create_sub_window(WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Rect2i &p_rect = Rect2i()) override;
+	virtual void show_window(WindowID p_window) override;
+	virtual void delete_sub_window(WindowID p_window) override;
 
-	virtual WindowID get_window_at_screen_position(const Point2i &p_position) const;
+	virtual WindowID get_window_at_screen_position(const Point2i &p_position) const override;
 
-	virtual void window_attach_instance_id(ObjectID p_instance, WindowID p_window = MAIN_WINDOW_ID);
-	virtual ObjectID window_get_attached_instance_id(WindowID p_window = MAIN_WINDOW_ID) const;
+	virtual void window_attach_instance_id(ObjectID p_instance, WindowID p_window = MAIN_WINDOW_ID) override;
+	virtual ObjectID window_get_attached_instance_id(WindowID p_window = MAIN_WINDOW_ID) const override;
 
-	virtual void window_set_rect_changed_callback(const Callable &p_callable, WindowID p_window = MAIN_WINDOW_ID);
+	virtual void window_set_rect_changed_callback(const Callable &p_callable, WindowID p_window = MAIN_WINDOW_ID) override;
 
-	virtual void window_set_window_event_callback(const Callable &p_callable, WindowID p_window = MAIN_WINDOW_ID);
-	virtual void window_set_input_event_callback(const Callable &p_callable, WindowID p_window = MAIN_WINDOW_ID);
-	virtual void window_set_input_text_callback(const Callable &p_callable, WindowID p_window = MAIN_WINDOW_ID);
+	virtual void window_set_window_event_callback(const Callable &p_callable, WindowID p_window = MAIN_WINDOW_ID) override;
+	virtual void window_set_input_event_callback(const Callable &p_callable, WindowID p_window = MAIN_WINDOW_ID) override;
+	virtual void window_set_input_text_callback(const Callable &p_callable, WindowID p_window = MAIN_WINDOW_ID) override;
 
-	virtual void window_set_drop_files_callback(const Callable &p_callable, WindowID p_window = MAIN_WINDOW_ID);
+	virtual void window_set_drop_files_callback(const Callable &p_callable, WindowID p_window = MAIN_WINDOW_ID) override;
 
-	virtual void window_set_title(const String &p_title, WindowID p_window = MAIN_WINDOW_ID);
-	virtual void window_set_mouse_passthrough(const Vector<Vector2> &p_region, WindowID p_window = MAIN_WINDOW_ID);
+	virtual void window_set_title(const String &p_title, WindowID p_window = MAIN_WINDOW_ID) override;
+	virtual void window_set_mouse_passthrough(const Vector<Vector2> &p_region, WindowID p_window = MAIN_WINDOW_ID) override;
 
-	virtual int window_get_current_screen(WindowID p_window = MAIN_WINDOW_ID) const;
-	virtual void window_set_current_screen(int p_screen, WindowID p_window = MAIN_WINDOW_ID);
+	virtual int window_get_current_screen(WindowID p_window = MAIN_WINDOW_ID) const override;
+	virtual void window_set_current_screen(int p_screen, WindowID p_window = MAIN_WINDOW_ID) override;
 
-	virtual Point2i window_get_position(WindowID p_window = MAIN_WINDOW_ID) const;
-	virtual void window_set_position(const Point2i &p_position, WindowID p_window = MAIN_WINDOW_ID);
+	virtual Point2i window_get_position(WindowID p_window = MAIN_WINDOW_ID) const override;
+	virtual void window_set_position(const Point2i &p_position, WindowID p_window = MAIN_WINDOW_ID) override;
 
-	virtual void window_set_transient(WindowID p_window, WindowID p_parent);
+	virtual void window_set_transient(WindowID p_window, WindowID p_parent) override;
 
-	virtual void window_set_max_size(const Size2i p_size, WindowID p_window = MAIN_WINDOW_ID);
-	virtual Size2i window_get_max_size(WindowID p_window = MAIN_WINDOW_ID) const;
+	virtual void window_set_max_size(const Size2i p_size, WindowID p_window = MAIN_WINDOW_ID) override;
+	virtual Size2i window_get_max_size(WindowID p_window = MAIN_WINDOW_ID) const override;
 
-	virtual void window_set_min_size(const Size2i p_size, WindowID p_window = MAIN_WINDOW_ID);
-	virtual Size2i window_get_min_size(WindowID p_window = MAIN_WINDOW_ID) const;
+	virtual void window_set_min_size(const Size2i p_size, WindowID p_window = MAIN_WINDOW_ID) override;
+	virtual Size2i window_get_min_size(WindowID p_window = MAIN_WINDOW_ID) const override;
 
-	virtual void window_set_size(const Size2i p_size, WindowID p_window = MAIN_WINDOW_ID);
-	virtual Size2i window_get_size(WindowID p_window = MAIN_WINDOW_ID) const;
-	virtual Size2i window_get_real_size(WindowID p_window = MAIN_WINDOW_ID) const; //wtf is this? should probable use proper name
+	virtual void window_set_size(const Size2i p_size, WindowID p_window = MAIN_WINDOW_ID) override;
+	virtual Size2i window_get_size(WindowID p_window = MAIN_WINDOW_ID) const override;
+	virtual Size2i window_get_real_size(WindowID p_window = MAIN_WINDOW_ID) const override; //wtf is this? should probable use proper name
 
-	virtual void window_set_mode(WindowMode p_mode, WindowID p_window = MAIN_WINDOW_ID);
-	virtual WindowMode window_get_mode(WindowID p_window = MAIN_WINDOW_ID) const;
+	virtual void window_set_mode(WindowMode p_mode, WindowID p_window = MAIN_WINDOW_ID) override;
+	virtual WindowMode window_get_mode(WindowID p_window = MAIN_WINDOW_ID) const override;
 
-	virtual bool window_is_maximize_allowed(WindowID p_window = MAIN_WINDOW_ID) const;
+	virtual bool window_is_maximize_allowed(WindowID p_window = MAIN_WINDOW_ID) const override;
 
-	virtual void window_set_flag(WindowFlags p_flag, bool p_enabled, WindowID p_window = MAIN_WINDOW_ID);
-	virtual bool window_get_flag(WindowFlags p_flag, WindowID p_window = MAIN_WINDOW_ID) const;
+	virtual void window_set_flag(WindowFlags p_flag, bool p_enabled, WindowID p_window = MAIN_WINDOW_ID) override;
+	virtual bool window_get_flag(WindowFlags p_flag, WindowID p_window = MAIN_WINDOW_ID) const override;
 
-	virtual void window_request_attention(WindowID p_window = MAIN_WINDOW_ID);
-	virtual void window_move_to_foreground(WindowID p_window = MAIN_WINDOW_ID);
+	virtual void window_request_attention(WindowID p_window = MAIN_WINDOW_ID) override;
+	virtual void window_move_to_foreground(WindowID p_window = MAIN_WINDOW_ID) override;
 
-	virtual bool window_can_draw(WindowID p_window = MAIN_WINDOW_ID) const;
+	virtual bool window_can_draw(WindowID p_window = MAIN_WINDOW_ID) const override;
 
-	virtual bool can_any_window_draw() const;
+	virtual bool can_any_window_draw() const override;
 
-	virtual void window_set_ime_active(const bool p_active, WindowID p_window = MAIN_WINDOW_ID);
-	virtual void window_set_ime_position(const Point2i &p_pos, WindowID p_window = MAIN_WINDOW_ID);
+	virtual void window_set_ime_active(const bool p_active, WindowID p_window = MAIN_WINDOW_ID) override;
+	virtual void window_set_ime_position(const Point2i &p_pos, WindowID p_window = MAIN_WINDOW_ID) override;
 
 	virtual void window_set_vsync_mode(DisplayServer::VSyncMode p_vsync_mode, WindowID p_window = MAIN_WINDOW_ID) override;
 	virtual DisplayServer::VSyncMode window_get_vsync_mode(WindowID p_vsync_mode) const override;
 
-	virtual void console_set_visible(bool p_enabled);
-	virtual bool is_console_visible() const;
+	virtual void console_set_visible(bool p_enabled) override;
+	virtual bool is_console_visible() const override;
 
-	virtual void cursor_set_shape(CursorShape p_shape);
-	virtual CursorShape cursor_get_shape() const;
-	virtual void cursor_set_custom_image(const RES &p_cursor, CursorShape p_shape = CURSOR_ARROW, const Vector2 &p_hotspot = Vector2());
+	virtual void cursor_set_shape(CursorShape p_shape) override;
+	virtual CursorShape cursor_get_shape() const override;
+	virtual void cursor_set_custom_image(const RES &p_cursor, CursorShape p_shape = CURSOR_ARROW, const Vector2 &p_hotspot = Vector2()) override;
 
-	virtual bool get_swap_cancel_ok();
+	virtual bool get_swap_cancel_ok() override;
 
-	virtual void enable_for_stealing_focus(OS::ProcessID pid);
+	virtual void enable_for_stealing_focus(OS::ProcessID pid) override;
 
-	virtual int keyboard_get_layout_count() const;
-	virtual int keyboard_get_current_layout() const;
-	virtual void keyboard_set_current_layout(int p_index);
-	virtual String keyboard_get_layout_language(int p_index) const;
-	virtual String keyboard_get_layout_name(int p_index) const;
+	virtual int keyboard_get_layout_count() const override;
+	virtual int keyboard_get_current_layout() const override;
+	virtual void keyboard_set_current_layout(int p_index) override;
+	virtual String keyboard_get_layout_language(int p_index) const override;
+	virtual String keyboard_get_layout_name(int p_index) const override;
 
-	virtual int tablet_get_driver_count() const;
-	virtual String tablet_get_driver_name(int p_driver) const;
-	virtual String tablet_get_current_driver() const;
-	virtual void tablet_set_current_driver(const String &p_driver);
+	virtual int tablet_get_driver_count() const override;
+	virtual String tablet_get_driver_name(int p_driver) const override;
+	virtual String tablet_get_current_driver() const override;
+	virtual void tablet_set_current_driver(const String &p_driver) override;
 
-	virtual void process_events();
+	virtual void process_events() override;
 
-	virtual void force_process_and_drop_events();
+	virtual void force_process_and_drop_events() override;
 
-	virtual void release_rendering_thread();
-	virtual void make_rendering_thread();
-	virtual void swap_buffers();
+	virtual void release_rendering_thread() override;
+	virtual void make_rendering_thread() override;
+	virtual void swap_buffers() override;
 
-	virtual void set_native_icon(const String &p_filename);
-	virtual void set_icon(const Ref<Image> &p_icon);
+	virtual void set_native_icon(const String &p_filename) override;
+	virtual void set_icon(const Ref<Image> &p_icon) override;
 
-	virtual void set_context(Context p_context);
+	virtual void set_context(Context p_context) override;
 
 	static DisplayServer *create_func(const String &p_rendering_driver, WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i &p_resolution, Error &r_error);
 	static Vector<String> get_rendering_drivers_func();
