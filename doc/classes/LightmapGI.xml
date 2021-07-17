@@ -33,7 +33,14 @@
 		</member>
 		<member name="quality" type="int" setter="set_bake_quality" getter="get_bake_quality" enum="LightmapGI.BakeQuality" default="1">
 		</member>
+		<member name="use_color" type="bool" setter="set_use_color" getter="is_using_color" default="true">
+			Store full color values in the lightmap textures. When disabled, lightmap textures will store a single brightness channel. This can be disabled to reduce disk usage if the scene contains only grayscale lights, or if you don't mind losing color information in indirect lighting.
+		</member>
 		<member name="use_denoiser" type="bool" setter="set_use_denoiser" getter="is_using_denoiser" default="true">
+		</member>
+		<member name="use_hdr" type="bool" setter="set_use_hdr" getter="is_using_hdr" default="true">
+			If [code]true[/code], stores the lightmap textures in a high dynamic range format (EXR). If [code]false[/code], stores the lightmap texture in a low dynamic range PNG image. This can be set to [code]false[/code] to reduce disk usage, but light values over 1.0 will be clamped and you may see banding caused by the reduced precision.
+			[b]Note:[/b] If [member use_hdr] is [code]true[/code], VRAM compression will be used for the lightmap texture by default. If [member use_hdr] is [code]false[/code], lossless compression will be used instead as it looks significantly better.
 		</member>
 	</members>
 	<constants>
