@@ -74,14 +74,14 @@ void ShaderTextEditor::reload_text() {
 	ERR_FAIL_COND(shader.is_null());
 
 	CodeEdit *te = get_text_editor();
-	int column = te->cursor_get_column();
-	int row = te->cursor_get_line();
+	int column = te->get_caret_column();
+	int row = te->get_caret_line();
 	int h = te->get_h_scroll();
 	int v = te->get_v_scroll();
 
 	te->set_text(shader->get_code());
-	te->cursor_set_line(row);
-	te->cursor_set_column(column);
+	te->set_caret_line(row);
+	te->set_caret_column(column);
 	te->set_h_scroll(h);
 	te->set_v_scroll(v);
 
@@ -157,6 +157,10 @@ void ShaderTextEditor::_load_theme_settings() {
 	text_editor->clear_comment_delimiters();
 	text_editor->add_comment_delimiter("/*", "*/", false);
 	text_editor->add_comment_delimiter("//", "", true);
+
+	if (!text_editor->has_auto_brace_completion_open_key("/*")) {
+		text_editor->add_auto_brace_completion_pair("/*", "*/");
+	}
 
 	if (warnings_panel) {
 		// Warnings panel
@@ -404,7 +408,7 @@ void ShaderEditor::_show_warnings_panel(bool p_show) {
 
 void ShaderEditor::_warning_clicked(Variant p_line) {
 	if (p_line.get_type() == Variant::INT) {
-		shader_editor->get_text_editor()->cursor_set_line(p_line.operator int64_t());
+		shader_editor->get_text_editor()->set_caret_line(p_line.operator int64_t());
 	}
 }
 
@@ -546,13 +550,15 @@ void ShaderEditor::_text_edit_gui_input(const Ref<InputEvent> &ev) {
 
 	if (mb.is_valid()) {
 		if (mb->get_button_index() == MOUSE_BUTTON_RIGHT && mb->is_pressed()) {
-			int col, row;
 			CodeEdit *tx = shader_editor->get_text_editor();
-			tx->_get_mouse_pos(mb->get_global_position() - tx->get_global_position(), row, col);
-			tx->set_right_click_moves_caret(EditorSettings::get_singleton()->get("text_editor/cursor/right_click_moves_caret"));
 
-			if (tx->is_right_click_moving_caret()) {
-				if (tx->is_selection_active()) {
+			Point2 pos = tx->get_line_column_at_pos(mb->get_global_position() - tx->get_global_position());
+			int row = pos.y;
+			int col = pos.x;
+			tx->set_move_caret_on_right_click_enabled(EditorSettings::get_singleton()->get("text_editor/cursor/right_click_moves_caret"));
+
+			if (tx->is_move_caret_on_right_click_enabled()) {
+				if (tx->has_selection()) {
 					int from_line = tx->get_selection_from_line();
 					int to_line = tx->get_selection_to_line();
 					int from_column = tx->get_selection_from_column();
@@ -563,19 +569,20 @@ void ShaderEditor::_text_edit_gui_input(const Ref<InputEvent> &ev) {
 						tx->deselect();
 					}
 				}
-				if (!tx->is_selection_active()) {
-					tx->cursor_set_line(row, true, false);
-					tx->cursor_set_column(col);
+				if (!tx->has_selection()) {
+					tx->set_caret_line(row, true, false);
+					tx->set_caret_column(col);
 				}
 			}
-			_make_context_menu(tx->is_selection_active(), get_local_mouse_position());
+			_make_context_menu(tx->has_selection(), get_local_mouse_position());
 		}
 	}
 
 	Ref<InputEventKey> k = ev;
-	if (k.is_valid() && k->is_pressed() && k->get_keycode() == KEY_MENU) {
+	if (k.is_valid() && k->is_pressed() && k->is_action("ui_menu", true)) {
 		CodeEdit *tx = shader_editor->get_text_editor();
-		_make_context_menu(tx->is_selection_active(), (get_global_transform().inverse() * tx->get_global_transform()).xform(tx->_get_cursor_pixel_pos()));
+		tx->adjust_viewport_to_caret();
+		_make_context_menu(tx->has_selection(), (get_global_transform().inverse() * tx->get_global_transform()).xform(tx->get_caret_draw_pos()));
 		context_menu->grab_focus();
 	}
 }
@@ -659,7 +666,7 @@ ShaderEditor::ShaderEditor(EditorNode *p_node) {
 
 	shader_editor->get_text_editor()->set_code_hint_draw_below(EditorSettings::get_singleton()->get("text_editor/completion/put_callhint_tooltip_below_current_line"));
 
-	shader_editor->get_text_editor()->set_select_identifiers_on_hover(true);
+	shader_editor->get_text_editor()->set_symbol_lookup_on_click_enabled(true);
 	shader_editor->get_text_editor()->set_context_menu_enabled(false);
 	shader_editor->get_text_editor()->connect("gui_input", callable_mp(this, &ShaderEditor::_text_edit_gui_input));
 
