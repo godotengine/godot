@@ -313,39 +313,39 @@ void Window::_event_callback(DisplayServer::WindowEvent p_event) {
 	switch (p_event) {
 		case DisplayServer::WINDOW_EVENT_MOUSE_ENTER: {
 			_propagate_window_notification(this, NOTIFICATION_WM_MOUSE_ENTER);
-			emit_signal("mouse_entered");
+			emit_signal(SNAME("mouse_entered"));
 			DisplayServer::get_singleton()->cursor_set_shape(DisplayServer::CURSOR_ARROW); //restore cursor shape
 		} break;
 		case DisplayServer::WINDOW_EVENT_MOUSE_EXIT: {
 			_propagate_window_notification(this, NOTIFICATION_WM_MOUSE_EXIT);
-			emit_signal("mouse_exited");
+			emit_signal(SNAME("mouse_exited"));
 		} break;
 		case DisplayServer::WINDOW_EVENT_FOCUS_IN: {
 			focused = true;
 			_propagate_window_notification(this, NOTIFICATION_WM_WINDOW_FOCUS_IN);
-			emit_signal("focus_entered");
+			emit_signal(SNAME("focus_entered"));
 
 		} break;
 		case DisplayServer::WINDOW_EVENT_FOCUS_OUT: {
 			focused = false;
 			_propagate_window_notification(this, NOTIFICATION_WM_WINDOW_FOCUS_OUT);
-			emit_signal("focus_exited");
+			emit_signal(SNAME("focus_exited"));
 		} break;
 		case DisplayServer::WINDOW_EVENT_CLOSE_REQUEST: {
 			if (exclusive_child != nullptr) {
 				break; //has an exclusive child, can't get events until child is closed
 			}
 			_propagate_window_notification(this, NOTIFICATION_WM_CLOSE_REQUEST);
-			emit_signal("close_requested");
+			emit_signal(SNAME("close_requested"));
 		} break;
 		case DisplayServer::WINDOW_EVENT_GO_BACK_REQUEST: {
 			_propagate_window_notification(this, NOTIFICATION_WM_GO_BACK_REQUEST);
-			emit_signal("go_back_requested");
+			emit_signal(SNAME("go_back_requested"));
 		} break;
 		case DisplayServer::WINDOW_EVENT_DPI_CHANGE: {
 			_update_viewport_size();
 			_propagate_window_notification(this, NOTIFICATION_WM_DPI_CHANGE);
-			emit_signal("dpi_changed");
+			emit_signal(SNAME("dpi_changed"));
 		} break;
 	}
 }
@@ -882,7 +882,7 @@ void Window::child_controls_changed() {
 	}
 
 	updating_child_controls = true;
-	call_deferred("_update_child_controls");
+	call_deferred(SNAME("_update_child_controls"));
 }
 
 bool Window::_can_consume_input_events() const {
@@ -925,7 +925,7 @@ void Window::_window_input_text(const String &p_text) {
 }
 
 void Window::_window_drop_files(const Vector<String> &p_files) {
-	emit_signal("files_dropped", p_files, current_screen);
+	emit_signal(SNAME("files_dropped"), p_files, current_screen);
 }
 
 Viewport *Window::get_parent_viewport() const {
@@ -1043,7 +1043,7 @@ void Window::popup_centered_ratio(float p_ratio) {
 }
 
 void Window::popup(const Rect2i &p_screen_rect) {
-	emit_signal("about_to_popup");
+	emit_signal(SNAME("about_to_popup"));
 
 	// Update window size to calculate the actual window size based on contents minimum size and minimum size.
 	_update_window_size();

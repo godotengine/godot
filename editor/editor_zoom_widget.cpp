@@ -52,17 +52,17 @@ void EditorZoomWidget::_update_zoom_label() {
 
 void EditorZoomWidget::_button_zoom_minus() {
 	set_zoom_by_increments(-6, Input::get_singleton()->is_key_pressed(KEY_ALT));
-	emit_signal("zoom_changed", zoom);
+	emit_signal(SNAME("zoom_changed"), zoom);
 }
 
 void EditorZoomWidget::_button_zoom_reset() {
 	set_zoom(1.0 * MAX(1, EDSCALE));
-	emit_signal("zoom_changed", zoom);
+	emit_signal(SNAME("zoom_changed"), zoom);
 }
 
 void EditorZoomWidget::_button_zoom_plus() {
 	set_zoom_by_increments(6, Input::get_singleton()->is_key_pressed(KEY_ALT));
-	emit_signal("zoom_changed", zoom);
+	emit_signal(SNAME("zoom_changed"), zoom);
 }
 
 float EditorZoomWidget::get_zoom() {
@@ -145,8 +145,8 @@ void EditorZoomWidget::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED:
-			zoom_minus->set_icon(get_theme_icon("ZoomLess", "EditorIcons"));
-			zoom_plus->set_icon(get_theme_icon("ZoomMore", "EditorIcons"));
+			zoom_minus->set_icon(get_theme_icon(SNAME("ZoomLess"), SNAME("EditorIcons")));
+			zoom_plus->set_icon(get_theme_icon(SNAME("ZoomMore"), SNAME("EditorIcons")));
 			break;
 		default:
 			break;

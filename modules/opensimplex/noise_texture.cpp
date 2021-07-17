@@ -109,7 +109,7 @@ void NoiseTexture::_thread_done(const Ref<Image> &p_image) {
 
 void NoiseTexture::_thread_function(void *p_ud) {
 	NoiseTexture *tex = (NoiseTexture *)p_ud;
-	tex->call_deferred("_thread_done", tex->_generate_texture());
+	tex->call_deferred(SNAME("_thread_done"), tex->_generate_texture());
 }
 
 void NoiseTexture::_queue_update() {
@@ -118,7 +118,7 @@ void NoiseTexture::_queue_update() {
 	}
 
 	update_queued = true;
-	call_deferred("_update_texture");
+	call_deferred(SNAME("_update_texture"));
 }
 
 Ref<Image> NoiseTexture::_generate_texture() {

@@ -43,7 +43,7 @@ void EditorDirDialog::_update_dir(TreeItem *p_item, EditorFileSystemDirectory *p
 	String path = p_dir->get_path();
 
 	p_item->set_metadata(0, p_dir->get_path());
-	p_item->set_icon(0, tree->get_theme_icon("Folder", "EditorIcons"));
+	p_item->set_icon(0, tree->get_theme_icon(SNAME("Folder"), SNAME("EditorIcons")));
 
 	if (!p_item->get_parent()) {
 		p_item->set_text(0, "res://");
@@ -129,7 +129,7 @@ void EditorDirDialog::ok_pressed() {
 	}
 
 	String dir = ti->get_metadata(0);
-	emit_signal("dir_selected", dir);
+	emit_signal(SNAME("dir_selected"), dir);
 	hide();
 }
 

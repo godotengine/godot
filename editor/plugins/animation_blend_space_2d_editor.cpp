@@ -97,7 +97,7 @@ void AnimationNodeBlendSpace2DEditor::_blend_space_gui_input(const Ref<InputEven
 				List<StringName> names;
 				ap->get_animation_list(&names);
 				for (List<StringName>::Element *E = names.front(); E; E = E->next()) {
-					animations_menu->add_icon_item(get_theme_icon("Animation", "EditorIcons"), E->get());
+					animations_menu->add_icon_item(get_theme_icon(SNAME("Animation"), SNAME("EditorIcons")), E->get());
 					animations_to_add.push_back(E->get());
 				}
 			}
@@ -392,18 +392,18 @@ void AnimationNodeBlendSpace2DEditor::_tool_switch(int p_tool) {
 }
 
 void AnimationNodeBlendSpace2DEditor::_blend_space_draw() {
-	Color linecolor = get_theme_color("font_color", "Label");
+	Color linecolor = get_theme_color(SNAME("font_color"), SNAME("Label"));
 	Color linecolor_soft = linecolor;
 	linecolor_soft.a *= 0.5;
-	Ref<Font> font = get_theme_font("font", "Label");
-	int font_size = get_theme_font_size("font_size", "Label");
-	Ref<Texture2D> icon = get_theme_icon("KeyValue", "EditorIcons");
-	Ref<Texture2D> icon_selected = get_theme_icon("KeySelected", "EditorIcons");
+	Ref<Font> font = get_theme_font(SNAME("font"), SNAME("Label"));
+	int font_size = get_theme_font_size(SNAME("font_size"), SNAME("Label"));
+	Ref<Texture2D> icon = get_theme_icon(SNAME("KeyValue"), SNAME("EditorIcons"));
+	Ref<Texture2D> icon_selected = get_theme_icon(SNAME("KeySelected"), SNAME("EditorIcons"));
 
 	Size2 s = blend_space_draw->get_size();
 
 	if (blend_space_draw->has_focus()) {
-		Color color = get_theme_color("accent_color", "Editor");
+		Color color = get_theme_color(SNAME("accent_color"), SNAME("Editor"));
 		blend_space_draw->draw_rect(Rect2(Point2(), s), color, false);
 	}
 	blend_space_draw->draw_line(Point2(1, 0), Point2(1, s.height - 1), linecolor);
@@ -483,7 +483,7 @@ void AnimationNodeBlendSpace2DEditor::_blend_space_draw() {
 
 		Color color;
 		if (i == selected_triangle) {
-			color = get_theme_color("accent_color", "Editor");
+			color = get_theme_color(SNAME("accent_color"), SNAME("Editor"));
 			color.a *= 0.5;
 		} else {
 			color = linecolor;
@@ -543,7 +543,7 @@ void AnimationNodeBlendSpace2DEditor::_blend_space_draw() {
 	{
 		Color color;
 		if (tool_blend->is_pressed()) {
-			color = get_theme_color("accent_color", "Editor");
+			color = get_theme_color(SNAME("accent_color"), SNAME("Editor"));
 		} else {
 			color = linecolor;
 			color.a *= 0.5;
@@ -733,21 +733,21 @@ void AnimationNodeBlendSpace2DEditor::_edit_point_pos(double) {
 
 void AnimationNodeBlendSpace2DEditor::_notification(int p_what) {
 	if (p_what == NOTIFICATION_ENTER_TREE || p_what == NOTIFICATION_THEME_CHANGED) {
-		error_panel->add_theme_style_override("panel", get_theme_stylebox("bg", "Tree"));
-		error_label->add_theme_color_override("font_color", get_theme_color("error_color", "Editor"));
-		panel->add_theme_style_override("panel", get_theme_stylebox("bg", "Tree"));
-		tool_blend->set_icon(get_theme_icon("EditPivot", "EditorIcons"));
-		tool_select->set_icon(get_theme_icon("ToolSelect", "EditorIcons"));
-		tool_create->set_icon(get_theme_icon("EditKey", "EditorIcons"));
-		tool_triangle->set_icon(get_theme_icon("ToolTriangle", "EditorIcons"));
-		tool_erase->set_icon(get_theme_icon("Remove", "EditorIcons"));
-		snap->set_icon(get_theme_icon("SnapGrid", "EditorIcons"));
-		open_editor->set_icon(get_theme_icon("Edit", "EditorIcons"));
-		auto_triangles->set_icon(get_theme_icon("AutoTriangle", "EditorIcons"));
+		error_panel->add_theme_style_override("panel", get_theme_stylebox(SNAME("bg"), SNAME("Tree")));
+		error_label->add_theme_color_override("font_color", get_theme_color(SNAME("error_color"), SNAME("Editor")));
+		panel->add_theme_style_override("panel", get_theme_stylebox(SNAME("bg"), SNAME("Tree")));
+		tool_blend->set_icon(get_theme_icon(SNAME("EditPivot"), SNAME("EditorIcons")));
+		tool_select->set_icon(get_theme_icon(SNAME("ToolSelect"), SNAME("EditorIcons")));
+		tool_create->set_icon(get_theme_icon(SNAME("EditKey"), SNAME("EditorIcons")));
+		tool_triangle->set_icon(get_theme_icon(SNAME("ToolTriangle"), SNAME("EditorIcons")));
+		tool_erase->set_icon(get_theme_icon(SNAME("Remove"), SNAME("EditorIcons")));
+		snap->set_icon(get_theme_icon(SNAME("SnapGrid"), SNAME("EditorIcons")));
+		open_editor->set_icon(get_theme_icon(SNAME("Edit"), SNAME("EditorIcons")));
+		auto_triangles->set_icon(get_theme_icon(SNAME("AutoTriangle"), SNAME("EditorIcons")));
 		interpolation->clear();
-		interpolation->add_icon_item(get_theme_icon("TrackContinuous", "EditorIcons"), "", 0);
-		interpolation->add_icon_item(get_theme_icon("TrackDiscrete", "EditorIcons"), "", 1);
-		interpolation->add_icon_item(get_theme_icon("TrackCapture", "EditorIcons"), "", 2);
+		interpolation->add_icon_item(get_theme_icon(SNAME("TrackContinuous"), SNAME("EditorIcons")), "", 0);
+		interpolation->add_icon_item(get_theme_icon(SNAME("TrackDiscrete"), SNAME("EditorIcons")), "", 1);
+		interpolation->add_icon_item(get_theme_icon(SNAME("TrackCapture"), SNAME("EditorIcons")), "", 2);
 	}
 
 	if (p_what == NOTIFICATION_PROCESS) {

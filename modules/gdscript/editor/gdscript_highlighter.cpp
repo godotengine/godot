@@ -448,7 +448,7 @@ void GDScriptSyntaxHighlighter::_update_cache() {
 	color_regions.clear();
 	color_region_cache.clear();
 
-	font_color = text_edit->get_theme_color("font_color");
+	font_color = text_edit->get_theme_color(SNAME("font_color"));
 	symbol_color = EDITOR_GET("text_editor/highlighting/symbol_color");
 	function_color = EDITOR_GET("text_editor/highlighting/function_color");
 	number_color = EDITOR_GET("text_editor/highlighting/number_color");

@@ -113,20 +113,20 @@ private:
 
 		switch (p_type) {
 			case MESSAGE_ERROR: {
-				msg->add_theme_color_override("font_color", msg->get_theme_color("error_color", "Editor"));
+				msg->add_theme_color_override("font_color", msg->get_theme_color(SNAME("error_color"), SNAME("Editor")));
 				msg->set_modulate(Color(1, 1, 1, 1));
-				new_icon = msg->get_theme_icon("StatusError", "EditorIcons");
+				new_icon = msg->get_theme_icon(SNAME("StatusError"), SNAME("EditorIcons"));
 
 			} break;
 			case MESSAGE_WARNING: {
-				msg->add_theme_color_override("font_color", msg->get_theme_color("warning_color", "Editor"));
+				msg->add_theme_color_override("font_color", msg->get_theme_color(SNAME("warning_color"), SNAME("Editor")));
 				msg->set_modulate(Color(1, 1, 1, 1));
-				new_icon = msg->get_theme_icon("StatusWarning", "EditorIcons");
+				new_icon = msg->get_theme_icon(SNAME("StatusWarning"), SNAME("EditorIcons"));
 
 			} break;
 			case MESSAGE_SUCCESS: {
 				msg->set_modulate(Color(1, 1, 1, 0));
-				new_icon = msg->get_theme_icon("StatusSuccess", "EditorIcons");
+				new_icon = msg->get_theme_icon(SNAME("StatusSuccess"), SNAME("EditorIcons"));
 
 			} break;
 		}
@@ -336,9 +336,9 @@ private:
 		project_path->set_text(sp);
 		_path_text_changed(sp);
 		if (p.ends_with(".zip")) {
-			install_path->call_deferred("grab_focus");
+			install_path->call_deferred(SNAME("grab_focus"));
 		} else {
-			get_ok_button()->call_deferred("grab_focus");
+			get_ok_button()->call_deferred(SNAME("grab_focus"));
 		}
 	}
 
@@ -346,14 +346,14 @@ private:
 		String sp = p_path.simplify_path();
 		project_path->set_text(sp);
 		_path_text_changed(sp);
-		get_ok_button()->call_deferred("grab_focus");
+		get_ok_button()->call_deferred(SNAME("grab_focus"));
 	}
 
 	void _install_path_selected(const String &p_path) {
 		String sp = p_path.simplify_path();
 		install_path->set_text(sp);
 		_path_text_changed(sp);
-		get_ok_button()->call_deferred("grab_focus");
+		get_ok_button()->call_deferred(SNAME("grab_focus"));
 	}
 
 	void _browse_path() {
@@ -448,7 +448,7 @@ private:
 			}
 
 			hide();
-			emit_signal("projects_updated");
+			emit_signal(SNAME("projects_updated"));
 
 		} else {
 			if (mode == MODE_IMPORT) {
@@ -617,7 +617,7 @@ private:
 			EditorSettings::get_singleton()->save();
 
 			hide();
-			emit_signal("project_created", dir);
+			emit_signal(SNAME("project_created"), dir);
 		}
 	}
 
@@ -640,11 +640,11 @@ private:
 		project_name->clear();
 		_text_changed("");
 
-		if (status_rect->get_texture() == msg->get_theme_icon("StatusError", "EditorIcons")) {
+		if (status_rect->get_texture() == msg->get_theme_icon(SNAME("StatusError"), SNAME("EditorIcons"))) {
 			msg->show();
 		}
 
-		if (install_status_rect->get_texture() == msg->get_theme_icon("StatusError", "EditorIcons")) {
+		if (install_status_rect->get_texture() == msg->get_theme_icon(SNAME("StatusError"), SNAME("EditorIcons"))) {
 			msg->show();
 		}
 	}
@@ -715,7 +715,7 @@ public:
 				_text_changed(proj);
 			}
 
-			project_name->call_deferred("grab_focus");
+			project_name->call_deferred(SNAME("grab_focus"));
 
 			create_dir->hide();
 
@@ -758,8 +758,8 @@ public:
 				name_container->show();
 				install_path_container->hide();
 				rasterizer_container->show();
-				project_name->call_deferred("grab_focus");
-				project_name->call_deferred("select_all");
+				project_name->call_deferred(SNAME("grab_focus"));
+				project_name->call_deferred(SNAME("select_all"));
 
 			} else if (mode == MODE_INSTALL) {
 				set_title(TTR("Install Project:") + " " + zip_title);
@@ -966,7 +966,7 @@ public:
 			} break;
 			case NOTIFICATION_DRAW: {
 				if (hover) {
-					draw_style_box(get_theme_stylebox("hover", "Tree"), Rect2(Point2(), get_size()));
+					draw_style_box(get_theme_stylebox(SNAME("hover"), SNAME("Tree")), Rect2(Point2(), get_size()));
 				}
 			} break;
 		}
@@ -1141,7 +1141,7 @@ void ProjectList::_notification(int p_what) {
 void ProjectList::load_project_icon(int p_index) {
 	Item &item = _projects.write[p_index];
 
-	Ref<Texture2D> default_icon = get_theme_icon("DefaultProjectIcon", "EditorIcons");
+	Ref<Texture2D> default_icon = get_theme_icon(SNAME("DefaultProjectIcon"), SNAME("EditorIcons"));
 	Ref<Texture2D> icon;
 	if (item.icon != "") {
 		Ref<Image> img;
@@ -1327,8 +1327,8 @@ void ProjectList::create_project_item_control(int p_index) {
 	Item &item = _projects.write[p_index];
 	ERR_FAIL_COND(item.control != nullptr); // Already created
 
-	Ref<Texture2D> favorite_icon = get_theme_icon("Favorites", "EditorIcons");
-	Color font_color = get_theme_color("font_color", "Tree");
+	Ref<Texture2D> favorite_icon = get_theme_icon(SNAME("Favorites"), SNAME("EditorIcons"));
+	Color font_color = get_theme_color(SNAME("font_color"), SNAME("Tree"));
 
 	ProjectListItemControl *hb = memnew(ProjectListItemControl);
 	hb->connect("draw", callable_mp(this, &ProjectList::_panel_draw), varray(hb));
@@ -1353,7 +1353,7 @@ void ProjectList::create_project_item_control(int p_index) {
 	TextureRect *tf = memnew(TextureRect);
 	// The project icon may not be loaded by the time the control is displayed,
 	// so use a loading placeholder.
-	tf->set_texture(get_theme_icon("ProjectIconLoading", "EditorIcons"));
+	tf->set_texture(get_theme_icon(SNAME("ProjectIconLoading"), SNAME("EditorIcons")));
 	tf->set_v_size_flags(SIZE_SHRINK_CENTER);
 	if (item.missing) {
 		tf->set_modulate(Color(1, 1, 1, 0.5));
@@ -1372,8 +1372,8 @@ void ProjectList::create_project_item_control(int p_index) {
 	ec->set_mouse_filter(MOUSE_FILTER_PASS);
 	vb->add_child(ec);
 	Label *title = memnew(Label(!item.missing ? item.project_name : TTR("Missing Project")));
-	title->add_theme_font_override("font", get_theme_font("title", "EditorFonts"));
-	title->add_theme_font_size_override("font_size", get_theme_font_size("title_size", "EditorFonts"));
+	title->add_theme_font_override("font", get_theme_font(SNAME("title"), SNAME("EditorFonts")));
+	title->add_theme_font_size_override("font_size", get_theme_font_size(SNAME("title_size"), SNAME("EditorFonts")));
 	title->add_theme_color_override("font_color", font_color);
 	title->set_clip_text(true);
 	vb->add_child(title);
@@ -1726,15 +1726,15 @@ void ProjectList::_panel_draw(Node *p_hb) {
 	Control *hb = Object::cast_to<Control>(p_hb);
 
 	if (is_layout_rtl() && get_v_scrollbar()->is_visible_in_tree()) {
-		hb->draw_line(Point2(get_v_scrollbar()->get_minimum_size().x, hb->get_size().y + 1), Point2(hb->get_size().x, hb->get_size().y + 1), get_theme_color("guide_color", "Tree"));
+		hb->draw_line(Point2(get_v_scrollbar()->get_minimum_size().x, hb->get_size().y + 1), Point2(hb->get_size().x, hb->get_size().y + 1), get_theme_color(SNAME("guide_color"), SNAME("Tree")));
 	} else {
-		hb->draw_line(Point2(0, hb->get_size().y + 1), Point2(hb->get_size().x, hb->get_size().y + 1), get_theme_color("guide_color", "Tree"));
+		hb->draw_line(Point2(0, hb->get_size().y + 1), Point2(hb->get_size().x, hb->get_size().y + 1), get_theme_color(SNAME("guide_color"), SNAME("Tree")));
 	}
 
 	String key = _projects[p_hb->get_index()].project_key;
 
 	if (_selected_project_keys.has(key)) {
-		hb->draw_style_box(get_theme_stylebox("selected", "Tree"), Rect2(Point2(), hb->get_size()));
+		hb->draw_style_box(get_theme_stylebox(SNAME("selected"), SNAME("Tree")), Rect2(Point2(), hb->get_size()));
 	}
 }
 
@@ -1765,10 +1765,10 @@ void ProjectList::_panel_input(const Ref<InputEvent> &p_ev, Node *p_hb) {
 			select_project(clicked_index);
 		}
 
-		emit_signal(SIGNAL_SELECTION_CHANGED);
+		emit_signal(SNAME(SIGNAL_SELECTION_CHANGED));
 
 		if (!mb->is_ctrl_pressed() && mb->is_double_click()) {
-			emit_signal(SIGNAL_PROJECT_ASK_OPEN);
+			emit_signal(SNAME(SIGNAL_PROJECT_ASK_OPEN));
 		}
 	}
 }
@@ -1826,7 +1826,7 @@ void ProjectManager::_notification(int p_what) {
 			update();
 		} break;
 		case NOTIFICATION_ENTER_TREE: {
-			search_box->set_right_icon(get_theme_icon("Search", "EditorIcons"));
+			search_box->set_right_icon(get_theme_icon(SNAME("Search"), SNAME("EditorIcons")));
 			search_box->set_clear_button_enabled(true);
 
 			Engine::get_singleton()->set_editor_hint(false);
@@ -2446,7 +2446,7 @@ ProjectManager::ProjectManager() {
 	Panel *panel = memnew(Panel);
 	add_child(panel);
 	panel->set_anchors_and_offsets_preset(Control::PRESET_WIDE);
-	panel->add_theme_style_override("panel", get_theme_stylebox("Background", "EditorStyles"));
+	panel->add_theme_style_override("panel", get_theme_stylebox(SNAME("Background"), SNAME("EditorStyles")));
 
 	VBoxContainer *vb = memnew(VBoxContainer);
 	panel->add_child(vb);
@@ -2484,7 +2484,7 @@ ProjectManager::ProjectManager() {
 		hb->add_child(search_box);
 
 		loading_label = memnew(Label(TTR("Loading, please wait...")));
-		loading_label->add_theme_font_override("font", get_theme_font("bold", "EditorFonts"));
+		loading_label->add_theme_font_override("font", get_theme_font(SNAME("bold"), SNAME("EditorFonts")));
 		loading_label->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 		hb->add_child(loading_label);
 		// Hide the label but make it still take up space. This prevents reflows when showing the label.
@@ -2510,7 +2510,7 @@ ProjectManager::ProjectManager() {
 		}
 
 		PanelContainer *pc = memnew(PanelContainer);
-		pc->add_theme_style_override("panel", get_theme_stylebox("bg", "Tree"));
+		pc->add_theme_style_override("panel", get_theme_stylebox(SNAME("bg"), SNAME("Tree")));
 		pc->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 		search_tree_vb->add_child(pc);
 
@@ -2618,7 +2618,7 @@ ProjectManager::ProjectManager() {
 
 		language_btn = memnew(OptionButton);
 		language_btn->set_flat(true);
-		language_btn->set_icon(get_theme_icon("Environment", "EditorIcons"));
+		language_btn->set_icon(get_theme_icon(SNAME("Environment"), SNAME("EditorIcons")));
 		language_btn->set_focus_mode(Control::FOCUS_NONE);
 		language_btn->connect("item_selected", callable_mp(this, &ProjectManager::_language_selected));
 

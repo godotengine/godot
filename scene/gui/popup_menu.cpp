@@ -46,15 +46,15 @@ String PopupMenu::_get_accel_text(const Item &p_item) const {
 }
 
 Size2 PopupMenu::_get_contents_minimum_size() const {
-	int vseparation = get_theme_constant("vseparation");
-	int hseparation = get_theme_constant("hseparation");
+	int vseparation = get_theme_constant(SNAME("vseparation"));
+	int hseparation = get_theme_constant(SNAME("hseparation"));
 
-	Size2 minsize = get_theme_stylebox("panel")->get_minimum_size(); // Accounts for margin in the margin container
+	Size2 minsize = get_theme_stylebox(SNAME("panel"))->get_minimum_size(); // Accounts for margin in the margin container
 	minsize.x += scroll_container->get_v_scrollbar()->get_size().width * 2; // Adds a buffer so that the scrollbar does not render over the top of content
 
 	float max_w = 0.0;
 	float icon_w = 0.0;
-	int check_w = MAX(get_theme_icon("checked")->get_width(), get_theme_icon("radio_checked")->get_width()) + hseparation;
+	int check_w = MAX(get_theme_icon(SNAME("checked"))->get_width(), get_theme_icon(SNAME("radio_checked"))->get_width()) + hseparation;
 	int accel_max_w = 0;
 	bool has_check = false;
 
@@ -81,7 +81,7 @@ Size2 PopupMenu::_get_contents_minimum_size() const {
 		}
 
 		if (items[i].submenu != "") {
-			size.width += get_theme_icon("submenu")->get_width();
+			size.width += get_theme_icon(SNAME("submenu"))->get_width();
 		}
 
 		max_w = MAX(max_w, size.width);
@@ -89,7 +89,7 @@ Size2 PopupMenu::_get_contents_minimum_size() const {
 		minsize.height += size.height;
 	}
 
-	int item_side_padding = get_theme_constant("item_start_padding") + get_theme_constant("item_end_padding");
+	int item_side_padding = get_theme_constant(SNAME("item_start_padding")) + get_theme_constant(SNAME("item_end_padding"));
 	minsize.width += max_w + icon_w + accel_max_w + item_side_padding;
 
 	if (has_check) {
@@ -112,24 +112,24 @@ int PopupMenu::_get_item_height(int p_item) const {
 
 	int icon_height = items[p_item].get_icon_size().height;
 	if (items[p_item].checkable_type) {
-		icon_height = MAX(icon_height, MAX(get_theme_icon("checked")->get_height(), get_theme_icon("radio_checked")->get_height()));
+		icon_height = MAX(icon_height, MAX(get_theme_icon(SNAME("checked"))->get_height(), get_theme_icon(SNAME("radio_checked"))->get_height()));
 	}
 
 	int text_height = items[p_item].text_buf->get_size().height;
 	if (text_height == 0 && !items[p_item].separator) {
-		text_height = get_theme_font("font")->get_height(get_theme_font_size("font_size"));
+		text_height = get_theme_font(SNAME("font"))->get_height(get_theme_font_size(SNAME("font_size")));
 	}
 
 	int separator_height = 0;
 	if (items[p_item].separator) {
-		separator_height = MAX(get_theme_stylebox("separator")->get_minimum_size().height, MAX(get_theme_stylebox("labeled_separator_left")->get_minimum_size().height, get_theme_stylebox("labeled_separator_right")->get_minimum_size().height));
+		separator_height = MAX(get_theme_stylebox(SNAME("separator"))->get_minimum_size().height, MAX(get_theme_stylebox(SNAME("labeled_separator_left"))->get_minimum_size().height, get_theme_stylebox(SNAME("labeled_separator_right"))->get_minimum_size().height));
 	}
 
 	return MAX(separator_height, MAX(text_height, icon_height));
 }
 
 int PopupMenu::_get_items_total_height() const {
-	int vsep = get_theme_constant("vseparation");
+	int vsep = get_theme_constant(SNAME("vseparation"));
 
 	// Get total height of all items by taking max of icon height and font height
 	int items_total_height = 0;
@@ -163,9 +163,9 @@ int PopupMenu::_get_mouse_over(const Point2 &p_over) const {
 		return -1;
 	}
 
-	Ref<StyleBox> style = get_theme_stylebox("panel"); // Accounts for margin in the margin container
+	Ref<StyleBox> style = get_theme_stylebox(SNAME("panel")); // Accounts for margin in the margin container
 
-	int vseparation = get_theme_constant("vseparation");
+	int vseparation = get_theme_constant(SNAME("vseparation"));
 
 	Point2 ofs = style->get_offset() + Point2(0, vseparation / 2);
 
@@ -195,8 +195,8 @@ void PopupMenu::_activate_submenu(int p_over) {
 		return; //already visible!
 	}
 
-	Ref<StyleBox> style = get_theme_stylebox("panel");
-	int vsep = get_theme_constant("vseparation");
+	Ref<StyleBox> style = get_theme_stylebox(SNAME("panel"));
+	int vsep = get_theme_constant(SNAME("vseparation"));
 
 	Point2 this_pos = get_position();
 	Rect2 this_rect(this_pos, get_size());
@@ -264,7 +264,7 @@ void PopupMenu::_gui_input(const Ref<InputEvent> &p_event) {
 		for (int i = search_from; i < items.size(); i++) {
 			if (!items[i].separator && !items[i].disabled) {
 				mouse_over = i;
-				emit_signal("id_focused", i);
+				emit_signal(SNAME("id_focused"), i);
 				_scroll_to_item(i);
 				control->update();
 				set_input_as_handled();
@@ -278,7 +278,7 @@ void PopupMenu::_gui_input(const Ref<InputEvent> &p_event) {
 			for (int i = 0; i < search_from; i++) {
 				if (!items[i].separator && !items[i].disabled) {
 					mouse_over = i;
-					emit_signal("id_focused", i);
+					emit_signal(SNAME("id_focused"), i);
 					_scroll_to_item(i);
 					control->update();
 					set_input_as_handled();
@@ -296,7 +296,7 @@ void PopupMenu::_gui_input(const Ref<InputEvent> &p_event) {
 		for (int i = search_from; i >= 0; i--) {
 			if (!items[i].separator && !items[i].disabled) {
 				mouse_over = i;
-				emit_signal("id_focused", i);
+				emit_signal(SNAME("id_focused"), i);
 				_scroll_to_item(i);
 				control->update();
 				set_input_as_handled();
@@ -310,7 +310,7 @@ void PopupMenu::_gui_input(const Ref<InputEvent> &p_event) {
 			for (int i = items.size() - 1; i >= search_from; i--) {
 				if (!items[i].separator && !items[i].disabled) {
 					mouse_over = i;
-					emit_signal("id_focused", i);
+					emit_signal(SNAME("id_focused"), i);
 					_scroll_to_item(i);
 					control->update();
 					set_input_as_handled();
@@ -459,7 +459,7 @@ void PopupMenu::_gui_input(const Ref<InputEvent> &p_event) {
 
 			if (items[i].text.findn(search_string) == 0) {
 				mouse_over = i;
-				emit_signal("id_focused", i);
+				emit_signal(SNAME("id_focused"), i);
 				_scroll_to_item(i);
 				control->update();
 				set_input_as_handled();
@@ -474,37 +474,37 @@ void PopupMenu::_draw_items() {
 	RID ci = control->get_canvas_item();
 
 	Size2 margin_size;
-	margin_size.width = margin_container->get_theme_constant("margin_right") + margin_container->get_theme_constant("margin_left");
-	margin_size.height = margin_container->get_theme_constant("margin_top") + margin_container->get_theme_constant("margin_bottom");
+	margin_size.width = margin_container->get_theme_constant(SNAME("margin_right")) + margin_container->get_theme_constant(SNAME("margin_left"));
+	margin_size.height = margin_container->get_theme_constant(SNAME("margin_top")) + margin_container->get_theme_constant(SNAME("margin_bottom"));
 
 	// Space between the item content and the sides of popup menu.
-	int item_start_padding = get_theme_constant("item_start_padding");
-	int item_end_padding = get_theme_constant("item_end_padding");
+	int item_start_padding = get_theme_constant(SNAME("item_start_padding"));
+	int item_end_padding = get_theme_constant(SNAME("item_end_padding"));
 
 	bool rtl = control->is_layout_rtl();
-	Ref<StyleBox> style = get_theme_stylebox("panel");
-	Ref<StyleBox> hover = get_theme_stylebox("hover");
+	Ref<StyleBox> style = get_theme_stylebox(SNAME("panel"));
+	Ref<StyleBox> hover = get_theme_stylebox(SNAME("hover"));
 	// In Item::checkable_type enum order (less the non-checkable member)
-	Ref<Texture2D> check[] = { get_theme_icon("checked"), get_theme_icon("radio_checked") };
-	Ref<Texture2D> uncheck[] = { get_theme_icon("unchecked"), get_theme_icon("radio_unchecked") };
+	Ref<Texture2D> check[] = { get_theme_icon(SNAME("checked")), get_theme_icon(SNAME("radio_checked")) };
+	Ref<Texture2D> uncheck[] = { get_theme_icon(SNAME("unchecked")), get_theme_icon(SNAME("radio_unchecked")) };
 	Ref<Texture2D> submenu;
 	if (rtl) {
-		submenu = get_theme_icon("submenu_mirrored");
+		submenu = get_theme_icon(SNAME("submenu_mirrored"));
 	} else {
-		submenu = get_theme_icon("submenu");
+		submenu = get_theme_icon(SNAME("submenu"));
 	}
 
-	Ref<StyleBox> separator = get_theme_stylebox("separator");
-	Ref<StyleBox> labeled_separator_left = get_theme_stylebox("labeled_separator_left");
-	Ref<StyleBox> labeled_separator_right = get_theme_stylebox("labeled_separator_right");
+	Ref<StyleBox> separator = get_theme_stylebox(SNAME("separator"));
+	Ref<StyleBox> labeled_separator_left = get_theme_stylebox(SNAME("labeled_separator_left"));
+	Ref<StyleBox> labeled_separator_right = get_theme_stylebox(SNAME("labeled_separator_right"));
 
-	int vseparation = get_theme_constant("vseparation");
-	int hseparation = get_theme_constant("hseparation");
-	Color font_color = get_theme_color("font_color");
-	Color font_disabled_color = get_theme_color("font_disabled_color");
-	Color font_accelerator_color = get_theme_color("font_accelerator_color");
-	Color font_hover_color = get_theme_color("font_hover_color");
-	Color font_separator_color = get_theme_color("font_separator_color");
+	int vseparation = get_theme_constant(SNAME("vseparation"));
+	int hseparation = get_theme_constant(SNAME("hseparation"));
+	Color font_color = get_theme_color(SNAME("font_color"));
+	Color font_disabled_color = get_theme_color(SNAME("font_disabled_color"));
+	Color font_accelerator_color = get_theme_color(SNAME("font_accelerator_color"));
+	Color font_hover_color = get_theme_color(SNAME("font_hover_color"));
+	Color font_separator_color = get_theme_color(SNAME("font_separator_color"));
 
 	float scroll_width = scroll_container->get_v_scrollbar()->is_visible_in_tree() ? scroll_container->get_v_scrollbar()->get_size().width : 0;
 	float display_width = control->get_size().width - scroll_width;
@@ -525,7 +525,7 @@ void PopupMenu::_draw_items() {
 
 	float check_ofs = 0.0;
 	if (has_check) {
-		check_ofs = MAX(get_theme_icon("checked")->get_width(), get_theme_icon("radio_checked")->get_width()) + hseparation;
+		check_ofs = MAX(get_theme_icon(SNAME("checked"))->get_width(), get_theme_icon(SNAME("radio_checked"))->get_width()) + hseparation;
 	}
 
 	Point2 ofs = Point2();
@@ -606,8 +606,8 @@ void PopupMenu::_draw_items() {
 		}
 
 		// Text
-		Color font_outline_color = get_theme_color("font_outline_color");
-		int outline_size = get_theme_constant("outline_size");
+		Color font_outline_color = get_theme_color(SNAME("font_outline_color"));
+		int outline_size = get_theme_constant(SNAME("outline_size"));
 		if (items[i].separator) {
 			if (text != String()) {
 				int center = (display_width - items[i].text_buf->get_size().width) / 2;
@@ -657,7 +657,7 @@ void PopupMenu::_draw_items() {
 }
 
 void PopupMenu::_draw_background() {
-	Ref<StyleBox> style = get_theme_stylebox("panel");
+	Ref<StyleBox> style = get_theme_stylebox(SNAME("panel"));
 	RID ci2 = margin_container->get_canvas_item();
 	style->draw(ci2, Rect2(Point2(), margin_container->get_size()));
 }
@@ -691,8 +691,8 @@ void PopupMenu::_shape_item(int p_item) {
 	if (items.write[p_item].dirty) {
 		items.write[p_item].text_buf->clear();
 
-		Ref<Font> font = get_theme_font("font");
-		int font_size = get_theme_font_size("font_size");
+		Ref<Font> font = get_theme_font(SNAME("font"));
+		int font_size = get_theme_font_size(SNAME("font_size"));
 
 		if (items[p_item].text_direction == Control::TEXT_DIRECTION_INHERITED) {
 			items.write[p_item].text_buf->set_direction(is_layout_rtl() ? TextServer::DIRECTION_RTL : TextServer::DIRECTION_LTR);
@@ -791,7 +791,7 @@ void PopupMenu::_notification(int p_what) {
 				}
 
 				// Set margin on the margin container
-				Ref<StyleBox> panel_style = get_theme_stylebox("panel");
+				Ref<StyleBox> panel_style = get_theme_stylebox(SNAME("panel"));
 				margin_container->add_theme_constant_override("margin_top", panel_style->get_margin(Side::SIDE_TOP));
 				margin_container->add_theme_constant_override("margin_bottom", panel_style->get_margin(Side::SIDE_BOTTOM));
 				margin_container->add_theme_constant_override("margin_left", panel_style->get_margin(Side::SIDE_LEFT));
@@ -1376,8 +1376,8 @@ void PopupMenu::activate_item(int p_item) {
 		need_hide = false;
 	}
 
-	emit_signal("id_pressed", id);
-	emit_signal("index_pressed", p_item);
+	emit_signal(SNAME("id_pressed"), id);
+	emit_signal(SNAME("index_pressed"), p_item);
 
 	if (need_hide) {
 		hide();

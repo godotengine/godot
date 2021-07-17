@@ -159,7 +159,7 @@ void TileSetEditor::_update_atlas_sources_list(int force_selected_id) {
 		// Scene collection source.
 		TileSetScenesCollectionSource *scene_collection_source = Object::cast_to<TileSetScenesCollectionSource>(source);
 		if (scene_collection_source) {
-			texture = get_theme_icon("PackedScene", "EditorIcons");
+			texture = get_theme_icon(SNAME("PackedScene"), SNAME("EditorIcons"));
 			item_text = vformat(TTR("Scene Collection Source (id:%d)"), source_id);
 		}
 
@@ -181,7 +181,7 @@ void TileSetEditor::_update_atlas_sources_list(int force_selected_id) {
 			if ((int)sources_list->get_item_metadata(i) == to_select) {
 				sources_list->set_current(i);
 				if (old_selected != to_select) {
-					sources_list->emit_signal("item_selected", sources_list->get_current());
+					sources_list->emit_signal(SNAME("item_selected"), sources_list->get_current());
 				}
 				break;
 			}
@@ -192,7 +192,7 @@ void TileSetEditor::_update_atlas_sources_list(int force_selected_id) {
 	if (sources_list->get_current() < 0 && sources_list->get_item_count() > 0) {
 		sources_list->set_current(0);
 		if (old_selected != int(sources_list->get_item_metadata(0))) {
-			sources_list->emit_signal("item_selected", sources_list->get_current());
+			sources_list->emit_signal(SNAME("item_selected"), sources_list->get_current());
 		}
 	}
 
@@ -292,9 +292,9 @@ void TileSetEditor::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED:
-			sources_delete_button->set_icon(get_theme_icon("Remove", "EditorIcons"));
-			sources_add_button->set_icon(get_theme_icon("Add", "EditorIcons"));
-			missing_texture_texture = get_theme_icon("TileSet", "EditorIcons");
+			sources_delete_button->set_icon(get_theme_icon(SNAME("Remove"), SNAME("EditorIcons")));
+			sources_add_button->set_icon(get_theme_icon(SNAME("Add"), SNAME("EditorIcons")));
+			missing_texture_texture = get_theme_icon(SNAME("TileSet"), SNAME("EditorIcons"));
 			break;
 		case NOTIFICATION_INTERNAL_PROCESS:
 			if (tile_set_changed_needs_update) {

@@ -2987,7 +2987,7 @@ VisualScriptNodeInstance *VisualScriptCustomNode::instantiate(VisualScriptInstan
 }
 
 void VisualScriptCustomNode::_script_changed() {
-	call_deferred("ports_changed_notify");
+	call_deferred(SNAME("ports_changed_notify"));
 }
 
 void VisualScriptCustomNode::_bind_methods() {

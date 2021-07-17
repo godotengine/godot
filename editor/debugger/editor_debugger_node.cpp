@@ -55,8 +55,8 @@ EditorDebuggerNode::EditorDebuggerNode() {
 		singleton = this;
 	}
 
-	add_theme_constant_override("margin_left", -EditorNode::get_singleton()->get_gui_base()->get_theme_stylebox("BottomPanelDebuggerOverride", "EditorStyles")->get_margin(SIDE_LEFT));
-	add_theme_constant_override("margin_right", -EditorNode::get_singleton()->get_gui_base()->get_theme_stylebox("BottomPanelDebuggerOverride", "EditorStyles")->get_margin(SIDE_RIGHT));
+	add_theme_constant_override("margin_left", -EditorNode::get_singleton()->get_gui_base()->get_theme_stylebox(SNAME("BottomPanelDebuggerOverride"), SNAME("EditorStyles"))->get_margin(SIDE_LEFT));
+	add_theme_constant_override("margin_right", -EditorNode::get_singleton()->get_gui_base()->get_theme_stylebox(SNAME("BottomPanelDebuggerOverride"), SNAME("EditorStyles"))->get_margin(SIDE_RIGHT));
 
 	tabs = memnew(TabContainer);
 	tabs->set_tab_align(TabContainer::ALIGN_LEFT);
@@ -112,7 +112,7 @@ ScriptEditorDebugger *EditorDebuggerNode::_add_debugger() {
 	if (tabs->get_tab_count() > 1) {
 		node->clear_style();
 		tabs->set_tabs_visible(true);
-		tabs->add_theme_style_override("panel", EditorNode::get_singleton()->get_gui_base()->get_theme_stylebox("DebuggerPanel", "EditorStyles"));
+		tabs->add_theme_style_override("panel", EditorNode::get_singleton()->get_gui_base()->get_theme_stylebox(SNAME("DebuggerPanel"), SNAME("EditorStyles")));
 	}
 
 	if (!debugger_plugins.is_empty()) {
@@ -135,7 +135,7 @@ void EditorDebuggerNode::_stack_frame_selected(int p_debugger) {
 
 void EditorDebuggerNode::_error_selected(const String &p_file, int p_line, int p_debugger) {
 	Ref<Script> s = ResourceLoader::load(p_file);
-	emit_signal("goto_script_line", s, p_line - 1);
+	emit_signal(SNAME("goto_script_line"), s, p_line - 1);
 }
 
 void EditorDebuggerNode::_text_editor_stack_goto(const ScriptEditorDebugger *p_debugger) {
@@ -145,8 +145,8 @@ void EditorDebuggerNode::_text_editor_stack_goto(const ScriptEditorDebugger *p_d
 	}
 	stack_script = ResourceLoader::load(file);
 	const int line = p_debugger->get_stack_script_line() - 1;
-	emit_signal("goto_script_line", stack_script, line);
-	emit_signal("set_execution", stack_script, line);
+	emit_signal(SNAME("goto_script_line"), stack_script, line);
+	emit_signal(SNAME("set_execution"), stack_script, line);
 	stack_script.unref(); // Why?!?
 }
 
@@ -226,10 +226,10 @@ void EditorDebuggerNode::_notification(int p_what) {
 	switch (p_what) {
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
 			if (tabs->get_tab_count() > 1) {
-				add_theme_constant_override("margin_left", -EditorNode::get_singleton()->get_gui_base()->get_theme_stylebox("BottomPanelDebuggerOverride", "EditorStyles")->get_margin(SIDE_LEFT));
-				add_theme_constant_override("margin_right", -EditorNode::get_singleton()->get_gui_base()->get_theme_stylebox("BottomPanelDebuggerOverride", "EditorStyles")->get_margin(SIDE_RIGHT));
+				add_theme_constant_override("margin_left", -EditorNode::get_singleton()->get_gui_base()->get_theme_stylebox(SNAME("BottomPanelDebuggerOverride"), SNAME("EditorStyles"))->get_margin(SIDE_LEFT));
+				add_theme_constant_override("margin_right", -EditorNode::get_singleton()->get_gui_base()->get_theme_stylebox(SNAME("BottomPanelDebuggerOverride"), SNAME("EditorStyles"))->get_margin(SIDE_RIGHT));
 
-				tabs->add_theme_style_override("panel", EditorNode::get_singleton()->get_gui_base()->get_theme_stylebox("DebuggerPanel", "EditorStyles"));
+				tabs->add_theme_style_override("panel", EditorNode::get_singleton()->get_gui_base()->get_theme_stylebox(SNAME("DebuggerPanel"), SNAME("EditorStyles")));
 			}
 		} break;
 		case NOTIFICATION_READY: {
@@ -268,11 +268,11 @@ void EditorDebuggerNode::_notification(int p_what) {
 		} else {
 			debugger_button->set_text(TTR("Debugger") + " (" + itos(error_count + warning_count) + ")");
 			if (error_count >= 1 && warning_count >= 1) {
-				debugger_button->set_icon(get_theme_icon("ErrorWarning", "EditorIcons"));
+				debugger_button->set_icon(get_theme_icon(SNAME("ErrorWarning"), SNAME("EditorIcons")));
 			} else if (error_count >= 1) {
-				debugger_button->set_icon(get_theme_icon("Error", "EditorIcons"));
+				debugger_button->set_icon(get_theme_icon(SNAME("Error"), SNAME("EditorIcons")));
 			} else {
-				debugger_button->set_icon(get_theme_icon("Warning", "EditorIcons"));
+				debugger_button->set_icon(get_theme_icon(SNAME("Warning"), SNAME("EditorIcons")));
 			}
 		}
 		last_error_count = error_count;
@@ -359,7 +359,7 @@ void EditorDebuggerNode::_debugger_wants_stop(int p_id) {
 	// Ask editor to kill PID.
 	int pid = get_debugger(p_id)->get_remote_pid();
 	if (pid) {
-		EditorNode::get_singleton()->call_deferred("stop_child_process", pid);
+		EditorNode::get_singleton()->call_deferred(SNAME("stop_child_process"), pid);
 	}
 }
 
@@ -475,7 +475,7 @@ void EditorDebuggerNode::_breaked(bool p_breaked, bool p_can_debug, int p_debugg
 	}
 	_break_state_changed();
 	EditorNode::get_singleton()->get_pause_button()->set_pressed(p_breaked);
-	emit_signal("breaked", p_breaked, p_can_debug);
+	emit_signal(SNAME("breaked"), p_breaked, p_can_debug);
 }
 
 bool EditorDebuggerNode::is_skip_breakpoints() const {

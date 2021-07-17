@@ -542,8 +542,8 @@ void TextEdit::_notification(int p_what) {
 		} break;
 		case NOTIFICATION_VISIBILITY_CHANGED: {
 			if (is_visible()) {
-				call_deferred("_update_scrollbars");
-				call_deferred("_update_wrap_at");
+				call_deferred(SNAME("_update_scrollbars"));
+				call_deferred(SNAME("_update_wrap_at"));
 			}
 		} break;
 		case NOTIFICATION_LAYOUT_DIRECTION_CHANGED:
@@ -2361,7 +2361,7 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 					}
 
 					if (mpos.x > left_margin && mpos.x <= (left_margin + gutters[i].width) - 3) {
-						emit_signal("gutter_clicked", row, i);
+						emit_signal(SNAME("gutter_clicked"), row, i);
 						return;
 					}
 
@@ -2483,7 +2483,7 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 					int row, col;
 					_get_mouse_pos(Point2i(mpos.x, mpos.y), row, col);
 
-					emit_signal("symbol_lookup", highlighted_word, row, col);
+					emit_signal(SNAME("symbol_lookup"), highlighted_word, row, col);
 					return;
 				}
 
@@ -2525,7 +2525,7 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 			if (!dragging_minimap && !dragging_selection && mm->is_command_pressed() && mm->get_button_mask() == 0) {
 				String new_word = get_word_at_pos(mpos);
 				if (new_word != highlighted_word) {
-					emit_signal("symbol_validate", new_word);
+					emit_signal(SNAME("symbol_validate"), new_word);
 				}
 			} else {
 				if (highlighted_word != String()) {
@@ -2576,7 +2576,7 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 			if (select_identifiers_enabled) {
 				if (k->is_pressed() && !dragging_minimap && !dragging_selection) {
 					Point2 mp = _get_local_mouse_pos();
-					emit_signal("symbol_validate", get_word_at_pos(mp));
+					emit_signal(SNAME("symbol_validate"), get_word_at_pos(mp));
 				} else {
 					set_highlighted_word(String());
 				}
@@ -2992,7 +2992,7 @@ void TextEdit::_base_insert_text(int p_line, int p_char, const String &p_text, i
 		}
 		text_changed_dirty = true;
 	}
-	emit_signal("lines_edited_from", p_line, r_end_line);
+	emit_signal(SNAME("lines_edited_from"), p_line, r_end_line);
 }
 
 String TextEdit::_base_get_text(int p_from_line, int p_from_column, int p_to_line, int p_to_column) const {
@@ -3043,7 +3043,7 @@ void TextEdit::_base_remove_text(int p_from_line, int p_from_column, int p_to_li
 		}
 		text_changed_dirty = true;
 	}
-	emit_signal("lines_edited_from", p_to_line, p_from_line);
+	emit_signal(SNAME("lines_edited_from"), p_to_line, p_from_line);
 }
 
 void TextEdit::_insert_text(int p_line, int p_char, const String &p_text, int *r_end_line, int *r_end_char) {
@@ -4034,35 +4034,35 @@ void TextEdit::_toggle_draw_caret() {
 }
 
 void TextEdit::_update_caches() {
-	cache.style_normal = get_theme_stylebox("normal");
-	cache.style_focus = get_theme_stylebox("focus");
-	cache.style_readonly = get_theme_stylebox("read_only");
-	cache.font = get_theme_font("font");
-	cache.font_size = get_theme_font_size("font_size");
-	cache.outline_color = get_theme_color("font_outline_color");
-	cache.outline_size = get_theme_constant("outline_size");
-	cache.caret_color = get_theme_color("caret_color");
-	cache.caret_background_color = get_theme_color("caret_background_color");
-	cache.font_color = get_theme_color("font_color");
-	cache.font_selected_color = get_theme_color("font_selected_color");
-	cache.font_readonly_color = get_theme_color("font_readonly_color");
-	cache.selection_color = get_theme_color("selection_color");
-	cache.current_line_color = get_theme_color("current_line_color");
-	cache.line_length_guideline_color = get_theme_color("line_length_guideline_color");
-	cache.code_folding_color = get_theme_color("code_folding_color", "CodeEdit");
-	cache.brace_mismatch_color = get_theme_color("brace_mismatch_color");
-	cache.word_highlighted_color = get_theme_color("word_highlighted_color");
-	cache.search_result_color = get_theme_color("search_result_color");
-	cache.search_result_border_color = get_theme_color("search_result_border_color");
-	cache.background_color = get_theme_color("background_color");
+	cache.style_normal = get_theme_stylebox(SNAME("normal"));
+	cache.style_focus = get_theme_stylebox(SNAME("focus"));
+	cache.style_readonly = get_theme_stylebox(SNAME("read_only"));
+	cache.font = get_theme_font(SNAME("font"));
+	cache.font_size = get_theme_font_size(SNAME("font_size"));
+	cache.outline_color = get_theme_color(SNAME("font_outline_color"));
+	cache.outline_size = get_theme_constant(SNAME("outline_size"));
+	cache.caret_color = get_theme_color(SNAME("caret_color"));
+	cache.caret_background_color = get_theme_color(SNAME("caret_background_color"));
+	cache.font_color = get_theme_color(SNAME("font_color"));
+	cache.font_selected_color = get_theme_color(SNAME("font_selected_color"));
+	cache.font_readonly_color = get_theme_color(SNAME("font_readonly_color"));
+	cache.selection_color = get_theme_color(SNAME("selection_color"));
+	cache.current_line_color = get_theme_color(SNAME("current_line_color"));
+	cache.line_length_guideline_color = get_theme_color(SNAME("line_length_guideline_color"));
+	cache.code_folding_color = get_theme_color(SNAME("code_folding_color"), SNAME("CodeEdit"));
+	cache.brace_mismatch_color = get_theme_color(SNAME("brace_mismatch_color"));
+	cache.word_highlighted_color = get_theme_color(SNAME("word_highlighted_color"));
+	cache.search_result_color = get_theme_color(SNAME("search_result_color"));
+	cache.search_result_border_color = get_theme_color(SNAME("search_result_border_color"));
+	cache.background_color = get_theme_color(SNAME("background_color"));
 #ifdef TOOLS_ENABLED
-	cache.line_spacing = get_theme_constant("line_spacing") * EDSCALE;
+	cache.line_spacing = get_theme_constant(SNAME("line_spacing")) * EDSCALE;
 #else
-	cache.line_spacing = get_theme_constant("line_spacing");
+	cache.line_spacing = get_theme_constant(SNAME("line_spacing"));
 #endif
-	cache.tab_icon = get_theme_icon("tab");
-	cache.space_icon = get_theme_icon("space");
-	cache.folded_eol_icon = get_theme_icon("folded_eol_icon", "CodeEdit");
+	cache.tab_icon = get_theme_icon(SNAME("tab"));
+	cache.space_icon = get_theme_icon(SNAME("space"));
+	cache.folded_eol_icon = get_theme_icon(SNAME("folded_eol_icon"), SNAME("CodeEdit"));
 
 	TextServer::Direction dir;
 	if (text_direction == Control::TEXT_DIRECTION_INHERITED) {
@@ -4119,7 +4119,7 @@ void TextEdit::add_gutter(int p_at) {
 	for (int i = 0; i < text.size() + 1; i++) {
 		text.add_gutter(p_at);
 	}
-	emit_signal("gutter_added");
+	emit_signal(SNAME("gutter_added"));
 	update();
 }
 
@@ -4131,7 +4131,7 @@ void TextEdit::remove_gutter(int p_gutter) {
 	for (int i = 0; i < text.size() + 1; i++) {
 		text.remove_gutter(p_gutter);
 	}
-	emit_signal("gutter_removed");
+	emit_signal(SNAME("gutter_removed"));
 	update();
 }
 
@@ -4755,12 +4755,12 @@ bool TextEdit::search(const String &p_key, uint32_t p_search_flags, int p_from_l
 }
 
 void TextEdit::_cursor_changed_emit() {
-	emit_signal("cursor_changed");
+	emit_signal(SNAME("cursor_changed"));
 	cursor_changed_dirty = false;
 }
 
 void TextEdit::_text_changed_emit() {
-	emit_signal("text_changed");
+	emit_signal(SNAME("text_changed"));
 	text_changed_dirty = false;
 }
 

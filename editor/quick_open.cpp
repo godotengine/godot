@@ -64,7 +64,7 @@ void EditorQuickOpen::_build_search_cache(EditorFileSystemDirectory *p_efsd) {
 			// Store refs to used icons.
 			String ext = file.get_extension();
 			if (!icons.has(ext)) {
-				icons.insert(ext, get_theme_icon((has_theme_icon(file_type, "EditorIcons") ? file_type : "Object"), "EditorIcons"));
+				icons.insert(ext, get_theme_icon((has_theme_icon(file_type, SNAME("EditorIcons")) ? file_type : String("Object")), SNAME("EditorIcons")));
 			}
 		}
 	}
@@ -140,7 +140,7 @@ void EditorQuickOpen::_confirmed() {
 		return;
 	}
 	_cleanup();
-	emit_signal("quick_open");
+	emit_signal(SNAME("quick_open"));
 	hide();
 }
 
@@ -228,7 +228,7 @@ void EditorQuickOpen::_notification(int p_what) {
 }
 
 void EditorQuickOpen::_theme_changed() {
-	search_box->set_right_icon(search_options->get_theme_icon("Search", "EditorIcons"));
+	search_box->set_right_icon(search_options->get_theme_icon(SNAME("Search"), SNAME("EditorIcons")));
 }
 
 void EditorQuickOpen::_bind_methods() {

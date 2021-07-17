@@ -1943,7 +1943,7 @@ void VisualShader::_update_shader() const {
 		const_cast<VisualShader *>(this)->set_default_texture_param(default_tex_params[i].name, default_tex_params[i].param);
 	}
 	if (previous_code != final_code) {
-		const_cast<VisualShader *>(this)->emit_signal("changed");
+		const_cast<VisualShader *>(this)->emit_signal(SNAME("changed"));
 	}
 	previous_code = final_code;
 }
@@ -1954,7 +1954,7 @@ void VisualShader::_queue_update() {
 	}
 
 	dirty.set();
-	call_deferred("_update_shader");
+	call_deferred(SNAME("_update_shader"));
 }
 
 void VisualShader::_input_type_changed(Type p_type, int p_id) {
@@ -2436,7 +2436,7 @@ void VisualShaderNodeInput::set_input_name(String p_name) {
 	input_name = p_name;
 	emit_changed();
 	if (get_input_type_by_name(input_name) != prev_type) {
-		emit_signal("input_type_changed");
+		emit_signal(SNAME("input_type_changed"));
 	}
 }
 
@@ -2977,7 +2977,7 @@ VisualShaderNodeOutput::VisualShaderNodeOutput() {
 
 void VisualShaderNodeUniform::set_uniform_name(const String &p_name) {
 	uniform_name = p_name;
-	emit_signal("name_changed");
+	emit_signal(SNAME("name_changed"));
 	emit_changed();
 }
 

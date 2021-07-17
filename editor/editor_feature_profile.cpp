@@ -497,7 +497,7 @@ void EditorFeatureProfileManager::_fill_classes_from(TreeItem *p_parent, const S
 	bool disabled_editor = edited->is_class_editor_disabled(p_class);
 	bool disabled_properties = edited->has_class_properties_disabled(p_class);
 	if (disabled) {
-		class_item->set_custom_color(0, class_list->get_theme_color("disabled_font_color", "Editor"));
+		class_item->set_custom_color(0, class_list->get_theme_color(SNAME("disabled_font_color"), SNAME("Editor")));
 	} else if (disabled_editor && disabled_properties) {
 		text += " " + TTR("(Editor Disabled, Properties Disabled)");
 	} else if (disabled_properties) {
@@ -834,7 +834,7 @@ void EditorFeatureProfileManager::_save_and_update() {
 }
 
 void EditorFeatureProfileManager::_emit_current_profile_changed() {
-	emit_signal("current_feature_profile_changed");
+	emit_signal(SNAME("current_feature_profile_changed"));
 }
 
 void EditorFeatureProfileManager::notify_changed() {

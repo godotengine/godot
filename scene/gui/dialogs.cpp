@@ -76,7 +76,7 @@ void AcceptDialog::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_THEME_CHANGED: {
-			bg->add_theme_style_override("panel", bg->get_theme_stylebox("panel", "AcceptDialog"));
+			bg->add_theme_style_override("panel", bg->get_theme_stylebox(SNAME("panel"), SNAME("AcceptDialog")));
 		} break;
 
 		case NOTIFICATION_EXIT_TREE: {
@@ -106,7 +106,7 @@ void AcceptDialog::_ok_pressed() {
 		set_visible(false);
 	}
 	ok_pressed();
-	emit_signal("confirmed");
+	emit_signal(SNAME("confirmed"));
 }
 
 void AcceptDialog::_cancel_pressed() {
@@ -116,9 +116,9 @@ void AcceptDialog::_cancel_pressed() {
 		parent_visible = nullptr;
 	}
 
-	call_deferred("hide");
+	call_deferred(SNAME("hide"));
 
-	emit_signal("cancelled");
+	emit_signal(SNAME("cancelled"));
 
 	cancel_pressed();
 
@@ -168,7 +168,7 @@ void AcceptDialog::_update_child_rects() {
 	if (label->get_text().is_empty()) {
 		label_size.height = 0;
 	}
-	int margin = hbc->get_theme_constant("margin", "Dialogs");
+	int margin = hbc->get_theme_constant(SNAME("margin"), SNAME("Dialogs"));
 	Size2 size = get_size();
 	Size2 hminsize = hbc->get_combined_minimum_size();
 
@@ -200,7 +200,7 @@ void AcceptDialog::_update_child_rects() {
 }
 
 Size2 AcceptDialog::_get_contents_minimum_size() const {
-	int margin = hbc->get_theme_constant("margin", "Dialogs");
+	int margin = hbc->get_theme_constant(SNAME("margin"), SNAME("Dialogs"));
 	Size2 minsize = label->get_combined_minimum_size();
 
 	for (int i = 0; i < get_child_count(); i++) {
@@ -230,7 +230,7 @@ Size2 AcceptDialog::_get_contents_minimum_size() const {
 }
 
 void AcceptDialog::_custom_action(const String &p_action) {
-	emit_signal("custom_action", p_action);
+	emit_signal(SNAME("custom_action"), p_action);
 	custom_action(p_action);
 }
 
@@ -326,8 +326,8 @@ AcceptDialog::AcceptDialog() {
 
 	hbc = memnew(HBoxContainer);
 
-	int margin = hbc->get_theme_constant("margin", "Dialogs");
-	int button_margin = hbc->get_theme_constant("button_margin", "Dialogs");
+	int margin = hbc->get_theme_constant(SNAME("margin"), SNAME("Dialogs"));
+	int button_margin = hbc->get_theme_constant(SNAME("button_margin"), SNAME("Dialogs"));
 
 	label = memnew(Label);
 	label->set_anchor(SIDE_RIGHT, Control::ANCHOR_END);

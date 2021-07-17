@@ -568,7 +568,7 @@ void Skeleton2D::_make_bone_setup_dirty() {
 	}
 	bone_setup_dirty = true;
 	if (is_inside_tree()) {
-		call_deferred("_update_bone_setup");
+		call_deferred(SNAME("_update_bone_setup"));
 	}
 }
 
@@ -597,7 +597,7 @@ void Skeleton2D::_update_bone_setup() {
 
 	transform_dirty = true;
 	_update_transform();
-	emit_signal("bone_setup_changed");
+	emit_signal(SNAME("bone_setup_changed"));
 }
 
 void Skeleton2D::_make_transform_dirty() {
@@ -606,7 +606,7 @@ void Skeleton2D::_make_transform_dirty() {
 	}
 	transform_dirty = true;
 	if (is_inside_tree()) {
-		call_deferred("_update_transform");
+		call_deferred(SNAME("_update_transform"));
 	}
 }
 

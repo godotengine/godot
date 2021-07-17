@@ -40,7 +40,7 @@
 void CreateDialog::popup_create(bool p_dont_clear, bool p_replace_mode, const String &p_select_type) {
 	_fill_type_list();
 
-	icon_fallback = search_options->has_theme_icon(base_type, "EditorIcons") ? base_type : "Object";
+	icon_fallback = search_options->has_theme_icon(base_type, SNAME("EditorIcons")) ? base_type : "Object";
 
 	if (p_dont_clear) {
 		search_box->select_all();
@@ -168,7 +168,7 @@ void CreateDialog::_update_search() {
 
 	TreeItem *root = search_options->create_item();
 	root->set_text(0, base_type);
-	root->set_icon(0, search_options->get_theme_icon(icon_fallback, "EditorIcons"));
+	root->set_icon(0, search_options->get_theme_icon(icon_fallback, SNAME("EditorIcons")));
 	search_options_types[base_type] = root;
 	_configure_search_option_item(root, base_type, ClassDB::class_exists(base_type));
 
@@ -236,7 +236,7 @@ void CreateDialog::_configure_search_option_item(TreeItem *r_item, const String 
 
 	bool can_instantiate = (p_cpp_type && ClassDB::can_instantiate(p_type)) || !p_cpp_type;
 	if (!can_instantiate) {
-		r_item->set_custom_color(0, search_options->get_theme_color("disabled_font_color", "Editor"));
+		r_item->set_custom_color(0, search_options->get_theme_color(SNAME("disabled_font_color"), SNAME("Editor")));
 		r_item->set_icon(0, EditorNode::get_singleton()->get_class_icon(p_type, "NodeDisabled"));
 		r_item->set_selectable(0, false);
 	} else {
@@ -338,7 +338,7 @@ void CreateDialog::_confirmed() {
 		memdelete(f);
 	}
 
-	emit_signal("create");
+	emit_signal(SNAME("create"));
 	hide();
 	_cleanup();
 }
@@ -366,16 +366,16 @@ void CreateDialog::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
 			connect("confirmed", callable_mp(this, &CreateDialog::_confirmed));
-			search_box->set_right_icon(search_options->get_theme_icon("Search", "EditorIcons"));
+			search_box->set_right_icon(search_options->get_theme_icon(SNAME("Search"), SNAME("EditorIcons")));
 			search_box->set_clear_button_enabled(true);
-			favorite->set_icon(search_options->get_theme_icon("Favorites", "EditorIcons"));
+			favorite->set_icon(search_options->get_theme_icon(SNAME("Favorites"), SNAME("EditorIcons")));
 		} break;
 		case NOTIFICATION_EXIT_TREE: {
 			disconnect("confirmed", callable_mp(this, &CreateDialog::_confirmed));
 		} break;
 		case NOTIFICATION_VISIBILITY_CHANGED: {
 			if (is_visible()) {
-				search_box->call_deferred("grab_focus"); // still not visible
+				search_box->call_deferred(SNAME("grab_focus")); // still not visible
 				search_box->select_all();
 			} else {
 				EditorSettings::get_singleton()->get_project_metadata("dialog_bounds", "create_new_node", Rect2(get_position(), get_size()));
@@ -607,7 +607,7 @@ void CreateDialog::_save_and_update_favorite_list() {
 		memdelete(f);
 	}
 
-	emit_signal("favorites_updated");
+	emit_signal(SNAME("favorites_updated"));
 }
 
 void CreateDialog::_load_favorites_and_history() {

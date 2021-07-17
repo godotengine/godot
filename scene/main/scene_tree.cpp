@@ -406,7 +406,7 @@ bool SceneTree::physics_process(float p_time) {
 	MainLoop::physics_process(p_time);
 	physics_process_time = p_time;
 
-	emit_signal("physics_frame");
+	emit_signal(SNAME("physics_frame"));
 
 	_notify_group_pause("physics_process_internal", Node::NOTIFICATION_INTERNAL_PHYSICS_PROCESS);
 	call_group_flags(GROUP_CALL_REALTIME, "_viewports", "_process_picking");
@@ -436,7 +436,7 @@ bool SceneTree::process(float p_time) {
 		multiplayer->poll();
 	}
 
-	emit_signal("process_frame");
+	emit_signal(SNAME("process_frame"));
 
 	MessageQueue::get_singleton()->flush(); //small little hack
 
@@ -471,7 +471,7 @@ bool SceneTree::process(float p_time) {
 		E->get()->set_time_left(time_left);
 
 		if (time_left < 0) {
-			E->get()->emit_signal("timeout");
+			E->get()->emit_signal(SNAME("timeout"));
 			timers.erase(E);
 		}
 		if (E == L) {
@@ -1097,7 +1097,7 @@ Error SceneTree::change_scene_to(const Ref<PackedScene> &p_scene) {
 		ERR_FAIL_COND_V(!new_scene, ERR_CANT_CREATE);
 	}
 
-	call_deferred("_change_scene", new_scene);
+	call_deferred(SNAME("_change_scene"), new_scene);
 	return OK;
 }
 

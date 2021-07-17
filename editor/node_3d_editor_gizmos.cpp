@@ -782,9 +782,9 @@ Light3DGizmoPlugin::Light3DGizmoPlugin() {
 	create_material("lines_secondary", Color(1, 1, 1, 0.35), false, false, true);
 	create_material("lines_billboard", Color(1, 1, 1), true, false, true);
 
-	create_icon_material("light_directional_icon", Node3DEditor::get_singleton()->get_theme_icon("GizmoDirectionalLight", "EditorIcons"));
-	create_icon_material("light_omni_icon", Node3DEditor::get_singleton()->get_theme_icon("GizmoLight", "EditorIcons"));
-	create_icon_material("light_spot_icon", Node3DEditor::get_singleton()->get_theme_icon("GizmoSpotLight", "EditorIcons"));
+	create_icon_material("light_directional_icon", Node3DEditor::get_singleton()->get_theme_icon(SNAME("GizmoDirectionalLight"), SNAME("EditorIcons")));
+	create_icon_material("light_omni_icon", Node3DEditor::get_singleton()->get_theme_icon(SNAME("GizmoLight"), SNAME("EditorIcons")));
+	create_icon_material("light_spot_icon", Node3DEditor::get_singleton()->get_theme_icon(SNAME("GizmoSpotLight"), SNAME("EditorIcons")));
 
 	create_handle_material("handles");
 	create_handle_material("handles_billboard", true);
@@ -1050,7 +1050,7 @@ void Light3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 AudioStreamPlayer3DGizmoPlugin::AudioStreamPlayer3DGizmoPlugin() {
 	Color gizmo_color = EDITOR_DEF("editors/3d_gizmos/gizmo_colors/stream_player_3d", Color(0.4, 0.8, 1));
 
-	create_icon_material("stream_player_3d_icon", Node3DEditor::get_singleton()->get_theme_icon("Gizmo3DSamplePlayer", "EditorIcons"));
+	create_icon_material("stream_player_3d_icon", Node3DEditor::get_singleton()->get_theme_icon(SNAME("Gizmo3DSamplePlayer"), SNAME("EditorIcons")));
 	create_material("stream_player_3d_material_primary", gizmo_color);
 	create_material("stream_player_3d_material_secondary", gizmo_color * Color(1, 1, 1, 0.35));
 	create_handle_material("handles");
@@ -1558,7 +1558,7 @@ Position3DGizmoPlugin::Position3DGizmoPlugin() {
 	// Use a darkened axis color for the negative axis.
 	// This makes it possible to see in which direction the Position3D node is rotated
 	// (which can be important depending on how it's used).
-	const Color color_x = EditorNode::get_singleton()->get_gui_base()->get_theme_color("axis_x_color", "Editor");
+	const Color color_x = EditorNode::get_singleton()->get_gui_base()->get_theme_color(SNAME("axis_x_color"), SNAME("Editor"));
 	cursor_colors.push_back(color_x);
 	cursor_colors.push_back(color_x);
 	// FIXME: Use less strong darkening factor once GH-48573 is fixed.
@@ -1566,13 +1566,13 @@ Position3DGizmoPlugin::Position3DGizmoPlugin() {
 	cursor_colors.push_back(color_x.lerp(Color(0, 0, 0), 0.75));
 	cursor_colors.push_back(color_x.lerp(Color(0, 0, 0), 0.75));
 
-	const Color color_y = EditorNode::get_singleton()->get_gui_base()->get_theme_color("axis_y_color", "Editor");
+	const Color color_y = EditorNode::get_singleton()->get_gui_base()->get_theme_color(SNAME("axis_y_color"), SNAME("Editor"));
 	cursor_colors.push_back(color_y);
 	cursor_colors.push_back(color_y);
 	cursor_colors.push_back(color_y.lerp(Color(0, 0, 0), 0.75));
 	cursor_colors.push_back(color_y.lerp(Color(0, 0, 0), 0.75));
 
-	const Color color_z = EditorNode::get_singleton()->get_gui_base()->get_theme_color("axis_z_color", "Editor");
+	const Color color_z = EditorNode::get_singleton()->get_gui_base()->get_theme_color(SNAME("axis_z_color"), SNAME("Editor"));
 	cursor_colors.push_back(color_z);
 	cursor_colors.push_back(color_z);
 	cursor_colors.push_back(color_z.lerp(Color(0, 0, 0), 0.75));
@@ -2284,7 +2284,7 @@ void VisibleOnScreenNotifier3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 ////
 
 CPUParticles3DGizmoPlugin::CPUParticles3DGizmoPlugin() {
-	create_icon_material("particles_icon", Node3DEditor::get_singleton()->get_theme_icon("GizmoCPUParticles3D", "EditorIcons"));
+	create_icon_material("particles_icon", Node3DEditor::get_singleton()->get_theme_icon(SNAME("GizmoCPUParticles3D"), SNAME("EditorIcons")));
 }
 
 bool CPUParticles3DGizmoPlugin::has_gizmo(Node3D *p_spatial) {
@@ -2315,7 +2315,7 @@ GPUParticles3DGizmoPlugin::GPUParticles3DGizmoPlugin() {
 	create_material("particles_material", gizmo_color);
 	gizmo_color.a = 0.1;
 	create_material("particles_solid_material", gizmo_color);
-	create_icon_material("particles_icon", Node3DEditor::get_singleton()->get_theme_icon("GizmoGPUParticles3D", "EditorIcons"));
+	create_icon_material("particles_icon", Node3DEditor::get_singleton()->get_theme_icon(SNAME("GizmoGPUParticles3D"), SNAME("EditorIcons")));
 	create_handle_material("handles");
 }
 
@@ -2746,7 +2746,7 @@ ReflectionProbeGizmoPlugin::ReflectionProbeGizmoPlugin() {
 	gizmo_color.a = 0.1;
 	create_material("reflection_probe_solid_material", gizmo_color);
 
-	create_icon_material("reflection_probe_icon", Node3DEditor::get_singleton()->get_theme_icon("GizmoReflectionProbe", "EditorIcons"));
+	create_icon_material("reflection_probe_icon", Node3DEditor::get_singleton()->get_theme_icon(SNAME("GizmoReflectionProbe"), SNAME("EditorIcons")));
 	create_handle_material("handles");
 }
 
@@ -3072,7 +3072,7 @@ VoxelGIGizmoPlugin::VoxelGIGizmoPlugin() {
 	gizmo_color.a = 0.05;
 	create_material("voxel_gi_solid_material", gizmo_color);
 
-	create_icon_material("voxel_gi_icon", Node3DEditor::get_singleton()->get_theme_icon("GizmoVoxelGI", "EditorIcons"));
+	create_icon_material("voxel_gi_icon", Node3DEditor::get_singleton()->get_theme_icon(SNAME("GizmoVoxelGI"), SNAME("EditorIcons")));
 	create_handle_material("handles");
 }
 
@@ -3254,7 +3254,7 @@ LightmapGIGizmoPlugin::LightmapGIGizmoPlugin() {
 
 	add_material("lightmap_probe_material", mat);
 
-	create_icon_material("baked_indirect_light_icon", Node3DEditor::get_singleton()->get_theme_icon("GizmoLightmapGI", "EditorIcons"));
+	create_icon_material("baked_indirect_light_icon", Node3DEditor::get_singleton()->get_theme_icon(SNAME("GizmoLightmapGI"), SNAME("EditorIcons")));
 }
 
 String LightmapGIGizmoPlugin::get_handle_name(const EditorNode3DGizmo *p_gizmo, int p_idx) const {
@@ -4589,7 +4589,7 @@ Joint3DGizmoPlugin::Joint3DGizmoPlugin() {
 	update_timer->set_wait_time(1.0 / 120.0);
 	update_timer->connect("timeout", callable_mp(this, &Joint3DGizmoPlugin::incremental_update_gizmos));
 	update_timer->set_autostart(true);
-	EditorNode::get_singleton()->call_deferred("add_child", update_timer);
+	EditorNode::get_singleton()->call_deferred(SNAME("add_child"), update_timer);
 }
 
 void Joint3DGizmoPlugin::incremental_update_gizmos() {

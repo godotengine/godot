@@ -66,7 +66,7 @@ void ConnectionInfoDialog::popup_connections(String p_method, Vector<Node *> p_n
 
 			node_item->set_text(1, connection.signal.get_name());
 			Control *p = Object::cast_to<Control>(get_parent());
-			node_item->set_icon(1, p->get_theme_icon("Slot", "EditorIcons"));
+			node_item->set_icon(1, p->get_theme_icon(SNAME("Slot"), SNAME("EditorIcons")));
 			node_item->set_selectable(1, false);
 			node_item->set_editable(1, false);
 
@@ -147,7 +147,7 @@ void ScriptTextEditor::set_edited_resource(const RES &p_res) {
 	code_editor->get_text_editor()->clear_undo_history();
 	code_editor->get_text_editor()->tag_saved_version();
 
-	emit_signal("name_changed");
+	emit_signal(SNAME("name_changed"));
 	code_editor->update_line_and_column();
 }
 
@@ -440,7 +440,7 @@ void ScriptTextEditor::_validate_script() {
 				String target_path = base == connection.callable.get_object() ? base_path : base_path + "/" + base->get_path_to(Object::cast_to<Node>(connection.callable.get_object()));
 
 				warnings_panel->push_cell();
-				warnings_panel->push_color(warnings_panel->get_theme_color("warning_color", "Editor"));
+				warnings_panel->push_color(warnings_panel->get_theme_color(SNAME("warning_color"), SNAME("Editor")));
 				warnings_panel->add_text(vformat(TTR("Missing connected method '%s' for signal '%s' from node '%s' to node '%s'."), connection.callable.get_method(), connection.signal.get_name(), source_path, target_path));
 				warnings_panel->pop(); // Color.
 				warnings_panel->pop(); // Cell.
@@ -465,7 +465,7 @@ void ScriptTextEditor::_validate_script() {
 		warnings_panel->push_cell();
 		warnings_panel->push_meta(ignore_meta);
 		warnings_panel->push_color(
-				warnings_panel->get_theme_color("accent_color", "Editor").lerp(warnings_panel->get_theme_color("mono_color", "Editor"), 0.5));
+				warnings_panel->get_theme_color(SNAME("accent_color"), SNAME("Editor")).lerp(warnings_panel->get_theme_color(SNAME("mono_color"), SNAME("Editor")), 0.5));
 		warnings_panel->add_text(TTR("[Ignore]"));
 		warnings_panel->pop(); // Color.
 		warnings_panel->pop(); // Meta ignore.
@@ -473,7 +473,7 @@ void ScriptTextEditor::_validate_script() {
 
 		warnings_panel->push_cell();
 		warnings_panel->push_meta(w.start_line - 1);
-		warnings_panel->push_color(warnings_panel->get_theme_color("warning_color", "Editor"));
+		warnings_panel->push_color(warnings_panel->get_theme_color(SNAME("warning_color"), SNAME("Editor")));
 		warnings_panel->add_text(TTR("Line") + " " + itos(w.start_line));
 		warnings_panel->add_text(" (" + w.string_code + "):");
 		warnings_panel->pop(); // Color.
@@ -493,7 +493,7 @@ void ScriptTextEditor::_validate_script() {
 
 		errors_panel->push_cell();
 		errors_panel->push_meta(err.line - 1);
-		errors_panel->push_color(warnings_panel->get_theme_color("error_color", "Editor"));
+		errors_panel->push_color(warnings_panel->get_theme_color(SNAME("error_color"), SNAME("Editor")));
 		errors_panel->add_text(TTR("Line") + " " + itos(err.line) + ":");
 		errors_panel->pop(); // Color.
 		errors_panel->pop(); // Meta goto.
@@ -535,8 +535,8 @@ void ScriptTextEditor::_validate_script() {
 		}
 	}
 
-	emit_signal("name_changed");
-	emit_signal("edited_script_changed");
+	emit_signal(SNAME("name_changed"));
+	emit_signal(SNAME("edited_script_changed"));
 }
 
 void ScriptTextEditor::_update_bookmark_list() {
@@ -725,7 +725,7 @@ void ScriptTextEditor::_breakpoint_item_pressed(int p_idx) {
 		_edit_option(breakpoints_menu->get_item_id(p_idx));
 	} else {
 		code_editor->goto_line(breakpoints_menu->get_item_metadata(p_idx));
-		code_editor->get_text_editor()->call_deferred("center_viewport_to_cursor"); //Need to be deferred, because goto uses call_deferred().
+		code_editor->get_text_editor()->call_deferred(SNAME("center_viewport_to_cursor")); //Need to be deferred, because goto uses call_deferred().
 	}
 }
 
@@ -760,14 +760,14 @@ void ScriptTextEditor::_lookup_symbol(const String &p_symbol, int p_row, int p_c
 		switch (result.type) {
 			case ScriptLanguage::LookupResult::RESULT_SCRIPT_LOCATION: {
 				if (result.script.is_valid()) {
-					emit_signal("request_open_script_at_line", result.script, result.location - 1);
+					emit_signal(SNAME("request_open_script_at_line"), result.script, result.location - 1);
 				} else {
-					emit_signal("request_save_history");
+					emit_signal(SNAME("request_save_history"));
 					goto_line_centered(result.location - 1);
 				}
 			} break;
 			case ScriptLanguage::LookupResult::RESULT_CLASS: {
-				emit_signal("go_to_help", "class_name:" + result.class_name);
+				emit_signal(SNAME("go_to_help"), "class_name:" + result.class_name);
 			} break;
 			case ScriptLanguage::LookupResult::RESULT_CLASS_CONSTANT: {
 				StringName cname = result.class_name;
@@ -782,11 +782,11 @@ void ScriptTextEditor::_lookup_symbol(const String &p_symbol, int p_row, int p_c
 					}
 				}
 
-				emit_signal("go_to_help", "class_constant:" + result.class_name + ":" + result.class_member);
+				emit_signal(SNAME("go_to_help"), "class_constant:" + result.class_name + ":" + result.class_member);
 
 			} break;
 			case ScriptLanguage::LookupResult::RESULT_CLASS_PROPERTY: {
-				emit_signal("go_to_help", "class_property:" + result.class_name + ":" + result.class_member);
+				emit_signal(SNAME("go_to_help"), "class_property:" + result.class_name + ":" + result.class_member);
 
 			} break;
 			case ScriptLanguage::LookupResult::RESULT_CLASS_METHOD: {
@@ -801,7 +801,7 @@ void ScriptTextEditor::_lookup_symbol(const String &p_symbol, int p_row, int p_c
 					}
 				}
 
-				emit_signal("go_to_help", "class_method:" + result.class_name + ":" + result.class_member);
+				emit_signal(SNAME("go_to_help"), "class_method:" + result.class_name + ":" + result.class_member);
 
 			} break;
 			case ScriptLanguage::LookupResult::RESULT_CLASS_ENUM: {
@@ -817,11 +817,11 @@ void ScriptTextEditor::_lookup_symbol(const String &p_symbol, int p_row, int p_c
 					}
 				}
 
-				emit_signal("go_to_help", "class_enum:" + result.class_name + ":" + result.class_member);
+				emit_signal(SNAME("go_to_help"), "class_enum:" + result.class_name + ":" + result.class_member);
 
 			} break;
 			case ScriptLanguage::LookupResult::RESULT_CLASS_TBD_GLOBALSCOPE: {
-				emit_signal("go_to_help", "class_global:" + result.class_name + ":" + result.class_member);
+				emit_signal(SNAME("go_to_help"), "class_global:" + result.class_name + ":" + result.class_member);
 			} break;
 		}
 	} else if (ProjectSettings::get_singleton()->has_autoload(p_symbol)) {
@@ -934,7 +934,7 @@ void ScriptTextEditor::_update_connected_methods() {
 					if (name == connection.callable.get_method()) {
 						line = functions[j].get_slice(":", 1).to_int() - 1;
 						text_edit->set_line_gutter_metadata(line, connection_gutter, connection.callable.get_method());
-						text_edit->set_line_gutter_icon(line, connection_gutter, get_parent_control()->get_theme_icon("Slot", "EditorIcons"));
+						text_edit->set_line_gutter_icon(line, connection_gutter, get_parent_control()->get_theme_icon(SNAME("Slot"), SNAME("EditorIcons")));
 						text_edit->set_line_gutter_clickable(line, connection_gutter, true);
 						methods_found.insert(connection.callable.get_method());
 						break;
@@ -1004,27 +1004,27 @@ void ScriptTextEditor::_edit_option(int p_op) {
 	switch (p_op) {
 		case EDIT_UNDO: {
 			tx->undo();
-			tx->call_deferred("grab_focus");
+			tx->call_deferred(SNAME("grab_focus"));
 		} break;
 		case EDIT_REDO: {
 			tx->redo();
-			tx->call_deferred("grab_focus");
+			tx->call_deferred(SNAME("grab_focus"));
 		} break;
 		case EDIT_CUT: {
 			tx->cut();
-			tx->call_deferred("grab_focus");
+			tx->call_deferred(SNAME("grab_focus"));
 		} break;
 		case EDIT_COPY: {
 			tx->copy();
-			tx->call_deferred("grab_focus");
+			tx->call_deferred(SNAME("grab_focus"));
 		} break;
 		case EDIT_PASTE: {
 			tx->paste();
-			tx->call_deferred("grab_focus");
+			tx->call_deferred(SNAME("grab_focus"));
 		} break;
 		case EDIT_SELECT_ALL: {
 			tx->select_all();
-			tx->call_deferred("grab_focus");
+			tx->call_deferred(SNAME("grab_focus"));
 		} break;
 		case EDIT_MOVE_LINE_UP: {
 			code_editor->move_lines_up();
@@ -1163,12 +1163,12 @@ void ScriptTextEditor::_edit_option(int p_op) {
 
 			// Yep, because it doesn't make sense to instance this dialog for every single script open...
 			// So this will be delegated to the ScriptEditor.
-			emit_signal("search_in_files_requested", selected_text);
+			emit_signal(SNAME("search_in_files_requested"), selected_text);
 		} break;
 		case REPLACE_IN_FILES: {
 			String selected_text = code_editor->get_text_editor()->get_selection_text();
 
-			emit_signal("replace_in_files_requested", selected_text);
+			emit_signal(SNAME("replace_in_files_requested"), selected_text);
 		} break;
 		case SEARCH_LOCATE_FUNCTION: {
 			quick_open->popup_dialog(get_functions());
@@ -1262,7 +1262,7 @@ void ScriptTextEditor::_edit_option(int p_op) {
 				text = tx->get_word_under_cursor();
 			}
 			if (text != "") {
-				emit_signal("request_help", text);
+				emit_signal(SNAME("request_help"), text);
 			}
 		} break;
 		case LOOKUP_SYMBOL: {
@@ -1686,16 +1686,16 @@ void ScriptTextEditor::_enable_code_editor() {
 
 	editor_box->add_child(warnings_panel);
 	warnings_panel->add_theme_font_override(
-			"normal_font", EditorNode::get_singleton()->get_gui_base()->get_theme_font("main", "EditorFonts"));
+			"normal_font", EditorNode::get_singleton()->get_gui_base()->get_theme_font(SNAME("main"), SNAME("EditorFonts")));
 	warnings_panel->add_theme_font_size_override(
-			"normal_font_size", EditorNode::get_singleton()->get_gui_base()->get_theme_font_size("main_size", "EditorFonts"));
+			"normal_font_size", EditorNode::get_singleton()->get_gui_base()->get_theme_font_size(SNAME("main_size"), SNAME("EditorFonts")));
 	warnings_panel->connect("meta_clicked", callable_mp(this, &ScriptTextEditor::_warning_clicked));
 
 	editor_box->add_child(errors_panel);
 	errors_panel->add_theme_font_override(
-			"normal_font", EditorNode::get_singleton()->get_gui_base()->get_theme_font("main", "EditorFonts"));
+			"normal_font", EditorNode::get_singleton()->get_gui_base()->get_theme_font(SNAME("main"), SNAME("EditorFonts")));
 	errors_panel->add_theme_font_size_override(
-			"normal_font_size", EditorNode::get_singleton()->get_gui_base()->get_theme_font_size("main_size", "EditorFonts"));
+			"normal_font_size", EditorNode::get_singleton()->get_gui_base()->get_theme_font_size(SNAME("main_size"), SNAME("EditorFonts")));
 	errors_panel->connect("meta_clicked", callable_mp(this, &ScriptTextEditor::_error_clicked));
 
 	add_child(context_menu);

@@ -140,7 +140,7 @@ void CSGShape3D::_make_dirty() {
 	if (parent) {
 		parent->_make_dirty();
 	} else if (!dirty) {
-		call_deferred("_update_shape");
+		call_deferred(SNAME("_update_shape"));
 	}
 
 	dirty = true;

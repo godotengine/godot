@@ -816,7 +816,7 @@ void AnimationNodeBlendTree::add_node(const StringName &p_name, Ref<AnimationNod
 	nodes[p_name] = n;
 
 	emit_changed();
-	emit_signal("tree_changed");
+	emit_signal(SNAME("tree_changed"));
 
 	p_node->connect("tree_changed", callable_mp(this, &AnimationNodeBlendTree::_tree_changed), varray(), CONNECT_REFERENCE_COUNTED);
 	p_node->connect("changed", callable_mp(this, &AnimationNodeBlendTree::_node_changed), varray(p_name), CONNECT_REFERENCE_COUNTED);
@@ -896,7 +896,7 @@ void AnimationNodeBlendTree::remove_node(const StringName &p_name) {
 	}
 
 	emit_changed();
-	emit_signal("tree_changed");
+	emit_signal(SNAME("tree_changed"));
 }
 
 void AnimationNodeBlendTree::rename_node(const StringName &p_name, const StringName &p_new_name) {
@@ -921,7 +921,7 @@ void AnimationNodeBlendTree::rename_node(const StringName &p_name, const StringN
 	//connection must be done with new name
 	nodes[p_new_name].node->connect("changed", callable_mp(this, &AnimationNodeBlendTree::_node_changed), varray(p_new_name), CONNECT_REFERENCE_COUNTED);
 
-	emit_signal("tree_changed");
+	emit_signal(SNAME("tree_changed"));
 }
 
 void AnimationNodeBlendTree::connect_node(const StringName &p_input_node, int p_input_index, const StringName &p_output_node) {
@@ -1125,11 +1125,11 @@ void AnimationNodeBlendTree::reset_state() {
 	graph_offset = Vector2();
 	nodes.clear();
 	emit_changed();
-	emit_signal("tree_changed");
+	emit_signal(SNAME("tree_changed"));
 }
 
 void AnimationNodeBlendTree::_tree_changed() {
-	emit_signal("tree_changed");
+	emit_signal(SNAME("tree_changed"));
 }
 
 void AnimationNodeBlendTree::_node_changed(const StringName &p_node) {

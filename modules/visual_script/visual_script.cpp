@@ -46,7 +46,7 @@ bool VisualScriptNode::is_breakpoint() const {
 }
 
 void VisualScriptNode::ports_changed_notify() {
-	emit_signal("ports_changed");
+	emit_signal(SNAME("ports_changed"));
 }
 
 void VisualScriptNode::set_default_input_value(int p_port, const Variant &p_value) {
@@ -264,7 +264,7 @@ void VisualScript::_node_ports_changed(int p_id) {
 
 #ifdef TOOLS_ENABLED
 	set_edited(true); // Something changed, let's set as edited.
-	emit_signal("node_ports_changed", p_id);
+	emit_signal(SNAME("node_ports_changed"), p_id);
 #endif
 }
 

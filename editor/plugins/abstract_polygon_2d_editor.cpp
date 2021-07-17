@@ -150,9 +150,9 @@ void AbstractPolygon2DEditor::_notification(int p_what) {
 		case NOTIFICATION_READY: {
 			disable_polygon_editing(false, String());
 
-			button_create->set_icon(EditorNode::get_singleton()->get_gui_base()->get_theme_icon("CurveCreate", "EditorIcons"));
-			button_edit->set_icon(EditorNode::get_singleton()->get_gui_base()->get_theme_icon("CurveEdit", "EditorIcons"));
-			button_delete->set_icon(EditorNode::get_singleton()->get_gui_base()->get_theme_icon("CurveDelete", "EditorIcons"));
+			button_create->set_icon(EditorNode::get_singleton()->get_gui_base()->get_theme_icon(SNAME("CurveCreate"), SNAME("EditorIcons")));
+			button_edit->set_icon(EditorNode::get_singleton()->get_gui_base()->get_theme_icon(SNAME("CurveEdit"), SNAME("EditorIcons")));
+			button_delete->set_icon(EditorNode::get_singleton()->get_gui_base()->get_theme_icon(SNAME("CurveDelete"), SNAME("EditorIcons")));
 			button_edit->set_pressed(true);
 
 			get_tree()->connect("node_removed", callable_mp(this, &AbstractPolygon2DEditor::_node_removed));
@@ -477,7 +477,7 @@ void AbstractPolygon2DEditor::forward_canvas_draw_over_viewport(Control *p_overl
 
 	Transform2D xform = canvas_item_editor->get_canvas_transform() * _get_node()->get_global_transform();
 	// All polygon points are sharp, so use the sharp handle icon
-	const Ref<Texture2D> handle = get_theme_icon("EditorPathSharpHandle", "EditorIcons");
+	const Ref<Texture2D> handle = get_theme_icon(SNAME("EditorPathSharpHandle"), SNAME("EditorIcons"));
 
 	const Vertex active_point = get_active_point();
 	const int n_polygons = _get_polygon_count();
@@ -550,8 +550,8 @@ void AbstractPolygon2DEditor::forward_canvas_draw_over_viewport(Control *p_overl
 			p_overlay->draw_texture(handle, point - handle->get_size() * 0.5, modulate);
 
 			if (vertex == hover_point) {
-				Ref<Font> font = get_theme_font("font", "Label");
-				int font_size = get_theme_font_size("font_size", "Label");
+				Ref<Font> font = get_theme_font(SNAME("font"), SNAME("Label"));
+				int font_size = get_theme_font_size(SNAME("font_size"), SNAME("Label"));
 				String num = String::num(vertex.vertex);
 				Size2 num_size = font->get_string_size(num, font_size);
 				p_overlay->draw_string(font, point - num_size * 0.5, num, HALIGN_LEFT, -1, font_size, Color(1.0, 1.0, 1.0, 0.5));
@@ -560,7 +560,7 @@ void AbstractPolygon2DEditor::forward_canvas_draw_over_viewport(Control *p_overl
 	}
 
 	if (edge_point.valid()) {
-		Ref<Texture2D> add_handle = get_theme_icon("EditorHandleAdd", "EditorIcons");
+		Ref<Texture2D> add_handle = get_theme_icon(SNAME("EditorHandleAdd"), SNAME("EditorIcons"));
 		p_overlay->draw_texture(add_handle, edge_point.pos - add_handle->get_size() * 0.5);
 	}
 }

@@ -123,7 +123,7 @@ protected:
 	void _save_node_requested(ObjectID p_id, const String &p_file, int p_debugger);
 
 	void _clear_execution(REF p_script) {
-		emit_signal("clear_execution", p_script);
+		emit_signal(SNAME("clear_execution"), p_script);
 	}
 
 	void _text_editor_stack_goto(const ScriptEditorDebugger *p_debugger);

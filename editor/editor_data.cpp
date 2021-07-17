@@ -1048,7 +1048,7 @@ void EditorSelection::add_node(Node *p_node) {
 
 	p_node->connect("tree_exiting", callable_mp(this, &EditorSelection::_node_removed), varray(p_node), CONNECT_ONESHOT);
 
-	//emit_signal("selection_changed");
+	//emit_signal(SNAME("selection_changed"));
 }
 
 void EditorSelection::remove_node(Node *p_node) {
@@ -1066,7 +1066,7 @@ void EditorSelection::remove_node(Node *p_node) {
 	}
 	selection.erase(p_node);
 	p_node->disconnect("tree_exiting", callable_mp(this, &EditorSelection::_node_removed));
-	//emit_signal("selection_changed");
+	//emit_signal(SNAME("selection_changed"));
 }
 
 bool EditorSelection::is_selected(Node *p_node) const {
@@ -1144,12 +1144,12 @@ void EditorSelection::update() {
 	changed = false;
 	if (!emitted) {
 		emitted = true;
-		call_deferred("_emit_change");
+		call_deferred(SNAME("_emit_change"));
 	}
 }
 
 void EditorSelection::_emit_change() {
-	emit_signal("selection_changed");
+	emit_signal(SNAME("selection_changed"));
 	emitted = false;
 }
 

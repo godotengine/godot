@@ -229,7 +229,7 @@ void SceneTreeDock::_perform_instantiate_scenes(const Vector<String> &p_files, N
 	editor_data->get_undo_redo().commit_action();
 	editor->push_item(instances[instances.size() - 1]);
 	for (int i = 0; i < instances.size(); i++) {
-		emit_signal("node_created", instances[i]);
+		emit_signal(SNAME("node_created"), instances[i]);
 	}
 }
 
@@ -385,7 +385,7 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 
 			create_dialog->popup_create(true);
 			if (!p_confirm_override) {
-				emit_signal("add_node_used");
+				emit_signal(SNAME("add_node_used"));
 			}
 		} break;
 		case TOOL_INSTANTIATE: {
@@ -402,7 +402,7 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 			quick_open->popup_dialog("PackedScene", true);
 			quick_open->set_title(TTR("Instantiate Child Scene"));
 			if (!p_confirm_override) {
-				emit_signal("add_node_used");
+				emit_signal(SNAME("add_node_used"));
 			}
 		} break;
 		case TOOL_EXPAND_COLLAPSE: {
@@ -1057,7 +1057,7 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 			if (e) {
 				Node *node = e->get();
 				if (node) {
-					scene_tree->emit_signal("open", node->get_filename());
+					scene_tree->emit_signal(SNAME("open"), node->get_filename());
 				}
 			}
 		} break;
@@ -1090,7 +1090,7 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 			if (e) {
 				Node *node = e->get();
 				if (node && node->get_scene_inherited_state().is_valid()) {
-					scene_tree->emit_signal("open", node->get_scene_inherited_state()->get_path());
+					scene_tree->emit_signal(SNAME("open"), node->get_scene_inherited_state()->get_path());
 				}
 			}
 		} break;
@@ -1198,12 +1198,12 @@ void SceneTreeDock::_notification(int p_what) {
 			spatial_editor_plugin->get_spatial_editor()->connect("item_lock_status_changed", Callable(scene_tree, "_update_tree"));
 			spatial_editor_plugin->get_spatial_editor()->connect("item_group_status_changed", Callable(scene_tree, "_update_tree"));
 
-			button_add->set_icon(get_theme_icon("Add", "EditorIcons"));
-			button_instance->set_icon(get_theme_icon("Instance", "EditorIcons"));
-			button_create_script->set_icon(get_theme_icon("ScriptCreate", "EditorIcons"));
-			button_detach_script->set_icon(get_theme_icon("ScriptRemove", "EditorIcons"));
+			button_add->set_icon(get_theme_icon(SNAME("Add"), SNAME("EditorIcons")));
+			button_instance->set_icon(get_theme_icon(SNAME("Instance"), SNAME("EditorIcons")));
+			button_create_script->set_icon(get_theme_icon(SNAME("ScriptCreate"), SNAME("EditorIcons")));
+			button_detach_script->set_icon(get_theme_icon(SNAME("ScriptRemove"), SNAME("EditorIcons")));
 
-			filter->set_right_icon(get_theme_icon("Search", "EditorIcons"));
+			filter->set_right_icon(get_theme_icon(SNAME("Search"), SNAME("EditorIcons")));
 			filter->set_clear_button_enabled(true);
 
 			// create_root_dialog
@@ -1218,7 +1218,7 @@ void SceneTreeDock::_notification(int p_what) {
 			Button *node_shortcuts_toggle = memnew(Button);
 			node_shortcuts_toggle->set_flat(true);
 			node_shortcuts_toggle->set_name("NodeShortcutsToggle");
-			node_shortcuts_toggle->set_icon(get_theme_icon("Favorites", "EditorIcons"));
+			node_shortcuts_toggle->set_icon(get_theme_icon(SNAME("Favorites"), SNAME("EditorIcons")));
 			node_shortcuts_toggle->set_toggle_mode(true);
 			node_shortcuts_toggle->set_tooltip(TTR("Switch to Favorite Nodes"));
 			node_shortcuts_toggle->set_pressed(EDITOR_GET("_use_favorites_root_selection"));
@@ -1238,19 +1238,19 @@ void SceneTreeDock::_notification(int p_what) {
 			button_2d = memnew(Button);
 			beginner_node_shortcuts->add_child(button_2d);
 			button_2d->set_text(TTR("2D Scene"));
-			button_2d->set_icon(get_theme_icon("Node2D", "EditorIcons"));
+			button_2d->set_icon(get_theme_icon(SNAME("Node2D"), SNAME("EditorIcons")));
 			button_2d->connect("pressed", callable_mp(this, &SceneTreeDock::_tool_selected), make_binds(TOOL_CREATE_2D_SCENE, false));
 
 			button_3d = memnew(Button);
 			beginner_node_shortcuts->add_child(button_3d);
 			button_3d->set_text(TTR("3D Scene"));
-			button_3d->set_icon(get_theme_icon("Node3D", "EditorIcons"));
+			button_3d->set_icon(get_theme_icon(SNAME("Node3D"), SNAME("EditorIcons")));
 			button_3d->connect("pressed", callable_mp(this, &SceneTreeDock::_tool_selected), make_binds(TOOL_CREATE_3D_SCENE, false));
 
 			button_ui = memnew(Button);
 			beginner_node_shortcuts->add_child(button_ui);
 			button_ui->set_text(TTR("User Interface"));
-			button_ui->set_icon(get_theme_icon("Control", "EditorIcons"));
+			button_ui->set_icon(get_theme_icon(SNAME("Control"), SNAME("EditorIcons")));
 			button_ui->connect("pressed", callable_mp(this, &SceneTreeDock::_tool_selected), make_binds(TOOL_CREATE_USER_INTERFACE, false));
 
 			VBoxContainer *favorite_node_shortcuts = memnew(VBoxContainer);
@@ -1260,7 +1260,7 @@ void SceneTreeDock::_notification(int p_what) {
 			button_custom = memnew(Button);
 			node_shortcuts->add_child(button_custom);
 			button_custom->set_text(TTR("Other Node"));
-			button_custom->set_icon(get_theme_icon("Add", "EditorIcons"));
+			button_custom->set_icon(get_theme_icon(SNAME("Add"), SNAME("EditorIcons")));
 			button_custom->connect("pressed", callable_bind(callable_mp(this, &SceneTreeDock::_tool_selected), TOOL_NEW, false));
 
 			node_shortcuts->add_spacer();
@@ -1276,16 +1276,16 @@ void SceneTreeDock::_notification(int p_what) {
 			clear_inherit_confirm->disconnect("confirmed", callable_mp(this, &SceneTreeDock::_tool_selected));
 		} break;
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
-			button_add->set_icon(get_theme_icon("Add", "EditorIcons"));
-			button_instance->set_icon(get_theme_icon("Instance", "EditorIcons"));
-			button_create_script->set_icon(get_theme_icon("ScriptCreate", "EditorIcons"));
-			button_detach_script->set_icon(get_theme_icon("ScriptRemove", "EditorIcons"));
-			button_2d->set_icon(get_theme_icon("Node2D", "EditorIcons"));
-			button_3d->set_icon(get_theme_icon("Node3D", "EditorIcons"));
-			button_ui->set_icon(get_theme_icon("Control", "EditorIcons"));
-			button_custom->set_icon(get_theme_icon("Add", "EditorIcons"));
+			button_add->set_icon(get_theme_icon(SNAME("Add"), SNAME("EditorIcons")));
+			button_instance->set_icon(get_theme_icon(SNAME("Instance"), SNAME("EditorIcons")));
+			button_create_script->set_icon(get_theme_icon(SNAME("ScriptCreate"), SNAME("EditorIcons")));
+			button_detach_script->set_icon(get_theme_icon(SNAME("ScriptRemove"), SNAME("EditorIcons")));
+			button_2d->set_icon(get_theme_icon(SNAME("Node2D"), SNAME("EditorIcons")));
+			button_3d->set_icon(get_theme_icon(SNAME("Node3D"), SNAME("EditorIcons")));
+			button_ui->set_icon(get_theme_icon(SNAME("Control"), SNAME("EditorIcons")));
+			button_custom->set_icon(get_theme_icon(SNAME("Add"), SNAME("EditorIcons")));
 
-			filter->set_right_icon(get_theme_icon("Search", "EditorIcons"));
+			filter->set_right_icon(get_theme_icon(SNAME("Search"), SNAME("EditorIcons")));
 			filter->set_clear_button_enabled(true);
 		} break;
 		case NOTIFICATION_PROCESS: {
@@ -2172,7 +2172,7 @@ void SceneTreeDock::_do_create(Node *p_parent) {
 		ct->set_size(ms);
 	}
 
-	emit_signal("node_created", c);
+	emit_signal(SNAME("node_created"), c);
 }
 
 void SceneTreeDock::_create() {
@@ -2268,7 +2268,7 @@ void SceneTreeDock::_create() {
 		_do_reparent(last_created, -1, nodes, true);
 	}
 
-	scene_tree->get_scene_tree()->call_deferred("grab_focus");
+	scene_tree->get_scene_tree()->call_deferred(SNAME("grab_focus"));
 }
 
 void SceneTreeDock::replace_node(Node *p_node, Node *p_by_node, bool p_keep_properties, bool p_remove_old) {
@@ -2599,8 +2599,8 @@ void SceneTreeDock::_tree_rmb(const Vector2 &p_menu_pos) {
 	if (!EditorNode::get_singleton()->get_edited_scene()) {
 		menu->clear();
 		if (profile_allow_editing) {
-			menu->add_icon_shortcut(get_theme_icon("Add", "EditorIcons"), ED_GET_SHORTCUT("scene_tree/add_child_node"), TOOL_NEW);
-			menu->add_icon_shortcut(get_theme_icon("Instance", "EditorIcons"), ED_GET_SHORTCUT("scene_tree/instance_scene"), TOOL_INSTANTIATE);
+			menu->add_icon_shortcut(get_theme_icon(SNAME("Add"), SNAME("EditorIcons")), ED_GET_SHORTCUT("scene_tree/add_child_node"), TOOL_NEW);
+			menu->add_icon_shortcut(get_theme_icon(SNAME("Instance"), SNAME("EditorIcons")), ED_GET_SHORTCUT("scene_tree/instance_scene"), TOOL_INSTANTIATE);
 		}
 
 		menu->set_size(Size2(1, 1));
@@ -2632,10 +2632,10 @@ void SceneTreeDock::_tree_rmb(const Vector2 &p_menu_pos) {
 				menu->add_separator();
 			}
 
-			menu->add_icon_shortcut(get_theme_icon("Add", "EditorIcons"), ED_GET_SHORTCUT("scene_tree/add_child_node"), TOOL_NEW);
-			menu->add_icon_shortcut(get_theme_icon("Instance", "EditorIcons"), ED_GET_SHORTCUT("scene_tree/instance_scene"), TOOL_INSTANTIATE);
+			menu->add_icon_shortcut(get_theme_icon(SNAME("Add"), SNAME("EditorIcons")), ED_GET_SHORTCUT("scene_tree/add_child_node"), TOOL_NEW);
+			menu->add_icon_shortcut(get_theme_icon(SNAME("Instance"), SNAME("EditorIcons")), ED_GET_SHORTCUT("scene_tree/instance_scene"), TOOL_INSTANTIATE);
 		}
-		menu->add_icon_shortcut(get_theme_icon("Collapse", "EditorIcons"), ED_GET_SHORTCUT("scene_tree/expand_collapse_all"), TOOL_EXPAND_COLLAPSE);
+		menu->add_icon_shortcut(get_theme_icon(SNAME("Collapse"), SNAME("EditorIcons")), ED_GET_SHORTCUT("scene_tree/expand_collapse_all"), TOOL_EXPAND_COLLAPSE);
 		menu->add_separator();
 
 		existing_script = selected->get_script();
@@ -2659,14 +2659,14 @@ void SceneTreeDock::_tree_rmb(const Vector2 &p_menu_pos) {
 
 		if (full_selection.size() == 1) {
 			add_separator = true;
-			menu->add_icon_shortcut(get_theme_icon("ScriptCreate", "EditorIcons"), ED_GET_SHORTCUT("scene_tree/attach_script"), TOOL_ATTACH_SCRIPT);
+			menu->add_icon_shortcut(get_theme_icon(SNAME("ScriptCreate"), SNAME("EditorIcons")), ED_GET_SHORTCUT("scene_tree/attach_script"), TOOL_ATTACH_SCRIPT);
 			if (existing_script.is_valid()) {
-				menu->add_icon_shortcut(get_theme_icon("ScriptExtend", "EditorIcons"), ED_GET_SHORTCUT("scene_tree/extend_script"), TOOL_EXTEND_SCRIPT);
+				menu->add_icon_shortcut(get_theme_icon(SNAME("ScriptExtend"), SNAME("EditorIcons")), ED_GET_SHORTCUT("scene_tree/extend_script"), TOOL_EXTEND_SCRIPT);
 			}
 		}
 		if (existing_script.is_valid() && existing_script_removable) {
 			add_separator = true;
-			menu->add_icon_shortcut(get_theme_icon("ScriptRemove", "EditorIcons"), ED_GET_SHORTCUT("scene_tree/detach_script"), TOOL_DETACH_SCRIPT);
+			menu->add_icon_shortcut(get_theme_icon(SNAME("ScriptRemove"), SNAME("EditorIcons")), ED_GET_SHORTCUT("scene_tree/detach_script"), TOOL_DETACH_SCRIPT);
 		} else if (full_selection.size() > 1) {
 			bool script_exists = false;
 			for (List<Node *>::Element *E = full_selection.front(); E; E = E->next()) {
@@ -2678,7 +2678,7 @@ void SceneTreeDock::_tree_rmb(const Vector2 &p_menu_pos) {
 
 			if (script_exists) {
 				add_separator = true;
-				menu->add_icon_shortcut(get_theme_icon("ScriptRemove", "EditorIcons"), ED_GET_SHORTCUT("scene_tree/detach_script"), TOOL_DETACH_SCRIPT);
+				menu->add_icon_shortcut(get_theme_icon(SNAME("ScriptRemove"), SNAME("EditorIcons")), ED_GET_SHORTCUT("scene_tree/detach_script"), TOOL_DETACH_SCRIPT);
 			}
 		}
 
@@ -2689,7 +2689,7 @@ void SceneTreeDock::_tree_rmb(const Vector2 &p_menu_pos) {
 
 	if (profile_allow_editing) {
 		if (full_selection.size() == 1) {
-			menu->add_icon_shortcut(get_theme_icon("Rename", "EditorIcons"), ED_GET_SHORTCUT("scene_tree/rename"), TOOL_RENAME);
+			menu->add_icon_shortcut(get_theme_icon(SNAME("Rename"), SNAME("EditorIcons")), ED_GET_SHORTCUT("scene_tree/rename"), TOOL_RENAME);
 		}
 
 		bool can_replace = true;
@@ -2701,29 +2701,29 @@ void SceneTreeDock::_tree_rmb(const Vector2 &p_menu_pos) {
 		}
 
 		if (can_replace) {
-			menu->add_icon_shortcut(get_theme_icon("Reload", "EditorIcons"), ED_GET_SHORTCUT("scene_tree/change_node_type"), TOOL_REPLACE);
+			menu->add_icon_shortcut(get_theme_icon(SNAME("Reload"), SNAME("EditorIcons")), ED_GET_SHORTCUT("scene_tree/change_node_type"), TOOL_REPLACE);
 		}
 
 		if (scene_tree->get_selected() != edited_scene) {
 			menu->add_separator();
-			menu->add_icon_shortcut(get_theme_icon("MoveUp", "EditorIcons"), ED_GET_SHORTCUT("scene_tree/move_up"), TOOL_MOVE_UP);
-			menu->add_icon_shortcut(get_theme_icon("MoveDown", "EditorIcons"), ED_GET_SHORTCUT("scene_tree/move_down"), TOOL_MOVE_DOWN);
-			menu->add_icon_shortcut(get_theme_icon("Duplicate", "EditorIcons"), ED_GET_SHORTCUT("scene_tree/duplicate"), TOOL_DUPLICATE);
-			menu->add_icon_shortcut(get_theme_icon("Reparent", "EditorIcons"), ED_GET_SHORTCUT("scene_tree/reparent"), TOOL_REPARENT);
-			menu->add_icon_shortcut(get_theme_icon("ReparentToNewNode", "EditorIcons"), ED_GET_SHORTCUT("scene_tree/reparent_to_new_node"), TOOL_REPARENT_TO_NEW_NODE);
+			menu->add_icon_shortcut(get_theme_icon(SNAME("MoveUp"), SNAME("EditorIcons")), ED_GET_SHORTCUT("scene_tree/move_up"), TOOL_MOVE_UP);
+			menu->add_icon_shortcut(get_theme_icon(SNAME("MoveDown"), SNAME("EditorIcons")), ED_GET_SHORTCUT("scene_tree/move_down"), TOOL_MOVE_DOWN);
+			menu->add_icon_shortcut(get_theme_icon(SNAME("Duplicate"), SNAME("EditorIcons")), ED_GET_SHORTCUT("scene_tree/duplicate"), TOOL_DUPLICATE);
+			menu->add_icon_shortcut(get_theme_icon(SNAME("Reparent"), SNAME("EditorIcons")), ED_GET_SHORTCUT("scene_tree/reparent"), TOOL_REPARENT);
+			menu->add_icon_shortcut(get_theme_icon(SNAME("ReparentToNewNode"), SNAME("EditorIcons")), ED_GET_SHORTCUT("scene_tree/reparent_to_new_node"), TOOL_REPARENT_TO_NEW_NODE);
 			if (selection.size() == 1) {
-				menu->add_icon_shortcut(get_theme_icon("NewRoot", "EditorIcons"), ED_GET_SHORTCUT("scene_tree/make_root"), TOOL_MAKE_ROOT);
+				menu->add_icon_shortcut(get_theme_icon(SNAME("NewRoot"), SNAME("EditorIcons")), ED_GET_SHORTCUT("scene_tree/make_root"), TOOL_MAKE_ROOT);
 			}
 		}
 	}
 	if (selection.size() == 1) {
 		if (profile_allow_editing) {
 			menu->add_separator();
-			menu->add_icon_shortcut(get_theme_icon("CreateNewSceneFrom", "EditorIcons"), ED_GET_SHORTCUT("scene_tree/save_branch_as_scene"), TOOL_NEW_SCENE_FROM);
+			menu->add_icon_shortcut(get_theme_icon(SNAME("CreateNewSceneFrom"), SNAME("EditorIcons")), ED_GET_SHORTCUT("scene_tree/save_branch_as_scene"), TOOL_NEW_SCENE_FROM);
 		}
 		if (full_selection.size() == 1) {
 			menu->add_separator();
-			menu->add_icon_shortcut(get_theme_icon("CopyNodePath", "EditorIcons"), ED_GET_SHORTCUT("scene_tree/copy_node_path"), TOOL_COPY_NODE_PATH);
+			menu->add_icon_shortcut(get_theme_icon(SNAME("CopyNodePath"), SNAME("EditorIcons")), ED_GET_SHORTCUT("scene_tree/copy_node_path"), TOOL_COPY_NODE_PATH);
 		}
 
 		bool is_external = (selection[0]->get_filename() != "");
@@ -2735,7 +2735,7 @@ void SceneTreeDock::_tree_rmb(const Vector2 &p_menu_pos) {
 				if (profile_allow_editing) {
 					menu->add_item(TTR("Clear Inheritance"), TOOL_SCENE_CLEAR_INHERITANCE);
 				}
-				menu->add_icon_item(get_theme_icon("Load", "EditorIcons"), TTR("Open in Editor"), TOOL_SCENE_OPEN_INHERITED);
+				menu->add_icon_item(get_theme_icon(SNAME("Load"), SNAME("EditorIcons")), TTR("Open in Editor"), TOOL_SCENE_OPEN_INHERITED);
 			} else if (!is_top_level) {
 				menu->add_separator();
 				bool editable = EditorNode::get_singleton()->get_edited_scene()->is_editable_instance(selection[0]);
@@ -2745,7 +2745,7 @@ void SceneTreeDock::_tree_rmb(const Vector2 &p_menu_pos) {
 					menu->add_check_item(TTR("Load As Placeholder"), TOOL_SCENE_USE_PLACEHOLDER);
 					menu->add_item(TTR("Make Local"), TOOL_SCENE_MAKE_LOCAL);
 				}
-				menu->add_icon_item(get_theme_icon("Load", "EditorIcons"), TTR("Open in Editor"), TOOL_SCENE_OPEN);
+				menu->add_icon_item(get_theme_icon(SNAME("Load"), SNAME("EditorIcons")), TTR("Open in Editor"), TOOL_SCENE_OPEN);
 				if (profile_allow_editing) {
 					menu->set_item_checked(menu->get_item_idx_from_text(TTR("Editable Children")), editable);
 					menu->set_item_checked(menu->get_item_idx_from_text(TTR("Load As Placeholder")), placeholder);
@@ -2757,14 +2757,14 @@ void SceneTreeDock::_tree_rmb(const Vector2 &p_menu_pos) {
 	if (profile_allow_editing && selection.size() > 1) {
 		//this is not a commonly used action, it makes no sense for it to be where it was nor always present.
 		menu->add_separator();
-		menu->add_icon_shortcut(get_theme_icon("Rename", "EditorIcons"), ED_GET_SHORTCUT("scene_tree/batch_rename"), TOOL_BATCH_RENAME);
+		menu->add_icon_shortcut(get_theme_icon(SNAME("Rename"), SNAME("EditorIcons")), ED_GET_SHORTCUT("scene_tree/batch_rename"), TOOL_BATCH_RENAME);
 	}
 	menu->add_separator();
-	menu->add_icon_item(get_theme_icon("Help", "EditorIcons"), TTR("Open Documentation"), TOOL_OPEN_DOCUMENTATION);
+	menu->add_icon_item(get_theme_icon(SNAME("Help"), SNAME("EditorIcons")), TTR("Open Documentation"), TOOL_OPEN_DOCUMENTATION);
 
 	if (profile_allow_editing) {
 		menu->add_separator();
-		menu->add_icon_shortcut(get_theme_icon("Remove", "EditorIcons"), ED_SHORTCUT("scene_tree/delete", TTR("Delete Node(s)"), KEY_DELETE), TOOL_ERASE);
+		menu->add_icon_shortcut(get_theme_icon(SNAME("Remove"), SNAME("EditorIcons")), ED_SHORTCUT("scene_tree/delete", TTR("Delete Node(s)"), KEY_DELETE), TOOL_ERASE);
 	}
 	menu->set_size(Size2(1, 1));
 	menu->set_position(p_menu_pos);
@@ -2906,7 +2906,7 @@ void SceneTreeDock::_remote_tree_selected() {
 	edit_remote->set_pressed(true);
 	edit_local->set_pressed(false);
 
-	emit_signal("remote_tree_selected");
+	emit_signal(SNAME("remote_tree_selected"));
 }
 
 void SceneTreeDock::_local_tree_selected() {

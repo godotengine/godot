@@ -63,8 +63,8 @@ void ShaderTextEditor::set_edited_shader(const Ref<Shader> &p_shader) {
 
 	get_text_editor()->set_text(p_shader->get_code());
 	get_text_editor()->clear_undo_history();
-	get_text_editor()->call_deferred("set_h_scroll", 0);
-	get_text_editor()->call_deferred("set_v_scroll", 0);
+	get_text_editor()->call_deferred(SNAME("set_h_scroll"), 0);
+	get_text_editor()->call_deferred(SNAME("set_v_scroll"), 0);
 
 	_validate_script();
 	_line_col_changed();
@@ -160,8 +160,8 @@ void ShaderTextEditor::_load_theme_settings() {
 
 	if (warnings_panel) {
 		// Warnings panel
-		warnings_panel->add_theme_font_override("normal_font", EditorNode::get_singleton()->get_gui_base()->get_theme_font("main", "EditorFonts"));
-		warnings_panel->add_theme_font_size_override("normal_font_size", EditorNode::get_singleton()->get_gui_base()->get_theme_font_size("main_size", "EditorFonts"));
+		warnings_panel->add_theme_font_override("normal_font", EditorNode::get_singleton()->get_gui_base()->get_theme_font(SNAME("main"), SNAME("EditorFonts")));
+		warnings_panel->add_theme_font_size_override("normal_font_size", EditorNode::get_singleton()->get_gui_base()->get_theme_font_size(SNAME("main_size"), SNAME("EditorFonts")));
 	}
 }
 
@@ -242,7 +242,7 @@ void ShaderTextEditor::_validate_script() {
 	} else {
 		set_warning_count(0);
 	}
-	emit_signal("script_changed");
+	emit_signal(SNAME("script_changed"));
 }
 
 void ShaderTextEditor::_update_warning_panel() {
@@ -266,7 +266,7 @@ void ShaderTextEditor::_update_warning_panel() {
 		// First cell.
 		warnings_panel->push_cell();
 		warnings_panel->push_meta(w.get_line() - 1);
-		warnings_panel->push_color(warnings_panel->get_theme_color("warning_color", "Editor"));
+		warnings_panel->push_color(warnings_panel->get_theme_color(SNAME("warning_color"), SNAME("Editor")));
 		warnings_panel->add_text(TTR("Line") + " " + itos(w.get_line()));
 		warnings_panel->add_text(" (" + w.get_name() + "):");
 		warnings_panel->pop(); // Color.
@@ -380,7 +380,7 @@ void ShaderEditor::_menu_option(int p_option) {
 		} break;
 	}
 	if (p_option != SEARCH_FIND && p_option != SEARCH_REPLACE && p_option != SEARCH_GOTO_LINE) {
-		shader_editor->get_text_editor()->call_deferred("grab_focus");
+		shader_editor->get_text_editor()->call_deferred(SNAME("grab_focus"));
 	}
 }
 
@@ -484,7 +484,7 @@ void ShaderEditor::_check_for_external_edit() {
 		if (use_autoreload) {
 			_reload_shader_from_disk();
 		} else {
-			disk_changed->call_deferred("popup_centered");
+			disk_changed->call_deferred(SNAME("popup_centered"));
 		}
 	}
 }
@@ -728,7 +728,7 @@ ShaderEditor::ShaderEditor(EditorNode *p_node) {
 	help_menu = memnew(MenuButton);
 	help_menu->set_text(TTR("Help"));
 	help_menu->set_switch_on_hover(true);
-	help_menu->get_popup()->add_icon_item(p_node->get_gui_base()->get_theme_icon("Instance", "EditorIcons"), TTR("Online Docs"), HELP_DOCS);
+	help_menu->get_popup()->add_icon_item(p_node->get_gui_base()->get_theme_icon(SNAME("Instance"), SNAME("EditorIcons")), TTR("Online Docs"), HELP_DOCS);
 	help_menu->get_popup()->connect("id_pressed", callable_mp(this, &ShaderEditor::_menu_option));
 
 	add_child(main_container);
@@ -737,7 +737,7 @@ ShaderEditor::ShaderEditor(EditorNode *p_node) {
 	hbc->add_child(edit_menu);
 	hbc->add_child(goto_menu);
 	hbc->add_child(help_menu);
-	hbc->add_theme_style_override("panel", p_node->get_gui_base()->get_theme_stylebox("ScriptEditorPanel", "EditorStyles"));
+	hbc->add_theme_style_override("panel", p_node->get_gui_base()->get_theme_stylebox(SNAME("ScriptEditorPanel"), SNAME("EditorStyles")));
 
 	VSplitContainer *editor_box = memnew(VSplitContainer);
 	main_container->add_child(editor_box);

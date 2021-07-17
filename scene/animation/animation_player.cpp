@@ -1325,7 +1325,7 @@ float AnimationPlayer::get_current_animation_length() const {
 
 void AnimationPlayer::_animation_changed() {
 	clear_caches();
-	emit_signal("caches_cleared");
+	emit_signal(SNAME("caches_cleared"));
 	if (is_playing()) {
 		playback.seeked = true; //need to restart stuff, like audio
 	}

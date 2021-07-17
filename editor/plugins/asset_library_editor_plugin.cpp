@@ -58,7 +58,7 @@ void EditorAssetLibraryItem::set_image(int p_type, int p_index, const Ref<Textur
 
 void EditorAssetLibraryItem::_notification(int p_what) {
 	if (p_what == NOTIFICATION_ENTER_TREE) {
-		icon->set_normal_texture(get_theme_icon("ProjectIconLoading", "EditorIcons"));
+		icon->set_normal_texture(get_theme_icon(SNAME("ProjectIconLoading"), SNAME("EditorIcons")));
 		category->add_theme_color_override("font_color", Color(0.5, 0.5, 0.5));
 		author->add_theme_color_override("font_color", Color(0.5, 0.5, 0.5));
 		price->add_theme_color_override("font_color", Color(0.5, 0.5, 0.5));
@@ -66,15 +66,15 @@ void EditorAssetLibraryItem::_notification(int p_what) {
 }
 
 void EditorAssetLibraryItem::_asset_clicked() {
-	emit_signal("asset_selected", asset_id);
+	emit_signal(SNAME("asset_selected"), asset_id);
 }
 
 void EditorAssetLibraryItem::_category_clicked() {
-	emit_signal("category_selected", category_id);
+	emit_signal(SNAME("category_selected"), category_id);
 }
 
 void EditorAssetLibraryItem::_author_clicked() {
-	emit_signal("author_selected", author_id);
+	emit_signal(SNAME("author_selected"), author_id);
 }
 
 void EditorAssetLibraryItem::_bind_methods() {
@@ -144,7 +144,7 @@ void EditorAssetLibraryItemDescription::set_image(int p_type, int p_index, const
 			for (int i = 0; i < preview_images.size(); i++) {
 				if (preview_images[i].id == p_index) {
 					if (preview_images[i].is_video) {
-						Ref<Image> overlay = previews->get_theme_icon("PlayOverlay", "EditorIcons")->get_image();
+						Ref<Image> overlay = previews->get_theme_icon(SNAME("PlayOverlay"), SNAME("EditorIcons"))->get_image();
 						Ref<Image> thumbnail = p_image->get_image();
 						thumbnail = thumbnail->duplicate();
 						Point2 overlay_pos = Point2((thumbnail->get_width() - overlay->get_width()) / 2, (thumbnail->get_height() - overlay->get_height()) / 2);
@@ -185,7 +185,7 @@ void EditorAssetLibraryItemDescription::set_image(int p_type, int p_index, const
 void EditorAssetLibraryItemDescription::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
-			previews_bg->add_theme_style_override("panel", previews->get_theme_stylebox("normal", "TextEdit"));
+			previews_bg->add_theme_style_override("panel", previews->get_theme_stylebox(SNAME("normal"), SNAME("TextEdit")));
 		} break;
 	}
 }
@@ -240,12 +240,12 @@ void EditorAssetLibraryItemDescription::add_preview(int p_id, bool p_video, cons
 	preview.video_link = p_url;
 	preview.is_video = p_video;
 	preview.button = memnew(Button);
-	preview.button->set_icon(previews->get_theme_icon("ThumbnailWait", "EditorIcons"));
+	preview.button->set_icon(previews->get_theme_icon(SNAME("ThumbnailWait"), SNAME("EditorIcons")));
 	preview.button->set_toggle_mode(true);
 	preview.button->connect("pressed", callable_mp(this, &EditorAssetLibraryItemDescription::_preview_click), varray(p_id));
 	preview_hb->add_child(preview.button);
 	if (!p_video) {
-		preview.image = previews->get_theme_icon("ThumbnailWait", "EditorIcons");
+		preview.image = previews->get_theme_icon(SNAME("ThumbnailWait"), SNAME("EditorIcons"));
 	}
 	preview_images.push_back(preview);
 	if (preview_images.size() == 1 && !p_video) {
@@ -379,7 +379,7 @@ void EditorAssetLibraryItemDownload::configure(const String &p_title, int p_asse
 	icon->set_texture(p_preview);
 	asset_id = p_asset_id;
 	if (!p_preview.is_valid()) {
-		icon->set_texture(get_theme_icon("FileBrokenBigThumb", "EditorIcons"));
+		icon->set_texture(get_theme_icon(SNAME("FileBrokenBigThumb"), SNAME("EditorIcons")));
 	}
 	host = p_download_url;
 	sha256 = p_sha256_hash;
@@ -390,8 +390,8 @@ void EditorAssetLibraryItemDownload::_notification(int p_what) {
 	switch (p_what) {
 		// FIXME: The editor crashes if 'NOTICATION_THEME_CHANGED' is used.
 		case NOTIFICATION_ENTER_TREE: {
-			add_theme_style_override("panel", get_theme_stylebox("panel", "TabContainer"));
-			dismiss->set_normal_texture(get_theme_icon("Close", "EditorIcons"));
+			add_theme_style_override("panel", get_theme_stylebox(SNAME("panel"), SNAME("TabContainer")));
+			dismiss->set_normal_texture(get_theme_icon(SNAME("Close"), SNAME("EditorIcons")));
 		} break;
 		case NOTIFICATION_PROCESS: {
 			// Make the progress bar visible again when retrying the download.
@@ -455,7 +455,7 @@ void EditorAssetLibraryItemDownload::_install() {
 	String file = download->get_download_file();
 
 	if (external_install) {
-		emit_signal("install_asset", file, title->get_text());
+		emit_signal(SNAME("install_asset"), file, title->get_text());
 		return;
 	}
 
@@ -553,8 +553,8 @@ EditorAssetLibraryItemDownload::EditorAssetLibraryItemDownload() {
 void EditorAssetLibrary::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_READY: {
-			error_tr->set_texture(get_theme_icon("Error", "EditorIcons"));
-			filter->set_right_icon(get_theme_icon("Search", "EditorIcons"));
+			error_tr->set_texture(get_theme_icon(SNAME("Error"), SNAME("EditorIcons")));
+			filter->set_right_icon(get_theme_icon(SNAME("Search"), SNAME("EditorIcons")));
 			filter->set_clear_button_enabled(true);
 
 			error_label->raise();
@@ -588,10 +588,10 @@ void EditorAssetLibrary::_notification(int p_what) {
 
 		} break;
 		case NOTIFICATION_THEME_CHANGED: {
-			library_scroll_bg->add_theme_style_override("panel", get_theme_stylebox("bg", "Tree"));
-			downloads_scroll->add_theme_style_override("bg", get_theme_stylebox("bg", "Tree"));
-			error_tr->set_texture(get_theme_icon("Error", "EditorIcons"));
-			filter->set_right_icon(get_theme_icon("Search", "EditorIcons"));
+			library_scroll_bg->add_theme_style_override("panel", get_theme_stylebox(SNAME("bg"), SNAME("Tree")));
+			downloads_scroll->add_theme_style_override("bg", get_theme_stylebox(SNAME("bg"), SNAME("Tree")));
+			error_tr->set_texture(get_theme_icon(SNAME("Error"), SNAME("EditorIcons")));
+			filter->set_right_icon(get_theme_icon(SNAME("Search"), SNAME("EditorIcons")));
 			filter->set_clear_button_enabled(true);
 		} break;
 
@@ -773,7 +773,7 @@ void EditorAssetLibrary::_image_update(bool use_cache, bool final, const PackedB
 		}
 
 		if (!image_set && final) {
-			obj->call("set_image", image_queue[p_queue_id].image_type, image_queue[p_queue_id].image_index, get_theme_icon("FileBrokenBigThumb", "EditorIcons"));
+			obj->call("set_image", image_queue[p_queue_id].image_type, image_queue[p_queue_id].image_index, get_theme_icon(SNAME("FileBrokenBigThumb"), SNAME("EditorIcons")));
 		}
 	}
 }
@@ -816,7 +816,7 @@ void EditorAssetLibrary::_image_request_completed(int p_status, int p_code, cons
 		WARN_PRINT("Error getting image file from URL: " + image_queue[p_queue_id].image_url);
 		Object *obj = ObjectDB::get_instance(image_queue[p_queue_id].target);
 		if (obj) {
-			obj->call("set_image", image_queue[p_queue_id].image_type, image_queue[p_queue_id].image_index, get_theme_icon("FileBrokenBigThumb", "EditorIcons"));
+			obj->call("set_image", image_queue[p_queue_id].image_type, image_queue[p_queue_id].image_index, get_theme_icon(SNAME("FileBrokenBigThumb"), SNAME("EditorIcons")));
 		}
 	}
 
@@ -1315,7 +1315,7 @@ void EditorAssetLibrary::_manage_plugins() {
 }
 
 void EditorAssetLibrary::_install_external_asset(String p_zip_path, String p_title) {
-	emit_signal("install_asset", p_zip_path, p_title);
+	emit_signal(SNAME("install_asset"), p_zip_path, p_title);
 }
 
 void EditorAssetLibrary::disable_community_support() {
@@ -1490,7 +1490,7 @@ EditorAssetLibrary::EditorAssetLibrary(bool p_templates_only) {
 	error_hb = memnew(HBoxContainer);
 	library_main->add_child(error_hb);
 	error_label = memnew(Label);
-	error_label->add_theme_color_override("color", get_theme_color("error_color", "Editor"));
+	error_label->add_theme_color_override("color", get_theme_color(SNAME("error_color"), SNAME("Editor")));
 	error_hb->add_child(error_label);
 	error_tr = memnew(TextureRect);
 	error_tr->set_v_size_flags(Control::SIZE_SHRINK_CENTER);

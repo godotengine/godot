@@ -100,7 +100,7 @@ void TextEditor::set_edited_resource(const RES &p_res) {
 	code_editor->get_text_editor()->clear_undo_history();
 	code_editor->get_text_editor()->tag_saved_version();
 
-	emit_signal("name_changed");
+	emit_signal(SNAME("name_changed"));
 	code_editor->update_line_and_column();
 }
 
@@ -149,8 +149,8 @@ void TextEditor::reload_text() {
 }
 
 void TextEditor::_validate_script() {
-	emit_signal("name_changed");
-	emit_signal("edited_script_changed");
+	emit_signal(SNAME("name_changed"));
+	emit_signal(SNAME("edited_script_changed"));
 }
 
 void TextEditor::_update_bookmark_list() {
@@ -291,27 +291,27 @@ void TextEditor::_edit_option(int p_op) {
 	switch (p_op) {
 		case EDIT_UNDO: {
 			tx->undo();
-			tx->call_deferred("grab_focus");
+			tx->call_deferred(SNAME("grab_focus"));
 		} break;
 		case EDIT_REDO: {
 			tx->redo();
-			tx->call_deferred("grab_focus");
+			tx->call_deferred(SNAME("grab_focus"));
 		} break;
 		case EDIT_CUT: {
 			tx->cut();
-			tx->call_deferred("grab_focus");
+			tx->call_deferred(SNAME("grab_focus"));
 		} break;
 		case EDIT_COPY: {
 			tx->copy();
-			tx->call_deferred("grab_focus");
+			tx->call_deferred(SNAME("grab_focus"));
 		} break;
 		case EDIT_PASTE: {
 			tx->paste();
-			tx->call_deferred("grab_focus");
+			tx->call_deferred(SNAME("grab_focus"));
 		} break;
 		case EDIT_SELECT_ALL: {
 			tx->select_all();
-			tx->call_deferred("grab_focus");
+			tx->call_deferred(SNAME("grab_focus"));
 		} break;
 		case EDIT_MOVE_LINE_UP: {
 			code_editor->move_lines_up();
@@ -378,12 +378,12 @@ void TextEditor::_edit_option(int p_op) {
 
 			// Yep, because it doesn't make sense to instance this dialog for every single script open...
 			// So this will be delegated to the ScriptEditor.
-			emit_signal("search_in_files_requested", selected_text);
+			emit_signal(SNAME("search_in_files_requested"), selected_text);
 		} break;
 		case REPLACE_IN_FILES: {
 			String selected_text = code_editor->get_text_editor()->get_selection_text();
 
-			emit_signal("replace_in_files_requested", selected_text);
+			emit_signal(SNAME("replace_in_files_requested"), selected_text);
 		} break;
 		case SEARCH_GOTO_LINE: {
 			goto_line_dialog->popup_find_line(tx);

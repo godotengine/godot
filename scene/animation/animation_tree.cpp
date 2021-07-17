@@ -1327,7 +1327,7 @@ void AnimationTree::_tree_changed() {
 		return;
 	}
 
-	call_deferred("_update_properties");
+	call_deferred(SNAME("_update_properties"));
 	properties_dirty = true;
 }
 

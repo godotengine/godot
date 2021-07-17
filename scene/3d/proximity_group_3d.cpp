@@ -130,7 +130,7 @@ void ProximityGroup3D::_proximity_group_broadcast(String p_method, Variant p_par
 	if (dispatch_mode == MODE_PROXY) {
 		get_parent()->call(p_method, p_parameters);
 	} else {
-		emit_signal("broadcast", p_method, p_parameters);
+		emit_signal(SNAME("broadcast"), p_method, p_parameters);
 	}
 }
 

@@ -1290,7 +1290,7 @@ public:
 void AnimationTimelineEdit::_zoom_changed(double) {
 	update();
 	play_position->update();
-	emit_signal("zoom_changed");
+	emit_signal(SNAME("zoom_changed"));
 }
 
 float AnimationTimelineEdit::get_zoom_scale() const {
@@ -1321,7 +1321,7 @@ void AnimationTimelineEdit::_anim_length_changed(double p_new_len) {
 	editing = false;
 	update();
 
-	emit_signal("length_changed", p_new_len);
+	emit_signal(SNAME("length_changed"), p_new_len);
 }
 
 void AnimationTimelineEdit::_anim_loop_pressed() {
@@ -1332,11 +1332,11 @@ void AnimationTimelineEdit::_anim_loop_pressed() {
 }
 
 int AnimationTimelineEdit::get_buttons_width() const {
-	Ref<Texture2D> interp_mode = get_theme_icon("TrackContinuous", "EditorIcons");
-	Ref<Texture2D> interp_type = get_theme_icon("InterpRaw", "EditorIcons");
-	Ref<Texture2D> loop_type = get_theme_icon("InterpWrapClamp", "EditorIcons");
-	Ref<Texture2D> remove_icon = get_theme_icon("Remove", "EditorIcons");
-	Ref<Texture2D> down_icon = get_theme_icon("select_arrow", "Tree");
+	Ref<Texture2D> interp_mode = get_theme_icon(SNAME("TrackContinuous"), SNAME("EditorIcons"));
+	Ref<Texture2D> interp_type = get_theme_icon(SNAME("InterpRaw"), SNAME("EditorIcons"));
+	Ref<Texture2D> loop_type = get_theme_icon(SNAME("InterpWrapClamp"), SNAME("EditorIcons"));
+	Ref<Texture2D> remove_icon = get_theme_icon(SNAME("Remove"), SNAME("EditorIcons"));
+	Ref<Texture2D> down_icon = get_theme_icon(SNAME("select_arrow"), SNAME("Tree"));
 
 	int total_w = interp_mode->get_width() + interp_type->get_width() + loop_type->get_width() + remove_icon->get_width();
 	total_w += (down_icon->get_width() + 4 * EDSCALE) * 4;
@@ -1345,7 +1345,7 @@ int AnimationTimelineEdit::get_buttons_width() const {
 }
 
 int AnimationTimelineEdit::get_name_limit() const {
-	Ref<Texture2D> hsize_icon = get_theme_icon("Hsize", "EditorIcons");
+	Ref<Texture2D> hsize_icon = get_theme_icon(SNAME("Hsize"), SNAME("EditorIcons"));
 
 	int limit = MAX(name_limit, add_track->get_minimum_size().width + hsize_icon->get_width());
 
@@ -1356,17 +1356,17 @@ int AnimationTimelineEdit::get_name_limit() const {
 
 void AnimationTimelineEdit::_notification(int p_what) {
 	if (p_what == NOTIFICATION_ENTER_TREE) {
-		add_track->set_icon(get_theme_icon("Add", "EditorIcons"));
-		loop->set_icon(get_theme_icon("Loop", "EditorIcons"));
-		time_icon->set_texture(get_theme_icon("Time", "EditorIcons"));
+		add_track->set_icon(get_theme_icon(SNAME("Add"), SNAME("EditorIcons")));
+		loop->set_icon(get_theme_icon(SNAME("Loop"), SNAME("EditorIcons")));
+		time_icon->set_texture(get_theme_icon(SNAME("Time"), SNAME("EditorIcons")));
 
 		add_track->get_popup()->clear();
-		add_track->get_popup()->add_icon_item(get_theme_icon("KeyValue", "EditorIcons"), TTR("Property Track"));
-		add_track->get_popup()->add_icon_item(get_theme_icon("KeyXform", "EditorIcons"), TTR("3D Transform Track"));
-		add_track->get_popup()->add_icon_item(get_theme_icon("KeyCall", "EditorIcons"), TTR("Call Method Track"));
-		add_track->get_popup()->add_icon_item(get_theme_icon("KeyBezier", "EditorIcons"), TTR("Bezier Curve Track"));
-		add_track->get_popup()->add_icon_item(get_theme_icon("KeyAudio", "EditorIcons"), TTR("Audio Playback Track"));
-		add_track->get_popup()->add_icon_item(get_theme_icon("KeyAnimation", "EditorIcons"), TTR("Animation Playback Track"));
+		add_track->get_popup()->add_icon_item(get_theme_icon(SNAME("KeyValue"), SNAME("EditorIcons")), TTR("Property Track"));
+		add_track->get_popup()->add_icon_item(get_theme_icon(SNAME("KeyXform"), SNAME("EditorIcons")), TTR("3D Transform Track"));
+		add_track->get_popup()->add_icon_item(get_theme_icon(SNAME("KeyCall"), SNAME("EditorIcons")), TTR("Call Method Track"));
+		add_track->get_popup()->add_icon_item(get_theme_icon(SNAME("KeyBezier"), SNAME("EditorIcons")), TTR("Bezier Curve Track"));
+		add_track->get_popup()->add_icon_item(get_theme_icon(SNAME("KeyAudio"), SNAME("EditorIcons")), TTR("Audio Playback Track"));
+		add_track->get_popup()->add_icon_item(get_theme_icon(SNAME("KeyAnimation"), SNAME("EditorIcons")), TTR("Animation Playback Track"));
 	}
 
 	if (p_what == NOTIFICATION_RESIZED) {
@@ -1381,9 +1381,9 @@ void AnimationTimelineEdit::_notification(int p_what) {
 			return;
 		}
 
-		Ref<Font> font = get_theme_font("font", "Label");
-		int font_size = get_theme_font_size("font_size", "Label");
-		Color color = get_theme_color("font_color", "Label");
+		Ref<Font> font = get_theme_font(SNAME("font"), SNAME("Label"));
+		int font_size = get_theme_font_size(SNAME("font_size"), SNAME("Label"));
+		Color color = get_theme_color(SNAME("font_color"), SNAME("Label"));
 
 		int zoomw = key_range;
 		float scale = get_zoom_scale();
@@ -1394,7 +1394,7 @@ void AnimationTimelineEdit::_notification(int p_what) {
 			l = 0.001; //avoid crashor
 		}
 
-		Ref<Texture2D> hsize_icon = get_theme_icon("Hsize", "EditorIcons");
+		Ref<Texture2D> hsize_icon = get_theme_icon(SNAME("Hsize"), SNAME("EditorIcons"));
 		hsize_rect = Rect2(get_name_limit() - hsize_icon->get_width() - 2 * EDSCALE, (get_size().height - hsize_icon->get_height()) / 2, hsize_icon->get_width(), hsize_icon->get_height());
 		draw_texture(hsize_icon, hsize_rect.position);
 
@@ -1443,7 +1443,7 @@ void AnimationTimelineEdit::_notification(int p_what) {
 
 		int end_px = (l - get_value()) * scale;
 		int begin_px = -get_value() * scale;
-		Color notimecol = get_theme_color("dark_color_2", "Editor");
+		Color notimecol = get_theme_color(SNAME("dark_color_2"), SNAME("Editor"));
 		Color timecolor = color;
 		timecolor.a = 0.2;
 		Color linecolor = color;
@@ -1568,10 +1568,10 @@ void AnimationTimelineEdit::set_animation(const Ref<Animation> &p_animation) {
 
 Size2 AnimationTimelineEdit::get_minimum_size() const {
 	Size2 ms = add_track->get_minimum_size();
-	Ref<Font> font = get_theme_font("font", "Label");
-	int font_size = get_theme_font_size("font_size", "Label");
+	Ref<Font> font = get_theme_font(SNAME("font"), SNAME("Label"));
+	int font_size = get_theme_font_size(SNAME("font_size"), SNAME("Label"));
 	ms.height = MAX(ms.height, font->get_height(font_size));
-	ms.width = get_buttons_width() + add_track->get_minimum_size().width + get_theme_icon("Hsize", "EditorIcons")->get_width() + 2;
+	ms.width = get_buttons_width() + add_track->get_minimum_size().width + get_theme_icon(SNAME("Hsize"), SNAME("EditorIcons"))->get_width() + 2;
 	return ms;
 }
 
@@ -1633,11 +1633,11 @@ void AnimationTimelineEdit::_play_position_draw() {
 	int px = (-get_value() + play_position_pos) * scale + get_name_limit();
 
 	if (px >= get_name_limit() && px < (play_position->get_size().width - get_buttons_width())) {
-		Color color = get_theme_color("accent_color", "Editor");
+		Color color = get_theme_color(SNAME("accent_color"), SNAME("Editor"));
 		play_position->draw_line(Point2(px, 0), Point2(px, h), color, Math::round(2 * EDSCALE));
 		play_position->draw_texture(
-				get_theme_icon("TimelineIndicator", "EditorIcons"),
-				Point2(px - get_theme_icon("TimelineIndicator", "EditorIcons")->get_width() * 0.5, 0),
+				get_theme_icon(SNAME("TimelineIndicator"), SNAME("EditorIcons")),
+				Point2(px - get_theme_icon(SNAME("TimelineIndicator"), SNAME("EditorIcons"))->get_width() * 0.5, 0),
 				color);
 	}
 }
@@ -1685,7 +1685,7 @@ void AnimationTimelineEdit::_gui_input(const Ref<InputEvent> &p_event) {
 			int x = mb->get_position().x - get_name_limit();
 
 			float ofs = x / get_zoom_scale() + get_value();
-			emit_signal("timeline_changed", ofs, false, Input::get_singleton()->is_key_pressed(KEY_ALT));
+			emit_signal(SNAME("timeline_changed"), ofs, false, Input::get_singleton()->is_key_pressed(KEY_ALT));
 			dragging_timeline = true;
 		}
 		if (!dragging_timeline && mb->get_button_index() == MOUSE_BUTTON_MIDDLE) {
@@ -1718,13 +1718,13 @@ void AnimationTimelineEdit::_gui_input(const Ref<InputEvent> &p_event) {
 			int ofs = mm->get_position().x - dragging_hsize_from;
 			name_limit = dragging_hsize_at + ofs;
 			update();
-			emit_signal("name_limit_changed");
+			emit_signal(SNAME("name_limit_changed"));
 			play_position->update();
 		}
 		if (dragging_timeline) {
 			int x = mm->get_position().x - get_name_limit();
 			float ofs = x / get_zoom_scale() + get_value();
-			emit_signal("timeline_changed", ofs, false, Input::get_singleton()->is_key_pressed(KEY_ALT));
+			emit_signal(SNAME("timeline_changed"), ofs, false, Input::get_singleton()->is_key_pressed(KEY_ALT));
 		}
 		if (panning_timeline) {
 			int x = mm->get_position().x - get_name_limit();
@@ -1750,7 +1750,7 @@ void AnimationTimelineEdit::set_hscroll(HScrollBar *p_hscroll) {
 }
 
 void AnimationTimelineEdit::_track_added(int p_track) {
-	emit_signal("track_added", p_track);
+	emit_signal(SNAME("track_added"), p_track);
 }
 
 void AnimationTimelineEdit::_bind_methods() {
@@ -1832,31 +1832,31 @@ void AnimationTrackEdit::_notification(int p_what) {
 		int limit = timeline->get_name_limit();
 
 		if (has_focus()) {
-			Color accent = get_theme_color("accent_color", "Editor");
+			Color accent = get_theme_color(SNAME("accent_color"), SNAME("Editor"));
 			accent.a *= 0.7;
 			// Offside so the horizontal sides aren't cutoff.
 			draw_rect(Rect2(Point2(1 * EDSCALE, 0), get_size() - Size2(1 * EDSCALE, 0)), accent, false);
 		}
 
-		Ref<Font> font = get_theme_font("font", "Label");
-		int font_size = get_theme_font_size("font_size", "Label");
-		Color color = get_theme_color("font_color", "Label");
+		Ref<Font> font = get_theme_font(SNAME("font"), SNAME("Label"));
+		int font_size = get_theme_font_size(SNAME("font_size"), SNAME("Label"));
+		Color color = get_theme_color(SNAME("font_color"), SNAME("Label"));
 		Ref<Texture2D> type_icons[6] = {
-			get_theme_icon("KeyValue", "EditorIcons"),
-			get_theme_icon("KeyXform", "EditorIcons"),
-			get_theme_icon("KeyCall", "EditorIcons"),
-			get_theme_icon("KeyBezier", "EditorIcons"),
-			get_theme_icon("KeyAudio", "EditorIcons"),
-			get_theme_icon("KeyAnimation", "EditorIcons")
+			get_theme_icon(SNAME("KeyValue"), SNAME("EditorIcons")),
+			get_theme_icon(SNAME("KeyXform"), SNAME("EditorIcons")),
+			get_theme_icon(SNAME("KeyCall"), SNAME("EditorIcons")),
+			get_theme_icon(SNAME("KeyBezier"), SNAME("EditorIcons")),
+			get_theme_icon(SNAME("KeyAudio"), SNAME("EditorIcons")),
+			get_theme_icon(SNAME("KeyAnimation"), SNAME("EditorIcons"))
 		};
-		int hsep = get_theme_constant("hseparation", "ItemList");
+		int hsep = get_theme_constant(SNAME("hseparation"), SNAME("ItemList"));
 		Color linecolor = color;
 		linecolor.a = 0.2;
 
 		// NAMES AND ICONS //
 
 		{
-			Ref<Texture2D> check = animation->track_is_enabled(track) ? get_theme_icon("checked", "CheckBox") : get_theme_icon("unchecked", "CheckBox");
+			Ref<Texture2D> check = animation->track_is_enabled(track) ? get_theme_icon(SNAME("checked"), SNAME("CheckBox")) : get_theme_icon(SNAME("unchecked"), SNAME("CheckBox"));
 
 			int ofs = in_group ? check->get_width() : 0; //not the best reference for margin but..
 
@@ -1877,7 +1877,7 @@ void AnimationTrackEdit::_notification(int p_what) {
 			String text;
 			Color text_color = color;
 			if (node && EditorNode::get_singleton()->get_editor_selection()->is_selected(node)) {
-				text_color = get_theme_color("accent_color", "Editor");
+				text_color = get_theme_color(SNAME("accent_color"), SNAME("Editor"));
 			}
 
 			if (in_group) {
@@ -1952,25 +1952,25 @@ void AnimationTrackEdit::_notification(int p_what) {
 
 		{
 			Ref<Texture2D> wrap_icon[2] = {
-				get_theme_icon("InterpWrapClamp", "EditorIcons"),
-				get_theme_icon("InterpWrapLoop", "EditorIcons"),
+				get_theme_icon(SNAME("InterpWrapClamp"), SNAME("EditorIcons")),
+				get_theme_icon(SNAME("InterpWrapLoop"), SNAME("EditorIcons")),
 			};
 
 			Ref<Texture2D> interp_icon[3] = {
-				get_theme_icon("InterpRaw", "EditorIcons"),
-				get_theme_icon("InterpLinear", "EditorIcons"),
-				get_theme_icon("InterpCubic", "EditorIcons")
+				get_theme_icon(SNAME("InterpRaw"), SNAME("EditorIcons")),
+				get_theme_icon(SNAME("InterpLinear"), SNAME("EditorIcons")),
+				get_theme_icon(SNAME("InterpCubic"), SNAME("EditorIcons"))
 			};
 			Ref<Texture2D> cont_icon[4] = {
-				get_theme_icon("TrackContinuous", "EditorIcons"),
-				get_theme_icon("TrackDiscrete", "EditorIcons"),
-				get_theme_icon("TrackTrigger", "EditorIcons"),
-				get_theme_icon("TrackCapture", "EditorIcons")
+				get_theme_icon(SNAME("TrackContinuous"), SNAME("EditorIcons")),
+				get_theme_icon(SNAME("TrackDiscrete"), SNAME("EditorIcons")),
+				get_theme_icon(SNAME("TrackTrigger"), SNAME("EditorIcons")),
+				get_theme_icon(SNAME("TrackCapture"), SNAME("EditorIcons"))
 			};
 
 			int ofs = get_size().width - timeline->get_buttons_width();
 
-			Ref<Texture2D> down_icon = get_theme_icon("select_arrow", "Tree");
+			Ref<Texture2D> down_icon = get_theme_icon(SNAME("select_arrow"), SNAME("Tree"));
 
 			draw_line(Point2(ofs, 0), Point2(ofs, get_size().height), linecolor, Math::round(EDSCALE));
 
@@ -2007,7 +2007,7 @@ void AnimationTrackEdit::_notification(int p_what) {
 					update_mode_rect.size.x += down_icon->get_width();
 					bezier_edit_rect = Rect2();
 				} else if (animation->track_get_type(track) == Animation::TYPE_BEZIER) {
-					Ref<Texture2D> bezier_icon = get_theme_icon("EditBezier", "EditorIcons");
+					Ref<Texture2D> bezier_icon = get_theme_icon(SNAME("EditBezier"), SNAME("EditorIcons"));
 					update_mode_rect.size.x += down_icon->get_width();
 					bezier_edit_rect.position = update_mode_rect.position + (update_mode_rect.size - bezier_icon->get_size()) / 2;
 					bezier_edit_rect.size = bezier_icon->get_size();
@@ -2092,7 +2092,7 @@ void AnimationTrackEdit::_notification(int p_what) {
 			{
 				//erase
 
-				Ref<Texture2D> icon = get_theme_icon("Remove", "EditorIcons");
+				Ref<Texture2D> icon = get_theme_icon(SNAME("Remove"), SNAME("EditorIcons"));
 
 				remove_rect.position.x = ofs + ((get_size().width - ofs) - icon->get_width()) / 2;
 				remove_rect.position.y = int(get_size().height - icon->get_height()) / 2;
@@ -2109,7 +2109,7 @@ void AnimationTrackEdit::_notification(int p_what) {
 		}
 
 		if (dropping_at != 0) {
-			Color drop_color = get_theme_color("accent_color", "Editor");
+			Color drop_color = get_theme_color(SNAME("accent_color"), SNAME("Editor"));
 			if (dropping_at < 0) {
 				draw_line(Vector2(0, 0), Vector2(get_size().width, 0), drop_color, Math::round(EDSCALE));
 			} else {
@@ -2161,7 +2161,7 @@ void AnimationTrackEdit::draw_key_link(int p_index, float p_pixels_sec, int p_x,
 		return;
 	}
 
-	Color color = get_theme_color("font_color", "Label");
+	Color color = get_theme_color(SNAME("font_color"), SNAME("Label"));
 	color.a = 0.5;
 
 	int from_x = MAX(p_x, p_clip_left);
@@ -2186,16 +2186,16 @@ void AnimationTrackEdit::draw_key(int p_index, float p_pixels_sec, int p_x, bool
 		const Variant &v = animation->track_get_key_value(track, p_index);
 		Variant::Type valid_type = Variant::NIL;
 		if (!_is_value_key_valid(v, valid_type)) {
-			icon_to_draw = get_theme_icon("KeyInvalid", "EditorIcons");
+			icon_to_draw = get_theme_icon(SNAME("KeyInvalid"), SNAME("EditorIcons"));
 		}
 	}
 
 	Vector2 ofs(p_x - icon_to_draw->get_width() / 2, int(get_size().height - icon_to_draw->get_height()) / 2);
 
 	if (animation->track_get_type(track) == Animation::TYPE_METHOD) {
-		Ref<Font> font = get_theme_font("font", "Label");
-		int font_size = get_theme_font_size("font_size", "Label");
-		Color color = get_theme_color("font_color", "Label");
+		Ref<Font> font = get_theme_font(SNAME("font"), SNAME("Label"));
+		int font_size = get_theme_font_size(SNAME("font_size"), SNAME("Label"));
+		Color color = get_theme_color(SNAME("font_color"), SNAME("Label"));
 		color.a = 0.5;
 
 		Dictionary d = animation->track_get_key_value(track, p_index);
@@ -2298,19 +2298,19 @@ void AnimationTrackEdit::set_animation_and_track(const Ref<Animation> &p_animati
 	update();
 
 	Ref<Texture2D> type_icons[6] = {
-		get_theme_icon("KeyValue", "EditorIcons"),
-		get_theme_icon("KeyXform", "EditorIcons"),
-		get_theme_icon("KeyCall", "EditorIcons"),
-		get_theme_icon("KeyBezier", "EditorIcons"),
-		get_theme_icon("KeyAudio", "EditorIcons"),
-		get_theme_icon("KeyAnimation", "EditorIcons")
+		get_theme_icon(SNAME("KeyValue"), SNAME("EditorIcons")),
+		get_theme_icon(SNAME("KeyXform"), SNAME("EditorIcons")),
+		get_theme_icon(SNAME("KeyCall"), SNAME("EditorIcons")),
+		get_theme_icon(SNAME("KeyBezier"), SNAME("EditorIcons")),
+		get_theme_icon(SNAME("KeyAudio"), SNAME("EditorIcons")),
+		get_theme_icon(SNAME("KeyAnimation"), SNAME("EditorIcons"))
 	};
 
 	ERR_FAIL_INDEX(track, animation->get_track_count());
 
 	node_path = animation->track_get_path(p_track);
 	type_icon = type_icons[animation->track_get_type(track)];
-	selected_icon = get_theme_icon("KeySelected", "EditorIcons");
+	selected_icon = get_theme_icon(SNAME("KeySelected"), SNAME("EditorIcons"));
 }
 
 NodePath AnimationTrackEdit::get_path() const {
@@ -2318,10 +2318,10 @@ NodePath AnimationTrackEdit::get_path() const {
 }
 
 Size2 AnimationTrackEdit::get_minimum_size() const {
-	Ref<Texture2D> texture = get_theme_icon("Object", "EditorIcons");
-	Ref<Font> font = get_theme_font("font", "Label");
-	int font_size = get_theme_font_size("font_size", "Label");
-	int separation = get_theme_constant("vseparation", "ItemList");
+	Ref<Texture2D> texture = get_theme_icon(SNAME("Object"), SNAME("EditorIcons"));
+	Ref<Font> font = get_theme_font(SNAME("font"), SNAME("Label"));
+	int font_size = get_theme_font_size(SNAME("font_size"), SNAME("Label"));
+	int separation = get_theme_constant(SNAME("vseparation"), SNAME("ItemList"));
 
 	int max_h = MAX(texture->get_height(), font->get_height(font_size));
 	max_h = MAX(max_h, get_key_height());
@@ -2355,7 +2355,7 @@ void AnimationTrackEdit::_play_position_draw() {
 	int px = (-timeline->get_value() + play_position_pos) * scale + timeline->get_name_limit();
 
 	if (px >= timeline->get_name_limit() && px < (get_size().width - timeline->get_buttons_width())) {
-		Color color = get_theme_color("accent_color", "Editor");
+		Color color = get_theme_color(SNAME("accent_color"), SNAME("Editor"));
 		play_position->draw_line(Point2(px, 0), Point2(px, h), color, Math::round(2 * EDSCALE));
 	}
 }
@@ -2556,17 +2556,17 @@ void AnimationTrackEdit::_gui_input(const Ref<InputEvent> &p_event) {
 
 	if (p_event->is_pressed()) {
 		if (ED_GET_SHORTCUT("animation_editor/duplicate_selection")->is_shortcut(p_event)) {
-			emit_signal("duplicate_request");
+			emit_signal(SNAME("duplicate_request"));
 			accept_event();
 		}
 
 		if (ED_GET_SHORTCUT("animation_editor/duplicate_selection_transposed")->is_shortcut(p_event)) {
-			emit_signal("duplicate_transpose_request");
+			emit_signal(SNAME("duplicate_transpose_request"));
 			accept_event();
 		}
 
 		if (ED_GET_SHORTCUT("animation_editor/delete_selection")->is_shortcut(p_event)) {
-			emit_signal("delete_request");
+			emit_signal(SNAME("delete_request"));
 			accept_event();
 		}
 	}
@@ -2597,10 +2597,10 @@ void AnimationTrackEdit::_gui_input(const Ref<InputEvent> &p_event) {
 				menu->connect("id_pressed", callable_mp(this, &AnimationTrackEdit::_menu_selected));
 			}
 			menu->clear();
-			menu->add_icon_item(get_theme_icon("TrackContinuous", "EditorIcons"), TTR("Continuous"), MENU_CALL_MODE_CONTINUOUS);
-			menu->add_icon_item(get_theme_icon("TrackDiscrete", "EditorIcons"), TTR("Discrete"), MENU_CALL_MODE_DISCRETE);
-			menu->add_icon_item(get_theme_icon("TrackTrigger", "EditorIcons"), TTR("Trigger"), MENU_CALL_MODE_TRIGGER);
-			menu->add_icon_item(get_theme_icon("TrackCapture", "EditorIcons"), TTR("Capture"), MENU_CALL_MODE_CAPTURE);
+			menu->add_icon_item(get_theme_icon(SNAME("TrackContinuous"), SNAME("EditorIcons")), TTR("Continuous"), MENU_CALL_MODE_CONTINUOUS);
+			menu->add_icon_item(get_theme_icon(SNAME("TrackDiscrete"), SNAME("EditorIcons")), TTR("Discrete"), MENU_CALL_MODE_DISCRETE);
+			menu->add_icon_item(get_theme_icon(SNAME("TrackTrigger"), SNAME("EditorIcons")), TTR("Trigger"), MENU_CALL_MODE_TRIGGER);
+			menu->add_icon_item(get_theme_icon(SNAME("TrackCapture"), SNAME("EditorIcons")), TTR("Capture"), MENU_CALL_MODE_CAPTURE);
 			menu->set_as_minsize();
 
 			Vector2 popup_pos = get_screen_position() + update_mode_rect.position + Vector2(0, update_mode_rect.size.height);
@@ -2616,9 +2616,9 @@ void AnimationTrackEdit::_gui_input(const Ref<InputEvent> &p_event) {
 				menu->connect("id_pressed", callable_mp(this, &AnimationTrackEdit::_menu_selected));
 			}
 			menu->clear();
-			menu->add_icon_item(get_theme_icon("InterpRaw", "EditorIcons"), TTR("Nearest"), MENU_INTERPOLATION_NEAREST);
-			menu->add_icon_item(get_theme_icon("InterpLinear", "EditorIcons"), TTR("Linear"), MENU_INTERPOLATION_LINEAR);
-			menu->add_icon_item(get_theme_icon("InterpCubic", "EditorIcons"), TTR("Cubic"), MENU_INTERPOLATION_CUBIC);
+			menu->add_icon_item(get_theme_icon(SNAME("InterpRaw"), SNAME("EditorIcons")), TTR("Nearest"), MENU_INTERPOLATION_NEAREST);
+			menu->add_icon_item(get_theme_icon(SNAME("InterpLinear"), SNAME("EditorIcons")), TTR("Linear"), MENU_INTERPOLATION_LINEAR);
+			menu->add_icon_item(get_theme_icon(SNAME("InterpCubic"), SNAME("EditorIcons")), TTR("Cubic"), MENU_INTERPOLATION_CUBIC);
 			menu->set_as_minsize();
 
 			Vector2 popup_pos = get_screen_position() + interp_mode_rect.position + Vector2(0, interp_mode_rect.size.height);
@@ -2634,8 +2634,8 @@ void AnimationTrackEdit::_gui_input(const Ref<InputEvent> &p_event) {
 				menu->connect("id_pressed", callable_mp(this, &AnimationTrackEdit::_menu_selected));
 			}
 			menu->clear();
-			menu->add_icon_item(get_theme_icon("InterpWrapClamp", "EditorIcons"), TTR("Clamp Loop Interp"), MENU_LOOP_CLAMP);
-			menu->add_icon_item(get_theme_icon("InterpWrapLoop", "EditorIcons"), TTR("Wrap Loop Interp"), MENU_LOOP_WRAP);
+			menu->add_icon_item(get_theme_icon(SNAME("InterpWrapClamp"), SNAME("EditorIcons")), TTR("Clamp Loop Interp"), MENU_LOOP_CLAMP);
+			menu->add_icon_item(get_theme_icon(SNAME("InterpWrapLoop"), SNAME("EditorIcons")), TTR("Wrap Loop Interp"), MENU_LOOP_WRAP);
 			menu->set_as_minsize();
 
 			Vector2 popup_pos = get_screen_position() + loop_mode_rect.position + Vector2(0, loop_mode_rect.size.height);
@@ -2645,13 +2645,13 @@ void AnimationTrackEdit::_gui_input(const Ref<InputEvent> &p_event) {
 		}
 
 		if (remove_rect.has_point(pos)) {
-			emit_signal("remove_request", track);
+			emit_signal(SNAME("remove_request"), track);
 			accept_event();
 			return;
 		}
 
 		if (bezier_edit_rect.has_point(pos)) {
-			emit_signal("bezier_edit");
+			emit_signal(SNAME("bezier_edit"));
 			accept_event();
 		}
 
@@ -2692,16 +2692,16 @@ void AnimationTrackEdit::_gui_input(const Ref<InputEvent> &p_event) {
 			if (key_idx != -1) {
 				if (mb->is_command_pressed() || mb->is_shift_pressed()) {
 					if (editor->is_key_selected(track, key_idx)) {
-						emit_signal("deselect_key", key_idx);
+						emit_signal(SNAME("deselect_key"), key_idx);
 					} else {
-						emit_signal("select_key", key_idx, false);
+						emit_signal(SNAME("select_key"), key_idx, false);
 						moving_selection_attempt = true;
 						select_single_attempt = -1;
 						moving_selection_from_ofs = (mb->get_position().x - limit) / timeline->get_zoom_scale();
 					}
 				} else {
 					if (!editor->is_key_selected(track, key_idx)) {
-						emit_signal("select_key", key_idx, true);
+						emit_signal(SNAME("select_key"), key_idx, true);
 						select_single_attempt = -1;
 					} else {
 						select_single_attempt = key_idx;
@@ -2727,12 +2727,12 @@ void AnimationTrackEdit::_gui_input(const Ref<InputEvent> &p_event) {
 			}
 
 			menu->clear();
-			menu->add_icon_item(get_theme_icon("Key", "EditorIcons"), TTR("Insert Key"), MENU_KEY_INSERT);
+			menu->add_icon_item(get_theme_icon(SNAME("Key"), SNAME("EditorIcons")), TTR("Insert Key"), MENU_KEY_INSERT);
 			if (editor->is_selection_active()) {
 				menu->add_separator();
-				menu->add_icon_item(get_theme_icon("Duplicate", "EditorIcons"), TTR("Duplicate Key(s)"), MENU_KEY_DUPLICATE);
+				menu->add_icon_item(get_theme_icon(SNAME("Duplicate"), SNAME("EditorIcons")), TTR("Duplicate Key(s)"), MENU_KEY_DUPLICATE);
 				menu->add_separator();
-				menu->add_icon_item(get_theme_icon("Remove", "EditorIcons"), TTR("Delete Key(s)"), MENU_KEY_DELETE);
+				menu->add_icon_item(get_theme_icon(SNAME("Remove"), SNAME("EditorIcons")), TTR("Delete Key(s)"), MENU_KEY_DELETE);
 			}
 			menu->set_as_minsize();
 
@@ -2757,7 +2757,7 @@ void AnimationTrackEdit::_gui_input(const Ref<InputEvent> &p_event) {
 		}
 
 		path->set_text(animation->track_get_path(track));
-		Vector2 theme_ofs = path->get_theme_stylebox("normal", "LineEdit")->get_offset();
+		Vector2 theme_ofs = path->get_theme_stylebox(SNAME("normal"), SNAME("LineEdit"))->get_offset();
 		path_popup->set_position(get_screen_position() + path_rect.position - theme_ofs);
 		path_popup->set_size(path_rect.size);
 		path_popup->popup();
@@ -2770,9 +2770,9 @@ void AnimationTrackEdit::_gui_input(const Ref<InputEvent> &p_event) {
 		if (!mb->is_pressed() && mb->get_button_index() == MOUSE_BUTTON_LEFT) {
 			moving_selection_attempt = false;
 			if (moving_selection) {
-				emit_signal("move_selection_commit");
+				emit_signal(SNAME("move_selection_commit"));
 			} else if (select_single_attempt != -1) {
-				emit_signal("select_key", select_single_attempt, true);
+				emit_signal(SNAME("select_key"), select_single_attempt, true);
 			}
 			moving_selection = false;
 			select_single_attempt = -1;
@@ -2781,7 +2781,7 @@ void AnimationTrackEdit::_gui_input(const Ref<InputEvent> &p_event) {
 		if (moving_selection && mb->is_pressed() && mb->get_button_index() == MOUSE_BUTTON_RIGHT) {
 			moving_selection_attempt = false;
 			moving_selection = false;
-			emit_signal("move_selection_cancel");
+			emit_signal(SNAME("move_selection_cancel"));
 		}
 	}
 
@@ -2789,11 +2789,11 @@ void AnimationTrackEdit::_gui_input(const Ref<InputEvent> &p_event) {
 	if (mm.is_valid() && mm->get_button_mask() & MOUSE_BUTTON_MASK_LEFT && moving_selection_attempt) {
 		if (!moving_selection) {
 			moving_selection = true;
-			emit_signal("move_selection_begin");
+			emit_signal(SNAME("move_selection_begin"));
 		}
 
 		float new_ofs = (mm->get_position().x - timeline->get_name_limit()) / timeline->get_zoom_scale();
-		emit_signal("move_selection", new_ofs - moving_selection_from_ofs);
+		emit_signal(SNAME("move_selection"), new_ofs - moving_selection_from_ofs);
 	}
 }
 
@@ -2847,7 +2847,7 @@ bool AnimationTrackEdit::can_drop_data(const Point2 &p_point, const Variant &p_d
 	}
 
 	const_cast<AnimationTrackEdit *>(this)->update();
-	const_cast<AnimationTrackEdit *>(this)->emit_signal("drop_attempted", track);
+	const_cast<AnimationTrackEdit *>(this)->emit_signal(SNAME("drop_attempted"), track);
 
 	return true;
 }
@@ -2875,9 +2875,9 @@ void AnimationTrackEdit::drop_data(const Point2 &p_point, const Variant &p_data)
 	int from_track = d["index"];
 
 	if (dropping_at < 0) {
-		emit_signal("dropped", from_track, track);
+		emit_signal(SNAME("dropped"), from_track, track);
 	} else {
-		emit_signal("dropped", from_track, track + 1);
+		emit_signal(SNAME("dropped"), from_track, track + 1);
 	}
 }
 
@@ -2916,14 +2916,14 @@ void AnimationTrackEdit::_menu_selected(int p_index) {
 
 		} break;
 		case MENU_KEY_INSERT: {
-			emit_signal("insert_key", insert_at_pos);
+			emit_signal(SNAME("insert_key"), insert_at_pos);
 		} break;
 		case MENU_KEY_DUPLICATE: {
-			emit_signal("duplicate_request");
+			emit_signal(SNAME("duplicate_request"));
 
 		} break;
 		case MENU_KEY_DELETE: {
-			emit_signal("delete_request");
+			emit_signal(SNAME("delete_request"));
 
 		} break;
 	}
@@ -2956,9 +2956,9 @@ void AnimationTrackEdit::append_to_selection(const Rect2 &p_box, bool p_deselect
 
 		if (select_rect.intersects(rect)) {
 			if (p_deselection) {
-				emit_signal("deselect_key", i);
+				emit_signal(SNAME("deselect_key"), i);
 			} else {
-				emit_signal("select_key", i, false);
+				emit_signal(SNAME("select_key"), i, false);
 			}
 		}
 	}
@@ -3057,19 +3057,19 @@ AnimationTrackEdit *AnimationTrackEditPlugin::create_animation_track_edit(Object
 
 void AnimationTrackEditGroup::_notification(int p_what) {
 	if (p_what == NOTIFICATION_DRAW) {
-		Ref<Font> font = get_theme_font("font", "Label");
-		int font_size = get_theme_font_size("font_size", "Label");
-		int separation = get_theme_constant("hseparation", "ItemList");
-		Color color = get_theme_color("font_color", "Label");
+		Ref<Font> font = get_theme_font(SNAME("font"), SNAME("Label"));
+		int font_size = get_theme_font_size(SNAME("font_size"), SNAME("Label"));
+		int separation = get_theme_constant(SNAME("hseparation"), SNAME("ItemList"));
+		Color color = get_theme_color(SNAME("font_color"), SNAME("Label"));
 
 		if (root && root->has_node(node)) {
 			Node *n = root->get_node(node);
 			if (n && EditorNode::get_singleton()->get_editor_selection()->is_selected(n)) {
-				color = get_theme_color("accent_color", "Editor");
+				color = get_theme_color(SNAME("accent_color"), SNAME("Editor"));
 			}
 		}
 
-		Color bgcol = get_theme_color("dark_color_2", "Editor");
+		Color bgcol = get_theme_color(SNAME("dark_color_2"), SNAME("Editor"));
 		bgcol.a *= 0.6;
 		draw_rect(Rect2(Point2(), get_size()), bgcol);
 		Color linecolor = color;
@@ -3087,7 +3087,7 @@ void AnimationTrackEditGroup::_notification(int p_what) {
 		int px = (-timeline->get_value() + timeline->get_play_position()) * timeline->get_zoom_scale() + timeline->get_name_limit();
 
 		if (px >= timeline->get_name_limit() && px < (get_size().width - timeline->get_buttons_width())) {
-			Color accent = get_theme_color("accent_color", "Editor");
+			Color accent = get_theme_color(SNAME("accent_color"), SNAME("Editor"));
 			draw_line(Point2(px, 0), Point2(px, get_size().height), accent, Math::round(2 * EDSCALE));
 		}
 	}
@@ -3102,9 +3102,9 @@ void AnimationTrackEditGroup::set_type_and_name(const Ref<Texture2D> &p_type, co
 }
 
 Size2 AnimationTrackEditGroup::get_minimum_size() const {
-	Ref<Font> font = get_theme_font("font", "Label");
-	int font_size = get_theme_font_size("font_size", "Label");
-	int separation = get_theme_constant("vseparation", "ItemList");
+	Ref<Font> font = get_theme_font(SNAME("font"), SNAME("Label"));
+	int font_size = get_theme_font_size(SNAME("font_size"), SNAME("Label"));
+	int separation = get_theme_constant(SNAME("vseparation"), SNAME("ItemList"));
 
 	return Vector2(0, MAX(font->get_height(font_size), icon->get_height()) + separation);
 }
@@ -3226,7 +3226,7 @@ void AnimationTrackEditor::update_keying() {
 
 	keying = keying_enabled;
 
-	emit_signal("keying_changed");
+	emit_signal(SNAME("keying_changed"));
 }
 
 bool AnimationTrackEditor::has_keying() const {
@@ -3283,7 +3283,7 @@ void AnimationTrackEditor::_name_limit_changed() {
 }
 
 void AnimationTrackEditor::_timeline_changed(float p_new_pos, bool p_drag, bool p_timeline_only) {
-	emit_signal("timeline_changed", p_new_pos, p_drag, p_timeline_only);
+	emit_signal(SNAME("timeline_changed"), p_new_pos, p_drag, p_timeline_only);
 }
 
 void AnimationTrackEditor::_track_remove_request(int p_track) {
@@ -3430,14 +3430,14 @@ void AnimationTrackEditor::_query_insert(const InsertData &p_id) {
 			insert_confirm->popup_centered();
 			insert_query = true;
 		} else {
-			call_deferred("_insert_delay", reset_allowed && EDITOR_GET("editors/animation/default_create_reset_tracks"), all_bezier && EDITOR_GET("editors/animation/default_create_bezier_tracks"));
+			call_deferred(SNAME("_insert_delay"), reset_allowed && EDITOR_GET("editors/animation/default_create_reset_tracks"), all_bezier && EDITOR_GET("editors/animation/default_create_bezier_tracks"));
 			insert_queue = true;
 		}
 
 	} else {
 		if (!insert_query && !insert_queue) {
 			// Create Beziers wouldn't make sense in this case, where no tracks are being created
-			call_deferred("_insert_delay", reset_allowed && EDITOR_GET("editors/animation/default_create_reset_tracks"), false);
+			call_deferred(SNAME("_insert_delay"), reset_allowed && EDITOR_GET("editors/animation/default_create_reset_tracks"), false);
 			insert_queue = true;
 		}
 	}
@@ -3482,7 +3482,7 @@ void AnimationTrackEditor::_insert_delay(bool p_create_reset, bool p_create_bezi
 			pos = animation->get_length();
 		}
 		set_anim_pos(pos);
-		emit_signal("timeline_changed", pos, true);
+		emit_signal(SNAME("timeline_changed"), pos, true);
 	}
 	insert_queue = false;
 }
@@ -4166,7 +4166,7 @@ void AnimationTrackEditor::_update_tracks() {
 
 			if (!group_sort.has(base_path)) {
 				AnimationTrackEditGroup *g = memnew(AnimationTrackEditGroup);
-				Ref<Texture2D> icon = get_theme_icon("Node", "EditorIcons");
+				Ref<Texture2D> icon = get_theme_icon(SNAME("Node"), SNAME("EditorIcons"));
 				String name = base_path;
 				String tooltip;
 				if (root && root->has_node(base_path)) {
@@ -4245,7 +4245,7 @@ void AnimationTrackEditor::_animation_changed() {
 	}
 
 	animation_changing_awaiting_update = true;
-	call_deferred("_animation_update");
+	call_deferred(SNAME("_animation_update"));
 }
 
 void AnimationTrackEditor::_snap_mode_changed(int p_mode) {
@@ -4313,8 +4313,8 @@ void AnimationTrackEditor::_animation_update() {
 	bezier_edit->update();
 
 	_update_step_spinbox();
-	emit_signal("animation_step_changed", animation->get_step());
-	emit_signal("animation_len_changed", animation->get_length());
+	emit_signal(SNAME("animation_step_changed"), animation->get_step());
+	emit_signal(SNAME("animation_len_changed"), animation->get_length());
 
 	animation_changing_awaiting_update = false;
 }
@@ -4325,13 +4325,13 @@ MenuButton *AnimationTrackEditor::get_edit_menu() {
 
 void AnimationTrackEditor::_notification(int p_what) {
 	if (p_what == NOTIFICATION_THEME_CHANGED || p_what == NOTIFICATION_ENTER_TREE) {
-		zoom_icon->set_texture(get_theme_icon("Zoom", "EditorIcons"));
-		snap->set_icon(get_theme_icon("Snap", "EditorIcons"));
+		zoom_icon->set_texture(get_theme_icon(SNAME("Zoom"), SNAME("EditorIcons")));
+		snap->set_icon(get_theme_icon(SNAME("Snap"), SNAME("EditorIcons")));
 		view_group->set_icon(get_theme_icon(view_group->is_pressed() ? "AnimationTrackList" : "AnimationTrackGroup", "EditorIcons"));
-		selected_filter->set_icon(get_theme_icon("AnimationFilter", "EditorIcons"));
-		imported_anim_warning->set_icon(get_theme_icon("NodeWarning", "EditorIcons"));
-		main_panel->add_theme_style_override("panel", get_theme_stylebox("bg", "Tree"));
-		edit->get_popup()->set_item_icon(edit->get_popup()->get_item_index(EDIT_APPLY_RESET), get_theme_icon("Reload", "EditorIcons"));
+		selected_filter->set_icon(get_theme_icon(SNAME("AnimationFilter"), SNAME("EditorIcons")));
+		imported_anim_warning->set_icon(get_theme_icon(SNAME("NodeWarning"), SNAME("EditorIcons")));
+		main_panel->add_theme_style_override("panel", get_theme_stylebox(SNAME("bg"), SNAME("Tree")));
+		edit->get_popup()->set_item_icon(edit->get_popup()->get_item_index(EDIT_APPLY_RESET), get_theme_icon(SNAME("Reload"), SNAME("EditorIcons")));
 	}
 
 	if (p_what == NOTIFICATION_READY) {
@@ -4341,7 +4341,7 @@ void AnimationTrackEditor::_notification(int p_what) {
 	if (p_what == NOTIFICATION_VISIBILITY_CHANGED) {
 		update_keying();
 		EditorNode::get_singleton()->update_keying();
-		emit_signal("keying_changed");
+		emit_signal(SNAME("keying_changed"));
 	}
 }
 
@@ -4367,11 +4367,11 @@ void AnimationTrackEditor::_update_step(double p_new_step) {
 	step->set_block_signals(true);
 	undo_redo->commit_action();
 	step->set_block_signals(false);
-	emit_signal("animation_step_changed", step_value);
+	emit_signal(SNAME("animation_step_changed"), step_value);
 }
 
 void AnimationTrackEditor::_update_length(double p_new_len) {
-	emit_signal("animation_len_changed", p_new_len);
+	emit_signal(SNAME("animation_len_changed"), p_new_len);
 }
 
 void AnimationTrackEditor::_dropped_track(int p_from_track, int p_to_track) {
@@ -4980,8 +4980,8 @@ float AnimationTrackEditor::get_moving_selection_offset() const {
 
 void AnimationTrackEditor::_box_selection_draw() {
 	const Rect2 selection_rect = Rect2(Point2(), box_selection->get_size());
-	box_selection->draw_rect(selection_rect, get_theme_color("box_selection_fill_color", "Editor"));
-	box_selection->draw_rect(selection_rect, get_theme_color("box_selection_stroke_color", "Editor"), false, Math::round(EDSCALE));
+	box_selection->draw_rect(selection_rect, get_theme_color(SNAME("box_selection_fill_color"), SNAME("Editor")));
+	box_selection->draw_rect(selection_rect, get_theme_color(SNAME("box_selection_stroke_color"), SNAME("Editor")), false, Math::round(EDSCALE));
 }
 
 void AnimationTrackEditor::_scroll_input(const Ref<InputEvent> &p_event) {
@@ -5201,7 +5201,7 @@ void AnimationTrackEditor::goto_prev_step(bool p_from_mouse_event) {
 		pos = 0;
 	}
 	set_anim_pos(pos);
-	emit_signal("timeline_changed", pos, true);
+	emit_signal(SNAME("timeline_changed"), pos, true);
 }
 
 void AnimationTrackEditor::goto_next_step(bool p_from_mouse_event) {
@@ -5228,7 +5228,7 @@ void AnimationTrackEditor::goto_next_step(bool p_from_mouse_event) {
 	}
 	set_anim_pos(pos);
 
-	emit_signal("timeline_changed", pos, true);
+	emit_signal(SNAME("timeline_changed"), pos, true);
 }
 
 void AnimationTrackEditor::_edit_menu_pressed(int p_option) {
@@ -5247,7 +5247,7 @@ void AnimationTrackEditor::_edit_menu_pressed(int p_option) {
 				}
 
 				String text;
-				Ref<Texture2D> icon = get_theme_icon("Node", "EditorIcons");
+				Ref<Texture2D> icon = get_theme_icon(SNAME("Node"), SNAME("EditorIcons"));
 				if (node) {
 					if (has_theme_icon(node->get_class(), "EditorIcons")) {
 						icon = get_theme_icon(node->get_class(), "EditorIcons");
