@@ -118,6 +118,10 @@
 		<member name="compression_mode" type="int" setter="set_compression_mode" getter="get_compression_mode" enum="NetworkedMultiplayerENet.CompressionMode" default="0">
 			The compression method used for network packets. These have different tradeoffs of compression speed versus bandwidth, you may need to test which one works best for your use case if you use compression at all.
 		</member>
+		<member name="dtls_hostname" type="String" setter="set_dtls_hostname" getter="get_dtls_hostname" default="&quot;&quot;">
+			The hostname used for DTLS verification, to be compared against the "CN" value in the certificate provided by the server.
+			When set to an empty string, the [code]address[/code] parameter passed to [method create_client] is used instead.
+		</member>
 		<member name="dtls_verify" type="bool" setter="set_dtls_verify_enabled" getter="is_dtls_verify_enabled" default="true">
 			Enable or disable certificate verification when [member use_dtls] [code]true[/code].
 		</member>
