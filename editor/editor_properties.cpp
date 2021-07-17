@@ -2798,13 +2798,14 @@ bool EditorInspectorDefaultPlugin::parse_property(Object *p_object, Variant::Typ
 			EditorPropertyResource *editor = memnew(EditorPropertyResource);
 			editor->setup(p_object, p_path, p_hint == PROPERTY_HINT_RESOURCE_TYPE ? p_hint_text : "Resource");
 
+			EditorData &ed = EditorNode::get_editor_data();
 			if (p_hint == PROPERTY_HINT_RESOURCE_TYPE) {
 				String open_in_new = EDITOR_GET("interface/inspector/resources_to_open_in_new_inspector");
 				for (int i = 0; i < open_in_new.get_slice_count(","); i++) {
 					String type = open_in_new.get_slicec(',', i).strip_edges();
 					for (int j = 0; j < p_hint_text.get_slice_count(","); j++) {
 						String inherits = p_hint_text.get_slicec(',', j);
-						if (ClassDB::is_parent_class(inherits, type)) {
+						if (ed.class_equals_or_inherits(inherits, type)) {
 							editor->set_use_sub_inspector(false);
 						}
 					}

@@ -31,6 +31,7 @@
 #include "script_language.h"
 
 #include "core/core_string_names.h"
+#include "core/io/resource_loader.h"
 #include "core/project_settings.h"
 
 ScriptLanguage *ScriptServer::_languages[MAX_LANGUAGES];
@@ -239,6 +240,27 @@ StringName ScriptServer::get_global_class_native_base(const String &p_class) {
 		base = global_classes[base].base;
 	}
 	return base;
+}
+Variant ScriptServer::instantiate_global_class(const StringName &p_class) {
+	ERR_FAIL_COND_V_MSG(!global_classes.has(p_class), Variant(), "Class to instantiate '" + String(p_class) + "' is not a script class.");
+	String native = get_global_class_native_base(p_class);
+	Object *o = ClassDB::instance(native);
+	ERR_FAIL_COND_V_MSG(!o, Variant(), "Class type: '" + String(native) + "' is not instantiable.");
+
+	REF ref;
+	Reference *r = Object::cast_to<Reference>(o);
+	if (r) {
+		ref = REF(r);
+	}
+
+	Ref<Script> s = ResourceLoader::load(get_global_class_path(p_class), "Script");
+	o->set_script(s.get_ref_ptr());
+
+	if (ref.is_valid()) {
+		return ref;
+	} else {
+		return o;
+	}
 }
 void ScriptServer::get_global_class_list(List<StringName> *r_global_classes) {
 	const StringName *K = nullptr;

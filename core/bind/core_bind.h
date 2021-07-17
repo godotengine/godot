@@ -745,6 +745,34 @@ public:
 	~_ClassDB();
 };
 
+class _ScriptServer : public Object {
+	GDCLASS(_ScriptServer, Object);
+
+protected:
+	static void _bind_methods();
+	static _ScriptServer *singleton;
+
+	bool _set(const StringName &p_name, const Variant &p_value);
+	bool _get(const StringName &p_name, Variant &r_ret) const;
+	void _get_property_list(List<PropertyInfo> *p_list) const;
+
+public:
+	static _ScriptServer *get_singleton() { return singleton; }
+
+	bool is_global_class(const StringName &p_class) const;
+	String get_global_class_path(const String &p_class) const;
+	StringName get_global_class_base(const String &p_class) const;
+	StringName get_global_class_native_base(const String &p_class) const;
+	StringName get_global_class_name(const String &p_path) const;
+	Ref<Script> get_global_class_script(const StringName &p_class) const;
+	Variant instantiate_global_class(const StringName &p_class) const;
+	Array get_global_class_list() const;
+	Dictionary get_global_class_map() const;
+
+	_ScriptServer();
+	~_ScriptServer();
+};
+
 class _Engine : public Object {
 	GDCLASS(_Engine, Object);
 

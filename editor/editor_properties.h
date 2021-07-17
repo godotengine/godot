@@ -564,6 +564,7 @@ class EditorPropertyResource : public EditorProperty {
 
 	void _open_editor_pressed();
 	void _fold_other_editors(Object *p_self);
+
 	void _update_property_bg();
 
 protected:

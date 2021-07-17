@@ -2149,6 +2149,118 @@ VisualScriptMathConstant::VisualScriptMathConstant() {
 }
 
 //////////////////////////////////////////
+////////////////SCRIPTCLASS///////////////
+//////////////////////////////////////////
+
+int VisualScriptScriptClass::get_output_sequence_port_count() const {
+	return 0;
+}
+
+bool VisualScriptScriptClass::has_input_sequence_port() const {
+	return false;
+}
+
+int VisualScriptScriptClass::get_input_value_port_count() const {
+	return 0;
+}
+int VisualScriptScriptClass::get_output_value_port_count() const {
+	return 1;
+}
+
+String VisualScriptScriptClass::get_output_sequence_port_text(int p_port) const {
+	return String();
+}
+
+PropertyInfo VisualScriptScriptClass::get_input_value_port_info(int p_idx) const {
+	return PropertyInfo();
+}
+
+PropertyInfo VisualScriptScriptClass::get_output_value_port_info(int p_idx) const {
+	if (ScriptServer::is_global_class(script_class)) {
+		Ref<Script> script = ResourceLoader::load(ScriptServer::get_global_class_path(script_class), "Script");
+		return PropertyInfo(Variant::OBJECT, script_class, PROPERTY_HINT_RESOURCE_TYPE, script->get_class(), PROPERTY_USAGE_DEFAULT, script->get_class());
+	}
+	return PropertyInfo(Variant::OBJECT, script_class, PROPERTY_HINT_RESOURCE_TYPE, "Script", PROPERTY_USAGE_DEFAULT, "Script");
+}
+
+String VisualScriptScriptClass::get_caption() const {
+	return "Script Class";
+}
+
+void VisualScriptScriptClass::set_script_class(const String &p_name) {
+	ERR_FAIL_COND(!ScriptServer::is_global_class(p_name));
+	script_class = p_name;
+	_change_notify();
+	ports_changed_notify();
+}
+
+const String &VisualScriptScriptClass::get_script_class() const {
+	return script_class;
+}
+
+class VisualScriptNodeInstanceScriptClass : public VisualScriptNodeInstance {
+public:
+	Ref<Script> script;
+
+	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Variant::CallError &r_error, String &r_error_str) {
+		*p_outputs[0] = script;
+		return OK;
+	}
+};
+
+VisualScriptNodeInstance *VisualScriptScriptClass::instance(VisualScriptInstance *p_instance) {
+	VisualScriptNodeInstanceScriptClass *instance = memnew(VisualScriptNodeInstanceScriptClass);
+	instance->script = script_class != StringName() ? ResourceLoader::load(ScriptServer::get_global_class_path(script_class), "Script") : RES();
+	return instance;
+}
+
+bool VisualScriptScriptClass::_set(const StringName &p_name, const Variant &p_value) {
+	if (p_name == "script_class") {
+		set_script_class(p_value);
+		return true;
+	}
+	return false;
+}
+
+bool VisualScriptScriptClass::_get(const StringName &p_name, Variant &r_ret) const {
+	if (p_name == "script_class") {
+		r_ret = get_script_class();
+		return true;
+	}
+	return false;
+}
+
+void VisualScriptScriptClass::_get_property_list(List<PropertyInfo> *p_list) const {
+	String cc;
+
+	List<StringName> lst;
+	ScriptServer::get_global_class_list(&lst);
+	int i = 0;
+	for (List<StringName>::Element *E = lst.front(); E; E = E->next()) {
+		if (i > 0)
+			cc += ",";
+		i++;
+		cc += E->get();
+	}
+	p_list->push_back(PropertyInfo(Variant::STRING, "script_class", PROPERTY_HINT_ENUM, cc));
+}
+
+void VisualScriptScriptClass::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("set_script_class", "name"), &VisualScriptScriptClass::set_script_class);
+	ClassDB::bind_method(D_METHOD("get_script_class"), &VisualScriptScriptClass::get_script_class);
+}
+
+VisualScriptScriptClass::VisualScriptScriptClass() {
+	List<StringName> lst;
+	ScriptServer::get_global_class_list(&lst);
+	script_class = "";
+	if (lst.size()) {
+		StringName name = lst.front()->get();
+		script_class = name;
+	}
+}
+
+//////////////////////////////////////////
 ////////////////ENGINESINGLETON///////////
 //////////////////////////////////////////
 
@@ -3795,6 +3907,7 @@ void register_visual_script_nodes() {
 	VisualScriptLanguage::singleton->add_register_func("constants/class_constant", create_node_generic<VisualScriptClassConstant>);
 	VisualScriptLanguage::singleton->add_register_func("constants/global_constant", create_node_generic<VisualScriptGlobalConstant>);
 	VisualScriptLanguage::singleton->add_register_func("constants/basic_type_constant", create_node_generic<VisualScriptBasicTypeConstant>);
+	VisualScriptLanguage::singleton->add_register_func("constants/script_class", create_node_generic<VisualScriptScriptClass>);
 
 	VisualScriptLanguage::singleton->add_register_func("custom/custom_node", create_node_generic<VisualScriptCustomNode>);
 	VisualScriptLanguage::singleton->add_register_func("custom/sub_call", create_node_generic<VisualScriptSubCall>);

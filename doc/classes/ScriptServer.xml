@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="ScriptServer" inherits="Object" version="3.4">
+	<brief_description>
+		Global script class management singleton.
+	</brief_description>
+	<description>
+		ScriptServer manages all information related to global script classes in Godot projects, similar to [ClassDB] for engine classes. Scripts independently opt-in to become global classes. With it, you can check if a script has a global name or icon, what its base classes are, or even instantiate them directly.
+		[b]Note:[/b] This class shouldn't be instantiated directly. Instead, access the singleton through a global variable.
+	</description>
+	<tutorials>
+		<link>https://docs.godotengine.org/en/stable/getting_started/scripting/gdscript/gdscript_basics.html#classes</link>
+	</tutorials>
+	<methods>
+		<method name="get_global_class_base" qualifiers="const">
+			<return type="String">
+			</return>
+			<argument index="0" name="class" type="String">
+			</argument>
+			<description>
+				Returns the class name that the script named [code]class[/code] directly extends. This may be an engine class or another global script class.
+			</description>
+		</method>
+		<method name="get_global_class_list" qualifiers="const">
+			<return type="Array">
+			</return>
+			<description>
+				Returns the names of all global script class names known by the ScriptServer.
+			</description>
+		</method>
+		<method name="get_global_class_map" qualifiers="const">
+			<return type="Dictionary">
+			</return>
+			<description>
+				Returns a Dictionary of all information known by the ScriptServer. If a project contained two GDScript files, "BaseNode" that extends [Node] and "DerivedNode" that extends "BaseNode", then the Dictionary might look like this:
+				[codeblock]
+				{
+				    "BaseNode": {
+				        "language": "GDScript",
+				        "path": "res://base_node.gd",
+				        "base": "Node",
+				        "native": "Node",
+				        "icon_path": "res://base_node.svg"
+				    },
+				    "DerivedNode": {
+				        "language": "GDScript",
+				        "path": "res://derived_node.gd",
+				        "base": "BaseNode",
+				        "native": "Node",
+				        "icon_path": null
+				    }
+				}
+				[/codeblock]
+			</description>
+		</method>
+		<method name="get_global_class_name" qualifiers="const">
+			<return type="String">
+			</return>
+			<argument index="0" name="path" type="String">
+			</argument>
+			<description>
+				Returns the global class name bound to the [Script] at [code]path[/code].
+			</description>
+		</method>
+		<method name="get_global_class_native_base" qualifiers="const">
+			<return type="String">
+			</return>
+			<argument index="0" name="class" type="String">
+			</argument>
+			<description>
+				Returns the native engine class that the script named [code]class[/code] eventually extends.
+			</description>
+		</method>
+		<method name="get_global_class_path" qualifiers="const">
+			<return type="String">
+			</return>
+			<argument index="0" name="class" type="String">
+			</argument>
+			<description>
+				Returns the file path to the script resource named [code]class[/code].
+			</description>
+		</method>
+		<method name="get_global_class_script" qualifiers="const">
+			<return type="Script">
+			</return>
+			<argument index="0" name="class" type="String">
+			</argument>
+			<description>
+				Returns the loaded [Script] named [code]class[/code].
+			</description>
+		</method>
+		<method name="instantiate_global_class" qualifiers="const">
+			<return type="Variant">
+			</return>
+			<argument index="0" name="class" type="String">
+			</argument>
+			<description>
+				Returns a new instance of the scripted type defined by the script named [code]class[/code].
+			</description>
+		</method>
+		<method name="is_global_class" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="class" type="String">
+			</argument>
+			<description>
+				Returns [code]true[/code] if the name [code]class[/code] is a global script class.
+			</description>
+		</method>
+	</methods>
+	<constants>
+	</constants>
+</class>

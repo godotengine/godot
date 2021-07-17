@@ -309,6 +309,14 @@ bool EditorInterface::is_distraction_free_mode_enabled() const {
 	return EditorNode::get_singleton()->is_distraction_free_mode_enabled();
 }
 
+Ref<Texture> EditorInterface::get_class_icon(const String &p_class, const String &p_fallback) {
+	return EditorNode::get_singleton()->get_class_icon(p_class, p_fallback);
+}
+
+Ref<Texture> EditorInterface::get_object_icon(const Object *p_object, const String &p_fallback) {
+	return EditorNode::get_singleton()->get_object_icon(p_object, p_fallback);
+}
+
 void EditorInterface::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("inspect_object", "object", "for_property", "inspector_only"), &EditorInterface::inspect_object, DEFVAL(String()), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("get_selection"), &EditorInterface::get_selection);
@@ -348,6 +356,9 @@ void EditorInterface::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_main_screen_editor", "name"), &EditorInterface::set_main_screen_editor);
 	ClassDB::bind_method(D_METHOD("set_distraction_free_mode", "enter"), &EditorInterface::set_distraction_free_mode);
 	ClassDB::bind_method(D_METHOD("is_distraction_free_mode_enabled"), &EditorInterface::is_distraction_free_mode_enabled);
+
+	ClassDB::bind_method(D_METHOD("get_class_icon", "class", "fallback"), &EditorInterface::get_class_icon);
+	ClassDB::bind_method(D_METHOD("get_object_icon", "object", "fallback"), &EditorInterface::get_object_icon);
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "distraction_free_mode"), "set_distraction_free_mode", "is_distraction_free_mode_enabled");
 }

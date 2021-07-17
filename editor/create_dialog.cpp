@@ -160,7 +160,8 @@ void CreateDialog::add_type(const String &p_type, HashMap<String, TreeItem *> &p
 
 		String script_path = ScriptServer::get_global_class_path(p_type);
 		if (script_path.find("res://addons/", 0) != -1) {
-			if (!EditorNode::get_singleton()->is_addon_plugin_enabled(script_path.get_slicec('/', 3))) {
+			String cfg_path = script_path.plus_file("plugin.cfg");
+			if (FileAccess::exists(cfg_path) && !EditorNode::get_singleton()->is_addon_plugin_enabled(script_path.get_slicec('/', 3))) {
 				return;
 			}
 		}
@@ -189,7 +190,11 @@ void CreateDialog::add_type(const String &p_type, HashMap<String, TreeItem *> &p
 		item->set_text(0, p_type);
 	} else {
 		item->set_metadata(0, p_type);
-		item->set_text(0, p_type + " (" + ScriptServer::get_global_class_path(p_type).get_file() + ")");
+		String text = p_type;
+		if (!EDITOR_GET("interface/editors/create_dialog_hide_script_class_filepath")) {
+			text += " (" + ScriptServer::get_global_class_path(p_type).get_file() + ")";
+		}
+		item->set_text(0, text);
 	}
 	if (!can_instance) {
 		item->set_custom_color(0, get_color("disabled_font_color", "Editor"));
