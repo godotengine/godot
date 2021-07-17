@@ -666,6 +666,7 @@ Error ResourceLoaderBinary::load() {
 		//maybe it is loaded already
 		String path;
 		String id;
+		RES res;
 
 		if (!main) {
 			path = internal_resources[i].path;
@@ -683,7 +684,8 @@ Error ResourceLoaderBinary::load() {
 					//already loaded, don't do anything
 					stage++;
 					error = OK;
-					continue;
+					Resource *r = ResourceCache::get(path);
+					res = Ref<Resource>(r);
 				}
 			}
 		} else {
@@ -697,8 +699,6 @@ Error ResourceLoaderBinary::load() {
 		f->seek(offset);
 
 		String t = get_unicode_string();
-
-		RES res;
 
 		if (cache_mode == ResourceFormatLoader::CACHE_MODE_REPLACE && ResourceCache::has(path)) {
 			//use the existing one
