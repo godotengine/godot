@@ -75,7 +75,7 @@
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
-				Sets the size of the array. If the array is grown, reserves elements at the end of the array. If the array is shrunk, truncates the array to the new size.
+				Sets the size of the array. If the array is grown, reserves elements at the end of the array. If the array is shrunk, truncates the array to the new size. Note: added elements are not automatically initialized to 0 and may contain garbage.
 			</description>
 		</method>
 		<method name="set">
