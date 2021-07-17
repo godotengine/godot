@@ -561,7 +561,7 @@ void AudioServer::set_bus_count(int p_count) {
 
 	unlock();
 
-	emit_signal("bus_layout_changed");
+	emit_signal(SNAME("bus_layout_changed"));
 }
 
 void AudioServer::remove_bus(int p_index) {
@@ -576,7 +576,7 @@ void AudioServer::remove_bus(int p_index) {
 	buses.remove(p_index);
 	unlock();
 
-	emit_signal("bus_layout_changed");
+	emit_signal(SNAME("bus_layout_changed"));
 }
 
 void AudioServer::add_bus(int p_at_pos) {
@@ -630,7 +630,7 @@ void AudioServer::add_bus(int p_at_pos) {
 		buses.insert(p_at_pos, bus);
 	}
 
-	emit_signal("bus_layout_changed");
+	emit_signal(SNAME("bus_layout_changed"));
 }
 
 void AudioServer::move_bus(int p_bus, int p_to_pos) {
@@ -654,7 +654,7 @@ void AudioServer::move_bus(int p_bus, int p_to_pos) {
 		buses.insert(p_to_pos - 1, bus);
 	}
 
-	emit_signal("bus_layout_changed");
+	emit_signal(SNAME("bus_layout_changed"));
 }
 
 int AudioServer::get_bus_count() const {
@@ -700,7 +700,7 @@ void AudioServer::set_bus_name(int p_bus, const String &p_name) {
 	bus_map[attempt] = buses[p_bus];
 	unlock();
 
-	emit_signal("bus_layout_changed");
+	emit_signal(SNAME("bus_layout_changed"));
 }
 
 String AudioServer::get_bus_name(int p_bus) const {

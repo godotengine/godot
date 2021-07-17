@@ -364,12 +364,12 @@ void Path2DEditor::forward_canvas_draw_over_viewport(Control *p_overlay) {
 
 	Transform2D xform = canvas_item_editor->get_canvas_transform() * node->get_global_transform();
 
-	const Ref<Texture2D> path_sharp_handle = get_theme_icon("EditorPathSharpHandle", "EditorIcons");
-	const Ref<Texture2D> path_smooth_handle = get_theme_icon("EditorPathSmoothHandle", "EditorIcons");
+	const Ref<Texture2D> path_sharp_handle = get_theme_icon(SNAME("EditorPathSharpHandle"), SNAME("EditorIcons"));
+	const Ref<Texture2D> path_smooth_handle = get_theme_icon(SNAME("EditorPathSmoothHandle"), SNAME("EditorIcons"));
 	// Both handle icons must be of the same size
 	const Size2 handle_size = path_sharp_handle->get_size();
 
-	const Ref<Texture2D> curve_handle = get_theme_icon("EditorCurveHandle", "EditorIcons");
+	const Ref<Texture2D> curve_handle = get_theme_icon(SNAME("EditorCurveHandle"), SNAME("EditorIcons"));
 	const Size2 curve_handle_size = curve_handle->get_size();
 
 	Ref<Curve2D> curve = node->get_curve();
@@ -411,7 +411,7 @@ void Path2DEditor::forward_canvas_draw_over_viewport(Control *p_overlay) {
 	}
 
 	if (on_edge) {
-		Ref<Texture2D> add_handle = get_theme_icon("EditorHandleAdd", "EditorIcons");
+		Ref<Texture2D> add_handle = get_theme_icon(SNAME("EditorHandleAdd"), SNAME("EditorIcons"));
 		p_overlay->draw_texture(add_handle, edge_point - add_handle->get_size() * 0.5);
 	}
 }
@@ -534,7 +534,7 @@ Path2DEditor::Path2DEditor(EditorNode *p_editor) {
 	base_hb->add_child(sep);
 	curve_edit = memnew(Button);
 	curve_edit->set_flat(true);
-	curve_edit->set_icon(EditorNode::get_singleton()->get_gui_base()->get_theme_icon("CurveEdit", "EditorIcons"));
+	curve_edit->set_icon(EditorNode::get_singleton()->get_gui_base()->get_theme_icon(SNAME("CurveEdit"), SNAME("EditorIcons")));
 	curve_edit->set_toggle_mode(true);
 	curve_edit->set_focus_mode(Control::FOCUS_NONE);
 	curve_edit->set_tooltip(TTR("Select Points") + "\n" + TTR("Shift+Drag: Select Control Points") + "\n" + keycode_get_string(KEY_MASK_CMD) + TTR("Click: Add Point") + "\n" + TTR("Left Click: Split Segment (in curve)") + "\n" + TTR("Right Click: Delete Point"));
@@ -542,7 +542,7 @@ Path2DEditor::Path2DEditor(EditorNode *p_editor) {
 	base_hb->add_child(curve_edit);
 	curve_edit_curve = memnew(Button);
 	curve_edit_curve->set_flat(true);
-	curve_edit_curve->set_icon(EditorNode::get_singleton()->get_gui_base()->get_theme_icon("CurveCurve", "EditorIcons"));
+	curve_edit_curve->set_icon(EditorNode::get_singleton()->get_gui_base()->get_theme_icon(SNAME("CurveCurve"), SNAME("EditorIcons")));
 	curve_edit_curve->set_toggle_mode(true);
 	curve_edit_curve->set_focus_mode(Control::FOCUS_NONE);
 	curve_edit_curve->set_tooltip(TTR("Select Control Points (Shift+Drag)"));
@@ -550,7 +550,7 @@ Path2DEditor::Path2DEditor(EditorNode *p_editor) {
 	base_hb->add_child(curve_edit_curve);
 	curve_create = memnew(Button);
 	curve_create->set_flat(true);
-	curve_create->set_icon(EditorNode::get_singleton()->get_gui_base()->get_theme_icon("CurveCreate", "EditorIcons"));
+	curve_create->set_icon(EditorNode::get_singleton()->get_gui_base()->get_theme_icon(SNAME("CurveCreate"), SNAME("EditorIcons")));
 	curve_create->set_toggle_mode(true);
 	curve_create->set_focus_mode(Control::FOCUS_NONE);
 	curve_create->set_tooltip(TTR("Add Point (in empty space)"));
@@ -558,7 +558,7 @@ Path2DEditor::Path2DEditor(EditorNode *p_editor) {
 	base_hb->add_child(curve_create);
 	curve_del = memnew(Button);
 	curve_del->set_flat(true);
-	curve_del->set_icon(EditorNode::get_singleton()->get_gui_base()->get_theme_icon("CurveDelete", "EditorIcons"));
+	curve_del->set_icon(EditorNode::get_singleton()->get_gui_base()->get_theme_icon(SNAME("CurveDelete"), SNAME("EditorIcons")));
 	curve_del->set_toggle_mode(true);
 	curve_del->set_focus_mode(Control::FOCUS_NONE);
 	curve_del->set_tooltip(TTR("Delete Point"));
@@ -566,7 +566,7 @@ Path2DEditor::Path2DEditor(EditorNode *p_editor) {
 	base_hb->add_child(curve_del);
 	curve_close = memnew(Button);
 	curve_close->set_flat(true);
-	curve_close->set_icon(EditorNode::get_singleton()->get_gui_base()->get_theme_icon("CurveClose", "EditorIcons"));
+	curve_close->set_icon(EditorNode::get_singleton()->get_gui_base()->get_theme_icon(SNAME("CurveClose"), SNAME("EditorIcons")));
 	curve_close->set_focus_mode(Control::FOCUS_NONE);
 	curve_close->set_tooltip(TTR("Close Curve"));
 	curve_close->connect("pressed", callable_mp(this, &Path2DEditor::_mode_selected), varray(ACTION_CLOSE));

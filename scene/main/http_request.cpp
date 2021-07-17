@@ -463,7 +463,7 @@ void HTTPRequest::_request_done(int p_status, int p_code, const PackedStringArra
 		data = &p_data;
 	}
 
-	emit_signal("request_completed", p_status, p_code, p_headers, *data);
+	emit_signal(SNAME("request_completed"), p_status, p_code, p_headers, *data);
 }
 
 void HTTPRequest::_notification(int p_what) {

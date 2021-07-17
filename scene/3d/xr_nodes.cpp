@@ -207,10 +207,10 @@ void XRController3D::_notification(int p_what) {
 						bool is_pressed = Input::get_singleton()->is_joy_button_pressed(joy_id, (JoyButton)i);
 
 						if (!was_pressed && is_pressed) {
-							emit_signal("button_pressed", i);
+							emit_signal(SNAME("button_pressed"), i);
 							button_states += mask;
 						} else if (was_pressed && !is_pressed) {
-							emit_signal("button_released", i);
+							emit_signal(SNAME("button_released"), i);
 							button_states -= mask;
 						};
 
@@ -225,7 +225,7 @@ void XRController3D::_notification(int p_what) {
 				Ref<Mesh> trackerMesh = tracker->get_mesh();
 				if (mesh != trackerMesh) {
 					mesh = trackerMesh;
-					emit_signal("mesh_updated", mesh);
+					emit_signal(SNAME("mesh_updated"), mesh);
 				}
 			};
 		}; break;
@@ -422,7 +422,7 @@ void XRAnchor3D::_notification(int p_what) {
 				Ref<Mesh> trackerMesh = tracker->get_mesh();
 				if (mesh != trackerMesh) {
 					mesh = trackerMesh;
-					emit_signal("mesh_updated", mesh);
+					emit_signal(SNAME("mesh_updated"), mesh);
 				}
 			};
 		}; break;

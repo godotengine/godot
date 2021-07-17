@@ -47,18 +47,18 @@ void TileMapEditorTilesPlugin::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED:
-			select_tool_button->set_icon(get_theme_icon("ToolSelect", "EditorIcons"));
-			paint_tool_button->set_icon(get_theme_icon("Edit", "EditorIcons"));
-			line_tool_button->set_icon(get_theme_icon("CurveLinear", "EditorIcons"));
-			rect_tool_button->set_icon(get_theme_icon("Rectangle", "EditorIcons"));
-			bucket_tool_button->set_icon(get_theme_icon("Bucket", "EditorIcons"));
+			select_tool_button->set_icon(get_theme_icon(SNAME("ToolSelect"), SNAME("EditorIcons")));
+			paint_tool_button->set_icon(get_theme_icon(SNAME("Edit"), SNAME("EditorIcons")));
+			line_tool_button->set_icon(get_theme_icon(SNAME("CurveLinear"), SNAME("EditorIcons")));
+			rect_tool_button->set_icon(get_theme_icon(SNAME("Rectangle"), SNAME("EditorIcons")));
+			bucket_tool_button->set_icon(get_theme_icon(SNAME("Bucket"), SNAME("EditorIcons")));
 
-			picker_button->set_icon(get_theme_icon("ColorPick", "EditorIcons"));
-			erase_button->set_icon(get_theme_icon("Eraser", "EditorIcons"));
+			picker_button->set_icon(get_theme_icon(SNAME("ColorPick"), SNAME("EditorIcons")));
+			erase_button->set_icon(get_theme_icon(SNAME("Eraser"), SNAME("EditorIcons")));
 
-			toggle_grid_button->set_icon(get_theme_icon("Grid", "EditorIcons"));
+			toggle_grid_button->set_icon(get_theme_icon(SNAME("Grid"), SNAME("EditorIcons")));
 
-			missing_atlas_texture_icon = get_theme_icon("TileSet", "EditorIcons");
+			missing_atlas_texture_icon = get_theme_icon(SNAME("TileSet"), SNAME("EditorIcons"));
 
 			toggle_grid_button->set_pressed(EditorSettings::get_singleton()->get("editors/tiles_editor/display_grid"));
 			break;
@@ -177,7 +177,7 @@ void TileMapEditorTilesPlugin::_update_tile_set_sources_list() {
 		// Scene collection source.
 		TileSetScenesCollectionSource *scene_collection_source = Object::cast_to<TileSetScenesCollectionSource>(source);
 		if (scene_collection_source) {
-			texture = get_theme_icon("PackedScene", "EditorIcons");
+			texture = get_theme_icon(SNAME("PackedScene"), SNAME("EditorIcons"));
 			item_text = vformat(TTR("Scene Collection Source (id:%d)"), source_id);
 		}
 
@@ -200,7 +200,7 @@ void TileMapEditorTilesPlugin::_update_tile_set_sources_list() {
 		} else {
 			sources_list->set_current(0);
 		}
-		sources_list->emit_signal("item_selected", sources_list->get_current());
+		sources_list->emit_signal(SNAME("item_selected"), sources_list->get_current());
 	}
 
 	// Synchronize
@@ -306,7 +306,7 @@ void TileMapEditorTilesPlugin::_update_scenes_collection_view() {
 			Variant udata = i;
 			EditorResourcePreview::get_singleton()->queue_edited_resource_preview(scene, this, "_scene_thumbnail_done", udata);
 		} else {
-			item_index = scene_tiles_list->add_item(TTR("Tile with Invalid Scene"), get_theme_icon("PackedScene", "EditorIcons"));
+			item_index = scene_tiles_list->add_item(TTR("Tile with Invalid Scene"), get_theme_icon(SNAME("PackedScene"), SNAME("EditorIcons")));
 		}
 		scene_tiles_list->set_item_metadata(item_index, scene_id);
 
@@ -1955,9 +1955,9 @@ void TileMapEditorTerrainsPlugin::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED:
-			paint_tool_button->set_icon(get_theme_icon("Edit", "EditorIcons"));
-			picker_button->set_icon(get_theme_icon("ColorPick", "EditorIcons"));
-			erase_button->set_icon(get_theme_icon("Eraser", "EditorIcons"));
+			paint_tool_button->set_icon(get_theme_icon(SNAME("Edit"), SNAME("EditorIcons")));
+			picker_button->set_icon(get_theme_icon(SNAME("ColorPick"), SNAME("EditorIcons")));
+			erase_button->set_icon(get_theme_icon(SNAME("Eraser"), SNAME("EditorIcons")));
 			break;
 	}
 }
@@ -2995,13 +2995,13 @@ void TileMapEditorTerrainsPlugin::_update_terrains_tree() {
 		TreeItem *terrain_set_tree_item = terrains_tree->create_item();
 		String matches;
 		if (tile_set->get_terrain_set_mode(terrain_set_index) == TileSet::TERRAIN_MODE_MATCH_CORNERS_AND_SIDES) {
-			terrain_set_tree_item->set_icon(0, get_theme_icon("TerrainMatchCornersAndSides", "EditorIcons"));
+			terrain_set_tree_item->set_icon(0, get_theme_icon(SNAME("TerrainMatchCornersAndSides"), SNAME("EditorIcons")));
 			matches = String(TTR("Matches Corners and Sides"));
 		} else if (tile_set->get_terrain_set_mode(terrain_set_index) == TileSet::TERRAIN_MODE_MATCH_CORNERS) {
-			terrain_set_tree_item->set_icon(0, get_theme_icon("TerrainMatchCorners", "EditorIcons"));
+			terrain_set_tree_item->set_icon(0, get_theme_icon(SNAME("TerrainMatchCorners"), SNAME("EditorIcons")));
 			matches = String(TTR("Matches Corners Only"));
 		} else {
-			terrain_set_tree_item->set_icon(0, get_theme_icon("TerrainMatchSides", "EditorIcons"));
+			terrain_set_tree_item->set_icon(0, get_theme_icon(SNAME("TerrainMatchSides"), SNAME("EditorIcons")));
 			matches = String(TTR("Matches Sides Only"));
 		}
 		terrain_set_tree_item->set_text(0, vformat("Terrain Set %d (%s)", terrain_set_index, matches));
@@ -3187,8 +3187,8 @@ void TileMapEditor::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED:
-			missing_tile_texture = get_theme_icon("StatusWarning", "EditorIcons");
-			warning_pattern_texture = get_theme_icon("WarningPattern", "EditorIcons");
+			missing_tile_texture = get_theme_icon(SNAME("StatusWarning"), SNAME("EditorIcons"));
+			warning_pattern_texture = get_theme_icon(SNAME("WarningPattern"), SNAME("EditorIcons"));
 			break;
 		case NOTIFICATION_INTERNAL_PROCESS:
 			if (is_visible_in_tree() && tileset_changed_needs_update) {
@@ -3438,7 +3438,7 @@ void TileMapEditor::forward_canvas_draw_over_viewport(Control *p_overlay) {
 	}
 
 	// Draw the IDs for debug.
-	/*Ref<Font> font = get_theme_font("font", "Label");
+	/*Ref<Font> font = get_theme_font(SNAME("font"), SNAME("Label"));
 	for (int x = displayed_rect.position.x; x < (displayed_rect.position.x + displayed_rect.size.x); x++) {
 		for (int y = displayed_rect.position.y; y < (displayed_rect.position.y + displayed_rect.size.y); y++) {
 			p_overlay->draw_string(font, xform.xform(tile_map->map_to_world(Vector2(x, y))) + Vector2i(-tile_shape_size.x / 2, 0), vformat("%s", Vector2(x, y)));

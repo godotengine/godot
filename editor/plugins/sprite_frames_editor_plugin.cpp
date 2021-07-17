@@ -80,7 +80,7 @@ void SpriteFramesEditor::_sheet_preview_draw() {
 		return;
 	}
 
-	Color accent = get_theme_color("accent_color", "Editor");
+	Color accent = get_theme_color(SNAME("accent_color"), SNAME("Editor"));
 
 	for (Set<int>::Element *E = frames_selected.front(); E; E = E->next()) {
 		int idx = E->get();
@@ -308,27 +308,27 @@ void SpriteFramesEditor::_prepare_sprite_sheet(const String &p_file) {
 void SpriteFramesEditor::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
-			load->set_icon(get_theme_icon("Load", "EditorIcons"));
-			load_sheet->set_icon(get_theme_icon("SpriteSheet", "EditorIcons"));
-			copy->set_icon(get_theme_icon("ActionCopy", "EditorIcons"));
-			paste->set_icon(get_theme_icon("ActionPaste", "EditorIcons"));
-			empty->set_icon(get_theme_icon("InsertBefore", "EditorIcons"));
-			empty2->set_icon(get_theme_icon("InsertAfter", "EditorIcons"));
-			move_up->set_icon(get_theme_icon("MoveLeft", "EditorIcons"));
-			move_down->set_icon(get_theme_icon("MoveRight", "EditorIcons"));
-			_delete->set_icon(get_theme_icon("Remove", "EditorIcons"));
-			zoom_out->set_icon(get_theme_icon("ZoomLess", "EditorIcons"));
-			zoom_reset->set_icon(get_theme_icon("ZoomReset", "EditorIcons"));
-			zoom_in->set_icon(get_theme_icon("ZoomMore", "EditorIcons"));
-			new_anim->set_icon(get_theme_icon("New", "EditorIcons"));
-			remove_anim->set_icon(get_theme_icon("Remove", "EditorIcons"));
-			split_sheet_zoom_out->set_icon(get_theme_icon("ZoomLess", "EditorIcons"));
-			split_sheet_zoom_reset->set_icon(get_theme_icon("ZoomReset", "EditorIcons"));
-			split_sheet_zoom_in->set_icon(get_theme_icon("ZoomMore", "EditorIcons"));
+			load->set_icon(get_theme_icon(SNAME("Load"), SNAME("EditorIcons")));
+			load_sheet->set_icon(get_theme_icon(SNAME("SpriteSheet"), SNAME("EditorIcons")));
+			copy->set_icon(get_theme_icon(SNAME("ActionCopy"), SNAME("EditorIcons")));
+			paste->set_icon(get_theme_icon(SNAME("ActionPaste"), SNAME("EditorIcons")));
+			empty->set_icon(get_theme_icon(SNAME("InsertBefore"), SNAME("EditorIcons")));
+			empty2->set_icon(get_theme_icon(SNAME("InsertAfter"), SNAME("EditorIcons")));
+			move_up->set_icon(get_theme_icon(SNAME("MoveLeft"), SNAME("EditorIcons")));
+			move_down->set_icon(get_theme_icon(SNAME("MoveRight"), SNAME("EditorIcons")));
+			_delete->set_icon(get_theme_icon(SNAME("Remove"), SNAME("EditorIcons")));
+			zoom_out->set_icon(get_theme_icon(SNAME("ZoomLess"), SNAME("EditorIcons")));
+			zoom_reset->set_icon(get_theme_icon(SNAME("ZoomReset"), SNAME("EditorIcons")));
+			zoom_in->set_icon(get_theme_icon(SNAME("ZoomMore"), SNAME("EditorIcons")));
+			new_anim->set_icon(get_theme_icon(SNAME("New"), SNAME("EditorIcons")));
+			remove_anim->set_icon(get_theme_icon(SNAME("Remove"), SNAME("EditorIcons")));
+			split_sheet_zoom_out->set_icon(get_theme_icon(SNAME("ZoomLess"), SNAME("EditorIcons")));
+			split_sheet_zoom_reset->set_icon(get_theme_icon(SNAME("ZoomReset"), SNAME("EditorIcons")));
+			split_sheet_zoom_in->set_icon(get_theme_icon(SNAME("ZoomMore"), SNAME("EditorIcons")));
 			[[fallthrough]];
 		}
 		case NOTIFICATION_THEME_CHANGED: {
-			split_sheet_scroll->add_theme_style_override("bg", get_theme_stylebox("bg", "Tree"));
+			split_sheet_scroll->add_theme_style_override("bg", get_theme_stylebox(SNAME("bg"), SNAME("Tree")));
 		} break;
 		case NOTIFICATION_READY: {
 			add_theme_constant_override("autohide", 1); // Fixes the dragger always showing up.

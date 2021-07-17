@@ -2569,7 +2569,7 @@ void TileSetAtlasSource::create_tile(const Vector2i p_atlas_coords, const Vector
 		}
 	}
 
-	emit_signal("changed");
+	emit_signal(SNAME("changed"));
 }
 
 void TileSetAtlasSource::remove_tile(Vector2i p_atlas_coords) {
@@ -2595,7 +2595,7 @@ void TileSetAtlasSource::remove_tile(Vector2i p_atlas_coords) {
 	tiles_ids.erase(p_atlas_coords);
 	tiles_ids.sort();
 
-	emit_signal("changed");
+	emit_signal(SNAME("changed"));
 }
 
 bool TileSetAtlasSource::has_tile(Vector2i p_atlas_coords) const {
@@ -2723,7 +2723,7 @@ void TileSetAtlasSource::move_tile_in_atlas(Vector2i p_atlas_coords, Vector2i p_
 		}
 	}
 
-	emit_signal("changed");
+	emit_signal(SNAME("changed"));
 }
 
 bool TileSetAtlasSource::has_tiles_outside_texture() {
@@ -2768,7 +2768,7 @@ int TileSetAtlasSource::create_alternative_tile(const Vector2i p_atlas_coords, i
 	tiles[p_atlas_coords].alternatives_ids.sort();
 	_compute_next_alternative_id(p_atlas_coords);
 
-	emit_signal("changed");
+	emit_signal(SNAME("changed"));
 
 	return new_alternative_id;
 }
@@ -2783,7 +2783,7 @@ void TileSetAtlasSource::remove_alternative_tile(const Vector2i p_atlas_coords, 
 	tiles[p_atlas_coords].alternatives_ids.erase(p_alternative_tile);
 	tiles[p_atlas_coords].alternatives_ids.sort();
 
-	emit_signal("changed");
+	emit_signal(SNAME("changed"));
 }
 
 void TileSetAtlasSource::set_alternative_tile_id(const Vector2i p_atlas_coords, int p_alternative_tile, int p_new_id) {
@@ -2800,7 +2800,7 @@ void TileSetAtlasSource::set_alternative_tile_id(const Vector2i p_atlas_coords, 
 	tiles[p_atlas_coords].alternatives_ids.erase(p_alternative_tile);
 	tiles[p_atlas_coords].alternatives_ids.sort();
 
-	emit_signal("changed");
+	emit_signal(SNAME("changed"));
 }
 
 bool TileSetAtlasSource::has_alternative_tile(const Vector2i p_atlas_coords, int p_alternative_tile) const {
@@ -2958,7 +2958,7 @@ int TileSetScenesCollectionSource::create_scene_tile(Ref<PackedScene> p_packed_s
 	set_scene_tile_scene(new_scene_id, p_packed_scene);
 	_compute_next_alternative_id();
 
-	emit_signal("changed");
+	emit_signal(SNAME("changed"));
 
 	return new_scene_id;
 }
@@ -2978,7 +2978,7 @@ void TileSetScenesCollectionSource::set_scene_tile_id(int p_id, int p_new_id) {
 	scenes.erase(p_id);
 	scenes_ids.erase(p_id);
 
-	emit_signal("changed");
+	emit_signal(SNAME("changed"));
 }
 
 void TileSetScenesCollectionSource::set_scene_tile_scene(int p_id, Ref<PackedScene> p_packed_scene) {
@@ -2997,7 +2997,7 @@ void TileSetScenesCollectionSource::set_scene_tile_scene(int p_id, Ref<PackedSce
 	} else {
 		scenes[p_id].scene = Ref<PackedScene>();
 	}
-	emit_signal("changed");
+	emit_signal(SNAME("changed"));
 }
 
 Ref<PackedScene> TileSetScenesCollectionSource::get_scene_tile_scene(int p_id) const {
@@ -3010,7 +3010,7 @@ void TileSetScenesCollectionSource::set_scene_tile_display_placeholder(int p_id,
 
 	scenes[p_id].display_placeholder = p_display_placeholder;
 
-	emit_signal("changed");
+	emit_signal(SNAME("changed"));
 }
 
 bool TileSetScenesCollectionSource::get_scene_tile_display_placeholder(int p_id) const {
@@ -3023,7 +3023,7 @@ void TileSetScenesCollectionSource::remove_scene_tile(int p_id) {
 
 	scenes.erase(p_id);
 	scenes_ids.erase(p_id);
-	emit_signal("changed");
+	emit_signal(SNAME("changed"));
 }
 
 int TileSetScenesCollectionSource::get_next_scene_tile_id() const {
@@ -3144,7 +3144,7 @@ void TileData::notify_tile_data_properties_should_change() {
 	}
 
 	notify_property_list_changed();
-	emit_signal("changed");
+	emit_signal(SNAME("changed"));
 }
 
 void TileData::reset_state() {
@@ -3166,7 +3166,7 @@ bool TileData::is_allowing_transform() const {
 void TileData::set_flip_h(bool p_flip_h) {
 	ERR_FAIL_COND_MSG(!allow_transform && p_flip_h, "Transform is only allowed for alternative tiles (with its alternative_id != 0)");
 	flip_h = p_flip_h;
-	emit_signal("changed");
+	emit_signal(SNAME("changed"));
 }
 bool TileData::get_flip_h() const {
 	return flip_h;
@@ -3175,7 +3175,7 @@ bool TileData::get_flip_h() const {
 void TileData::set_flip_v(bool p_flip_v) {
 	ERR_FAIL_COND_MSG(!allow_transform && p_flip_v, "Transform is only allowed for alternative tiles (with its alternative_id != 0)");
 	flip_v = p_flip_v;
-	emit_signal("changed");
+	emit_signal(SNAME("changed"));
 }
 
 bool TileData::get_flip_v() const {
@@ -3185,7 +3185,7 @@ bool TileData::get_flip_v() const {
 void TileData::set_transpose(bool p_transpose) {
 	ERR_FAIL_COND_MSG(!allow_transform && p_transpose, "Transform is only allowed for alternative tiles (with its alternative_id != 0)");
 	transpose = p_transpose;
-	emit_signal("changed");
+	emit_signal(SNAME("changed"));
 }
 bool TileData::get_transpose() const {
 	return transpose;
@@ -3193,7 +3193,7 @@ bool TileData::get_transpose() const {
 
 void TileData::set_texture_offset(Vector2i p_texture_offset) {
 	tex_offset = p_texture_offset;
-	emit_signal("changed");
+	emit_signal(SNAME("changed"));
 }
 
 Vector2i TileData::get_texture_offset() const {
@@ -3202,7 +3202,7 @@ Vector2i TileData::get_texture_offset() const {
 
 void TileData::tile_set_material(Ref<ShaderMaterial> p_material) {
 	material = p_material;
-	emit_signal("changed");
+	emit_signal(SNAME("changed"));
 }
 Ref<ShaderMaterial> TileData::tile_get_material() const {
 	return material;
@@ -3210,7 +3210,7 @@ Ref<ShaderMaterial> TileData::tile_get_material() const {
 
 void TileData::set_modulate(Color p_modulate) {
 	modulate = p_modulate;
-	emit_signal("changed");
+	emit_signal(SNAME("changed"));
 }
 Color TileData::get_modulate() const {
 	return modulate;
@@ -3218,7 +3218,7 @@ Color TileData::get_modulate() const {
 
 void TileData::set_z_index(int p_z_index) {
 	z_index = p_z_index;
-	emit_signal("changed");
+	emit_signal(SNAME("changed"));
 }
 int TileData::get_z_index() const {
 	return z_index;
@@ -3226,7 +3226,7 @@ int TileData::get_z_index() const {
 
 void TileData::set_y_sort_origin(int p_y_sort_origin) {
 	y_sort_origin = p_y_sort_origin;
-	emit_signal("changed");
+	emit_signal(SNAME("changed"));
 }
 int TileData::get_y_sort_origin() const {
 	return y_sort_origin;
@@ -3235,7 +3235,7 @@ int TileData::get_y_sort_origin() const {
 void TileData::set_occluder(int p_layer_id, Ref<OccluderPolygon2D> p_occluder_polygon) {
 	ERR_FAIL_INDEX(p_layer_id, occluders.size());
 	occluders.write[p_layer_id] = p_occluder_polygon;
-	emit_signal("changed");
+	emit_signal(SNAME("changed"));
 }
 
 Ref<OccluderPolygon2D> TileData::get_occluder(int p_layer_id) const {
@@ -3254,20 +3254,20 @@ void TileData::set_collision_polygons_count(int p_layer_id, int p_polygons_count
 	ERR_FAIL_COND(p_polygons_count < 0);
 	physics.write[p_layer_id].polygons.resize(p_polygons_count);
 	notify_property_list_changed();
-	emit_signal("changed");
+	emit_signal(SNAME("changed"));
 }
 
 void TileData::add_collision_polygon(int p_layer_id) {
 	ERR_FAIL_INDEX(p_layer_id, physics.size());
 	physics.write[p_layer_id].polygons.push_back(PhysicsLayerTileData::PolygonShapeTileData());
-	emit_signal("changed");
+	emit_signal(SNAME("changed"));
 }
 
 void TileData::remove_collision_polygon(int p_layer_id, int p_polygon_index) {
 	ERR_FAIL_INDEX(p_layer_id, physics.size());
 	ERR_FAIL_INDEX(p_polygon_index, physics[p_layer_id].polygons.size());
 	physics.write[p_layer_id].polygons.remove(p_polygon_index);
-	emit_signal("changed");
+	emit_signal(SNAME("changed"));
 }
 
 void TileData::set_collision_polygon_points(int p_layer_id, int p_polygon_index, Vector<Vector2> p_polygon) {
@@ -3291,7 +3291,7 @@ void TileData::set_collision_polygon_points(int p_layer_id, int p_polygon_index,
 		}
 	}
 	physics.write[p_layer_id].polygons.write[p_polygon_index].polygon = p_polygon;
-	emit_signal("changed");
+	emit_signal(SNAME("changed"));
 }
 
 Vector<Vector2> TileData::get_collision_polygon_points(int p_layer_id, int p_polygon_index) const {
@@ -3304,7 +3304,7 @@ void TileData::set_collision_polygon_one_way(int p_layer_id, int p_polygon_index
 	ERR_FAIL_INDEX(p_layer_id, physics.size());
 	ERR_FAIL_INDEX(p_polygon_index, physics[p_layer_id].polygons.size());
 	physics.write[p_layer_id].polygons.write[p_polygon_index].one_way = p_one_way;
-	emit_signal("changed");
+	emit_signal(SNAME("changed"));
 }
 
 bool TileData::is_collision_polygon_one_way(int p_layer_id, int p_polygon_index) const {
@@ -3317,7 +3317,7 @@ void TileData::set_collision_polygon_one_way_margin(int p_layer_id, int p_polygo
 	ERR_FAIL_INDEX(p_layer_id, physics.size());
 	ERR_FAIL_INDEX(p_polygon_index, physics[p_layer_id].polygons.size());
 	physics.write[p_layer_id].polygons.write[p_polygon_index].one_way_margin = p_one_way_margin;
-	emit_signal("changed");
+	emit_signal(SNAME("changed"));
 }
 
 float TileData::get_collision_polygon_one_way_margin(int p_layer_id, int p_polygon_index) const {
@@ -3353,7 +3353,7 @@ void TileData::set_terrain_set(int p_terrain_set) {
 	}
 	terrain_set = p_terrain_set;
 	notify_property_list_changed();
-	emit_signal("changed");
+	emit_signal(SNAME("changed"));
 }
 
 int TileData::get_terrain_set() const {
@@ -3368,7 +3368,7 @@ void TileData::set_peering_bit_terrain(TileSet::CellNeighbor p_peering_bit, int 
 		ERR_FAIL_COND(!is_valid_peering_bit_terrain(p_peering_bit));
 	}
 	terrain_peering_bits[p_peering_bit] = p_terrain_index;
-	emit_signal("changed");
+	emit_signal(SNAME("changed"));
 }
 
 int TileData::get_peering_bit_terrain(TileSet::CellNeighbor p_peering_bit) const {
@@ -3386,7 +3386,7 @@ bool TileData::is_valid_peering_bit_terrain(TileSet::CellNeighbor p_peering_bit)
 void TileData::set_navigation_polygon(int p_layer_id, Ref<NavigationPolygon> p_navigation_polygon) {
 	ERR_FAIL_INDEX(p_layer_id, navigation.size());
 	navigation.write[p_layer_id] = p_navigation_polygon;
-	emit_signal("changed");
+	emit_signal(SNAME("changed"));
 }
 
 Ref<NavigationPolygon> TileData::get_navigation_polygon(int p_layer_id) const {
@@ -3398,7 +3398,7 @@ Ref<NavigationPolygon> TileData::get_navigation_polygon(int p_layer_id) const {
 void TileData::set_probability(float p_probability) {
 	ERR_FAIL_COND(p_probability < 0.0);
 	probability = p_probability;
-	emit_signal("changed");
+	emit_signal(SNAME("changed"));
 }
 float TileData::get_probability() const {
 	return probability;
@@ -3422,7 +3422,7 @@ Variant TileData::get_custom_data(String p_layer_name) const {
 void TileData::set_custom_data_by_layer_id(int p_layer_id, Variant p_value) {
 	ERR_FAIL_INDEX(p_layer_id, custom_data.size());
 	custom_data.write[p_layer_id] = p_value;
-	emit_signal("changed");
+	emit_signal(SNAME("changed"));
 }
 
 Variant TileData::get_custom_data_by_layer_id(int p_layer_id) const {

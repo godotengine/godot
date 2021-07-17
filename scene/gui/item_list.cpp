@@ -42,7 +42,7 @@ void ItemList::_shape(int p_idx) {
 	} else {
 		item.text_buf->set_direction((TextServer::Direction)item.text_direction);
 	}
-	item.text_buf->add_string(item.text, get_theme_font("font"), get_theme_font_size("font_size"), item.opentype_features, (item.language != "") ? item.language : TranslationServer::get_singleton()->get_tool_locale());
+	item.text_buf->add_string(item.text, get_theme_font(SNAME("font")), get_theme_font_size(SNAME("font_size")), item.opentype_features, (item.language != "") ? item.language : TranslationServer::get_singleton()->get_tool_locale());
 	if (icon_mode == ICON_MODE_TOP && max_text_lines > 0) {
 		item.text_buf->set_flags(TextServer::BREAK_MANDATORY | TextServer::BREAK_WORD_BOUND | TextServer::BREAK_GRAPHEME_BOUND);
 	} else {
@@ -548,7 +548,7 @@ void ItemList::_gui_input(const Ref<InputEvent> &p_event) {
 	if (defer_select_single >= 0 && mb.is_valid() && mb->get_button_index() == MOUSE_BUTTON_LEFT && !mb->is_pressed()) {
 		select(defer_select_single, true);
 
-		emit_signal("multi_selected", defer_select_single, true);
+		emit_signal(SNAME("multi_selected"), defer_select_single, true);
 		defer_select_single = -1;
 		return;
 	}
@@ -556,7 +556,7 @@ void ItemList::_gui_input(const Ref<InputEvent> &p_event) {
 	if (mb.is_valid() && (mb->get_button_index() == MOUSE_BUTTON_LEFT || (allow_rmb_select && mb->get_button_index() == MOUSE_BUTTON_RIGHT)) && mb->is_pressed()) {
 		search_string = ""; //any mousepress cancels
 		Vector2 pos = mb->get_position();
-		Ref<StyleBox> bg = get_theme_stylebox("bg");
+		Ref<StyleBox> bg = get_theme_stylebox(SNAME("bg"));
 		pos -= bg->get_offset();
 		pos.y += scroll_bar->get_value();
 
@@ -583,7 +583,7 @@ void ItemList::_gui_input(const Ref<InputEvent> &p_event) {
 
 			if (select_mode == SELECT_MULTI && items[i].selected && mb->is_command_pressed()) {
 				deselect(i);
-				emit_signal("multi_selected", i, false);
+				emit_signal(SNAME("multi_selected"), i, false);
 
 			} else if (select_mode == SELECT_MULTI && mb->is_shift_pressed() && current >= 0 && current < items.size() && current != i) {
 				int from = current;
@@ -595,12 +595,12 @@ void ItemList::_gui_input(const Ref<InputEvent> &p_event) {
 					bool selected = !items[j].selected;
 					select(j, false);
 					if (selected) {
-						emit_signal("multi_selected", j, true);
+						emit_signal(SNAME("multi_selected"), j, true);
 					}
 				}
 
 				if (mb->get_button_index() == MOUSE_BUTTON_RIGHT) {
-					emit_signal("item_rmb_selected", i, get_local_mouse_position());
+					emit_signal(SNAME("item_rmb_selected"), i, get_local_mouse_position());
 				}
 			} else {
 				if (!mb->is_double_click() && !mb->is_command_pressed() && select_mode == SELECT_MULTI && items[i].selectable && !items[i].disabled && items[i].selected && mb->get_button_index() == MOUSE_BUTTON_LEFT) {
@@ -609,7 +609,7 @@ void ItemList::_gui_input(const Ref<InputEvent> &p_event) {
 				}
 
 				if (items[i].selected && mb->get_button_index() == MOUSE_BUTTON_RIGHT) {
-					emit_signal("item_rmb_selected", i, get_local_mouse_position());
+					emit_signal(SNAME("item_rmb_selected"), i, get_local_mouse_position());
 				} else {
 					bool selected = items[i].selected;
 
@@ -617,16 +617,16 @@ void ItemList::_gui_input(const Ref<InputEvent> &p_event) {
 
 					if (!selected || allow_reselect) {
 						if (select_mode == SELECT_SINGLE) {
-							emit_signal("item_selected", i);
+							emit_signal(SNAME("item_selected"), i);
 						} else {
-							emit_signal("multi_selected", i, true);
+							emit_signal(SNAME("multi_selected"), i, true);
 						}
 					}
 
 					if (mb->get_button_index() == MOUSE_BUTTON_RIGHT) {
-						emit_signal("item_rmb_selected", i, get_local_mouse_position());
+						emit_signal(SNAME("item_rmb_selected"), i, get_local_mouse_position());
 					} else if (/*select_mode==SELECT_SINGLE &&*/ mb->is_double_click()) {
-						emit_signal("item_activated", i);
+						emit_signal(SNAME("item_activated"), i);
 					}
 				}
 			}
@@ -634,13 +634,13 @@ void ItemList::_gui_input(const Ref<InputEvent> &p_event) {
 			return;
 		}
 		if (mb->get_button_index() == MOUSE_BUTTON_RIGHT) {
-			emit_signal("rmb_clicked", mb->get_position());
+			emit_signal(SNAME("rmb_clicked"), mb->get_position());
 
 			return;
 		}
 
 		// Since closest is null, more likely we clicked on empty space, so send signal to interested controls. Allows, for example, implement items deselecting.
-		emit_signal("nothing_selected");
+		emit_signal(SNAME("nothing_selected"));
 	}
 	if (mb.is_valid() && mb->get_button_index() == MOUSE_BUTTON_WHEEL_UP && mb->is_pressed()) {
 		scroll_bar->set_value(scroll_bar->get_value() - scroll_bar->get_page() * mb->get_factor() / 8);
@@ -661,7 +661,7 @@ void ItemList::_gui_input(const Ref<InputEvent> &p_event) {
 							set_current(i);
 							ensure_current_is_visible();
 							if (select_mode == SELECT_SINGLE) {
-								emit_signal("item_selected", current);
+								emit_signal(SNAME("item_selected"), current);
 							}
 
 							break;
@@ -676,7 +676,7 @@ void ItemList::_gui_input(const Ref<InputEvent> &p_event) {
 				set_current(current - current_columns);
 				ensure_current_is_visible();
 				if (select_mode == SELECT_SINGLE) {
-					emit_signal("item_selected", current);
+					emit_signal(SNAME("item_selected"), current);
 				}
 				accept_event();
 			}
@@ -691,7 +691,7 @@ void ItemList::_gui_input(const Ref<InputEvent> &p_event) {
 							set_current(i);
 							ensure_current_is_visible();
 							if (select_mode == SELECT_SINGLE) {
-								emit_signal("item_selected", current);
+								emit_signal(SNAME("item_selected"), current);
 							}
 							break;
 						}
@@ -705,7 +705,7 @@ void ItemList::_gui_input(const Ref<InputEvent> &p_event) {
 				set_current(current + current_columns);
 				ensure_current_is_visible();
 				if (select_mode == SELECT_SINGLE) {
-					emit_signal("item_selected", current);
+					emit_signal(SNAME("item_selected"), current);
 				}
 				accept_event();
 			}
@@ -717,7 +717,7 @@ void ItemList::_gui_input(const Ref<InputEvent> &p_event) {
 					set_current(current - current_columns * i);
 					ensure_current_is_visible();
 					if (select_mode == SELECT_SINGLE) {
-						emit_signal("item_selected", current);
+						emit_signal(SNAME("item_selected"), current);
 					}
 					accept_event();
 					break;
@@ -731,7 +731,7 @@ void ItemList::_gui_input(const Ref<InputEvent> &p_event) {
 					set_current(current + current_columns * i);
 					ensure_current_is_visible();
 					if (select_mode == SELECT_SINGLE) {
-						emit_signal("item_selected", current);
+						emit_signal(SNAME("item_selected"), current);
 					}
 					accept_event();
 
@@ -745,7 +745,7 @@ void ItemList::_gui_input(const Ref<InputEvent> &p_event) {
 				set_current(current - 1);
 				ensure_current_is_visible();
 				if (select_mode == SELECT_SINGLE) {
-					emit_signal("item_selected", current);
+					emit_signal(SNAME("item_selected"), current);
 				}
 				accept_event();
 			}
@@ -756,7 +756,7 @@ void ItemList::_gui_input(const Ref<InputEvent> &p_event) {
 				set_current(current + 1);
 				ensure_current_is_visible();
 				if (select_mode == SELECT_SINGLE) {
-					emit_signal("item_selected", current);
+					emit_signal(SNAME("item_selected"), current);
 				}
 				accept_event();
 			}
@@ -766,17 +766,17 @@ void ItemList::_gui_input(const Ref<InputEvent> &p_event) {
 			if (current >= 0 && current < items.size()) {
 				if (items[current].selectable && !items[current].disabled && !items[current].selected) {
 					select(current, false);
-					emit_signal("multi_selected", current, true);
+					emit_signal(SNAME("multi_selected"), current, true);
 				} else if (items[current].selected) {
 					deselect(current);
-					emit_signal("multi_selected", current, false);
+					emit_signal(SNAME("multi_selected"), current, false);
 				}
 			}
 		} else if (p_event->is_action("ui_accept")) {
 			search_string = ""; //any mousepress cancels
 
 			if (current >= 0 && current < items.size()) {
-				emit_signal("item_activated", current);
+				emit_signal(SNAME("item_activated"), current);
 			}
 		} else {
 			Ref<InputEventKey> k = p_event;
@@ -812,7 +812,7 @@ void ItemList::_gui_input(const Ref<InputEvent> &p_event) {
 						set_current(i);
 						ensure_current_is_visible();
 						if (select_mode == SELECT_SINGLE) {
-							emit_signal("item_selected", current);
+							emit_signal(SNAME("item_selected"), current);
 						}
 						break;
 					}
@@ -867,7 +867,7 @@ void ItemList::_notification(int p_what) {
 	}
 
 	if (p_what == NOTIFICATION_DRAW) {
-		Ref<StyleBox> bg = get_theme_stylebox("bg");
+		Ref<StyleBox> bg = get_theme_stylebox(SNAME("bg"));
 
 		int mw = scroll_bar->get_minimum_size().x;
 		scroll_bar->set_anchor_and_offset(SIDE_LEFT, ANCHOR_END, -mw);
@@ -884,24 +884,24 @@ void ItemList::_notification(int p_what) {
 
 		draw_style_box(bg, Rect2(Point2(), size));
 
-		int hseparation = get_theme_constant("hseparation");
-		int vseparation = get_theme_constant("vseparation");
-		int icon_margin = get_theme_constant("icon_margin");
-		int line_separation = get_theme_constant("line_separation");
-		Color font_outline_color = get_theme_color("font_outline_color");
-		int outline_size = get_theme_constant("outline_size");
+		int hseparation = get_theme_constant(SNAME("hseparation"));
+		int vseparation = get_theme_constant(SNAME("vseparation"));
+		int icon_margin = get_theme_constant(SNAME("icon_margin"));
+		int line_separation = get_theme_constant(SNAME("line_separation"));
+		Color font_outline_color = get_theme_color(SNAME("font_outline_color"));
+		int outline_size = get_theme_constant(SNAME("outline_size"));
 
-		Ref<StyleBox> sbsel = has_focus() ? get_theme_stylebox("selected_focus") : get_theme_stylebox("selected");
-		Ref<StyleBox> cursor = has_focus() ? get_theme_stylebox("cursor") : get_theme_stylebox("cursor_unfocused");
+		Ref<StyleBox> sbsel = has_focus() ? get_theme_stylebox(SNAME("selected_focus")) : get_theme_stylebox(SNAME("selected"));
+		Ref<StyleBox> cursor = has_focus() ? get_theme_stylebox(SNAME("cursor")) : get_theme_stylebox(SNAME("cursor_unfocused"));
 		bool rtl = is_layout_rtl();
 
-		Color guide_color = get_theme_color("guide_color");
-		Color font_color = get_theme_color("font_color");
-		Color font_selected_color = get_theme_color("font_selected_color");
+		Color guide_color = get_theme_color(SNAME("guide_color"));
+		Color font_color = get_theme_color(SNAME("font_color"));
+		Color font_selected_color = get_theme_color(SNAME("font_selected_color"));
 
 		if (has_focus()) {
 			RenderingServer::get_singleton()->canvas_item_add_clip_ignore(get_canvas_item(), true);
-			draw_style_box(get_theme_stylebox("bg_focus"), Rect2(Point2(), size));
+			draw_style_box(get_theme_stylebox(SNAME("bg_focus")), Rect2(Point2(), size));
 			RenderingServer::get_singleton()->canvas_item_add_clip_ignore(get_canvas_item(), false);
 		}
 
@@ -1299,7 +1299,7 @@ void ItemList::_scroll_changed(double) {
 
 int ItemList::get_item_at_position(const Point2 &p_pos, bool p_exact) const {
 	Vector2 pos = p_pos;
-	Ref<StyleBox> bg = get_theme_stylebox("bg");
+	Ref<StyleBox> bg = get_theme_stylebox(SNAME("bg"));
 	pos -= bg->get_offset();
 	pos.y += scroll_bar->get_value();
 
@@ -1337,7 +1337,7 @@ bool ItemList::is_pos_at_end_of_items(const Point2 &p_pos) const {
 	}
 
 	Vector2 pos = p_pos;
-	Ref<StyleBox> bg = get_theme_stylebox("bg");
+	Ref<StyleBox> bg = get_theme_stylebox(SNAME("bg"));
 	pos -= bg->get_offset();
 	pos.y += scroll_bar->get_value();
 

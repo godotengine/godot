@@ -98,7 +98,7 @@ void ImportDefaultsEditor::_save() {
 			ProjectSettings::get_singleton()->set("importer_defaults/" + settings->importer->get_importer_name(), Variant());
 		}
 
-		emit_signal("project_settings_changed");
+		emit_signal(SNAME("project_settings_changed"));
 	}
 }
 

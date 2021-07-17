@@ -350,7 +350,7 @@ void LineEdit::_gui_input(Ref<InputEvent> p_event) {
 		if (context_menu_enabled) {
 			if (k->is_action("ui_menu", true)) {
 				_ensure_menu();
-				Point2 pos = Point2(get_caret_pixel_pos().x, (get_size().y + get_theme_font("font")->get_height(get_theme_font_size("font_size"))) / 2);
+				Point2 pos = Point2(get_caret_pixel_pos().x, (get_size().y + get_theme_font(SNAME("font"))->get_height(get_theme_font_size(SNAME("font_size")))) / 2);
 				menu->set_position(get_global_transform().xform(pos));
 				menu->set_size(Vector2(1, 1));
 				_generate_context_menu();
@@ -361,7 +361,7 @@ void LineEdit::_gui_input(Ref<InputEvent> p_event) {
 
 		// Default is ENTER and KP_ENTER. Cannot use ui_accept as default includes SPACE
 		if (k->is_action("ui_text_submit", false)) {
-			emit_signal("text_submitted", text);
+			emit_signal(SNAME("text_submitted"), text);
 			if (DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_VIRTUAL_KEYBOARD) && virtual_keyboard_enabled) {
 				DisplayServer::get_singleton()->virtual_keyboard_hide();
 			}
@@ -569,8 +569,8 @@ bool LineEdit::_is_over_clear_button(const Point2 &p_pos) const {
 	if (!clear_button_enabled || !has_point(p_pos)) {
 		return false;
 	}
-	Ref<Texture2D> icon = Control::get_theme_icon("clear");
-	int x_ofs = get_theme_stylebox("normal")->get_offset().x;
+	Ref<Texture2D> icon = Control::get_theme_icon(SNAME("clear"));
+	int x_ofs = get_theme_stylebox(SNAME("normal"))->get_offset().x;
 	return p_pos.x > get_size().width - icon->get_width() - x_ofs;
 }
 
@@ -627,17 +627,17 @@ void LineEdit::_notification(int p_what) {
 
 			RID ci = get_canvas_item();
 
-			Ref<StyleBox> style = get_theme_stylebox("normal");
+			Ref<StyleBox> style = get_theme_stylebox(SNAME("normal"));
 			if (!is_editable()) {
-				style = get_theme_stylebox("read_only");
+				style = get_theme_stylebox(SNAME("read_only"));
 				draw_caret = false;
 			}
-			Ref<Font> font = get_theme_font("font");
+			Ref<Font> font = get_theme_font(SNAME("font"));
 
 			style->draw(ci, Rect2(Point2(), size));
 
 			if (has_focus()) {
-				get_theme_stylebox("focus")->draw(ci, Rect2(Point2(), size));
+				get_theme_stylebox(SNAME("focus"))->draw(ci, Rect2(Point2(), size));
 			}
 
 			int x_ofs = 0;
@@ -675,10 +675,10 @@ void LineEdit::_notification(int p_what) {
 			int y_area = height - style->get_minimum_size().height;
 			int y_ofs = style->get_offset().y + (y_area - text_height) / 2;
 
-			Color selection_color = get_theme_color("selection_color");
-			Color font_color = is_editable() ? get_theme_color("font_color") : get_theme_color("font_uneditable_color");
-			Color font_selected_color = get_theme_color("font_selected_color");
-			Color caret_color = get_theme_color("caret_color");
+			Color selection_color = get_theme_color(SNAME("selection_color"));
+			Color font_color = is_editable() ? get_theme_color(SNAME("font_color")) : get_theme_color(SNAME("font_uneditable_color"));
+			Color font_selected_color = get_theme_color(SNAME("font_selected_color"));
+			Color caret_color = get_theme_color(SNAME("caret_color"));
 
 			// Draw placeholder color.
 			if (using_placeholder) {
@@ -687,13 +687,13 @@ void LineEdit::_notification(int p_what) {
 
 			bool display_clear_icon = !using_placeholder && is_editable() && clear_button_enabled;
 			if (right_icon.is_valid() || display_clear_icon) {
-				Ref<Texture2D> r_icon = display_clear_icon ? Control::get_theme_icon("clear") : right_icon;
+				Ref<Texture2D> r_icon = display_clear_icon ? Control::get_theme_icon(SNAME("clear")) : right_icon;
 				Color color_icon(1, 1, 1, !is_editable() ? .5 * .9 : .9);
 				if (display_clear_icon) {
 					if (clear_button_status.press_attempt && clear_button_status.pressing_inside) {
-						color_icon = get_theme_color("clear_button_color_pressed");
+						color_icon = get_theme_color(SNAME("clear_button_color_pressed"));
 					} else {
-						color_icon = get_theme_color("clear_button_color");
+						color_icon = get_theme_color(SNAME("clear_button_color"));
 					}
 				}
 
@@ -740,8 +740,8 @@ void LineEdit::_notification(int p_what) {
 
 			// Draw text.
 			ofs.y += TS->shaped_text_get_ascent(text_rid);
-			Color font_outline_color = get_theme_color("font_outline_color");
-			int outline_size = get_theme_constant("outline_size");
+			Color font_outline_color = get_theme_color(SNAME("font_outline_color"));
+			int outline_size = get_theme_constant(SNAME("outline_size"));
 			if (outline_size > 0 && font_outline_color.a > 0) {
 				Vector2 oofs = ofs;
 				for (int i = 0; i < gl_size; i++) {
@@ -786,7 +786,7 @@ void LineEdit::_notification(int p_what) {
 
 					if (l_caret == Rect2() && t_caret == Rect2()) {
 						// No carets, add one at the start.
-						int h = get_theme_font("font")->get_height(get_theme_font_size("font_size"));
+						int h = get_theme_font(SNAME("font"))->get_height(get_theme_font_size(SNAME("font_size")));
 						int y = style->get_offset().y + (y_area - h) / 2;
 						if (rtl) {
 							l_dir = TextServer::DIRECTION_RTL;
@@ -1008,7 +1008,7 @@ void LineEdit::shift_selection_check_post(bool p_shift) {
 }
 
 void LineEdit::set_caret_at_pixel_pos(int p_x) {
-	Ref<StyleBox> style = get_theme_stylebox("normal");
+	Ref<StyleBox> style = get_theme_stylebox(SNAME("normal"));
 	bool rtl = is_layout_rtl();
 
 	int x_ofs = 0;
@@ -1041,7 +1041,7 @@ void LineEdit::set_caret_at_pixel_pos(int p_x) {
 	bool using_placeholder = text.is_empty() && ime_text.is_empty();
 	bool display_clear_icon = !using_placeholder && is_editable() && clear_button_enabled;
 	if (right_icon.is_valid() || display_clear_icon) {
-		Ref<Texture2D> r_icon = display_clear_icon ? Control::get_theme_icon("clear") : right_icon;
+		Ref<Texture2D> r_icon = display_clear_icon ? Control::get_theme_icon(SNAME("clear")) : right_icon;
 		if (align == ALIGN_CENTER) {
 			if (scroll_offset == 0) {
 				x_ofs = MAX(style->get_margin(SIDE_LEFT), int(get_size().width - text_width - r_icon->get_width() - style->get_margin(SIDE_RIGHT) * 2) / 2);
@@ -1056,7 +1056,7 @@ void LineEdit::set_caret_at_pixel_pos(int p_x) {
 }
 
 Vector2i LineEdit::get_caret_pixel_pos() {
-	Ref<StyleBox> style = get_theme_stylebox("normal");
+	Ref<StyleBox> style = get_theme_stylebox(SNAME("normal"));
 	bool rtl = is_layout_rtl();
 
 	int x_ofs = 0;
@@ -1089,7 +1089,7 @@ Vector2i LineEdit::get_caret_pixel_pos() {
 	bool using_placeholder = text.is_empty() && ime_text.is_empty();
 	bool display_clear_icon = !using_placeholder && is_editable() && clear_button_enabled;
 	if (right_icon.is_valid() || display_clear_icon) {
-		Ref<Texture2D> r_icon = display_clear_icon ? Control::get_theme_icon("clear") : right_icon;
+		Ref<Texture2D> r_icon = display_clear_icon ? Control::get_theme_icon(SNAME("clear")) : right_icon;
 		if (align == ALIGN_CENTER) {
 			if (scroll_offset == 0) {
 				x_ofs = MAX(style->get_margin(SIDE_LEFT), int(get_size().width - text_width - r_icon->get_width() - style->get_margin(SIDE_RIGHT) * 2) / 2);
@@ -1402,7 +1402,7 @@ void LineEdit::set_caret_column(int p_column) {
 		return;
 	}
 
-	Ref<StyleBox> style = get_theme_stylebox("normal");
+	Ref<StyleBox> style = get_theme_stylebox(SNAME("normal"));
 	bool rtl = is_layout_rtl();
 
 	int x_ofs = 0;
@@ -1436,7 +1436,7 @@ void LineEdit::set_caret_column(int p_column) {
 	bool using_placeholder = text.is_empty() && ime_text.is_empty();
 	bool display_clear_icon = !using_placeholder && is_editable() && clear_button_enabled;
 	if (right_icon.is_valid() || display_clear_icon) {
-		Ref<Texture2D> r_icon = display_clear_icon ? Control::get_theme_icon("clear") : right_icon;
+		Ref<Texture2D> r_icon = display_clear_icon ? Control::get_theme_icon(SNAME("clear")) : right_icon;
 		if (align == ALIGN_CENTER) {
 			if (scroll_offset == 0) {
 				x_ofs = MAX(style->get_margin(SIDE_LEFT), int(get_size().width - text_width - r_icon->get_width() - style->get_margin(SIDE_RIGHT) * 2) / 2);
@@ -1480,7 +1480,7 @@ void LineEdit::insert_text_at_caret(String p_text) {
 		// Truncate text to append to fit in max_length, if needed.
 		int available_chars = max_length - text.length();
 		if (p_text.length() > available_chars) {
-			emit_signal("text_change_rejected", p_text.substr(available_chars));
+			emit_signal(SNAME("text_change_rejected"), p_text.substr(available_chars));
 			p_text = p_text.substr(0, available_chars);
 		}
 	}
@@ -1507,15 +1507,15 @@ void LineEdit::clear_internal() {
 }
 
 Size2 LineEdit::get_minimum_size() const {
-	Ref<StyleBox> style = get_theme_stylebox("normal");
-	Ref<Font> font = get_theme_font("font");
-	int font_size = get_theme_font_size("font_size");
+	Ref<StyleBox> style = get_theme_stylebox(SNAME("normal"));
+	Ref<Font> font = get_theme_font(SNAME("font"));
+	int font_size = get_theme_font_size(SNAME("font_size"));
 
 	Size2 min_size;
 
 	// Minimum size of text.
 	int em_space_size = font->get_char_size('M', 0, font_size).x;
-	min_size.width = get_theme_constant("minimum_character_width") * em_space_size;
+	min_size.width = get_theme_constant(SNAME("minimum_character_width")) * em_space_size;
 
 	if (expand_to_text_length) {
 		// Add a space because some fonts are too exact, and because caret needs a bit more when at the end.
@@ -1528,7 +1528,7 @@ Size2 LineEdit::get_minimum_size() const {
 	bool using_placeholder = text.is_empty() && ime_text.is_empty();
 	bool display_clear_icon = !using_placeholder && is_editable() && clear_button_enabled;
 	if (right_icon.is_valid() || display_clear_icon) {
-		Ref<Texture2D> r_icon = display_clear_icon ? Control::get_theme_icon("clear") : right_icon;
+		Ref<Texture2D> r_icon = display_clear_icon ? Control::get_theme_icon(SNAME("clear")) : right_icon;
 		min_size.width += r_icon->get_width();
 		min_size.height = MAX(min_size.height, r_icon->get_height());
 	}
@@ -1908,7 +1908,7 @@ void LineEdit::_text_changed() {
 }
 
 void LineEdit::_emit_text_change() {
-	emit_signal("text_changed", text);
+	emit_signal(SNAME("text_changed"), text);
 	text_changed_dirty = false;
 }
 
@@ -1935,8 +1935,8 @@ void LineEdit::_shape() {
 	}
 	TS->shaped_text_set_preserve_control(text_rid, draw_control_chars);
 
-	const Ref<Font> &font = get_theme_font("font");
-	int font_size = get_theme_font_size("font_size");
+	const Ref<Font> &font = get_theme_font(SNAME("font"));
+	int font_size = get_theme_font_size(SNAME("font_size"));
 	TS->shaped_text_add_string(text_rid, t, font->get_rids(), font_size, opentype_features, (language != "") ? language : TranslationServer::get_singleton()->get_tool_locale());
 	TS->shaped_text_set_bidi_override(text_rid, structured_text_parser(st_parser, st_args, t));
 
@@ -1952,12 +1952,12 @@ void LineEdit::_shape() {
 
 void LineEdit::_fit_to_width() {
 	if (align == ALIGN_FILL) {
-		Ref<StyleBox> style = get_theme_stylebox("normal");
+		Ref<StyleBox> style = get_theme_stylebox(SNAME("normal"));
 		int t_width = get_size().width - style->get_margin(SIDE_RIGHT) - style->get_margin(SIDE_LEFT);
 		bool using_placeholder = text.is_empty() && ime_text.is_empty();
 		bool display_clear_icon = !using_placeholder && is_editable() && clear_button_enabled;
 		if (right_icon.is_valid() || display_clear_icon) {
-			Ref<Texture2D> r_icon = display_clear_icon ? Control::get_theme_icon("clear") : right_icon;
+			Ref<Texture2D> r_icon = display_clear_icon ? Control::get_theme_icon(SNAME("clear")) : right_icon;
 			t_width -= r_icon->get_width();
 		}
 		TS->shaped_text_fit_to_width(text_rid, MAX(t_width, full_width));

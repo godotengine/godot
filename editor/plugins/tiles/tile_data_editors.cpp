@@ -113,8 +113,8 @@ void GenericTilePolygonEditor::_base_control_draw() {
 	real_t grab_threshold = EDITOR_GET("editors/poly_editor/point_grab_radius");
 
 	Color grid_color = EditorSettings::get_singleton()->get("editors/tiles_editor/grid_color");
-	const Ref<Texture2D> handle = get_theme_icon("EditorPathSharpHandle", "EditorIcons");
-	const Ref<Texture2D> add_handle = get_theme_icon("EditorHandleAdd", "EditorIcons");
+	const Ref<Texture2D> handle = get_theme_icon(SNAME("EditorPathSharpHandle"), SNAME("EditorIcons"));
+	const Ref<Texture2D> add_handle = get_theme_icon(SNAME("EditorHandleAdd"), SNAME("EditorIcons"));
 
 	Size2 tile_size = tile_set->get_tile_size();
 
@@ -195,8 +195,8 @@ void GenericTilePolygonEditor::_base_control_draw() {
 
 	// Draw the text on top of the selected point.
 	if (tinted_polygon_index >= 0) {
-		Ref<Font> font = get_theme_font("font", "Label");
-		int font_size = get_theme_font_size("font_size", "Label");
+		Ref<Font> font = get_theme_font(SNAME("font"), SNAME("Label"));
+		int font_size = get_theme_font_size(SNAME("font_size"), SNAME("Label"));
 		String text = multiple_polygon_mode ? vformat("%d:%d", tinted_polygon_index, tinted_point_index) : vformat("%d", tinted_point_index);
 		Size2 text_size = font->get_string_size(text, font_size);
 		base_control->draw_string(font, xform.xform(polygons[tinted_polygon_index][tinted_point_index]) - text_size * 0.5, text, HALIGN_LEFT, -1, font_size, Color(1.0, 1.0, 1.0, 0.5));
@@ -413,7 +413,7 @@ void GenericTilePolygonEditor::_base_control_gui_input(Ref<InputEvent> p_event) 
 						undo_redo->add_undo_method(this, "remove_polygon", added);
 						undo_redo->add_undo_method(base_control, "update");
 						undo_redo->commit_action(false);
-						emit_signal("polygons_changed");
+						emit_signal(SNAME("polygons_changed"));
 					} else {
 						// Create a new point.
 						drag_type = DRAG_TYPE_CREATE_POINT;
@@ -460,7 +460,7 @@ void GenericTilePolygonEditor::_base_control_gui_input(Ref<InputEvent> p_event) 
 						undo_redo->add_do_method(base_control, "update");
 						undo_redo->add_undo_method(base_control, "update");
 						undo_redo->commit_action(false);
-						emit_signal("polygons_changed");
+						emit_signal(SNAME("polygons_changed"));
 					}
 				}
 			} else {
@@ -471,7 +471,7 @@ void GenericTilePolygonEditor::_base_control_gui_input(Ref<InputEvent> p_event) 
 					undo_redo->add_undo_method(this, "set_polygon", drag_polygon_index, drag_old_polygon);
 					undo_redo->add_undo_method(base_control, "update");
 					undo_redo->commit_action(false);
-					emit_signal("polygons_changed");
+					emit_signal(SNAME("polygons_changed"));
 				} else if (drag_type == DRAG_TYPE_CREATE_POINT) {
 					Point2 point = xform.affine_inverse().xform(mb->get_position());
 					float distance = grab_threshold * 2;
@@ -507,7 +507,7 @@ void GenericTilePolygonEditor::_base_control_gui_input(Ref<InputEvent> p_event) 
 						undo_redo->add_do_method(base_control, "update");
 						undo_redo->add_undo_method(base_control, "update");
 						undo_redo->commit_action(false);
-						emit_signal("polygons_changed");
+						emit_signal(SNAME("polygons_changed"));
 					} else {
 						drag_type = DRAG_TYPE_PAN;
 						drag_last_pos = mb->get_position();
@@ -615,12 +615,12 @@ void GenericTilePolygonEditor::set_multiple_polygon_mode(bool p_multiple_polygon
 void GenericTilePolygonEditor::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_READY:
-			button_create->set_icon(EditorNode::get_singleton()->get_gui_base()->get_theme_icon("CurveCreate", "EditorIcons"));
-			button_edit->set_icon(EditorNode::get_singleton()->get_gui_base()->get_theme_icon("CurveEdit", "EditorIcons"));
-			button_delete->set_icon(EditorNode::get_singleton()->get_gui_base()->get_theme_icon("CurveDelete", "EditorIcons"));
-			button_center_view->set_icon(EditorNode::get_singleton()->get_gui_base()->get_theme_icon("CenterView", "EditorIcons"));
-			button_pixel_snap->set_icon(EditorNode::get_singleton()->get_gui_base()->get_theme_icon("Snap", "EditorIcons"));
-			button_advanced_menu->set_icon(EditorNode::get_singleton()->get_gui_base()->get_theme_icon("GuiTabMenu", "EditorIcons"));
+			button_create->set_icon(EditorNode::get_singleton()->get_gui_base()->get_theme_icon(SNAME("CurveCreate"), SNAME("EditorIcons")));
+			button_edit->set_icon(EditorNode::get_singleton()->get_gui_base()->get_theme_icon(SNAME("CurveEdit"), SNAME("EditorIcons")));
+			button_delete->set_icon(EditorNode::get_singleton()->get_gui_base()->get_theme_icon(SNAME("CurveDelete"), SNAME("EditorIcons")));
+			button_center_view->set_icon(EditorNode::get_singleton()->get_gui_base()->get_theme_icon(SNAME("CenterView"), SNAME("EditorIcons")));
+			button_pixel_snap->set_icon(EditorNode::get_singleton()->get_gui_base()->get_theme_icon(SNAME("Snap"), SNAME("EditorIcons")));
+			button_advanced_menu->set_icon(EditorNode::get_singleton()->get_gui_base()->get_theme_icon(SNAME("GuiTabMenu"), SNAME("EditorIcons")));
 			break;
 	}
 }
@@ -702,7 +702,7 @@ GenericTilePolygonEditor::GenericTilePolygonEditor() {
 	root->add_child(editor_zoom_widget);
 
 	button_center_view = memnew(Button);
-	button_center_view->set_icon(EditorNode::get_singleton()->get_gui_base()->get_theme_icon("CenterView", "EditorIcons"));
+	button_center_view->set_icon(EditorNode::get_singleton()->get_gui_base()->get_theme_icon(SNAME("CenterView"), SNAME("EditorIcons")));
 	button_center_view->set_anchors_and_offsets_preset(Control::PRESET_TOP_RIGHT, Control::PRESET_MODE_MINSIZE, 5);
 	button_center_view->connect("pressed", callable_mp(this, &GenericTilePolygonEditor::_center_view));
 	button_center_view->set_flat(true);
@@ -963,7 +963,7 @@ void TileDataDefaultEditor::draw_over_tile(CanvasItem *p_canvas_item, Transform2
 		Rect2 rect = p_transform.xform(Rect2(Vector2(-size / 2, -size / 2), Vector2(size, size)));
 		p_canvas_item->draw_rect(rect, value);
 	} else {
-		Ref<Font> font = TileSetEditor::get_singleton()->get_theme_font("bold", "EditorFonts");
+		Ref<Font> font = TileSetEditor::get_singleton()->get_theme_font(SNAME("bold"), SNAME("EditorFonts"));
 		String text;
 		switch (value.get_type()) {
 			case Variant::INT:
@@ -1039,9 +1039,9 @@ void TileDataDefaultEditor::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED:
-			picker_button->set_icon(get_theme_icon("ColorPick", "EditorIcons"));
-			tile_bool_checked = get_theme_icon("TileChecked", "EditorIcons");
-			tile_bool_unchecked = get_theme_icon("TileUnchecked", "EditorIcons");
+			picker_button->set_icon(get_theme_icon(SNAME("ColorPick"), SNAME("EditorIcons")));
+			tile_bool_checked = get_theme_icon(SNAME("TileChecked"), SNAME("EditorIcons"));
+			tile_bool_unchecked = get_theme_icon(SNAME("TileUnchecked"), SNAME("EditorIcons"));
 			break;
 		default:
 			break;
@@ -1099,7 +1099,7 @@ void TileDataPositionEditor::draw_over_tile(CanvasItem *p_canvas_item, Transform
 		Color selection_color = Color().from_hsv(Math::fposmod(grid_color.get_h() + 0.5, 1.0), grid_color.get_s(), grid_color.get_v(), 1.0);
 		color = selection_color;
 	}
-	Ref<Texture2D> position_icon = TileSetEditor::get_singleton()->get_theme_icon("EditorPosition", "EditorIcons");
+	Ref<Texture2D> position_icon = TileSetEditor::get_singleton()->get_theme_icon(SNAME("EditorPosition"), SNAME("EditorIcons"));
 	p_canvas_item->draw_texture(position_icon, p_transform.xform(Vector2(value)) - position_icon->get_size() / 2, color);
 }
 
@@ -1113,7 +1113,7 @@ void TileDataYSortEditor::draw_over_tile(CanvasItem *p_canvas_item, Transform2D 
 		Color selection_color = Color().from_hsv(Math::fposmod(grid_color.get_h() + 0.5, 1.0), grid_color.get_s(), grid_color.get_v(), 1.0);
 		color = selection_color;
 	}
-	Ref<Texture2D> position_icon = TileSetEditor::get_singleton()->get_theme_icon("EditorPosition", "EditorIcons");
+	Ref<Texture2D> position_icon = TileSetEditor::get_singleton()->get_theme_icon(SNAME("EditorPosition"), SNAME("EditorIcons"));
 	p_canvas_item->draw_texture(position_icon, p_transform.xform(Vector2(0, tile_data->get_y_sort_origin())) - position_icon->get_size() / 2, color);
 }
 
@@ -1458,7 +1458,7 @@ void TileDataTerrainsEditor::_property_value_changed(StringName p_property, Vari
 		}
 		_update_terrain_selector();
 	}
-	emit_signal("needs_redraw");
+	emit_signal(SNAME("needs_redraw"));
 }
 
 void TileDataTerrainsEditor::_tile_set_changed() {
@@ -1521,7 +1521,7 @@ void TileDataTerrainsEditor::forward_draw_over_atlas(TileAtlasView *p_tile_atlas
 	}
 
 	// Dim terrains with wrong terrain set.
-	Ref<Font> font = TileSetEditor::get_singleton()->get_theme_font("bold", "EditorFonts");
+	Ref<Font> font = TileSetEditor::get_singleton()->get_theme_font(SNAME("bold"), SNAME("EditorFonts"));
 	for (int i = 0; i < p_tile_set_atlas_source->get_tiles_count(); i++) {
 		Vector2i coords = p_tile_set_atlas_source->get_tile_id(i);
 		if (coords != hovered_coords) {
@@ -1693,7 +1693,7 @@ void TileDataTerrainsEditor::forward_draw_over_alternatives(TileAtlasView *p_til
 	}
 
 	// Dim terrains with wrong terrain set.
-	Ref<Font> font = TileSetEditor::get_singleton()->get_theme_font("bold", "EditorFonts");
+	Ref<Font> font = TileSetEditor::get_singleton()->get_theme_font(SNAME("bold"), SNAME("EditorFonts"));
 	for (int i = 0; i < p_tile_set_atlas_source->get_tiles_count(); i++) {
 		Vector2i coords = p_tile_set_atlas_source->get_tile_id(i);
 		for (int j = 1; j < p_tile_set_atlas_source->get_alternative_tiles_count(coords); j++) {
@@ -2303,7 +2303,7 @@ void TileDataTerrainsEditor::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED:
-			picker_button->set_icon(get_theme_icon("ColorPick", "EditorIcons"));
+			picker_button->set_icon(get_theme_icon(SNAME("ColorPick"), SNAME("EditorIcons")));
 			break;
 		default:
 			break;

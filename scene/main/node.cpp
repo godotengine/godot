@@ -442,7 +442,7 @@ void Node::set_process_mode(ProcessMode p_mode) {
 	// This is required for the editor to update the visibility of disabled nodes
 	// It's very expensive during runtime to change, so editor-only
 	if (Engine::get_singleton()->is_editor_hint()) {
-		get_tree()->emit_signal("tree_process_mode_changed");
+		get_tree()->emit_signal(SNAME("tree_process_mode_changed"));
 	}
 #endif
 }
@@ -868,7 +868,7 @@ void Node::set_name(const String &p_name) {
 	propagate_notification(NOTIFICATION_PATH_CHANGED);
 
 	if (is_inside_tree()) {
-		emit_signal("renamed");
+		emit_signal(SNAME("renamed"));
 		get_tree()->node_renamed(this);
 		get_tree()->tree_changed();
 	}

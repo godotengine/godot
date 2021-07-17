@@ -132,57 +132,57 @@ void EditorAssetInstaller::open(const String &p_path, int p_depth) {
 
 	Map<String, Ref<Texture2D>> extension_guess;
 	{
-		extension_guess["bmp"] = tree->get_theme_icon("ImageTexture", "EditorIcons");
-		extension_guess["dds"] = tree->get_theme_icon("ImageTexture", "EditorIcons");
-		extension_guess["exr"] = tree->get_theme_icon("ImageTexture", "EditorIcons");
-		extension_guess["hdr"] = tree->get_theme_icon("ImageTexture", "EditorIcons");
-		extension_guess["jpg"] = tree->get_theme_icon("ImageTexture", "EditorIcons");
-		extension_guess["jpeg"] = tree->get_theme_icon("ImageTexture", "EditorIcons");
-		extension_guess["png"] = tree->get_theme_icon("ImageTexture", "EditorIcons");
-		extension_guess["svg"] = tree->get_theme_icon("ImageTexture", "EditorIcons");
-		extension_guess["svgz"] = tree->get_theme_icon("ImageTexture", "EditorIcons");
-		extension_guess["tga"] = tree->get_theme_icon("ImageTexture", "EditorIcons");
-		extension_guess["webp"] = tree->get_theme_icon("ImageTexture", "EditorIcons");
+		extension_guess["bmp"] = tree->get_theme_icon(SNAME("ImageTexture"), SNAME("EditorIcons"));
+		extension_guess["dds"] = tree->get_theme_icon(SNAME("ImageTexture"), SNAME("EditorIcons"));
+		extension_guess["exr"] = tree->get_theme_icon(SNAME("ImageTexture"), SNAME("EditorIcons"));
+		extension_guess["hdr"] = tree->get_theme_icon(SNAME("ImageTexture"), SNAME("EditorIcons"));
+		extension_guess["jpg"] = tree->get_theme_icon(SNAME("ImageTexture"), SNAME("EditorIcons"));
+		extension_guess["jpeg"] = tree->get_theme_icon(SNAME("ImageTexture"), SNAME("EditorIcons"));
+		extension_guess["png"] = tree->get_theme_icon(SNAME("ImageTexture"), SNAME("EditorIcons"));
+		extension_guess["svg"] = tree->get_theme_icon(SNAME("ImageTexture"), SNAME("EditorIcons"));
+		extension_guess["svgz"] = tree->get_theme_icon(SNAME("ImageTexture"), SNAME("EditorIcons"));
+		extension_guess["tga"] = tree->get_theme_icon(SNAME("ImageTexture"), SNAME("EditorIcons"));
+		extension_guess["webp"] = tree->get_theme_icon(SNAME("ImageTexture"), SNAME("EditorIcons"));
 
-		extension_guess["wav"] = tree->get_theme_icon("AudioStreamSample", "EditorIcons");
-		extension_guess["ogg"] = tree->get_theme_icon("AudioStreamOGGVorbis", "EditorIcons");
-		extension_guess["mp3"] = tree->get_theme_icon("AudioStreamMP3", "EditorIcons");
+		extension_guess["wav"] = tree->get_theme_icon(SNAME("AudioStreamSample"), SNAME("EditorIcons"));
+		extension_guess["ogg"] = tree->get_theme_icon(SNAME("AudioStreamOGGVorbis"), SNAME("EditorIcons"));
+		extension_guess["mp3"] = tree->get_theme_icon(SNAME("AudioStreamMP3"), SNAME("EditorIcons"));
 
-		extension_guess["scn"] = tree->get_theme_icon("PackedScene", "EditorIcons");
-		extension_guess["tscn"] = tree->get_theme_icon("PackedScene", "EditorIcons");
-		extension_guess["escn"] = tree->get_theme_icon("PackedScene", "EditorIcons");
-		extension_guess["dae"] = tree->get_theme_icon("PackedScene", "EditorIcons");
-		extension_guess["gltf"] = tree->get_theme_icon("PackedScene", "EditorIcons");
-		extension_guess["glb"] = tree->get_theme_icon("PackedScene", "EditorIcons");
+		extension_guess["scn"] = tree->get_theme_icon(SNAME("PackedScene"), SNAME("EditorIcons"));
+		extension_guess["tscn"] = tree->get_theme_icon(SNAME("PackedScene"), SNAME("EditorIcons"));
+		extension_guess["escn"] = tree->get_theme_icon(SNAME("PackedScene"), SNAME("EditorIcons"));
+		extension_guess["dae"] = tree->get_theme_icon(SNAME("PackedScene"), SNAME("EditorIcons"));
+		extension_guess["gltf"] = tree->get_theme_icon(SNAME("PackedScene"), SNAME("EditorIcons"));
+		extension_guess["glb"] = tree->get_theme_icon(SNAME("PackedScene"), SNAME("EditorIcons"));
 
-		extension_guess["gdshader"] = tree->get_theme_icon("Shader", "EditorIcons");
-		extension_guess["gd"] = tree->get_theme_icon("GDScript", "EditorIcons");
+		extension_guess["gdshader"] = tree->get_theme_icon(SNAME("Shader"), SNAME("EditorIcons"));
+		extension_guess["gd"] = tree->get_theme_icon(SNAME("GDScript"), SNAME("EditorIcons"));
 		if (Engine::get_singleton()->has_singleton("GodotSharp")) {
-			extension_guess["cs"] = tree->get_theme_icon("CSharpScript", "EditorIcons");
+			extension_guess["cs"] = tree->get_theme_icon(SNAME("CSharpScript"), SNAME("EditorIcons"));
 		} else {
 			// Mark C# support as unavailable.
-			extension_guess["cs"] = tree->get_theme_icon("ImportFail", "EditorIcons");
+			extension_guess["cs"] = tree->get_theme_icon(SNAME("ImportFail"), SNAME("EditorIcons"));
 		}
-		extension_guess["vs"] = tree->get_theme_icon("VisualScript", "EditorIcons");
+		extension_guess["vs"] = tree->get_theme_icon(SNAME("VisualScript"), SNAME("EditorIcons"));
 
-		extension_guess["res"] = tree->get_theme_icon("Resource", "EditorIcons");
-		extension_guess["tres"] = tree->get_theme_icon("Resource", "EditorIcons");
-		extension_guess["atlastex"] = tree->get_theme_icon("AtlasTexture", "EditorIcons");
+		extension_guess["res"] = tree->get_theme_icon(SNAME("Resource"), SNAME("EditorIcons"));
+		extension_guess["tres"] = tree->get_theme_icon(SNAME("Resource"), SNAME("EditorIcons"));
+		extension_guess["atlastex"] = tree->get_theme_icon(SNAME("AtlasTexture"), SNAME("EditorIcons"));
 		// By default, OBJ files are imported as Mesh resources rather than PackedScenes.
-		extension_guess["obj"] = tree->get_theme_icon("Mesh", "EditorIcons");
+		extension_guess["obj"] = tree->get_theme_icon(SNAME("Mesh"), SNAME("EditorIcons"));
 
-		extension_guess["txt"] = tree->get_theme_icon("TextFile", "EditorIcons");
-		extension_guess["md"] = tree->get_theme_icon("TextFile", "EditorIcons");
-		extension_guess["rst"] = tree->get_theme_icon("TextFile", "EditorIcons");
-		extension_guess["json"] = tree->get_theme_icon("TextFile", "EditorIcons");
-		extension_guess["yml"] = tree->get_theme_icon("TextFile", "EditorIcons");
-		extension_guess["yaml"] = tree->get_theme_icon("TextFile", "EditorIcons");
-		extension_guess["toml"] = tree->get_theme_icon("TextFile", "EditorIcons");
-		extension_guess["cfg"] = tree->get_theme_icon("TextFile", "EditorIcons");
-		extension_guess["ini"] = tree->get_theme_icon("TextFile", "EditorIcons");
+		extension_guess["txt"] = tree->get_theme_icon(SNAME("TextFile"), SNAME("EditorIcons"));
+		extension_guess["md"] = tree->get_theme_icon(SNAME("TextFile"), SNAME("EditorIcons"));
+		extension_guess["rst"] = tree->get_theme_icon(SNAME("TextFile"), SNAME("EditorIcons"));
+		extension_guess["json"] = tree->get_theme_icon(SNAME("TextFile"), SNAME("EditorIcons"));
+		extension_guess["yml"] = tree->get_theme_icon(SNAME("TextFile"), SNAME("EditorIcons"));
+		extension_guess["yaml"] = tree->get_theme_icon(SNAME("TextFile"), SNAME("EditorIcons"));
+		extension_guess["toml"] = tree->get_theme_icon(SNAME("TextFile"), SNAME("EditorIcons"));
+		extension_guess["cfg"] = tree->get_theme_icon(SNAME("TextFile"), SNAME("EditorIcons"));
+		extension_guess["ini"] = tree->get_theme_icon(SNAME("TextFile"), SNAME("EditorIcons"));
 	}
 
-	Ref<Texture2D> generic_extension = tree->get_theme_icon("Object", "EditorIcons");
+	Ref<Texture2D> generic_extension = tree->get_theme_icon(SNAME("Object"), SNAME("EditorIcons"));
 
 	unzClose(pkg);
 
@@ -191,7 +191,7 @@ void EditorAssetInstaller::open(const String &p_path, int p_depth) {
 	TreeItem *root = tree->create_item();
 	root->set_cell_mode(0, TreeItem::CELL_MODE_CHECK);
 	root->set_checked(0, true);
-	root->set_icon(0, tree->get_theme_icon("folder", "FileDialog"));
+	root->set_icon(0, tree->get_theme_icon(SNAME("folder"), SNAME("FileDialog")));
 	root->set_text(0, "res://");
 	root->set_editable(0, true);
 	Map<String, TreeItem *> dir_map;
@@ -242,7 +242,7 @@ void EditorAssetInstaller::open(const String &p_path, int p_depth) {
 		if (isdir) {
 			dir_map[path] = ti;
 			ti->set_text(0, path.get_file() + "/");
-			ti->set_icon(0, tree->get_theme_icon("folder", "FileDialog"));
+			ti->set_icon(0, tree->get_theme_icon(SNAME("folder"), SNAME("FileDialog")));
 			ti->set_metadata(0, String());
 		} else {
 			String file = path.get_file();
@@ -257,7 +257,7 @@ void EditorAssetInstaller::open(const String &p_path, int p_depth) {
 			String res_path = "res://" + path;
 			if (FileAccess::exists(res_path)) {
 				num_file_conflicts += 1;
-				ti->set_custom_color(0, tree->get_theme_color("error_color", "Editor"));
+				ti->set_custom_color(0, tree->get_theme_color(SNAME("error_color"), SNAME("Editor")));
 				ti->set_tooltip(0, vformat(TTR("%s (already exists)"), res_path));
 				ti->set_checked(0, false);
 			} else {

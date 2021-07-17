@@ -294,7 +294,7 @@ void TouchScreenButton::_press(int p_finger_pressed) {
 		get_viewport()->input(iea, true);
 	}
 
-	emit_signal("pressed");
+	emit_signal(SNAME("pressed"));
 	update();
 }
 
@@ -313,7 +313,7 @@ void TouchScreenButton::_release(bool p_exiting_tree) {
 	}
 
 	if (!p_exiting_tree) {
-		emit_signal("released");
+		emit_signal(SNAME("released"));
 		update();
 	}
 }

@@ -176,15 +176,15 @@ void EditorSettingsDialog::_unhandled_input(const Ref<InputEvent> &p_event) {
 }
 
 void EditorSettingsDialog::_update_icons() {
-	search_box->set_right_icon(shortcuts->get_theme_icon("Search", "EditorIcons"));
+	search_box->set_right_icon(shortcuts->get_theme_icon(SNAME("Search"), SNAME("EditorIcons")));
 	search_box->set_clear_button_enabled(true);
-	shortcut_search_box->set_right_icon(shortcuts->get_theme_icon("Search", "EditorIcons"));
+	shortcut_search_box->set_right_icon(shortcuts->get_theme_icon(SNAME("Search"), SNAME("EditorIcons")));
 	shortcut_search_box->set_clear_button_enabled(true);
 
-	restart_close_button->set_icon(shortcuts->get_theme_icon("Close", "EditorIcons"));
-	restart_container->add_theme_style_override("panel", shortcuts->get_theme_stylebox("bg", "Tree"));
-	restart_icon->set_texture(shortcuts->get_theme_icon("StatusWarning", "EditorIcons"));
-	restart_label->add_theme_color_override("font_color", shortcuts->get_theme_color("warning_color", "Editor"));
+	restart_close_button->set_icon(shortcuts->get_theme_icon(SNAME("Close"), SNAME("EditorIcons")));
+	restart_container->add_theme_style_override("panel", shortcuts->get_theme_stylebox(SNAME("bg"), SNAME("Tree")));
+	restart_icon->set_texture(shortcuts->get_theme_icon(SNAME("StatusWarning"), SNAME("EditorIcons")));
+	restart_label->add_theme_color_override("font_color", shortcuts->get_theme_color(SNAME("warning_color"), SNAME("Editor")));
 }
 
 void EditorSettingsDialog::_event_config_confirmed() {
@@ -253,8 +253,8 @@ void EditorSettingsDialog::_update_shortcuts() {
 	if (collapsed.has("Common")) {
 		common_section->set_collapsed(collapsed["Common"]);
 	}
-	common_section->set_custom_bg_color(0, shortcuts->get_theme_color("prop_subsection", "Editor"));
-	common_section->set_custom_bg_color(1, shortcuts->get_theme_color("prop_subsection", "Editor"));
+	common_section->set_custom_bg_color(0, shortcuts->get_theme_color(SNAME("prop_subsection"), SNAME("Editor")));
+	common_section->set_custom_bg_color(1, shortcuts->get_theme_color(SNAME("prop_subsection"), SNAME("Editor")));
 
 	// Get the action map for the editor, and add each item to the "Common" section.
 	OrderedHashMap<StringName, InputMap::Action> action_map = InputMap::get_singleton()->get_action_map();
@@ -303,16 +303,16 @@ void EditorSettingsDialog::_update_shortcuts() {
 		item->set_text(1, events_display_string);
 
 		if (!same_as_defaults) {
-			item->add_button(1, shortcuts->get_theme_icon("Reload", "EditorIcons"), 2);
+			item->add_button(1, shortcuts->get_theme_icon(SNAME("Reload"), SNAME("EditorIcons")), 2);
 		}
 
 		if (events_display_string == "None") {
 			// Fade out unassigned shortcut labels for easier visual grepping.
-			item->set_custom_color(1, shortcuts->get_theme_color("font_color", "Label") * Color(1, 1, 1, 0.5));
+			item->set_custom_color(1, shortcuts->get_theme_color(SNAME("font_color"), SNAME("Label")) * Color(1, 1, 1, 0.5));
 		}
 
-		item->add_button(1, shortcuts->get_theme_icon("Edit", "EditorIcons"), 0);
-		item->add_button(1, shortcuts->get_theme_icon("Close", "EditorIcons"), 1);
+		item->add_button(1, shortcuts->get_theme_icon(SNAME("Edit"), SNAME("EditorIcons")), 0);
+		item->add_button(1, shortcuts->get_theme_icon(SNAME("Close"), SNAME("EditorIcons")), 1);
 		item->set_tooltip(0, action_name);
 		item->set_tooltip(1, events_display_string);
 		item->set_metadata(0, "Common");
@@ -349,8 +349,8 @@ void EditorSettingsDialog::_update_shortcuts() {
 			}
 
 			sections[section_name] = section;
-			section->set_custom_bg_color(0, shortcuts->get_theme_color("prop_subsection", "Editor"));
-			section->set_custom_bg_color(1, shortcuts->get_theme_color("prop_subsection", "Editor"));
+			section->set_custom_bg_color(0, shortcuts->get_theme_color(SNAME("prop_subsection"), SNAME("Editor")));
+			section->set_custom_bg_color(1, shortcuts->get_theme_color(SNAME("prop_subsection"), SNAME("Editor")));
 		}
 
 		// Don't match unassigned shortcuts when searching for assigned keys in search results.
@@ -362,16 +362,16 @@ void EditorSettingsDialog::_update_shortcuts() {
 			item->set_text(1, sc->get_as_text());
 
 			if (!sc->is_shortcut(original) && !(sc->get_shortcut().is_null() && original.is_null())) {
-				item->add_button(1, shortcuts->get_theme_icon("Reload", "EditorIcons"), 2);
+				item->add_button(1, shortcuts->get_theme_icon(SNAME("Reload"), SNAME("EditorIcons")), 2);
 			}
 
 			if (sc->get_as_text() == "None") {
 				// Fade out unassigned shortcut labels for easier visual grepping.
-				item->set_custom_color(1, shortcuts->get_theme_color("font_color", "Label") * Color(1, 1, 1, 0.5));
+				item->set_custom_color(1, shortcuts->get_theme_color(SNAME("font_color"), SNAME("Label")) * Color(1, 1, 1, 0.5));
 			}
 
-			item->add_button(1, shortcuts->get_theme_icon("Edit", "EditorIcons"), 0);
-			item->add_button(1, shortcuts->get_theme_icon("Close", "EditorIcons"), 1);
+			item->add_button(1, shortcuts->get_theme_icon(SNAME("Edit"), SNAME("EditorIcons")), 0);
+			item->add_button(1, shortcuts->get_theme_icon(SNAME("Close"), SNAME("EditorIcons")), 1);
 			item->set_tooltip(0, E->get());
 			item->set_metadata(0, E->get());
 		}
@@ -426,7 +426,7 @@ void EditorSettingsDialog::_shortcut_button_pressed(Object *p_item, int p_column
 
 				if (button_idx == SHORTCUT_EDIT) {
 					// If editing, add a button which can be used to add an additional event.
-					action_popup->add_icon_item(get_theme_icon("Add", "EditorIcons"), TTR("Add"));
+					action_popup->add_icon_item(get_theme_icon(SNAME("Add"), SNAME("EditorIcons")), TTR("Add"));
 				}
 
 				action_popup->set_position(get_position() + get_mouse_position());

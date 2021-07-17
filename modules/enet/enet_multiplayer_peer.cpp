@@ -249,7 +249,7 @@ void ENetMultiplayerPeer::poll() {
 
 				connection_status = CONNECTION_CONNECTED; // If connecting, this means it connected to something!
 
-				emit_signal("peer_connected", *new_id);
+				emit_signal(SNAME("peer_connected"), *new_id);
 
 				if (server) {
 					// Do not notify other peers when server_relay is disabled.
@@ -274,7 +274,7 @@ void ENetMultiplayerPeer::poll() {
 						enet_peer_send(E->get(), SYSCH_CONFIG, packet);
 					}
 				} else {
-					emit_signal("connection_succeeded");
+					emit_signal(SNAME("connection_succeeded"));
 				}
 
 			} break;
@@ -285,7 +285,7 @@ void ENetMultiplayerPeer::poll() {
 
 				if (!id) {
 					if (!server) {
-						emit_signal("connection_failed");
+						emit_signal(SNAME("connection_failed"));
 					}
 					// Never fully connected.
 					break;
@@ -293,7 +293,7 @@ void ENetMultiplayerPeer::poll() {
 
 				if (!server) {
 					// Client just disconnected from server.
-					emit_signal("server_disconnected");
+					emit_signal(SNAME("server_disconnected"));
 					close_connection();
 					return;
 				} else if (server_relay) {
@@ -310,7 +310,7 @@ void ENetMultiplayerPeer::poll() {
 					}
 				}
 
-				emit_signal("peer_disconnected", *id);
+				emit_signal(SNAME("peer_disconnected"), *id);
 				peer_map.erase(*id);
 				memdelete(id);
 			} break;
@@ -328,12 +328,12 @@ void ENetMultiplayerPeer::poll() {
 					switch (msg) {
 						case SYSMSG_ADD_PEER: {
 							peer_map[id] = nullptr;
-							emit_signal("peer_connected", id);
+							emit_signal(SNAME("peer_connected"), id);
 
 						} break;
 						case SYSMSG_REMOVE_PEER: {
 							peer_map.erase(id);
-							emit_signal("peer_disconnected", id);
+							emit_signal(SNAME("peer_disconnected"), id);
 						} break;
 					}
 
@@ -491,7 +491,7 @@ void ENetMultiplayerPeer::disconnect_peer(int p_peer, bool now) {
 			memdelete(id);
 		}
 
-		emit_signal("peer_disconnected", p_peer);
+		emit_signal(SNAME("peer_disconnected"), p_peer);
 		peer_map.erase(p_peer);
 	} else {
 		enet_peer_disconnect_later(peer_map[p_peer], 0);

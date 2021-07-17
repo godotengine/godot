@@ -33,10 +33,10 @@
 Size2 PanelContainer::get_minimum_size() const {
 	Ref<StyleBox> style;
 
-	if (has_theme_stylebox("panel")) {
-		style = get_theme_stylebox("panel");
+	if (has_theme_stylebox(SNAME("panel"))) {
+		style = get_theme_stylebox(SNAME("panel"));
 	} else {
-		style = get_theme_stylebox("panel", "PanelContainer");
+		style = get_theme_stylebox(SNAME("panel"), SNAME("PanelContainer"));
 	}
 
 	Size2 ms;
@@ -65,10 +65,10 @@ void PanelContainer::_notification(int p_what) {
 		RID ci = get_canvas_item();
 		Ref<StyleBox> style;
 
-		if (has_theme_stylebox("panel")) {
-			style = get_theme_stylebox("panel");
+		if (has_theme_stylebox(SNAME("panel"))) {
+			style = get_theme_stylebox(SNAME("panel"));
 		} else {
-			style = get_theme_stylebox("panel", "PanelContainer");
+			style = get_theme_stylebox(SNAME("panel"), SNAME("PanelContainer"));
 		}
 
 		style->draw(ci, Rect2(Point2(), get_size()));
@@ -77,10 +77,10 @@ void PanelContainer::_notification(int p_what) {
 	if (p_what == NOTIFICATION_SORT_CHILDREN) {
 		Ref<StyleBox> style;
 
-		if (has_theme_stylebox("panel")) {
-			style = get_theme_stylebox("panel");
+		if (has_theme_stylebox(SNAME("panel"))) {
+			style = get_theme_stylebox(SNAME("panel"));
 		} else {
-			style = get_theme_stylebox("panel", "PanelContainer");
+			style = get_theme_stylebox(SNAME("panel"), SNAME("PanelContainer"));
 		}
 
 		Size2 size = get_size();

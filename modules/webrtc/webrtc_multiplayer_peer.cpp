@@ -123,19 +123,19 @@ void WebRTCMultiplayerPeer::poll() {
 		// Already connected to server: simply notify new peer.
 		// NOTE: Mesh is always connected.
 		if (connection_status == CONNECTION_CONNECTED) {
-			emit_signal("peer_connected", E->get());
+			emit_signal(SNAME("peer_connected"), E->get());
 		}
 
 		// Server emulation mode suppresses peer_conencted until server connects.
 		if (server_compat && E->get() == TARGET_PEER_SERVER) {
 			// Server connected.
 			connection_status = CONNECTION_CONNECTED;
-			emit_signal("peer_connected", TARGET_PEER_SERVER);
-			emit_signal("connection_succeeded");
+			emit_signal(SNAME("peer_connected"), TARGET_PEER_SERVER);
+			emit_signal(SNAME("connection_succeeded"));
 			// Notify of all previously connected peers
 			for (Map<int, Ref<ConnectedPeer>>::Element *F = peer_map.front(); F; F = F->next()) {
 				if (F->key() != 1 && F->get()->connected) {
-					emit_signal("peer_connected", F->key());
+					emit_signal(SNAME("peer_connected"), F->key());
 				}
 			}
 			break; // Because we already notified of all newly added peers.
@@ -283,9 +283,9 @@ void WebRTCMultiplayerPeer::remove_peer(int p_peer_id) {
 	peer_map.erase(p_peer_id);
 	if (peer->connected) {
 		peer->connected = false;
-		emit_signal("peer_disconnected", p_peer_id);
+		emit_signal(SNAME("peer_disconnected"), p_peer_id);
 		if (server_compat && p_peer_id == TARGET_PEER_SERVER) {
-			emit_signal("server_disconnected");
+			emit_signal(SNAME("server_disconnected"));
 			connection_status = CONNECTION_DISCONNECTED;
 		}
 	}

@@ -98,35 +98,35 @@ void VisualScriptPropertySelector::_update_search() {
 		List<PropertyInfo> props;
 		TreeItem *category = nullptr;
 		Ref<Texture2D> type_icons[Variant::VARIANT_MAX] = {
-			vbc->get_theme_icon("Variant", "EditorIcons"),
-			vbc->get_theme_icon("bool", "EditorIcons"),
-			vbc->get_theme_icon("int", "EditorIcons"),
-			vbc->get_theme_icon("float", "EditorIcons"),
-			vbc->get_theme_icon("String", "EditorIcons"),
-			vbc->get_theme_icon("Vector2", "EditorIcons"),
-			vbc->get_theme_icon("Rect2", "EditorIcons"),
-			vbc->get_theme_icon("Vector3", "EditorIcons"),
-			vbc->get_theme_icon("Transform2D", "EditorIcons"),
-			vbc->get_theme_icon("Plane", "EditorIcons"),
-			vbc->get_theme_icon("Quaternion", "EditorIcons"),
-			vbc->get_theme_icon("AABB", "EditorIcons"),
-			vbc->get_theme_icon("Basis", "EditorIcons"),
-			vbc->get_theme_icon("Transform3D", "EditorIcons"),
-			vbc->get_theme_icon("Color", "EditorIcons"),
-			vbc->get_theme_icon("Path", "EditorIcons"),
-			vbc->get_theme_icon("RID", "EditorIcons"),
-			vbc->get_theme_icon("Object", "EditorIcons"),
-			vbc->get_theme_icon("Dictionary", "EditorIcons"),
-			vbc->get_theme_icon("Array", "EditorIcons"),
-			vbc->get_theme_icon("PackedByteArray", "EditorIcons"),
-			vbc->get_theme_icon("PackedInt32Array", "EditorIcons"),
-			vbc->get_theme_icon("PackedFloat32Array", "EditorIcons"),
-			vbc->get_theme_icon("PackedInt64Array", "EditorIcons"),
-			vbc->get_theme_icon("PackedFloat64Array", "EditorIcons"),
-			vbc->get_theme_icon("PackedStringArray", "EditorIcons"),
-			vbc->get_theme_icon("PackedVector2Array", "EditorIcons"),
-			vbc->get_theme_icon("PackedVector3Array", "EditorIcons"),
-			vbc->get_theme_icon("PackedColorArray", "EditorIcons")
+			vbc->get_theme_icon(SNAME("Variant"), SNAME("EditorIcons")),
+			vbc->get_theme_icon(SNAME("bool"), SNAME("EditorIcons")),
+			vbc->get_theme_icon(SNAME("int"), SNAME("EditorIcons")),
+			vbc->get_theme_icon(SNAME("float"), SNAME("EditorIcons")),
+			vbc->get_theme_icon(SNAME("String"), SNAME("EditorIcons")),
+			vbc->get_theme_icon(SNAME("Vector2"), SNAME("EditorIcons")),
+			vbc->get_theme_icon(SNAME("Rect2"), SNAME("EditorIcons")),
+			vbc->get_theme_icon(SNAME("Vector3"), SNAME("EditorIcons")),
+			vbc->get_theme_icon(SNAME("Transform2D"), SNAME("EditorIcons")),
+			vbc->get_theme_icon(SNAME("Plane"), SNAME("EditorIcons")),
+			vbc->get_theme_icon(SNAME("Quaternion"), SNAME("EditorIcons")),
+			vbc->get_theme_icon(SNAME("AABB"), SNAME("EditorIcons")),
+			vbc->get_theme_icon(SNAME("Basis"), SNAME("EditorIcons")),
+			vbc->get_theme_icon(SNAME("Transform3D"), SNAME("EditorIcons")),
+			vbc->get_theme_icon(SNAME("Color"), SNAME("EditorIcons")),
+			vbc->get_theme_icon(SNAME("Path"), SNAME("EditorIcons")),
+			vbc->get_theme_icon(SNAME("RID"), SNAME("EditorIcons")),
+			vbc->get_theme_icon(SNAME("Object"), SNAME("EditorIcons")),
+			vbc->get_theme_icon(SNAME("Dictionary"), SNAME("EditorIcons")),
+			vbc->get_theme_icon(SNAME("Array"), SNAME("EditorIcons")),
+			vbc->get_theme_icon(SNAME("PackedByteArray"), SNAME("EditorIcons")),
+			vbc->get_theme_icon(SNAME("PackedInt32Array"), SNAME("EditorIcons")),
+			vbc->get_theme_icon(SNAME("PackedFloat32Array"), SNAME("EditorIcons")),
+			vbc->get_theme_icon(SNAME("PackedInt64Array"), SNAME("EditorIcons")),
+			vbc->get_theme_icon(SNAME("PackedFloat64Array"), SNAME("EditorIcons")),
+			vbc->get_theme_icon(SNAME("PackedStringArray"), SNAME("EditorIcons")),
+			vbc->get_theme_icon(SNAME("PackedVector2Array"), SNAME("EditorIcons")),
+			vbc->get_theme_icon(SNAME("PackedVector3Array"), SNAME("EditorIcons")),
+			vbc->get_theme_icon(SNAME("PackedColorArray"), SNAME("EditorIcons"))
 		};
 		{
 			String b = String(E->get());
@@ -253,7 +253,7 @@ void VisualScriptPropertySelector::_update_search() {
 
 			TreeItem *item = search_options->create_item(category ? category : root);
 			item->set_text(0, desc);
-			item->set_icon(0, vbc->get_theme_icon("MemberMethod", "EditorIcons"));
+			item->set_icon(0, vbc->get_theme_icon(SNAME("MemberMethod"), SNAME("EditorIcons")));
 			item->set_metadata(0, name);
 			item->set_selectable(0, true);
 
@@ -317,7 +317,7 @@ void VisualScriptPropertySelector::create_visualscript_item(const String &name, 
 	if (search_input == String() || text.findn(search_input) != -1) {
 		TreeItem *item = search_options->create_item(root);
 		item->set_text(0, text);
-		item->set_icon(0, vbc->get_theme_icon("VisualScript", "EditorIcons"));
+		item->set_icon(0, vbc->get_theme_icon(SNAME("VisualScript"), SNAME("EditorIcons")));
 		item->set_metadata(0, name);
 		item->set_metadata(1, "action");
 		item->set_selectable(0, true);
@@ -401,7 +401,7 @@ void VisualScriptPropertySelector::get_visual_node_names(const String &root_filt
 		}
 
 		item->set_text(0, type_name + String("").join(desc));
-		item->set_icon(0, vbc->get_theme_icon("VisualScript", "EditorIcons"));
+		item->set_icon(0, vbc->get_theme_icon(SNAME("VisualScript"), SNAME("EditorIcons")));
 		item->set_selectable(0, true);
 		item->set_metadata(0, E->get());
 		item->set_selectable(0, true);
@@ -417,7 +417,7 @@ void VisualScriptPropertySelector::_confirmed() {
 	if (!ti) {
 		return;
 	}
-	emit_signal("selected", ti->get_metadata(0), ti->get_metadata(1), ti->get_metadata(2));
+	emit_signal(SNAME("selected"), ti->get_metadata(0), ti->get_metadata(1), ti->get_metadata(2));
 	set_visible(false);
 }
 

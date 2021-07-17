@@ -50,7 +50,7 @@ void ReparentDialog::_cancel() {
 
 void ReparentDialog::_reparent() {
 	if (tree->get_selected()) {
-		emit_signal("reparent", tree->get_selected()->get_path(), keep_transform->is_pressed());
+		emit_signal(SNAME("reparent"), tree->get_selected()->get_path(), keep_transform->is_pressed());
 		hide();
 	}
 }

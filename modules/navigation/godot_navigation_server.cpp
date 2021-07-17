@@ -536,7 +536,7 @@ void GodotNavigationServer::process(real_t p_delta_time) {
 		// Emit a signal if a map changed.
 		const uint32_t new_map_update_id = active_maps[i]->get_map_update_id();
 		if (new_map_update_id != active_maps_update_id[i]) {
-			emit_signal("map_changed", active_maps[i]->get_self());
+			emit_signal(SNAME("map_changed"), active_maps[i]->get_self());
 			active_maps_update_id[i] = new_map_update_id;
 		}
 	}

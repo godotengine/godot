@@ -592,7 +592,7 @@ bool EditorFileSystem::_update_scan_actions() {
 	}
 
 	if (reloads.size()) {
-		emit_signal("resources_reload", reloads);
+		emit_signal(SNAME("resources_reload"), reloads);
 	}
 	scan_actions.clear();
 
@@ -623,8 +623,8 @@ void EditorFileSystem::scan() {
 		new_filesystem = nullptr;
 		_update_scan_actions();
 		scanning = false;
-		emit_signal("filesystem_changed");
-		emit_signal("sources_changed", sources_changed.size() > 0);
+		emit_signal(SNAME("filesystem_changed"));
+		emit_signal(SNAME("sources_changed"), sources_changed.size() > 0);
 		_queue_update_script_classes();
 		first_scan = false;
 	} else {
@@ -1073,12 +1073,12 @@ void EditorFileSystem::scan_changes() {
 			scan_total = 0;
 			_scan_fs_changes(filesystem, sp);
 			if (_update_scan_actions()) {
-				emit_signal("filesystem_changed");
+				emit_signal(SNAME("filesystem_changed"));
 			}
 		}
 		scanning_changes = false;
 		scanning_changes_done = true;
-		emit_signal("sources_changed", sources_changed.size() > 0);
+		emit_signal(SNAME("sources_changed"), sources_changed.size() > 0);
 	} else {
 		ERR_FAIL_COND(thread_sources.is_started());
 		set_process(true);
@@ -1128,9 +1128,9 @@ void EditorFileSystem::_notification(int p_what) {
 
 						thread_sources.wait_to_finish();
 						if (_update_scan_actions()) {
-							emit_signal("filesystem_changed");
+							emit_signal(SNAME("filesystem_changed"));
 						}
-						emit_signal("sources_changed", sources_changed.size() > 0);
+						emit_signal(SNAME("sources_changed"), sources_changed.size() > 0);
 						_queue_update_script_classes();
 						first_scan = false;
 					}
@@ -1144,8 +1144,8 @@ void EditorFileSystem::_notification(int p_what) {
 					new_filesystem = nullptr;
 					thread.wait_to_finish();
 					_update_scan_actions();
-					emit_signal("filesystem_changed");
-					emit_signal("sources_changed", sources_changed.size() > 0);
+					emit_signal(SNAME("filesystem_changed"));
+					emit_signal(SNAME("sources_changed"), sources_changed.size() > 0);
 					_queue_update_script_classes();
 					first_scan = false;
 				}
@@ -2026,10 +2026,10 @@ void EditorFileSystem::reimport_files(const Vector<String> &p_files) {
 	_save_filesystem_cache();
 	importing = false;
 	if (!is_scanning()) {
-		emit_signal("filesystem_changed");
+		emit_signal(SNAME("filesystem_changed"));
 	}
 
-	emit_signal("resources_reimported", p_files);
+	emit_signal(SNAME("resources_reimported"), p_files);
 }
 
 Error EditorFileSystem::_resource_import(const String &p_path) {

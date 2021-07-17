@@ -73,7 +73,7 @@ void RenderingServerDefault::request_frame_drawn_callback(Object *p_where, const
 
 void RenderingServerDefault::_draw(bool p_swap_buffers, double frame_step) {
 	//needs to be done before changes is reset to 0, to not force the editor to redraw
-	RS::get_singleton()->emit_signal("frame_pre_draw");
+	RS::get_singleton()->emit_signal(SNAME("frame_pre_draw"));
 
 	changes = 0;
 
@@ -113,7 +113,7 @@ void RenderingServerDefault::_draw(bool p_swap_buffers, double frame_step) {
 
 		frame_drawn_callbacks.pop_front();
 	}
-	RS::get_singleton()->emit_signal("frame_post_draw");
+	RS::get_singleton()->emit_signal(SNAME("frame_post_draw"));
 
 	if (RSG::storage->get_captured_timestamps_count()) {
 		Vector<FrameProfileArea> new_profile;

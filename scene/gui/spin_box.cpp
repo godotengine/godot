@@ -188,7 +188,7 @@ inline void SpinBox::_adjust_width_for_icon(const Ref<Texture2D> &icon) {
 
 void SpinBox::_notification(int p_what) {
 	if (p_what == NOTIFICATION_DRAW) {
-		Ref<Texture2D> updown = get_theme_icon("updown");
+		Ref<Texture2D> updown = get_theme_icon(SNAME("updown"));
 
 		_adjust_width_for_icon(updown);
 
@@ -204,7 +204,7 @@ void SpinBox::_notification(int p_what) {
 	} else if (p_what == NOTIFICATION_FOCUS_EXIT) {
 		//_value_changed(0);
 	} else if (p_what == NOTIFICATION_ENTER_TREE) {
-		_adjust_width_for_icon(get_theme_icon("updown"));
+		_adjust_width_for_icon(get_theme_icon(SNAME("updown")));
 		_value_changed(0);
 	} else if (p_what == NOTIFICATION_EXIT_TREE) {
 		_release_mouse();
