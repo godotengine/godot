@@ -34,88 +34,88 @@
 EditorVCSInterface *EditorVCSInterface::singleton = nullptr;
 
 bool EditorVCSInterface::_initialize(String p_project_root_path) {
-	ERR_PRINT("Selected VCS addon does not implement \"" + String(__FUNCTION__) + "\"function. This warning will be suppressed.");
+	_not_implemented_function(__FUNCTION__);
 	return true;
 }
 
 bool EditorVCSInterface::_is_vcs_initialized() {
-	ERR_PRINT("Selected VCS addon does not implement \"" + String(__FUNCTION__) + "\"function. This warning will be suppressed.");
+	_not_implemented_function(__FUNCTION__);
 	return false;
 }
 
 Array EditorVCSInterface::_get_modified_files_data() {
-	ERR_PRINT("Selected VCS addon does not implement \"" + String(__FUNCTION__) + "\" function. This warning will be suppressed.");
+	_not_implemented_function(__FUNCTION__);
 	return Array();
 }
 
 void EditorVCSInterface::_stage_file(String p_file_path) {
-	ERR_PRINT("Selected VCS addon does not implement \"" + String(__FUNCTION__) + "\"function. This warning will be suppressed.");
+	_not_implemented_function(__FUNCTION__);
 }
 
 void EditorVCSInterface::_unstage_file(String p_file_path) {
-	ERR_PRINT("Selected VCS addon does not implement \"" + String(__FUNCTION__) + "\"function. This warning will be suppressed.");
+	_not_implemented_function(__FUNCTION__);
 }
 
 void EditorVCSInterface::_commit(String p_msg) {
-	ERR_PRINT("Selected VCS addon does not implement \"" + String(__FUNCTION__) + "\"function. This warning will be suppressed.");
+	_not_implemented_function(__FUNCTION__);
 }
 
 void EditorVCSInterface::_discard_file(String p_file_path) {
-	ERR_PRINT("Selected VCS addon does not implement \"" + String(__FUNCTION__) + "\"function. This warning will be suppressed.");
+	_not_implemented_function(__FUNCTION__);
 }
 
 Array EditorVCSInterface::_get_file_diff(String p_identifier, TreeArea area) {
-	ERR_PRINT("Selected VCS addon does not implement \"" + String(__FUNCTION__) + "\"function. This warning will be suppressed.");
+	_not_implemented_function(__FUNCTION__);
 	return Array();
 }
 
 Array EditorVCSInterface::_get_branch_list() {
-	ERR_PRINT("Selected VCS addon does not implement \"" + String(__FUNCTION__) + "\"function. This warning will be suppressed.");
+	_not_implemented_function(__FUNCTION__);
 	return Array();
 }
 
 bool EditorVCSInterface::_checkout_branch(String p_branch) {
-	ERR_PRINT("Selected VCS addon does not implement \"" + String(__FUNCTION__) + "\"function. This warning will be suppressed.");
+	_not_implemented_function(__FUNCTION__);
 	return false;
 }
 
 Array EditorVCSInterface::_get_previous_commits() {
-	ERR_PRINT("Selected VCS addon does not implement \"" + String(__FUNCTION__) + "\"function. This warning will be suppressed.");
+	_not_implemented_function(__FUNCTION__);
 	return Array();
 }
 
 bool EditorVCSInterface::_shut_down() {
-	ERR_PRINT("Selected VCS addon does not implement \"" + String(__FUNCTION__) + "\"function. This warning will be suppressed.");
+	_not_implemented_function(__FUNCTION__);
 	return false;
 }
 
 String EditorVCSInterface::_get_project_name() {
-	ERR_PRINT("Selected VCS addon does not implement \"" + String(__FUNCTION__) + "\"function. This warning will be suppressed.");
+	_not_implemented_function(__FUNCTION__);
 	return String();
 }
 
 String EditorVCSInterface::_get_vcs_name() {
-	ERR_PRINT("Selected VCS addon does not implement \"" + String(__FUNCTION__) + "\"function. This warning will be suppressed.");
+	_not_implemented_function(__FUNCTION__);
 	return "";
 }
 
 void EditorVCSInterface::_pull() {
-	ERR_PRINT("Selected VCS addon does not implement \"" + String(__FUNCTION__) + "\"function. This warning will be suppressed.");
+	_not_implemented_function(__FUNCTION__);
 	return;
 }
 
 void EditorVCSInterface::_push() {
-	ERR_PRINT("Selected VCS addon does not implement \"" + String(__FUNCTION__) + "\"function. This warning will be suppressed.");
+	_not_implemented_function(__FUNCTION__);
 	return;
 }
 
 void EditorVCSInterface::_fetch() {
-	ERR_PRINT("Selected VCS addon does not implement \"" + String(__FUNCTION__) + "\"function. This warning will be suppressed.");
+	_not_implemented_function(__FUNCTION__);
 	return;
 }
 
 void EditorVCSInterface::_set_up_credentials(String p_username, String p_password) {
-	ERR_PRINT("Selected VCS addon does not implement \"" + String(__FUNCTION__) + "\"function. This warning will be suppressed.");
+	_not_implemented_function(__FUNCTION__);
 }
 
 void EditorVCSInterface::_popup_error(String p_msg) {
@@ -143,29 +143,29 @@ List<EditorVCSInterface::StatusFile> EditorVCSInterface::get_modified_files_data
 }
 
 void EditorVCSInterface::stage_file(String p_file_path) {
-	if (is_addon_ready()) {
+	if (is_plugin_ready()) {
 		call("_stage_file", p_file_path);
 	}
 }
 
 void EditorVCSInterface::unstage_file(String p_file_path) {
-	if (is_addon_ready()) {
+	if (is_plugin_ready()) {
 		call("_unstage_file", p_file_path);
 	}
 }
 
 void EditorVCSInterface::discard_file(String p_file_path) {
-	if (is_addon_ready()) {
+	if (is_plugin_ready()) {
 		call("_discard_file", p_file_path);
 	}
 }
 
-bool EditorVCSInterface::is_addon_ready() {
+bool EditorVCSInterface::is_plugin_ready() {
 	return is_initialized;
 }
 
 void EditorVCSInterface::commit(String p_msg) {
-	if (is_addon_ready()) {
+	if (is_plugin_ready()) {
 		call("_commit", p_msg);
 	}
 }
@@ -173,7 +173,7 @@ void EditorVCSInterface::commit(String p_msg) {
 List<EditorVCSInterface::DiffFile> EditorVCSInterface::get_file_diff(String p_identifier, TreeArea p_area) {
 	List<DiffFile> diff_files = List<DiffFile>();
 
-	if (is_addon_ready()) {
+	if (is_plugin_ready()) {
 		Array result = call("_get_file_diff", p_identifier, p_area);
 		for (int i = 0; i < result.size(); i++) {
 			diff_files.push_back(_convert_diff_file(result[i]));
@@ -185,7 +185,7 @@ List<EditorVCSInterface::DiffFile> EditorVCSInterface::get_file_diff(String p_id
 
 List<EditorVCSInterface::Commit> EditorVCSInterface::get_previous_commits() {
 	List<EditorVCSInterface::Commit> commits = List<EditorVCSInterface::Commit>();
-	if (is_addon_ready()) {
+	if (is_plugin_ready()) {
 		Array result = call("_get_previous_commits");
 		for (int i = 0; i < result.size(); i++) {
 			commits.push_back(_convert_commit(result[i]));
@@ -197,7 +197,7 @@ List<EditorVCSInterface::Commit> EditorVCSInterface::get_previous_commits() {
 List<String> EditorVCSInterface::get_branch_list() {
 	List<String> branch_list = List<String>();
 
-	if (is_addon_ready()) {
+	if (is_plugin_ready()) {
 		Array result = call("_get_branch_list");
 		for (int i = 0; i < result.size(); i++) {
 			branch_list.push_back(result[i]);
@@ -207,33 +207,33 @@ List<String> EditorVCSInterface::get_branch_list() {
 }
 
 bool EditorVCSInterface::checkout_branch(String p_branch) {
-	if (is_addon_ready()) {
+	if (is_plugin_ready()) {
 		return call("_checkout_branch", p_branch);
 	}
 	return false;
 }
 
 void EditorVCSInterface::pull() {
-	if (is_addon_ready()) {
+	if (is_plugin_ready()) {
 		call("_pull");
 	}
 }
 
 void EditorVCSInterface::push() {
-	if (is_addon_ready()) {
+	if (is_plugin_ready()) {
 		call("_push");
 	}
 }
 
 void EditorVCSInterface::fetch() {
-	if (is_addon_ready()) {
+	if (is_plugin_ready()) {
 		call("_fetch");
 	}
 }
 
 List<EditorVCSInterface::DiffHunk> EditorVCSInterface::get_line_diff(String p_file_path, String p_text) {
 	List<DiffHunk> diff_hunks = List<DiffHunk>();
-	if (is_addon_ready()) {
+	if (is_plugin_ready()) {
 		Array result = call("_get_line_diff", p_file_path, p_text);
 		for (int i = 0; i < result.size(); i++) {
 			diff_hunks.push_back(_convert_diff_hunk(result[i]));
@@ -368,6 +368,10 @@ EditorVCSInterface::StatusFile EditorVCSInterface::_convert_status_file(Dictiona
 	return sf;
 }
 
+void EditorVCSInterface::_not_implemented_function(String p_function) {
+	ERR_PRINT("Selected VCS plugin does not implement " + p_function + " function");
+}
+
 void EditorVCSInterface::_bind_methods() {
 	// Proxy end points that act as fallbacks to unavailability of a function in the VCS addon
 	ClassDB::bind_method(D_METHOD("_initialize", "project_root_path"), &EditorVCSInterface::_initialize);
@@ -390,7 +394,7 @@ void EditorVCSInterface::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_set_up_credentials"), &EditorVCSInterface::_set_up_credentials);
 	// ClassDB::bind_method(D_METHOD("_get_line_diff"), &EditorVCSInterface::_get_line_diff);
 
-	ClassDB::bind_method(D_METHOD("is_addon_ready"), &EditorVCSInterface::is_addon_ready);
+	ClassDB::bind_method(D_METHOD("is_plugin_ready"), &EditorVCSInterface::is_plugin_ready);
 
 	// API methods that redirect calls to the proxy end points
 	ClassDB::bind_method(D_METHOD("initialize", "project_root_path"), &EditorVCSInterface::initialize);

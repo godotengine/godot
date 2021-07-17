@@ -38,7 +38,9 @@
 class EditorVCSInterface : public Object {
 	GDCLASS(EditorVCSInterface, Object)
 
-	bool is_initialized;
+	bool is_initialized = false;
+
+	void _not_implemented_function(String p_function);
 
 public:
 	enum ChangeType {
@@ -140,7 +142,7 @@ public:
 	static EditorVCSInterface *get_singleton();
 	static void set_singleton(EditorVCSInterface *p_singleton);
 
-	bool is_addon_ready();
+	bool is_plugin_ready();
 
 	// Proxy functions to the editor for use
 	bool initialize(String p_project_root_path);
