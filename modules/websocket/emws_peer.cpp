@@ -56,7 +56,7 @@ Error EMWSPeer::put_packet(const uint8_t *p_buffer, int p_buffer_size) {
 	int is_bin = write_mode == WebSocketPeer::WRITE_MODE_BINARY ? 1 : 0;
 	godot_js_websocket_send(peer_sock, p_buffer, p_buffer_size, is_bin);
 	return OK;
-};
+}
 
 Error EMWSPeer::get_packet(const uint8_t **r_buffer, int &r_buffer_size) {
 	if (_in_buffer.packets_left() == 0)
@@ -70,19 +70,19 @@ Error EMWSPeer::get_packet(const uint8_t **r_buffer, int &r_buffer_size) {
 	r_buffer_size = read;
 
 	return OK;
-};
+}
 
 int EMWSPeer::get_available_packet_count() const {
 	return _in_buffer.packets_left();
-};
+}
 
 bool EMWSPeer::was_string_packet() const {
 	return _is_string;
-};
+}
 
 bool EMWSPeer::is_connected_to_host() const {
 	return peer_sock != -1;
-};
+}
 
 void EMWSPeer::close(int p_code, String p_reason) {
 	if (peer_sock != -1) {
@@ -91,7 +91,7 @@ void EMWSPeer::close(int p_code, String p_reason) {
 	_is_string = 0;
 	_in_buffer.clear();
 	peer_sock = -1;
-};
+}
 
 IPAddress EMWSPeer::get_connected_host() const {
 	ERR_FAIL_V_MSG(IPAddress(), "Not supported in HTML5 export.");
@@ -99,7 +99,7 @@ IPAddress EMWSPeer::get_connected_host() const {
 
 uint16_t EMWSPeer::get_connected_port() const {
 	ERR_FAIL_V_MSG(0, "Not supported in HTML5 export.");
-};
+}
 
 void EMWSPeer::set_no_delay(bool p_enabled) {
 	ERR_FAIL_MSG("'set_no_delay' is not supported in HTML5 export.");
@@ -107,10 +107,10 @@ void EMWSPeer::set_no_delay(bool p_enabled) {
 
 EMWSPeer::EMWSPeer() {
 	close();
-};
+}
 
 EMWSPeer::~EMWSPeer() {
 	close();
-};
+}
 
 #endif // JAVASCRIPT_ENABLED

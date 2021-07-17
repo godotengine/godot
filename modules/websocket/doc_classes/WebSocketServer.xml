@@ -116,8 +116,11 @@
 			</argument>
 			<argument index="1" name="protocol" type="String">
 			</argument>
+			<argument index="2" name="resource_name" type="String">
+			</argument>
 			<description>
-				Emitted when a new client connects. "protocol" will be the sub-protocol agreed with the client.
+				Emitted when a new client connects. "protocol" will be the sub-protocol agreed with the client, and "resource_name" will be the resource name of the URI the peer used.
+				"resource_name" is a path (at the very least a single forward slash) and potentially a query string.
 			</description>
 		</signal>
 		<signal name="client_disconnected">

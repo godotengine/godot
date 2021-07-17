@@ -63,7 +63,7 @@ public:
 	virtual void disconnect_peer(int p_peer_id, int p_code = 1000, String p_reason = "") = 0;
 
 	void _on_peer_packet(int32_t p_peer_id);
-	void _on_connect(int32_t p_peer_id, String p_protocol);
+	void _on_connect(int32_t p_peer_id, String p_protocol, String p_resource_name);
 	void _on_disconnect(int32_t p_peer_id, bool p_was_clean);
 	void _on_close_request(int32_t p_peer_id, int p_code, String p_reason);
 

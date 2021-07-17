@@ -34,7 +34,7 @@
 #include "core/config/project_settings.h"
 #include "core/os/os.h"
 
-bool WSLServer::PendingPeer::_parse_request(const Vector<String> p_protocols) {
+bool WSLServer::PendingPeer::_parse_request(const Vector<String> p_protocols, String &r_resource_name) {
 	Vector<String> psa = String((char *)req_buf).split("\r\n");
 	int len = psa.size();
 	ERR_FAIL_COND_V_MSG(len < 4, false, "Not enough response headers, got: " + itos(len) + ", expected >= 4.");
@@ -45,6 +45,7 @@ bool WSLServer::PendingPeer::_parse_request(const Vector<String> p_protocols) {
 	// Wrong protocol
 	ERR_FAIL_COND_V_MSG(req[0] != "GET" || req[2] != "HTTP/1.1", false, "Invalid method or HTTP version.");
 
+	r_resource_name = req[1];
 	Map<String, String> headers;
 	for (int i = 1; i < len; i++) {
 		Vector<String> header = psa[i].split(":", false, 1);
@@ -95,7 +96,7 @@ bool WSLServer::PendingPeer::_parse_request(const Vector<String> p_protocols) {
 	return true;
 }
 
-Error WSLServer::PendingPeer::do_handshake(const Vector<String> p_protocols, uint64_t p_timeout) {
+Error WSLServer::PendingPeer::do_handshake(const Vector<String> p_protocols, uint64_t p_timeout, String &r_resource_name) {
 	if (OS::get_singleton()->get_ticks_msec() - time > p_timeout) {
 		print_verbose(vformat("WebSocket handshake timed out after %.3f seconds.", p_timeout * 0.001));
 		return ERR_TIMEOUT;
@@ -130,7 +131,7 @@ Error WSLServer::PendingPeer::do_handshake(const Vector<String> p_protocols, uin
 			int l = req_pos;
 			if (l > 3 && r[l] == '\n' && r[l - 1] == '\r' && r[l - 2] == '\n' && r[l - 3] == '\r') {
 				r[l - 3] = '\0';
-				if (!_parse_request(p_protocols)) {
+				if (!_parse_request(p_protocols, r_resource_name)) {
 					return FAILED;
 				}
 				String s = "HTTP/1.1 101 Switching Protocols\r\n";
@@ -196,8 +197,9 @@ void WSLServer::poll() {
 
 	List<Ref<PendingPeer>> remove_peers;
 	for (List<Ref<PendingPeer>>::Element *E = _pending.front(); E; E = E->next()) {
+		String resource_name;
 		Ref<PendingPeer> ppeer = E->get();
-		Error err = ppeer->do_handshake(_protocols, handshake_timeout);
+		Error err = ppeer->do_handshake(_protocols, handshake_timeout, resource_name);
 		if (err == ERR_BUSY) {
 			continue;
 		} else if (err != OK) {
@@ -220,7 +222,7 @@ void WSLServer::poll() {
 
 		_peer_map[id] = ws_peer;
 		remove_peers.push_back(ppeer);
-		_on_connect(id, ppeer->protocol);
+		_on_connect(id, ppeer->protocol, resource_name);
 	}
 	for (List<Ref<PendingPeer>>::Element *E = remove_peers.front(); E; E = E->next()) {
 		_pending.erase(E->get());

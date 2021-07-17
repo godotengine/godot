@@ -46,7 +46,7 @@ class WSLServer : public WebSocketServer {
 private:
 	class PendingPeer : public RefCounted {
 	private:
-		bool _parse_request(const Vector<String> p_protocols);
+		bool _parse_request(const Vector<String> p_protocols, String &r_resource_name);
 
 	public:
 		Ref<StreamPeerTCP> tcp;
@@ -62,7 +62,7 @@ private:
 		CharString response;
 		int response_sent = 0;
 
-		Error do_handshake(const Vector<String> p_protocols, uint64_t p_timeout);
+		Error do_handshake(const Vector<String> p_protocols, uint64_t p_timeout, String &r_resource_name);
 	};
 
 	int _in_buf_size = DEF_BUF_SHIFT;
