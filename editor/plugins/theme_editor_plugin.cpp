@@ -2015,6 +2015,12 @@ void ThemeTypeDialog::_notification(int p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
 			_update_add_type_options();
 		} break;
+
+		case NOTIFICATION_VISIBILITY_CHANGED: {
+			if (is_visible()) {
+				add_type_filter->grab_focus();
+			}
+		} break;
 	}
 }
 
