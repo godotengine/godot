@@ -121,6 +121,7 @@ _FORCE_INLINE_ Vector3 Transform3D::xform(const Vector3 &p_vector) const {
 			basis[2].dot(p_vector) + origin.z);
 }
 
+// This cheap approach does not work with non-uniform scaling
 _FORCE_INLINE_ Vector3 Transform3D::xform_inv(const Vector3 &p_vector) const {
 	Vector3 v = p_vector - origin;
 
@@ -130,29 +131,35 @@ _FORCE_INLINE_ Vector3 Transform3D::xform_inv(const Vector3 &p_vector) const {
 			(basis.elements[0][2] * v.x) + (basis.elements[1][2] * v.y) + (basis.elements[2][2] * v.z));
 }
 
+// Note that neither the plane xform or xform_inv are particularly efficient,
+// especially the xform, as it does a basis inverse. For xforming a large number
+// of planes it is better to manually calculate the inverse transpose basis once
+// and reuse it for each plane.
 _FORCE_INLINE_ Plane Transform3D::xform(const Plane &p_plane) const {
+	// transform a single point on the plane
 	Vector3 point = p_plane.normal * p_plane.d;
-	Vector3 point_dir = point + p_plane.normal;
 	point = xform(point);
-	point_dir = xform(point_dir);
 
-	Vector3 normal = point_dir - point;
+	// use inverse transpose for correct normals with non-uniform scaling
+	Basis b = basis.inverse();
+	b.transpose();
+	Vector3 normal = b.xform(p_plane.normal);
 	normal.normalize();
-	real_t d = normal.dot(point);
 
+	real_t d = normal.dot(point);
 	return Plane(normal, d);
 }
 
 _FORCE_INLINE_ Plane Transform3D::xform_inv(const Plane &p_plane) const {
+	// transform a single point on the plane
 	Vector3 point = p_plane.normal * p_plane.d;
-	Vector3 point_dir = point + p_plane.normal;
-	point = xform_inv(point);
-	point_dir = xform_inv(point_dir);
+	point = basis.inverse().xform(point);
 
-	Vector3 normal = point_dir - point;
+	// use transpose for correct normals with non-uniform scaling
+	Vector3 normal = basis.transposed().xform(p_plane.normal);
 	normal.normalize();
-	real_t d = normal.dot(point);
 
+	real_t d = normal.dot(point);
 	return Plane(normal, d);
 }
 
