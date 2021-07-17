@@ -58,8 +58,8 @@ bool ResourceFormatLoader::recognize_path(const String &p_path, const String &p_
 		get_recognized_extensions_for_type(p_for_type, &extensions);
 	}
 
-	for (List<String>::Element *E = extensions.front(); E; E = E->next()) {
-		if (E->get().nocasecmp_to(extension) == 0) {
+	for (String &E : extensions) {
+		if (E.nocasecmp_to(extension) == 0) {
 			return true;
 		}
 	}
@@ -978,15 +978,15 @@ void ResourceLoader::load_translation_remaps() {
 	Dictionary remaps = ProjectSettings::get_singleton()->get("internationalization/locale/translation_remaps");
 	List<Variant> keys;
 	remaps.get_key_list(&keys);
-	for (List<Variant>::Element *E = keys.front(); E; E = E->next()) {
-		Array langs = remaps[E->get()];
+	for (Variant &E : keys) {
+		Array langs = remaps[E];
 		Vector<String> lang_remaps;
 		lang_remaps.resize(langs.size());
 		for (int i = 0; i < langs.size(); i++) {
 			lang_remaps.write[i] = langs[i];
 		}
 
-		translation_remaps[String(E->get())] = lang_remaps;
+		translation_remaps[String(E)] = lang_remaps;
 	}
 }
 
@@ -1071,8 +1071,7 @@ void ResourceLoader::add_custom_loaders() {
 	List<StringName> global_classes;
 	ScriptServer::get_global_class_list(&global_classes);
 
-	for (List<StringName>::Element *E = global_classes.front(); E; E = E->next()) {
-		StringName class_name = E->get();
+	for (StringName &class_name : global_classes) {
 		StringName base_class = ScriptServer::get_global_class_native_base(class_name);
 
 		if (base_class == custom_loader_base_class) {

@@ -781,8 +781,8 @@ void Node3DEditorViewport::_compute_edit(const Point2 &p_point) {
 
 	List<Node *> &selection = editor_selection->get_selected_node_list();
 
-	for (List<Node *>::Element *E = selection.front(); E; E = E->next()) {
-		Node3D *sp = Object::cast_to<Node3D>(E->get());
+	for (Node *E : selection) {
+		Node3D *sp = Object::cast_to<Node3D>(E);
 		if (!sp) {
 			continue;
 		}
@@ -1179,8 +1179,8 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 
 					List<Node *> &selection = editor_selection->get_selected_node_list();
 
-					for (List<Node *>::Element *E = selection.front(); E; E = E->next()) {
-						Node3D *sp = Object::cast_to<Node3D>(E->get());
+					for (Node *E : selection) {
+						Node3D *sp = Object::cast_to<Node3D>(E);
 						if (!sp) {
 							continue;
 						}
@@ -1388,8 +1388,8 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 
 						List<Node *> &selection = editor_selection->get_selected_node_list();
 
-						for (List<Node *>::Element *E = selection.front(); E; E = E->next()) {
-							Node3D *sp = Object::cast_to<Node3D>(E->get());
+						for (Node *E : selection) {
+							Node3D *sp = Object::cast_to<Node3D>(E);
 							if (!sp) {
 								continue;
 							}
@@ -1582,8 +1582,8 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 						set_message(TTR("Scaling: ") + "(" + String::num(motion_snapped.x, snap_step_decimals) + ", " +
 									String::num(motion_snapped.y, snap_step_decimals) + ", " + String::num(motion_snapped.z, snap_step_decimals) + ")");
 
-						for (List<Node *>::Element *E = selection.front(); E; E = E->next()) {
-							Node3D *sp = Object::cast_to<Node3D>(E->get());
+						for (Node *E : selection) {
+							Node3D *sp = Object::cast_to<Node3D>(E);
 							if (!sp) {
 								continue;
 							}
@@ -1704,8 +1704,8 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 						set_message(TTR("Translating: ") + "(" + String::num(motion_snapped.x, snap_step_decimals) + ", " +
 									String::num(motion_snapped.y, snap_step_decimals) + ", " + String::num(motion_snapped.z, snap_step_decimals) + ")");
 
-						for (List<Node *>::Element *E = selection.front(); E; E = E->next()) {
-							Node3D *sp = Object::cast_to<Node3D>(E->get());
+						for (Node *E : selection) {
+							Node3D *sp = Object::cast_to<Node3D>(E);
 							if (!sp) {
 								continue;
 							}
@@ -1800,8 +1800,8 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 
 						bool local_coords = (spatial_editor->are_local_coords_enabled() && _edit.plane != TRANSFORM_VIEW); // Disable local transformation for TRANSFORM_VIEW
 
-						for (List<Node *>::Element *E = selection.front(); E; E = E->next()) {
-							Node3D *sp = Object::cast_to<Node3D>(E->get());
+						for (Node *E : selection) {
+							Node3D *sp = Object::cast_to<Node3D>(E);
 							if (!sp) {
 								continue;
 							}
@@ -2039,8 +2039,8 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 
 			List<Node *> &selection = editor_selection->get_selected_node_list();
 
-			for (List<Node *>::Element *E = selection.front(); E; E = E->next()) {
-				Node3D *sp = Object::cast_to<Node3D>(E->get());
+			for (Node *E : selection) {
+				Node3D *sp = Object::cast_to<Node3D>(E);
 				if (!sp) {
 					continue;
 				}
@@ -2905,8 +2905,8 @@ void Node3DEditorViewport::_menu_option(int p_option) {
 
 			undo_redo->create_action(TTR("Align Transform with View"));
 
-			for (List<Node *>::Element *E = selection.front(); E; E = E->next()) {
-				Node3D *sp = Object::cast_to<Node3D>(E->get());
+			for (Node *E : selection) {
+				Node3D *sp = Object::cast_to<Node3D>(E);
 				if (!sp) {
 					continue;
 				}
@@ -2941,8 +2941,8 @@ void Node3DEditorViewport::_menu_option(int p_option) {
 			List<Node *> &selection = editor_selection->get_selected_node_list();
 
 			undo_redo->create_action(TTR("Align Rotation with View"));
-			for (List<Node *>::Element *E = selection.front(); E; E = E->next()) {
-				Node3D *sp = Object::cast_to<Node3D>(E->get());
+			for (Node *E : selection) {
+				Node3D *sp = Object::cast_to<Node3D>(E);
 				if (!sp) {
 					continue;
 				}
@@ -3595,8 +3595,8 @@ void Node3DEditorViewport::focus_selection() {
 
 	List<Node *> &selection = editor_selection->get_selected_node_list();
 
-	for (List<Node *>::Element *E = selection.front(); E; E = E->next()) {
-		Node3D *sp = Object::cast_to<Node3D>(E->get());
+	for (Node *E : selection) {
+		Node3D *sp = Object::cast_to<Node3D>(E);
 		if (!sp) {
 			continue;
 		}
@@ -4581,8 +4581,8 @@ void Node3DEditor::update_transform_gizmo() {
 	Basis gizmo_basis;
 	bool local_gizmo_coords = are_local_coords_enabled();
 
-	for (List<Node *>::Element *E = selection.front(); E; E = E->next()) {
-		Node3D *sp = Object::cast_to<Node3D>(E->get());
+	for (Node *E : selection) {
+		Node3D *sp = Object::cast_to<Node3D>(E);
 		if (!sp) {
 			continue;
 		}
@@ -4993,8 +4993,8 @@ void Node3DEditor::_xform_dialog_action() {
 
 	List<Node *> &selection = editor_selection->get_selected_node_list();
 
-	for (List<Node *>::Element *E = selection.front(); E; E = E->next()) {
-		Node3D *sp = Object::cast_to<Node3D>(E->get());
+	for (Node *E : selection) {
+		Node3D *sp = Object::cast_to<Node3D>(E);
 		if (!sp) {
 			continue;
 		}
@@ -5230,8 +5230,8 @@ void Node3DEditor::_menu_item_pressed(int p_option) {
 
 			List<Node *> &selection = editor_selection->get_selected_node_list();
 
-			for (List<Node *>::Element *E = selection.front(); E; E = E->next()) {
-				Node3D *spatial = Object::cast_to<Node3D>(E->get());
+			for (Node *E : selection) {
+				Node3D *spatial = Object::cast_to<Node3D>(E);
 				if (!spatial || !spatial->is_inside_tree()) {
 					continue;
 				}
@@ -5255,8 +5255,8 @@ void Node3DEditor::_menu_item_pressed(int p_option) {
 
 			List<Node *> &selection = editor_selection->get_selected_node_list();
 
-			for (List<Node *>::Element *E = selection.front(); E; E = E->next()) {
-				Node3D *spatial = Object::cast_to<Node3D>(E->get());
+			for (Node *E : selection) {
+				Node3D *spatial = Object::cast_to<Node3D>(E);
 				if (!spatial || !spatial->is_inside_tree()) {
 					continue;
 				}
@@ -5280,8 +5280,8 @@ void Node3DEditor::_menu_item_pressed(int p_option) {
 
 			List<Node *> &selection = editor_selection->get_selected_node_list();
 
-			for (List<Node *>::Element *E = selection.front(); E; E = E->next()) {
-				Node3D *spatial = Object::cast_to<Node3D>(E->get());
+			for (Node *E : selection) {
+				Node3D *spatial = Object::cast_to<Node3D>(E);
 				if (!spatial || !spatial->is_inside_tree()) {
 					continue;
 				}
@@ -5304,8 +5304,8 @@ void Node3DEditor::_menu_item_pressed(int p_option) {
 			undo_redo->create_action(TTR("Ungroup Selected"));
 			List<Node *> &selection = editor_selection->get_selected_node_list();
 
-			for (List<Node *>::Element *E = selection.front(); E; E = E->next()) {
-				Node3D *spatial = Object::cast_to<Node3D>(E->get());
+			for (Node *E : selection) {
+				Node3D *spatial = Object::cast_to<Node3D>(E);
 				if (!spatial || !spatial->is_inside_tree()) {
 					continue;
 				}
@@ -6040,14 +6040,14 @@ void Node3DEditor::_refresh_menu_icons() {
 		all_locked = false;
 		all_grouped = false;
 	} else {
-		for (List<Node *>::Element *E = selection.front(); E; E = E->next()) {
-			if (Object::cast_to<Node3D>(E->get()) && !Object::cast_to<Node3D>(E->get())->has_meta("_edit_lock_")) {
+		for (Node *E : selection) {
+			if (Object::cast_to<Node3D>(E) && !Object::cast_to<Node3D>(E)->has_meta("_edit_lock_")) {
 				all_locked = false;
 				break;
 			}
 		}
-		for (List<Node *>::Element *E = selection.front(); E; E = E->next()) {
-			if (Object::cast_to<Node3D>(E->get()) && !Object::cast_to<Node3D>(E->get())->has_meta("_edit_group_")) {
+		for (Node *E : selection) {
+			if (Object::cast_to<Node3D>(E) && !Object::cast_to<Node3D>(E)->has_meta("_edit_group_")) {
 				all_grouped = false;
 				break;
 			}
@@ -6100,8 +6100,8 @@ void Node3DEditor::snap_selected_nodes_to_floor() {
 	List<Node *> &selection = editor_selection->get_selected_node_list();
 	Dictionary snap_data;
 
-	for (List<Node *>::Element *E = selection.front(); E; E = E->next()) {
-		Node3D *sp = Object::cast_to<Node3D>(E->get());
+	for (Node *E : selection) {
+		Node3D *sp = Object::cast_to<Node3D>(E);
 		if (sp) {
 			Vector3 from = Vector3();
 			Vector3 position_offset = Vector3();

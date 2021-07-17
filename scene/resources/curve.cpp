@@ -729,8 +729,8 @@ void Curve2D::_bake() const {
 	Vector2 *w = baked_point_cache.ptrw();
 	int idx = 0;
 
-	for (List<Vector2>::Element *E = pointlist.front(); E; E = E->next()) {
-		w[idx] = E->get();
+	for (Vector2 &E : pointlist) {
+		w[idx] = E;
 		idx++;
 	}
 }
@@ -1239,9 +1239,9 @@ void Curve3D::_bake() const {
 	Vector3 prev_up = Vector3(0, 1, 0);
 	Vector3 prev_forward = Vector3(0, 0, 1);
 
-	for (List<Plane>::Element *E = pointlist.front(); E; E = E->next()) {
-		w[idx] = E->get().normal;
-		wt[idx] = E->get().d;
+	for (Plane &E : pointlist) {
+		w[idx] = E.normal;
+		wt[idx] = E.d;
 
 		if (!up_vector_enabled) {
 			idx++;

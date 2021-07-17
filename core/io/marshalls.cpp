@@ -1358,8 +1358,8 @@ Error encode_variant(const Variant &p_variant, uint8_t *r_buffer, int &r_len, bo
 					obj->get_property_list(&props);
 
 					int pc = 0;
-					for (List<PropertyInfo>::Element *E = props.front(); E; E = E->next()) {
-						if (!(E->get().usage & PROPERTY_USAGE_STORAGE)) {
+					for (PropertyInfo &E : props) {
+						if (!(E.usage & PROPERTY_USAGE_STORAGE)) {
 							continue;
 						}
 						pc++;
@@ -1372,15 +1372,15 @@ Error encode_variant(const Variant &p_variant, uint8_t *r_buffer, int &r_len, bo
 
 					r_len += 4;
 
-					for (List<PropertyInfo>::Element *E = props.front(); E; E = E->next()) {
-						if (!(E->get().usage & PROPERTY_USAGE_STORAGE)) {
+					for (PropertyInfo &E : props) {
+						if (!(E.usage & PROPERTY_USAGE_STORAGE)) {
 							continue;
 						}
 
-						_encode_string(E->get().name, buf, r_len);
+						_encode_string(E.name, buf, r_len);
 
 						int len;
-						Error err = encode_variant(obj->get(E->get().name), buf, len, p_full_objects);
+						Error err = encode_variant(obj->get(E.name), buf, len, p_full_objects);
 						if (err) {
 							return err;
 						}
@@ -1418,7 +1418,7 @@ Error encode_variant(const Variant &p_variant, uint8_t *r_buffer, int &r_len, bo
 			List<Variant> keys;
 			d.get_key_list(&keys);
 
-			for (List<Variant>::Element *E = keys.front(); E; E = E->next()) {
+			for (Variant &E : keys) {
 				/*
 				CharString utf8 = E->->utf8();
 
@@ -1433,13 +1433,13 @@ Error encode_variant(const Variant &p_variant, uint8_t *r_buffer, int &r_len, bo
 					r_len++; //pad
 				*/
 				int len;
-				encode_variant(E->get(), buf, len, p_full_objects);
+				encode_variant(E, buf, len, p_full_objects);
 				ERR_FAIL_COND_V(len % 4, ERR_BUG);
 				r_len += len;
 				if (buf) {
 					buf += len;
 				}
-				Variant *v = d.getptr(E->get());
+				Variant *v = d.getptr(E);
 				ERR_FAIL_COND_V(!v, ERR_BUG);
 				encode_variant(*v, buf, len, p_full_objects);
 				ERR_FAIL_COND_V(len % 4, ERR_BUG);

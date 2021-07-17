@@ -1088,8 +1088,8 @@ bool Variant::has_builtin_method_return_value(Variant::Type p_type, const String
 
 void Variant::get_builtin_method_list(Variant::Type p_type, List<StringName> *p_list) {
 	ERR_FAIL_INDEX(p_type, Variant::VARIANT_MAX);
-	for (List<StringName>::Element *E = builtin_method_names[p_type].front(); E; E = E->next()) {
-		p_list->push_back(E->get());
+	for (StringName &E : builtin_method_names[p_type]) {
+		p_list->push_back(E);
 	}
 }
 
@@ -1152,12 +1152,12 @@ void Variant::get_method_list(List<MethodInfo> *p_list) const {
 			obj->get_method_list(p_list);
 		}
 	} else {
-		for (List<StringName>::Element *E = builtin_method_names[type].front(); E; E = E->next()) {
-			const VariantBuiltInMethodInfo *method = builtin_method_info[type].lookup_ptr(E->get());
+		for (StringName &E : builtin_method_names[type]) {
+			const VariantBuiltInMethodInfo *method = builtin_method_info[type].lookup_ptr(E);
 			ERR_CONTINUE(!method);
 
 			MethodInfo mi;
-			mi.name = E->get();
+			mi.name = E;
 
 			//return type
 			if (method->has_return_type) {

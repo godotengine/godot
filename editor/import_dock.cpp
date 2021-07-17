@@ -65,14 +65,14 @@ public:
 		return false;
 	}
 	void _get_property_list(List<PropertyInfo> *p_list) const {
-		for (const List<PropertyInfo>::Element *E = properties.front(); E; E = E->next()) {
-			if (!importer->get_option_visibility(E->get().name, values)) {
+		for (const PropertyInfo &E : properties) {
+			if (!importer->get_option_visibility(E.name, values)) {
 				continue;
 			}
-			PropertyInfo pi = E->get();
+			PropertyInfo pi = E;
 			if (checking) {
 				pi.usage |= PROPERTY_USAGE_CHECKABLE;
-				if (checked.has(E->get().name)) {
+				if (checked.has(E.name)) {
 					pi.usage |= PROPERTY_USAGE_CHECKED;
 				}
 			}
@@ -111,18 +111,18 @@ void ImportDock::set_edit_path(const String &p_path) {
 	ResourceFormatImporter::get_singleton()->get_importers_for_extension(p_path.get_extension(), &importers);
 	List<Pair<String, String>> importer_names;
 
-	for (List<Ref<ResourceImporter>>::Element *E = importers.front(); E; E = E->next()) {
-		importer_names.push_back(Pair<String, String>(E->get()->get_visible_name(), E->get()->get_importer_name()));
+	for (Ref<ResourceImporter> E : importers) {
+		importer_names.push_back(Pair<String, String>(E->get_visible_name(), E->get_importer_name()));
 	}
 
 	importer_names.sort_custom<PairSort<String, String>>();
 
 	import_as->clear();
 
-	for (List<Pair<String, String>>::Element *E = importer_names.front(); E; E = E->next()) {
-		import_as->add_item(E->get().first);
-		import_as->set_item_metadata(import_as->get_item_count() - 1, E->get().second);
-		if (E->get().second == importer_name) {
+	for (Pair<String, String> &E : importer_names) {
+		import_as->add_item(E.first);
+		import_as->set_item_metadata(import_as->get_item_count() - 1, E.second);
+		if (E.second == importer_name) {
 			import_as->select(import_as->get_item_count() - 1);
 		}
 	}
@@ -153,12 +153,12 @@ void ImportDock::_update_options(const Ref<ConfigFile> &p_config) {
 	params->checking = params->paths.size() > 1;
 	params->checked.clear();
 
-	for (List<ResourceImporter::ImportOption>::Element *E = options.front(); E; E = E->next()) {
-		params->properties.push_back(E->get().option);
-		if (p_config.is_valid() && p_config->has_section_key("params", E->get().option.name)) {
-			params->values[E->get().option.name] = p_config->get_value("params", E->get().option.name);
+	for (ResourceImporter::ImportOption &E : options) {
+		params->properties.push_back(E.option);
+		if (p_config.is_valid() && p_config->has_section_key("params", E.option.name)) {
+			params->values[E.option.name] = p_config->get_value("params", E.option.name);
 		} else {
-			params->values[E->get().option.name] = E->get().default_value;
+			params->values[E.option.name] = E.default_value;
 		}
 	}
 
@@ -201,17 +201,17 @@ void ImportDock::set_edit_multiple_paths(const Vector<String> &p_paths) {
 		List<String> keys;
 		config->get_section_keys("params", &keys);
 
-		for (List<String>::Element *E = keys.front(); E; E = E->next()) {
-			if (!value_frequency.has(E->get())) {
-				value_frequency[E->get()] = Dictionary();
+		for (String &E : keys) {
+			if (!value_frequency.has(E)) {
+				value_frequency[E] = Dictionary();
 			}
 
-			Variant value = config->get_value("params", E->get());
+			Variant value = config->get_value("params", E);
 
-			if (value_frequency[E->get()].has(value)) {
-				value_frequency[E->get()][value] = int(value_frequency[E->get()][value]) + 1;
+			if (value_frequency[E].has(value)) {
+				value_frequency[E][value] = int(value_frequency[E][value]) + 1;
 			} else {
-				value_frequency[E->get()][value] = 1;
+				value_frequency[E][value] = 1;
 			}
 		}
 	}
@@ -226,25 +226,25 @@ void ImportDock::set_edit_multiple_paths(const Vector<String> &p_paths) {
 	params->checking = true;
 	params->checked.clear();
 
-	for (List<ResourceImporter::ImportOption>::Element *E = options.front(); E; E = E->next()) {
-		params->properties.push_back(E->get().option);
+	for (ResourceImporter::ImportOption &E : options) {
+		params->properties.push_back(E.option);
 
-		if (value_frequency.has(E->get().option.name)) {
-			Dictionary d = value_frequency[E->get().option.name];
+		if (value_frequency.has(E.option.name)) {
+			Dictionary d = value_frequency[E.option.name];
 			int freq = 0;
 			List<Variant> v;
 			d.get_key_list(&v);
 			Variant value;
-			for (List<Variant>::Element *F = v.front(); F; F = F->next()) {
-				int f = d[F->get()];
+			for (Variant &F : v) {
+				int f = d[F];
 				if (f > freq) {
-					value = F->get();
+					value = F;
 				}
 			}
 
-			params->values[E->get().option.name] = value;
+			params->values[E.option.name] = value;
 		} else {
-			params->values[E->get().option.name] = E->get().default_value;
+			params->values[E.option.name] = E.default_value;
 		}
 	}
 
@@ -254,18 +254,18 @@ void ImportDock::set_edit_multiple_paths(const Vector<String> &p_paths) {
 	ResourceFormatImporter::get_singleton()->get_importers_for_extension(p_paths[0].get_extension(), &importers);
 	List<Pair<String, String>> importer_names;
 
-	for (List<Ref<ResourceImporter>>::Element *E = importers.front(); E; E = E->next()) {
-		importer_names.push_back(Pair<String, String>(E->get()->get_visible_name(), E->get()->get_importer_name()));
+	for (Ref<ResourceImporter> E : importers) {
+		importer_names.push_back(Pair<String, String>(E->get_visible_name(), E->get_importer_name()));
 	}
 
 	importer_names.sort_custom<PairSort<String, String>>();
 
 	import_as->clear();
 
-	for (List<Pair<String, String>>::Element *E = importer_names.front(); E; E = E->next()) {
-		import_as->add_item(E->get().first);
-		import_as->set_item_metadata(import_as->get_item_count() - 1, E->get().second);
-		if (E->get().second == params->importer->get_importer_name()) {
+	for (Pair<String, String> &E : importer_names) {
+		import_as->add_item(E.first);
+		import_as->set_item_metadata(import_as->get_item_count() - 1, E.second);
+		if (E.second == params->importer->get_importer_name()) {
 			import_as->select(import_as->get_item_count() - 1);
 		}
 	}
@@ -345,8 +345,8 @@ void ImportDock::_preset_selected(int p_idx) {
 		case ITEM_SET_AS_DEFAULT: {
 			Dictionary d;
 
-			for (const List<PropertyInfo>::Element *E = params->properties.front(); E; E = E->next()) {
-				d[E->get().name] = params->values[E->get().name];
+			for (const PropertyInfo &E : params->properties) {
+				d[E.name] = params->values[E.name];
 			}
 
 			ProjectSettings::get_singleton()->set("importer_defaults/" + params->importer->get_importer_name(), d);
@@ -363,10 +363,10 @@ void ImportDock::_preset_selected(int p_idx) {
 			if (params->checking) {
 				params->checked.clear();
 			}
-			for (List<Variant>::Element *E = v.front(); E; E = E->next()) {
-				params->values[E->get()] = d[E->get()];
+			for (Variant &E : v) {
+				params->values[E] = d[E];
 				if (params->checking) {
-					params->checked.insert(E->get());
+					params->checked.insert(E);
 				}
 			}
 			params->update();
@@ -384,10 +384,10 @@ void ImportDock::_preset_selected(int p_idx) {
 			if (params->checking) {
 				params->checked.clear();
 			}
-			for (List<ResourceImporter::ImportOption>::Element *E = options.front(); E; E = E->next()) {
-				params->values[E->get().option.name] = E->get().default_value;
+			for (ResourceImporter::ImportOption &E : options) {
+				params->values[E.option.name] = E.default_value;
 				if (params->checking) {
-					params->checked.insert(E->get().option.name);
+					params->checked.insert(E.option.name);
 				}
 			}
 			params->update();
@@ -486,9 +486,9 @@ void ImportDock::_reimport() {
 
 			if (params->checking && config->get_value("remap", "importer") == params->importer->get_importer_name()) {
 				//update only what is edited (checkboxes) if the importer is the same
-				for (List<PropertyInfo>::Element *E = params->properties.front(); E; E = E->next()) {
-					if (params->checked.has(E->get().name)) {
-						config->set_value("params", E->get().name, params->values[E->get().name]);
+				for (PropertyInfo &E : params->properties) {
+					if (params->checked.has(E.name)) {
+						config->set_value("params", E.name, params->values[E.name]);
 					}
 				}
 			} else {
@@ -498,8 +498,8 @@ void ImportDock::_reimport() {
 					config->erase_section("params");
 				}
 
-				for (List<PropertyInfo>::Element *E = params->properties.front(); E; E = E->next()) {
-					config->set_value("params", E->get().name, params->values[E->get().name]);
+				for (PropertyInfo &E : params->properties) {
+					config->set_value("params", E.name, params->values[E.name]);
 				}
 			}
 

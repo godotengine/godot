@@ -915,8 +915,8 @@ void GDAPI godot_variant_get_builtin_method_list(godot_variant_type p_type, godo
 	List<StringName> list;
 	Variant::get_builtin_method_list((Variant::Type)p_type, &list);
 	int i = 0;
-	for (const List<StringName>::Element *E = list.front(); E; E = E->next()) {
-		memnew_placement_custom(&r_list[i], StringName, StringName(E->get()));
+	for (const StringName &E : list) {
+		memnew_placement_custom(&r_list[i], StringName, StringName(E));
 	}
 }
 
@@ -970,8 +970,8 @@ void GDAPI godot_variant_get_member_list(godot_variant_type p_type, godot_string
 	List<StringName> members;
 	Variant::get_member_list((Variant::Type)p_type, &members);
 	int i = 0;
-	for (const List<StringName>::Element *E = members.front(); E; E = E->next()) {
-		memnew_placement_custom(&r_list[i++], StringName, StringName(E->get()));
+	for (const StringName &E : members) {
+		memnew_placement_custom(&r_list[i++], StringName, StringName(E));
 	}
 }
 
@@ -1075,8 +1075,8 @@ void GDAPI godot_variant_get_constants_list(godot_variant_type p_type, godot_str
 	List<StringName> constants;
 	int i = 0;
 	Variant::get_constants_for_type((Variant::Type)p_type, &constants);
-	for (const List<StringName>::Element *E = constants.front(); E; E = E->next()) {
-		memnew_placement_custom(&r_list[i++], StringName, StringName(E->get()));
+	for (const StringName &E : constants) {
+		memnew_placement_custom(&r_list[i++], StringName, StringName(E));
 	}
 }
 
@@ -1227,8 +1227,8 @@ void GDAPI godot_variant_get_utility_function_list(godot_string_name *r_function
 	godot_string_name *func = r_functions;
 	Variant::get_utility_function_list(&functions);
 
-	for (const List<StringName>::Element *E = functions.front(); E; E = E->next()) {
-		memnew_placement_custom(func++, StringName, StringName(E->get()));
+	for (const StringName &E : functions) {
+		memnew_placement_custom(func++, StringName, StringName(E));
 	}
 }
 

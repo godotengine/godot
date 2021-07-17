@@ -1093,9 +1093,9 @@ void Variant::get_property_list(List<PropertyInfo> *p_list) const {
 		const Dictionary *dic = reinterpret_cast<const Dictionary *>(_data._mem);
 		List<Variant> keys;
 		dic->get_key_list(&keys);
-		for (List<Variant>::Element *E = keys.front(); E; E = E->next()) {
-			if (E->get().get_type() == Variant::STRING) {
-				p_list->push_back(PropertyInfo(Variant::STRING, E->get()));
+		for (Variant &E : keys) {
+			if (E.get_type() == Variant::STRING) {
+				p_list->push_back(PropertyInfo(Variant::STRING, E));
 			}
 		}
 	} else if (type == OBJECT) {
@@ -1106,10 +1106,10 @@ void Variant::get_property_list(List<PropertyInfo> *p_list) const {
 	} else {
 		List<StringName> members;
 		get_member_list(type, &members);
-		for (List<StringName>::Element *E = members.front(); E; E = E->next()) {
+		for (StringName &E : members) {
 			PropertyInfo pi;
-			pi.name = E->get();
-			pi.type = get_member_type(type, E->get());
+			pi.name = E;
+			pi.type = get_member_type(type, E);
 			p_list->push_back(pi);
 		}
 	}

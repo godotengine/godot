@@ -292,9 +292,9 @@ SceneDebuggerObject::SceneDebuggerObject(ObjectID p_id) {
 	// Add base object properties.
 	List<PropertyInfo> pinfo;
 	obj->get_property_list(&pinfo, true);
-	for (List<PropertyInfo>::Element *E = pinfo.front(); E; E = E->next()) {
-		if (E->get().usage & (PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_CATEGORY)) {
-			properties.push_back(SceneDebuggerProperty(E->get(), obj->get(E->get().name)));
+	for (PropertyInfo &E : pinfo) {
+		if (E.usage & (PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_CATEGORY)) {
+			properties.push_back(SceneDebuggerProperty(E, obj->get(E.name)));
 		}
 	}
 }
@@ -452,8 +452,7 @@ SceneDebuggerTree::SceneDebuggerTree(Node *p_root) {
 }
 
 void SceneDebuggerTree::serialize(Array &p_arr) {
-	for (List<RemoteNode>::Element *E = nodes.front(); E; E = E->next()) {
-		RemoteNode &n = E->get();
+	for (RemoteNode &n : nodes) {
 		p_arr.push_back(n.child_count);
 		p_arr.push_back(n.name);
 		p_arr.push_back(n.type_name);

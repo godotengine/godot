@@ -79,8 +79,7 @@ void SceneTreeEditor::_cell_button_pressed(Object *p_item, int p_column, int p_i
 		_toggle_visible(n);
 		List<Node *> selection = editor_selection->get_selected_node_list();
 		if (selection.size() > 1 && selection.find(n) != nullptr) {
-			for (List<Node *>::Element *E = selection.front(); E; E = E->next()) {
-				Node *nv = E->get();
+			for (Node *nv : selection) {
 				ERR_FAIL_COND(!nv);
 				if (nv == n) {
 					continue;

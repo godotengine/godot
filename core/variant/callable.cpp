@@ -407,8 +407,8 @@ Array Signal::get_connections() const {
 	object->get_signal_connection_list(name, &connections);
 
 	Array arr;
-	for (List<Object::Connection>::Element *E = connections.front(); E; E = E->next()) {
-		arr.push_back(E->get());
+	for (Object::Connection &E : connections) {
+		arr.push_back(E);
 	}
 	return arr;
 }

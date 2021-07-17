@@ -157,8 +157,7 @@ Array GDScriptTextDocument::completion(const Dictionary &p_params) {
 		int i = 0;
 		arr.resize(options.size());
 
-		for (const List<ScriptCodeCompletionOption>::Element *E = options.front(); E; E = E->next()) {
-			const ScriptCodeCompletionOption &option = E->get();
+		for (const ScriptCodeCompletionOption &option : options) {
 			lsp::CompletionItem item;
 			item.label = option.display;
 			item.data = request_data;
@@ -294,8 +293,8 @@ Array GDScriptTextDocument::documentLink(const Dictionary &p_params) {
 
 	List<lsp::DocumentLink> links;
 	GDScriptLanguageProtocol::get_singleton()->get_workspace()->resolve_document_links(params.textDocument.uri, links);
-	for (const List<lsp::DocumentLink>::Element *E = links.front(); E; E = E->next()) {
-		ret.push_back(E->get().to_json());
+	for (const lsp::DocumentLink &E : links) {
+		ret.push_back(E.to_json());
 	}
 	return ret;
 }
@@ -322,8 +321,8 @@ Variant GDScriptTextDocument::hover(const Dictionary &p_params) {
 		Array contents;
 		List<const lsp::DocumentSymbol *> list;
 		GDScriptLanguageProtocol::get_singleton()->get_workspace()->resolve_related_symbols(params, list);
-		for (List<const lsp::DocumentSymbol *>::Element *E = list.front(); E; E = E->next()) {
-			if (const lsp::DocumentSymbol *s = E->get()) {
+		for (const lsp::DocumentSymbol *&E : list) {
+			if (const lsp::DocumentSymbol *s = E) {
 				contents.push_back(s->render().value);
 			}
 		}
@@ -430,8 +429,8 @@ Array GDScriptTextDocument::find_symbols(const lsp::TextDocumentPositionParams &
 	} else if (GDScriptLanguageProtocol::get_singleton()->is_smart_resolve_enabled()) {
 		List<const lsp::DocumentSymbol *> list;
 		GDScriptLanguageProtocol::get_singleton()->get_workspace()->resolve_related_symbols(p_location, list);
-		for (List<const lsp::DocumentSymbol *>::Element *E = list.front(); E; E = E->next()) {
-			if (const lsp::DocumentSymbol *s = E->get()) {
+		for (const lsp::DocumentSymbol *&E : list) {
+			if (const lsp::DocumentSymbol *s = E) {
 				if (!s->uri.is_empty()) {
 					lsp::Location location;
 					location.uri = s->uri;

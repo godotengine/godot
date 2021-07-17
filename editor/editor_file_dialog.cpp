@@ -830,8 +830,8 @@ void EditorFileDialog::update_file_list() {
 	while (!files.is_empty()) {
 		bool match = patterns.is_empty();
 
-		for (List<String>::Element *E = patterns.front(); E; E = E->next()) {
-			if (files.front()->get().matchn(E->get())) {
+		for (String &E : patterns) {
+			if (files.front()->get().matchn(E)) {
 				match = true;
 				break;
 			}

@@ -312,8 +312,8 @@ Node *ResourceImporterScene::_pre_fix_node(Node *p_node, Node *p_root, Map<Ref<E
 
 		List<StringName> anims;
 		ap->get_animation_list(&anims);
-		for (List<StringName>::Element *E = anims.front(); E; E = E->next()) {
-			Ref<Animation> anim = ap->get_animation(E->get());
+		for (StringName &E : anims) {
+			Ref<Animation> anim = ap->get_animation(E);
 			ERR_CONTINUE(anim.is_null());
 			for (int i = 0; i < anim->get_track_count(); i++) {
 				NodePath path = anim->track_get_path(i);
@@ -328,14 +328,14 @@ Node *ResourceImporterScene::_pre_fix_node(Node *p_node, Node *p_root, Map<Ref<E
 				}
 			}
 
-			String animname = E->get();
+			String animname = E;
 			const int loop_string_count = 3;
 			static const char *loop_strings[loop_string_count] = { "loops", "loop", "cycle" };
 			for (int i = 0; i < loop_string_count; i++) {
 				if (_teststr(animname, loop_strings[i])) {
 					anim->set_loop(true);
 					animname = _fixstr(animname, loop_strings[i]);
-					ap->rename_animation(E->get(), animname);
+					ap->rename_animation(E, animname);
 				}
 			}
 		}
@@ -659,9 +659,9 @@ Node *ResourceImporterScene::_post_fix_node(Node *p_node, Node *p_root, Map<Ref<
 						}
 
 						int idx = 0;
-						for (List<Ref<Shape3D>>::Element *E = shapes.front(); E; E = E->next()) {
+						for (Ref<Shape3D> &E : shapes) {
 							CollisionShape3D *cshape = memnew(CollisionShape3D);
-							cshape->set_shape(E->get());
+							cshape->set_shape(E);
 							base->add_child(cshape);
 
 							cshape->set_owner(base->get_owner());
@@ -712,9 +712,9 @@ Node *ResourceImporterScene::_post_fix_node(Node *p_node, Node *p_root, Map<Ref<
 			//fill node settings for this node with default values
 			List<ImportOption> iopts;
 			get_internal_import_options(INTERNAL_IMPORT_CATEGORY_ANIMATION_NODE, &iopts);
-			for (List<ImportOption>::Element *E = iopts.front(); E; E = E->next()) {
-				if (!node_settings.has(E->get().option.name)) {
-					node_settings[E->get().option.name] = E->get().default_value;
+			for (ImportOption &E : iopts) {
+				if (!node_settings.has(E.option.name)) {
+					node_settings[E.option.name] = E.default_value;
 				}
 			}
 		}
@@ -756,8 +756,7 @@ Node *ResourceImporterScene::_post_fix_node(Node *p_node, Node *p_root, Map<Ref<
 		} else {
 			List<StringName> anims;
 			ap->get_animation_list(&anims);
-			for (List<StringName>::Element *E = anims.front(); E; E = E->next()) {
-				String name = E->get();
+			for (StringName &name : anims) {
 				Ref<Animation> anim = ap->get_animation(name);
 				if (p_animation_data.has(name)) {
 					Dictionary anim_settings = p_animation_data[name];
@@ -765,9 +764,9 @@ Node *ResourceImporterScene::_post_fix_node(Node *p_node, Node *p_root, Map<Ref<
 						//fill with default values
 						List<ImportOption> iopts;
 						get_internal_import_options(INTERNAL_IMPORT_CATEGORY_ANIMATION, &iopts);
-						for (List<ImportOption>::Element *F = iopts.front(); F; F = F->next()) {
-							if (!anim_settings.has(F->get().option.name)) {
-								anim_settings[F->get().option.name] = F->get().default_value;
+						for (ImportOption &F : iopts) {
+							if (!anim_settings.has(F.option.name)) {
+								anim_settings[F.option.name] = F.default_value;
 							}
 						}
 					}
@@ -936,8 +935,8 @@ void ResourceImporterScene::_create_clips(AnimationPlayer *anim, const Array &p_
 void ResourceImporterScene::_optimize_animations(AnimationPlayer *anim, float p_max_lin_error, float p_max_ang_error, float p_max_angle) {
 	List<StringName> anim_names;
 	anim->get_animation_list(&anim_names);
-	for (List<StringName>::Element *E = anim_names.front(); E; E = E->next()) {
-		Ref<Animation> a = anim->get_animation(E->get());
+	for (StringName &E : anim_names) {
+		Ref<Animation> a = anim->get_animation(E);
 		a->optimize(p_max_lin_error, p_max_ang_error, Math::deg2rad(p_max_angle));
 	}
 }
@@ -1046,11 +1045,11 @@ void ResourceImporterScene::get_import_options(List<ImportOption> *r_options, in
 
 	String script_ext_hint;
 
-	for (List<String>::Element *E = script_extentions.front(); E; E = E->next()) {
+	for (String &E : script_extentions) {
 		if (script_ext_hint != "") {
 			script_ext_hint += ",";
 		}
-		script_ext_hint += "*." + E->get();
+		script_ext_hint += "*." + E;
 	}
 
 	r_options->push_back(ImportOption(PropertyInfo(Variant::FLOAT, "nodes/root_scale", PROPERTY_HINT_RANGE, "0.001,1000,0.001"), 1.0));
@@ -1089,9 +1088,9 @@ Node *ResourceImporterScene::import_scene_from_other_importer(EditorSceneImporte
 		List<String> extensions;
 		E->get()->get_extensions(&extensions);
 
-		for (List<String>::Element *F = extensions.front(); F; F = F->next()) {
-			if (F->get().to_lower() == ext) {
-				importer = E->get();
+		for (String &F : extensions) {
+			if (F.to_lower() == ext) {
+				importer = E;
 				break;
 			}
 		}
@@ -1119,9 +1118,9 @@ Ref<Animation> ResourceImporterScene::import_animation_from_other_importer(Edito
 		List<String> extensions;
 		E->get()->get_extensions(&extensions);
 
-		for (List<String>::Element *F = extensions.front(); F; F = F->next()) {
-			if (F->get().to_lower() == ext) {
-				importer = E->get();
+		for (String &F : extensions) {
+			if (F.to_lower() == ext) {
+				importer = E;
 				break;
 			}
 		}
@@ -1291,9 +1290,9 @@ void ResourceImporterScene::_generate_meshes(Node *p_node, const Dictionary &p_m
 }
 
 void ResourceImporterScene::_add_shapes(Node *p_node, const List<Ref<Shape3D>> &p_shapes) {
-	for (const List<Ref<Shape3D>>::Element *E = p_shapes.front(); E; E = E->next()) {
+	for (const Ref<Shape3D> &E : p_shapes) {
 		CollisionShape3D *cshape = memnew(CollisionShape3D);
-		cshape->set_shape(E->get());
+		cshape->set_shape(E);
 		p_node->add_child(cshape);
 
 		cshape->set_owner(p_node->get_owner());
@@ -1311,9 +1310,9 @@ Node *ResourceImporterScene::pre_import(const String &p_source_file) {
 		List<String> extensions;
 		E->get()->get_extensions(&extensions);
 
-		for (List<String>::Element *F = extensions.front(); F; F = F->next()) {
-			if (F->get().to_lower() == ext) {
-				importer = E->get();
+		for (String &F : extensions) {
+			if (F.to_lower() == ext) {
+				importer = E;
 				break;
 			}
 		}
@@ -1351,9 +1350,9 @@ Error ResourceImporterScene::import(const String &p_source_file, const String &p
 		List<String> extensions;
 		E->get()->get_extensions(&extensions);
 
-		for (List<String>::Element *F = extensions.front(); F; F = F->next()) {
-			if (F->get().to_lower() == ext) {
-				importer = E->get();
+		for (String &F : extensions) {
+			if (F.to_lower() == ext) {
+				importer = E;
 				break;
 			}
 		}

@@ -252,8 +252,8 @@ void AnimationCache::set_all(float p_time, float p_delta) {
 					List<int> indices;
 					animation->value_track_get_key_indices(i, p_time, p_delta, &indices);
 
-					for (List<int>::Element *E = indices.front(); E; E = E->next()) {
-						Variant v = animation->track_get_key_value(i, E->get());
+					for (int &E : indices) {
+						Variant v = animation->track_get_key_value(i, E);
 						set_track_value(i, v);
 					}
 				}
@@ -263,9 +263,9 @@ void AnimationCache::set_all(float p_time, float p_delta) {
 				List<int> indices;
 				animation->method_track_get_key_indices(i, p_time, p_delta, &indices);
 
-				for (List<int>::Element *E = indices.front(); E; E = E->next()) {
-					Vector<Variant> args = animation->method_track_get_params(i, E->get());
-					StringName name = animation->method_track_get_name(i, E->get());
+				for (int &E : indices) {
+					Vector<Variant> args = animation->method_track_get_params(i, E);
+					StringName name = animation->method_track_get_name(i, E);
 					Callable::CallError err;
 
 					if (!args.size()) {

@@ -75,8 +75,8 @@ Vector<String> _ResourceLoader::get_recognized_extensions_for_type(const String 
 	List<String> exts;
 	ResourceLoader::get_recognized_extensions_for_type(p_type, &exts);
 	Vector<String> ret;
-	for (List<String>::Element *E = exts.front(); E; E = E->next()) {
-		ret.push_back(E->get());
+	for (String &E : exts) {
+		ret.push_back(E);
 	}
 
 	return ret;
@@ -91,8 +91,8 @@ PackedStringArray _ResourceLoader::get_dependencies(const String &p_path) {
 	ResourceLoader::get_dependencies(p_path, &deps);
 
 	PackedStringArray ret;
-	for (List<String>::Element *E = deps.front(); E; E = E->next()) {
-		ret.push_back(E->get());
+	for (String &E : deps) {
+		ret.push_back(E);
 	}
 
 	return ret;
@@ -141,8 +141,8 @@ Vector<String> _ResourceSaver::get_recognized_extensions(const RES &p_resource) 
 	List<String> exts;
 	ResourceSaver::get_recognized_extensions(p_resource, &exts);
 	Vector<String> ret;
-	for (List<String>::Element *E = exts.front(); E; E = E->next()) {
-		ret.push_back(E->get());
+	for (String &E : exts) {
+		ret.push_back(E);
 	}
 	return ret;
 }
@@ -264,8 +264,8 @@ String _OS::get_name() const {
 Vector<String> _OS::get_cmdline_args() {
 	List<String> cmdline = OS::get_singleton()->get_cmdline_args();
 	Vector<String> cmdlinev;
-	for (List<String>::Element *E = cmdline.front(); E; E = E->next()) {
-		cmdlinev.push_back(E->get());
+	for (String &E : cmdline) {
+		cmdlinev.push_back(E);
 	}
 
 	return cmdlinev;
@@ -351,20 +351,20 @@ void _OS::print_all_textures_by_size() {
 		List<Ref<Resource>> rsrc;
 		ResourceCache::get_cached_resources(&rsrc);
 
-		for (List<Ref<Resource>>::Element *E = rsrc.front(); E; E = E->next()) {
-			if (!E->get()->is_class("ImageTexture")) {
+		for (Ref<Resource> E : rsrc) {
+			if (!E->is_class("ImageTexture")) {
 				continue;
 			}
 
-			Size2 size = E->get()->call("get_size");
-			int fmt = E->get()->call("get_format");
+			Size2 size = E->call("get_size");
+			int fmt = E->call("get_format");
 
 			_OSCoreBindImg img;
 			img.size = size;
 			img.fmt = fmt;
-			img.path = E->get()->get_path();
+			img.path = E->get_path();
 			img.vram = Image::get_image_data_size(img.size.width, img.size.height, Image::Format(img.fmt));
-			img.id = E->get()->get_instance_id();
+			img.id = E->get_instance_id();
 			total += img.vram;
 			imgs.push_back(img);
 		}
@@ -372,8 +372,8 @@ void _OS::print_all_textures_by_size() {
 
 	imgs.sort();
 
-	for (List<_OSCoreBindImg>::Element *E = imgs.front(); E; E = E->next()) {
-		total -= E->get().vram;
+	for (_OSCoreBindImg &E : imgs) {
+		total -= E.vram;
 	}
 }
 
@@ -383,9 +383,7 @@ void _OS::print_resources_by_type(const Vector<String> &p_types) {
 	List<Ref<Resource>> resources;
 	ResourceCache::get_cached_resources(&resources);
 
-	for (List<Ref<Resource>>::Element *E = resources.front(); E; E = E->next()) {
-		Ref<Resource> r = E->get();
-
+	for (Ref<Resource> r : resources) {
 		bool found = false;
 
 		for (int i = 0; i < p_types.size(); i++) {
@@ -1818,8 +1816,8 @@ PackedStringArray _ClassDB::get_class_list() const {
 	PackedStringArray ret;
 	ret.resize(classes.size());
 	int idx = 0;
-	for (List<StringName>::Element *E = classes.front(); E; E = E->next()) {
-		ret.set(idx++, E->get());
+	for (StringName &E : classes) {
+		ret.set(idx++, E);
 	}
 
 	return ret;
@@ -1832,8 +1830,8 @@ PackedStringArray _ClassDB::get_inheriters_from_class(const StringName &p_class)
 	PackedStringArray ret;
 	ret.resize(classes.size());
 	int idx = 0;
-	for (List<StringName>::Element *E = classes.front(); E; E = E->next()) {
-		ret.set(idx++, E->get());
+	for (StringName &E : classes) {
+		ret.set(idx++, E);
 	}
 
 	return ret;
@@ -1887,8 +1885,8 @@ Array _ClassDB::get_signal_list(StringName p_class, bool p_no_inheritance) const
 	ClassDB::get_signal_list(p_class, &signals, p_no_inheritance);
 	Array ret;
 
-	for (List<MethodInfo>::Element *E = signals.front(); E; E = E->next()) {
-		ret.push_back(E->get().operator Dictionary());
+	for (MethodInfo &E : signals) {
+		ret.push_back(E.operator Dictionary());
 	}
 
 	return ret;
@@ -1898,8 +1896,8 @@ Array _ClassDB::get_property_list(StringName p_class, bool p_no_inheritance) con
 	List<PropertyInfo> plist;
 	ClassDB::get_property_list(p_class, &plist, p_no_inheritance);
 	Array ret;
-	for (List<PropertyInfo>::Element *E = plist.front(); E; E = E->next()) {
-		ret.push_back(E->get().operator Dictionary());
+	for (PropertyInfo &E : plist) {
+		ret.push_back(E.operator Dictionary());
 	}
 
 	return ret;
@@ -1931,12 +1929,12 @@ Array _ClassDB::get_method_list(StringName p_class, bool p_no_inheritance) const
 	ClassDB::get_method_list(p_class, &methods, p_no_inheritance);
 	Array ret;
 
-	for (List<MethodInfo>::Element *E = methods.front(); E; E = E->next()) {
+	for (MethodInfo &E : methods) {
 #ifdef DEBUG_METHODS_ENABLED
-		ret.push_back(E->get().operator Dictionary());
+		ret.push_back(E.operator Dictionary());
 #else
 		Dictionary dict;
-		dict["name"] = E->get().name;
+		dict["name"] = E.name;
 		ret.push_back(dict);
 #endif
 	}
@@ -1951,8 +1949,8 @@ PackedStringArray _ClassDB::get_integer_constant_list(const StringName &p_class,
 	PackedStringArray ret;
 	ret.resize(constants.size());
 	int idx = 0;
-	for (List<String>::Element *E = constants.front(); E; E = E->next()) {
-		ret.set(idx++, E->get());
+	for (String &E : constants) {
+		ret.set(idx++, E);
 	}
 
 	return ret;

@@ -1597,8 +1597,8 @@ Array Node::_get_groups() const {
 	Array groups;
 	List<GroupInfo> gi;
 	get_groups(&gi);
-	for (List<GroupInfo>::Element *E = gi.front(); E; E = E->next()) {
-		groups.push_back(E->get().name);
+	for (GroupInfo &E : gi) {
+		groups.push_back(E.name);
 	}
 
 	return groups;
@@ -1947,18 +1947,18 @@ Node *Node::_duplicate(int p_flags, Map<const Node *, Node *> *r_duplimap) const
 		List<PropertyInfo> plist;
 		N->get()->get_property_list(&plist);
 
-		for (List<PropertyInfo>::Element *E = plist.front(); E; E = E->next()) {
-			if (!(E->get().usage & PROPERTY_USAGE_STORAGE)) {
+		for (PropertyInfo &E : plist) {
+			if (!(E.usage & PROPERTY_USAGE_STORAGE)) {
 				continue;
 			}
-			String name = E->get().name;
+			String name = E.name;
 			if (name == script_property_name) {
 				continue;
 			}
 
 			Variant value = N->get()->get(name).duplicate(true);
 
-			if (E->get().usage & PROPERTY_USAGE_DO_NOT_SHARE_ON_DUPLICATE) {
+			if (E.usage & PROPERTY_USAGE_DO_NOT_SHARE_ON_DUPLICATE) {
 				Resource *res = Object::cast_to<Resource>(value);
 				if (res) { // Duplicate only if it's a resource
 					current_node->set(name, res->duplicate());
@@ -1983,14 +1983,14 @@ Node *Node::_duplicate(int p_flags, Map<const Node *, Node *> *r_duplimap) const
 	if (p_flags & DUPLICATE_GROUPS) {
 		List<GroupInfo> gi;
 		get_groups(&gi);
-		for (List<GroupInfo>::Element *E = gi.front(); E; E = E->next()) {
+		for (GroupInfo &E : gi) {
 #ifdef TOOLS_ENABLED
-			if ((p_flags & DUPLICATE_FROM_EDITOR) && !E->get().persistent) {
+			if ((p_flags & DUPLICATE_FROM_EDITOR) && !E.persistent) {
 				continue;
 			}
 #endif
 
-			node->add_to_group(E->get().name, E->get().persistent);
+			node->add_to_group(E.name, E.persistent);
 		}
 	}
 
@@ -2014,21 +2014,21 @@ Node *Node::_duplicate(int p_flags, Map<const Node *, Node *> *r_duplimap) const
 		}
 	}
 
-	for (List<const Node *>::Element *E = hidden_roots.front(); E; E = E->next()) {
-		Node *parent = node->get_node(get_path_to(E->get()->data.parent));
+	for (const Node *&E : hidden_roots) {
+		Node *parent = node->get_node(get_path_to(E->data.parent));
 		if (!parent) {
 			memdelete(node);
 			return nullptr;
 		}
 
-		Node *dup = E->get()->_duplicate(p_flags, r_duplimap);
+		Node *dup = E->_duplicate(p_flags, r_duplimap);
 		if (!dup) {
 			memdelete(node);
 			return nullptr;
 		}
 
 		parent->add_child(dup);
-		int pos = E->get()->get_index();
+		int pos = E->get_index();
 
 		if (pos < parent->get_child_count() - 1) {
 			parent->move_child(dup, pos);
@@ -2073,17 +2073,17 @@ void Node::remap_node_resources(Node *p_node, const Map<RES, RES> &p_resource_re
 	List<PropertyInfo> props;
 	p_node->get_property_list(&props);
 
-	for (List<PropertyInfo>::Element *E = props.front(); E; E = E->next()) {
-		if (!(E->get().usage & PROPERTY_USAGE_STORAGE)) {
+	for (PropertyInfo &E : props) {
+		if (!(E.usage & PROPERTY_USAGE_STORAGE)) {
 			continue;
 		}
 
-		Variant v = p_node->get(E->get().name);
+		Variant v = p_node->get(E.name);
 		if (v.is_ref()) {
 			RES res = v;
 			if (res.is_valid()) {
 				if (p_resource_remap.has(res)) {
-					p_node->set(E->get().name, p_resource_remap[res]);
+					p_node->set(E.name, p_resource_remap[res]);
 					remap_nested_resources(res, p_resource_remap);
 				}
 			}
@@ -2099,17 +2099,17 @@ void Node::remap_nested_resources(RES p_resource, const Map<RES, RES> &p_resourc
 	List<PropertyInfo> props;
 	p_resource->get_property_list(&props);
 
-	for (List<PropertyInfo>::Element *E = props.front(); E; E = E->next()) {
-		if (!(E->get().usage & PROPERTY_USAGE_STORAGE)) {
+	for (PropertyInfo &E : props) {
+		if (!(E.usage & PROPERTY_USAGE_STORAGE)) {
 			continue;
 		}
 
-		Variant v = p_resource->get(E->get().name);
+		Variant v = p_resource->get(E.name);
 		if (v.is_ref()) {
 			RES res = v;
 			if (res.is_valid()) {
 				if (p_resource_remap.has(res)) {
-					p_resource->set(E->get().name, p_resource_remap[res]);
+					p_resource->set(E.name, p_resource_remap[res]);
 					remap_nested_resources(res, p_resource_remap);
 				}
 			}
@@ -2135,13 +2135,13 @@ void Node::_duplicate_signals(const Node *p_original, Node *p_copy) const {
 		List<Connection> conns;
 		n->get_all_signal_connections(&conns);
 
-		for (List<Connection>::Element *E = conns.front(); E; E = E->next()) {
-			if (E->get().flags & CONNECT_PERSIST) {
+		for (Connection &E : conns) {
+			if (E.flags & CONNECT_PERSIST) {
 				//user connected
 				NodePath p = p_original->get_path_to(n);
 				Node *copy = p_copy->get_node(p);
 
-				Node *target = Object::cast_to<Node>(E->get().callable.get_object());
+				Node *target = Object::cast_to<Node>(E.callable.get_object());
 				if (!target) {
 					continue;
 				}
@@ -2158,9 +2158,9 @@ void Node::_duplicate_signals(const Node *p_original, Node *p_copy) const {
 				}
 
 				if (copy && copytarget) {
-					const Callable copy_callable = Callable(copytarget, E->get().callable.get_method());
-					if (!copy->is_connected(E->get().signal.get_name(), copy_callable)) {
-						copy->connect(E->get().signal.get_name(), copy_callable, E->get().binds, E->get().flags);
+					const Callable copy_callable = Callable(copytarget, E.callable.get_method());
+					if (!copy->is_connected(E.signal.get_name(), copy_callable)) {
+						copy->connect(E.signal.get_name(), copy_callable, E.binds, E.flags);
 					}
 				}
 			}
@@ -2194,8 +2194,8 @@ void Node::replace_by(Node *p_node, bool p_keep_groups) {
 		List<GroupInfo> groups;
 		get_groups(&groups);
 
-		for (List<GroupInfo>::Element *E = groups.front(); E; E = E->next()) {
-			p_node->add_to_group(E->get().name, E->get().persistent);
+		for (GroupInfo &E : groups) {
+			p_node->add_to_group(E.name, E.persistent);
 		}
 	}
 
@@ -2241,9 +2241,7 @@ void Node::_replace_connections_target(Node *p_new_target) {
 	List<Connection> cl;
 	get_signals_connected_to_this(&cl);
 
-	for (List<Connection>::Element *E = cl.front(); E; E = E->next()) {
-		Connection &c = E->get();
-
+	for (Connection &c : cl) {
 		if (c.flags & CONNECT_PERSIST) {
 			c.signal.get_object()->disconnect(c.signal.get_name(), Callable(this, c.callable.get_method()));
 			bool valid = p_new_target->has_method(c.callable.get_method()) || Ref<Script>(p_new_target->get_script()).is_null() || Ref<Script>(p_new_target->get_script())->has_method(c.callable.get_method());

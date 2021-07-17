@@ -46,8 +46,8 @@ void Step2DSW::_populate_island(Body2DSW *p_body, LocalVector<Body2DSW *> &p_bod
 		p_body_island.push_back(p_body);
 	}
 
-	for (const List<Pair<Constraint2DSW *, int>>::Element *E = p_body->get_constraint_list().front(); E; E = E->next()) {
-		Constraint2DSW *constraint = (Constraint2DSW *)E->get().first;
+	for (const Pair<Constraint2DSW *, int> &E : p_body->get_constraint_list()) {
+		Constraint2DSW *constraint = (Constraint2DSW *)E.first;
 		if (constraint->get_island_step() == _step) {
 			continue; // Already processed.
 		}
@@ -56,7 +56,7 @@ void Step2DSW::_populate_island(Body2DSW *p_body, LocalVector<Body2DSW *> &p_bod
 		all_constraints.push_back(constraint);
 
 		for (int i = 0; i < constraint->get_body_count(); i++) {
-			if (i == E->get().second) {
+			if (i == E.second) {
 				continue;
 			}
 			Body2DSW *other_body = constraint->get_body_ptr()[i];

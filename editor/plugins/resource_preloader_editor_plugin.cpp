@@ -181,21 +181,21 @@ void ResourcePreloaderEditor::_update_library() {
 	preloader->get_resource_list(&rnames);
 
 	List<String> names;
-	for (List<StringName>::Element *E = rnames.front(); E; E = E->next()) {
-		names.push_back(E->get());
+	for (StringName &E : rnames) {
+		names.push_back(E);
 	}
 
 	names.sort();
 
-	for (List<String>::Element *E = names.front(); E; E = E->next()) {
+	for (String &E : names) {
 		TreeItem *ti = tree->create_item(root);
 		ti->set_cell_mode(0, TreeItem::CELL_MODE_STRING);
 		ti->set_editable(0, true);
 		ti->set_selectable(0, true);
-		ti->set_text(0, E->get());
-		ti->set_metadata(0, E->get());
+		ti->set_text(0, E);
+		ti->set_metadata(0, E);
 
-		RES r = preloader->get_resource(E->get());
+		RES r = preloader->get_resource(E);
 
 		ERR_CONTINUE(r.is_null());
 

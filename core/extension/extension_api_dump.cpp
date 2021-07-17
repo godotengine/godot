@@ -276,10 +276,10 @@ Dictionary NativeExtensionAPIDump::generate_extension_api() {
 			Dictionary d1;
 			d1["name"] = E->key();
 			Array values;
-			for (List<Pair<String, int>>::Element *F = E->get().front(); F; F = F->next()) {
+			for (Pair<String, int> &F : E->get()) {
 				Dictionary d2;
-				d2["name"] = F->get().first;
-				d2["value"] = F->get().second;
+				d2["name"] = F.first;
+				d2["value"] = F.second;
 				values.push_back(d2);
 			}
 			d1["values"] = values;
@@ -294,8 +294,7 @@ Dictionary NativeExtensionAPIDump::generate_extension_api() {
 		List<StringName> utility_func_names;
 		Variant::get_utility_function_list(&utility_func_names);
 
-		for (List<StringName>::Element *E = utility_func_names.front(); E; E = E->next()) {
-			StringName name = E->get();
+		for (StringName &name : utility_func_names) {
 			Dictionary func;
 			func["name"] = String(name);
 			if (Variant::has_utility_function_return_value(name)) {
@@ -363,8 +362,7 @@ Dictionary NativeExtensionAPIDump::generate_extension_api() {
 
 				List<StringName> member_names;
 				Variant::get_member_list(type, &member_names);
-				for (List<StringName>::Element *E = member_names.front(); E; E = E->next()) {
-					StringName member_name = E->get();
+				for (StringName &member_name : member_names) {
 					Dictionary d2;
 					d2["name"] = String(member_name);
 					d2["type"] = Variant::get_type_name(Variant::get_member_type(type, member_name));
@@ -380,8 +378,7 @@ Dictionary NativeExtensionAPIDump::generate_extension_api() {
 
 				List<StringName> constant_names;
 				Variant::get_constants_for_type(type, &constant_names);
-				for (List<StringName>::Element *E = constant_names.front(); E; E = E->next()) {
-					StringName constant_name = E->get();
+				for (StringName &constant_name : constant_names) {
 					Dictionary d2;
 					d2["name"] = String(constant_name);
 					Variant constant = Variant::get_constant_value(type, constant_name);
@@ -420,8 +417,7 @@ Dictionary NativeExtensionAPIDump::generate_extension_api() {
 
 				List<StringName> method_names;
 				Variant::get_builtin_method_list(type, &method_names);
-				for (List<StringName>::Element *E = method_names.front(); E; E = E->next()) {
-					StringName method_name = E->get();
+				for (StringName &method_name : method_names) {
 					Dictionary d2;
 					d2["name"] = String(method_name);
 					if (Variant::has_builtin_method_return_value(type, method_name)) {
@@ -503,9 +499,8 @@ Dictionary NativeExtensionAPIDump::generate_extension_api() {
 
 		class_list.sort_custom<StringName::AlphCompare>();
 
-		for (List<StringName>::Element *E = class_list.front(); E; E = E->next()) {
+		for (StringName &class_name : class_list) {
 			Dictionary d;
-			StringName class_name = E->get();
 			d["name"] = String(class_name);
 			d["is_refcounted"] = ClassDB::is_parent_class(class_name, "RefCounted");
 			d["is_instantiable"] = ClassDB::can_instantiate(class_name);
@@ -525,15 +520,15 @@ Dictionary NativeExtensionAPIDump::generate_extension_api() {
 				Array constants;
 				List<String> constant_list;
 				ClassDB::get_integer_constant_list(class_name, &constant_list, true);
-				for (List<String>::Element *F = constant_list.front(); F; F = F->next()) {
-					StringName enum_name = ClassDB::get_integer_constant_enum(class_name, F->get());
+				for (String &F : constant_list) {
+					StringName enum_name = ClassDB::get_integer_constant_enum(class_name, F);
 					if (enum_name != StringName()) {
 						continue; //enums will be handled on their own
 					}
 
 					Dictionary d2;
-					d2["name"] = String(F->get());
-					d2["value"] = ClassDB::get_integer_constant(class_name, F->get());
+					d2["name"] = String(F);
+					d2["value"] = ClassDB::get_integer_constant(class_name, F);
 
 					constants.push_back(d2);
 				}
@@ -547,13 +542,13 @@ Dictionary NativeExtensionAPIDump::generate_extension_api() {
 				Array enums;
 				List<StringName> enum_list;
 				ClassDB::get_enum_list(class_name, &enum_list, true);
-				for (List<StringName>::Element *F = enum_list.front(); F; F = F->next()) {
+				for (StringName &F : enum_list) {
 					Dictionary d2;
-					d2["name"] = String(F->get());
+					d2["name"] = String(F);
 
 					Array values;
 					List<StringName> enum_constant_list;
-					ClassDB::get_enum_constants(class_name, F->get(), &enum_constant_list, true);
+					ClassDB::get_enum_constants(class_name, F, &enum_constant_list, true);
 					for (List<StringName>::Element *G = enum_constant_list.front(); G; G = G->next()) {
 						Dictionary d3;
 						d3["name"] = String(G->get());
@@ -575,14 +570,14 @@ Dictionary NativeExtensionAPIDump::generate_extension_api() {
 				Array methods;
 				List<MethodInfo> method_list;
 				ClassDB::get_method_list(class_name, &method_list, true);
-				for (List<MethodInfo>::Element *F = method_list.front(); F; F = F->next()) {
-					StringName method_name = F->get().name;
-					if (F->get().flags & METHOD_FLAG_VIRTUAL) {
+				for (MethodInfo &F : method_list) {
+					StringName method_name = F.name;
+					if (F.flags & METHOD_FLAG_VIRTUAL) {
 						//virtual method
-						const MethodInfo &mi = F->get();
+						const MethodInfo &mi = F;
 						Dictionary d2;
 						d2["name"] = String(method_name);
-						d2["is_const"] = (F->get().flags & METHOD_FLAG_CONST) ? true : false;
+						d2["is_const"] = (F.flags & METHOD_FLAG_CONST) ? true : false;
 						d2["is_vararg"] = false;
 						d2["is_virtual"] = true;
 						// virtual functions have no hash since no MethodBind is involved
@@ -619,7 +614,7 @@ Dictionary NativeExtensionAPIDump::generate_extension_api() {
 
 						methods.push_back(d2);
 
-					} else if (F->get().name.begins_with("_")) {
+					} else if (F.name.begins_with("_")) {
 						//hidden method, ignore
 
 					} else {
@@ -692,19 +687,19 @@ Dictionary NativeExtensionAPIDump::generate_extension_api() {
 				Array signals;
 				List<MethodInfo> signal_list;
 				ClassDB::get_signal_list(class_name, &signal_list, true);
-				for (List<MethodInfo>::Element *F = signal_list.front(); F; F = F->next()) {
-					StringName signal_name = F->get().name;
+				for (MethodInfo &F : signal_list) {
+					StringName signal_name = F.name;
 					Dictionary d2;
 					d2["name"] = String(signal_name);
 
 					Array arguments;
 
-					for (int i = 0; i < F->get().arguments.size(); i++) {
+					for (int i = 0; i < F.arguments.size(); i++) {
 						Dictionary d3;
-						d3["name"] = F->get().arguments[i].name;
-						Variant::Type type = F->get().arguments[i].type;
-						if (F->get().arguments[i].class_name != StringName()) {
-							d3["type"] = String(F->get().arguments[i].class_name);
+						d3["name"] = F.arguments[i].name;
+						Variant::Type type = F.arguments[i].type;
+						if (F.arguments[i].class_name != StringName()) {
+							d3["type"] = String(F.arguments[i].class_name);
 						} else if (type == Variant::NIL) {
 							d3["type"] = "Variant";
 						} else {
@@ -728,28 +723,28 @@ Dictionary NativeExtensionAPIDump::generate_extension_api() {
 				Array properties;
 				List<PropertyInfo> property_list;
 				ClassDB::get_property_list(class_name, &property_list, true);
-				for (List<PropertyInfo>::Element *F = property_list.front(); F; F = F->next()) {
-					if (F->get().usage & PROPERTY_USAGE_CATEGORY || F->get().usage & PROPERTY_USAGE_GROUP || F->get().usage & PROPERTY_USAGE_SUBGROUP) {
+				for (PropertyInfo &F : property_list) {
+					if (F.usage & PROPERTY_USAGE_CATEGORY || F.usage & PROPERTY_USAGE_GROUP || F.usage & PROPERTY_USAGE_SUBGROUP) {
 						continue; //not real properties
 					}
-					if (F->get().name.begins_with("_")) {
+					if (F.name.begins_with("_")) {
 						continue; //hidden property
 					}
-					StringName property_name = F->get().name;
+					StringName property_name = F.name;
 					Dictionary d2;
 					d2["name"] = String(property_name);
 
-					if (F->get().class_name != StringName()) {
-						d2["type"] = String(F->get().class_name);
-					} else if (F->get().type == Variant::NIL && F->get().usage & PROPERTY_USAGE_NIL_IS_VARIANT) {
+					if (F.class_name != StringName()) {
+						d2["type"] = String(F.class_name);
+					} else if (F.type == Variant::NIL && F.usage & PROPERTY_USAGE_NIL_IS_VARIANT) {
 						d2["type"] = "Variant";
 					} else {
-						d2["type"] = Variant::get_type_name(F->get().type);
+						d2["type"] = Variant::get_type_name(F.type);
 					}
 
-					d2["setter"] = ClassDB::get_property_setter(class_name, F->get().name);
-					d2["getter"] = ClassDB::get_property_getter(class_name, F->get().name);
-					d2["index"] = ClassDB::get_property_index(class_name, F->get().name);
+					d2["setter"] = ClassDB::get_property_setter(class_name, F.name);
+					d2["getter"] = ClassDB::get_property_getter(class_name, F.name);
+					d2["index"] = ClassDB::get_property_index(class_name, F.name);
 					properties.push_back(d2);
 				}
 
@@ -771,8 +766,7 @@ Dictionary NativeExtensionAPIDump::generate_extension_api() {
 		List<Engine::Singleton> singleton_list;
 		Engine::get_singleton()->get_singletons(&singleton_list);
 
-		for (List<Engine::Singleton>::Element *E = singleton_list.front(); E; E = E->next()) {
-			const Engine::Singleton &s = E->get();
+		for (Engine::Singleton &s : singleton_list) {
 			Dictionary d;
 			d["name"] = s.name;
 			if (s.class_name != StringName()) {

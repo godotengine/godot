@@ -210,12 +210,12 @@ public:
 
 		//return quit;
 
-		for (List<InstanceInfo>::Element *E = instances.front(); E; E = E->next()) {
-			Transform3D pre(Basis(E->get().rot_axis, ofs), Vector3());
-			vs->instance_set_transform(E->get().instance, pre * E->get().base);
+		for (InstanceInfo &E : instances) {
+			Transform3D pre(Basis(E.rot_axis, ofs), Vector3());
+			vs->instance_set_transform(E.instance, pre * E.base);
 			/*
 			if( !E->next() ) {
-				vs->free( E->get().instance );
+				vs->free( E.instance );
 				instances.erase(E );
 			}*/
 		}

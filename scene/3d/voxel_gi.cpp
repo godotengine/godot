@@ -384,14 +384,14 @@ void VoxelGI::bake(Node *p_from_node, bool p_create_visual_debug) {
 
 	int pmc = 0;
 
-	for (List<PlotMesh>::Element *E = mesh_list.front(); E; E = E->next()) {
+	for (PlotMesh &E : mesh_list) {
 		if (bake_step_function) {
 			bake_step_function(pmc, RTR("Plotting Meshes") + " " + itos(pmc) + "/" + itos(mesh_list.size()));
 		}
 
 		pmc++;
 
-		baker.plot_mesh(E->get().local_xform, E->get().mesh, E->get().instance_materials, E->get().override_material);
+		baker.plot_mesh(E.local_xform, E.mesh, E.instance_materials, E.override_material);
 	}
 	if (bake_step_function) {
 		bake_step_function(pmc++, RTR("Finishing Plot"));

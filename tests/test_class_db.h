@@ -108,9 +108,9 @@ struct ExposedClass {
 	List<SignalData> signals_;
 
 	const PropertyData *find_property_by_name(const StringName &p_name) const {
-		for (const List<PropertyData>::Element *E = properties.front(); E; E = E->next()) {
-			if (E->get().name == p_name) {
-				return &E->get();
+		for (const PropertyData &E : properties) {
+			if (E.name == p_name) {
+				return &E;
 			}
 		}
 
@@ -118,9 +118,9 @@ struct ExposedClass {
 	}
 
 	const MethodData *find_method_by_name(const StringName &p_name) const {
-		for (const List<MethodData>::Element *E = methods.front(); E; E = E->next()) {
-			if (E->get().name == p_name) {
-				return &E->get();
+		for (const MethodData &E : methods) {
+			if (E.name == p_name) {
+				return &E;
 			}
 		}
 
@@ -395,8 +395,8 @@ void validate_method(const Context &p_context, const ExposedClass &p_class, cons
 		}
 	}
 
-	for (const List<ArgumentData>::Element *F = p_method.arguments.front(); F; F = F->next()) {
-		const ArgumentData &arg = F->get();
+	for (const ArgumentData &F : p_method.arguments) {
+		const ArgumentData &arg = F;
 
 		const ExposedClass *arg_class = p_context.find_exposed_class(arg.type);
 		if (arg_class) {
@@ -427,8 +427,8 @@ void validate_method(const Context &p_context, const ExposedClass &p_class, cons
 }
 
 void validate_signal(const Context &p_context, const ExposedClass &p_class, const SignalData &p_signal) {
-	for (const List<ArgumentData>::Element *F = p_signal.arguments.front(); F; F = F->next()) {
-		const ArgumentData &arg = F->get();
+	for (const ArgumentData &F : p_signal.arguments) {
+		const ArgumentData &arg = F;
 
 		const ExposedClass *arg_class = p_context.find_exposed_class(arg.type);
 		if (arg_class) {
@@ -469,16 +469,16 @@ void validate_class(const Context &p_context, const ExposedClass &p_exposed_clas
 	TEST_FAIL_COND((is_derived_type && !p_context.exposed_classes.has(p_exposed_class.base)),
 			"Base type '", p_exposed_class.base.operator String(), "' does not exist, for class '", p_exposed_class.name, "'.");
 
-	for (const List<PropertyData>::Element *F = p_exposed_class.properties.front(); F; F = F->next()) {
-		validate_property(p_context, p_exposed_class, F->get());
+	for (const PropertyData &F : p_exposed_class.properties) {
+		validate_property(p_context, p_exposed_class, F);
 	}
 
-	for (const List<MethodData>::Element *F = p_exposed_class.methods.front(); F; F = F->next()) {
-		validate_method(p_context, p_exposed_class, F->get());
+	for (const MethodData &F : p_exposed_class.methods) {
+		validate_method(p_context, p_exposed_class, F);
 	}
 
-	for (const List<SignalData>::Element *F = p_exposed_class.signals_.front(); F; F = F->next()) {
-		validate_signal(p_context, p_exposed_class, F->get());
+	for (const SignalData &F : p_exposed_class.signals_) {
+		validate_signal(p_context, p_exposed_class, F);
 	}
 }
 
@@ -526,9 +526,7 @@ void add_exposed_classes(Context &r_context) {
 
 		Map<StringName, StringName> accessor_methods;
 
-		for (const List<PropertyInfo>::Element *E = property_list.front(); E; E = E->next()) {
-			const PropertyInfo &property = E->get();
-
+		for (const PropertyInfo &property : property_list) {
 			if (property.usage & PROPERTY_USAGE_GROUP || property.usage & PROPERTY_USAGE_SUBGROUP || property.usage & PROPERTY_USAGE_CATEGORY) {
 				continue;
 			}
@@ -561,8 +559,8 @@ void add_exposed_classes(Context &r_context) {
 		ClassDB::get_method_list(class_name, &method_list, true);
 		method_list.sort();
 
-		for (List<MethodInfo>::Element *E = method_list.front(); E; E = E->next()) {
-			const MethodInfo &method_info = E->get();
+		for (MethodInfo &E : method_list) {
+			const MethodInfo &method_info = E;
 
 			int argc = method_info.arguments.size();
 
@@ -667,8 +665,8 @@ void add_exposed_classes(Context &r_context) {
 
 			// Methods starting with an underscore are ignored unless they're virtual or used as a property setter or getter.
 			if (!method.is_virtual && String(method.name)[0] == '_') {
-				for (const List<PropertyData>::Element *F = exposed_class.properties.front(); F; F = F->next()) {
-					const PropertyData &prop = F->get();
+				for (const PropertyData &F : exposed_class.properties) {
+					const PropertyData &prop = F;
 
 					if (prop.setter == method.name || prop.getter == method.name) {
 						exposed_class.methods.push_back(method);
@@ -752,8 +750,8 @@ void add_exposed_classes(Context &r_context) {
 			enum_.name = *k;
 
 			const List<StringName> &enum_constants = enum_map.get(*k);
-			for (const List<StringName>::Element *E = enum_constants.front(); E; E = E->next()) {
-				const StringName &constant_name = E->get();
+			for (const StringName &E : enum_constants) {
+				const StringName &constant_name = E;
 				TEST_FAIL_COND(String(constant_name).find("::") != -1,
 						"Enum constant contains '::', check bindings to remove the scope: '",
 						String(class_name), ".", String(enum_.name), ".", String(constant_name), "'.");
@@ -774,12 +772,12 @@ void add_exposed_classes(Context &r_context) {
 			r_context.enum_types.push_back(String(class_name) + "." + String(*k));
 		}
 
-		for (const List<String>::Element *E = constants.front(); E; E = E->next()) {
-			const String &constant_name = E->get();
+		for (const String &E : constants) {
+			const String &constant_name = E;
 			TEST_FAIL_COND(constant_name.find("::") != -1,
 					"Constant contains '::', check bindings to remove the scope: '",
 					String(class_name), ".", constant_name, "'.");
-			int *value = class_info->constant_map.getptr(StringName(E->get()));
+			int *value = class_info->constant_map.getptr(StringName(E));
 			TEST_FAIL_COND(!value, "Missing constant value: '", String(class_name), ".", String(constant_name), "'.");
 
 			ConstantData constant;
@@ -829,8 +827,8 @@ void add_global_enums(Context &r_context) {
 			}
 		}
 
-		for (List<EnumData>::Element *E = r_context.global_enums.front(); E; E = E->next()) {
-			r_context.enum_types.push_back(E->get().name);
+		for (EnumData &E : r_context.global_enums) {
+			r_context.enum_types.push_back(E.name);
 		}
 	}
 
@@ -840,10 +838,10 @@ void add_global_enums(Context &r_context) {
 	hardcoded_enums.push_back("Vector2i.Axis");
 	hardcoded_enums.push_back("Vector3.Axis");
 	hardcoded_enums.push_back("Vector3i.Axis");
-	for (List<StringName>::Element *E = hardcoded_enums.front(); E; E = E->next()) {
+	for (StringName &E : hardcoded_enums) {
 		// These enums are not generated and must be written manually (e.g.: Vector3.Axis)
 		// Here, we assume core types do not begin with underscore
-		r_context.enum_types.push_back(E->get());
+		r_context.enum_types.push_back(E);
 	}
 }
 

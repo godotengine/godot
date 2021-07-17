@@ -375,8 +375,7 @@ public:
 		OutputSimplex *ret_simplicesw = ret_simplices.ptrw();
 		uint32_t simplices_written = 0;
 
-		for (List<Simplex *>::Element *E = simplex_list.front(); E; E = E->next()) {
-			Simplex *simplex = E->get();
+		for (Simplex *simplex : simplex_list) {
 			bool invalid = false;
 			for (int j = 0; j < 4; j++) {
 				if (simplex->points[j] >= point_count) {

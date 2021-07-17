@@ -458,8 +458,8 @@ void GDScriptSyntaxHighlighter::_update_cache() {
 	const Color types_color = EDITOR_GET("text_editor/highlighting/engine_type_color");
 	List<StringName> types;
 	ClassDB::get_class_list(&types);
-	for (List<StringName>::Element *E = types.front(); E; E = E->next()) {
-		String n = E->get();
+	for (StringName &E : types) {
+		String n = E;
 		if (n.begins_with("_")) {
 			n = n.substr(1, n.length());
 		}
@@ -470,8 +470,8 @@ void GDScriptSyntaxHighlighter::_update_cache() {
 	const Color usertype_color = EDITOR_GET("text_editor/highlighting/user_type_color");
 	List<StringName> global_classes;
 	ScriptServer::get_global_class_list(&global_classes);
-	for (List<StringName>::Element *E = global_classes.front(); E; E = E->next()) {
-		keywords[String(E->get())] = usertype_color;
+	for (StringName &E : global_classes) {
+		keywords[String(E)] = usertype_color;
 	}
 
 	/* Autoloads. */
@@ -489,8 +489,8 @@ void GDScriptSyntaxHighlighter::_update_cache() {
 	const Color basetype_color = EDITOR_GET("text_editor/highlighting/base_type_color");
 	List<String> core_types;
 	gdscript->get_core_type_words(&core_types);
-	for (List<String>::Element *E = core_types.front(); E; E = E->next()) {
-		keywords[E->get()] = basetype_color;
+	for (String &E : core_types) {
+		keywords[E] = basetype_color;
 	}
 
 	/* Reserved words. */
@@ -498,11 +498,11 @@ void GDScriptSyntaxHighlighter::_update_cache() {
 	const Color control_flow_keyword_color = EDITOR_GET("text_editor/highlighting/control_flow_keyword_color");
 	List<String> keyword_list;
 	gdscript->get_reserved_words(&keyword_list);
-	for (List<String>::Element *E = keyword_list.front(); E; E = E->next()) {
-		if (gdscript->is_control_flow_keyword(E->get())) {
-			keywords[E->get()] = control_flow_keyword_color;
+	for (String &E : keyword_list) {
+		if (gdscript->is_control_flow_keyword(E)) {
+			keywords[E] = control_flow_keyword_color;
 		} else {
-			keywords[E->get()] = keyword_color;
+			keywords[E] = keyword_color;
 		}
 	}
 
@@ -510,8 +510,7 @@ void GDScriptSyntaxHighlighter::_update_cache() {
 	const Color comment_color = EDITOR_GET("text_editor/highlighting/comment_color");
 	List<String> comments;
 	gdscript->get_comment_delimiters(&comments);
-	for (List<String>::Element *E = comments.front(); E; E = E->next()) {
-		String comment = E->get();
+	for (String &comment : comments) {
 		String beg = comment.get_slice(" ", 0);
 		String end = comment.get_slice_count(" ") > 1 ? comment.get_slice(" ", 1) : String();
 		add_color_region(beg, end, comment_color, end == "");
@@ -521,8 +520,7 @@ void GDScriptSyntaxHighlighter::_update_cache() {
 	const Color string_color = EDITOR_GET("text_editor/highlighting/string_color");
 	List<String> strings;
 	gdscript->get_string_delimiters(&strings);
-	for (List<String>::Element *E = strings.front(); E; E = E->next()) {
-		String string = E->get();
+	for (String &string : strings) {
 		String beg = string.get_slice(" ", 0);
 		String end = string.get_slice_count(" ") > 1 ? string.get_slice(" ", 1) : String();
 		add_color_region(beg, end, string_color, end == "");
@@ -536,9 +534,9 @@ void GDScriptSyntaxHighlighter::_update_cache() {
 		if (instance_base != StringName()) {
 			List<PropertyInfo> plist;
 			ClassDB::get_property_list(instance_base, &plist);
-			for (List<PropertyInfo>::Element *E = plist.front(); E; E = E->next()) {
-				String name = E->get().name;
-				if (E->get().usage & PROPERTY_USAGE_CATEGORY || E->get().usage & PROPERTY_USAGE_GROUP || E->get().usage & PROPERTY_USAGE_SUBGROUP) {
+			for (PropertyInfo &E : plist) {
+				String name = E.name;
+				if (E.usage & PROPERTY_USAGE_CATEGORY || E.usage & PROPERTY_USAGE_GROUP || E.usage & PROPERTY_USAGE_SUBGROUP) {
 					continue;
 				}
 				if (name.find("/") != -1) {
@@ -549,8 +547,8 @@ void GDScriptSyntaxHighlighter::_update_cache() {
 
 			List<String> clist;
 			ClassDB::get_integer_constant_list(instance_base, &clist);
-			for (List<String>::Element *E = clist.front(); E; E = E->next()) {
-				member_keywords[E->get()] = member_variable_color;
+			for (String &E : clist) {
+				member_keywords[E] = member_variable_color;
 			}
 		}
 	}

@@ -70,8 +70,8 @@ void EditorPropertyRootMotion::_node_assign() {
 		List<StringName> animations;
 		player->get_animation_list(&animations);
 
-		for (List<StringName>::Element *E = animations.front(); E; E = E->next()) {
-			Ref<Animation> anim = player->get_animation(E->get());
+		for (StringName &E : animations) {
+			Ref<Animation> anim = player->get_animation(E);
 			for (int i = 0; i < anim->get_track_count(); i++) {
 				paths.insert(anim->track_get_path(i));
 			}

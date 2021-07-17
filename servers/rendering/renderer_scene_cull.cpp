@@ -2876,8 +2876,8 @@ void RendererSceneCull::_render_scene(const RendererSceneRender::CameraData *p_c
 
 		Vector<Instance *> lights_with_shadow;
 
-		for (List<Instance *>::Element *E = scenario->directional_lights.front(); E; E = E->next()) {
-			if (!E->get()->visible) {
+		for (Instance *E : scenario->directional_lights) {
+			if (!E->visible) {
 				continue;
 			}
 
@@ -2885,13 +2885,13 @@ void RendererSceneCull::_render_scene(const RendererSceneRender::CameraData *p_c
 				break;
 			}
 
-			InstanceLightData *light = static_cast<InstanceLightData *>(E->get()->base_data);
+			InstanceLightData *light = static_cast<InstanceLightData *>(E->base_data);
 
 			//check shadow..
 
 			if (light) {
-				if (p_using_shadows && p_shadow_atlas.is_valid() && RSG::storage->light_has_shadow(E->get()->base) && !(RSG::storage->light_get_type(E->get()->base) == RS::LIGHT_DIRECTIONAL && RSG::storage->light_directional_is_sky_only(E->get()->base))) {
-					lights_with_shadow.push_back(E->get());
+				if (p_using_shadows && p_shadow_atlas.is_valid() && RSG::storage->light_has_shadow(E->base) && !(RSG::storage->light_get_type(E->base) == RS::LIGHT_DIRECTIONAL && RSG::storage->light_directional_is_sky_only(E->base))) {
+					lights_with_shadow.push_back(E);
 				}
 				//add to list
 				directional_lights.push_back(light->instance);
@@ -3391,8 +3391,7 @@ void RendererSceneCull::render_probes() {
 				idx++;
 			}
 
-			for (List<Instance *>::Element *E = probe->owner->scenario->directional_lights.front(); E; E = E->next()) {
-				Instance *instance = E->get();
+			for (Instance *instance : probe->owner->scenario->directional_lights) {
 				InstanceLightData *instance_light = (InstanceLightData *)instance->base_data;
 				if (!instance->visible) {
 					continue;
@@ -3465,8 +3464,7 @@ void RendererSceneCull::render_probes() {
 
 					idx++;
 				}
-				for (List<Instance *>::Element *E = probe->owner->scenario->directional_lights.front(); E; E = E->next()) {
-					Instance *instance = E->get();
+				for (Instance *instance : probe->owner->scenario->directional_lights) {
 					InstanceLightData *instance_light = (InstanceLightData *)instance->base_data;
 					if (!instance->visible) {
 						continue;
@@ -3573,26 +3571,26 @@ void RendererSceneCull::render_particle_colliders() {
 void RendererSceneCull::_update_instance_shader_parameters_from_material(Map<StringName, Instance::InstanceShaderParameter> &isparams, const Map<StringName, Instance::InstanceShaderParameter> &existing_isparams, RID p_material) {
 	List<RendererStorage::InstanceShaderParam> plist;
 	RSG::storage->material_get_instance_shader_parameters(p_material, &plist);
-	for (List<RendererStorage::InstanceShaderParam>::Element *E = plist.front(); E; E = E->next()) {
-		StringName name = E->get().info.name;
+	for (RendererStorage::InstanceShaderParam &E : plist) {
+		StringName name = E.info.name;
 		if (isparams.has(name)) {
-			if (isparams[name].info.type != E->get().info.type) {
-				WARN_PRINT("More than one material in instance export the same instance shader uniform '" + E->get().info.name + "', but they do it with different data types. Only the first one (in order) will display correctly.");
+			if (isparams[name].info.type != E.info.type) {
+				WARN_PRINT("More than one material in instance export the same instance shader uniform '" + E.info.name + "', but they do it with different data types. Only the first one (in order) will display correctly.");
 			}
-			if (isparams[name].index != E->get().index) {
-				WARN_PRINT("More than one material in instance export the same instance shader uniform '" + E->get().info.name + "', but they do it with different indices. Only the first one (in order) will display correctly.");
+			if (isparams[name].index != E.index) {
+				WARN_PRINT("More than one material in instance export the same instance shader uniform '" + E.info.name + "', but they do it with different indices. Only the first one (in order) will display correctly.");
 			}
 			continue; //first one found always has priority
 		}
 
 		Instance::InstanceShaderParameter isp;
-		isp.index = E->get().index;
-		isp.info = E->get().info;
-		isp.default_value = E->get().default_value;
+		isp.index = E.index;
+		isp.info = E.info;
+		isp.default_value = E.default_value;
 		if (existing_isparams.has(name)) {
 			isp.value = existing_isparams[name].value;
 		} else {
-			isp.value = E->get().default_value;
+			isp.value = E.default_value;
 		}
 		isparams[name] = isp;
 	}

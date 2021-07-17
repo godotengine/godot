@@ -87,12 +87,12 @@ void InspectorDock::_menu_option(int p_option) {
 				List<PropertyInfo> props;
 				current->get_property_list(&props);
 				Map<RES, RES> duplicates;
-				for (List<PropertyInfo>::Element *E = props.front(); E; E = E->next()) {
-					if (!(E->get().usage & PROPERTY_USAGE_STORAGE)) {
+				for (PropertyInfo &E : props) {
+					if (!(E.usage & PROPERTY_USAGE_STORAGE)) {
 						continue;
 					}
 
-					Variant v = current->get(E->get().name);
+					Variant v = current->get(E.name);
 					if (v.is_ref()) {
 						REF ref = v;
 						if (ref.is_valid()) {
@@ -103,8 +103,8 @@ void InspectorDock::_menu_option(int p_option) {
 								}
 								res = duplicates[res];
 
-								current->set(E->get().name, res);
-								editor->get_inspector()->update_property(E->get().name);
+								current->set(E.name, res);
+								editor->get_inspector()->update_property(E.name);
 							}
 						}
 					}

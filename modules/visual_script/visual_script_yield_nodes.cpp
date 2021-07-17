@@ -438,21 +438,21 @@ void VisualScriptYieldSignal::_validate_property(PropertyInfo &property) const {
 		ClassDB::get_signal_list(_get_base_type(), &methods);
 
 		List<String> mstring;
-		for (List<MethodInfo>::Element *E = methods.front(); E; E = E->next()) {
-			if (E->get().name.begins_with("_")) {
+		for (MethodInfo &E : methods) {
+			if (E.name.begins_with("_")) {
 				continue;
 			}
-			mstring.push_back(E->get().name.get_slice(":", 0));
+			mstring.push_back(E.name.get_slice(":", 0));
 		}
 
 		mstring.sort();
 
 		String ml;
-		for (List<String>::Element *E = mstring.front(); E; E = E->next()) {
+		for (String &E : mstring) {
 			if (ml != String()) {
 				ml += ",";
 			}
-			ml += E->get();
+			ml += E;
 		}
 
 		property.hint_string = ml;
