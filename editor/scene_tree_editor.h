@@ -81,7 +81,6 @@ class SceneTreeEditor : public Control {
 
 	TreeItem *_find(TreeItem *p_node, const NodePath &p_path);
 	void _notification(int p_what);
-	void _selected_changed();
 	void _deselect_items();
 	void _rename_node(ObjectID p_node, const String &p_name);
 
@@ -132,6 +131,8 @@ class SceneTreeEditor : public Control {
 	bool _is_script_type(const StringName &p_type) const;
 
 	Vector<StringName> valid_types;
+
+	void _emit_node_selected();
 
 public:
 	void set_filter(const String &p_filter);
