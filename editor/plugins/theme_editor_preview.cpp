@@ -76,7 +76,7 @@ void ThemeEditorPreview::_picker_button_cbk() {
 Control *ThemeEditorPreview::_find_hovered_control(Control *p_parent, Vector2 p_mouse_position) {
 	Control *found = nullptr;
 
-	for (int i = 0; i < p_parent->get_child_count(); i++) {
+	for (int i = p_parent->get_child_count() - 1; i >= 0; i--) {
 		Control *cc = Object::cast_to<Control>(p_parent->get_child(i));
 		if (!cc || !cc->is_visible()) {
 			continue;
@@ -105,12 +105,35 @@ void ThemeEditorPreview::_draw_picker_overlay() {
 		return;
 	}
 
-	picker_overlay->draw_rect(Rect2(Vector2(0.0, 0.0), picker_overlay->get_size()), get_theme_color("preview_picker_overlay_color", "ThemeEditor"));
+	picker_overlay->draw_rect(Rect2(Vector2(0.0, 0.0), picker_overlay->get_size()), theme_cache.preview_picker_overlay_color);
 	if (hovered_control) {
 		Rect2 highlight_rect = hovered_control->get_global_rect();
 		highlight_rect.position = picker_overlay->get_global_transform().affine_inverse().xform(highlight_rect.position);
+		picker_overlay->draw_style_box(theme_cache.preview_picker_overlay, highlight_rect);
 
-		picker_overlay->draw_style_box(get_theme_stylebox("preview_picker_overlay", "ThemeEditor"), highlight_rect);
+		String highlight_name = hovered_control->get_theme_type_variation();
+		if (highlight_name == StringName()) {
+			highlight_name = hovered_control->get_class_name();
+		}
+
+		Rect2 highlight_label_rect = highlight_rect;
+		highlight_label_rect.size = theme_cache.preview_picker_font->get_string_size(highlight_name);
+
+		int margin_top = theme_cache.preview_picker_label->get_margin(SIDE_TOP);
+		int margin_left = theme_cache.preview_picker_label->get_margin(SIDE_LEFT);
+		int margin_bottom = theme_cache.preview_picker_label->get_margin(SIDE_BOTTOM);
+		int margin_right = theme_cache.preview_picker_label->get_margin(SIDE_RIGHT);
+		highlight_label_rect.size.x += margin_left + margin_right;
+		highlight_label_rect.size.y += margin_top + margin_bottom;
+
+		highlight_label_rect.position.x = CLAMP(highlight_label_rect.position.x, 0.0, picker_overlay->get_size().width);
+		highlight_label_rect.position.y = CLAMP(highlight_label_rect.position.y, 0.0, picker_overlay->get_size().height);
+		picker_overlay->draw_style_box(theme_cache.preview_picker_label, highlight_label_rect);
+
+		Point2 label_pos = highlight_label_rect.position;
+		label_pos.y += highlight_label_rect.size.y - margin_bottom;
+		label_pos.x += margin_left;
+		picker_overlay->draw_string(theme_cache.preview_picker_font, label_pos, highlight_name);
 	}
 }
 
@@ -143,6 +166,11 @@ void ThemeEditorPreview::_gui_input_picker_overlay(const Ref<InputEvent> &p_even
 	}
 }
 
+void ThemeEditorPreview::_reset_picker_overlay() {
+	hovered_control = nullptr;
+	picker_overlay->update();
+}
+
 void ThemeEditorPreview::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
@@ -155,6 +183,11 @@ void ThemeEditorPreview::_notification(int p_what) {
 		}
 		case NOTIFICATION_THEME_CHANGED: {
 			picker_button->set_icon(get_theme_icon("ColorPick", "EditorIcons"));
+
+			theme_cache.preview_picker_overlay = get_theme_stylebox("preview_picker_overlay", "ThemeEditor");
+			theme_cache.preview_picker_overlay_color = get_theme_color("preview_picker_overlay_color", "ThemeEditor");
+			theme_cache.preview_picker_label = get_theme_stylebox("preview_picker_label", "ThemeEditor");
+			theme_cache.preview_picker_font = get_theme_font("status_source", "EditorFonts");
 		} break;
 		case NOTIFICATION_PROCESS: {
 			time_left -= get_process_delta_time();
@@ -213,12 +246,14 @@ ThemeEditorPreview::ThemeEditorPreview() {
 
 	preview_overlay = memnew(MarginContainer);
 	preview_overlay->set_mouse_filter(MOUSE_FILTER_IGNORE);
+	preview_overlay->set_clip_contents(true);
 	preview_body->add_child(preview_overlay);
 
 	picker_overlay = memnew(Control);
 	add_preview_overlay(picker_overlay);
 	picker_overlay->connect("draw", callable_mp(this, &ThemeEditorPreview::_draw_picker_overlay));
 	picker_overlay->connect("gui_input", callable_mp(this, &ThemeEditorPreview::_gui_input_picker_overlay));
+	picker_overlay->connect("mouse_exited", callable_mp(this, &ThemeEditorPreview::_reset_picker_overlay));
 }
 
 DefaultThemeEditorPreview::DefaultThemeEditorPreview() {
