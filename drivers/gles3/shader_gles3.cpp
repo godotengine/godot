@@ -149,7 +149,7 @@ static void _display_error_with_code(const String &p_error, const Vector<const c
 	Vector<String> lines = String(total_code).split("\n");
 
 	for (int j = 0; j < lines.size(); j++) {
-		print_line(itos(line) + ": " + lines[j]);
+		print_line(vformat("%4d | %s", line, lines[j]));
 		line++;
 	}
 
