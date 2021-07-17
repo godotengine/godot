@@ -472,7 +472,7 @@ private:
 
 	int _initial_line = 0;
 	bool _static = false;
-	MultiplayerAPI::RPCMode rpc_mode = MultiplayerAPI::RPC_MODE_DISABLED;
+	MultiplayerAPI::RPCConfig rpc_config;
 
 	GDScript *_script = nullptr;
 
@@ -592,7 +592,7 @@ public:
 	void disassemble(const Vector<String> &p_code_lines) const;
 #endif
 
-	_FORCE_INLINE_ MultiplayerAPI::RPCMode get_rpc_mode() const { return rpc_mode; }
+	_FORCE_INLINE_ MultiplayerAPI::RPCConfig get_rpc_config() const { return rpc_config; }
 	GDScriptFunction();
 	~GDScriptFunction();
 };

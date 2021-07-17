@@ -43,14 +43,12 @@ public:
 		RPC_MODE_REMOTE, // Using rpc() on it will call method in all remote peers
 		RPC_MODE_MASTER, // Using rpc() on it will call method on wherever the master is, be it local or remote
 		RPC_MODE_PUPPET, // Using rpc() on it will call method for all puppets
-		RPC_MODE_REMOTESYNC, // Using rpc() on it will call method in all remote peers and locally
-		RPC_MODE_MASTERSYNC, // Using rpc() on it will call method in the master peer and locally
-		RPC_MODE_PUPPETSYNC, // Using rpc() on it will call method in all puppets peers and locally
 	};
 
 	struct RPCConfig {
 		StringName name;
 		RPCMode rpc_mode = RPC_MODE_DISABLED;
+		bool sync = false;
 		MultiplayerPeer::TransferMode transfer_mode = MultiplayerPeer::TRANSFER_MODE_RELIABLE;
 		int channel = 0;
 

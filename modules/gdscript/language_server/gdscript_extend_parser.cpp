@@ -695,7 +695,9 @@ Dictionary ExtendGDScriptParser::dump_function_api(const GDScriptParser::Functio
 	ERR_FAIL_NULL_V(p_func, func);
 	func["name"] = p_func->identifier->name;
 	func["return_type"] = p_func->get_datatype().to_string();
-	func["rpc_mode"] = p_func->rpc_mode;
+	func["rpc_mode"] = p_func->rpc_config.rpc_mode;
+	func["rpc_transfer_mode"] = p_func->rpc_config.transfer_mode;
+	func["rpc_transfer_channel"] = p_func->rpc_config.channel;
 	Array parameters;
 	for (int i = 0; i < p_func->parameters.size(); i++) {
 		Dictionary arg;

@@ -114,9 +114,6 @@ struct CachedData {
 	GDMonoClass *class_RemoteAttribute;
 	GDMonoClass *class_MasterAttribute;
 	GDMonoClass *class_PuppetAttribute;
-	GDMonoClass *class_RemoteSyncAttribute;
-	GDMonoClass *class_MasterSyncAttribute;
-	GDMonoClass *class_PuppetSyncAttribute;
 	GDMonoClass *class_GodotMethodAttribute;
 	GDMonoField *field_GodotMethodAttribute_methodName;
 	GDMonoClass *class_ScriptPathAttribute;

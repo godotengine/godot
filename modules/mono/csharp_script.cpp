@@ -3472,15 +3472,6 @@ MultiplayerAPI::RPCMode CSharpScript::_member_get_rpc_mode(IMonoClassMember *p_m
 	if (p_member->has_attribute(CACHED_CLASS(PuppetAttribute))) {
 		return MultiplayerAPI::RPC_MODE_PUPPET;
 	}
-	if (p_member->has_attribute(CACHED_CLASS(RemoteSyncAttribute))) {
-		return MultiplayerAPI::RPC_MODE_REMOTESYNC;
-	}
-	if (p_member->has_attribute(CACHED_CLASS(MasterSyncAttribute))) {
-		return MultiplayerAPI::RPC_MODE_MASTERSYNC;
-	}
-	if (p_member->has_attribute(CACHED_CLASS(PuppetSyncAttribute))) {
-		return MultiplayerAPI::RPC_MODE_PUPPETSYNC;
-	}
 
 	return MultiplayerAPI::RPC_MODE_DISABLED;
 }
