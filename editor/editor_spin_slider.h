@@ -112,7 +112,7 @@ public:
 	void set_custom_label_color(bool p_use_custom_label_color, Color p_custom_label_color);
 
 	void setup_and_show() { _focus_entered(); }
-	LineEdit *get_line_edit() { return value_input; }
+	LineEdit *get_line_edit();
 
 	virtual Size2 get_minimum_size() const override;
 	EditorSpinSlider();
