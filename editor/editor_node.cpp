@@ -329,7 +329,7 @@ void EditorNode::_update_scene_tabs() {
 		scene_tabs->add_tab(disambiguated_scene_names[i] + (unsaved ? "(*)" : ""), icon);
 
 		if (DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_GLOBAL_MENU)) {
-			DisplayServer::get_singleton()->global_menu_add_item("_dock", editor_data.get_scene_title(i) + (unsaved ? "(*)" : ""), callable_mp(this, &EditorNode::_global_menu_scene), i);
+			DisplayServer::get_singleton()->global_menu_add_item("_dock", TTR("Tab") + " - " + editor_data.get_scene_title(i) + (unsaved ? "(*)" : ""), callable_mp(this, &EditorNode::_global_menu_scene), i);
 		}
 
 		if (show_rb && editor_data.get_scene_root_script(i).is_valid()) {
@@ -636,6 +636,9 @@ void EditorNode::_notification(int p_what) {
 		} break;
 
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
+#ifdef OSX_ENABLED
+			left_menu_hb->set_visible(!EditorSettings::get_singleton()->get("interface/editor/hide_main_menu"));
+#endif
 			scene_tabs->set_tab_close_display_policy((bool(EDITOR_GET("interface/scene_tabs/always_show_close_button")) ? Tabs::CLOSE_BUTTON_SHOW_ALWAYS : Tabs::CLOSE_BUTTON_SHOW_ACTIVE_ONLY));
 			theme = create_custom_theme(theme_base->get_theme());
 
@@ -6157,7 +6160,7 @@ EditorNode::EditorNode() {
 	main_control->add_theme_constant_override("separation", 0);
 	scene_root_parent->add_child(main_control);
 
-	HBoxContainer *left_menu_hb = memnew(HBoxContainer);
+	left_menu_hb = memnew(HBoxContainer);
 	menu_hb->add_child(left_menu_hb);
 
 	file_menu = memnew(MenuButton);
@@ -6260,8 +6263,11 @@ EditorNode::EditorNode() {
 	p->add_child(recent_scenes);
 	recent_scenes->connect("id_pressed", callable_mp(this, &EditorNode::_open_recent_scene));
 
+#ifndef OSX_ENABLED
+	// On macOS "Quit" is located in the app menu.
 	p->add_separator();
 	p->add_shortcut(ED_SHORTCUT("editor/file_quit", TTR("Quit"), KEY_MASK_CMD + KEY_Q), FILE_QUIT, true);
+#endif
 
 	project_menu = memnew(MenuButton);
 	project_menu->set_flat(false);
@@ -6330,6 +6336,10 @@ EditorNode::EditorNode() {
 	settings_menu->set_text(TTR("Editor"));
 	settings_menu->add_theme_style_override("hover", gui_base->get_theme_stylebox("MenuHover", "EditorStyles"));
 	left_menu_hb->add_child(settings_menu);
+
+#ifdef OSX_ENABLED
+	left_menu_hb->set_visible(!EditorSettings::get_singleton()->get("interface/editor/hide_main_menu"));
+#endif
 
 	p = settings_menu->get_popup();
 #ifdef OSX_ENABLED
@@ -7034,6 +7044,21 @@ EditorNode::EditorNode() {
 
 	String exec = OS::get_singleton()->get_executable_path();
 	EditorSettings::get_singleton()->set_project_metadata("editor_metadata", "executable_path", exec); // Save editor executable path for third-party tools
+
+#ifdef OSX_ENABLED
+	// Add "Preferences..." to the macOS app menu.
+	DisplayServer::get_singleton()->global_menu_add_item("_app", TTR("Preferences..."), callable_mp(this, &EditorNode::_menu_option), SETTINGS_PREFERENCES, KEY_MASK_META | KEY_COMMA, 2);
+	DisplayServer::get_singleton()->global_menu_add_separator("_app", 3);
+#endif
+
+	if (DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_GLOBAL_MENU)) {
+		// Attach editor main menu to the native global menu.
+		file_menu->get_popup()->attach_to_global_menu("_main", TTR("Scene"));
+		project_menu->get_popup()->attach_to_global_menu("_main", TTR("Project"));
+		debug_menu->get_popup()->attach_to_global_menu("_main", TTR("Debug"));
+		settings_menu->get_popup()->attach_to_global_menu("_main", TTR("Editor"));
+		help_menu->get_popup()->attach_to_global_menu("_main", TTR("Help"));
+	}
 }
 
 EditorNode::~EditorNode() {

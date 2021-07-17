@@ -261,6 +261,8 @@ private:
 
 	HBoxContainer *menu_hb;
 	Control *main_control;
+	HBoxContainer *left_menu_hb;
+	Control *viewport;
 	MenuButton *file_menu;
 	MenuButton *project_menu;
 	MenuButton *debug_menu;

@@ -170,9 +170,110 @@
 			</argument>
 			<argument index="2" name="callback" type="Callable">
 			</argument>
-			<argument index="3" name="tag" type="Variant" default="null">
+			<argument index="3" name="id" type="int" default="-1">
+			</argument>
+			<argument index="4" name="accel" type="int" default="0">
+			</argument>
+			<argument index="5" name="idx" type="int" default="-1">
 			</argument>
 			<description>
+				Adds a new checkable item with text [code]label[/code] to the global menu [code]menu_root[/code].
+				An [code]id[/code] can optionally be provided, as well as an accelerator ([code]accel[/code]). If no [code]id[/code] is provided, one will be created from the index. If no [code]accel[/code] is provided then the default [code]0[/code] will be assigned to it. See [method global_menu_get_item_accelerator] for more info on accelerators.
+				[b]Note:[/b] Checkable items just display a checkmark, but don't have any built-in checking behavior and must be checked/unchecked manually. See [method global_menu_set_item_checked] for more info on how to control it.
+				[b]Note:[/b] This method is implemented on macOS.
+				[b]Supported system menu names:[/b]
+				[codeblock]
+				"_main" - Main menu (macOS).
+				"_app" - Application menu (macOS).
+				"_dock" - Dock popup menu (macOS).
+				[/codeblock]
+			</description>
+		</method>
+		<method name="global_menu_add_icon_check_item">
+			<return type="void">
+			</return>
+			<argument index="0" name="menu_root" type="String">
+			</argument>
+			<argument index="1" name="icon" type="Texture2D">
+			</argument>
+			<argument index="2" name="label" type="String">
+			</argument>
+			<argument index="3" name="callback" type="Callable">
+			</argument>
+			<argument index="4" name="id" type="int" default="-1">
+			</argument>
+			<argument index="5" name="accel" type="int" default="0">
+			</argument>
+			<argument index="6" name="idx" type="int" default="-1">
+			</argument>
+			<description>
+				Adds a new checkable item with text [code]label[/code] and icon [code]icon[/code] to the global menu [code]menu_root[/code].
+				An [code]id[/code] can optionally be provided, as well as an accelerator ([code]accel[/code]). If no [code]id[/code] is provided, one will be created from the index. If no [code]accel[/code] is provided then the default [code]0[/code] will be assigned to it. See [method global_menu_get_item_accelerator] for more info on accelerators.
+				[b]Note:[/b] Checkable items just display a checkmark, but don't have any built-in checking behavior and must be checked/unchecked manually. See [method global_menu_set_item_checked] for more info on how to control it.
+				[b]Note:[/b] This method is implemented on macOS.
+				[b]Supported system menu names:[/b]
+				[codeblock]
+				"_main" - Main menu (macOS).
+				"_app" - Application menu (macOS).
+				"_dock" - Dock popup menu (macOS).
+				[/codeblock]
+			</description>
+		</method>
+		<method name="global_menu_add_icon_item">
+			<return type="void">
+			</return>
+			<argument index="0" name="menu_root" type="String">
+			</argument>
+			<argument index="1" name="icon" type="Texture2D">
+			</argument>
+			<argument index="2" name="label" type="String">
+			</argument>
+			<argument index="3" name="callback" type="Callable">
+			</argument>
+			<argument index="4" name="id" type="int" default="-1">
+			</argument>
+			<argument index="5" name="accel" type="int" default="0">
+			</argument>
+			<argument index="6" name="idx" type="int" default="-1">
+			</argument>
+			<description>
+				Adds a new item with text [code]label[/code] and icon [code]icon[/code] to the global menu [code]menu_root[/code].
+				An [code]id[/code] can optionally be provided, as well as an accelerator ([code]accel[/code]). If no [code]id[/code] is provided, one will be created from the index. If no [code]accel[/code] is provided then the default [code]0[/code] will be assigned to it. See [method global_menu_get_item_accelerator] for more info on accelerators.
+				[b]Note:[/b] This method is implemented on macOS.
+				[b]Supported system menu names:[/b]
+				[codeblock]
+				"_main" - Main menu (macOS).
+				"_app" - Application menu (macOS).
+				"_dock" - Dock popup menu (macOS).
+				[/codeblock]
+			</description>
+		</method>
+		<method name="global_menu_add_icon_radio_check_item">
+			<return type="void">
+			</return>
+			<argument index="0" name="menu_root" type="String">
+			</argument>
+			<argument index="1" name="icon" type="Texture2D">
+			</argument>
+			<argument index="2" name="label" type="String">
+			</argument>
+			<argument index="3" name="callback" type="Callable">
+			</argument>
+			<argument index="4" name="id" type="int" default="-1">
+			</argument>
+			<argument index="5" name="accel" type="int" default="0">
+			</argument>
+			<argument index="6" name="idx" type="int" default="-1">
+			</argument>
+			<description>
+				Same as [method global_menu_add_icon_check_item], but uses a radio check button.
+				[b]Note:[/b] This method is implemented on macOS.
+				[b]Supported system menu names:[/b]
+				[codeblock]
+				"_main" - Main menu (macOS).
+				"_app" - Application menu (macOS).
+				"_dock" - Dock popup menu (macOS).
+				[/codeblock]
 			</description>
 		</method>
 		<method name="global_menu_add_item">
@@ -184,9 +285,82 @@
 			</argument>
 			<argument index="2" name="callback" type="Callable">
 			</argument>
-			<argument index="3" name="tag" type="Variant" default="null">
+			<argument index="3" name="id" type="int" default="-1">
+			</argument>
+			<argument index="4" name="accel" type="int" default="0">
+			</argument>
+			<argument index="5" name="idx" type="int" default="-1">
 			</argument>
 			<description>
+				Adds a new item with text [code]label[/code] to the global menu [code]menu_root[/code].
+				An [code]id[/code] can optionally be provided, as well as an accelerator ([code]accel[/code]). If no [code]id[/code] is provided, one will be created from the index. If no [code]accel[/code] is provided then the default [code]0[/code] will be assigned to it. See [method global_menu_get_item_accelerator] for more info on accelerators.
+				[b]Note:[/b] This method is implemented on macOS.
+				[b]Supported system menu names:[/b]
+				[codeblock]
+				"_main" - Main menu (macOS).
+				"_app" - Application menu (macOS).
+				"_dock" - Dock popup menu (macOS).
+				[/codeblock]
+			</description>
+		</method>
+		<method name="global_menu_add_multistate_item">
+			<return type="void">
+			</return>
+			<argument index="0" name="menu_root" type="String">
+			</argument>
+			<argument index="1" name="label" type="String">
+			</argument>
+			<argument index="2" name="max_states" type="int">
+			</argument>
+			<argument index="3" name="default_state" type="int" default="0">
+			</argument>
+			<argument index="4" name="callback" type="Callable">
+			</argument>
+			<argument index="5" name="id" type="int" default="-1">
+			</argument>
+			<argument index="6" name="accel" type="int" default="0">
+			</argument>
+			<argument index="7" name="idx" type="int" default="-1">
+			</argument>
+			<description>
+				Adds a new multistate item with text [code]label[/code] to the global menu [code]menu_root[/code].
+				Contrarily to normal binary items, multistate items can have more than two states, as defined by [code]max_states[/code]. Each press or activate of the item will increase the state by one. The default value is defined by [code]default_state[/code].
+				An [code]id[/code] can optionally be provided, as well as an accelerator ([code]accel[/code]). If no [code]id[/code] is provided, one will be created from the index. If no [code]accel[/code] is provided then the default [code]0[/code] will be assigned to it. See [method global_menu_get_item_accelerator] for more info on accelerators.
+				[b]Note:[/b] This method is implemented on macOS.
+				[b]Supported system menu names:[/b]
+				[codeblock]
+				"_main" - Main menu (macOS).
+				"_app" - Application menu (macOS).
+				"_dock" - Dock popup menu (macOS).
+				[/codeblock]
+			</description>
+		</method>
+		<method name="global_menu_add_radio_check_item">
+			<return type="void">
+			</return>
+			<argument index="0" name="menu_root" type="String">
+			</argument>
+			<argument index="1" name="label" type="String">
+			</argument>
+			<argument index="2" name="callback" type="Callable">
+			</argument>
+			<argument index="3" name="id" type="int" default="-1">
+			</argument>
+			<argument index="4" name="accel" type="int" default="0">
+			</argument>
+			<argument index="5" name="idx" type="int" default="-1">
+			</argument>
+			<description>
+				Adds a new radio check button with text [code]label[/code] to the global menu [code]menu_root[/code].
+				An [code]id[/code] can optionally be provided, as well as an accelerator ([code]accel[/code]). If no [code]id[/code] is provided, one will be created from the index. If no [code]accel[/code] is provided then the default [code]0[/code] will be assigned to it. See [method global_menu_get_item_accelerator] for more info on accelerators.
+				[b]Note:[/b] Checkable items just display a checkmark, but don't have any built-in checking behavior and must be checked/unchecked manually. See [method global_menu_set_item_checked] for more info on how to control it.
+				[b]Note:[/b] This method is implemented on macOS.
+				[b]Supported system menu names:[/b]
+				[codeblock]
+				"_main" - Main menu (macOS).
+				"_app" - Application menu (macOS).
+				"_dock" - Dock popup menu (macOS).
+				[/codeblock]
 			</description>
 		</method>
 		<method name="global_menu_add_separator">
@@ -194,7 +368,17 @@
 			</return>
 			<argument index="0" name="menu_root" type="String">
 			</argument>
+			<argument index="1" name="idx" type="int" default="-1">
+			</argument>
 			<description>
+				Adds a separator between items to the global menu [code]menu_root[/code]. Separators also occupy an index.
+				[b]Note:[/b] This method is implemented on macOS.
+				[b]Supported system menu names:[/b]
+				[codeblock]
+				"_main" - Main menu (macOS).
+				"_app" - Application menu (macOS).
+				"_dock" - Dock popup menu (macOS).
+				[/codeblock]
 			</description>
 		</method>
 		<method name="global_menu_add_submenu_item">
@@ -206,7 +390,18 @@
 			</argument>
 			<argument index="2" name="submenu" type="String">
 			</argument>
+			<argument index="3" name="idx" type="int" default="-1">
+			</argument>
 			<description>
+				Adds an item that will act as a submenu of the global menu [code]menu_root[/code]. The [code]submenu[/code] argument is the name of the global menu root that will be shown when the item is clicked.
+				An [code]id[/code] can optionally be provided. If no [code]id[/code] is provided, one will be created from the index.
+				[b]Note:[/b] This method is implemented on macOS.
+				[b]Supported system menu names:[/b]
+				[codeblock]
+				"_main" - Main menu (macOS).
+				"_app" - Application menu (macOS).
+				"_dock" - Dock popup menu (macOS).
+				[/codeblock]
 			</description>
 		</method>
 		<method name="global_menu_clear">
@@ -214,7 +409,29 @@
 			</return>
 			<argument index="0" name="menu_root" type="String">
 			</argument>
+			<argument index="1" name="restore_default" type="bool" default="true">
+			</argument>
 			<description>
+				Removes all items from the global menu [code]menu_root[/code] and restores default menu items if [code]restore_default[/code] is true.
+				[b]Note:[/b] This method is implemented on macOS.
+				[b]Supported system menu names:[/b]
+				[codeblock]
+				"_main" - Main menu (macOS).
+				"_app" - Application menu (macOS).
+				"_dock" - Dock popup menu (macOS).
+				[/codeblock]
+			</description>
+		</method>
+		<method name="global_menu_get_item_accelerator">
+			<return type="int">
+			</return>
+			<argument index="0" name="menu_root" type="String">
+			</argument>
+			<argument index="1" name="idx" type="int">
+			</argument>
+			<description>
+				Returns the accelerator of the item at index [code]idx[/code]. Accelerators are special combinations of keys that activate the item, no matter which control is focused.
+				[b]Note:[/b] This method is implemented on macOS.
 			</description>
 		</method>
 		<method name="global_menu_get_item_callback">
@@ -225,6 +442,92 @@
 			<argument index="1" name="idx" type="int">
 			</argument>
 			<description>
+				Returns the callback of the item at index [code]idx[/code].
+				[b]Note:[/b] This method is implemented on macOS.
+			</description>
+		</method>
+		<method name="global_menu_get_item_icon" qualifiers="const">
+			<return type="Texture2D">
+			</return>
+			<argument index="0" name="menu_root" type="String">
+			</argument>
+			<argument index="1" name="idx" type="int">
+			</argument>
+			<description>
+				Returns the icon of the item at index [code]idx[/code].
+				[b]Note:[/b] This method is implemented on macOS.
+			</description>
+		</method>
+		<method name="global_menu_get_item_id">
+			<return type="int">
+			</return>
+			<argument index="0" name="menu_root" type="String">
+			</argument>
+			<argument index="1" name="idx" type="int">
+			</argument>
+			<description>
+				Returns the id of the item at index [code]idx[/code]. [code]id[/code] can be manually assigned, while index can not.
+				[b]Note:[/b] This method is implemented on macOS.
+			</description>
+		</method>
+		<method name="global_menu_get_item_idx_from_text" qualifiers="const">
+			<return type="int">
+			</return>
+			<argument index="0" name="menu_root" type="String">
+			</argument>
+			<argument index="1" name="text" type="String">
+			</argument>
+			<description>
+				Returns the index of the item with the specified [code]text[/code]. Index is automatically assigned to each item by the engine. Index can not be set manually.
+				[b]Note:[/b] This method is implemented on macOS.
+			</description>
+		</method>
+		<method name="global_menu_get_item_index" qualifiers="const">
+			<return type="int">
+			</return>
+			<argument index="0" name="menu_root" type="String">
+			</argument>
+			<argument index="1" name="id" type="int">
+			</argument>
+			<description>
+				Returns the index of the item containing the specified [code]id[/code]. Index is automatically assigned to each item by the engine. Index can not be set manually.
+				[b]Note:[/b] This method is implemented on macOS.
+			</description>
+		</method>
+		<method name="global_menu_get_item_max_states" qualifiers="const">
+			<return type="int">
+			</return>
+			<argument index="0" name="menu_root" type="String">
+			</argument>
+			<argument index="1" name="idx" type="int">
+			</argument>
+			<description>
+				Returns number of states of an multistate item. See [method global_menu_add_multistate_item] for details.
+				[b]Note:[/b] This method is implemented on macOS.
+			</description>
+		</method>
+		<method name="global_menu_get_item_metadata" qualifiers="const">
+			<return type="Variant">
+			</return>
+			<argument index="0" name="menu_root" type="String">
+			</argument>
+			<argument index="1" name="idx" type="int">
+			</argument>
+			<description>
+				Returns the metadata of the specified item, which might be of any type. You can set it with [method global_menu_set_item_metadata], which provides a simple way of assigning context data to items.
+				[b]Note:[/b] This method is implemented on macOS.
+			</description>
+		</method>
+		<method name="global_menu_get_item_state" qualifiers="const">
+			<return type="int">
+			</return>
+			<argument index="0" name="menu_root" type="String">
+			</argument>
+			<argument index="1" name="idx" type="int">
+			</argument>
+			<description>
+				Returns the state of an multistate item. See [method global_menu_add_multistate_item] for details.
+				[b]Note:[/b] This method is implemented on macOS.
 			</description>
 		</method>
 		<method name="global_menu_get_item_submenu">
@@ -235,16 +538,8 @@
 			<argument index="1" name="idx" type="int">
 			</argument>
 			<description>
-			</description>
-		</method>
-		<method name="global_menu_get_item_tag">
-			<return type="Variant">
-			</return>
-			<argument index="0" name="menu_root" type="String">
-			</argument>
-			<argument index="1" name="idx" type="int">
-			</argument>
-			<description>
+				Returns the submenu name of the item at index [code]idx[/code]. See [method global_menu_add_submenu_item] for more info on how to add a submenu.
+				[b]Note:[/b] This method is implemented on macOS.
 			</description>
 		</method>
 		<method name="global_menu_get_item_text">
@@ -255,6 +550,20 @@
 			<argument index="1" name="idx" type="int">
 			</argument>
 			<description>
+				Returns the text of the item at index [code]idx[/code].
+				[b]Note:[/b] This method is implemented on macOS.
+			</description>
+		</method>
+		<method name="global_menu_get_item_tooltip">
+			<return type="String">
+			</return>
+			<argument index="0" name="menu_root" type="String">
+			</argument>
+			<argument index="1" name="idx" type="int">
+			</argument>
+			<description>
+				Returns the tooltip associated with the specified index index [code]idx[/code].
+				[b]Note:[/b] This method is implemented on macOS.
 			</description>
 		</method>
 		<method name="global_menu_is_item_checkable" qualifiers="const">
@@ -265,6 +574,9 @@
 			<argument index="1" name="idx" type="int">
 			</argument>
 			<description>
+				Returns [code]true[/code] if the item at index [code]idx[/code] is checkable in some way, i.e. if it has a checkbox or radio button.
+				[b]Note:[/b] Checkable items just display a checkmark or radio button, but don't have any built-in checking behavior and must be checked/unchecked manually.
+				[b]Note:[/b] This method is implemented on macOS.
 			</description>
 		</method>
 		<method name="global_menu_is_item_checked" qualifiers="const">
@@ -275,6 +587,34 @@
 			<argument index="1" name="idx" type="int">
 			</argument>
 			<description>
+				Returns [code]true[/code] if the item at index [code]idx[/code] is checked.
+				[b]Note:[/b] This method is implemented on macOS.
+			</description>
+		</method>
+		<method name="global_menu_is_item_disabled" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="menu_root" type="String">
+			</argument>
+			<argument index="1" name="idx" type="int">
+			</argument>
+			<description>
+				Returns [code]true[/code] if the item at index [code]idx[/code] is disabled. When it is disabled it can't be selected, or its action invoked.
+				See [method global_menu_set_item_disabled] for more info on how to disable an item.
+				[b]Note:[/b] This method is implemented on macOS.
+			</description>
+		</method>
+		<method name="global_menu_is_item_radio_checkable" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="menu_root" type="String">
+			</argument>
+			<argument index="1" name="idx" type="int">
+			</argument>
+			<description>
+				Returns [code]true[/code] if the item at index [code]idx[/code] has radio button-style checkability.
+				[b]Note:[/b] This is purely cosmetic; you must add the logic for checking/unchecking items in radio groups.
+				[b]Note:[/b] This method is implemented on macOS.
 			</description>
 		</method>
 		<method name="global_menu_remove_item">
@@ -285,6 +625,23 @@
 			<argument index="1" name="idx" type="int">
 			</argument>
 			<description>
+				Removes the item at index [code]idx[/code] from the global menu [code]menu_root[/code].
+				[b]Note:[/b] The indices of items after the removed item will be shifted by one.
+				[b]Note:[/b] This method is implemented on macOS.
+			</description>
+		</method>
+		<method name="global_menu_set_item_accelerator">
+			<return type="void">
+			</return>
+			<argument index="0" name="menu_root" type="String">
+			</argument>
+			<argument index="1" name="idx" type="int">
+			</argument>
+			<argument index="2" name="accelerator" type="int">
+			</argument>
+			<description>
+				Sets the accelerator of the item at index [code]idx[/code].
+				[b]Note:[/b] This method is implemented on macOS.
 			</description>
 		</method>
 		<method name="global_menu_set_item_callback">
@@ -297,6 +654,8 @@
 			<argument index="2" name="callback" type="Callable">
 			</argument>
 			<description>
+				Sets the callback of the item at index [code]idx[/code]. Callback is emitted when an item is pressed or its accelerator is activated.
+				[b]Note:[/b] This method is implemented on macOS.
 			</description>
 		</method>
 		<method name="global_menu_set_item_checkable">
@@ -309,6 +668,9 @@
 			<argument index="2" name="checkable" type="bool">
 			</argument>
 			<description>
+				Sets whether the item at index [code]idx[/code] has a checkbox. If [code]false[/code], sets the type of the item to plain text.
+				[b]Note:[/b] Checkable items just display a checkmark, but don't have any built-in checking behavior and must be checked/unchecked manually.
+				[b]Note:[/b] This method is implemented on macOS.
 			</description>
 		</method>
 		<method name="global_menu_set_item_checked">
@@ -321,6 +683,107 @@
 			<argument index="2" name="checked" type="bool">
 			</argument>
 			<description>
+				Sets the checkstate status of the item at index [code]idx[/code].
+				[b]Note:[/b] This method is implemented on macOS.
+			</description>
+		</method>
+		<method name="global_menu_set_item_disabled">
+			<return type="void">
+			</return>
+			<argument index="0" name="menu_root" type="String">
+			</argument>
+			<argument index="1" name="idx" type="int">
+			</argument>
+			<argument index="2" name="disabled" type="bool">
+			</argument>
+			<description>
+				Enables/disables the item at index [code]idx[/code]. When it is disabled, it can't be selected and its action can't be invoked.
+				[b]Note:[/b] This method is implemented on macOS.
+			</description>
+		</method>
+		<method name="global_menu_set_item_icon">
+			<return type="void">
+			</return>
+			<argument index="0" name="menu_root" type="String">
+			</argument>
+			<argument index="1" name="idx" type="int">
+			</argument>
+			<argument index="2" name="icon" type="Texture2D">
+			</argument>
+			<description>
+				Replaces the [Texture2D] icon of the specified [code]idx[/code].
+				[b]Note:[/b] This method is implemented on macOS.
+				[b]Note:[/b] This method is not supported by macOS "_dock" menu items.
+			</description>
+		</method>
+		<method name="global_menu_set_item_id">
+			<return type="void">
+			</return>
+			<argument index="0" name="menu_root" type="String">
+			</argument>
+			<argument index="1" name="idx" type="int">
+			</argument>
+			<argument index="2" name="id" type="int">
+			</argument>
+			<description>
+				Sets the [code]id[/code] of the item at index [code]idx[/code].
+				[b]Note:[/b] This method is implemented on macOS.
+			</description>
+		</method>
+		<method name="global_menu_set_item_max_states">
+			<return type="void">
+			</return>
+			<argument index="0" name="menu_root" type="String">
+			</argument>
+			<argument index="1" name="idx" type="int">
+			</argument>
+			<argument index="2" name="max_states" type="int">
+			</argument>
+			<description>
+				Sets number of state of an multistate item. See [method global_menu_add_multistate_item] for details.
+				[b]Note:[/b] This method is implemented on macOS.
+			</description>
+		</method>
+		<method name="global_menu_set_item_metadata">
+			<return type="void">
+			</return>
+			<argument index="0" name="menu_root" type="String">
+			</argument>
+			<argument index="1" name="idx" type="int">
+			</argument>
+			<argument index="2" name="metadata" type="Variant">
+			</argument>
+			<description>
+				Sets the metadata of an item, which may be of any type. You can later get it with [method global_menu_get_item_metadata], which provides a simple way of assigning context data to items.
+				[b]Note:[/b] This method is implemented on macOS.
+			</description>
+		</method>
+		<method name="global_menu_set_item_radio_checkable">
+			<return type="void">
+			</return>
+			<argument index="0" name="menu_root" type="String">
+			</argument>
+			<argument index="1" name="idx" type="int">
+			</argument>
+			<argument index="2" name="checkable" type="bool">
+			</argument>
+			<description>
+				Sets the type of the item at the specified index [code]idx[/code] to radio button. If [code]false[/code], sets the type of the item to plain text
+				[b]Note:[/b] This method is implemented on macOS.
+			</description>
+		</method>
+		<method name="global_menu_set_item_state">
+			<return type="void">
+			</return>
+			<argument index="0" name="menu_root" type="String">
+			</argument>
+			<argument index="1" name="idx" type="int">
+			</argument>
+			<argument index="2" name="state" type="int">
+			</argument>
+			<description>
+				Sets the state of an multistate item. See [method global_menu_add_multistate_item] for details.
+				[b]Note:[/b] This method is implemented on macOS.
 			</description>
 		</method>
 		<method name="global_menu_set_item_submenu">
@@ -333,18 +796,8 @@
 			<argument index="2" name="submenu" type="String">
 			</argument>
 			<description>
-			</description>
-		</method>
-		<method name="global_menu_set_item_tag">
-			<return type="void">
-			</return>
-			<argument index="0" name="menu_root" type="String">
-			</argument>
-			<argument index="1" name="idx" type="int">
-			</argument>
-			<argument index="2" name="tag" type="Variant">
-			</argument>
-			<description>
+				Sets the submenu of the item at index [code]idx[/code]. The submenu is the name of a global menu root that would be shown when the item is clicked.
+				[b]Note:[/b] This method is implemented on macOS.
 			</description>
 		</method>
 		<method name="global_menu_set_item_text">
@@ -357,6 +810,22 @@
 			<argument index="2" name="text" type="String">
 			</argument>
 			<description>
+				Sets the text of the item at index [code]idx[/code].
+				[b]Note:[/b] This method is implemented on macOS.
+			</description>
+		</method>
+		<method name="global_menu_set_item_tooltip">
+			<return type="void">
+			</return>
+			<argument index="0" name="menu_root" type="String">
+			</argument>
+			<argument index="1" name="idx" type="int">
+			</argument>
+			<argument index="2" name="tooltip" type="String">
+			</argument>
+			<description>
+				Sets the [String] tooltip of the item at the specified index [code]idx[/code].
+				[b]Note:[/b] This method is implemented on macOS.
 			</description>
 		</method>
 		<method name="has_feature" qualifiers="const">

@@ -148,11 +148,21 @@ static NSCursor *_cursorFromSelector(SEL selector, SEL fallback = nil) {
 /* GlobalMenuItem                                                       */
 /*************************************************************************/
 
+enum GlobalMenuCheckType {
+	CHECKABLE_TYPE_NONE,
+	CHECKABLE_TYPE_CHECK_BOX,
+	CHECKABLE_TYPE_RADIO_BUTTON,
+};
+
 @interface GlobalMenuItem : NSObject {
 @public
 	Callable callback;
 	Variant meta;
-	bool checkable;
+	int id;
+	GlobalMenuCheckType checkable_type;
+	int max_states;
+	int state;
+	Ref<Image> img;
 }
 
 @end
@@ -220,22 +230,13 @@ static NSCursor *_cursorFromSelector(SEL selector, SEL fallback = nil) {
 	}
 
 	GlobalMenuItem *value = [sender representedObject];
-
 	if (value) {
-		if (value->checkable) {
-			if ([sender state] == NSControlStateValueOff) {
-				[sender setState:NSControlStateValueOn];
-			} else {
-				[sender setState:NSControlStateValueOff];
-			}
-		}
-
 		if (value->callback != Callable()) {
-			Variant tag = value->meta;
-			Variant *tagp = &tag;
+			Variant id = value->id;
+			Variant *idp = &id;
 			Variant ret;
 			Callable::CallError ce;
-			value->callback.call((const Variant **)&tagp, 1, ret, ce);
+			value->callback.call((const Variant **)&idp, 1, ret, ce);
 		}
 	}
 }
@@ -1643,30 +1644,198 @@ String DisplayServerOSX::get_name() const {
 	return "OSX";
 }
 
-const NSMenu *DisplayServerOSX::_get_menu_root(const String &p_menu_root) const {
-	const NSMenu *menu = nullptr;
-	if (p_menu_root == "") {
-		// Main menu.x
-		menu = [NSApp mainMenu];
-	} else if (p_menu_root.to_lower() == "_dock") {
-		// macOS dock menu.
-		menu = dock_menu;
-	} else {
-		// Submenu.
-		if (submenu.has(p_menu_root)) {
-			menu = submenu[p_menu_root];
+struct _KeyCodeText {
+	int code;
+	char32_t text;
+};
+
+static const _KeyCodeText _native_keycodes[] = {
+	/* clang-format off */
+		{KEY_ESCAPE                        ,0x001B},
+		{KEY_TAB                           ,0x0009},
+		{KEY_BACKTAB                       ,0x007F},
+		{KEY_BACKSPACE                     ,0x0008},
+		{KEY_ENTER                         ,0x000D},
+		{KEY_INSERT                        ,NSInsertFunctionKey},
+		{KEY_DELETE                        ,0x007F},
+		{KEY_PAUSE                         ,NSPauseFunctionKey},
+		{KEY_PRINT                         ,NSPrintScreenFunctionKey},
+		{KEY_SYSREQ                        ,NSSysReqFunctionKey},
+		{KEY_CLEAR                         ,NSClearLineFunctionKey},
+		{KEY_HOME                          ,0x2196},
+		{KEY_END                           ,0x2198},
+		{KEY_LEFT                          ,0x001C},
+		{KEY_UP                            ,0x001E},
+		{KEY_RIGHT                         ,0x001D},
+		{KEY_DOWN                          ,0x001F},
+		{KEY_PAGEUP                        ,0x21DE},
+		{KEY_PAGEDOWN                      ,0x21DF},
+		{KEY_NUMLOCK                       ,NSClearLineFunctionKey},
+		{KEY_SCROLLLOCK                    ,NSScrollLockFunctionKey},
+		{KEY_F1                            ,NSF1FunctionKey},
+		{KEY_F2                            ,NSF2FunctionKey},
+		{KEY_F3                            ,NSF3FunctionKey},
+		{KEY_F4                            ,NSF4FunctionKey},
+		{KEY_F5                            ,NSF5FunctionKey},
+		{KEY_F6                            ,NSF6FunctionKey},
+		{KEY_F7                            ,NSF7FunctionKey},
+		{KEY_F8                            ,NSF8FunctionKey},
+		{KEY_F9                            ,NSF9FunctionKey},
+		{KEY_F10                           ,NSF10FunctionKey},
+		{KEY_F11                           ,NSF11FunctionKey},
+		{KEY_F12                           ,NSF12FunctionKey},
+		{KEY_F13                           ,NSF13FunctionKey},
+		{KEY_F14                           ,NSF14FunctionKey},
+		{KEY_F15                           ,NSF15FunctionKey},
+		{KEY_F16                           ,NSF16FunctionKey}, //* ... NSF35FunctionKey */
+		{KEY_MENU                          ,NSMenuFunctionKey},
+		{KEY_HELP                          ,NSHelpFunctionKey},
+		{KEY_STOP                          ,NSStopFunctionKey},
+		{KEY_LAUNCH0                       ,NSUserFunctionKey},
+		{KEY_SPACE                         ,0x0020},
+		{KEY_EXCLAM                        ,'!'},
+		{KEY_QUOTEDBL                      ,'\"'},
+		{KEY_NUMBERSIGN                    ,'#'},
+		{KEY_DOLLAR                        ,'$'},
+		{KEY_PERCENT                       ,'\%'},
+		{KEY_AMPERSAND                     ,'&'},
+		{KEY_APOSTROPHE                    ,'\''},
+		{KEY_PARENLEFT                     ,'('},
+		{KEY_PARENRIGHT                    ,')'},
+		{KEY_ASTERISK                      ,'*'},
+		{KEY_PLUS                          ,'+'},
+		{KEY_COMMA                         ,','},
+		{KEY_MINUS                         ,'-'},
+		{KEY_PERIOD                        ,'.'},
+		{KEY_SLASH                         ,'/'},
+		{KEY_0                             ,'0'},
+		{KEY_1                             ,'1'},
+		{KEY_2                             ,'2'},
+		{KEY_3                             ,'3'},
+		{KEY_4                             ,'4'},
+		{KEY_5                             ,'5'},
+		{KEY_6                             ,'6'},
+		{KEY_7                             ,'7'},
+		{KEY_8                             ,'8'},
+		{KEY_9                             ,'9'},
+		{KEY_COLON                         ,':'},
+		{KEY_SEMICOLON                     ,';'},
+		{KEY_LESS                          ,'<'},
+		{KEY_EQUAL                         ,'='},
+		{KEY_GREATER                       ,'>'},
+		{KEY_QUESTION                      ,'?'},
+		{KEY_AT                            ,'@'},
+		{KEY_A                             ,'a'},
+		{KEY_B                             ,'b'},
+		{KEY_C                             ,'c'},
+		{KEY_D                             ,'d'},
+		{KEY_E                             ,'e'},
+		{KEY_F                             ,'f'},
+		{KEY_G                             ,'g'},
+		{KEY_H                             ,'h'},
+		{KEY_I                             ,'i'},
+		{KEY_J                             ,'j'},
+		{KEY_K                             ,'k'},
+		{KEY_L                             ,'l'},
+		{KEY_M                             ,'m'},
+		{KEY_N                             ,'n'},
+		{KEY_O                             ,'o'},
+		{KEY_P                             ,'p'},
+		{KEY_Q                             ,'q'},
+		{KEY_R                             ,'r'},
+		{KEY_S                             ,'s'},
+		{KEY_T                             ,'t'},
+		{KEY_U                             ,'u'},
+		{KEY_V                             ,'v'},
+		{KEY_W                             ,'w'},
+		{KEY_X                             ,'x'},
+		{KEY_Y                             ,'y'},
+		{KEY_Z                             ,'z'},
+		{KEY_BRACKETLEFT                   ,'['},
+		{KEY_BACKSLASH                     ,'\\'},
+		{KEY_BRACKETRIGHT                  ,']'},
+		{KEY_ASCIICIRCUM                   ,'^'},
+		{KEY_UNDERSCORE                    ,'_'},
+		{KEY_QUOTELEFT                     ,'`'},
+		{KEY_BRACELEFT                     ,'{'},
+		{KEY_BAR                           ,'|'},
+		{KEY_BRACERIGHT                    ,'}'},
+		{KEY_ASCIITILDE                    ,'~'},
+		{0                                 ,0x0000}
+	/* clang-format on */
+};
+
+String _keycode_get_native_string(uint32_t p_keycode) {
+	const _KeyCodeText *kct = &_native_keycodes[0];
+
+	while (kct->text) {
+		if (kct->code == (int)p_keycode) {
+			return String::chr(kct->text);
 		}
+		kct++;
 	}
-	if (menu == apple_menu) {
-		// Do not allow to change Apple menu.
-		return nullptr;
-	}
-	return menu;
+	return String();
 }
 
-NSMenu *DisplayServerOSX::_get_menu_root(const String &p_menu_root) {
-	NSMenu *menu = nullptr;
-	if (p_menu_root == "") {
+NSUInteger _keycode_get_native_mask(uint32_t p_keycode) {
+	NSUInteger mask = 0;
+	if (p_keycode & KEY_MASK_CTRL) {
+		mask |= NSEventModifierFlagControl;
+	}
+	if (p_keycode & KEY_MASK_ALT) {
+		mask |= NSEventModifierFlagOption;
+	}
+	if (p_keycode & KEY_MASK_SHIFT) {
+		mask |= NSEventModifierFlagShift;
+	}
+	if (p_keycode & KEY_MASK_META) {
+		mask |= NSEventModifierFlagCommand;
+	}
+	if (p_keycode & KEY_MASK_KPAD) {
+		mask |= NSEventModifierFlagNumericPad;
+	}
+	return mask;
+}
+
+NSImage *_convert_to_nsimg(Ref<Image> &p_image) {
+	p_image->convert(Image::FORMAT_RGBA8);
+	NSBitmapImageRep *imgrep = [[NSBitmapImageRep alloc]
+			initWithBitmapDataPlanes:NULL
+						  pixelsWide:p_image->get_width()
+						  pixelsHigh:p_image->get_height()
+					   bitsPerSample:8
+					 samplesPerPixel:4
+							hasAlpha:YES
+							isPlanar:NO
+					  colorSpaceName:NSDeviceRGBColorSpace
+						 bytesPerRow:int(p_image->get_width()) * 4
+						bitsPerPixel:32];
+	ERR_FAIL_COND_V(imgrep == nil, nil);
+	uint8_t *pixels = [imgrep bitmapData];
+
+	int len = p_image->get_width() * p_image->get_height();
+	const uint8_t *r = p_image->get_data().ptr();
+
+	/* Premultiply the alpha channel */
+	for (int i = 0; i < len; i++) {
+		uint8_t alpha = r[i * 4 + 3];
+		pixels[i * 4 + 0] = (uint8_t)(((uint16_t)r[i * 4 + 0] * alpha) / 255);
+		pixels[i * 4 + 1] = (uint8_t)(((uint16_t)r[i * 4 + 1] * alpha) / 255);
+		pixels[i * 4 + 2] = (uint8_t)(((uint16_t)r[i * 4 + 2] * alpha) / 255);
+		pixels[i * 4 + 3] = alpha;
+	}
+
+	NSImage *nsimg = [[NSImage alloc] initWithSize:NSMakeSize(p_image->get_width(), p_image->get_height())];
+	ERR_FAIL_COND_V(nsimg == nil, nil);
+	[nsimg addRepresentation:imgrep];
+	return nsimg;
+}
+
+const NSMenu *DisplayServerOSX::_get_menu_root(const String &p_menu_root) const {
+	const NSMenu *menu = nil;
+	if (p_menu_root == String()) {
+		menu = nil;
+	} else if (p_menu_root == "_main") {
 		// Main menu.
 		menu = [NSApp mainMenu];
 	} else if (p_menu_root.to_lower() == "_dock") {
@@ -1674,51 +1843,288 @@ NSMenu *DisplayServerOSX::_get_menu_root(const String &p_menu_root) {
 		menu = dock_menu;
 	} else {
 		// Submenu.
-		if (!submenu.has(p_menu_root)) {
-			NSMenu *n_menu = [[NSMenu alloc] initWithTitle:[NSString stringWithUTF8String:p_menu_root.utf8().get_data()]];
-			submenu[p_menu_root] = n_menu;
+		if (p_menu_root == "_app") {
+			menu = apple_menu;
+		} else if (p_menu_root == "Window" || p_menu_root == RTR("Window")) {
+			menu = window_menu;
+		} else if (p_menu_root == "Help" || p_menu_root == RTR("Help")) {
+			menu = help_menu;
+		} else if (submenu.has(p_menu_root)) {
+			menu = submenu[p_menu_root];
+		} else {
+			menu = nil;
 		}
-		menu = submenu[p_menu_root];
-	}
-	if (menu == apple_menu) {
-		// Do not allow to change Apple menu.
-		return nullptr;
 	}
 	return menu;
 }
 
-void DisplayServerOSX::global_menu_add_item(const String &p_menu_root, const String &p_label, const Callable &p_callback, const Variant &p_tag) {
+NSMenu *DisplayServerOSX::_get_menu_root(const String &p_menu_root) {
+	NSMenu *menu = nil;
+	if (p_menu_root == String()) {
+		menu = nil;
+	} else if (p_menu_root == "_main") {
+		// Main menu.
+		menu = [NSApp mainMenu];
+	} else if (p_menu_root.to_lower() == "_dock") {
+		// macOS dock menu.
+		menu = dock_menu;
+	} else {
+		// Submenu.
+		if (p_menu_root == "_app") {
+			menu = apple_menu;
+		} else if (p_menu_root == "Window" || p_menu_root == RTR("Window")) {
+			menu = window_menu;
+		} else if (p_menu_root == "Help" || p_menu_root == RTR("Help")) {
+			menu = help_menu;
+		} else if (submenu.has(p_menu_root)) {
+			menu = submenu[p_menu_root];
+		} else {
+			NSMenu *n_menu = [[NSMenu alloc] initWithTitle:[NSString stringWithUTF8String:p_menu_root.utf8().get_data()]];
+			[n_menu setAutoenablesItems:NO];
+			submenu[p_menu_root] = n_menu;
+			menu = submenu[p_menu_root];
+		}
+	}
+	return menu;
+}
+
+void DisplayServerOSX::global_menu_add_item(const String &p_menu_root, const String &p_label, const Callable &p_callback, int p_id, uint32_t p_accel, int p_idx) {
 	_THREAD_SAFE_METHOD_
 
 	NSMenu *menu = _get_menu_root(p_menu_root);
+	if (menu == [NSApp mainMenu] && (p_label == "Window" || p_label == RTR("Window") || p_label == "Help" || p_label == RTR("Help") || p_label == "_app")) {
+		return;
+	}
 	if (menu) {
-		NSMenuItem *menu_item = [menu addItemWithTitle:[NSString stringWithUTF8String:p_label.utf8().get_data()] action:@selector(globalMenuCallback:) keyEquivalent:@""];
+		String keycode = _keycode_get_native_string(p_accel & KEY_CODE_MASK);
+		NSMenuItem *menu_item = nil;
+		if (p_idx != -1) {
+			menu_item = [menu insertItemWithTitle:[NSString stringWithUTF8String:p_label.utf8().get_data()] action:@selector(globalMenuCallback:) keyEquivalent:[NSString stringWithUTF8String:keycode.utf8().get_data()] atIndex:p_idx];
+		} else if (menu == [NSApp mainMenu]) {
+			menu_item = [menu insertItemWithTitle:[NSString stringWithUTF8String:p_label.utf8().get_data()] action:@selector(globalMenuCallback:) keyEquivalent:[NSString stringWithUTF8String:keycode.utf8().get_data()] atIndex:([menu numberOfItems] - 2)];
+		} else {
+			menu_item = [menu addItemWithTitle:[NSString stringWithUTF8String:p_label.utf8().get_data()] action:@selector(globalMenuCallback:) keyEquivalent:[NSString stringWithUTF8String:keycode.utf8().get_data()]];
+		}
+		[menu_item setKeyEquivalentModifierMask:_keycode_get_native_mask(p_accel)];
 		GlobalMenuItem *obj = [[[GlobalMenuItem alloc] init] autorelease];
 		obj->callback = p_callback;
-		obj->meta = p_tag;
-		obj->checkable = false;
+		obj->id = p_id;
+		obj->checkable_type = GlobalMenuCheckType::CHECKABLE_TYPE_NONE;
+		obj->max_states = 0;
+		obj->state = 0;
+		[menu_item setTag:p_id];
 		[menu_item setRepresentedObject:obj];
 	}
 }
 
-void DisplayServerOSX::global_menu_add_check_item(const String &p_menu_root, const String &p_label, const Callable &p_callback, const Variant &p_tag) {
+void DisplayServerOSX::global_menu_add_check_item(const String &p_menu_root, const String &p_label, const Callable &p_callback, int p_id, uint32_t p_accel, int p_idx) {
 	_THREAD_SAFE_METHOD_
 
 	NSMenu *menu = _get_menu_root(p_menu_root);
+	if (menu == [NSApp mainMenu] && (p_label == "Window" || p_label == RTR("Window") || p_label == "Help" || p_label == RTR("Help") || p_label == "_app")) {
+		return;
+	}
 	if (menu) {
-		NSMenuItem *menu_item = [menu addItemWithTitle:[NSString stringWithUTF8String:p_label.utf8().get_data()] action:@selector(globalMenuCallback:) keyEquivalent:@""];
+		String keycode = _keycode_get_native_string(p_accel & KEY_CODE_MASK);
+		NSMenuItem *menu_item = nil;
+		if (p_idx != -1) {
+			menu_item = [menu insertItemWithTitle:[NSString stringWithUTF8String:p_label.utf8().get_data()] action:@selector(globalMenuCallback:) keyEquivalent:[NSString stringWithUTF8String:keycode.utf8().get_data()] atIndex:p_idx];
+		} else if (menu == [NSApp mainMenu]) {
+			menu_item = [menu insertItemWithTitle:[NSString stringWithUTF8String:p_label.utf8().get_data()] action:@selector(globalMenuCallback:) keyEquivalent:[NSString stringWithUTF8String:keycode.utf8().get_data()] atIndex:([menu numberOfItems] - 2)];
+		} else {
+			menu_item = [menu addItemWithTitle:[NSString stringWithUTF8String:p_label.utf8().get_data()] action:@selector(globalMenuCallback:) keyEquivalent:[NSString stringWithUTF8String:keycode.utf8().get_data()]];
+		}
+		[menu_item setKeyEquivalentModifierMask:_keycode_get_native_mask(p_accel)];
 		GlobalMenuItem *obj = [[[GlobalMenuItem alloc] init] autorelease];
 		obj->callback = p_callback;
-		obj->meta = p_tag;
-		obj->checkable = true;
+		obj->id = p_id;
+		obj->checkable_type = GlobalMenuCheckType::CHECKABLE_TYPE_CHECK_BOX;
+		obj->max_states = 0;
+		obj->state = 0;
+		[menu_item setTag:p_id];
 		[menu_item setRepresentedObject:obj];
 	}
 }
 
-void DisplayServerOSX::global_menu_add_submenu_item(const String &p_menu_root, const String &p_label, const String &p_submenu) {
+void DisplayServerOSX::global_menu_add_icon_item(const String &p_menu_root, const Ref<Texture2D> &p_icon, const String &p_label, const Callable &p_callback, int p_id, uint32_t p_accel, int p_idx) {
 	_THREAD_SAFE_METHOD_
 
 	NSMenu *menu = _get_menu_root(p_menu_root);
+	if (menu == [NSApp mainMenu] && (p_label == "Window" || p_label == RTR("Window") || p_label == "Help" || p_label == RTR("Help") || p_label == "_app")) {
+		return;
+	}
+	if (menu) {
+		String keycode = _keycode_get_native_string(p_accel & KEY_CODE_MASK);
+		NSMenuItem *menu_item = nil;
+		if (p_idx != -1) {
+			menu_item = [menu insertItemWithTitle:[NSString stringWithUTF8String:p_label.utf8().get_data()] action:@selector(globalMenuCallback:) keyEquivalent:[NSString stringWithUTF8String:keycode.utf8().get_data()] atIndex:p_idx];
+		} else if (menu == [NSApp mainMenu]) {
+			menu_item = [menu insertItemWithTitle:[NSString stringWithUTF8String:p_label.utf8().get_data()] action:@selector(globalMenuCallback:) keyEquivalent:[NSString stringWithUTF8String:keycode.utf8().get_data()] atIndex:([menu numberOfItems] - 2)];
+		} else {
+			menu_item = [menu addItemWithTitle:[NSString stringWithUTF8String:p_label.utf8().get_data()] action:@selector(globalMenuCallback:) keyEquivalent:[NSString stringWithUTF8String:keycode.utf8().get_data()]];
+		}
+		[menu_item setKeyEquivalentModifierMask:_keycode_get_native_mask(p_accel)];
+		GlobalMenuItem *obj = [[[GlobalMenuItem alloc] init] autorelease];
+		obj->callback = p_callback;
+		obj->id = p_id;
+		obj->checkable_type = GlobalMenuCheckType::CHECKABLE_TYPE_NONE;
+		obj->max_states = 0;
+		obj->state = 0;
+		if (p_icon.is_valid()) {
+			obj->img = p_icon->get_image();
+			obj->img = obj->img->duplicate();
+			if (obj->img->is_compressed()) {
+				obj->img->decompress();
+			}
+			obj->img->resize(16, 16, Image::INTERPOLATE_LANCZOS);
+			[menu_item setImage:_convert_to_nsimg(obj->img)];
+		}
+		[menu_item setTag:p_id];
+		[menu_item setRepresentedObject:obj];
+	}
+}
+
+void DisplayServerOSX::global_menu_add_icon_check_item(const String &p_menu_root, const Ref<Texture2D> &p_icon, const String &p_label, const Callable &p_callback, int p_id, uint32_t p_accel, int p_idx) {
+	_THREAD_SAFE_METHOD_
+
+	NSMenu *menu = _get_menu_root(p_menu_root);
+	if (menu == [NSApp mainMenu] && (p_label == "Window" || p_label == RTR("Window") || p_label == "Help" || p_label == RTR("Help") || p_label == "_app")) {
+		return;
+	}
+	if (menu) {
+		String keycode = _keycode_get_native_string(p_accel & KEY_CODE_MASK);
+		NSMenuItem *menu_item = nil;
+		if (p_idx != -1) {
+			menu_item = [menu insertItemWithTitle:[NSString stringWithUTF8String:p_label.utf8().get_data()] action:@selector(globalMenuCallback:) keyEquivalent:[NSString stringWithUTF8String:keycode.utf8().get_data()] atIndex:p_idx];
+		} else if (menu == [NSApp mainMenu]) {
+			menu_item = [menu insertItemWithTitle:[NSString stringWithUTF8String:p_label.utf8().get_data()] action:@selector(globalMenuCallback:) keyEquivalent:[NSString stringWithUTF8String:keycode.utf8().get_data()] atIndex:([menu numberOfItems] - 2)];
+		} else {
+			menu_item = [menu addItemWithTitle:[NSString stringWithUTF8String:p_label.utf8().get_data()] action:@selector(globalMenuCallback:) keyEquivalent:[NSString stringWithUTF8String:keycode.utf8().get_data()]];
+		}
+		[menu_item setKeyEquivalentModifierMask:_keycode_get_native_mask(p_accel)];
+		GlobalMenuItem *obj = [[[GlobalMenuItem alloc] init] autorelease];
+		obj->callback = p_callback;
+		obj->id = p_id;
+		obj->checkable_type = GlobalMenuCheckType::CHECKABLE_TYPE_CHECK_BOX;
+		obj->max_states = 0;
+		obj->state = 0;
+		if (p_icon.is_valid()) {
+			obj->img = p_icon->get_image();
+			obj->img = obj->img->duplicate();
+			if (obj->img->is_compressed()) {
+				obj->img->decompress();
+			}
+			obj->img->resize(16, 16, Image::INTERPOLATE_LANCZOS);
+			[menu_item setImage:_convert_to_nsimg(obj->img)];
+		}
+		[menu_item setTag:p_id];
+		[menu_item setRepresentedObject:obj];
+	}
+}
+
+void DisplayServerOSX::global_menu_add_radio_check_item(const String &p_menu_root, const String &p_label, const Callable &p_callback, int p_id, uint32_t p_accel, int p_idx) {
+	_THREAD_SAFE_METHOD_
+
+	NSMenu *menu = _get_menu_root(p_menu_root);
+	if (menu == [NSApp mainMenu] && (p_label == "Window" || p_label == RTR("Window") || p_label == "Help" || p_label == RTR("Help") || p_label == "_app")) {
+		return;
+	}
+	if (menu) {
+		String keycode = _keycode_get_native_string(p_accel & KEY_CODE_MASK);
+		NSMenuItem *menu_item = nil;
+		if (p_idx != -1) {
+			menu_item = [menu insertItemWithTitle:[NSString stringWithUTF8String:p_label.utf8().get_data()] action:@selector(globalMenuCallback:) keyEquivalent:[NSString stringWithUTF8String:keycode.utf8().get_data()] atIndex:p_idx];
+		} else if (menu == [NSApp mainMenu]) {
+			menu_item = [menu insertItemWithTitle:[NSString stringWithUTF8String:p_label.utf8().get_data()] action:@selector(globalMenuCallback:) keyEquivalent:[NSString stringWithUTF8String:keycode.utf8().get_data()] atIndex:([menu numberOfItems] - 2)];
+		} else {
+			menu_item = [menu addItemWithTitle:[NSString stringWithUTF8String:p_label.utf8().get_data()] action:@selector(globalMenuCallback:) keyEquivalent:[NSString stringWithUTF8String:keycode.utf8().get_data()]];
+		}
+		[menu_item setKeyEquivalentModifierMask:_keycode_get_native_mask(p_accel)];
+		GlobalMenuItem *obj = [[[GlobalMenuItem alloc] init] autorelease];
+		obj->callback = p_callback;
+		obj->id = p_id;
+		obj->checkable_type = GlobalMenuCheckType::CHECKABLE_TYPE_RADIO_BUTTON;
+		obj->max_states = 0;
+		obj->state = 0;
+		[menu_item setTag:p_id];
+		[menu_item setRepresentedObject:obj];
+	}
+}
+
+void DisplayServerOSX::global_menu_add_icon_radio_check_item(const String &p_menu_root, const Ref<Texture2D> &p_icon, const String &p_label, const Callable &p_callback, int p_id, uint32_t p_accel, int p_idx) {
+	_THREAD_SAFE_METHOD_
+
+	NSMenu *menu = _get_menu_root(p_menu_root);
+	if (menu == [NSApp mainMenu] && (p_label == "Window" || p_label == RTR("Window") || p_label == "Help" || p_label == RTR("Help") || p_label == "_app")) {
+		return;
+	}
+	if (menu) {
+		String keycode = _keycode_get_native_string(p_accel & KEY_CODE_MASK);
+		NSMenuItem *menu_item = nil;
+		if (p_idx != -1) {
+			menu_item = [menu insertItemWithTitle:[NSString stringWithUTF8String:p_label.utf8().get_data()] action:@selector(globalMenuCallback:) keyEquivalent:[NSString stringWithUTF8String:keycode.utf8().get_data()] atIndex:p_idx];
+		} else if (menu == [NSApp mainMenu]) {
+			menu_item = [menu insertItemWithTitle:[NSString stringWithUTF8String:p_label.utf8().get_data()] action:@selector(globalMenuCallback:) keyEquivalent:[NSString stringWithUTF8String:keycode.utf8().get_data()] atIndex:([menu numberOfItems] - 2)];
+		} else {
+			menu_item = [menu addItemWithTitle:[NSString stringWithUTF8String:p_label.utf8().get_data()] action:@selector(globalMenuCallback:) keyEquivalent:[NSString stringWithUTF8String:keycode.utf8().get_data()]];
+		}
+		[menu_item setKeyEquivalentModifierMask:_keycode_get_native_mask(p_accel)];
+		GlobalMenuItem *obj = [[[GlobalMenuItem alloc] init] autorelease];
+		obj->callback = p_callback;
+		obj->id = p_id;
+		obj->checkable_type = GlobalMenuCheckType::CHECKABLE_TYPE_RADIO_BUTTON;
+		obj->max_states = 0;
+		obj->state = 0;
+		if (p_icon.is_valid()) {
+			obj->img = p_icon->get_image();
+			obj->img = obj->img->duplicate();
+			if (obj->img->is_compressed()) {
+				obj->img->decompress();
+			}
+			obj->img->resize(16, 16, Image::INTERPOLATE_LANCZOS);
+			[menu_item setImage:_convert_to_nsimg(obj->img)];
+		}
+		[menu_item setTag:p_id];
+		[menu_item setRepresentedObject:obj];
+	}
+}
+
+void DisplayServerOSX::global_menu_add_multistate_item(const String &p_menu_root, const String &p_label, int p_max_states, int p_default_state, const Callable &p_callback, int p_id, uint32_t p_accel, int p_idx) {
+	_THREAD_SAFE_METHOD_
+
+	NSMenu *menu = _get_menu_root(p_menu_root);
+	if (menu == [NSApp mainMenu] && (p_label == "Window" || p_label == RTR("Window") || p_label == "Help" || p_label == RTR("Help") || p_label == "_app")) {
+		return;
+	}
+	if (menu) {
+		String keycode = _keycode_get_native_string(p_accel & KEY_CODE_MASK);
+		NSMenuItem *menu_item = nil;
+		if (p_idx != -1) {
+			menu_item = [menu insertItemWithTitle:[NSString stringWithUTF8String:p_label.utf8().get_data()] action:@selector(globalMenuCallback:) keyEquivalent:[NSString stringWithUTF8String:keycode.utf8().get_data()] atIndex:p_idx];
+		} else if (menu == [NSApp mainMenu]) {
+			menu_item = [menu insertItemWithTitle:[NSString stringWithUTF8String:p_label.utf8().get_data()] action:@selector(globalMenuCallback:) keyEquivalent:[NSString stringWithUTF8String:keycode.utf8().get_data()] atIndex:([menu numberOfItems] - 2)];
+		} else {
+			menu_item = [menu addItemWithTitle:[NSString stringWithUTF8String:p_label.utf8().get_data()] action:@selector(globalMenuCallback:) keyEquivalent:[NSString stringWithUTF8String:keycode.utf8().get_data()]];
+		}
+		[menu_item setKeyEquivalentModifierMask:_keycode_get_native_mask(p_accel)];
+		GlobalMenuItem *obj = [[[GlobalMenuItem alloc] init] autorelease];
+		obj->callback = p_callback;
+		obj->id = p_id;
+		obj->checkable_type = GlobalMenuCheckType::CHECKABLE_TYPE_NONE;
+		obj->max_states = p_max_states;
+		obj->state = p_default_state;
+		[menu_item setTag:p_id];
+		[menu_item setRepresentedObject:obj];
+	}
+}
+
+void DisplayServerOSX::global_menu_add_submenu_item(const String &p_menu_root, const String &p_label, const String &p_submenu, int p_idx) {
+	_THREAD_SAFE_METHOD_
+
+	NSMenu *menu = _get_menu_root(p_menu_root);
+	if (menu == [NSApp mainMenu] && (p_label == "Window" || p_label == RTR("Window") || p_label == "Help" || p_label == RTR("Help") || p_label == "_app")) {
+		return;
+	}
 	NSMenu *sub_menu = _get_menu_root(p_submenu);
 	if (menu && sub_menu) {
 		if (sub_menu == menu) {
@@ -1729,18 +2135,54 @@ void DisplayServerOSX::global_menu_add_submenu_item(const String &p_menu_root, c
 			ERR_PRINT("Can't set submenu to menu that is already a submenu of some other menu!");
 			return;
 		}
-		NSMenuItem *menu_item = [menu addItemWithTitle:[NSString stringWithUTF8String:p_label.utf8().get_data()] action:nil keyEquivalent:@""];
+		NSMenuItem *menu_item = nil;
+		if (p_idx != -1) {
+			menu_item = [menu insertItemWithTitle:[NSString stringWithUTF8String:p_label.utf8().get_data()] action:nil keyEquivalent:@"" atIndex:p_idx];
+		} else if (menu == [NSApp mainMenu]) {
+			menu_item = [menu insertItemWithTitle:[NSString stringWithUTF8String:p_label.utf8().get_data()] action:nil keyEquivalent:@"" atIndex:([menu numberOfItems] - 2)];
+		} else {
+			menu_item = [menu addItemWithTitle:[NSString stringWithUTF8String:p_label.utf8().get_data()] action:nil keyEquivalent:@""];
+		}
 		[menu setSubmenu:sub_menu forItem:menu_item];
 	}
 }
 
-void DisplayServerOSX::global_menu_add_separator(const String &p_menu_root) {
+void DisplayServerOSX::global_menu_add_separator(const String &p_menu_root, int p_idx) {
 	_THREAD_SAFE_METHOD_
 
 	NSMenu *menu = _get_menu_root(p_menu_root);
 	if (menu) {
-		[menu addItem:[NSMenuItem separatorItem]];
+		if (menu == [NSApp mainMenu]) {
+			return;
+		}
+		if (p_idx != -1) {
+			[menu insertItem:[NSMenuItem separatorItem] atIndex:p_idx];
+		} else {
+			[menu addItem:[NSMenuItem separatorItem]];
+		}
 	}
+}
+
+int DisplayServerOSX::global_menu_get_item_idx_from_text(const String &p_menu_root, const String &p_text) const {
+	_THREAD_SAFE_METHOD_
+
+	const NSMenu *menu = _get_menu_root(p_menu_root);
+	if (menu) {
+		return [menu indexOfItemWithTitle:[NSString stringWithUTF8String:p_text.utf8().get_data()]];
+	}
+
+	return -1;
+}
+
+int DisplayServerOSX::global_menu_get_item_index(const String &p_menu_root, int p_id) const {
+	_THREAD_SAFE_METHOD_
+
+	const NSMenu *menu = _get_menu_root(p_menu_root);
+	if (menu) {
+		return [menu indexOfItemWithTag:p_id];
+	}
+
+	return -1;
 }
 
 bool DisplayServerOSX::global_menu_is_item_checked(const String &p_menu_root, int p_idx) const {
@@ -1765,7 +2207,23 @@ bool DisplayServerOSX::global_menu_is_item_checkable(const String &p_menu_root, 
 		if (menu_item) {
 			GlobalMenuItem *obj = [menu_item representedObject];
 			if (obj) {
-				return obj->checkable;
+				return obj->checkable_type;
+			}
+		}
+	}
+	return false;
+}
+
+bool DisplayServerOSX::global_menu_is_item_radio_checkable(const String &p_menu_root, int p_idx) const {
+	_THREAD_SAFE_METHOD_
+
+	const NSMenu *menu = _get_menu_root(p_menu_root);
+	if (menu) {
+		const NSMenuItem *menu_item = [menu itemAtIndex:p_idx];
+		if (menu_item) {
+			GlobalMenuItem *obj = [menu_item representedObject];
+			if (obj) {
+				return (obj->checkable_type == GlobalMenuCheckType::CHECKABLE_TYPE_RADIO_BUTTON);
 			}
 		}
 	}
@@ -1788,7 +2246,7 @@ Callable DisplayServerOSX::global_menu_get_item_callback(const String &p_menu_ro
 	return Callable();
 }
 
-Variant DisplayServerOSX::global_menu_get_item_tag(const String &p_menu_root, int p_idx) {
+int DisplayServerOSX::global_menu_get_item_id(const String &p_menu_root, int p_idx) {
 	_THREAD_SAFE_METHOD_
 
 	const NSMenu *menu = _get_menu_root(p_menu_root);
@@ -1797,11 +2255,11 @@ Variant DisplayServerOSX::global_menu_get_item_tag(const String &p_menu_root, in
 		if (menu_item) {
 			GlobalMenuItem *obj = [menu_item representedObject];
 			if (obj) {
-				return obj->meta;
+				return obj->id;
 			}
 		}
 	}
-	return Variant();
+	return -1;
 }
 
 String DisplayServerOSX::global_menu_get_item_text(const String &p_menu_root, int p_idx) {
@@ -1840,14 +2298,154 @@ String DisplayServerOSX::global_menu_get_item_submenu(const String &p_menu_root,
 	return String();
 }
 
+uint32_t DisplayServerOSX::global_menu_get_item_accelerator(const String &p_menu_root, int p_idx) {
+	_THREAD_SAFE_METHOD_
+
+	const NSMenu *menu = _get_menu_root(p_menu_root);
+	if (menu) {
+		const NSMenuItem *menu_item = [menu itemAtIndex:p_idx];
+		if (menu_item) {
+			char *utfs = strdup([[menu_item keyEquivalent] UTF8String]);
+			String ret;
+			ret.parse_utf8(utfs);
+			free(utfs);
+			uint32_t keycode = find_keycode(ret);
+			NSUInteger mask = [menu_item keyEquivalentModifierMask];
+			if (mask & NSEventModifierFlagControl) {
+				keycode |= KEY_MASK_CTRL;
+			}
+			if (mask & NSEventModifierFlagOption) {
+				keycode |= KEY_MASK_ALT;
+			}
+			if (mask & NSEventModifierFlagShift) {
+				keycode |= KEY_MASK_SHIFT;
+			}
+			if (mask & NSEventModifierFlagCommand) {
+				keycode |= KEY_MASK_META;
+			}
+			if (mask & NSEventModifierFlagNumericPad) {
+				keycode |= ~KEY_MASK_KPAD;
+			}
+			return keycode;
+		}
+	}
+	return 0;
+}
+
+bool DisplayServerOSX::global_menu_is_item_disabled(const String &p_menu_root, int p_idx) const {
+	_THREAD_SAFE_METHOD_
+
+	const NSMenu *menu = _get_menu_root(p_menu_root);
+	if (menu) {
+		const NSMenuItem *menu_item = [menu itemAtIndex:p_idx];
+		if (menu_item) {
+			return ![menu_item isEnabled];
+		}
+	}
+	return false;
+}
+
+String DisplayServerOSX::global_menu_get_item_tooltip(const String &p_menu_root, int p_idx) {
+	_THREAD_SAFE_METHOD_
+
+	const NSMenu *menu = _get_menu_root(p_menu_root);
+	if (menu) {
+		const NSMenuItem *menu_item = [menu itemAtIndex:p_idx];
+		if (menu_item) {
+			char *utfs = strdup([[menu_item toolTip] UTF8String]);
+			String ret;
+			ret.parse_utf8(utfs);
+			free(utfs);
+			return ret;
+		}
+	}
+	return String();
+}
+int DisplayServerOSX::global_menu_get_item_state(const String &p_menu_root, int p_idx) const {
+	_THREAD_SAFE_METHOD_
+
+	const NSMenu *menu = _get_menu_root(p_menu_root);
+	if (menu) {
+		const NSMenuItem *menu_item = [menu itemAtIndex:p_idx];
+		if (menu_item) {
+			GlobalMenuItem *obj = [menu_item representedObject];
+			if (obj) {
+				return obj->state;
+			}
+		}
+	}
+	return 0;
+}
+
+int DisplayServerOSX::global_menu_get_item_max_states(const String &p_menu_root, int p_idx) const {
+	_THREAD_SAFE_METHOD_
+
+	const NSMenu *menu = _get_menu_root(p_menu_root);
+	if (menu) {
+		const NSMenuItem *menu_item = [menu itemAtIndex:p_idx];
+		if (menu_item) {
+			GlobalMenuItem *obj = [menu_item representedObject];
+			if (obj) {
+				return obj->max_states;
+			}
+		}
+	}
+	return 0;
+}
+
+Variant DisplayServerOSX::global_menu_get_item_metadata(const String &p_menu_root, int p_idx) const {
+	_THREAD_SAFE_METHOD_
+
+	const NSMenu *menu = _get_menu_root(p_menu_root);
+	if (menu) {
+		const NSMenuItem *menu_item = [menu itemAtIndex:p_idx];
+		if (menu_item) {
+			GlobalMenuItem *obj = [menu_item representedObject];
+			if (obj) {
+				return obj->meta;
+			}
+		}
+	}
+	return Variant();
+}
+
+Ref<Texture2D> DisplayServerOSX::global_menu_get_item_icon(const String &p_menu_root, int p_idx) const {
+	_THREAD_SAFE_METHOD_
+
+	const NSMenu *menu = _get_menu_root(p_menu_root);
+	if (menu) {
+		const NSMenuItem *menu_item = [menu itemAtIndex:p_idx];
+		if (menu_item) {
+			GlobalMenuItem *obj = [menu_item representedObject];
+			if (obj) {
+				if (obj->img.is_valid()) {
+					Ref<ImageTexture> txt;
+					txt.instance();
+					txt->create_from_image(obj->img);
+					return txt;
+				}
+			}
+		}
+	}
+	return Ref<Texture2D>();
+}
+
 void DisplayServerOSX::global_menu_set_item_checked(const String &p_menu_root, int p_idx, bool p_checked) {
 	_THREAD_SAFE_METHOD_
 
 	NSMenu *menu = _get_menu_root(p_menu_root);
 	if (menu) {
-		if ((menu == [NSApp mainMenu]) && (p_idx == 0)) { // Do not edit Apple menu.
-			return;
+		if (menu == [NSApp mainMenu]) { // Do not edit "App", "Window" or "Help" menu roots.
+			NSMenuItem *menu_item = [menu itemAtIndex:p_idx];
+			if (!menu_item) {
+				return;
+			}
+			NSMenu *sub_menu = [menu_item submenu];
+			if (sub_menu == apple_menu || sub_menu == window_menu || sub_menu == help_menu) {
+				return;
+			}
 		}
+
 		NSMenuItem *menu_item = [menu itemAtIndex:p_idx];
 		if (menu_item) {
 			if (p_checked) {
@@ -1864,13 +2462,45 @@ void DisplayServerOSX::global_menu_set_item_checkable(const String &p_menu_root,
 
 	NSMenu *menu = _get_menu_root(p_menu_root);
 	if (menu) {
-		if ((menu == [NSApp mainMenu]) && (p_idx == 0)) { // Do not edit Apple menu.
-			return;
+		if (menu == [NSApp mainMenu]) { // Do not edit "App", "Window" or "Help" menu roots.
+			NSMenuItem *menu_item = [menu itemAtIndex:p_idx];
+			if (!menu_item) {
+				return;
+			}
+			NSMenu *sub_menu = [menu_item submenu];
+			if (sub_menu == apple_menu || sub_menu == window_menu || sub_menu == help_menu) {
+				return;
+			}
 		}
+
 		NSMenuItem *menu_item = [menu itemAtIndex:p_idx];
 		if (menu_item) {
 			GlobalMenuItem *obj = [menu_item representedObject];
-			obj->checkable = p_checkable;
+			obj->checkable_type = p_checkable ? GlobalMenuCheckType::CHECKABLE_TYPE_CHECK_BOX : GlobalMenuCheckType::CHECKABLE_TYPE_NONE;
+		}
+	}
+}
+
+void DisplayServerOSX::global_menu_set_item_radio_checkable(const String &p_menu_root, int p_idx, bool p_checkable) {
+	_THREAD_SAFE_METHOD_
+
+	NSMenu *menu = _get_menu_root(p_menu_root);
+	if (menu) {
+		if (menu == [NSApp mainMenu]) { // Do not edit "App", "Window" or "Help" menu roots.
+			NSMenuItem *menu_item = [menu itemAtIndex:p_idx];
+			if (!menu_item) {
+				return;
+			}
+			NSMenu *sub_menu = [menu_item submenu];
+			if (sub_menu == apple_menu || sub_menu == window_menu || sub_menu == help_menu) {
+				return;
+			}
+		}
+
+		NSMenuItem *menu_item = [menu itemAtIndex:p_idx];
+		if (menu_item) {
+			GlobalMenuItem *obj = [menu_item representedObject];
+			obj->checkable_type = p_checkable ? GlobalMenuCheckType::CHECKABLE_TYPE_RADIO_BUTTON : GlobalMenuCheckType::CHECKABLE_TYPE_NONE;
 		}
 	}
 }
@@ -1880,9 +2510,17 @@ void DisplayServerOSX::global_menu_set_item_callback(const String &p_menu_root, 
 
 	NSMenu *menu = _get_menu_root(p_menu_root);
 	if (menu) {
-		if ((menu == [NSApp mainMenu]) && (p_idx == 0)) { // Do not edit Apple menu.
-			return;
+		if (menu == [NSApp mainMenu]) { // Do not edit "App", "Window" or "Help" menu roots.
+			NSMenuItem *menu_item = [menu itemAtIndex:p_idx];
+			if (!menu_item) {
+				return;
+			}
+			NSMenu *sub_menu = [menu_item submenu];
+			if (sub_menu == apple_menu || sub_menu == window_menu || sub_menu == help_menu) {
+				return;
+			}
 		}
+
 		NSMenuItem *menu_item = [menu itemAtIndex:p_idx];
 		if (menu_item) {
 			GlobalMenuItem *obj = [menu_item representedObject];
@@ -1891,18 +2529,27 @@ void DisplayServerOSX::global_menu_set_item_callback(const String &p_menu_root, 
 	}
 }
 
-void DisplayServerOSX::global_menu_set_item_tag(const String &p_menu_root, int p_idx, const Variant &p_tag) {
+void DisplayServerOSX::global_menu_set_item_id(const String &p_menu_root, int p_idx, int p_id) {
 	_THREAD_SAFE_METHOD_
 
 	NSMenu *menu = _get_menu_root(p_menu_root);
 	if (menu) {
-		if ((menu == [NSApp mainMenu]) && (p_idx == 0)) { // Do not edit Apple menu.
-			return;
+		if (menu == [NSApp mainMenu]) { // Do not edit "App", "Window" or "Help" menu roots.
+			NSMenuItem *menu_item = [menu itemAtIndex:p_idx];
+			if (!menu_item) {
+				return;
+			}
+			NSMenu *sub_menu = [menu_item submenu];
+			if (sub_menu == apple_menu || sub_menu == window_menu || sub_menu == help_menu) {
+				return;
+			}
 		}
+
 		NSMenuItem *menu_item = [menu itemAtIndex:p_idx];
 		if (menu_item) {
 			GlobalMenuItem *obj = [menu_item representedObject];
-			obj->meta = p_tag;
+			obj->id = p_id;
+			[menu_item setTag:p_id];
 		}
 	}
 }
@@ -1912,9 +2559,17 @@ void DisplayServerOSX::global_menu_set_item_text(const String &p_menu_root, int 
 
 	NSMenu *menu = _get_menu_root(p_menu_root);
 	if (menu) {
-		if ((menu == [NSApp mainMenu]) && (p_idx == 0)) { // Do not edit Apple menu.
-			return;
+		if (menu == [NSApp mainMenu]) { // Do not edit "App", "Window" or "Help" menu roots.
+			NSMenuItem *menu_item = [menu itemAtIndex:p_idx];
+			if (!menu_item) {
+				return;
+			}
+			NSMenu *sub_menu = [menu_item submenu];
+			if (sub_menu == apple_menu || sub_menu == window_menu || sub_menu == help_menu) {
+				return;
+			}
 		}
+
 		NSMenuItem *menu_item = [menu itemAtIndex:p_idx];
 		if (menu_item) {
 			[menu_item setTitle:[NSString stringWithUTF8String:p_text.utf8().get_data()]];
@@ -1936,12 +2591,197 @@ void DisplayServerOSX::global_menu_set_item_submenu(const String &p_menu_root, i
 			ERR_PRINT("Can't set submenu to menu that is already a submenu of some other menu!");
 			return;
 		}
-		if ((menu == [NSApp mainMenu]) && (p_idx == 0)) { // Do not edit Apple menu.
-			return;
+		if (menu == [NSApp mainMenu]) { // Do not edit "App", "Window" or "Help" menu roots.
+			NSMenuItem *menu_item = [menu itemAtIndex:p_idx];
+			if (!menu_item) {
+				return;
+			}
+			NSMenu *sub_menu = [menu_item submenu];
+			if (sub_menu == apple_menu || sub_menu == window_menu || sub_menu == help_menu) {
+				return;
+			}
 		}
+
 		NSMenuItem *menu_item = [menu itemAtIndex:p_idx];
 		if (menu_item) {
 			[menu setSubmenu:sub_menu forItem:menu_item];
+		}
+	}
+}
+
+void DisplayServerOSX::global_menu_set_item_accelerator(const String &p_menu_root, int p_idx, uint32_t p_keycode) {
+	_THREAD_SAFE_METHOD_
+
+	NSMenu *menu = _get_menu_root(p_menu_root);
+	if (menu) {
+		if (menu == [NSApp mainMenu]) { // Do not edit "App", "Window" or "Help" menu roots.
+			NSMenuItem *menu_item = [menu itemAtIndex:p_idx];
+			if (!menu_item) {
+				return;
+			}
+			NSMenu *sub_menu = [menu_item submenu];
+			if (sub_menu == apple_menu || sub_menu == window_menu || sub_menu == help_menu) {
+				return;
+			}
+		}
+
+		NSMenuItem *menu_item = [menu itemAtIndex:p_idx];
+		if (menu_item) {
+			[menu_item setKeyEquivalentModifierMask:_keycode_get_native_mask(p_keycode)];
+			String keycode = _keycode_get_native_string(p_keycode & KEY_CODE_MASK);
+			[menu_item setKeyEquivalent:[NSString stringWithUTF8String:keycode.utf8().get_data()]];
+		}
+	}
+}
+
+void DisplayServerOSX::global_menu_set_item_disabled(const String &p_menu_root, int p_idx, bool p_disabled) {
+	_THREAD_SAFE_METHOD_
+
+	NSMenu *menu = _get_menu_root(p_menu_root);
+	if (menu) {
+		if (menu == [NSApp mainMenu]) { // Do not edit "App", "Window" or "Help" menu roots.
+			NSMenuItem *menu_item = [menu itemAtIndex:p_idx];
+			if (!menu_item) {
+				return;
+			}
+			NSMenu *sub_menu = [menu_item submenu];
+			if (sub_menu == apple_menu || sub_menu == window_menu || sub_menu == help_menu) {
+				return;
+			}
+		}
+
+		NSMenuItem *menu_item = [menu itemAtIndex:p_idx];
+		if (menu_item) {
+			[menu_item setEnabled:(!p_disabled)];
+		}
+	}
+}
+
+void DisplayServerOSX::global_menu_set_item_tooltip(const String &p_menu_root, int p_idx, const String &p_tooltip) {
+	_THREAD_SAFE_METHOD_
+
+	NSMenu *menu = _get_menu_root(p_menu_root);
+	if (menu) {
+		if (menu == [NSApp mainMenu]) { // Do not edit "App", "Window" or "Help" menu roots.
+			NSMenuItem *menu_item = [menu itemAtIndex:p_idx];
+			if (!menu_item) {
+				return;
+			}
+			NSMenu *sub_menu = [menu_item submenu];
+			if (sub_menu == apple_menu || sub_menu == window_menu || sub_menu == help_menu) {
+				return;
+			}
+		}
+
+		NSMenuItem *menu_item = [menu itemAtIndex:p_idx];
+		if (menu_item) {
+			[menu_item setToolTip:[NSString stringWithUTF8String:p_tooltip.utf8().get_data()]];
+		}
+	}
+}
+void DisplayServerOSX::global_menu_set_item_state(const String &p_menu_root, int p_idx, int p_state) {
+	_THREAD_SAFE_METHOD_
+
+	NSMenu *menu = _get_menu_root(p_menu_root);
+	if (menu) {
+		if (menu == [NSApp mainMenu]) { // Do not edit "App", "Window" or "Help" menu roots.
+			NSMenuItem *menu_item = [menu itemAtIndex:p_idx];
+			if (!menu_item) {
+				return;
+			}
+			NSMenu *sub_menu = [menu_item submenu];
+			if (sub_menu == apple_menu || sub_menu == window_menu || sub_menu == help_menu) {
+				return;
+			}
+		}
+
+		NSMenuItem *menu_item = [menu itemAtIndex:p_idx];
+		if (menu_item) {
+			GlobalMenuItem *obj = [menu_item representedObject];
+			obj->state = p_state;
+		}
+	}
+}
+
+void DisplayServerOSX::global_menu_set_item_max_states(const String &p_menu_root, int p_idx, int p_max_states) {
+	_THREAD_SAFE_METHOD_
+
+	NSMenu *menu = _get_menu_root(p_menu_root);
+	if (menu) {
+		if (menu == [NSApp mainMenu]) { // Do not edit "App", "Window" or "Help" menu roots.
+			NSMenuItem *menu_item = [menu itemAtIndex:p_idx];
+			if (!menu_item) {
+				return;
+			}
+			NSMenu *sub_menu = [menu_item submenu];
+			if (sub_menu == apple_menu || sub_menu == window_menu || sub_menu == help_menu) {
+				return;
+			}
+		}
+
+		NSMenuItem *menu_item = [menu itemAtIndex:p_idx];
+		if (menu_item) {
+			GlobalMenuItem *obj = [menu_item representedObject];
+			obj->max_states = p_max_states;
+		}
+	}
+}
+
+void DisplayServerOSX::global_menu_set_item_metadata(const String &p_menu_root, int p_idx, const Variant &p_meta) {
+	_THREAD_SAFE_METHOD_
+
+	NSMenu *menu = _get_menu_root(p_menu_root);
+	if (menu) {
+		if (menu == [NSApp mainMenu]) { // Do not edit "App", "Window" or "Help" menu roots.
+			NSMenuItem *menu_item = [menu itemAtIndex:p_idx];
+			if (!menu_item) {
+				return;
+			}
+			NSMenu *sub_menu = [menu_item submenu];
+			if (sub_menu == apple_menu || sub_menu == window_menu || sub_menu == help_menu) {
+				return;
+			}
+		}
+
+		NSMenuItem *menu_item = [menu itemAtIndex:p_idx];
+		if (menu_item) {
+			GlobalMenuItem *obj = [menu_item representedObject];
+			obj->meta = p_meta;
+		}
+	}
+}
+
+void DisplayServerOSX::global_menu_set_item_icon(const String &p_menu_root, int p_idx, const Ref<Texture2D> &p_icon) {
+	_THREAD_SAFE_METHOD_
+
+	NSMenu *menu = _get_menu_root(p_menu_root);
+	if (menu) {
+		if (menu == [NSApp mainMenu]) { // Do not edit "App", "Window" or "Help" menu roots.
+			NSMenuItem *menu_item = [menu itemAtIndex:p_idx];
+			if (!menu_item) {
+				return;
+			}
+			NSMenu *sub_menu = [menu_item submenu];
+			if (sub_menu == apple_menu || sub_menu == window_menu || sub_menu == help_menu) {
+				return;
+			}
+		}
+
+		NSMenuItem *menu_item = [menu itemAtIndex:p_idx];
+		if (menu_item) {
+			GlobalMenuItem *obj = [menu_item representedObject];
+			if (p_icon.is_valid()) {
+				obj->img = p_icon->get_image();
+				obj->img = obj->img->duplicate();
+				if (obj->img->is_compressed()) {
+					obj->img->decompress();
+				}
+				obj->img->resize(16, 16, Image::INTERPOLATE_LANCZOS);
+				[menu_item setImage:_convert_to_nsimg(obj->img)];
+			} else {
+				obj->img = Ref<Image>();
+				[menu_item setImage:nil];
+			}
 		}
 	}
 }
@@ -1962,23 +2802,90 @@ void DisplayServerOSX::global_menu_remove_item(const String &p_menu_root, int p_
 
 	NSMenu *menu = _get_menu_root(p_menu_root);
 	if (menu) {
-		if ((menu == [NSApp mainMenu]) && (p_idx == 0)) { // Do not delete Apple menu.
-			return;
+		if (menu == [NSApp mainMenu]) { // Do not delete "App", "Window" or "Help" menu.
+			NSMenuItem *menu_item = [menu itemAtIndex:p_idx];
+			if (!menu_item) {
+				return;
+			}
+			NSMenu *sub_menu = [menu_item submenu];
+			if (sub_menu == apple_menu || sub_menu == window_menu || sub_menu == help_menu) {
+				return;
+			}
 		}
 		[menu removeItemAtIndex:p_idx];
 	}
 }
 
-void DisplayServerOSX::global_menu_clear(const String &p_menu_root) {
+void DisplayServerOSX::_fill_apple_menu() {
+	NSString *nsappname = [[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleName"];
+	if (nsappname == nil) {
+		nsappname = [[NSProcessInfo processInfo] processName];
+	}
+
+	NSString *title = [NSString stringWithFormat:NSLocalizedString(@"About %@", nil), nsappname];
+	[apple_menu addItemWithTitle:title action:@selector(showAbout:) keyEquivalent:@""];
+
+	[apple_menu addItem:[NSMenuItem separatorItem]];
+
+	NSMenu *services = [[NSMenu alloc] initWithTitle:@""];
+	NSMenuItem *menu_item = [apple_menu addItemWithTitle:NSLocalizedString(@"Services", nil) action:nil keyEquivalent:@""];
+	[apple_menu setSubmenu:services forItem:menu_item];
+	[NSApp setServicesMenu:services];
+	[services release];
+
+	[apple_menu addItem:[NSMenuItem separatorItem]];
+
+	title = [NSString stringWithFormat:NSLocalizedString(@"Hide %@", nil), nsappname];
+	[apple_menu addItemWithTitle:title action:@selector(hide:) keyEquivalent:@"h"];
+
+	menu_item = [apple_menu addItemWithTitle:NSLocalizedString(@"Hide Others", nil) action:@selector(hideOtherApplications:) keyEquivalent:@"h"];
+	[menu_item setKeyEquivalentModifierMask:(NSEventModifierFlagOption | NSEventModifierFlagCommand)];
+
+	[apple_menu addItemWithTitle:NSLocalizedString(@"Show all", nil) action:@selector(unhideAllApplications:) keyEquivalent:@""];
+
+	[apple_menu addItem:[NSMenuItem separatorItem]];
+
+	title = [NSString stringWithFormat:NSLocalizedString(@"Quit %@", nil), nsappname];
+	[apple_menu addItemWithTitle:title action:@selector(terminate:) keyEquivalent:@"q"];
+}
+
+void DisplayServerOSX::_fill_window_menu() {
+	[window_menu addItemWithTitle:NSLocalizedString(@"Minimize", nil) action:@selector(miniaturize:) keyEquivalent:@"m"];
+	[window_menu addItemWithTitle:NSLocalizedString(@"Zoom", nil) action:@selector(performZoom:) keyEquivalent:@""];
+	[window_menu addItemWithTitle:NSLocalizedString(@"Close", nil) action:@selector(performClose:) keyEquivalent:@"w"];
+	[window_menu addItem:[NSMenuItem separatorItem]];
+	[window_menu addItemWithTitle:NSLocalizedString(@"Bring All to Front", nil) action:@selector(arrangeInFront:) keyEquivalent:@""];
+	[window_menu addItem:[NSMenuItem separatorItem]];
+}
+
+void DisplayServerOSX::_fill_help_menu() {
+	// Reserved.
+}
+
+void DisplayServerOSX::global_menu_clear(const String &p_menu_root, bool p_restore_default) {
 	_THREAD_SAFE_METHOD_
 
 	NSMenu *menu = _get_menu_root(p_menu_root);
 	if (menu) {
 		[menu removeAllItems];
-		// Restore Apple menu.
-		if (menu == [NSApp mainMenu]) {
-			NSMenuItem *menu_item = [menu addItemWithTitle:@"" action:nil keyEquivalent:@""];
-			[menu setSubmenu:apple_menu forItem:menu_item];
+		if (p_restore_default) {
+			// Restore "App", "Window" and "Help" menu default items.
+			if (menu == apple_menu) {
+				_fill_apple_menu();
+			} else if (menu == window_menu) {
+				_fill_window_menu();
+			} else if (menu == help_menu) {
+				_fill_help_menu();
+			} else if (menu == [NSApp mainMenu]) {
+				NSMenuItem *menu_item = [menu addItemWithTitle:@"" action:nil keyEquivalent:@""];
+				[menu setSubmenu:apple_menu forItem:menu_item];
+
+				menu_item = [menu addItemWithTitle:NSLocalizedString(@"Window", nil) action:nil keyEquivalent:@""];
+				[menu setSubmenu:window_menu forItem:menu_item];
+
+				menu_item = [menu addItemWithTitle:NSLocalizedString(@"Help", nil) action:nil keyEquivalent:@""];
+				[menu setSubmenu:help_menu forItem:menu_item];
+			}
 		}
 	}
 }
@@ -3808,49 +4715,38 @@ DisplayServerOSX::DisplayServerOSX(const String &p_rendering_driver, WindowMode 
 	// finishLaunching below, in order to properly emulate the behavior
 	// of NSApplicationMain
 	NSMenuItem *menu_item;
-	NSString *title;
-
-	NSString *nsappname = [[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleName"];
-	if (nsappname == nil) {
-		nsappname = [[NSProcessInfo processInfo] processName];
-	}
 
 	// Setup Dock menu
 	dock_menu = [[NSMenu alloc] initWithTitle:@"_dock"];
+	[dock_menu setAutoenablesItems:NO];
 
 	// Setup Apple menu
 	apple_menu = [[[NSMenu alloc] initWithTitle:@""] autorelease];
-	title = [NSString stringWithFormat:NSLocalizedString(@"About %@", nil), nsappname];
-	[apple_menu addItemWithTitle:title action:@selector(showAbout:) keyEquivalent:@""];
-
-	[apple_menu addItem:[NSMenuItem separatorItem]];
-
-	NSMenu *services = [[NSMenu alloc] initWithTitle:@""];
-	menu_item = [apple_menu addItemWithTitle:NSLocalizedString(@"Services", nil) action:nil keyEquivalent:@""];
-	[apple_menu setSubmenu:services forItem:menu_item];
-	[NSApp setServicesMenu:services];
-	[services release];
-
-	[apple_menu addItem:[NSMenuItem separatorItem]];
-
-	title = [NSString stringWithFormat:NSLocalizedString(@"Hide %@", nil), nsappname];
-	[apple_menu addItemWithTitle:title action:@selector(hide:) keyEquivalent:@"h"];
-
-	menu_item = [apple_menu addItemWithTitle:NSLocalizedString(@"Hide Others", nil) action:@selector(hideOtherApplications:) keyEquivalent:@"h"];
-	[menu_item setKeyEquivalentModifierMask:(NSEventModifierFlagOption | NSEventModifierFlagCommand)];
-
-	[apple_menu addItemWithTitle:NSLocalizedString(@"Show all", nil) action:@selector(unhideAllApplications:) keyEquivalent:@""];
-
-	[apple_menu addItem:[NSMenuItem separatorItem]];
-
-	title = [NSString stringWithFormat:NSLocalizedString(@"Quit %@", nil), nsappname];
-	[apple_menu addItemWithTitle:title action:@selector(terminate:) keyEquivalent:@"q"];
+	[apple_menu setAutoenablesItems:NO];
+	_fill_apple_menu();
 
 	// Setup menu bar
 	NSMenu *main_menu = [[[NSMenu alloc] initWithTitle:@""] autorelease];
+	[main_menu setAutoenablesItems:NO];
 	menu_item = [main_menu addItemWithTitle:@"" action:nil keyEquivalent:@""];
 	[main_menu setSubmenu:apple_menu forItem:menu_item];
 	[NSApp setMainMenu:main_menu];
+
+	window_menu = [[[NSMenu alloc] initWithTitle:NSLocalizedString(@"Window", nil)] autorelease];
+	[window_menu setAutoenablesItems:NO];
+	_fill_window_menu();
+
+	menu_item = [main_menu addItemWithTitle:NSLocalizedString(@"Window", nil) action:nil keyEquivalent:@""];
+	[main_menu setSubmenu:window_menu forItem:menu_item];
+	[NSApp setWindowsMenu:window_menu];
+
+	help_menu = [[[NSMenu alloc] initWithTitle:NSLocalizedString(@"Help", nil)] autorelease];
+	[help_menu setAutoenablesItems:NO];
+	_fill_help_menu();
+
+	menu_item = [main_menu addItemWithTitle:NSLocalizedString(@"Help", nil) action:nil keyEquivalent:@""];
+	[main_menu setSubmenu:help_menu forItem:menu_item];
+	[NSApp setHelpMenu:help_menu];
 
 	[NSApp finishLaunching];
 
