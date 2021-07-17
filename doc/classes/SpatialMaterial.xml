@@ -364,7 +364,7 @@
 		<member name="uv1_triplanar" type="bool" setter="set_flag" getter="get_flag" default="false">
 			If [code]true[/code], instead of using [code]UV[/code] textures will use a triplanar texture lookup to determine how to apply textures. Triplanar uses the orientation of the object's surface to blend between texture coordinates. It reads from the source texture 3 times, once for each axis and then blends between the results based on how closely the pixel aligns with each axis. This is often used for natural features to get a realistic blend of materials. Because triplanar texturing requires many more texture reads per-pixel it is much slower than normal UV texturing. Additionally, because it is blending the texture between the three axes, it is unsuitable when you are trying to achieve crisp texturing.
 		</member>
-		<member name="uv1_triplanar_sharpness" type="float" setter="set_uv1_triplanar_blend_sharpness" getter="get_uv1_triplanar_blend_sharpness" default="1.0">
+		<member name="uv1_triplanar_sharpness" type="float" setter="set_uv1_triplanar_blend_sharpness" getter="get_uv1_triplanar_blend_sharpness">
 			A lower number blends the texture more softly while a higher number blends the texture more sharply.
 		</member>
 		<member name="uv2_offset" type="Vector3" setter="set_uv2_offset" getter="get_uv2_offset" default="Vector3( 0, 0, 0 )">
@@ -376,7 +376,7 @@
 		<member name="uv2_triplanar" type="bool" setter="set_flag" getter="get_flag" default="false">
 			If [code]true[/code], instead of using [code]UV2[/code] textures will use a triplanar texture lookup to determine how to apply textures. Triplanar uses the orientation of the object's surface to blend between texture coordinates. It reads from the source texture 3 times, once for each axis and then blends between the results based on how closely the pixel aligns with each axis. This is often used for natural features to get a realistic blend of materials. Because triplanar texturing requires many more texture reads per-pixel it is much slower than normal UV texturing. Additionally, because it is blending the texture between the three axes, it is unsuitable when you are trying to achieve crisp texturing.
 		</member>
-		<member name="uv2_triplanar_sharpness" type="float" setter="set_uv2_triplanar_blend_sharpness" getter="get_uv2_triplanar_blend_sharpness" default="1.0">
+		<member name="uv2_triplanar_sharpness" type="float" setter="set_uv2_triplanar_blend_sharpness" getter="get_uv2_triplanar_blend_sharpness">
 			A lower number blends the texture more softly while a higher number blends the texture more sharply.
 		</member>
 		<member name="vertex_color_is_srgb" type="bool" setter="set_flag" getter="get_flag" default="false">
