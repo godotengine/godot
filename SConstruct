@@ -506,13 +506,17 @@ if selected_platform in platform_list:
         if env["werror"]:
             env.Append(CCFLAGS=["/WX"])
     else:  # GCC, Clang
-        gcc_common_warnings = []
+        common_warnings = []
 
         if methods.using_gcc(env):
-            gcc_common_warnings += ["-Wshadow-local", "-Wno-misleading-indentation"]
+            common_warnings += ["-Wshadow-local", "-Wno-misleading-indentation"]
+        elif methods.using_clang(env) or methods.using_emcc(env):
+            # We often implement `operator<` for structs of pointers as a requirement
+            # for putting them in `Set` or `Map`. We don't mind about unreliable ordering.
+            common_warnings += ["-Wno-ordered-compare-function-pointers"]
 
         if env["warnings"] == "extra":
-            env.Append(CCFLAGS=["-Wall", "-Wextra", "-Wwrite-strings", "-Wno-unused-parameter"] + gcc_common_warnings)
+            env.Append(CCFLAGS=["-Wall", "-Wextra", "-Wwrite-strings", "-Wno-unused-parameter"] + common_warnings)
             env.Append(CXXFLAGS=["-Wctor-dtor-privacy", "-Wnon-virtual-dtor"])
             if methods.using_gcc(env):
                 env.Append(
@@ -528,12 +532,12 @@ if selected_platform in platform_list:
                 env.Append(CXXFLAGS=["-Wplacement-new=1"])
                 if cc_version_major >= 9:
                     env.Append(CCFLAGS=["-Wattribute-alias=2"])
-            elif methods.using_clang(env):
+            elif methods.using_clang(env) or methods.using_emcc(env):
                 env.Append(CCFLAGS=["-Wimplicit-fallthrough"])
         elif env["warnings"] == "all":
-            env.Append(CCFLAGS=["-Wall"] + gcc_common_warnings)
+            env.Append(CCFLAGS=["-Wall"] + common_warnings)
         elif env["warnings"] == "moderate":
-            env.Append(CCFLAGS=["-Wall", "-Wno-unused"] + gcc_common_warnings)
+            env.Append(CCFLAGS=["-Wall", "-Wno-unused"] + common_warnings)
         else:  # 'no'
             env.Append(CCFLAGS=["-w"])
 
@@ -544,7 +548,7 @@ if selected_platform in platform_list:
                 env.Append(CXXFLAGS=["-Wno-error=cpp"])
                 if cc_version_major == 7:  # Bogus warning fixed in 8+.
                     env.Append(CCFLAGS=["-Wno-error=strict-overflow"])
-            else:
+            elif methods.using_clang(env) or methods.using_emcc(env):
                 env.Append(CXXFLAGS=["-Wno-error=#warnings"])
         else:  # always enable those errors
             env.Append(CCFLAGS=["-Werror=return-type"])
