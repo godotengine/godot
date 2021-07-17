@@ -34,84 +34,100 @@
 #include "editor/editor_plugin.h"
 #include "editor/editor_vcs_interface.h"
 #include "scene/gui/container.h"
+#include "scene/gui/menu_button.h"
 #include "scene/gui/rich_text_label.h"
+#include "scene/gui/tab_container.h"
 #include "scene/gui/text_edit.h"
+#include "scene/gui/tool_button.h"
 #include "scene/gui/tree.h"
 
 class VersionControlEditorPlugin : public EditorPlugin {
 	GDCLASS(VersionControlEditorPlugin, EditorPlugin)
 
 public:
-	enum ChangeType {
+	enum ButtonType {
+		BUTTON_TYPE_OPEN = 0,
+		BUTTON_TYPE_DISCARD = 1,
+	};
 
-		CHANGE_TYPE_NEW = 0,
-		CHANGE_TYPE_MODIFIED = 1,
-		CHANGE_TYPE_RENAMED = 2,
-		CHANGE_TYPE_DELETED = 3,
-		CHANGE_TYPE_TYPECHANGE = 4
+	enum DiffViewType {
+		DIFF_VIEW_TYPE_SPLIT = 0,
+		DIFF_VIEW_TYPE_UNIFIED = 1,
 	};
 
 private:
 	static VersionControlEditorPlugin *singleton;
 
-	int staged_files_count;
 	List<StringName> available_addons;
 
 	PopupMenu *version_control_actions;
 	AcceptDialog *set_up_dialog;
-	VBoxContainer *set_up_vbc;
-	HBoxContainer *set_up_hbc;
-	Label *set_up_vcs_label;
 	OptionButton *set_up_choice;
 	PanelContainer *set_up_init_settings;
 	Button *set_up_init_button;
-	RichTextLabel *set_up_vcs_status;
-	Button *set_up_ok_button;
+	LineEdit *set_up_username;
+	LineEdit *set_up_password;
 
-	HashMap<ChangeType, String> change_type_to_strings;
-	HashMap<ChangeType, Color> change_type_to_color;
+	HashMap<EditorVCSInterface::ChangeType, String> change_type_to_strings;
+	HashMap<EditorVCSInterface::ChangeType, Color> change_type_to_color;
+	HashMap<EditorVCSInterface::ChangeType, Ref<Texture>> change_type_to_icon;
 
+	TabContainer *dock_vbc;
 	VBoxContainer *version_commit_dock;
-	VBoxContainer *commit_box_vbc;
-	HSplitContainer *stage_tools;
-	Tree *stage_files;
-	TreeItem *new_files;
-	TreeItem *modified_files;
-	TreeItem *renamed_files;
-	TreeItem *deleted_files;
-	TreeItem *typechange_files;
-	Label *staging_area_label;
-	HSplitContainer *stage_buttons;
-	Button *stage_all_button;
-	Button *stage_selected_button;
-	Button *refresh_button;
+	Tree *staged_files;
+	Tree *unstaged_files;
+	Tree *commit_list;
+
+	OptionButton *branch_select;
+
+	ToolButton *fetch_button;
+	ToolButton *pull_button;
+	ToolButton *push_button;
+
+	ToolButton *stage_all_button;
+	ToolButton *unstage_all_button;
+	ToolButton *discard_all_button;
+	ToolButton *refresh_button;
 	TextEdit *commit_message;
 	Button *commit_button;
-	Label *commit_status;
 
-	PanelContainer *version_control_dock;
+	VBoxContainer *version_control_dock;
 	ToolButton *version_control_dock_button;
-	VBoxContainer *diff_vbc;
-	HBoxContainer *diff_hbc;
-	Button *diff_refresh_button;
-	Label *diff_file_name;
-	Label *diff_heading;
+	Label *diff_title;
 	RichTextLabel *diff;
+	OptionButton *diff_view_type_select;
+	List<EditorVCSInterface::DiffFile> diff_content;
 
-	void _populate_available_vcs_names();
-	void _selected_a_vcs(int p_id);
+	void _notification(int p_what);
 	void _initialize_vcs();
-	void _send_commit_msg();
+	void _selected_a_vcs(int p_id);
+	void _populate_available_vcs_names();
+	bool _load_addon(String p_path);
+	void _set_up();
+	void _set_credentials();
+	void _update_opened_tabs();
+
+	void _pull();
+	void _push();
+	void _fetch();
+	void _commit();
+	void _discard_all();
 	void _refresh_stage_area();
-	void _stage_selected();
-	void _stage_all();
-	void _view_file_diff();
-	void _display_file_diff(String p_file_path);
-	void _refresh_file_diff();
-	void _clear_file_diff();
-	void _update_stage_status();
-	void _update_commit_status();
-	void _update_commit_button();
+	void _refresh_branch_list();
+	void _refresh_commit_list();
+	void _display_diff(int idx);
+	void _move_all(Object *p_tree);
+	void _load_diff(Object *p_tree);
+	void _clear_diff();
+	int _get_item_count(Tree *p_tree);
+	void _item_activated(Object *p_tree);
+	void _branch_item_selected(int index);
+	void _move_item(Tree *p_tree, TreeItem *p_itme);
+	void _display_diff_split_view(List<EditorVCSInterface::DiffLine> &p_diff_content);
+	void _display_diff_unified_view(List<EditorVCSInterface::DiffLine> &p_diff_content);
+	void _discard_file(String p_file_path, EditorVCSInterface::ChangeType change);
+	void _cell_button_pressed(Object *p_item, int column, int id);
+	void _add_new_item(Tree *p_tree, String p_file_path, EditorVCSInterface::ChangeType change);
 
 	friend class EditorVCSInterface;
 
@@ -126,7 +142,7 @@ public:
 
 	PopupMenu *get_version_control_actions_panel() const { return version_control_actions; }
 	VBoxContainer *get_version_commit_dock() const { return version_commit_dock; }
-	PanelContainer *get_version_control_dock() const { return version_control_dock; }
+	VBoxContainer *get_version_control_dock() const { return version_control_dock; }
 
 	List<StringName> get_available_vcs_names() const { return available_addons; }
 	bool is_vcs_initialized() const;
@@ -134,13 +150,10 @@ public:
 
 	void register_editor();
 	void fetch_available_vcs_addon_names();
-	void clear_stage_area();
 	void shut_down();
 
 	VersionControlEditorPlugin();
 	~VersionControlEditorPlugin();
 };
-
-VARIANT_ENUM_CAST(VersionControlEditorPlugin::ChangeType);
 
 #endif // !VERSION_CONTROL_EDITOR_PLUGIN_H
