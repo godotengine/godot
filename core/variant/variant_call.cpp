@@ -708,6 +708,7 @@ struct _VariantCall {
 		const uint8_t *r = p_instance->ptr();
 		return decode_float(&r[p_offset]);
 	}
+
 	static double func_PackedByteArray_decode_double(PackedByteArray *p_instance, int64_t p_offset) {
 		uint64_t size = p_instance->size();
 		ERR_FAIL_COND_V(p_offset < 0 || p_offset > (int64_t(size) - 8), 0);
@@ -723,6 +724,7 @@ struct _VariantCall {
 		Error err = decode_variant(ret, r + p_offset, size - p_offset, nullptr, p_allow_objects);
 		return err == OK;
 	}
+
 	static Variant func_PackedByteArray_decode_var(PackedByteArray *p_instance, int64_t p_offset, bool p_allow_objects) {
 		uint64_t size = p_instance->size();
 		ERR_FAIL_COND_V(p_offset < 0, Variant());
@@ -734,6 +736,7 @@ struct _VariantCall {
 		}
 		return ret;
 	}
+
 	static int64_t func_PackedByteArray_decode_var_size(PackedByteArray *p_instance, int64_t p_offset, bool p_allow_objects) {
 		uint64_t size = p_instance->size();
 		ERR_FAIL_COND_V(p_offset < 0, 0);
@@ -755,6 +758,7 @@ struct _VariantCall {
 		std::memcpy(dest.ptrw(), r, size);
 		return dest;
 	}
+
 	static PackedInt64Array func_PackedByteArray_decode_s64_array(PackedByteArray *p_instance) {
 		uint64_t size = p_instance->size();
 		const uint8_t *r = p_instance->ptr();
@@ -763,6 +767,7 @@ struct _VariantCall {
 		std::memcpy(dest.ptrw(), r, size);
 		return dest;
 	}
+
 	static PackedFloat32Array func_PackedByteArray_decode_float_array(PackedByteArray *p_instance) {
 		uint64_t size = p_instance->size();
 		const uint8_t *r = p_instance->ptr();
@@ -771,6 +776,7 @@ struct _VariantCall {
 		std::memcpy(dest.ptrw(), r, size);
 		return dest;
 	}
+
 	static PackedFloat64Array func_PackedByteArray_decode_double_array(PackedByteArray *p_instance) {
 		uint64_t size = p_instance->size();
 		const uint8_t *r = p_instance->ptr();
