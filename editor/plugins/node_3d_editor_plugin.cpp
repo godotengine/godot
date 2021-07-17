@@ -2566,7 +2566,8 @@ void Node3DEditorViewport::_notification(int p_what) {
 				cpu_time += cpu_time_history[i];
 			}
 			cpu_time /= FRAME_TIME_HISTORY;
-			// Prevent unrealistically low values.
+			// Prevent division by zero for the FPS counter (and unrealistically low values).
+			// This limits the reported FPS to 100000.
 			cpu_time = MAX(0.01, cpu_time);
 
 			gpu_time_history[gpu_time_history_index] = RS::get_singleton()->viewport_get_measured_render_time_gpu(viewport->get_viewport_rid());
@@ -2595,7 +2596,10 @@ void Node3DEditorViewport::_notification(int p_what) {
 					frame_time_gradient->get_color_at_offset(
 							Math::range_lerp(gpu_time, 0, 30, 0, 1)));
 
-			const float fps = 1000.0 / gpu_time;
+			// Tasks may run in parallel on both the CPU and GPU. Estimating the FPS
+			// is best done by using the highest measure of both,
+			// rather than summing both values (which assumes that nothing runs in parallel).
+			const float fps = 1000.0 / MAX(cpu_time, gpu_time);
 			fps_label->set_text(vformat(TTR("FPS: %d"), fps));
 			// Middle point is at 60 FPS.
 			fps_label->add_theme_color_override(
