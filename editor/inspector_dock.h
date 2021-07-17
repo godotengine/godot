@@ -82,9 +82,11 @@ class InspectorDock : public VBoxContainer {
 	ToolButton *resource_new_button;
 	ToolButton *resource_load_button;
 	MenuButton *resource_save_button;
+	MenuButton *resource_extra_button;
 	MenuButton *history_menu;
 	LineEdit *search;
 
+	Button *open_docs_button;
 	MenuButton *object_menu;
 	EditorPath *editor_path;
 
