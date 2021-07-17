@@ -1273,6 +1273,10 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme_preview_picker_sb->set_border_color(accent_color);
 	theme_preview_picker_sb->set_border_width_all(1.0 * EDSCALE);
 	theme->set_stylebox("preview_picker_overlay", "ThemeEditor", theme_preview_picker_sb);
+	Color theme_preview_picker_label_bg_color = accent_color;
+	theme_preview_picker_label_bg_color.set_hsv(theme_preview_picker_label_bg_color.get_h(), theme_preview_picker_label_bg_color.get_s(), 0.5);
+	Ref<StyleBoxFlat> theme_preview_picker_label_sb = make_flat_stylebox(theme_preview_picker_label_bg_color, 4.0, 1.0, 4.0, 3.0);
+	theme->set_stylebox("preview_picker_label", "ThemeEditor", theme_preview_picker_label_sb);
 
 	// adaptive script theme constants
 	// for comments and elements with lower relevance

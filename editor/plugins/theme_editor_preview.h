@@ -60,6 +60,13 @@ class ThemeEditorPreview : public VBoxContainer {
 	Control *picker_overlay;
 	Control *hovered_control = nullptr;
 
+	struct ThemeCache {
+		Ref<StyleBox> preview_picker_overlay;
+		Color preview_picker_overlay_color;
+		Ref<StyleBox> preview_picker_label;
+		Ref<Font> preview_picker_font;
+	} theme_cache;
+
 	double time_left = 0;
 
 	void _propagate_redraw(Control *p_at);
@@ -71,6 +78,7 @@ class ThemeEditorPreview : public VBoxContainer {
 
 	void _draw_picker_overlay();
 	void _gui_input_picker_overlay(const Ref<InputEvent> &p_event);
+	void _reset_picker_overlay();
 
 protected:
 	HBoxContainer *preview_toolbar;
