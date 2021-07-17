@@ -35,6 +35,7 @@
 #include "core/os/os.h"
 #include "emscripten.h"
 #include "godot_webxr.h"
+#include "servers/rendering/renderer_compositor.h"
 #include <stdlib.h>
 
 void _emwebxr_on_session_supported(char *p_session_mode, int p_supported) {
@@ -376,6 +377,22 @@ void WebXRInterfaceJS::commit_for_eye(XRInterface::Eyes p_eye, RID p_render_targ
 		return;
 	}
 	godot_webxr_commit_for_eye(p_eye);
+}
+
+Vector<BlitToScreen> WebXRInterfaceJS::commit_views(RID p_render_target, const Rect2 &p_screen_rect) {
+	Vector<BlitToScreen> blit_to_screen;
+
+	if (!initialized) {
+		return blit_to_screen;
+	}
+
+	// @todo Refactor this to be based on "views" rather than "eyes".
+	godot_webxr_commit_for_eye(XRInterface::EYE_LEFT);
+	if (godot_webxr_get_view_count() > 1) {
+		godot_webxr_commit_for_eye(XRInterface::EYE_RIGHT);
+	}
+
+	return blit_to_screen;
 };
 
 void WebXRInterfaceJS::process() {
