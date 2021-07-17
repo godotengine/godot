@@ -921,6 +921,10 @@ void VisualShaderGraphPlugin::add_node(VisualShader::Type p_type, int p_id) {
 		expression_box->add_comment_delimiter("/*", "*/", false);
 		expression_box->add_comment_delimiter("//", "", true);
 
+		if (!expression_box->has_auto_brace_completion_open_key("/*")) {
+			expression_box->add_auto_brace_completion_pair("/*", "*/");
+		}
+
 		expression_box->set_text(expression);
 		expression_box->set_context_menu_enabled(false);
 		expression_box->set_draw_line_numbers(true);
@@ -3949,7 +3953,7 @@ VisualShaderEditor::VisualShaderEditor() {
 	preview_text->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	preview_text->set_syntax_highlighter(syntax_highlighter);
 	preview_text->set_draw_line_numbers(true);
-	preview_text->set_readonly(true);
+	preview_text->set_editable(false);
 
 	error_panel = memnew(PanelContainer);
 	preview_vbox->add_child(error_panel);

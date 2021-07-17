@@ -51,7 +51,7 @@ void EditorNativeShaderSourceVisualizer::_inspect_shader(RID p_shader) {
 		versions->add_child(vtab);
 		for (int j = 0; j < nsc.versions[i].stages.size(); j++) {
 			TextEdit *vtext = memnew(TextEdit);
-			vtext->set_readonly(true);
+			vtext->set_editable(false);
 			vtext->set_name(nsc.versions[i].stages[j].name);
 			vtext->set_text(nsc.versions[i].stages[j].code);
 			vtext->set_v_size_flags(Control::SIZE_EXPAND_FILL);

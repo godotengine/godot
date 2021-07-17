@@ -129,4 +129,129 @@ int register_test_command(String p_command, TestFunc p_function);
 			register_test_command(m_command, m_function);               \
 	DOCTEST_GLOBAL_NO_WARNINGS_END()
 
+// Utility macro to send an action event to a given object
+// Requires Message Queue and InputMap to be setup.
+
+#define SEND_GUI_ACTION(m_object, m_action)                                                           \
+	{                                                                                                 \
+		const List<Ref<InputEvent>> *events = InputMap::get_singleton()->action_get_events(m_action); \
+		const List<Ref<InputEvent>>::Element *first_event = events->front();                          \
+		Ref<InputEventKey> event = first_event->get();                                                \
+		event->set_pressed(true);                                                                     \
+		m_object->call("_gui_input", event);                                                          \
+		MessageQueue::get_singleton()->flush();                                                       \
+	}
+
+// Utility class / macros for testing signals
+//
+// Use SIGNAL_WATCH(*object, "signal_name") to start watching
+// Makes sure to call SIGNAL_UNWATCH(*object, "signal_name") to stop watching in cleanup, this is not done automaticaly.
+//
+// The SignalWatcher will capture all signals and their args sent between checks.
+//
+// Use SIGNAL_CHECK("signal_name"), Vector<Vector<Variant>>), to check the arguments of all fireed signals.
+// The outer vector is each fired signal, the inner vector the list of arguements for that signal. Order does matter.
+//
+// Use SIGNAL_CHECK_FALSE("signal_name") to check if a signal was not fired.
+//
+// Use SIGNAL_DISCARD("signal_name") to discard records all of the given signal, use only in placed you don't need to check.
+//
+// All signals are automaticaly discared between test/sub test cases.
+
+#include "core/object/callable_method_pointer.h"
+#include "core/object/object.h"
+
+class SignalWatcher : public Object {
+private:
+	inline static SignalWatcher *singleton;
+
+	/* Equal to: Map<String, Vector<Vector<Variant>>> */
+	Map<String, Array> _signals;
+	void _add_signal_entry(const Array &p_args, const String &p_name) {
+		if (!_signals.has(p_name)) {
+			_signals[p_name] = Array();
+		}
+		_signals[p_name].push_back(p_args);
+	}
+
+	void _signal_callback(Variant p_arg1, const String &p_name) {
+		Array args;
+		args.push_back(p_arg1);
+		_add_signal_entry(args, p_name);
+	}
+
+public:
+	static SignalWatcher *get_singleton() { return singleton; }
+
+	void watch_signal(Object *p_object, const String &p_name) {
+		Vector<Variant> args;
+		args.push_back(p_name);
+		p_object->connect(p_name, callable_mp(this, &SignalWatcher::_signal_callback), args);
+	}
+
+	void unwatch_signal(Object *p_object, const String &p_name) {
+		p_object->disconnect(p_name, callable_mp(this, &SignalWatcher::_signal_callback));
+	}
+
+	bool check(const String &p_name, const Array &p_args) {
+		if (!_signals.has(p_name)) {
+			MESSAGE("Signal ", p_name, " not emitted");
+			return false;
+		}
+
+		if (p_args.size() != _signals[p_name].size()) {
+			MESSAGE("Signal has " << _signals[p_name] << " expected " << p_args);
+			discard_signal(p_name);
+			return false;
+		}
+
+		bool match = true;
+		for (int i = 0; i < p_args.size(); i++) {
+			if (((Array)p_args[i]).size() != ((Array)_signals[p_name][i]).size()) {
+				MESSAGE("Signal has " << _signals[p_name][i] << " expected " << p_args[i]);
+				match = false;
+				continue;
+			}
+
+			for (int j = 0; j < ((Array)p_args[i]).size(); j++) {
+				if (((Array)p_args[i])[j] != ((Array)_signals[p_name][i])[j]) {
+					MESSAGE("Signal has " << _signals[p_name][i] << " expected " << p_args[i]);
+					match = false;
+					break;
+				}
+			}
+		}
+
+		discard_signal(p_name);
+		return match;
+	}
+
+	bool check_false(const String &p_name) {
+		bool has = _signals.has(p_name);
+		discard_signal(p_name);
+		return !has;
+	}
+
+	void discard_signal(const String &p_name) {
+		if (_signals.has(p_name)) {
+			_signals.erase(p_name);
+		}
+	}
+
+	void _clear_signals() {
+		_signals.clear();
+	}
+
+	SignalWatcher() {
+		singleton = this;
+	}
+};
+
+#define SIGNAL_WATCH(m_object, m_signal) SignalWatcher::get_singleton()->watch_signal(m_object, m_signal);
+#define SIGNAL_UNWATCH(m_object, m_signal) SignalWatcher::get_singleton()->unwatch_signal(m_object, m_signal);
+
+#define SIGNAL_CHECK(m_signal, m_args) CHECK(SignalWatcher::get_singleton()->check(m_signal, m_args));
+#define SIGNAL_CHECK_FALSE(m_signal) CHECK(SignalWatcher::get_singleton()->check_false(m_signal));
+#define SIGNAL_DISCARD(m_signal) SignalWatcher::get_singleton()->discard_signal(m_signal);
+
 #endif // TEST_MACROS_H
