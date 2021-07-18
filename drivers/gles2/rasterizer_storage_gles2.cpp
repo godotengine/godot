@@ -2240,10 +2240,13 @@ void RasterizerStorageGLES2::mesh_add_surface(RID p_mesh, uint32_t p_format, VS:
 	}
 
 	//bool has_morph = p_blend_shapes.size();
+	bool use_split_stream = GLOBAL_GET("rendering/mesh_storage/split_stream");
 
 	Surface::Attrib attribs[VS::ARRAY_MAX];
 
-	int stride = 0;
+	int attributes_base_offset = 0;
+	int attributes_stride = 0;
+	int positions_stride = 0;
 	bool uses_half_float = false;
 
 	for (int i = 0; i < VS::ARRAY_MAX; i++) {
@@ -2256,7 +2259,7 @@ void RasterizerStorageGLES2::mesh_add_surface(RID p_mesh, uint32_t p_format, VS:
 		}
 
 		attribs[i].enabled = true;
-		attribs[i].offset = stride;
+		attribs[i].offset = attributes_base_offset + attributes_stride;
 		attribs[i].integer = false;
 
 		switch (i) {
@@ -2269,14 +2272,19 @@ void RasterizerStorageGLES2::mesh_add_surface(RID p_mesh, uint32_t p_format, VS:
 
 				if (p_format & VS::ARRAY_COMPRESS_VERTEX) {
 					attribs[i].type = _GL_HALF_FLOAT_OES;
-					stride += attribs[i].size * 2;
-					uses_half_float = true;
+					positions_stride += attribs[i].size * 2;
 				} else {
 					attribs[i].type = GL_FLOAT;
-					stride += attribs[i].size * 4;
+					positions_stride += attribs[i].size * 4;
 				}
 
 				attribs[i].normalized = GL_FALSE;
+
+				if (use_split_stream) {
+					attributes_base_offset = positions_stride * p_vertex_count;
+				} else {
+					attributes_base_offset = positions_stride;
+				}
 
 			} break;
 			case VS::ARRAY_NORMAL: {
@@ -2284,11 +2292,11 @@ void RasterizerStorageGLES2::mesh_add_surface(RID p_mesh, uint32_t p_format, VS:
 
 				if (p_format & VS::ARRAY_COMPRESS_NORMAL) {
 					attribs[i].type = GL_BYTE;
-					stride += 4; //pad extra byte
+					attributes_stride += 4; //pad extra byte
 					attribs[i].normalized = GL_TRUE;
 				} else {
 					attribs[i].type = GL_FLOAT;
-					stride += 12;
+					attributes_stride += 12;
 					attribs[i].normalized = GL_FALSE;
 				}
 
@@ -2298,11 +2306,11 @@ void RasterizerStorageGLES2::mesh_add_surface(RID p_mesh, uint32_t p_format, VS:
 
 				if (p_format & VS::ARRAY_COMPRESS_TANGENT) {
 					attribs[i].type = GL_BYTE;
-					stride += 4;
+					attributes_stride += 4;
 					attribs[i].normalized = GL_TRUE;
 				} else {
 					attribs[i].type = GL_FLOAT;
-					stride += 16;
+					attributes_stride += 16;
 					attribs[i].normalized = GL_FALSE;
 				}
 
@@ -2312,11 +2320,11 @@ void RasterizerStorageGLES2::mesh_add_surface(RID p_mesh, uint32_t p_format, VS:
 
 				if (p_format & VS::ARRAY_COMPRESS_COLOR) {
 					attribs[i].type = GL_UNSIGNED_BYTE;
-					stride += 4;
+					attributes_stride += 4;
 					attribs[i].normalized = GL_TRUE;
 				} else {
 					attribs[i].type = GL_FLOAT;
-					stride += 16;
+					attributes_stride += 16;
 					attribs[i].normalized = GL_FALSE;
 				}
 
@@ -2326,11 +2334,11 @@ void RasterizerStorageGLES2::mesh_add_surface(RID p_mesh, uint32_t p_format, VS:
 
 				if (p_format & VS::ARRAY_COMPRESS_TEX_UV) {
 					attribs[i].type = _GL_HALF_FLOAT_OES;
-					stride += 4;
+					attributes_stride += 4;
 					uses_half_float = true;
 				} else {
 					attribs[i].type = GL_FLOAT;
-					stride += 8;
+					attributes_stride += 8;
 				}
 
 				attribs[i].normalized = GL_FALSE;
@@ -2341,11 +2349,11 @@ void RasterizerStorageGLES2::mesh_add_surface(RID p_mesh, uint32_t p_format, VS:
 
 				if (p_format & VS::ARRAY_COMPRESS_TEX_UV2) {
 					attribs[i].type = _GL_HALF_FLOAT_OES;
-					stride += 4;
+					attributes_stride += 4;
 					uses_half_float = true;
 				} else {
 					attribs[i].type = GL_FLOAT;
-					stride += 8;
+					attributes_stride += 8;
 				}
 				attribs[i].normalized = GL_FALSE;
 
@@ -2355,10 +2363,10 @@ void RasterizerStorageGLES2::mesh_add_surface(RID p_mesh, uint32_t p_format, VS:
 
 				if (p_format & VS::ARRAY_FLAG_USE_16_BIT_BONES) {
 					attribs[i].type = GL_UNSIGNED_SHORT;
-					stride += 8;
+					attributes_stride += 8;
 				} else {
 					attribs[i].type = GL_UNSIGNED_BYTE;
-					stride += 4;
+					attributes_stride += 4;
 				}
 
 				attribs[i].normalized = GL_FALSE;
@@ -2370,11 +2378,11 @@ void RasterizerStorageGLES2::mesh_add_surface(RID p_mesh, uint32_t p_format, VS:
 
 				if (p_format & VS::ARRAY_COMPRESS_WEIGHTS) {
 					attribs[i].type = GL_UNSIGNED_SHORT;
-					stride += 8;
+					attributes_stride += 8;
 					attribs[i].normalized = GL_TRUE;
 				} else {
 					attribs[i].type = GL_FLOAT;
-					stride += 16;
+					attributes_stride += 16;
 					attribs[i].normalized = GL_FALSE;
 				}
 
@@ -2396,13 +2404,21 @@ void RasterizerStorageGLES2::mesh_add_surface(RID p_mesh, uint32_t p_format, VS:
 		}
 	}
 
-	for (int i = 0; i < VS::ARRAY_MAX - 1; i++) {
-		attribs[i].stride = stride;
+	if (use_split_stream) {
+		attribs[VS::ARRAY_VERTEX].stride = positions_stride;
+		for (int i = 1; i < VS::ARRAY_MAX - 1; i++) {
+			attribs[i].stride = attributes_stride;
+		}
+	} else {
+		for (int i = 0; i < VS::ARRAY_MAX - 1; i++) {
+			attribs[i].stride = positions_stride + attributes_stride;
+		}
 	}
 
 	//validate sizes
 	PoolVector<uint8_t> array = p_array;
 
+	int stride = positions_stride + attributes_stride;
 	int array_size = stride * p_vertex_count;
 	int index_array_size = 0;
 	if (array.size() != array_size && array.size() + p_vertex_count * 2 == array_size) {
