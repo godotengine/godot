@@ -534,18 +534,16 @@ void Sprite3D::_draw() {
 	// Everything except position and UV is compressed
 	PoolVector<uint8_t>::Write write_buffer = mesh_buffer.write();
 
-	int8_t v_normal[4] = {
-		(int8_t)CLAMP(normal.x * 127, -128, 127),
-		(int8_t)CLAMP(normal.y * 127, -128, 127),
-		(int8_t)CLAMP(normal.z * 127, -128, 127),
-		0,
+	Vector2 normal_oct = VisualServer::get_singleton()->norm_to_oct(normal);
+	int8_t v_normal[2] = {
+		(int8_t)CLAMP(normal_oct.x * 127, -128, 127),
+		(int8_t)CLAMP(normal_oct.y * 127, -128, 127),
 	};
 
-	int8_t v_tangent[4] = {
-		(int8_t)CLAMP(tangent.normal.x * 127, -128, 127),
-		(int8_t)CLAMP(tangent.normal.y * 127, -128, 127),
-		(int8_t)CLAMP(tangent.normal.z * 127, -128, 127),
-		(int8_t)CLAMP(tangent.d * 127, -128, 127)
+	Vector2 tangent_oct = VisualServer::get_singleton()->tangent_to_oct(tangent.normal, tangent.d, false);
+	int8_t v_tangent[2] = {
+		(int8_t)CLAMP(tangent_oct.x * 127, -128, 127),
+		(int8_t)CLAMP(tangent_oct.y * 127, -128, 127),
 	};
 
 	uint8_t v_color[4] = {
@@ -571,8 +569,8 @@ void Sprite3D::_draw() {
 
 		float v_vertex[3] = { vtx.x, vtx.y, vtx.z };
 		memcpy(&write_buffer[i * mesh_stride + mesh_surface_offsets[VS::ARRAY_VERTEX]], &v_vertex, sizeof(float) * 3);
-		memcpy(&write_buffer[i * mesh_stride + mesh_surface_offsets[VS::ARRAY_NORMAL]], v_normal, 4);
-		memcpy(&write_buffer[i * mesh_stride + mesh_surface_offsets[VS::ARRAY_TANGENT]], v_tangent, 4);
+		memcpy(&write_buffer[i * mesh_stride + mesh_surface_offsets[VS::ARRAY_NORMAL]], v_normal, 2);
+		memcpy(&write_buffer[i * mesh_stride + mesh_surface_offsets[VS::ARRAY_TANGENT]], v_tangent, 2);
 		memcpy(&write_buffer[i * mesh_stride + mesh_surface_offsets[VS::ARRAY_COLOR]], v_color, 4);
 	}
 
@@ -888,18 +886,16 @@ void AnimatedSprite3D::_draw() {
 	// Everything except position and UV is compressed
 	PoolVector<uint8_t>::Write write_buffer = mesh_buffer.write();
 
-	int8_t v_normal[4] = {
-		(int8_t)CLAMP(normal.x * 127, -128, 127),
-		(int8_t)CLAMP(normal.y * 127, -128, 127),
-		(int8_t)CLAMP(normal.z * 127, -128, 127),
-		0,
+	Vector2 normal_oct = VisualServer::get_singleton()->norm_to_oct(normal);
+	int8_t v_normal[2] = {
+		(int8_t)CLAMP(normal_oct.x * 127, -128, 127),
+		(int8_t)CLAMP(normal_oct.y * 127, -128, 127),
 	};
 
-	int8_t v_tangent[4] = {
-		(int8_t)CLAMP(tangent.normal.x * 127, -128, 127),
-		(int8_t)CLAMP(tangent.normal.y * 127, -128, 127),
-		(int8_t)CLAMP(tangent.normal.z * 127, -128, 127),
-		(int8_t)CLAMP(tangent.d * 127, -128, 127)
+	Vector2 tangent_oct = VisualServer::get_singleton()->tangent_to_oct(tangent.normal, tangent.d, false);
+	int8_t v_tangent[2] = {
+		(int8_t)CLAMP(tangent_oct.x * 127, -128, 127),
+		(int8_t)CLAMP(tangent_oct.y * 127, -128, 127),
 	};
 
 	uint8_t v_color[4] = {
@@ -925,8 +921,8 @@ void AnimatedSprite3D::_draw() {
 
 		float v_vertex[3] = { vtx.x, vtx.y, vtx.z };
 		memcpy(&write_buffer[i * mesh_stride + mesh_surface_offsets[VS::ARRAY_VERTEX]], &v_vertex, sizeof(float) * 3);
-		memcpy(&write_buffer[i * mesh_stride + mesh_surface_offsets[VS::ARRAY_NORMAL]], v_normal, 4);
-		memcpy(&write_buffer[i * mesh_stride + mesh_surface_offsets[VS::ARRAY_TANGENT]], v_tangent, 4);
+		memcpy(&write_buffer[i * mesh_stride + mesh_surface_offsets[VS::ARRAY_NORMAL]], v_normal, 2);
+		memcpy(&write_buffer[i * mesh_stride + mesh_surface_offsets[VS::ARRAY_TANGENT]], v_tangent, 2);
 		memcpy(&write_buffer[i * mesh_stride + mesh_surface_offsets[VS::ARRAY_COLOR]], v_color, 4);
 	}
 

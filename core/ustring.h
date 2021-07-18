@@ -100,6 +100,10 @@ public:
 	}
 	_FORCE_INLINE_ CharString(const char *p_cstr) { copy_from(p_cstr); }
 
+	_FORCE_INLINE_ bool operator==(const CharString &char_string) const {
+		return strcmp(get_data(), char_string.get_data()) == 0;
+	};
+
 	CharString &operator=(const char *p_cstr);
 	bool operator<(const CharString &p_right) const;
 	CharString &operator+=(char p_char);
