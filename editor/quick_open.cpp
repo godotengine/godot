@@ -31,6 +31,9 @@
 #include "quick_open.h"
 
 #include "core/os/keyboard.h"
+#include "editor_settings.h"
+
+static const String addons_directory = "addons";
 
 void EditorQuickOpen::popup_dialog(const StringName &p_base, bool p_enable_multi, bool p_dontclear) {
 	base_type = p_base;
@@ -55,11 +58,16 @@ void EditorQuickOpen::_build_search_cache(EditorFileSystemDirectory *p_efsd) {
 		_build_search_cache(p_efsd->get_subdir(i));
 	}
 
+	const bool skip_addons = (bool)EDITOR_GET("filesystem/file_dialog/quick_open_exclude_addons");
+
 	for (int i = 0; i < p_efsd->get_file_count(); i++) {
 		String file_type = p_efsd->get_file_type(i);
 		if (ClassDB::is_parent_class(file_type, base_type)) {
 			String file = p_efsd->get_file_path(i);
-			files.push_back(file.substr(6, file.length()));
+
+			if (!(skip_addons && file.substr(6, file.length()).begins_with(addons_directory + "/"))) {
+				files.push_back(file.substr(6, file.length()));
+			}
 
 			// Store refs to used icons.
 			String ext = file.get_extension();
