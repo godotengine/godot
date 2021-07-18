@@ -1998,8 +1998,9 @@ void GDScriptLanguage::get_reserved_words(List<String> *p_words) const {
 		"preload",
 		"signal",
 		"super",
-		"trait",
-		"yield",
+		"trait", // Not implemented yet, but reserved for future use. Highlight as a keyword to make errors easier to understand.
+		"namespace", // Not implemented yet, but reserved for future use. Highlight as a keyword to make errors easier to understand.
+		"yield", // Not implemented yet, but reserved for future use. Highlight as a keyword to make errors easier to understand.
 		// var
 		"const",
 		"enum",
