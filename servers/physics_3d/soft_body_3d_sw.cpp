@@ -243,7 +243,7 @@ void SoftBody3DSW::update_area() {
 		const Vector3 a = x1 - x0;
 		const Vector3 b = x2 - x0;
 		const Vector3 cr = vec3_cross(a, b);
-		face.ra = cr.length();
+		face.ra = 0.5 * cr.length();
 	}
 
 	// Node area.
