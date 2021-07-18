@@ -118,6 +118,13 @@ class ResourceImporterScene : public ResourceImporter {
 		MESH_OVERRIDE_DISABLE,
 	};
 
+	enum ColliderImportMode {
+		COLLIDER_IMPORT_NONE,
+		COLLIDER_IMPORT_STATIC,
+		COLLIDER_IMPORT_RIGID,
+		COLLIDER_IMPORT_AREA,
+	};
+
 	void _replace_owner(Node *p_node, Node *p_scene, Node *p_new_owner);
 	void _generate_meshes(Node *p_node, const Dictionary &p_mesh_data, bool p_generate_lods, bool p_create_shadow_meshes, LightBakeMode p_light_bake_mode, float p_lightmap_texel_size, const Vector<uint8_t> &p_src_lightmap_cache, Vector<Vector<uint8_t>> &r_lightmap_caches);
 	void _add_shapes(Node *p_node, const List<Ref<Shape3D>> &p_shapes);
@@ -157,7 +164,7 @@ public:
 	virtual bool get_option_visibility(const String &p_option, const Map<StringName, Variant> &p_options) const override;
 	virtual int get_import_order() const override { return 100; } //after everything
 
-	Node *_pre_fix_node(Node *p_node, Node *p_root, Map<Ref<EditorSceneImporterMesh>, List<Ref<Shape3D>>> &collision_map);
+	Node *_pre_fix_node(Node *p_node, Node *p_root, Map<Ref<EditorSceneImporterMesh>, List<Ref<Shape3D>>> &collision_map, ColliderImportMode p_collider_import_mode = COLLIDER_IMPORT_STATIC);
 	Node *_post_fix_node(Node *p_node, Node *p_root, Map<Ref<EditorSceneImporterMesh>, List<Ref<Shape3D>>> &collision_map, Set<Ref<EditorSceneImporterMesh>> &r_scanned_meshes, const Dictionary &p_node_data, const Dictionary &p_material_data, const Dictionary &p_animation_data, float p_animation_fps);
 
 	Ref<Animation> _save_animation_to_file(Ref<Animation> anim, bool p_save_to_file, String p_save_to_path, bool p_keep_custom_tracks);
