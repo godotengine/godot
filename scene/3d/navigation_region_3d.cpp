@@ -168,7 +168,11 @@ void NavigationRegion3D::bake_navigation_mesh() {
 	BakeThreadsArgs *args = memnew(BakeThreadsArgs);
 	args->nav_region = this;
 
-	bake_thread.start(_bake_navigation_mesh, args);
+	if (Engine::get_singleton()->is_editor_hint()) {
+		_bake_navigation_mesh(args);
+	} else {
+		bake_thread.start(_bake_navigation_mesh, args);
+	}
 }
 
 void NavigationRegion3D::_bake_finished(Ref<NavigationMesh> p_nav_mesh) {
