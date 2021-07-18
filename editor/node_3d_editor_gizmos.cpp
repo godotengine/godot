@@ -1044,8 +1044,6 @@ void Light3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 	}
 }
 
-//////
-
 //// player gizmo
 AudioStreamPlayer3DGizmoPlugin::AudioStreamPlayer3DGizmoPlugin() {
 	Color gizmo_color = EDITOR_DEF("editors/3d_gizmos/gizmo_colors/stream_player_3d", Color(0.4, 0.8, 1));
@@ -1179,6 +1177,43 @@ void AudioStreamPlayer3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 		p_gizmo->add_handles(handles, get_material("handles"));
 	}
 
+	p_gizmo->add_unscaled_billboard(icon, 0.05);
+}
+
+//////
+
+Listener3DGizmoPlugin::Listener3DGizmoPlugin() {
+	create_icon_material("listener_3d_icon", Node3DEditor::get_singleton()->get_theme_icon("GizmoListener3D", "EditorIcons"));
+}
+
+bool Listener3DGizmoPlugin::has_gizmo(Node3D *p_spatial) {
+	return Object::cast_to<Listener3D>(p_spatial) != nullptr;
+}
+
+String Listener3DGizmoPlugin::get_gizmo_name() const {
+	return "Listener3D";
+}
+
+int Listener3DGizmoPlugin::get_priority() const {
+	return -1;
+}
+
+String Listener3DGizmoPlugin::get_handle_name(const EditorNode3DGizmo *p_gizmo, int p_idx) const {
+	return "";
+}
+
+Variant Listener3DGizmoPlugin::get_handle_value(EditorNode3DGizmo *p_gizmo, int p_idx) const {
+	return Variant();
+}
+
+void Listener3DGizmoPlugin::set_handle(EditorNode3DGizmo *p_gizmo, int p_idx, Camera3D *p_camera, const Point2 &p_point) {
+}
+
+void Listener3DGizmoPlugin::commit_handle(EditorNode3DGizmo *p_gizmo, int p_idx, const Variant &p_restore, bool p_cancel) {
+}
+
+void Listener3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
+	const Ref<Material> icon = get_material("listener_3d_icon", p_gizmo);
 	p_gizmo->add_unscaled_billboard(icon, 0.05);
 }
 
