@@ -118,6 +118,7 @@ void OptionButton::pressed() {
 	Size2 size = get_size();
 	popup->set_position(get_screen_position() + Size2(0, size.height * get_global_transform().get_scale().y));
 	popup->set_size(Size2(size.width, 0));
+	popup->set_current_index(current);
 	popup->popup();
 }
 
