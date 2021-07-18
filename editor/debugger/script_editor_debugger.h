@@ -235,6 +235,7 @@ public:
 	String get_stack_script_file() const;
 	int get_stack_script_line() const;
 	int get_stack_script_frame() const;
+	String get_stack_script_owner() const;
 
 	void update_tabs();
 	void clear_style();

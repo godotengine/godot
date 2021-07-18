@@ -190,11 +190,12 @@ bool DebuggerMarshalls::ServersProfilerFrame::deserialize(const Array &p_arr) {
 
 Array DebuggerMarshalls::ScriptStackDump::serialize() {
 	Array arr;
-	arr.push_back(frames.size() * 3);
+	arr.push_back(frames.size() * 4);
 	for (int i = 0; i < frames.size(); i++) {
 		arr.push_back(frames[i].file);
 		arr.push_back(frames[i].line);
 		arr.push_back(frames[i].func);
+		arr.push_back(frames[i].owner);
 	}
 	return arr;
 }
@@ -204,13 +205,14 @@ bool DebuggerMarshalls::ScriptStackDump::deserialize(const Array &p_arr) {
 	uint32_t size = p_arr[0];
 	CHECK_SIZE(p_arr, size, "ScriptStackDump");
 	int idx = 1;
-	for (uint32_t i = 0; i < size / 3; i++) {
+	for (uint32_t i = 0; i < size / 4; i++) {
 		ScriptLanguage::StackInfo sf;
 		sf.file = p_arr[idx];
 		sf.line = p_arr[idx + 1];
 		sf.func = p_arr[idx + 2];
+		sf.owner = p_arr[idx + 3];
 		frames.push_back(sf);
-		idx += 3;
+		idx += 4;
 	}
 	CHECK_END(p_arr, idx, "ScriptStackDump");
 	return true;

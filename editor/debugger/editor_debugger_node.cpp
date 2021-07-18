@@ -130,6 +130,17 @@ void EditorDebuggerNode::_stack_frame_selected(int p_debugger) {
 	if (dbg != get_current_debugger()) {
 		return;
 	}
+
+	const bool open_dominant = EditorSettings::get_singleton()->get("text_editor/files/open_dominant_script_on_scene_change");
+	if (open_dominant) {
+		const String owner = dbg->get_stack_script_owner();
+		if (owner.length() != 0) {
+			EditorData &editor_data = EditorNode::get_editor_data();
+			EditorInterface::get_singleton()->open_scene_from_path(owner);
+			editor_data.notify_edited_scene_changed();
+		}
+	}
+
 	_text_editor_stack_goto(dbg);
 }
 
