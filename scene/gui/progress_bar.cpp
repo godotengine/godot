@@ -40,14 +40,21 @@ Size2 ProgressBar::get_minimum_size() const {
 	Size2 minimum_size = bg->get_minimum_size();
 	minimum_size.height = MAX(minimum_size.height, fg->get_minimum_size().height);
 	minimum_size.width = MAX(minimum_size.width, fg->get_minimum_size().width);
-	if (percent_visible) {
-		String txt = "100%";
-		TextLine tl = TextLine(txt, font, font_size);
-		minimum_size.height = MAX(minimum_size.height, bg->get_minimum_size().height + tl.get_size().y);
-	} else { // this is needed, else the progressbar will collapse
-		minimum_size.width = MAX(minimum_size.width, 1);
-		minimum_size.height = MAX(minimum_size.height, 1);
+
+	switch (progress_label_format) {
+		case FORMAT_NONE: // this is needed, else the progressbar will collapse
+			minimum_size.width = MAX(minimum_size.width, 1);
+			minimum_size.height = MAX(minimum_size.height, 1);
+			break;
+		case FORMAT_PERCENTAGE:
+		case FORMAT_DECIMAL:
+		case FORMAT_FRACTION:
+			String txt = "100%";
+			TextLine tl = TextLine(txt, font, font_size);
+			minimum_size.height = MAX(minimum_size.height, bg->get_minimum_size().height + tl.get_size().y);
+			break;
 	}
+
 	return minimum_size;
 }
 
@@ -71,8 +78,23 @@ void ProgressBar::_notification(int p_what) {
 			}
 		}
 
-		if (percent_visible) {
-			String txt = TS->format_number(itos(int(get_as_ratio() * 100))) + TS->percent_sign();
+		if (progress_label_format != FORMAT_NONE) {
+			String txt = "";
+
+			switch (progress_label_format) {
+				case FORMAT_PERCENTAGE:
+					txt = TS->format_number(itos(int(get_as_ratio() * 100))) + TS->percent_sign();
+					break;
+				case FORMAT_DECIMAL:
+					txt = TS->format_number(rtos(Math::snapped(get_as_ratio(), 0.001)));
+					break;
+				case FORMAT_FRACTION:
+					txt = TS->format_number(rtos(Math::snapped(get_value(), 0.001))) + "/" + TS->format_number(rtos(Math::snapped(get_max(), 0.001)));
+					break;
+				default:
+					break;
+			}
+
 			TextLine tl = TextLine(txt, font, font_size);
 			Vector2 text_pos = (Point2(get_size().width - tl.get_size().x, get_size().height - tl.get_size().y) / 2).round();
 			Color font_outline_color = get_theme_color("font_outline_color");
@@ -85,20 +107,25 @@ void ProgressBar::_notification(int p_what) {
 	}
 }
 
-void ProgressBar::set_percent_visible(bool p_visible) {
-	percent_visible = p_visible;
+void ProgressBar::set_progress_label_format(ProgressLabelFormat p_type) {
+	progress_label_format = p_type;
 	update();
 }
 
-bool ProgressBar::is_percent_visible() const {
-	return percent_visible;
+ProgressBar::ProgressLabelFormat ProgressBar::get_progress_label_format() const {
+	return progress_label_format;
 }
 
 void ProgressBar::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("set_percent_visible", "visible"), &ProgressBar::set_percent_visible);
-	ClassDB::bind_method(D_METHOD("is_percent_visible"), &ProgressBar::is_percent_visible);
-	ADD_GROUP("Percent", "percent_");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "percent_visible"), "set_percent_visible", "is_percent_visible");
+	ClassDB::bind_method(D_METHOD("set_progress_label_format", "progress_label_format"), &ProgressBar::set_progress_label_format);
+	ClassDB::bind_method(D_METHOD("get_progress_label_format"), &ProgressBar::get_progress_label_format);
+
+	BIND_ENUM_CONSTANT(FORMAT_NONE);
+	BIND_ENUM_CONSTANT(FORMAT_PERCENTAGE);
+	BIND_ENUM_CONSTANT(FORMAT_DECIMAL);
+	BIND_ENUM_CONSTANT(FORMAT_FRACTION);
+
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "progress_label_format", PROPERTY_HINT_ENUM, "None,Percentage,Decimal,Fraction"), "set_progress_label_format", "get_progress_label_format");
 }
 
 ProgressBar::ProgressBar() {

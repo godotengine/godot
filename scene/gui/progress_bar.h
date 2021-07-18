@@ -36,18 +36,29 @@
 class ProgressBar : public Range {
 	GDCLASS(ProgressBar, Range);
 
-	bool percent_visible = true;
+public:
+	enum ProgressLabelFormat {
+		FORMAT_NONE,
+		FORMAT_PERCENTAGE,
+		FORMAT_DECIMAL,
+		FORMAT_FRACTION
+	};
+
+private:
+	ProgressLabelFormat progress_label_format = FORMAT_PERCENTAGE;
 
 protected:
 	void _notification(int p_what);
 	static void _bind_methods();
 
 public:
-	void set_percent_visible(bool p_visible);
-	bool is_percent_visible() const;
+	void set_progress_label_format(ProgressLabelFormat p_type);
+	ProgressLabelFormat get_progress_label_format() const;
 
 	Size2 get_minimum_size() const override;
 	ProgressBar();
 };
+
+VARIANT_ENUM_CAST(ProgressBar::ProgressLabelFormat);
 
 #endif // PROGRESS_BAR_H
