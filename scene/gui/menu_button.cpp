@@ -58,14 +58,37 @@ void MenuButton::_unhandled_key_input(Ref<InputEvent> p_event) {
 void MenuButton::pressed() {
 	Size2 size = get_size();
 
-	Point2 gp = get_screen_position();
-	gp.y += get_size().y;
+	int screen_height = popup->get_usable_parent_rect().size.height;
+	int content_height = popup->get_contents_size().height;
 
-	popup->set_position(gp);
+	int min_height = MIN(screen_height, content_height);
+
+	int button_height = size.height * get_global_transform().get_scale().y;
+	int button_bottom_position = get_screen_position().y + button_height;
+
+	// Decide if the popup shows below the button
+	bool popup_below = true;
+	if (screen_height - button_bottom_position < min_height && screen_height - button_bottom_position < get_screen_position().y) {
+		popup_below = false;
+	}
+
+	// Set the popup position
+	if (popup_below) {
+		// Set a valid height limit to override the default one (the usable parent rect height)
+		popup->set_height_limit(screen_height - get_screen_position().y - button_height);
+
+		popup->set_position(get_screen_position() + Size2(0, button_height));
+	} else {
+		popup->set_height_limit(get_screen_position().y);
+
+		if (min_height < get_screen_position().y) {
+			popup->set_position(get_screen_position() - Size2(0, min_height));
+		} else {
+			popup->set_position(Size2(get_screen_position().x, 0));
+		}
+	}
 
 	popup->set_size(Size2(size.width, 0));
-	popup->set_parent_rect(Rect2(Point2(gp - popup->get_position()), get_size()));
-	popup->take_mouse_focus();
 	popup->popup();
 }
 

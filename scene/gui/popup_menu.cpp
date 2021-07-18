@@ -45,7 +45,7 @@ String PopupMenu::_get_accel_text(const Item &p_item) const {
 	return String();
 }
 
-Size2 PopupMenu::_get_contents_minimum_size() const {
+Size2 PopupMenu::get_contents_size() const {
 	int vseparation = get_theme_constant("vseparation");
 	int hseparation = get_theme_constant("hseparation");
 
@@ -96,10 +96,18 @@ Size2 PopupMenu::_get_contents_minimum_size() const {
 		minsize.width += check_w;
 	}
 
+	return minsize;
+}
+
+Size2 PopupMenu::_get_contents_minimum_size() const {
+	Size2 minsize = get_contents_size();
+
 	if (is_inside_tree()) {
-		int height_limit = get_usable_parent_rect().size.height;
-		if (minsize.height > height_limit) {
-			minsize.height = height_limit;
+		// If a valid height limit is set, use it. Else, use the usable parent rect height as limit
+		if (get_height_limit() > -1) {
+			minsize.height = MIN(minsize.height, get_height_limit());
+		} else {
+			minsize.height = MIN(minsize.height, get_usable_parent_rect().size.height);
 		}
 	}
 
@@ -1541,6 +1549,14 @@ void PopupMenu::set_allow_search(bool p_allow) {
 
 bool PopupMenu::get_allow_search() const {
 	return allow_search;
+}
+
+void PopupMenu::set_height_limit(int p_height_limit) {
+	height_limit = p_height_limit;
+}
+
+int PopupMenu::get_height_limit() const {
+	return height_limit;
 }
 
 String PopupMenu::get_tooltip(const Point2 &p_pos) const {
