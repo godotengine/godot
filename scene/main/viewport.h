@@ -308,7 +308,6 @@ private:
 		float tooltip_timer;
 		float tooltip_delay;
 		List<Control *> modal_stack;
-		Transform2D focus_inv_xform;
 		bool subwindow_order_dirty;
 		bool subwindow_visibility_dirty;
 		List<Control *> subwindows; // visible subwindows
@@ -331,7 +330,7 @@ private:
 	void _gui_sort_roots();
 	void _gui_sort_modal_stack();
 	Control *_gui_find_control(const Point2 &p_global);
-	Control *_gui_find_control_at_pos(CanvasItem *p_node, const Point2 &p_global, const Transform2D &p_xform, Transform2D &r_inv_xform);
+	Control *_gui_find_control_at_pos(CanvasItem *p_node, const Point2 &p_global, const Transform2D &p_xform);
 
 	void _gui_input_event(Ref<InputEvent> p_event);
 
