@@ -508,7 +508,8 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	_initial_set("text_editor/indent/draw_spaces", false);
 
 	// Navigation
-	_initial_set("text_editor/navigation/smooth_scrolling", true);
+	// Disable smooth scrolling by default due to known bugs like GH-28385.
+	_initial_set("text_editor/navigation/smooth_scrolling", false);
 	_initial_set("text_editor/navigation/v_scroll_speed", 80);
 	_initial_set("text_editor/navigation/show_minimap", true);
 	_initial_set("text_editor/navigation/minimap_width", 80);
