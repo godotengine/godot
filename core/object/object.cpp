@@ -878,13 +878,15 @@ void Object::set_script(const Variant &p_script) {
 		return;
 	}
 
+	Ref<Script> s = p_script;
+	ERR_FAIL_COND(s.is_null() && !p_script.is_null());
+
+	script = p_script;
+
 	if (script_instance) {
 		memdelete(script_instance);
 		script_instance = nullptr;
 	}
-
-	script = p_script;
-	Ref<Script> s = script;
 
 	if (!s.is_null()) {
 		if (s->can_instantiate()) {
