@@ -1001,6 +1001,20 @@ LightmapGI::BakeError LightmapGI::bake(Node *p_from_node, String p_image_data_pa
 
 		config->save(base_path + ".import");
 
+		if (!environment_min_light.is_equal_approx(Color(0, 0, 0))) {
+			// Apply minimum lighting to avoid overly dark areas, if requested by the user.
+			for (int i = 0; i < large_image->get_height(); i++) {
+				for (int j = 0; j < large_image->get_width(); j++) {
+					Color c = large_image->get_pixel(j, i);
+					c.r = MAX(c.r, environment_min_light.r);
+					c.g = MAX(c.g, environment_min_light.g);
+					c.b = MAX(c.b, environment_min_light.b);
+
+					large_image->set_pixel(j, i, c);
+				}
+			}
+		}
+
 		Error err = large_image->save_exr(base_path, false);
 		ERR_FAIL_COND_V(err, BAKE_ERROR_CANT_CREATE_IMAGE);
 		ResourceLoader::import(base_path);
@@ -1330,6 +1344,14 @@ float LightmapGI::get_environment_custom_energy() const {
 	return environment_custom_energy;
 }
 
+void LightmapGI::set_environment_min_light(Color p_min_light) {
+	environment_min_light = p_min_light;
+}
+
+Color LightmapGI::get_environment_min_light() const {
+	return environment_min_light;
+}
+
 void LightmapGI::set_bounces(int p_bounces) {
 	ERR_FAIL_COND(p_bounces < 0 || p_bounces > 16);
 	bounces = p_bounces;
@@ -1405,6 +1427,9 @@ void LightmapGI::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_environment_custom_energy", "energy"), &LightmapGI::set_environment_custom_energy);
 	ClassDB::bind_method(D_METHOD("get_environment_custom_energy"), &LightmapGI::get_environment_custom_energy);
 
+	ClassDB::bind_method(D_METHOD("set_environment_min_light", "min_light"), &LightmapGI::set_environment_min_light);
+	ClassDB::bind_method(D_METHOD("get_environment_min_light"), &LightmapGI::get_environment_min_light);
+
 	ClassDB::bind_method(D_METHOD("set_max_texture_size", "max_texture_size"), &LightmapGI::set_max_texture_size);
 	ClassDB::bind_method(D_METHOD("get_max_texture_size"), &LightmapGI::get_max_texture_size);
 
@@ -1432,6 +1457,7 @@ void LightmapGI::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "environment_custom_sky", PROPERTY_HINT_RESOURCE_TYPE, "Sky"), "set_environment_custom_sky", "get_environment_custom_sky");
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "environment_custom_color", PROPERTY_HINT_COLOR_NO_ALPHA), "set_environment_custom_color", "get_environment_custom_color");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "environment_custom_energy", PROPERTY_HINT_RANGE, "0,64,0.01"), "set_environment_custom_energy", "get_environment_custom_energy");
+	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "environment_min_light", PROPERTY_HINT_COLOR_NO_ALPHA), "set_environment_min_light", "get_environment_min_light");
 	ADD_GROUP("Gen Probes", "generate_probes_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "generate_probes_subdiv", PROPERTY_HINT_ENUM, "Disabled,4,8,16,32"), "set_generate_probes", "get_generate_probes");
 	ADD_GROUP("Data", "");
