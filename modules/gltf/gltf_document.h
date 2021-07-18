@@ -380,6 +380,7 @@ public:
 	void _convert_scene_node(Ref<GLTFState> state, Node *p_current, Node *p_root,
 			const GLTFNodeIndex p_gltf_current,
 			const GLTFNodeIndex p_gltf_root);
+	void _normalize_bone(int32_t p_bone, Set<BoneId> &r_bones, float &r_joint, float &r_weight);
 
 #ifdef MODULE_CSG_ENABLED
 	void _convert_csg_shape_to_gltf(Node *p_current, GLTFNodeIndex p_gltf_parent, Ref<GLTFNode> gltf_node, Ref<GLTFState> state);
