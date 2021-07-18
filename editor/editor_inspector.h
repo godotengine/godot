@@ -262,7 +262,6 @@ class EditorInspector : public ScrollContainer {
 	//map use to cache the instanced editors
 	Map<StringName, List<EditorProperty *>> editor_property_map;
 	List<EditorInspectorSection *> sections;
-	Set<StringName> pending;
 
 	void _clear();
 	Object *object;
@@ -279,6 +278,7 @@ class EditorInspector : public ScrollContainer {
 	bool use_folding;
 	int changing;
 	bool update_all_pending;
+	bool update_properties;
 	bool read_only;
 	bool keying;
 	bool sub_inspector;

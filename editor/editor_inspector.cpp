@@ -1797,7 +1797,6 @@ void EditorInspector::_clear() {
 	property_focusable = -1;
 	editor_property_map.clear();
 	sections.clear();
-	pending.clear();
 	restart_request_props.clear();
 }
 
@@ -1961,11 +1960,8 @@ void EditorInspector::_edit_request_change(Object *p_object, const String &p_pro
 		return;
 	}
 
-	if (p_property == String()) {
-		update_tree_pending = true;
-	} else {
-		pending.insert(p_property);
-	}
+	update_tree_pending |= p_property.empty();
+	update_properties |= !update_all_pending;
 }
 
 void EditorInspector::_edit_set(const String &p_name, const Variant &p_value, bool p_refresh_all, const String &p_changed_field) {
@@ -2198,20 +2194,16 @@ void EditorInspector::_notification(int p_what) {
 
 		if (update_tree_pending) {
 			update_tree();
+			update_properties = false;
 			update_tree_pending = false;
-			pending.clear();
-
-		} else {
-			while (pending.size()) {
-				StringName prop = pending.front()->get();
-				if (editor_property_map.has(prop)) {
-					for (List<EditorProperty *>::Element *E = editor_property_map[prop].front(); E; E = E->next()) {
-						E->get()->update_property();
-						E->get()->update_reload_status();
-					}
+		} else if (update_properties) {
+			for (Map<StringName, List<EditorProperty *>>::Element *E = editor_property_map.front(); E; E = E->next()) {
+				for (List<EditorProperty *>::Element *F = E->value().front(); F; F = F->next()) {
+					F->get()->update_property();
+					F->get()->update_reload_status();
 				}
-				pending.erase(pending.front());
 			}
+			update_properties = false;
 		}
 
 		changing--;
@@ -2307,6 +2299,7 @@ EditorInspector::EditorInspector() {
 	use_folding = false;
 	update_all_pending = false;
 	update_tree_pending = false;
+	update_properties = false;
 	refresh_countdown = 0;
 	read_only = false;
 	search_box = nullptr;
