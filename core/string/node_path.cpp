@@ -240,18 +240,25 @@ NodePath NodePath::rel_path_to(const NodePath &p_np) const {
 	common_parent--;
 
 	Vector<StringName> relpath;
+	relpath.resize(src_dirs.size() + dst_dirs.size() + 1);
 
-	for (int i = src_dirs.size() - 1; i > common_parent; i--) {
-		relpath.push_back("..");
+	StringName *relpath_ptr = relpath.ptrw();
+
+	int path_size = 0;
+	StringName back_str("..");
+	for (int i = common_parent + 1; i < src_dirs.size(); i++) {
+		relpath_ptr[path_size++] = back_str;
 	}
 
 	for (int i = common_parent + 1; i < dst_dirs.size(); i++) {
-		relpath.push_back(dst_dirs[i]);
+		relpath_ptr[path_size++] = dst_dirs[i];
 	}
 
-	if (relpath.size() == 0) {
-		relpath.push_back(".");
+	if (path_size == 0) {
+		relpath_ptr[path_size++] = ".";
 	}
+
+	relpath.resize(path_size);
 
 	return NodePath(relpath, p_np.get_subnames(), false);
 }
