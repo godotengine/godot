@@ -177,8 +177,20 @@
 		<member name="emission_normals" type="PackedVector3Array" setter="set_emission_normals" getter="get_emission_normals">
 			Sets the direction the particles will be emitted in when using [constant EMISSION_SHAPE_DIRECTED_POINTS].
 		</member>
-		<member name="emission_points" type="PackedVector3Array" setter="set_emission_points" getter="get_emission_points" default="PackedVector3Array()">
+		<member name="emission_points" type="PackedVector3Array" setter="set_emission_points" getter="get_emission_points">
 			Sets the initial positions to spawn particles when using [constant EMISSION_SHAPE_POINTS] or [constant EMISSION_SHAPE_DIRECTED_POINTS].
+		</member>
+		<member name="emission_ring_axis" type="Vector3" setter="set_emission_ring_axis" getter="get_emission_ring_axis">
+			The axis of the ring when using the emitter [constant EMISSION_SHAPE_RING].
+		</member>
+		<member name="emission_ring_height" type="float" setter="set_emission_ring_height" getter="get_emission_ring_height">
+			The height of the ring when using the emitter [constant EMISSION_SHAPE_RING].
+		</member>
+		<member name="emission_ring_inner_radius" type="float" setter="set_emission_ring_inner_radius" getter="get_emission_ring_inner_radius">
+			The inner radius of the ring when using the emitter [constant EMISSION_SHAPE_RING].
+		</member>
+		<member name="emission_ring_radius" type="float" setter="set_emission_ring_radius" getter="get_emission_ring_radius">
+			The radius of the ring when using the emitter [constant EMISSION_SHAPE_RING].
 		</member>
 		<member name="emission_shape" type="int" setter="set_emission_shape" getter="get_emission_shape" enum="CPUParticles3D.EmissionShape" default="0">
 			Particles will be emitted inside this region. See [enum EmissionShape] for possible values.
@@ -378,7 +390,10 @@
 		<constant name="EMISSION_SHAPE_DIRECTED_POINTS" value="4" enum="EmissionShape">
 			Particles will be emitted at a position chosen randomly among [member emission_points]. Particle velocity and rotation will be set based on [member emission_normals]. Particle color will be modulated by [member emission_colors].
 		</constant>
-		<constant name="EMISSION_SHAPE_MAX" value="5" enum="EmissionShape">
+		<constant name="EMISSION_SHAPE_RING" value="5" enum="EmissionShape">
+			Particles will be emitted in a ring or cylinder.
+		</constant>
+		<constant name="EMISSION_SHAPE_MAX" value="6" enum="EmissionShape">
 			Represents the size of the [enum EmissionShape] enum.
 		</constant>
 	</constants>
