@@ -75,7 +75,7 @@ class StringName {
 	friend void register_core_types();
 	friend void unregister_core_types();
 	friend class Main;
-	static Mutex mutex;
+	static Mutex *mutex;
 	static void setup();
 	static void cleanup();
 	static bool configured;
