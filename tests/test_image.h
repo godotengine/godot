@@ -33,7 +33,9 @@
 
 #include "core/io/file_access_pack.h"
 #include "core/io/image.h"
+#include "scene/resources/texture.h"
 #include "test_utils.h"
+#include "tests/test_macros.h"
 
 #include "thirdparty/doctest/doctest.h"
 
@@ -254,6 +256,14 @@ TEST_CASE("[Image] Modifying pixels of an image") {
 	CHECK_MESSAGE(
 			image3->get_pixel(1, 0).is_equal_approx(Color(0, 0, 0, 0)),
 			"flip_y() should not leave old pixels behind.");
+}
+TEST_CASE("[Image] ImageTexture3D::create() with invalid arguments") {
+	ERR_PRINT_OFF;
+	ImageTexture3D image;
+	Vector<Ref<Image>> img;
+	Error e = image.create(Image::Format(), 27, -35, 40, false, img);
+	CHECK(e == ERR_CANT_CREATE);
+	ERR_PRINT_ON;
 }
 } // namespace TestImage
 #endif // TEST_IMAGE_H
