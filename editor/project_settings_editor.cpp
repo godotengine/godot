@@ -222,7 +222,9 @@ void ProjectSettingsEditor::_add_feature_overrides() {
 	presets.insert("standalone");
 	presets.insert("32");
 	presets.insert("64");
-	presets.insert("Server"); // Not available as an export platform yet, so it needs to be added manually
+	presets.insert("server"); // Not available as an export platform yet, so it needs to be added manually.
+	presets.insert("linux"); // Not reported in the list of export platforms yet, so it needs to be added manually.
+	presets.insert("bsd"); // Not reported in the list of export platforms yet, so it needs to be added manually.
 
 	EditorExport *ee = EditorExport::get_singleton();
 
@@ -230,7 +232,14 @@ void ProjectSettingsEditor::_add_feature_overrides() {
 		List<String> p;
 		ee->get_export_platform(i)->get_platform_features(&p);
 		for (List<String>::Element *E = p.front(); E; E = E->next()) {
-			presets.insert(E->get());
+			// Feature tags for platform names are lowercase.
+			if (E->get().to_lower() == "x11") {
+				// `x11` is no longer a valid feature tag name in Godot 4.0 and later.
+				// Use `linux` or `bsd` instead.
+				continue;
+			}
+
+			presets.insert(E->get().to_lower());
 		}
 	}
 

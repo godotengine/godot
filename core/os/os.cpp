@@ -366,7 +366,7 @@ void OS::set_has_server_feature_callback(HasServerFeatureCallback p_callback) {
 }
 
 bool OS::has_feature(const String &p_feature) {
-	if (p_feature == get_name()) {
+	if (p_feature == get_name().to_lower()) {
 		return true;
 	}
 #ifdef DEBUG_ENABLED
