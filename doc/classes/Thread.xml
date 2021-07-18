@@ -48,6 +48,8 @@
 			</return>
 			<description>
 				Joins the [Thread] and waits for it to finish. Returns what the method called returned.
+				Should either be used when you want to retrieve the value returned from the method called by the [Thread] or before freeing the instance that contains the [Thread].
+				[b]Note:[/b] After the [Thread] finishes joining it will be disposed. If you want to use it again you will have to create a new instance of it.
 			</description>
 		</method>
 	</methods>
