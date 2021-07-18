@@ -68,9 +68,9 @@ void EditorPropertyText::_text_changed(const String &p_string) {
 	}
 
 	if (string_name) {
-		emit_changed(get_edited_property(), StringName(p_string), "", true);
+		emit_changed(get_edited_property(), StringName(p_string), "", false);
 	} else {
-		emit_changed(get_edited_property(), p_string, "", true);
+		emit_changed(get_edited_property(), p_string, "", false);
 	}
 }
 
@@ -110,11 +110,11 @@ EditorPropertyText::EditorPropertyText() {
 
 void EditorPropertyMultilineText::_big_text_changed() {
 	text->set_text(big_text->get_text());
-	emit_changed(get_edited_property(), big_text->get_text(), "", true);
+	emit_changed(get_edited_property(), big_text->get_text(), "", false);
 }
 
 void EditorPropertyMultilineText::_text_changed() {
-	emit_changed(get_edited_property(), text->get_text(), "", true);
+	emit_changed(get_edited_property(), text->get_text(), "", false);
 }
 
 void EditorPropertyMultilineText::_open_big_text() {

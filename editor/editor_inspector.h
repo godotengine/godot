@@ -273,6 +273,9 @@ class EditorInspector : public ScrollContainer {
 
 	//map use to cache the instantiated editors
 	Map<StringName, List<EditorProperty *>> editor_property_map;
+	Map<StringName, PropertyInfo> property_info_cache;
+	Map<StringName, List<Control *>> property_control_cache;
+	Map<StringName, List<Pair<StringName, EditorProperty *>>> property_map_cache;
 	List<EditorInspectorSection *> sections;
 	Set<StringName> pending;
 
@@ -362,7 +365,7 @@ public:
 
 	String get_selected_path() const;
 
-	void update_tree();
+	void update_tree(bool p_clear_all = true);
 	void update_property(const String &p_prop);
 	void edit(Object *p_object);
 	Object *get_edited_object();
