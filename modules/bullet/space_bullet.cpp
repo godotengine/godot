@@ -470,6 +470,22 @@ void SpaceBullet::reload_collision_filters(AreaBullet *p_area) {
 	dynamicsWorld->refreshBroadphaseProxy(ghost_object);
 }
 
+void SpaceBullet::add_rigid_body_with_force(RigidBodyBullet *p_body) {
+	if (rigid_bodies_with_forces.find(p_body) == -1) {
+		rigid_bodies_with_forces.append(p_body);
+	}
+}
+
+void SpaceBullet::remove_rigid_body_with_force(RigidBodyBullet *p_body) {
+	rigid_bodies_with_forces.erase(p_body);
+}
+
+void SpaceBullet::apply_rigid_body_forces() {
+	for (int i = 0; i < rigid_bodies_with_forces.size(); i++) {
+		rigid_bodies_with_forces[i]->apply_forces();
+	}
+}
+
 void SpaceBullet::add_rigid_body(RigidBodyBullet *p_body) {
 	if (p_body->is_static()) {
 		dynamicsWorld->addCollisionObject(p_body->get_bt_rigid_body(), p_body->get_collision_layer(), p_body->get_collision_mask());
@@ -558,6 +574,11 @@ void SpaceBullet::remove_all_collision_objects() {
 	}
 }
 
+void onBulletPreTickCallback(btDynamicsWorld *p_dynamicsWorld, btScalar timeStep) {
+	SpaceBullet *space = static_cast<SpaceBullet *>(p_dynamicsWorld->getWorldUserInfo());
+	space->apply_rigid_body_forces();
+}
+
 void onBulletTickCallback(btDynamicsWorld *p_dynamicsWorld, btScalar timeStep) {
 	const btCollisionObjectArray &colObjArray = p_dynamicsWorld->getCollisionObjectArray();
 
@@ -625,6 +646,7 @@ void SpaceBullet::create_empty_world(bool p_create_soft_world) {
 
 	dynamicsWorld->setWorldUserInfo(this);
 
+	dynamicsWorld->setInternalTickCallback(onBulletPreTickCallback, this, true);
 	dynamicsWorld->setInternalTickCallback(onBulletTickCallback, this, false);
 	dynamicsWorld->getBroadphase()->getOverlappingPairCache()->setInternalGhostPairCallback(ghostPairCallback); // Setup ghost check
 	dynamicsWorld->getPairCache()->setOverlapFilterCallback(godotFilterCallback);

@@ -521,8 +521,6 @@ void Body3DSW::integrate_forces(real_t p_step) {
 		}
 	}
 
-	applied_force = Vector3();
-	applied_torque = Vector3();
 	first_integration = false;
 
 	//motion=linear_velocity*p_step;
