@@ -165,6 +165,15 @@ void Node2D::set_skew(real_t p_radians) {
 }
 
 void Node2D::set_scale(const Size2 &p_scale) {
+#ifdef DEBUG_ENABLED
+	if (p_scale.x < 0 && bool(GLOBAL_GET("debug/settings/warnings/invalid_scale_set"))) {
+		WARN_PRINT("Due to the way scale is represented with transformation "
+				   "matrices in Godot, negative scales on the X axis will be "
+				   "changed to negative scales on the Y axis plus a rotation "
+				   "of 180 degrees when decomposed. "
+				   "This warning can be disabled in project settings.");
+	}
+#endif
 	if (_xform_dirty) {
 		((Node2D *)this)->_update_xform_values();
 	}
