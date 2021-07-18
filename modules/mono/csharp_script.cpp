@@ -54,6 +54,7 @@
 
 #include "editor/editor_internal_calls.h"
 #include "godotsharp_dirs.h"
+#include "modules/regex/regex.h"
 #include "mono_gd/gd_mono_cache.h"
 #include "mono_gd/gd_mono_class.h"
 #include "mono_gd/gd_mono_marshal.h"
@@ -3458,8 +3459,23 @@ void CSharpScript::get_script_property_list(List<PropertyInfo> *p_list) const {
 }
 
 int CSharpScript::get_member_line(const StringName &p_member) const {
-	// TODO omnisharp
-	return -1;
+	int p_line = -1;
+	RegEx pattern("\\w+\\s{0,}" + p_member + "\\s{0,}\\([^()]*\\)\\s{0,}\\{{1,}");
+	Ref<RegExMatch> ref = pattern.search(get_source_code());
+	if (ref != NULL) {
+		RegExMatch *match = ref.ptr();
+		String tmp_str = match->get_string(0).split("\n")[0];
+
+		Vector<String> source_code_line = get_source_code().split("\n");
+		for (int i = 0; i < source_code_line.size(); i = i + 1) {
+			int tmp_col = source_code_line[i].find(tmp_str);
+			if (tmp_col > 0) {
+				p_line = i;
+				break;
+			}
+		}
+	}
+	return p_line;
 }
 
 MultiplayerAPI::RPCMode CSharpScript::_member_get_rpc_mode(IMonoClassMember *p_member) const {
