@@ -73,6 +73,7 @@ const char *VisualScriptBuiltinFunc::func_name[VisualScriptBuiltinFunc::FUNC_MAX
 	"randi",
 	"randf",
 	"randf_range",
+	"randfn",
 	"randi_range",
 	"seed",
 	"rand_seed",
@@ -194,6 +195,7 @@ int VisualScriptBuiltinFunc::get_func_argument_count(BuiltinFunc p_func) {
 		case MATH_EASE:
 		case MATH_SNAPPED:
 		case MATH_RANDF_RANGE:
+		case MATH_RANDFN:
 		case MATH_RANDI_RANGE:
 		case MATH_POLAR2CARTESIAN:
 		case MATH_CARTESIAN2POLAR:
@@ -367,6 +369,13 @@ PropertyInfo VisualScriptBuiltinFunc::get_input_value_port_info(int p_idx) const
 				return PropertyInfo(Variant::FLOAT, "from");
 			} else {
 				return PropertyInfo(Variant::FLOAT, "to");
+			}
+		} break;
+		case MATH_RANDFN: {
+			if (p_idx == 0) {
+				return PropertyInfo(Variant::FLOAT, "mean");
+			} else {
+				return PropertyInfo(Variant::FLOAT, "deviation");
 			}
 		} break;
 		case MATH_RANDI_RANGE: {
@@ -546,6 +555,7 @@ PropertyInfo VisualScriptBuiltinFunc::get_output_value_port_info(int p_idx) cons
 			t = Variant::INT;
 		} break;
 		case MATH_RANDF:
+		case MATH_RANDFN:
 		case MATH_RANDF_RANGE: {
 			t = Variant::FLOAT;
 		} break;
@@ -1244,6 +1254,7 @@ void VisualScriptBuiltinFunc::_bind_methods() {
 	BIND_ENUM_CONSTANT(MATH_RANDI);
 	BIND_ENUM_CONSTANT(MATH_RANDF);
 	BIND_ENUM_CONSTANT(MATH_RANDF_RANGE);
+	BIND_ENUM_CONSTANT(MATH_RANDFN);
 	BIND_ENUM_CONSTANT(MATH_RANDI_RANGE);
 	BIND_ENUM_CONSTANT(MATH_SEED);
 	BIND_ENUM_CONSTANT(MATH_RANDSEED);
@@ -1335,6 +1346,7 @@ void register_visual_script_builtin_func_node() {
 	VisualScriptLanguage::singleton->add_register_func("functions/built_in/randi", create_builtin_func_node<VisualScriptBuiltinFunc::MATH_RANDI>);
 	VisualScriptLanguage::singleton->add_register_func("functions/built_in/randf", create_builtin_func_node<VisualScriptBuiltinFunc::MATH_RANDF>);
 	VisualScriptLanguage::singleton->add_register_func("functions/built_in/randf_range", create_builtin_func_node<VisualScriptBuiltinFunc::MATH_RANDF_RANGE>);
+	VisualScriptLanguage::singleton->add_register_func("functions/built_in/randfn", create_builtin_func_node<VisualScriptBuiltinFunc::MATH_RANDFN>);
 	VisualScriptLanguage::singleton->add_register_func("functions/built_in/randi_range", create_builtin_func_node<VisualScriptBuiltinFunc::MATH_RANDI_RANGE>);
 
 	VisualScriptLanguage::singleton->add_register_func("functions/built_in/seed", create_builtin_func_node<VisualScriptBuiltinFunc::MATH_SEED>);
