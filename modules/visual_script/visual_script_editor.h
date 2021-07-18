@@ -60,7 +60,8 @@ class VisualScriptEditor : public ScriptEditorBase {
 		EDIT_CUT_NODES,
 		EDIT_PASTE_NODES,
 		EDIT_CREATE_FUNCTION,
-		REFRESH_GRAPH
+		REFRESH_GRAPH,
+		ARRANGE_NODES,
 	};
 
 	enum PortAction {

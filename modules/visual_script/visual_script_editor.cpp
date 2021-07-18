@@ -4019,6 +4019,9 @@ void VisualScriptEditor::_menu_option(int p_what) {
 		case REFRESH_GRAPH: {
 			_update_graph();
 		} break;
+		case ARRANGE_NODES: {
+			graph->arrange_nodes();
+		} break;
 	}
 }
 
@@ -4219,6 +4222,7 @@ VisualScriptEditor::VisualScriptEditor() {
 	edit_menu->get_popup()->add_separator();
 	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("visual_script_editor/create_function"), EDIT_CREATE_FUNCTION);
 	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("visual_script_editor/refresh_nodes"), REFRESH_GRAPH);
+	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("visual_script_editor/arrange_nodes"), ARRANGE_NODES);
 	edit_menu->get_popup()->connect("id_pressed", callable_mp(this, &VisualScriptEditor::_menu_option));
 
 	members_section = memnew(VBoxContainer);
@@ -4460,6 +4464,7 @@ static void register_editor_callback() {
 	ED_SHORTCUT("visual_script_editor/create_function", TTR("Make Function"), KEY_MASK_CMD + KEY_G);
 	ED_SHORTCUT("visual_script_editor/refresh_nodes", TTR("Refresh Graph"), KEY_MASK_CMD + KEY_R);
 	ED_SHORTCUT("visual_script_editor/edit_member", TTR("Edit Member"), KEY_MASK_CMD + KEY_E);
+	ED_SHORTCUT("visual_script_editor/arrange_nodes", TTR("Arrange Nodes"), KEY_MASK_CMD + KEY_K);
 }
 
 void VisualScriptEditor::register_editor() {

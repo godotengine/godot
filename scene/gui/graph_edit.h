@@ -230,6 +230,21 @@ private:
 
 	bool _check_clickable_control(Control *p_control, const Vector2 &pos);
 
+	enum SET_OPERATIONS {
+		IS_EQUAL,
+		IS_SUBSET,
+		DIFFERENCE,
+		UNION,
+	};
+
+	int set_operations(SET_OPERATIONS e, Set<StringName> &U, const Set<StringName> &V);
+	HashMap<int, Vector<StringName>> layering(const Set<StringName> &v, const HashMap<StringName, Set<StringName>> &m);
+	Vector<StringName> split(const Vector<StringName> &l, const HashMap<StringName, Dictionary> &c);
+	void horizontal_alignment(Dictionary &root, Dictionary &align, const HashMap<int, Vector<StringName>> &l, const HashMap<StringName, Set<StringName>> &u, const Set<StringName> &s);
+	void crossing_minimisation(HashMap<int, Vector<StringName>> &l, const HashMap<StringName, Set<StringName>> &u);
+	void calculate_inner_shifts(Dictionary &d, const Dictionary &node_names, const Dictionary &root, const Dictionary &align, const Set<StringName> &block_heads, const HashMap<StringName, Pair<int, int>> &port_info);
+	void place_block(StringName v, float delta, const HashMap<int, Vector<StringName>> &_layers, const Dictionary &root, const Dictionary &align, const Dictionary &node_name, const Dictionary &inner_shift, Dictionary &sink, Dictionary &shift, HashMap<StringName, Vector2> &node_positions);
+
 protected:
 	static void _bind_methods();
 	virtual void add_child_notify(Node *p_child) override;
@@ -303,6 +318,8 @@ public:
 	bool is_connection_lines_antialiased() const;
 
 	HBoxContainer *get_zoom_hbox();
+
+	void arrange_nodes();
 
 	GraphEdit();
 };
