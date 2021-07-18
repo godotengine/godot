@@ -194,6 +194,7 @@ Error RegEx::compile(const String &p_pattern) {
 
 Ref<RegExMatch> RegEx::search(const String &p_subject, int p_offset, int p_end) const {
 	ERR_FAIL_COND_V(!is_valid(), nullptr);
+	ERR_FAIL_COND_V_MSG(p_offset < 0, nullptr, "RegEx search offset must be >= 0");
 
 	Ref<RegExMatch> result = memnew(RegExMatch);
 
@@ -258,6 +259,8 @@ Ref<RegExMatch> RegEx::search(const String &p_subject, int p_offset, int p_end) 
 }
 
 Array RegEx::search_all(const String &p_subject, int p_offset, int p_end) const {
+	ERR_FAIL_COND_V_MSG(p_offset < 0, Array(), "RegEx search offset must be >= 0");
+
 	int last_end = -1;
 	Array result;
 	Ref<RegExMatch> match = search(p_subject, p_offset, p_end);
@@ -274,6 +277,7 @@ Array RegEx::search_all(const String &p_subject, int p_offset, int p_end) const 
 
 String RegEx::sub(const String &p_subject, const String &p_replacement, bool p_all, int p_offset, int p_end) const {
 	ERR_FAIL_COND_V(!is_valid(), String());
+	ERR_FAIL_COND_V_MSG(p_offset < 0, String(), "RegEx sub offset must be >= 0");
 
 	// safety_zone is the number of chars we allocate in addition to the number of chars expected in order to
 	// guard against the PCRE API writing one additional \0 at the end. PCRE's API docs are unclear on whether
