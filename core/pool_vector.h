@@ -451,10 +451,22 @@ public:
 	void invert();
 
 	void operator=(const PoolVector &p_pool_vector) { _reference(p_pool_vector); }
+	void operator=(std::initializer_list<T> l) {
+		alloc = nullptr;
+		resize(l.size());
+		Write w = write();
+		int p_index = -1;
+		for (const T &p_val : l) {
+			w[++p_index] = p_val;
+		}
+	}
 	PoolVector() { alloc = nullptr; }
 	PoolVector(const PoolVector &p_pool_vector) {
 		alloc = nullptr;
 		_reference(p_pool_vector);
+	}
+	PoolVector(std::initializer_list<T> l) {
+		*this = l;
 	}
 	~PoolVector() { _unreference(); }
 };

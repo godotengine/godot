@@ -37,6 +37,10 @@ class Variant;
 class ArrayPrivate;
 class Object;
 class StringName;
+namespace std {
+template <class _E>
+class initializer_list;
+}
 
 class Array {
 	mutable ArrayPrivate *_p;
@@ -60,6 +64,7 @@ public:
 
 	uint32_t hash() const;
 	void operator=(const Array &p_array);
+	void operator=(std::initializer_list<Variant> l);
 
 	void push_back(const Variant &p_value);
 	_FORCE_INLINE_ void append(const Variant &p_value) { push_back(p_value); } //for python compatibility
@@ -101,6 +106,7 @@ public:
 	const void *id() const;
 
 	Array(const Array &p_from);
+	Array(std::initializer_list<Variant> l);
 	Array();
 	~Array();
 };

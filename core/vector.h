@@ -41,6 +41,8 @@
 #include "core/error_macros.h"
 #include "core/os/memory.h"
 #include "core/sort_array.h"
+#include <initializer_list>
+#include <utility>
 
 template <class T>
 class VectorWriteProxy {
@@ -118,8 +120,17 @@ public:
 
 	_FORCE_INLINE_ Vector() {}
 	_FORCE_INLINE_ Vector(const Vector &p_from) { _cowdata._ref(p_from._cowdata); }
+	_FORCE_INLINE_ Vector(std::initializer_list<T> l) { *this = std::move(l); }
 	inline Vector &operator=(const Vector &p_from) {
 		_cowdata._ref(p_from._cowdata);
+		return *this;
+	}
+	Vector &operator=(std::initializer_list<T> l) {
+		_cowdata.resize(l.size());
+		int i = -1;
+		for (const T &v : l) {
+			_cowdata.set(++i, v);
+		}
 		return *this;
 	}
 

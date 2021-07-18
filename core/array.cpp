@@ -34,6 +34,8 @@
 #include "core/object.h"
 #include "core/variant.h"
 #include "core/vector.h"
+#include <initializer_list>
+#include <utility>
 
 class ArrayPrivate {
 public:
@@ -102,6 +104,9 @@ uint32_t Array::hash() const {
 }
 void Array::operator=(const Array &p_array) {
 	_ref(p_array);
+}
+void Array::operator=(std::initializer_list<Variant> l) {
+	_ref(Array(std::move(l)));
 }
 void Array::push_back(const Variant &p_value) {
 	_p->array.push_back(p_value);
@@ -431,6 +436,12 @@ const void *Array::id() const {
 Array::Array(const Array &p_from) {
 	_p = nullptr;
 	_ref(p_from);
+}
+
+Array::Array(std::initializer_list<Variant> l) {
+	_p = memnew(ArrayPrivate);
+	_p->refcount.init();
+	_p->array = Vector<Variant>(l);
 }
 
 Array::Array() {

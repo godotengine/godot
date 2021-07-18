@@ -317,6 +317,7 @@ public:
 	Variant(const PoolVector<Vector2> &p_vector2_array); // helper
 
 	Variant(const IP_Address &p_address);
+	Variant(std::initializer_list<Variant> l);
 
 	// If this changes the table in variant_op must be updated
 	enum Operator {
