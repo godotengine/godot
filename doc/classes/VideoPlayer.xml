@@ -69,6 +69,9 @@
 		<member name="paused" type="bool" setter="set_paused" getter="is_paused" default="false">
 			If [code]true[/code], the video is paused.
 		</member>
+		<member name="process_while_paused" type="bool" setter="set_process_while_paused" getter="is_processing_while_paused" default="false">
+			If [code]true[/code], continues processing the video stream even when [member paused] is [code]true[/code], this allows to seek to different parts of the video while paused.
+		</member>
 		<member name="stream" type="VideoStream" setter="set_stream" getter="get_stream">
 			The assigned video stream. See description for supported formats.
 		</member>
