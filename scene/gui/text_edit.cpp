@@ -4913,7 +4913,13 @@ int TextEdit::get_first_non_whitespace_column(int p_line) const {
 }
 
 int TextEdit::get_line_count() const {
-	return text.size();
+	int line_count = text.size();
+
+	for (int i = 0; i < text.size(); ++i) {
+		line_count += times_line_wraps(i);
+	}
+
+	return line_count;
 }
 
 int TextEdit::get_line_width(int p_line, int p_wrap_offset) const {
