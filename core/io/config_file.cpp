@@ -183,7 +183,9 @@ Error ConfigFile::_internal_save(FileAccess *file) {
 		if (E != values.front()) {
 			file->store_string("\n");
 		}
-		file->store_string("[" + E.key() + "]\n\n");
+		if (E.key() != "") {
+			file->store_string("[" + E.key() + "]\n\n");
+		}
 
 		for (OrderedHashMap<String, Variant>::Element F = E.get().front(); F; F = F.next()) {
 			String vstr;

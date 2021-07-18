@@ -473,16 +473,21 @@ private:
 						cd->grab_focus();
 						return;
 					}
+					PackedStringArray project_features = ProjectSettings::get_required_features();
 					ProjectSettings::CustomMap initial_settings;
 					if (rasterizer_button_group->get_pressed_button()->get_meta("driver_name") == "Vulkan") {
 						initial_settings["rendering/driver/driver_name"] = "Vulkan";
+						project_features.append("Vulkan");
 					} else {
 						initial_settings["rendering/driver/driver_name"] = "GLES2";
+						project_features.append("GLES2");
 						initial_settings["rendering/textures/vram_compression/import_etc2"] = false;
 						initial_settings["rendering/textures/vram_compression/import_etc"] = true;
 					}
 					initial_settings["application/config/name"] = project_name->get_text().strip_edges();
 					initial_settings["application/config/icon"] = "res://icon.png";
+					project_features.sort();
+					initial_settings["application/config/features"] = project_features;
 					initial_settings["rendering/environment/defaults/default_environment"] = "res://default_env.tres";
 
 					if (ProjectSettings::get_singleton()->save_custom(dir.plus_file("project.godot"), initial_settings, Vector<String>(), false) != OK) {
@@ -992,6 +997,7 @@ public:
 		String path;
 		String icon;
 		String main_scene;
+		String unsupported_features_str;
 		uint64_t last_edited = 0;
 		bool favorite = false;
 		bool grayed = false;
@@ -1008,6 +1014,7 @@ public:
 				const String &p_path,
 				const String &p_icon,
 				const String &p_main_scene,
+				const String &p_unsupported_features_str,
 				uint64_t p_last_edited,
 				bool p_favorite,
 				bool p_grayed,
@@ -1019,6 +1026,7 @@ public:
 			path = p_path;
 			icon = p_icon;
 			main_scene = p_main_scene;
+			unsupported_features_str = p_unsupported_features_str;
 			last_edited = p_last_edited;
 			favorite = p_favorite;
 			grayed = p_grayed;
@@ -1070,8 +1078,7 @@ private:
 	void remove_project(int p_index, bool p_update_settings);
 	void update_icons_async();
 	void load_project_icon(int p_index);
-
-	static void load_project_data(const String &p_property_key, Item &p_item, bool p_favorite);
+	static Item load_project_data(const String &p_property_key, bool p_favorite);
 
 	String _search_term;
 	FilterOption _order_option;
@@ -1162,7 +1169,8 @@ void ProjectList::load_project_icon(int p_index) {
 	item.control->icon_needs_reload = false;
 }
 
-void ProjectList::load_project_data(const String &p_property_key, Item &p_item, bool p_favorite) {
+// Load project data from p_property_key and return it in a ProjectList::Item. p_favorite is passed directly into the Item.
+ProjectList::Item ProjectList::load_project_data(const String &p_property_key, bool p_favorite) {
 	String path = EditorSettings::get_singleton()->get(p_property_key);
 	String conf = path.plus_file("project.godot");
 	bool grayed = false;
@@ -1182,13 +1190,63 @@ void ProjectList::load_project_data(const String &p_property_key, Item &p_item, 
 	}
 
 	if (config_version > ProjectSettings::CONFIG_VERSION) {
-		// Comes from an incompatible (more recent) Godot version, grey it out
+		// Comes from an incompatible (more recent) Godot version, gray it out.
 		grayed = true;
 	}
 
-	String description = cf->get_value("application", "config/description", "");
-	String icon = cf->get_value("application", "config/icon", "");
-	String main_scene = cf->get_value("application", "run/main_scene", "");
+	const String description = cf->get_value("application", "config/description", "");
+	const String icon = cf->get_value("application", "config/icon", "");
+	const String main_scene = cf->get_value("application", "run/main_scene", "");
+
+	PackedStringArray project_features = cf->get_value("application", "config/features", PackedStringArray());
+	bool project_features_dirty = false;
+	// If there is no feature list currently present, force one to generate.
+	if (project_features.is_empty()) {
+		project_features = ProjectSettings::get_required_features();
+		project_features_dirty = true;
+	}
+	// Check the rendering API.
+	const String rendering_api = cf->get_value("rendering", "quality/driver/driver_name", "");
+	if (rendering_api != "") {
+		// Add the rendering API as a project feature if it doesn't already exist.
+		if (!project_features.has(rendering_api)) {
+			project_features.append(rendering_api);
+			project_features_dirty = true;
+		}
+	}
+	// Check for the existence of a csproj file.
+	if (FileAccess::exists(path.plus_file(project_name + ".csproj"))) {
+		// If there is a csproj file, add the C# feature if it doesn't already exist.
+		if (!project_features.has("C#")) {
+			project_features.append("C#");
+			project_features_dirty = true;
+		}
+	} else {
+		// If there isn't a csproj file, remove the C# feature if it exists.
+		if (project_features.has("C#")) {
+			project_features.remove(project_features.find("C#"));
+			project_features_dirty = true;
+		}
+	}
+	if (project_features_dirty) {
+		project_features.sort();
+		// Write the updated feature list, but only if the project config version is the same.
+		// Never write to project files with a different config version!
+		if (config_version == ProjectSettings::CONFIG_VERSION) {
+			ProjectSettings *ps = ProjectSettings::get_singleton();
+			ps->load_custom(conf);
+			ps->set("application/config/features", project_features);
+			ps->save_custom(conf);
+		}
+	}
+	PackedStringArray unsupported_features = ProjectSettings::get_unsupported_features(project_features);
+	String features_string = Variant(unsupported_features).operator String();
+	String unsupported_features_str;
+	if (features_string.length() < 3) {
+		unsupported_features_str = "";
+	} else {
+		unsupported_features_str = features_string.trim_prefix("[").trim_suffix("]");
+	}
 
 	uint64_t last_edited = 0;
 	if (FileAccess::exists(conf)) {
@@ -1210,9 +1268,9 @@ void ProjectList::load_project_data(const String &p_property_key, Item &p_item, 
 		print_line("Project is missing: " + conf);
 	}
 
-	String project_key = p_property_key.get_slice("/", 1);
+	const String project_key = p_property_key.get_slice("/", 1);
 
-	p_item = Item(project_key, project_name, description, path, icon, main_scene, last_edited, p_favorite, grayed, missing, config_version);
+	return Item(project_key, project_name, description, path, icon, main_scene, unsupported_features_str, last_edited, p_favorite, grayed, missing, config_version);
 }
 
 void ProjectList::load_projects() {
@@ -1255,8 +1313,7 @@ void ProjectList::load_projects() {
 		String project_key = property_key.get_slice("/", 1);
 		bool favorite = favorites.has("favorite_projects/" + project_key);
 
-		Item item;
-		load_project_data(property_key, item, favorite);
+		Item item = load_project_data(property_key, favorite);
 
 		_projects.push_back(item);
 	}
@@ -1341,7 +1398,7 @@ void ProjectList::create_project_item_control(int p_index) {
 	TextureButton *favorite = memnew(TextureButton);
 	favorite->set_name("FavoriteButton");
 	favorite->set_normal_texture(favorite_icon);
-	// This makes the project's "hover" style display correctly when hovering the favorite icon
+	// This makes the project's "hover" style display correctly when hovering the favorite icon.
 	favorite->set_mouse_filter(MOUSE_FILTER_PASS);
 	favorite->connect("pressed", callable_mp(this, &ProjectList::_favorite_pressed), varray(hb));
 	favorite_box->add_child(favorite);
@@ -1371,40 +1428,64 @@ void ProjectList::create_project_item_control(int p_index) {
 	ec->set_custom_minimum_size(Size2(0, 1));
 	ec->set_mouse_filter(MOUSE_FILTER_PASS);
 	vb->add_child(ec);
-	Label *title = memnew(Label(!item.missing ? item.project_name : TTR("Missing Project")));
-	title->add_theme_font_override("font", get_theme_font("title", "EditorFonts"));
-	title->add_theme_font_size_override("font_size", get_theme_font_size("title_size", "EditorFonts"));
-	title->add_theme_color_override("font_color", font_color);
-	title->set_clip_text(true);
-	vb->add_child(title);
 
-	HBoxContainer *path_hb = memnew(HBoxContainer);
-	path_hb->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-	vb->add_child(path_hb);
+	{ // Top half, title and unsupported features labels.
+		HBoxContainer *title_hb = memnew(HBoxContainer);
+		vb->add_child(title_hb);
 
-	Button *show = memnew(Button);
-	// Display a folder icon if the project directory can be opened, or a "broken file" icon if it can't.
-	show->set_icon(get_theme_icon(!item.missing ? "Load" : "FileBroken", "EditorIcons"));
-	if (!item.grayed) {
-		// Don't make the icon less prominent if the parent is already grayed out.
-		show->set_modulate(Color(1, 1, 1, 0.5));
+		Label *title = memnew(Label(!item.missing ? item.project_name : TTR("Missing Project")));
+		title->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+		title->add_theme_font_override("font", get_theme_font("title", "EditorFonts"));
+		title->add_theme_font_size_override("font_size", get_theme_font_size("title_size", "EditorFonts"));
+		title->add_theme_color_override("font_color", font_color);
+		title->set_clip_text(true);
+		title_hb->add_child(title);
+
+		int length = item.unsupported_features_str.length();
+		if (length > 0) {
+			Label *unsupported_label = memnew(Label(item.unsupported_features_str));
+			unsupported_label->set_custom_minimum_size(Size2(length * 15, 10));
+			unsupported_label->add_theme_font_override("font", get_theme_font("title", "EditorFonts"));
+			unsupported_label->add_theme_color_override("font_color", Color(1, 0.85, 0.4));
+			unsupported_label->set_clip_text(true);
+			unsupported_label->set_align(Label::ALIGN_RIGHT);
+			title_hb->add_child(unsupported_label);
+			Control *spacer = memnew(Control());
+			spacer->set_custom_minimum_size(Size2(10, 10));
+			title_hb->add_child(spacer);
+		}
 	}
-	path_hb->add_child(show);
 
-	if (!item.missing) {
-		show->connect("pressed", callable_mp(this, &ProjectList::_show_project), varray(item.path));
-		show->set_tooltip(TTR("Show in File Manager"));
-	} else {
-		show->set_tooltip(TTR("Error: Project is missing on the filesystem."));
+	{ // Bottom half, containing the path and view folder button.
+		HBoxContainer *path_hb = memnew(HBoxContainer);
+		path_hb->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+		vb->add_child(path_hb);
+
+		Button *show = memnew(Button);
+		// Display a folder icon if the project directory can be opened, or a "broken file" icon if it can't.
+		show->set_icon(get_theme_icon(!item.missing ? "Load" : "FileBroken", "EditorIcons"));
+		show->set_flat(true);
+		if (!item.grayed) {
+			// Don't make the icon less prominent if the parent is already grayed out.
+			show->set_modulate(Color(1, 1, 1, 0.5));
+		}
+		path_hb->add_child(show);
+
+		if (!item.missing) {
+			show->connect("pressed", callable_mp(this, &ProjectList::_show_project), varray(item.path));
+			show->set_tooltip(TTR("Show in File Manager"));
+		} else {
+			show->set_tooltip(TTR("Error: Project is missing on the filesystem."));
+		}
+
+		Label *fpath = memnew(Label(item.path));
+		fpath->set_structured_text_bidi_override(Control::STRUCTURED_TEXT_FILE);
+		path_hb->add_child(fpath);
+		fpath->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+		fpath->set_modulate(Color(1, 1, 1, 0.5));
+		fpath->add_theme_color_override("font_color", font_color);
+		fpath->set_clip_text(true);
 	}
-
-	Label *fpath = memnew(Label(item.path));
-	fpath->set_structured_text_bidi_override(Control::STRUCTURED_TEXT_FILE);
-	path_hb->add_child(fpath);
-	fpath->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-	fpath->set_modulate(Color(1, 1, 1, 0.5));
-	fpath->add_theme_color_override("font_color", font_color);
-	fpath->set_clip_text(true);
 
 	_scroll_children->add_child(hb);
 	item.control = hb;
@@ -1609,8 +1690,7 @@ int ProjectList::refresh_project(const String &dir_path) {
 	if (should_be_in_list) {
 		// Recreate it with updated info
 
-		Item item;
-		load_project_data(property_key, item, is_favourite);
+		Item item = load_project_data(property_key, is_favourite);
 
 		_projects.push_back(item);
 		create_project_item_control(_projects.size() - 1);
@@ -2086,8 +2166,12 @@ void ProjectManager::_open_selected_projects_ask() {
 	}
 
 	// Update the project settings or don't open
-	String conf = project.path.plus_file("project.godot");
-	int config_version = project.version;
+	const String conf = project.path.plus_file("project.godot");
+	const String unsupported_features_str = project.unsupported_features_str;
+	const int config_version = project.version;
+
+	Label *ask_update_label = ask_update_settings->get_label();
+	ask_update_label->set_align(Label::ALIGN_LEFT); // Reset in case of previous center align.
 
 	// Check if the config_version property was empty or 0
 	if (config_version == 0) {
@@ -2105,6 +2189,13 @@ void ProjectManager::_open_selected_projects_ask() {
 	if (config_version > ProjectSettings::CONFIG_VERSION) {
 		dialog_error->set_text(vformat(TTR("Can't open project at '%s'.") + "\n" + TTR("The project settings were created by a newer engine version, whose settings are not compatible with this version."), project.path));
 		dialog_error->popup_centered();
+		return;
+	}
+	// Check if the project is using features not supported by this build of Godot.
+	if (unsupported_features_str.length() > 0) {
+		ask_update_label->set_align(Label::ALIGN_CENTER);
+		ask_update_settings->set_text(vformat(TTR("Warning: This project uses the following features not supported by this build of Godot:\n\n%s\n\nOpen anyway? Project will be modified."), unsupported_features_str));
+		ask_update_settings->popup_centered();
 		return;
 	}
 
