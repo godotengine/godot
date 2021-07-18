@@ -986,9 +986,9 @@ public:
 	};
 
 	enum EnvironmentSDFGIYScale {
-		ENV_SDFGI_Y_SCALE_DISABLED,
+		ENV_SDFGI_Y_SCALE_50_PERCENT,
 		ENV_SDFGI_Y_SCALE_75_PERCENT,
-		ENV_SDFGI_Y_SCALE_50_PERCENT
+		ENV_SDFGI_Y_SCALE_100_PERCENT,
 	};
 
 	virtual void environment_set_sdfgi(RID p_env, bool p_enable, EnvironmentSDFGICascades p_cascades, float p_min_cell_size, EnvironmentSDFGIYScale p_y_scale, bool p_use_occlusion, float p_bounce_feedback, bool p_read_sky, float p_energy, float p_normal_bias, float p_probe_bias) = 0;
