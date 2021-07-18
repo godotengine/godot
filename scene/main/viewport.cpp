@@ -70,7 +70,7 @@ void ViewportTexture::setup_local_to_scene() {
 	}
 
 	Node *vpn = local_scene->get_node(path);
-	ERR_FAIL_COND_MSG(!vpn, "ViewportTexture: Path to node is invalid.");
+	ERR_FAIL_COND_MSG(!vpn, "ViewportTexture: Path to node is invalid. If the path seems valid, move the node using the ViewportTexture so that it is placed after the Viewport in the scene tree.");
 
 	vp = Object::cast_to<Viewport>(vpn);
 
