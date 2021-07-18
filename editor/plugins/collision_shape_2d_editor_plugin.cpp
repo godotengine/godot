@@ -31,6 +31,7 @@
 #include "collision_shape_2d_editor_plugin.h"
 
 #include "canvas_item_editor_plugin.h"
+#include "core/os/keyboard.h"
 #include "scene/resources/capsule_shape_2d.h"
 #include "scene/resources/circle_shape_2d.h"
 #include "scene/resources/concave_polygon_shape_2d.h"
@@ -97,7 +98,7 @@ Variant CollisionShape2DEditor::get_handle_value(int idx) const {
 		case RECTANGLE_SHAPE: {
 			Ref<RectangleShape2D> rect = node->get_shape();
 
-			if (idx < 3) {
+			if (idx < 8) {
 				return rect->get_size().abs();
 			}
 
@@ -176,16 +177,26 @@ void CollisionShape2DEditor::set_handle(int idx, Point2 &p_point) {
 		} break;
 
 		case RECTANGLE_SHAPE: {
-			if (idx < 3) {
+			if (idx < 8) {
 				Ref<RectangleShape2D> rect = node->get_shape();
+				Vector2 size = (Point2)original;
 
-				Vector2 size = rect->get_size();
-				if (idx == 2) {
-					size = p_point * 2;
-				} else {
-					size[idx] = p_point[idx] * 2;
+				if (RECT_HANDLES[idx].x != 0) {
+					size.x = p_point.x * RECT_HANDLES[idx].x * 2;
 				}
-				rect->set_size(size.abs());
+				if (RECT_HANDLES[idx].y != 0) {
+					size.y = p_point.y * RECT_HANDLES[idx].y * 2;
+				}
+
+				if (Input::get_singleton()->is_key_pressed(KEY_ALT)) {
+					rect->set_size(size.abs());
+					node->set_global_position(original_transform.get_origin());
+				} else {
+					rect->set_size(((Point2)original + (size - (Point2)original) * 0.5).abs());
+					Point2 pos = original_transform.affine_inverse().xform(original_transform.get_origin());
+					pos += (size - (Point2)original) * 0.5 * RECT_HANDLES[idx] * 0.5;
+					node->set_global_position(original_transform.xform(pos));
+				}
 
 				canvas_item_editor->update_viewport();
 			}
@@ -280,8 +291,10 @@ void CollisionShape2DEditor::commit_handle(int idx, Variant &p_org) {
 			Ref<RectangleShape2D> rect = node->get_shape();
 
 			undo_redo->add_do_method(rect.ptr(), "set_size", rect->get_size());
+			undo_redo->add_do_method(node, "set_global_transform", node->get_global_transform());
 			undo_redo->add_do_method(canvas_item_editor, "update_viewport");
 			undo_redo->add_undo_method(rect.ptr(), "set_size", p_org);
+			undo_redo->add_undo_method(node, "set_global_transform", original_transform);
 			undo_redo->add_undo_method(canvas_item_editor, "update_viewport");
 
 		} break;
@@ -342,6 +355,8 @@ bool CollisionShape2DEditor::forward_canvas_gui_input(const Ref<InputEvent> &p_e
 				}
 
 				original = get_handle_value(edit_handle);
+				original_transform = node->get_global_transform();
+				last_point = original;
 				pressed = true;
 
 				return true;
@@ -369,11 +384,24 @@ bool CollisionShape2DEditor::forward_canvas_gui_input(const Ref<InputEvent> &p_e
 		}
 
 		Vector2 cpoint = canvas_item_editor->snap_point(canvas_item_editor->get_canvas_transform().affine_inverse().xform(mm->get_position()));
-		cpoint = node->get_global_transform().affine_inverse().xform(cpoint);
+		cpoint = original_transform.affine_inverse().xform(cpoint);
+		last_point = cpoint;
 
 		set_handle(edit_handle, cpoint);
 
 		return true;
+	}
+
+	Ref<InputEventKey> k = p_event;
+
+	if (k.is_valid()) {
+		if (edit_handle == -1 || !pressed || k->is_echo()) {
+			return false;
+		}
+
+		if (shape_type == RECTANGLE_SHAPE && k->get_keycode() == KEY_ALT) {
+			set_handle(edit_handle, last_point); // Update handle when Alt key is toggled.
+		}
 	}
 
 	return false;
@@ -492,15 +520,12 @@ void CollisionShape2DEditor::forward_canvas_draw_over_viewport(Control *p_overla
 		case RECTANGLE_SHAPE: {
 			Ref<RectangleShape2D> shape = node->get_shape();
 
-			handles.resize(3);
+			handles.resize(8);
 			Vector2 ext = shape->get_size() / 2;
-			handles.write[0] = Point2(ext.x, 0);
-			handles.write[1] = Point2(0, ext.y);
-			handles.write[2] = Point2(ext.x, ext.y);
-
-			p_overlay->draw_texture(h, gt.xform(handles[0]) - size);
-			p_overlay->draw_texture(h, gt.xform(handles[1]) - size);
-			p_overlay->draw_texture(h, gt.xform(handles[2]) - size);
+			for (int i = 0; i < handles.size(); i++) {
+				handles.write[i] = RECT_HANDLES[i] * ext;
+				p_overlay->draw_texture(h, gt.xform(handles[i]) - size);
+			}
 
 		} break;
 
