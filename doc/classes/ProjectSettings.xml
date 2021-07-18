@@ -1474,6 +1474,10 @@
 		</member>
 		<member name="rendering/occlusion_culling/use_occlusion_culling" type="bool" setter="" getter="" default="false">
 		</member>
+		<member name="rendering/quality/default_filters/mipmap_lod_bias" type="float" setter="" getter="" default="0.0">
+			Controls the LOD bias to use for [i]all[/i] mipmapped textures. Positive values will make mipmapped textures appear blurrier, whereas negative values will make mipmapped textures appear sharper. This can be used as a cheaper complement or alternative to anisotropic filtering, especially on platforms with low memory bandwidth such as integrated graphics or mobile platforms. However, a LOD bias that's too low will result in mipmapped textures having a grainy appearance. Recommended values are between [code]-1.0[/code] and [code]0.0[/code].
+			[b]Note:[/b] This value cannot be changed at runtime yet.
+		</member>
 		<member name="rendering/reflections/reflection_atlas/reflection_count" type="int" setter="" getter="" default="64">
 			Number of cubemaps to store in the reflection atlas. The number of [ReflectionProbe]s in a scene will be limited by this amount. A higher number requires more VRAM.
 		</member>

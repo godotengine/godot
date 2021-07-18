@@ -9128,11 +9128,13 @@ RendererStorageRD::RendererStorageRD() {
 					sampler_state.mag_filter = RD::SAMPLER_FILTER_NEAREST;
 					sampler_state.min_filter = RD::SAMPLER_FILTER_LINEAR;
 					sampler_state.mip_filter = RD::SAMPLER_FILTER_LINEAR;
+					sampler_state.lod_bias = GLOBAL_GET("rendering/quality/default_filters/mipmap_lod_bias");
 				} break;
 				case RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR_WITH_MIPMAPS: {
 					sampler_state.mag_filter = RD::SAMPLER_FILTER_LINEAR;
 					sampler_state.min_filter = RD::SAMPLER_FILTER_LINEAR;
 					sampler_state.mip_filter = RD::SAMPLER_FILTER_LINEAR;
+					sampler_state.lod_bias = GLOBAL_GET("rendering/quality/default_filters/mipmap_lod_bias");
 
 				} break;
 				case RS::CANVAS_ITEM_TEXTURE_FILTER_NEAREST_WITH_MIPMAPS_ANISOTROPIC: {
@@ -9141,6 +9143,7 @@ RendererStorageRD::RendererStorageRD() {
 					sampler_state.mip_filter = RD::SAMPLER_FILTER_LINEAR;
 					sampler_state.use_anisotropy = true;
 					sampler_state.anisotropy_max = 1 << int(GLOBAL_GET("rendering/textures/default_filters/anisotropic_filtering_level"));
+					sampler_state.lod_bias = GLOBAL_GET("rendering/quality/default_filters/mipmap_lod_bias");
 				} break;
 				case RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR_WITH_MIPMAPS_ANISOTROPIC: {
 					sampler_state.mag_filter = RD::SAMPLER_FILTER_LINEAR;
@@ -9148,7 +9151,7 @@ RendererStorageRD::RendererStorageRD() {
 					sampler_state.mip_filter = RD::SAMPLER_FILTER_LINEAR;
 					sampler_state.use_anisotropy = true;
 					sampler_state.anisotropy_max = 1 << int(GLOBAL_GET("rendering/textures/default_filters/anisotropic_filtering_level"));
-
+					sampler_state.lod_bias = GLOBAL_GET("rendering/quality/default_filters/mipmap_lod_bias");
 				} break;
 				default: {
 				}
@@ -9158,7 +9161,6 @@ RendererStorageRD::RendererStorageRD() {
 					sampler_state.repeat_u = RD::SAMPLER_REPEAT_MODE_CLAMP_TO_EDGE;
 					sampler_state.repeat_v = RD::SAMPLER_REPEAT_MODE_CLAMP_TO_EDGE;
 					sampler_state.repeat_w = RD::SAMPLER_REPEAT_MODE_CLAMP_TO_EDGE;
-
 				} break;
 				case RS::CANVAS_ITEM_TEXTURE_REPEAT_ENABLED: {
 					sampler_state.repeat_u = RD::SAMPLER_REPEAT_MODE_REPEAT;
