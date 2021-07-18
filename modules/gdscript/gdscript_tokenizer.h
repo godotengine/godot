@@ -150,6 +150,10 @@ public:
 			CONST_TAU,
 			CONST_INF,
 			CONST_NAN,
+			CONST_INT32_MIN,
+			CONST_INT32_MAX,
+			CONST_INT64_MIN,
+			CONST_INT64_MAX,
 			// Error message improvement
 			VCS_CONFLICT_MARKER,
 			BACKTICK,
