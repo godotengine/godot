@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  image_loader_svg.h                                                   */
+/*  config.h                                                             */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,25 +28,6 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef RESOURCE_IMPORTER_SVG
-#define RESOURCE_IMPORTER_SVG
-
-#include "core/io/image_loader.h"
-
-class ImageLoaderSVG : public ImageFormatLoader {
-	static struct ReplaceColors {
-		List<uint32_t> old_colors;
-		List<uint32_t> new_colors;
-	} replace_colors;
-
-public:
-	static void set_convert_colors(Dictionary *p_replace_color = nullptr);
-	static void create_image_from_string(Ref<Image> p_image, String p_string, float p_scale, bool upsample, bool p_convert_color);
-	virtual Error load_image(Ref<Image> p_image, FileAccess *p_fileaccess,
-			bool p_force_linear, float p_scale) override;
-	virtual void get_recognized_extensions(List<String> *p_extensions) const override;
-
-public:
-	virtual ~ImageLoaderSVG() {}
-};
-#endif // RESOURCE_IMPORTER_SVG
+#ifndef RESOURCE_IMPORTER_THORVG_CONFIG_H
+#define RESOURCE_IMPORTER_THORVG_CONFIG_H
+#endif

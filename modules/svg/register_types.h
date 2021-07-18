@@ -28,10 +28,10 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef SVG_REGISTER_TYPES_H
-#define SVG_REGISTER_TYPES_H
+#ifndef RESOURCE_IMPORTER_SVG_REGISTER_TYPES
+#define RESOURCE_IMPORTER_SVG_REGISTER_TYPES
 
 void register_svg_types();
 void unregister_svg_types();
 
-#endif // SVG_REGISTER_TYPES_H
+#endif

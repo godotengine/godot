@@ -487,18 +487,6 @@ Collection of single-file libraries used in Godot components.
   * License: BSD
 
 
-## nanosvg
-
-- Upstream: https://github.com/memononen/nanosvg
-- Version: git (3e403ec72a9145cbbcc6c63d94a4caf079aafec2, 2020)
-- License: zlib
-
-Files extracted from the upstream source:
-
-- All .h files in `src/`
-- LICENSE.txt
-
-
 ## oidn
 
 - Upstream: https://github.com/OpenImageDenoise/oidn
@@ -646,6 +634,20 @@ comments and a patch is provided in the squish/ folder.
 Files extracted from upstream source:
 
 - `tinyexr.{cc,h}`
+
+
+## thorvg
+
+- Upstream: https://github.com/Samsung/thorvg
+- Version: v0.3.1 (44fe571030e8ab561379817e7a933f36f726ef1a, 2021)
+- License: MIT
+
+Files extracted from upstream source:
+
+- `inc`
+- `src`
+- `LICENSE`
+- `AUTHORS`
 
 
 ## vhacd

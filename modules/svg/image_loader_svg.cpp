@@ -29,48 +29,12 @@
 /*************************************************************************/
 
 #include "image_loader_svg.h"
-
-#include <nanosvg.h>
-#include <nanosvgrast.h>
-
-void SVGRasterizer::rasterize(NSVGimage *p_image, float p_tx, float p_ty, float p_scale, unsigned char *p_dst, int p_w, int p_h, int p_stride) {
-	nsvgRasterize(rasterizer, p_image, p_tx, p_ty, p_scale, p_dst, p_w, p_h, p_stride);
-}
-
-SVGRasterizer::SVGRasterizer() {
-	rasterizer = nsvgCreateRasterizer();
-}
-
-SVGRasterizer::~SVGRasterizer() {
-	nsvgDeleteRasterizer(rasterizer);
-}
-
-SVGRasterizer ImageLoaderSVG::rasterizer;
-
-inline void change_nsvg_paint_color(NSVGpaint *p_paint, const uint32_t p_old, const uint32_t p_new) {
-	if (p_paint->type == NSVG_PAINT_COLOR) {
-		if (p_paint->color << 8 == p_old << 8) {
-			p_paint->color = (p_paint->color & 0xFF000000) | (p_new & 0x00FFFFFF);
-		}
-	}
-
-	if (p_paint->type == NSVG_PAINT_LINEAR_GRADIENT || p_paint->type == NSVG_PAINT_RADIAL_GRADIENT) {
-		for (int stop_index = 0; stop_index < p_paint->gradient->nstops; stop_index++) {
-			if (p_paint->gradient->stops[stop_index].color << 8 == p_old << 8) {
-				p_paint->gradient->stops[stop_index].color = p_new;
-			}
-		}
-	}
-}
-
-void ImageLoaderSVG::_convert_colors(NSVGimage *p_svg_image) {
-	for (NSVGshape *shape = p_svg_image->shapes; shape != nullptr; shape = shape->next) {
-		for (int i = 0; i < replace_colors.old_colors.size(); i++) {
-			change_nsvg_paint_color(&(shape->stroke), replace_colors.old_colors[i], replace_colors.new_colors[i]);
-			change_nsvg_paint_color(&(shape->fill), replace_colors.old_colors[i], replace_colors.new_colors[i]);
-		}
-	}
-}
+#include "core/error/error_macros.h"
+#include "core/math/vector2.h"
+#include "core/templates/local_vector.h"
+#include <stdint.h>
+#include <thorvg.h>
+#include <memory>
 
 void ImageLoaderSVG::set_convert_colors(Dictionary *p_replace_color) {
 	if (p_replace_color) {
@@ -89,73 +53,83 @@ void ImageLoaderSVG::set_convert_colors(Dictionary *p_replace_color) {
 		replace_colors.old_colors.clear();
 		replace_colors.new_colors.clear();
 	}
+	// Restore dark and light color replacement
 }
 
-Error ImageLoaderSVG::_create_image(Ref<Image> p_image, const Vector<uint8_t> *p_data, float p_scale, bool upsample, bool convert_colors) {
-	NSVGimage *svg_image;
-	const uint8_t *src_r = p_data->ptr();
-	svg_image = nsvgParse((char *)src_r, "px", 96);
-	if (svg_image == nullptr) {
-		ERR_PRINT("SVG Corrupted");
-		return ERR_FILE_CORRUPT;
+void ImageLoaderSVG::create_image_from_string(Ref<Image> p_image, String p_string, float p_scale, bool upsample, bool p_convert_color) {
+	Vector<uint8_t> data = p_string.to_utf8_buffer();
+
+	uint32_t bgColor = 0xffffffff;
+
+	std::unique_ptr<tvg::Picture> picture = tvg::Picture::gen();
+
+	float fw, fh;
+	if (picture->load((const char *)data.ptr(), data.size()) != tvg::Result::Success) {
+		return;
+	}
+	picture->viewbox(nullptr, nullptr, &fw, &fh);
+	ERR_FAIL_COND(Math::is_zero_approx(p_scale));
+	uint32_t width = MIN(fw * p_scale, 16 * 1024);
+	uint32_t height = MIN(fh * p_scale, 16 * 1024);
+	picture->size(width, height);
+	std::unique_ptr<tvg::SwCanvas> swCanvas = tvg::SwCanvas::gen();
+	uint32_t *buffer = (uint32_t *)malloc(sizeof(uint32_t) * width * height);
+	tvg::Result res = swCanvas->target(buffer, width, width, height, tvg::SwCanvas::ARGB8888);
+	if (res != tvg::Result::Success) {
+		return;
 	}
 
-	if (convert_colors) {
-		_convert_colors(svg_image);
+	if (bgColor != 0xffffffff) {
+		uint8_t bgColorR = (uint8_t)((bgColor & 0xff0000) >> 16);
+		uint8_t bgColorG = (uint8_t)((bgColor & 0x00ff00) >> 8);
+		uint8_t bgColorB = (uint8_t)((bgColor & 0x0000ff));
+
+		std::unique_ptr<tvg::Shape> shape = tvg::Shape::gen();
+		shape->appendRect(0, 0, width, height, 0, 0); //x, y, w, h, rx, ry
+		shape->fill(bgColorR, bgColorG, bgColorB, 255); //r, g, b, a
+
+		if (swCanvas->push(move(shape)) != tvg::Result::Success) {
+			return;
+		}
 	}
 
-	const float upscale = upsample ? 2.0 : 1.0;
+	swCanvas->push(move(picture));
 
-	const int w = (int)(svg_image->width * p_scale * upscale);
-	ERR_FAIL_COND_V_MSG(w > Image::MAX_WIDTH, ERR_PARAMETER_RANGE_ERROR, vformat("Can't create image from SVG with scale %s, the resulting image size exceeds max width.", rtos(p_scale)));
-
-	const int h = (int)(svg_image->height * p_scale * upscale);
-	ERR_FAIL_COND_V_MSG(h > Image::MAX_HEIGHT, ERR_PARAMETER_RANGE_ERROR, vformat("Can't create image from SVG with scale %s, the resulting image size exceeds max height.", rtos(p_scale)));
-
-	Vector<uint8_t> dst_image;
-	dst_image.resize(w * h * 4);
-
-	uint8_t *dw = dst_image.ptrw();
-
-	rasterizer.rasterize(svg_image, 0, 0, p_scale * upscale, (unsigned char *)dw, w, h, w * 4);
-
-	p_image->create(w, h, false, Image::FORMAT_RGBA8, dst_image);
-	if (upsample) {
-		p_image->shrink_x2();
+	if (swCanvas->draw() == tvg::Result::Success) {
+		swCanvas->sync();
+	} else {
+		return;
 	}
 
-	nsvgDelete(svg_image);
+	LocalVector<uint8_t> image;
+	image.resize(width * height * 4);
+	for (unsigned y = 0; y < height; y++) {
+		for (unsigned x = 0; x < width; x++) {
+			uint32_t n = buffer[y * width + x];
+			image[4 * width * y + 4 * x + 0] = (n >> 16) & 0xff;
+			image[4 * width * y + 4 * x + 1] = (n >> 8) & 0xff;
+			image[4 * width * y + 4 * x + 2] = n & 0xff;
+			image[4 * width * y + 4 * x + 3] = (n >> 24) & 0xff;
+		}
+	}
 
-	return OK;
-}
-
-Error ImageLoaderSVG::create_image_from_string(Ref<Image> p_image, const char *p_svg_str, float p_scale, bool upsample, bool convert_colors) {
-	size_t str_len = strlen(p_svg_str);
-	Vector<uint8_t> src_data;
-	src_data.resize(str_len + 1);
-	uint8_t *src_w = src_data.ptrw();
-	memcpy(src_w, p_svg_str, str_len + 1);
-
-	return _create_image(p_image, &src_data, p_scale, upsample, convert_colors);
-}
-
-Error ImageLoaderSVG::load_image(Ref<Image> p_image, FileAccess *f, bool p_force_linear, float p_scale) {
-	uint64_t size = f->get_length();
-	Vector<uint8_t> src_image;
-	src_image.resize(size + 1);
-	uint8_t *src_w = src_image.ptrw();
-	f->get_buffer(src_w, size);
-	src_w[size] = '\0';
-
-	return _create_image(p_image, &src_image, p_scale, 1.0);
+	free(buffer);
+	p_image->create(width, height, false, Image::FORMAT_RGBA8, image);
 }
 
 void ImageLoaderSVG::get_recognized_extensions(List<String> *p_extensions) const {
 	p_extensions->push_back("svg");
-	p_extensions->push_back("svgz");
 }
 
-ImageLoaderSVG::ImageLoaderSVG() {
+Error ImageLoaderSVG::load_image(Ref<Image> p_image, FileAccess *p_fileaccess,
+		bool p_force_linear, float p_scale) {
+	String svg = p_fileaccess->get_as_utf8_string();
+	create_image_from_string(p_image, svg, p_scale, false, false);
+	ERR_FAIL_COND_V(p_image->is_empty(), FAILED);
+	if (p_force_linear) {
+		p_image->srgb_to_linear();
+	}
+	return OK;
 }
 
 ImageLoaderSVG::ReplaceColors ImageLoaderSVG::replace_colors;
