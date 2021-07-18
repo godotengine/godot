@@ -707,6 +707,14 @@ Vector2 GraphNode::get_position_offset() const {
 	return position_offset;
 }
 
+#ifdef TOOLS_ENABLED
+void GraphNode::_edit_set_position(const Point2 &p_position) {
+	Control::_edit_set_position(p_position);
+	set_offset(get_position());
+	_change_notify("offset");
+}
+#endif
+
 void GraphNode::set_selected(bool p_selected) {
 	selected = p_selected;
 	update();

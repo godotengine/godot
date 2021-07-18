@@ -148,6 +148,10 @@ public:
 	void set_position_offset(const Vector2 &p_offset);
 	Vector2 get_position_offset() const;
 
+#ifdef TOOLS_ENABLED
+	void _edit_set_position(const Point2 &p_position);
+#endif
+
 	void set_selected(bool p_selected);
 	bool is_selected();
 
