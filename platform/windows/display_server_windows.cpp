@@ -2114,7 +2114,7 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 					mm->set_relative(Vector2(mm->get_position() - Vector2(old_x, old_y)));
 					old_x = mm->get_position().x;
 					old_y = mm->get_position().y;
-					if (windows[window_id].window_has_focus)
+					if (windows[window_id].window_has_focus && mm->get_relative() != Vector2())
 						Input::get_singleton()->accumulate_input_event(mm);
 				}
 				return 0;
@@ -2261,7 +2261,7 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 			mm->set_relative(Vector2(mm->get_position() - Vector2(old_x, old_y)));
 			old_x = mm->get_position().x;
 			old_y = mm->get_position().y;
-			if (windows[window_id].window_has_focus) {
+			if (windows[window_id].window_has_focus && mm->get_relative() != Vector2()) {
 				Input::get_singleton()->accumulate_input_event(mm);
 			}
 
@@ -2367,7 +2367,7 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 			mm->set_relative(Vector2(mm->get_position() - Vector2(old_x, old_y)));
 			old_x = mm->get_position().x;
 			old_y = mm->get_position().y;
-			if (windows[window_id].window_has_focus)
+			if (windows[window_id].window_has_focus && mm->get_relative() != Vector2())
 				Input::get_singleton()->accumulate_input_event(mm);
 
 		} break;
