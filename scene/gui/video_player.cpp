@@ -178,6 +178,18 @@ void VideoPlayer::_notification(int p_notification) {
 			draw_texture_rect(texture, Rect2(Point2(), s), false);
 
 		} break;
+
+		case NOTIFICATION_PAUSED: {
+			playback->set_paused(true);
+			set_process_internal(false);
+			last_audio_time = 0;
+		} break;
+
+		case NOTIFICATION_UNPAUSED: {
+			playback->set_paused(false);
+			set_process_internal(true);
+			last_audio_time = 0;
+		} break;
 	};
 };
 
