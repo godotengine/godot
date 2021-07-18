@@ -336,8 +336,6 @@ private:
 	bool shortcut_keys_enabled = true;
 	bool virtual_keyboard_enabled = true;
 
-	void _generate_context_menu();
-
 	int get_visible_rows() const;
 	int get_total_visible_rows() const;
 
