@@ -1290,6 +1290,9 @@ bool Viewport::is_size_override_stretch_enabled() const {
 void Viewport::set_update_mode(UpdateMode p_mode) {
 	update_mode = p_mode;
 	VS::get_singleton()->viewport_set_update_mode(viewport, VS::ViewportUpdateMode(p_mode));
+	if (update_mode == UPDATE_ONCE) {
+		VS::get_singleton()->request_frame_drawn_callback(const_cast<Viewport *>(this), "set_update_mode", Variant(UPDATE_DISABLED));
+	}
 }
 Viewport::UpdateMode Viewport::get_update_mode() const {
 	return update_mode;
@@ -1311,6 +1314,9 @@ bool Viewport::get_vflip() const {
 void Viewport::set_clear_mode(ClearMode p_mode) {
 	clear_mode = p_mode;
 	VS::get_singleton()->viewport_set_clear_mode(viewport, VS::ViewportClearMode(p_mode));
+	if (clear_mode == CLEAR_MODE_ONLY_NEXT_FRAME) {
+		VS::get_singleton()->request_frame_drawn_callback(const_cast<Viewport *>(this), "set_clear_mode", Variant(CLEAR_MODE_NEVER));
+	}
 }
 
 Viewport::ClearMode Viewport::get_clear_mode() const {
