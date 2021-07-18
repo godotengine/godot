@@ -3043,6 +3043,9 @@ EditorProperty *EditorInspectorDefaultPlugin::get_editor_for_property(Object *p_
 
 				EditorPropertyMember::Type type = EditorPropertyMember::MEMBER_METHOD_OF_BASE_TYPE;
 				switch (p_hint) {
+					case PROPERTY_HINT_METHOD_OF_VARIANT_TYPE:
+						type = EditorPropertyMember::MEMBER_METHOD_OF_VARIANT_TYPE;
+						break;
 					case PROPERTY_HINT_METHOD_OF_BASE_TYPE:
 						type = EditorPropertyMember::MEMBER_METHOD_OF_BASE_TYPE;
 						break;
