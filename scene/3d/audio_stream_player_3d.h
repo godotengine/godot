@@ -38,7 +38,6 @@
 #include "servers/audio/audio_stream.h"
 #include "servers/audio_server.h"
 
-class Camera3D;
 class AudioStreamPlayer3D : public Node3D {
 	GDCLASS(AudioStreamPlayer3D, Node3D);
 
@@ -80,6 +79,13 @@ private:
 		Viewport *viewport = nullptr; //pointer only used for reference to previous mix
 	};
 
+	static unsigned int speaker_count;
+	static Vector3 speaker_directions[7];
+	static real_t spcap_speaker_effects[7];
+	static void _calculate_spcap_speaker_effects();
+	static void _calculate_spcap_volumes(const Vector3 &source_direction, real_t tightness, real_t *volumes);
+	static void _calculate_output_volumes(const Vector3 &source_dir, real_t tightness, Output &output);
+
 	Output outputs[MAX_OUTPUTS];
 	SafeNumeric<int> output_count;
 	SafeFlag output_ready;
@@ -107,7 +113,6 @@ private:
 	bool stream_paused_fade_out = false;
 	StringName bus;
 
-	static void _calc_output_vol(const Vector3 &source_dir, real_t tightness, Output &output);
 	void _mix_audio();
 	static void _mix_audios(void *self) { reinterpret_cast<AudioStreamPlayer3D *>(self)->_mix_audio(); }
 
