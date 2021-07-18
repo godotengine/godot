@@ -1104,14 +1104,17 @@ void BaseMaterial3D::_update_shader() {
 	}
 
 	if (distance_fade != DISTANCE_FADE_DISABLED) {
+		// For all distance fade modes, use circular fade (disatnce to the
+		// object instead of Z distance), so that the fade is always the same
+		// regardless of the camera angle.
+		// This has a small performance cost, but the quality increase is worth it.
 		if ((distance_fade == DISTANCE_FADE_OBJECT_DITHER || distance_fade == DISTANCE_FADE_PIXEL_DITHER)) {
 			if (!RenderingServer::get_singleton()->is_low_end()) {
 				code += "\t{\n";
 				if (distance_fade == DISTANCE_FADE_OBJECT_DITHER) {
-					code += "\t\tfloat fade_distance = abs((INV_CAMERA_MATRIX * WORLD_MATRIX[3]).z);\n";
-
+					code += "\t\tfloat fade_distance = sqrt(pow((INV_CAMERA_MATRIX * WORLD_MATRIX[3]).z, 2) + pow((INV_CAMERA_MATRIX * WORLD_MATRIX[3]).x, 2) + pow((INV_CAMERA_MATRIX * WORLD_MATRIX[3]).y, 2));\n";
 				} else {
-					code += "\t\tfloat fade_distance=-VERTEX.z;\n";
+					code += "\t\tfloat fade_distance = sqrt(pow(VERTEX.z, 2) + pow(VERTEX.x, 2) + pow(VERTEX.y, 2));\n";
 				}
 
 				code += "\t\tfloat fade=clamp(smoothstep(distance_fade_min,distance_fade_max,fade_distance),0.0,1.0);\n";
@@ -1143,7 +1146,7 @@ void BaseMaterial3D::_update_shader() {
 			}
 
 		} else {
-			code += "\tALPHA*=clamp(smoothstep(distance_fade_min,distance_fade_max,-VERTEX.z),0.0,1.0);\n";
+			code += "\tALPHA *= clamp(smoothstep(distance_fade_min, distance_fade_max, sqrt(pow(VERTEX.z, 2) + pow(VERTEX.x, 2) + pow(VERTEX.y, 2))), 0.0, 1.0);\n";
 		}
 	}
 
