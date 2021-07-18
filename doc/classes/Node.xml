@@ -255,12 +255,6 @@
 				Returns an array of references to node's children.
 			</description>
 		</method>
-		<method name="get_editor_description" qualifiers="const">
-			<return type="String">
-			</return>
-			<description>
-			</description>
-		</method>
 		<method name="get_groups" qualifiers="const">
 			<return type="Array">
 			</return>
@@ -698,14 +692,6 @@
 				Sets the folded state of the node in the Scene dock.
 			</description>
 		</method>
-		<method name="set_editor_description">
-			<return type="void">
-			</return>
-			<argument index="0" name="editor_description" type="String">
-			</argument>
-			<description>
-			</description>
-		</method>
 		<method name="set_network_master">
 			<return type="void">
 			</return>
@@ -803,6 +789,8 @@
 	<members>
 		<member name="custom_multiplayer" type="MultiplayerAPI" setter="set_custom_multiplayer" getter="get_custom_multiplayer">
 			The override to the default [MultiplayerAPI]. Set to [code]null[/code] to use the default [SceneTree] one.
+		</member>
+		<member name="editor_description" type="String" setter="set_editor_description" getter="get_editor_description" default="&quot;&quot;">
 		</member>
 		<member name="filename" type="String" setter="set_filename" getter="get_filename">
 			When a scene is instantiated from a file, its topmost node contains the filename from which it was loaded.
