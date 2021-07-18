@@ -696,7 +696,8 @@ public:
 	Vector<Rect2> flag_rects;
 	Vector<String> names;
 	Vector<String> tooltips;
-	int hovered_index;
+	// Set to `INT32_MAX` when nothing is hovered.
+	uint32_t hovered_index;
 
 	virtual Size2 get_minimum_size() const override {
 		Ref<Font> font = get_theme_font("font", "Label");
@@ -731,10 +732,22 @@ public:
 		if (mb.is_valid() && mb->get_button_index() == MOUSE_BUTTON_LEFT && mb->is_pressed() && hovered_index >= 0) {
 			// Toggle the flag.
 			// We base our choice on the hovered flag, so that it always matches the hovered flag.
-			if (value & (1 << hovered_index)) {
-				value &= ~(1 << hovered_index);
+			if (mb->is_command_pressed()) {
+				// Holding Command will replace all flags with the hovered flag ("solo mode"),
+				// instead of toggling the hovered flags while preserving other flags's state.
+				if (value == 1 << hovered_index) {
+					// If the flag is already enbled, enable all other items and disable the current flag.
+					// This allows for quicker toggling.
+					value = INT32_MAX - (1 << hovered_index);
+				} else {
+					value = 1 << hovered_index;
+				}
 			} else {
-				value |= (1 << hovered_index);
+				if (value & (1 << hovered_index)) {
+					value &= ~(1 << hovered_index);
+				} else {
+					value |= (1 << hovered_index);
+				}
 			}
 
 			emit_signal("flag_changed", value);
@@ -767,7 +780,7 @@ public:
 							o.x += 1;
 						}
 
-						const int idx = i * 10 + j;
+						const uint32_t idx = i * 10 + j;
 						const bool on = value & (1 << idx);
 						Rect2 rect2 = Rect2(o, Size2(bsize, bsize));
 
@@ -783,7 +796,7 @@ public:
 				}
 			} break;
 			case NOTIFICATION_MOUSE_EXIT: {
-				hovered_index = -1;
+				hovered_index = INT32_MAX; // Nothing is hovered.
 				update();
 			} break;
 			default:
@@ -803,7 +816,7 @@ public:
 
 	EditorPropertyLayersGrid() {
 		value = 0;
-		hovered_index = -1; // Nothing is hovered.
+		hovered_index = INT32_MAX; // Nothing is hovered.
 	}
 };
 void EditorPropertyLayers::_grid_changed(uint32_t p_grid) {
