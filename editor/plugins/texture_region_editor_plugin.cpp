@@ -40,21 +40,21 @@
 	@author Mariano Suligoy
 */
 
-void draw_margin_line(Control *edit_draw, Vector2 from, Vector2 to) {
-	Vector2 line = (to - from).normalized() * 10;
+void draw_margin_line(Control *edit_draw, Vector2 from, Vector2 to, Color line_color, int line_factor) {
+	Vector2 line = (to - from).normalized() * line_factor;
 
 	// Draw a translucent background line to make the foreground line visible on any background.
 	edit_draw->draw_line(
 			from,
 			to,
-			EditorNode::get_singleton()->get_theme_base()->get_theme_color("mono_color", "Editor").inverted() * Color(1, 1, 1, 0.5),
+			EditorNode::get_singleton()->get_theme_base()->get_theme_color("base_line_color", "TextureRegionEditor").inverted() * Color(1, 1, 1, 0.5),
 			Math::round(2 * EDSCALE));
 
 	while ((to - from).length_squared() > 200) {
 		edit_draw->draw_line(
 				from,
 				from + line,
-				EditorNode::get_singleton()->get_theme_base()->get_theme_color("mono_color", "Editor"),
+				line_color,
 				Math::round(2 * EDSCALE));
 
 		from += line * 2;
@@ -175,7 +175,9 @@ void TextureRegionEditor::_region_draw() {
 		mtx.basis_xform(raw_endpoints[2]),
 		mtx.basis_xform(raw_endpoints[3])
 	};
-	Color color = get_theme_color("mono_color", "Editor");
+
+	Color h_line_color = EditorNode::get_singleton()->get_theme_base()->get_theme_color("h_line_color", "TextureRegionEditor");
+	Color v_line_color = EditorNode::get_singleton()->get_theme_base()->get_theme_color("v_line_color", "TextureRegionEditor");
 	for (int i = 0; i < 4; i++) {
 		int prev = (i + 3) % 4;
 		int next = (i + 1) % 4;
@@ -183,7 +185,12 @@ void TextureRegionEditor::_region_draw() {
 		Vector2 ofs = ((endpoints[i] - endpoints[prev]).normalized() + ((endpoints[i] - endpoints[next]).normalized())).normalized();
 		ofs *= Math_SQRT2 * (select_handle->get_size().width / 2);
 
-		edit_draw->draw_line(endpoints[i] - draw_ofs * draw_zoom, endpoints[next] - draw_ofs * draw_zoom, color, 2);
+		Color line_color = (i % 2 ? v_line_color : h_line_color);
+		if (i == 0 || i == 3) {
+			line_color = line_color.lightened(0.54);
+		}
+
+		edit_draw->draw_line(endpoints[i] - draw_ofs * draw_zoom, endpoints[next] - draw_ofs * draw_zoom, line_color, 2);
 
 		if (snap_mode != SNAP_AUTOSLICE) {
 			edit_draw->draw_texture(select_handle, (endpoints[i] + ofs - (select_handle->get_size() / 2)).floor() - draw_ofs * draw_zoom);
@@ -256,10 +263,10 @@ void TextureRegionEditor::_region_draw() {
 			-mtx.basis_xform(Vector2(margins[3], 0)) + Vector2(endpoints[2].x - draw_ofs.x * draw_zoom, 0)
 		};
 
-		draw_margin_line(edit_draw, pos[0], pos[0] + Vector2(edit_draw->get_size().x, 0));
-		draw_margin_line(edit_draw, pos[1], pos[1] + Vector2(edit_draw->get_size().x, 0));
-		draw_margin_line(edit_draw, pos[2], pos[2] + Vector2(0, edit_draw->get_size().y));
-		draw_margin_line(edit_draw, pos[3], pos[3] + Vector2(0, edit_draw->get_size().y));
+		draw_margin_line(edit_draw, pos[0], pos[0] + Vector2(edit_draw->get_size().x, 0), h_line_color.lightened(0.54), 7);
+		draw_margin_line(edit_draw, pos[1], pos[1] + Vector2(edit_draw->get_size().x, 0), h_line_color, 10);
+		draw_margin_line(edit_draw, pos[2], pos[2] + Vector2(0, edit_draw->get_size().y), v_line_color.lightened(0.54), 7);
+		draw_margin_line(edit_draw, pos[3], pos[3] + Vector2(0, edit_draw->get_size().y), v_line_color, 10);
 	}
 }
 
