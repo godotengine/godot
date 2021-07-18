@@ -700,6 +700,9 @@ void Viewport::_process_picking() {
 
 				int rc = ss2d->intersect_point_on_canvas(point, canvas_layer_id, res, 64, Set<RID>(), 0xFFFFFFFF, true, true, true);
 				for (int i = 0; i < rc; i++) {
+					if (is_input_handled()) {
+						break;
+					}
 					if (res[i].collider_id.is_valid() && res[i].collider) {
 						CollisionObject2D *co = Object::cast_to<CollisionObject2D>(res[i].collider);
 						if (co && co->can_process()) {
