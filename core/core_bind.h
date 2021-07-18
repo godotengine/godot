@@ -599,6 +599,7 @@ public:
 	bool has_method(StringName p_class, StringName p_method, bool p_no_inheritance = false) const;
 
 	Array get_method_list(StringName p_class, bool p_no_inheritance = false) const;
+	Array get_variant_method_list(Variant::Type p_type) const;
 
 	PackedStringArray get_integer_constant_list(const StringName &p_class, bool p_no_inheritance = false) const;
 	bool has_integer_constant(const StringName &p_class, const StringName &p_name) const;
