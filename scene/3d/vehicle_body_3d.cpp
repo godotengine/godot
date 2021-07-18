@@ -399,7 +399,6 @@ real_t VehicleBody3D::_ray_cast(int p_idx, PhysicsDirectBodyState3D *s) {
 	Vector3 source = wheel.m_raycastInfo.m_hardPointWS;
 	wheel.m_raycastInfo.m_contactPointWS = source + rayvector;
 	const Vector3 &target = wheel.m_raycastInfo.m_contactPointWS;
-	source -= wheel.m_wheelRadius * wheel.m_raycastInfo.m_wheelDirectionWS;
 
 	real_t param = real_t(0.);
 
@@ -421,10 +420,9 @@ real_t VehicleBody3D::_ray_cast(int p_idx, PhysicsDirectBodyState3D *s) {
 			wheel.m_raycastInfo.m_groundObject = Object::cast_to<PhysicsBody3D>(rr.collider);
 		}
 
-		real_t hitDistance = param * raylen;
-		wheel.m_raycastInfo.m_suspensionLength = hitDistance - wheel.m_wheelRadius;
-		//clamp on max suspension travel
+		wheel.m_raycastInfo.m_suspensionLength = source.distance_to(rr.position) - wheel.m_wheelRadius;
 
+		//clamp on max suspension travel
 		real_t minSuspensionLength = wheel.m_suspensionRestLength - wheel.m_maxSuspensionTravelCm * real_t(0.01);
 		real_t maxSuspensionLength = wheel.m_suspensionRestLength + wheel.m_maxSuspensionTravelCm * real_t(0.01);
 		if (wheel.m_raycastInfo.m_suspensionLength < minSuspensionLength) {
