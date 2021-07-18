@@ -135,7 +135,8 @@ const char *GDScriptTokenizer::token_names[TK_MAX] = {
 	"NAN",
 	"Error",
 	"EOF",
-	"Cursor"
+	"Cursor",
+	"##", // Tooltip comment for exported variables.
 };
 
 struct _bit {
@@ -258,6 +259,7 @@ bool GDScriptTokenizer::is_token_literal(int p_offset, bool variable_safe) const
 		case TK_PR_REMOTESYNC:
 		case TK_PR_MASTERSYNC:
 		case TK_PR_PUPPETSYNC:
+		case TK_TOOLTIP:
 			return true;
 
 		// Literal for non-variables only:
@@ -501,17 +503,48 @@ void GDScriptTokenizerText::_advance() {
 #ifdef DEBUG_ENABLED
 				String comment;
 #endif // DEBUG_ENABLED
+
+#ifdef TOOLS_ENABLED
+				bool tooltip = GETCHAR(1) == '#';
+				String tooltip_text;
+				if (tooltip) {
+					_make_token(TK_TOOLTIP);
+					INCPOS(1);
+					return;
+				} else {
+					tooltip = GETCHAR(-1) == '#';
+				}
+#endif
+
 				while (GETCHAR(0) != '\n') {
 #ifdef DEBUG_ENABLED
 					comment += GETCHAR(0);
 #endif // DEBUG_ENABLED
-					code_pos++;
+
+#ifdef TOOLS_ENABLED
+					if (tooltip) {
+						tooltip_text += GETCHAR(0);
+						INCPOS(1);
+					} else
+#endif
+					{
+						code_pos++;
+					}
+
 					if (GETCHAR(0) == 0) { //end of file
 						//_make_error("Unterminated Comment");
 						_make_token(TK_EOF);
 						return;
 					}
 				}
+
+#ifdef TOOLS_ENABLED
+				if (tooltip) {
+					_make_constant(tooltip_text.trim_prefix("#").trim_prefix(" "));
+					return;
+				}
+#endif
+
 #ifdef DEBUG_ENABLED
 				String comment_content = comment.trim_prefix("#").trim_prefix(" ");
 				if (comment_content.begins_with("warning-ignore:")) {

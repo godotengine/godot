@@ -147,6 +147,7 @@ struct PropertyInfo {
 	StringName class_name; //for classes
 	PropertyHint hint;
 	String hint_string;
+	String tooltip;
 	uint32_t usage;
 
 	_FORCE_INLINE_ PropertyInfo added_usage(int p_fl) const {
