@@ -60,6 +60,7 @@ void VisualInstance3D::_notification(int p_what) {
 			_update_visibility();
 
 		} break;
+		case NOTIFICATION_TRANSFORM_CHANGE_IGNORED:
 		case NOTIFICATION_TRANSFORM_CHANGED: {
 			Transform3D gt = get_global_transform();
 			RenderingServer::get_singleton()->instance_set_transform(instance, gt);
