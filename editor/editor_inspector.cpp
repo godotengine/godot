@@ -281,13 +281,21 @@ void EditorProperty::_notification(int p_what) {
 			check_rect = Rect2();
 		}
 
-		if (can_revert) {
-			Ref<Texture2D> reload_icon = get_theme_icon("ReloadSmall", "EditorIcons");
+		if (can_revert || differs_from_class_default) {
+			Ref<Texture2D> reload_icon;
+			if (revert_from_instanced) {
+				reload_icon = get_theme_icon("ReloadSmallInstanced", "EditorIcons");
+			} else if (can_revert) {
+				reload_icon = get_theme_icon("ReloadSmall", "EditorIcons");
+			} else if (differs_from_class_default) {
+				reload_icon = get_theme_icon("PropertyModified", "EditorIcons");
+			}
 			text_limit -= reload_icon->get_width() + get_theme_constant("hseparator", "Tree") * 2;
 			revert_rect = Rect2(text_limit + get_theme_constant("hseparator", "Tree"), (size.height - reload_icon->get_height()) / 2, reload_icon->get_width(), reload_icon->get_height());
 
 			Color color2(1, 1, 1);
-			if (revert_hover) {
+			if (can_revert && revert_hover) {
+				// Only brighten the icon when hovered if the property can actually be reverted.
 				color2.r *= 1.2;
 				color2.g *= 1.2;
 				color2.b *= 1.2;
@@ -516,8 +524,8 @@ bool EditorPropertyRevert::is_node_property_different(Node *p_node, const Varian
 	return bool(Variant::evaluate(Variant::OP_NOT_EQUAL, p_current, p_orig));
 }
 
-bool EditorPropertyRevert::can_property_revert(Object *p_object, const StringName &p_property) {
-	bool has_revert = false;
+PropertyRevertStatus EditorPropertyRevert::can_property_revert(Object *p_object, const StringName &p_property) {
+	PropertyRevertStatus status;
 
 	Node *node = Object::cast_to<Node>(p_object);
 
@@ -528,14 +536,20 @@ bool EditorPropertyRevert::can_property_revert(Object *p_object, const StringNam
 			Variant v = p_object->get(p_property);
 
 			if (EditorPropertyRevert::is_node_property_different(node, v, vorig)) {
-				has_revert = true;
+				status.has_revert = true;
+				status.revert_from_instanced = true;
 			}
+		}
+
+		Variant default_value = ClassDB::class_get_default_property_value(p_object->get_class_name(), p_property);
+		if (default_value != Variant() && default_value != p_object->get(p_property)) {
+			status.differs_from_class_default = true;
 		}
 	} else {
 		//check for difference against default class value instead
 		Variant default_value = ClassDB::class_get_default_property_value(p_object->get_class_name(), p_property);
 		if (default_value != Variant() && default_value != p_object->get(p_property)) {
-			has_revert = true;
+			status.has_revert = true;
 		}
 	}
 
@@ -543,22 +557,24 @@ bool EditorPropertyRevert::can_property_revert(Object *p_object, const StringNam
 	// (i.e. don't then try to revert to default value - the property_get_revert implementation
 	// can do that if so desired)
 	if (p_object->has_method("property_can_revert")) {
-		has_revert = p_object->call("property_can_revert", p_property).operator bool();
+		status.has_revert = p_object->call("property_can_revert", p_property).operator bool();
+		status.differs_from_class_default = status.has_revert;
 	} else {
-		if (!has_revert && !p_object->get_script().is_null()) {
+		if (!status.has_revert && !p_object->get_script().is_null()) {
 			Ref<Script> scr = p_object->get_script();
 			if (scr.is_valid()) {
 				Variant orig_value;
 				if (scr->get_property_default_value(p_property, orig_value)) {
 					if (orig_value != p_object->get(p_property)) {
-						has_revert = true;
+						status.has_revert = true;
+						status.differs_from_class_default = true;
 					}
 				}
 			}
 		}
 	}
 
-	return has_revert;
+	return status;
 }
 
 void EditorProperty::update_reload_status() {
@@ -566,7 +582,10 @@ void EditorProperty::update_reload_status() {
 		return; //no property, so nothing to do
 	}
 
-	bool has_reload = EditorPropertyRevert::can_property_revert(object, property);
+	const PropertyRevertStatus status = EditorPropertyRevert::can_property_revert(object, property);
+	const bool has_reload = status.has_revert;
+	revert_from_instanced = EditorPropertyRevert::can_property_revert(object, property).revert_from_instanced;
+	differs_from_class_default = EditorPropertyRevert::can_property_revert(object, property).differs_from_class_default;
 
 	if (has_reload != can_revert) {
 		can_revert = has_reload;

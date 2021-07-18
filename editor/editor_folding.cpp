@@ -245,7 +245,7 @@ void EditorFolding::_do_object_unfolds(Object *p_object, Set<RES> &resources) {
 		if (E->get().usage & PROPERTY_USAGE_EDITOR) {
 			if (group != "") { //group
 				if (group_base == String() || E->get().name.begins_with(group_base)) {
-					bool can_revert = EditorPropertyRevert::can_property_revert(p_object, E->get().name);
+					bool can_revert = EditorPropertyRevert::can_property_revert(p_object, E->get().name).has_revert;
 					if (can_revert) {
 						unfold_group.insert(group);
 					}
@@ -253,7 +253,7 @@ void EditorFolding::_do_object_unfolds(Object *p_object, Set<RES> &resources) {
 			} else { //path
 				int last = E->get().name.rfind("/");
 				if (last != -1) {
-					bool can_revert = EditorPropertyRevert::can_property_revert(p_object, E->get().name);
+					bool can_revert = EditorPropertyRevert::can_property_revert(p_object, E->get().name).has_revert;
 					if (can_revert) {
 						unfold_group.insert(E->get().name.substr(0, last));
 					}
