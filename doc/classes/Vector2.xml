@@ -85,6 +85,7 @@
 			</argument>
 			<description>
 				Returns the angle between the line connecting the two points and the X axis, in radians.
+				[code]a.angle_to_point(b)[/code] is equivalent of doing [code](b - a).angle()[/code].
 			</description>
 		</method>
 		<method name="aspect" qualifiers="const">
