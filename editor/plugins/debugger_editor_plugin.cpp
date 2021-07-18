@@ -58,6 +58,9 @@ DebuggerEditorPlugin::DebuggerEditorPlugin(EditorNode *p_editor, MenuButton *p_d
 	debug_menu = p_debug_menu;
 	PopupMenu *p = debug_menu->get_popup();
 	p->set_hide_on_checkable_item_selection(false);
+
+#ifndef JAVASCRIPT_ENABLED
+	// These options are irrelevant in the web editor since one-click deploy is not available there.
 	p->add_check_shortcut(ED_SHORTCUT("editor/deploy_with_remote_debug", TTR("Deploy with Remote Debug")), RUN_DEPLOY_REMOTE_DEBUG);
 	p->set_item_tooltip(
 			p->get_item_count() - 1,
@@ -67,6 +70,8 @@ DebuggerEditorPlugin::DebuggerEditorPlugin(EditorNode *p_editor, MenuButton *p_d
 			p->get_item_count() - 1,
 			TTR("When this option is enabled, using one-click deploy for Android will only export an executable without the project data.\nThe filesystem will be provided from the project by the editor over the network.\nOn Android, deploying will use the USB cable for faster performance. This option speeds up testing for projects with large assets."));
 	p->add_separator();
+#endif
+
 	p->add_check_shortcut(ED_SHORTCUT("editor/visible_collision_shapes", TTR("Visible Collision Shapes")), RUN_DEBUG_COLLISONS);
 	p->set_item_tooltip(
 			p->get_item_count() - 1,
@@ -75,6 +80,12 @@ DebuggerEditorPlugin::DebuggerEditorPlugin(EditorNode *p_editor, MenuButton *p_d
 	p->set_item_tooltip(
 			p->get_item_count() - 1,
 			TTR("When this option is enabled, navigation meshes and polygons will be visible in the running project."));
+
+#ifndef JAVASCRIPT_ENABLED
+	// These options don't work in the web editor since the debugger protocol
+	// is not available there. Live editing features require the editor debugger protocol
+	// to be functional.
+	// The web editor can also only display one instance at a given time.
 	p->add_separator();
 	p->add_check_shortcut(ED_SHORTCUT("editor/sync_scene_changes", TTR("Synchronize Scene Changes")), RUN_LIVE_DEBUG);
 	p->set_item_tooltip(
@@ -104,6 +115,7 @@ DebuggerEditorPlugin::DebuggerEditorPlugin(EditorNode *p_editor, MenuButton *p_d
 	instances_menu->set_item_metadata(3, 4);
 	instances_menu->set_item_checked(0, true);
 	instances_menu->connect("index_pressed", callable_mp(this, &DebuggerEditorPlugin::_select_run_count));
+#endif
 	p->connect("id_pressed", callable_mp(this, &DebuggerEditorPlugin::_menu_option));
 }
 
@@ -121,8 +133,10 @@ void DebuggerEditorPlugin::_select_run_count(int p_index) {
 }
 
 void DebuggerEditorPlugin::_menu_option(int p_option) {
+	// Certain operations are not available in the web editor, so they are `#ifdef`'d out.
 	switch (p_option) {
 		case RUN_FILE_SERVER: {
+#ifndef JAVASCRIPT_ENABLED
 			bool ischecked = debug_menu->get_popup()->is_item_checked(debug_menu->get_popup()->get_item_index(RUN_FILE_SERVER));
 
 			if (ischecked) {
@@ -133,21 +147,23 @@ void DebuggerEditorPlugin::_menu_option(int p_option) {
 
 			debug_menu->get_popup()->set_item_checked(debug_menu->get_popup()->get_item_index(RUN_FILE_SERVER), !ischecked);
 			EditorSettings::get_singleton()->set_project_metadata("debug_options", "run_file_server", !ischecked);
-
+#endif
 		} break;
 		case RUN_LIVE_DEBUG: {
+#ifndef JAVASCRIPT_ENABLED
 			bool ischecked = debug_menu->get_popup()->is_item_checked(debug_menu->get_popup()->get_item_index(RUN_LIVE_DEBUG));
 
 			debug_menu->get_popup()->set_item_checked(debug_menu->get_popup()->get_item_index(RUN_LIVE_DEBUG), !ischecked);
 			EditorDebuggerNode::get_singleton()->set_live_debugging(!ischecked);
 			EditorSettings::get_singleton()->set_project_metadata("debug_options", "run_live_debug", !ischecked);
-
+#endif
 		} break;
 		case RUN_DEPLOY_REMOTE_DEBUG: {
+#ifndef JAVASCRIPT_ENABLED
 			bool ischecked = debug_menu->get_popup()->is_item_checked(debug_menu->get_popup()->get_item_index(RUN_DEPLOY_REMOTE_DEBUG));
 			debug_menu->get_popup()->set_item_checked(debug_menu->get_popup()->get_item_index(RUN_DEPLOY_REMOTE_DEBUG), !ischecked);
 			EditorSettings::get_singleton()->set_project_metadata("debug_options", "run_deploy_remote_debug", !ischecked);
-
+#endif
 		} break;
 		case RUN_DEBUG_COLLISONS: {
 			bool ischecked = debug_menu->get_popup()->is_item_checked(debug_menu->get_popup()->get_item_index(RUN_DEBUG_COLLISONS));
@@ -162,12 +178,13 @@ void DebuggerEditorPlugin::_menu_option(int p_option) {
 
 		} break;
 		case RUN_RELOAD_SCRIPTS: {
+#ifndef JAVASCRIPT_ENABLED
 			bool ischecked = debug_menu->get_popup()->is_item_checked(debug_menu->get_popup()->get_item_index(RUN_RELOAD_SCRIPTS));
 			debug_menu->get_popup()->set_item_checked(debug_menu->get_popup()->get_item_index(RUN_RELOAD_SCRIPTS), !ischecked);
 
 			ScriptEditor::get_singleton()->set_live_auto_reload_running_scripts(!ischecked);
 			EditorSettings::get_singleton()->set_project_metadata("debug_options", "run_reload_scripts", !ischecked);
-
+#endif
 		} break;
 	}
 }
@@ -206,9 +223,13 @@ void DebuggerEditorPlugin::_update_debug_options() {
 		_menu_option(RUN_RELOAD_SCRIPTS);
 	}
 
+#ifndef JAVASCRIPT_ENABLED
+	// Multiple instances aren't available in the web editor since it can only
+	// display one instance at a given time.
 	int len = instances_menu->get_item_count();
 	for (int idx = 0; idx < len; idx++) {
 		bool checked = (int)instances_menu->get_item_metadata(idx) == instances;
 		instances_menu->set_item_checked(idx, checked);
 	}
+#endif
 }
