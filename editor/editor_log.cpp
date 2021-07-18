@@ -432,6 +432,10 @@ void EditorLog::deinit() {
 	remove_error_handler(&eh);
 }
 
+void EditorLog::set_scroll_follow(bool p_follow) {
+	log->set_scroll_follow(p_follow);
+}
+
 EditorLog::~EditorLog() {
 	for (Map<MessageType, LogFilter *>::Element *E = type_filter_map.front(); E; E = E->next()) {
 		memdelete(E->get());
