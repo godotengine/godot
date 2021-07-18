@@ -291,7 +291,7 @@ void Main::print_help(const char *p_binary) {
 	OS::get_singleton()->print("  -l, --language <locale>                      Use a specific locale (<locale> being a two-letter code).\n");
 	OS::get_singleton()->print("  --path <directory>                           Path to a project (<directory> must contain a 'project.godot' file).\n");
 	OS::get_singleton()->print("  -u, --upwards                                Scan folders upwards for project.godot file.\n");
-	OS::get_singleton()->print("  --main-pack <file>                           Path to a pack (.pck) file to load.\n");
+	OS::get_singleton()->print("  --main-pack <file>                           Path to a pack (.pck/.zip) file to load.\n");
 	OS::get_singleton()->print("  --render-thread <mode>                       Render thread mode ('unsafe', 'safe', 'separate').\n");
 	OS::get_singleton()->print("  --remote-fs <address>                        Remote filesystem (<host/IP>[:<port>] address).\n");
 	OS::get_singleton()->print("  --remote-fs-password <password>              Password for remote filesystem.\n");
@@ -1076,7 +1076,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 #ifdef TOOLS_ENABLED
 		editor = false;
 #else
-		const String error_msg = "Error: Couldn't load project data at path \"" + project_path + "\". Is the .pck file missing?\nIf you've renamed the executable, the associated .pck file should also be renamed to match the executable's name (without the extension).\n";
+		const String error_msg = "Error: Couldn't load project data at path \"" + project_path + "\". Is the .pck/.zip file missing?\nIf you've renamed the executable, the associated .pck/.zip file should also be renamed to match the executable's name (without the extension).\n";
 		OS::get_singleton()->print("%s", error_msg.ascii().get_data());
 		DisplayServer::get_singleton()->alert(error_msg);
 
