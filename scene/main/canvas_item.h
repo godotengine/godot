@@ -212,6 +212,7 @@ private:
 	bool notify_local_transform = false;
 	bool notify_transform = false;
 
+	// Don't enable anisotropic filtering in 2D by default as it's generally not necessary.
 	RS::CanvasItemTextureFilter texture_filter_cache = RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR;
 	RS::CanvasItemTextureRepeat texture_repeat_cache = RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED;
 	TextureFilter texture_filter = TEXTURE_FILTER_PARENT_NODE;
