@@ -356,7 +356,7 @@ void EditorProfiler::_update_frame() {
 			item->set_metadata(1, it.script);
 			item->set_metadata(2, it.line);
 			item->set_text_align(2, TreeItem::ALIGN_RIGHT);
-			item->set_tooltip(0, it.script + ":" + itos(it.line));
+			item->set_tooltip(0, it.name + "\n" + it.script + ":" + itos(it.line));
 
 			float time = dtime == DISPLAY_SELF_TIME ? it.self : it.total;
 
