@@ -169,6 +169,9 @@ public:
 	void deindex();
 	void generate_normals(bool p_flip = false);
 	void generate_tangents();
+	void generate_normals_smoothed(bool p_flip, float smoothingAngle = 175.0f);
+	void generate_tangents_smoothed(float smoothingAngle = 45.0f);
+	void find_vertices(const Vector3 &position, float epsilon, Vector<int> &result);
 
 	void optimize_indices_for_cache();
 	float get_max_axis_length() const;

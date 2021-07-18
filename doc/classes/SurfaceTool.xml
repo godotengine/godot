@@ -168,6 +168,27 @@
 				[b]Note:[/b] [method generate_normals] only works if the primitive type to be set to [constant Mesh.PRIMITIVE_TRIANGLES].
 			</description>
 		</method>
+		<method name="generate_normals_smoothed">
+			<return type="void">
+			</return>
+			<argument index="0" name="flip" type="bool" default="false">
+			</argument>
+			<argument index="1" name="smoothingAngle" type="float" default="175">
+			</argument>
+			<description>
+				Generates normals from vertices by smoothing so you do not have to do it manually. If [code]flip[/code] is [code]true[/code], the resulting normals will be inverted. [method generate_normals] should be called [i]after[/i] generating geometry and [i]before[/i] committing the mesh using [method commit] or [method commit_to_arrays].
+				[b]Note:[/b] [method generate_normals_smoothed] only works if the primitive type to be set to [constant Mesh.PRIMITIVE_TRIANGLES]. [code]smoothingAngle[/code] is the radius in degrees to determine the smoothing angle.
+			</description>
+		</method>
+		<method name="generate_tangents_smoothed">
+			<return type="void">
+			</return>
+			<argument index="0" name="smoothingAngle" type="float" default="45">
+			</argument>
+			<description>
+				Generates a tangent vector for each vertex by using a smoothing angle. Requires that each vertex have UVs and normals set already. [code]smoothingAngle[/code] is the radius in degrees to determine the smoothing angle.
+			</description>
+		</method>
 		<method name="generate_tangents">
 			<return type="void">
 			</return>

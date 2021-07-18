@@ -56,6 +56,22 @@ struct Vector3 {
 		real_t coord[3] = { 0 };
 	};
 
+	Vector3 min(const Vector3 &p_vector3) const {
+		return Vector3(MIN(x, p_vector3.x), MIN(y, p_vector3.y), MIN(z, p_vector3.z));
+	}
+
+	Vector3 max(const Vector3 &p_vector3) const {
+		return Vector3(MAX(x, p_vector3.x), MAX(y, p_vector3.y), MAX(z, p_vector3.z));
+	}
+
+	bool is_inf() const {
+		return Math::is_inf(x) || Math::is_inf(y) || Math::is_inf(z);
+	}
+
+	bool is_nan() const {
+		return Math::is_nan(x) || Math::is_nan(y) || Math::is_nan(z);
+	}
+
 	_FORCE_INLINE_ const real_t &operator[](int p_axis) const {
 		return coord[p_axis];
 	}
@@ -131,6 +147,7 @@ struct Vector3 {
 	_FORCE_INLINE_ Vector3 reflect(const Vector3 &p_normal) const;
 
 	bool is_equal_approx(const Vector3 &p_v) const;
+	bool is_equal_approx_tolerance(const Vector3 &p_v, real_t tolerance) const;
 
 	/* Operators */
 
