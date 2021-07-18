@@ -16,7 +16,7 @@
 			</argument>
 			<argument index="1" name="size" type="Vector2">
 			</argument>
-			<argument index="2" name="inline_align" type="int" enum="VAlign" default="1">
+			<argument index="2" name="inline_align" type="int" enum="InlineAlign" default="5">
 			</argument>
 			<argument index="3" name="length" type="int" default="1">
 			</argument>
@@ -158,7 +158,7 @@
 			</argument>
 			<argument index="1" name="size" type="Vector2">
 			</argument>
-			<argument index="2" name="inline_align" type="int" enum="VAlign" default="1">
+			<argument index="2" name="inline_align" type="int" enum="InlineAlign" default="5">
 			</argument>
 			<description>
 				Sets new size and alignment of embedded object.

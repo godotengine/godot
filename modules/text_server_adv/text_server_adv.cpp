@@ -1161,7 +1161,7 @@ bool TextServerAdvanced::shaped_text_add_string(RID p_shaped, const String &p_te
 	return true;
 }
 
-bool TextServerAdvanced::shaped_text_add_object(RID p_shaped, Variant p_key, const Size2 &p_size, VAlign p_inline_align, int p_length) {
+bool TextServerAdvanced::shaped_text_add_object(RID p_shaped, Variant p_key, const Size2 &p_size, InlineAlign p_inline_align, int p_length) {
 	_THREAD_SAFE_METHOD_
 	ShapedTextDataAdvanced *sd = shaped_owner.getornull(p_shaped);
 	ERR_FAIL_COND_V(!sd, false);
@@ -1191,7 +1191,7 @@ bool TextServerAdvanced::shaped_text_add_object(RID p_shaped, Variant p_key, con
 	return true;
 }
 
-bool TextServerAdvanced::shaped_text_resize_object(RID p_shaped, Variant p_key, const Size2 &p_size, VAlign p_inline_align) {
+bool TextServerAdvanced::shaped_text_resize_object(RID p_shaped, Variant p_key, const Size2 &p_size, InlineAlign p_inline_align) {
 	_THREAD_SAFE_METHOD_
 	ShapedTextData *sd = shaped_owner.getornull(p_shaped);
 	ERR_FAIL_COND_V(!sd, false);
@@ -1222,34 +1222,10 @@ bool TextServerAdvanced::shaped_text_resize_object(RID p_shaped, Variant p_key, 
 				if (sd->orientation == ORIENTATION_HORIZONTAL) {
 					sd->objects[key].rect.position.x = sd->width;
 					sd->width += sd->objects[key].rect.size.x;
-					switch (sd->objects[key].inline_align) {
-						case VALIGN_TOP: {
-							sd->ascent = MAX(sd->ascent, sd->objects[key].rect.size.y);
-						} break;
-						case VALIGN_CENTER: {
-							sd->ascent = MAX(sd->ascent, Math::round(sd->objects[key].rect.size.y / 2));
-							sd->descent = MAX(sd->descent, Math::round(sd->objects[key].rect.size.y / 2));
-						} break;
-						case VALIGN_BOTTOM: {
-							sd->descent = MAX(sd->descent, sd->objects[key].rect.size.y);
-						} break;
-					}
 					sd->glyphs.write[i].advance = sd->objects[key].rect.size.x;
 				} else {
 					sd->objects[key].rect.position.y = sd->width;
 					sd->width += sd->objects[key].rect.size.y;
-					switch (sd->objects[key].inline_align) {
-						case VALIGN_TOP: {
-							sd->ascent = MAX(sd->ascent, sd->objects[key].rect.size.x);
-						} break;
-						case VALIGN_CENTER: {
-							sd->ascent = MAX(sd->ascent, Math::round(sd->objects[key].rect.size.x / 2));
-							sd->descent = MAX(sd->descent, Math::round(sd->objects[key].rect.size.x / 2));
-						} break;
-						case VALIGN_BOTTOM: {
-							sd->descent = MAX(sd->descent, sd->objects[key].rect.size.x);
-						} break;
-					}
 					sd->glyphs.write[i].advance = sd->objects[key].rect.size.y;
 				}
 			} else {
@@ -1279,35 +1255,71 @@ bool TextServerAdvanced::shaped_text_resize_object(RID p_shaped, Variant p_key, 
 		}
 
 		// Align embedded objects to baseline.
+		float full_ascent = sd->ascent;
+		float full_descent = sd->descent;
 		for (Map<Variant, ShapedTextData::EmbeddedObject>::Element *E = sd->objects.front(); E; E = E->next()) {
 			if ((E->get().pos >= sd->start) && (E->get().pos < sd->end)) {
 				if (sd->orientation == ORIENTATION_HORIZONTAL) {
-					switch (E->get().inline_align) {
-						case VALIGN_TOP: {
+					switch (E->get().inline_align & INLINE_ALIGN_TEXT_MASK) {
+						case INLINE_ALIGN_TO_TOP: {
 							E->get().rect.position.y = -sd->ascent;
 						} break;
-						case VALIGN_CENTER: {
-							E->get().rect.position.y = -(E->get().rect.size.y / 2);
+						case INLINE_ALIGN_TO_CENTER: {
+							E->get().rect.position.y = (-sd->ascent + sd->descent) / 2;
 						} break;
-						case VALIGN_BOTTOM: {
-							E->get().rect.position.y = sd->descent - E->get().rect.size.y;
+						case INLINE_ALIGN_TO_BASELINE: {
+							E->get().rect.position.y = 0;
+						} break;
+						case INLINE_ALIGN_TO_BOTTOM: {
+							E->get().rect.position.y = sd->descent;
 						} break;
 					}
+					switch (E->get().inline_align & INLINE_ALIGN_IMAGE_MASK) {
+						case INLINE_ALIGN_BOTTOM_TO: {
+							E->get().rect.position.y -= E->get().rect.size.y;
+						} break;
+						case INLINE_ALIGN_CENTER_TO: {
+							E->get().rect.position.y -= E->get().rect.size.y / 2;
+						} break;
+						case INLINE_ALIGN_TOP_TO: {
+							//NOP
+						} break;
+					}
+					full_ascent = MAX(full_ascent, -E->get().rect.position.y);
+					full_descent = MAX(full_descent, E->get().rect.position.y + E->get().rect.size.y);
 				} else {
-					switch (E->get().inline_align) {
-						case VALIGN_TOP: {
+					switch (E->get().inline_align & INLINE_ALIGN_TEXT_MASK) {
+						case INLINE_ALIGN_TO_TOP: {
 							E->get().rect.position.x = -sd->ascent;
 						} break;
-						case VALIGN_CENTER: {
-							E->get().rect.position.x = -(E->get().rect.size.x / 2);
+						case INLINE_ALIGN_TO_CENTER: {
+							E->get().rect.position.x = (-sd->ascent + sd->descent) / 2;
 						} break;
-						case VALIGN_BOTTOM: {
-							E->get().rect.position.x = sd->descent - E->get().rect.size.x;
+						case INLINE_ALIGN_TO_BASELINE: {
+							E->get().rect.position.x = 0;
+						} break;
+						case INLINE_ALIGN_TO_BOTTOM: {
+							E->get().rect.position.x = sd->descent;
 						} break;
 					}
+					switch (E->get().inline_align & INLINE_ALIGN_IMAGE_MASK) {
+						case INLINE_ALIGN_BOTTOM_TO: {
+							E->get().rect.position.x -= E->get().rect.size.x;
+						} break;
+						case INLINE_ALIGN_CENTER_TO: {
+							E->get().rect.position.x -= E->get().rect.size.x / 2;
+						} break;
+						case INLINE_ALIGN_TOP_TO: {
+							//NOP
+						} break;
+					}
+					full_ascent = MAX(full_ascent, -E->get().rect.position.x);
+					full_descent = MAX(full_descent, E->get().rect.position.x + E->get().rect.size.x);
 				}
 			}
 		}
+		sd->ascent = full_ascent;
+		sd->descent = full_descent;
 	}
 	return true;
 }
@@ -1404,33 +1416,9 @@ RID TextServerAdvanced::shaped_text_substr(RID p_shaped, int p_start, int p_leng
 							if (new_sd->orientation == ORIENTATION_HORIZONTAL) {
 								new_sd->objects[key].rect.position.x = new_sd->width;
 								new_sd->width += new_sd->objects[key].rect.size.x;
-								switch (new_sd->objects[key].inline_align) {
-									case VALIGN_TOP: {
-										new_sd->ascent = MAX(new_sd->ascent, new_sd->objects[key].rect.size.y);
-									} break;
-									case VALIGN_CENTER: {
-										new_sd->ascent = MAX(new_sd->ascent, Math::round(new_sd->objects[key].rect.size.y / 2));
-										new_sd->descent = MAX(new_sd->descent, Math::round(new_sd->objects[key].rect.size.y / 2));
-									} break;
-									case VALIGN_BOTTOM: {
-										new_sd->descent = MAX(new_sd->descent, new_sd->objects[key].rect.size.y);
-									} break;
-								}
 							} else {
 								new_sd->objects[key].rect.position.y = new_sd->width;
 								new_sd->width += new_sd->objects[key].rect.size.y;
-								switch (new_sd->objects[key].inline_align) {
-									case VALIGN_TOP: {
-										new_sd->ascent = MAX(new_sd->ascent, new_sd->objects[key].rect.size.x);
-									} break;
-									case VALIGN_CENTER: {
-										new_sd->ascent = MAX(new_sd->ascent, Math::round(new_sd->objects[key].rect.size.x / 2));
-										new_sd->descent = MAX(new_sd->descent, Math::round(new_sd->objects[key].rect.size.x / 2));
-									} break;
-									case VALIGN_BOTTOM: {
-										new_sd->descent = MAX(new_sd->descent, new_sd->objects[key].rect.size.x);
-									} break;
-								}
 							}
 						} else {
 							if (prev_rid != gl.font_rid) {
@@ -1464,37 +1452,72 @@ RID TextServerAdvanced::shaped_text_substr(RID p_shaped, int p_start, int p_leng
 		}
 
 		// Align embedded objects to baseline.
+		float full_ascent = new_sd->ascent;
+		float full_descent = new_sd->descent;
 		for (Map<Variant, ShapedTextData::EmbeddedObject>::Element *E = new_sd->objects.front(); E; E = E->next()) {
 			if ((E->get().pos >= new_sd->start) && (E->get().pos < new_sd->end)) {
 				if (sd->orientation == ORIENTATION_HORIZONTAL) {
-					switch (E->get().inline_align) {
-						case VALIGN_TOP: {
+					switch (E->get().inline_align & INLINE_ALIGN_TEXT_MASK) {
+						case INLINE_ALIGN_TO_TOP: {
 							E->get().rect.position.y = -new_sd->ascent;
 						} break;
-						case VALIGN_CENTER: {
-							E->get().rect.position.y = -(E->get().rect.size.y / 2);
+						case INLINE_ALIGN_TO_CENTER: {
+							E->get().rect.position.y = (-new_sd->ascent + new_sd->descent) / 2;
 						} break;
-						case VALIGN_BOTTOM: {
-							E->get().rect.position.y = new_sd->descent - E->get().rect.size.y;
+						case INLINE_ALIGN_TO_BASELINE: {
+							E->get().rect.position.y = 0;
+						} break;
+						case INLINE_ALIGN_TO_BOTTOM: {
+							E->get().rect.position.y = new_sd->descent;
 						} break;
 					}
+					switch (E->get().inline_align & INLINE_ALIGN_IMAGE_MASK) {
+						case INLINE_ALIGN_BOTTOM_TO: {
+							E->get().rect.position.y -= E->get().rect.size.y;
+						} break;
+						case INLINE_ALIGN_CENTER_TO: {
+							E->get().rect.position.y -= E->get().rect.size.y / 2;
+						} break;
+						case INLINE_ALIGN_TOP_TO: {
+							//NOP
+						} break;
+					}
+					full_ascent = MAX(full_ascent, -E->get().rect.position.y);
+					full_descent = MAX(full_descent, E->get().rect.position.y + E->get().rect.size.y);
 				} else {
-					switch (E->get().inline_align) {
-						case VALIGN_TOP: {
+					switch (E->get().inline_align & INLINE_ALIGN_TEXT_MASK) {
+						case INLINE_ALIGN_TO_TOP: {
 							E->get().rect.position.x = -new_sd->ascent;
 						} break;
-						case VALIGN_CENTER: {
-							E->get().rect.position.x = -(E->get().rect.size.x / 2);
+						case INLINE_ALIGN_TO_CENTER: {
+							E->get().rect.position.x = (-new_sd->ascent + new_sd->descent) / 2;
 						} break;
-						case VALIGN_BOTTOM: {
-							E->get().rect.position.x = new_sd->descent - E->get().rect.size.x;
+						case INLINE_ALIGN_TO_BASELINE: {
+							E->get().rect.position.x = 0;
+						} break;
+						case INLINE_ALIGN_TO_BOTTOM: {
+							E->get().rect.position.x = new_sd->descent;
 						} break;
 					}
+					switch (E->get().inline_align & INLINE_ALIGN_IMAGE_MASK) {
+						case INLINE_ALIGN_BOTTOM_TO: {
+							E->get().rect.position.x -= E->get().rect.size.x;
+						} break;
+						case INLINE_ALIGN_CENTER_TO: {
+							E->get().rect.position.x -= E->get().rect.size.x / 2;
+						} break;
+						case INLINE_ALIGN_TOP_TO: {
+							//NOP
+						} break;
+					}
+					full_ascent = MAX(full_ascent, -E->get().rect.position.x);
+					full_descent = MAX(full_descent, E->get().rect.position.x + E->get().rect.size.x);
 				}
 			}
 		}
+		new_sd->ascent = full_ascent;
+		new_sd->descent = full_descent;
 	}
-
 	new_sd->valid = true;
 
 	return shaped_owner.make_rid(new_sd);
@@ -2473,33 +2496,9 @@ bool TextServerAdvanced::shaped_text_shape(RID p_shaped) {
 							if (sd->orientation == ORIENTATION_HORIZONTAL) {
 								sd->objects[span.embedded_key].rect.position.x = sd->width;
 								sd->width += sd->objects[span.embedded_key].rect.size.x;
-								switch (sd->objects[span.embedded_key].inline_align) {
-									case VALIGN_TOP: {
-										sd->ascent = MAX(sd->ascent, sd->objects[span.embedded_key].rect.size.y);
-									} break;
-									case VALIGN_CENTER: {
-										sd->ascent = MAX(sd->ascent, Math::round(sd->objects[span.embedded_key].rect.size.y / 2));
-										sd->descent = MAX(sd->descent, Math::round(sd->objects[span.embedded_key].rect.size.y / 2));
-									} break;
-									case VALIGN_BOTTOM: {
-										sd->descent = MAX(sd->descent, sd->objects[span.embedded_key].rect.size.y);
-									} break;
-								}
 							} else {
 								sd->objects[span.embedded_key].rect.position.y = sd->width;
 								sd->width += sd->objects[span.embedded_key].rect.size.y;
-								switch (sd->objects[span.embedded_key].inline_align) {
-									case VALIGN_TOP: {
-										sd->ascent = MAX(sd->ascent, sd->objects[span.embedded_key].rect.size.x);
-									} break;
-									case VALIGN_CENTER: {
-										sd->ascent = MAX(sd->ascent, Math::round(sd->objects[span.embedded_key].rect.size.x / 2));
-										sd->descent = MAX(sd->descent, Math::round(sd->objects[span.embedded_key].rect.size.x / 2));
-									} break;
-									case VALIGN_BOTTOM: {
-										sd->descent = MAX(sd->descent, sd->objects[span.embedded_key].rect.size.x);
-									} break;
-								}
 							}
 							Glyph gl;
 							gl.start = span.start;
@@ -2539,34 +2538,69 @@ bool TextServerAdvanced::shaped_text_shape(RID p_shaped) {
 	}
 
 	// Align embedded objects to baseline.
+	float full_ascent = sd->ascent;
+	float full_descent = sd->descent;
 	for (Map<Variant, ShapedTextData::EmbeddedObject>::Element *E = sd->objects.front(); E; E = E->next()) {
 		if (sd->orientation == ORIENTATION_HORIZONTAL) {
-			switch (E->get().inline_align) {
-				case VALIGN_TOP: {
+			switch (E->get().inline_align & INLINE_ALIGN_TEXT_MASK) {
+				case INLINE_ALIGN_TO_TOP: {
 					E->get().rect.position.y = -sd->ascent;
 				} break;
-				case VALIGN_CENTER: {
-					E->get().rect.position.y = -(E->get().rect.size.y / 2);
+				case INLINE_ALIGN_TO_CENTER: {
+					E->get().rect.position.y = (-sd->ascent + sd->descent) / 2;
 				} break;
-				case VALIGN_BOTTOM: {
-					E->get().rect.position.y = sd->descent - E->get().rect.size.y;
+				case INLINE_ALIGN_TO_BASELINE: {
+					E->get().rect.position.y = 0;
+				} break;
+				case INLINE_ALIGN_TO_BOTTOM: {
+					E->get().rect.position.y = sd->descent;
 				} break;
 			}
+			switch (E->get().inline_align & INLINE_ALIGN_IMAGE_MASK) {
+				case INLINE_ALIGN_BOTTOM_TO: {
+					E->get().rect.position.y -= E->get().rect.size.y;
+				} break;
+				case INLINE_ALIGN_CENTER_TO: {
+					E->get().rect.position.y -= E->get().rect.size.y / 2;
+				} break;
+				case INLINE_ALIGN_TOP_TO: {
+					//NOP
+				} break;
+			}
+			full_ascent = MAX(full_ascent, -E->get().rect.position.y);
+			full_descent = MAX(full_descent, E->get().rect.position.y + E->get().rect.size.y);
 		} else {
-			switch (E->get().inline_align) {
-				case VALIGN_TOP: {
+			switch (E->get().inline_align & INLINE_ALIGN_TEXT_MASK) {
+				case INLINE_ALIGN_TO_TOP: {
 					E->get().rect.position.x = -sd->ascent;
 				} break;
-				case VALIGN_CENTER: {
-					E->get().rect.position.x = -(E->get().rect.size.x / 2);
+				case INLINE_ALIGN_TO_CENTER: {
+					E->get().rect.position.x = (-sd->ascent + sd->descent) / 2;
 				} break;
-				case VALIGN_BOTTOM: {
-					E->get().rect.position.x = sd->descent - E->get().rect.size.x;
+				case INLINE_ALIGN_TO_BASELINE: {
+					E->get().rect.position.x = 0;
+				} break;
+				case INLINE_ALIGN_TO_BOTTOM: {
+					E->get().rect.position.x = sd->descent;
 				} break;
 			}
+			switch (E->get().inline_align & INLINE_ALIGN_IMAGE_MASK) {
+				case INLINE_ALIGN_BOTTOM_TO: {
+					E->get().rect.position.x -= E->get().rect.size.x;
+				} break;
+				case INLINE_ALIGN_CENTER_TO: {
+					E->get().rect.position.x -= E->get().rect.size.x / 2;
+				} break;
+				case INLINE_ALIGN_TOP_TO: {
+					//NOP
+				} break;
+			}
+			full_ascent = MAX(full_ascent, -E->get().rect.position.x);
+			full_descent = MAX(full_descent, E->get().rect.position.x + E->get().rect.size.x);
 		}
 	}
-
+	sd->ascent = full_ascent;
+	sd->descent = full_descent;
 	sd->valid = true;
 	return sd->valid;
 }

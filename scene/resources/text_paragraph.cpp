@@ -59,8 +59,8 @@ void TextParagraph::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("clear_dropcap"), &TextParagraph::clear_dropcap);
 
 	ClassDB::bind_method(D_METHOD("add_string", "text", "fonts", "size", "opentype_features", "language"), &TextParagraph::add_string, DEFVAL(Dictionary()), DEFVAL(""));
-	ClassDB::bind_method(D_METHOD("add_object", "key", "size", "inline_align", "length"), &TextParagraph::add_object, DEFVAL(VALIGN_CENTER), DEFVAL(1));
-	ClassDB::bind_method(D_METHOD("resize_object", "key", "size", "inline_align"), &TextParagraph::resize_object, DEFVAL(VALIGN_CENTER));
+	ClassDB::bind_method(D_METHOD("add_object", "key", "size", "inline_align", "length"), &TextParagraph::add_object, DEFVAL(INLINE_ALIGN_CENTER), DEFVAL(1));
+	ClassDB::bind_method(D_METHOD("resize_object", "key", "size", "inline_align"), &TextParagraph::resize_object, DEFVAL(INLINE_ALIGN_CENTER));
 
 	ClassDB::bind_method(D_METHOD("set_align", "align"), &TextParagraph::set_align);
 	ClassDB::bind_method(D_METHOD("get_align"), &TextParagraph::get_align);
@@ -290,13 +290,13 @@ void TextParagraph::set_bidi_override(const Vector<Vector2i> &p_override) {
 	dirty_lines = true;
 }
 
-bool TextParagraph::add_object(Variant p_key, const Size2 &p_size, VAlign p_inline_align, int p_length) {
+bool TextParagraph::add_object(Variant p_key, const Size2 &p_size, InlineAlign p_inline_align, int p_length) {
 	bool res = TS->shaped_text_add_object(rid, p_key, p_size, p_inline_align, p_length);
 	dirty_lines = true;
 	return res;
 }
 
-bool TextParagraph::resize_object(Variant p_key, const Size2 &p_size, VAlign p_inline_align) {
+bool TextParagraph::resize_object(Variant p_key, const Size2 &p_size, InlineAlign p_inline_align) {
 	bool res = TS->shaped_text_resize_object(rid, p_key, p_size, p_inline_align);
 	dirty_lines = true;
 	return res;
