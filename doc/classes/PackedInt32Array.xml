@@ -201,6 +201,8 @@
 			<return type="PackedByteArray">
 			</return>
 			<description>
+				Returns a copy stored as a [PackedByteArray] where each element have been encoded in 4 bytes.
+				Size of new array will be [code]oldArray.size()*4[/code].
 			</description>
 		</method>
 	</methods>
