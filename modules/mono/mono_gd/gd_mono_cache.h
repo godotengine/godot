@@ -151,9 +151,11 @@ struct CachedData {
 	GDMonoMethodThunkR<MonoBoolean, MonoReflectionType *> methodthunk_MarshalUtils_TypeIsGenericIEnumerable;
 	GDMonoMethodThunkR<MonoBoolean, MonoReflectionType *> methodthunk_MarshalUtils_TypeIsGenericICollection;
 	GDMonoMethodThunkR<MonoBoolean, MonoReflectionType *> methodthunk_MarshalUtils_TypeIsGenericIDictionary;
+	GDMonoMethodThunkR<MonoBoolean, MonoReflectionType *> methodthunk_MarshalUtils_TypeIsGenericNullable;
 
 	GDMonoMethodThunk<MonoReflectionType *, MonoReflectionType **> methodthunk_MarshalUtils_ArrayGetElementType;
 	GDMonoMethodThunk<MonoReflectionType *, MonoReflectionType **, MonoReflectionType **> methodthunk_MarshalUtils_DictionaryGetKeyValueTypes;
+	GDMonoMethodThunk<MonoReflectionType *, MonoReflectionType **> methodthunk_MarshalUtils_NullableGetUnderlyingType;
 
 	GDMonoMethodThunkR<MonoReflectionType *, MonoReflectionType *> methodthunk_MarshalUtils_MakeGenericArrayType;
 	GDMonoMethodThunkR<MonoReflectionType *, MonoReflectionType *, MonoReflectionType *> methodthunk_MarshalUtils_MakeGenericDictionaryType;

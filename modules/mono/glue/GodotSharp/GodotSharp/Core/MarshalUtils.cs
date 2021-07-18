@@ -41,6 +41,8 @@ namespace Godot
 
         static bool TypeIsGenericIDictionary(Type type) => type.GetGenericTypeDefinition() == typeof(IDictionary<,>);
 
+        static bool TypeIsGenericNullable(Type type) => type.GetGenericTypeDefinition() == typeof(Nullable<>);
+
         static void ArrayGetElementType(Type arrayType, out Type elementType)
         {
             elementType = arrayType.GetGenericArguments()[0];
@@ -51,6 +53,11 @@ namespace Godot
             var genericArgs = dictionaryType.GetGenericArguments();
             keyType = genericArgs[0];
             valueType = genericArgs[1];
+        }
+
+        static void NullableGetUnderlyingType(Type nullableType, out Type underlyingType)
+        {
+            underlyingType = Nullable.GetUnderlyingType(nullableType);
         }
 
         static Type MakeGenericArrayType(Type elemType)

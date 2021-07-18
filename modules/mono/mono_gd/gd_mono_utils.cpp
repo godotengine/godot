@@ -350,6 +350,42 @@ MonoObject *create_managed_from(const Dictionary &p_from, GDMonoClass *p_class) 
 	return mono_object;
 }
 
+MonoObject *create_nullable(MonoObject *p_from, MonoClass *p_class, GDMonoClass *p_class_from) {
+	MonoObject *mono_object = mono_object_new(mono_domain_get(), p_class);
+	ERR_FAIL_NULL_V(mono_object, nullptr);
+	const char *class_name = mono_class_get_name(p_class);
+	const char *class_from_name = mono_class_get_name(p_class_from->get_mono_ptr());
+	const char *object_class_name = mono_class_get_name(mono_object_get_class(mono_object));
+
+	MonoMethod *m;
+	void *iter = nullptr;
+	while ((m = mono_class_get_methods(p_class, &iter))) {
+		if (strcmp(mono_method_get_name(m), ".ctor") == 0) {
+			MonoMethodSignature *sig = mono_method_signature(m);
+			void *front = nullptr;
+			if (mono_signature_get_param_count(sig) == 1 &&
+					mono_class_from_mono_type(mono_signature_get_params(sig, &front)) == p_class_from->get_mono_ptr()) {
+				break;
+			}
+		}
+	}
+
+	CRASH_COND(m == nullptr);
+
+	void *args[1] = { &p_from };
+
+	MonoException *exc = nullptr;
+	MonoObject *ret = GDMonoUtils::runtime_invoke(m, mono_object, args, &exc);
+	UNHANDLED_EXCEPTION(exc);
+
+	MonoObject *isinst = nullptr;
+	isinst = mono_object_isinst(mono_object, p_class);
+
+	object_class_name = mono_class_get_name(mono_object_get_class(mono_object));
+
+	return mono_object;
+}
+
 MonoDomain *create_domain(const String &p_friendly_name) {
 	print_verbose("Mono: Creating domain '" + p_friendly_name + "'...");
 
@@ -629,6 +665,14 @@ bool type_is_generic_idictionary(MonoReflectionType *p_reftype) {
 	return (bool)res;
 }
 
+bool type_is_generic_nullable(MonoReflectionType *p_reftype) {
+	NO_GLUE_RET(false);
+	MonoException *exc = NULL;
+	MonoBoolean res = CACHED_METHOD_THUNK(MarshalUtils, TypeIsGenericNullable).invoke(p_reftype, &exc);
+	UNHANDLED_EXCEPTION(exc);
+	return (bool)res;
+}
+
 void array_get_element_type(MonoReflectionType *p_array_reftype, MonoReflectionType **r_elem_reftype) {
 	MonoException *exc = nullptr;
 	CACHED_METHOD_THUNK(MarshalUtils, ArrayGetElementType).invoke(p_array_reftype, r_elem_reftype, &exc);
@@ -638,6 +682,12 @@ void array_get_element_type(MonoReflectionType *p_array_reftype, MonoReflectionT
 void dictionary_get_key_value_types(MonoReflectionType *p_dict_reftype, MonoReflectionType **r_key_reftype, MonoReflectionType **r_value_reftype) {
 	MonoException *exc = nullptr;
 	CACHED_METHOD_THUNK(MarshalUtils, DictionaryGetKeyValueTypes).invoke(p_dict_reftype, r_key_reftype, r_value_reftype, &exc);
+	UNHANDLED_EXCEPTION(exc);
+}
+
+void nullable_get_underlying_type(MonoReflectionType *p_nullable_reftype, MonoReflectionType **r_underlying_reftype) {
+	MonoException *exc = NULL;
+	CACHED_METHOD_THUNK(MarshalUtils, NullableGetUnderlyingType).invoke(p_nullable_reftype, r_underlying_reftype, &exc);
 	UNHANDLED_EXCEPTION(exc);
 }
 
