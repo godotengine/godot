@@ -524,6 +524,27 @@ Error VisualScriptExpression::_get_token(Token &r_token) {
 					} else if (id == "TAU") {
 						r_token.type = TK_CONSTANT;
 						r_token.value = Math_TAU;
+					} else if (id == "E") {
+						r_token.type = TK_CONSTANT;
+						r_token.value = Math_E;
+					} else if (id == "LN2") {
+						r_token.type = TK_CONSTANT;
+						r_token.value = Math_LN2;
+					} else if (id == "LN10") {
+						r_token.type = TK_CONSTANT;
+						r_token.value = Math_LN10;
+					} else if (id == "LOG2E") {
+						r_token.type = TK_CONSTANT;
+						r_token.value = Math_LOG2E;
+					} else if (id == "LOG10E") {
+						r_token.type = TK_CONSTANT;
+						r_token.value = Math_LOG10E;
+					} else if (id == "SQRT12") {
+						r_token.type = TK_CONSTANT;
+						r_token.value = Math_SQRT12;
+					} else if (id == "SQRT2") {
+						r_token.type = TK_CONSTANT;
+						r_token.value = Math_SQRT2;
 					} else if (id == "INF") {
 						r_token.type = TK_CONSTANT;
 						r_token.value = Math_INF;

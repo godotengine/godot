@@ -139,6 +139,13 @@ static const char *token_names[] = {
 	"TAU", // CONST_TAU,
 	"INF", // CONST_INF,
 	"NaN", // CONST_NAN,
+	"EULER", // CONST_EULER,
+	"LN2", // CONST_LN2,
+	"LN10", // CONST_LN10,
+	"LOG2E", // CONST_LOG2E,
+	"LOG10E", // CONST_LOG10E,
+	"SQRT12", // CONST_SQRT12,
+	"SQRT2", // CONST_SQRT2,
 	// Error message improvement
 	"VCS conflict marker", // VCS_CONFLICT_MARKER,
 	"`", // BACKTICK,
@@ -513,14 +520,25 @@ GDScriptTokenizer::Token GDScriptTokenizer::potential_identifier() {
 	KEYWORD("while", Token::WHILE)           \
 	KEYWORD_GROUP('y')                       \
 	KEYWORD("yield", Token::YIELD)           \
+	KEYWORD_GROUP('E')                       \
+	KEYWORD("EULER", Token::CONST_EULER)     \
 	KEYWORD_GROUP('I')                       \
 	KEYWORD("INF", Token::CONST_INF)         \
+	KEYWORD_GROUP('L')                       \
+	KEYWORD("LN2", Token::CONST_LN2)         \
+	KEYWORD("LN10", Token::CONST_LN10)       \
+	KEYWORD("LOG2E", Token::CONST_LOG2E)     \
+	KEYWORD("LOG10E", Token::CONST_LOG10E)   \
 	KEYWORD_GROUP('N')                       \
 	KEYWORD("NAN", Token::CONST_NAN)         \
 	KEYWORD_GROUP('P')                       \
 	KEYWORD("PI", Token::CONST_PI)           \
+	KEYWORD_GROUP('S')                       \
+	KEYWORD("SQRT12", Token::CONST_SQRT12)   \
+	KEYWORD("SQRT2", Token::CONST_SQRT2)     \
 	KEYWORD_GROUP('T')                       \
 	KEYWORD("TAU", Token::CONST_TAU)
+	// YO WHAT
 
 #define MIN_KEYWORD_LENGTH 2
 #define MAX_KEYWORD_LENGTH 10

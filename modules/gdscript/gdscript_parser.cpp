@@ -2133,6 +2133,27 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_builtin_constant(Expressio
 		case GDScriptTokenizer::Token::CONST_NAN:
 			constant->value = Math_NAN;
 			break;
+		case GDScriptTokenizer::Token::CONST_EULER:
+			constant->value = Math_E;
+			break;
+		case GDScriptTokenizer::Token::CONST_LN2:
+			constant->value = Math_LN2;
+			break;
+		case GDScriptTokenizer::Token::CONST_LN10:
+			constant->value = Math_LN10;
+			break;
+		case GDScriptTokenizer::Token::CONST_LOG2E:
+			constant->value = Math_LOG2E;
+			break;
+		case GDScriptTokenizer::Token::CONST_LOG10E:
+			constant->value = Math_LOG10E;
+			break;
+		case GDScriptTokenizer::Token::CONST_SQRT12:
+			constant->value = Math_SQRT12;
+			break;
+		case GDScriptTokenizer::Token::CONST_SQRT2:
+			constant->value = Math_SQRT2;
+			break;
 		default:
 			return nullptr; // Unreachable.
 	}
@@ -3171,6 +3192,13 @@ GDScriptParser::ParseRule *GDScriptParser::get_rule(GDScriptTokenizer::Token::Ty
 		{ &GDScriptParser::parse_builtin_constant,			nullptr,                                        PREC_NONE }, // CONST_TAU,
 		{ &GDScriptParser::parse_builtin_constant,			nullptr,                                        PREC_NONE }, // CONST_INF,
 		{ &GDScriptParser::parse_builtin_constant,			nullptr,                                        PREC_NONE }, // CONST_NAN,
+		{ &GDScriptParser::parse_builtin_constant,			nullptr,                                        PREC_NONE }, // CONST_EULER,
+		{ &GDScriptParser::parse_builtin_constant,			nullptr,                                        PREC_NONE }, // CONST_LN2,
+		{ &GDScriptParser::parse_builtin_constant,			nullptr,                                        PREC_NONE }, // CONST_LN10,
+		{ &GDScriptParser::parse_builtin_constant,			nullptr,                                        PREC_NONE }, // CONST_LOG2E,
+		{ &GDScriptParser::parse_builtin_constant,			nullptr,                                        PREC_NONE }, // CONST_LOG10E,
+		{ &GDScriptParser::parse_builtin_constant,			nullptr,                                        PREC_NONE }, // CONST_SQRT12,
+		{ &GDScriptParser::parse_builtin_constant,			nullptr,                                        PREC_NONE }, // CONST_SQRT2,
 		// Error message improvement
 		{ nullptr,                                          nullptr,                                        PREC_NONE }, // VCS_CONFLICT_MARKER,
 		{ nullptr,                                          nullptr,                                        PREC_NONE }, // BACKTICK,

@@ -1643,6 +1643,13 @@ void GDScriptLanguage::init() {
 	_add_global(StaticCString::create("TAU"), Math_TAU);
 	_add_global(StaticCString::create("INF"), Math_INF);
 	_add_global(StaticCString::create("NAN"), Math_NAN);
+	_add_global(StaticCString::create("EULER"), Math_E);
+	_add_global(StaticCString::create("LN2"), Math_LN2);
+	_add_global(StaticCString::create("LN10"), Math_LN10);
+	_add_global(StaticCString::create("LOG2E"), Math_LOG2E);
+	_add_global(StaticCString::create("LOG10E"), Math_LOG10E);
+	_add_global(StaticCString::create("SQRT12"), Math_SQRT12);
+	_add_global(StaticCString::create("SQRT2"), Math_SQRT2);
 
 	//populate native classes
 
@@ -1982,6 +1989,13 @@ void GDScriptLanguage::get_reserved_words(List<String> *p_words) const {
 		"TAU",
 		"INF",
 		"NAN",
+		"EULER",
+		"LN2",
+		"LN10",
+		"LOG2E",
+		"LOG10E",
+		"SQRT12",
+		"SQRT2",
 		"self",
 		"true",
 		"void",

@@ -252,5 +252,26 @@
 		<constant name="NAN" value="nan">
 			"Not a Number", an invalid value. [code]NaN[/code] has special properties, including that it is not equal to itself. It is output by some invalid operations, such as dividing zero by zero.
 		</constant>
+		<constant name="EULER" value="2.71828182845905">
+			The natural logarithm base.
+		</constant>
+		<constant name="LN2" value="0.693147180559945">
+			Natural logarithm of two.
+		</constant>
+		<constant name="LN10" value="2.30258509299405">
+			Natural logarithm of ten.
+		</constant>
+		<constant name="LOG2E" value="1.44269504088896">
+			Logarithm of base two of value e.
+		</constant>
+		<constant name="LOG10E" value="0.434294481903252">
+			Logarithm of base ten of value e.
+		</constant>
+		<constant name="SQRT12" value="0.707106781186548">
+			Square root of one half.
+		</constant>
+		<constant name="SQRT2" value="1.4142135623731">
+			Square root of two.
+		</constant>
 	</constants>
 </class>

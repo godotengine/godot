@@ -150,6 +150,13 @@ public:
 			CONST_TAU,
 			CONST_INF,
 			CONST_NAN,
+			CONST_EULER,
+			CONST_LN2,
+			CONST_LN10,
+			CONST_LOG2E,
+			CONST_LOG10E,
+			CONST_SQRT12,
+			CONST_SQRT2,
 			// Error message improvement
 			VCS_CONFLICT_MARKER,
 			BACKTICK,
