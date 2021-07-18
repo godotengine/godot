@@ -1104,6 +1104,9 @@
 		<member name="current_screen" type="int" setter="set_current_screen" getter="get_current_screen" default="0">
 			The current screen index (starting from 0).
 		</member>
+		<member name="delta_smoothing" type="bool" setter="set_delta_smoothing" getter="is_delta_smoothing_enabled" default="true">
+			If [code]true[/code], the engine filters the time delta measured between each frame, and attempts to compensate for random variation. This will only operate on systems where V-Sync is active.
+		</member>
 		<member name="exit_code" type="int" setter="set_exit_code" getter="get_exit_code" default="0">
 			The exit code passed to the OS when the main loop exits. By convention, an exit code of [code]0[/code] indicates success whereas a non-zero exit code indicates an error. For portability reasons, the exit code should be set between 0 and 125 (inclusive).
 			[b]Note:[/b] This value will be ignored if using [method SceneTree.quit] with an [code]exit_code[/code] argument passed.
