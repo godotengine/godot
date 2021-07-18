@@ -276,6 +276,7 @@ public:
 	virtual void set_exit_code(int p_code);
 
 	virtual int get_processor_count() const;
+	virtual String get_processor_name() const;
 
 	virtual String get_unique_id() const;
 

@@ -142,6 +142,7 @@ public:
 	virtual String get_locale() const override;
 
 	virtual int get_processor_count() const override;
+	virtual String get_processor_name() const override;
 
 	virtual String get_config_path() const override;
 	virtual String get_data_path() const override;

@@ -89,6 +89,7 @@ public:
 	virtual Error shell_open(String p_uri) override;
 
 	virtual String get_unique_id() const override;
+	virtual String get_processor_name() const override;
 
 	virtual bool _check_internal_feature_support(const String &p_feature) override;
 

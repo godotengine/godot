@@ -40,6 +40,7 @@
 #include <libproc.h>
 #include <mach-o/dyld.h>
 #include <os/log.h>
+#include <sys/sysctl.h>
 
 /*************************************************************************/
 /* OSXTerminalLogger                                                     */
@@ -117,6 +118,15 @@ String OS_OSX::get_unique_id() const {
 	}
 
 	return serial_number;
+}
+
+String OS_OSX::get_processor_name() const {
+	char buffer[256];
+	size_t buffer_len = 256;
+	if (sysctlbyname("machdep.cpu.brand_string", &buffer, &buffer_len, NULL, 0) == 0) {
+		return String::utf8(buffer, buffer_len);
+	}
+	ERR_FAIL_V_MSG("", String("Couldn't get the CPU model name. Returning an empty string."));
 }
 
 void OS_OSX::initialize_core() {
