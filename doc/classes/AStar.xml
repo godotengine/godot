@@ -280,6 +280,13 @@
 				Returns the number of points currently in the points pool.
 			</description>
 		</method>
+		<method name="get_point_ids">
+			<return type="Array">
+			</return>
+			<description>
+				Returns an array of all point IDs.
+			</description>
+		</method>
 		<method name="get_point_path">
 			<return type="PackedVector3Array">
 			</return>
@@ -308,13 +315,6 @@
 			</argument>
 			<description>
 				Returns the weight scale of the point associated with the given [code]id[/code].
-			</description>
-		</method>
-		<method name="get_points">
-			<return type="Array">
-			</return>
-			<description>
-				Returns an array of all points.
 			</description>
 		</method>
 		<method name="has_point" qualifiers="const">
