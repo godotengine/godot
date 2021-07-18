@@ -862,16 +862,16 @@ public:
 		rshb->add_child(rvb);
 		Button *rs_button = memnew(CheckBox);
 		rs_button->set_button_group(rasterizer_button_group);
-		rs_button->set_text(TTR("OpenGL ES 3.0"));
+		rs_button->set_text(TTR("OpenGL ES 3.0 / WebGL 2.0"));
 		rs_button->set_meta("driver_name", "GLES3");
 		rvb->add_child(rs_button);
-		if (gles3_viable) {
+		if (!gles3_viable) {
 			rs_button->set_pressed(true);
 		} else {
 			// If GLES3 can't be used, don't let users shoot themselves in the foot.
 			rs_button->set_disabled(true);
 			l = memnew(Label);
-			l->set_text(TTR("Not supported by your GPU drivers."));
+			l->set_text(TTR("Not supported by your GPU hardware\nor drivers."));
 			rvb->add_child(l);
 		}
 		l = memnew(Label);
@@ -885,7 +885,7 @@ public:
 		rshb->add_child(rvb);
 		rs_button = memnew(CheckBox);
 		rs_button->set_button_group(rasterizer_button_group);
-		rs_button->set_text(TTR("OpenGL ES 2.0"));
+		rs_button->set_text(TTR("OpenGL ES 2.0 / WebGL 1.0"));
 		rs_button->set_meta("driver_name", "GLES2");
 		rs_button->set_pressed(!gles3_viable);
 		rvb->add_child(rs_button);
