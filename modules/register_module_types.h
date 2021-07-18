@@ -34,5 +34,6 @@
 void preregister_module_types();
 void register_module_types();
 void unregister_module_types();
+void call_modules_lifecycle_callback(int p_phase);
 
 #endif // REGISTER_MODULE_TYPES_H
