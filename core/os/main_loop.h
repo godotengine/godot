@@ -60,8 +60,8 @@ public:
 	};
 
 	virtual void initialize();
-	virtual bool physics_process(float p_time);
-	virtual bool process(float p_time);
+	virtual bool physics_process(double p_time);
+	virtual bool process(double p_time);
 	virtual void finalize();
 
 	void set_initialize_script(const Ref<Script> &p_initialize_script);

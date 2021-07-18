@@ -77,7 +77,7 @@ void Performance::_bind_methods() {
 	BIND_ENUM_CONSTANT(MONITOR_MAX);
 }
 
-float Performance::_get_node_count() const {
+int Performance::_get_node_count() const {
 	MainLoop *ml = OS::get_singleton()->get_main_loop();
 	SceneTree *sml = Object::cast_to<SceneTree>(ml);
 	if (!sml) {
@@ -118,7 +118,7 @@ String Performance::get_monitor_name(Monitor p_monitor) const {
 	return names[p_monitor];
 }
 
-float Performance::get_monitor(Monitor p_monitor) const {
+double Performance::get_monitor(Monitor p_monitor) const {
 	switch (p_monitor) {
 		case TIME_FPS:
 			return Engine::get_singleton()->get_frames_per_second();
@@ -207,11 +207,11 @@ Performance::MonitorType Performance::get_monitor_type(Monitor p_monitor) const 
 	return types[p_monitor];
 }
 
-void Performance::set_process_time(float p_pt) {
+void Performance::set_process_time(double p_pt) {
 	_process_time = p_pt;
 }
 
-void Performance::set_physics_process_time(float p_pt) {
+void Performance::set_physics_process_time(double p_pt) {
 	_physics_process_time = p_pt;
 }
 
