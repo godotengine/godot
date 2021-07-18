@@ -42,6 +42,12 @@
 
 #if defined(UNIX_ENABLED)
 #include <unistd.h>
+
+#if defined(TOOLS_ENABLED)
+#include <limits.h>
+#include <stdlib.h>
+#endif
+
 #endif
 
 #ifndef ANDROID_ENABLED
@@ -110,6 +116,15 @@ Error FileAccessUnix::_open(const String &p_path, int p_mode_flags) {
 				return ERR_FILE_CANT_OPEN;
 		}
 	}
+
+#if defined(TOOLS_ENABLED)
+	if (p_mode_flags & READ) {
+		String real_path = realpath(path.utf8().get_data(), NULL);
+		if (real_path != "" && real_path != path) {
+			WARN_PRINTS("Case mismatch opening requested file '" + path + "', stored as '" + real_path + "' in the filesystem. This file will not open when exported to other case-sensitive platforms.");
+		}
+	}
+#endif
 
 	if (is_backup_save_enabled() && (p_mode_flags & WRITE) && !(p_mode_flags & READ)) {
 		save_path = path;
