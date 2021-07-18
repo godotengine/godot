@@ -44,7 +44,6 @@ class PhysicsServer3DSW : public PhysicsServer3D {
 	friend class PhysicsDirectSpaceState3DSW;
 	bool active;
 	int iterations;
-	real_t last_step;
 
 	int island_count;
 	int active_objects;
@@ -56,8 +55,6 @@ class PhysicsServer3DSW : public PhysicsServer3D {
 
 	Step3DSW *stepper;
 	Set<const Space3DSW *> active_spaces;
-
-	PhysicsDirectBodyState3DSW *direct_state;
 
 	mutable RID_PtrOwner<Shape3DSW, true> shape_owner;
 	mutable RID_PtrOwner<Space3DSW, true> space_owner;

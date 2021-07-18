@@ -182,7 +182,7 @@ void Step3DSW::_check_suspend(const LocalVector<Body3DSW *> &p_body_island) cons
 
 void Step3DSW::step(Space3DSW *p_space, real_t p_delta, int p_iterations) {
 	p_space->lock(); // can't access space during this
-
+	p_space->set_step(p_delta);
 	p_space->setup(); //update inertias, etc
 
 	iterations = p_iterations;

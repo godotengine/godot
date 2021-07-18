@@ -117,6 +117,7 @@ private:
 
 	bool locked;
 
+	real_t step;
 	int island_count;
 	int active_objects;
 	int collision_pairs;
@@ -131,6 +132,9 @@ private:
 public:
 	_FORCE_INLINE_ void set_self(const RID &p_self) { self = p_self; }
 	_FORCE_INLINE_ RID get_self() const { return self; }
+
+	_FORCE_INLINE_ void set_step(const real_t &p_step) { step = p_step; }
+	_FORCE_INLINE_ real_t get_step() const { return step; }
 
 	void set_default_area(Area2DSW *p_area) { area = p_area; }
 	Area2DSW *get_default_area() const { return area; }

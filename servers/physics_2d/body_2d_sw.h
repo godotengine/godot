@@ -38,6 +38,7 @@
 #include "core/templates/vset.h"
 
 class Constraint2DSW;
+class PhysicsDirectBodyState2DSW;
 
 class Body2DSW : public CollisionObject2DSW {
 	PhysicsServer2D::BodyMode mode;
@@ -127,6 +128,7 @@ class Body2DSW : public CollisionObject2DSW {
 
 	_FORCE_INLINE_ void _compute_area_gravity_and_dampenings(const Area2DSW *p_area);
 
+	PhysicsDirectBodyState2DSW *direct_access = nullptr;
 	friend class PhysicsDirectBodyState2DSW; // i give up, too many functions to expose
 
 public:
@@ -280,6 +282,8 @@ public:
 
 	bool sleep_test(real_t p_step);
 
+	PhysicsDirectBodyState2DSW *get_direct_state() const { return direct_access; }
+
 	Body2DSW();
 	~Body2DSW();
 };
@@ -332,9 +336,7 @@ class PhysicsDirectBodyState2DSW : public PhysicsDirectBodyState2D {
 	GDCLASS(PhysicsDirectBodyState2DSW, PhysicsDirectBodyState2D);
 
 public:
-	static PhysicsDirectBodyState2DSW *singleton;
-	Body2DSW *body;
-	real_t step;
+	Body2DSW *body = nullptr;
 
 	virtual Vector2 get_total_gravity() const override { return body->gravity; } // get gravity vector working on this body space/area
 	virtual real_t get_total_angular_damp() const override { return body->area_angular_damp; } // get density of this body space/area
@@ -402,11 +404,9 @@ public:
 
 	virtual PhysicsDirectSpaceState2D *get_space_state() override;
 
-	virtual real_t get_step() const override { return step; }
-	PhysicsDirectBodyState2DSW() {
-		singleton = this;
-		body = nullptr;
-	}
+	virtual real_t get_step() const override;
+
+	PhysicsDirectBodyState2DSW() {}
 };
 
 #endif // BODY_2D_SW_H

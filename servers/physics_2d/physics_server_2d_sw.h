@@ -46,7 +46,6 @@ class PhysicsServer2DSW : public PhysicsServer2D {
 	bool active;
 	int iterations;
 	bool doing_sync;
-	real_t last_step;
 
 	int island_count;
 	int active_objects;
@@ -58,8 +57,6 @@ class PhysicsServer2DSW : public PhysicsServer2D {
 
 	Step2DSW *stepper;
 	Set<const Space2DSW *> active_spaces;
-
-	PhysicsDirectBodyState2DSW *direct_state;
 
 	mutable RID_PtrOwner<Shape2DSW, true> shape_owner;
 	mutable RID_PtrOwner<Space2DSW, true> space_owner;

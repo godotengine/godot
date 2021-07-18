@@ -126,7 +126,7 @@ void Step2DSW::_check_suspend(LocalVector<Body2DSW *> &p_body_island) const {
 
 void Step2DSW::step(Space2DSW *p_space, real_t p_delta, int p_iterations) {
 	p_space->lock(); // can't access space during this
-
+	p_space->set_step(p_delta);
 	p_space->setup(); //update inertias, etc
 
 	iterations = p_iterations;

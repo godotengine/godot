@@ -36,6 +36,7 @@
 #include "core/templates/vset.h"
 
 class Constraint3DSW;
+class PhysicsDirectBodyState3DSW;
 
 class Body3DSW : public CollisionObject3DSW {
 	PhysicsServer3D::BodyMode mode;
@@ -138,6 +139,7 @@ class Body3DSW : public CollisionObject3DSW {
 
 	_FORCE_INLINE_ void _update_transform_dependant();
 
+	PhysicsDirectBodyState3DSW *direct_access = nullptr;
 	friend class PhysicsDirectBodyState3DSW; // i give up, too many functions to expose
 
 public:
@@ -313,6 +315,8 @@ public:
 
 	bool sleep_test(real_t p_step);
 
+	PhysicsDirectBodyState3DSW *get_direct_state() const { return direct_access; }
+
 	Body3DSW();
 	~Body3DSW();
 };
@@ -365,9 +369,7 @@ class PhysicsDirectBodyState3DSW : public PhysicsDirectBodyState3D {
 	GDCLASS(PhysicsDirectBodyState3DSW, PhysicsDirectBodyState3D);
 
 public:
-	static PhysicsDirectBodyState3DSW *singleton;
-	Body3DSW *body;
-	real_t step;
+	Body3DSW *body = nullptr;
 
 	virtual Vector3 get_total_gravity() const override { return body->gravity; } // get gravity vector working on this body space/area
 	virtual real_t get_total_angular_damp() const override { return body->area_angular_damp; } // get density of this body space/area
@@ -444,11 +446,9 @@ public:
 
 	virtual PhysicsDirectSpaceState3D *get_space_state() override;
 
-	virtual real_t get_step() const override { return step; }
-	PhysicsDirectBodyState3DSW() {
-		singleton = this;
-		body = nullptr;
-	}
+	virtual real_t get_step() const override;
+
+	PhysicsDirectBodyState3DSW() {}
 };
 
 #endif // BODY__SW_H
