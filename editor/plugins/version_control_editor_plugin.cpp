@@ -30,6 +30,7 @@
 
 #include "version_control_editor_plugin.h"
 
+#include "core/os/keyboard.h"
 #include "core/script_language.h"
 #include "editor/editor_file_system.h"
 #include "editor/editor_node.h"
@@ -47,6 +48,7 @@ void VersionControlEditorPlugin::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_view_file_diff"), &VersionControlEditorPlugin::_view_file_diff);
 	ClassDB::bind_method(D_METHOD("_refresh_file_diff"), &VersionControlEditorPlugin::_refresh_file_diff);
 	ClassDB::bind_method(D_METHOD("_update_commit_button"), &VersionControlEditorPlugin::_update_commit_button);
+	ClassDB::bind_method(D_METHOD("_commit_message_gui_input"), &VersionControlEditorPlugin::_commit_message_gui_input);
 	ClassDB::bind_method(D_METHOD("popup_vcs_set_up_dialog"), &VersionControlEditorPlugin::popup_vcs_set_up_dialog);
 
 	// Used to track the status of files in the staging area
@@ -301,6 +303,29 @@ void VersionControlEditorPlugin::_update_commit_button() {
 	commit_button->set_disabled(commit_message->get_text().strip_edges() == "");
 }
 
+void VersionControlEditorPlugin::_commit_message_gui_input(const Ref<InputEvent> &p_event) {
+	if (!commit_message->has_focus()) {
+		return;
+	}
+	if (commit_message->get_text().strip_edges().empty()) {
+		// Do not allow empty commit messages.
+		return;
+	}
+	const Ref<InputEventKey> k = p_event;
+
+	if (k.is_valid() && k->is_pressed()) {
+		if (ED_IS_SHORTCUT("version_control/commit", p_event)) {
+			if (staged_files_count == 0) {
+				// Stage all files only when no files were previously staged.
+				_stage_all();
+			}
+			_send_commit_msg();
+			commit_message->accept_event();
+			return;
+		}
+	}
+}
+
 void VersionControlEditorPlugin::register_editor() {
 	if (!EditorVCSInterface::get_singleton()) {
 		EditorNode::get_singleton()->add_control_to_dock(EditorNode::DOCK_SLOT_RIGHT_UL, version_commit_dock);
@@ -475,7 +500,9 @@ VersionControlEditorPlugin::VersionControlEditorPlugin() {
 	commit_message->set_custom_minimum_size(Size2(200, 100));
 	commit_message->set_wrap_enabled(true);
 	commit_message->connect("text_changed", this, "_update_commit_button");
+	commit_message->connect("gui_input", this, "_commit_message_gui_input");
 	commit_box_vbc->add_child(commit_message);
+	ED_SHORTCUT("version_control/commit", TTR("Commit"), KEY_MASK_CMD | KEY_ENTER);
 
 	commit_button = memnew(Button);
 	commit_button->set_text(TTR("Commit Changes"));
