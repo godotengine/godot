@@ -1654,6 +1654,7 @@ void EditorInspector::update_tree() {
 		_parse_added_editors(main_vbox, ped);
 	}
 
+	bool has_scripts = false; // for checking if exposed "Script/scripts" by MultiNodeEdit.
 	for (List<PropertyInfo>::Element *I = plist.front(); I; I = I->next()) {
 		PropertyInfo &p = I->get();
 
@@ -1766,7 +1767,7 @@ void EditorInspector::update_tree() {
 			continue; //do not show this property in low end gfx
 		}
 
-		if (p.name == "script" && (hide_script || bool(object->call("_hide_script_from_inspector")))) {
+		if ((p.name == "script" && (hide_script || bool(object->call("_hide_script_from_inspector")))) || has_scripts) {
 			continue;
 		}
 
@@ -1800,6 +1801,9 @@ void EditorInspector::update_tree() {
 		}
 		if (group != "") {
 			basename = group + "/" + basename;
+		}
+		if (basename == "Script/scripts") {
+			has_scripts = true;
 		}
 
 		String name = (basename.find("/") != -1) ? basename.substr(basename.rfind("/") + 1) : basename;
