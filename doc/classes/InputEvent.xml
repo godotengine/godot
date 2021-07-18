@@ -39,6 +39,18 @@
 				Returns a value between 0.0 and 1.0 depending on the given actions' state. Useful for getting the value of events of type [InputEventJoypadMotion].
 			</description>
 		</method>
+		<method name="get_strength" qualifiers="const">
+			<return type="float">
+			</return>
+			<argument index="0" name="deadzone" type="float" default="0.0">
+			</argument>
+			<description>
+				Returns a value between 0.0 and 1.0 depending on the event.
+				For [InputEventJoypadMotion] or supported [InputEventJoypadButton] events, returns the extent the axis or button is moved or pressed beyond the [code]deadzone[/code]. Event values below the [code]deadzone[/code] will return 0.0. Event values above the [code]deadzone[/code] will be scaled linearly to values between 0.0 and 1.0.
+				For [InputEventKey] or [InputEventMouseButton] events, returns 0.0 or 1.0 depending on whether or not [method is_pressed] returns [code]true[/code].
+				For all other event types, returns 0.0.
+			</description>
+		</method>
 		<method name="is_action" qualifiers="const">
 			<return type="bool">
 			</return>
