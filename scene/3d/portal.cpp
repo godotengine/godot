@@ -44,6 +44,20 @@ bool Portal::_settings_gizmo_show_margins = true;
 Portal::Portal() {
 	clear();
 
+	_settings_active = true;
+	_settings_two_way = true;
+	_internal = false;
+	_linkedroom_ID[0] = -1;
+	_linkedroom_ID[1] = -1;
+	_pts_world.clear();
+	_pts_local.clear();
+	_pts_local_raw.resize(0);
+	_pt_center_world = Vector3();
+	_plane = Plane();
+	_margin = 1.0f;
+	_default_margin = 1.0f;
+	_use_default_margin = true;
+
 	// the visual server portal lifetime is linked to the lifetime of this object
 	_portal_rid = VisualServer::get_singleton()->portal_create();
 
@@ -129,19 +143,9 @@ void Portal::_changed() {
 }
 
 void Portal::clear() {
-	_settings_active = true;
-	_settings_two_way = true;
 	_internal = false;
 	_linkedroom_ID[0] = -1;
 	_linkedroom_ID[1] = -1;
-	_pts_world.clear();
-	_pts_local.clear();
-	_pts_local_raw.resize(0);
-	_pt_center_world = Vector3();
-	_plane = Plane();
-	_margin = 1.0f;
-	_default_margin = 1.0f;
-	_use_default_margin = true;
 }
 
 void Portal::_notification(int p_what) {
@@ -199,10 +203,26 @@ real_t Portal::get_portal_margin() const {
 	return _margin;
 }
 
-void Portal::resolve_links(const RID &p_from_room_rid) {
+void Portal::resolve_links(const LocalVector<Room *, int32_t> &p_rooms, const RID &p_from_room_rid) {
 	Room *linkedroom = nullptr;
 	if (has_node(_settings_path_linkedroom)) {
 		linkedroom = Object::cast_to<Room>(get_node(_settings_path_linkedroom));
+
+		// only allow linking to rooms that are part of the roomlist
+		// (already recognised).
+		// If we don't check this, it will start trying to link to Room nodes that are invalid,
+		// and crash.
+		if (linkedroom && (p_rooms.find(linkedroom) == -1)) {
+			// invalid room
+			WARN_PRINT("Portal attempting to link to Room outside the roomlist : " + linkedroom->get_name());
+			linkedroom = nullptr;
+		}
+
+		// this should not happen, but just in case
+		if (linkedroom && (linkedroom->_room_ID >= p_rooms.size())) {
+			WARN_PRINT("Portal attempting to link to invalid Room : " + linkedroom->get_name());
+			linkedroom = nullptr;
+		}
 	}
 
 	if (linkedroom) {
@@ -249,6 +269,8 @@ bool Portal::try_set_unique_name(const String &p_name) {
 }
 
 void Portal::set_linked_room(const NodePath &link_path) {
+	_settings_path_linkedroom = link_path;
+
 	// change the name of the portal as well, if the link looks legit
 	Room *linkedroom = nullptr;
 	if (has_node(link_path)) {
@@ -269,26 +291,23 @@ void Portal::set_linked_room(const NodePath &link_path) {
 						String string_name = string_name_base + GODOT_PORTAL_WILDCARD + itos(n);
 						if (try_set_unique_name(string_name)) {
 							success = true;
-							_changed();
 							break;
 						}
 					}
 
 					if (!success) {
-						WARN_PRINT("Could not set portal name, set name manually instead.");
+						WARN_PRINT("Could not set portal name, suggest setting name manually instead.");
 					}
-				} else {
-					_changed();
 				}
 			} else {
-				WARN_PRINT("Linked room cannot be portal's parent room, ignoring.");
+				WARN_PRINT("Linked room cannot be the parent room of a portal.");
 			}
 		} else {
-			WARN_PRINT("Linked room path is not a room, ignoring.");
+			WARN_PRINT("Linked room path is not a room.");
 		}
-	} else {
-		WARN_PRINT("Linked room path not found.");
 	}
+
+	_changed();
 }
 
 NodePath Portal::get_linked_room() const {

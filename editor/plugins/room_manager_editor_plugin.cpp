@@ -170,3 +170,53 @@ RoomEditorPlugin::RoomEditorPlugin(EditorNode *p_node) {
 
 RoomEditorPlugin::~RoomEditorPlugin() {
 }
+
+///////////////////////
+
+void PortalEditorPlugin::_flip_portal() {
+	if (_portal) {
+		_portal->flip();
+		_portal->_changed();
+	}
+}
+
+void PortalEditorPlugin::edit(Object *p_object) {
+	Portal *p = Object::cast_to<Portal>(p_object);
+	if (!p) {
+		return;
+	}
+
+	_portal = p;
+}
+
+bool PortalEditorPlugin::handles(Object *p_object) const {
+	return p_object->is_class("Portal");
+}
+
+void PortalEditorPlugin::make_visible(bool p_visible) {
+	if (p_visible) {
+		button_flip->show();
+	} else {
+		button_flip->hide();
+	}
+}
+
+void PortalEditorPlugin::_bind_methods() {
+	ClassDB::bind_method("_flip_portal", &PortalEditorPlugin::_flip_portal);
+}
+
+PortalEditorPlugin::PortalEditorPlugin(EditorNode *p_node) {
+	editor = p_node;
+
+	button_flip = memnew(ToolButton);
+	button_flip->set_icon(editor->get_gui_base()->get_icon("Portal", "EditorIcons"));
+	button_flip->set_text(TTR("Flip Portal"));
+	button_flip->hide();
+	button_flip->connect("pressed", this, "_flip_portal");
+	add_control_to_container(CONTAINER_SPATIAL_EDITOR_MENU, button_flip);
+
+	_portal = nullptr;
+}
+
+PortalEditorPlugin::~PortalEditorPlugin() {
+}

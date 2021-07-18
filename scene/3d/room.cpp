@@ -108,6 +108,20 @@ Room::~Room() {
 	}
 }
 
+bool Room::contains_point(const Vector3 &p_pt) const {
+	if (!_aabb.has_point(p_pt)) {
+		return false;
+	}
+
+	for (int n = 0; n < _planes.size(); n++) {
+		if (_planes[n].is_point_over(p_pt)) {
+			return false;
+		}
+	}
+
+	return true;
+}
+
 void Room::set_room_simplify(real_t p_value) {
 	_simplify_info.set_simplify(p_value, _aabb.get_longest_axis_size());
 }
