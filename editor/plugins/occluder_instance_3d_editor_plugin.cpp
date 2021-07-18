@@ -98,7 +98,7 @@ OccluderInstance3DEditorPlugin::OccluderInstance3DEditorPlugin(EditorNode *p_nod
 	editor = p_node;
 	bake = memnew(Button);
 	bake->set_flat(true);
-	bake->set_icon(editor->get_gui_base()->get_theme_icon("Bake", "EditorIcons"));
+	bake->set_icon(editor->get_gui_base()->get_theme_icon(SNAME("Bake"), SNAME("EditorIcons")));
 	bake->set_text(TTR("Bake Occluders"));
 	bake->hide();
 	bake->connect("pressed", Callable(this, "_bake"));

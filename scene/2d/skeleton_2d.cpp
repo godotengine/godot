@@ -597,7 +597,7 @@ void Skeleton2D::_update_bone_setup() {
 
 	transform_dirty = true;
 	_update_transform();
-	emit_signal("bone_setup_changed");
+	emit_signal(SNAME("bone_setup_changed"));
 }
 
 void Skeleton2D::_make_transform_dirty() {

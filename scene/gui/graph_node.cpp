@@ -180,9 +180,9 @@ void GraphNode::_resort() {
 	/** First pass, determine minimum size AND amount of stretchable elements */
 
 	Size2i new_size = get_size();
-	Ref<StyleBox> sb = get_theme_stylebox("frame");
+	Ref<StyleBox> sb = get_theme_stylebox(SNAME("frame"));
 
-	int sep = get_theme_constant("separation");
+	int sep = get_theme_constant(SNAME("separation"));
 
 	bool first = true;
 	int children_count = 0;
@@ -323,8 +323,8 @@ void GraphNode::_resort() {
 
 bool GraphNode::has_point(const Point2 &p_point) const {
 	if (comment) {
-		Ref<StyleBox> comment = get_theme_stylebox("comment");
-		Ref<Texture2D> resizer = get_theme_icon("resizer");
+		Ref<StyleBox> comment = get_theme_stylebox(SNAME("comment"));
+		Ref<Texture2D> resizer = get_theme_icon(SNAME("resizer"));
 
 		if (Rect2(get_size() - resizer->get_size(), resizer->get_size()).has_point(p_point)) {
 			return true;
@@ -355,18 +355,18 @@ void GraphNode::_notification(int p_what) {
 
 			//sb=sb->duplicate();
 			//sb->call("set_modulate",modulate);
-			Ref<Texture2D> port = get_theme_icon("port");
-			Ref<Texture2D> close = get_theme_icon("close");
-			Ref<Texture2D> resizer = get_theme_icon("resizer");
-			int close_offset = get_theme_constant("close_offset");
-			int close_h_offset = get_theme_constant("close_h_offset");
-			Color close_color = get_theme_color("close_color");
-			Color resizer_color = get_theme_color("resizer_color");
-			int title_offset = get_theme_constant("title_offset");
-			int title_h_offset = get_theme_constant("title_h_offset");
-			Color title_color = get_theme_color("title_color");
+			Ref<Texture2D> port = get_theme_icon(SNAME("port"));
+			Ref<Texture2D> close = get_theme_icon(SNAME("close"));
+			Ref<Texture2D> resizer = get_theme_icon(SNAME("resizer"));
+			int close_offset = get_theme_constant(SNAME("close_offset"));
+			int close_h_offset = get_theme_constant(SNAME("close_h_offset"));
+			Color close_color = get_theme_color(SNAME("close_color"));
+			Color resizer_color = get_theme_color(SNAME("resizer_color"));
+			int title_offset = get_theme_constant(SNAME("title_offset"));
+			int title_h_offset = get_theme_constant(SNAME("title_h_offset"));
+			Color title_color = get_theme_color(SNAME("title_color"));
 			Point2i icofs = -port->get_size() * 0.5;
-			int edgeofs = get_theme_constant("port_offset");
+			int edgeofs = get_theme_constant(SNAME("port_offset"));
 			icofs.y += sb->get_margin(SIDE_TOP);
 
 			draw_style_box(sb, Rect2(Point2(), get_size()));
@@ -375,10 +375,10 @@ void GraphNode::_notification(int p_what) {
 				case OVERLAY_DISABLED: {
 				} break;
 				case OVERLAY_BREAKPOINT: {
-					draw_style_box(get_theme_stylebox("breakpoint"), Rect2(Point2(), get_size()));
+					draw_style_box(get_theme_stylebox(SNAME("breakpoint")), Rect2(Point2(), get_size()));
 				} break;
 				case OVERLAY_POSITION: {
-					draw_style_box(get_theme_stylebox("position"), Rect2(Point2(), get_size()));
+					draw_style_box(get_theme_stylebox(SNAME("position")), Rect2(Point2(), get_size()));
 
 				} break;
 			}
@@ -446,8 +446,8 @@ void GraphNode::_notification(int p_what) {
 }
 
 void GraphNode::_shape() {
-	Ref<Font> font = get_theme_font("title_font");
-	int font_size = get_theme_font_size("title_font_size");
+	Ref<Font> font = get_theme_font(SNAME("title_font"));
+	int font_size = get_theme_font_size(SNAME("title_font_size"));
 
 	title_buf->clear();
 	if (text_direction == Control::TEXT_DIRECTION_INHERITED) {
@@ -481,7 +481,7 @@ void GraphNode::set_slot(int p_idx, bool p_enable_left, int p_type_left, const C
 	update();
 	connpos_dirty = true;
 
-	emit_signal("slot_updated", p_idx);
+	emit_signal(SNAME("slot_updated"), p_idx);
 }
 
 void GraphNode::clear_slot(int p_idx) {
@@ -510,7 +510,7 @@ void GraphNode::set_slot_enabled_left(int p_idx, bool p_enable_left) {
 	update();
 	connpos_dirty = true;
 
-	emit_signal("slot_updated", p_idx);
+	emit_signal(SNAME("slot_updated"), p_idx);
 }
 
 void GraphNode::set_slot_type_left(int p_idx, int p_type_left) {
@@ -520,7 +520,7 @@ void GraphNode::set_slot_type_left(int p_idx, int p_type_left) {
 	update();
 	connpos_dirty = true;
 
-	emit_signal("slot_updated", p_idx);
+	emit_signal(SNAME("slot_updated"), p_idx);
 }
 
 int GraphNode::get_slot_type_left(int p_idx) const {
@@ -537,7 +537,7 @@ void GraphNode::set_slot_color_left(int p_idx, const Color &p_color_left) {
 	update();
 	connpos_dirty = true;
 
-	emit_signal("slot_updated", p_idx);
+	emit_signal(SNAME("slot_updated"), p_idx);
 }
 
 Color GraphNode::get_slot_color_left(int p_idx) const {
@@ -561,7 +561,7 @@ void GraphNode::set_slot_enabled_right(int p_idx, bool p_enable_right) {
 	update();
 	connpos_dirty = true;
 
-	emit_signal("slot_updated", p_idx);
+	emit_signal(SNAME("slot_updated"), p_idx);
 }
 
 void GraphNode::set_slot_type_right(int p_idx, int p_type_right) {
@@ -571,7 +571,7 @@ void GraphNode::set_slot_type_right(int p_idx, int p_type_right) {
 	update();
 	connpos_dirty = true;
 
-	emit_signal("slot_updated", p_idx);
+	emit_signal(SNAME("slot_updated"), p_idx);
 }
 
 int GraphNode::get_slot_type_right(int p_idx) const {
@@ -588,7 +588,7 @@ void GraphNode::set_slot_color_right(int p_idx, const Color &p_color_right) {
 	update();
 	connpos_dirty = true;
 
-	emit_signal("slot_updated", p_idx);
+	emit_signal(SNAME("slot_updated"), p_idx);
 }
 
 Color GraphNode::get_slot_color_right(int p_idx) const {
@@ -599,14 +599,14 @@ Color GraphNode::get_slot_color_right(int p_idx) const {
 }
 
 Size2 GraphNode::get_minimum_size() const {
-	int sep = get_theme_constant("separation");
-	Ref<StyleBox> sb = get_theme_stylebox("frame");
+	int sep = get_theme_constant(SNAME("separation"));
+	Ref<StyleBox> sb = get_theme_stylebox(SNAME("frame"));
 	bool first = true;
 
 	Size2 minsize;
 	minsize.x = title_buf->get_size().x;
 	if (show_close) {
-		Ref<Texture2D> close = get_theme_icon("close");
+		Ref<Texture2D> close = get_theme_icon(SNAME("close"));
 		minsize.x += sep + close->get_width();
 	}
 
@@ -699,7 +699,7 @@ String GraphNode::get_language() const {
 
 void GraphNode::set_position_offset(const Vector2 &p_offset) {
 	position_offset = p_offset;
-	emit_signal("position_offset_changed");
+	emit_signal(SNAME("position_offset_changed"));
 	update();
 }
 
@@ -720,7 +720,7 @@ void GraphNode::set_drag(bool p_drag) {
 	if (p_drag) {
 		drag_from = get_position_offset();
 	} else {
-		emit_signal("dragged", drag_from, get_position_offset()); //useful for undo/redo
+		emit_signal(SNAME("dragged"), drag_from, get_position_offset()); //useful for undo/redo
 	}
 }
 
@@ -738,10 +738,10 @@ bool GraphNode::is_close_button_visible() const {
 }
 
 void GraphNode::_connpos_update() {
-	int edgeofs = get_theme_constant("port_offset");
-	int sep = get_theme_constant("separation");
+	int edgeofs = get_theme_constant(SNAME("port_offset"));
+	int sep = get_theme_constant(SNAME("separation"));
 
-	Ref<StyleBox> sb = get_theme_stylebox("frame");
+	Ref<StyleBox> sb = get_theme_stylebox(SNAME("frame"));
 	conn_input_cache.clear();
 	conn_output_cache.clear();
 	int vofs = 0;
@@ -875,12 +875,12 @@ void GraphNode::_gui_input(const Ref<InputEvent> &p_ev) {
 			if (close_rect.size != Size2() && close_rect.has_point(mpos)) {
 				//send focus to parent
 				get_parent_control()->grab_focus();
-				emit_signal("close_request");
+				emit_signal(SNAME("close_request"));
 				accept_event();
 				return;
 			}
 
-			Ref<Texture2D> resizer = get_theme_icon("resizer");
+			Ref<Texture2D> resizer = get_theme_icon(SNAME("resizer"));
 
 			if (resizable && mpos.x > get_size().x - resizer->get_width() && mpos.y > get_size().y - resizer->get_height()) {
 				resizing = true;
@@ -890,7 +890,7 @@ void GraphNode::_gui_input(const Ref<InputEvent> &p_ev) {
 				return;
 			}
 
-			emit_signal("raise_request");
+			emit_signal(SNAME("raise_request"));
 		}
 
 		if (!mb->is_pressed() && mb->get_button_index() == MOUSE_BUTTON_LEFT) {
@@ -904,7 +904,7 @@ void GraphNode::_gui_input(const Ref<InputEvent> &p_ev) {
 
 		Vector2 diff = mpos - resizing_from;
 
-		emit_signal("resize_request", resizing_from_size + diff);
+		emit_signal(SNAME("resize_request"), resizing_from_size + diff);
 	}
 }
 

@@ -44,7 +44,7 @@
 #include "scene/resources/sphere_shape_3d.h"
 
 void BoneTransformEditor::create_editors() {
-	const Color section_color = get_theme_color("prop_subsection", "Editor");
+	const Color section_color = get_theme_color(SNAME("prop_subsection"), SNAME("Editor"));
 
 	section = memnew(EditorInspectorSection);
 	section->setup("trf_properties", label, this, section_color, true);
@@ -53,7 +53,7 @@ void BoneTransformEditor::create_editors() {
 	key_button = memnew(Button);
 	key_button->set_text(TTR("Key Transform"));
 	key_button->set_visible(keyable);
-	key_button->set_icon(get_theme_icon("Key", "EditorIcons"));
+	key_button->set_icon(get_theme_icon(SNAME("Key"), SNAME("EditorIcons")));
 	key_button->set_flat(true);
 	section->get_vbox()->add_child(key_button);
 
@@ -113,19 +113,19 @@ void BoneTransformEditor::_notification(int p_what) {
 			[[fallthrough]];
 		}
 		case NOTIFICATION_SORT_CHILDREN: {
-			const Ref<Font> font = get_theme_font("font", "Tree");
-			int font_size = get_theme_font_size("font_size", "Tree");
+			const Ref<Font> font = get_theme_font(SNAME("font"), SNAME("Tree"));
+			int font_size = get_theme_font_size(SNAME("font_size"), SNAME("Tree"));
 
 			Point2 buffer;
-			buffer.x += get_theme_constant("inspector_margin", "Editor");
+			buffer.x += get_theme_constant(SNAME("inspector_margin"), SNAME("Editor"));
 			buffer.y += font->get_height(font_size);
-			buffer.y += get_theme_constant("vseparation", "Tree");
+			buffer.y += get_theme_constant(SNAME("vseparation"), SNAME("Tree"));
 
 			const float vector_height = translation_property->get_size().y;
 			const float transform_height = transform_property->get_size().y;
 			const float button_height = key_button->get_size().y;
 
-			const float width = get_size().x - get_theme_constant("inspector_margin", "Editor");
+			const float width = get_size().x - get_theme_constant(SNAME("inspector_margin"), SNAME("Editor"));
 			Vector<Rect2> input_rects;
 			if (keyable && section->get_vbox()->is_visible()) {
 				input_rects.push_back(Rect2(key_button->get_position() + buffer, Size2(width, button_height)));
@@ -155,7 +155,7 @@ void BoneTransformEditor::_notification(int p_what) {
 			break;
 		}
 		case NOTIFICATION_DRAW: {
-			const Color dark_color = get_theme_color("dark_color_2", "Editor");
+			const Color dark_color = get_theme_color(SNAME("dark_color_2"), SNAME("Editor"));
 
 			for (int i = 0; i < 5; ++i) {
 				draw_rect(background_rects[i], dark_color);
@@ -552,7 +552,7 @@ void Skeleton3DEditor::update_joint_tree() {
 	items.insert(-1, root);
 
 	const Vector<int> &joint_porder = skeleton->get_bone_process_orders();
-	Ref<Texture> bone_icon = get_theme_icon("BoneAttachment3D", "EditorIcons");
+	Ref<Texture> bone_icon = get_theme_icon(SNAME("BoneAttachment3D"), SNAME("EditorIcons"));
 
 	for (int i = 0; i < joint_porder.size(); ++i) {
 		const int b_idx = joint_porder[i];
@@ -584,13 +584,13 @@ void Skeleton3DEditor::create_editors() {
 	Node3DEditor::get_singleton()->add_control_to_menu_panel(options);
 
 	options->set_text(TTR("Skeleton3D"));
-	options->set_icon(EditorNode::get_singleton()->get_gui_base()->get_theme_icon("Skeleton3D", "EditorIcons"));
+	options->set_icon(EditorNode::get_singleton()->get_gui_base()->get_theme_icon(SNAME("Skeleton3D"), SNAME("EditorIcons")));
 
 	options->get_popup()->add_item(TTR("Create physical skeleton"), MENU_OPTION_CREATE_PHYSICAL_SKELETON);
 
 	options->get_popup()->connect("id_pressed", callable_mp(this, &Skeleton3DEditor::_on_click_option));
 
-	const Color section_color = get_theme_color("prop_subsection", "Editor");
+	const Color section_color = get_theme_color(SNAME("prop_subsection"), SNAME("Editor"));
 
 	EditorInspectorSection *bones_section = memnew(EditorInspectorSection);
 	bones_section->setup("bones", "Bones", skeleton, section_color, true);

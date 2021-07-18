@@ -453,14 +453,14 @@ void Path3DEditorPlugin::edit(Object *p_object) {
 		path = Object::cast_to<Path3D>(p_object);
 		if (path) {
 			if (path->get_curve().is_valid()) {
-				path->get_curve()->emit_signal("changed");
+				path->get_curve()->emit_signal(SNAME("changed"));
 			}
 		}
 	} else {
 		Path3D *pre = path;
 		path = nullptr;
 		if (pre) {
-			pre->get_curve()->emit_signal("changed");
+			pre->get_curve()->emit_signal(SNAME("changed"));
 		}
 	}
 	//collision_polygon_editor->edit(Object::cast_to<Node>(p_object));
@@ -490,7 +490,7 @@ void Path3DEditorPlugin::make_visible(bool p_visible) {
 			Path3D *pre = path;
 			path = nullptr;
 			if (pre && pre->get_curve().is_valid()) {
-				pre->get_curve()->emit_signal("changed");
+				pre->get_curve()->emit_signal(SNAME("changed"));
 			}
 		}
 	}
@@ -562,7 +562,7 @@ Path3DEditorPlugin::Path3DEditorPlugin(EditorNode *p_node) {
 	Node3DEditor::get_singleton()->add_control_to_menu_panel(sep);
 	curve_edit = memnew(Button);
 	curve_edit->set_flat(true);
-	curve_edit->set_icon(EditorNode::get_singleton()->get_gui_base()->get_theme_icon("CurveEdit", "EditorIcons"));
+	curve_edit->set_icon(EditorNode::get_singleton()->get_gui_base()->get_theme_icon(SNAME("CurveEdit"), SNAME("EditorIcons")));
 	curve_edit->set_toggle_mode(true);
 	curve_edit->hide();
 	curve_edit->set_focus_mode(Control::FOCUS_NONE);
@@ -570,7 +570,7 @@ Path3DEditorPlugin::Path3DEditorPlugin(EditorNode *p_node) {
 	Node3DEditor::get_singleton()->add_control_to_menu_panel(curve_edit);
 	curve_create = memnew(Button);
 	curve_create->set_flat(true);
-	curve_create->set_icon(EditorNode::get_singleton()->get_gui_base()->get_theme_icon("CurveCreate", "EditorIcons"));
+	curve_create->set_icon(EditorNode::get_singleton()->get_gui_base()->get_theme_icon(SNAME("CurveCreate"), SNAME("EditorIcons")));
 	curve_create->set_toggle_mode(true);
 	curve_create->hide();
 	curve_create->set_focus_mode(Control::FOCUS_NONE);
@@ -578,7 +578,7 @@ Path3DEditorPlugin::Path3DEditorPlugin(EditorNode *p_node) {
 	Node3DEditor::get_singleton()->add_control_to_menu_panel(curve_create);
 	curve_del = memnew(Button);
 	curve_del->set_flat(true);
-	curve_del->set_icon(EditorNode::get_singleton()->get_gui_base()->get_theme_icon("CurveDelete", "EditorIcons"));
+	curve_del->set_icon(EditorNode::get_singleton()->get_gui_base()->get_theme_icon(SNAME("CurveDelete"), SNAME("EditorIcons")));
 	curve_del->set_toggle_mode(true);
 	curve_del->hide();
 	curve_del->set_focus_mode(Control::FOCUS_NONE);
@@ -586,7 +586,7 @@ Path3DEditorPlugin::Path3DEditorPlugin(EditorNode *p_node) {
 	Node3DEditor::get_singleton()->add_control_to_menu_panel(curve_del);
 	curve_close = memnew(Button);
 	curve_close->set_flat(true);
-	curve_close->set_icon(EditorNode::get_singleton()->get_gui_base()->get_theme_icon("CurveClose", "EditorIcons"));
+	curve_close->set_icon(EditorNode::get_singleton()->get_gui_base()->get_theme_icon(SNAME("CurveClose"), SNAME("EditorIcons")));
 	curve_close->hide();
 	curve_close->set_focus_mode(Control::FOCUS_NONE);
 	curve_close->set_tooltip(TTR("Close Curve"));
@@ -644,6 +644,6 @@ Path3DGizmoPlugin::Path3DGizmoPlugin() {
 	Color path_color = EDITOR_DEF("editors/3d_gizmos/gizmo_colors/path", Color(0.5, 0.5, 1.0, 0.8));
 	create_material("path_material", path_color);
 	create_material("path_thin_material", Color(0.5, 0.5, 0.5));
-	create_handle_material("handles", false, Node3DEditor::get_singleton()->get_theme_icon("EditorPathSmoothHandle", "EditorIcons"));
-	create_handle_material("sec_handles", false, Node3DEditor::get_singleton()->get_theme_icon("EditorCurveHandle", "EditorIcons"));
+	create_handle_material("handles", false, Node3DEditor::get_singleton()->get_theme_icon(SNAME("EditorPathSmoothHandle"), SNAME("EditorIcons")));
+	create_handle_material("sec_handles", false, Node3DEditor::get_singleton()->get_theme_icon(SNAME("EditorCurveHandle"), SNAME("EditorIcons")));
 }

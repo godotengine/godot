@@ -132,7 +132,7 @@ void NavigationRegion3D::set_navigation_mesh(const Ref<NavigationMesh> &p_navmes
 		Object::cast_to<MeshInstance3D>(debug_view)->set_mesh(navmesh->get_debug_mesh());
 	}
 
-	emit_signal("navigation_mesh_changed");
+	emit_signal(SNAME("navigation_mesh_changed"));
 
 	update_gizmo();
 	update_configuration_warnings();
@@ -174,7 +174,7 @@ void NavigationRegion3D::bake_navigation_mesh() {
 void NavigationRegion3D::_bake_finished(Ref<NavigationMesh> p_nav_mesh) {
 	set_navigation_mesh(p_nav_mesh);
 	bake_thread.wait_to_finish();
-	emit_signal("bake_finished");
+	emit_signal(SNAME("bake_finished"));
 }
 
 TypedArray<String> NavigationRegion3D::get_configuration_warnings() const {

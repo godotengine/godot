@@ -41,8 +41,8 @@ Size2 Button::get_minimum_size() const {
 
 	if (!expand_icon) {
 		Ref<Texture2D> _icon;
-		if (icon.is_null() && has_theme_icon("icon")) {
-			_icon = Control::get_theme_icon("icon");
+		if (icon.is_null() && has_theme_icon(SNAME("icon"))) {
+			_icon = Control::get_theme_icon(SNAME("icon"));
 		} else {
 			_icon = icon;
 		}
@@ -53,7 +53,7 @@ Size2 Button::get_minimum_size() const {
 			if (icon_align != ALIGN_CENTER) {
 				minsize.width += _icon->get_width();
 				if (xl_text != "") {
-					minsize.width += get_theme_constant("hseparation");
+					minsize.width += get_theme_constant(SNAME("hseparation"));
 				}
 			} else {
 				minsize.width = MAX(minsize.width, _icon->get_width());
@@ -61,12 +61,12 @@ Size2 Button::get_minimum_size() const {
 		}
 	}
 
-	Ref<Font> font = get_theme_font("font");
-	float font_height = font->get_height(get_theme_font_size("font_size"));
+	Ref<Font> font = get_theme_font(SNAME("font"));
+	float font_height = font->get_height(get_theme_font_size(SNAME("font_size")));
 
 	minsize.height = MAX(font_height, minsize.height);
 
-	return get_theme_stylebox("normal")->get_minimum_size() + minsize;
+	return get_theme_stylebox(SNAME("normal"))->get_minimum_size() + minsize;
 }
 
 void Button::_set_internal_margin(Side p_side, float p_value) {
@@ -97,43 +97,43 @@ void Button::_notification(int p_what) {
 			Color color;
 			Color color_icon(1, 1, 1, 1);
 
-			Ref<StyleBox> style = get_theme_stylebox("normal");
+			Ref<StyleBox> style = get_theme_stylebox(SNAME("normal"));
 			bool rtl = is_layout_rtl();
 
 			switch (get_draw_mode()) {
 				case DRAW_NORMAL: {
-					if (rtl && has_theme_stylebox("normal_mirrored")) {
-						style = get_theme_stylebox("normal_mirrored");
+					if (rtl && has_theme_stylebox(SNAME("normal_mirrored"))) {
+						style = get_theme_stylebox(SNAME("normal_mirrored"));
 					} else {
-						style = get_theme_stylebox("normal");
+						style = get_theme_stylebox(SNAME("normal"));
 					}
 
 					if (!flat) {
 						style->draw(ci, Rect2(Point2(0, 0), size));
 					}
-					color = get_theme_color("font_color");
-					if (has_theme_color("icon_normal_color")) {
-						color_icon = get_theme_color("icon_normal_color");
+					color = get_theme_color(SNAME("font_color"));
+					if (has_theme_color(SNAME("icon_normal_color"))) {
+						color_icon = get_theme_color(SNAME("icon_normal_color"));
 					}
 				} break;
 				case DRAW_HOVER_PRESSED: {
-					if (has_theme_stylebox("hover_pressed") && has_theme_stylebox_override("hover_pressed")) {
-						if (rtl && has_theme_stylebox("hover_pressed_mirrored")) {
-							style = get_theme_stylebox("hover_pressed_mirrored");
+					if (has_theme_stylebox(SNAME("hover_pressed")) && has_theme_stylebox_override("hover_pressed")) {
+						if (rtl && has_theme_stylebox(SNAME("hover_pressed_mirrored"))) {
+							style = get_theme_stylebox(SNAME("hover_pressed_mirrored"));
 						} else {
-							style = get_theme_stylebox("hover_pressed");
+							style = get_theme_stylebox(SNAME("hover_pressed"));
 						}
 
 						if (!flat) {
 							style->draw(ci, Rect2(Point2(0, 0), size));
 						}
-						if (has_theme_color("font_hover_pressed_color")) {
-							color = get_theme_color("font_hover_pressed_color");
+						if (has_theme_color(SNAME("font_hover_pressed_color"))) {
+							color = get_theme_color(SNAME("font_hover_pressed_color"));
 						} else {
-							color = get_theme_color("font_color");
+							color = get_theme_color(SNAME("font_color"));
 						}
-						if (has_theme_color("icon_hover_pressed_color")) {
-							color_icon = get_theme_color("icon_hover_pressed_color");
+						if (has_theme_color(SNAME("icon_hover_pressed_color"))) {
+							color_icon = get_theme_color(SNAME("icon_hover_pressed_color"));
 						}
 
 						break;
@@ -141,67 +141,67 @@ void Button::_notification(int p_what) {
 					[[fallthrough]];
 				}
 				case DRAW_PRESSED: {
-					if (rtl && has_theme_stylebox("pressed_mirrored")) {
-						style = get_theme_stylebox("pressed_mirrored");
+					if (rtl && has_theme_stylebox(SNAME("pressed_mirrored"))) {
+						style = get_theme_stylebox(SNAME("pressed_mirrored"));
 					} else {
-						style = get_theme_stylebox("pressed");
+						style = get_theme_stylebox(SNAME("pressed"));
 					}
 
 					if (!flat) {
 						style->draw(ci, Rect2(Point2(0, 0), size));
 					}
-					if (has_theme_color("font_pressed_color")) {
-						color = get_theme_color("font_pressed_color");
+					if (has_theme_color(SNAME("font_pressed_color"))) {
+						color = get_theme_color(SNAME("font_pressed_color"));
 					} else {
-						color = get_theme_color("font_color");
+						color = get_theme_color(SNAME("font_color"));
 					}
-					if (has_theme_color("icon_pressed_color")) {
-						color_icon = get_theme_color("icon_pressed_color");
+					if (has_theme_color(SNAME("icon_pressed_color"))) {
+						color_icon = get_theme_color(SNAME("icon_pressed_color"));
 					}
 
 				} break;
 				case DRAW_HOVER: {
-					if (rtl && has_theme_stylebox("hover_mirrored")) {
-						style = get_theme_stylebox("hover_mirrored");
+					if (rtl && has_theme_stylebox(SNAME("hover_mirrored"))) {
+						style = get_theme_stylebox(SNAME("hover_mirrored"));
 					} else {
-						style = get_theme_stylebox("hover");
+						style = get_theme_stylebox(SNAME("hover"));
 					}
 
 					if (!flat) {
 						style->draw(ci, Rect2(Point2(0, 0), size));
 					}
-					color = get_theme_color("font_hover_color");
-					if (has_theme_color("icon_hover_color")) {
-						color_icon = get_theme_color("icon_hover_color");
+					color = get_theme_color(SNAME("font_hover_color"));
+					if (has_theme_color(SNAME("icon_hover_color"))) {
+						color_icon = get_theme_color(SNAME("icon_hover_color"));
 					}
 
 				} break;
 				case DRAW_DISABLED: {
-					if (rtl && has_theme_stylebox("disabled_mirrored")) {
-						style = get_theme_stylebox("disabled_mirrored");
+					if (rtl && has_theme_stylebox(SNAME("disabled_mirrored"))) {
+						style = get_theme_stylebox(SNAME("disabled_mirrored"));
 					} else {
-						style = get_theme_stylebox("disabled");
+						style = get_theme_stylebox(SNAME("disabled"));
 					}
 
 					if (!flat) {
 						style->draw(ci, Rect2(Point2(0, 0), size));
 					}
-					color = get_theme_color("font_disabled_color");
-					if (has_theme_color("icon_disabled_color")) {
-						color_icon = get_theme_color("icon_disabled_color");
+					color = get_theme_color(SNAME("font_disabled_color"));
+					if (has_theme_color(SNAME("icon_disabled_color"))) {
+						color_icon = get_theme_color(SNAME("icon_disabled_color"));
 					}
 
 				} break;
 			}
 
 			if (has_focus()) {
-				Ref<StyleBox> style2 = get_theme_stylebox("focus");
+				Ref<StyleBox> style2 = get_theme_stylebox(SNAME("focus"));
 				style2->draw(ci, Rect2(Point2(), size));
 			}
 
 			Ref<Texture2D> _icon;
-			if (icon.is_null() && has_theme_icon("icon")) {
-				_icon = Control::get_theme_icon("icon");
+			if (icon.is_null() && has_theme_icon(SNAME("icon"))) {
+				_icon = Control::get_theme_icon(SNAME("icon"));
 			} else {
 				_icon = icon;
 			}
@@ -234,21 +234,21 @@ void Button::_notification(int p_what) {
 				if (icon_align_rtl_checked == ALIGN_LEFT) {
 					style_offset.x = style->get_margin(SIDE_LEFT);
 					if (_internal_margin[SIDE_LEFT] > 0) {
-						icon_ofs_region = _internal_margin[SIDE_LEFT] + get_theme_constant("hseparation");
+						icon_ofs_region = _internal_margin[SIDE_LEFT] + get_theme_constant(SNAME("hseparation"));
 					}
 				} else if (icon_align_rtl_checked == ALIGN_CENTER) {
 					style_offset.x = 0.0;
 				} else if (icon_align_rtl_checked == ALIGN_RIGHT) {
 					style_offset.x = -style->get_margin(SIDE_RIGHT);
 					if (_internal_margin[SIDE_RIGHT] > 0) {
-						icon_ofs_region = -_internal_margin[SIDE_RIGHT] - get_theme_constant("hseparation");
+						icon_ofs_region = -_internal_margin[SIDE_RIGHT] - get_theme_constant(SNAME("hseparation"));
 					}
 				}
 				style_offset.y = style->get_margin(SIDE_TOP);
 
 				if (expand_icon) {
 					Size2 _size = get_size() - style->get_offset() * 2;
-					_size.width -= get_theme_constant("hseparation") + icon_ofs_region;
+					_size.width -= get_theme_constant(SNAME("hseparation")) + icon_ofs_region;
 					if (!clip_text && icon_align_rtl_checked != ALIGN_CENTER) {
 						_size.width -= text_buf->get_size().width;
 					}
@@ -276,7 +276,7 @@ void Button::_notification(int p_what) {
 				}
 			}
 
-			Point2 icon_ofs = !_icon.is_null() ? Point2(icon_region.size.width + get_theme_constant("hseparation"), 0) : Point2();
+			Point2 icon_ofs = !_icon.is_null() ? Point2(icon_region.size.width + get_theme_constant(SNAME("hseparation")), 0) : Point2();
 			if (align_rtl_checked == ALIGN_CENTER && icon_align_rtl_checked == ALIGN_CENTER) {
 				icon_ofs.x = 0.0;
 			}
@@ -286,10 +286,10 @@ void Button::_notification(int p_what) {
 			int text_width = clip_text ? MIN(text_clip, text_buf->get_size().x) : text_buf->get_size().x;
 
 			if (_internal_margin[SIDE_LEFT] > 0) {
-				text_clip -= _internal_margin[SIDE_LEFT] + get_theme_constant("hseparation");
+				text_clip -= _internal_margin[SIDE_LEFT] + get_theme_constant(SNAME("hseparation"));
 			}
 			if (_internal_margin[SIDE_RIGHT] > 0) {
-				text_clip -= _internal_margin[SIDE_RIGHT] + get_theme_constant("hseparation");
+				text_clip -= _internal_margin[SIDE_RIGHT] + get_theme_constant(SNAME("hseparation"));
 			}
 
 			Point2 text_ofs = (size - style->get_minimum_size() - icon_ofs - text_buf->get_size() - Point2(_internal_margin[SIDE_RIGHT] - _internal_margin[SIDE_LEFT], 0)) / 2.0;
@@ -300,7 +300,7 @@ void Button::_notification(int p_what) {
 						icon_ofs.x = 0.0;
 					}
 					if (_internal_margin[SIDE_LEFT] > 0) {
-						text_ofs.x = style->get_margin(SIDE_LEFT) + icon_ofs.x + _internal_margin[SIDE_LEFT] + get_theme_constant("hseparation");
+						text_ofs.x = style->get_margin(SIDE_LEFT) + icon_ofs.x + _internal_margin[SIDE_LEFT] + get_theme_constant(SNAME("hseparation"));
 					} else {
 						text_ofs.x = style->get_margin(SIDE_LEFT) + icon_ofs.x;
 					}
@@ -317,7 +317,7 @@ void Button::_notification(int p_what) {
 				} break;
 				case ALIGN_RIGHT: {
 					if (_internal_margin[SIDE_RIGHT] > 0) {
-						text_ofs.x = size.x - style->get_margin(SIDE_RIGHT) - text_width - _internal_margin[SIDE_RIGHT] - get_theme_constant("hseparation");
+						text_ofs.x = size.x - style->get_margin(SIDE_RIGHT) - text_width - _internal_margin[SIDE_RIGHT] - get_theme_constant(SNAME("hseparation"));
 					} else {
 						text_ofs.x = size.x - style->get_margin(SIDE_RIGHT) - text_width;
 					}
@@ -328,8 +328,8 @@ void Button::_notification(int p_what) {
 				} break;
 			}
 
-			Color font_outline_color = get_theme_color("font_outline_color");
-			int outline_size = get_theme_constant("outline_size");
+			Color font_outline_color = get_theme_color(SNAME("font_outline_color"));
+			int outline_size = get_theme_constant(SNAME("outline_size"));
 			if (outline_size > 0 && font_outline_color.a > 0) {
 				text_buf->draw_outline(ci, text_ofs, outline_size, font_outline_color);
 			}
@@ -340,8 +340,8 @@ void Button::_notification(int p_what) {
 }
 
 void Button::_shape() {
-	Ref<Font> font = get_theme_font("font");
-	int font_size = get_theme_font_size("font_size");
+	Ref<Font> font = get_theme_font(SNAME("font"));
+	int font_size = get_theme_font_size(SNAME("font_size"));
 
 	text_buf->clear();
 	if (text_direction == Control::TEXT_DIRECTION_INHERITED) {

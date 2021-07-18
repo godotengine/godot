@@ -262,9 +262,9 @@ Variant GDScriptFunctionState::resume(const Variant &p_arg) {
 
 	if (completed) {
 		if (first_state.is_valid()) {
-			first_state->emit_signal("completed", ret);
+			first_state->emit_signal(SNAME("completed"), ret);
 		} else {
-			emit_signal("completed", ret);
+			emit_signal(SNAME("completed"), ret);
 		}
 
 #ifdef DEBUG_ENABLED

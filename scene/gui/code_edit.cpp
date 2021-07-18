@@ -50,28 +50,28 @@ void CodeEdit::_notification(int p_what) {
 			set_gutter_width(line_number_gutter, (line_number_digits + 1) * cache.font->get_char_size('0', 0, cache.font_size).width);
 			set_gutter_width(fold_gutter, get_row_height() / 1.2);
 
-			breakpoint_color = get_theme_color("breakpoint_color");
-			breakpoint_icon = get_theme_icon("breakpoint");
+			breakpoint_color = get_theme_color(SNAME("breakpoint_color"));
+			breakpoint_icon = get_theme_icon(SNAME("breakpoint"));
 
-			bookmark_color = get_theme_color("bookmark_color");
-			bookmark_icon = get_theme_icon("bookmark");
+			bookmark_color = get_theme_color(SNAME("bookmark_color"));
+			bookmark_icon = get_theme_icon(SNAME("bookmark"));
 
-			executing_line_color = get_theme_color("executing_line_color");
-			executing_line_icon = get_theme_icon("executing_line");
+			executing_line_color = get_theme_color(SNAME("executing_line_color"));
+			executing_line_icon = get_theme_icon(SNAME("executing_line"));
 
-			line_number_color = get_theme_color("line_number_color");
+			line_number_color = get_theme_color(SNAME("line_number_color"));
 
-			folding_color = get_theme_color("code_folding_color");
-			can_fold_icon = get_theme_icon("can_fold");
-			folded_icon = get_theme_icon("folded");
+			folding_color = get_theme_color(SNAME("code_folding_color"));
+			can_fold_icon = get_theme_icon(SNAME("can_fold"));
+			folded_icon = get_theme_icon(SNAME("folded"));
 
-			code_completion_max_width = get_theme_constant("completion_max_width") * cache.font->get_char_size('x').x;
-			code_completion_max_lines = get_theme_constant("completion_lines");
-			code_completion_scroll_width = get_theme_constant("completion_scroll_width");
-			code_completion_scroll_color = get_theme_color("completion_scroll_color");
-			code_completion_background_color = get_theme_color("completion_background_color");
-			code_completion_selected_color = get_theme_color("completion_selected_color");
-			code_completion_existing_color = get_theme_color("completion_existing_color");
+			code_completion_max_width = get_theme_constant(SNAME("completion_max_width")) * cache.font->get_char_size('x').x;
+			code_completion_max_lines = get_theme_constant(SNAME("completion_lines"));
+			code_completion_scroll_width = get_theme_constant(SNAME("completion_scroll_width"));
+			code_completion_scroll_color = get_theme_color(SNAME("completion_scroll_color"));
+			code_completion_background_color = get_theme_color(SNAME("completion_background_color"));
+			code_completion_selected_color = get_theme_color(SNAME("completion_selected_color"));
+			code_completion_existing_color = get_theme_color(SNAME("completion_existing_color"));
 		} break;
 		case NOTIFICATION_DRAW: {
 			RID ci = get_canvas_item();
@@ -81,11 +81,11 @@ void CodeEdit::_notification(int p_what) {
 
 			bool code_completion_below = false;
 			if (caret_visible && code_completion_active && code_completion_options.size() > 0) {
-				Ref<StyleBox> csb = get_theme_stylebox("completion");
+				Ref<StyleBox> csb = get_theme_stylebox(SNAME("completion"));
 
 				const int code_completion_options_count = code_completion_options.size();
 				const int lines = MIN(code_completion_options_count, code_completion_max_lines);
-				const int icon_hsep = get_theme_constant("hseparation", "ItemList");
+				const int icon_hsep = get_theme_constant(SNAME("hseparation"), SNAME("ItemList"));
 				const Size2 icon_area_size(row_height, row_height);
 
 				code_completion_rect.size.width = code_completion_longest_line + icon_hsep + icon_area_size.width + 2;
@@ -164,8 +164,8 @@ void CodeEdit::_notification(int p_what) {
 			if (caret_visible && code_hint != "" && (!code_completion_active || (code_completion_below != code_hint_draw_below))) {
 				const Ref<Font> font = cache.font;
 				const int font_height = font->get_height(cache.font_size);
-				Ref<StyleBox> sb = get_theme_stylebox("panel", "TooltipPanel");
-				Color font_color = get_theme_color("font_color", "TooltipLabel");
+				Ref<StyleBox> sb = get_theme_stylebox(SNAME("panel"), SNAME("TooltipPanel"));
+				Color font_color = get_theme_color(SNAME("font_color"), SNAME("TooltipLabel"));
 
 				Vector<String> code_hint_lines = code_hint.split("\n");
 				int line_count = code_hint_lines.size();
@@ -969,7 +969,7 @@ void CodeEdit::set_line_as_breakpoint(int p_line, bool p_breakpointed) {
 	} else if (breakpointed_lines.has(p_line)) {
 		breakpointed_lines.erase(p_line);
 	}
-	emit_signal("breakpoint_toggled", p_line);
+	emit_signal(SNAME("breakpoint_toggled"), p_line);
 	update();
 }
 
@@ -1551,7 +1551,7 @@ void CodeEdit::request_code_completion(bool p_force) {
 	}
 
 	if (p_force) {
-		emit_signal("request_code_completion");
+		emit_signal(SNAME("request_code_completion"));
 		return;
 	}
 
@@ -1559,9 +1559,9 @@ void CodeEdit::request_code_completion(bool p_force) {
 	int ofs = CLAMP(cursor_get_column(), 0, line.length());
 
 	if (ofs > 0 && (is_in_string(cursor_get_line(), ofs) != -1 || _is_char(line[ofs - 1]) || code_completion_prefixes.has(String::chr(line[ofs - 1])))) {
-		emit_signal("request_code_completion");
+		emit_signal(SNAME("request_code_completion"));
 	} else if (ofs > 1 && line[ofs - 1] == ' ' && code_completion_prefixes.has(String::chr(line[ofs - 2]))) {
-		emit_signal("request_code_completion");
+		emit_signal(SNAME("request_code_completion"));
 	}
 }
 
@@ -2534,9 +2534,9 @@ void CodeEdit::_lines_edited_from(int p_from_line, int p_to_line) {
 		}
 		breakpointed_lines.erase(line);
 
-		emit_signal("breakpoint_toggled", line);
+		emit_signal(SNAME("breakpoint_toggled"), line);
 		if (line_count > 0 || line >= p_from_line) {
-			emit_signal("breakpoint_toggled", line + line_count);
+			emit_signal(SNAME("breakpoint_toggled"), line + line_count);
 			breakpointed_lines[line + line_count] = true;
 			continue;
 		}

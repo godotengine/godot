@@ -42,22 +42,22 @@ void MaterialEditor::_notification(int p_what) {
 		if (first_enter) {
 			//it's in propertyeditor so.. could be moved around
 
-			light_1_switch->set_normal_texture(get_theme_icon("MaterialPreviewLight1", "EditorIcons"));
-			light_1_switch->set_pressed_texture(get_theme_icon("MaterialPreviewLight1Off", "EditorIcons"));
-			light_2_switch->set_normal_texture(get_theme_icon("MaterialPreviewLight2", "EditorIcons"));
-			light_2_switch->set_pressed_texture(get_theme_icon("MaterialPreviewLight2Off", "EditorIcons"));
+			light_1_switch->set_normal_texture(get_theme_icon(SNAME("MaterialPreviewLight1"), SNAME("EditorIcons")));
+			light_1_switch->set_pressed_texture(get_theme_icon(SNAME("MaterialPreviewLight1Off"), SNAME("EditorIcons")));
+			light_2_switch->set_normal_texture(get_theme_icon(SNAME("MaterialPreviewLight2"), SNAME("EditorIcons")));
+			light_2_switch->set_pressed_texture(get_theme_icon(SNAME("MaterialPreviewLight2Off"), SNAME("EditorIcons")));
 
-			sphere_switch->set_normal_texture(get_theme_icon("MaterialPreviewSphereOff", "EditorIcons"));
-			sphere_switch->set_pressed_texture(get_theme_icon("MaterialPreviewSphere", "EditorIcons"));
-			box_switch->set_normal_texture(get_theme_icon("MaterialPreviewCubeOff", "EditorIcons"));
-			box_switch->set_pressed_texture(get_theme_icon("MaterialPreviewCube", "EditorIcons"));
+			sphere_switch->set_normal_texture(get_theme_icon(SNAME("MaterialPreviewSphereOff"), SNAME("EditorIcons")));
+			sphere_switch->set_pressed_texture(get_theme_icon(SNAME("MaterialPreviewSphere"), SNAME("EditorIcons")));
+			box_switch->set_normal_texture(get_theme_icon(SNAME("MaterialPreviewCubeOff"), SNAME("EditorIcons")));
+			box_switch->set_pressed_texture(get_theme_icon(SNAME("MaterialPreviewCube"), SNAME("EditorIcons")));
 
 			first_enter = false;
 		}
 	}
 
 	if (p_what == NOTIFICATION_DRAW) {
-		Ref<Texture2D> checkerboard = get_theme_icon("Checkerboard", "EditorIcons");
+		Ref<Texture2D> checkerboard = get_theme_icon(SNAME("Checkerboard"), SNAME("EditorIcons"));
 		Size2 size = get_size();
 
 		draw_texture_rect(checkerboard, Rect2(Point2(), size), true);

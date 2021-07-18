@@ -40,14 +40,14 @@ void EditorNetworkProfiler::_bind_methods() {
 
 void EditorNetworkProfiler::_notification(int p_what) {
 	if (p_what == NOTIFICATION_ENTER_TREE || p_what == NOTIFICATION_THEME_CHANGED) {
-		activate->set_icon(get_theme_icon("Play", "EditorIcons"));
-		clear_button->set_icon(get_theme_icon("Clear", "EditorIcons"));
-		incoming_bandwidth_text->set_right_icon(get_theme_icon("ArrowDown", "EditorIcons"));
-		outgoing_bandwidth_text->set_right_icon(get_theme_icon("ArrowUp", "EditorIcons"));
+		activate->set_icon(get_theme_icon(SNAME("Play"), SNAME("EditorIcons")));
+		clear_button->set_icon(get_theme_icon(SNAME("Clear"), SNAME("EditorIcons")));
+		incoming_bandwidth_text->set_right_icon(get_theme_icon(SNAME("ArrowDown"), SNAME("EditorIcons")));
+		outgoing_bandwidth_text->set_right_icon(get_theme_icon(SNAME("ArrowUp"), SNAME("EditorIcons")));
 
 		// This needs to be done here to set the faded color when the profiler is first opened
-		incoming_bandwidth_text->add_theme_color_override("font_uneditable_color", get_theme_color("font_color", "Editor") * Color(1, 1, 1, 0.5));
-		outgoing_bandwidth_text->add_theme_color_override("font_uneditable_color", get_theme_color("font_color", "Editor") * Color(1, 1, 1, 0.5));
+		incoming_bandwidth_text->add_theme_color_override("font_uneditable_color", get_theme_color(SNAME("font_color"), SNAME("Editor")) * Color(1, 1, 1, 0.5));
+		outgoing_bandwidth_text->add_theme_color_override("font_uneditable_color", get_theme_color(SNAME("font_color"), SNAME("Editor")) * Color(1, 1, 1, 0.5));
 	}
 }
 
@@ -73,13 +73,13 @@ void EditorNetworkProfiler::_update_frame() {
 
 void EditorNetworkProfiler::_activate_pressed() {
 	if (activate->is_pressed()) {
-		activate->set_icon(get_theme_icon("Stop", "EditorIcons"));
+		activate->set_icon(get_theme_icon(SNAME("Stop"), SNAME("EditorIcons")));
 		activate->set_text(TTR("Stop"));
 	} else {
-		activate->set_icon(get_theme_icon("Play", "EditorIcons"));
+		activate->set_icon(get_theme_icon(SNAME("Play"), SNAME("EditorIcons")));
 		activate->set_text(TTR("Start"));
 	}
-	emit_signal("enable_profiling", activate->is_pressed());
+	emit_signal(SNAME("enable_profiling"), activate->is_pressed());
 }
 
 void EditorNetworkProfiler::_clear_pressed() {
@@ -114,10 +114,10 @@ void EditorNetworkProfiler::set_bandwidth(int p_incoming, int p_outgoing) {
 	// Make labels more prominent when the bandwidth is greater than 0 to attract user attention
 	incoming_bandwidth_text->add_theme_color_override(
 			"font_uneditable_color",
-			get_theme_color("font_color", "Editor") * Color(1, 1, 1, p_incoming > 0 ? 1 : 0.5));
+			get_theme_color(SNAME("font_color"), SNAME("Editor")) * Color(1, 1, 1, p_incoming > 0 ? 1 : 0.5));
 	outgoing_bandwidth_text->add_theme_color_override(
 			"font_uneditable_color",
-			get_theme_color("font_color", "Editor") * Color(1, 1, 1, p_outgoing > 0 ? 1 : 0.5));
+			get_theme_color(SNAME("font_color"), SNAME("Editor")) * Color(1, 1, 1, p_outgoing > 0 ? 1 : 0.5));
 }
 
 bool EditorNetworkProfiler::is_profiling() {

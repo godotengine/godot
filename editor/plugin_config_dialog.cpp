@@ -113,7 +113,7 @@ void PluginConfigDialog::_on_confirmed() {
 		}
 #endif
 
-		emit_signal("plugin_ready", script.operator->(), active_edit->is_pressed() ? _to_absolute_plugin_path(subfolder_edit->get_text()) : "");
+		emit_signal(SNAME("plugin_ready"), script.operator->(), active_edit->is_pressed() ? _to_absolute_plugin_path(subfolder_edit->get_text()) : "");
 	} else {
 		EditorNode::get_singleton()->get_project_settings()->update_plugins();
 	}
@@ -128,8 +128,8 @@ void PluginConfigDialog::_on_required_text_changed(const String &) {
 	int lang_idx = script_option_edit->get_selected();
 	String ext = ScriptServer::get_language(lang_idx)->get_extension();
 
-	Ref<Texture2D> valid_icon = get_theme_icon("StatusSuccess", "EditorIcons");
-	Ref<Texture2D> invalid_icon = get_theme_icon("StatusWarning", "EditorIcons");
+	Ref<Texture2D> valid_icon = get_theme_icon(SNAME("StatusSuccess"), SNAME("EditorIcons"));
+	Ref<Texture2D> invalid_icon = get_theme_icon(SNAME("StatusWarning"), SNAME("EditorIcons"));
 
 	// Set variables to assume all is valid
 	bool is_valid = true;

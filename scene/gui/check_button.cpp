@@ -52,9 +52,9 @@ Size2 CheckButton::get_minimum_size() const {
 	Size2 tex_size = get_icon_size();
 	minsize.width += tex_size.width;
 	if (get_text().length() > 0) {
-		minsize.width += get_theme_constant("hseparation");
+		minsize.width += get_theme_constant(SNAME("hseparation"));
 	}
-	Ref<StyleBox> sb = get_theme_stylebox("normal");
+	Ref<StyleBox> sb = get_theme_stylebox(SNAME("normal"));
 	minsize.height = MAX(minsize.height, tex_size.height + sb->get_margin(SIDE_TOP) + sb->get_margin(SIDE_BOTTOM));
 
 	return minsize;
@@ -86,7 +86,7 @@ void CheckButton::_notification(int p_what) {
 			off = Control::get_theme_icon(is_disabled() ? "off_disabled" : "off");
 		}
 
-		Ref<StyleBox> sb = get_theme_stylebox("normal");
+		Ref<StyleBox> sb = get_theme_stylebox(SNAME("normal"));
 		Vector2 ofs;
 		Size2 tex_size = get_icon_size();
 
@@ -95,7 +95,7 @@ void CheckButton::_notification(int p_what) {
 		} else {
 			ofs.x = get_size().width - (tex_size.width + sb->get_margin(SIDE_RIGHT));
 		}
-		ofs.y = (get_size().height - tex_size.height) / 2 + get_theme_constant("check_vadjust");
+		ofs.y = (get_size().height - tex_size.height) / 2 + get_theme_constant(SNAME("check_vadjust"));
 
 		if (is_pressed()) {
 			on->draw(ci, ofs);

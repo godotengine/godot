@@ -203,7 +203,7 @@ void EditorPropertyArray::_change_type_menu(int p_index) {
 }
 
 void EditorPropertyArray::_object_id_selected(const StringName &p_property, ObjectID p_id) {
-	emit_signal("object_id_selected", p_property, p_id);
+	emit_signal(SNAME("object_id_selected"), p_property, p_id);
 }
 
 void EditorPropertyArray::update_property() {
@@ -346,7 +346,7 @@ void EditorPropertyArray::update_property() {
 			vbox->add_child(hbox);
 
 			Button *reorder_button = memnew(Button);
-			reorder_button->set_icon(get_theme_icon("TripleBar", "EditorIcons"));
+			reorder_button->set_icon(get_theme_icon(SNAME("TripleBar"), SNAME("EditorIcons")));
 			reorder_button->set_default_cursor_shape(Control::CURSOR_MOVE);
 			reorder_button->connect("gui_input", callable_mp(this, &EditorPropertyArray::_reorder_button_gui_input));
 			reorder_button->connect("button_down", callable_mp(this, &EditorPropertyArray::_reorder_button_down), varray(i + offset));
@@ -383,12 +383,12 @@ void EditorPropertyArray::update_property() {
 
 			if (is_untyped_array) {
 				Button *edit = memnew(Button);
-				edit->set_icon(get_theme_icon("Edit", "EditorIcons"));
+				edit->set_icon(get_theme_icon(SNAME("Edit"), SNAME("EditorIcons")));
 				hbox->add_child(edit);
 				edit->connect("pressed", callable_mp(this, &EditorPropertyArray::_change_type), varray(edit, i + offset));
 			} else {
 				Button *remove = memnew(Button);
-				remove->set_icon(get_theme_icon("Remove", "EditorIcons"));
+				remove->set_icon(get_theme_icon(SNAME("Remove"), SNAME("EditorIcons")));
 				remove->connect("pressed", callable_mp(this, &EditorPropertyArray::_remove_pressed), varray(i + offset));
 				hbox->add_child(remove);
 			}
@@ -421,7 +421,7 @@ void EditorPropertyArray::_remove_pressed(int p_index) {
 
 void EditorPropertyArray::_button_draw() {
 	if (dropping) {
-		Color color = get_theme_color("accent_color", "Editor");
+		Color color = get_theme_color(SNAME("accent_color"), SNAME("Editor"));
 		edit->draw_rect(Rect2(Point2(), edit->get_size()), color, false);
 	}
 }
@@ -1070,7 +1070,7 @@ void EditorPropertyDictionary::update_property() {
 				for (int j = 0; j < 4; j++) {
 					flat->set_default_margin(Side(j), 2 * EDSCALE);
 				}
-				flat->set_bg_color(get_theme_color("prop_subsection", "Editor"));
+				flat->set_bg_color(get_theme_color(SNAME("prop_subsection"), SNAME("Editor")));
 
 				pc->add_theme_style_override("panel", flat);
 				add_vbox = memnew(VBoxContainer);
@@ -1105,7 +1105,7 @@ void EditorPropertyDictionary::update_property() {
 			hbox->add_child(prop);
 			prop->set_h_size_flags(SIZE_EXPAND_FILL);
 			Button *edit = memnew(Button);
-			edit->set_icon(get_theme_icon("Edit", "EditorIcons"));
+			edit->set_icon(get_theme_icon(SNAME("Edit"), SNAME("EditorIcons")));
 			hbox->add_child(edit);
 			edit->connect("pressed", callable_mp(this, &EditorPropertyDictionary::_change_type), varray(edit, change_index));
 
@@ -1131,7 +1131,7 @@ void EditorPropertyDictionary::update_property() {
 }
 
 void EditorPropertyDictionary::_object_id_selected(const StringName &p_property, ObjectID p_id) {
-	emit_signal("object_id_selected", p_property, p_id);
+	emit_signal(SNAME("object_id_selected"), p_property, p_id);
 }
 
 void EditorPropertyDictionary::_notification(int p_what) {

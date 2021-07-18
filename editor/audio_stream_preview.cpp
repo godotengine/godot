@@ -97,7 +97,7 @@ AudioStreamPreview::AudioStreamPreview() {
 ////
 
 void AudioStreamPreviewGenerator::_update_emit(ObjectID p_id) {
-	emit_signal("preview_updated", p_id);
+	emit_signal(SNAME("preview_updated"), p_id);
 }
 
 void AudioStreamPreviewGenerator::_preview_thread(void *p_preview) {

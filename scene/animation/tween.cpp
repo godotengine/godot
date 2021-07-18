@@ -264,7 +264,7 @@ bool Tween::step(float p_delta) {
 		rem_delta = step_delta;
 
 		if (!step_active) {
-			emit_signal("step_finished", current_step);
+			emit_signal(SNAME("step_finished"), current_step);
 			current_step++;
 
 			if (current_step == tweeners.size()) {
@@ -272,9 +272,9 @@ bool Tween::step(float p_delta) {
 				if (loops_done == loops) {
 					running = false;
 					dead = true;
-					emit_signal("finished");
+					emit_signal(SNAME("finished"));
 				} else {
-					emit_signal("loop_finished", loops_done);
+					emit_signal(SNAME("loop_finished"), loops_done);
 					current_step = 0;
 					start_tweeners();
 				}
@@ -690,7 +690,7 @@ bool PropertyTweener::step(float &r_delta) {
 	} else {
 		finished = true;
 		r_delta = elapsed_time - delay - duration;
-		emit_signal("finished");
+		emit_signal(SNAME("finished"));
 		return false;
 	}
 }
@@ -745,7 +745,7 @@ bool IntervalTweener::step(float &r_delta) {
 	} else {
 		finished = true;
 		r_delta = elapsed_time - duration;
-		emit_signal("finished");
+		emit_signal(SNAME("finished"));
 		return false;
 	}
 }
@@ -784,7 +784,7 @@ bool CallbackTweener::step(float &r_delta) {
 
 		finished = true;
 		r_delta = elapsed_time - delay;
-		emit_signal("finished");
+		emit_signal(SNAME("finished"));
 		return false;
 	}
 
@@ -854,7 +854,7 @@ bool MethodTweener::step(float &r_delta) {
 	} else {
 		finished = true;
 		r_delta = elapsed_time - delay - duration;
-		emit_signal("finished");
+		emit_signal(SNAME("finished"));
 		return false;
 	}
 }

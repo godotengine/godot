@@ -506,7 +506,7 @@ Sprite2DEditor::Sprite2DEditor() {
 	CanvasItemEditor::get_singleton()->add_control_to_menu_panel(options);
 
 	options->set_text(TTR("Sprite2D"));
-	options->set_icon(EditorNode::get_singleton()->get_gui_base()->get_theme_icon("Sprite2D", "EditorIcons"));
+	options->set_icon(EditorNode::get_singleton()->get_gui_base()->get_theme_icon(SNAME("Sprite2D"), SNAME("EditorIcons")));
 
 	options->get_popup()->add_item(TTR("Convert to Mesh2D"), MENU_OPTION_CONVERT_TO_MESH_2D);
 	options->get_popup()->add_item(TTR("Convert to Polygon2D"), MENU_OPTION_CONVERT_TO_POLYGON_2D);

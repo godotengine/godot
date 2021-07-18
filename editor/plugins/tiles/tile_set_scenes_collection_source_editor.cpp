@@ -48,7 +48,7 @@ void TileSetScenesCollectionSourceEditor::TileSetScenesCollectionProxyObject::se
 	int previous_source = source_id;
 	source_id = p_id; // source_id must be updated before, because it's used by the source list update.
 	tile_set->set_source_id(previous_source, p_id);
-	emit_signal("changed", "id");
+	emit_signal(SNAME("changed"), "id");
 }
 
 int TileSetScenesCollectionSourceEditor::TileSetScenesCollectionProxyObject::get_id() {
@@ -59,7 +59,7 @@ bool TileSetScenesCollectionSourceEditor::TileSetScenesCollectionProxyObject::_s
 	bool valid = false;
 	tile_set_scenes_collection_source->set(p_name, p_value, &valid);
 	if (valid) {
-		emit_signal("changed", String(p_name).utf8().get_data());
+		emit_signal(SNAME("changed"), String(p_name).utf8().get_data());
 	}
 	return valid;
 }
@@ -120,7 +120,7 @@ bool TileSetScenesCollectionSourceEditor::SceneTileProxyObject::_set(const Strin
 		ERR_FAIL_COND_V(tile_set_scenes_collection_source->has_scene_tile_id(as_int), false);
 		tile_set_scenes_collection_source->set_scene_tile_id(scene_id, as_int);
 		scene_id = as_int;
-		emit_signal("changed", "id");
+		emit_signal(SNAME("changed"), "id");
 		for (int i = 0; i < tile_set_scenes_collection_source_editor->scene_tiles_list->get_item_count(); i++) {
 			if (int(tile_set_scenes_collection_source_editor->scene_tiles_list->get_item_metadata(i)) == scene_id) {
 				tile_set_scenes_collection_source_editor->scene_tiles_list->select(i);
@@ -130,11 +130,11 @@ bool TileSetScenesCollectionSourceEditor::SceneTileProxyObject::_set(const Strin
 		return true;
 	} else if (p_name == "scene") {
 		tile_set_scenes_collection_source->set_scene_tile_scene(scene_id, p_value);
-		emit_signal("changed", "scene");
+		emit_signal(SNAME("changed"), "scene");
 		return true;
 	} else if (p_name == "display_placeholder") {
 		tile_set_scenes_collection_source->set_scene_tile_display_placeholder(scene_id, p_value);
-		emit_signal("changed", "display_placeholder");
+		emit_signal(SNAME("changed"), "display_placeholder");
 		return true;
 	}
 
@@ -186,7 +186,7 @@ void TileSetScenesCollectionSourceEditor::SceneTileProxyObject::_bind_methods() 
 
 void TileSetScenesCollectionSourceEditor::_scenes_collection_source_proxy_object_changed(String p_what) {
 	if (p_what == "id") {
-		emit_signal("source_id_changed", scenes_collection_source_proxy_object->get_id());
+		emit_signal(SNAME("source_id_changed"), scenes_collection_source_proxy_object->get_id());
 	}
 }
 
@@ -284,7 +284,7 @@ void TileSetScenesCollectionSourceEditor::_update_scenes_list() {
 			Variant udata = i;
 			EditorResourcePreview::get_singleton()->queue_edited_resource_preview(scene, this, "_scene_thumbnail_done", udata);
 		} else {
-			item_index = scene_tiles_list->add_item(TTR("Tile with Invalid Scene"), get_theme_icon("PackedScene", "EditorIcons"));
+			item_index = scene_tiles_list->add_item(TTR("Tile with Invalid Scene"), get_theme_icon(SNAME("PackedScene"), SNAME("EditorIcons")));
 		}
 		scene_tiles_list->set_item_metadata(item_index, scene_id);
 
@@ -307,8 +307,8 @@ void TileSetScenesCollectionSourceEditor::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED:
-			scene_tile_add_button->set_icon(get_theme_icon("Add", "EditorIcons"));
-			scene_tile_delete_button->set_icon(get_theme_icon("Remove", "EditorIcons"));
+			scene_tile_add_button->set_icon(get_theme_icon(SNAME("Add"), SNAME("EditorIcons")));
+			scene_tile_delete_button->set_icon(get_theme_icon(SNAME("Remove"), SNAME("EditorIcons")));
 			_update_scenes_list();
 			break;
 		case NOTIFICATION_INTERNAL_PROCESS:

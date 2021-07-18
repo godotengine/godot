@@ -242,7 +242,7 @@ void NavigationAgent3D::_avoidance_done(Vector3 p_new_velocity) {
 	}
 	velocity_submitted = false;
 
-	emit_signal("velocity_computed", p_new_velocity);
+	emit_signal(SNAME("velocity_computed"), p_new_velocity);
 }
 
 TypedArray<String> NavigationAgent3D::get_configuration_warnings() const {
@@ -296,7 +296,7 @@ void NavigationAgent3D::update_navigation() {
 		navigation_path = NavigationServer3D::get_singleton()->map_get_path(agent_parent->get_world_3d()->get_navigation_map(), o, target_location, true);
 		navigation_finished = false;
 		nav_path_index = 0;
-		emit_signal("path_changed");
+		emit_signal(SNAME("path_changed"));
 	}
 
 	if (navigation_path.size() == 0) {
@@ -312,7 +312,7 @@ void NavigationAgent3D::update_navigation() {
 				_check_distance_to_target();
 				nav_path_index -= 1;
 				navigation_finished = true;
-				emit_signal("navigation_finished");
+				emit_signal(SNAME("navigation_finished"));
 				break;
 			}
 		}
@@ -322,7 +322,7 @@ void NavigationAgent3D::update_navigation() {
 void NavigationAgent3D::_check_distance_to_target() {
 	if (!target_reached) {
 		if (distance_to_target() < target_desired_distance) {
-			emit_signal("target_reached");
+			emit_signal(SNAME("target_reached"));
 			target_reached = true;
 		}
 	}

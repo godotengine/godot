@@ -56,9 +56,9 @@ void EditorAutoloadSettings::_notification(int p_what) {
 				get_tree()->get_root()->call_deferred("add_child", info.node);
 			}
 		}
-		browse_button->set_icon(get_theme_icon("Folder", "EditorIcons"));
+		browse_button->set_icon(get_theme_icon(SNAME("Folder"), SNAME("EditorIcons")));
 	} else if (p_what == NOTIFICATION_THEME_CHANGED) {
-		browse_button->set_icon(get_theme_icon("Folder", "EditorIcons"));
+		browse_button->set_icon(get_theme_icon(SNAME("Folder"), SNAME("EditorIcons")));
 	}
 }
 
@@ -453,10 +453,10 @@ void EditorAutoloadSettings::update_autoload() {
 		item->set_editable(2, true);
 		item->set_text(2, TTR("Enable"));
 		item->set_checked(2, info.is_singleton);
-		item->add_button(3, get_theme_icon("Load", "EditorIcons"), BUTTON_OPEN);
-		item->add_button(3, get_theme_icon("MoveUp", "EditorIcons"), BUTTON_MOVE_UP);
-		item->add_button(3, get_theme_icon("MoveDown", "EditorIcons"), BUTTON_MOVE_DOWN);
-		item->add_button(3, get_theme_icon("Remove", "EditorIcons"), BUTTON_DELETE);
+		item->add_button(3, get_theme_icon(SNAME("Load"), SNAME("EditorIcons")), BUTTON_OPEN);
+		item->add_button(3, get_theme_icon(SNAME("MoveUp"), SNAME("EditorIcons")), BUTTON_MOVE_UP);
+		item->add_button(3, get_theme_icon(SNAME("MoveDown"), SNAME("EditorIcons")), BUTTON_MOVE_DOWN);
+		item->add_button(3, get_theme_icon(SNAME("Remove"), SNAME("EditorIcons")), BUTTON_DELETE);
 		item->set_selectable(3, false);
 	}
 
@@ -914,7 +914,7 @@ EditorAutoloadSettings::~EditorAutoloadSettings() {
 
 void EditorAutoloadSettings::_set_autoload_add_path(const String &p_text) {
 	autoload_add_path->set_text(p_text);
-	autoload_add_path->emit_signal("text_submitted", p_text);
+	autoload_add_path->emit_signal(SNAME("text_submitted"), p_text);
 }
 
 void EditorAutoloadSettings::_browse_autoload_add_path() {

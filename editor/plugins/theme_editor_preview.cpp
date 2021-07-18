@@ -151,7 +151,7 @@ void ThemeEditorPreview::_gui_input_picker_overlay(const Ref<InputEvent> &p_even
 				theme_type = hovered_control->get_class_name();
 			}
 
-			emit_signal("control_picked", theme_type);
+			emit_signal(SNAME("control_picked"), theme_type);
 			picker_button->set_pressed(false);
 			picker_overlay->set_visible(false);
 		}
@@ -182,12 +182,12 @@ void ThemeEditorPreview::_notification(int p_what) {
 			[[fallthrough]];
 		}
 		case NOTIFICATION_THEME_CHANGED: {
-			picker_button->set_icon(get_theme_icon("ColorPick", "EditorIcons"));
+			picker_button->set_icon(get_theme_icon(SNAME("ColorPick"), SNAME("EditorIcons")));
 
-			theme_cache.preview_picker_overlay = get_theme_stylebox("preview_picker_overlay", "ThemeEditor");
-			theme_cache.preview_picker_overlay_color = get_theme_color("preview_picker_overlay_color", "ThemeEditor");
-			theme_cache.preview_picker_label = get_theme_stylebox("preview_picker_label", "ThemeEditor");
-			theme_cache.preview_picker_font = get_theme_font("status_source", "EditorFonts");
+			theme_cache.preview_picker_overlay = get_theme_stylebox(SNAME("preview_picker_overlay"), SNAME("ThemeEditor"));
+			theme_cache.preview_picker_overlay_color = get_theme_color(SNAME("preview_picker_overlay_color"), SNAME("ThemeEditor"));
+			theme_cache.preview_picker_label = get_theme_stylebox(SNAME("preview_picker_label"), SNAME("ThemeEditor"));
+			theme_cache.preview_picker_font = get_theme_font(SNAME("status_source"), SNAME("EditorFonts"));
 		} break;
 		case NOTIFICATION_PROCESS: {
 			time_left -= get_process_delta_time();
@@ -428,7 +428,7 @@ void SceneThemeEditorPreview::_reload_scene() {
 
 	if (loaded_scene->get_path().is_empty() || !ResourceLoader::exists(loaded_scene->get_path())) {
 		EditorNode::get_singleton()->show_warning(TTR("Invalid path, the PackedScene resource was probably moved or removed."));
-		emit_signal("scene_invalidated");
+		emit_signal(SNAME("scene_invalidated"));
 		return;
 	}
 
@@ -441,19 +441,19 @@ void SceneThemeEditorPreview::_reload_scene() {
 	Node *instance = loaded_scene->instantiate();
 	if (!instance || !Object::cast_to<Control>(instance)) {
 		EditorNode::get_singleton()->show_warning(TTR("Invalid PackedScene resource, must have a Control node at its root."));
-		emit_signal("scene_invalidated");
+		emit_signal(SNAME("scene_invalidated"));
 		return;
 	}
 
 	preview_content->add_child(instance);
-	emit_signal("scene_reloaded");
+	emit_signal(SNAME("scene_reloaded"));
 }
 
 void SceneThemeEditorPreview::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
-			reload_scene_button->set_icon(get_theme_icon("Reload", "EditorIcons"));
+			reload_scene_button->set_icon(get_theme_icon(SNAME("Reload"), SNAME("EditorIcons")));
 		} break;
 	}
 }

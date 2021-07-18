@@ -86,7 +86,7 @@ void WebSocketClient::_on_peer_packet() {
 	if (_is_multiplayer) {
 		_process_multiplayer(get_peer(1), 1);
 	} else {
-		emit_signal("data_received");
+		emit_signal(SNAME("data_received"));
 	}
 }
 
@@ -94,27 +94,27 @@ void WebSocketClient::_on_connect(String p_protocol) {
 	if (_is_multiplayer) {
 		// need to wait for ID confirmation...
 	} else {
-		emit_signal("connection_established", p_protocol);
+		emit_signal(SNAME("connection_established"), p_protocol);
 	}
 }
 
 void WebSocketClient::_on_close_request(int p_code, String p_reason) {
-	emit_signal("server_close_request", p_code, p_reason);
+	emit_signal(SNAME("server_close_request"), p_code, p_reason);
 }
 
 void WebSocketClient::_on_disconnect(bool p_was_clean) {
 	if (_is_multiplayer) {
-		emit_signal("connection_failed");
+		emit_signal(SNAME("connection_failed"));
 	} else {
-		emit_signal("connection_closed", p_was_clean);
+		emit_signal(SNAME("connection_closed"), p_was_clean);
 	}
 }
 
 void WebSocketClient::_on_error() {
 	if (_is_multiplayer) {
-		emit_signal("connection_failed");
+		emit_signal(SNAME("connection_failed"));
 	} else {
-		emit_signal("connection_error");
+		emit_signal(SNAME("connection_error"));
 	}
 }
 

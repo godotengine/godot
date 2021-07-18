@@ -58,7 +58,7 @@ void Timer::_notification(int p_what) {
 					stop();
 				}
 
-				emit_signal("timeout");
+				emit_signal(SNAME("timeout"));
 			}
 
 		} break;
@@ -74,7 +74,7 @@ void Timer::_notification(int p_what) {
 				} else {
 					stop();
 				}
-				emit_signal("timeout");
+				emit_signal(SNAME("timeout"));
 			}
 
 		} break;

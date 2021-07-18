@@ -46,7 +46,7 @@ void ScriptCreateDialog::_notification(int p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
 			for (int i = 0; i < ScriptServer::get_language_count(); i++) {
 				String lang = ScriptServer::get_language(i)->get_type();
-				Ref<Texture2D> lang_icon = get_theme_icon(lang, "EditorIcons");
+				Ref<Texture2D> lang_icon = get_theme_icon(lang, SNAME("EditorIcons"));
 				if (lang_icon.is_valid()) {
 					language_menu->set_item_icon(i, lang_icon);
 				}
@@ -65,10 +65,10 @@ void ScriptCreateDialog::_notification(int p_what) {
 				language_menu->select(default_language);
 			}
 
-			path_button->set_icon(get_theme_icon("Folder", "EditorIcons"));
-			parent_browse_button->set_icon(get_theme_icon("Folder", "EditorIcons"));
-			parent_search_button->set_icon(get_theme_icon("ClassList", "EditorIcons"));
-			status_panel->add_theme_style_override("panel", get_theme_stylebox("bg", "Tree"));
+			path_button->set_icon(get_theme_icon(SNAME("Folder"), SNAME("EditorIcons")));
+			parent_browse_button->set_icon(get_theme_icon(SNAME("Folder"), SNAME("EditorIcons")));
+			parent_search_button->set_icon(get_theme_icon(SNAME("ClassList"), SNAME("EditorIcons")));
+			status_panel->add_theme_style_override("panel", get_theme_stylebox(SNAME("bg"), SNAME("Tree")));
 		} break;
 	}
 }
@@ -326,7 +326,7 @@ void ScriptCreateDialog::_create_new() {
 		}
 	}
 
-	emit_signal("script_created", scr);
+	emit_signal(SNAME("script_created"), scr);
 	hide();
 }
 
@@ -339,7 +339,7 @@ void ScriptCreateDialog::_load_exist() {
 		return;
 	}
 
-	emit_signal("script_created", p_script);
+	emit_signal(SNAME("script_created"), p_script);
 	hide();
 }
 
@@ -448,7 +448,7 @@ void ScriptCreateDialog::_lang_changed(int l) {
 					override_info += ", ";
 				}
 			}
-			template_menu->set_item_icon(extended.id, get_theme_icon("Override", "EditorIcons"));
+			template_menu->set_item_icon(extended.id, get_theme_icon(SNAME("Override"), SNAME("EditorIcons")));
 			template_menu->get_popup()->set_item_tooltip(extended.id, override_info.as_string());
 		}
 		// Reselect last selected template
@@ -606,18 +606,18 @@ void ScriptCreateDialog::_path_submitted(const String &p_path) {
 void ScriptCreateDialog::_msg_script_valid(bool valid, const String &p_msg) {
 	error_label->set_text("- " + p_msg);
 	if (valid) {
-		error_label->add_theme_color_override("font_color", get_theme_color("success_color", "Editor"));
+		error_label->add_theme_color_override("font_color", get_theme_color(SNAME("success_color"), SNAME("Editor")));
 	} else {
-		error_label->add_theme_color_override("font_color", get_theme_color("error_color", "Editor"));
+		error_label->add_theme_color_override("font_color", get_theme_color(SNAME("error_color"), SNAME("Editor")));
 	}
 }
 
 void ScriptCreateDialog::_msg_path_valid(bool valid, const String &p_msg) {
 	path_error_label->set_text("- " + p_msg);
 	if (valid) {
-		path_error_label->add_theme_color_override("font_color", get_theme_color("success_color", "Editor"));
+		path_error_label->add_theme_color_override("font_color", get_theme_color(SNAME("success_color"), SNAME("Editor")));
 	} else {
-		path_error_label->add_theme_color_override("font_color", get_theme_color("error_color", "Editor"));
+		path_error_label->add_theme_color_override("font_color", get_theme_color(SNAME("error_color"), SNAME("Editor")));
 	}
 }
 

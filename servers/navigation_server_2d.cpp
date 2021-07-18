@@ -158,7 +158,7 @@ static Ref<NavigationMesh> poly_to_mesh(Ref<NavigationPolygon> d) {
 }
 
 void NavigationServer2D::_emit_map_changed(RID p_map) {
-	emit_signal("map_changed", p_map);
+	emit_signal(SNAME("map_changed"), p_map);
 }
 
 void NavigationServer2D::_bind_methods() {

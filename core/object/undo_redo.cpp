@@ -65,7 +65,7 @@ bool UndoRedo::_redo(bool p_execute) {
 		_process_operation_list(actions.write[current_action].do_ops.front());
 	}
 	version++;
-	emit_signal("version_changed");
+	emit_signal(SNAME("version_changed"));
 
 	return true;
 }
@@ -352,7 +352,7 @@ bool UndoRedo::undo() {
 	_process_operation_list(actions.write[current_action].undo_ops.front());
 	current_action--;
 	version--;
-	emit_signal("version_changed");
+	emit_signal(SNAME("version_changed"));
 
 	return true;
 }
@@ -385,7 +385,7 @@ void UndoRedo::clear_history(bool p_increase_version) {
 
 	if (p_increase_version) {
 		version++;
-		emit_signal("version_changed");
+		emit_signal(SNAME("version_changed"));
 	}
 }
 

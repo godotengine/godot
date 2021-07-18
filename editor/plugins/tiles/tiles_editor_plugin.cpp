@@ -50,7 +50,7 @@ void TilesEditor::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
-			tileset_tilemap_switch_button->set_icon(get_theme_icon("TileSet", "EditorIcons"));
+			tileset_tilemap_switch_button->set_icon(get_theme_icon(SNAME("TileSet"), SNAME("EditorIcons")));
 		} break;
 		case NOTIFICATION_INTERNAL_PROCESS: {
 			if (tile_map_changed_needs_update) {
@@ -131,7 +131,7 @@ void TilesEditor::synchronize_atlas_sources_list(Object *p_current) {
 			item_list->deselect_all();
 		} else {
 			item_list->set_current(atlas_sources_lists_current);
-			item_list->emit_signal("item_selected", atlas_sources_lists_current);
+			item_list->emit_signal(SNAME("item_selected"), atlas_sources_lists_current);
 		}
 	}
 }

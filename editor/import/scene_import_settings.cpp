@@ -105,7 +105,7 @@ void SceneImportSettings::_fill_material(Tree *p_tree, const Ref<Material> &p_ma
 
 	MaterialData &material_data = material_map[import_id];
 
-	Ref<Texture2D> icon = get_theme_icon("StandardMaterial3D", "EditorIcons");
+	Ref<Texture2D> icon = get_theme_icon(SNAME("StandardMaterial3D"), SNAME("EditorIcons"));
 
 	TreeItem *item = p_tree->create_item(p_parent);
 	item->set_text(0, p_material->get_name());
@@ -161,7 +161,7 @@ void SceneImportSettings::_fill_mesh(Tree *p_tree, const Ref<Mesh> &p_mesh, Tree
 
 	MeshData &mesh_data = mesh_map[import_id];
 
-	Ref<Texture2D> icon = get_theme_icon("Mesh", "EditorIcons");
+	Ref<Texture2D> icon = get_theme_icon(SNAME("Mesh"), SNAME("EditorIcons"));
 
 	TreeItem *item = p_tree->create_item(p_parent);
 	item->set_text(0, p_mesh->get_name());
@@ -211,7 +211,7 @@ void SceneImportSettings::_fill_animation(Tree *p_tree, const Ref<Animation> &p_
 
 	AnimationData &animation_data = animation_map[p_name];
 
-	Ref<Texture2D> icon = get_theme_icon("Animation", "EditorIcons");
+	Ref<Texture2D> icon = get_theme_icon(SNAME("Animation"), SNAME("EditorIcons"));
 
 	TreeItem *item = p_tree->create_item(p_parent);
 	item->set_text(0, p_name);
@@ -255,17 +255,17 @@ void SceneImportSettings::_fill_scene(Node *p_node, TreeItem *p_parent_item) {
 
 	String type = p_node->get_class();
 
-	if (!has_theme_icon(type, "EditorIcons")) {
+	if (!has_theme_icon(type, SNAME("EditorIcons"))) {
 		type = "Node3D";
 	}
 
-	Ref<Texture2D> icon = get_theme_icon(type, "EditorIcons");
+	Ref<Texture2D> icon = get_theme_icon(type, SNAME("EditorIcons"));
 
 	TreeItem *item = scene_tree->create_item(p_parent_item);
 	item->set_text(0, p_node->get_name());
 
 	if (p_node == scene) {
-		icon = get_theme_icon("PackedScene", "EditorIcons");
+		icon = get_theme_icon(SNAME("PackedScene"), SNAME("EditorIcons"));
 		item->set_text(0, "Scene");
 	}
 
@@ -795,11 +795,11 @@ void SceneImportSettings::_save_path_changed(const String &p_path) {
 	if (FileAccess::exists(p_path)) {
 		save_path_item->set_text(2, "Warning: File exists");
 		save_path_item->set_tooltip(2, TTR("Existing file with the same name will be replaced."));
-		save_path_item->set_icon(2, get_theme_icon("StatusWarning", "EditorIcons"));
+		save_path_item->set_icon(2, get_theme_icon(SNAME("StatusWarning"), SNAME("EditorIcons")));
 
 	} else {
 		save_path_item->set_text(2, "Will create new File");
-		save_path_item->set_icon(2, get_theme_icon("StatusSuccess", "EditorIcons"));
+		save_path_item->set_icon(2, get_theme_icon(SNAME("StatusSuccess"), SNAME("EditorIcons")));
 	}
 }
 
@@ -829,7 +829,7 @@ void SceneImportSettings::_save_dir_callback(const String &p_path) {
 				String name = md.material_node->get_text(0);
 
 				item->set_cell_mode(0, TreeItem::CELL_MODE_CHECK);
-				item->set_icon(0, get_theme_icon("StandardMaterial3D", "EditorIcons"));
+				item->set_icon(0, get_theme_icon(SNAME("StandardMaterial3D"), SNAME("EditorIcons")));
 				item->set_text(0, name);
 
 				if (md.has_import_id) {
@@ -851,20 +851,20 @@ void SceneImportSettings::_save_dir_callback(const String &p_path) {
 						if (FileAccess::exists(path)) {
 							item->set_text(2, "Warning: File exists");
 							item->set_tooltip(2, TTR("Existing file with the same name will be replaced."));
-							item->set_icon(2, get_theme_icon("StatusWarning", "EditorIcons"));
+							item->set_icon(2, get_theme_icon(SNAME("StatusWarning"), SNAME("EditorIcons")));
 
 						} else {
 							item->set_text(2, "Will create new File");
-							item->set_icon(2, get_theme_icon("StatusSuccess", "EditorIcons"));
+							item->set_icon(2, get_theme_icon(SNAME("StatusSuccess"), SNAME("EditorIcons")));
 						}
 
-						item->add_button(1, get_theme_icon("Folder", "EditorIcons"));
+						item->add_button(1, get_theme_icon(SNAME("Folder"), SNAME("EditorIcons")));
 					}
 
 				} else {
 					item->set_text(2, "No import ID");
 					item->set_tooltip(2, TTR("Material has no name nor any other way to identify on re-import.\nPlease name it or ensure it is exported with an unique ID."));
-					item->set_icon(2, get_theme_icon("StatusError", "EditorIcons"));
+					item->set_icon(2, get_theme_icon(SNAME("StatusError"), SNAME("EditorIcons")));
 				}
 
 				save_path_items.push_back(item);
@@ -882,7 +882,7 @@ void SceneImportSettings::_save_dir_callback(const String &p_path) {
 				String name = md.mesh_node->get_text(0);
 
 				item->set_cell_mode(0, TreeItem::CELL_MODE_CHECK);
-				item->set_icon(0, get_theme_icon("Mesh", "EditorIcons"));
+				item->set_icon(0, get_theme_icon(SNAME("Mesh"), SNAME("EditorIcons")));
 				item->set_text(0, name);
 
 				if (md.has_import_id) {
@@ -904,20 +904,20 @@ void SceneImportSettings::_save_dir_callback(const String &p_path) {
 						if (FileAccess::exists(path)) {
 							item->set_text(2, "Warning: File exists");
 							item->set_tooltip(2, TTR("Existing file with the same name will be replaced on import."));
-							item->set_icon(2, get_theme_icon("StatusWarning", "EditorIcons"));
+							item->set_icon(2, get_theme_icon(SNAME("StatusWarning"), SNAME("EditorIcons")));
 
 						} else {
 							item->set_text(2, "Will save to new File");
-							item->set_icon(2, get_theme_icon("StatusSuccess", "EditorIcons"));
+							item->set_icon(2, get_theme_icon(SNAME("StatusSuccess"), SNAME("EditorIcons")));
 						}
 
-						item->add_button(1, get_theme_icon("Folder", "EditorIcons"));
+						item->add_button(1, get_theme_icon(SNAME("Folder"), SNAME("EditorIcons")));
 					}
 
 				} else {
 					item->set_text(2, "No import ID");
 					item->set_tooltip(2, TTR("Mesh has no name nor any other way to identify on re-import.\nPlease name it or ensure it is exported with an unique ID."));
-					item->set_icon(2, get_theme_icon("StatusError", "EditorIcons"));
+					item->set_icon(2, get_theme_icon(SNAME("StatusError"), SNAME("EditorIcons")));
 				}
 
 				save_path_items.push_back(item);
@@ -935,7 +935,7 @@ void SceneImportSettings::_save_dir_callback(const String &p_path) {
 				String name = ad.scene_node->get_text(0);
 
 				item->set_cell_mode(0, TreeItem::CELL_MODE_CHECK);
-				item->set_icon(0, get_theme_icon("Animation", "EditorIcons"));
+				item->set_icon(0, get_theme_icon(SNAME("Animation"), SNAME("EditorIcons")));
 				item->set_text(0, name);
 
 				if (ad.settings.has("save_to_file/enabled") && bool(ad.settings["save_to_file/enabled"])) {
@@ -956,14 +956,14 @@ void SceneImportSettings::_save_dir_callback(const String &p_path) {
 					if (FileAccess::exists(path)) {
 						item->set_text(2, "Warning: File exists");
 						item->set_tooltip(2, TTR("Existing file with the same name will be replaced on import."));
-						item->set_icon(2, get_theme_icon("StatusWarning", "EditorIcons"));
+						item->set_icon(2, get_theme_icon(SNAME("StatusWarning"), SNAME("EditorIcons")));
 
 					} else {
 						item->set_text(2, "Will save to new File");
-						item->set_icon(2, get_theme_icon("StatusSuccess", "EditorIcons"));
+						item->set_icon(2, get_theme_icon(SNAME("StatusSuccess"), SNAME("EditorIcons")));
 					}
 
-					item->add_button(1, get_theme_icon("Folder", "EditorIcons"));
+					item->add_button(1, get_theme_icon(SNAME("Folder"), SNAME("EditorIcons")));
 				}
 
 				save_path_items.push_back(item);

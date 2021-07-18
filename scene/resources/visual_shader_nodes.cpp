@@ -707,7 +707,7 @@ void VisualShaderNodeTexture::set_source(Source p_source) {
 			break;
 	}
 	emit_changed();
-	emit_signal("editor_refresh_request");
+	emit_signal(SNAME("editor_refresh_request"));
 }
 
 VisualShaderNodeTexture::Source VisualShaderNodeTexture::get_source() const {
@@ -1076,7 +1076,7 @@ String VisualShaderNodeSample3D::generate_code(Shader::Mode p_mode, VisualShader
 void VisualShaderNodeSample3D::set_source(Source p_source) {
 	source = p_source;
 	emit_changed();
-	emit_signal("editor_refresh_request");
+	emit_signal(SNAME("editor_refresh_request"));
 }
 
 VisualShaderNodeSample3D::Source VisualShaderNodeSample3D::get_source() const {
@@ -1366,7 +1366,7 @@ String VisualShaderNodeCubemap::get_input_port_default_hint(int p_port) const {
 void VisualShaderNodeCubemap::set_source(Source p_source) {
 	source = p_source;
 	emit_changed();
-	emit_signal("editor_refresh_request");
+	emit_signal(SNAME("editor_refresh_request"));
 }
 
 VisualShaderNodeCubemap::Source VisualShaderNodeCubemap::get_source() const {
