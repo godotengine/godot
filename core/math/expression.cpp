@@ -410,6 +410,14 @@ Error Expression::_get_token(Token &r_token) {
 					} else if (id == "self") {
 						r_token.type = TK_SELF;
 					} else {
+						for (int i = 0; i < Variant::VARIANT_MAX; i++) {
+							if (id == Variant::get_type_name(Variant::Type(i))) {
+								r_token.type = TK_BASIC_TYPE;
+								r_token.value = i;
+								return OK;
+							}
+						}
+
 						if (Variant::has_utility_function(id)) {
 							r_token.type = TK_BUILTIN_FUNC;
 							r_token.value = id;
