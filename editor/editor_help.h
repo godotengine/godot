@@ -135,6 +135,11 @@ class EditorHelp : public VBoxContainer {
 	Color symbol_color;
 	Color value_color;
 	Color qualifier_color;
+	Color odd_row_bg_color;
+	Color even_row_bg_color;
+	Color border_color;
+
+	Rect2 padding;
 
 	void _init_colors();
 	void _help_callback(const String &p_topic);
