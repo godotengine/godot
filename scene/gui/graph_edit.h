@@ -120,7 +120,6 @@ private:
 	VScrollBar *v_scroll;
 
 	float port_grab_distance_horizontal = 0.0;
-	float port_grab_distance_vertical;
 
 	bool connecting = false;
 	String connecting_from;
@@ -184,7 +183,7 @@ private:
 	GraphEditMinimap *minimap;
 	void _top_layer_input(const Ref<InputEvent> &p_ev);
 
-	bool is_in_hot_zone(const Vector2 &pos, const Vector2 &p_mouse_pos);
+	bool is_in_hot_zone(const Vector2 &pos, int hot_zone_height, const Vector2 &p_mouse_pos);
 
 	void _top_layer_draw();
 	void _connections_layer_draw();
