@@ -91,7 +91,7 @@ static int _get_datatype_size(SL::DataType p_type) {
 		case SL::TYPE_VEC4:
 			return 16;
 		case SL::TYPE_MAT2:
-			return 32; //4 * 4 + 4 * 4
+			return 32; // 4 * 4 + 4 * 4
 		case SL::TYPE_MAT3:
 			return 48; // 4 * 4 + 4 * 4 + 4 * 4
 		case SL::TYPE_MAT4:
@@ -166,11 +166,11 @@ static int _get_datatype_alignment(SL::DataType p_type) {
 		case SL::TYPE_VEC4:
 			return 16;
 		case SL::TYPE_MAT2:
-			return 16;
+			return 32;
 		case SL::TYPE_MAT3:
-			return 16;
+			return 48;
 		case SL::TYPE_MAT4:
-			return 16;
+			return 64;
 		case SL::TYPE_SAMPLER2D:
 			return 16;
 		case SL::TYPE_ISAMPLER2D:
@@ -622,6 +622,11 @@ String ShaderCompilerRD::_dump_node_code(const SL::Node *p_node, int p_level, Ge
 				}
 
 				ucode += " " + _mkid(uniform_name);
+				if (uniform.array_size > 0) {
+					ucode += "[";
+					ucode += itos(uniform.array_size);
+					ucode += "]";
+				}
 				ucode += ";\n";
 				if (SL::is_sampler_type(uniform.type)) {
 					for (int j = 0; j < STAGE_MAX; j++) {
@@ -650,7 +655,19 @@ String ShaderCompilerRD::_dump_node_code(const SL::Node *p_node, int p_level, Ge
 						uniform_sizes.write[uniform.order] = _get_datatype_size(ShaderLanguage::TYPE_UINT);
 						uniform_alignments.write[uniform.order] = _get_datatype_alignment(ShaderLanguage::TYPE_UINT);
 					} else {
-						uniform_sizes.write[uniform.order] = _get_datatype_size(uniform.type);
+						if (uniform.array_size > 0) {
+							int size = 0;
+							for (int i = 0; i < uniform.array_size; i++) {
+								size += _get_datatype_alignment(uniform.type);
+							}
+							int m = (16 * uniform.array_size);
+							if ((size % m) != 0) {
+								size += m - (size % m);
+							}
+							uniform_sizes.write[uniform.order] = size;
+						} else {
+							uniform_sizes.write[uniform.order] = _get_datatype_size(uniform.type);
+						}
 						uniform_alignments.write[uniform.order] = _get_datatype_alignment(uniform.type);
 					}
 				}
@@ -1074,10 +1091,32 @@ String ShaderCompilerRD::_dump_node_code(const SL::Node *p_node, int p_level, Ge
 			if (p_default_actions.renames.has(anode->name)) {
 				code = p_default_actions.renames[anode->name];
 			} else {
-				if (use_fragment_varying) {
-					code = "frag_to_light.";
+				if (shader->uniforms.has(anode->name)) {
+					//its a uniform!
+					const ShaderLanguage::ShaderNode::Uniform &u = shader->uniforms[anode->name];
+					if (u.texture_order >= 0) {
+						code = _mkid(anode->name); //texture, use as is
+					} else {
+						//a scalar or vector
+						if (u.scope == ShaderLanguage::ShaderNode::Uniform::SCOPE_GLOBAL) {
+							code = actions.base_uniform_string + _mkid(anode->name); //texture, use as is
+							//global variable, this means the code points to an index to the global table
+							code = _get_global_variable_from_type_and_index(p_default_actions.global_buffer_array_variable, code, u.type);
+						} else if (u.scope == ShaderLanguage::ShaderNode::Uniform::SCOPE_INSTANCE) {
+							//instance variable, index it as such
+							code = "(" + p_default_actions.instance_uniform_index_variable + "+" + itos(u.instance_index) + ")";
+							code = _get_global_variable_from_type_and_index(p_default_actions.global_buffer_array_variable, code, u.type);
+						} else {
+							//regular uniform, index from UBO
+							code = actions.base_uniform_string + _mkid(anode->name);
+						}
+					}
+				} else {
+					if (use_fragment_varying) {
+						code = "frag_to_light.";
+					}
+					code += _mkid(anode->name);
 				}
-				code += _mkid(anode->name);
 			}
 
 			if (anode->call_expression != nullptr) {
