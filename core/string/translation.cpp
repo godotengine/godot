@@ -1143,7 +1143,7 @@ StringName TranslationServer::_get_message_from_translations(const StringName &p
 	bool near_match = false;
 
 	for (const Set<Ref<Translation>>::Element *E = translations.front(); E; E = E->next()) {
-		const Ref<Translation> &t = E->get();
+		Ref<Translation> &t = const_cast<Ref<Translation> &>(E->get());
 		ERR_FAIL_COND_V(t.is_null(), p_message);
 		String l = t->get_locale();
 
@@ -1159,9 +1159,9 @@ StringName TranslationServer::_get_message_from_translations(const StringName &p
 
 		StringName r;
 		if (!plural) {
-			r = t->get_message(p_message, p_context);
+			r = t->call("get_message", p_message, p_context);
 		} else {
-			r = t->get_plural_message(p_message, p_message_plural, p_n, p_context);
+			r = t->call("get_plural_message", p_message, p_message_plural, p_n, p_context);
 		}
 
 		if (!r) {
