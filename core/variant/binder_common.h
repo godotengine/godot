@@ -86,7 +86,10 @@ struct VariantCaster<const T &> {
 // Object enum casts must go here
 VARIANT_ENUM_CAST(Object::ConnectFlags);
 
+VARIANT_ENUM_CAST(Vector2::Axis);
+VARIANT_ENUM_CAST(Vector2i::Axis);
 VARIANT_ENUM_CAST(Vector3::Axis);
+VARIANT_ENUM_CAST(Vector3i::Axis);
 
 VARIANT_ENUM_CAST(Error);
 VARIANT_ENUM_CAST(Side);

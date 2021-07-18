@@ -62,8 +62,13 @@ struct Vector3i {
 	void set_axis(int p_axis, int32_t p_value);
 	int32_t get_axis(int p_axis) const;
 
-	int min_axis() const;
-	int max_axis() const;
+	_FORCE_INLINE_ Vector3i::Axis min_axis() const {
+		return x < y ? (x < z ? Vector3i::AXIS_X : Vector3i::AXIS_Z) : (y < z ? Vector3i::AXIS_Y : Vector3i::AXIS_Z);
+	}
+
+	_FORCE_INLINE_ Vector3i::Axis max_axis() const {
+		return x < y ? (y < z ? Vector3i::AXIS_Z : Vector3i::AXIS_Y) : (x < z ? Vector3i::AXIS_Z : Vector3i::AXIS_X);
+	}
 
 	_FORCE_INLINE_ void zero();
 
