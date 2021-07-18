@@ -10,6 +10,11 @@
 	<tutorials>
 	</tutorials>
 	<methods>
+		<method name="open_url">
+			<description>
+				Opens the URL assigned by [member url] in the default application assigned on the system (typically the user's default Web browser). See [method OS.shell_open] for more information.
+			</description>
+		</method>
 		<method name="clear_opentype_features">
 			<return type="void">
 			</return>
@@ -57,7 +62,16 @@
 			Base text writing direction.
 		</member>
 		<member name="underline" type="int" setter="set_underline_mode" getter="get_underline_mode" enum="LinkButton.UnderlineMode" default="0">
-			Determines when to show the underline. See [enum UnderlineMode] for options.
+			The underline mode to use for the text. See [enum LinkButton.UnderlineMode] for the available modes.
+		</member>
+		<member name="url" type="String" setter="set_url" getter="get_url" default="">
+			The URL for this [LinkButton]. If a URL has been set, it will be opened automatically with the operating system's default program assigned to the URL protocol when the button is pressed. For HTTP and HTTPS URLs, this is typically the user's default Web browser. See [method OS.shell_open] for more information.
+			Examples
+			[codeblock]
+			set_url("http://godotengine.org")
+			set_url("C:\SomeFolder")
+			set_url("C:\someImage.png")
+			[/codeblock]
 		</member>
 	</members>
 	<constants>

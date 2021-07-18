@@ -126,6 +126,16 @@ String LinkButton::get_language() const {
 	return language;
 }
 
+void LinkButton::set_url(const String &p_link) {
+	url = p_link;
+	update();
+	minimum_size_changed();
+}
+
+String LinkButton::get_url() const {
+	return url;
+}
+
 void LinkButton::set_underline_mode(UnderlineMode p_underline_mode) {
 	underline_mode = p_underline_mode;
 	update();
@@ -137,6 +147,20 @@ LinkButton::UnderlineMode LinkButton::get_underline_mode() const {
 
 Size2 LinkButton::get_minimum_size() const {
 	return text_buf->get_size();
+}
+
+void LinkButton::open_url() {
+	ERR_FAIL_COND_MSG(url == "", "Url is empty.");
+
+	_open_url();
+}
+
+void LinkButton::_open_url() {
+	if (url == "") {
+		return;
+	}
+
+	OS::get_singleton()->shell_open(url);
 }
 
 void LinkButton::_notification(int p_what) {
@@ -280,12 +304,15 @@ void LinkButton::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("clear_opentype_features"), &LinkButton::clear_opentype_features);
 	ClassDB::bind_method(D_METHOD("set_language", "language"), &LinkButton::set_language);
 	ClassDB::bind_method(D_METHOD("get_language"), &LinkButton::get_language);
+	ClassDB::bind_method(D_METHOD("set_url", "url"), &LinkButton::set_url);
+	ClassDB::bind_method(D_METHOD("get_url"), &LinkButton::get_url);
 	ClassDB::bind_method(D_METHOD("set_underline_mode", "underline_mode"), &LinkButton::set_underline_mode);
 	ClassDB::bind_method(D_METHOD("get_underline_mode"), &LinkButton::get_underline_mode);
 	ClassDB::bind_method(D_METHOD("set_structured_text_bidi_override", "parser"), &LinkButton::set_structured_text_bidi_override);
 	ClassDB::bind_method(D_METHOD("get_structured_text_bidi_override"), &LinkButton::get_structured_text_bidi_override);
 	ClassDB::bind_method(D_METHOD("set_structured_text_bidi_override_options", "args"), &LinkButton::set_structured_text_bidi_override_options);
 	ClassDB::bind_method(D_METHOD("get_structured_text_bidi_override_options"), &LinkButton::get_structured_text_bidi_override_options);
+	ClassDB::bind_method(D_METHOD("open_url"), &LinkButton::open_url);
 
 	BIND_ENUM_CONSTANT(UNDERLINE_MODE_ALWAYS);
 	BIND_ENUM_CONSTANT(UNDERLINE_MODE_ON_HOVER);
@@ -294,6 +321,7 @@ void LinkButton::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "text"), "set_text", "get_text");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "text_direction", PROPERTY_HINT_ENUM, "Auto,Left-to-Right,Right-to-Left,Inherited"), "set_text_direction", "get_text_direction");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "language"), "set_language", "get_language");
+	ADD_PROPERTY(PropertyInfo(Variant::STRING, "url"), "set_url", "get_url");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "underline", PROPERTY_HINT_ENUM, "Always,On Hover,Never"), "set_underline_mode", "get_underline_mode");
 	ADD_GROUP("Structured Text", "structured_text_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "structured_text_bidi_override", PROPERTY_HINT_ENUM, "Default,URI,File,Email,List,None,Custom"), "set_structured_text_bidi_override", "get_structured_text_bidi_override");
@@ -304,4 +332,5 @@ LinkButton::LinkButton() {
 	text_buf.instantiate();
 	set_focus_mode(FOCUS_NONE);
 	set_default_cursor_shape(CURSOR_POINTING_HAND);
+	this->connect("pressed", callable_mp(this, &LinkButton::_open_url));
 }

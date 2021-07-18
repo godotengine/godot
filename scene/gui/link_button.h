@@ -49,6 +49,7 @@ private:
 	String text;
 	Ref<TextLine> text_buf;
 	UnderlineMode underline_mode = UNDERLINE_MODE_ALWAYS;
+	String url;
 
 	Dictionary opentype_features;
 	String language;
@@ -70,6 +71,11 @@ protected:
 public:
 	void set_text(const String &p_text);
 	String get_text() const;
+	void set_url(const String &p_link);
+	String get_url() const;
+
+	void open_url();
+	void _open_url();
 
 	void set_structured_text_bidi_override(Control::StructuredTextParser p_parser);
 	Control::StructuredTextParser get_structured_text_bidi_override() const;
