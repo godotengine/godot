@@ -218,10 +218,7 @@ void GradientEdit::_gui_input(const Ref<InputEvent> &p_event) {
 	}
 
 	if (mb.is_valid() && mb->get_button_index() == 1 && !mb->is_pressed()) {
-		if (grabbing) {
-			grabbing = false;
-			emit_signal("ramp_changed");
-		}
+		grabbing = false;
 		update();
 	}
 
@@ -432,6 +429,9 @@ Size2 GradientEdit::get_minimum_size() const {
 
 void GradientEdit::_color_changed(const Color &p_color) {
 	if (grabbed == -1) {
+		return;
+	}
+	if (points[grabbed].color == p_color) {
 		return;
 	}
 	points.write[grabbed].color = p_color;
