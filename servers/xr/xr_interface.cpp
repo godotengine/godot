@@ -32,6 +32,8 @@
 #include "servers/rendering/renderer_compositor.h"
 
 void XRInterface::_bind_methods() {
+	ADD_SIGNAL(MethodInfo("play_area_changed", PropertyInfo(Variant::INT, "mode")));
+
 	ClassDB::bind_method(D_METHOD("get_name"), &XRInterface::get_name);
 	ClassDB::bind_method(D_METHOD("get_capabilities"), &XRInterface::get_capabilities);
 
@@ -52,9 +54,16 @@ void XRInterface::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "interface_is_primary"), "set_is_primary", "is_primary");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "interface_is_initialized"), "set_is_initialized", "is_initialized");
 
-	// we don't have any properties specific to VR yet....
+	// methods and properties specific to VR...
+	ClassDB::bind_method(D_METHOD("supports_play_area_mode", "mode"), &XRInterface::supports_play_area_mode);
+	ClassDB::bind_method(D_METHOD("get_play_area_mode"), &XRInterface::get_play_area_mode);
+	ClassDB::bind_method(D_METHOD("set_play_area_mode", "mode"), &XRInterface::set_play_area_mode);
+	ClassDB::bind_method(D_METHOD("get_play_area"), &XRInterface::get_play_area);
 
-	// but we do have properties specific to AR....
+	ADD_GROUP("VR", "vr_");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "vr_play_area_mode", PROPERTY_HINT_ENUM, "Unknown,3DOF,Sitting,Roomscale,Stage"), "set_play_area_mode", "get_play_area_mode");
+
+	// methods and properties specific to AR....
 	ClassDB::bind_method(D_METHOD("get_anchor_detection_is_enabled"), &XRInterface::get_anchor_detection_is_enabled);
 	ClassDB::bind_method(D_METHOD("set_anchor_detection_is_enabled", "enable"), &XRInterface::set_anchor_detection_is_enabled);
 	ClassDB::bind_method(D_METHOD("get_camera_feed_id"), &XRInterface::get_camera_feed_id);
@@ -77,6 +86,12 @@ void XRInterface::_bind_methods() {
 	BIND_ENUM_CONSTANT(XR_INSUFFICIENT_FEATURES);
 	BIND_ENUM_CONSTANT(XR_UNKNOWN_TRACKING);
 	BIND_ENUM_CONSTANT(XR_NOT_TRACKING);
+
+	BIND_ENUM_CONSTANT(XR_PLAY_AREA_UNKNOWN);
+	BIND_ENUM_CONSTANT(XR_PLAY_AREA_3DOF);
+	BIND_ENUM_CONSTANT(XR_PLAY_AREA_SITTING);
+	BIND_ENUM_CONSTANT(XR_PLAY_AREA_ROOMSCALE);
+	BIND_ENUM_CONSTANT(XR_PLAY_AREA_STAGE);
 };
 
 StringName XRInterface::get_name() const {
@@ -124,6 +139,29 @@ XRInterface::XRInterface() {
 };
 
 XRInterface::~XRInterface() {}
+
+// query if this interface supports this play area mode
+bool XRInterface::supports_play_area_mode(XRInterface::PlayAreaMode p_mode) {
+	return p_mode == XR_PLAY_AREA_UNKNOWN;
+}
+
+// get the current play area mode
+XRInterface::PlayAreaMode XRInterface::get_play_area_mode() const {
+	return XR_PLAY_AREA_UNKNOWN;
+}
+
+// change the play area mode, note that this should return false if the mode is not available
+bool XRInterface::set_play_area_mode(XRInterface::PlayAreaMode p_mode) {
+	return p_mode == XR_PLAY_AREA_UNKNOWN;
+}
+
+// if available, returns an array of vectors denoting the play area the player can move around in
+PackedVector3Array XRInterface::get_play_area() const {
+	// Return an empty array by default.
+	// Note implementation is responsible for applying our reference frame and world scale to the raw data.
+	// `play_area_changed` should be emitted if play area data is available and either the reference frame or world scale changes.
+	return PackedVector3Array();
+};
 
 // optional render to external texture which enhances performance on those platforms that require us to submit our end result into special textures.
 unsigned int XRInterface::get_external_texture_for_eye(XRInterface::Eyes p_eye) {

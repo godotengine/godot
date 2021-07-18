@@ -76,6 +76,14 @@ public:
 		XR_NOT_TRACKING
 	};
 
+	enum PlayAreaMode { /* defines the mode used by the XR interface for tracking */
+		XR_PLAY_AREA_UNKNOWN, /* Area mode not set or not available */
+		XR_PLAY_AREA_3DOF, /* Only support orientation tracking, no positional tracking, area will center around player */
+		XR_PLAY_AREA_SITTING, /* Player is in seated position, limited positional tracking, fixed guardian around player */
+		XR_PLAY_AREA_ROOMSCALE, /* Player is free to move around, full positional tracking */
+		XR_PLAY_AREA_STAGE, /* Same as roomscale but origin point is fixed to the center of the physical space, XRServer.center_on_hmd disabled */
+	};
+
 protected:
 	_THREAD_SAFE_CLASS_
 
@@ -97,10 +105,13 @@ public:
 
 	Tracking_status get_tracking_status() const; /* get the status of our current tracking */
 
-	/** specific to VR **/
-	// nothing yet
+	/** VR centric **/
+	virtual bool supports_play_area_mode(XRInterface::PlayAreaMode p_mode); /* query if this interface supports this play area mode */
+	virtual XRInterface::PlayAreaMode get_play_area_mode() const; /* get the current play area mode */
+	virtual bool set_play_area_mode(XRInterface::PlayAreaMode p_mode); /* change the play area mode, note that this should return false if the mode is not available */
+	virtual PackedVector3Array get_play_area() const; /* if available, returns an array of vectors denoting the play area the player can move around in */
 
-	/** specific to AR **/
+	/** AR centric **/
 	virtual bool get_anchor_detection_is_enabled() const;
 	virtual void set_anchor_detection_is_enabled(bool p_enable);
 	virtual int get_camera_feed_id();
@@ -129,5 +140,6 @@ public:
 VARIANT_ENUM_CAST(XRInterface::Capabilities);
 VARIANT_ENUM_CAST(XRInterface::Eyes);
 VARIANT_ENUM_CAST(XRInterface::Tracking_status);
+VARIANT_ENUM_CAST(XRInterface::PlayAreaMode);
 
 #endif

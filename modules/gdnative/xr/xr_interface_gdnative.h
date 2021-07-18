@@ -65,6 +65,8 @@ public:
 	virtual bool initialize() override;
 	virtual void uninitialize() override;
 
+	/** specific to VR **/
+
 	/** specific to AR **/
 	virtual bool get_anchor_detection_is_enabled() const override;
 	virtual void set_anchor_detection_is_enabled(bool p_enable) override;
