@@ -1031,6 +1031,8 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 			OS::get_singleton()->disable_crash_handler();
 		} else if (I->get() == "--skip-breakpoints") {
 			skip_breakpoints = true;
+		} else if (I->get() == "--stop-shortcut") {
+			globals->set_meta("stop_shortcut", I->next()->get());
 		} else {
 			main_args.push_back(I->get());
 		}

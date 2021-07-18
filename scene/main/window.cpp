@@ -33,6 +33,7 @@
 #include "core/debugger/engine_debugger.h"
 #include "core/os/keyboard.h"
 #include "core/string/translation.h"
+#include "core/variant/variant_parser.h"
 #include "scene/gui/control.h"
 #include "scene/resources/font.h"
 #include "scene/scene_string_names.h"
@@ -893,7 +894,32 @@ void Window::_window_input(const Ref<InputEvent> &p_ev) {
 	if (EngineDebugger::is_active()) {
 		//quit from game window using F8
 		Ref<InputEventKey> k = p_ev;
-		if (k.is_valid() && k->is_pressed() && !k->is_echo() && k->get_keycode() == KEY_F8) {
+
+		if (!debugger_stop_shortcut.is_valid()) {
+			if (ProjectSettings::get_singleton()->has_meta("stop_shortcut")) {
+				String shortcut_str = ProjectSettings::get_singleton()->get_meta("stop_shortcut");
+				Variant shortcut_var;
+
+				VariantParser::StreamString ss;
+				ss.s = shortcut_str;
+
+				String errs;
+				int line;
+				VariantParser::parse(&ss, shortcut_var, errs, line);
+				debugger_stop_shortcut = shortcut_var;
+			}
+
+			if (!debugger_stop_shortcut.is_valid()) {
+				// Define a default shortcut if it wasn't provided.
+				debugger_stop_shortcut.instance();
+				Ref<InputEventKey> f8;
+				f8.instance();
+				f8->set_keycode(KEY_F8);
+				debugger_stop_shortcut->set_shortcut(f8);
+			}
+		}
+
+		if (k.is_valid() && k->is_pressed() && !k->is_echo() && debugger_stop_shortcut->is_shortcut(k)) {
 			EngineDebugger::get_singleton()->send_message("request_quit", Array());
 		}
 	}

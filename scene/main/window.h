@@ -36,6 +36,7 @@
 #include "servers/display_server.h"
 
 class Control;
+class Shortcut;
 class Window : public Viewport {
 	GDCLASS(Window, Viewport)
 public:
@@ -142,6 +143,8 @@ private:
 	void _rect_changed_callback(const Rect2i &p_callback);
 	void _event_callback(DisplayServer::WindowEvent p_event);
 	virtual bool _can_consume_input_events() const override;
+
+	Ref<Shortcut> debugger_stop_shortcut;
 
 protected:
 	Viewport *_get_embedder() const;

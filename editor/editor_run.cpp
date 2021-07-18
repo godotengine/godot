@@ -179,6 +179,13 @@ Error EditorRun::run(const String &p_scene, const String &p_custom_args, const L
 		args.push_back("--skip-breakpoints");
 	}
 
+	String shortcut;
+	Ref<Shortcut> shrt = ED_GET_SHORTCUT("editor/stop")->duplicate();
+	shrt->set("__meta__", Variant()); // We don't need to send the metadata.
+	VariantWriter::write_to_string(shrt, shortcut);
+	args.push_back("--stop-shortcut");
+	args.push_back(shortcut.replace("\n", "").replace("\"", "\\\""));
+
 	if (p_scene != "") {
 		args.push_back(p_scene);
 	}
