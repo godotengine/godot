@@ -1259,7 +1259,7 @@ void RendererSceneCull::_update_instance_visibility_depth(Instance *p_instance) 
 	}
 
 	if (cycle_detected) {
-		ERR_PRINT("Cycle detected in the visibility dependecies tree.");
+		ERR_PRINT("Cycle detected in the visibility dependencies tree.");
 		for (Set<Instance *>::Element *E = traversed_nodes.front(); E; E = E->next()) {
 			Instance *instance = E->get();
 			InstanceGeometryData *geom = static_cast<InstanceGeometryData *>(instance->base_data);

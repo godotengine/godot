@@ -13,7 +13,7 @@
 	<signals>
 		<signal name="finished">
 			<description>
-				Emited when the [Tweener] has just finished its job.
+				Emitted when the [Tweener] has just finished its job.
 			</description>
 		</signal>
 	</signals>

@@ -6979,7 +6979,7 @@ msgstr ""
 
 #: editor/plugins/shader_editor_plugin.cpp
 msgid ""
-"This shader has been modified on on disk.\n"
+"This shader has been modified on disk.\n"
 "What action should be taken?"
 msgstr ""
 

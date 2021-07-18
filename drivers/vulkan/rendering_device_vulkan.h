@@ -652,8 +652,8 @@ class RenderingDeviceVulkan : public RenderingDevice {
 	// Basically, you can mix and match pools as you
 	// like, but you'll run into fragmentation issues.
 	// Because of this, the recommended approach is to
-	// create a a pool for every descriptor set type,
-	// as this prevents fragmentation.
+	// create a pool for every descriptor set type, as
+	// this prevents fragmentation.
 	//
 	// This is implemented here as a having a list of
 	// pools (each can contain up to 64 sets) for each

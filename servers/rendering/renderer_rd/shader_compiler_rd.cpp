@@ -571,7 +571,7 @@ String ShaderCompilerRD::_dump_node_code(const SL::Node *p_node, int p_level, Ge
 					max_texture_uniforms++;
 				} else {
 					if (E->get().scope == SL::ShaderNode::Uniform::SCOPE_INSTANCE) {
-						continue; //instances are indexed directly, dont need index uniforms
+						continue; // Instances are indexed directly, don't need index uniforms.
 					}
 
 					max_uniforms++;
@@ -605,7 +605,7 @@ String ShaderCompilerRD::_dump_node_code(const SL::Node *p_node, int p_level, Ge
 				if (uniform.scope == SL::ShaderNode::Uniform::SCOPE_INSTANCE) {
 					//insert, but don't generate any code.
 					p_actions.uniforms->insert(uniform_name, uniform);
-					continue; //instances are indexed directly, dont need index uniforms
+					continue; // Instances are indexed directly, don't need index uniforms.
 				}
 				if (SL::is_sampler_type(uniform.type)) {
 					ucode = "layout(set = " + itos(actions.texture_layout_set) + ", binding = " + itos(actions.base_texture_binding_index + uniform.texture_order) + ") uniform ";

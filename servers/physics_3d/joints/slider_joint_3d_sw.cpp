@@ -200,7 +200,7 @@ void SliderJoint3DSW::solve(real_t p_step) {
 		real_t softness = (i) ? m_softnessOrthoLin : (m_solveLinLim ? m_softnessLimLin : m_softnessDirLin);
 		real_t restitution = (i) ? m_restitutionOrthoLin : (m_solveLinLim ? m_restitutionLimLin : m_restitutionDirLin);
 		real_t damping = (i) ? m_dampingOrthoLin : (m_solveLinLim ? m_dampingLimLin : m_dampingDirLin);
-		// calcutate and apply impulse
+		// Calculate and apply impulse.
 		real_t normalImpulse = softness * (restitution * depth / p_step - damping * rel_vel) * m_jacLinDiagABInv[i];
 		Vector3 impulse_vector = normal * normalImpulse;
 		if (dynamic_A) {

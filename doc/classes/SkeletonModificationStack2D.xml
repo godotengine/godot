@@ -54,7 +54,7 @@
 			<return type="bool">
 			</return>
 			<description>
-				Returns a boolean that indiciates whether the modification stack is setup and can execute.
+				Returns a boolean that indicates whether the modification stack is setup and can execute.
 			</description>
 		</method>
 		<method name="get_modification" qualifiers="const">
