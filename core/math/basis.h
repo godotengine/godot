@@ -129,6 +129,7 @@ public:
 	Vector3 get_scale() const;
 	Vector3 get_scale_abs() const;
 	Vector3 get_scale_local() const;
+	void set_scale(const Vector3 &p_scale);
 
 	void set_axis_angle_scale(const Vector3 &p_axis, real_t p_phi, const Vector3 &p_scale);
 	void set_euler_scale(const Vector3 &p_euler, const Vector3 &p_scale);
