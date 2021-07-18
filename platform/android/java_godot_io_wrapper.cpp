@@ -48,8 +48,8 @@ GodotIOJavaWrapper::GodotIOJavaWrapper(JNIEnv *p_env, jobject p_godot_io_instanc
 		}
 
 		_open_URI = p_env->GetMethodID(cls, "openURI", "(Ljava/lang/String;)I");
+		_get_cache_dir = p_env->GetMethodID(cls, "getCacheDir", "()Ljava/lang/String;");
 		_get_data_dir = p_env->GetMethodID(cls, "getDataDir", "()Ljava/lang/String;");
-		_get_external_data_dir = p_env->GetMethodID(cls, "getExternalDataDir", "()Ljava/lang/String;");
 		_get_locale = p_env->GetMethodID(cls, "getLocale", "()Ljava/lang/String;");
 		_get_model = p_env->GetMethodID(cls, "getModel", "()Ljava/lang/String;");
 		_get_screen_DPI = p_env->GetMethodID(cls, "getScreenDPI", "()I");
@@ -82,22 +82,22 @@ Error GodotIOJavaWrapper::open_uri(const String &p_uri) {
 	}
 }
 
-String GodotIOJavaWrapper::get_user_data_dir() {
-	if (_get_data_dir) {
+String GodotIOJavaWrapper::get_cache_dir() {
+	if (_get_cache_dir) {
 		JNIEnv *env = get_jni_env();
 		ERR_FAIL_COND_V(env == nullptr, String());
-		jstring s = (jstring)env->CallObjectMethod(godot_io_instance, _get_data_dir);
+		jstring s = (jstring)env->CallObjectMethod(godot_io_instance, _get_cache_dir);
 		return jstring_to_string(s, env);
 	} else {
 		return String();
 	}
 }
 
-String GodotIOJavaWrapper::get_external_data_dir() {
-	if (_get_external_data_dir) {
+String GodotIOJavaWrapper::get_user_data_dir() {
+	if (_get_data_dir) {
 		JNIEnv *env = get_jni_env();
 		ERR_FAIL_COND_V(env == nullptr, String());
-		jstring s = (jstring)env->CallObjectMethod(godot_io_instance, _get_external_data_dir);
+		jstring s = (jstring)env->CallObjectMethod(godot_io_instance, _get_data_dir);
 		return jstring_to_string(s, env);
 	} else {
 		return String();

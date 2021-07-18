@@ -46,8 +46,8 @@ private:
 	jclass cls;
 
 	jmethodID _open_URI = 0;
+	jmethodID _get_cache_dir = 0;
 	jmethodID _get_data_dir = 0;
-	jmethodID _get_external_data_dir = 0;
 	jmethodID _get_locale = 0;
 	jmethodID _get_model = 0;
 	jmethodID _get_screen_DPI = 0;
@@ -66,8 +66,8 @@ public:
 	jobject get_instance();
 
 	Error open_uri(const String &p_uri);
+	String get_cache_dir();
 	String get_user_data_dir();
-	String get_external_data_dir();
 	String get_locale();
 	String get_model();
 	int get_screen_dpi();

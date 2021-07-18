@@ -421,10 +421,6 @@ String _OS::get_user_data_dir() const {
 	return OS::get_singleton()->get_user_data_dir();
 }
 
-String _OS::get_external_data_dir() const {
-	return OS::get_singleton()->get_external_data_dir();
-}
-
 String _OS::get_config_dir() const {
 	// Exposed as `get_config_dir()` instead of `get_config_path()` for consistency with other exposed OS methods.
 	return OS::get_singleton()->get_config_path();
@@ -530,7 +526,6 @@ void _OS::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_static_memory_peak_usage"), &_OS::get_static_memory_peak_usage);
 
 	ClassDB::bind_method(D_METHOD("get_user_data_dir"), &_OS::get_user_data_dir);
-	ClassDB::bind_method(D_METHOD("get_external_data_dir"), &_OS::get_external_data_dir);
 	ClassDB::bind_method(D_METHOD("get_system_dir", "dir"), &_OS::get_system_dir);
 	ClassDB::bind_method(D_METHOD("get_config_dir"), &_OS::get_config_dir);
 	ClassDB::bind_method(D_METHOD("get_data_dir"), &_OS::get_data_dir);
