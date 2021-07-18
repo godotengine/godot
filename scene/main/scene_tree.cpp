@@ -487,7 +487,7 @@ bool SceneTree::process(float p_time) {
 	_call_idle_callbacks();
 
 #ifdef TOOLS_ENABLED
-
+#ifndef _3D_DISABLED
 	if (Engine::get_singleton()->is_editor_hint()) {
 		//simple hack to reload fallback environment if it changed from editor
 		String env_path = ProjectSettings::get_singleton()->get("rendering/environment/defaults/default_environment");
@@ -510,8 +510,8 @@ bool SceneTree::process(float p_time) {
 			get_root()->get_world_3d()->set_fallback_environment(fallback);
 		}
 	}
-
-#endif
+#endif // _3D_DISABLED
+#endif // TOOLS_ENABLED
 
 	return _quit;
 }
@@ -1321,15 +1321,17 @@ SceneTree::SceneTree() {
 
 	root = memnew(Window);
 	root->set_name("root");
+#ifndef _3D_DISABLED
 	if (!root->get_world_3d().is_valid()) {
 		root->set_world_3d(Ref<World3D>(memnew(World3D)));
 	}
+	root->set_as_audio_listener_3d(true);
+#endif // _3D_DISABLED
 
 	// Initialize network state.
 	set_multiplayer(Ref<MultiplayerAPI>(memnew(MultiplayerAPI)));
 
 	//root->set_world_2d( Ref<World2D>( memnew( World2D )));
-	root->set_as_audio_listener(true);
 	root->set_as_audio_listener_2d(true);
 	current_scene = nullptr;
 
@@ -1404,7 +1406,9 @@ SceneTree::SceneTree() {
 		if (env_path != String()) {
 			Ref<Environment> env = ResourceLoader::load(env_path);
 			if (env.is_valid()) {
+#ifndef _3D_DISABLED
 				root->get_world_3d()->set_fallback_environment(env);
+#endif // _3D_DISABLED
 			} else {
 				if (Engine::get_singleton()->is_editor_hint()) {
 					// File was erased, clear the field.

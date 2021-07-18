@@ -2,7 +2,5 @@
 
 Import("env")
 
-if env["disable_3d"]:
-    env.add_source_files(env.scene_sources, "node_3d.cpp")
-else:
+if not env["disable_3d"]:
     env.add_source_files(env.scene_sources, "*.cpp")
