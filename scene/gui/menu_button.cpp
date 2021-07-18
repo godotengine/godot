@@ -61,6 +61,9 @@ void MenuButton::pressed() {
 	Point2 gp = get_screen_position();
 	gp.y += get_size().y;
 
+	Point2 camera_offset = get_viewport()->get_canvas_transform().get_origin();
+	gp += camera_offset;
+
 	popup->set_position(gp);
 
 	popup->set_size(Size2(size.width, 0));
