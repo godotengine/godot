@@ -230,33 +230,43 @@ public:
 	EditorData();
 };
 
+/**
+ * Stores and provides access to the nodes currently selected in the editor.
+ *
+ * This provides a central location for storing "selected" nodes, as a selection can be triggered from multiple places,
+ * such as the SceneTreeDock or a main screen editor plugin (e.g. CanvasItemEditor).
+*/
 class EditorSelection : public Object {
 	GDCLASS(EditorSelection, Object);
 
 private:
+	// Contains the selected nodes and corresponding metadata.
+	// Metadata objects come from calling _get_editor_data on the editor_plugins, passing the selected node.
 	Map<Node *, Object *> selection;
 
+	// Tracks whether the selection change signal has been emitted. Prevents multiple signals being called in one frame.
 	bool emitted;
+
+	// Stores state of whether selection or node list have been changed.
 	bool changed;
 	bool nl_changed;
 
 	void _node_removed(Node *p_node);
 
+	// Editor plugins which are related to selection.
 	List<Object *> editor_plugins;
 	List<Node *> selected_node_list;
 
 	void _update_nl();
-	Array _get_transformable_selected_nodes();
 	void _emit_change();
 
 protected:
 	static void _bind_methods();
 
 public:
-	TypedArray<Node> get_selected_nodes();
 	void add_node(Node *p_node);
 	void remove_node(Node *p_node);
-	bool is_selected(Node *) const;
+	bool is_selected(Node *p_node) const;
 
 	template <class T>
 	T *get_node_editor_data(Node *p_node) {
@@ -266,13 +276,19 @@ public:
 		return Object::cast_to<T>(selection[p_node]);
 	}
 
+	// Add an editor plugin which can provide metadata for selected nodes.
 	void add_editor_plugin(Object *p_object);
 
 	void update();
 	void clear();
 
+	// Gets all selected nodes
+	TypedArray<Node> get_selected_nodes();
+	// Gets selected nodes but does not include childen of selected nodes, if they are selected as well.
 	List<Node *> &get_selected_node_list();
+	// Gets all selected nodes
 	List<Node *> get_full_selected_node_list();
+	// Retuns the map of selected objects and their metdata.
 	Map<Node *, Object *> &get_selection() { return selection; }
 
 	EditorSelection();

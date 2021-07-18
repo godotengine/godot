@@ -1013,7 +1013,8 @@ EditorData::EditorData() {
 	script_class_load_icon_paths();
 }
 
-///////////
+///////////////////////////////////////////////////////////////
+
 void EditorSelection::_node_removed(Node *p_node) {
 	if (!selection.has(p_node)) {
 		return;
@@ -1047,8 +1048,6 @@ void EditorSelection::add_node(Node *p_node) {
 	selection[p_node] = meta;
 
 	p_node->connect("tree_exiting", callable_mp(this, &EditorSelection::_node_removed), varray(p_node), CONNECT_ONESHOT);
-
-	//emit_signal("selection_changed");
 }
 
 void EditorSelection::remove_node(Node *p_node) {
@@ -1066,31 +1065,10 @@ void EditorSelection::remove_node(Node *p_node) {
 	}
 	selection.erase(p_node);
 	p_node->disconnect("tree_exiting", callable_mp(this, &EditorSelection::_node_removed));
-	//emit_signal("selection_changed");
 }
 
 bool EditorSelection::is_selected(Node *p_node) const {
 	return selection.has(p_node);
-}
-
-Array EditorSelection::_get_transformable_selected_nodes() {
-	Array ret;
-
-	for (List<Node *>::Element *E = selected_node_list.front(); E; E = E->next()) {
-		ret.push_back(E->get());
-	}
-
-	return ret;
-}
-
-TypedArray<Node> EditorSelection::get_selected_nodes() {
-	TypedArray<Node> ret;
-
-	for (Map<Node *, Object *>::Element *E = selection.front(); E; E = E->next()) {
-		ret.push_back(E->key());
-	}
-
-	return ret;
 }
 
 void EditorSelection::_bind_methods() {
@@ -1098,7 +1076,6 @@ void EditorSelection::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("add_node", "node"), &EditorSelection::add_node);
 	ClassDB::bind_method(D_METHOD("remove_node", "node"), &EditorSelection::remove_node);
 	ClassDB::bind_method(D_METHOD("get_selected_nodes"), &EditorSelection::get_selected_nodes);
-	ClassDB::bind_method(D_METHOD("get_transformable_selected_nodes"), &EditorSelection::_get_transformable_selected_nodes);
 	ClassDB::bind_method(D_METHOD("_emit_change"), &EditorSelection::_emit_change);
 	ADD_SIGNAL(MethodInfo("selection_changed"));
 }
@@ -1114,6 +1091,7 @@ void EditorSelection::_update_nl() {
 
 	selected_node_list.clear();
 
+	// Skip nodes which are children of nodes which are selected. i.e. only select the top parent
 	for (Map<Node *, Object *>::Element *E = selection.front(); E; E = E->next()) {
 		Node *parent = E->key();
 		parent = parent->get_parent();
@@ -1151,6 +1129,16 @@ void EditorSelection::update() {
 void EditorSelection::_emit_change() {
 	emit_signal("selection_changed");
 	emitted = false;
+}
+
+TypedArray<Node> EditorSelection::get_selected_nodes() {
+	TypedArray<Node> ret;
+
+	for (Map<Node *, Object *>::Element *E = selection.front(); E; E = E->next()) {
+		ret.push_back(E->key());
+	}
+
+	return ret;
 }
 
 List<Node *> &EditorSelection::get_selected_node_list() {
