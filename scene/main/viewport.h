@@ -354,6 +354,7 @@ private:
 		// info used when this is a window
 
 		bool forced_mouse_focus = false; //used for menu buttons
+		bool mouse_in_window = true;
 		bool key_event_accepted = false;
 		Control *mouse_focus = nullptr;
 		Control *last_mouse_focus = nullptr;
@@ -460,6 +461,7 @@ private:
 	void _canvas_layer_add(CanvasLayer *p_canvas_layer);
 	void _canvas_layer_remove(CanvasLayer *p_canvas_layer);
 
+	void _drop_mouse_over();
 	void _drop_mouse_focus();
 	void _drop_physics_mouseover(bool p_paused_only = false);
 
