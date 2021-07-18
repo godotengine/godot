@@ -31,6 +31,7 @@
 #include "material.h"
 
 #include "core/config/engine.h"
+#include "core/version.h"
 
 #ifdef TOOLS_ENABLED
 #include "editor/editor_settings.h"
@@ -469,7 +470,12 @@ void BaseMaterial3D::_update_shader() {
 
 	//must create a shader!
 
-	String code = "shader_type spatial;\nrender_mode ";
+	// Add a comment to describe the shader origin (useful when converting to ShaderMaterial).
+	String code = vformat(
+			"// NOTE: Shader automatically converted from " VERSION_NAME " " VERSION_FULL_CONFIG "'s %s.\n\n",
+			orm ? "ORMMaterial3D" : "StandardMaterial3D");
+
+	code += "shader_type spatial;\nrender_mode ";
 	switch (blend_mode) {
 		case BLEND_MODE_MIX:
 			code += "blend_mix";
