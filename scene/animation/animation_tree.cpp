@@ -542,17 +542,37 @@ bool AnimationTree::_update_caches(AnimationPlayer *player) {
 			NodePath path = anim->track_get_path(i);
 			Animation::TrackType track_type = anim->track_get_type(i);
 
-			TrackCache *track = nullptr;
+			Vector<TrackCache *> *tracks;
 			if (track_cache.has(path)) {
-				track = track_cache.get(path);
+				tracks = track_cache.get(path);
+			} else {
+				tracks = memnew(Vector<TrackCache *>);
+				track_cache[path] = tracks;
 			}
 
-			//if not valid, delete track
-			if (track && (track->type != track_type || ObjectDB::get_instance(track->object_id) == nullptr)) {
-				playing_caches.erase(track);
-				memdelete(track);
-				track_cache.erase(path);
-				track = nullptr;
+			//convert bezier to value in cache
+			if (track_type == Animation::TYPE_BEZIER) {
+				track_type = Animation::TYPE_VALUE;
+			}
+
+			TrackCache *track = nullptr;
+			int tracks_len = tracks->size();
+			for (int j = 0; j < tracks_len; j++) {
+				if (tracks->get(j)->type == track_type) {
+					track = tracks->get(j);
+					//if not valid, delete track
+					if (ObjectDB::get_instance(track->object_id) == nullptr) {
+						playing_caches.erase(track);
+						tracks->remove(j);
+						memdelete(track);
+						track = nullptr;
+						if (tracks->size() <= 0) {
+							memdelete(tracks);
+							track_cache.erase(path);
+						}
+					}
+					break;
+				}
 			}
 
 			if (!track) {
@@ -629,20 +649,6 @@ bool AnimationTree::_update_caches(AnimationPlayer *player) {
 						track = track_method;
 
 					} break;
-					case Animation::TYPE_BEZIER: {
-						TrackCacheBezier *track_bezier = memnew(TrackCacheBezier);
-
-						if (resource.is_valid()) {
-							track_bezier->object = resource.ptr();
-						} else {
-							track_bezier->object = child;
-						}
-
-						track_bezier->subpath = leftover_path;
-						track_bezier->object_id = track_bezier->object->get_instance_id();
-
-						track = track_bezier;
-					} break;
 					case Animation::TYPE_AUDIO: {
 						TrackCacheAudio *track_audio = memnew(TrackCacheAudio);
 
@@ -666,29 +672,42 @@ bool AnimationTree::_update_caches(AnimationPlayer *player) {
 						continue;
 					}
 				}
-
-				track_cache[path] = track;
+				track_cache[path]->push_back(track);
 			}
-
 			track->setup_pass = setup_pass;
 		}
 	}
 
-	List<NodePath> to_delete;
+	List<NodePath> to_delete_path;
+	List<int> to_delete_idx;
 
 	const NodePath *K = nullptr;
 	while ((K = track_cache.next(K))) {
-		TrackCache *tc = track_cache[*K];
-		if (tc->setup_pass != setup_pass) {
-			to_delete.push_back(*K);
+		to_delete_idx.clear();
+		Vector<TrackCache *> *tcs = track_cache[*K];
+		int tracks_len = tcs->size();
+		for (int i = 0; i < tracks_len; i++) {
+			TrackCache *tc = tcs->get(i);
+			if (tc->setup_pass != setup_pass) {
+				to_delete_idx.push_front(i);
+			}
+		}
+		while (to_delete_idx.front()) {
+			int idx = to_delete_idx.front()->get();
+			memdelete(tcs->get(idx));
+			tcs->remove(idx);
+			to_delete_path.pop_front();
+		}
+		if (tcs->size() <= 0) {
+			to_delete_path.push_back(*K);
 		}
 	}
 
-	while (to_delete.front()) {
-		NodePath np = to_delete.front()->get();
+	while (to_delete_path.front()) {
+		NodePath np = to_delete_path.front()->get();
 		memdelete(track_cache[np]);
 		track_cache.erase(np);
-		to_delete.pop_front();
+		to_delete_path.pop_front();
 	}
 
 	state.track_map.clear();
@@ -709,7 +728,14 @@ bool AnimationTree::_update_caches(AnimationPlayer *player) {
 
 void AnimationTree::_clear_caches() {
 	const NodePath *K = nullptr;
+	Vector<TrackCache *> *tracks;
 	while ((K = track_cache.next(K))) {
+		tracks = track_cache[*K];
+		int tracks_len = tracks->size();
+		for (int i = 0; i < tracks_len; i++) {
+			memdelete(tracks->get(i));
+		}
+		tracks->clear();
 		memdelete(track_cache[*K]);
 	}
 	playing_caches.clear();
@@ -830,8 +856,23 @@ void AnimationTree::_process_graph(float p_delta) {
 
 				ERR_CONTINUE(!track_cache.has(path));
 
-				TrackCache *track = track_cache[path];
-				if (track->type != a->track_get_type(i)) {
+				TrackCache *track = nullptr;
+				Animation::TrackType cache_type = a->track_get_type(i);
+
+				//convert bezier to value in cache
+				if (cache_type == Animation::TYPE_BEZIER) {
+					cache_type = Animation::TYPE_VALUE;
+				}
+
+				Vector<TrackCache *> *tcs = track_cache[path];
+				int tracks_len = tcs->size();
+				for (int j = 0; j < tracks_len; j++) {
+					if (tcs->get(j)->type == cache_type) {
+						track = tcs->get(j);
+						break;
+					}
+				}
+				if (!track) {
 					continue; //may happen should not
 				}
 
@@ -940,32 +981,48 @@ void AnimationTree::_process_graph(float p_delta) {
 					} break;
 					case Animation::TYPE_VALUE: {
 						TrackCacheValue *t = static_cast<TrackCacheValue *>(track);
+						switch (a->track_get_type(i)) {
+							case Animation::TYPE_VALUE: {
+								Animation::UpdateMode update_mode = a->value_track_get_update_mode(i);
 
-						Animation::UpdateMode update_mode = a->value_track_get_update_mode(i);
+								if (update_mode == Animation::UPDATE_CONTINUOUS || update_mode == Animation::UPDATE_CAPTURE) { //delta == 0 means seek
 
-						if (update_mode == Animation::UPDATE_CONTINUOUS || update_mode == Animation::UPDATE_CAPTURE) { //delta == 0 means seek
+									Variant value = a->value_track_interpolate(i, time);
 
-							Variant value = a->value_track_interpolate(i, time);
+									if (value == Variant()) {
+										continue;
+									}
 
-							if (value == Variant()) {
-								continue;
-							}
+									if (t->process_pass != process_pass) {
+										t->value = value;
+										t->process_pass = process_pass;
+									}
 
-							if (t->process_pass != process_pass) {
-								t->value = value;
-								t->process_pass = process_pass;
-							}
+									Variant::interpolate(t->value, value, blend, t->value);
 
-							Variant::interpolate(t->value, value, blend, t->value);
+								} else if (delta != 0) {
+									List<int> indices;
+									a->value_track_get_key_indices(i, time, delta, &indices);
 
-						} else if (delta != 0) {
-							List<int> indices;
-							a->value_track_get_key_indices(i, time, delta, &indices);
+									for (List<int>::Element *F = indices.front(); F; F = F->next()) {
+										Variant value = a->track_get_key_value(i, F->get());
+										t->object->set_indexed(t->subpath, value);
+									}
+								}
+							} break;
+							case Animation::TYPE_BEZIER: {
+								float bezier = a->bezier_track_interpolate(i, time);
 
-							for (List<int>::Element *F = indices.front(); F; F = F->next()) {
-								Variant value = a->track_get_key_value(i, F->get());
-								t->object->set_indexed(t->subpath, value);
-							}
+								if (t->process_pass != process_pass) {
+									t->value = bezier;
+									t->process_pass = process_pass;
+								}
+
+								t->value = Math::lerp(t->value, bezier, blend);
+
+							} break;
+							default: {
+							} break;
 						}
 
 					} break;
@@ -998,19 +1055,7 @@ void AnimationTree::_process_graph(float p_delta) {
 						}
 
 					} break;
-					case Animation::TYPE_BEZIER: {
-						TrackCacheBezier *t = static_cast<TrackCacheBezier *>(track);
 
-						float bezier = a->bezier_track_interpolate(i, time);
-
-						if (t->process_pass != process_pass) {
-							t->value = bezier;
-							t->process_pass = process_pass;
-						}
-
-						t->value = Math::lerp(t->value, bezier, blend);
-
-					} break;
 					case Animation::TYPE_AUDIO: {
 						TrackCacheAudio *t = static_cast<TrackCacheAudio *>(track);
 
@@ -1179,6 +1224,8 @@ void AnimationTree::_process_graph(float p_delta) {
 						}
 
 					} break;
+					default: {
+					} break;
 				}
 			}
 		}
@@ -1188,49 +1235,52 @@ void AnimationTree::_process_graph(float p_delta) {
 		// finally, set the tracks
 		const NodePath *K = nullptr;
 		while ((K = track_cache.next(K))) {
-			TrackCache *track = track_cache[*K];
-			if (track->process_pass != process_pass) {
-				continue; //not processed, ignore
-			}
+			Vector<TrackCache *> *tcs = track_cache[*K];
+			int tracks_len = tcs->size();
+			for (int i = 0; i < tracks_len; i++) {
+				TrackCache *track = tcs->get(i);
 
-			switch (track->type) {
-				case Animation::TYPE_TRANSFORM3D: {
+				if (!track) {
+					continue; //may happen should not
+				}
+
+				if (track->process_pass != process_pass) {
+					continue; //not processed, ignore
+				}
+
+				switch (track->type) {
+					case Animation::TYPE_TRANSFORM3D: {
 #ifndef _3D_DISABLED
-					TrackCacheTransform *t = static_cast<TrackCacheTransform *>(track);
+						TrackCacheTransform *t = static_cast<TrackCacheTransform *>(track);
 
-					Transform3D xform;
-					xform.origin = t->loc;
+						Transform3D xform;
+						xform.origin = t->loc;
 
-					xform.basis.set_quaternion_scale(t->rot, t->scale);
+						xform.basis.set_quaternion_scale(t->rot, t->scale);
 
-					if (t->root_motion) {
-						root_motion_transform = xform;
+						if (t->root_motion) {
+							root_motion_transform = xform;
 
-						if (t->skeleton && t->bone_idx >= 0) {
-							root_motion_transform = (t->skeleton->get_bone_rest(t->bone_idx) * root_motion_transform) * t->skeleton->get_bone_rest(t->bone_idx).affine_inverse();
+							if (t->skeleton && t->bone_idx >= 0) {
+								root_motion_transform = (t->skeleton->get_bone_rest(t->bone_idx) * root_motion_transform) * t->skeleton->get_bone_rest(t->bone_idx).affine_inverse();
+							}
+						} else if (t->skeleton && t->bone_idx >= 0) {
+							t->skeleton->set_bone_pose(t->bone_idx, xform);
+
+						} else if (!t->skeleton) {
+							t->node_3d->set_transform(xform);
 						}
-					} else if (t->skeleton && t->bone_idx >= 0) {
-						t->skeleton->set_bone_pose(t->bone_idx, xform);
-
-					} else if (!t->skeleton) {
-						t->node_3d->set_transform(xform);
-					}
 #endif // _3D_DISABLED
-				} break;
-				case Animation::TYPE_VALUE: {
-					TrackCacheValue *t = static_cast<TrackCacheValue *>(track);
+					} break;
+					case Animation::TYPE_VALUE: {
+						TrackCacheValue *t = static_cast<TrackCacheValue *>(track);
 
-					t->object->set_indexed(t->subpath, t->value);
+						t->object->set_indexed(t->subpath, t->value);
 
-				} break;
-				case Animation::TYPE_BEZIER: {
-					TrackCacheBezier *t = static_cast<TrackCacheBezier *>(track);
-
-					t->object->set_indexed(t->subpath, t->value);
-
-				} break;
-				default: {
-				} //the rest don't matter
+					} break;
+					default: {
+					} //the rest don't matter
+				}
 			}
 		}
 	}
