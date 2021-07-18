@@ -317,6 +317,7 @@ Error VulkanContext::_initialize_extensions() {
 			free(instance_extensions);
 			ERR_FAIL_V(ERR_CANT_CREATE);
 		}
+		//extensions used by VkInstanceCreateInfo inst_info
 		for (uint32_t i = 0; i < instance_extension_count; i++) {
 			if (!strcmp(VK_KHR_SURFACE_EXTENSION_NAME, instance_extensions[i].extensionName)) {
 				surfaceExtFound = 1;
@@ -342,7 +343,7 @@ Error VulkanContext::_initialize_extensions() {
 			}
 			if (enabled_extension_count >= MAX_EXTENSIONS) {
 				free(instance_extensions);
-				ERR_FAIL_V_MSG(ERR_BUG, "Enabled extension count reaches MAX_EXTENSIONS, BUG");
+				ERR_FAIL_V_MSG(ERR_BUG, "Enabled extension count reaches MAX_EXTENSIONS, BUG. Increase the size of extension_names");
 			}
 		}
 
@@ -773,6 +774,7 @@ Error VulkanContext::_create_physical_device() {
 			ERR_FAIL_V(ERR_CANT_CREATE);
 		}
 
+		//extensions used by VkDeviceCreateInfo sdevice
 		for (uint32_t i = 0; i < device_extension_count; i++) {
 			if (!strcmp(VK_KHR_SWAPCHAIN_EXTENSION_NAME, device_extensions[i].extensionName)) {
 				swapchainExtFound = 1;
@@ -784,7 +786,7 @@ Error VulkanContext::_create_physical_device() {
 			}
 			if (enabled_extension_count >= MAX_EXTENSIONS) {
 				free(device_extensions);
-				ERR_FAIL_V_MSG(ERR_BUG, "Enabled extension count reaches MAX_EXTENSIONS, BUG");
+				ERR_FAIL_V_MSG(ERR_BUG, "Enabled extension count reaches MAX_EXTENSIONS, BUG. Increase the length of extension_names");
 			}
 		}
 
@@ -801,7 +803,7 @@ Error VulkanContext::_create_physical_device() {
 				}
 				if (enabled_extension_count >= MAX_EXTENSIONS) {
 					free(device_extensions);
-					ERR_FAIL_V_MSG(ERR_BUG, "Enabled extension count reaches MAX_EXTENSIONS, BUG");
+					ERR_FAIL_V_MSG(ERR_BUG, "Enabled extension count reaches MAX_EXTENSIONS, BUG. Increase the length of extension_names");
 				}
 			}
 		}
@@ -819,7 +821,7 @@ Error VulkanContext::_create_physical_device() {
 				}
 				if (enabled_extension_count >= MAX_EXTENSIONS) {
 					free(device_extensions);
-					ERR_FAIL_V_MSG(ERR_BUG, "Enabled extension count reaches MAX_EXTENSIONS, BUG");
+					ERR_FAIL_V_MSG(ERR_BUG, "Enabled extension count reaches MAX_EXTENSIONS, BUG. Increase the length of extension_names");
 				}
 			}
 		}
