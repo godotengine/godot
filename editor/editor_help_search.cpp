@@ -74,6 +74,8 @@ void EditorHelpSearch::_search_box_gui_input(const Ref<InputEvent> &p_event) {
 				results_tree->call("_gui_input", key);
 				search_box->accept_event();
 			} break;
+			default:
+				break;
 		}
 	}
 }

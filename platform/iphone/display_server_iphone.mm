@@ -254,7 +254,7 @@ void DisplayServerIPhone::touches_cancelled(int p_idx) {
 
 // MARK: Keyboard
 
-void DisplayServerIPhone::key(uint32_t p_key, bool p_pressed) {
+void DisplayServerIPhone::key(Key p_key, bool p_pressed) {
 	Ref<InputEventKey> ev;
 	ev.instantiate();
 	ev->set_echo(false);

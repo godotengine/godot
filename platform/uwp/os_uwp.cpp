@@ -566,7 +566,7 @@ void OS_UWP::process_key_events() {
 		key_event->set_ctrl_pressed(kev.control);
 		key_event->set_echo(kev.echo);
 		key_event->set_keycode(kev.keycode);
-		key_event->set_physical_keycode(kev.physical_keycode);
+		key_event->set_physical_keycode((Key)kev.physical_keycode);
 		key_event->set_unicode(kev.unicode);
 		key_event->set_pressed(kev.pressed);
 

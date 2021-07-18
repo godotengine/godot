@@ -58,7 +58,7 @@ public:
 		bool alt = false, shift = false, control = false;
 		MessageType type = KEY_EVENT_MESSAGE;
 		bool pressed = false;
-		unsigned int keycode = 0;
+		Key keycode = KEY_NONE;
 		unsigned int physical_keycode = 0;
 		unsigned int unicode = 0;
 		bool echo = false;

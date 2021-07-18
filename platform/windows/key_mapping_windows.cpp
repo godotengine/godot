@@ -365,6 +365,8 @@ unsigned int KeyMappingWindows::get_scansym(unsigned int p_code, bool p_extended
 			case KEY_CAPSLOCK: {
 				keycode = KEY_KP_ADD;
 			} break;
+			default:
+				break;
 		}
 	} else {
 		switch (keycode) {
@@ -404,6 +406,8 @@ unsigned int KeyMappingWindows::get_scansym(unsigned int p_code, bool p_extended
 			case KEY_PRINT: {
 				keycode = KEY_KP_MULTIPLY;
 			} break;
+			default:
+				break;
 		}
 	}
 

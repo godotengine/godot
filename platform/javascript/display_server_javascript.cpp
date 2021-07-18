@@ -131,8 +131,8 @@ Ref<InputEventKey> DisplayServerJavaScript::setup_key_event(const EmscriptenKeyb
 	ev.instantiate();
 	ev->set_echo(emscripten_event->repeat);
 	dom2godot_mod(emscripten_event, ev);
-	ev->set_keycode(dom_code2godot_scancode(emscripten_event->code, emscripten_event->key, false));
-	ev->set_physical_keycode(dom_code2godot_scancode(emscripten_event->code, emscripten_event->key, true));
+	ev->set_keycode((Key)dom_code2godot_scancode(emscripten_event->code, emscripten_event->key, false));
+	ev->set_physical_keycode((Key)dom_code2godot_scancode(emscripten_event->code, emscripten_event->key, true));
 
 	String unicode = String::utf8(emscripten_event->key);
 	// Check if empty or multi-character (e.g. `CapsLock`).
@@ -172,7 +172,7 @@ EM_BOOL DisplayServerJavaScript::keyup_callback(int p_event_type, const Emscript
 	Ref<InputEventKey> ev = setup_key_event(p_event);
 	ev->set_pressed(false);
 	Input::get_singleton()->parse_input_event(ev);
-	return ev->get_keycode() != KEY_UNKNOWN && ev->get_keycode() != 0;
+	return ev->get_keycode() != KEY_UNKNOWN && ev->get_keycode() != (Key)0;
 }
 
 // Mouse

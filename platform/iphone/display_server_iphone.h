@@ -105,7 +105,7 @@ public:
 
 	// MARK: Keyboard
 
-	void key(uint32_t p_key, bool p_pressed);
+	void key(Key p_key, bool p_pressed);
 
 	// MARK: Motion
 

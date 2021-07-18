@@ -58,6 +58,8 @@ void EditorLayoutsDialog::_line_gui_input(const Ref<InputEvent> &p_event) {
 				hide();
 				set_input_as_handled();
 			} break;
+			default:
+				break;
 		}
 	}
 }
