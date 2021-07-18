@@ -50,7 +50,7 @@ void AudioStreamPlaybackResampled::mix(AudioFrame *p_buffer, float p_rate_scale,
 	float target_rate = AudioServer::get_singleton()->get_mix_rate();
 	float global_rate_scale = AudioServer::get_singleton()->get_global_rate_scale();
 
-	uint64_t mix_increment = uint64_t(((get_stream_sampling_rate() * p_rate_scale) / double(target_rate * global_rate_scale)) * double(FP_LEN));
+	uint64_t mix_increment = uint64_t(((get_stream_sampling_rate() * p_rate_scale * global_rate_scale) / double(target_rate)) * double(FP_LEN));
 
 	for (int i = 0; i < p_frames; i++) {
 		uint32_t idx = CUBIC_INTERP_HISTORY + uint32_t(mix_offset >> FP_BITS);
