@@ -109,6 +109,18 @@ public:
 		item->set_cell_mode(1, TreeItem::CELL_MODE_CHECK);
 		item->set_editable(1, true);
 		item->set_text(1, "check2");
+		TreeItem *sub_item = tree->create_item(item);
+		sub_item->set_cell_mode(0, TreeItem::CELL_MODE_CHECK);
+		sub_item->set_editable(0, true);
+		sub_item->set_text(0, "sub check");
+		sub_item->set_cell_mode(1, TreeItem::CELL_MODE_CHECK);
+		sub_item->set_editable(1, true);
+		sub_item = tree->create_item(item);
+		sub_item->set_cell_mode(0, TreeItem::CELL_MODE_CHECK);
+		sub_item->set_editable(0, true);
+		sub_item->set_text(0, "sub check2");
+		sub_item->set_cell_mode(1, TreeItem::CELL_MODE_CHECK);
+		sub_item->set_editable(1, true);
 		item = tree->create_item(tree->get_root());
 		item->set_cell_mode(0, TreeItem::CELL_MODE_RANGE);
 		item->set_editable(0, true);
