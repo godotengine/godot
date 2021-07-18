@@ -389,6 +389,11 @@ void EditorSpinSlider::_notification(int p_what) {
 	}
 }
 
+LineEdit *EditorSpinSlider::get_line_edit() {
+	_ensure_input_popup();
+	return value_input;
+}
+
 Size2 EditorSpinSlider::get_minimum_size() const {
 	Ref<StyleBox> sb = get_theme_stylebox("normal", "LineEdit");
 	Ref<Font> font = get_theme_font("font", "LineEdit");
