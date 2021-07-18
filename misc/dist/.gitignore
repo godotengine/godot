@@ -1,0 +1,2 @@
+# Don't ignore part of Apple Vulkan library. Overrides Godot's global gitignore.
+!icd.d
