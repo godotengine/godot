@@ -554,7 +554,7 @@ void ColorPicker::_sample_draw() {
 		const Rect2 rect_old = Rect2(Point2(), Size2(sample->get_size().width * 0.5, sample->get_size().height * 0.95));
 
 		if (display_old_color && old_color.a < 1.0) {
-			sample->draw_texture_rect(get_theme_icon("preset_bg", "ColorPicker"), rect_old, true);
+			sample->draw_texture_rect(get_theme_icon("GuiMiniCheckerboard", "EditorIcons"), rect_old, true);
 		}
 
 		sample->draw_rect(rect_old, old_color);
@@ -568,7 +568,7 @@ void ColorPicker::_sample_draw() {
 	}
 
 	if (color.a < 1.0) {
-		sample->draw_texture_rect(get_theme_icon("preset_bg", "ColorPicker"), rect_new, true);
+		sample->draw_texture_rect(get_theme_icon("GuiMiniCheckerboard", "EditorIcons"), rect_new, true);
 	}
 
 	sample->draw_rect(rect_new, color);
@@ -728,7 +728,7 @@ void ColorPicker::_slider_draw(int p_which) {
 #endif
 
 	if (p_which == 3) {
-		scroll[p_which]->draw_texture_rect(get_theme_icon("preset_bg", "ColorPicker"), Rect2(Point2(0, margin), Size2(size.x, margin)), true);
+		scroll[p_which]->draw_texture_rect(get_theme_icon("GuiMiniCheckerboard", "EditorIcons"), Rect2(Point2(0, margin), Size2(size.x, margin)), true);
 
 		left_color = color;
 		left_color.a = 0;
@@ -1329,7 +1329,7 @@ void ColorPickerButton::_notification(int p_what) {
 		case NOTIFICATION_DRAW: {
 			const Ref<StyleBox> normal = get_theme_stylebox("normal");
 			const Rect2 r = Rect2(normal->get_offset(), get_size() - normal->get_minimum_size());
-			draw_texture_rect(Control::get_theme_icon("bg", "ColorPickerButton"), r, true);
+			draw_texture_rect(Control::get_theme_icon("GuiMiniCheckerboard", "EditorIcons"), r, true);
 			draw_rect(r, color);
 
 			if (color.r > 1 || color.g > 1 || color.b > 1) {
