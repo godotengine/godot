@@ -60,8 +60,20 @@
 			<return type="bool">
 			</return>
 			<description>
-				Returns [code]true[/code] if the file cursor has read past the end of the file.
-				[b]Note:[/b] This function will still return [code]false[/code] while at the end of the file and only activates when reading past it. This can be confusing but it conforms to how low-level file access works in all operating systems. There is always [method get_length] and [method get_position] to implement a custom logic.
+				Returns [code]true[/code] if the file cursor has already read past the end of the file.
+				[b]Note:[/b] [code]eof_reached() == false[/code] cannot be used to check whether there is more data available. To loop while there is more data available, use:
+				[codeblocks]
+				[gdscript]
+				while file.get_position() &lt; file.get_length():
+				    # Read data
+				[/gdscript]
+				[csharp]
+				while (file.GetPosition() &lt; file.GetLength())
+				{
+				    // Read data
+				}
+				[/csharp]
+				[/codeblocks]
 			</description>
 		</method>
 		<method name="file_exists" qualifiers="const">
