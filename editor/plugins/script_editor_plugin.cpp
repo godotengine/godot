@@ -2124,8 +2124,49 @@ bool ScriptEditor::edit(const RES &p_resource, int p_line, int p_col, bool p_gra
 			(EditorDebuggerNode::get_singleton()->get_dump_stack_script() != p_resource || EditorDebuggerNode::get_singleton()->get_debug_with_external_editor()) &&
 			p_resource->get_path().is_resource_file() &&
 			p_resource->get_class_name() != StringName("VisualScript")) {
-		String path = EditorSettings::get_singleton()->get("text_editor/external/exec_path");
-		String flags = EditorSettings::get_singleton()->get("text_editor/external/exec_flags");
+		int exec_preset = EditorSettings::get_singleton()->get("text_editor/external/exec_preset");
+		String path;
+		String flags;
+
+		switch (exec_preset) {
+			case 0: {
+				flags = EditorSettings::get_singleton()->get("text_editor/external/exec_flags");
+			} break;
+			case 1: {
+				path = "atom";
+				flags = "{file}:{line}:{col}";
+			} break;
+			case 2: {
+				path = "geany";
+				flags = "{file} --line {line} --column {col}";
+			} break;
+			case 3: {
+				path = "rider";
+				flags = "--line {line} --column {col} {file}";
+			} break;
+			case 4: {
+				path = "kate";
+				flags = "--line {line} --column {col} {file}";
+			} break;
+			case 5: {
+				path = "subl";
+				flags = "--project {project} {file}:{line}:{col}";
+			} break;
+			case 6: {
+				path = "vim";
+				flags = "\"+call cursor({line}, {col})\" {file}";
+			} break;
+			case 7: {
+				path = "code";
+				flags = "{project} --goto {file}:{line}:{col}";
+			} break;
+		}
+
+		// If available, always use the exec_path set by the user to allow using presets with a custom path
+		String user_exec_path = EditorSettings::get_singleton()->get("text_editor/external/exec_path");
+		if (!user_exec_path.empty()) {
+			path = user_exec_path;
+		}
 
 		List<String> args;
 		bool has_file_flag = false;
@@ -3709,6 +3750,8 @@ ScriptEditorPlugin::ScriptEditorPlugin(EditorNode *p_node) {
 	ScriptServer::set_reload_scripts_on_save(EDITOR_DEF("text_editor/files/auto_reload_and_parse_scripts_on_save", true));
 	EDITOR_DEF("text_editor/files/open_dominant_script_on_scene_change", true);
 	EDITOR_DEF("text_editor/external/use_external_editor", false);
+	EDITOR_DEF("text_editor/external/exec_preset", 0);
+	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::INT, "text_editor/external/exec_preset", PROPERTY_HINT_ENUM, "Custom,Atom,Geany,JetBrains Rider,Kate,Sublime Text,Vim (gVim),Visual Studio Code", PROPERTY_USAGE_DEFAULT));
 	EDITOR_DEF("text_editor/external/exec_path", "");
 	EDITOR_DEF("text_editor/script_list/script_temperature_enabled", true);
 	EDITOR_DEF("text_editor/script_list/script_temperature_history_size", 15);
