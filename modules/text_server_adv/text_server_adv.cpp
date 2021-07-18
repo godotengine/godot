@@ -1472,7 +1472,7 @@ RID TextServerAdvanced::shaped_text_substr(RID p_shaped, int p_start, int p_leng
 							E->get().rect.position.y = -new_sd->ascent;
 						} break;
 						case VALIGN_CENTER: {
-							E->get().rect.position.y = -(E->get().rect.size.y / 2);
+							E->get().rect.position.y = -E->get().rect.size.y;
 						} break;
 						case VALIGN_BOTTOM: {
 							E->get().rect.position.y = new_sd->descent - E->get().rect.size.y;
@@ -1484,7 +1484,7 @@ RID TextServerAdvanced::shaped_text_substr(RID p_shaped, int p_start, int p_leng
 							E->get().rect.position.x = -new_sd->ascent;
 						} break;
 						case VALIGN_CENTER: {
-							E->get().rect.position.x = -(E->get().rect.size.x / 2);
+							E->get().rect.position.x = -E->get().rect.size.x;
 						} break;
 						case VALIGN_BOTTOM: {
 							E->get().rect.position.x = new_sd->descent - E->get().rect.size.x;
