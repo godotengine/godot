@@ -9,3 +9,4 @@ PrefersNonDefaultGPU=true
 Type=Application
 MimeType=application/x-godot-project;
 Categories=Development;IDE;
+StartupWMClass=Godot
