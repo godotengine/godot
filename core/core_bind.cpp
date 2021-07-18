@@ -279,6 +279,10 @@ String _OS::get_model_name() const {
 	return OS::get_singleton()->get_model_name();
 }
 
+String _OS::get_hostname() const {
+	return OS::get_singleton()->get_hostname();
+}
+
 Error _OS::set_thread_name(const String &p_name) {
 	return Thread::set_name(p_name);
 }
@@ -513,6 +517,7 @@ void _OS::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("delay_msec", "msec"), &_OS::delay_msec);
 	ClassDB::bind_method(D_METHOD("get_locale"), &_OS::get_locale);
 	ClassDB::bind_method(D_METHOD("get_model_name"), &_OS::get_model_name);
+	ClassDB::bind_method(D_METHOD("get_hostname"), &_OS::get_hostname);
 
 	ClassDB::bind_method(D_METHOD("is_userfs_persistent"), &_OS::is_userfs_persistent);
 	ClassDB::bind_method(D_METHOD("is_stdout_verbose"), &_OS::is_stdout_verbose);

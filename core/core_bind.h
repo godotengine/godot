@@ -180,6 +180,7 @@ public:
 	String get_locale() const;
 
 	String get_model_name() const;
+	String get_hostname() const;
 
 	void dump_memory_to_file(const String &p_file);
 	void dump_resources_to_file(const String &p_file);

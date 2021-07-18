@@ -38,7 +38,9 @@
 #include "core/version_generated.gen.h"
 #include "servers/audio_server.h"
 
+#include <limits.h>
 #include <stdarg.h>
+#include <unistd.h>
 
 OS *OS::singleton = nullptr;
 uint64_t OS::target_ticks = 0;
@@ -338,6 +340,15 @@ void OS::ensure_user_data_dir() {
 
 String OS::get_model_name() const {
 	return "GenericDevice";
+}
+
+String OS::get_hostname() const {
+	char hostname[HOST_NAME_MAX + 1];
+	// Handle maximum-length hostname correctly.
+	hostname[HOST_NAME_MAX] = 0;
+	gethostname(hostname, HOST_NAME_MAX);
+
+	return String(hostname);
 }
 
 void OS::set_cmdline(const char *p_execpath, const List<String> &p_args) {
