@@ -193,8 +193,8 @@ ObjectPtr LazyObject::LoadObject() {
 	} else if (!strncmp(obtype, "Model", length)) {
 		// Model is normal node
 
-		// LimbNode model is a 'bone' node.
-		if (!strcmp(classtag.c_str(), "LimbNode")) {
+		// Limb/LimbNode model is a 'bone' node.
+		if (!strcmp(classtag.c_str(), "Limb") || !strcmp(classtag.c_str(), "LimbNode")) {
 			object.reset(new ModelLimbNode(id, element, doc, name));
 
 		} else if (strcmp(classtag.c_str(), "IKEffector") && strcmp(classtag.c_str(), "FKEffector")) {
