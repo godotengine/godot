@@ -26,6 +26,13 @@ struct CullParams {
 };
 
 private:
+// Default query result callback, for use when we are using the complex BVH that translates cull hits,
+// rather than a client specified callback (in Godot 4.x).
+struct TreeDefaultQueryResult {
+	virtual bool operator()(T *p_data) = 0; //return true whether you want to continue the query
+	virtual ~TreeDefaultQueryResult() {}
+};
+
 void _cull_translate_hits(CullParams &p) {
 	int num_hits = _cull_hits.size();
 	int left = p.result_max - p.result_count_overall;
@@ -54,7 +61,8 @@ void _cull_translate_hits(CullParams &p) {
 }
 
 public:
-int cull_convex(CullParams &r_params, bool p_translate_hits = true) {
+template <class QUERY_RESULT = TreeDefaultQueryResult>
+int cull_convex(CullParams &r_params, bool p_translate_hits = true, QUERY_RESULT *r_result = nullptr) {
 	_cull_hits.clear();
 	r_params.result_count = 0;
 
@@ -63,7 +71,7 @@ int cull_convex(CullParams &r_params, bool p_translate_hits = true) {
 			continue;
 		}
 
-		_cull_convex_iterative(_root_node_id[n], r_params);
+		_cull_convex_iterative<QUERY_RESULT>(_root_node_id[n], r_params, r_result);
 	}
 
 	if (p_translate_hits) {
@@ -73,7 +81,8 @@ int cull_convex(CullParams &r_params, bool p_translate_hits = true) {
 	return r_params.result_count;
 }
 
-int cull_segment(CullParams &r_params, bool p_translate_hits = true) {
+template <class QUERY_RESULT = TreeDefaultQueryResult>
+int cull_segment(CullParams &r_params, bool p_translate_hits = true, QUERY_RESULT *r_result = nullptr) {
 	_cull_hits.clear();
 	r_params.result_count = 0;
 
@@ -82,7 +91,7 @@ int cull_segment(CullParams &r_params, bool p_translate_hits = true) {
 			continue;
 		}
 
-		_cull_segment_iterative(_root_node_id[n], r_params);
+		_cull_segment_iterative<QUERY_RESULT>(_root_node_id[n], r_params);
 	}
 
 	if (p_translate_hits) {
@@ -111,7 +120,8 @@ int cull_point(CullParams &r_params, bool p_translate_hits = true) {
 	return r_params.result_count;
 }
 
-int cull_aabb(CullParams &r_params, bool p_translate_hits = true) {
+template <class QUERY_RESULT = TreeDefaultQueryResult>
+int cull_aabb(CullParams &r_params, bool p_translate_hits = true, QUERY_RESULT *r_result = nullptr) {
 	_cull_hits.clear();
 	r_params.result_count = 0;
 
@@ -124,7 +134,7 @@ int cull_aabb(CullParams &r_params, bool p_translate_hits = true) {
 			continue;
 		}
 
-		_cull_aabb_iterative(_root_node_id[n], r_params);
+		_cull_aabb_iterative<QUERY_RESULT>(_root_node_id[n], r_params, r_result);
 	}
 
 	if (p_translate_hits) {
@@ -135,6 +145,12 @@ int cull_aabb(CullParams &r_params, bool p_translate_hits = true) {
 }
 
 bool _cull_hits_full(const CullParams &p) {
+	// in godot 4 the simple BVH doesn't use PAIRS, and the cull hits
+	// will never be full because a callback is used
+	if (USE_SIMPLE) {
+		return false;
+	}
+
 	// instead of checking every hit, we can do a lazy check for this condition.
 	// it isn't a problem if we write too much _cull_hits because they only the
 	// result_max amount will be translated and outputted. But we might as
@@ -158,7 +174,15 @@ bool _cull_pairing_mask_test_hit(uint32_t p_maskA, uint32_t p_typeA, uint32_t p_
 	return true;
 }
 
-void _cull_hit(uint32_t p_ref_id, CullParams &p) {
+template <class QUERY_RESULT = TreeDefaultQueryResult>
+bool _cull_hit(uint32_t p_ref_id, CullParams &p, QUERY_RESULT *r_result = nullptr) {
+	// we can either pass results back through an intermediate list (stored in CullParams), OR for simple tree (Godot 4)
+	// we get passed a callback function r_result, in which case returning true indicates the collision check can be stopped prematurely.
+	if (r_result) {
+		const ItemExtra &ex = _extra[p_ref_id];
+		return (*r_result)(ex.userdata);
+	}
+
 	// take into account masks etc
 	// this would be more efficient to do before plane checks,
 	// but done here for ease to get started
@@ -166,14 +190,18 @@ void _cull_hit(uint32_t p_ref_id, CullParams &p) {
 		const ItemExtra &ex = _extra[p_ref_id];
 
 		if (!_cull_pairing_mask_test_hit(p.mask, p.pairable_type, ex.pairable_mask, ex.pairable_type)) {
-			return;
+			return false;
 		}
 	}
 
 	_cull_hits.push_back(p_ref_id);
+	return false;
 }
 
-bool _cull_segment_iterative(uint32_t p_node_id, CullParams &r_params) {
+// we can either pass results back through an intermediate list (stored in CullParams), OR for simple tree (Godot 4)
+// we get passed a callback function r_result
+template <class QUERY_RESULT = TreeDefaultQueryResult>
+void _cull_segment_iterative(uint32_t p_node_id, CullParams &r_params, QUERY_RESULT *r_result = nullptr) {
 	// our function parameters to keep on a stack
 	struct CullSegParams {
 		uint32_t node_id;
@@ -198,7 +226,7 @@ bool _cull_segment_iterative(uint32_t p_node_id, CullParams &r_params) {
 		if (tnode.is_leaf()) {
 			// lazy check for hits full up condition
 			if (_cull_hits_full(r_params)) {
-				return false;
+				return;
 			}
 
 			TLeaf &leaf = _node_get_leaf(tnode);
@@ -211,7 +239,9 @@ bool _cull_segment_iterative(uint32_t p_node_id, CullParams &r_params) {
 					uint32_t child_id = leaf.get_item_ref_id(n);
 
 					// register hit
-					_cull_hit(child_id, r_params);
+					if (_cull_hit<QUERY_RESULT>(child_id, r_params, r_result)) {
+						return;
+					}
 				}
 			}
 		} else {
@@ -229,12 +259,9 @@ bool _cull_segment_iterative(uint32_t p_node_id, CullParams &r_params) {
 		}
 
 	} // while more nodes to pop
-
-	// true indicates results are not full
-	return true;
 }
 
-bool _cull_point_iterative(uint32_t p_node_id, CullParams &r_params) {
+void _cull_point_iterative(uint32_t p_node_id, CullParams &r_params) {
 	// our function parameters to keep on a stack
 	struct CullPointParams {
 		uint32_t node_id;
@@ -263,7 +290,7 @@ bool _cull_point_iterative(uint32_t p_node_id, CullParams &r_params) {
 		if (tnode.is_leaf()) {
 			// lazy check for hits full up condition
 			if (_cull_hits_full(r_params)) {
-				return false;
+				return;
 			}
 
 			TLeaf &leaf = _node_get_leaf(tnode);
@@ -289,12 +316,12 @@ bool _cull_point_iterative(uint32_t p_node_id, CullParams &r_params) {
 		}
 
 	} // while more nodes to pop
-
-	// true indicates results are not full
-	return true;
 }
 
-bool _cull_aabb_iterative(uint32_t p_node_id, CullParams &r_params, bool p_fully_within = false) {
+// we can either pass results back through an intermediate list (stored in CullParams), OR for simple tree (Godot 4)
+// we get passed a callback function r_result
+template <class QUERY_RESULT = TreeDefaultQueryResult>
+void _cull_aabb_iterative(uint32_t p_node_id, CullParams &r_params, QUERY_RESULT *r_result = nullptr) {
 	// our function parameters to keep on a stack
 	struct CullAABBParams {
 		uint32_t node_id;
@@ -310,7 +337,7 @@ bool _cull_aabb_iterative(uint32_t p_node_id, CullParams &r_params, bool p_fully
 
 	// seed the stack
 	ii.get_first()->node_id = p_node_id;
-	ii.get_first()->fully_within = p_fully_within;
+	ii.get_first()->fully_within = false;
 
 	CullAABBParams cap;
 
@@ -321,7 +348,7 @@ bool _cull_aabb_iterative(uint32_t p_node_id, CullParams &r_params, bool p_fully
 		if (tnode.is_leaf()) {
 			// lazy check for hits full up condition
 			if (_cull_hits_full(r_params)) {
-				return false;
+				return;
 			}
 
 			TLeaf &leaf = _node_get_leaf(tnode);
@@ -333,7 +360,9 @@ bool _cull_aabb_iterative(uint32_t p_node_id, CullParams &r_params, bool p_fully
 					uint32_t child_id = leaf.get_item_ref_id(n);
 
 					// register hit
-					_cull_hit(child_id, r_params);
+					if (_cull_hit<QUERY_RESULT>(child_id, r_params, r_result)) {
+						return;
+					}
 				}
 			} else {
 				for (int n = 0; n < leaf.num_items; n++) {
@@ -343,7 +372,9 @@ bool _cull_aabb_iterative(uint32_t p_node_id, CullParams &r_params, bool p_fully
 						uint32_t child_id = leaf.get_item_ref_id(n);
 
 						// register hit
-						_cull_hit(child_id, r_params);
+						if (_cull_hit<QUERY_RESULT>(child_id, r_params, r_result)) {
+							return;
+						}
 					}
 				}
 			} // not fully within
@@ -381,13 +412,12 @@ bool _cull_aabb_iterative(uint32_t p_node_id, CullParams &r_params, bool p_fully
 		}
 
 	} // while more nodes to pop
-
-	// true indicates results are not full
-	return true;
 }
 
-// returns full up with results
-bool _cull_convex_iterative(uint32_t p_node_id, CullParams &r_params, bool p_fully_within = false) {
+// we can either pass results back through an intermediate list (stored in CullParams), OR for simple tree (Godot 4)
+// we get passed a callback function r_result
+template <class QUERY_RESULT = TreeDefaultQueryResult>
+void _cull_convex_iterative(uint32_t p_node_id, CullParams &r_params, QUERY_RESULT *r_result = nullptr) {
 	// our function parameters to keep on a stack
 	struct CullConvexParams {
 		uint32_t node_id;
@@ -403,7 +433,7 @@ bool _cull_convex_iterative(uint32_t p_node_id, CullParams &r_params, bool p_ful
 
 	// seed the stack
 	ii.get_first()->node_id = p_node_id;
-	ii.get_first()->fully_within = p_fully_within;
+	ii.get_first()->fully_within = false;
 
 	// preallocate these as a once off to be reused
 	uint32_t max_planes = r_params.hull.num_planes;
@@ -434,7 +464,7 @@ bool _cull_convex_iterative(uint32_t p_node_id, CullParams &r_params, bool p_ful
 		if (tnode.is_leaf()) {
 			// lazy check for hits full up condition
 			if (_cull_hits_full(r_params)) {
-				return false;
+				return;
 			}
 
 			const TLeaf &leaf = _node_get_leaf(tnode);
@@ -446,7 +476,9 @@ bool _cull_convex_iterative(uint32_t p_node_id, CullParams &r_params, bool p_ful
 					uint32_t child_id = leaf.get_item_ref_id(n);
 
 					// register hit
-					_cull_hit(child_id, r_params);
+					if (_cull_hit<QUERY_RESULT>(child_id, r_params, r_result)) {
+						return;
+					}
 				}
 
 			} else {
@@ -479,7 +511,9 @@ bool _cull_convex_iterative(uint32_t p_node_id, CullParams &r_params, bool p_ful
 #endif
 
 						// register hit
-						_cull_hit(child_id, r_params);
+						if (_cull_hit<QUERY_RESULT>(child_id, r_params, r_result)) {
+							return;
+						}
 					}
 				}
 
@@ -509,7 +543,7 @@ bool _cull_convex_iterative(uint32_t p_node_id, CullParams &r_params, bool p_ful
 
 						// full up with results? exit early, no point in further testing
 						if (!_cull_hit(child_id, r_params))
-							return false;
+							return;
 					}
 				}
 #endif // BVH_CONVEX_CULL_OPTIMIZED
@@ -528,7 +562,4 @@ bool _cull_convex_iterative(uint32_t p_node_id, CullParams &r_params, bool p_ful
 		}
 
 	} // while more nodes to pop
-
-	// true indicates results are not full
-	return true;
 }
