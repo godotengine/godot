@@ -123,7 +123,12 @@ class SceneTreeDock : public VBoxContainer {
 
 	HBoxContainer *tool_hbc;
 	void _tool_selected(int p_tool, bool p_confirm_override = false);
+	void _property_selected(int p_idx);
 	void _node_collapsed(Object *p_obj);
+
+	Node *property_drop_node = nullptr;
+	String resource_drop_path;
+	void _perform_property_drop(Node *p_node, String p_property, RES p_res);
 
 	EditorData *editor_data;
 	EditorSelection *editor_selection;
@@ -147,6 +152,7 @@ class SceneTreeDock : public VBoxContainer {
 
 	PopupMenu *menu;
 	PopupMenu *menu_subresources;
+	PopupMenu *menu_properties;
 	ConfirmationDialog *clear_inherit_confirm;
 
 	bool first_enter;
