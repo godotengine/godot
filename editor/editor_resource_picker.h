@@ -36,6 +36,7 @@
 #include "scene/gui/button.h"
 #include "scene/gui/popup_menu.h"
 #include "scene/gui/texture_rect.h"
+#include "editor_data.h"
 
 class EditorResourcePicker : public HBoxContainer {
 	GDCLASS(EditorResourcePicker, HBoxContainer);
@@ -46,8 +47,12 @@ class EditorResourcePicker : public HBoxContainer {
 	bool editable = true;
 	bool dropping = false;
 
-	Vector<String> inheritors_array;
-
+	struct Inheritor {
+		String type;
+		const EditorData::CustomType *custom_resource = nullptr;
+	};
+	Vector<Inheritor> inheritors_array;
+	
 	Button *assign_button;
 	TextureRect *preview_rect;
 	Button *edit_button;
@@ -82,7 +87,8 @@ class EditorResourcePicker : public HBoxContainer {
 	void _button_draw();
 	void _button_input(const Ref<InputEvent> &p_event);
 
-	void _get_allowed_types(bool p_with_convert, Set<String> *p_vector) const;
+	void _get_custom_resources_from_allowed_types(Set<String> *p_allowed_types, Vector<EditorData::CustomType> *p_vector) const;
+	void _get_allowed_types(bool p_with_convert, Set<String> *p_set) const;
 	bool _is_drop_valid(const Dictionary &p_drag_data) const;
 	bool _is_type_valid(const String p_type_name, Set<String> p_allowed_types) const;
 

@@ -461,6 +461,7 @@ void EditorData::add_custom_type(const String &p_type, const String &p_inherits,
 	ERR_FAIL_COND_MSG(p_script.is_null(), "It's not a reference to a valid Script object.");
 	CustomType ct;
 	ct.name = p_type;
+	ct.base = p_inherits;
 	ct.icon = p_icon;
 	ct.script = p_script;
 	if (!custom_types.has(p_inherits)) {
