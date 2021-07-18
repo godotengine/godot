@@ -488,6 +488,14 @@ struct VariantUtilityFunctions {
 		return str;
 	}
 
+	static inline String error_string(Error error) {
+		if (error < 0 || error >= ERR_MAX) {
+			return String("(invalid error code)");
+		}
+
+		return String(error_names[error]);
+	}
+
 	static inline void print(const Variant **p_args, int p_arg_count, Callable::CallError &r_error) {
 		if (p_arg_count < 1) {
 			r_error.error = Callable::CallError::CALL_ERROR_TOO_FEW_ARGUMENTS;
@@ -600,6 +608,14 @@ struct VariantUtilityFunctions {
 
 		ERR_PRINT(str);
 		r_error.error = Callable::CallError::CALL_OK;
+	}
+
+	static inline void push_error_formatted(const String &message, Error error) {
+		if (error < 0 || error >= ERR_MAX) {
+			ERR_PRINT(vformat("push_error_formatted: Invalid error code: %d", error));
+			return;
+		}
+		ERR_PRINT(vformat("%s: %s", message, error_names[error]));
 	}
 
 	static inline void push_warning(const Variant **p_args, int p_arg_count, Callable::CallError &r_error) {
@@ -1239,12 +1255,14 @@ void Variant::_register_variant_utility_functions() {
 	FUNCBINDVR(weakref, sarray("obj"), Variant::UTILITY_FUNC_TYPE_GENERAL);
 	FUNCBINDR(_typeof, sarray("variable"), Variant::UTILITY_FUNC_TYPE_GENERAL);
 	FUNCBINDVARARGS(str, sarray(), Variant::UTILITY_FUNC_TYPE_GENERAL);
+	FUNCBINDR(error_string, sarray("error"), Variant::UTILITY_FUNC_TYPE_GENERAL);
 	FUNCBINDVARARGV(print, sarray(), Variant::UTILITY_FUNC_TYPE_GENERAL);
 	FUNCBINDVARARGV(printerr, sarray(), Variant::UTILITY_FUNC_TYPE_GENERAL);
 	FUNCBINDVARARGV(printt, sarray(), Variant::UTILITY_FUNC_TYPE_GENERAL);
 	FUNCBINDVARARGV(prints, sarray(), Variant::UTILITY_FUNC_TYPE_GENERAL);
 	FUNCBINDVARARGV(printraw, sarray(), Variant::UTILITY_FUNC_TYPE_GENERAL);
 	FUNCBINDVARARGV(push_error, sarray(), Variant::UTILITY_FUNC_TYPE_GENERAL);
+	FUNCBIND(push_error_formatted, sarray("message", "error"), Variant::UTILITY_FUNC_TYPE_GENERAL);
 	FUNCBINDVARARGV(push_warning, sarray(), Variant::UTILITY_FUNC_TYPE_GENERAL);
 
 	FUNCBINDR(var2str, sarray("variable"), Variant::UTILITY_FUNC_TYPE_GENERAL);

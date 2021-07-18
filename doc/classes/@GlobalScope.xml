@@ -276,6 +276,15 @@
 				Easing function, based on exponent. The curve values are: 0 is constant, 1 is linear, 0 to 1 is ease-in, 1+ is ease out. Negative values are in-out/out in.
 			</description>
 		</method>
+		<method name="error_string">
+			<return type="String">
+			</return>
+			<argument index="0" name="error" type="int">
+			</argument>
+			<description>
+				Returns a human-readable name for the given error code.
+			</description>
+		</method>
 		<method name="exp">
 			<return type="float">
 			</return>
@@ -741,6 +750,25 @@
 				Pushes an error message to Godot's built-in debugger and to the OS terminal.
 				[codeblock]
 				push_error("test error") # Prints "test error" to debugger and terminal as error call
+				[/codeblock]
+				[b]Note:[/b] Errors printed this way will not pause project execution. To print an error message and pause project execution in debug builds, use [code]assert(false, "test error")[/code] instead.
+			</description>
+		</method>
+		<method name="push_error_formatted">
+			<return type="void">
+			</return>
+			<argument index="0" name="message" type="String">
+			</argument>
+			<argument index="1" name="error" type="int">
+			</argument>
+			<description>
+				Pushes an error message along with a human readable name of the error code to Godot's built-in debugger and to the OS terminal.
+				[codeblock]
+				var file = File.new()
+				var err = file.open("res://file.txt", File.READ)
+				if err:
+				    # Prints, e.g. "Failed to open file: File not found", to debugger and terminal as error call
+				    push_error_formatted("Failed to open file", err)
 				[/codeblock]
 				[b]Note:[/b] Errors printed this way will not pause project execution. To print an error message and pause project execution in debug builds, use [code]assert(false, "test error")[/code] instead.
 			</description>
