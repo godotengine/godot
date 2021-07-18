@@ -346,10 +346,9 @@ struct btMatrixX
 					T dotProd = 0;
 					{
 						{
-							int r = rows();
 							int c = cols();
 
-							for (int k = 0; k < cols(); k++)
+							for (int k = 0; k < c; k++)
 							{
 								T w = (*this)(i, k);
 								if (other(k, j) != 0.f)

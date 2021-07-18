@@ -24,7 +24,7 @@ subject to the following restrictions:
 #define BTMBFIXEDCONSTRAINT_DIM 6
 
 btMultiBodyFixedConstraint::btMultiBodyFixedConstraint(btMultiBody* body, int link, btRigidBody* bodyB, const btVector3& pivotInA, const btVector3& pivotInB, const btMatrix3x3& frameInA, const btMatrix3x3& frameInB)
-	: btMultiBodyConstraint(body, 0, link, -1, BTMBFIXEDCONSTRAINT_DIM, false),
+	: btMultiBodyConstraint(body, 0, link, -1, BTMBFIXEDCONSTRAINT_DIM, false, MULTIBODY_CONSTRAINT_FIXED),
 	  m_rigidBodyA(0),
 	  m_rigidBodyB(bodyB),
 	  m_pivotInA(pivotInA),
@@ -36,7 +36,7 @@ btMultiBodyFixedConstraint::btMultiBodyFixedConstraint(btMultiBody* body, int li
 }
 
 btMultiBodyFixedConstraint::btMultiBodyFixedConstraint(btMultiBody* bodyA, int linkA, btMultiBody* bodyB, int linkB, const btVector3& pivotInA, const btVector3& pivotInB, const btMatrix3x3& frameInA, const btMatrix3x3& frameInB)
-	: btMultiBodyConstraint(bodyA, bodyB, linkA, linkB, BTMBFIXEDCONSTRAINT_DIM, false),
+	: btMultiBodyConstraint(bodyA, bodyB, linkA, linkB, BTMBFIXEDCONSTRAINT_DIM, false, MULTIBODY_CONSTRAINT_FIXED),
 	  m_rigidBodyA(0),
 	  m_rigidBodyB(0),
 	  m_pivotInA(pivotInA),

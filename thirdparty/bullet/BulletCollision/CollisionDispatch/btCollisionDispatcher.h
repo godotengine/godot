@@ -46,8 +46,6 @@ protected:
 
 	btAlignedObjectArray<btPersistentManifold*> m_manifoldsPtr;
 
-	btManifoldResult m_defaultManifoldResult;
-
 	btNearCallback m_nearCallback;
 
 	btPoolAllocator* m_collisionAlgorithmPoolAllocator;
@@ -95,11 +93,15 @@ public:
 
 	btPersistentManifold* getManifoldByIndexInternal(int index)
 	{
+		btAssert(index>=0);
+		btAssert(index<m_manifoldsPtr.size());
 		return m_manifoldsPtr[index];
 	}
 
 	const btPersistentManifold* getManifoldByIndexInternal(int index) const
 	{
+		btAssert(index>=0);
+		btAssert(index<m_manifoldsPtr.size());
 		return m_manifoldsPtr[index];
 	}
 

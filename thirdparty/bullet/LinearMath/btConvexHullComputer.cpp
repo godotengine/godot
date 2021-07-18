@@ -105,7 +105,7 @@ public:
 
 		Point64 cross(const Point32& b) const
 		{
-			return Point64(y * b.z - z * b.y, z * b.x - x * b.z, x * b.y - y * b.x);
+			return Point64(((int64_t)y) * b.z - ((int64_t)z) * b.y, ((int64_t)z) * b.x - ((int64_t)x) * b.z, ((int64_t)x) * b.y - ((int64_t)y) * b.x);
 		}
 
 		Point64 cross(const Point64& b) const
@@ -115,7 +115,7 @@ public:
 
 		int64_t dot(const Point32& b) const
 		{
-			return x * b.x + y * b.y + z * b.z;
+			return ((int64_t)x) * b.x + ((int64_t)y) * b.y + ((int64_t)z) * b.z;
 		}
 
 		int64_t dot(const Point64& b) const
@@ -2673,6 +2673,7 @@ btScalar btConvexHullComputer::compute(const void* coords, bool doubleCoords, in
 	}
 
 	vertices.resize(0);
+	original_vertex_index.resize(0);
 	edges.resize(0);
 	faces.resize(0);
 
@@ -2683,6 +2684,7 @@ btScalar btConvexHullComputer::compute(const void* coords, bool doubleCoords, in
 	{
 		btConvexHullInternal::Vertex* v = oldVertices[copied];
 		vertices.push_back(hull.getCoordinates(v));
+		original_vertex_index.push_back(v->point.index);
 		btConvexHullInternal::Edge* firstEdge = v->edges;
 		if (firstEdge)
 		{
