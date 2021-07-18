@@ -546,6 +546,7 @@ public:
 	int get_selection_to() const;
 	String get_selected_text() const;
 	void selection_copy();
+	void select_all();
 
 	Error parse_bbcode(const String &p_bbcode);
 	Error append_bbcode(const String &p_bbcode);
