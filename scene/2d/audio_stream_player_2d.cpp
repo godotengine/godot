@@ -228,6 +228,12 @@ void AudioStreamPlayer2D::_notification(int p_what) {
 
 					float pan = CLAMP(point_in_screen.x / screen_size.width, 0.0, 1.0);
 
+					// Silence if NaNs would poison the audio system (if the Transform had NaN values).
+					if (!isfinite(pan) || !isfinite(multiplier)) {
+						pan = 0.5f;
+						multiplier = 0.0f;
+					}
+
 					float l = 1.0 - pan;
 					float r = pan;
 
