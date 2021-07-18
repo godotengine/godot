@@ -191,24 +191,34 @@ String ResourceImporterScene::get_preset_name(int p_idx) const {
 	return String();
 }
 
+bool is_alpha(char32_t p_ch) {
+	return (p_ch >= 'a' && p_ch <= 'z') || (p_ch >= 'A' && p_ch <= 'Z');
+}
+
 static bool _teststr(const String &p_what, const String &p_str) {
 	String what = p_what;
 
-	//remove trailing spaces and numbers, some apps like blender add ".number" to duplicates so also compensate for this
-	while (what.length() && ((what[what.length() - 1] >= '0' && what[what.length() - 1] <= '9') || what[what.length() - 1] <= 32 || what[what.length() - 1] == '.')) {
-		what = what.substr(0, what.length() - 1);
+	int pos = p_what.findn(p_str);
+
+	if (pos < 0) {
+		return false;
 	}
 
-	if (what.findn("$" + p_str) != -1) { //blender and other stuff
-		return true;
+	if (pos > 0) {
+		const char32_t character = p_what.get(pos - 1);
+		if (is_alpha(character)) {
+			return false;
+		}
 	}
-	if (what.to_lower().ends_with("-" + p_str)) { //collada only supports "_" and "-" besides letters
-		return true;
+
+	if (pos + p_str.length() < p_what.length()) {
+		const char32_t character = p_what.get(pos + p_str.length());
+		if (is_alpha(character)) {
+			return false;
+		}
 	}
-	if (what.to_lower().ends_with("_" + p_str)) { //collada only supports "_" and "-" besides letters
-		return true;
-	}
-	return false;
+
+	return true;
 }
 
 static String _fixstr(const String &p_what, const String &p_str) {
