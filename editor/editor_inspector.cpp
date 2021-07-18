@@ -804,6 +804,42 @@ void EditorProperty::_gui_input(const Ref<InputEvent> &p_event) {
 	}
 }
 
+Color *EditorProperty::_xy_property_colors() {
+	Color base = get_theme_color("accent_color", "Editor");
+	float saturation = base.get_s() * 0.75;
+	float value = base.get_v();
+
+	static Color c[2];
+	c[0].set_hsv(0.0 / 3.0 + 0.05, saturation, value);
+	c[1].set_hsv(1.0 / 3.0 + 0.05, saturation, value);
+	return c;
+}
+
+Color *EditorProperty::_xyz_property_colors() {
+	Color base = get_theme_color("accent_color", "Editor");
+	float saturation = base.get_s() * 0.75;
+	float value = base.get_v();
+
+	static Color c[3];
+	c[0].set_hsv(0.0 / 3.0 + 0.05, saturation, value);
+	c[1].set_hsv(1.0 / 3.0 + 0.05, saturation, value);
+	c[2].set_hsv(2.0 / 3.0 + 0.05, saturation, value);
+	return c;
+}
+
+Color *EditorProperty::_xyzw_property_colors() {
+	Color base = get_theme_color("accent_color", "Editor");
+	float saturation = base.get_s() * 0.75;
+	float value = base.get_v();
+
+	static Color c[4];
+	c[0].set_hsv(0.0 / 3.0 + 0.05, saturation, value);
+	c[1].set_hsv(1.0 / 3.0 + 0.05, saturation, value);
+	c[2].set_hsv(2.0 / 3.0 + 0.05, saturation, value);
+	c[3].set_hsv(1.5 / 3.0 + 0.05, saturation, value);
+	return c;
+}
+
 void EditorProperty::set_label_reference(Control *p_control) {
 	label_reference = p_control;
 }
