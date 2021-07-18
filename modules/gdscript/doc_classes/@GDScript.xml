@@ -165,6 +165,7 @@
 				[/codeblock]
 				[b]Important:[/b] The path must be absolute, a local path will just return [code]null[/code].
 				This method is a simplified version of [method ResourceLoader.load], which can be used for more advanced scenarios.
+				[b]Note: [/b] You have to import the files into the engine first, in order to load them using this method. If you want to load [Image]s at run-time, you may use [method Image.load]. If you want to import audio files, you can use the methods described in [member AudioStreamOGGVorbis.data] for OGG Vorbis files and [member AudioStreamMP3.data] for MP3s.
 			</description>
 		</method>
 		<method name="preload">

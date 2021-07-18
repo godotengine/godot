@@ -4,7 +4,7 @@
 		OGG Vorbis audio stream driver.
 	</brief_description>
 	<description>
-		OGG Vorbis audio stream driver.
+		OGG Vorbis audio stream driver. See [member data] if you want to load an OGG Vorbis file at run-time.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -13,6 +13,29 @@
 	<members>
 		<member name="data" type="PackedByteArray" setter="set_data" getter="get_data" default="PackedByteArray()">
 			Contains the audio data in bytes.
+			You can load a file without import using the method below. Keep in mind that this method loads the whole file into memory and may be not the prefered way for big files.
+			[codeblocks]
+			[gdscript]
+			func load_ogg(path):
+			    var file = File.new()
+			    file.open(path, File.READ)
+			    var sound = AudioStreamOGGVorbis.new()
+			    sound.data = file.get_buffer(file.get_len())
+			    file.close()
+			    return sound
+			[/gdscript]
+			[csharp]
+			public AudioStreamOGGVorbis LoadOgg(string path)
+			{
+			    var file = new File();
+			    file.Open(path, File.READ);
+			    var sound = new AudioStreamOGGVorbis();
+			    sound.Data = file.GetBuffer(file.GetLen());
+			    file.Close();
+			    return sound;
+			}
+			[/csharp]
+			[/codeblocks]
 		</member>
 		<member name="loop" type="bool" setter="set_loop" getter="has_loop" default="false">
 			If [code]true[/code], the stream will automatically loop when it reaches the end.

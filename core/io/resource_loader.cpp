@@ -199,7 +199,7 @@ RES ResourceLoader::_load(const String &p_path, const String &p_original_path, c
 	}
 
 	ERR_FAIL_COND_V_MSG(found, RES(),
-			vformat("Failed loading resource: %s. Make sure resources have been imported by opening the project in the editor at least once.", p_path));
+			vformat("Failed loading resource: %s. Make sure resources have been imported by opening the project in the editor at least once. Use Image.load if you want to load an image or consult the class reference of AudioStreamMP3/OGGVorbis if you want to load an audio file without importing it first.", p_path));
 
 #ifdef TOOLS_ENABLED
 	FileAccessRef file_check = FileAccess::create(FileAccess::ACCESS_RESOURCES);
