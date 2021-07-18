@@ -150,6 +150,10 @@ public:
 	static ThreadLoadStatus load_threaded_get_status(const String &p_path, float *r_progress = nullptr);
 	static RES load_threaded_get(const String &p_path, Error *r_error = nullptr);
 
+	static Vector<Error> load_threaded_request_batch(const Vector<String> &p_path, const String &p_type_hint = "", bool p_use_sub_threads = false, ResourceFormatLoader::CacheMode p_cache_mode = ResourceFormatLoader::CACHE_MODE_REUSE, const String &p_source_resource = String());
+	static Vector<ThreadLoadStatus> load_threaded_get_status_batch(const Vector<String> &p_path, float *r_progress = nullptr);
+	static Vector<RES> load_threaded_get_batch(const Vector<String> &p_path, Error *r_error = nullptr);
+
 	static RES load(const String &p_path, const String &p_type_hint = "", ResourceFormatLoader::CacheMode p_cache_mode = ResourceFormatLoader::CACHE_MODE_REUSE, Error *r_error = nullptr);
 	static bool exists(const String &p_path, const String &p_type_hint = "");
 

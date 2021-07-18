@@ -376,6 +376,129 @@ Error ResourceLoader::load_threaded_request(const String &p_path, const String &
 	return OK;
 }
 
+Vector<Error> ResourceLoader::load_threaded_request_batch(const Vector<String> &p_path, const String &p_type_hint, bool p_use_sub_threads, ResourceFormatLoader::CacheMode p_cache_mode, const String &p_source_resource) {
+	Vector<String> local_paths;
+	local_paths.resize(p_path.size());
+	for (int p = 0; p < local_paths.size(); p++) {
+		if (p_path[p].is_rel_path()) {
+			local_paths.set(p, "res://" + p_path[p]);
+		} else {
+			local_paths.set(p, ProjectSettings::get_singleton()->localize_path(p_path[p]));
+		}
+	}
+
+	Vector<Error> err;
+	err.resize(local_paths.size());
+
+	thread_load_mutex->lock();
+
+	for (int p = 0; p < local_paths.size(); p++) {
+		const String &local_path = local_paths[p];
+		if (p_source_resource != String()) {
+			//must be loading from this resource
+			if (!thread_load_tasks.has(p_source_resource)) {
+				err.set(p, ERR_INVALID_PARAMETER);
+				ERR_PRINT("There is no thread loading source resource '" + p_source_resource + "'.");
+				continue;
+			}
+			//must be loading from this thread
+			if (thread_load_tasks[p_source_resource].loader_id != Thread::get_caller_id()) {
+				err.set(p, ERR_INVALID_PARAMETER);
+				ERR_PRINT("Threading loading resource'" + local_path + " failed: Source specified: '" + p_source_resource + "' but was not called by it.");
+				continue;
+			}
+
+			//must not be already added as s sub tasks
+			if (thread_load_tasks[p_source_resource].sub_tasks.has(local_path)) {
+				err.set(p, ERR_INVALID_PARAMETER);
+				ERR_PRINT("Thread loading source resource '" + p_source_resource + "' already is loading '" + local_path + "'.");
+				continue;
+			}
+		}
+
+		if (thread_load_tasks.has(local_path)) {
+			thread_load_tasks[local_path].requests++;
+			if (p_source_resource != String()) {
+				thread_load_tasks[p_source_resource].sub_tasks.insert(local_path);
+			}
+			thread_load_mutex->unlock();
+			err.set(p, OK);
+			continue;
+		}
+
+		{
+			//create load task
+
+			ThreadLoadTask load_task;
+
+			load_task.requests = 1;
+			load_task.remapped_path = _path_remap(local_path, &load_task.xl_remapped);
+			load_task.local_path = local_path;
+			load_task.type_hint = p_type_hint;
+			load_task.cache_mode = p_cache_mode;
+			load_task.use_sub_threads = p_use_sub_threads;
+
+			{ //must check if resource is already loaded before attempting to load it in a thread
+
+				if (load_task.loader_id == Thread::get_caller_id()) {
+					thread_load_mutex->unlock();
+					err.set(p, ERR_INVALID_PARAMETER);
+					ERR_PRINT("Attempted to load a resource already being loaded from this thread, cyclic reference?");
+					continue;
+				}
+				//lock first if possible
+				ResourceCache::lock.read_lock();
+
+				//get ptr
+				Resource **rptr = ResourceCache::resources.getptr(local_path);
+
+				if (rptr) {
+					RES res(*rptr);
+					//it is possible this resource was just freed in a thread. If so, this referencing will not work and resource is considered not cached
+					if (res.is_valid()) {
+						//referencing is fine
+						load_task.resource = res;
+						load_task.status = THREAD_LOAD_LOADED;
+						load_task.progress = 1.0;
+					}
+				}
+				ResourceCache::lock.read_unlock();
+			}
+
+			if (p_source_resource != String()) {
+				thread_load_tasks[p_source_resource].sub_tasks.insert(local_path);
+			}
+
+			thread_load_tasks[local_path] = load_task;
+		}
+
+		ThreadLoadTask &load_task = thread_load_tasks[local_path];
+
+		if (load_task.resource.is_null()) { //needs to be loaded in thread
+
+			load_task.semaphore = memnew(Semaphore);
+			if (thread_loading_count < thread_load_max) {
+				thread_loading_count++;
+				thread_load_semaphore->post(); //we have free threads, so allow one
+			} else {
+				thread_waiting_count++;
+			}
+
+			print_lt("REQUEST: load count: " + itos(thread_loading_count) + " / wait count: " + itos(thread_waiting_count) + " / suspended count: " + itos(thread_suspended_count) + " / active: " + itos(thread_loading_count - thread_suspended_count));
+
+			load_task.thread = memnew(Thread);
+			load_task.thread->start(_thread_load_function, &thread_load_tasks[local_path]);
+			load_task.loader_id = load_task.thread->get_id();
+		}
+
+		err.set(p, OK);
+	}
+
+	thread_load_mutex->unlock();
+
+	return err;
+}
+
 float ResourceLoader::_dependency_get_progress(const String &p_path) {
 	if (thread_load_tasks.has(p_path)) {
 		ThreadLoadTask &load_task = thread_load_tasks[p_path];
@@ -416,6 +539,39 @@ ResourceLoader::ThreadLoadStatus ResourceLoader::load_threaded_get_status(const 
 	status = load_task.status;
 	if (r_progress) {
 		*r_progress = _dependency_get_progress(local_path);
+	}
+
+	thread_load_mutex->unlock();
+
+	return status;
+}
+
+Vector<ResourceLoader::ThreadLoadStatus> ResourceLoader::load_threaded_get_status_batch(const Vector<String> &p_path, float *r_progress) {
+	Vector<String> local_paths;
+	local_paths.resize(p_path.size());
+	for (int p = 0; p < local_paths.size(); p++) {
+		if (p_path[p].is_rel_path()) {
+			local_paths.set(p, "res://" + p_path[p]);
+		} else {
+			local_paths.set(p, ProjectSettings::get_singleton()->localize_path(p_path[p]));
+		}
+	}
+
+	Vector<ResourceLoader::ThreadLoadStatus> status;
+	status.resize(local_paths.size());
+
+	thread_load_mutex->lock();
+
+	for (int p = 0; p < local_paths.size(); p++) {
+		const String &local_path = local_paths[p];
+		if (!thread_load_tasks.has(local_path)) {
+			status.set(p, THREAD_LOAD_INVALID_RESOURCE);
+		}
+		ThreadLoadTask &load_task = thread_load_tasks[local_path];
+		status.set(p, load_task.status);
+		if (r_progress) {
+			*r_progress = _dependency_get_progress(local_path);
+		}
 	}
 
 	thread_load_mutex->unlock();
@@ -503,6 +659,94 @@ RES ResourceLoader::load_threaded_get(const String &p_path, Error *r_error) {
 	thread_load_mutex->unlock();
 
 	return resource;
+}
+
+Vector<RES> ResourceLoader::load_threaded_get_batch(const Vector<String> &p_path, Error *r_error) {
+	Vector<String> local_paths;
+	local_paths.resize(p_path.size());
+	for (int p = 0; p < local_paths.size(); p++) {
+		if (p_path[p].is_rel_path()) {
+			local_paths.set(p, "res://" + p_path[p]);
+		} else {
+			local_paths.set(p, ProjectSettings::get_singleton()->localize_path(p_path[p]));
+		}
+	}
+
+	Vector<RES> res;
+	res.resize(local_paths.size());
+
+	thread_load_mutex->lock();
+
+	for (int p = 0; p < local_paths.size(); p++) {
+		const String &local_path = local_paths[p];
+		if (!thread_load_tasks.has(local_path)) {
+			if (r_error) {
+				*r_error = ERR_INVALID_PARAMETER;
+			}
+			continue;
+		}
+
+		ThreadLoadTask &load_task = thread_load_tasks[local_path];
+
+		//semaphore still exists, meaning it's still loading, request poll
+		Semaphore *semaphore = load_task.semaphore;
+		if (semaphore) {
+			load_task.poll_requests++;
+
+			{
+				// As we got a semaphore, this means we are going to have to wait
+				// until the sub-resource is done loading
+				//
+				// As this thread will become 'blocked' we should "exchange" its
+				// active status with a waiting one, to ensure load continues.
+				//
+				// This ensures loading is never blocked and that is also within
+				// the maximum number of active threads.
+
+				if (thread_waiting_count > 0) {
+					thread_waiting_count--;
+					thread_loading_count++;
+					thread_load_semaphore->post();
+
+					load_task.start_next = false; //do not start next since we are doing it here
+				}
+
+				thread_suspended_count++;
+
+				print_lt("GET: load count: " + itos(thread_loading_count) + " / wait count: " + itos(thread_waiting_count) + " / suspended count: " + itos(thread_suspended_count) + " / active: " + itos(thread_loading_count - thread_suspended_count));
+			}
+
+			thread_load_mutex->unlock();
+			semaphore->wait();
+			thread_load_mutex->lock();
+
+			thread_suspended_count--;
+
+			if (!thread_load_tasks.has(local_path)) { //may have been erased during unlock and this was always an invalid call
+				if (r_error) {
+					*r_error = ERR_INVALID_PARAMETER;
+				}
+				continue;
+			}
+		}
+
+		res.set(p, load_task.resource);
+		if (r_error) {
+			*r_error = load_task.error;
+		}
+
+		load_task.requests--;
+
+		if (load_task.requests == 0) {
+			if (load_task.thread) { //thread may not have been used
+				load_task.thread->wait_to_finish();
+				memdelete(load_task.thread);
+			}
+			thread_load_tasks.erase(local_path);
+		}
+	}
+	thread_load_mutex->unlock();
+	return res;
 }
 
 RES ResourceLoader::load(const String &p_path, const String &p_type_hint, ResourceFormatLoader::CacheMode p_cache_mode, Error *r_error) {
