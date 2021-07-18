@@ -1583,6 +1583,13 @@ static void _reset_animation_players(Node *p_node, List<Ref<AnimatedValuesBackup
 }
 
 void EditorNode::_save_scene(String p_file, int idx) {
+	// Imported 3D scenes can't be saved by the Godot editor.
+	// Exit early to avoid displaying a "Requested file format unknown:" alert dialog
+	// when running the project, as running the project saves all opened saves by default.
+	if (p_file.ends_with(".gltf") || p_file.ends_with(".glb") || p_file.ends_with(".dae") || p_file.ends_with(".obj")) {
+		return;
+	}
+
 	Node *scene = editor_data.get_edited_scene_root(idx);
 
 	if (!scene) {
