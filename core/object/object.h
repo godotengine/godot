@@ -137,6 +137,15 @@ enum PropertyUsageFlags {
 	PROPERTY_USAGE_NOEDITOR = PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_NETWORK,
 };
 
+// The type of unit consumed by the API.
+enum PropertyUnitType {
+	PROPERTY_UNIT_TYPE_NONE,
+	PROPERTY_UNIT_TYPE_2D_DISTANCE,
+	PROPERTY_UNIT_TYPE_3D_DISTANCE,
+	PROPERTY_UNIT_TYPE_ANGLE_RADIANS,
+	PROPERTY_UNIT_TYPE_ANGLE_DEGREES,
+};
+
 #define ADD_SIGNAL(m_signal) ClassDB::add_signal(get_class_static(), m_signal)
 #define ADD_PROPERTY(m_property, m_setter, m_getter) ClassDB::add_property(get_class_static(), m_property, _scs_create(m_setter), _scs_create(m_getter))
 #define ADD_PROPERTYI(m_property, m_setter, m_getter, m_index) ClassDB::add_property(get_class_static(), m_property, _scs_create(m_setter), _scs_create(m_getter), m_index)

@@ -416,6 +416,8 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	// Inspector
 	_initial_set("interface/inspector/max_array_dictionary_items_per_page", 20);
 	hints["interface/inspector/max_array_dictionary_items_per_page"] = PropertyInfo(Variant::INT, "interface/inspector/max_array_dictionary_items_per_page", PROPERTY_HINT_RANGE, "10,100,1", PROPERTY_USAGE_DEFAULT);
+	_initial_set("interface/inspector/rotation_unit", ROTATION_UNIT_DEGREES);
+	hints["interface/inspector/rotation_unit"] = PropertyInfo(Variant::INT, "interface/inspector/rotation_unit", PROPERTY_HINT_ENUM, "Degrees,Radians,Turns");
 
 	// Theme
 	_initial_set("interface/theme/preset", "Default");
@@ -1200,6 +1202,47 @@ String EditorSettings::get_project_script_templates_dir() const {
 
 String EditorSettings::get_feature_profiles_dir() const {
 	return EditorPaths::get_singleton()->get_config_dir().plus_file("feature_profiles");
+}
+
+String EditorSettings::get_preferred_unit_suffix(const PropertyUnitType p_hint) const {
+	if (p_hint == PROPERTY_UNIT_TYPE_ANGLE_RADIANS || p_hint == PROPERTY_UNIT_TYPE_ANGLE_DEGREES) {
+		RotationUnit unit = (RotationUnit)(int)get_setting("interface/inspector/rotation_unit");
+		if (unit == ROTATION_UNIT_DEGREES) {
+			return U"\u00B0"; // Degree symbol (small raised circle).
+		} else if (unit == ROTATION_UNIT_RADIANS) {
+			return "rad";
+		} else if (unit == ROTATION_UNIT_TURNS) {
+			return "turns";
+		}
+	} else if (p_hint == PROPERTY_UNIT_TYPE_2D_DISTANCE) {
+		return "px";
+	} else if (p_hint == PROPERTY_UNIT_TYPE_3D_DISTANCE) {
+		return "m";
+	}
+	return String();
+}
+
+double EditorSettings::get_preferred_unit_scale(const PropertyUnitType p_hint) const {
+	if (p_hint == PROPERTY_UNIT_TYPE_ANGLE_RADIANS) {
+		RotationUnit unit = (RotationUnit)(int)get_setting("interface/inspector/rotation_unit");
+		if (unit == ROTATION_UNIT_DEGREES) {
+			return Math_TAU / 360.0;
+		} else if (unit == ROTATION_UNIT_RADIANS) {
+			return 1.0;
+		} else if (unit == ROTATION_UNIT_TURNS) {
+			return Math_TAU;
+		}
+	} else if (p_hint == PROPERTY_UNIT_TYPE_ANGLE_DEGREES) {
+		RotationUnit unit = (RotationUnit)(int)get_setting("interface/inspector/rotation_unit");
+		if (unit == ROTATION_UNIT_DEGREES) {
+			return 1.0;
+		} else if (unit == ROTATION_UNIT_RADIANS) {
+			return 360.0 / Math_TAU;
+		} else if (unit == ROTATION_UNIT_TURNS) {
+			return 360.0;
+		}
+	}
+	return 1.0;
 }
 
 // Metadata
