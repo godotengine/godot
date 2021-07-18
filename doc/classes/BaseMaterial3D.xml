@@ -222,7 +222,7 @@
 		<member name="grow_amount" type="float" setter="set_grow" getter="get_grow" default="0.0">
 			Grows object vertices in the direction of their normals.
 		</member>
-		<member name="heightmap_deep_parallax" type="bool" setter="set_heightmap_deep_parallax" getter="is_heightmap_deep_parallax_enabled" default="false">
+		<member name="heightmap_deep_parallax" type="bool" setter="set_heightmap_deep_parallax" getter="is_heightmap_deep_parallax_enabled" default="true">
 		</member>
 		<member name="heightmap_enabled" type="bool" setter="set_feature" getter="get_feature" default="false">
 			If [code]true[/code], height mapping is enabled (also called "parallax mapping" or "depth mapping"). See also [member normal_enabled].
@@ -234,11 +234,11 @@
 		</member>
 		<member name="heightmap_flip_texture" type="bool" setter="set_flag" getter="get_flag" default="false">
 		</member>
-		<member name="heightmap_max_layers" type="int" setter="set_heightmap_deep_parallax_max_layers" getter="get_heightmap_deep_parallax_max_layers">
+		<member name="heightmap_max_layers" type="int" setter="set_heightmap_deep_parallax_max_layers" getter="get_heightmap_deep_parallax_max_layers" default="32">
 		</member>
-		<member name="heightmap_min_layers" type="int" setter="set_heightmap_deep_parallax_min_layers" getter="get_heightmap_deep_parallax_min_layers">
+		<member name="heightmap_min_layers" type="int" setter="set_heightmap_deep_parallax_min_layers" getter="get_heightmap_deep_parallax_min_layers" default="8">
 		</member>
-		<member name="heightmap_scale" type="float" setter="set_heightmap_scale" getter="get_heightmap_scale" default="0.05">
+		<member name="heightmap_scale" type="float" setter="set_heightmap_scale" getter="get_heightmap_scale" default="1.0">
 		</member>
 		<member name="heightmap_texture" type="Texture2D" setter="set_texture" getter="get_texture">
 		</member>
