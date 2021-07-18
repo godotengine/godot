@@ -2966,9 +2966,18 @@
 			</argument>
 			<description>
 				Sets all data related to the instances in one go. This is especially useful when loading the data from disk or preparing the data from GDNative.
-
 				All data is packed in one large float array. An array may look like this: Transform for instance 1, color data for instance 1, custom data for instance 1, transform for instance 2, color data for instance 2, etc.
-
+				[Transform] is stored as 12 floats, [Transform2D] is stored as 8 floats, [code]COLOR_8BIT[/code] / [code]CUSTOM_DATA_8BIT[/code] is stored as 1 float (4 bytes as is) and [code]COLOR_FLOAT[/code] / [code]CUSTOM_DATA_FLOAT[/code] is stored as 4 floats.
+			</description>
+		</method>
+		<method name="multimesh_get_as_bulk_array">
+			<return type="PoolRealArray">
+			</return>
+			<argument index="0" name="multimesh" type="RID">
+			</argument>
+			<description>
+				Gets all data related to the instances in one go. Note that this will cause stalls in multithreaded environments.
+				All data is packed in one large float array. An array may look like this: Transform for instance 1, color data for instance 1, custom data for instance 1, transform for instance 2, color data for instance 2, etc.
 				[Transform] is stored as 12 floats, [Transform2D] is stored as 8 floats, [code]COLOR_8BIT[/code] / [code]CUSTOM_DATA_8BIT[/code] is stored as 1 float (4 bytes as is) and [code]COLOR_FLOAT[/code] / [code]CUSTOM_DATA_FLOAT[/code] is stored as 4 floats.
 			</description>
 		</method>
