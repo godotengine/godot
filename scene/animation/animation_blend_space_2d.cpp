@@ -387,19 +387,19 @@ Vector2 AnimationNodeBlendSpace2D::get_closest_point(const Vector2 &p_point) {
 }
 
 void AnimationNodeBlendSpace2D::_blend_triangle(const Vector2 &p_pos, const Vector2 *p_points, float *r_weights) {
-	if (p_pos.distance_squared_to(p_points[0]) < CMP_EPSILON2) {
+	if (p_pos.is_equal_approx(p_points[0])) {
 		r_weights[0] = 1;
 		r_weights[1] = 0;
 		r_weights[2] = 0;
 		return;
 	}
-	if (p_pos.distance_squared_to(p_points[1]) < CMP_EPSILON2) {
+	if (p_pos.is_equal_approx(p_points[1])) {
 		r_weights[0] = 0;
 		r_weights[1] = 1;
 		r_weights[2] = 0;
 		return;
 	}
-	if (p_pos.distance_squared_to(p_points[2]) < CMP_EPSILON2) {
+	if (p_pos.is_equal_approx(p_points[2])) {
 		r_weights[0] = 0;
 		r_weights[1] = 0;
 		r_weights[2] = 1;

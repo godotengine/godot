@@ -1783,7 +1783,7 @@ bool HeightMapShape3DSW::intersect_segment(const Vector3 &p_begin, const Vector3
 		int z = floor(local_begin.z);
 
 		// Workaround cases where the ray starts at an integer position.
-		if (Math::abs(cross_x) < CMP_EPSILON) {
+		if (Math::is_zero_approx(cross_x)) {
 			cross_x += delta_x;
 			// If going backwards, we should ignore the position we would get by the above flooring,
 			// because the ray is not heading in that direction.
@@ -1792,7 +1792,7 @@ bool HeightMapShape3DSW::intersect_segment(const Vector3 &p_begin, const Vector3
 			}
 		}
 
-		if (Math::abs(cross_z) < CMP_EPSILON) {
+		if (Math::is_zero_approx(cross_z)) {
 			cross_z += delta_z;
 			if (z_step == -1) {
 				z -= 1;
