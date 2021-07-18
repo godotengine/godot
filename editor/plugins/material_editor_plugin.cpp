@@ -35,44 +35,72 @@
 #include "scene/resources/particles_material.h"
 #include "scene/resources/sky_material.h"
 
-void MaterialEditor::_notification(int p_what) {
-	if (p_what == NOTIFICATION_READY) {
-		//get_scene()->connect("node_removed",this,"_node_removed");
+void MaterialEditor::_gui_input(Ref<InputEvent> p_event) {
+	ERR_FAIL_COND(p_event.is_null());
 
-		if (first_enter) {
-			//it's in propertyeditor so.. could be moved around
-
-			light_1_switch->set_normal_texture(get_theme_icon("MaterialPreviewLight1", "EditorIcons"));
-			light_1_switch->set_pressed_texture(get_theme_icon("MaterialPreviewLight1Off", "EditorIcons"));
-			light_2_switch->set_normal_texture(get_theme_icon("MaterialPreviewLight2", "EditorIcons"));
-			light_2_switch->set_pressed_texture(get_theme_icon("MaterialPreviewLight2Off", "EditorIcons"));
-
-			sphere_switch->set_normal_texture(get_theme_icon("MaterialPreviewSphereOff", "EditorIcons"));
-			sphere_switch->set_pressed_texture(get_theme_icon("MaterialPreviewSphere", "EditorIcons"));
-			box_switch->set_normal_texture(get_theme_icon("MaterialPreviewCubeOff", "EditorIcons"));
-			box_switch->set_pressed_texture(get_theme_icon("MaterialPreviewCube", "EditorIcons"));
-
-			first_enter = false;
+	Ref<InputEventMouseMotion> mm = p_event;
+	if (mm.is_valid() && mm->get_button_mask() & MOUSE_BUTTON_MASK_LEFT) {
+		rot.x -= mm->get_relative().y * 0.01;
+		rot.y -= mm->get_relative().x * 0.01;
+		if (rot.x < -Math_PI / 2) {
+			rot.x = -Math_PI / 2;
+		} else if (rot.x > Math_PI / 2) {
+			rot.x = Math_PI / 2;
 		}
+		_update_rotation();
 	}
+}
 
-	if (p_what == NOTIFICATION_DRAW) {
-		Ref<Texture2D> checkerboard = get_theme_icon("Checkerboard", "EditorIcons");
-		Size2 size = get_size();
+void MaterialEditor::_notification(int p_what) {
+	switch (p_what) {
+		case NOTIFICATION_READY: {
+			if (first_enter) {
+				light_1_switch->set_normal_texture(get_theme_icon("MaterialPreviewLight1", "EditorIcons"));
+				light_1_switch->set_pressed_texture(get_theme_icon("MaterialPreviewLight1Off", "EditorIcons"));
+				light_2_switch->set_normal_texture(get_theme_icon("MaterialPreviewLight2", "EditorIcons"));
+				light_2_switch->set_pressed_texture(get_theme_icon("MaterialPreviewLight2Off", "EditorIcons"));
 
-		draw_texture_rect(checkerboard, Rect2(Point2(), size), true);
+				sphere_switch->set_normal_texture(get_theme_icon("MaterialPreviewSphereOff", "EditorIcons"));
+				sphere_switch->set_pressed_texture(get_theme_icon("MaterialPreviewSphere", "EditorIcons"));
+				box_switch->set_normal_texture(get_theme_icon("MaterialPreviewCubeOff", "EditorIcons"));
+				box_switch->set_pressed_texture(get_theme_icon("MaterialPreviewCube", "EditorIcons"));
+				first_enter = false;
+			}
+		} break;
+		case NOTIFICATION_DRAW: {
+			Ref<Texture2D> checkerboard = get_theme_icon("Checkerboard", "EditorIcons");
+			Size2 size = get_size();
+
+			draw_texture_rect(checkerboard, Rect2(Point2(), size), true);
+		} break;
 	}
+}
+
+void MaterialEditor::_update_rotation() {
+	Transform3D t;
+	t.basis.rotate(Vector3(0, 1, 0), -rot.y);
+	t.basis.rotate(Vector3(1, 0, 0), -rot.x);
+	rotation->set_transform(t);
+	update();
 }
 
 void MaterialEditor::edit(Ref<Material> p_material, const Ref<Environment> &p_env) {
 	material = p_material;
 	camera->set_environment(p_env);
+
 	if (!material.is_null()) {
 		sphere_instance->set_material_override(material);
 		box_instance->set_material_override(material);
 	} else {
 		hide();
 	}
+
+	rot.x = Math::deg2rad(-15.0);
+	rot.y = Math::deg2rad(30.0);
+	_update_rotation();
+
+	box_instance->set_transform(Transform3D() * 0.25);
+	sphere_instance->set_transform(Transform3D() * 0.375);
 }
 
 void MaterialEditor::_button_pressed(Node *p_button) {
@@ -102,6 +130,7 @@ void MaterialEditor::_button_pressed(Node *p_button) {
 }
 
 void MaterialEditor::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("_gui_input"), &MaterialEditor::_gui_input);
 }
 
 MaterialEditor::MaterialEditor() {
@@ -119,7 +148,7 @@ MaterialEditor::MaterialEditor() {
 	viewport->set_msaa(Viewport::MSAA_4X);
 
 	camera = memnew(Camera3D);
-	camera->set_transform(Transform3D(Basis(), Vector3(0, 0, 3)));
+	camera->set_transform(Transform3D(Basis(), Vector3(0, 0, 1.1)));
 	camera->set_perspective(45, 0.1, 10);
 	camera->make_current();
 	viewport->add_child(camera);
@@ -133,11 +162,14 @@ MaterialEditor::MaterialEditor() {
 	light2->set_color(Color(0.7, 0.7, 0.7));
 	viewport->add_child(light2);
 
+	rotation = memnew(Node3D);
+	viewport->add_child(rotation);
+
 	sphere_instance = memnew(MeshInstance3D);
-	viewport->add_child(sphere_instance);
+	rotation->add_child(sphere_instance);
 
 	box_instance = memnew(MeshInstance3D);
-	viewport->add_child(box_instance);
+	rotation->add_child(box_instance);
 
 	Transform3D box_xform;
 	box_xform.basis.rotate(Vector3(1, 0, 0), Math::deg2rad(25.0));
@@ -186,8 +218,6 @@ MaterialEditor::MaterialEditor() {
 	light_2_switch->set_toggle_mode(true);
 	vb_light->add_child(light_2_switch);
 	light_2_switch->connect("pressed", callable_mp(this, &MaterialEditor::_button_pressed), varray(light_2_switch));
-
-	first_enter = true;
 
 	if (EditorSettings::get_singleton()->get_project_metadata("inspector_options", "material_preview_on_sphere", true)) {
 		box_instance->hide();

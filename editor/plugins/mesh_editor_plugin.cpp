@@ -37,12 +37,12 @@ void MeshEditor::_gui_input(Ref<InputEvent> p_event) {
 
 	Ref<InputEventMouseMotion> mm = p_event;
 	if (mm.is_valid() && mm->get_button_mask() & MOUSE_BUTTON_MASK_LEFT) {
-		rot_x -= mm->get_relative().y * 0.01;
-		rot_y -= mm->get_relative().x * 0.01;
-		if (rot_x < -Math_PI / 2) {
-			rot_x = -Math_PI / 2;
-		} else if (rot_x > Math_PI / 2) {
-			rot_x = Math_PI / 2;
+		rot.x -= mm->get_relative().y * 0.01;
+		rot.y -= mm->get_relative().x * 0.01;
+		if (rot.x < -Math_PI / 2) {
+			rot.x = -Math_PI / 2;
+		} else if (rot.x > Math_PI / 2) {
+			rot.x = Math_PI / 2;
 		}
 		_update_rotation();
 	}
@@ -50,10 +50,8 @@ void MeshEditor::_gui_input(Ref<InputEvent> p_event) {
 
 void MeshEditor::_notification(int p_what) {
 	if (p_what == NOTIFICATION_READY) {
-		//get_scene()->connect("node_removed",this,"_node_removed");
-
 		if (first_enter) {
-			//it's in propertyeditor so. could be moved around
+			// It's in the property editor. So, could be moved around.
 
 			light_1_switch->set_normal_texture(get_theme_icon("MaterialPreviewLight1", "EditorIcons"));
 			light_1_switch->set_pressed_texture(get_theme_icon("MaterialPreviewLight1Off", "EditorIcons"));
@@ -66,8 +64,8 @@ void MeshEditor::_notification(int p_what) {
 
 void MeshEditor::_update_rotation() {
 	Transform3D t;
-	t.basis.rotate(Vector3(0, 1, 0), -rot_y);
-	t.basis.rotate(Vector3(1, 0, 0), -rot_x);
+	t.basis.rotate(Vector3(0, 1, 0), -rot.y);
+	t.basis.rotate(Vector3(1, 0, 0), -rot.x);
 	rotation->set_transform(t);
 }
 
@@ -75,8 +73,8 @@ void MeshEditor::edit(Ref<Mesh> p_mesh) {
 	mesh = p_mesh;
 	mesh_instance->set_mesh(mesh);
 
-	rot_x = Math::deg2rad(-15.0);
-	rot_y = Math::deg2rad(30.0);
+	rot.x = Math::deg2rad(-15.0);
+	rot.y = Math::deg2rad(30.0);
 	_update_rotation();
 
 	AABB aabb = mesh->get_aabb();
@@ -155,11 +153,6 @@ MeshEditor::MeshEditor() {
 	light_2_switch->set_toggle_mode(true);
 	vb_light->add_child(light_2_switch);
 	light_2_switch->connect("pressed", callable_mp(this, &MeshEditor::_button_pressed), varray(light_2_switch));
-
-	first_enter = true;
-
-	rot_x = 0;
-	rot_y = 0;
 }
 
 ///////////////////////
