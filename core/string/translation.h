@@ -77,6 +77,16 @@ class TranslationServer : public Object {
 
 	bool enabled = true;
 
+	bool pseudolocalization_enabled;
+	bool pseudolocalization_accents_enabled;
+	bool pseudolocalization_double_vowels_enabled;
+	bool pseudolocalization_fake_bidi_enabled;
+	bool pseudolocalization_override_enabled;
+	bool pseudolocalization_skip_placeholders_enabled;
+	float expansion_ratio;
+	String pseudolocalization_prefix;
+	String pseudolocalization_suffix;
+
 	static TranslationServer *singleton;
 	bool _load_translations(const String &p_from);
 
@@ -103,6 +113,33 @@ public:
 
 	StringName translate(const StringName &p_message, const StringName &p_context = "") const;
 	StringName translate_plural(const StringName &p_message, const StringName &p_message_plural, int p_n, const StringName &p_context = "") const;
+
+	StringName pseudolocalize(const StringName &p_message) const;
+	String get_override_string(String &message) const;
+	String double_vowels(String &message) const;
+	String replace_with_accented_string(String &message) const;
+	String wrap_with_fakebidi_characters(String &message) const;
+	String add_padding(String &message, int length) const;
+	const char32_t *get_accented_version(char32_t c) const;
+
+	bool is_pseudolocalization_enabled() const;
+	void set_pseudolocalization_enabled(bool enabled);
+	bool is_pseudolocalization_accents_enabled() const;
+	void set_pseudolocalization_accents_enabled(bool enabled);
+	bool is_pseudolocalization_double_vowels_enabled() const;
+	void set_pseudolocalization_double_vowels_enabled(bool enabled);
+	bool is_pseudolocalization_fake_bidi_enabled() const;
+	void set_pseudolocalization_fake_bidi_enabled(bool enabled);
+	bool is_pseudolocalization_override_enabled() const;
+	void set_pseudolocalization_override_enabled(bool enabled);
+	bool is_pseudolocalization_skip_placeholders_enabled() const;
+	void set_pseudolocalization_skip_placeholders_enabled(bool enabled);
+	float get_pseudolocalization_expansion_ratio() const;
+	void set_pseudolocalization_expansion_ratio(float ratio);
+	String get_pseudolocalization_prefix() const;
+	void set_pseudolocalization_prefix(String prefix);
+	String get_pseudolocalization_suffix() const;
+	void set_pseudolocalization_suffix(String suffix);
 
 	static Vector<String> get_all_locales();
 	static Vector<String> get_all_locale_names();
