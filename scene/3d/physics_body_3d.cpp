@@ -160,11 +160,7 @@ bool PhysicsBody3D::move_and_collide(const Vector3 &p_motion, bool p_infinite_in
 		}
 	}
 
-	for (int i = 0; i < 3; i++) {
-		if (locked_axis & (1 << i)) {
-			r_result.motion[i] = 0;
-		}
-	}
+	_apply_axis_lock(r_result.motion);
 
 	if (!p_test_only) {
 		gt.origin += r_result.motion;
@@ -187,16 +183,23 @@ bool PhysicsBody3D::test_move(const Transform3D &p_from, const Vector3 &p_motion
 }
 
 void PhysicsBody3D::set_axis_lock(PhysicsServer3D::BodyAxis p_axis, bool p_lock) {
-	if (p_lock) {
-		locked_axis |= p_axis;
-	} else {
-		locked_axis &= (~p_axis);
-	}
 	PhysicsServer3D::get_singleton()->body_set_axis_lock(get_rid(), p_axis, p_lock);
 }
 
 bool PhysicsBody3D::get_axis_lock(PhysicsServer3D::BodyAxis p_axis) const {
-	return (locked_axis & p_axis);
+	return PhysicsServer3D::get_singleton()->body_is_axis_locked(get_rid(), p_axis);
+}
+
+void PhysicsBody3D::_apply_axis_lock(Vector3 &p_motion) const {
+	if (get_axis_lock(PhysicsServer3D::BODY_AXIS_LINEAR_X)) {
+		p_motion.x = 0.0f;
+	}
+	if (get_axis_lock(PhysicsServer3D::BODY_AXIS_LINEAR_Y)) {
+		p_motion.y = 0.0f;
+	}
+	if (get_axis_lock(PhysicsServer3D::BODY_AXIS_LINEAR_Z)) {
+		p_motion.z = 0.0f;
+	}
 }
 
 Vector3 PhysicsBody3D::get_linear_velocity() const {
@@ -1091,11 +1094,7 @@ void CharacterBody3D::move_and_slide() {
 
 	bool was_on_floor = on_floor;
 
-	for (int i = 0; i < 3; i++) {
-		if (locked_axis & (1 << i)) {
-			linear_velocity[i] = 0.0;
-		}
-	}
+	_apply_axis_lock(linear_velocity);
 
 	Vector3 current_floor_velocity = floor_velocity;
 	if (on_floor && on_floor_body.is_valid()) {
@@ -1179,11 +1178,7 @@ void CharacterBody3D::move_and_slide() {
 					motion = result.remainder.slide(result.collision_normal);
 					linear_velocity = linear_velocity.slide(result.collision_normal);
 
-					for (int j = 0; j < 3; j++) {
-						if (locked_axis & (1 << j)) {
-							linear_velocity[j] = 0.0;
-						}
-					}
+					_apply_axis_lock(linear_velocity);
 				} else {
 					motion = result.remainder;
 				}
