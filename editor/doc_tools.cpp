@@ -38,6 +38,7 @@
 #include "core/io/marshalls.h"
 #include "core/object/script_language.h"
 #include "core/version.h"
+#include "editor/editor_settings.h"
 #include "scene/resources/theme.h"
 
 // Used for a hack preserving Mono properties on non-Mono builds.
@@ -256,8 +257,17 @@ void DocTools::generate(bool p_basic_types) {
 
 		List<PropertyInfo> properties;
 		List<PropertyInfo> own_properties;
-		if (name == "ProjectSettings") {
-			//special case for project settings, so settings can be documented
+
+		if (name == "EditorSettings") {
+			// Special case for editor settings, so they can be documented.
+			// Force the use of default editor settings to prevent the user's settings
+			// (and list of projects) from being included the list.
+			EditorSettings::create(true);
+			EditorSettings::get_singleton()->get_property_list(&properties);
+			EditorSettings::destroy();
+			own_properties = properties;
+		} else if (name == "ProjectSettings") {
+			// Special case for project settings, so they can be documented.
 			ProjectSettings::get_singleton()->get_property_list(&properties);
 			own_properties = properties;
 		} else {
@@ -285,6 +295,16 @@ void DocTools::generate(bool p_basic_types) {
 
 			bool default_value_valid = false;
 			Variant default_value;
+
+			if (name == "EditorSettings") {
+				if (E->get().name == "resource_local_to_scene" ||
+						E->get().name == "resource_name" ||
+						E->get().name == "resource_path" ||
+						E->get().name == "script") {
+					// Don't include spurious properties in the generated EditorSettings class reference.
+					continue;
+				}
+			}
 
 			if (name == "ProjectSettings") {
 				// Special case for project settings, so that settings are not taken from the current project's settings

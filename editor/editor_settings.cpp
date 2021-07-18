@@ -656,7 +656,7 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	hints["editors/3d/navigation_feel/manipulation_translation_inertia"] = PropertyInfo(Variant::FLOAT, "editors/3d/navigation_feel/manipulation_translation_inertia", PROPERTY_HINT_RANGE, "0.0, 1, 0.01");
 
 	// 3D: Freelook
-	_initial_set("editors/3d/freelook/freelook_navigation_scheme", false);
+	_initial_set("editors/3d/freelook/freelook_navigation_scheme", 0);
 	hints["editors/3d/freelook/freelook_navigation_scheme"] = PropertyInfo(Variant::INT, "editors/3d/freelook/freelook_navigation_scheme", PROPERTY_HINT_ENUM, "Default,Partially Axis-Locked (id Tech),Fully Axis-Locked (Minecraft)");
 	_initial_set("editors/3d/freelook/freelook_sensitivity", 0.4);
 	hints["editors/3d/freelook/freelook_sensitivity"] = PropertyInfo(Variant::FLOAT, "editors/3d/freelook/freelook_sensitivity", PROPERTY_HINT_RANGE, "0.0, 2, 0.01");
@@ -874,11 +874,10 @@ EditorSettings *EditorSettings::get_singleton() {
 	return singleton.ptr();
 }
 
-void EditorSettings::create() {
-	// IMPORTANT: create() *must* create a valid EditorSettings singleton,
-	// as the rest of the engine code will assume it. As such, it should never
-	// return (incl. via ERR_FAIL) without initializing the singleton member.
-
+// IMPORTANT: If not called with `false` as an argument, `create()` *must*
+// create a valid EditorSettings singleton, as the rest of the engine code will assume it.
+// As such, it should never return (including via `ERR_FAIL()`) without initializing the singleton member.
+void EditorSettings::create(bool p_use_default_settings) {
 	if (singleton.ptr()) {
 		ERR_PRINT("Can't recreate EditorSettings as it already exists.");
 		return;
@@ -913,10 +912,16 @@ void EditorSettings::create() {
 			goto fail;
 		}
 
-		singleton = ResourceLoader::load(config_file_path, "EditorSettings");
+		if (!p_use_default_settings) {
+			singleton = ResourceLoader::load(config_file_path, "EditorSettings");
+		}
 
 		if (singleton.is_null()) {
-			ERR_PRINT("Could not load editor settings from path: " + config_file_path);
+			if (!p_use_default_settings) {
+				// This is expected behavior when forcing the use of default settings (used by `--doctool`),
+				// so don't print an error message about it.
+				ERR_PRINT("Could not load editor settings from path: " + config_file_path);
+			}
 			goto fail;
 		}
 
@@ -951,7 +956,9 @@ fail:
 	singleton->_load_defaults(extra_config);
 	singleton->setup_language();
 	singleton->setup_network();
-	singleton->list_text_editor_themes();
+	if (EditorPaths::get_singleton() != nullptr) {
+		singleton->list_text_editor_themes();
+	}
 }
 
 void EditorSettings::setup_language() {
