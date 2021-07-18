@@ -681,8 +681,44 @@ bool EditorProperty::is_selected() const {
 	return selected;
 }
 
+void EditorProperty::set_disabled(bool p_disabled) {
+	set_read_only(p_disabled);
+	Color color = get_modulate();
+	color.a = p_disabled ? 0.5 : 1.0;
+	set_modulate(color);
+	int child_count = get_child_count();
+	for (int i = 0; i < child_count; i++) {
+		Node *child = get_child(i);
+		Container *container = Object::cast_to<Container>(child);
+		if (container) {
+			int container_child_count = container->get_child_count();
+			for (int j = 0; j < container_child_count; j++) {
+				Node *container_child = container->get_child(j);
+				EditorSpinSlider *spin_slider = Object::cast_to<EditorSpinSlider>(container_child);
+				if (spin_slider) {
+					spin_slider->set_read_only(p_disabled);
+				}
+			}
+		} else {
+			EditorSpinSlider *spin_slider = Object::cast_to<EditorSpinSlider>(child);
+			if (spin_slider) {
+				spin_slider->set_read_only(p_disabled);
+			}
+		}
+	}
+	disabled = p_disabled;
+}
+
+bool EditorProperty::is_disabled() const {
+	return disabled;
+}
+
 void EditorProperty::_gui_input(const Ref<InputEvent> &p_event) {
 	ERR_FAIL_COND(p_event.is_null());
+
+	if (read_only) {
+		return;
+	}
 
 	if (property == StringName()) {
 		return;
@@ -2027,6 +2063,13 @@ void EditorInspector::update_tree() {
 
 			if (exclusive) {
 				break;
+			}
+		}
+
+		if (p.usage & PROPERTY_USAGE_READ_ONLY) {
+			List<EditorProperty *> editor_properties = editor_property_map[p.name];
+			for (List<EditorProperty *>::Element *editor_property = editor_properties.front(); editor_property; editor_property = editor_property->next()) {
+				editor_property->get()->set_disabled(true);
 			}
 		}
 	}

@@ -46,6 +46,8 @@
 #include "servers/rendering_server.h"
 #include "servers/text_server.h"
 
+#define ARRAY_SIZE(a) (sizeof(a) / sizeof(a[0]))
+
 #ifdef TOOLS_ENABLED
 #include "editor/editor_settings.h"
 #include "editor/plugins/canvas_item_editor_plugin.h"
@@ -71,6 +73,20 @@ Dictionary Control::_edit_get_state() const {
 	s["offsets"] = offsets;
 	return s;
 }
+
+String Control::properties_managed_by_container[] = {
+	"offset_left",
+	"offset_top",
+	"offset_right",
+	"offset_bottom",
+	"anchor_left",
+	"anchor_top",
+	"anchor_right",
+	"anchor_bottom",
+	"rect_position",
+	"rect_scale",
+	"rect_size"
+};
 
 void Control::_edit_set_state(const Dictionary &p_state) {
 	ERR_FAIL_COND((p_state.size() <= 0) ||
@@ -335,6 +351,32 @@ bool Control::_get(const StringName &p_name, Variant &r_ret) const {
 	}
 
 	return true;
+}
+
+void Control::_validate_property(PropertyInfo &property) const {
+	// Check if the control node has a parent.
+	Node *parent = this->get_parent();
+	if (parent == nullptr) {
+		return;
+	}
+	// Check if the parent is a container.
+	StringName parent_class_name = parent->get_class_name();
+	bool parent_is_a_container = ClassDB::is_parent_class(parent_class_name, "Container");
+	if (parent_is_a_container == false) {
+		return;
+	}
+	// Disable the property if it's managed by the parent container.
+	bool property_is_managed_by_container = false;
+	int property_count = ARRAY_SIZE(properties_managed_by_container);
+	for (int i = 0; i < property_count; i++) {
+		property_is_managed_by_container = properties_managed_by_container[i] == property.name;
+		if (property_is_managed_by_container) {
+			break;
+		}
+	}
+	if (property_is_managed_by_container) {
+		property.usage |= PROPERTY_USAGE_READ_ONLY;
+	}
 }
 
 void Control::_get_property_list(List<PropertyInfo> *p_list) const {

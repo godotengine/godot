@@ -144,6 +144,10 @@ void EditorSpinSlider::_gui_input(const Ref<InputEvent> &p_event) {
 }
 
 void EditorSpinSlider::_grabber_gui_input(const Ref<InputEvent> &p_event) {
+	if (read_only) {
+		return;
+	}
+
 	Ref<InputEventMouseButton> mb = p_event;
 
 	if (grabbing_grabber) {
@@ -322,7 +326,7 @@ void EditorSpinSlider::_notification(int p_what) {
 			if (grabber->is_visible()) {
 				grabber->hide();
 			}
-		} else if (!hide_slider) {
+		} else if (!hide_slider && !read_only) {
 			int grabber_w = 4 * EDSCALE;
 			int width = size.width - sb->get_minimum_size().width - grabber_w;
 			int ofs = sb->get_offset().x;
@@ -521,6 +525,7 @@ void EditorSpinSlider::set_custom_label_color(bool p_use_custom_label_color, Col
 void EditorSpinSlider::_focus_entered() {
 	_ensure_input_popup();
 	Rect2 gr = get_screen_rect();
+	value_input->set_editable(!read_only);
 	value_input->set_text(get_text_value());
 	value_input_popup->set_position(gr.position);
 	value_input_popup->set_size(gr.size);

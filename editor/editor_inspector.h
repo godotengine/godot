@@ -61,6 +61,7 @@ private:
 	bool read_only;
 	bool checkable;
 	bool checked;
+	bool disabled;
 	bool draw_red;
 	bool keying;
 	bool deletable;
@@ -143,6 +144,9 @@ public:
 	void select(int p_focusable = -1);
 	void deselect();
 	bool is_selected() const;
+
+	virtual void set_disabled(bool p_disabled);
+	bool is_disabled() const;
 
 	void set_label_reference(Control *p_control);
 	void set_bottom_editor(Control *p_control);
