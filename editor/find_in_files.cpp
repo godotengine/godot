@@ -125,6 +125,9 @@ void FindInFiles::start() {
 		return;
 	}
 
+	if (_whole_words) {
+		_pattern = _pattern.strip_edges();
+	}
 	// Init search
 	_current_dir = "";
 	PackedStringArray init_folder;
@@ -420,8 +423,7 @@ void FindInFilesDialog::set_find_in_files_mode(FindInFilesMode p_mode) {
 }
 
 String FindInFilesDialog::get_search_text() const {
-	String text = _search_text_line_edit->get_text();
-	return text.strip_edges();
+	return _search_text_line_edit->get_text();
 }
 
 String FindInFilesDialog::get_replace_text() const {
@@ -721,7 +723,9 @@ void FindInFilesPanel::_on_result_found(String fpath, int line_number, int begin
 
 	// Trim result item line
 	int old_text_size = text.size();
-	text = text.strip_edges(true, false);
+	if (_finder->is_whole_words()) {
+		text = text.strip_edges(true, false);
+	}
 	int chars_removed = old_text_size - text.size();
 	String start = vformat("%3s: ", line_number);
 
