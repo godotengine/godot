@@ -60,6 +60,7 @@ class ProjectSettingsEditor : public AcceptDialog {
 	LineEdit *search_box;
 	CheckButton *advanced;
 
+	HBoxContainer *custom_properties;
 	LineEdit *property_box;
 	OptionButton *feature_box;
 	OptionButton *type_box;
@@ -76,6 +77,7 @@ class ProjectSettingsEditor : public AcceptDialog {
 	UndoRedo *undo_redo;
 
 	void _advanced_toggled(bool p_button_pressed);
+	void _update_advanced(bool p_is_advanced);
 	void _property_box_changed(const String &p_text);
 	void _update_property_box();
 	void _feature_selected(int p_index);
