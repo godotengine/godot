@@ -980,7 +980,14 @@ LightmapGI::BakeError LightmapGI::bake(Node *p_from_node, String p_image_data_pa
 			large_image->blit_rect(images[i], Rect2(0, 0, images[i]->get_width(), images[i]->get_height()), Point2(0, images[i]->get_height() * i));
 		}
 
-		String base_path = p_image_data_path.get_basename() + ".exr";
+		String base_path;
+		if (use_hdr) {
+			// Use OpenEXR for HDR lightmaps (required, as PNG does not support the required format).
+			base_path = p_image_data_path.get_basename() + ".exr";
+		} else {
+			// Use PNG for LDR lightmaps.
+			base_path = p_image_data_path.get_basename() + ".png";
+		}
 
 		Ref<ConfigFile> config;
 
@@ -992,7 +999,14 @@ LightmapGI::BakeError LightmapGI::bake(Node *p_from_node, String p_image_data_pa
 		config->set_value("remap", "importer", "2d_array_texture");
 		config->set_value("remap", "type", "StreamTexture2DArray");
 		if (!config->has_section_key("params", "compress/mode")) {
-			config->set_value("params", "compress/mode", 2); //user may want another compression, so leave it be
+			// The user may want another compression method, so leave it be if it was customized.
+			if (use_hdr) {
+				config->set_value("params", "compress/mode", 2); // COMPRESS_VRAM_COMPRESSED
+			} else {
+				// Low dynamic range lightmaps look bad when using VRAM compression,
+				// so use lossless compression by default instead.
+				config->set_value("params", "compress/mode", 0); // COMPRESS_LOSSLESS
+			}
 		}
 		config->set_value("params", "compress/channel_pack", 1);
 		config->set_value("params", "mipmaps/generate", false);
@@ -1001,7 +1015,23 @@ LightmapGI::BakeError LightmapGI::bake(Node *p_from_node, String p_image_data_pa
 
 		config->save(base_path + ".import");
 
-		Error err = large_image->save_exr(base_path, false);
+		if (!use_color) {
+			// Convert to grayscale to reduce file size.
+			if (use_hdr) {
+				large_image->convert(Image::FORMAT_RH);
+			} else {
+				// Convert to low dynamic range to further reduce file size.
+				large_image->convert(Image::FORMAT_L8);
+			}
+		}
+
+		Error err;
+		if (use_hdr) {
+			err = large_image->save_exr(base_path, !use_color);
+		} else {
+			err = large_image->save_png(base_path);
+		}
+
 		ERR_FAIL_COND_V(err, BAKE_ERROR_CANT_CREATE_IMAGE);
 		ResourceLoader::import(base_path);
 		Ref<Texture> t = ResourceLoader::load(base_path); //if already loaded, it will be updated on refocus?
@@ -1281,6 +1311,22 @@ bool LightmapGI::is_using_denoiser() const {
 	return use_denoiser;
 }
 
+void LightmapGI::set_use_hdr(bool p_enable) {
+	use_hdr = p_enable;
+}
+
+bool LightmapGI::is_using_hdr() const {
+	return use_hdr;
+}
+
+void LightmapGI::set_use_color(bool p_enable) {
+	use_color = p_enable;
+}
+
+bool LightmapGI::is_using_color() const {
+	return use_color;
+}
+
 void LightmapGI::set_directional(bool p_enable) {
 	directional = p_enable;
 }
@@ -1411,6 +1457,12 @@ void LightmapGI::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_use_denoiser", "use_denoiser"), &LightmapGI::set_use_denoiser);
 	ClassDB::bind_method(D_METHOD("is_using_denoiser"), &LightmapGI::is_using_denoiser);
 
+	ClassDB::bind_method(D_METHOD("set_use_hdr", "use_denoiser"), &LightmapGI::set_use_hdr);
+	ClassDB::bind_method(D_METHOD("is_using_hdr"), &LightmapGI::is_using_hdr);
+
+	ClassDB::bind_method(D_METHOD("set_use_color", "use_denoiser"), &LightmapGI::set_use_color);
+	ClassDB::bind_method(D_METHOD("is_using_color"), &LightmapGI::is_using_color);
+
 	ClassDB::bind_method(D_METHOD("set_interior", "enable"), &LightmapGI::set_interior);
 	ClassDB::bind_method(D_METHOD("is_interior"), &LightmapGI::is_interior);
 
@@ -1425,6 +1477,8 @@ void LightmapGI::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "directional"), "set_directional", "is_directional");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "interior"), "set_interior", "is_interior");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_denoiser"), "set_use_denoiser", "is_using_denoiser");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_hdr"), "set_use_hdr", "is_using_hdr");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_color"), "set_use_color", "is_using_color");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "bias", PROPERTY_HINT_RANGE, "0.00001,0.1,0.00001,or_greater"), "set_bias", "get_bias");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "max_texture_size"), "set_max_texture_size", "get_max_texture_size");
 	ADD_GROUP("Environment", "environment_");

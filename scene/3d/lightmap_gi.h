@@ -138,6 +138,8 @@ public:
 private:
 	BakeQuality bake_quality = BAKE_QUALITY_MEDIUM;
 	bool use_denoiser = true;
+	bool use_hdr = true;
+	bool use_color = true;
 	int bounces = 1;
 	float bias = 0.0005;
 	int max_texture_size = 16384;
@@ -238,6 +240,12 @@ public:
 
 	void set_use_denoiser(bool p_enable);
 	bool is_using_denoiser() const;
+
+	void set_use_hdr(bool p_enable);
+	bool is_using_hdr() const;
+
+	void set_use_color(bool p_enable);
+	bool is_using_color() const;
 
 	void set_directional(bool p_enable);
 	bool is_directional() const;
