@@ -30,7 +30,10 @@ if env["tools"]:
     reg_exporters_inc = '#include "register_exporters.h"\n'
     reg_exporters = "void register_exporters() {\n"
     for e in env.platform_exporters:
-        env.add_source_files(env.editor_sources, "#platform/" + e + "/export/export.cpp")
+        # Glob all .cpp files in export folder
+        files = Glob("#platform/" + e + "/export/" + "*.cpp")
+        env.add_source_files(env.editor_sources, files)
+
         reg_exporters += "\tregister_" + e + "_exporter();\n"
         reg_exporters_inc += '#include "platform/' + e + '/export/export.h"\n'
     reg_exporters += "}\n"

@@ -28,4 +28,9 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
+#ifndef JAVASCRIPT_EXPORT_H
+#define JAVASCRIPT_EXPORT_H
+
 void register_javascript_exporter();
+
+#endif

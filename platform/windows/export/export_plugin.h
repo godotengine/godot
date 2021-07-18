@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  export.h                                                             */
+/*  export_plugin.h                                                      */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,9 +28,24 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef WINDOWS_EXPORT_H
-#define WINDOWS_EXPORT_H
+#ifndef WINDOWS_EXPORT_PLUGIN_H
+#define WINDOWS_EXPORT_PLUGIN_H
 
-void register_windows_exporter();
+#include "core/io/file_access.h"
+#include "core/os/os.h"
+#include "editor/editor_export.h"
+#include "editor/editor_node.h"
+#include "editor/editor_settings.h"
+#include "platform/windows/logo.gen.h"
+
+class EditorExportPlatformWindows : public EditorExportPlatformPC {
+	void _rcedit_add_data(const Ref<EditorExportPreset> &p_preset, const String &p_path);
+	Error _code_sign(const Ref<EditorExportPreset> &p_preset, const String &p_path);
+
+public:
+	virtual Error export_project(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, int p_flags = 0);
+	virtual Error sign_shared_object(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path);
+	virtual void get_export_options(List<ExportOption> *r_options);
+};
 
 #endif
