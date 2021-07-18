@@ -32,8 +32,10 @@
 
 #include "resource_importer_texture.h"
 
+#include "core/error/error_macros.h"
 #include "core/io/config_file.h"
 #include "core/io/image_loader.h"
+#include "core/object/ref_counted.h"
 #include "editor/editor_file_system.h"
 #include "editor/editor_node.h"
 #include "resource_importer_texture.h"
@@ -289,7 +291,6 @@ Error ResourceImporterLayeredTexture::import(const String &p_source_file, const 
 	int hdr_compression = p_options["compress/hdr_compression"];
 	int bptc_ldr = p_options["compress/bptc_ldr"];
 	bool mipmaps = p_options["mipmaps/generate"];
-	//bool mipmap_limit = p_options["mipmaps/limit"];
 
 	int channel_pack = p_options["compress/channel_pack"];
 	int hslices = (p_options.has("slices/horizontal")) ? int(p_options["slices/horizontal"]) : 0;
@@ -380,92 +381,23 @@ Error ResourceImporterLayeredTexture::import(const String &p_source_file, const 
 			slices.push_back(slice);
 		}
 	}
-
-	String extension = get_save_extension();
 	Array formats_imported;
-
-	if (compress_mode == COMPRESS_VRAM_COMPRESSED) {
-		//must import in all formats, in order of priority (so platform choses the best supported one. IE, etc2 over etc).
-		//Android, GLES 2.x
-
-		bool ok_on_pc = false;
-		bool is_hdr = (image->get_format() >= Image::FORMAT_RF && image->get_format() <= Image::FORMAT_RGBE9995);
-		bool is_ldr = (image->get_format() >= Image::FORMAT_L8 && image->get_format() <= Image::FORMAT_RGB565);
-		bool can_bptc = ProjectSettings::get_singleton()->get("rendering/textures/vram_compression/import_bptc");
-		bool can_s3tc = ProjectSettings::get_singleton()->get("rendering/textures/vram_compression/import_s3tc");
-
-		if (can_bptc) {
-			formats_imported.push_back("bptc"); //needs to be aded anyway
-		}
-		bool can_compress_hdr = hdr_compression > 0;
-
-		if (is_hdr && can_compress_hdr) {
-			if (used_channels == Image::USED_CHANNELS_LA || used_channels == Image::USED_CHANNELS_RGBA) {
-				//can compress hdr, but hdr with alpha is not compressible
-
-				if (hdr_compression == 2) {
-					//but user selected to compress hdr anyway, so force an alpha-less format.
-					if (image->get_format() == Image::FORMAT_RGBAF) {
-						for (int i = 0; i < slices.size(); i++) {
-							slices.write[i]->convert(Image::FORMAT_RGBF);
-						}
-
-					} else if (image->get_format() == Image::FORMAT_RGBAH) {
-						for (int i = 0; i < slices.size(); i++) {
-							slices.write[i]->convert(Image::FORMAT_RGBH);
-						}
-					}
-				} else {
-					can_compress_hdr = false;
-				}
-			}
-
-			if (can_compress_hdr) {
-				if (!can_bptc) {
-					//default to rgbe
-					if (image->get_format() != Image::FORMAT_RGBE9995) {
-						for (int i = 0; i < slices.size(); i++) {
-							slices.write[i]->convert(Image::FORMAT_RGBE9995);
-						}
-					}
-				}
-			} else {
-				can_bptc = false;
-			}
-		}
-
-		if (is_ldr && can_bptc) {
-			if (bptc_ldr == 0 || (bptc_ldr == 1 && !(used_channels == Image::USED_CHANNELS_LA || used_channels == Image::USED_CHANNELS_RGBA))) {
-				can_bptc = false;
-			}
-		}
-
-		if (can_bptc || can_s3tc) {
-			_save_tex(slices, p_save_path + ".s3tc." + extension, compress_mode, lossy, can_bptc ? Image::COMPRESS_BPTC : Image::COMPRESS_S3TC, csource, used_channels, mipmaps, false);
-			r_platform_variants->push_back("s3tc");
-			formats_imported.push_back("s3tc");
-			ok_on_pc = true;
-		}
-
-		if (ProjectSettings::get_singleton()->get("rendering/textures/vram_compression/import_etc2")) {
-			_save_tex(slices, p_save_path + ".etc2." + extension, compress_mode, lossy, Image::COMPRESS_ETC2, csource, used_channels, mipmaps, true);
-			r_platform_variants->push_back("etc2");
-			formats_imported.push_back("etc2");
-		}
-
-		if (ProjectSettings::get_singleton()->get("rendering/textures/vram_compression/import_pvrtc")) {
-			_save_tex(slices, p_save_path + ".etc2." + extension, compress_mode, lossy, Image::COMPRESS_ETC2, csource, used_channels, mipmaps, true);
-			r_platform_variants->push_back("pvrtc");
-			formats_imported.push_back("pvrtc");
-		}
-
-		if (!ok_on_pc) {
-			EditorNode::add_io_error("Warning, no suitable PC VRAM compression enabled in Project Settings. This texture will not display correctly on PC.");
-		}
-	} else {
-		//import normally
-		_save_tex(slices, p_save_path + "." + extension, compress_mode, lossy, Image::COMPRESS_S3TC /* IGNORED */, csource, used_channels, mipmaps, false);
-	}
+	Ref<LayeredTextureImport> texture_import;
+	texture_import.instantiate();
+	texture_import->csource = &csource;
+	texture_import->save_path = p_save_path;
+	texture_import->options = p_options;
+	texture_import->platform_variants = r_platform_variants;
+	texture_import->image = image;
+	texture_import->formats_imported = formats_imported;
+	texture_import->slices = &slices;
+	texture_import->compress_mode = compress_mode;
+	texture_import->lossy = lossy;
+	texture_import->hdr_compression = hdr_compression;
+	texture_import->bptc_ldr = bptc_ldr;
+	texture_import->mipmaps = mipmaps;
+	texture_import->used_channels = used_channels;
+	_check_compress_stex(texture_import);
 
 	if (r_metadata) {
 		Dictionary metadata;
@@ -546,4 +478,82 @@ ResourceImporterLayeredTexture::ResourceImporterLayeredTexture() {
 }
 
 ResourceImporterLayeredTexture::~ResourceImporterLayeredTexture() {
+}
+void ResourceImporterLayeredTexture::_check_compress_stex(Ref<LayeredTextureImport> r_texture_import) {
+	String extension = get_save_extension();
+	ERR_FAIL_NULL(r_texture_import->csource);
+	if (r_texture_import->compress_mode != COMPRESS_VRAM_COMPRESSED) {
+		//import normally
+		_save_tex(*r_texture_import->slices, r_texture_import->save_path + "." + extension, r_texture_import->compress_mode, r_texture_import->lossy, Image::COMPRESS_S3TC /* IGNORED */, *r_texture_import->csource, r_texture_import->used_channels, r_texture_import->mipmaps, false);
+		return;
+	}
+	//must import in all formats, in order of priority (so platform choses the best supported one. IE, etc2 over etc).
+	//Android, GLES 2.x
+
+	bool can_bptc = ProjectSettings::get_singleton()->get("rendering/textures/vram_compression/import_bptc");
+	if (can_bptc) {
+		r_texture_import->formats_imported.push_back("bptc"); //needs to be aded anyway
+	}
+	bool can_compress_hdr = r_texture_import->hdr_compression > 0;
+	ERR_FAIL_NULL(r_texture_import->image);
+	bool is_hdr = (r_texture_import->image->get_format() >= Image::FORMAT_RF && r_texture_import->image->get_format() <= Image::FORMAT_RGBE9995);
+	bool is_ldr = (r_texture_import->image->get_format() >= Image::FORMAT_L8 && r_texture_import->image->get_format() <= Image::FORMAT_RGB565);
+	bool can_s3tc = ProjectSettings::get_singleton()->get("rendering/textures/vram_compression/import_s3tc");
+	ERR_FAIL_NULL(r_texture_import->slices);
+	//can compress hdr, but hdr with alpha is not compressible
+	if (r_texture_import->hdr_compression == 2) {
+		//but user selected to compress hdr anyway, so force an alpha-less format.
+		if (r_texture_import->image->get_format() == Image::FORMAT_RGBAF) {
+			for (int i = 0; i < r_texture_import->slices->size(); i++) {
+				r_texture_import->slices->write[i]->convert(Image::FORMAT_RGBF);
+			}
+
+		} else if (r_texture_import->image->get_format() == Image::FORMAT_RGBAH) {
+			for (int i = 0; i < r_texture_import->slices->size(); i++) {
+				r_texture_import->slices->write[i]->convert(Image::FORMAT_RGBH);
+			}
+		}
+	} else {
+		can_compress_hdr = false;
+	}
+
+	if (is_hdr && can_compress_hdr) {
+		if (!can_bptc) {
+			//default to rgbe
+			if (r_texture_import->image->get_format() != Image::FORMAT_RGBE9995) {
+				for (int i = 0; i < r_texture_import->slices->size(); i++) {
+					r_texture_import->slices->write[i]->convert(Image::FORMAT_RGBE9995);
+				}
+			}
+		}
+	} else {
+		can_bptc = false;
+	}
+
+	if (is_ldr && can_bptc) {
+		if (r_texture_import->bptc_ldr == 0 || (r_texture_import->bptc_ldr == 1 && !(r_texture_import->used_channels == Image::USED_CHANNELS_LA || r_texture_import->used_channels == Image::USED_CHANNELS_RGBA))) {
+			can_bptc = false;
+		}
+	}
+	if (!(r_texture_import->used_channels == Image::USED_CHANNELS_LA || r_texture_import->used_channels == Image::USED_CHANNELS_RGBA)) {
+		if (ProjectSettings::get_singleton()->get("rendering/textures/vram_compression/import_etc2")) {
+			_save_tex(*r_texture_import->slices, r_texture_import->save_path + ".etc2." + extension, r_texture_import->compress_mode, r_texture_import->lossy, Image::COMPRESS_ETC2, *r_texture_import->csource, r_texture_import->used_channels, r_texture_import->mipmaps, true);
+			r_texture_import->platform_variants->push_back("etc2");
+			r_texture_import->formats_imported.push_back("etc2");
+		}
+
+		if (ProjectSettings::get_singleton()->get("rendering/textures/vram_compression/import_pvrtc")) {
+			_save_tex(*r_texture_import->slices, r_texture_import->save_path + ".etc2." + extension, r_texture_import->compress_mode, r_texture_import->lossy, Image::COMPRESS_ETC2, *r_texture_import->csource, r_texture_import->used_channels, r_texture_import->mipmaps, true);
+			r_texture_import->platform_variants->push_back("pvrtc");
+			r_texture_import->formats_imported.push_back("pvrtc");
+		}
+
+		if (can_bptc || can_s3tc) {
+			_save_tex(*r_texture_import->slices, r_texture_import->save_path + ".s3tc." + extension, r_texture_import->compress_mode, r_texture_import->lossy, can_bptc ? Image::COMPRESS_BPTC : Image::COMPRESS_S3TC, *r_texture_import->csource, r_texture_import->used_channels, r_texture_import->mipmaps, false);
+			r_texture_import->platform_variants->push_back("s3tc");
+			r_texture_import->formats_imported.push_back("s3tc");
+		}
+		return;
+	}
+	EditorNode::add_io_error("Warning, no suitable PC VRAM compression enabled in Project Settings. This texture will not display correctly on PC.");
 }
