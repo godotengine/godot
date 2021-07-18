@@ -92,7 +92,12 @@ class InspectorDock : public VBoxContainer {
 	Button *warning;
 	AcceptDialog *warning_dialog;
 
+	int current_option = -1;
+	ConfirmationDialog *option_confirmation;
+
 	void _menu_option(int p_option);
+	void _menu_confirm_current();
+	void _menu_option_confirm(int p_option, bool p_confirmed);
 
 	void _new_resource();
 	void _load_resource(const String &p_type = "");

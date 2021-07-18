@@ -30,11 +30,24 @@
 
 #include "inspector_dock.h"
 
+#include "core/string_builder.h"
 #include "editor/editor_node.h"
 #include "editor/editor_settings.h"
 #include "editor/plugins/animation_player_editor_plugin.h"
 
 void InspectorDock::_menu_option(int p_option) {
+	_menu_option_confirm(p_option, false);
+}
+
+void InspectorDock::_menu_confirm_current() {
+	_menu_option_confirm(current_option, true);
+}
+
+void InspectorDock::_menu_option_confirm(int p_option, bool p_confirmed) {
+	if (!p_confirmed) {
+		current_option = p_option;
+	}
+
 	switch (p_option) {
 		case EXPAND_ALL: {
 			_menu_expandall();
@@ -82,39 +95,79 @@ void InspectorDock::_menu_option(int p_option) {
 		} break;
 
 		case OBJECT_UNIQUE_RESOURCES: {
-			editor_data->apply_changes_in_editors();
-			if (current) {
-				List<PropertyInfo> props;
-				current->get_property_list(&props);
-				Map<RES, RES> duplicates;
-				for (List<PropertyInfo>::Element *E = props.front(); E; E = E->next()) {
-					if (!(E->get().usage & PROPERTY_USAGE_STORAGE)) {
-						continue;
-					}
+			if (!p_confirmed) {
+				Vector<String> resource_propnames;
 
-					Variant v = current->get(E->get().name);
-					if (v.is_ref()) {
+				if (current) {
+					List<PropertyInfo> props;
+					current->get_property_list(&props);
+
+					for (List<PropertyInfo>::Element *E = props.front(); E; E = E->next()) {
+						if (!(E->get().usage & PROPERTY_USAGE_STORAGE)) {
+							continue;
+						}
+
+						Variant v = current->get(E->get().name);
 						REF ref = v;
-						if (ref.is_valid()) {
-							RES res = ref;
-							if (res.is_valid()) {
-								if (!duplicates.has(res)) {
-									duplicates[res] = res->duplicate();
-								}
-								res = duplicates[res];
+						RES res = ref;
+						if (v.is_ref() && ref.is_valid() && res.is_valid()) {
+							// Valid resource which would be duplicated if action is confirmed.
+							resource_propnames.append(E->get().name);
+						}
+					}
+				}
 
-								current->set(E->get().name, res);
-								editor->get_inspector()->update_property(E->get().name);
+				if (resource_propnames.size()) {
+					StringBuilder sb;
+					sb.append(TTR("The following resources will be duplicated and made unique to this object") + ": \n\n");
+					for (int i = 0; i < resource_propnames.size(); i++) {
+						sb.append(" - " + resource_propnames[i] + "\n");
+					}
+					sb.append("\n" + TTR("This cannot be undone. Are you sure?"));
+
+					option_confirmation->set_text(sb.as_string());
+					option_confirmation->popup_centered();
+				} else {
+					option_confirmation->set_text(TTR("This object has no resources."));
+					current_option = -1;
+					option_confirmation->popup_centered();
+				}
+			} else {
+				editor_data->apply_changes_in_editors();
+
+				if (current) {
+					List<PropertyInfo> props;
+					current->get_property_list(&props);
+					Map<RES, RES> duplicates;
+					for (List<PropertyInfo>::Element *E = props.front(); E; E = E->next()) {
+						if (!(E->get().usage & PROPERTY_USAGE_STORAGE)) {
+							continue;
+						}
+
+						Variant v = current->get(E->get().name);
+						if (v.is_ref()) {
+							REF ref = v;
+							if (ref.is_valid()) {
+								RES res = ref;
+								if (res.is_valid()) {
+									if (!duplicates.has(res)) {
+										duplicates[res] = res->duplicate();
+									}
+									res = duplicates[res];
+
+									current->set(E->get().name, res);
+									editor->get_inspector()->update_property(E->get().name);
+								}
 							}
 						}
 					}
 				}
+
+				editor_data->get_undo_redo().clear_history();
+
+				editor->get_editor_plugins_over()->edit(nullptr);
+				editor->get_editor_plugins_over()->edit(current);
 			}
-
-			editor_data->get_undo_redo().clear_history();
-
-			editor->get_editor_plugins_over()->edit(nullptr);
-			editor->get_editor_plugins_over()->edit(current);
 
 		} break;
 
@@ -611,6 +664,10 @@ InspectorDock::InspectorDock(EditorNode *p_editor, EditorData &p_editor_data) {
 	warning->set_clip_text(true);
 	warning->hide();
 	warning->connect("pressed", callable_mp(this, &InspectorDock::_warning_pressed));
+
+	option_confirmation = memnew(ConfirmationDialog);
+	add_child(option_confirmation);
+	option_confirmation->connect("confirmed", callable_mp(this, &InspectorDock::_menu_confirm_current));
 
 	warning_dialog = memnew(AcceptDialog);
 	editor->get_gui_base()->add_child(warning_dialog);
