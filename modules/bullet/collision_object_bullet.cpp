@@ -187,6 +187,7 @@ void CollisionObjectBullet::on_exit_area(AreaBullet *p_area) {
 
 void CollisionObjectBullet::set_godot_object_flags(int flags) {
 	bt_collision_object->setUserIndex2(flags);
+	updated = true;
 }
 
 int CollisionObjectBullet::get_godot_object_flags() const {
@@ -220,7 +221,7 @@ const btTransform &CollisionObjectBullet::get_transform__bullet() const {
 }
 
 void CollisionObjectBullet::notify_transform_changed() {
-	isTransformChanged = true;
+	updated = true;
 }
 
 RigidCollisionObjectBullet::~RigidCollisionObjectBullet() {
