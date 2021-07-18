@@ -48,6 +48,13 @@ void ColorPicker::_notification(int p_what) {
 			btn_pick->set_icon(get_theme_icon("screen_picker", "ColorPicker"));
 			bt_add_preset->set_icon(get_theme_icon("add_preset"));
 
+			uv_edit->set_custom_minimum_size(Size2(get_theme_constant("sv_width"), get_theme_constant("sv_height")));
+			w_edit->set_custom_minimum_size(Size2(get_theme_constant("h_width"), 0));
+			for (int i = 0; i < 4; i++) {
+				labels[i]->set_custom_minimum_size(Size2(get_theme_constant("label_width"), 0));
+				set_margin((Margin)i, has_theme_constant_override("margin") ? get_theme_constant("margin") : get_margin(static_cast<Margin>(i)));
+			}
+
 			_update_controls();
 		} break;
 		case NOTIFICATION_ENTER_TREE: {
