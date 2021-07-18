@@ -2316,22 +2316,24 @@ void Node3DEditorViewport::_update_freelook(real_t delta) {
 
 	Vector3 direction;
 
-	if (is_shortcut_pressed("spatial_editor/freelook_left")) {
+	// Always allow using the arrow keys (+ Space and Ctrl) for freelook.
+	// This provides a good default layout for both right-handed and left-handed users out of the box.
+	if (Input::get_singleton()->is_key_pressed(KEY_LEFT) || is_shortcut_pressed("spatial_editor/freelook_left")) {
 		direction -= right;
 	}
-	if (is_shortcut_pressed("spatial_editor/freelook_right")) {
+	if (Input::get_singleton()->is_key_pressed(KEY_RIGHT) || is_shortcut_pressed("spatial_editor/freelook_right")) {
 		direction += right;
 	}
-	if (is_shortcut_pressed("spatial_editor/freelook_forward")) {
+	if (Input::get_singleton()->is_key_pressed(KEY_UP) || is_shortcut_pressed("spatial_editor/freelook_forward")) {
 		direction += forward;
 	}
-	if (is_shortcut_pressed("spatial_editor/freelook_backwards")) {
+	if (Input::get_singleton()->is_key_pressed(KEY_DOWN) || is_shortcut_pressed("spatial_editor/freelook_backwards")) {
 		direction -= forward;
 	}
-	if (is_shortcut_pressed("spatial_editor/freelook_up")) {
+	if (Input::get_singleton()->is_key_pressed(KEY_SPACE) || is_shortcut_pressed("spatial_editor/freelook_up")) {
 		direction += up;
 	}
-	if (is_shortcut_pressed("spatial_editor/freelook_down")) {
+	if (Input::get_singleton()->is_key_pressed(KEY_CONTROL) || is_shortcut_pressed("spatial_editor/freelook_down")) {
 		direction -= up;
 	}
 
