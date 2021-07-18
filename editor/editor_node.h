@@ -432,6 +432,7 @@ private:
 	VBoxContainer *bottom_panel_vb;
 	LinkButton *version_btn;
 	Button *bottom_panel_raise;
+	Map<String, String> capitalize_string_remaps;
 
 	Tree *disk_changed_list;
 	ConfirmationDialog *disk_changed;
@@ -844,6 +845,8 @@ public:
 	bool is_exiting() const { return exiting; }
 
 	Button *get_pause_button() { return pause_button; }
+
+	String capitalize_string(const String &p_string) const;
 
 	Button *add_bottom_panel_item(String p_text, Control *p_item);
 	void make_bottom_panel_item_visible(Control *p_item);

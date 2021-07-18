@@ -1809,11 +1809,11 @@ void EditorInspector::update_tree() {
 			if (dot != -1) {
 				String ov = name.substr(dot);
 				name = name.substr(0, dot);
-				name = name.capitalize();
+				name = EditorNode::get_singleton()->capitalize_string(name);
 				name += ov;
 
 			} else {
-				name = name.capitalize();
+				name = EditorNode::get_singleton()->capitalize_string(name);
 			}
 		}
 
@@ -1829,7 +1829,7 @@ void EditorInspector::update_tree() {
 			String cat = path;
 
 			if (capitalize_paths) {
-				cat = cat.capitalize();
+				cat = EditorNode::get_singleton()->capitalize_string(cat);
 			}
 
 			if (!filter.is_subsequence_ofi(cat) && !filter.is_subsequence_ofi(name) && property_prefix.to_lower().find(filter.to_lower()) == -1) {
@@ -1859,7 +1859,7 @@ void EditorInspector::update_tree() {
 					sections.push_back(section);
 
 					if (capitalize_paths) {
-						path_name = path_name.capitalize();
+						path_name = EditorNode::get_singleton()->capitalize_string(path_name);
 					}
 
 					Color c = sscolor;
