@@ -350,6 +350,11 @@ private:
 		RID canvas_item;
 	};
 
+	struct TouchFocus {
+		int index;
+		Control *control;
+	};
+
 	struct GUI {
 		// info used when this is a window
 
@@ -379,6 +384,8 @@ private:
 		List<Control *> roots;
 		int canvas_sort_index = 0; //for sorting items with canvas as root
 		bool dragging = false;
+		Vector<TouchFocus> touch_focuses;
+
 		bool embed_subwindows_hint = false;
 		bool embedding_subwindows = false;
 
@@ -405,6 +412,11 @@ private:
 	void _gui_sort_roots();
 	Control *_gui_find_control(const Point2 &p_global);
 	Control *_gui_find_control_at_pos(CanvasItem *p_node, const Point2 &p_global, const Transform2D &p_xform, Transform2D &r_inv_xform);
+
+	void _gui_set_touch_focus(int p_index, Control *p_control);
+	void _gui_clear_touch_focus(int p_index);
+	Control *_gui_get_touch_focus(int p_index);
+	int _gui_has_touch_focus(Control *p_control);
 
 	void _gui_input_event(Ref<InputEvent> p_event);
 
