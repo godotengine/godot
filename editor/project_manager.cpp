@@ -164,6 +164,14 @@ private:
 			return "";
 		}
 
+		if (valid_path == String(EditorSettings::get_singleton()->get("filesystem/directories/default_project_path"))) {
+			// Don't allow creating a new project at the root of the default project folder.
+			// Instead, projects must be located in subfolders.
+			set_message(TTR("Enter a project name and click the \"Create Folder\" button above."), MESSAGE_ERROR);
+			get_ok_button()->set_disabled(true);
+			return "";
+		}
+
 		if (mode == MODE_IMPORT && valid_path.ends_with(".zip")) {
 			if (d->change_dir(install_path->get_text()) == OK) {
 				valid_install_path = install_path->get_text();
