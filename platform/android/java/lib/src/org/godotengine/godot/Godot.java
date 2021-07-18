@@ -500,6 +500,7 @@ public class Godot extends Fragment implements SensorEventListener, IDownloaderC
 	@Override
 	public void onCreate(Bundle icicle) {
 		super.onCreate(icicle);
+		setRetainInstance(true);
 
 		final Activity activity = getActivity();
 		Window window = activity.getWindow();
