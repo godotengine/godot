@@ -35,6 +35,7 @@
 #include "scene/gui/margin_container.h"
 
 class Button;
+class DebugAdapterParser;
 class EditorDebuggerTree;
 class EditorDebuggerRemoteObject;
 class MenuButton;
@@ -109,6 +110,7 @@ private:
 	EditorDebuggerRemoteObject *get_inspected_remote_object();
 
 	friend class DebuggerEditorPlugin;
+	friend class DebugAdapterParser;
 	static EditorDebuggerNode *singleton;
 	EditorDebuggerNode();
 
@@ -164,6 +166,7 @@ public:
 
 	bool is_skip_breakpoints() const;
 	void set_breakpoint(const String &p_path, int p_line, bool p_enabled);
+	void set_breakpoints(const String &p_path, Array p_lines);
 	void reload_scripts();
 
 	// Remote inspector/edit.
