@@ -1930,16 +1930,58 @@ void SceneTreeDock::_script_created(Ref<Script> p_script) {
 		return;
 	}
 
-	editor_data->get_undo_redo().create_action(TTR("Attach Script"));
-	for (List<Node *>::Element *E = selected.front(); E; E = E->next()) {
-		Ref<Script> existing = E->get()->get_script();
-		editor_data->get_undo_redo().add_do_method(E->get(), "set_script", p_script);
-		editor_data->get_undo_redo().add_undo_method(E->get(), "set_script", existing);
+	if (selected.size() == 1) {
+		Node *node = selected.front()->get();
+		Ref<Script> existing = node->get_script();
+		ScriptInstance *script_instance = node->get_script_instance();
+		HashMap<String, Variant> previous_values;
+
+		if (script_instance) {
+			List<PropertyInfo> plist;
+			script_instance->get_property_list(&plist);
+
+			for (List<PropertyInfo>::Element *E = plist.front(); E; E = E->next()) {
+				if (!(E->get().usage & PROPERTY_USAGE_STORAGE)) {
+					continue;
+				}
+
+				Variant value;
+				script_instance->get(E->get().name, value);
+				previous_values.set(E->get().name, value);
+			}
+		}
+
+		editor_data->get_undo_redo().create_action(TTR("Attach Script"));
+		editor_data->get_undo_redo().add_do_method(node, "set_script", p_script);
+		editor_data->get_undo_redo().add_undo_method(node, "set_script", existing);
 		editor_data->get_undo_redo().add_do_method(this, "_update_script_button");
 		editor_data->get_undo_redo().add_undo_method(this, "_update_script_button");
-	}
+		editor_data->get_undo_redo().commit_action();
 
-	editor_data->get_undo_redo().commit_action();
+		script_instance = node->get_script_instance();
+		if (script_instance) {
+			List<PropertyInfo> plist;
+			script_instance->get_property_list(&plist);
+
+			for (const String *E = previous_values.next(nullptr); E; E = previous_values.next(E)) {
+				for (List<PropertyInfo>::Element *E2 = plist.front(); E2; E2 = E2->next()) {
+					if (E2->get().name == *E) {
+						script_instance->set(*E, previous_values[*E]);
+					}
+				}
+			}
+		}
+	} else {
+		editor_data->get_undo_redo().create_action(TTR("Attach Script"));
+		for (List<Node *>::Element *E = selected.front(); E; E = E->next()) {
+			Ref<Script> existing = E->get()->get_script();
+			editor_data->get_undo_redo().add_do_method(E->get(), "set_script", p_script);
+			editor_data->get_undo_redo().add_undo_method(E->get(), "set_script", existing);
+			editor_data->get_undo_redo().add_do_method(this, "_update_script_button");
+			editor_data->get_undo_redo().add_undo_method(this, "_update_script_button");
+		}
+		editor_data->get_undo_redo().commit_action();
+	}
 
 	editor->push_item(p_script.operator->());
 	_update_script_button();
