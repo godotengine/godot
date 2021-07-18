@@ -29,6 +29,7 @@
 /*************************************************************************/
 
 #include "range.h"
+#include "core/object/message_queue.h"
 
 TypedArray<String> Range::get_configuration_warnings() const {
 	TypedArray<String> warnings = Node::get_configuration_warnings();
@@ -100,6 +101,7 @@ void Range::set_value(double p_val) {
 void Range::set_min(double p_min) {
 	shared->min = p_min;
 	set_value(shared->val);
+	MessageQueue::get_singleton()->push_call(this, "validate_min");
 
 	shared->emit_changed("min");
 
@@ -109,8 +111,19 @@ void Range::set_min(double p_min) {
 void Range::set_max(double p_max) {
 	shared->max = p_max;
 	set_value(shared->val);
+	MessageQueue::get_singleton()->push_call(this, "validate_max");
 
 	shared->emit_changed("max");
+}
+
+void Range::validate_min() {
+	shared->min = MIN(shared->min, shared->max);
+	set_page(MIN(shared->page, shared->max - shared->min)); // update page
+}
+
+void Range::validate_max() {
+	shared->max = MAX(shared->min, shared->max);
+	set_page(MIN(shared->page, shared->max - shared->min)); // update page
 }
 
 void Range::set_step(double p_step) {
@@ -119,7 +132,7 @@ void Range::set_step(double p_step) {
 }
 
 void Range::set_page(double p_page) {
-	shared->page = p_page;
+	shared->page = MIN(p_page, shared->max - shared->min); // page should be less-than (max - min)
 	set_value(shared->val);
 
 	shared->emit_changed("page");
@@ -253,6 +266,8 @@ void Range::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_greater_allowed"), &Range::is_greater_allowed);
 	ClassDB::bind_method(D_METHOD("set_allow_lesser", "allow"), &Range::set_allow_lesser);
 	ClassDB::bind_method(D_METHOD("is_lesser_allowed"), &Range::is_lesser_allowed);
+	ClassDB::bind_method(D_METHOD("validate_min"), &Range::validate_min);
+	ClassDB::bind_method(D_METHOD("validate_max"), &Range::validate_max);
 
 	ClassDB::bind_method(D_METHOD("share", "with"), &Range::_share);
 	ClassDB::bind_method(D_METHOD("unshare"), &Range::unshare);
