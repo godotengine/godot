@@ -134,6 +134,7 @@ void AnimationPlayerEditor::_notification(int p_what) {
 			onion_skinning->set_icon(get_theme_icon("GuiTabMenuHl", "EditorIcons"));
 
 			pin->set_icon(get_theme_icon("Pin", "EditorIcons"));
+			track_editor_toggle->set_icon(get_theme_icon("GuiVisibilityVisible", "EditorIcons"));
 
 			tool_anim->add_theme_style_override("normal", get_theme_stylebox("normal", "Button"));
 			track_editor->get_edit_menu()->add_theme_style_override("normal", get_theme_stylebox("normal", "Button"));
@@ -1254,6 +1255,12 @@ void AnimationPlayerEditor::_editor_visibility_changed() {
 	if (is_visible() && animation->get_item_count() > 0) {
 		_start_onion_skinning();
 	}
+
+	if (track_editor->is_visible()) {
+		track_editor_toggle->set_icon(get_theme_icon("GuiVisibilityVisible", "EditorIcons"));
+	} else {
+		track_editor_toggle->set_icon(get_theme_icon("GuiVisibilityHidden", "EditorIcons"));
+	}
 }
 
 bool AnimationPlayerEditor::_are_onion_layers_valid() {
@@ -1484,6 +1491,10 @@ void AnimationPlayerEditor::_pin_pressed() {
 	EditorNode::get_singleton()->get_scene_tree_dock()->get_tree_editor()->update_tree();
 }
 
+void AnimationPlayerEditor::_track_editor_toggle_pressed() {
+	track_editor->set_visible(!track_editor_toggle->is_pressed());
+}
+
 void AnimationPlayerEditor::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_animation_new"), &AnimationPlayerEditor::_animation_new);
 	ClassDB::bind_method(D_METHOD("_animation_rename"), &AnimationPlayerEditor::_animation_rename);
@@ -1501,6 +1512,7 @@ void AnimationPlayerEditor::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_prepare_onion_layers_2"), &AnimationPlayerEditor::_prepare_onion_layers_2);
 	ClassDB::bind_method(D_METHOD("_start_onion_skinning"), &AnimationPlayerEditor::_start_onion_skinning);
 	ClassDB::bind_method(D_METHOD("_stop_onion_skinning"), &AnimationPlayerEditor::_stop_onion_skinning);
+	ClassDB::bind_method(D_METHOD("_track_editor_toggle_pressed"), &AnimationPlayerEditor::_track_editor_toggle_pressed);
 }
 
 AnimationPlayerEditor *AnimationPlayerEditor::singleton = nullptr;
@@ -1643,6 +1655,13 @@ AnimationPlayerEditor::AnimationPlayerEditor(EditorNode *p_editor, AnimationPlay
 	pin->set_tooltip(TTR("Pin AnimationPlayer"));
 	hb->add_child(pin);
 	pin->connect("pressed", callable_mp(this, &AnimationPlayerEditor::_pin_pressed));
+
+	track_editor_toggle = memnew(Button);
+	track_editor_toggle->set_flat(true);
+	track_editor_toggle->set_toggle_mode(true);
+	track_editor_toggle->set_tooltip(TTR("Toggle Track Editor"));
+	hb->add_child(track_editor_toggle);
+	track_editor_toggle->connect("pressed", callable_mp(this, &AnimationPlayerEditor::_track_editor_toggle_pressed));
 
 	file = memnew(EditorFileDialog);
 	add_child(file);
