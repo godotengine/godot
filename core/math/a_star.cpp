@@ -35,18 +35,12 @@
 #include "scene/scene_string_names.h"
 
 int AStar::get_available_point_id() const {
-	if (points.is_empty()) {
-		return 1;
-	}
-
-	// calculate our new next available point id if bigger than before or next id already contained in set of points.
 	if (points.has(last_free_id)) {
-		int cur_new_id = last_free_id;
+		int cur_new_id = last_free_id + 1;
 		while (points.has(cur_new_id)) {
 			cur_new_id++;
 		}
-		int &non_const = const_cast<int &>(last_free_id);
-		non_const = cur_new_id;
+		const_cast<int &>(last_free_id) = cur_new_id;
 	}
 
 	return last_free_id;
