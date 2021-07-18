@@ -195,6 +195,9 @@ int PacketPeerStream::get_available_packet_count() const {
 		uint8_t lbuf[4];
 		ring_buffer.copy(lbuf, ofs, 4);
 		uint32_t len = decode_uint32(lbuf);
+		if (peer->is_big_endian_enabled()) {
+			len = BSWAP32(len);
+		}
 		remaining -= 4;
 		ofs += 4;
 		if (len > remaining) {
@@ -218,6 +221,9 @@ Error PacketPeerStream::get_packet(const uint8_t **r_buffer, int &r_buffer_size)
 	ring_buffer.copy(lbuf, 0, 4);
 	remaining -= 4;
 	uint32_t len = decode_uint32(lbuf);
+	if (peer->is_big_endian_enabled()) {
+		len = BSWAP32(len);
+	}
 	ERR_FAIL_COND_V(remaining < (int)len, ERR_UNAVAILABLE);
 
 	ERR_FAIL_COND_V(input_buffer.size() < (int)len, ERR_UNAVAILABLE);
@@ -244,7 +250,11 @@ Error PacketPeerStream::put_packet(const uint8_t *p_buffer, int p_buffer_size) {
 	ERR_FAIL_COND_V(p_buffer_size < 0, ERR_INVALID_PARAMETER);
 	ERR_FAIL_COND_V(p_buffer_size + 4 > output_buffer.size(), ERR_INVALID_PARAMETER);
 
-	encode_uint32(p_buffer_size, output_buffer.ptrw());
+	if (peer->is_big_endian_enabled()) {
+		encode_uint32(BSWAP32(p_buffer_size), output_buffer.ptrw());
+	} else {
+		encode_uint32(p_buffer_size, output_buffer.ptrw());
+	}
 	uint8_t *dst = &output_buffer.write[4];
 	for (int i = 0; i < p_buffer_size; i++) {
 		dst[i] = p_buffer[i];
