@@ -784,40 +784,49 @@ void CanvasItem::draw_rect(const Rect2 &p_rect, const Color &p_color, bool p_fil
 		}
 
 		RenderingServer::get_singleton()->canvas_item_add_rect(canvas_item, p_rect, p_color);
+	} else if (p_width >= p_rect.size.width || p_width >= p_rect.size.height) {
+		Size2 pos = p_rect.position - Size2(0.5 * p_width, 0.5 * p_width);
+		Size2 size = p_rect.size + Size2(p_width, p_width);
+		RenderingServer::get_singleton()->canvas_item_add_rect(canvas_item, Rect2(pos, size), p_color);
 	} else {
-		// Thick lines are offset depending on their width to avoid partial overlapping.
-		// Thin lines don't require an offset, so don't apply one in this case
-		real_t offset;
-		if (p_width >= 2) {
-			offset = p_width / 2.0;
-		} else {
-			offset = 0.0;
+		Size2 pos = p_rect.position;
+		Size2 size = p_rect.size;
+		int width = (int)Math::round(p_width);
+		real_t offset = 0.5f * width;
+
+		if (width % 2) {
+			pos += Size2(0.5, 0.5);
+			size -= Size2(1, 1);
 		}
 
+		// top line
 		RenderingServer::get_singleton()->canvas_item_add_line(
 				canvas_item,
-				p_rect.position + Size2(-offset, 0),
-				p_rect.position + Size2(p_rect.size.width + offset, 0),
+				pos + Size2(-offset, 0),
+				pos + Size2(-offset + size.width, 0),
 				p_color,
-				p_width);
+				width);
+		// right line
 		RenderingServer::get_singleton()->canvas_item_add_line(
 				canvas_item,
-				p_rect.position + Size2(p_rect.size.width, offset),
-				p_rect.position + Size2(p_rect.size.width, p_rect.size.height - offset),
+				pos + Size2(size.width, -offset),
+				pos + Size2(size.width, -offset + size.height),
 				p_color,
-				p_width);
+				width);
+		// bottom line
 		RenderingServer::get_singleton()->canvas_item_add_line(
 				canvas_item,
-				p_rect.position + Size2(p_rect.size.width + offset, p_rect.size.height),
-				p_rect.position + Size2(-offset, p_rect.size.height),
+				pos + Size2(offset + size.width, size.height),
+				pos + Size2(offset, size.height),
 				p_color,
-				p_width);
+				width);
+		// left line
 		RenderingServer::get_singleton()->canvas_item_add_line(
 				canvas_item,
-				p_rect.position + Size2(0, p_rect.size.height - offset),
-				p_rect.position + Size2(0, offset),
+				pos + Size2(0, offset + size.height),
+				pos + Size2(0, offset),
 				p_color,
-				p_width);
+				width);
 	}
 }
 
