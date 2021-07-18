@@ -286,6 +286,8 @@ Node *SceneState::instantiate(GenEditState p_edit_state) const {
 					node->_set_owner_nocheck(owner);
 				}
 			}
+		} else if (i == 0) {
+			ERR_FAIL_COND_V(!node, NULL);
 		}
 
 		ret_nodes[i] = node;
