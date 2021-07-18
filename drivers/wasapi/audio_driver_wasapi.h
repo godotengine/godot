@@ -71,6 +71,7 @@ class AudioDriverWASAPI : public AudioDriver {
 	unsigned int channels = 0;
 	int mix_rate = 0;
 	int buffer_frames = 0;
+	int target_latency_ms = 0;
 
 	bool thread_exited = false;
 	mutable bool exit_thread = false;
@@ -114,5 +115,5 @@ public:
 	AudioDriverWASAPI();
 };
 
+#endif // WASAPI_ENABLED
 #endif // AUDIO_DRIVER_WASAPI_H
-#endif
