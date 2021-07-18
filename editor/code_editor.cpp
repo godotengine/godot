@@ -1348,7 +1348,7 @@ void CodeTextEditor::toggle_inline_comment(const String &delimiter) {
 		// Check if all lines in the selected block are commented.
 		bool is_commented = true;
 		for (int i = begin; i <= end; i++) {
-			if (!text_editor->get_line(i).begins_with(delimiter)) {
+			if (!text_editor->is_line_comment(i)) {
 				is_commented = false;
 				break;
 			}
@@ -1360,7 +1360,7 @@ void CodeTextEditor::toggle_inline_comment(const String &delimiter) {
 				line_text = delimiter;
 			} else {
 				if (is_commented) {
-					line_text = line_text.substr(delimiter.length(), line_text.length());
+					line_text = line_text.replace_first(delimiter, "");
 				} else {
 					line_text = delimiter + line_text;
 				}
@@ -1388,20 +1388,20 @@ void CodeTextEditor::toggle_inline_comment(const String &delimiter) {
 		text_editor->cursor_set_column(cursor_pos);
 
 	} else {
-		int begin = text_editor->cursor_get_line();
-		String line_text = text_editor->get_line(begin);
+		int cursor_line = text_editor->cursor_get_line();
+		String line_text = text_editor->get_line(cursor_line);
 		int delimiter_length = delimiter.length();
 
 		int col = text_editor->cursor_get_column();
-		if (line_text.begins_with(delimiter)) {
-			line_text = line_text.substr(delimiter_length, line_text.length());
+		if (text_editor->is_line_comment(cursor_line)) {
+			line_text = line_text.replace_first(delimiter, "");
 			col -= delimiter_length;
 		} else {
 			line_text = delimiter + line_text;
 			col += delimiter_length;
 		}
 
-		text_editor->set_line(begin, line_text);
+		text_editor->set_line(cursor_line, line_text);
 		text_editor->cursor_set_column(col);
 	}
 	text_editor->end_complex_operation();
