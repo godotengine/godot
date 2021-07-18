@@ -337,7 +337,7 @@ void InspectorDock::_notification(int p_what) {
 			resource_new_button->set_icon(get_icon("New", "EditorIcons"));
 			resource_load_button->set_icon(get_icon("Load", "EditorIcons"));
 			resource_save_button->set_icon(get_icon("Save", "EditorIcons"));
-			resource_extra_button->set_icon(get_icon("GuiTabMenu", "EditorIcons"));
+			resource_extra_button->set_icon(get_icon("GuiTabMenuHl", "EditorIcons"));
 
 			PopupMenu *resource_extra_popup = resource_extra_button->get_popup();
 			resource_extra_popup->set_item_icon(resource_extra_popup->get_item_index(RESOURCE_EDIT_CLIPBOARD), get_icon("ActionPaste", "EditorIcons"));
@@ -526,7 +526,8 @@ InspectorDock::InspectorDock(EditorNode *p_editor, EditorData &p_editor_data) {
 	resource_save_button->set_disabled(true);
 
 	resource_extra_button = memnew(MenuButton);
-	resource_extra_button->set_icon(get_icon("GuiTabMenu", "EditorIcons"));
+	resource_extra_button->set_icon(get_icon("GuiTabMenuHl", "EditorIcons"));
+	resource_extra_button->set_tooltip(TTR("Extra resource options."));
 	general_options_hb->add_child(resource_extra_button);
 	resource_extra_button->get_popup()->add_icon_shortcut(get_icon("ActionPaste", "EditorIcons"), ED_SHORTCUT("property_editor/paste_resource", TTR("Edit Resource from Clipboard")), RESOURCE_EDIT_CLIPBOARD);
 	resource_extra_button->get_popup()->add_icon_shortcut(get_icon("ActionCopy", "EditorIcons"), ED_SHORTCUT("property_editor/copy_resource", TTR("Copy Resource")), RESOURCE_COPY);
