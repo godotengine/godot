@@ -438,8 +438,8 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_calldeferred(JNIEnv *
 		env->DeleteLocalRef(obj);
 	};
 
-	static_assert(VARIANT_ARG_MAX == 5, "This code needs to be updated if VARIANT_ARG_MAX != 5");
-	obj->call_deferred(str_method, args[0], args[1], args[2], args[3], args[4]);
+	static_assert(VARIANT_ARG_MAX == 8, "This code needs to be updated if VARIANT_ARG_MAX != 8");
+	obj->call_deferred(str_method, args[0], args[1], args[2], args[3], args[4], args[5], args[6], args[7]);
 	// something
 	env->PopLocalFrame(nullptr);
 }
