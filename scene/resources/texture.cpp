@@ -1987,6 +1987,7 @@ void AnimatedTexture::set_current_frame(int p_frame) {
 	RWLockWrite r(rw_lock);
 
 	current_frame = p_frame;
+	time = 0;
 }
 
 int AnimatedTexture::get_current_frame() const {
