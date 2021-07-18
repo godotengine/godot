@@ -67,6 +67,7 @@
 #include "core/os/main_loop.h"
 #include "core/packed_data_container.h"
 #include "core/path_remap.h"
+#include "core/physics.h"
 #include "core/project_settings.h"
 #include "core/translation.h"
 #include "core/undo_redo.h"
@@ -88,6 +89,7 @@ static _Marshalls *_marshalls = nullptr;
 static _JSON *_json = nullptr;
 
 static IP *ip = nullptr;
+static Physics *physics = nullptr;
 
 static _Geometry *_geometry = nullptr;
 
@@ -212,6 +214,7 @@ void register_core_types() {
 	ClassDB::register_virtual_class<ResourceImporter>();
 
 	ip = IP::create();
+	physics = memnew(Physics);
 
 	_geometry = memnew(_Geometry);
 
@@ -250,6 +253,7 @@ void register_core_singletons() {
 	ClassDB::register_class<InputMap>();
 	ClassDB::register_class<_JSON>();
 	ClassDB::register_class<Expression>();
+	ClassDB::register_class<Physics>();
 
 	Engine::get_singleton()->add_singleton(Engine::Singleton("ProjectSettings", ProjectSettings::get_singleton()));
 	Engine::get_singleton()->add_singleton(Engine::Singleton("IP", IP::get_singleton()));
@@ -264,6 +268,7 @@ void register_core_singletons() {
 	Engine::get_singleton()->add_singleton(Engine::Singleton("Input", Input::get_singleton()));
 	Engine::get_singleton()->add_singleton(Engine::Singleton("InputMap", InputMap::get_singleton()));
 	Engine::get_singleton()->add_singleton(Engine::Singleton("JSON", _JSON::get_singleton()));
+	Engine::get_singleton()->add_singleton(Engine::Singleton("Physics", Physics::get_singleton()));
 }
 
 void unregister_core_types() {
@@ -299,6 +304,9 @@ void unregister_core_types() {
 
 	if (ip) {
 		memdelete(ip);
+	}
+	if (physics) {
+		memdelete(physics);
 	}
 
 	ResourceLoader::finalize();
