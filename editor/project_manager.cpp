@@ -376,20 +376,33 @@ private:
 		fdialog_install->popup_file_dialog();
 	}
 
-	void _create_folder() {
-		const String project_name_no_edges = project_name->get_text().strip_edges();
+	void _create_new_project_folder() {
+		_create_folder(project_name->get_text(), project_path);
+	}
+
+	void _create_install_folder() {
+		Vector<String> strings = project_path->get_text().split("/");
+		String filename = strings[strings.size() - 1];
+		String filename_no_extension = filename.trim_suffix("." + filename.get_extension());
+		project_name->set_text(filename_no_extension);
+
+		_create_folder(project_name->get_text(), install_path);
+	}
+
+	void _create_folder(const String p_project_name, LineEdit *p_path) {
+		const String project_name_no_edges = p_project_name.strip_edges();
 		if (project_name_no_edges == "" || created_folder_path != "" || project_name_no_edges.ends_with(".")) {
 			set_message(TTR("Invalid project name."), MESSAGE_WARNING);
 			return;
 		}
 
 		DirAccess *d = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
-		if (d->change_dir(project_path->get_text()) == OK) {
+		if (d->change_dir(p_path->get_text()) == OK) {
 			if (!d->dir_exists(project_name_no_edges)) {
 				if (d->make_dir(project_name_no_edges) == OK) {
 					d->change_dir(project_name_no_edges);
 					String dir_str = d->get_current_dir();
-					project_path->set_text(dir_str);
+					p_path->set_text(dir_str);
 					_path_text_changed(dir_str);
 					created_folder_path = d->get_current_dir();
 					create_dir->set_disabled(true);
@@ -658,7 +671,6 @@ private:
 protected:
 	static void _bind_methods() {
 		ClassDB::bind_method("_browse_path", &ProjectDialog::_browse_path);
-		ClassDB::bind_method("_create_folder", &ProjectDialog::_create_folder);
 		ClassDB::bind_method("_text_changed", &ProjectDialog::_text_changed);
 		ClassDB::bind_method("_path_text_changed", &ProjectDialog::_path_text_changed);
 		ClassDB::bind_method("_path_selected", &ProjectDialog::_path_selected);
@@ -798,7 +810,7 @@ public:
 		create_dir = memnew(Button);
 		pnhb->add_child(create_dir);
 		create_dir->set_text(TTR("Create Folder"));
-		create_dir->connect("pressed", callable_mp(this, &ProjectDialog::_create_folder));
+		create_dir->connect("pressed", callable_mp(this, &ProjectDialog::_create_new_project_folder));
 
 		path_container = memnew(VBoxContainer);
 		vb->add_child(path_container);
@@ -849,6 +861,11 @@ public:
 		install_browse->set_text(TTR("Browse"));
 		install_browse->connect("pressed", callable_mp(this, &ProjectDialog::_browse_install_path));
 		iphb->add_child(install_browse);
+
+		create_dir = memnew(Button);
+		create_dir->set_text(TTR("Create Folder"));
+		create_dir->connect("pressed", callable_mp(this, &ProjectDialog::_create_install_folder));
+		iphb->add_child(create_dir);
 
 		msg = memnew(Label);
 		msg->set_align(Label::ALIGN_CENTER);
