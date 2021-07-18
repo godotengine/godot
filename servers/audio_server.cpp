@@ -573,7 +573,7 @@ void AudioServer::remove_bus(int p_index) {
 	lock();
 	bus_map.erase(buses[p_index]->name);
 	memdelete(buses[p_index]);
-	buses.remove(p_index);
+	buses.remove_at(p_index);
 	unlock();
 
 	emit_signal("bus_layout_changed");
@@ -644,7 +644,7 @@ void AudioServer::move_bus(int p_bus, int p_to_pos) {
 	}
 
 	Bus *bus = buses[p_bus];
-	buses.remove(p_bus);
+	buses.remove_at(p_bus);
 
 	if (p_to_pos == -1) {
 		buses.push_back(bus);
@@ -837,7 +837,7 @@ void AudioServer::remove_bus_effect(int p_bus, int p_effect) {
 
 	lock();
 
-	buses[p_bus]->effects.remove(p_effect);
+	buses[p_bus]->effects.remove_at(p_effect);
 	_update_bus_effects(p_bus);
 
 	unlock();

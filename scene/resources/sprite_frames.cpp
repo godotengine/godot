@@ -56,7 +56,7 @@ void SpriteFrames::remove_frame(const StringName &p_anim, int p_idx) {
 	Map<StringName, Anim>::Element *E = animations.find(p_anim);
 	ERR_FAIL_COND_MSG(!E, "Animation '" + String(p_anim) + "' doesn't exist.");
 
-	E->get().frames.remove(p_idx);
+	E->get().frames.remove_at(p_idx);
 	emit_changed();
 }
 

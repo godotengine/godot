@@ -152,7 +152,7 @@ public:
 		void erase_item(Item *p_item) {
 			int idx = find_item(p_item);
 			if (idx >= 0) {
-				child_items.remove(idx);
+				child_items.remove_at(idx);
 			}
 		}
 

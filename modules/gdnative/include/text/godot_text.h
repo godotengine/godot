@@ -219,7 +219,7 @@ void GDAPI godot_packed_glyph_array_reverse(godot_packed_glyph_array *p_self);
 
 void GDAPI godot_packed_glyph_array_push_back(godot_packed_glyph_array *p_self, const godot_glyph *p_data);
 
-void GDAPI godot_packed_glyph_array_remove(godot_packed_glyph_array *p_self, godot_int p_idx);
+void GDAPI godot_packed_glyph_array_remove_at(godot_packed_glyph_array *p_self, godot_int p_idx);
 
 void GDAPI godot_packed_glyph_array_resize(godot_packed_glyph_array *p_self, godot_int p_size);
 

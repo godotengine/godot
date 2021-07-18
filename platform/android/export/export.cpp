@@ -2255,7 +2255,7 @@ public:
 		Vector<String> command_line_strings = cmdline.strip_edges().split(" ");
 		for (int i = 0; i < command_line_strings.size(); i++) {
 			if (command_line_strings[i].strip_edges().length() == 0) {
-				command_line_strings.remove(i);
+				command_line_strings.remove_at(i);
 				i--;
 			}
 		}

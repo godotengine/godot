@@ -123,7 +123,7 @@ public:
 
 			for (int j = 0; j < triangles.size(); j++) {
 				if (triangles[j].bad) {
-					triangles.remove(j);
+					triangles.remove_at(j);
 					j--;
 				}
 			}
@@ -154,7 +154,7 @@ public:
 				}
 			}
 			if (invalid) {
-				triangles.remove(i);
+				triangles.remove_at(i);
 				i--;
 			}
 		}

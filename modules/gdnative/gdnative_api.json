@@ -5740,7 +5740,7 @@
 					]
 				},
 				{
-					"name": "godot_packed_glyph_array_remove",
+					"name": "godot_packed_glyph_array_remove_at",
 					"return_type": "void",
 					"arguments": [
 						[

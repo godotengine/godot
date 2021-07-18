@@ -117,7 +117,7 @@ void CollisionObject3DSW::remove_shape(int p_index) {
 		shapes.write[i].bpid = 0;
 	}
 	shapes[p_index].shape->remove_owner(this);
-	shapes.remove(p_index);
+	shapes.remove_at(p_index);
 
 	if (!pending_shape_update_list.in_list()) {
 		PhysicsServer3DSW::singletonsw->pending_shape_update_list.add(&pending_shape_update_list);

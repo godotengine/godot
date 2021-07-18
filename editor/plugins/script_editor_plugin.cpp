@@ -679,7 +679,7 @@ void ScriptEditor::_open_recent_script(int p_idx) {
 		return;
 	}
 
-	rc.remove(p_idx);
+	rc.remove_at(p_idx);
 	EditorSettings::get_singleton()->set_project_metadata("recent_files", "scripts", rc);
 	_update_recent_scripts();
 	_show_error_dialog(path);
@@ -727,7 +727,7 @@ void ScriptEditor::_close_tab(int p_idx, bool p_save, bool p_history_back) {
 
 	for (int i = 0; i < history.size(); i++) {
 		if (history[i].control == tselected) {
-			history.remove(i);
+			history.remove_at(i);
 			i--;
 			history_pos--;
 		}

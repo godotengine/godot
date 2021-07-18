@@ -112,7 +112,7 @@ public:
 		return current_idx;
 	}
 
-	void remove(uint64_t p_idx) {
+	void remove_at(uint64_t p_idx) {
 		ERR_FAIL_COND(p_idx >= array.size());
 		uint64_t new_idx = move(p_idx, 0);
 		uint64_t swap_idx = array.size() - 1;

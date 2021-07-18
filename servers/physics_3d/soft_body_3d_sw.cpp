@@ -362,7 +362,7 @@ void SoftBody3DSW::unpin_vertex(int p_index) {
 	uint32_t pinned_count = pinned_vertices.size();
 	for (uint32_t i = 0; i < pinned_count; ++i) {
 		if (p_index == pinned_vertices[i]) {
-			pinned_vertices.remove(i);
+			pinned_vertices.remove_at(i);
 
 			if (!soft_mesh.is_null()) {
 				ERR_FAIL_INDEX(p_index, (int)map_visual_to_physics.size());

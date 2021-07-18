@@ -498,7 +498,7 @@ void EditorSettingsDialog::_builtin_action_popup_index_pressed(int p_index) {
 			}
 		} break;
 		case SHORTCUT_ERASE: {
-			current_action_events.remove(p_index);
+			current_action_events.remove_at(p_index);
 			_update_builtin_action(current_action, current_action_events);
 		} break;
 		default:

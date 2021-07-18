@@ -144,7 +144,7 @@ void godot_icall_Array_Insert(Array *ptr, int32_t index, MonoObject *item) {
 MonoBoolean godot_icall_Array_Remove(Array *ptr, MonoObject *item) {
 	int idx = ptr->find(GDMonoMarshal::mono_object_to_variant(item));
 	if (idx >= 0) {
-		ptr->remove(idx);
+		ptr->remove_at(idx);
 		return true;
 	}
 	return false;
@@ -155,7 +155,7 @@ void godot_icall_Array_RemoveAt(Array *ptr, int32_t index) {
 		GDMonoUtils::set_pending_exception(mono_get_exception_index_out_of_range());
 		return;
 	}
-	ptr->remove(index);
+	ptr->remove_at(index);
 }
 
 int32_t godot_icall_Array_Resize(Array *ptr, int32_t new_size) {

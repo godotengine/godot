@@ -3266,7 +3266,7 @@ void TileData::add_collision_polygon(int p_layer_id) {
 void TileData::remove_collision_polygon(int p_layer_id, int p_polygon_index) {
 	ERR_FAIL_INDEX(p_layer_id, physics.size());
 	ERR_FAIL_INDEX(p_polygon_index, physics[p_layer_id].polygons.size());
-	physics.write[p_layer_id].polygons.remove(p_polygon_index);
+	physics.write[p_layer_id].polygons.remove_at(p_polygon_index);
 	emit_signal("changed");
 }
 

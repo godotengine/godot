@@ -119,7 +119,7 @@ public:
 		if (pos < 0) {
 			return;
 		}
-		_data.remove(pos);
+		_data.remove_at(pos);
 	}
 
 	int find(const T &p_val) const {

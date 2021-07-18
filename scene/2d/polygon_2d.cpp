@@ -532,7 +532,7 @@ Vector<float> Polygon2D::get_bone_weights(int p_index) const {
 
 void Polygon2D::erase_bone(int p_idx) {
 	ERR_FAIL_INDEX(p_idx, bone_weights.size());
-	bone_weights.remove(p_idx);
+	bone_weights.remove_at(p_idx);
 }
 
 void Polygon2D::clear_bones() {

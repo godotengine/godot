@@ -391,7 +391,7 @@ void ItemList::move_item(int p_from_idx, int p_to_idx) {
 	}
 
 	Item item = items[p_from_idx];
-	items.remove(p_from_idx);
+	items.remove_at(p_from_idx);
 	items.insert(p_to_idx, item);
 
 	update();
@@ -405,7 +405,7 @@ int ItemList::get_item_count() const {
 void ItemList::remove_item(int p_idx) {
 	ERR_FAIL_INDEX(p_idx, items.size());
 
-	items.remove(p_idx);
+	items.remove_at(p_idx);
 	if (current == p_idx) {
 		current = -1;
 	}

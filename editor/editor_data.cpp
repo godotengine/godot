@@ -70,7 +70,7 @@ void EditorHistory::cleanup_history() {
 		}
 
 		if (fail) {
-			history.remove(i);
+			history.remove_at(i);
 			i--;
 		}
 	}
@@ -495,7 +495,7 @@ void EditorData::remove_custom_type(const String &p_type) {
 	for (Map<String, Vector<CustomType>>::Element *E = custom_types.front(); E; E = E->next()) {
 		for (int i = 0; i < E->get().size(); i++) {
 			if (E->get()[i].name == p_type) {
-				E->get().remove(i);
+				E->get().remove_at(i);
 				if (E->get().is_empty()) {
 					custom_types.erase(E->key());
 				}
@@ -551,7 +551,7 @@ void EditorData::remove_scene(int p_idx) {
 		current_edited_scene--;
 	}
 
-	edited_scene.remove(p_idx);
+	edited_scene.remove_at(p_idx);
 }
 
 bool EditorData::_find_updated_instances(Node *p_root, Node *p_node, Set<String> &checked_paths) {
@@ -732,7 +732,7 @@ void EditorData::move_edited_scene_to_index(int p_idx) {
 	ERR_FAIL_INDEX(p_idx, edited_scene.size());
 
 	EditedScene es = edited_scene[current_edited_scene];
-	edited_scene.remove(current_edited_scene);
+	edited_scene.remove_at(current_edited_scene);
 	edited_scene.insert(p_idx, es);
 	current_edited_scene = p_idx;
 }

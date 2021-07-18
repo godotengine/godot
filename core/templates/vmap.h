@@ -134,7 +134,7 @@ public:
 		if (pos < 0) {
 			return;
 		}
-		_cowdata.remove(pos);
+		_cowdata.remove_at(pos);
 	}
 
 	int find(const T &p_val) const {

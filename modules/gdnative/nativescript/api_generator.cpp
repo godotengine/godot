@@ -244,7 +244,7 @@ List<ClassAPI> generate_c_api_classes() {
 		{
 			String name = class_name;
 			if (name.begins_with("_")) {
-				name.remove(0);
+				name.remove_at(0);
 			}
 			class_api.is_singleton = Engine::get_singleton()->has_singleton(name);
 			if (class_api.is_singleton) {

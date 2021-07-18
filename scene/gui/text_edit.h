@@ -138,7 +138,7 @@ private:
 		void set_hidden(int p_line, bool p_hidden) { text.write[p_line].hidden = p_hidden; }
 		bool is_hidden(int p_line) const { return text[p_line].hidden; }
 		void insert(int p_at, const String &p_text, const Vector<Vector2i> &p_bidi_override);
-		void remove(int p_at);
+		void remove_at(int p_index);
 		int size() const { return text.size(); }
 		void clear();
 

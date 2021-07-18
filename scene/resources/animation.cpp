@@ -661,7 +661,7 @@ void Animation::remove_track(int p_track) {
 	}
 
 	memdelete(t);
-	tracks.remove(p_track);
+	tracks.remove_at(p_track);
 	emit_changed();
 	emit_signal(SceneStringNames::get_singleton()->tracks_changed);
 }
@@ -826,37 +826,37 @@ void Animation::track_remove_key(int p_track, int p_idx) {
 		case TYPE_TRANSFORM3D: {
 			TransformTrack *tt = static_cast<TransformTrack *>(t);
 			ERR_FAIL_INDEX(p_idx, tt->transforms.size());
-			tt->transforms.remove(p_idx);
+			tt->transforms.remove_at(p_idx);
 
 		} break;
 		case TYPE_VALUE: {
 			ValueTrack *vt = static_cast<ValueTrack *>(t);
 			ERR_FAIL_INDEX(p_idx, vt->values.size());
-			vt->values.remove(p_idx);
+			vt->values.remove_at(p_idx);
 
 		} break;
 		case TYPE_METHOD: {
 			MethodTrack *mt = static_cast<MethodTrack *>(t);
 			ERR_FAIL_INDEX(p_idx, mt->methods.size());
-			mt->methods.remove(p_idx);
+			mt->methods.remove_at(p_idx);
 
 		} break;
 		case TYPE_BEZIER: {
 			BezierTrack *bz = static_cast<BezierTrack *>(t);
 			ERR_FAIL_INDEX(p_idx, bz->values.size());
-			bz->values.remove(p_idx);
+			bz->values.remove_at(p_idx);
 
 		} break;
 		case TYPE_AUDIO: {
 			AudioTrack *ad = static_cast<AudioTrack *>(t);
 			ERR_FAIL_INDEX(p_idx, ad->values.size());
-			ad->values.remove(p_idx);
+			ad->values.remove_at(p_idx);
 
 		} break;
 		case TYPE_ANIMATION: {
 			AnimationTrack *an = static_cast<AnimationTrack *>(t);
 			ERR_FAIL_INDEX(p_idx, an->values.size());
-			an->values.remove(p_idx);
+			an->values.remove_at(p_idx);
 
 		} break;
 	}
@@ -1206,7 +1206,7 @@ void Animation::track_set_key_time(int p_track, int p_key_idx, float p_time) {
 			ERR_FAIL_INDEX(p_key_idx, tt->transforms.size());
 			TKey<TransformKey> key = tt->transforms[p_key_idx];
 			key.time = p_time;
-			tt->transforms.remove(p_key_idx);
+			tt->transforms.remove_at(p_key_idx);
 			_insert(p_time, tt->transforms, key);
 			return;
 		}
@@ -1215,7 +1215,7 @@ void Animation::track_set_key_time(int p_track, int p_key_idx, float p_time) {
 			ERR_FAIL_INDEX(p_key_idx, vt->values.size());
 			TKey<Variant> key = vt->values[p_key_idx];
 			key.time = p_time;
-			vt->values.remove(p_key_idx);
+			vt->values.remove_at(p_key_idx);
 			_insert(p_time, vt->values, key);
 			return;
 		}
@@ -1224,7 +1224,7 @@ void Animation::track_set_key_time(int p_track, int p_key_idx, float p_time) {
 			ERR_FAIL_INDEX(p_key_idx, mt->methods.size());
 			MethodKey key = mt->methods[p_key_idx];
 			key.time = p_time;
-			mt->methods.remove(p_key_idx);
+			mt->methods.remove_at(p_key_idx);
 			_insert(p_time, mt->methods, key);
 			return;
 		}
@@ -1233,7 +1233,7 @@ void Animation::track_set_key_time(int p_track, int p_key_idx, float p_time) {
 			ERR_FAIL_INDEX(p_key_idx, bt->values.size());
 			TKey<BezierKey> key = bt->values[p_key_idx];
 			key.time = p_time;
-			bt->values.remove(p_key_idx);
+			bt->values.remove_at(p_key_idx);
 			_insert(p_time, bt->values, key);
 			return;
 		}
@@ -1242,7 +1242,7 @@ void Animation::track_set_key_time(int p_track, int p_key_idx, float p_time) {
 			ERR_FAIL_INDEX(p_key_idx, at->values.size());
 			TKey<AudioKey> key = at->values[p_key_idx];
 			key.time = p_time;
-			at->values.remove(p_key_idx);
+			at->values.remove_at(p_key_idx);
 			_insert(p_time, at->values, key);
 			return;
 		}
@@ -1251,7 +1251,7 @@ void Animation::track_set_key_time(int p_track, int p_key_idx, float p_time) {
 			ERR_FAIL_INDEX(p_key_idx, at->values.size());
 			TKey<StringName> key = at->values[p_key_idx];
 			key.time = p_time;
-			at->values.remove(p_key_idx);
+			at->values.remove_at(p_key_idx);
 			_insert(p_time, at->values, key);
 			return;
 		}
@@ -2538,7 +2538,7 @@ void Animation::track_move_to(int p_track, int p_to_index) {
 	}
 
 	Track *track = tracks.get(p_track);
-	tracks.remove(p_track);
+	tracks.remove_at(p_track);
 	// Take into account that the position of the tracks that come after the one removed will change.
 	tracks.insert(p_to_index > p_track ? p_to_index - 1 : p_to_index, track);
 
@@ -2905,7 +2905,7 @@ void Animation::_transform_track_optimize(int p_idx, float p_allowed_linear_err,
 				prev_erased = true;
 			}
 
-			tt->transforms.remove(i);
+			tt->transforms.remove_at(i);
 			i--;
 
 		} else {

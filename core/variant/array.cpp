@@ -284,8 +284,8 @@ bool Array::has(const Variant &p_value) const {
 	return _p->array.find(p_value, 0) != -1;
 }
 
-void Array::remove(int p_pos) {
-	_p->array.remove(p_pos);
+void Array::remove_at(int p_pos) {
+	_p->array.remove_at(p_pos);
 }
 
 void Array::set(int p_idx, const Variant &p_value) {
@@ -546,7 +546,7 @@ Variant Array::pop_back() {
 Variant Array::pop_front() {
 	if (!_p->array.is_empty()) {
 		Variant ret = _p->array.get(0);
-		_p->array.remove(0);
+		_p->array.remove_at(0);
 		return ret;
 	}
 	return Variant();
