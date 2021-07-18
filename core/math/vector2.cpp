@@ -34,6 +34,10 @@ real_t Vector2::angle() const {
 	return Math::atan2(y, x);
 }
 
+Vector2 Vector2::from_angle(const real_t p_angle) {
+	return Vector2(Math::cos(p_angle), Math::sin(p_angle));
+}
+
 real_t Vector2::length() const {
 	return Math::sqrt(x * x + y * y);
 }
