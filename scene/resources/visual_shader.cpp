@@ -1752,6 +1752,11 @@ void VisualShader::_update_shader() const {
 
 		StringBuilder func_code;
 
+		bool is_empty_func = false;
+		if (shader_mode != Shader::MODE_PARTICLES && shader_mode != Shader::MODE_SKY) {
+			is_empty_func = true;
+		}
+
 		for (const List<Connection>::Element *E = graph[i].connections.front(); E; E = E->next()) {
 			ConnectionKey from_key;
 			from_key.node = E->get().from_node;
@@ -1764,7 +1769,16 @@ void VisualShader::_update_shader() const {
 			to_key.port = E->get().to_port;
 
 			input_connections.insert(to_key, E);
+
+			if (is_empty_func && to_key.node == NODE_ID_OUTPUT) {
+				is_empty_func = false;
+			}
 		}
+
+		if (is_empty_func) {
+			continue;
+		}
+
 		if (shader_mode != Shader::MODE_PARTICLES) {
 			func_code += "\nvoid " + String(func_name[i]) + "() {\n";
 		}
