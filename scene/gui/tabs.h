@@ -100,6 +100,7 @@ private:
 	bool scrolling_enabled = true;
 	bool drag_to_rearrange_enabled = false;
 	int tabs_rearrange_group = -1;
+	bool rollover = false;
 
 	int get_tab_width(int p_idx) const;
 	void _ensure_no_over_offset();
@@ -181,6 +182,8 @@ public:
 	void set_select_with_rmb(bool p_enabled);
 	bool get_select_with_rmb() const;
 
+	void set_rollover(bool p_enabled);
+	bool get_rollover() const;
 	void ensure_tab_visible(int p_idx);
 	void set_min_width(int p_width);
 
