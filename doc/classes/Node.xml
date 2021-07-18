@@ -102,7 +102,8 @@
 				Called when an [InputEvent] hasn't been consumed by [method _input] or any GUI. The input event propagates up through the node tree until a node consumes it.
 				It is only called if unhandled input processing is enabled, which is done automatically if this method is overridden, and can be toggled with [method set_process_unhandled_input].
 				To consume the input event and stop it propagating further to other nodes, [method Viewport.set_input_as_handled] can be called.
-				For gameplay input, this and [method _unhandled_key_input] are usually a better fit than [method _input] as they allow the GUI to intercept the events first.
+				For gameplay input, this method is usually a better fit than [method _input] as it allows the GUI to intercept the events first. When you only need to handle keybord events (for example for keyboard shortcuts), overriding [method _unhandled_key_input] is a better choice for performance reasons, as that method only processes keyboard events.
+
 				[b]Note:[/b] This method is only called if the node is present in the scene tree (i.e. if it's not orphan).
 			</description>
 		</method>
@@ -112,10 +113,11 @@
 			<argument index="0" name="event" type="InputEventKey">
 			</argument>
 			<description>
-				Called when an [InputEventKey] hasn't been consumed by [method _input] or any GUI. The input event propagates up through the node tree until a node consumes it.
+				Called when an [InputEventKey] hasn't been consumed by [method _input] or any GUI. The input event propagates up through the node tree until a node consumes it. This method is similar to [method _unhandled_input], but it only receives keyboard events.
 				It is only called if unhandled key input processing is enabled, which is done automatically if this method is overridden, and can be toggled with [method set_process_unhandled_key_input].
 				To consume the input event and stop it propagating further to other nodes, [method Viewport.set_input_as_handled] can be called.
-				For gameplay input, this and [method _unhandled_input] are usually a better fit than [method _input] as they allow the GUI to intercept the events first.
+				For gameplay input, this and [method _unhandled_input] are usually a better fit than [method _input] as they allow the GUI to intercept the events first. When you only need to handle keybord events (for example for keyboard shortcuts), this is a better choice than [method _unhandled_input] for performance reasons, as this method only processes keyboard events.
+
 				[b]Note:[/b] This method is only called if the node is present in the scene tree (i.e. if it's not orphan).
 			</description>
 		</method>
