@@ -22,7 +22,7 @@ allprojects {
 
 ext {
     supportedAbis = ["armv7", "arm64v8", "x86", "x86_64"]
-    supportedTargets = ["release", "debug"]
+    supportedTargets = ["release", "release_debug", "debug"]
 
     // Used by gradle to specify which architecture to build for by default when running `./gradlew build`.
     // This command is usually used by Android Studio.
@@ -30,6 +30,9 @@ ext {
     // `./gradlew generateGodotTemplates` build command instead after running the `scons` command.
     // The defaultAbi must be one of the {supportedAbis} values.
     defaultAbi = "arm64v8"
+
+	//default for building on Android Studio so editor would be built as well
+	tools=true
 }
 
 def rootDir = "../../.."

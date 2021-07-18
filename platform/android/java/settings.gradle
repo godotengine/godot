@@ -4,3 +4,4 @@ rootProject.name = "Godot"
 include ':app'
 include ':lib'
 include ':nativeSrcsConfigs'
+include ':editor'

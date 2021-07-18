@@ -76,6 +76,7 @@ GodotJavaWrapper::GodotJavaWrapper(JNIEnv *p_env, jobject p_activity, jobject p_
 	_get_input_fallback_mapping = p_env->GetMethodID(godot_class, "getInputFallbackMapping", "()Ljava/lang/String;");
 	_on_godot_setup_completed = p_env->GetMethodID(godot_class, "onGodotSetupCompleted", "()V");
 	_on_godot_main_loop_started = p_env->GetMethodID(godot_class, "onGodotMainLoopStarted", "()V");
+	_call_intent_with_command_line_args = p_env->GetMethodID(godot_class, "callIntentWithCommandLineArgs", "(Ljava/lang/String;[Ljava/lang/String;)V");
 
 	// get some Activity method pointers...
 	_get_class_loader = p_env->GetMethodID(activity_class, "getClassLoader", "()Ljava/lang/ClassLoader;");
@@ -329,5 +330,17 @@ void GodotJavaWrapper::vibrate(int p_duration_ms) {
 		ERR_FAIL_COND(env == nullptr);
 
 		env->CallVoidMethod(godot_instance, _vibrate, p_duration_ms);
+	}
+}
+
+void GodotJavaWrapper::call_intent_with_command_line_args(String intent, List<String> args) {
+	if (_call_intent_with_command_line_args) {
+		JNIEnv *env = get_jni_env();
+		jstring jStrIntent = env->NewStringUTF(intent.utf8().get_data());
+		jobjectArray jargs = env->NewObjectArray(args.size(), env->FindClass("java/lang/String"), env->NewStringUTF(""));
+		for (int i = 0; i < args.size(); i++) {
+			env->SetObjectArrayElement(jargs, i, env->NewStringUTF(args[i].utf8().get_data()));
+		}
+		env->CallVoidMethod(godot_instance, _call_intent_with_command_line_args, jStrIntent, jargs);
 	}
 }
