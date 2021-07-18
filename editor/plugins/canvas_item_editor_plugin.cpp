@@ -5735,6 +5735,9 @@ void CanvasItemEditorViewport::_create_preview(const Vector<String> &files) cons
 					Node *instance = scene->instantiate();
 					if (instance) {
 						preview_node->add_child(instance);
+						preview_node->set_pause_mode(PAUSE_MODE_STOP);
+						// make sure only the preview node stops
+						editor->set_pause_mode(PAUSE_MODE_PROCESS);
 					}
 				}
 			}
@@ -5744,6 +5747,7 @@ void CanvasItemEditorViewport::_create_preview(const Vector<String> &files) cons
 
 	if (add_preview) {
 		editor->get_scene_root()->add_child(preview_node);
+		preview_node->get_tree()->set_pause(true);
 	}
 }
 
