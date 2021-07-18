@@ -98,6 +98,9 @@ void NativeExtensionManager::initialize_extensions(NativeExtension::Initializati
 }
 
 void NativeExtensionManager::deinitialize_extensions(NativeExtension::InitializationLevel p_level) {
+	if (level == -1) {
+		return;
+	}
 	ERR_FAIL_COND(int32_t(p_level) != level);
 	for (Map<String, Ref<NativeExtension>>::Element *E = native_extension_map.front(); E; E = E->next()) {
 		E->get()->deinitialize_library(p_level);
