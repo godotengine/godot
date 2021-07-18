@@ -425,7 +425,7 @@ Node *ResourceImporterScene::_pre_fix_node(Node *p_node, Node *p_root, Map<Ref<E
 			if (collision_map.has(mesh)) {
 				shapes = collision_map[mesh];
 			} else {
-				_gen_shape_list(mesh, shapes, true);
+				_pre_gen_shape_list(mesh, shapes, true);
 			}
 
 			RigidBody3D *rigid_body = memnew(RigidBody3D);
@@ -451,10 +451,10 @@ Node *ResourceImporterScene::_pre_fix_node(Node *p_node, Node *p_root, Map<Ref<E
 			if (collision_map.has(mesh)) {
 				shapes = collision_map[mesh];
 			} else if (_teststr(name, "col")) {
-				_gen_shape_list(mesh, shapes, false);
+				_pre_gen_shape_list(mesh, shapes, false);
 				collision_map[mesh] = shapes;
 			} else if (_teststr(name, "convcol")) {
-				_gen_shape_list(mesh, shapes, true);
+				_pre_gen_shape_list(mesh, shapes, true);
 				collision_map[mesh] = shapes;
 			}
 
@@ -624,13 +624,15 @@ Node *ResourceImporterScene::_post_fix_node(Node *p_node, Node *p_root, Map<Ref<
 							case MESH_PHYSICS_MESH_AND_STATIC_COLLIDER: {
 								StaticBody3D *col = memnew(StaticBody3D);
 								p_node->add_child(col);
+								col->set_owner(mi->get_owner());
 								base = col;
 							} break;
 							case MESH_PHYSICS_RIGID_BODY_AND_MESH: {
 								RigidBody3D *rigid_body = memnew(RigidBody3D);
+								rigid_body->set_transform(mi->get_transform());
 								rigid_body->set_name(p_node->get_name());
 								p_node->replace_by(rigid_body);
-								rigid_body->set_transform(mi->get_transform());
+								p_node->queue_delete();
 								p_node = rigid_body;
 								mi->set_transform(Transform3D());
 								rigid_body->add_child(mi);
@@ -642,7 +644,7 @@ Node *ResourceImporterScene::_post_fix_node(Node *p_node, Node *p_root, Map<Ref<
 								col->set_transform(mi->get_transform());
 								col->set_name(p_node->get_name());
 								p_node->replace_by(col);
-								memdelete(p_node);
+								p_node->queue_delete();
 								p_node = col;
 								base = col;
 							} break;
@@ -651,7 +653,7 @@ Node *ResourceImporterScene::_post_fix_node(Node *p_node, Node *p_root, Map<Ref<
 								area->set_transform(mi->get_transform());
 								area->set_name(p_node->get_name());
 								p_node->replace_by(area);
-								memdelete(p_node);
+								p_node->queue_delete();
 								p_node = area;
 								base = area;
 
