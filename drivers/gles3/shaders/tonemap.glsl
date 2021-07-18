@@ -52,6 +52,10 @@ uniform vec3 bcs;
 uniform vec2 pixel_size;
 #endif
 
+#ifdef USE_SHARPENING
+uniform float sharpen_intensity;
+#endif
+
 #ifdef USE_COLOR_CORRECTION
 uniform sampler2D color_correction; //texunit:3
 #endif
@@ -323,6 +327,54 @@ vec3 screen_space_dither(vec2 frag_coord) {
 	return (dither.rgb - 0.5) / 255.0;
 }
 
+// Adapted from https://github.com/DadSchoorse/vkBasalt/blob/b929505ba71dea21d6c32a5a59f2d241592b30c4/src/shader/cas.frag.glsl
+// (MIT license).
+vec3 apply_cas(vec3 color, vec2 uv_interp, float sharpen_intensity) {
+	// Fetch a 3x3 neighborhood around the pixel 'e',
+	//  a b c
+	//  d(e)f
+	//  g h i
+	vec3 a = textureLodOffset(source, uv_interp, 0.0, ivec2(-1, -1)).rgb;
+	vec3 b = textureLodOffset(source, uv_interp, 0.0, ivec2(0, -1)).rgb;
+	vec3 c = textureLodOffset(source, uv_interp, 0.0, ivec2(1, -1)).rgb;
+	vec3 d = textureLodOffset(source, uv_interp, 0.0, ivec2(-1, 0)).rgb;
+	vec3 e = color.rgb;
+	vec3 f = textureLodOffset(source, uv_interp, 0.0, ivec2(1, 0)).rgb;
+	vec3 g = textureLodOffset(source, uv_interp, 0.0, ivec2(-1, 1)).rgb;
+	vec3 h = textureLodOffset(source, uv_interp, 0.0, ivec2(0, 1)).rgb;
+	vec3 i = textureLodOffset(source, uv_interp, 0.0, ivec2(1, 1)).rgb;
+
+	// Soft min and max.
+	//  a b c             b
+	//  d e f * 0.5  +  d e f * 0.5
+	//  g h i             h
+	// These are 2.0x bigger (factored out the extra multiply).
+	vec3 min_rgb = min(min(min(d, e), min(f, b)), h);
+	vec3 min_rgb2 = min(min(min(min_rgb, a), min(g, c)), i);
+	min_rgb += min_rgb2;
+
+	vec3 max_rgb = max(max(max(d, e), max(f, b)), h);
+	vec3 max_rgb2 = max(max(max(max_rgb, a), max(g, c)), i);
+	max_rgb += max_rgb2;
+
+	// Smooth minimum distance to signal limit divided by smooth max.
+	vec3 rcp_max_rgb = vec3(1.0) / max_rgb;
+	vec3 amp_rgb = clamp((min(min_rgb, 2.0 - max_rgb) * rcp_max_rgb), 0.0, 1.0);
+
+	// Shaping amount of sharpening.
+	amp_rgb = inversesqrt(amp_rgb);
+	float peak = 8.0 - 3.0 * sharpen_intensity;
+	vec3 w_rgb = -vec3(1) / (amp_rgb * peak);
+	vec3 rcp_weight_rgb = vec3(1.0) / (1.0 + 4.0 * w_rgb);
+
+	//                          0 w 0
+	//  Filter shape:           w 1 w
+	//                          0 w 0
+	vec3 window = b + d + f + h;
+
+	return max(vec3(0.0), (window * w_rgb + e) * rcp_weight_rgb);
+}
+
 void main() {
 	vec3 color = textureLod(source, uv_interp, 0.0f).rgb;
 
@@ -338,6 +390,12 @@ void main() {
 #ifdef USE_FXAA
 	// FXAA must be applied before tonemapping.
 	color = apply_fxaa(color, full_exposure, uv_interp, pixel_size);
+#endif
+
+#ifdef USE_SHARPENING
+	// CAS gives best results when applied after tonemapping, but `source` isn't tonemapped.
+	// As a workaround, apply CAS before tonemapping so that the image still has a correct appearance when tonemapped.
+	color = apply_cas(color, uv_interp, sharpen_intensity);
 #endif
 
 #ifdef USE_DEBANDING

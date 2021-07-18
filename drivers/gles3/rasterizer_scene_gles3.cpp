@@ -3503,7 +3503,7 @@ void RasterizerSceneGLES3::_post_process(Environment *env, const CameraMatrix &p
 		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
 	}
 
-	if ((!env || storage->frame.current_rt->flags[RasterizerStorage::RENDER_TARGET_TRANSPARENT] || storage->frame.current_rt->width < 4 || storage->frame.current_rt->height < 4) && !storage->frame.current_rt->use_fxaa && !storage->frame.current_rt->use_debanding) { //no post process on small render targets
+	if ((!env || storage->frame.current_rt->flags[RasterizerStorage::RENDER_TARGET_TRANSPARENT] || storage->frame.current_rt->width < 4 || storage->frame.current_rt->height < 4) && !storage->frame.current_rt->use_fxaa && !storage->frame.current_rt->use_debanding && storage->frame.current_rt->sharpen_intensity < 0.001) { //no post process on small render targets
 		//no environment or transparent render, simply return and convert to SRGB
 		if (storage->frame.current_rt->external.fbo != 0) {
 			glBindFramebuffer(GL_FRAMEBUFFER, storage->frame.current_rt->external.fbo);
@@ -3862,6 +3862,7 @@ void RasterizerSceneGLES3::_post_process(Environment *env, const CameraMatrix &p
 	state.tonemap_shader.set_conditional(TonemapShaderGLES3::KEEP_3D_LINEAR, storage->frame.current_rt->flags[RasterizerStorage::RENDER_TARGET_KEEP_3D_LINEAR]);
 	state.tonemap_shader.set_conditional(TonemapShaderGLES3::USE_FXAA, storage->frame.current_rt->use_fxaa);
 	state.tonemap_shader.set_conditional(TonemapShaderGLES3::USE_DEBANDING, storage->frame.current_rt->use_debanding);
+	state.tonemap_shader.set_conditional(TonemapShaderGLES3::USE_SHARPENING, storage->frame.current_rt->sharpen_intensity >= 0.001);
 
 	if (env && max_glow_level >= 0) {
 		for (int i = 0; i < (max_glow_level + 1); i++) {
@@ -3941,11 +3942,16 @@ void RasterizerSceneGLES3::_post_process(Environment *env, const CameraMatrix &p
 		state.tonemap_shader.set_uniform(TonemapShaderGLES3::PIXEL_SIZE, Vector2(1.0 / storage->frame.current_rt->width, 1.0 / storage->frame.current_rt->height));
 	}
 
+	if (storage->frame.current_rt->sharpen_intensity >= 0.001) {
+		state.tonemap_shader.set_uniform(TonemapShaderGLES3::SHARPEN_INTENSITY, storage->frame.current_rt->sharpen_intensity);
+	}
+
 	_copy_screen(true, true);
 
 	//turn off everything used
 	state.tonemap_shader.set_conditional(TonemapShaderGLES3::USE_FXAA, false);
 	state.tonemap_shader.set_conditional(TonemapShaderGLES3::USE_DEBANDING, false);
+	state.tonemap_shader.set_conditional(TonemapShaderGLES3::USE_SHARPENING, false);
 	state.tonemap_shader.set_conditional(TonemapShaderGLES3::USE_AUTO_EXPOSURE, false);
 	state.tonemap_shader.set_conditional(TonemapShaderGLES3::USE_FILMIC_TONEMAPPER, false);
 	state.tonemap_shader.set_conditional(TonemapShaderGLES3::USE_ACES_TONEMAPPER, false);

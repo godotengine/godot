@@ -2062,6 +2062,9 @@ SceneTree::SceneTree() {
 	const bool use_debanding = GLOBAL_DEF("rendering/quality/filters/use_debanding", false);
 	root->set_use_debanding(use_debanding);
 
+	const float sharpen_intensity = GLOBAL_GET("rendering/quality/filters/sharpen_intensity");
+	root->set_sharpen_intensity(sharpen_intensity);
+
 	GLOBAL_DEF_RST("rendering/quality/depth/hdr", true);
 	GLOBAL_DEF("rendering/quality/depth/hdr.mobile", false);
 

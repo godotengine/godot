@@ -1197,6 +1197,9 @@ ProjectSettings::ProjectSettings() {
 	custom_prop_info["physics/2d/thread_model"] = PropertyInfo(Variant::INT, "physics/2d/thread_model", PROPERTY_HINT_ENUM, "Single-Unsafe,Single-Safe,Multi-Threaded");
 	custom_prop_info["rendering/quality/intended_usage/framebuffer_allocation"] = PropertyInfo(Variant::INT, "rendering/quality/intended_usage/framebuffer_allocation", PROPERTY_HINT_ENUM, "2D,2D Without Sampling,3D,3D Without Effects");
 
+	GLOBAL_DEF("rendering/quality/filters/sharpen_intensity", 0.0);
+	custom_prop_info["rendering/quality/filters/sharpen_intensity"] = PropertyInfo(Variant::REAL, "rendering/quality/filters/sharpen_intensity", PROPERTY_HINT_RANGE, "0,1");
+
 	GLOBAL_DEF("debug/settings/profiler/max_functions", 16384);
 	custom_prop_info["debug/settings/profiler/max_functions"] = PropertyInfo(Variant::INT, "debug/settings/profiler/max_functions", PROPERTY_HINT_RANGE, "128,65535,1");
 
