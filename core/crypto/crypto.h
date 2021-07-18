@@ -65,6 +65,8 @@ public:
 	virtual Error load(String p_path) = 0;
 	virtual Error load_from_memory(const uint8_t *p_buffer, int p_len) = 0;
 	virtual Error save(String p_path) = 0;
+	virtual Error load_from_string(String p_string_cert) = 0;
+	virtual String save_to_string() const = 0;
 };
 
 class HMACContext : public RefCounted {

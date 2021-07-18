@@ -20,6 +20,15 @@
 				Loads a certificate from [code]path[/code] ("*.crt" file).
 			</description>
 		</method>
+		<method name="load_from_string">
+			<return type="int" enum="Error">
+			</return>
+			<argument index="0" name="string_cert" type="String">
+			</argument>
+			<description>
+				Loads a certificate from a [code]string[/code] (in PEM format).
+			</description>
+		</method>
 		<method name="save">
 			<return type="int" enum="Error">
 			</return>
@@ -27,6 +36,13 @@
 			</argument>
 			<description>
 				Saves a certificate to the given [code]path[/code] (should be a "*.crt" file).
+			</description>
+		</method>
+		<method name="save_to_string">
+			<return type="String">
+			</return>
+			<description>
+				Saves a certificate to a string (in PEM format).
 			</description>
 		</method>
 	</methods>

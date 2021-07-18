@@ -82,9 +82,11 @@ public:
 	static void make_default() { X509Certificate::_create = create; }
 	static void finalize() { X509Certificate::_create = nullptr; }
 
-	virtual Error load(String p_path);
-	virtual Error load_from_memory(const uint8_t *p_buffer, int p_len);
-	virtual Error save(String p_path);
+	virtual Error load(String p_path) override;
+	virtual Error load_from_memory(const uint8_t *p_buffer, int p_len) override;
+	virtual Error save(String p_path) override;
+	virtual Error load_from_string(String p_string_cert) override;
+	virtual String save_to_string() const override;
 
 	X509CertificateMbedTLS() {
 		mbedtls_x509_crt_init(&cert);

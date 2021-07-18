@@ -154,7 +154,6 @@ Error X509CertificateMbedTLS::load(String p_path) {
 
 	int ret = mbedtls_x509_crt_parse(&cert, out.ptr(), out.size());
 	ERR_FAIL_COND_V_MSG(ret, FAILED, "Error parsing some certificates: " + itos(ret));
-
 	return OK;
 }
 
@@ -169,20 +168,8 @@ Error X509CertificateMbedTLS::load_from_memory(const uint8_t *p_buffer, int p_le
 Error X509CertificateMbedTLS::save(String p_path) {
 	FileAccess *f = FileAccess::open(p_path, FileAccess::WRITE);
 	ERR_FAIL_COND_V_MSG(!f, ERR_INVALID_PARAMETER, "Cannot save X509CertificateMbedTLS file '" + p_path + "'.");
-
-	mbedtls_x509_crt *crt = &cert;
-	while (crt) {
-		unsigned char w[4096];
-		size_t wrote = 0;
-		int ret = mbedtls_pem_write_buffer(PEM_BEGIN_CRT, PEM_END_CRT, cert.raw.p, cert.raw.len, w, sizeof(w), &wrote);
-		if (ret != 0 || wrote == 0) {
-			memdelete(f);
-			ERR_FAIL_V_MSG(FAILED, "Error writing certificate '" + itos(ret) + "'.");
-		}
-
-		f->store_buffer(w, wrote - 1); // don't write the string terminator
-		crt = crt->next;
-	}
+	f->store_string(save_to_string());
+	f->flush();
 	memdelete(f);
 	return OK;
 }
@@ -455,4 +442,36 @@ Vector<uint8_t> CryptoMbedTLS::decrypt(Ref<CryptoKey> p_key, Vector<uint8_t> p_c
 	out.resize(size);
 	memcpy(out.ptrw(), buf, size);
 	return out;
+}
+
+String X509CertificateMbedTLS::save_to_string() const {
+	const mbedtls_x509_crt *crt = &cert;
+	PackedByteArray bytes_out;
+	while (crt) {
+		Vector<unsigned char> w;
+		w.resize(4096);
+		size_t wrote = 0;
+		int ret = mbedtls_pem_write_buffer(PEM_BEGIN_CRT, PEM_END_CRT, cert.raw.p, cert.raw.len, w.ptrw(), w.size(), &wrote);
+		if (ret != 0 || wrote == 0) {
+			ERR_FAIL_V_MSG(String(), "Error saving certificate '" + itos(ret) + "'.");
+		}
+		w.resize(wrote);
+		bytes_out.append_array(w);
+		crt = crt->next;
+	}
+	String out;
+	out.parse_utf8((const char *)bytes_out.ptr(), bytes_out.size());
+	return out;
+}
+
+Error X509CertificateMbedTLS::load_from_string(String p_string_cert) {
+	if (p_string_cert.is_empty()) {
+		return ERR_INVALID_DATA;
+	}
+	ERR_FAIL_COND_V_MSG(locks, ERR_ALREADY_IN_USE, "Key is in use");
+
+	PackedByteArray string_buffer = p_string_cert.to_utf8_buffer();
+	Error ret = load_from_memory(string_buffer.ptr(), string_buffer.size());
+	mbedtls_platform_zeroize(string_buffer.ptrw(), string_buffer.size());
+	return ret;
 }
