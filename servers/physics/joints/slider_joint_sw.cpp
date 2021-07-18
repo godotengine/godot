@@ -119,8 +119,8 @@ SliderJointSW::SliderJointSW(BodySW *rbA, BodySW *rbB, const Transform &frameInA
 	A = rbA;
 	B = rbB;
 
-	A->add_constraint(this, 0);
-	B->add_constraint(this, 1);
+	A->add_constraint(this);
+	B->add_constraint(this);
 
 	initParams();
 } // SliderJointSW::SliderJointSW()

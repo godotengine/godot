@@ -38,24 +38,30 @@ void StepSW::_populate_island(BodySW *p_body, BodySW **p_island, ConstraintSW **
 	p_body->set_island_next(*p_island);
 	*p_island = p_body;
 
-	for (Map<ConstraintSW *, int>::Element *E = p_body->get_constraint_map().front(); E; E = E->next()) {
-		ConstraintSW *c = (ConstraintSW *)E->key();
-		if (c->get_island_step() == _step) {
-			continue; //already processed
+	for (const CollisionObjectSW::T_ConstraintMap::Element *E = p_body->get_constraint_map().front(); E; E = E->next()) {
+		ConstraintSW *constraint = E->get();
+		if (constraint->get_island_step() == _step) {
+			continue; // Already processed.
 		}
-		c->set_island_step(_step);
-		c->set_island_next(*p_constraint_island);
-		*p_constraint_island = c;
 
-		for (int i = 0; i < c->get_body_count(); i++) {
-			if (i == E->get()) {
-				continue;
+		constraint->set_island_step(_step);
+		constraint->set_island_next(*p_constraint_island);
+		*p_constraint_island = constraint;
+
+		BodySW **bodies = constraint->get_body_ptr();
+		int body_count = constraint->get_body_count();
+		for (int i = 0; i < body_count; i++) {
+			BodySW *other_body = bodies[i];
+
+			if (other_body->get_island_step() == _step) {
+				continue; // Already processed (can be this body).
 			}
-			BodySW *b = c->get_body_ptr()[i];
-			if (b->get_island_step() == _step || b->get_mode() == PhysicsServer::BODY_MODE_STATIC || b->get_mode() == PhysicsServer::BODY_MODE_KINEMATIC) {
-				continue; //no go
+
+			if (other_body->get_mode() <= PhysicsServer::BODY_MODE_KINEMATIC) {
+				continue; // Only dynamic bodies connect islands.
 			}
-			_populate_island(c->get_body_ptr()[i], p_island, p_constraint_island);
+
+			_populate_island(other_body, p_island, p_constraint_island);
 		}
 	}
 }
@@ -201,15 +207,15 @@ void StepSW::step(SpaceSW *p_space, real_t p_delta, int p_iterations) {
 	const SelfList<AreaSW>::List &aml = p_space->get_moved_area_list();
 
 	while (aml.first()) {
-		for (const Set<ConstraintSW *>::Element *E = aml.first()->self()->get_constraints().front(); E; E = E->next()) {
-			ConstraintSW *c = E->get();
-			if (c->get_island_step() == _step) {
+		for (const CollisionObjectSW::T_ConstraintMap::Element *E = aml.first()->self()->get_constraint_map().front(); E; E = E->next()) {
+			ConstraintSW *constraint = E->get();
+			if (constraint->get_island_step() == _step) {
 				continue;
 			}
-			c->set_island_step(_step);
-			c->set_island_next(nullptr);
-			c->set_island_list_next(constraint_island_list);
-			constraint_island_list = c;
+			constraint->set_island_step(_step);
+			constraint->set_island_next(nullptr);
+			constraint->set_island_list_next(constraint_island_list);
+			constraint_island_list = constraint;
 		}
 		p_space->area_remove_from_moved_list((SelfList<AreaSW> *)aml.first()); //faster to remove here
 	}

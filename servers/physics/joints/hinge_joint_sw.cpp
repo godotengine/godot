@@ -94,8 +94,8 @@ HingeJointSW::HingeJointSW(BodySW *rbA, BodySW *rbB, const Transform &frameA, co
 	m_angularOnly = false;
 	m_enableAngularMotor = false;
 
-	A->add_constraint(this, 0);
-	B->add_constraint(this, 1);
+	A->add_constraint(this);
+	B->add_constraint(this);
 }
 
 HingeJointSW::HingeJointSW(BodySW *rbA, BodySW *rbB, const Vector3 &pivotInA, const Vector3 &pivotInB,
@@ -150,8 +150,8 @@ HingeJointSW::HingeJointSW(BodySW *rbA, BodySW *rbB, const Vector3 &pivotInA, co
 	m_angularOnly = false;
 	m_enableAngularMotor = false;
 
-	A->add_constraint(this, 0);
-	B->add_constraint(this, 1);
+	A->add_constraint(this);
+	B->add_constraint(this);
 }
 
 bool HingeJointSW::setup(real_t p_step) {

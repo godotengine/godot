@@ -196,9 +196,9 @@ PinJoint2DSW::PinJoint2DSW(const Vector2 &p_pos, Body2DSW *p_body_a, Body2DSW *p
 
 	softness = 0;
 
-	p_body_a->add_constraint(this, 0);
+	p_body_a->add_constraint(this);
 	if (p_body_b) {
-		p_body_b->add_constraint(this, 1);
+		p_body_b->add_constraint(this);
 	}
 }
 
@@ -343,8 +343,8 @@ GrooveJoint2DSW::GrooveJoint2DSW(const Vector2 &p_a_groove1, const Vector2 &p_a_
 	B_anchor = B->get_inv_transform().xform(p_b_anchor);
 	A_groove_normal = -(A_groove_2 - A_groove_1).normalized().tangent();
 
-	A->add_constraint(this, 0);
-	B->add_constraint(this, 1);
+	A->add_constraint(this);
+	B->add_constraint(this);
 }
 
 GrooveJoint2DSW::~GrooveJoint2DSW() {
@@ -444,8 +444,8 @@ DampedSpringJoint2DSW::DampedSpringJoint2DSW(const Vector2 &p_anchor_a, const Ve
 	stiffness = 20;
 	damping = 1.5;
 
-	A->add_constraint(this, 0);
-	B->add_constraint(this, 1);
+	A->add_constraint(this);
+	B->add_constraint(this);
 }
 
 DampedSpringJoint2DSW::~DampedSpringJoint2DSW() {
