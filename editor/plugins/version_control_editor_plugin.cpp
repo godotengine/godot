@@ -48,6 +48,28 @@ void VersionControlEditorPlugin::_bind_methods() {
 	BIND_ENUM_CONSTANT(CHANGE_TYPE_TYPECHANGE);
 }
 
+void VersionControlEditorPlugin::_create_vcs_metadata_files() {
+	VCSMetadata selection = VCSMetadata(metadata_selection->get_selected());
+	if (selection == VCSMetadata::VCS_METADATA_GIT) {
+		FileAccess *f = FileAccess::open("res://.gitignore", FileAccess::WRITE);
+		if (!f) {
+			ERR_FAIL_MSG(TTR("Couldn't create .gitignore in project path."));
+		} else {
+			f->store_line("# Godot 4+ specific ignores");
+			f->store_line(".godot/");
+			memdelete(f);
+		}
+		f = FileAccess::open("res://.gitattributes", FileAccess::WRITE);
+		if (!f) {
+			ERR_FAIL_MSG(TTR("Couldn't create .gitattributes in project path."));
+		} else {
+			f->store_line("# Normalize EOL for all files that Git considers text files.");
+			f->store_line("* text=auto eol=lf");
+			memdelete(f);
+		}
+	}
+}
+
 void VersionControlEditorPlugin::_selected_a_vcs(int p_id) {
 	List<StringName> available_addons = get_available_vcs_names();
 	const StringName selected_vcs = set_up_choice->get_item_text(p_id);
@@ -68,6 +90,10 @@ void VersionControlEditorPlugin::_populate_available_vcs_names() {
 
 VersionControlEditorPlugin *VersionControlEditorPlugin::get_singleton() {
 	return singleton ? singleton : memnew(VersionControlEditorPlugin);
+}
+
+void VersionControlEditorPlugin::popup_vcs_metadata_dialog() {
+	metadata_dialog->popup_centered();
 }
 
 void VersionControlEditorPlugin::popup_vcs_set_up_dialog(const Control *p_gui_base) {
@@ -349,6 +375,30 @@ VersionControlEditorPlugin::VersionControlEditorPlugin() {
 	staged_files_count = 0;
 
 	version_control_actions = memnew(PopupMenu);
+
+	metadata_dialog = memnew(ConfirmationDialog);
+	metadata_dialog->set_title(TTR("Create Version Control Metadata"));
+	metadata_dialog->set_min_size(Size2(200, 40));
+	version_control_actions->add_child(metadata_dialog);
+
+	VBoxContainer *metadata_vb = memnew(VBoxContainer);
+	HBoxContainer *metadata_hb = memnew(HBoxContainer);
+	metadata_hb->set_custom_minimum_size(Size2(200, 20));
+	Label *l = memnew(Label);
+	l->set_text(TTR("Create VCS metadata files for:"));
+	metadata_hb->add_child(l);
+	metadata_selection = memnew(OptionButton);
+	metadata_selection->set_custom_minimum_size(Size2(100, 20));
+	metadata_selection->add_item("None", VCSMetadata::VCS_METADATA_NONE);
+	metadata_selection->add_item("Git", VCSMetadata::VCS_METADATA_GIT);
+	metadata_selection->select(VCSMetadata::VCS_METADATA_GIT);
+	metadata_dialog->get_ok_button()->connect("pressed", callable_mp(this, &VersionControlEditorPlugin::_create_vcs_metadata_files));
+	metadata_hb->add_child(metadata_selection);
+	metadata_vb->add_child(metadata_hb);
+	l = memnew(Label);
+	l->set_text(TTR("Existing VCS metadata files will be overwritten."));
+	metadata_vb->add_child(l);
+	metadata_dialog->add_child(metadata_vb);
 
 	set_up_dialog = memnew(AcceptDialog);
 	set_up_dialog->set_title(TTR("Set Up Version Control"));

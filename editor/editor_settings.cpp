@@ -450,11 +450,11 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 
 	/* Filesystem */
 
-	// Directories
-	_initial_set("filesystem/directories/autoscan_project_path", "");
-	hints["filesystem/directories/autoscan_project_path"] = PropertyInfo(Variant::STRING, "filesystem/directories/autoscan_project_path", PROPERTY_HINT_GLOBAL_DIR);
-	_initial_set("filesystem/directories/default_project_path", OS::get_singleton()->has_environment("HOME") ? OS::get_singleton()->get_environment("HOME") : OS::get_singleton()->get_system_dir(OS::SYSTEM_DIR_DOCUMENTS));
-	hints["filesystem/directories/default_project_path"] = PropertyInfo(Variant::STRING, "filesystem/directories/default_project_path", PROPERTY_HINT_GLOBAL_DIR);
+	// Project Manager
+	_initial_set("filesystem/project_manager/autoscan_project_path", "");
+	hints["filesystem/project_manager/autoscan_project_path"] = PropertyInfo(Variant::STRING, "filesystem/project_manager/autoscan_project_path", PROPERTY_HINT_GLOBAL_DIR);
+	_initial_set("filesystem/project_manager/default_project_path", OS::get_singleton()->has_environment("HOME") ? OS::get_singleton()->get_environment("HOME") : OS::get_singleton()->get_system_dir(OS::SYSTEM_DIR_DOCUMENTS));
+	hints["filesystem/project_manager/default_project_path"] = PropertyInfo(Variant::STRING, "filesystem/project_manager/default_project_path", PROPERTY_HINT_GLOBAL_DIR);
 
 	// On save
 	_initial_set("filesystem/on_save/compress_binary_resources", true);
