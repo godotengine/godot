@@ -74,6 +74,7 @@ public:
 		EMISSION_SHAPE_BOX,
 		EMISSION_SHAPE_POINTS,
 		EMISSION_SHAPE_DIRECTED_POINTS,
+		EMISSION_SHAPE_RING,
 		EMISSION_SHAPE_MAX
 	};
 
@@ -195,6 +196,10 @@ private:
 		StringName emission_texture_points;
 		StringName emission_texture_normal;
 		StringName emission_texture_color;
+		StringName emission_ring_axis;
+		StringName emission_ring_height;
+		StringName emission_ring_radius;
+		StringName emission_ring_inner_radius;
 
 		StringName gravity;
 
@@ -235,6 +240,10 @@ private:
 	Ref<Texture2D> emission_point_texture;
 	Ref<Texture2D> emission_normal_texture;
 	Ref<Texture2D> emission_color_texture;
+	Vector3 emission_ring_axis;
+	float emission_ring_height;
+	float emission_ring_radius;
+	float emission_ring_inner_radius;
 	int emission_point_count = 1;
 
 	bool anim_loop;
@@ -293,6 +302,10 @@ public:
 	void set_emission_point_texture(const Ref<Texture2D> &p_points);
 	void set_emission_normal_texture(const Ref<Texture2D> &p_normals);
 	void set_emission_color_texture(const Ref<Texture2D> &p_colors);
+	void set_emission_ring_axis(Vector3 p_axis);
+	void set_emission_ring_height(float p_height);
+	void set_emission_ring_radius(float p_radius);
+	void set_emission_ring_inner_radius(float p_radius);
 	void set_emission_point_count(int p_count);
 
 	EmissionShape get_emission_shape() const;
@@ -301,6 +314,10 @@ public:
 	Ref<Texture2D> get_emission_point_texture() const;
 	Ref<Texture2D> get_emission_normal_texture() const;
 	Ref<Texture2D> get_emission_color_texture() const;
+	Vector3 get_emission_ring_axis() const;
+	float get_emission_ring_height() const;
+	float get_emission_ring_radius() const;
+	float get_emission_ring_inner_radius() const;
 	int get_emission_point_count() const;
 
 	void set_gravity(const Vector3 &p_gravity);
