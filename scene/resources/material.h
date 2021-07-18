@@ -403,6 +403,7 @@ private:
 		StringName particles_anim_h_frames;
 		StringName particles_anim_v_frames;
 		StringName particles_anim_loop;
+		StringName particles_anim_blend;
 		StringName heightmap_min_layers;
 		StringName heightmap_max_layers;
 		StringName heightmap_flip;
@@ -473,6 +474,7 @@ private:
 	int particles_anim_h_frames;
 	int particles_anim_v_frames;
 	bool particles_anim_loop;
+	bool particles_anim_blend;
 	Transparency transparency = TRANSPARENCY_DISABLED;
 	ShadingMode shading_mode = SHADING_MODE_PER_PIXEL;
 
@@ -689,6 +691,9 @@ public:
 
 	void set_particles_anim_loop(bool p_loop);
 	bool get_particles_anim_loop() const;
+
+	void set_particles_anim_blend(bool p_blend);
+	bool get_particles_anim_blend() const;
 
 	void set_grow_enabled(bool p_enable);
 	bool is_grow_enabled() const;

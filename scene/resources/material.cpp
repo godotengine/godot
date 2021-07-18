@@ -350,6 +350,7 @@ void BaseMaterial3D::init_shaders() {
 	shader_names->particles_anim_h_frames = "particles_anim_h_frames";
 	shader_names->particles_anim_v_frames = "particles_anim_v_frames";
 	shader_names->particles_anim_loop = "particles_anim_loop";
+	shader_names->particles_anim_blend = "particles_anim_blend";
 	shader_names->heightmap_min_layers = "heightmap_min_layers";
 	shader_names->heightmap_max_layers = "heightmap_max_layers";
 	shader_names->heightmap_flip = "heightmap_flip";
@@ -659,6 +660,12 @@ void BaseMaterial3D::_update_shader() {
 		code += "uniform sampler2D texture_orm : hint_roughness_g," + texfilter_str + ";\n";
 	}
 
+	// This uniform and varyings below are always used, so they must always be defined.
+	code += "uniform bool particles_anim_blend;\n";
+	// Required to pass particle flipbook blending frame UV coordinates and progress from `vertex()` to `fragment()`.
+	code += "varying vec2 particles_anim_next_frame_uv_coord;\n";
+	code += "varying float particles_anim_next_frame_mix;\n";
+
 	if (billboard_mode == BILLBOARD_PARTICLES) {
 		code += "uniform int particles_anim_h_frames;\n";
 		code += "uniform int particles_anim_v_frames;\n";
@@ -773,6 +780,10 @@ void BaseMaterial3D::_update_shader() {
 		code += "\tUV=UV*uv1_scale.xy+uv1_offset.xy;\n";
 	}
 
+	// Assigned to make the shader compile, even if it's unused.
+	code += "\tparticles_anim_next_frame_uv_coord = UV;\n";
+	code += "\tparticles_anim_next_frame_mix = 0.0;\n";
+
 	switch (billboard_mode) {
 		case BILLBOARD_DISABLED: {
 		} break;
@@ -812,6 +823,18 @@ void BaseMaterial3D::_update_shader() {
 			code += "\t}";
 			code += "\tUV /= vec2(h_frames, v_frames);\n";
 			code += "\tUV += vec2(mod(particle_frame, h_frames) / h_frames, floor(particle_frame / h_frames) / v_frames);\n";
+			code += "\tif (particles_anim_blend) {\n";
+			// Store the next frame UV coordinates in a varying for animation blending.
+			code += "\t\tparticles_anim_next_frame_uv_coord /= vec2(h_frames, v_frames);\n";
+			code += "\t\tif (!particles_anim_loop) {\n";
+			code += "\t\t\tparticle_frame = clamp(particle_frame + 1.0, 0.0, particle_total_frames - 1.0);\n";
+			code += "\t\t} else {\n";
+			code += "\t\t\tparticle_frame = mod(particle_frame + 1.0, particle_total_frames);\n";
+			code += "\t\t}";
+			code += "\t\tparticles_anim_next_frame_uv_coord += vec2(mod(particle_frame, h_frames) / h_frames, floor((particle_frame) / h_frames) / v_frames);\n";
+			// Calculate the blending factor (between 0.0 and 1.0) and store it in a varying for use in `fragment()`.
+			code += "\t\tparticles_anim_next_frame_mix = mod(INSTANCE_CUSTOM.y * particle_total_frames, 1.0);\n";
+			code += "\t}\n";
 		} break;
 		case BILLBOARD_MAX:
 			break; // Internal value, skip.
@@ -985,7 +1008,13 @@ void BaseMaterial3D::_update_shader() {
 	if (flags[FLAG_ALBEDO_FROM_VERTEX_COLOR]) {
 		code += "\talbedo_tex *= COLOR;\n";
 	}
-	code += "\tALBEDO = albedo.rgb * albedo_tex.rgb;\n";
+
+	// Use particle flipbook animation if specified.
+	code += "\tif (particles_anim_blend) {\n";
+	code += "\t\tALBEDO = albedo.rgb * mix(albedo_tex.rgb, texture(texture_albedo, particles_anim_next_frame_uv_coord).rgb, particles_anim_next_frame_mix);\n";
+	code += "\t} else {\n";
+	code += "\t\tALBEDO = albedo.rgb * albedo_tex.rgb;\n";
+	code += "\t}\n";
 
 	if (!orm) {
 		if (flags[FLAG_UV1_USE_TRIPLANAR]) {
@@ -1084,7 +1113,11 @@ void BaseMaterial3D::_update_shader() {
 		code += "\tALPHA = 1.0;\n";
 
 	} else if (transparency != TRANSPARENCY_DISABLED || flags[FLAG_USE_SHADOW_TO_OPACITY] || (distance_fade == DISTANCE_FADE_PIXEL_ALPHA) || proximity_fade_enabled) {
+		code += "\tif (particles_anim_blend) {\n";
+		code += "\t\tALPHA = albedo.a * mix(albedo_tex.a, texture(texture_albedo, particles_anim_next_frame_uv_coord).a, particles_anim_next_frame_mix);\n";
+		code += "\t} else {\n";
 		code += "\tALPHA = albedo.a * albedo_tex.a;\n";
+		code += "\t}\n";
 	}
 	if (transparency == TRANSPARENCY_ALPHA_HASH) {
 		code += "\tALPHA_HASH_SCALE = alpha_hash_scale;\n";
@@ -1946,6 +1979,15 @@ bool BaseMaterial3D::get_particles_anim_loop() const {
 	return particles_anim_loop;
 }
 
+void BaseMaterial3D::set_particles_anim_blend(bool p_blend) {
+	particles_anim_blend = p_blend;
+	RS::get_singleton()->material_set_param(_get_material(), shader_names->particles_anim_blend, particles_anim_blend);
+}
+
+bool BaseMaterial3D::get_particles_anim_blend() const {
+	return particles_anim_blend;
+}
+
 void BaseMaterial3D::set_heightmap_deep_parallax(bool p_enable) {
 	deep_parallax = p_enable;
 	_queue_shader_change();
@@ -2357,6 +2399,9 @@ void BaseMaterial3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_particles_anim_loop", "loop"), &BaseMaterial3D::set_particles_anim_loop);
 	ClassDB::bind_method(D_METHOD("get_particles_anim_loop"), &BaseMaterial3D::get_particles_anim_loop);
 
+	ClassDB::bind_method(D_METHOD("set_particles_anim_blend", "blend"), &BaseMaterial3D::set_particles_anim_blend);
+	ClassDB::bind_method(D_METHOD("get_particles_anim_blend"), &BaseMaterial3D::get_particles_anim_blend);
+
 	ClassDB::bind_method(D_METHOD("set_heightmap_deep_parallax", "enable"), &BaseMaterial3D::set_heightmap_deep_parallax);
 	ClassDB::bind_method(D_METHOD("is_heightmap_deep_parallax_enabled"), &BaseMaterial3D::is_heightmap_deep_parallax_enabled);
 
@@ -2567,6 +2612,7 @@ void BaseMaterial3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "particles_anim_h_frames", PROPERTY_HINT_RANGE, "1,128,1"), "set_particles_anim_h_frames", "get_particles_anim_h_frames");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "particles_anim_v_frames", PROPERTY_HINT_RANGE, "1,128,1"), "set_particles_anim_v_frames", "get_particles_anim_v_frames");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "particles_anim_loop"), "set_particles_anim_loop", "get_particles_anim_loop");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "particles_anim_blend"), "set_particles_anim_blend", "get_particles_anim_blend");
 
 	ADD_GROUP("Grow", "grow_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "grow"), "set_grow_enabled", "is_grow_enabled");
@@ -2745,6 +2791,7 @@ BaseMaterial3D::BaseMaterial3D(bool p_orm) :
 	set_particles_anim_h_frames(1);
 	set_particles_anim_v_frames(1);
 	set_particles_anim_loop(false);
+	set_particles_anim_blend(false);
 
 	set_transparency(TRANSPARENCY_DISABLED);
 	set_alpha_antialiasing(ALPHA_ANTIALIASING_OFF);
