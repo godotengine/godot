@@ -1383,11 +1383,11 @@ Vector3 ConcavePolygonShapeSW::get_closest_point_to(const Vector3 &p_point) cons
 	return Vector3();
 }
 
-void ConcavePolygonShapeSW::_cull(int p_idx, _CullParams *p_params) const {
+bool ConcavePolygonShapeSW::_cull(int p_idx, _CullParams *p_params) const {
 	const BVH *bvh = &p_params->bvh[p_idx];
 
 	if (!p_params->aabb.intersects(bvh->aabb)) {
-		return;
+		return false;
 	}
 
 	if (bvh->face_index >= 0) {
@@ -1397,20 +1397,28 @@ void ConcavePolygonShapeSW::_cull(int p_idx, _CullParams *p_params) const {
 		face->vertex[0] = p_params->vertices[f->indices[0]];
 		face->vertex[1] = p_params->vertices[f->indices[1]];
 		face->vertex[2] = p_params->vertices[f->indices[2]];
-		p_params->callback(p_params->userdata, face);
+		if (p_params->callback(p_params->userdata, face)) {
+			return true;
+		}
 
 	} else {
 		if (bvh->left >= 0) {
-			_cull(bvh->left, p_params);
+			if (_cull(bvh->left, p_params)) {
+				return true;
+			}
 		}
 
 		if (bvh->right >= 0) {
-			_cull(bvh->right, p_params);
+			if (_cull(bvh->right, p_params)) {
+				return true;
+			}
 		}
 	}
+
+	return false;
 }
 
-void ConcavePolygonShapeSW::cull(const AABB &p_local_aabb, Callback p_callback, void *p_userdata) const {
+void ConcavePolygonShapeSW::cull(const AABB &p_local_aabb, QueryCallback p_callback, void *p_userdata) const {
 	// make matrix local to concave
 	if (faces.size() == 0) {
 		return;
@@ -1873,7 +1881,7 @@ void HeightMapShapeSW::_get_cell(const Vector3 &p_point, int &r_x, int &r_y, int
 	r_z = (clamped_point.z < 0.0) ? (clamped_point.z - 0.5) : (clamped_point.z + 0.5);
 }
 
-void HeightMapShapeSW::cull(const AABB &p_local_aabb, Callback p_callback, void *p_userdata) const {
+void HeightMapShapeSW::cull(const AABB &p_local_aabb, QueryCallback p_callback, void *p_userdata) const {
 	if (heights.empty()) {
 		return;
 	}
@@ -1908,13 +1916,17 @@ void HeightMapShapeSW::cull(const AABB &p_local_aabb, Callback p_callback, void 
 			_get_point(x + 1, z, face.vertex[1]);
 			_get_point(x, z + 1, face.vertex[2]);
 			face.normal = Plane(face.vertex[0], face.vertex[1], face.vertex[2]).normal;
-			p_callback(p_userdata, &face);
+			if (p_callback(p_userdata, &face)) {
+				return;
+			}
 
 			// Second triangle.
 			face.vertex[0] = face.vertex[1];
 			_get_point(x + 1, z + 1, face.vertex[1]);
 			face.normal = Plane(face.vertex[0], face.vertex[1], face.vertex[2]).normal;
-			p_callback(p_userdata, &face);
+			if (p_callback(p_userdata, &face)) {
+				return;
+			}
 		}
 	}
 }
