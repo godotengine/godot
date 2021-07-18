@@ -1695,6 +1695,17 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 #endif
 		}
 
+		uint32_t boot_display_time = GLOBAL_DEF("application/boot_splash/display_time_msec", 0);
+		ProjectSettings::get_singleton()->set_custom_property_info("application/boot_splash/display_time_msec",
+				PropertyInfo(Variant::INT,
+						"application/boot_splash/display_time_msec",
+						PROPERTY_HINT_RANGE,
+						"0,100,1,or_greater")); // No negative numbers
+		if (boot_display_time > 0) {
+			// delay_msec() isn't yet available.
+			OS::get_singleton()->delay_usec(1000 * boot_display_time);
+		}
+
 #ifdef TOOLS_ENABLED
 		Ref<Image> icon = memnew(Image(app_icon_png));
 		DisplayServer::get_singleton()->set_icon(icon);
