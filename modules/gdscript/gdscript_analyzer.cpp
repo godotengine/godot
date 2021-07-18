@@ -433,7 +433,27 @@ GDScriptParser::DataType GDScriptAnalyzer::resolve_datatype(GDScriptParser::Type
 					case GDScriptParser::ClassNode::Member::CONSTANT:
 						if (member.constant->get_datatype().is_meta_type) {
 							result = member.constant->get_datatype();
+							result.is_meta_type = false;
 							found = true;
+							break;
+						} else if (Ref<Script>(member.constant->initializer->reduced_value).is_valid()) {
+							Ref<GDScript> gdscript = member.constant->initializer->reduced_value;
+							if (gdscript.is_valid()) {
+								Ref<GDScriptParserRef> ref = get_parser_for(gdscript->get_path());
+								if (ref->raise_status(GDScriptParserRef::INTERFACE_SOLVED) != OK) {
+									push_error(vformat(R"(Could not parse script from "%s".)", gdscript->get_path()), p_type);
+									return GDScriptParser::DataType();
+								}
+								result = ref->get_parser()->head->get_datatype();
+								result.is_meta_type = false;
+							} else {
+								Ref<GDScript> script = member.constant->initializer->reduced_value;
+								result.kind = GDScriptParser::DataType::SCRIPT;
+								result.builtin_type = Variant::OBJECT;
+								result.script_type = script;
+								result.script_path = script->get_path();
+								result.native_type = script->get_instance_base_type();
+							}
 							break;
 						}
 						[[fallthrough]];
@@ -2132,6 +2152,9 @@ void GDScriptAnalyzer::reduce_call(GDScriptParser::CallNode *p_call, bool is_awa
 
 		if (is_self && parser->current_function != nullptr && parser->current_function->is_static && !is_static) {
 			push_error(vformat(R"*(Cannot call non-static function "%s()" from static function "%s()".)*", p_call->function_name, parser->current_function->identifier->name), p_call->callee);
+		} else if (!is_self && base_type.is_meta_type && !is_static) {
+			base_type.is_meta_type = false; // For `to_string()`.
+			push_error(vformat(R"*(Cannot call non-static function "%s()" on the class "%s" directly. Make an instance instead.)*", p_call->function_name, base_type.to_string()), p_call->callee);
 		} else if (is_self && !is_static && !lambda_stack.is_empty()) {
 			push_error(vformat(R"*(Cannot call non-static function "%s()" from a lambda function.)*", p_call->function_name), p_call->callee);
 		}
@@ -2395,6 +2418,11 @@ void GDScriptAnalyzer::reduce_identifier_from_base(GDScriptParser::IdentifierNod
 				case GDScriptParser::ClassNode::Member::FUNCTION:
 					resolve_function_signature(member.function);
 					p_identifier->set_datatype(make_callable_type(member.function->info));
+					break;
+				case GDScriptParser::ClassNode::Member::CLASS:
+					// For out-of-order resolution:
+					resolve_class_interface(member.m_class);
+					p_identifier->set_datatype(member.m_class->get_datatype());
 					break;
 				default:
 					break; // Type already set.
@@ -3205,7 +3233,7 @@ GDScriptParser::DataType GDScriptAnalyzer::type_from_property(const PropertyInfo
 	return result;
 }
 
-bool GDScriptAnalyzer::get_function_signature(GDScriptParser::Node *p_source, GDScriptParser::DataType p_base_type, const StringName &p_function, GDScriptParser::DataType &r_return_type, List<GDScriptParser::DataType> &r_par_types, int &r_default_arg_count, bool &r_static, bool &r_vararg) {
+bool GDScriptAnalyzer::get_function_signature(GDScriptParser::CallNode *p_source, GDScriptParser::DataType p_base_type, const StringName &p_function, GDScriptParser::DataType &r_return_type, List<GDScriptParser::DataType> &r_par_types, int &r_default_arg_count, bool &r_static, bool &r_vararg) {
 	r_static = false;
 	r_vararg = false;
 	r_default_arg_count = 0;
@@ -3224,14 +3252,16 @@ bool GDScriptAnalyzer::get_function_signature(GDScriptParser::Node *p_source, GD
 
 		for (const List<MethodInfo>::Element *E = methods.front(); E != nullptr; E = E->next()) {
 			if (E->get().name == p_function) {
-				return function_signature_from_info(E->get(), r_return_type, r_par_types, r_default_arg_count, r_static, r_vararg);
+				function_signature_from_info(E->get(), r_return_type, r_par_types, r_default_arg_count, r_static, r_vararg);
+				r_static = Variant::is_builtin_method_static(p_base_type.builtin_type, function_name);
+				return true;
 			}
 		}
 
 		return false;
 	}
 
-	bool is_constructor = p_base_type.is_meta_type && p_function == "new";
+	bool is_constructor = (p_base_type.is_meta_type || (p_source->callee && p_source->callee->type == GDScriptParser::Node::IDENTIFIER)) && p_function == StaticCString::create("new");
 	if (is_constructor) {
 		function_name = "_init";
 		r_static = true;
@@ -3261,6 +3291,7 @@ bool GDScriptAnalyzer::get_function_signature(GDScriptParser::Node *p_source, GD
 			}
 		}
 		r_return_type = found_function->get_datatype();
+		r_return_type.is_meta_type = false;
 		r_return_type.is_coroutine = found_function->is_coroutine;
 
 		return true;
