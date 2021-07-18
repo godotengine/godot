@@ -29,38 +29,65 @@
 /*************************************************************************/
 
 #include "audio_effect_limiter.h"
+#include "core/math/math_funcs.h"
 
+// Soft clipping starts to reduce the peaks a little below the threshold level
+// and progressively increases its effect as the input level increases such that
+// the threshold is never exceeded.
+//
+// This is implemented as a logistics function because it's designed to increase near
+// linearly and taper up to a certain max value. This is exactly what we want for
+// this soft clipping function.
 void AudioEffectLimiterInstance::process(const AudioFrame *p_src_frames, AudioFrame *p_dst_frames, int p_frame_count) {
-	float threshdb = base->threshold;
+	// The threshold from which the limiter begins to be active, in decibels. Value can range from -30 to 0.
+	float threshold = Math::db2linear(base->threshold);
+
+	// The waveform's maximum allowed value, in decibels. Value can range from -20 to -0.1.
 	float ceiling = Math::db2linear(base->ceiling);
-	float ceildb = base->ceiling;
-	float makeup = Math::db2linear(ceildb - threshdb);
-	float sc = -base->soft_clip;
-	float scv = Math::db2linear(sc);
-	float peakdb = ceildb + 25;
-	float scmult = Math::abs((ceildb - sc) / (peakdb - sc));
+
+	// Applies a gain to the limited waves, in decibels. Value can range from 0 to 6.
+	// This will be the slope (k) of the logistics curve. 0 will end up creating a hard clip.
+	float soft_clip = Math::db2linear(base->soft_clip);
+
+	// The difference between the threshold and the ceiling
+	// This is used as the maximum value (L) in the logistics function.
+	float limit = ceiling - threshold;
+
+	// The halfway point of the threshold and the ceiling.
+	// This will serve as our x0 in the logistics transform.
+	float mid_point = limit / 2.0;
 
 	for (int i = 0; i < p_frame_count; i++) {
 		float spl0 = p_src_frames[i].l;
 		float spl1 = p_src_frames[i].r;
-		spl0 = spl0 * makeup;
-		spl1 = spl1 * makeup;
+
+		// The signs of the frame.
 		float sign0 = (spl0 < 0.0 ? -1.0 : 1.0);
 		float sign1 = (spl1 < 0.0 ? -1.0 : 1.0);
+
+		// The values of the frame.
 		float abs0 = Math::abs(spl0);
 		float abs1 = Math::abs(spl1);
-		float overdb0 = Math::linear2db(abs0) - ceildb;
-		float overdb1 = Math::linear2db(abs1) - ceildb;
 
-		if (abs0 > scv) {
-			spl0 = sign0 * (scv + Math::db2linear(overdb0 * scmult));
-		}
-		if (abs1 > scv) {
-			spl1 = sign1 * (scv + Math::db2linear(overdb1 * scmult));
+		// We only activate when we hit the threshold.
+		if (abs0 > threshold) {
+			// Pull the value down to the threshold.
+			abs0 -= threshold;
+			// Apply the logistics transformation.
+			abs0 = limit / (1 + exp(-soft_clip * (abs0 - mid_point)));
+			// Bring it back up.
+			abs0 += threshold;
+			// Apply this value to spl0.
+			spl0 = sign0 * abs0;
 		}
 
-		spl0 = MIN(ceiling, Math::abs(spl0)) * (spl0 < 0.0 ? -1.0 : 1.0);
-		spl1 = MIN(ceiling, Math::abs(spl1)) * (spl1 < 0.0 ? -1.0 : 1.0);
+		// Ditto with spl1.
+		if (abs1 > threshold) {
+			abs1 -= threshold;
+			abs1 = ceiling / (1 + exp(-soft_clip * (abs1 - mid_point)));
+			abs1 += threshold;
+			spl1 = sign1 * abs1;
+		}
 
 		p_dst_frames[i].l = spl0;
 		p_dst_frames[i].r = spl1;
@@ -120,15 +147,15 @@ void AudioEffectLimiter::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_soft_clip_ratio", "soft_clip"), &AudioEffectLimiter::set_soft_clip_ratio);
 	ClassDB::bind_method(D_METHOD("get_soft_clip_ratio"), &AudioEffectLimiter::get_soft_clip_ratio);
 
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "ceiling_db", PROPERTY_HINT_RANGE, "-20,-0.1,0.1"), "set_ceiling_db", "get_ceiling_db");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "threshold_db", PROPERTY_HINT_RANGE, "-30,0,0.1"), "set_threshold_db", "get_threshold_db");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "ceiling_db", PROPERTY_HINT_RANGE, "-20,0,0.1"), "set_ceiling_db", "get_ceiling_db");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "threshold_db", PROPERTY_HINT_RANGE, "-30,-0.1,0.1"), "set_threshold_db", "get_threshold_db");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "soft_clip_db", PROPERTY_HINT_RANGE, "0,6,0.1"), "set_soft_clip_db", "get_soft_clip_db");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "soft_clip_ratio", PROPERTY_HINT_RANGE, "3,20,0.1"), "set_soft_clip_ratio", "get_soft_clip_ratio");
 }
 
 AudioEffectLimiter::AudioEffectLimiter() {
-	threshold = 0;
-	ceiling = -0.1;
+	threshold = -0.1;
+	ceiling = 0;
 	soft_clip = 2;
 	soft_clip_ratio = 10;
 }
