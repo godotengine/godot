@@ -769,6 +769,10 @@ int OS_Android::get_screen_dpi(int p_screen) const {
 	return godot_io_java->get_screen_dpi();
 }
 
+String OS_Android::get_data_path() const {
+	return get_user_data_dir();
+}
+
 String OS_Android::get_user_data_dir() const {
 	if (data_dir_cache != String())
 		return data_dir_cache;
@@ -781,11 +785,11 @@ String OS_Android::get_user_data_dir() const {
 	return ".";
 }
 
-String OS_Android::get_external_data_dir() const {
-	String data_dir = godot_io_java->get_external_data_dir();
-	if (data_dir != "") {
-		data_dir = _remove_symlink(data_dir);
-		return data_dir;
+String OS_Android::get_cache_path() const {
+	String cache_dir = godot_io_java->get_cache_dir();
+	if (cache_dir != "") {
+		cache_dir = _remove_symlink(cache_dir);
+		return cache_dir;
 	}
 	return ".";
 }

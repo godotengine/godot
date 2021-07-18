@@ -795,10 +795,6 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 		return OK;
 	}
 
-	bool _has_storage_permission(const Vector<String> &p_permissions) {
-		return p_permissions.find("android.permission.READ_EXTERNAL_STORAGE") != -1 || p_permissions.find("android.permission.WRITE_EXTERNAL_STORAGE") != -1;
-	}
-
 	void _get_permissions(const Ref<EditorExportPreset> &p_preset, bool p_give_internet, Vector<String> &r_permissions) {
 		const char **aperms = android_perms;
 		while (*aperms) {
@@ -845,12 +841,17 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 		Vector<String> perms;
 		_get_permissions(p_preset, p_give_internet, perms);
 		for (int i = 0; i < perms.size(); i++) {
-			manifest_text += vformat("    <uses-permission android:name=\"%s\" />\n", perms.get(i));
+			String permission = perms.get(i);
+			if (permission == "android.permission.WRITE_EXTERNAL_STORAGE" || permission == "android.permission.READ_EXTERNAL_STORAGE") {
+				manifest_text += vformat("    <uses-permission android:name=\"%s\" android:maxSdkVersion=\"28\" />\n", permission);
+			} else {
+				manifest_text += vformat("    <uses-permission android:name=\"%s\" />\n", permission);
+			}
 		}
 
 		manifest_text += _get_xr_features_tag(p_preset);
 		manifest_text += _get_instrumentation_tag(p_preset);
-		manifest_text += _get_application_tag(p_preset, _has_storage_permission(perms));
+		manifest_text += _get_application_tag(p_preset);
 		manifest_text += "</manifest>\n";
 		String manifest_path = vformat("res://android/build/src/%s/AndroidManifest.xml", (p_debug ? "debug" : "release"));
 
@@ -908,7 +909,6 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 		Vector<String> perms;
 		// Write permissions into the perms variable.
 		_get_permissions(p_preset, p_give_internet, perms);
-		bool has_storage_permission = _has_storage_permission(perms);
 
 		while (ofs < (uint32_t)p_manifest.size()) {
 			uint32_t chunk = decode_uint32(&p_manifest[ofs]);
@@ -997,10 +997,6 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 							} else {
 								string_table.write[attr_value] = version_name;
 							}
-						}
-
-						if (tname == "application" && attrname == "requestLegacyExternalStorage") {
-							encode_uint32(has_storage_permission ? 0xFFFFFFFF : 0, &p_manifest.write[iofs + 16]);
 						}
 
 						if (tname == "application" && attrname == "allowBackup") {
