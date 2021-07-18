@@ -79,7 +79,7 @@ void XRInterface::_bind_methods() {
 	BIND_ENUM_CONSTANT(XR_NOT_TRACKING);
 };
 
-StringName XRInterface::get_name() const {
+String XRInterface::get_name() const {
 	return "Unknown";
 };
 

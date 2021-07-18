@@ -75,7 +75,7 @@ public:
 	virtual String get_visibility_state() const override;
 	virtual PackedVector3Array get_bounds_geometry() const override;
 
-	virtual StringName get_name() const override;
+	virtual String get_name() const override;
 	virtual int get_capabilities() const override;
 
 	virtual bool is_initialized() const override;

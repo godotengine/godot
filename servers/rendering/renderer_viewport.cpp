@@ -587,10 +587,10 @@ void RendererViewport::draw_viewports() {
 				BlitToScreen blit;
 				blit.render_target = vp->render_target;
 				if (vp->viewport_to_screen_rect != Rect2()) {
-					blit.rect = vp->viewport_to_screen_rect;
+					blit.dest_rect = vp->viewport_to_screen_rect;
 				} else {
-					blit.rect.position = Vector2();
-					blit.rect.size = vp->size;
+					blit.dest_rect.position = Vector2();
+					blit.dest_rect.size = vp->size;
 				}
 
 				if (!blit_to_screen_list.has(vp->viewport_to_screen)) {

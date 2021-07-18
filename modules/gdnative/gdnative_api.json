@@ -5051,8 +5051,8 @@
 			"name": "xr",
 			"type": "XR",
 			"version": {
-				"major": 1,
-				"minor": 1
+				"major": 4,
+				"minor": 0
 			},
 			"next": null,
 			"api": [
@@ -5063,6 +5063,74 @@
 						[
 							"const godot_xr_interface_gdnative *",
 							"p_interface"
+						]
+					]
+				},
+				{
+					"name": "godot_xr_set_interface",
+					"return_type": "void",
+					"arguments": [
+						[
+							"godot_object *",
+							"p_xr_interface"
+						],
+						[
+							"const godot_xr_interface_gdnative *",
+							"p_gdn_interface"
+						]
+					]
+				},
+				{
+					"name": "godot_xr_blit_layer",
+					"return_type": "void",
+					"arguments": [
+						[
+							"void *",
+							"p_blit_to_screen"
+						],
+						[
+							"const godot_rid *",
+							"p_render_target"
+						],
+						[
+							"const godot_rect2 *",
+							"p_src_rect"
+						],
+						[
+							"const godot_rect2 *",
+							"p_dest_rect"
+						],
+						[
+							"godot_int",
+							"p_layer"
+						]
+					]
+				},
+				{
+					"name": "godot_xr_get_vulkan_data",
+					"return_type": "bool",
+					"arguments": [
+						[
+							"godot_xr_vulkan_data *",
+							"p_vulkan_data"
+						]
+					]
+				},
+				{
+					"name": "godot_xr_get_image_data",
+					"return_type": "bool",
+					"arguments": [
+						[
+							"const godot_rid *",
+							"p_vulkan_data"
+						],
+						[
+							"uint64_t *",
+							"p_texture_id"
+						],
+						[
+							"uint32_t *",
+							"p_format"
 						]
 					]
 				},

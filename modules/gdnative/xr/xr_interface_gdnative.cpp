@@ -30,6 +30,8 @@
 
 #include "xr_interface_gdnative.h"
 #include "core/input/input.h"
+#include "servers/rendering/renderer_storage.h"
+#include "servers/rendering/rendering_device.h"
 #include "servers/rendering/rendering_server_globals.h"
 #include "servers/xr/xr_positional_tracker.h"
 
@@ -84,14 +86,12 @@ void XRInterfaceGDNative::set_interface(const godot_xr_interface_gdnative *p_int
 	data = interface->constructor((godot_object *)this);
 }
 
-StringName XRInterfaceGDNative::get_name() const {
-	ERR_FAIL_COND_V(interface == nullptr, StringName());
+String XRInterfaceGDNative::get_name() const {
+	ERR_FAIL_COND_V(interface == nullptr, String());
 
-	godot_string result = interface->get_name(data);
+	String name;
 
-	StringName name = *(String *)&result;
-
-	godot_string_destroy(&result);
+	interface->get_name(data, (godot_string *)&name);
 
 	return name;
 }
@@ -212,18 +212,6 @@ CameraMatrix XRInterfaceGDNative::get_projection_for_view(uint32_t p_view, real_
 	return cm;
 }
 
-Vector<BlitToScreen> XRInterfaceGDNative::commit_views(RID p_render_target, const Rect2 &p_screen_rect) {
-	// possibly move this as a member variable and add a callback to populate?
-	Vector<BlitToScreen> blit_to_screen;
-
-	ERR_FAIL_COND_V(interface == nullptr, blit_to_screen);
-
-	// must implement
-	interface->commit_views(data, (godot_rid *)&p_render_target, (godot_rect2 *)&p_screen_rect);
-
-	return blit_to_screen;
-}
-
 unsigned int XRInterfaceGDNative::get_external_texture_for_eye(XRInterface::Eyes p_eye) {
 	ERR_FAIL_COND_V(interface == nullptr, 0);
 
@@ -234,6 +222,18 @@ void XRInterfaceGDNative::commit_for_eye(XRInterface::Eyes p_eye, RID p_render_t
 	ERR_FAIL_COND(interface == nullptr);
 
 	interface->commit_for_eye(data, (godot_int)p_eye, (godot_rid *)&p_render_target, (godot_rect2 *)&p_screen_rect);
+}
+
+Vector<BlitToScreen> XRInterfaceGDNative::commit_views(const RID p_render_target, const Rect2 &p_screen_rect) {
+	// possibly move this as a member variable and add a callback to populate?
+	Vector<BlitToScreen> blit_to_screen;
+
+	ERR_FAIL_COND_V(interface == nullptr, blit_to_screen);
+
+	// commit_views can do callbacks to `godot_xr_blit_layer` to blit output to screen. This is ignored if this isn't the main view
+	interface->commit_views(data, (void *)&blit_to_screen, (const godot_rid *)&p_render_target, (godot_rect2 *)&p_screen_rect);
+
+	return blit_to_screen;
 }
 
 void XRInterfaceGDNative::process() {
@@ -254,6 +254,8 @@ void XRInterfaceGDNative::notification(int p_what) {
 extern "C" {
 
 void GDAPI godot_xr_register_interface(const godot_xr_interface_gdnative *p_interface) {
+	ERR_FAIL_NULL_MSG(p_interface, "An XRInterface callback struct must be provided when calling godot_xr_register_interface.");
+
 	// Must be on a version 4 plugin
 	ERR_FAIL_COND_MSG(p_interface->version.major < 4, "GDNative XR interfaces build for Godot 3.x are not supported.");
 
@@ -262,6 +264,78 @@ void GDAPI godot_xr_register_interface(const godot_xr_interface_gdnative *p_inte
 	new_interface->set_interface((const godot_xr_interface_gdnative *)p_interface);
 	XRServer::get_singleton()->add_interface(new_interface);
 }
+
+void GDAPI godot_xr_set_interface(godot_object *p_xr_interface, const godot_xr_interface_gdnative *p_gdn_interface) {
+	ERR_FAIL_NULL_MSG(p_xr_interface, "An XRInterfaceGDNative object must be provided when calling godot_xr_set_interface.");
+	ERR_FAIL_NULL_MSG(p_gdn_interface, "An XRInterface callback struct must be provided when calling godot_xr_set_interface.");
+
+	// Must be on a version 4 plugin
+	ERR_FAIL_COND_MSG(p_gdn_interface->version.major < 4, "GDNative XR interfaces build for Godot 3.x are not supported.");
+
+	XRInterfaceGDNative *interface = (XRInterfaceGDNative *)p_xr_interface;
+	interface->set_interface((const godot_xr_interface_gdnative *)p_gdn_interface);
+}
+
+void GDAPI godot_xr_blit_layer(void *p_blit_to_screen, const godot_rid *p_render_target, const godot_rect2 *p_src_rect, const godot_rect2 *p_dest_rect, godot_int p_layer) {
+	// need to find a safer way to do this cast....
+	Vector<BlitToScreen> *blit_to_screen = (Vector<BlitToScreen> *)p_blit_to_screen;
+
+	const RID *render_target = (const RID *)p_render_target;
+	const Rect2 *src_rect = (const Rect2 *)p_src_rect;
+	const Rect2 *dest_rect = (const Rect2 *)p_dest_rect;
+
+	BlitToScreen blit;
+	blit.render_target = *render_target;
+	blit.src_rect = *src_rect;
+	blit.dest_rect = *dest_rect;
+	blit.multi_view.use_layer = true;
+	blit.multi_view.layer = p_layer;
+	blit.lens_distortion.apply = false;
+
+	blit_to_screen->push_back(blit);
+}
+
+/////////////////////////////////////////////////////////////////////////////////////
+// get some vulkan specific data, may need to rethink this...
+
+bool GDAPI godot_xr_get_vulkan_data(godot_xr_vulkan_data *p_vulkan_data) {
+	RenderingDevice *rd = RD::get_singleton();
+	ERR_FAIL_NULL_V_MSG(rd, false, "Rendering device not setup, can't access Vulkan data");
+
+	p_vulkan_data->device = rd->get_vulkan_device();
+	p_vulkan_data->physical_device = rd->get_vulkan_physical_device();
+	p_vulkan_data->instance = rd->get_vulkan_instance();
+	p_vulkan_data->queue = rd->get_vulkan_queue();
+	p_vulkan_data->queue_family_index = rd->get_vulkan_queue_family_index();
+
+	// assume we have one or none...
+	ERR_FAIL_NULL_V_MSG(p_vulkan_data->device, false, "Rendering device not setup, missing vulkan device");
+
+	// we got data
+	return true;
+}
+
+bool GDAPI godot_xr_get_image_data(const godot_rid *p_render_target, uint64_t *p_texture_id, uint32_t *p_format) {
+	const RID *render_target = (const RID *)p_render_target;
+
+	RenderingDevice *rd = RD::get_singleton();
+	ERR_FAIL_NULL_V_MSG(rd, false, "Rendering device not setup, can't access Vulkan data");
+
+	RID texture = RSG::storage->render_target_get_color(*render_target);
+	uint64_t image = rd->texture_get_vulkan_image(texture);
+	ERR_FAIL_COND_V_MSG(image == 0, false, "Texture not setup, can't access Vulkan data");
+
+	*p_texture_id = image;
+	*p_format = rd->texture_get_vulkan_image_format(texture);
+
+	// TODO need to get the right format...
+	// *p_format = 43; // VK_FORMAT_R8G8B8A8_SRGB;
+
+	return true;
+}
+
+/////////////////////////////////////////////////////////////////////////////////////
+// deprecated
 
 godot_real_t GDAPI godot_xr_get_worldscale() {
 	XRServer *xr_server = XRServer::get_singleton();
