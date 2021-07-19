@@ -5808,7 +5808,7 @@ RID RenderingDeviceVulkan::render_pipeline_create(RID p_shader, FramebufferForma
 	tessellation_create_info.sType = VK_STRUCTURE_TYPE_PIPELINE_TESSELLATION_STATE_CREATE_INFO;
 	tessellation_create_info.pNext = nullptr;
 	tessellation_create_info.flags = 0;
-	ERR_FAIL_COND_V(p_rasterization_state.patch_control_points < 1 || p_rasterization_state.patch_control_points > limits.maxTessellationPatchSize, RID());
+	ERR_FAIL_COND_V(limits.maxTessellationPatchSize > 0 && (p_rasterization_state.patch_control_points < 1 || p_rasterization_state.patch_control_points > limits.maxTessellationPatchSize), RID());
 	tessellation_create_info.patchControlPoints = p_rasterization_state.patch_control_points;
 
 	VkPipelineViewportStateCreateInfo viewport_state_create_info;

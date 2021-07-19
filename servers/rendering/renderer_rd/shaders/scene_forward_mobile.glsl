@@ -1291,7 +1291,7 @@ void main() {
 
 			blur_shadow(shadow);
 
-			light_compute(normal, directional_lights.data[i].direction, normalize(view), directional_lights.data[i].color * directional_lights.data[i].energy, shadow, f0, orms, 1.0,
+			light_compute(normal, directional_lights.data[i].direction, normalize(view), 0.0, directional_lights.data[i].color * directional_lights.data[i].energy, shadow, f0, orms, 1.0,
 #ifdef LIGHT_BACKLIGHT_USED
 					backlight,
 #endif
