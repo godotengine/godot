@@ -131,7 +131,7 @@ void GPUParticlesCollisionSDFEditorPlugin::_sdf_save_path_and_bake(const String 
 	if (col_sdf) {
 		Ref<Image> bake_img = col_sdf->bake();
 		if (bake_img.is_null()) {
-			EditorNode::get_singleton()->show_warning("Bake Error.");
+			EditorNode::get_singleton()->show_warning(TTR("Bake Error."));
 			return;
 		}
 

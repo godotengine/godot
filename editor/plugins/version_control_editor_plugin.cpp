@@ -164,7 +164,7 @@ void VersionControlEditorPlugin::_refresh_stage_area() {
 					_refresh_file_diff();
 				}
 			}
-			commit_status->set_text("New changes detected");
+			commit_status->set_text(TTR("New changes detected"));
 		}
 	} else {
 		WARN_PRINT("No VCS addon is initialized. Select a Version Control Addon from Project menu.");
@@ -270,9 +270,9 @@ void VersionControlEditorPlugin::_clear_file_diff() {
 void VersionControlEditorPlugin::_update_stage_status() {
 	String status;
 	if (staged_files_count == 1) {
-		status = "Stage contains 1 file";
+		status = TTR("Stage contains 1 file");
 	} else {
-		status = "Stage contains " + String::num_int64(staged_files_count) + " files";
+		status = vformat(TTR("Stage contains %d files"), staged_files_count);
 	}
 	commit_status->set_text(status);
 }
@@ -280,9 +280,9 @@ void VersionControlEditorPlugin::_update_stage_status() {
 void VersionControlEditorPlugin::_update_commit_status() {
 	String status;
 	if (staged_files_count == 1) {
-		status = "Committed 1 file";
+		status = TTR("Committed 1 file");
 	} else {
-		status = "Committed " + String::num_int64(staged_files_count) + " files ";
+		status = vformat(TTR("Committed %d files"), staged_files_count);
 	}
 	commit_status->set_text(status);
 	staged_files_count = 0;

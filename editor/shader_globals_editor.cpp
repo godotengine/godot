@@ -84,7 +84,7 @@ protected:
 
 		UndoRedo *undo_redo = EditorNode::get_singleton()->get_undo_redo();
 
-		undo_redo->create_action("Set Shader Global Variable");
+		undo_redo->create_action(TTR("Set Shader Global Variable"));
 		undo_redo->add_do_method(RS::get_singleton(), "global_variable_set", p_name, p_value);
 		undo_redo->add_undo_method(RS::get_singleton(), "global_variable_set", p_name, existing);
 		RS::GlobalVariableType type = RS::get_singleton()->global_variable_get_type(p_name);
@@ -395,7 +395,7 @@ void ShaderGlobalsEditor::_variable_added() {
 
 	Variant value = create_var(RS::GlobalVariableType(variable_type->get_selected()));
 
-	undo_redo->create_action("Add Shader Global Variable");
+	undo_redo->create_action(TTR("Add Shader Global Variable"));
 	undo_redo->add_do_method(RS::get_singleton(), "global_variable_add", var, RS::GlobalVariableType(variable_type->get_selected()), value);
 	undo_redo->add_undo_method(RS::get_singleton(), "global_variable_remove", var);
 	Dictionary gv;
@@ -413,7 +413,7 @@ void ShaderGlobalsEditor::_variable_deleted(const String &p_variable) {
 	print_line("deleted " + p_variable);
 	UndoRedo *undo_redo = EditorNode::get_singleton()->get_undo_redo();
 
-	undo_redo->create_action("Add Shader Global Variable");
+	undo_redo->create_action(TTR("Add Shader Global Variable"));
 	undo_redo->add_do_method(RS::get_singleton(), "global_variable_remove", p_variable);
 	undo_redo->add_undo_method(RS::get_singleton(), "global_variable_add", p_variable, RS::get_singleton()->global_variable_get_type(p_variable), RS::get_singleton()->global_variable_get(p_variable));
 

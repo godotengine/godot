@@ -1050,7 +1050,7 @@ void TileDataDefaultEditor::_notification(int p_what) {
 
 TileDataDefaultEditor::TileDataDefaultEditor() {
 	label = memnew(Label);
-	label->set_text("Painting:");
+	label->set_text(TTR("Painting:"));
 	add_child(label);
 
 	toolbar->add_child(memnew(VSeparator));

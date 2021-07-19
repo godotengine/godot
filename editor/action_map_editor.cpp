@@ -581,7 +581,7 @@ void InputEventConfigurationDialog::set_allowed_input_types(int p_type_masks) {
 InputEventConfigurationDialog::InputEventConfigurationDialog() {
 	allowed_input_types = INPUT_KEY | INPUT_MOUSE_BUTTON | INPUT_JOY_BUTTON | INPUT_JOY_MOTION;
 
-	set_title("Event Configuration");
+	set_title(TTR("Event Configuration"));
 	set_min_size(Size2i(550 * EDSCALE, 0)); // Min width
 
 	VBoxContainer *main_vbox = memnew(VBoxContainer);
@@ -595,7 +595,7 @@ InputEventConfigurationDialog::InputEventConfigurationDialog() {
 	main_vbox->add_child(tab_container);
 
 	CenterContainer *cc = memnew(CenterContainer);
-	cc->set_name("Listen for Input");
+	cc->set_name(TTR("Listen for Input"));
 	event_as_text = memnew(Label);
 	event_as_text->set_align(Label::ALIGN_CENTER);
 	cc->add_child(event_as_text);
@@ -604,7 +604,7 @@ InputEventConfigurationDialog::InputEventConfigurationDialog() {
 	// List of all input options to manually select from.
 
 	VBoxContainer *manual_vbox = memnew(VBoxContainer);
-	manual_vbox->set_name("Manual Selection");
+	manual_vbox->set_name(TTR("Manual Selection"));
 	manual_vbox->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	tab_container->add_child(manual_vbox);
 
@@ -632,7 +632,7 @@ InputEventConfigurationDialog::InputEventConfigurationDialog() {
 
 	Label *opts_label = memnew(Label);
 	opts_label->set_theme_type_variation("HeaderSmall");
-	opts_label->set_text("Additional Options");
+	opts_label->set_text(TTR("Additional Options"));
 	additional_options_container->add_child(opts_label);
 
 	// Device Selection
@@ -641,7 +641,7 @@ InputEventConfigurationDialog::InputEventConfigurationDialog() {
 
 	Label *device_label = memnew(Label);
 	device_label->set_theme_type_variation("HeaderSmall");
-	device_label->set_text("Device:");
+	device_label->set_text(TTR("Device:"));
 	device_container->add_child(device_label);
 
 	device_id_option = memnew(OptionButton);

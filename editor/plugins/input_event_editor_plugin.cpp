@@ -86,7 +86,7 @@ InputEventConfigContainer::InputEventConfigContainer() {
 	mc->add_child(hb);
 
 	open_config_button = memnew(Button);
-	open_config_button->set_text("Configure");
+	open_config_button->set_text(TTR("Configure"));
 	open_config_button->connect("pressed", callable_mp(this, &InputEventConfigContainer::_configure_pressed));
 	hb->add_child(open_config_button);
 
