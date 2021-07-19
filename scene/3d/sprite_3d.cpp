@@ -583,10 +583,10 @@ void Sprite3D::_draw() {
 			aabb.expand_to(vtx);
 		}
 
-		float v_uv[2] = { uvs[i].x, uvs[i].y };
+		float v_uv[2] = { (float)uvs[i].x, (float)uvs[i].y };
 		memcpy(&attribute_write_buffer[i * attrib_stride + mesh_surface_offsets[RS::ARRAY_TEX_UV]], v_uv, 8);
 
-		float v_vertex[3] = { vtx.x, vtx.y, vtx.z };
+		float v_vertex[3] = { (float)vtx.x, (float)vtx.y, (float)vtx.z };
 
 		memcpy(&vertex_write_buffer[i * vertex_stride + mesh_surface_offsets[RS::ARRAY_VERTEX]], &v_vertex, sizeof(float) * 3);
 		memcpy(&vertex_write_buffer[i * vertex_stride + mesh_surface_offsets[RS::ARRAY_NORMAL]], &v_normal, 4);
@@ -949,10 +949,10 @@ void AnimatedSprite3D::_draw() {
 			aabb.expand_to(vtx);
 		}
 
-		float v_uv[2] = { uvs[i].x, uvs[i].y };
+		float v_uv[2] = { (float)uvs[i].x, (float)uvs[i].y };
 		memcpy(&attribute_write_buffer[i * attrib_stride + mesh_surface_offsets[RS::ARRAY_TEX_UV]], v_uv, 8);
 
-		float v_vertex[3] = { vtx.x, vtx.y, vtx.z };
+		float v_vertex[3] = { (float)vtx.x, (float)vtx.y, (float)vtx.z };
 		memcpy(&vertex_write_buffer[i * vertex_stride + mesh_surface_offsets[RS::ARRAY_VERTEX]], &v_vertex, sizeof(float) * 3);
 		memcpy(&vertex_write_buffer[i * vertex_stride + mesh_surface_offsets[RS::ARRAY_NORMAL]], &v_normal, 4);
 		memcpy(&vertex_write_buffer[i * vertex_stride + mesh_surface_offsets[RS::ARRAY_TANGENT]], &v_tangent, 4);

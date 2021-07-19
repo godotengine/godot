@@ -350,7 +350,7 @@ Error RenderingServer::_surface_set_data(Array p_arrays, uint32_t p_format, uint
 
 					{
 						for (int i = 0; i < p_vertex_array_len; i++) {
-							float vector[2] = { src[i].x, src[i].y };
+							float vector[2] = { (float)src[i].x, (float)src[i].y };
 
 							memcpy(&vw[p_offsets[ai] + i * p_vertex_stride], vector, sizeof(float) * 2);
 
@@ -375,7 +375,7 @@ Error RenderingServer::_surface_set_data(Array p_arrays, uint32_t p_format, uint
 
 					{
 						for (int i = 0; i < p_vertex_array_len; i++) {
-							float vector[3] = { src[i].x, src[i].y, src[i].z };
+							float vector[3] = { (float)src[i].x, (float)src[i].y, (float)src[i].z };
 
 							memcpy(&vw[p_offsets[ai] + i * p_vertex_stride], vector, sizeof(float) * 3);
 
@@ -461,7 +461,7 @@ Error RenderingServer::_surface_set_data(Array p_arrays, uint32_t p_format, uint
 				const Vector2 *src = array.ptr();
 
 				for (int i = 0; i < p_vertex_array_len; i++) {
-					float uv[2] = { src[i].x, src[i].y };
+					float uv[2] = { (float)src[i].x, (float)src[i].y };
 
 					memcpy(&aw[p_offsets[ai] + i * p_attrib_stride], uv, 2 * 4);
 				}
@@ -478,7 +478,7 @@ Error RenderingServer::_surface_set_data(Array p_arrays, uint32_t p_format, uint
 				const Vector2 *src = array.ptr();
 
 				for (int i = 0; i < p_vertex_array_len; i++) {
-					float uv[2] = { src[i].x, src[i].y };
+					float uv[2] = { (float)src[i].x, (float)src[i].y };
 					memcpy(&aw[p_offsets[ai] + i * p_attrib_stride], uv, 2 * 4);
 				}
 			} break;
