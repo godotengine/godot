@@ -1119,7 +1119,7 @@ void TextEdit::_notification(int p_what) {
 									}
 									tl->draw(ci, Point2(gutter_offset + ofs_x, yofs), get_line_gutter_item_color(line, g));
 								} break;
-								case GUTTER_TPYE_ICON: {
+								case GUTTER_TYPE_ICON: {
 									const Ref<Texture2D> icon = get_line_gutter_icon(line, g);
 									if (icon.is_null()) {
 										break;
@@ -1147,7 +1147,7 @@ void TextEdit::_notification(int p_what) {
 
 									icon->draw_rect(ci, gutter_rect, false, get_line_gutter_item_color(line, g));
 								} break;
-								case GUTTER_TPYE_CUSTOM: {
+								case GUTTER_TYPE_CUSTOM: {
 									if (gutter.custom_draw_obj.is_valid()) {
 										Object *cdo = ObjectDB::get_instance(gutter.custom_draw_obj);
 										if (cdo) {
@@ -5794,8 +5794,8 @@ void TextEdit::_bind_methods() {
 
 	/* Gutters. */
 	BIND_ENUM_CONSTANT(GUTTER_TYPE_STRING);
-	BIND_ENUM_CONSTANT(GUTTER_TPYE_ICON);
-	BIND_ENUM_CONSTANT(GUTTER_TPYE_CUSTOM);
+	BIND_ENUM_CONSTANT(GUTTER_TYPE_ICON);
+	BIND_ENUM_CONSTANT(GUTTER_TYPE_CUSTOM);
 
 	ClassDB::bind_method(D_METHOD("add_gutter", "at"), &TextEdit::add_gutter, DEFVAL(-1));
 	ClassDB::bind_method(D_METHOD("remove_gutter", "gutter"), &TextEdit::remove_gutter);

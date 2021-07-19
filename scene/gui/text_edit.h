@@ -44,8 +44,8 @@ class TextEdit : public Control {
 public:
 	enum GutterType {
 		GUTTER_TYPE_STRING,
-		GUTTER_TPYE_ICON,
-		GUTTER_TPYE_CUSTOM
+		GUTTER_TYPE_ICON,
+		GUTTER_TYPE_CUSTOM
 	};
 
 	enum SelectionMode {

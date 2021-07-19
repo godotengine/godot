@@ -2562,7 +2562,7 @@ CodeEdit::CodeEdit() {
 	set_gutter_name(gutter_idx, "main_gutter");
 	set_gutter_draw(gutter_idx, false);
 	set_gutter_overwritable(gutter_idx, true);
-	set_gutter_type(gutter_idx, GUTTER_TPYE_CUSTOM);
+	set_gutter_type(gutter_idx, GUTTER_TYPE_CUSTOM);
 	set_gutter_custom_draw(gutter_idx, this, "_main_gutter_draw_callback");
 	gutter_idx++;
 
@@ -2570,7 +2570,7 @@ CodeEdit::CodeEdit() {
 	add_gutter();
 	set_gutter_name(gutter_idx, "line_numbers");
 	set_gutter_draw(gutter_idx, false);
-	set_gutter_type(gutter_idx, GUTTER_TPYE_CUSTOM);
+	set_gutter_type(gutter_idx, GUTTER_TYPE_CUSTOM);
 	set_gutter_custom_draw(gutter_idx, this, "_line_number_draw_callback");
 	gutter_idx++;
 
@@ -2578,7 +2578,7 @@ CodeEdit::CodeEdit() {
 	add_gutter();
 	set_gutter_name(gutter_idx, "fold_gutter");
 	set_gutter_draw(gutter_idx, false);
-	set_gutter_type(gutter_idx, GUTTER_TPYE_CUSTOM);
+	set_gutter_type(gutter_idx, GUTTER_TYPE_CUSTOM);
 	set_gutter_custom_draw(gutter_idx, this, "_fold_gutter_draw_callback");
 	gutter_idx++;
 
