@@ -123,9 +123,9 @@ Files extracted from upstream source:
 
 ## fonts
 
-- `NotoSans*.ttf`, `NotoNaskhArabicUI_Regular.ttf`:
-  * Upstream: https://github.com/googlei18n/noto-fonts
-  * Version: 1.06 (2017)
+- `NotoSans*.ttf`, `NotoNaskhArabicUI_*.ttf`:
+  * Upstream: https://github.com/googlefonts/noto-fonts
+  * Version: v2017-10-24-phase3-second-cleanup
   * License: OFL-1.1
   * Comment: Use UI font variant if available, because it has tight vertical metrics and
     good for UI.
