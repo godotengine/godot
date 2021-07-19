@@ -6096,13 +6096,13 @@ CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 	group_button = memnew(ToolButton);
 	main_menu_hbox->add_child(group_button);
 	group_button->connect("pressed", this, "_popup_callback", varray(GROUP_SELECTED));
-	group_button->set_tooltip(TTR("Makes sure the object's children are not selectable."));
+	group_button->set_tooltip(TTR("Make selected node's children not selectable."));
 	group_button->set_shortcut(ED_SHORTCUT("editor/group_selected_nodes", TTR("Group Selected Node(s)"), KEY_MASK_CMD | KEY_G));
 
 	ungroup_button = memnew(ToolButton);
 	main_menu_hbox->add_child(ungroup_button);
 	ungroup_button->connect("pressed", this, "_popup_callback", varray(UNGROUP_SELECTED));
-	ungroup_button->set_tooltip(TTR("Restores the object's children's ability to be selected."));
+	ungroup_button->set_tooltip(TTR("Make selected node's children selectable."));
 	ungroup_button->set_shortcut(ED_SHORTCUT("editor/ungroup_selected_nodes", TTR("Ungroup Selected Node(s)"), KEY_MASK_CMD | KEY_MASK_SHIFT | KEY_G));
 
 	main_menu_hbox->add_child(memnew(VSeparator));
