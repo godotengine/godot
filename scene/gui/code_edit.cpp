@@ -1100,17 +1100,8 @@ void CodeEdit::_fold_gutter_draw_callback(int p_line, int p_gutter, Rect2 p_regi
 	}
 	set_line_gutter_clickable(p_line, fold_gutter, true);
 
-	int horizontal_padding = p_region.size.x / 10;
-	int vertical_padding = p_region.size.y / 6;
-
-	p_region.position += Point2(horizontal_padding, vertical_padding);
-	p_region.size -= Point2(horizontal_padding, vertical_padding) * 2;
-
-	if (can_fold_line(p_line)) {
-		can_fold_icon->draw_rect(get_canvas_item(), p_region, false, folding_color);
-		return;
-	}
-	folded_icon->draw_rect(get_canvas_item(), p_region, false, folding_color);
+	Ref<Texture2D> texture = can_fold_line(p_line) ? can_fold_icon : folded_icon;
+	texture->draw(get_canvas_item(), p_region.position + Point2(p_region.size.x / 2 - texture->get_size().x / 2, p_region.size.y / 2 - texture->get_size().y / 2), folding_color);
 }
 
 /* Line Folding */
