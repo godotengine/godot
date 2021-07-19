@@ -1819,7 +1819,7 @@ ScriptTextEditor::ScriptTextEditor() {
 	code_editor->get_text_editor()->set_gutter_name(connection_gutter, "connection_gutter");
 	code_editor->get_text_editor()->set_gutter_draw(connection_gutter, false);
 	code_editor->get_text_editor()->set_gutter_overwritable(connection_gutter, true);
-	code_editor->get_text_editor()->set_gutter_type(connection_gutter, TextEdit::GUTTER_TPYE_ICON);
+	code_editor->get_text_editor()->set_gutter_type(connection_gutter, TextEdit::GUTTER_TYPE_ICON);
 
 	warnings_panel = memnew(RichTextLabel);
 	warnings_panel->set_custom_minimum_size(Size2(0, 100 * EDSCALE));

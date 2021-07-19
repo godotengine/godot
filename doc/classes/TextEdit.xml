@@ -858,9 +858,9 @@
 		</constant>
 		<constant name="GUTTER_TYPE_STRING" value="0" enum="GutterType">
 		</constant>
-		<constant name="GUTTER_TPYE_ICON" value="1" enum="GutterType">
+		<constant name="GUTTER_TYPE_ICON" value="1" enum="GutterType">
 		</constant>
-		<constant name="GUTTER_TPYE_CUSTOM" value="2" enum="GutterType">
+		<constant name="GUTTER_TYPE_CUSTOM" value="2" enum="GutterType">
 		</constant>
 		<constant name="MENU_CUT" value="0" enum="MenuItems">
 			Cuts (copies and clears) the selected text.
