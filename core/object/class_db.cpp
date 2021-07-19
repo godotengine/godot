@@ -602,7 +602,7 @@ static MethodInfo info_from_bind(MethodBind *p_method) {
 }
 #endif
 
-void ClassDB::get_method_list(StringName p_class, List<MethodInfo> *p_methods, bool p_no_inheritance, bool p_exclude_from_properties) {
+void ClassDB::get_method_list(const StringName &p_class, List<MethodInfo> *p_methods, bool p_no_inheritance, bool p_exclude_from_properties) {
 	OBJTYPE_RLOCK;
 
 	ClassInfo *type = classes.getptr(p_class);
@@ -655,7 +655,7 @@ void ClassDB::get_method_list(StringName p_class, List<MethodInfo> *p_methods, b
 	}
 }
 
-bool ClassDB::get_method_info(StringName p_class, StringName p_method, MethodInfo *r_info, bool p_no_inheritance, bool p_exclude_from_properties) {
+bool ClassDB::get_method_info(const StringName &p_class, const StringName &p_method, MethodInfo *r_info, bool p_no_inheritance, bool p_exclude_from_properties) {
 	OBJTYPE_RLOCK;
 
 	ClassInfo *type = classes.getptr(p_class);
@@ -706,7 +706,7 @@ bool ClassDB::get_method_info(StringName p_class, StringName p_method, MethodInf
 	return false;
 }
 
-MethodBind *ClassDB::get_method(StringName p_class, StringName p_name) {
+MethodBind *ClassDB::get_method(const StringName &p_class, const StringName &p_name) {
 	OBJTYPE_RLOCK;
 
 	ClassInfo *type = classes.getptr(p_class);
@@ -910,7 +910,7 @@ bool ClassDB::has_enum(const StringName &p_class, const StringName &p_name, bool
 	return false;
 }
 
-void ClassDB::add_signal(StringName p_class, const MethodInfo &p_signal) {
+void ClassDB::add_signal(const StringName &p_class, const MethodInfo &p_signal) {
 	OBJTYPE_WLOCK;
 
 	ClassInfo *type = classes.getptr(p_class);
@@ -929,7 +929,7 @@ void ClassDB::add_signal(StringName p_class, const MethodInfo &p_signal) {
 	type->signal_map[sname] = p_signal;
 }
 
-void ClassDB::get_signal_list(StringName p_class, List<MethodInfo> *p_signals, bool p_no_inheritance) {
+void ClassDB::get_signal_list(const StringName &p_class, List<MethodInfo> *p_signals, bool p_no_inheritance) {
 	OBJTYPE_RLOCK;
 
 	ClassInfo *type = classes.getptr(p_class);
@@ -951,7 +951,7 @@ void ClassDB::get_signal_list(StringName p_class, List<MethodInfo> *p_signals, b
 	}
 }
 
-bool ClassDB::has_signal(StringName p_class, StringName p_signal, bool p_no_inheritance) {
+bool ClassDB::has_signal(const StringName &p_class, const StringName &p_signal, bool p_no_inheritance) {
 	OBJTYPE_RLOCK;
 	ClassInfo *type = classes.getptr(p_class);
 	ClassInfo *check = type;
@@ -968,7 +968,7 @@ bool ClassDB::has_signal(StringName p_class, StringName p_signal, bool p_no_inhe
 	return false;
 }
 
-bool ClassDB::get_signal(StringName p_class, StringName p_signal, MethodInfo *r_signal) {
+bool ClassDB::get_signal(const StringName &p_class, const StringName &p_signal, MethodInfo *r_signal) {
 	OBJTYPE_RLOCK;
 	ClassInfo *type = classes.getptr(p_class);
 	ClassInfo *check = type;
@@ -985,7 +985,7 @@ bool ClassDB::get_signal(StringName p_class, StringName p_signal, MethodInfo *r_
 	return false;
 }
 
-void ClassDB::add_property_group(StringName p_class, const String &p_name, const String &p_prefix) {
+void ClassDB::add_property_group(const StringName &p_class, const String &p_name, const String &p_prefix) {
 	OBJTYPE_WLOCK;
 	ClassInfo *type = classes.getptr(p_class);
 	ERR_FAIL_COND(!type);
@@ -993,7 +993,7 @@ void ClassDB::add_property_group(StringName p_class, const String &p_name, const
 	type->property_list.push_back(PropertyInfo(Variant::NIL, p_name, PROPERTY_HINT_NONE, p_prefix, PROPERTY_USAGE_GROUP));
 }
 
-void ClassDB::add_property_subgroup(StringName p_class, const String &p_name, const String &p_prefix) {
+void ClassDB::add_property_subgroup(const StringName &p_class, const String &p_name, const String &p_prefix) {
 	OBJTYPE_WLOCK;
 	ClassInfo *type = classes.getptr(p_class);
 	ERR_FAIL_COND(!type);
@@ -1002,7 +1002,7 @@ void ClassDB::add_property_subgroup(StringName p_class, const String &p_name, co
 }
 
 // NOTE: For implementation simplicity reasons, this method doesn't allow setters to have optional arguments at the end.
-void ClassDB::add_property(StringName p_class, const PropertyInfo &p_pinfo, const StringName &p_setter, const StringName &p_getter, int p_index) {
+void ClassDB::add_property(const StringName &p_class, const PropertyInfo &p_pinfo, const StringName &p_setter, const StringName &p_getter, int p_index) {
 	lock.read_lock();
 	ClassInfo *type = classes.getptr(p_class);
 	lock.read_unlock();
@@ -1060,14 +1060,14 @@ void ClassDB::add_property(StringName p_class, const PropertyInfo &p_pinfo, cons
 	type->property_setget[p_pinfo.name] = psg;
 }
 
-void ClassDB::set_property_default_value(StringName p_class, const StringName &p_name, const Variant &p_default) {
+void ClassDB::set_property_default_value(const StringName &p_class, const StringName &p_name, const Variant &p_default) {
 	if (!default_values.has(p_class)) {
 		default_values[p_class] = HashMap<StringName, Variant>();
 	}
 	default_values[p_class][p_name] = p_default;
 }
 
-void ClassDB::get_property_list(StringName p_class, List<PropertyInfo> *p_list, bool p_no_inheritance, const Object *p_validator) {
+void ClassDB::get_property_list(const StringName &p_class, List<PropertyInfo> *p_list, bool p_no_inheritance, const Object *p_validator) {
 	OBJTYPE_RLOCK;
 
 	ClassInfo *type = classes.getptr(p_class);
@@ -1090,7 +1090,7 @@ void ClassDB::get_property_list(StringName p_class, List<PropertyInfo> *p_list, 
 	}
 }
 
-bool ClassDB::get_property_info(StringName p_class, StringName p_property, PropertyInfo *r_info, bool p_no_inheritance, const Object *p_validator) {
+bool ClassDB::get_property_info(const StringName &p_class, const StringName &p_property, PropertyInfo *r_info, bool p_no_inheritance, const Object *p_validator) {
 	OBJTYPE_RLOCK;
 
 	ClassInfo *check = classes.getptr(p_class);
@@ -1258,7 +1258,7 @@ Variant::Type ClassDB::get_property_type(const StringName &p_class, const String
 	return Variant::NIL;
 }
 
-StringName ClassDB::get_property_setter(StringName p_class, const StringName &p_property) {
+StringName ClassDB::get_property_setter(const StringName &p_class, const StringName &p_property) {
 	ClassInfo *type = classes.getptr(p_class);
 	ClassInfo *check = type;
 	while (check) {
@@ -1273,7 +1273,7 @@ StringName ClassDB::get_property_setter(StringName p_class, const StringName &p_
 	return StringName();
 }
 
-StringName ClassDB::get_property_getter(StringName p_class, const StringName &p_property) {
+StringName ClassDB::get_property_getter(const StringName &p_class, const StringName &p_property) {
 	ClassInfo *type = classes.getptr(p_class);
 	ClassInfo *check = type;
 	while (check) {
@@ -1305,7 +1305,7 @@ bool ClassDB::has_property(const StringName &p_class, const StringName &p_proper
 	return false;
 }
 
-void ClassDB::set_method_flags(StringName p_class, StringName p_method, int p_flags) {
+void ClassDB::set_method_flags(const StringName &p_class, const StringName &p_method, int p_flags) {
 	OBJTYPE_WLOCK;
 	ClassInfo *type = classes.getptr(p_class);
 	ClassInfo *check = type;
@@ -1314,7 +1314,7 @@ void ClassDB::set_method_flags(StringName p_class, StringName p_method, int p_fl
 	check->method_map[p_method]->set_hint_flags(p_flags);
 }
 
-bool ClassDB::has_method(StringName p_class, StringName p_method, bool p_no_inheritance) {
+bool ClassDB::has_method(const StringName &p_class, const StringName &p_method, bool p_no_inheritance) {
 	ClassInfo *type = classes.getptr(p_class);
 	ClassInfo *check = type;
 	while (check) {
@@ -1442,14 +1442,14 @@ void ClassDB::get_virtual_methods(const StringName &p_class, List<MethodInfo> *p
 #endif
 }
 
-void ClassDB::set_class_enabled(StringName p_class, bool p_enable) {
+void ClassDB::set_class_enabled(const StringName &p_class, bool p_enable) {
 	OBJTYPE_WLOCK;
 
 	ERR_FAIL_COND_MSG(!classes.has(p_class), "Request for nonexistent class '" + p_class + "'.");
 	classes[p_class].disabled = !p_enable;
 }
 
-bool ClassDB::is_class_enabled(StringName p_class) {
+bool ClassDB::is_class_enabled(const StringName &p_class) {
 	OBJTYPE_RLOCK;
 
 	ClassInfo *ti = classes.getptr(p_class);
@@ -1463,7 +1463,7 @@ bool ClassDB::is_class_enabled(StringName p_class) {
 	return !ti->disabled;
 }
 
-bool ClassDB::is_class_exposed(StringName p_class) {
+bool ClassDB::is_class_exposed(const StringName &p_class) {
 	OBJTYPE_RLOCK;
 
 	ClassInfo *ti = classes.getptr(p_class);

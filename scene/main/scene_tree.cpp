@@ -408,9 +408,9 @@ bool SceneTree::physics_process(float p_time) {
 
 	emit_signal(SNAME("physics_frame"));
 
-	_notify_group_pause("physics_process_internal", Node::NOTIFICATION_INTERNAL_PHYSICS_PROCESS);
-	call_group_flags(GROUP_CALL_REALTIME, "_viewports", "_process_picking");
-	_notify_group_pause("physics_process", Node::NOTIFICATION_PHYSICS_PROCESS);
+	_notify_group_pause(SNAME("physics_process_internal"), Node::NOTIFICATION_INTERNAL_PHYSICS_PROCESS);
+	call_group_flags(GROUP_CALL_REALTIME, SNAME("_picking_viewports"), SNAME("_process_picking"));
+	_notify_group_pause(SNAME("physics_process"), Node::NOTIFICATION_PHYSICS_PROCESS);
 	_flush_ugc();
 	MessageQueue::get_singleton()->flush(); //small little hack
 
@@ -442,8 +442,8 @@ bool SceneTree::process(float p_time) {
 
 	flush_transform_notifications();
 
-	_notify_group_pause("process_internal", Node::NOTIFICATION_INTERNAL_PROCESS);
-	_notify_group_pause("process", Node::NOTIFICATION_PROCESS);
+	_notify_group_pause(SNAME("process_internal"), Node::NOTIFICATION_INTERNAL_PROCESS);
+	_notify_group_pause(SNAME("process"), Node::NOTIFICATION_PROCESS);
 
 	_flush_ugc();
 	MessageQueue::get_singleton()->flush(); //small little hack
@@ -490,7 +490,7 @@ bool SceneTree::process(float p_time) {
 
 	if (Engine::get_singleton()->is_editor_hint()) {
 		//simple hack to reload fallback environment if it changed from editor
-		String env_path = ProjectSettings::get_singleton()->get("rendering/environment/defaults/default_environment");
+		String env_path = ProjectSettings::get_singleton()->get(SNAME("rendering/environment/defaults/default_environment"));
 		env_path = env_path.strip_edges(); //user may have added a space or two
 		String cpath;
 		Ref<Environment> fallback = get_root()->get_world_3d()->get_fallback_environment();

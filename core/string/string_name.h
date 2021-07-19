@@ -167,6 +167,6 @@ bool operator!=(const char *p_name, const StringName &p_string_name);
 
 StringName _scs_create(const char *p_chr, bool p_static = false);
 
-#define SNAME(m_arg) ([]() { static StringName sname = _scs_create(m_arg, true); return sname; })()
+#define SNAME(m_arg) ([]() -> const StringName & { static StringName sname = _scs_create(m_arg, true); return sname; })()
 
 #endif // STRING_NAME_H

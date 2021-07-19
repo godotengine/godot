@@ -444,6 +444,7 @@ void Viewport::_notification(int p_what) {
 				RenderingServer::get_singleton()->instance_set_base(contact_3d_debug_instance, contact_3d_debug_multimesh);
 				RenderingServer::get_singleton()->instance_set_scenario(contact_3d_debug_instance, find_world_3d()->get_scenario());
 				//RenderingServer::get_singleton()->instance_geometry_set_flag(contact_3d_debug_instance, RS::INSTANCE_FLAG_VISIBLE_IN_ALL_ROOMS, true);
+				set_physics_process_internal(true);
 			}
 
 		} break;
@@ -477,10 +478,6 @@ void Viewport::_notification(int p_what) {
 			}
 #endif
 
-			// Enable processing for tooltips, collision debugging, physics object picking, etc.
-			set_process_internal(true);
-			set_physics_process_internal(true);
-
 		} break;
 		case NOTIFICATION_EXIT_TREE: {
 			_gui_cancel_tooltip();
@@ -500,6 +497,7 @@ void Viewport::_notification(int p_what) {
 			}
 
 			remove_from_group("_viewports");
+			set_physics_process_internal(false);
 
 			RS::get_singleton()->viewport_set_active(viewport, false);
 			RenderingServer::get_singleton()->viewport_set_parent_viewport(viewport, RID());
@@ -510,6 +508,7 @@ void Viewport::_notification(int p_what) {
 				gui.tooltip_timer -= get_process_delta_time();
 				if (gui.tooltip_timer < 0) {
 					_gui_show_tooltip();
+					set_process_internal(false);
 				}
 			}
 
@@ -1482,6 +1481,7 @@ void Viewport::_gui_sort_roots() {
 void Viewport::_gui_cancel_tooltip() {
 	gui.tooltip_control = nullptr;
 	gui.tooltip_timer = -1;
+	set_process_internal(false);
 	if (gui.tooltip_popup) {
 		gui.tooltip_popup->queue_delete();
 		gui.tooltip_popup = nullptr;
@@ -2133,6 +2133,7 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 					gui.tooltip_control = over;
 					gui.tooltip_pos = over->get_screen_transform().xform(pos);
 					gui.tooltip_timer = gui.tooltip_delay;
+					set_process_internal(true);
 				}
 			}
 
@@ -3172,8 +3173,13 @@ bool Viewport::is_using_own_world_3d() const {
 
 void Viewport::set_physics_object_picking(bool p_enable) {
 	physics_object_picking = p_enable;
-	if (!physics_object_picking) {
+	if (physics_object_picking) {
+		add_to_group("_picking_viewports");
+	} else {
 		physics_picking_events.clear();
+		if (is_in_group("_picking_viewports")) {
+			remove_from_group("_picking_viewports");
+		}
 	}
 }
 
