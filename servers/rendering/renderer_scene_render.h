@@ -262,6 +262,9 @@ public:
 
 	virtual void sdfgi_set_debug_probe_select(const Vector3 &p_position, const Vector3 &p_dir) = 0;
 
+	virtual void decals_set_filter(RS::DecalFilter p_filter) = 0;
+	virtual void light_projectors_set_filter(RS::LightProjectorFilter p_filter) = 0;
+
 	virtual void update() = 0;
 	virtual ~RendererSceneRender() {}
 };

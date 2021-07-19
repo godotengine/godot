@@ -68,6 +68,9 @@ RID PipelineCacheRD::_generate_version(RD::VertexFormatID p_vertex_format_id, RD
 }
 
 void PipelineCacheRD::_clear() {
+#ifndef _MSC_VER
+#warning Clear should probably recompile all the variants already compiled instead to avoid stalls? needs discussion
+#endif
 	if (versions) {
 		for (uint32_t i = 0; i < version_count; i++) {
 			//shader may be gone, so this may not be valid
@@ -93,6 +96,10 @@ void PipelineCacheRD::setup(RID p_shader, RD::RenderPrimitive p_primitive, const
 	blend_state = p_blend_state;
 	dynamic_state_flags = p_dynamic_state_flags;
 	base_specialization_constants = p_base_specialization_constants;
+}
+void PipelineCacheRD::update_specialization_constants(const Vector<RD::PipelineSpecializationConstant> &p_base_specialization_constants) {
+	base_specialization_constants = p_base_specialization_constants;
+	_clear();
 }
 
 void PipelineCacheRD::update_shader(RID p_shader) {

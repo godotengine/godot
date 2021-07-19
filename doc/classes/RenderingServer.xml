@@ -1209,6 +1209,14 @@
 			<description>
 			</description>
 		</method>
+		<method name="decals_set_filter">
+			<return type="void">
+			</return>
+			<argument index="0" name="filter" type="int" enum="RenderingServer.DecalFilter">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="directional_light_create">
 			<return type="RID">
 			</return>
@@ -2151,6 +2159,14 @@
 			</argument>
 			<description>
 				Sets whether to use a dual paraboloid or a cubemap for the shadow map. Dual paraboloid is faster but may suffer from artifacts. Equivalent to [member OmniLight3D.omni_shadow_mode].
+			</description>
+		</method>
+		<method name="light_projectors_set_filter">
+			<return type="void">
+			</return>
+			<argument index="0" name="filter" type="int" enum="RenderingServer.LightProjectorFilter">
+			</argument>
+			<description>
 			</description>
 		</method>
 		<method name="light_set_bake_mode">
@@ -4865,6 +4881,16 @@
 		<constant name="MULTIMESH_TRANSFORM_3D" value="1" enum="MultimeshTransformFormat">
 			Use [Transform3D] to store MultiMesh transform.
 		</constant>
+		<constant name="LIGHT_PROJECTOR_FILTER_NEAREST" value="0" enum="LightProjectorFilter">
+		</constant>
+		<constant name="LIGHT_PROJECTOR_FILTER_NEAREST_MIPMAPS" value="1" enum="LightProjectorFilter">
+		</constant>
+		<constant name="LIGHT_PROJECTOR_FILTER_LINEAR" value="2" enum="LightProjectorFilter">
+		</constant>
+		<constant name="LIGHT_PROJECTOR_FILTER_LINEAR_MIPMAPS" value="3" enum="LightProjectorFilter">
+		</constant>
+		<constant name="LIGHT_PROJECTOR_FILTER_LINEAR_MIPMAPS_ANISOTROPIC" value="4" enum="LightProjectorFilter">
+		</constant>
 		<constant name="LIGHT_DIRECTIONAL" value="0" enum="LightType">
 			Is a directional (sun) light.
 		</constant>
@@ -4985,6 +5011,16 @@
 		<constant name="DECAL_TEXTURE_EMISSION" value="3" enum="DecalTexture">
 		</constant>
 		<constant name="DECAL_TEXTURE_MAX" value="4" enum="DecalTexture">
+		</constant>
+		<constant name="DECAL_FILTER_NEAREST" value="0" enum="DecalFilter">
+		</constant>
+		<constant name="DECAL_FILTER_NEAREST_MIPMAPS" value="1" enum="DecalFilter">
+		</constant>
+		<constant name="DECAL_FILTER_LINEAR" value="2" enum="DecalFilter">
+		</constant>
+		<constant name="DECAL_FILTER_LINEAR_MIPMAPS" value="3" enum="DecalFilter">
+		</constant>
+		<constant name="DECAL_FILTER_LINEAR_MIPMAPS_ANISOTROPIC" value="4" enum="DecalFilter">
 		</constant>
 		<constant name="VOXEL_GI_QUALITY_LOW" value="0" enum="VoxelGIQuality">
 		</constant>

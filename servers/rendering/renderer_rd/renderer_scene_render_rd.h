@@ -165,6 +165,8 @@ protected:
 	virtual void _map_forward_id(ForwardIDType p_type, ForwardID p_id, uint32_t p_index) {}
 	virtual bool _uses_forward_ids() const { return false; }
 
+	virtual void _update_shader_quality_settings() {}
+
 private:
 	RS::ViewportDebugDraw debug_draw = RS::VIEWPORT_DEBUG_DRAW_DISABLED;
 	static RendererSceneRenderRD *singleton;
@@ -305,6 +307,8 @@ private:
 	int directional_soft_shadow_samples = 0;
 	int penumbra_shadow_samples = 0;
 	int soft_shadow_samples = 0;
+	RS::DecalFilter decals_filter = RS::DECAL_FILTER_LINEAR_MIPMAPS;
+	RS::LightProjectorFilter light_projectors_filter = RS::LIGHT_PROJECTOR_FILTER_LINEAR_MIPMAPS;
 
 	/* DIRECTIONAL SHADOW */
 
@@ -1197,6 +1201,10 @@ public:
 
 	virtual void shadows_quality_set(RS::ShadowQuality p_quality) override;
 	virtual void directional_shadow_quality_set(RS::ShadowQuality p_quality) override;
+
+	virtual void decals_set_filter(RS::DecalFilter p_filter) override;
+	virtual void light_projectors_set_filter(RS::LightProjectorFilter p_filter) override;
+
 	_FORCE_INLINE_ RS::ShadowQuality shadows_quality_get() const { return shadows_quality; }
 	_FORCE_INLINE_ RS::ShadowQuality directional_shadow_quality_get() const { return directional_shadow_quality; }
 	_FORCE_INLINE_ float shadows_quality_radius_get() const { return shadows_quality_radius; }
@@ -1211,6 +1219,9 @@ public:
 	_FORCE_INLINE_ int directional_soft_shadow_samples_get() const { return directional_soft_shadow_samples; }
 	_FORCE_INLINE_ int penumbra_shadow_samples_get() const { return penumbra_shadow_samples; }
 	_FORCE_INLINE_ int soft_shadow_samples_get() const { return soft_shadow_samples; }
+
+	_FORCE_INLINE_ RS::LightProjectorFilter light_projectors_get_filter() const { return light_projectors_filter; }
+	_FORCE_INLINE_ RS::DecalFilter decals_get_filter() const { return decals_filter; }
 
 	int get_roughness_layers() const;
 	bool is_using_radiance_cubemap_array() const;

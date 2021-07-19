@@ -2259,6 +2259,8 @@ void RendererSceneRenderRD::shadows_quality_set(RS::ShadowQuality p_quality) {
 		get_vogel_disk(penumbra_shadow_kernel, penumbra_shadow_samples);
 		get_vogel_disk(soft_shadow_kernel, soft_shadow_samples);
 	}
+
+	_update_shader_quality_settings();
 }
 
 void RendererSceneRenderRD::directional_shadow_quality_set(RS::ShadowQuality p_quality) {
@@ -2299,6 +2301,23 @@ void RendererSceneRenderRD::directional_shadow_quality_set(RS::ShadowQuality p_q
 		get_vogel_disk(directional_penumbra_shadow_kernel, directional_penumbra_shadow_samples);
 		get_vogel_disk(directional_soft_shadow_kernel, directional_soft_shadow_samples);
 	}
+
+	_update_shader_quality_settings();
+}
+
+void RendererSceneRenderRD::decals_set_filter(RenderingServer::DecalFilter p_filter) {
+	if (decals_filter == p_filter) {
+		return;
+	}
+	decals_filter = p_filter;
+	_update_shader_quality_settings();
+}
+void RendererSceneRenderRD::light_projectors_set_filter(RenderingServer::LightProjectorFilter p_filter) {
+	if (light_projectors_filter == p_filter) {
+		return;
+	}
+	light_projectors_filter = p_filter;
+	_update_shader_quality_settings();
 }
 
 int RendererSceneRenderRD::get_roughness_layers() const {
@@ -4286,6 +4305,9 @@ RendererSceneRenderRD::RendererSceneRenderRD(RendererStorageRD *p_storage) {
 
 	environment_set_volumetric_fog_volume_size(GLOBAL_GET("rendering/environment/volumetric_fog/volume_size"), GLOBAL_GET("rendering/environment/volumetric_fog/volume_depth"));
 	environment_set_volumetric_fog_filter_active(GLOBAL_GET("rendering/environment/volumetric_fog/use_filter"));
+
+	decals_set_filter(RS::DecalFilter(int(GLOBAL_GET("rendering/textures/decals/filter"))));
+	light_projectors_set_filter(RS::LightProjectorFilter(int(GLOBAL_GET("rendering/textures/light_projectors/filter"))));
 
 	cull_argument.set_page_pool(&cull_argument_pool);
 }

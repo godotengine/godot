@@ -51,6 +51,15 @@ class RenderForwardClustered : public RendererSceneRenderRD {
 	};
 
 	enum {
+		SPEC_CONSTANT_SOFT_SHADOW_SAMPLES = 6,
+		SPEC_CONSTANT_PENUMBRA_SHADOW_SAMPLES = 7,
+		SPEC_CONSTANT_DIRECTIONAL_SOFT_SHADOW_SAMPLES = 8,
+		SPEC_CONSTANT_DIRECTIONAL_PENUMBRA_SHADOW_SAMPLES = 9,
+		SPEC_CONSTANT_DECAL_FILTER = 10,
+		SPEC_CONSTANT_PROJECTOR_FILTER = 11,
+	};
+
+	enum {
 		SDFGI_MAX_CASCADES = 8,
 		MAX_VOXEL_GI_INSTANCESS = 8,
 		MAX_LIGHTMAPS = 8,
@@ -221,11 +230,6 @@ class RenderForwardClustered : public RendererSceneRenderRD {
 			float directional_soft_shadow_kernel[128];
 			float penumbra_shadow_kernel[128];
 			float soft_shadow_kernel[128];
-
-			uint32_t directional_penumbra_shadow_samples;
-			uint32_t directional_soft_shadow_samples;
-			uint32_t penumbra_shadow_samples;
-			uint32_t soft_shadow_samples;
 
 			float ambient_light_color_energy[4];
 
@@ -572,6 +576,8 @@ class RenderForwardClustered : public RendererSceneRenderRD {
 	};
 
 	RenderList render_list[RENDER_LIST_MAX];
+
+	virtual void _update_shader_quality_settings() override;
 
 protected:
 	virtual void _render_scene(RenderDataRD *p_render_data, const Color &p_default_bg_color) override;

@@ -201,6 +201,9 @@ public:
 	void update() override {}
 	void sdfgi_set_debug_probe_select(const Vector3 &p_position, const Vector3 &p_dir) override {}
 
+	virtual void decals_set_filter(RS::DecalFilter p_filter) override {}
+	virtual void light_projectors_set_filter(RS::LightProjectorFilter p_filter) override {}
+
 	RasterizerSceneDummy() {}
 	~RasterizerSceneDummy() {}
 };

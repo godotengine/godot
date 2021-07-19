@@ -656,6 +656,8 @@ public:
 
 	FUNC1(shadows_quality_set, ShadowQuality);
 	FUNC1(directional_shadow_quality_set, ShadowQuality);
+	FUNC1(decals_set_filter, RS::DecalFilter);
+	FUNC1(light_projectors_set_filter, RS::LightProjectorFilter);
 
 	/* SCENARIO API */
 

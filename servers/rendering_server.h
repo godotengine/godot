@@ -483,6 +483,17 @@ public:
 
 	virtual void shadows_quality_set(ShadowQuality p_quality) = 0;
 	virtual void directional_shadow_quality_set(ShadowQuality p_quality) = 0;
+
+	enum LightProjectorFilter {
+		LIGHT_PROJECTOR_FILTER_NEAREST,
+		LIGHT_PROJECTOR_FILTER_NEAREST_MIPMAPS,
+		LIGHT_PROJECTOR_FILTER_LINEAR,
+		LIGHT_PROJECTOR_FILTER_LINEAR_MIPMAPS,
+		LIGHT_PROJECTOR_FILTER_LINEAR_MIPMAPS_ANISOTROPIC,
+	};
+
+	virtual void light_projectors_set_filter(LightProjectorFilter p_filter) = 0;
+
 	/* PROBE API */
 
 	virtual RID reflection_probe_create() = 0;
@@ -534,6 +545,16 @@ public:
 	virtual void decal_set_distance_fade(RID p_decal, bool p_enabled, float p_begin, float p_length) = 0;
 	virtual void decal_set_fade(RID p_decal, float p_above, float p_below) = 0;
 	virtual void decal_set_normal_fade(RID p_decal, float p_fade) = 0;
+
+	enum DecalFilter {
+		DECAL_FILTER_NEAREST,
+		DECAL_FILTER_NEAREST_MIPMAPS,
+		DECAL_FILTER_LINEAR,
+		DECAL_FILTER_LINEAR_MIPMAPS,
+		DECAL_FILTER_LINEAR_MIPMAPS_ANISOTROPIC,
+	};
+
+	virtual void decals_set_filter(DecalFilter p_quality) = 0;
 
 	/* VOXEL GI API */
 
@@ -1499,10 +1520,12 @@ VARIANT_ENUM_CAST(RenderingServer::LightParam);
 VARIANT_ENUM_CAST(RenderingServer::LightBakeMode);
 VARIANT_ENUM_CAST(RenderingServer::LightOmniShadowMode);
 VARIANT_ENUM_CAST(RenderingServer::LightDirectionalShadowMode);
+VARIANT_ENUM_CAST(RenderingServer::LightProjectorFilter);
 VARIANT_ENUM_CAST(RenderingServer::ReflectionProbeUpdateMode);
 VARIANT_ENUM_CAST(RenderingServer::ReflectionProbeAmbientMode);
 VARIANT_ENUM_CAST(RenderingServer::VoxelGIQuality);
 VARIANT_ENUM_CAST(RenderingServer::DecalTexture);
+VARIANT_ENUM_CAST(RenderingServer::DecalFilter);
 VARIANT_ENUM_CAST(RenderingServer::ParticlesMode);
 VARIANT_ENUM_CAST(RenderingServer::ParticlesTransformAlign);
 VARIANT_ENUM_CAST(RenderingServer::ParticlesDrawOrder);

@@ -65,6 +65,15 @@ protected:
 	};
 
 	enum {
+		SPEC_CONSTANT_SOFT_SHADOW_SAMPLES = 6,
+		SPEC_CONSTANT_PENUMBRA_SHADOW_SAMPLES = 7,
+		SPEC_CONSTANT_DIRECTIONAL_SOFT_SHADOW_SAMPLES = 8,
+		SPEC_CONSTANT_DIRECTIONAL_PENUMBRA_SHADOW_SAMPLES = 9,
+		SPEC_CONSTANT_DECAL_FILTER = 10,
+		SPEC_CONSTANT_PROJECTOR_FILTER = 11,
+	};
+
+	enum {
 		MAX_LIGHTMAPS = 8,
 		MAX_RDL_CULL = 8, // maximum number of reflection probes, decals or lights we can cull per geometry instance
 		INSTANCE_DATA_BUFFER_MIN_SIZE = 4096
@@ -227,11 +236,6 @@ protected:
 			float directional_soft_shadow_kernel[128];
 			float penumbra_shadow_kernel[128];
 			float soft_shadow_kernel[128];
-
-			uint32_t directional_penumbra_shadow_samples;
-			uint32_t directional_soft_shadow_samples;
-			uint32_t penumbra_shadow_samples;
-			uint32_t soft_shadow_samples;
 
 			float ambient_light_color_energy[4];
 
@@ -568,6 +572,8 @@ protected:
 	};
 
 	_FORCE_INLINE_ void _fill_push_constant_instance_indices(GeometryInstanceForwardMobile::PushConstant *p_push_constant, const GeometryInstanceForwardMobile *p_instance);
+
+	void _update_shader_quality_settings() override;
 
 public:
 	static void _geometry_instance_dependency_changed(RendererStorage::DependencyChangedNotification p_notification, RendererStorage::DependencyTracker *p_tracker);
