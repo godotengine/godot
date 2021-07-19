@@ -2326,6 +2326,7 @@ void ThemeTypeEditor::_list_type_selected(int p_index) {
 }
 
 void ThemeTypeEditor::_add_type_button_cbk() {
+	add_type_filter->clear();
 	add_type_dialog->popup_centered(Size2(560, 420) * EDSCALE);
 	add_type_filter->grab_focus();
 }
