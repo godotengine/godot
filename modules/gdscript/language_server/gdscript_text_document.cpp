@@ -373,7 +373,7 @@ Variant GDScriptTextDocument::declaration(const Dictionary &p_params) {
 					id = "class_global:" + symbol->native_class + ":" + symbol->name;
 					break;
 			}
-			call_deferred("show_native_symbol_in_editor", id);
+			call_deferred(SNAME("show_native_symbol_in_editor"), id);
 		} else {
 			notify_client_show_symbol(symbol);
 		}
@@ -410,7 +410,7 @@ void GDScriptTextDocument::sync_script_content(const String &p_path, const Strin
 }
 
 void GDScriptTextDocument::show_native_symbol_in_editor(const String &p_symbol_id) {
-	ScriptEditor::get_singleton()->call_deferred("_help_class_goto", p_symbol_id);
+	ScriptEditor::get_singleton()->call_deferred(SNAME("_help_class_goto"), p_symbol_id);
 
 	DisplayServer::get_singleton()->window_move_to_foreground();
 }

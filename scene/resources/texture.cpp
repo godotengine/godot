@@ -1790,7 +1790,7 @@ void GradientTexture::_queue_update() {
 	}
 
 	update_pending = true;
-	call_deferred("_update");
+	call_deferred(SNAME("_update"));
 }
 
 void GradientTexture::_update() {

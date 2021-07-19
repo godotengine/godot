@@ -33,7 +33,7 @@
 #include "scene/main/window.h"
 
 Size2 ScrollContainer::get_minimum_size() const {
-	Ref<StyleBox> sb = get_theme_stylebox("bg");
+	Ref<StyleBox> sb = get_theme_stylebox(SNAME("bg"));
 	Size2 min_size;
 
 	for (int i = 0; i < get_child_count(); i++) {
@@ -77,7 +77,7 @@ void ScrollContainer::_cancel_drag() {
 	drag_from = Vector2();
 
 	if (beyond_deadzone) {
-		emit_signal("scroll_ended");
+		emit_signal(SNAME("scroll_ended"));
 		propagate_notification(NOTIFICATION_SCROLL_END);
 		beyond_deadzone = false;
 	}
@@ -173,7 +173,7 @@ void ScrollContainer::_gui_input(const Ref<InputEvent> &p_gui_input) {
 			if (beyond_deadzone || (scroll_h && Math::abs(drag_accum.x) > deadzone) || (scroll_v && Math::abs(drag_accum.y) > deadzone)) {
 				if (!beyond_deadzone) {
 					propagate_notification(NOTIFICATION_SCROLL_BEGIN);
-					emit_signal("scroll_started");
+					emit_signal(SNAME("scroll_started"));
 
 					beyond_deadzone = true;
 					// resetting drag_accum here ensures smooth scrolling after reaching deadzone
@@ -260,7 +260,7 @@ void ScrollContainer::_update_dimensions() {
 	Size2 size = get_size();
 	Point2 ofs;
 
-	Ref<StyleBox> sb = get_theme_stylebox("bg");
+	Ref<StyleBox> sb = get_theme_stylebox(SNAME("bg"));
 	size -= sb->get_minimum_size();
 	ofs += sb->get_offset();
 	bool rtl = is_layout_rtl();
@@ -319,7 +319,7 @@ void ScrollContainer::_update_dimensions() {
 void ScrollContainer::_notification(int p_what) {
 	if (p_what == NOTIFICATION_ENTER_TREE || p_what == NOTIFICATION_THEME_CHANGED || p_what == NOTIFICATION_LAYOUT_DIRECTION_CHANGED || p_what == NOTIFICATION_TRANSLATION_CHANGED) {
 		_updating_scrollbars = true;
-		call_deferred("_update_scrollbar_position");
+		call_deferred(SNAME("_update_scrollbar_position"));
 	};
 
 	if (p_what == NOTIFICATION_READY) {
@@ -332,7 +332,7 @@ void ScrollContainer::_notification(int p_what) {
 	};
 
 	if (p_what == NOTIFICATION_DRAW) {
-		Ref<StyleBox> sb = get_theme_stylebox("bg");
+		Ref<StyleBox> sb = get_theme_stylebox(SNAME("bg"));
 		draw_style_box(sb, Rect2(Vector2(), get_size()));
 
 		update_scrollbars();
@@ -409,7 +409,7 @@ void ScrollContainer::_notification(int p_what) {
 
 void ScrollContainer::update_scrollbars() {
 	Size2 size = get_size();
-	Ref<StyleBox> sb = get_theme_stylebox("bg");
+	Ref<StyleBox> sb = get_theme_stylebox(SNAME("bg"));
 	size -= sb->get_minimum_size();
 
 	Size2 hmin;

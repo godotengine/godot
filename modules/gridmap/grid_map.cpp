@@ -221,7 +221,7 @@ void GridMap::set_cell_size(const Vector3 &p_size) {
 	ERR_FAIL_COND(p_size.x < 0.001 || p_size.y < 0.001 || p_size.z < 0.001);
 	cell_size = p_size;
 	_recreate_octant_data();
-	emit_signal("cell_size_changed", cell_size);
+	emit_signal(SNAME("cell_size_changed"), cell_size);
 }
 
 Vector3 GridMap::get_cell_size() const {

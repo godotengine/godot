@@ -40,7 +40,7 @@ void ResourcePreloaderEditor::_gui_input(Ref<InputEvent> p_event) {
 
 void ResourcePreloaderEditor::_notification(int p_what) {
 	if (p_what == NOTIFICATION_ENTER_TREE) {
-		load->set_icon(get_theme_icon("Folder", "EditorIcons"));
+		load->set_icon(get_theme_icon(SNAME("Folder"), SNAME("EditorIcons")));
 	}
 
 	if (p_what == NOTIFICATION_READY) {
@@ -208,11 +208,11 @@ void ResourcePreloaderEditor::_update_library() {
 		ti->set_selectable(1, false);
 
 		if (type == "PackedScene") {
-			ti->add_button(1, get_theme_icon("InstanceOptions", "EditorIcons"), BUTTON_OPEN_SCENE, false, TTR("Open in Editor"));
+			ti->add_button(1, get_theme_icon(SNAME("InstanceOptions"), SNAME("EditorIcons")), BUTTON_OPEN_SCENE, false, TTR("Open in Editor"));
 		} else {
-			ti->add_button(1, get_theme_icon("Load", "EditorIcons"), BUTTON_EDIT_RESOURCE, false, TTR("Open in Editor"));
+			ti->add_button(1, get_theme_icon(SNAME("Load"), SNAME("EditorIcons")), BUTTON_EDIT_RESOURCE, false, TTR("Open in Editor"));
 		}
-		ti->add_button(1, get_theme_icon("Remove", "EditorIcons"), BUTTON_REMOVE, false, TTR("Remove"));
+		ti->add_button(1, get_theme_icon(SNAME("Remove"), SNAME("EditorIcons")), BUTTON_REMOVE, false, TTR("Remove"));
 	}
 
 	//player->add_resource("default",resource);

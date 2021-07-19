@@ -255,7 +255,7 @@ void AudioStreamPlayer2D::_notification(int p_what) {
 		//stop playing if no longer active
 		if (!active.is_set()) {
 			set_physics_process_internal(false);
-			emit_signal("finished");
+			emit_signal(SNAME("finished"));
 		}
 	}
 }

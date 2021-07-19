@@ -200,7 +200,7 @@ void InputEventConfigurationDialog::_tab_selected(int p_tab) {
 		if (is_connected("window_input", signal_method)) {
 			disconnect("window_input", signal_method);
 		}
-		input_list_tree->call_deferred("ensure_cursor_is_visible");
+		input_list_tree->call_deferred(SNAME("ensure_cursor_is_visible"));
 		if (input_list_tree->get_selected() == nullptr) {
 			// If nothing selected, scroll to top.
 			input_list_tree->scroll_to_item(input_list_tree->get_root());
@@ -532,14 +532,14 @@ void InputEventConfigurationDialog::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
-			input_list_search->set_right_icon(input_list_search->get_theme_icon("Search", "EditorIcons"));
+			input_list_search->set_right_icon(input_list_search->get_theme_icon(SNAME("Search"), SNAME("EditorIcons")));
 
-			physical_key_checkbox->set_icon(get_theme_icon("KeyboardPhysical", "EditorIcons"));
+			physical_key_checkbox->set_icon(get_theme_icon(SNAME("KeyboardPhysical"), SNAME("EditorIcons")));
 
-			icon_cache.keyboard = get_theme_icon("Keyboard", "EditorIcons");
-			icon_cache.mouse = get_theme_icon("Mouse", "EditorIcons");
-			icon_cache.joypad_button = get_theme_icon("JoyButton", "EditorIcons");
-			icon_cache.joypad_axis = get_theme_icon("JoyAxis", "EditorIcons");
+			icon_cache.keyboard = get_theme_icon(SNAME("Keyboard"), SNAME("EditorIcons"));
+			icon_cache.mouse = get_theme_icon(SNAME("Mouse"), SNAME("EditorIcons"));
+			icon_cache.joypad_button = get_theme_icon(SNAME("JoyButton"), SNAME("EditorIcons"));
+			icon_cache.joypad_axis = get_theme_icon(SNAME("JoyAxis"), SNAME("EditorIcons"));
 
 			_update_input_list();
 		} break;
@@ -724,7 +724,7 @@ void ActionMapEditor::_event_config_confirmed() {
 	}
 
 	new_action["events"] = events;
-	emit_signal("action_edited", current_action_name, new_action);
+	emit_signal(SNAME("action_edited"), current_action_name, new_action);
 }
 
 void ActionMapEditor::_add_action_pressed() {
@@ -738,7 +738,7 @@ void ActionMapEditor::_add_action(const String &p_name) {
 	}
 
 	add_edit->clear();
-	emit_signal("action_added", p_name);
+	emit_signal(SNAME("action_added"), p_name);
 }
 
 void ActionMapEditor::_action_edited() {
@@ -762,7 +762,7 @@ void ActionMapEditor::_action_edited() {
 			return;
 		}
 
-		emit_signal("action_renamed", old_name, new_name);
+		emit_signal(SNAME("action_renamed"), old_name, new_name);
 	} else if (action_tree->get_selected_column() == 1) {
 		// Deadzone Edited
 		String name = ti->get_meta("__name");
@@ -771,7 +771,7 @@ void ActionMapEditor::_action_edited() {
 		new_action["deadzone"] = ti->get_range(1);
 
 		// Call deferred so that input can finish propagating through tree, allowing re-making of tree to occur.
-		call_deferred("emit_signal", "action_edited", name, new_action);
+		call_deferred(SNAME("emit_signal"), "action_edited", name, new_action);
 	}
 }
 
@@ -808,7 +808,7 @@ void ActionMapEditor::_tree_button_pressed(Object *p_item, int p_column, int p_i
 		case ActionMapEditor::BUTTON_REMOVE_ACTION: {
 			// Send removed action name
 			String name = item->get_meta("__name");
-			emit_signal("action_removed", name);
+			emit_signal(SNAME("action_removed"), name);
 		} break;
 		case ActionMapEditor::BUTTON_REMOVE_EVENT: {
 			// Remove event and send updated action
@@ -821,7 +821,7 @@ void ActionMapEditor::_tree_button_pressed(Object *p_item, int p_column, int p_i
 			events.remove(event_index);
 			action["events"] = events;
 
-			emit_signal("action_edited", action_name, action);
+			emit_signal(SNAME("action_edited"), action_name, action);
 		} break;
 		default:
 			break;
@@ -922,7 +922,7 @@ void ActionMapEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data,
 		// Change action order.
 		String relative_to = target->get_meta("__name");
 		String action_name = selected->get_meta("__name");
-		emit_signal("action_reordered", action_name, relative_to, drop_above);
+		emit_signal(SNAME("action_reordered"), action_name, relative_to, drop_above);
 
 	} else if (d["input_type"] == "event") {
 		// Change event order
@@ -956,7 +956,7 @@ void ActionMapEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data,
 		}
 
 		new_action["events"] = new_events;
-		emit_signal("action_edited", selected->get_parent()->get_meta("__name"), new_action);
+		emit_signal(SNAME("action_edited"), selected->get_parent()->get_meta("__name"), new_action);
 	}
 }
 
@@ -964,7 +964,7 @@ void ActionMapEditor::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
-			action_list_search->set_right_icon(get_theme_icon("Search", "EditorIcons"));
+			action_list_search->set_right_icon(get_theme_icon(SNAME("Search"), SNAME("EditorIcons")));
 		} break;
 		default:
 			break;
@@ -1038,11 +1038,11 @@ void ActionMapEditor::update_action_list(const Vector<ActionInfo> &p_action_info
 		action_item->set_range(1, deadzone);
 
 		// Third column - buttons
-		action_item->add_button(2, action_tree->get_theme_icon("Add", "EditorIcons"), BUTTON_ADD_EVENT, false, TTR("Add Event"));
-		action_item->add_button(2, action_tree->get_theme_icon("Remove", "EditorIcons"), BUTTON_REMOVE_ACTION, !action_info.editable, action_info.editable ? "Remove Action" : "Cannot Remove Action");
+		action_item->add_button(2, action_tree->get_theme_icon(SNAME("Add"), SNAME("EditorIcons")), BUTTON_ADD_EVENT, false, TTR("Add Event"));
+		action_item->add_button(2, action_tree->get_theme_icon(SNAME("Remove"), SNAME("EditorIcons")), BUTTON_REMOVE_ACTION, !action_info.editable, action_info.editable ? "Remove Action" : "Cannot Remove Action");
 
-		action_item->set_custom_bg_color(0, action_tree->get_theme_color("prop_subsection", "Editor"));
-		action_item->set_custom_bg_color(1, action_tree->get_theme_color("prop_subsection", "Editor"));
+		action_item->set_custom_bg_color(0, action_tree->get_theme_color(SNAME("prop_subsection"), SNAME("Editor")));
+		action_item->set_custom_bg_color(1, action_tree->get_theme_color(SNAME("prop_subsection"), SNAME("Editor")));
 
 		for (int evnt_idx = 0; evnt_idx < events.size(); evnt_idx++) {
 			Ref<InputEvent> event = events[evnt_idx];
@@ -1058,8 +1058,8 @@ void ActionMapEditor::update_action_list(const Vector<ActionInfo> &p_action_info
 			event_item->set_meta("__index", evnt_idx);
 
 			// Third Column - Buttons
-			event_item->add_button(2, action_tree->get_theme_icon("Edit", "EditorIcons"), BUTTON_EDIT_EVENT, false, TTR("Edit Event"));
-			event_item->add_button(2, action_tree->get_theme_icon("Remove", "EditorIcons"), BUTTON_REMOVE_EVENT, false, TTR("Remove Event"));
+			event_item->add_button(2, action_tree->get_theme_icon(SNAME("Edit"), SNAME("EditorIcons")), BUTTON_EDIT_EVENT, false, TTR("Edit Event"));
+			event_item->add_button(2, action_tree->get_theme_icon(SNAME("Remove"), SNAME("EditorIcons")), BUTTON_REMOVE_EVENT, false, TTR("Remove Event"));
 			event_item->set_button_color(2, 0, Color(1, 1, 1, 0.75));
 			event_item->set_button_color(2, 1, Color(1, 1, 1, 0.75));
 		}

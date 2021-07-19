@@ -41,8 +41,8 @@ StaticCString StaticCString::create(const char *p_ptr) {
 
 StringName::_Data *StringName::_table[STRING_TABLE_LEN];
 
-StringName _scs_create(const char *p_chr) {
-	return (p_chr[0] ? StringName(StaticCString::create(p_chr)) : StringName());
+StringName _scs_create(const char *p_chr, bool p_static) {
+	return (p_chr[0] ? StringName(StaticCString::create(p_chr), p_static) : StringName());
 }
 
 bool StringName::configured = false;
@@ -64,7 +64,7 @@ void StringName::cleanup() {
 		while (_table[i]) {
 			_Data *d = _table[i];
 			lost_strings++;
-			if (OS::get_singleton()->is_stdout_verbose()) {
+			if (d->static_count.get() != d->refcount.get() && OS::get_singleton()->is_stdout_verbose()) {
 				if (d->cname) {
 					print_line("Orphan StringName: " + String(d->cname));
 				} else {
@@ -79,6 +79,7 @@ void StringName::cleanup() {
 	if (lost_strings) {
 		print_verbose("StringName: " + itos(lost_strings) + " unclaimed string names at exit.");
 	}
+	configured = false;
 }
 
 void StringName::unref() {
@@ -87,6 +88,13 @@ void StringName::unref() {
 	if (_data && _data->refcount.unref()) {
 		MutexLock lock(mutex);
 
+		if (_data->static_count.get() > 0) {
+			if (_data->cname) {
+				ERR_PRINT("BUG: Unreferenced static string to 0: " + String(_data->cname));
+			} else {
+				ERR_PRINT("BUG: Unreferenced static string to 0: " + String(_data->name));
+			}
+		}
 		if (_data->prev) {
 			_data->prev->next = _data->next;
 		} else {
@@ -153,7 +161,7 @@ StringName::StringName(const StringName &p_name) {
 	}
 }
 
-StringName::StringName(const char *p_name) {
+StringName::StringName(const char *p_name, bool p_static) {
 	_data = nullptr;
 
 	ERR_FAIL_COND(!configured);
@@ -181,6 +189,9 @@ StringName::StringName(const char *p_name) {
 	if (_data) {
 		if (_data->refcount.ref()) {
 			// exists
+			if (p_static) {
+				_data->static_count.increment();
+			}
 			return;
 		}
 	}
@@ -188,6 +199,7 @@ StringName::StringName(const char *p_name) {
 	_data = memnew(_Data);
 	_data->name = p_name;
 	_data->refcount.init();
+	_data->static_count.set(p_static ? 1 : 0);
 	_data->hash = hash;
 	_data->idx = idx;
 	_data->cname = nullptr;
@@ -199,7 +211,7 @@ StringName::StringName(const char *p_name) {
 	_table[idx] = _data;
 }
 
-StringName::StringName(const StaticCString &p_static_string) {
+StringName::StringName(const StaticCString &p_static_string, bool p_static) {
 	_data = nullptr;
 
 	ERR_FAIL_COND(!configured);
@@ -225,6 +237,9 @@ StringName::StringName(const StaticCString &p_static_string) {
 	if (_data) {
 		if (_data->refcount.ref()) {
 			// exists
+			if (p_static) {
+				_data->static_count.increment();
+			}
 			return;
 		}
 	}
@@ -232,6 +247,7 @@ StringName::StringName(const StaticCString &p_static_string) {
 	_data = memnew(_Data);
 
 	_data->refcount.init();
+	_data->static_count.set(p_static ? 1 : 0);
 	_data->hash = hash;
 	_data->idx = idx;
 	_data->cname = p_static_string.ptr;
@@ -243,7 +259,7 @@ StringName::StringName(const StaticCString &p_static_string) {
 	_table[idx] = _data;
 }
 
-StringName::StringName(const String &p_name) {
+StringName::StringName(const String &p_name, bool p_static) {
 	_data = nullptr;
 
 	ERR_FAIL_COND(!configured);
@@ -269,6 +285,9 @@ StringName::StringName(const String &p_name) {
 	if (_data) {
 		if (_data->refcount.ref()) {
 			// exists
+			if (p_static) {
+				_data->static_count.increment();
+			}
 			return;
 		}
 	}
@@ -276,6 +295,7 @@ StringName::StringName(const String &p_name) {
 	_data = memnew(_Data);
 	_data->name = p_name;
 	_data->refcount.init();
+	_data->static_count.set(p_static ? 1 : 0);
 	_data->hash = hash;
 	_data->idx = idx;
 	_data->cname = nullptr;
@@ -372,10 +392,6 @@ StringName StringName::search(const String &p_name) {
 	}
 
 	return StringName(); //does not exist
-}
-
-StringName::~StringName() {
-	unref();
 }
 
 bool operator==(const String &p_name, const StringName &p_string_name) {

@@ -286,7 +286,7 @@ void Curve::set_min_value(float p_min) {
 	}
 	// Note: min and max are indicative values,
 	// it's still possible that existing points are out of range at this point.
-	emit_signal(SIGNAL_RANGE_CHANGED);
+	emit_signal(SNAME(SIGNAL_RANGE_CHANGED));
 }
 
 void Curve::set_max_value(float p_max) {
@@ -296,7 +296,7 @@ void Curve::set_max_value(float p_max) {
 		_minmax_set_once |= 0b01; // second bit is "max set"
 		_max_value = p_max;
 	}
-	emit_signal(SIGNAL_RANGE_CHANGED);
+	emit_signal(SNAME(SIGNAL_RANGE_CHANGED));
 }
 
 real_t Curve::interpolate(real_t offset) const {

@@ -127,7 +127,7 @@ void EditorRunNative::_run_native(int p_idx, int p_platform) {
 		return;
 	}
 
-	emit_signal("native_run", preset);
+	emit_signal(SNAME("native_run"), preset);
 
 	int flags = 0;
 

@@ -444,7 +444,7 @@ void ProjectSettingsEditor::_update_action_map_editor() {
 	List<PropertyInfo> props;
 	ProjectSettings::get_singleton()->get_property_list(&props);
 
-	const Ref<Texture2D> builtin_icon = get_theme_icon("PinPressed", "EditorIcons");
+	const Ref<Texture2D> builtin_icon = get_theme_icon(SNAME("PinPressed"), SNAME("EditorIcons"));
 	for (List<PropertyInfo>::Element *E = props.front(); E; E = E->next()) {
 		const String property_name = E->get().name;
 
@@ -483,18 +483,18 @@ void ProjectSettingsEditor::_notification(int p_what) {
 		case NOTIFICATION_ENTER_TREE: {
 			inspector->edit(ps);
 
-			search_box->set_right_icon(get_theme_icon("Search", "EditorIcons"));
+			search_box->set_right_icon(get_theme_icon(SNAME("Search"), SNAME("EditorIcons")));
 			search_box->set_clear_button_enabled(true);
 
-			restart_close_button->set_icon(get_theme_icon("Close", "EditorIcons"));
-			restart_container->add_theme_style_override("panel", get_theme_stylebox("bg", "Tree"));
-			restart_icon->set_texture(get_theme_icon("StatusWarning", "EditorIcons"));
-			restart_label->add_theme_color_override("font_color", get_theme_color("warning_color", "Editor"));
+			restart_close_button->set_icon(get_theme_icon(SNAME("Close"), SNAME("EditorIcons")));
+			restart_container->add_theme_style_override("panel", get_theme_stylebox(SNAME("bg"), SNAME("Tree")));
+			restart_icon->set_texture(get_theme_icon(SNAME("StatusWarning"), SNAME("EditorIcons")));
+			restart_label->add_theme_color_override("font_color", get_theme_color(SNAME("warning_color"), SNAME("Editor")));
 
 			_update_action_map_editor();
 		} break;
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
-			search_box->set_right_icon(get_theme_icon("Search", "EditorIcons"));
+			search_box->set_right_icon(get_theme_icon(SNAME("Search"), SNAME("EditorIcons")));
 			search_box->set_clear_button_enabled(true);
 		} break;
 	}

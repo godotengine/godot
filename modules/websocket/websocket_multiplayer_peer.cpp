@@ -215,7 +215,7 @@ void WebSocketMultiplayerPeer::_store_pkt(int32_t p_source, int32_t p_dest, cons
 	packet.destination = p_dest;
 	memcpy(packet.data, &p_data[PROTO_SIZE], p_data_size);
 	_incoming_packets.push_back(packet);
-	emit_signal("peer_packet", p_source);
+	emit_signal(SNAME("peer_packet"), p_source);
 }
 
 Error WebSocketMultiplayerPeer::_server_relay(int32_t p_from, int32_t p_to, const uint8_t *p_buffer, uint32_t p_buffer_size) {
@@ -306,15 +306,15 @@ void WebSocketMultiplayerPeer::_process_multiplayer(Ref<WebSocketPeer> p_peer, u
 		switch (type) {
 			case SYS_ADD: // Add peer
 				_peer_map[id] = Ref<WebSocketPeer>();
-				emit_signal("peer_connected", id);
+				emit_signal(SNAME("peer_connected"), id);
 				if (id == 1) { // We just connected to the server
-					emit_signal("connection_succeeded");
+					emit_signal(SNAME("connection_succeeded"));
 				}
 				break;
 
 			case SYS_DEL: // Remove peer
 				_peer_map.erase(id);
-				emit_signal("peer_disconnected", id);
+				emit_signal(SNAME("peer_disconnected"), id);
 				break;
 			case SYS_ID: // Hello, server assigned ID
 				_peer_id = id;

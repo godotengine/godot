@@ -254,7 +254,7 @@ MeshLibraryEditor::MeshLibraryEditor(EditorNode *p_editor) {
 	Node3DEditor::get_singleton()->add_control_to_menu_panel(menu);
 	menu->set_position(Point2(1, 1));
 	menu->set_text(TTR("Mesh Library"));
-	menu->set_icon(EditorNode::get_singleton()->get_gui_base()->get_theme_icon("MeshLibrary", "EditorIcons"));
+	menu->set_icon(EditorNode::get_singleton()->get_gui_base()->get_theme_icon(SNAME("MeshLibrary"), SNAME("EditorIcons")));
 	menu->get_popup()->add_item(TTR("Add Item"), MENU_OPTION_ADD_ITEM);
 	menu->get_popup()->add_item(TTR("Remove Selected Item"), MENU_OPTION_REMOVE_ITEM);
 	menu->get_popup()->add_separator();

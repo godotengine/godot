@@ -132,7 +132,7 @@ void NavigationRegion3D::set_navigation_mesh(const Ref<NavigationMesh> &p_navmes
 		Object::cast_to<MeshInstance3D>(debug_view)->set_mesh(navmesh->get_debug_mesh());
 	}
 
-	emit_signal("navigation_mesh_changed");
+	emit_signal(SNAME("navigation_mesh_changed"));
 
 	update_gizmo();
 	update_configuration_warnings();
@@ -153,11 +153,11 @@ void _bake_navigation_mesh(void *p_user_data) {
 		Ref<NavigationMesh> nav_mesh = args->nav_region->get_navigation_mesh()->duplicate();
 
 		NavigationServer3D::get_singleton()->region_bake_navmesh(nav_mesh, args->nav_region);
-		args->nav_region->call_deferred("_bake_finished", nav_mesh);
+		args->nav_region->call_deferred(SNAME("_bake_finished"), nav_mesh);
 		memdelete(args);
 	} else {
 		ERR_PRINT("Can't bake the navigation mesh if the `NavigationMesh` resource doesn't exist");
-		args->nav_region->call_deferred("_bake_finished", Ref<NavigationMesh>());
+		args->nav_region->call_deferred(SNAME("_bake_finished"), Ref<NavigationMesh>());
 		memdelete(args);
 	}
 }
@@ -174,7 +174,7 @@ void NavigationRegion3D::bake_navigation_mesh() {
 void NavigationRegion3D::_bake_finished(Ref<NavigationMesh> p_nav_mesh) {
 	set_navigation_mesh(p_nav_mesh);
 	bake_thread.wait_to_finish();
-	emit_signal("bake_finished");
+	emit_signal(SNAME("bake_finished"));
 }
 
 TypedArray<String> NavigationRegion3D::get_configuration_warnings() const {

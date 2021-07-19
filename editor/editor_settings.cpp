@@ -63,7 +63,7 @@ bool EditorSettings::_set(const StringName &p_name, const Variant &p_value) {
 
 	bool changed = _set_only(p_name, p_value);
 	if (changed) {
-		emit_signal("settings_changed");
+		emit_signal(SNAME("settings_changed"));
 	}
 	return true;
 }
@@ -1344,7 +1344,7 @@ void EditorSettings::load_text_editor_theme() {
 			}
 		}
 	}
-	emit_signal("settings_changed");
+	emit_signal(SNAME("settings_changed"));
 	// if it doesn't load just use what is currently loaded
 }
 

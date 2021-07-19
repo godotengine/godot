@@ -36,11 +36,11 @@
 #include "editor_scale.h"
 
 void EditorHelpSearch::_update_icons() {
-	search_box->set_right_icon(results_tree->get_theme_icon("Search", "EditorIcons"));
+	search_box->set_right_icon(results_tree->get_theme_icon(SNAME("Search"), SNAME("EditorIcons")));
 	search_box->set_clear_button_enabled(true);
-	search_box->add_theme_icon_override("right_icon", results_tree->get_theme_icon("Search", "EditorIcons"));
-	case_sensitive_button->set_icon(results_tree->get_theme_icon("MatchCase", "EditorIcons"));
-	hierarchy_button->set_icon(results_tree->get_theme_icon("ClassList", "EditorIcons"));
+	search_box->add_theme_icon_override("right_icon", results_tree->get_theme_icon(SNAME("Search"), SNAME("EditorIcons")));
+	case_sensitive_button->set_icon(results_tree->get_theme_icon(SNAME("MatchCase"), SNAME("EditorIcons")));
+	hierarchy_button->set_icon(results_tree->get_theme_icon(SNAME("ClassList"), SNAME("EditorIcons")));
 
 	if (is_visible()) {
 		_update_results();
@@ -95,7 +95,7 @@ void EditorHelpSearch::_confirmed() {
 	// Activate the script editor and emit the signal with the documentation link to display.
 	EditorNode::get_singleton()->set_visible_editor(EditorNode::EDITOR_SCRIPT);
 
-	emit_signal("go_to_help", item->get_metadata(0));
+	emit_signal(SNAME("go_to_help"), item->get_metadata(0));
 
 	hide();
 }
@@ -104,7 +104,7 @@ void EditorHelpSearch::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_VISIBILITY_CHANGED: {
 			if (!is_visible()) {
-				results_tree->call_deferred("clear"); // Wait for the Tree's mouse event propagation.
+				results_tree->call_deferred(SNAME("clear")); // Wait for the Tree's mouse event propagation.
 				get_ok_button()->set_disabled(true);
 				EditorSettings::get_singleton()->set_project_metadata("dialog_bounds", "search_help", Rect2(get_position(), get_size()));
 			}
@@ -506,7 +506,7 @@ TreeItem *EditorHelpSearch::Runner::_create_class_item(TreeItem *p_parent, const
 	if (ui_service->has_theme_icon(p_doc->name, "EditorIcons")) {
 		icon = ui_service->get_theme_icon(p_doc->name, "EditorIcons");
 	} else if (ClassDB::class_exists(p_doc->name) && ClassDB::is_parent_class(p_doc->name, "Object")) {
-		icon = ui_service->get_theme_icon("Object", "EditorIcons");
+		icon = ui_service->get_theme_icon(SNAME("Object"), SNAME("EditorIcons"));
 	}
 	String tooltip = p_doc->brief_description.strip_edges();
 
@@ -580,10 +580,10 @@ TreeItem *EditorHelpSearch::Runner::_create_member_item(TreeItem *p_parent, cons
 	Ref<Texture2D> icon;
 	String text;
 	if (search_flags & SEARCH_SHOW_HIERARCHY) {
-		icon = ui_service->get_theme_icon(p_icon, "EditorIcons");
+		icon = ui_service->get_theme_icon(p_icon, SNAME("EditorIcons"));
 		text = p_text;
 	} else {
-		icon = ui_service->get_theme_icon(p_icon, "EditorIcons");
+		icon = ui_service->get_theme_icon(p_icon, SNAME("EditorIcons"));
 		/*// In flat mode, show the class icon.
 if (ui_service->has_icon(p_class_name, "EditorIcons"))
 icon = ui_service->get_icon(p_class_name, "EditorIcons");
@@ -621,6 +621,6 @@ EditorHelpSearch::Runner::Runner(Control *p_icon_service, Tree *p_results_tree, 
 		results_tree(p_results_tree),
 		term((p_search_flags & SEARCH_CASE_SENSITIVE) == 0 ? p_term.strip_edges().to_lower() : p_term.strip_edges()),
 		search_flags(p_search_flags),
-		empty_icon(ui_service->get_theme_icon("ArrowRight", "EditorIcons")),
-		disabled_color(ui_service->get_theme_color("disabled_font_color", "Editor")) {
+		empty_icon(ui_service->get_theme_icon(SNAME("ArrowRight"), SNAME("EditorIcons"))),
+		disabled_color(ui_service->get_theme_color(SNAME("disabled_font_color"), SNAME("Editor"))) {
 }

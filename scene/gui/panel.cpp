@@ -35,7 +35,7 @@
 void Panel::_notification(int p_what) {
 	if (p_what == NOTIFICATION_DRAW) {
 		RID ci = get_canvas_item();
-		Ref<StyleBox> style = mode == MODE_BACKGROUND ? get_theme_stylebox("panel") : get_theme_stylebox("panel_fg");
+		Ref<StyleBox> style = mode == MODE_BACKGROUND ? get_theme_stylebox(SNAME("panel")) : get_theme_stylebox(SNAME("panel_fg"));
 		style->draw(ci, Rect2(Point2(), get_size()));
 	}
 }

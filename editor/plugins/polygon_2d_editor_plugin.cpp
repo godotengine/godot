@@ -64,27 +64,27 @@ void Polygon2DEditor::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
-			uv_edit_draw->add_theme_style_override("panel", get_theme_stylebox("bg", "Tree"));
-			bone_scroll->add_theme_style_override("bg", get_theme_stylebox("bg", "Tree"));
+			uv_edit_draw->add_theme_style_override("panel", get_theme_stylebox(SNAME("bg"), SNAME("Tree")));
+			bone_scroll->add_theme_style_override("bg", get_theme_stylebox(SNAME("bg"), SNAME("Tree")));
 		} break;
 		case NOTIFICATION_READY: {
-			button_uv->set_icon(get_theme_icon("Uv", "EditorIcons"));
+			button_uv->set_icon(get_theme_icon(SNAME("Uv"), SNAME("EditorIcons")));
 
-			uv_button[UV_MODE_CREATE]->set_icon(get_theme_icon("Edit", "EditorIcons"));
-			uv_button[UV_MODE_CREATE_INTERNAL]->set_icon(get_theme_icon("EditInternal", "EditorIcons"));
-			uv_button[UV_MODE_REMOVE_INTERNAL]->set_icon(get_theme_icon("RemoveInternal", "EditorIcons"));
-			uv_button[UV_MODE_EDIT_POINT]->set_icon(get_theme_icon("ToolSelect", "EditorIcons"));
-			uv_button[UV_MODE_MOVE]->set_icon(get_theme_icon("ToolMove", "EditorIcons"));
-			uv_button[UV_MODE_ROTATE]->set_icon(get_theme_icon("ToolRotate", "EditorIcons"));
-			uv_button[UV_MODE_SCALE]->set_icon(get_theme_icon("ToolScale", "EditorIcons"));
-			uv_button[UV_MODE_ADD_POLYGON]->set_icon(get_theme_icon("Edit", "EditorIcons"));
-			uv_button[UV_MODE_REMOVE_POLYGON]->set_icon(get_theme_icon("Close", "EditorIcons"));
-			uv_button[UV_MODE_PAINT_WEIGHT]->set_icon(get_theme_icon("Bucket", "EditorIcons"));
-			uv_button[UV_MODE_CLEAR_WEIGHT]->set_icon(get_theme_icon("Clear", "EditorIcons"));
+			uv_button[UV_MODE_CREATE]->set_icon(get_theme_icon(SNAME("Edit"), SNAME("EditorIcons")));
+			uv_button[UV_MODE_CREATE_INTERNAL]->set_icon(get_theme_icon(SNAME("EditInternal"), SNAME("EditorIcons")));
+			uv_button[UV_MODE_REMOVE_INTERNAL]->set_icon(get_theme_icon(SNAME("RemoveInternal"), SNAME("EditorIcons")));
+			uv_button[UV_MODE_EDIT_POINT]->set_icon(get_theme_icon(SNAME("ToolSelect"), SNAME("EditorIcons")));
+			uv_button[UV_MODE_MOVE]->set_icon(get_theme_icon(SNAME("ToolMove"), SNAME("EditorIcons")));
+			uv_button[UV_MODE_ROTATE]->set_icon(get_theme_icon(SNAME("ToolRotate"), SNAME("EditorIcons")));
+			uv_button[UV_MODE_SCALE]->set_icon(get_theme_icon(SNAME("ToolScale"), SNAME("EditorIcons")));
+			uv_button[UV_MODE_ADD_POLYGON]->set_icon(get_theme_icon(SNAME("Edit"), SNAME("EditorIcons")));
+			uv_button[UV_MODE_REMOVE_POLYGON]->set_icon(get_theme_icon(SNAME("Close"), SNAME("EditorIcons")));
+			uv_button[UV_MODE_PAINT_WEIGHT]->set_icon(get_theme_icon(SNAME("Bucket"), SNAME("EditorIcons")));
+			uv_button[UV_MODE_CLEAR_WEIGHT]->set_icon(get_theme_icon(SNAME("Clear"), SNAME("EditorIcons")));
 
-			b_snap_grid->set_icon(get_theme_icon("Grid", "EditorIcons"));
-			b_snap_enable->set_icon(get_theme_icon("SnapGrid", "EditorIcons"));
-			uv_icon_zoom->set_texture(get_theme_icon("Zoom", "EditorIcons"));
+			b_snap_grid->set_icon(get_theme_icon(SNAME("Grid"), SNAME("EditorIcons")));
+			b_snap_enable->set_icon(get_theme_icon(SNAME("SnapGrid"), SNAME("EditorIcons")));
+			uv_icon_zoom->set_texture(get_theme_icon(SNAME("Zoom"), SNAME("EditorIcons")));
 
 			uv_vscroll->set_anchors_and_offsets_preset(PRESET_RIGHT_WIDE);
 			uv_hscroll->set_anchors_and_offsets_preset(PRESET_BOTTOM_WIDE);
@@ -1015,7 +1015,7 @@ void Polygon2DEditor::_uv_draw() {
 	}
 
 	// All UV points are sharp, so use the sharp handle icon
-	Ref<Texture2D> handle = get_theme_icon("EditorPathSharpHandle", "EditorIcons");
+	Ref<Texture2D> handle = get_theme_icon(SNAME("EditorPathSharpHandle"), SNAME("EditorIcons"));
 
 	Color poly_line_color = Color(0.9, 0.5, 0.5);
 	if (polygons.size() || polygon_create.size()) {

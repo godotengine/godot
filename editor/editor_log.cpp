@@ -60,30 +60,30 @@ void EditorLog::_error_handler(void *p_self, const char *p_func, const char *p_f
 void EditorLog::_notification(int p_what) {
 	if (p_what == NOTIFICATION_ENTER_TREE) {
 		//button->set_icon(get_icon("Console","EditorIcons"));
-		log->add_theme_font_override("normal_font", get_theme_font("output_source", "EditorFonts"));
-		log->add_theme_font_size_override("normal_font_size", get_theme_font_size("output_source_size", "EditorFonts"));
-		log->add_theme_color_override("selection_color", get_theme_color("accent_color", "Editor") * Color(1, 1, 1, 0.4));
-		log->add_theme_font_override("bold_font", get_theme_font("bold", "EditorFonts"));
+		log->add_theme_font_override("normal_font", get_theme_font(SNAME("output_source"), SNAME("EditorFonts")));
+		log->add_theme_font_size_override("normal_font_size", get_theme_font_size(SNAME("output_source_size"), SNAME("EditorFonts")));
+		log->add_theme_color_override("selection_color", get_theme_color(SNAME("accent_color"), SNAME("Editor")) * Color(1, 1, 1, 0.4));
+		log->add_theme_font_override("bold_font", get_theme_font(SNAME("bold"), SNAME("EditorFonts")));
 
-		type_filter_map[MSG_TYPE_STD]->toggle_button->set_icon(get_theme_icon("Popup", "EditorIcons"));
-		type_filter_map[MSG_TYPE_ERROR]->toggle_button->set_icon(get_theme_icon("StatusError", "EditorIcons"));
-		type_filter_map[MSG_TYPE_WARNING]->toggle_button->set_icon(get_theme_icon("StatusWarning", "EditorIcons"));
-		type_filter_map[MSG_TYPE_EDITOR]->toggle_button->set_icon(get_theme_icon("Edit", "EditorIcons"));
+		type_filter_map[MSG_TYPE_STD]->toggle_button->set_icon(get_theme_icon(SNAME("Popup"), SNAME("EditorIcons")));
+		type_filter_map[MSG_TYPE_ERROR]->toggle_button->set_icon(get_theme_icon(SNAME("StatusError"), SNAME("EditorIcons")));
+		type_filter_map[MSG_TYPE_WARNING]->toggle_button->set_icon(get_theme_icon(SNAME("StatusWarning"), SNAME("EditorIcons")));
+		type_filter_map[MSG_TYPE_EDITOR]->toggle_button->set_icon(get_theme_icon(SNAME("Edit"), SNAME("EditorIcons")));
 
-		clear_button->set_icon(get_theme_icon("Clear", "EditorIcons"));
-		copy_button->set_icon(get_theme_icon("ActionCopy", "EditorIcons"));
-		collapse_button->set_icon(get_theme_icon("CombineLines", "EditorIcons"));
-		show_search_button->set_icon(get_theme_icon("Search", "EditorIcons"));
+		clear_button->set_icon(get_theme_icon(SNAME("Clear"), SNAME("EditorIcons")));
+		copy_button->set_icon(get_theme_icon(SNAME("ActionCopy"), SNAME("EditorIcons")));
+		collapse_button->set_icon(get_theme_icon(SNAME("CombineLines"), SNAME("EditorIcons")));
+		show_search_button->set_icon(get_theme_icon(SNAME("Search"), SNAME("EditorIcons")));
 
 		_load_state();
 
 	} else if (p_what == NOTIFICATION_THEME_CHANGED) {
-		Ref<Font> df_output_code = get_theme_font("output_source", "EditorFonts");
+		Ref<Font> df_output_code = get_theme_font(SNAME("output_source"), SNAME("EditorFonts"));
 		if (df_output_code.is_valid()) {
 			if (log != nullptr) {
-				log->add_theme_font_override("normal_font", get_theme_font("output_source", "EditorFonts"));
-				log->add_theme_font_size_override("normal_font_size", get_theme_font_size("output_source_size", "EditorFonts"));
-				log->add_theme_color_override("selection_color", get_theme_color("accent_color", "Editor") * Color(1, 1, 1, 0.4));
+				log->add_theme_font_override("normal_font", get_theme_font(SNAME("output_source"), SNAME("EditorFonts")));
+				log->add_theme_font_size_override("normal_font_size", get_theme_font_size(SNAME("output_source_size"), SNAME("EditorFonts")));
+				log->add_theme_color_override("selection_color", get_theme_color(SNAME("accent_color"), SNAME("Editor")) * Color(1, 1, 1, 0.4));
 			}
 		}
 	}
@@ -242,22 +242,22 @@ void EditorLog::_add_log_line(LogMessage &p_message, bool p_replace_previous) {
 		case MSG_TYPE_STD: {
 		} break;
 		case MSG_TYPE_ERROR: {
-			log->push_color(get_theme_color("error_color", "Editor"));
-			Ref<Texture2D> icon = get_theme_icon("Error", "EditorIcons");
+			log->push_color(get_theme_color(SNAME("error_color"), SNAME("Editor")));
+			Ref<Texture2D> icon = get_theme_icon(SNAME("Error"), SNAME("EditorIcons"));
 			log->add_image(icon);
 			log->add_text(" ");
 			tool_button->set_icon(icon);
 		} break;
 		case MSG_TYPE_WARNING: {
-			log->push_color(get_theme_color("warning_color", "Editor"));
-			Ref<Texture2D> icon = get_theme_icon("Warning", "EditorIcons");
+			log->push_color(get_theme_color(SNAME("warning_color"), SNAME("Editor")));
+			Ref<Texture2D> icon = get_theme_icon(SNAME("Warning"), SNAME("EditorIcons"));
 			log->add_image(icon);
 			log->add_text(" ");
 			tool_button->set_icon(icon);
 		} break;
 		case MSG_TYPE_EDITOR: {
 			// Distinguish editor messages from messages printed by the project
-			log->push_color(get_theme_color("font_color", "Editor") * Color(1, 1, 1, 0.6));
+			log->push_color(get_theme_color(SNAME("font_color"), SNAME("Editor")) * Color(1, 1, 1, 0.6));
 		} break;
 	}
 
@@ -336,7 +336,7 @@ EditorLog::EditorLog() {
 	search_box = memnew(LineEdit);
 	search_box->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	search_box->set_placeholder(TTR("Filter messages"));
-	search_box->set_right_icon(get_theme_icon("Search", "EditorIcons"));
+	search_box->set_right_icon(get_theme_icon(SNAME("Search"), SNAME("EditorIcons")));
 	search_box->set_clear_button_enabled(true);
 	search_box->set_visible(true);
 	search_box->connect("text_changed", callable_mp(this, &EditorLog::_search_changed));

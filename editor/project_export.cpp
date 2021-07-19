@@ -49,8 +49,8 @@
 #include "servers/display_server.h"
 
 void ProjectExportDialog::_theme_changed() {
-	duplicate_preset->set_icon(presets->get_theme_icon("Duplicate", "EditorIcons"));
-	delete_preset->set_icon(presets->get_theme_icon("Remove", "EditorIcons"));
+	duplicate_preset->set_icon(presets->get_theme_icon(SNAME("Duplicate"), SNAME("EditorIcons")));
+	delete_preset->set_icon(presets->get_theme_icon(SNAME("Remove"), SNAME("EditorIcons")));
 }
 
 void ProjectExportDialog::_notification(int p_what) {
@@ -61,8 +61,8 @@ void ProjectExportDialog::_notification(int p_what) {
 			}
 		} break;
 		case NOTIFICATION_READY: {
-			duplicate_preset->set_icon(presets->get_theme_icon("Duplicate", "EditorIcons"));
-			delete_preset->set_icon(presets->get_theme_icon("Remove", "EditorIcons"));
+			duplicate_preset->set_icon(presets->get_theme_icon(SNAME("Duplicate"), SNAME("EditorIcons")));
+			delete_preset->set_icon(presets->get_theme_icon(SNAME("Remove"), SNAME("EditorIcons")));
 			connect("confirmed", callable_mp(this, &ProjectExportDialog::_export_pck_zip));
 			_update_export_all();
 		} break;
@@ -730,7 +730,7 @@ void ProjectExportDialog::_fill_resource_tree() {
 
 bool ProjectExportDialog::_fill_tree(EditorFileSystemDirectory *p_dir, TreeItem *p_item, Ref<EditorExportPreset> &current, bool p_only_scenes) {
 	p_item->set_cell_mode(0, TreeItem::CELL_MODE_CHECK);
-	p_item->set_icon(0, presets->get_theme_icon("folder", "FileDialog"));
+	p_item->set_icon(0, presets->get_theme_icon(SNAME("folder"), SNAME("FileDialog")));
 	p_item->set_text(0, p_dir->get_name() + "/");
 	p_item->set_editable(0, true);
 	p_item->set_metadata(0, p_dir->get_path());
@@ -1172,7 +1172,7 @@ ProjectExportDialog::ProjectExportDialog() {
 	script_key->connect("text_changed", callable_mp(this, &ProjectExportDialog::_script_encryption_key_changed));
 	script_key_error = memnew(Label);
 	script_key_error->set_text("- " + TTR("Invalid Encryption Key (must be 64 hexadecimal characters long)"));
-	script_key_error->add_theme_color_override("font_color", EditorNode::get_singleton()->get_gui_base()->get_theme_color("error_color", "Editor"));
+	script_key_error->add_theme_color_override("font_color", EditorNode::get_singleton()->get_gui_base()->get_theme_color(SNAME("error_color"), SNAME("Editor")));
 	sec_vb->add_margin_child(TTR("Encryption Key (256-bits as hexadecimal):"), script_key);
 	sec_vb->add_child(script_key_error);
 	sections->add_child(sec_vb);
@@ -1241,7 +1241,7 @@ ProjectExportDialog::ProjectExportDialog() {
 	export_error = memnew(Label);
 	main_vb->add_child(export_error);
 	export_error->hide();
-	export_error->add_theme_color_override("font_color", EditorNode::get_singleton()->get_gui_base()->get_theme_color("error_color", "Editor"));
+	export_error->add_theme_color_override("font_color", EditorNode::get_singleton()->get_gui_base()->get_theme_color(SNAME("error_color"), SNAME("Editor")));
 
 	export_templates_error = memnew(HBoxContainer);
 	main_vb->add_child(export_templates_error);
@@ -1249,7 +1249,7 @@ ProjectExportDialog::ProjectExportDialog() {
 
 	Label *export_error2 = memnew(Label);
 	export_templates_error->add_child(export_error2);
-	export_error2->add_theme_color_override("font_color", EditorNode::get_singleton()->get_gui_base()->get_theme_color("error_color", "Editor"));
+	export_error2->add_theme_color_override("font_color", EditorNode::get_singleton()->get_gui_base()->get_theme_color(SNAME("error_color"), SNAME("Editor")));
 	export_error2->set_text(" - " + TTR("Export templates for this platform are missing:") + " ");
 
 	error_dialog = memnew(AcceptDialog);

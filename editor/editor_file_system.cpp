@@ -592,7 +592,7 @@ bool EditorFileSystem::_update_scan_actions() {
 	}
 
 	if (reloads.size()) {
-		emit_signal("resources_reload", reloads);
+		emit_signal(SNAME("resources_reload"), reloads);
 	}
 	scan_actions.clear();
 
@@ -623,8 +623,8 @@ void EditorFileSystem::scan() {
 		new_filesystem = nullptr;
 		_update_scan_actions();
 		scanning = false;
-		emit_signal("filesystem_changed");
-		emit_signal("sources_changed", sources_changed.size() > 0);
+		emit_signal(SNAME("filesystem_changed"));
+		emit_signal(SNAME("sources_changed"), sources_changed.size() > 0);
 		_queue_update_script_classes();
 		first_scan = false;
 	} else {
@@ -1073,12 +1073,12 @@ void EditorFileSystem::scan_changes() {
 			scan_total = 0;
 			_scan_fs_changes(filesystem, sp);
 			if (_update_scan_actions()) {
-				emit_signal("filesystem_changed");
+				emit_signal(SNAME("filesystem_changed"));
 			}
 		}
 		scanning_changes = false;
 		scanning_changes_done = true;
-		emit_signal("sources_changed", sources_changed.size() > 0);
+		emit_signal(SNAME("sources_changed"), sources_changed.size() > 0);
 	} else {
 		ERR_FAIL_COND(thread_sources.is_started());
 		set_process(true);
@@ -1092,7 +1092,7 @@ void EditorFileSystem::scan_changes() {
 void EditorFileSystem::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
-			call_deferred("scan"); //this should happen after every editor node entered the tree
+			call_deferred(SNAME("scan")); //this should happen after every editor node entered the tree
 
 		} break;
 		case NOTIFICATION_EXIT_TREE: {
@@ -1128,9 +1128,9 @@ void EditorFileSystem::_notification(int p_what) {
 
 						thread_sources.wait_to_finish();
 						if (_update_scan_actions()) {
-							emit_signal("filesystem_changed");
+							emit_signal(SNAME("filesystem_changed"));
 						}
-						emit_signal("sources_changed", sources_changed.size() > 0);
+						emit_signal(SNAME("sources_changed"), sources_changed.size() > 0);
 						_queue_update_script_classes();
 						first_scan = false;
 					}
@@ -1144,8 +1144,8 @@ void EditorFileSystem::_notification(int p_what) {
 					new_filesystem = nullptr;
 					thread.wait_to_finish();
 					_update_scan_actions();
-					emit_signal("filesystem_changed");
-					emit_signal("sources_changed", sources_changed.size() > 0);
+					emit_signal(SNAME("filesystem_changed"));
+					emit_signal(SNAME("sources_changed"), sources_changed.size() > 0);
 					_queue_update_script_classes();
 					first_scan = false;
 				}
@@ -1445,7 +1445,7 @@ void EditorFileSystem::_queue_update_script_classes() {
 	}
 
 	update_script_classes_queued.set();
-	call_deferred("update_script_classes");
+	call_deferred(SNAME("update_script_classes"));
 }
 
 void EditorFileSystem::update_file(const String &p_file) {
@@ -1466,7 +1466,7 @@ void EditorFileSystem::update_file(const String &p_file) {
 			fs->files.remove(cpos);
 		}
 
-		call_deferred("emit_signal", "filesystem_changed"); //update later
+		call_deferred(SNAME("emit_signal"), "filesystem_changed"); //update later
 		_queue_update_script_classes();
 		return;
 	}
@@ -1513,7 +1513,7 @@ void EditorFileSystem::update_file(const String &p_file) {
 	// Update preview
 	EditorResourcePreview::get_singleton()->check_for_invalidation(p_file);
 
-	call_deferred("emit_signal", "filesystem_changed"); //update later
+	call_deferred(SNAME("emit_signal"), "filesystem_changed"); //update later
 	_queue_update_script_classes();
 }
 
@@ -2026,10 +2026,10 @@ void EditorFileSystem::reimport_files(const Vector<String> &p_files) {
 	_save_filesystem_cache();
 	importing = false;
 	if (!is_scanning()) {
-		emit_signal("filesystem_changed");
+		emit_signal(SNAME("filesystem_changed"));
 	}
 
-	emit_signal("resources_reimported", p_files);
+	emit_signal(SNAME("resources_reimported"), p_files);
 }
 
 Error EditorFileSystem::_resource_import(const String &p_path) {

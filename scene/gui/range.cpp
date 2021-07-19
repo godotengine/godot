@@ -42,7 +42,7 @@ TypedArray<String> Range::get_configuration_warnings() const {
 
 void Range::_value_changed_notify() {
 	_value_changed(shared->val);
-	emit_signal("value_changed", shared->val);
+	emit_signal(SNAME("value_changed"), shared->val);
 	update();
 }
 
@@ -57,7 +57,7 @@ void Range::Shared::emit_value_changed() {
 }
 
 void Range::_changed_notify(const char *p_what) {
-	emit_signal("changed");
+	emit_signal(SNAME("changed"));
 	update();
 }
 

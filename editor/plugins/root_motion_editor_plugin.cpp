@@ -149,7 +149,7 @@ void EditorPropertyRootMotion::_node_assign() {
 						ti->set_text(0, F->get());
 						ti->set_selectable(0, true);
 						ti->set_editable(0, false);
-						ti->set_icon(0, get_theme_icon("BoneAttachment3D", "EditorIcons"));
+						ti->set_icon(0, get_theme_icon(SNAME("BoneAttachment3D"), SNAME("EditorIcons")));
 						ti->set_metadata(0, accum);
 					} else {
 						ti = parenthood[accum];
@@ -158,7 +158,7 @@ void EditorPropertyRootMotion::_node_assign() {
 
 				ti->set_selectable(0, true);
 				ti->set_text(0, concat);
-				ti->set_icon(0, get_theme_icon("BoneAttachment3D", "EditorIcons"));
+				ti->set_icon(0, get_theme_icon(SNAME("BoneAttachment3D"), SNAME("EditorIcons")));
 				ti->set_metadata(0, path);
 				if (path == current) {
 					ti->select(0);
@@ -234,7 +234,7 @@ void EditorPropertyRootMotion::setup(const NodePath &p_base_hint) {
 
 void EditorPropertyRootMotion::_notification(int p_what) {
 	if (p_what == NOTIFICATION_ENTER_TREE || p_what == NOTIFICATION_THEME_CHANGED) {
-		Ref<Texture2D> t = get_theme_icon("Clear", "EditorIcons");
+		Ref<Texture2D> t = get_theme_icon(SNAME("Clear"), SNAME("EditorIcons"));
 		clear->set_icon(t);
 	}
 }

@@ -134,7 +134,7 @@ void ConnectDialog::ok_pressed() {
 			return;
 		}
 	}
-	emit_signal("connected");
+	emit_signal(SNAME("connected"));
 	hide();
 }
 
@@ -360,7 +360,7 @@ void ConnectDialog::init(ConnectionData c, bool bEdit) {
 
 void ConnectDialog::popup_dialog(const String &p_for_signal) {
 	from_signal->set_text(p_for_signal);
-	error_label->add_theme_color_override("font_color", error_label->get_theme_color("error_color", "Editor"));
+	error_label->add_theme_color_override("font_color", error_label->get_theme_color(SNAME("error_color"), SNAME("Editor")));
 	if (!advanced->is_pressed()) {
 		error_label->set_visible(!_find_first_script(get_tree()->get_edited_scene_root(), get_tree()->get_edited_scene_root()));
 	}
@@ -509,13 +509,13 @@ ConnectDialog::~ConnectDialog() {
 // Originally copied and adapted from EditorProperty, try to keep style in sync.
 Control *ConnectionsDockTree::make_custom_tooltip(const String &p_text) const {
 	EditorHelpBit *help_bit = memnew(EditorHelpBit);
-	help_bit->add_theme_style_override("panel", get_theme_stylebox("panel", "TooltipPanel"));
+	help_bit->add_theme_style_override("panel", get_theme_stylebox(SNAME("panel"), SNAME("TooltipPanel")));
 	help_bit->get_rich_text()->set_fixed_size_to_width(360 * EDSCALE);
 
 	String text = TTR("Signal:") + " [u][b]" + p_text.get_slice("::", 0) + "[/b][/u]";
 	text += p_text.get_slice("::", 1).strip_edges() + "\n";
 	text += p_text.get_slice("::", 2).strip_edges();
-	help_bit->call_deferred("set_text", text); //hack so it uses proper theme once inside scene
+	help_bit->call_deferred(SNAME("set_text"), text); //hack so it uses proper theme once inside scene
 	return help_bit;
 }
 
@@ -591,7 +591,7 @@ void ConnectionsDock::_make_or_edit_connection() {
 	it = nullptr;
 
 	if (add_script_function) {
-		editor->emit_signal("script_add_function_request", target, cToMake.method, script_function_args);
+		editor->emit_signal(SNAME("script_add_function_request"), target, cToMake.method, script_function_args);
 		hide();
 	}
 
@@ -921,14 +921,14 @@ void ConnectionsDock::update_tree() {
 			}
 		} else {
 			ClassDB::get_signal_list(base, &node_signals2, true);
-			if (has_theme_icon(base, "EditorIcons")) {
-				icon = get_theme_icon(base, "EditorIcons");
+			if (has_theme_icon(base, SNAME("EditorIcons"))) {
+				icon = get_theme_icon(base, SNAME("EditorIcons"));
 			}
 			name = base;
 		}
 
 		if (!icon.is_valid()) {
-			icon = get_theme_icon("Object", "EditorIcons");
+			icon = get_theme_icon(SNAME("Object"), SNAME("EditorIcons"));
 		}
 
 		TreeItem *section_item = nullptr;
@@ -940,7 +940,7 @@ void ConnectionsDock::update_tree() {
 			section_item->set_icon(0, icon);
 			section_item->set_selectable(0, false);
 			section_item->set_editable(0, false);
-			section_item->set_custom_bg_color(0, get_theme_color("prop_subsection", "Editor"));
+			section_item->set_custom_bg_color(0, get_theme_color(SNAME("prop_subsection"), SNAME("Editor")));
 			node_signals2.sort();
 		}
 
@@ -982,7 +982,7 @@ void ConnectionsDock::update_tree() {
 			sinfo["name"] = signal_name;
 			sinfo["args"] = argnames;
 			signal_item->set_metadata(0, sinfo);
-			signal_item->set_icon(0, get_theme_icon("Signal", "EditorIcons"));
+			signal_item->set_icon(0, get_theme_icon(SNAME("Signal"), SNAME("EditorIcons")));
 
 			// Set tooltip with the signal's documentation.
 			{
@@ -1059,7 +1059,7 @@ void ConnectionsDock::update_tree() {
 				connection_item->set_text(0, path);
 				Connection cd = c;
 				connection_item->set_metadata(0, cd);
-				connection_item->set_icon(0, get_theme_icon("Slot", "EditorIcons"));
+				connection_item->set_icon(0, get_theme_icon(SNAME("Slot"), SNAME("EditorIcons")));
 			}
 		}
 
@@ -1083,7 +1083,7 @@ ConnectionsDock::ConnectionsDock(EditorNode *p_editor) {
 	search_box = memnew(LineEdit);
 	search_box->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	search_box->set_placeholder(TTR("Filter signals"));
-	search_box->set_right_icon(get_theme_icon("Search", "EditorIcons"));
+	search_box->set_right_icon(get_theme_icon(SNAME("Search"), SNAME("EditorIcons")));
 	search_box->set_clear_button_enabled(true);
 	search_box->connect("text_changed", callable_mp(this, &ConnectionsDock::_filter_changed));
 	vbc->add_child(search_box);

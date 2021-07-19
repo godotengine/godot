@@ -45,7 +45,7 @@ void _emwebxr_on_session_supported(char *p_session_mode, int p_supported) {
 	ERR_FAIL_COND(interface.is_null());
 
 	String session_mode = String(p_session_mode);
-	interface->emit_signal("session_supported", session_mode, p_supported ? true : false);
+	interface->emit_signal(SNAME("session_supported"), session_mode, p_supported ? true : false);
 }
 
 void _emwebxr_on_session_started(char *p_reference_space_type) {
@@ -57,7 +57,7 @@ void _emwebxr_on_session_started(char *p_reference_space_type) {
 
 	String reference_space_type = String(p_reference_space_type);
 	((WebXRInterfaceJS *)interface.ptr())->_set_reference_space_type(reference_space_type);
-	interface->emit_signal("session_started");
+	interface->emit_signal(SNAME("session_started"));
 }
 
 void _emwebxr_on_session_ended() {
@@ -68,7 +68,7 @@ void _emwebxr_on_session_ended() {
 	ERR_FAIL_COND(interface.is_null());
 
 	interface->uninitialize();
-	interface->emit_signal("session_ended");
+	interface->emit_signal(SNAME("session_ended"));
 }
 
 void _emwebxr_on_session_failed(char *p_message) {
@@ -81,7 +81,7 @@ void _emwebxr_on_session_failed(char *p_message) {
 	interface->uninitialize();
 
 	String message = String(p_message);
-	interface->emit_signal("session_failed", message);
+	interface->emit_signal(SNAME("session_failed"), message);
 }
 
 void _emwebxr_on_controller_changed() {
@@ -102,7 +102,7 @@ extern "C" EMSCRIPTEN_KEEPALIVE void _emwebxr_on_input_event(char *p_signal_name
 	ERR_FAIL_COND(interface.is_null());
 
 	StringName signal_name = StringName(p_signal_name);
-	interface->emit_signal(signal_name, p_input_source + 1);
+	interface->emit_signal(SNAME(signal_name), p_input_source + 1);
 }
 
 extern "C" EMSCRIPTEN_KEEPALIVE void _emwebxr_on_simple_event(char *p_signal_name) {
@@ -113,7 +113,7 @@ extern "C" EMSCRIPTEN_KEEPALIVE void _emwebxr_on_simple_event(char *p_signal_nam
 	ERR_FAIL_COND(interface.is_null());
 
 	StringName signal_name = StringName(p_signal_name);
-	interface->emit_signal(signal_name);
+	interface->emit_signal(SNAME(signal_name));
 }
 
 void WebXRInterfaceJS::is_session_supported(const String &p_session_mode) {

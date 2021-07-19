@@ -355,7 +355,7 @@ void ScriptEditorQuickOpen::_confirmed() {
 	}
 	int line = ti->get_text(0).get_slice(":", 1).to_int();
 
-	emit_signal("goto_line", line - 1);
+	emit_signal(SNAME("goto_line"), line - 1);
 	hide();
 }
 
@@ -368,7 +368,7 @@ void ScriptEditorQuickOpen::_notification(int p_what) {
 			[[fallthrough]];
 		}
 		case NOTIFICATION_VISIBILITY_CHANGED: {
-			search_box->set_right_icon(search_options->get_theme_icon("Search", "EditorIcons"));
+			search_box->set_right_icon(search_options->get_theme_icon(SNAME("Search"), SNAME("EditorIcons")));
 		} break;
 		case NOTIFICATION_EXIT_TREE: {
 			disconnect("confirmed", callable_mp(this, &ScriptEditorQuickOpen::_confirmed));
@@ -577,7 +577,7 @@ void ScriptEditor::_go_to_tab(int p_idx) {
 	}
 	if (Object::cast_to<EditorHelp>(c)) {
 		script_name_label->set_text(Object::cast_to<EditorHelp>(c)->get_class());
-		script_icon->set_texture(get_theme_icon("Help", "EditorIcons"));
+		script_icon->set_texture(get_theme_icon(SNAME("Help"), SNAME("EditorIcons")));
 		if (is_visible_in_tree()) {
 			Object::cast_to<EditorHelp>(c)->set_focused();
 		}
@@ -631,7 +631,7 @@ void ScriptEditor::_open_recent_script(int p_idx) {
 	// clear button
 	if (p_idx == recent_scripts->get_item_count() - 1) {
 		EditorSettings::get_singleton()->set_project_metadata("recent_files", "scripts", Array());
-		call_deferred("_update_recent_scripts");
+		call_deferred(SNAME("_update_recent_scripts"));
 		return;
 	}
 
@@ -946,7 +946,7 @@ void ScriptEditor::_res_saved_callback(const Ref<Resource> &p_res) {
 	_update_script_names();
 
 	if (!pending_auto_reload && auto_reload_running_scripts) {
-		call_deferred("_live_auto_reload_running_scripts");
+		call_deferred(SNAME("_live_auto_reload_running_scripts"));
 		pending_auto_reload = true;
 	}
 }
@@ -997,7 +997,7 @@ bool ScriptEditor::_test_script_times_on_disk(RES p_for_script) {
 			script_editor->_reload_scripts();
 			need_reload = false;
 		} else {
-			disk_changed->call_deferred("popup_centered_ratio", 0.5);
+			disk_changed->call_deferred(SNAME("popup_centered_ratio"), 0.5);
 		}
 	}
 
@@ -1155,7 +1155,7 @@ void ScriptEditor::_menu_option(int p_option) {
 					if (ResourceLoader::get_resource_type(res_path) == "PackedScene") {
 						if (!EditorNode::get_singleton()->is_scene_open(res_path)) {
 							EditorNode::get_singleton()->load_scene(res_path);
-							script_editor->call_deferred("_menu_option", p_option);
+							script_editor->call_deferred(SNAME("_menu_option"), p_option);
 							previous_scripts.push_back(path); //repeat the operation
 							return;
 						}
@@ -1486,23 +1486,23 @@ void ScriptEditor::_notification(int p_what) {
 		case NOTIFICATION_TRANSLATION_CHANGED:
 		case NOTIFICATION_LAYOUT_DIRECTION_CHANGED:
 		case NOTIFICATION_THEME_CHANGED: {
-			help_search->set_icon(get_theme_icon("HelpSearch", "EditorIcons"));
-			site_search->set_icon(get_theme_icon("Instance", "EditorIcons"));
+			help_search->set_icon(get_theme_icon(SNAME("HelpSearch"), SNAME("EditorIcons")));
+			site_search->set_icon(get_theme_icon(SNAME("Instance"), SNAME("EditorIcons")));
 
 			if (is_layout_rtl()) {
-				script_forward->set_icon(get_theme_icon("Back", "EditorIcons"));
-				script_back->set_icon(get_theme_icon("Forward", "EditorIcons"));
+				script_forward->set_icon(get_theme_icon(SNAME("Back"), SNAME("EditorIcons")));
+				script_back->set_icon(get_theme_icon(SNAME("Forward"), SNAME("EditorIcons")));
 			} else {
-				script_forward->set_icon(get_theme_icon("Forward", "EditorIcons"));
-				script_back->set_icon(get_theme_icon("Back", "EditorIcons"));
+				script_forward->set_icon(get_theme_icon(SNAME("Forward"), SNAME("EditorIcons")));
+				script_back->set_icon(get_theme_icon(SNAME("Back"), SNAME("EditorIcons")));
 			}
 
-			members_overview_alphabeta_sort_button->set_icon(get_theme_icon("Sort", "EditorIcons"));
+			members_overview_alphabeta_sort_button->set_icon(get_theme_icon(SNAME("Sort"), SNAME("EditorIcons")));
 
-			filter_scripts->set_right_icon(get_theme_icon("Search", "EditorIcons"));
-			filter_methods->set_right_icon(get_theme_icon("Search", "EditorIcons"));
+			filter_scripts->set_right_icon(get_theme_icon(SNAME("Search"), SNAME("EditorIcons")));
+			filter_methods->set_right_icon(get_theme_icon(SNAME("Search"), SNAME("EditorIcons")));
 
-			filename->add_theme_style_override("normal", editor->get_gui_base()->get_theme_stylebox("normal", "LineEdit"));
+			filename->add_theme_style_override("normal", editor->get_gui_base()->get_theme_stylebox(SNAME("normal"), SNAME("LineEdit")));
 
 			recent_scripts->set_as_minsize();
 
@@ -1576,11 +1576,11 @@ void ScriptEditor::edited_scene_changed() {
 }
 
 void ScriptEditor::notify_script_close(const Ref<Script> &p_script) {
-	emit_signal("script_close", p_script);
+	emit_signal(SNAME("script_close"), p_script);
 }
 
 void ScriptEditor::notify_script_changed(const Ref<Script> &p_script) {
-	emit_signal("editor_script_changed", p_script);
+	emit_signal(SNAME("editor_script_changed"), p_script);
 }
 
 void ScriptEditor::get_breakpoints(List<String> *p_breakpoints) {
@@ -1796,8 +1796,8 @@ void ScriptEditor::_update_script_colors() {
 	bool script_temperature_enabled = EditorSettings::get_singleton()->get("text_editor/script_list/script_temperature_enabled");
 
 	int hist_size = EditorSettings::get_singleton()->get("text_editor/script_list/script_temperature_history_size");
-	Color hot_color = get_theme_color("accent_color", "Editor");
-	Color cold_color = get_theme_color("font_color", "Editor");
+	Color hot_color = get_theme_color(SNAME("accent_color"), SNAME("Editor"));
+	Color cold_color = get_theme_color(SNAME("font_color"), SNAME("Editor"));
 
 	for (int i = 0; i < script_list->get_item_count(); i++) {
 		int c = script_list->get_item_metadata(i);
@@ -1946,7 +1946,7 @@ void ScriptEditor::_update_script_names() {
 		EditorHelp *eh = Object::cast_to<EditorHelp>(tab_container->get_child(i));
 		if (eh) {
 			String name = eh->get_class();
-			Ref<Texture2D> icon = get_theme_icon("Help", "EditorIcons");
+			Ref<Texture2D> icon = get_theme_icon(SNAME("Help"), SNAME("EditorIcons"));
 			String tooltip = vformat(TTR("%s Class Reference"), name);
 
 			_ScriptEditorItemData sd;
@@ -2554,8 +2554,8 @@ void ScriptEditor::_tree_changed() {
 	}
 
 	waiting_update_names = true;
-	call_deferred("_update_script_names");
-	call_deferred("_update_script_connections");
+	call_deferred(SNAME("_update_script_names"));
+	call_deferred(SNAME("_update_script_connections"));
 }
 
 void ScriptEditor::_script_split_dragged(float) {
@@ -2581,7 +2581,7 @@ Variant ScriptEditor::get_drag_data_fw(const Point2 &p_point, Control *p_from) {
 	EditorHelp *eh = Object::cast_to<EditorHelp>(cur_node);
 	if (eh) {
 		preview_name = eh->get_class();
-		preview_icon = get_theme_icon("Help", "EditorIcons");
+		preview_icon = get_theme_icon(SNAME("Help"), SNAME("EditorIcons"));
 	}
 
 	if (!preview_icon.is_null()) {
@@ -3362,7 +3362,7 @@ ScriptEditor::ScriptEditor(EditorNode *p_editor) {
 	filename = memnew(Label);
 	filename->set_clip_text(true);
 	filename->set_h_size_flags(SIZE_EXPAND_FILL);
-	filename->add_theme_style_override("normal", EditorNode::get_singleton()->get_gui_base()->get_theme_stylebox("normal", "LineEdit"));
+	filename->add_theme_style_override("normal", EditorNode::get_singleton()->get_gui_base()->get_theme_stylebox(SNAME("normal"), SNAME("LineEdit")));
 	buttons_hbox->add_child(filename);
 
 	members_overview_alphabeta_sort_button = memnew(Button);
@@ -3612,8 +3612,8 @@ ScriptEditor::ScriptEditor(EditorNode *p_editor) {
 
 	ScriptServer::edit_request_func = _open_script_request;
 
-	add_theme_style_override("panel", editor->get_gui_base()->get_theme_stylebox("ScriptEditorPanel", "EditorStyles"));
-	tab_container->add_theme_style_override("panel", editor->get_gui_base()->get_theme_stylebox("ScriptEditor", "EditorStyles"));
+	add_theme_style_override("panel", editor->get_gui_base()->get_theme_stylebox(SNAME("ScriptEditorPanel"), SNAME("EditorStyles")));
+	tab_container->add_theme_style_override("panel", editor->get_gui_base()->get_theme_stylebox(SNAME("ScriptEditor"), SNAME("EditorStyles")));
 }
 
 ScriptEditor::~ScriptEditor() {

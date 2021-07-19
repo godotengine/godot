@@ -66,7 +66,7 @@ class ShaderGlobalsEditorInterface : public Object {
 	GDCLASS(ShaderGlobalsEditorInterface, Object)
 
 	void _var_changed() {
-		emit_signal("var_changed");
+		emit_signal(SNAME("var_changed"));
 	}
 
 protected:
@@ -425,7 +425,7 @@ void ShaderGlobalsEditor::_variable_deleted(const String &p_variable) {
 }
 
 void ShaderGlobalsEditor::_changed() {
-	emit_signal("globals_changed");
+	emit_signal(SNAME("globals_changed"));
 	if (!interface->block_update) {
 		interface->notify_property_list_changed();
 	}

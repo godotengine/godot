@@ -299,7 +299,7 @@ void TileMap::set_tileset(const Ref<TileSet> &p_tileset) {
 		_recreate_quadrants();
 	}
 
-	emit_signal("changed");
+	emit_signal(SNAME("changed"));
 }
 
 int TileMap::get_quadrant_size() const {
@@ -311,13 +311,13 @@ void TileMap::set_quadrant_size(int p_size) {
 
 	quadrant_size = p_size;
 	_recreate_quadrants();
-	emit_signal("changed");
+	emit_signal(SNAME("changed"));
 }
 
 void TileMap::set_collision_visibility_mode(TileMap::VisibilityMode p_show_collision) {
 	show_collision = p_show_collision;
 	_recreate_quadrants();
-	emit_signal("changed");
+	emit_signal(SNAME("changed"));
 }
 
 TileMap::VisibilityMode TileMap::get_collision_visibility_mode() {
@@ -327,7 +327,7 @@ TileMap::VisibilityMode TileMap::get_collision_visibility_mode() {
 void TileMap::set_navigation_visibility_mode(TileMap::VisibilityMode p_show_navigation) {
 	show_navigation = p_show_navigation;
 	_recreate_quadrants();
-	emit_signal("changed");
+	emit_signal(SNAME("changed"));
 }
 
 TileMap::VisibilityMode TileMap::get_navigation_visibility_mode() {
@@ -337,7 +337,7 @@ TileMap::VisibilityMode TileMap::get_navigation_visibility_mode() {
 void TileMap::set_y_sort_enabled(bool p_enable) {
 	Node2D::set_y_sort_enabled(p_enable);
 	_recreate_quadrants();
-	emit_signal("changed");
+	emit_signal(SNAME("changed"));
 }
 
 void TileMap::update_dirty_quadrants() {
@@ -480,7 +480,7 @@ void TileMap::_make_all_quadrants_dirty(bool p_update) {
 		return;
 	}
 	if (p_update) {
-		call_deferred("update_dirty_quadrants");
+		call_deferred(SNAME("update_dirty_quadrants"));
 	}
 }
 
@@ -500,7 +500,7 @@ void TileMap::_make_quadrant_dirty(Map<Vector2i, TileMapQuadrant>::Element *Q, b
 	}
 
 	if (p_update) {
-		call_deferred("update_dirty_quadrants");
+		call_deferred(SNAME("update_dirty_quadrants"));
 	}
 }
 
@@ -1764,7 +1764,7 @@ void TileMap::_bind_methods() {
 }
 
 void TileMap::_tile_set_changed() {
-	emit_signal("changed");
+	emit_signal(SNAME("changed"));
 	_make_all_quadrants_dirty(true);
 }
 

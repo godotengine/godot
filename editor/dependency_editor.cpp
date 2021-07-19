@@ -162,7 +162,7 @@ void DependencyEditor::_update_list() {
 
 	TreeItem *root = tree->create_item();
 
-	Ref<Texture2D> folder = tree->get_theme_icon("folder", "FileDialog");
+	Ref<Texture2D> folder = tree->get_theme_icon(SNAME("folder"), SNAME("FileDialog"));
 
 	bool broken = false;
 
@@ -278,7 +278,7 @@ void DependencyEditorOwners::_select_file(int p_idx) {
 	if (ResourceLoader::get_resource_type(fpath) == "PackedScene") {
 		editor->open_request(fpath);
 		hide();
-		emit_signal("confirmed");
+		emit_signal(SNAME("confirmed"));
 	}
 }
 
@@ -412,17 +412,17 @@ void DependencyRemoveDialog::_build_removed_dependency_tree(const Vector<Removed
 				if (!tree_items.has(rd.dependency_folder)) {
 					TreeItem *folder_item = owners->create_item(owners->get_root());
 					folder_item->set_text(0, rd.dependency_folder);
-					folder_item->set_icon(0, owners->get_theme_icon("Folder", "EditorIcons"));
+					folder_item->set_icon(0, owners->get_theme_icon(SNAME("Folder"), SNAME("EditorIcons")));
 					tree_items[rd.dependency_folder] = folder_item;
 				}
 				TreeItem *dependency_item = owners->create_item(tree_items[rd.dependency_folder]);
 				dependency_item->set_text(0, rd.dependency);
-				dependency_item->set_icon(0, owners->get_theme_icon("Warning", "EditorIcons"));
+				dependency_item->set_icon(0, owners->get_theme_icon(SNAME("Warning"), SNAME("EditorIcons")));
 				tree_items[rd.dependency] = dependency_item;
 			} else {
 				TreeItem *dependency_item = owners->create_item(owners->get_root());
 				dependency_item->set_text(0, rd.dependency);
-				dependency_item->set_icon(0, owners->get_theme_icon("Warning", "EditorIcons"));
+				dependency_item->set_icon(0, owners->get_theme_icon(SNAME("Warning"), SNAME("EditorIcons")));
 				tree_items[rd.dependency] = dependency_item;
 			}
 		}
@@ -508,7 +508,7 @@ void DependencyRemoveDialog::ok_pressed() {
 		if (err != OK) {
 			EditorNode::get_singleton()->add_io_error(TTR("Cannot remove:") + "\n" + files_to_delete[i] + "\n");
 		} else {
-			emit_signal("file_removed", files_to_delete[i]);
+			emit_signal(SNAME("file_removed"), files_to_delete[i]);
 		}
 	}
 
@@ -525,7 +525,7 @@ void DependencyRemoveDialog::ok_pressed() {
 			if (err != OK) {
 				EditorNode::get_singleton()->add_io_error(TTR("Cannot remove:") + "\n" + dirs_to_delete[i] + "\n");
 			} else {
-				emit_signal("folder_removed", dirs_to_delete[i]);
+				emit_signal(SNAME("folder_removed"), dirs_to_delete[i]);
 			}
 		}
 
@@ -665,7 +665,7 @@ bool OrphanResourcesDialog::_fill_owners(EditorFileSystemDirectory *efsd, HashMa
 		if (p_parent) {
 			dir_item = files->create_item(p_parent);
 			dir_item->set_text(0, efsd->get_subdir(i)->get_name());
-			dir_item->set_icon(0, files->get_theme_icon("folder", "FileDialog"));
+			dir_item->set_icon(0, files->get_theme_icon(SNAME("folder"), SNAME("FileDialog")));
 		}
 		bool children = _fill_owners(efsd->get_subdir(i), refs, dir_item);
 
@@ -701,7 +701,7 @@ bool OrphanResourcesDialog::_fill_owners(EditorFileSystemDirectory *efsd, HashMa
 				int ds = efsd->get_file_deps(i).size();
 				ti->set_text(1, itos(ds));
 				if (ds) {
-					ti->add_button(1, files->get_theme_icon("GuiVisibilityVisible", "EditorIcons"), -1, false, TTR("Show Dependencies"));
+					ti->add_button(1, files->get_theme_icon(SNAME("GuiVisibilityVisible"), SNAME("EditorIcons")), -1, false, TTR("Show Dependencies"));
 				}
 				ti->set_metadata(0, path);
 				has_children = true;

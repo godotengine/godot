@@ -64,7 +64,7 @@ bool Label::is_uppercase() const {
 }
 
 int Label::get_line_height(int p_line) const {
-	Ref<Font> font = get_theme_font("font");
+	Ref<Font> font = get_theme_font(SNAME("font"));
 	if (p_line >= 0 && p_line < lines_rid.size()) {
 		return TS->shaped_text_get_size(lines_rid[p_line]).y + font->get_spacing(Font::SPACING_TOP) + font->get_spacing(Font::SPACING_BOTTOM);
 	} else if (lines_rid.size() > 0) {
@@ -74,12 +74,12 @@ int Label::get_line_height(int p_line) const {
 		}
 		return h;
 	} else {
-		return font->get_height(get_theme_font_size("font_size"));
+		return font->get_height(get_theme_font_size(SNAME("font_size")));
 	}
 }
 
 void Label::_shape() {
-	Ref<StyleBox> style = get_theme_stylebox("normal", "Label");
+	Ref<StyleBox> style = get_theme_stylebox(SNAME("normal"), SNAME("Label"));
 	int width = (get_size().width - style->get_minimum_size().width);
 
 	if (dirty) {
@@ -89,7 +89,7 @@ void Label::_shape() {
 		} else {
 			TS->shaped_text_set_direction(text_rid, (TextServer::Direction)text_direction);
 		}
-		TS->shaped_text_add_string(text_rid, (uppercase) ? xl_text.to_upper() : xl_text, get_theme_font("font")->get_rids(), get_theme_font_size("font_size"), opentype_features, (language != "") ? language : TranslationServer::get_singleton()->get_tool_locale());
+		TS->shaped_text_add_string(text_rid, (uppercase) ? xl_text.to_upper() : xl_text, get_theme_font(SNAME("font"))->get_rids(), get_theme_font_size(SNAME("font_size")), opentype_features, (language != "") ? language : TranslationServer::get_singleton()->get_tool_locale());
 		TS->shaped_text_set_bidi_override(text_rid, structured_text_parser(st_parser, st_args, xl_text));
 		dirty = false;
 		lines_dirty = true;
@@ -200,9 +200,9 @@ void Label::_shape() {
 }
 
 void Label::_update_visible() {
-	int line_spacing = get_theme_constant("line_spacing", "Label");
-	Ref<StyleBox> style = get_theme_stylebox("normal", "Label");
-	Ref<Font> font = get_theme_font("font");
+	int line_spacing = get_theme_constant(SNAME("line_spacing"), SNAME("Label"));
+	Ref<StyleBox> style = get_theme_stylebox(SNAME("normal"), SNAME("Label"));
+	Ref<Font> font = get_theme_font(SNAME("font"));
 	int lines_visible = lines_rid.size();
 
 	if (max_lines_visible >= 0 && lines_visible > max_lines_visible) {
@@ -244,15 +244,15 @@ void Label::_notification(int p_what) {
 
 		Size2 string_size;
 		Size2 size = get_size();
-		Ref<StyleBox> style = get_theme_stylebox("normal");
-		Ref<Font> font = get_theme_font("font");
-		Color font_color = get_theme_color("font_color");
-		Color font_shadow_color = get_theme_color("font_shadow_color");
-		Point2 shadow_ofs(get_theme_constant("shadow_offset_x"), get_theme_constant("shadow_offset_y"));
-		int line_spacing = get_theme_constant("line_spacing");
-		Color font_outline_color = get_theme_color("font_outline_color");
-		int outline_size = get_theme_constant("outline_size");
-		int shadow_outline_size = get_theme_constant("shadow_outline_size");
+		Ref<StyleBox> style = get_theme_stylebox(SNAME("normal"));
+		Ref<Font> font = get_theme_font(SNAME("font"));
+		Color font_color = get_theme_color(SNAME("font_color"));
+		Color font_shadow_color = get_theme_color(SNAME("font_shadow_color"));
+		Point2 shadow_ofs(get_theme_constant(SNAME("shadow_offset_x")), get_theme_constant(SNAME("shadow_offset_y")));
+		int line_spacing = get_theme_constant(SNAME("line_spacing"));
+		Color font_outline_color = get_theme_color(SNAME("font_outline_color"));
+		int outline_size = get_theme_constant(SNAME("outline_size"));
+		int shadow_outline_size = get_theme_constant(SNAME("shadow_outline_size"));
 		bool rtl = is_layout_rtl();
 
 		style->draw(ci, Rect2(Point2(0, 0), get_size()));
@@ -429,10 +429,10 @@ Size2 Label::get_minimum_size() const {
 
 	Size2 min_size = minsize;
 
-	Ref<Font> font = get_theme_font("font");
-	min_size.height = MAX(min_size.height, font->get_height(get_theme_font_size("font_size")) + font->get_spacing(Font::SPACING_TOP) + font->get_spacing(Font::SPACING_BOTTOM));
+	Ref<Font> font = get_theme_font(SNAME("font"));
+	min_size.height = MAX(min_size.height, font->get_height(get_theme_font_size(SNAME("font_size"))) + font->get_spacing(Font::SPACING_TOP) + font->get_spacing(Font::SPACING_BOTTOM));
 
-	Size2 min_style = get_theme_stylebox("normal")->get_minimum_size();
+	Size2 min_style = get_theme_stylebox(SNAME("normal"))->get_minimum_size();
 	if (autowrap_mode != AUTOWRAP_OFF) {
 		return Size2(1, (clip || overrun_behavior != OVERRUN_NO_TRIMMING) ? 1 : min_size.height) + min_style;
 	} else {
@@ -455,9 +455,9 @@ int Label::get_line_count() const {
 }
 
 int Label::get_visible_line_count() const {
-	Ref<Font> font = get_theme_font("font");
-	Ref<StyleBox> style = get_theme_stylebox("normal");
-	int line_spacing = get_theme_constant("line_spacing");
+	Ref<Font> font = get_theme_font(SNAME("font"));
+	Ref<StyleBox> style = get_theme_stylebox(SNAME("normal"));
+	int line_spacing = get_theme_constant(SNAME("line_spacing"));
 	int lines_visible = 0;
 	float total_h = 0.0;
 	for (int64_t i = lines_skipped; i < lines_rid.size(); i++) {

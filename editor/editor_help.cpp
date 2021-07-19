@@ -43,16 +43,16 @@
 DocTools *EditorHelp::doc = nullptr;
 
 void EditorHelp::_init_colors() {
-	title_color = get_theme_color("accent_color", "Editor");
-	text_color = get_theme_color("default_color", "RichTextLabel");
-	headline_color = get_theme_color("headline_color", "EditorHelp");
+	title_color = get_theme_color(SNAME("accent_color"), SNAME("Editor"));
+	text_color = get_theme_color(SNAME("default_color"), SNAME("RichTextLabel"));
+	headline_color = get_theme_color(SNAME("headline_color"), SNAME("EditorHelp"));
 	base_type_color = title_color.lerp(text_color, 0.5);
 	comment_color = text_color * Color(1, 1, 1, 0.6);
 	symbol_color = comment_color;
 	value_color = text_color * Color(1, 1, 1, 0.6);
 	qualifier_color = text_color * Color(1, 1, 1, 0.8);
-	type_color = get_theme_color("accent_color", "Editor").lerp(text_color, 0.5);
-	class_desc->add_theme_color_override("selection_color", get_theme_color("accent_color", "Editor") * Color(1, 1, 1, 0.4));
+	type_color = get_theme_color(SNAME("accent_color"), SNAME("Editor")).lerp(text_color, 0.5);
+	class_desc->add_theme_color_override("selection_color", get_theme_color(SNAME("accent_color"), SNAME("Editor")) * Color(1, 1, 1, 0.4));
 	class_desc->add_theme_constant_override("line_separation", Math::round(5 * EDSCALE));
 }
 
@@ -78,10 +78,10 @@ void EditorHelp::_class_desc_select(const String &p_select) {
 		} else {
 			class_name = "@GlobalScope";
 		}
-		emit_signal("go_to_help", "class_enum:" + class_name + ":" + select);
+		emit_signal(SNAME("go_to_help"), "class_enum:" + class_name + ":" + select);
 		return;
 	} else if (p_select.begins_with("#")) {
-		emit_signal("go_to_help", "class_name:" + p_select.substr(1, p_select.length()));
+		emit_signal(SNAME("go_to_help"), "class_name:" + p_select.substr(1, p_select.length()));
 		return;
 	} else if (p_select.begins_with("@")) {
 		int tag_end = p_select.find(" ");
@@ -112,7 +112,7 @@ void EditorHelp::_class_desc_select(const String &p_select) {
 		}
 
 		if (link.find(".") != -1) {
-			emit_signal("go_to_help", topic + ":" + link.get_slice(".", 0) + ":" + link.get_slice(".", 1));
+			emit_signal(SNAME("go_to_help"), topic + ":" + link.get_slice(".", 0) + ":" + link.get_slice(".", 1));
 		} else {
 			if (table->has(link)) {
 				// Found in the current page
@@ -125,7 +125,7 @@ void EditorHelp::_class_desc_select(const String &p_select) {
 					for (int i = 0; i < cd.constants.size(); i++) {
 						if (cd.constants[i].enumeration == link) {
 							// Found in @GlobalScope
-							emit_signal("go_to_help", topic + ":@GlobalScope:" + link);
+							emit_signal(SNAME("go_to_help"), topic + ":@GlobalScope:" + link);
 							break;
 						}
 					}
@@ -136,7 +136,7 @@ void EditorHelp::_class_desc_select(const String &p_select) {
 					for (int i = 0; i < cd.constants.size(); i++) {
 						if (cd.constants[i].name == link) {
 							// Found in @GlobalScope
-							emit_signal("go_to_help", topic + ":@GlobalScope:" + link);
+							emit_signal(SNAME("go_to_help"), topic + ":@GlobalScope:" + link);
 							break;
 						}
 					}
@@ -154,12 +154,12 @@ void EditorHelp::_class_desc_input(const Ref<InputEvent> &p_input) {
 void EditorHelp::_class_desc_resized() {
 	// Add extra horizontal margins for better readability.
 	// The margins increase as the width of the editor help container increases.
-	Ref<Font> doc_code_font = get_theme_font("doc_source", "EditorFonts");
-	int font_size = get_theme_font_size("doc_source_size", "EditorFonts");
+	Ref<Font> doc_code_font = get_theme_font(SNAME("doc_source"), SNAME("EditorFonts"));
+	int font_size = get_theme_font_size(SNAME("doc_source_size"), SNAME("EditorFonts"));
 	real_t char_width = doc_code_font->get_char_size('x', 0, font_size).width;
 	const int display_margin = MAX(30 * EDSCALE, get_parent_anchorable_rect().size.width - char_width * 120 * EDSCALE) * 0.5;
 
-	Ref<StyleBox> class_desc_stylebox = EditorNode::get_singleton()->get_theme_base()->get_theme_stylebox("normal", "RichTextLabel")->duplicate();
+	Ref<StyleBox> class_desc_stylebox = EditorNode::get_singleton()->get_theme_base()->get_theme_stylebox(SNAME("normal"), SNAME("RichTextLabel"))->duplicate();
 	class_desc_stylebox->set_default_margin(SIDE_LEFT, display_margin);
 	class_desc_stylebox->set_default_margin(SIDE_RIGHT, display_margin);
 	class_desc->add_theme_style_override("normal", class_desc_stylebox);
@@ -179,8 +179,8 @@ void EditorHelp::_add_type(const String &p_type, const String &p_enum) {
 			t = p_enum.get_slice(".", 0);
 		}
 	}
-	const Color text_color = get_theme_color("default_color", "RichTextLabel");
-	const Color type_color = get_theme_color("accent_color", "Editor").lerp(text_color, 0.5);
+	const Color text_color = get_theme_color(SNAME("default_color"), SNAME("RichTextLabel"));
+	const Color type_color = get_theme_color(SNAME("accent_color"), SNAME("Editor")).lerp(text_color, 0.5);
 	class_desc->push_color(type_color);
 	bool add_array = false;
 	if (can_ref) {
@@ -344,10 +344,10 @@ void EditorHelp::_update_doc() {
 
 	DocData::ClassDoc cd = doc->class_list[edited_class]; //make a copy, so we can sort without worrying
 
-	Ref<Font> doc_font = get_theme_font("doc", "EditorFonts");
-	Ref<Font> doc_bold_font = get_theme_font("doc_bold", "EditorFonts");
-	Ref<Font> doc_title_font = get_theme_font("doc_title", "EditorFonts");
-	Ref<Font> doc_code_font = get_theme_font("doc_source", "EditorFonts");
+	Ref<Font> doc_font = get_theme_font(SNAME("doc"), SNAME("EditorFonts"));
+	Ref<Font> doc_bold_font = get_theme_font(SNAME("doc_bold"), SNAME("EditorFonts"));
+	Ref<Font> doc_title_font = get_theme_font(SNAME("doc_title"), SNAME("EditorFonts"));
+	Ref<Font> doc_code_font = get_theme_font(SNAME("doc_source"), SNAME("EditorFonts"));
 	String link_color_text = title_color.to_html(false);
 
 	// Class name
@@ -1177,7 +1177,7 @@ void EditorHelp::_update_doc() {
 			if (!cd.properties[i].description.strip_edges().is_empty()) {
 				_add_text(DTR(cd.properties[i].description));
 			} else {
-				class_desc->add_image(get_theme_icon("Error", "EditorIcons"));
+				class_desc->add_image(get_theme_icon(SNAME("Error"), SNAME("EditorIcons")));
 				class_desc->add_text(" ");
 				class_desc->push_color(comment_color);
 				if (cd.is_script_doc) {
@@ -1232,7 +1232,7 @@ void EditorHelp::_update_doc() {
 				if (!methods_filtered[i].description.strip_edges().is_empty()) {
 					_add_text(DTR(methods_filtered[i].description));
 				} else {
-					class_desc->add_image(get_theme_icon("Error", "EditorIcons"));
+					class_desc->add_image(get_theme_icon(SNAME("Error"), SNAME("EditorIcons")));
 					class_desc->add_text(" ");
 					class_desc->push_color(comment_color);
 					if (cd.is_script_doc) {
@@ -1319,21 +1319,21 @@ void EditorHelp::_help_callback(const String &p_topic) {
 		}
 	}
 
-	class_desc->call_deferred("scroll_to_line", line);
+	class_desc->call_deferred(SNAME("scroll_to_line"), line);
 }
 
 static void _add_text_to_rt(const String &p_bbcode, RichTextLabel *p_rt) {
 	DocTools *doc = EditorHelp::get_doc_data();
 	String base_path;
 
-	Ref<Font> doc_font = p_rt->get_theme_font("doc", "EditorFonts");
-	Ref<Font> doc_bold_font = p_rt->get_theme_font("doc_bold", "EditorFonts");
-	Ref<Font> doc_code_font = p_rt->get_theme_font("doc_source", "EditorFonts");
-	Ref<Font> doc_kbd_font = p_rt->get_theme_font("doc_keyboard", "EditorFonts");
+	Ref<Font> doc_font = p_rt->get_theme_font(SNAME("doc"), SNAME("EditorFonts"));
+	Ref<Font> doc_bold_font = p_rt->get_theme_font(SNAME("doc_bold"), SNAME("EditorFonts"));
+	Ref<Font> doc_code_font = p_rt->get_theme_font(SNAME("doc_source"), SNAME("EditorFonts"));
+	Ref<Font> doc_kbd_font = p_rt->get_theme_font(SNAME("doc_keyboard"), SNAME("EditorFonts"));
 
-	Color headline_color = p_rt->get_theme_color("headline_color", "EditorHelp");
-	Color accent_color = p_rt->get_theme_color("accent_color", "Editor");
-	Color property_color = p_rt->get_theme_color("property_color", "Editor");
+	Color headline_color = p_rt->get_theme_color(SNAME("headline_color"), SNAME("EditorHelp"));
+	Color accent_color = p_rt->get_theme_color(SNAME("accent_color"), SNAME("Editor"));
+	Color property_color = p_rt->get_theme_color(SNAME("property_color"), SNAME("Editor"));
 	Color link_color = accent_color.lerp(headline_color, 0.8);
 	Color code_color = accent_color.lerp(headline_color, 0.6);
 	Color kbd_color = accent_color.lerp(property_color, 0.6);
@@ -1667,7 +1667,7 @@ EditorHelp::EditorHelp() {
 	class_desc = memnew(RichTextLabel);
 	add_child(class_desc);
 	class_desc->set_v_size_flags(SIZE_EXPAND_FILL);
-	class_desc->add_theme_color_override("selection_color", get_theme_color("accent_color", "Editor") * Color(1, 1, 1, 0.4));
+	class_desc->add_theme_color_override("selection_color", get_theme_color(SNAME("accent_color"), SNAME("Editor")) * Color(1, 1, 1, 0.4));
 
 	class_desc->connect("meta_clicked", callable_mp(this, &EditorHelp::_class_desc_select));
 	class_desc->connect("gui_input", callable_mp(this, &EditorHelp::_class_desc_input));
@@ -1693,7 +1693,7 @@ EditorHelp::~EditorHelp() {
 void EditorHelpBit::_go_to_help(String p_what) {
 	EditorNode::get_singleton()->set_visible_editor(EditorNode::EDITOR_SCRIPT);
 	ScriptEditor::get_singleton()->goto_help(p_what);
-	emit_signal("request_hide");
+	emit_signal(SNAME("request_hide"));
 }
 
 void EditorHelpBit::_meta_clicked(String p_select) {
@@ -1733,7 +1733,7 @@ void EditorHelpBit::_notification(int p_what) {
 
 		} break;
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
-			rich_text->add_theme_color_override("selection_color", get_theme_color("accent_color", "Editor") * Color(1, 1, 1, 0.4));
+			rich_text->add_theme_color_override("selection_color", get_theme_color(SNAME("accent_color"), SNAME("Editor")) * Color(1, 1, 1, 0.4));
 		} break;
 		default:
 			break;
@@ -1750,7 +1750,7 @@ EditorHelpBit::EditorHelpBit() {
 	rich_text = memnew(RichTextLabel);
 	add_child(rich_text);
 	rich_text->connect("meta_clicked", callable_mp(this, &EditorHelpBit::_meta_clicked));
-	rich_text->add_theme_color_override("selection_color", get_theme_color("accent_color", "Editor") * Color(1, 1, 1, 0.4));
+	rich_text->add_theme_color_override("selection_color", get_theme_color(SNAME("accent_color"), SNAME("Editor")) * Color(1, 1, 1, 0.4));
 	rich_text->set_override_selected_font_color(false);
 	set_custom_minimum_size(Size2(0, 70 * EDSCALE));
 }
@@ -1812,13 +1812,13 @@ void FindBar::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
-			find_prev->set_icon(get_theme_icon("MoveUp", "EditorIcons"));
-			find_next->set_icon(get_theme_icon("MoveDown", "EditorIcons"));
-			hide_button->set_normal_texture(get_theme_icon("Close", "EditorIcons"));
-			hide_button->set_hover_texture(get_theme_icon("Close", "EditorIcons"));
-			hide_button->set_pressed_texture(get_theme_icon("Close", "EditorIcons"));
+			find_prev->set_icon(get_theme_icon(SNAME("MoveUp"), SNAME("EditorIcons")));
+			find_next->set_icon(get_theme_icon(SNAME("MoveDown"), SNAME("EditorIcons")));
+			hide_button->set_normal_texture(get_theme_icon(SNAME("Close"), SNAME("EditorIcons")));
+			hide_button->set_hover_texture(get_theme_icon(SNAME("Close"), SNAME("EditorIcons")));
+			hide_button->set_pressed_texture(get_theme_icon(SNAME("Close"), SNAME("EditorIcons")));
 			hide_button->set_custom_minimum_size(hide_button->get_normal_texture()->get_size());
-			matches_label->add_theme_color_override("font_color", results_count > 0 ? get_theme_color("font_color", "Label") : get_theme_color("error_color", "Editor"));
+			matches_label->add_theme_color_override("font_color", results_count > 0 ? get_theme_color(SNAME("font_color"), SNAME("Label")) : get_theme_color(SNAME("error_color"), SNAME("Editor")));
 		} break;
 		case NOTIFICATION_VISIBILITY_CHANGED: {
 			set_process_unhandled_input(is_visible_in_tree());
@@ -1891,7 +1891,7 @@ void FindBar::_update_matches_label() {
 	} else {
 		matches_label->show();
 
-		matches_label->add_theme_color_override("font_color", results_count > 0 ? get_theme_color("font_color", "Label") : get_theme_color("error_color", "Editor"));
+		matches_label->add_theme_color_override("font_color", results_count > 0 ? get_theme_color(SNAME("font_color"), SNAME("Label")) : get_theme_color(SNAME("error_color"), SNAME("Editor")));
 		matches_label->set_text(vformat(results_count == 1 ? TTR("%d match.") : TTR("%d matches."), results_count));
 	}
 }

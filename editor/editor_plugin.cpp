@@ -532,7 +532,7 @@ void EditorPlugin::set_force_draw_over_forwarding_enabled() {
 }
 
 void EditorPlugin::notify_scene_changed(const Node *scn_root) {
-	emit_signal("scene_changed", scn_root);
+	emit_signal(SNAME("scene_changed"), scn_root);
 }
 
 void EditorPlugin::notify_main_screen_changed(const String &screen_name) {
@@ -540,16 +540,16 @@ void EditorPlugin::notify_main_screen_changed(const String &screen_name) {
 		return;
 	}
 
-	emit_signal("main_screen_changed", screen_name);
+	emit_signal(SNAME("main_screen_changed"), screen_name);
 	last_main_screen_name = screen_name;
 }
 
 void EditorPlugin::notify_scene_closed(const String &scene_filepath) {
-	emit_signal("scene_closed", scene_filepath);
+	emit_signal(SNAME("scene_closed"), scene_filepath);
 }
 
 void EditorPlugin::notify_resource_saved(const Ref<Resource> &p_resource) {
-	emit_signal("resource_saved", p_resource);
+	emit_signal(SNAME("resource_saved"), p_resource);
 }
 
 bool EditorPlugin::forward_canvas_gui_input(const Ref<InputEvent> &p_event) {
@@ -729,13 +729,13 @@ void EditorPlugin::remove_translation_parser_plugin(const Ref<EditorTranslationP
 void EditorPlugin::add_import_plugin(const Ref<EditorImportPlugin> &p_importer) {
 	ERR_FAIL_COND(!p_importer.is_valid());
 	ResourceFormatImporter::get_singleton()->add_importer(p_importer);
-	EditorFileSystem::get_singleton()->call_deferred("scan");
+	EditorFileSystem::get_singleton()->call_deferred(SNAME("scan"));
 }
 
 void EditorPlugin::remove_import_plugin(const Ref<EditorImportPlugin> &p_importer) {
 	ERR_FAIL_COND(!p_importer.is_valid());
 	ResourceFormatImporter::get_singleton()->remove_importer(p_importer);
-	EditorFileSystem::get_singleton()->call_deferred("scan");
+	EditorFileSystem::get_singleton()->call_deferred(SNAME("scan"));
 }
 
 void EditorPlugin::add_export_plugin(const Ref<EditorExportPlugin> &p_exporter) {
@@ -854,7 +854,7 @@ void EditorPlugin::remove_debugger_plugin(const Ref<Script> &p_script) {
 }
 
 void EditorPlugin::_editor_project_settings_changed() {
-	emit_signal("project_settings_changed");
+	emit_signal(SNAME("project_settings_changed"));
 }
 void EditorPlugin::_notification(int p_what) {
 	if (p_what == NOTIFICATION_ENTER_TREE) {

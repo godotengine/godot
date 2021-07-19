@@ -60,7 +60,7 @@ PhysicalBone3DEditor::PhysicalBone3DEditor(EditorNode *p_editor) :
 	spatial_editor_hb->add_child(button_transform_joint);
 
 	button_transform_joint->set_text(TTR("Move Joint"));
-	button_transform_joint->set_icon(Node3DEditor::get_singleton()->get_theme_icon("PhysicalBone3D", "EditorIcons"));
+	button_transform_joint->set_icon(Node3DEditor::get_singleton()->get_theme_icon(SNAME("PhysicalBone3D"), SNAME("EditorIcons")));
 	button_transform_joint->set_toggle_mode(true);
 	button_transform_joint->connect("toggled", callable_mp(this, &PhysicalBone3DEditor::_on_toggle_button_transform_joint));
 

@@ -84,7 +84,7 @@ void AnimationNodeBlendSpace2D::add_blend_point(const Ref<AnimationRootNode> &p_
 
 	_queue_auto_triangles();
 
-	emit_signal("tree_changed");
+	emit_signal(SNAME("tree_changed"));
 }
 
 void AnimationNodeBlendSpace2D::set_blend_point_position(int p_point, const Vector2 &p_position) {
@@ -103,7 +103,7 @@ void AnimationNodeBlendSpace2D::set_blend_point_node(int p_point, const Ref<Anim
 	blend_points[p_point].node = p_node;
 	blend_points[p_point].node->connect("tree_changed", callable_mp(this, &AnimationNodeBlendSpace2D::_tree_changed), varray(), CONNECT_REFERENCE_COUNTED);
 
-	emit_signal("tree_changed");
+	emit_signal(SNAME("tree_changed"));
 }
 
 Vector2 AnimationNodeBlendSpace2D::get_blend_point_position(int p_point) const {
@@ -143,7 +143,7 @@ void AnimationNodeBlendSpace2D::remove_blend_point(int p_point) {
 		blend_points[i] = blend_points[i + 1];
 	}
 	blend_points_used--;
-	emit_signal("tree_changed");
+	emit_signal(SNAME("tree_changed"));
 }
 
 int AnimationNodeBlendSpace2D::get_blend_point_count() const {
@@ -321,7 +321,7 @@ void AnimationNodeBlendSpace2D::_queue_auto_triangles() {
 	}
 
 	trianges_dirty = true;
-	call_deferred("_update_triangles");
+	call_deferred(SNAME("_update_triangles"));
 }
 
 void AnimationNodeBlendSpace2D::_update_triangles() {
@@ -332,7 +332,7 @@ void AnimationNodeBlendSpace2D::_update_triangles() {
 	trianges_dirty = false;
 	triangles.clear();
 	if (blend_points_used < 3) {
-		emit_signal("triangles_updated");
+		emit_signal(SNAME("triangles_updated"));
 		return;
 	}
 
@@ -347,7 +347,7 @@ void AnimationNodeBlendSpace2D::_update_triangles() {
 	for (int i = 0; i < triangles.size(); i++) {
 		add_triangle(triangles[i].points[0], triangles[i].points[1], triangles[i].points[2]);
 	}
-	emit_signal("triangles_updated");
+	emit_signal(SNAME("triangles_updated"));
 }
 
 Vector2 AnimationNodeBlendSpace2D::get_closest_point(const Vector2 &p_point) {
@@ -586,7 +586,7 @@ Ref<AnimationNode> AnimationNodeBlendSpace2D::get_child_by_name(const StringName
 }
 
 void AnimationNodeBlendSpace2D::_tree_changed() {
-	emit_signal("tree_changed");
+	emit_signal(SNAME("tree_changed"));
 }
 
 void AnimationNodeBlendSpace2D::set_blend_mode(BlendMode p_blend_mode) {

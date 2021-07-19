@@ -438,7 +438,7 @@ void Input::joy_connection_changed(int p_idx, bool p_connected, String p_name, S
 	}
 	joy_names[p_idx] = js;
 
-	emit_signal("joy_connection_changed", p_idx, p_connected);
+	emit_signal(SNAME("joy_connection_changed"), p_idx, p_connected);
 }
 
 Vector3 Input::get_gravity() const {

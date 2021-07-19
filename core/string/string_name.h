@@ -44,13 +44,15 @@ struct StaticCString {
 
 class StringName {
 	enum {
-		STRING_TABLE_BITS = 12,
+		STRING_TABLE_BITS = 16,
 		STRING_TABLE_LEN = 1 << STRING_TABLE_BITS,
 		STRING_TABLE_MASK = STRING_TABLE_LEN - 1
 	};
 
 	struct _Data {
 		SafeRefCount refcount;
+		SafeNumeric<uint32_t> static_count;
+		SafeRefCount static_refcount;
 		const char *cname = nullptr;
 		String name;
 
@@ -146,12 +148,16 @@ public:
 	};
 
 	void operator=(const StringName &p_name);
-	StringName(const char *p_name);
+	StringName(const char *p_name, bool p_static = false);
 	StringName(const StringName &p_name);
-	StringName(const String &p_name);
-	StringName(const StaticCString &p_static_string);
+	StringName(const String &p_name, bool p_static = false);
+	StringName(const StaticCString &p_static_string, bool p_static = false);
 	StringName() {}
-	~StringName();
+	_FORCE_INLINE_ ~StringName() {
+		if (likely(configured) && _data) { //only free if configured
+			unref();
+		}
+	}
 };
 
 bool operator==(const String &p_name, const StringName &p_string_name);
@@ -159,6 +165,8 @@ bool operator!=(const String &p_name, const StringName &p_string_name);
 bool operator==(const char *p_name, const StringName &p_string_name);
 bool operator!=(const char *p_name, const StringName &p_string_name);
 
-StringName _scs_create(const char *p_chr);
+StringName _scs_create(const char *p_chr, bool p_static = false);
+
+#define SNAME(m_arg) ([]() { static StringName sname = _scs_create(m_arg, true); return sname; })()
 
 #endif // STRING_NAME_H

@@ -99,23 +99,23 @@ void AnimationPlayerEditor::_notification(int p_what) {
 
 			get_tree()->connect("node_removed", callable_mp(this, &AnimationPlayerEditor::_node_removed));
 
-			add_theme_style_override("panel", editor->get_gui_base()->get_theme_stylebox("panel", "Panel"));
+			add_theme_style_override("panel", editor->get_gui_base()->get_theme_stylebox(SNAME("panel"), SNAME("Panel")));
 		} break;
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
-			add_theme_style_override("panel", editor->get_gui_base()->get_theme_stylebox("panel", "Panel"));
+			add_theme_style_override("panel", editor->get_gui_base()->get_theme_stylebox(SNAME("panel"), SNAME("Panel")));
 		} break;
 		case NOTIFICATION_TRANSLATION_CHANGED:
 		case NOTIFICATION_LAYOUT_DIRECTION_CHANGED:
 		case NOTIFICATION_THEME_CHANGED: {
-			autoplay->set_icon(get_theme_icon("AutoPlay", "EditorIcons"));
+			autoplay->set_icon(get_theme_icon(SNAME("AutoPlay"), SNAME("EditorIcons")));
 
-			play->set_icon(get_theme_icon("PlayStart", "EditorIcons"));
-			play_from->set_icon(get_theme_icon("Play", "EditorIcons"));
-			play_bw->set_icon(get_theme_icon("PlayStartBackwards", "EditorIcons"));
-			play_bw_from->set_icon(get_theme_icon("PlayBackwards", "EditorIcons"));
+			play->set_icon(get_theme_icon(SNAME("PlayStart"), SNAME("EditorIcons")));
+			play_from->set_icon(get_theme_icon(SNAME("Play"), SNAME("EditorIcons")));
+			play_bw->set_icon(get_theme_icon(SNAME("PlayStartBackwards"), SNAME("EditorIcons")));
+			play_bw_from->set_icon(get_theme_icon(SNAME("PlayBackwards"), SNAME("EditorIcons")));
 
-			autoplay_icon = get_theme_icon("AutoPlay", "EditorIcons");
-			reset_icon = get_theme_icon("Reload", "EditorIcons");
+			autoplay_icon = get_theme_icon(SNAME("AutoPlay"), SNAME("EditorIcons"));
+			reset_icon = get_theme_icon(SNAME("Reload"), SNAME("EditorIcons"));
 			{
 				Ref<Image> autoplay_img = autoplay_icon->get_image();
 				Ref<Image> reset_img = reset_icon->get_image();
@@ -128,17 +128,17 @@ void AnimationPlayerEditor::_notification(int p_what) {
 				autoplay_reset_icon.instantiate();
 				autoplay_reset_icon->create_from_image(autoplay_reset_img);
 			}
-			stop->set_icon(get_theme_icon("Stop", "EditorIcons"));
+			stop->set_icon(get_theme_icon(SNAME("Stop"), SNAME("EditorIcons")));
 
-			onion_toggle->set_icon(get_theme_icon("Onion", "EditorIcons"));
-			onion_skinning->set_icon(get_theme_icon("GuiTabMenuHl", "EditorIcons"));
+			onion_toggle->set_icon(get_theme_icon(SNAME("Onion"), SNAME("EditorIcons")));
+			onion_skinning->set_icon(get_theme_icon(SNAME("GuiTabMenuHl"), SNAME("EditorIcons")));
 
-			pin->set_icon(get_theme_icon("Pin", "EditorIcons"));
+			pin->set_icon(get_theme_icon(SNAME("Pin"), SNAME("EditorIcons")));
 
-			tool_anim->add_theme_style_override("normal", get_theme_stylebox("normal", "Button"));
-			track_editor->get_edit_menu()->add_theme_style_override("normal", get_theme_stylebox("normal", "Button"));
+			tool_anim->add_theme_style_override("normal", get_theme_stylebox(SNAME("normal"), SNAME("Button")));
+			track_editor->get_edit_menu()->add_theme_style_override("normal", get_theme_stylebox(SNAME("normal"), SNAME("Button")));
 
-#define ITEM_ICON(m_item, m_icon) tool_anim->get_popup()->set_item_icon(tool_anim->get_popup()->get_item_index(m_item), get_theme_icon(m_icon, "EditorIcons"))
+#define ITEM_ICON(m_item, m_icon) tool_anim->get_popup()->set_item_icon(tool_anim->get_popup()->get_item_index(m_item), get_theme_icon(SNAME(m_icon), SNAME("EditorIcons")))
 
 			ITEM_ICON(TOOL_NEW_ANIM, "New");
 			ITEM_ICON(TOOL_LOAD_ANIM, "Load");
@@ -373,7 +373,7 @@ void AnimationPlayerEditor::_animation_save_in_path(const Ref<Resource> &p_resou
 	}
 
 	((Resource *)p_resource.ptr())->set_path(path);
-	editor->emit_signal("resource_saved", p_resource);
+	editor->emit_signal(SNAME("resource_saved"), p_resource);
 }
 
 void AnimationPlayerEditor::_animation_save(const Ref<Resource> &p_resource) {
@@ -1324,11 +1324,11 @@ void AnimationPlayerEditor::_prepare_onion_layers_1() {
 	}
 
 	// And go to next step afterwards.
-	call_deferred("_prepare_onion_layers_2");
+	call_deferred(SNAME("_prepare_onion_layers_2"));
 }
 
 void AnimationPlayerEditor::_prepare_onion_layers_1_deferred() {
-	call_deferred("_prepare_onion_layers_1");
+	call_deferred(SNAME("_prepare_onion_layers_1"));
 }
 
 void AnimationPlayerEditor::_prepare_onion_layers_2() {
