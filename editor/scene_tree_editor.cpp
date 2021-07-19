@@ -357,7 +357,7 @@ bool SceneTreeEditor::_add_nodes(Node *p_node, TreeItem *p_parent, bool p_scroll
 
 			bool is_grouped = p_node->has_meta("_edit_group_");
 			if (is_grouped) {
-				item->add_button(0, get_icon("Group", "EditorIcons"), BUTTON_GROUP, false, TTR("Children are not selectable.\nClick to make selectable."));
+				item->add_button(0, get_icon("Group", "EditorIcons"), BUTTON_GROUP, false, TTR("Children are not selectable.\nClick to make them selectable."));
 			}
 
 			bool v = p_node->call("is_visible");
@@ -391,7 +391,7 @@ bool SceneTreeEditor::_add_nodes(Node *p_node, TreeItem *p_parent, bool p_scroll
 
 			bool is_grouped = p_node->has_meta("_edit_group_");
 			if (is_grouped) {
-				item->add_button(0, get_icon("Group", "EditorIcons"), BUTTON_GROUP, false, TTR("Children are not selectable.\nClick to make selectable."));
+				item->add_button(0, get_icon("Group", "EditorIcons"), BUTTON_GROUP, false, TTR("Children are not selectable.\nClick to make them selectable."));
 			}
 
 			bool v = p_node->call("is_visible");
