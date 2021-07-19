@@ -316,6 +316,7 @@ void SpatialMaterial::init_shaders() {
 	shader_names->ao_light_affect = "ao_light_affect";
 
 	shader_names->proximity_fade_distance = "proximity_fade_distance";
+	shader_names->proximity_fade_far_distance = "proximity_fade_far_distance";
 	shader_names->distance_fade_min = "distance_fade_min";
 	shader_names->distance_fade_max = "distance_fade_max";
 
@@ -504,6 +505,7 @@ void SpatialMaterial::_update_shader() {
 
 	if (proximity_fade_enabled) {
 		code += "uniform float proximity_fade_distance;\n";
+		code += "uniform float proximity_fade_far_distance;\n";
 	}
 	if (distance_fade != DISTANCE_FADE_DISABLED) {
 		code += "uniform float distance_fade_min;\n";
@@ -883,10 +885,15 @@ void SpatialMaterial::_update_shader() {
 	}
 
 	if (proximity_fade_enabled) {
-		code += "\tfloat depth_tex = textureLod(DEPTH_TEXTURE,SCREEN_UV,0.0).r;\n";
-		code += "\tvec4 world_pos = INV_PROJECTION_MATRIX * vec4(SCREEN_UV*2.0-1.0,depth_tex*2.0-1.0,1.0);\n";
-		code += "\tworld_pos.xyz/=world_pos.w;\n";
-		code += "\tALPHA*=clamp(1.0-smoothstep(world_pos.z+proximity_fade_distance,world_pos.z,VERTEX.z),0.0,1.0);\n";
+		code += "\tfloat depth_tex = textureLod(DEPTH_TEXTURE, SCREEN_UV, 0.0).r;\n";
+		code += "\tvec4 world_pos = INV_PROJECTION_MATRIX * vec4(SCREEN_UV * 2.0 - 1.0, depth_tex * 2.0 - 1.0, 1.0);\n";
+		code += "\tworld_pos.xyz /= world_pos.w;\n";
+		code += "\tif (proximity_fade_distance >= 0.0001) {\n";
+		code += "\t\tALPHA *= clamp(1.0 - smoothstep(world_pos.z + proximity_fade_distance, world_pos.z, VERTEX.z), 0.0, 1.0);\n";
+		code += "\t}\n";
+		code += "\tif (proximity_fade_far_distance >= 0.0001) {\n";
+		code += "\t\tALPHA *= clamp(smoothstep(world_pos.z + proximity_fade_far_distance, world_pos.z, VERTEX.z), 0.0, 1.0);\n";
+		code += "\t}\n";
 	}
 
 	if (distance_fade != DISTANCE_FADE_DISABLED) {
@@ -1412,7 +1419,7 @@ void SpatialMaterial::_validate_property(PropertyInfo &property) const {
 		property.usage = 0;
 	}
 
-	if (property.name == "proximity_fade_distance" && !proximity_fade_enabled) {
+	if ((property.name == "proximity_fade_distance" || property.name == "proximity_fade_far_distance") && !proximity_fade_enabled) {
 		property.usage = 0;
 	}
 
@@ -1772,8 +1779,18 @@ void SpatialMaterial::set_proximity_fade_distance(float p_distance) {
 	proximity_fade_distance = p_distance;
 	VS::get_singleton()->material_set_param(_get_material(), shader_names->proximity_fade_distance, p_distance);
 }
+
 float SpatialMaterial::get_proximity_fade_distance() const {
 	return proximity_fade_distance;
+}
+
+void SpatialMaterial::set_proximity_fade_far_distance(float p_far_distance) {
+	proximity_fade_far_distance = p_far_distance;
+	VS::get_singleton()->material_set_param(_get_material(), shader_names->proximity_fade_far_distance, p_far_distance);
+}
+
+float SpatialMaterial::get_proximity_fade_far_distance() const {
+	return proximity_fade_far_distance;
 }
 
 void SpatialMaterial::set_distance_fade(DistanceFadeMode p_mode) {
@@ -1986,6 +2003,9 @@ void SpatialMaterial::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_proximity_fade_distance", "distance"), &SpatialMaterial::set_proximity_fade_distance);
 	ClassDB::bind_method(D_METHOD("get_proximity_fade_distance"), &SpatialMaterial::get_proximity_fade_distance);
 
+	ClassDB::bind_method(D_METHOD("set_proximity_fade_far_distance", "far_distance"), &SpatialMaterial::set_proximity_fade_far_distance);
+	ClassDB::bind_method(D_METHOD("get_proximity_fade_far_distance"), &SpatialMaterial::get_proximity_fade_far_distance);
+
 	ClassDB::bind_method(D_METHOD("set_distance_fade", "mode"), &SpatialMaterial::set_distance_fade);
 	ClassDB::bind_method(D_METHOD("get_distance_fade"), &SpatialMaterial::get_distance_fade);
 
@@ -2131,7 +2151,8 @@ void SpatialMaterial::_bind_methods() {
 
 	ADD_GROUP("Proximity Fade", "proximity_fade_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "proximity_fade_enable"), "set_proximity_fade", "is_proximity_fade_enabled");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "proximity_fade_distance", PROPERTY_HINT_RANGE, "0,4096,0.01"), "set_proximity_fade_distance", "get_proximity_fade_distance");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL, "proximity_fade_distance", PROPERTY_HINT_RANGE, "0,4096,0.0001"), "set_proximity_fade_distance", "get_proximity_fade_distance");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL, "proximity_fade_far_distance", PROPERTY_HINT_RANGE, "0,4096,0.0001"), "set_proximity_fade_far_distance", "get_proximity_fade_far_distance");
 	ADD_GROUP("Distance Fade", "distance_fade_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "distance_fade_mode", PROPERTY_HINT_ENUM, "Disabled,PixelAlpha,PixelDither,ObjectDither"), "set_distance_fade", "get_distance_fade");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "distance_fade_min_distance", PROPERTY_HINT_RANGE, "0,4096,0.01"), "set_distance_fade_min_distance", "get_distance_fade_min_distance");
@@ -2276,6 +2297,7 @@ SpatialMaterial::SpatialMaterial() :
 	proximity_fade_enabled = false;
 	distance_fade = DISTANCE_FADE_DISABLED;
 	set_proximity_fade_distance(1);
+	set_proximity_fade_far_distance(0);
 	set_distance_fade_min_distance(0);
 	set_distance_fade_max_distance(10);
 

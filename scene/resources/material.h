@@ -340,6 +340,7 @@ private:
 		StringName uv2_blend_sharpness;
 		StringName grow;
 		StringName proximity_fade_distance;
+		StringName proximity_fade_far_distance;
 		StringName distance_fade_min;
 		StringName distance_fade_max;
 		StringName ao_light_affect;
@@ -410,6 +411,7 @@ private:
 
 	bool proximity_fade_enabled;
 	float proximity_fade_distance;
+	float proximity_fade_far_distance;
 
 	DistanceFadeMode distance_fade;
 	float distance_fade_max_distance;
@@ -599,6 +601,9 @@ public:
 
 	void set_proximity_fade_distance(float p_distance);
 	float get_proximity_fade_distance() const;
+
+	void set_proximity_fade_far_distance(float p_far_distance);
+	float get_proximity_fade_far_distance() const;
 
 	void set_distance_fade(DistanceFadeMode p_mode);
 	DistanceFadeMode get_distance_fade() const;
