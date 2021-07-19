@@ -47,6 +47,8 @@ class MenuButton : public Button {
 
 	void _gui_input(Ref<InputEvent> p_event) override;
 
+	void _popup_visibility_changed(bool p_visible);
+
 protected:
 	void _notification(int p_what);
 	static void _bind_methods();
