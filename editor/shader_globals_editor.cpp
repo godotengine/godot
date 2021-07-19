@@ -110,7 +110,6 @@ protected:
 		undo_redo->commit_action();
 		block_update = false;
 
-		print_line("all good?");
 		return true;
 	}
 
@@ -410,7 +409,6 @@ void ShaderGlobalsEditor::_variable_added() {
 }
 
 void ShaderGlobalsEditor::_variable_deleted(const String &p_variable) {
-	print_line("deleted " + p_variable);
 	UndoRedo *undo_redo = EditorNode::get_singleton()->get_undo_redo();
 
 	undo_redo->create_action("Add Shader Global Variable");
@@ -439,7 +437,6 @@ void ShaderGlobalsEditor::_bind_methods() {
 void ShaderGlobalsEditor::_notification(int p_what) {
 	if (p_what == NOTIFICATION_VISIBILITY_CHANGED) {
 		if (is_visible_in_tree()) {
-			print_line("OK load settings in globalseditor");
 			inspector->edit(interface);
 		}
 	}
