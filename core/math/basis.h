@@ -54,6 +54,7 @@ public:
 
 	Basis inverse() const;
 	Basis transposed() const;
+	Basis inverse_transposed() const { return inverse().transposed(); }
 
 	_FORCE_INLINE_ real_t determinant() const;
 
@@ -86,7 +87,7 @@ public:
 	void get_rotation_axis_angle(Vector3 &p_axis, real_t &p_angle) const;
 	void get_rotation_axis_angle_local(Vector3 &p_axis, real_t &p_angle) const;
 	Quat get_rotation_quat() const;
-	Vector3 get_rotation() const { return get_rotation_euler(); };
+	Vector3 get_rotation() const { return get_rotation_euler(); }
 
 	Vector3 rotref_posscale_decomposition(Basis &rotref) const;
 
@@ -152,6 +153,15 @@ public:
 
 	_FORCE_INLINE_ Vector3 xform(const Vector3 &p_vector) const;
 	_FORCE_INLINE_ Vector3 xform_inv(const Vector3 &p_vector) const;
+
+	// safe with non-uniform scales (uses affine inverse)
+	_FORCE_INLINE_ Vector3 xform_normal(const Vector3 &p_normal) const; // slow
+	_FORCE_INLINE_ Vector3 xform_normal_inv(const Vector3 &p_normal) const; // slow
+
+	// fast versions (also safe with non-uniform scales)
+	static _FORCE_INLINE_ Vector3 xform_normal_fast(const Vector3 &p_normal, const Basis &p_basis_inverse_transpose);
+	static _FORCE_INLINE_ Vector3 xform_normal_inv_fast(const Vector3 &p_normal, const Basis &p_basis_transpose);
+
 	_FORCE_INLINE_ void operator*=(const Basis &p_matrix);
 	_FORCE_INLINE_ Basis operator*(const Basis &p_matrix) const;
 	_FORCE_INLINE_ void operator+=(const Basis &p_matrix);
@@ -319,6 +329,26 @@ Vector3 Basis::xform_inv(const Vector3 &p_vector) const {
 			(elements[0][0] * p_vector.x) + (elements[1][0] * p_vector.y) + (elements[2][0] * p_vector.z),
 			(elements[0][1] * p_vector.x) + (elements[1][1] * p_vector.y) + (elements[2][1] * p_vector.z),
 			(elements[0][2] * p_vector.x) + (elements[1][2] * p_vector.y) + (elements[2][2] * p_vector.z));
+}
+
+// To some extent these two functions are superfluous, but they serve as a standard implementation and they make the calling code clear
+Vector3 Basis::xform_normal_fast(const Vector3 &p_normal, const Basis &p_basis_inverse_transpose) {
+	return p_basis_inverse_transpose.xform(p_normal).normalized();
+}
+
+Vector3 Basis::xform_normal_inv_fast(const Vector3 &p_normal, const Basis &p_basis_transpose) {
+	return p_basis_transpose.xform(p_normal).normalized();
+}
+
+Vector3 Basis::xform_normal(const Vector3 &p_normal) const {
+	Basis b = inverse();
+	b.transpose();
+	return xform_normal_fast(p_normal, b);
+}
+
+Vector3 Basis::xform_normal_inv(const Vector3 &p_normal) const {
+	Basis basis_transpose = transposed();
+	return xform_normal_inv_fast(p_normal, basis_transpose);
 }
 
 real_t Basis::determinant() const {

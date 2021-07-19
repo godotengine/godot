@@ -101,7 +101,7 @@ public:
 	// Note there are no fast versions for non-planes. In those cases simply precompute the affine_inverse,
 	// and xform by that.
 	_FORCE_INLINE_ Plane xform_fast(const Plane &p_plane, const Basis &p_basis_inverse_transpose) const;
-	_FORCE_INLINE_ Plane xform_inv_fast(const Plane &p_plane, const Transform &p_inverse, const Basis &p_basis_transpose) const;
+	static _FORCE_INLINE_ Plane xform_inv_fast(const Plane &p_plane, const Transform &p_inverse, const Basis &p_basis_transpose);
 
 	// Uniform scale versions of functions.
 	// These are faster but will return incorrect results with non-uniform scales.
@@ -170,7 +170,7 @@ _FORCE_INLINE_ Plane Transform::xform_fast(const Plane &p_plane, const Basis &p_
 	return Plane(normal, d);
 }
 
-_FORCE_INLINE_ Plane Transform::xform_inv_fast(const Plane &p_plane, const Transform &p_inverse, const Basis &p_basis_transpose) const {
+_FORCE_INLINE_ Plane Transform::xform_inv_fast(const Plane &p_plane, const Transform &p_inverse, const Basis &p_basis_transpose) {
 	// transform a single point on the plane
 	Vector3 point = p_plane.normal * p_plane.d;
 	point = p_inverse.xform(point);

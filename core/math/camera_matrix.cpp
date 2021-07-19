@@ -298,6 +298,9 @@ Vector<Plane> CameraMatrix::get_projection_planes(const Transform &p_transform) 
 
 	Plane new_plane;
 
+	// precalculating this makes the transforms faster
+	Basis b_inverse_transpose = p_transform.basis.inverse_transposed();
+
 	///////--- Near Plane ---///////
 	new_plane = Plane(matrix[3] + matrix[2],
 			matrix[7] + matrix[6],
@@ -307,7 +310,7 @@ Vector<Plane> CameraMatrix::get_projection_planes(const Transform &p_transform) 
 	new_plane.normal = -new_plane.normal;
 	new_plane.normalize();
 
-	planes.push_back(p_transform.xform(new_plane));
+	planes.push_back(p_transform.xform_fast(new_plane, b_inverse_transpose));
 
 	///////--- Far Plane ---///////
 	new_plane = Plane(matrix[3] - matrix[2],
@@ -318,7 +321,7 @@ Vector<Plane> CameraMatrix::get_projection_planes(const Transform &p_transform) 
 	new_plane.normal = -new_plane.normal;
 	new_plane.normalize();
 
-	planes.push_back(p_transform.xform(new_plane));
+	planes.push_back(p_transform.xform_fast(new_plane, b_inverse_transpose));
 
 	///////--- Left Plane ---///////
 	new_plane = Plane(matrix[3] + matrix[0],
@@ -329,7 +332,7 @@ Vector<Plane> CameraMatrix::get_projection_planes(const Transform &p_transform) 
 	new_plane.normal = -new_plane.normal;
 	new_plane.normalize();
 
-	planes.push_back(p_transform.xform(new_plane));
+	planes.push_back(p_transform.xform_fast(new_plane, b_inverse_transpose));
 
 	///////--- Top Plane ---///////
 	new_plane = Plane(matrix[3] - matrix[1],
@@ -340,7 +343,7 @@ Vector<Plane> CameraMatrix::get_projection_planes(const Transform &p_transform) 
 	new_plane.normal = -new_plane.normal;
 	new_plane.normalize();
 
-	planes.push_back(p_transform.xform(new_plane));
+	planes.push_back(p_transform.xform_fast(new_plane, b_inverse_transpose));
 
 	///////--- Right Plane ---///////
 	new_plane = Plane(matrix[3] - matrix[0],
@@ -351,7 +354,7 @@ Vector<Plane> CameraMatrix::get_projection_planes(const Transform &p_transform) 
 	new_plane.normal = -new_plane.normal;
 	new_plane.normalize();
 
-	planes.push_back(p_transform.xform(new_plane));
+	planes.push_back(p_transform.xform_fast(new_plane, b_inverse_transpose));
 
 	///////--- Bottom Plane ---///////
 	new_plane = Plane(matrix[3] + matrix[1],
@@ -362,7 +365,7 @@ Vector<Plane> CameraMatrix::get_projection_planes(const Transform &p_transform) 
 	new_plane.normal = -new_plane.normal;
 	new_plane.normalize();
 
-	planes.push_back(p_transform.xform(new_plane));
+	planes.push_back(p_transform.xform_fast(new_plane, b_inverse_transpose));
 
 	return planes;
 }
