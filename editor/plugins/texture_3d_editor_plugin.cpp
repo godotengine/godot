@@ -77,16 +77,17 @@ void Texture3DEditor::_update_material() {
 }
 
 void Texture3DEditor::_make_shaders() {
-	String shader_3d = ""
-					   "shader_type canvas_item;\n"
-					   "uniform sampler3D tex;\n"
-					   "uniform float layer;\n"
-					   "void fragment() {\n"
-					   "  COLOR = textureLod(tex,vec3(UV,layer),0.0);\n"
-					   "}";
-
 	shader.instantiate();
-	shader->set_code(shader_3d);
+	shader->set_code(R"(
+shader_type canvas_item;
+
+uniform sampler3D tex;
+uniform float layer;
+
+void fragment() {
+	COLOR = textureLod(tex, vec3(UV, layer), 0.0);
+}
+)");
 	material.instantiate();
 	material->set_shader(shader);
 }

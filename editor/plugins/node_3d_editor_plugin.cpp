@@ -5381,35 +5381,37 @@ void Node3DEditor::_init_indicators() {
 		}
 
 		Ref<Shader> grid_shader = memnew(Shader);
-		grid_shader->set_code(
-				"\n"
-				"shader_type spatial; \n"
-				"render_mode unshaded; \n"
-				"uniform bool orthogonal; \n"
-				"uniform float grid_size; \n"
-				"\n"
-				"void vertex() { \n"
-				"	// From FLAG_SRGB_VERTEX_COLOR \n"
-				"	if (!OUTPUT_IS_SRGB) { \n"
-				"		COLOR.rgb = mix(pow((COLOR.rgb + vec3(0.055)) * (1.0 / (1.0 + 0.055)), vec3(2.4)), COLOR.rgb * (1.0 / 12.92), lessThan(COLOR.rgb, vec3(0.04045))); \n"
-				"	} \n"
-				"} \n"
-				"\n"
-				"void fragment() { \n"
-				"	ALBEDO = COLOR.rgb; \n"
-				"	vec3 dir = orthogonal ? -vec3(0, 0, 1) : VIEW; \n"
-				"	float angle_fade = abs(dot(dir, NORMAL)); \n"
-				"	angle_fade = smoothstep(0.05, 0.2, angle_fade); \n"
-				"	\n"
-				"	vec3 world_pos = (CAMERA_MATRIX * vec4(VERTEX, 1.0)).xyz; \n"
-				"	vec3 world_normal = (CAMERA_MATRIX * vec4(NORMAL, 0.0)).xyz; \n"
-				"	vec3 camera_world_pos = CAMERA_MATRIX[3].xyz; \n"
-				"	vec3 camera_world_pos_on_plane = camera_world_pos * (1.0 - world_normal); \n"
-				"	float dist_fade = 1.0 - (distance(world_pos, camera_world_pos_on_plane) / grid_size); \n"
-				"	dist_fade = smoothstep(0.02, 0.3, dist_fade); \n"
-				"	\n"
-				"	ALPHA = COLOR.a * dist_fade * angle_fade; \n"
-				"}");
+		grid_shader->set_code(R"(
+shader_type spatial;
+
+render_mode unshaded;
+
+uniform bool orthogonal;
+uniform float grid_size;
+
+void vertex() {
+	// From FLAG_SRGB_VERTEX_COLOR.
+	if (!OUTPUT_IS_SRGB) {
+		COLOR.rgb = mix(pow((COLOR.rgb + vec3(0.055)) * (1.0 / (1.0 + 0.055)), vec3(2.4)), COLOR.rgb * (1.0 / 12.92), lessThan(COLOR.rgb, vec3(0.04045)));
+	}
+}
+
+void fragment() {
+	ALBEDO = COLOR.rgb;
+	vec3 dir = orthogonal ? -vec3(0, 0, 1) : VIEW;
+	float angle_fade = abs(dot(dir, NORMAL));
+	angle_fade = smoothstep(0.05, 0.2, angle_fade);
+
+	vec3 world_pos = (CAMERA_MATRIX * vec4(VERTEX, 1.0)).xyz;
+	vec3 world_normal = (CAMERA_MATRIX * vec4(NORMAL, 0.0)).xyz;
+	vec3 camera_world_pos = CAMERA_MATRIX[3].xyz;
+	vec3 camera_world_pos_on_plane = camera_world_pos * (1.0 - world_normal);
+	float dist_fade = 1.0 - (distance(world_pos, camera_world_pos_on_plane) / grid_size);
+	dist_fade = smoothstep(0.02, 0.3, dist_fade);
+
+	ALPHA = COLOR.a * dist_fade * angle_fade;
+}
+)");
 
 		for (int i = 0; i < 3; i++) {
 			grid_mat[i].instantiate();
@@ -5621,33 +5623,35 @@ void Node3DEditor::_init_indicators() {
 
 				Ref<Shader> rotate_shader = memnew(Shader);
 
-				rotate_shader->set_code(
-						"\n"
-						"shader_type spatial; \n"
-						"render_mode unshaded, depth_test_disabled; \n"
-						"uniform vec4 albedo; \n"
-						"\n"
-						"mat3 orthonormalize(mat3 m) { \n"
-						"	vec3 x = normalize(m[0]); \n"
-						"	vec3 y = normalize(m[1] - x * dot(x, m[1])); \n"
-						"	vec3 z = m[2] - x * dot(x, m[2]); \n"
-						"	z = normalize(z - y * (dot(y,m[2]))); \n"
-						"	return mat3(x,y,z); \n"
-						"} \n"
-						"\n"
-						"void vertex() { \n"
-						"	mat3 mv = orthonormalize(mat3(MODELVIEW_MATRIX)); \n"
-						"	vec3 n = mv * VERTEX; \n"
-						"	float orientation = dot(vec3(0,0,-1),n); \n"
-						"	if (orientation <= 0.005) { \n"
-						"		VERTEX += NORMAL*0.02; \n"
-						"	} \n"
-						"} \n"
-						"\n"
-						"void fragment() { \n"
-						"	ALBEDO = albedo.rgb; \n"
-						"	ALPHA = albedo.a; \n"
-						"}");
+				rotate_shader->set_code(R"(
+shader_type spatial;
+
+render_mode unshaded, depth_test_disabled;
+
+uniform vec4 albedo;
+
+mat3 orthonormalize(mat3 m) {
+	vec3 x = normalize(m[0]);
+	vec3 y = normalize(m[1] - x * dot(x, m[1]));
+	vec3 z = m[2] - x * dot(x, m[2]);
+	z = normalize(z - y * (dot(y,m[2])));
+	return mat3(x,y,z);
+}
+
+void vertex() {
+	mat3 mv = orthonormalize(mat3(MODELVIEW_MATRIX));
+	vec3 n = mv * VERTEX;
+	float orientation = dot(vec3(0, 0, -1), n);
+	if (orientation <= 0.005) {
+		VERTEX += NORMAL * 0.02;
+	}
+}
+
+void fragment() {
+	ALBEDO = albedo.rgb;
+	ALPHA = albedo.a;
+}
+)");
 
 				Ref<ShaderMaterial> rotate_mat = memnew(ShaderMaterial);
 				rotate_mat->set_render_priority(Material::RENDER_PRIORITY_MAX);
@@ -5667,34 +5671,36 @@ void Node3DEditor::_init_indicators() {
 					Ref<ShaderMaterial> border_mat = rotate_mat->duplicate();
 
 					Ref<Shader> border_shader = memnew(Shader);
-					border_shader->set_code(
-							"\n"
-							"shader_type spatial; \n"
-							"render_mode unshaded, depth_test_disabled; \n"
-							"uniform vec4 albedo; \n"
-							"\n"
-							"mat3 orthonormalize(mat3 m) { \n"
-							"	vec3 x = normalize(m[0]); \n"
-							"	vec3 y = normalize(m[1] - x * dot(x, m[1])); \n"
-							"	vec3 z = m[2] - x * dot(x, m[2]); \n"
-							"	z = normalize(z - y * (dot(y,m[2]))); \n"
-							"	return mat3(x,y,z); \n"
-							"} \n"
-							"\n"
-							"void vertex() { \n"
-							"	mat3 mv = orthonormalize(mat3(MODELVIEW_MATRIX)); \n"
-							"	mv = inverse(mv); \n"
-							"	VERTEX += NORMAL*0.008; \n"
-							"	vec3 camera_dir_local = mv * vec3(0,0,1); \n"
-							"	vec3 camera_up_local = mv * vec3(0,1,0); \n"
-							"	mat3 rotation_matrix = mat3(cross(camera_dir_local, camera_up_local), camera_up_local, camera_dir_local); \n"
-							"	VERTEX = rotation_matrix * VERTEX; \n"
-							"} \n"
-							"\n"
-							"void fragment() { \n"
-							"	ALBEDO = albedo.rgb; \n"
-							"	ALPHA = albedo.a; \n"
-							"}");
+					border_shader->set_code(R"(
+shader_type spatial;
+
+render_mode unshaded, depth_test_disabled;
+
+uniform vec4 albedo;
+
+mat3 orthonormalize(mat3 m) {
+	vec3 x = normalize(m[0]);
+	vec3 y = normalize(m[1] - x * dot(x, m[1]));
+	vec3 z = m[2] - x * dot(x, m[2]);
+	z = normalize(z - y * (dot(y,m[2])));
+	return mat3(x,y,z);
+}
+
+void vertex() {
+	mat3 mv = orthonormalize(mat3(MODELVIEW_MATRIX));
+	mv = inverse(mv);
+	VERTEX += NORMAL*0.008;
+	vec3 camera_dir_local = mv * vec3(0,0,1);
+	vec3 camera_up_local = mv * vec3(0,1,0);
+	mat3 rotation_matrix = mat3(cross(camera_dir_local, camera_up_local), camera_up_local, camera_dir_local);
+	VERTEX = rotation_matrix * VERTEX;
+}
+
+void fragment() {
+	ALBEDO = albedo.rgb;
+	ALPHA = albedo.a;
+}
+)");
 
 					border_mat->set_shader(border_shader);
 					border_mat->set_shader_param("albedo", Color(0.75, 0.75, 0.75, col.a / 3.0));
@@ -7155,9 +7161,21 @@ Node3DEditor::Node3DEditor(EditorNode *p_editor) {
 		sun_direction->connect("draw", callable_mp(this, &Node3DEditor::_sun_direction_draw));
 		sun_direction->set_default_cursor_shape(CURSOR_MOVE);
 
-		String sun_dir_shader_code = "shader_type canvas_item; uniform vec3 sun_direction; uniform vec3 sun_color; void fragment() { vec3 n; n.xy = UV * 2.0 - 1.0; n.z = sqrt(max(0.0, 1.0 - dot(n.xy, n.xy))); COLOR.rgb = dot(n,sun_direction) * sun_color; COLOR.a = 1.0 - smoothstep(0.99,1.0,length(n.xy)); }";
 		sun_direction_shader.instantiate();
-		sun_direction_shader->set_code(sun_dir_shader_code);
+		sun_direction_shader->set_code(R"(
+shader_type canvas_item;
+
+uniform vec3 sun_direction;
+uniform vec3 sun_color;
+
+void fragment() {
+	vec3 n;
+	n.xy = UV * 2.0 - 1.0;
+	n.z = sqrt(max(0.0, 1.0 - dot(n.xy, n.xy)));
+	COLOR.rgb = dot(n, sun_direction) * sun_color;
+	COLOR.a = 1.0 - smoothstep(0.99, 1.0, length(n.xy));
+}
+)");
 		sun_direction_material.instantiate();
 		sun_direction_material->set_shader(sun_direction_shader);
 		sun_direction_material->set_shader_param("sun_direction", Vector3(0, 0, 1));

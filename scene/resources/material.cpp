@@ -757,148 +757,148 @@ void BaseMaterial3D::_update_shader() {
 	code += "void vertex() {\n";
 
 	if (flags[FLAG_SRGB_VERTEX_COLOR]) {
-		code += "\tif (!OUTPUT_IS_SRGB) {\n";
-		code += "\t\tCOLOR.rgb = mix(pow((COLOR.rgb + vec3(0.055)) * (1.0 / (1.0 + 0.055)), vec3(2.4)), COLOR.rgb * (1.0 / 12.92), lessThan(COLOR.rgb, vec3(0.04045)));\n";
-		code += "\t}\n";
+		code += "	if (!OUTPUT_IS_SRGB) {\n";
+		code += "		COLOR.rgb = mix(pow((COLOR.rgb + vec3(0.055)) * (1.0 / (1.0 + 0.055)), vec3(2.4)), COLOR.rgb * (1.0 / 12.92), lessThan(COLOR.rgb, vec3(0.04045)));\n";
+		code += "	}\n";
 	}
 	if (flags[FLAG_USE_POINT_SIZE]) {
-		code += "\tPOINT_SIZE=point_size;\n";
+		code += "	POINT_SIZE=point_size;\n";
 	}
 
 	if (shading_mode == SHADING_MODE_PER_VERTEX) {
-		code += "\tROUGHNESS=roughness;\n";
+		code += "	ROUGHNESS=roughness;\n";
 	}
 
 	if (!flags[FLAG_UV1_USE_TRIPLANAR]) {
-		code += "\tUV=UV*uv1_scale.xy+uv1_offset.xy;\n";
+		code += "	UV=UV*uv1_scale.xy+uv1_offset.xy;\n";
 	}
 
 	switch (billboard_mode) {
 		case BILLBOARD_DISABLED: {
 		} break;
 		case BILLBOARD_ENABLED: {
-			code += "\tMODELVIEW_MATRIX = INV_CAMERA_MATRIX * mat4(CAMERA_MATRIX[0],CAMERA_MATRIX[1],CAMERA_MATRIX[2],WORLD_MATRIX[3]);\n";
+			code += "	MODELVIEW_MATRIX = INV_CAMERA_MATRIX * mat4(CAMERA_MATRIX[0],CAMERA_MATRIX[1],CAMERA_MATRIX[2],WORLD_MATRIX[3]);\n";
 
 			if (flags[FLAG_BILLBOARD_KEEP_SCALE]) {
-				code += "\tMODELVIEW_MATRIX = MODELVIEW_MATRIX * mat4(vec4(length(WORLD_MATRIX[0].xyz), 0.0, 0.0, 0.0),vec4(0.0, length(WORLD_MATRIX[1].xyz), 0.0, 0.0),vec4(0.0, 0.0, length(WORLD_MATRIX[2].xyz), 0.0),vec4(0.0, 0.0, 0.0, 1.0));\n";
+				code += "	MODELVIEW_MATRIX = MODELVIEW_MATRIX * mat4(vec4(length(WORLD_MATRIX[0].xyz), 0.0, 0.0, 0.0),vec4(0.0, length(WORLD_MATRIX[1].xyz), 0.0, 0.0),vec4(0.0, 0.0, length(WORLD_MATRIX[2].xyz), 0.0),vec4(0.0, 0.0, 0.0, 1.0));\n";
 			}
 		} break;
 		case BILLBOARD_FIXED_Y: {
-			code += "\tMODELVIEW_MATRIX = INV_CAMERA_MATRIX * mat4(CAMERA_MATRIX[0],WORLD_MATRIX[1],vec4(normalize(cross(CAMERA_MATRIX[0].xyz,WORLD_MATRIX[1].xyz)), 0.0),WORLD_MATRIX[3]);\n";
+			code += "	MODELVIEW_MATRIX = INV_CAMERA_MATRIX * mat4(CAMERA_MATRIX[0],WORLD_MATRIX[1],vec4(normalize(cross(CAMERA_MATRIX[0].xyz,WORLD_MATRIX[1].xyz)), 0.0),WORLD_MATRIX[3]);\n";
 
 			if (flags[FLAG_BILLBOARD_KEEP_SCALE]) {
-				code += "\tMODELVIEW_MATRIX = MODELVIEW_MATRIX * mat4(vec4(length(WORLD_MATRIX[0].xyz), 0.0, 0.0, 0.0),vec4(0.0, 1.0, 0.0, 0.0),vec4(0.0, 0.0, length(WORLD_MATRIX[2].xyz), 0.0), vec4(0.0, 0.0, 0.0, 1.0));\n";
+				code += "	MODELVIEW_MATRIX = MODELVIEW_MATRIX * mat4(vec4(length(WORLD_MATRIX[0].xyz), 0.0, 0.0, 0.0),vec4(0.0, 1.0, 0.0, 0.0),vec4(0.0, 0.0, length(WORLD_MATRIX[2].xyz), 0.0), vec4(0.0, 0.0, 0.0, 1.0));\n";
 			} else {
-				code += "\tMODELVIEW_MATRIX = MODELVIEW_MATRIX * mat4(vec4(1.0, 0.0, 0.0, 0.0),vec4(0.0, 1.0/length(WORLD_MATRIX[1].xyz), 0.0, 0.0), vec4(0.0, 0.0, 1.0, 0.0),vec4(0.0, 0.0, 0.0 ,1.0));\n";
+				code += "	MODELVIEW_MATRIX = MODELVIEW_MATRIX * mat4(vec4(1.0, 0.0, 0.0, 0.0),vec4(0.0, 1.0/length(WORLD_MATRIX[1].xyz), 0.0, 0.0), vec4(0.0, 0.0, 1.0, 0.0),vec4(0.0, 0.0, 0.0 ,1.0));\n";
 			}
 		} break;
 		case BILLBOARD_PARTICLES: {
 			//make billboard
-			code += "\tmat4 mat_world = mat4(normalize(CAMERA_MATRIX[0])*length(WORLD_MATRIX[0]),normalize(CAMERA_MATRIX[1])*length(WORLD_MATRIX[0]),normalize(CAMERA_MATRIX[2])*length(WORLD_MATRIX[2]),WORLD_MATRIX[3]);\n";
+			code += "	mat4 mat_world = mat4(normalize(CAMERA_MATRIX[0])*length(WORLD_MATRIX[0]),normalize(CAMERA_MATRIX[1])*length(WORLD_MATRIX[0]),normalize(CAMERA_MATRIX[2])*length(WORLD_MATRIX[2]),WORLD_MATRIX[3]);\n";
 			//rotate by rotation
-			code += "\tmat_world = mat_world * mat4( vec4(cos(INSTANCE_CUSTOM.x),-sin(INSTANCE_CUSTOM.x), 0.0, 0.0), vec4(sin(INSTANCE_CUSTOM.x), cos(INSTANCE_CUSTOM.x), 0.0, 0.0),vec4(0.0, 0.0, 1.0, 0.0),vec4(0.0, 0.0, 0.0, 1.0));\n";
+			code += "	mat_world = mat_world * mat4( vec4(cos(INSTANCE_CUSTOM.x),-sin(INSTANCE_CUSTOM.x), 0.0, 0.0), vec4(sin(INSTANCE_CUSTOM.x), cos(INSTANCE_CUSTOM.x), 0.0, 0.0),vec4(0.0, 0.0, 1.0, 0.0),vec4(0.0, 0.0, 0.0, 1.0));\n";
 			//set modelview
-			code += "\tMODELVIEW_MATRIX = INV_CAMERA_MATRIX * mat_world;\n";
+			code += "	MODELVIEW_MATRIX = INV_CAMERA_MATRIX * mat_world;\n";
 
 			//handle animation
-			code += "\tfloat h_frames = float(particles_anim_h_frames);\n";
-			code += "\tfloat v_frames = float(particles_anim_v_frames);\n";
-			code += "\tfloat particle_total_frames = float(particles_anim_h_frames * particles_anim_v_frames);\n";
-			code += "\tfloat particle_frame = floor(INSTANCE_CUSTOM.z * float(particle_total_frames));\n";
-			code += "\tif (!particles_anim_loop) {\n";
-			code += "\t\tparticle_frame = clamp(particle_frame, 0.0, particle_total_frames - 1.0);\n";
-			code += "\t} else {\n";
-			code += "\t\tparticle_frame = mod(particle_frame, particle_total_frames);\n";
-			code += "\t}";
-			code += "\tUV /= vec2(h_frames, v_frames);\n";
-			code += "\tUV += vec2(mod(particle_frame, h_frames) / h_frames, floor(particle_frame / h_frames) / v_frames);\n";
+			code += "	float h_frames = float(particles_anim_h_frames);\n";
+			code += "	float v_frames = float(particles_anim_v_frames);\n";
+			code += "	float particle_total_frames = float(particles_anim_h_frames * particles_anim_v_frames);\n";
+			code += "	float particle_frame = floor(INSTANCE_CUSTOM.z * float(particle_total_frames));\n";
+			code += "	if (!particles_anim_loop) {\n";
+			code += "		particle_frame = clamp(particle_frame, 0.0, particle_total_frames - 1.0);\n";
+			code += "	} else {\n";
+			code += "		particle_frame = mod(particle_frame, particle_total_frames);\n";
+			code += "	}";
+			code += "	UV /= vec2(h_frames, v_frames);\n";
+			code += "	UV += vec2(mod(particle_frame, h_frames) / h_frames, floor(particle_frame / h_frames) / v_frames);\n";
 		} break;
 		case BILLBOARD_MAX:
 			break; // Internal value, skip.
 	}
 
 	if (flags[FLAG_FIXED_SIZE]) {
-		code += "\tif (PROJECTION_MATRIX[3][3] != 0.0) {\n";
+		code += "	if (PROJECTION_MATRIX[3][3] != 0.0) {\n";
 		//orthogonal matrix, try to do about the same
 		//with viewport size
-		code += "\t\tfloat h = abs(1.0 / (2.0 * PROJECTION_MATRIX[1][1]));\n";
-		code += "\t\tfloat sc = (h * 2.0); //consistent with Y-fov\n";
-		code += "\t\tMODELVIEW_MATRIX[0]*=sc;\n";
-		code += "\t\tMODELVIEW_MATRIX[1]*=sc;\n";
-		code += "\t\tMODELVIEW_MATRIX[2]*=sc;\n";
-		code += "\t} else {\n";
+		code += "		float h = abs(1.0 / (2.0 * PROJECTION_MATRIX[1][1]));\n";
+		code += "		float sc = (h * 2.0); //consistent with Y-fov\n";
+		code += "		MODELVIEW_MATRIX[0]*=sc;\n";
+		code += "		MODELVIEW_MATRIX[1]*=sc;\n";
+		code += "		MODELVIEW_MATRIX[2]*=sc;\n";
+		code += "	} else {\n";
 		//just scale by depth
-		code += "\t\tfloat sc = -(MODELVIEW_MATRIX)[3].z;\n";
-		code += "\t\tMODELVIEW_MATRIX[0]*=sc;\n";
-		code += "\t\tMODELVIEW_MATRIX[1]*=sc;\n";
-		code += "\t\tMODELVIEW_MATRIX[2]*=sc;\n";
-		code += "\t}\n";
+		code += "		float sc = -(MODELVIEW_MATRIX)[3].z;\n";
+		code += "		MODELVIEW_MATRIX[0]*=sc;\n";
+		code += "		MODELVIEW_MATRIX[1]*=sc;\n";
+		code += "		MODELVIEW_MATRIX[2]*=sc;\n";
+		code += "	}\n";
 	}
 
 	if (detail_uv == DETAIL_UV_2 && !flags[FLAG_UV2_USE_TRIPLANAR]) {
-		code += "\tUV2=UV2*uv2_scale.xy+uv2_offset.xy;\n";
+		code += "	UV2=UV2*uv2_scale.xy+uv2_offset.xy;\n";
 	}
 	if (flags[FLAG_UV1_USE_TRIPLANAR] || flags[FLAG_UV2_USE_TRIPLANAR]) {
 		//generate tangent and binormal in world space
-		code += "\tTANGENT = vec3(0.0,0.0,-1.0) * abs(NORMAL.x);\n";
-		code += "\tTANGENT+= vec3(1.0,0.0,0.0) * abs(NORMAL.y);\n";
-		code += "\tTANGENT+= vec3(1.0,0.0,0.0) * abs(NORMAL.z);\n";
-		code += "\tTANGENT = normalize(TANGENT);\n";
+		code += "	TANGENT = vec3(0.0,0.0,-1.0) * abs(NORMAL.x);\n";
+		code += "	TANGENT+= vec3(1.0,0.0,0.0) * abs(NORMAL.y);\n";
+		code += "	TANGENT+= vec3(1.0,0.0,0.0) * abs(NORMAL.z);\n";
+		code += "	TANGENT = normalize(TANGENT);\n";
 
-		code += "\tBINORMAL = vec3(0.0,1.0,0.0) * abs(NORMAL.x);\n";
-		code += "\tBINORMAL+= vec3(0.0,0.0,-1.0) * abs(NORMAL.y);\n";
-		code += "\tBINORMAL+= vec3(0.0,1.0,0.0) * abs(NORMAL.z);\n";
-		code += "\tBINORMAL = normalize(BINORMAL);\n";
+		code += "	BINORMAL = vec3(0.0,1.0,0.0) * abs(NORMAL.x);\n";
+		code += "	BINORMAL+= vec3(0.0,0.0,-1.0) * abs(NORMAL.y);\n";
+		code += "	BINORMAL+= vec3(0.0,1.0,0.0) * abs(NORMAL.z);\n";
+		code += "	BINORMAL = normalize(BINORMAL);\n";
 	}
 
 	if (flags[FLAG_UV1_USE_TRIPLANAR]) {
 		if (flags[FLAG_UV1_USE_WORLD_TRIPLANAR]) {
-			code += "\tuv1_power_normal=pow(abs(mat3(WORLD_MATRIX) * NORMAL),vec3(uv1_blend_sharpness));\n";
-			code += "\tuv1_triplanar_pos = (WORLD_MATRIX * vec4(VERTEX, 1.0f)).xyz * uv1_scale + uv1_offset;\n";
+			code += "	uv1_power_normal=pow(abs(mat3(WORLD_MATRIX) * NORMAL),vec3(uv1_blend_sharpness));\n";
+			code += "	uv1_triplanar_pos = (WORLD_MATRIX * vec4(VERTEX, 1.0f)).xyz * uv1_scale + uv1_offset;\n";
 		} else {
-			code += "\tuv1_power_normal=pow(abs(NORMAL),vec3(uv1_blend_sharpness));\n";
-			code += "\tuv1_triplanar_pos = VERTEX * uv1_scale + uv1_offset;\n";
+			code += "	uv1_power_normal=pow(abs(NORMAL),vec3(uv1_blend_sharpness));\n";
+			code += "	uv1_triplanar_pos = VERTEX * uv1_scale + uv1_offset;\n";
 		}
-		code += "\tuv1_power_normal/=dot(uv1_power_normal,vec3(1.0));\n";
-		code += "\tuv1_triplanar_pos *= vec3(1.0,-1.0, 1.0);\n";
+		code += "	uv1_power_normal/=dot(uv1_power_normal,vec3(1.0));\n";
+		code += "	uv1_triplanar_pos *= vec3(1.0,-1.0, 1.0);\n";
 	}
 
 	if (flags[FLAG_UV2_USE_TRIPLANAR]) {
 		if (flags[FLAG_UV2_USE_WORLD_TRIPLANAR]) {
-			code += "\tuv2_power_normal=pow(abs(mat3(WORLD_MATRIX) * NORMAL), vec3(uv2_blend_sharpness));\n";
-			code += "\tuv2_triplanar_pos = (WORLD_MATRIX * vec4(VERTEX, 1.0f)).xyz * uv2_scale + uv2_offset;\n";
+			code += "	uv2_power_normal=pow(abs(mat3(WORLD_MATRIX) * NORMAL), vec3(uv2_blend_sharpness));\n";
+			code += "	uv2_triplanar_pos = (WORLD_MATRIX * vec4(VERTEX, 1.0f)).xyz * uv2_scale + uv2_offset;\n";
 		} else {
-			code += "\tuv2_power_normal=pow(abs(NORMAL), vec3(uv2_blend_sharpness));\n";
-			code += "\tuv2_triplanar_pos = VERTEX * uv2_scale + uv2_offset;\n";
+			code += "	uv2_power_normal=pow(abs(NORMAL), vec3(uv2_blend_sharpness));\n";
+			code += "	uv2_triplanar_pos = VERTEX * uv2_scale + uv2_offset;\n";
 		}
-		code += "\tuv2_power_normal/=dot(uv2_power_normal,vec3(1.0));\n";
-		code += "\tuv2_triplanar_pos *= vec3(1.0,-1.0, 1.0);\n";
+		code += "	uv2_power_normal/=dot(uv2_power_normal,vec3(1.0));\n";
+		code += "	uv2_triplanar_pos *= vec3(1.0,-1.0, 1.0);\n";
 	}
 
 	if (grow_enabled) {
-		code += "\tVERTEX+=NORMAL*grow;\n";
+		code += "	VERTEX+=NORMAL*grow;\n";
 	}
 
 	code += "}\n";
 	code += "\n\n";
 	if (flags[FLAG_UV1_USE_TRIPLANAR] || flags[FLAG_UV2_USE_TRIPLANAR]) {
 		code += "vec4 triplanar_texture(sampler2D p_sampler,vec3 p_weights,vec3 p_triplanar_pos) {\n";
-		code += "\tvec4 samp=vec4(0.0);\n";
-		code += "\tsamp+= texture(p_sampler,p_triplanar_pos.xy) * p_weights.z;\n";
-		code += "\tsamp+= texture(p_sampler,p_triplanar_pos.xz) * p_weights.y;\n";
-		code += "\tsamp+= texture(p_sampler,p_triplanar_pos.zy * vec2(-1.0,1.0)) * p_weights.x;\n";
-		code += "\treturn samp;\n";
+		code += "	vec4 samp=vec4(0.0);\n";
+		code += "	samp+= texture(p_sampler,p_triplanar_pos.xy) * p_weights.z;\n";
+		code += "	samp+= texture(p_sampler,p_triplanar_pos.xz) * p_weights.y;\n";
+		code += "	samp+= texture(p_sampler,p_triplanar_pos.zy * vec2(-1.0,1.0)) * p_weights.x;\n";
+		code += "	return samp;\n";
 		code += "}\n";
 	}
 	code += "\n\n";
 	code += "void fragment() {\n";
 
 	if (!flags[FLAG_UV1_USE_TRIPLANAR]) {
-		code += "\tvec2 base_uv = UV;\n";
+		code += "	vec2 base_uv = UV;\n";
 	}
 
 	if ((features[FEATURE_DETAIL] && detail_uv == DETAIL_UV_2) || (features[FEATURE_AMBIENT_OCCLUSION] && flags[FLAG_AO_ON_UV2]) || (features[FEATURE_EMISSION] && flags[FLAG_EMISSION_ON_UV2])) {
-		code += "\tvec2 base_uv2 = UV2;\n";
+		code += "	vec2 base_uv2 = UV2;\n";
 	}
 
 	if (features[FEATURE_HEIGHT_MAPPING] && flags[FLAG_UV1_USE_TRIPLANAR]) {
@@ -916,317 +916,317 @@ void BaseMaterial3D::_update_shader() {
 	}
 
 	if (!RenderingServer::get_singleton()->is_low_end() && features[FEATURE_HEIGHT_MAPPING] && !flags[FLAG_UV1_USE_TRIPLANAR]) { //heightmap not supported with triplanar
-		code += "\t{\n";
-		code += "\t\tvec3 view_dir = normalize(normalize(-VERTEX)*mat3(TANGENT*heightmap_flip.x,-BINORMAL*heightmap_flip.y,NORMAL));\n"; // binormal is negative due to mikktspace, flip 'unflips' it ;-)
+		code += "	{\n";
+		code += "		vec3 view_dir = normalize(normalize(-VERTEX)*mat3(TANGENT*heightmap_flip.x,-BINORMAL*heightmap_flip.y,NORMAL));\n"; // binormal is negative due to mikktspace, flip 'unflips' it ;-)
 
 		if (deep_parallax) {
-			code += "\t\tfloat num_layers = mix(float(heightmap_max_layers),float(heightmap_min_layers), abs(dot(vec3(0.0, 0.0, 1.0), view_dir)));\n";
-			code += "\t\tfloat layer_depth = 1.0 / num_layers;\n";
-			code += "\t\tfloat current_layer_depth = 0.0;\n";
-			code += "\t\tvec2 P = view_dir.xy * heightmap_scale;\n";
-			code += "\t\tvec2 delta = P / num_layers;\n";
-			code += "\t\tvec2 ofs = base_uv;\n";
+			code += "		float num_layers = mix(float(heightmap_max_layers),float(heightmap_min_layers), abs(dot(vec3(0.0, 0.0, 1.0), view_dir)));\n";
+			code += "		float layer_depth = 1.0 / num_layers;\n";
+			code += "		float current_layer_depth = 0.0;\n";
+			code += "		vec2 P = view_dir.xy * heightmap_scale;\n";
+			code += "		vec2 delta = P / num_layers;\n";
+			code += "		vec2 ofs = base_uv;\n";
 			if (flags[FLAG_INVERT_HEIGHTMAP]) {
-				code += "\t\tfloat depth = texture(texture_heightmap, ofs).r;\n";
+				code += "		float depth = texture(texture_heightmap, ofs).r;\n";
 			} else {
-				code += "\t\tfloat depth = 1.0 - texture(texture_heightmap, ofs).r;\n";
+				code += "		float depth = 1.0 - texture(texture_heightmap, ofs).r;\n";
 			}
-			code += "\t\tfloat current_depth = 0.0;\n";
-			code += "\t\twhile(current_depth < depth) {\n";
-			code += "\t\t\tofs -= delta;\n";
+			code += "		float current_depth = 0.0;\n";
+			code += "		while(current_depth < depth) {\n";
+			code += "			ofs -= delta;\n";
 			if (flags[FLAG_INVERT_HEIGHTMAP]) {
-				code += "\t\t\tdepth = texture(texture_heightmap, ofs).r;\n";
+				code += "			depth = texture(texture_heightmap, ofs).r;\n";
 			} else {
-				code += "\t\t\tdepth = 1.0 - texture(texture_heightmap, ofs).r;\n";
+				code += "			depth = 1.0 - texture(texture_heightmap, ofs).r;\n";
 			}
-			code += "\t\t\tcurrent_depth += layer_depth;\n";
-			code += "\t\t}\n";
-			code += "\t\tvec2 prev_ofs = ofs + delta;\n";
-			code += "\t\tfloat after_depth  = depth - current_depth;\n";
+			code += "			current_depth += layer_depth;\n";
+			code += "		}\n";
+			code += "		vec2 prev_ofs = ofs + delta;\n";
+			code += "		float after_depth  = depth - current_depth;\n";
 			if (flags[FLAG_INVERT_HEIGHTMAP]) {
-				code += "\t\tfloat before_depth = texture(texture_heightmap, prev_ofs).r - current_depth + layer_depth;\n";
+				code += "		float before_depth = texture(texture_heightmap, prev_ofs).r - current_depth + layer_depth;\n";
 			} else {
-				code += "\t\tfloat before_depth = ( 1.0 - texture(texture_heightmap, prev_ofs).r  ) - current_depth + layer_depth;\n";
+				code += "		float before_depth = ( 1.0 - texture(texture_heightmap, prev_ofs).r  ) - current_depth + layer_depth;\n";
 			}
-			code += "\t\tfloat weight = after_depth / (after_depth - before_depth);\n";
-			code += "\t\tofs = mix(ofs,prev_ofs,weight);\n";
+			code += "		float weight = after_depth / (after_depth - before_depth);\n";
+			code += "		ofs = mix(ofs,prev_ofs,weight);\n";
 
 		} else {
 			if (flags[FLAG_INVERT_HEIGHTMAP]) {
-				code += "\t\tfloat depth = texture(texture_heightmap, base_uv).r;\n";
+				code += "		float depth = texture(texture_heightmap, base_uv).r;\n";
 			} else {
-				code += "\t\tfloat depth = 1.0 - texture(texture_heightmap, base_uv).r;\n";
+				code += "		float depth = 1.0 - texture(texture_heightmap, base_uv).r;\n";
 			}
-			code += "\t\tvec2 ofs = base_uv - view_dir.xy / view_dir.z * (depth * heightmap_scale);\n";
+			code += "		vec2 ofs = base_uv - view_dir.xy / view_dir.z * (depth * heightmap_scale);\n";
 		}
 
-		code += "\t\tbase_uv=ofs;\n";
+		code += "		base_uv=ofs;\n";
 		if (features[FEATURE_DETAIL] && detail_uv == DETAIL_UV_2) {
-			code += "\t\tbase_uv2-=ofs;\n";
+			code += "		base_uv2-=ofs;\n";
 		}
 
-		code += "\t}\n";
+		code += "	}\n";
 	}
 
 	if (flags[FLAG_USE_POINT_SIZE]) {
-		code += "\tvec4 albedo_tex = texture(texture_albedo,POINT_COORD);\n";
+		code += "	vec4 albedo_tex = texture(texture_albedo,POINT_COORD);\n";
 	} else {
 		if (flags[FLAG_UV1_USE_TRIPLANAR]) {
-			code += "\tvec4 albedo_tex = triplanar_texture(texture_albedo,uv1_power_normal,uv1_triplanar_pos);\n";
+			code += "	vec4 albedo_tex = triplanar_texture(texture_albedo,uv1_power_normal,uv1_triplanar_pos);\n";
 		} else {
-			code += "\tvec4 albedo_tex = texture(texture_albedo,base_uv);\n";
+			code += "	vec4 albedo_tex = texture(texture_albedo,base_uv);\n";
 		}
 	}
 
 	if (flags[FLAG_ALBEDO_TEXTURE_FORCE_SRGB]) {
-		code += "\talbedo_tex.rgb = mix(pow((albedo_tex.rgb + vec3(0.055)) * (1.0 / (1.0 + 0.055)),vec3(2.4)),albedo_tex.rgb.rgb * (1.0 / 12.92),lessThan(albedo_tex.rgb,vec3(0.04045)));\n";
+		code += "	albedo_tex.rgb = mix(pow((albedo_tex.rgb + vec3(0.055)) * (1.0 / (1.0 + 0.055)),vec3(2.4)),albedo_tex.rgb.rgb * (1.0 / 12.92),lessThan(albedo_tex.rgb,vec3(0.04045)));\n";
 	}
 
 	if (flags[FLAG_ALBEDO_FROM_VERTEX_COLOR]) {
-		code += "\talbedo_tex *= COLOR;\n";
+		code += "	albedo_tex *= COLOR;\n";
 	}
-	code += "\tALBEDO = albedo.rgb * albedo_tex.rgb;\n";
+	code += "	ALBEDO = albedo.rgb * albedo_tex.rgb;\n";
 
 	if (!orm) {
 		if (flags[FLAG_UV1_USE_TRIPLANAR]) {
-			code += "\tfloat metallic_tex = dot(triplanar_texture(texture_metallic,uv1_power_normal,uv1_triplanar_pos),metallic_texture_channel);\n";
+			code += "	float metallic_tex = dot(triplanar_texture(texture_metallic,uv1_power_normal,uv1_triplanar_pos),metallic_texture_channel);\n";
 		} else {
-			code += "\tfloat metallic_tex = dot(texture(texture_metallic,base_uv),metallic_texture_channel);\n";
+			code += "	float metallic_tex = dot(texture(texture_metallic,base_uv),metallic_texture_channel);\n";
 		}
-		code += "\tMETALLIC = metallic_tex * metallic;\n";
+		code += "	METALLIC = metallic_tex * metallic;\n";
 
 		switch (roughness_texture_channel) {
 			case TEXTURE_CHANNEL_RED: {
-				code += "\tvec4 roughness_texture_channel = vec4(1.0,0.0,0.0,0.0);\n";
+				code += "	vec4 roughness_texture_channel = vec4(1.0,0.0,0.0,0.0);\n";
 			} break;
 			case TEXTURE_CHANNEL_GREEN: {
-				code += "\tvec4 roughness_texture_channel = vec4(0.0,1.0,0.0,0.0);\n";
+				code += "	vec4 roughness_texture_channel = vec4(0.0,1.0,0.0,0.0);\n";
 			} break;
 			case TEXTURE_CHANNEL_BLUE: {
-				code += "\tvec4 roughness_texture_channel = vec4(0.0,0.0,1.0,0.0);\n";
+				code += "	vec4 roughness_texture_channel = vec4(0.0,0.0,1.0,0.0);\n";
 			} break;
 			case TEXTURE_CHANNEL_ALPHA: {
-				code += "\tvec4 roughness_texture_channel = vec4(0.0,0.0,0.0,1.0);\n";
+				code += "	vec4 roughness_texture_channel = vec4(0.0,0.0,0.0,1.0);\n";
 			} break;
 			case TEXTURE_CHANNEL_GRAYSCALE: {
-				code += "\tvec4 roughness_texture_channel = vec4(0.333333,0.333333,0.333333,0.0);\n";
+				code += "	vec4 roughness_texture_channel = vec4(0.333333,0.333333,0.333333,0.0);\n";
 			} break;
 			case TEXTURE_CHANNEL_MAX:
 				break; // Internal value, skip.
 		}
 
 		if (flags[FLAG_UV1_USE_TRIPLANAR]) {
-			code += "\tfloat roughness_tex = dot(triplanar_texture(texture_roughness,uv1_power_normal,uv1_triplanar_pos),roughness_texture_channel);\n";
+			code += "	float roughness_tex = dot(triplanar_texture(texture_roughness,uv1_power_normal,uv1_triplanar_pos),roughness_texture_channel);\n";
 		} else {
-			code += "\tfloat roughness_tex = dot(texture(texture_roughness,base_uv),roughness_texture_channel);\n";
+			code += "	float roughness_tex = dot(texture(texture_roughness,base_uv),roughness_texture_channel);\n";
 		}
-		code += "\tROUGHNESS = roughness_tex * roughness;\n";
-		code += "\tSPECULAR = specular;\n";
+		code += "	ROUGHNESS = roughness_tex * roughness;\n";
+		code += "	SPECULAR = specular;\n";
 	} else {
 		if (flags[FLAG_UV1_USE_TRIPLANAR]) {
-			code += "\tvec4 orm_tex = triplanar_texture(texture_orm,uv1_power_normal,uv1_triplanar_pos);\n";
+			code += "	vec4 orm_tex = triplanar_texture(texture_orm,uv1_power_normal,uv1_triplanar_pos);\n";
 		} else {
-			code += "\tvec4 orm_tex = texture(texture_orm,base_uv);\n";
+			code += "	vec4 orm_tex = texture(texture_orm,base_uv);\n";
 		}
 
-		code += "\tROUGHNESS = orm_tex.g;\n";
-		code += "\tMETALLIC = orm_tex.b;\n";
+		code += "	ROUGHNESS = orm_tex.g;\n";
+		code += "	METALLIC = orm_tex.b;\n";
 	}
 
 	if (features[FEATURE_NORMAL_MAPPING]) {
 		if (flags[FLAG_UV1_USE_TRIPLANAR]) {
-			code += "\tNORMAL_MAP = triplanar_texture(texture_normal,uv1_power_normal,uv1_triplanar_pos).rgb;\n";
+			code += "	NORMAL_MAP = triplanar_texture(texture_normal,uv1_power_normal,uv1_triplanar_pos).rgb;\n";
 		} else {
-			code += "\tNORMAL_MAP = texture(texture_normal,base_uv).rgb;\n";
+			code += "	NORMAL_MAP = texture(texture_normal,base_uv).rgb;\n";
 		}
-		code += "\tNORMAL_MAP_DEPTH = normal_scale;\n";
+		code += "	NORMAL_MAP_DEPTH = normal_scale;\n";
 	}
 
 	if (features[FEATURE_EMISSION]) {
 		if (flags[FLAG_EMISSION_ON_UV2]) {
 			if (flags[FLAG_UV2_USE_TRIPLANAR]) {
-				code += "\tvec3 emission_tex = triplanar_texture(texture_emission,uv2_power_normal,uv2_triplanar_pos).rgb;\n";
+				code += "	vec3 emission_tex = triplanar_texture(texture_emission,uv2_power_normal,uv2_triplanar_pos).rgb;\n";
 			} else {
-				code += "\tvec3 emission_tex = texture(texture_emission,base_uv2).rgb;\n";
+				code += "	vec3 emission_tex = texture(texture_emission,base_uv2).rgb;\n";
 			}
 		} else {
 			if (flags[FLAG_UV1_USE_TRIPLANAR]) {
-				code += "\tvec3 emission_tex = triplanar_texture(texture_emission,uv1_power_normal,uv1_triplanar_pos).rgb;\n";
+				code += "	vec3 emission_tex = triplanar_texture(texture_emission,uv1_power_normal,uv1_triplanar_pos).rgb;\n";
 			} else {
-				code += "\tvec3 emission_tex = texture(texture_emission,base_uv).rgb;\n";
+				code += "	vec3 emission_tex = texture(texture_emission,base_uv).rgb;\n";
 			}
 		}
 
 		if (emission_op == EMISSION_OP_ADD) {
-			code += "\tEMISSION = (emission.rgb+emission_tex)*emission_energy;\n";
+			code += "	EMISSION = (emission.rgb+emission_tex)*emission_energy;\n";
 		} else {
-			code += "\tEMISSION = (emission.rgb*emission_tex)*emission_energy;\n";
+			code += "	EMISSION = (emission.rgb*emission_tex)*emission_energy;\n";
 		}
 	}
 
 	if (features[FEATURE_REFRACTION]) {
 		if (features[FEATURE_NORMAL_MAPPING]) {
-			code += "\tvec3 unpacked_normal = NORMAL_MAP;\n";
-			code += "\tunpacked_normal.xy = unpacked_normal.xy * 2.0 - 1.0;\n";
-			code += "\tunpacked_normal.z = sqrt(max(0.0, 1.0 - dot(unpacked_normal.xy, unpacked_normal.xy)));\n";
-			code += "\tvec3 ref_normal = normalize( mix(NORMAL,TANGENT * unpacked_normal.x + BINORMAL * unpacked_normal.y + NORMAL * unpacked_normal.z,NORMAL_MAP_DEPTH) );\n";
+			code += "	vec3 unpacked_normal = NORMAL_MAP;\n";
+			code += "	unpacked_normal.xy = unpacked_normal.xy * 2.0 - 1.0;\n";
+			code += "	unpacked_normal.z = sqrt(max(0.0, 1.0 - dot(unpacked_normal.xy, unpacked_normal.xy)));\n";
+			code += "	vec3 ref_normal = normalize( mix(NORMAL,TANGENT * unpacked_normal.x + BINORMAL * unpacked_normal.y + NORMAL * unpacked_normal.z,NORMAL_MAP_DEPTH) );\n";
 		} else {
-			code += "\tvec3 ref_normal = NORMAL;\n";
+			code += "	vec3 ref_normal = NORMAL;\n";
 		}
 		if (flags[FLAG_UV1_USE_TRIPLANAR]) {
-			code += "\tvec2 ref_ofs = SCREEN_UV - ref_normal.xy * dot(triplanar_texture(texture_refraction,uv1_power_normal,uv1_triplanar_pos),refraction_texture_channel) * refraction;\n";
+			code += "	vec2 ref_ofs = SCREEN_UV - ref_normal.xy * dot(triplanar_texture(texture_refraction,uv1_power_normal,uv1_triplanar_pos),refraction_texture_channel) * refraction;\n";
 		} else {
-			code += "\tvec2 ref_ofs = SCREEN_UV - ref_normal.xy * dot(texture(texture_refraction,base_uv),refraction_texture_channel) * refraction;\n";
+			code += "	vec2 ref_ofs = SCREEN_UV - ref_normal.xy * dot(texture(texture_refraction,base_uv),refraction_texture_channel) * refraction;\n";
 		}
-		code += "\tfloat ref_amount = 1.0 - albedo.a * albedo_tex.a;\n";
-		code += "\tEMISSION += textureLod(SCREEN_TEXTURE,ref_ofs,ROUGHNESS * 8.0).rgb * ref_amount;\n";
-		code += "\tALBEDO *= 1.0 - ref_amount;\n";
-		code += "\tALPHA = 1.0;\n";
+		code += "	float ref_amount = 1.0 - albedo.a * albedo_tex.a;\n";
+		code += "	EMISSION += textureLod(SCREEN_TEXTURE,ref_ofs,ROUGHNESS * 8.0).rgb * ref_amount;\n";
+		code += "	ALBEDO *= 1.0 - ref_amount;\n";
+		code += "	ALPHA = 1.0;\n";
 
 	} else if (transparency != TRANSPARENCY_DISABLED || flags[FLAG_USE_SHADOW_TO_OPACITY] || (distance_fade == DISTANCE_FADE_PIXEL_ALPHA) || proximity_fade_enabled) {
-		code += "\tALPHA = albedo.a * albedo_tex.a;\n";
+		code += "	ALPHA = albedo.a * albedo_tex.a;\n";
 	}
 	if (transparency == TRANSPARENCY_ALPHA_HASH) {
-		code += "\tALPHA_HASH_SCALE = alpha_hash_scale;\n";
+		code += "	ALPHA_HASH_SCALE = alpha_hash_scale;\n";
 	} else if (transparency == TRANSPARENCY_ALPHA_SCISSOR) {
-		code += "\tALPHA_SCISSOR_THRESHOLD = alpha_scissor_threshold;\n";
+		code += "	ALPHA_SCISSOR_THRESHOLD = alpha_scissor_threshold;\n";
 	}
 	if (alpha_antialiasing_mode != ALPHA_ANTIALIASING_OFF && (transparency == TRANSPARENCY_ALPHA_HASH || transparency == TRANSPARENCY_ALPHA_SCISSOR)) {
-		code += "\tALPHA_ANTIALIASING_EDGE = alpha_antialiasing_edge;\n";
-		code += "\tALPHA_TEXTURE_COORDINATE = UV * vec2(albedo_texture_size);\n";
+		code += "	ALPHA_ANTIALIASING_EDGE = alpha_antialiasing_edge;\n";
+		code += "	ALPHA_TEXTURE_COORDINATE = UV * vec2(albedo_texture_size);\n";
 	}
 
 	if (proximity_fade_enabled) {
-		code += "\tfloat depth_tex = textureLod(DEPTH_TEXTURE,SCREEN_UV,0.0).r;\n";
-		code += "\tvec4 world_pos = INV_PROJECTION_MATRIX * vec4(SCREEN_UV*2.0-1.0,depth_tex*2.0-1.0,1.0);\n";
-		code += "\tworld_pos.xyz/=world_pos.w;\n";
-		code += "\tALPHA*=clamp(1.0-smoothstep(world_pos.z+proximity_fade_distance,world_pos.z,VERTEX.z),0.0,1.0);\n";
+		code += "	float depth_tex = textureLod(DEPTH_TEXTURE,SCREEN_UV,0.0).r;\n";
+		code += "	vec4 world_pos = INV_PROJECTION_MATRIX * vec4(SCREEN_UV*2.0-1.0,depth_tex*2.0-1.0,1.0);\n";
+		code += "	world_pos.xyz/=world_pos.w;\n";
+		code += "	ALPHA*=clamp(1.0-smoothstep(world_pos.z+proximity_fade_distance,world_pos.z,VERTEX.z),0.0,1.0);\n";
 	}
 
 	if (distance_fade != DISTANCE_FADE_DISABLED) {
 		if ((distance_fade == DISTANCE_FADE_OBJECT_DITHER || distance_fade == DISTANCE_FADE_PIXEL_DITHER)) {
 			if (!RenderingServer::get_singleton()->is_low_end()) {
-				code += "\t{\n";
+				code += "	{\n";
 				if (distance_fade == DISTANCE_FADE_OBJECT_DITHER) {
-					code += "\t\tfloat fade_distance = abs((INV_CAMERA_MATRIX * WORLD_MATRIX[3]).z);\n";
+					code += "		float fade_distance = abs((INV_CAMERA_MATRIX * WORLD_MATRIX[3]).z);\n";
 
 				} else {
-					code += "\t\tfloat fade_distance=-VERTEX.z;\n";
+					code += "		float fade_distance=-VERTEX.z;\n";
 				}
 
-				code += "\t\tfloat fade=clamp(smoothstep(distance_fade_min,distance_fade_max,fade_distance),0.0,1.0);\n";
-				code += "\t\tint x = int(FRAGCOORD.x) % 4;\n";
-				code += "\t\tint y = int(FRAGCOORD.y) % 4;\n";
-				code += "\t\tint index = x + y * 4;\n";
-				code += "\t\tfloat limit = 0.0;\n\n";
-				code += "\t\tif (x < 8) {\n";
-				code += "\t\t\tif (index == 0) limit = 0.0625;\n";
-				code += "\t\t\tif (index == 1) limit = 0.5625;\n";
-				code += "\t\t\tif (index == 2) limit = 0.1875;\n";
-				code += "\t\t\tif (index == 3) limit = 0.6875;\n";
-				code += "\t\t\tif (index == 4) limit = 0.8125;\n";
-				code += "\t\t\tif (index == 5) limit = 0.3125;\n";
-				code += "\t\t\tif (index == 6) limit = 0.9375;\n";
-				code += "\t\t\tif (index == 7) limit = 0.4375;\n";
-				code += "\t\t\tif (index == 8) limit = 0.25;\n";
-				code += "\t\t\tif (index == 9) limit = 0.75;\n";
-				code += "\t\t\tif (index == 10) limit = 0.125;\n";
-				code += "\t\t\tif (index == 11) limit = 0.625;\n";
-				code += "\t\t\tif (index == 12) limit = 1.0;\n";
-				code += "\t\t\tif (index == 13) limit = 0.5;\n";
-				code += "\t\t\tif (index == 14) limit = 0.875;\n";
-				code += "\t\t\tif (index == 15) limit = 0.375;\n";
-				code += "\t\t}\n\n";
-				code += "\tif (fade < limit)\n";
-				code += "\t\tdiscard;\n";
-				code += "\t}\n\n";
+				code += "		float fade=clamp(smoothstep(distance_fade_min,distance_fade_max,fade_distance),0.0,1.0);\n";
+				code += "		int x = int(FRAGCOORD.x) % 4;\n";
+				code += "		int y = int(FRAGCOORD.y) % 4;\n";
+				code += "		int index = x + y * 4;\n";
+				code += "		float limit = 0.0;\n\n";
+				code += "		if (x < 8) {\n";
+				code += "			if (index == 0) limit = 0.0625;\n";
+				code += "			if (index == 1) limit = 0.5625;\n";
+				code += "			if (index == 2) limit = 0.1875;\n";
+				code += "			if (index == 3) limit = 0.6875;\n";
+				code += "			if (index == 4) limit = 0.8125;\n";
+				code += "			if (index == 5) limit = 0.3125;\n";
+				code += "			if (index == 6) limit = 0.9375;\n";
+				code += "			if (index == 7) limit = 0.4375;\n";
+				code += "			if (index == 8) limit = 0.25;\n";
+				code += "			if (index == 9) limit = 0.75;\n";
+				code += "			if (index == 10) limit = 0.125;\n";
+				code += "			if (index == 11) limit = 0.625;\n";
+				code += "			if (index == 12) limit = 1.0;\n";
+				code += "			if (index == 13) limit = 0.5;\n";
+				code += "			if (index == 14) limit = 0.875;\n";
+				code += "			if (index == 15) limit = 0.375;\n";
+				code += "		}\n\n";
+				code += "	if (fade < limit)\n";
+				code += "		discard;\n";
+				code += "	}\n\n";
 			}
 
 		} else {
-			code += "\tALPHA*=clamp(smoothstep(distance_fade_min,distance_fade_max,-VERTEX.z),0.0,1.0);\n";
+			code += "	ALPHA*=clamp(smoothstep(distance_fade_min,distance_fade_max,-VERTEX.z),0.0,1.0);\n";
 		}
 	}
 
 	if (features[FEATURE_RIM]) {
 		if (flags[FLAG_UV1_USE_TRIPLANAR]) {
-			code += "\tvec2 rim_tex = triplanar_texture(texture_rim,uv1_power_normal,uv1_triplanar_pos).xy;\n";
+			code += "	vec2 rim_tex = triplanar_texture(texture_rim,uv1_power_normal,uv1_triplanar_pos).xy;\n";
 		} else {
-			code += "\tvec2 rim_tex = texture(texture_rim,base_uv).xy;\n";
+			code += "	vec2 rim_tex = texture(texture_rim,base_uv).xy;\n";
 		}
-		code += "\tRIM = rim*rim_tex.x;";
-		code += "\tRIM_TINT = rim_tint*rim_tex.y;\n";
+		code += "	RIM = rim*rim_tex.x;";
+		code += "	RIM_TINT = rim_tint*rim_tex.y;\n";
 	}
 
 	if (features[FEATURE_CLEARCOAT]) {
 		if (flags[FLAG_UV1_USE_TRIPLANAR]) {
-			code += "\tvec2 clearcoat_tex = triplanar_texture(texture_clearcoat,uv1_power_normal,uv1_triplanar_pos).xy;\n";
+			code += "	vec2 clearcoat_tex = triplanar_texture(texture_clearcoat,uv1_power_normal,uv1_triplanar_pos).xy;\n";
 		} else {
-			code += "\tvec2 clearcoat_tex = texture(texture_clearcoat,base_uv).xy;\n";
+			code += "	vec2 clearcoat_tex = texture(texture_clearcoat,base_uv).xy;\n";
 		}
-		code += "\tCLEARCOAT = clearcoat*clearcoat_tex.x;";
-		code += "\tCLEARCOAT_GLOSS = clearcoat_gloss*clearcoat_tex.y;\n";
+		code += "	CLEARCOAT = clearcoat*clearcoat_tex.x;";
+		code += "	CLEARCOAT_GLOSS = clearcoat_gloss*clearcoat_tex.y;\n";
 	}
 
 	if (features[FEATURE_ANISOTROPY]) {
 		if (flags[FLAG_UV1_USE_TRIPLANAR]) {
-			code += "\tvec3 anisotropy_tex = triplanar_texture(texture_flowmap,uv1_power_normal,uv1_triplanar_pos).rga;\n";
+			code += "	vec3 anisotropy_tex = triplanar_texture(texture_flowmap,uv1_power_normal,uv1_triplanar_pos).rga;\n";
 		} else {
-			code += "\tvec3 anisotropy_tex = texture(texture_flowmap,base_uv).rga;\n";
+			code += "	vec3 anisotropy_tex = texture(texture_flowmap,base_uv).rga;\n";
 		}
-		code += "\tANISOTROPY = anisotropy_ratio*anisotropy_tex.b;\n";
-		code += "\tANISOTROPY_FLOW = anisotropy_tex.rg*2.0-1.0;\n";
+		code += "	ANISOTROPY = anisotropy_ratio*anisotropy_tex.b;\n";
+		code += "	ANISOTROPY_FLOW = anisotropy_tex.rg*2.0-1.0;\n";
 	}
 
 	if (features[FEATURE_AMBIENT_OCCLUSION]) {
 		if (!orm) {
 			if (flags[FLAG_AO_ON_UV2]) {
 				if (flags[FLAG_UV2_USE_TRIPLANAR]) {
-					code += "\tAO = dot(triplanar_texture(texture_ambient_occlusion,uv2_power_normal,uv2_triplanar_pos),ao_texture_channel);\n";
+					code += "	AO = dot(triplanar_texture(texture_ambient_occlusion,uv2_power_normal,uv2_triplanar_pos),ao_texture_channel);\n";
 				} else {
-					code += "\tAO = dot(texture(texture_ambient_occlusion,base_uv2),ao_texture_channel);\n";
+					code += "	AO = dot(texture(texture_ambient_occlusion,base_uv2),ao_texture_channel);\n";
 				}
 			} else {
 				if (flags[FLAG_UV1_USE_TRIPLANAR]) {
-					code += "\tAO = dot(triplanar_texture(texture_ambient_occlusion,uv1_power_normal,uv1_triplanar_pos),ao_texture_channel);\n";
+					code += "	AO = dot(triplanar_texture(texture_ambient_occlusion,uv1_power_normal,uv1_triplanar_pos),ao_texture_channel);\n";
 				} else {
-					code += "\tAO = dot(texture(texture_ambient_occlusion,base_uv),ao_texture_channel);\n";
+					code += "	AO = dot(texture(texture_ambient_occlusion,base_uv),ao_texture_channel);\n";
 				}
 			}
 		} else {
-			code += "\tAO = orm_tex.r;\n";
+			code += "	AO = orm_tex.r;\n";
 		}
 
-		code += "\tAO_LIGHT_AFFECT = ao_light_affect;\n";
+		code += "	AO_LIGHT_AFFECT = ao_light_affect;\n";
 	}
 
 	if (features[FEATURE_SUBSURFACE_SCATTERING]) {
 		if (flags[FLAG_UV1_USE_TRIPLANAR]) {
-			code += "\tfloat sss_tex = triplanar_texture(texture_subsurface_scattering,uv1_power_normal,uv1_triplanar_pos).r;\n";
+			code += "	float sss_tex = triplanar_texture(texture_subsurface_scattering,uv1_power_normal,uv1_triplanar_pos).r;\n";
 		} else {
-			code += "\tfloat sss_tex = texture(texture_subsurface_scattering,base_uv).r;\n";
+			code += "	float sss_tex = texture(texture_subsurface_scattering,base_uv).r;\n";
 		}
-		code += "\tSSS_STRENGTH=subsurface_scattering_strength*sss_tex;\n";
+		code += "	SSS_STRENGTH=subsurface_scattering_strength*sss_tex;\n";
 	}
 
 	if (features[FEATURE_SUBSURFACE_TRANSMITTANCE]) {
 		if (flags[FLAG_UV1_USE_TRIPLANAR]) {
-			code += "\tvec4 trans_color_tex = triplanar_texture(texture_subsurface_transmittance,uv1_power_normal,uv1_triplanar_pos);\n";
+			code += "	vec4 trans_color_tex = triplanar_texture(texture_subsurface_transmittance,uv1_power_normal,uv1_triplanar_pos);\n";
 		} else {
-			code += "\tvec4 trans_color_tex = texture(texture_subsurface_transmittance,base_uv);\n";
+			code += "	vec4 trans_color_tex = texture(texture_subsurface_transmittance,base_uv);\n";
 		}
-		code += "\tSSS_TRANSMITTANCE_COLOR=transmittance_color*trans_color_tex;\n";
+		code += "	SSS_TRANSMITTANCE_COLOR=transmittance_color*trans_color_tex;\n";
 
-		code += "\tSSS_TRANSMITTANCE_DEPTH=transmittance_depth;\n";
-		code += "\tSSS_TRANSMITTANCE_BOOST=transmittance_boost;\n";
+		code += "	SSS_TRANSMITTANCE_DEPTH=transmittance_depth;\n";
+		code += "	SSS_TRANSMITTANCE_BOOST=transmittance_boost;\n";
 	}
 
 	if (features[FEATURE_BACKLIGHT]) {
 		if (flags[FLAG_UV1_USE_TRIPLANAR]) {
-			code += "\tvec3 backlight_tex = triplanar_texture(texture_backlight,uv1_power_normal,uv1_triplanar_pos).rgb;\n";
+			code += "	vec3 backlight_tex = triplanar_texture(texture_backlight,uv1_power_normal,uv1_triplanar_pos).rgb;\n";
 		} else {
-			code += "\tvec3 backlight_tex = texture(texture_backlight,base_uv).rgb;\n";
+			code += "	vec3 backlight_tex = texture(texture_backlight,base_uv).rgb;\n";
 		}
-		code += "\tBACKLIGHT = (backlight.rgb+backlight_tex);\n";
+		code += "	BACKLIGHT = (backlight.rgb+backlight_tex);\n";
 	}
 
 	if (features[FEATURE_DETAIL]) {
@@ -1234,41 +1234,41 @@ void BaseMaterial3D::_update_shader() {
 
 		if (triplanar) {
 			String tp_uv = detail_uv == DETAIL_UV_1 ? "uv1" : "uv2";
-			code += "\tvec4 detail_tex = triplanar_texture(texture_detail_albedo," + tp_uv + "_power_normal," + tp_uv + "_triplanar_pos);\n";
-			code += "\tvec4 detail_norm_tex = triplanar_texture(texture_detail_normal," + tp_uv + "_power_normal," + tp_uv + "_triplanar_pos);\n";
+			code += "	vec4 detail_tex = triplanar_texture(texture_detail_albedo," + tp_uv + "_power_normal," + tp_uv + "_triplanar_pos);\n";
+			code += "	vec4 detail_norm_tex = triplanar_texture(texture_detail_normal," + tp_uv + "_power_normal," + tp_uv + "_triplanar_pos);\n";
 
 		} else {
 			String det_uv = detail_uv == DETAIL_UV_1 ? "base_uv" : "base_uv2";
-			code += "\tvec4 detail_tex = texture(texture_detail_albedo," + det_uv + ");\n";
-			code += "\tvec4 detail_norm_tex = texture(texture_detail_normal," + det_uv + ");\n";
+			code += "	vec4 detail_tex = texture(texture_detail_albedo," + det_uv + ");\n";
+			code += "	vec4 detail_norm_tex = texture(texture_detail_normal," + det_uv + ");\n";
 		}
 
 		if (flags[FLAG_UV1_USE_TRIPLANAR]) {
-			code += "\tvec4 detail_mask_tex = triplanar_texture(texture_detail_mask,uv1_power_normal,uv1_triplanar_pos);\n";
+			code += "	vec4 detail_mask_tex = triplanar_texture(texture_detail_mask,uv1_power_normal,uv1_triplanar_pos);\n";
 		} else {
-			code += "\tvec4 detail_mask_tex = texture(texture_detail_mask,base_uv);\n";
+			code += "	vec4 detail_mask_tex = texture(texture_detail_mask,base_uv);\n";
 		}
 
 		switch (detail_blend_mode) {
 			case BLEND_MODE_MIX: {
-				code += "\tvec3 detail = mix(ALBEDO.rgb,detail_tex.rgb,detail_tex.a);\n";
+				code += "	vec3 detail = mix(ALBEDO.rgb,detail_tex.rgb,detail_tex.a);\n";
 			} break;
 			case BLEND_MODE_ADD: {
-				code += "\tvec3 detail = mix(ALBEDO.rgb,ALBEDO.rgb+detail_tex.rgb,detail_tex.a);\n";
+				code += "	vec3 detail = mix(ALBEDO.rgb,ALBEDO.rgb+detail_tex.rgb,detail_tex.a);\n";
 			} break;
 			case BLEND_MODE_SUB: {
-				code += "\tvec3 detail = mix(ALBEDO.rgb,ALBEDO.rgb-detail_tex.rgb,detail_tex.a);\n";
+				code += "	vec3 detail = mix(ALBEDO.rgb,ALBEDO.rgb-detail_tex.rgb,detail_tex.a);\n";
 			} break;
 			case BLEND_MODE_MUL: {
-				code += "\tvec3 detail = mix(ALBEDO.rgb,ALBEDO.rgb*detail_tex.rgb,detail_tex.a);\n";
+				code += "	vec3 detail = mix(ALBEDO.rgb,ALBEDO.rgb*detail_tex.rgb,detail_tex.a);\n";
 			} break;
 			case BLEND_MODE_MAX:
 				break; // Internal value, skip.
 		}
 
-		code += "\tvec3 detail_norm = mix(NORMAL_MAP,detail_norm_tex.rgb,detail_tex.a);\n";
-		code += "\tNORMAL_MAP = mix(NORMAL_MAP,detail_norm,detail_mask_tex.r);\n";
-		code += "\tALBEDO.rgb = mix(ALBEDO.rgb,detail,detail_mask_tex.r);\n";
+		code += "	vec3 detail_norm = mix(NORMAL_MAP,detail_norm_tex.rgb,detail_tex.a);\n";
+		code += "	NORMAL_MAP = mix(NORMAL_MAP,detail_norm,detail_mask_tex.r);\n";
+		code += "	ALBEDO.rgb = mix(ALBEDO.rgb,detail,detail_mask_tex.r);\n";
 	}
 
 	code += "}\n";
