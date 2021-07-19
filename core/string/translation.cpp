@@ -1271,9 +1271,23 @@ StringName TranslationServer::tool_translate(const StringName &p_message, const 
 	if (tool_translation.is_valid()) {
 		StringName r = tool_translation->get_message(p_message, p_context);
 		if (r) {
+#ifdef TOOLS_ENABLED
+			if (EditorSettings::get_singleton()) {
+				if (EditorSettings::get_singleton()->get("interface/editor/enable_debugging_pseudolocalization")) {
+					return tool_pseudolocalize(r);
+				}
+			}
+#endif // TOOLS_ENABLED
 			return r;
 		}
 	}
+#ifdef TOOLS_ENABLED
+	if (EditorSettings::get_singleton()) {
+		if (EditorSettings::get_singleton()->get("interface/editor/enable_debugging_pseudolocalization")) {
+			return tool_pseudolocalize(p_message);
+		}
+	}
+#endif // TOOLS_ENABLED
 	return p_message;
 }
 
@@ -1458,6 +1472,15 @@ StringName TranslationServer::pseudolocalize(const StringName &p_message) const 
 	StringName res = add_padding(message, length);
 	return res;
 }
+
+StringName TranslationServer::tool_pseudolocalize(const StringName &p_message) const {
+	String message = p_message;
+	message = double_vowels(message);
+	message = replace_with_accented_string(message);
+	StringName res = "[!!! " + message + " !!!]";
+	return res;
+}
+
 String TranslationServer::get_override_string(String &message) const {
 	String res = "";
 	for (int i = 0; i < message.size(); i++) {
