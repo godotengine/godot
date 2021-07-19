@@ -2261,7 +2261,7 @@ void EditorInspector::_edit_set(const String &p_name, const Variant &p_value, bo
 		_edit_request_change(object, p_name);
 		emit_signal(_prop_edited, p_name);
 	} else {
-		undo_redo->create_action(TTR("Set") + " " + p_name, UndoRedo::MERGE_ENDS);
+		undo_redo->create_action(vformat(TTR("Set %s"), p_name), UndoRedo::MERGE_ENDS);
 		undo_redo->add_do_property(object, p_name, p_value);
 		undo_redo->add_undo_property(object, p_name, object->get(p_name));
 
