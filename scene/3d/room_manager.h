@@ -39,6 +39,7 @@ class Portal;
 class RoomGroup;
 class MeshInstance;
 class GeometryInstance;
+class VisualInstance;
 
 #define GODOT_PORTAL_DELINEATOR String("_")
 #define GODOT_PORTAL_WILDCARD String("*")
@@ -157,6 +158,7 @@ private:
 
 	bool _convert_manual_bound(Room *p_room, Spatial *p_node, const LocalVector<Portal *> &p_portals);
 	void _check_portal_for_warnings(Portal *p_portal, const AABB &p_room_aabb_without_portals);
+	void _process_static(Room *p_room, Spatial *p_node, Vector<Vector3> &r_room_pts, bool p_add_to_portal_renderer);
 	void _find_statics_recursive(Room *p_room, Spatial *p_node, Vector<Vector3> &r_room_pts, bool p_add_to_portal_renderer);
 	bool _convert_room_hull_preliminary(Room *p_room, const Vector<Vector3> &p_room_pts, const LocalVector<Portal *> &p_portals);
 
@@ -164,16 +166,21 @@ private:
 	bool _bound_findpoints_geom_instance(GeometryInstance *p_gi, Vector<Vector3> &r_room_pts, AABB &r_aabb);
 
 	// THIRD PASS
-	void _third_pass_portals(Spatial *p_roomlist, LocalVector<Portal *> &r_portals);
+	void _autolink_portals(Spatial *p_roomlist, LocalVector<Portal *> &r_portals);
 	void _third_pass_rooms(const LocalVector<Portal *> &p_portals);
 
 	bool _convert_room_hull_final(Room *p_room, const LocalVector<Portal *> &p_portals);
 	void _build_simplified_bound(const Room *p_room, Geometry::MeshData &r_md, LocalVector<Plane, int32_t> &r_planes, int p_num_portal_planes);
 
+	// AUTOPLACE - automatically place STATIC and DYNAMICs that are not within a room
+	// into the most appropriate room, and sprawl
+	void _autoplace_recursive(Spatial *p_node);
+	bool _autoplace_object(VisualInstance *p_vi);
+
 	// misc
 	bool _add_plane_if_unique(const Room *p_room, LocalVector<Plane, int32_t> &r_planes, const Plane &p);
 	void _update_portal_margins(Spatial *p_node, real_t p_margin);
-	Node *_check_roomlist_validity_recursive(Node *p_node);
+	bool _check_roomlist_validity(Node *p_node);
 	void _cleanup_after_conversion();
 	Error _build_room_convex_hull(const Room *p_room, const Vector<Vector3> &p_points, Geometry::MeshData &r_mesh);
 #ifdef TOOLS_ENABLED

@@ -77,12 +77,17 @@ public:
 	String get_configuration_warning() const;
 
 private:
+	// call during each conversion
 	void clear();
+
 	void _changed(bool p_regenerate_bounds = false);
 	template <class T>
 	static bool detect_nodes_of_type(const Node *p_node, bool p_ignore_first_node = true);
 	template <typename T>
 	static bool detect_nodes_using_lambda(const Node *p_node, T p_lambda, bool p_ignore_first_node = true);
+
+	// note this is client side, and does not use the final planes stored in the PortalRenderer
+	bool contains_point(const Vector3 &p_pt) const;
 
 	// planes forming convex hull of room
 	LocalVector<Plane, int32_t> _planes;
