@@ -446,6 +446,7 @@ private:
 
 		RID texture; //main texture for rendering to, must be filled after done rendering
 		RID depth_texture; //main depth texture
+		RID texture_fb; // framebuffer for the main texture, ONLY USED FOR MOBILE RENDERER POST EFFECTS, DO NOT USE FOR RENDERING 3D!!!
 
 		RendererSceneGIRD::SDFGI *sdfgi = nullptr;
 		VolumetricFog *volumetric_fog = nullptr;
@@ -461,6 +462,11 @@ private:
 				RID texture;
 				int width;
 				int height;
+
+				// only used on mobile renderer
+				RID fb;
+				RID half_texture;
+				RID half_fb;
 			};
 
 			Vector<Mipmap> mipmaps;
@@ -471,6 +477,10 @@ private:
 		struct Luminance {
 			Vector<RID> reduce;
 			RID current;
+
+			// used only on mobile renderer
+			Vector<RID> fb;
+			RID current_fb;
 		} luminance;
 
 		struct SSAO {

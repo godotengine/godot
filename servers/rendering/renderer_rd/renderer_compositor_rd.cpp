@@ -280,6 +280,9 @@ RendererCompositorRD::RendererCompositorRD() {
 		// default to our high end renderer
 		scene = memnew(RendererSceneRenderImplementation::RenderForwardClustered(storage));
 	}
+
+	// now we're ready to create our effects,
+	storage->init_effects(!scene->_render_buffers_can_be_storage());
 }
 
 RendererCompositorRD::~RendererCompositorRD() {
