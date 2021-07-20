@@ -82,18 +82,24 @@ class EditorPropertyArray : public EditorProperty {
 	bool updating;
 
 	Ref<EditorPropertyArrayObject> object;
-	int page_len = 20;
-	int page_idx = 0;
-	int changing_type_idx;
+	int page_length = 20;
+	int page_index = 0;
+	int changing_type_index;
 	Button *edit;
 	VBoxContainer *vbox;
-	EditorSpinSlider *length;
-	EditorSpinSlider *page;
-	HBoxContainer *page_hb;
+	EditorSpinSlider *size_slider;
+	EditorSpinSlider *page_slider;
+	HBoxContainer *page_hbox;
 	Variant::Type array_type;
 	Variant::Type subtype;
 	PropertyHint subtype_hint;
 	String subtype_hint_string;
+
+	int reorder_from_index = -1;
+	int reorder_to_index = -1;
+	float reorder_mouse_y_delta = 0.0f;
+	HBoxContainer *reorder_selected_element_hbox = nullptr;
+	Button *reorder_selected_button = nullptr;
 
 	void _page_changed(double p_page);
 	void _length_changed(double p_page);
@@ -104,6 +110,10 @@ class EditorPropertyArray : public EditorProperty {
 
 	void _object_id_selected(const String &p_property, ObjectID p_id);
 	void _remove_pressed(int p_index);
+
+	void _reorder_button_gui_input(const Ref<InputEvent> &p_event);
+	void _reorder_button_down(int p_index);
+	void _reorder_button_up();
 
 protected:
 	static void _bind_methods();
@@ -122,14 +132,14 @@ class EditorPropertyDictionary : public EditorProperty {
 	bool updating;
 
 	Ref<EditorPropertyDictionaryObject> object;
-	int page_len = 20;
-	int page_idx = 0;
-	int changing_type_idx;
+	int page_length = 20;
+	int page_index = 0;
+	int changing_type_index;
 	Button *edit;
 	VBoxContainer *vbox;
-	EditorSpinSlider *length;
-	EditorSpinSlider *page;
-	HBoxContainer *page_hb;
+	EditorSpinSlider *size_slider;
+	EditorSpinSlider *page_slider;
+	HBoxContainer *page_hbox;
 
 	void _page_changed(double p_page);
 	void _edit_pressed();
