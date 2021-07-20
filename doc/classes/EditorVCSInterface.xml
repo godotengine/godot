@@ -4,11 +4,259 @@
 		Version Control System (VCS) interface which reads and writes to the local VCS in use.
 	</brief_description>
 	<description>
-		Used by the editor to display VCS extracted information in the editor. The implementation of this API is included in VCS addons, which are essentially GDNative plugins that need to be put into the project folder. These VCS addons are scripts which are attached (on demand) to the object instance of [code]EditorVCSInterface[/code]. All the functions listed below, instead of performing the task themselves, they call the internally defined functions in the VCS addons to provide a plug-n-play experience.
+		Used by the editor to display VCS extracted information in the editor. The implementation of this API is included in VCS plugins, which are essentially GDNative plugins. These VCS plugins are scripts that are attached (on demand) to the object instance of [code]EditorVCSInterface[/code]. All the virtual functions listed below, instead of performing the task themselves, call the internally defined functions in the VCS plugins to provide a plug-n-play experience. VCS plugin is supposed to override and implement them.
 	</description>
 	<tutorials>
 	</tutorials>
 	<methods>
+		<method name="_checkout_branch" qualifiers="virtual">
+			<return type="bool">
+			</return>
+			<argument index="0" name="branch" type="String">
+			</argument>
+			<description>
+				called to checkout a [code]branch[/code] in the VCS.
+			</description>
+		</method>
+		<method name="_commit" qualifiers="virtual">
+			<return type="void">
+			</return>
+			<argument index="0" name="message" type="String">
+			</argument>
+			<description>
+				This method is called to commit staged changes.
+			</description>
+		</method>
+		<method name="_discard_file" qualifiers="virtual">
+			<return type="void">
+			</return>
+			<argument index="0" name="file_path" type="String">
+			</argument>
+			<description>
+				Called to discards the changes made in file present at [code]file_path[/code].
+			</description>
+		</method>
+		<method name="_fetch" qualifiers="virtual">
+			<return type="void">
+			</return>
+			<description>
+				Fetches changes from the remote. Equivalent to [code]git fetch[/code].
+			</description>
+		</method>
+		<method name="_get_branch_list" qualifiers="virtual">
+			<return type="Array">
+			</return>
+			<description>
+				Returns an Array of available branch names.
+			</description>
+		</method>
+		<method name="_get_file_diff" qualifiers="virtual">
+			<return type="Array">
+			</return>
+			<argument index="0" name="identifier" type="String">
+			</argument>
+			<argument index="1" name="area" type="int">
+			</argument>
+			<description>
+				Returns an Array of Dictionary objects (see [method create_diff_file] and [method add_diff_hunks_into_diff_file]) containing the changes in a file or a commit hash. The [code]identifier[/code] can be commit hash or file path based on value of area (see [enum TreeArea]).
+			</description>
+		</method>
+		<method name="_get_line_diff" qualifiers="virtual">
+			<return type="Array">
+			</return>
+			<argument index="0" name="file_path" type="String">
+			</argument>
+			<argument index="1" name="text" type="String">
+			</argument>
+			<description>
+				Returns an Array of Dictionary objects, each containing a line diff between file at [code]file_path[/code] and [code]text[/code]. Returns Array of Dictionary (see [method create_diff_hunk]).
+			</description>
+		</method>
+		<method name="_get_modified_files_data" qualifiers="virtual">
+			<return type="Array">
+			</return>
+			<description>
+				Returns Array of Dictionary (see [method create_status_file]) objects, each containing the status data of a modified file. Equivalent to running plain [code]git status[/code].
+			</description>
+		</method>
+		<method name="_get_previous_commits" qualifiers="virtual">
+			<return type="Array">
+			</return>
+			<description>
+				Returns Array of Dictionary (see [method create_commit]) objects, each containing the data for a past commit.
+			</description>
+		</method>
+		<method name="_get_project_name" qualifiers="virtual">
+			<return type="String">
+			</return>
+			<description>
+				Virtual function to get project name or path as name.
+			</description>
+		</method>
+		<method name="_get_vcs_name" qualifiers="virtual">
+			<return type="String">
+			</return>
+			<description>
+				Virtual function to get name of VCS plugin.
+			</description>
+		</method>
+		<method name="_initialize" qualifiers="virtual">
+			<return type="bool">
+			</return>
+			<argument index="0" name="project_root_path" type="String">
+			</argument>
+			<description>
+				Called when initializing the VCS plugin from the editor. Returns whether or not the plugin was successfully initialized.
+			</description>
+		</method>
+		<method name="_is_vcs_initialized" qualifiers="virtual">
+			<return type="bool">
+			</return>
+			<description>
+				Returns whether the VCS plugin has been initialized.
+			</description>
+		</method>
+		<method name="_pull" qualifiers="virtual">
+			<return type="void">
+			</return>
+			<description>
+				Pulls changes from the remote.
+			</description>
+		</method>
+		<method name="_push" qualifiers="virtual">
+			<return type="void">
+			</return>
+			<description>
+				Pushes changes to the remote.
+			</description>
+		</method>
+		<method name="_set_up_credentials" qualifiers="virtual">
+			<return type="void">
+			</return>
+			<argument index="0" name="username" type="String">
+			</argument>
+			<argument index="1" name="password" type="String">
+			</argument>
+			<description>
+				Called after initializing the plugin. The plugin should save the sent account credentials for future use while performing remote operations.
+			</description>
+		</method>
+		<method name="_shut_down" qualifiers="virtual">
+			<return type="bool">
+			</return>
+			<description>
+				Shuts down VCS plugin instance. Called when the user either closes the editor or shuts down the VCS plugin through the editor UI.
+			</description>
+		</method>
+		<method name="_stage_file" qualifiers="virtual">
+			<return type="void">
+			</return>
+			<argument index="0" name="file_path" type="String">
+			</argument>
+			<description>
+				Stage file present at [code]file_path[/code] to the staged area.
+			</description>
+		</method>
+		<method name="_unstage_file" qualifiers="virtual">
+			<return type="void">
+			</return>
+			<argument index="0" name="file_path" type="String">
+			</argument>
+			<description>
+				Unstage file present at [code]file_path[/code] from the staged area to the unstaged area.
+			</description>
+		</method>
+		<method name="add_diff_hunks_into_diff_file">
+			<return type="Dictionary">
+			</return>
+			<argument index="0" name="diff_hunk" type="Dictionary">
+			</argument>
+			<argument index="1" name="line_diffs" type="Array">
+			</argument>
+			<description>
+				Helper function to add a diff hunk in a diff file. Appends [code]diff_hunk[/code] at the end in [code]diff_file[/code].
+			</description>
+		</method>
+		<method name="add_line_diffs_into_diff_hunk">
+			<return type="Dictionary">
+			</return>
+			<argument index="0" name="diff_files" type="Dictionary">
+			</argument>
+			<argument index="1" name="diff_hunks" type="Array">
+			</argument>
+			<description>
+				Helper function to add a diff line in a diff hunk. Appends [code]diff_line[/code] at the end in [code]diff_hunk[/code].
+			</description>
+		</method>
+		<method name="create_commit">
+			<return type="Dictionary">
+			</return>
+			<argument index="0" name="msg" type="String">
+			</argument>
+			<argument index="1" name="author" type="String">
+			</argument>
+			<argument index="2" name="hex_id" type="String">
+			</argument>
+			<argument index="3" name="time" type="int">
+			</argument>
+			<description>
+				Helper function to create a [code]Dictionary[/code] for commit data.
+			</description>
+		</method>
+		<method name="create_diff_file">
+			<return type="Dictionary">
+			</return>
+			<argument index="0" name="new_file" type="String">
+			</argument>
+			<argument index="1" name="old_file" type="String">
+			</argument>
+			<description>
+				Helper function to create a [code]Dictionary[/code] for diff file data.
+			</description>
+		</method>
+		<method name="create_diff_hunk">
+			<return type="Dictionary">
+			</return>
+			<argument index="0" name="old_start" type="int">
+			</argument>
+			<argument index="1" name="new_start" type="int">
+			</argument>
+			<argument index="2" name="old_lines" type="int">
+			</argument>
+			<argument index="3" name="new_lines" type="int">
+			</argument>
+			<description>
+				Helper function to create a [code]Dictionary[/code] for diff hunk data in diff file.
+			</description>
+		</method>
+		<method name="create_diff_line">
+			<return type="Dictionary">
+			</return>
+			<argument index="0" name="new_line_no" type="int">
+			</argument>
+			<argument index="1" name="old_line_no" type="int">
+			</argument>
+			<argument index="2" name="content" type="String">
+			</argument>
+			<argument index="3" name="status" type="String">
+			</argument>
+			<description>
+				Helper function to create a [code]Dictionary[/code] for line diff.
+			</description>
+		</method>
+		<method name="create_status_file">
+			<return type="Dictionary">
+			</return>
+			<argument index="0" name="file_path" type="String">
+			</argument>
+			<argument index="1" name="change_type" type="int" enum="EditorVCSInterface.ChangeType">
+			</argument>
+			<argument index="2" name="area" type="int" enum="EditorVCSInterface.TreeArea">
+			</argument>
+			<description>
+				Helper function to create a [code]Dictionary[/code] used by editor to read the status of a file.
+			</description>
+		</method>
 		<method name="is_plugin_ready">
 			<return type="bool">
 			</return>
@@ -16,10 +264,20 @@
 				Returns [code]true[/code] if the addon is ready to respond to function calls, else returns [code]false[/code].
 			</description>
 		</method>
+		<method name="popup_error">
+			<return type="void">
+			</return>
+			<argument index="0" name="msg" type="String">
+			</argument>
+			<description>
+				shows an error message while performing a VCS operation.
+			</description>
+		</method>
 	</methods>
 	<signals>
 		<signal name="stage_area_refreshed">
 			<description>
+				Emitted when the stage area is refreshed by the editor.
 			</description>
 		</signal>
 	</signals>

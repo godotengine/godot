@@ -36,6 +36,9 @@
 #include "editor/editor_scale.h"
 #include "editor/filesystem_dock.h"
 
+#define CHECK_PLUGIN_INITIALIZED() \
+	ERR_FAIL_COND_MSG(!EditorVCSInterface::get_singleton(), "No VCS plugin is initialized. Select a Version Control Plugin from Project menu.");
+
 VersionControlEditorPlugin *VersionControlEditorPlugin::singleton = nullptr;
 
 void VersionControlEditorPlugin::_bind_methods() {
@@ -110,7 +113,7 @@ void VersionControlEditorPlugin::popup_vcs_set_up_dialog(const Control *p_gui_ba
 }
 
 void VersionControlEditorPlugin::_initialize_vcs() {
-	ERR_FAIL_COND_MSG(EditorVCSInterface::get_singleton(), EditorVCSInterface::get_singleton()->get_vcs_name() + " is already active");
+	ERR_FAIL_COND_MSG(EditorVCSInterface::get_singleton(), EditorVCSInterface::get_singleton()->get_vcs_name() + " is already active.");
 
 	const int id = set_up_choice->get_selected_id();
 	String selected_addon = set_up_choice->get_item_text(id);
@@ -128,12 +131,12 @@ bool VersionControlEditorPlugin::_load_addon(String p_name) {
 	String path = ScriptServer::get_global_class_path(p_name);
 	Ref<Script> script = ResourceLoader::load(path);
 
-	ERR_FAIL_COND_V_MSG(!script.is_valid(), false, "VCS Addon path is invalid");
+	ERR_FAIL_COND_V_MSG(!script.is_valid(), false, "VCS Plugin path is invalid");
 
 	EditorVCSInterface *vcs_interface = memnew(EditorVCSInterface);
 	ScriptInstance *addon_script_instance = script->instance_create(vcs_interface);
 
-	ERR_FAIL_COND_V_MSG(!addon_script_instance, false, "Failed to create addon script instance.");
+	ERR_FAIL_COND_V_MSG(!addon_script_instance, false, "Failed to create plugin script instance.");
 
 	// The addon is attached as a script to the VCS interface as a proxy end-point
 	vcs_interface->set_script_and_instance(script.get_ref_ptr(), addon_script_instance);
@@ -149,7 +152,7 @@ void VersionControlEditorPlugin::_set_up() {
 
 	String res_dir = OS::get_singleton()->get_resource_dir();
 
-	ERR_FAIL_COND_MSG(!EditorVCSInterface::get_singleton()->initialize(res_dir), "VCS was not initialized");
+	ERR_FAIL_COND_MSG(!EditorVCSInterface::get_singleton()->initialize(res_dir), "VCS was not initialized.");
 
 	_refresh_stage_area();
 	_refresh_commit_list();
@@ -167,22 +170,21 @@ void VersionControlEditorPlugin::_set_credentials() {
 }
 
 void VersionControlEditorPlugin::_refresh_branch_list() {
-	ERR_FAIL_COND_MSG(!EditorVCSInterface::get_singleton(), "No VCS plugin is initialized. Select a Version Control Addon from Project menu");
-
+	CHECK_PLUGIN_INITIALIZED();
 	List<String> branch_list = EditorVCSInterface::get_singleton()->get_branch_list();
 	branch_select->clear();
 	for (int i = 0; i < branch_list.size(); i++) {
 		branch_select->add_item(branch_list[i], i);
 	}
 
-	// TODO: Add new brach feature
+	// TODO: Add new brach feature.
 	// branch_select->add_separator();
 	// branch_select->add_item("New Branch");
 	branch_select->select(0); // First branch in the list is current branch
 }
 
 void VersionControlEditorPlugin::_refresh_commit_list() {
-	ERR_FAIL_COND_MSG(!EditorVCSInterface::get_singleton(), "No VCS plugin is initialized. Select a Version Control Addon from Project menu");
+	CHECK_PLUGIN_INITIALIZED();
 
 	commit_list->get_root()->clear_children();
 
@@ -198,13 +200,13 @@ void VersionControlEditorPlugin::_refresh_commit_list() {
 }
 
 void VersionControlEditorPlugin::_commit() {
-	ERR_FAIL_COND_MSG(!EditorVCSInterface::get_singleton(), "No VCS plugin is initialized. Select a Version Control Addon from Project menu");
+	CHECK_PLUGIN_INITIALIZED();
 
-	ERR_FAIL_COND_MSG(_get_item_count(staged_files) == 0, TTR("No files added to stage"));
+	ERR_FAIL_COND_MSG(_get_item_count(staged_files) == 0, TTR("No files added to stage."));
 
 	String msg = commit_message->get_text();
 
-	ERR_FAIL_COND_MSG(msg == "", TTR("No commit message was provided"));
+	ERR_FAIL_COND_MSG(msg == "", TTR("No commit message was provided."));
 
 	EditorVCSInterface::get_singleton()->commit(msg);
 
@@ -217,7 +219,7 @@ void VersionControlEditorPlugin::_commit() {
 }
 
 void VersionControlEditorPlugin::_branch_item_selected(int index) {
-	ERR_FAIL_COND_MSG(!EditorVCSInterface::get_singleton(), "No VCS plugin is initialized. Select a Version Control Addon from Project menu");
+	CHECK_PLUGIN_INITIALIZED();
 
 	String branch_name = branch_select->get_item_text(index);
 	EditorVCSInterface::get_singleton()->checkout_branch(branch_name);
@@ -248,7 +250,7 @@ int VersionControlEditorPlugin::_get_item_count(Tree *p_tree) {
 }
 
 void VersionControlEditorPlugin::_refresh_stage_area() {
-	ERR_FAIL_COND_MSG(!EditorVCSInterface::get_singleton(), "No VCS plugin is initialized. Select a Version Control Addon from Project menu");
+	CHECK_PLUGIN_INITIALIZED();
 
 	staged_files->get_root()->clear_children();
 	unstaged_files->get_root()->clear_children();
@@ -277,7 +279,7 @@ void VersionControlEditorPlugin::_discard_file(String p_file_path, EditorVCSInte
 		dir->remove(p_file_path);
 		memdelete(dir);
 	} else {
-		ERR_FAIL_COND_MSG(!EditorVCSInterface::get_singleton(), "No VCS plugin is initialized. Select a Version Control Addon from Project menu");
+		CHECK_PLUGIN_INITIALIZED();
 		EditorVCSInterface::get_singleton()->discard_file(p_file_path);
 	}
 	//FIXIT: The project.godot file shows wierd behaviour
@@ -315,14 +317,14 @@ void VersionControlEditorPlugin::_add_new_item(Tree *p_tree, String p_file_path,
 }
 
 void VersionControlEditorPlugin::_fetch() {
-	ERR_FAIL_COND_MSG(!EditorVCSInterface::get_singleton(), "No VCS plugin is initialized. Select a Version Control Addon from Project menu");
+	CHECK_PLUGIN_INITIALIZED();
 
 	EditorVCSInterface::get_singleton()->fetch();
 	_refresh_branch_list();
 }
 
 void VersionControlEditorPlugin::_pull() {
-	ERR_FAIL_COND_MSG(!EditorVCSInterface::get_singleton(), "No VCS plugin is initialized. Select a Version Control Addon from Project menu");
+	CHECK_PLUGIN_INITIALIZED();
 
 	EditorVCSInterface::get_singleton()->pull();
 	_refresh_stage_area();
@@ -343,7 +345,7 @@ void VersionControlEditorPlugin::_update_opened_tabs() {
 }
 
 void VersionControlEditorPlugin::_push() {
-	ERR_FAIL_COND_MSG(!EditorVCSInterface::get_singleton(), "No VCS plugin is initialized. Select a Version Control Addon from Project menu");
+	CHECK_PLUGIN_INITIALIZED();
 
 	EditorVCSInterface::get_singleton()->push();
 }
@@ -363,7 +365,7 @@ void VersionControlEditorPlugin::_move_all(Object *p_tree) {
 }
 
 void VersionControlEditorPlugin::_load_diff(Object *p_tree) {
-	ERR_FAIL_COND_MSG(!EditorVCSInterface::get_singleton(), "No VCS plugin is initialized. Select a Version Control Addon from Project menu");
+	CHECK_PLUGIN_INITIALIZED();
 
 	version_control_dock_button->set_pressed(true);
 	Tree *tree = Object::cast_to<Tree>(p_tree);
@@ -397,7 +399,7 @@ void VersionControlEditorPlugin::_item_activated(Object *p_tree) {
 }
 
 void VersionControlEditorPlugin::_move_item(Tree *p_tree, TreeItem *p_item) {
-	ERR_FAIL_COND_MSG(!EditorVCSInterface::get_singleton(), "No VCS plugin is initialized. Select a Version Control Addon from Project menu");
+	CHECK_PLUGIN_INITIALIZED();
 
 	if (p_tree == staged_files) {
 		EditorVCSInterface::get_singleton()->unstage_file(p_item->get_meta("file_path"));
@@ -434,7 +436,7 @@ void VersionControlEditorPlugin::_cell_button_pressed(Object *p_item, int column
 }
 
 void VersionControlEditorPlugin::_display_diff(int idx) {
-	ERR_FAIL_COND_MSG(diff_content.size() == 0, "Diff is empty");
+	ERR_FAIL_COND_MSG(diff_content.size() == 0, "Diff is empty.");
 
 	DiffViewType diff_view = (DiffViewType)diff_view_type_select->get_selected();
 
@@ -733,7 +735,7 @@ VersionControlEditorPlugin::VersionControlEditorPlugin() {
 	set_up_vbc->add_child(set_up_hbc);
 
 	RichTextLabel *set_up_vcs_status = memnew(RichTextLabel);
-	set_up_vcs_status->set_text(TTR("VCS Addon is not initialized"));
+	set_up_vcs_status->set_text(TTR("VCS Plugin is not initialized"));
 	set_up_vbc->add_child(set_up_vcs_status);
 
 	Label *set_up_vcs_label = memnew(Label);
@@ -983,8 +985,8 @@ VersionControlEditorPlugin::VersionControlEditorPlugin() {
 	diff_heading->add_child(view);
 
 	diff_view_type_select = memnew(OptionButton);
-	diff_view_type_select->add_item("Split", DIFF_VIEW_TYPE_SPLIT);
-	diff_view_type_select->add_item("Unified", DIFF_VIEW_TYPE_UNIFIED);
+	diff_view_type_select->add_item(TTR("Split"), DIFF_VIEW_TYPE_SPLIT);
+	diff_view_type_select->add_item(TTR("Unified"), DIFF_VIEW_TYPE_UNIFIED);
 	diff_view_type_select->connect("item_selected", this, "_display_diff");
 	diff_heading->add_child(diff_view_type_select);
 
@@ -996,8 +998,6 @@ VersionControlEditorPlugin::VersionControlEditorPlugin() {
 
 	GLOBAL_DEF("version_control/autoload_on_startup", false);
 	GLOBAL_DEF("version_control/plugin_name", "");
-	ProjectSettings::get_singleton()->set_custom_property_info("version_control/plugin_name", PropertyInfo(Variant::STRING, "version_control/plugin_name"));
-	ProjectSettings::get_singleton()->set_custom_property_info("version_control/autoload_on_startup", PropertyInfo(Variant::BOOL, "version_control/autoload_on_startup"));
 }
 
 VersionControlEditorPlugin::~VersionControlEditorPlugin() {

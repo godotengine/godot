@@ -99,7 +99,6 @@ protected:
 	static EditorVCSInterface *singleton;
 
 	static void _bind_methods();
-	static void _bind_types();
 
 	// Implemented by addons as end points for the proxy functions
 	virtual bool _initialize(String p_project_root_path);
@@ -109,7 +108,7 @@ protected:
 	virtual void _discard_file(String p_file_path);
 	virtual void _unstage_file(String p_file_path);
 	virtual void _commit(String p_msg);
-	virtual Array _get_file_diff(String p_identifier, TreeArea area);
+	virtual Array _get_file_diff(String p_identifier, TreeArea p_area);
 	virtual bool _shut_down();
 	virtual String _get_project_name();
 	virtual String _get_vcs_name();
@@ -122,22 +121,11 @@ protected:
 	virtual void _set_up_credentials(String p_username, String p_password);
 	virtual Array _get_line_diff(String p_file_path, String p_text);
 
-	// Helper functions to create and convert Dictionary into data structures
-	Dictionary _create_diff_line(int new_line_no, int old_line_no, String p_content, String p_status);
-	Dictionary _create_diff_hunk(int old_start, int new_start, int old_lines, int new_lines);
-	Dictionary _create_diff_file(String p_new_file, String p_old_file);
-	Dictionary _create_commit(String p_msg, String p_author, String p_hex_id, int16_t p_time);
-	Dictionary _create_status_file(String p_file_path, ChangeType p_change, TreeArea p_area);
-	Dictionary _add_line_diffs_into_diff_hunk(Dictionary p_diff_hunk, Array p_line_diffs);
-	Dictionary _add_diff_hunks_into_diff_file(Dictionary p_diff_file, Array p_diff_hunks);
-
 	DiffLine _convert_diff_line(Dictionary p_diff_line);
 	DiffHunk _convert_diff_hunk(Dictionary p_diff_hunk);
 	DiffFile _convert_diff_file(Dictionary p_diff_file);
 	Commit _convert_commit(Dictionary p_commit);
 	StatusFile _convert_status_file(Dictionary p_status_file);
-
-	void _popup_error(String p_msg);
 
 public:
 	static EditorVCSInterface *get_singleton();
@@ -165,6 +153,17 @@ public:
 	void fetch();
 	void set_up_credentials(String p_username, String p_password);
 	List<DiffHunk> get_line_diff(String p_file_path, String p_text);
+
+	// Helper functions to create and convert Dictionary into data structures
+	Dictionary create_diff_line(int new_line_no, int old_line_no, String p_content, String p_status);
+	Dictionary create_diff_hunk(int old_start, int new_start, int old_lines, int new_lines);
+	Dictionary create_diff_file(String p_new_file, String p_old_file);
+	Dictionary create_commit(String p_msg, String p_author, String p_hex_id, int16_t p_time);
+	Dictionary create_status_file(String p_file_path, ChangeType p_change, TreeArea p_area);
+	Dictionary add_line_diffs_into_diff_hunk(Dictionary p_diff_hunk, Array p_line_diffs);
+	Dictionary add_diff_hunks_into_diff_file(Dictionary p_diff_file, Array p_diff_hunks);
+
+	void popup_error(String p_msg);
 
 	EditorVCSInterface();
 	virtual ~EditorVCSInterface();

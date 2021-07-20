@@ -64,7 +64,7 @@ void EditorVCSInterface::_discard_file(String p_file_path) {
 	_not_implemented_function(__FUNCTION__);
 }
 
-Array EditorVCSInterface::_get_file_diff(String p_identifier, TreeArea area) {
+Array EditorVCSInterface::_get_file_diff(String p_identifier, TreeArea p_area) {
 	_not_implemented_function(__FUNCTION__);
 	return Array();
 }
@@ -123,7 +123,7 @@ Array EditorVCSInterface::_get_line_diff(String p_file_path, String p_text) {
 	return Array();
 }
 
-void EditorVCSInterface::_popup_error(String p_msg) {
+void EditorVCSInterface::popup_error(String p_msg) {
 	EditorNode::get_singleton()->show_warning(p_msg, get_vcs_name() + TTR(": Error"));
 }
 
@@ -176,7 +176,7 @@ void EditorVCSInterface::commit(String p_msg) {
 }
 
 List<EditorVCSInterface::DiffFile> EditorVCSInterface::get_file_diff(String p_identifier, TreeArea p_area) {
-	List<DiffFile> diff_files = List<DiffFile>();
+	List<DiffFile> diff_files;
 
 	if (is_plugin_ready()) {
 		Array result = call("_get_file_diff", p_identifier, p_area);
@@ -189,7 +189,7 @@ List<EditorVCSInterface::DiffFile> EditorVCSInterface::get_file_diff(String p_id
 }
 
 List<EditorVCSInterface::Commit> EditorVCSInterface::get_previous_commits() {
-	List<EditorVCSInterface::Commit> commits = List<EditorVCSInterface::Commit>();
+	List<EditorVCSInterface::Commit> commits;
 	if (is_plugin_ready()) {
 		Array result = call("_get_previous_commits");
 		for (int i = 0; i < result.size(); i++) {
@@ -200,7 +200,7 @@ List<EditorVCSInterface::Commit> EditorVCSInterface::get_previous_commits() {
 }
 
 List<String> EditorVCSInterface::get_branch_list() {
-	List<String> branch_list = List<String>();
+	List<String> branch_list;
 
 	if (is_plugin_ready()) {
 		Array result = call("_get_branch_list");
@@ -237,7 +237,7 @@ void EditorVCSInterface::fetch() {
 }
 
 List<EditorVCSInterface::DiffHunk> EditorVCSInterface::get_line_diff(String p_file_path, String p_text) {
-	List<DiffHunk> diff_hunks = List<DiffHunk>();
+	List<DiffHunk> diff_hunks;
 	if (is_plugin_ready()) {
 		Array result = call("_get_line_diff", p_file_path, p_text);
 		for (int i = 0; i < result.size(); i++) {
@@ -264,17 +264,17 @@ void EditorVCSInterface::set_up_credentials(String p_username, String p_password
 	call("_set_up_credentials", p_username, p_password);
 }
 
-Dictionary EditorVCSInterface::_create_diff_line(int new_line_no, int old_line_no, String content, String status) {
+Dictionary EditorVCSInterface::create_diff_line(int new_line_no, int old_line_no, String p_content, String p_status) {
 	Dictionary diff_line;
 	diff_line["new_line_no"] = new_line_no;
 	diff_line["old_line_no"] = old_line_no;
-	diff_line["content"] = content;
-	diff_line["status"] = status;
+	diff_line["content"] = p_content;
+	diff_line["status"] = p_status;
 
 	return diff_line;
 }
 
-Dictionary EditorVCSInterface::_create_diff_hunk(int old_start, int new_start, int old_lines, int new_lines) {
+Dictionary EditorVCSInterface::create_diff_hunk(int old_start, int new_start, int old_lines, int new_lines) {
 	Dictionary diff_hunk;
 	diff_hunk["new_lines"] = new_lines;
 	diff_hunk["old_lines"] = old_lines;
@@ -284,20 +284,20 @@ Dictionary EditorVCSInterface::_create_diff_hunk(int old_start, int new_start, i
 	return diff_hunk;
 }
 
-Dictionary EditorVCSInterface::_add_line_diffs_into_diff_hunk(Dictionary diff_hunk, Array line_diffs) {
-	diff_hunk["diff_lines"] = line_diffs;
-	return diff_hunk;
+Dictionary EditorVCSInterface::add_line_diffs_into_diff_hunk(Dictionary p_diff_hunk, Array p_line_diffs) {
+	p_diff_hunk["diff_lines"] = p_line_diffs;
+	return p_diff_hunk;
 }
 
-Dictionary EditorVCSInterface::_create_diff_file(String new_file, String old_file) {
+Dictionary EditorVCSInterface::create_diff_file(String p_new_file, String p_old_file) {
 	Dictionary file_diff;
-	file_diff["new_file"] = new_file;
-	file_diff["old_file"] = old_file;
+	file_diff["new_file"] = p_new_file;
+	file_diff["old_file"] = p_old_file;
 	file_diff["diff_hunks"] = Array();
 	return file_diff;
 }
 
-Dictionary EditorVCSInterface::_create_commit(String p_msg, String p_author, String p_hex_id, int16_t p_when) {
+Dictionary EditorVCSInterface::create_commit(String p_msg, String p_author, String p_hex_id, int16_t p_when) {
 	Dictionary commit_info;
 	commit_info["message"] = p_msg;
 	commit_info["author"] = p_author;
@@ -306,12 +306,12 @@ Dictionary EditorVCSInterface::_create_commit(String p_msg, String p_author, Str
 	return commit_info;
 }
 
-Dictionary EditorVCSInterface::_add_diff_hunks_into_diff_file(Dictionary diff_file, Array diff_hunks) {
-	diff_file["diff_hunks"] = diff_hunks;
-	return diff_file;
+Dictionary EditorVCSInterface::add_diff_hunks_into_diff_file(Dictionary p_diff_file, Array p_diff_hunks) {
+	p_diff_file["diff_hunks"] = p_diff_hunks;
+	return p_diff_file;
 }
 
-Dictionary EditorVCSInterface::_create_status_file(String p_file_path, ChangeType p_change, TreeArea p_area) {
+Dictionary EditorVCSInterface::create_status_file(String p_file_path, ChangeType p_change, TreeArea p_area) {
 	Dictionary sf;
 	sf["file_path"] = p_file_path;
 	sf["chanage_type"] = p_change;
@@ -374,63 +374,41 @@ EditorVCSInterface::StatusFile EditorVCSInterface::_convert_status_file(Dictiona
 }
 
 void EditorVCSInterface::_not_implemented_function(String p_function) {
-	ERR_PRINT("Selected VCS plugin does not implement " + p_function + " function");
+	ERR_PRINT(vformat("The selected VCS plugin does not implement the \"%s\" function.", p_function));
 }
 
 void EditorVCSInterface::_bind_methods() {
 	// Proxy end points that act as fallbacks to unavailability of a function in the VCS addon
-	ClassDB::bind_method(D_METHOD("_initialize", "project_root_path"), &EditorVCSInterface::_initialize);
-	ClassDB::bind_method(D_METHOD("_is_vcs_initialized"), &EditorVCSInterface::_is_vcs_initialized);
-	ClassDB::bind_method(D_METHOD("_get_vcs_name"), &EditorVCSInterface::_get_vcs_name);
-	ClassDB::bind_method(D_METHOD("_shut_down"), &EditorVCSInterface::_shut_down);
-	ClassDB::bind_method(D_METHOD("_get_project_name"), &EditorVCSInterface::_get_project_name);
-	ClassDB::bind_method(D_METHOD("_get_modified_files_data"), &EditorVCSInterface::_get_modified_files_data);
-	ClassDB::bind_method(D_METHOD("_commit", "msg"), &EditorVCSInterface::_commit);
-	ClassDB::bind_method(D_METHOD("_get_file_diff", "file_path", "area"), &EditorVCSInterface::_get_file_diff);
-	ClassDB::bind_method(D_METHOD("_stage_file", "file_path"), &EditorVCSInterface::_stage_file);
-	ClassDB::bind_method(D_METHOD("_unstage_file", "file_path"), &EditorVCSInterface::_unstage_file);
-	ClassDB::bind_method(D_METHOD("_discard_file", "file_path"), &EditorVCSInterface::_discard_file);
-	ClassDB::bind_method(D_METHOD("_get_previous_commits"), &EditorVCSInterface::_get_previous_commits);
-	ClassDB::bind_method(D_METHOD("_get_branch_list"), &EditorVCSInterface::_get_branch_list);
-	ClassDB::bind_method(D_METHOD("_checkout_branch", "branch"), &EditorVCSInterface::_checkout_branch);
-	ClassDB::bind_method(D_METHOD("_push"), &EditorVCSInterface::_push);
-	ClassDB::bind_method(D_METHOD("_pull"), &EditorVCSInterface::_pull);
-	ClassDB::bind_method(D_METHOD("_fetch"), &EditorVCSInterface::_fetch);
-	ClassDB::bind_method(D_METHOD("_set_up_credentials"), &EditorVCSInterface::_set_up_credentials);
-	ClassDB::bind_method(D_METHOD("_get_line_diff", "file_path", "text"), &EditorVCSInterface::_get_line_diff);
+	ClassDB::add_virtual_method(get_class_static(), MethodInfo(Variant::BOOL, "_initialize", PropertyInfo(Variant::STRING, "project_root_path")));
+	ClassDB::add_virtual_method(get_class_static(), MethodInfo(Variant::BOOL, "_is_vcs_initialized"));
+	ClassDB::add_virtual_method(get_class_static(), MethodInfo(Variant::STRING, "_get_vcs_name"));
+	ClassDB::add_virtual_method(get_class_static(), MethodInfo(Variant::BOOL, "_shut_down"));
+	ClassDB::add_virtual_method(get_class_static(), MethodInfo(Variant::STRING, "_get_project_name"));
+	ClassDB::add_virtual_method(get_class_static(), MethodInfo(Variant::ARRAY, "_get_modified_files_data"));
+	ClassDB::add_virtual_method(get_class_static(), MethodInfo("_commit", PropertyInfo(Variant::STRING, "message")));
+	ClassDB::add_virtual_method(get_class_static(), MethodInfo(Variant::ARRAY, "_get_file_diff", PropertyInfo(Variant::STRING, "identifier"), PropertyInfo(Variant::INT, "area")));
+	ClassDB::add_virtual_method(get_class_static(), MethodInfo("_stage_file", PropertyInfo(Variant::STRING, "file_path")));
+	ClassDB::add_virtual_method(get_class_static(), MethodInfo("_unstage_file", PropertyInfo(Variant::STRING, "file_path")));
+	ClassDB::add_virtual_method(get_class_static(), MethodInfo("_discard_file", PropertyInfo(Variant::STRING, "file_path")));
+	ClassDB::add_virtual_method(get_class_static(), MethodInfo(Variant::ARRAY, "_get_previous_commits"));
+	ClassDB::add_virtual_method(get_class_static(), MethodInfo(Variant::ARRAY, "_get_branch_list"));
+	ClassDB::add_virtual_method(get_class_static(), MethodInfo(Variant::BOOL, "_checkout_branch", PropertyInfo(Variant::STRING, "branch")));
+	ClassDB::add_virtual_method(get_class_static(), MethodInfo("_push"));
+	ClassDB::add_virtual_method(get_class_static(), MethodInfo("_pull"));
+	ClassDB::add_virtual_method(get_class_static(), MethodInfo("_fetch"));
+	ClassDB::add_virtual_method(get_class_static(), MethodInfo("_set_up_credentials", PropertyInfo(Variant::STRING, "username"), PropertyInfo(Variant::STRING, "password")));
+	ClassDB::add_virtual_method(get_class_static(), MethodInfo(Variant::ARRAY, "_get_line_diff", PropertyInfo(Variant::STRING, "file_path"), PropertyInfo(Variant::STRING, "text")));
 
 	ClassDB::bind_method(D_METHOD("is_plugin_ready"), &EditorVCSInterface::is_plugin_ready);
+	ClassDB::bind_method(D_METHOD("create_diff_line", "new_line_no", "old_line_no", "content", "status"), &EditorVCSInterface::create_diff_line);
+	ClassDB::bind_method(D_METHOD("create_diff_hunk", "old_start", "new_start", "old_lines", "new_lines"), &EditorVCSInterface::create_diff_hunk);
+	ClassDB::bind_method(D_METHOD("create_diff_file", "new_file", "old_file"), &EditorVCSInterface::create_diff_file);
+	ClassDB::bind_method(D_METHOD("create_commit", "msg", "author", "hex_id", "time"), &EditorVCSInterface::create_commit);
+	ClassDB::bind_method(D_METHOD("create_status_file", "file_path", "change_type", "area"), &EditorVCSInterface::create_status_file);
+	ClassDB::bind_method(D_METHOD("add_diff_hunks_into_diff_file", "diff_hunk", "line_diffs"), &EditorVCSInterface::add_diff_hunks_into_diff_file);
+	ClassDB::bind_method(D_METHOD("add_line_diffs_into_diff_hunk", "diff_files", "diff_hunks"), &EditorVCSInterface::add_line_diffs_into_diff_hunk);
+	ClassDB::bind_method(D_METHOD("popup_error", "msg"), &EditorVCSInterface::popup_error);
 
-	// // API methods that redirect calls to the proxy end points
-	// ClassDB::bind_method(D_METHOD("initialize", "project_root_path"), &EditorVCSInterface::initialize);
-	// ClassDB::bind_method(D_METHOD("is_vcs_initialized"), &EditorVCSInterface::is_vcs_initialized);
-	// ClassDB::bind_method(D_METHOD("get_modified_files_data"), &EditorVCSInterface::get_modified_files_data);
-	// ClassDB::bind_method(D_METHOD("stage_file", "file_path"), &EditorVCSInterface::stage_file);
-	// ClassDB::bind_method(D_METHOD("unstage_file", "file_path"), &EditorVCSInterface::unstage_file);
-	// ClassDB::bind_method(D_METHOD("discard_file", "file_path"), &EditorVCSInterface::discard_file);
-	// ClassDB::bind_method(D_METHOD("commit", "msg"), &EditorVCSInterface::commit);
-	// ClassDB::bind_method(D_METHOD("get_file_diff", "file_path", "area"), &EditorVCSInterface::get_file_diff);
-	// ClassDB::bind_method(D_METHOD("shut_down"), &EditorVCSInterface::shut_down);
-	// ClassDB::bind_method(D_METHOD("get_project_name"), &EditorVCSInterface::get_project_name);
-	// ClassDB::bind_method(D_METHOD("get_vcs_name"), &EditorVCSInterface::get_vcs_name);
-	// ClassDB::bind_method(D_METHOD("get_previous_commits"), &EditorVCSInterface::get_previous_commits);
-	// ClassDB::bind_method(D_METHOD("get_branch_list"), &EditorVCSInterface::get_branch_list);
-	// ClassDB::bind_method(D_METHOD("checkout_branch", "branch"), &EditorVCSInterface::checkout_branch);
-	// ClassDB::bind_method(D_METHOD("push"), &EditorVCSInterface::push);
-	// ClassDB::bind_method(D_METHOD("pull"), &EditorVCSInterface::pull);
-	// ClassDB::bind_method(D_METHOD("fetch"), &EditorVCSInterface::fetch);
-	// ClassDB::bind_method(D_METHOD("set_up_credentials"), &EditorVCSInterface::set_up_credentials);
-	// ClassDB::bind_method(D_METHOD("get_line_diff"), &EditorVCSInterface::get_line_diff);
-
-	ClassDB::bind_method(D_METHOD("_create_diff_line", "new_line_no", "old_line_no", "p_content", "p_status"), &EditorVCSInterface::_create_diff_line);
-	ClassDB::bind_method(D_METHOD("_create_diff_hunk", "old_start", "new_start", "old_lines", "new_lines"), &EditorVCSInterface::_create_diff_hunk);
-	ClassDB::bind_method(D_METHOD("_create_diff_file", "p_new_file", "p_old_file"), &EditorVCSInterface::_create_diff_file);
-	ClassDB::bind_method(D_METHOD("_create_commit", "p_msg", "p_author", "p_hex_id", "p_time"), &EditorVCSInterface::_create_commit);
-	ClassDB::bind_method(D_METHOD("_create_status_file", "p_file_path", "p_change_type", "p_area"), &EditorVCSInterface::_create_status_file);
-
-	ClassDB::bind_method(D_METHOD("_add_diff_hunks_into_diff_file", "p_diff_hunk", "p_line_diffs"), &EditorVCSInterface::_add_diff_hunks_into_diff_file);
-	ClassDB::bind_method(D_METHOD("_add_line_diffs_into_diff_hunk", "p_diff_files", "p_diff_hunks"), &EditorVCSInterface::_add_line_diffs_into_diff_hunk);
-	ClassDB::bind_method(D_METHOD("_popup_error", "p_msg"), &EditorVCSInterface::_popup_error);
 	ADD_SIGNAL(MethodInfo("stage_area_refreshed"));
 
 	BIND_ENUM_CONSTANT(CHANGE_TYPE_NEW);
