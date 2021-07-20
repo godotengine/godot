@@ -759,7 +759,7 @@ if "env" in locals():
 def print_elapsed_time():
     elapsed_time_sec = round(time.time() - time_at_start, 3)
     time_ms = round((elapsed_time_sec % 1) * 1000)
-    print(f"[Time elapsed: {time.strftime('%H:%M:%S', time.gmtime(elapsed_time_sec))}.{time_ms:03}]")
+    print("[Time elapsed: {}.{:03}]".format(time.strftime("%H:%M:%S", time.gmtime(elapsed_time_sec)), time_ms))
 
 
 atexit.register(print_elapsed_time)
