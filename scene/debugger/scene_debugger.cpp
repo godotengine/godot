@@ -145,12 +145,12 @@ Error SceneDebugger::parse_message(void *p_user, const String &p_msg, const Arra
 		live_editor->_res_set_func(p_args[0], p_args[1], p_args[2]);
 
 	} else if (p_msg == "live_node_call") {
-		ERR_FAIL_COND_V(p_args.size() < 7, ERR_INVALID_DATA);
-		live_editor->_node_call_func(p_args[0], p_args[1], p_args[2], p_args[3], p_args[4], p_args[5], p_args[6]);
+		ERR_FAIL_COND_V(p_args.size() < 10, ERR_INVALID_DATA);
+		live_editor->_node_call_func(p_args[0], p_args[1], p_args[2], p_args[3], p_args[4], p_args[5], p_args[6], p_args[7], p_args[8], p_args[9]);
 
 	} else if (p_msg == "live_res_call") {
-		ERR_FAIL_COND_V(p_args.size() < 7, ERR_INVALID_DATA);
-		live_editor->_res_call_func(p_args[0], p_args[1], p_args[2], p_args[3], p_args[4], p_args[5], p_args[6]);
+		ERR_FAIL_COND_V(p_args.size() < 10, ERR_INVALID_DATA);
+		live_editor->_res_call_func(p_args[0], p_args[1], p_args[2], p_args[3], p_args[4], p_args[5], p_args[6], p_args[7], p_args[8], p_args[9]);
 
 	} else if (p_msg == "live_create_node") {
 		ERR_FAIL_COND_V(p_args.size() < 3, ERR_INVALID_DATA);

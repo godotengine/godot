@@ -460,8 +460,8 @@ Variant UndoRedo::_add_do_method(const Variant **p_args, int p_argcount, Callabl
 		v[i] = *p_args[i + 2];
 	}
 
-	static_assert(VARIANT_ARG_MAX == 5, "This code needs to be updated if VARIANT_ARG_MAX != 5");
-	add_do_method(object, method, v[0], v[1], v[2], v[3], v[4]);
+	static_assert(VARIANT_ARG_MAX == 8, "This code needs to be updated if VARIANT_ARG_MAX != 8");
+	add_do_method(object, method, v[0], v[1], v[2], v[3], v[4], v[5], v[6], v[7]);
 	return Variant();
 }
 
@@ -497,8 +497,8 @@ Variant UndoRedo::_add_undo_method(const Variant **p_args, int p_argcount, Calla
 		v[i] = *p_args[i + 2];
 	}
 
-	static_assert(VARIANT_ARG_MAX == 5, "This code needs to be updated if VARIANT_ARG_MAX != 5");
-	add_undo_method(object, method, v[0], v[1], v[2], v[3], v[4]);
+	static_assert(VARIANT_ARG_MAX == 8, "This code needs to be updated if VARIANT_ARG_MAX != 8");
+	add_undo_method(object, method, v[0], v[1], v[2], v[3], v[4], v[5], v[6], v[7]);
 	return Variant();
 }
 
