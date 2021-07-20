@@ -573,6 +573,9 @@ void EditorPropertyArray::_bind_methods() {
 	ClassDB::bind_method("_change_type_menu", &EditorPropertyArray::_change_type_menu);
 	ClassDB::bind_method("_object_id_selected", &EditorPropertyArray::_object_id_selected);
 	ClassDB::bind_method("_remove_pressed", &EditorPropertyArray::_remove_pressed);
+	ClassDB::bind_method("_reorder_button_gui_input", &EditorPropertyArray::_reorder_button_gui_input);
+	ClassDB::bind_method("_reorder_button_down", &EditorPropertyArray::_reorder_button_down);
+	ClassDB::bind_method("_reorder_button_up", &EditorPropertyArray::_reorder_button_up);
 }
 
 EditorPropertyArray::EditorPropertyArray() {
