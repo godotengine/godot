@@ -393,7 +393,8 @@ int CurveEditor::get_point_at(Vector2 pos) const {
 	}
 	const Curve &curve = **_curve_ref;
 
-	const float r = _hover_radius * _hover_radius;
+	const float true_hover_radius = Math::round(_hover_radius * EDSCALE);
+	const float r = true_hover_radius * true_hover_radius;
 
 	for (int i = 0; i < curve.get_point_count(); ++i) {
 		Vector2 p = get_view_pos(curve.get_point_position(i));
@@ -558,7 +559,7 @@ Vector2 CurveEditor::get_tangent_view_pos(int i, TangentIndex tangent) const {
 	Vector2 point_pos = get_view_pos(_curve_ref->get_point_position(i));
 	Vector2 control_pos = get_view_pos(_curve_ref->get_point_position(i) + dir);
 
-	return point_pos + _tangents_length * (control_pos - point_pos).normalized();
+	return point_pos + Math::round(_tangents_length * EDSCALE) * (control_pos - point_pos).normalized();
 }
 
 Vector2 CurveEditor::get_view_pos(Vector2 world_pos) const {
@@ -703,13 +704,13 @@ void CurveEditor::_draw() {
 		if (i != 0) {
 			Vector2 control_pos = get_tangent_view_pos(i, TANGENT_LEFT);
 			draw_line(get_view_pos(pos), control_pos, tangent_color, Math::round(EDSCALE));
-			draw_rect(Rect2(control_pos, Vector2(1, 1)).grow(2), tangent_color);
+			draw_rect(Rect2(control_pos, Vector2(1, 1)).grow(Math::round(2 * EDSCALE)), tangent_color);
 		}
 
 		if (i != curve.get_point_count() - 1) {
 			Vector2 control_pos = get_tangent_view_pos(i, TANGENT_RIGHT);
 			draw_line(get_view_pos(pos), control_pos, tangent_color, Math::round(EDSCALE));
-			draw_rect(Rect2(control_pos, Vector2(1, 1)).grow(2), tangent_color);
+			draw_rect(Rect2(control_pos, Vector2(1, 1)).grow(Math::round(2 * EDSCALE)), tangent_color);
 		}
 	}
 
@@ -732,7 +733,7 @@ void CurveEditor::_draw() {
 
 	for (int i = 0; i < curve.get_point_count(); ++i) {
 		Vector2 pos = curve.get_point_position(i);
-		draw_rect(Rect2(get_view_pos(pos), Vector2(1, 1)).grow(3), i == _selected_point ? selected_point_color : point_color);
+		draw_rect(Rect2(get_view_pos(pos), Vector2(1, 1)).grow(Math::round(3 * EDSCALE)), i == _selected_point ? selected_point_color : point_color);
 		// TODO Circles are prettier. Needs a fix! Or a texture
 		//draw_circle(pos, 2, point_color);
 	}
@@ -742,7 +743,7 @@ void CurveEditor::_draw() {
 	if (_hover_point != -1) {
 		const Color hover_color = line_color;
 		Vector2 pos = curve.get_point_position(_hover_point);
-		draw_rect(Rect2(get_view_pos(pos), Vector2(1, 1)).grow(_hover_radius), hover_color, false, Math::round(EDSCALE));
+		draw_rect(Rect2(get_view_pos(pos), Vector2(1, 1)).grow(Math::round(_hover_radius * EDSCALE)), hover_color, false, Math::round(EDSCALE));
 	}
 
 	// Help text
