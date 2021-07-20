@@ -104,43 +104,46 @@ void TextureLayeredEditor::_update_material() {
 }
 
 void TextureLayeredEditor::_make_shaders() {
-	String shader_2d_array = ""
-							 "shader_type canvas_item;\n"
-							 "uniform sampler2DArray tex;\n"
-							 "uniform float layer;\n"
-							 "void fragment() {\n"
-							 "  COLOR = textureLod(tex,vec3(UV,layer),0.0);\n"
-							 "}";
-
 	shaders[0].instantiate();
-	shaders[0]->set_code(shader_2d_array);
+	shaders[0]->set_code(R"(
+shader_type canvas_item;
 
-	String shader_cube = ""
-						 "shader_type canvas_item;\n"
-						 "uniform samplerCube tex;\n"
-						 "uniform vec3 normal;\n"
-						 "uniform mat3 rot;\n"
-						 "void fragment() {\n"
-						 "  vec3 n = rot * normalize(vec3(normal.xy*(UV * 2.0 - 1.0),normal.z));\n"
-						 "  COLOR = textureLod(tex,n,0.0);\n"
-						 "}";
+uniform sampler2DArray tex;
+uniform float layer;
+
+void fragment() {
+	COLOR = textureLod(tex, vec3(UV, layer), 0.0);
+}
+)");
 
 	shaders[1].instantiate();
-	shaders[1]->set_code(shader_cube);
+	shaders[1]->set_code(R"(
+shader_type canvas_item;
 
-	String shader_cube_array = ""
-							   "shader_type canvas_item;\n"
-							   "uniform samplerCubeArray tex;\n"
-							   "uniform vec3 normal;\n"
-							   "uniform mat3 rot;\n"
-							   "uniform float layer;\n"
-							   "void fragment() {\n"
-							   "  vec3 n = rot * normalize(vec3(normal.xy*(UV * 2.0 - 1.0),normal.z));\n"
-							   "  COLOR = textureLod(tex,vec4(n,layer),0.0);\n"
-							   "}";
+uniform samplerCube tex;
+uniform vec3 normal;
+uniform mat3 rot;
+
+void fragment() {
+	vec3 n = rot * normalize(vec3(normal.xy * (UV * 2.0 - 1.0), normal.z));
+	COLOR = textureLod(tex, n, 0.0);
+}
+)");
 
 	shaders[2].instantiate();
-	shaders[2]->set_code(shader_cube_array);
+	shaders[2]->set_code(R"(
+shader_type canvas_item;
+
+uniform samplerCubeArray tex;
+uniform vec3 normal;
+uniform mat3 rot;
+uniform float layer;
+
+void fragment() {
+	vec3 n = rot * normalize(vec3(normal.xy * (UV * 2.0 - 1.0), normal.z));
+	COLOR = textureLod(tex, vec4(n, layer), 0.0);
+}
+)");
 
 	for (int i = 0; i < 3; i++) {
 		materials[i].instantiate();

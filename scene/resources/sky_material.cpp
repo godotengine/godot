@@ -181,68 +181,75 @@ void ProceduralSkyMaterial::_bind_methods() {
 }
 
 ProceduralSkyMaterial::ProceduralSkyMaterial() {
-	String code = "shader_type sky;\n\n";
-
-	code += "uniform vec4 sky_top_color : hint_color = vec4(0.35, 0.46, 0.71, 1.0);\n";
-	code += "uniform vec4 sky_horizon_color : hint_color = vec4(0.55, 0.69, 0.81, 1.0);\n";
-	code += "uniform float sky_curve : hint_range(0, 1) = 0.09;\n";
-	code += "uniform float sky_energy = 1.0;\n\n";
-	code += "uniform vec4 ground_bottom_color : hint_color = vec4(0.12, 0.12, 0.13, 1.0);\n";
-	code += "uniform vec4 ground_horizon_color : hint_color = vec4(0.37, 0.33, 0.31, 1.0);\n";
-	code += "uniform float ground_curve : hint_range(0, 1) = 0.02;\n";
-	code += "uniform float ground_energy = 1.0;\n\n";
-	code += "uniform float sun_angle_max = 1.74;\n";
-	code += "uniform float sun_curve : hint_range(0, 1) = 0.05;\n\n";
-	code += "void sky() {\n";
-	code += "\tfloat v_angle = acos(clamp(EYEDIR.y, -1.0, 1.0));\n";
-	code += "\tfloat c = (1.0 - v_angle / (PI * 0.5));\n";
-	code += "\tvec3 sky = mix(sky_horizon_color.rgb, sky_top_color.rgb, clamp(1.0 - pow(1.0 - c, 1.0 / sky_curve), 0.0, 1.0));\n";
-	code += "\tsky *= sky_energy;\n";
-	code += "\tif (LIGHT0_ENABLED) {\n";
-	code += "\t\tfloat sun_angle = acos(dot(LIGHT0_DIRECTION, EYEDIR));\n";
-	code += "\t\tif (sun_angle < LIGHT0_SIZE) {\n";
-	code += "\t\t\tsky = LIGHT0_COLOR * LIGHT0_ENERGY;\n";
-	code += "\t\t} else if (sun_angle < sun_angle_max) {\n";
-	code += "\t\t\tfloat c2 = (sun_angle - LIGHT0_SIZE) / (sun_angle_max - LIGHT0_SIZE);\n";
-	code += "\t\t\tsky = mix(LIGHT0_COLOR * LIGHT0_ENERGY, sky, clamp(1.0 - pow(1.0 - c2, 1.0 / sun_curve), 0.0, 1.0));\n";
-	code += "\t\t}\n";
-	code += "\t}\n";
-	code += "\tif (LIGHT1_ENABLED) {\n";
-	code += "\t\tfloat sun_angle = acos(dot(LIGHT1_DIRECTION, EYEDIR));\n";
-	code += "\t\tif (sun_angle < LIGHT1_SIZE) {\n";
-	code += "\t\t\tsky = LIGHT1_COLOR * LIGHT1_ENERGY;\n";
-	code += "\t\t} else if (sun_angle < sun_angle_max) {\n";
-	code += "\t\t\tfloat c2 = (sun_angle - LIGHT1_SIZE) / (sun_angle_max - LIGHT1_SIZE);\n";
-	code += "\t\t\tsky = mix(LIGHT1_COLOR * LIGHT1_ENERGY, sky, clamp(1.0 - pow(1.0 - c2, 1.0 / sun_curve), 0.0, 1.0));\n";
-	code += "\t\t}\n";
-	code += "\t}\n";
-	code += "\tif (LIGHT2_ENABLED) {\n";
-	code += "\t\tfloat sun_angle = acos(dot(LIGHT2_DIRECTION, EYEDIR));\n";
-	code += "\t\tif (sun_angle < LIGHT2_SIZE) {\n";
-	code += "\t\t\tsky = LIGHT2_COLOR * LIGHT2_ENERGY;\n";
-	code += "\t\t} else if (sun_angle < sun_angle_max) {\n";
-	code += "\t\t\tfloat c2 = (sun_angle - LIGHT2_SIZE) / (sun_angle_max - LIGHT2_SIZE);\n";
-	code += "\t\t\tsky = mix(LIGHT2_COLOR * LIGHT2_ENERGY, sky, clamp(1.0 - pow(1.0 - c2, 1.0 / sun_curve), 0.0, 1.0));\n";
-	code += "\t\t}\n";
-	code += "\t}\n";
-	code += "\tif (LIGHT3_ENABLED) {\n";
-	code += "\t\tfloat sun_angle = acos(dot(LIGHT3_DIRECTION, EYEDIR));\n";
-	code += "\t\tif (sun_angle < LIGHT3_SIZE) {\n";
-	code += "\t\t\tsky = LIGHT3_COLOR * LIGHT3_ENERGY;\n";
-	code += "\t\t} else if (sun_angle < sun_angle_max) {\n";
-	code += "\t\t\tfloat c2 = (sun_angle - LIGHT3_SIZE) / (sun_angle_max - LIGHT3_SIZE);\n";
-	code += "\t\t\tsky = mix(LIGHT3_COLOR * LIGHT3_ENERGY, sky, clamp(1.0 - pow(1.0 - c2, 1.0 / sun_curve), 0.0, 1.0));\n";
-	code += "\t\t}\n";
-	code += "\t}\n";
-	code += "\tc = (v_angle - (PI * 0.5)) / (PI * 0.5);\n";
-	code += "\tvec3 ground = mix(ground_horizon_color.rgb, ground_bottom_color.rgb, clamp(1.0 - pow(1.0 - c, 1.0 / ground_curve), 0.0, 1.0));\n";
-	code += "\tground *= ground_energy;\n";
-	code += "\tCOLOR = mix(ground, sky, step(0.0, EYEDIR.y));\n";
-	code += "}\n";
-
 	shader = RS::get_singleton()->shader_create();
 
-	RS::get_singleton()->shader_set_code(shader, code);
+	RS::get_singleton()->shader_set_code(shader, R"(
+shader_type sky;
+
+uniform vec4 sky_top_color : hint_color = vec4(0.35, 0.46, 0.71, 1.0);
+uniform vec4 sky_horizon_color : hint_color = vec4(0.55, 0.69, 0.81, 1.0);
+uniform float sky_curve : hint_range(0, 1) = 0.09;
+uniform float sky_energy = 1.0;
+uniform vec4 ground_bottom_color : hint_color = vec4(0.12, 0.12, 0.13, 1.0);
+uniform vec4 ground_horizon_color : hint_color = vec4(0.37, 0.33, 0.31, 1.0);
+uniform float ground_curve : hint_range(0, 1) = 0.02;
+uniform float ground_energy = 1.0;
+uniform float sun_angle_max = 1.74;
+uniform float sun_curve : hint_range(0, 1) = 0.05;
+
+void sky() {
+	float v_angle = acos(clamp(EYEDIR.y, -1.0, 1.0));
+	float c = (1.0 - v_angle / (PI * 0.5));
+	vec3 sky = mix(sky_horizon_color.rgb, sky_top_color.rgb, clamp(1.0 - pow(1.0 - c, 1.0 / sky_curve), 0.0, 1.0));
+	sky *= sky_energy;
+
+	if (LIGHT0_ENABLED) {
+		float sun_angle = acos(dot(LIGHT0_DIRECTION, EYEDIR));
+		if (sun_angle < LIGHT0_SIZE) {
+			sky = LIGHT0_COLOR * LIGHT0_ENERGY;
+		} else if (sun_angle < sun_angle_max) {
+			float c2 = (sun_angle - LIGHT0_SIZE) / (sun_angle_max - LIGHT0_SIZE);
+			sky = mix(LIGHT0_COLOR * LIGHT0_ENERGY, sky, clamp(1.0 - pow(1.0 - c2, 1.0 / sun_curve), 0.0, 1.0));
+		}
+	}
+
+	if (LIGHT1_ENABLED) {
+		float sun_angle = acos(dot(LIGHT1_DIRECTION, EYEDIR));
+		if (sun_angle < LIGHT1_SIZE) {
+			sky = LIGHT1_COLOR * LIGHT1_ENERGY;
+		} else if (sun_angle < sun_angle_max) {
+			float c2 = (sun_angle - LIGHT1_SIZE) / (sun_angle_max - LIGHT1_SIZE);
+			sky = mix(LIGHT1_COLOR * LIGHT1_ENERGY, sky, clamp(1.0 - pow(1.0 - c2, 1.0 / sun_curve), 0.0, 1.0));
+		}
+	}
+
+	if (LIGHT2_ENABLED) {
+		float sun_angle = acos(dot(LIGHT2_DIRECTION, EYEDIR));
+		if (sun_angle < LIGHT2_SIZE) {
+			sky = LIGHT2_COLOR * LIGHT2_ENERGY;
+		} else if (sun_angle < sun_angle_max) {
+			float c2 = (sun_angle - LIGHT2_SIZE) / (sun_angle_max - LIGHT2_SIZE);
+			sky = mix(LIGHT2_COLOR * LIGHT2_ENERGY, sky, clamp(1.0 - pow(1.0 - c2, 1.0 / sun_curve), 0.0, 1.0));
+		}
+	}
+
+	if (LIGHT3_ENABLED) {
+		float sun_angle = acos(dot(LIGHT3_DIRECTION, EYEDIR));
+		if (sun_angle < LIGHT3_SIZE) {
+			sky = LIGHT3_COLOR * LIGHT3_ENERGY;
+		} else if (sun_angle < sun_angle_max) {
+			float c2 = (sun_angle - LIGHT3_SIZE) / (sun_angle_max - LIGHT3_SIZE);
+			sky = mix(LIGHT3_COLOR * LIGHT3_ENERGY, sky, clamp(1.0 - pow(1.0 - c2, 1.0 / sun_curve), 0.0, 1.0));
+		}
+	}
+
+	c = (v_angle - (PI * 0.5)) / (PI * 0.5);
+	vec3 ground = mix(ground_horizon_color.rgb, ground_bottom_color.rgb, clamp(1.0 - pow(1.0 - c, 1.0 / ground_curve), 0.0, 1.0));
+	ground *= ground_energy;
+
+	COLOR = mix(ground, sky, step(0.0, EYEDIR.y));
+}
+)");
 
 	RS::get_singleton()->material_set_shader(_get_material(), shader);
 
@@ -298,16 +305,17 @@ void PanoramaSkyMaterial::_bind_methods() {
 }
 
 PanoramaSkyMaterial::PanoramaSkyMaterial() {
-	String code = "shader_type sky;\n\n";
-
-	code += "uniform sampler2D source_panorama : filter_linear;\n";
-	code += "void sky() {\n";
-	code += "\tCOLOR = texture(source_panorama, SKY_COORDS).rgb;\n";
-	code += "}";
-
 	shader = RS::get_singleton()->shader_create();
 
-	RS::get_singleton()->shader_set_code(shader, code);
+	RS::get_singleton()->shader_set_code(shader, R"(
+shader_type sky;
+
+uniform sampler2D source_panorama : filter_linear;
+
+void sky() {
+	COLOR = texture(source_panorama, SKY_COORDS).rgb;
+}
+)");
 
 	RS::get_singleton()->material_set_shader(_get_material(), shader);
 }
@@ -484,102 +492,102 @@ void PhysicalSkyMaterial::_bind_methods() {
 }
 
 PhysicalSkyMaterial::PhysicalSkyMaterial() {
-	String code = "shader_type sky;\n\n";
-
-	code += "uniform float rayleigh : hint_range(0, 64) = 2.0;\n";
-	code += "uniform vec4 rayleigh_color : hint_color = vec4(0.056, 0.14, 0.3, 1.0);\n";
-	code += "uniform float mie : hint_range(0, 1) = 0.005;\n";
-	code += "uniform float mie_eccentricity : hint_range(-1, 1) = 0.8;\n";
-	code += "uniform vec4 mie_color : hint_color = vec4(0.36, 0.56, 0.82, 1.0);\n\n";
-
-	code += "uniform float turbidity : hint_range(0, 1000) = 10.0;\n";
-	code += "uniform float sun_disk_scale : hint_range(0, 360) = 1.0;\n";
-	code += "uniform vec4 ground_color : hint_color = vec4(1.0);\n";
-	code += "uniform float exposure : hint_range(0, 128) = 0.1;\n";
-	code += "uniform float dither_strength : hint_range(0, 10) = 1.0;\n\n";
-
-	code += "uniform sampler2D night_sky : hint_black;";
-
-	code += "const vec3 UP = vec3( 0.0, 1.0, 0.0 );\n\n";
-
-	code += "// Sun constants\n";
-	code += "const float SUN_ENERGY = 1000.0;\n\n";
-
-	code += "// optical length at zenith for molecules\n";
-	code += "const float rayleigh_zenith_size = 8.4e3;\n";
-	code += "const float mie_zenith_size = 1.25e3;\n\n";
-
-	code += "float henyey_greenstein(float cos_theta, float g) {\n";
-	code += "\tconst float k = 0.0795774715459;\n";
-	code += "\treturn k * (1.0 - g * g) / (pow(1.0 + g * g - 2.0 * g * cos_theta, 1.5));\n";
-	code += "}\n\n";
-
-	code += "// From: https://www.shadertoy.com/view/4sfGzS credit to iq\n";
-	code += "float hash(vec3 p) {\n";
-	code += "\tp  = fract( p * 0.3183099 + 0.1 );\n";
-	code += "\tp *= 17.0;\n";
-	code += "\treturn fract(p.x * p.y * p.z * (p.x + p.y + p.z));\n";
-	code += "}\n\n";
-
-	code += "void sky() {\n";
-	code += "\tif (LIGHT0_ENABLED) {\n";
-	code += "\t\tfloat zenith_angle = clamp( dot(UP, normalize(LIGHT0_DIRECTION)), -1.0, 1.0 );\n";
-	code += "\t\tfloat sun_energy = max(0.0, 1.0 - exp(-((PI * 0.5) - acos(zenith_angle)))) * SUN_ENERGY * LIGHT0_ENERGY;\n";
-	code += "\t\tfloat sun_fade = 1.0 - clamp(1.0 - exp(LIGHT0_DIRECTION.y), 0.0, 1.0);\n\n";
-
-	code += "\t\t// rayleigh coefficients\n";
-	code += "\t\tfloat rayleigh_coefficient = rayleigh - ( 1.0 * ( 1.0 - sun_fade ) );\n";
-	code += "\t\tvec3 rayleigh_beta = rayleigh_coefficient * rayleigh_color.rgb * 0.0001;\n";
-	code += "\t\t// mie coefficients from Preetham\n";
-	code += "\t\tvec3 mie_beta = turbidity * mie * mie_color.rgb * 0.000434;\n\n";
-
-	code += "\t\t// optical length\n";
-	code += "\t\tfloat zenith = acos(max(0.0, dot(UP, EYEDIR)));\n";
-	code += "\t\tfloat optical_mass = 1.0 / (cos(zenith) + 0.15 * pow(93.885 - degrees(zenith), -1.253));\n";
-	code += "\t\tfloat rayleigh_scatter = rayleigh_zenith_size * optical_mass;\n";
-	code += "\t\tfloat mie_scatter = mie_zenith_size * optical_mass;\n\n";
-
-	code += "\t\t// light extinction based on thickness of atmosphere\n";
-	code += "\t\tvec3 extinction = exp(-(rayleigh_beta * rayleigh_scatter + mie_beta * mie_scatter));\n\n";
-
-	code += "\t\t// in scattering\n";
-	code += "\t\tfloat cos_theta = dot(EYEDIR, normalize(LIGHT0_DIRECTION));\n\n";
-
-	code += "\t\tfloat rayleigh_phase = (3.0 / (16.0 * PI)) * (1.0 + pow(cos_theta * 0.5 + 0.5, 2.0));\n";
-	code += "\t\tvec3 betaRTheta = rayleigh_beta * rayleigh_phase;\n\n";
-
-	code += "\t\tfloat mie_phase = henyey_greenstein(cos_theta, mie_eccentricity);\n";
-	code += "\t\tvec3 betaMTheta = mie_beta * mie_phase;\n\n";
-
-	code += "\t\tvec3 Lin = pow(sun_energy * ((betaRTheta + betaMTheta) / (rayleigh_beta + mie_beta)) * (1.0 - extinction), vec3(1.5));\n";
-	code += "\t\t// Hack from https://github.com/mrdoob/three.js/blob/master/examples/jsm/objects/Sky.js\n";
-	code += "\t\tLin *= mix(vec3(1.0), pow(sun_energy * ((betaRTheta + betaMTheta) / (rayleigh_beta + mie_beta)) * extinction, vec3(0.5)), clamp(pow(1.0 - zenith_angle, 5.0), 0.0, 1.0));\n\n";
-
-	code += "\t\t// Hack in the ground color\n";
-	code += "\t\tLin  *= mix(ground_color.rgb, vec3(1.0), smoothstep(-0.1, 0.1, dot(UP, EYEDIR)));\n\n";
-
-	code += "\t\t// Solar disk and out-scattering\n";
-	code += "\t\tfloat sunAngularDiameterCos = cos(LIGHT0_SIZE * sun_disk_scale);\n";
-	code += "\t\tfloat sunAngularDiameterCos2 = cos(LIGHT0_SIZE * sun_disk_scale*0.5);\n";
-	code += "\t\tfloat sundisk = smoothstep(sunAngularDiameterCos, sunAngularDiameterCos2, cos_theta);\n";
-	code += "\t\tvec3 L0 = (sun_energy * 1900.0 * extinction) * sundisk * LIGHT0_COLOR;\n";
-	code += "\t\tL0 += texture(night_sky, SKY_COORDS).xyz * extinction;\n\n";
-
-	code += "\t\tvec3 color = (Lin + L0) * 0.04;\n";
-	code += "\t\tCOLOR = pow(color, vec3(1.0 / (1.2 + (1.2 * sun_fade))));\n";
-	code += "\t\tCOLOR *= exposure;\n";
-	code += "\t\t// Make optional, eliminates banding\n";
-	code += "\t\tCOLOR += (hash(EYEDIR * 1741.9782) * 0.08 - 0.04) * 0.016 * dither_strength;\n";
-	code += "\t} else {\n";
-	code += "\t\t// There is no sun, so display night_sky and nothing else\n";
-	code += "\t\tCOLOR = texture(night_sky, SKY_COORDS).xyz * 0.04;\n";
-	code += "\t\tCOLOR *= exposure;\n";
-	code += "\t}\n";
-	code += "}\n";
-
 	shader = RS::get_singleton()->shader_create();
 
-	RS::get_singleton()->shader_set_code(shader, code);
+	RS::get_singleton()->shader_set_code(shader, R"(
+shader_type sky;
+
+uniform float rayleigh : hint_range(0, 64) = 2.0;
+uniform vec4 rayleigh_color : hint_color = vec4(0.056, 0.14, 0.3, 1.0);
+uniform float mie : hint_range(0, 1) = 0.005;
+uniform float mie_eccentricity : hint_range(-1, 1) = 0.8;
+uniform vec4 mie_color : hint_color = vec4(0.36, 0.56, 0.82, 1.0);
+
+uniform float turbidity : hint_range(0, 1000) = 10.0;
+uniform float sun_disk_scale : hint_range(0, 360) = 1.0;
+uniform vec4 ground_color : hint_color = vec4(1.0);
+uniform float exposure : hint_range(0, 128) = 0.1;
+uniform float dither_strength : hint_range(0, 10) = 1.0;
+
+uniform sampler2D night_sky : hint_black;
+
+const vec3 UP = vec3( 0.0, 1.0, 0.0 );
+
+// Sun constants
+const float SUN_ENERGY = 1000.0;
+
+// Optical length at zenith for molecules.
+const float rayleigh_zenith_size = 8.4e3;
+const float mie_zenith_size = 1.25e3;
+
+float henyey_greenstein(float cos_theta, float g) {
+	const float k = 0.0795774715459;
+	return k * (1.0 - g * g) / (pow(1.0 + g * g - 2.0 * g * cos_theta, 1.5));
+}
+
+// From: https://www.shadertoy.com/view/4sfGzS credit to iq
+float hash(vec3 p) {
+	p  = fract( p * 0.3183099 + 0.1 );
+	p *= 17.0;
+	return fract(p.x * p.y * p.z * (p.x + p.y + p.z));
+}
+
+void sky() {
+	if (LIGHT0_ENABLED) {
+		float zenith_angle = clamp( dot(UP, normalize(LIGHT0_DIRECTION)), -1.0, 1.0 );
+		float sun_energy = max(0.0, 1.0 - exp(-((PI * 0.5) - acos(zenith_angle)))) * SUN_ENERGY * LIGHT0_ENERGY;
+		float sun_fade = 1.0 - clamp(1.0 - exp(LIGHT0_DIRECTION.y), 0.0, 1.0);
+
+		// Rayleigh coefficients.
+		float rayleigh_coefficient = rayleigh - ( 1.0 * ( 1.0 - sun_fade ) );
+		vec3 rayleigh_beta = rayleigh_coefficient * rayleigh_color.rgb * 0.0001;
+		// mie coefficients from Preetham
+		vec3 mie_beta = turbidity * mie * mie_color.rgb * 0.000434;
+
+		// Optical length.
+		float zenith = acos(max(0.0, dot(UP, EYEDIR)));
+		float optical_mass = 1.0 / (cos(zenith) + 0.15 * pow(93.885 - degrees(zenith), -1.253));
+		float rayleigh_scatter = rayleigh_zenith_size * optical_mass;
+		float mie_scatter = mie_zenith_size * optical_mass;
+
+		// Light extinction based on thickness of atmosphere.
+		vec3 extinction = exp(-(rayleigh_beta * rayleigh_scatter + mie_beta * mie_scatter));
+
+		// In scattering.
+		float cos_theta = dot(EYEDIR, normalize(LIGHT0_DIRECTION));
+
+		float rayleigh_phase = (3.0 / (16.0 * PI)) * (1.0 + pow(cos_theta * 0.5 + 0.5, 2.0));
+		vec3 betaRTheta = rayleigh_beta * rayleigh_phase;
+
+		float mie_phase = henyey_greenstein(cos_theta, mie_eccentricity);
+		vec3 betaMTheta = mie_beta * mie_phase;
+
+		vec3 Lin = pow(sun_energy * ((betaRTheta + betaMTheta) / (rayleigh_beta + mie_beta)) * (1.0 - extinction), vec3(1.5));
+		// Hack from https://github.com/mrdoob/three.js/blob/master/examples/jsm/objects/Sky.js
+		Lin *= mix(vec3(1.0), pow(sun_energy * ((betaRTheta + betaMTheta) / (rayleigh_beta + mie_beta)) * extinction, vec3(0.5)), clamp(pow(1.0 - zenith_angle, 5.0), 0.0, 1.0));
+
+		// Hack in the ground color.
+		Lin  *= mix(ground_color.rgb, vec3(1.0), smoothstep(-0.1, 0.1, dot(UP, EYEDIR)));
+
+		// Solar disk and out-scattering.
+		float sunAngularDiameterCos = cos(LIGHT0_SIZE * sun_disk_scale);
+		float sunAngularDiameterCos2 = cos(LIGHT0_SIZE * sun_disk_scale*0.5);
+		float sundisk = smoothstep(sunAngularDiameterCos, sunAngularDiameterCos2, cos_theta);
+		vec3 L0 = (sun_energy * 1900.0 * extinction) * sundisk * LIGHT0_COLOR;
+		L0 += texture(night_sky, SKY_COORDS).xyz * extinction;
+
+		vec3 color = (Lin + L0) * 0.04;
+		COLOR = pow(color, vec3(1.0 / (1.2 + (1.2 * sun_fade))));
+		COLOR *= exposure;
+		// Make optional, eliminates banding.
+		COLOR += (hash(EYEDIR * 1741.9782) * 0.08 - 0.04) * 0.016 * dither_strength;
+	} else {
+		// There is no sun, so display night_sky and nothing else.
+		COLOR = texture(night_sky, SKY_COORDS).xyz * 0.04;
+		COLOR *= exposure;
+	}
+}
+)");
 
 	RS::get_singleton()->material_set_shader(_get_material(), shader);
 

@@ -9388,7 +9388,13 @@ RendererStorageRD::RendererStorageRD() {
 		// default material and shader for particles shader
 		particles_shader.default_shader = shader_allocate();
 		shader_initialize(particles_shader.default_shader);
-		shader_set_code(particles_shader.default_shader, "shader_type particles; void process() { COLOR = vec4(1.0); } \n");
+		shader_set_code(particles_shader.default_shader, R"(
+shader_type particles;
+
+void process() {
+	COLOR = vec4(1.0);
+}
+)");
 		particles_shader.default_material = material_allocate();
 		material_initialize(particles_shader.default_material);
 		material_set_shader(particles_shader.default_material, particles_shader.default_shader);

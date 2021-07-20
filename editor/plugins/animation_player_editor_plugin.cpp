@@ -1733,27 +1733,27 @@ AnimationPlayerEditor::AnimationPlayerEditor(EditorNode *p_editor, AnimationPlay
 	onion.capture.material = Ref<ShaderMaterial>(memnew(ShaderMaterial));
 
 	onion.capture.shader = Ref<Shader>(memnew(Shader));
-	onion.capture.shader->set_code(" \
-		shader_type canvas_item; \
-		\
-        uniform vec4 bkg_color; \
-		uniform vec4 dir_color; \
-		uniform bool differences_only; \
-		uniform sampler2D present; \
-		\
-		float zero_if_equal(vec4 a, vec4 b) { \
-			return smoothstep(0.0, 0.005, length(a.rgb - b.rgb) / sqrt(3.0)); \
-		} \
-		\
-		void fragment() { \
-			vec4 capture_samp = texture(TEXTURE, UV); \
-			vec4 present_samp = texture(present, UV); \
-			float bkg_mask = zero_if_equal(capture_samp, bkg_color); \
-			float diff_mask = 1.0 - zero_if_equal(present_samp, bkg_color); \
-			diff_mask = min(1.0, diff_mask + float(!differences_only)); \
-			COLOR = vec4(capture_samp.rgb * dir_color.rgb, bkg_mask * diff_mask); \
-		} \
-	");
+	onion.capture.shader->set_code(R"(
+shader_type canvas_item;
+
+uniform vec4 bkg_color;
+uniform vec4 dir_color;
+uniform bool differences_only;
+uniform sampler2D present;
+
+float zero_if_equal(vec4 a, vec4 b) {
+	return smoothstep(0.0, 0.005, length(a.rgb - b.rgb) / sqrt(3.0));
+}
+
+void fragment() {
+	vec4 capture_samp = texture(TEXTURE, UV);
+	vec4 present_samp = texture(present, UV);
+	float bkg_mask = zero_if_equal(capture_samp, bkg_color);
+	float diff_mask = 1.0 - zero_if_equal(present_samp, bkg_color);
+	diff_mask = min(1.0, diff_mask + float(!differences_only));
+	COLOR = vec4(capture_samp.rgb * dir_color.rgb, bkg_mask * diff_mask);
+}
+)");
 	RS::get_singleton()->material_set_shader(onion.capture.material->get_rid(), onion.capture.shader->get_rid());
 }
 

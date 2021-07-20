@@ -757,7 +757,13 @@ void RendererSceneSkyRD::init(RendererStorageRD *p_storage) {
 		sky_shader.default_shader = storage->shader_allocate();
 		storage->shader_initialize(sky_shader.default_shader);
 
-		storage->shader_set_code(sky_shader.default_shader, "shader_type sky; void sky() { COLOR = vec3(0.0); } \n");
+		storage->shader_set_code(sky_shader.default_shader, R"(
+shader_type sky;
+
+void sky() {
+	COLOR = vec3(0.0);
+}
+)");
 
 		sky_shader.default_material = storage->material_allocate();
 		storage->material_initialize(sky_shader.default_material);
@@ -838,7 +844,15 @@ void RendererSceneSkyRD::init(RendererStorageRD *p_storage) {
 		sky_scene_state.fog_shader = storage->shader_allocate();
 		storage->shader_initialize(sky_scene_state.fog_shader);
 
-		storage->shader_set_code(sky_scene_state.fog_shader, "shader_type sky; uniform vec4 clear_color; void sky() { COLOR = clear_color.rgb; } \n");
+		storage->shader_set_code(sky_scene_state.fog_shader, R"(
+shader_type sky;
+
+uniform vec4 clear_color;
+
+void sky() {
+	COLOR = clear_color.rgb;
+}
+)");
 		sky_scene_state.fog_material = storage->material_allocate();
 		storage->material_initialize(sky_scene_state.fog_material);
 
