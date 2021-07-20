@@ -729,7 +729,7 @@ public:
 		SuiteNode *body = nullptr;
 		bool is_static = false;
 		bool is_coroutine = false;
-		MultiplayerAPI::RPCMode rpc_mode = MultiplayerAPI::RPC_MODE_DISABLED;
+		MultiplayerAPI::RPCConfig rpc_config;
 		MethodInfo info;
 		LambdaNode *source_lambda = nullptr;
 #ifdef TOOLS_ENABLED
@@ -1117,7 +1117,6 @@ public:
 		bool exported = false;
 		bool onready = false;
 		PropertyInfo export_info;
-		MultiplayerAPI::RPCMode rpc_mode = MultiplayerAPI::RPC_MODE_DISABLED;
 		int assignments = 0;
 		int usages = 0;
 		bool use_conversion_assign = false;

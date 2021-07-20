@@ -94,52 +94,17 @@ const MultiplayerAPI::RPCConfig _get_rpc_config_by_id(Node *p_node, uint16_t p_i
 	return MultiplayerAPI::RPCConfig();
 }
 
-_FORCE_INLINE_ bool _should_call_local(MultiplayerAPI::RPCMode mode, bool is_master, bool &r_skip_rpc) {
-	switch (mode) {
-		case MultiplayerAPI::RPC_MODE_DISABLED: {
-			// Do nothing.
-		} break;
-		case MultiplayerAPI::RPC_MODE_REMOTE: {
-			// Do nothing. Remote cannot produce a local call.
-		} break;
-		case MultiplayerAPI::RPC_MODE_MASTERSYNC: {
-			if (is_master) {
-				r_skip_rpc = true; // I am the master, so skip remote call.
-			}
-			[[fallthrough]];
-		}
-		case MultiplayerAPI::RPC_MODE_REMOTESYNC:
-		case MultiplayerAPI::RPC_MODE_PUPPETSYNC: {
-			// Call it, sync always results in a local call.
-			return true;
-		} break;
-		case MultiplayerAPI::RPC_MODE_MASTER: {
-			if (is_master) {
-				r_skip_rpc = true; // I am the master, so skip remote call.
-			}
-			return is_master;
-		} break;
-		case MultiplayerAPI::RPC_MODE_PUPPET: {
-			return !is_master;
-		} break;
-	}
-	return false;
-}
-
 _FORCE_INLINE_ bool _can_call_mode(Node *p_node, MultiplayerAPI::RPCMode mode, int p_remote_id) {
 	switch (mode) {
 		case MultiplayerAPI::RPC_MODE_DISABLED: {
 			return false;
 		} break;
-		case MultiplayerAPI::RPC_MODE_REMOTE:
-		case MultiplayerAPI::RPC_MODE_REMOTESYNC: {
+		case MultiplayerAPI::RPC_MODE_REMOTE: {
 			return true;
 		} break;
-		case MultiplayerAPI::RPC_MODE_MASTERSYNC:
 		case MultiplayerAPI::RPC_MODE_MASTER: {
 			return p_node->is_network_master();
 		} break;
-		case MultiplayerAPI::RPC_MODE_PUPPETSYNC:
 		case MultiplayerAPI::RPC_MODE_PUPPET: {
 			return !p_node->is_network_master() && p_remote_id == p_node->get_network_master();
 		} break;
@@ -977,23 +942,21 @@ void MultiplayerAPI::rpcp(Node *p_node, int p_peer_id, bool p_unreliable, const 
 	ERR_FAIL_COND_MSG(network_peer->get_connection_status() != MultiplayerPeer::CONNECTION_CONNECTED, "Trying to call an RPC via a network peer which is not connected.");
 
 	int node_id = network_peer->get_unique_id();
-	bool skip_rpc = node_id == p_peer_id;
 	bool call_local_native = false;
 	bool call_local_script = false;
-	bool is_master = p_node->is_network_master();
 	uint16_t rpc_id = UINT16_MAX;
 	const RPCConfig config = _get_rpc_config(p_node, p_method, rpc_id);
 	ERR_FAIL_COND_MSG(config.name == StringName(),
 			vformat("Unable to get the RPC configuration for the function \"%s\" at path: \"%s\". This happens when the method is not marked for RPCs.", p_method, p_node->get_path()));
 	if (p_peer_id == 0 || p_peer_id == node_id || (p_peer_id < 0 && p_peer_id != -node_id)) {
 		if (rpc_id & (1 << 15)) {
-			call_local_native = _should_call_local(config.rpc_mode, is_master, skip_rpc);
+			call_local_native = config.sync;
 		} else {
-			call_local_script = _should_call_local(config.rpc_mode, is_master, skip_rpc);
+			call_local_script = config.sync;
 		}
 	}
 
-	if (!skip_rpc) {
+	if (p_peer_id != node_id) {
 #ifdef DEBUG_ENABLED
 		_profile_node_data("out_rpc", p_node->get_instance_id());
 #endif
@@ -1030,7 +993,7 @@ void MultiplayerAPI::rpcp(Node *p_node, int p_peer_id, bool p_unreliable, const 
 		}
 	}
 
-	ERR_FAIL_COND_MSG(skip_rpc && !(call_local_native || call_local_script), "RPC '" + p_method + "' on yourself is not allowed by selected mode.");
+	ERR_FAIL_COND_MSG(p_peer_id == node_id && !config.sync, "RPC '" + p_method + "' on yourself is not allowed by selected mode.");
 }
 
 Error MultiplayerAPI::send_bytes(Vector<uint8_t> p_data, int p_to, MultiplayerPeer::TransferMode p_mode) {
@@ -1136,9 +1099,6 @@ void MultiplayerAPI::_bind_methods() {
 	BIND_ENUM_CONSTANT(RPC_MODE_REMOTE);
 	BIND_ENUM_CONSTANT(RPC_MODE_MASTER);
 	BIND_ENUM_CONSTANT(RPC_MODE_PUPPET);
-	BIND_ENUM_CONSTANT(RPC_MODE_REMOTESYNC);
-	BIND_ENUM_CONSTANT(RPC_MODE_MASTERSYNC);
-	BIND_ENUM_CONSTANT(RPC_MODE_PUPPETSYNC);
 }
 
 MultiplayerAPI::MultiplayerAPI() {
