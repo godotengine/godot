@@ -1153,7 +1153,7 @@ ProjectExportDialog::ProjectExportDialog() {
 
 	enc_directory = memnew(CheckButton);
 	enc_directory->connect("toggled", callable_mp(this, &ProjectExportDialog::_enc_directory_changed));
-	enc_directory->set_text("Encrypt Index (File Names and Info)");
+	enc_directory->set_text(TTR("Encrypt Index (File Names and Info)"));
 	sec_vb->add_child(enc_directory);
 
 	enc_in_filters = memnew(LineEdit);
@@ -1219,7 +1219,7 @@ ProjectExportDialog::ProjectExportDialog() {
 
 	export_all_dialog = memnew(ConfirmationDialog);
 	add_child(export_all_dialog);
-	export_all_dialog->set_title("Export All");
+	export_all_dialog->set_title(TTR("Export All"));
 	export_all_dialog->set_text(TTR("Choose an export mode:"));
 	export_all_dialog->get_ok_button()->hide();
 	export_all_dialog->add_button(TTR("Debug"), true, "debug");
@@ -1253,7 +1253,7 @@ ProjectExportDialog::ProjectExportDialog() {
 	export_error2->set_text(" - " + TTR("Export templates for this platform are missing:") + " ");
 
 	error_dialog = memnew(AcceptDialog);
-	error_dialog->set_title("Error");
+	error_dialog->set_title(TTR("Error"));
 	error_dialog->set_text(TTR("Export templates for this platform are missing/corrupted:") + " ");
 	main_vb->add_child(error_dialog);
 	error_dialog->hide();

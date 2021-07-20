@@ -79,7 +79,7 @@ void AnimationTreeEditor::_update_path() {
 	group.instantiate();
 
 	Button *b = memnew(Button);
-	b->set_text("Root");
+	b->set_text(TTR("Root"));
 	b->set_toggle_mode(true);
 	b->set_button_group(group);
 	b->set_pressed(true);

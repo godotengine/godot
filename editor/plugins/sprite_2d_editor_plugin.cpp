@@ -521,7 +521,7 @@ Sprite2DEditor::Sprite2DEditor() {
 
 	debug_uv_dialog = memnew(ConfirmationDialog);
 	debug_uv_dialog->get_ok_button()->set_text(TTR("Create Mesh2D"));
-	debug_uv_dialog->set_title("Mesh 2D Preview");
+	debug_uv_dialog->set_title(TTR("Mesh 2D Preview"));
 	VBoxContainer *vb = memnew(VBoxContainer);
 	debug_uv_dialog->add_child(vb);
 	ScrollContainer *scroll = memnew(ScrollContainer);
