@@ -48,10 +48,13 @@
 #include "scene/resources/animation.h"
 #include "scene_tree_editor.h"
 
+class AnimationTrackEdit;
+
 class AnimationTimelineEdit : public Range {
 	GDCLASS(AnimationTimelineEdit, Range);
 
 	Ref<Animation> animation;
+	AnimationTrackEdit *track_edit;
 	int name_limit;
 	Range *zoom;
 	Range *h_scroll;
@@ -100,6 +103,7 @@ public:
 
 	virtual Size2 get_minimum_size() const;
 	void set_animation(const Ref<Animation> &p_animation);
+	void set_track_edit(AnimationTrackEdit *p_track_edit);
 	void set_zoom(Range *p_zoom);
 	Range *get_zoom() const { return zoom; }
 	void set_undo_redo(UndoRedo *p_undo_redo);
@@ -273,25 +277,6 @@ public:
 
 class AnimationTrackEditor : public VBoxContainer {
 	GDCLASS(AnimationTrackEditor, VBoxContainer);
-
-	enum {
-		EDIT_COPY_TRACKS,
-		EDIT_COPY_TRACKS_CONFIRM,
-		EDIT_PASTE_TRACKS,
-		EDIT_SCALE_SELECTION,
-		EDIT_SCALE_FROM_CURSOR,
-		EDIT_SCALE_CONFIRM,
-		EDIT_DUPLICATE_SELECTION,
-		EDIT_DUPLICATE_TRANSPOSED,
-		EDIT_DELETE_SELECTION,
-		EDIT_GOTO_NEXT_STEP,
-		EDIT_GOTO_PREV_STEP,
-		EDIT_APPLY_RESET,
-		EDIT_OPTIMIZE_ANIMATION,
-		EDIT_OPTIMIZE_ANIMATION_CONFIRM,
-		EDIT_CLEAN_UP_ANIMATION,
-		EDIT_CLEAN_UP_ANIMATION_CONFIRM
-	};
 
 	Ref<Animation> animation;
 	Node *root;
@@ -503,6 +488,25 @@ protected:
 	void _notification(int p_what);
 
 public:
+	enum {
+		EDIT_COPY_TRACKS,
+		EDIT_COPY_TRACKS_CONFIRM,
+		EDIT_PASTE_TRACKS,
+		EDIT_SCALE_SELECTION,
+		EDIT_SCALE_FROM_CURSOR,
+		EDIT_SCALE_CONFIRM,
+		EDIT_DUPLICATE_SELECTION,
+		EDIT_DUPLICATE_TRANSPOSED,
+		EDIT_DELETE_SELECTION,
+		EDIT_GOTO_NEXT_STEP,
+		EDIT_GOTO_PREV_STEP,
+		EDIT_APPLY_RESET,
+		EDIT_OPTIMIZE_ANIMATION,
+		EDIT_OPTIMIZE_ANIMATION_CONFIRM,
+		EDIT_CLEAN_UP_ANIMATION,
+		EDIT_CLEAN_UP_ANIMATION_CONFIRM
+	};
+
 	void add_track_edit_plugin(const Ref<AnimationTrackEditPlugin> &p_plugin);
 	void remove_track_edit_plugin(const Ref<AnimationTrackEditPlugin> &p_plugin);
 
@@ -532,6 +536,12 @@ public:
 	float get_moving_selection_offset() const;
 	float snap_time(float p_value, bool p_relative = false);
 	bool is_grouping_tracks();
+
+	/** If `p_from_mouse_event` is `true`, handle Shift key presses for precise snapping. */
+	void goto_prev_step(bool p_from_mouse_event);
+
+	/** If `p_from_mouse_event` is `true`, handle Shift key presses for precise snapping. */
+	void goto_next_step(bool p_from_mouse_event);
 
 	MenuButton *get_edit_menu();
 	AnimationTrackEditor();
