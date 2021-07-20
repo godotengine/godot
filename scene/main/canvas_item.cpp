@@ -523,7 +523,7 @@ void CanvasItem::_enter_canvas() {
 			get_viewport()->gui_reset_canvas_sort_index();
 		}
 
-		get_tree()->call_group_flags(SceneTree::GROUP_CALL_UNIQUE, group, "_top_level_raise_self");
+		get_tree()->call_group_flags(SceneTree::GROUP_CALL_UNIQUE, group, SNAME("_top_level_raise_self"));
 
 	} else {
 		CanvasItem *parent = get_parent_item();
@@ -542,7 +542,7 @@ void CanvasItem::_exit_canvas() {
 	notification(NOTIFICATION_EXIT_CANVAS, true); //reverse the notification
 	RenderingServer::get_singleton()->canvas_item_set_parent(canvas_item, RID());
 	canvas_layer = nullptr;
-	group = "";
+	group = StringName();
 }
 
 void CanvasItem::_notification(int p_what) {
@@ -588,7 +588,7 @@ void CanvasItem::_notification(int p_what) {
 				break;
 			}
 
-			if (group != "") {
+			if (group != StringName()) {
 				get_tree()->call_group_flags(SceneTree::GROUP_CALL_UNIQUE, group, "_top_level_raise_self");
 			} else {
 				CanvasItem *p = get_parent_item();
@@ -648,7 +648,7 @@ void CanvasItem::update() {
 
 	pending_update = true;
 
-	MessageQueue::get_singleton()->push_call(this, "_update_callback");
+	MessageQueue::get_singleton()->push_call(this, SNAME("_update_callback"));
 }
 
 void CanvasItem::set_modulate(const Color &p_modulate) {

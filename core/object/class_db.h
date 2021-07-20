@@ -311,7 +311,7 @@ public:
 	}
 
 	template <class M>
-	static MethodBind *bind_vararg_method(uint32_t p_flags, StringName p_name, M p_method, const MethodInfo &p_info = MethodInfo(), const Vector<Variant> &p_default_args = Vector<Variant>(), bool p_return_nil_is_variant = true) {
+	static MethodBind *bind_vararg_method(uint32_t p_flags, const StringName &p_name, M p_method, const MethodInfo &p_info = MethodInfo(), const Vector<Variant> &p_default_args = Vector<Variant>(), bool p_return_nil_is_variant = true) {
 		GLOBAL_LOCK_FUNCTION;
 
 		MethodBind *bind = create_vararg_method_bind(p_method, p_info, p_return_nil_is_variant);
@@ -345,31 +345,31 @@ public:
 
 	static void bind_method_custom(const StringName &p_class, MethodBind *p_method);
 
-	static void add_signal(StringName p_class, const MethodInfo &p_signal);
-	static bool has_signal(StringName p_class, StringName p_signal, bool p_no_inheritance = false);
-	static bool get_signal(StringName p_class, StringName p_signal, MethodInfo *r_signal);
-	static void get_signal_list(StringName p_class, List<MethodInfo> *p_signals, bool p_no_inheritance = false);
+	static void add_signal(const StringName &p_class, const MethodInfo &p_signal);
+	static bool has_signal(const StringName &p_class, const StringName &p_signal, bool p_no_inheritance = false);
+	static bool get_signal(const StringName &p_class, const StringName &p_signal, MethodInfo *r_signal);
+	static void get_signal_list(const StringName &p_class, List<MethodInfo> *p_signals, bool p_no_inheritance = false);
 
-	static void add_property_group(StringName p_class, const String &p_name, const String &p_prefix = "");
-	static void add_property_subgroup(StringName p_class, const String &p_name, const String &p_prefix = "");
-	static void add_property(StringName p_class, const PropertyInfo &p_pinfo, const StringName &p_setter, const StringName &p_getter, int p_index = -1);
-	static void set_property_default_value(StringName p_class, const StringName &p_name, const Variant &p_default);
-	static void get_property_list(StringName p_class, List<PropertyInfo> *p_list, bool p_no_inheritance = false, const Object *p_validator = nullptr);
-	static bool get_property_info(StringName p_class, StringName p_property, PropertyInfo *r_info, bool p_no_inheritance = false, const Object *p_validator = nullptr);
+	static void add_property_group(const StringName &p_class, const String &p_name, const String &p_prefix = "");
+	static void add_property_subgroup(const StringName &p_class, const String &p_name, const String &p_prefix = "");
+	static void add_property(const StringName &p_class, const PropertyInfo &p_pinfo, const StringName &p_setter, const StringName &p_getter, int p_index = -1);
+	static void set_property_default_value(const StringName &p_class, const StringName &p_name, const Variant &p_default);
+	static void get_property_list(const StringName &p_class, List<PropertyInfo> *p_list, bool p_no_inheritance = false, const Object *p_validator = nullptr);
+	static bool get_property_info(const StringName &p_class, const StringName &p_property, PropertyInfo *r_info, bool p_no_inheritance = false, const Object *p_validator = nullptr);
 	static bool set_property(Object *p_object, const StringName &p_property, const Variant &p_value, bool *r_valid = nullptr);
 	static bool get_property(Object *p_object, const StringName &p_property, Variant &r_value);
 	static bool has_property(const StringName &p_class, const StringName &p_property, bool p_no_inheritance = false);
 	static int get_property_index(const StringName &p_class, const StringName &p_property, bool *r_is_valid = nullptr);
 	static Variant::Type get_property_type(const StringName &p_class, const StringName &p_property, bool *r_is_valid = nullptr);
-	static StringName get_property_setter(StringName p_class, const StringName &p_property);
-	static StringName get_property_getter(StringName p_class, const StringName &p_property);
+	static StringName get_property_setter(const StringName &p_class, const StringName &p_property);
+	static StringName get_property_getter(const StringName &p_class, const StringName &p_property);
 
-	static bool has_method(StringName p_class, StringName p_method, bool p_no_inheritance = false);
-	static void set_method_flags(StringName p_class, StringName p_method, int p_flags);
+	static bool has_method(const StringName &p_class, const StringName &p_method, bool p_no_inheritance = false);
+	static void set_method_flags(const StringName &p_class, const StringName &p_method, int p_flags);
 
-	static void get_method_list(StringName p_class, List<MethodInfo> *p_methods, bool p_no_inheritance = false, bool p_exclude_from_properties = false);
-	static bool get_method_info(StringName p_class, StringName p_method, MethodInfo *r_info, bool p_no_inheritance = false, bool p_exclude_from_properties = false);
-	static MethodBind *get_method(StringName p_class, StringName p_name);
+	static void get_method_list(const StringName &p_class, List<MethodInfo> *p_methods, bool p_no_inheritance = false, bool p_exclude_from_properties = false);
+	static bool get_method_info(const StringName &p_class, const StringName &p_method, MethodInfo *r_info, bool p_no_inheritance = false, bool p_exclude_from_properties = false);
+	static MethodBind *get_method(const StringName &p_class, const StringName &p_name);
 
 	static void add_virtual_method(const StringName &p_class, const MethodInfo &p_method, bool p_virtual = true);
 	static void get_virtual_methods(const StringName &p_class, List<MethodInfo> *p_methods, bool p_no_inheritance = false);
@@ -388,10 +388,10 @@ public:
 
 	static StringName get_category(const StringName &p_node);
 
-	static void set_class_enabled(StringName p_class, bool p_enable);
-	static bool is_class_enabled(StringName p_class);
+	static void set_class_enabled(const StringName &p_class, bool p_enable);
+	static bool is_class_enabled(const StringName &p_class);
 
-	static bool is_class_exposed(StringName p_class);
+	static bool is_class_exposed(const StringName &p_class);
 
 	static void add_resource_base_extension(const StringName &p_extension, const StringName &p_class);
 	static void get_resource_base_extensions(List<String> *p_extensions);

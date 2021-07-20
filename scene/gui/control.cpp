@@ -446,6 +446,10 @@ Control *Control::get_parent_control() const {
 	return data.parent;
 }
 
+Window *Control::get_parent_window() const {
+	return data.parent_window;
+}
+
 void Control::set_layout_direction(Control::LayoutDirection p_direction) {
 	ERR_FAIL_INDEX((int)p_direction, 4);
 
@@ -459,21 +463,21 @@ Control::LayoutDirection Control::get_layout_direction() const {
 
 bool Control::is_layout_rtl() const {
 	if (data.layout_dir == LAYOUT_DIRECTION_INHERITED) {
-		Window *parent_window = Object::cast_to<Window>(get_parent());
+		Window *parent_window = get_parent_window();
 		Control *parent_control = get_parent_control();
 		if (parent_control) {
 			return parent_control->is_layout_rtl();
 		} else if (parent_window) {
 			return parent_window->is_layout_rtl();
 		} else {
-			if (GLOBAL_GET("internationalization/rendering/force_right_to_left_layout_direction")) {
+			if (GLOBAL_GET(SNAME("internationalization/rendering/force_right_to_left_layout_direction"))) {
 				return true;
 			}
 			String locale = TranslationServer::get_singleton()->get_tool_locale();
 			return TS->is_locale_right_to_left(locale);
 		}
 	} else if (data.layout_dir == LAYOUT_DIRECTION_LOCALE) {
-		if (GLOBAL_GET("internationalization/rendering/force_right_to_left_layout_direction")) {
+		if (GLOBAL_GET(SNAME("internationalization/rendering/force_right_to_left_layout_direction"))) {
 			return true;
 		}
 		String locale = TranslationServer::get_singleton()->get_tool_locale();
@@ -543,6 +547,7 @@ void Control::_notification(int p_notification) {
 
 		case NOTIFICATION_ENTER_CANVAS: {
 			data.parent = Object::cast_to<Control>(get_parent());
+			data.parent_window = Object::cast_to<Window>(get_parent());
 
 			Node *parent = this; //meh
 			Control *parent_control = nullptr;
@@ -607,6 +612,7 @@ void Control::_notification(int p_notification) {
 
 			data.parent = nullptr;
 			data.parent_canvas_item = nullptr;
+			data.parent_window = nullptr;
 
 		} break;
 		case NOTIFICATION_MOVED_IN_PARENT: {

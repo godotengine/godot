@@ -202,6 +202,7 @@ private:
 		Ref<Theme> theme;
 		Control *theme_owner = nullptr;
 		Window *theme_owner_window = nullptr;
+		Window *parent_window = nullptr;
 		StringName theme_type_variation;
 
 		String tooltip;
@@ -342,6 +343,7 @@ public:
 	Size2 get_custom_minimum_size() const;
 
 	Control *get_parent_control() const;
+	Window *get_parent_window() const;
 
 	void set_layout_direction(LayoutDirection p_direction);
 	LayoutDirection get_layout_direction() const;
