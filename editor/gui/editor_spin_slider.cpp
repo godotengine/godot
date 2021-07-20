@@ -34,6 +34,7 @@
 #include "core/math/expression.h"
 #include "core/os/keyboard.h"
 #include "editor/editor_scale.h"
+#include "editor/editor_settings.h"
 
 String EditorSpinSlider::get_tooltip(const Point2 &p_pos) const {
 	if (grabber->is_visible()) {
@@ -103,7 +104,7 @@ void EditorSpinSlider::gui_input(const Ref<InputEvent> &p_event) {
 			if (mm->is_shift_pressed() && grabbing_spinner) {
 				diff_x *= 0.1;
 			}
-			grabbing_spinner_dist_cache += diff_x;
+			grabbing_spinner_dist_cache += diff_x * grabbing_spinner_speed;
 
 			if (!grabbing_spinner && ABS(grabbing_spinner_dist_cache) > 4 * EDSCALE) {
 				Input::get_singleton()->set_mouse_mode(Input::MOUSE_MODE_CAPTURED);
@@ -439,7 +440,11 @@ void EditorSpinSlider::_draw_spin_slider() {
 
 void EditorSpinSlider::_notification(int p_what) {
 	switch (p_what) {
-		case NOTIFICATION_ENTER_TREE:
+		case NOTIFICATION_ENTER_TREE: {
+			grabbing_spinner_speed = EditorSettings::get_singleton()->get("interface/inspector/float_drag_speed");
+			_update_value_input_stylebox();
+		} break;
+
 		case NOTIFICATION_THEME_CHANGED: {
 			_update_value_input_stylebox();
 		} break;
