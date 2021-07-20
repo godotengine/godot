@@ -1895,6 +1895,9 @@ int mbedtls_ssl_cf_hmac(
             MD_CHK( mbedtls_md_update( ctx, data + offset, 1 ) );
     }
 
+    /* The context needs to finish() before it starts() again */
+    MD_CHK( mbedtls_md_finish( ctx, aux_out ) );
+
     /* Now compute HASH(okey + inner_hash) */
     MD_CHK( mbedtls_md_starts( ctx ) );
     MD_CHK( mbedtls_md_update( ctx, okey, block_size ) );
@@ -6364,8 +6367,6 @@ static void ssl_calc_finished_tls_sha256(
 
 #if defined(MBEDTLS_SHA512_C)
 
-typedef int (*finish_sha384_t)(mbedtls_sha512_context*, unsigned char*);
-
 static void ssl_calc_finished_tls_sha384(
                 mbedtls_ssl_context *ssl, unsigned char *buf, int from )
 {
@@ -6373,12 +6374,6 @@ static void ssl_calc_finished_tls_sha384(
     const char *sender;
     mbedtls_sha512_context sha512;
     unsigned char padbuf[48];
-    /*
-     * For SHA-384, we can save 16 bytes by keeping padbuf 48 bytes long.
-     * However, to avoid stringop-overflow warning in gcc, we have to cast
-     * mbedtls_sha512_finish_ret().
-     */
-    finish_sha384_t finish_sha384 = (finish_sha384_t)mbedtls_sha512_finish_ret;
 
     mbedtls_ssl_session *session = ssl->session_negotiate;
     if( !session )
@@ -6404,8 +6399,19 @@ static void ssl_calc_finished_tls_sha384(
     sender = ( from == MBEDTLS_SSL_IS_CLIENT )
              ? "client finished"
              : "server finished";
-
-    finish_sha384( &sha512, padbuf );
+    /* mbedtls_sha512_finish_ret's output parameter is declared as a
+     * 64-byte buffer, but sice we're using SHA-384, we know that the
+     * output fits in 48 bytes. This is correct C, but GCC 11.1 warns
+     * about it.
+     */
+#if defined(__GNUC__) && __GNUC__ >= 11
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wstringop-overflow"
+#endif
+    mbedtls_sha512_finish_ret( &sha512, padbuf );
+#if defined(__GNUC__) && __GNUC__ >= 11
+#pragma GCC diagnostic pop
+#endif
 
     ssl->handshake->tls_prf( session->master, 48, sender,
                              padbuf, 48, buf, len );
@@ -6678,7 +6684,7 @@ int mbedtls_ssl_parse_finished( mbedtls_ssl_context *ssl )
     {
         MBEDTLS_SSL_DEBUG_MSG( 1, ( "bad finished message" ) );
         mbedtls_ssl_send_alert_message( ssl, MBEDTLS_SSL_ALERT_LEVEL_FATAL,
-                                        MBEDTLS_SSL_ALERT_MSG_DECODE_ERROR );
+                                        MBEDTLS_SSL_ALERT_MSG_DECRYPT_ERROR );
         return( MBEDTLS_ERR_SSL_BAD_HS_FINISHED );
     }
 

@@ -124,7 +124,7 @@ void mbedtls_ssl_ticket_init( mbedtls_ssl_ticket_context *ctx );
  *                  Recommended value: 86400 (one day).
  *
  * \note            It is highly recommended to select a cipher that is at
- *                  least as strong as the the strongest ciphersuite
+ *                  least as strong as the strongest ciphersuite
  *                  supported. Usually that means a 256-bit key.
  *
  * \note            The lifetime of the keys is twice the lifetime of tickets.
