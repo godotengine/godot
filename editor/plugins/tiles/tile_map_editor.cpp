@@ -168,9 +168,9 @@ void TileMapEditorTilesPlugin::_update_tile_set_sources_list() {
 		if (atlas_source) {
 			texture = atlas_source->get_texture();
 			if (texture.is_valid()) {
-				item_text = vformat("%s (id:%d)", texture->get_path().get_file(), source_id);
+				item_text = vformat("%s (ID: %d)", texture->get_path().get_file(), source_id);
 			} else {
-				item_text = vformat("No Texture Atlas Source (id:%d)", source_id);
+				item_text = vformat("No Texture Atlas Source (ID: %d)", source_id);
 			}
 		}
 
@@ -178,12 +178,12 @@ void TileMapEditorTilesPlugin::_update_tile_set_sources_list() {
 		TileSetScenesCollectionSource *scene_collection_source = Object::cast_to<TileSetScenesCollectionSource>(source);
 		if (scene_collection_source) {
 			texture = get_theme_icon(SNAME("PackedScene"), SNAME("EditorIcons"));
-			item_text = vformat(TTR("Scene Collection Source (id:%d)"), source_id);
+			item_text = vformat(TTR("Scene Collection Source (ID: %d)"), source_id);
 		}
 
 		// Use default if not valid.
 		if (item_text.is_empty()) {
-			item_text = vformat(TTR("Unknown Type Source (id:%d)"), source_id);
+			item_text = vformat(TTR("Unknown Type Source (ID: %d)"), source_id);
 		}
 		if (!texture.is_valid()) {
 			texture = missing_atlas_texture_icon;
@@ -302,7 +302,7 @@ void TileMapEditorTilesPlugin::_update_scenes_collection_view() {
 
 		int item_index = 0;
 		if (scene.is_valid()) {
-			item_index = scene_tiles_list->add_item(vformat("%s (path:%s id:%d)", scene->get_path().get_file().get_basename(), scene->get_path(), scene_id));
+			item_index = scene_tiles_list->add_item(vformat("%s (Path: %s, ID: %d)", scene->get_path().get_file().get_basename(), scene->get_path(), scene_id));
 			Variant udata = i;
 			EditorResourcePreview::get_singleton()->queue_edited_resource_preview(scene, this, "_scene_thumbnail_done", udata);
 		} else {
@@ -1865,6 +1865,7 @@ TileMapEditorTilesPlugin::TileMapEditorTilesPlugin() {
 	toggle_grid_button = memnew(Button);
 	toggle_grid_button->set_flat(true);
 	toggle_grid_button->set_toggle_mode(true);
+	toggle_grid_button->set_tooltip(TTR("Toggle grid visibility."));
 	toggle_grid_button->connect("toggled", callable_mp(this, &TileMapEditorTilesPlugin::_on_grid_toggled));
 	toolbar->add_child(toggle_grid_button);
 

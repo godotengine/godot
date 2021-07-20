@@ -2055,7 +2055,7 @@ void TileSetAtlasSourceEditor::_notification(int p_what) {
 
 			tools_settings_erase_button->set_icon(get_theme_icon(SNAME("Eraser"), SNAME("EditorIcons")));
 
-			tool_advanced_menu_buttom->set_icon(get_theme_icon(SNAME("GuiTabMenu"), SNAME("EditorIcons")));
+			tool_advanced_menu_buttom->set_icon(get_theme_icon(SNAME("GuiTabMenuHl"), SNAME("EditorIcons")));
 
 			resize_handle = get_theme_icon(SNAME("EditorHandle"), SNAME("EditorIcons"));
 			resize_handle_disabled = get_theme_icon(SNAME("EditorHandleDisabled"), SNAME("EditorIcons"));
@@ -2176,7 +2176,7 @@ TileSetAtlasSourceEditor::TileSetAtlasSourceEditor() {
 
 	// -- Dialogs --
 	confirm_auto_create_tiles = memnew(AcceptDialog);
-	confirm_auto_create_tiles->set_title(TTR("Create tiles automatically in non-transparent texture regions?"));
+	confirm_auto_create_tiles->set_title(TTR("Auto Create Tiles in Non-Transparent Texture Regions?"));
 	confirm_auto_create_tiles->set_text(TTR("The atlas's texture was modified.\nWould you like to automatically create tiles in the atlas?"));
 	confirm_auto_create_tiles->get_ok_button()->set_text(TTR("Yes"));
 	confirm_auto_create_tiles->add_cancel_button()->set_text(TTR("No"));
@@ -2202,7 +2202,7 @@ TileSetAtlasSourceEditor::TileSetAtlasSourceEditor() {
 	tool_setup_atlas_source_button->set_toggle_mode(true);
 	tool_setup_atlas_source_button->set_pressed(true);
 	tool_setup_atlas_source_button->set_button_group(tools_button_group);
-	tool_setup_atlas_source_button->set_tooltip(TTR("Atlas Setup. Add/Remove tiles tool (use the shift key to create big tiles, control for rectangle editing)."));
+	tool_setup_atlas_source_button->set_tooltip(TTR("Atlas setup. Add/Remove tiles tool (use the shift key to create big tiles, control for rectangle editing)."));
 	toolbox->add_child(tool_setup_atlas_source_button);
 
 	tool_select_button = memnew(Button);
