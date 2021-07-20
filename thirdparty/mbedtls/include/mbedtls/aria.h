@@ -88,13 +88,13 @@
 /* MBEDTLS_ERR_ARIA_HW_ACCEL_FAILED is deprecated and should not be used. */
 #define MBEDTLS_ERR_ARIA_HW_ACCEL_FAILED      -0x0058  /**< ARIA hardware accelerator failed. */
 
-#if !defined(MBEDTLS_ARIA_ALT)
-// Regular implementation
-//
-
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+#if !defined(MBEDTLS_ARIA_ALT)
+// Regular implementation
+//
 
 /**
  * \brief The ARIA context-type definition.
