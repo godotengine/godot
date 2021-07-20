@@ -239,7 +239,7 @@ class ThemeItemEditorDialog : public AcceptDialog {
 	void _update_edit_item_tree(String p_item_type);
 	void _item_tree_button_pressed(Object *p_item, int p_column, int p_id);
 
-	void _add_theme_type();
+	void _add_theme_type(const String &p_new_text);
 	void _add_theme_item(Theme::DataType p_data_type, String p_item_name, String p_item_type);
 	void _remove_data_type_items(Theme::DataType p_data_type, String p_item_type);
 	void _remove_class_items();
