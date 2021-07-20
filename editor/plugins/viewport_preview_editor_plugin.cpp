@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  texture_editor_plugin.h                                              */
+/*  viewport_preview_editor_plugin.cpp                                   */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,39 +28,23 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef TEXTURE_EDITOR_PLUGIN_H
-#define TEXTURE_EDITOR_PLUGIN_H
+#include "viewport_preview_editor_plugin.h"
 
-#include "editor/editor_node.h"
-#include "editor/editor_plugin.h"
-#include "scene/resources/texture.h"
+bool EditorInspectorPluginViewportPreview::can_handle(Object *p_object) {
+	return Object::cast_to<Viewport>(p_object) != nullptr;
+}
 
-class TexturePreview : public MarginContainer {
-	GDCLASS(TexturePreview, MarginContainer);
+void EditorInspectorPluginViewportPreview::parse_begin(Object *p_object) {
+	Viewport *viewport = Object::cast_to<Viewport>(p_object);
 
-private:
-	TextureRect *texture_display;
+	TexturePreview *viewport_preview = memnew(TexturePreview(viewport->get_texture(), false));
+	// Otherwise `viewport_preview`'s `texture_display` doesn't update properly when `viewport`'s size changes.
+	viewport->connect("size_changed", viewport_preview->get_texture_display(), "update");
+	add_custom_control(viewport_preview);
+}
 
-public:
-	TextureRect *get_texture_display();
-	TexturePreview(Ref<Texture> p_texture, bool p_show_metadata);
-};
-
-class EditorInspectorPluginTexture : public EditorInspectorPlugin {
-	GDCLASS(EditorInspectorPluginTexture, EditorInspectorPlugin);
-
-public:
-	virtual bool can_handle(Object *p_object);
-	virtual void parse_begin(Object *p_object);
-};
-
-class TextureEditorPlugin : public EditorPlugin {
-	GDCLASS(TextureEditorPlugin, EditorPlugin);
-
-public:
-	virtual String get_name() const { return "Texture"; }
-
-	TextureEditorPlugin(EditorNode *p_node);
-};
-
-#endif // TEXTURE_EDITOR_PLUGIN_H
+ViewportPreviewEditorPlugin::ViewportPreviewEditorPlugin(EditorNode *p_node) {
+	Ref<EditorInspectorPluginViewportPreview> plugin;
+	plugin.instance();
+	add_inspector_plugin(plugin);
+}
