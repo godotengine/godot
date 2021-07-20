@@ -151,6 +151,8 @@ public:
 		virtual Variant get_default_parameter(const StringName &p_parameter) const;
 		virtual RS::ShaderNativeSourceCode get_native_source_code() const;
 
+		SelfList<ShaderData> shader_list_element;
+
 		ShaderData();
 		virtual ~ShaderData();
 	};
@@ -173,6 +175,8 @@ public:
 		virtual bool update_parameters(const Map<StringName, Variant> &p_parameters, bool p_uniform_dirty, bool p_textures_dirty);
 		virtual ~MaterialData();
 	};
+
+	SelfList<ShaderData>::List shader_list;
 
 	RendererStorageRD::MaterialData *_create_material_func(ShaderData *p_shader);
 	static RendererStorageRD::MaterialData *_create_material_funcs(RendererStorageRD::ShaderData *p_shader) {
@@ -202,7 +206,10 @@ public:
 	SceneShaderForwardMobile();
 	~SceneShaderForwardMobile();
 
+	Vector<RD::PipelineSpecializationConstant> default_specialization_constants;
+
 	void init(RendererStorageRD *p_storage, const String p_defines);
+	void set_default_specialization_constants(const Vector<RD::PipelineSpecializationConstant> &p_constants);
 };
 
 } // namespace RendererSceneRenderImplementation

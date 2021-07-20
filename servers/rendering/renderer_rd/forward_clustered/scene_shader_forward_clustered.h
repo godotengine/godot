@@ -160,9 +160,12 @@ public:
 		virtual Variant get_default_parameter(const StringName &p_parameter) const;
 		virtual RS::ShaderNativeSourceCode get_native_source_code() const;
 
+		SelfList<ShaderData> shader_list_element;
 		ShaderData();
 		virtual ~ShaderData();
 	};
+
+	SelfList<ShaderData>::List shader_list;
 
 	RendererStorageRD::ShaderData *_create_shader_func();
 	static RendererStorageRD::ShaderData *_create_shader_funcs() {
@@ -209,10 +212,12 @@ public:
 	RID overdraw_material_uniform_set;
 	ShaderData *overdraw_material_shader_ptr = nullptr;
 
+	Vector<RD::PipelineSpecializationConstant> default_specialization_constants;
 	SceneShaderForwardClustered();
 	~SceneShaderForwardClustered();
 
 	void init(RendererStorageRD *p_storage, const String p_defines);
+	void set_default_specialization_constants(const Vector<RD::PipelineSpecializationConstant> &p_constants);
 };
 
 } // namespace RendererSceneRenderImplementation

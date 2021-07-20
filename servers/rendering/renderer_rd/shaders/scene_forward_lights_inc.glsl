@@ -301,7 +301,7 @@ float sample_directional_pcf_shadow(texture2D shadow, vec2 shadow_pixel_size, ve
 	float depth = coord.z;
 
 	//if only one sample is taken, take it from the center
-	if (scene_data.directional_soft_shadow_samples == 1) {
+	if (sc_directional_soft_shadow_samples == 1) {
 		return textureProj(sampler2DShadow(shadow, shadow_sampler), vec4(pos, depth, 1.0));
 	}
 
@@ -315,11 +315,11 @@ float sample_directional_pcf_shadow(texture2D shadow, vec2 shadow_pixel_size, ve
 
 	float avg = 0.0;
 
-	for (uint i = 0; i < scene_data.directional_soft_shadow_samples; i++) {
+	for (uint i = 0; i < sc_directional_soft_shadow_samples; i++) {
 		avg += textureProj(sampler2DShadow(shadow, shadow_sampler), vec4(pos + shadow_pixel_size * (disk_rotation * scene_data.directional_soft_shadow_kernel[i].xy), depth, 1.0));
 	}
 
-	return avg * (1.0 / float(scene_data.directional_soft_shadow_samples));
+	return avg * (1.0 / float(sc_directional_soft_shadow_samples));
 }
 
 float sample_pcf_shadow(texture2D shadow, vec2 shadow_pixel_size, vec4 coord) {
@@ -327,7 +327,7 @@ float sample_pcf_shadow(texture2D shadow, vec2 shadow_pixel_size, vec4 coord) {
 	float depth = coord.z;
 
 	//if only one sample is taken, take it from the center
-	if (scene_data.soft_shadow_samples == 1) {
+	if (sc_soft_shadow_samples == 1) {
 		return textureProj(sampler2DShadow(shadow, shadow_sampler), vec4(pos, depth, 1.0));
 	}
 
@@ -341,11 +341,11 @@ float sample_pcf_shadow(texture2D shadow, vec2 shadow_pixel_size, vec4 coord) {
 
 	float avg = 0.0;
 
-	for (uint i = 0; i < scene_data.soft_shadow_samples; i++) {
+	for (uint i = 0; i < sc_soft_shadow_samples; i++) {
 		avg += textureProj(sampler2DShadow(shadow, shadow_sampler), vec4(pos + shadow_pixel_size * (disk_rotation * scene_data.soft_shadow_kernel[i].xy), depth, 1.0));
 	}
 
-	return avg * (1.0 / float(scene_data.soft_shadow_samples));
+	return avg * (1.0 / float(sc_soft_shadow_samples));
 }
 
 float sample_directional_soft_shadow(texture2D shadow, vec3 pssm_coord, vec2 tex_scale) {
@@ -361,7 +361,7 @@ float sample_directional_soft_shadow(texture2D shadow, vec3 pssm_coord, vec2 tex
 		disk_rotation = mat2(vec2(cr, -sr), vec2(sr, cr));
 	}
 
-	for (uint i = 0; i < scene_data.directional_penumbra_shadow_samples; i++) {
+	for (uint i = 0; i < sc_directional_penumbra_shadow_samples; i++) {
 		vec2 suv = pssm_coord.xy + (disk_rotation * scene_data.directional_penumbra_shadow_kernel[i].xy) * tex_scale;
 		float d = textureLod(sampler2D(shadow, material_samplers[SAMPLER_LINEAR_CLAMP]), suv, 0.0).r;
 		if (d < pssm_coord.z) {
@@ -377,12 +377,12 @@ float sample_directional_soft_shadow(texture2D shadow, vec3 pssm_coord, vec2 tex
 		tex_scale *= penumbra;
 
 		float s = 0.0;
-		for (uint i = 0; i < scene_data.directional_penumbra_shadow_samples; i++) {
+		for (uint i = 0; i < sc_directional_penumbra_shadow_samples; i++) {
 			vec2 suv = pssm_coord.xy + (disk_rotation * scene_data.directional_penumbra_shadow_kernel[i].xy) * tex_scale;
 			s += textureProj(sampler2DShadow(shadow, shadow_sampler), vec4(suv, pssm_coord.z, 1.0));
 		}
 
-		return s / float(scene_data.directional_penumbra_shadow_samples);
+		return s / float(sc_directional_penumbra_shadow_samples);
 
 	} else {
 		//no blockers found, so no shadow
@@ -448,7 +448,7 @@ float light_process_omni_shadow(uint idx, vec3 vertex, vec3 normal) {
 			tangent *= omni_lights.data[idx].soft_shadow_size * omni_lights.data[idx].soft_shadow_scale;
 			bitangent *= omni_lights.data[idx].soft_shadow_size * omni_lights.data[idx].soft_shadow_scale;
 
-			for (uint i = 0; i < scene_data.penumbra_shadow_samples; i++) {
+			for (uint i = 0; i < sc_penumbra_shadow_samples; i++) {
 				vec2 disk = disk_rotation * scene_data.penumbra_shadow_kernel[i].xy;
 
 				vec3 pos = splane.xyz + tangent * disk.x + bitangent * disk.y;
@@ -485,7 +485,7 @@ float light_process_omni_shadow(uint idx, vec3 vertex, vec3 normal) {
 				z_norm -= omni_lights.data[idx].inv_radius * omni_lights.data[idx].shadow_bias;
 
 				shadow = 0.0;
-				for (uint i = 0; i < scene_data.penumbra_shadow_samples; i++) {
+				for (uint i = 0; i < sc_penumbra_shadow_samples; i++) {
 					vec2 disk = disk_rotation * scene_data.penumbra_shadow_kernel[i].xy;
 					vec3 pos = splane.xyz + tangent * disk.x + bitangent * disk.y;
 
@@ -506,7 +506,7 @@ float light_process_omni_shadow(uint idx, vec3 vertex, vec3 normal) {
 					shadow += textureProj(sampler2DShadow(shadow_atlas, shadow_sampler), vec4(pos.xy, z_norm, 1.0));
 				}
 
-				shadow /= float(scene_data.penumbra_shadow_samples);
+				shadow /= float(sc_penumbra_shadow_samples);
 
 			} else {
 				//no blockers found, so no shadow
@@ -626,40 +626,45 @@ void light_process_omni(uint idx, vec3 vertex, vec3 eye_vec, vec3 normal, vec3 v
 		local_v.xy = local_v.xy * 0.5 + 0.5;
 		vec2 proj_uv = local_v.xy * atlas_rect.zw;
 
-		vec2 proj_uv_ddx;
-		vec2 proj_uv_ddy;
-		{
-			vec3 local_v_ddx = (omni_lights.data[idx].shadow_matrix * vec4(vertex + vertex_ddx, 1.0)).xyz;
-			local_v_ddx = normalize(local_v_ddx);
+		if (sc_projector_use_mipmaps) {
+			vec2 proj_uv_ddx;
+			vec2 proj_uv_ddy;
+			{
+				vec3 local_v_ddx = (omni_lights.data[idx].shadow_matrix * vec4(vertex + vertex_ddx, 1.0)).xyz;
+				local_v_ddx = normalize(local_v_ddx);
 
-			if (local_v_ddx.z >= 0.0) {
-				local_v_ddx.z += 1.0;
-			} else {
-				local_v_ddx.z = 1.0 - local_v_ddx.z;
+				if (local_v_ddx.z >= 0.0) {
+					local_v_ddx.z += 1.0;
+				} else {
+					local_v_ddx.z = 1.0 - local_v_ddx.z;
+				}
+
+				local_v_ddx.xy /= local_v_ddx.z;
+				local_v_ddx.xy = local_v_ddx.xy * 0.5 + 0.5;
+
+				proj_uv_ddx = local_v_ddx.xy * atlas_rect.zw - proj_uv;
+
+				vec3 local_v_ddy = (omni_lights.data[idx].shadow_matrix * vec4(vertex + vertex_ddy, 1.0)).xyz;
+				local_v_ddy = normalize(local_v_ddy);
+
+				if (local_v_ddy.z >= 0.0) {
+					local_v_ddy.z += 1.0;
+				} else {
+					local_v_ddy.z = 1.0 - local_v_ddy.z;
+				}
+
+				local_v_ddy.xy /= local_v_ddy.z;
+				local_v_ddy.xy = local_v_ddy.xy * 0.5 + 0.5;
+
+				proj_uv_ddy = local_v_ddy.xy * atlas_rect.zw - proj_uv;
 			}
 
-			local_v_ddx.xy /= local_v_ddx.z;
-			local_v_ddx.xy = local_v_ddx.xy * 0.5 + 0.5;
-
-			proj_uv_ddx = local_v_ddx.xy * atlas_rect.zw - proj_uv;
-
-			vec3 local_v_ddy = (omni_lights.data[idx].shadow_matrix * vec4(vertex + vertex_ddy, 1.0)).xyz;
-			local_v_ddy = normalize(local_v_ddy);
-
-			if (local_v_ddy.z >= 0.0) {
-				local_v_ddy.z += 1.0;
-			} else {
-				local_v_ddy.z = 1.0 - local_v_ddy.z;
-			}
-
-			local_v_ddy.xy /= local_v_ddy.z;
-			local_v_ddy.xy = local_v_ddy.xy * 0.5 + 0.5;
-
-			proj_uv_ddy = local_v_ddy.xy * atlas_rect.zw - proj_uv;
+			vec4 proj = textureGrad(sampler2D(decal_atlas_srgb, light_projector_sampler), proj_uv + atlas_rect.xy, proj_uv_ddx, proj_uv_ddy);
+			color *= proj.rgb * proj.a;
+		} else {
+			vec4 proj = textureLod(sampler2D(decal_atlas_srgb, light_projector_sampler), proj_uv + atlas_rect.xy, 0.0);
+			color *= proj.rgb * proj.a;
 		}
-
-		vec4 proj = textureGrad(sampler2D(decal_atlas_srgb, material_samplers[SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP]), proj_uv + atlas_rect.xy, proj_uv_ddx, proj_uv_ddy);
-		color *= proj.rgb * proj.a;
 	}
 
 	light_attenuation *= shadow;
@@ -736,7 +741,7 @@ float light_process_spot_shadow(uint idx, vec3 vertex, vec3 normal) {
 
 			float uv_size = spot_lights.data[idx].soft_shadow_size * z_norm * spot_lights.data[idx].soft_shadow_scale;
 			vec2 clamp_max = spot_lights.data[idx].atlas_rect.xy + spot_lights.data[idx].atlas_rect.zw;
-			for (uint i = 0; i < scene_data.penumbra_shadow_samples; i++) {
+			for (uint i = 0; i < sc_penumbra_shadow_samples; i++) {
 				vec2 suv = shadow_uv + (disk_rotation * scene_data.penumbra_shadow_kernel[i].xy) * uv_size;
 				suv = clamp(suv, spot_lights.data[idx].atlas_rect.xy, clamp_max);
 				float d = textureLod(sampler2D(shadow_atlas, material_samplers[SAMPLER_LINEAR_CLAMP]), suv, 0.0).r;
@@ -753,13 +758,13 @@ float light_process_spot_shadow(uint idx, vec3 vertex, vec3 normal) {
 				uv_size *= penumbra;
 
 				shadow = 0.0;
-				for (uint i = 0; i < scene_data.penumbra_shadow_samples; i++) {
+				for (uint i = 0; i < sc_penumbra_shadow_samples; i++) {
 					vec2 suv = shadow_uv + (disk_rotation * scene_data.penumbra_shadow_kernel[i].xy) * uv_size;
 					suv = clamp(suv, spot_lights.data[idx].atlas_rect.xy, clamp_max);
 					shadow += textureProj(sampler2DShadow(shadow_atlas, shadow_sampler), vec4(suv, splane.z, 1.0));
 				}
 
-				shadow /= float(scene_data.penumbra_shadow_samples);
+				shadow /= float(sc_penumbra_shadow_samples);
 
 			} else {
 				//no blockers found, so no shadow
@@ -861,17 +866,22 @@ void light_process_spot(uint idx, vec3 vertex, vec3 eye_vec, vec3 normal, vec3 v
 
 		vec2 proj_uv = normal_to_panorama(splane.xyz) * spot_lights.data[idx].projector_rect.zw;
 
-		//ensure we have proper mipmaps
-		vec4 splane_ddx = (spot_lights.data[idx].shadow_matrix * vec4(vertex + vertex_ddx, 1.0));
-		splane_ddx /= splane_ddx.w;
-		vec2 proj_uv_ddx = normal_to_panorama(splane_ddx.xyz) * spot_lights.data[idx].projector_rect.zw - proj_uv;
+		if (sc_projector_use_mipmaps) {
+			//ensure we have proper mipmaps
+			vec4 splane_ddx = (spot_lights.data[idx].shadow_matrix * vec4(vertex + vertex_ddx, 1.0));
+			splane_ddx /= splane_ddx.w;
+			vec2 proj_uv_ddx = normal_to_panorama(splane_ddx.xyz) * spot_lights.data[idx].projector_rect.zw - proj_uv;
 
-		vec4 splane_ddy = (spot_lights.data[idx].shadow_matrix * vec4(vertex + vertex_ddy, 1.0));
-		splane_ddy /= splane_ddy.w;
-		vec2 proj_uv_ddy = normal_to_panorama(splane_ddy.xyz) * spot_lights.data[idx].projector_rect.zw - proj_uv;
+			vec4 splane_ddy = (spot_lights.data[idx].shadow_matrix * vec4(vertex + vertex_ddy, 1.0));
+			splane_ddy /= splane_ddy.w;
+			vec2 proj_uv_ddy = normal_to_panorama(splane_ddy.xyz) * spot_lights.data[idx].projector_rect.zw - proj_uv;
 
-		vec4 proj = textureGrad(sampler2D(decal_atlas_srgb, material_samplers[SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP]), proj_uv + spot_lights.data[idx].projector_rect.xy, proj_uv_ddx, proj_uv_ddy);
-		color *= proj.rgb * proj.a;
+			vec4 proj = textureGrad(sampler2D(decal_atlas_srgb, light_projector_sampler), proj_uv + spot_lights.data[idx].projector_rect.xy, proj_uv_ddx, proj_uv_ddy);
+			color *= proj.rgb * proj.a;
+		} else {
+			vec4 proj = textureLod(sampler2D(decal_atlas_srgb, light_projector_sampler), proj_uv + spot_lights.data[idx].projector_rect.xy, 0.0);
+			color *= proj.rgb * proj.a;
+		}
 	}
 	light_attenuation *= shadow;
 

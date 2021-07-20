@@ -318,7 +318,7 @@ void SceneShaderForwardMobile::ShaderData::set_code(const String &p_code) {
 				}
 
 				RID shader_variant = shader_singleton->shader.version_get_shader(version, k);
-				pipelines[i][j][k].setup(shader_variant, primitive_rd, raster_state, multisample_state, depth_stencil, blend_state, 0);
+				pipelines[i][j][k].setup(shader_variant, primitive_rd, raster_state, multisample_state, depth_stencil, blend_state, 0, singleton->default_specialization_constants);
 			}
 		}
 	}
@@ -402,7 +402,8 @@ RS::ShaderNativeSourceCode SceneShaderForwardMobile::ShaderData::get_native_sour
 	return shader_singleton->shader.version_get_native_source_code(version);
 }
 
-SceneShaderForwardMobile::ShaderData::ShaderData() {
+SceneShaderForwardMobile::ShaderData::ShaderData() :
+		shader_list_element(this) {
 	valid = false;
 	uses_screen_texture = false;
 }
@@ -418,6 +419,7 @@ SceneShaderForwardMobile::ShaderData::~ShaderData() {
 
 RendererStorageRD::ShaderData *SceneShaderForwardMobile::_create_shader_func() {
 	ShaderData *shader_data = memnew(ShaderData);
+	singleton->shader_list.add(&shader_data->shader_list_element);
 	return shader_data;
 }
 
@@ -715,6 +717,19 @@ void SceneShaderForwardMobile::init(RendererStorageRD *p_storage, const String p
 		sampler.enable_compare = true;
 		sampler.compare_op = RD::COMPARE_OP_LESS;
 		shadow_sampler = RD::get_singleton()->sampler_create(sampler);
+	}
+}
+
+void SceneShaderForwardMobile::set_default_specialization_constants(const Vector<RD::PipelineSpecializationConstant> &p_constants) {
+	default_specialization_constants = p_constants;
+	for (SelfList<ShaderData> *E = shader_list.first(); E; E = E->next()) {
+		for (int i = 0; i < ShaderData::CULL_VARIANT_MAX; i++) {
+			for (int j = 0; j < RS::PRIMITIVE_MAX; j++) {
+				for (int k = 0; k < SHADER_VERSION_MAX; k++) {
+					E->self()->pipelines[i][j][k].update_specialization_constants(default_specialization_constants);
+				}
+			}
+		}
 	}
 }
 

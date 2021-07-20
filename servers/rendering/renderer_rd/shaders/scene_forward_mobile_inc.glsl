@@ -51,6 +51,9 @@ layout(set = 0, binding = 1) uniform sampler material_samplers[12];
 
 layout(set = 0, binding = 2) uniform sampler shadow_sampler;
 
+layout(set = 0, binding = 3) uniform sampler decal_sampler;
+layout(set = 0, binding = 4) uniform sampler light_projector_sampler;
+
 #define INSTANCE_FLAGS_NON_UNIFORM_SCALE (1 << 5)
 #define INSTANCE_FLAGS_USE_GI_BUFFERS (1 << 6)
 #define INSTANCE_FLAGS_USE_SDFGI (1 << 7)
@@ -66,22 +69,22 @@ layout(set = 0, binding = 2) uniform sampler shadow_sampler;
 //3 bits of stride
 #define INSTANCE_FLAGS_PARTICLE_TRAIL_MASK 0xFF
 
-layout(set = 0, binding = 3, std430) restrict readonly buffer OmniLights {
+layout(set = 0, binding = 5, std430) restrict readonly buffer OmniLights {
 	LightData data[];
 }
 omni_lights;
 
-layout(set = 0, binding = 4, std430) restrict readonly buffer SpotLights {
+layout(set = 0, binding = 6, std430) restrict readonly buffer SpotLights {
 	LightData data[];
 }
 spot_lights;
 
-layout(set = 0, binding = 5, std430) restrict readonly buffer ReflectionProbeData {
+layout(set = 0, binding = 7, std430) restrict readonly buffer ReflectionProbeData {
 	ReflectionData data[];
 }
 reflections;
 
-layout(set = 0, binding = 6, std140) uniform DirectionalLights {
+layout(set = 0, binding = 8, std140) uniform DirectionalLights {
 	DirectionalLightData data[MAX_DIRECTIONAL_LIGHT_DATA_STRUCTS];
 }
 directional_lights;
@@ -93,7 +96,7 @@ struct Lightmap {
 	mat3 normal_xform;
 };
 
-layout(set = 0, binding = 7, std140) restrict readonly buffer Lightmaps {
+layout(set = 0, binding = 9, std140) restrict readonly buffer Lightmaps {
 	Lightmap data[];
 }
 lightmaps;
@@ -102,20 +105,20 @@ struct LightmapCapture {
 	vec4 sh[9];
 };
 
-layout(set = 0, binding = 8, std140) restrict readonly buffer LightmapCaptures {
+layout(set = 0, binding = 10, std140) restrict readonly buffer LightmapCaptures {
 	LightmapCapture data[];
 }
 lightmap_captures;
 
-layout(set = 0, binding = 9) uniform texture2D decal_atlas;
-layout(set = 0, binding = 10) uniform texture2D decal_atlas_srgb;
+layout(set = 0, binding = 11) uniform texture2D decal_atlas;
+layout(set = 0, binding = 12) uniform texture2D decal_atlas_srgb;
 
-layout(set = 0, binding = 11, std430) restrict readonly buffer Decals {
+layout(set = 0, binding = 13, std430) restrict readonly buffer Decals {
 	DecalData data[];
 }
 decals;
 
-layout(set = 0, binding = 12, std430) restrict readonly buffer GlobalVariableData {
+layout(set = 0, binding = 14, std430) restrict readonly buffer GlobalVariableData {
 	vec4 data[];
 }
 global_variables;
@@ -140,11 +143,6 @@ layout(set = 1, binding = 0, std140) uniform SceneData {
 	vec4 directional_soft_shadow_kernel[32];
 	vec4 penumbra_shadow_kernel[32];
 	vec4 soft_shadow_kernel[32];
-
-	uint directional_penumbra_shadow_samples;
-	uint directional_soft_shadow_samples;
-	uint penumbra_shadow_samples;
-	uint soft_shadow_samples;
 
 	vec4 ambient_light_color_energy;
 

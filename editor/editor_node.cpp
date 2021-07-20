@@ -508,6 +508,9 @@ void EditorNode::_update_from_settings() {
 
 	float lod_threshold = GLOBAL_GET("rendering/mesh_lod/lod_change/threshold_pixels");
 	scene_root->set_lod_threshold(lod_threshold);
+
+	RS::get_singleton()->decals_set_filter(RS::DecalFilter(int(GLOBAL_GET("rendering/textures/decals/filter"))));
+	RS::get_singleton()->light_projectors_set_filter(RS::LightProjectorFilter(int(GLOBAL_GET("rendering/textures/light_projectors/filter"))));
 }
 
 void EditorNode::_notification(int p_what) {

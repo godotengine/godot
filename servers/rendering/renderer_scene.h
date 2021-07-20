@@ -212,6 +212,9 @@ public:
 	virtual void render_probes() = 0;
 	virtual void update_visibility_notifiers() = 0;
 
+	virtual void decals_set_filter(RS::DecalFilter p_filter) = 0;
+	virtual void light_projectors_set_filter(RS::LightProjectorFilter p_filter) = 0;
+
 	virtual bool free(RID p_rid) = 0;
 
 	RendererScene();
