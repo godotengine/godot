@@ -986,11 +986,13 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		} else if (I->get() == "-d" || I->get() == "--debug") {
 			debug_uri = "local://";
 			OS::get_singleton()->_debug_stdout = true;
-#if defined(DEBUG_ENABLED) && !defined(SERVER_ENABLED)
+#if defined(DEBUG_ENABLED)
 		} else if (I->get() == "--debug-collisions") {
 			debug_collisions = true;
 		} else if (I->get() == "--debug-navigation") {
 			debug_navigation = true;
+		} else if (I->get() == "--debug-stringnames") {
+			StringName::set_debug_stringnames(true);
 #endif
 		} else if (I->get() == "--remote-debug") {
 			if (I->next()) {

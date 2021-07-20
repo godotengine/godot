@@ -52,10 +52,11 @@ class StringName {
 	struct _Data {
 		SafeRefCount refcount;
 		SafeNumeric<uint32_t> static_count;
-		SafeRefCount static_refcount;
 		const char *cname = nullptr;
 		String name;
-
+#ifdef DEBUG_ENABLED
+		uint32_t debug_references = 0;
+#endif
 		String get_name() const { return cname ? String(cname) : name; }
 		int idx = 0;
 		uint32_t hash = 0;
@@ -81,6 +82,15 @@ class StringName {
 	static void setup();
 	static void cleanup();
 	static bool configured;
+#ifdef DEBUG_ENABLED
+	struct DebugSortReferences {
+		bool operator()(const _Data *p_left, const _Data *p_right) const {
+			return p_left->debug_references > p_right->debug_references;
+		}
+	};
+
+	static bool debug_stringname;
+#endif
 
 	StringName(_Data *p_data) { _data = p_data; }
 
@@ -158,6 +168,10 @@ public:
 			unref();
 		}
 	}
+
+#ifdef DEBUG_ENABLED
+	static void set_debug_stringnames(bool p_enable) { debug_stringname = p_enable; }
+#endif
 };
 
 bool operator==(const String &p_name, const StringName &p_string_name);
