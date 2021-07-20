@@ -21,13 +21,6 @@
 				Aligns the camera to the tracked node.
 			</description>
 		</method>
-		<method name="clear_current">
-			<return type="void">
-			</return>
-			<description>
-				Removes any [Camera2D] from the ancestor [Viewport]'s internal currently-assigned camera.
-			</description>
-		</method>
 		<method name="force_update_scroll">
 			<return type="void">
 			</return>
@@ -67,13 +60,6 @@
 				Returns the camera limit for the specified [enum Side]. See also [member limit_bottom], [member limit_top], [member limit_left], and [member limit_right].
 			</description>
 		</method>
-		<method name="make_current">
-			<return type="void">
-			</return>
-			<description>
-				Make this the current 2D camera for the scene (viewport and layer), in case there are many cameras in the scene.
-			</description>
-		</method>
 		<method name="reset_smoothing">
 			<return type="void">
 			</return>
@@ -109,7 +95,7 @@
 		<member name="anchor_mode" type="int" setter="set_anchor_mode" getter="get_anchor_mode" enum="Camera2D.AnchorMode" default="1">
 			The Camera2D's anchor point. See [enum AnchorMode] constants.
 		</member>
-		<member name="current" type="bool" setter="_set_current" getter="is_current" default="false">
+		<member name="current" type="bool" setter="set_current" getter="is_current" default="false">
 			If [code]true[/code], the camera is the active camera for the current scene. Only one camera can be current, so setting a different camera [code]current[/code] will disable this one.
 		</member>
 		<member name="custom_viewport" type="Node" setter="set_custom_viewport" getter="get_custom_viewport">
