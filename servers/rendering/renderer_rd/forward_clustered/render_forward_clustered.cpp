@@ -382,7 +382,7 @@ void RenderForwardClustered::_render_list_template(RenderingDevice::DrawListID p
 		RS::PrimitiveType primitive = surf->primitive;
 		RID xforms_uniform_set = surf->owner->transforms_uniform_set;
 
-		SceneShaderForwardClustered::ShaderVersion shader_version = SceneShaderForwardClustered::SHADER_VERSION_MAX; // Assigned to silence wrong -Wmaybe-initialized.
+		SceneShaderForwardClustered::PipelineVersion pipeline_version = SceneShaderForwardClustered::PIPELINE_VERSION_MAX; // Assigned to silence wrong -Wmaybe-initialized.
 
 		uint32_t pipeline_specialization = 0;
 
@@ -400,48 +400,56 @@ void RenderForwardClustered::_render_list_template(RenderingDevice::DrawListID p
 		}
 
 		switch (p_pass_mode) {
-			case PASS_MODE_COLOR:
+			case PASS_MODE_COLOR: {
+				if (element_info.uses_lightmap) {
+					pipeline_version = SceneShaderForwardClustered::PIPELINE_VERSION_LIGHTMAP_OPAQUE_PASS;
+				} else {
+					pipeline_version = SceneShaderForwardClustered::PIPELINE_VERSION_OPAQUE_PASS;
+				}
+
+			} break;
 			case PASS_MODE_COLOR_TRANSPARENT: {
 				if (element_info.uses_lightmap) {
-					shader_version = SceneShaderForwardClustered::SHADER_VERSION_LIGHTMAP_COLOR_PASS;
+					pipeline_version = SceneShaderForwardClustered::PIPELINE_VERSION_LIGHTMAP_TRANSPARENT_PASS;
 				} else {
 					if (element_info.uses_forward_gi) {
 						pipeline_specialization |= SceneShaderForwardClustered::SHADER_SPECIALIZATION_FORWARD_GI;
 					}
-					shader_version = SceneShaderForwardClustered::SHADER_VERSION_COLOR_PASS;
+					pipeline_version = SceneShaderForwardClustered::PIPELINE_VERSION_TRANSPARENT_PASS;
 				}
+
 			} break;
 			case PASS_MODE_COLOR_SPECULAR: {
 				if (element_info.uses_lightmap) {
-					shader_version = SceneShaderForwardClustered::SHADER_VERSION_LIGHTMAP_COLOR_PASS_WITH_SEPARATE_SPECULAR;
+					pipeline_version = SceneShaderForwardClustered::PIPELINE_VERSION_LIGHTMAP_OPAQUE_PASS_WITH_SEPARATE_SPECULAR;
 				} else {
-					shader_version = SceneShaderForwardClustered::SHADER_VERSION_COLOR_PASS_WITH_SEPARATE_SPECULAR;
+					pipeline_version = SceneShaderForwardClustered::PIPELINE_VERSION_OPAQUE_PASS_WITH_SEPARATE_SPECULAR;
 				}
 			} break;
 			case PASS_MODE_SHADOW:
 			case PASS_MODE_DEPTH: {
-				shader_version = SceneShaderForwardClustered::SHADER_VERSION_DEPTH_PASS;
+				pipeline_version = SceneShaderForwardClustered::PIPELINE_VERSION_DEPTH_PASS;
 			} break;
 			case PASS_MODE_SHADOW_DP: {
-				shader_version = SceneShaderForwardClustered::SHADER_VERSION_DEPTH_PASS_DP;
+				pipeline_version = SceneShaderForwardClustered::PIPELINE_VERSION_DEPTH_PASS_DP;
 			} break;
 			case PASS_MODE_DEPTH_NORMAL_ROUGHNESS: {
-				shader_version = SceneShaderForwardClustered::SHADER_VERSION_DEPTH_PASS_WITH_NORMAL_AND_ROUGHNESS;
+				pipeline_version = SceneShaderForwardClustered::PIPELINE_VERSION_DEPTH_PASS_WITH_NORMAL_AND_ROUGHNESS;
 			} break;
 			case PASS_MODE_DEPTH_NORMAL_ROUGHNESS_VOXEL_GI: {
-				shader_version = SceneShaderForwardClustered::SHADER_VERSION_DEPTH_PASS_WITH_NORMAL_AND_ROUGHNESS_AND_VOXEL_GI;
+				pipeline_version = SceneShaderForwardClustered::PIPELINE_VERSION_DEPTH_PASS_WITH_NORMAL_AND_ROUGHNESS_AND_VOXEL_GI;
 			} break;
 			case PASS_MODE_DEPTH_MATERIAL: {
-				shader_version = SceneShaderForwardClustered::SHADER_VERSION_DEPTH_PASS_WITH_MATERIAL;
+				pipeline_version = SceneShaderForwardClustered::PIPELINE_VERSION_DEPTH_PASS_WITH_MATERIAL;
 			} break;
 			case PASS_MODE_SDF: {
-				shader_version = SceneShaderForwardClustered::SHADER_VERSION_DEPTH_PASS_WITH_SDF;
+				pipeline_version = SceneShaderForwardClustered::PIPELINE_VERSION_DEPTH_PASS_WITH_SDF;
 			} break;
 		}
 
 		PipelineCacheRD *pipeline = nullptr;
 
-		pipeline = &shader->pipelines[cull_variant][primitive][shader_version];
+		pipeline = &shader->pipelines[cull_variant][primitive][pipeline_version];
 
 		RD::VertexFormatID vertex_format = -1;
 		RID vertex_array_rd;
@@ -944,8 +952,25 @@ void RenderForwardClustered::_fill_render_list(RenderListType p_render_list, con
 		}
 		bool uses_lightmap = false;
 		bool uses_gi = false;
+		float fade_alpha = 1.0;
 
 		if (p_render_list == RENDER_LIST_OPAQUE) {
+			if (inst->fade_far && inst->depth > inst->fade_far_begin) {
+				fade_alpha = 1.0 - (inst->depth - inst->fade_far_begin) / inst->fade_far_end;
+				if (fade_alpha < 0.0) {
+					fade_alpha = 0.0;
+				}
+
+			} else if (inst->fade_near && inst->depth < inst->fade_near_end) {
+				fade_alpha = (inst->depth - inst->fade_near_begin) / inst->fade_near_end;
+				if (fade_alpha < 0.0) {
+					fade_alpha = 0.0;
+				}
+			}
+
+			fade_alpha *= inst->force_alpha;
+
+			inst->base_flags |= uint32_t(fade_alpha * 255.0) << INSTANCE_DATA_FLAGS_FADE_SHIFT;
 			//setup GI
 
 			if (inst->lightmap_instance.is_valid()) {
@@ -1078,6 +1103,11 @@ void RenderForwardClustered::_fill_render_list(RenderListType p_render_list, con
 #else
 				bool force_alpha = false;
 #endif
+
+				if (fade_alpha < 0.999) {
+					force_alpha = true;
+				}
+
 				if (!force_alpha && (surf->flags & (GeometryInstanceSurfaceDataCache::FLAG_PASS_DEPTH | GeometryInstanceSurfaceDataCache::FLAG_PASS_OPAQUE))) {
 					rl->add_element(surf);
 				}
@@ -2869,6 +2899,22 @@ void RenderForwardClustered::geometry_instance_set_lod_bias(GeometryInstance *p_
 	ERR_FAIL_COND(!ginstance);
 	ginstance->lod_bias = p_lod_bias;
 }
+void RenderForwardClustered::geometry_instance_set_fade_range(GeometryInstance *p_geometry_instance, bool p_enable_near, float p_near_begin, float p_near_end, bool p_enable_far, float p_far_begin, float p_far_end) {
+	GeometryInstanceForwardClustered *ginstance = static_cast<GeometryInstanceForwardClustered *>(p_geometry_instance);
+	ERR_FAIL_COND(!ginstance);
+	ginstance->fade_near = p_enable_near;
+	ginstance->fade_near_begin = p_near_begin;
+	ginstance->fade_near_end = p_near_end;
+	ginstance->fade_far = p_enable_far;
+	ginstance->fade_far_begin = p_far_begin;
+	ginstance->fade_far_end = p_far_end;
+}
+void RenderForwardClustered::geometry_instance_set_transparency(GeometryInstance *p_geometry_instance, float p_transparency) {
+	GeometryInstanceForwardClustered *ginstance = static_cast<GeometryInstanceForwardClustered *>(p_geometry_instance);
+	ERR_FAIL_COND(!ginstance);
+	ginstance->force_alpha = CLAMP(1.0 - p_transparency, 0, 1);
+}
+
 void RenderForwardClustered::geometry_instance_set_use_baked_light(GeometryInstance *p_geometry_instance, bool p_enable) {
 	GeometryInstanceForwardClustered *ginstance = static_cast<GeometryInstanceForwardClustered *>(p_geometry_instance);
 	ERR_FAIL_COND(!ginstance);

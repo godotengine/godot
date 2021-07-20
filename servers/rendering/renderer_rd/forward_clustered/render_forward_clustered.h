@@ -208,6 +208,7 @@ class RenderForwardClustered : public RendererSceneRenderRD {
 		INSTANCE_DATA_FLAG_MULTIMESH_HAS_CUSTOM_DATA = 1 << 15,
 		INSTANCE_DATA_FLAGS_PARTICLE_TRAIL_SHIFT = 16,
 		INSTANCE_DATA_FLAGS_PARTICLE_TRAIL_MASK = 0xFF,
+		INSTANCE_DATA_FLAGS_FADE_SHIFT = 24,
 	};
 
 	struct SceneState {
@@ -468,6 +469,13 @@ class RenderForwardClustered : public RendererSceneRenderRD {
 		bool can_sdfgi = false;
 		bool using_projectors = false;
 		bool using_softshadows = false;
+		bool fade_near = false;
+		float fade_near_begin = 0;
+		float fade_near_end = 0;
+		bool fade_far = false;
+		float fade_far_begin = 0;
+		float fade_far_end = 0;
+		float force_alpha = 1.0;
 		//used during setup
 		uint32_t base_flags = 0;
 		Transform3D transform;
@@ -601,6 +609,8 @@ public:
 	virtual void geometry_instance_set_transform(GeometryInstance *p_geometry_instance, const Transform3D &p_transform, const AABB &p_aabb, const AABB &p_transformed_aabb) override;
 	virtual void geometry_instance_set_layer_mask(GeometryInstance *p_geometry_instance, uint32_t p_layer_mask) override;
 	virtual void geometry_instance_set_lod_bias(GeometryInstance *p_geometry_instance, float p_lod_bias) override;
+	virtual void geometry_instance_set_fade_range(GeometryInstance *p_geometry_instance, bool p_enable_near, float p_near_begin, float p_near_end, bool p_enable_far, float p_far_begin, float p_far_end) override;
+	virtual void geometry_instance_set_transparency(GeometryInstance *p_geometry_instance, float p_transparency) override;
 	virtual void geometry_instance_set_use_baked_light(GeometryInstance *p_geometry_instance, bool p_enable) override;
 	virtual void geometry_instance_set_use_dynamic_gi(GeometryInstance *p_geometry_instance, bool p_enable) override;
 	virtual void geometry_instance_set_use_lightmap(GeometryInstance *p_geometry_instance, RID p_lightmap_instance, const Rect2 &p_lightmap_uv_scale, int p_lightmap_slice_index) override;

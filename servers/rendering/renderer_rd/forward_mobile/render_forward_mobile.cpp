@@ -1791,6 +1791,10 @@ void RenderForwardMobile::geometry_instance_set_lod_bias(GeometryInstance *p_geo
 	ERR_FAIL_COND(!ginstance);
 	ginstance->lod_bias = p_lod_bias;
 }
+void RenderForwardMobile::geometry_instance_set_fade_range(GeometryInstance *p_geometry_instance, bool p_enable_near, float p_near_begin, float p_near_end, bool p_enable_far, float p_far_begin, float p_far_end) {
+}
+void RenderForwardMobile::geometry_instance_set_transparency(GeometryInstance *p_geometry_instance, float p_transparency) {
+}
 
 void RenderForwardMobile::geometry_instance_set_use_baked_light(GeometryInstance *p_geometry_instance, bool p_enable) {
 	GeometryInstanceForwardMobile *ginstance = static_cast<GeometryInstanceForwardMobile *>(p_geometry_instance);
