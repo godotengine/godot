@@ -2172,6 +2172,11 @@ void VisualScriptEditor::drop_data_fw(const Point2 &p_point, const Variant &p_da
 	}
 
 	if (String(d["type"]) == "files") {
+#ifdef OSX_ENABLED
+		bool use_preload = Input::get_singleton()->is_key_pressed(KEY_META);
+#else
+		bool use_preload = Input::get_singleton()->is_key_pressed(KEY_CTRL);
+#endif
 		Vector2 pos = _get_pos_in_graph(p_point);
 
 		Array files = d["files"];
@@ -2187,13 +2192,22 @@ void VisualScriptEditor::drop_data_fw(const Point2 &p_point, const Variant &p_da
 				if (!res.is_valid()) {
 					continue;
 				}
+				Ref<Script> drop_script = ResourceLoader::load(files[i]);
+				if (drop_script.is_valid() && drop_script->is_tool() && drop_script->get_instance_base_type() == "VisualScriptCustomNode" && !use_preload) {
+					Ref<VisualScriptCustomNode> vscn;
+					vscn.instantiate();
+					vscn->set_script(drop_script);
 
-				Ref<VisualScriptPreload> prnode;
-				prnode.instantiate();
-				prnode->set_preload(res);
+					undo_redo->add_do_method(script.ptr(), "add_node", new_id, vscn, pos);
+					undo_redo->add_undo_method(script.ptr(), "remove_node", new_id);
+				} else {
+					Ref<VisualScriptPreload> prnode;
+					prnode.instantiate();
+					prnode->set_preload(res);
 
-				undo_redo->add_do_method(script.ptr(), "add_node", new_id, prnode, pos);
-				undo_redo->add_undo_method(script.ptr(), "remove_node", new_id);
+					undo_redo->add_do_method(script.ptr(), "add_node", new_id, prnode, pos);
+					undo_redo->add_undo_method(script.ptr(), "remove_node", new_id);
+				}
 				new_ids.push_back(new_id);
 				new_id++;
 				pos += Vector2(20, 20);
