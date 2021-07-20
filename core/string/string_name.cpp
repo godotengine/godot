@@ -48,6 +48,10 @@ StringName _scs_create(const char *p_chr, bool p_static) {
 bool StringName::configured = false;
 Mutex StringName::mutex;
 
+#ifdef DEBUG_ENABLED
+bool StringName::debug_stringname = false;
+#endif
+
 void StringName::setup() {
 	ERR_FAIL_COND(configured);
 	for (int i = 0; i < STRING_TABLE_LEN; i++) {
@@ -59,6 +63,23 @@ void StringName::setup() {
 void StringName::cleanup() {
 	MutexLock lock(mutex);
 
+#ifdef DEBUG_ENABLED
+	if (unlikely(debug_stringname)) {
+		Vector<_Data *> data;
+		for (int i = 0; i < STRING_TABLE_LEN; i++) {
+			_Data *d = _table[i];
+			while (d) {
+				data.push_back(d);
+				d = d->next;
+			}
+		}
+		print_line("\nStringName Reference Ranking:\n");
+		data.sort_custom<DebugSortReferences>();
+		for (int i = 0; i < MIN(100, data.size()); i++) {
+			print_line(itos(i + 1) + ": " + data[i]->get_name() + " - " + itos(data[i]->debug_references));
+		}
+	}
+#endif
 	int lost_strings = 0;
 	for (int i = 0; i < STRING_TABLE_LEN; i++) {
 		while (_table[i]) {
@@ -192,8 +213,14 @@ StringName::StringName(const char *p_name, bool p_static) {
 			if (p_static) {
 				_data->static_count.increment();
 			}
-			return;
+#ifdef DEBUG_ENABLED
+			if (unlikely(debug_stringname)) {
+				_data->debug_references++;
+			}
+#endif
 		}
+
+		return;
 	}
 
 	_data = memnew(_Data);
@@ -205,6 +232,13 @@ StringName::StringName(const char *p_name, bool p_static) {
 	_data->cname = nullptr;
 	_data->next = _table[idx];
 	_data->prev = nullptr;
+#ifdef DEBUG_ENABLED
+	if (unlikely(debug_stringname)) {
+		// Keep in memory, force static.
+		_data->refcount.ref();
+		_data->static_count.increment();
+	}
+#endif
 	if (_table[idx]) {
 		_table[idx]->prev = _data;
 	}
@@ -240,6 +274,11 @@ StringName::StringName(const StaticCString &p_static_string, bool p_static) {
 			if (p_static) {
 				_data->static_count.increment();
 			}
+#ifdef DEBUG_ENABLED
+			if (unlikely(debug_stringname)) {
+				_data->debug_references++;
+			}
+#endif
 			return;
 		}
 	}
@@ -253,6 +292,13 @@ StringName::StringName(const StaticCString &p_static_string, bool p_static) {
 	_data->cname = p_static_string.ptr;
 	_data->next = _table[idx];
 	_data->prev = nullptr;
+#ifdef DEBUG_ENABLED
+	if (unlikely(debug_stringname)) {
+		// Keep in memory, force static.
+		_data->refcount.ref();
+		_data->static_count.increment();
+	}
+#endif
 	if (_table[idx]) {
 		_table[idx]->prev = _data;
 	}
@@ -288,6 +334,11 @@ StringName::StringName(const String &p_name, bool p_static) {
 			if (p_static) {
 				_data->static_count.increment();
 			}
+#ifdef DEBUG_ENABLED
+			if (unlikely(debug_stringname)) {
+				_data->debug_references++;
+			}
+#endif
 			return;
 		}
 	}
@@ -301,6 +352,14 @@ StringName::StringName(const String &p_name, bool p_static) {
 	_data->cname = nullptr;
 	_data->next = _table[idx];
 	_data->prev = nullptr;
+#ifdef DEBUG_ENABLED
+	if (unlikely(debug_stringname)) {
+		// Keep in memory, force static.
+		_data->refcount.ref();
+		_data->static_count.increment();
+	}
+#endif
+
 	if (_table[idx]) {
 		_table[idx]->prev = _data;
 	}
@@ -331,6 +390,12 @@ StringName StringName::search(const char *p_name) {
 	}
 
 	if (_data && _data->refcount.ref()) {
+#ifdef DEBUG_ENABLED
+		if (unlikely(debug_stringname)) {
+			_data->debug_references++;
+		}
+#endif
+
 		return StringName(_data);
 	}
 
@@ -388,6 +453,11 @@ StringName StringName::search(const String &p_name) {
 	}
 
 	if (_data && _data->refcount.ref()) {
+#ifdef DEBUG_ENABLED
+		if (unlikely(debug_stringname)) {
+			_data->debug_references++;
+		}
+#endif
 		return StringName(_data);
 	}
 
