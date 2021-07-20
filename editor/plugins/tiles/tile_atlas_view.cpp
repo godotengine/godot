@@ -41,25 +41,31 @@
 #include "editor/editor_settings.h"
 
 void TileAtlasView::_gui_input(const Ref<InputEvent> &p_event) {
-	bool ctrl = Input::get_singleton()->is_key_pressed(KEY_CTRL);
-
 	Ref<InputEventMouseButton> mb = p_event;
 	if (mb.is_valid()) {
 		drag_type = DRAG_TYPE_NONE;
-		if (ctrl && mb->is_pressed() && mb->get_button_index() == MOUSE_BUTTON_WHEEL_DOWN) {
-			// Zoom out
-			zoom_widget->set_zoom_by_increments(-2);
-			emit_signal(SNAME("transform_changed"), zoom_widget->get_zoom(), panning);
-			_update_zoom_and_panning(true);
-			accept_event();
-		}
 
-		if (ctrl && mb->is_pressed() && mb->get_button_index() == MOUSE_BUTTON_WHEEL_UP) {
-			// Zoom in
-			zoom_widget->set_zoom_by_increments(2);
-			emit_signal(SNAME("transform_changed"), zoom_widget->get_zoom(), panning);
-			_update_zoom_and_panning(true);
-			accept_event();
+		Vector2i scroll_vec = Vector2((mb->get_button_index() == MOUSE_BUTTON_WHEEL_LEFT) - (mb->get_button_index() == MOUSE_BUTTON_WHEEL_RIGHT), (mb->get_button_index() == MOUSE_BUTTON_WHEEL_UP) - (mb->get_button_index() == MOUSE_BUTTON_WHEEL_DOWN));
+		if (scroll_vec != Vector2()) {
+			if (mb->is_ctrl_pressed()) {
+				if (mb->is_shift_pressed()) {
+					panning.x += 32 * mb->get_factor() * scroll_vec.y;
+					panning.y += 32 * mb->get_factor() * scroll_vec.x;
+				} else {
+					panning.y += 32 * mb->get_factor() * scroll_vec.y;
+					panning.x += 32 * mb->get_factor() * scroll_vec.x;
+				}
+
+				emit_signal(SNAME("transform_changed"), zoom_widget->get_zoom(), panning);
+				_update_zoom_and_panning(true);
+				accept_event();
+
+			} else if (!mb->is_shift_pressed()) {
+				zoom_widget->set_zoom_by_increments(scroll_vec.y * 2);
+				emit_signal(SNAME("transform_changed"), zoom_widget->get_zoom(), panning);
+				_update_zoom_and_panning(true);
+				accept_event();
+			}
 		}
 
 		if (mb->get_button_index() == MOUSE_BUTTON_MIDDLE || mb->get_button_index() == MOUSE_BUTTON_RIGHT) {
