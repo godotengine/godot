@@ -2367,7 +2367,6 @@ void EditorInspector::_property_keyed(const String &p_path, bool p_advance) {
 }
 
 void EditorInspector::_property_deleted(const String &p_path) {
-	print_line("deleted pressed?");
 	if (!object) {
 		return;
 	}
