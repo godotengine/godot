@@ -102,6 +102,10 @@ void CollisionSolver3DSW::soft_body_contact_callback(const Vector3 &p_point_A, i
 
 	++cinfo.contact_count;
 
+	if (!cinfo.result_callback) {
+		return;
+	}
+
 	if (cinfo.swap_result) {
 		cinfo.result_callback(p_point_B, cinfo.node_index, p_point_A, p_index_A, cinfo.userdata);
 	} else {

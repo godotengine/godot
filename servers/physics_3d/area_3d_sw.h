@@ -38,6 +38,7 @@
 
 class Space3DSW;
 class Body3DSW;
+class SoftBody3DSW;
 class Constraint3DSW;
 
 class Area3DSW : public CollisionObject3DSW {
@@ -80,6 +81,7 @@ class Area3DSW : public CollisionObject3DSW {
 		}
 
 		_FORCE_INLINE_ BodyKey() {}
+		BodyKey(SoftBody3DSW *p_body, uint32_t p_body_shape, uint32_t p_area_shape);
 		BodyKey(Body3DSW *p_body, uint32_t p_body_shape, uint32_t p_area_shape);
 		BodyKey(Area3DSW *p_body, uint32_t p_body_shape, uint32_t p_area_shape);
 	};
@@ -91,6 +93,7 @@ class Area3DSW : public CollisionObject3DSW {
 		_FORCE_INLINE_ BodyState() { state = 0; }
 	};
 
+	Map<BodyKey, BodyState> monitored_soft_bodies;
 	Map<BodyKey, BodyState> monitored_bodies;
 	Map<BodyKey, BodyState> monitored_areas;
 
@@ -114,6 +117,9 @@ public:
 
 	_FORCE_INLINE_ void add_body_to_query(Body3DSW *p_body, uint32_t p_body_shape, uint32_t p_area_shape);
 	_FORCE_INLINE_ void remove_body_from_query(Body3DSW *p_body, uint32_t p_body_shape, uint32_t p_area_shape);
+
+	_FORCE_INLINE_ void add_soft_body_to_query(SoftBody3DSW *p_soft_body, uint32_t p_soft_body_shape, uint32_t p_area_shape);
+	_FORCE_INLINE_ void remove_soft_body_from_query(SoftBody3DSW *p_soft_body, uint32_t p_soft_body_shape, uint32_t p_area_shape);
 
 	_FORCE_INLINE_ void add_area_to_query(Area3DSW *p_area, uint32_t p_area_shape, uint32_t p_self_shape);
 	_FORCE_INLINE_ void remove_area_from_query(Area3DSW *p_area, uint32_t p_area_shape, uint32_t p_self_shape);
@@ -166,6 +172,22 @@ public:
 	~Area3DSW();
 };
 
+void Area3DSW::add_soft_body_to_query(SoftBody3DSW *p_soft_body, uint32_t p_soft_body_shape, uint32_t p_area_shape) {
+	BodyKey bk(p_soft_body, p_soft_body_shape, p_area_shape);
+	monitored_soft_bodies[bk].inc();
+	if (!monitor_query_list.in_list()) {
+		_queue_monitor_update();
+	}
+}
+
+void Area3DSW::remove_soft_body_from_query(SoftBody3DSW *p_soft_body, uint32_t p_soft_body_shape, uint32_t p_area_shape) {
+	BodyKey bk(p_soft_body, p_soft_body_shape, p_area_shape);
+	monitored_soft_bodies[bk].dec();
+	if (!monitor_query_list.in_list()) {
+		_queue_monitor_update();
+	}
+}
+
 void Area3DSW::add_body_to_query(Body3DSW *p_body, uint32_t p_body_shape, uint32_t p_area_shape) {
 	BodyKey bk(p_body, p_body_shape, p_area_shape);
 	monitored_bodies[bk].inc();
@@ -197,5 +219,17 @@ void Area3DSW::remove_area_from_query(Area3DSW *p_area, uint32_t p_area_shape, u
 		_queue_monitor_update();
 	}
 }
+
+struct AreaCMP {
+	Area3DSW *area;
+	int refCount;
+	_FORCE_INLINE_ bool operator==(const AreaCMP &p_cmp) const { return area->get_self() == p_cmp.area->get_self(); }
+	_FORCE_INLINE_ bool operator<(const AreaCMP &p_cmp) const { return area->get_priority() < p_cmp.area->get_priority(); }
+	_FORCE_INLINE_ AreaCMP() {}
+	_FORCE_INLINE_ AreaCMP(Area3DSW *p_area) {
+		area = p_area;
+		refCount = 1;
+	}
+};
 
 #endif // AREA__SW_H

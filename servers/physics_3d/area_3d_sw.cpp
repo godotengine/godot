@@ -30,7 +30,15 @@
 
 #include "area_3d_sw.h"
 #include "body_3d_sw.h"
+#include "soft_body_3d_sw.h"
 #include "space_3d_sw.h"
+
+Area3DSW::BodyKey::BodyKey(SoftBody3DSW *p_body, uint32_t p_body_shape, uint32_t p_area_shape) {
+	rid = p_body->get_self();
+	instance_id = p_body->get_instance_id();
+	body_shape = p_body_shape;
+	area_shape = p_area_shape;
+}
 
 Area3DSW::BodyKey::BodyKey(Body3DSW *p_body, uint32_t p_body_shape, uint32_t p_area_shape) {
 	rid = p_body->get_self();

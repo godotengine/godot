@@ -921,7 +921,9 @@ void *Space3DSW::_broadphase_pair(CollisionObject3DSW *A, int p_subindex_A, Coll
 			Area2Pair3DSW *area2_pair = memnew(Area2Pair3DSW(area_b, p_subindex_B, area, p_subindex_A));
 			return area2_pair;
 		} else if (type_B == CollisionObject3DSW::TYPE_SOFT_BODY) {
-			// Area/Soft Body, not supported.
+			SoftBody3DSW *softbody = static_cast<SoftBody3DSW *>(B);
+			AreaSoftBodyPair3DSW *soft_area_pair = memnew(AreaSoftBodyPair3DSW(softbody, p_subindex_B, area, p_subindex_A));
+			return soft_area_pair;
 		} else {
 			Body3DSW *body = static_cast<Body3DSW *>(B);
 			AreaPair3DSW *area_pair = memnew(AreaPair3DSW(body, p_subindex_B, area, p_subindex_A));
