@@ -270,6 +270,9 @@
 		</member>
 		<member name="orm_texture" type="Texture2D" setter="set_texture" getter="get_texture">
 		</member>
+		<member name="particles_anim_blend" type="bool" setter="set_particles_anim_blend" getter="get_particles_anim_blend">
+			If [code]true[/code], enables blending between frames in the particle flipbook animation. This results in a smoother animation appearance, especially for fire or smoke effects. Only enabled when using [constant BILLBOARD_PARTICLES]. See [member billboard_mode].
+		</member>
 		<member name="particles_anim_h_frames" type="int" setter="set_particles_anim_h_frames" getter="get_particles_anim_h_frames">
 			The number of horizontal frames in the particle sprite sheet. Only enabled when using [constant BILLBOARD_PARTICLES]. See [member billboard_mode].
 		</member>
