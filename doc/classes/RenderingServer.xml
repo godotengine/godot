@@ -1377,6 +1377,14 @@
 			<description>
 			</description>
 		</method>
+		<method name="instance_geometry_set_transparency">
+			<return type="void" />
+			<argument index="0" name="instance" type="RID" />
+			<argument index="1" name="transparency" type="float" />
+			<description>
+				Sets the transparency for the given geometry instance. Equivalent to [member GeometryInstance3D.transparency].
+			</description>
+		</method>
 		<method name="instance_geometry_set_visibility_range">
 			<return type="void" />
 			<argument index="0" name="instance" type="RID" />
@@ -1384,6 +1392,7 @@
 			<argument index="2" name="max" type="float" />
 			<argument index="3" name="min_margin" type="float" />
 			<argument index="4" name="max_margin" type="float" />
+			<argument index="5" name="fade_mode" type="int" enum="RenderingServer.VisibilityRangeFadeMode" />
 			<description>
 				Sets the visibility range values for the given geometry instance. Equivalent to [member GeometryInstance3D.visibility_range_begin] and related properties.
 			</description>
@@ -4177,6 +4186,15 @@
 		</constant>
 		<constant name="SHADOW_CASTING_SETTING_SHADOWS_ONLY" value="3" enum="ShadowCastingSetting">
 			Only render the shadows from the object. The object itself will not be drawn.
+		</constant>
+		<constant name="VISIBILITY_RANGE_FADE_DISABLED" value="0" enum="VisibilityRangeFadeMode">
+			Disable visibility range fading for the given instance.
+		</constant>
+		<constant name="VISIBILITY_RANGE_FADE_SELF" value="1" enum="VisibilityRangeFadeMode">
+			Fade-out the given instance when it approaches its visibility range limits.
+		</constant>
+		<constant name="VISIBILITY_RANGE_FADE_DEPENDENCIES" value="2" enum="VisibilityRangeFadeMode">
+			Fade-in the given instance's dependencies when reaching its visibility range limits.
 		</constant>
 		<constant name="BAKE_CHANNEL_ALBEDO_ALPHA" value="0" enum="BakeChannels">
 		</constant>
