@@ -50,6 +50,10 @@ class Area3DSW : public CollisionObject3DSW {
 	real_t point_attenuation;
 	real_t linear_damp;
 	real_t angular_damp;
+	real_t wind_force_magnitude = 0.0;
+	real_t wind_attenuation_factor = 0.0;
+	Vector3 wind_source;
+	Vector3 wind_direction;
 	int priority;
 	bool monitorable;
 
@@ -153,6 +157,18 @@ public:
 
 	_FORCE_INLINE_ void set_priority(int p_priority) { priority = p_priority; }
 	_FORCE_INLINE_ int get_priority() const { return priority; }
+
+	_FORCE_INLINE_ void set_wind_force_magnitude(real_t p_wind_force_magnitude) { wind_force_magnitude = p_wind_force_magnitude; }
+	_FORCE_INLINE_ real_t get_wind_force_magnitude() const { return wind_force_magnitude; }
+
+	_FORCE_INLINE_ void set_wind_attenuation_factor(real_t p_wind_attenuation_factor) { wind_attenuation_factor = p_wind_attenuation_factor; }
+	_FORCE_INLINE_ real_t get_wind_attenuation_factor() const { return wind_attenuation_factor; }
+
+	_FORCE_INLINE_ void set_wind_source(const Vector3 &p_wind_source) { wind_source = p_wind_source; }
+	_FORCE_INLINE_ const Vector3 &get_wind_source() const { return wind_source; }
+
+	_FORCE_INLINE_ void set_wind_direction(const Vector3 &p_wind_direction) { wind_direction = p_wind_direction; }
+	_FORCE_INLINE_ const Vector3 &get_wind_direction() const { return wind_direction; }
 
 	_FORCE_INLINE_ void add_constraint(Constraint3DSW *p_constraint) { constraints.insert(p_constraint); }
 	_FORCE_INLINE_ void remove_constraint(Constraint3DSW *p_constraint) { constraints.erase(p_constraint); }
