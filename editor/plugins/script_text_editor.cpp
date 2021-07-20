@@ -1370,6 +1370,14 @@ Array ScriptTextEditor::get_breakpoints() {
 	return code_editor->get_text_editor()->get_breakpointed_lines();
 }
 
+void ScriptTextEditor::set_breakpoint(int p_line, bool p_enabled) {
+	code_editor->get_text_editor()->set_line_as_breakpoint(p_line, p_enabled);
+}
+
+void ScriptTextEditor::clear_breakpoints() {
+	code_editor->get_text_editor()->clear_breakpointed_lines();
+}
+
 void ScriptTextEditor::set_tooltip_request_func(String p_method, Object *p_obj) {
 	code_editor->get_text_editor()->set_tooltip_request_func(p_obj, p_method, this);
 }

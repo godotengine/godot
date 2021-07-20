@@ -164,6 +164,7 @@ void EditorDebuggerNode::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("set_execution", PropertyInfo("script"), PropertyInfo(Variant::INT, "line")));
 	ADD_SIGNAL(MethodInfo("clear_execution", PropertyInfo("script")));
 	ADD_SIGNAL(MethodInfo("breaked", PropertyInfo(Variant::BOOL, "reallydid"), PropertyInfo(Variant::BOOL, "can_debug")));
+	ADD_SIGNAL(MethodInfo("breakpoint_toggled", PropertyInfo(Variant::STRING, "path"), PropertyInfo(Variant::INT, "line"), PropertyInfo(Variant::BOOL, "enabled")));
 }
 
 EditorDebuggerRemoteObject *EditorDebuggerNode::get_inspected_remote_object() {
@@ -487,6 +488,8 @@ void EditorDebuggerNode::set_breakpoint(const String &p_path, int p_line, bool p
 	_for_all(tabs, [&](ScriptEditorDebugger *dbg) {
 		dbg->set_breakpoint(p_path, p_line, p_enabled);
 	});
+
+	emit_signal("breakpoint_toggled", p_path, p_line, p_enabled);
 }
 
 void EditorDebuggerNode::set_breakpoints(const String &p_path, Array p_lines) {

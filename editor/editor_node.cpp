@@ -4759,6 +4759,10 @@ bool EditorNode::ensure_main_scene(bool p_from_native) {
 	return true;
 }
 
+Error EditorNode::run_play_native(int p_idx, int p_platform) {
+	return run_native->run_native(p_idx, p_platform);
+}
+
 void EditorNode::run_play() {
 	_menu_option_confirm(RUN_STOP, true);
 	_run(false);

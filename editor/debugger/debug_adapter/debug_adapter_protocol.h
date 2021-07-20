@@ -52,12 +52,17 @@ struct DAPeer : RefCounted {
 	int content_length = 0;
 	List<Dictionary> res_queue;
 	int seq = 0;
+	uint64_t timestamp = 0;
 
 	// Client specific info
 	bool linesStartAt1 = false;
 	bool columnsStartAt1 = false;
 	bool supportsVariableType = false;
 	bool supportsInvalidatedEvent = false;
+	bool supportsCustomData = false;
+
+	// Internal client info
+	bool attached = false;
 
 	Error handle_data();
 	Error send_data();
@@ -82,13 +87,17 @@ private:
 	void on_debug_stopped();
 	void on_debug_output(const String &p_message);
 	void on_debug_breaked(const bool &p_reallydid, const bool &p_can_debug, const String &p_reason, const bool &p_has_stackdump);
+	void on_debug_breakpoint_toggled(const String &p_path, const int &p_line, const bool &p_enabled);
 	void on_debug_stack_dump(const Array &p_stack_dump);
 	void on_debug_stack_frame_vars(const int &p_size);
 	void on_debug_stack_frame_var(const Array &p_data);
+	void on_debug_data(const String &p_msg, const Array &p_data);
 
 	void reset_current_info();
 	void reset_ids();
 	void reset_stack_info();
+
+	int parse_variant(const Variant &p_var);
 
 	bool _initialized = false;
 	bool _processing_breakpoint = false;
@@ -96,6 +105,8 @@ private:
 	bool _processing_stackdump = false;
 	int _remaining_vars = 0;
 	int _current_frame = 0;
+	uint64_t _request_timeout = 1000;
+	bool _sync_breakpoints = false;
 
 	String _current_request;
 	Ref<DAPeer> _current_peer;
@@ -108,6 +119,8 @@ private:
 	Map<int, Array> variable_list;
 
 public:
+	friend class DebugAdapterServer;
+
 	_FORCE_INLINE_ static DebugAdapterProtocol *get_singleton() { return singleton; }
 	_FORCE_INLINE_ bool is_active() const { return _initialized && clients.size() > 0; }
 
@@ -126,8 +139,10 @@ public:
 	void notify_stopped_step();
 	void notify_continued();
 	void notify_output(const String &p_message);
+	void notify_custom_data(const String &p_msg, const Array &p_data);
+	void notify_breakpoint(const DAP::Breakpoint &p_breakpoint, const bool &p_enabled);
 
-	Array update_breakpoints(const String &p_path, const Array &p_breakpoints);
+	Array update_breakpoints(const String &p_path, const Array &p_lines);
 
 	void poll();
 	Error start(int p_port, const IPAddress &p_bind_ip);
