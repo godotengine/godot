@@ -30,6 +30,9 @@
 
 #include "sky_material.h"
 
+Mutex ProceduralSkyMaterial::shader_mutex;
+RID ProceduralSkyMaterial::shader;
+
 void ProceduralSkyMaterial::set_sky_top_color(const Color &p_sky_top) {
 	sky_top_color = p_sky_top;
 	RS::get_singleton()->material_set_param(_get_material(), "sky_top_color", sky_top_color.to_linear());
@@ -128,7 +131,17 @@ Shader::Mode ProceduralSkyMaterial::get_shader_mode() const {
 	return Shader::MODE_SKY;
 }
 
+RID ProceduralSkyMaterial::get_rid() const {
+	_update_shader();
+	if (!shader_set) {
+		RS::get_singleton()->material_set_shader(_get_material(), shader);
+		shader_set = true;
+	}
+	return _get_material();
+}
+
 RID ProceduralSkyMaterial::get_shader_rid() const {
+	_update_shader();
 	return shader;
 }
 
@@ -180,10 +193,18 @@ void ProceduralSkyMaterial::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "sun_curve", PROPERTY_HINT_EXP_EASING), "set_sun_curve", "get_sun_curve");
 }
 
-ProceduralSkyMaterial::ProceduralSkyMaterial() {
-	shader = RS::get_singleton()->shader_create();
+void ProceduralSkyMaterial::cleanup_shader() {
+	if (shader.is_valid()) {
+		RS::get_singleton()->free(shader);
+	}
+}
 
-	RS::get_singleton()->shader_set_code(shader, R"(
+void ProceduralSkyMaterial::_update_shader() {
+	shader_mutex.lock();
+	if (shader.is_null()) {
+		shader = RS::get_singleton()->shader_create();
+
+		RS::get_singleton()->shader_set_code(shader, R"(
 shader_type sky;
 
 uniform vec4 sky_top_color : hint_color = vec4(0.35, 0.46, 0.71, 1.0);
@@ -250,9 +271,11 @@ void sky() {
 	COLOR = mix(ground, sky, step(0.0, EYEDIR.y));
 }
 )");
+	}
+	shader_mutex.unlock();
+}
 
-	RS::get_singleton()->material_set_shader(_get_material(), shader);
-
+ProceduralSkyMaterial::ProceduralSkyMaterial() {
 	set_sky_top_color(Color(0.35, 0.46, 0.71));
 	set_sky_horizon_color(Color(0.55, 0.69, 0.81));
 	set_sky_curve(0.09);
@@ -268,7 +291,6 @@ void sky() {
 }
 
 ProceduralSkyMaterial::~ProceduralSkyMaterial() {
-	RS::get_singleton()->free(shader);
 	RS::get_singleton()->material_set_shader(_get_material(), RID());
 }
 
@@ -293,7 +315,17 @@ Shader::Mode PanoramaSkyMaterial::get_shader_mode() const {
 	return Shader::MODE_SKY;
 }
 
+RID PanoramaSkyMaterial::get_rid() const {
+	_update_shader();
+	if (!shader_set) {
+		RS::get_singleton()->material_set_shader(_get_material(), shader);
+		shader_set = true;
+	}
+	return _get_material();
+}
+
 RID PanoramaSkyMaterial::get_shader_rid() const {
+	_update_shader();
 	return shader;
 }
 
@@ -304,10 +336,21 @@ void PanoramaSkyMaterial::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "panorama", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_panorama", "get_panorama");
 }
 
-PanoramaSkyMaterial::PanoramaSkyMaterial() {
-	shader = RS::get_singleton()->shader_create();
+Mutex PanoramaSkyMaterial::shader_mutex;
+RID PanoramaSkyMaterial::shader;
 
-	RS::get_singleton()->shader_set_code(shader, R"(
+void PanoramaSkyMaterial::cleanup_shader() {
+	if (shader.is_valid()) {
+		RS::get_singleton()->free(shader);
+	}
+}
+
+void PanoramaSkyMaterial::_update_shader() {
+	shader_mutex.lock();
+	if (shader.is_null()) {
+		shader = RS::get_singleton()->shader_create();
+
+		RS::get_singleton()->shader_set_code(shader, R"(
 shader_type sky;
 
 uniform sampler2D source_panorama : filter_linear;
@@ -316,12 +359,15 @@ void sky() {
 	COLOR = texture(source_panorama, SKY_COORDS).rgb;
 }
 )");
+	}
 
-	RS::get_singleton()->material_set_shader(_get_material(), shader);
+	shader_mutex.unlock();
+}
+
+PanoramaSkyMaterial::PanoramaSkyMaterial() {
 }
 
 PanoramaSkyMaterial::~PanoramaSkyMaterial() {
-	RS::get_singleton()->free(shader);
 	RS::get_singleton()->material_set_shader(_get_material(), RID());
 }
 
@@ -436,9 +482,22 @@ Shader::Mode PhysicalSkyMaterial::get_shader_mode() const {
 	return Shader::MODE_SKY;
 }
 
+RID PhysicalSkyMaterial::get_rid() const {
+	_update_shader();
+	if (!shader_set) {
+		RS::get_singleton()->material_set_shader(_get_material(), shader);
+		shader_set = true;
+	}
+	return _get_material();
+}
+
 RID PhysicalSkyMaterial::get_shader_rid() const {
+	_update_shader();
 	return shader;
 }
+
+Mutex PhysicalSkyMaterial::shader_mutex;
+RID PhysicalSkyMaterial::shader;
 
 void PhysicalSkyMaterial::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_rayleigh_coefficient", "rayleigh"), &PhysicalSkyMaterial::set_rayleigh_coefficient);
@@ -491,10 +550,18 @@ void PhysicalSkyMaterial::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "night_sky", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_night_sky", "get_night_sky");
 }
 
-PhysicalSkyMaterial::PhysicalSkyMaterial() {
-	shader = RS::get_singleton()->shader_create();
+void PhysicalSkyMaterial::cleanup_shader() {
+	if (shader.is_valid()) {
+		RS::get_singleton()->free(shader);
+	}
+}
 
-	RS::get_singleton()->shader_set_code(shader, R"(
+void PhysicalSkyMaterial::_update_shader() {
+	shader_mutex.lock();
+	if (shader.is_null()) {
+		shader = RS::get_singleton()->shader_create();
+
+		RS::get_singleton()->shader_set_code(shader, R"(
 shader_type sky;
 
 uniform float rayleigh : hint_range(0, 64) = 2.0;
@@ -588,9 +655,12 @@ void sky() {
 	}
 }
 )");
+	}
 
-	RS::get_singleton()->material_set_shader(_get_material(), shader);
+	shader_mutex.unlock();
+}
 
+PhysicalSkyMaterial::PhysicalSkyMaterial() {
 	set_rayleigh_coefficient(2.0);
 	set_rayleigh_color(Color(0.056, 0.14, 0.3));
 	set_mie_coefficient(0.005);
@@ -604,5 +674,4 @@ void sky() {
 }
 
 PhysicalSkyMaterial::~PhysicalSkyMaterial() {
-	RS::get_singleton()->free(shader);
 }
