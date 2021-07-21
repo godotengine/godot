@@ -72,6 +72,7 @@ public:
 	virtual int get_max_retransmits() const;
 	virtual String get_protocol() const;
 	virtual bool is_negotiated() const;
+	virtual int get_buffered_amount() const;
 
 	virtual Error poll();
 	virtual void close();

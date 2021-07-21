@@ -166,6 +166,11 @@ const GodotRTCDataChannel = {
 		return GodotRTCDataChannel.get_prop(p_id, 'negotiated', 65535);
 	},
 
+	godot_js_rtc_datachannel_get_buffered_amount__sig: 'ii',
+	godot_js_rtc_datachannel_get_buffered_amount: function (p_id) {
+		return GodotRTCDataChannel.get_prop(p_id, 'bufferedAmount', 0);
+	},
+
 	godot_js_rtc_datachannel_label_get__sig: 'ii',
 	godot_js_rtc_datachannel_label_get: function (p_id) {
 		const ref = IDHandler.get(p_id);
