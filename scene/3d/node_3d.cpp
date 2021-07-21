@@ -237,6 +237,28 @@ void Node3D::set_quaternion(const Quaternion &p_quaternion) {
 	}
 }
 
+Vector3 Node3D::get_global_position() const {
+	return get_global_transform().get_origin();
+}
+
+void Node3D::set_global_position(const Vector3 &p_position) {
+	Transform3D transform = get_global_transform();
+	transform.set_origin(p_position);
+	set_global_transform(transform);
+}
+
+Vector3 Node3D::get_global_rotation() const {
+	return get_global_transform().get_basis().get_euler();
+}
+
+void Node3D::set_global_rotation(const Vector3 &p_euler_rad) {
+	Transform3D transform = get_global_transform();
+	Basis new_basis = transform.get_basis();
+	new_basis.set_euler(p_euler_rad);
+	transform.set_basis(new_basis);
+	set_global_transform(transform);
+}
+
 void Node3D::set_transform(const Transform3D &p_transform) {
 	data.local_transform = p_transform;
 	data.dirty = DIRTY_EULER_ROTATION_AND_SCALE; // Make rot/scale dirty.
@@ -950,8 +972,14 @@ void Node3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_quaternion"), &Node3D::get_quaternion);
 	ClassDB::bind_method(D_METHOD("set_basis", "basis"), &Node3D::set_basis);
 	ClassDB::bind_method(D_METHOD("get_basis"), &Node3D::get_basis);
+
 	ClassDB::bind_method(D_METHOD("set_global_transform", "global"), &Node3D::set_global_transform);
 	ClassDB::bind_method(D_METHOD("get_global_transform"), &Node3D::get_global_transform);
+	ClassDB::bind_method(D_METHOD("set_global_position", "position"), &Node3D::set_global_position);
+	ClassDB::bind_method(D_METHOD("get_global_position"), &Node3D::get_global_position);
+	ClassDB::bind_method(D_METHOD("set_global_rotation", "radians"), &Node3D::set_global_rotation);
+	ClassDB::bind_method(D_METHOD("get_global_rotation"), &Node3D::get_global_rotation);
+
 	ClassDB::bind_method(D_METHOD("get_parent_node_3d"), &Node3D::get_parent_node_3d);
 	ClassDB::bind_method(D_METHOD("set_ignore_transform_notification", "enabled"), &Node3D::set_ignore_transform_notification);
 	ClassDB::bind_method(D_METHOD("set_as_top_level", "enable"), &Node3D::set_as_top_level);
@@ -1034,6 +1062,9 @@ void Node3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "rotation_edit_mode", PROPERTY_HINT_ENUM, "Euler,Quaternion,Basis"), "set_rotation_edit_mode", "get_rotation_edit_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "rotation_order", PROPERTY_HINT_ENUM, "XYZ,XZY,YXZ,YZX,ZXY,ZYX"), "set_rotation_order", "get_rotation_order");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "top_level"), "set_as_top_level", "is_set_as_top_level");
+
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "global_position", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "set_global_position", "get_global_position");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "global_rotation", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "set_global_rotation", "get_global_rotation");
 	ADD_GROUP("Visibility", "");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "visible"), "set_visible", "is_visible");
 	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "visibility_parent", PROPERTY_HINT_NODE_PATH_VALID_TYPES, "GeometryInstance3D"), "set_visibility_parent", "get_visibility_parent");
