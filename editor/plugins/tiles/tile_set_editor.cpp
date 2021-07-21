@@ -50,7 +50,7 @@ void TileSetEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data, C
 
 	if (p_from == sources_list) {
 		// Handle dropping a texture in the list of atlas resources.
-		int source_id = -1;
+		int source_id = TileSet::INVALID_SOURCE;
 		int added = 0;
 		Dictionary d = p_data;
 		Vector<String> files = d["files"];
@@ -77,7 +77,7 @@ void TileSetEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data, C
 		}
 
 		// Update the selected source (thus triggering an update).
-		_update_atlas_sources_list(source_id);
+		_update_sources_list(source_id);
 	}
 }
 
@@ -114,11 +114,11 @@ bool TileSetEditor::can_drop_data_fw(const Point2 &p_point, const Variant &p_dat
 	return false;
 }
 
-void TileSetEditor::_update_atlas_sources_list(int force_selected_id) {
+void TileSetEditor::_update_sources_list(int force_selected_id) {
 	ERR_FAIL_COND(!tile_set.is_valid());
 
 	// Get the previously selected id.
-	int old_selected = -1;
+	int old_selected = TileSet::INVALID_SOURCE;
 	if (sources_list->get_current() >= 0) {
 		int source_id = sources_list->get_item_metadata(sources_list->get_current());
 		if (tile_set->has_source(source_id)) {
@@ -126,7 +126,7 @@ void TileSetEditor::_update_atlas_sources_list(int force_selected_id) {
 		}
 	}
 
-	int to_select = -1;
+	int to_select = TileSet::INVALID_SOURCE;
 	if (force_selected_id >= 0) {
 		to_select = force_selected_id;
 	} else if (old_selected >= 0) {
@@ -200,7 +200,7 @@ void TileSetEditor::_update_atlas_sources_list(int force_selected_id) {
 	_source_selected(sources_list->get_current());
 
 	// Synchronize the lists.
-	TilesEditor::get_singleton()->set_atlas_sources_lists_current(sources_list->get_current());
+	TilesEditor::get_singleton()->set_sources_lists_current(sources_list->get_current());
 }
 
 void TileSetEditor::_source_selected(int p_source_index) {
@@ -235,6 +235,23 @@ void TileSetEditor::_source_selected(int p_source_index) {
 	}
 }
 
+void TileSetEditor::_source_delete_pressed() {
+	ERR_FAIL_COND(!tile_set.is_valid());
+
+	// Update the selected source.
+	int to_delete = sources_list->get_item_metadata(sources_list->get_current());
+
+	Ref<TileSetSource> source = tile_set->get_source(to_delete);
+
+	// Remove the source.
+	undo_redo->create_action(TTR("Remove source"));
+	undo_redo->add_do_method(*tile_set, "remove_source", to_delete);
+	undo_redo->add_undo_method(*tile_set, "add_source", source, to_delete);
+	undo_redo->commit_action();
+
+	_update_sources_list();
+}
+
 void TileSetEditor::_source_add_id_pressed(int p_id_pressed) {
 	ERR_FAIL_COND(!tile_set.is_valid());
 
@@ -251,7 +268,7 @@ void TileSetEditor::_source_add_id_pressed(int p_id_pressed) {
 			undo_redo->add_undo_method(*tile_set, "remove_source", source_id);
 			undo_redo->commit_action();
 
-			_update_atlas_sources_list(source_id);
+			_update_sources_list(source_id);
 		} break;
 		case 1: {
 			int source_id = tile_set->get_next_source_id();
@@ -264,28 +281,26 @@ void TileSetEditor::_source_add_id_pressed(int p_id_pressed) {
 			undo_redo->add_undo_method(*tile_set, "remove_source", source_id);
 			undo_redo->commit_action();
 
-			_update_atlas_sources_list(source_id);
+			_update_sources_list(source_id);
 		} break;
 		default:
 			ERR_FAIL();
 	}
 }
 
-void TileSetEditor::_source_delete_pressed() {
+void TileSetEditor::_sources_advanced_menu_id_pressed(int p_id_pressed) {
 	ERR_FAIL_COND(!tile_set.is_valid());
 
-	// Update the selected source.
-	int to_delete = sources_list->get_item_metadata(sources_list->get_current());
-
-	Ref<TileSetSource> source = tile_set->get_source(to_delete);
-
-	// Remove the source.
-	undo_redo->create_action(TTR("Remove source"));
-	undo_redo->add_do_method(*tile_set, "remove_source", to_delete);
-	undo_redo->add_undo_method(*tile_set, "add_source", source, to_delete);
-	undo_redo->commit_action();
-
-	_update_atlas_sources_list();
+	switch (p_id_pressed) {
+		case 0: {
+			atlas_merging_dialog->update_tile_set(tile_set);
+			atlas_merging_dialog->popup_centered_ratio(0.5);
+		} break;
+		case 1: {
+			tile_proxies_manager_dialog->update_tile_set(tile_set);
+			tile_proxies_manager_dialog->popup_centered_ratio(0.5);
+		} break;
+	}
 }
 
 void TileSetEditor::_notification(int p_what) {
@@ -294,6 +309,7 @@ void TileSetEditor::_notification(int p_what) {
 		case NOTIFICATION_THEME_CHANGED:
 			sources_delete_button->set_icon(get_theme_icon(SNAME("Remove"), SNAME("EditorIcons")));
 			sources_add_button->set_icon(get_theme_icon(SNAME("Add"), SNAME("EditorIcons")));
+			sources_advanced_menu_button->set_icon(get_theme_icon(SNAME("GuiTabMenuHl"), SNAME("EditorIcons")));
 			missing_texture_texture = get_theme_icon(SNAME("TileSet"), SNAME("EditorIcons"));
 			break;
 		case NOTIFICATION_INTERNAL_PROCESS:
@@ -301,7 +317,7 @@ void TileSetEditor::_notification(int p_what) {
 				if (tile_set.is_valid()) {
 					tile_set->set_edited(true);
 				}
-				_update_atlas_sources_list();
+				_update_sources_list();
 				tile_set_changed_needs_update = false;
 			}
 			break;
@@ -414,7 +430,7 @@ void TileSetEditor::edit(Ref<TileSet> p_tile_set) {
 	// Add the listener again.
 	if (tile_set.is_valid()) {
 		tile_set->connect("changed", callable_mp(this, &TileSetEditor::_tile_set_changed));
-		_update_atlas_sources_list();
+		_update_sources_list();
 	}
 
 	tile_set_atlas_source_editor->hide();
@@ -447,8 +463,8 @@ TileSetEditor::TileSetEditor() {
 	sources_list->set_h_size_flags(SIZE_EXPAND_FILL);
 	sources_list->set_v_size_flags(SIZE_EXPAND_FILL);
 	sources_list->connect("item_selected", callable_mp(this, &TileSetEditor::_source_selected));
-	sources_list->connect("item_selected", callable_mp(TilesEditor::get_singleton(), &TilesEditor::set_atlas_sources_lists_current));
-	sources_list->connect("visibility_changed", callable_mp(TilesEditor::get_singleton(), &TilesEditor::synchronize_atlas_sources_list), varray(sources_list));
+	sources_list->connect("item_selected", callable_mp(TilesEditor::get_singleton(), &TilesEditor::set_sources_lists_current));
+	sources_list->connect("visibility_changed", callable_mp(TilesEditor::get_singleton(), &TilesEditor::synchronize_sources_list), varray(sources_list));
 	sources_list->set_texture_filter(CanvasItem::TEXTURE_FILTER_NEAREST);
 	sources_list->set_drag_forwarding(this);
 	split_container_left_side->add_child(sources_list);
@@ -470,6 +486,19 @@ TileSetEditor::TileSetEditor() {
 	sources_add_button->get_popup()->connect("id_pressed", callable_mp(this, &TileSetEditor::_source_add_id_pressed));
 	sources_bottom_actions->add_child(sources_add_button);
 
+	sources_advanced_menu_button = memnew(MenuButton);
+	sources_advanced_menu_button->set_flat(true);
+	sources_advanced_menu_button->get_popup()->add_item(TTR("Open Atlas Merging Tool"));
+	sources_advanced_menu_button->get_popup()->add_item(TTR("Manage Tile Proxies"));
+	sources_advanced_menu_button->get_popup()->connect("id_pressed", callable_mp(this, &TileSetEditor::_sources_advanced_menu_id_pressed));
+	sources_bottom_actions->add_child(sources_advanced_menu_button);
+
+	atlas_merging_dialog = memnew(AtlasMergingDialog);
+	add_child(atlas_merging_dialog);
+
+	tile_proxies_manager_dialog = memnew(TileProxiesManagerDialog);
+	add_child(tile_proxies_manager_dialog);
+
 	// Right side container.
 	VBoxContainer *split_container_right_side = memnew(VBoxContainer);
 	split_container_right_side->set_h_size_flags(SIZE_EXPAND_FILL);
@@ -489,7 +518,7 @@ TileSetEditor::TileSetEditor() {
 	tile_set_atlas_source_editor = memnew(TileSetAtlasSourceEditor);
 	tile_set_atlas_source_editor->set_h_size_flags(SIZE_EXPAND_FILL);
 	tile_set_atlas_source_editor->set_v_size_flags(SIZE_EXPAND_FILL);
-	tile_set_atlas_source_editor->connect("source_id_changed", callable_mp(this, &TileSetEditor::_update_atlas_sources_list));
+	tile_set_atlas_source_editor->connect("source_id_changed", callable_mp(this, &TileSetEditor::_update_sources_list));
 	split_container_right_side->add_child(tile_set_atlas_source_editor);
 	tile_set_atlas_source_editor->hide();
 
@@ -497,7 +526,7 @@ TileSetEditor::TileSetEditor() {
 	tile_set_scenes_collection_source_editor = memnew(TileSetScenesCollectionSourceEditor);
 	tile_set_scenes_collection_source_editor->set_h_size_flags(SIZE_EXPAND_FILL);
 	tile_set_scenes_collection_source_editor->set_v_size_flags(SIZE_EXPAND_FILL);
-	tile_set_scenes_collection_source_editor->connect("source_id_changed", callable_mp(this, &TileSetEditor::_update_atlas_sources_list));
+	tile_set_scenes_collection_source_editor->connect("source_id_changed", callable_mp(this, &TileSetEditor::_update_sources_list));
 	split_container_right_side->add_child(tile_set_scenes_collection_source_editor);
 	tile_set_scenes_collection_source_editor->hide();
 

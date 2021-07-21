@@ -27,6 +27,40 @@
 			<description>
 			</description>
 		</method>
+		<method name="cleanup_invalid_tile_proxies">
+			<return type="void">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="clear_tile_proxies">
+			<return type="void">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_alternative_level_tile_proxy">
+			<return type="Array">
+			</return>
+			<argument index="0" name="source_from" type="int">
+			</argument>
+			<argument index="1" name="coords_from" type="Vector2i">
+			</argument>
+			<argument index="2" name="alternative_from" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_coords_level_tile_proxy">
+			<return type="Array">
+			</return>
+			<argument index="0" name="source_from" type="int">
+			</argument>
+			<argument index="1" name="coords_from" type="Vector2i">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="get_navigation_layer_layers" qualifiers="const">
 			<return type="int">
 			</return>
@@ -103,6 +137,14 @@
 			<description>
 			</description>
 		</method>
+		<method name="get_source_level_tile_proxy">
+			<return type="int">
+			</return>
+			<argument index="0" name="source_from" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="get_terrain_color" qualifiers="const">
 			<return type="Color">
 			</return>
@@ -139,6 +181,28 @@
 			<description>
 			</description>
 		</method>
+		<method name="has_alternative_level_tile_proxy">
+			<return type="bool">
+			</return>
+			<argument index="0" name="source_from" type="int">
+			</argument>
+			<argument index="1" name="coords_from" type="Vector2i">
+			</argument>
+			<argument index="2" name="alternative_from" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="has_coords_level_tile_proxy">
+			<return type="bool">
+			</return>
+			<argument index="0" name="source_from" type="int">
+			</argument>
+			<argument index="1" name="coords_from" type="Vector2i">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="has_source" qualifiers="const">
 			<return type="bool">
 			</return>
@@ -147,10 +211,92 @@
 			<description>
 			</description>
 		</method>
+		<method name="has_source_level_tile_proxy">
+			<return type="bool">
+			</return>
+			<argument index="0" name="source_from" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="map_tile_proxy" qualifiers="const">
+			<return type="Array">
+			</return>
+			<argument index="0" name="source_from" type="int">
+			</argument>
+			<argument index="1" name="coords_from" type="Vector2i">
+			</argument>
+			<argument index="2" name="alternative_from" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="remove_alternative_level_tile_proxy">
+			<return type="void">
+			</return>
+			<argument index="0" name="source_from" type="int">
+			</argument>
+			<argument index="1" name="coords_from" type="Vector2i">
+			</argument>
+			<argument index="2" name="alternative_from" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="remove_coords_level_tile_proxy">
+			<return type="void">
+			</return>
+			<argument index="0" name="source_from" type="int">
+			</argument>
+			<argument index="1" name="coords_from" type="Vector2i">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="remove_source">
 			<return type="void">
 			</return>
 			<argument index="0" name="source_id" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="remove_source_level_tile_proxy">
+			<return type="void">
+			</return>
+			<argument index="0" name="source_from" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_alternative_level_tile_proxy">
+			<return type="void">
+			</return>
+			<argument index="0" name="source_from" type="int">
+			</argument>
+			<argument index="1" name="coords_from" type="Vector2i">
+			</argument>
+			<argument index="2" name="alternative_from" type="int">
+			</argument>
+			<argument index="3" name="source_to" type="int">
+			</argument>
+			<argument index="4" name="coords_to" type="Vector2i">
+			</argument>
+			<argument index="5" name="alternative_to" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_coords_level_tile_proxy">
+			<return type="void">
+			</return>
+			<argument index="0" name="p_source_from" type="int">
+			</argument>
+			<argument index="1" name="coords_from" type="Vector2i">
+			</argument>
+			<argument index="2" name="source_to" type="int">
+			</argument>
+			<argument index="3" name="coords_to" type="Vector2i">
 			</argument>
 			<description>
 			</description>
@@ -221,6 +367,16 @@
 			<argument index="0" name="source_id" type="int">
 			</argument>
 			<argument index="1" name="arg1" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_source_level_tile_proxy">
+			<return type="void">
+			</return>
+			<argument index="0" name="source_from" type="int">
+			</argument>
+			<argument index="1" name="source_to" type="int">
 			</argument>
 			<description>
 			</description>

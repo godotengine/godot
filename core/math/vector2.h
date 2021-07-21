@@ -300,6 +300,14 @@ struct Vector2i {
 		return p_idx ? y : x;
 	}
 
+	_FORCE_INLINE_ int min_axis() const {
+		return x < y ? 0 : 1;
+	}
+
+	_FORCE_INLINE_ int max_axis() const {
+		return x < y ? 1 : 0;
+	}
+
 	Vector2i min(const Vector2i &p_vector2i) const {
 		return Vector2(MIN(x, p_vector2i.x), MIN(y, p_vector2i.y));
 	}

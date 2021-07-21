@@ -265,16 +265,16 @@ public:
 	VisibilityMode get_navigation_visibility_mode();
 
 	void set_cell(const Vector2i &p_coords, int p_source_id = -1, const Vector2i p_atlas_coords = TileSetSource::INVALID_ATLAS_COORDS, int p_alternative_tile = TileSetSource::INVALID_TILE_ALTERNATIVE);
-	int get_cell_source_id(const Vector2i &p_coords) const;
-	Vector2i get_cell_atlas_coords(const Vector2i &p_coords) const;
-	int get_cell_alternative_tile(const Vector2i &p_coords) const;
+	int get_cell_source_id(const Vector2i &p_coords, bool p_use_proxies = false) const;
+	Vector2i get_cell_atlas_coords(const Vector2i &p_coords, bool p_use_proxies = false) const;
+	int get_cell_alternative_tile(const Vector2i &p_coords, bool p_use_proxies = false) const;
 
 	TileMapPattern *get_pattern(TypedArray<Vector2i> p_coords_array);
 	Vector2i map_pattern(Vector2i p_position_in_tilemap, Vector2i p_coords_in_pattern, const TileMapPattern *p_pattern);
 	void set_pattern(Vector2i p_position, const TileMapPattern *p_pattern);
 
 	// Not exposed to users
-	TileMapCell get_cell(const Vector2i &p_coords) const;
+	TileMapCell get_cell(const Vector2i &p_coords, bool p_use_proxies = false) const;
 	Map<Vector2i, TileMapQuadrant> &get_quadrant_map();
 	int get_effective_quadrant_size() const;
 

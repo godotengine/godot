@@ -745,7 +745,7 @@ void TileSetAtlasSourceEditor::_update_atlas_view() {
 			button->add_theme_style_override("hover", memnew(StyleBoxEmpty));
 			button->add_theme_style_override("focus", memnew(StyleBoxEmpty));
 			button->add_theme_style_override("pressed", memnew(StyleBoxEmpty));
-			button->connect("pressed", callable_mp(tile_set_atlas_source, &TileSetAtlasSource::create_alternative_tile), varray(tile_id, -1));
+			button->connect("pressed", callable_mp(tile_set_atlas_source, &TileSetAtlasSource::create_alternative_tile), varray(tile_id, TileSetSource::INVALID_TILE_ALTERNATIVE));
 			button->set_rect(Rect2(Vector2(pos.x, pos.y + (y_increment - texture_region_base_size.y) / 2.0), Vector2(texture_region_base_size_min, texture_region_base_size_min)));
 			button->set_expand_icon(true);
 
