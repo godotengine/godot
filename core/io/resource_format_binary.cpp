@@ -84,9 +84,10 @@ enum {
 	OBJECT_EXTERNAL_RESOURCE = 1,
 	OBJECT_INTERNAL_RESOURCE = 2,
 	OBJECT_EXTERNAL_RESOURCE_INDEX = 3,
-	//version 2: added 64 bits support for float and int
-	//version 3: changed nodepath encoding
-	FORMAT_VERSION = 3,
+	// Version 2: added 64 bits support for float and int.
+	// Version 3: changed nodepath encoding.
+	// Version 4: new string ID for ext/subresources, breaks forward compat.
+	FORMAT_VERSION = 4,
 	FORMAT_VERSION_CAN_RENAME_DEPS = 1,
 	FORMAT_VERSION_NO_NODEPATH_PROPERTY = 3,
 
@@ -286,13 +287,20 @@ Error ResourceInteractiveLoaderBinary::parse_variant(Variant &r_v) {
 				} break;
 				case OBJECT_INTERNAL_RESOURCE: {
 					uint32_t index = f->get_32();
-					String path = res_path + "::" + itos(index);
+					String path;
+
+					if (using_named_scene_ids) { // New format.
+						ERR_FAIL_INDEX_V((int)index, internal_resources.size(), ERR_PARSE_ERROR);
+						path = internal_resources[index].path;
+					} else {
+						path += res_path + "::" + itos(index);
+					}
+
 					RES res = ResourceLoader::load(path);
 					if (res.is_null()) {
 						WARN_PRINT(String("Couldn't load resource: " + path).utf8().get_data());
 					}
 					r_v = res;
-
 				} break;
 				case OBJECT_EXTERNAL_RESOURCE: {
 					//old file format, still around for compatibility
@@ -346,7 +354,6 @@ Error ResourceInteractiveLoaderBinary::parse_variant(Variant &r_v) {
 					ERR_FAIL_V(ERR_FILE_CORRUPT);
 				} break;
 			}
-
 		} break;
 		case VARIANT_DICTIONARY: {
 			uint32_t len = f->get_32();
@@ -630,14 +637,16 @@ Error ResourceInteractiveLoaderBinary::poll() {
 
 	//maybe it is loaded already
 	String path;
-	int subindex = 0;
+	String id;
 
 	if (!main) {
 		path = internal_resources[s].path;
 		if (path.begins_with("local://")) {
 			path = path.replace_first("local://", "");
-			subindex = path.to_int();
+			id = path;
 			path = res_path + "::" + path;
+
+			internal_resources.write[s].path = path; // Update path.
 		}
 
 		if (ResourceCache::has(path)) {
@@ -675,7 +684,7 @@ Error ResourceInteractiveLoaderBinary::poll() {
 	RES res = RES(r);
 
 	r->set_path(path);
-	r->set_subindex(subindex);
+	r->set_scene_unique_id(id);
 
 	int pc = f->get_32();
 
@@ -830,7 +839,11 @@ void ResourceInteractiveLoaderBinary::open(FileAccess *p_f) {
 	print_bl("type: " + type);
 
 	importmd_ofs = f->get_64();
-	for (int i = 0; i < 14; i++) {
+	uint32_t flags = f->get_32();
+	if (flags & ResourceFormatSaverBinaryInstance::FORMAT_FLAG_NAMED_SCENE_IDS) {
+		using_named_scene_ids = true;
+	}
+	for (int i = 0; i < 13; i++) {
 		f->get_32(); //skip a few reserved fields
 	}
 
@@ -1218,11 +1231,7 @@ void ResourceFormatSaverBinaryInstance::_pad_buffer(FileAccess *f, int p_bytes) 
 	}
 }
 
-void ResourceFormatSaverBinaryInstance::_write_variant(const Variant &p_property, const PropertyInfo &p_hint) {
-	write_variant(f, p_property, resource_set, external_resources, string_map, p_hint);
-}
-
-void ResourceFormatSaverBinaryInstance::write_variant(FileAccess *f, const Variant &p_property, Set<RES> &resource_set, Map<RES, int> &external_resources, Map<StringName, int> &string_map, const PropertyInfo &p_hint) {
+void ResourceFormatSaverBinaryInstance::write_variant(FileAccess *f, const Variant &p_property, Map<RES, int> &resource_map, Map<RES, int> &external_resources, Map<StringName, int> &string_map, const PropertyInfo &p_hint) {
 	switch (p_property.get_type()) {
 		case Variant::NIL: {
 			f->store_32(VARIANT_NIL);
@@ -1411,13 +1420,13 @@ void ResourceFormatSaverBinaryInstance::write_variant(FileAccess *f, const Varia
 				f->store_32(OBJECT_EXTERNAL_RESOURCE_INDEX);
 				f->store_32(external_resources[res]);
 			} else {
-				if (!resource_set.has(res)) {
+				if (!resource_map.has(res)) {
 					f->store_32(OBJECT_EMPTY);
 					ERR_FAIL_MSG("Resource was not pre cached for the resource section, most likely due to circular reference.");
 				}
 
 				f->store_32(OBJECT_INTERNAL_RESOURCE);
-				f->store_32(res->get_subindex());
+				f->store_32(resource_map[res]);
 				//internal resource
 			}
 
@@ -1436,8 +1445,8 @@ void ResourceFormatSaverBinaryInstance::write_variant(FileAccess *f, const Varia
 					continue;
 				*/
 
-				write_variant(f, E->get(), resource_set, external_resources, string_map);
-				write_variant(f, d[E->get()], resource_set, external_resources, string_map);
+				write_variant(f, E->get(), resource_map, external_resources, string_map);
+				write_variant(f, d[E->get()], resource_map, external_resources, string_map);
 			}
 
 		} break;
@@ -1446,7 +1455,7 @@ void ResourceFormatSaverBinaryInstance::write_variant(FileAccess *f, const Varia
 			Array a = p_property;
 			f->store_32(uint32_t(a.size()));
 			for (int i = 0; i < a.size(); i++) {
-				write_variant(f, a[i], resource_set, external_resources, string_map);
+				write_variant(f, a[i], resource_map, external_resources, string_map);
 			}
 
 		} break;
@@ -1704,7 +1713,8 @@ Error ResourceFormatSaverBinaryInstance::save(const String &p_path, const RES &p
 
 	save_unicode_string(f, p_resource->get_class());
 	f->store_64(0); //offset to import metadata
-	for (int i = 0; i < 14; i++) {
+	f->store_32(FORMAT_FLAG_NAMED_SCENE_IDS);
+	for (int i = 0; i < 13; i++) {
 		f->store_32(0); // reserved
 	}
 
@@ -1774,37 +1784,43 @@ Error ResourceFormatSaverBinaryInstance::save(const String &p_path, const RES &p
 	// save internal resource table
 	f->store_32(saved_resources.size()); //amount of internal resources
 	Vector<uint64_t> ofs_pos;
-	Set<int> used_indices;
+	Set<String> used_unique_ids;
 
 	for (List<RES>::Element *E = saved_resources.front(); E; E = E->next()) {
 		RES r = E->get();
 		if (r->get_path() == "" || r->get_path().find("::") != -1) {
-			if (r->get_subindex() != 0) {
-				if (used_indices.has(r->get_subindex())) {
-					r->set_subindex(0); //repeated
+			if (r->get_scene_unique_id() != "") {
+				if (used_unique_ids.has(r->get_scene_unique_id())) {
+					r->set_scene_unique_id("");
 				} else {
-					used_indices.insert(r->get_subindex());
+					used_unique_ids.insert(r->get_scene_unique_id());
 				}
 			}
 		}
 	}
 
+	Map<RES, int> resource_map;
+	int res_index = 0;
 	for (List<RES>::Element *E = saved_resources.front(); E; E = E->next()) {
 		RES r = E->get();
 		if (r->get_path() == "" || r->get_path().find("::") != -1) {
-			if (r->get_subindex() == 0) {
-				int new_subindex = 1;
-				if (used_indices.size()) {
-					new_subindex = used_indices.back()->get() + 1;
+			if (r->get_scene_unique_id() == "") {
+				String new_id;
+
+				while (true) {
+					new_id = r->get_class() + "_" + Resource::generate_scene_unique_id();
+					if (!used_unique_ids.has(new_id)) {
+						break;
+					}
 				}
 
-				r->set_subindex(new_subindex);
-				used_indices.insert(new_subindex);
+				r->set_scene_unique_id(new_id);
+				used_unique_ids.insert(new_id);
 			}
 
-			save_unicode_string(f, "local://" + itos(r->get_subindex()));
+			save_unicode_string(f, "local://" + r->get_scene_unique_id());
 			if (takeover_paths) {
-				r->set_path(p_path + "::" + itos(r->get_subindex()), true);
+				r->set_path(p_path + "::" + r->get_scene_unique_id(), true);
 			}
 #ifdef TOOLS_ENABLED
 			r->set_edited(false);
@@ -1814,6 +1830,7 @@ Error ResourceFormatSaverBinaryInstance::save(const String &p_path, const RES &p
 		}
 		ofs_pos.push_back(f->get_position());
 		f->store_64(0); //offset in 64 bits
+		resource_map[r] = res_index++;
 	}
 
 	Vector<uint64_t> ofs_table;
@@ -1829,7 +1846,7 @@ Error ResourceFormatSaverBinaryInstance::save(const String &p_path, const RES &p
 		for (List<Property>::Element *F = rd.properties.front(); F; F = F->next()) {
 			Property &p = F->get();
 			f->store_32(p.name_idx);
-			_write_variant(p.value, F->get().pi);
+			write_variant(f, p.value, resource_map, external_resources, string_map, F->get().pi);
 		}
 	}
 
