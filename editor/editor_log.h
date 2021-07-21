@@ -163,6 +163,8 @@ private:
 	void _save_state();
 	void _load_state();
 
+	void _update_theme();
+
 protected:
 	static void _bind_methods();
 	void _notification(int p_what);
