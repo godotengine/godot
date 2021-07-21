@@ -506,9 +506,9 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 		} else if (id == "null" || id == "nil") {
 			value = Variant();
 		} else if (id == "inf") {
-			value = Math_INF;
+			value = INFINITY;
 		} else if (id == "nan") {
-			value = Math_NAN;
+			value = NAN;
 		} else if (id == "Vector2") {
 			Vector<real_t> args;
 			Error err = _parse_construct<real_t>(p_stream, args, line, r_err_str);
