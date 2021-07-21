@@ -1166,6 +1166,20 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 	}
 }
 
+void SceneTreeDock::_property_selected(int p_idx) {
+	ERR_FAIL_NULL(property_drop_node);
+	_perform_property_drop(property_drop_node, menu_properties->get_item_metadata(p_idx), ResourceLoader::load(resource_drop_path));
+	property_drop_node = nullptr;
+}
+
+void SceneTreeDock::_perform_property_drop(Node *p_node, String p_property, RES p_res) {
+	editor_data->get_undo_redo().create_action(vformat(TTR("Set %s"), p_property));
+	editor_data->get_undo_redo().add_do_property(p_node, p_property, p_res);
+	editor_data->get_undo_redo().add_do_method(p_node, "property_list_changed_notify");
+	editor_data->get_undo_redo().add_undo_property(p_node, p_property, p_node->get(p_property));
+	editor_data->get_undo_redo().add_undo_method(p_node, "property_list_changed_notify");
+	editor_data->get_undo_redo().commit_action();
+}
 void SceneTreeDock::_node_collapsed(Object *p_obj) {
 	TreeItem *ti = Object::cast_to<TreeItem>(p_obj);
 	if (!ti) {
@@ -2526,9 +2540,55 @@ void SceneTreeDock::_files_dropped(Vector<String> p_files, NodePath p_to, int p_
 	Node *node = get_node(p_to);
 	ERR_FAIL_COND(!node);
 
-	int to_pos = -1;
-	_normalize_drop(node, to_pos, p_type);
-	_perform_instance_scenes(p_files, node, to_pos);
+	if (scene_tree->get_scene_tree()->get_drop_mode_flags() & Tree::DROP_MODE_INBETWEEN) {
+		// Dropped PackedScene, instance it.
+		int to_pos = -1;
+		_normalize_drop(node, to_pos, p_type);
+		_perform_instance_scenes(p_files, node, to_pos);
+	} else {
+		String res_path = p_files[0];
+		StringName res_type = EditorFileSystem::get_singleton()->get_file_type(res_path);
+		List<String> valid_properties;
+
+		List<PropertyInfo> pinfo;
+		node->get_property_list(&pinfo);
+
+		for (List<PropertyInfo>::Element *E = pinfo.front(); E; E = E->next()) {
+			PropertyInfo &p = E->get();
+
+			if (!(p.usage & PROPERTY_USAGE_EDITOR) || !(p.usage & PROPERTY_USAGE_STORAGE) || p.hint != PROPERTY_HINT_RESOURCE_TYPE) {
+				continue;
+			}
+			Vector<String> valid_types = p.hint_string.split(",");
+
+			for (int i = 0; i < valid_types.size(); i++) {
+				String prop_type = valid_types[i];
+				if (res_type == prop_type || ClassDB::is_parent_class(res_type, prop_type) || EditorNode::get_editor_data().script_class_is_parent(res_type, prop_type)) {
+					valid_properties.push_back(p.name);
+					break;
+				}
+			}
+		}
+
+		if (valid_properties.size() > 1) {
+			property_drop_node = node;
+			resource_drop_path = res_path;
+
+			bool capitalize = bool(EDITOR_GET("interface/inspector/capitalize_properties"));
+			menu_properties->clear();
+			for (List<String>::Element *E = valid_properties.front(); E; E = E->next()) {
+				String &p = E->get();
+				menu_properties->add_item(capitalize ? p.capitalize() : p);
+				menu_properties->set_item_metadata(menu_properties->get_item_count() - 1, p);
+			}
+
+			menu_properties->set_size(Size2(1, 1));
+			menu_properties->set_position(get_global_mouse_position());
+			menu_properties->popup();
+		} else if (!valid_properties.empty()) {
+			_perform_property_drop(node, valid_properties[0], ResourceLoader::load(res_path));
+		}
+	}
 }
 
 void SceneTreeDock::_script_dropped(String p_file, NodePath p_to) {
@@ -3107,6 +3167,7 @@ void SceneTreeDock::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_new_scene_from"), &SceneTreeDock::_new_scene_from);
 	ClassDB::bind_method(D_METHOD("_nodes_dragged"), &SceneTreeDock::_nodes_dragged);
 	ClassDB::bind_method(D_METHOD("_files_dropped"), &SceneTreeDock::_files_dropped);
+	ClassDB::bind_method(D_METHOD("_property_selected"), &SceneTreeDock::_property_selected);
 	ClassDB::bind_method(D_METHOD("_quick_open"), &SceneTreeDock::_quick_open);
 	ClassDB::bind_method(D_METHOD("_script_dropped"), &SceneTreeDock::_script_dropped);
 	ClassDB::bind_method(D_METHOD("_tree_rmb"), &SceneTreeDock::_tree_rmb);
@@ -3301,6 +3362,10 @@ SceneTreeDock::SceneTreeDock(EditorNode *p_editor, Node *p_scene_root, EditorSel
 	menu->add_child(menu_subresources);
 	first_enter = true;
 	restore_script_editor_on_drag = false;
+
+	menu_properties = memnew(PopupMenu);
+	add_child(menu_properties);
+	menu_properties->connect("id_pressed", this, "_property_selected");
 
 	clear_inherit_confirm = memnew(ConfirmationDialog);
 	clear_inherit_confirm->set_text(TTR("Clear Inheritance? (No Undo!)"));
