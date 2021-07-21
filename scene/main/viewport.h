@@ -263,7 +263,7 @@ private:
 	Transform3D physics_last_camera_transform;
 	ObjectID physics_last_id;
 	bool physics_has_last_mousepos = false;
-	Vector2 physics_last_mousepos = Vector2(Math_INF, Math_INF);
+	Vector2 physics_last_mousepos = Vector2(INFINITY, INFINITY);
 	struct {
 		bool alt = false;
 		bool control = false;
