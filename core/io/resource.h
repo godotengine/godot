@@ -59,7 +59,7 @@ private:
 
 	String name;
 	String path_cache;
-	int subindex = 0;
+	String scene_unique_id;
 
 	virtual bool _use_builtin_script() const { return true; }
 
@@ -105,8 +105,9 @@ public:
 	virtual void set_path(const String &p_path, bool p_take_over = false);
 	String get_path() const;
 
-	void set_subindex(int p_sub_index);
-	int get_subindex() const;
+	static String generate_scene_unique_id();
+	void set_scene_unique_id(const String &p_id);
+	String get_scene_unique_id() const;
 
 	virtual Ref<Resource> duplicate(bool p_subresources = false) const;
 	Ref<Resource> duplicate_for_local_scene(Node *p_for_scene, Map<Ref<Resource>, Ref<Resource>> &remap_cache);
@@ -140,8 +141,8 @@ public:
 
 #ifdef TOOLS_ENABLED
 	//helps keep IDs same number when loading/saving scenes. -1 clears ID and it Returns -1 when no id stored
-	void set_id_for_path(const String &p_path, int p_id);
-	int get_id_for_path(const String &p_path) const;
+	void set_id_for_path(const String &p_path, const String &p_id);
+	String get_id_for_path(const String &p_path) const;
 #endif
 
 	Resource();
@@ -156,7 +157,7 @@ class ResourceCache {
 	static RWLock lock;
 	static HashMap<String, Resource *> resources;
 #ifdef TOOLS_ENABLED
-	static HashMap<String, HashMap<String, int>> resource_path_cache; // each tscn has a set of resource paths and IDs
+	static HashMap<String, HashMap<String, String>> resource_path_cache; // Each tscn has a set of resource paths and IDs.
 	static RWLock path_cache_lock;
 #endif // TOOLS_ENABLED
 	friend void unregister_core_types();

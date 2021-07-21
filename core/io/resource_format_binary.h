@@ -60,6 +60,7 @@ class ResourceLoaderBinary {
 		RES cache;
 	};
 
+	bool using_named_scene_ids = false;
 	bool use_sub_threads = false;
 	float *progress = nullptr;
 	Vector<ExtResource> external_resources;
@@ -150,14 +151,16 @@ class ResourceFormatSaverBinaryInstance {
 	};
 
 	static void _pad_buffer(FileAccess *f, int p_bytes);
-	void _write_variant(const Variant &p_property, const PropertyInfo &p_hint = PropertyInfo());
 	void _find_resources(const Variant &p_variant, bool p_main = false);
 	static void save_unicode_string(FileAccess *f, const String &p_string, bool p_bit_on_len = false);
 	int get_string_index(const String &p_string);
 
 public:
+	enum {
+		FORMAT_FLAG_NAMED_SCENE_IDS = 1
+	};
 	Error save(const String &p_path, const RES &p_resource, uint32_t p_flags = 0);
-	static void write_variant(FileAccess *f, const Variant &p_property, Set<RES> &resource_set, Map<RES, int> &external_resources, Map<StringName, int> &string_map, const PropertyInfo &p_hint = PropertyInfo());
+	static void write_variant(FileAccess *f, const Variant &p_property, Map<RES, int> &resource_map, Map<RES, int> &external_resources, Map<StringName, int> &string_map, const PropertyInfo &p_hint = PropertyInfo());
 };
 
 class ResourceFormatSaverBinary : public ResourceFormatSaver {
