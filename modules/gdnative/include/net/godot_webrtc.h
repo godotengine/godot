@@ -101,6 +101,7 @@ typedef struct {
 	int (*get_max_retransmits)(const void *);
 	const char *(*get_protocol)(const void *);
 	bool (*is_negotiated)(const void *);
+	int (*get_buffered_amount)(const void *);
 
 	godot_error (*poll)(void *);
 	void (*close)(void *);

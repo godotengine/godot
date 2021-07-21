@@ -70,6 +70,8 @@ public:
 	virtual String get_protocol() const = 0;
 	virtual bool is_negotiated() const = 0;
 
+	virtual int get_buffered_amount() const = 0;
+
 	virtual Error poll() = 0;
 	virtual void close() = 0;
 
