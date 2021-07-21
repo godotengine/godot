@@ -153,10 +153,16 @@ public:
 	void set_rotation_degrees(const Vector3 &p_euler_deg);
 	void set_scale(const Vector3 &p_scale);
 
+	void set_global_translation(const Vector3 &p_translation);
+	void set_global_rotation(const Vector3 &p_euler_rad);
+
 	Vector3 get_translation() const;
 	Vector3 get_rotation() const;
 	Vector3 get_rotation_degrees() const;
 	Vector3 get_scale() const;
+
+	Vector3 get_global_translation() const;
+	Vector3 get_global_rotation() const;
 
 	void set_transform(const Transform &p_transform);
 	void set_global_transform(const Transform &p_transform);

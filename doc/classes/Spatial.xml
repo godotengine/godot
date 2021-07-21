@@ -253,8 +253,15 @@
 		<member name="gizmo" type="SpatialGizmo" setter="set_gizmo" getter="get_gizmo">
 			The [SpatialGizmo] for this node. Used for example in [EditorSpatialGizmo] as custom visualization and editing handles in Editor.
 		</member>
+		<member name="global_rotation" type="Vector3" setter="set_global_rotation" getter="get_global_rotation">
+			Rotation part of the global transformation in radians, specified in terms of YXZ-Euler angles in the format (X angle, Y angle, Z angle).
+			[b]Note:[/b] In the mathematical sense, rotation is a matrix and not a vector. The three Euler angles, which are the three independent parameters of the Euler-angle parametrization of the rotation matrix, are stored in a [Vector3] data structure not because the rotation is a vector, but only because [Vector3] exists as a convenient data-structure to store 3 floating-point numbers. Therefore, applying affine operations on the rotation "vector" is not meaningful.
+		</member>
 		<member name="global_transform" type="Transform" setter="set_global_transform" getter="get_global_transform">
 			World space (global) [Transform] of this node.
+		</member>
+		<member name="global_translation" type="Vector3" setter="set_global_translation" getter="get_global_translation">
+			Global position of this node. This is equivalent to [code]global_transform.origin[/code].
 		</member>
 		<member name="rotation" type="Vector3" setter="set_rotation" getter="get_rotation">
 			Rotation part of the local transformation in radians, specified in terms of YXZ-Euler angles in the format (X angle, Y angle, Z angle).

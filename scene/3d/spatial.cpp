@@ -249,6 +249,28 @@ void Spatial::_notification(int p_what) {
 	}
 }
 
+Vector3 Spatial::get_global_translation() const {
+	return get_global_transform().get_origin();
+}
+
+void Spatial::set_global_translation(const Vector3 &p_translation) {
+	Transform transform = get_global_transform();
+	transform.set_origin(p_translation);
+	set_global_transform(transform);
+}
+
+Vector3 Spatial::get_global_rotation() const {
+	return get_global_transform().get_basis().get_euler();
+}
+
+void Spatial::set_global_rotation(const Vector3 &p_euler_rad) {
+	Transform transform = get_global_transform();
+	Basis new_basis = transform.get_basis();
+	new_basis.set_euler(p_euler_rad);
+	transform.set_basis(new_basis);
+	set_global_transform(transform);
+}
+
 void Spatial::set_transform(const Transform &p_transform) {
 	data.local_transform = p_transform;
 	data.dirty |= DIRTY_VECTORS;
@@ -848,8 +870,14 @@ void Spatial::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_rotation_degrees"), &Spatial::get_rotation_degrees);
 	ClassDB::bind_method(D_METHOD("set_scale", "scale"), &Spatial::set_scale);
 	ClassDB::bind_method(D_METHOD("get_scale"), &Spatial::get_scale);
+
 	ClassDB::bind_method(D_METHOD("set_global_transform", "global"), &Spatial::set_global_transform);
 	ClassDB::bind_method(D_METHOD("get_global_transform"), &Spatial::get_global_transform);
+	ClassDB::bind_method(D_METHOD("set_global_translation", "translation"), &Spatial::set_global_translation);
+	ClassDB::bind_method(D_METHOD("get_global_translation"), &Spatial::get_global_translation);
+	ClassDB::bind_method(D_METHOD("set_global_rotation", "radians"), &Spatial::set_global_rotation);
+	ClassDB::bind_method(D_METHOD("get_global_rotation"), &Spatial::get_global_rotation);
+
 	ClassDB::bind_method(D_METHOD("get_global_transform_interpolated"), &Spatial::get_global_transform_interpolated);
 	ClassDB::bind_method(D_METHOD("get_parent_spatial"), &Spatial::get_parent_spatial);
 	ClassDB::bind_method(D_METHOD("set_ignore_transform_notification", "enabled"), &Spatial::set_ignore_transform_notification);
@@ -906,13 +934,15 @@ void Spatial::_bind_methods() {
 	BIND_CONSTANT(NOTIFICATION_ENTER_GAMEPLAY);
 	BIND_CONSTANT(NOTIFICATION_EXIT_GAMEPLAY);
 
-	//ADD_PROPERTY( PropertyInfo(Variant::TRANSFORM,"transform/global",PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR ), "set_global_transform", "get_global_transform") ;
 	ADD_GROUP("Transform", "");
-	ADD_PROPERTY(PropertyInfo(Variant::TRANSFORM, "global_transform", PROPERTY_HINT_NONE, "", 0), "set_global_transform", "get_global_transform");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "translation", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR), "set_translation", "get_translation");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "rotation_degrees", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR), "set_rotation_degrees", "get_rotation_degrees");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "rotation", PROPERTY_HINT_NONE, "", 0), "set_rotation", "get_rotation");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "scale", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR), "set_scale", "get_scale");
+	ADD_PROPERTY(PropertyInfo(Variant::TRANSFORM, "global_transform", PROPERTY_HINT_NONE, "", 0), "set_global_transform", "get_global_transform");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "global_translation", PROPERTY_HINT_NONE, "", 0), "set_global_translation", "get_global_translation");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "global_rotation", PROPERTY_HINT_NONE, "", 0), "set_global_rotation", "get_global_rotation");
+
 	ADD_GROUP("Matrix", "");
 	ADD_PROPERTY(PropertyInfo(Variant::TRANSFORM, "transform", PROPERTY_HINT_NONE, ""), "set_transform", "get_transform");
 	ADD_GROUP("Visibility", "");
