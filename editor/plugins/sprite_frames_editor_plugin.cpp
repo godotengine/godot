@@ -65,13 +65,11 @@ void SpriteFramesEditor::_sheet_preview_draw() {
 		int x = i * width;
 		split_sheet_preview->draw_line(Point2(x, 0), Point2(x, size.height), Color(1, 1, 1, a));
 		split_sheet_preview->draw_line(Point2(x + 1, 0), Point2(x + 1, size.height), Color(0, 0, 0, a));
-
-		for (int j = 1; j < v; j++) {
-			int y = j * height;
-
-			split_sheet_preview->draw_line(Point2(0, y), Point2(size.width, y), Color(1, 1, 1, a));
-			split_sheet_preview->draw_line(Point2(0, y + 1), Point2(size.width, y + 1), Color(0, 0, 0, a));
-		}
+	}
+	for (int i = 1; i < v; i++) {
+		int y = i * height;
+		split_sheet_preview->draw_line(Point2(0, y), Point2(size.width, y), Color(1, 1, 1, a));
+		split_sheet_preview->draw_line(Point2(0, y + 1), Point2(size.width, y + 1), Color(0, 0, 0, a));
 	}
 
 	if (frames_selected.size() == 0) {
