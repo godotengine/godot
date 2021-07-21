@@ -1085,6 +1085,10 @@ void unregister_scene_types() {
 	BaseMaterial3D::finish_shaders();
 #endif // _3D_DISABLED
 
+	PhysicalSkyMaterial::cleanup_shader();
+	PanoramaSkyMaterial::cleanup_shader();
+	ProceduralSkyMaterial::cleanup_shader();
+
 	ParticlesMaterial::finish_shaders();
 	CanvasItemMaterial::finish_shaders();
 	ColorPicker::finish_shaders();
