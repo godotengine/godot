@@ -184,7 +184,7 @@ public:
 		light = vs->instance_create2(lightaux, scenario);
 		Transform3D lla;
 		//lla.set_look_at(Vector3(),Vector3(1, -1, 1));
-		lla.set_look_at(Vector3(), Vector3(0.0, -0.836026, -0.548690));
+		lla.basis = Basis::looking_at(Vector3(0.0, -0.836026, -0.548690));
 
 		vs->instance_set_transform(light, lla);
 

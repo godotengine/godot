@@ -109,6 +109,15 @@
 				Returns [code]true[/code] if this basis and [code]b[/code] are approximately equal, by calling [code]is_equal_approx[/code] on each component.
 			</description>
 		</method>
+		<method name="looking_at" qualifiers="static">
+			<return type="Basis" />
+			<argument index="0" name="target" type="Vector3" />
+			<argument index="1" name="up" type="Vector3" default="Vector3(0, 1, 0)" />
+			<description>
+				Creates a Basis with a rotation such that the forward axis (-Z) points towards the [code]target[/code] position.
+				The up axis (+Y) points as close to the [code]up[/code] vector as possible while staying perpendicular to the forward axis. The resulting Basis is orthonormalized. The [code]target[/code] and [code]up[/code] vectors cannot be zero, and cannot be parallel to each other.
+			</description>
+		</method>
 		<method name="operator !=" qualifiers="operator">
 			<return type="bool" />
 			<argument index="0" name="right" type="Basis" />
