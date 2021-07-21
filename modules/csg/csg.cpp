@@ -42,7 +42,7 @@ inline static bool is_snapable(const Vector3 &p_point1, const Vector3 &p_point2,
 
 inline static Vector2 interpolate_segment_uv(const Vector2 p_segement_points[2], const Vector2 p_uvs[2], const Vector2 &p_interpolation_point) {
 	float segment_length = (p_segement_points[1] - p_segement_points[0]).length();
-	if (segment_length < CMP_EPSILON) {
+	if (p_segement_points[0].is_equal_approx(p_segement_points[1])) {
 		return p_uvs[0];
 	}
 
@@ -53,13 +53,13 @@ inline static Vector2 interpolate_segment_uv(const Vector2 p_segement_points[2],
 }
 
 inline static Vector2 interpolate_triangle_uv(const Vector2 p_vertices[3], const Vector2 p_uvs[3], const Vector2 &p_interpolation_point) {
-	if (p_interpolation_point.distance_squared_to(p_vertices[0]) < CMP_EPSILON2) {
+	if (p_interpolation_point.is_equal_approx(p_vertices[0])) {
 		return p_uvs[0];
 	}
-	if (p_interpolation_point.distance_squared_to(p_vertices[1]) < CMP_EPSILON2) {
+	if (p_interpolation_point.is_equal_approx(p_vertices[1])) {
 		return p_uvs[1];
 	}
-	if (p_interpolation_point.distance_squared_to(p_vertices[2]) < CMP_EPSILON2) {
+	if (p_interpolation_point.is_equal_approx(p_vertices[2])) {
 		return p_uvs[2];
 	}
 
@@ -589,7 +589,7 @@ bool CSGBrushOperation::MeshMerge::_bvh_inside(FaceBVH *facebvhptr, int p_max_de
 							Vector3 intersection_point;
 
 							// Check if faces are co-planar.
-							if ((current_normal - face_normal).length_squared() < CMP_EPSILON2 &&
+							if (current_normal.is_equal_approx(face_normal) &&
 									is_point_in_triangle(face_center, current_points)) {
 								// Only add an intersection if not a B face.
 								if (!face.from_b) {

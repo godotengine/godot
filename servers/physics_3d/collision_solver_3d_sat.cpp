@@ -629,9 +629,7 @@ public:
 	_FORCE_INLINE_ bool test_axis(const Vector3 &p_axis, bool p_directional = false) {
 		Vector3 axis = p_axis;
 
-		if (Math::abs(axis.x) < CMP_EPSILON &&
-				Math::abs(axis.y) < CMP_EPSILON &&
-				Math::abs(axis.z) < CMP_EPSILON) {
+		if (axis.is_equal_approx(Vector3())) {
 			// strange case, try an upwards separator
 			axis = Vector3(0.0, 1.0, 0.0);
 		}

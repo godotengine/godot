@@ -36,17 +36,17 @@
 #include <stdlib.h>
 
 static _FORCE_INLINE_ void get_uv_and_normal(const Vector3 &p_pos, const Vector3 *p_vtx, const Vector2 *p_uv, const Vector3 *p_normal, Vector2 &r_uv, Vector3 &r_normal) {
-	if (p_pos.distance_squared_to(p_vtx[0]) < CMP_EPSILON2) {
+	if (p_pos.is_equal_approx(p_vtx[0])) {
 		r_uv = p_uv[0];
 		r_normal = p_normal[0];
 		return;
 	}
-	if (p_pos.distance_squared_to(p_vtx[1]) < CMP_EPSILON2) {
+	if (p_pos.is_equal_approx(p_vtx[1])) {
 		r_uv = p_uv[1];
 		r_normal = p_normal[1];
 		return;
 	}
-	if (p_pos.distance_squared_to(p_vtx[2]) < CMP_EPSILON2) {
+	if (p_pos.is_equal_approx(p_vtx[2])) {
 		r_uv = p_uv[2];
 		r_normal = p_normal[2];
 		return;
