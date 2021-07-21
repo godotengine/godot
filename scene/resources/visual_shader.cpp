@@ -1740,6 +1740,7 @@ void VisualShader::_update_shader() const {
 	}
 
 	Map<int, String> code_map;
+	Set<int> empty_funcs;
 
 	for (int i = 0; i < TYPE_MAX; i++) {
 		if (!has_func_name(RenderingServer::ShaderMode(shader_mode), func_name[i])) {
@@ -1776,6 +1777,7 @@ void VisualShader::_update_shader() const {
 		}
 
 		if (is_empty_func) {
+			empty_funcs.insert(i);
 			continue;
 		}
 
@@ -1934,7 +1936,11 @@ void VisualShader::_update_shader() const {
 		if (!has_func_name(RenderingServer::ShaderMode(shader_mode), func_name[i])) {
 			continue;
 		}
-		tcode = tcode.insert(insertion_pos[i], global_code_per_func[Type(i)]);
+		String func_code = global_code_per_func[Type(i)].as_string();
+		if (empty_funcs.has(Type(i)) && !func_code.is_empty()) {
+			func_code = vformat("%s%s%s", String("\nvoid " + String(func_name[i]) + "() {\n"), func_code, "}\n");
+		}
+		tcode = tcode.insert(insertion_pos[i], func_code);
 	}
 	final_code += tcode;
 
