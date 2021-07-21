@@ -72,6 +72,7 @@ void Popup::_notification(int p_what) {
 			} else {
 				_deinitialize_visible_parents();
 				emit_signal(SNAME("popup_hide"));
+				popped_up = false;
 			}
 
 		} break;
