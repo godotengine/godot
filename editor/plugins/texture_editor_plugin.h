@@ -41,6 +41,12 @@ class TexturePreview : public MarginContainer {
 private:
 	TextureRect *texture_display;
 
+	TextureRect *checkerboard;
+	Label *metadata_label;
+
+protected:
+	void _notification(int p_what);
+
 public:
 	TextureRect *get_texture_display();
 	TexturePreview(Ref<Texture> p_texture, bool p_show_metadata);

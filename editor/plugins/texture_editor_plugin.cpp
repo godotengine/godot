@@ -37,9 +37,31 @@ TextureRect *TexturePreview::get_texture_display() {
 	return texture_display;
 }
 
+void TexturePreview::_notification(int p_what) {
+	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE:
+		case NOTIFICATION_THEME_CHANGED: {
+			if (!is_inside_tree()) {
+				// TODO: This is a workaround because `NOTIFICATION_THEME_CHANGED`
+				// is getting called for some reason when the `TexturePreview` is
+				// getting destroyed, which causes `get_theme_font()` to return `nullptr`.
+				// See https://github.com/godotengine/godot/issues/50743.
+				break;
+			}
+
+			Ref<DynamicFont> metadata_label_font = get_font("expression", "EditorFonts")->duplicate();
+			metadata_label_font->set_size(16 * EDSCALE);
+			metadata_label_font->set_outline_size(2 * EDSCALE);
+			metadata_label_font->set_outline_color(Color::named("black"));
+			metadata_label->add_font_override("font", metadata_label_font);
+
+			checkerboard->set_texture(get_icon("Checkerboard", "EditorIcons"));
+		} break;
+	}
+}
+
 TexturePreview::TexturePreview(Ref<Texture> p_texture, bool p_show_metadata) {
-	TextureRect *checkerboard = memnew(TextureRect);
-	checkerboard->set_texture(get_icon("Checkerboard", "EditorIcons"));
+	checkerboard = memnew(TextureRect);
 	checkerboard->set_stretch_mode(TextureRect::STRETCH_TILE);
 	checkerboard->set_custom_minimum_size(Size2(0.0, 256.0) * EDSCALE);
 	add_child(checkerboard);
@@ -52,7 +74,7 @@ TexturePreview::TexturePreview(Ref<Texture> p_texture, bool p_show_metadata) {
 	add_child(texture_display);
 
 	if (p_show_metadata) {
-		Label *metadata_label = memnew(Label);
+		metadata_label = memnew(Label);
 
 		String format;
 		if (Object::cast_to<ImageTexture>(*p_texture)) {
@@ -64,12 +86,6 @@ TexturePreview::TexturePreview(Ref<Texture> p_texture, bool p_show_metadata) {
 		}
 
 		metadata_label->set_text(itos(p_texture->get_width()) + "x" + itos(p_texture->get_height()) + " " + format);
-
-		Ref<DynamicFont> metadata_label_font = get_font("expression", "EditorFonts")->duplicate();
-		metadata_label_font->set_size(16 * EDSCALE);
-		metadata_label_font->set_outline_size(2 * EDSCALE);
-		metadata_label_font->set_outline_color(Color::named("black"));
-		metadata_label->add_font_override("font", metadata_label_font);
 
 		// It's okay that these colors are static since the grid color is static too.
 		metadata_label->add_color_override("font_color", Color::named("white"));
