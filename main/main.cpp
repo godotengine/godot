@@ -2105,7 +2105,7 @@ bool Main::start() {
 		}
 #endif
 
-		bool embed_subwindows = GLOBAL_DEF("display/window/subwindows/embed_subwindows", false);
+		bool embed_subwindows = GLOBAL_DEF("display/window/subwindows/embed_subwindows", true);
 
 		if (single_window || (!project_manager && !editor && embed_subwindows)) {
 			sml->get_root()->set_embed_subwindows_hint(true);
