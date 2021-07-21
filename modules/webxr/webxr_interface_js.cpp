@@ -103,7 +103,7 @@ extern "C" EMSCRIPTEN_KEEPALIVE void _emwebxr_on_input_event(char *p_signal_name
 	ERR_FAIL_COND(interface.is_null());
 
 	StringName signal_name = StringName(p_signal_name);
-	interface->emit_signal(SNAME(signal_name), p_input_source + 1);
+	interface->emit_signal(signal_name, p_input_source + 1);
 }
 
 extern "C" EMSCRIPTEN_KEEPALIVE void _emwebxr_on_simple_event(char *p_signal_name) {
@@ -114,7 +114,7 @@ extern "C" EMSCRIPTEN_KEEPALIVE void _emwebxr_on_simple_event(char *p_signal_nam
 	ERR_FAIL_COND(interface.is_null());
 
 	StringName signal_name = StringName(p_signal_name);
-	interface->emit_signal(SNAME(signal_name));
+	interface->emit_signal(signal_name);
 }
 
 void WebXRInterfaceJS::is_session_supported(const String &p_session_mode) {
