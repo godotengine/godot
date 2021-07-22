@@ -55,6 +55,11 @@ void MenuButton::_unhandled_key_input(Ref<InputEvent> p_event) {
 	}
 }
 
+void MenuButton::_popup_visibility_changed(bool p_visible) {
+	set_pressed(p_visible);
+	set_process_internal(p_visible);
+}
+
 void MenuButton::pressed() {
 	Size2 size = get_size();
 
@@ -94,10 +99,26 @@ bool MenuButton::is_switch_on_hover() {
 }
 
 void MenuButton::_notification(int p_what) {
-	if (p_what == NOTIFICATION_VISIBILITY_CHANGED) {
-		if (!is_visible_in_tree()) {
-			popup->hide();
-		}
+	switch (p_what) {
+		case NOTIFICATION_VISIBILITY_CHANGED: {
+			if (!is_visible_in_tree()) {
+				popup->hide();
+			}
+		} break;
+		case NOTIFICATION_INTERNAL_PROCESS: {
+			if (switch_on_hover) {
+				Window *window = Object::cast_to<Window>(get_viewport());
+				if (window) {
+					Vector2i mouse_pos = DisplayServer::get_singleton()->mouse_get_position() - window->get_position();
+					MenuButton *menu_btn_other = Object::cast_to<MenuButton>(window->gui_find_control(mouse_pos));
+					if (menu_btn_other && menu_btn_other != this && menu_btn_other->is_switch_on_hover() && !menu_btn_other->is_disabled() &&
+							(get_parent()->is_ancestor_of(menu_btn_other) || menu_btn_other->get_parent()->is_ancestor_of(popup))) {
+						popup->hide();
+						menu_btn_other->pressed();
+					}
+				}
+			}
+		} break;
 	}
 }
 
@@ -130,8 +151,8 @@ MenuButton::MenuButton() {
 	popup = memnew(PopupMenu);
 	popup->hide();
 	add_child(popup);
-	popup->connect("about_to_popup", callable_mp((BaseButton *)this, &BaseButton::set_pressed), varray(true)); // For when switching from another MenuButton.
-	popup->connect("popup_hide", callable_mp((BaseButton *)this, &BaseButton::set_pressed), varray(false));
+	popup->connect("about_to_popup", callable_mp(this, &MenuButton::_popup_visibility_changed), varray(true));
+	popup->connect("popup_hide", callable_mp(this, &MenuButton::_popup_visibility_changed), varray(false));
 }
 
 MenuButton::~MenuButton() {

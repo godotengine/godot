@@ -140,7 +140,6 @@ class PopupMenu : public Popup {
 	void _close_pressed();
 
 protected:
-	friend class MenuButton;
 	void _notification(int p_what);
 	static void _bind_methods();
 
