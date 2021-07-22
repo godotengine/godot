@@ -82,6 +82,7 @@ private:
 		int icon_max_w = 0;
 		bool expr = false;
 		bool checked = false;
+		bool indeterminate = false;
 		bool editable = false;
 		bool selected = false;
 		bool selectable = true;
@@ -209,7 +210,9 @@ public:
 
 	/* check mode */
 	void set_checked(int p_column, bool p_checked);
+	void set_indeterminate(int p_column, bool p_indeterminate);
 	bool is_checked(int p_column) const;
+	bool is_indeterminate(int p_column) const;
 
 	void set_text(int p_column, String p_text);
 	String get_text(int p_column) const;
@@ -491,6 +494,7 @@ private:
 
 		Ref<Texture2D> checked;
 		Ref<Texture2D> unchecked;
+		Ref<Texture2D> indeterminate;
 		Ref<Texture2D> arrow_collapsed;
 		Ref<Texture2D> arrow;
 		Ref<Texture2D> select_arrow;
