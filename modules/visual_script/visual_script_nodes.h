@@ -790,6 +790,8 @@ public:
 
 	virtual VisualScriptNodeInstance *instance(VisualScriptInstance *p_instance);
 
+	virtual TypeGuess guess_output_type(TypeGuess *p_inputs, int p_output) const;
+
 	void _script_changed();
 
 	VisualScriptCustomNode();

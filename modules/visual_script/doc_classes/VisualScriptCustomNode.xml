@@ -30,6 +30,24 @@
 				Return the count of input value ports.
 			</description>
 		</method>
+		<method name="_get_input_value_port_hint" qualifiers="virtual">
+			<return type="int">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<description>
+				Return the specified input port's hint. See the [enum @GlobalScope.PropertyHint] hints.
+			</description>
+		</method>
+		<method name="_get_input_value_port_hint_string" qualifiers="virtual">
+			<return type="String">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<description>
+				Return the specified input port's hint string.
+			</description>
+		</method>
 		<method name="_get_input_value_port_name" qualifiers="virtual">
 			<return type="String">
 			</return>
@@ -71,13 +89,31 @@
 				Return the amount of output value ports.
 			</description>
 		</method>
+		<method name="_get_output_value_port_hint" qualifiers="virtual">
+			<return type="int">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<description>
+				Return the specified output port's hint. See the [enum @GlobalScope.PropertyHint] hints.
+			</description>
+		</method>
+		<method name="_get_output_value_port_hint_string" qualifiers="virtual">
+			<return type="String">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<description>
+				Return the specified output port's hint string.
+			</description>
+		</method>
 		<method name="_get_output_value_port_name" qualifiers="virtual">
 			<return type="String">
 			</return>
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
-				Return the specified output's name.
+				Return the specified output port's name.
 			</description>
 		</method>
 		<method name="_get_output_value_port_type" qualifiers="virtual">
@@ -86,7 +122,7 @@
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
-				Return the specified output's type. See the [enum Variant.Type] values.
+				Return the specified output port's type. See the [enum Variant.Type] values.
 			</description>
 		</method>
 		<method name="_get_text" qualifiers="virtual">
