@@ -615,7 +615,7 @@ protected:
 		return &_class_name;
 	}
 
-	Vector<String> _get_meta_list_bind() const;
+	Vector<StringName> _get_meta_list_bind() const;
 	Array _get_property_list_bind() const;
 	Array _get_method_list_bind() const;
 
@@ -743,11 +743,11 @@ public:
 
 	/* SCRIPT */
 
-	bool has_meta(const String &p_name) const;
-	void set_meta(const String &p_name, const Variant &p_value);
-	void remove_meta(const String &p_name);
-	Variant get_meta(const String &p_name) const;
-	void get_meta_list(List<String> *p_list) const;
+	bool has_meta(const StringName &p_name) const;
+	void set_meta(const StringName &p_name, const Variant &p_value);
+	void remove_meta(const StringName &p_name);
+	Variant get_meta(const StringName &p_name) const;
+	void get_meta_list(List<StringName> *p_list) const;
 
 #ifdef TOOLS_ENABLED
 	void set_edited(bool p_edited);

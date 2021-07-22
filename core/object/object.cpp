@@ -922,11 +922,11 @@ Variant Object::get_script() const {
 	return script;
 }
 
-bool Object::has_meta(const String &p_name) const {
+bool Object::has_meta(const StringName &p_name) const {
 	return metadata.has(p_name);
 }
 
-void Object::set_meta(const String &p_name, const Variant &p_value) {
+void Object::set_meta(const StringName &p_name, const Variant &p_value) {
 	if (p_value.get_type() == Variant::NIL) {
 		metadata.erase(p_name);
 		return;
@@ -935,12 +935,12 @@ void Object::set_meta(const String &p_name, const Variant &p_value) {
 	metadata[p_name] = p_value;
 }
 
-Variant Object::get_meta(const String &p_name) const {
+Variant Object::get_meta(const StringName &p_name) const {
 	ERR_FAIL_COND_V_MSG(!metadata.has(p_name), Variant(), "The object does not have any 'meta' values with the key '" + p_name + "'.");
 	return metadata[p_name];
 }
 
-void Object::remove_meta(const String &p_name) {
+void Object::remove_meta(const StringName &p_name) {
 	metadata.erase(p_name);
 }
 
@@ -964,8 +964,8 @@ Array Object::_get_method_list_bind() const {
 	return ret;
 }
 
-Vector<String> Object::_get_meta_list_bind() const {
-	Vector<String> _metaret;
+Vector<StringName> Object::_get_meta_list_bind() const {
+	Vector<StringName> _metaret;
 
 	List<Variant> keys;
 	metadata.get_key_list(&keys);
@@ -976,7 +976,7 @@ Vector<String> Object::_get_meta_list_bind() const {
 	return _metaret;
 }
 
-void Object::get_meta_list(List<String> *p_list) const {
+void Object::get_meta_list(List<StringName> *p_list) const {
 	List<Variant> keys;
 	metadata.get_key_list(&keys);
 	for (List<Variant>::Element *E = keys.front(); E; E = E->next()) {
