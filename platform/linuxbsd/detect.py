@@ -201,11 +201,6 @@ def configure(env):
     env.Append(CCFLAGS=["-pipe"])
     env.Append(LINKFLAGS=["-pipe"])
 
-    # -fpie and -no-pie is supported on GCC 6+ and Clang 4+, both below our
-    # minimal requirements.
-    env.Append(CCFLAGS=["-fpie"])
-    env.Append(LINKFLAGS=["-no-pie"])
-
     ## Dependencies
 
     env.ParseConfig("pkg-config x11 --cflags --libs")
