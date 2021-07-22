@@ -249,6 +249,9 @@
 			[b]Note:[/b] Delta smoothing is only attempted when [member display/window/vsync/use_vsync] is switched on, as it does not work well without V-Sync.
 			It may take several seconds at a stable frame rate before the smoothing is initially activated. It will only be active on machines where performance is adequate to render frames at the refresh rate.
 		</member>
+		<member name="application/run/delta_sync_after_draw" type="bool" setter="" getter="" default="false">
+			[b]Experimental.[/b] Shifts the measurement of delta time for each frame to just after the drawing has taken place. This may lead to more consistent deltas and a reduction in frame stutters.
+		</member>
 		<member name="application/run/disable_stderr" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], disables printing to standard error. If [code]true[/code], this also hides error and warning messages printed by [method @GDScript.push_error] and [method @GDScript.push_warning]. See also [member application/run/disable_stdout].
 			Changes to this setting will only be applied upon restarting the application.
@@ -1059,19 +1062,19 @@
 			[b]Note:[/b] This property is only read when the project starts. To change the physics FPS at runtime, set [member Engine.physics_jitter_fix] instead.
 		</member>
 		<member name="rendering/2d/opengl/batching_send_null" type="int" setter="" getter="" default="0">
-			[b]Experimental[/b] Calls [code]glBufferData[/code] with NULL data prior to uploading batching data. This may not be necessary but can be used for safety.
+			[b]Experimental.[/b] Calls [code]glBufferData[/code] with NULL data prior to uploading batching data. This may not be necessary but can be used for safety.
 			[b]Note:[/b] Use with care. You are advised to leave this as default for exports. A non-default setting that works better on your machine may adversely affect performance for end users.
 		</member>
 		<member name="rendering/2d/opengl/batching_stream" type="int" setter="" getter="" default="0">
-			[b]Experimental[/b] If set to on, uses the [code]GL_STREAM_DRAW[/code] flag for batching buffer uploads. If off, uses the [code]GL_DYNAMIC_DRAW[/code] flag.
+			[b]Experimental.[/b] If set to on, uses the [code]GL_STREAM_DRAW[/code] flag for batching buffer uploads. If off, uses the [code]GL_DYNAMIC_DRAW[/code] flag.
 			[b]Note:[/b] Use with care. You are advised to leave this as default for exports. A non-default setting that works better on your machine may adversely affect performance for end users.
 		</member>
 		<member name="rendering/2d/opengl/legacy_orphan_buffers" type="int" setter="" getter="" default="0">
-			[b]Experimental[/b] If set to on, this applies buffer orphaning - [code]glBufferData[/code] is called with NULL data and the full buffer size prior to uploading new data. This can be important to avoid stalling on some hardware.
+			[b]Experimental.[/b] If set to on, this applies buffer orphaning - [code]glBufferData[/code] is called with NULL data and the full buffer size prior to uploading new data. This can be important to avoid stalling on some hardware.
 			[b]Note:[/b] Use with care. You are advised to leave this as default for exports. A non-default setting that works better on your machine may adversely affect performance for end users.
 		</member>
 		<member name="rendering/2d/opengl/legacy_stream" type="int" setter="" getter="" default="0">
-			[b]Experimental[/b] If set to on, uses the [code]GL_STREAM_DRAW[/code] flag for legacy buffer uploads. If off, uses the [code]GL_DYNAMIC_DRAW[/code] flag.
+			[b]Experimental.[/b] If set to on, uses the [code]GL_STREAM_DRAW[/code] flag for legacy buffer uploads. If off, uses the [code]GL_DYNAMIC_DRAW[/code] flag.
 			[b]Note:[/b] Use with care. You are advised to leave this as default for exports. A non-default setting that works better on your machine may adversely affect performance for end users.
 		</member>
 		<member name="rendering/2d/options/ninepatch_mode" type="int" setter="" getter="" default="1">
@@ -1097,7 +1100,7 @@
 			When batching is on, this regularly prints a frame diagnosis log. Note that this will degrade performance.
 		</member>
 		<member name="rendering/batching/debug/flash_batching" type="bool" setter="" getter="" default="false">
-			[b]Experimental[/b] For regression testing against the old renderer. If this is switched on, and [code]use_batching[/code] is set, the renderer will swap alternately between using the old renderer, and the batched renderer, on each frame. This makes it easy to identify visual differences. Performance will be degraded.
+			[b]Experimental.[/b] For regression testing against the old renderer. If this is switched on, and [code]use_batching[/code] is set, the renderer will swap alternately between using the old renderer, and the batched renderer, on each frame. This makes it easy to identify visual differences. Performance will be degraded.
 		</member>
 		<member name="rendering/batching/lights/max_join_items" type="int" setter="" getter="" default="32">
 			Lights have the potential to prevent joining items, and break many of the performance benefits of batching. This setting enables some complex logic to allow joining items if their lighting is similar, and overlap tests pass. This can significantly improve performance in some games. Set to 0 to switch off. With large values the cost of overlap tests may lead to diminishing returns.
