@@ -122,6 +122,7 @@ static String locale;
 static bool show_help = false;
 static bool auto_quit = false;
 static OS::ProcessID allow_focus_steal_pid = 0;
+static bool delta_sync_after_draw = false;
 #ifdef TOOLS_ENABLED
 static bool auto_build_solutions = false;
 #endif
@@ -1204,6 +1205,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	OS::get_singleton()->set_low_processor_usage_mode_sleep_usec(GLOBAL_DEF("application/run/low_processor_mode_sleep_usec", 6900)); // Roughly 144 FPS
 	ProjectSettings::get_singleton()->set_custom_property_info("application/run/low_processor_mode_sleep_usec", PropertyInfo(Variant::INT, "application/run/low_processor_mode_sleep_usec", PROPERTY_HINT_RANGE, "0,33200,1,or_greater")); // No negative numbers
 
+	delta_sync_after_draw = GLOBAL_DEF("application/run/delta_sync_after_draw", false);
 	GLOBAL_DEF("application/run/delta_smoothing", true);
 	if (!delta_smoothing_override) {
 		OS::get_singleton()->set_delta_smoothing(GLOBAL_GET("application/run/delta_smoothing"));
@@ -2044,13 +2046,31 @@ bool Main::is_iterating() {
 static uint64_t physics_process_max = 0;
 static uint64_t idle_process_max = 0;
 
+#ifndef TOOLS_ENABLED
+static uint64_t frame_delta_sync_time = 0;
+#endif
+
 bool Main::iteration() {
 	//for now do not error on this
 	//ERR_FAIL_COND_V(iterating, false);
 
 	iterating++;
 
+#ifdef TOOLS_ENABLED
 	uint64_t ticks = OS::get_singleton()->get_ticks_usec();
+#else
+	// we can either sync the delta from here, or later in the iteration
+	uint64_t ticks_at_start = OS::get_singleton()->get_ticks_usec();
+	uint64_t ticks_difference = ticks_at_start - frame_delta_sync_time;
+
+	// if we are syncing at start or if frame_delta_sync_time is being initialized
+	// or a large gap has happened between the last delta_sync_time and now
+	if (!delta_sync_after_draw || (ticks_difference > 100000)) {
+		frame_delta_sync_time = ticks_at_start;
+	}
+	uint64_t ticks = frame_delta_sync_time;
+#endif
+
 	Engine::get_singleton()->_frame_ticks = ticks;
 	main_timer_sync.set_cpu_ticks_usec(ticks);
 	main_timer_sync.set_fixed_fps(fixed_fps);
@@ -2137,6 +2157,13 @@ bool Main::iteration() {
 			force_redraw_requested = false;
 		}
 	}
+
+#ifndef TOOLS_ENABLED
+	// we can choose to sync delta from here, just after the draw
+	if (delta_sync_after_draw) {
+		frame_delta_sync_time = OS::get_singleton()->get_ticks_usec();
+	}
+#endif
 
 	idle_process_ticks = OS::get_singleton()->get_ticks_usec() - idle_begin;
 	idle_process_max = MAX(idle_process_ticks, idle_process_max);
