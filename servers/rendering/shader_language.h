@@ -876,6 +876,14 @@ private:
 
 	VaryingFunctionNames varying_function_names;
 
+	struct VaryingUsage {
+		ShaderNode::Varying *var;
+		int line;
+	};
+	List<VaryingUsage> unknown_varying_usages;
+
+	bool _check_varying_usages(int *r_error_line, String *r_error_message) const;
+
 	TkPos _get_tkpos() {
 		TkPos tkp;
 		tkp.char_idx = char_idx;
