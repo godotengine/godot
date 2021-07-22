@@ -105,7 +105,7 @@ elif env["builtin_vulkan"]:
 
 else:  # Always build VMA.
     thirdparty_dir = "#thirdparty/vulkan"
-    env.Prepend(CPPPATH=[thirdparty_dir])
+    env.Prepend(CPPPATH=[thirdparty_dir, thirdparty_dir + "/include"])
 
     # Build Vulkan loader library
     env_thirdparty = env.Clone()

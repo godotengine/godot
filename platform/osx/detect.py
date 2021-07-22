@@ -24,6 +24,7 @@ def get_opts():
     return [
         ("osxcross_sdk", "OSXCross SDK version", "darwin16"),
         ("MACOS_SDK_PATH", "Path to the macOS SDK", ""),
+        ("VULKAN_SDK_PATH", "Path to the Vulkan SDK", ""),
         BoolVariable(
             "use_static_mvk",
             "Link MoltenVK statically as Level-0 driver (better portability) or use Vulkan ICD loader (enables"
@@ -190,7 +191,7 @@ def configure(env):
     env.Append(CPPDEFINES=["VULKAN_ENABLED"])
     env.Append(LINKFLAGS=["-framework", "Metal", "-framework", "QuartzCore", "-framework", "IOSurface"])
     if env["use_static_mvk"]:
-        env.Append(LINKFLAGS=["-framework", "MoltenVK"])
+        env.Append(LINKFLAGS=["-L$VULKAN_SDK_PATH/MoltenVK/MoltenVK.xcframework/macos-arm64_x86_64/", "-lMoltenVK"])
         env["builtin_vulkan"] = False
     elif not env["builtin_vulkan"]:
         env.Append(LIBS=["vulkan"])
