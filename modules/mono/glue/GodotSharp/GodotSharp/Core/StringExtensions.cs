@@ -124,7 +124,7 @@ namespace Godot
                 instance = instance.Substring(2);
             }
 
-            return sign * Convert.ToInt32(instance, 2);;
+            return sign * Convert.ToInt32(instance, 2);
         }
 
         // <summary>
@@ -468,7 +468,7 @@ namespace Godot
         {
             uint hash = 5381;
 
-            foreach(uint c in instance)
+            foreach (uint c in instance)
             {
                 hash = (hash << 5) + hash + c; // hash * 33 + c
             }
@@ -798,8 +798,11 @@ namespace Godot
                 case '?':
                     return instance.Length > 0 && instance[0] != '.' && ExprMatch(instance.Substring(1), expr.Substring(1), caseSensitive);
                 default:
-                    if (instance.Length == 0) return false;
-                    return (caseSensitive ? instance[0] == expr[0] : char.ToUpper(instance[0]) == char.ToUpper(expr[0])) && ExprMatch(instance.Substring(1), expr.Substring(1), caseSensitive);
+                    if (instance.Length == 0)
+                        return false;
+                    if (caseSensitive)
+                        return instance[0] == expr[0];
+                    return (char.ToUpper(instance[0]) == char.ToUpper(expr[0])) && ExprMatch(instance.Substring(1), expr.Substring(1), caseSensitive);
             }
         }
 

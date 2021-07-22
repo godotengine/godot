@@ -1,11 +1,10 @@
-using System;
-using System.Runtime.InteropServices;
-
 #if REAL_T_IS_DOUBLE
 using real_t = System.Double;
 #else
 using real_t = System.Single;
 #endif
+using System;
+using System.Runtime.InteropServices;
 
 namespace Godot
 {

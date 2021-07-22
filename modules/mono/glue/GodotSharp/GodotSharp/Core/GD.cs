@@ -1,12 +1,11 @@
-using System;
-using System.Collections.Generic;
-using System.Runtime.CompilerServices;
 #if REAL_T_IS_DOUBLE
 using real_t = System.Double;
 #else
 using real_t = System.Single;
-
 #endif
+using System;
+using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 
 // TODO: Add comments describing what this class does. It is not obvious.
 
@@ -26,7 +25,7 @@ namespace Godot
 
         public static real_t Db2Linear(real_t db)
         {
-            return (real_t) Math.Exp(db * 0.11512925464970228420089957273422);
+            return (real_t)Math.Exp(db * 0.11512925464970228420089957273422);
         }
 
         public static real_t DecTime(real_t value, real_t amount, real_t step)
@@ -51,7 +50,7 @@ namespace Godot
 
         public static real_t Linear2Db(real_t linear)
         {
-            return (real_t) (Math.Log(linear) * 8.6858896380650365530225783783321);
+            return (real_t)(Math.Log(linear) * 8.6858896380650365530225783783321);
         }
 
         public static Resource Load(string path)
@@ -76,7 +75,7 @@ namespace Godot
 
         public static void Print(params object[] what)
         {
-            godot_icall_GD_print(Array.ConvertAll(what ?? new object[]{"null"}, x => x != null ? x.ToString() : "null"));
+            godot_icall_GD_print(Array.ConvertAll(what ?? new object[] { "null" }, x => x != null ? x.ToString() : "null"));
         }
 
         public static void PrintStack()
@@ -86,22 +85,22 @@ namespace Godot
 
         public static void PrintErr(params object[] what)
         {
-            godot_icall_GD_printerr(Array.ConvertAll(what ?? new object[]{"null"}, x => x != null ? x.ToString() : "null"));
+            godot_icall_GD_printerr(Array.ConvertAll(what ?? new object[] { "null" }, x => x != null ? x.ToString() : "null"));
         }
 
         public static void PrintRaw(params object[] what)
         {
-            godot_icall_GD_printraw(Array.ConvertAll(what ?? new object[]{"null"}, x => x != null ? x.ToString() : "null"));
+            godot_icall_GD_printraw(Array.ConvertAll(what ?? new object[] { "null" }, x => x != null ? x.ToString() : "null"));
         }
 
         public static void PrintS(params object[] what)
         {
-            godot_icall_GD_prints(Array.ConvertAll(what ?? new object[]{"null"}, x => x != null ? x.ToString() : "null"));
+            godot_icall_GD_prints(Array.ConvertAll(what ?? new object[] { "null" }, x => x != null ? x.ToString() : "null"));
         }
 
         public static void PrintT(params object[] what)
         {
-            godot_icall_GD_printt(Array.ConvertAll(what ?? new object[]{"null"}, x => x != null ? x.ToString() : "null"));
+            godot_icall_GD_printt(Array.ConvertAll(what ?? new object[] { "null" }, x => x != null ? x.ToString() : "null"));
         }
 
         public static float Randf()
