@@ -58,10 +58,8 @@ class ResourceLoaderText {
 
 	bool ignore_resource_parsing = false;
 
-	//Map<String,String> remaps;
-
-	Map<int, ExtResource> ext_resources;
-	Map<int, RES> int_resources;
+	Map<String, ExtResource> ext_resources;
+	Map<String, RES> int_resources;
 
 	int resources_total = 0;
 	int resource_current = 0;
@@ -77,7 +75,6 @@ class ResourceLoaderText {
 	mutable int lines = 0;
 
 	Map<String, String> remaps;
-	//void _printerr();
 
 	static Error _parse_sub_resources(void *p_self, VariantParser::Stream *p_stream, Ref<Resource> &r_res, int &line, String &r_err_str) { return reinterpret_cast<ResourceLoaderText *>(p_self)->_parse_sub_resource(p_stream, r_res, line, r_err_str); }
 	static Error _parse_ext_resources(void *p_self, VariantParser::Stream *p_stream, Ref<Resource> &r_res, int &line, String &r_err_str) { return reinterpret_cast<ResourceLoaderText *>(p_self)->_parse_ext_resource(p_stream, r_res, line, r_err_str); }
@@ -92,9 +89,9 @@ class ResourceLoaderText {
 
 	struct DummyReadData {
 		Map<RES, int> external_resources;
-		Map<int, RES> rev_external_resources;
-		Set<RES> resource_set;
-		Map<int, RES> resource_map;
+		Map<String, RES> rev_external_resources;
+		Map<RES, int> resource_index_map;
+		Map<String, RES> resource_map;
 	};
 
 	static Error _parse_sub_resource_dummys(void *p_self, VariantParser::Stream *p_stream, Ref<Resource> &r_res, int &line, String &r_err_str) { return _parse_sub_resource_dummy((DummyReadData *)(p_self), p_stream, r_res, line, r_err_str); }
@@ -168,14 +165,14 @@ class ResourceFormatSaverTextInstance {
 
 	Set<RES> resource_set;
 	List<RES> saved_resources;
-	Map<RES, int> external_resources;
-	Map<RES, int> internal_resources;
+	Map<RES, String> external_resources;
+	Map<RES, String> internal_resources;
 
 	struct ResourceSort {
 		RES resource;
-		int index = 0;
+		String id;
 		bool operator<(const ResourceSort &p_right) const {
-			return index < p_right.index;
+			return id.naturalnocasecmp_to(p_right.id) < 0;
 		}
 	};
 

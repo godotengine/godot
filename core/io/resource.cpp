@@ -33,6 +33,7 @@
 #include "core/core_string_names.h"
 #include "core/io/file_access.h"
 #include "core/io/resource_loader.h"
+#include "core/math/math_funcs.h"
 #include "core/object/script_language.h"
 #include "core/os/os.h"
 #include "scene/main/node.h" //only so casting works
@@ -94,12 +95,43 @@ String Resource::get_path() const {
 	return path_cache;
 }
 
-void Resource::set_subindex(int p_sub_index) {
-	subindex = p_sub_index;
+String Resource::generate_scene_unique_id() {
+	// Generate a unique enough hash, but still user-readable.
+	// If it's not unique it does not matter because the saver will try again.
+	OS::Date date = OS::get_singleton()->get_date();
+	OS::Time time = OS::get_singleton()->get_time();
+	uint32_t hash = hash_djb2_one_32(OS::get_singleton()->get_ticks_usec());
+	hash = hash_djb2_one_32(date.year, hash);
+	hash = hash_djb2_one_32(date.month, hash);
+	hash = hash_djb2_one_32(date.day, hash);
+	hash = hash_djb2_one_32(time.hour, hash);
+	hash = hash_djb2_one_32(time.minute, hash);
+	hash = hash_djb2_one_32(time.second, hash);
+	hash = hash_djb2_one_32(Math::rand(), hash);
+
+	static constexpr uint32_t characters = 5;
+	static constexpr uint32_t char_count = ('z' - 'a');
+	static constexpr uint32_t base = char_count + ('9' - '0');
+	String id;
+	for (uint32_t i = 0; i < characters; i++) {
+		uint32_t c = hash % base;
+		if (c < char_count) {
+			id += String::chr('a' + c);
+		} else {
+			id += String::chr('0' + (c - char_count));
+		}
+		hash /= base;
+	}
+
+	return id;
 }
 
-int Resource::get_subindex() const {
-	return subindex;
+void Resource::set_scene_unique_id(const String &p_id) {
+	scene_unique_id = p_id;
+}
+
+String Resource::get_scene_unique_id() const {
+	return scene_unique_id;
 }
 
 void Resource::set_name(const String &p_name) {
@@ -350,8 +382,8 @@ bool Resource::is_translation_remapped() const {
 
 #ifdef TOOLS_ENABLED
 //helps keep IDs same number when loading/saving scenes. -1 clears ID and it Returns -1 when no id stored
-void Resource::set_id_for_path(const String &p_path, int p_id) {
-	if (p_id == -1) {
+void Resource::set_id_for_path(const String &p_path, const String &p_id) {
+	if (p_id == "") {
 		ResourceCache::path_cache_lock.write_lock();
 		ResourceCache::resource_path_cache[p_path].erase(get_path());
 		ResourceCache::path_cache_lock.write_unlock();
@@ -362,15 +394,15 @@ void Resource::set_id_for_path(const String &p_path, int p_id) {
 	}
 }
 
-int Resource::get_id_for_path(const String &p_path) const {
+String Resource::get_id_for_path(const String &p_path) const {
 	ResourceCache::path_cache_lock.read_lock();
 	if (ResourceCache::resource_path_cache[p_path].has(get_path())) {
-		int result = ResourceCache::resource_path_cache[p_path][get_path()];
+		String result = ResourceCache::resource_path_cache[p_path][get_path()];
 		ResourceCache::path_cache_lock.read_unlock();
 		return result;
 	} else {
 		ResourceCache::path_cache_lock.read_unlock();
-		return -1;
+		return "";
 	}
 }
 #endif
@@ -414,7 +446,7 @@ Resource::~Resource() {
 
 HashMap<String, Resource *> ResourceCache::resources;
 #ifdef TOOLS_ENABLED
-HashMap<String, HashMap<String, int>> ResourceCache::resource_path_cache;
+HashMap<String, HashMap<String, String>> ResourceCache::resource_path_cache;
 #endif
 
 RWLock ResourceCache::lock;
