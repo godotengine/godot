@@ -86,6 +86,8 @@ public:
 	virtual bool request_permissions() override;
 	virtual Vector<String> get_granted_permissions() const override;
 
+	virtual void alert(const String &p_alert, const String &p_title) override;
+
 	virtual Error open_dynamic_library(const String p_path, void *&p_library_handle, bool p_also_set_library_path = false) override;
 
 	virtual String get_name() const override;

@@ -196,6 +196,10 @@ int _OS::get_low_processor_usage_mode_sleep_usec() const {
 	return OS::get_singleton()->get_low_processor_usage_mode_sleep_usec();
 }
 
+void _OS::alert(const String &p_alert, const String &p_title) {
+	OS::get_singleton()->alert(p_alert, p_title);
+}
+
 String _OS::get_executable_path() const {
 	return OS::get_singleton()->get_executable_path();
 }
@@ -486,6 +490,8 @@ void _OS::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_connected_midi_inputs"), &_OS::get_connected_midi_inputs);
 	ClassDB::bind_method(D_METHOD("open_midi_inputs"), &_OS::open_midi_inputs);
 	ClassDB::bind_method(D_METHOD("close_midi_inputs"), &_OS::close_midi_inputs);
+
+	ClassDB::bind_method(D_METHOD("alert", "text", "title"), &_OS::alert, DEFVAL("Alert!"));
 
 	ClassDB::bind_method(D_METHOD("set_low_processor_usage_mode", "enable"), &_OS::set_low_processor_usage_mode);
 	ClassDB::bind_method(D_METHOD("is_in_low_processor_usage_mode"), &_OS::is_in_low_processor_usage_mode);

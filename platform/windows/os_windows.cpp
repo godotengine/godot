@@ -165,6 +165,10 @@ BOOL WINAPI HandlerRoutine(_In_ DWORD dwCtrlType) {
 	}
 }
 
+void OS_Windows::alert(const String &p_alert, const String &p_title) {
+	MessageBoxW(nullptr, (LPCWSTR)(p_alert.utf16().get_data()), (LPCWSTR)(p_title.utf16().get_data()), MB_OK | MB_ICONEXCLAMATION | MB_TASKMODAL);
+}
+
 void OS_Windows::initialize_debugging() {
 	SetConsoleCtrlHandler(HandlerRoutine, TRUE);
 }

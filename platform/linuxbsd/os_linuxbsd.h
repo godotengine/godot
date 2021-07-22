@@ -90,6 +90,8 @@ public:
 
 	virtual String get_unique_id() const override;
 
+	virtual void alert(const String &p_alert, const String &p_title = "ALERT!") override;
+
 	virtual bool _check_internal_feature_support(const String &p_feature) override;
 
 	void run();

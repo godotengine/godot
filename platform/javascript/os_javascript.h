@@ -89,6 +89,9 @@ public:
 	String get_user_data_dir() const override;
 
 	bool is_userfs_persistent() const override;
+
+	void alert(const String &p_alert, const String &p_title = "ALERT!") override;
+
 	Error open_dynamic_library(const String p_path, void *&p_library_handle, bool p_also_set_library_path) override;
 
 	void resume_audio();

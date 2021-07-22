@@ -143,8 +143,6 @@ public:
 	virtual void global_menu_remove_item(const String &p_menu_root, int p_idx);
 	virtual void global_menu_clear(const String &p_menu_root);
 
-	virtual void alert(const String &p_alert, const String &p_title = "ALERT!") = 0;
-
 	enum MouseMode {
 		MOUSE_MODE_VISIBLE,
 		MOUSE_MODE_HIDDEN,

@@ -334,13 +334,6 @@ bool DisplayServerAndroid::can_any_window_draw() const {
 	return true;
 }
 
-void DisplayServerAndroid::alert(const String &p_alert, const String &p_title) {
-	GodotJavaWrapper *godot_java = OS_Android::get_singleton()->get_godot_java();
-	ERR_FAIL_COND(!godot_java);
-
-	godot_java->alert(p_alert, p_title);
-}
-
 void DisplayServerAndroid::process_events() {
 	Input::get_singleton()->flush_accumulated_events();
 }
@@ -361,7 +354,7 @@ Vector<String> DisplayServerAndroid::get_rendering_drivers_func() {
 DisplayServer *DisplayServerAndroid::create_func(const String &p_rendering_driver, DisplayServer::WindowMode p_mode, DisplayServer::VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i &p_resolution, Error &r_error) {
 	DisplayServer *ds = memnew(DisplayServerAndroid(p_rendering_driver, p_mode, p_vsync_mode, p_flags, p_resolution, r_error));
 	if (r_error != OK) {
-		ds->alert("Your video card driver does not support any of the supported Vulkan versions.", "Unable to initialize Video driver");
+		OS::get_singleton()->alert("Your video card driver does not support any of the supported Vulkan versions.", "Unable to initialize Video driver");
 	}
 	return ds;
 }

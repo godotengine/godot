@@ -79,10 +79,6 @@ String DisplayServerWindows::get_name() const {
 	return "Windows";
 }
 
-void DisplayServerWindows::alert(const String &p_alert, const String &p_title) {
-	MessageBoxW(nullptr, (LPCWSTR)(p_alert.utf16().get_data()), (LPCWSTR)(p_title.utf16().get_data()), MB_OK | MB_ICONEXCLAMATION | MB_TASKMODAL);
-}
-
 void DisplayServerWindows::_set_mouse_mode_impl(MouseMode p_mode) {
 	if (p_mode == MOUSE_MODE_CAPTURED || p_mode == MOUSE_MODE_CONFINED || p_mode == MOUSE_MODE_CONFINED_HIDDEN) {
 		// Mouse is grabbed (captured or confined).
@@ -3358,8 +3354,8 @@ Vector<String> DisplayServerWindows::get_rendering_drivers_func() {
 DisplayServer *DisplayServerWindows::create_func(const String &p_rendering_driver, WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i &p_resolution, Error &r_error) {
 	DisplayServer *ds = memnew(DisplayServerWindows(p_rendering_driver, p_mode, p_vsync_mode, p_flags, p_resolution, r_error));
 	if (r_error != OK) {
-		ds->alert("Your video card driver does not support any of the supported Vulkan versions.\n"
-				  "Please update your drivers or if you have a very old or integrated GPU upgrade it.",
+		OS::get_singleton()->alert("Your video card driver does not support any of the supported Vulkan versions.\n"
+								   "Please update your drivers or if you have a very old or integrated GPU upgrade it.",
 				"Unable to initialize Video driver");
 	}
 	return ds;

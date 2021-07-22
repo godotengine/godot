@@ -139,10 +139,6 @@ void OS_Unix::finalize_core() {
 	NetSocketPosix::cleanup();
 }
 
-void OS_Unix::alert(const String &p_alert, const String &p_title) {
-	fprintf(stderr, "ERROR: %s\n", p_alert.utf8().get_data());
-}
-
 String OS_Unix::get_stdin_string(bool p_block) {
 	if (p_block) {
 		char buff[1024];

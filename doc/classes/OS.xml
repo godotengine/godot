@@ -10,6 +10,17 @@
 		<link title="OS Test Demo">https://godotengine.org/asset-library/asset/677</link>
 	</tutorials>
 	<methods>
+		<method name="alert">
+			<return type="void">
+			</return>
+			<argument index="0" name="text" type="String">
+			</argument>
+			<argument index="1" name="title" type="String" default="&quot;Alert!&quot;">
+			</argument>
+			<description>
+				Displays a modal dialog box using the host OS' facilities. Execution is blocked until the dialog is closed.
+			</description>
+		</method>
 		<method name="can_use_threads" qualifiers="const">
 			<return type="bool">
 			</return>

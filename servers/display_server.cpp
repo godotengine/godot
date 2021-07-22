@@ -346,8 +346,6 @@ void DisplayServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("global_menu_remove_item", "menu_root", "idx"), &DisplayServer::global_menu_remove_item);
 	ClassDB::bind_method(D_METHOD("global_menu_clear", "menu_root"), &DisplayServer::global_menu_clear);
 
-	ClassDB::bind_method(D_METHOD("alert", "text", "title"), &DisplayServer::alert, DEFVAL("Alert!"));
-
 	ClassDB::bind_method(D_METHOD("mouse_set_mode", "mouse_mode"), &DisplayServer::mouse_set_mode);
 	ClassDB::bind_method(D_METHOD("mouse_get_mode"), &DisplayServer::mouse_get_mode);
 

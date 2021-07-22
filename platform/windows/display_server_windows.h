@@ -442,8 +442,6 @@ public:
 	virtual bool has_feature(Feature p_feature) const override;
 	virtual String get_name() const override;
 
-	virtual void alert(const String &p_alert, const String &p_title = "ALERT!") override;
-
 	virtual void mouse_set_mode(MouseMode p_mode) override;
 	virtual MouseMode mouse_get_mode() const override;
 

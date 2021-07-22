@@ -1080,7 +1080,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 #else
 		const String error_msg = "Error: Couldn't load project data at path \"" + project_path + "\". Is the .pck file missing?\nIf you've renamed the executable, the associated .pck file should also be renamed to match the executable's name (without the extension).\n";
 		OS::get_singleton()->print("%s", error_msg.ascii().get_data());
-		DisplayServer::get_singleton()->alert(error_msg);
+		OS::get_singleton()->alert(error_msg);
 
 		goto error;
 #endif
@@ -2015,6 +2015,7 @@ bool Main::start() {
 		// Let's throw an error gently. The code leading to this is pretty brittle so
 		// this might end up triggered by valid usage, in which case we'll have to
 		// fine-tune further.
+		OS::get_singleton()->alert("Couldn't detect whether to run the editor, the project manager or a specific project. Aborting.");
 		ERR_FAIL_V_MSG(false, "Couldn't detect whether to run the editor, the project manager or a specific project. Aborting.");
 	}
 #endif
@@ -2044,9 +2045,8 @@ bool Main::start() {
 				if (obj) {
 					memdelete(obj);
 				}
-				ERR_FAIL_V_MSG(false,
-						vformat("Can't load the script \"%s\" as it doesn't inherit from SceneTree or MainLoop.",
-								script));
+				OS::get_singleton()->alert(vformat("Can't load the script \"%s\" as it doesn't inherit from SceneTree or MainLoop.", script));
+				ERR_FAIL_V_MSG(false, vformat("Can't load the script \"%s\" as it doesn't inherit from SceneTree or MainLoop.", script));
 			}
 
 			script_loop->set_initialize_script(script_res);
@@ -2065,7 +2065,7 @@ bool Main::start() {
 				if (obj) {
 					memdelete(obj);
 				}
-				DisplayServer::get_singleton()->alert("Error: Invalid MainLoop script base type: " + script_base);
+				OS::get_singleton()->alert("Error: Invalid MainLoop script base type: " + script_base);
 				ERR_FAIL_V_MSG(false, vformat("The global class %s does not inherit from SceneTree or MainLoop.", main_loop_type));
 			}
 			script_loop->set_initialize_script(script_res);
@@ -2079,7 +2079,7 @@ bool Main::start() {
 
 	if (!main_loop) {
 		if (!ClassDB::class_exists(main_loop_type)) {
-			DisplayServer::get_singleton()->alert("Error: MainLoop type doesn't exist: " + main_loop_type);
+			OS::get_singleton()->alert("Error: MainLoop type doesn't exist: " + main_loop_type);
 			return false;
 		} else {
 			Object *ml = ClassDB::instantiate(main_loop_type);

@@ -55,8 +55,6 @@ public:
 	bool has_feature(Feature p_feature) const override { return false; }
 	String get_name() const override { return "headless"; }
 
-	void alert(const String &p_alert, const String &p_title = "ALERT!") override {}
-
 	int get_screen_count() const override { return 0; }
 	Point2i screen_get_position(int p_screen = SCREEN_OF_MAIN_WINDOW) const override { return Point2i(); }
 	Size2i screen_get_size(int p_screen = SCREEN_OF_MAIN_WINDOW) const override { return Size2i(); }
