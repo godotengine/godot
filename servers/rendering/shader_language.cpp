@@ -3324,8 +3324,7 @@ bool ShaderLanguage::_validate_varying_assign(ShaderNode::Varying &p_varying, St
 				p_varying.stage = ShaderNode::Varying::STAGE_FRAGMENT;
 			}
 			break;
-		case ShaderNode::Varying::STAGE_VERTEX_TO_FRAGMENT:
-		case ShaderNode::Varying::STAGE_VERTEX_TO_LIGHT:
+		case ShaderNode::Varying::STAGE_VERTEX_TO_FRAGMENT_LIGHT:
 		case ShaderNode::Varying::STAGE_VERTEX:
 			if (current_function == varying_function_names.fragment) {
 				*r_message = RTR("Varyings which assigned in 'vertex' function may not be reassigned in 'fragment' or 'light'.");
@@ -3351,27 +3350,13 @@ bool ShaderLanguage::_validate_varying_using(ShaderNode::Varying &p_varying, Str
 			*r_message = RTR("Varying must be assigned before using!");
 			return false;
 		case ShaderNode::Varying::STAGE_VERTEX:
-			if (current_function == varying_function_names.fragment) {
-				p_varying.stage = ShaderNode::Varying::STAGE_VERTEX_TO_FRAGMENT;
-			} else if (current_function == varying_function_names.light) {
-				p_varying.stage = ShaderNode::Varying::STAGE_VERTEX_TO_LIGHT;
+			if (current_function == varying_function_names.fragment || current_function == varying_function_names.light) {
+				p_varying.stage = ShaderNode::Varying::STAGE_VERTEX_TO_FRAGMENT_LIGHT;
 			}
 			break;
 		case ShaderNode::Varying::STAGE_FRAGMENT:
 			if (current_function == varying_function_names.light) {
 				p_varying.stage = ShaderNode::Varying::STAGE_FRAGMENT_TO_LIGHT;
-			}
-			break;
-		case ShaderNode::Varying::STAGE_VERTEX_TO_FRAGMENT:
-			if (current_function == varying_function_names.light) {
-				*r_message = RTR("Varying must only be used in two different stages, which can be 'vertex' 'fragment' and 'light'");
-				return false;
-			}
-			break;
-		case ShaderNode::Varying::STAGE_VERTEX_TO_LIGHT:
-			if (current_function == varying_function_names.fragment) {
-				*r_message = RTR("Varying must only be used in two different stages, which can be 'vertex' 'fragment' and 'light'");
-				return false;
 			}
 			break;
 		default:
