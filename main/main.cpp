@@ -1111,6 +1111,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	if (rtm == -1) {
 		rtm = GLOBAL_DEF("rendering/threads/thread_model", OS::RENDER_THREAD_SAFE);
 	}
+	GLOBAL_DEF("rendering/threads/thread_safe_bvh", false);
 
 	if (rtm >= 0 && rtm < 3) {
 #ifdef NO_THREADS
