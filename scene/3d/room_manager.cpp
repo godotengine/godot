@@ -1141,6 +1141,12 @@ void RoomManager::_autoplace_recursive(Spatial *p_node) {
 		return;
 	}
 
+	// as soon as we hit a room, quit the recursion as the objects
+	// will already have been added inside rooms
+	if (Object::cast_to<Room>(p_node)) {
+		return;
+	}
+
 	VisualInstance *vi = Object::cast_to<VisualInstance>(p_node);
 
 	// we are only interested in VIs with static or dynamic mode
