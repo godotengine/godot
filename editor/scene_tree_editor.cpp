@@ -426,7 +426,6 @@ bool SceneTreeEditor::_add_nodes(Node *p_node, TreeItem *p_parent, bool p_scroll
 		}
 
 		if (!valid) {
-			//item->set_selectable(0,marked_selectable);
 			item->set_custom_color(0, get_color("disabled_font_color", "Editor"));
 			item->set_selectable(0, false);
 		}
@@ -534,7 +533,7 @@ void SceneTreeEditor::_node_removed(Node *p_node) {
 
 	if (p_node == selected) {
 		selected = nullptr;
-		emit_signal("node_selected");
+		_emit_node_selected();
 	}
 }
 
@@ -619,30 +618,18 @@ void SceneTreeEditor::_tree_changed() {
 	pending_test_update = true;
 }
 
-void SceneTreeEditor::_selected_changed() {
-	TreeItem *s = tree->get_selected();
-	ERR_FAIL_COND(!s);
-	NodePath np = s->get_metadata(0);
-
-	Node *n = get_node(np);
-
-	if (n == selected) {
-		return;
-	}
-
-	selected = get_node(np);
-
-	blocked++;
-	emit_signal("node_selected");
-	blocked--;
-}
-
 void SceneTreeEditor::_deselect_items() {
 	// Clear currently selected items in scene tree dock.
 	if (editor_selection) {
 		editor_selection->clear();
 		emit_signal("node_changed");
 	}
+}
+
+void SceneTreeEditor::_emit_node_selected() {
+	blocked++;
+	emit_signal("node_selected");
+	blocked--;
 }
 
 void SceneTreeEditor::_cell_multi_selected(Object *p_object, int p_cell, bool p_selected) {
@@ -667,7 +654,13 @@ void SceneTreeEditor::_cell_multi_selected(Object *p_object, int p_cell, bool p_
 	} else {
 		editor_selection->remove_node(n);
 	}
-	emit_signal("node_changed");
+
+	if (editor_selection->get_selected_nodes().size() == 1) {
+		selected = editor_selection->get_selected_node_list()[0];
+		_emit_node_selected();
+	} else {
+		emit_signal("node_changed");
+	}
 }
 
 void SceneTreeEditor::_notification(int p_what) {
@@ -754,7 +747,7 @@ void SceneTreeEditor::set_selected(Node *p_node, bool p_emit_selected) {
 	}
 
 	if (p_emit_selected) {
-		emit_signal("node_selected");
+		_emit_node_selected();
 	}
 }
 
@@ -1142,7 +1135,6 @@ void SceneTreeEditor::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_update_tree", "scroll_to_selected"), &SceneTreeEditor::_update_tree, DEFVAL(false));
 	ClassDB::bind_method("_node_removed", &SceneTreeEditor::_node_removed);
 	ClassDB::bind_method("_node_renamed", &SceneTreeEditor::_node_renamed);
-	ClassDB::bind_method("_selected_changed", &SceneTreeEditor::_selected_changed);
 	ClassDB::bind_method("_deselect_items", &SceneTreeEditor::_deselect_items);
 	ClassDB::bind_method("_renamed", &SceneTreeEditor::_renamed);
 	ClassDB::bind_method("_rename_node", &SceneTreeEditor::_rename_node);
@@ -1216,12 +1208,10 @@ SceneTreeEditor::SceneTreeEditor(bool p_label, bool p_can_rename, bool p_can_ope
 		tree->connect("empty_tree_rmb_selected", this, "_rmb_select");
 	}
 
-	tree->connect("cell_selected", this, "_selected_changed");
 	tree->connect("item_edited", this, "_renamed", varray(), CONNECT_DEFERRED);
 	tree->connect("multi_selected", this, "_cell_multi_selected");
 	tree->connect("button_pressed", this, "_cell_button_pressed");
 	tree->connect("nothing_selected", this, "_deselect_items");
-	//tree->connect("item_edited", this,"_renamed",Vector<Variant>(),true);
 
 	error = memnew(AcceptDialog);
 	add_child(error);
