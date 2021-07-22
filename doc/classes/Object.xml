@@ -400,7 +400,7 @@
 		<method name="get_meta" qualifiers="const">
 			<return type="Variant">
 			</return>
-			<argument index="0" name="name" type="String">
+			<argument index="0" name="name" type="StringName">
 			</argument>
 			<description>
 				Returns the object's metadata entry for the given [code]name[/code].
@@ -454,7 +454,7 @@
 		<method name="has_meta" qualifiers="const">
 			<return type="bool">
 			</return>
-			<argument index="0" name="name" type="String">
+			<argument index="0" name="name" type="StringName">
 			</argument>
 			<description>
 				Returns [code]true[/code] if a metadata entry is found with the given [code]name[/code].
@@ -543,7 +543,7 @@
 		<method name="remove_meta">
 			<return type="void">
 			</return>
-			<argument index="0" name="name" type="String">
+			<argument index="0" name="name" type="StringName">
 			</argument>
 			<description>
 				Removes a given entry from the object's metadata. See also [method set_meta].
@@ -619,7 +619,7 @@
 		<method name="set_meta">
 			<return type="void">
 			</return>
-			<argument index="0" name="name" type="String">
+			<argument index="0" name="name" type="StringName">
 			</argument>
 			<argument index="1" name="value" type="Variant">
 			</argument>

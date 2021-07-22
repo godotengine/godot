@@ -139,7 +139,7 @@ TEST_CASE("[Object] Metadata") {
 			Color(object.get_meta(meta_path)).is_equal_approx(Color(0, 1, 0)),
 			"The returned object metadata after setting should match the expected value.");
 
-	List<String> meta_list;
+	List<StringName> meta_list;
 	object.get_meta_list(&meta_list);
 	CHECK_MESSAGE(
 			meta_list.size() == 1,
@@ -154,7 +154,7 @@ TEST_CASE("[Object] Metadata") {
 			"The returned object metadata after removing should match the expected value.");
 	ERR_PRINT_ON;
 
-	List<String> meta_list2;
+	List<StringName> meta_list2;
 	object.get_meta_list(&meta_list2);
 	CHECK_MESSAGE(
 			meta_list2.size() == 0,
