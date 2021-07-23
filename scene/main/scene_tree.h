@@ -54,6 +54,7 @@ class SceneTreeTimer : public RefCounted {
 
 	float time_left = 0.0;
 	bool process_always = true;
+	bool ignore_time_scale = false;
 
 protected:
 	static void _bind_methods();
@@ -64,6 +65,9 @@ public:
 
 	void set_process_always(bool p_process_always);
 	bool is_process_always();
+
+	void set_ignore_time_scale(bool p_ignore);
+	bool is_ignore_time_scale();
 
 	void release_connections();
 
