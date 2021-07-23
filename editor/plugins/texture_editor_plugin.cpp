@@ -48,8 +48,10 @@ void TexturePreview::_notification(int p_what) {
 				break;
 			}
 
-			Ref<Font> metadata_label_font = get_theme_font(SNAME("expression"), SNAME("EditorFonts"));
-			metadata_label->add_theme_font_override("font", metadata_label_font);
+			if (metadata_label) {
+				Ref<Font> metadata_label_font = get_theme_font(SNAME("expression"), SNAME("EditorFonts"));
+				metadata_label->add_theme_font_override("font", metadata_label_font);
+			}
 
 			checkerboard->set_texture(get_theme_icon(SNAME("Checkerboard"), SNAME("EditorIcons")));
 		} break;
