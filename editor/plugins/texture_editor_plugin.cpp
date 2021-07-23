@@ -49,11 +49,13 @@ void TexturePreview::_notification(int p_what) {
 				break;
 			}
 
-			Ref<DynamicFont> metadata_label_font = get_font("expression", "EditorFonts")->duplicate();
-			metadata_label_font->set_size(16 * EDSCALE);
-			metadata_label_font->set_outline_size(2 * EDSCALE);
-			metadata_label_font->set_outline_color(Color::named("black"));
-			metadata_label->add_font_override("font", metadata_label_font);
+			if (metadata_label) {
+				Ref<DynamicFont> metadata_label_font = get_font("expression", "EditorFonts")->duplicate();
+				metadata_label_font->set_size(16 * EDSCALE);
+				metadata_label_font->set_outline_size(2 * EDSCALE);
+				metadata_label_font->set_outline_color(Color::named("black"));
+				metadata_label->add_font_override("font", metadata_label_font);
+			}
 
 			checkerboard->set_texture(get_icon("Checkerboard", "EditorIcons"));
 		} break;
