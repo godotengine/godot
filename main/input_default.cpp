@@ -145,6 +145,19 @@ float InputDefault::get_action_strength(const StringName &p_action) const {
 	return E->get().strength;
 }
 
+float InputDefault::get_action_raw_strength(const StringName &p_action) const {
+#ifdef DEBUG_ENABLED
+	bool has_action = InputMap::get_singleton()->has_action(p_action);
+	ERR_FAIL_COND_V_MSG(!has_action, false, "Request for nonexistent InputMap action '" + String(p_action) + "'.");
+#endif
+	const Map<StringName, Action>::Element *E = action_state.find(p_action);
+	if (!E) {
+		return 0.0f;
+	}
+
+	return E->get().raw_strength;
+}
+
 float InputDefault::get_joy_axis(int p_device, int p_axis) const {
 	_THREAD_SAFE_METHOD_
 	int c = _combine_device(p_axis, p_device);
@@ -424,10 +437,12 @@ void InputDefault::_parse_input_event_impl(const Ref<InputEvent> &p_event, bool 
 				action.physics_frame = Engine::get_singleton()->get_physics_frames();
 				action.idle_frame = Engine::get_singleton()->get_idle_frames();
 				action.pressed = p_event->is_action_pressed(E->key());
-				action.strength = 0.f;
+				action.strength = 0.0f;
+				action.raw_strength = 0.0f;
 				action_state[E->key()] = action;
 			}
 			action_state[E->key()].strength = p_event->get_action_strength(E->key());
+			action_state[E->key()].raw_strength = p_event->get_action_raw_strength(E->key());
 		}
 	}
 
