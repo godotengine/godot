@@ -397,15 +397,15 @@ void PopupMenu::_gui_input(const Ref<InputEvent> &p_event) {
 	Ref<InputEventMouseMotion> m = p_event;
 
 	if (m.is_valid()) {
-		if (!item_clickable_area.has_point(m->get_position())) {
-			return;
-		}
-
 		for (List<Rect2>::Element *E = autohide_areas.front(); E; E = E->next()) {
 			if (!Rect2(Point2(), get_size()).has_point(m->get_position()) && E->get().has_point(m->get_position())) {
 				_close_pressed();
 				return;
 			}
+		}
+
+		if (!item_clickable_area.has_point(m->get_position())) {
+			return;
 		}
 
 		int over = _get_mouse_over(m->get_position());
@@ -747,7 +747,7 @@ void PopupMenu::_notification(int p_what) {
 		} break;
 		case NOTIFICATION_INTERNAL_PROCESS: {
 			//only used when using operating system windows
-			if (get_window_id() != DisplayServer::INVALID_WINDOW_ID && autohide_areas.size()) {
+			if (!is_embedded() && autohide_areas.size()) {
 				Point2 mouse_pos = DisplayServer::get_singleton()->mouse_get_position();
 				mouse_pos -= get_position();
 
@@ -786,7 +786,7 @@ void PopupMenu::_notification(int p_what) {
 
 				set_process_internal(false);
 			} else {
-				if (get_window_id() != DisplayServer::INVALID_WINDOW_ID) {
+				if (!is_embedded()) {
 					set_process_internal(true);
 				}
 
