@@ -132,8 +132,6 @@ class SceneTreeEditor : public Control {
 
 	Vector<StringName> valid_types;
 
-	void _emit_node_selected();
-
 public:
 	void set_filter(const String &p_filter);
 	String get_filter() const;
