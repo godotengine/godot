@@ -109,7 +109,6 @@ public:
 	bool check_size_force_redraw();
 
 	// from DisplayServer
-	virtual void alert(const String &p_alert, const String &p_title = "ALERT!") override;
 	virtual bool has_feature(Feature p_feature) const override;
 	virtual String get_name() const override;
 

@@ -320,12 +320,6 @@ String DisplayServerIPhone::get_name() const {
 	return "iPhone";
 }
 
-void DisplayServerIPhone::alert(const String &p_alert, const String &p_title) {
-	const CharString utf8_alert = p_alert.utf8();
-	const CharString utf8_title = p_title.utf8();
-	iOS::alert(utf8_alert.get_data(), utf8_title.get_data());
-}
-
 int DisplayServerIPhone::get_screen_count() const {
 	return 1;
 }

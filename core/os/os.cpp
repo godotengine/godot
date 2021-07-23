@@ -110,6 +110,10 @@ void OS::printerr(const char *p_format, ...) {
 	va_end(argp);
 }
 
+void OS::alert(const String &p_alert, const String &p_title) {
+	fprintf(stderr, "%s: %s\n", p_title.utf8().get_data(), p_alert.utf8().get_data());
+}
+
 void OS::set_low_processor_usage_mode(bool p_enabled) {
 	low_processor_usage_mode = p_enabled;
 }

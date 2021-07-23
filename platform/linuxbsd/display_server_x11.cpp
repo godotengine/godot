@@ -136,70 +136,6 @@ String DisplayServerX11::get_name() const {
 	return "X11";
 }
 
-void DisplayServerX11::alert(const String &p_alert, const String &p_title) {
-	const char *message_programs[] = { "zenity", "kdialog", "Xdialog", "xmessage" };
-
-	String path = OS::get_singleton()->get_environment("PATH");
-	Vector<String> path_elems = path.split(":", false);
-	String program;
-
-	for (int i = 0; i < path_elems.size(); i++) {
-		for (uint64_t k = 0; k < sizeof(message_programs) / sizeof(char *); k++) {
-			String tested_path = path_elems[i].plus_file(message_programs[k]);
-
-			if (FileAccess::exists(tested_path)) {
-				program = tested_path;
-				break;
-			}
-		}
-
-		if (program.length()) {
-			break;
-		}
-	}
-
-	List<String> args;
-
-	if (program.ends_with("zenity")) {
-		args.push_back("--error");
-		args.push_back("--width");
-		args.push_back("500");
-		args.push_back("--title");
-		args.push_back(p_title);
-		args.push_back("--text");
-		args.push_back(p_alert);
-	}
-
-	if (program.ends_with("kdialog")) {
-		args.push_back("--error");
-		args.push_back(p_alert);
-		args.push_back("--title");
-		args.push_back(p_title);
-	}
-
-	if (program.ends_with("Xdialog")) {
-		args.push_back("--title");
-		args.push_back(p_title);
-		args.push_back("--msgbox");
-		args.push_back(p_alert);
-		args.push_back("0");
-		args.push_back("0");
-	}
-
-	if (program.ends_with("xmessage")) {
-		args.push_back("-center");
-		args.push_back("-title");
-		args.push_back(p_title);
-		args.push_back(p_alert);
-	}
-
-	if (program.length()) {
-		OS::get_singleton()->execute(program, args);
-	} else {
-		print_line(p_alert);
-	}
-}
-
 void DisplayServerX11::_update_real_mouse_position(const WindowData &wd) {
 	Window root_return, child_return;
 	int root_x, root_y, win_x, win_y;
@@ -3677,8 +3613,8 @@ Vector<String> DisplayServerX11::get_rendering_drivers_func() {
 DisplayServer *DisplayServerX11::create_func(const String &p_rendering_driver, WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i &p_resolution, Error &r_error) {
 	DisplayServer *ds = memnew(DisplayServerX11(p_rendering_driver, p_mode, p_vsync_mode, p_flags, p_resolution, r_error));
 	if (r_error != OK) {
-		ds->alert("Your video card driver does not support any of the supported Vulkan versions.\n"
-				  "Please update your drivers or if you have a very old or integrated GPU upgrade it.",
+		OS::get_singleton()->alert("Your video card driver does not support any of the supported Vulkan versions.\n"
+								   "Please update your drivers or if you have a very old or integrated GPU upgrade it.",
 				"Unable to initialize Video driver");
 	}
 	return ds;
@@ -3976,8 +3912,8 @@ DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, WindowMode 
 	}
 
 	if (!_refresh_device_info()) {
-		alert("Your system does not support XInput 2.\n"
-			  "Please upgrade your distribution.",
+		OS::get_singleton()->alert("Your system does not support XInput 2.\n"
+								   "Please upgrade your distribution.",
 				"Unable to initialize XInput");
 		r_error = ERR_UNAVAILABLE;
 		return;

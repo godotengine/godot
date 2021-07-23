@@ -659,10 +659,6 @@ void DisplayServerJavaScript::send_window_event_callback(int p_notification) {
 	}
 }
 
-void DisplayServerJavaScript::alert(const String &p_alert, const String &p_title) {
-	godot_js_display_alert(p_alert.utf8().get_data());
-}
-
 void DisplayServerJavaScript::set_icon(const Ref<Image> &p_icon) {
 	ERR_FAIL_COND(p_icon.is_null());
 	Ref<Image> icon = p_icon;

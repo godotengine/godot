@@ -119,8 +119,6 @@ public:
 	virtual bool has_feature(Feature p_feature) const override;
 	virtual String get_name() const override;
 
-	virtual void alert(const String &p_alert, const String &p_title = "ALERT!") override;
-
 	virtual int get_screen_count() const override;
 	virtual Point2i screen_get_position(int p_screen = SCREEN_OF_MAIN_WINDOW) const override;
 	virtual Size2i screen_get_size(int p_screen = SCREEN_OF_MAIN_WINDOW) const override;

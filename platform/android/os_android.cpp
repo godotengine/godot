@@ -71,6 +71,13 @@ public:
 	virtual ~AndroidLogger() {}
 };
 
+void OS_Android::alert(const String &p_alert, const String &p_title) {
+	GodotJavaWrapper *godot_java = OS_Android::get_singleton()->get_godot_java();
+	ERR_FAIL_COND(!godot_java);
+
+	godot_java->alert(p_alert, p_title);
+}
+
 void OS_Android::initialize_core() {
 	OS_Unix::initialize_core();
 

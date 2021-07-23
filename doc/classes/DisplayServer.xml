@@ -7,16 +7,6 @@
 	<tutorials>
 	</tutorials>
 	<methods>
-		<method name="alert">
-			<return type="void">
-			</return>
-			<argument index="0" name="text" type="String">
-			</argument>
-			<argument index="1" name="title" type="String" default="&quot;Alert!&quot;">
-			</argument>
-			<description>
-			</description>
-		</method>
 		<method name="clipboard_get" qualifiers="const">
 			<return type="String">
 			</return>

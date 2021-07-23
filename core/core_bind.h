@@ -162,6 +162,8 @@ public:
 	void set_low_processor_usage_mode_sleep_usec(int p_usec);
 	int get_low_processor_usage_mode_sleep_usec() const;
 
+	void alert(const String &p_alert, const String &p_title = "ALERT!");
+
 	String get_executable_path() const;
 	int execute(const String &p_path, const Vector<String> &p_arguments, Array r_output = Array(), bool p_read_stderr = false);
 	int create_process(const String &p_path, const Vector<String> &p_arguments);

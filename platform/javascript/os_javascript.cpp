@@ -47,6 +47,10 @@
 
 #include "godot_js.h"
 
+void OS_JavaScript::alert(const String &p_alert, const String &p_title) {
+	godot_js_display_alert(p_alert.utf8().get_data());
+}
+
 // Lifecycle
 void OS_JavaScript::initialize() {
 	OS_Unix::initialize_core();

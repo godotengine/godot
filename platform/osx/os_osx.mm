@@ -41,6 +41,137 @@
 #include <mach-o/dyld.h>
 #include <os/log.h>
 
+#define DS_OSX ((DisplayServerOSX *)(DisplayServerOSX::get_singleton()))
+
+/*************************************************************************/
+/* GodotApplication                                                      */
+/*************************************************************************/
+
+@interface GodotApplication : NSApplication
+@end
+
+@implementation GodotApplication
+
+- (void)sendEvent:(NSEvent *)event {
+	if (DS_OSX) {
+		DS_OSX->_send_event(event);
+	}
+
+	// From http://cocoadev.com/index.pl?GameKeyboardHandlingAlmost
+	// This works around an AppKit bug, where key up events while holding
+	// down the command key don't get sent to the key window.
+	if ([event type] == NSEventTypeKeyUp && ([event modifierFlags] & NSEventModifierFlagCommand)) {
+		[[self keyWindow] sendEvent:event];
+	} else {
+		[super sendEvent:event];
+	}
+}
+
+@end
+
+/*************************************************************************/
+/* GodotApplicationDelegate                                              */
+/*************************************************************************/
+
+@interface GodotApplicationDelegate : NSObject
+- (void)forceUnbundledWindowActivationHackStep1;
+- (void)forceUnbundledWindowActivationHackStep2;
+- (void)forceUnbundledWindowActivationHackStep3;
+@end
+
+@implementation GodotApplicationDelegate
+
+- (void)forceUnbundledWindowActivationHackStep1 {
+	// Step1: Switch focus to macOS Dock.
+	// Required to perform step 2, TransformProcessType will fail if app is already the in focus.
+	for (NSRunningApplication *app in [NSRunningApplication runningApplicationsWithBundleIdentifier:@"com.apple.dock"]) {
+		[app activateWithOptions:NSApplicationActivateIgnoringOtherApps];
+		break;
+	}
+	[self performSelector:@selector(forceUnbundledWindowActivationHackStep2)
+			   withObject:nil
+			   afterDelay:0.02];
+}
+
+- (void)forceUnbundledWindowActivationHackStep2 {
+	// Step 2: Register app as foreground process.
+	ProcessSerialNumber psn = { 0, kCurrentProcess };
+	(void)TransformProcessType(&psn, kProcessTransformToForegroundApplication);
+	[self performSelector:@selector(forceUnbundledWindowActivationHackStep3) withObject:nil afterDelay:0.02];
+}
+
+- (void)forceUnbundledWindowActivationHackStep3 {
+	// Step 3: Switch focus back to app window.
+	[[NSRunningApplication currentApplication] activateWithOptions:NSApplicationActivateIgnoringOtherApps];
+}
+
+- (void)applicationDidFinishLaunching:(NSNotification *)notice {
+	NSString *nsappname = [[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleName"];
+	if (nsappname == nil) {
+		// If executable is not a bundled, macOS WindowServer won't register and activate app window correctly (menu and title bar are grayed out and input ignored).
+		[self performSelector:@selector(forceUnbundledWindowActivationHackStep1) withObject:nil afterDelay:0.02];
+	}
+}
+
+- (void)applicationDidResignActive:(NSNotification *)notification {
+	if (OS::get_singleton()->get_main_loop()) {
+		OS::get_singleton()->get_main_loop()->notification(MainLoop::NOTIFICATION_APPLICATION_FOCUS_OUT);
+	}
+}
+
+- (void)applicationDidBecomeActive:(NSNotification *)notification {
+	if (OS::get_singleton()->get_main_loop()) {
+		OS::get_singleton()->get_main_loop()->notification(MainLoop::NOTIFICATION_APPLICATION_FOCUS_IN);
+	}
+}
+
+- (void)globalMenuCallback:(id)sender {
+	if (DS_OSX) {
+		return DS_OSX->_menu_callback(sender);
+	}
+}
+
+- (NSMenu *)applicationDockMenu:(NSApplication *)sender {
+	if (DS_OSX) {
+		return DS_OSX->_get_dock_menu();
+	} else {
+		return nullptr;
+	}
+}
+
+- (BOOL)application:(NSApplication *)sender openFile:(NSString *)filename {
+	// Note: may be called called before main loop init!
+	char *utfs = strdup([filename UTF8String]);
+	((OS_OSX *)OS_OSX::get_singleton())->open_with_filename.parse_utf8(utfs);
+	free(utfs);
+
+#ifdef TOOLS_ENABLED
+	// Open new instance
+	if (OS_OSX::get_singleton()->get_main_loop()) {
+		List<String> args;
+		args.push_back(((OS_OSX *)OS_OSX::get_singleton())->open_with_filename);
+		String exec = OS_OSX::get_singleton()->get_executable_path();
+		OS_OSX::get_singleton()->create_process(exec, args);
+	}
+#endif
+	return YES;
+}
+
+- (NSApplicationTerminateReply)applicationShouldTerminate:(NSApplication *)sender {
+	if (DS_OSX) {
+		DS_OSX->_send_window_event(DS_OSX->windows[DisplayServerOSX::MAIN_WINDOW_ID], DisplayServerOSX::WINDOW_EVENT_CLOSE_REQUEST);
+	}
+	return NSTerminateCancel;
+}
+
+- (void)showAbout:(id)sender {
+	if (OS_OSX::get_singleton()->get_main_loop()) {
+		OS_OSX::get_singleton()->get_main_loop()->notification(MainLoop::NOTIFICATION_WM_ABOUT);
+	}
+}
+
+@end
+
 /*************************************************************************/
 /* OSXTerminalLogger                                                     */
 /*************************************************************************/
@@ -117,6 +248,24 @@ String OS_OSX::get_unique_id() const {
 	}
 
 	return serial_number;
+}
+
+void OS_OSX::alert(const String &p_alert, const String &p_title) {
+	NSAlert *window = [[NSAlert alloc] init];
+	NSString *ns_title = [NSString stringWithUTF8String:p_title.utf8().get_data()];
+	NSString *ns_alert = [NSString stringWithUTF8String:p_alert.utf8().get_data()];
+
+	[window addButtonWithTitle:@"OK"];
+	[window setMessageText:ns_title];
+	[window setInformativeText:ns_alert];
+	[window setAlertStyle:NSAlertStyleWarning];
+
+	id key_window = [[NSApplication sharedApplication] keyWindow];
+	[window runModal];
+	[window release];
+	if (key_window) {
+		[key_window makeKeyAndOrderFront:nil];
+	}
 }
 
 void OS_OSX::initialize_core() {
@@ -372,6 +521,41 @@ OS_OSX::OS_OSX() {
 #endif
 
 	DisplayServerOSX::register_osx_driver();
+
+	// Implicitly create shared NSApplication instance
+	[GodotApplication sharedApplication];
+
+	// In case we are unbundled, make us a proper UI application
+	[NSApp setActivationPolicy:NSApplicationActivationPolicyRegular];
+
+	// Menu bar setup must go between sharedApplication above and
+	// finishLaunching below, in order to properly emulate the behavior
+	// of NSApplicationMain
+
+	NSMenu *main_menu = [[[NSMenu alloc] initWithTitle:@""] autorelease];
+	[NSApp setMainMenu:main_menu];
+	[NSApp finishLaunching];
+
+	id delegate = [[GodotApplicationDelegate alloc] init];
+	ERR_FAIL_COND(!delegate);
+	[NSApp setDelegate:delegate];
+
+	//process application:openFile: event
+	while (true) {
+		NSEvent *event = [NSApp
+				nextEventMatchingMask:NSEventMaskAny
+							untilDate:[NSDate distantPast]
+							   inMode:NSDefaultRunLoopMode
+							  dequeue:YES];
+
+		if (event == nil) {
+			break;
+		}
+
+		[NSApp sendEvent:event];
+	}
+
+	[NSApp activateIgnoringOtherApps:YES];
 }
 
 bool OS_OSX::_check_internal_feature_support(const String &p_feature) {

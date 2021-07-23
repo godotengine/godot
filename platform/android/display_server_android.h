@@ -204,8 +204,6 @@ public:
 	virtual void window_set_vsync_mode(DisplayServer::VSyncMode p_vsync_mode, WindowID p_window = MAIN_WINDOW_ID) override;
 	virtual DisplayServer::VSyncMode window_get_vsync_mode(WindowID p_vsync_mode) const override;
 
-	virtual void alert(const String &p_alert, const String &p_title) override;
-
 	virtual void process_events() override;
 
 	void process_accelerometer(const Vector3 &p_accelerometer);
