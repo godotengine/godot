@@ -99,7 +99,7 @@ void GPUParticles3D::set_randomness_ratio(float p_ratio) {
 void GPUParticles3D::set_visibility_aabb(const AABB &p_aabb) {
 	visibility_aabb = p_aabb;
 	RS::get_singleton()->particles_set_custom_aabb(particles, visibility_aabb);
-	update_gizmo();
+	update_gizmos();
 }
 
 void GPUParticles3D::set_use_local_coordinates(bool p_enable) {

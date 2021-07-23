@@ -1250,7 +1250,7 @@ void LightmapGI::set_light_data(const Ref<LightmapGIData> &p_data) {
 		}
 	}
 
-	update_gizmo();
+	update_gizmos();
 }
 
 Ref<LightmapGIData> LightmapGI::get_light_data() const {

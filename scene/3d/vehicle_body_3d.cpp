@@ -149,7 +149,7 @@ void VehicleWheel3D::_update(PhysicsDirectBodyState3D *s) {
 
 void VehicleWheel3D::set_radius(real_t p_radius) {
 	m_wheelRadius = p_radius;
-	update_gizmo();
+	update_gizmos();
 }
 
 real_t VehicleWheel3D::get_radius() const {
@@ -158,7 +158,7 @@ real_t VehicleWheel3D::get_radius() const {
 
 void VehicleWheel3D::set_suspension_rest_length(real_t p_length) {
 	m_suspensionRestLength = p_length;
-	update_gizmo();
+	update_gizmos();
 }
 
 real_t VehicleWheel3D::get_suspension_rest_length() const {

@@ -13,11 +13,41 @@
 		<link title="All 3D Demos">https://github.com/godotengine/godot-demo-projects/tree/master/3d</link>
 	</tutorials>
 	<methods>
+		<method name="add_gizmo">
+			<return type="void">
+			</return>
+			<argument index="0" name="gizmo" type="Node3DGizmo">
+			</argument>
+			<description>
+				Attach a gizmo to this [code]Node3D[/code].
+			</description>
+		</method>
+		<method name="clear_gizmos">
+			<return type="void">
+			</return>
+			<description>
+				Clear all gizmos attached to this [code]Node3D[/code].
+			</description>
+		</method>
+		<method name="clear_subgizmo_selection">
+			<return type="void">
+			</return>
+			<description>
+				Clears subgizmo selection for this node in the editor. Useful when subgizmo IDs become invalid after a property change.
+			</description>
+		</method>
 		<method name="force_update_transform">
 			<return type="void">
 			</return>
 			<description>
 				Forces the transform to update. Transform changes in physics are not instant for performance reasons. Transforms are accumulated and then set. Use this if you need an up-to-date transform when doing physics operations.
+			</description>
+		</method>
+		<method name="get_gizmos" qualifiers="const">
+			<return type="Array">
+			</return>
+			<description>
+				Returns all the gizmos attached to this [code]Node3D[/code].
 			</description>
 		</method>
 		<method name="get_parent_node_3d" qualifiers="const">
@@ -276,18 +306,15 @@
 				Changes the node's position by the given offset [Vector3] in local space.
 			</description>
 		</method>
-		<method name="update_gizmo">
+		<method name="update_gizmos">
 			<return type="void">
 			</return>
 			<description>
-				Updates the [Node3DGizmo] of this node.
+				Updates all the [Node3DGizmo]s attached to this node.
 			</description>
 		</method>
 	</methods>
 	<members>
-		<member name="gizmo" type="Node3DGizmo" setter="set_gizmo" getter="get_gizmo">
-			The [Node3DGizmo] for this node. Used for example in [EditorNode3DGizmo] as custom visualization and editing handles in Editor.
-		</member>
 		<member name="global_transform" type="Transform3D" setter="set_global_transform" getter="get_global_transform">
 			World3D space (global) [Transform3D] of this node.
 		</member>
@@ -324,7 +351,7 @@
 	<constants>
 		<constant name="NOTIFICATION_TRANSFORM_CHANGED" value="2000">
 			Node3D nodes receives this notification when their global transform changes. This means that either the current or a parent node changed its transform.
-			In order for [constant NOTIFICATION_TRANSFORM_CHANGED] to work, users first need to ask for it, with [method set_notify_transform]. The notification is also sent if the node is in the editor context and it has a valid gizmo.
+			In order for [constant NOTIFICATION_TRANSFORM_CHANGED] to work, users first need to ask for it, with [method set_notify_transform]. The notification is also sent if the node is in the editor context and it has at least one valid gizmo.
 		</constant>
 		<constant name="NOTIFICATION_ENTER_WORLD" value="41">
 			Node3D nodes receives this notification when they are registered to new [World3D] resource.

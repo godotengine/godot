@@ -133,7 +133,7 @@ void MeshInstance3D::set_mesh(const Ref<Mesh> &p_mesh) {
 		set_base(RID());
 	}
 
-	update_gizmo();
+	update_gizmos();
 
 	notify_property_list_changed();
 }
@@ -356,7 +356,7 @@ Ref<Material> MeshInstance3D::get_active_material(int p_surface) const {
 void MeshInstance3D::_mesh_changed() {
 	ERR_FAIL_COND(mesh.is_null());
 	surface_override_materials.resize(mesh->get_surface_count());
-	update_gizmo();
+	update_gizmos();
 }
 
 void MeshInstance3D::create_debug_tangents() {

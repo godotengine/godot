@@ -173,12 +173,12 @@ void OccluderInstance3D::set_occluder(const Ref<Occluder3D> &p_occluder) {
 		set_base(RID());
 	}
 
-	update_gizmo();
+	update_gizmos();
 	update_configuration_warnings();
 }
 
 void OccluderInstance3D::_occluder_changed() {
-	update_gizmo();
+	update_gizmos();
 	update_configuration_warnings();
 }
 

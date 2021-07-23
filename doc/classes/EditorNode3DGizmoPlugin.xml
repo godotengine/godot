@@ -14,7 +14,7 @@
 			<return type="bool">
 			</return>
 			<description>
-				Override this method to define whether the gizmo can be hidden or not. Returns [code]true[/code] if not overridden.
+				Override this method to define whether the gizmos handled by this plugin can be hidden or not. Returns [code]true[/code] if not overridden.
 			</description>
 		</method>
 		<method name="_commit_handle" qualifiers="virtual">
@@ -22,14 +22,31 @@
 			</return>
 			<argument index="0" name="gizmo" type="EditorNode3DGizmo">
 			</argument>
-			<argument index="1" name="index" type="int">
+			<argument index="1" name="id" type="int">
 			</argument>
 			<argument index="2" name="restore" type="Variant">
 			</argument>
 			<argument index="3" name="cancel" type="bool" default="false">
 			</argument>
 			<description>
-				Override this method to commit gizmo handles. Called for this plugin's active gizmos.
+				Override this method to commit a handle being edited (handles must have been previously added by [method EditorNode3DGizmo.add_handles] during [method _redraw]). This usually means creating an [UndoRedo] action for the change, using the current handle value as "do" and the [code]restore[/code] argument as "undo".
+				If the [code]cancel[/code] argument is [code]true[/code], the [code]restore[/code] value should be directly set, without any [UndoRedo] action. Called for this plugin's active gizmos.
+			</description>
+		</method>
+		<method name="_commit_subgizmos" qualifiers="virtual">
+			<return type="void">
+			</return>
+			<argument index="0" name="gizmo" type="EditorNode3DGizmo">
+			</argument>
+			<argument index="1" name="ids" type="PackedInt32Array">
+			</argument>
+			<argument index="2" name="restore" type="Array">
+			</argument>
+			<argument index="3" name="cancel" type="bool" default="false">
+			</argument>
+			<description>
+				Override this method to commit a group of subgizmos being edited (see [method _subgizmos_intersect_ray] and [method _subgizmos_intersect_frustum]). This usually means creating an [UndoRedo] action for the change, using the current transforms as "do" and the [code]restore[/code] transforms as "undo".
+				If the [code]cancel[/code] argument is [code]true[/code], the [code]restore[/code] transforms should be directly set, without any [UndoRedo] action. Called for this plugin's active gizmos.
 			</description>
 		</method>
 		<method name="_create_gizmo" qualifiers="virtual">
@@ -53,7 +70,7 @@
 			</return>
 			<argument index="0" name="gizmo" type="EditorNode3DGizmo">
 			</argument>
-			<argument index="1" name="index" type="int">
+			<argument index="1" name="id" type="int">
 			</argument>
 			<description>
 				Override this method to provide gizmo's handle names. Called for this plugin's active gizmos.
@@ -64,18 +81,29 @@
 			</return>
 			<argument index="0" name="gizmo" type="EditorNode3DGizmo">
 			</argument>
-			<argument index="1" name="index" type="int">
+			<argument index="1" name="id" type="int">
 			</argument>
 			<description>
-				Gets actual value of a handle from gizmo. Called for this plugin's active gizmos.
+				Override this method to return the current value of a handle. This value will be requested at the start of an edit and used as the [code]restore[/code] argument in [method _commit_handle]. Called for this plugin's active gizmos.
 			</description>
 		</method>
 		<method name="_get_priority" qualifiers="virtual">
 			<return type="int">
 			</return>
 			<description>
-				Override this method to set the gizmo's priority. Higher values correspond to higher priority. If a gizmo with higher priority conflicts with another gizmo, only the gizmo with higher priority will be used.
-				All built-in editor gizmos return a priority of [code]-1[/code]. If not overridden, this method will return [code]0[/code], which means custom gizmos will automatically override built-in gizmos.
+				Override this method to set the gizmo's priority. Gizmos with higher priority will have precedence when processing inputs like handles or subgizmos selection.
+				All built-in editor gizmos return a priority of [code]-1[/code]. If not overridden, this method will return [code]0[/code], which means custom gizmos will automatically get higher priority than built-in gizmos.
+			</description>
+		</method>
+		<method name="_get_subgizmo_transform" qualifiers="virtual">
+			<return type="Transform3D">
+			</return>
+			<argument index="0" name="gizmo" type="EditorNode3DGizmo">
+			</argument>
+			<argument index="1" name="id" type="int">
+			</argument>
+			<description>
+				Override this method to return the current transform of a subgizmo. This transform will be requested at the start of an edit and used in the [code]restore[/code] argument in [method _commit_subgizmos]. Called for this plugin's active gizmos.
 			</description>
 		</method>
 		<method name="_has_gizmo" qualifiers="virtual">
@@ -92,10 +120,10 @@
 			</return>
 			<argument index="0" name="gizmo" type="EditorNode3DGizmo">
 			</argument>
-			<argument index="1" name="index" type="int">
+			<argument index="1" name="id" type="int">
 			</argument>
 			<description>
-				Gets whether a handle is highlighted or not. Called for this plugin's active gizmos.
+				Override this method to return [code]true[/code] whenever to given handle should be highlighted in the editor. Called for this plugin's active gizmos.
 			</description>
 		</method>
 		<method name="_is_selectable_when_hidden" qualifiers="virtual">
@@ -111,7 +139,7 @@
 			<argument index="0" name="gizmo" type="EditorNode3DGizmo">
 			</argument>
 			<description>
-				Callback to redraw the provided gizmo. Called for this plugin's active gizmos.
+				Override this method to add all the gizmo elements whenever a gizmo update is requested. It's common to call [method EditorNode3DGizmo.clear] at the beginning of this method and then add visual elements depending on the node's properties.
 			</description>
 		</method>
 		<method name="_set_handle" qualifiers="virtual">
@@ -119,14 +147,53 @@
 			</return>
 			<argument index="0" name="gizmo" type="EditorNode3DGizmo">
 			</argument>
-			<argument index="1" name="index" type="int">
+			<argument index="1" name="id" type="int">
 			</argument>
 			<argument index="2" name="camera" type="Camera3D">
 			</argument>
 			<argument index="3" name="point" type="Vector2">
 			</argument>
 			<description>
-				Update the value of a handle after it has been updated. Called for this plugin's active gizmos.
+				Override this method to update the node's properties when the user drags a gizmo handle (previously added with [method EditorNode3DGizmo.add_handles]). The provided [code]point[/code] is the mouse position in screen coordinates and the [code]camera[/code] can be used to convert it to raycasts. Called for this plugin's active gizmos.
+			</description>
+		</method>
+		<method name="_set_subgizmo_transform" qualifiers="virtual">
+			<return type="void">
+			</return>
+			<argument index="0" name="gizmo" type="EditorNode3DGizmo">
+			</argument>
+			<argument index="1" name="id" type="int">
+			</argument>
+			<argument index="2" name="transform" type="Transform3D">
+			</argument>
+			<description>
+				Override this method to update the node properties during subgizmo editing (see [method _subgizmos_intersect_ray] and [method _subgizmos_intersect_frustum]). The [code]transform[/code] is given in the Node3D's local coordinate system.  Called for this plugin's active gizmos.
+			</description>
+		</method>
+		<method name="_subgizmos_intersect_frustum" qualifiers="virtual">
+			<return type="PackedInt32Array">
+			</return>
+			<argument index="0" name="gizmo" type="EditorNode3DGizmo">
+			</argument>
+			<argument index="1" name="camera" type="Camera3D">
+			</argument>
+			<argument index="2" name="frustum" type="Array">
+			</argument>
+			<description>
+				Override this method to allow selecting subgizmos using mouse drag box selection. Given a [code]camera[/code] and a [code]frustum[/code], this method should return which subgizmos are contained within the frustum. The [code]frustum[/code] argument consists of an [code]Array[/code] with all the [code]Plane[/code]s that make up the selection frustum. The returned value should contain a list of unique subgizmo identifiers, these identifiers can have any non-negative value and will be used in other virtual methods like [method _get_subgizmo_transform] or [method _commit_subgizmos].  Called for this plugin's active gizmos.
+			</description>
+		</method>
+		<method name="_subgizmos_intersect_ray" qualifiers="virtual">
+			<return type="int">
+			</return>
+			<argument index="0" name="gizmo" type="EditorNode3DGizmo">
+			</argument>
+			<argument index="1" name="camera" type="Camera3D">
+			</argument>
+			<argument index="2" name="point" type="Vector2">
+			</argument>
+			<description>
+				Override this method to allow selecting subgizmos using mouse clicks. Given a [code]camera[/code] and a [code]point[/code] in screen coordinates, this method should return which subgizmo should be selected. The returned value should be a unique subgizmo identifier, which can have any non-negative value and will be used in other virtual methods like [method _get_subgizmo_transform] or [method _commit_subgizmos]. Called for this plugin's active gizmos.
 			</description>
 		</method>
 		<method name="add_material">

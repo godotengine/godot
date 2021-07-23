@@ -45,7 +45,7 @@ void Light3D::set_param(Param p_param, float p_value) {
 	RS::get_singleton()->light_set_param(light, RS::LightParam(p_param), p_value);
 
 	if (p_param == PARAM_SPOT_ANGLE || p_param == PARAM_RANGE) {
-		update_gizmo();
+		update_gizmos();
 
 		if (p_param == PARAM_SPOT_ANGLE) {
 			update_configuration_warnings();
@@ -95,7 +95,7 @@ void Light3D::set_color(const Color &p_color) {
 	color = p_color;
 	RS::get_singleton()->light_set_color(light, p_color);
 	// The gizmo color depends on the light color, so update it.
-	update_gizmo();
+	update_gizmos();
 }
 
 Color Light3D::get_color() const {

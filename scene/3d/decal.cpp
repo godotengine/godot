@@ -33,7 +33,7 @@
 void Decal::set_extents(const Vector3 &p_extents) {
 	extents = p_extents;
 	RS::get_singleton()->decal_set_extents(decal, p_extents);
-	update_gizmo();
+	update_gizmos();
 }
 
 Vector3 Decal::get_extents() const {

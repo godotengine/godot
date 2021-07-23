@@ -73,7 +73,7 @@ void GPUParticlesCollisionSphere::_bind_methods() {
 void GPUParticlesCollisionSphere::set_radius(float p_radius) {
 	radius = p_radius;
 	RS::get_singleton()->particles_collision_set_sphere_radius(_get_collision(), radius);
-	update_gizmo();
+	update_gizmos();
 }
 
 float GPUParticlesCollisionSphere::get_radius() const {
@@ -103,7 +103,7 @@ void GPUParticlesCollisionBox::_bind_methods() {
 void GPUParticlesCollisionBox::set_extents(const Vector3 &p_extents) {
 	extents = p_extents;
 	RS::get_singleton()->particles_collision_set_box_extents(_get_collision(), extents);
-	update_gizmo();
+	update_gizmos();
 }
 
 Vector3 GPUParticlesCollisionBox::get_extents() const {
@@ -545,7 +545,7 @@ float GPUParticlesCollisionSDF::get_thickness() const {
 void GPUParticlesCollisionSDF::set_extents(const Vector3 &p_extents) {
 	extents = p_extents;
 	RS::get_singleton()->particles_collision_set_box_extents(_get_collision(), extents);
-	update_gizmo();
+	update_gizmos();
 }
 
 Vector3 GPUParticlesCollisionSDF::get_extents() const {
@@ -554,7 +554,7 @@ Vector3 GPUParticlesCollisionSDF::get_extents() const {
 
 void GPUParticlesCollisionSDF::set_resolution(Resolution p_resolution) {
 	resolution = p_resolution;
-	update_gizmo();
+	update_gizmos();
 }
 
 GPUParticlesCollisionSDF::Resolution GPUParticlesCollisionSDF::get_resolution() const {
@@ -680,7 +680,7 @@ float GPUParticlesCollisionHeightField::get_follow_camera_push_ratio() const {
 void GPUParticlesCollisionHeightField::set_extents(const Vector3 &p_extents) {
 	extents = p_extents;
 	RS::get_singleton()->particles_collision_set_box_extents(_get_collision(), extents);
-	update_gizmo();
+	update_gizmos();
 	RS::get_singleton()->particles_collision_height_field_update(_get_collision());
 }
 
@@ -691,7 +691,7 @@ Vector3 GPUParticlesCollisionHeightField::get_extents() const {
 void GPUParticlesCollisionHeightField::set_resolution(Resolution p_resolution) {
 	resolution = p_resolution;
 	RS::get_singleton()->particles_collision_set_height_field_resolution(_get_collision(), RS::ParticlesCollisionHeightfieldResolution(resolution));
-	update_gizmo();
+	update_gizmos();
 	RS::get_singleton()->particles_collision_height_field_update(_get_collision());
 }
 
@@ -761,7 +761,7 @@ float GPUParticlesAttractor3D::get_attenuation() const {
 void GPUParticlesAttractor3D::set_directionality(float p_directionality) {
 	directionality = p_directionality;
 	RS::get_singleton()->particles_collision_set_attractor_directionality(collision, p_directionality);
-	update_gizmo();
+	update_gizmos();
 }
 
 float GPUParticlesAttractor3D::get_directionality() const {
@@ -808,7 +808,7 @@ void GPUParticlesAttractorSphere::_bind_methods() {
 void GPUParticlesAttractorSphere::set_radius(float p_radius) {
 	radius = p_radius;
 	RS::get_singleton()->particles_collision_set_sphere_radius(_get_collision(), radius);
-	update_gizmo();
+	update_gizmos();
 }
 
 float GPUParticlesAttractorSphere::get_radius() const {
@@ -838,7 +838,7 @@ void GPUParticlesAttractorBox::_bind_methods() {
 void GPUParticlesAttractorBox::set_extents(const Vector3 &p_extents) {
 	extents = p_extents;
 	RS::get_singleton()->particles_collision_set_box_extents(_get_collision(), extents);
-	update_gizmo();
+	update_gizmos();
 }
 
 Vector3 GPUParticlesAttractorBox::get_extents() const {
@@ -872,7 +872,7 @@ void GPUParticlesAttractorVectorField::_bind_methods() {
 void GPUParticlesAttractorVectorField::set_extents(const Vector3 &p_extents) {
 	extents = p_extents;
 	RS::get_singleton()->particles_collision_set_box_extents(_get_collision(), extents);
-	update_gizmo();
+	update_gizmos();
 }
 
 Vector3 GPUParticlesAttractorVectorField::get_extents() const {

@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="EditorNode3DGizmo" inherits="Node3DGizmo" version="4.0">
 	<brief_description>
-		Custom gizmo for editing Node3D objects.
+		Gizmo for editing Node3D objects.
 	</brief_description>
 	<description>
-		Custom gizmo that is used for providing custom visualization and editing (handles) for Node3D objects. See [EditorNode3DGizmoPlugin] for more information.
+		Gizmo that is used for providing custom visualization and editing (handles and subgizmos) for Node3D objects. Can be overridden to create custom gizmos, but for simple gizmos creating a [EditorNode3DGizmoPlugin] is usually recommended.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -12,64 +12,119 @@
 		<method name="_commit_handle" qualifiers="virtual">
 			<return type="void">
 			</return>
-			<argument index="0" name="index" type="int">
+			<argument index="0" name="id" type="int">
 			</argument>
 			<argument index="1" name="restore" type="Variant">
 			</argument>
 			<argument index="2" name="cancel" type="bool" default="false">
 			</argument>
 			<description>
-				Commit a handle being edited (handles must have been previously added by [method add_handles]).
-				If the [code]cancel[/code] parameter is [code]true[/code], an option to restore the edited value to the original is provided.
+				Override this method to commit a handle being edited (handles must have been previously added by [method add_handles]). This usually means creating an [UndoRedo] action for the change, using the current handle value as "do" and the [code]restore[/code] argument as "undo".
+				If the [code]cancel[/code] argument is [code]true[/code], the [code]restore[/code] value should be directly set, without any [UndoRedo] action.
+			</description>
+		</method>
+		<method name="_commit_subgizmos" qualifiers="virtual">
+			<return type="void">
+			</return>
+			<argument index="0" name="ids" type="PackedInt32Array">
+			</argument>
+			<argument index="1" name="restore" type="Array">
+			</argument>
+			<argument index="2" name="cancel" type="bool" default="false">
+			</argument>
+			<description>
+				Override this method to commit a group of subgizmos being edited (see [method _subgizmos_intersect_ray] and [method _subgizmos_intersect_frustum]). This usually means creating an [UndoRedo] action for the change, using the current transforms as "do" and the [code]restore[/code] transforms as "undo".
+				If the [code]cancel[/code] argument is [code]true[/code], the [code]restore[/code] transforms should be directly set, without any [UndoRedo] action.
 			</description>
 		</method>
 		<method name="_get_handle_name" qualifiers="virtual">
 			<return type="String">
 			</return>
-			<argument index="0" name="index" type="int">
+			<argument index="0" name="id" type="int">
 			</argument>
 			<description>
-				Gets the name of an edited handle (handles must have been previously added by [method add_handles]).
+				Override this method to return the name of an edited handle (handles must have been previously added by [method add_handles]).
 				Handles can be named for reference to the user when editing.
 			</description>
 		</method>
 		<method name="_get_handle_value" qualifiers="virtual">
 			<return type="Variant">
 			</return>
-			<argument index="0" name="index" type="int">
+			<argument index="0" name="id" type="int">
 			</argument>
 			<description>
-				Gets actual value of a handle. This value can be anything and used for eventually undoing the motion when calling [method _commit_handle].
+				Override this method to return the current value of a handle. This value will be requested at the start of an edit and used as the [code]restore[/code] argument in [method _commit_handle].
+			</description>
+		</method>
+		<method name="_get_subgizmo_transform" qualifiers="virtual">
+			<return type="Transform3D">
+			</return>
+			<argument index="0" name="id" type="int">
+			</argument>
+			<description>
+				Override this method to return the current transform of a subgizmo. This transform will be requested at the start of an edit and used as the [code]restore[/code] argument in [method _commit_subgizmos].
 			</description>
 		</method>
 		<method name="_is_handle_highlighted" qualifiers="virtual">
 			<return type="bool">
 			</return>
-			<argument index="0" name="index" type="int">
+			<argument index="0" name="id" type="int">
 			</argument>
 			<description>
-				Returns [code]true[/code] if the handle at index [code]index[/code] is highlighted by being hovered with the mouse.
+				Override this method to return [code]true[/code] whenever the given handle should be highlighted in the editor.
 			</description>
 		</method>
 		<method name="_redraw" qualifiers="virtual">
 			<return type="void">
 			</return>
 			<description>
-				This function is called when the [Node3D] this gizmo refers to changes (the [method Node3D.update_gizmo] is called).
+				Override this method to add all the gizmo elements whenever a gizmo update is requested. It's common to call [method clear] at the beginning of this method and then add visual elements depending on the node's properties.
 			</description>
 		</method>
 		<method name="_set_handle" qualifiers="virtual">
 			<return type="void">
 			</return>
-			<argument index="0" name="index" type="int">
+			<argument index="0" name="id" type="int">
 			</argument>
 			<argument index="1" name="camera" type="Camera3D">
 			</argument>
 			<argument index="2" name="point" type="Vector2">
 			</argument>
 			<description>
-				This function is used when the user drags a gizmo handle (previously added with [method add_handles]) in screen coordinates.
-				The [Camera3D] is also provided so screen coordinates can be converted to raycasts.
+				Override this method to update the node properties when the user drags a gizmo handle (previously added with [method add_handles]). The provided [code]point[/code] is the mouse position in screen coordinates and the [code]camera[/code] can be used to convert it to raycasts.
+			</description>
+		</method>
+		<method name="_set_subgizmo_transform" qualifiers="virtual">
+			<return type="void">
+			</return>
+			<argument index="0" name="id" type="int">
+			</argument>
+			<argument index="1" name="transform" type="Transform3D">
+			</argument>
+			<description>
+				Override this method to update the node properties during subgizmo editing (see [method _subgizmos_intersect_ray] and [method _subgizmos_intersect_frustum]). The [code]transform[/code] is given in the Node3D's local coordinate system.
+			</description>
+		</method>
+		<method name="_subgizmos_intersect_frustum" qualifiers="virtual">
+			<return type="PackedInt32Array">
+			</return>
+			<argument index="0" name="camera" type="Camera3D">
+			</argument>
+			<argument index="1" name="frustum" type="Array">
+			</argument>
+			<description>
+				Override this method to allow selecting subgizmos using mouse drag box selection. Given a [code]camera[/code] and a [code]frustum[/code], this method should return which subgizmos are contained within the frustum. The [code]frustum[/code] argument consists of an [code]Array[/code] with all the [code]Plane[/code]s that make up the selection frustum. The returned value should contain a list of unique subgizmo identifiers, which can have any non-negative value and will be used in other virtual methods like [method _get_subgizmo_transform] or [method _commit_subgizmos].
+			</description>
+		</method>
+		<method name="_subgizmos_intersect_ray" qualifiers="virtual">
+			<return type="int">
+			</return>
+			<argument index="0" name="camera" type="Camera3D">
+			</argument>
+			<argument index="1" name="point" type="Vector2">
+			</argument>
+			<description>
+				Override this method to allow selecting subgizmos using mouse clicks. Given a [code]camera[/code] and a [code]point[/code] in screen coordinates, this method should return which subgizmo should be selected. The returned value should be a unique subgizmo identifier, which can have any non-negative value and will be used in other virtual methods like [method _get_subgizmo_transform] or [method _commit_subgizmos].
 			</description>
 		</method>
 		<method name="add_collision_segments">
@@ -78,7 +133,7 @@
 			<argument index="0" name="segments" type="PackedVector3Array">
 			</argument>
 			<description>
-				Adds the specified [code]segments[/code] to the gizmo's collision shape for picking. Call this function during [method _redraw].
+				Adds the specified [code]segments[/code] to the gizmo's collision shape for picking. Call this method during [method _redraw].
 			</description>
 		</method>
 		<method name="add_collision_triangles">
@@ -87,7 +142,7 @@
 			<argument index="0" name="triangles" type="TriangleMesh">
 			</argument>
 			<description>
-				Adds collision triangles to the gizmo for picking. A [TriangleMesh] can be generated from a regular [Mesh] too. Call this function during [method _redraw].
+				Adds collision triangles to the gizmo for picking. A [TriangleMesh] can be generated from a regular [Mesh] too. Call this method during [method _redraw].
 			</description>
 		</method>
 		<method name="add_handles">
@@ -97,13 +152,15 @@
 			</argument>
 			<argument index="1" name="material" type="Material">
 			</argument>
-			<argument index="2" name="billboard" type="bool" default="false">
+			<argument index="2" name="ids" type="PackedInt32Array">
 			</argument>
-			<argument index="3" name="secondary" type="bool" default="false">
+			<argument index="3" name="billboard" type="bool" default="false">
+			</argument>
+			<argument index="4" name="secondary" type="bool" default="false">
 			</argument>
 			<description>
-				Adds a list of handles (points) which can be used to deform the object being edited.
-				There are virtual functions which will be called upon editing of these handles. Call this function during [method _redraw].
+				Adds a list of handles (points) which can be used to edit the properties of the gizmo's Node3D. The [code]ids[/code] argument can be used to specify a custom identifier for each handle, if an empty [code]Array[/code] is passed, the ids will be assigned automatically from the [code]handles[/code] argument order.
+				There are virtual methods which will be called upon editing of these handles. Call this method during [method _redraw].
 			</description>
 		</method>
 		<method name="add_lines">
@@ -118,7 +175,7 @@
 			<argument index="3" name="modulate" type="Color" default="Color(1, 1, 1, 1)">
 			</argument>
 			<description>
-				Adds lines to the gizmo (as sets of 2 points), with a given material. The lines are used for visualizing the gizmo. Call this function during [method _redraw].
+				Adds lines to the gizmo (as sets of 2 points), with a given material. The lines are used for visualizing the gizmo. Call this method during [method _redraw].
 			</description>
 		</method>
 		<method name="add_mesh">
@@ -126,14 +183,14 @@
 			</return>
 			<argument index="0" name="mesh" type="ArrayMesh">
 			</argument>
-			<argument index="1" name="billboard" type="bool" default="false">
+			<argument index="1" name="material" type="Material" default="null">
 			</argument>
-			<argument index="2" name="skeleton" type="SkinReference" default="null">
+			<argument index="2" name="transform" type="Transform3D" default="Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)">
 			</argument>
-			<argument index="3" name="material" type="Material" default="null">
+			<argument index="3" name="skeleton" type="SkinReference" default="null">
 			</argument>
 			<description>
-				Adds a mesh to the gizmo with the specified [code]billboard[/code] state, [code]skeleton[/code] and [code]material[/code]. If [code]billboard[/code] is [code]true[/code], the mesh will rotate to always face the camera. Call this function during [method _redraw].
+				Adds a mesh to the gizmo with the specified [code]material[/code], local [code]transform[/code] and [code]skeleton[/code]. Call this method during [method _redraw].
 			</description>
 		</method>
 		<method name="add_unscaled_billboard">
@@ -146,7 +203,7 @@
 			<argument index="2" name="modulate" type="Color" default="Color(1, 1, 1, 1)">
 			</argument>
 			<description>
-				Adds an unscaled billboard for visualization. Call this function during [method _redraw].
+				Adds an unscaled billboard for visualization and selection. Call this method during [method _redraw].
 			</description>
 		</method>
 		<method name="clear">
@@ -168,6 +225,22 @@
 			</return>
 			<description>
 				Returns the Node3D node associated with this gizmo.
+			</description>
+		</method>
+		<method name="get_subgizmo_selection" qualifiers="const">
+			<return type="PackedInt32Array">
+			</return>
+			<description>
+				Returns a list of the currently selected subgizmos. Can be used to highlight selected elements during [method _redraw].
+			</description>
+		</method>
+		<method name="is_subgizmo_selected" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="arg0" type="int">
+			</argument>
+			<description>
+				Returns [code]true[/code] if the given subgizmo is currently selected. Can be used to highlight selected elements during [method _redraw].
 			</description>
 		</method>
 		<method name="set_hidden">

@@ -117,7 +117,7 @@ void CollisionShape3D::_notification(int p_what) {
 }
 
 void CollisionShape3D::resource_changed(RES res) {
-	update_gizmo();
+	update_gizmos();
 }
 
 TypedArray<String> CollisionShape3D::get_configuration_warnings() const {
@@ -166,7 +166,7 @@ void CollisionShape3D::set_shape(const Ref<Shape3D> &p_shape) {
 	if (!shape.is_null()) {
 		shape->register_owner(this);
 	}
-	update_gizmo();
+	update_gizmos();
 	if (parent) {
 		parent->shape_owner_clear_shapes(owner_id);
 		if (shape.is_valid()) {
@@ -187,7 +187,7 @@ Ref<Shape3D> CollisionShape3D::get_shape() const {
 
 void CollisionShape3D::set_disabled(bool p_disabled) {
 	disabled = p_disabled;
-	update_gizmo();
+	update_gizmos();
 	if (parent) {
 		parent->shape_owner_set_disabled(owner_id, p_disabled);
 	}

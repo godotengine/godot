@@ -164,7 +164,7 @@ void Camera3D::set_perspective(float p_fovy_degrees, float p_z_near, float p_z_f
 	mode = PROJECTION_PERSPECTIVE;
 
 	RenderingServer::get_singleton()->camera_set_perspective(camera, fov, near, far);
-	update_gizmo();
+	update_gizmos();
 	force_change = false;
 }
 
@@ -181,7 +181,7 @@ void Camera3D::set_orthogonal(float p_size, float p_z_near, float p_z_far) {
 	force_change = false;
 
 	RenderingServer::get_singleton()->camera_set_orthogonal(camera, size, near, far);
-	update_gizmo();
+	update_gizmos();
 }
 
 void Camera3D::set_frustum(float p_size, Vector2 p_offset, float p_z_near, float p_z_far) {
@@ -198,7 +198,7 @@ void Camera3D::set_frustum(float p_size, Vector2 p_offset, float p_z_near, float
 	force_change = false;
 
 	RenderingServer::get_singleton()->camera_set_frustum(camera, size, frustum_offset, near, far);
-	update_gizmo();
+	update_gizmos();
 }
 
 void Camera3D::set_projection(Camera3D::Projection p_mode) {
@@ -755,7 +755,7 @@ void ClippedCamera3D::_notification(int p_what) {
 	}
 
 	if (p_what == NOTIFICATION_LOCAL_TRANSFORM_CHANGED) {
-		update_gizmo();
+		update_gizmos();
 	}
 }
 
