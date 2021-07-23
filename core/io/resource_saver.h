@@ -48,6 +48,7 @@ public:
 };
 
 typedef void (*ResourceSavedCallback)(Ref<Resource> p_resource, const String &p_path);
+typedef ResourceUID::ID (*ResourceSaverGetResourceIDForPath)(const String &p_path, bool p_generate);
 
 class ResourceSaver {
 	enum {
@@ -58,6 +59,7 @@ class ResourceSaver {
 	static int saver_count;
 	static bool timestamp_on_save;
 	static ResourceSavedCallback save_callback;
+	static ResourceSaverGetResourceIDForPath save_get_id_for_path;
 
 	static Ref<ResourceFormatSaver> _find_custom_resource_format_saver(String path);
 
@@ -80,7 +82,10 @@ public:
 	static void set_timestamp_on_save(bool p_timestamp) { timestamp_on_save = p_timestamp; }
 	static bool get_timestamp_on_save() { return timestamp_on_save; }
 
+	static ResourceUID::ID get_resource_id_for_path(const String &p_path, bool p_generate = false);
+
 	static void set_save_callback(ResourceSavedCallback p_callback);
+	static void set_get_resource_id_for_path(ResourceSaverGetResourceIDForPath p_callback);
 
 	static bool add_custom_resource_format_saver(String script_path);
 	static void remove_custom_resource_format_saver(String script_path);

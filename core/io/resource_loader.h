@@ -56,6 +56,7 @@ public:
 	virtual bool recognize_path(const String &p_path, const String &p_for_type = String()) const;
 	virtual bool handles_type(const String &p_type) const;
 	virtual String get_resource_type(const String &p_path) const;
+	virtual ResourceUID::ID get_resource_uid(const String &p_path) const;
 	virtual void get_dependencies(const String &p_path, List<String> *p_dependencies, bool p_add_types = false);
 	virtual Error rename_dependencies(const String &p_path, const Map<String, String> &p_map);
 	virtual bool is_import_valid(const String &p_path) const { return true; }
@@ -157,6 +158,7 @@ public:
 	static void add_resource_format_loader(Ref<ResourceFormatLoader> p_format_loader, bool p_at_front = false);
 	static void remove_resource_format_loader(Ref<ResourceFormatLoader> p_format_loader);
 	static String get_resource_type(const String &p_path);
+	static ResourceUID::ID get_resource_uid(const String &p_path);
 	static void get_dependencies(const String &p_path, List<String> *p_dependencies, bool p_add_types = false);
 	static Error rename_dependencies(const String &p_path, const Map<String, String> &p_map);
 	static bool is_import_valid(const String &p_path);

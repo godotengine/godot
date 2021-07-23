@@ -93,6 +93,8 @@ Error ResourceFormatImporter::_get_path_and_type(const String &p_path, PathAndTy
 				r_path_and_type.type = ClassDB::get_compatibility_remapped_class(value);
 			} else if (assign == "importer") {
 				r_path_and_type.importer = value;
+			} else if (assign == "uid") {
+				r_path_and_type.uid = ResourceUID::get_singleton()->text_to_id(value);
 			} else if (assign == "group_file") {
 				r_path_and_type.group_file = value;
 			} else if (assign == "metadata") {
@@ -334,6 +336,17 @@ String ResourceFormatImporter::get_resource_type(const String &p_path) const {
 	}
 
 	return pat.type;
+}
+
+ResourceUID::ID ResourceFormatImporter::get_resource_uid(const String &p_path) const {
+	PathAndType pat;
+	Error err = _get_path_and_type(p_path, pat);
+
+	if (err != OK) {
+		return ResourceUID::INVALID_ID;
+	}
+
+	return pat.uid;
 }
 
 Variant ResourceFormatImporter::get_resource_metadata(const String &p_path) const {
