@@ -613,8 +613,10 @@ void EditorNode::_notification(int p_what) {
 				_editor_select(EDITOR_3D);
 			}
 
-			// Save the project after opening to mark it as last modified.
-			ProjectSettings::get_singleton()->save();
+			// Save the project after opening to mark it as last modified, except in headless mode.
+			if (DisplayServer::get_singleton()->window_can_draw()) {
+				ProjectSettings::get_singleton()->save();
+			}
 
 			/* DO NOT LOAD SCENES HERE, WAIT FOR FILE SCANNING AND REIMPORT TO COMPLETE */
 		} break;
