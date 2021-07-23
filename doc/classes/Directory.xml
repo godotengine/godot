@@ -159,7 +159,7 @@
 			<argument index="1" name="show_hidden" type="bool" default="false">
 			</argument>
 			<description>
-				Initializes the stream used to list all files and directories using the [method get_next] function, closing the current opened stream if needed. Once the stream has been processed, it should typically be closed with [method list_dir_end].
+				Initializes the stream used to list all files and directories using the [method get_next] function, closing the currently opened stream if needed. Once the stream has been processed, it should typically be closed with [method list_dir_end].
 				If [code]show_navigational[/code] is [code]true[/code], [code].[/code] and [code]..[/code] are included too.
 				If [code]show_hidden[/code] is [code]true[/code], hidden files are included too.
 			</description>
