@@ -225,6 +225,13 @@ String Room::get_configuration_warning() const {
 		}
 	}
 
+	if (_planes.size() > 80) {
+		if (!warning.empty()) {
+			warning += "\n\n";
+		}
+		warning += TTR("Room convex hull contains a large number of planes.\nConsider simplifying the room bound in order to increase performance.");
+	}
+
 	return warning;
 }
 

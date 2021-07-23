@@ -796,6 +796,7 @@ void RoomManager::_third_pass_rooms(const LocalVector<Portal *> &p_portals) {
 			found_errors = true;
 		}
 		room->update_gizmo();
+		room->update_configuration_warning();
 	}
 
 	if (found_errors) {
