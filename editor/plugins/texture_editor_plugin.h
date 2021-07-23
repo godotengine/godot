@@ -39,10 +39,10 @@ class TexturePreview : public MarginContainer {
 	GDCLASS(TexturePreview, MarginContainer);
 
 private:
-	TextureRect *texture_display;
+	TextureRect *texture_display = nullptr;
 
-	TextureRect *checkerboard;
-	Label *metadata_label;
+	TextureRect *checkerboard = nullptr;
+	Label *metadata_label = nullptr;
 
 protected:
 	void _notification(int p_what);
