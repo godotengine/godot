@@ -125,22 +125,7 @@ public:
 
 	bool is_pseudolocalization_enabled() const;
 	void set_pseudolocalization_enabled(bool enabled);
-	bool is_pseudolocalization_accents_enabled() const;
-	void set_pseudolocalization_accents_enabled(bool enabled);
-	bool is_pseudolocalization_double_vowels_enabled() const;
-	void set_pseudolocalization_double_vowels_enabled(bool enabled);
-	bool is_pseudolocalization_fake_bidi_enabled() const;
-	void set_pseudolocalization_fake_bidi_enabled(bool enabled);
-	bool is_pseudolocalization_override_enabled() const;
-	void set_pseudolocalization_override_enabled(bool enabled);
-	bool is_pseudolocalization_skip_placeholders_enabled() const;
-	void set_pseudolocalization_skip_placeholders_enabled(bool enabled);
-	float get_pseudolocalization_expansion_ratio() const;
-	void set_pseudolocalization_expansion_ratio(float ratio);
-	String get_pseudolocalization_prefix() const;
-	void set_pseudolocalization_prefix(String prefix);
-	String get_pseudolocalization_suffix() const;
-	void set_pseudolocalization_suffix(String suffix);
+	void reload_pseudolocalization();
 
 	static Vector<String> get_all_locales();
 	static Vector<String> get_all_locale_names();

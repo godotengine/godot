@@ -50,27 +50,6 @@
 				Returns a locale's language and its variant (e.g. [code]"en_US"[/code] would return [code]"English (United States)"[/code]).
 			</description>
 		</method>
-		<method name="get_pseudolocalization_expansion_ratio" qualifiers="const">
-			<return type="float">
-			</return>
-			<description>
-				Returns the [code]expansion_ratio[/code] to be used during Pseudolocalization.
-			</description>
-		</method>
-		<method name="get_pseudolocalization_prefix" qualifiers="const">
-			<return type="String">
-			</return>
-			<description>
-				Returns the Prefix that will be used during Pseudolocalization.
-			</description>
-		</method>
-		<method name="get_pseudolocalization_suffix" qualifiers="const">
-			<return type="String">
-			</return>
-			<description>
-				Returns the Suffix that will be used during Pseudolocalization.
-			</description>
-		</method>
 		<method name="get_translation_object">
 			<return type="Translation">
 			</return>
@@ -81,46 +60,11 @@
 				It will return a [code]nullptr[/code] if there is no [Translation] instance that matches the [code]locale[/code].
 			</description>
 		</method>
-		<method name="is_pseudolocalization_accents_enabled" qualifiers="const">
-			<return type="bool">
-			</return>
-			<description>
-				Returns a boolean suggesting whether the option to replace characters with accented variants during Pseudolocalization is enabled.
-			</description>
-		</method>
-		<method name="is_pseudolocalization_double_vowels_enabled" qualifiers="const">
-			<return type="bool">
-			</return>
-			<description>
-				Returns a boolean suggesting whether the option to double vowels of Pseudolocalization is enabled.
-			</description>
-		</method>
 		<method name="is_pseudolocalization_enabled" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
 				Returns a boolean suggesting whether Pseudolocalization is enabled.
-			</description>
-		</method>
-		<method name="is_pseudolocalization_fake_bidi_enabled" qualifiers="const">
-			<return type="bool">
-			</return>
-			<description>
-				Returns a boolean suggesting whether the fake_bidi option of Pseudolocalization is enabled.
-			</description>
-		</method>
-		<method name="is_pseudolocalization_override_enabled" qualifiers="const">
-			<return type="bool">
-			</return>
-			<description>
-				Returns a boolean suggesting whether the override option of Pseudolocalization is enabled.
-			</description>
-		</method>
-		<method name="is_pseudolocalization_skip_placeholders_enabled" qualifiers="const">
-			<return type="bool">
-			</return>
-			<description>
-				Returns a boolean suggesting whether the skip_placeholders option of Pseudolocalization is enabled.
 			</description>
 		</method>
 		<method name="pseudolocalize" qualifiers="const">
@@ -130,6 +74,13 @@
 			</argument>
 			<description>
 				Returns the pseudolocalized string based on the [code]p_message[/code] passed in.
+			</description>
+		</method>
+		<method name="reload_pseudolocalization">
+			<return type="void">
+			</return>
+			<description>
+				Reparses the pseudolocalization options and reloads the translation.
 			</description>
 		</method>
 		<method name="remove_translation">
@@ -150,24 +101,6 @@
 				Sets the locale of the game.
 			</description>
 		</method>
-		<method name="set_pseudolocalization_accents_enabled">
-			<return type="void">
-			</return>
-			<argument index="0" name="enabled" type="bool">
-			</argument>
-			<description>
-				Sets the boolean option to replace characters with accented variants during Pseudolocalization.
-			</description>
-		</method>
-		<method name="set_pseudolocalization_double_vowels_enabled">
-			<return type="void">
-			</return>
-			<argument index="0" name="enabled" type="bool">
-			</argument>
-			<description>
-				Sets the boolean option to double vowels during Pseudolocalization.
-			</description>
-		</method>
 		<method name="set_pseudolocalization_enabled">
 			<return type="void">
 			</return>
@@ -175,60 +108,6 @@
 			</argument>
 			<description>
 				Turns Pseudolocalization on or off based on the argument [code]enabled[/code].
-			</description>
-		</method>
-		<method name="set_pseudolocalization_expansion_ratio">
-			<return type="void">
-			</return>
-			<argument index="0" name="p_expansion_ratio" type="float">
-			</argument>
-			<description>
-				Sets the [code]expansion_ratio[/code] to be used during Pseudolocalization.
-			</description>
-		</method>
-		<method name="set_pseudolocalization_fake_bidi_enabled">
-			<return type="void">
-			</return>
-			<argument index="0" name="enabled" type="bool">
-			</argument>
-			<description>
-				Sets the fake_bidi boolean option of Pseudolocalization.
-			</description>
-		</method>
-		<method name="set_pseudolocalization_override_enabled">
-			<return type="void">
-			</return>
-			<argument index="0" name="enabled" type="bool">
-			</argument>
-			<description>
-				Sets the override boolean option of Pseudolocalization.
-			</description>
-		</method>
-		<method name="set_pseudolocalization_prefix">
-			<return type="void">
-			</return>
-			<argument index="0" name="prefix" type="String">
-			</argument>
-			<description>
-				Sets the [code]prefix[/code] to be used in Pseudolocalization.
-			</description>
-		</method>
-		<method name="set_pseudolocalization_skip_placeholders_enabled">
-			<return type="void">
-			</return>
-			<argument index="0" name="enabled" type="bool">
-			</argument>
-			<description>
-				Sets the boolean option to skip string formatting placeholders during Pseudolocalization.
-			</description>
-		</method>
-		<method name="set_pseudolocalization_suffix">
-			<return type="void">
-			</return>
-			<argument index="0" name="suffix" type="String">
-			</argument>
-			<description>
-				Sets the [code]suffix[/code] to be used in Pseudolocalization.
 			</description>
 		</method>
 		<method name="translate" qualifiers="const">

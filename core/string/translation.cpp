@@ -1346,103 +1346,15 @@ void TranslationServer::set_pseudolocalization_enabled(bool enabled) {
 	ResourceLoader::reload_translation_remaps();
 }
 
-bool TranslationServer::is_pseudolocalization_accents_enabled() const {
-	return pseudolocalization_accents_enabled;
-}
-
-void TranslationServer::set_pseudolocalization_accents_enabled(bool enabled) {
-	pseudolocalization_accents_enabled = enabled;
-
-	if (OS::get_singleton()->get_main_loop()) {
-		OS::get_singleton()->get_main_loop()->notification(MainLoop::NOTIFICATION_TRANSLATION_CHANGED);
-	}
-	ResourceLoader::reload_translation_remaps();
-}
-
-bool TranslationServer::is_pseudolocalization_double_vowels_enabled() const {
-	return pseudolocalization_double_vowels_enabled;
-}
-
-void TranslationServer::set_pseudolocalization_double_vowels_enabled(bool enabled) {
-	pseudolocalization_double_vowels_enabled = enabled;
-
-	if (OS::get_singleton()->get_main_loop()) {
-		OS::get_singleton()->get_main_loop()->notification(MainLoop::NOTIFICATION_TRANSLATION_CHANGED);
-	}
-	ResourceLoader::reload_translation_remaps();
-}
-
-bool TranslationServer::is_pseudolocalization_fake_bidi_enabled() const {
-	return pseudolocalization_fake_bidi_enabled;
-}
-
-void TranslationServer::set_pseudolocalization_fake_bidi_enabled(bool enabled) {
-	pseudolocalization_fake_bidi_enabled = enabled;
-
-	if (OS::get_singleton()->get_main_loop()) {
-		OS::get_singleton()->get_main_loop()->notification(MainLoop::NOTIFICATION_TRANSLATION_CHANGED);
-	}
-	ResourceLoader::reload_translation_remaps();
-}
-
-bool TranslationServer::is_pseudolocalization_override_enabled() const {
-	return pseudolocalization_override_enabled;
-}
-
-void TranslationServer::set_pseudolocalization_override_enabled(bool enabled) {
-	pseudolocalization_override_enabled = enabled;
-
-	if (OS::get_singleton()->get_main_loop()) {
-		OS::get_singleton()->get_main_loop()->notification(MainLoop::NOTIFICATION_TRANSLATION_CHANGED);
-	}
-	ResourceLoader::reload_translation_remaps();
-}
-
-bool TranslationServer::is_pseudolocalization_skip_placeholders_enabled() const {
-	return pseudolocalization_skip_placeholders_enabled;
-}
-
-void TranslationServer::set_pseudolocalization_skip_placeholders_enabled(bool enabled) {
-	pseudolocalization_skip_placeholders_enabled = enabled;
-
-	if (OS::get_singleton()->get_main_loop()) {
-		OS::get_singleton()->get_main_loop()->notification(MainLoop::NOTIFICATION_TRANSLATION_CHANGED);
-	}
-	ResourceLoader::reload_translation_remaps();
-}
-
-float TranslationServer::get_pseudolocalization_expansion_ratio() const {
-	return expansion_ratio;
-}
-
-void TranslationServer::set_pseudolocalization_expansion_ratio(float ratio) {
-	expansion_ratio = ratio;
-
-	if (OS::get_singleton()->get_main_loop()) {
-		OS::get_singleton()->get_main_loop()->notification(MainLoop::NOTIFICATION_TRANSLATION_CHANGED);
-	}
-	ResourceLoader::reload_translation_remaps();
-}
-
-String TranslationServer::get_pseudolocalization_prefix() const {
-	return pseudolocalization_prefix;
-}
-
-void TranslationServer::set_pseudolocalization_prefix(String prefix) {
-	pseudolocalization_prefix = prefix;
-
-	if (OS::get_singleton()->get_main_loop()) {
-		OS::get_singleton()->get_main_loop()->notification(MainLoop::NOTIFICATION_TRANSLATION_CHANGED);
-	}
-	ResourceLoader::reload_translation_remaps();
-}
-
-String TranslationServer::get_pseudolocalization_suffix() const {
-	return pseudolocalization_suffix;
-}
-
-void TranslationServer::set_pseudolocalization_suffix(String suffix) {
-	pseudolocalization_suffix = suffix;
+void TranslationServer::reload_pseudolocalization() {
+	pseudolocalization_accents_enabled = GLOBAL_GET("internationalization/pseudolocalization/replace_with_accents");
+	pseudolocalization_double_vowels_enabled = GLOBAL_GET("internationalization/pseudolocalization/double_vowels");
+	pseudolocalization_fake_bidi_enabled = GLOBAL_GET("internationalization/pseudolocalization/fake_bidi");
+	pseudolocalization_override_enabled = GLOBAL_GET("internationalization/pseudolocalization/override");
+	expansion_ratio = GLOBAL_GET("internationalization/pseudolocalization/expansion_ratio");
+	pseudolocalization_prefix = GLOBAL_GET("internationalization/pseudolocalization/prefix");
+	pseudolocalization_suffix = GLOBAL_GET("internationalization/pseudolocalization/suffix");
+	pseudolocalization_skip_placeholders_enabled = GLOBAL_GET("internationalization/pseudolocalization/skip_placeholders");
 
 	if (OS::get_singleton()->get_main_loop()) {
 		OS::get_singleton()->get_main_loop()->notification(MainLoop::NOTIFICATION_TRANSLATION_CHANGED);
@@ -1709,22 +1621,7 @@ void TranslationServer::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("is_pseudolocalization_enabled"), &TranslationServer::is_pseudolocalization_enabled);
 	ClassDB::bind_method(D_METHOD("set_pseudolocalization_enabled", "enabled"), &TranslationServer::set_pseudolocalization_enabled);
-	ClassDB::bind_method(D_METHOD("is_pseudolocalization_accents_enabled"), &TranslationServer::is_pseudolocalization_accents_enabled);
-	ClassDB::bind_method(D_METHOD("set_pseudolocalization_accents_enabled", "enabled"), &TranslationServer::set_pseudolocalization_accents_enabled);
-	ClassDB::bind_method(D_METHOD("is_pseudolocalization_double_vowels_enabled"), &TranslationServer::is_pseudolocalization_double_vowels_enabled);
-	ClassDB::bind_method(D_METHOD("set_pseudolocalization_double_vowels_enabled", "enabled"), &TranslationServer::set_pseudolocalization_double_vowels_enabled);
-	ClassDB::bind_method(D_METHOD("get_pseudolocalization_expansion_ratio"), &TranslationServer::get_pseudolocalization_expansion_ratio);
-	ClassDB::bind_method(D_METHOD("set_pseudolocalization_expansion_ratio", "p_expansion_ratio"), &TranslationServer::set_pseudolocalization_expansion_ratio);
-	ClassDB::bind_method(D_METHOD("is_pseudolocalization_fake_bidi_enabled"), &TranslationServer::is_pseudolocalization_fake_bidi_enabled);
-	ClassDB::bind_method(D_METHOD("set_pseudolocalization_fake_bidi_enabled", "enabled"), &TranslationServer::set_pseudolocalization_fake_bidi_enabled);
-	ClassDB::bind_method(D_METHOD("is_pseudolocalization_override_enabled"), &TranslationServer::is_pseudolocalization_override_enabled);
-	ClassDB::bind_method(D_METHOD("set_pseudolocalization_override_enabled", "enabled"), &TranslationServer::set_pseudolocalization_override_enabled);
-	ClassDB::bind_method(D_METHOD("is_pseudolocalization_skip_placeholders_enabled"), &TranslationServer::is_pseudolocalization_skip_placeholders_enabled);
-	ClassDB::bind_method(D_METHOD("set_pseudolocalization_skip_placeholders_enabled", "enabled"), &TranslationServer::set_pseudolocalization_skip_placeholders_enabled);
-	ClassDB::bind_method(D_METHOD("get_pseudolocalization_prefix"), &TranslationServer::get_pseudolocalization_prefix);
-	ClassDB::bind_method(D_METHOD("set_pseudolocalization_prefix", "prefix"), &TranslationServer::set_pseudolocalization_prefix);
-	ClassDB::bind_method(D_METHOD("get_pseudolocalization_suffix"), &TranslationServer::get_pseudolocalization_suffix);
-	ClassDB::bind_method(D_METHOD("set_pseudolocalization_suffix", "suffix"), &TranslationServer::set_pseudolocalization_suffix);
+	ClassDB::bind_method(D_METHOD("reload_pseudolocalization"), &TranslationServer::reload_pseudolocalization);
 	ClassDB::bind_method(D_METHOD("pseudolocalize", "p_message"), &TranslationServer::pseudolocalize);
 }
 
