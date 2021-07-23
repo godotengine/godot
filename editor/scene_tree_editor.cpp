@@ -521,7 +521,7 @@ void SceneTreeEditor::_node_removed(Node *p_node) {
 
 	if (p_node == selected) {
 		selected = nullptr;
-		_emit_node_selected();
+		emit_signal("node_selected");
 	}
 }
 
@@ -615,18 +615,30 @@ void SceneTreeEditor::_tree_changed() {
 	pending_test_update = true;
 }
 
+void SceneTreeEditor::_selected_changed() {
+	TreeItem *s = tree->get_selected();
+	ERR_FAIL_COND(!s);
+	NodePath np = s->get_metadata(0);
+
+	Node *n = get_node(np);
+
+	if (n == selected) {
+		return;
+	}
+
+	selected = get_node(np);
+
+	blocked++;
+	emit_signal("node_selected");
+	blocked--;
+}
+
 void SceneTreeEditor::_deselect_items() {
 	// Clear currently selected items in scene tree dock.
 	if (editor_selection) {
 		editor_selection->clear();
 		emit_signal(SNAME("node_changed"));
 	}
-}
-
-void SceneTreeEditor::_emit_node_selected() {
-	blocked++;
-	emit_signal(SNAME("node_selected"));
-	blocked--;
 }
 
 void SceneTreeEditor::_cell_multi_selected(Object *p_object, int p_cell, bool p_selected) {
@@ -652,11 +664,8 @@ void SceneTreeEditor::_cell_multi_selected(Object *p_object, int p_cell, bool p_
 		editor_selection->remove_node(n);
 	}
 
-	// Selection changed to be single node, so emit "selected" (for single node) rather than "changed" (for multiple nodes)
-	if (editor_selection->get_selected_nodes().size() == 1) {
-		selected = editor_selection->get_selected_node_list()[0];
-		_emit_node_selected();
-	} else {
+	// Emitted "selected" in _selected_changed() when select single node, so select multiple node emit "changed"
+	if (editor_selection->get_selected_nodes().size() > 1) {
 		emit_signal(SNAME("node_changed"));
 	}
 }
@@ -747,7 +756,7 @@ void SceneTreeEditor::set_selected(Node *p_node, bool p_emit_selected) {
 	}
 
 	if (p_emit_selected) {
-		_emit_node_selected();
+		emit_signal("node_selected");
 	}
 }
 
@@ -1197,6 +1206,7 @@ SceneTreeEditor::SceneTreeEditor(bool p_label, bool p_can_rename, bool p_can_ope
 		tree->connect("empty_tree_rmb_selected", callable_mp(this, &SceneTreeEditor::_rmb_select));
 	}
 
+	tree->connect("cell_selected", callable_mp(this, &SceneTreeEditor::_selected_changed));
 	tree->connect("item_edited", callable_mp(this, &SceneTreeEditor::_renamed), varray(), CONNECT_DEFERRED);
 	tree->connect("multi_selected", callable_mp(this, &SceneTreeEditor::_cell_multi_selected));
 	tree->connect("button_pressed", callable_mp(this, &SceneTreeEditor::_cell_button_pressed));
