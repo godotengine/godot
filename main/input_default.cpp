@@ -158,6 +158,37 @@ float InputDefault::get_action_raw_strength(const StringName &p_action) const {
 	return E->get().raw_strength;
 }
 
+float Input::get_axis(const StringName &p_negative_action, const StringName &p_positive_action) const {
+	return get_action_strength(p_positive_action) - get_action_strength(p_negative_action);
+}
+
+Vector2 Input::get_vector(const StringName &p_negative_x, const StringName &p_positive_x, const StringName &p_negative_y, const StringName &p_positive_y, float p_deadzone) const {
+	Vector2 vector = Vector2(
+			get_action_raw_strength(p_positive_x) - get_action_raw_strength(p_negative_x),
+			get_action_raw_strength(p_positive_y) - get_action_raw_strength(p_negative_y));
+
+	if (p_deadzone < 0.0f) {
+		// If the deadzone isn't specified, get it from the average of the actions.
+		p_deadzone = (InputMap::get_singleton()->action_get_deadzone(p_positive_x) +
+							 InputMap::get_singleton()->action_get_deadzone(p_negative_x) +
+							 InputMap::get_singleton()->action_get_deadzone(p_positive_y) +
+							 InputMap::get_singleton()->action_get_deadzone(p_negative_y)) /
+					 4;
+	}
+
+	// Circular length limiting and deadzone.
+	float length = vector.length();
+	if (length <= p_deadzone) {
+		return Vector2();
+	} else if (length > 1.0f) {
+		return vector / length;
+	} else {
+		// Inverse lerp length to map (p_deadzone, 1) to (0, 1).
+		return vector * (Math::inverse_lerp(p_deadzone, 1.0f, length) / length);
+	}
+	return vector;
+}
+
 float InputDefault::get_joy_axis(int p_device, int p_axis) const {
 	_THREAD_SAFE_METHOD_
 	int c = _combine_device(p_axis, p_device);
