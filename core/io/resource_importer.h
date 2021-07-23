@@ -95,6 +95,9 @@ public:
 class ResourceImporter : public Reference {
 	GDCLASS(ResourceImporter, Reference);
 
+protected:
+	static void _bind_methods();
+
 public:
 	virtual String get_importer_name() const = 0;
 	virtual String get_visible_name() const = 0;
@@ -102,7 +105,7 @@ public:
 	virtual String get_save_extension() const = 0;
 	virtual String get_resource_type() const = 0;
 	virtual float get_priority() const { return 1.0; }
-	virtual int get_import_order() const { return 0; }
+	virtual int get_import_order() const { return IMPORT_ORDER_DEFAULT; }
 
 	struct ImportOption {
 		PropertyInfo option;
@@ -113,6 +116,11 @@ public:
 				default_value(p_default) {
 		}
 		ImportOption() {}
+	};
+
+	enum ImportOrder {
+		IMPORT_ORDER_DEFAULT = 0,
+		IMPORT_ORDER_SCENE = 100,
 	};
 
 	virtual int get_preset_count() const { return 0; }
@@ -128,5 +136,7 @@ public:
 	virtual bool are_import_settings_valid(const String &p_path) const { return true; }
 	virtual String get_import_settings_string() const { return String(); }
 };
+
+VARIANT_ENUM_CAST(ResourceImporter::ImportOrder);
 
 #endif // RESOURCE_IMPORTER_H
