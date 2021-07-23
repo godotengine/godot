@@ -2796,7 +2796,7 @@ Error GLTFDocument::_parse_meshes(Ref<GLTFState> state) {
 				mat = mat3d;
 			}
 
-			import_mesh->add_surface(primitive, array, morphs, Dictionary(), mat, mat->get_name());
+			import_mesh->add_surface(primitive, array, morphs, Dictionary(), mat, mat.is_valid() ? mat->get_name() : String());
 		}
 
 		Vector<float> blend_weights;
