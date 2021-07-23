@@ -2268,7 +2268,7 @@ int VisualScriptEmitSignal::get_input_value_port_count() const {
 }
 
 int VisualScriptEmitSignal::get_output_value_port_count() const {
-	return 1;
+	return 0;
 }
 
 String VisualScriptEmitSignal::get_output_sequence_port_text(int p_port) const {
@@ -2309,16 +2309,6 @@ void VisualScriptEmitSignal::set_signal(const StringName &p_type) {
 
 StringName VisualScriptEmitSignal::get_signal() const {
 	return name;
-}
-
-void VisualScriptEmitSignal::_adjust_input_index(PropertyInfo &pinfo) const {
-	if (index != StringName()) {
-		Variant v;
-		Callable::CallError ce;
-		Variant::construct(pinfo.type, v, nullptr, 0, ce);
-		Variant i = v.get(index);
-		pinfo.type = i.get_type();
-	}
 }
 
 void VisualScriptEmitSignal::_validate_property(PropertyInfo &property) const {
