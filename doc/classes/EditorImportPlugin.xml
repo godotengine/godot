@@ -126,7 +126,7 @@
 			<return type="int">
 			</return>
 			<description>
-				Gets the order of this importer to be run when importing resources. Higher values will be called later. Use this to ensure the importer runs after the dependencies are already imported.
+				Gets the order of this importer to be run when importing resources. Importers with [i]lower[/i] import orders will be called first, and higher values will be called later. Use this to ensure the importer runs after the dependencies are already imported. The default import order is [code]0[/code] unless overridden by a specific importer. See [enum ResourceImporter.ImportOrder] for some predefined values.
 			</description>
 		</method>
 		<method name="_get_importer_name" qualifiers="virtual">
