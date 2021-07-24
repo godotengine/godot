@@ -1380,30 +1380,50 @@ void main() {
 	normal_bias -= light_dir * dot(light_dir, normal_bias);                                     \
 	m_var.xyz += normal_bias;
 
+					float dither = 0.0;
+					if (!directional_lights.data[i].blend_splits) {
+						// We only need dithering if blend splitting is disabled.
+						// Use a slight offset to prevent the dithering pattern from being identical to the soft shadows'.
+						// This makes the dithering pattern look slightly less noticeable overall.
+						dither = quick_hash(gl_FragCoord.xy + vec2(4, 4));
+					}
+
 					if (depth_z < directional_lights.data[i].shadow_split_offsets.x) {
 						vec4 v = vec4(vertex, 1.0);
 
-						BIAS_FUNC(v, 0)
-
-						pssm_coord = (directional_lights.data[i].shadow_matrix1 * v);
+						if (!directional_lights.data[i].blend_splits && dither < smoothstep(0.0, directional_lights.data[i].shadow_split_offsets.x, depth_z)) {
+							BIAS_FUNC(v, 1)
+							pssm_coord = (directional_lights.data[i].shadow_matrix2 * v);
+						} else {
+							BIAS_FUNC(v, 0)
+							pssm_coord = (directional_lights.data[i].shadow_matrix1 * v);
+						}
 					} else if (depth_z < directional_lights.data[i].shadow_split_offsets.y) {
 						vec4 v = vec4(vertex, 1.0);
 
-						BIAS_FUNC(v, 1)
-
-						pssm_coord = (directional_lights.data[i].shadow_matrix2 * v);
+						if (!directional_lights.data[i].blend_splits && dither < smoothstep(directional_lights.data[i].shadow_split_offsets.x, directional_lights.data[i].shadow_split_offsets.y, depth_z)) {
+							BIAS_FUNC(v, 2)
+							pssm_coord = (directional_lights.data[i].shadow_matrix3 * v);
+						} else {
+							BIAS_FUNC(v, 1)
+							pssm_coord = (directional_lights.data[i].shadow_matrix2 * v);
+						}
 					} else if (depth_z < directional_lights.data[i].shadow_split_offsets.z) {
 						vec4 v = vec4(vertex, 1.0);
 
-						BIAS_FUNC(v, 2)
-
-						pssm_coord = (directional_lights.data[i].shadow_matrix3 * v);
+						if (!directional_lights.data[i].blend_splits && dither < smoothstep(directional_lights.data[i].shadow_split_offsets.y, directional_lights.data[i].shadow_split_offsets.z, depth_z)) {
+							BIAS_FUNC(v, 3)
+							pssm_coord = (directional_lights.data[i].shadow_matrix4 * v);
+						} else {
+							BIAS_FUNC(v, 2)
+							pssm_coord = (directional_lights.data[i].shadow_matrix3 * v);
+						}
 
 					} else {
 						vec4 v = vec4(vertex, 1.0);
 
+						// This is the last split, so don't perform dithering as there is no split to dither to.
 						BIAS_FUNC(v, 3)
-
 						pssm_coord = (directional_lights.data[i].shadow_matrix4 * v);
 					}
 

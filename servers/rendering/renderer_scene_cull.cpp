@@ -1953,7 +1953,8 @@ void RendererSceneCull::_light_instance_setup_directional_shadow(int p_shadow_in
 
 	real_t texture_size = scene_render->get_directional_light_shadow_size(light->instance);
 
-	bool overlap = RSG::storage->light_directional_get_blend_splits(p_instance->base);
+	// FIXME: Overlap is always required because dithering is used if blend splitting is disabled.
+	const bool overlap = true;
 
 	real_t first_radius = 0.0;
 
