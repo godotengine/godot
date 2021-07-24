@@ -1310,9 +1310,9 @@ Node *ResourceImporterScene::pre_import(const String &p_source_file) {
 		List<String> extensions;
 		E->get()->get_extensions(&extensions);
 
-		for (String &F : extensions) {
+		for (const String &F : extensions) {
 			if (F.to_lower() == ext) {
-				importer = E;
+				importer = E->get();
 				break;
 			}
 		}
@@ -1350,9 +1350,9 @@ Error ResourceImporterScene::import(const String &p_source_file, const String &p
 		List<String> extensions;
 		E->get()->get_extensions(&extensions);
 
-		for (String &F : extensions) {
+		for (const String &F : extensions) {
 			if (F.to_lower() == ext) {
-				importer = E;
+				importer = E->get();
 				break;
 			}
 		}
