@@ -40,15 +40,15 @@ void EditorPath::_add_children_to_popup(Object *p_obj, int p_depth) {
 
 	List<PropertyInfo> pinfo;
 	p_obj->get_property_list(&pinfo);
-	for (List<PropertyInfo>::Element *E = pinfo.front(); E; E = E->next()) {
-		if (!(E->get().usage & PROPERTY_USAGE_EDITOR)) {
+	for (PropertyInfo &E : pinfo) {
+		if (!(E.usage & PROPERTY_USAGE_EDITOR)) {
 			continue;
 		}
-		if (E->get().hint != PROPERTY_HINT_RESOURCE_TYPE) {
+		if (E.hint != PROPERTY_HINT_RESOURCE_TYPE) {
 			continue;
 		}
 
-		Variant value = p_obj->get(E->get().name);
+		Variant value = p_obj->get(E.name);
 		if (value.get_type() != Variant::OBJECT) {
 			continue;
 		}
@@ -60,7 +60,7 @@ void EditorPath::_add_children_to_popup(Object *p_obj, int p_depth) {
 		Ref<Texture2D> icon = EditorNode::get_singleton()->get_object_icon(obj);
 
 		String proper_name = "";
-		Vector<String> name_parts = E->get().name.split("/");
+		Vector<String> name_parts = E.name.split("/");
 
 		for (int i = 0; i < name_parts.size(); i++) {
 			if (i > 0) {

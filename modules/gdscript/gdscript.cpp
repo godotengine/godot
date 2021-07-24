@@ -291,8 +291,8 @@ void GDScript::_get_script_property_list(List<PropertyInfo> *r_list, bool p_incl
 		sptr = sptr->_base;
 	}
 
-	for (List<PropertyInfo>::Element *E = props.front(); E; E = E->next()) {
-		r_list->push_back(E->get());
+	for (PropertyInfo &E : props) {
+		r_list->push_back(E);
 	}
 }
 
@@ -401,8 +401,8 @@ void GDScript::_update_exports_values(Map<StringName, Variant> &values, List<Pro
 		values[E->key()] = E->get();
 	}
 
-	for (List<PropertyInfo>::Element *E = members_cache.front(); E; E = E->next()) {
-		propnames.push_back(E->get());
+	for (PropertyInfo &E : members_cache) {
+		propnames.push_back(E);
 	}
 }
 
@@ -861,8 +861,8 @@ Error GDScript::reload(bool p_keep_state) {
 		}
 	}
 #ifdef DEBUG_ENABLED
-	for (const List<GDScriptWarning>::Element *E = parser.get_warnings().front(); E; E = E->next()) {
-		const GDScriptWarning &warning = E->get();
+	for (const GDScriptWarning &E : parser.get_warnings()) {
+		const GDScriptWarning &warning = E;
 		if (EngineDebugger::is_active()) {
 			Vector<ScriptLanguage::StackInfo> si;
 			EngineDebugger::get_script_debugger()->send_error("", get_path(), warning.start_line, warning.get_name(), warning.get_message(), ERR_HANDLER_WARNING, si);
@@ -1445,8 +1445,8 @@ void GDScriptInstance::get_property_list(List<PropertyInfo> *p_properties) const
 		sptr = sptr->_base;
 	}
 
-	for (List<PropertyInfo>::Element *E = props.front(); E; E = E->next()) {
-		p_properties->push_back(E->get());
+	for (PropertyInfo &E : props) {
+		p_properties->push_back(E);
 	}
 }
 
@@ -1644,8 +1644,7 @@ void GDScriptLanguage::init() {
 
 	List<StringName> class_list;
 	ClassDB::get_class_list(&class_list);
-	for (List<StringName>::Element *E = class_list.front(); E; E = E->next()) {
-		StringName n = E->get();
+	for (StringName &n : class_list) {
 		String s = String(n);
 		if (s.begins_with("_")) {
 			n = s.substr(1, s.length());
@@ -1654,7 +1653,7 @@ void GDScriptLanguage::init() {
 		if (globals.has(n)) {
 			continue;
 		}
-		Ref<GDScriptNativeClass> nc = memnew(GDScriptNativeClass(E->get()));
+		Ref<GDScriptNativeClass> nc = memnew(GDScriptNativeClass(n));
 		_add_global(n, nc);
 	}
 
@@ -1662,8 +1661,8 @@ void GDScriptLanguage::init() {
 
 	List<Engine::Singleton> singletons;
 	Engine::get_singleton()->get_singletons(&singletons);
-	for (List<Engine::Singleton>::Element *E = singletons.front(); E; E = E->next()) {
-		_add_global(E->get().name, E->get().ptr);
+	for (Engine::Singleton &E : singletons) {
+		_add_global(E.name, E.ptr);
 	}
 
 #ifdef TESTS_ENABLED
@@ -1806,10 +1805,10 @@ void GDScriptLanguage::reload_all_scripts() {
 
 	scripts.sort_custom<GDScriptDepSort>(); //update in inheritance dependency order
 
-	for (List<Ref<GDScript>>::Element *E = scripts.front(); E; E = E->next()) {
-		print_verbose("GDScript: Reloading: " + E->get()->get_path());
-		E->get()->load_source_code(E->get()->get_path());
-		E->get()->reload(true);
+	for (Ref<GDScript> E : scripts) {
+		print_verbose("GDScript: Reloading: " + E->get_path());
+		E->load_source_code(E->get_path());
+		E->reload(true);
 	}
 #endif
 }
@@ -1838,21 +1837,21 @@ void GDScriptLanguage::reload_tool_script(const Ref<Script> &p_script, bool p_so
 
 	scripts.sort_custom<GDScriptDepSort>(); //update in inheritance dependency order
 
-	for (List<Ref<GDScript>>::Element *E = scripts.front(); E; E = E->next()) {
-		bool reload = E->get() == p_script || to_reload.has(E->get()->get_base());
+	for (Ref<GDScript> E : scripts) {
+		bool reload = E == p_script || to_reload.has(E->get_base());
 
 		if (!reload) {
 			continue;
 		}
 
-		to_reload.insert(E->get(), Map<ObjectID, List<Pair<StringName, Variant>>>());
+		to_reload.insert(E, Map<ObjectID, List<Pair<StringName, Variant>>>());
 
 		if (!p_soft_reload) {
 			//save state and remove script from instances
-			Map<ObjectID, List<Pair<StringName, Variant>>> &map = to_reload[E->get()];
+			Map<ObjectID, List<Pair<StringName, Variant>>> &map = to_reload[E];
 
-			while (E->get()->instances.front()) {
-				Object *obj = E->get()->instances.front()->get();
+			while (E->instances.front()) {
+				Object *obj = E->instances.front()->get();
 				//save instance info
 				List<Pair<StringName, Variant>> state;
 				if (obj->get_script_instance()) {
@@ -1865,8 +1864,8 @@ void GDScriptLanguage::reload_tool_script(const Ref<Script> &p_script, bool p_so
 //same thing for placeholders
 #ifdef TOOLS_ENABLED
 
-			while (E->get()->placeholders.size()) {
-				Object *obj = E->get()->placeholders.front()->get()->get_owner();
+			while (E->placeholders.size()) {
+				Object *obj = E->placeholders.front()->get()->get_owner();
 
 				//save instance info
 				if (obj->get_script_instance()) {
@@ -1876,13 +1875,13 @@ void GDScriptLanguage::reload_tool_script(const Ref<Script> &p_script, bool p_so
 					obj->set_script(Variant());
 				} else {
 					// no instance found. Let's remove it so we don't loop forever
-					E->get()->placeholders.erase(E->get()->placeholders.front()->get());
+					E->placeholders.erase(E->placeholders.front()->get());
 				}
 			}
 
 #endif
 
-			for (Map<ObjectID, List<Pair<StringName, Variant>>>::Element *F = E->get()->pending_reload_state.front(); F; F = F->next()) {
+			for (Map<ObjectID, List<Pair<StringName, Variant>>>::Element *F = E->pending_reload_state.front(); F; F = F->next()) {
 				map[F->key()] = F->get(); //pending to reload, use this one instead
 			}
 		}
@@ -2025,8 +2024,8 @@ void GDScriptLanguage::get_reserved_words(List<String> *p_words) const {
 	List<StringName> functions;
 	GDScriptUtilityFunctions::get_function_list(&functions);
 
-	for (const List<StringName>::Element *E = functions.front(); E; E = E->next()) {
-		p_words->push_back(String(E->get()));
+	for (const StringName &E : functions) {
+		p_words->push_back(String(E));
 	}
 }
 
@@ -2296,8 +2295,8 @@ void ResourceFormatLoaderGDScript::get_dependencies(const String &p_path, List<S
 		return;
 	}
 
-	for (const List<String>::Element *E = parser.get_dependencies().front(); E; E = E->next()) {
-		p_dependencies->push_back(E->get());
+	for (const String &E : parser.get_dependencies()) {
+		p_dependencies->push_back(E);
 	}
 }
 

@@ -447,8 +447,7 @@ Variant CreateDialog::instance_selected() {
 	List<PropertyInfo> pinfo;
 	((Object *)obj)->get_property_list(&pinfo);
 
-	for (List<PropertyInfo>::Element *E = pinfo.front(); E; E = E->next()) {
-		PropertyInfo pi = E->get();
+	for (PropertyInfo &pi : pinfo) {
 		if (pi.type == Variant::OBJECT && pi.usage & PROPERTY_USAGE_EDITOR_INSTANTIATE_OBJECT) {
 			Object *prop = ClassDB::instantiate(pi.class_name);
 			((Object *)obj)->set(pi.name, prop);

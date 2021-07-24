@@ -1167,12 +1167,12 @@ Error ResourceLoaderText::save_as_binary(FileAccess *p_f, const String &p_path) 
 
 		int prop_count = 0;
 
-		for (List<PropertyInfo>::Element *E = props.front(); E; E = E->next()) {
-			if (!(E->get().usage & PROPERTY_USAGE_STORAGE)) {
+		for (PropertyInfo &E : props) {
+			if (!(E.usage & PROPERTY_USAGE_STORAGE)) {
 				continue;
 			}
 
-			String name = E->get().name;
+			String name = E.name;
 			Variant value = packed_scene->get(name);
 
 			Map<StringName, int> empty_string_map; //unused
@@ -1488,8 +1488,8 @@ void ResourceFormatSaverTextInstance::_find_resources(const Variant &p_variant, 
 			Dictionary d = p_variant;
 			List<Variant> keys;
 			d.get_key_list(&keys);
-			for (List<Variant>::Element *E = keys.front(); E; E = E->next()) {
-				Variant v = d[E->get()];
+			for (Variant &E : keys) {
+				Variant v = d[E];
 				_find_resources(v);
 			}
 		} break;

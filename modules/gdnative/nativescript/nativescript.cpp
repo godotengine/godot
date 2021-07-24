@@ -98,10 +98,10 @@ void NativeScript::_update_placeholder(PlaceHolderScriptInstance *p_placeholder)
 	List<PropertyInfo> info;
 	get_script_property_list(&info);
 	Map<StringName, Variant> values;
-	for (List<PropertyInfo>::Element *E = info.front(); E; E = E->next()) {
+	for (PropertyInfo &E : info) {
 		Variant value;
-		get_property_default_value(E->get().name, value);
-		values[E->get().name] = value;
+		get_property_default_value(E.name, value);
+		values[E.name] = value;
 	}
 
 	p_placeholder->update(info, values);

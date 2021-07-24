@@ -93,7 +93,7 @@ void VisualScriptPropertySelector::_update_search() {
 		base = ClassDB::get_parent_class_nocheck(base);
 	}
 
-	for (List<StringName>::Element *E = base_list.front(); E; E = E->next()) {
+	for (StringName &E : base_list) {
 		List<MethodInfo> methods;
 		List<PropertyInfo> props;
 		TreeItem *category = nullptr;
@@ -135,7 +135,7 @@ void VisualScriptPropertySelector::_update_search() {
 			vbc->get_theme_icon(SNAME("PackedColorArray"), SNAME("EditorIcons"))
 		};
 		{
-			String b = String(E->get());
+			String b = String(E);
 			category = search_options->create_item(root);
 			if (category) {
 				category->set_text(0, b.replace_first("*", ""));
@@ -154,30 +154,30 @@ void VisualScriptPropertySelector::_update_search() {
 				if (Object::cast_to<Script>(obj)) {
 					Object::cast_to<Script>(obj)->get_script_property_list(&props);
 				} else {
-					ClassDB::get_property_list(E->get(), &props, true);
+					ClassDB::get_property_list(E, &props, true);
 				}
 			}
-			for (List<PropertyInfo>::Element *F = props.front(); F; F = F->next()) {
-				if (!(F->get().usage & PROPERTY_USAGE_EDITOR) && !(F->get().usage & PROPERTY_USAGE_SCRIPT_VARIABLE)) {
+			for (PropertyInfo &F : props) {
+				if (!(F.usage & PROPERTY_USAGE_EDITOR) && !(F.usage & PROPERTY_USAGE_SCRIPT_VARIABLE)) {
 					continue;
 				}
 
-				if (type_filter.size() && type_filter.find(F->get().type) == -1) {
+				if (type_filter.size() && type_filter.find(F.type) == -1) {
 					continue;
 				}
 
 				// capitalize() also converts underscore to space, we'll match again both possible styles
-				String get_text_raw = String(vformat(TTR("Get %s"), F->get().name));
+				String get_text_raw = String(vformat(TTR("Get %s"), F.name));
 				String get_text = get_text_raw.capitalize();
-				String set_text_raw = String(vformat(TTR("Set %s"), F->get().name));
+				String set_text_raw = String(vformat(TTR("Set %s"), F.name));
 				String set_text = set_text_raw.capitalize();
 				String input = search_box->get_text().capitalize();
 
 				if (input == String() || get_text_raw.findn(input) != -1 || get_text.findn(input) != -1) {
 					TreeItem *item = search_options->create_item(category ? category : root);
 					item->set_text(0, get_text);
-					item->set_metadata(0, F->get().name);
-					item->set_icon(0, type_icons[F->get().type]);
+					item->set_metadata(0, F.name);
+					item->set_icon(0, type_icons[F.type]);
 					item->set_metadata(1, "get");
 					item->set_collapsed(true);
 					item->set_selectable(0, true);
@@ -189,8 +189,8 @@ void VisualScriptPropertySelector::_update_search() {
 				if (input == String() || set_text_raw.findn(input) != -1 || set_text.findn(input) != -1) {
 					TreeItem *item = search_options->create_item(category ? category : root);
 					item->set_text(0, set_text);
-					item->set_metadata(0, F->get().name);
-					item->set_icon(0, type_icons[F->get().type]);
+					item->set_metadata(0, F.name);
+					item->set_icon(0, type_icons[F.type]);
 					item->set_metadata(1, "set");
 					item->set_selectable(0, true);
 					item->set_selectable(1, false);
@@ -211,7 +211,7 @@ void VisualScriptPropertySelector::_update_search() {
 					Object::cast_to<Script>(obj)->get_script_method_list(&methods);
 				}
 
-				ClassDB::get_method_list(E->get(), &methods, true, true);
+				ClassDB::get_method_list(E, &methods, true, true);
 			}
 		}
 		for (List<MethodInfo>::Element *M = methods.front(); M; M = M->next()) {
@@ -340,11 +340,11 @@ void VisualScriptPropertySelector::get_visual_node_names(const String &root_filt
 	List<String> fnodes;
 	VisualScriptLanguage::singleton->get_registered_node_names(&fnodes);
 
-	for (List<String>::Element *E = fnodes.front(); E; E = E->next()) {
-		if (!E->get().begins_with(root_filter)) {
+	for (String &E : fnodes) {
+		if (!E.begins_with(root_filter)) {
 			continue;
 		}
-		Vector<String> path = E->get().split("/");
+		Vector<String> path = E.split("/");
 
 		// check if the name has the filter
 		bool in_filter = false;
@@ -355,7 +355,7 @@ void VisualScriptPropertySelector::get_visual_node_names(const String &root_filt
 			} else {
 				in_filter = false;
 			}
-			if (E->get().findn(tx_filters[i]) != -1) {
+			if (E.findn(tx_filters[i]) != -1) {
 				in_filter = true;
 				break;
 			}
@@ -366,7 +366,7 @@ void VisualScriptPropertySelector::get_visual_node_names(const String &root_filt
 
 		bool in_modifier = p_modifiers.is_empty();
 		for (Set<String>::Element *F = p_modifiers.front(); F && in_modifier; F = F->next()) {
-			if (E->get().findn(F->get()) != -1) {
+			if (E.findn(F->get()) != -1) {
 				in_modifier = true;
 			}
 		}
@@ -375,7 +375,7 @@ void VisualScriptPropertySelector::get_visual_node_names(const String &root_filt
 		}
 
 		TreeItem *item = search_options->create_item(root);
-		Ref<VisualScriptNode> vnode = VisualScriptLanguage::singleton->create_node_from_name(E->get());
+		Ref<VisualScriptNode> vnode = VisualScriptLanguage::singleton->create_node_from_name(E);
 		Ref<VisualScriptOperator> vnode_operator = vnode;
 		String type_name;
 		if (vnode_operator.is_valid()) {
@@ -409,7 +409,7 @@ void VisualScriptPropertySelector::get_visual_node_names(const String &root_filt
 		item->set_text(0, type_name + String("").join(desc));
 		item->set_icon(0, vbc->get_theme_icon(SNAME("VisualScript"), SNAME("EditorIcons")));
 		item->set_selectable(0, true);
-		item->set_metadata(0, E->get());
+		item->set_metadata(0, E);
 		item->set_selectable(0, true);
 		item->set_metadata(1, "visualscript");
 		item->set_selectable(1, false);

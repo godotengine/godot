@@ -94,8 +94,7 @@ void SceneTreeTimer::release_connections() {
 	List<Connection> connections;
 	get_all_signal_connections(&connections);
 
-	for (List<Connection>::Element *E = connections.front(); E; E = E->next()) {
-		Connection const &connection = E->get();
+	for (Connection &connection : connections) {
 		disconnect(connection.signal.get_name(), connection.callable);
 	}
 }
@@ -572,8 +571,8 @@ void SceneTree::finalize() {
 	}
 
 	// cleanup timers
-	for (List<Ref<SceneTreeTimer>>::Element *E = timers.front(); E; E = E->next()) {
-		E->get()->release_connections();
+	for (Ref<SceneTreeTimer> E : timers) {
+		E->release_connections();
 	}
 	timers.clear();
 }
@@ -1147,8 +1146,8 @@ Array SceneTree::get_processed_tweens() {
 	ret.resize(tweens.size());
 
 	int i = 0;
-	for (List<Ref<Tween>>::Element *E = tweens.front(); E; E = E->next()) {
-		ret[i] = E->get();
+	for (Ref<Tween> E : tweens) {
+		ret[i] = E;
 		i++;
 	}
 
@@ -1403,11 +1402,11 @@ SceneTree::SceneTree() {
 		List<String> exts;
 		ResourceLoader::get_recognized_extensions_for_type("Environment", &exts);
 		String ext_hint;
-		for (List<String>::Element *E = exts.front(); E; E = E->next()) {
+		for (String &E : exts) {
 			if (ext_hint != String()) {
 				ext_hint += ",";
 			}
-			ext_hint += "*." + E->get();
+			ext_hint += "*." + E;
 		}
 		// Get path.
 		String env_path = GLOBAL_DEF("rendering/environment/defaults/default_environment", "");

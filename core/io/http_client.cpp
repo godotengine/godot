@@ -93,8 +93,7 @@ Dictionary HTTPClient::_get_response_headers_as_dictionary() {
 	List<String> rh;
 	get_response_headers(&rh);
 	Dictionary ret;
-	for (const List<String>::Element *E = rh.front(); E; E = E->next()) {
-		const String &s = E->get();
+	for (const String &s : rh) {
 		int sp = s.find(":");
 		if (sp == -1) {
 			continue;
@@ -113,8 +112,8 @@ PackedStringArray HTTPClient::_get_response_headers() {
 	PackedStringArray ret;
 	ret.resize(rh.size());
 	int idx = 0;
-	for (const List<String>::Element *E = rh.front(); E; E = E->next()) {
-		ret.set(idx++, E->get());
+	for (const String &E : rh) {
+		ret.set(idx++, E);
 	}
 
 	return ret;

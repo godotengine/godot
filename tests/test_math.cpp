@@ -549,8 +549,8 @@ MainLoop *test() {
 		List<StringName> tl;
 		ClassDB::get_class_list(&tl);
 
-		for (List<StringName>::Element *E = tl.front(); E; E = E->next()) {
-			Vector<uint8_t> m5b = E->get().operator String().md5_buffer();
+		for (StringName &E : tl) {
+			Vector<uint8_t> m5b = E.operator String().md5_buffer();
 			hashes.push_back(hashes.size());
 		}
 

@@ -1025,8 +1025,8 @@ void ResourceFormatLoaderBinary::get_recognized_extensions_for_type(const String
 
 	extensions.sort();
 
-	for (List<String>::Element *E = extensions.front(); E; E = E->next()) {
-		String ext = E->get().to_lower();
+	for (String &E : extensions) {
+		String ext = E.to_lower();
 		p_extensions->push_back(ext);
 	}
 }
@@ -1036,8 +1036,8 @@ void ResourceFormatLoaderBinary::get_recognized_extensions(List<String> *p_exten
 	ClassDB::get_resource_base_extensions(&extensions);
 	extensions.sort();
 
-	for (List<String>::Element *E = extensions.front(); E; E = E->next()) {
-		String ext = E->get().to_lower();
+	for (String &E : extensions) {
+		String ext = E.to_lower();
 		p_extensions->push_back(ext);
 	}
 }
@@ -1528,14 +1528,14 @@ void ResourceFormatSaverBinaryInstance::write_variant(FileAccess *f, const Varia
 			List<Variant> keys;
 			d.get_key_list(&keys);
 
-			for (List<Variant>::Element *E = keys.front(); E; E = E->next()) {
+			for (Variant &E : keys) {
 				/*
-				if (!_check_type(dict[E->get()]))
+				if (!_check_type(dict[E]))
 					continue;
 				*/
 
-				write_variant(f, E->get(), resource_map, external_resources, string_map);
-				write_variant(f, d[E->get()], resource_map, external_resources, string_map);
+				write_variant(f, E, resource_map, external_resources, string_map);
+				write_variant(f, d[E], resource_map, external_resources, string_map);
 			}
 
 		} break;
@@ -1685,15 +1685,15 @@ void ResourceFormatSaverBinaryInstance::_find_resources(const Variant &p_variant
 
 			res->get_property_list(&property_list);
 
-			for (List<PropertyInfo>::Element *E = property_list.front(); E; E = E->next()) {
-				if (E->get().usage & PROPERTY_USAGE_STORAGE) {
-					Variant value = res->get(E->get().name);
-					if (E->get().usage & PROPERTY_USAGE_RESOURCE_NOT_PERSISTENT) {
+			for (PropertyInfo &E : property_list) {
+				if (E.usage & PROPERTY_USAGE_STORAGE) {
+					Variant value = res->get(E.name);
+					if (E.usage & PROPERTY_USAGE_RESOURCE_NOT_PERSISTENT) {
 						RES sres = value;
 						if (sres.is_valid()) {
 							NonPersistentKey npk;
 							npk.base = res;
-							npk.property = E->get().name;
+							npk.property = E.name;
 							non_persistent_map[npk] = sres;
 							resource_set.insert(sres);
 							saved_resources.push_back(sres);
@@ -1723,9 +1723,9 @@ void ResourceFormatSaverBinaryInstance::_find_resources(const Variant &p_variant
 			Dictionary d = p_variant;
 			List<Variant> keys;
 			d.get_key_list(&keys);
-			for (List<Variant>::Element *E = keys.front(); E; E = E->next()) {
-				_find_resources(E->get());
-				Variant v = d[E->get()];
+			for (Variant &E : keys) {
+				_find_resources(E);
+				Variant v = d[E];
 				_find_resources(v);
 			}
 		} break;
@@ -1832,39 +1832,39 @@ Error ResourceFormatSaverBinaryInstance::save(const String &p_path, const RES &p
 	List<ResourceData> resources;
 
 	{
-		for (List<RES>::Element *E = saved_resources.front(); E; E = E->next()) {
+		for (RES &E : saved_resources) {
 			ResourceData &rd = resources.push_back(ResourceData())->get();
-			rd.type = E->get()->get_class();
+			rd.type = E->get_class();
 
 			List<PropertyInfo> property_list;
-			E->get()->get_property_list(&property_list);
+			E->get_property_list(&property_list);
 
-			for (List<PropertyInfo>::Element *F = property_list.front(); F; F = F->next()) {
-				if (skip_editor && F->get().name.begins_with("__editor")) {
+			for (PropertyInfo &F : property_list) {
+				if (skip_editor && F.name.begins_with("__editor")) {
 					continue;
 				}
-				if ((F->get().usage & PROPERTY_USAGE_STORAGE)) {
+				if ((F.usage & PROPERTY_USAGE_STORAGE)) {
 					Property p;
-					p.name_idx = get_string_index(F->get().name);
+					p.name_idx = get_string_index(F.name);
 
-					if (F->get().usage & PROPERTY_USAGE_RESOURCE_NOT_PERSISTENT) {
+					if (F.usage & PROPERTY_USAGE_RESOURCE_NOT_PERSISTENT) {
 						NonPersistentKey npk;
-						npk.base = E->get();
-						npk.property = F->get().name;
+						npk.base = E;
+						npk.property = F.name;
 						if (non_persistent_map.has(npk)) {
 							p.value = non_persistent_map[npk];
 						}
 					} else {
-						p.value = E->get()->get(F->get().name);
+						p.value = E->get(F.name);
 					}
 
-					Variant default_value = ClassDB::class_get_default_property_value(E->get()->get_class(), F->get().name);
+					Variant default_value = ClassDB::class_get_default_property_value(E->get_class(), F.name);
 
 					if (default_value.get_type() != Variant::NIL && bool(Variant::evaluate(Variant::OP_EQUAL, p.value, default_value))) {
 						continue;
 					}
 
-					p.pi = F->get();
+					p.pi = F;
 
 					rd.properties.push_back(p);
 				}
@@ -1897,8 +1897,7 @@ Error ResourceFormatSaverBinaryInstance::save(const String &p_path, const RES &p
 	Vector<uint64_t> ofs_pos;
 	Set<String> used_unique_ids;
 
-	for (List<RES>::Element *E = saved_resources.front(); E; E = E->next()) {
-		RES r = E->get();
+	for (RES &r : saved_resources) {
 		if (r->get_path() == "" || r->get_path().find("::") != -1) {
 			if (r->get_scene_unique_id() != "") {
 				if (used_unique_ids.has(r->get_scene_unique_id())) {
@@ -1912,8 +1911,7 @@ Error ResourceFormatSaverBinaryInstance::save(const String &p_path, const RES &p
 
 	Map<RES, int> resource_map;
 	int res_index = 0;
-	for (List<RES>::Element *E = saved_resources.front(); E; E = E->next()) {
-		RES r = E->get();
+	for (RES &r : saved_resources) {
 		if (r->get_path() == "" || r->get_path().find("::") != -1) {
 			if (r->get_scene_unique_id() == "") {
 				String new_id;
@@ -1947,17 +1945,15 @@ Error ResourceFormatSaverBinaryInstance::save(const String &p_path, const RES &p
 	Vector<uint64_t> ofs_table;
 
 	//now actually save the resources
-	for (List<ResourceData>::Element *E = resources.front(); E; E = E->next()) {
-		ResourceData &rd = E->get();
-
+	for (ResourceData &rd : resources) {
 		ofs_table.push_back(f->get_position());
 		save_unicode_string(f, rd.type);
 		f->store_32(rd.properties.size());
 
-		for (List<Property>::Element *F = rd.properties.front(); F; F = F->next()) {
-			Property &p = F->get();
+		for (Property &F : rd.properties) {
+			Property &p = F;
 			f->store_32(p.name_idx);
-			write_variant(f, p.value, resource_map, external_resources, string_map, F->get().pi);
+			write_variant(f, p.value, resource_map, external_resources, string_map, F.pi);
 		}
 	}
 

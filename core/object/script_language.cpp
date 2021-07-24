@@ -63,8 +63,8 @@ Array Script::_get_script_property_list() {
 	Array ret;
 	List<PropertyInfo> list;
 	get_script_property_list(&list);
-	for (List<PropertyInfo>::Element *E = list.front(); E; E = E->next()) {
-		ret.append(E->get().operator Dictionary());
+	for (PropertyInfo &E : list) {
+		ret.append(E.operator Dictionary());
 	}
 	return ret;
 }
@@ -73,8 +73,8 @@ Array Script::_get_script_method_list() {
 	Array ret;
 	List<MethodInfo> list;
 	get_script_method_list(&list);
-	for (List<MethodInfo>::Element *E = list.front(); E; E = E->next()) {
-		ret.append(E->get().operator Dictionary());
+	for (MethodInfo &E : list) {
+		ret.append(E.operator Dictionary());
 	}
 	return ret;
 }
@@ -83,8 +83,8 @@ Array Script::_get_script_signal_list() {
 	Array ret;
 	List<MethodInfo> list;
 	get_script_signal_list(&list);
-	for (List<MethodInfo>::Element *E = list.front(); E; E = E->next()) {
-		ret.append(E->get().operator Dictionary());
+	for (MethodInfo &E : list) {
+		ret.append(E.operator Dictionary());
 	}
 	return ret;
 }
@@ -257,8 +257,8 @@ void ScriptServer::get_global_class_list(List<StringName> *r_global_classes) {
 		classes.push_back(*K);
 	}
 	classes.sort_custom<StringName::AlphCompare>();
-	for (List<StringName>::Element *E = classes.front(); E; E = E->next()) {
-		r_global_classes->push_back(E->get());
+	for (StringName &E : classes) {
+		r_global_classes->push_back(E);
 	}
 }
 
@@ -266,12 +266,12 @@ void ScriptServer::save_global_classes() {
 	List<StringName> gc;
 	get_global_class_list(&gc);
 	Array gcarr;
-	for (List<StringName>::Element *E = gc.front(); E; E = E->next()) {
+	for (StringName &E : gc) {
 		Dictionary d;
-		d["class"] = E->get();
-		d["language"] = global_classes[E->get()].language;
-		d["path"] = global_classes[E->get()].path;
-		d["base"] = global_classes[E->get()].base;
+		d["class"] = E;
+		d["language"] = global_classes[E].language;
+		d["path"] = global_classes[E].path;
+		d["base"] = global_classes[E].base;
 		gcarr.push_back(d);
 	}
 
@@ -297,10 +297,10 @@ void ScriptServer::save_global_classes() {
 void ScriptInstance::get_property_state(List<Pair<StringName, Variant>> &state) {
 	List<PropertyInfo> pinfo;
 	get_property_list(&pinfo);
-	for (List<PropertyInfo>::Element *E = pinfo.front(); E; E = E->next()) {
-		if (E->get().usage & PROPERTY_USAGE_STORAGE) {
+	for (PropertyInfo &E : pinfo) {
+		if (E.usage & PROPERTY_USAGE_STORAGE) {
 			Pair<StringName, Variant> p;
-			p.first = E->get().name;
+			p.first = E.name;
 			if (get(p.first, p.second)) {
 				state.push_back(p);
 			}
@@ -430,16 +430,16 @@ bool PlaceHolderScriptInstance::get(const StringName &p_name, Variant &r_ret) co
 
 void PlaceHolderScriptInstance::get_property_list(List<PropertyInfo> *p_properties) const {
 	if (script->is_placeholder_fallback_enabled()) {
-		for (const List<PropertyInfo>::Element *E = properties.front(); E; E = E->next()) {
-			p_properties->push_back(E->get());
+		for (const PropertyInfo &E : properties) {
+			p_properties->push_back(E);
 		}
 	} else {
-		for (const List<PropertyInfo>::Element *E = properties.front(); E; E = E->next()) {
-			PropertyInfo pinfo = E->get();
+		for (const PropertyInfo &E : properties) {
+			PropertyInfo pinfo = E;
 			if (!values.has(pinfo.name)) {
 				pinfo.usage |= PROPERTY_USAGE_SCRIPT_DEFAULT_VALUE;
 			}
-			p_properties->push_back(E->get());
+			p_properties->push_back(E);
 		}
 	}
 }
@@ -489,11 +489,11 @@ bool PlaceHolderScriptInstance::has_method(const StringName &p_method) const {
 
 void PlaceHolderScriptInstance::update(const List<PropertyInfo> &p_properties, const Map<StringName, Variant> &p_values) {
 	Set<StringName> new_values;
-	for (const List<PropertyInfo>::Element *E = p_properties.front(); E; E = E->next()) {
-		StringName n = E->get().name;
+	for (const PropertyInfo &E : p_properties) {
+		StringName n = E.name;
 		new_values.insert(n);
 
-		if (!values.has(n) || values[n].get_type() != E->get().type) {
+		if (!values.has(n) || values[n].get_type() != E.type) {
 			if (p_values.has(n)) {
 				values[n] = p_values[n];
 			}
@@ -511,7 +511,7 @@ void PlaceHolderScriptInstance::update(const List<PropertyInfo> &p_properties, c
 		Variant defval;
 		if (script->get_property_default_value(E->key(), defval)) {
 			//remove because it's the same as the default value
-			if (defval == E->get()) {
+			if (defval == E) {
 				to_remove.push_back(E->key());
 			}
 		}
@@ -542,8 +542,8 @@ void PlaceHolderScriptInstance::property_set_fallback(const StringName &p_name, 
 		}
 
 		bool found = false;
-		for (const List<PropertyInfo>::Element *F = properties.front(); F; F = F->next()) {
-			if (F->get().name == p_name) {
+		for (const PropertyInfo &F : properties) {
+			if (F.name == p_name) {
 				found = true;
 				break;
 			}

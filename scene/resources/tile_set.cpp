@@ -4357,14 +4357,14 @@ void TileSetPluginAtlasRendering::update_dirty_quadrants(TileMap *p_tile_map, Se
 		RenderingServer *rs = RenderingServer::get_singleton();
 
 		// Free the canvas items.
-		for (List<RID>::Element *E = q.canvas_items.front(); E; E = E->next()) {
-			rs->free(E->get());
+		for (RID E : q.canvas_items) {
+			rs->free(E);
 		}
 		q.canvas_items.clear();
 
 		// Free the occluders.
-		for (List<RID>::Element *E = q.occluders.front(); E; E = E->next()) {
-			rs->free(E->get());
+		for (RID E : q.occluders) {
+			rs->free(E);
 		}
 		q.occluders.clear();
 
@@ -4473,8 +4473,8 @@ void TileSetPluginAtlasRendering::update_dirty_quadrants(TileMap *p_tile_map, Se
 		// Sort the quadrants
 		for (Map<Vector2i, Vector2i, TileMapQuadrant::CoordsWorldComparator>::Element *E = world_to_map.front(); E; E = E->next()) {
 			TileMapQuadrant &q = quadrant_map[E->value()];
-			for (List<RID>::Element *F = q.canvas_items.front(); F; F = F->next()) {
-				RS::get_singleton()->canvas_item_set_draw_index(F->get(), index++);
+			for (RID F : q.canvas_items) {
+				RS::get_singleton()->canvas_item_set_draw_index(F, index++);
 			}
 		}
 
@@ -4491,14 +4491,14 @@ void TileSetPluginAtlasRendering::create_quadrant(TileMap *p_tile_map, TileMapQu
 
 void TileSetPluginAtlasRendering::cleanup_quadrant(TileMap *p_tile_map, TileMapQuadrant *p_quadrant) {
 	// Free the canvas items.
-	for (List<RID>::Element *E = p_quadrant->canvas_items.front(); E; E = E->next()) {
-		RenderingServer::get_singleton()->free(E->get());
+	for (RID E : p_quadrant->canvas_items) {
+		RenderingServer::get_singleton()->free(E);
 	}
 	p_quadrant->canvas_items.clear();
 
 	// Free the occluders.
-	for (List<RID>::Element *E = p_quadrant->occluders.front(); E; E = E->next()) {
-		RenderingServer::get_singleton()->free(E->get());
+	for (RID E : p_quadrant->occluders) {
+		RenderingServer::get_singleton()->free(E);
 	}
 	p_quadrant->occluders.clear();
 }

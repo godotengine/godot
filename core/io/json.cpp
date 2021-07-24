@@ -121,14 +121,14 @@ String JSON::_stringify(const Variant &p_var, const String &p_indent, int p_cur_
 				keys.sort();
 			}
 
-			for (List<Variant>::Element *E = keys.front(); E; E = E->next()) {
+			for (Variant &E : keys) {
 				if (E != keys.front()) {
 					s += ",";
 					s += end_statement;
 				}
-				s += _make_indent(p_indent, p_cur_indent + 1) + _stringify(String(E->get()), p_indent, p_cur_indent + 1, p_sort_keys, p_markers);
+				s += _make_indent(p_indent, p_cur_indent + 1) + _stringify(String(E), p_indent, p_cur_indent + 1, p_sort_keys, p_markers);
 				s += colon;
-				s += _stringify(d[E->get()], p_indent, p_cur_indent + 1, p_sort_keys, p_markers);
+				s += _stringify(d[E], p_indent, p_cur_indent + 1, p_sort_keys, p_markers);
 			}
 
 			s += end_statement + _make_indent(p_indent, p_cur_indent) + "}";

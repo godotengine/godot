@@ -190,15 +190,15 @@ void WSLServer::poll() {
 			remove_ids.push_back(E->key());
 		}
 	}
-	for (List<int>::Element *E = remove_ids.front(); E; E = E->next()) {
-		_peer_map.erase(E->get());
+	for (int &E : remove_ids) {
+		_peer_map.erase(E);
 	}
 	remove_ids.clear();
 
 	List<Ref<PendingPeer>> remove_peers;
-	for (List<Ref<PendingPeer>>::Element *E = _pending.front(); E; E = E->next()) {
+	for (Ref<PendingPeer> E : _pending) {
 		String resource_name;
-		Ref<PendingPeer> ppeer = E->get();
+		Ref<PendingPeer> ppeer = E;
 		Error err = ppeer->do_handshake(_protocols, handshake_timeout, resource_name);
 		if (err == ERR_BUSY) {
 			continue;
@@ -224,8 +224,8 @@ void WSLServer::poll() {
 		remove_peers.push_back(ppeer);
 		_on_connect(id, ppeer->protocol, resource_name);
 	}
-	for (List<Ref<PendingPeer>>::Element *E = remove_peers.front(); E; E = E->next()) {
-		_pending.erase(E->get());
+	for (Ref<PendingPeer> E : remove_peers) {
+		_pending.erase(E);
 	}
 	remove_peers.clear();
 

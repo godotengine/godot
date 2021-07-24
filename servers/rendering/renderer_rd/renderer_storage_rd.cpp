@@ -2716,9 +2716,7 @@ void RendererStorageRD::mesh_add_surface(RID p_mesh, const RS::SurfaceData &p_su
 	mesh->surfaces[mesh->surface_count] = s;
 	mesh->surface_count++;
 
-	for (List<MeshInstance *>::Element *E = mesh->instances.front(); E; E = E->next()) {
-		//update instances
-		MeshInstance *mi = E->get();
+	for (MeshInstance *mi : mesh->instances) {
 		_mesh_instance_add_surface(mi, mesh, mesh->surface_count - 1);
 	}
 
@@ -3029,8 +3027,7 @@ void RendererStorageRD::mesh_clear(RID p_mesh) {
 	mesh->surface_count = 0;
 	mesh->material_cache.clear();
 	//clear instance data
-	for (List<MeshInstance *>::Element *E = mesh->instances.front(); E; E = E->next()) {
-		MeshInstance *mi = E->get();
+	for (MeshInstance *mi : mesh->instances) {
 		_mesh_instance_clear(mi);
 	}
 	mesh->has_bone_weights = false;
@@ -8413,10 +8410,10 @@ void RendererStorageRD::global_variables_load_settings(bool p_load_textures) {
 	List<PropertyInfo> settings;
 	ProjectSettings::get_singleton()->get_property_list(&settings);
 
-	for (List<PropertyInfo>::Element *E = settings.front(); E; E = E->next()) {
-		if (E->get().name.begins_with("shader_globals/")) {
-			StringName name = E->get().name.get_slice("/", 1);
-			Dictionary d = ProjectSettings::get_singleton()->get(E->get().name);
+	for (PropertyInfo &E : settings) {
+		if (E.name.begins_with("shader_globals/")) {
+			StringName name = E.name.get_slice("/", 1);
+			Dictionary d = ProjectSettings::get_singleton()->get(E.name);
 
 			ERR_CONTINUE(!d.has("type"));
 			ERR_CONTINUE(!d.has("value"));
@@ -8584,8 +8581,8 @@ void RendererStorageRD::_update_global_variables() {
 	if (global_variables.must_update_buffer_materials) {
 		// only happens in the case of a buffer variable added or removed,
 		// so not often.
-		for (List<RID>::Element *E = global_variables.materials_using_buffer.front(); E; E = E->next()) {
-			Material *material = material_owner.getornull(E->get());
+		for (RID E : global_variables.materials_using_buffer) {
+			Material *material = material_owner.getornull(E);
 			ERR_CONTINUE(!material); //wtf
 
 			_material_queue_update(material, true, false);
@@ -8597,8 +8594,8 @@ void RendererStorageRD::_update_global_variables() {
 	if (global_variables.must_update_texture_materials) {
 		// only happens in the case of a buffer variable added or removed,
 		// so not often.
-		for (List<RID>::Element *E = global_variables.materials_using_texture.front(); E; E = E->next()) {
-			Material *material = material_owner.getornull(E->get());
+		for (RID E : global_variables.materials_using_texture) {
+			Material *material = material_owner.getornull(E);
 			ERR_CONTINUE(!material); //wtf
 
 			_material_queue_update(material, false, true);

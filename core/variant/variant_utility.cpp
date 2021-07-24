@@ -1397,8 +1397,8 @@ uint32_t Variant::get_utility_function_hash(const StringName &p_name) {
 }
 
 void Variant::get_utility_function_list(List<StringName> *r_functions) {
-	for (List<StringName>::Element *E = utility_function_name_table.front(); E; E = E->next()) {
-		r_functions->push_back(E->get());
+	for (StringName &E : utility_function_name_table) {
+		r_functions->push_back(E);
 	}
 }
 

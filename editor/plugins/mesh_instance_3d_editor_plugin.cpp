@@ -90,8 +90,8 @@ void MeshInstance3DEditor::_menu_option(int p_option) {
 
 			ur->create_action(TTR("Create Static Trimesh Body"));
 
-			for (List<Node *>::Element *E = selection.front(); E; E = E->next()) {
-				MeshInstance3D *instance = Object::cast_to<MeshInstance3D>(E->get());
+			for (Node *E : selection) {
+				MeshInstance3D *instance = Object::cast_to<MeshInstance3D>(E);
 				if (!instance) {
 					continue;
 				}

@@ -365,8 +365,8 @@ void SpriteFramesEditor::_file_load_request(const Vector<String> &p_path, int p_
 
 	int count = 0;
 
-	for (List<Ref<Texture2D>>::Element *E = resources.front(); E; E = E->next()) {
-		undo_redo->add_do_method(frames, "add_frame", edited_anim, E->get(), p_at_pos == -1 ? -1 : p_at_pos + count);
+	for (Ref<Texture2D> &E : resources) {
+		undo_redo->add_do_method(frames, "add_frame", edited_anim, E, p_at_pos == -1 ? -1 : p_at_pos + count);
 		undo_redo->add_undo_method(frames, "remove_frame", edited_anim, p_at_pos == -1 ? fc : p_at_pos);
 		count++;
 	}
@@ -624,10 +624,10 @@ void SpriteFramesEditor::_animation_name_edited() {
 	undo_redo->add_do_method(frames, "rename_animation", edited_anim, name);
 	undo_redo->add_undo_method(frames, "rename_animation", name, edited_anim);
 
-	for (List<Node *>::Element *E = nodes.front(); E; E = E->next()) {
-		String current = E->get()->call("get_animation");
-		undo_redo->add_do_method(E->get(), "set_animation", name);
-		undo_redo->add_undo_method(E->get(), "set_animation", edited_anim);
+	for (Node *E : nodes) {
+		String current = E->call("get_animation");
+		undo_redo->add_do_method(E, "set_animation", name);
+		undo_redo->add_undo_method(E, "set_animation", edited_anim);
 	}
 
 	undo_redo->add_do_method(this, "_update_library");
@@ -655,10 +655,10 @@ void SpriteFramesEditor::_animation_add() {
 	undo_redo->add_do_method(this, "_update_library");
 	undo_redo->add_undo_method(this, "_update_library");
 
-	for (List<Node *>::Element *E = nodes.front(); E; E = E->next()) {
-		String current = E->get()->call("get_animation");
-		undo_redo->add_do_method(E->get(), "set_animation", name);
-		undo_redo->add_undo_method(E->get(), "set_animation", current);
+	for (Node *E : nodes) {
+		String current = E->call("get_animation");
+		undo_redo->add_do_method(E, "set_animation", name);
+		undo_redo->add_undo_method(E, "set_animation", current);
 	}
 
 	edited_anim = name;
@@ -788,8 +788,8 @@ void SpriteFramesEditor::_update_library(bool p_skip_selector) {
 
 		anim_names.sort_custom<StringName::AlphCompare>();
 
-		for (List<StringName>::Element *E = anim_names.front(); E; E = E->next()) {
-			String name = E->get();
+		for (StringName &E : anim_names) {
+			String name = E;
 
 			TreeItem *it = animations->create_item(anim_root);
 
@@ -798,7 +798,7 @@ void SpriteFramesEditor::_update_library(bool p_skip_selector) {
 			it->set_text(0, name);
 			it->set_editable(0, true);
 
-			if (E->get() == edited_anim) {
+			if (E == edited_anim) {
 				it->select(0);
 			}
 		}

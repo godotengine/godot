@@ -527,9 +527,8 @@ void EditorFeatureProfileManager::_fill_classes_from(TreeItem *p_parent, const S
 	ClassDB::get_direct_inheriters_from_class(p_class, &child_classes);
 	child_classes.sort_custom<StringName::AlphCompare>();
 
-	for (List<StringName>::Element *E = child_classes.front(); E; E = E->next()) {
-		String name = E->get();
-		if (name.begins_with("Editor") || ClassDB::get_api_type(name) != ClassDB::API_CORE) {
+	for (StringName &name : child_classes) {
+		if (String(name).begins_with("Editor") || ClassDB::get_api_type(name) != ClassDB::API_CORE) {
 			continue;
 		}
 		_fill_classes_from(class_item, name, p_selected);
@@ -597,9 +596,9 @@ void EditorFeatureProfileManager::_class_list_item_selected() {
 		TreeItem *properties = property_list->create_item(root);
 		properties->set_text(0, TTR("Class Properties:"));
 
-		for (List<PropertyInfo>::Element *E = props.front(); E; E = E->next()) {
-			String name = E->get().name;
-			if (!(E->get().usage & PROPERTY_USAGE_EDITOR)) {
+		for (PropertyInfo &E : props) {
+			String name = E.name;
+			if (!(E.usage & PROPERTY_USAGE_EDITOR)) {
 				continue;
 			}
 			TreeItem *property = property_list->create_item(properties);
@@ -609,7 +608,7 @@ void EditorFeatureProfileManager::_class_list_item_selected() {
 			property->set_checked(0, !edited->is_class_property_disabled(class_name, name));
 			property->set_text(0, name.capitalize());
 			property->set_metadata(0, name);
-			String icon_type = Variant::get_type_name(E->get().type);
+			String icon_type = Variant::get_type_name(E.type);
 			property->set_icon(0, EditorNode::get_singleton()->get_class_icon(icon_type));
 		}
 	}

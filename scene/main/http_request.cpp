@@ -220,8 +220,8 @@ bool HTTPRequest::_handle_response(bool *ret_value) {
 	client->get_response_headers(&rheaders);
 	response_headers.resize(0);
 	downloaded.set(0);
-	for (List<String>::Element *E = rheaders.front(); E; E = E->next()) {
-		response_headers.push_back(E->get());
+	for (String &E : rheaders) {
+		response_headers.push_back(E);
 	}
 
 	if (response_code == 301 || response_code == 302) {
@@ -235,9 +235,9 @@ bool HTTPRequest::_handle_response(bool *ret_value) {
 
 		String new_request;
 
-		for (List<String>::Element *E = rheaders.front(); E; E = E->next()) {
-			if (E->get().findn("Location: ") != -1) {
-				new_request = E->get().substr(9, E->get().length()).strip_edges();
+		for (String &E : rheaders) {
+			if (E.findn("Location: ") != -1) {
+				new_request = E.substr(9, E.length()).strip_edges();
 			}
 		}
 

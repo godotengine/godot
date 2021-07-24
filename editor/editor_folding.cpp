@@ -109,10 +109,10 @@ void EditorFolding::_fill_folds(const Node *p_root, const Node *p_node, Array &p
 
 	List<PropertyInfo> plist;
 	p_node->get_property_list(&plist);
-	for (List<PropertyInfo>::Element *E = plist.front(); E; E = E->next()) {
-		if (E->get().usage & PROPERTY_USAGE_EDITOR) {
-			if (E->get().type == Variant::OBJECT) {
-				RES res = p_node->get(E->get().name);
+	for (PropertyInfo &E : plist) {
+		if (E.usage & PROPERTY_USAGE_EDITOR) {
+			if (E.type == Variant::OBJECT) {
+				RES res = p_node->get(E.name);
 				if (res.is_valid() && !resources.has(res) && res->get_path() != String() && !res->get_path().is_resource_file()) {
 					Vector<String> res_unfolds = _get_unfolds(res.ptr());
 					resource_folds.push_back(res->get_path());
@@ -228,41 +228,41 @@ void EditorFolding::_do_object_unfolds(Object *p_object, Set<RES> &resources) {
 
 	Set<String> unfold_group;
 
-	for (List<PropertyInfo>::Element *E = plist.front(); E; E = E->next()) {
-		if (E->get().usage & PROPERTY_USAGE_CATEGORY) {
+	for (PropertyInfo &E : plist) {
+		if (E.usage & PROPERTY_USAGE_CATEGORY) {
 			group = "";
 			group_base = "";
 		}
-		if (E->get().usage & PROPERTY_USAGE_GROUP) {
-			group = E->get().name;
-			group_base = E->get().hint_string;
+		if (E.usage & PROPERTY_USAGE_GROUP) {
+			group = E.name;
+			group_base = E.hint_string;
 			if (group_base.ends_with("_")) {
 				group_base = group_base.substr(0, group_base.length() - 1);
 			}
 		}
 
 		//can unfold
-		if (E->get().usage & PROPERTY_USAGE_EDITOR) {
+		if (E.usage & PROPERTY_USAGE_EDITOR) {
 			if (group != "") { //group
-				if (group_base == String() || E->get().name.begins_with(group_base)) {
-					bool can_revert = EditorPropertyRevert::can_property_revert(p_object, E->get().name);
+				if (group_base == String() || E.name.begins_with(group_base)) {
+					bool can_revert = EditorPropertyRevert::can_property_revert(p_object, E.name);
 					if (can_revert) {
 						unfold_group.insert(group);
 					}
 				}
 			} else { //path
-				int last = E->get().name.rfind("/");
+				int last = E.name.rfind("/");
 				if (last != -1) {
-					bool can_revert = EditorPropertyRevert::can_property_revert(p_object, E->get().name);
+					bool can_revert = EditorPropertyRevert::can_property_revert(p_object, E.name);
 					if (can_revert) {
-						unfold_group.insert(E->get().name.substr(0, last));
+						unfold_group.insert(E.name.substr(0, last));
 					}
 				}
 			}
 
-			if (E->get().type == Variant::OBJECT) {
-				RES res = p_object->get(E->get().name);
-				print_line("res: " + String(E->get().name) + " valid " + itos(res.is_valid()));
+			if (E.type == Variant::OBJECT) {
+				RES res = p_object->get(E.name);
+				print_line("res: " + String(E.name) + " valid " + itos(res.is_valid()));
 				if (res.is_valid()) {
 					print_line("path " + res->get_path());
 				}

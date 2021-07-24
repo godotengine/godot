@@ -191,8 +191,8 @@ TEST_CASE("[GDNative Variant] Get utility function list") {
 
 	godot_string_name *cur = c_list;
 
-	for (const List<StringName>::Element *E = cpp_list.front(); E; E = E->next()) {
-		const StringName &cpp_name = E->get();
+	for (const StringName &E : cpp_list) {
+		const StringName &cpp_name = E;
 		StringName *c_name = (StringName *)cur++;
 
 		CHECK(*c_name == cpp_name);

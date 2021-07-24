@@ -1681,10 +1681,10 @@ String Variant::stringify(List<const void *> &stack) const {
 
 			Vector<_VariantStrPair> pairs;
 
-			for (List<Variant>::Element *E = keys.front(); E; E = E->next()) {
+			for (Variant &E : keys) {
 				_VariantStrPair sp;
-				sp.key = E->get().stringify(stack);
-				sp.value = d[E->get()].stringify(stack);
+				sp.key = E.stringify(stack);
+				sp.value = d[E].stringify(stack);
 
 				pairs.push_back(sp);
 			}

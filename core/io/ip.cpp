@@ -252,8 +252,8 @@ Array IP::_get_local_addresses() const {
 	Array addresses;
 	List<IPAddress> ip_addresses;
 	get_local_addresses(&ip_addresses);
-	for (List<IPAddress>::Element *E = ip_addresses.front(); E; E = E->next()) {
-		addresses.push_back(E->get());
+	for (IPAddress &E : ip_addresses) {
+		addresses.push_back(E);
 	}
 
 	return addresses;
@@ -271,8 +271,8 @@ Array IP::_get_local_interfaces() const {
 		rc["index"] = c.index;
 
 		Array ips;
-		for (const List<IPAddress>::Element *F = c.ip_addresses.front(); F; F = F->next()) {
-			ips.push_front(F->get());
+		for (const IPAddress &F : c.ip_addresses) {
+			ips.push_front(F);
 		}
 		rc["addresses"] = ips;
 
@@ -286,8 +286,8 @@ void IP::get_local_addresses(List<IPAddress> *r_addresses) const {
 	Map<String, Interface_Info> interfaces;
 	get_local_interfaces(&interfaces);
 	for (Map<String, Interface_Info>::Element *E = interfaces.front(); E; E = E->next()) {
-		for (const List<IPAddress>::Element *F = E->get().ip_addresses.front(); F; F = F->next()) {
-			r_addresses->push_front(F->get());
+		for (const IPAddress &F : E->get().ip_addresses) {
+			r_addresses->push_front(F);
 		}
 	}
 }

@@ -205,12 +205,12 @@ String ScriptCreateDialog::_validate_path(const String &p_path, bool p_file_must
 	bool found = false;
 	bool match = false;
 	int index = 0;
-	for (List<String>::Element *E = extensions.front(); E; E = E->next()) {
-		if (E->get().nocasecmp_to(extension) == 0) {
+	for (String &E : extensions) {
+		if (E.nocasecmp_to(extension) == 0) {
 			//FIXME (?) - changing language this way doesn't update controls, needs rework
 			//language_menu->select(index); // change Language option by extension
 			found = true;
-			if (E->get() == ScriptServer::get_language(language_menu->get_selected())->get_extension()) {
+			if (E == ScriptServer::get_language(language_menu->get_selected())->get_extension()) {
 				match = true;
 			}
 			break;
@@ -373,8 +373,8 @@ void ScriptCreateDialog::_lang_changed(int l) {
 				ScriptServer::get_language(m)->get_recognized_extensions(&extensions);
 			}
 
-			for (List<String>::Element *E = extensions.front(); E; E = E->next()) {
-				if (E->get().nocasecmp_to(extension) == 0) {
+			for (String &E : extensions) {
+				if (E.nocasecmp_to(extension) == 0) {
 					path = path.get_basename() + selected_ext;
 					_path_changed(path);
 					break;
@@ -534,8 +534,8 @@ void ScriptCreateDialog::_browse_path(bool browse_parent, bool p_save) {
 	int lang = language_menu->get_selected();
 	ScriptServer::get_language(lang)->get_recognized_extensions(&extensions);
 
-	for (List<String>::Element *E = extensions.front(); E; E = E->next()) {
-		file_browse->add_filter("*." + E->get());
+	for (String &E : extensions) {
+		file_browse->add_filter("*." + E);
 	}
 
 	file_browse->set_current_path(file_path->get_text());

@@ -80,9 +80,9 @@ bool EditorExportPreset::_get(const StringName &p_name, Variant &r_ret) const {
 }
 
 void EditorExportPreset::_get_property_list(List<PropertyInfo> *p_list) const {
-	for (const List<PropertyInfo>::Element *E = properties.front(); E; E = E->next()) {
-		if (platform->get_option_visibility(E->get().name, values)) {
-			p_list->push_back(E->get());
+	for (const PropertyInfo &E : properties) {
+		if (platform->get_option_visibility(E.name, values)) {
+			p_list->push_back(E);
 		}
 	}
 }
@@ -436,9 +436,9 @@ Ref<EditorExportPreset> EditorExportPlatform::create_preset() {
 	List<ExportOption> options;
 	get_export_options(&options);
 
-	for (List<ExportOption>::Element *E = options.front(); E; E = E->next()) {
-		preset->properties.push_back(E->get().option);
-		preset->values[E->get().option.name] = E->get().default_value;
+	for (ExportOption &E : options) {
+		preset->properties.push_back(E.option);
+		preset->values[E.option.name] = E.default_value;
 	}
 
 	return preset;
@@ -679,9 +679,9 @@ EditorExportPlatform::FeatureContainers EditorExportPlatform::get_feature_contai
 	platform->get_preset_features(p_preset, &feature_list);
 
 	FeatureContainers result;
-	for (List<String>::Element *E = feature_list.front(); E; E = E->next()) {
-		result.features.insert(E->get());
-		result.features_pv.push_back(E->get());
+	for (String &E : feature_list) {
+		result.features.insert(E);
+		result.features_pv.push_back(E);
 	}
 
 	if (p_preset->get_custom_features() != String()) {
@@ -752,9 +752,7 @@ Error EditorExportPlatform::export_project_files(const Ref<EditorExportPreset> &
 		List<PropertyInfo> props;
 		ProjectSettings::get_singleton()->get_property_list(&props);
 
-		for (List<PropertyInfo>::Element *E = props.front(); E; E = E->next()) {
-			const PropertyInfo &pi = E->get();
-
+		for (PropertyInfo &pi : props) {
 			if (!pi.name.begins_with("autoload/")) {
 				continue;
 			}
@@ -899,8 +897,8 @@ Error EditorExportPlatform::export_project_files(const Ref<EditorExportPreset> &
 
 			Set<String> remap_features;
 
-			for (List<String>::Element *F = remaps.front(); F; F = F->next()) {
-				String remap = F->get();
+			for (String &F : remaps) {
+				String remap = F;
 				String feature = remap.get_slice(".", 1);
 				if (features.has(feature)) {
 					remap_features.insert(feature);
@@ -913,8 +911,8 @@ Error EditorExportPlatform::export_project_files(const Ref<EditorExportPreset> &
 
 			err = OK;
 
-			for (List<String>::Element *F = remaps.front(); F; F = F->next()) {
-				String remap = F->get();
+			for (String &F : remaps) {
+				String remap = F;
 				if (remap == "path") {
 					String remapped_path = config->get_value("remap", remap);
 					Vector<uint8_t> array = FileAccess::get_file_as_array(remapped_path);
@@ -1362,7 +1360,7 @@ void EditorExportPlatform::gen_export_flags(Vector<String> &r_flags, int p_flags
 		if (breakpoints.size()) {
 			r_flags.push_back("--breakpoints");
 			String bpoints;
-			for (const List<String>::Element *E = breakpoints.front(); E; E = E->next()) {
+			for (List<String>::Element *E = breakpoints.front(); E; E = E->next()) {
 				bpoints += E->get().replace(" ", "%20");
 				if (E->next()) {
 					bpoints += ",";
@@ -1436,8 +1434,8 @@ void EditorExport::_save() {
 
 		String option_section = "preset." + itos(i) + ".options";
 
-		for (const List<PropertyInfo>::Element *E = preset->get_properties().front(); E; E = E->next()) {
-			config->set_value(option_section, E->get().name, preset->get(E->get().name));
+		for (const PropertyInfo &E : preset->get_properties()) {
+			config->set_value(option_section, E.name, preset->get(E.name));
 		}
 	}
 
@@ -1642,10 +1640,10 @@ void EditorExport::load_config() {
 
 		config->get_section_keys(option_section, &options);
 
-		for (List<String>::Element *E = options.front(); E; E = E->next()) {
-			Variant value = config->get_value(option_section, E->get());
+		for (String &E : options) {
+			Variant value = config->get_value(option_section, E);
 
-			preset->set(E->get(), value);
+			preset->set(E, value);
 		}
 
 		add_export_preset(preset);
@@ -1684,11 +1682,11 @@ void EditorExport::update_export_presets() {
 			preset->properties.clear();
 			preset->values.clear();
 
-			for (List<EditorExportPlatform::ExportOption>::Element *E = options.front(); E; E = E->next()) {
-				preset->properties.push_back(E->get().option);
+			for (EditorExportPlatform::ExportOption &E : options) {
+				preset->properties.push_back(E.option);
 
-				StringName option_name = E->get().option.name;
-				preset->values[option_name] = previous_values.has(option_name) ? previous_values[option_name] : E->get().default_value;
+				StringName option_name = E.option.name;
+				preset->values[option_name] = previous_values.has(option_name) ? previous_values[option_name] : E.default_value;
 			}
 		}
 	}

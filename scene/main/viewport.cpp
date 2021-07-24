@@ -573,8 +573,7 @@ void Viewport::_process_picking() {
 		// if no mouse event exists, create a motion one. This is necessary because objects or camera may have moved.
 		// while this extra event is sent, it is checked if both camera and last object and last ID did not move. If nothing changed, the event is discarded to avoid flooding with unnecessary motion events every frame
 		bool has_mouse_event = false;
-		for (List<Ref<InputEvent>>::Element *E = physics_picking_events.front(); E; E = E->next()) {
-			Ref<InputEventMouse> m = E->get();
+		for (Ref<InputEvent> m : physics_picking_events) {
 			if (m.is_valid()) {
 				has_mouse_event = true;
 				break;

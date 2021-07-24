@@ -229,16 +229,16 @@ void ProjectSettingsEditor::_add_feature_overrides() {
 	for (int i = 0; i < ee->get_export_platform_count(); i++) {
 		List<String> p;
 		ee->get_export_platform(i)->get_platform_features(&p);
-		for (List<String>::Element *E = p.front(); E; E = E->next()) {
-			presets.insert(E->get());
+		for (String &E : p) {
+			presets.insert(E);
 		}
 	}
 
 	for (int i = 0; i < ee->get_export_preset_count(); i++) {
 		List<String> p;
 		ee->get_export_preset(i)->get_platform()->get_preset_features(ee->get_export_preset(i), &p);
-		for (List<String>::Element *E = p.front(); E; E = E->next()) {
-			presets.insert(E->get());
+		for (String &E : p) {
+			presets.insert(E);
 		}
 
 		String custom = ee->get_export_preset(i)->get_custom_features();
@@ -391,8 +391,7 @@ void ProjectSettingsEditor::_action_reordered(const String &p_action_name, const
 
 	undo_redo->create_action(TTR("Update Input Action Order"));
 
-	for (List<PropertyInfo>::Element *E = props.front(); E; E = E->next()) {
-		PropertyInfo prop = E->get();
+	for (PropertyInfo &prop : props) {
 		// Skip builtins and non-inputs
 		if (ProjectSettings::get_singleton()->is_builtin_setting(prop.name) || !prop.name.begins_with("input/")) {
 			continue;
@@ -445,8 +444,8 @@ void ProjectSettingsEditor::_update_action_map_editor() {
 	ProjectSettings::get_singleton()->get_property_list(&props);
 
 	const Ref<Texture2D> builtin_icon = get_theme_icon(SNAME("PinPressed"), SNAME("EditorIcons"));
-	for (List<PropertyInfo>::Element *E = props.front(); E; E = E->next()) {
-		const String property_name = E->get().name;
+	for (PropertyInfo &E : props) {
+		const String property_name = E.name;
 
 		if (!property_name.begins_with("input/")) {
 			continue;

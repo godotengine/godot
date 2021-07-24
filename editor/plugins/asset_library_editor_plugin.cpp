@@ -607,7 +607,7 @@ void EditorAssetLibrary::_update_repository_options() {
 	Dictionary available_urls = _EDITOR_DEF("asset_library/available_urls", default_urls, true);
 	repository->clear();
 	Array keys = available_urls.keys();
-	for (int i = 0; i < available_urls.size(); i++) {
+	for (int i = 0; i < keys.size(); i++) {
 		String key = keys[i];
 		repository->add_item(key);
 		repository->set_item_metadata(i, available_urls[key]);

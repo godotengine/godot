@@ -100,8 +100,8 @@ void gd_mono_setup_runtime_main_args() {
 	main_args.write[0] = execpath.ptrw();
 
 	int i = 1;
-	for (List<String>::Element *E = cmdline_args.front(); E; E = E->next()) {
-		CharString &stored = cmdline_args_utf8.push_back(E->get().utf8())->get();
+	for (String &E : cmdline_args) {
+		CharString &stored = cmdline_args_utf8.push_back(E.utf8())->get();
 		main_args.write[i] = stored.ptrw();
 		i++;
 	}

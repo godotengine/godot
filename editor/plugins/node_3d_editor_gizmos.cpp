@@ -4013,8 +4013,7 @@ void CollisionObject3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 
 	List<uint32_t> owners;
 	co->get_shape_owners(&owners);
-	for (List<uint32_t>::Element *E = owners.front(); E; E = E->next()) {
-		uint32_t owner_id = E->get();
+	for (uint32_t &owner_id : owners) {
 		Transform3D xform = co->shape_owner_get_transform(owner_id);
 		Object *owner = co->shape_owner_get_owner(owner_id);
 		// Exclude CollisionShape3D and CollisionPolygon3D as they have their gizmo.
@@ -4747,9 +4746,7 @@ void NavigationRegion3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 		Vector3 *tw = tmeshfaces.ptrw();
 		int tidx = 0;
 
-		for (List<Face3>::Element *E = faces.front(); E; E = E->next()) {
-			const Face3 &f = E->get();
-
+		for (Face3 &f : faces) {
 			for (int j = 0; j < 3; j++) {
 				tw[tidx++] = f.vertex[j];
 				_EdgeKey ek;

@@ -1356,14 +1356,14 @@ void Window::_validate_property(PropertyInfo &property) const {
 
 		Vector<StringName> unique_names;
 		String hint_string;
-		for (List<StringName>::Element *E = names.front(); E; E = E->next()) {
+		for (StringName &E : names) {
 			// Skip duplicate values.
-			if (unique_names.has(E->get())) {
+			if (unique_names.has(E)) {
 				continue;
 			}
 
-			hint_string += String(E->get()) + ",";
-			unique_names.append(E->get());
+			hint_string += String(E) + ",";
+			unique_names.append(E);
 		}
 
 		property.hint_string = hint_string;

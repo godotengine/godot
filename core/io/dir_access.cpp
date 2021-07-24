@@ -93,8 +93,8 @@ static Error _erase_recursive(DirAccess *da) {
 
 	da->list_dir_end();
 
-	for (List<String>::Element *E = dirs.front(); E; E = E->next()) {
-		Error err = da->change_dir(E->get());
+	for (String &E : dirs) {
+		Error err = da->change_dir(E);
 		if (err == OK) {
 			err = _erase_recursive(da);
 			if (err) {
@@ -105,7 +105,7 @@ static Error _erase_recursive(DirAccess *da) {
 			if (err) {
 				return err;
 			}
-			err = da->remove(da->get_current_dir().plus_file(E->get()));
+			err = da->remove(da->get_current_dir().plus_file(E));
 			if (err) {
 				return err;
 			}
@@ -114,8 +114,8 @@ static Error _erase_recursive(DirAccess *da) {
 		}
 	}
 
-	for (List<String>::Element *E = files.front(); E; E = E->next()) {
-		Error err = da->remove(da->get_current_dir().plus_file(E->get()));
+	for (String &E : files) {
+		Error err = da->remove(da->get_current_dir().plus_file(E));
 		if (err) {
 			return err;
 		}
@@ -362,16 +362,15 @@ Error DirAccess::_copy_dir(DirAccess *p_target_da, String p_to, int p_chmod_flag
 
 	list_dir_end();
 
-	for (List<String>::Element *E = dirs.front(); E; E = E->next()) {
-		String rel_path = E->get();
+	for (String &rel_path : dirs) {
 		String target_dir = p_to + rel_path;
 		if (!p_target_da->dir_exists(target_dir)) {
 			Error err = p_target_da->make_dir(target_dir);
 			ERR_FAIL_COND_V_MSG(err != OK, err, "Cannot create directory '" + target_dir + "'.");
 		}
 
-		Error err = change_dir(E->get());
-		ERR_FAIL_COND_V_MSG(err != OK, err, "Cannot change current directory to '" + E->get() + "'.");
+		Error err = change_dir(rel_path);
+		ERR_FAIL_COND_V_MSG(err != OK, err, "Cannot change current directory to '" + rel_path + "'.");
 
 		err = _copy_dir(p_target_da, p_to + rel_path + "/", p_chmod_flags, p_copy_links);
 		if (err) {

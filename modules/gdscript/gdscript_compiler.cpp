@@ -981,8 +981,7 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 				assigned = prev_base;
 
 				// Set back the values into their bases.
-				for (List<ChainInfo>::Element *E = set_chain.front(); E; E = E->next()) {
-					const ChainInfo &info = E->get();
+				for (ChainInfo &info : set_chain) {
 					if (!info.is_named) {
 						gen->write_set(info.base, info.key, assigned);
 						if (info.key.mode == GDScriptCodeGenerator::Address::TEMPORARY) {

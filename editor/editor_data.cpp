@@ -299,13 +299,13 @@ void EditorData::copy_object_params(Object *p_object) {
 	List<PropertyInfo> pinfo;
 	p_object->get_property_list(&pinfo);
 
-	for (List<PropertyInfo>::Element *E = pinfo.front(); E; E = E->next()) {
-		if (!(E->get().usage & PROPERTY_USAGE_EDITOR) || E->get().name == "script" || E->get().name == "scripts") {
+	for (PropertyInfo &E : pinfo) {
+		if (!(E.usage & PROPERTY_USAGE_EDITOR) || E.name == "script" || E.name == "scripts") {
 			continue;
 		}
 
 		PropertyData pd;
-		pd.name = E->get().name;
+		pd.name = E.name;
 		pd.value = p_object->get(pd.name);
 		clipboard.push_back(pd);
 	}
@@ -404,9 +404,9 @@ void EditorData::restore_editor_global_states() {
 void EditorData::paste_object_params(Object *p_object) {
 	ERR_FAIL_NULL(p_object);
 	undo_redo.create_action(TTR("Paste Params"));
-	for (List<PropertyData>::Element *E = clipboard.front(); E; E = E->next()) {
-		String name = E->get().name;
-		undo_redo.add_do_property(p_object, name, E->get().value);
+	for (PropertyData &E : clipboard) {
+		String name = E.name;
+		undo_redo.add_do_property(p_object, name, E.value);
 		undo_redo.add_undo_property(p_object, name, p_object->get(name));
 	}
 	undo_redo.commit_action();
@@ -616,8 +616,8 @@ bool EditorData::check_and_update_scene(int p_idx) {
 
 		//transfer selection
 		List<Node *> new_selection;
-		for (List<Node *>::Element *E = edited_scene.write[p_idx].selection.front(); E; E = E->next()) {
-			NodePath p = edited_scene[p_idx].root->get_path_to(E->get());
+		for (Node *E : edited_scene.write[p_idx].selection) {
+			NodePath p = edited_scene[p_idx].root->get_path_to(E);
 			Node *new_node = new_scene->get_node(p);
 			if (new_node) {
 				new_selection.push_back(new_node);
@@ -841,8 +841,8 @@ Dictionary EditorData::restore_edited_scene_state(EditorSelection *p_selection, 
 	p_history->history = es.history_stored;
 
 	p_selection->clear();
-	for (List<Node *>::Element *E = es.selection.front(); E; E = E->next()) {
-		p_selection->add_node(E->get());
+	for (Node *E : es.selection) {
+		p_selection->add_node(E);
 	}
 	set_editor_states(es.editor_states);
 
@@ -964,9 +964,9 @@ void EditorData::script_class_save_icon_paths() {
 	_script_class_icon_paths.get_key_list(&keys);
 
 	Dictionary d;
-	for (List<StringName>::Element *E = keys.front(); E; E = E->next()) {
-		if (ScriptServer::is_global_class(E->get())) {
-			d[E->get()] = _script_class_icon_paths[E->get()];
+	for (StringName &E : keys) {
+		if (ScriptServer::is_global_class(E)) {
+			d[E] = _script_class_icon_paths[E];
 		}
 	}
 
@@ -996,8 +996,8 @@ void EditorData::script_class_load_icon_paths() {
 		List<Variant> keys;
 		d.get_key_list(&keys);
 
-		for (List<Variant>::Element *E = keys.front(); E; E = E->next()) {
-			String name = E->get().operator String();
+		for (Variant &E : keys) {
+			String name = E.operator String();
 			_script_class_icon_paths[name] = d[name];
 
 			String path = ScriptServer::get_global_class_path(name);
@@ -1038,8 +1038,8 @@ void EditorSelection::add_node(Node *p_node) {
 	changed = true;
 	nl_changed = true;
 	Object *meta = nullptr;
-	for (List<Object *>::Element *E = editor_plugins.front(); E; E = E->next()) {
-		meta = E->get()->call("_get_editor_data", p_node);
+	for (Object *E : editor_plugins) {
+		meta = E->call("_get_editor_data", p_node);
 		if (meta) {
 			break;
 		}
@@ -1076,8 +1076,8 @@ bool EditorSelection::is_selected(Node *p_node) const {
 Array EditorSelection::_get_transformable_selected_nodes() {
 	Array ret;
 
-	for (List<Node *>::Element *E = selected_node_list.front(); E; E = E->next()) {
-		ret.push_back(E->get());
+	for (Node *E : selected_node_list) {
+		ret.push_back(E);
 	}
 
 	return ret;

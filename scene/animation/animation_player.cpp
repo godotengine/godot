@@ -176,8 +176,8 @@ void AnimationPlayer::_get_property_list(List<PropertyInfo> *p_list) const {
 
 	anim_names.sort();
 
-	for (List<PropertyInfo>::Element *E = anim_names.front(); E; E = E->next()) {
-		p_list->push_back(E->get());
+	for (PropertyInfo &E : anim_names) {
+		p_list->push_back(E);
 	}
 
 	p_list->push_back(PropertyInfo(Variant::ARRAY, "blend_times", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL));
@@ -485,8 +485,8 @@ void AnimationPlayer::_animation_process_animation(AnimationData *p_anim, float 
 					List<int> indices;
 					a->value_track_get_key_indices(i, p_time, p_delta, &indices);
 
-					for (List<int>::Element *F = indices.front(); F; F = F->next()) {
-						Variant value = a->track_get_key_value(i, F->get());
+					for (int &F : indices) {
+						Variant value = a->track_get_key_value(i, F);
 						switch (pa->special) {
 							case SP_NONE: {
 								bool valid;
@@ -544,9 +544,9 @@ void AnimationPlayer::_animation_process_animation(AnimationData *p_anim, float 
 
 				a->method_track_get_key_indices(i, p_time, p_delta, &indices);
 
-				for (List<int>::Element *E = indices.front(); E; E = E->next()) {
-					StringName method = a->method_track_get_name(i, E->get());
-					Vector<Variant> params = a->method_track_get_params(i, E->get());
+				for (int &E : indices) {
+					StringName method = a->method_track_get_name(i, E);
+					Vector<Variant> params = a->method_track_get_params(i, E);
 
 					int s = params.size();
 
@@ -1076,8 +1076,8 @@ void AnimationPlayer::get_animation_list(List<StringName> *p_animations) const {
 
 	anims.sort();
 
-	for (List<String>::Element *E = anims.front(); E; E = E->next()) {
-		p_animations->push_back(E->get());
+	for (String &E : anims) {
+		p_animations->push_back(E);
 	}
 }
 
@@ -1118,8 +1118,8 @@ void AnimationPlayer::queue(const StringName &p_name) {
 
 Vector<String> AnimationPlayer::get_queue() {
 	Vector<String> ret;
-	for (List<StringName>::Element *E = queued.front(); E; E = E->next()) {
-		ret.push_back(E->get());
+	for (StringName &E : queued) {
+		ret.push_back(E);
 	}
 
 	return ret;
@@ -1502,8 +1502,8 @@ void AnimationPlayer::get_argument_options(const StringName &p_function, int p_i
 	if (p_idx == 0 && (p_function == "play" || p_function == "play_backwards" || p_function == "remove_animation" || p_function == "has_animation" || p_function == "queue")) {
 		List<StringName> al;
 		get_animation_list(&al);
-		for (List<StringName>::Element *E = al.front(); E; E = E->next()) {
-			r_options->push_back(quote_style + String(E->get()) + quote_style);
+		for (StringName &E : al) {
+			r_options->push_back(quote_style + String(E) + quote_style);
 		}
 	}
 	Node::get_argument_options(p_function, p_idx, r_options);

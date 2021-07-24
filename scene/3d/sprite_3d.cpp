@@ -60,8 +60,8 @@ void SpriteBase3D::_propagate_color_changed() {
 	color_dirty = true;
 	_queue_update();
 
-	for (List<SpriteBase3D *>::Element *E = children.front(); E; E = E->next()) {
-		E->get()->_propagate_color_changed();
+	for (SpriteBase3D *&E : children) {
+		E->_propagate_color_changed();
 	}
 }
 
@@ -996,7 +996,7 @@ void AnimatedSprite3D::_validate_property(PropertyInfo &property) const {
 			}
 
 			property.hint_string += String(E->get());
-			if (animation == E->get()) {
+			if (animation == E) {
 				current_found = true;
 			}
 		}

@@ -156,43 +156,43 @@ void PropertySelector::_update_search() {
 			search_options->get_theme_icon(SNAME("PackedColorArray"), SNAME("EditorIcons"))
 		};
 
-		for (List<PropertyInfo>::Element *E = props.front(); E; E = E->next()) {
-			if (E->get().usage == PROPERTY_USAGE_CATEGORY) {
+		for (PropertyInfo &E : props) {
+			if (E.usage == PROPERTY_USAGE_CATEGORY) {
 				if (category && category->get_first_child() == nullptr) {
 					memdelete(category); //old category was unused
 				}
 				category = search_options->create_item(root);
-				category->set_text(0, E->get().name);
+				category->set_text(0, E.name);
 				category->set_selectable(0, false);
 
 				Ref<Texture2D> icon;
-				if (E->get().name == "Script Variables") {
+				if (E.name == "Script Variables") {
 					icon = search_options->get_theme_icon(SNAME("Script"), SNAME("EditorIcons"));
 				} else {
-					icon = EditorNode::get_singleton()->get_class_icon(E->get().name);
+					icon = EditorNode::get_singleton()->get_class_icon(E.name);
 				}
 				category->set_icon(0, icon);
 				continue;
 			}
 
-			if (!(E->get().usage & PROPERTY_USAGE_EDITOR) && !(E->get().usage & PROPERTY_USAGE_SCRIPT_VARIABLE)) {
+			if (!(E.usage & PROPERTY_USAGE_EDITOR) && !(E.usage & PROPERTY_USAGE_SCRIPT_VARIABLE)) {
 				continue;
 			}
 
-			if (search_box->get_text() != String() && E->get().name.findn(search_text) == -1) {
+			if (search_box->get_text() != String() && E.name.findn(search_text) == -1) {
 				continue;
 			}
 
-			if (type_filter.size() && type_filter.find(E->get().type) == -1) {
+			if (type_filter.size() && type_filter.find(E.type) == -1) {
 				continue;
 			}
 
 			TreeItem *item = search_options->create_item(category ? category : root);
-			item->set_text(0, E->get().name);
-			item->set_metadata(0, E->get().name);
-			item->set_icon(0, type_icons[E->get().type]);
+			item->set_text(0, E.name);
+			item->set_metadata(0, E.name);
+			item->set_icon(0, type_icons[E.type]);
 
-			if (!found && search_box->get_text() != String() && E->get().name.findn(search_text) != -1) {
+			if (!found && search_box->get_text() != String() && E.name.findn(search_text) != -1) {
 				item->select(0);
 				found = true;
 			}
@@ -231,19 +231,19 @@ void PropertySelector::_update_search() {
 		bool found = false;
 		bool script_methods = false;
 
-		for (List<MethodInfo>::Element *E = methods.front(); E; E = E->next()) {
-			if (E->get().name.begins_with("*")) {
+		for (MethodInfo &mi : methods) {
+			if (mi.name.begins_with("*")) {
 				if (category && category->get_first_child() == nullptr) {
 					memdelete(category); //old category was unused
 				}
 				category = search_options->create_item(root);
-				category->set_text(0, E->get().name.replace_first("*", ""));
+				category->set_text(0, mi.name.replace_first("*", ""));
 				category->set_selectable(0, false);
 
 				Ref<Texture2D> icon;
 				script_methods = false;
-				String rep = E->get().name.replace("*", "");
-				if (E->get().name == "*Script Methods") {
+				String rep = mi.name.replace("*", "");
+				if (mi.name == "*Script Methods") {
 					icon = search_options->get_theme_icon(SNAME("Script"), SNAME("EditorIcons"));
 					script_methods = true;
 				} else {
@@ -254,16 +254,16 @@ void PropertySelector::_update_search() {
 				continue;
 			}
 
-			String name = E->get().name.get_slice(":", 0);
-			if (!script_methods && name.begins_with("_") && !(E->get().flags & METHOD_FLAG_VIRTUAL)) {
+			String name = mi.name.get_slice(":", 0);
+			if (!script_methods && name.begins_with("_") && !(mi.flags & METHOD_FLAG_VIRTUAL)) {
 				continue;
 			}
 
-			if (virtuals_only && !(E->get().flags & METHOD_FLAG_VIRTUAL)) {
+			if (virtuals_only && !(mi.flags & METHOD_FLAG_VIRTUAL)) {
 				continue;
 			}
 
-			if (!virtuals_only && (E->get().flags & METHOD_FLAG_VIRTUAL)) {
+			if (!virtuals_only && (mi.flags & METHOD_FLAG_VIRTUAL)) {
 				continue;
 			}
 
@@ -272,8 +272,6 @@ void PropertySelector::_update_search() {
 			}
 
 			TreeItem *item = search_options->create_item(category ? category : root);
-
-			MethodInfo mi = E->get();
 
 			String desc;
 			if (mi.name.find(":") != -1) {
@@ -306,11 +304,11 @@ void PropertySelector::_update_search() {
 
 			desc += ")";
 
-			if (E->get().flags & METHOD_FLAG_CONST) {
+			if (mi.flags & METHOD_FLAG_CONST) {
 				desc += " const";
 			}
 
-			if (E->get().flags & METHOD_FLAG_VIRTUAL) {
+			if (mi.flags & METHOD_FLAG_VIRTUAL) {
 				desc += " virtual";
 			}
 
