@@ -1018,32 +1018,32 @@ struct CompletionList {
  * A symbol kind.
  */
 namespace SymbolKind {
-static const int File = 0;
-static const int Module = 1;
-static const int Namespace = 2;
-static const int Package = 3;
-static const int Class = 4;
-static const int Method = 5;
-static const int Property = 6;
-static const int Field = 7;
-static const int Constructor = 8;
-static const int Enum = 9;
-static const int Interface = 10;
-static const int Function = 11;
-static const int Variable = 12;
-static const int Constant = 13;
-static const int String = 14;
-static const int Number = 15;
-static const int Boolean = 16;
-static const int Array = 17;
-static const int Object = 18;
-static const int Key = 19;
-static const int Null = 20;
-static const int EnumMember = 21;
-static const int Struct = 22;
-static const int Event = 23;
-static const int Operator = 24;
-static const int TypeParameter = 25;
+static const int File = 1;
+static const int Module = 2;
+static const int Namespace = 3;
+static const int Package = 4;
+static const int Class = 5;
+static const int Method = 6;
+static const int Property = 7;
+static const int Field = 8;
+static const int Constructor = 9;
+static const int Enum = 10;
+static const int Interface = 11;
+static const int Function = 12;
+static const int Variable = 13;
+static const int Constant = 14;
+static const int String = 15;
+static const int Number = 16;
+static const int Boolean = 17;
+static const int Array = 18;
+static const int Object = 19;
+static const int Key = 20;
+static const int Null = 21;
+static const int EnumMember = 22;
+static const int Struct = 23;
+static const int Event = 24;
+static const int Operator = 25;
+static const int TypeParameter = 26;
 }; // namespace SymbolKind
 
 /**
