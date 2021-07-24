@@ -332,7 +332,7 @@ void MeshInstanceEditor::_create_uv_lines(int p_layer) {
 
 		PoolVector<Vector2> uv = a[p_layer == 0 ? Mesh::ARRAY_TEX_UV : Mesh::ARRAY_TEX_UV2];
 		if (uv.size() == 0) {
-			err_dialog->set_text(TTR("Model has no UV in this layer"));
+			err_dialog->set_text(vformat(TTR("Mesh has no UV in layer %d."), p_layer + 1));
 			err_dialog->popup_centered_minsize();
 			return;
 		}
@@ -385,9 +385,10 @@ void MeshInstanceEditor::_debug_uv_draw() {
 	}
 
 	debug_uv->set_clip_contents(true);
-	debug_uv->draw_rect(Rect2(Vector2(), debug_uv->get_size()), Color(0.2, 0.2, 0.0));
+	debug_uv->draw_rect(Rect2(Vector2(), debug_uv->get_size()), get_color("dark_color_3", "Editor"));
 	debug_uv->draw_set_transform(Vector2(), 0, debug_uv->get_size());
-	debug_uv->draw_multiline(uv_lines, Color(1.0, 0.8, 0.7));
+	// Use a translucent color to allow overlapping triangles to be visible.
+	debug_uv->draw_multiline(uv_lines, get_color("mono_color", "Editor") * Color(1, 1, 1, 0.5), Math::round(EDSCALE));
 }
 
 void MeshInstanceEditor::_create_outline_mesh() {
