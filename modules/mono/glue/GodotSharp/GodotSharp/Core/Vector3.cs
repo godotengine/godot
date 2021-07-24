@@ -1,16 +1,10 @@
-// file: core/math/vector3.h
-// commit: bd282ff43f23fe845f29a3e25c8efc01bd65ffb0
-// file: core/math/vector3.cpp
-// commit: 7ad14e7a3e6f87ddc450f7e34621eb5200808451
-// file: core/variant_call.cpp
-// commit: 5ad9be4c24e9d7dc5672fdc42cea896622fe5685
-using System;
-using System.Runtime.InteropServices;
 #if REAL_T_IS_DOUBLE
 using real_t = System.Double;
 #else
 using real_t = System.Single;
 #endif
+using System;
+using System.Runtime.InteropServices;
 
 namespace Godot
 {

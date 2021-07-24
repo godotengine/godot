@@ -1,9 +1,9 @@
-using System;
 #if REAL_T_IS_DOUBLE
 using real_t = System.Double;
 #else
 using real_t = System.Single;
 #endif
+using System;
 
 namespace Godot
 {
@@ -14,13 +14,15 @@ namespace Godot
         /// <summary>
         /// The circle constant, the circumference of the unit circle in radians.
         /// </summary>
-        public const real_t Tau = (real_t) 6.2831853071795864769252867666M; // 6.2831855f and 6.28318530717959
+        // 6.2831855f and 6.28318530717959
+        public const real_t Tau = (real_t)6.2831853071795864769252867666M;
 
         /// <summary>
         /// Constant that represents how many times the diameter of a circle
         /// fits around its perimeter. This is equivalent to `Mathf.Tau / 2`.
         /// </summary>
-        public const real_t Pi = (real_t) 3.1415926535897932384626433833M; // 3.1415927f and 3.14159265358979
+        // 3.1415927f and 3.14159265358979
+        public const real_t Pi = (real_t)3.1415926535897932384626433833M;
 
         /// <summary>
         /// Positive infinity. For negative infinity, use `-Mathf.Inf`.
@@ -34,8 +36,10 @@ namespace Godot
         /// </summary>
         public const real_t NaN = real_t.NaN;
 
-        private const real_t Deg2RadConst = (real_t) 0.0174532925199432957692369077M; // 0.0174532924f and 0.0174532925199433
-        private const real_t Rad2DegConst = (real_t) 57.295779513082320876798154814M; // 57.29578f and 57.2957795130823
+        // 0.0174532924f and 0.0174532925199433
+        private const real_t Deg2RadConst = (real_t)0.0174532925199432957692369077M;
+        // 57.29578f and 57.2957795130823
+        private const real_t Rad2DegConst = (real_t)57.295779513082320876798154814M;
 
         /// <summary>
         /// Returns the absolute value of `s` (i.e. positive value).
@@ -515,7 +519,8 @@ namespace Godot
         /// <returns>One of three possible values: `1`, `-1`, or `0`.</returns>
         public static int Sign(int s)
         {
-            if (s == 0) return 0;
+            if (s == 0)
+                return 0;
             return s < 0 ? -1 : 1;
         }
 
@@ -526,7 +531,8 @@ namespace Godot
         /// <returns>One of three possible values: `1`, `-1`, or `0`.</returns>
         public static int Sign(real_t s)
         {
-            if (s == 0) return 0;
+            if (s == 0)
+                return 0;
             return s < 0 ? -1 : 1;
         }
 
