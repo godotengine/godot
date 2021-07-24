@@ -113,8 +113,7 @@ namespace GodotTools.IdeMessaging.CLI
                         }
                     }
 
-                    ExitMainLoop:
-
+                ExitMainLoop:
                     await forwarder.WriteLineToOutput("Event=Quit");
                 }
 
