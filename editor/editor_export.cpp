@@ -1048,6 +1048,13 @@ Error EditorExportPlatform::export_project_files(const Ref<EditorExportPreset> &
 			return err;
 		}
 	}
+	if (FileAccess::exists(ResourceUID::CACHE_FILE)) {
+		Vector<uint8_t> array = FileAccess::get_file_as_array(ResourceUID::CACHE_FILE);
+		err = p_func(p_udata, ResourceUID::CACHE_FILE, array, idx, total, enc_in_filters, enc_ex_filters, key);
+		if (err != OK) {
+			return err;
+		}
+	}
 
 	// Store text server data if it is supported.
 	if (TS->has_feature(TextServer::FEATURE_USE_SUPPORT_DATA)) {

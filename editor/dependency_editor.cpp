@@ -178,6 +178,15 @@ void DependencyEditor::_update_list() {
 			path = n;
 			type = "Resource";
 		}
+
+		ResourceUID::ID uid = ResourceUID::get_singleton()->text_to_id(path);
+		if (uid != ResourceUID::INVALID_ID) {
+			// dependency is in uid format, obtain proper path
+			ERR_CONTINUE(!ResourceUID::get_singleton()->has_id(uid));
+
+			path = ResourceUID::get_singleton()->get_id_path(uid);
+		}
+
 		String name = path.get_file();
 
 		Ref<Texture2D> icon = EditorNode::get_singleton()->get_class_icon(type);

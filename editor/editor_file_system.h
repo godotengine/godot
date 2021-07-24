@@ -55,6 +55,7 @@ class EditorFileSystemDirectory : public Object {
 	struct FileInfo {
 		String file;
 		StringName type;
+		ResourceUID::ID uid = ResourceUID::INVALID_ID;
 		uint64_t modified_time = 0;
 		uint64_t import_modified_time = 0;
 		bool import_valid = false;
@@ -159,6 +160,7 @@ class EditorFileSystem : public Node {
 	/* Used for reading the filesystem cache file */
 	struct FileCache {
 		String type;
+		ResourceUID::ID uid = ResourceUID::INVALID_ID;
 		uint64_t modification_time = 0;
 		uint64_t import_modification_time = 0;
 		Vector<String> deps;
@@ -250,6 +252,8 @@ class EditorFileSystem : public Node {
 	};
 
 	void _reimport_thread(uint32_t p_index, ImportThreadData *p_import_data);
+
+	static ResourceUID::ID _resource_saver_get_resource_id_for_path(const String &p_path, bool p_generate);
 
 protected:
 	void _notification(int p_what);

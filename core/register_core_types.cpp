@@ -56,6 +56,7 @@
 #include "core/io/pck_packer.h"
 #include "core/io/resource_format_binary.h"
 #include "core/io/resource_importer.h"
+#include "core/io/resource_uid.h"
 #include "core/io/stream_peer_ssl.h"
 #include "core/io/tcp_server.h"
 #include "core/io/translation_loader_po.h"
@@ -101,6 +102,8 @@ static NativeExtensionManager *native_extension_manager = nullptr;
 
 extern void register_global_constants();
 extern void unregister_global_constants();
+
+static ResourceUID *resource_uid = nullptr;
 
 void register_core_types() {
 	//consistency check
@@ -225,6 +228,10 @@ void register_core_types() {
 
 	GDREGISTER_VIRTUAL_CLASS(NativeExtensionManager);
 
+	GDREGISTER_VIRTUAL_CLASS(ResourceUID);
+
+	resource_uid = memnew(ResourceUID);
+
 	native_extension_manager = memnew(NativeExtensionManager);
 
 	ip = IP::create();
@@ -286,6 +293,7 @@ void register_core_singletons() {
 	Engine::get_singleton()->add_singleton(Engine::Singleton("EngineDebugger", _EngineDebugger::get_singleton()));
 	Engine::get_singleton()->add_singleton(Engine::Singleton("Time", Time::get_singleton()));
 	Engine::get_singleton()->add_singleton(Engine::Singleton("NativeExtensionManager", NativeExtensionManager::get_singleton()));
+	Engine::get_singleton()->add_singleton(Engine::Singleton("ResourceUID", ResourceUID::get_singleton()));
 }
 
 void register_core_extensions() {
@@ -304,6 +312,8 @@ void unregister_core_types() {
 	native_extension_manager->deinitialize_extensions(NativeExtension::INITIALIZATION_LEVEL_CORE);
 
 	memdelete(native_extension_manager);
+
+	memdelete(resource_uid);
 	memdelete(_resource_loader);
 	memdelete(_resource_saver);
 	memdelete(_os);

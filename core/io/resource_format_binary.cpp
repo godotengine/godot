@@ -816,13 +816,18 @@ String ResourceLoaderBinary::get_unicode_string() {
 }
 
 void ResourceLoaderBinary::get_dependencies(FileAccess *p_f, List<String> *p_dependencies, bool p_add_types) {
-	open(p_f);
+	open(p_f, false, true);
 	if (error) {
 		return;
 	}
 
 	for (int i = 0; i < external_resources.size(); i++) {
-		String dep = external_resources[i].path;
+		String dep;
+		if (external_resources[i].uid != ResourceUID::INVALID_ID) {
+			dep = ResourceUID::get_singleton()->id_to_text(external_resources[i].uid);
+		} else {
+			dep = external_resources[i].path;
+		}
 
 		if (p_add_types && external_resources[i].type != String()) {
 			dep += "::" + external_resources[i].type;
@@ -832,7 +837,7 @@ void ResourceLoaderBinary::get_dependencies(FileAccess *p_f, List<String> *p_dep
 	}
 }
 
-void ResourceLoaderBinary::open(FileAccess *p_f) {
+void ResourceLoaderBinary::open(FileAccess *p_f, bool p_no_resources, bool p_keep_uuid_paths) {
 	error = OK;
 
 	f = p_f;
@@ -891,8 +896,22 @@ void ResourceLoaderBinary::open(FileAccess *p_f) {
 	if (flags & ResourceFormatSaverBinaryInstance::FORMAT_FLAG_NAMED_SCENE_IDS) {
 		using_named_scene_ids = true;
 	}
-	for (int i = 0; i < 13; i++) {
+	if (flags & ResourceFormatSaverBinaryInstance::FORMAT_FLAG_UIDS) {
+		using_uids = true;
+	}
+
+	if (using_uids) {
+		uid = f->get_64();
+	} else {
+		uid = ResourceUID::INVALID_ID;
+	}
+
+	for (int i = 0; i < 5; i++) {
 		f->get_32(); //skip a few reserved fields
+	}
+
+	if (p_no_resources) {
+		return;
 	}
 
 	uint32_t string_table_size = f->get_32();
@@ -908,8 +927,18 @@ void ResourceLoaderBinary::open(FileAccess *p_f) {
 	for (uint32_t i = 0; i < ext_resources_size; i++) {
 		ExtResource er;
 		er.type = get_unicode_string();
-
 		er.path = get_unicode_string();
+		if (using_uids) {
+			er.uid = f->get_64();
+			if (!p_keep_uuid_paths && er.uid != ResourceUID::INVALID_ID) {
+				if (ResourceUID::get_singleton()->has_id(er.uid)) {
+					// If a UID is found and the path is valid, it will be used, otherwise, it falls back to the path.
+					er.path = ResourceUID::get_singleton()->get_id_path(er.uid);
+				} else {
+					WARN_PRINT(String(res_path + ": In external resouce #" + itos(i) + ", invalid UUID: " + ResourceUID::get_singleton()->id_to_text(er.uid) + " - using text path instead: " + er.path).utf8().get_data());
+				}
+			}
+		}
 
 		external_resources.push_back(er);
 	}
@@ -1173,8 +1202,15 @@ Error ResourceFormatLoaderBinary::rename_dependencies(const String &p_path, cons
 	uint64_t importmd_ofs = f->get_64();
 	fw->store_64(0); //metadata offset
 
-	for (int i = 0; i < 14; i++) {
-		fw->store_32(0);
+	uint32_t flags = f->get_32();
+	bool using_uids = (flags & ResourceFormatSaverBinaryInstance::FORMAT_FLAG_UIDS);
+	uint64_t uid_data = f->get_64();
+
+	fw->store_32(flags);
+	fw->store_64(uid_data);
+
+	for (int i = 0; i < 5; i++) {
+		f->store_32(0); // reserved
 		f->get_32();
 	}
 
@@ -1195,6 +1231,16 @@ Error ResourceFormatLoaderBinary::rename_dependencies(const String &p_path, cons
 		String type = get_ustring(f);
 		String path = get_ustring(f);
 
+		if (using_uids) {
+			ResourceUID::ID uid = f->get_64();
+			if (uid != ResourceUID::INVALID_ID) {
+				if (ResourceUID::get_singleton()->has_id(uid)) {
+					// If a UID is found and the path is valid, it will be used, otherwise, it falls back to the path.
+					path = ResourceUID::get_singleton()->get_id_path(uid);
+				}
+			}
+		}
+
 		bool relative = false;
 		if (!path.begins_with("res://")) {
 			path = local_path.plus_file(path).simplify_path();
@@ -1206,6 +1252,8 @@ Error ResourceFormatLoaderBinary::rename_dependencies(const String &p_path, cons
 			path = np;
 		}
 
+		String full_path = path;
+
 		if (relative) {
 			//restore relative
 			path = local_path.path_to_file(path);
@@ -1213,6 +1261,11 @@ Error ResourceFormatLoaderBinary::rename_dependencies(const String &p_path, cons
 
 		save_ustring(fw, type);
 		save_ustring(fw, path);
+
+		if (using_uids) {
+			ResourceUID::ID uid = ResourceSaver::get_resource_id_for_path(full_path);
+			f->store_64(uid);
+		}
 	}
 
 	int64_t size_diff = (int64_t)fw->get_position() - (int64_t)f->get_position();
@@ -1266,6 +1319,28 @@ String ResourceFormatLoaderBinary::get_resource_type(const String &p_path) const
 	//loader.set_local_path( Globals::get_singleton()->localize_path(p_path) );
 	String r = loader.recognize(f);
 	return ClassDB::get_compatibility_remapped_class(r);
+}
+
+ResourceUID::ID ResourceFormatLoaderBinary::get_resource_uid(const String &p_path) const {
+	String ext = p_path.get_extension().to_lower();
+	if (!ClassDB::is_resource_extension(ext)) {
+		return ResourceUID::INVALID_ID;
+	}
+
+	FileAccess *f = FileAccess::open(p_path, FileAccess::READ);
+	if (!f) {
+		return ResourceUID::INVALID_ID; //could not read
+	}
+
+	ResourceLoaderBinary loader;
+	loader.local_path = ProjectSettings::get_singleton()->localize_path(p_path);
+	loader.res_path = loader.local_path;
+	//loader.set_local_path( Globals::get_singleton()->localize_path(p_path) );
+	loader.open(f, true);
+	if (loader.error != OK) {
+		return ResourceUID::INVALID_ID; //could not read
+	}
+	return loader.uid;
 }
 
 ///////////////////////////////////////////////////////////
@@ -1824,8 +1899,10 @@ Error ResourceFormatSaverBinaryInstance::save(const String &p_path, const RES &p
 
 	save_unicode_string(f, p_resource->get_class());
 	f->store_64(0); //offset to import metadata
-	f->store_32(FORMAT_FLAG_NAMED_SCENE_IDS);
-	for (int i = 0; i < 13; i++) {
+	f->store_32(FORMAT_FLAG_NAMED_SCENE_IDS | FORMAT_FLAG_UIDS);
+	ResourceUID::ID uid = ResourceSaver::get_resource_id_for_path(p_path, true);
+	f->store_64(uid);
+	for (int i = 0; i < 5; i++) {
 		f->store_32(0); // reserved
 	}
 
@@ -1891,6 +1968,8 @@ Error ResourceFormatSaverBinaryInstance::save(const String &p_path, const RES &p
 		String path = save_order[i]->get_path();
 		path = relative_paths ? local_path.path_to_file(path) : path;
 		save_unicode_string(f, path);
+		ResourceUID::ID ruid = ResourceSaver::get_resource_id_for_path(save_order[i]->get_path(), false);
+		f->store_64(ruid);
 	}
 	// save internal resource table
 	f->store_32(saved_resources.size()); //amount of internal resources

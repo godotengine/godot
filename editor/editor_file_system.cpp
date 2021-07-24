@@ -43,7 +43,7 @@
 
 EditorFileSystem *EditorFileSystem::singleton = nullptr;
 //the name is the version, to keep compatibility with different versions of Godot
-#define CACHE_FILE_NAME "filesystem_cache6"
+#define CACHE_FILE_NAME "filesystem_cache7"
 
 void EditorFileSystemDirectory::sort_files() {
 	files.sort_custom<FileInfoSort>();
@@ -116,7 +116,26 @@ String EditorFileSystemDirectory::get_file_path(int p_idx) const {
 
 Vector<String> EditorFileSystemDirectory::get_file_deps(int p_idx) const {
 	ERR_FAIL_INDEX_V(p_idx, files.size(), Vector<String>());
-	return files[p_idx]->deps;
+	Vector<String> deps;
+
+	for (int i = 0; i < files[p_idx]->deps.size(); i++) {
+		String dep = files[p_idx]->deps[i];
+		int sep_idx = dep.find("::"); //may contain type information, unwanted
+		if (sep_idx != -1) {
+			dep = dep.substr(0, sep_idx);
+		}
+		ResourceUID::ID uid = ResourceUID::get_singleton()->text_to_id(dep);
+		if (uid != ResourceUID::INVALID_ID) {
+			//return proper dependency resoure from uid
+			if (ResourceUID::get_singleton()->has_id(uid)) {
+				dep = ResourceUID::get_singleton()->get_id_path(uid);
+			} else {
+				continue;
+			}
+		}
+		deps.push_back(dep);
+	}
+	return deps;
 }
 
 bool EditorFileSystemDirectory::get_file_import_is_valid(int p_idx) const {
@@ -234,7 +253,7 @@ void EditorFileSystem::_scan_filesystem() {
 
 			} else {
 				Vector<String> split = l.split("::");
-				ERR_CONTINUE(split.size() != 8);
+				ERR_CONTINUE(split.size() != 9);
 				String name = split[0];
 				String file;
 
@@ -243,15 +262,16 @@ void EditorFileSystem::_scan_filesystem() {
 
 				FileCache fc;
 				fc.type = split[1];
-				fc.modification_time = split[2].to_int();
-				fc.import_modification_time = split[3].to_int();
-				fc.import_valid = split[4].to_int() != 0;
-				fc.import_group_file = split[5].strip_edges();
-				fc.script_class_name = split[6].get_slice("<>", 0);
-				fc.script_class_extends = split[6].get_slice("<>", 1);
-				fc.script_class_icon_path = split[6].get_slice("<>", 2);
+				fc.uid = split[2].to_int();
+				fc.modification_time = split[3].to_int();
+				fc.import_modification_time = split[4].to_int();
+				fc.import_valid = split[5].to_int() != 0;
+				fc.import_group_file = split[6].strip_edges();
+				fc.script_class_name = split[7].get_slice("<>", 0);
+				fc.script_class_extends = split[7].get_slice("<>", 1);
+				fc.script_class_icon_path = split[7].get_slice("<>", 2);
 
-				String deps = split[7].strip_edges();
+				String deps = split[8].strip_edges();
 				if (deps.length()) {
 					Vector<String> dp = deps.split("<>");
 					for (int i = 0; i < dp.size(); i++) {
@@ -368,6 +388,7 @@ bool EditorFileSystem::_test_for_reimport(const String &p_path, bool p_only_impo
 	Vector<String> dest_files;
 	String dest_md5 = "";
 	int version = 0;
+	bool found_uid = false;
 
 	while (true) {
 		assign = Variant();
@@ -395,6 +416,8 @@ bool EditorFileSystem::_test_for_reimport(const String &p_path, bool p_only_impo
 				version = value;
 			} else if (assign == "importer") {
 				importer_name = value;
+			} else if (assign == "uid") {
+				found_uid = true;
 			} else if (!p_only_imported_files) {
 				if (assign == "source_file") {
 					source_file = value;
@@ -412,6 +435,10 @@ bool EditorFileSystem::_test_for_reimport(const String &p_path, bool p_only_impo
 
 	if (importer_name == "keep") {
 		return false; //keep mode, do not reimport
+	}
+
+	if (!found_uid) {
+		return true; //UUID not found, old format, reimport.
 	}
 
 	Ref<ResourceImporter> importer = ResourceFormatImporter::get_singleton()->get_importer_by_name(importer_name);
@@ -580,6 +607,9 @@ bool EditorFileSystem::_update_scan_actions() {
 
 	if (reimports.size()) {
 		reimport_files(reimports);
+	} else {
+		//reimport files will update the uid cache file so if nothing was reimported, update it manually
+		ResourceUID::get_singleton()->update_cache();
 	}
 
 	if (first_scan) {
@@ -754,6 +784,7 @@ void EditorFileSystem::_scan_new_dir(EditorFileSystemDirectory *p_dir, DirAccess
 
 			if (fc && fc->modification_time == mt && fc->import_modification_time == import_mt && !_test_for_reimport(path, true)) {
 				fi->type = fc->type;
+				fi->uid = fc->uid;
 				fi->deps = fc->deps;
 				fi->modified_time = fc->modification_time;
 				fi->import_modified_time = fc->import_modification_time;
@@ -779,8 +810,14 @@ void EditorFileSystem::_scan_new_dir(EditorFileSystemDirectory *p_dir, DirAccess
 					//note: I think this should not happen any longer..
 				}
 
+				if (fc->uid == ResourceUID::INVALID_ID) {
+					// imported files should always have a UUID, so attempt to fetch it.
+					fi->uid = ResourceLoader::get_resource_uid(path);
+				}
+
 			} else {
 				fi->type = ResourceFormatImporter::get_singleton()->get_resource_type(path);
+				fi->uid = ResourceFormatImporter::get_singleton()->get_resource_uid(path);
 				fi->import_group_file = ResourceFormatImporter::get_singleton()->get_import_group_file(path);
 				fi->script_class_name = _get_global_script_class(fi->type, path, &fi->script_class_extends, &fi->script_class_icon_path);
 				fi->modified_time = 0;
@@ -797,6 +834,7 @@ void EditorFileSystem::_scan_new_dir(EditorFileSystemDirectory *p_dir, DirAccess
 			if (fc && fc->modification_time == mt) {
 				//not imported, so just update type if changed
 				fi->type = fc->type;
+				fi->uid = fc->uid;
 				fi->modified_time = fc->modification_time;
 				fi->deps = fc->deps;
 				fi->import_modified_time = 0;
@@ -807,11 +845,20 @@ void EditorFileSystem::_scan_new_dir(EditorFileSystemDirectory *p_dir, DirAccess
 			} else {
 				//new or modified time
 				fi->type = ResourceLoader::get_resource_type(path);
+				fi->uid = ResourceLoader::get_resource_uid(path);
 				fi->script_class_name = _get_global_script_class(fi->type, path, &fi->script_class_extends, &fi->script_class_icon_path);
 				fi->deps = _get_dependencies(path);
 				fi->modified_time = mt;
 				fi->import_modified_time = 0;
 				fi->import_valid = true;
+			}
+		}
+
+		if (fi->uid != ResourceUID::INVALID_ID) {
+			if (ResourceUID::get_singleton()->has_id(fi->uid)) {
+				ResourceUID::get_singleton()->set_id(fi->uid, path);
+			} else {
+				ResourceUID::get_singleton()->add_id(fi->uid, path);
 			}
 		}
 
@@ -1179,7 +1226,7 @@ void EditorFileSystem::_save_filesystem_cache(EditorFileSystemDirectory *p_dir, 
 		if (p_dir->files[i]->import_group_file != String()) {
 			group_file_cache.insert(p_dir->files[i]->import_group_file);
 		}
-		String s = p_dir->files[i]->file + "::" + p_dir->files[i]->type + "::" + itos(p_dir->files[i]->modified_time) + "::" + itos(p_dir->files[i]->import_modified_time) + "::" + itos(p_dir->files[i]->import_valid) + "::" + p_dir->files[i]->import_group_file + "::" + p_dir->files[i]->script_class_name + "<>" + p_dir->files[i]->script_class_extends + "<>" + p_dir->files[i]->script_class_icon_path;
+		String s = p_dir->files[i]->file + "::" + p_dir->files[i]->type + "::" + itos(p_dir->files[i]->uid) + "::" + itos(p_dir->files[i]->modified_time) + "::" + itos(p_dir->files[i]->import_modified_time) + "::" + itos(p_dir->files[i]->import_valid) + "::" + p_dir->files[i]->import_group_file + "::" + p_dir->files[i]->script_class_name + "<>" + p_dir->files[i]->script_class_extends + "<>" + p_dir->files[i]->script_class_icon_path;
 		s += "::";
 		for (int j = 0; j < p_dir->files[i]->deps.size(); j++) {
 			if (j > 0) {
@@ -1460,6 +1507,11 @@ void EditorFileSystem::update_file(const String &p_file) {
 		//was removed
 		_delete_internal_files(p_file);
 		if (cpos != -1) { // Might've never been part of the editor file system (*.* files deleted in Open dialog).
+			if (fs->files[cpos]->uid != ResourceUID::INVALID_ID) {
+				if (ResourceUID::get_singleton()->has_id(fs->files[cpos]->uid)) {
+					ResourceUID::get_singleton()->remove_id(fs->files[cpos]->uid);
+				}
+			}
 			memdelete(fs->files[cpos]);
 			fs->files.remove(cpos);
 		}
@@ -1470,6 +1522,7 @@ void EditorFileSystem::update_file(const String &p_file) {
 	}
 
 	String type = ResourceLoader::get_resource_type(p_file);
+	ResourceUID::ID uid = ResourceLoader::get_resource_uid(p_file);
 
 	if (cpos == -1) {
 		// The file did not exist, it was added.
@@ -1502,12 +1555,22 @@ void EditorFileSystem::update_file(const String &p_file) {
 	}
 
 	fs->files[cpos]->type = type;
+	fs->files[cpos]->uid = uid;
 	fs->files[cpos]->script_class_name = _get_global_script_class(type, p_file, &fs->files[cpos]->script_class_extends, &fs->files[cpos]->script_class_icon_path);
 	fs->files[cpos]->import_group_file = ResourceLoader::get_import_group_file(p_file);
 	fs->files[cpos]->modified_time = FileAccess::get_modified_time(p_file);
 	fs->files[cpos]->deps = _get_dependencies(p_file);
 	fs->files[cpos]->import_valid = ResourceLoader::is_import_valid(p_file);
 
+	if (uid != ResourceUID::INVALID_ID) {
+		if (ResourceUID::get_singleton()->has_id(uid)) {
+			ResourceUID::get_singleton()->set_id(uid, p_file);
+		} else {
+			ResourceUID::get_singleton()->add_id(uid, p_file);
+		}
+
+		ResourceUID::get_singleton()->update_cache();
+	}
 	// Update preview
 	EditorResourcePreview::get_singleton()->check_for_invalidation(p_file);
 
@@ -1530,7 +1593,6 @@ Error EditorFileSystem::_reimport_group(const String &p_group_file, const Vector
 		ERR_CONTINUE(file_importer_name == String());
 
 		if (importer_name != String() && importer_name != file_importer_name) {
-			print_line("one importer '" + importer_name + "' the other '" + file_importer_name + "'.");
 			EditorNode::get_singleton()->show_warning(vformat(TTR("There are multiple importers for different types pointing to file %s, import aborted"), p_group_file));
 			ERR_FAIL_V(ERR_FILE_CORRUPT);
 		}
@@ -1699,6 +1761,8 @@ void EditorFileSystem::_reimport_file(const String &p_file, const Map<StringName
 		params = *p_custom_options;
 	}
 
+	ResourceUID::ID uid = ResourceUID::INVALID_ID;
+
 	if (FileAccess::exists(p_file + ".import")) {
 		//use existing
 		if (p_custom_options == nullptr) {
@@ -1713,8 +1777,16 @@ void EditorFileSystem::_reimport_file(const String &p_file, const Map<StringName
 						params[E] = cf->get_value("params", E);
 					}
 				}
-				if (p_custom_importer == String() && cf->has_section("remap")) {
-					importer_name = cf->get_value("remap", "importer");
+
+				if (cf->has_section("remap")) {
+					if (p_custom_importer == String()) {
+						importer_name = cf->get_value("remap", "importer");
+					}
+
+					if (cf->has_section_key("remap", "uid")) {
+						String uidt = cf->get_value("remap", "uid");
+						uid = ResourceUID::get_singleton()->text_to_id(uidt);
+					}
 				}
 			}
 		}
@@ -1796,6 +1868,12 @@ void EditorFileSystem::_reimport_file(const String &p_file, const Map<StringName
 	if (importer->get_resource_type() != "") {
 		f->store_line("type=\"" + importer->get_resource_type() + "\"");
 	}
+
+	if (uid == ResourceUID::INVALID_ID) {
+		uid = ResourceUID::get_singleton()->create_id();
+	}
+
+	f->store_line("uid=\"" + ResourceUID::get_singleton()->id_to_text(uid) + "\""); //store in readable format
 
 	Vector<String> dest_paths;
 
@@ -1882,7 +1960,14 @@ void EditorFileSystem::_reimport_file(const String &p_file, const Map<StringName
 	fs->files[cpos]->import_modified_time = FileAccess::get_modified_time(p_file + ".import");
 	fs->files[cpos]->deps = _get_dependencies(p_file);
 	fs->files[cpos]->type = importer->get_resource_type();
+	fs->files[cpos]->uid = uid;
 	fs->files[cpos]->import_valid = ResourceLoader::is_import_valid(p_file);
+
+	if (ResourceUID::get_singleton()->has_id(uid)) {
+		ResourceUID::get_singleton()->set_id(uid, p_file);
+	} else {
+		ResourceUID::get_singleton()->add_id(uid, p_file);
+	}
 
 	//if file is currently up, maybe the source it was loaded from changed, so import math must be updated for it
 	//to reload properly
@@ -1934,11 +2019,18 @@ void EditorFileSystem::reimport_files(const Vector<String> &p_files) {
 	Set<String> groups_to_reimport;
 
 	for (int i = 0; i < p_files.size(); i++) {
-		String group_file = ResourceFormatImporter::get_singleton()->get_import_group_file(p_files[i]);
+		String file = p_files[i];
 
-		if (group_file_cache.has(p_files[i])) {
+		ResourceUID::ID uid = ResourceUID::get_singleton()->text_to_id(file);
+		if (uid != ResourceUID::INVALID_ID && ResourceUID::get_singleton()->has_id(uid)) {
+			file = ResourceUID::get_singleton()->get_id_path(uid);
+		}
+
+		String group_file = ResourceFormatImporter::get_singleton()->get_import_group_file(file);
+
+		if (group_file_cache.has(file)) {
 			//maybe the file itself is a group!
-			groups_to_reimport.insert(p_files[i]);
+			groups_to_reimport.insert(file);
 			//groups do not belong to grups
 			group_file = String();
 		} else if (group_file != String()) {
@@ -1947,15 +2039,15 @@ void EditorFileSystem::reimport_files(const Vector<String> &p_files) {
 		} else {
 			//it's a regular file
 			ImportFile ifile;
-			ifile.path = p_files[i];
-			ResourceFormatImporter::get_singleton()->get_import_order_threads_and_importer(p_files[i], ifile.order, ifile.threaded, ifile.importer);
+			ifile.path = file;
+			ResourceFormatImporter::get_singleton()->get_import_order_threads_and_importer(file, ifile.order, ifile.threaded, ifile.importer);
 			reimport_files.push_back(ifile);
 		}
 
 		//group may have changed, so also update group reference
 		EditorFileSystemDirectory *fs = nullptr;
 		int cpos = -1;
-		if (_find_file(p_files[i], &fs, cpos)) {
+		if (_find_file(file, &fs, cpos)) {
 			fs->files.write[cpos]->import_group_file = group_file;
 		}
 	}
@@ -2019,6 +2111,8 @@ void EditorFileSystem::reimport_files(const Vector<String> &p_files) {
 			}
 		}
 	}
+
+	ResourceUID::get_singleton()->update_cache(); //after reimporting, update the cache
 
 	_save_filesystem_cache();
 	importing = false;
@@ -2104,6 +2198,30 @@ void EditorFileSystem::move_group_file(const String &p_path, const String &p_new
 	}
 }
 
+ResourceUID::ID EditorFileSystem::_resource_saver_get_resource_id_for_path(const String &p_path, bool p_generate) {
+	if (!p_path.is_resource_file() || p_path.begins_with("res://.godot")) {
+		//saved externally (configuration file) or internal file, do not assign an ID.
+		return ResourceUID::INVALID_ID;
+	}
+
+	EditorFileSystemDirectory *fs = nullptr;
+	int cpos = -1;
+
+	if (!singleton->_find_file(p_path, &fs, cpos)) {
+		if (p_generate) {
+			return ResourceUID::get_singleton()->create_id(); //just create a new one, we will be notified of save anyway and fetch the right UUID at that time, to keep things simple.
+		} else {
+			return ResourceUID::INVALID_ID;
+		}
+	} else if (fs->files[cpos]->uid != ResourceUID::INVALID_ID) {
+		return fs->files[cpos]->uid;
+	} else if (p_generate) {
+		return ResourceUID::get_singleton()->create_id(); //just create a new one, we will be notified of save anyway and fetch the right UUID at that time, to keep things simple.
+	} else {
+		return ResourceUID::INVALID_ID;
+	}
+}
+
 void EditorFileSystem::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_filesystem"), &EditorFileSystem::get_filesystem);
 	ClassDB::bind_method(D_METHOD("is_scanning"), &EditorFileSystem::is_scanning);
@@ -2165,8 +2283,11 @@ EditorFileSystem::EditorFileSystem() {
 	scan_changes_pending = false;
 	revalidate_import_files = false;
 	import_threads.init();
+	ResourceUID::get_singleton()->clear(); //will be updated on scan
+	ResourceSaver::set_get_resource_id_for_path(_resource_saver_get_resource_id_for_path);
 }
 
 EditorFileSystem::~EditorFileSystem() {
 	import_threads.finish();
+	ResourceSaver::set_get_resource_id_for_path(nullptr);
 }

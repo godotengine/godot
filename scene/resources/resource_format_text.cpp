@@ -413,6 +413,17 @@ Error ResourceLoaderText::load() {
 		String type = next_tag.fields["type"];
 		String id = next_tag.fields["id"];
 
+		if (next_tag.fields.has("uid")) {
+			String uidt = next_tag.fields["uid"];
+			ResourceUID::ID uid = ResourceUID::get_singleton()->text_to_id(uidt);
+			if (uid != ResourceUID::INVALID_ID && ResourceUID::get_singleton()->has_id(uid)) {
+				// If a UID is found and the path is valid, it will be used, otherwise, it falls back to the path.
+				path = ResourceUID::get_singleton()->get_id_path(uid);
+			} else {
+				WARN_PRINT(String(res_path + ":" + itos(lines) + " - ext_resource, invalid UUID: " + uidt + " - using text path instead: " + path).utf8().get_data());
+			}
+		}
+
 		if (path.find("://") == -1 && path.is_rel_path()) {
 			// path is relative to file being loaded, so convert to a resource path
 			path = ProjectSettings::get_singleton()->localize_path(local_path.get_base_dir().plus_file(path));
@@ -746,7 +757,18 @@ void ResourceLoaderText::get_dependencies(FileAccess *p_f, List<String> *p_depen
 		String path = next_tag.fields["path"];
 		String type = next_tag.fields["type"];
 
-		if (path.find("://") == -1 && path.is_rel_path()) {
+		bool using_uid = false;
+		if (next_tag.fields.has("uid")) {
+			//if uid exists, return uid in text format, not the path
+			String uidt = next_tag.fields["uid"];
+			ResourceUID::ID uid = ResourceUID::get_singleton()->text_to_id(uidt);
+			if (uid != ResourceUID::INVALID_ID) {
+				path = ResourceUID::get_singleton()->id_to_text(uid);
+				using_uid = true;
+			}
+		}
+
+		if (!using_uid && path.find("://") == -1 && path.is_rel_path()) {
 			// path is relative to file being loaded, so convert to a resource path
 			path = ProjectSettings::get_singleton()->localize_path(local_path.get_base_dir().plus_file(path));
 		}
@@ -819,6 +841,14 @@ Error ResourceLoaderText::rename_dependencies(FileAccess *p_f, const String &p_p
 			String id = next_tag.fields["id"];
 			String type = next_tag.fields["type"];
 
+			if (next_tag.fields.has("uid")) {
+				String uidt = next_tag.fields["uid"];
+				ResourceUID::ID uid = ResourceUID::get_singleton()->text_to_id(uidt);
+				if (uid != ResourceUID::INVALID_ID && ResourceUID::get_singleton()->has_id(uid)) {
+					// If a UID is found and the path is valid, it will be used, otherwise, it falls back to the path.
+					path = ResourceUID::get_singleton()->get_id_path(uid);
+				}
+			}
 			bool relative = false;
 			if (!path.begins_with("res://")) {
 				path = base_path.plus_file(path).simplify_path();
@@ -835,7 +865,14 @@ Error ResourceLoaderText::rename_dependencies(FileAccess *p_f, const String &p_p
 				path = base_path.path_to_file(path);
 			}
 
-			fw->store_line("[ext_resource path=\"" + path + "\" type=\"" + type + "\" id=\"" + id + "\"]");
+			String s = "[ext_resource type=\"" + type + "\"";
+
+			ResourceUID::ID uid = ResourceSaver::get_resource_id_for_path(path);
+			if (uid != ResourceUID::INVALID_ID) {
+				s += " uid=\"" + ResourceUID::get_singleton()->id_to_text(uid) + "\"";
+			}
+			s += " path=\"" + path + "\" id=\"" + id + "\"]";
+			fw->store_line(s); // Bundled.
 
 			tag_end = f->get_position();
 		}
@@ -921,6 +958,12 @@ void ResourceLoaderText::open(FileAccess *p_f, bool p_skip_first_tag) {
 		return;
 	}
 
+	if (tag.fields.has("uid")) {
+		res_uid = ResourceUID::get_singleton()->text_to_id(tag.fields["uid"]);
+	} else {
+		res_uid = ResourceUID::INVALID_ID;
+	}
+
 	if (tag.fields.has("load_steps")) {
 		resources_total = tag.fields["load_steps"];
 	} else {
@@ -976,7 +1019,12 @@ Error ResourceLoaderText::save_as_binary(FileAccess *p_f, const String &p_path) 
 
 	bs_save_unicode_string(wf.f, is_scene ? "PackedScene" : resource_type);
 	wf->store_64(0); //offset to import metadata, this is no longer used
-	for (int i = 0; i < 14; i++) {
+
+	f->store_32(ResourceFormatSaverBinaryInstance::FORMAT_FLAG_NAMED_SCENE_IDS | ResourceFormatSaverBinaryInstance::FORMAT_FLAG_UIDS);
+
+	f->store_64(res_uid);
+
+	for (int i = 0; i < 5; i++) {
 		wf->store_32(0); // reserved
 	}
 
@@ -1018,9 +1066,15 @@ Error ResourceLoaderText::save_as_binary(FileAccess *p_f, const String &p_path) 
 		String path = next_tag.fields["path"];
 		String type = next_tag.fields["type"];
 		String id = next_tag.fields["id"];
+		ResourceUID::ID uid = ResourceUID::INVALID_ID;
+		if (next_tag.fields.has("uid")) {
+			String uidt = next_tag.fields["uid"];
+			uid = ResourceUID::get_singleton()->text_to_id(uidt);
+		}
 
 		bs_save_unicode_string(wf.f, type);
 		bs_save_unicode_string(wf.f, path);
+		wf.f->store_64(uid);
 
 		int lindex = dummy_read.external_resources.size();
 		Ref<DummyResource> dr;
@@ -1257,6 +1311,32 @@ String ResourceLoaderText::recognize(FileAccess *p_f) {
 	return tag.fields["type"];
 }
 
+ResourceUID::ID ResourceLoaderText::get_uid(FileAccess *p_f) {
+	error = OK;
+
+	lines = 1;
+	f = p_f;
+
+	stream.f = f;
+
+	ignore_resource_parsing = true;
+
+	VariantParser::Tag tag;
+	Error err = VariantParser::parse_tag(&stream, lines, error_text, tag);
+
+	if (err) {
+		_printerr();
+		return ResourceUID::INVALID_ID;
+	}
+
+	if (tag.fields.has("uid")) { //field is optional
+		String uidt = tag.fields["uid"];
+		return ResourceUID::get_singleton()->text_to_id(uidt);
+	}
+
+	return ResourceUID::INVALID_ID;
+}
+
 /////////////////////
 
 RES ResourceFormatLoaderText::load(const String &p_path, const String &p_original_path, Error *r_error, bool p_use_sub_threads, float *r_progress, CacheMode p_cache_mode) {
@@ -1277,7 +1357,6 @@ RES ResourceFormatLoaderText::load(const String &p_path, const String &p_origina
 	loader.local_path = ProjectSettings::get_singleton()->localize_path(path);
 	loader.progress = r_progress;
 	loader.res_path = loader.local_path;
-	//loader.set_local_path( ProjectSettings::get_singleton()->localize_path(p_path) );
 	loader.open(f);
 	err = loader.load();
 	if (r_error) {
@@ -1330,9 +1409,26 @@ String ResourceFormatLoaderText::get_resource_type(const String &p_path) const {
 	ResourceLoaderText loader;
 	loader.local_path = ProjectSettings::get_singleton()->localize_path(p_path);
 	loader.res_path = loader.local_path;
-	//loader.set_local_path( ProjectSettings::get_singleton()->localize_path(p_path) );
 	String r = loader.recognize(f);
 	return ClassDB::get_compatibility_remapped_class(r);
+}
+
+ResourceUID::ID ResourceFormatLoaderText::get_resource_uid(const String &p_path) const {
+	String ext = p_path.get_extension().to_lower();
+
+	if (ext != "tscn" && ext != "tres") {
+		return ResourceUID::INVALID_ID;
+	}
+
+	FileAccess *f = FileAccess::open(p_path, FileAccess::READ);
+	if (!f) {
+		return ResourceUID::INVALID_ID; //could not read
+	}
+
+	ResourceLoaderText loader;
+	loader.local_path = ProjectSettings::get_singleton()->localize_path(p_path);
+	loader.res_path = loader.local_path;
+	return loader.get_uid(f);
 }
 
 void ResourceFormatLoaderText::get_dependencies(const String &p_path, List<String> *p_dependencies, bool p_add_types) {
@@ -1344,7 +1440,6 @@ void ResourceFormatLoaderText::get_dependencies(const String &p_path, List<Strin
 	ResourceLoaderText loader;
 	loader.local_path = ProjectSettings::get_singleton()->localize_path(p_path);
 	loader.res_path = loader.local_path;
-	//loader.set_local_path( ProjectSettings::get_singleton()->localize_path(p_path) );
 	loader.get_dependencies(f, p_dependencies, p_add_types);
 }
 
@@ -1357,7 +1452,6 @@ Error ResourceFormatLoaderText::rename_dependencies(const String &p_path, const 
 	ResourceLoaderText loader;
 	loader.local_path = ProjectSettings::get_singleton()->localize_path(p_path);
 	loader.res_path = loader.local_path;
-	//loader.set_local_path( ProjectSettings::get_singleton()->localize_path(p_path) );
 	return loader.rename_dependencies(f, p_path, p_map);
 }
 
@@ -1373,7 +1467,6 @@ Error ResourceFormatLoaderText::convert_file_to_binary(const String &p_src_path,
 	const String &path = p_src_path;
 	loader.local_path = ProjectSettings::get_singleton()->localize_path(path);
 	loader.res_path = loader.local_path;
-	//loader.set_local_path( ProjectSettings::get_singleton()->localize_path(p_path) );
 	loader.open(f);
 	return loader.save_as_binary(f, p_dst_path);
 }
@@ -1548,6 +1641,12 @@ Error ResourceFormatSaverTextInstance::save(const String &p_path, const RES &p_r
 		}
 		title += "format=" + itos(FORMAT_VERSION) + "";
 
+		ResourceUID::ID uid = ResourceSaver::get_resource_id_for_path(local_path, true);
+
+		if (uid != ResourceUID::INVALID_ID) {
+			title += " uid=\"" + ResourceUID::get_singleton()->id_to_text(uid) + "\"";
+		}
+
 		f->store_string(title);
 		f->store_line("]\n"); // One empty line.
 	}
@@ -1612,7 +1711,14 @@ Error ResourceFormatSaverTextInstance::save(const String &p_path, const RES &p_r
 	for (int i = 0; i < sorted_er.size(); i++) {
 		String p = sorted_er[i].resource->get_path();
 
-		f->store_string("[ext_resource path=\"" + p + "\" type=\"" + sorted_er[i].resource->get_save_class() + "\" id=\"" + sorted_er[i].id + "\"]\n"); // Bundled.
+		String s = "[ext_resource type=\"" + sorted_er[i].resource->get_save_class() + "\"";
+
+		ResourceUID::ID uid = ResourceSaver::get_resource_id_for_path(p, false);
+		if (uid != ResourceUID::INVALID_ID) {
+			s += " uid=\"" + ResourceUID::get_singleton()->id_to_text(uid) + "\"";
+		}
+		s += " path=\"" + p + "\" id=\"" + sorted_er[i].id + "\"]\n";
+		f->store_string(s); // Bundled.
 	}
 
 	if (external_resources.size()) {

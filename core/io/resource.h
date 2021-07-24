@@ -31,6 +31,7 @@
 #ifndef RESOURCE_H
 #define RESOURCE_H
 
+#include "core/io/resource_uid.h"
 #include "core/object/class_db.h"
 #include "core/object/ref_counted.h"
 #include "core/templates/safe_refcount.h"

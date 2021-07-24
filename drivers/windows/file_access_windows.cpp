@@ -108,7 +108,7 @@ Error FileAccessWindows::_open(const String &p_path, int p_mode_flags) {
 	}
 #endif
 
-	if (is_backup_save_enabled() && p_mode_flags & WRITE && !(p_mode_flags & READ)) {
+	if (is_backup_save_enabled() && p_mode_flags == WRITE) {
 		save_path = path;
 		path = path + ".tmp";
 	}

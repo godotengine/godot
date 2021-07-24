@@ -1495,6 +1495,10 @@ void ClassDB::get_resource_base_extensions(List<String> *p_extensions) {
 	}
 }
 
+bool ClassDB::is_resource_extension(const StringName &p_extension) {
+	return resource_base_extensions.has(p_extension);
+}
+
 void ClassDB::get_extensions_for_type(const StringName &p_class, List<String> *p_extensions) {
 	const StringName *K = nullptr;
 

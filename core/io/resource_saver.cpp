@@ -39,6 +39,7 @@ Ref<ResourceFormatSaver> ResourceSaver::saver[MAX_SAVERS];
 int ResourceSaver::saver_count = 0;
 bool ResourceSaver::timestamp_on_save = false;
 ResourceSavedCallback ResourceSaver::save_callback = nullptr;
+ResourceSaverGetResourceIDForPath ResourceSaver::save_get_id_for_path = nullptr;
 
 Error ResourceFormatSaver::save(const String &p_path, const RES &p_resource, uint32_t p_flags) {
 	if (get_script_instance() && get_script_instance()->has_method("_save")) {
@@ -257,4 +258,15 @@ void ResourceSaver::remove_custom_savers() {
 	for (int i = 0; i < custom_savers.size(); ++i) {
 		remove_resource_format_saver(custom_savers[i]);
 	}
+}
+
+ResourceUID::ID ResourceSaver::get_resource_id_for_path(const String &p_path, bool p_generate) {
+	if (save_get_id_for_path) {
+		return save_get_id_for_path(p_path, p_generate);
+	}
+	return ResourceUID::INVALID_ID;
+}
+
+void ResourceSaver::set_get_resource_id_for_path(ResourceSaverGetResourceIDForPath p_callback) {
+	save_get_id_for_path = p_callback;
 }
