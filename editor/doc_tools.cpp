@@ -266,7 +266,7 @@ void DocTools::generate(bool p_basic_types) {
 		}
 
 		List<PropertyInfo>::Element *EO = own_properties.front();
-		for (PropertyInfo &E : properties) {
+		for (const PropertyInfo &E : properties) {
 			bool inherited = EO == nullptr;
 			if (EO && EO->get() == E) {
 				inherited = false;
@@ -367,7 +367,7 @@ void DocTools::generate(bool p_basic_types) {
 		ClassDB::get_method_list(name, &method_list, true);
 		method_list.sort();
 
-		for (MethodInfo &E : method_list) {
+		for (const MethodInfo &E : method_list) {
 			if (E.name == "" || (E.name[0] == '_' && !(E.flags & METHOD_FLAG_VIRTUAL))) {
 				continue; //hidden, don't count
 			}
@@ -455,7 +455,7 @@ void DocTools::generate(bool p_basic_types) {
 		List<String> constant_list;
 		ClassDB::get_integer_constant_list(name, &constant_list, true);
 
-		for (String &E : constant_list) {
+		for (const String &E : constant_list) {
 			DocData::ConstantDoc constant;
 			constant.name = E;
 			constant.value = itos(ClassDB::get_integer_constant(name, E));
@@ -469,7 +469,7 @@ void DocTools::generate(bool p_basic_types) {
 		{
 			List<StringName> l;
 			Theme::get_default()->get_constant_list(cname, &l);
-			for (StringName &E : l) {
+			for (const StringName &E : l) {
 				DocData::PropertyDoc pd;
 				pd.name = E;
 				pd.type = "int";
@@ -479,7 +479,7 @@ void DocTools::generate(bool p_basic_types) {
 
 			l.clear();
 			Theme::get_default()->get_color_list(cname, &l);
-			for (StringName &E : l) {
+			for (const StringName &E : l) {
 				DocData::PropertyDoc pd;
 				pd.name = E;
 				pd.type = "Color";
@@ -489,7 +489,7 @@ void DocTools::generate(bool p_basic_types) {
 
 			l.clear();
 			Theme::get_default()->get_icon_list(cname, &l);
-			for (StringName &E : l) {
+			for (const StringName &E : l) {
 				DocData::PropertyDoc pd;
 				pd.name = E;
 				pd.type = "Texture2D";
@@ -497,7 +497,7 @@ void DocTools::generate(bool p_basic_types) {
 			}
 			l.clear();
 			Theme::get_default()->get_font_list(cname, &l);
-			for (StringName &E : l) {
+			for (const StringName &E : l) {
 				DocData::PropertyDoc pd;
 				pd.name = E;
 				pd.type = "Font";
@@ -505,7 +505,7 @@ void DocTools::generate(bool p_basic_types) {
 			}
 			l.clear();
 			Theme::get_default()->get_font_size_list(cname, &l);
-			for (StringName &E : l) {
+			for (const StringName &E : l) {
 				DocData::PropertyDoc pd;
 				pd.name = E;
 				pd.type = "int";
@@ -513,7 +513,7 @@ void DocTools::generate(bool p_basic_types) {
 			}
 			l.clear();
 			Theme::get_default()->get_stylebox_list(cname, &l);
-			for (StringName &E : l) {
+			for (const StringName &E : l) {
 				DocData::PropertyDoc pd;
 				pd.name = E;
 				pd.type = "StyleBox";
@@ -621,7 +621,7 @@ void DocTools::generate(bool p_basic_types) {
 			method_list.push_back(mi);
 		}
 
-		for (MethodInfo &mi : method_list) {
+		for (const MethodInfo &mi : method_list) {
 			DocData::MethodDoc method;
 
 			method.name = mi.name;
@@ -674,7 +674,7 @@ void DocTools::generate(bool p_basic_types) {
 
 		List<PropertyInfo> properties;
 		v.get_property_list(&properties);
-		for (PropertyInfo &pi : properties) {
+		for (const PropertyInfo &pi : properties) {
 			DocData::PropertyDoc property;
 			property.name = pi.name;
 			property.type = Variant::get_type_name(pi.type);
@@ -686,7 +686,7 @@ void DocTools::generate(bool p_basic_types) {
 		List<StringName> constants;
 		Variant::get_constants_for_type(Variant::Type(i), &constants);
 
-		for (StringName &E : constants) {
+		for (const StringName &E : constants) {
 			DocData::ConstantDoc constant;
 			constant.name = E;
 			Variant value = Variant::get_constant_value(Variant::Type(i), E);
@@ -721,7 +721,7 @@ void DocTools::generate(bool p_basic_types) {
 		Engine::get_singleton()->get_singletons(&singletons);
 
 		//servers (this is kind of hackish)
-		for (Engine::Singleton &s : singletons) {
+		for (const Engine::Singleton &s : singletons) {
 			DocData::PropertyDoc pd;
 			if (!s.ptr) {
 				continue;
@@ -740,7 +740,7 @@ void DocTools::generate(bool p_basic_types) {
 		List<StringName> utility_functions;
 		Variant::get_utility_function_list(&utility_functions);
 		utility_functions.sort_custom<StringName::AlphCompare>();
-		for (StringName &E : utility_functions) {
+		for (const StringName &E : utility_functions) {
 			DocData::MethodDoc md;
 			md.name = E;
 			//return
@@ -790,7 +790,7 @@ void DocTools::generate(bool p_basic_types) {
 			List<MethodInfo> minfo;
 			lang->get_public_functions(&minfo);
 
-			for (MethodInfo &mi : minfo) {
+			for (const MethodInfo &mi : minfo) {
 				DocData::MethodDoc md;
 				md.name = mi.name;
 
@@ -823,7 +823,7 @@ void DocTools::generate(bool p_basic_types) {
 			List<Pair<String, Variant>> cinfo;
 			lang->get_public_constants(&cinfo);
 
-			for (Pair<String, Variant> &E : cinfo) {
+			for (const Pair<String, Variant> &E : cinfo) {
 				DocData::ConstantDoc cd;
 				cd.name = E.first;
 				cd.value = E.second;

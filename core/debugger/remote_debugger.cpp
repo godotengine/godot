@@ -427,7 +427,7 @@ void RemoteDebugger::_send_resource_usage() {
 	List<RS::TextureInfo> tinfo;
 	RS::get_singleton()->texture_debug_usage(&tinfo);
 
-	for (RS::TextureInfo &E : tinfo) {
+	for (const RS::TextureInfo &E : tinfo) {
 		DebuggerMarshalls::ResourceInfo info;
 		info.path = E.path;
 		info.vram = E.bytes;

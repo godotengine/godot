@@ -399,7 +399,7 @@ Point2 CanvasItemEditor::snap_point(Point2 p_target, unsigned int p_modes, unsig
 	if ((is_snap_active && snap_other_nodes && (p_modes & SNAP_OTHER_NODES)) || (p_forced_modes & SNAP_OTHER_NODES)) {
 		Transform2D to_snap_transform = Transform2D();
 		List<const CanvasItem *> exceptions = List<const CanvasItem *>();
-		for (CanvasItem *E : p_other_nodes_exceptions) {
+		for (const CanvasItem *E : p_other_nodes_exceptions) {
 			exceptions.push_back(E);
 		}
 		if (p_self_canvas_item) {
@@ -842,7 +842,7 @@ void CanvasItemEditor::_commit_canvas_item_state(List<CanvasItem *> p_canvas_ite
 			undo_redo->add_do_method(canvas_item, "_edit_set_state", canvas_item->_edit_get_state());
 			undo_redo->add_undo_method(canvas_item, "_edit_set_state", se->undo_state);
 			if (commit_bones) {
-				for (Dictionary &F : se->pre_drag_bones_undo_state) {
+				for (const Dictionary &F : se->pre_drag_bones_undo_state) {
 					canvas_item = Object::cast_to<CanvasItem>(canvas_item->get_parent());
 					undo_redo->add_do_method(canvas_item, "_edit_set_state", canvas_item->_edit_get_state());
 					undo_redo->add_undo_method(canvas_item, "_edit_set_state", F);
@@ -3555,7 +3555,7 @@ void CanvasItemEditor::_draw_hover() {
 
 		Point2 pos = transform.xform(hovering_results[i].position) - Point2(0, item_size.y) + (Point2(node_icon->get_size().x, -node_icon->get_size().y) / 4);
 		// Rectify the position to avoid overlapping items
-		for (Rect2 &E : previous_rects) {
+		for (const Rect2 &E : previous_rects) {
 			if (E.intersects(Rect2(pos, item_size))) {
 				pos.y = E.get_position().y - item_size.y;
 			}
@@ -4699,7 +4699,7 @@ void CanvasItemEditor::_popup_callback(int p_op) {
 			}
 
 			undo_redo->create_action(TTR("Paste Pose"));
-			for (PoseClipboard &E : pose_clipboard) {
+			for (const PoseClipboard &E : pose_clipboard) {
 				Node2D *n2d = Object::cast_to<Node2D>(ObjectDB::get_instance(E.id));
 				if (!n2d) {
 					continue;

@@ -215,7 +215,7 @@ Vector<String> AnimationTreeEditor::get_animation_list() {
 	List<StringName> anims;
 	ap->get_animation_list(&anims);
 	Vector<String> ret;
-	for (StringName &E : anims) {
+	for (const StringName &E : anims) {
 		ret.push_back(E);
 	}
 

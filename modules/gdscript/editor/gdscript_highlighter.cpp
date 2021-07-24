@@ -458,7 +458,7 @@ void GDScriptSyntaxHighlighter::_update_cache() {
 	const Color types_color = EDITOR_GET("text_editor/highlighting/engine_type_color");
 	List<StringName> types;
 	ClassDB::get_class_list(&types);
-	for (StringName &E : types) {
+	for (const StringName &E : types) {
 		String n = E;
 		if (n.begins_with("_")) {
 			n = n.substr(1, n.length());
@@ -470,7 +470,7 @@ void GDScriptSyntaxHighlighter::_update_cache() {
 	const Color usertype_color = EDITOR_GET("text_editor/highlighting/user_type_color");
 	List<StringName> global_classes;
 	ScriptServer::get_global_class_list(&global_classes);
-	for (StringName &E : global_classes) {
+	for (const StringName &E : global_classes) {
 		keywords[String(E)] = usertype_color;
 	}
 
@@ -489,7 +489,7 @@ void GDScriptSyntaxHighlighter::_update_cache() {
 	const Color basetype_color = EDITOR_GET("text_editor/highlighting/base_type_color");
 	List<String> core_types;
 	gdscript->get_core_type_words(&core_types);
-	for (String &E : core_types) {
+	for (const String &E : core_types) {
 		keywords[E] = basetype_color;
 	}
 
@@ -498,7 +498,7 @@ void GDScriptSyntaxHighlighter::_update_cache() {
 	const Color control_flow_keyword_color = EDITOR_GET("text_editor/highlighting/control_flow_keyword_color");
 	List<String> keyword_list;
 	gdscript->get_reserved_words(&keyword_list);
-	for (String &E : keyword_list) {
+	for (const String &E : keyword_list) {
 		if (gdscript->is_control_flow_keyword(E)) {
 			keywords[E] = control_flow_keyword_color;
 		} else {
@@ -510,7 +510,7 @@ void GDScriptSyntaxHighlighter::_update_cache() {
 	const Color comment_color = EDITOR_GET("text_editor/highlighting/comment_color");
 	List<String> comments;
 	gdscript->get_comment_delimiters(&comments);
-	for (String &comment : comments) {
+	for (const String &comment : comments) {
 		String beg = comment.get_slice(" ", 0);
 		String end = comment.get_slice_count(" ") > 1 ? comment.get_slice(" ", 1) : String();
 		add_color_region(beg, end, comment_color, end == "");
@@ -520,7 +520,7 @@ void GDScriptSyntaxHighlighter::_update_cache() {
 	const Color string_color = EDITOR_GET("text_editor/highlighting/string_color");
 	List<String> strings;
 	gdscript->get_string_delimiters(&strings);
-	for (String &string : strings) {
+	for (const String &string : strings) {
 		String beg = string.get_slice(" ", 0);
 		String end = string.get_slice_count(" ") > 1 ? string.get_slice(" ", 1) : String();
 		add_color_region(beg, end, string_color, end == "");
@@ -534,7 +534,7 @@ void GDScriptSyntaxHighlighter::_update_cache() {
 		if (instance_base != StringName()) {
 			List<PropertyInfo> plist;
 			ClassDB::get_property_list(instance_base, &plist);
-			for (PropertyInfo &E : plist) {
+			for (const PropertyInfo &E : plist) {
 				String name = E.name;
 				if (E.usage & PROPERTY_USAGE_CATEGORY || E.usage & PROPERTY_USAGE_GROUP || E.usage & PROPERTY_USAGE_SUBGROUP) {
 					continue;
@@ -547,7 +547,7 @@ void GDScriptSyntaxHighlighter::_update_cache() {
 
 			List<String> clist;
 			ClassDB::get_integer_constant_list(instance_base, &clist);
-			for (String &E : clist) {
+			for (const String &E : clist) {
 				member_keywords[E] = member_variable_color;
 			}
 		}

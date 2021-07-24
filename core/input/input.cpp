@@ -174,7 +174,7 @@ void Input::get_argument_options(const StringName &p_function, int p_idx, List<S
 		List<PropertyInfo> pinfo;
 		ProjectSettings::get_singleton()->get_property_list(&pinfo);
 
-		for (PropertyInfo &pi : pinfo) {
+		for (const PropertyInfo &pi : pinfo) {
 			if (!pi.name.begins_with("input/")) {
 				continue;
 			}

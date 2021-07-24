@@ -129,7 +129,7 @@ void GDNativeLibrary::_get_property_list(List<PropertyInfo> *p_list) const {
 		config_file->get_section_keys("entry", &entry_key_list);
 	}
 
-	for (String &key : entry_key_list) {
+	for (const String &key : entry_key_list) {
 		PropertyInfo prop;
 
 		prop.type = Variant::STRING;
@@ -145,7 +145,7 @@ void GDNativeLibrary::_get_property_list(List<PropertyInfo> *p_list) const {
 		config_file->get_section_keys("dependencies", &dependency_key_list);
 	}
 
-	for (String &key : dependency_key_list) {
+	for (const String &key : dependency_key_list) {
 		PropertyInfo prop;
 
 		prop.type = Variant::STRING;
@@ -171,7 +171,7 @@ void GDNativeLibrary::set_config_file(Ref<ConfigFile> p_config_file) {
 			p_config_file->get_section_keys("entry", &entry_keys);
 		}
 
-		for (String &key : entry_keys) {
+		for (const String &key : entry_keys) {
 			Vector<String> tags = key.split(".");
 
 			bool skip = false;
@@ -201,7 +201,7 @@ void GDNativeLibrary::set_config_file(Ref<ConfigFile> p_config_file) {
 			p_config_file->get_section_keys("dependencies", &dependency_keys);
 		}
 
-		for (String &key : dependency_keys) {
+		for (const String &key : dependency_keys) {
 			Vector<String> tags = key.split(".");
 
 			bool skip = false;

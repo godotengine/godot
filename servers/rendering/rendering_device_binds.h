@@ -388,7 +388,7 @@ protected:
 		versions.clear();
 		List<Variant> keys;
 		p_versions.get_key_list(&keys);
-		for (Variant &E : keys) {
+		for (const Variant &E : keys) {
 			StringName name = E;
 			Ref<RDShaderBytecode> bc = p_versions[E];
 			ERR_CONTINUE(bc.is_null());

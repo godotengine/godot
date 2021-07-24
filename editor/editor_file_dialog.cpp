@@ -830,7 +830,7 @@ void EditorFileDialog::update_file_list() {
 	while (!files.is_empty()) {
 		bool match = patterns.is_empty();
 
-		for (String &E : patterns) {
+		for (const String &E : patterns) {
 			if (files.front()->get().matchn(E)) {
 				match = true;
 				break;

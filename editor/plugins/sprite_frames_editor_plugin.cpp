@@ -788,7 +788,7 @@ void SpriteFramesEditor::_update_library(bool p_skip_selector) {
 
 		anim_names.sort_custom<StringName::AlphCompare>();
 
-		for (StringName &E : anim_names) {
+		for (const StringName &E : anim_names) {
 			String name = E;
 
 			TreeItem *it = animations->create_item(anim_root);

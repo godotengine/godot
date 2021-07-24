@@ -303,7 +303,7 @@ void TileSetAtlasSourceEditor::AtlasTileProxyObject::_get_property_list(List<Pro
 	}
 
 	// Add only properties that are common to all tiles.
-	for (PLData *E : data_list) {
+	for (const PLData *E : data_list) {
 		if (E->uses == tiles.size()) {
 			p_list->push_back(E->property_info);
 		}

@@ -8542,7 +8542,7 @@ void RenderingDeviceVulkan::_free_rids(T &p_owner, const char *p_type) {
 		} else {
 			WARN_PRINT(vformat("%d RIDs of type \"%s\" were leaked.", owned.size(), p_type));
 		}
-		for (RID E : owned) {
+		for (const RID &E : owned) {
 			free(E);
 		}
 	}
@@ -8769,7 +8769,7 @@ void RenderingDeviceVulkan::finalize() {
 				E = N;
 			}
 			//free non shared second, this will avoid an error trying to free unexisting textures due to dependencies.
-			for (RID E : owned) {
+			for (const RID &E : owned) {
 				free(E);
 			}
 		}

@@ -75,7 +75,7 @@ Vector<String> _ResourceLoader::get_recognized_extensions_for_type(const String 
 	List<String> exts;
 	ResourceLoader::get_recognized_extensions_for_type(p_type, &exts);
 	Vector<String> ret;
-	for (String &E : exts) {
+	for (const String &E : exts) {
 		ret.push_back(E);
 	}
 
@@ -91,7 +91,7 @@ PackedStringArray _ResourceLoader::get_dependencies(const String &p_path) {
 	ResourceLoader::get_dependencies(p_path, &deps);
 
 	PackedStringArray ret;
-	for (String &E : deps) {
+	for (const String &E : deps) {
 		ret.push_back(E);
 	}
 
@@ -141,7 +141,7 @@ Vector<String> _ResourceSaver::get_recognized_extensions(const RES &p_resource) 
 	List<String> exts;
 	ResourceSaver::get_recognized_extensions(p_resource, &exts);
 	Vector<String> ret;
-	for (String &E : exts) {
+	for (const String &E : exts) {
 		ret.push_back(E);
 	}
 	return ret;
@@ -268,7 +268,7 @@ String _OS::get_name() const {
 Vector<String> _OS::get_cmdline_args() {
 	List<String> cmdline = OS::get_singleton()->get_cmdline_args();
 	Vector<String> cmdlinev;
-	for (String &E : cmdline) {
+	for (const String &E : cmdline) {
 		cmdlinev.push_back(E);
 	}
 
@@ -1822,7 +1822,7 @@ PackedStringArray _ClassDB::get_class_list() const {
 	PackedStringArray ret;
 	ret.resize(classes.size());
 	int idx = 0;
-	for (StringName &E : classes) {
+	for (const StringName &E : classes) {
 		ret.set(idx++, E);
 	}
 
@@ -1836,7 +1836,7 @@ PackedStringArray _ClassDB::get_inheriters_from_class(const StringName &p_class)
 	PackedStringArray ret;
 	ret.resize(classes.size());
 	int idx = 0;
-	for (StringName &E : classes) {
+	for (const StringName &E : classes) {
 		ret.set(idx++, E);
 	}
 
@@ -1891,7 +1891,7 @@ Array _ClassDB::get_signal_list(StringName p_class, bool p_no_inheritance) const
 	ClassDB::get_signal_list(p_class, &signals, p_no_inheritance);
 	Array ret;
 
-	for (MethodInfo &E : signals) {
+	for (const MethodInfo &E : signals) {
 		ret.push_back(E.operator Dictionary());
 	}
 
@@ -1902,7 +1902,7 @@ Array _ClassDB::get_property_list(StringName p_class, bool p_no_inheritance) con
 	List<PropertyInfo> plist;
 	ClassDB::get_property_list(p_class, &plist, p_no_inheritance);
 	Array ret;
-	for (PropertyInfo &E : plist) {
+	for (const PropertyInfo &E : plist) {
 		ret.push_back(E.operator Dictionary());
 	}
 
@@ -1935,7 +1935,7 @@ Array _ClassDB::get_method_list(StringName p_class, bool p_no_inheritance) const
 	ClassDB::get_method_list(p_class, &methods, p_no_inheritance);
 	Array ret;
 
-	for (MethodInfo &E : methods) {
+	for (const MethodInfo &E : methods) {
 #ifdef DEBUG_METHODS_ENABLED
 		ret.push_back(E.operator Dictionary());
 #else
@@ -1955,7 +1955,7 @@ PackedStringArray _ClassDB::get_integer_constant_list(const StringName &p_class,
 	PackedStringArray ret;
 	ret.resize(constants.size());
 	int idx = 0;
-	for (String &E : constants) {
+	for (const String &E : constants) {
 		ret.set(idx++, E);
 	}
 

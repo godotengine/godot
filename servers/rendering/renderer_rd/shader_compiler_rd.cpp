@@ -760,7 +760,7 @@ String ShaderCompilerRD::_dump_node_code(const SL::Node *p_node, int p_level, Ge
 
 			if (var_frag_to_light.size() > 0) {
 				String gcode = "\n\nstruct {\n";
-				for (Pair<StringName, SL::ShaderNode::Varying> &E : var_frag_to_light) {
+				for (const Pair<StringName, SL::ShaderNode::Varying> &E : var_frag_to_light) {
 					gcode += "\t" + _prestr(E.second.precision) + _typestr(E.second.type) + " " + _mkid(E.first);
 					if (E.second.array_size > 0) {
 						gcode += "[";
@@ -1394,7 +1394,7 @@ void ShaderCompilerRD::initialize(DefaultIdentifierActions p_actions) {
 
 	ShaderLanguage::get_builtin_funcs(&func_list);
 
-	for (String &E : func_list) {
+	for (const String &E : func_list) {
 		internal_functions.insert(E);
 	}
 	texture_functions.insert("texture");

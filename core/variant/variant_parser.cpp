@@ -1586,7 +1586,7 @@ Error VariantWriter::write(const Variant &p_variant, StoreStringFunc p_store_str
 			List<PropertyInfo> props;
 			obj->get_property_list(&props);
 			bool first = true;
-			for (PropertyInfo &E : props) {
+			for (const PropertyInfo &E : props) {
 				if (E.usage & PROPERTY_USAGE_STORAGE || E.usage & PROPERTY_USAGE_SCRIPT_VARIABLE) {
 					//must be serialized
 

@@ -1332,7 +1332,7 @@ GDScriptParser::AnnotationNode *GDScriptParser::parse_annotation(uint32_t p_vali
 }
 
 void GDScriptParser::clear_unused_annotations() {
-	for (AnnotationNode *annotation : annotation_stack) {
+	for (const AnnotationNode *annotation : annotation_stack) {
 		push_error(vformat(R"(Annotation "%s" does not precedes a valid target, so it will have no effect.)", annotation->name), annotation);
 	}
 
@@ -1795,7 +1795,7 @@ GDScriptParser::MatchBranchNode *GDScriptParser::parse_match_branch() {
 		List<StringName> binds;
 		branch->patterns[0]->binds.get_key_list(&binds);
 
-		for (StringName &E : binds) {
+		for (const StringName &E : binds) {
 			SuiteNode::Local local(branch->patterns[0]->binds[E], current_function);
 			suite->add_local(local);
 		}
@@ -3617,7 +3617,7 @@ void GDScriptParser::TreePrinter::push_text(const String &p_text) {
 	printed += p_text;
 }
 
-void GDScriptParser::TreePrinter::print_annotation(AnnotationNode *p_annotation) {
+void GDScriptParser::TreePrinter::print_annotation(const AnnotationNode *p_annotation) {
 	push_text(p_annotation->name);
 	push_text(" (");
 	for (int i = 0; i < p_annotation->arguments.size(); i++) {
@@ -3992,7 +3992,7 @@ void GDScriptParser::TreePrinter::print_for(ForNode *p_for) {
 }
 
 void GDScriptParser::TreePrinter::print_function(FunctionNode *p_function, const String &p_context) {
-	for (AnnotationNode *E : p_function->annotations) {
+	for (const AnnotationNode *E : p_function->annotations) {
 		print_annotation(E);
 	}
 	push_text(p_context);
@@ -4332,7 +4332,7 @@ void GDScriptParser::TreePrinter::print_unary_op(UnaryOpNode *p_unary_op) {
 }
 
 void GDScriptParser::TreePrinter::print_variable(VariableNode *p_variable) {
-	for (AnnotationNode *E : p_variable->annotations) {
+	for (const AnnotationNode *E : p_variable->annotations) {
 		print_annotation(E);
 	}
 

@@ -972,7 +972,7 @@ Error RenderingServer::mesh_create_surface_data_from_arrays(SurfaceData *r_surfa
 	if (index_array_len) {
 		List<Variant> keys;
 		p_lods.get_key_list(&keys);
-		for (Variant &E : keys) {
+		for (const Variant &E : keys) {
 			float distance = E;
 			ERR_CONTINUE(distance <= 0.0);
 			Vector<int> indices = p_lods[E];

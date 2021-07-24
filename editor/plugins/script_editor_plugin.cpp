@@ -103,7 +103,7 @@ void EditorStandardSyntaxHighlighter::_update_cache() {
 	const Color type_color = EDITOR_GET("text_editor/highlighting/engine_type_color");
 	List<StringName> types;
 	ClassDB::get_class_list(&types);
-	for (StringName &E : types) {
+	for (const StringName &E : types) {
 		String n = E;
 		if (n.begins_with("_")) {
 			n = n.substr(1, n.length());
@@ -115,7 +115,7 @@ void EditorStandardSyntaxHighlighter::_update_cache() {
 	const Color usertype_color = EDITOR_GET("text_editor/highlighting/user_type_color");
 	List<StringName> global_classes;
 	ScriptServer::get_global_class_list(&global_classes);
-	for (StringName &E : global_classes) {
+	for (const StringName &E : global_classes) {
 		highlighter->add_keyword_color(E, usertype_color);
 	}
 
@@ -134,7 +134,7 @@ void EditorStandardSyntaxHighlighter::_update_cache() {
 		const Color basetype_color = EDITOR_GET("text_editor/highlighting/base_type_color");
 		List<String> core_types;
 		script->get_language()->get_core_type_words(&core_types);
-		for (String &E : core_types) {
+		for (const String &E : core_types) {
 			highlighter->add_keyword_color(E, basetype_color);
 		}
 
@@ -143,7 +143,7 @@ void EditorStandardSyntaxHighlighter::_update_cache() {
 		const Color control_flow_keyword_color = EDITOR_GET("text_editor/highlighting/control_flow_keyword_color");
 		List<String> keywords;
 		script->get_language()->get_reserved_words(&keywords);
-		for (String &E : keywords) {
+		for (const String &E : keywords) {
 			if (script->get_language()->is_control_flow_keyword(E)) {
 				highlighter->add_keyword_color(E, control_flow_keyword_color);
 			} else {
@@ -157,7 +157,7 @@ void EditorStandardSyntaxHighlighter::_update_cache() {
 		if (instance_base != StringName()) {
 			List<PropertyInfo> plist;
 			ClassDB::get_property_list(instance_base, &plist);
-			for (PropertyInfo &E : plist) {
+			for (const PropertyInfo &E : plist) {
 				String name = E.name;
 				if (E.usage & PROPERTY_USAGE_CATEGORY || E.usage & PROPERTY_USAGE_GROUP || E.usage & PROPERTY_USAGE_SUBGROUP) {
 					continue;
@@ -170,7 +170,7 @@ void EditorStandardSyntaxHighlighter::_update_cache() {
 
 			List<String> clist;
 			ClassDB::get_integer_constant_list(instance_base, &clist);
-			for (String &E : clist) {
+			for (const String &E : clist) {
 				highlighter->add_member_keyword_color(E, member_variable_color);
 			}
 		}
@@ -179,7 +179,7 @@ void EditorStandardSyntaxHighlighter::_update_cache() {
 		const Color comment_color = EDITOR_GET("text_editor/highlighting/comment_color");
 		List<String> comments;
 		script->get_language()->get_comment_delimiters(&comments);
-		for (String &comment : comments) {
+		for (const String &comment : comments) {
 			String beg = comment.get_slice(" ", 0);
 			String end = comment.get_slice_count(" ") > 1 ? comment.get_slice(" ", 1) : String();
 			highlighter->add_color_region(beg, end, comment_color, end == "");
@@ -189,7 +189,7 @@ void EditorStandardSyntaxHighlighter::_update_cache() {
 		const Color string_color = EDITOR_GET("text_editor/highlighting/string_color");
 		List<String> strings;
 		script->get_language()->get_string_delimiters(&strings);
-		for (String &string : strings) {
+		for (const String &string : strings) {
 			String beg = string.get_slice(" ", 0);
 			String end = string.get_slice_count(" ") > 1 ? string.get_slice(" ", 1) : String();
 			highlighter->add_color_region(beg, end, string_color, end == "");

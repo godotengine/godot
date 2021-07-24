@@ -559,7 +559,7 @@ void add_exposed_classes(Context &r_context) {
 		ClassDB::get_method_list(class_name, &method_list, true);
 		method_list.sort();
 
-		for (MethodInfo &E : method_list) {
+		for (const MethodInfo &E : method_list) {
 			const MethodInfo &method_info = E;
 
 			int argc = method_info.arguments.size();
@@ -827,7 +827,7 @@ void add_global_enums(Context &r_context) {
 			}
 		}
 
-		for (EnumData &E : r_context.global_enums) {
+		for (const EnumData &E : r_context.global_enums) {
 			r_context.enum_types.push_back(E.name);
 		}
 	}
@@ -838,7 +838,7 @@ void add_global_enums(Context &r_context) {
 	hardcoded_enums.push_back("Vector2i.Axis");
 	hardcoded_enums.push_back("Vector3.Axis");
 	hardcoded_enums.push_back("Vector3i.Axis");
-	for (StringName &E : hardcoded_enums) {
+	for (const StringName &E : hardcoded_enums) {
 		// These enums are not generated and must be written manually (e.g.: Vector3.Axis)
 		// Here, we assume core types do not begin with underscore
 		r_context.enum_types.push_back(E);

@@ -221,7 +221,7 @@ void EditorResourcePicker::_edit_menu_cbk(int p_which) {
 			}
 
 			Set<String> valid_extensions;
-			for (String &E : extensions) {
+			for (const String &E : extensions) {
 				valid_extensions.insert(E);
 			}
 
@@ -260,7 +260,7 @@ void EditorResourcePicker::_edit_menu_cbk(int p_which) {
 			List<PropertyInfo> property_list;
 			edited_resource->get_property_list(&property_list);
 			List<Pair<String, Variant>> propvalues;
-			for (PropertyInfo &pi : property_list) {
+			for (const PropertyInfo &pi : property_list) {
 				Pair<String, Variant> p;
 				if (pi.usage & PROPERTY_USAGE_STORAGE) {
 					p.first = pi.name;
@@ -275,7 +275,7 @@ void EditorResourcePicker::_edit_menu_cbk(int p_which) {
 			Ref<Resource> unique_resource = Ref<Resource>(Object::cast_to<Resource>(inst));
 			ERR_FAIL_COND(unique_resource.is_null());
 
-			for (Pair<String, Variant> &p : propvalues) {
+			for (const Pair<String, Variant> &p : propvalues) {
 				unique_resource->set(p.first, p.second);
 			}
 
@@ -465,11 +465,11 @@ void EditorResourcePicker::_get_allowed_types(bool p_with_convert, Set<String> *
 		List<StringName> inheriters;
 
 		ClassDB::get_inheriters_from_class(base, &inheriters);
-		for (StringName &E : inheriters) {
+		for (const StringName &E : inheriters) {
 			p_vector->insert(E);
 		}
 
-		for (StringName &E : global_classes) {
+		for (const StringName &E : global_classes) {
 			if (EditorNode::get_editor_data().script_class_is_parent(E, base)) {
 				p_vector->insert(E);
 			}

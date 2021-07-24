@@ -220,7 +220,7 @@ bool HTTPRequest::_handle_response(bool *ret_value) {
 	client->get_response_headers(&rheaders);
 	response_headers.resize(0);
 	downloaded.set(0);
-	for (String &E : rheaders) {
+	for (const String &E : rheaders) {
 		response_headers.push_back(E);
 	}
 
@@ -235,7 +235,7 @@ bool HTTPRequest::_handle_response(bool *ret_value) {
 
 		String new_request;
 
-		for (String &E : rheaders) {
+		for (const String &E : rheaders) {
 			if (E.findn("Location: ") != -1) {
 				new_request = E.substr(9, E.length()).strip_edges();
 			}

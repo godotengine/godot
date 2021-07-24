@@ -436,7 +436,7 @@ Ref<EditorExportPreset> EditorExportPlatform::create_preset() {
 	List<ExportOption> options;
 	get_export_options(&options);
 
-	for (ExportOption &E : options) {
+	for (const ExportOption &E : options) {
 		preset->properties.push_back(E.option);
 		preset->values[E.option.name] = E.default_value;
 	}
@@ -679,7 +679,7 @@ EditorExportPlatform::FeatureContainers EditorExportPlatform::get_feature_contai
 	platform->get_preset_features(p_preset, &feature_list);
 
 	FeatureContainers result;
-	for (String &E : feature_list) {
+	for (const String &E : feature_list) {
 		result.features.insert(E);
 		result.features_pv.push_back(E);
 	}
@@ -752,7 +752,7 @@ Error EditorExportPlatform::export_project_files(const Ref<EditorExportPreset> &
 		List<PropertyInfo> props;
 		ProjectSettings::get_singleton()->get_property_list(&props);
 
-		for (PropertyInfo &pi : props) {
+		for (const PropertyInfo &pi : props) {
 			if (!pi.name.begins_with("autoload/")) {
 				continue;
 			}
@@ -897,7 +897,7 @@ Error EditorExportPlatform::export_project_files(const Ref<EditorExportPreset> &
 
 			Set<String> remap_features;
 
-			for (String &F : remaps) {
+			for (const String &F : remaps) {
 				String remap = F;
 				String feature = remap.get_slice(".", 1);
 				if (features.has(feature)) {
@@ -911,7 +911,7 @@ Error EditorExportPlatform::export_project_files(const Ref<EditorExportPreset> &
 
 			err = OK;
 
-			for (String &F : remaps) {
+			for (const String &F : remaps) {
 				String remap = F;
 				if (remap == "path") {
 					String remapped_path = config->get_value("remap", remap);
@@ -1647,7 +1647,7 @@ void EditorExport::load_config() {
 
 		config->get_section_keys(option_section, &options);
 
-		for (String &E : options) {
+		for (const String &E : options) {
 			Variant value = config->get_value(option_section, E);
 
 			preset->set(E, value);
@@ -1689,7 +1689,7 @@ void EditorExport::update_export_presets() {
 			preset->properties.clear();
 			preset->values.clear();
 
-			for (EditorExportPlatform::ExportOption &E : options) {
+			for (const EditorExportPlatform::ExportOption &E : options) {
 				preset->properties.push_back(E.option);
 
 				StringName option_name = E.option.name;

@@ -276,7 +276,7 @@ Dictionary NativeExtensionAPIDump::generate_extension_api() {
 			Dictionary d1;
 			d1["name"] = E->key();
 			Array values;
-			for (Pair<String, int> &F : E->get()) {
+			for (const Pair<String, int> &F : E->get()) {
 				Dictionary d2;
 				d2["name"] = F.first;
 				d2["value"] = F.second;
@@ -294,7 +294,7 @@ Dictionary NativeExtensionAPIDump::generate_extension_api() {
 		List<StringName> utility_func_names;
 		Variant::get_utility_function_list(&utility_func_names);
 
-		for (StringName &name : utility_func_names) {
+		for (const StringName &name : utility_func_names) {
 			Dictionary func;
 			func["name"] = String(name);
 			if (Variant::has_utility_function_return_value(name)) {
@@ -362,7 +362,7 @@ Dictionary NativeExtensionAPIDump::generate_extension_api() {
 
 				List<StringName> member_names;
 				Variant::get_member_list(type, &member_names);
-				for (StringName &member_name : member_names) {
+				for (const StringName &member_name : member_names) {
 					Dictionary d2;
 					d2["name"] = String(member_name);
 					d2["type"] = Variant::get_type_name(Variant::get_member_type(type, member_name));
@@ -378,7 +378,7 @@ Dictionary NativeExtensionAPIDump::generate_extension_api() {
 
 				List<StringName> constant_names;
 				Variant::get_constants_for_type(type, &constant_names);
-				for (StringName &constant_name : constant_names) {
+				for (const StringName &constant_name : constant_names) {
 					Dictionary d2;
 					d2["name"] = String(constant_name);
 					Variant constant = Variant::get_constant_value(type, constant_name);
@@ -417,7 +417,7 @@ Dictionary NativeExtensionAPIDump::generate_extension_api() {
 
 				List<StringName> method_names;
 				Variant::get_builtin_method_list(type, &method_names);
-				for (StringName &method_name : method_names) {
+				for (const StringName &method_name : method_names) {
 					Dictionary d2;
 					d2["name"] = String(method_name);
 					if (Variant::has_builtin_method_return_value(type, method_name)) {
@@ -499,7 +499,7 @@ Dictionary NativeExtensionAPIDump::generate_extension_api() {
 
 		class_list.sort_custom<StringName::AlphCompare>();
 
-		for (StringName &class_name : class_list) {
+		for (const StringName &class_name : class_list) {
 			Dictionary d;
 			d["name"] = String(class_name);
 			d["is_refcounted"] = ClassDB::is_parent_class(class_name, "RefCounted");
@@ -520,7 +520,7 @@ Dictionary NativeExtensionAPIDump::generate_extension_api() {
 				Array constants;
 				List<String> constant_list;
 				ClassDB::get_integer_constant_list(class_name, &constant_list, true);
-				for (String &F : constant_list) {
+				for (const String &F : constant_list) {
 					StringName enum_name = ClassDB::get_integer_constant_enum(class_name, F);
 					if (enum_name != StringName()) {
 						continue; //enums will be handled on their own
@@ -542,7 +542,7 @@ Dictionary NativeExtensionAPIDump::generate_extension_api() {
 				Array enums;
 				List<StringName> enum_list;
 				ClassDB::get_enum_list(class_name, &enum_list, true);
-				for (StringName &F : enum_list) {
+				for (const StringName &F : enum_list) {
 					Dictionary d2;
 					d2["name"] = String(F);
 
@@ -570,7 +570,7 @@ Dictionary NativeExtensionAPIDump::generate_extension_api() {
 				Array methods;
 				List<MethodInfo> method_list;
 				ClassDB::get_method_list(class_name, &method_list, true);
-				for (MethodInfo &F : method_list) {
+				for (const MethodInfo &F : method_list) {
 					StringName method_name = F.name;
 					if (F.flags & METHOD_FLAG_VIRTUAL) {
 						//virtual method
@@ -687,7 +687,7 @@ Dictionary NativeExtensionAPIDump::generate_extension_api() {
 				Array signals;
 				List<MethodInfo> signal_list;
 				ClassDB::get_signal_list(class_name, &signal_list, true);
-				for (MethodInfo &F : signal_list) {
+				for (const MethodInfo &F : signal_list) {
 					StringName signal_name = F.name;
 					Dictionary d2;
 					d2["name"] = String(signal_name);
@@ -723,7 +723,7 @@ Dictionary NativeExtensionAPIDump::generate_extension_api() {
 				Array properties;
 				List<PropertyInfo> property_list;
 				ClassDB::get_property_list(class_name, &property_list, true);
-				for (PropertyInfo &F : property_list) {
+				for (const PropertyInfo &F : property_list) {
 					if (F.usage & PROPERTY_USAGE_CATEGORY || F.usage & PROPERTY_USAGE_GROUP || F.usage & PROPERTY_USAGE_SUBGROUP) {
 						continue; //not real properties
 					}
@@ -766,7 +766,7 @@ Dictionary NativeExtensionAPIDump::generate_extension_api() {
 		List<Engine::Singleton> singleton_list;
 		Engine::get_singleton()->get_singletons(&singleton_list);
 
-		for (Engine::Singleton &s : singleton_list) {
+		for (const Engine::Singleton &s : singleton_list) {
 			Dictionary d;
 			d["name"] = s.name;
 			if (s.class_name != StringName()) {

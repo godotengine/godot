@@ -76,7 +76,7 @@ void AnimationNode::get_child_nodes(List<ChildNode> *r_child_nodes) {
 		Dictionary cn = get_script_instance()->call("_get_child_nodes");
 		List<Variant> keys;
 		cn.get_key_list(&keys);
-		for (Variant &E : keys) {
+		for (const Variant &E : keys) {
 			ChildNode child;
 			child.name = E;
 			child.node = cn[E];
@@ -536,7 +536,7 @@ bool AnimationTree::_update_caches(AnimationPlayer *player) {
 	List<StringName> sname;
 	player->get_animation_list(&sname);
 
-	for (StringName &E : sname) {
+	for (const StringName &E : sname) {
 		Ref<Animation> anim = player->get_animation(E);
 		for (int i = 0; i < anim->get_track_count(); i++) {
 			NodePath path = anim->track_get_path(i);
@@ -816,7 +816,7 @@ void AnimationTree::_process_graph(float p_delta) {
 	{
 		bool can_call = is_inside_tree() && !Engine::get_singleton()->is_editor_hint();
 
-		for (AnimationNode::AnimationState &as : state.animation_states) {
+		for (const AnimationNode::AnimationState &as : state.animation_states) {
 			Ref<Animation> a = as.animation;
 			float time = as.time;
 			float delta = as.delta;
@@ -1369,7 +1369,7 @@ void AnimationTree::_update_properties_for_node(const String &p_base_path, Ref<A
 	List<AnimationNode::ChildNode> children;
 	node->get_child_nodes(&children);
 
-	for (AnimationNode::ChildNode &E : children) {
+	for (const AnimationNode::ChildNode &E : children) {
 		_update_properties_for_node(p_base_path + E.name + "/", E.node);
 	}
 }

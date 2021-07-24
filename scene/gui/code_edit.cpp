@@ -2288,7 +2288,7 @@ void CodeEdit::_filter_code_completion_candidates() {
 		TypedArray<Dictionary> completion_options_sources;
 		completion_options_sources.resize(code_completion_option_sources.size());
 		int i = 0;
-		for (ScriptCodeCompletionOption &E : code_completion_option_sources) {
+		for (const ScriptCodeCompletionOption &E : code_completion_option_sources) {
 			Dictionary option;
 			option["kind"] = E.kind;
 			option["display_text"] = E.display;

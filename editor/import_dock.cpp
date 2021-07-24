@@ -119,7 +119,7 @@ void ImportDock::set_edit_path(const String &p_path) {
 
 	import_as->clear();
 
-	for (Pair<String, String> &E : importer_names) {
+	for (const Pair<String, String> &E : importer_names) {
 		import_as->add_item(E.first);
 		import_as->set_item_metadata(import_as->get_item_count() - 1, E.second);
 		if (E.second == importer_name) {
@@ -153,7 +153,7 @@ void ImportDock::_update_options(const Ref<ConfigFile> &p_config) {
 	params->checking = params->paths.size() > 1;
 	params->checked.clear();
 
-	for (ResourceImporter::ImportOption &E : options) {
+	for (const ResourceImporter::ImportOption &E : options) {
 		params->properties.push_back(E.option);
 		if (p_config.is_valid() && p_config->has_section_key("params", E.option.name)) {
 			params->values[E.option.name] = p_config->get_value("params", E.option.name);
@@ -201,7 +201,7 @@ void ImportDock::set_edit_multiple_paths(const Vector<String> &p_paths) {
 		List<String> keys;
 		config->get_section_keys("params", &keys);
 
-		for (String &E : keys) {
+		for (const String &E : keys) {
 			if (!value_frequency.has(E)) {
 				value_frequency[E] = Dictionary();
 			}
@@ -226,7 +226,7 @@ void ImportDock::set_edit_multiple_paths(const Vector<String> &p_paths) {
 	params->checking = true;
 	params->checked.clear();
 
-	for (ResourceImporter::ImportOption &E : options) {
+	for (const ResourceImporter::ImportOption &E : options) {
 		params->properties.push_back(E.option);
 
 		if (value_frequency.has(E.option.name)) {
@@ -235,7 +235,7 @@ void ImportDock::set_edit_multiple_paths(const Vector<String> &p_paths) {
 			List<Variant> v;
 			d.get_key_list(&v);
 			Variant value;
-			for (Variant &F : v) {
+			for (const Variant &F : v) {
 				int f = d[F];
 				if (f > freq) {
 					value = F;
@@ -262,7 +262,7 @@ void ImportDock::set_edit_multiple_paths(const Vector<String> &p_paths) {
 
 	import_as->clear();
 
-	for (Pair<String, String> &E : importer_names) {
+	for (const Pair<String, String> &E : importer_names) {
 		import_as->add_item(E.first);
 		import_as->set_item_metadata(import_as->get_item_count() - 1, E.second);
 		if (E.second == params->importer->get_importer_name()) {
@@ -363,7 +363,7 @@ void ImportDock::_preset_selected(int p_idx) {
 			if (params->checking) {
 				params->checked.clear();
 			}
-			for (Variant &E : v) {
+			for (const Variant &E : v) {
 				params->values[E] = d[E];
 				if (params->checking) {
 					params->checked.insert(E);
@@ -384,7 +384,7 @@ void ImportDock::_preset_selected(int p_idx) {
 			if (params->checking) {
 				params->checked.clear();
 			}
-			for (ResourceImporter::ImportOption &E : options) {
+			for (const ResourceImporter::ImportOption &E : options) {
 				params->values[E.option.name] = E.default_value;
 				if (params->checking) {
 					params->checked.insert(E.option.name);
@@ -486,7 +486,7 @@ void ImportDock::_reimport() {
 
 			if (params->checking && config->get_value("remap", "importer") == params->importer->get_importer_name()) {
 				//update only what is edited (checkboxes) if the importer is the same
-				for (PropertyInfo &E : params->properties) {
+				for (const PropertyInfo &E : params->properties) {
 					if (params->checked.has(E.name)) {
 						config->set_value("params", E.name, params->values[E.name]);
 					}
@@ -498,7 +498,7 @@ void ImportDock::_reimport() {
 					config->erase_section("params");
 				}
 
-				for (PropertyInfo &E : params->properties) {
+				for (const PropertyInfo &E : params->properties) {
 					config->set_value("params", E.name, params->values[E.name]);
 				}
 			}

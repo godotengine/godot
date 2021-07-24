@@ -397,7 +397,7 @@ Ref<Image> GPUParticlesCollisionSDF::bake() {
 		bake_step_function(0, "Finding Meshes");
 	}
 
-	for (PlotMesh &pm : plot_meshes) {
+	for (const PlotMesh &pm : plot_meshes) {
 		for (int i = 0; i < pm.mesh->get_surface_count(); i++) {
 			if (pm.mesh->surface_get_primitive_type(i) != Mesh::PRIMITIVE_TRIANGLES) {
 				continue; //only triangles

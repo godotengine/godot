@@ -1508,7 +1508,7 @@ String EditorInspector::get_selected_path() const {
 }
 
 void EditorInspector::_parse_added_editors(VBoxContainer *current_vbox, Ref<EditorInspectorPlugin> ped) {
-	for (EditorInspectorPlugin::AddedEditor &F : ped->added_editors) {
+	for (const EditorInspectorPlugin::AddedEditor &F : ped->added_editors) {
 		EditorProperty *ep = Object::cast_to<EditorProperty>(F.property_editor);
 		current_vbox->add_child(F.property_editor);
 
@@ -1952,7 +1952,7 @@ void EditorInspector::update_tree() {
 			List<EditorInspectorPlugin::AddedEditor> editors = ped->added_editors; //make a copy, since plugins may be used again in a sub-inspector
 			ped->added_editors.clear();
 
-			for (EditorInspectorPlugin::AddedEditor &F : editors) {
+			for (const EditorInspectorPlugin::AddedEditor &F : editors) {
 				EditorProperty *ep = Object::cast_to<EditorProperty>(F.property_editor);
 
 				if (ep) {
@@ -2391,7 +2391,7 @@ void EditorInspector::_property_checked(const String &p_path, bool p_checked) {
 			Variant to_create;
 			List<PropertyInfo> pinfo;
 			object->get_property_list(&pinfo);
-			for (PropertyInfo &E : pinfo) {
+			for (const PropertyInfo &E : pinfo) {
 				if (E.name == p_path) {
 					Callable::CallError ce;
 					Variant::construct(E.type, to_create, nullptr, 0, ce);

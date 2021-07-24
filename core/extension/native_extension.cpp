@@ -351,7 +351,7 @@ RES NativeExtensionResourceLoader::load(const String &p_path, const String &p_or
 
 	String library_path;
 
-	for (String &E : libraries) {
+	for (const String &E : libraries) {
 		Vector<String> tags = E.split(".");
 		bool all_tags_met = true;
 		for (int i = 0; i < tags.size(); i++) {

@@ -484,7 +484,7 @@ bool EditorFileSystem::_test_for_reimport(const String &p_path, bool p_only_impo
 	memdelete(md5s);
 
 	//imported files are gone, reimport
-	for (String &E : to_check) {
+	for (const String &E : to_check) {
 		if (!FileAccess::exists(E)) {
 			return true;
 		}
@@ -524,7 +524,7 @@ bool EditorFileSystem::_update_scan_actions() {
 	Vector<String> reimports;
 	Vector<String> reloads;
 
-	for (ItemAction &ia : scan_actions) {
+	for (const ItemAction &ia : scan_actions) {
 		switch (ia.action) {
 			case ItemAction::ACTION_NONE: {
 			} break;
@@ -1072,7 +1072,7 @@ void EditorFileSystem::_delete_internal_files(String p_file) {
 		List<String> paths;
 		ResourceFormatImporter::get_singleton()->get_internal_resource_path_list(p_file, &paths);
 		DirAccess *da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
-		for (String &E : paths) {
+		for (const String &E : paths) {
 			da->remove(E);
 		}
 		da->remove(p_file + ".import");
@@ -1413,7 +1413,7 @@ Vector<String> EditorFileSystem::_get_dependencies(const String &p_path) {
 	ResourceLoader::get_dependencies(p_path, &deps);
 
 	Vector<String> ret;
-	for (String &E : deps) {
+	for (const String &E : deps) {
 		ret.push_back(E);
 	}
 
@@ -1609,14 +1609,14 @@ Error EditorFileSystem::_reimport_group(const String &p_group_file, const Vector
 		List<ResourceImporter::ImportOption> options;
 		importer->get_import_options(&options);
 		//set default values
-		for (ResourceImporter::ImportOption &E : options) {
+		for (const ResourceImporter::ImportOption &E : options) {
 			source_file_options[p_files[i]][E.option.name] = E.default_value;
 		}
 
 		if (config->has_section("params")) {
 			List<String> sk;
 			config->get_section_keys("params", &sk);
-			for (String &param : sk) {
+			for (const String &param : sk) {
 				Variant value = config->get_value("params", param);
 				//override with whathever is in file
 				source_file_options[p_files[i]][param] = value;
@@ -1690,7 +1690,7 @@ Error EditorFileSystem::_reimport_group(const String &p_group_file, const Vector
 		List<ResourceImporter::ImportOption> options;
 		importer->get_import_options(&options);
 		//set default values
-		for (ResourceImporter::ImportOption &F : options) {
+		for (const ResourceImporter::ImportOption &F : options) {
 			String base = F.option.name;
 			Variant v = F.default_value;
 			if (source_file_options[file].has(base)) {
@@ -1773,7 +1773,7 @@ void EditorFileSystem::_reimport_file(const String &p_file, const Map<StringName
 				if (cf->has_section("params")) {
 					List<String> sk;
 					cf->get_section_keys("params", &sk);
-					for (String &E : sk) {
+					for (const String &E : sk) {
 						params[E] = cf->get_value("params", E);
 					}
 				}
@@ -1823,7 +1823,7 @@ void EditorFileSystem::_reimport_file(const String &p_file, const Map<StringName
 
 	List<ResourceImporter::ImportOption> opts;
 	importer->get_import_options(&opts);
-	for (ResourceImporter::ImportOption &E : opts) {
+	for (const ResourceImporter::ImportOption &E : opts) {
 		if (!params.has(E.option.name)) { //this one is not present
 			params[E.option.name] = E.default_value;
 		}
@@ -1835,7 +1835,7 @@ void EditorFileSystem::_reimport_file(const String &p_file, const Map<StringName
 		List<Variant> v;
 		d.get_key_list(&v);
 
-		for (Variant &E : v) {
+		for (const Variant &E : v) {
 			params[E] = d[E];
 		}
 	}
@@ -1882,7 +1882,7 @@ void EditorFileSystem::_reimport_file(const String &p_file, const Map<StringName
 			//no path
 		} else if (import_variants.size()) {
 			//import with variants
-			for (String &E : import_variants) {
+			for (const String &E : import_variants) {
 				String path = base_path.c_escape() + "." + E + "." + importer->get_save_extension();
 
 				f->store_line("path." + E + "=\"" + path + "\"");
@@ -1908,7 +1908,7 @@ void EditorFileSystem::_reimport_file(const String &p_file, const Map<StringName
 
 	if (gen_files.size()) {
 		Array genf;
-		for (String &E : gen_files) {
+		for (const String &E : gen_files) {
 			genf.push_back(E);
 			dest_paths.push_back(E);
 		}
@@ -1934,7 +1934,7 @@ void EditorFileSystem::_reimport_file(const String &p_file, const Map<StringName
 
 	//store options in provided order, to avoid file changing. Order is also important because first match is accepted first.
 
-	for (ResourceImporter::ImportOption &E : opts) {
+	for (const ResourceImporter::ImportOption &E : opts) {
 		String base = E.option.name;
 		String value;
 		VariantWriter::write_to_string(params[base], value);
@@ -2171,7 +2171,7 @@ void EditorFileSystem::_move_group_files(EditorFileSystemDirectory *efd, const S
 
 			List<String> sk;
 			config->get_section_keys("params", &sk);
-			for (String &param : sk) {
+			for (const String &param : sk) {
 				//not very clean, but should work
 				String value = config->get_value("params", param);
 				if (value == p_group_file) {
@@ -2245,13 +2245,13 @@ void EditorFileSystem::_update_extensions() {
 
 	List<String> extensionsl;
 	ResourceLoader::get_recognized_extensions_for_type("", &extensionsl);
-	for (String &E : extensionsl) {
+	for (const String &E : extensionsl) {
 		valid_extensions.insert(E);
 	}
 
 	extensionsl.clear();
 	ResourceFormatImporter::get_singleton()->get_recognized_extensions(&extensionsl);
-	for (String &E : extensionsl) {
+	for (const String &E : extensionsl) {
 		import_extensions.insert(E);
 	}
 }

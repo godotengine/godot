@@ -79,7 +79,7 @@ void GDNativeExportPlugin::_export_file(const String &p_path, const String &p_ty
 		List<String> entry_keys;
 		config->get_section_keys("entry", &entry_keys);
 
-		for (String &key : entry_keys) {
+		for (const String &key : entry_keys) {
 			Vector<String> tags = key.split(".");
 
 			bool skip = false;
@@ -110,7 +110,7 @@ void GDNativeExportPlugin::_export_file(const String &p_path, const String &p_ty
 		List<String> dependency_keys;
 		config->get_section_keys("dependencies", &dependency_keys);
 
-		for (String &key : dependency_keys) {
+		for (const String &key : dependency_keys) {
 			Vector<String> tags = key.split(".");
 
 			bool skip = false;
@@ -145,7 +145,7 @@ void GDNativeExportPlugin::_export_file(const String &p_path, const String &p_ty
 		List<String> entry_keys;
 		config->get_section_keys("entry", &entry_keys);
 
-		for (String &key : entry_keys) {
+		for (const String &key : entry_keys) {
 			Vector<String> tags = key.split(".");
 
 			bool skip = false;

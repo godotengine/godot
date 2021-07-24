@@ -265,7 +265,7 @@ Ref<Resource> StandardMaterial3DConversionPlugin::convert(const Ref<Resource> &p
 	List<PropertyInfo> params;
 	RS::get_singleton()->shader_get_param_list(mat->get_shader_rid(), &params);
 
-	for (PropertyInfo &E : params) {
+	for (const PropertyInfo &E : params) {
 		// Texture parameter has to be treated specially since StandardMaterial3D saved it
 		// as RID but ShaderMaterial needs Texture itself
 		Ref<Texture2D> texture = mat->get_texture_by_name(E.name);
@@ -309,7 +309,7 @@ Ref<Resource> ParticlesMaterialConversionPlugin::convert(const Ref<Resource> &p_
 	List<PropertyInfo> params;
 	RS::get_singleton()->shader_get_param_list(mat->get_shader_rid(), &params);
 
-	for (PropertyInfo &E : params) {
+	for (const PropertyInfo &E : params) {
 		Variant value = RS::get_singleton()->material_get_param(mat->get_rid(), E.name);
 		smat->set_shader_param(E.name, value);
 	}
@@ -346,7 +346,7 @@ Ref<Resource> CanvasItemMaterialConversionPlugin::convert(const Ref<Resource> &p
 	List<PropertyInfo> params;
 	RS::get_singleton()->shader_get_param_list(mat->get_shader_rid(), &params);
 
-	for (PropertyInfo &E : params) {
+	for (const PropertyInfo &E : params) {
 		Variant value = RS::get_singleton()->material_get_param(mat->get_rid(), E.name);
 		smat->set_shader_param(E.name, value);
 	}
@@ -383,7 +383,7 @@ Ref<Resource> ProceduralSkyMaterialConversionPlugin::convert(const Ref<Resource>
 	List<PropertyInfo> params;
 	RS::get_singleton()->shader_get_param_list(mat->get_shader_rid(), &params);
 
-	for (PropertyInfo &E : params) {
+	for (const PropertyInfo &E : params) {
 		Variant value = RS::get_singleton()->material_get_param(mat->get_rid(), E.name);
 		smat->set_shader_param(E.name, value);
 	}
@@ -420,7 +420,7 @@ Ref<Resource> PanoramaSkyMaterialConversionPlugin::convert(const Ref<Resource> &
 	List<PropertyInfo> params;
 	RS::get_singleton()->shader_get_param_list(mat->get_shader_rid(), &params);
 
-	for (PropertyInfo &E : params) {
+	for (const PropertyInfo &E : params) {
 		Variant value = RS::get_singleton()->material_get_param(mat->get_rid(), E.name);
 		smat->set_shader_param(E.name, value);
 	}
@@ -457,7 +457,7 @@ Ref<Resource> PhysicalSkyMaterialConversionPlugin::convert(const Ref<Resource> &
 	List<PropertyInfo> params;
 	RS::get_singleton()->shader_get_param_list(mat->get_shader_rid(), &params);
 
-	for (PropertyInfo &E : params) {
+	for (const PropertyInfo &E : params) {
 		Variant value = RS::get_singleton()->material_get_param(mat->get_rid(), E.name);
 		smat->set_shader_param(E.name, value);
 	}

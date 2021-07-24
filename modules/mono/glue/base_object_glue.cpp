@@ -177,7 +177,7 @@ MonoArray *godot_icall_DynamicGodotObject_SetMemberList(Object *p_ptr) {
 	MonoArray *result = mono_array_new(mono_domain_get(), CACHED_CLASS_RAW(String), property_list.size());
 
 	int i = 0;
-	for (PropertyInfo &E : property_list) {
+	for (const PropertyInfo &E : property_list) {
 		MonoString *boxed = GDMonoMarshal::mono_string_from_godot(E.name);
 		mono_array_setref(result, i, boxed);
 		i++;

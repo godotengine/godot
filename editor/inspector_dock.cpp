@@ -87,7 +87,7 @@ void InspectorDock::_menu_option(int p_option) {
 				List<PropertyInfo> props;
 				current->get_property_list(&props);
 				Map<RES, RES> duplicates;
-				for (PropertyInfo &E : props) {
+				for (const PropertyInfo &E : props) {
 					if (!(E.usage & PROPERTY_USAGE_STORAGE)) {
 						continue;
 					}

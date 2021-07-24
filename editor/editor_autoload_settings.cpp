@@ -46,11 +46,11 @@ void EditorAutoloadSettings::_notification(int p_what) {
 		ResourceLoader::get_recognized_extensions_for_type("Script", &afn);
 		ResourceLoader::get_recognized_extensions_for_type("PackedScene", &afn);
 
-		for (String &E : afn) {
+		for (const String &E : afn) {
 			file_dialog->add_filter("*." + E);
 		}
 
-		for (AutoLoadInfo &info : autoload_cache) {
+		for (const AutoLoadInfo &info : autoload_cache) {
 			if (info.node && info.in_editor) {
 				get_tree()->get_root()->call_deferred(SNAME("add_child"), info.node);
 			}
@@ -101,7 +101,7 @@ bool EditorAutoloadSettings::_autoload_name_is_valid(const String &p_name, Strin
 	for (int i = 0; i < ScriptServer::get_language_count(); i++) {
 		List<String> keywords;
 		ScriptServer::get_language(i)->get_reserved_words(&keywords);
-		for (String &E : keywords) {
+		for (const String &E : keywords) {
 			if (E == p_name) {
 				if (r_error) {
 					*r_error = TTR("Invalid name.") + "\n" + TTR("Keyword cannot be used as an autoload name.");
@@ -378,7 +378,7 @@ void EditorAutoloadSettings::update_autoload() {
 	Map<String, AutoLoadInfo> to_remove;
 	List<AutoLoadInfo *> to_add;
 
-	for (AutoLoadInfo &info : autoload_cache) {
+	for (const AutoLoadInfo &info : autoload_cache) {
 		to_remove.insert(info.name, info);
 	}
 
@@ -390,7 +390,7 @@ void EditorAutoloadSettings::update_autoload() {
 	List<PropertyInfo> props;
 	ProjectSettings::get_singleton()->get_property_list(&props);
 
-	for (PropertyInfo &pi : props) {
+	for (const PropertyInfo &pi : props) {
 		if (!pi.name.begins_with("autoload/")) {
 			continue;
 		}
@@ -643,7 +643,7 @@ void EditorAutoloadSettings::drop_data_fw(const Point2 &p_point, const Variant &
 
 	int i = 0;
 
-	for (AutoLoadInfo &F : autoload_cache) {
+	for (const AutoLoadInfo &F : autoload_cache) {
 		orders.write[i++] = F.order;
 	}
 
@@ -655,7 +655,7 @@ void EditorAutoloadSettings::drop_data_fw(const Point2 &p_point, const Variant &
 
 	i = 0;
 
-	for (AutoLoadInfo &F : autoload_cache) {
+	for (const AutoLoadInfo &F : autoload_cache) {
 		undo_redo->add_do_method(ProjectSettings::get_singleton(), "set_order", "autoload/" + F.name, orders[i++]);
 		undo_redo->add_undo_method(ProjectSettings::get_singleton(), "set_order", "autoload/" + F.name, F.order);
 	}
@@ -758,7 +758,7 @@ EditorAutoloadSettings::EditorAutoloadSettings() {
 	// Make first cache
 	List<PropertyInfo> props;
 	ProjectSettings::get_singleton()->get_property_list(&props);
-	for (PropertyInfo &pi : props) {
+	for (const PropertyInfo &pi : props) {
 		if (!pi.name.begins_with("autoload/")) {
 			continue;
 		}
@@ -894,7 +894,7 @@ EditorAutoloadSettings::EditorAutoloadSettings() {
 }
 
 EditorAutoloadSettings::~EditorAutoloadSettings() {
-	for (AutoLoadInfo &info : autoload_cache) {
+	for (const AutoLoadInfo &info : autoload_cache) {
 		if (info.node && !info.in_editor) {
 			memdelete(info.node);
 		}

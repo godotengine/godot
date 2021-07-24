@@ -217,7 +217,7 @@ Error GraphEdit::connect_node(const StringName &p_from, int p_from_port, const S
 }
 
 bool GraphEdit::is_node_connected(const StringName &p_from, int p_from_port, const StringName &p_to, int p_to_port) {
-	for (Connection &E : connections) {
+	for (const Connection &E : connections) {
 		if (E.from == p_from && E.from_port == p_from_port && E.to == p_to && E.to_port == p_to_port) {
 			return true;
 		}
@@ -561,7 +561,7 @@ void GraphEdit::_top_layer_input(const Ref<InputEvent> &p_ev) {
 				if (is_in_hot_zone(pos / zoom, click_pos)) {
 					if (valid_left_disconnect_types.has(gn->get_connection_output_type(j))) {
 						//check disconnect
-						for (Connection &E : connections) {
+						for (const Connection &E : connections) {
 							if (E.from == gn->get_name() && E.from_port == j) {
 								Node *to = get_node(String(E.to));
 								if (Object::cast_to<GraphNode>(to)) {
@@ -603,7 +603,7 @@ void GraphEdit::_top_layer_input(const Ref<InputEvent> &p_ev) {
 				if (is_in_hot_zone(pos / zoom, click_pos)) {
 					if (right_disconnects || valid_right_disconnect_types.has(gn->get_connection_input_type(j))) {
 						//check disconnect
-						for (Connection &E : connections) {
+						for (const Connection &E : connections) {
 							if (E.to == gn->get_name() && E.to_port == j) {
 								Node *fr = get_node(String(E.from));
 								if (Object::cast_to<GraphNode>(fr)) {
@@ -1001,7 +1001,7 @@ void GraphEdit::_minimap_draw() {
 
 	// Draw node connections.
 	Color activity_color = get_theme_color(SNAME("activity"));
-	for (Connection &E : connections) {
+	for (const Connection &E : connections) {
 		NodePath fromnp(E.from);
 
 		Node *from = get_node(fromnp);
@@ -1500,7 +1500,7 @@ Array GraphEdit::_get_connection_list() const {
 	List<Connection> conns;
 	get_connection_list(&conns);
 	Array arr;
-	for (Connection &E : conns) {
+	for (const Connection &E : conns) {
 		Dictionary d;
 		d["from"] = E.from;
 		d["from_port"] = E.from_port;

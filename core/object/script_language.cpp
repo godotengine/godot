@@ -63,7 +63,7 @@ Array Script::_get_script_property_list() {
 	Array ret;
 	List<PropertyInfo> list;
 	get_script_property_list(&list);
-	for (PropertyInfo &E : list) {
+	for (const PropertyInfo &E : list) {
 		ret.append(E.operator Dictionary());
 	}
 	return ret;
@@ -73,7 +73,7 @@ Array Script::_get_script_method_list() {
 	Array ret;
 	List<MethodInfo> list;
 	get_script_method_list(&list);
-	for (MethodInfo &E : list) {
+	for (const MethodInfo &E : list) {
 		ret.append(E.operator Dictionary());
 	}
 	return ret;
@@ -83,7 +83,7 @@ Array Script::_get_script_signal_list() {
 	Array ret;
 	List<MethodInfo> list;
 	get_script_signal_list(&list);
-	for (MethodInfo &E : list) {
+	for (const MethodInfo &E : list) {
 		ret.append(E.operator Dictionary());
 	}
 	return ret;
@@ -257,7 +257,7 @@ void ScriptServer::get_global_class_list(List<StringName> *r_global_classes) {
 		classes.push_back(*K);
 	}
 	classes.sort_custom<StringName::AlphCompare>();
-	for (StringName &E : classes) {
+	for (const StringName &E : classes) {
 		r_global_classes->push_back(E);
 	}
 }
@@ -266,7 +266,7 @@ void ScriptServer::save_global_classes() {
 	List<StringName> gc;
 	get_global_class_list(&gc);
 	Array gcarr;
-	for (StringName &E : gc) {
+	for (const StringName &E : gc) {
 		Dictionary d;
 		d["class"] = E;
 		d["language"] = global_classes[E].language;
@@ -297,7 +297,7 @@ void ScriptServer::save_global_classes() {
 void ScriptInstance::get_property_state(List<Pair<StringName, Variant>> &state) {
 	List<PropertyInfo> pinfo;
 	get_property_list(&pinfo);
-	for (PropertyInfo &E : pinfo) {
+	for (const PropertyInfo &E : pinfo) {
 		if (E.usage & PROPERTY_USAGE_STORAGE) {
 			Pair<StringName, Variant> p;
 			p.first = E.name;

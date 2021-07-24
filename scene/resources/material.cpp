@@ -278,7 +278,7 @@ void ShaderMaterial::get_argument_options(const StringName &p_function, int p_id
 		if (shader.is_valid()) {
 			List<PropertyInfo> pl;
 			shader->get_param_list(&pl);
-			for (PropertyInfo &E : pl) {
+			for (const PropertyInfo &E : pl) {
 				r_options->push_back(quote_style + E.name.replace_first("shader_param/", "") + quote_style);
 			}
 		}

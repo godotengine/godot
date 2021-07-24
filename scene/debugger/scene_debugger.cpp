@@ -292,7 +292,7 @@ SceneDebuggerObject::SceneDebuggerObject(ObjectID p_id) {
 	// Add base object properties.
 	List<PropertyInfo> pinfo;
 	obj->get_property_list(&pinfo, true);
-	for (PropertyInfo &E : pinfo) {
+	for (const PropertyInfo &E : pinfo) {
 		if (E.usage & (PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_CATEGORY)) {
 			properties.push_back(SceneDebuggerProperty(E, obj->get(E.name)));
 		}
@@ -452,7 +452,7 @@ SceneDebuggerTree::SceneDebuggerTree(Node *p_root) {
 }
 
 void SceneDebuggerTree::serialize(Array &p_arr) {
-	for (RemoteNode &n : nodes) {
+	for (const RemoteNode &n : nodes) {
 		p_arr.push_back(n.child_count);
 		p_arr.push_back(n.name);
 		p_arr.push_back(n.type_name);

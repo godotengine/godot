@@ -1238,14 +1238,14 @@ void ProjectList::load_projects() {
 
 	Set<String> favorites;
 	// Find favourites...
-	for (PropertyInfo &E : properties) {
+	for (const PropertyInfo &E : properties) {
 		String property_key = E.name;
 		if (property_key.begins_with("favorite_projects/")) {
 			favorites.insert(property_key);
 		}
 	}
 
-	for (PropertyInfo &E : properties) {
+	for (const PropertyInfo &E : properties) {
 		// This is actually something like "projects/C:::Documents::Godot::Projects::MyGame"
 		String property_key = E.name;
 		if (!property_key.begins_with("projects/")) {
@@ -1582,7 +1582,7 @@ int ProjectList::refresh_project(const String &dir_path) {
 		String favorite_property_key = "favorite_projects/" + project_key;
 
 		bool found = false;
-		for (PropertyInfo &E : properties) {
+		for (const PropertyInfo &E : properties) {
 			String prop = E.name;
 			if (!found && prop == property_key) {
 				found = true;
@@ -2188,7 +2188,7 @@ void ProjectManager::_scan_begin(const String &p_base) {
 	_scan_dir(p_base, &projects);
 	print_line("Found " + itos(projects.size()) + " projects.");
 
-	for (String &E : projects) {
+	for (const String &E : projects) {
 		String proj = get_project_key_from_path(E);
 		EditorSettings::get_singleton()->set("projects/" + proj, E);
 	}
@@ -2625,7 +2625,7 @@ ProjectManager::ProjectManager() {
 		Vector<String> editor_languages;
 		List<PropertyInfo> editor_settings_properties;
 		EditorSettings::get_singleton()->get_property_list(&editor_settings_properties);
-		for (PropertyInfo &pi : editor_settings_properties) {
+		for (const PropertyInfo &pi : editor_settings_properties) {
 			if (pi.name == "interface/editor/editor_language") {
 				editor_languages = pi.hint_string.split(",");
 				break;

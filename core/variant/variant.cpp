@@ -1681,7 +1681,7 @@ String Variant::stringify(List<const void *> &stack) const {
 
 			Vector<_VariantStrPair> pairs;
 
-			for (Variant &E : keys) {
+			for (const Variant &E : keys) {
 				_VariantStrPair sp;
 				sp.key = E.stringify(stack);
 				sp.value = d[E].stringify(stack);

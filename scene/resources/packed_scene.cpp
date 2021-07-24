@@ -206,7 +206,7 @@ Node *SceneState::instantiate(GenEditState p_edit_state) const {
 						node->set(snames[nprops[j].name], props[nprops[j].value], &valid);
 
 						//restore old state for new script, if exists
-						for (Pair<StringName, Variant> &E : old_state) {
+						for (const Pair<StringName, Variant> &E : old_state) {
 							node->set(E.first, E.second);
 						}
 					} else {
@@ -477,7 +477,7 @@ Error SceneState::_parse_node(Node *p_owner, Node *p_node, int p_parent_idx, Map
 		script->update_exports();
 	}
 
-	for (PropertyInfo &E : plist) {
+	for (const PropertyInfo &E : plist) {
 		if (!(E.usage & PROPERTY_USAGE_STORAGE)) {
 			continue;
 		}
@@ -565,7 +565,7 @@ Error SceneState::_parse_node(Node *p_owner, Node *p_node, int p_parent_idx, Map
 
 	List<Node::GroupInfo> groups;
 	p_node->get_groups(&groups);
-	for (Node::GroupInfo &gi : groups) {
+	for (const Node::GroupInfo &gi : groups) {
 		if (!gi.persistent) {
 			continue;
 		}
@@ -575,7 +575,7 @@ Error SceneState::_parse_node(Node *p_owner, Node *p_node, int p_parent_idx, Map
 		*/
 
 		bool skip = false;
-		for (PackState &F : pack_state_stack) {
+		for (const PackState &F : pack_state_stack) {
 			//check all levels of pack to see if the group was added somewhere
 			const PackState &ps = F;
 			if (ps.state->is_node_in_group(ps.node, gi.name)) {
@@ -677,13 +677,13 @@ Error SceneState::_parse_connections(Node *p_owner, Node *p_node, Map<StringName
 	//ERR_FAIL_COND_V( !node_map.has(p_node), ERR_BUG);
 	//NodeData &nd = nodes[node_map[p_node]];
 
-	for (MethodInfo &E : _signals) {
+	for (const MethodInfo &E : _signals) {
 		List<Node::Connection> conns;
 		p_node->get_signal_connection_list(E.name, &conns);
 
 		conns.sort();
 
-		for (Node::Connection &F : conns) {
+		for (const Node::Connection &F : conns) {
 			const Node::Connection &c = F;
 
 			if (!(c.flags & CONNECT_PERSIST)) { //only persistent connections get saved

@@ -165,7 +165,7 @@ Error Resource::copy_from(const Ref<Resource> &p_resource) {
 	List<PropertyInfo> pi;
 	p_resource->get_property_list(&pi);
 
-	for (PropertyInfo &E : pi) {
+	for (const PropertyInfo &E : pi) {
 		if (!(E.usage & PROPERTY_USAGE_STORAGE)) {
 			continue;
 		}
@@ -201,7 +201,7 @@ Ref<Resource> Resource::duplicate_for_local_scene(Node *p_for_scene, Map<Ref<Res
 
 	r->local_scene = p_for_scene;
 
-	for (PropertyInfo &E : plist) {
+	for (const PropertyInfo &E : plist) {
 		if (!(E.usage & PROPERTY_USAGE_STORAGE)) {
 			continue;
 		}
@@ -233,7 +233,7 @@ void Resource::configure_for_local_scene(Node *p_for_scene, Map<Ref<Resource>, R
 
 	local_scene = p_for_scene;
 
-	for (PropertyInfo &E : plist) {
+	for (const PropertyInfo &E : plist) {
 		if (!(E.usage & PROPERTY_USAGE_STORAGE)) {
 			continue;
 		}
@@ -259,7 +259,7 @@ Ref<Resource> Resource::duplicate(bool p_subresources) const {
 	Ref<Resource> r = (Resource *)ClassDB::instantiate(get_class());
 	ERR_FAIL_COND_V(r.is_null(), Ref<Resource>());
 
-	for (PropertyInfo &E : plist) {
+	for (const PropertyInfo &E : plist) {
 		if (!(E.usage & PROPERTY_USAGE_STORAGE)) {
 			continue;
 		}
@@ -317,7 +317,7 @@ uint32_t Resource::hash_edited_version() const {
 	List<PropertyInfo> plist;
 	get_property_list(&plist);
 
-	for (PropertyInfo &E : plist) {
+	for (const PropertyInfo &E : plist) {
 		if (E.usage & PROPERTY_USAGE_STORAGE && E.type == Variant::OBJECT && E.hint == PROPERTY_HINT_RESOURCE_TYPE) {
 			RES res = get(E.name);
 			if (res.is_valid()) {

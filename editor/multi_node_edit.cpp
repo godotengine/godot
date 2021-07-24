@@ -143,7 +143,7 @@ void MultiNodeEdit::_get_property_list(List<PropertyInfo> *p_list) const {
 		List<PropertyInfo> plist;
 		n->get_property_list(&plist, true);
 
-		for (PropertyInfo &F : plist) {
+		for (const PropertyInfo &F : plist) {
 			if (F.name == "script") {
 				continue; //added later manually, since this is intercepted before being set (check Variant Object::get() )
 			}
@@ -164,7 +164,7 @@ void MultiNodeEdit::_get_property_list(List<PropertyInfo> *p_list) const {
 		nc++;
 	}
 
-	for (PLData *E : data_list) {
+	for (const PLData *E : data_list) {
 		if (nc == E->uses) {
 			p_list->push_back(E->info);
 		}

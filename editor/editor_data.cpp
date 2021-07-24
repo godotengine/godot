@@ -299,7 +299,7 @@ void EditorData::copy_object_params(Object *p_object) {
 	List<PropertyInfo> pinfo;
 	p_object->get_property_list(&pinfo);
 
-	for (PropertyInfo &E : pinfo) {
+	for (const PropertyInfo &E : pinfo) {
 		if (!(E.usage & PROPERTY_USAGE_EDITOR) || E.name == "script" || E.name == "scripts") {
 			continue;
 		}
@@ -404,7 +404,7 @@ void EditorData::restore_editor_global_states() {
 void EditorData::paste_object_params(Object *p_object) {
 	ERR_FAIL_NULL(p_object);
 	undo_redo.create_action(TTR("Paste Params"));
-	for (PropertyData &E : clipboard) {
+	for (const PropertyData &E : clipboard) {
 		String name = E.name;
 		undo_redo.add_do_property(p_object, name, E.value);
 		undo_redo.add_undo_property(p_object, name, p_object->get(name));
@@ -616,7 +616,7 @@ bool EditorData::check_and_update_scene(int p_idx) {
 
 		//transfer selection
 		List<Node *> new_selection;
-		for (Node *E : edited_scene.write[p_idx].selection) {
+		for (const Node *E : edited_scene.write[p_idx].selection) {
 			NodePath p = edited_scene[p_idx].root->get_path_to(E);
 			Node *new_node = new_scene->get_node(p);
 			if (new_node) {
@@ -964,7 +964,7 @@ void EditorData::script_class_save_icon_paths() {
 	_script_class_icon_paths.get_key_list(&keys);
 
 	Dictionary d;
-	for (StringName &E : keys) {
+	for (const StringName &E : keys) {
 		if (ScriptServer::is_global_class(E)) {
 			d[E] = _script_class_icon_paths[E];
 		}
@@ -996,7 +996,7 @@ void EditorData::script_class_load_icon_paths() {
 		List<Variant> keys;
 		d.get_key_list(&keys);
 
-		for (Variant &E : keys) {
+		for (const Variant &E : keys) {
 			String name = E.operator String();
 			_script_class_icon_paths[name] = d[name];
 
@@ -1076,7 +1076,7 @@ bool EditorSelection::is_selected(Node *p_node) const {
 Array EditorSelection::_get_transformable_selected_nodes() {
 	Array ret;
 
-	for (Node *E : selected_node_list) {
+	for (const Node *E : selected_node_list) {
 		ret.push_back(E);
 	}
 

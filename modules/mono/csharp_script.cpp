@@ -1731,7 +1731,7 @@ void CSharpInstance::get_properties_state_for_reloading(List<Pair<StringName, Va
 	List<PropertyInfo> pinfo;
 	get_property_list(&pinfo);
 
-	for (PropertyInfo &E : pinfo) {
+	for (const PropertyInfo &E : pinfo) {
 		Pair<StringName, Variant> state_pair;
 		state_pair.first = E.name;
 
@@ -2313,7 +2313,7 @@ void CSharpScript::_update_exports_values(Map<StringName, Variant> &values, List
 		values[E->key()] = E->get();
 	}
 
-	for (PropertyInfo &E : exported_members_cache) {
+	for (const PropertyInfo &E : exported_members_cache) {
 		propnames.push_back(E);
 	}
 }

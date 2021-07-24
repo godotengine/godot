@@ -109,7 +109,7 @@ PackedStringArray get_code_completion(CompletionKind p_kind, const String &p_scr
 			List<PropertyInfo> project_props;
 			ProjectSettings::get_singleton()->get_property_list(&project_props);
 
-			for (PropertyInfo &prop : project_props) {
+			for (const PropertyInfo &prop : project_props) {
 				if (!prop.name.begins_with("input/")) {
 					continue;
 				}
@@ -185,7 +185,7 @@ PackedStringArray get_code_completion(CompletionKind p_kind, const String &p_scr
 				ClassDB::get_signal_list(native, &signals, /* p_no_inheritance: */ false);
 			}
 
-			for (MethodInfo &E : signals) {
+			for (const MethodInfo &E : signals) {
 				const String &signal = E.name;
 				suggestions.push_back(quoted(signal));
 			}
@@ -197,7 +197,7 @@ PackedStringArray get_code_completion(CompletionKind p_kind, const String &p_scr
 				List<StringName> sn;
 				Theme::get_default()->get_color_list(base->get_class(), &sn);
 
-				for (StringName &E : sn) {
+				for (const StringName &E : sn) {
 					suggestions.push_back(quoted(E));
 				}
 			}
@@ -209,7 +209,7 @@ PackedStringArray get_code_completion(CompletionKind p_kind, const String &p_scr
 				List<StringName> sn;
 				Theme::get_default()->get_constant_list(base->get_class(), &sn);
 
-				for (StringName &E : sn) {
+				for (const StringName &E : sn) {
 					suggestions.push_back(quoted(E));
 				}
 			}
@@ -221,7 +221,7 @@ PackedStringArray get_code_completion(CompletionKind p_kind, const String &p_scr
 				List<StringName> sn;
 				Theme::get_default()->get_font_list(base->get_class(), &sn);
 
-				for (StringName &E : sn) {
+				for (const StringName &E : sn) {
 					suggestions.push_back(quoted(E));
 				}
 			}
@@ -233,7 +233,7 @@ PackedStringArray get_code_completion(CompletionKind p_kind, const String &p_scr
 				List<StringName> sn;
 				Theme::get_default()->get_font_size_list(base->get_class(), &sn);
 
-				for (StringName &E : sn) {
+				for (const StringName &E : sn) {
 					suggestions.push_back(quoted(E));
 				}
 			}
@@ -245,7 +245,7 @@ PackedStringArray get_code_completion(CompletionKind p_kind, const String &p_scr
 				List<StringName> sn;
 				Theme::get_default()->get_stylebox_list(base->get_class(), &sn);
 
-				for (StringName &E : sn) {
+				for (const StringName &E : sn) {
 					suggestions.push_back(quoted(E));
 				}
 			}

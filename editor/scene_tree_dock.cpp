@@ -1531,7 +1531,7 @@ void SceneTreeDock::perform_node_renames(Node *p_base, Map<Node *, NodePath> *p_
 	List<PropertyInfo> properties;
 	p_base->get_property_list(&properties);
 
-	for (PropertyInfo &E : properties) {
+	for (const PropertyInfo &E : properties) {
 		if (!(E.usage & (PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_EDITOR))) {
 			continue;
 		}
@@ -1557,7 +1557,7 @@ void SceneTreeDock::perform_node_renames(Node *p_base, Map<Node *, NodePath> *p_
 			Map<Node *, NodePath>::Element *found_root_path = p_renames->find(root);
 			NodePath new_root_path = found_root_path ? found_root_path->get() : root->get_path();
 			if (!new_root_path.is_empty()) { // No renaming if root node is deleted.
-				for (StringName &E : anims) {
+				for (const StringName &E : anims) {
 					Ref<Animation> anim = ap->get_animation(E);
 					if (!r_rem_anims->has(anim)) {
 						r_rem_anims->insert(anim, Set<int>());
@@ -2271,7 +2271,7 @@ void SceneTreeDock::replace_node(Node *p_node, Node *p_by_node, bool p_keep_prop
 		List<PropertyInfo> pinfo;
 		n->get_property_list(&pinfo);
 
-		for (PropertyInfo &E : pinfo) {
+		for (const PropertyInfo &E : pinfo) {
 			if (!(E.usage & PROPERTY_USAGE_STORAGE)) {
 				continue;
 			}
@@ -2308,12 +2308,11 @@ void SceneTreeDock::replace_node(Node *p_node, Node *p_by_node, bool p_keep_prop
 	List<MethodInfo> sl;
 
 	n->get_signal_list(&sl);
-	for (MethodInfo &E : sl) {
+	for (const MethodInfo &E : sl) {
 		List<Object::Connection> cl;
 		n->get_signal_connection_list(E.name, &cl);
 
-		for (Object::Connection &F : cl) {
-			Object::Connection &c = F;
+		for (const Object::Connection &c : cl) {
 			if (!(c.flags & Object::CONNECT_PERSIST)) {
 				continue;
 			}
@@ -2519,13 +2518,13 @@ void SceneTreeDock::_files_dropped(Vector<String> p_files, NodePath p_to, int p_
 		List<PropertyInfo> pinfo;
 		node->get_property_list(&pinfo);
 
-		for (PropertyInfo &p : pinfo) {
+		for (const PropertyInfo &p : pinfo) {
 			if (!(p.usage & PROPERTY_USAGE_EDITOR) || !(p.usage & PROPERTY_USAGE_STORAGE) || p.hint != PROPERTY_HINT_RESOURCE_TYPE) {
 				continue;
 			}
 			Vector<String> valid_types = p.hint_string.split(",");
 
-			for (String &prop_type : valid_types) {
+			for (const String &prop_type : valid_types) {
 				if (res_type == prop_type || ClassDB::is_parent_class(res_type, prop_type) || EditorNode::get_editor_data().script_class_is_parent(res_type, prop_type)) {
 					valid_properties.push_back(p.name);
 					break;
@@ -2539,7 +2538,7 @@ void SceneTreeDock::_files_dropped(Vector<String> p_files, NodePath p_to, int p_
 
 			bool capitalize = bool(EDITOR_GET("interface/inspector/capitalize_properties"));
 			menu_properties->clear();
-			for (String &p : valid_properties) {
+			for (const String &p : valid_properties) {
 				menu_properties->add_item(capitalize ? p.capitalize() : p);
 				menu_properties->set_item_metadata(menu_properties->get_item_count() - 1, p);
 			}
@@ -2597,7 +2596,7 @@ void SceneTreeDock::_add_children_to_popup(Object *p_obj, int p_depth) {
 
 	List<PropertyInfo> pinfo;
 	p_obj->get_property_list(&pinfo);
-	for (PropertyInfo &E : pinfo) {
+	for (const PropertyInfo &E : pinfo) {
 		if (!(E.usage & PROPERTY_USAGE_EDITOR)) {
 			continue;
 		}
@@ -3052,7 +3051,7 @@ void SceneTreeDock::_create_remap_for_node(Node *p_node, Map<RES, RES> &r_remap)
 	p_node->get_property_list(&props);
 	bool is_instantiated = EditorPropertyRevert::may_node_be_in_instance(p_node);
 
-	for (PropertyInfo &E : props) {
+	for (const PropertyInfo &E : props) {
 		if (!(E.usage & PROPERTY_USAGE_STORAGE)) {
 			continue;
 		}
@@ -3088,7 +3087,7 @@ void SceneTreeDock::_create_remap_for_resource(RES p_resource, Map<RES, RES> &r_
 	List<PropertyInfo> props;
 	p_resource->get_property_list(&props);
 
-	for (PropertyInfo &E : props) {
+	for (const PropertyInfo &E : props) {
 		if (!(E.usage & PROPERTY_USAGE_STORAGE)) {
 			continue;
 		}

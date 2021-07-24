@@ -497,7 +497,7 @@ void GridMapEditor::_fill_selection() {
 }
 
 void GridMapEditor::_clear_clipboard_data() {
-	for (ClipboardItem &E : clipboard_items) {
+	for (const ClipboardItem &E : clipboard_items) {
 		RenderingServer::get_singleton()->free(E.instance);
 	}
 
@@ -552,7 +552,7 @@ void GridMapEditor::_update_paste_indicator() {
 
 	RenderingServer::get_singleton()->instance_set_transform(paste_instance, node->get_global_transform() * xf);
 
-	for (ClipboardItem &item : clipboard_items) {
+	for (const ClipboardItem &item : clipboard_items) {
 		xf = Transform3D();
 		xf.origin = (paste_indicator.begin + (paste_indicator.current - paste_indicator.click) + center) * node->get_cell_size();
 		xf.basis = rot * xf.basis;
@@ -576,7 +576,7 @@ void GridMapEditor::_do_paste() {
 	Vector3 ofs = paste_indicator.current - paste_indicator.click;
 	undo_redo->create_action(TTR("GridMap Paste Selection"));
 
-	for (ClipboardItem &item : clipboard_items) {
+	for (const ClipboardItem &item : clipboard_items) {
 		Vector3 position = rot.xform(item.grid_offset) + paste_indicator.begin + ofs;
 
 		Basis orm;
@@ -659,7 +659,7 @@ bool GridMapEditor::forward_spatial_input_event(Camera3D *p_camera, const Ref<In
 			if ((mb->get_button_index() == MOUSE_BUTTON_RIGHT && input_action == INPUT_ERASE) || (mb->get_button_index() == MOUSE_BUTTON_LEFT && input_action == INPUT_PAINT)) {
 				if (set_items.size()) {
 					undo_redo->create_action(TTR("GridMap Paint"));
-					for (SetItem &si : set_items) {
+					for (const SetItem &si : set_items) {
 						undo_redo->add_do_method(node, "set_cell_item", si.position, si.new_value, si.new_orientation);
 					}
 					for (List<SetItem>::Element *E = set_items.back(); E; E = E->prev()) {

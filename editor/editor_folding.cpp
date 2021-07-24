@@ -109,7 +109,7 @@ void EditorFolding::_fill_folds(const Node *p_root, const Node *p_node, Array &p
 
 	List<PropertyInfo> plist;
 	p_node->get_property_list(&plist);
-	for (PropertyInfo &E : plist) {
+	for (const PropertyInfo &E : plist) {
 		if (E.usage & PROPERTY_USAGE_EDITOR) {
 			if (E.type == Variant::OBJECT) {
 				RES res = p_node->get(E.name);
@@ -228,7 +228,7 @@ void EditorFolding::_do_object_unfolds(Object *p_object, Set<RES> &resources) {
 
 	Set<String> unfold_group;
 
-	for (PropertyInfo &E : plist) {
+	for (const PropertyInfo &E : plist) {
 		if (E.usage & PROPERTY_USAGE_CATEGORY) {
 			group = "";
 			group_base = "";

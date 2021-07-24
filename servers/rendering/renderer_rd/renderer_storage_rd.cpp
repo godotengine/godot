@@ -8410,7 +8410,7 @@ void RendererStorageRD::global_variables_load_settings(bool p_load_textures) {
 	List<PropertyInfo> settings;
 	ProjectSettings::get_singleton()->get_property_list(&settings);
 
-	for (PropertyInfo &E : settings) {
+	for (const PropertyInfo &E : settings) {
 		if (E.name.begins_with("shader_globals/")) {
 			StringName name = E.name.get_slice("/", 1);
 			Dictionary d = ProjectSettings::get_singleton()->get(E.name);
@@ -8581,7 +8581,7 @@ void RendererStorageRD::_update_global_variables() {
 	if (global_variables.must_update_buffer_materials) {
 		// only happens in the case of a buffer variable added or removed,
 		// so not often.
-		for (RID E : global_variables.materials_using_buffer) {
+		for (const RID &E : global_variables.materials_using_buffer) {
 			Material *material = material_owner.getornull(E);
 			ERR_CONTINUE(!material); //wtf
 
@@ -8594,7 +8594,7 @@ void RendererStorageRD::_update_global_variables() {
 	if (global_variables.must_update_texture_materials) {
 		// only happens in the case of a buffer variable added or removed,
 		// so not often.
-		for (RID E : global_variables.materials_using_texture) {
+		for (const RID &E : global_variables.materials_using_texture) {
 			Material *material = material_owner.getornull(E);
 			ERR_CONTINUE(!material); //wtf
 

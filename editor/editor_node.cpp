@@ -914,7 +914,7 @@ void EditorNode::_resources_reimported(const Vector<String> &p_resources) {
 		}
 	}
 
-	for (String &E : scenes) {
+	for (const String &E : scenes) {
 		reload_scene(E);
 	}
 
@@ -1143,7 +1143,7 @@ void EditorNode::save_resource_as(const Ref<Resource> &p_resource, const String 
 	file->clear_filters();
 
 	List<String> preferred;
-	for (String &E : extensions) {
+	for (const String &E : extensions) {
 		if (p_resource->is_class("Script") && (E == "tres" || E == "res")) {
 			//this serves no purpose and confused people
 			continue;
@@ -1259,7 +1259,7 @@ void EditorNode::_get_scene_metadata(const String &p_file) {
 	cf->get_section_keys("editor_states", &esl);
 
 	Dictionary md;
-	for (String &E : esl) {
+	for (const String &E : esl) {
 		Variant st = cf->get_value("editor_states", E);
 		if (st.get_type() != Variant::NIL) {
 			md[E] = st;
@@ -1295,7 +1295,7 @@ void EditorNode::_set_scene_metadata(const String &p_file, int p_idx) {
 	List<Variant> keys;
 	md.get_key_list(&keys);
 
-	for (Variant &E : keys) {
+	for (const Variant &E : keys) {
 		cf->set_value("editor_states", E, md[E]);
 	}
 
@@ -1334,7 +1334,7 @@ bool EditorNode::_find_and_save_edited_subresources(Object *obj, Map<RES, bool> 
 	bool ret_changed = false;
 	List<PropertyInfo> pi;
 	obj->get_property_list(&pi);
-	for (PropertyInfo &E : pi) {
+	for (const PropertyInfo &E : pi) {
 		if (!(E.usage & PROPERTY_USAGE_STORAGE)) {
 			continue;
 		}
@@ -1364,7 +1364,7 @@ bool EditorNode::_find_and_save_edited_subresources(Object *obj, Map<RES, bool> 
 				Dictionary d = obj->get(E.name);
 				List<Variant> keys;
 				d.get_key_list(&keys);
-				for (Variant &F : keys) {
+				for (const Variant &F : keys) {
 					Variant v = d[F];
 					RES res = v;
 					if (_find_and_save_resource(res, processed, flags)) {
@@ -1520,7 +1520,7 @@ static bool _find_edited_resources(const Ref<Resource> &p_resource, Set<Ref<Reso
 
 	p_resource->get_property_list(&plist);
 
-	for (PropertyInfo &E : plist) {
+	for (const PropertyInfo &E : plist) {
 		if (E.type == Variant::OBJECT && E.usage & PROPERTY_USAGE_STORAGE && !(E.usage & PROPERTY_USAGE_RESOURCE_NOT_PERSISTENT)) {
 			RES res = p_resource->get(E.name);
 			if (res.is_null()) {
@@ -1883,7 +1883,7 @@ void EditorNode::_dialog_action(String p_file) {
 			// erase
 			List<String> keys;
 			config->get_section_keys(p_file, &keys);
-			for (String &E : keys) {
+			for (const String &E : keys) {
 				config->set_value(p_file, E, Variant());
 			}
 
@@ -2532,7 +2532,7 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 			Ref<MeshLibrary> ml(memnew(MeshLibrary));
 			ResourceSaver::get_recognized_extensions(ml, &extensions);
 			file_export_lib->clear_filters();
-			for (String &E : extensions) {
+			for (const String &E : extensions) {
 				file_export_lib->add_filter("*." + E);
 			}
 
@@ -4054,7 +4054,7 @@ void EditorNode::_build_icon_type_cache() {
 	List<StringName> tl;
 	StringName ei = "EditorIcons";
 	theme_base->get_theme()->get_icon_list(ei, &tl);
-	for (StringName &E : tl) {
+	for (const StringName &E : tl) {
 		if (!ClassDB::class_exists(E)) {
 			continue;
 		}
@@ -4783,7 +4783,7 @@ void EditorNode::_update_layouts_menu() {
 	List<String> layouts;
 	config.ptr()->get_sections(&layouts);
 
-	for (String &layout : layouts) {
+	for (const String &layout : layouts) {
 		if (layout == TTR("Default")) {
 			editor_layouts->remove_item(editor_layouts->get_item_index(SETTINGS_LAYOUT_DEFAULT));
 			overridden_default_layout = editor_layouts->get_item_count();
@@ -6738,7 +6738,7 @@ EditorNode::EditorNode() {
 	file_script->set_file_mode(EditorFileDialog::FILE_MODE_OPEN_FILE);
 	List<String> sexts;
 	ResourceLoader::get_recognized_extensions_for_type("Script", &sexts);
-	for (String &E : sexts) {
+	for (const String &E : sexts) {
 		file_script->add_filter("*." + E);
 	}
 	gui_base->add_child(file_script);

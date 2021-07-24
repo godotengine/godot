@@ -156,7 +156,7 @@ void PropertySelector::_update_search() {
 			search_options->get_theme_icon(SNAME("PackedColorArray"), SNAME("EditorIcons"))
 		};
 
-		for (PropertyInfo &E : props) {
+		for (const PropertyInfo &E : props) {
 			if (E.usage == PROPERTY_USAGE_CATEGORY) {
 				if (category && category->get_first_child() == nullptr) {
 					memdelete(category); //old category was unused

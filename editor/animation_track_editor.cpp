@@ -598,7 +598,7 @@ public:
 					if (ap) {
 						List<StringName> anims;
 						ap->get_animation_list(&anims);
-						for (StringName &E : anims) {
+						for (const StringName &E : anims) {
 							if (animations != String()) {
 								animations += ",";
 							}
@@ -3356,7 +3356,7 @@ void AnimationTrackEditor::_query_insert(const InsertData &p_id) {
 	}
 	insert_frame = Engine::get_singleton()->get_frames_drawn();
 
-	for (InsertData &E : insert_data) {
+	for (const InsertData &E : insert_data) {
 		//prevent insertion of multiple tracks
 		if (E.path == p_id.path) {
 			return; //already inserted a track for this on this frame
@@ -3843,7 +3843,7 @@ PropertyInfo AnimationTrackEditor::_find_hint_for_track(int p_idx, NodePath &r_b
 	List<PropertyInfo> pinfo;
 	property_info_base.get_property_list(&pinfo);
 
-	for (PropertyInfo &E : pinfo) {
+	for (const PropertyInfo &E : pinfo) {
 		if (E.name == leftover_path[leftover_path.size() - 1]) {
 			return E;
 		}
@@ -4675,7 +4675,7 @@ void AnimationTrackEditor::_add_method_key(const String &p_method) {
 	List<MethodInfo> minfo;
 	base->get_method_list(&minfo);
 
-	for (MethodInfo &E : minfo) {
+	for (const MethodInfo &E : minfo) {
 		if (E.name == p_method) {
 			Dictionary d;
 			d["method"] = p_method;
@@ -5150,7 +5150,7 @@ void AnimationTrackEditor::_anim_duplicate_keys(bool transpose) {
 		//reselect duplicated
 
 		Map<SelectedKey, KeyInfo> new_selection;
-		for (Pair<int, float> &E : new_selection_values) {
+		for (const Pair<int, float> &E : new_selection_values) {
 			int track = E.first;
 			float time = E.second;
 
@@ -5541,7 +5541,7 @@ void AnimationTrackEditor::_edit_menu_pressed(int p_option) {
 			if (cleanup_all->is_pressed()) {
 				List<StringName> names;
 				AnimationPlayerEditor::singleton->get_player()->get_animation_list(&names);
-				for (StringName &E : names) {
+				for (const StringName &E : names) {
 					_cleanup_animation(AnimationPlayerEditor::singleton->get_player()->get_animation(E));
 				}
 			} else {

@@ -917,7 +917,7 @@ void MultiplayerAPI::_del_peer(int p_id) {
 	// Some refactoring is needed to make this faster and do paths GC.
 	List<NodePath> keys;
 	path_send_cache.get_key_list(&keys);
-	for (NodePath &E : keys) {
+	for (const NodePath &E : keys) {
 		PathSentCache *psc = path_send_cache.getptr(E);
 		psc->confirmed_peers.erase(p_id);
 	}

@@ -92,7 +92,7 @@ void EditorLayoutsDialog::_post_popup() {
 	List<String> layouts;
 	config.ptr()->get_sections(&layouts);
 
-	for (String &E : layouts) {
+	for (const String &E : layouts) {
 		layout_names->add_item(E);
 	}
 }

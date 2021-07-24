@@ -35,7 +35,7 @@
 bool ImageFormatLoader::recognize(const String &p_extension) const {
 	List<String> extensions;
 	get_recognized_extensions(&extensions);
-	for (String &E : extensions) {
+	for (const String &E : extensions) {
 		if (E.nocasecmp_to(p_extension) == 0) {
 			return true;
 		}

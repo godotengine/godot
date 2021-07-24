@@ -1358,7 +1358,7 @@ Error encode_variant(const Variant &p_variant, uint8_t *r_buffer, int &r_len, bo
 					obj->get_property_list(&props);
 
 					int pc = 0;
-					for (PropertyInfo &E : props) {
+					for (const PropertyInfo &E : props) {
 						if (!(E.usage & PROPERTY_USAGE_STORAGE)) {
 							continue;
 						}
@@ -1372,7 +1372,7 @@ Error encode_variant(const Variant &p_variant, uint8_t *r_buffer, int &r_len, bo
 
 					r_len += 4;
 
-					for (PropertyInfo &E : props) {
+					for (const PropertyInfo &E : props) {
 						if (!(E.usage & PROPERTY_USAGE_STORAGE)) {
 							continue;
 						}
@@ -1418,7 +1418,7 @@ Error encode_variant(const Variant &p_variant, uint8_t *r_buffer, int &r_len, bo
 			List<Variant> keys;
 			d.get_key_list(&keys);
 
-			for (Variant &E : keys) {
+			for (const Variant &E : keys) {
 				/*
 				CharString utf8 = E->->utf8();
 

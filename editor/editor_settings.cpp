@@ -759,7 +759,7 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 			List<String> keys;
 			p_extra_config->get_section_keys("presets", &keys);
 
-			for (String &key : keys) {
+			for (const String &key : keys) {
 				Variant val = p_extra_config->get_value("presets", key);
 				set(key, val);
 			}
@@ -1013,7 +1013,7 @@ void EditorSettings::setup_network() {
 	String selected = "127.0.0.1";
 
 	// Check that current remote_host is a valid interface address and populate hints.
-	for (IPAddress &ip : local_ip) {
+	for (const IPAddress &ip : local_ip) {
 		// link-local IPv6 addresses don't work, skipping them
 		if (String(ip).begins_with("fe80:0:0:0:")) { // fe80::/64
 			continue;
@@ -1299,7 +1299,7 @@ void EditorSettings::list_text_editor_themes() {
 		memdelete(d);
 
 		custom_themes.sort();
-		for (String &E : custom_themes) {
+		for (const String &E : custom_themes) {
 			themes += "," + E;
 		}
 	}
@@ -1328,7 +1328,7 @@ void EditorSettings::load_text_editor_theme() {
 	List<String> keys;
 	cf->get_section_keys("color_theme", &keys);
 
-	for (String &key : keys) {
+	for (const String &key : keys) {
 		String val = cf->get_value("color_theme", key);
 
 		// don't load if it's not already there!

@@ -552,7 +552,7 @@ void FileDialog::update_file_list() {
 		bool match = patterns.is_empty();
 		String match_str;
 
-		for (String &E : patterns) {
+		for (const String &E : patterns) {
 			if (files.front()->get().matchn(E)) {
 				match_str = E;
 				match = true;
