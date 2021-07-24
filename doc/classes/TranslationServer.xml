@@ -64,7 +64,7 @@
 			<return type="bool">
 			</return>
 			<description>
-				Returns a boolean suggesting whether Pseudolocalization is enabled.
+				Returns [code]true[/code] if pseudolocalization is enabled, [code]false[/code] otherwise. See also [member ProjectSettings.internationalization/pseudolocalization/use_pseudolocalization].
 			</description>
 		</method>
 		<method name="pseudolocalize" qualifiers="const">
@@ -107,7 +107,7 @@
 			<argument index="0" name="enabled" type="bool">
 			</argument>
 			<description>
-				Turns Pseudolocalization on or off based on the argument [code]enabled[/code].
+				Sets the state of pseudolocalization to the value of  [code]enabled[/code]. See also [member ProjectSettings.internationalization/pseudolocalization/use_pseudolocalization].
 			</description>
 		</method>
 		<method name="translate" qualifiers="const">
