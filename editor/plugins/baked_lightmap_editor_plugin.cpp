@@ -135,11 +135,17 @@ void BakedLightmapEditorPlugin::bake_func_end(uint32_t p_time_started) {
 	}
 
 	const int time_taken = (OS::get_singleton()->get_ticks_msec() - p_time_started) * 0.001;
-	print_line(vformat("Done baking lightmaps in %02d:%02d:%02d.", time_taken / 3600, (time_taken % 3600) / 60, time_taken % 60));
-	// Request attention in case the user was doing something else.
-	// Baking lightmaps is likely the editor task that can take the most time,
-	// so only request the attention for baking lightmaps.
-	OS::get_singleton()->request_attention();
+	if (time_taken >= 1) {
+		// Only print a message and request attention if baking lightmaps took at least 1 second.
+		// Otherwise, attempting to bake in an erroneous situation (e.g. no meshes to bake)
+		// would print the "done baking lightmaps" message and request attention for no good reason.
+		print_line(vformat("Done baking lightmaps in %02d:%02d:%02d.", time_taken / 3600, (time_taken % 3600) / 60, time_taken % 60));
+
+		// Request attention in case the user was doing something else.
+		// Baking lightmaps is likely the editor task that can take the most time,
+		// so only request the attention for baking lightmaps.
+		OS::get_singleton()->request_attention();
+	}
 }
 
 void BakedLightmapEditorPlugin::_bind_methods() {
