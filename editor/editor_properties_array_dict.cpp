@@ -429,6 +429,12 @@ void EditorPropertyArray::_button_draw() {
 bool EditorPropertyArray::_is_drop_valid(const Dictionary &p_drag_data) const {
 	String allowed_type = Variant::get_type_name(subtype);
 
+	// When the subtype is of type Object, an additional subtype may be specified in the hint string
+	// (e.g. Resource, Texture2D, ShaderMaterial, etc). We want the allowed type to be that, not just "Object".
+	if (subtype == Variant::OBJECT && subtype_hint_string != "") {
+		allowed_type = subtype_hint_string;
+	}
+
 	Dictionary drag_data = p_drag_data;
 
 	if (drag_data.has("type") && String(drag_data["type"]) == "files") {
