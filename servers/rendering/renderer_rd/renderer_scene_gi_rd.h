@@ -535,7 +535,7 @@ public:
 	};
 
 	RS::EnvironmentSDFGIRayCount sdfgi_ray_count = RS::ENV_SDFGI_RAY_COUNT_16;
-	RS::EnvironmentSDFGIFramesToConverge sdfgi_frames_to_converge = RS::ENV_SDFGI_CONVERGE_IN_30_FRAMES;
+	int sdfgi_frames_to_converge = 30;
 	RS::EnvironmentSDFGIFramesToUpdateLight sdfgi_frames_to_update_light = RS::ENV_SDFGI_UPDATE_LIGHT_IN_4_FRAMES;
 
 	float sdfgi_solid_cell_ratio = 0.25;

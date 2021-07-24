@@ -1705,7 +1705,11 @@
 			If [code]true[/code], renders [VoxelGI] and SDFGI ([member Environment.sdfgi_enabled]) buffers at halved resolution (e.g. 960×540 when the viewport size is 1920×1080). This improves performance significantly when VoxelGI or SDFGI is enabled, at the cost of artifacts that may be visible on polygon edges. The loss in quality becomes less noticeable as the viewport resolution increases. [LightmapGI] rendering is not affected by this setting.
 			[b]Note:[/b] This property is only read when the project starts. To set half-resolution GI at run-time, call [method RenderingServer.gi_set_use_half_resolution] instead.
 		</member>
-		<member name="rendering/global_illumination/sdfgi/frames_to_converge" type="int" setter="" getter="" default="5">
+		<member name="rendering/global_illumination/sdfgi/frames_to_converge" type="int" setter="" getter="" default="30">
+			The number of frames over which SDFGI indirect lighting should be converged. Higher values result in better quality, but indirect lighting will take more time to update when a light's visibility is toggled or modified in any way. Higher values will also take more time to initially converge. If you want to hide this from the player, you can hide the initial SDFGI convergence by using a loading screen that waits until enough frames have been rendered to let SDFGI converge.
+			The default value is tuned to allow relatively fast updates, but don't hesitate to increase it if your scene mostly has static lighting. Higher values will progressively improve quality, but there are diminishing returns in terms of visual quality as the number of frames to converge is further increased.
+			[b]Note:[/b] High values can cause performance drops when the camera moves fast. This can be alleviated by lowering this value and increasing [member rendering/global_illumination/sdfgi/probe_ray_count], which will result in overall lower but more predictable performance. Decreasing the number of SDFGI cascades ([member Environment.sdfgi_cascades]) can also reduce performance drops when the camera moves fast.
+			[b]Note:[/b] This property is only read when the project starts. To change the number of SDFGI frames to converge at run-time, use [method RenderingServer.environment_set_sdfgi_frames_to_converge] instead.
 		</member>
 		<member name="rendering/global_illumination/sdfgi/frames_to_update_lights" type="int" setter="" getter="" default="2">
 		</member>

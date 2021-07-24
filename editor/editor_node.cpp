@@ -518,7 +518,7 @@ void EditorNode::_update_from_settings() {
 	RS::get_singleton()->directional_shadow_quality_set(directional_shadow_quality);
 	float probe_update_speed = GLOBAL_GET("rendering/lightmapping/probe_capture/update_speed");
 	RS::get_singleton()->lightmap_set_probe_capture_update_speed(probe_update_speed);
-	RS::EnvironmentSDFGIFramesToConverge frames_to_converge = RS::EnvironmentSDFGIFramesToConverge(int(GLOBAL_GET("rendering/global_illumination/sdfgi/frames_to_converge")));
+	int frames_to_converge = int(GLOBAL_GET("rendering/global_illumination/sdfgi/frames_to_converge"));
 	RS::get_singleton()->environment_set_sdfgi_frames_to_converge(frames_to_converge);
 	RS::EnvironmentSDFGIRayCount ray_count = RS::EnvironmentSDFGIRayCount(int(GLOBAL_GET("rendering/global_illumination/sdfgi/probe_ray_count")));
 	RS::get_singleton()->environment_set_sdfgi_ray_count(ray_count);

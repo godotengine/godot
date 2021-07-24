@@ -2802,7 +2802,7 @@ void RendererSceneGIRD::VoxelGIInstance::debug(RD::DrawListID p_draw_list, RID p
 
 RendererSceneGIRD::RendererSceneGIRD() {
 	sdfgi_ray_count = RS::EnvironmentSDFGIRayCount(CLAMP(int32_t(GLOBAL_GET("rendering/global_illumination/sdfgi/probe_ray_count")), 0, int32_t(RS::ENV_SDFGI_RAY_COUNT_MAX - 1)));
-	sdfgi_frames_to_converge = RS::EnvironmentSDFGIFramesToConverge(CLAMP(int32_t(GLOBAL_GET("rendering/global_illumination/sdfgi/frames_to_converge")), 0, int32_t(RS::ENV_SDFGI_CONVERGE_MAX - 1)));
+	sdfgi_frames_to_converge = MAX(1, int(GLOBAL_GET("rendering/global_illumination/sdfgi/frames_to_converge")));
 	sdfgi_frames_to_update_light = RS::EnvironmentSDFGIFramesToUpdateLight(CLAMP(int32_t(GLOBAL_GET("rendering/global_illumination/sdfgi/frames_to_update_lights")), 0, int32_t(RS::ENV_SDFGI_UPDATE_LIGHT_MAX - 1)));
 }
 

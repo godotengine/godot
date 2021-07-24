@@ -63,10 +63,7 @@ void RendererSceneRenderRD::sdfgi_update(RID p_render_buffers, RID p_environment
 		return;
 	}
 
-	static const uint32_t history_frames_to_converge[RS::ENV_SDFGI_CONVERGE_MAX] = { 5, 10, 15, 20, 25, 30 };
-	uint32_t requested_history_size = history_frames_to_converge[gi.sdfgi_frames_to_converge];
-
-	if (rb->sdfgi && (rb->sdfgi->num_cascades != env->sdfgi_cascades || rb->sdfgi->min_cell_size != env->sdfgi_min_cell_size || requested_history_size != rb->sdfgi->history_size || rb->sdfgi->uses_occlusion != env->sdfgi_use_occlusion || rb->sdfgi->y_scale_mode != env->sdfgi_y_scale)) {
+	if (rb->sdfgi && (rb->sdfgi->num_cascades != env->sdfgi_cascades || rb->sdfgi->min_cell_size != env->sdfgi_min_cell_size || uint32_t(gi.sdfgi_frames_to_converge) != rb->sdfgi->history_size || rb->sdfgi->uses_occlusion != env->sdfgi_use_occlusion || rb->sdfgi->y_scale_mode != env->sdfgi_y_scale)) {
 		//configuration changed, erase
 		rb->sdfgi->erase();
 		memdelete(rb->sdfgi);
@@ -76,7 +73,7 @@ void RendererSceneRenderRD::sdfgi_update(RID p_render_buffers, RID p_environment
 	RendererSceneGIRD::SDFGI *sdfgi = rb->sdfgi;
 	if (sdfgi == nullptr) {
 		// re-create
-		rb->sdfgi = gi.create_sdfgi(env, p_world_position, requested_history_size);
+		rb->sdfgi = gi.create_sdfgi(env, p_world_position, uint32_t(gi.sdfgi_frames_to_converge));
 	} else {
 		//check for updates
 		rb->sdfgi->update(env, p_world_position);
@@ -390,7 +387,7 @@ void RendererSceneRenderRD::environment_set_sdfgi_ray_count(RS::EnvironmentSDFGI
 	gi.sdfgi_ray_count = p_ray_count;
 }
 
-void RendererSceneRenderRD::environment_set_sdfgi_frames_to_converge(RS::EnvironmentSDFGIFramesToConverge p_frames) {
+void RendererSceneRenderRD::environment_set_sdfgi_frames_to_converge(int p_frames) {
 	gi.sdfgi_frames_to_converge = p_frames;
 }
 void RendererSceneRenderRD::environment_set_sdfgi_frames_to_update_light(RS::EnvironmentSDFGIFramesToUpdateLight p_update) {

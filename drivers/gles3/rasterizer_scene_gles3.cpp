@@ -241,7 +241,7 @@ void RasterizerSceneGLES3::environment_set_sdfgi(RID p_env, bool p_enable, int p
 void RasterizerSceneGLES3::environment_set_sdfgi_ray_count(RS::EnvironmentSDFGIRayCount p_ray_count) {
 }
 
-void RasterizerSceneGLES3::environment_set_sdfgi_frames_to_converge(RS::EnvironmentSDFGIFramesToConverge p_frames) {
+void RasterizerSceneGLES3::environment_set_sdfgi_frames_to_converge(int p_frames) {
 }
 
 void RasterizerSceneGLES3::environment_set_sdfgi_frames_to_update_light(RS::EnvironmentSDFGIFramesToUpdateLight p_update) {

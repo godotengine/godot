@@ -1124,7 +1124,7 @@ public:
 
 	PASS11(environment_set_sdfgi, RID, bool, int, float, RS::EnvironmentSDFGIYScale, bool, float, bool, float, float, float)
 	PASS1(environment_set_sdfgi_ray_count, RS::EnvironmentSDFGIRayCount)
-	PASS1(environment_set_sdfgi_frames_to_converge, RS::EnvironmentSDFGIFramesToConverge)
+	PASS1(environment_set_sdfgi_frames_to_converge, int)
 	PASS1(environment_set_sdfgi_frames_to_update_light, RS::EnvironmentSDFGIFramesToUpdateLight)
 
 	PASS1RC(RS::EnvironmentBG, environment_get_background, RID)

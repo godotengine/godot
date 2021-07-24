@@ -1068,17 +1068,7 @@ public:
 
 	virtual void environment_set_sdfgi_ray_count(EnvironmentSDFGIRayCount p_ray_count) = 0;
 
-	enum EnvironmentSDFGIFramesToConverge {
-		ENV_SDFGI_CONVERGE_IN_5_FRAMES,
-		ENV_SDFGI_CONVERGE_IN_10_FRAMES,
-		ENV_SDFGI_CONVERGE_IN_15_FRAMES,
-		ENV_SDFGI_CONVERGE_IN_20_FRAMES,
-		ENV_SDFGI_CONVERGE_IN_25_FRAMES,
-		ENV_SDFGI_CONVERGE_IN_30_FRAMES,
-		ENV_SDFGI_CONVERGE_MAX
-	};
-
-	virtual void environment_set_sdfgi_frames_to_converge(EnvironmentSDFGIFramesToConverge p_frames) = 0;
+	virtual void environment_set_sdfgi_frames_to_converge(int p_frames) = 0;
 
 	enum EnvironmentSDFGIFramesToUpdateLight {
 		ENV_SDFGI_UPDATE_LIGHT_IN_1_FRAME,
@@ -1609,7 +1599,6 @@ VARIANT_ENUM_CAST(RenderingServer::EnvironmentToneMapper);
 VARIANT_ENUM_CAST(RenderingServer::EnvironmentSSRRoughnessQuality);
 VARIANT_ENUM_CAST(RenderingServer::EnvironmentSSAOQuality);
 VARIANT_ENUM_CAST(RenderingServer::EnvironmentSSILQuality);
-VARIANT_ENUM_CAST(RenderingServer::EnvironmentSDFGIFramesToConverge);
 VARIANT_ENUM_CAST(RenderingServer::EnvironmentSDFGIRayCount);
 VARIANT_ENUM_CAST(RenderingServer::EnvironmentSDFGIFramesToUpdateLight);
 VARIANT_ENUM_CAST(RenderingServer::EnvironmentSDFGIYScale);

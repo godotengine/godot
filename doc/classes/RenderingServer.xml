@@ -1028,8 +1028,12 @@
 		</method>
 		<method name="environment_set_sdfgi_frames_to_converge">
 			<return type="void" />
-			<argument index="0" name="frames" type="int" enum="RenderingServer.EnvironmentSDFGIFramesToConverge" />
+			<argument index="0" name="frames" type="int" />
 			<description>
+				Sets the number of frames over which SDFGI indirect lighting should be converged. Higher values result in better quality, but indirect lighting will take more time to update when a light's visibility is toggled or modified in any way. Higher values will also take more time to initially converge. If you want to hide this from the player, you can hide the initial SDFGI convergence by using a loading screen that waits until enough frames have been rendered to let SDFGI converge.
+				[b]Note:[/b] Changing this setting at run-time will reinitialize SDFGI, making it perform its initial convergence again. This means the scene will be temporarily darkened while SDFGI is converging again.
+				[b]Note:[/b] High values can cause performance drops when the camera moves fast. This can be alleviated by lowering this value and increasing [method environment_set_sdfgi_ray_count], which will result in overall lower but more predictable performance. Decreasing the number of SDFGI cascades ([member Environment.sdfgi_cascades]) can also reduce performance drops when the camera moves fast.
+				See also [member ProjectSettings.rendering/global_illumination/sdfgi/frames_to_converge].
 			</description>
 		</method>
 		<method name="environment_set_sdfgi_frames_to_update_light">
@@ -4232,20 +4236,6 @@
 		<constant name="ENV_SDFGI_RAY_COUNT_128" value="6" enum="EnvironmentSDFGIRayCount">
 		</constant>
 		<constant name="ENV_SDFGI_RAY_COUNT_MAX" value="7" enum="EnvironmentSDFGIRayCount">
-		</constant>
-		<constant name="ENV_SDFGI_CONVERGE_IN_5_FRAMES" value="0" enum="EnvironmentSDFGIFramesToConverge">
-		</constant>
-		<constant name="ENV_SDFGI_CONVERGE_IN_10_FRAMES" value="1" enum="EnvironmentSDFGIFramesToConverge">
-		</constant>
-		<constant name="ENV_SDFGI_CONVERGE_IN_15_FRAMES" value="2" enum="EnvironmentSDFGIFramesToConverge">
-		</constant>
-		<constant name="ENV_SDFGI_CONVERGE_IN_20_FRAMES" value="3" enum="EnvironmentSDFGIFramesToConverge">
-		</constant>
-		<constant name="ENV_SDFGI_CONVERGE_IN_25_FRAMES" value="4" enum="EnvironmentSDFGIFramesToConverge">
-		</constant>
-		<constant name="ENV_SDFGI_CONVERGE_IN_30_FRAMES" value="5" enum="EnvironmentSDFGIFramesToConverge">
-		</constant>
-		<constant name="ENV_SDFGI_CONVERGE_MAX" value="6" enum="EnvironmentSDFGIFramesToConverge">
 		</constant>
 		<constant name="ENV_SDFGI_UPDATE_LIGHT_IN_1_FRAME" value="0" enum="EnvironmentSDFGIFramesToUpdateLight">
 		</constant>
