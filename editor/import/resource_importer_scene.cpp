@@ -233,21 +233,6 @@ static String _fixstr(const String &p_what, const String &p_str) {
 	return what;
 }
 
-static void _gen_shape_list(const Ref<Mesh> &mesh, List<Ref<Shape3D>> &r_shape_list, bool p_convex) {
-	ERR_FAIL_NULL_MSG(mesh, "Cannot generate shape list with null mesh value");
-	if (!p_convex) {
-		Ref<Shape3D> shape = mesh->create_trimesh_shape();
-		r_shape_list.push_back(shape);
-	} else {
-		Vector<Ref<Shape3D>> cd = mesh->convex_decompose();
-		if (cd.size()) {
-			for (int i = 0; i < cd.size(); i++) {
-				r_shape_list.push_back(cd[i]);
-			}
-		}
-	}
-}
-
 static void _pre_gen_shape_list(const Ref<EditorSceneImporterMesh> &mesh, List<Ref<Shape3D>> &r_shape_list, bool p_convex) {
 	ERR_FAIL_NULL_MSG(mesh, "Cannot generate shape list with null mesh value");
 	if (!p_convex) {
@@ -425,7 +410,7 @@ Node *ResourceImporterScene::_pre_fix_node(Node *p_node, Node *p_root, Map<Ref<E
 			if (collision_map.has(mesh)) {
 				shapes = collision_map[mesh];
 			} else {
-				_gen_shape_list(mesh, shapes, true);
+				_pre_gen_shape_list(mesh, shapes, true);
 			}
 
 			RigidBody3D *rigid_body = memnew(RigidBody3D);
@@ -451,10 +436,10 @@ Node *ResourceImporterScene::_pre_fix_node(Node *p_node, Node *p_root, Map<Ref<E
 			if (collision_map.has(mesh)) {
 				shapes = collision_map[mesh];
 			} else if (_teststr(name, "col")) {
-				_gen_shape_list(mesh, shapes, false);
+				_pre_gen_shape_list(mesh, shapes, false);
 				collision_map[mesh] = shapes;
 			} else if (_teststr(name, "convcol")) {
-				_gen_shape_list(mesh, shapes, true);
+				_pre_gen_shape_list(mesh, shapes, true);
 				collision_map[mesh] = shapes;
 			}
 
@@ -509,11 +494,11 @@ Node *ResourceImporterScene::_pre_fix_node(Node *p_node, Node *p_root, Map<Ref<E
 			if (collision_map.has(mesh)) {
 				shapes = collision_map[mesh];
 			} else if (_teststr(mesh->get_name(), "col")) {
-				_gen_shape_list(mesh, shapes, false);
+				_pre_gen_shape_list(mesh, shapes, false);
 				collision_map[mesh] = shapes;
 				mesh->set_name(_fixstr(mesh->get_name(), "col"));
 			} else if (_teststr(mesh->get_name(), "convcol")) {
-				_gen_shape_list(mesh, shapes, true);
+				_pre_gen_shape_list(mesh, shapes, true);
 				collision_map[mesh] = shapes;
 				mesh->set_name(_fixstr(mesh->get_name(), "convcol"));
 			}
