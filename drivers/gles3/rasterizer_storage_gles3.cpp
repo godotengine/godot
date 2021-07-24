@@ -7784,8 +7784,13 @@ bool RasterizerStorageGLES3::free(RID p_rid) {
 		}
 		for (Map<RasterizerScene::InstanceBase *, int>::Element *E = material->instance_owners.front(); E; E = E->next()) {
 			RasterizerScene::InstanceBase *ins = E->key();
+
 			if (ins->material_override == p_rid) {
 				ins->material_override = RID();
+			}
+
+			if (ins->material_overlay == p_rid) {
+				ins->material_overlay = RID();
 			}
 
 			for (int i = 0; i < ins->materials.size(); i++) {

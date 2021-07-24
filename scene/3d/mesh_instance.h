@@ -127,6 +127,8 @@ public:
 
 	virtual void set_material_override(const Ref<Material> &p_material);
 
+	virtual void set_material_overlay(const Ref<Material> &p_material);
+
 	void set_software_skinning_transform_normals(bool p_enabled);
 	bool is_software_skinning_transform_normals_enabled() const;
 

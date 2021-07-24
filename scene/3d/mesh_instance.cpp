@@ -733,6 +733,14 @@ void MeshInstance::set_material_override(const Ref<Material> &p_material) {
 	}
 }
 
+void MeshInstance::set_material_overlay(const Ref<Material> &p_material) {
+	if (p_material == get_material_overlay()) {
+		return;
+	}
+
+	GeometryInstance::set_material_overlay(p_material);
+}
+
 void MeshInstance::set_software_skinning_transform_normals(bool p_enabled) {
 	if (p_enabled == is_software_skinning_transform_normals_enabled()) {
 		return;
@@ -849,6 +857,11 @@ bool MeshInstance::is_mergeable_with(const MeshInstance &p_other) {
 
 	int num_surfaces = rmesh_a->get_surface_count();
 	if (num_surfaces != rmesh_b->get_surface_count()) {
+		return false;
+	}
+
+	// overlay materials must match
+	if (get_material_overlay() != p_other.get_material_overlay()) {
 		return false;
 	}
 
@@ -1153,6 +1166,9 @@ bool MeshInstance::create_by_merging(Vector<MeshInstance *> p_list) {
 	for (int n = 0; n < num_surfaces; n++) {
 		set_surface_material(n, first->get_active_material(n));
 	}
+
+	// set overlay material
+	set_material_overlay(first->get_material_overlay());
 
 	return true;
 }

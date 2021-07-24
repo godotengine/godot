@@ -88,6 +88,7 @@ public:
 
 		RID skeleton;
 		RID material_override;
+		RID material_overlay;
 
 		Transform transform;
 

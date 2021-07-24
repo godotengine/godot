@@ -1520,6 +1520,20 @@ void VisualServerScene::instance_geometry_set_material_override(RID p_instance, 
 		VSG::storage->material_add_instance_owner(instance->material_override, instance);
 	}
 }
+void VisualServerScene::instance_geometry_set_material_overlay(RID p_instance, RID p_material) {
+	Instance *instance = instance_owner.get(p_instance);
+	ERR_FAIL_COND(!instance);
+
+	if (instance->material_overlay.is_valid()) {
+		VSG::storage->material_remove_instance_owner(instance->material_overlay, instance);
+	}
+	instance->material_overlay = p_material;
+	instance->base_changed(false, true);
+
+	if (instance->material_overlay.is_valid()) {
+		VSG::storage->material_add_instance_owner(instance->material_overlay, instance);
+	}
+}
 
 void VisualServerScene::instance_geometry_set_draw_range(RID p_instance, float p_min, float p_max, float p_min_margin, float p_max_margin) {
 }
@@ -3988,6 +4002,11 @@ void VisualServerScene::_update_dirty_instance(Instance *p_instance) {
 				}
 			}
 
+			if (p_instance->material_overlay.is_valid()) {
+				can_cast_shadows = can_cast_shadows || VSG::storage->material_casts_shadows(p_instance->material_overlay);
+				is_animated = is_animated || VSG::storage->material_is_animated(p_instance->material_overlay);
+			}
+
 			if (can_cast_shadows != geom->can_cast_shadows) {
 				//ability to cast shadows change, let lights now
 				for (List<Instance *>::Element *E = geom->lighting.front(); E; E = E->next()) {
@@ -4057,6 +4076,7 @@ bool VisualServerScene::free(RID p_rid) {
 		instance_set_scenario(p_rid, RID());
 		instance_set_base(p_rid, RID());
 		instance_geometry_set_material_override(p_rid, RID());
+		instance_geometry_set_material_overlay(p_rid, RID());
 		instance_attach_skeleton(p_rid, RID());
 
 		update_dirty_instances(); //in case something changed this
