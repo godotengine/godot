@@ -39,7 +39,6 @@
 #include "scene/3d/mesh_instance_3d.h"
 #include "scene/3d/navigation_region_3d.h"
 #include "scene/3d/physics_body_3d.h"
-#include "scene/3d/vehicle_body_3d.h"
 #include "scene/animation/animation_player.h"
 #include "scene/resources/animation.h"
 #include "scene/resources/box_shape_3d.h"
@@ -143,6 +142,92 @@ void EditorScenePostImport::init(const String &p_source_file) {
 EditorScenePostImport::EditorScenePostImport() {
 }
 
+String ResourceImporterScene::_import_hint_string(NodeHint p_hint) {
+	switch (p_hint) {
+		case NODE_HINT_NONE: {
+			return "";
+		}
+		case NODE_HINT_NO_IMPORT: {
+			return "noimp";
+		}
+		case NODE_HINT_COLLISION: {
+			return "col";
+		}
+		case NODE_HINT_CONVEX_COLLISION: {
+			return "convcol";
+		}
+		case NODE_HINT_COLLISION_ONLY: {
+			return "colonly";
+		}
+		case NODE_HINT_CONVEX_COLLISION_ONLY: {
+			return "convcolonly";
+		}
+		case NODE_HINT_RIGID: {
+			return "rigid";
+		}
+		case NODE_HINT_NAVMESH: {
+			return "navmesh";
+		}
+		default: {
+			ERR_FAIL_V_MSG(String(), "Node import hint out of range");
+		}
+	}
+}
+
+String ResourceImporterScene::_import_hint_string(AnimationHint p_hint) {
+	switch (p_hint) {
+		case ANIMATION_HINT_NONE: {
+			return "";
+		}
+		case ANIMATION_HINT_LOOPS: {
+			return "loops";
+		}
+		case ANIMATION_HINT_LOOP: {
+			return "loop";
+		}
+		case ANIMATION_HINT_CYCLE: {
+			return "cycle";
+		}
+		default: {
+			ERR_FAIL_V_MSG(String(), "Animation import hint out of range");
+		}
+	}
+}
+
+String ResourceImporterScene::_import_hint_string(MaterialHint p_hint) {
+	switch (p_hint) {
+		case MATERIAL_HINT_NONE: {
+			return "";
+		}
+		case MATERIAL_HINT_ALPHA: {
+			return "alpha";
+		}
+		case MATERIAL_HINT_VERTEX_COLOR: {
+			return "vcol";
+		}
+		default: {
+			ERR_FAIL_V_MSG(String(), "Material import hint out of range");
+		}
+	}
+}
+
+template <class T>
+T ResourceImporterScene::_parse_import_hint(String &p_name, T max) {
+	// Iterate from 1 to skip NONE-hint
+	for (int enum_index = 1; enum_index < max; ++enum_index) {
+		const T enum_value = static_cast<T>(enum_index);
+		const String hint_string = _import_hint_string(enum_value);
+		const int position = p_name.rfindn(hint_string);
+		// Find the hint and make sure that there are no letters around
+		if (position > 0 && !is_alpha(p_name[position - 1]) && (p_name.length() == position + hint_string.length() || !is_alpha(p_name[position + hint_string.length() + 1]))) {
+			p_name.erase(position - 1, hint_string.length() + 1); // Remove the hint along with the preceding character
+			return enum_value;
+		}
+	}
+
+	return static_cast<T>(0); // NONE-hint
+}
+
 String ResourceImporterScene::get_importer_name() const {
 	return "scene";
 }
@@ -191,48 +276,6 @@ String ResourceImporterScene::get_preset_name(int p_idx) const {
 	return String();
 }
 
-static bool _teststr(const String &p_what, const String &p_str) {
-	String what = p_what;
-
-	//remove trailing spaces and numbers, some apps like blender add ".number" to duplicates so also compensate for this
-	while (what.length() && ((what[what.length() - 1] >= '0' && what[what.length() - 1] <= '9') || what[what.length() - 1] <= 32 || what[what.length() - 1] == '.')) {
-		what = what.substr(0, what.length() - 1);
-	}
-
-	if (what.findn("$" + p_str) != -1) { //blender and other stuff
-		return true;
-	}
-	if (what.to_lower().ends_with("-" + p_str)) { //collada only supports "_" and "-" besides letters
-		return true;
-	}
-	if (what.to_lower().ends_with("_" + p_str)) { //collada only supports "_" and "-" besides letters
-		return true;
-	}
-	return false;
-}
-
-static String _fixstr(const String &p_what, const String &p_str) {
-	String what = p_what;
-
-	//remove trailing spaces and numbers, some apps like blender add ".number" to duplicates so also compensate for this
-	while (what.length() && ((what[what.length() - 1] >= '0' && what[what.length() - 1] <= '9') || what[what.length() - 1] <= 32 || what[what.length() - 1] == '.')) {
-		what = what.substr(0, what.length() - 1);
-	}
-
-	String end = p_what.substr(what.length(), p_what.length() - what.length());
-
-	if (what.findn("$" + p_str) != -1) { //blender and other stuff
-		return what.replace("$" + p_str, "") + end;
-	}
-	if (what.to_lower().ends_with("-" + p_str)) { //collada only supports "_" and "-" besides letters
-		return what.substr(0, what.length() - (p_str.length() + 1)) + end;
-	}
-	if (what.to_lower().ends_with("_" + p_str)) { //collada only supports "_" and "-" besides letters
-		return what.substr(0, what.length() - (p_str.length() + 1)) + end;
-	}
-	return what;
-}
-
 static void _gen_shape_list(const Ref<Mesh> &mesh, List<Ref<Shape3D>> &r_shape_list, bool p_convex) {
 	ERR_FAIL_NULL_MSG(mesh, "Cannot generate shape list with null mesh value");
 	if (!p_convex) {
@@ -264,19 +307,20 @@ static void _pre_gen_shape_list(const Ref<EditorSceneImporterMesh> &mesh, List<R
 }
 
 Node *ResourceImporterScene::_pre_fix_node(Node *p_node, Node *p_root, Map<Ref<EditorSceneImporterMesh>, List<Ref<Shape3D>>> &collision_map) {
-	// children first
+	// Children first
 	for (int i = 0; i < p_node->get_child_count(); i++) {
 		Node *r = _pre_fix_node(p_node->get_child(i), p_root, collision_map);
 		if (!r) {
-			i--; //was erased
+			i--; // Was erased
 		}
 	}
 
 	String name = p_node->get_name();
+	const NodeHint hint = _parse_import_hint(name, NODE_HINT_MAX);
 
 	bool isroot = p_node == p_root;
 
-	if (!isroot && _teststr(name, "noimp")) {
+	if (!isroot && hint == NODE_HINT_NO_IMPORT) {
 		memdelete(p_node);
 		return nullptr;
 	}
@@ -293,21 +337,30 @@ Node *ResourceImporterScene::_pre_fix_node(Node *p_node, Node *p_root, Map<Ref<E
 					continue;
 				}
 
-				if (_teststr(mat->get_name(), "alpha")) {
-					mat->set_transparency(BaseMaterial3D::TRANSPARENCY_ALPHA);
-					mat->set_name(_fixstr(mat->get_name(), "alpha"));
-				}
-				if (_teststr(mat->get_name(), "vcol")) {
-					mat->set_flag(BaseMaterial3D::FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
-					mat->set_flag(BaseMaterial3D::FLAG_SRGB_VERTEX_COLOR, true);
-					mat->set_name(_fixstr(mat->get_name(), "vcol"));
-				}
+				String material_name = mat->get_name();
+				MaterialHint material_hint;
+				do {
+					material_hint = _parse_import_hint(material_name, MATERIAL_HINT_MAX);
+					switch (material_hint) {
+						case MATERIAL_HINT_ALPHA: {
+							mat->set_transparency(BaseMaterial3D::TRANSPARENCY_ALPHA);
+							mat->set_name(material_name);
+						} break;
+						case MATERIAL_HINT_VERTEX_COLOR: {
+							mat->set_flag(BaseMaterial3D::FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
+							mat->set_flag(BaseMaterial3D::FLAG_SRGB_VERTEX_COLOR, true);
+							mat->set_name(material_name);
+						} break;
+						default: {
+						}
+					}
+				} while (material_hint != MATERIAL_HINT_NONE);
 			}
 		}
 	}
 
 	if (Object::cast_to<AnimationPlayer>(p_node)) {
-		//remove animations referencing non-importable nodes
+		// Remove animations referencing non-importable nodes
 		AnimationPlayer *ap = Object::cast_to<AnimationPlayer>(p_node);
 
 		List<StringName> anims;
@@ -319,8 +372,8 @@ Node *ResourceImporterScene::_pre_fix_node(Node *p_node, Node *p_root, Map<Ref<E
 				NodePath path = anim->track_get_path(i);
 
 				for (int j = 0; j < path.get_name_count(); j++) {
-					String node = path.get_name(j);
-					if (_teststr(node, "noimp")) {
+					String node_name = path.get_name(j);
+					if (_parse_import_hint(node_name, NODE_HINT_MAX) == NODE_HINT_NO_IMPORT) {
 						anim->remove_track(i);
 						i--;
 						break;
@@ -328,20 +381,16 @@ Node *ResourceImporterScene::_pre_fix_node(Node *p_node, Node *p_root, Map<Ref<E
 				}
 			}
 
-			String animname = E->get();
-			const int loop_string_count = 3;
-			static const char *loop_strings[loop_string_count] = { "loops", "loop", "cycle" };
-			for (int i = 0; i < loop_string_count; i++) {
-				if (_teststr(animname, loop_strings[i])) {
-					anim->set_loop(true);
-					animname = _fixstr(animname, loop_strings[i]);
-					ap->rename_animation(E->get(), animname);
-				}
+			String anim_name = E->get();
+			const AnimationHint anim_hint = _parse_import_hint(anim_name, ANIMATION_HINT_MAX);
+			if (anim_hint != ANIMATION_HINT_NONE) {
+				anim->set_loop(true);
+				ap->rename_animation(E->get(), anim_name);
 			}
 		}
 	}
 
-	if (_teststr(name, "colonly") || _teststr(name, "convcolonly")) {
+	if (hint == NODE_HINT_COLLISION_ONLY || hint == NODE_HINT_CONVEX_COLLISION_ONLY) {
 		if (isroot) {
 			return p_node;
 		}
@@ -351,29 +400,19 @@ Node *ResourceImporterScene::_pre_fix_node(Node *p_node, Node *p_root, Map<Ref<E
 
 			if (mesh.is_valid()) {
 				List<Ref<Shape3D>> shapes;
-				String fixed_name;
 				if (collision_map.has(mesh)) {
 					shapes = collision_map[mesh];
-				} else if (_teststr(name, "colonly")) {
-					_pre_gen_shape_list(mesh, shapes, false);
-					collision_map[mesh] = shapes;
-				} else if (_teststr(name, "convcolonly")) {
-					_pre_gen_shape_list(mesh, shapes, true);
+				} else {
+					_pre_gen_shape_list(mesh, shapes, hint == NODE_HINT_CONVEX_COLLISION_ONLY);
 					collision_map[mesh] = shapes;
 				}
 
-				if (_teststr(name, "colonly")) {
-					fixed_name = _fixstr(name, "colonly");
-				} else if (_teststr(name, "convcolonly")) {
-					fixed_name = _fixstr(name, "convcolonly");
-				}
-
-				ERR_FAIL_COND_V(fixed_name == String(), nullptr);
+				ERR_FAIL_COND_V(name.is_empty(), nullptr);
 
 				if (shapes.size()) {
 					StaticBody3D *col = memnew(StaticBody3D);
 					col->set_transform(mi->get_transform());
-					col->set_name(fixed_name);
+					col->set_name(name);
 					p_node->replace_by(col);
 					memdelete(p_node);
 					p_node = col;
@@ -382,10 +421,10 @@ Node *ResourceImporterScene::_pre_fix_node(Node *p_node, Node *p_root, Map<Ref<E
 				}
 			}
 
-		} else if (p_node->has_meta("empty_draw_type")) {
+		} else if (hint == NODE_HINT_COLLISION_ONLY && p_node->has_meta("empty_draw_type")) {
 			String empty_draw_type = String(p_node->get_meta("empty_draw_type"));
 			StaticBody3D *sb = memnew(StaticBody3D);
-			sb->set_name(_fixstr(name, "colonly"));
+			sb->set_name(name);
 			Object::cast_to<Node3D>(sb)->set_transform(Object::cast_to<Node3D>(p_node)->get_transform());
 			p_node->replace_by(sb);
 			memdelete(p_node);
@@ -412,7 +451,7 @@ Node *ResourceImporterScene::_pre_fix_node(Node *p_node, Node *p_root, Map<Ref<E
 			colshape->set_owner(sb->get_owner());
 		}
 
-	} else if (_teststr(name, "rigid") && Object::cast_to<EditorSceneImporterMeshNode3D>(p_node)) {
+	} else if (hint == NODE_HINT_RIGID && Object::cast_to<EditorSceneImporterMeshNode3D>(p_node)) {
 		if (isroot) {
 			return p_node;
 		}
@@ -429,7 +468,7 @@ Node *ResourceImporterScene::_pre_fix_node(Node *p_node, Node *p_root, Map<Ref<E
 			}
 
 			RigidBody3D *rigid_body = memnew(RigidBody3D);
-			rigid_body->set_name(_fixstr(name, "rigid"));
+			rigid_body->set_name(name);
 			p_node->replace_by(rigid_body);
 			rigid_body->set_transform(mi->get_transform());
 			p_node = rigid_body;
@@ -440,33 +479,23 @@ Node *ResourceImporterScene::_pre_fix_node(Node *p_node, Node *p_root, Map<Ref<E
 			_add_shapes(rigid_body, shapes);
 		}
 
-	} else if ((_teststr(name, "col") || (_teststr(name, "convcol"))) && Object::cast_to<EditorSceneImporterMeshNode3D>(p_node)) {
+	} else if ((hint == NODE_HINT_COLLISION || hint == NODE_HINT_CONVEX_COLLISION) && Object::cast_to<EditorSceneImporterMeshNode3D>(p_node)) {
 		EditorSceneImporterMeshNode3D *mi = Object::cast_to<EditorSceneImporterMeshNode3D>(p_node);
 
 		Ref<EditorSceneImporterMesh> mesh = mi->get_mesh();
 
 		if (mesh.is_valid()) {
 			List<Ref<Shape3D>> shapes;
-			String fixed_name;
 			if (collision_map.has(mesh)) {
 				shapes = collision_map[mesh];
-			} else if (_teststr(name, "col")) {
-				_gen_shape_list(mesh, shapes, false);
-				collision_map[mesh] = shapes;
-			} else if (_teststr(name, "convcol")) {
-				_gen_shape_list(mesh, shapes, true);
+			} else {
+				_gen_shape_list(mesh, shapes, hint == NODE_HINT_CONVEX_COLLISION);
 				collision_map[mesh] = shapes;
 			}
 
-			if (_teststr(name, "col")) {
-				fixed_name = _fixstr(name, "col");
-			} else if (_teststr(name, "convcol")) {
-				fixed_name = _fixstr(name, "convcol");
-			}
-
-			if (fixed_name != String()) {
-				if (mi->get_parent() && !mi->get_parent()->has_node(fixed_name)) {
-					mi->set_name(fixed_name);
+			if (!name.is_empty()) {
+				if (mi->get_parent() && !mi->get_parent()->has_node(name)) {
+					mi->set_name(name);
 				}
 			}
 
@@ -479,7 +508,7 @@ Node *ResourceImporterScene::_pre_fix_node(Node *p_node, Node *p_root, Map<Ref<E
 			}
 		}
 
-	} else if (_teststr(name, "navmesh") && Object::cast_to<EditorSceneImporterMeshNode3D>(p_node)) {
+	} else if (hint == NODE_HINT_NAVMESH && Object::cast_to<EditorSceneImporterMeshNode3D>(p_node)) {
 		if (isroot) {
 			return p_node;
 		}
@@ -490,7 +519,7 @@ Node *ResourceImporterScene::_pre_fix_node(Node *p_node, Node *p_root, Map<Ref<E
 		ERR_FAIL_COND_V(mesh.is_null(), nullptr);
 		NavigationRegion3D *nmi = memnew(NavigationRegion3D);
 
-		nmi->set_name(_fixstr(name, "navmesh"));
+		nmi->set_name(name);
 		Ref<NavigationMesh> nmesh = mesh->create_navigation_mesh();
 		nmi->set_navigation_mesh(nmesh);
 		Object::cast_to<Node3D>(nmi)->set_transform(mi->get_transform());
@@ -499,23 +528,25 @@ Node *ResourceImporterScene::_pre_fix_node(Node *p_node, Node *p_root, Map<Ref<E
 		p_node = nmi;
 
 	} else if (Object::cast_to<EditorSceneImporterMeshNode3D>(p_node)) {
-		//last attempt, maybe collision inside the mesh data
+		// Last attempt, maybe collision inside the mesh data
 
 		EditorSceneImporterMeshNode3D *mi = Object::cast_to<EditorSceneImporterMeshNode3D>(p_node);
 
 		Ref<EditorSceneImporterMesh> mesh = mi->get_mesh();
 		if (!mesh.is_null()) {
 			List<Ref<Shape3D>> shapes;
+			String mesh_name = mesh->get_name();
+			const NodeHint mesh_hint = _parse_import_hint(mesh_name, NODE_HINT_MAX);
 			if (collision_map.has(mesh)) {
 				shapes = collision_map[mesh];
-			} else if (_teststr(mesh->get_name(), "col")) {
+			} else if (mesh_hint == NODE_HINT_COLLISION) {
 				_gen_shape_list(mesh, shapes, false);
 				collision_map[mesh] = shapes;
-				mesh->set_name(_fixstr(mesh->get_name(), "col"));
-			} else if (_teststr(mesh->get_name(), "convcol")) {
+				mesh->set_name(mesh_name);
+			} else if (hint == NODE_HINT_CONVEX_COLLISION) {
 				_gen_shape_list(mesh, shapes, true);
 				collision_map[mesh] = shapes;
-				mesh->set_name(_fixstr(mesh->get_name(), "convcol"));
+				mesh->set_name(mesh_name);
 			}
 
 			if (shapes.size()) {
