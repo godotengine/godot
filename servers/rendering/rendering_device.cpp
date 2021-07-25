@@ -38,23 +38,23 @@ RenderingDevice *RenderingDevice::get_singleton() {
 	return singleton;
 }
 
-RenderingDevice::ShaderCompileFunction RenderingDevice::compile_function = nullptr;
+RenderingDevice::ShaderCompileToSPIRVFunction RenderingDevice::compile_to_spirv_function = nullptr;
 RenderingDevice::ShaderCacheFunction RenderingDevice::cache_function = nullptr;
-RenderingDevice::ShaderGetCacheKeyFunction RenderingDevice::get_cache_key_function = nullptr;
+RenderingDevice::ShaderSPIRVGetCacheKeyFunction RenderingDevice::get_spirv_cache_key_function = nullptr;
 
-void RenderingDevice::shader_set_compile_function(ShaderCompileFunction p_function) {
-	compile_function = p_function;
+void RenderingDevice::shader_set_compile_to_spirv_function(ShaderCompileToSPIRVFunction p_function) {
+	compile_to_spirv_function = p_function;
 }
 
-void RenderingDevice::shader_set_cache_function(ShaderCacheFunction p_function) {
+void RenderingDevice::shader_set_spirv_cache_function(ShaderCacheFunction p_function) {
 	cache_function = p_function;
 }
 
-void RenderingDevice::shader_set_get_cache_key_function(ShaderGetCacheKeyFunction p_function) {
-	get_cache_key_function = p_function;
+void RenderingDevice::shader_set_get_cache_key_function(ShaderSPIRVGetCacheKeyFunction p_function) {
+	get_spirv_cache_key_function = p_function;
 }
 
-Vector<uint8_t> RenderingDevice::shader_compile_from_source(ShaderStage p_stage, const String &p_source_code, ShaderLanguage p_language, String *r_error, bool p_allow_cache) {
+Vector<uint8_t> RenderingDevice::shader_compile_spirv_from_source(ShaderStage p_stage, const String &p_source_code, ShaderLanguage p_language, String *r_error, bool p_allow_cache) {
 	if (p_allow_cache && cache_function) {
 		Vector<uint8_t> cache = cache_function(p_stage, p_source_code, p_language);
 		if (cache.size()) {
@@ -62,16 +62,22 @@ Vector<uint8_t> RenderingDevice::shader_compile_from_source(ShaderStage p_stage,
 		}
 	}
 
-	ERR_FAIL_COND_V(!compile_function, Vector<uint8_t>());
+	ERR_FAIL_COND_V(!compile_to_spirv_function, Vector<uint8_t>());
 
-	return compile_function(p_stage, p_source_code, p_language, r_error, &device_capabilities);
+	return compile_to_spirv_function(p_stage, p_source_code, p_language, r_error, &device_capabilities);
 }
 
-String RenderingDevice::shader_get_cache_key() const {
-	if (get_cache_key_function) {
-		return get_cache_key_function(&device_capabilities);
+String RenderingDevice::shader_get_spirv_cache_key() const {
+	if (get_spirv_cache_key_function) {
+		return get_spirv_cache_key_function(&device_capabilities);
 	}
 	return String();
+}
+
+RID RenderingDevice::shader_create_from_spirv(const Vector<ShaderStageSPIRVData> &p_spirv) {
+	Vector<uint8_t> bytecode = shader_compile_binary_from_spirv(p_spirv);
+	ERR_FAIL_COND_V(bytecode.size() == 0, RID());
+	return shader_create_from_bytecode(bytecode);
 }
 
 RID RenderingDevice::_texture_create(const Ref<RDTextureFormat> &p_format, const Ref<RDTextureView> &p_view, const TypedArray<PackedByteArray> &p_data) {
@@ -170,40 +176,59 @@ RID RenderingDevice::_vertex_array_create(uint32_t p_vertex_count, VertexFormatI
 	return vertex_array_create(p_vertex_count, p_vertex_format, buffers);
 }
 
-Ref<RDShaderBytecode> RenderingDevice::_shader_compile_from_source(const Ref<RDShaderSource> &p_source, bool p_allow_cache) {
-	ERR_FAIL_COND_V(p_source.is_null(), Ref<RDShaderBytecode>());
+Ref<RDShaderSPIRV> RenderingDevice::_shader_compile_spirv_from_source(const Ref<RDShaderSource> &p_source, bool p_allow_cache) {
+	ERR_FAIL_COND_V(p_source.is_null(), Ref<RDShaderSPIRV>());
 
-	Ref<RDShaderBytecode> bytecode;
+	Ref<RDShaderSPIRV> bytecode;
 	bytecode.instantiate();
 	for (int i = 0; i < RD::SHADER_STAGE_MAX; i++) {
 		String error;
 
 		ShaderStage stage = ShaderStage(i);
-		Vector<uint8_t> spirv = shader_compile_from_source(stage, p_source->get_stage_source(stage), p_source->get_language(), &error, p_allow_cache);
+		Vector<uint8_t> spirv = shader_compile_spirv_from_source(stage, p_source->get_stage_source(stage), p_source->get_language(), &error, p_allow_cache);
 		bytecode->set_stage_bytecode(stage, spirv);
 		bytecode->set_stage_compile_error(stage, error);
 	}
 	return bytecode;
 }
 
-RID RenderingDevice::shader_create_from_bytecode(const Ref<RDShaderBytecode> &p_bytecode) {
-	ERR_FAIL_COND_V(p_bytecode.is_null(), RID());
+Vector<uint8_t> RenderingDevice::_shader_compile_binary_from_spirv(const Ref<RDShaderSPIRV> &p_spirv) {
+	ERR_FAIL_COND_V(p_spirv.is_null(), Vector<uint8_t>());
 
-	Vector<ShaderStageData> stage_data;
+	Vector<ShaderStageSPIRVData> stage_data;
 	for (int i = 0; i < RD::SHADER_STAGE_MAX; i++) {
 		ShaderStage stage = ShaderStage(i);
-		ShaderStageData sd;
+		ShaderStageSPIRVData sd;
 		sd.shader_stage = stage;
-		String error = p_bytecode->get_stage_compile_error(stage);
-		ERR_FAIL_COND_V_MSG(error != String(), RID(), "Can't create a shader from an errored bytecode. Check errors in source bytecode.");
-		sd.spir_v = p_bytecode->get_stage_bytecode(stage);
+		String error = p_spirv->get_stage_compile_error(stage);
+		ERR_FAIL_COND_V_MSG(error != String(), Vector<uint8_t>(), "Can't create a shader from an errored bytecode. Check errors in source bytecode.");
+		sd.spir_v = p_spirv->get_stage_bytecode(stage);
 		if (sd.spir_v.is_empty()) {
 			continue;
 		}
 		stage_data.push_back(sd);
 	}
 
-	return shader_create(stage_data);
+	return shader_compile_binary_from_spirv(stage_data);
+}
+
+RID RenderingDevice::_shader_create_from_spirv(const Ref<RDShaderSPIRV> &p_spirv) {
+	ERR_FAIL_COND_V(p_spirv.is_null(), RID());
+
+	Vector<ShaderStageSPIRVData> stage_data;
+	for (int i = 0; i < RD::SHADER_STAGE_MAX; i++) {
+		ShaderStage stage = ShaderStage(i);
+		ShaderStageSPIRVData sd;
+		sd.shader_stage = stage;
+		String error = p_spirv->get_stage_compile_error(stage);
+		ERR_FAIL_COND_V_MSG(error != String(), RID(), "Can't create a shader from an errored bytecode. Check errors in source bytecode.");
+		sd.spir_v = p_spirv->get_stage_bytecode(stage);
+		if (sd.spir_v.is_empty()) {
+			continue;
+		}
+		stage_data.push_back(sd);
+	}
+	return shader_create_from_spirv(stage_data);
 }
 
 RID RenderingDevice::_uniform_set_create(const Array &p_uniforms, RID p_shader, uint32_t p_shader_set) {
@@ -366,8 +391,10 @@ void RenderingDevice::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("index_buffer_create", "size_indices", "format", "data", "use_restart_indices"), &RenderingDevice::index_buffer_create, DEFVAL(Vector<uint8_t>()), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("index_array_create", "index_buffer", "index_offset", "index_count"), &RenderingDevice::index_array_create);
 
-	ClassDB::bind_method(D_METHOD("shader_compile_from_source", "shader_source", "allow_cache"), &RenderingDevice::_shader_compile_from_source, DEFVAL(true));
-	ClassDB::bind_method(D_METHOD("shader_create", "shader_data"), &RenderingDevice::shader_create_from_bytecode);
+	ClassDB::bind_method(D_METHOD("shader_compile_spirv_from_source", "shader_source", "allow_cache"), &RenderingDevice::_shader_compile_spirv_from_source, DEFVAL(true));
+	ClassDB::bind_method(D_METHOD("shader_compile_binary_from_spirv", "spirv_data"), &RenderingDevice::_shader_compile_binary_from_spirv);
+	ClassDB::bind_method(D_METHOD("shader_create_from_spirv", "spirv_data"), &RenderingDevice::_shader_compile_binary_from_spirv);
+	ClassDB::bind_method(D_METHOD("shader_create_from_bytecode", "binary_data"), &RenderingDevice::shader_create_from_bytecode);
 	ClassDB::bind_method(D_METHOD("shader_get_vertex_input_attribute_mask", "shader"), &RenderingDevice::shader_get_vertex_input_attribute_mask);
 
 	ClassDB::bind_method(D_METHOD("uniform_buffer_create", "size_bytes", "data"), &RenderingDevice::uniform_buffer_create, DEFVAL(Vector<uint8_t>()));

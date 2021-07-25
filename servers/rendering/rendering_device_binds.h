@@ -263,8 +263,8 @@ protected:
 	}
 };
 
-class RDShaderBytecode : public Resource {
-	GDCLASS(RDShaderBytecode, Resource)
+class RDShaderSPIRV : public Resource {
+	GDCLASS(RDShaderSPIRV, Resource)
 
 	Vector<uint8_t> bytecode[RD::SHADER_STAGE_MAX];
 	String compile_error[RD::SHADER_STAGE_MAX];
@@ -280,6 +280,19 @@ public:
 		return bytecode[p_stage];
 	}
 
+	Vector<RD::ShaderStageSPIRVData> get_stages() const {
+		Vector<RD::ShaderStageSPIRVData> stages;
+		for (int i = 0; i < RD::SHADER_STAGE_MAX; i++) {
+			if (bytecode[i].size()) {
+				RD::ShaderStageSPIRVData stage;
+				stage.shader_stage = RD::ShaderStage(i);
+				stage.spir_v = bytecode[i];
+				stages.push_back(stage);
+			}
+		}
+		return stages;
+	}
+
 	void set_stage_compile_error(RD::ShaderStage p_stage, const String &p_compile_error) {
 		ERR_FAIL_INDEX(p_stage, RD::SHADER_STAGE_MAX);
 		compile_error[p_stage] = p_compile_error;
@@ -292,11 +305,11 @@ public:
 
 protected:
 	static void _bind_methods() {
-		ClassDB::bind_method(D_METHOD("set_stage_bytecode", "stage", "bytecode"), &RDShaderBytecode::set_stage_bytecode);
-		ClassDB::bind_method(D_METHOD("get_stage_bytecode", "stage"), &RDShaderBytecode::get_stage_bytecode);
+		ClassDB::bind_method(D_METHOD("set_stage_bytecode", "stage", "bytecode"), &RDShaderSPIRV::set_stage_bytecode);
+		ClassDB::bind_method(D_METHOD("get_stage_bytecode", "stage"), &RDShaderSPIRV::get_stage_bytecode);
 
-		ClassDB::bind_method(D_METHOD("set_stage_compile_error", "stage", "compile_error"), &RDShaderBytecode::set_stage_compile_error);
-		ClassDB::bind_method(D_METHOD("get_stage_compile_error", "stage"), &RDShaderBytecode::get_stage_compile_error);
+		ClassDB::bind_method(D_METHOD("set_stage_compile_error", "stage", "compile_error"), &RDShaderSPIRV::set_stage_compile_error);
+		ClassDB::bind_method(D_METHOD("get_stage_compile_error", "stage"), &RDShaderSPIRV::get_stage_compile_error);
 
 		ADD_GROUP("Bytecode", "bytecode_");
 		ADD_PROPERTYI(PropertyInfo(Variant::PACKED_BYTE_ARRAY, "bytecode_vertex"), "set_stage_bytecode", "get_stage_bytecode", RD::SHADER_STAGE_VERTEX);
@@ -316,24 +329,29 @@ protected:
 class RDShaderFile : public Resource {
 	GDCLASS(RDShaderFile, Resource)
 
-	Map<StringName, Ref<RDShaderBytecode>> versions;
+	Map<StringName, Ref<RDShaderSPIRV>> versions;
 	String base_error;
 
 public:
-	void set_bytecode(const Ref<RDShaderBytecode> &p_bytecode, const StringName &p_version = StringName()) {
+	void set_bytecode(const Ref<RDShaderSPIRV> &p_bytecode, const StringName &p_version = StringName()) {
 		ERR_FAIL_COND(p_bytecode.is_null());
 		versions[p_version] = p_bytecode;
 		emit_changed();
 	}
 
-	Ref<RDShaderBytecode> get_bytecode(const StringName &p_version = StringName()) const {
-		ERR_FAIL_COND_V(!versions.has(p_version), Ref<RDShaderBytecode>());
+	Ref<RDShaderSPIRV> get_spirv(const StringName &p_version = StringName()) const {
+		ERR_FAIL_COND_V(!versions.has(p_version), Ref<RDShaderSPIRV>());
 		return versions[p_version];
+	}
+
+	Vector<RD::ShaderStageSPIRVData> get_spirv_stages(const StringName &p_version = StringName()) const {
+		ERR_FAIL_COND_V(!versions.has(p_version), Vector<RD::ShaderStageSPIRVData>());
+		return versions[p_version]->get_stages();
 	}
 
 	Vector<StringName> get_version_list() const {
 		Vector<StringName> vnames;
-		for (Map<StringName, Ref<RDShaderBytecode>>::Element *E = versions.front(); E; E = E->next()) {
+		for (Map<StringName, Ref<RDShaderSPIRV>>::Element *E = versions.front(); E; E = E->next()) {
 			vnames.push_back(E->key());
 		}
 		vnames.sort_custom<StringName::AlphCompare>();
@@ -353,7 +371,7 @@ public:
 		if (base_error != "") {
 			ERR_PRINT("Error parsing shader '" + p_file + "':\n\n" + base_error);
 		} else {
-			for (Map<StringName, Ref<RDShaderBytecode>>::Element *E = versions.front(); E; E = E->next()) {
+			for (Map<StringName, Ref<RDShaderSPIRV>>::Element *E = versions.front(); E; E = E->next()) {
 				for (int i = 0; i < RD::SHADER_STAGE_MAX; i++) {
 					String error = E->get()->get_stage_compile_error(RD::ShaderStage(i));
 					if (error != String()) {
@@ -390,7 +408,7 @@ protected:
 		p_versions.get_key_list(&keys);
 		for (const Variant &E : keys) {
 			StringName name = E;
-			Ref<RDShaderBytecode> bc = p_versions[E];
+			Ref<RDShaderSPIRV> bc = p_versions[E];
 			ERR_CONTINUE(bc.is_null());
 			versions[name] = bc;
 		}
@@ -400,7 +418,7 @@ protected:
 
 	static void _bind_methods() {
 		ClassDB::bind_method(D_METHOD("set_bytecode", "bytecode", "version"), &RDShaderFile::set_bytecode, DEFVAL(StringName()));
-		ClassDB::bind_method(D_METHOD("get_bytecode", "version"), &RDShaderFile::get_bytecode, DEFVAL(StringName()));
+		ClassDB::bind_method(D_METHOD("get_spirv", "version"), &RDShaderFile::get_spirv, DEFVAL(StringName()));
 		ClassDB::bind_method(D_METHOD("get_version_list"), &RDShaderFile::get_version_list);
 
 		ClassDB::bind_method(D_METHOD("set_base_error", "error"), &RDShaderFile::set_base_error);
