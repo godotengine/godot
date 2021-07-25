@@ -281,8 +281,9 @@ static GDNativeBool gdnative_variant_has_key(const GDNativeVariantPtr p_self, co
 	const Variant *self = (const Variant *)p_self;
 	const Variant *key = (const Variant *)p_key;
 	bool valid;
-	return self->has_key(*key, valid);
+	bool ret = self->has_key(*key, valid);
 	*r_valid = valid;
+	return ret;
 }
 
 static void gdnative_variant_get_type_name(GDNativeVariantType p_type, GDNativeStringPtr r_ret) {
