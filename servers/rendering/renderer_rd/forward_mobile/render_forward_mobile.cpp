@@ -96,10 +96,6 @@ void RenderForwardMobile::RenderBufferDataForwardMobile::configure(RID p_color_b
 	RD::DataFormat color_format = RenderForwardMobile::singleton->_render_buffers_get_color_format();
 
 	if (p_msaa == RS::VIEWPORT_MSAA_DISABLED) {
-		if (color_format == RD::DATA_FORMAT_A2B10G10R10_UNORM_PACK32) {
-			// @TODO add a second color buffer for alpha as this format is RGB only
-		}
-
 		Vector<RID> fb;
 		fb.push_back(p_color_buffer);
 		fb.push_back(depth);
@@ -165,15 +161,12 @@ bool RenderForwardMobile::free(RID p_rid) {
 
 RD::DataFormat RenderForwardMobile::_render_buffers_get_color_format() {
 	// Using 32bit buffers enables AFBC on mobile devices which should have a definate performance improvement (MALI G710 and newer support this on 64bit RTs)
-	// NO ALPHA and unsigned float.
-	// @TODO No alpha is an issue, recommendation here is to add a second RT for alpha
 	return RD::DATA_FORMAT_A2B10G10R10_UNORM_PACK32;
 }
 
 bool RenderForwardMobile::_render_buffers_can_be_storage() {
 	// Using 32bit buffers enables AFBC on mobile devices which should have a definate performance improvement (MALI G710 and newer support this on 64bit RTs)
-	// NO ALPHA and unsigned float.
-	// @TODO No alpha is an issue, recommendation here is to add a second RT for alpha
+	// Doesn't support storage
 	return false;
 }
 

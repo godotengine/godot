@@ -1290,7 +1290,7 @@ private:
 	void _update_global_variables();
 	/* EFFECTS */
 
-	EffectsRD effects;
+	EffectsRD *effects = NULL;
 
 public:
 	virtual bool can_create_resources_async() const;
@@ -2374,6 +2374,7 @@ public:
 
 	static RendererStorageRD *base_singleton;
 
+	void init_effects(bool p_prefer_raster_effects);
 	EffectsRD *get_effects();
 
 	RendererStorageRD();

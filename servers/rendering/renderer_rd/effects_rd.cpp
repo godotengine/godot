@@ -383,6 +383,8 @@ void EffectsRD::set_color(RID p_dest_texture, const Color &p_color, const Rect2i
 }
 
 void EffectsRD::gaussian_blur(RID p_source_rd_texture, RID p_texture, RID p_back_texture, const Rect2i &p_region, bool p_8bit_dst) {
+	ERR_FAIL_COND_MSG(!prefer_raster_effects, "Can't use the compute version of the gaussian blur with the mobile renderer.");
+
 	memset(&copy.push_constant, 0, sizeof(CopyPushConstant));
 
 	uint32_t base_flags = 0;
@@ -416,6 +418,8 @@ void EffectsRD::gaussian_blur(RID p_source_rd_texture, RID p_texture, RID p_back
 }
 
 void EffectsRD::gaussian_glow(RID p_source_rd_texture, RID p_back_texture, const Size2i &p_size, float p_strength, bool p_high_quality, bool p_first_pass, float p_luminance_cap, float p_exposure, float p_bloom, float p_hdr_bleed_treshold, float p_hdr_bleed_scale, RID p_auto_exposure, float p_auto_exposure_grey) {
+	ERR_FAIL_COND_MSG(prefer_raster_effects, "Can't use the compute version of the gaussian glow with the mobile renderer.");
+
 	memset(&copy.push_constant, 0, sizeof(CopyPushConstant));
 
 	CopyMode copy_mode = p_first_pass && p_auto_exposure.is_valid() ? COPY_MODE_GAUSSIAN_GLOW_AUTO_EXPOSURE : COPY_MODE_GAUSSIAN_GLOW;
@@ -447,6 +451,57 @@ void EffectsRD::gaussian_glow(RID p_source_rd_texture, RID p_back_texture, const
 
 	RD::get_singleton()->compute_list_dispatch_threads(compute_list, p_size.width, p_size.height, 1);
 	RD::get_singleton()->compute_list_end();
+}
+
+void EffectsRD::gaussian_glow_raster(RID p_source_rd_texture, RID p_framebuffer_half, RID p_rd_texture_half, RID p_dest_framebuffer, const Vector2 &p_pixel_size, float p_strength, bool p_high_quality, bool p_first_pass, float p_luminance_cap, float p_exposure, float p_bloom, float p_hdr_bleed_treshold, float p_hdr_bleed_scale, RID p_auto_exposure, float p_auto_exposure_grey) {
+	ERR_FAIL_COND_MSG(!prefer_raster_effects, "Can't use the fragment version of the gaussian glow with the clustered renderer.");
+
+	memset(&blur_raster.push_constant, 0, sizeof(BlurRasterPushConstant));
+
+	BlurRasterMode blur_mode = p_first_pass && p_auto_exposure.is_valid() ? BLUR_MODE_GAUSSIAN_GLOW_AUTO_EXPOSURE : BLUR_MODE_GAUSSIAN_GLOW;
+	uint32_t base_flags = 0;
+
+	blur_raster.push_constant.pixel_size[0] = p_pixel_size.x;
+	blur_raster.push_constant.pixel_size[1] = p_pixel_size.y;
+
+	blur_raster.push_constant.glow_strength = p_strength;
+	blur_raster.push_constant.glow_bloom = p_bloom;
+	blur_raster.push_constant.glow_hdr_threshold = p_hdr_bleed_treshold;
+	blur_raster.push_constant.glow_hdr_scale = p_hdr_bleed_scale;
+	blur_raster.push_constant.glow_exposure = p_exposure;
+	blur_raster.push_constant.glow_white = 0; //actually unused
+	blur_raster.push_constant.glow_luminance_cap = p_luminance_cap;
+
+	blur_raster.push_constant.glow_auto_exposure_grey = p_auto_exposure_grey; //unused also
+
+	//HORIZONTAL
+	RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(p_framebuffer_half, RD::INITIAL_ACTION_KEEP, RD::FINAL_ACTION_READ, RD::INITIAL_ACTION_KEEP, RD::FINAL_ACTION_DISCARD);
+	RD::get_singleton()->draw_list_bind_render_pipeline(draw_list, blur_raster.pipelines[blur_mode].get_render_pipeline(RD::INVALID_ID, RD::get_singleton()->framebuffer_get_format(p_framebuffer_half)));
+	RD::get_singleton()->draw_list_bind_uniform_set(draw_list, _get_uniform_set_from_texture(p_source_rd_texture), 0);
+	if (p_auto_exposure.is_valid() && p_first_pass) {
+		RD::get_singleton()->draw_list_bind_uniform_set(draw_list, _get_uniform_set_from_texture(p_auto_exposure), 1);
+	}
+	RD::get_singleton()->draw_list_bind_index_array(draw_list, index_array);
+
+	blur_raster.push_constant.flags = base_flags | BLUR_FLAG_HORIZONTAL | (p_first_pass ? BLUR_FLAG_GLOW_FIRST_PASS : 0);
+	RD::get_singleton()->draw_list_set_push_constant(draw_list, &blur_raster.push_constant, sizeof(BlurRasterPushConstant));
+
+	RD::get_singleton()->draw_list_draw(draw_list, true);
+	RD::get_singleton()->draw_list_end();
+
+	blur_mode = BLUR_MODE_GAUSSIAN_GLOW;
+
+	//VERTICAL
+	draw_list = RD::get_singleton()->draw_list_begin(p_dest_framebuffer, RD::INITIAL_ACTION_KEEP, RD::FINAL_ACTION_READ, RD::INITIAL_ACTION_KEEP, RD::FINAL_ACTION_DISCARD);
+	RD::get_singleton()->draw_list_bind_render_pipeline(draw_list, blur_raster.pipelines[blur_mode].get_render_pipeline(RD::INVALID_ID, RD::get_singleton()->framebuffer_get_format(p_dest_framebuffer)));
+	RD::get_singleton()->draw_list_bind_uniform_set(draw_list, _get_uniform_set_from_texture(p_rd_texture_half), 0);
+	RD::get_singleton()->draw_list_bind_index_array(draw_list, index_array);
+
+	blur_raster.push_constant.flags = base_flags;
+	RD::get_singleton()->draw_list_set_push_constant(draw_list, &blur_raster.push_constant, sizeof(BlurRasterPushConstant));
+
+	RD::get_singleton()->draw_list_draw(draw_list, true);
+	RD::get_singleton()->draw_list_end();
 }
 
 void EffectsRD::screen_space_reflection(RID p_diffuse, RID p_normal_roughness, RenderingServer::EnvironmentSSRRoughnessQuality p_roughness_quality, RID p_blur_radius, RID p_blur_radius2, RID p_metallic, const Color &p_metallic_mask, RID p_depth, RID p_scale_depth, RID p_scale_normal, RID p_output, RID p_output_blur, const Size2i &p_screen_size, int p_max_steps, float p_fade_in, float p_fade_out, float p_tolerance, const CameraMatrix &p_camera) {
@@ -736,6 +791,8 @@ void EffectsRD::tonemapper(RID p_source_color, RID p_dst_framebuffer, const Tone
 }
 
 void EffectsRD::luminance_reduction(RID p_source_texture, const Size2i p_source_size, const Vector<RID> p_reduce, RID p_prev_luminance, float p_min_luminance, float p_max_luminance, float p_adjust, bool p_set) {
+	ERR_FAIL_COND_MSG(prefer_raster_effects, "Can't use compute version of luminance reduction with the mobile renderer.");
+
 	luminance_reduce.push_constant.source_size[0] = p_source_size.x;
 	luminance_reduce.push_constant.source_size[1] = p_source_size.y;
 	luminance_reduce.push_constant.max_luminance = p_max_luminance;
@@ -774,7 +831,41 @@ void EffectsRD::luminance_reduction(RID p_source_texture, const Size2i p_source_
 	RD::get_singleton()->compute_list_end();
 }
 
+void EffectsRD::luminance_reduction_raster(RID p_source_texture, const Size2i p_source_size, const Vector<RID> p_reduce, Vector<RID> p_fb, RID p_prev_luminance, float p_min_luminance, float p_max_luminance, float p_adjust, bool p_set) {
+	ERR_FAIL_COND_MSG(!prefer_raster_effects, "Can't use fragment version of luminance reduction with the clustered renderer.");
+	ERR_FAIL_COND_MSG(p_reduce.size() != p_fb.size(), "Incorrect frame buffer account for luminance reduction.");
+
+	luminance_reduce_raster.push_constant.max_luminance = p_max_luminance;
+	luminance_reduce_raster.push_constant.min_luminance = p_min_luminance;
+	luminance_reduce_raster.push_constant.exposure_adjust = p_adjust;
+
+	for (int i = 0; i < p_reduce.size(); i++) {
+		luminance_reduce_raster.push_constant.source_size[0] = i == 0 ? p_source_size.x : luminance_reduce_raster.push_constant.dest_size[0];
+		luminance_reduce_raster.push_constant.source_size[1] = i == 0 ? p_source_size.y : luminance_reduce_raster.push_constant.dest_size[1];
+		luminance_reduce_raster.push_constant.dest_size[0] = MAX(luminance_reduce_raster.push_constant.source_size[0] / 8, 1);
+		luminance_reduce_raster.push_constant.dest_size[1] = MAX(luminance_reduce_raster.push_constant.source_size[1] / 8, 1);
+
+		bool final = !p_set && (luminance_reduce_raster.push_constant.dest_size[0] == 1) && (luminance_reduce_raster.push_constant.dest_size[1] == 1);
+		LuminanceReduceRasterMode mode = final ? LUMINANCE_REDUCE_FRAGMENT_FINAL : (i == 0 ? LUMINANCE_REDUCE_FRAGMENT_FIRST : LUMINANCE_REDUCE_FRAGMENT);
+
+		RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(p_fb[i], RD::INITIAL_ACTION_KEEP, RD::FINAL_ACTION_READ, RD::INITIAL_ACTION_KEEP, RD::FINAL_ACTION_DISCARD);
+		RD::get_singleton()->draw_list_bind_render_pipeline(draw_list, luminance_reduce_raster.pipelines[mode].get_render_pipeline(RD::INVALID_ID, RD::get_singleton()->framebuffer_get_format(p_fb[i])));
+		RD::get_singleton()->draw_list_bind_uniform_set(draw_list, _get_uniform_set_from_texture(i == 0 ? p_source_texture : p_reduce[i - 1]), 0);
+		if (final) {
+			RD::get_singleton()->draw_list_bind_uniform_set(draw_list, _get_uniform_set_from_texture(p_prev_luminance), 1);
+		}
+		RD::get_singleton()->draw_list_bind_index_array(draw_list, index_array);
+
+		RD::get_singleton()->draw_list_set_push_constant(draw_list, &luminance_reduce_raster.push_constant, sizeof(LuminanceReduceRasterPushConstant));
+
+		RD::get_singleton()->draw_list_draw(draw_list, true);
+		RD::get_singleton()->draw_list_end();
+	}
+}
+
 void EffectsRD::bokeh_dof(RID p_base_texture, RID p_depth_texture, const Size2i &p_base_texture_size, RID p_secondary_texture, RID p_halfsize_texture1, RID p_halfsize_texture2, bool p_dof_far, float p_dof_far_begin, float p_dof_far_size, bool p_dof_near, float p_dof_near_begin, float p_dof_near_size, float p_bokeh_size, RenderingServer::DOFBokehShape p_bokeh_shape, RS::DOFBlurQuality p_quality, bool p_use_jitter, float p_cam_znear, float p_cam_zfar, bool p_cam_orthogonal) {
+	ERR_FAIL_COND_MSG(prefer_raster_effects, "Can't use compute version of BOKEH DOF with the mobile renderer.");
+
 	bokeh.push_constant.blur_far_active = p_dof_far;
 	bokeh.push_constant.blur_far_begin = p_dof_far_begin;
 	bokeh.push_constant.blur_far_end = p_dof_far_begin + p_dof_far_size;
@@ -922,6 +1013,78 @@ void EffectsRD::bokeh_dof(RID p_base_texture, RID p_depth_texture, const Size2i 
 	}
 
 	RD::get_singleton()->compute_list_end();
+}
+
+void EffectsRD::blur_dof_raster(RID p_base_texture, RID p_depth_texture, const Size2i &p_base_texture_size, RID p_base_fb, RID p_secondary_texture, RID p_secondary_fb, bool p_dof_far, float p_dof_far_begin, float p_dof_far_size, bool p_dof_near, float p_dof_near_begin, float p_dof_near_size, float p_dof_blur_amount, RS::DOFBlurQuality p_quality, float p_cam_znear, float p_cam_zfar, bool p_cam_orthogonal) {
+	ERR_FAIL_COND_MSG(!prefer_raster_effects, "Can't use blur DOF with the clustered renderer.");
+
+	memset(&blur_raster.push_constant, 0, sizeof(BlurRasterPushConstant));
+
+	BlurRasterMode blur_mode;
+	int qsteps[4] = { 4, 4, 10, 20 };
+	uint32_t base_flags = p_cam_orthogonal ? BLUR_FLAG_USE_ORTHOGONAL_PROJECTION : 0;
+
+	Vector2 pixel_size = Vector2(1.0 / p_base_texture_size.width, 1.0 / p_base_texture_size.height);
+
+	blur_raster.push_constant.dof_radius = (p_dof_blur_amount * p_dof_blur_amount) / qsteps[p_quality];
+	blur_raster.push_constant.pixel_size[0] = pixel_size.x;
+	blur_raster.push_constant.pixel_size[1] = pixel_size.y;
+	blur_raster.push_constant.camera_z_far = p_cam_zfar;
+	blur_raster.push_constant.camera_z_near = p_cam_znear;
+
+	if (p_dof_far || p_dof_near) {
+		if (p_quality == RS::DOF_BLUR_QUALITY_HIGH) {
+			blur_mode = BLUR_MODE_DOF_HIGH;
+		} else if (p_quality == RS::DOF_BLUR_QUALITY_MEDIUM) {
+			blur_mode = BLUR_MODE_DOF_MEDIUM;
+		} else { // for LOW or VERYLOW we use LOW
+			blur_mode = BLUR_MODE_DOF_LOW;
+		}
+
+		if (p_dof_far) {
+			base_flags |= BLUR_FLAG_DOF_FAR;
+			blur_raster.push_constant.dof_far_begin = p_dof_far_begin;
+			blur_raster.push_constant.dof_far_end = p_dof_far_begin + p_dof_far_size;
+		}
+
+		if (p_dof_near) {
+			base_flags |= BLUR_FLAG_DOF_NEAR;
+			blur_raster.push_constant.dof_near_begin = p_dof_near_begin;
+			blur_raster.push_constant.dof_near_end = p_dof_near_begin - p_dof_near_size;
+		}
+
+		//HORIZONTAL
+		RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(p_secondary_fb, RD::INITIAL_ACTION_KEEP, RD::FINAL_ACTION_READ, RD::INITIAL_ACTION_KEEP, RD::FINAL_ACTION_DISCARD);
+		RD::get_singleton()->draw_list_bind_render_pipeline(draw_list, blur_raster.pipelines[blur_mode].get_render_pipeline(RD::INVALID_ID, RD::get_singleton()->framebuffer_get_format(p_secondary_fb)));
+		RD::get_singleton()->draw_list_bind_uniform_set(draw_list, _get_uniform_set_from_texture(p_base_texture), 0);
+		RD::get_singleton()->draw_list_bind_uniform_set(draw_list, _get_uniform_set_from_texture(p_depth_texture), 1);
+		RD::get_singleton()->draw_list_bind_index_array(draw_list, index_array);
+
+		blur_raster.push_constant.flags = base_flags | BLUR_FLAG_HORIZONTAL;
+		blur_raster.push_constant.dof_dir[0] = 1.0;
+		blur_raster.push_constant.dof_dir[1] = 0.0;
+
+		RD::get_singleton()->draw_list_set_push_constant(draw_list, &blur_raster.push_constant, sizeof(BlurRasterPushConstant));
+
+		RD::get_singleton()->draw_list_draw(draw_list, true);
+		RD::get_singleton()->draw_list_end();
+
+		//VERTICAL
+		draw_list = RD::get_singleton()->draw_list_begin(p_base_fb, RD::INITIAL_ACTION_KEEP, RD::FINAL_ACTION_READ, RD::INITIAL_ACTION_KEEP, RD::FINAL_ACTION_DISCARD);
+		RD::get_singleton()->draw_list_bind_render_pipeline(draw_list, blur_raster.pipelines[blur_mode].get_render_pipeline(RD::INVALID_ID, RD::get_singleton()->framebuffer_get_format(p_base_fb)));
+		RD::get_singleton()->draw_list_bind_uniform_set(draw_list, _get_uniform_set_from_texture(p_secondary_texture), 0);
+		RD::get_singleton()->draw_list_bind_uniform_set(draw_list, _get_uniform_set_from_texture(p_depth_texture), 1);
+		RD::get_singleton()->draw_list_bind_index_array(draw_list, index_array);
+
+		blur_raster.push_constant.flags = base_flags;
+		blur_raster.push_constant.dof_dir[0] = 0.0;
+		blur_raster.push_constant.dof_dir[1] = 1.0;
+
+		RD::get_singleton()->draw_list_set_push_constant(draw_list, &blur_raster.push_constant, sizeof(BlurRasterPushConstant));
+
+		RD::get_singleton()->draw_list_draw(draw_list, true);
+		RD::get_singleton()->draw_list_end();
+	}
 }
 
 void EffectsRD::gather_ssao(RD::ComputeListID p_compute_list, const Vector<RID> p_ao_slices, const SSAOSettings &p_settings, bool p_adaptive_base_pass, RID p_gather_uniform_set, RID p_importance_map_uniform_set) {
@@ -1464,7 +1627,35 @@ void EffectsRD::sort_buffer(RID p_uniform_set, int p_size) {
 	RD::get_singleton()->compute_list_end();
 }
 
-EffectsRD::EffectsRD() {
+EffectsRD::EffectsRD(bool p_prefer_raster_effects) {
+	prefer_raster_effects = p_prefer_raster_effects;
+
+	if (prefer_raster_effects) {
+		// init blur shader (on compute use copy shader)
+
+		Vector<String> blur_modes;
+		blur_modes.push_back("\n#define MODE_GAUSSIAN_BLUR\n"); // BLUR_MODE_GAUSSIAN_BLUR
+		blur_modes.push_back("\n#define MODE_GAUSSIAN_GLOW\n"); // BLUR_MODE_GAUSSIAN_GLOW
+		blur_modes.push_back("\n#define MODE_GAUSSIAN_GLOW\n#define GLOW_USE_AUTO_EXPOSURE\n"); // BLUR_MODE_GAUSSIAN_GLOW_AUTO_EXPOSURE
+		blur_modes.push_back("\n#define MODE_DOF_BLUR\n#define DOF_QUALITY_LOW\n"); // BLUR_MODE_DOF_LOW
+		blur_modes.push_back("\n#define MODE_DOF_BLUR\n#define DOF_QUALITY_MEDIUM\n"); // BLUR_MODE_DOF_MEDIUM
+		blur_modes.push_back("\n#define MODE_DOF_BLUR\n#define DOF_QUALITY_HIGH\n"); // BLUR_MODE_DOF_HIGH
+
+		blur_raster.shader.initialize(blur_modes);
+		memset(&blur_raster.push_constant, 0, sizeof(BlurRasterPushConstant));
+		blur_raster.shader_version = blur_raster.shader.version_create();
+
+		for (int i = 0; i < BLUR_MODE_MAX; i++) {
+			blur_raster.pipelines[i].setup(blur_raster.shader.version_get_shader(blur_raster.shader_version, i), RD::RENDER_PRIMITIVE_TRIANGLES, RD::PipelineRasterizationState(), RD::PipelineMultisampleState(), RD::PipelineDepthStencilState(), RD::PipelineColorBlendState::create_disabled(), 0);
+		}
+
+	} else {
+		// not used in clustered
+		for (int i = 0; i < BLUR_MODE_MAX; i++) {
+			blur_raster.pipelines[i].clear();
+		}
+	}
+
 	{ // Initialize copy
 		Vector<String> copy_modes;
 		copy_modes.push_back("\n#define MODE_GAUSSIAN_BLUR\n");
@@ -1483,10 +1674,21 @@ EffectsRD::EffectsRD() {
 
 		copy.shader.initialize(copy_modes);
 		memset(&copy.push_constant, 0, sizeof(CopyPushConstant));
+
+		if (prefer_raster_effects) {
+			// disable shaders we can't use
+			copy.shader.set_variant_enabled(COPY_MODE_GAUSSIAN_COPY, false);
+			copy.shader.set_variant_enabled(COPY_MODE_GAUSSIAN_COPY_8BIT, false);
+			copy.shader.set_variant_enabled(COPY_MODE_GAUSSIAN_GLOW, false);
+			copy.shader.set_variant_enabled(COPY_MODE_GAUSSIAN_GLOW_AUTO_EXPOSURE, false);
+		}
+
 		copy.shader_version = copy.shader.version_create();
 
 		for (int i = 0; i < COPY_MODE_MAX; i++) {
-			copy.pipelines[i] = RD::get_singleton()->compute_pipeline_create(copy.shader.version_get_shader(copy.shader_version, i));
+			if (copy.shader.is_variant_enabled(i)) {
+				copy.pipelines[i] = RD::get_singleton()->compute_pipeline_create(copy.shader.version_get_shader(copy.shader_version, i));
+			}
 		}
 	}
 	{
@@ -1551,7 +1753,20 @@ EffectsRD::EffectsRD() {
 		}
 	}
 
-	{
+	if (prefer_raster_effects) {
+		Vector<String> luminance_reduce_modes;
+		luminance_reduce_modes.push_back("\n#define FIRST_PASS\n"); // LUMINANCE_REDUCE_FRAGMENT_FIRST
+		luminance_reduce_modes.push_back("\n"); // LUMINANCE_REDUCE_FRAGMENT
+		luminance_reduce_modes.push_back("\n#define FINAL_PASS\n"); // LUMINANCE_REDUCE_FRAGMENT_FINAL
+
+		luminance_reduce_raster.shader.initialize(luminance_reduce_modes);
+		memset(&luminance_reduce_raster.push_constant, 0, sizeof(LuminanceReduceRasterPushConstant));
+		luminance_reduce_raster.shader_version = luminance_reduce_raster.shader.version_create();
+
+		for (int i = 0; i < LUMINANCE_REDUCE_FRAGMENT_MAX; i++) {
+			luminance_reduce_raster.pipelines[i].setup(luminance_reduce_raster.shader.version_get_shader(luminance_reduce_raster.shader_version, i), RD::RENDER_PRIMITIVE_TRIANGLES, RD::PipelineRasterizationState(), RD::PipelineMultisampleState(), RD::PipelineDepthStencilState(), RD::PipelineColorBlendState::create_disabled(), 0);
+		}
+	} else {
 		// Initialize luminance_reduce
 		Vector<String> luminance_reduce_modes;
 		luminance_reduce_modes.push_back("\n#define READ_TEXTURE\n");
@@ -1564,6 +1779,10 @@ EffectsRD::EffectsRD() {
 
 		for (int i = 0; i < LUMINANCE_REDUCE_MAX; i++) {
 			luminance_reduce.pipelines[i] = RD::get_singleton()->compute_pipeline_create(luminance_reduce.shader.version_get_shader(luminance_reduce.shader_version, i));
+		}
+
+		for (int i = 0; i < LUMINANCE_REDUCE_FRAGMENT_MAX; i++) {
+			luminance_reduce_raster.pipelines[i].clear();
 		}
 	}
 
@@ -1583,7 +1802,9 @@ EffectsRD::EffectsRD() {
 		cube_to_dp.pipeline.setup(shader, RD::RENDER_PRIMITIVE_TRIANGLES, RD::PipelineRasterizationState(), RD::PipelineMultisampleState(), dss, RD::PipelineColorBlendState(), 0);
 	}
 
-	{
+	if (prefer_raster_effects) {
+		// not supported
+	} else {
 		// Initialize bokeh
 		Vector<String> bokeh_modes;
 		bokeh_modes.push_back("\n#define MODE_GEN_BLUR_SIZE\n");
@@ -1974,13 +2195,18 @@ EffectsRD::~EffectsRD() {
 	RD::get_singleton()->free(ssao.gather_constants_buffer);
 	RD::get_singleton()->free(ssao.importance_map_load_counter);
 
-	bokeh.shader.version_free(bokeh.shader_version);
+	if (prefer_raster_effects) {
+		blur_raster.shader.version_free(blur_raster.shader_version);
+		luminance_reduce_raster.shader.version_free(luminance_reduce_raster.shader_version);
+	} else {
+		bokeh.shader.version_free(bokeh.shader_version);
+		luminance_reduce.shader.version_free(luminance_reduce.shader_version);
+	}
 	copy.shader.version_free(copy.shader_version);
 	copy_to_fb.shader.version_free(copy_to_fb.shader_version);
 	cube_to_dp.shader.version_free(cube_to_dp.shader_version);
 	cubemap_downsampler.shader.version_free(cubemap_downsampler.shader_version);
 	filter.shader.version_free(filter.shader_version);
-	luminance_reduce.shader.version_free(luminance_reduce.shader_version);
 	resolve.shader.version_free(resolve.shader_version);
 	roughness.shader.version_free(roughness.shader_version);
 	roughness_limiter.shader.version_free(roughness_limiter.shader_version);
