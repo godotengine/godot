@@ -691,7 +691,7 @@ void vertex() {
 }
 
 void fragment() {
-	ALBEDO = vec3(0.6);
+	ALBEDO = vec3(0.6) * vec3(COLOR.r, COLOR.g, COLOR.b);
 	ROUGHNESS = 0.8;
 	METALLIC = 0.2;
 }
